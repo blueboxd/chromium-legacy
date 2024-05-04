@@ -1747,7 +1747,9 @@ std::optional<CtapDeviceResponseCode> VirtualCtap2Device::OnGetAssertion(
           fido_parsing_utils::Materialize(registration.first));
     }
 
-    if (registration.second->is_resident) {
+    if (registration.second->is_resident &&
+        (request.allow_list.empty() ||
+         !config_.omit_user_entity_on_allow_credentials_requests)) {
       assertion.user_entity = registration.second->user.value();
     }
 
@@ -2488,7 +2490,7 @@ CtapDeviceResponseCode VirtualCtap2Device::OnBioEnrollment(
 
   using SubCmd = BioEnrollmentSubCommand;
   switch (*cmd) {
-    // TODO(crbug.com/1090415): some of these commands should be checking
+    // TODO(crbug.com/40697161): some of these commands should be checking
     // PinUvAuthToken.
     case SubCmd::kGetFingerprintSensorInfo:
       response_map.emplace(

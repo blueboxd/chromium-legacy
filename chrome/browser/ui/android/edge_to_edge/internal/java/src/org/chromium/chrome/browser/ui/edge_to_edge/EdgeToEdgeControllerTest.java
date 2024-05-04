@@ -89,8 +89,12 @@ public class EdgeToEdgeControllerTest {
         return new Object[] {false, true};
     }
 
+    private static final int TOP_INSET = 113;
+    private static final int BOTTOM_INSET = 59;
+
     @SuppressLint("NewApi")
-    private static final Insets SYSTEM_INSETS = Insets.of(0, 113, 0, 59); // Typical.
+    private static final Insets SYSTEM_INSETS =
+            Insets.of(0, TOP_INSET, 0, BOTTOM_INSET); // Typical.
 
     @Rule(order = -2)
     public BaseRobolectricTestRule mBaseRule = new BaseRobolectricTestRule();
@@ -467,6 +471,105 @@ public class EdgeToEdgeControllerTest {
                         Robolectric.buildActivity(AppCompatActivity.class).setup().get()));
     }
 
+    // Regression test for https://crbug.com/329875254.
+    @Test
+    public void testViewportFitAfterListenerSet_ToNormal() {
+        when(mTab.isNativePage()).thenReturn(false);
+        mTabProvider.set(mTab);
+        verifyInteractions(mTab);
+        assertFalse("Shouldn't be toEdge.", mEdgeToEdgeControllerImpl.isToEdge());
+
+        // Simulate a viewport fit change to kick off WindowInsetConsumer being hooked up.
+        mEdgeToEdgeControllerImpl.getWebContentsObserver().viewportFitChanged(ViewportFit.COVER);
+        // Simulate another viewport fit change prior to #handleWindowInsets being called.
+        mEdgeToEdgeControllerImpl.getWebContentsObserver().viewportFitChanged(ViewportFit.CONTAIN);
+
+        // Simulate insets being available.
+        assertNotNull(mWindowInsetsListenerCaptor.getValue());
+        mWindowInsetsListenerCaptor.getValue().onApplyWindowInsets(mViewMock, mWindowInsetsMock);
+        assertFalse(
+                "Shouldn't be toEdge after toggling viewport-fit.",
+                mEdgeToEdgeControllerImpl.isToEdge());
+        verify(mOsWrapper).setPadding(any(), eq(0), eq(TOP_INSET), eq(0), eq(BOTTOM_INSET));
+    }
+
+    @Test
+    public void testViewportFitAfterListenerSet_ToEdge() {
+        when(mTab.isNativePage()).thenReturn(false);
+        mTabProvider.set(mTab);
+        verifyInteractions(mTab);
+        assertFalse("Shouldn't be toEdge.", mEdgeToEdgeControllerImpl.isToEdge());
+
+        // Simulate a viewport fit change to kick off WindowInsetConsumer being hooked up.
+        mEdgeToEdgeControllerImpl.getWebContentsObserver().viewportFitChanged(ViewportFit.COVER);
+        // Simulate another viewport fit change prior to #handleWindowInsets being called.
+        mEdgeToEdgeControllerImpl.getWebContentsObserver().viewportFitChanged(ViewportFit.CONTAIN);
+        // Go back to edge.
+        mEdgeToEdgeControllerImpl.getWebContentsObserver().viewportFitChanged(ViewportFit.COVER);
+
+        // Simulate insets being available.
+        assertNotNull(mWindowInsetsListenerCaptor.getValue());
+        mWindowInsetsListenerCaptor.getValue().onApplyWindowInsets(mViewMock, mWindowInsetsMock);
+        assertTrue(
+                "Should be toEdge after toggling viewport-fit.",
+                mEdgeToEdgeControllerImpl.isToEdge());
+        verify(mOsWrapper).setPadding(any(), eq(0), eq(TOP_INSET), eq(0), eq(0));
+    }
+
+    @Test
+    public void handleBrowserControls_properlyPadAdjusters() {
+        int unused = -1;
+        int browserControlsHeight = BOTTOM_INSET * 2;
+
+        verify(mBrowserControlsStateProvider, atLeastOnce())
+                .addObserver(eq(mEdgeToEdgeControllerImpl));
+
+        mEdgeToEdgeControllerImpl.setToEdgeForTesting(true);
+        mEdgeToEdgeControllerImpl.setSystemInsetsForTesting(SYSTEM_INSETS);
+        mEdgeToEdgeControllerImpl.setKeyboardInsetsForTesting(null);
+
+        // Register a new pad adjuster. Without the keyboard or browser controls visible, the insets
+        // should just match the system bottom inset.
+        MockPadAdjuster mockPadAdjuster = new MockPadAdjuster();
+        mEdgeToEdgeControllerImpl.registerAdjuster(mockPadAdjuster);
+        mockPadAdjuster.checkInsets(BOTTOM_INSET, BOTTOM_INSET);
+
+        // Sometimes, the controls offset can change even when browser controls aren't visible. This
+        // should be a no-op.
+        mEdgeToEdgeControllerImpl.onControlsOffsetChanged(
+                unused, unused, /* bottomOffset= */ browserControlsHeight, unused, false);
+        mockPadAdjuster.checkInsets(BOTTOM_INSET, BOTTOM_INSET);
+
+        // Show browser controls.
+        mEdgeToEdgeControllerImpl.onBottomControlsHeightChanged(browserControlsHeight, unused);
+        mockPadAdjuster.checkInsets(BOTTOM_INSET, 0);
+
+        // Scroll off browser controls gradually.
+        mEdgeToEdgeControllerImpl.onControlsOffsetChanged(
+                unused, unused, /* bottomOffset= */ browserControlsHeight / 4, unused, false);
+        mockPadAdjuster.checkInsets(BOTTOM_INSET, 0);
+        mEdgeToEdgeControllerImpl.onControlsOffsetChanged(
+                unused, unused, /* bottomOffset= */ browserControlsHeight / 2, unused, false);
+        mockPadAdjuster.checkInsets(BOTTOM_INSET, 0);
+        mEdgeToEdgeControllerImpl.onControlsOffsetChanged(
+                unused, unused, /* bottomOffset= */ browserControlsHeight, unused, false);
+        mockPadAdjuster.checkInsets(BOTTOM_INSET, BOTTOM_INSET);
+
+        // Scroll the browser controls back up.
+        mEdgeToEdgeControllerImpl.onControlsOffsetChanged(
+                unused, unused, /* bottomOffset= */ browserControlsHeight / 2, unused, false);
+        mockPadAdjuster.checkInsets(BOTTOM_INSET, 0);
+        mEdgeToEdgeControllerImpl.onControlsOffsetChanged(
+                unused, unused, /* bottomOffset= */ 0, unused, false);
+        mockPadAdjuster.checkInsets(BOTTOM_INSET, 0);
+
+        // Hide browser controls.
+        mEdgeToEdgeControllerImpl.onBottomControlsHeightChanged(0, unused);
+        mockPadAdjuster.checkInsets(BOTTOM_INSET, BOTTOM_INSET);
+
+        mEdgeToEdgeControllerImpl.unregisterAdjuster(mockPadAdjuster);
+    }
+
     void assertToEdgeExpectations() {
         assertNotNull(mWindowInsetsListenerCaptor.getValue());
         mWindowInsetsListenerCaptor.getValue().onApplyWindowInsets(mViewMock, mWindowInsetsMock);
@@ -507,4 +610,29 @@ public class EdgeToEdgeControllerTest {
 
     // TODO: Verify that the value of the updated insets returned from the
     //  OnApplyWindowInsetsListener is correct.
+
+    private class MockPadAdjuster implements EdgeToEdgePadAdjuster {
+        private int mDefaultInset;
+        private int mInsetWithBrowserControls;
+
+        MockPadAdjuster() {}
+
+        @Override
+        public void overrideBottomInset(int defaultInset, int insetWithBrowserControls) {
+            mDefaultInset = defaultInset;
+            mInsetWithBrowserControls = insetWithBrowserControls;
+        }
+
+        void checkInsets(int expectedDefaultInset, int expectedInsetWithBrowserControls) {
+            assertEquals(
+                    "The pad adjuster does not have the expected default inset.",
+                    expectedDefaultInset,
+                    mDefaultInset);
+            assertEquals(
+                    "The pad adjuster does not have the expected inset account for browser"
+                            + " controls.",
+                    expectedInsetWithBrowserControls,
+                    mInsetWithBrowserControls);
+        }
+    }
 }

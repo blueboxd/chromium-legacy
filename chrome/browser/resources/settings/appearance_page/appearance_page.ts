@@ -18,10 +18,10 @@ import '../settings_vars.css.js';
 import './home_url_input.js';
 import '../controls/settings_dropdown_menu.js';
 
+import {PrefsMixin} from '/shared/settings/prefs/prefs_mixin.js';
 import {CustomizeColorSchemeModeBrowserProxy} from 'chrome://resources/cr_components/customize_color_scheme_mode/browser_proxy.js';
 import type {CustomizeColorSchemeModeClientCallbackRouter, CustomizeColorSchemeModeHandlerInterface} from 'chrome://resources/cr_components/customize_color_scheme_mode/customize_color_scheme_mode.mojom-webui.js';
 import {ColorSchemeMode} from 'chrome://resources/cr_components/customize_color_scheme_mode/customize_color_scheme_mode.mojom-webui.js';
-import {PrefsMixin} from 'chrome://resources/cr_components/settings_prefs/prefs_mixin.js';
 import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
 import {assert} from 'chrome://resources/js/assert.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -109,12 +109,6 @@ export class SettingsAppearancePageElement extends
 
       isWallpaperPolicyControlled_: {type: Boolean, value: true},
 
-      showColorSchemeMode_: {
-        type: Boolean,
-        value: () =>
-            document.documentElement.hasAttribute('chrome-refresh-2023'),
-      },
-
       colorSchemeModeOptions_: {
         readOnly: true,
         type: Array,
@@ -182,13 +176,6 @@ export class SettingsAppearancePageElement extends
         },
       },
 
-      showReaderModeOption_: {
-        type: Boolean,
-        value() {
-          return loadTimeData.getBoolean('showReaderModeOption');
-        },
-      },
-
       isForcedTheme_: {
         type: Boolean,
         computed: 'computeIsForcedTheme_(' +
@@ -242,7 +229,6 @@ export class SettingsAppearancePageElement extends
   private defaultZoom_: number;
   private isWallpaperPolicyControlled_: boolean;
   private fontSizeOptions_: DropdownMenuOptionList;
-  private showColorSchemeMode_: boolean;
   private colorSchemeModeOptions_:
       Array<{value: ColorSchemeMode, name: string}>;
   private selectedColorSchemeMode_: ColorSchemeMode|undefined;
@@ -251,7 +237,6 @@ export class SettingsAppearancePageElement extends
   private themeUrl_: string;
   private systemTheme_: SystemTheme;
   private focusConfig_: Map<string, string>;
-  private showReaderModeOption_: boolean;
   private isForcedTheme_: boolean;
   private showHoverCardImagesOption_: boolean;
 
@@ -375,8 +360,7 @@ export class SettingsAppearancePageElement extends
   /** @return Whether to show the "USE QT" button. */
   private showUseQt_(themeId: string): boolean {
     return (!!themeId || this.systemTheme_ !== SystemTheme.QT) &&
-        !this.appearanceBrowserProxy_.isChildAccount() &&
-        loadTimeData.getBoolean('allowQtTheme');
+        !this.appearanceBrowserProxy_.isChildAccount();
   }
 
   /**

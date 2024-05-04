@@ -29,7 +29,7 @@ struct MEDIA_EXPORT AudioProcessingSettings {
   bool multi_channel_capture_processing = true;
   bool stereo_mirroring = false;
 
-  // TODO(https://crbug.com/1269723): Deprecate this setting.
+  // TODO(crbug.com/40205136): Deprecate this setting.
   // This flag preserves the behavior of the to-be-deprecated flag / constraint
   // |AudioProcessingProperties::goog_experimental_echo_cancellation|: It has no
   // effect on what effects are enabled, but for legacy reasons, it forces APM
@@ -54,7 +54,7 @@ struct MEDIA_EXPORT AudioProcessingSettings {
   }
 
   bool NeedWebrtcAudioProcessing() const {
-    // TODO(https://crbug.com/1269364): Legacy iOS-specific behavior;
+    // TODO(crbug.com/40205004): Legacy iOS-specific behavior;
     // reconsider.
 #if BUILDFLAG(IS_IOS)
     if (stereo_mirroring)
@@ -78,7 +78,7 @@ struct MEDIA_EXPORT AudioProcessingSettings {
   }
 
   // Deprecated.
-  // TODO(crbug.com/1410129): Use `AudioProcessor::NeedsPlayoutReference()`
+  // TODO(crbug.com/40889535): Use `AudioProcessor::NeedsPlayoutReference()`
   // instead.
   bool NeedPlayoutReference() const {
     return echo_cancellation || automatic_gain_control;

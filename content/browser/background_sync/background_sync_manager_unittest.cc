@@ -914,7 +914,9 @@ TEST_F(BackgroundSyncManagerTest, RegisterWithoutLiveSWRegistration) {
   ASSERT_TRUE(worker_host);
 
   // Remove the registration object host.
-  worker_host->container_host()->registration_object_hosts_.clear();
+  worker_host->container_host()
+      ->registration_object_manager()
+      .registration_object_hosts_.clear();
 
   // Ensure |sw_registration_1_| is the last reference to the registration.
   ASSERT_TRUE(sw_registration_1_->HasOneRef());
@@ -1771,8 +1773,8 @@ TEST_F(BackgroundSyncManagerTest, NotifyBackgroundSyncRegistered) {
             GetController()->registration_origin());
 }
 
-// TODO(crbug.com/996166): Update and enable when browser wake up logic has been
-// updated to not schedule a wakeup with delay of 0.
+// TODO(crbug.com/40641360): Update and enable when browser wake up logic has
+// been updated to not schedule a wakeup with delay of 0.
 TEST_F(BackgroundSyncManagerTest, DISABLED_WakeBrowserCalledForOneShotSync) {
   SetupBackgroundSyncManager();
   InitDelayedSyncEventTest();

@@ -17,6 +17,11 @@
 #include "components/viz/common/quads/compositor_render_pass.h"
 #include "components/viz/common/resources/release_callback.h"
 #include "components/viz/service/viz_service_export.h"
+#include "gpu/command_buffer/client/client_shared_image.h"
+
+namespace gpu {
+class SharedImageInterface;
+}
 
 namespace viz {
 
@@ -24,7 +29,7 @@ class Surface;
 
 class VIZ_SERVICE_EXPORT SurfaceSavedFrame {
  public:
-  using TransitionDirectiveCompleteCallback =
+  using CopyFinishedCallback =
       base::OnceCallback<void(const CompositorFrameTransitionDirective&)>;
 
   struct RenderPassDrawData {
@@ -72,8 +77,12 @@ class VIZ_SERVICE_EXPORT SurfaceSavedFrame {
     base::flat_set<ViewTransitionElementResourceId> empty_resource_ids;
   };
 
+  static std::unique_ptr<SurfaceSavedFrame> CreateForTesting(
+      CompositorFrameTransitionDirective directive);
+
   SurfaceSavedFrame(CompositorFrameTransitionDirective directive,
-                    TransitionDirectiveCompleteCallback finished_callback);
+                    gpu::SharedImageInterface* shared_image_interface,
+                    CopyFinishedCallback finished_callback);
   ~SurfaceSavedFrame();
 
   // Returns true iff the frame is valid and complete.
@@ -93,9 +102,12 @@ class VIZ_SERVICE_EXPORT SurfaceSavedFrame {
   base::flat_set<ViewTransitionElementResourceId> GetEmptyResourceIds() const;
 
  private:
+  explicit SurfaceSavedFrame(CompositorFrameTransitionDirective directive);
+
   std::unique_ptr<CopyOutputRequest> CreateCopyRequestIfNeeded(
       const CompositorRenderPass& render_pass,
-      const CompositorRenderPassList& render_pass_list) const;
+      const CompositorRenderPassList& render_pass_list,
+      bool is_software);
 
   void NotifyCopyOfOutputComplete(size_t shared_index,
                                   const RenderPassDrawData& info,
@@ -132,7 +144,12 @@ class VIZ_SERVICE_EXPORT SurfaceSavedFrame {
   bool IsSharedElementRenderPass(CompositorRenderPassId pass_id) const;
 
   CompositorFrameTransitionDirective directive_;
-  TransitionDirectiveCompleteCallback directive_finished_callback_;
+  raw_ptr<gpu::SharedImageInterface> shared_image_interface_;
+  CopyFinishedCallback directive_finished_callback_;
+
+  // Store the blit images while the copy output request is ongoing.
+  base::flat_map<size_t, scoped_refptr<gpu::ClientSharedImage>>
+      blit_shared_images_;
 
   std::optional<FrameResult> frame_result_;
 

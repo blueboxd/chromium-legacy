@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40284755): Remove this and spanify to fix the errors.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "base/debug/allocation_trace.h"
 
 #include <algorithm>
@@ -13,9 +18,9 @@
 
 #include "base/allocator/dispatcher/dispatcher.h"
 #include "base/allocator/dispatcher/testing/tools.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_allocation_data.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_config.h"
 #include "base/debug/stack_trace.h"
+#include "partition_alloc/partition_alloc_allocation_data.h"
+#include "partition_alloc/partition_alloc_config.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -81,7 +86,7 @@ class AllocationTraceRecorderTest : public Test {
       MTEMode mte_mode = MTEMode::kUndefined) {
     return AllocationNotificationData(address, size, nullptr,
                                       AllocationSubsystem::kPartitionAllocator)
-#if BUILDFLAG(HAS_MEMORY_TAGGING)
+#if PA_BUILDFLAG(HAS_MEMORY_TAGGING)
         .SetMteReportingMode(mte_mode)
 #endif
         ;
@@ -91,7 +96,7 @@ class AllocationTraceRecorderTest : public Test {
                                       MTEMode mte_mode = MTEMode::kUndefined) {
     return FreeNotificationData(address,
                                 AllocationSubsystem::kPartitionAllocator)
-#if BUILDFLAG(HAS_MEMORY_TAGGING)
+#if PA_BUILDFLAG(HAS_MEMORY_TAGGING)
         .SetMteReportingMode(mte_mode)
 #endif
         ;
@@ -350,12 +355,12 @@ class OperationRecordTest : public Test {
     // to inline, depending i.e. on the optimization level. Therefore, we search
     // for the first common frame in both stack-traces. From there on, both must
     // be equal for the remaining number of frames.
-    auto* const* const it_stack_trace_begin = std::begin(stack_trace);
-    auto* const* const it_stack_trace_end =
+    auto const it_stack_trace_begin = std::begin(stack_trace);
+    auto const it_stack_trace_end =
         std::find(it_stack_trace_begin, std::end(stack_trace), nullptr);
     auto const it_reference_stack_trace_end = std::end(reference_stack_trace);
 
-    auto* const* it_stack_trace = std::find_first_of(
+    auto const it_stack_trace = std::find_first_of(
         it_stack_trace_begin, it_stack_trace_end,
         std::begin(reference_stack_trace), it_reference_stack_trace_end);
 

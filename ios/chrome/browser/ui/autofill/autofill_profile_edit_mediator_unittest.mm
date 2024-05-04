@@ -6,7 +6,7 @@
 
 #import "base/memory/raw_ptr.h"
 #import "base/strings/sys_string_conversions.h"
-#import "base/test/scoped_feature_list.h"
+#import "components/autofill/core/browser/address_data_manager.h"
 #import "components/autofill/core/browser/autofill_test_utils.h"
 #import "components/autofill/core/browser/geo/autofill_country.h"
 #import "components/autofill/core/browser/personal_data_manager.h"
@@ -35,26 +35,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 @interface FakeAutofillProfileEditConsumer
     : NSObject <AutofillProfileEditConsumer>
-// If YES, denote that the particular field requires a value.
-@property(nonatomic, assign) BOOL line1Required;
-@property(nonatomic, assign) BOOL cityRequired;
-@property(nonatomic, assign) BOOL stateRequired;
-@property(nonatomic, assign) BOOL zipRequired;
-
 // Stores the value displayed in the fields.
-@property(nonatomic, assign) NSString* honorificPrefix;
-@property(nonatomic, assign) NSString* companyName;
-@property(nonatomic, assign) NSString* fullName;
-@property(nonatomic, assign) NSString* homeAddressLine1;
-@property(nonatomic, assign) NSString* homeAddressLine2;
-@property(nonatomic, assign) NSString* homeAddressDependentLocality;
-@property(nonatomic, assign) NSString* homeAddressCity;
-@property(nonatomic, assign) NSString* homeAddressAdminLevel2;
-@property(nonatomic, assign) NSString* homeAddressState;
-@property(nonatomic, assign) NSString* homeAddressZip;
-@property(nonatomic, assign) NSString* homeAddressCountry;
-@property(nonatomic, assign) NSString* homePhoneWholeNumber;
-@property(nonatomic, assign) NSString* emailAddress;
 
 // YES, if the profile's source is autofill::AutofillProfile::Source::kAccount.
 @property(nonatomic, assign) BOOL accountProfile;
@@ -66,6 +47,14 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 - (void)didSelectCountry:(NSString*)country {
   self.countrySelected = country;
+}
+
+- (void)setFieldValuesMap:
+    (NSMutableDictionary<NSString*, NSString*>*)fieldValueMap {
+}
+
+- (void)setAddressInputFields:
+    (NSArray<AutofillProfileAddressField*>*)addressInputFields {
 }
 
 @end
@@ -108,8 +97,12 @@ class AutofillProfileEditMediatorTest : public PlatformTest {
             chrome_browser_state_.get());
     personal_data_manager_->SetSyncServiceForTest(nullptr);
 
-    personal_data_manager_->get_alternative_state_name_map_updater_for_testing()
+    personal_data_manager_->address_data_manager()
+        .get_alternative_state_name_map_updater_for_testing()
         ->set_local_state_for_testing(local_state_.Get());
+
+    profile_ = std::make_unique<autofill::AutofillProfile>(
+        autofill::test::GetFullProfile());
 
     fake_autofill_profile_edit_mediator_delegate_ =
         [[FakeAutofillProfileEditMediatorDelegate alloc] init];
@@ -117,13 +110,10 @@ class AutofillProfileEditMediatorTest : public PlatformTest {
   }
 
   void InitializeMediator(bool is_migration_prompt) {
-    autofill::AutofillProfile autofill_profile(
-        autofill::i18n_model_definition::kLegacyHierarchyCountryCode);
     autofill_profile_edit_mediator_ = [[AutofillProfileEditMediator alloc]
            initWithDelegate:fake_autofill_profile_edit_mediator_delegate_
         personalDataManager:personal_data_manager_
-            autofillProfile:&autofill_profile
-                countryCode:@"US"
+            autofillProfile:profile_.get()
           isMigrationPrompt:is_migration_prompt];
     autofill_profile_edit_mediator_.consumer = fake_consumer_;
   }
@@ -151,31 +141,60 @@ class AutofillProfileEditMediatorTest : public PlatformTest {
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   raw_ptr<autofill::PersonalDataManager> personal_data_manager_;
   autofill::CountryComboboxModel country_model_;
+  std::unique_ptr<autofill::AutofillProfile> profile_;
 };
 
 // Tests that the consumer is initialised and informed of the required fields on
 // initialisation.
 TEST_F(AutofillProfileEditMediatorTest, TestRequiredFieldsOnInitialisation) {
   InitializeMediator(NO);
-  EXPECT_TRUE([fake_consumer_ line1Required]);
-  EXPECT_TRUE([fake_consumer_ cityRequired]);
-  EXPECT_TRUE([fake_consumer_ stateRequired]);
-  EXPECT_TRUE([fake_consumer_ zipRequired]);
+  EXPECT_FALSE([autofill_profile_edit_mediator_
+        fieldContainsValidValue:@"ADDRESS_HOME_LINE1"
+                  hasEmptyValue:YES
+      moveToAccountFromSettings:NO]);
+  EXPECT_FALSE([autofill_profile_edit_mediator_
+        fieldContainsValidValue:@"ADDRESS_HOME_CITY"
+                  hasEmptyValue:YES
+      moveToAccountFromSettings:NO]);
+  EXPECT_FALSE([autofill_profile_edit_mediator_
+        fieldContainsValidValue:@"ADDRESS_HOME_STATE"
+                  hasEmptyValue:YES
+      moveToAccountFromSettings:NO]);
+  EXPECT_FALSE([autofill_profile_edit_mediator_
+        fieldContainsValidValue:@"ADDRESS_HOME_ZIP"
+                  hasEmptyValue:YES
+      moveToAccountFromSettings:NO]);
 }
 
 // Tests that the consumer is informed of the required fields on country
 // selection.
 TEST_F(AutofillProfileEditMediatorTest, TestRequiredFieldsOnCountrySelection) {
   InitializeMediator(NO);
+  ASSERT_EQ(
+      [autofill_profile_edit_mediator_ requiredFieldsWithEmptyValuesCount], 0);
   CountryItem* countryItem = [[CountryItem alloc] initWithType:ItemTypeCountry];
   countryItem.text = @"Germany";
   countryItem.countryCode = @"DE";
   [autofill_profile_edit_mediator_ didSelectCountry:countryItem];
-  EXPECT_TRUE([fake_consumer_ line1Required]);
-  EXPECT_TRUE([fake_consumer_ cityRequired]);
-  EXPECT_FALSE([fake_consumer_ stateRequired]);
-  EXPECT_TRUE([fake_consumer_ zipRequired]);
+  EXPECT_FALSE([autofill_profile_edit_mediator_
+        fieldContainsValidValue:@"ADDRESS_HOME_LINE1"
+                  hasEmptyValue:YES
+      moveToAccountFromSettings:NO]);
+  EXPECT_FALSE([autofill_profile_edit_mediator_
+        fieldContainsValidValue:@"ADDRESS_HOME_CITY"
+                  hasEmptyValue:YES
+      moveToAccountFromSettings:NO]);
+  EXPECT_TRUE([autofill_profile_edit_mediator_
+        fieldContainsValidValue:@"ADDRESS_HOME_STATE"
+                  hasEmptyValue:YES
+      moveToAccountFromSettings:NO]);
+  EXPECT_FALSE([autofill_profile_edit_mediator_
+        fieldContainsValidValue:@"ADDRESS_HOME_ZIP"
+                  hasEmptyValue:YES
+      moveToAccountFromSettings:NO]);
   EXPECT_NSEQ([fake_consumer_ countrySelected], @"Germany");
+  ASSERT_GT(
+      [autofill_profile_edit_mediator_ requiredFieldsWithEmptyValuesCount], 0);
 }
 
 // Tests that the country list used for selecting countries is correctly
@@ -221,8 +240,10 @@ TEST_F(AutofillProfileEditMediatorTest,
   size_t country_counter_in_mediator = 0;
   for (size_t i = 1; i < countriesVector.size() - 1; i++) {
     if (!countriesVector[i].get() ||
-        !personal_data_manager()->IsCountryEligibleForAccountStorage(
-            countriesVector[i]->country_code())) {
+        !personal_data_manager()
+             ->address_data_manager()
+             .IsCountryEligibleForAccountStorage(
+                 countriesVector[i]->country_code())) {
       continue;
     }
 

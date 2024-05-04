@@ -266,7 +266,6 @@ void BrowserStatusMonitor::OnTabStripModelChanged(
     for (const auto& contents : remove->contents) {
       switch (contents.remove_reason) {
         case TabStripModelChange::RemoveReason::kDeleted:
-        case TabStripModelChange::RemoveReason::kCached:
 #if DCHECK_IS_ON()
           DCHECK(!base::Contains(tabs_in_transit_, contents.contents));
 #endif
@@ -276,7 +275,7 @@ void BrowserStatusMonitor::OnTabStripModelChanged(
           // The tab will be reinserted immediately into another browser, so
           // this event is ignored.
           if (browser->is_type_devtools()) {
-            // TODO(crbug.com/1221967): when a dev tools window is docked, and
+            // TODO(crbug.com/40773744): when a dev tools window is docked, and
             // its WebContents is removed, it will not be reinserted into
             // another tab strip, so it should be treated as closed.
             OnTabClosing(contents.contents);
@@ -437,7 +436,7 @@ void BrowserStatusMonitor::OnTabClosing(content::WebContents* contents) {
 
 void BrowserStatusMonitor::OnTabMoved(TabStripModel* tab_strip_model,
                                       content::WebContents* contents) {
-  // TODO(crbug.com/1203992): split this into inserted and moved cases.
+  // TODO(crbug.com/40763808): split this into inserted and moved cases.
   OnTabInserted(tab_strip_model, contents);
 }
 

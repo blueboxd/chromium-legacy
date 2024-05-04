@@ -49,6 +49,12 @@ DEFINE_UI_CLASS_PROPERTY_KEY(std::underlying_type_t<SidePanelOpenTrigger>,
                              kSidePanelOpenTriggerKey,
                              kInvalidSidePanelOpenTrigger)
 
+DEFINE_UI_CLASS_PROPERTY_TYPE(SidePanelContentState)
+DEFINE_UI_CLASS_PROPERTY_KEY(std::underlying_type_t<SidePanelContentState>,
+                             kSidePanelContentStateKey,
+                             std::underlying_type_t<SidePanelContentState>(
+                                 SidePanelContentState::kReadyToShow))
+
 // static
 void SidePanelUtil::PopulateGlobalEntries(Browser* browser,
                                           SidePanelRegistry* global_registry) {
@@ -235,6 +241,12 @@ void SidePanelUtil::RecordPinnedButtonClicked(SidePanelEntry::Id id,
   base::RecordComputedAction(base::StrCat(
       {"SidePanel.", SidePanelEntryIdToHistogramName(id), ".",
        is_pinned ? "Pinned" : "Unpinned", ".BySidePanelHeaderButton"}));
+}
+
+void SidePanelUtil::RecordSidePanelAnimationMetrics(
+    base::TimeDelta largest_step_time) {
+  base::UmaHistogramTimes("SidePanel.TimeOfLongestAnimationStep",
+                          largest_step_time);
 }
 
 actions::ActionItem::InvokeActionCallback

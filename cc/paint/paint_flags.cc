@@ -13,6 +13,7 @@
 #include "cc/paint/paint_op_buffer.h"
 #include "cc/paint/paint_shader.h"
 #include "third_party/skia/include/core/SkColorFilter.h"
+#include "third_party/skia/include/core/SkPathEffect.h"
 #include "third_party/skia/include/core/SkPathUtils.h"
 
 namespace {
@@ -22,14 +23,6 @@ bool AreValuesEqualForTesting(const sk_sp<T>& a, const sk_sp<T>& b) {
   return base::ValuesEquivalent(a, b, [](const T& x, const T& y) {
     return x.EqualsForTesting(y);  // IN-TEST
   });
-}
-
-bool AreSkFlattenablesEqualForTesting(const sk_sp<SkFlattenable> a,  // IN-TEST
-                                      const sk_sp<SkFlattenable> b) {
-  return base::ValuesEquivalent(
-      a, b, [](const SkFlattenable& x, const SkFlattenable& y) {
-        return x.serialize()->equals(y.serialize().get());
-      });
 }
 
 }  // namespace
@@ -65,7 +58,6 @@ PaintFlags::~PaintFlags() {
   // Free refcounted objects one by one.
   path_effect_.reset();
   shader_.reset();
-  mask_filter_.reset();
   color_filter_.reset();
   draw_looper_.reset();
   image_filter_.reset();
@@ -137,15 +129,18 @@ bool PaintFlags::SupportsFoldingAlpha() const {
 
 SkPaint PaintFlags::ToSkPaint() const {
   SkPaint paint;
-  paint.setPathEffect(path_effect_);
-  if (shader_)
+  if (path_effect_) {
+    paint.setPathEffect(path_effect_->GetSkPathEffect());
+  }
+  if (shader_) {
     paint.setShader(shader_->GetSkShader(getFilterQuality()));
-  paint.setMaskFilter(mask_filter_);
+  }
   if (color_filter_) {
     paint.setColorFilter(color_filter_->sk_color_filter_);
   }
-  if (image_filter_)
+  if (image_filter_) {
     paint.setImageFilter(image_filter_->cached_sk_filter_);
+  }
   paint.setColor(color_);
   paint.setStrokeWidth(width_);
   paint.setStrokeMiter(miter_limit_);
@@ -191,14 +186,13 @@ bool PaintFlags::EqualsForTesting(const PaintFlags& other) const {
          getStyle() == other.getStyle() &&
          getFilterQuality() == other.getFilterQuality() &&
          getDynamicRangeLimit() == other.getDynamicRangeLimit() &&
-         AreSkFlattenablesEqualForTesting(path_effect_,  // IN-TEST
-                                          other.path_effect_) &&
-         AreSkFlattenablesEqualForTesting(mask_filter_,  // IN-TEST
-                                          other.mask_filter_) &&
+         isArcClosed() == other.isArcClosed() &&
+         AreValuesEqualForTesting(path_effect_,  // IN-TEST
+                                  other.path_effect_) &&
          AreValuesEqualForTesting(color_filter_,  // IN-TEST
                                   other.color_filter_) &&
-         AreSkFlattenablesEqualForTesting(draw_looper_,  // IN-TEST
-                                          other.draw_looper_) &&
+         AreValuesEqualForTesting(draw_looper_,  // IN-TEST
+                                  other.draw_looper_) &&
          AreValuesEqualForTesting(image_filter_,  // IN-TEST
                                   other.image_filter_) &&
          AreValuesEqualForTesting(shader_, other.shader_);  // IN-TEST

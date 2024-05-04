@@ -145,7 +145,7 @@ class ObserverList {
                          ? std::numeric_limits<size_t>::max()
                          : list->observers_.size()) {
       DCHECK(list);
-      // TODO(crbug.com/1423093): Turn into CHECK once very prevalent failures
+      // TODO(crbug.com/40063488): Turn into CHECK once very prevalent failures
       // are weeded out.
       DUMP_WILL_BE_CHECK(allow_reentrancy || list_.IsOnlyRemainingNode());
       // Bind to this sequence when creating the first iterator.
@@ -253,6 +253,7 @@ class ObserverList {
   using value_type = ObserverType;
 
   const_iterator begin() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(iteration_sequence_checker_);
     // An optimization: do not involve weak pointers for empty list.
     return observers_.empty() ? const_iterator() : const_iterator(this);
   }
@@ -275,8 +276,8 @@ class ObserverList {
       live_iterators_.head()->value()->Invalidate();
     if (check_empty) {
       Compact();
-      // TODO(crbug.com/1423093): Turn into a CHECK once very prevalent failures
-      // are weeded out.
+      // TODO(crbug.com/40063488): Turn into a CHECK once very prevalent
+      // failures are weeded out.
       DUMP_WILL_BE_CHECK(observers_.empty())
           << "\n"
           << GetObserversCreationStackString();
@@ -290,7 +291,7 @@ class ObserverList {
   // Precondition: !HasObserver(obs)
   void AddObserver(ObserverType* obs) {
     DCHECK(obs);
-    // TODO(crbug.com/1423093): Turn this into a CHECK once very prevalent
+    // TODO(crbug.com/40063488): Turn this into a CHECK once very prevalent
     // failures are weeded out.
     if (HasObserver(obs)) {
       DUMP_WILL_BE_NOTREACHED_NORETURN() << "Observers can only be added once!";
@@ -321,7 +322,7 @@ class ObserverList {
   // Determine whether a particular observer is in the list.
   bool HasObserver(const ObserverType* obs) const {
     // Client code passing null could be confused by the treatment of observers
-    // removed mid-iteration. TODO(https://crbug.com/876588): This should
+    // removed mid-iteration. TODO(crbug.com/40590447): This should
     // probably DCHECK, but some client code currently does pass null.
     if (obs == nullptr)
       return false;

@@ -90,35 +90,6 @@ TEST(SimpleColorSpace, BT709toSRGB) {
   EXPECT_GT(tmp.z(), tmp.y());
 }
 
-TEST(SimpleColorSpace, BT2020CLtoBT2020RGB) {
-  ColorSpace bt2020cl(
-      ColorSpace::PrimaryID::BT2020, ColorSpace::TransferID::BT2020_10,
-      ColorSpace::MatrixID::BT2020_CL, ColorSpace::RangeID::LIMITED);
-  ColorSpace bt2020rgb(ColorSpace::PrimaryID::BT2020,
-                       ColorSpace::TransferID::BT2020_10,
-                       ColorSpace::MatrixID::RGB, ColorSpace::RangeID::FULL);
-  std::unique_ptr<ColorTransform> t(
-      ColorTransform::NewColorTransform(bt2020cl, bt2020rgb));
-
-  ColorTransform::TriStim tmp(16.0f / 255.0f, 0.5f, 0.5f);
-  t->Transform(&tmp, 1);
-  EXPECT_NEAR(tmp.x(), 0.0f, kMathEpsilon);
-  EXPECT_NEAR(tmp.y(), 0.0f, kMathEpsilon);
-  EXPECT_NEAR(tmp.z(), 0.0f, kMathEpsilon);
-
-  tmp = ColorTransform::TriStim(235.0f / 255.0f, 0.5f, 0.5f);
-  t->Transform(&tmp, 1);
-  EXPECT_NEAR(tmp.x(), 1.0f, kMathEpsilon);
-  EXPECT_NEAR(tmp.y(), 1.0f, kMathEpsilon);
-  EXPECT_NEAR(tmp.z(), 1.0f, kMathEpsilon);
-
-  // Test a blue color
-  tmp = ColorTransform::TriStim(128.0f / 255.0f, 240.0f / 255.0f, 0.5f);
-  t->Transform(&tmp, 1);
-  EXPECT_GT(tmp.z(), tmp.x());
-  EXPECT_GT(tmp.z(), tmp.y());
-}
-
 TEST(SimpleColorSpace, YCOCGLimitedToSRGB) {
   ColorSpace ycocg(ColorSpace::PrimaryID::BT709, ColorSpace::TransferID::SRGB,
                    ColorSpace::MatrixID::YCOCG, ColorSpace::RangeID::LIMITED);
@@ -689,7 +660,7 @@ TEST(ColorSpaceTest, ScrgbLinear80Nits) {
   }
 
   // HLG's maximum value will be 12 times 203 nits.
-  // TODO(https://crbug.com/1442884): This is not an appropriate value. This
+  // TODO(crbug.com/40267141): This is not an appropriate value. This
   // path is to be deleted.
   {
     base::test::ScopedFeatureList features;
@@ -714,7 +685,7 @@ TEST(ColorSpaceTest, ScrgbLinear80Nits) {
   }
 
   // HLG's maximum maps to the maximum value when tonemapped.
-  // TODO(https://crbug.com/1442884): This path is to be deleted.
+  // TODO(crbug.com/40267141): This path is to be deleted.
   {
     base::test::ScopedFeatureList features;
     features.InitWithFeatures({}, {kHlgPqUnifiedTonemap, kHlgPqSdrRelative});

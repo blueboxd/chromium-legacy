@@ -15,13 +15,14 @@
 #include "gpu/vulkan/vulkan_device_queue.h"
 #include "gpu/vulkan/vulkan_image.h"
 #include "gpu/vulkan/vulkan_implementation.h"
-#include "media/gpu/chromeos/image_processor_backend.h"
 #include "media/gpu/media_gpu_export.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/overlay_transform.h"
 
 namespace media {
+
+enum TiledImageFormat { kMM21, kMT2T };
 
 // An image processor using Vulkan to perform MM21 detiling.
 class MEDIA_GPU_EXPORT VulkanImageProcessor {
@@ -31,7 +32,11 @@ class MEDIA_GPU_EXPORT VulkanImageProcessor {
 
   ~VulkanImageProcessor();
 
-  static std::unique_ptr<VulkanImageProcessor> Create();
+  // TODO(greenjustin): Change the |is_protected| bool to an enum.
+  static std::unique_ptr<VulkanImageProcessor> Create(
+      bool is_protected,
+      TiledImageFormat format = kMM21,
+      const gfx::Size& max_size = gfx::Size(3840, 2160));
 
   // Note: |crop_rect| is actually the crop *in addition* to the |visible_rect|
   // cropping. It is equivalent to |uv_rect| in an OverlayCandidate.
@@ -56,6 +61,7 @@ class MEDIA_GPU_EXPORT VulkanImageProcessor {
   class VulkanCommandBufferWrapper;
   class VulkanCommandPoolWrapper;
   class VulkanTextureImage;
+  class VulkanSampler;
 
   VulkanImageProcessor(
       std::unique_ptr<gpu::VulkanImplementation> vulkan_implementation,
@@ -63,18 +69,40 @@ class MEDIA_GPU_EXPORT VulkanImageProcessor {
           vulkan_device_queue,
       std::unique_ptr<VulkanImageProcessor::VulkanCommandPoolWrapper>
           command_pool,
-      std::unique_ptr<VulkanImageProcessor::VulkanRenderPass> render_pass,
-      std::unique_ptr<VulkanImageProcessor::VulkanPipeline> pipeline,
+      std::unique_ptr<VulkanImageProcessor::VulkanRenderPass>
+          convert_render_pass,
+      std::unique_ptr<VulkanImageProcessor::VulkanRenderPass>
+          transform_render_pass,
+      std::unique_ptr<VulkanImageProcessor::VulkanPipeline> convert_pipeline,
+      std::unique_ptr<VulkanImageProcessor::VulkanPipeline> transform_pipeline,
       std::unique_ptr<VulkanImageProcessor::VulkanDescriptorPool>
-          descriptor_pool);
+          convert_descriptor_pool,
+      std::unique_ptr<VulkanImageProcessor::VulkanDescriptorPool>
+          transform_descriptor_pool,
+      std::unique_ptr<VulkanImageProcessor::VulkanSampler> sampler,
+      std::unique_ptr<gpu::VulkanImage> pivot_image,
+      std::unique_ptr<VulkanImageProcessor::VulkanTextureImage> pivot_texture,
+      bool is_protected);
 
   std::unique_ptr<gpu::VulkanImplementation> vulkan_implementation_;
   std::unique_ptr<VulkanImageProcessor::VulkanDeviceQueueWrapper>
       vulkan_device_queue_;
   std::unique_ptr<VulkanImageProcessor::VulkanCommandPoolWrapper> command_pool_;
-  std::unique_ptr<VulkanImageProcessor::VulkanRenderPass> render_pass_;
-  std::unique_ptr<VulkanImageProcessor::VulkanPipeline> pipeline_;
-  std::unique_ptr<VulkanImageProcessor::VulkanDescriptorPool> descriptor_pool_;
+  std::unique_ptr<VulkanImageProcessor::VulkanRenderPass> convert_render_pass_;
+  std::unique_ptr<VulkanImageProcessor::VulkanRenderPass>
+      transform_render_pass_;
+  std::unique_ptr<VulkanImageProcessor::VulkanPipeline> convert_pipeline_;
+  std::unique_ptr<VulkanImageProcessor::VulkanPipeline> transform_pipeline_;
+  std::unique_ptr<VulkanImageProcessor::VulkanDescriptorPool>
+      convert_descriptor_pool_;
+  std::unique_ptr<VulkanImageProcessor::VulkanDescriptorPool>
+      transform_descriptor_pool_;
+  std::unique_ptr<VulkanImageProcessor::VulkanSampler> sampler_;
+
+  std::unique_ptr<gpu::VulkanImage> pivot_image_;
+  std::unique_ptr<VulkanImageProcessor::VulkanTextureImage> pivot_texture_;
+
+  bool is_protected_;
 };
 
 }  // namespace media

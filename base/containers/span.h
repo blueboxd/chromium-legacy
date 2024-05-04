@@ -21,15 +21,12 @@
 #include "base/check.h"
 #include "base/compiler_specific.h"
 #include "base/containers/checked_iterators.h"
+#include "base/containers/dynamic_extent.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/template_util.h"
 #include "base/types/to_address.h"
 #include "third_party/abseil-cpp/absl/base/attributes.h"
 
 namespace base {
-
-// [views.constants]
-constexpr size_t dynamic_extent = std::numeric_limits<size_t>::max();
 
 template <typename T,
           size_t Extent = dynamic_extent,
@@ -53,15 +50,23 @@ concept CompatibleRange =
     LegalDataConversion<std::ranges::range_reference_t<R>, T> &&
     (std::ranges::borrowed_range<R> || std::is_const_v<T>);
 
+template <typename T>
+concept LegacyRangeDataIsPointer = std::is_pointer_v<T>;
+
+template <typename R>
+concept LegacyRange = requires(R& r) {
+  { std::ranges::data(r) } -> LegacyRangeDataIsPointer;
+  { std::ranges::size(r) } -> std::convertible_to<size_t>;
+};
+
 // NOTE: Ideally we'd just use `CompatibleRange`, however this currently breaks
 // code that was written prior to C++20 being standardized and assumes providing
 // .data() and .size() is sufficient.
 // TODO: https://crbug.com/1504998 - Remove in favor of CompatibleRange and fix
 // callsites.
 template <typename T, typename R>
-concept LegacyCompatibleRange = requires(R& r) {
+concept LegacyCompatibleRange = LegacyRange<R> && requires(R& r) {
   { *std::ranges::data(r) } -> LegalDataConversion<T>;
-  std::ranges::size(r);
 };
 
 template <size_t I>
@@ -94,6 +99,11 @@ constexpr size_t must_not_be_dynamic_extent() {
       "EXTENT should only be used for containers with a static extent.");
   return kExtent;
 }
+
+template <class T, class U, size_t N, size_t M>
+  requires((N == M || N == dynamic_extent || M == dynamic_extent) &&
+           std::equality_comparable_with<T, U>)
+constexpr bool span_cmp(span<T, N> l, span<U, M> r);
 
 }  // namespace internal
 
@@ -224,6 +234,7 @@ constexpr size_t must_not_be_dynamic_extent() {
 // - span_from_cstring() function.
 // - byte_span_from_cstring() function.
 // - split_at() method.
+// - operator==() comparator function.
 //
 // Furthermore, all constructors and methods are marked noexcept due to the lack
 // of exceptions in Chromium.
@@ -543,7 +554,9 @@ class GSL_POINTER span {
   // # Checks
   // The function CHECKs that the `other` span has the same size as itself and
   // will terminate otherwise.
-  constexpr void copy_from(span<const T, N> other) {
+  constexpr void copy_from(span<const T, N> other)
+    requires(!std::is_const_v<T>)
+  {
     CHECK_EQ(size_bytes(), other.size_bytes());
     // Verify non-overlapping in developer builds.
     //
@@ -600,9 +613,43 @@ class GSL_POINTER span {
     return std::span<const T, N>(*this);
   }
 
+  // Compares two spans for equality by comparing the objects pointed to by the
+  // spans. The operation is defined for spans of different types as long as the
+  // types are themselves comparable.
+  //
+  // For primitive types, this replaces the less safe `memcmp` function, where
+  // `memcmp(a.data(), b.data(), a.size())` can be written as `a == b` and can
+  // no longer go outside the bounds of `b`. Otherwise, it replaced std::equal
+  // or std::ranges::equal when working with spans, and when no projection is
+  // needed.
+  //
+  // If the spans are of different sizes, they are not equal. If both spans are
+  // empty, they are always equal (even though their data pointers may differ).
+  //
+  // # Implementation note
+  // The non-template overloads allow implicit conversions to span for
+  // comparison.
+  friend constexpr bool operator==(span lhs, span rhs)
+    requires(std::equality_comparable<const T>)
+  {
+    return internal::span_cmp(span<const T, N>(lhs), span<const T, N>(rhs));
+  }
+  friend constexpr bool operator==(span lhs, span<const T, N> rhs)
+    requires(!std::is_const_v<T> && std::equality_comparable<const T>)
+  {
+    return internal::span_cmp(span<const T, N>(lhs), span<const T, N>(rhs));
+  }
+  template <class U, size_t M>
+    requires((N == M || M == dynamic_extent) &&
+             std::equality_comparable_with<const T, const U>)
+  friend constexpr bool operator==(span lhs, span<U, M> rhs) {
+    return internal::span_cmp(span<const T, N>(lhs), span<const U, M>(rhs));
+  }
+
  private:
-  // This field is not a raw_ptr<> because it was filtered by the rewriter
-  // for: #constexpr-ctor-field-initializer, #global-scope, #union
+  // This field is not a raw_ptr<> since span is mostly used for stack
+  // variables. Use `raw_span` instead for class fields, which does use
+  // raw_ptr<> internally.
   InternalPtrType data_ = nullptr;
 };
 
@@ -919,7 +966,9 @@ class GSL_POINTER span<T, dynamic_extent, InternalPtrType> {
   // # Checks
   // The function CHECKs that the `other` span has the same size as itself and
   // will terminate otherwise.
-  constexpr void copy_from(span<const T> other) {
+  constexpr void copy_from(span<const T> other)
+    requires(!std::is_const_v<T>)
+  {
     CHECK_EQ(size_bytes(), other.size_bytes());
     // Verify non-overlapping in developer builds.
     //
@@ -949,9 +998,42 @@ class GSL_POINTER span<T, dynamic_extent, InternalPtrType> {
         std::copy(other.data(), other.data() + other.size(), data()));
   }
 
+  // Compares two spans for equality by comparing the objects pointed to by the
+  // spans. The operation is defined for spans of different types as long as the
+  // types are themselves comparable.
+  //
+  // For primitive types, this replaces the less safe `memcmp` function, where
+  // `memcmp(a.data(), b.data(), a.size())` can be written as `a == b` and can
+  // no longer go outside the bounds of `b`. Otherwise, it replaced std::equal
+  // or std::ranges::equal when working with spans, and when no projection is
+  // needed.
+  //
+  // If the spans are of different sizes, they are not equal. If both spans are
+  // empty, they are always equal (even though their data pointers may differ).
+  //
+  // # Implementation note
+  // The non-template overloads allow implicit conversions to span for
+  // comparison.
+  friend constexpr bool operator==(span lhs, span rhs)
+    requires(std::equality_comparable<const T>)
+  {
+    return internal::span_cmp(span<const T>(lhs), span<const T>(rhs));
+  }
+  friend constexpr bool operator==(span lhs, span<const T> rhs)
+    requires(!std::is_const_v<T> && std::equality_comparable<const T>)
+  {
+    return internal::span_cmp(span<const T>(lhs), span<const T>(rhs));
+  }
+  template <class U, size_t M>
+    requires(std::equality_comparable_with<const T, const U>)
+  friend constexpr bool operator==(span lhs, span<U, M> rhs) {
+    return internal::span_cmp(span<const T>(lhs), span<const U, M>(rhs));
+  }
+
  private:
-  // This field is not a raw_ptr<> because it was filtered by the rewriter
-  // for: #constexpr-ctor-field-initializer, #global-scope, #union
+  // This field is not a raw_ptr<> since span is mostly used for stack
+  // variables. Use `raw_span` instead for class fields, which does use
+  // raw_ptr<> internally.
   InternalPtrType data_ = nullptr;
   size_t size_ = 0;
 };
@@ -969,12 +1051,20 @@ span(R&&)
     -> span<std::conditional_t<std::ranges::borrowed_range<R>, T, const T>,
             internal::ExtentV<R>>;
 
+// This guide prefers to let the contiguous_range guide match, since it can
+// produce a fixed-size span. Whereas, LegacyRange only produces a dynamic-sized
+// span.
+template <typename R>
+  requires(!std::ranges::contiguous_range<R> && internal::LegacyRange<R>)
+span(R&& r) noexcept
+    -> span<std::remove_reference_t<decltype(*std::ranges::data(r))>>;
+
 template <typename T, size_t N>
 span(const T (&)[N]) -> span<const T, N>;
 
 // [span.objectrep], views of object representation
 template <typename T, size_t X>
-auto as_bytes(span<T, X> s) noexcept {
+constexpr auto as_bytes(span<T, X> s) noexcept {
   constexpr size_t N = X == dynamic_extent ? dynamic_extent : sizeof(T) * X;
   // SAFETY: span provides that data() points to at least size_bytes() many
   // bytes. So since `uint8_t` has a size of 1 byte, the size_bytes() value is
@@ -988,7 +1078,7 @@ auto as_bytes(span<T, X> s) noexcept {
 
 template <typename T, size_t X>
   requires(!std::is_const_v<T>)
-auto as_writable_bytes(span<T, X> s) noexcept {
+constexpr auto as_writable_bytes(span<T, X> s) noexcept {
   constexpr size_t N = X == dynamic_extent ? dynamic_extent : sizeof(T) * X;
   // SAFETY: span provides that data() points to at least size_bytes() many
   // bytes. So since `uint8_t` has a size of 1 byte, the size_bytes() value is a
@@ -1005,7 +1095,7 @@ auto as_writable_bytes(span<T, X> s) noexcept {
 // added since chrome still represents many things as char arrays which
 // rightfully should be uint8_t.
 template <typename T, size_t X>
-auto as_chars(span<T, X> s) noexcept {
+constexpr auto as_chars(span<T, X> s) noexcept {
   constexpr size_t N = X == dynamic_extent ? dynamic_extent : sizeof(T) * X;
   // SAFETY: span provides that data() points to at least size_bytes() many
   // bytes. So since `char` has a size of 1 byte, the size_bytes() value is a
@@ -1015,6 +1105,27 @@ auto as_chars(span<T, X> s) noexcept {
   // always less-than or equal to the alignment of T.
   return UNSAFE_BUFFERS(span<const char, N>(
       reinterpret_cast<const char*>(s.data()), s.size_bytes()));
+}
+
+// as_string_view() converts a span over byte-sized primitives (holding chars or
+// uint8_t) into a std::string_view, where each byte is represented as a char.
+// It also accepts any type that can implicitly convert to a span, such as
+// arrays.
+//
+// If you want to view an arbitrary span type as a string, first explicitly
+// convert it to bytes via `base::as_bytes()`.
+//
+// For spans over byte-sized primitives, this is sugar for:
+// ```
+// std::string_view(as_chars(span).begin(), as_chars(span).end())
+// ```
+constexpr std::string_view as_string_view(span<const char> s) noexcept {
+  return std::string_view(s.begin(), s.end());
+}
+constexpr std::string_view as_string_view(
+    span<const unsigned char> s) noexcept {
+  const auto c = as_chars(s);
+  return std::string_view(c.begin(), c.end());
 }
 
 // as_writable_chars() is the equivalent of as_writable_bytes(), except that
@@ -1272,6 +1383,18 @@ constexpr span<uint8_t, N * sizeof(T)> as_writable_byte_span(
     T (&&arr ABSL_ATTRIBUTE_LIFETIME_BOUND)[N]) {
   return as_writable_bytes(make_span<N>(arr));
 }
+
+namespace internal {
+
+// Template helper for implementing operator==.
+template <class T, class U, size_t N, size_t M>
+  requires((N == M || N == dynamic_extent || M == dynamic_extent) &&
+           std::equality_comparable_with<T, U>)
+constexpr bool span_cmp(span<T, N> l, span<U, M> r) {
+  return l.size() == r.size() && std::equal(l.begin(), l.end(), r.begin());
+}
+
+}  // namespace internal
 
 }  // namespace base
 

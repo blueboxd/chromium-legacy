@@ -5,12 +5,40 @@
 #include "components/web_package/signed_web_bundles/signed_web_bundle_signature_stack.h"
 
 #include "base/containers/span.h"
+#include "base/containers/to_vector.h"
 #include "base/ranges/algorithm.h"
 #include "base/types/expected.h"
 #include "components/web_package/mojom/web_bundle_parser.mojom.h"
 #include "components/web_package/signed_web_bundles/signed_web_bundle_signature_stack_entry.h"
 
 namespace web_package {
+
+namespace {
+
+SignedWebBundleSignatureStackEntry CreateSignatureEntry(
+    const mojom::BundleIntegrityBlockSignatureStackEntryPtr& entry) {
+  const auto& signature_info = entry->signature_info;
+  switch (signature_info->which()) {
+    case mojom::SignatureInfo::Tag::kEd25519:
+      return SignedWebBundleSignatureStackEntry(
+          entry->complete_entry_cbor, entry->attributes_cbor,
+          SignedWebBundleSignatureInfoEd25519(
+              signature_info->get_ed25519()->public_key,
+              signature_info->get_ed25519()->signature));
+    case mojom::SignatureInfo::Tag::kEcdsaP256Sha256:
+      return SignedWebBundleSignatureStackEntry(
+          entry->complete_entry_cbor, entry->attributes_cbor,
+          SignedWebBundleSignatureInfoEcdsaP256SHA256(
+              signature_info->get_ecdsa_p256_sha256()->public_key,
+              signature_info->get_ecdsa_p256_sha256()->signature));
+    case mojom::SignatureInfo::Tag::kUnknown:
+      return SignedWebBundleSignatureStackEntry(
+          entry->complete_entry_cbor, entry->attributes_cbor,
+          SignedWebBundleSignatureInfoUnknown());
+  }
+}
+
+}  // namespace
 
 // static
 base::expected<SignedWebBundleSignatureStack, std::string>
@@ -29,17 +57,8 @@ base::expected<SignedWebBundleSignatureStack, std::string>
 SignedWebBundleSignatureStack::Create(
     std::vector<mojom::BundleIntegrityBlockSignatureStackEntryPtr>&&
         raw_entries) {
-  std::vector<SignedWebBundleSignatureStackEntry> entries;
-  entries.reserve(raw_entries.size());
-  base::ranges::transform(
-      raw_entries, std::back_inserter(entries),
-      [](mojom::BundleIntegrityBlockSignatureStackEntryPtr& raw_entry) {
-        return SignedWebBundleSignatureStackEntry(
-            raw_entry->complete_entry_cbor, raw_entry->attributes_cbor,
-            raw_entry->public_key, raw_entry->signature);
-      });
-
-  return SignedWebBundleSignatureStack::Create(std::move(entries));
+  return SignedWebBundleSignatureStack::Create(
+      base::ToVector(raw_entries, &CreateSignatureEntry));
 }
 
 SignedWebBundleSignatureStack::SignedWebBundleSignatureStack(

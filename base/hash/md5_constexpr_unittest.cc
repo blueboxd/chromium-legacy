@@ -2,9 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40284755): Remove this and spanify to fix the errors.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "base/hash/md5_constexpr.h"
 
-#include "base/hash/md5.h"
+#include <array>
+#include <cstddef>
+#include <cstdint>
+#include <iterator>
+
+#include "base/hash/md5_boringssl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {

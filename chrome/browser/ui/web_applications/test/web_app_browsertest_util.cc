@@ -7,6 +7,7 @@
 #include <memory>
 #include <ostream>
 #include <string>
+#include <string_view>
 #include <utility>
 
 #include "base/check.h"
@@ -58,7 +59,6 @@
 #include "components/webapps/browser/installable/installable_metrics.h"
 #include "components/webapps/browser/test/service_worker_registration_waiter.h"
 #include "components/webapps/browser/uninstall_result_code.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
@@ -134,7 +134,10 @@ webapps::AppId InstallWebAppFromPageAndCloseAppBrowser(Browser* browser,
   Browser* app_browser = observer.Wait();
   DCHECK_NE(app_browser, browser);
   DCHECK(AppBrowserController::IsForWebApp(app_browser, app_id));
+  ui_test_utils::BrowserChangeObserver on_close(
+      app_browser, ui_test_utils::BrowserChangeObserver::ChangeType::kRemoved);
   chrome::CloseWindow(app_browser);
+  on_close.Wait();
 
   return app_id;
 }
@@ -194,8 +197,7 @@ Browser* LaunchWebAppBrowserAndWait(Profile* profile,
                                     WindowOpenDisposition disposition) {
   ui_test_utils::UrlLoadObserver url_observer(
       WebAppProvider::GetForTest(profile)->registrar_unsafe().GetAppLaunchUrl(
-          app_id),
-      content::NotificationService::AllSources());
+          app_id));
   Browser* const app_browser =
       LaunchWebAppBrowser(profile, app_id, disposition);
   url_observer.Wait();
@@ -359,6 +361,9 @@ void CloseAndWait(Browser* browser) {
 
 bool IsBrowserOpen(const Browser* test_browser) {
   for (Browser* browser : *BrowserList::GetInstance()) {
+    if (browser->IsAttemptingToCloseBrowser() || browser->IsBrowserClosing()) {
+      continue;
+    }
     if (browser == test_browser)
       return true;
   }
@@ -432,7 +437,7 @@ void UpdateAwaiter::OnWebAppManifestUpdated(const webapps::AppId& app_id) {
   run_loop_.Quit();
 }
 
-base::FilePath CreateTestFileWithExtension(base::StringPiece extension) {
+base::FilePath CreateTestFileWithExtension(std::string_view extension) {
   // CreateTemporaryFile blocks, temporarily allow blocking.
   base::ScopedAllowBlockingForTesting allow_blocking;
 

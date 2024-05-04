@@ -13,6 +13,7 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -27,7 +28,6 @@
 #include "base/run_loop.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/test/scoped_feature_list.h"
@@ -93,10 +93,10 @@ using test_server::BasicHttpResponse;
 using test_server::HttpRequest;
 using test_server::HttpResponse;
 
-static const char kEchoServer[] = "echo-with-no-extension";
+static constexpr char kEchoServer[] = "echo-with-no-extension";
 
 // Simplify changing URL schemes.
-GURL ReplaceUrlScheme(const GURL& in_url, base::StringPiece scheme) {
+GURL ReplaceUrlScheme(const GURL& in_url, std::string_view scheme) {
   GURL::Replacements replacements;
   replacements.SetSchemeStr(scheme);
   return in_url.ReplaceComponents(replacements);
@@ -293,11 +293,16 @@ class TestProxyDelegateWithProxyInfo : public ProxyDelegate {
     resolved_proxy_info_.proxy_info = *result;
   }
 
+  void OnSuccessfulRequestAfterFailures(
+      const ProxyRetryInfoMap& proxy_retry_info) override {}
+
   void OnFallback(const ProxyChain& bad_chain, int net_error) override {}
 
-  void OnBeforeTunnelRequest(const ProxyChain& proxy_chain,
-                             size_t chain_index,
-                             HttpRequestHeaders* extra_headers) override {}
+  Error OnBeforeTunnelRequest(const ProxyChain& proxy_chain,
+                              size_t chain_index,
+                              HttpRequestHeaders* extra_headers) override {
+    return OK;
+  }
 
   Error OnTunnelHeadersReceived(
       const ProxyChain& proxy_chain,
@@ -399,7 +404,7 @@ TEST_F(WebSocketEndToEndTest, MAYBE_HttpsProxyUnauthedFails) {
   ProxyConfig proxy_config;
   proxy_config.proxy_rules().ParseFromString(
       "https=" + proxy_server.host_port_pair().ToString());
-  // TODO(https://crbug.com/901896): Don't rely on proxying localhost.
+  // TODO(crbug.com/40600992): Don't rely on proxying localhost.
   proxy_config.proxy_rules().bypass_rules.AddRulesToSubtractImplicit();
 
   std::unique_ptr<ProxyResolutionService> proxy_resolution_service(
@@ -426,7 +431,7 @@ TEST_F(WebSocketEndToEndTest, MAYBE_HttpsWssProxyUnauthedFails) {
   ProxyConfig proxy_config;
   proxy_config.proxy_rules().ParseFromString(
       "https=" + proxy_server.host_port_pair().ToString());
-  // TODO(https://crbug.com/901896): Don't rely on proxying localhost.
+  // TODO(crbug.com/40600992): Don't rely on proxying localhost.
   proxy_config.proxy_rules().bypass_rules.AddRulesToSubtractImplicit();
 
   std::unique_ptr<ProxyResolutionService> proxy_resolution_service(
@@ -455,7 +460,7 @@ TEST_F(WebSocketEndToEndTest, MAYBE_HttpsProxyUsed) {
   proxy_config.proxy_rules().ParseFromString(
       "https=" + proxy_server.host_port_pair().ToString() + ";" +
       "http=" + proxy_server.host_port_pair().ToString());
-  // TODO(https://crbug.com/901896): Don't rely on proxying localhost.
+  // TODO(crbug.com/40600992): Don't rely on proxying localhost.
   proxy_config.proxy_rules().bypass_rules.AddRulesToSubtractImplicit();
 
   std::unique_ptr<ProxyResolutionService> proxy_resolution_service(

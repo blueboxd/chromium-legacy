@@ -29,7 +29,8 @@ class AutomationClientImpl : public ax::mojom::AutomationClient,
   void BindAutomationClient(
       mojo::PendingReceiver<ax::mojom::AutomationClient> automation_client);
 
-  void Disable();
+  // ax::mojom::AutomationClient:
+  void Disable() override;
 
  private:
   friend class AccessibilityServiceClientTest;
@@ -38,9 +39,8 @@ class AutomationClientImpl : public ax::mojom::AutomationClient,
   // back to the OS.
   // ax::mojom::AutomationClient:
   void Enable(EnableCallback callback) override;
-  // TODO(crbug.com/1355633): Override from ax::mojom::AutomationClient:
-  void EnableTree(const ui::AXTreeID& tree_id);
-  void PerformAction(const ui::AXActionData& data);
+  void PerformAction(const ui::AXActionData& data) override;
+  void EnableChildTree(const ui::AXTreeID& tree_id) override;
 
   // Receive accessibility information from AutomationEventRouter in ash and
   // forward it along to the service.
@@ -50,7 +50,7 @@ class AutomationClientImpl : public ax::mojom::AutomationClient,
                                    const gfx::Point& mouse_location,
                                    std::vector<ui::AXEvent> events) override;
   void DispatchAccessibilityLocationChange(
-      const content::AXLocationChangeNotificationDetails& details) override;
+      const ui::AXLocationChanges& details) override;
   void DispatchTreeDestroyedEvent(ui::AXTreeID tree_id) override;
   void DispatchActionResult(const ui::AXActionData& data,
                             bool result,

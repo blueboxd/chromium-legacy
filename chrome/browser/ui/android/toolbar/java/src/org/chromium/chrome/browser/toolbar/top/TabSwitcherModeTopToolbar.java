@@ -17,7 +17,6 @@ import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 
-import org.chromium.chrome.browser.omnibox.OmniboxFeatures;
 import org.chromium.chrome.browser.omnibox.styles.OmniboxResourceProvider;
 import org.chromium.chrome.browser.tabmodel.IncognitoStateProvider;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -33,6 +32,7 @@ import org.chromium.components.browser_ui.widget.animation.CancelAwareAnimatorLi
 import org.chromium.components.browser_ui.widget.highlight.ViewHighlighter;
 import org.chromium.components.browser_ui.widget.highlight.ViewHighlighter.HighlightParams;
 import org.chromium.components.browser_ui.widget.highlight.ViewHighlighter.HighlightShape;
+import org.chromium.components.omnibox.OmniboxFeatures;
 import org.chromium.ui.accessibility.AccessibilityState;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.interpolators.Interpolators;
@@ -135,10 +135,11 @@ public class TabSwitcherModeTopToolbar extends OptimizedFrameLayout
 
     /**
      * Called when tab switcher mode is entered or exited.
+     *
      * @param inTabSwitcherMode Whether or not tab switcher mode should be shown or hidden.
      */
     void setTabSwitcherMode(boolean inTabSwitcherMode) {
-        // TODO(https://crbug.com/914868): Use consistent logic here for setting clickable/enabled
+        // TODO(crbug.com/40606413): Use consistent logic here for setting clickable/enabled
         // on mIncognitoToggleTabLayout & mNewTabButton?
         if (!inTabSwitcherMode) {
             if (mIncognitoToggleTabLayout != null) mIncognitoToggleTabLayout.setClickable(false);
@@ -325,7 +326,7 @@ public class TabSwitcherModeTopToolbar extends OptimizedFrameLayout
         }
 
         if (mMenuButton != null) {
-            mMenuButton.onTintChanged(tint, brandedColorScheme);
+            mMenuButton.onTintChanged(tint, tint, brandedColorScheme);
         }
     }
 
@@ -354,10 +355,10 @@ public class TabSwitcherModeTopToolbar extends OptimizedFrameLayout
 
     /**
      * @return Whether or not incognito toggle should be visible based on the enabled features,
-     *         incognito status and form-factor.
+     *     incognito status and form-factor.
      */
     private boolean shouldShowIncognitoToggle() {
-        // TODO(crbug.com/1434937): Remove top toggle (and update "New Tab" button logic,
+        // TODO(crbug.com/40904502): Remove top toggle (and update "New Tab" button logic,
         //  accordingly) for the a11y switcher, since that variant has the bottom toggle showing.
         return mIsIncognitoModeEnabledSupplier.getAsBoolean()
                 && (!DeviceFormFactor.isNonMultiDisplayContextOnTablet(getContext())

@@ -160,13 +160,13 @@ void DIPSStorage::RemoveRows(const std::vector<std::string>& sites) {
   db_->RemoveRows(DIPSDatabaseTable::kBounces, sites);
 }
 
-void DIPSStorage::RemoveRowsWithoutInteractionOrWaa(
+void DIPSStorage::RemoveRowsWithoutProtectiveEvent(
     const std::set<std::string>& sites) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(db_);
 
   std::set<std::string> filtered_sites =
-      FilterSitesWithoutInteractionOrWaa(sites);
+      FilterSitesWithoutProtectiveEvent(sites);
 
   RemoveRows(
       std::vector<std::string>(filtered_sites.begin(), filtered_sites.end()));
@@ -216,13 +216,13 @@ void DIPSStorage::RecordBounce(const GURL& url,
   }
 }
 
-std::set<std::string> DIPSStorage::FilterSitesWithoutInteractionOrWaa(
+std::set<std::string> DIPSStorage::FilterSitesWithoutProtectiveEvent(
     std::set<std::string> sites) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(db_);
 
   std::set<std::string> interacted_sites =
-      db_->FilterSitesWithInteractionOrWaa(sites);
+      db_->FilterSitesWithProtectiveEvent(sites);
 
   for (const auto& site : interacted_sites) {
     if (sites.count(site)) {
@@ -319,7 +319,7 @@ void DIPSStorage::PrepopulateChunk(PrepopulateArgs args) {
       std::min(args.sites.size() - args.offset, g_prepopulate_chunk_size);
   for (size_t i = 0; i < chunk_size; i++) {
     DIPSState state = ReadSite(args.sites[args.offset + i]);
-    // TODO(crbug.com/1446678): Verify whether we need to ignore if WAA is
+    // TODO(crbug.com/40913154): Verify whether we need to ignore if WAA is
     // non-empty regardless of interaction.
     if (state.user_interaction_times().has_value()) {
       continue;
@@ -345,4 +345,14 @@ void DIPSStorage::PrepopulateChunk(PrepopulateArgs args) {
     db_->MarkAsPrepopulated();
     std::move(args.on_complete).Run();
   }
+}
+
+std::optional<base::Time> DIPSStorage::GetTimerLastFired() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return db_->GetTimerLastFired();
+}
+
+bool DIPSStorage::SetTimerLastFired(base::Time time) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return db_->SetTimerLastFired(time);
 }

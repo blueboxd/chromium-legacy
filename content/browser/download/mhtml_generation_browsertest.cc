@@ -144,7 +144,7 @@ class MockWriterBase : public mojom::MhtmlFileWriter {
   void WriteDataToProducerPipe(
       mojo::ScopedDataPipeProducerHandle producer_pipe) {
     base::ScopedAllowBlockingForTesting allow_blocking;
-    uint32_t size = strlen(kTestData);
+    size_t size = strlen(kTestData);
     producer_pipe->WriteData(kTestData, &size, MOJO_WRITE_DATA_FLAG_NONE);
     producer_pipe.reset();
   }
@@ -345,9 +345,9 @@ class MHTMLGenerationTest : public ContentBrowserTest,
     ASSERT_TRUE(has_mhtml_callback_run())
         << "Unexpected error generating MHTML file";
 
-    // TODO(crbug.com/997408): Add tests which will let MHTMLGeneration manager
-    // fail during file write operation. This will allow us to actually test if
-    // we receive a bogus hash instead of a std::nullopt.
+    // TODO(crbug.com/40641976): Add tests which will let MHTMLGeneration
+    // manager fail during file write operation. This will allow us to actually
+    // test if we receive a bogus hash instead of a std::nullopt.
     EXPECT_EQ(std::nullopt, file_digest());
 
     // Skip well formedness check if explicitly disabled or there was a
@@ -565,7 +565,7 @@ IN_PROC_BROWSER_TEST_P(MHTMLGenerationTest, GenerateMHTMLInNonTempDir) {
 
 // Regression test for the crash/race from https://crbug.com/612098.
 //
-// TODO(crbug.com/959435): Flaky on Android.
+// TODO(crbug.com/41456635): Flaky on Android.
 #if BUILDFLAG(IS_ANDROID)
 #define MAYBE_GenerateMHTMLAndCloseConnection \
   DISABLED_GenerateMHTMLAndCloseConnection
@@ -594,7 +594,7 @@ IN_PROC_BROWSER_TEST_P(MHTMLGenerationTest,
   EXPECT_EQ(ReadFileSizeFromDisk(path), file_size());
 }
 
-// TODO(crbug.com/672313): Flaky on Windows.
+// TODO(crbug.com/41290169): Flaky on Windows.
 #if BUILDFLAG(IS_WIN)
 #define MAYBE_InvalidPath DISABLED_InvalidPath
 #else
@@ -681,7 +681,7 @@ IN_PROC_BROWSER_TEST_P(MHTMLGenerationTest, GenerateMHTMLIgnoreNoStore) {
   EXPECT_THAT(mhtml, ContainsRegex("Content-Location:.*/nostore.html"));
 }
 
-// TODO(crbug.com/615291): These fail on Android under some circumstances.
+// TODO(crbug.com/40470937): These fail on Android under some circumstances.
 #if BUILDFLAG(IS_ANDROID)
 #define MAYBE_ViewedMHTMLContainsNoStoreContent \
   DISABLED_ViewedMHTMLContainsNoStoreContent

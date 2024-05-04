@@ -37,7 +37,7 @@ class PageUsageData;
 // Container for a list of URLs.
 typedef std::vector<GURL> RedirectList;
 
-typedef int64_t SegmentID;        // URL segments for the most visited view.
+typedef int64_t SegmentID;  // URL segments for the most visited view.
 
 // The enumeration of all possible sources of visits is listed below.
 // The source will be propagated along with a URL or a visit item
@@ -245,6 +245,11 @@ struct VisitedLinkRow {
   // this row (must exactly match the <link_url, top_level_url, frame_url>
   // partition key).
   int visit_count = 0;
+
+ private:
+  friend bool operator==(const VisitedLinkRow& lhs, const VisitedLinkRow& rhs);
+  friend bool operator!=(const VisitedLinkRow& lhs, const VisitedLinkRow& rhs);
+  friend bool operator<(const VisitedLinkRow& lhs, const VisitedLinkRow& rhs);
 };
 using VisitedLinkRows = std::vector<VisitedLinkRow>;
 
@@ -417,7 +422,9 @@ struct QueryOptions {
 
 // QueryURLResult -------------------------------------------------------------
 
-// QueryURLResult encapsulates the result of a call to HistoryBackend::QueryURL.
+// QueryURLResult encapsulates the result of a call to
+// `HistoryBackend::QueryURL()` or
+// `HistoryBackend::GetMostRecentVisitsForGurl()`.
 struct QueryURLResult {
   QueryURLResult();
   QueryURLResult(const QueryURLResult&);
@@ -426,8 +433,8 @@ struct QueryURLResult {
   QueryURLResult& operator=(QueryURLResult&&) noexcept;
   ~QueryURLResult();
 
-  // Indicates whether the call to HistoryBackend::QueryURL was successful
-  // or not. If false, then both `row` and `visits` fields are undefined.
+  // Indicates whether the call was successful. If false, then both `row` and
+  // `visits` fields are undefined.
   bool success = false;
   URLRow row;
   VisitVector visits;
@@ -494,6 +501,19 @@ struct FilteredURL {
   std::u16string title;
   double score = 0.0;
   ExtendedInfo extended_info;
+};
+
+// GetAllAppIdsResult ----------------------------------------------------
+
+// GetAllAppIdsResult encapsulates a list of all app IDs found in the
+// database entries.
+struct GetAllAppIdsResult {
+  GetAllAppIdsResult();
+  GetAllAppIdsResult(GetAllAppIdsResult&& other);
+  GetAllAppIdsResult& operator=(GetAllAppIdsResult&& other);
+  ~GetAllAppIdsResult();
+
+  std::vector<std::string> app_ids;
 };
 
 // DomainsVisitedResult --------------------------------------------------
@@ -742,6 +762,7 @@ class DeletionInfo {
                bool is_from_expiration,
                Reason deletion_reason,
                URLRows deleted_rows,
+               std::set<VisitID> deleted_visit_ids,
                std::set<GURL> favicon_urls,
                std::optional<std::set<GURL>> restrict_urls);
 
@@ -776,6 +797,12 @@ class DeletionInfo {
   // Undefined if `IsAllHistory()` returns true.
   const URLRows& deleted_rows() const { return deleted_rows_; }
 
+  // Returns the list of deleted VisitIDs.
+  // Undefined if `IsAllHistory()` returns true.
+  const std::set<VisitID>& deleted_visit_ids() const {
+    return deleted_visit_ids_;
+  }
+
   // Returns the list of favicon URLs that correspond to the deleted URLs.
   // Undefined if `IsAllHistory()` returns true.
   const std::set<GURL>& favicon_urls() const { return favicon_urls_; }
@@ -799,9 +826,34 @@ class DeletionInfo {
   bool is_from_expiration_;
   Reason deletion_reason_;
   URLRows deleted_rows_;
+  std::set<VisitID> deleted_visit_ids_;
   std::set<GURL> favicon_urls_;
   std::optional<std::set<GURL>> restrict_urls_;
   OriginCountAndLastVisitMap deleted_urls_origin_map_;
+};
+
+// When a VisitedLink is deleted from the VisitedLinkDatabase, we notify the
+// HistoryService with the following information. In `visited_link_row`, we are
+// given a URLID. Callers should obtain the GURL associated with that URLID from
+// the URLDatabase and pass it along with this payload.
+struct DeletedVisitedLink {
+  GURL link_url;
+  VisitedLinkRow visited_link_row;
+};
+
+// When a Visit is deleted from the the VisitDatabase, we notify the
+// HistoryService with the following information. `deleted_visited_link` is
+// optional, as not all VisitRow deletions result in a deletion from the
+// VisitedLinkDatabase.
+struct DeletedVisit {
+  DeletedVisit(VisitRow visit);
+  DeletedVisit(VisitRow visit, DeletedVisitedLink deleted_visited_link);
+  DeletedVisit(const DeletedVisit& other);
+  DeletedVisit& operator=(const DeletedVisit& other);
+  ~DeletedVisit();
+
+  VisitRow visit_row;
+  std::optional<DeletedVisitedLink> deleted_visited_link;
 };
 
 // Represents a visit to a domain.

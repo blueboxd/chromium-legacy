@@ -5,9 +5,9 @@
 import '//resources/ash/common/cr_elements/cr_button/cr_button.js';
 import './routine_group.js';
 
-import {I18nMixin} from 'chrome://resources/ash/common/cr_elements/i18n_mixin.js';
-import {ArcDnsResolutionProblem, ArcHttpProblem, ArcPingProblem, CaptivePortalProblem, DnsLatencyProblem, DnsResolutionProblem, DnsResolverPresentProblem, GatewayCanBePingedProblem, HasSecureWiFiConnectionProblem, HttpFirewallProblem, HttpsFirewallProblem, HttpsLatencyProblem, RoutineCallSource, RoutineProblems, RoutineType, RoutineVerdict, SignalStrengthProblem, VideoConferencingProblem} from 'chrome://resources/mojo/chromeos/services/network_health/public/mojom/network_diagnostics.mojom-webui.js';
-import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {I18nMixin} from '//resources/ash/common/cr_elements/i18n_mixin.js';
+import {ArcDnsResolutionProblem, ArcHttpProblem, ArcPingProblem, CaptivePortalProblem, DnsLatencyProblem, DnsResolutionProblem, DnsResolverPresentProblem, GatewayCanBePingedProblem, HasSecureWiFiConnectionProblem, HttpFirewallProblem, HttpsFirewallProblem, HttpsLatencyProblem, RoutineCallSource, RoutineProblems, RoutineType, RoutineVerdict, SignalStrengthProblem, VideoConferencingProblem} from '//resources/mojo/chromeos/services/network_health/public/mojom/network_diagnostics.mojom-webui.js';
+import {PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {getNetworkDiagnosticsService} from './mojo_interface_provider.js';
 import {getTemplate} from './network_diagnostics.html.js';
@@ -237,11 +237,11 @@ export class NetworkDiagnosticsElement extends NetworkDiagnosticsElementBase {
   }
 
   private runRoutine_(type: RoutineType) {
-    this.set(`routines.${type}.running`, true);
-    this.set(`routines.${type}.resultMsg`, '');
-    this.set(`routines.${type}.result`, null);
+    this.set(`routines_.${type}.running`, true);
+    this.set(`routines_.${type}.resultMsg`, '');
+    this.set(`routines_.${type}.result`, null);
     this.set(
-        `routines.${type}.ariaDescription`,
+        `routines_.${type}.ariaDescription`,
         this.i18n('NetworkDiagnosticsRunning'));
 
     this.routines_[type].func().then(
@@ -249,7 +249,7 @@ export class NetworkDiagnosticsElement extends NetworkDiagnosticsElementBase {
   }
 
   private evaluateRoutine_(type: RoutineType, response: RoutineResponse) {
-    const routine = `routines.${type}`;
+    const routine = `routines_.${type}`;
     this.set(routine + '.running', false);
     this.set(routine + '.result', response.result);
 

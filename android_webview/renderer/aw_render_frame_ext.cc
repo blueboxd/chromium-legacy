@@ -5,6 +5,7 @@
 #include "android_webview/renderer/aw_render_frame_ext.h"
 
 #include <memory>
+#include <string_view>
 #include <utility>
 
 #include "android_webview/common/aw_features.h"
@@ -86,10 +87,10 @@ GURL GetChildImageUrlFromElement(const blink::WebElement& element) {
   return GetAbsoluteSrcUrl(child_img);
 }
 
-bool RemovePrefixAndAssignIfMatches(const base::StringPiece& prefix,
+bool RemovePrefixAndAssignIfMatches(std::string_view prefix,
                                     const GURL& url,
                                     std::string* dest) {
-  const base::StringPiece spec(url.possibly_invalid_spec());
+  const std::string_view spec(url.possibly_invalid_spec());
 
   if (base::StartsWith(spec, prefix)) {
     url::RawCanonOutputW<1024> output;
@@ -288,7 +289,7 @@ void AwRenderFrameExt::SetInitialPageScale(double page_scale_factor) {
 }
 
 void AwRenderFrameExt::SetTextZoomFactor(float zoom_factor) {
-  // TODO(crbug.com/1085428): This will need to be set on every local root
+  // TODO(crbug.com/40132194): This will need to be set on every local root
   // when site isolation is used in android webview.
   DCHECK(render_frame()->IsMainFrame());
 

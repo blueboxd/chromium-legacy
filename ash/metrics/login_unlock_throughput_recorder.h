@@ -82,6 +82,10 @@ class ASH_EXPORT LoginUnlockThroughputRecorder : public SessionObserver,
   // This is called when cryptohome was successfully created/unlocked.
   void OnAuthSuccess();
 
+  // This is called when ash-chrome is restarted (i.e. on start up procedure
+  // of restoring).
+  void OnAshRestart();
+
   // This is true if we need to report Ash.ArcAppInitialAppsInstallDuration
   // histogram in this session but it has not been reported yet.
   bool NeedReportArcAppListReady() const;
@@ -219,6 +223,9 @@ class ASH_EXPORT LoginUnlockThroughputRecorder : public SessionObserver,
   // This is a signal that current list of expected windows to be restored is
   // final.
   bool first_restored_window_created_ = false;
+
+  // Whether ash is restarted (due to crash, or applying flags etc).
+  bool is_ash_restart_ = false;
 
   std::optional<base::TimeTicks> arc_opt_in_time_;
 

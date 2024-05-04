@@ -29,6 +29,7 @@
 #include "chrome/browser/ash/login/test/oobe_base_test.h"
 #include "chrome/browser/ash/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/ash/login/test/oobe_screens_utils.h"
+#include "chrome/browser/ash/login/test/scoped_policy_update.h"
 #include "chrome/browser/ash/login/test/session_manager_state_waiter.h"
 #include "chrome/browser/ash/login/test/test_predicate_waiter.h"
 #include "chrome/browser/ash/login/test/user_adding_screen_utils.h"
@@ -315,7 +316,7 @@ IN_PROC_BROWSER_TEST_F(LoginOfflineTest, PRE_AuthOffline) {
 
 IN_PROC_BROWSER_TEST_F(LoginOfflineTest, AuthOffline) {
   network_portal_detector_.SimulateDefaultNetworkState(
-      NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_OFFLINE);
+      NetworkPortalDetectorMixin::NetworkStatus::kOffline);
   offline_login_test_mixin_.GoOffline();
   offline_login_test_mixin_.InitOfflineLogin(test_account_id_,
                                              LoginManagerTest::kPassword);

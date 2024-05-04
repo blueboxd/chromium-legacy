@@ -50,6 +50,22 @@ source_set("tracking_protection_onboarding") {
   public_deps = [ "//base" ]
 }
 
+source_set("tracking_protection_reminder_service") {
+  sources = [
+    "tracking_protection_reminder_service.cc",
+    "tracking_protection_reminder_service.h",
+  ]
+
+  deps = [
+    ":features",
+    ":privacy_sandbox_prefs",
+    "//components/keyed_service/core:core",
+    "//components/prefs",
+  ]
+
+  public_deps = [ "//base" ]
+}
+
 source_set("tracking_protection_settings") {
   sources = [
     "tracking_protection_settings.cc",
@@ -62,10 +78,12 @@ source_set("tracking_protection_settings") {
     ":privacy_sandbox_prefs",
     ":tracking_protection_onboarding",
     ":tracking_protection_prefs",
+    "//components/content_settings/core/browser",
     "//components/content_settings/core/common",
     "//components/keyed_service/core:core",
     "//components/pref_registry:pref_registry",
     "//components/prefs",
+    "//url:url",
   ]
 
   public_deps = [ "//base" ]
@@ -124,9 +142,11 @@ if (use_blink) {
 
     deps = [
       ":privacy_sandbox_prefs",
+      ":tracking_protection_reminder_service",
       ":tracking_protection_settings",
       "//components/browsing_topics/common:common",
       "//components/content_settings/core/browser",
+      "//components/content_settings/core/browser:cookie_settings",
       "//components/content_settings/core/common",
       "//components/keyed_service/core:core",
       "//components/pref_registry:pref_registry",
@@ -177,10 +197,7 @@ if (use_blink) {
 
 source_set("unit_tests") {
   testonly = true
-  sources = [
-    "tracking_protection_onboarding_unittest.cc",
-    "tracking_protection_settings_unittest.cc",
-  ]
+  sources = [ "tracking_protection_onboarding_unittest.cc" ]
 
   deps = [
     ":features",
@@ -189,6 +206,7 @@ source_set("unit_tests") {
     ":tracking_protection_prefs",
     ":tracking_protection_settings",
     "//base/test:test_support",
+    "//components/content_settings/core/common",
     "//components/prefs:test_support",
     "//components/sync_preferences:test_support",
     "//components/version_info",
@@ -201,6 +219,7 @@ source_set("unit_tests") {
       "privacy_sandbox_settings_impl_unittest.cc",
       "privacy_sandbox_test_util_unittest.cc",
       "tpcd_experiment_eligibility_unittest.cc",
+      "tracking_protection_settings_unittest.cc",
     ]
 
     deps += [

@@ -7,8 +7,15 @@
 const CGFloat kFaviconImageViewSize = 24.;
 const CGFloat kFaviconImageViewRadius = 3.;
 
+const CGFloat kIPadSearchEngineChoiceScreenPreferredWidth = 540.;
+const CGFloat kIPadSearchEngineChoiceScreenPreferredHeight = 760.;
+
 NSString* const kSearchEngineChoiceTitleAccessibilityIdentifier =
     @"SearchEngineChoiceTitleAccessibilityIdentifier";
+NSString* const kSnippetSearchEngineOneLineChevronIdentifierPrefix =
+    @"SnippetSearchEngineOneLineChevronIdentifierPrefix";
+NSString* const kSnippetSearchEngineExpandedChevronIdentifierPrefix =
+    @"SnippetSearchEngineExpandedChevronIdentifierPrefix";
 NSString* const kSnippetSearchEngineIdentifierPrefix =
     @"SnippetSearchEngineIdentifierPrefix_";
 NSString* const kSetAsDefaultSearchEngineIdentifier =
@@ -17,3 +24,5 @@ NSString* const kSearchEngineChoiceScrollViewIdentifier =
     @"SearchEngineChoiceScrollViewIdentifier";
 NSString* const kSearchEngineMoreButtonIdentifier =
     @"SearchEngineMoreButtonIdentifier";
+const char kExpandSearchEngineDescriptionUserAction[] =
+    "ExpandSearchEngineDescription";

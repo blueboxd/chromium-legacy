@@ -24,8 +24,6 @@ class ActionViewListItem : public ActionEditView {
   ActionViewListItem& operator=(const ActionViewListItem&) = delete;
   ~ActionViewListItem() override;
 
-  void PerformPulseAnimation();
-
  private:
   friend class EditLabelTest;
 
@@ -37,6 +35,7 @@ class ActionViewListItem : public ActionEditView {
   void OnMouseExited(const ui::MouseEvent& event) override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;
   void OnFocus() override;
+  void OnBlur() override;
 };
 
 }  // namespace arc::input_overlay

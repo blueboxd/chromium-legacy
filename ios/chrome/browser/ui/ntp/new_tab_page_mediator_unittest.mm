@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/ntp/new_tab_page_mediator.h"
 
 #import <memory>
+#import <string_view>
 
 #import "base/memory/raw_ptr.h"
 #import "base/test/metrics/histogram_tester.h"
@@ -157,7 +158,7 @@ class NewTabPageMediatorTest : public PlatformTest {
             std::make_unique<TemplateURL>(template_url_data)));
   }
 
-  void OverrideSearchEngineChoiceCountry(base::StringPiece country) {
+  void OverrideSearchEngineChoiceCountry(std::string_view country) {
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         switches::kSearchEngineChoiceCountry, country);
   }
@@ -220,7 +221,7 @@ TEST_F(NewTabPageMediatorTest, TestFeedManagementNavigationDelegate) {
   GURL followed_url("https://example.org");
   [mediator_ handleNavigateToFollowedURL:followed_url];
   EXPECT_URL_LOAD(followed_url.spec().c_str());
-  // TODO(crbug.com/1331102): Add metrics.
+  // TODO(crbug.com/40227407): Add metrics.
 }
 
 // Tests that the handleFeedLearnMoreTapped loads the correct URL and records
@@ -234,41 +235,9 @@ TEST_F(NewTabPageMediatorTest, TestHandleFeedLearnMoreTapped) {
                                         1);
 }
 
-// Tests that the feed will be hidden when IOSHideFeedWithSearchChoice is
-// enabled and a non-Google search engine is chosen.
-TEST_F(NewTabPageMediatorTest, TestHideFeedWithSearchChoice) {
-  scoped_feature_list_.InitWithFeaturesAndParameters(
-      {
-          {kIOSHideFeedWithSearchChoice,
-           {{kIOSHideFeedWithSearchChoiceTargeted, "false"}}},
-      },
-      {});
-
-  // Test it with the default search engine.
-  [mediator_ setUp];
-  EXPECT_TRUE(mediator_.feedHeaderVisible);
-
-  // Set up expectation for custom search engine.
-  id feed_control_delegate = OCMProtocolMock(@protocol(FeedControlDelegate));
-  OCMExpect([feed_control_delegate setFeedAndHeaderVisibility:NO]);
-  mediator_.feedControlDelegate = feed_control_delegate;
-
-  // Test setting a custom search engine.
-  SetCustomSearchEngine();
-  EXPECT_FALSE(mediator_.feedHeaderVisible);
-  EXPECT_OCMOCK_VERIFY(feed_control_delegate);
-}
-
-// Tests that the feed will be hidden when IOSHideFeedWithSearchChoice is
-// enabled and a non-Google search engine is chosen, but only in EEA countries.
+// Tests that the feed will be hidden when a non-Google search engine is chosen,
+// but only in EEA countries.
 TEST_F(NewTabPageMediatorTest, TestHideFeedWithSearchChoiceTargeted) {
-  scoped_feature_list_.InitWithFeaturesAndParameters(
-      {
-          {kIOSHideFeedWithSearchChoice,
-           {{kIOSHideFeedWithSearchChoiceTargeted, "true"}}},
-      },
-      {});
-
   // Test it with the default search engine, with country set to France.
   OverrideSearchEngineChoiceCountry("FR");
   [mediator_ setUp];

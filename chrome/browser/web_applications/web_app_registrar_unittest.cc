@@ -65,18 +65,11 @@
 #include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/web_applications/test/with_crosapi_param.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "components/user_manager/user_names.h"
 
 using web_app::test::CrosapiParam;
 using web_app::test::WithCrosapiParam;
-#endif
-
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-#include "chromeos/crosapi/mojom/crosapi.mojom.h"
-#include "chromeos/lacros/lacros_service.h"
-#include "chromeos/startup/browser_init_params.h"
 #endif
 
 namespace web_app {
@@ -308,7 +301,7 @@ TEST_F(WebAppRegistrarTest, InitWithApps) {
 
 TEST_F(WebAppRegistrarTest, InitRegistrarAndDoForEachApp) {
   base::flat_set<webapps::AppId> ids = PopulateRegistry(
-      CreateRegistryForTesting("https://example.com/path", 100));
+      CreateRegistryForTesting("https://example.com/path", 20));
   StartWebAppProvider();
 
   for (const WebApp& web_app : registrar().GetAppsIncludingStubs()) {
@@ -320,9 +313,9 @@ TEST_F(WebAppRegistrarTest, InitRegistrarAndDoForEachApp) {
 }
 
 TEST_F(WebAppRegistrarTest, DoForEachAndUnregisterAllApps) {
-  Registry registry = CreateRegistryForTesting("https://example.com/path", 100);
+  Registry registry = CreateRegistryForTesting("https://example.com/path", 20);
   auto ids = PopulateRegistry(std::move(registry));
-  EXPECT_EQ(100UL, ids.size());
+  EXPECT_EQ(20UL, ids.size());
 
   StartWebAppProvider();
 
@@ -509,9 +502,8 @@ TEST_F(WebAppRegistrarTest, GetAppDataFields) {
     EXPECT_EQ(mojom::UserDisplayMode::kBrowser,
               registrar().GetAppUserDisplayMode(app_id));
 
-    fake_provider().sync_bridge_unsafe().SetAppUserDisplayMode(
-        app_id, mojom::UserDisplayMode::kStandalone,
-        /*is_user_action=*/false);
+    fake_provider().sync_bridge_unsafe().SetAppUserDisplayModeForTesting(
+        app_id, mojom::UserDisplayMode::kStandalone);
     EXPECT_EQ(mojom::UserDisplayMode::kStandalone,
               registrar().GetAppUserDisplayMode(app_id));
     EXPECT_EQ(DisplayMode::kMinimalUi, registrar().GetAppDisplayMode(app_id));
@@ -661,18 +653,6 @@ TEST_F(WebAppRegistrarTest, CanFindAppWithUrlInScope) {
 }
 
 TEST_F(WebAppRegistrarTest, CanFindShortcutWithUrlInScope) {
-  // Behaviour when Shortstand enabled is covered in
-  // WebAppRegistrarTest_Shortstand.CannotFindShortcutWithUrlInScope.
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(
-      chromeos::features::kCrosShortstand);
-#elif BUILDFLAG(IS_CHROMEOS_LACROS)
-  crosapi::mojom::BrowserInitParamsPtr init_params =
-      chromeos::BrowserInitParams::GetForTests()->Clone();
-  init_params->is_cros_shortstand_enabled = false;
-  chromeos::BrowserInitParams::SetInitParamsForTests(std::move(init_params));
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   StartWebAppProvider();
 
   const GURL app1_page("https://example.com/app/page");
@@ -911,7 +891,43 @@ TEST_F(WebAppRegistrarTest, CountUserInstalledApps) {
     RegisterAppUnsafe(std::move(web_app));
   }
 
-  EXPECT_EQ(3, registrar().CountUserInstalledApps());
+  // User-installed apps have one of the following types:
+  // - `WebAppManagement::kSync`
+  // - `WebAppManagement::kWebAppStore`
+  // - `WebAppManagement::kOneDriveIntegration`
+  // - `WebAppManagement::kIwaUserInstalled`
+  EXPECT_EQ(4, registrar().CountUserInstalledApps());
+}
+
+TEST_F(WebAppRegistrarTest, CountUserInstalledAppsDiy) {
+  StartWebAppProvider();
+
+  int i = 1;
+  const std::string base_url{"https://example.com/path"};
+
+  // Sync installed non-DIY.
+  auto web_app1 = test::CreateWebApp(GURL(base_url + base::NumberToString(i)),
+                                     WebAppManagement::kSync);
+  web_app1->SetIsDiyApp(/*is_diy_app=*/false);
+  RegisterAppUnsafe(std::move(web_app1));
+  ++i;
+
+  // Sync installed DIY.
+  auto web_app2 = test::CreateWebApp(GURL(base_url + base::NumberToString(i)),
+                                     WebAppManagement::kSync);
+  web_app2->SetIsDiyApp(/*is_diy_app=*/true);
+  RegisterAppUnsafe(std::move(web_app2));
+  ++i;
+
+  // Policy installed DIY (not counted as part of user installed)
+  auto web_app3 = test::CreateWebApp(GURL(base_url + base::NumberToString(i)),
+                                     WebAppManagement::kPolicy);
+  web_app3->SetIsDiyApp(/*is_diy_app=*/true);
+  RegisterAppUnsafe(std::move(web_app3));
+  ++i;
+
+  EXPECT_EQ(2, registrar().CountUserInstalledApps());
+  EXPECT_EQ(1, registrar().CountUserInstalledDiyApps());
 }
 
 TEST_F(WebAppRegistrarTest, GetAllIsolatedWebAppStoragePartitionConfigs) {
@@ -1002,10 +1018,10 @@ TEST_F(WebAppRegistrarTest, SaveAndGetInMemoryControlledFramePartitionConfig) {
 
 TEST_F(WebAppRegistrarTest,
        AppsFromSyncAndPendingInstallationExcludedFromGetAppIds) {
-  PopulateRegistryWithApps("https://example.com/path/", 100);
+  PopulateRegistryWithApps("https://example.com/path/", 20);
   StartWebAppProvider();
 
-  EXPECT_EQ(100u, registrar().GetAppIds().size());
+  EXPECT_EQ(20u, registrar().GetAppIds().size());
 
   std::unique_ptr<WebApp> web_app_in_sync_install =
       test::CreateWebApp(GURL("https://example.org/"));
@@ -1017,7 +1033,7 @@ TEST_F(WebAppRegistrarTest,
 
   // Tests that GetAppIds() excludes web app in sync install:
   std::vector<webapps::AppId> ids = registrar().GetAppIds();
-  EXPECT_EQ(100u, ids.size());
+  EXPECT_EQ(20u, ids.size());
   for (const webapps::AppId& app_id : ids) {
     EXPECT_NE(app_id, web_app_in_sync_install_id);
   }
@@ -1466,7 +1482,7 @@ class WebAppRegistrarAshTest : public WebAppTest, public WithCrosapiParam {
  public:
   void SetUp() override {
     // Set up user manager to so that Lacros mode can be enabled.
-    // TODO(crbug.com/1463865): Consider setting up a fake user in all Ash web
+    // TODO(crbug.com/40275387): Consider setting up a fake user in all Ash web
     // app tests.
     auto user_manager = std::make_unique<ash::FakeChromeUserManager>();
     auto* fake_user_manager = user_manager.get();
@@ -1612,309 +1628,4 @@ TEST_F(WebAppRegistrarLacrosTest, SwaSourceNotSupported) {
 
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
-#if BUILDFLAG(IS_CHROMEOS)
-class WebAppRegistrarTest_Shortstand : public WebAppRegistrarTest {
- public:
-  WebAppRegistrarTest_Shortstand() {
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-    scoped_feature_list_.InitAndEnableFeature(
-        chromeos::features::kCrosShortstand);
-#elif BUILDFLAG(IS_CHROMEOS_LACROS)
-    crosapi::mojom::BrowserInitParamsPtr init_params =
-        chromeos::BrowserInitParams::GetForTests()->Clone();
-    init_params->is_cros_shortstand_enabled = true;
-    chromeos::BrowserInitParams::SetInitParamsForTests(std::move(init_params));
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
-TEST_F(WebAppRegistrarTest_Shortstand, IsShortcut) {
-  StartWebAppProvider();
-
-  {
-    // Verify that Docs, Sheets and Slides apps respects existing user display
-    // mode setting.
-    auto docs_web_app = test::CreateWebApp(
-        GURL("https://docs.google.com/document/?usp=installed_webapp"),
-        WebAppManagement::Type::kDefault);
-    docs_web_app->SetScope(GURL("https://docs.google.com/document/"));
-    docs_web_app->SetUserDisplayMode(mojom::UserDisplayMode::kBrowser);
-    ASSERT_EQ(docs_web_app->app_id(), kGoogleDocsAppId);
-
-    RegisterAppUnsafe(std::move(docs_web_app));
-    EXPECT_TRUE(registrar().IsShortcutApp(kGoogleDocsAppId));
-
-    auto sheets_web_app = test::CreateWebApp(
-        GURL("https://docs.google.com/spreadsheets/?usp=installed_webapp"),
-        WebAppManagement::Type::kDefault);
-    sheets_web_app->SetScope(GURL("https://docs.google.com/spreadsheets/"));
-    sheets_web_app->SetUserDisplayMode(mojom::UserDisplayMode::kBrowser);
-    ASSERT_EQ(sheets_web_app->app_id(), kGoogleSheetsAppId);
-
-    RegisterAppUnsafe(std::move(sheets_web_app));
-    EXPECT_TRUE(registrar().IsShortcutApp(kGoogleSheetsAppId));
-
-    auto slides_web_app = test::CreateWebApp(
-        GURL("https://docs.google.com/presentation/?usp=installed_webapp"),
-        WebAppManagement::Type::kDefault);
-    slides_web_app->SetScope(GURL("https://docs.google.com/presentation/"));
-    slides_web_app->SetUserDisplayMode(mojom::UserDisplayMode::kBrowser);
-    ASSERT_EQ(slides_web_app->app_id(), kGoogleSlidesAppId);
-
-    RegisterAppUnsafe(std::move(slides_web_app));
-    EXPECT_TRUE(registrar().IsShortcutApp(kGoogleSlidesAppId));
-
-    Uninstall(kGoogleDocsAppId);
-    Uninstall(kGoogleSheetsAppId);
-    Uninstall(kGoogleSlidesAppId);
-  }
-
-  // TODO(b/304660867): Test policy installed apps.
-  const GURL start_url = GURL("https://example.com/path");
-  const GURL scope = GURL("https://example.com/scope");
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  {
-    // Verify that system web app is not shortcut.
-    auto web_app =
-        test::CreateWebApp(start_url, WebAppManagement::Type::kSystem);
-    const webapps::AppId web_app_id = web_app->app_id();
-
-    RegisterAppUnsafe(std::move(web_app));
-    EXPECT_FALSE(registrar().IsShortcutApp(web_app_id));
-    UninstallViaRemoveSource(web_app_id, WebAppManagement::Type::kSystem);
-  }
-#endif
-  // Verify that user installed app with a scope is always not a shortcut.
-  {
-    auto web_app = test::CreateWebApp(start_url, WebAppManagement::Type::kSync);
-    web_app->SetScope(scope);
-    web_app->SetUserDisplayMode(mojom::UserDisplayMode::kBrowser);
-    webapps::AppId web_app_id = web_app->app_id();
-
-    RegisterAppUnsafe(std::move(web_app));
-    EXPECT_FALSE(registrar().IsShortcutApp(web_app_id));
-    Uninstall(web_app_id);
-  }
-
-  // Verify that playstore installed app with a scope is always not a shortcut
-  {
-    auto web_app =
-        test::CreateWebApp(start_url, WebAppManagement::Type::kWebAppStore);
-    web_app->SetScope(scope);
-    web_app->SetUserDisplayMode(mojom::UserDisplayMode::kBrowser);
-    webapps::AppId web_app_id = web_app->app_id();
-
-    RegisterAppUnsafe(std::move(web_app));
-    EXPECT_FALSE(registrar().IsShortcutApp(web_app_id));
-    Uninstall(web_app_id);
-  }
-
-  // Verify that default installed app is not a shortcut
-  {
-    auto web_app =
-        test::CreateWebApp(start_url, WebAppManagement::Type::kDefault);
-    webapps::AppId web_app_id = web_app->app_id();
-
-    RegisterAppUnsafe(std::move(web_app));
-    EXPECT_FALSE(registrar().IsShortcutApp(web_app_id));
-    Uninstall(web_app_id);
-  }
-
-  // Verify that default installed app is not a shortcut
-  {
-    auto web_app = test::CreateWebApp(start_url, WebAppManagement::Type::kOem);
-    webapps::AppId web_app_id = web_app->app_id();
-
-    RegisterAppUnsafe(std::move(web_app));
-    EXPECT_FALSE(registrar().IsShortcutApp(web_app_id));
-    Uninstall(web_app_id);
-  }
-
-  // Verify that default installed app is not a shortcut
-  {
-    auto web_app =
-        test::CreateWebApp(start_url, WebAppManagement::Type::kApsDefault);
-    webapps::AppId web_app_id = web_app->app_id();
-
-    RegisterAppUnsafe(std::move(web_app));
-    EXPECT_FALSE(registrar().IsShortcutApp(web_app_id));
-
-    UninstallViaRemoveSource(web_app_id, WebAppManagement::Type::kApsDefault);
-  }
-
-  // Verify that default installed app with user install is not a shortcut
-  {
-    auto web_app =
-        test::CreateWebApp(start_url, WebAppManagement::Type::kDefault);
-    web_app->AddSource(WebAppManagement::kSync);
-    webapps::AppId web_app_id = web_app->app_id();
-
-    RegisterAppUnsafe(std::move(web_app));
-    EXPECT_FALSE(registrar().IsShortcutApp(web_app_id));
-    Uninstall(web_app_id);
-  }
-
-  // Verify that user installed app with no scope is a shortcut if display mode
-  // is browser
-  {
-    auto web_app = test::CreateWebApp(start_url, WebAppManagement::Type::kSync);
-    web_app->SetUserDisplayMode(mojom::UserDisplayMode::kBrowser);
-    webapps::AppId web_app_id = web_app->app_id();
-
-    RegisterAppUnsafe(std::move(web_app));
-    EXPECT_TRUE(registrar().IsShortcutApp(web_app_id));
-    Uninstall(web_app_id);
-  }
-
-  // Verify that user installed app with no scope is not a shortcut if display
-  // mode is not browser
-  {
-    auto web_app = test::CreateWebApp(start_url, WebAppManagement::Type::kSync);
-    web_app->SetUserDisplayMode(mojom::UserDisplayMode::kStandalone);
-    webapps::AppId web_app_id = web_app->app_id();
-
-    RegisterAppUnsafe(std::move(web_app));
-    EXPECT_FALSE(registrar().IsShortcutApp(web_app_id));
-    Uninstall(web_app_id);
-  }
-
-  // Verify that user installed app with no scope is not a shortcut if display
-  // mode is not browser
-  {
-    auto web_app = test::CreateWebApp(start_url, WebAppManagement::Type::kSync);
-    web_app->SetUserDisplayMode(mojom::UserDisplayMode::kTabbed);
-    webapps::AppId web_app_id = web_app->app_id();
-
-    RegisterAppUnsafe(std::move(web_app));
-    EXPECT_FALSE(registrar().IsShortcutApp(web_app_id));
-    Uninstall(web_app_id);
-  }
-}
-
-TEST_F(WebAppRegistrarTest_Shortstand, CannotFindShortcutWithUrlInScope) {
-  StartWebAppProvider();
-
-  const GURL shortcut1_page("https://example.com/shortcut/page");
-  const GURL shortcut2_page("https://example.com/shortcut-two/page");
-  const GURL shortcut3_page("https://not-example.com/shortcut/page");
-
-  const GURL shortcut1_launch("https://example.com/shortcut/launch");
-  const GURL shortcut2_launch("https://example.com/shortcut-two/launch");
-  const GURL shortcut3_launch("https://not-example.com/shortcut/launch");
-
-  const webapps::AppId shortcut1_id =
-      GenerateAppId(/*manifest_id=*/std::nullopt, shortcut1_launch);
-  const webapps::AppId shortcut2_id =
-      GenerateAppId(/*manifest_id=*/std::nullopt, shortcut2_launch);
-  const webapps::AppId shortcut3_id =
-      GenerateAppId(/*manifest_id=*/std::nullopt, shortcut3_launch);
-
-  // Implicit scope "https://example.com/shortcut/"
-  auto shortcut1 = test::CreateWebApp(shortcut1_launch);
-  shortcut1->SetUserDisplayMode(mojom::UserDisplayMode::kBrowser);
-  RegisterAppUnsafe(std::move(shortcut1));
-
-  std::optional<webapps::AppId> shortcut2_match =
-      registrar().FindAppWithUrlInScope(shortcut2_page);
-  EXPECT_FALSE(shortcut2_match);
-
-  std::optional<webapps::AppId> shortcut3_match =
-      registrar().FindAppWithUrlInScope(shortcut3_page);
-  EXPECT_FALSE(shortcut3_match);
-
-  auto shortcut2 = test::CreateWebApp(shortcut2_launch);
-  shortcut2->SetUserDisplayMode(mojom::UserDisplayMode::kBrowser);
-  RegisterAppUnsafe(std::move(shortcut2));
-
-  auto shortcut3 = test::CreateWebApp(shortcut3_launch);
-  shortcut3->SetUserDisplayMode(mojom::UserDisplayMode::kBrowser);
-  RegisterAppUnsafe(std::move(shortcut3));
-
-  std::optional<webapps::AppId> shortcut1_match =
-      registrar().FindAppWithUrlInScope(shortcut1_page);
-  EXPECT_FALSE(shortcut1_match);
-
-  shortcut2_match = registrar().FindAppWithUrlInScope(shortcut2_page);
-  EXPECT_FALSE(shortcut2_match);
-
-  shortcut3_match = registrar().FindAppWithUrlInScope(shortcut3_page);
-  EXPECT_FALSE(shortcut3_match);
-}
-
-// TODO(b/315263875): Parameterize this test (and other tests) to
-// run in all platforms with shortstand on and off.
-TEST_F(WebAppRegistrarTest_Shortstand, CanFindAppWithUrlInScope) {
-  StartWebAppProvider();
-
-  const GURL origin_scope("https://example.com/");
-
-  const GURL app1_scope("https://example.com/app");
-  const GURL app2_scope("https://example.com/app-two");
-  const GURL app3_scope("https://not-example.com/app");
-  const GURL app4_scope("https://app-four.com/");
-
-  const webapps::AppId app1_id =
-      GenerateAppId(/*manifest_id=*/std::nullopt, app1_scope);
-  const webapps::AppId app2_id =
-      GenerateAppId(/*manifest_id=*/std::nullopt, app2_scope);
-  const webapps::AppId app3_id =
-      GenerateAppId(/*manifest_id=*/std::nullopt, app3_scope);
-  const webapps::AppId app4_id =
-      GenerateAppId(/*manifest_id=*/std::nullopt, app3_scope);
-
-  auto app1 = test::CreateWebApp(app1_scope);
-  app1->SetScope(app1_scope);
-  RegisterAppUnsafe(std::move(app1));
-
-  std::optional<webapps::AppId> app2_match =
-      registrar().FindAppWithUrlInScope(app2_scope);
-  DCHECK(app2_match);
-  EXPECT_EQ(*app2_match, app1_id);
-
-  std::optional<webapps::AppId> app3_match =
-      registrar().FindAppWithUrlInScope(app3_scope);
-  EXPECT_FALSE(app3_match);
-
-  std::optional<webapps::AppId> app4_match =
-      registrar().FindAppWithUrlInScope(app4_scope);
-  EXPECT_FALSE(app4_match);
-
-  auto app2 = test::CreateWebApp(app2_scope);
-  app2->SetScope(app2_scope);
-  RegisterAppUnsafe(std::move(app2));
-
-  auto app3 = test::CreateWebApp(app3_scope);
-  app3->SetScope(app3_scope);
-  RegisterAppUnsafe(std::move(app3));
-
-  auto app4 = test::CreateWebApp(app4_scope);
-  app4->SetScope(app4_scope);
-  app4->SetIsUninstalling(true);
-  RegisterAppUnsafe(std::move(app4));
-
-  std::optional<webapps::AppId> origin_match =
-      registrar().FindAppWithUrlInScope(origin_scope);
-  EXPECT_FALSE(origin_match);
-
-  std::optional<webapps::AppId> app1_match =
-      registrar().FindAppWithUrlInScope(app1_scope);
-  DCHECK(app1_match);
-  EXPECT_EQ(*app1_match, app1_id);
-
-  app2_match = registrar().FindAppWithUrlInScope(app2_scope);
-  DCHECK(app2_match);
-  EXPECT_EQ(*app2_match, app2_id);
-
-  app3_match = registrar().FindAppWithUrlInScope(app3_scope);
-  DCHECK(app3_match);
-  EXPECT_EQ(*app3_match, app3_id);
-
-  // Apps in the process of uninstalling are ignored.
-  app4_match = registrar().FindAppWithUrlInScope(app4_scope);
-  EXPECT_FALSE(app4_match);
-}
-#endif
 }  // namespace web_app

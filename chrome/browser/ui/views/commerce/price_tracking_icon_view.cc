@@ -25,6 +25,7 @@
 #include "chrome/common/pref_names.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/commerce/core/commerce_feature_list.h"
+#include "components/commerce/core/metrics/metrics_utils.h"
 #include "components/commerce/core/pref_names.h"
 #include "components/commerce/core/price_tracking_utils.h"
 #include "components/commerce/core/shopping_service.h"
@@ -184,9 +185,10 @@ void PriceTrackingIconView::AnimationProgressed(
   // kLabelPersistDuration before resuming the animation and allowing the label
   // to animate out. This is currently set to show for 12s including the in/out
   // animation.
-  // TODO(crbug.com/1314206): This approach of inspecting the animation progress
-  // to extend the animation duration is quite hacky. This should be removed and
-  // the IconLabelBubbleView API expanded to support a finer level of control.
+  // TODO(crbug.com/40832707): This approach of inspecting the animation
+  // progress to extend the animation duration is quite hacky. This should be
+  // removed and the IconLabelBubbleView API expanded to support a finer level
+  // of control.
   constexpr double kAnimationValueWhenLabelFullyShown = 0.5;
   constexpr base::TimeDelta kLabelPersistDuration = base::Seconds(10.8);
   if (should_extend_label_shown_duration_ &&
@@ -250,6 +252,10 @@ void PriceTrackingIconView::EnablePriceTracking(bool enable) {
         }
       }
     }
+
+    commerce::metrics::RecordShoppingActionUKM(
+        GetWebContents()->GetPrimaryMainFrame()->GetPageUkmSourceId(),
+        commerce::metrics::ShoppingAction::kPriceTracked);
   }
 
   auto* tab_helper =
@@ -284,7 +290,7 @@ void PriceTrackingIconView::SetVisualState(bool enable) {
 }
 
 void PriceTrackingIconView::OnPriceTrackingServerStateUpdated(bool success) {
-  // TODO(crbug.com/1364739): Handles error if |success| is false.
+  // TODO(crbug.com/40865740): Handles error if |success| is false.
   if (commerce::kRevertIconOnFailure.Get() && !success) {
     bubble_coordinator_.Hide();
     UpdateImpl();

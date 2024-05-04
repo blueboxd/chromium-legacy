@@ -64,10 +64,6 @@
 #include "chrome/browser/enterprise/connectors/device_trust/key_management/browser/key_rotation_launcher.h"
 #endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC)
 
-#if BUILDFLAG(IS_FUCHSIA)
-#include "chrome/browser/policy/browser_dm_token_storage_fuchsia.h"
-#endif  // BUILDFLAG(IS_FUCHSIA)
-
 namespace policy {
 
 namespace {
@@ -95,8 +91,6 @@ void ChromeBrowserCloudManagementControllerDesktop::
   storage_delegate = std::make_unique<BrowserDMTokenStorageLinux>();
 #elif BUILDFLAG(IS_WIN)
   storage_delegate = std::make_unique<BrowserDMTokenStorageWin>();
-#elif BUILDFLAG(IS_FUCHSIA)
-  storage_delegate = std::make_unique<BrowserDMTokenStorageFuchsia>();
 #else
   NOTREACHED();
 #endif
@@ -302,7 +296,6 @@ void ChromeBrowserCloudManagementControllerDesktop::StartInvalidations() {
           base::BindRepeating(&invalidation::FCMInvalidationListener::Create),
           base::BindRepeating(
               &invalidation::PerUserTopicSubscriptionManager::Create,
-              identity_provider_.get(), g_browser_process->local_state(),
               base::RetainedRef(
                   g_browser_process->shared_url_loader_factory())),
           device_instance_id_driver_.get(), g_browser_process->local_state(),

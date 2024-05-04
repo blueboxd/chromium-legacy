@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {AcceleratorAction, ActionChoice, CustomizableButton, CustomizationRestriction, ExtendedFkeysModifier, GraphicsTablet, Keyboard, MetaKey, ModifierKey, Mouse, MouseButtonConfig, PointingStick, SimulateRightClickModifier, SixPackKeyInfo, SixPackShortcutModifier, StaticShortcutAction, Stylus, TopRowActionKey, Touchpad, Vkey} from './input_device_settings_types.js';
+import {AcceleratorAction, ActionChoice, ChargeState, CustomizableButton, CustomizationRestriction, ExtendedFkeysModifier, GraphicsTablet, Keyboard, MetaKey, ModifierKey, Mouse, MouseButtonConfig, PointingStick, SimulateRightClickModifier, SixPackKeyInfo, SixPackShortcutModifier, StaticShortcutAction, Stylus, TopRowActionKey, Touchpad, Vkey} from './input_device_settings_types.js';
 
 const defaultSixPackKeyRemappings: SixPackKeyInfo = {
   pageDown: SixPackShortcutModifier.kSearch,
@@ -51,6 +51,10 @@ export const fakeKeyboards: Keyboard[] = [
       f11: null,
       f12: null,
     },
+    batteryInfo: {
+      chargeState: ChargeState.kCharging,
+      batteryPercentage: 10,
+    },
   },
   {
     id: 1,
@@ -73,6 +77,10 @@ export const fakeKeyboards: Keyboard[] = [
       sixPackKeyRemappings: defaultSixPackKeyRemappings,
       f11: ExtendedFkeysModifier.kAlt,
       f12: ExtendedFkeysModifier.kShift,
+    },
+    batteryInfo: {
+      chargeState: ChargeState.kCharging,
+      batteryPercentage: 10,
     },
     topRowActionKeys: [
       TopRowActionKey.kBack,
@@ -122,6 +130,10 @@ export const fakeKeyboards: Keyboard[] = [
       f11: null,
       f12: null,
     },
+    batteryInfo: {
+      chargeState: ChargeState.kCharging,
+      batteryPercentage: 10,
+    },
   },
   {
     id: 9,
@@ -167,6 +179,54 @@ export const fakeKeyboards: Keyboard[] = [
       f11: null,
       f12: null,
     },
+    batteryInfo: {
+      chargeState: ChargeState.kCharging,
+      batteryPercentage: 10,
+    },
+  },
+  {
+    id: 17,
+    deviceKey: 'test:key',
+    name: 'Split Modifier keyboard',
+    isExternal: true,
+    metaKey: MetaKey.kCommand,
+    modifierKeys: [
+      ModifierKey.kAlt,
+      ModifierKey.kBackspace,
+      ModifierKey.kCapsLock,
+      ModifierKey.kControl,
+      ModifierKey.kEscape,
+      ModifierKey.kMeta,
+      ModifierKey.kRightAlt,
+      ModifierKey.kFunction,
+    ],
+    topRowActionKeys: [
+      TopRowActionKey.kBack,
+      TopRowActionKey.kForward,
+      TopRowActionKey.kRefresh,
+      TopRowActionKey.kFullscreen,
+      TopRowActionKey.kOverview,
+      TopRowActionKey.kScreenBrightnessDown,
+      TopRowActionKey.kScreenBrightnessUp,
+      TopRowActionKey.kVolumeMute,
+      TopRowActionKey.kVolumeDown,
+      TopRowActionKey.kVolumeUp,
+    ],
+    settings: {
+      modifierRemappings: {
+        [ModifierKey.kControl]: ModifierKey.kCapsLock,
+        [ModifierKey.kCapsLock]: ModifierKey.kAssistant,
+      },
+      topRowAreFkeys: false,
+      suppressMetaFkeyRewrites: false,
+      sixPackKeyRemappings: defaultSixPackKeyRemappings,
+      f11: ExtendedFkeysModifier.kAlt,
+      f12: ExtendedFkeysModifier.kShift,
+    },
+    batteryInfo: {
+      chargeState: ChargeState.kCharging,
+      batteryPercentage: 10,
+    },
   },
 ];
 
@@ -208,6 +268,10 @@ export const fakeKeyboards2: Keyboard[] = [
       f11: null,
       f12: null,
     },
+    batteryInfo: {
+      chargeState: ChargeState.kCharging,
+      batteryPercentage: 10,
+    },
   },
   {
     id: 10,
@@ -243,6 +307,10 @@ export const fakeKeyboards2: Keyboard[] = [
       f11: null,
       f12: null,
     },
+    batteryInfo: {
+      chargeState: ChargeState.kCharging,
+      batteryPercentage: 10,
+    },
   },
 ];
 
@@ -266,6 +334,10 @@ export const fakeTouchpads: Touchpad[] = [
       hapticEnabled: false,
       simulateRightClick: SimulateRightClickModifier.kNone,
     },
+    batteryInfo: {
+      chargeState: ChargeState.kCharging,
+      batteryPercentage: 10,
+    },
   },
   {
     id: 3,
@@ -285,6 +357,10 @@ export const fakeTouchpads: Touchpad[] = [
       hapticSensitivity: 5,
       hapticEnabled: true,
       simulateRightClick: SimulateRightClickModifier.kNone,
+    },
+    batteryInfo: {
+      chargeState: ChargeState.kCharging,
+      batteryPercentage: 10,
     },
   },
 ];
@@ -308,6 +384,10 @@ export const fakeTouchpads2: Touchpad[] = [
       hapticSensitivity: 1,
       hapticEnabled: false,
       simulateRightClick: SimulateRightClickModifier.kNone,
+    },
+    batteryInfo: {
+      chargeState: ChargeState.kCharging,
+      batteryPercentage: 10,
     },
   },
 ];
@@ -378,6 +458,10 @@ export const fakeMice: Mouse[] = [
         },
       ],
     },
+    batteryInfo: {
+      chargeState: ChargeState.kCharging,
+      batteryPercentage: 10,
+    },
   },
   {
     id: 5,
@@ -420,6 +504,10 @@ export const fakeMice: Mouse[] = [
         },
       ],
     },
+    batteryInfo: {
+      chargeState: ChargeState.kCharging,
+      batteryPercentage: 10,
+    },
   },
 ];
 
@@ -439,6 +527,10 @@ export const fakeMice2: Mouse[] = [
       scrollSensitivity: 5,
       scrollAcceleration: true,
       buttonRemappings: [],
+    },
+    batteryInfo: {
+      chargeState: ChargeState.kCharging,
+      batteryPercentage: 10,
     },
   },
 ];

@@ -14,6 +14,7 @@ import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
+import org.jni_zero.JniType;
 import org.jni_zero.NativeMethods;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -30,9 +31,11 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.init.AsyncInitTaskRunner;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.profiles.ProfileManager;
 import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.services.SigninManager;
+import org.chromium.components.prefs.PrefService;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.AccountUtils;
@@ -40,7 +43,11 @@ import org.chromium.components.signin.SigninFeatureMap;
 import org.chromium.components.signin.SigninFeatures;
 import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.signin.identitymanager.ConsentLevel;
+import org.chromium.components.signin.identitymanager.IdentityManager;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
+import org.chromium.components.sync.UserSelectableType;
+import org.chromium.components.sync.internal.SyncPrefNames;
+import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.content_public.common.ContentProcessInfo;
 
 import java.io.FileInputStream;
@@ -109,13 +116,30 @@ public class ChromeBackupAgentImpl extends ChromeBackupAgent.Impl {
     @VisibleForTesting static final String BACKUP_FAILURE_COUNT = "android_backup_failure_count";
     @VisibleForTesting static final int MAX_BACKUP_FAILURES = 5;
 
-    // List of preferences that should be restored unchanged.
+    // Bool entries from SharedPreferences that should be backed up / restored.
     static final String[] BACKUP_ANDROID_BOOL_PREFS = {
         ChromePreferenceKeys.FIRST_RUN_CACHED_TOS_ACCEPTED,
         ChromePreferenceKeys.FIRST_RUN_FLOW_COMPLETE,
         ChromePreferenceKeys.FIRST_RUN_LIGHTWEIGHT_FLOW_COMPLETE,
         ChromePreferenceKeys.PRIVACY_METRICS_REPORTING_PERMITTED_BY_POLICY,
         ChromePreferenceKeys.PRIVACY_METRICS_REPORTING_PERMITTED_BY_USER,
+    };
+
+    // Bool entries from PrefService that should be backed up / restored.
+    static final String[] BACKUP_NATIVE_SYNC_TYPE_BOOL_PREFS = {
+        SyncPrefNames.SYNC_KEEP_EVERYTHING_SYNCED,
+        SyncPrefNames.SYNC_APPS,
+        SyncPrefNames.SYNC_AUTOFILL,
+        SyncPrefNames.SYNC_BOOKMARKS,
+        SyncPrefNames.SYNC_COMPARE,
+        SyncPrefNames.SYNC_HISTORY,
+        SyncPrefNames.SYNC_PASSWORDS,
+        SyncPrefNames.SYNC_PAYMENTS,
+        SyncPrefNames.SYNC_PREFERENCES,
+        SyncPrefNames.SYNC_READING_LIST,
+        SyncPrefNames.SYNC_SAVED_TAB_GROUPS,
+        SyncPrefNames.SYNC_SHARED_TAB_GROUP_DATA,
+        SyncPrefNames.SYNC_TABS,
     };
 
     // Key used to store the email of the syncing account. This email is obtained from
@@ -221,17 +245,13 @@ public class ChromeBackupAgentImpl extends ChromeBackupAgent.Impl {
                             // immediately, so by the time it does Chrome may not be running.
                             if (!initializeBrowser()) return false;
 
+                            Profile profile = ProfileManager.getLastUsedRegularProfile();
+                            IdentityManager identityManager =
+                                    IdentityServicesProvider.get().getIdentityManager(profile);
                             syncAccount.set(
-                                    IdentityServicesProvider.get()
-                                            .getIdentityManager(
-                                                    ProfileManager.getLastUsedRegularProfile())
-                                            .getPrimaryAccountInfo(ConsentLevel.SYNC));
-
+                                    identityManager.getPrimaryAccountInfo(ConsentLevel.SYNC));
                             signedInAccount.set(
-                                    IdentityServicesProvider.get()
-                                            .getIdentityManager(
-                                                    ProfileManager.getLastUsedRegularProfile())
-                                            .getPrimaryAccountInfo(ConsentLevel.SIGNIN));
+                                    identityManager.getPrimaryAccountInfo(ConsentLevel.SIGNIN));
 
                             if (syncAccount.get() != null
                                     && !syncAccount.get().equals(signedInAccount.get())) {
@@ -239,22 +259,24 @@ public class ChromeBackupAgentImpl extends ChromeBackupAgent.Impl {
                                         "Recorded signed in account differs from syncing account");
                             }
 
-                            Natives jni = ChromeBackupAgentImplJni.get();
-
-                            String[] nativeBackupNames = jni.getBoolBackupNames(this);
-                            boolean[] nativeBackupValues = jni.getBoolBackupValues(this);
-                            assert nativeBackupNames.length == nativeBackupValues.length;
-
-                            for (String name : nativeBackupNames) {
+                            // When new data type is added to the UserSelectableType enum, also add
+                            // it to BACKUP_NATIVE_SYNC_TYPE_BOOL_PREFS (if the type is supported on
+                            // Android).
+                            assert UserSelectableType.LAST_TYPE == 14;
+                            PrefService prefService = UserPrefs.get(profile);
+                            for (String name : BACKUP_NATIVE_SYNC_TYPE_BOOL_PREFS) {
                                 backupNames.add(NATIVE_BOOL_PREF_PREFIX + name);
-                            }
-                            for (boolean val : nativeBackupValues) {
-                                backupValues.add(booleanToBytes(val));
+                                backupValues.add(booleanToBytes(prefService.getBoolean(name)));
                             }
                             backupNames.add(
                                     NATIVE_DICT_PREF_PREFIX
-                                            + jni.getAccountSettingsBackupName(this));
-                            backupValues.add(jni.getAccountSettingsBackupValue(this).getBytes());
+                                            + SyncPrefNames.SELECTED_TYPES_PER_ACCOUNT);
+                            backupValues.add(
+                                    ChromeBackupAgentImplJni.get()
+                                            .getSerializedDict(
+                                                    prefService,
+                                                    SyncPrefNames.SELECTED_TYPES_PER_ACCOUNT)
+                                            .getBytes());
 
                             return true;
                         });
@@ -382,7 +404,7 @@ public class ChromeBackupAgentImpl extends ChromeBackupAgent.Impl {
         PostTask.runSynchronously(
                 TaskTraits.UI_DEFAULT,
                 () -> {
-                    // TODO(crbug.com/1489226): Wait for AccountManagerFacade to load accounts.
+                    // TODO(crbug.com/40283943): Wait for AccountManagerFacade to load accounts.
                     // Chrome library loading depends on PathUtils.
                     PathUtils.setPrivateDataDirectorySuffix(
                             SplitCompatApplication.PRIVATE_DATA_DIRECTORY_SUFFIX);
@@ -436,27 +458,77 @@ public class ChromeBackupAgentImpl extends ChromeBackupAgent.Impl {
         PostTask.runSynchronously(
                 TaskTraits.UI_DEFAULT,
                 () -> {
-                    ArrayList<String> nativeBoolBackupNames = new ArrayList<>();
-                    boolean[] nativeBoolBackupValues = new boolean[backupNames.size()];
-                    int count = 0;
-                    int boolPrefixLength = NATIVE_BOOL_PREF_PREFIX.length();
+                    PrefService prefService =
+                            UserPrefs.get(ProfileManager.getLastUsedRegularProfile());
+                    boolean areAccountSettingsRestored = false;
+
                     for (int i = 0; i < backupNames.size(); i++) {
                         String name = backupNames.get(i);
                         if (name.startsWith(NATIVE_BOOL_PREF_PREFIX)) {
-                            nativeBoolBackupNames.add(name.substring(boolPrefixLength));
-                            nativeBoolBackupValues[count] = bytesToBoolean(backupValues.get(i));
-                            count++;
-                        } else if (name.startsWith(NATIVE_DICT_PREF_PREFIX)) {
-                            // TODO(crbug.com/1493706): Implement the restoration of the account
-                            // settings.
+                            name = name.substring(NATIVE_BOOL_PREF_PREFIX.length());
+                            if (!Arrays.asList(BACKUP_NATIVE_SYNC_TYPE_BOOL_PREFS).contains(name)) {
+                                // Not among the known prefs, do not restore. In the worst case,
+                                // this could attempt to write a pref which is no longer exists,
+                                // causing a crash.
+                                continue;
+                            }
+
+                            prefService.setBoolean(name, bytesToBoolean(backupValues.get(i)));
+                            continue;
+                        }
+
+                        // Restore the account settings if possible.
+                        // It should be done before the potential migration of global boolean
+                        // preferences to account settings:
+                        // - If the user was syncing, the global prefs are more up-to-date so the
+                        // converted global prefs should take precedence;
+                        // - If the user was signed-in only, the global preferences will not be
+                        // migrated to account settings if the latter is restored, so no risk of
+                        // override here.
+                        if (name.startsWith(NATIVE_DICT_PREF_PREFIX)) {
+                            name = name.substring(NATIVE_DICT_PREF_PREFIX.length());
+                            if (!name.equals(SyncPrefNames.SELECTED_TYPES_PER_ACCOUNT)
+                                    || !SigninFeatureMap.isEnabled(
+                                            SigninFeatures
+                                                    .RESTORE_SIGNED_IN_ACCOUNT_AND_SETTINGS_FROM_BACKUP)) {
+                                // Same as above, do not restore prefs if the name is unknown
+                                // or if the restore flag is not enabled.
+                                continue;
+                            }
+
+                            areAccountSettingsRestored = true;
+                            ChromeBackupAgentImplJni.get()
+                                    .setDict(
+                                            prefService,
+                                            SyncPrefNames.SELECTED_TYPES_PER_ACCOUNT,
+                                            new String(backupValues.get(i)));
                             continue;
                         }
                     }
-                    ChromeBackupAgentImplJni.get()
-                            .setBoolBackupPrefs(
-                                    this,
-                                    nativeBoolBackupNames.toArray(new String[count]),
-                                    Arrays.copyOf(nativeBoolBackupValues, count));
+
+                    // Migrate global sync settings to account settings when necessary.
+                    // It should be done after the restoration of the existing per-account settings
+                    // from the backup to avoid override, as mentioned above.
+                    final boolean shouldRestoreSelectedTypesAsAccountSettings =
+                            (syncAccountInfo != null || !areAccountSettingsRestored)
+                                    && SigninFeatureMap.isEnabled(
+                                            SigninFeatures
+                                                    .RESTORE_SIGNED_IN_ACCOUNT_AND_SETTINGS_FROM_BACKUP)
+                                    && ChromeFeatureList.isEnabled(
+                                            ChromeFeatureList
+                                                    .REPLACE_SYNC_PROMOS_WITH_SIGN_IN_PROMOS);
+                    if (shouldRestoreSelectedTypesAsAccountSettings) {
+                        final String gaiaID =
+                                syncAccountInfo != null
+                                        ? syncAccountInfo.getGaiaId()
+                                        : signedInAccountInfo.getGaiaId();
+                        ChromeBackupAgentImplJni.get()
+                                .migrateGlobalDataTypePrefsToAccount(prefService, gaiaID);
+                    }
+
+                    // TODO(crbug.com/332710541): Another commit is done for signed-in users in
+                    // SigninManager.SignInCallback.onPrefsCommitted(). Do a single one instead.
+                    ChromeBackupAgentImplJni.get().commitPendingPrefWrites(prefService);
                 });
 
         // Now that everything looks good so restore the Android preferences.
@@ -635,7 +707,7 @@ public class ChromeBackupAgentImpl extends ChromeBackupAgent.Impl {
                     AccountManagerFacade.ChildAccountStatusListener listener =
                             (isChild, unused) -> {
                                 if (isChild) {
-                                    // TODO(crbug.com/1318350):
+                                    // TODO(crbug.com/40835324):
                                     // Pre-AllowSyncOffForChildAccounts, the backup sign-in for
                                     // child accounts would happen in SigninChecker anyways.
                                     // Maybe it should be handled by this  class once the
@@ -728,14 +800,24 @@ public class ChromeBackupAgentImpl extends ChromeBackupAgent.Impl {
 
     @NativeMethods
     interface Natives {
-        String[] getBoolBackupNames(ChromeBackupAgentImpl caller);
+        // See PrefService::CommitPendingWrite().
+        void commitPendingPrefWrites(PrefService prefService);
 
-        boolean[] getBoolBackupValues(ChromeBackupAgentImpl caller);
+        // Returns a serialized version of PrefService::GetDict(), which can be stored in backups.
+        @JniType("std::string")
+        String getSerializedDict(PrefService prefService, @JniType("std::string") String prefName);
 
-        void setBoolBackupPrefs(ChromeBackupAgentImpl caller, String[] name, boolean[] value);
+        // If `serializedDict` was obtained from `getSerializedDict(prefService, prefName)`,
+        // deserializes and passes the result to PrefService::SetDict(). If deserialization fails,
+        // does nothing.
+        void setDict(
+                PrefService prefService,
+                @JniType("std::string") String prefName,
+                @JniType("std::string") String serializedDict);
 
-        String getAccountSettingsBackupName(ChromeBackupAgentImpl caller);
-
-        String getAccountSettingsBackupValue(ChromeBackupAgentImpl caller);
+        // Calls syncer::MigrateGlobalDataTypePrefsToAccount() to migrate global boolean sync prefs
+        // to account settings.
+        void migrateGlobalDataTypePrefsToAccount(
+                PrefService prefService, @JniType("std::string") String gaiaId);
     }
 }

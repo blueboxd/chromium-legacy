@@ -11,10 +11,10 @@
 #include "base/strings/escape.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/sequenced_task_runner.h"
-#include "components/safe_browsing/core/browser/hashprefix_realtime/hash_realtime_utils.h"
 #include "components/safe_browsing/core/browser/hashprefix_realtime/ohttp_key_service.h"
 #include "components/safe_browsing/core/browser/verdict_cache_manager.h"
 #include "components/safe_browsing/core/common/features.h"
+#include "components/safe_browsing/core/common/hashprefix_realtime/hash_realtime_utils.h"
 #include "components/safe_browsing/core/common/proto/safebrowsingv5.pb.h"
 #include "components/safe_browsing/core/common/utils.h"
 #include "google_apis/google_api_keys.h"
@@ -321,6 +321,18 @@ void HashRealTimeService::StartLookupInternal(
     lookup_completer->CompleteLookup(/*is_lookup_successful=*/false,
                                      /*sb_threat_type=*/std::nullopt,
                                      OperationOutcome::kServiceInBackoffMode);
+    return;
+  }
+
+  // If the ohttp_key_service_ is null, return early.
+  // TODO(crbug.com/333491722): A followup fix will attempt to avoid creating
+  // this service in cases where the OHTTP key service is null. Remove this
+  // block if the followup fix results in this codepath no longer being
+  // triggered.
+  if (!ohttp_key_service_) {
+    lookup_completer->CompleteLookup(/*is_lookup_successful=*/false,
+                                     /*sb_threat_type=*/std::nullopt,
+                                     OperationOutcome::kNoOhttpKeyService);
     return;
   }
 

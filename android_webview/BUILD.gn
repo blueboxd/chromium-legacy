@@ -524,6 +524,7 @@ generate_jni("browser_jni_headers") {
     "java/src/org/chromium/android_webview/AwContentsOriginMatcher.java",
     "java/src/org/chromium/android_webview/AwContentsStatics.java",
     "java/src/org/chromium/android_webview/AwCookieManager.java",
+    "java/src/org/chromium/android_webview/AwCrashyClassUtils.java",
     "java/src/org/chromium/android_webview/AwDarkMode.java",
     "java/src/org/chromium/android_webview/AwDevToolsServer.java",
     "java/src/org/chromium/android_webview/AwFeatureMap.java",
@@ -567,6 +568,7 @@ android_library("browser_java") {
     "java/src/org/chromium/android_webview/AwBrowserContext.java",
     "java/src/org/chromium/android_webview/AwBrowserContextStore.java",
     "java/src/org/chromium/android_webview/AwBrowserProcess.java",
+    "java/src/org/chromium/android_webview/AwClassPreloader.java",
     "java/src/org/chromium/android_webview/AwComputedFlags.java",
     "java/src/org/chromium/android_webview/AwConsoleMessage.java",
     "java/src/org/chromium/android_webview/AwContents.java",
@@ -579,6 +581,7 @@ android_library("browser_java") {
     "java/src/org/chromium/android_webview/AwContentsOriginMatcher.java",
     "java/src/org/chromium/android_webview/AwContentsStatics.java",
     "java/src/org/chromium/android_webview/AwCookieManager.java",
+    "java/src/org/chromium/android_webview/AwCrashyClassUtils.java",
     "java/src/org/chromium/android_webview/AwDarkMode.java",
     "java/src/org/chromium/android_webview/AwDataDirLock.java",
     "java/src/org/chromium/android_webview/AwDebug.java",
@@ -660,6 +663,8 @@ android_library("browser_java") {
     "java/src/org/chromium/android_webview/gfx/RectUtils.java",
     "java/src/org/chromium/android_webview/gfx/RootBeginFrameSourceWebView.java",
     "java/src/org/chromium/android_webview/ip_protection/ExclusionUtilities.java",
+    "java/src/org/chromium/android_webview/media_integrity/AwMediaIntegrityServiceFactory.java",
+    "java/src/org/chromium/android_webview/media_integrity/AwMediaIntegrityServiceImpl.java",
     "java/src/org/chromium/android_webview/metrics/AwMetricsLogUploader.java",
     "java/src/org/chromium/android_webview/metrics/AwMetricsServiceClient.java",
     "java/src/org/chromium/android_webview/metrics/AwMetricsUtils.java",
@@ -777,8 +782,11 @@ android_library("common_platform_services_java") {
   sources = [
     "java/src/org/chromium/android_webview/common/AwSupervisedUserUrlClassifierDelegate.java",
     "java/src/org/chromium/android_webview/common/MediaIntegrityApiStatus.java",
+    "java/src/org/chromium/android_webview/common/MediaIntegrityErrorCode.java",
+    "java/src/org/chromium/android_webview/common/MediaIntegrityProvider.java",
     "java/src/org/chromium/android_webview/common/PlatformServiceBridge.java",
     "java/src/org/chromium/android_webview/common/PlatformServiceBridgeImpl.java",
+    "java/src/org/chromium/android_webview/common/ValueOrErrorCallback.java",
   ]
 
   deps = [
@@ -890,6 +898,7 @@ android_library("common_java") {
     "//third_party/jni_zero:jni_zero_java",
     "//ui/accessibility:accessibility_features_java",
     "//ui/android:ui_android_features_java",
+    "//ui/gfx:ui_gfx_java",
   ]
 
   srcjar_deps = [

@@ -13,10 +13,15 @@
 #include "cc/paint/paint_flags.h"
 #include "chrome/browser/favicon/favicon_utils.h"
 #include "chrome/browser/themes/theme_properties.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_element_identifiers.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/color/chrome_color_id.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/tabs/tab_renderer_data.h"
 #include "chrome/common/webui_url_constants.h"
+#include "components/feature_engagement/public/feature_constants.h"
 #include "components/grit/components_scaled_resources.h"
 #include "content/public/common/url_constants.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
@@ -38,6 +43,7 @@
 #include "ui/views/border.h"
 #include "ui/views/cascading_property.h"
 #include "ui/views/interaction/element_tracker_views.h"
+#include "ui/views/view_class_properties.h"
 #include "ui/views/widget/widget.h"
 #include "url/gurl.h"
 
@@ -46,6 +52,7 @@ namespace {
 constexpr int kAttentionIndicatorRadius = 3;
 constexpr int kLoadingAnimationStrokeWidthDp = 2;
 constexpr float kDiscardRingStrokeWidthDp = 1.5;
+constexpr int kLargerDiscardIndicatorRadiusDp = 2;
 
 // Discard Ring Segments
 constexpr int kNumSmallSegments = 4;
@@ -120,14 +127,25 @@ TabIcon::TabIcon()
       favicon_size_animation_(this),
       tab_discard_animation_(base::Seconds(1),
                              gfx::LinearAnimation::kDefaultFrameRate,
-                             this) {
+                             this),
+      increased_discard_indicator_radius_(
+          base::FeatureList::IsEnabled(
+              performance_manager::features::kDiscardRingImprovements)
+              ? kLargerDiscardIndicatorRadiusDp
+              : 0) {
   favicon_size_animation_.SetSlideDuration(base::Milliseconds(250));
 
   SetCanProcessEventsWithinSubtree(false);
 
-  // The minimum size to avoid clipping the attention indicator.
-  const int preferred_width =
-      gfx::kFaviconSize + kAttentionIndicatorRadius + GetInsets().width();
+  // Add padding to avoid clipping the attention indicator and the increased
+  // discard ring radius when kDiscardRingImprovements is enabled. Padding must
+  // be symmetric on each side so that elements will anchor to the center of the
+  // favicon.
+  const int padding =
+      std::max(increased_discard_indicator_radius_, kAttentionIndicatorRadius);
+  SetBorder(views::CreateEmptyBorder(padding));
+
+  const int preferred_width = gfx::kFaviconSize + GetInsets().width();
   SetPreferredSize(gfx::Size(preferred_width, preferred_width));
 
   // Initial state (before any data) should not be animating.
@@ -137,6 +155,8 @@ TabIcon::TabIcon()
     tab_discard_animation_.SetDuration(base::TimeDelta());
     favicon_size_animation_.SetSlideDuration(base::TimeDelta());
   }
+
+  SetProperty(views::kElementIdentifierKey, kTabIconElementId);
 }
 
 TabIcon::~TabIcon() = default;
@@ -198,6 +218,10 @@ bool TabIcon::GetShowingLoadingAnimation() const {
 
 bool TabIcon::GetShowingAttentionIndicator() const {
   return attention_types_ > 0;
+}
+
+bool TabIcon::GetShowingDiscardIndicator() const {
+  return was_discard_indicator_shown_;
 }
 
 void TabIcon::SetCanPaintToLayer(bool can_paint_to_layer) {
@@ -300,9 +324,17 @@ void TabIcon::PaintAttentionIndicatorAndIcon(gfx::Canvas* canvas,
 
 void TabIcon::PaintDiscardRingAndIcon(gfx::Canvas* canvas,
                                       const gfx::ImageSkia& icon,
-                                      const gfx::Rect& bounds) {
+                                      const gfx::Rect& icon_bounds) {
   // Fades in the discard ring and smaller favicon
-  MaybePaintFavicon(canvas, icon, bounds);
+  MaybePaintFavicon(canvas, icon, icon_bounds);
+
+  // Increase the bounds of the discard ring beyond the icon bounds if
+  // kDiscardRingImprovements is enabled. This is safe because in the
+  // constructor, we have already added insets so that the larger discard ring
+  // can expand into them and won't be clipped, and the icon bounds will be
+  // inside those insets.
+  gfx::Rect discard_ring_bounds = icon_bounds;
+  discard_ring_bounds.Outset(increased_discard_indicator_radius_);
 
   // Painting Discard Ring
   const ui::ColorProvider* color_provider = GetColorProvider();
@@ -327,8 +359,8 @@ void TabIcon::PaintDiscardRingAndIcon(gfx::Canvas* canvas,
 
   // Draw the large segment centered on the left side.
   const int large_segment_start_angle = 180 - kLargeSegmentSweepAngle / 2;
-  PaintArc(canvas, bounds, large_segment_start_angle, kLargeSegmentSweepAngle,
-           flags);
+  PaintArc(canvas, discard_ring_bounds, large_segment_start_angle,
+           kLargeSegmentSweepAngle, flags);
 
   // Draw the small segments evenly spaced around the rest of the ring.
   const int small_segments_start_angle =
@@ -337,7 +369,8 @@ void TabIcon::PaintDiscardRingAndIcon(gfx::Canvas* canvas,
     const int start_angle =
         small_segments_start_angle +
         (i * (kSmallSegmentSweepAngle + kSpacingSweepAngle));
-    PaintArc(canvas, bounds, start_angle % 360, kSmallSegmentSweepAngle, flags);
+    PaintArc(canvas, discard_ring_bounds, start_angle % 360,
+             kSmallSegmentSweepAngle, flags);
   }
 }
 
@@ -413,7 +446,9 @@ void TabIcon::MaybePaintFavicon(gfx::Canvas* canvas,
     // stroke + an additional dp to create some visual separation.
     const float kInitialFaviconInsetDp = 1 + kLoadingAnimationStrokeWidthDp;
     const float kInitialFaviconDiameterDp =
-        gfx::kFaviconSize - 2 * kInitialFaviconInsetDp;
+        gfx::kFaviconSize - 2 * kInitialFaviconInsetDp +
+        (was_discard_indicator_shown_ ? 2 * increased_discard_indicator_radius_
+                                      : 0);
     // This a full outset circle of the favicon square. The animation ends with
     // the entire favicon shown.
     const float kFinalFaviconDiameterDp = sqrt(2) * gfx::kFaviconSize;
@@ -449,7 +484,9 @@ void TabIcon::MaybePaintFavicon(gfx::Canvas* canvas,
   }
 
   cc::PaintFlags opacity_flag;
-  if (was_discard_indicator_shown_) {
+  if (!base::FeatureList::IsEnabled(
+          performance_manager::features::kDiscardRingImprovements) &&
+      was_discard_indicator_shown_) {
     opacity_flag.setAlphaf(gfx::Tween::FloatValueBetween(
         gfx::Tween::CalculateValue(gfx::Tween::EASE_OUT,
                                    tab_discard_animation_.GetCurrentValue()),
@@ -493,6 +530,12 @@ void TabIcon::SetDiscarded(bool should_show_discard_status) {
     if (should_show_discard_status) {
       tab_discard_animation_.Start();
       favicon_size_animation_.Hide();
+
+      // Potentially show an IPH if a tab was discarded.
+      Browser* browser = chrome::FindBrowserWithUiElementContext(
+          views::ElementTrackerViews::GetInstance()->GetContextForView(this));
+      browser->window()->MaybeShowFeaturePromo(
+          feature_engagement::kIPHDiscardRingFeature);
     } else {
       tab_discard_animation_.Stop();
       favicon_size_animation_.Show();

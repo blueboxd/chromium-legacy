@@ -14,12 +14,14 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/permissions_policy/permissions_policy.h"
+#include "third_party/blink/public/common/safe_url_pattern.h"
 #include "third_party/blink/public/mojom/manifest/manifest.mojom-blink.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/task_environment.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_uchar.h"
+#include "third_party/liburlpattern/pattern.h"
 
 namespace blink {
 
@@ -74,6 +76,25 @@ class ManifestParserTest : public testing::Test {
 
   const KURL& DefaultDocumentUrl() const { return default_document_url; }
   const KURL& DefaultManifestUrl() const { return default_manifest_url; }
+
+  void VerifySafeUrlPatternSizes(const SafeUrlPattern& pattern,
+                                 size_t protocol_size,
+                                 size_t username_size,
+                                 size_t password_size,
+                                 size_t hostname_size,
+                                 size_t port_size,
+                                 size_t pathname_size,
+                                 size_t search_size,
+                                 size_t hash_size) {
+    EXPECT_EQ(pattern.protocol.size(), protocol_size);
+    EXPECT_EQ(pattern.username.size(), username_size);
+    EXPECT_EQ(pattern.password.size(), password_size);
+    EXPECT_EQ(pattern.hostname.size(), hostname_size);
+    EXPECT_EQ(pattern.port.size(), port_size);
+    EXPECT_EQ(pattern.pathname.size(), pathname_size);
+    EXPECT_EQ(pattern.search.size(), search_size);
+    EXPECT_EQ(pattern.hash.size(), hash_size);
+  }
 
  private:
   test::TaskEnvironment task_environment_;
@@ -6735,35 +6756,285 @@ TEST_F(ManifestParserTest, TabStripParseRules) {
 TEST_F(ManifestParserTest, TabStripHomeTabScopeParseRules) {
   ScopedWebAppTabStripForTest feature(true);
 
-  // Valid scope patterns are parsed.
+  // Valid scope hostname and protocol patterns override the default manifest
+  // URL.
   {
     auto& manifest = ParseManifest(R"({
         "tab_strip": {
           "home_tab": {"scope_patterns":
-            [{"pathname": "foo"}, {"pathname": "foo/bar/"}]}} })");
+            [{"protocol": "ftp"}, {"hostname": "bar.com"},
+            {"protocol": "ftp", "hostname": "bar.com"}]}} })");
     EXPECT_FALSE(manifest->tab_strip.is_null());
     EXPECT_FALSE(manifest->tab_strip->home_tab->is_visibility());
     EXPECT_EQ(
-        manifest->tab_strip->home_tab->get_params()->scope_patterns.size(), 2u);
+        manifest->tab_strip->home_tab->get_params()->scope_patterns.size(), 3u);
+    VerifySafeUrlPatternSizes(
+        manifest->tab_strip->home_tab->get_params()->scope_patterns[0], 1, 0, 0,
+        0, 0, 0, 0, 0);
+    VerifySafeUrlPatternSizes(
+        manifest->tab_strip->home_tab->get_params()->scope_patterns[1], 1, 0, 0,
+        1, 0, 0, 0, 0);
+    VerifySafeUrlPatternSizes(
+        manifest->tab_strip->home_tab->get_params()->scope_patterns[2], 1, 0, 0,
+        1, 0, 0, 0, 0);
+    EXPECT_EQ(manifest->tab_strip->home_tab->get_params()
+                  ->scope_patterns[0]
+                  .protocol[0]
+                  .value,
+              "ftp");
+    EXPECT_EQ(manifest->tab_strip->home_tab->get_params()
+                  ->scope_patterns[1]
+                  .protocol[0]
+                  .value,
+              "http");
+    EXPECT_EQ(manifest->tab_strip->home_tab->get_params()
+                  ->scope_patterns[1]
+                  .hostname[0]
+                  .value,
+              "bar.com");
+    EXPECT_EQ(manifest->tab_strip->home_tab->get_params()
+                  ->scope_patterns[2]
+                  .protocol[0]
+                  .value,
+              "ftp");
+    EXPECT_EQ(manifest->tab_strip->home_tab->get_params()
+                  ->scope_patterns[2]
+                  .hostname[0]
+                  .value,
+              "bar.com");
 
     EXPECT_EQ(0u, GetErrorCount());
   }
 
-  // Reject patterns containing custom regex.
+  // Valid scope pathname patterns are parsed. Relative pathnames are made
+  // absolute, resolved relative to the manifest URL.
+  {
+    auto& manifest = ParseManifestWithURLs(
+        R"({
+        "tab_strip": {
+          "home_tab": {"scope_patterns":
+            [{"pathname": "foo"}, {"pathname": "foo/bar/"},
+            {"pathname": "/foo/"}, {"pathname": "/foo/bar/"}]
+          }} })",
+        KURL("http://foo.com/static/manifest.json"), DefaultDocumentUrl());
+    EXPECT_FALSE(manifest->tab_strip.is_null());
+    EXPECT_FALSE(manifest->tab_strip->home_tab->is_visibility());
+    EXPECT_EQ(
+        manifest->tab_strip->home_tab->get_params()->scope_patterns.size(), 4u);
+    VerifySafeUrlPatternSizes(
+        manifest->tab_strip->home_tab->get_params()->scope_patterns[0], 1, 0, 0,
+        1, 0, 1, 0, 0);
+    VerifySafeUrlPatternSizes(
+        manifest->tab_strip->home_tab->get_params()->scope_patterns[1], 1, 0, 0,
+        1, 0, 1, 0, 0);
+    VerifySafeUrlPatternSizes(
+        manifest->tab_strip->home_tab->get_params()->scope_patterns[2], 1, 0, 0,
+        1, 0, 1, 0, 0);
+    VerifySafeUrlPatternSizes(
+        manifest->tab_strip->home_tab->get_params()->scope_patterns[3], 1, 0, 0,
+        1, 0, 1, 0, 0);
+    EXPECT_EQ(manifest->tab_strip->home_tab->get_params()
+                  ->scope_patterns[0]
+                  .protocol[0]
+                  .type,
+              liburlpattern::PartType::kFixed);
+    EXPECT_EQ(manifest->tab_strip->home_tab->get_params()
+                  ->scope_patterns[0]
+                  .hostname[0]
+                  .type,
+              liburlpattern::PartType::kFixed);
+    EXPECT_EQ(manifest->tab_strip->home_tab->get_params()
+                  ->scope_patterns[0]
+                  .hostname[0]
+                  .value,
+              "foo.com");
+    EXPECT_EQ(manifest->tab_strip->home_tab->get_params()
+                  ->scope_patterns[0]
+                  .pathname[0]
+                  .type,
+              liburlpattern::PartType::kFixed);
+    EXPECT_EQ(manifest->tab_strip->home_tab->get_params()
+                  ->scope_patterns[0]
+                  .pathname[0]
+                  .value,
+              "/static/foo");
+    EXPECT_EQ(manifest->tab_strip->home_tab->get_params()
+                  ->scope_patterns[1]
+                  .protocol[0]
+                  .type,
+              liburlpattern::PartType::kFixed);
+    EXPECT_EQ(manifest->tab_strip->home_tab->get_params()
+                  ->scope_patterns[1]
+                  .hostname[0]
+                  .type,
+              liburlpattern::PartType::kFixed);
+    EXPECT_EQ(manifest->tab_strip->home_tab->get_params()
+                  ->scope_patterns[1]
+                  .hostname[0]
+                  .value,
+              "foo.com");
+    EXPECT_EQ(manifest->tab_strip->home_tab->get_params()
+                  ->scope_patterns[1]
+                  .pathname[0]
+                  .type,
+              liburlpattern::PartType::kFixed);
+    EXPECT_EQ(manifest->tab_strip->home_tab->get_params()
+                  ->scope_patterns[1]
+                  .pathname[0]
+                  .value,
+              "/static/foo/bar/");
+    EXPECT_EQ(manifest->tab_strip->home_tab->get_params()
+                  ->scope_patterns[2]
+                  .protocol[0]
+                  .type,
+              liburlpattern::PartType::kFixed);
+    EXPECT_EQ(manifest->tab_strip->home_tab->get_params()
+                  ->scope_patterns[2]
+                  .hostname[0]
+                  .type,
+              liburlpattern::PartType::kFixed);
+    EXPECT_EQ(manifest->tab_strip->home_tab->get_params()
+                  ->scope_patterns[2]
+                  .hostname[0]
+                  .value,
+              "foo.com");
+    EXPECT_EQ(manifest->tab_strip->home_tab->get_params()
+                  ->scope_patterns[2]
+                  .pathname[0]
+                  .type,
+              liburlpattern::PartType::kFixed);
+    EXPECT_EQ(manifest->tab_strip->home_tab->get_params()
+                  ->scope_patterns[2]
+                  .pathname[0]
+                  .value,
+              "/foo/");
+    EXPECT_EQ(manifest->tab_strip->home_tab->get_params()
+                  ->scope_patterns[3]
+                  .protocol[0]
+                  .type,
+              liburlpattern::PartType::kFixed);
+    EXPECT_EQ(manifest->tab_strip->home_tab->get_params()
+                  ->scope_patterns[3]
+                  .hostname[0]
+                  .type,
+              liburlpattern::PartType::kFixed);
+    EXPECT_EQ(manifest->tab_strip->home_tab->get_params()
+                  ->scope_patterns[3]
+                  .hostname[0]
+                  .value,
+              "foo.com");
+    EXPECT_EQ(manifest->tab_strip->home_tab->get_params()
+                  ->scope_patterns[3]
+                  .pathname[0]
+                  .type,
+              liburlpattern::PartType::kFixed);
+    EXPECT_EQ(manifest->tab_strip->home_tab->get_params()
+                  ->scope_patterns[3]
+                  .pathname[0]
+                  .value,
+              "/foo/bar/");
+
+    EXPECT_EQ(0u, GetErrorCount());
+  }
+
+  // Base URL provided in scope patterns is respected if it is valid.
   {
     auto& manifest = ParseManifest(R"({
         "tab_strip": {
           "home_tab": {"scope_patterns":
-            [{"pathname": "([a-z]+)/"}, {"pathname": "/foo/([a-z]+)/"}]}} })");
+            [{"protocol": "ftp", "baseURL": "https://www.bar.com"},
+            {"hostname": "bar.com", "baseURL": "https://foobar.com"},
+            {"pathname": "/foo/bar/", "baseURL": "https://bar.com"},
+            // Invalid (expect to be discarded).
+            {"pathname": "/foobar/", "baseURL": "notaurl"},
+            {"pathname": "bar", "baseURL": "https://bar.com/foo"},
+            {"pathname": "bar", "baseURL": "https://bar.com/foo/"}
+          ]}}
+         })");
     EXPECT_FALSE(manifest->tab_strip.is_null());
     EXPECT_FALSE(manifest->tab_strip->home_tab->is_visibility());
     EXPECT_EQ(
-        manifest->tab_strip->home_tab->get_params()->scope_patterns.size(), 0u);
+        manifest->tab_strip->home_tab->get_params()->scope_patterns.size(), 5u);
+    VerifySafeUrlPatternSizes(
+        manifest->tab_strip->home_tab->get_params()->scope_patterns[0], 1, 0, 0,
+        0, 0, 0, 0, 0);
+    VerifySafeUrlPatternSizes(
+        manifest->tab_strip->home_tab->get_params()->scope_patterns[1], 1, 0, 0,
+        1, 0, 0, 0, 0);
+    VerifySafeUrlPatternSizes(
+        manifest->tab_strip->home_tab->get_params()->scope_patterns[2], 1, 0, 0,
+        1, 0, 1, 0, 0);
+    VerifySafeUrlPatternSizes(
+        manifest->tab_strip->home_tab->get_params()->scope_patterns[3], 1, 0, 0,
+        1, 0, 1, 0, 0);
+    VerifySafeUrlPatternSizes(
+        manifest->tab_strip->home_tab->get_params()->scope_patterns[4], 1, 0, 0,
+        1, 0, 1, 0, 0);
+    EXPECT_EQ(manifest->tab_strip->home_tab->get_params()
+                  ->scope_patterns[0]
+                  .protocol[0]
+                  .value,
+              "ftp");
+    EXPECT_EQ(manifest->tab_strip->home_tab->get_params()
+                  ->scope_patterns[1]
+                  .protocol[0]
+                  .value,
+              "https");
+    EXPECT_EQ(manifest->tab_strip->home_tab->get_params()
+                  ->scope_patterns[1]
+                  .hostname[0]
+                  .value,
+              "bar.com");
+    EXPECT_EQ(manifest->tab_strip->home_tab->get_params()
+                  ->scope_patterns[2]
+                  .protocol[0]
+                  .value,
+              "https");
+    EXPECT_EQ(manifest->tab_strip->home_tab->get_params()
+                  ->scope_patterns[2]
+                  .hostname[0]
+                  .value,
+              "bar.com");
+    EXPECT_EQ(manifest->tab_strip->home_tab->get_params()
+                  ->scope_patterns[2]
+                  .pathname[0]
+                  .value,
+              "/foo/bar/");
+    EXPECT_EQ(manifest->tab_strip->home_tab->get_params()
+                  ->scope_patterns[3]
+                  .protocol[0]
+                  .value,
+              "https");
+    EXPECT_EQ(manifest->tab_strip->home_tab->get_params()
+                  ->scope_patterns[3]
+                  .hostname[0]
+                  .value,
+              "bar.com");
+    EXPECT_EQ(manifest->tab_strip->home_tab->get_params()
+                  ->scope_patterns[3]
+                  .pathname[0]
+                  .value,
+              "/bar");
+    EXPECT_EQ(manifest->tab_strip->home_tab->get_params()
+                  ->scope_patterns[4]
+                  .protocol[0]
+                  .value,
+              "https");
+    EXPECT_EQ(manifest->tab_strip->home_tab->get_params()
+                  ->scope_patterns[4]
+                  .hostname[0]
+                  .value,
+              "bar.com");
+    EXPECT_EQ(manifest->tab_strip->home_tab->get_params()
+                  ->scope_patterns[4]
+                  .pathname[0]
+                  .value,
+              "/foo/bar");
 
-    EXPECT_EQ(0u, GetErrorCount());
+    EXPECT_EQ(1u, GetErrorCount());
   }
 
-  // Allow patterns with wildcards and named groups.
+  // Allow patterns with wildcards and named groups in the pathname.
   {
     auto& manifest = ParseManifest(R"({
         "tab_strip": {
@@ -6776,8 +7047,285 @@ TEST_F(ManifestParserTest, TabStripHomeTabScopeParseRules) {
     EXPECT_FALSE(manifest->tab_strip->home_tab->is_visibility());
     EXPECT_EQ(
         manifest->tab_strip->home_tab->get_params()->scope_patterns.size(), 6u);
+    VerifySafeUrlPatternSizes(
+        manifest->tab_strip->home_tab->get_params()->scope_patterns[0], 1, 0, 0,
+        1, 0, 1, 0, 0);
+    VerifySafeUrlPatternSizes(
+        manifest->tab_strip->home_tab->get_params()->scope_patterns[1], 1, 0, 0,
+        1, 0, 1, 0, 0);
+    VerifySafeUrlPatternSizes(
+        manifest->tab_strip->home_tab->get_params()->scope_patterns[2], 1, 0, 0,
+        1, 0, 2, 0, 0);
+    VerifySafeUrlPatternSizes(
+        manifest->tab_strip->home_tab->get_params()->scope_patterns[3], 1, 0, 0,
+        1, 0, 3, 0, 0);
+    VerifySafeUrlPatternSizes(
+        manifest->tab_strip->home_tab->get_params()->scope_patterns[4], 1, 0, 0,
+        1, 0, 2, 0, 0);
+    VerifySafeUrlPatternSizes(
+        manifest->tab_strip->home_tab->get_params()->scope_patterns[5], 1, 0, 0,
+        1, 0, 3, 0, 0);
+
+    EXPECT_EQ(manifest->tab_strip->home_tab->get_params()
+                  ->scope_patterns[0]
+                  .pathname[0]
+                  .type,
+              liburlpattern::PartType::kFullWildcard);
+    EXPECT_EQ(manifest->tab_strip->home_tab->get_params()
+                  ->scope_patterns[1]
+                  .pathname[0]
+                  .type,
+              liburlpattern::PartType::kSegmentWildcard);
+    EXPECT_EQ(manifest->tab_strip->home_tab->get_params()
+                  ->scope_patterns[2]
+                  .pathname[0]
+                  .type,
+              liburlpattern::PartType::kFixed);
+    EXPECT_EQ(manifest->tab_strip->home_tab->get_params()
+                  ->scope_patterns[2]
+                  .pathname[0]
+                  .value,
+              "/foo");
+    EXPECT_EQ(manifest->tab_strip->home_tab->get_params()
+                  ->scope_patterns[2]
+                  .pathname[1]
+                  .type,
+              liburlpattern::PartType::kFullWildcard);
+    EXPECT_EQ(manifest->tab_strip->home_tab->get_params()
+                  ->scope_patterns[3]
+                  .pathname[0]
+                  .type,
+              liburlpattern::PartType::kFixed);
+    EXPECT_EQ(manifest->tab_strip->home_tab->get_params()
+                  ->scope_patterns[3]
+                  .pathname[0]
+                  .value,
+              "/foo");
+    EXPECT_EQ(manifest->tab_strip->home_tab->get_params()
+                  ->scope_patterns[3]
+                  .pathname[1]
+                  .type,
+              liburlpattern::PartType::kFullWildcard);
+    EXPECT_EQ(manifest->tab_strip->home_tab->get_params()
+                  ->scope_patterns[3]
+                  .pathname[2]
+                  .type,
+              liburlpattern::PartType::kFixed);
+    EXPECT_EQ(manifest->tab_strip->home_tab->get_params()
+                  ->scope_patterns[3]
+                  .pathname[2]
+                  .value,
+              "/bar");
+    EXPECT_EQ(manifest->tab_strip->home_tab->get_params()
+                  ->scope_patterns[4]
+                  .pathname[0]
+                  .type,
+              liburlpattern::PartType::kFixed);
+    EXPECT_EQ(manifest->tab_strip->home_tab->get_params()
+                  ->scope_patterns[4]
+                  .pathname[0]
+                  .value,
+              "/foo");
+    EXPECT_EQ(manifest->tab_strip->home_tab->get_params()
+                  ->scope_patterns[4]
+                  .pathname[1]
+                  .type,
+              liburlpattern::PartType::kSegmentWildcard);
+    EXPECT_EQ(manifest->tab_strip->home_tab->get_params()
+                  ->scope_patterns[5]
+                  .pathname[0]
+                  .type,
+              liburlpattern::PartType::kFixed);
+    EXPECT_EQ(manifest->tab_strip->home_tab->get_params()
+                  ->scope_patterns[5]
+                  .pathname[0]
+                  .value,
+              "/foo");
+    EXPECT_EQ(manifest->tab_strip->home_tab->get_params()
+                  ->scope_patterns[5]
+                  .pathname[1]
+                  .type,
+              liburlpattern::PartType::kSegmentWildcard);
+    EXPECT_EQ(manifest->tab_strip->home_tab->get_params()
+                  ->scope_patterns[5]
+                  .pathname[2]
+                  .type,
+              liburlpattern::PartType::kFullWildcard);
 
     EXPECT_EQ(0u, GetErrorCount());
+  }
+
+  // Allow patterns with wildcards and named groups in the hostname.
+  {
+    auto& manifest = ParseManifest(R"({
+        "tab_strip": {
+          "home_tab": {"scope_patterns":
+            [{"hostname": "*"}, {"hostname": "bar.com"}, {"hostname": "bar*.com"},
+            {"hostname": "bar.*"}, {"hostname": "bar.*.com"},
+            {"hostname": "foo.:bar.*"}, {"hostname": "*.com"}]}}
+        })");
+    EXPECT_FALSE(manifest->tab_strip.is_null());
+    EXPECT_FALSE(manifest->tab_strip->home_tab->is_visibility());
+    EXPECT_EQ(
+        manifest->tab_strip->home_tab->get_params()->scope_patterns.size(), 7u);
+    VerifySafeUrlPatternSizes(
+        manifest->tab_strip->home_tab->get_params()->scope_patterns[0], 1, 0, 0,
+        1, 0, 0, 0, 0);
+    VerifySafeUrlPatternSizes(
+        manifest->tab_strip->home_tab->get_params()->scope_patterns[1], 1, 0, 0,
+        1, 0, 0, 0, 0);
+    VerifySafeUrlPatternSizes(
+        manifest->tab_strip->home_tab->get_params()->scope_patterns[2], 1, 0, 0,
+        3, 0, 0, 0, 0);
+    VerifySafeUrlPatternSizes(
+        manifest->tab_strip->home_tab->get_params()->scope_patterns[3], 1, 0, 0,
+        2, 0, 0, 0, 0);
+    VerifySafeUrlPatternSizes(
+        manifest->tab_strip->home_tab->get_params()->scope_patterns[4], 1, 0, 0,
+        3, 0, 0, 0, 0);
+    VerifySafeUrlPatternSizes(
+        manifest->tab_strip->home_tab->get_params()->scope_patterns[5], 1, 0, 0,
+        3, 0, 0, 0, 0);
+    VerifySafeUrlPatternSizes(
+        manifest->tab_strip->home_tab->get_params()->scope_patterns[6], 1, 0, 0,
+        2, 0, 0, 0, 0);
+
+    EXPECT_EQ(manifest->tab_strip->home_tab->get_params()
+                  ->scope_patterns[0]
+                  .hostname[0]
+                  .type,
+              liburlpattern::PartType::kFullWildcard);
+    EXPECT_EQ(manifest->tab_strip->home_tab->get_params()
+                  ->scope_patterns[1]
+                  .hostname[0]
+                  .type,
+              liburlpattern::PartType::kFixed);
+    EXPECT_EQ(manifest->tab_strip->home_tab->get_params()
+                  ->scope_patterns[1]
+                  .hostname[0]
+                  .value,
+              "bar.com");
+    EXPECT_EQ(manifest->tab_strip->home_tab->get_params()
+                  ->scope_patterns[2]
+                  .hostname[0]
+                  .type,
+              liburlpattern::PartType::kFixed);
+    EXPECT_EQ(manifest->tab_strip->home_tab->get_params()
+                  ->scope_patterns[2]
+                  .hostname[0]
+                  .value,
+              "bar");
+    EXPECT_EQ(manifest->tab_strip->home_tab->get_params()
+                  ->scope_patterns[2]
+                  .hostname[1]
+                  .type,
+              liburlpattern::PartType::kFullWildcard);
+    EXPECT_EQ(manifest->tab_strip->home_tab->get_params()
+                  ->scope_patterns[2]
+                  .hostname[2]
+                  .type,
+              liburlpattern::PartType::kFixed);
+    EXPECT_EQ(manifest->tab_strip->home_tab->get_params()
+                  ->scope_patterns[2]
+                  .hostname[2]
+                  .value,
+              ".com");
+    EXPECT_EQ(manifest->tab_strip->home_tab->get_params()
+                  ->scope_patterns[3]
+                  .hostname[0]
+                  .type,
+              liburlpattern::PartType::kFixed);
+    EXPECT_EQ(manifest->tab_strip->home_tab->get_params()
+                  ->scope_patterns[3]
+                  .hostname[0]
+                  .value,
+              "bar");
+    EXPECT_EQ(manifest->tab_strip->home_tab->get_params()
+                  ->scope_patterns[3]
+                  .hostname[1]
+                  .type,
+              liburlpattern::PartType::kFullWildcard);
+    EXPECT_EQ(manifest->tab_strip->home_tab->get_params()
+                  ->scope_patterns[4]
+                  .hostname[0]
+                  .type,
+              liburlpattern::PartType::kFixed);
+    EXPECT_EQ(manifest->tab_strip->home_tab->get_params()
+                  ->scope_patterns[4]
+                  .hostname[0]
+                  .value,
+              "bar");
+    EXPECT_EQ(manifest->tab_strip->home_tab->get_params()
+                  ->scope_patterns[4]
+                  .hostname[1]
+                  .type,
+              liburlpattern::PartType::kFullWildcard);
+    EXPECT_EQ(manifest->tab_strip->home_tab->get_params()
+                  ->scope_patterns[4]
+                  .hostname[2]
+                  .type,
+              liburlpattern::PartType::kFixed);
+    EXPECT_EQ(manifest->tab_strip->home_tab->get_params()
+                  ->scope_patterns[4]
+                  .hostname[2]
+                  .value,
+              ".com");
+    EXPECT_EQ(manifest->tab_strip->home_tab->get_params()
+                  ->scope_patterns[5]
+                  .hostname[0]
+                  .type,
+              liburlpattern::PartType::kFixed);
+    EXPECT_EQ(manifest->tab_strip->home_tab->get_params()
+                  ->scope_patterns[5]
+                  .hostname[0]
+                  .value,
+              "foo");
+    EXPECT_EQ(manifest->tab_strip->home_tab->get_params()
+                  ->scope_patterns[5]
+                  .hostname[1]
+                  .type,
+              liburlpattern::PartType::kSegmentWildcard);
+    EXPECT_EQ(manifest->tab_strip->home_tab->get_params()
+                  ->scope_patterns[5]
+                  .hostname[2]
+                  .type,
+              liburlpattern::PartType::kFullWildcard);
+    EXPECT_EQ(manifest->tab_strip->home_tab->get_params()
+                  ->scope_patterns[6]
+                  .hostname[0]
+                  .type,
+              liburlpattern::PartType::kFullWildcard);
+    EXPECT_EQ(manifest->tab_strip->home_tab->get_params()
+                  ->scope_patterns[6]
+                  .hostname[1]
+                  .type,
+              liburlpattern::PartType::kFixed);
+    EXPECT_EQ(manifest->tab_strip->home_tab->get_params()
+                  ->scope_patterns[6]
+                  .hostname[1]
+                  .value,
+              ".com");
+
+    EXPECT_EQ(0u, GetErrorCount());
+  }
+
+  // Reject patterns containing custom regex in any field, with errors.
+  {
+    auto& manifest = ParseManifest(R"a({
+        "tab_strip": {
+          "home_tab": {"scope_patterns":
+            [{"pathname": "([a-z]+)/"}, {"pathname": "/foo/([a-z]+)/"},
+            {"protocol": "http([a-z])+)"}, {"hostname": "([a-z]+).com"},
+            {"username": "([A-Za-z])+"}, {"password": "([A-Za-z0-9@%^!])+"},
+            {"port": "(80|443)"}, {"hash": "([a-zA-Z0-9])+"},
+            {"search": "([A-Za-z0-9])+"}
+    ]}} })a");
+    EXPECT_FALSE(manifest->tab_strip.is_null());
+    EXPECT_FALSE(manifest->tab_strip->home_tab->is_visibility());
+    EXPECT_EQ(
+        manifest->tab_strip->home_tab->get_params()->scope_patterns.size(), 0u);
+
+    EXPECT_EQ(9u, GetErrorCount());
   }
 
   // Patterns list doesn't contain objects.

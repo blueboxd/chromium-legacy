@@ -467,7 +467,7 @@ arc::mojom::ConnectionStateType TranslateConnectionState(
   }
 
   if ((state == shill::kStateIdle) || (state == shill::kStateFailure) ||
-      (state == shill::kStateDisconnect) || (state == "")) {
+      (state == shill::kStateDisconnecting) || (state == "")) {
     return arc::mojom::ConnectionStateType::NOT_CONNECTED;
   }
   if (ash::NetworkState::StateIsPortalled(state)) {
@@ -479,8 +479,7 @@ arc::mojom::ConnectionStateType TranslateConnectionState(
   }
 
   // The remaining cases defined in shill dbus-constants are legacy values from
-  // Flimflam and are not expected to be encountered. These are: kStateCarrier,
-  // and kStateOffline.
+  // Flimflam and are not expected to be encountered.
   NOTREACHED() << "Unknown connection state: " << state;
   return arc::mojom::ConnectionStateType::NOT_CONNECTED;
 }

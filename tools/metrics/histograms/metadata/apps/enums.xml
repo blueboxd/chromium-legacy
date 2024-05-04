@@ -55,6 +55,21 @@ chromium-metrics-reviews@google.com.
   <int value="3" label="kAppDataCorrupted"/>
   <int value="4" label="kAppProviderNotAvailable"/>
   <int value="5" label="kAppTypeNotSupported"/>
+  <int value="6" label="kInstallParametersInvalid"/>
+  <int value="7" label="kInstallDialogNotAccepted"/>
+  <int value="8" label="kAppTypeInstallFailed"/>
+  <int value="9" label="kUserTypeNotPermitted"/>
+  <int value="10" label="kBadAppRequest"/>
+</enum>
+
+<enum name="AppListAppCollections">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Essentials"/>
+  <int value="2" label="Productivity"/>
+  <int value="3" label="Creativity"/>
+  <int value="4" label="Entertainment"/>
+  <int value="5" label="OEM"/>
+  <int value="6" label="Utilities"/>
 </enum>
 
 <enum name="AppListAppMovingType">
@@ -74,6 +89,20 @@ chromium-metrics-reviews@google.com.
   <int value="1" label="Chrome"/>
   <int value="2" label="Play"/>
   <int value="3" label="PWA"/>
+</enum>
+
+<enum name="AppListContinueFileSuggestionType">
+  <int value="0" label="Recently viewed drive file"/>
+  <int value="1" label="Recently modified drive file"/>
+  <int value="2" label="Drive file recently modified by user"/>
+  <int value="3" label="Drive file recently shared with user"/>
+  <int value="4" label="Recently viewed local file"/>
+  <int value="5" label="Local file recently modified by user"/>
+</enum>
+
+<enum name="AppListEntity">
+  <int value="0" label="Default Apps"/>
+  <int value="1" label="Third-Party Apps"/>
 </enum>
 
 <enum name="AppListFederatedActions">
@@ -115,6 +144,8 @@ chromium-metrics-reviews@google.com.
   <int value="5" label="Launched From RecentApps"/>
   <int value="6" label="Launched From ContinueSection"/>
   <int value="7" label="Launched From Quick App Access"/>
+  <int value="8" label="Launched From Apps Collections"/>
+  <int value="9" label="Launched From Discovery Chip"/>
 </enum>
 
 <enum name="AppListOrderUpdateEvent">
@@ -260,12 +291,6 @@ chromium-metrics-reviews@google.com.
   <int value="3" label="Color order"/>
 </enum>
 
-<enum name="AppListUsageStateByNewUsers">
-  <int value="0" label="LAUNCHER_USED"/>
-  <int value="1" label="LAUNCHER_NOT_USED_BEFORE_DESTRUCTION"/>
-  <int value="2" label="LAUNCHER_NOT_USED_BEFORE_SWITCHING_ACCOUNTS"/>
-</enum>
-
 <enum name="AppListUserEvent">
   <obsolete>
     Deprecated November 2021.
@@ -346,6 +371,11 @@ chromium-metrics-reviews@google.com.
   <int value="3" label="HTTP response error while downloading manifest"/>
   <int value="4" label="Empty manifest response"/>
   <int value="5" label="Web app installation error"/>
+</enum>
+
+<enum name="AppsCollectionsDismissedReason">
+  <int value="0" label="Dismissed by Sorting"/>
+  <int value="1" label="Dismissed by Nudge"/>
 </enum>
 
 <enum name="AppTypeV2">
@@ -485,6 +515,14 @@ chromium-metrics-reviews@google.com.
   <int value="2" label="Load icon via non-mojom call"/>
 </enum>
 
+<enum name="ImageAnnotationWorkerIndexingStatus">
+  <int value="0" label="Start indexing"/>
+  <int value="1" label="Start OCR processing"/>
+  <int value="2" label="OCR Succeed"/>
+  <int value="3" label="Start ICA processing"/>
+  <int value="4" label="ICA Succeed"/>
+</enum>
+
 <enum name="ImageAnnotationWorkerStatus">
   <int value="0" label="Ok"/>
   <int value="1" label="Failed to initialize ICA"/>
@@ -547,6 +585,8 @@ chromium-metrics-reviews@google.com.
   <int value="3" label="App search result opened"/>
   <int value="4" label="Continue section task opened"/>
   <int value="5" label="Suggestion chip opened"/>
+  <int value="6" label="Scrolled to apps grid bottom"/>
+  <int value="7" label="App launched from apps collections"/>
 </enum>
 
 <enum name="NoteTakingAppLaunchResult">

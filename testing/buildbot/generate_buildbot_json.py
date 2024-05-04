@@ -391,8 +391,8 @@ class BBJSONGenerator(object):  # pylint: disable=useless-object-inheritance
         'test_suite_exceptions.pyl')
     args.gn_isolate_map_pyl_path = absolute_file_path('gn_isolate_map.pyl')
     args.variants_pyl_path = absolute_file_path('variants.pyl')
-    args.autoshard_exceptions_json_path = absolute_file_path(
-        'autoshard_exceptions.json')
+    args.autoshard_exceptions_json_path = os.path.join(
+        args.infra_config_dir, 'targets', 'autoshard_exceptions.json')
 
     return args
 
@@ -534,7 +534,7 @@ class BBJSONGenerator(object):  # pylint: disable=useless-object-inheritance
 
     Args:
       test_config: A dict containing a configuration for a specific test on
-          a specific builder, e.g. the output of update_and_cleanup_test.
+          a specific builder.
       tester_name: A string containing the name of the tester that |test_config|
           came from.
       tester_config: A dict containing the configuration for the builder that
@@ -586,59 +586,6 @@ class BBJSONGenerator(object):  # pylint: disable=useless-object-inheritance
 
     return a
 
-  def initialize_args_for_test(
-      self, generated_test, tester_config, additional_arg_keys=None):
-    args = []
-    args.extend(generated_test.get('args', []))
-    args.extend(tester_config.get('args', []))
-
-    def add_conditional_args(key, fn):
-      val = generated_test.pop(key, [])
-      if fn(tester_config):
-        args.extend(val)
-
-    add_conditional_args('desktop_args', lambda cfg: not self.is_android(cfg))
-    add_conditional_args('lacros_args', self.is_lacros)
-    add_conditional_args('linux_args', self.is_linux)
-    add_conditional_args('android_args', self.is_android)
-    add_conditional_args('chromeos_args', self.is_chromeos)
-    add_conditional_args('mac_args', self.is_mac)
-    add_conditional_args('win_args', self.is_win)
-    add_conditional_args('win64_args', self.is_win64)
-
-    for key in additional_arg_keys or []:
-      args.extend(generated_test.pop(key, []))
-      args.extend(tester_config.get(key, []))
-
-    if args:
-      generated_test['args'] = self.maybe_fixup_args_array(args)
-
-  def initialize_swarming_dictionary_for_test(self, generated_test,
-                                              tester_config):
-    if 'swarming' not in generated_test:
-      generated_test['swarming'] = {}
-    if not 'can_use_on_swarming_builders' in generated_test['swarming']:
-      generated_test['swarming'].update({
-        'can_use_on_swarming_builders': tester_config.get('use_swarming',
-                                                          True)
-      })
-    if 'swarming' in tester_config:
-      self.dictionary_merge(generated_test['swarming'],
-                            tester_config['swarming'])
-    # Apply any platform-specific Swarming dimensions after the generic ones.
-    if 'android_swarming' in generated_test:
-      if self.is_android(tester_config): # pragma: no cover
-        self.dictionary_merge(
-          generated_test['swarming'],
-          generated_test['android_swarming']) # pragma: no cover
-      del generated_test['android_swarming'] # pragma: no cover
-    if 'chromeos_swarming' in generated_test:
-      if self.is_chromeos(tester_config):  # pragma: no cover
-        self.dictionary_merge(
-            generated_test['swarming'],
-            generated_test['chromeos_swarming'])  # pragma: no cover
-      del generated_test['chromeos_swarming']  # pragma: no cover
-
   def clean_swarming_dictionary(self, swarming_dict):
     # Clean out redundant entries from a test's "swarming" dictionary.
     # This is really only needed to retain 100% parity with the
@@ -652,31 +599,105 @@ class BBJSONGenerator(object):  # pylint: disable=useless-object-inheritance
         del swarming_dict['hard_timeout'] # pragma: no cover
     del swarming_dict['can_use_on_swarming_builders']
 
-  def update_and_cleanup_test(self, test, test_name, tester_name, tester_config,
-                              waterfall):
-    # Apply swarming mixins.
-    test = self.apply_all_mixins(
-        test, waterfall, tester_name, tester_config)
+  def resolve_os_conditional_values(self, test, builder):
+    for key, fn in (
+        ('android_swarming', self.is_android),
+        ('chromeos_swarming', self.is_chromeos),
+    ):
+      swarming = test.pop(key, None)
+      if swarming and fn(builder):
+        self.dictionary_merge(test['swarming'], swarming)
+
+    for key, fn in (
+        ('desktop_args', lambda cfg: not self.is_android(cfg)),
+        ('lacros_args', self.is_lacros),
+        ('linux_args', self.is_linux),
+        ('android_args', self.is_android),
+        ('chromeos_args', self.is_chromeos),
+        ('mac_args', self.is_mac),
+        ('win_args', self.is_win),
+        ('win64_args', self.is_win64),
+    ):
+      args = test.pop(key, [])
+      if fn(builder):
+        test.setdefault('args', []).extend(args)
+
+  def apply_common_transformations(self,
+                                   waterfall,
+                                   builder_name,
+                                   builder,
+                                   test,
+                                   test_name,
+                                   *,
+                                   swarmable=True,
+                                   supports_args=True):
+    # Initialize the swarming dictionary
+    swarmable = swarmable and builder.get('use_swarming', True)
+    test.setdefault('swarming', {}).setdefault('can_use_on_swarming_builders',
+                                               swarmable)
+
+    mixins_to_ignore = test.pop('remove_mixins', [])
+    self.ensure_valid_mixin_list(mixins_to_ignore,
+                                 f'test {test_name} remove_mixins')
+
+    # Expand any conditional values
+    self.resolve_os_conditional_values(test, builder)
+
+    # Apply mixins from the test
+    test_mixins = test.pop('mixins', [])
+    self.ensure_valid_mixin_list(test_mixins, f'test {test_name} mixins')
+    test = self.apply_mixins(test, test_mixins, mixins_to_ignore, builder)
+
+    # Add any swarming or args from the builder
+    self.dictionary_merge(test['swarming'], builder.get('swarming', {}))
+    if supports_args:
+      test.setdefault('args', []).extend(builder.get('args', []))
+
+    # Apply mixins from the waterfall
+    waterfall_mixins = waterfall.get('mixins', [])
+    self.ensure_valid_mixin_list(waterfall_mixins,
+                                 f"waterfall {waterfall['name']} mixins")
+    test = self.apply_mixins(test, waterfall_mixins, mixins_to_ignore, builder)
+
+    # Apply mixins from the builder
+    builder_mixins = builder.get('mixins', [])
+    self.ensure_valid_mixin_list(builder_mixins,
+                                 f"builder {builder_name} mixins")
+    test = self.apply_mixins(test, builder_mixins, mixins_to_ignore, builder)
+
     # See if there are any exceptions that need to be merged into this
     # test's specification.
-    modifications = self.get_test_modifications(test, tester_name)
+    modifications = self.get_test_modifications(test, builder_name)
     if modifications:
       test = self.dictionary_merge(test, modifications)
+
+    # Clean up the swarming entry or remove it if it's unnecessary
     if (swarming_dict := test.get('swarming')) is not None:
       if swarming_dict.get('can_use_on_swarming_builders'):
         self.clean_swarming_dictionary(swarming_dict)
       else:
         del test['swarming']
+
     # Ensure all Android Swarming tests run only on userdebug builds if another
     # build type was not specified.
-    if 'swarming' in test and self.is_android(tester_config):
+    if 'swarming' in test and self.is_android(builder):
       dimensions = test.get('swarming', {}).get('dimensions', {})
       if (dimensions.get('os') == 'Android'
           and not dimensions.get('device_os_type')):
         dimensions['device_os_type'] = 'userdebug'
-    self.replace_test_args(test, test_name, tester_name)
-    if 'args' in test and not test['args']:
-      test.pop('args')
+
+    # Apply any replacements specified for the test for the builder
+    self.replace_test_args(test, test_name, builder_name)
+
+    # Remove args if it is empty
+    if 'args' in test:
+      if not test['args']:
+        del test['args']
+      else:
+        # Replace any magic arguments with their actual value
+        self.substitute_magic_args(test, builder_name, builder)
+
+        test['args'] = self.maybe_fixup_args_array(test['args'])
 
     return test
 
@@ -724,11 +745,11 @@ class BBJSONGenerator(object):  # pylint: disable=useless-object-inheritance
         }
 
   def add_android_presentation_args(self, tester_config, result):
-    args = result.get('args', [])
     bucket = tester_config.get('results_bucket', 'chromium-result-details')
-    args.append('--gs-results-bucket=%s' % bucket)
-    if (result['swarming']['can_use_on_swarming_builders'] and not
-        tester_config.get('skip_merge_script', False)):
+    result.setdefault('args', []).append('--gs-results-bucket=%s' % bucket)
+
+    if ('swarming' in result and 'merge' not in 'result'
+        and not tester_config.get('skip_merge_script', False)):
       result['merge'] = {
           'args': [
               '--bucket',
@@ -739,19 +760,6 @@ class BBJSONGenerator(object):  # pylint: disable=useless-object-inheritance
           'script': ('//build/android/pylib/results/presentation/'
                      'test_results_presentation.py'),
       }
-    if not tester_config.get('skip_output_links', False):
-      result['swarming']['output_links'] = [
-        {
-          'link': [
-            'https://luci-logdog.appspot.com/v/?s',
-            '=android%2Fswarming%2Flogcats%2F',
-            '${TASK_ID}%2F%2B%2Funified_logcats',
-          ],
-          'name': 'shard #${SHARD_INDEX} logcats',
-        },
-      ]
-    if args:
-      result['args'] = args
 
   def generate_gtest(self, waterfall, tester_name, tester_config, test_name,
                      test_config):
@@ -761,22 +769,16 @@ class BBJSONGenerator(object):  # pylint: disable=useless-object-inheritance
     # Use test_name here instead of test['name'] because test['name'] will be
     # modified with the variant identifier in a matrix compound suite
     result.setdefault('test', test_name)
-    self.initialize_swarming_dictionary_for_test(result, tester_config)
 
-    self.initialize_args_for_test(
-        result, tester_config, additional_arg_keys=['gtest_args'])
-    if self.is_android(tester_config) and tester_config.get(
-        'use_swarming', True):
-      if not test_config.get('use_isolated_scripts_api', False):
-        # TODO(https://crbug.com/1137998) make Android presentation work with
+    result = self.apply_common_transformations(waterfall, tester_name,
+                                               tester_config, result, test_name)
+    if self.is_android(tester_config) and 'swarming' in result:
+      if not result.get('use_isolated_scripts_api', False):
+        # TODO(crbug.com/40725094) make Android presentation work with
         # isolated scripts in test_results_presentation.py merge script
         self.add_android_presentation_args(tester_config, result)
         result['args'] = result.get('args', []) + ['--recover-devices']
-
-    result = self.update_and_cleanup_test(
-        result, test_name, tester_name, tester_config, waterfall)
     self.add_common_test_properties(result, tester_config)
-    self.substitute_magic_args(result, tester_name, tester_config)
 
     if 'swarming' in result and not result.get('merge'):
       if test_config.get('use_isolated_scripts_api', False):
@@ -797,21 +799,17 @@ class BBJSONGenerator(object):  # pylint: disable=useless-object-inheritance
     # Use test_name here instead of test['name'] because test['name'] will be
     # modified with the variant identifier in a matrix compound suite
     result.setdefault('test', test_name)
-    self.initialize_swarming_dictionary_for_test(result, tester_config)
-    self.initialize_args_for_test(result, tester_config)
-    if self.is_android(tester_config) and tester_config.get(
-        'use_swarming', True):
+    result = self.apply_common_transformations(waterfall, tester_name,
+                                               tester_config, result, test_name)
+    if self.is_android(tester_config) and 'swarming' in result:
       if tester_config.get('use_android_presentation', False):
-        # TODO(https://crbug.com/1137998) make Android presentation work with
+        # TODO(crbug.com/40725094) make Android presentation work with
         # isolated scripts in test_results_presentation.py merge script
         self.add_android_presentation_args(tester_config, result)
-    result = self.update_and_cleanup_test(
-        result, test_name, tester_name, tester_config, waterfall)
     self.add_common_test_properties(result, tester_config)
-    self.substitute_magic_args(result, tester_name, tester_config)
 
     if 'swarming' in result and not result.get('merge'):
-      # TODO(https://crbug.com/958376): Consider adding the ability to not have
+      # TODO(crbug.com/41456107): Consider adding the ability to not have
       # this default.
       result['merge'] = {
         'script': '//testing/merge_scripts/standard_isolated_script_merge.py',
@@ -820,7 +818,7 @@ class BBJSONGenerator(object):  # pylint: disable=useless-object-inheritance
 
   def generate_script_test(self, waterfall, tester_name, tester_config,
                            test_name, test_config):
-    # TODO(https://crbug.com/953072): Remove this check whenever a better
+    # TODO(crbug.com/40623237): Remove this check whenever a better
     # long-term solution is implemented.
     if (waterfall.get('forbid_script_tests', False) or
         waterfall['machines'][tester_name].get('forbid_script_tests', False)):
@@ -832,9 +830,13 @@ class BBJSONGenerator(object):  # pylint: disable=useless-object-inheritance
         'name': test_config['name'],
         'script': test_config['script'],
     }
-    result = self.update_and_cleanup_test(
-        result, test_name, tester_name, tester_config, waterfall)
-    self.substitute_magic_args(result, tester_name, tester_config)
+    result = self.apply_common_transformations(waterfall,
+                                               tester_name,
+                                               tester_config,
+                                               result,
+                                               test_name,
+                                               swarmable=False,
+                                               supports_args=False)
     return result
 
   def generate_junit_test(self, waterfall, tester_name, tester_config,
@@ -845,10 +847,12 @@ class BBJSONGenerator(object):  # pylint: disable=useless-object-inheritance
     # Use test_name here instead of test['name'] because test['name'] will be
     # modified with the variant identifier in a matrix compound suite
     result.setdefault('test', test_name)
-    self.initialize_args_for_test(result, tester_config)
-    result = self.update_and_cleanup_test(
-        result, test_name, tester_name, tester_config, waterfall)
-    self.substitute_magic_args(result, tester_name, tester_config)
+    result = self.apply_common_transformations(waterfall,
+                                               tester_name,
+                                               tester_config,
+                                               result,
+                                               test_name,
+                                               swarmable=False)
     return result
 
   def generate_skylab_test(self, waterfall, tester_name, tester_config,
@@ -857,10 +861,25 @@ class BBJSONGenerator(object):  # pylint: disable=useless-object-inheritance
       return None
     result = copy.deepcopy(test_config)
     result.setdefault('test', test_name)
-    self.initialize_args_for_test(result, tester_config)
-    result = self.update_and_cleanup_test(result, test_name, tester_name,
-                                          tester_config, waterfall)
-    self.substitute_magic_args(result, tester_name, tester_config)
+
+    if 'cros_board' in result or 'cros_board' in tester_config:
+      result['cros_board'] = tester_config.get('cros_board') or result.get(
+          'cros_board')
+    else:
+      raise BBGenErr("skylab tests must specify cros_board.")
+    if 'cros_model' in result or 'cros_model' in tester_config:
+      result['cros_model'] = tester_config.get('cros_model') or result.get(
+          'cros_model')
+    if 'dut_pool' in result or 'cros_dut_pool' in tester_config:
+      result['dut_pool'] = tester_config.get('cros_dut_pool') or result.get(
+          'dut_pool')
+
+    result = self.apply_common_transformations(waterfall,
+                                               tester_name,
+                                               tester_config,
+                                               result,
+                                               test_name,
+                                               swarmable=False)
     return result
 
   def substitute_gpu_args(self, tester_config, test, args):
@@ -1081,7 +1100,7 @@ class BBJSONGenerator(object):  # pylint: disable=useless-object-inheritance
         else:  # pragma: no cover
           # Some tests do not have an entry gn_isolate_map.pyl, such as
           # telemetry tests.
-          # TODO(crbug.com/1035304): require an entry in gn_isolate_map.
+          # TODO(crbug.com/40112160): require an entry in gn_isolate_map.
           pass
 
   def resolve_composition_test_suites(self):
@@ -1322,62 +1341,18 @@ class BBJSONGenerator(object):  # pylint: disable=useless-object-inheritance
       'Unknown test suite type ' + suite_type + ' in bot ' + bot_name +
       ' on waterfall ' + waterfall_name)
 
-  def apply_all_mixins(self, test, waterfall, builder_name, builder):
-    """Applies all present swarming mixins to the test for a given builder.
+  def ensure_valid_mixin_list(self, mixins, location):
+    if not isinstance(mixins, list):
+      raise BBGenErr(
+          f"got '{mixins}', should be a list of mixin names: {location}")
+    for mixin in mixins:
+      if not mixin in self.mixins:
+        raise BBGenErr(f'bad mixin {mixin}: {location}')
 
-    Checks in the waterfall, builder, and test objects for mixins.
-    """
-    def valid_mixin(mixin_name):
-      """Asserts that the mixin is valid."""
-      if mixin_name not in self.mixins:
-        raise BBGenErr("bad mixin %s" % mixin_name)
-
-    def must_be_list(mixins, typ, name):
-      """Asserts that given mixins are a list."""
-      if not isinstance(mixins, list):
-        raise BBGenErr("'%s' in %s '%s' must be a list" % (mixins, typ, name))
-
-    test_name = test['name']
-    remove_mixins = set()
-    if 'remove_mixins' in builder:
-      must_be_list(builder['remove_mixins'], 'builder', builder_name)
-      for rm in builder['remove_mixins']:
-        valid_mixin(rm)
-        remove_mixins.add(rm)
-    if 'remove_mixins' in test:
-      must_be_list(test['remove_mixins'], 'test', test_name)
-      for rm in test['remove_mixins']:
-        valid_mixin(rm)
-        remove_mixins.add(rm)
-      del test['remove_mixins']
-
-    if 'mixins' in waterfall:
-      must_be_list(waterfall['mixins'], 'waterfall', waterfall['name'])
-      for mixin in waterfall['mixins']:
-        if mixin in remove_mixins:
-          continue
-        valid_mixin(mixin)
+  def apply_mixins(self, test, mixins, mixins_to_ignore, builder=None):
+    for mixin in mixins:
+      if mixin not in mixins_to_ignore:
         test = self.apply_mixin(self.mixins[mixin], test, builder)
-
-    if 'mixins' in builder:
-      must_be_list(builder['mixins'], 'builder', builder_name)
-      for mixin in builder['mixins']:
-        if mixin in remove_mixins:
-          continue
-        valid_mixin(mixin)
-        test = self.apply_mixin(self.mixins[mixin], test, builder)
-
-    if not 'mixins' in test:
-      return test
-
-    must_be_list(test['mixins'], 'test', test_name)
-    for mixin in test['mixins']:
-      # We don't bother checking if the given mixin is in remove_mixins here
-      # since this is already the lowest level, so if a mixin is added here that
-      # we don't want, we can just delete its entry.
-      valid_mixin(mixin)
-      test = self.apply_mixin(self.mixins[mixin], test, builder)
-    del test['mixins']
     return test
 
   def apply_mixin(self, mixin, test, builder=None):
@@ -1422,51 +1397,25 @@ class BBJSONGenerator(object):  # pylint: disable=useless-object-inheritance
       new_test['swarming'].update(swarming_mixin)
       del mixin['swarming']
 
-    # Array so we can assign to it in a nested scope.
-    args_need_fixup = ['args' in mixin]
-
-    for a in (
-        'args',
-        'precommit_args',
-        'non_precommit_args',
-        'desktop_args',
-        'lacros_args',
-        'linux_args',
-        'android_args',
-        'chromeos_args',
-        'mac_args',
-        'win_args',
-        'win64_args',
-    ):
+    for a in ('args', 'precommit_args', 'non_precommit_args'):
       if (value := mixin.pop(a, None)) is None:
         continue
       if not isinstance(value, list):
         raise BBGenErr(f'"{a}" must be a list')
       new_test.setdefault(a, []).extend(value)
 
-    args = new_test.get('args', [])
-
-    def add_conditional_args(key, fn):
-      if builder is None:
-        return
-      val = new_test.pop(key, [])
-      if val and fn(builder):
-        args.extend(val)
-        args_need_fixup[0] = True
-
-    add_conditional_args('desktop_args', lambda cfg: not self.is_android(cfg))
-    add_conditional_args('lacros_args', self.is_lacros)
-    add_conditional_args('linux_args', self.is_linux)
-    add_conditional_args('android_args', self.is_android)
-    add_conditional_args('chromeos_args', self.is_chromeos)
-    add_conditional_args('mac_args', self.is_mac)
-    add_conditional_args('win_args', self.is_win)
-    add_conditional_args('win64_args', self.is_win64)
-
-    if args_need_fixup[0]:
-      new_test['args'] = self.maybe_fixup_args_array(args)
-
+    # At this point, all keys that require merging are taken care of, so the
+    # remaining entries can be copied over. The os-conditional entries will be
+    # resolved immediately after and they are resolved before any mixins are
+    # applied, so there's are no concerns about overwriting the corresponding
+    # entry in the test.
     new_test.update(mixin)
+    if builder:
+      self.resolve_os_conditional_values(new_test, builder)
+
+    if 'args' in new_test:
+      new_test['args'] = self.maybe_fixup_args_array(new_test['args'])
+
     return new_test
 
   def generate_output_tests(self, waterfall):
@@ -1621,7 +1570,8 @@ class BBJSONGenerator(object):  # pylint: disable=useless-object-inheritance
     # waterfalls defined in internal configs.
     return [
         'chrome', 'chrome.pgo', 'chrome.gpu.fyi', 'internal.chrome.fyi',
-        'internal.chromeos.fyi', 'internal.optimization_guide', 'internal.soda'
+        'internal.chromeos.fyi', 'internal.optimization_guide', 'internal.soda',
+        'chromeos.preuprev'
     ]
 
   def check_input_file_consistency(self, verbose=False):
@@ -1673,7 +1623,7 @@ class BBJSONGenerator(object):  # pylint: disable=useless-object-inheritance
     if bot_names is not None:
       internal_waterfalls = self.get_internal_waterfalls()
       for waterfall in self.waterfalls:
-        # TODO(crbug.com/991417): Remove the need for this exception.
+        # TODO(crbug.com/41474799): Remove the need for this exception.
         if waterfall['name'] in internal_waterfalls:
           continue  # pragma: no cover
         for bot_name in waterfall['machines']:
@@ -1908,7 +1858,7 @@ class BBJSONGenerator(object):  # pylint: disable=useless-object-inheritance
     return self.check_ast_list_formatted(keys, file_path, verbose)
 
   def check_input_files_sorting(self, verbose=False):
-    # TODO(https://crbug.com/886993): Add the ability for this script to
+    # TODO(crbug.com/41415841): Add the ability for this script to
     # actually format the files, rather than just complain if they're
     # incorrectly formatted.
     bad_files = set()
@@ -2053,7 +2003,7 @@ class BBJSONGenerator(object):  # pylint: disable=useless-object-inheritance
                                         step_data)
 
   def _check_swarming_config(self, filename, builder, step_name, step_data):
-    # TODO(crbug.com/1203436): Ensure all swarming tests specify cpu, not
+    # TODO(crbug.com/40179524): Ensure all swarming tests specify cpu, not
     # just mac tests.
     if 'swarming' in step_data:
       dimensions = step_data['swarming'].get('dimensions')

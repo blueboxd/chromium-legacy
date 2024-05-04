@@ -31,6 +31,7 @@
 #include "chrome/browser/ui/tabs/tab_group.h"
 #include "chrome/browser/ui/tabs/tab_group_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
+#include "chrome/browser/ui/webui/top_chrome/top_chrome_web_ui_controller.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/history/core/common/pref_names.h"
@@ -54,7 +55,6 @@
 #include "ui/base/mojom/window_open_disposition.mojom.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/base/window_open_disposition_utils.h"
-#include "ui/webui/mojo_bubble_web_ui_controller.h"
 #include "ui/webui/resources/cr_components/history_clusters/history_clusters.mojom.h"
 #include "url/gurl.h"
 
@@ -93,7 +93,7 @@ class HistoryClustersSidePanelContextMenu
         content::OpenURLParams params(url_, content::Referrer(),
                                       WindowOpenDisposition::NEW_BACKGROUND_TAB,
                                       ui::PAGE_TRANSITION_AUTO_BOOKMARK, false);
-        browser_->OpenURL(params);
+        browser_->OpenURL(params, /*navigation_handle_callback=*/{});
         break;
       }
 
@@ -101,7 +101,7 @@ class HistoryClustersSidePanelContextMenu
         content::OpenURLParams params(url_, content::Referrer(),
                                       WindowOpenDisposition::NEW_WINDOW,
                                       ui::PAGE_TRANSITION_AUTO_BOOKMARK, false);
-        browser_->OpenURL(params);
+        browser_->OpenURL(params, /*navigation_handle_callback=*/{});
         break;
       }
 
@@ -109,7 +109,7 @@ class HistoryClustersSidePanelContextMenu
         content::OpenURLParams params(url_, content::Referrer(),
                                       WindowOpenDisposition::OFF_THE_RECORD,
                                       ui::PAGE_TRANSITION_AUTO_BOOKMARK, false);
-        browser_->OpenURL(params);
+        browser_->OpenURL(params, /*navigation_handle_callback=*/{});
         break;
       }
       case IDC_CONTENT_CONTEXT_COPYLINKLOCATION: {
@@ -187,8 +187,7 @@ HistoryClustersHandler::HistoryClustersHandler(
 HistoryClustersHandler::~HistoryClustersHandler() = default;
 
 void HistoryClustersHandler::SetSidePanelUIEmbedder(
-    base::WeakPtr<ui::MojoBubbleWebUIController::Embedder>
-        side_panel_embedder) {
+    base::WeakPtr<TopChromeWebUIController::Embedder> side_panel_embedder) {
   history_clusters_side_panel_embedder_ = side_panel_embedder;
 }
 
@@ -219,7 +218,7 @@ void HistoryClustersHandler::OpenHistoryCluster(
   content::OpenURLParams params(url, content::Referrer(), open_location,
                                 ui::PAGE_TRANSITION_AUTO_BOOKMARK,
                                 /*is_renderer_initiated=*/false);
-  browser->OpenURL(params);
+  browser->OpenURL(params, /*navigation_handle_callback=*/{});
 }
 
 void HistoryClustersHandler::SetPage(
@@ -240,8 +239,10 @@ void HistoryClustersHandler::ToggleVisibility(
   std::move(callback).Run(visible);
 }
 
-void HistoryClustersHandler::StartQueryClusters(const std::string& query,
-                                                bool recluster) {
+void HistoryClustersHandler::StartQueryClusters(
+    const std::string& query,
+    std::optional<base::Time> begin_time,
+    bool recluster) {
   last_query_issued_ = query;
 
   if (!query.empty()) {
@@ -258,7 +259,7 @@ void HistoryClustersHandler::StartQueryClusters(const std::string& query,
       HistoryClustersServiceFactory::GetForBrowserContext(profile_);
   query_clusters_state_ = std::make_unique<QueryClustersState>(
       history_clusters_service->GetWeakPtr(), history_service_, query,
-      recluster);
+      begin_time.value_or(base::Time()), recluster);
   LoadMoreClusters(query);
 }
 
@@ -363,7 +364,8 @@ void HistoryClustersHandler::OpenVisitUrlsInTabGroup(
     auto* opened_web_contents = browser->OpenURL(
         content::OpenURLParams(visit_ptr->normalized_url, content::Referrer(),
                                WindowOpenDisposition::NEW_BACKGROUND_TAB,
-                               ui::PAGE_TRANSITION_AUTO_BOOKMARK, false));
+                               ui::PAGE_TRANSITION_AUTO_BOOKMARK, false),
+        /*navigation_handle_callback=*/{});
 
     // Only add those tabs to a new group that actually opened in this browser.
     const int tab_index = model->GetIndexOfWebContents(opened_web_contents);

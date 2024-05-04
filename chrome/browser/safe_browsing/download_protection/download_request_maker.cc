@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "build/build_config.h"
@@ -35,9 +36,10 @@ namespace {
 // The version of this client supporting tailored warnings.
 // Please update the description of TailoredInfo field in csd.proto when
 // changing this value.
-// Note: The name of this variable is checked by PRESUBMIT. Please update the
-// PRESUBMIT script before renaming this variable.
+// LINT.IfChange
 constexpr int kTailoredWarningVersion = 3;
+constexpr int kTailoredWarningVersionDownloadReportWithoutUserDecision = 4;
+// LINT.ThenChange(/components/safe_browsing/core/common/proto/csd.proto)
 
 DownloadRequestMaker::TabUrls TabUrlsFromWebContents(
     content::WebContents* web_contents) {
@@ -205,6 +207,11 @@ void DownloadRequestMaker::Start(DownloadRequestMaker::Callback callback) {
     request_->mutable_population()->add_finch_active_groups(
         "SafeBrowsingArchiveImprovements.Enabled");
   }
+  if (profile && IsEnhancedProtectionEnabled(*profile->GetPrefs()) &&
+      base::FeatureList::IsEnabled(kDeepScanningCriteria)) {
+    request_->mutable_population()->add_finch_active_groups(
+        "SafeBrowsingDeepScanningCriteria-Enabled");
+  }
   request_->set_request_ap_verdicts(is_under_advanced_protection);
   request_->set_locale(g_browser_process->GetApplicationLocale());
   request_->set_file_basename(target_file_path_.BaseName().AsUTF8Unsafe());
@@ -299,7 +306,11 @@ void DownloadRequestMaker::OnGotTabRedirects(
 
 void DownloadRequestMaker::PopulateTailoredInfo() {
   ClientDownloadRequest::TailoredInfo tailored_info;
-  tailored_info.set_version(kTailoredWarningVersion);
+  int version = base::FeatureList::IsEnabled(
+                    safe_browsing::kDownloadReportWithoutUserDecision)
+                    ? kTailoredWarningVersionDownloadReportWithoutUserDecision
+                    : kTailoredWarningVersion;
+  tailored_info.set_version(version);
   *request_->mutable_tailored_info() = tailored_info;
 }
 

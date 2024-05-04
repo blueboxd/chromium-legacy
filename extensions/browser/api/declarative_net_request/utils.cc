@@ -48,7 +48,7 @@ namespace flat_rule = url_pattern_index::flat;
 // url_pattern_index.fbs. Whenever an extension with an indexed ruleset format
 // version different from the one currently used by Chrome is loaded, the
 // extension ruleset will be reindexed.
-constexpr int kIndexedRulesetFormatVersion = 31;
+constexpr int kIndexedRulesetFormatVersion = 32;
 
 // This static assert is meant to catch cases where
 // url_pattern_index::kUrlPatternIndexFormatVersion is incremented without
@@ -507,7 +507,7 @@ bool HasDNRFeedbackPermission(const Extension* extension,
                    mojom::APIPermissionID::kDeclarativeNetRequestFeedback);
 }
 
-// TODO(crbug.com/1370166): Add a parameter that allows more specific strings
+// TODO(crbug.com/40869593): Add a parameter that allows more specific strings
 // for error messages that can pinpoint the error within a single rule.
 std::string GetParseError(ParseResult error_reason, int rule_id) {
   switch (error_reason) {

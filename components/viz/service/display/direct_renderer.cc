@@ -33,6 +33,7 @@
 #include "components/viz/common/resources/shared_image_format.h"
 #include "components/viz/common/resources/shared_image_format_utils.h"
 #include "components/viz/common/viz_utils.h"
+#include "components/viz/service/debugger/viz_debugger.h"
 #include "components/viz/service/display/bsp_tree.h"
 #include "components/viz/service/display/bsp_walk_action.h"
 #include "components/viz/service/display/output_surface.h"
@@ -43,6 +44,7 @@
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/display_color_spaces.h"
 #include "ui/gfx/geometry/quad_f.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/transform.h"
@@ -78,7 +80,6 @@ DirectRenderer::~DirectRenderer() = default;
 
 void DirectRenderer::Initialize() {
   use_partial_swap_ = settings_->partial_swap_enabled && CanPartialSwap();
-
   initialized_ = true;
 }
 
@@ -186,7 +187,7 @@ void DirectRenderer::DecideRenderPassAllocationsForFrame(
       continue;
     }
 #else
-    // TODO(crbug.com/1322528): Consider deallocating the primary plane in this
+    // TODO(crbug.com/40224327): Consider deallocating the primary plane in this
     // case.
     // Non-Windows platforms use BufferQueue, which are not owned by the render
     // pass backing. ChromeOS must hold on to the root surface buffers to ensure
@@ -451,6 +452,10 @@ gfx::Rect DirectRenderer::GetCurrentFramebufferDamage() const {
 }
 
 gfx::Rect DirectRenderer::GetTargetDamageBoundingRect() const {
+  if (use_render_pass_drawn_rect_) {
+    return gfx::Rect();
+  }
+
   gfx::Rect bounding_rect = GetCurrentFramebufferDamage();
   if (overlay_processor_) {
     bounding_rect.Union(
@@ -662,8 +667,8 @@ void DirectRenderer::DrawRenderPass(const AggregatedRenderPass* render_pass) {
 
   UseRenderPass(render_pass);
 
-  // TODO(crbug.com/582554): This change applies only when Vulkan is enabled and
-  // it will be removed once SkiaRenderer has complete support for Vulkan.
+  // TODO(crbug.com/40454563): This change applies only when Vulkan is enabled
+  // and it will be removed once SkiaRenderer has complete support for Vulkan.
   if (current_frame()->current_render_pass !=
           current_frame()->root_render_pass &&
       !IsRenderPassResourceAllocated(render_pass->id))
@@ -702,7 +707,8 @@ void DirectRenderer::DrawRenderPass(const AggregatedRenderPass* render_pass) {
   const gfx::Rect render_pass_update_rect = MoveFromDrawToWindowSpace(
       render_pass_requires_scissor ? render_pass_scissor_in_draw_space
                                    : surface_rect_in_draw_space);
-  BeginDrawingRenderPass(should_clear_surface, render_pass_update_rect);
+  BeginDrawingRenderPass(render_pass, should_clear_surface,
+                         render_pass_update_rect);
 
   if (is_root_render_pass)
     last_root_render_pass_scissor_rect_ = render_pass_scissor_in_draw_space;
@@ -751,9 +757,6 @@ void DirectRenderer::DrawRenderPass(const AggregatedRenderPass* render_pass) {
   FlushPolygons(&poly_list, render_pass_scissor_in_draw_space,
                 render_pass_requires_scissor);
   FinishDrawingRenderPass();
-
-  if (render_pass->generate_mipmap)
-    GenerateMipmap();
 }
 
 bool DirectRenderer::CanSkipRenderPass(
@@ -767,7 +770,7 @@ bool DirectRenderer::CanSkipRenderPass(
   // the RenderPass.
   if (render_pass->cache_render_pass ||
       allow_undamaged_nonroot_render_pass_to_skip_) {
-    // TODO(crbug.com/1346502): Fix CopyOutputRequest and allow the render pass
+    // TODO(crbug.com/40232521): Fix CopyOutputRequest and allow the render pass
     // with copy request to skip.
     if (render_pass->has_damage_from_contributing_content ||
         !render_pass->copy_requests.empty()) {
@@ -782,31 +785,49 @@ bool DirectRenderer::CanSkipRenderPass(
 DirectRenderer::RenderPassRequirements
 DirectRenderer::CalculateRenderPassRequirements(
     const AggregatedRenderPass* render_pass) const {
-  bool is_root = render_pass == current_frame()->root_render_pass;
+  const bool is_root = render_pass == current_frame()->root_render_pass;
 
   RenderPassRequirements requirements;
 
+#if BUILDFLAG(IS_WIN)
+  // All root render pass backings allocated by the renderer needs to eventually
+  // go into some composition tree. Other things that own/allocate the root pass
+  // backing include the output device and buffer queue.
+  // Windows also can support scanout backings for non-root passes to optimize
+  // partially delegated compositing iff they will not be read in Viz.
+  requirements.is_scanout =
+      is_root || (features::IsDelegatedCompositingEnabled() &&
+                  render_pass->is_from_surface_root_pass &&
+                  !render_pass->will_backing_be_read_by_viz);
+
+  requirements.scanout_dcomp_surface =
+      requirements.is_scanout && render_pass->needs_synchronous_dcomp_commit;
+#else
+  // On macOS and Lacros, the root render pass is handled by |BufferQueue| and
+  // RPDQ overlays are handled by |PrepareRenderPassOverlay|.
+  requirements.is_scanout = is_root;
+#endif
+
   if (is_root) {
     requirements.size = surface_size_for_swap_buffers();
+  } else {
+    requirements.size = CalculateTextureSizeForRenderPass(render_pass);
+  }
+
+  if (requirements.is_scanout) {
+    CHECK(!render_pass->generate_mipmap);
     requirements.generate_mipmap = false;
     requirements.color_space = reshape_color_space();
     requirements.format =
         GetSinglePlaneSharedImageFormat(reshape_buffer_format());
-    requirements.alpha_type = reshape_alpha_type();
-
-    // All root render pass backings allocated by the renderer needs to
-    // eventually go into some composition tree. Other things that own/allocate
-    // the root pass backing include the output device and buffer queue.
-    requirements.is_scanout = true;
-
-#if BUILDFLAG(IS_WIN)
-    requirements.scanout_dcomp_surface =
-        render_pass->needs_synchronous_dcomp_commit;
-#endif
-    CHECK_EQ(requirements.alpha_type == RenderPassAlphaType::kOpaque,
-             !render_pass->has_transparent_background);
+    if (is_root) {
+      requirements.alpha_type = reshape_alpha_type();
+    } else {
+      requirements.alpha_type = render_pass->has_transparent_background
+                                    ? RenderPassAlphaType::kPremul
+                                    : RenderPassAlphaType::kOpaque;
+    }
   } else {
-    requirements.size = CalculateTextureSizeForRenderPass(render_pass);
     requirements.generate_mipmap = render_pass->generate_mipmap;
     requirements.color_space = RenderPassColorSpace(render_pass);
     requirements.format =
@@ -832,8 +853,6 @@ void DirectRenderer::UseRenderPass(const AggregatedRenderPass* render_pass) {
   // BindFramebufferToTexture().
   if (is_root && !output_surface_->capabilities().renderer_allocates_images) {
     BindFramebufferToOutputSurface();
-    if (output_surface_->capabilities().supports_dc_layers)
-      output_surface_->SetDrawRectangle(current_frame()->root_damage_rect);
     InitializeViewport(current_frame(), render_pass->output_rect,
                        gfx::Rect(current_frame()->device_viewport_size),
                        current_frame()->device_viewport_size);
@@ -849,8 +868,8 @@ void DirectRenderer::UseRenderPass(const AggregatedRenderPass* render_pass) {
   }
   AllocateRenderPassResourceIfNeeded(render_pass->id, requirements);
 
-  // TODO(crbug.com/582554): This change applies only when Vulkan is enabled and
-  // it will be removed once SkiaRenderer has complete support for Vulkan.
+  // TODO(crbug.com/40454563): This change applies only when Vulkan is enabled
+  // and it will be removed once SkiaRenderer has complete support for Vulkan.
   if (!IsRenderPassResourceAllocated(render_pass->id))
     return;
 
@@ -863,7 +882,7 @@ void DirectRenderer::UseRenderPass(const AggregatedRenderPass* render_pass) {
 }
 
 gfx::Rect DirectRenderer::ComputeScissorRectForRenderPass(
-    const AggregatedRenderPass* render_pass) const {
+    const AggregatedRenderPass* render_pass) {
   const AggregatedRenderPass* root_render_pass =
       current_frame()->root_render_pass;
   gfx::Rect root_damage_rect = current_frame()->root_damage_rect;
@@ -961,15 +980,39 @@ gfx::Rect DirectRenderer::ComputeScissorRectForRenderPass(
     return root_damage_rect;
   }
 
-  // If the root damage rect has been expanded due to overlays, all the other
-  // damage rect calculations are incorrect.
-  if (!root_render_pass->damage_rect.Contains(root_damage_rect))
-    return render_pass->output_rect;
-
   DCHECK(render_pass->copy_requests.empty() ||
          (render_pass->damage_rect == render_pass->output_rect));
 
+  if (use_render_pass_drawn_rect_) {
+    if (GetRenderPassBackingDrawnRect(render_pass->id) ==
+        render_pass->output_rect) {
+      return render_pass->damage_rect;
+    } else {
+      // This is the first time we are drawing to this backing but it might not
+      // be the first time we are drawing this render pass. If the render pass
+      // backing has been deallocated we must conservatively redraw the entire
+      // 'output_rect' as we have lost the accumulated damaged for this pass.
+      // TODO(crbug.com/332562242): We should move to better tracking of
+      // the drawn area by only fully drawing the visible portion of this render
+      // pass and not the entire output rect. This information is available in
+      // surface aggregator as root parent clip for render passes.
+      SetRenderPassBackingDrawnRect(render_pass->id, render_pass->output_rect);
+      return render_pass->output_rect;
+    }
+  }
+  // If the root damage rect has been expanded due to overlays, all the other
+  // damage rect calculations are incorrect. If the root damage rect was shrunk
+  // to an empty rect (i.e. during overlay processing for delegated compositing)
+  // then |Contains()| no longer works as expected so it must be checked
+  // separately.
+  if (!root_damage_rect.IsEmpty() &&
+      !root_render_pass->damage_rect.Contains(root_damage_rect)) {
+    return render_pass->output_rect;
+  }
+
   // For the non-root render pass.
+  // This is a repeated computation of target damage to render pass damage that
+  // already occurs in surface aggregator.
   gfx::Rect damage_rect = render_pass->damage_rect;
   if (!frame_buffer_damage.IsEmpty()) {
     gfx::Transform inverse_transform;
@@ -1125,10 +1168,6 @@ gfx::ColorSpace DirectRenderer::RenderPassColorSpace(
       .GetWithSdrWhiteLevel(CurrentFrameSDRWhiteLevel());
 }
 
-gfx::ColorSpace DirectRenderer::CurrentRenderPassColorSpace() const {
-  return RenderPassColorSpace(current_frame()->current_render_pass);
-}
-
 SharedImageFormat DirectRenderer::GetColorSpaceSharedImageFormat(
     gfx::ColorSpace color_space) const {
   gpu::Capabilities caps;
@@ -1178,6 +1217,11 @@ gfx::Rect DirectRenderer::GetDelegatedInkTrailDamageRect() {
 gpu::Mailbox DirectRenderer::GetPrimaryPlaneOverlayTestingMailbox() {
   NOTREACHED();
   return gpu::Mailbox();
+}
+
+gfx::Rect DirectRenderer::GetRenderPassBackingDrawnRect(
+    const AggregatedRenderPassId& render_pass_id) {
+  return gfx::Rect();
 }
 
 }  // namespace viz

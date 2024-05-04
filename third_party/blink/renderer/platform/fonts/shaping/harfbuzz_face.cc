@@ -51,9 +51,12 @@
 #include "third_party/blink/renderer/platform/fonts/skia/skia_text_metrics.h"
 #include "third_party/blink/renderer/platform/fonts/unicode_range_set.h"
 #include "third_party/blink/renderer/platform/resolution_units.h"
+#include "third_party/blink/renderer/platform/text/character.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/character_names.h"
+#include "third_party/blink/renderer/platform/wtf/thread_specific.h"
+#include "third_party/blink/renderer/platform/wtf/wtf.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkPoint.h"
@@ -74,6 +77,21 @@ void HarfBuzzFace::Trace(Visitor* visitor) const {
   visitor->Trace(harfbuzz_font_data_);
 }
 
+bool& GetIgnoreVariationSelectors() {
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(WTF::ThreadSpecific<bool>,
+                                  ignore_variation_selectors, ());
+  return *ignore_variation_selectors;
+}
+
+bool HarfBuzzFace::ShouldIgnoreVariationSelectors() {
+  return GetIgnoreVariationSelectors();
+}
+
+void HarfBuzzFace::SetIgnoreVariationSelectors(bool value) {
+  DCHECK(RuntimeEnabledFeatures::FontVariationSequencesEnabled() || value);
+  GetIgnoreVariationSelectors() = value;
+}
+
 static hb_bool_t HarfBuzzGetGlyph(hb_font_t* hb_font,
                                   void* font_data,
                                   hb_codepoint_t unicode,
@@ -84,8 +102,10 @@ static hb_bool_t HarfBuzzGetGlyph(hb_font_t* hb_font,
       reinterpret_cast<HarfBuzzFontData*>(font_data);
 
   CHECK(hb_font_data);
-  if (hb_font_data->range_set_ && !hb_font_data->range_set_->Contains(unicode))
+  if (hb_font_data->range_set_ &&
+      !hb_font_data->range_set_->Contains(unicode)) {
     return false;
+  }
 
   // If the system fonts do not have a glyph coverage for line separator
   // (0x2028) or paragraph separator (0x2029), missing glyph would be displayed
@@ -98,8 +118,39 @@ static hb_bool_t HarfBuzzGetGlyph(hb_font_t* hb_font,
     unicode = kSpaceCharacter;
   }
 
-  hb_bool_t hb_has_glyph = hb_font_get_glyph(
+  // Variation sequences are a special case because we want to distinguish
+  // between the cases when we found a glyph for the whole variation sequence in
+  // cmap format 14 subtable and when we found only a base character of the
+  // variation sequence. In the latter case we set the glyph value to
+  // `kUnmatchedVSGlyphId`.
+  bool consider_variation_selector =
+      RuntimeEnabledFeatures::FontVariationSequencesEnabled() &&
+      !HarfBuzzFace::ShouldIgnoreVariationSelectors() &&
+      Character::IsUnicodeVariationSelector(variation_selector) &&
+      Character::IsVariationSequence(unicode, variation_selector);
+
+  if (consider_variation_selector) {
+    hb_bool_t hb_has_vs_glyph = hb_font_get_variation_glyph(
+        hb_font_get_parent(hb_font), unicode, variation_selector, glyph);
+    if (hb_has_vs_glyph) {
+      // Found a glyph for variation sequence, no need to look for a base
+      // character, can just return.
+      return true;
+    }
+    // Unable to find a glyph for variation sequence, now we need to look for a
+    // glyph for the base character from variation sequence.
+    variation_selector = 0;
+  }
+
+  hb_bool_t hb_has_base_glyph = hb_font_get_glyph(
       hb_font_get_parent(hb_font), unicode, variation_selector, glyph);
+
+  if (consider_variation_selector && hb_has_base_glyph) {
+    // Unable to find a glyph for variation sequence, but found a glyph for
+    // the base character from variation sequence ignoring variation selector.
+    *glyph = kUnmatchedVSGlyphId;
+  }
+
 // MacOS CoreText API synthesizes GlyphID for several unicode codepoints,
 // for example, hyphens and separators for some fonts. HarfBuzz does not
 // synthesize such glyphs, and as it's not found from the last resort font, we
@@ -109,7 +160,7 @@ static hb_bool_t HarfBuzzGetGlyph(hb_font_t* hb_font,
 // For performance reasons, we limit this fallback lookup to the specific
 // missing glyphs for hyphens and only to Mac OS, where we're facing this issue.
 #if BUILDFLAG(IS_APPLE)
-  if (!hb_has_glyph) {
+  if (!hb_has_base_glyph) {
     SkTypeface* typeface = hb_font_data->font_.getTypeface();
     if (!typeface) {
       return false;
@@ -121,7 +172,7 @@ static hb_bool_t HarfBuzzGetGlyph(hb_font_t* hb_font,
     }
   }
 #endif
-  return hb_has_glyph;
+  return hb_has_base_glyph;
 }
 
 static hb_bool_t HarfBuzzGetNominalGlyph(hb_font_t* hb_font,
@@ -168,8 +219,9 @@ static hb_bool_t HarfBuzzGetGlyphVerticalOrigin(hb_font_t* hb_font,
   HarfBuzzFontData* hb_font_data =
       reinterpret_cast<HarfBuzzFontData*>(font_data);
   OpenTypeVerticalData* vertical_data = hb_font_data->VerticalData();
-  if (!vertical_data)
+  if (!vertical_data) {
     return false;
+  }
 
   float result[] = {0, 0};
   Glyph the_glyph = glyph;
@@ -216,8 +268,9 @@ static inline bool TableHasSpace(hb_face_t* face,
   for (unsigned i = 0; i < count; i++) {
     hb_ot_layout_lookup_collect_glyphs(face, tag, i, glyphs, glyphs, glyphs,
                                        nullptr);
-    if (hb_set_has(glyphs, space))
+    if (hb_set_has(glyphs, space)) {
       return true;
+    }
   }
   return false;
 }
@@ -289,6 +342,17 @@ Glyph HarfBuzzFace::HbGlyphForCharacter(UChar32 character) {
   return glyph;
 }
 
+hb_codepoint_t HarfBuzzFace::HarfBuzzGetGlyphForTesting(
+    UChar32 character,
+    UChar32 variation_selector) {
+  DCHECK(RuntimeEnabledFeatures::FontVariationSequencesEnabled());
+  hb_codepoint_t glyph = 0;
+  HarfBuzzGetGlyph(harfbuzz_font_data_->unscaled_font_.get(),
+                   harfbuzz_font_data_, character, variation_selector, &glyph,
+                   nullptr);
+  return glyph;
+}
+
 bool HarfBuzzFace::ShouldSubpixelPosition() {
   return harfbuzz_font_data_->font_.isSubpixel();
 }
@@ -326,10 +390,12 @@ class HarfBuzzSkiaFontFuncs final {
     DCHECK_EQ(num_tags, returned_tags);
 
     for (auto& tag : tags) {
-      if (tag == SkSetFourByteTag('t', 'r', 'a', 'k'))
+      if (tag == SkSetFourByteTag('t', 'r', 'a', 'k')) {
         has_trak = true;
-      if (tag == SkSetFourByteTag('s', 'b', 'i', 'x'))
+      }
+      if (tag == SkSetFourByteTag('s', 'b', 'i', 'x')) {
         has_sbix = true;
+      }
     }
 
     return has_trak && !has_sbix ? hb_font_funcs_harfbuzz_advances_
@@ -409,8 +475,9 @@ static hb_blob_t* HarfBuzzSkiaGetTable(hb_face_t* face,
 
   char* buffer = reinterpret_cast<char*>(WTF::Partitions::FastMalloc(
       table_size, WTF_HEAP_PROFILER_TYPE_NAME(HarfBuzzFontData)));
-  if (!buffer)
+  if (!buffer) {
     return nullptr;
+  }
   size_t actual_size = typeface->getTableData(tag, 0, table_size, buffer);
   if (table_size != actual_size) {
     WTF::Partitions::FastFree(buffer);

@@ -94,6 +94,16 @@ class SecondDeviceAuthBroker {
 
       // Federated Enterprise accounts are currently not supported.
       kFederatedEnterpriseAccountNotSupported,
+
+      // A Unicorn account was used for QuickStart when QuickStart is disallowed
+      // for the account.
+      kUnicornAccountNotEnabled,
+
+      // Account lookup failed - account not found.
+      kAccountNotFound,
+
+      // Account lookup failed - captcha required.
+      kCaptchaRequired,
     };
 
     Reason reason;

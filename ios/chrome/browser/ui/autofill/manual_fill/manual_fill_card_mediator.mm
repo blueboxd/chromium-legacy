@@ -12,6 +12,7 @@
 #import "components/autofill/core/browser/browser_autofill_manager.h"
 #import "components/autofill/core/browser/data_model/credit_card.h"
 #import "components/autofill/core/common/autofill_payments_features.h"
+#import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/shared/ui/list_model/list_model.h"
 #import "ios/chrome/browser/shared/ui/table_view/table_view_model.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
@@ -23,10 +24,13 @@
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_content_injector.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_credit_card+CreditCard.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_credit_card.h"
+#import "ios/chrome/browser/ui/menu/browser_action_factory.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #import "ui/base/l10n/l10n_util_mac.h"
 #import "url/gurl.h"
+
+using manual_fill::PaymentFieldType;
 
 namespace autofill {
 class CreditCard;
@@ -107,24 +111,31 @@ NSString* const kAddPaymentMethodAccessibilityIdentifier =
             autofill::CreditCard::VirtualCardEnrollmentState::kEnrolled) {
       [cardItems addObject:[self createVirtualCardItem:card]];
     }
+    NSArray<UIAction*>* menuActions =
+        IsKeyboardAccessoryUpgradeEnabled() ? [self createMenuActions] : @[];
     [cardItems addObject:[[ManualFillCardItem alloc]
                              initWithCreditCard:manualFillCreditCard
                                 contentInjector:self.contentInjector
-                             navigationDelegate:self.navigationDelegate]];
+                             navigationDelegate:self.navigationDelegate
+                                    menuActions:menuActions]];
   }
 
   [self.consumer presentCards:cardItems];
 }
 
 - (ManualFillCardItem*)createVirtualCardItem:(autofill::CreditCard*)card {
-  std::unique_ptr<autofill::CreditCard> virtualCard =
-      autofill::CreditCard::CreateVirtualCardWithGuidSuffix(*card);
+  autofill::CreditCard virtualCard =
+      autofill::CreditCard::CreateVirtualCard(*card);
   ManualFillCreditCard* manualFillVirtualCreditCard =
-      [[ManualFillCreditCard alloc] initWithCreditCard:*virtualCard];
+      [[ManualFillCreditCard alloc] initWithCreditCard:virtualCard];
+  NSArray<UIAction*>* menuActions =
+      IsKeyboardAccessoryUpgradeEnabled() ? [self createMenuActions] : @[];
+
   return
       [[ManualFillCardItem alloc] initWithCreditCard:manualFillVirtualCreditCard
                                      contentInjector:self.contentInjector
-                                  navigationDelegate:self.navigationDelegate];
+                                  navigationDelegate:self.navigationDelegate
+                                         menuActions:menuActions];
 }
 
 - (void)postActionsToConsumer {
@@ -159,15 +170,48 @@ NSString* const kAddPaymentMethodAccessibilityIdentifier =
   [self.consumer presentActions:@[ addCreditCardsItem, manageCreditCardsItem ]];
 }
 
+// Creates an "Edit" and a "Show Details" UIAction to be used with a UIMenu.
+- (NSArray<UIAction*>*)createMenuActions {
+  ActionFactory* actionFactory = [[ActionFactory alloc]
+      initWithScenario:
+          kMenuScenarioHistogramAutofillManualFallbackPaymentEntry];
+  UIAction* editAction = [actionFactory actionToEditWithBlock:^{
+      // TODO(crbug.com/326413453): Handle tap.
+  }];
+
+  // TODO(crbug.com/326413453): Add Show Details action.
+
+  return @[ editAction ];
+}
+
 #pragma mark - FullCardRequestResultDelegateObserving
 
-- (void)onFullCardRequestSucceeded:(const autofill::CreditCard&)card {
+- (void)onFullCardRequestSucceeded:(const autofill::CreditCard&)card
+                         fieldType:(manual_fill::PaymentFieldType)fieldType {
   // Credit card are not shown as 'Secure'.
   ManualFillCreditCard* manualFillCreditCard =
       [[ManualFillCreditCard alloc] initWithCreditCard:card];
+  NSString* fillValue;
+  if (base::FeatureList::IsEnabled(
+          autofill::features::kAutofillEnableVirtualCards)) {
+    switch (fieldType) {
+      case PaymentFieldType::kCardNumber:
+        fillValue = manualFillCreditCard.number;
+        break;
+      case PaymentFieldType::kExpirationMonth:
+        fillValue = manualFillCreditCard.expirationMonth;
+        break;
+      case PaymentFieldType::kExpirationYear:
+        fillValue = manualFillCreditCard.expirationYear;
+        break;
+    }
+  } else {
+    fillValue = manualFillCreditCard.number;
+  }
+
   // Don't replace the locked card with the unlocked one, so the user will
   // have to unlock it again, if needed.
-  [self.contentInjector userDidPickContent:manualFillCreditCard.number
+  [self.contentInjector userDidPickContent:fillValue
                              passwordField:NO
                              requiresHTTPS:YES];
 }

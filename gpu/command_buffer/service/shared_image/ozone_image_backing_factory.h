@@ -24,8 +24,9 @@ class SharedContextState;
 class GPU_GLES2_EXPORT OzoneImageBackingFactory
     : public SharedImageBackingFactory {
  public:
-  explicit OzoneImageBackingFactory(SharedContextState* shared_context_state,
-                                    const GpuDriverBugWorkarounds& workarounds);
+  explicit OzoneImageBackingFactory(
+      scoped_refptr<SharedContextState> shared_context_state,
+      const GpuDriverBugWorkarounds& workarounds);
 
   ~OzoneImageBackingFactory() override;
 
@@ -51,6 +52,7 @@ class GPU_GLES2_EXPORT OzoneImageBackingFactory
       SkAlphaType alpha_type,
       uint32_t usage,
       std::string debug_label,
+      bool is_thread_safe,
       base::span<const uint8_t> pixel_data) override;
 
   std::unique_ptr<SharedImageBacking> CreateSharedImage(
@@ -105,11 +107,11 @@ class GPU_GLES2_EXPORT OzoneImageBackingFactory
   bool CanImportNativePixmapToWebGPU();
   bool CanWebGPUSynchronizeGpuFence();
 
-  const raw_ptr<SharedContextState> shared_context_state_;
+  const scoped_refptr<SharedContextState> shared_context_state_;
   const GpuDriverBugWorkarounds workarounds_;
 
   // This method optionally takes BufferUsage as a parameter.
-  // TODO(crbug.com/1467584) : BufferUsage will be eventually merged into
+  // TODO(crbug.com/40276844) : BufferUsage will be eventually merged into
   // SharedImageUsage at which point BufferUsage should be removed.
   std::unique_ptr<OzoneImageBacking> CreateSharedImageInternal(
       const Mailbox& mailbox,

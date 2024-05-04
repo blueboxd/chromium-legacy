@@ -289,7 +289,7 @@ void BrowserTabStripController::SelectTab(int model_index,
       ->GetCompositor()
       ->RequestSuccessfulPresentationTimeForNextFrame(base::BindOnce(
           [](std::unique_ptr<content::PeakGpuMemoryTracker> tracker,
-             base::TimeTicks presentation_timestamp) {
+             const viz::FrameTimingDetails& frame_timing_details) {
             // This callback will be ran once the ui::Compositor presents the
             // next frame for the |tabstrip_|. The destruction of |tracker| will
             // get the peak GPU memory and record a histogram.
@@ -698,14 +698,10 @@ void BrowserTabStripController::OnTabGroupChanged(
           if (base::FeatureList::IsEnabled(
                   features::kTabGroupsCollapseFreezing)) {
             if (new_visuals->is_collapsed()) {
-              tabstrip_->tab_at(i)->SetFreezingVoteToken(
-                  performance_manager::freezing::EmitFreezingVoteForWebContents(
-                      model_->GetWebContentsAt(i),
-                      performance_manager::freezing::FreezingVoteValue::
-                          kCanFreeze,
-                      "Collapsed Tab Group"));
+              tabstrip_->tab_at(i)->CreateFreezingVote(
+                  model_->GetWebContentsAt(i));
             } else {
-              tabstrip_->tab_at(i)->ReleaseFreezingVoteToken();
+              tabstrip_->tab_at(i)->ReleaseFreezingVote();
             }
           }
         }

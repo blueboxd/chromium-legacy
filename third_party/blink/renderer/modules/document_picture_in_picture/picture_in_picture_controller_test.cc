@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/modules/document_picture_in_picture/picture_in_picture_controller_impl.h"
-
 #include <memory>
 
 #include "base/containers/contains.h"
@@ -32,6 +30,7 @@
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 #include "third_party/blink/renderer/core/testing/wait_for_event.h"
 #include "third_party/blink/renderer/modules/document_picture_in_picture/document_picture_in_picture.h"
+#include "third_party/blink/renderer/modules/document_picture_in_picture/picture_in_picture_controller_impl.h"
 #include "third_party/blink/renderer/platform/graphics/unaccelerated_static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_component.h"
@@ -40,16 +39,16 @@
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
 
-#if !BUILDFLAG(IS_ANDROID)
+#if !BUILDFLAG(TARGET_OS_IS_ANDROID)
 #include "third_party/blink/renderer/bindings/modules/v8/v8_document_picture_in_picture_options.h"
-#endif  // !BUILDFLAG(IS_ANDROID)
+#endif  // !BUILDFLAG(TARGET_OS_IS_ANDROID)
 
 using ::testing::_;
 
 namespace blink {
 
 namespace {
-#if !BUILDFLAG(IS_ANDROID)
+#if !BUILDFLAG(TARGET_OS_IS_ANDROID)
 KURL GetOpenerURL() {
   return KURL("https://example.com/");
 }
@@ -79,8 +78,7 @@ LocalDOMWindow* OpenDocumentPictureInPictureWindow(
 
   // Create the DocumentPictureInPictureOptions.
   auto* resolver =
-      MakeGarbageCollected<ScriptPromiseResolverTyped<LocalDOMWindow>>(
-          script_state);
+      MakeGarbageCollected<ScriptPromiseResolver<DOMWindow>>(script_state);
   ExceptionState exception_state(script_state->GetIsolate(),
                                  ExceptionContextType::kOperationInvoke,
                                  "DocumentPictureInPicture", "requestWindow");
@@ -95,7 +93,7 @@ LocalDOMWindow* OpenDocumentPictureInPictureWindow(
             v8::Number::New(v8_scope.GetIsolate(), 320))
       .Check();
   DocumentPictureInPictureOptions* options =
-      DocumentPictureInPictureOptions::Create(resolver->Promise().GetIsolate(),
+      DocumentPictureInPictureOptions::Create(script_state->GetIsolate(),
                                               v8_object, exception_state);
 
   // Set a base URL for the opener window.
@@ -107,7 +105,7 @@ LocalDOMWindow* OpenDocumentPictureInPictureWindow(
 
   return controller.documentPictureInPictureWindow();
 }
-#endif  // !BUILDFLAG(IS_ANDROID)
+#endif  // !BUILDFLAG(TARGET_OS_IS_ANDROID)
 
 }  // namespace
 
@@ -338,7 +336,7 @@ class PictureInPictureControllerTestWithWidget : public RenderingTest {
   WebViewImpl* GetWebView() const { return helper_.GetWebView(); }
 
   void ResetMediaPlayerAndMediaSource() {
-    DynamicTo<HTMLMediaElement>(Video())->ResetMediaPlayerAndMediaSource();
+    Video()->ResetMediaPlayerAndMediaSource();
   }
 
  private:
@@ -539,7 +537,7 @@ TEST_F(PictureInPictureControllerTestWithWidget,
   EXPECT_EQ(nullptr, Video()->GetWebMediaPlayer());
 
   auto* resolver =
-      MakeGarbageCollected<ScriptPromiseResolverTyped<PictureInPictureWindow>>(
+      MakeGarbageCollected<ScriptPromiseResolver<PictureInPictureWindow>>(
           scope.GetScriptState());
   auto promise = resolver->Promise();
   PictureInPictureControllerImpl::From(GetDocument())
@@ -548,7 +546,7 @@ TEST_F(PictureInPictureControllerTestWithWidget,
   // Verify rejected with DOMExceptionCode::kInvalidStateError.
   EXPECT_EQ(v8::Promise::kRejected, promise.V8Promise()->State());
   DOMException* dom_exception = V8DOMException::ToWrappable(
-      promise.GetIsolate(), promise.V8Promise()->Result());
+      scope.GetIsolate(), promise.V8Promise()->Result());
   ASSERT_NE(dom_exception, nullptr);
   EXPECT_EQ(static_cast<int>(DOMExceptionCode::kInvalidStateError),
             dom_exception->code());
@@ -642,7 +640,7 @@ TEST_F(PictureInPictureControllerTestWithWidget, VideoIsNotAllowedIfAutoPip) {
                 .IsElementAllowed(*Video(), /*report_failure=*/false));
 }
 
-#if !BUILDFLAG(IS_ANDROID)
+#if !BUILDFLAG(TARGET_OS_IS_ANDROID)
 TEST_F(PictureInPictureControllerTestWithWidget,
        DocumentPiPDoesNotAllowVizThrottling) {
   EXPECT_TRUE(GetWidget()->GetMayThrottleIfUndrawnFramesForTesting());
@@ -831,8 +829,7 @@ TEST_F(PictureInPictureControllerTestWithChromeClient,
 
   // Create the DocumentPictureInPictureOptions.
   auto* resolver =
-      MakeGarbageCollected<ScriptPromiseResolverTyped<LocalDOMWindow>>(
-          script_state);
+      MakeGarbageCollected<ScriptPromiseResolver<DOMWindow>>(script_state);
   ExceptionState exception_state(script_state->GetIsolate(),
                                  ExceptionContextType::kOperationInvoke,
                                  "DocumentPictureInPicture", "requestWindow");
@@ -840,8 +837,8 @@ TEST_F(PictureInPictureControllerTestWithChromeClient,
   v8::Local<v8::Object> v8_object = v8::Object::New(v8_scope.GetIsolate());
   const auto promise = resolver->Promise();
   DocumentPictureInPictureOptions* options =
-      DocumentPictureInPictureOptions::Create(promise.GetIsolate(), v8_object,
-                                              exception_state);
+      DocumentPictureInPictureOptions::Create(script_state->GetIsolate(),
+                                              v8_object, exception_state);
 
   // Set a URL for the opener window.
   document.SetURL(opener_url);
@@ -858,7 +855,7 @@ TEST_F(PictureInPictureControllerTestWithChromeClient,
   // Verify rejected with DOMExceptionCode::kInvalidStateError.
   EXPECT_EQ(promise.V8Promise()->State(), v8::Promise::kRejected);
   DOMException* dom_exception = V8DOMException::ToWrappable(
-      promise.GetIsolate(), promise.V8Promise()->Result());
+      script_state->GetIsolate(), promise.V8Promise()->Result());
   ASSERT_NE(dom_exception, nullptr);
   EXPECT_EQ(dom_exception->code(),
             static_cast<int>(DOMExceptionCode::kInvalidStateError));
@@ -904,6 +901,6 @@ TEST_F(PictureInPictureControllerTestWithChromeClient, CopiesAutoplayFlags) {
   EXPECT_EQ(pictureInPictureWindow->document()->GetPage()->AutoplayFlags(),
             flags);
 }
-#endif  // !BUILDFLAG(IS_ANDROID)
+#endif  // !BUILDFLAG(TARGET_OS_IS_ANDROID)
 
 }  // namespace blink

@@ -20,6 +20,7 @@
 #include "base/test/test_future.h"
 #include "chrome/browser/ash/accessibility/accessibility_manager.h"
 #include "chrome/browser/ash/accessibility/speech_monitor.h"
+#include "chrome/browser/ash/app_mode/kiosk_controller.h"
 #include "chrome/browser/ash/app_mode/kiosk_system_session.h"
 #include "chrome/browser/ash/login/app_mode/test/kiosk_base_test.h"
 #include "chrome/browser/ash/login/app_mode/test/kiosk_test_helpers.h"
@@ -187,8 +188,7 @@ IN_PROC_BROWSER_TEST_F(KioskDeviceOwnedTest, InstallAndLaunchApp) {
   base::AddFeatureIdTagToTestResult(
       "screenplay-5e6b8c54-2eab-4ac0-a484-b9738466bb9b");
 
-  StartAppLaunchFromLoginScreen(
-      NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE);
+  StartAppLaunchFromLoginScreen(NetworkStatus::kOnline);
   WaitForAppLaunchSuccess();
   KioskChromeAppManager::App app;
   ASSERT_TRUE(KioskChromeAppManager::Get()->GetApp(test_app_id(), &app));
@@ -201,8 +201,7 @@ IN_PROC_BROWSER_TEST_F(KioskDeviceOwnedTest, WindowViewsBounds) {
   ExtensionTestMessageListener app_window_loaded_listener("appWindowLoaded");
 
   // Start app launch with network portal state.
-  StartAppLaunchFromLoginScreen(
-      NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE);
+  StartAppLaunchFromLoginScreen(NetworkStatus::kOnline);
   EXPECT_TRUE(app_window_loaded_listener.WaitUntilSatisfied());
 
   // Verify the primary user profile is existing.
@@ -231,8 +230,7 @@ IN_PROC_BROWSER_TEST_F(KioskDeviceOwnedTest, WindowViewsBounds) {
 
 IN_PROC_BROWSER_TEST_F(KioskDeviceOwnedTest,
                        VirtualKeyboardFeaturesEnabledByDefault) {
-  StartAppLaunchFromLoginScreen(
-      NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE);
+  StartAppLaunchFromLoginScreen(NetworkStatus::kOnline);
   WaitForAppLaunchSuccess();
 
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();
@@ -250,8 +248,7 @@ IN_PROC_BROWSER_TEST_F(KioskDeviceOwnedTest,
 
 IN_PROC_BROWSER_TEST_F(KioskDeviceOwnedTest, HiddenShelf) {
   ExtensionTestMessageListener app_window_loaded_listener("appWindowLoaded");
-  StartAppLaunchFromLoginScreen(
-      NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE);
+  StartAppLaunchFromLoginScreen(NetworkStatus::kOnline);
   EXPECT_TRUE(app_window_loaded_listener.WaitUntilSatisfied());
 
   // The shelf should be hidden at the beginning.
@@ -284,8 +281,7 @@ IN_PROC_BROWSER_TEST_F(KioskDeviceOwnedTest, HiddenShelf) {
 IN_PROC_BROWSER_TEST_F(KioskDeviceOwnedTest, NotSignedInWithGAIAAccount) {
   // Tests that the kiosk session is not considered to be logged in with a GAIA
   // account.
-  StartAppLaunchFromLoginScreen(
-      NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE);
+  StartAppLaunchFromLoginScreen(NetworkStatus::kOnline);
   WaitForAppLaunchSuccess();
   EXPECT_EQ(ManifestLocation::kExternalPref, GetInstalledAppLocation());
 
@@ -301,8 +297,7 @@ IN_PROC_BROWSER_TEST_F(KioskDeviceOwnedTest,
       NetworkUiController::SetCanConfigureNetworkForTesting(false);
 
   // Start app launch and wait for network connectivity timeout.
-  StartAppLaunchFromLoginScreen(
-      NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_OFFLINE);
+  StartAppLaunchFromLoginScreen(NetworkStatus::kOffline);
   OobeScreenWaiter splash_waiter(AppLaunchSplashScreenView::kScreenId);
   splash_waiter.Wait();
 
@@ -321,26 +316,23 @@ IN_PROC_BROWSER_TEST_F(KioskDeviceOwnedTest, GetVolumeList) {
   SetTestApp(kTestGetVolumeListKioskAppId, /*version=*/"0.1");
 
   extensions::ResultCatcher catcher;
-  StartAppLaunchFromLoginScreen(
-      NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE);
+  StartAppLaunchFromLoginScreen(NetworkStatus::kOnline);
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
 IN_PROC_BROWSER_TEST_F(KioskDeviceOwnedTest, OpenA11ySettings) {
-  StartAppLaunchFromLoginScreen(
-      NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE);
+  StartAppLaunchFromLoginScreen(NetworkStatus::kOnline);
   WaitForAppLaunchWithOptions(/*check_launch_data=*/true,
                               /*terminate_app=*/false,
                               /*keep_app_open=*/true);
 
-  Browser* settings_browser = OpenA11ySettingsBrowser(
-      KioskChromeAppManager::Get()->kiosk_system_session());
+  Browser* settings_browser =
+      OpenA11ySettingsBrowser(KioskController::Get().GetKioskSystemSession());
   ASSERT_TRUE(settings_browser);
 }
 
 IN_PROC_BROWSER_TEST_F(KioskDeviceOwnedTest, SettingsWindow) {
-  StartAppLaunchFromLoginScreen(
-      NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE);
+  StartAppLaunchFromLoginScreen(NetworkStatus::kOnline);
   WaitForAppLaunchWithOptions(/*check_launch_data=*/true,
                               /*terminate_app=*/false,
                               /*keep_app_open=*/true);
@@ -361,7 +353,7 @@ IN_PROC_BROWSER_TEST_F(KioskDeviceOwnedTest, SettingsWindow) {
   // Replace the settings allowlist with `settings_pages`.
   ScopedSettingsPages pages(&settings_pages);
   KioskSystemSession* system_session =
-      KioskChromeAppManager::Get()->kiosk_system_session();
+      KioskController::Get().GetKioskSystemSession();
 
   // App session should be initialized.
   ASSERT_TRUE(system_session);
@@ -423,13 +415,12 @@ IN_PROC_BROWSER_TEST_F(KioskDeviceOwnedTest, SettingsWindow) {
 // This test covers b/245088137: after opening the settings browser and moving
 // focus to the main kiosk app, the settings browser could not be opened again.
 IN_PROC_BROWSER_TEST_F(KioskDeviceOwnedTest, SettingsWindowShouldBeActive) {
-  StartAppLaunchFromLoginScreen(
-      NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE);
+  StartAppLaunchFromLoginScreen(NetworkStatus::kOnline);
   WaitForAppLaunchWithOptions(/*check_launch_data=*/true,
                               /*terminate_app=*/false,
                               /*keep_app_open=*/true);
   KioskSystemSession* system_session =
-      KioskChromeAppManager::Get()->kiosk_system_session();
+      KioskController::Get().GetKioskSystemSession();
 
   // App session should be initialized.
   ASSERT_TRUE(system_session);
@@ -470,13 +461,12 @@ IN_PROC_BROWSER_TEST_F(KioskDeviceOwnedTest, SettingsWindowShouldBeActive) {
 // If only the a11y settings window remains open, it should not be automatically
 // closed in the chrome app kiosk session.
 IN_PROC_BROWSER_TEST_F(KioskDeviceOwnedTest, SettingsWindowRemainsOpen) {
-  StartAppLaunchFromLoginScreen(
-      NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE);
+  StartAppLaunchFromLoginScreen(NetworkStatus::kOnline);
   WaitForAppLaunchWithOptions(/*check_launch_data=*/true,
                               /*terminate_app=*/false,
                               /*keep_app_open=*/true);
   KioskSystemSession* system_session =
-      KioskChromeAppManager::Get()->kiosk_system_session();
+      KioskController::Get().GetKioskSystemSession();
   // App session should be initialized.
   ASSERT_NE(system_session, nullptr);
 
@@ -492,13 +482,12 @@ IN_PROC_BROWSER_TEST_F(KioskDeviceOwnedTest, SettingsWindowRemainsOpen) {
 // Closing the a11y settings window should not exit the chrome app kiosk
 // session.
 IN_PROC_BROWSER_TEST_F(KioskDeviceOwnedTest, CloseSettingsWindow) {
-  StartAppLaunchFromLoginScreen(
-      NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE);
+  StartAppLaunchFromLoginScreen(NetworkStatus::kOnline);
   WaitForAppLaunchWithOptions(/*check_launch_data=*/true,
                               /*terminate_app=*/false,
                               /*keep_app_open=*/true);
   KioskSystemSession* system_session =
-      KioskChromeAppManager::Get()->kiosk_system_session();
+      KioskController::Get().GetKioskSystemSession();
   // App session should be initialized.
   ASSERT_NE(system_session, nullptr);
 
@@ -550,8 +539,7 @@ IN_PROC_BROWSER_TEST_F(
     KioskDeviceOwnedTest,
     PRE_AccessibilityExtensionsResetTheirStateUponSessionRestart) {
   test::SpeechMonitor speech_monitor;
-  StartAppLaunchFromLoginScreen(
-      NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE);
+  StartAppLaunchFromLoginScreen(NetworkStatus::kOnline);
   WaitForAppLaunchWithOptions(/*check_launch_data=*/true,
                               /*terminate_app=*/false,
                               /*keep_app_open=*/true);
@@ -605,8 +593,7 @@ IN_PROC_BROWSER_TEST_F(
     KioskDeviceOwnedTest,
     DISABLED_AccessibilityExtensionsResetTheirStateUponSessionRestart) {
   test::SpeechMonitor speech_monitor;
-  StartAppLaunchFromLoginScreen(
-      NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE);
+  StartAppLaunchFromLoginScreen(NetworkStatus::kOnline);
   WaitForAppLaunchWithOptions(/*check_launch_data=*/true,
                               /*terminate_app=*/false,
                               /*keep_app_open=*/true);

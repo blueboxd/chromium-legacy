@@ -4,13 +4,13 @@
 
 #include "net/spdy/spdy_proxy_client_socket.h"
 
+#include <string_view>
 #include <utility>
 
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
-#include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "net/base/address_list.h"
 #include "net/base/host_port_pair.h"
@@ -31,6 +31,7 @@
 #include "net/log/test_net_log.h"
 #include "net/log/test_net_log_util.h"
 #include "net/socket/client_socket_factory.h"
+#include "net/socket/connect_job_params.h"
 #include "net/socket/connect_job_test_util.h"
 #include "net/socket/next_proto.h"
 #include "net/socket/socket_tag.h"
@@ -106,11 +107,11 @@ base::WeakPtr<SpdySession> CreateSpdyProxySession(
       /*supported_alpns=*/base::flat_set<std::string>{"h2", "http/1.1"});
 
   SSLConfig ssl_config;
+  ssl_config.privacy_mode = key.privacy_mode();
   auto ssl_params = base::MakeRefCounted<SSLSocketParams>(
-      transport_params, /*socks_proxy_params=*/nullptr,
-      /*http_proxy_params=*/nullptr,
+      ConnectJobParams(transport_params),
       HostPortPair::FromSchemeHostPort(destination), ssl_config,
-      key.privacy_mode(), key.network_anonymization_key());
+      key.network_anonymization_key());
   TestConnectJobDelegate connect_job_delegate;
   SSLConnectJob connect_job(MEDIUM, SocketTag(), common_connect_job_params,
                             ssl_params, &connect_job_delegate,
@@ -196,16 +197,11 @@ class SpdyProxyClientSocketTest : public PlatformTest,
   // Whether to use net::Socket::ReadIfReady() instead of net::Socket::Read().
   bool use_read_if_ready() const { return GetParam(); }
 
+ protected:
   NetLogWithSource net_log_with_source_{
       NetLogWithSource::Make(NetLogSourceType::NONE)};
   RecordingNetLogObserver net_log_observer_;
-  SpdyTestUtil spdy_util_;
-  std::unique_ptr<SpdyProxyClientSocket> sock_;
-  TestCompletionCallback read_callback_;
-  TestCompletionCallback write_callback_;
-  std::unique_ptr<SequencedSocketData> data_;
 
- private:
   scoped_refptr<IOBuffer> read_buf_;
   SpdySessionDependencies session_deps_;
   std::unique_ptr<HttpNetworkSession> session_;
@@ -219,6 +215,12 @@ class SpdyProxyClientSocketTest : public PlatformTest,
   SpdySessionKey endpoint_spdy_session_key_;
   std::unique_ptr<CommonConnectJobParams> common_connect_job_params_;
   SSLSocketDataProvider ssl_;
+
+  SpdyTestUtil spdy_util_;
+  std::unique_ptr<SpdyProxyClientSocket> sock_;
+  TestCompletionCallback read_callback_;
+  TestCompletionCallback write_callback_;
+  std::unique_ptr<SequencedSocketData> data_;
 };
 
 SpdyProxyClientSocketTest::SpdyProxyClientSocketTest()
@@ -500,8 +502,8 @@ spdy::SpdySerializedFrame SpdyProxyClientSocketTest::ConstructBodyFrame(
     const char* data,
     int length,
     bool fin) {
-  return spdy_util_.ConstructSpdyDataFrame(
-      kStreamId, base::StringPiece(data, length), fin);
+  return spdy_util_.ConstructSpdyDataFrame(kStreamId,
+                                           std::string_view(data, length), fin);
 }
 
 // ----------- Connect

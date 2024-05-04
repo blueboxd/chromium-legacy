@@ -68,7 +68,7 @@ IdentityManagerFactory::IdentityManagerFactory()
           "IdentityManager",
           ProfileSelections::Builder()
               .WithRegular(ProfileSelection::kOriginalOnly)
-              // TODO(crbug.com/1418376): Check if this service is needed in
+              // TODO(crbug.com/40257657): Check if this service is needed in
               // Guest mode.
               .WithGuest(ProfileSelection::kOriginalOnly)
               .Build()) {
@@ -86,7 +86,7 @@ IdentityManagerFactory::IdentityManagerFactory()
       base::BindRepeating([](content::BrowserContext* context) {
         return GetForProfile(Profile::FromBrowserContext(context));
       }));
-  // TODO(crbug.com/1380593): This should declare a dependency to
+  // TODO(crbug.com/40244790): This should declare a dependency to
   // CookieSettingsFactory but this causes a hang for some reason.
 }
 

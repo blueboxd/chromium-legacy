@@ -8,6 +8,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/gfx/text_utils.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/badge_painter.h"
 #include "ui/views/border.h"
 #include "ui/views/metadata/type_conversion.h"
@@ -79,7 +80,7 @@ void NewBadgeLabel::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   std::u16string accessible_name = GetText();
   if (display_new_badge_) {
     accessible_name.push_back(' ');
-    accessible_name.append(GetAccessibleDescription());
+    accessible_name.append(GetViewAccessibility().GetCachedDescription());
   }
   node_data->SetNameChecked(accessible_name);
 }
@@ -119,7 +120,8 @@ void NewBadgeLabel::OnPaint(gfx::Canvas* canvas) {
   const gfx::Rect contents_bounds = GetContentsBounds();
   int extra_width = 0;
   if (badge_placement_ == BadgePlacement::kImmediatelyAfterText)
-    extra_width = std::max(0, width() - GetPreferredSize().width());
+    extra_width = std::max(
+        0, width() - GetPreferredSize(views::SizeBounds(width(), {})).width());
   const int badge_x = views::BadgePainter::kBadgeHorizontalMargin -
                       extra_width +
                       (base::i18n::IsRTL() ? width() - contents_bounds.x()

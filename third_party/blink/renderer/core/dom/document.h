@@ -40,6 +40,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
+#include "base/uuid.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/mojom/referrer_policy.mojom-blink-forward.h"
 #include "services/network/public/mojom/restricted_cookie_manager.mojom-blink-forward.h"
@@ -55,6 +56,8 @@
 #include "third_party/blink/public/mojom/permissions_policy/document_policy_feature.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/scroll/scrollbar_mode.mojom-blink-forward.h"
 #include "third_party/blink/public/web/web_form_related_change_type.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_typedefs.h"
 #include "third_party/blink/renderer/core/accessibility/axid.h"
 #include "third_party/blink/renderer/core/animation/animation_clock.h"
@@ -227,8 +230,6 @@ class RootScrollerController;
 class SVGDocumentExtensions;
 class SVGUseElement;
 class ScriptElementBase;
-class ScriptPromise;
-class ScriptPromiseResolver;
 class ScriptRegexp;
 class ScriptRunner;
 class ScriptRunnerDelayer;
@@ -262,7 +263,7 @@ class EventWithHitTestResults;
 
 enum class CSSPropertyID;
 
-struct AnnotatedRegionValue;
+struct DraggableRegionValue;
 struct FocusParams;
 struct IconURL;
 struct PhysicalOffset;
@@ -423,6 +424,13 @@ class CORE_EXPORT Document : public ContainerNode,
   bool CanContainRangeEndPoint() const override { return true; }
 
   SelectorQueryCache& GetSelectorQueryCache();
+
+  void SetStatePreservingAtomicMoveInProgress(bool value) {
+    state_preserving_atomic_move_in_progress_ = value;
+  }
+  bool StatePreservingAtomicMoveInProgress() const {
+    return state_preserving_atomic_move_in_progress_;
+  }
 
   // Focus Management.
   Element* ActiveElement() const;
@@ -919,13 +927,25 @@ class CORE_EXPORT Document : public ContainerNode,
   // https://html.spec.whatwg.org/C/#fallback-base-url
   KURL FallbackBaseURL() const;
 
+  // If we call CompleteURL* during preload, it's possible that we may not
+  // have processed any <base> element the document might have
+  // (https://crbug.com/331806513), and so we should avoid triggering use counts
+  // for resolving relative urls into absolute urls in that case. The following
+  // enum allows us to detect calls originating from PreloadRequest.
+  // TODO(https://crbug.com/330744612): Remove `CompleteURLPreloadStatus` and
+  // related code once the associated issue is ready to be closed.
+  enum CompleteURLPreloadStatus { kIsNotPreload, kIsPreload };
   // Creates URL based on passed relative url and this documents base URL.
   // Depending on base URL value it is possible that parent document
   // base URL will be used instead. Uses CompleteURLWithOverride internally.
-  KURL CompleteURL(const String&) const;
+  KURL CompleteURL(
+      const String&,
+      const CompleteURLPreloadStatus preload_status = kIsNotPreload) const;
   // Creates URL based on passed relative url and passed base URL override.
-  KURL CompleteURLWithOverride(const String&,
-                               const KURL& base_url_override) const;
+  KURL CompleteURLWithOverride(
+      const String&,
+      const KURL& base_url_override,
+      const CompleteURLPreloadStatus preload_status = kIsNotPreload) const;
 
   // Determines whether a new document should take on the same origin as that of
   // the document which created it.
@@ -1022,7 +1042,7 @@ class CORE_EXPORT Document : public ContainerNode,
   void SetLastFocusType(mojom::blink::FocusType last_focus_type);
   mojom::blink::FocusType LastFocusType() const { return last_focus_type_; }
   bool SetFocusedElement(Element*, const FocusParams&);
-  void ClearFocusedElement();
+  void ClearFocusedElement(bool omit_blur_events = false);
   Element* FocusedElement() const { return focused_element_.Get(); }
   void ClearFocusedElementIfNeeded();
   UserActionElementSet& UserActionElements() { return user_action_elements_; }
@@ -1034,11 +1054,17 @@ class CORE_EXPORT Document : public ContainerNode,
   void MoveElementExplicitlySetAttrElementsMapToNewDocument(
       const Element*,
       Document& new_document);
+  inline bool HasExplicitlySetAttrElements() const {
+    return !element_explicitly_set_attr_elements_map_.empty();
+  }
 
   CachedAttrAssociatedElementsMap* GetCachedAttrAssociatedElementsMap(Element*);
   void MoveElementCachedAttrAssociatedElementsMapToNewDocument(
       Element*,
       Document& new_document);
+  inline bool HasCachedAttrAssociatedElements() const {
+    return !element_cached_attr_associated_elements_map_.empty();
+  }
 
   // Returns false if the function fails.  e.g. |pseudo| is not supported.
   bool SetPseudoStateForTesting(Element& element,
@@ -1095,9 +1121,11 @@ class CORE_EXPORT Document : public ContainerNode,
   void AttachNodeIterator(NodeIterator*);
   void DetachNodeIterator(NodeIterator*);
   void MoveNodeIteratorsToNewDocument(Node&, Document&);
+  inline bool HasNodeIterators() const { return !node_iterators_.empty(); }
 
   void AttachRange(Range*);
   void DetachRange(Range*);
+  inline bool HasRanges() const { return !ranges_.empty(); }
 
   void DidMoveTreeToNewDocument(const Node& root);
   // nodeChildrenWillBeRemoved is used when removing all node children at once.
@@ -1157,6 +1185,7 @@ class CORE_EXPORT Document : public ContainerNode,
         kDOMCharacterDataModifiedListener,
   };
 
+  bool HasAnyListenerTypes() const { return listener_types_; }
   bool HasListenerType(ListenerType listener_type) const;
   void AddListenerTypeIfNeeded(const AtomicString& event_type, EventTarget&);
 
@@ -1209,6 +1238,8 @@ class CORE_EXPORT Document : public ContainerNode,
       mojo::PendingRemote<network::mojom::blink::RestrictedCookieManager>
           cookie_manager);
 
+  const base::Uuid& base_auction_nonce();
+
   const AtomicString& referrer() const;
 
   String domain() const;
@@ -1243,13 +1274,6 @@ class CORE_EXPORT Document : public ContainerNode,
       ExecutionContext* execution_context);
   void PermissionServiceConnectionError();
 
-  // Storage Access API methods to check for or request access to storage that
-  // may otherwise be blocked.
-  ScriptPromiseTyped<IDLBoolean> hasStorageAccess(ScriptState* script_state);
-  ScriptPromise requestStorageAccess(ScriptState* script_state);
-  ScriptPromise requestStorageAccessFor(ScriptState* script_state,
-                                        const AtomicString& site);
-
   // Fragment directive API, currently used to feature detect text-fragments.
   // https://wicg.github.io/scroll-to-text-fragment/#feature-detectability
   FragmentDirective& fragmentDirective() const;
@@ -1259,18 +1283,18 @@ class CORE_EXPORT Document : public ContainerNode,
   // with the top-level origin would exceed the top-level origin's limit on the
   // number of associated issuers) or on other internal errors (e.g. the network
   // service is unavailable).
-  ScriptPromiseTyped<IDLBoolean> hasPrivateToken(ScriptState* script_state,
-                                                 const String& issuer,
-                                                 ExceptionState&);
+  ScriptPromise<IDLBoolean> hasPrivateToken(ScriptState* script_state,
+                                            const String& issuer,
+                                            ExceptionState&);
 
   // Sends a query via Mojo to ask whether the user has a redemption record.
   // This can reject on permissions errors (e.g. associating |issuer| with the
   // top-level origin would exceed the top-level origin's limit on the number of
   // associated issuers) or on other internal errors (e.g. the network service
   // is unavailable).
-  ScriptPromiseTyped<IDLBoolean> hasRedemptionRecord(ScriptState* script_state,
-                                                     const String& issuer,
-                                                     ExceptionState&);
+  ScriptPromise<IDLBoolean> hasRedemptionRecord(ScriptState* script_state,
+                                                const String& issuer,
+                                                ExceptionState&);
 
   void ariaNotify(const String& announcement,
                   const AriaNotificationOptions* options);
@@ -1416,12 +1440,13 @@ class CORE_EXPORT Document : public ContainerNode,
   }
   bool SawDecodingError() const { return encoding_data_.SawDecodingError(); }
 
-  void SetAnnotatedRegionsDirty(bool f) { annotated_regions_dirty_ = f; }
-  bool AnnotatedRegionsDirty() const { return annotated_regions_dirty_; }
-  bool HasAnnotatedRegions() const { return has_annotated_regions_; }
-  void SetHasAnnotatedRegions(bool f) { has_annotated_regions_ = f; }
-  const Vector<AnnotatedRegionValue>& AnnotatedRegions() const;
-  void SetAnnotatedRegions(const Vector<AnnotatedRegionValue>&);
+  // Draggable regions are set using the "app-region" CSS property.
+  void SetDraggableRegionsDirty(bool f) { draggable_regions_dirty_ = f; }
+  bool DraggableRegionsDirty() const { return draggable_regions_dirty_; }
+  bool HasDraggableRegions() const { return has_draggable_regions_; }
+  void SetHasDraggableRegions(bool f) { has_draggable_regions_ = f; }
+  const Vector<DraggableRegionValue>& DraggableRegions() const;
+  void SetDraggableRegions(const Vector<DraggableRegionValue>&);
 
   void RemovedEventListener(const AtomicString& event_type,
                             const RegisteredEventListener&) final;
@@ -1499,9 +1524,12 @@ class CORE_EXPORT Document : public ContainerNode,
   void EnqueueVisualViewportScrollEvent();
   void EnqueueVisualViewportScrollEndEvent();
   void EnqueueVisualViewportResizeEvent();
-  void EnqueueSnapChangedEvent(Node* target, HeapVector<Member<Node>>& targets);
+  void EnqueueSnapChangedEvent(Node* target,
+                               Member<Node>& block_target,
+                               Member<Node>& inline_target);
   void EnqueueSnapChangingEvent(Node* target,
-                                HeapVector<Member<Node>>& targets);
+                                Member<Node>& block_target,
+                                Member<Node>& inline_target);
 
   void DispatchEventsForPrinting();
 
@@ -1691,6 +1719,7 @@ class CORE_EXPORT Document : public ContainerNode,
   CheckPseudoHasCacheScope* GetCheckPseudoHasCacheScope() const {
     return check_pseudo_has_cache_scope_;
   }
+  bool InPseudoHasChecking() const { return in_pseudo_has_checking_; }
 
   CanvasFontCache* GetCanvasFontCache();
 
@@ -1836,9 +1865,6 @@ class CORE_EXPORT Document : public ContainerNode,
   bool IsInWebAppScope() const;
 
   ComputedAccessibleNode* GetOrCreateComputedAccessibleNode(AXID ax_id);
-
-  // Return true if any accessibility contexts have been enabled.
-  bool IsAccessibilityEnabled() const { return !ax_contexts_.empty(); }
 
   void DispatchHandleLoadStart();
   void DispatchHandleLoadComplete();
@@ -2109,6 +2135,9 @@ class CORE_EXPORT Document : public ContainerNode,
                            BeforeMatchExpandedHiddenMatchableUkmNoHandler);
   FRIEND_TEST_ALL_PREFIXES(DictionaryLoadFromHeaderTest,
                            LoadDictionaryFromHeader);
+  FRIEND_TEST_ALL_PREFIXES(
+      RangeTest,
+      ContainerNodeRemovalWithSequentialFocusNavigationStartingPoint);
 
   // Listed elements that are not associated to a <form> element.
   class UnassociatedListedElementsList {
@@ -2261,6 +2290,13 @@ class CORE_EXPORT Document : public ContainerNode,
     check_pseudo_has_cache_scope_ = check_pseudo_has_cache_scope;
   }
 
+  // See CheckPseudoHasCacheScope constructor.
+  void EnterPseudoHasChecking() {
+    DCHECK(!in_pseudo_has_checking_);
+    in_pseudo_has_checking_ = true;
+  }
+  void LeavePseudoHasChecking() { in_pseudo_has_checking_ = false; }
+
   void UpdateActiveState(bool is_active, bool update_active_chain, Element*);
   void UpdateHoverState(Element*);
 
@@ -2288,30 +2324,11 @@ class CORE_EXPORT Document : public ContainerNode,
 
   void RunPostPrerenderingActivationSteps();
 
-  // Attempt permission checks for unpartitioned storage access and enable
-  // unpartitioned cookie access based on success if
-  // `request_unpartitioned_cookie_access` is true.
-  ScriptPromise RequestStorageAccessImpl(
-      ScriptState* script_state,
-      bool request_unpartitioned_cookie_access);
-
-  // Resolves the promise if the `status` can approve; rejects the promise
-  // otherwise, and consumes user activation. Enables unpartitioned cookie
-  // access if `request_unpartitioned_cookie_access` is true.
-  void ProcessStorageAccessPermissionState(
-      ScriptPromiseResolver* resolver,
-      bool request_unpartitioned_cookie_access,
-      mojom::blink::PermissionStatus status);
-
-  // Similar to `ProcessStorageAccessPermissionState`, but for the top-level
-  // variant. Notably, does not modify the per-frame storage access bit.
-  void ProcessTopLevelStorageAccessPermissionState(
-      ScriptPromiseResolver* resolver,
-      mojom::blink::PermissionStatus status);
-
   // Fetch the compression dictionary sent in the response header after the
   // document load completes.
   void FetchDictionaryFromLinkHeader();
+
+  void OnWarnUnusedPreloads(Vector<KURL> unused_preloads);
 
   Resource* GetPendingLinkPreloadForTesting(const KURL&);
 
@@ -2379,15 +2396,22 @@ class CORE_EXPORT Document : public ContainerNode,
   KURL base_url_override_;  // An alternative base URL that takes precedence
                             // over base_url_ (but not base_element_url_).
 
+  // Indicates whether all the conditions are met to trigger recording of counts
+  // for cases where sandboxed srcdoc documents use their base url to resolve
+  // relative urls.
+  // Note: mutable since it needs to be reset inside a const function.
+  // TODO(https://crbug.com/330744612): Remove this code once we have the data
+  // around how often this happens.
+  mutable bool should_record_sandboxed_srcdoc_baseurl_metrics_ = false;
+
   // Used in FallbackBaseURL() to provide the base URL for  about:srcdoc  and
   // about:blank documents, which is the initiator's base URL at the time the
   // navigation was initiated. Separate from the base_url_* fields because the
-  // fallback base URL should not take precedence over things like <base>. Note:
-  // this currently is only used when NewBaseUrlInheritanceBehavior is enabled.
+  // fallback base URL should not take precedence over things like <base>.
   KURL fallback_base_url_;
 
-  KURL base_element_url_;   // The URL set by the <base> element.
-  KURL cookie_url_;         // The URL to use for cookie access.
+  KURL base_element_url_;  // The URL set by the <base> element.
+  KURL cookie_url_;        // The URL to use for cookie access.
 
   AtomicString base_target_;
 
@@ -2544,9 +2568,9 @@ class CORE_EXPORT Document : public ContainerNode,
 
   Member<SVGDocumentExtensions> svg_extensions_;
 
-  Vector<AnnotatedRegionValue> annotated_regions_;
-  bool has_annotated_regions_;
-  bool annotated_regions_dirty_;
+  Vector<DraggableRegionValue> draggable_regions_;
+  bool has_draggable_regions_ = false;
+  bool draggable_regions_dirty_ = false;
 
   std::unique_ptr<SelectorQueryCache> selector_query_cache_;
 
@@ -2564,6 +2588,8 @@ class CORE_EXPORT Document : public ContainerNode,
   // references will be traced by a stack walk.
   GC_PLUGIN_IGNORE("https://crbug.com/669058")
   CheckPseudoHasCacheScope* check_pseudo_has_cache_scope_ = nullptr;
+
+  bool in_pseudo_has_checking_ = false;
 
   DocumentClassFlags document_classes_;
 
@@ -2742,6 +2768,9 @@ class CORE_EXPORT Document : public ContainerNode,
   // Used for document.cookie. May be null.
   Member<CookieJar> cookie_jar_;
 
+  // Seed for all PAAPI Auction Nonces generated for this document.
+  base::Uuid base_auction_nonce_;
+
   bool toggle_during_parsing_ = false;
 
   bool is_for_markup_sanitization_ = false;
@@ -2825,6 +2854,13 @@ class CORE_EXPORT Document : public ContainerNode,
 
   // See description in ScheduleShadowTreeCreation().
   HeapHashSet<Member<HTMLInputElement>> elements_needing_shadow_tree_;
+
+  // See https://github.com/whatwg/dom/issues/1255 and
+  // https://crbug.com/40150299. This flag is consulted via its getter, by any
+  // code in the Node insertion/removal path that's interested in NOT resetting
+  // certain state, when the insertion is triggered via the state-preserving
+  // atomic move API (so far, `Node#moveBefore()`).
+  bool state_preserving_atomic_move_in_progress_ = false;
 
   // If you want to add new data members to blink::Document, please reconsider
   // if the members really should be in blink::Document.  document.h is a very

@@ -8,10 +8,12 @@
 // COMMON SCREENS
 import './screens/common/adb_sideloading.js';
 import './screens/common/add_child.js';
+import './screens/common/ai_intro.js';
 import './screens/common/app_downloading.js';
 import './screens/common/app_launch_splash.js';
 import './screens/common/assistant_optin.js';
 import './screens/common/autolaunch.js';
+import './screens/common/categories_selection.js';
 import './screens/common/choobe.js';
 import './screens/common/consolidated_consent.js';
 import './screens/common/device_disabled.js';
@@ -45,6 +47,7 @@ import './screens/common/sync_consent.js';
 import './screens/common/theme_selection.js';
 import './screens/common/touchpad_scroll.js';
 import './screens/common/tpm_error.js';
+import './screens/common/tuna.js';
 import './screens/common/user_allowlist_check_screen.js';
 import './screens/common/wrong_hwid.js';
 // COMMON SCREENS USED TO SET UP AUTHENTICATION
@@ -89,6 +92,11 @@ import {OobeTypes} from './components/oobe_types.js';
 export const commonScreensList: OobeTypes.ScreensList = [
   {tag: 'adb-sideloading-element', id: 'adb-sideloading'},
   {tag: 'add-child-element', id: 'add-child'},
+  {
+    tag: 'ai-intro-element',
+    id: 'ai-intro',
+    condition: 'isOobeAiIntroEnabled',
+  },
   {tag: 'app-downloading-element', id: 'app-downloading'},
   {tag: 'app-launch-splash-element', id: 'app-launch-splash'},
   {
@@ -101,6 +109,11 @@ export const commonScreensList: OobeTypes.ScreensList = [
     id: 'apply-online-password',
   },
   {tag: 'autolaunch-element', id: 'autolaunch'},
+  {
+    tag: 'categories-selection-element',
+    id: 'categories-selection',
+    condition: 'isPersonalizedOnboarding',
+  },
   {
     tag: 'choobe-element',
     id: 'choobe',
@@ -186,6 +199,11 @@ export const commonScreensList: OobeTypes.ScreensList = [
     condition: 'isTouchpadScrollEnabled',
   },
   {tag: 'tpm-error-message-element', id: 'tpm-error-message'},
+  {
+    tag: 'tuna-element',
+    id: 'tuna',
+    condition: 'isOobeTunaEnabled',
+  },
   {
     tag: 'install-attributes-error-message-element',
     id: 'install-attributes-error-message',

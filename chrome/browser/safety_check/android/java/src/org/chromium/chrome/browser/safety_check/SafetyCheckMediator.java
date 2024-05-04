@@ -28,9 +28,10 @@ import org.chromium.base.shared_preferences.SharedPreferencesManager;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.build.BuildConfig;
 import org.chromium.chrome.browser.password_check.PasswordCheckFactory;
+import org.chromium.chrome.browser.password_manager.ManagePasswordsReferrer;
 import org.chromium.chrome.browser.password_manager.PasswordCheckReferrer;
-import org.chromium.chrome.browser.password_manager.PasswordManagerBackendSupportHelper;
 import org.chromium.chrome.browser.password_manager.PasswordManagerHelper;
+import org.chromium.chrome.browser.password_manager.PasswordManagerUtilBridge;
 import org.chromium.chrome.browser.password_manager.PasswordStoreBridge;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.ChromeSharedPreferences;
@@ -367,7 +368,7 @@ class SafetyCheckMediator {
             // designed to be only shown when user explicitly runs the check (or it was ran
             // recently). For this case, breached credential fetch is skipped.
             if (mPasswordManagerHelper.canUseUpm()
-                    && PasswordManagerBackendSupportHelper.getInstance().isUpdateNeeded()) {
+                    && !PasswordManagerUtilBridge.areMinUpmRequirementsMet()) {
                 setPasswordsState(mPasswordsCheckAccountStorageModel, PasswordsState.UNCHECKED);
                 setPasswordsState(mPasswordsCheckLocalStorageModel, PasswordsState.UNCHECKED);
                 return;
@@ -562,7 +563,22 @@ class SafetyCheckMediator {
         @PasswordsState
         int state = passwordsCheckModel.get(PasswordsCheckPreferenceProperties.PASSWORDS_STATE);
         Preference.OnPreferenceClickListener listener = null;
-        if (state == PasswordsState.SIGNED_OUT) {
+        if (state == PasswordsState.UNCHECKED) {
+            listener =
+                    (p) -> {
+                        String account =
+                                getAccountNameForPasswordStorageType(
+                                        passwordStorageType, mSyncService);
+                        mPasswordManagerHelper.showPasswordSettings(
+                                p.getContext(),
+                                ManagePasswordsReferrer.SAFETY_CHECK,
+                                mSettingsLauncher,
+                                mModalDialogManagerSupplier,
+                                /* managePasskeys= */ false,
+                                account);
+                        return true;
+                    };
+        } else if (state == PasswordsState.SIGNED_OUT) {
             listener =
                     (p) -> {
                         // Open the sign in page.
@@ -601,8 +617,6 @@ class SafetyCheckMediator {
                         PasswordManagerHelper.launchGmsUpdate(p.getContext());
                         return true;
                     };
-        } else {
-            listener = null;
         }
         passwordsCheckModel.set(
                 PasswordsCheckPreferenceProperties.PASSWORDS_CLICK_LISTENER, listener);

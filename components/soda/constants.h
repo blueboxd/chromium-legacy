@@ -55,13 +55,15 @@ enum class LanguageCode {
   kTrTr = 26,
   kZhCn = 27,
   kZhTw = 28,
-  // TODO(evliu): Add Chrome LC Support for languages 29-33.
+  // TODO(evliu): Add Chrome LC Support for languages below.
   kDaDk = 29,
   kFrCa = 30,
   kNbNo = 31,
   kNlNl = 32,
   kSvSe = 33,
-  kMaxValue = kSvSe,
+  kRuRu = 34,
+  kViVn = 35,
+  kMaxValue = kViVn,
 };
 
 // Describes all metadata needed to dynamically install SODA language pack
@@ -250,16 +252,22 @@ const std::u16string GetLanguageDisplayName(const std::string& language_name,
 // metric string for the language code.
 const std::string GetInstallationSuccessTimeMetricForLanguagePack(
     const LanguageCode& language_code);
+const std::string GetInstallationSuccessTimeMetricForLanguage(
+    const std::string& language);
 
 // Returns the `SodaInstaller.Language.{language}.InstallationFailureTime` uma
 // metric string for the language code.
 const std::string GetInstallationFailureTimeMetricForLanguagePack(
     const LanguageCode& language_code);
+const std::string GetInstallationFailureTimeMetricForLanguage(
+    const std::string& language);
 
 // Returns the `SodaInstaller.Language.{language}.InstallationResult` uma
 // metric string for the language code..
 const std::string GetInstallationResultMetricForLanguagePack(
     const LanguageCode& language_code);
+const std::string GetInstallationResultMetricForLanguage(
+    const std::string& language);
 
 // Gets a list of locales enabled by the Finch flag.
 std::vector<std::string> GetLiveCaptionEnabledLanguages();

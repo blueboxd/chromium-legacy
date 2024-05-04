@@ -887,17 +887,8 @@ class SingleClientSessionsSyncTestWithFaviconTestServer
   }
 };
 
-#if BUILDFLAG(IS_FUCHSIA)
-// TODO(crbug.com/1290548): Re-enable after further investigation.
-#define MAYBE_ShouldDeleteOnDemandIconsOnSessionsDisabled \
-  DISABLED_ShouldDeleteOnDemandIconsOnSessionsDisabled
-#else
-#define MAYBE_ShouldDeleteOnDemandIconsOnSessionsDisabled \
-  ShouldDeleteOnDemandIconsOnSessionsDisabled
-#endif
-
 IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTestWithFaviconTestServer,
-                       MAYBE_ShouldDeleteOnDemandIconsOnSessionsDisabled) {
+                       ShouldDeleteOnDemandIconsOnSessionsDisabled) {
   const std::string kForeignSessionTag = "ForeignSessionTag";
   const std::string kForeignClientName = "ForeignClientName";
   const SessionID kWindowId = SessionID::FromSerializedValue(5);
@@ -1023,11 +1014,11 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsWithDestroyProfileSyncTest,
   {
     // Closing the last tab results in profile destruction and hence may require
     // running blocking tasks which are normally disallowed during tests.
-    // TODO(crbug.com/1334091): remove once it's clear why it results in
+    // TODO(crbug.com/40846214): remove once it's clear why it results in
     // blocking tasks.
     base::ScopedAllowUnresponsiveTasksForTesting scoped_allow_sync_primitives;
     CloseTab(/*browser_index=*/0, /*tab_index=*/0);
-    // TODO(crbug.com/1039234): When DestroyProfileOnBrowserClose is enabled,
+    // TODO(crbug.com/40113507): When DestroyProfileOnBrowserClose is enabled,
     // the last CloseTab() triggers Profile deletion (and SyncService deletion).
     // This means the last tab close never gets synced. We should fix this
     // regression eventually. Once that's done, merge this test with the

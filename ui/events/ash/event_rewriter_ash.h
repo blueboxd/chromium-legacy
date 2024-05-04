@@ -265,7 +265,7 @@ class EventRewriterAsh : public EventRewriter {
 
   // Returns true when the input |state| has key |DomKey::ALT_GRAPH_LATCH| and
   // is remapped.
-  // TODO(crbug.com/1440147): Remove this function.
+  // TODO(crbug.com/40265877): Remove this function.
   bool RewriteModifierKeys(const KeyEvent& event, MutableKeyState* state) {
     return RewriteModifierKeys(event, last_keyboard_device_id_, state);
   }
@@ -332,14 +332,25 @@ class EventRewriterAsh : public EventRewriter {
   // support supplying a custom layout via sysfs.
   bool RewriteTopRowKeysForCustomLayout(const ui::KeyEvent& key_event,
                                         int device_id,
-                                        bool search_is_pressed,
+                                        bool flip_remapping,
+                                        EventFlags flip_remapping_flag,
                                         MutableKeyState* state);
 
   // Handle Fn/Action key remapping for Wilco keyboard layout.
   bool RewriteTopRowKeysForLayoutWilco(
       const KeyEvent& key_event,
       int device_id,
-      bool search_is_pressed,
+      bool flip_remapping,
+      EventFlags flip_remapping_flag,
+      MutableKeyState* state,
+      KeyboardCapability::KeyboardTopRowLayout layout);
+
+  bool RewriteTopRowKeysForStandardLayouts(
+      const KeyEvent& key_event,
+      int device_id,
+      bool flip_remapping,
+      EventFlags flip_remapping_flag,
+      bool rewrite_modifier_is_pressed,
       MutableKeyState* state,
       KeyboardCapability::KeyboardTopRowLayout layout);
 

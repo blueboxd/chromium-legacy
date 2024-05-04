@@ -19,7 +19,9 @@
 #include "content/browser/file_system_access/file_system_access_observer_host.h"
 #include "content/browser/file_system_access/file_system_access_watch_scope.h"
 #include "content/browser/file_system_access/file_system_access_watcher_manager.h"
+#include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/public/browser/file_system_access_permission_context.h"
+#include "content/public/browser/global_routing_id.h"
 #include "storage/browser/file_system/file_system_context.h"
 #include "storage/browser/file_system/file_system_url.h"
 #include "third_party/blink/public/mojom/file_system_access/file_system_access_directory_handle.mojom.h"
@@ -58,7 +60,7 @@ FileSystemAccessHandleBase& AsHandleBase(
   return *absl::get<std::unique_ptr<FileSystemAccessFileHandleImpl>>(handle);
 }
 
-// TODO(https://crbug.com/1019297): Move this to a helper shared with
+// TODO(crbug.com/40105284): Move this to a helper shared with
 // `FileSystemAccessDirectoryHandleImpl`.
 std::vector<std::string> GetRelativePathAsVectorOfStrings(
     const base::FilePath& relative_path) {
@@ -145,15 +147,24 @@ void FileSystemAccessObserverObservation::OnChanges(
   FileSystemAccessManagerImpl* manager = AsHandleBase(handle_).manager();
   const FileSystemAccessManagerImpl::BindingContext& binding_context =
       AsHandleBase(handle_).context();
+
+  // Make sure the RenderFrameHost is Active before sending changes to the
+  // renderer.
+  GlobalRenderFrameHostId render_frame_host_id = binding_context.frame_id;
+  RenderFrameHostImpl* rfh = RenderFrameHostImpl::FromID(render_frame_host_id);
+  if (!rfh || !rfh->IsActive()) {
+    return;
+  }
+
   const FileSystemAccessManagerImpl::SharedHandleState& handle_state =
       AsHandleBase(handle_).handle_state();
   const storage::FileSystemURL& handle_url = AsHandleBase(handle_).url();
 
   // Do not relay changes if the site has lost read permission to the handle.
-  // TODO(https://crbug.com/1489035): Add tests for this.
+  // TODO(crbug.com/40283887): Add tests for this.
   if (handle_state.read_grant->GetStatus() !=
       blink::mojom::PermissionStatus::GRANTED) {
-    // TODO(https://crbug.com/1489035): Proactively listen for permission
+    // TODO(crbug.com/40283887): Proactively listen for permission
     // changes, rather than (or perhaps in addition to) checking on each change.
     return;
   }
@@ -161,13 +172,13 @@ void FileSystemAccessObserverObservation::OnChanges(
   std::vector<blink::mojom::FileSystemAccessChangePtr> mojo_changes;
   for (const auto& change : changes) {
     if (change.type->is_errored()) {
-      // TODO(https://crbug.com/1019297): Consider destroying `observation_`...
+      // TODO(crbug.com/40105284): Consider destroying `observation_`...
       // Or don't bother passing along errored changes from the WatcherManager
       // to its Observations in the first place.
       continue;
     }
 
-    // TODO(https://crbug.com/1019297): Consider refactoring to keep the "scope"
+    // TODO(crbug.com/40105284): Consider refactoring to keep the "scope"
     // concept within the WatcherManager and its associated classes. This method
     // just needs the root url.
     //

@@ -13,14 +13,14 @@
 namespace blink {
 
 void SetIntAttribute(ax::mojom::blink::IntAttribute attribute,
-                     AXObject* object,
+                     const AXObject* object,
                      ui::AXNodeData* node_data,
                      const AtomicString& value) {
   node_data->AddIntAttribute(attribute, value.ToInt());
 }
 
 void SetBoolAttribute(ax::mojom::blink::BoolAttribute attribute,
-                      AXObject* object,
+                      const AXObject* object,
                       ui::AXNodeData* node_data,
                       const AtomicString& value) {
   // ARIA booleans are true if not "false" and not specifically undefined.
@@ -31,7 +31,7 @@ void SetBoolAttribute(ax::mojom::blink::BoolAttribute attribute,
 }
 
 void SetStringAttribute(ax::mojom::blink::StringAttribute attribute,
-                        AXObject* object,
+                        const AXObject* object,
                         ui::AXNodeData* node_data,
                         const AtomicString& value) {
   if (object->IsProhibited(attribute))
@@ -40,7 +40,7 @@ void SetStringAttribute(ax::mojom::blink::StringAttribute attribute,
 }
 
 void SetNotEmptyStringAttribute(ax::mojom::blink::StringAttribute attribute,
-                                AXObject* object,
+                                const AXObject* object,
                                 ui::AXNodeData* node_data,
                                 const AtomicString& value) {
   if (value.length() != 0)
@@ -49,7 +49,7 @@ void SetNotEmptyStringAttribute(ax::mojom::blink::StringAttribute attribute,
 
 void SetObjectAttribute(ax::mojom::blink::IntAttribute attribute,
                         QualifiedName qualified_name,
-                        AXObject* object,
+                        const AXObject* object,
                         ui::AXNodeData* node_data,
                         const AtomicString& value) {
   Element* element = object->GetElement();
@@ -74,7 +74,7 @@ void SetObjectAttribute(ax::mojom::blink::IntAttribute attribute,
 
 void SetIntListAttribute(ax::mojom::blink::IntListAttribute attribute,
                          QualifiedName qualified_name,
-                         AXObject* object,
+                         const AXObject* object,
                          ui::AXNodeData* node_data,
                          const AtomicString& value) {
   if (object->IsProhibited(attribute)) {
@@ -94,7 +94,7 @@ void SetIntListAttribute(ax::mojom::blink::IntListAttribute attribute,
     AXObject* ax_element = object->AXObjectCache().Get(associated_element);
     if (!ax_element)
       continue;
-    if (!ax_element->AccessibilityIsIgnored())
+    if (!ax_element->IsIgnored())
       ax_ids.push_back(ax_element->AXObjectID());
   }
   node_data->AddIntListAttribute(attribute, ax_ids);
@@ -281,7 +281,7 @@ void AXNodeDataAOMPropertyClient::AddRelationListProperty(
     if (accessible_node) {
       Element* element = accessible_node->element();
       AXObject* ax_element = ax_object_cache_->Get(element);
-      if (ax_element && !ax_element->AccessibilityIsIgnored())
+      if (ax_element && !ax_element->IsIgnored())
         ax_ids.push_back(ax_element->AXObjectID());
     }
   }

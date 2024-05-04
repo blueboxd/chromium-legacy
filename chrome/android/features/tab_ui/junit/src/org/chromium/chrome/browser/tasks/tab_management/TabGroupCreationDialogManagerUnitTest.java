@@ -4,16 +4,15 @@
 
 package org.chromium.chrome.browser.tasks.tab_management;
 
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import android.app.Activity;
-
-import androidx.appcompat.widget.DialogTitle;
+import android.content.Context;
+import android.content.SharedPreferences;
 
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -24,22 +23,23 @@ import org.mockito.MockitoAnnotations;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelFilterProvider;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilterObserver;
-import org.chromium.ui.modaldialog.DialogDismissalCause;
 import org.chromium.ui.modaldialog.ModalDialogManager;
-import org.chromium.ui.modaldialog.ModalDialogManager.ModalDialogType;
-import org.chromium.ui.modaldialog.ModalDialogProperties;
-import org.chromium.ui.modelutil.PropertyModel;
 
 /** Tests for TabGroupCreationDialogManager. */
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class TabGroupCreationDialogManagerUnitTest {
-    private static final int TAB_COUNT = 3;
+    private static final String TAB_GROUP_COLORS_FILE_NAME = "tab_group_colors";
+    private static final String TAB1_TITLE = "Tab1";
+    private static final int TAB1_ID = 456;
+    private static final int COLOR_1 = 0;
 
     @Mock private ModalDialogManager mModalDialogManager;
     @Mock private TabModelSelector mTabModelSelector;
@@ -47,15 +47,17 @@ public class TabGroupCreationDialogManagerUnitTest {
     @Mock private TabGroupModelFilter mRegularTabGroupModelFilter;
     @Mock private TabGroupModelFilter mIncognitoTabGroupModelFilter;
     @Mock private TabGroupCreationDialogManager.ShowDialogDelegate mShowDialogDelegate;
-    @Captor private ArgumentCaptor<PropertyModel> mModelCaptor;
+    @Mock private Runnable mOnDialogAcceptedRunnable;
     @Captor private ArgumentCaptor<TabGroupModelFilterObserver> mObserverCaptor;
 
     private Activity mActivity;
     private TabGroupCreationDialogManager mTabGroupCreationDialogManager;
+    private Tab mTab1;
 
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
+        mTab1 = TabUiUnitTestUtils.prepareTab(TAB1_ID, TAB1_TITLE);
         mActivity = Robolectric.buildActivity(Activity.class).setup().get();
         when(mTabModelSelector.getTabModelFilterProvider()).thenReturn(mTabModelFilterProvider);
         when(mTabModelFilterProvider.getTabModelFilter(false))
@@ -64,12 +66,20 @@ public class TabGroupCreationDialogManagerUnitTest {
                 .thenReturn(mIncognitoTabGroupModelFilter);
         mTabGroupCreationDialogManager =
                 new TabGroupCreationDialogManager(
-                        mActivity, mModalDialogManager, mTabModelSelector);
+                        mActivity,
+                        mModalDialogManager,
+                        mTabModelSelector,
+                        mOnDialogAcceptedRunnable);
     }
 
     @After
     public void tearDown() {
         mTabGroupCreationDialogManager.destroy();
+    }
+
+    private static SharedPreferences getGroupColorSharedPreferences() {
+        return ContextUtils.getApplicationContext()
+                .getSharedPreferences(TAB_GROUP_COLORS_FILE_NAME, Context.MODE_PRIVATE);
     }
 
     @Test
@@ -78,48 +88,26 @@ public class TabGroupCreationDialogManagerUnitTest {
 
         verify(mRegularTabGroupModelFilter).addTabGroupObserver(mObserverCaptor.capture());
         TabGroupModelFilterObserver observer = mObserverCaptor.getValue();
+        observer.didCreateNewGroup(mTab1, mRegularTabGroupModelFilter);
 
-        int rootId = 1;
-        int tabCount = 5;
-        when(mRegularTabGroupModelFilter.getRelatedTabCountForRootId(rootId)).thenReturn(tabCount);
-        observer.didCreateNewGroup(rootId, mRegularTabGroupModelFilter);
-
-        verify(mShowDialogDelegate).showDialog(tabCount, false);
+        verify(mShowDialogDelegate).showDialog(mTab1.getRootId(), mRegularTabGroupModelFilter);
     }
 
     @Test
-    public void testCreationDialogDelegate_showDialog() {
-        mTabGroupCreationDialogManager
-                .getShowDialogDelegateForTesting()
-                .showDialog(TAB_COUNT, false);
-        verify(mModalDialogManager).showDialog(mModelCaptor.capture(), eq(ModalDialogType.APP));
+    public void testNoShowOnDidCreateGroup() {
+        mTabGroupCreationDialogManager.setShowDialogDelegateForTesting(mShowDialogDelegate);
 
-        PropertyModel model = mModelCaptor.getValue();
-        Assert.assertEquals(
-                mActivity
-                        .getResources()
-                        .getString(R.string.tab_group_creation_positive_button_text),
-                model.get(ModalDialogProperties.POSITIVE_BUTTON_TEXT));
-        Assert.assertEquals(
-                mActivity.getResources().getString(R.string.cancel),
-                model.get(ModalDialogProperties.NEGATIVE_BUTTON_TEXT));
+        // Mock that we have a stored tab group color with reference to ROOT_ID.
+        getGroupColorSharedPreferences()
+                .edit()
+                .putInt(String.valueOf(mTab1.getRootId()), COLOR_1)
+                .apply();
 
-        DialogTitle title =
-                model.get(ModalDialogProperties.CUSTOM_VIEW)
-                        .findViewById(R.id.creation_dialog_title);
-        Assert.assertEquals(
-                mActivity.getResources().getString(R.string.tab_group_creation_dialog_title),
-                title.getText());
+        verify(mRegularTabGroupModelFilter).addTabGroupObserver(mObserverCaptor.capture());
+        TabGroupModelFilterObserver observer = mObserverCaptor.getValue();
+        observer.didCreateNewGroup(mTab1, mRegularTabGroupModelFilter);
 
-        TabGroupCreationTextInputLayout groupTitle =
-                model.get(ModalDialogProperties.CUSTOM_VIEW).findViewById(R.id.tab_group_title);
-        groupTitle.getEditText().setText("user title");
-
-        ModalDialogProperties.Controller dialogController =
-                model.get(ModalDialogProperties.CONTROLLER);
-        dialogController.onClick(model, ModalDialogProperties.ButtonType.POSITIVE);
-
-        verify(mModalDialogManager)
-                .dismissDialog(model, DialogDismissalCause.POSITIVE_BUTTON_CLICKED);
+        verify(mShowDialogDelegate, never())
+                .showDialog(mTab1.getRootId(), mRegularTabGroupModelFilter);
     }
 }

@@ -15,7 +15,7 @@
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/profiles/profile_test_util.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/web_applications/web_app_controller_browsertest.h"
+#include "chrome/browser/ui/web_applications/web_app_browsertest_base.h"
 #include "chrome/browser/web_applications/app_service/web_app_publisher_helper.h"
 #include "chrome/browser/web_applications/preinstalled_web_app_manager.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
@@ -26,10 +26,10 @@
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_applications/web_contents/web_app_data_retriever.h"
 #include "chrome/browser/web_applications/web_contents/web_app_icon_downloader.h"
-#include "chrome/browser/web_applications/web_contents/web_app_url_loader.h"
 #include "chrome/test/base/profile_destruction_waiter.h"
 #include "components/user_manager/user_manager.h"
 #include "components/webapps/browser/installable/installable_logging.h"
+#include "components/webapps/browser/web_contents/web_app_url_loader.h"
 #include "components/webapps/common/web_app_id.h"
 #include "content/public/test/browser_test.h"
 #include "third_party/blink/public/mojom/manifest/manifest.mojom.h"
@@ -43,7 +43,7 @@
 
 namespace web_app {
 
-class WebAppProfileDeletionBrowserTest : public WebAppControllerBrowserTest {
+class WebAppProfileDeletionBrowserTest : public WebAppBrowserTestBase {
  public:
   WebAppProfileDeletionBrowserTest()
       : skip_preinstalled_(PreinstalledWebAppManager::SkipStartupForTesting()) {
@@ -63,8 +63,8 @@ class WebAppProfileDeletionBrowserTest : public WebAppControllerBrowserTest {
   }
 
   webapps::AppId InstallAppToProfile(Profile* profile, const GURL& start_url) {
-    auto web_app_info = std::make_unique<WebAppInstallInfo>();
-    web_app_info->start_url = start_url;
+    auto web_app_info =
+        WebAppInstallInfo::CreateWithStartUrlForTesting(start_url);
     web_app_info->scope = start_url.GetWithoutFilename();
     web_app_info->user_display_mode =
         web_app::mojom::UserDisplayMode::kStandalone;
@@ -262,8 +262,8 @@ IN_PROC_BROWSER_TEST_F(WebAppProfileDeletionBrowserTest_WebAppPublisher,
 }
 
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
-// TODO(crbug.com/1487301): Figure out a way having this test be run on ChromeOS
-// Ash, i.e. properly trigger a browser context shutdown.
+// TODO(crbug.com/40283231): Figure out a way having this test be run on
+// ChromeOS Ash, i.e. properly trigger a browser context shutdown.
 
 using WebAppProfileDeletionTest_WebContentsGracefulShutdown =
     WebAppProfileDeletionBrowserTest;
@@ -271,20 +271,20 @@ using WebAppProfileDeletionTest_WebContentsGracefulShutdown =
 IN_PROC_BROWSER_TEST_F(WebAppProfileDeletionTest_WebContentsGracefulShutdown,
                        UrlLoading) {
   ASSERT_TRUE(embedded_test_server()->Start());
-  WebAppUrlLoader loader;
+  webapps::WebAppUrlLoader loader;
 
   std::unique_ptr<content::WebContents> deleting_web_contents =
       CreateWebContentsScheduledForDeletion();
 
-  base::test::TestFuture<WebAppUrlLoaderResult> loader_result;
+  base::test::TestFuture<webapps::WebAppUrlLoaderResult> loader_result;
   loader.LoadUrl(embedded_test_server()->GetURL("/title1.html"),
                  deleting_web_contents.get(),
-                 WebAppUrlLoader::UrlComparison::kExact,
+                 webapps::WebAppUrlLoader::UrlComparison::kExact,
                  loader_result.GetCallback());
   EXPECT_TRUE(loader_result.Wait());
 
-  EXPECT_EQ(loader_result.Get<WebAppUrlLoaderResult>(),
-            WebAppUrlLoaderResult::kFailedWebContentsDestroyed);
+  EXPECT_EQ(loader_result.Get<webapps::WebAppUrlLoaderResult>(),
+            webapps::WebAppUrlLoaderResult::kFailedWebContentsDestroyed);
 }
 
 IN_PROC_BROWSER_TEST_F(WebAppProfileDeletionTest_WebContentsGracefulShutdown,

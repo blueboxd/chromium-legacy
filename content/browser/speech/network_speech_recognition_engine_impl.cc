@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <string_view>
 #include <vector>
 
 #include "base/functional/bind.h"
@@ -166,7 +167,7 @@ void NetworkSpeechRecognitionEngineImpl::OnUpstreamDataComplete(
 }
 
 void NetworkSpeechRecognitionEngineImpl::OnDownstreamDataReceived(
-    base::StringPiece new_response_data) {
+    std::string_view new_response_data) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   DVLOG(1) << "Downstream length: " << new_response_data.size();
@@ -637,7 +638,7 @@ NetworkSpeechRecognitionEngineImpl::CloseUpstreamAndWaitForResults(
   // The encoder requires a non-empty final buffer. So we encode a packet
   // of silence in case encoder had no data already.
   size_t sample_count =
-      config_.audio_sample_rate * kAudioPacketIntervalMs / 1000;
+      config_.audio_sample_rate * GetDesiredAudioChunkDurationMs() / 1000;
   scoped_refptr<AudioChunk> dummy_chunk = new AudioChunk(
       sample_count * sizeof(int16_t), encoder_->GetBitsPerSample() / 8);
   encoder_->Encode(*dummy_chunk.get());

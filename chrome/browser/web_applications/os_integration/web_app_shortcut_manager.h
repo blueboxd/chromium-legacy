@@ -7,6 +7,7 @@
 
 #include <map>
 #include <memory>
+#include <string_view>
 
 #include "base/functional/callback_forward.h"
 #include "base/memory/raw_ptr.h"
@@ -39,7 +40,7 @@ using ShortcutLocationCallback =
 // This class manages creation/update/deletion of OS shortcuts for web
 // applications.
 //
-// TODO(crbug.com/860581): Migrate functions from
+// TODO(crbug.com/40583793): Migrate functions from
 // web_app_extension_shortcut.(h|cc) and
 // platform_apps/shortcut_manager.(h|cc) to WebAppShortcutManager.
 class WebAppShortcutManager {
@@ -68,7 +69,7 @@ class WebAppShortcutManager {
                        CreateShortcutsCallback callback);
   // Fetch already-updated shortcut data and deploy to OS integration.
   void UpdateShortcuts(const webapps::AppId& app_id,
-                       base::StringPiece old_name,
+                       std::string_view old_name,
                        ResultCallback update_finished_callback);
   void DeleteShortcuts(const webapps::AppId& app_id,
                        const base::FilePath& shortcuts_data_dir,
@@ -85,7 +86,7 @@ class WebAppShortcutManager {
   // Registers a shortcuts menu for a web app after reading its shortcuts menu
   // icons from disk.
   //
-  // TODO(crbug.com/1098471): Consider unifying this method and
+  // TODO(crbug.com/40701951): Consider unifying this method and
   // RegisterShortcutsMenuWithOs() below.
   void ReadAllShortcutsMenuIconsAndRegisterShortcutsMenu(
       const webapps::AppId& app_id,
@@ -105,7 +106,7 @@ class WebAppShortcutManager {
   // Builds initial ShortcutInfo without |ShortcutInfo::favicon| being read.
   // virtual for testing.
   //
-  // TODO(crbug.com/1225132): Get rid of |BuildShortcutInfo| method: inline it
+  // TODO(crbug.com/40775647): Get rid of |BuildShortcutInfo| method: inline it
   // or make it private.
   virtual std::unique_ptr<ShortcutInfo> BuildShortcutInfo(
       const webapps::AppId& app_id);

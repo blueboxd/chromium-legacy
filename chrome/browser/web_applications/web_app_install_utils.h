@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_WEB_APPLICATIONS_WEB_APP_INSTALL_UTILS_H_
 #define CHROME_BROWSER_WEB_APPLICATIONS_WEB_APP_INSTALL_UTILS_H_
 
+#include <string_view>
 #include <vector>
 
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
-#include "base/strings/string_piece.h"
 #include "chrome/browser/web_applications/os_integration/os_integration_manager.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_icon_operations.h"
@@ -39,7 +39,6 @@ enum class WebappUninstallSource;
 namespace web_app {
 
 class WebApp;
-class WebAppRegistrar;
 struct WebAppInstallParams;
 
 enum class ForInstallableSite {
@@ -100,13 +99,13 @@ void RecordDownloadedIconsResultAndHttpStatusCodes(
 // Records the class of http status code (2XX, 3XX, 4XX, 5XX) for each processed
 // icon url.
 void RecordDownloadedIconsHttpResultsCodeClass(
-    base::StringPiece histogram_name,
+    std::string_view histogram_name,
     IconsDownloadedResult result,
     const DownloadedIconsHttpResults& icons_http_results);
 
 // Records http status code for each processed icon url.
 void RecordDownloadedIconHttpStatusCodes(
-    base::StringPiece histogram_name,
+    std::string_view histogram_name,
     const DownloadedIconsHttpResults& icons_http_results);
 
 WebAppManagement::Type ConvertExternalInstallSourceToSource(
@@ -132,12 +131,6 @@ void SetWebAppManifestFields(const WebAppInstallInfo& web_app_info,
 // Updates product icon fields of |web_app| using |web_app_info|.
 void SetWebAppProductIconFields(const WebAppInstallInfo& web_app_info,
                                 WebApp& web_app);
-
-// Possibly updates |options| to disable OS-integrations based on the
-// configuration of the given app.
-void MaybeDisableOsIntegration(const WebAppRegistrar* app_registrar,
-                               const webapps::AppId& app_id,
-                               InstallOsHooksOptions* options);
 
 // Update |web_app_info| using |install_params|.
 void ApplyParamsToWebAppInstallInfo(const WebAppInstallParams& install_params,

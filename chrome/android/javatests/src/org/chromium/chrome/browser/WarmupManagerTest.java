@@ -9,6 +9,7 @@ import static org.junit.Assert.assertNotEquals;
 
 import android.content.Context;
 
+import androidx.test.annotation.UiThreadTest;
 import androidx.test.filters.MediumTest;
 import androidx.test.filters.SmallTest;
 import androidx.test.platform.app.InstrumentationRegistry;
@@ -23,7 +24,6 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskTraits;
-import org.chromium.base.test.UiThreadTest;
 import org.chromium.base.test.params.ParameterAnnotations.UseMethodParameter;
 import org.chromium.base.test.params.ParameterAnnotations.UseRunnerDelegate;
 import org.chromium.base.test.params.ParameterProvider;
@@ -33,11 +33,9 @@ import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.Features.EnableFeatures;
 import org.chromium.base.test.util.HistogramWatcher;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.WarmupManager.SpareTabFinalStatus;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.profiles.OTRProfileID;
@@ -272,7 +270,7 @@ public class WarmupManagerTest {
         PostTask.runOrPostTask(
                 TaskTraits.UI_DEFAULT,
                 () -> {
-                    mWarmupManager.createSpareWebContents();
+                    mWarmupManager.createSpareWebContents(sActivityTestRule.getProfile(false));
                     Assert.assertTrue(mWarmupManager.hasSpareWebContents());
                     WebContents webContents = mWarmupManager.takeSpareWebContents(false, false);
                     Assert.assertNotNull(webContents);
@@ -294,7 +292,7 @@ public class WarmupManagerTest {
     @SmallTest
     @UiThreadTest
     public void testTakeSpareWebContents() {
-        mWarmupManager.createSpareWebContents();
+        mWarmupManager.createSpareWebContents(sActivityTestRule.getProfile(false));
         WebContents webContents = mWarmupManager.takeSpareWebContents(false, false);
         Assert.assertNotNull(webContents);
         Assert.assertFalse(mWarmupManager.hasSpareWebContents());
@@ -305,7 +303,7 @@ public class WarmupManagerTest {
     @SmallTest
     @UiThreadTest
     public void testTakeSpareWebContentsChecksArguments() {
-        mWarmupManager.createSpareWebContents();
+        mWarmupManager.createSpareWebContents(sActivityTestRule.getProfile(false));
         Assert.assertNull(mWarmupManager.takeSpareWebContents(true, false));
         Assert.assertNull(mWarmupManager.takeSpareWebContents(true, true));
         Assert.assertTrue(mWarmupManager.hasSpareWebContents());
@@ -317,7 +315,7 @@ public class WarmupManagerTest {
     @SmallTest
     @UiThreadTest
     public void testClearsDeadWebContents() {
-        mWarmupManager.createSpareWebContents();
+        mWarmupManager.createSpareWebContents(sActivityTestRule.getProfile(false));
         WebContentsUtils.simulateRendererKilled(mWarmupManager.mSpareWebContents);
         Assert.assertNull(mWarmupManager.takeSpareWebContents(false, false));
     }
@@ -381,7 +379,7 @@ public class WarmupManagerTest {
     }
 
     // Test to check the functionality of spare tab creation with initializing renderer.
-    // TODO(crbug.com/1412572): Add tests to track navigation related WebContentsObserver events
+    // TODO(crbug.com/40255340): Add tests to track navigation related WebContentsObserver events
     // with spare tab creation.
     @Test
     @MediumTest
@@ -548,31 +546,6 @@ public class WarmupManagerTest {
                     Assert.assertFalse(mWarmupManager.hasSpareTab(profile));
                 });
         pageLoadHistogramWatcher.pollInstrumentationThreadUntilSatisfied();
-    }
-
-    /**
-     * Tests that we are able to create new tab along with initializing renderer when the feature
-     * CREATE_NEW_TAB_INITIALIZE_RENDERER is enabled.
-     */
-    @Test
-    @MediumTest
-    @Feature({"SpareTab"})
-    @UiThreadTest
-    @EnableFeatures({ChromeFeatureList.CREATE_NEW_TAB_INITIALIZE_RENDERER})
-    public void testOnTabCreationWithInitializeRenderer() {
-        Profile profile = getProfile(ProfileType.REGULAR_PROFILE);
-        mWarmupManager.createRegularSpareTab(profile);
-        Assert.assertTrue(mWarmupManager.hasSpareTab(profile));
-
-        Tab tab = mWarmupManager.takeSpareTab(profile, TabLaunchType.FROM_TAB_GROUP_UI);
-        WebContents webContents = tab.getWebContents();
-        Assert.assertNotNull(tab);
-        Assert.assertNotNull(webContents);
-        Assert.assertEquals(TabLaunchType.FROM_TAB_GROUP_UI, tab.getLaunchType());
-
-        // RenderFrame should be created when the CREATE_NEW_TAB_INITIALIZE_RENDERER is enabled.
-        Assert.assertTrue(webContents.getMainFrame().isRenderFrameLive());
-        tab.destroy();
     }
 
     @Test

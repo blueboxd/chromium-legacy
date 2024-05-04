@@ -28,12 +28,12 @@ import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.compositor.LayerTitleCache;
-import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tab.TabUtils;
-import org.chromium.chrome.browser.tasks.tab_management.TabThumbnailView;
+import org.chromium.chrome.browser.tab_ui.TabContentManager;
+import org.chromium.chrome.browser.tab_ui.TabThumbnailView;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiThemeProvider;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiThemeUtil;
 import org.chromium.ui.interpolators.Interpolators;
@@ -183,7 +183,7 @@ public class StripTabDragShadowView extends FrameLayout {
     }
 
     private void update() {
-        // TODO(https://crbug.com/1499119): Unify the shared code for creating the GTS-style card.
+        // TODO(crbug.com/40287709): Unify the shared code for creating the GTS-style card.
         // Set to final size. Even though the size will be animated, we need to initially set to the
         // final size, so that we allocate the appropriate amount of space when
         // #onProvideShadowMetrics is called on drag start.

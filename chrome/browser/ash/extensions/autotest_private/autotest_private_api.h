@@ -113,6 +113,19 @@ class AutotestPrivateLoginStatusFunction : public ExtensionFunction {
   ResponseAction Run() override;
 };
 
+class AutotestPrivateWaitForLoginAnimationEndFunction
+    : public ExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.waitForLoginAnimationEnd",
+                             AUTOTESTPRIVATE_WAITFORLOGINANIMATIONEND)
+
+ private:
+  ~AutotestPrivateWaitForLoginAnimationEndFunction() override;
+  ResponseAction Run() override;
+
+  void OnLoginAnimationEnd();
+};
+
 class AutotestPrivateLockScreenFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.lockScreen",
@@ -1075,7 +1088,7 @@ class AutotestPrivateSetOverviewModeStateFunction : public ExtensionFunction {
   void OnOverviewModeChanged(bool for_start, bool finished);
 };
 
-// TODO(crbug.com/1275410): Replace this by introducing
+// TODO(crbug.com/40207057): Replace this by introducing
 // autotestPrivate.setVirtualKeyboardVisibilityIfEnabled().
 class AutotestPrivateShowVirtualKeyboardIfEnabledFunction
     : public ExtensionFunction {

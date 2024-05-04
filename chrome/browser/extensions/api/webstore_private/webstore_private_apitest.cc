@@ -12,6 +12,8 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/metrics/histogram_tester.h"
+#include "base/test/metrics/user_action_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
@@ -22,15 +24,20 @@
 #include "chrome/browser/extensions/mixin_based_extension_apitest.h"
 #include "chrome/browser/extensions/webstore_installer.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/supervised_user/supervised_user_extensions_delegate_impl.h"
+#include "chrome/browser/supervised_user/supervised_user_test_util.h"  // nogncheck
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/views/supervised_user/parent_permission_dialog_view.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_test_util.h"
+#include "chrome/test/supervised_user/supervision_mixin.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
-#include "components/supervised_user/core/common/buildflags.h"
 #include "components/supervised_user/core/common/features.h"
+#include "components/supervised_user/core/common/pref_names.h"
+#include "components/supervised_user/core/common/supervised_user_constants.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/test/browser_test.h"
 #include "extensions/browser/allowlist_state.h"
@@ -39,31 +46,17 @@
 #include "extensions/browser/extension_dialog_auto_confirm.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/install/extension_install_ui.h"
+#include "extensions/common/extension_builder.h"
 #include "extensions/common/extension_features.h"
 #include "gpu/config/gpu_feature_type.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "ui/gl/gl_switches.h"
 
-#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-#include "base/test/metrics/histogram_tester.h"
-#include "base/test/metrics/user_action_tester.h"
-#include "chrome/browser/supervised_user/supervised_user_extensions_delegate_impl.h"
-#include "chrome/browser/supervised_user/supervised_user_service_factory.h"
-#include "chrome/browser/supervised_user/supervised_user_test_util.h"  // nogncheck
-#include "chrome/browser/ui/supervised_user/parent_permission_dialog.h"
-#include "chrome/browser/ui/views/supervised_user/parent_permission_dialog_view.h"
-#include "chrome/test/supervised_user/supervision_mixin.h"
-#include "components/account_id/account_id.h"
-#include "components/supervised_user/core/common/pref_names.h"
-#include "components/supervised_user/core/common/supervised_user_constants.h"
-#include "extensions/common/extension_builder.h"
-#endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS)
 #include "chrome/browser/supervised_user/chromeos/parent_access_extension_approvals_manager.h"
-#include "chrome/browser/ui/webui/ash/parent_access/parent_access_dialog.h"
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chromeos/crosapi/mojom/parent_access.mojom.h"
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
 namespace extensions {
 
@@ -313,7 +306,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, EmptyCrx) {
   ASSERT_TRUE(RunInstallTest("empty.html", "empty.crx"));
 }
 
-#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
 static constexpr char kTestAppId[] = "iladmdjkfniedhfhcfoefgojhgaiaccc";
 static constexpr char kTestAppVersion[] = "0.1";
 
@@ -327,7 +319,7 @@ class SupervisedUserExtensionWebstorePrivateApiTest
     : public ExtensionWebstorePrivateApiTest,
       public ::testing::WithParamInterface<
           SupervisedUserExtensionManagedBySwitch>,
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS)
       public TestExtensionApprovalsManagerObserver,
 #endif
       public TestParentPermissionDialogViewObserver {
@@ -340,7 +332,7 @@ class SupervisedUserExtensionWebstorePrivateApiTest
 
   SupervisedUserExtensionWebstorePrivateApiTest()
       :
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS)
         TestExtensionApprovalsManagerObserver(this),
 #endif
         TestParentPermissionDialogViewObserver(this),
@@ -356,6 +348,7 @@ class SupervisedUserExtensionWebstorePrivateApiTest
             }) {
 
     std::vector<base::test::FeatureRef> enabled_features;
+    std::vector<base::test::FeatureRef> disabled_features;
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN)
     enabled_features.push_back(
         supervised_user::
@@ -366,8 +359,12 @@ class SupervisedUserExtensionWebstorePrivateApiTest
       enabled_features.push_back(
           supervised_user::
               kEnableSupervisedUserSkipParentApprovalToInstallExtensions);
+    } else {
+      disabled_features.push_back(
+          supervised_user::
+              kEnableSupervisedUserSkipParentApprovalToInstallExtensions);
     }
-    feature_list_.InitWithFeatures(enabled_features, /*disabled_features=*/{});
+    feature_list_.InitWithFeatures(enabled_features, disabled_features);
   }
 
   ~SupervisedUserExtensionWebstorePrivateApiTest() override {
@@ -434,14 +431,16 @@ class SupervisedUserExtensionWebstorePrivateApiTest
     }
   }
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS)
   // TestExtensionApprovalsManagerObserver override:
   void OnTestParentAccessDialogCreated() override {
     parent_permission_dialog_appeared_ = true;
     if (next_dialog_action_) {
       switch (next_dialog_action_.value()) {
         case NextDialogAction::kCancel:
-          ash::ParentAccessDialog::GetInstance()->SetCanceled();
+          SetParentAccessDialogResult(
+              crosapi::mojom::ParentAccessResult::NewCanceled(
+                  crosapi::mojom::ParentAccessCanceledResult::New()));
           break;
         case NextDialogAction::kAccept:
           bool can_request_permission =
@@ -452,16 +451,21 @@ class SupervisedUserExtensionWebstorePrivateApiTest
                   : true;
 
           if (!can_request_permission) {
-            ash::ParentAccessDialog::GetInstance()->SetDisabled();
+            SetParentAccessDialogResult(
+                crosapi::mojom::ParentAccessResult::NewDisabled(
+                    crosapi::mojom::ParentAccessDisabledResult::New()));
             break;
           }
-          ash::ParentAccessDialog::GetInstance()->SetApproved(
-              "test_token", base::Time::FromSecondsSinceUnixEpoch(123456L));
+          SetParentAccessDialogResult(
+              crosapi::mojom::ParentAccessResult::NewApproved(
+                  crosapi::mojom::ParentAccessApprovedResult::New(
+                      "test_token",
+                      base::Time::FromSecondsSinceUnixEpoch(123456L))));
           break;
       }
     }
   }
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
   void set_next_dialog_action(NextDialogAction action) {
     next_dialog_action_ = action;
@@ -637,7 +641,6 @@ INSTANTIATE_TEST_SUITE_P(
                  ? "ManagedByPermissionsToggle"
                  : "ManagedByExtensionsToggle";
     });
-#endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
 
 class ExtensionWebstoreGetWebGLStatusTest : public InProcessBrowserTest {
  protected:
@@ -686,7 +689,7 @@ class ExtensionWebstorePrivateGetReferrerChainApiTest
     : public ExtensionWebstorePrivateApiTest {
  public:
   ExtensionWebstorePrivateGetReferrerChainApiTest() {
-    // TODO(crbug.com/1394910): Use HTTPS URLs in tests to avoid having to
+    // TODO(crbug.com/40248833): Use HTTPS URLs in tests to avoid having to
     // disable this feature.
     feature_list_.InitAndDisableFeature(features::kHttpsUpgrades);
   }

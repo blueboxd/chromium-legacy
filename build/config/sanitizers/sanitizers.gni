@@ -39,6 +39,12 @@ declare_args() {
   # chain of stores leading from allocation site to use site.
   msan_track_origins = 2
 
+  # Enables "param-retval" mode, which finds more uses of uninitialized data and
+  # reduces code size. Behind a flag as there are a number of previously
+  # undetected violations that still need to be fixed.
+  # TODO(crbug.com/40240570): Default this to true and remove.
+  msan_eager_checks = false
+
   # Use dynamic libraries instrumented by one of the sanitizers instead of the
   # standard system libraries. Set this flag to build the libraries from source.
   use_locally_built_instrumented_libraries = false
@@ -111,12 +117,13 @@ declare_args() {
   # When true, sanitizer warnings will cause test case failures.
   fail_on_san_warnings = false
 
-  # The fuzztest library builds only on some platforms, so for now,
-  # all targets depending on fuzztest need to be configured according
-  # to this.
-  # TODO(crbug.com/1494445): remove this when all build permutations
-  # work
-  fuzztest_supported = true
+  # When true, only builds fuzzer targets that require high end machines to run.
+  # Otherwise, builds all the targets.
+  # TODO(paulsemel): once we have everything implemented on the recipe side, we
+  # can change the behaviour for the false case, and only build the non high-end
+  # jobs, so that they do not appear in the zip. As for now, this behaviour
+  # ensures nothing breaks.
+  high_end_fuzzer_targets = false
 }
 
 declare_args() {
@@ -139,7 +146,7 @@ declare_args() {
   # enable it by default only in sanitizer builds.
   # Also be sure not to enable this on non-Chromium builds where
   # the required //third_party/fuzztest dependency may be absent.
-  # TODO(crbug.com/1495713): enable on component builds
+  # TODO(crbug.com/40286621): enable on component builds
   enable_fuzztest_fuzz =
       !(use_libfuzzer || use_afl || use_centipede ||
         use_external_fuzzing_engine) &&
@@ -215,7 +222,7 @@ fuzzing_engine_supports_custom_main = use_libfuzzer || use_centipede
 # declare_args block.
 declare_args() {
   # Generates an owners file for each fuzzer test.
-  # TODO(crbug.com/1194183): Remove this arg when finding OWNERS is faster.
+  # TODO(crbug.com/40175535): Remove this arg when finding OWNERS is faster.
   generate_fuzzer_owners = use_fuzzing_engine
 
   use_sanitizer_coverage =
@@ -315,7 +322,7 @@ assert(!is_win || !use_libfuzzer || is_asan,
 assert(!use_cfi_recover || use_cfi_diag,
        "Only use CFI recovery together with diagnostics.")
 
-# TODO(crbug.com/753445): the use_sanitizer_coverage arg is currently
+# TODO(crbug.com/40534102): the use_sanitizer_coverage arg is currently
 # not supported by the Chromium mac_clang_x64 toolchain on iOS distribution.
 # The coverage works with iOS toolchain but it is broken when the mac
 # toolchain is used as a secondary one on iOS distribution. E.g., it should be

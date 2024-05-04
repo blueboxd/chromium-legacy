@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/web_view/internal/autofill/cwv_autofill_controller_internal.h"
-
 #import <memory>
 #import <string>
 #import <vector>
@@ -17,7 +15,7 @@
 #import "components/autofill/core/browser/browser_autofill_manager.h"
 #import "components/autofill/core/browser/form_structure.h"
 #import "components/autofill/core/browser/payments/legal_message_line.h"
-#import "components/autofill/core/browser/ui/popup_item_ids.h"
+#import "components/autofill/core/browser/ui/suggestion_type.h"
 #import "components/autofill/ios/browser/autofill_agent.h"
 #import "components/autofill/ios/browser/autofill_driver_ios.h"
 #import "components/autofill/ios/browser/autofill_driver_ios_factory.h"
@@ -25,7 +23,6 @@
 #import "components/autofill/ios/browser/autofill_util.h"
 #import "components/autofill/ios/browser/suggestion_controller_java_script_feature.h"
 #import "components/autofill/ios/form_util/form_activity_params.h"
-#import "components/autofill/ios/form_util/unique_id_data_tab_helper.h"
 #import "components/keyed_service/core/service_access_type.h"
 #import "components/password_manager/core/browser/leak_detection_dialog_utils.h"
 #import "components/password_manager/ios/shared_password_controller.h"
@@ -34,6 +31,7 @@
 #import "ios/web/public/js_messaging/web_frames_manager.h"
 #import "ios/web/public/web_state.h"
 #import "ios/web_view/internal/app/application_context.h"
+#import "ios/web_view/internal/autofill/cwv_autofill_controller_internal.h"
 #import "ios/web_view/internal/autofill/cwv_autofill_form_internal.h"
 #import "ios/web_view/internal/autofill/cwv_autofill_profile_internal.h"
 #import "ios/web_view/internal/autofill/cwv_autofill_suggestion_internal.h"
@@ -89,8 +87,8 @@ using UserDecision = autofill::AutofillClient::AddressPromptUserDecision;
   std::string _lastFormActivityWebFrameID;
   NSString* _lastFormActivityTypedValue;
   NSString* _lastFormActivityType;
-  FormRendererId _lastFormActivityUniqueFormID;
-  FieldRendererId _lastFormActivityUniqueFieldID;
+  FormRendererId _lastFormActivityFormRendererID;
+  FieldRendererId _lastFormActivityFieldRendererID;
 }
 
 @synthesize delegate = _delegate;
@@ -156,8 +154,8 @@ using UserDecision = autofill::AutofillClient::AddressPromptUserDecision;
   web::WebFrame* frame =
       feature->GetWebFramesManager(_webState)->GetFrameWithId(
           base::SysNSStringToUTF8(frameID));
-  feature->ClearAutofilledFieldsForForm(frame, _lastFormActivityUniqueFormID,
-                                        _lastFormActivityUniqueFieldID,
+  feature->ClearAutofilledFieldsForForm(frame, _lastFormActivityFormRendererID,
+                                        _lastFormActivityFieldRendererID,
                                         base::BindOnce(^(NSString*) {
                                           if (completionHandler) {
                                             completionHandler();
@@ -186,9 +184,9 @@ using UserDecision = autofill::AutofillClient::AddressPromptUserDecision;
   // Construct query.
   FormSuggestionProviderQuery* formQuery = [[FormSuggestionProviderQuery alloc]
       initWithFormName:formName
-          uniqueFormID:_lastFormActivityUniqueFormID
+        formRendererID:_lastFormActivityFormRendererID
        fieldIdentifier:fieldIdentifier
-         uniqueFieldID:_lastFormActivityUniqueFieldID
+       fieldRendererID:_lastFormActivityFieldRendererID
              fieldType:fieldType
                   type:_lastFormActivityType
             typedValue:_lastFormActivityTypedValue
@@ -244,9 +242,9 @@ using UserDecision = autofill::AutofillClient::AddressPromptUserDecision;
   if (suggestion.isPasswordSuggestion) {
     [_passwordController didSelectSuggestion:suggestion.formSuggestion
                                         form:suggestion.formName
-                                uniqueFormID:_lastFormActivityUniqueFormID
+                              formRendererID:_lastFormActivityFormRendererID
                              fieldIdentifier:suggestion.fieldIdentifier
-                               uniqueFieldID:_lastFormActivityUniqueFieldID
+                             fieldRendererID:_lastFormActivityFieldRendererID
                                      frameID:suggestion.frameID
                            completionHandler:^{
                              if (completionHandler) {
@@ -256,9 +254,9 @@ using UserDecision = autofill::AutofillClient::AddressPromptUserDecision;
   } else {
     [_autofillAgent didSelectSuggestion:suggestion.formSuggestion
                                    form:suggestion.formName
-                           uniqueFormID:_lastFormActivityUniqueFormID
+                         formRendererID:_lastFormActivityFormRendererID
                         fieldIdentifier:suggestion.fieldIdentifier
-                          uniqueFieldID:_lastFormActivityUniqueFieldID
+                        fieldRendererID:_lastFormActivityFieldRendererID
                                 frameID:suggestion.frameID
                       completionHandler:^{
                         if (completionHandler) {
@@ -317,13 +315,12 @@ using UserDecision = autofill::AutofillClient::AddressPromptUserDecision;
                     delegate {
   // We only want Autofill suggestions.
   std::vector<autofill::Suggestion> filtered_suggestions;
-  base::ranges::copy_if(suggestions, std::back_inserter(filtered_suggestions),
-                        [](const autofill::Suggestion& suggestion) {
-                          return suggestion.popup_item_id ==
-                                     autofill::PopupItemId::kAddressEntry ||
-                                 suggestion.popup_item_id ==
-                                     autofill::PopupItemId::kCreditCardEntry;
-                        });
+  base::ranges::copy_if(
+      suggestions, std::back_inserter(filtered_suggestions),
+      [](const autofill::Suggestion& suggestion) {
+        return suggestion.type == autofill::SuggestionType::kAddressEntry ||
+               suggestion.type == autofill::SuggestionType::kCreditCardEntry;
+      });
   [_autofillAgent showAutofillPopup:filtered_suggestions
                       popupDelegate:delegate];
 }
@@ -441,9 +438,9 @@ using UserDecision = autofill::AutofillClient::AddressPromptUserDecision;
 
 #pragma mark - AutofillDriverIOSBridge
 
-- (void)fillFormData:(const autofill::FormData&)form
-             inFrame:(web::WebFrame*)frame {
-  [_autofillAgent fillFormData:form inFrame:frame];
+- (void)fillData:(const std::vector<autofill::FormFieldData::FillData>&)form
+         inFrame:(web::WebFrame*)frame {
+  [_autofillAgent fillData:form inFrame:frame];
 }
 
 - (void)fillSpecificFormField:(const autofill::FieldRendererId&)field
@@ -493,10 +490,10 @@ using UserDecision = autofill::AutofillClient::AddressPromptUserDecision;
   std::string frame_id = frame ? frame->GetFrameId() : "";
 
   NSString* nsFormName = base::SysUTF8ToNSString(params.form_name);
-  _lastFormActivityUniqueFormID = params.unique_form_id;
+  _lastFormActivityFormRendererID = params.form_renderer_id;
   NSString* nsFieldIdentifier =
       base::SysUTF8ToNSString(params.field_identifier);
-  _lastFormActivityUniqueFieldID = params.unique_field_id;
+  _lastFormActivityFieldRendererID = params.field_renderer_id;
   NSString* nsFieldType = base::SysUTF8ToNSString(params.field_type);
   NSString* nsFrameID = base::SysUTF8ToNSString(frame_id);
   NSString* nsValue = base::SysUTF8ToNSString(params.value);
@@ -735,14 +732,6 @@ using UserDecision = autofill::AutofillClient::AddressPromptUserDecision;
 - (void)sharedPasswordController:(SharedPasswordController*)controller
              didAcceptSuggestion:(FormSuggestion*)suggestion {
   // No op.
-}
-
-- (BOOL)shouldShowAccountStorageNotice {
-  return false;
-}
-
-- (void)showAccountStorageNotice:(void (^)())completion {
-  NOTREACHED_NORETURN();
 }
 
 @end

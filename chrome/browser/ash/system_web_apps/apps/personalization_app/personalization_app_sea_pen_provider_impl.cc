@@ -8,7 +8,7 @@
 #include <string_view>
 
 #include "ash/constants/ash_features.h"
-#include "ash/public/cpp/image_util.h"
+#include "ash/controls/contextual_tooltip.h"
 #include "ash/public/cpp/wallpaper/wallpaper_controller.h"
 #include "ash/wallpaper/sea_pen_wallpaper_manager.h"
 #include "ash/webui/common/mojom/sea_pen.mojom.h"
@@ -16,10 +16,53 @@
 #include "chrome/browser/ash/system_web_apps/apps/personalization_app/personalization_app_utils.h"
 #include "chrome/browser/ash/wallpaper_handlers/wallpaper_fetcher_delegate.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/account_id/account_id.h"
 #include "components/manta/features.h"
 #include "content/public/browser/web_ui.h"
 
 namespace ash::personalization_app {
+
+namespace {
+
+void OnSeaPenImageDeleted(const AccountId& account_id,
+                          const uint32_t image_id,
+                          base::OnceCallback<void(bool success)> callback,
+                          bool success) {
+  if (!success) {
+    LOG(WARNING) << "Failed to delete SeaPen image.";
+    std::move(callback).Run(/*success=*/false);
+    return;
+  }
+  // Set selected wallpaper to default if the deleted image currently selected.
+  auto* wallpaper_controller = WallpaperController::Get();
+  DCHECK(wallpaper_controller);
+  auto wallpaper_info = wallpaper_controller->GetActiveUserWallpaperInfo();
+  if (wallpaper_info.has_value() &&
+      wallpaper_info->type == WallpaperType::kSeaPen &&
+      wallpaper_info->location == base::NumberToString(image_id)) {
+    wallpaper_controller->SetDefaultWallpaper(
+        account_id, /*show_wallpaper=*/true, std::move(callback));
+  } else {
+    std::move(callback).Run(/*success=*/true);
+  }
+}
+
+void OnSeaPenImageSaved(const AccountId& account_id,
+                        const uint32_t image_id,
+                        base::OnceCallback<void(bool success)> callback,
+                        bool success) {
+  if (!success) {
+    LOG(WARNING) << "SeaPen image failed to save, skip setting as wallpaper.";
+    std::move(callback).Run(/*success=*/false);
+    return;
+  }
+  auto* wallpaper_controller = WallpaperController::Get();
+  DCHECK(wallpaper_controller);
+  wallpaper_controller->SetSeaPenWallpaper(account_id, image_id,
+                                           std::move(callback));
+}
+
+}  // namespace
 
 PersonalizationAppSeaPenProviderImpl::PersonalizationAppSeaPenProviderImpl(
     content::WebUI* web_ui,
@@ -42,12 +85,12 @@ void PersonalizationAppSeaPenProviderImpl::BindInterface(
 }
 
 void PersonalizationAppSeaPenProviderImpl::SelectRecentSeaPenImageInternal(
-    const uint32_t id,
+    const uint32_t image_id,
     SelectRecentSeaPenImageCallback callback) {
   ash::WallpaperController* wallpaper_controller = WallpaperController::Get();
   DCHECK(wallpaper_controller);
-  wallpaper_controller->SetSeaPenWallpaperFromFile(GetAccountId(profile_), id,
-                                                   std::move(callback));
+  wallpaper_controller->SetSeaPenWallpaper(GetAccountId(profile_), image_id,
+                                           std::move(callback));
 }
 
 void PersonalizationAppSeaPenProviderImpl::GetRecentSeaPenImagesInternal(
@@ -59,26 +102,29 @@ void PersonalizationAppSeaPenProviderImpl::GetRecentSeaPenImagesInternal(
 }
 
 void PersonalizationAppSeaPenProviderImpl::
-    GetRecentSeaPenImageThumbnailInternal(const uint32_t id,
-                                          DecodeImageCallback callback) {
+    GetRecentSeaPenImageThumbnailInternal(
+        const uint32_t id,
+        SeaPenWallpaperManager::GetImageAndMetadataCallback callback) {
   auto* sea_pen_wallpaper_manager = SeaPenWallpaperManager::GetInstance();
   DCHECK(sea_pen_wallpaper_manager);
-  image_util::DecodeImageFile(
-      base::BindOnce(
-          &PersonalizationAppSeaPenProviderImpl::GetRecentSeaPenImageInfo,
-          weak_ptr_factory_.GetWeakPtr(), id, std::move(callback)),
-      sea_pen_wallpaper_manager->GetFilePathForImageId(GetAccountId(profile_),
-                                                       id));
+  sea_pen_wallpaper_manager->GetImageAndMetadata(GetAccountId(profile_), id,
+                                                 std::move(callback));
 }
 
-void PersonalizationAppSeaPenProviderImpl::GetRecentSeaPenImageInfo(
-    const uint32_t id,
-    DecodeImageCallback callback,
-    const gfx::ImageSkia& image) {
-  ash::WallpaperController* wallpaper_controller = WallpaperController::Get();
-  DCHECK(wallpaper_controller);
-  wallpaper_controller->GetSeaPenMetadata(
-      GetAccountId(profile_), id, base::BindOnce(std::move(callback), image));
+void PersonalizationAppSeaPenProviderImpl::
+    ShouldShowSeaPenIntroductionDialogInternal(
+        ShouldShowSeaPenIntroductionDialogCallback callback) {
+  std::move(callback).Run(contextual_tooltip::ShouldShowNudge(
+      profile_->GetPrefs(),
+      contextual_tooltip::TooltipType::kSeaPenWallpaperIntroDialog,
+      /*recheck_delay=*/nullptr));
+}
+
+void PersonalizationAppSeaPenProviderImpl::
+    HandleSeaPenIntroductionDialogClosedInternal() {
+  contextual_tooltip::HandleGesturePerformed(
+      profile_->GetPrefs(),
+      contextual_tooltip::TooltipType::kSeaPenWallpaperIntroDialog);
 }
 
 void PersonalizationAppSeaPenProviderImpl::DeleteRecentSeaPenImage(
@@ -89,20 +135,26 @@ void PersonalizationAppSeaPenProviderImpl::DeleteRecentSeaPenImage(
     return;
   }
 
-  auto* wallpaper_controller = ash::WallpaperController::Get();
-  DCHECK(wallpaper_controller);
+  auto* sea_pen_wallpaper_manager = SeaPenWallpaperManager::GetInstance();
+  DCHECK(sea_pen_wallpaper_manager);
 
-  wallpaper_controller->DeleteRecentSeaPenImage(GetAccountId(profile_), id,
-                                                std::move(callback));
+  sea_pen_wallpaper_manager->DeleteSeaPenImage(
+      GetAccountId(profile_), id,
+      base::BindOnce(&OnSeaPenImageDeleted, GetAccountId(profile_), id,
+                     std::move(callback)));
 }
 
 void PersonalizationAppSeaPenProviderImpl::OnFetchWallpaperDoneInternal(
     const SeaPenImage& sea_pen_image,
     const mojom::SeaPenQueryPtr& query,
     base::OnceCallback<void(bool success)> callback) {
-  auto* wallpaper_controller = ash::WallpaperController::Get();
-  wallpaper_controller->SetSeaPenWallpaper(
-      GetAccountId(profile_), sea_pen_image, query, std::move(callback));
+  auto* sea_pen_wallpaper_manager = SeaPenWallpaperManager::GetInstance();
+  DCHECK(sea_pen_wallpaper_manager);
+  const AccountId account_id = GetAccountId(profile_);
+  sea_pen_wallpaper_manager->SaveSeaPenImage(
+      account_id, sea_pen_image, query,
+      base::BindOnce(&OnSeaPenImageSaved, account_id, sea_pen_image.id,
+                     std::move(callback)));
 }
 
 }  // namespace ash::personalization_app

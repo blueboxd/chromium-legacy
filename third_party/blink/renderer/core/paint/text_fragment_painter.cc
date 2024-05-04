@@ -23,20 +23,20 @@
 #include "third_party/blink/renderer/core/layout/text_decoration_offset.h"
 #include "third_party/blink/renderer/core/mobile_metrics/mobile_friendliness_checker.h"
 #include "third_party/blink/renderer/core/paint/box_model_object_painter.h"
-#include "third_party/blink/renderer/core/paint/line_relative_rect.h"
 #include "third_party/blink/renderer/core/paint/highlight_painter.h"
 #include "third_party/blink/renderer/core/paint/inline_paint_context.h"
-#include "third_party/blink/renderer/core/paint/text_decoration_painter.h"
-#include "third_party/blink/renderer/core/paint/text_painter.h"
+#include "third_party/blink/renderer/core/paint/line_relative_rect.h"
 #include "third_party/blink/renderer/core/paint/object_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_auto_dark_mode.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/core/paint/selection_bounds_recorder.h"
-#include "third_party/blink/renderer/core/paint/text_painter_base.h"
+#include "third_party/blink/renderer/core/paint/text_decoration_painter.h"
+#include "third_party/blink/renderer/core/paint/text_painter.h"
 #include "third_party/blink/renderer/core/style/applied_text_decoration.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/svg/svg_element.h"
 #include "third_party/blink/renderer/platform/fonts/character_range.h"
+#include "third_party/blink/renderer/platform/fonts/text_fragment_paint_info.h"
 #include "third_party/blink/renderer/platform/graphics/dom_node_id.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context_state_saver.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
@@ -96,19 +96,30 @@ inline const InlineCursor& InlineCursorForBlockFlow(
 }
 
 // Check if text-emphasis and ruby annotation text are on different sides.
-// See InlineTextBox::GetEmphasisMarkPosition().
 //
 // TODO(layout-dev): The current behavior is compatible with the legacy layout.
 // However, the specification asks to draw emphasis marks over ruby annotation
 // text.
 // https://drafts.csswg.org/css-text-decor-4/#text-emphasis-position-property
+// > If emphasis marks are applied to characters for which ruby is drawn in the
+// > same position as the emphasis mark, the emphasis marks are placed outside
+// > the ruby.
 bool ShouldPaintEmphasisMark(const ComputedStyle& style,
-                             const LayoutObject& layout_object) {
+                             const LayoutObject& layout_object,
+                             const FragmentItem& text_item) {
   if (style.GetTextEmphasisMark() == TextEmphasisMark::kNone)
     return false;
   // Note: We set text-emphasis-style:none for combined text and we paint
   // emphasis mark at left/right side of |LayoutTextCombine|.
   DCHECK(!IsA<LayoutTextCombine>(layout_object.Parent()));
+
+  if (RuntimeEnabledFeatures::RubyLineBreakableEnabled()) {
+    if (style.GetTextEmphasisLineLogicalSide() == LineLogicalSide::kOver) {
+      return !text_item.HasOverAnnotation();
+    }
+    return !text_item.HasUnderAnnotation();
+  }
+
   const LayoutObject* containing_block = layout_object.ContainingBlock();
   if (!containing_block || !containing_block->IsRubyBase())
     return true;
@@ -123,7 +134,7 @@ bool ShouldPaintEmphasisMark(const ComputedStyle& style,
     return true;
   }
   const LineLogicalSide ruby_logical_side =
-      parent->StyleRef().GetRubyPosition() == RubyPosition::kBefore
+      parent->StyleRef().GetRubyPosition() == RubyPosition::kOver
           ? LineLogicalSide::kOver
           : LineLogicalSide::kUnder;
   return ruby_logical_side != style.GetTextEmphasisLineLogicalSide();
@@ -211,7 +222,7 @@ void TextFragmentPainter::PaintSymbol(const LayoutObject* layout_object,
   Color color(layout_object->ResolveColor(GetCSSPropertyColor()));
   if (BoxModelObjectPainter::ShouldForceWhiteBackgroundForPrintEconomy(
           layout_object->GetDocument(), style)) {
-    color = TextPainterBase::TextColorForWhiteBackground(color);
+    color = TextPainter::TextColorForWhiteBackground(color);
   }
   // Apply the color to the list marker text.
   context.SetFillColor(color);
@@ -386,7 +397,7 @@ void TextFragmentPainter::Paint(const PaintInfo& paint_info,
 
   Node* node = layout_object->GetNode();
   TextPaintStyle text_style =
-      TextPainterBase::TextPaintingStyle(document, style, paint_info);
+      TextPainter::TextPaintingStyle(document, style, paint_info);
   if (UNLIKELY(selection)) {
     selection->ComputeSelectionStyle(document, style, node, paint_info,
                                      text_style);
@@ -486,7 +497,7 @@ void TextFragmentPainter::Paint(const PaintInfo& paint_info,
   // 2. Now paint the foreground, including text and decorations.
   // TODO(dazabani@igalia.com): suppress text proper where one or more highlight
   // overlays are active, but paint shadows in full <https://crbug.com/1147859>
-  if (ShouldPaintEmphasisMark(style, *layout_object)) {
+  if (ShouldPaintEmphasisMark(style, *layout_object, text_item)) {
     text_painter.SetEmphasisMark(style.TextEmphasisMarkString(),
                                  style.GetTextEmphasisPosition());
   }
@@ -526,9 +537,9 @@ void TextFragmentPainter::Paint(const PaintInfo& paint_info,
           auto_dark_mode);
       break;
     case HighlightPainter::kOverlay:
-      // Slow path: paint suppressing text proper where highlighted, then
-      // paint each highlight overlay, suppressing unless topmost highlight.
-      highlight_painter.PaintOriginatingText(text_style, node_id);
+      // Paint originating shadows at the bottom, below all highlight pseudos.
+      highlight_painter.PaintOriginatingShadow(text_style, node_id);
+      // Paint each highlight overlay, including originating and selection.
       highlight_painter.PaintHighlightOverlays(
           text_style, node_id, paint_marker_backgrounds, rotation);
       break;

@@ -164,7 +164,6 @@ std::unique_ptr<ExternalVkImageBacking> ExternalVkImageBacking::Create(
   auto* device_queue = context_state->vk_context_provider()->GetDeviceQueue();
   constexpr auto kUsageNeedsColorAttachment =
       SHARED_IMAGE_USAGE_GLES2_READ | SHARED_IMAGE_USAGE_GLES2_WRITE |
-      SHARED_IMAGE_USAGE_GLES2_FRAMEBUFFER_HINT |
       SHARED_IMAGE_USAGE_RASTER_READ | SHARED_IMAGE_USAGE_RASTER_WRITE |
       SHARED_IMAGE_USAGE_OOP_RASTERIZATION | SHARED_IMAGE_USAGE_WEBGPU_READ |
       SHARED_IMAGE_USAGE_WEBGPU_WRITE;
@@ -226,7 +225,7 @@ std::unique_ptr<ExternalVkImageBacking> ExternalVkImageBacking::Create(
     }
 
     estimated_size += image->device_size();
-    textures.emplace_back(std::move(image), color_space);
+    textures.emplace_back(std::move(image), format, color_space);
   }
 
   bool use_separate_gl_texture =
@@ -296,7 +295,7 @@ std::unique_ptr<ExternalVkImageBacking> ExternalVkImageBacking::CreateFromGMB(
 
   std::vector<TextureHolderVk> textures;
   textures.reserve(1);
-  textures.emplace_back(std::move(image), color_space);
+  textures.emplace_back(std::move(image), format, color_space);
 
   bool use_separate_gl_texture =
       UseSeparateGLTexture(context_state.get(), format);

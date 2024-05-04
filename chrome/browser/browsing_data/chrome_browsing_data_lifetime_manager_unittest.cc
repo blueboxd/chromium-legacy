@@ -16,7 +16,6 @@
 #include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/browser/trusted_vault/trusted_vault_service_factory.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/browsing_data/core/features.h"
 #include "components/browsing_data/core/pref_names.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/signin/public/base/signin_pref_names.h"
@@ -255,7 +254,9 @@ TEST(ChromeBrowsingDataLifetimeManager,
   // If required sync types get disabled, the scheduled deletions should proceed
   // as usual.
   sync_service->GetUserSettings()->SetTypeIsManaged(
-      syncer::UserSelectableType::kPreferences, true);
+      syncer::UserSelectableType::kPreferences, /*is_managed=*/true);
+  sync_service->GetUserSettings()->SetTypeIsManaged(
+      syncer::UserSelectableType::kCookies, /*is_managed=*/true);
 
   base::Time current_time = base::Time::Now();
   base::Time delete_start_time = base::Time::Min();

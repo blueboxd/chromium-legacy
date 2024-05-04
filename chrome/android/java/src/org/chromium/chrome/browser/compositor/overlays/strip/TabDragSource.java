@@ -36,11 +36,12 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.compositor.LayerTitleCache;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerImpl;
-import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
+import org.chromium.chrome.browser.dragdrop.ChromeDragDropUtils;
 import org.chromium.chrome.browser.dragdrop.ChromeDropDataAndroid;
 import org.chromium.chrome.browser.multiwindow.MultiInstanceManager;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab_ui.TabContentManager;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 import org.chromium.ui.base.MimeTypeUtils;
@@ -138,8 +139,15 @@ public class TabDragSource implements View.OnDragListener {
     }
 
     private boolean shouldAllowTabDrag() {
-        return TabUiFeatureUtilities.isTabTearingEnabled()
+        // TODO (crbug/331980663): Prevent OEM-agnostic single tab drag on Android V+.
+        return ChromeDragDropUtils.shouldAllowTabTearing(mTabModelSelector)
                 || mManufacturerAllowlist.contains(getCurrManufacturer());
+    }
+
+    // Determine if a tab drag initiated to create a new window is valid.
+    private boolean shouldAllowTabTearing() {
+        return MultiWindowUtils.getInstanceCount() < MultiWindowUtils.getMaxInstances()
+                && ChromeDragDropUtils.shouldAllowTabTearing(mTabModelSelector);
     }
 
     /**
@@ -169,10 +177,9 @@ public class TabDragSource implements View.OnDragListener {
             return false;
         }
 
-        // Do not allow drag when we are in non-split screen mode on non-Samsung device since we
-        // don't support tab drag to open new instances of Chrome given OS/OEM limitations (the drag
-        // won't actually create a new instance on any OEM besides Samsung).
-        // @TODO(crbug.com/1520080): Make this configurable via Finch in case we find more OEMs
+        // Do not allow drag if the tab is the only tab in non-split screen mode on a non-Samsung
+        // device.
+        // @TODO(crbug.com/41493055): Make this configurable via Finch in case we find more OEMs
         // where this works.
         if (!MultiWindowUtils.getInstance().isInMultiWindowMode(getActivity())
                 && !shouldAllowTabDrag()) {
@@ -185,7 +192,10 @@ public class TabDragSource implements View.OnDragListener {
 
         // Build shared state with all info.
         ChromeDropDataAndroid dropData =
-                new ChromeDropDataAndroid.Builder().withTab(tabBeingDragged).build();
+                new ChromeDropDataAndroid.Builder()
+                        .withTab(tabBeingDragged)
+                        .withAllowTabTearing(shouldAllowTabTearing())
+                        .build();
         updateShadowView(tabBeingDragged, dragSourceView, (int) (tabWidthDp / mPxToDp));
         DragShadowBuilder builder =
                 createDragShadowBuilder(dragSourceView, startPoint, tabPositionX);
@@ -301,6 +311,11 @@ public class TabDragSource implements View.OnDragListener {
         mTabModelSelector = tabModelSelector;
     }
 
+    /** Whether a tab drag and drop has started. */
+    public boolean isTabDraggingInProgress() {
+        return sDragTrackerToken != null;
+    }
+
     private boolean didOccurInTabStrip(float yPx) {
         return yPx <= mTabStripHeightSupplier.get();
     }
@@ -358,7 +373,7 @@ public class TabDragSource implements View.OnDragListener {
 
     private boolean onDrop(float xPx, DragEvent dropEvent) {
         StripLayoutHelper helper = mStripLayoutHelperSupplier.get();
-        int groupRootId = helper.getTabDropGroupId();
+        int destinationTabId = helper.getTabDropId();
         helper.onUpOrCancel(LayoutManagerImpl.time());
 
         if (isDragSource()) {
@@ -392,7 +407,8 @@ public class TabDragSource implements View.OnDragListener {
         } else {
             int tabIndex = helper.getTabIndexForTabDrop(dropEvent.getX() * mPxToDp);
             mMultiInstanceManager.moveTabToWindow(getActivity(), tabBeingDragged, tabIndex);
-            helper.mergeToGroupForTabDropIfNeeded(groupRootId, tabBeingDragged.getId(), tabIndex);
+            helper.mergeToGroupForTabDropIfNeeded(
+                    destinationTabId, tabBeingDragged.getId(), tabIndex);
         }
         DragDropMetricUtils.recordTabDragDropType(DragDropType.TAB_STRIP_TO_TAB_STRIP);
         mUmaState.mTabLeavingDestStripSystemElapsedTime = SystemClock.elapsedRealtime();
@@ -449,6 +465,13 @@ public class TabDragSource implements View.OnDragListener {
         // Only record for source strip to avoid duplicate.
         if (dropHandled) {
             DragDropMetricUtils.recordTabDragDropResult(DragDropTabResult.SUCCESS);
+        } else if (MultiWindowUtils.getInstanceCount() == MultiWindowUtils.getMaxInstances()) {
+            Toast.makeText(
+                            mWindowAndroid.getContext().get(),
+                            R.string.max_number_of_windows,
+                            Toast.LENGTH_LONG)
+                    .show();
+            DragDropMetricUtils.recordTabDragDropResult(DragDropTabResult.IGNORED_MAX_INSTANCES);
         }
 
         // Close the source instance window if it has no tabs.
@@ -499,7 +522,7 @@ public class TabDragSource implements View.OnDragListener {
         assert globalState != null : "Attempting to access dragged tab with invalid drag state.";
         assert globalState.getData() instanceof ChromeDropDataAndroid
                 : "Attempting to access dragged tab with wrong data type";
-        return ((ChromeDropDataAndroid) globalState.getData()).mTab;
+        return ((ChromeDropDataAndroid) globalState.getData()).tab;
     }
 
     private boolean isDragSource() {

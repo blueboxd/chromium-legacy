@@ -182,6 +182,12 @@ const std::string& PageNodeImpl::GetContentsMimeType() const {
   return contents_mime_type_;
 }
 
+std::optional<blink::mojom::PermissionStatus>
+PageNodeImpl::GetNotificationPermissionStatus() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return notification_permission_status_;
+}
+
 base::TimeDelta PageNodeImpl::GetTimeSinceLastNavigation() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (navigation_committed_time_.is_null()) {
@@ -221,12 +227,6 @@ bool PageNodeImpl::HadUserEdits() const {
 
 const WebContentsProxy& PageNodeImpl::GetContentsProxy() const {
   return contents_proxy();
-}
-
-const std::optional<freezing::FreezingVote>& PageNodeImpl::GetFreezingVote()
-    const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return freezing_vote_.value();
 }
 
 PageState PageNodeImpl::GetPageState() const {
@@ -344,14 +344,16 @@ void PageNodeImpl::SetUkmSourceId(ukm::SourceId ukm_source_id) {
 
 void PageNodeImpl::OnFaviconUpdated() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  for (auto* observer : GetObservers())
-    observer->OnFaviconUpdated(this);
+  for (auto& observer : GetObservers()) {
+    observer.OnFaviconUpdated(this);
+  }
 }
 
 void PageNodeImpl::OnTitleUpdated() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  for (auto* observer : GetObservers())
-    observer->OnTitleUpdated(this);
+  for (auto& observer : GetObservers()) {
+    observer.OnTitleUpdated(this);
+  }
 }
 
 void PageNodeImpl::OnAboutToBeDiscarded(base::WeakPtr<PageNode> new_page_node) {
@@ -361,8 +363,8 @@ void PageNodeImpl::OnAboutToBeDiscarded(base::WeakPtr<PageNode> new_page_node) {
     return;
   }
 
-  for (auto* observer : GetObservers()) {
-    observer->OnAboutToBeDiscarded(this, new_page_node.get());
+  for (auto& observer : GetObservers()) {
+    observer.OnAboutToBeDiscarded(this, new_page_node.get());
   }
 }
 
@@ -371,7 +373,9 @@ void PageNodeImpl::OnMainFrameNavigationCommitted(
     base::TimeTicks navigation_committed_time,
     int64_t navigation_id,
     const GURL& url,
-    const std::string& contents_mime_type) {
+    const std::string& contents_mime_type,
+    std::optional<blink::mojom::PermissionStatus>
+        notification_permission_status) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // This should never be invoked with a null navigation, nor should it be
   // called twice for the same navigation.
@@ -380,14 +384,22 @@ void PageNodeImpl::OnMainFrameNavigationCommitted(
   navigation_committed_time_ = navigation_committed_time;
   navigation_id_ = navigation_id;
   contents_mime_type_ = contents_mime_type;
+  notification_permission_status_ = notification_permission_status;
   main_frame_url_.SetAndMaybeNotify(this, url);
 
   // No mainframe document change notification on same-document navigations.
   if (same_document)
     return;
 
-  for (auto* observer : GetObservers())
-    observer->OnMainFrameDocumentChanged(this);
+  for (auto& observer : GetObservers()) {
+    observer.OnMainFrameDocumentChanged(this);
+  }
+}
+
+void PageNodeImpl::OnNotificationPermissionStatusChange(
+    blink::mojom::PermissionStatus permission_status) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  notification_permission_status_ = permission_status;
 }
 
 FrameNodeImpl* PageNodeImpl::opener_frame_node() const {
@@ -436,8 +448,9 @@ void PageNodeImpl::SetOpenerFrameNode(FrameNodeImpl* opener) {
   opener_frame_node_ = opener;
   opener->AddOpenedPage(PassKey(), this);
 
-  for (auto* observer : GetObservers())
-    observer->OnOpenerFrameNodeChanged(this, previous_opener);
+  for (auto& observer : GetObservers()) {
+    observer.OnOpenerFrameNodeChanged(this, previous_opener);
+  }
 }
 
 void PageNodeImpl::ClearOpenerFrameNode() {
@@ -449,8 +462,9 @@ void PageNodeImpl::ClearOpenerFrameNode() {
   opener_frame_node_->RemoveOpenedPage(PassKey(), this);
   opener_frame_node_ = nullptr;
 
-  for (auto* observer : GetObservers())
-    observer->OnOpenerFrameNodeChanged(this, previous_opener);
+  for (auto& observer : GetObservers()) {
+    observer.OnOpenerFrameNodeChanged(this, previous_opener);
+  }
 }
 
 void PageNodeImpl::SetEmbedderFrameNodeAndEmbeddingType(
@@ -471,9 +485,9 @@ void PageNodeImpl::SetEmbedderFrameNodeAndEmbeddingType(
   embedding_type_ = embedding_type;
   embedder->AddEmbeddedPage(PassKey(), this);
 
-  for (auto* observer : GetObservers())
-    observer->OnEmbedderFrameNodeChanged(this, previous_embedder,
-                                         previous_type);
+  for (auto& observer : GetObservers()) {
+    observer.OnEmbedderFrameNodeChanged(this, previous_embedder, previous_type);
+  }
 }
 
 void PageNodeImpl::ClearEmbedderFrameNodeAndEmbeddingType() {
@@ -488,21 +502,15 @@ void PageNodeImpl::ClearEmbedderFrameNodeAndEmbeddingType() {
   embedder_frame_node_ = nullptr;
   embedding_type_ = EmbeddingType::kInvalid;
 
-  for (auto* observer : GetObservers())
-    observer->OnEmbedderFrameNodeChanged(this, previous_embedder,
-                                         previous_type);
+  for (auto& observer : GetObservers()) {
+    observer.OnEmbedderFrameNodeChanged(this, previous_embedder, previous_type);
+  }
 }
 
 void PageNodeImpl::set_has_nonempty_beforeunload(
     bool has_nonempty_beforeunload) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   has_nonempty_beforeunload_ = has_nonempty_beforeunload;
-}
-
-void PageNodeImpl::set_freezing_vote(
-    std::optional<freezing::FreezingVote> freezing_vote) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  freezing_vote_.SetAndMaybeNotify(this, freezing_vote);
 }
 
 void PageNodeImpl::set_page_state(PageState page_state) {

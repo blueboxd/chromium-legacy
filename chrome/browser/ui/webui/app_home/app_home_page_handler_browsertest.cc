@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/app_home/app_home_page_handler.h"
 
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -13,7 +14,7 @@
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/create_application_shortcut_view_test_support.h"
-#include "chrome/browser/ui/web_applications/web_app_controller_browsertest.h"
+#include "chrome/browser/ui/web_applications/web_app_browsertest_base.h"
 #include "chrome/browser/ui/webui/app_home/app_home.mojom.h"
 #include "chrome/browser/ui/webui/app_home/mock_app_home_page.h"
 #include "chrome/browser/web_applications/os_integration/web_app_shortcut.h"
@@ -97,7 +98,7 @@ class TestAppHomePageHandler : public AppHomePageHandler {
   ~TestAppHomePageHandler() override = default;
 
   void Wait() {
-    // TODO(crbug.com/1350406): Define specific Wait for each
+    // TODO(crbug.com/40234138): Define specific Wait for each
     // listener.
     run_loop_->Run();
     run_loop_ = std::make_unique<base::RunLoop>();
@@ -146,10 +147,10 @@ class TestAppHomePageHandler : public AppHomePageHandler {
 
 std::unique_ptr<web_app::WebAppInstallInfo> BuildWebAppInfo(
     std::string test_app_name) {
-  auto app_info = std::make_unique<web_app::WebAppInstallInfo>();
-  app_info->start_url = GURL(kTestAppUrl);
+  auto app_info = web_app::WebAppInstallInfo::CreateWithStartUrlForTesting(
+      GURL(kTestAppUrl));
   app_info->scope = GURL(kTestAppUrl);
-  app_info->title = base::UTF8ToUTF16(base::StringPiece(test_app_name));
+  app_info->title = base::UTF8ToUTF16(std::string_view(test_app_name));
   app_info->manifest_url = GURL(kTestManifestUrl);
 
   return app_info;

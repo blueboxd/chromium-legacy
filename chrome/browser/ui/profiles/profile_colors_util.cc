@@ -133,8 +133,11 @@ ProfileThemeColors GetCurrentProfileThemeColors(
       color_provider, color_provider.GetColor(ui::kColorFrameActive));
 }
 
-ProfileThemeColors GetDefaultProfileThemeColors() {
-  const auto* color_provider = GetDefaultColorProvider();
+ProfileThemeColors GetDefaultProfileThemeColors(
+    const ui::ColorProvider* color_provider) {
+  if (!color_provider) {
+    color_provider = GetDefaultColorProvider();
+  }
   return GetProfileThemeColorsFromHighlightColor(
       *color_provider, color_provider->GetColor(ui::kColorFrameActiveUnthemed));
 }
@@ -179,8 +182,8 @@ chrome_colors::ColorInfo GenerateNewProfileColorWithGenerator(
     ProfileAttributesStorage& storage,
     base::OnceCallback<size_t(size_t count)> random_generator,
     ProfileAttributesEntry* current_profile) {
-  // TODO(crbug.com/1108295): Return only a SkColor if the full ColorInfo is not
-  // needed.
+  // TODO(crbug.com/40141230): Return only a SkColor if the full ColorInfo is
+  // not needed.
   std::set<ProfileThemeColors> used_theme_colors;
   for (ProfileAttributesEntry* entry : storage.GetAllProfilesAttributes()) {
     std::optional<ProfileThemeColors> current_colors =

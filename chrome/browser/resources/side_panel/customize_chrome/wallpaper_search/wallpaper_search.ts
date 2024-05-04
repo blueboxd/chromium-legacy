@@ -6,24 +6,23 @@ import '../check_mark_wrapper.js';
 import './combobox/customize_chrome_combobox.js';
 import 'chrome://customize-chrome-side-panel.top-chrome/shared/sp_heading.js';
 import 'chrome://customize-chrome-side-panel.top-chrome/shared/sp_shared_style.css.js';
+import 'chrome://resources/cr_elements/cr_auto_img/cr_auto_img.js';
 import 'chrome://resources/cr_elements/cr_button/cr_button.js';
 import 'chrome://resources/cr_elements/cr_feedback_buttons/cr_feedback_buttons.js';
 import 'chrome://resources/cr_elements/cr_grid/cr_grid.js';
-import 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.js';
 import 'chrome://resources/cr_elements/cr_hidden_style.css.js';
+import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.js';
 import 'chrome://resources/cr_elements/cr_icons.css.js';
-import 'chrome://resources/cr_elements/cr_input/cr_input.js';
 import 'chrome://resources/cr_elements/cr_loading_gradient/cr_loading_gradient.js';
+import 'chrome://resources/cr_elements/cr_ripple/cr_ripple.js';
 import 'chrome://resources/cr_elements/cr_shared_vars.css.js';
 import 'chrome://resources/cr_elements/icons.html.js';
 import 'chrome://resources/cr_components/theme_color_picker/theme_hue_slider_dialog.js';
-import 'chrome://resources/polymer/v3_0/paper-ripple/paper-ripple.js';
 
-import type {SpHeading} from 'chrome://customize-chrome-side-panel.top-chrome/shared/sp_heading.js';
+import type {SpHeadingElement} from 'chrome://customize-chrome-side-panel.top-chrome/shared/sp_heading.js';
 import type {ThemeHueSliderDialogElement} from 'chrome://resources/cr_components/theme_color_picker/theme_hue_slider_dialog.js';
 import type {CrA11yAnnouncerElement} from 'chrome://resources/cr_elements/cr_a11y_announcer/cr_a11y_announcer.js';
 import {getInstance as getAnnouncerInstance} from 'chrome://resources/cr_elements/cr_a11y_announcer/cr_a11y_announcer.js';
-import type {CrActionMenuElement} from 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.js';
 import type {CrButtonElement} from 'chrome://resources/cr_elements/cr_button/cr_button.js';
 import type {CrFeedbackButtonsElement} from 'chrome://resources/cr_elements/cr_feedback_buttons/cr_feedback_buttons.js';
 import {CrFeedbackOption} from 'chrome://resources/cr_elements/cr_feedback_buttons/cr_feedback_buttons.js';
@@ -100,10 +99,9 @@ export interface WallpaperSearchElement {
     descriptorComboboxA: CustomizeChromeCombobox,
     descriptorComboboxB: CustomizeChromeCombobox,
     descriptorComboboxC: CustomizeChromeCombobox,
-    descriptorMenuD: CrActionMenuElement,
     error: HTMLElement,
     feedbackButtons: CrFeedbackButtonsElement,
-    heading: SpHeading,
+    heading: SpHeadingElement,
     historyCard: HTMLElement,
     hueSlider: ThemeHueSliderDialogElement,
     loading: HTMLElement,
@@ -459,8 +457,12 @@ export class WallpaperSearchElement extends WallpaperSearchElementBase {
     return descriptor ? loadTimeData.getString(descriptor.name) : '';
   }
 
+  private isCustomColorSelected_(): boolean {
+    return this.selectedHue_ !== null;
+  }
+
   private getCustomColorCheckedStatus_(): string {
-    return this.selectedHue_ !== null ? 'true' : 'false';
+    return this.isCustomColorSelected_() ? 'true' : 'false';
   }
 
   private getInspirationDescriptorsCheckedStatus_(

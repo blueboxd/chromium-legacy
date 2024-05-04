@@ -21,6 +21,7 @@
 #include "content/browser/device_posture/device_posture_provider_impl.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/renderer_host/delegated_frame_host.h"
+#include "content/browser/renderer_host/frame_tree.h"
 #include "content/browser/renderer_host/input/mouse_wheel_phase_handler.h"
 #include "content/browser/renderer_host/input/synthetic_gesture_target_base.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
@@ -28,12 +29,13 @@
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #include "content/browser/renderer_host/render_widget_host_owner_delegate.h"
-#include "content/browser/renderer_host/render_widget_host_view_base_observer.h"
 #include "content/browser/renderer_host/render_widget_host_view_child_frame.h"
+#include "content/browser/renderer_host/scoped_view_transition_resources.h"
 #include "content/browser/renderer_host/text_input_manager.h"
 #include "content/browser/renderer_host/visible_time_request_trigger.h"
 #include "content/common/content_switches_internal.h"
 #include "content/common/input/event_with_latency_info.h"
+#include "content/common/input/render_widget_host_view_input_observer.h"
 #include "content/public/common/page_visibility_state.h"
 #include "third_party/blink/public/mojom/frame/intrinsic_sizing_info.mojom.h"
 #include "ui/base/ui_base_types.h"
@@ -56,8 +58,8 @@ RenderWidgetHostViewBase::RenderWidgetHostViewBase(RenderWidgetHost* host)
       screen_infos_(display::ScreenInfos(display::ScreenInfo())) {}
 
 RenderWidgetHostViewBase::~RenderWidgetHostViewBase() {
-  DCHECK(!keyboard_locked_);
-  DCHECK(!IsPointerLocked());
+  CHECK(!keyboard_locked_);
+  CHECK(!IsPointerLocked());
   // We call this here to guarantee that observers are notified before we go
   // away. However, some subclasses may wish to call this earlier in their
   // shutdown process, e.g. to force removal from
@@ -94,9 +96,9 @@ void RenderWidgetHostViewBase::NotifyObserversAboutShutdown() {
   // Note: RenderWidgetHostInputEventRouter is an observer, and uses the
   // following notification to remove this view from its surface owners map.
   for (auto& observer : observers_)
-    observer.OnRenderWidgetHostViewBaseDestroyed(this);
+    observer.OnRenderWidgetHostViewInputDestroyed(this);
   // All observers are required to disconnect after they are notified.
-  DCHECK(observers_.empty());
+  CHECK(observers_.empty());
 }
 
 MouseWheelPhaseHandler* RenderWidgetHostViewBase::GetMouseWheelPhaseHandler() {
@@ -303,8 +305,8 @@ void RenderWidgetHostViewBase::SetBackgroundColor(SkColor color) {
   // TODO(danakj): OPAQUE colors only make sense for main frame widgets,
   // as child frames are always transparent background. We should move this to
   // `blink::WebView` instead.
-  DCHECK(SkColorGetA(color) == SK_AlphaOPAQUE ||
-         SkColorGetA(color) == SK_AlphaTRANSPARENT);
+  CHECK(SkColorGetA(color) == SK_AlphaOPAQUE ||
+        SkColorGetA(color) == SK_AlphaTRANSPARENT);
   if (default_background_color_ == color)
     return;
 
@@ -469,6 +471,12 @@ bool RenderWidgetHostViewBase::HasFallbackSurface() const {
   return false;
 }
 
+viz::SurfaceId RenderWidgetHostViewBase::GetFallbackSurfaceIdForTesting()
+    const {
+  NOTREACHED();
+  return viz::SurfaceId();
+}
+
 void RenderWidgetHostViewBase::SetWidgetType(WidgetType widget_type) {
   widget_type_ = widget_type;
 }
@@ -503,7 +511,7 @@ bool RenderWidgetHostViewBase::RequestRepaintForTesting() {
 void RenderWidgetHostViewBase::ProcessAckedTouchEvent(
     const TouchEventWithLatencyInfo& touch,
     blink::mojom::InputEventResultState ack_result) {
-  NOTREACHED();
+  DUMP_WILL_BE_NOTREACHED_NORETURN();
 }
 
 // Send system cursor size to the renderer via UpdateScreenInfo().
@@ -588,7 +596,7 @@ void RenderWidgetHostViewBase::UpdateActiveState(bool active) {
 
 void RenderWidgetHostViewBase::DidUnregisterFromTextInputManager(
     TextInputManager* text_input_manager) {
-  DCHECK(text_input_manager && text_input_manager_ == text_input_manager);
+  CHECK(text_input_manager && text_input_manager_ == text_input_manager);
 
   text_input_manager_ = nullptr;
 }
@@ -641,6 +649,19 @@ display::ScreenInfos RenderWidgetHostViewBase::GetScreenInfos() const {
 
 float RenderWidgetHostViewBase::GetDeviceScaleFactor() const {
   return screen_infos_.current().device_scale_factor;
+}
+
+base::WeakPtr<RenderWidgetHostViewInput>
+RenderWidgetHostViewBase::GetInputWeakPtr() {
+  return weak_factory_.GetWeakPtr();
+}
+
+RenderInputRouter* RenderWidgetHostViewBase::GetViewRenderInputRouter() {
+  return host()->GetRenderInputRouter();
+}
+
+RenderWidgetHostViewInput* RenderWidgetHostViewBase::GetParentViewInput() {
+  return nullptr;
 }
 
 void RenderWidgetHostViewBase::SetScaleOverrideForCapture(float scale) {
@@ -720,10 +741,15 @@ bool RenderWidgetHostViewBase::ScreenRectIsUnstableForIOv2For(
 void RenderWidgetHostViewBase::ProcessMouseEvent(
     const blink::WebMouseEvent& event,
     const ui::LatencyInfo& latency) {
-  // TODO(crbug.com/814674): Figure out the reason |host| is null here in all
+  // TODO(crbug.com/40564125): Figure out the reason |host| is null here in all
   // Process* functions.
   if (!host())
     return;
+
+  // Ensure the event is not routed to a prerendered page.
+  if (host()->frame_tree() && host()->frame_tree()->is_prerendering()) {
+    NOTREACHED_NORETURN();
+  }
 
   PreProcessMouseEvent(event);
   host()->ForwardMouseEventWithLatencyInfo(event, latency);
@@ -734,6 +760,12 @@ void RenderWidgetHostViewBase::ProcessMouseWheelEvent(
     const ui::LatencyInfo& latency) {
   if (!host())
     return;
+
+  // Ensure the event is not routed to a prerendered page.
+  if (host()->frame_tree() && host()->frame_tree()->is_prerendering()) {
+    NOTREACHED_NORETURN();
+  }
+
   host()->ForwardWheelEventWithLatencyInfo(event, latency);
 }
 
@@ -742,6 +774,11 @@ void RenderWidgetHostViewBase::ProcessTouchEvent(
     const ui::LatencyInfo& latency) {
   if (!host())
     return;
+
+  // Ensure the event is not routed to a prerendered page.
+  if (host()->frame_tree() && host()->frame_tree()->is_prerendering()) {
+    NOTREACHED_NORETURN();
+  }
 
   PreProcessTouchEvent(event);
   host()->ForwardTouchEventWithLatencyInfo(event, latency);
@@ -752,6 +789,12 @@ void RenderWidgetHostViewBase::ProcessGestureEvent(
     const ui::LatencyInfo& latency) {
   if (!host())
     return;
+
+  // Ensure the event is not routed to a prerendered page.
+  if (host()->frame_tree() && host()->frame_tree()->is_prerendering()) {
+    NOTREACHED_NORETURN();
+  }
+
   host()->ForwardGestureEventWithLatencyInfo(event, latency);
 }
 
@@ -767,7 +810,7 @@ gfx::PointF RenderWidgetHostViewBase::TransformRootPointToViewCoordSpace(
 
 bool RenderWidgetHostViewBase::TransformPointToCoordSpaceForView(
     const gfx::PointF& point,
-    RenderWidgetHostViewBase* target_view,
+    RenderWidgetHostViewInput* target_view,
     gfx::PointF* transformed_point) {
   NOTREACHED();
   return true;
@@ -791,6 +834,13 @@ void RenderWidgetHostViewBase::Destroy() {
 
 bool RenderWidgetHostViewBase::CanSynchronizeVisualProperties() {
   return true;
+}
+
+// This function is called from host, so host and delegate should be set up.
+double RenderWidgetHostViewBase::GetZoomLevel() const {
+  CHECK(host());
+  CHECK(host()->delegate());
+  return host()->delegate()->GetPendingPageZoomLevel();
 }
 
 std::vector<std::unique_ptr<ui::TouchEvent>>
@@ -849,12 +899,12 @@ void RenderWidgetHostViewBase::StopFling() {
 }
 
 void RenderWidgetHostViewBase::AddObserver(
-    RenderWidgetHostViewBaseObserver* observer) {
+    RenderWidgetHostViewInputObserver* observer) {
   observers_.AddObserver(observer);
 }
 
 void RenderWidgetHostViewBase::RemoveObserver(
-    RenderWidgetHostViewBaseObserver* observer) {
+    RenderWidgetHostViewInputObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
@@ -870,7 +920,7 @@ void RenderWidgetHostViewBase::SynchronizeVisualProperties() {
 
 display::ScreenInfos RenderWidgetHostViewBase::GetNewScreenInfosForUpdate() {
   // RWHVChildFrame gets its ScreenInfos from the CrossProcessFrameConnector.
-  DCHECK(!IsRenderWidgetHostViewChildFrame());
+  CHECK(!IsRenderWidgetHostViewChildFrame());
 
   display::ScreenInfos screen_infos;
 
@@ -910,12 +960,12 @@ void RenderWidgetHostViewBase::SetTooltipObserverForTesting(
 // TODO(wjmaclean): Would it simplify this function if we re-implemented it
 // using GetTransformToViewCoordSpace()?
 bool RenderWidgetHostViewBase::TransformPointToTargetCoordSpace(
-    RenderWidgetHostViewBase* original_view,
-    RenderWidgetHostViewBase* target_view,
+    RenderWidgetHostViewInput* original_view,
+    RenderWidgetHostViewInput* target_view,
     const gfx::PointF& point,
     gfx::PointF* transformed_point) const {
-  DCHECK(original_view);
-  DCHECK(target_view);
+  CHECK(original_view);
+  CHECK(target_view);
   viz::FrameSinkId root_frame_sink_id = original_view->GetRootFrameSinkId();
   if (!root_frame_sink_id.is_valid())
     return false;
@@ -929,10 +979,9 @@ bool RenderWidgetHostViewBase::TransformPointToTargetCoordSpace(
   std::vector<viz::FrameSinkId> target_ancestors;
   target_ancestors.push_back(target_view->GetFrameSinkId());
 
-  RenderWidgetHostViewBase* cur_view = target_view;
-  while (cur_view->IsRenderWidgetHostViewChildFrame()) {
-    cur_view =
-        static_cast<RenderWidgetHostViewChildFrame*>(cur_view)->GetParentView();
+  RenderWidgetHostViewInput* cur_view = target_view;
+  while (cur_view->GetParentViewInput()) {
+    cur_view = cur_view->GetParentViewInput();
     if (!cur_view)
       return false;
     target_ancestors.push_back(cur_view->GetFrameSinkId());
@@ -941,9 +990,9 @@ bool RenderWidgetHostViewBase::TransformPointToTargetCoordSpace(
     target_ancestors.push_back(root_frame_sink_id);
 
   float device_scale_factor = original_view->GetDeviceScaleFactor();
-  DCHECK_GT(device_scale_factor, 0.0f);
-  // TODO(crbug.com/966995): Optimize so that |point_in_pixels| doesn't need to
-  // be in the coordinate space of the root surface in HitTestQuery.
+  CHECK_GT(device_scale_factor, 0.0f);
+  // TODO(crbug.com/41460959): Optimize so that |point_in_pixels| doesn't need
+  // to be in the coordinate space of the root surface in HitTestQuery.
   gfx::Transform transform_root_to_original;
   query->GetTransformToTarget(original_view->GetFrameSinkId(),
                               &transform_root_to_original);
@@ -964,9 +1013,9 @@ bool RenderWidgetHostViewBase::TransformPointToTargetCoordSpace(
 }
 
 bool RenderWidgetHostViewBase::GetTransformToViewCoordSpace(
-    RenderWidgetHostViewBase* target_view,
+    RenderWidgetHostViewInput* target_view,
     gfx::Transform* transform) {
-  DCHECK(transform);
+  CHECK(transform);
   if (target_view == this) {
     transform->MakeIdentity();
     return true;
@@ -1060,6 +1109,8 @@ void RenderWidgetHostViewBase::OnShowWithPageVisibility(
   if (!host())
     return;
 
+  EnsurePlatformVisibility(page_visibility);
+
   VisibleTimeRequestTrigger& visible_time_request_trigger =
       host_->GetVisibleTimeRequestTrigger();
 
@@ -1135,6 +1186,11 @@ void RenderWidgetHostViewBase::UpdateFrameSinkIdRegistration() {
     // register until ownership has been transferred.
     router->RemoveFrameSinkIdOwner(GetFrameSinkId());
   }
+}
+
+void RenderWidgetHostViewBase::SetViewTransitionResources(
+    std::unique_ptr<ScopedViewTransitionResources> resources) {
+  view_transition_resources_ = std::move(resources);
 }
 
 }  // namespace content

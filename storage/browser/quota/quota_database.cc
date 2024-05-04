@@ -39,6 +39,8 @@ using ::blink::mojom::StorageType;
 namespace storage {
 namespace {
 
+static const int kDaysInTenYears = 10 * 365;
+
 // Version number of the database schema.
 //
 // We support migrating the database schema from versions that are at most 2
@@ -134,12 +136,18 @@ QuotaErrorOr<BucketInfo> BucketInfoFromSqlStatement(sql::Statement& statement) {
     return base::unexpected(QuotaError::kStorageKeyError);
   }
 
-  return BucketInfo(
+  BucketInfo bucket_info(
       BucketId(statement.ColumnInt64(0)), storage_key.value(),
       static_cast<StorageType>(statement.ColumnInt(2)),
       statement.ColumnString(3), statement.ColumnTime(4),
       statement.ColumnInt64(5), statement.ColumnBool(6),
       static_cast<blink::mojom::BucketDurability>(statement.ColumnInt(7)));
+  // Ignore the durability saved in the database for default buckets, which
+  // changed from strict by default to relaxed by default in M124.
+  if (bucket_info.is_default()) {
+    bucket_info.durability = blink::mojom::BucketDurability::kRelaxed;
+  }
+  return bucket_info;
 }
 
 std::set<BucketInfo> BucketInfosFromSqlStatement(sql::Statement& statement) {
@@ -449,19 +457,52 @@ QuotaError QuotaDatabase::SetStorageKeyLastAccessTime(
   }
 
   // clang-format off
-  static constexpr char kSql[] =
+  static constexpr char kSqlReadLastAccessed[] =
+      "SELECT last_accessed FROM buckets "
+        "WHERE storage_key = ? AND type = ? AND name = ?";
+  // clang-format on
+  last_operation_ = "ReadStorageKeyLastAccessTime";
+  sql::Statement statement_read(
+      db_->GetCachedStatement(SQL_FROM_HERE, kSqlReadLastAccessed));
+  statement_read.BindString(0, storage_key.Serialize());
+  statement_read.BindInt(1, static_cast<int>(type));
+  statement_read.BindString(2, kDefaultBucketName);
+
+  if (statement_read.Step()) {
+    base::Time earlier_last_accessed = statement_read.ColumnTime(0);
+    // We want to record the delta in days between the last_accessed field value
+    // and the new value so we better understand how often old quota buckets are
+    // loaded for new use.
+    if (!earlier_last_accessed.is_null() &&
+        last_accessed > earlier_last_accessed) {
+      int days_since_last_accessed =
+          (last_accessed - earlier_last_accessed).InDays();
+      if (days_since_last_accessed > 400) {
+        base::UmaHistogramCustomCounts("Quota.DaysSinceLastAccessed400DaysGT",
+                                       days_since_last_accessed, 401,
+                                       kDaysInTenYears, 100);
+      } else {
+        base::UmaHistogramCustomCounts("Quota.DaysSinceLastAccessed400DaysLTE",
+                                       days_since_last_accessed, 1, 400, 100);
+      }
+    }
+  }
+
+  // clang-format off
+  static constexpr char kSqlSetLastAccessed[] =
       "UPDATE buckets "
         "SET use_count = use_count + 1, last_accessed = ? "
         "WHERE storage_key = ? AND type = ? AND name = ?";
   // clang-format on
   last_operation_ = "SetStorageKeyLastAccessTime";
-  sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kSql));
-  statement.BindTime(0, last_accessed);
-  statement.BindString(1, storage_key.Serialize());
-  statement.BindInt(2, static_cast<int>(type));
-  statement.BindString(3, kDefaultBucketName);
+  sql::Statement statement_set(
+      db_->GetCachedStatement(SQL_FROM_HERE, kSqlSetLastAccessed));
+  statement_set.BindTime(0, last_accessed);
+  statement_set.BindString(1, storage_key.Serialize());
+  statement_set.BindInt(2, static_cast<int>(type));
+  statement_set.BindString(3, kDefaultBucketName);
 
-  if (!statement.Run()) {
+  if (!statement_set.Run()) {
     return QuotaError::kDatabaseError;
   }
 
@@ -621,7 +662,7 @@ QuotaErrorOr<mojom::BucketTableEntryPtr> QuotaDatabase::DeleteBucketData(
   // While this is not ideal, this does not introduce any new edge case.
   // We should check that bucket IDs have existing associated directories,
   // because database corruption could result in invalid bucket IDs.
-  // TODO(crbug.com/1314567): For handling inconsistencies between the db and
+  // TODO(crbug.com/40832940): For handling inconsistencies between the db and
   // the file system.
   ScheduleCommit();
 
@@ -807,9 +848,9 @@ QuotaError QuotaDatabase::SetIsBootstrapped(bool bootstrap_flag) {
 bool QuotaDatabase::RecoverOrRaze(int error_code) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  std::ignore = sql::BuiltInRecovery::RecoverIfPossible(
+  std::ignore = sql::Recovery::RecoverIfPossible(
       db_.get(), error_code,
-      sql::BuiltInRecovery::Strategy::kRecoverWithMetaVersionOrRaze);
+      sql::Recovery::Strategy::kRecoverWithMetaVersionOrRaze);
 
   db_.reset();
   EnsureOpened();
@@ -1196,7 +1237,7 @@ QuotaErrorOr<BucketInfo> QuotaDatabase::CreateBucketInternal(
     StorageType type,
     int max_bucket_count) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // TODO(crbug/1210259): Add DCHECKs for input validation.
+  // TODO(crbug.com/40182349): Add DCHECKs for input validation.
   QuotaError open_error = EnsureOpened();
   if (open_error != QuotaError::kNone) {
     return base::unexpected(open_error);

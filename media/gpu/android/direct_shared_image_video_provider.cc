@@ -15,7 +15,6 @@
 #include "base/task/bind_post_task.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
-#include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/shared_image/android_video_image_backing.h"
 #include "gpu/command_buffer/service/shared_image/shared_image_factory.h"
 #include "gpu/command_buffer/service/texture_manager.h"
@@ -48,8 +47,6 @@ void ContextStateResultUMA(gpu::ContextResult result) {
 }
 
 }  // namespace
-
-using gpu::gles2::AbstractTexture;
 
 DirectSharedImageVideoProvider::DirectSharedImageVideoProvider(
     scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner,

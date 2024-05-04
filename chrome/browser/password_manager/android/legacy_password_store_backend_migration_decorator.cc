@@ -24,6 +24,7 @@ namespace {
 
 // TODO(crbug.com/40067770): Migrate away from `ConsentLevel::kSync` on Android.
 using sync_util::IsSyncFeatureEnabledIncludingPasswords;
+using MigrationType = BuiltInBackendToAndroidBackendMigrator::MigrationType;
 
 // Time in seconds by which the passwords migration from the built-in backend to
 // the Android backend is delayed.
@@ -38,24 +39,27 @@ LegacyPasswordStoreBackendMigrationDecorator::
         PrefService* prefs)
     : built_in_backend_(built_in_backend.get()),
       android_backend_(android_backend.get()),
-      prefs_(prefs),
-      sync_settings_helper_(prefs) {
+      prefs_(prefs) {
   // LegacyPasswordStoreBackendMigrationDecorator should not be created after
   // stores split under any circumstances.
   CHECK(!password_manager::UsesSplitStoresAndUPMForLocal(prefs_));
   CHECK(built_in_backend_);
   CHECK(android_backend_);
   active_backend_ = std::make_unique<PasswordStoreProxyBackend>(
-      std::move(built_in_backend), std::move(android_backend), prefs_,
-      password_manager::kProfileStore);
+      std::move(built_in_backend), std::move(android_backend), prefs_);
 }
 
 LegacyPasswordStoreBackendMigrationDecorator::
     ~LegacyPasswordStoreBackendMigrationDecorator() = default;
 
+BuiltInBackendToAndroidBackendMigrator::MigrationType
+LegacyPasswordStoreBackendMigrationDecorator::migration_in_progress_type()
+    const {
+  return migrator_->migration_in_progress_type();
+}
+
 LegacyPasswordStoreBackendMigrationDecorator::PasswordSyncSettingsHelper::
-    PasswordSyncSettingsHelper(PrefService* prefs)
-    : prefs_(prefs) {}
+    PasswordSyncSettingsHelper() {}
 
 void LegacyPasswordStoreBackendMigrationDecorator::PasswordSyncSettingsHelper::
     CachePasswordSyncSettingOnStartup(syncer::SyncService* sync) {
@@ -82,6 +86,14 @@ bool LegacyPasswordStoreBackendMigrationDecorator::PasswordSyncSettingsHelper::
 
   password_sync_configured_setting_ = is_password_sync_enabled;
   return true;
+}
+
+bool LegacyPasswordStoreBackendMigrationDecorator::PasswordSyncSettingsHelper::
+    IsSyncFeatureEnabledIncludingPasswords() {
+  CHECK(sync_service_);
+  // TODO(crbug.com/40067770): Migrate away from `ConsentLevel::kSync` on
+  // Android.
+  return sync_util::IsSyncFeatureEnabledIncludingPasswords(sync_service_);
 }
 
 void LegacyPasswordStoreBackendMigrationDecorator::InitBackend(
@@ -196,28 +208,33 @@ void LegacyPasswordStoreBackendMigrationDecorator::UpdateLoginAsync(
 }
 
 void LegacyPasswordStoreBackendMigrationDecorator::RemoveLoginAsync(
+    const base::Location& location,
     const PasswordForm& form,
     PasswordChangesOrErrorReply callback) {
-  active_backend_->RemoveLoginAsync(form, std::move(callback));
+  active_backend_->RemoveLoginAsync(location, form, std::move(callback));
 }
 
-void LegacyPasswordStoreBackendMigrationDecorator::RemoveLoginsByURLAndTimeAsync(
-    const base::RepeatingCallback<bool(const GURL&)>& url_filter,
-    base::Time delete_begin,
-    base::Time delete_end,
-    base::OnceCallback<void(bool)> sync_completion,
-    PasswordChangesOrErrorReply callback) {
+void LegacyPasswordStoreBackendMigrationDecorator::
+    RemoveLoginsByURLAndTimeAsync(
+        const base::Location& location,
+        const base::RepeatingCallback<bool(const GURL&)>& url_filter,
+        base::Time delete_begin,
+        base::Time delete_end,
+        base::OnceCallback<void(bool)> sync_completion,
+        PasswordChangesOrErrorReply callback) {
   active_backend_->RemoveLoginsByURLAndTimeAsync(
-      url_filter, std::move(delete_begin), std::move(delete_end),
+      location, url_filter, std::move(delete_begin), std::move(delete_end),
       std::move(sync_completion), std::move(callback));
 }
 
-void LegacyPasswordStoreBackendMigrationDecorator::RemoveLoginsCreatedBetweenAsync(
-    base::Time delete_begin,
-    base::Time delete_end,
-    PasswordChangesOrErrorReply callback) {
+void LegacyPasswordStoreBackendMigrationDecorator::
+    RemoveLoginsCreatedBetweenAsync(const base::Location& location,
+                                    base::Time delete_begin,
+                                    base::Time delete_end,
+                                    PasswordChangesOrErrorReply callback) {
   active_backend_->RemoveLoginsCreatedBetweenAsync(
-      std::move(delete_begin), std::move(delete_end), std::move(callback));
+      location, std::move(delete_begin), std::move(delete_end),
+      std::move(callback));
 }
 
 void LegacyPasswordStoreBackendMigrationDecorator::DisableAutoSignInForOriginsAsync(
@@ -232,16 +249,8 @@ LegacyPasswordStoreBackendMigrationDecorator::GetSmartBubbleStatsStore() {
   return active_backend_->GetSmartBubbleStatsStore();
 }
 
-std::unique_ptr<syncer::ProxyModelTypeControllerDelegate>
+std::unique_ptr<syncer::ModelTypeControllerDelegate>
 LegacyPasswordStoreBackendMigrationDecorator::CreateSyncControllerDelegate() {
-  if (base::FeatureList::IsEnabled(
-          features::kUnifiedPasswordManagerSyncUsingAndroidBackendOnly)) {
-    // The android backend (PasswordStoreAndroidBackend) creates a controller
-    // delegate that prevents sync from actually communicating with the sync
-    // server using the built in SyncEngine.
-    return android_backend_->CreateSyncControllerDelegate();
-  }
-
   return built_in_backend_->CreateSyncControllerDelegate();
 }
 
@@ -272,7 +281,7 @@ void LegacyPasswordStoreBackendMigrationDecorator::StartMigrationIfNecessary() {
   // TODO(crbug.com/40067770): Migrate away from `ConsentLevel::kSync` on
   // Android.
   bool password_sync_enabled =
-      sync_util::IsSyncFeatureActiveIncludingPasswords(sync_service_);
+      sync_settings_helper_.IsSyncFeatureEnabledIncludingPasswords();
 
   if (prefs_->GetBoolean(
           prefs::kUnenrolledFromGoogleMobileServicesDueToErrors) &&
@@ -282,7 +291,7 @@ void LegacyPasswordStoreBackendMigrationDecorator::StartMigrationIfNecessary() {
     prefs_->SetInteger(prefs::kTimesAttemptedToReenrollToGoogleMobileServices,
                        reenrollment_attempts + 1);
     migrator_->StartAccountMigrationIfNecessary(
-        /*should_attempt_upm_reenrollment=*/true);
+        MigrationType::kReenrollmentAttempt);
     return;
   }
 
@@ -299,8 +308,12 @@ void LegacyPasswordStoreBackendMigrationDecorator::StartMigrationIfNecessary() {
     return;
   }
 
-  migrator_->StartAccountMigrationIfNecessary(
-      /*should_attempt_upm_reenrollment=*/false);
+  if (password_sync_enabled &&
+      prefs_->GetInteger(
+          prefs::kCurrentMigrationVersionToGoogleMobileServices) == 0) {
+    migrator_->StartAccountMigrationIfNecessary(
+        MigrationType::kInitialForSyncUsers);
+  }
 }
 
 void LegacyPasswordStoreBackendMigrationDecorator::SyncStatusChanged() {
@@ -309,11 +322,24 @@ void LegacyPasswordStoreBackendMigrationDecorator::SyncStatusChanged() {
     return;
   }
 
+  bool act_on_password_changes =
+      sync_settings_helper_.ShouldActOnSyncStatusChanges();
   prefs_->SetBoolean(prefs::kRequiresMigrationAfterSyncStatusChange,
-                     sync_settings_helper_.ShouldActOnSyncStatusChanges());
-  // Non-syncable data needs to be migrated to the new active backend.
-  migrator_->StartAccountMigrationIfNecessary(
-      /*should_attempt_upm_reenrollment=*/false);
+                     act_on_password_changes);
+
+  if (act_on_password_changes) {
+    // Non-syncable data needs to be migrated to the new active backend.
+    if (sync_settings_helper_.IsSyncFeatureEnabledIncludingPasswords()) {
+      migrator_->StartAccountMigrationIfNecessary(
+          MigrationType::kNonSyncableToAndroidBackend);
+    } else {
+      prefs_->SetInteger(password_manager::prefs::
+                             kCurrentMigrationVersionToGoogleMobileServices,
+                         0);
+      migrator_->StartAccountMigrationIfNecessary(
+          MigrationType::kNonSyncableToBuiltInBackend);
+    }
+  }
 }
 
 }  // namespace password_manager

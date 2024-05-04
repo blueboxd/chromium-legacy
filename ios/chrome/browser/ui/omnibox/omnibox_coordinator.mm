@@ -83,7 +83,7 @@
 @end
 
 @implementation OmniboxCoordinator {
-  // TODO(crbug.com/818636): use a slimmer subclass of OmniboxView,
+  // TODO(crbug.com/40565663): use a slimmer subclass of OmniboxView,
   // OmniboxPopupViewSuggestionsDelegate instead of OmniboxViewIOS.
   std::unique_ptr<OmniboxViewIOS> _editView;
 
@@ -161,7 +161,7 @@
       self.browser->GetCommandDispatcher(), QRScannerCommands);
   _keyboardMediator.layoutGuideCenter =
       LayoutGuideCenterForBrowser(self.browser);
-  // TODO(crbug.com/1045047): Use HandlerForProtocol after commands protocol
+  // TODO(crbug.com/40670043): Use HandlerForProtocol after commands protocol
   // clean up.
   _keyboardMediator.browserCoordinatorCommandsHandler =
       static_cast<id<BrowserCoordinatorCommands>>(
@@ -242,12 +242,10 @@
     }
 
     [self.textField becomeFirstResponder];
-    if (IsBottomOmniboxSteadyStateEnabled()) {
-      // Ensures that the accessibility system focuses the text field instead of
-      // the popup crbug.com/1469173.
-      UIAccessibilityPostNotification(UIAccessibilityScreenChangedNotification,
-                                      self.textField);
-    }
+    // Ensures that the accessibility system focuses the text field instead of
+    // the popup crbug.com/1469173.
+    UIAccessibilityPostNotification(UIAccessibilityScreenChangedNotification,
+                                    self.textField);
   }
 }
 

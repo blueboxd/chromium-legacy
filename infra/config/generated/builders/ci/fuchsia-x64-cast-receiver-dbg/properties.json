@@ -46,6 +46,10 @@
         {
           "builder": "fuchsia-x64-cast-receiver-dbg",
           "group": "tryserver.chromium.fuchsia"
+        },
+        {
+          "builder": "fuchsia-x64-cast-receiver-dbg-compile",
+          "group": "tryserver.chromium.fuchsia"
         }
       ]
     }
@@ -56,6 +60,16 @@
     "metrics_project": "chromium-reclient-metrics",
     "scandeps_server": true
   },
+  "$build/siso": {
+    "configs": [
+      "builder"
+    ],
+    "enable_cloud_profiler": true,
+    "enable_cloud_trace": true,
+    "experiments": [],
+    "project": "rbe-chromium-trusted",
+    "remote_jobs": 500
+  },
   "$recipe_engine/resultdb/test_presentation": {
     "column_keys": [],
     "grouping_keys": [
@@ -64,5 +78,8 @@
     ]
   },
   "builder_group": "chromium.fuchsia",
-  "recipe": "chromium"
+  "recipe": "chromium",
+  "sheriff_rotations": [
+    "chromium"
+  ]
 }

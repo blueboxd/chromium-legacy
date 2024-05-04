@@ -7,7 +7,6 @@
 #include "base/strings/strcat.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/signin/signin_browser_test_base.h"
-#include "chrome/browser/signin/signin_features.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/browser/ui/test/test_browser_ui.h"
@@ -29,7 +28,7 @@
 #error Platform not supported
 #endif
 
-// TODO(crbug.com/1374702): Move this file next to sync_confirmation_ui.cc.
+// TODO(crbug.com/40242558): Move this file next to sync_confirmation_ui.cc.
 // Render the page in a browser instead of a profile_picker_view to be able to
 // do so.
 
@@ -97,8 +96,11 @@ const SyncConfirmationTestParam kWindowTestParams[] = {
                           .use_right_to_left_language = true}},
     {.pixel_test_param = {.test_suffix = "SmallWindow",
                           .use_small_window = true}},
+    // TODO(crbug.com/336964850): this test is flaky on windows.
+#if !BUILDFLAG(IS_WIN)
     {.pixel_test_param = {.test_suffix = "ManagedAccount"},
      .account_management_status = AccountManagementStatus::kManaged},
+#endif
     {.pixel_test_param = {.test_suffix = "CR2023",
                           .use_chrome_refresh_2023_style = true}},
 
@@ -127,9 +129,12 @@ const SyncConfirmationTestParam kDialogTestParams[] = {
     {.pixel_test_param = {.test_suffix = "Rtl",
                           .use_right_to_left_language = true},
      .sync_style = SyncConfirmationStyle::kDefaultModal},
+// TODO(crbug.com/336964850): this test is flaky on windows.
+#if !BUILDFLAG(IS_WIN)
     {.pixel_test_param = {.test_suffix = "ManagedAccount"},
      .account_management_status = AccountManagementStatus::kManaged,
      .sync_style = SyncConfirmationStyle::kDefaultModal},
+#endif
     {.pixel_test_param = {.test_suffix = "CR2023",
                           .use_chrome_refresh_2023_style = true},
      .sync_style = SyncConfirmationStyle::kDefaultModal},

@@ -16,6 +16,7 @@
 #import "ios/chrome/browser/sessions/session_constants.h"
 #import "ios/chrome/browser/sessions/session_restoration_observer.h"
 #import "ios/chrome/browser/sessions/session_service_ios.h"
+#import "ios/chrome/browser/sessions/session_tab_group.h"
 #import "ios/chrome/browser/sessions/session_window_ios.h"
 #import "ios/chrome/browser/sessions/session_window_ios_factory.h"
 #import "ios/chrome/browser/sessions/web_state_list_serialization.h"
@@ -25,6 +26,7 @@
 #import "ios/chrome/browser/shared/model/web_state_list/order_controller.h"
 #import "ios/chrome/browser/shared/model/web_state_list/order_controller_source.h"
 #import "ios/chrome/browser/shared/model/web_state_list/removing_indexes.h"
+#import "ios/chrome/browser/shared/model/web_state_list/tab_group_range.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web/model/session_state/web_session_state_tab_helper.h"
 #import "ios/web/public/navigation/navigation_item.h"
@@ -51,6 +53,7 @@ class OrderControllerSourceFromSessionWindowIOS final
   bool IsOpenerOfItemAt(int index,
                         int opener_index,
                         bool check_navigation_index) const final;
+  TabGroupRange GetGroupRangeOfItemAt(int index) const final;
 
  private:
   SessionWindowIOS* session_window_;
@@ -69,7 +72,7 @@ int OrderControllerSourceFromSessionWindowIOS::GetPinnedCount() const {
   for (CRWSessionStorage* session in session_window_.sessions) {
     CRWSessionUserData* user_data = session.userData;
     NSNumber* pinned_obj = base::apple::ObjCCast<NSNumber>(
-        [user_data objectForKey:kLegacyWebStateListOpenerIndexKey]);
+        [user_data objectForKey:kLegacyWebStateListPinnedStateKey]);
 
     // All pinned items are at the beginning of the list, so stop as
     // soon as the first unpinned tab is found.
@@ -116,6 +119,17 @@ bool OrderControllerSourceFromSessionWindowIOS::IsOpenerOfItemAt(
   }
 
   return true;
+}
+
+TabGroupRange OrderControllerSourceFromSessionWindowIOS::GetGroupRangeOfItemAt(
+    int index) const {
+  for (SessionTabGroup* group in session_window_.tabGroups) {
+    const TabGroupRange group_range(group.rangeStart, group.rangeCount);
+    if (group_range.contains(index)) {
+      return group_range;
+    }
+  }
+  return TabGroupRange::InvalidRange();
 }
 
 // Determines the new active index.
@@ -211,8 +225,38 @@ SessionWindowIOS* FilterInvalidTabs(SessionWindowIOS* session_window) {
     [sessions addObject:session];
   }
 
+  // Create the new list of tab groups, updating the `rangeStart` and
+  // `rangeCount` properties.
+  NSMutableArray<SessionTabGroup*>* groups = [[NSMutableArray alloc] init];
+  for (SessionTabGroup* group in session_window.tabGroups) {
+    const TabGroupRange initial_range(group.rangeStart, group.rangeCount);
+    const TabGroupRange final_range =
+        removing_indexes.RangeAfterRemoval(initial_range);
+    if (final_range.valid()) {
+      group.rangeStart = final_range.range_begin();
+      group.rangeCount = final_range.count();
+      [groups addObject:group];
+    }
+  }
+
   return [[SessionWindowIOS alloc] initWithSessions:sessions
+                                          tabGroups:groups
                                       selectedIndex:selected_index];
+}
+
+// Creates a WebState with `params` and `session_storage`. Ensures that the
+// WebSessionStateTabHelper is attached to the WebState after its creation.
+// Note: the WebSessionStateTabHelper needs to be created before inserting
+// the WebState into the WebStateList since the insertion can cause the
+// realisation of the WebState and the WebSessionStateTabHelper is needed
+// for the realisation.
+std::unique_ptr<web::WebState> CreateWebState(
+    const web::WebState::CreateParams& params,
+    CRWSessionStorage* session_storage) {
+  auto web_state =
+      web::WebState::CreateWithStorageSession(params, session_storage);
+  WebSessionStateTabHelper::CreateForWebState(web_state.get());
+  return web_state;
 }
 
 }  // namespace
@@ -222,12 +266,14 @@ BROWSER_USER_DATA_KEY_IMPL(SessionRestorationBrowserAgent)
 SessionRestorationBrowserAgent::SessionRestorationBrowserAgent(
     Browser* browser,
     SessionServiceIOS* session_service,
-    bool enable_pinned_web_states)
+    bool enable_pinned_web_states,
+    bool enable_tab_groups)
     : session_service_(session_service),
       browser_(browser),
       session_window_ios_factory_([[SessionWindowIOSFactory alloc]
           initWithWebStateList:browser_->GetWebStateList()]),
       enable_pinned_web_states_(enable_pinned_web_states),
+      enable_tab_groups_(enable_tab_groups),
       all_web_state_observer_(std::make_unique<AllWebStateObservationForwarder>(
           browser_->GetWebStateList(),
           this)) {
@@ -282,9 +328,9 @@ void SessionRestorationBrowserAgent::RestoreSessionWindow(
   const std::vector<web::WebState*> restored_web_states =
       DeserializeWebStateList(
           browser_->GetWebStateList(), FilterInvalidTabs(window),
-          enable_pinned_web_states_,
+          enable_pinned_web_states_, enable_tab_groups_,
           base::BindRepeating(
-              &web::WebState::CreateWithStorageSession,
+              &CreateWebState,
               web::WebState::CreateParams(browser_->GetBrowserState())));
 
   for (auto& observer : observers_) {
@@ -450,6 +496,22 @@ void SessionRestorationBrowserAgent::WebStateListDidChange(
       SaveSession(/*immediately=*/false);
       break;
     }
+    case WebStateListChange::Type::kGroupCreate:
+      // Persist the session state.
+      SaveSession(/*immediately=*/false);
+      break;
+    case WebStateListChange::Type::kGroupVisualDataUpdate:
+      // Persist the session state.
+      SaveSession(/*immediately=*/false);
+      break;
+    case WebStateListChange::Type::kGroupMove:
+      // Persist the session state.
+      SaveSession(/*immediately=*/false);
+      break;
+    case WebStateListChange::Type::kGroupDelete:
+      // Persist the session state.
+      SaveSession(/*immediately=*/false);
+      break;
   }
 
   if (status.active_web_state_change()) {

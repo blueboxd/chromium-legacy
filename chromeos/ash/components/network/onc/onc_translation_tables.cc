@@ -137,9 +137,7 @@ const FieldTranslationEntry wireguard_peer_fields[] = {
      shill::kWireGuardPeerPersistentKeepalive},
     {nullptr}};
 
-const FieldTranslationEntry arc_vpn_fields[] = {
-    {::onc::arc_vpn::kTunnelChrome, shill::kArcVpnTunnelChromeProperty},
-    {nullptr}};
+const FieldTranslationEntry arc_vpn_fields[] = {{nullptr}};
 
 const FieldTranslationEntry verify_x509_fields[] = {
     {::onc::verify_x509::kName, shill::kOpenVPNVerifyX509NameProperty},
@@ -463,6 +461,19 @@ const StringTranslationEntry kApnIpTypeTranslationTable[] = {
     {::onc::cellular_apn::kIpTypeIpv4, shill::kApnIpTypeV4},
     {::onc::cellular_apn::kIpTypeIpv6, shill::kApnIpTypeV6},
     {::onc::cellular_apn::kIpTypeIpv4Ipv6, shill::kApnIpTypeV4V6},
+    {nullptr}};
+
+const StringTranslationEntry kApnSourceTranslationTable[] = {
+    {::onc::cellular_apn::kSourceModem, shill::kApnSourceModem},
+    {::onc::cellular_apn::kSourceModb, shill::kApnSourceMoDb},
+    {::onc::cellular_apn::kSourceAdmin, shill::kApnSourceAdmin},
+    {::onc::cellular_apn::kSourceUi, shill::kApnSourceUi},
+    {nullptr}};
+
+const StringTranslationEntry kCheckCaptivePortalTranslationTable[] = {
+    {::onc::check_captive_portal::kFalse, "false"},
+    {::onc::check_captive_portal::kHTTPOnly, "http-only"},
+    {::onc::check_captive_portal::kTrue, "true"},
     {nullptr}};
 
 // This must contain only Shill Device properties and no Service properties.

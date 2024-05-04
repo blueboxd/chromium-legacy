@@ -43,15 +43,13 @@
 #include "chrome/browser/ash/crosapi/crosapi_id.h"
 #include "chrome/browser/ash/crosapi/crosapi_manager.h"
 #include "chrome/browser/ash/crosapi/crosapi_util.h"
-#include "chrome/browser/ash/crosapi/device_ownership_waiter.h"
-#include "chrome/browser/ash/crosapi/device_ownership_waiter_impl.h"
-#include "chrome/browser/ash/crosapi/environment_provider.h"
 #include "chrome/browser/ash/crosapi/primary_profile_creation_waiter.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/logging_chrome.h"
+#include "chromeos/ash/components/standalone_browser/lacros_selection.h"
 #include "chromeos/crosapi/cpp/crosapi_constants.h"
 #include "chromeos/crosapi/mojom/crosapi.mojom-shared.h"
 #include "chromeos/dbus/constants/dbus_switches.h"
@@ -62,6 +60,8 @@
 #include "components/policy/core/common/cloud/cloud_policy_refresh_scheduler.h"
 #include "components/policy/core/common/values_util.h"
 #include "components/session_manager/core/session_manager.h"
+#include "components/user_manager/device_ownership_waiter.h"
+#include "components/user_manager/device_ownership_waiter_impl.h"
 #include "components/version_info/version_info.h"
 #include "content/public/common/content_switches.h"
 #include "gpu/config/gpu_switches.h"
@@ -76,6 +76,11 @@
 
 #if BUILDFLAG(ENABLE_NACL)
 #include "components/nacl/common/nacl_switches.h"
+#endif
+
+#if BUILDFLAG(ENABLE_WIDEVINE)
+#include "base/path_service.h"
+#include "chrome/common/chrome_paths.h"
 #endif
 
 namespace crosapi {
@@ -271,9 +276,6 @@ void DoLacrosBackgroundWorkPreLaunch(
 
   params.logfd = base::ScopedFD(fd);
 
-  params.enable_shared_components_dir =
-      base::FeatureList::IsEnabled(features::kLacrosSharedComponentsDir);
-
   params.enable_resource_file_sharing =
       base::FeatureList::IsEnabled(features::kLacrosResourcesFileSharing);
   // If resource file sharing feature is disabled, clear the cached shared
@@ -375,7 +377,7 @@ base::LaunchOptions CreateLaunchOptions() {
   return options;
 }
 
-void SetUpEnvironment(browser_util::LacrosSelection lacros_selection,
+void SetUpEnvironment(ash::standalone_browser::LacrosSelection lacros_selection,
                       base::LaunchOptions& options) {
   // If Ash is an unknown channel then this is not a production build and we
   // should be using an unknown channel for Lacros as well. This prevents Lacros
@@ -435,6 +437,24 @@ void SetUpForNacl(base::CommandLine& command_line) {
   }
 }
 #endif
+
+#if BUILDFLAG(ENABLE_WIDEVINE)
+void SetUpForWidevine(base::CommandLine& command_line) {
+  // These directories are needed to load the Widevine CDM before zygote fork.
+  base::FilePath bundled_dir;
+  if (base::PathService::Get(chrome::DIR_BUNDLED_WIDEVINE_CDM, &bundled_dir)) {
+    command_line.AppendSwitchASCII(switches::kCrosWidevineBundledDir,
+                                   bundled_dir.AsUTF8Unsafe());
+  }
+
+  base::FilePath component_updated_dir;
+  if (base::PathService::Get(chrome::DIR_COMPONENT_UPDATED_WIDEVINE_CDM,
+                             &component_updated_dir)) {
+    command_line.AppendSwitchASCII(switches::kCrosWidevineComponentUpdatedDir,
+                                   component_updated_dir.AsUTF8Unsafe());
+  }
+}
+#endif  // BUILDFLAG(ENABLE_WIDEVINE)
 
 void SetUpLacrosAdditionalParameters(const LaunchParamsFromBackground& params,
                                      LaunchParams& parameters) {
@@ -502,9 +522,9 @@ void SetUpLogging(bool launching_at_login_screen,
 
   parameters.command_line.AppendSwitchASCII(
       switches::kVModule,
-      // TODO(crbug.com/1371493): Remove after fix.
+      // TODO(crbug.com/40061238): Remove after fix.
       "wayland_window_drag_controller=1,wayland_data_source=1,tab_drag_"
-      // TODO(crbug.com/1472682): Remove after fix.
+      // TODO(crbug.com/40069512): Remove after fix.
       "controller=1, wayland_data_drag_controller=1");
 
   if (launching_at_login_screen &&
@@ -581,13 +601,6 @@ void SetUpFeatures(const LaunchParamsFromBackground& params,
     parameters.command_line.AppendSwitch(switches::kEnableResourcesFileSharing);
   }
 
-  if (params.enable_shared_components_dir) {
-    // Passes a flag to enable using a location shared across users for browser
-    // components.
-    parameters.command_line.AppendSwitch(
-        switches::kEnableLacrosSharedComponentsDir);
-  }
-
   if (params.enable_fork_zygotes_at_login_screen) {
     parameters.command_line.AppendSwitch(
         switches::kEnableLacrosForkZygotesAtLoginScreen);
@@ -600,7 +613,7 @@ void SetUpFeatures(const LaunchParamsFromBackground& params,
 class LacrosThreadTypeDelegate : public base::LaunchOptions::PreExecDelegate {
  public:
   void RunAsyncSafe() override {
-    // TODO(crbug.com/1289736): Currently, this is causing some deadlock issue.
+    // TODO(crbug.com/40212082): Currently, this is causing some deadlock issue.
     // It looks like inside the function, we seem to call async unsafe API.
     // For the mitigation, disabling this temporarily.
     // We should revisit here, and see the impact of performance.
@@ -612,7 +625,8 @@ class LacrosThreadTypeDelegate : public base::LaunchOptions::PreExecDelegate {
 };
 
 BrowserLauncher::BrowserLauncher()
-    : device_ownership_waiter_(std::make_unique<DeviceOwnershipWaiterImpl>()) {}
+    : device_ownership_waiter_(
+          std::make_unique<user_manager::DeviceOwnershipWaiterImpl>()) {}
 
 BrowserLauncher::~BrowserLauncher() = default;
 
@@ -689,12 +703,13 @@ std::vector<base::FilePath> BrowserLauncher::GetPreloadFiles(
   return paths;
 }
 
-void BrowserLauncher::Launch(const base::FilePath& chrome_path,
-                             bool launching_at_login_screen,
-                             browser_util::LacrosSelection lacros_selection,
-                             base::OnceClosure mojo_disconnection_cb,
-                             bool is_keep_alive_enabled,
-                             LaunchCompletionCallback callback) {
+void BrowserLauncher::Launch(
+    const base::FilePath& chrome_path,
+    bool launching_at_login_screen,
+    ash::standalone_browser::LacrosSelection lacros_selection,
+    base::OnceClosure mojo_disconnection_cb,
+    bool is_keep_alive_enabled,
+    LaunchCompletionCallback callback) {
   auto* params = new LaunchParamsFromBackground();
 
   // Represents the number of tasks to complete before starting launch. If we
@@ -745,11 +760,6 @@ void BrowserLauncher::ResumeLaunch(
   WaitForPrimaryProfileAddedAndThen(barrier_closure);
 }
 
-void BrowserLauncher::SetLastPolicyFetchAttemptTimestamp(
-    base::Time last_refresh) {
-  environment_provider_.SetLastPolicyFetchAttemptTimestamp(last_refresh);
-}
-
 bool BrowserLauncher::IsProcessValid() const {
   return process_.IsValid();
 }
@@ -786,6 +796,19 @@ bool BrowserLauncher::LaunchProcessForTesting(const LaunchParams& parameters) {
   return LaunchProcessWithParameters(parameters);
 }
 
+LaunchParams BrowserLauncher::CreateLaunchParamsForTesting(
+    const base::FilePath& chrome_path,
+    const LaunchParamsFromBackground& params,
+    bool launching_at_login_screen,
+    std::optional<int> startup_fd,
+    std::optional<int> read_pipe_fd,
+    mojo::PlatformChannel& channel,
+    ash::standalone_browser::LacrosSelection lacros_selection) {
+  return CreateLaunchParams(chrome_path, params, launching_at_login_screen,
+                            startup_fd, read_pipe_fd, channel,
+                            lacros_selection);
+}
+
 base::ScopedFD BrowserLauncher::CreatePostLoginPipeForTesting() {
   base::ScopedFD read_pipe_fd;
   CHECK(base::CreatePipe(&read_pipe_fd, &postlogin_pipe_fd_));
@@ -810,7 +833,8 @@ void BrowserLauncher::WaitForBackgroundWorkPreLaunchForTesting(
 }
 
 void BrowserLauncher::set_device_ownership_waiter_for_testing(
-    std::unique_ptr<DeviceOwnershipWaiter> device_ownership_waiter) {
+    std::unique_ptr<user_manager::DeviceOwnershipWaiter>
+        device_ownership_waiter) {
   CHECK(!device_ownership_waiter_called_);
   device_ownership_waiter_ = std::move(device_ownership_waiter);
 }
@@ -858,7 +882,7 @@ void BrowserLauncher::LaunchProcess(
     const base::FilePath& chrome_path,
     std::unique_ptr<LaunchParamsFromBackground> params,
     bool launching_at_login_screen,
-    browser_util::LacrosSelection lacros_selection,
+    ash::standalone_browser::LacrosSelection lacros_selection,
     base::OnceClosure mojo_disconnection_cb,
     bool is_keep_alive_enabled,
     LaunchCompletionCallback callback) {
@@ -877,7 +901,6 @@ void BrowserLauncher::LaunchProcess(
   // Vice versa, if we're launching at login screen, we want to split
   // the parameters in pre-login and post-login.
   base::ScopedFD startup_fd = browser_util::CreateStartupData(
-      &environment_provider_,
       browser_util::InitialBrowserAction(
           mojom::InitialBrowserAction::kDoNotOpenWindow),
       !is_keep_alive_enabled, lacros_selection, !launching_at_login_screen);
@@ -928,10 +951,10 @@ LaunchParams BrowserLauncher::CreateLaunchParams(
     std::optional<int> startup_fd,
     std::optional<int> read_pipe_fd,
     mojo::PlatformChannel& channel,
-    browser_util::LacrosSelection lacros_selection) {
+    ash::standalone_browser::LacrosSelection lacros_selection) {
   // Static configuration should be enabled from Lacros rather than Ash. This
   // vector should only be used for dynamic configuration.
-  // TODO(https://crbug.com/1145713): Remove existing static configuration.
+  // TODO(crbug.com/40729628): Remove existing static configuration.
   LaunchParams parameters(CreateCommandLine(chrome_path),
                           CreateLaunchOptions());
 
@@ -940,7 +963,9 @@ LaunchParams BrowserLauncher::CreateLaunchParams(
 #if BUILDFLAG(ENABLE_NACL)
   SetUpForNacl(parameters.command_line);
 #endif
-  SetUpLacrosAdditionalParameters(params, parameters);
+#if BUILDFLAG(ENABLE_WIDEVINE)
+  SetUpForWidevine(parameters.command_line);
+#endif
   SetUpForGpu(parameters.command_line);
   SetUpLogging(launching_at_login_screen,
                params.logfd.is_valid() ? std::optional(params.logfd.get())
@@ -958,6 +983,10 @@ LaunchParams BrowserLauncher::CreateLaunchParams(
       parameters.command_line);
 
   SetUpFeatures(params, parameters);
+
+  // Process additional parameters at the end so that /etc/chrome_dev.conf can
+  // override choices made by the SetUp* functions above.
+  SetUpLacrosAdditionalParameters(params, parameters);
 
   return parameters;
 }
@@ -999,7 +1028,7 @@ void BrowserLauncher::WritePostLoginData(
 
   // Write post-login parameters into the anonymous pipe.
   bool write_success = browser_util::WritePostLoginData(
-      postlogin_pipe_fd_.get(), &environment_provider_,
+      postlogin_pipe_fd_.get(),
       browser_util::InitialBrowserAction(
           mojom::InitialBrowserAction::kDoNotOpenWindow));
   PCHECK(write_success);

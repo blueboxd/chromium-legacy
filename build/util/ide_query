@@ -51,10 +51,10 @@ def _use_reclient(outdir):
 
 def main():
   parser = argparse.ArgumentParser()
-  parser.add_argument('--source', action='append',
+  parser.add_argument('source', nargs='+',
     help=('The source file being analyzed.'
-          'Multiple --source arguments can be passed in order to batch '
-          'process is desired. '))
+          'Multiple source arguments can be passed in order to batch '
+          'process if desired.'))
   parser.add_argument('--perform-build', action='store_true',
     help=('If specified, actually build the target, including any generated '
           'prerequisite files. '
@@ -62,7 +62,7 @@ def main():
           'the GeneratedFile results will only be returned if a build has '
           'been previously completed, and may be stale.'))
   parser.add_argument('--out-dir',
-    help=('Output directory, containing  args.gn, which specifies the build '
+    help=('Output directory, containing args.gn, which specifies the build '
           'configuration.'))
   options = parser.parse_args()
 
@@ -78,16 +78,24 @@ def main():
 
   if options.perform_build:
     if _use_reclient(options.out_dir):
-      args = ['autoninja', '-C', options.out_dir]
+      args = ['autoninja']
     else:
-      args = ['siso', 'ninja', '-C', options.out_dir]
+      args = ['siso', 'ninja']
+    # use `-k=0` to build generated files as much as possible.
+    args.extend([
+        '-k=0',
+        '--prepare',
+        '-C',
+        options.out_dir,
+    ])
     args.extend(targets)
-    p = subprocess.run(args, cwd=repo_root, capture_output=True)
+    env = os.environ.copy()
+    env['SISO_EXPERIMENTS'] = 'no-fast-deps'
+    p = subprocess.run(args, cwd=repo_root, stdout=2, stderr=2, env=env)
     if p.returncode != 0:
       # TODO: report error in IdeAnalysis.Status?
-      sys.stderr.write('build failed with %d\n%s\n%s' % (
-          p.returncode, p.stdout, p.stderr))
-      return 1
+      sys.stderr.write('build failed with %d\n' % p.returncode)
+      # even if build fails, it should report ideanalysis back.
 
   args = ['siso', 'query', 'ideanalysis', '-C', options.out_dir]
   args.extend(targets)

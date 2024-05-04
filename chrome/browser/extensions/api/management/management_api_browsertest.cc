@@ -47,8 +47,7 @@ namespace {
 
 #if !BUILDFLAG(IS_CHROMEOS_LACROS)
 bool ExpectChromeAppsDefaultEnabled() {
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
-    BUILDFLAG(IS_FUCHSIA)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
   return false;
 #else
   return true;
@@ -132,7 +131,7 @@ IN_PROC_BROWSER_TEST_P(ExtensionManagementApiTestWithBackgroundType,
 }
 
 #if !BUILDFLAG(IS_CHROMEOS_LACROS)
-// TODO(crbug.com/1288199): Run these tests on Chrome OS with both Ash and
+// TODO(crbug.com/40211465): Run these tests on Chrome OS with both Ash and
 // Lacros processes active.
 
 IN_PROC_BROWSER_TEST_P(ExtensionManagementApiTestWithBackgroundType,
@@ -221,7 +220,7 @@ IN_PROC_BROWSER_TEST_P(ExtensionManagementApiTestWithBackgroundType,
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if !BUILDFLAG(IS_CHROMEOS_LACROS)
-// TODO(crbug.com/1288199): Run these tests on Chrome OS with both Ash and
+// TODO(crbug.com/40211465): Run these tests on Chrome OS with both Ash and
 // Lacros processes active.
 IN_PROC_BROWSER_TEST_P(ExtensionManagementApiTestWithBackgroundType,
                        LaunchAppFromBackground) {

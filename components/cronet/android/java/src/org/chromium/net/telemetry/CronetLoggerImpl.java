@@ -55,10 +55,11 @@ public class CronetLoggerImpl extends CronetLogger {
                 info.apiVersion.getMinorVersion(),
                 info.apiVersion.getBuildVersion(),
                 info.apiVersion.getPatchVersion(),
-                info.implVersion.getMajorVersion(),
-                info.implVersion.getMinorVersion(),
-                info.implVersion.getBuildVersion(),
-                info.implVersion.getPatchVersion(),
+                // These null checks actually matter. See b/329601514.
+                info.implVersion == null ? -1 : info.implVersion.getMajorVersion(),
+                info.implVersion == null ? -1 : info.implVersion.getMinorVersion(),
+                info.implVersion == null ? -1 : info.implVersion.getBuildVersion(),
+                info.implVersion == null ? -1 : info.implVersion.getPatchVersion(),
                 info.uid);
     }
 
@@ -161,11 +162,13 @@ public class CronetLoggerImpl extends CronetLogger {
                     experimentalOptions.getDisableIpv6OnWifiOption().getValue(),
                     builder.getCronetInitializationRef());
         } catch (Exception e) { // catching all exceptions since we don't want to crash the client
-            Log.d(
-                    TAG,
-                    String.format(
-                            "Failed to log CronetEngine:%s creation: %s",
-                            cronetEngineId, e.getMessage()));
+            if (Log.isLoggable(TAG, Log.DEBUG)) {
+                Log.d(
+                        TAG,
+                        String.format(
+                                "Failed to log CronetEngine:%s creation: %s",
+                                cronetEngineId, e.getMessage()));
+            }
         }
     }
 
@@ -191,23 +194,25 @@ public class CronetLoggerImpl extends CronetLogger {
                     trafficInfo.wasConnectionMigrationAttempted(),
                     trafficInfo.didConnectionMigrationSucceed(),
                     samplesRateLimitedCount,
-                    /* terminal_state= */ CronetStatsLog
-                            .CRONET_TRAFFIC_REPORTED__TERMINAL_STATE__STATE_UNKNOWN,
-                    /* user_callback_exception_count= */ -1,
+                    convertToProtoCronetRequestTerminalState(trafficInfo.getTerminalState()),
+                    trafficInfo.getNonfinalUserCallbackExceptionCount(),
                     /* total_idle_time_millis= */ -1,
                     /* total_user_executor_execute_latency_millis= */ -1,
-                    /* read_count= */ -1,
-                    /* on_upload_read_count= */ -1,
-                    /* is_bidi_stream= */ CronetStatsLog
-                            .CRONET_TRAFFIC_REPORTED__IS_BIDI_STREAM__OPTIONAL_BOOLEAN_UNSET);
+                    trafficInfo.getReadCount(),
+                    trafficInfo.getOnUploadReadCount(),
+                    OptionalBoolean.fromBoolean(trafficInfo.getIsBidiStream()).getValue(),
+                    OptionalBoolean.fromBoolean(trafficInfo.getFinalUserCallbackThrew())
+                            .getValue());
         } catch (Exception e) {
             // using addAndGet because another thread might have modified samplesRateLimited's value
             mSamplesRateLimited.addAndGet(samplesRateLimitedCount);
-            Log.d(
-                    TAG,
-                    String.format(
-                            "Failed to log cronet traffic sample for CronetEngine %s: %s",
-                            cronetEngineId, e.getMessage()));
+            if (Log.isLoggable(TAG, Log.DEBUG)) {
+                Log.d(
+                        TAG,
+                        String.format(
+                                "Failed to log cronet traffic sample for CronetEngine %s: %s",
+                                cronetEngineId, e.getMessage()));
+            }
         }
     }
 
@@ -220,6 +225,20 @@ public class CronetLoggerImpl extends CronetLogger {
                 return CronetStatsLog.CRONET_ENGINE_BUILDER_INITIALIZED__AUTHOR__AUTHOR_IMPL;
         }
         return CronetStatsLog.CRONET_ENGINE_BUILDER_INITIALIZED__AUTHOR__AUTHOR_UNSPECIFIED;
+    }
+
+    private static int convertToProtoCronetRequestTerminalState(
+            CronetTrafficInfo.RequestTerminalState requestTerminalState) {
+        switch (requestTerminalState) {
+            case SUCCEEDED:
+                return CronetStatsLog.CRONET_TRAFFIC_REPORTED__TERMINAL_STATE__STATE_SUCCEEDED;
+            case ERROR:
+                return CronetStatsLog.CRONET_TRAFFIC_REPORTED__TERMINAL_STATE__STATE_ERROR;
+            case CANCELLED:
+                return CronetStatsLog.CRONET_TRAFFIC_REPORTED__TERMINAL_STATE__STATE_CANCELLED;
+            default:
+                return CronetStatsLog.CRONET_TRAFFIC_REPORTED__TERMINAL_STATE__STATE_UNKNOWN;
+        }
     }
 
     private static int convertToProtoCronetSource(CronetSource source) {

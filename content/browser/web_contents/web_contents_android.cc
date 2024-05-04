@@ -368,6 +368,11 @@ bool WebContentsAndroid::ShouldShowLoadingUI(JNIEnv* env) const {
   return web_contents_->ShouldShowLoadingUI();
 }
 
+bool WebContentsAndroid::HasUncommittedNavigationInPrimaryMainFrame(
+    JNIEnv* env) const {
+  return web_contents_->HasUncommittedNavigationInPrimaryMainFrame();
+}
+
 void WebContentsAndroid::DispatchBeforeUnload(JNIEnv* env, bool auto_cancel) {
   web_contents_->DispatchBeforeUnload(auto_cancel);
 }
@@ -449,14 +454,7 @@ RenderWidgetHostViewAndroid*
 }
 
 jint WebContentsAndroid::GetBackgroundColor(JNIEnv* env) {
-  RenderWidgetHostViewAndroid* rwhva = GetRenderWidgetHostViewAndroid();
-
-  // Return transparent as an indicator that the web content background color
-  // is not specified, and a default background color will be used on the Java
-  // side.
-  if (!rwhva || !rwhva->GetCachedBackgroundColor())
-    return SK_ColorTRANSPARENT;
-  return *rwhva->GetCachedBackgroundColor();
+  return web_contents_->GetBackgroundColor().value_or(SK_ColorTRANSPARENT);
 }
 
 ScopedJavaLocalRef<jobject> WebContentsAndroid::GetLastCommittedURL(
@@ -766,7 +764,7 @@ int WebContentsAndroid::DownloadImage(
     const base::android::JavaParamRef<jobject>& jcallback) {
   const gfx::Size preferred_size;
   return web_contents_->DownloadImage(
-      *url::GURLAndroid::ToNativeGURL(env, jurl), is_fav_icon, preferred_size,
+      url::GURLAndroid::ToNativeGURL(env, jurl), is_fav_icon, preferred_size,
       max_bitmap_size, bypass_cache,
       base::BindOnce(&WebContentsAndroid::OnFinishDownloadImage,
                      weak_factory_.GetWeakPtr(), obj_,

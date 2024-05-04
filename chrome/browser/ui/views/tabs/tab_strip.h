@@ -288,7 +288,6 @@ class TabStrip : public views::View,
   void OnMouseEventInTab(views::View* source,
                          const ui::MouseEvent& event) override;
   void UpdateHoverCard(Tab* tab, HoverCardUpdateType update_type) override;
-  bool ShowDomainInHoverCards() const override;
   bool HoverCardIsShowingForTab(Tab* tab) override;
   int GetBackgroundOffset() const override;
   int GetStrokeThickness() const override;
@@ -316,15 +315,18 @@ class TabStrip : public views::View,
   // views::View:
   views::SizeBounds GetAvailableSize(const View* child) const override;
   gfx::Size GetMinimumSize() const override;
-  gfx::Size CalculatePreferredSize() const override;
+  gfx::Size CalculatePreferredSize(
+      const views::SizeBounds& available_size) const override;
   void Layout(PassKey) override;
   void ChildPreferredSizeChanged(views::View* child) override;
 
   // BrowserRootView::DropTarget:
   // These methods handle link drag & drop.
-  // TODO(1307594): Use the standard views::View drag and drop methods instead.
-  BrowserRootView::DropIndex GetDropIndex(
-      const ui::DropTargetEvent& event) override;
+  // TODO(https://crbug.com/40828528): Use the standard views::View drag and
+  // drop methods instead.
+  std::optional<BrowserRootView::DropIndex> GetDropIndex(
+      const ui::DropTargetEvent& event,
+      bool allow_replacement) override;
   BrowserRootView::DropTarget* GetDropTarget(
       gfx::Point loc_in_local_coords) override;
   views::View* GetViewForDrop() override;

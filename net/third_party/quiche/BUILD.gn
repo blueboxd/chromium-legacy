@@ -63,6 +63,8 @@ component("quiche") {
               "overrides/quiche_platform_impl/quiche_mutex_impl.h",
               "overrides/quiche_platform_impl/quiche_reference_counted_impl.h",
               "overrides/quiche_platform_impl/quiche_server_stats_impl.h",
+              "overrides/quiche_platform_impl/quiche_stack_trace_impl.cc",
+              "overrides/quiche_platform_impl/quiche_stack_trace_impl.h",
               "overrides/quiche_platform_impl/quiche_time_utils_impl.cc",
               "overrides/quiche_platform_impl/quiche_time_utils_impl.h",
               "overrides/quiche_platform_impl/quiche_url_utils_impl.cc",
@@ -318,7 +320,6 @@ static_library("quiche_tool_support") {
 
   deps = [
     "//base",
-    "//base/third_party/dynamic_annotations",
     "//net",
     "//third_party/protobuf:protobuf_lite",
     "//third_party/quic_trace:quic_trace_proto",
@@ -850,8 +851,9 @@ component("blind_sign_auth") {
     "src/quiche/blind_sign_auth/blind_sign_auth.cc",
     "src/quiche/blind_sign_auth/blind_sign_auth.h",
     "src/quiche/blind_sign_auth/blind_sign_auth_interface.h",
-    "src/quiche/blind_sign_auth/blind_sign_http_interface.h",
-    "src/quiche/blind_sign_auth/blind_sign_http_response.h",
+    "src/quiche/blind_sign_auth/blind_sign_message_interface.h",
+    "src/quiche/blind_sign_auth/blind_sign_message_response.cc",
+    "src/quiche/blind_sign_auth/blind_sign_message_response.h",
     "src/quiche/blind_sign_auth/cached_blind_sign_auth.cc",
     "src/quiche/blind_sign_auth/cached_blind_sign_auth.h",
   ]
@@ -886,17 +888,7 @@ proto_library("blind_sign_auth_proto") {
     ":quiche_tests",
   ]
 
-  sources = [
-    "src/quiche/blind_sign_auth/proto/any.proto",
-    "src/quiche/blind_sign_auth/proto/attestation.proto",
-    "src/quiche/blind_sign_auth/proto/auth_and_sign.proto",
-    "src/quiche/blind_sign_auth/proto/blind_sign_auth_options.proto",
-    "src/quiche/blind_sign_auth/proto/get_initial_data.proto",
-    "src/quiche/blind_sign_auth/proto/key_services.proto",
-    "src/quiche/blind_sign_auth/proto/proxy_layer.proto",
-    "src/quiche/blind_sign_auth/proto/public_metadata.proto",
-    "src/quiche/blind_sign_auth/proto/spend_token_data.proto",
-  ]
+  sources = protobuf_blind_sign_auth
   cc_generator_options = "lite=true,dllexport_decl=COMPONENT_EXPORT(QUICHE):"
   cc_include = "base/component_export.h"
   component_build_force_source_set = true
@@ -921,7 +913,7 @@ source_set("blind_sign_auth_test_support") {
   testonly = true
   sources = [
     "src/quiche/blind_sign_auth/test_tools/mock_blind_sign_auth_interface.h",
-    "src/quiche/blind_sign_auth/test_tools/mock_blind_sign_http_interface.h",
+    "src/quiche/blind_sign_auth/test_tools/mock_blind_sign_message_interface.h",
   ]
   configs += [ ":quiche_internal_config" ]
   public_configs = [ ":quiche_config" ]
@@ -934,4 +926,31 @@ source_set("blind_sign_auth_test_support") {
   ]
   public_deps =
       [ "//third_party/anonymous_tokens:anonymous_tokens_test_support" ]
+}
+
+if (is_android) {
+  import("//build/config/android/rules.gni")
+
+  proto_java_library("blind_sign_auth_proto_java") {
+    visibility = [
+      "//components/ip_protection/*",
+      "//net/third_party/quiche/*",
+    ]
+
+    proto_path = "src/"
+
+    sources = [
+      "src/quiche/blind_sign_auth/proto/any.proto",
+      "src/quiche/blind_sign_auth/proto/attestation.proto",
+      "src/quiche/blind_sign_auth/proto/auth_and_sign.proto",
+      "src/quiche/blind_sign_auth/proto/get_initial_data.proto",
+      "src/quiche/blind_sign_auth/proto/key_services.proto",
+      "src/quiche/blind_sign_auth/proto/proxy_layer.proto",
+      "src/quiche/blind_sign_auth/proto/public_metadata.proto",
+    ]
+
+    deps = [ "//third_party/anonymous_tokens:anonymous_tokens_java_proto" ]
+
+    import_dirs = [ "//third_party/anonymous_tokens/src/" ]
+  }
 }

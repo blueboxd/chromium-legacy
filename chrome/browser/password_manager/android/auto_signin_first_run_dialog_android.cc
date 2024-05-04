@@ -66,11 +66,8 @@ void AutoSigninFirstRunDialogAndroid::ShowDialog() {
       native_window->GetJavaObject();
   if (java_dialog) {
     dialog_jobject_.Reset(Java_AutoSigninFirstRunDialog_createAndShowDialog(
-        env, java_dialog, reinterpret_cast<intptr_t>(this),
-        base::android::ConvertUTF16ToJavaString(env, message),
-        base::android::ConvertUTF16ToJavaString(env, explanation),
-        base::android::ConvertUTF16ToJavaString(env, ok_button_text),
-        base::android::ConvertUTF16ToJavaString(env, turn_off_button_text)));
+        env, java_dialog, reinterpret_cast<intptr_t>(this), message,
+        explanation, ok_button_text, turn_off_button_text));
   }
 }
 
@@ -102,10 +99,12 @@ void AutoSigninFirstRunDialogAndroid::OnTurnOffClicked(JNIEnv* env,
 void AutoSigninFirstRunDialogAndroid::CancelDialog(JNIEnv* env, jobject obj) {}
 
 void AutoSigninFirstRunDialogAndroid::OnLinkClicked(JNIEnv* env, jobject obj) {
-  web_contents_->OpenURL(content::OpenURLParams(
-      GURL(password_manager::kPasswordManagerHelpCenterSmartLock),
-      content::Referrer(), WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      ui::PAGE_TRANSITION_LINK, false /* is_renderer_initiated */));
+  web_contents_->OpenURL(
+      content::OpenURLParams(
+          GURL(password_manager::kPasswordManagerHelpCenterSmartLock),
+          content::Referrer(), WindowOpenDisposition::NEW_FOREGROUND_TAB,
+          ui::PAGE_TRANSITION_LINK, false /* is_renderer_initiated */),
+      /*navigation_handle_callback=*/{});
 }
 
 void AutoSigninFirstRunDialogAndroid::WebContentsDestroyed() {
@@ -118,7 +117,7 @@ void AutoSigninFirstRunDialogAndroid::WebContentsDestroyed() {
 void AutoSigninFirstRunDialogAndroid::OnVisibilityChanged(
     content::Visibility visibility) {
   if (dialog_jobject_ && visibility == content::Visibility::HIDDEN) {
-    // TODO(https://crbug.com/610700): once bug is fixed, this code should be
+    // TODO(crbug.com/41253286): once bug is fixed, this code should be
     // gone.
     JNIEnv* env = AttachCurrentThread();
     Java_AutoSigninFirstRunDialog_dismissDialog(env, dialog_jobject_);

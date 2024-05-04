@@ -6,6 +6,7 @@
 #define COMPONENTS_FAVICON_CORE_LARGE_ICON_SERVICE_IMPL_H_
 
 #include <memory>
+#include <optional>
 
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -58,7 +59,9 @@ class LargeIconServiceImpl : public LargeIconService {
   base::CancelableTaskTracker::TaskId GetLargeIconRawBitmapForPageUrl(
       const GURL& page_url,
       int min_source_size_in_pixel,
-      favicon_base::FaviconRawBitmapCallback callback,
+      std::optional<int> size_in_pixel_to_resize_to,
+      NoBigEnoughIconBehavior no_big_enough_icon_behavior,
+      favicon_base::LargeIconCallback callback,
       base::CancelableTaskTracker* tracker) override;
   base::CancelableTaskTracker::TaskId
   GetLargeIconRawBitmapOrFallbackStyleForIconUrl(
@@ -74,7 +77,6 @@ class LargeIconServiceImpl : public LargeIconService {
       base::CancelableTaskTracker* tracker) override;
   void GetLargeIconOrFallbackStyleFromGoogleServerSkippingLocalCache(
       const GURL& page_url,
-      bool may_page_url_be_private,
       bool should_trim_page_url_path,
       const net::NetworkTrafficAnnotationTag& traffic_annotation,
       favicon_base::GoogleFaviconServerCallback callback) override;
@@ -88,7 +90,8 @@ class LargeIconServiceImpl : public LargeIconService {
   base::CancelableTaskTracker::TaskId GetLargeIconOrFallbackStyleImpl(
       const GURL& page_url,
       int min_source_size_in_pixel,
-      int desired_size_in_pixel,
+      std::optional<int> size_in_pixel_to_resize_to,
+      NoBigEnoughIconBehavior no_big_enough_icon_behavior,
       favicon_base::LargeIconCallback raw_bitmap_callback,
       favicon_base::LargeIconImageCallback image_callback,
       base::CancelableTaskTracker* tracker);

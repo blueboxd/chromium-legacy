@@ -33,9 +33,8 @@ import java.io.OutputStream;
  * each class loader, the chromium one {@link DropDataContentProvider}.
  *
  * @see DropDataProviderImpl#FULL_AUTH_URI
- *
- * TODO(https://crbug.com/1353048): Add the reference to //android_webview/support_library content
- * provider to this java doc.
+ *     <p>TODO(crbug.com/40235067): Add the reference to //android_webview/support_library content
+ *     provider to this java doc.
  */
 @UsedByReflection("Webview Support Lib")
 public class DropDataProviderImpl {
@@ -231,7 +230,7 @@ public class DropDataProviderImpl {
     /** A static initializer for the class. */
     @UsedByReflection("DropDataContentProvider")
     public static DropDataProviderImpl onCreate() {
-        // TODO(crbug.com/1302383): Lazily create DropPipeDataWriter in #openFile.
+        // TODO(crbug.com/40825314): Lazily create DropPipeDataWriter in #openFile.
         return new DropDataProviderImpl();
     }
 

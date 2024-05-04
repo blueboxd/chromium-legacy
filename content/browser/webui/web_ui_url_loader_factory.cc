@@ -5,6 +5,7 @@
 #include "content/public/browser/web_ui_url_loader_factory.h"
 
 #include <optional>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -16,7 +17,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/ranges/algorithm.h"
-#include "base/strings/string_piece.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "base/timer/elapsed_timer.h"
@@ -81,8 +81,7 @@ void ReadData(
   if (replacements) {
     // We won't know the the final output size ahead of time, so we have to
     // use an intermediate string.
-    base::StringPiece input(reinterpret_cast<const char*>(bytes->front()),
-                            bytes->size());
+    auto input = base::as_string_view(*bytes);
     std::string temp_str;
     if (replace_in_js) {
       CHECK(
@@ -101,7 +100,7 @@ void ReadData(
   }
 
   uint32_t output_offset = 0;
-  uint32_t output_size = base::checked_cast<uint32_t>(bytes->size());
+  size_t output_size = bytes->size();
   if (requested_range) {
     if (!requested_range->ComputeBounds(output_size)) {
       CallOnError(std::move(client_remote),
@@ -128,7 +127,7 @@ void ReadData(
   CHECK_EQ(create_result, MOJO_RESULT_OK);
 
   void* buffer = nullptr;
-  uint32_t num_bytes = output_size;
+  size_t num_bytes = output_size;
   MojoResult result = pipe_producer_handle->BeginWriteData(
       &buffer, &num_bytes, MOJO_WRITE_DATA_FLAG_NONE);
   CHECK_EQ(result, MOJO_RESULT_OK);

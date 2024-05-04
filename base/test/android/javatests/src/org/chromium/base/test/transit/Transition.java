@@ -11,51 +11,123 @@ import java.util.Collections;
 import java.util.List;
 
 /** A transition into and/or out of {@link ConditionalState}s. */
-public class Transition {
+public abstract class Transition {
     /**
      * A trigger that will be executed to start the transition after all Conditions are in place and
      * states are set to TRANSITIONING_*.
      */
     public interface Trigger {
-        /**
-         * Code to trigger the transition, e.g. click a View.
-         *
-         * @param transition the Transition that will be triggered; Conditions can be added to it.
-         */
-        void triggerTransition(Transition transition);
+        /** Code to trigger the transition, e.g. click a View. */
+        void triggerTransition();
     }
 
+    protected final TransitionOptions mOptions;
     @Nullable private final Trigger mTrigger;
 
-    @Nullable private List<Condition> mConditions;
-
-    Transition(@Nullable Trigger trigger) {
+    Transition(TransitionOptions options, @Nullable Trigger trigger) {
+        mOptions = options;
         mTrigger = trigger;
-    }
-
-    /**
-     * Add a |condition| to the Transition that is not in the exit or enter conditions of the states
-     * involved. The condition will be waited in parallel with the exit and enter conditions of the
-     * states.
-     */
-    public void addCondition(Condition condition) {
-        if (mConditions == null) {
-            mConditions = new ArrayList<>();
-        }
-        mConditions.add(condition);
     }
 
     protected void triggerTransition() {
         if (mTrigger != null) {
-            mTrigger.triggerTransition(this);
+            try {
+                mTrigger.triggerTransition();
+            } catch (Exception e) {
+                throw TravelException.newTravelException(
+                        "Exception thrown by Transition trigger for " + toDebugString(), e);
+            }
         }
     }
 
+    /**
+     * Factory method for TravelException for an error during a {@link Transition}.
+     *
+     * @param cause the root cause
+     * @return a new TravelException instance
+     */
+    public TravelException newTransitionException(Throwable cause) {
+        return TravelException.newTravelException("Did not complete " + toDebugString(), cause);
+    }
+
+    /** Should return a String representation of the Transition for debugging. */
+    public abstract String toDebugString();
+
+    @Override
+    public String toString() {
+        return toDebugString();
+    }
+
     protected List<Condition> getTransitionConditions() {
-        if (mConditions == null) {
+        if (mOptions.mTransitionConditions == null) {
             return Collections.EMPTY_LIST;
         } else {
-            return mConditions;
+            return mOptions.mTransitionConditions;
+        }
+    }
+
+    /**
+     * @return builder to specify Transition options.
+     *     <p>e.g.: Transition.newOptions().withTimeout(10000L).build()
+     */
+    public static TransitionOptions.Builder newOptions() {
+        return new TransitionOptions().new Builder();
+    }
+
+    /** Convenience method equivalent to newOptions().withTimeout().build(). */
+    public static TransitionOptions timeoutOption(long timeoutMs) {
+        return newOptions().withTimeout(timeoutMs).build();
+    }
+
+    /** Convenience method equivalent to newOptions().withRetry().build(). */
+    public static TransitionOptions retryOption() {
+        return newOptions().withRetry().build();
+    }
+
+    /** Options to configure the Transition. */
+    public static class TransitionOptions {
+
+        static final TransitionOptions DEFAULT = new TransitionOptions();
+        @Nullable List<Condition> mTransitionConditions;
+        long mTimeoutMs;
+        int mTries = 1;
+
+        private TransitionOptions() {}
+
+        /** Builder for TransitionOptions. Call {@link Transition#newOptions()} to instantiate. */
+        public class Builder {
+            public TransitionOptions build() {
+                return TransitionOptions.this;
+            }
+
+            /**
+             * Add an extra |condition| to the Transition that is not in the exit or enter
+             * conditions of the states involved.
+             */
+            public Builder withCondition(Condition condition) {
+                if (mTransitionConditions == null) {
+                    mTransitionConditions = new ArrayList<>();
+                }
+                mTransitionConditions.add(condition);
+                return this;
+            }
+
+            /**
+             * @param timeoutMs how long to poll for during the transition
+             */
+            public Builder withTimeout(long timeoutMs) {
+                mTimeoutMs = timeoutMs;
+                return this;
+            }
+
+            /**
+             * Retry the transition trigger once, if the transition does not finish within the
+             * timeout.
+             */
+            public Builder withRetry() {
+                mTries = 2;
+                return this;
+            }
         }
     }
 }

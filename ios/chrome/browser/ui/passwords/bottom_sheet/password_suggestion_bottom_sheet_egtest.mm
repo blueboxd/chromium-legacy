@@ -110,9 +110,6 @@ void CheckPasswordDetailsVisitMetricCount(int count) {
   net::test_server::RegisterDefaultHandlers(self.testServer);
   GREYAssertTrue(self.testServer->Start(), @"Server did not start.");
 
-  // Prefs aren't reset between tests, crbug.com/1069086. Most tests don't care
-  // about the account storage notice, so suppress it by marking it as shown.
-  [PasswordManagerAppInterface setAccountStorageNoticeShown:YES];
   // Also reset the dismiss count pref to 0 to make sure the bottom sheet is
   // enabled by default.
   [PasswordSuggestionBottomSheetAppInterface setDismissCount:0];
@@ -123,7 +120,8 @@ void CheckPasswordDetailsVisitMetricCount(int count) {
 }
 
 - (void)tearDown {
-  [PasswordManagerAppInterface clearCredentials];
+  GREYAssertTrue([PasswordManagerAppInterface clearCredentials],
+                 @"Clearing credentials wasn't done.");
   [PasswordSettingsAppInterface removeMockReauthenticationModule];
   [PasswordSuggestionBottomSheetAppInterface removeMockReauthenticationModule];
 
@@ -169,7 +167,7 @@ void CheckPasswordDetailsVisitMetricCount(int count) {
   }
 
   if ([self isRunningTest:@selector
-            (DISABLED_testOpenPasswordBottomSheetWithSingleSharedPassword)] ||
+            (testOpenPasswordBottomSheetWithSingleSharedPassword)] ||
       [self isRunningTest:@selector
             (testOpenPasswordBottomSheetWithMultipleSharedPasswords)] ||
       [self isRunningTest:@selector
@@ -787,7 +785,7 @@ id<GREYMatcher> OpenKeyboardButton() {
   GREYWaitForAppToIdle(@"App failed to idle");
 }
 
-// TODO(crbug.com/1474949): Fix flaky test & re-enable.
+// TODO(crbug.com/40279461): Fix flaky test & re-enable.
 - (void)DISABLED_testOpenPasswordBottomSheetExpand {
   [SigninEarlGrey signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]];
   NSURL* URL = net::NSURLWithGURL(
@@ -892,7 +890,7 @@ id<GREYMatcher> OpenKeyboardButton() {
   GREYAssert(WaitForKeyboardToAppear(), @"Keyboard didn't appear.");
 }
 
-// TODO(crbug.com/1474949): Fix flaky test & re-enable.
+// TODO(crbug.com/40279461): Fix flaky test & re-enable.
 - (void)DISABLED_testOpenPasswordBottomSheetNoUsername {
   [PasswordSuggestionBottomSheetAppInterface setUpMockReauthenticationModule];
   [PasswordSuggestionBottomSheetAppInterface
@@ -978,16 +976,16 @@ id<GREYMatcher> OpenKeyboardButton() {
   }
 }
 
-// TODO(crbug.com/327629133): Fix failing test (on fieldtrial bot) & re-enable.
-- (void)DISABLED_testOpenPasswordBottomSheetWithSingleSharedPassword {
+- (void)testOpenPasswordBottomSheetWithSingleSharedPassword {
+  [SigninEarlGrey signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]];
+  NSURL* URL = net::NSURLWithGURL(
+      self.testServer->GetURL("/simple_login_form_empty.html"));
   [PasswordSuggestionBottomSheetAppInterface setUpMockReauthenticationModule];
   [PasswordSuggestionBottomSheetAppInterface
       mockReauthenticationModuleExpectedResult:ReauthenticationResult::
                                                    kSuccess];
 
   // Save 1 password that has been received via sharing and the other not.
-  NSURL* URL = net::NSURLWithGURL(
-      self.testServer->GetURL("/simple_login_form_empty.html"));
   [PasswordManagerAppInterface storeCredentialWithUsername:@"user1"
                                                   password:@"password1"
                                                        URL:URL
@@ -996,7 +994,9 @@ id<GREYMatcher> OpenKeyboardButton() {
                                                   password:@"password2"
                                                        URL:URL
                                                     shared:NO];
-  [SigninEarlGrey signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]];
+  int credentialsCount = [PasswordManagerAppInterface storedCredentialsCount];
+  GREYAssertEqual(2, credentialsCount, @"Wrong number of stored credentials.");
+
   [self loadLoginPage];
 
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
@@ -1014,6 +1014,8 @@ id<GREYMatcher> OpenKeyboardButton() {
       assertWithMatcher:grey_notNil()];
 
   // Verify that the other password is also accessible to fill.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"user1")]
+      performAction:grey_swipeSlowInDirection(kGREYDirectionUp)];
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"user1")]
       performAction:grey_tap()];
   [ChromeEarlGrey

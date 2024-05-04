@@ -51,11 +51,6 @@ found in the LICENSE file.
     <dimen name="list_item_start_icon_width">36dp</dimen>
     <dimen name="list_item_end_icon_width">56dp</dimen>
 
-    <!-- Modern List Item V2 dimensions -->
-    <dimen name="list_item_v2_margin">6dp</dimen>
-    <dimen name="list_item_v2_start_icon_width_compact">70dp</dimen>
-    <dimen name="list_item_v2_start_icon_corner_radius">16dp</dimen>
-
     <!-- SelectableListLayout dimensions -->
     <dimen name="selectable_list_action_bar_end_padding">6dp</dimen>
     <dimen name="toolbar_wide_display_start_offset">13dp</dimen>
@@ -121,7 +116,7 @@ found in the LICENSE file.
     <!-- QueryTile view dimensions -->
     <dimen name="query_tile_view_width">80dp</dimen>
     <dimen name="query_tile_view_height">80dp</dimen>
-    <!-- TODO(crbug.com/900912): Fix and remove lint ignore -->
+    <!-- TODO(crbug.com/40600572): Fix and remove lint ignore -->
     <dimen tools:ignore="PxUsage" name="tile_view_icon_min_size">24px</dimen>
     <dimen name="tile_view_icon_corner_radius">4dp</dimen>
     <dimen name="tile_view_icon_text_size">20dp</dimen>
@@ -206,4 +201,11 @@ found in the LICENSE file.
     <!-- Min height required to satisfy the min touch target size-->
     <dimen name="switch_pre_scale_min_height">60dp</dimen>
     <dimen name="switch_with_text_min_height">@dimen/min_touch_target_size</dimen>
+
+    <!-- Default values for GradientParagraphLoadingIndicator. -->
+    <item type="integer" name="loading_text_line_count">3</item>
+    <dimen name="loading_text_line_height">14dp</dimen>
+    <dimen name="loading_text_line_spacing">6dp</dimen>
+    <item type="fraction" format="fraction" name="loading_text_last_line_width_fraction">50%</item>
+
 </resources>

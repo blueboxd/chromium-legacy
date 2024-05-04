@@ -98,17 +98,22 @@ StorageBucketManager* StorageBucketManager::storageBuckets(
   return supplement;
 }
 
-ScriptPromiseTyped<StorageBucket> StorageBucketManager::open(
+ScriptPromise<StorageBucket> StorageBucketManager::open(
     ScriptState* script_state,
     const String& name,
     const StorageBucketOptions* options,
     ExceptionState& exception_state) {
-  auto* resolver =
-      MakeGarbageCollected<ScriptPromiseResolverTyped<StorageBucket>>(
-          script_state, exception_state.GetContext());
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver<StorageBucket>>(
+      script_state, exception_state.GetContext());
   auto promise = resolver->Promise();
 
   ExecutionContext* context = ExecutionContext::From(script_state);
+
+  if (context->IsContextDestroyed()) {
+    exception_state.ThrowTypeError("The window/worker has been destroyed.");
+    return promise;
+  }
+
   if (!context->GetSecurityOrigin()->CanAccessStorageBuckets()) {
     exception_state.ThrowSecurityError(
         "Access to Storage Buckets API is denied in this context.");
@@ -138,15 +143,20 @@ ScriptPromiseTyped<StorageBucket> StorageBucketManager::open(
   return promise;
 }
 
-ScriptPromiseTyped<IDLSequence<IDLString>> StorageBucketManager::keys(
+ScriptPromise<IDLSequence<IDLString>> StorageBucketManager::keys(
     ScriptState* script_state,
     ExceptionState& exception_state) {
   auto* resolver =
-      MakeGarbageCollected<ScriptPromiseResolverTyped<IDLSequence<IDLString>>>(
+      MakeGarbageCollected<ScriptPromiseResolver<IDLSequence<IDLString>>>(
           script_state, exception_state.GetContext());
   auto promise = resolver->Promise();
 
   ExecutionContext* context = ExecutionContext::From(script_state);
+  if (context->IsContextDestroyed()) {
+    exception_state.ThrowTypeError("The window/worker has been destroyed.");
+    return promise;
+  }
+
   if (!context->GetSecurityOrigin()->CanAccessStorageBuckets()) {
     exception_state.ThrowSecurityError(
         "Access to Storage Buckets API is denied in this context.");
@@ -159,14 +169,20 @@ ScriptPromiseTyped<IDLSequence<IDLString>> StorageBucketManager::keys(
   return promise;
 }
 
-ScriptPromise StorageBucketManager::Delete(ScriptState* script_state,
-                                           const String& name,
-                                           ExceptionState& exception_state) {
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(
+ScriptPromise<IDLUndefined> StorageBucketManager::Delete(
+    ScriptState* script_state,
+    const String& name,
+    ExceptionState& exception_state) {
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver<IDLUndefined>>(
       script_state, exception_state.GetContext());
-  ScriptPromise promise = resolver->Promise();
+  auto promise = resolver->Promise();
 
   ExecutionContext* context = ExecutionContext::From(script_state);
+  if (context->IsContextDestroyed()) {
+    exception_state.ThrowTypeError("The window/worker has been destroyed.");
+    return promise;
+  }
+
   if (!context->GetSecurityOrigin()->CanAccessStorageBuckets()) {
     exception_state.ThrowSecurityError(
         "Access to Storage Buckets API is denied in this context.");
@@ -201,7 +217,7 @@ mojom::blink::BucketManagerHost* StorageBucketManager::GetBucketManager(
 }
 
 void StorageBucketManager::DidOpen(
-    ScriptPromiseResolverTyped<StorageBucket>* resolver,
+    ScriptPromiseResolver<StorageBucket>* resolver,
     const String& name,
     mojo::PendingRemote<mojom::blink::BucketHost> bucket_remote,
     mojom::blink::BucketError error) {
@@ -235,7 +251,7 @@ void StorageBucketManager::DidOpen(
 }
 
 void StorageBucketManager::DidGetKeys(
-    ScriptPromiseResolverTyped<IDLSequence<IDLString>>* resolver,
+    ScriptPromiseResolver<IDLSequence<IDLString>>* resolver,
     const Vector<String>& keys,
     bool success) {
   ScriptState* script_state = resolver->GetScriptState();
@@ -253,14 +269,9 @@ void StorageBucketManager::DidGetKeys(
   resolver->Resolve(keys);
 }
 
-void StorageBucketManager::DidDelete(ScriptPromiseResolver* resolver,
-                                     bool success) {
-  ScriptState* script_state = resolver->GetScriptState();
-  if (!script_state->ContextIsValid()) {
-    return;
-  }
-  ScriptState::Scope scope(script_state);
-
+void StorageBucketManager::DidDelete(
+    ScriptPromiseResolver<IDLUndefined>* resolver,
+    bool success) {
   if (!success) {
     resolver->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kUnknownError,

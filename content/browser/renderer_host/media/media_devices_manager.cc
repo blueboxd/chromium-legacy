@@ -43,7 +43,6 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/audio/public/mojom/device_notifications.mojom.h"
-#include "services/video_capture/public/cpp/features.h"
 #include "third_party/blink/public/common/mediastream/media_devices.h"
 #include "third_party/blink/public/mojom/mediastream/media_devices.mojom.h"
 
@@ -388,7 +387,10 @@ MediaDevicesManager::SubscriptionRequest::operator=(SubscriptionRequest&&) =
 class MediaDevicesManager::AudioServiceDeviceListener
     : public audio::mojom::DeviceListener {
  public:
-  AudioServiceDeviceListener() { ConnectToService(); }
+  AudioServiceDeviceListener(base::RepeatingClosure disconnect_cb)
+      : disconnect_cb_(std::move(disconnect_cb)) {
+    ConnectToService();
+  }
 
   AudioServiceDeviceListener(const AudioServiceDeviceListener&) = delete;
   AudioServiceDeviceListener& operator=(const AudioServiceDeviceListener&) =
@@ -421,8 +423,10 @@ class MediaDevicesManager::AudioServiceDeviceListener
 
   void OnConnectionError() {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    CHECK(disconnect_cb_);
     mojo_audio_device_notifier_.reset();
     receiver_.reset();
+    disconnect_cb_.Run();
 
     // Resetting the error handler in a posted task since doing it synchronously
     // results in a browser crash. See https://crbug.com/845142.
@@ -431,6 +435,10 @@ class MediaDevicesManager::AudioServiceDeviceListener
                                   weak_factory_.GetWeakPtr()));
   }
 
+  // |disconnect_cb_| is a callback used to invalidate the cache and do a
+  // fresh enumeration to avoid losing out on the changes that might happen
+  // when the audio service is not active.
+  const base::RepeatingClosure disconnect_cb_;
   mojo::Receiver<audio::mojom::DeviceListener> receiver_{this};
   mojo::Remote<audio::mojom::DeviceNotifier> mojo_audio_device_notifier_;
 
@@ -616,8 +624,14 @@ void MediaDevicesManager::StartMonitoring() {
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
   if (base::FeatureList::IsEnabled(features::kAudioServiceOutOfProcess)) {
     DCHECK(!audio_service_device_listener_);
+
+    // base::Unretained(this) is safe here because |this| owns
+    // |audio_service_device_listener_|.
     audio_service_device_listener_ =
-        std::make_unique<AudioServiceDeviceListener>();
+        std::make_unique<AudioServiceDeviceListener>(
+            /*disconnect_cb=*/base::BindRepeating(
+                &MediaDevicesManager::HandleDevicesChanged,
+                base::Unretained(this), MediaDeviceType::kMediaAudioInput));
   }
 #endif
   SendLogMessage("StartMonitoring()");
@@ -634,15 +648,7 @@ void MediaDevicesManager::StartMonitoring() {
   }
 
 #if BUILDFLAG(IS_MAC)
-  if (base::FeatureList::IsEnabled(
-          video_capture::features::kCameraMonitoringInVideoCaptureService)) {
     RegisterVideoCaptureDevicesChangedObserver();
-  } else {
-    GetUIThreadTaskRunner({})->PostTask(
-        FROM_HERE,
-        base::BindOnce(&MediaDevicesManager::StartMonitoringOnUIThread,
-                       base::Unretained(this)));
-  }
 #endif
 #if BUILDFLAG(IS_WIN)
   if (switches::IsMediaFoundationCameraUsageMonitoringEnabled() &&
@@ -652,18 +658,6 @@ void MediaDevicesManager::StartMonitoring() {
   }
 #endif
 }
-
-#if BUILDFLAG(IS_MAC)
-void MediaDevicesManager::StartMonitoringOnUIThread() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  CHECK(!base::FeatureList::IsEnabled(
-      video_capture::features::kCameraMonitoringInVideoCaptureService));
-  BrowserMainLoop* browser_main_loop = content::BrowserMainLoop::GetInstance();
-  if (!browser_main_loop)
-    return;
-  browser_main_loop->device_monitor_mac()->StartMonitoring();
-}
-#endif
 
 void MediaDevicesManager::StopMonitoring() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -785,7 +779,7 @@ void MediaDevicesManager::OnPermissionsCheckDone(
   // If video input devices are requested, also request audio input devices in
   // order to be able to use an heuristic that guesses group IDs for video
   // devices by finding matches in audio input devices.
-  // TODO(crbug.com/627793): Remove |internal_requested_types| and use
+  // TODO(crbug.com/41263713): Remove |internal_requested_types| and use
   // |requested_types| directly when video capture supports group IDs.
   BoolDeviceTypes internal_requested_types;
   internal_requested_types[static_cast<size_t>(
@@ -934,7 +928,7 @@ void MediaDevicesManager::GotAudioInputCapabilities(
     // Data from the |parameters| field is duplicated in the |channels|,
     // |sample_rate| and |latency| fields due to the lack of availability
     // of the media::AudioParameters native mojo mapping in blink.
-    // TODO(crbug.com/787252): Remove redundant fields when |parameters|
+    // TODO(crbug.com/40550966): Remove redundant fields when |parameters|
     // is accessible from Blink.
     capabilities->is_valid = parameters->IsValid();
     capabilities->channels = parameters->channels();
@@ -1047,7 +1041,7 @@ void MediaDevicesManager::VideoInputDevicesEnumerated(
     // manually-collected chrome logs at customers.
     SendLogMessage(log_message);
     VLOG(1) << log_message;
-    // TODO(crbug.com/1313822): Propagate this as an error response to the
+    // TODO(crbug.com/40221155): Propagate this as an error response to the
     // page and expose in the JS API.
   }
   blink::WebMediaDeviceInfoArray snapshot;
@@ -1117,7 +1111,7 @@ void MediaDevicesManager::UpdateSnapshot(
                                            : EqualDeviceIncludingGroupID)) {
     // Prevent sending notifications until group IDs are updated using
     // a heuristic in ProcessRequests().
-    // TODO(crbug.com/627793): Remove |is_video_with_group_ids| and the
+    // TODO(crbug.com/41263713): Remove |is_video_with_group_ids| and the
     // corresponding checks when the video-capture subsystem supports
     // group IDs.
     bool is_video_with_good_group_ids =
@@ -1160,7 +1154,7 @@ void MediaDevicesManager::ProcessRequests() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // Populate the group ID field for video devices using a heuristic that looks
   // for device coincidences with audio input devices.
-  // TODO(crbug.com/627793): Remove this once the video-capture subsystem
+  // TODO(crbug.com/41263713): Remove this once the video-capture subsystem
   // supports group IDs.
   if (has_seen_result_[static_cast<size_t>(
           MediaDeviceType::kMediaVideoInput)]) {

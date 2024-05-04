@@ -8,6 +8,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -301,6 +302,121 @@ public class CompositorViewHolderUnitTest {
     }
 
     @Test
+    @EnableFeatures(ChromeFeatureList.BROWSER_CONTROLS_EARLY_RESIZE)
+    public void testResizeViewOnWillShowControls() {
+        final int topHeight = 100;
+        final int topMinHeight = 0;
+
+        TabModelSelectorTabObserver tabControlsObserver =
+                mBrowserControlsManager.getTabControlsObserverForTesting();
+
+        mBrowserControlsManager.setTopControlsHeight(topHeight, topMinHeight);
+
+        // Send initial offsets.
+        tabControlsObserver.onBrowserControlsOffsetChanged(
+                mTab,
+                /* topControlsOffsetY= */ -topHeight,
+                /* bottomControlsOffsetY= */ 0,
+                /* contentOffsetY= */ 0,
+                /* topControlsMinHeightOffsetY= */ 0,
+                /* bottomControlsMinHeightOffsetY= */ 0);
+        // Initially, the controls should be hidden.
+        assertTrue(
+                "Browser controls aren't fully hidden.",
+                BrowserControlsUtils.areBrowserControlsOffScreen(mBrowserControlsManager));
+
+        // Simulate the browser issuing a "show browser controls" signal to the renderer.
+        mCompositorViewHolder.onWillShowBrowserControls();
+
+        // This should cause the controls to start resizing the view.
+        verify(mCompositorView).onControlsResizeViewChanged(any(), eq(true));
+        reset(mCompositorView);
+
+        // Simulating a show-animation partially updating the controls, this shouldn't cause another
+        // resize.
+        tabControlsObserver.onBrowserControlsOffsetChanged(
+                mTab,
+                /* topControlsOffsetY= */ -topHeight / 2,
+                /* bottomControlsOffsetY= */ 0,
+                /* contentOffsetY= */ topHeight / 2,
+                /* topControlsMinHeightOffsetY= */ 0,
+                /* bottomControlsMinHeightOffsetY= */ 0);
+        verify(mCompositorView, never()).onControlsResizeViewChanged(any(), anyBoolean());
+        reset(mCompositorView);
+
+        // The controls finished animating in. Since they already resized the view, this should also
+        // be a no-op.
+        tabControlsObserver.onBrowserControlsOffsetChanged(
+                mTab,
+                /* topControlsOffsetY= */ 0,
+                /* bottomControlsOffsetY= */ 0,
+                /* contentOffsetY= */ topHeight,
+                /* topControlsMinHeightOffsetY= */ 0,
+                /* bottomControlsMinHeightOffsetY= */ 0);
+
+        verify(mCompositorView, never()).onControlsResizeViewChanged(any(), anyBoolean());
+        reset(mCompositorView);
+
+        // The controls going back to hidden should resize the view as usual.
+        tabControlsObserver.onBrowserControlsOffsetChanged(
+                mTab,
+                /* topControlsOffsetY= */ -topHeight,
+                /* bottomControlsOffsetY= */ 0,
+                /* contentOffsetY= */ 0,
+                /* topControlsMinHeightOffsetY= */ 0,
+                /* bottomControlsMinHeightOffsetY= */ 0);
+        verify(mCompositorView).onControlsResizeViewChanged(any(), eq(false));
+        reset(mCompositorView);
+    }
+
+    // TODO(bokan): Ensure disabling the flag-guard reverts to old behavior. This test can be
+    // removed with the flag after M125 ships. https://crbug.com/5366846.
+    @Test
+    @DisableFeatures(ChromeFeatureList.BROWSER_CONTROLS_EARLY_RESIZE)
+    public void testResizeViewOnWillShowControlsFlagGuarded() {
+        final int topHeight = 100;
+        final int topMinHeight = 0;
+
+        TabModelSelectorTabObserver tabControlsObserver =
+                mBrowserControlsManager.getTabControlsObserverForTesting();
+
+        mBrowserControlsManager.setTopControlsHeight(topHeight, topMinHeight);
+
+        // Send initial offsets.
+        tabControlsObserver.onBrowserControlsOffsetChanged(
+                mTab,
+                /* topControlsOffsetY= */ -topHeight,
+                /* bottomControlsOffsetY= */ 0,
+                /* contentOffsetY= */ 0,
+                /* topControlsMinHeightOffsetY= */ 0,
+                /* bottomControlsMinHeightOffsetY= */ 0);
+        // Initially, the controls should be hidden.
+        assertTrue(
+                "Browser controls aren't fully hidden.",
+                BrowserControlsUtils.areBrowserControlsOffScreen(mBrowserControlsManager));
+
+        // Simulate the browser issuing a "show browser controls" signal to the renderer.
+        mCompositorViewHolder.onWillShowBrowserControls();
+
+        // This should must not cause the controls to start resizing the view yet.
+        verify(mCompositorView, never()).onControlsResizeViewChanged(any(), anyBoolean());
+        reset(mCompositorView);
+
+        // The controls finished animating in. Since they already resized the view, this should
+        // cause the resize the occur.
+        tabControlsObserver.onBrowserControlsOffsetChanged(
+                mTab,
+                /* topControlsOffsetY= */ 0,
+                /* bottomControlsOffsetY= */ 0,
+                /* contentOffsetY= */ topHeight,
+                /* topControlsMinHeightOffsetY= */ 0,
+                /* bottomControlsMinHeightOffsetY= */ 0);
+
+        verify(mCompositorView).onControlsResizeViewChanged(any(), eq(true));
+        reset(mCompositorView);
+    }
+
+    @Test
     @EnableFeatures({
         ChromeFeatureList.FULLSCREEN_INSETS_API_MIGRATION,
         ChromeFeatureList.FULLSCREEN_INSETS_API_MIGRATION_ON_AUTOMOTIVE
@@ -470,11 +586,11 @@ public class CompositorViewHolderUnitTest {
         when(mCompositorViewHolder.getHeight()).thenReturn(adjustedHeight);
 
         mKeyboardInsetSupplier.set(KEYBOARD_HEIGHT);
+        mCompositorViewHolder.updateWebContentsSize(mTab);
 
         // Expect fullViewportHeight since in OVERLAYS_CONTENT the keyboard doesn't cause a resize
         // to the WebContents.
-        verify(mWebContents, times(1))
-                .setSize(fullViewportWidth, fullViewportHeight - TOOLBAR_HEIGHT);
+        verify(mWebContents, times(1)).setSize(fullViewportWidth, fullViewportHeight);
         verify(mCompositorViewHolder, times(1))
                 .notifyVirtualKeyboardOverlayRect(
                         mWebContents, 0, 0, fullViewportWidth, KEYBOARD_HEIGHT);
@@ -487,9 +603,9 @@ public class CompositorViewHolderUnitTest {
         when(mCompositorViewHolder.getWidth()).thenReturn(fullViewportWidth);
         when(mCompositorViewHolder.getHeight()).thenReturn(fullViewportHeight);
         mKeyboardInsetSupplier.set(0);
+        mCompositorViewHolder.updateWebContentsSize(mTab);
 
-        verify(mWebContents, times(1))
-                .setSize(fullViewportWidth, fullViewportHeight - TOOLBAR_HEIGHT);
+        verify(mWebContents, times(1)).setSize(fullViewportWidth, fullViewportHeight);
         verify(mCompositorViewHolder, times(1))
                 .notifyVirtualKeyboardOverlayRect(mWebContents, 0, 0, 0, 0);
     }
@@ -510,8 +626,10 @@ public class CompositorViewHolderUnitTest {
         mKeyboardInsetSupplier.set(0);
 
         // Ensure updating the WebContents size doesn't dispatch a keyboard geometry event to
-        // web content.
-        verify(mWebContents, times(1)).setSize(viewportWidth, viewportHeight - TOOLBAR_HEIGHT);
+        // web content. The updateWebContentsSize call simulates the Views layout that happens as a
+        // result of the keyboard showing, which happens after the inset is set.
+        mCompositorViewHolder.updateWebContentsSize(mTab);
+        verify(mWebContents, times(1)).setSize(viewportWidth, viewportHeight);
         verify(mCompositorViewHolder, times(0))
                 .notifyVirtualKeyboardOverlayRect(mWebContents, 0, 0, 0, 0);
     }

@@ -27,6 +27,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/omnibox/browser/autocomplete_i18n.h"
 #include "components/omnibox/browser/autocomplete_input.h"
@@ -52,6 +53,8 @@
 #if !BUILDFLAG(IS_IOS)
 #include "components/history_clusters/core/config.h"
 #endif  // !BUILDFLAG(IS_IOS)
+
+constexpr bool kIsDesktop = !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS);
 
 namespace {
 
@@ -308,12 +311,12 @@ void ShortcutsProvider::DoAutocomplete(const AutocompleteInput& input,
     if (shortcut_match.relevance == 0)
       continue;
 
-    if (OmniboxFieldTrial::IsKeywordModeRefreshEnabled()) {
-      // Let builtin provider win for starter pack shortcuts; they should not
-      // allow default or inline autocomplete for the keyword mode refresh.
-      if (shortcut_match.type == AutocompleteMatch::Type::STARTER_PACK) {
-        continue;
-      }
+    if (kIsDesktop &&
+        AutocompleteMatch::IsFeaturedSearchType(shortcut_match.type)) {
+      // Let FeaturedSearchProvider win for feature search shortcuts (e.g.
+      // starter pack and feature site search created by policy); they should
+      // not allow default or inline autocomplete for the keyword mode refresh.
+      continue;
     }
 
     if (shortcut_match.shortcut->match_core.type ==
@@ -549,13 +552,14 @@ AutocompleteMatch ShortcutsProvider::ShortcutMatchToACMatch(
   // a fill_into_edit of "http://foo.com".
   const bool is_search_type = AutocompleteMatch::IsSearchType(match.type);
 
-  const bool is_starter_pack = AutocompleteMatch::IsStarterPackType(match.type);
-  if (OmniboxFieldTrial::IsKeywordModeRefreshEnabled()) {
-    DCHECK(!is_starter_pack);
+  const bool is_featured_search =
+      AutocompleteMatch::IsFeaturedSearchType(match.type);
+  if (kIsDesktop) {
+    DCHECK(!is_featured_search);
     DCHECK(is_search_type != match.keyword.empty())
         << "type: " << match.type << ", keyword: " << match.keyword;
   } else {
-    DCHECK(is_search_type != match.keyword.empty() || is_starter_pack)
+    DCHECK(is_search_type != match.keyword.empty() || is_featured_search)
         << "type: " << match.type << ", keyword: " << match.keyword;
   }
 

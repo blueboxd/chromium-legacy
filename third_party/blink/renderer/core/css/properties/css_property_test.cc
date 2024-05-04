@@ -39,9 +39,21 @@ class ModeCheckingAnchorEvaluator : public AnchorEvaluator {
       : required_mode_(required_mode) {}
 
   std::optional<LayoutUnit> Evaluate(
-      const CalculationExpressionNode&) override {
+      const AnchorQuery&,
+      const ScopedCSSName* position_anchor,
+      const std::optional<InsetAreaOffsets>&) override {
     return (required_mode_ == GetMode()) ? std::optional<LayoutUnit>(1)
                                          : std::optional<LayoutUnit>();
+  }
+
+  std::optional<InsetAreaOffsets> ComputeInsetAreaOffsetsForLayout(
+      const ScopedCSSName*,
+      InsetArea) override {
+    return std::nullopt;
+  }
+  std::optional<PhysicalOffset> ComputeAnchorCenterOffsets(
+      const ComputedStyleBuilder& builder) override {
+    return std::nullopt;
   }
 
  private:
@@ -340,80 +352,100 @@ TEST_F(CSSPropertyTest, AnchorModeTop) {
   ModeCheckingAnchorEvaluator anchor_evaluator(AnchorScope::Mode::kTop);
   StyleRecalcContext context = {.anchor_evaluator = &anchor_evaluator};
 
-  EXPECT_EQ("1px", ComputedValue("top", "anchor(top)", context));
-  EXPECT_EQ("0px", ComputedValue("right", "anchor(top)", context));
-  EXPECT_EQ("0px", ComputedValue("bottom", "anchor(top)", context));
-  EXPECT_EQ("0px", ComputedValue("left", "anchor(top)", context));
-  EXPECT_EQ("0px", ComputedValue("width", "anchor-size(width)", context));
-  EXPECT_EQ("0px", ComputedValue("height", "anchor-size(width)", context));
-  EXPECT_EQ("0px", ComputedValue("min-width", "anchor-size(width)", context));
-  EXPECT_EQ("0px", ComputedValue("min-height", "anchor-size(width)", context));
-  EXPECT_EQ("0px", ComputedValue("max-width", "anchor-size(width)", context));
-  EXPECT_EQ("0px", ComputedValue("max-height", "anchor-size(width)", context));
+  EXPECT_EQ("1px", ComputedValue("top", "anchor(top, 0px)", context));
+  EXPECT_EQ("0px", ComputedValue("right", "anchor(top, 0px)", context));
+  EXPECT_EQ("0px", ComputedValue("bottom", "anchor(top, 0px)", context));
+  EXPECT_EQ("0px", ComputedValue("left", "anchor(top, 0px)", context));
+  EXPECT_EQ("0px", ComputedValue("width", "anchor-size(width, 0px)", context));
+  EXPECT_EQ("0px", ComputedValue("height", "anchor-size(width, 0px)", context));
+  EXPECT_EQ("0px",
+            ComputedValue("min-width", "anchor-size(width, 0px)", context));
+  EXPECT_EQ("0px",
+            ComputedValue("min-height", "anchor-size(width, 0px)", context));
+  EXPECT_EQ("0px",
+            ComputedValue("max-width", "anchor-size(width, 0px)", context));
+  EXPECT_EQ("0px",
+            ComputedValue("max-height", "anchor-size(width, 0px)", context));
 }
 
 TEST_F(CSSPropertyTest, AnchorModeRight) {
   ModeCheckingAnchorEvaluator anchor_evaluator(AnchorScope::Mode::kRight);
   StyleRecalcContext context = {.anchor_evaluator = &anchor_evaluator};
 
-  EXPECT_EQ("0px", ComputedValue("top", "anchor(top)", context));
-  EXPECT_EQ("1px", ComputedValue("right", "anchor(top)", context));
-  EXPECT_EQ("0px", ComputedValue("bottom", "anchor(top)", context));
-  EXPECT_EQ("0px", ComputedValue("left", "anchor(top)", context));
-  EXPECT_EQ("0px", ComputedValue("width", "anchor-size(width)", context));
-  EXPECT_EQ("0px", ComputedValue("height", "anchor-size(width)", context));
-  EXPECT_EQ("0px", ComputedValue("min-width", "anchor-size(width)", context));
-  EXPECT_EQ("0px", ComputedValue("min-height", "anchor-size(width)", context));
-  EXPECT_EQ("0px", ComputedValue("max-width", "anchor-size(width)", context));
-  EXPECT_EQ("0px", ComputedValue("max-height", "anchor-size(width)", context));
+  EXPECT_EQ("0px", ComputedValue("top", "anchor(top, 0px)", context));
+  EXPECT_EQ("1px", ComputedValue("right", "anchor(top, 0px)", context));
+  EXPECT_EQ("0px", ComputedValue("bottom", "anchor(top, 0px)", context));
+  EXPECT_EQ("0px", ComputedValue("left", "anchor(top, 0px)", context));
+  EXPECT_EQ("0px", ComputedValue("width", "anchor-size(width, 0px)", context));
+  EXPECT_EQ("0px", ComputedValue("height", "anchor-size(width, 0px)", context));
+  EXPECT_EQ("0px",
+            ComputedValue("min-width", "anchor-size(width, 0px)", context));
+  EXPECT_EQ("0px",
+            ComputedValue("min-height", "anchor-size(width, 0px)", context));
+  EXPECT_EQ("0px",
+            ComputedValue("max-width", "anchor-size(width, 0px)", context));
+  EXPECT_EQ("0px",
+            ComputedValue("max-height", "anchor-size(width, 0px)", context));
 }
 
 TEST_F(CSSPropertyTest, AnchorModeBottom) {
   ModeCheckingAnchorEvaluator anchor_evaluator(AnchorScope::Mode::kBottom);
   StyleRecalcContext context = {.anchor_evaluator = &anchor_evaluator};
 
-  EXPECT_EQ("0px", ComputedValue("top", "anchor(top)", context));
-  EXPECT_EQ("0px", ComputedValue("right", "anchor(top)", context));
-  EXPECT_EQ("1px", ComputedValue("bottom", "anchor(top)", context));
-  EXPECT_EQ("0px", ComputedValue("left", "anchor(top)", context));
-  EXPECT_EQ("0px", ComputedValue("width", "anchor-size(width)", context));
-  EXPECT_EQ("0px", ComputedValue("height", "anchor-size(width)", context));
-  EXPECT_EQ("0px", ComputedValue("min-width", "anchor-size(width)", context));
-  EXPECT_EQ("0px", ComputedValue("min-height", "anchor-size(width)", context));
-  EXPECT_EQ("0px", ComputedValue("max-width", "anchor-size(width)", context));
-  EXPECT_EQ("0px", ComputedValue("max-height", "anchor-size(width)", context));
+  EXPECT_EQ("0px", ComputedValue("top", "anchor(top, 0px)", context));
+  EXPECT_EQ("0px", ComputedValue("right", "anchor(top, 0px)", context));
+  EXPECT_EQ("1px", ComputedValue("bottom", "anchor(top, 0px)", context));
+  EXPECT_EQ("0px", ComputedValue("left", "anchor(top, 0px)", context));
+  EXPECT_EQ("0px", ComputedValue("width", "anchor-size(width, 0px)", context));
+  EXPECT_EQ("0px", ComputedValue("height", "anchor-size(width, 0px)", context));
+  EXPECT_EQ("0px",
+            ComputedValue("min-width", "anchor-size(width, 0px)", context));
+  EXPECT_EQ("0px",
+            ComputedValue("min-height", "anchor-size(width, 0px)", context));
+  EXPECT_EQ("0px",
+            ComputedValue("max-width", "anchor-size(width, 0px)", context));
+  EXPECT_EQ("0px",
+            ComputedValue("max-height", "anchor-size(width, 0px)", context));
 }
 
 TEST_F(CSSPropertyTest, AnchorModeLeft) {
   ModeCheckingAnchorEvaluator anchor_evaluator(AnchorScope::Mode::kLeft);
   StyleRecalcContext context = {.anchor_evaluator = &anchor_evaluator};
 
-  EXPECT_EQ("0px", ComputedValue("top", "anchor(top)", context));
-  EXPECT_EQ("0px", ComputedValue("right", "anchor(top)", context));
-  EXPECT_EQ("0px", ComputedValue("bottom", "anchor(top)", context));
-  EXPECT_EQ("1px", ComputedValue("left", "anchor(top)", context));
-  EXPECT_EQ("0px", ComputedValue("width", "anchor-size(width)", context));
-  EXPECT_EQ("0px", ComputedValue("height", "anchor-size(width)", context));
-  EXPECT_EQ("0px", ComputedValue("min-width", "anchor-size(width)", context));
-  EXPECT_EQ("0px", ComputedValue("min-height", "anchor-size(width)", context));
-  EXPECT_EQ("0px", ComputedValue("max-width", "anchor-size(width)", context));
-  EXPECT_EQ("0px", ComputedValue("max-height", "anchor-size(width)", context));
+  EXPECT_EQ("0px", ComputedValue("top", "anchor(top, 0px)", context));
+  EXPECT_EQ("0px", ComputedValue("right", "anchor(top, 0px)", context));
+  EXPECT_EQ("0px", ComputedValue("bottom", "anchor(top, 0px)", context));
+  EXPECT_EQ("1px", ComputedValue("left", "anchor(top, 0px)", context));
+  EXPECT_EQ("0px", ComputedValue("width", "anchor-size(width, 0px)", context));
+  EXPECT_EQ("0px", ComputedValue("height", "anchor-size(width, 0px)", context));
+  EXPECT_EQ("0px",
+            ComputedValue("min-width", "anchor-size(width, 0px)", context));
+  EXPECT_EQ("0px",
+            ComputedValue("min-height", "anchor-size(width, 0px)", context));
+  EXPECT_EQ("0px",
+            ComputedValue("max-width", "anchor-size(width, 0px)", context));
+  EXPECT_EQ("0px",
+            ComputedValue("max-height", "anchor-size(width, 0px)", context));
 }
 
 TEST_F(CSSPropertyTest, AnchorModeSize) {
   ModeCheckingAnchorEvaluator anchor_evaluator(AnchorScope::Mode::kSize);
   StyleRecalcContext context = {.anchor_evaluator = &anchor_evaluator};
 
-  EXPECT_EQ("0px", ComputedValue("top", "anchor(top)", context));
-  EXPECT_EQ("0px", ComputedValue("right", "anchor(top)", context));
-  EXPECT_EQ("0px", ComputedValue("bottom", "anchor(top)", context));
-  EXPECT_EQ("0px", ComputedValue("left", "anchor(top)", context));
-  EXPECT_EQ("1px", ComputedValue("width", "anchor-size(width)", context));
-  EXPECT_EQ("1px", ComputedValue("height", "anchor-size(width)", context));
-  EXPECT_EQ("1px", ComputedValue("min-width", "anchor-size(width)", context));
-  EXPECT_EQ("1px", ComputedValue("min-height", "anchor-size(width)", context));
-  EXPECT_EQ("1px", ComputedValue("max-width", "anchor-size(width)", context));
-  EXPECT_EQ("1px", ComputedValue("max-height", "anchor-size(width)", context));
+  EXPECT_EQ("0px", ComputedValue("top", "anchor(top, 0px)", context));
+  EXPECT_EQ("0px", ComputedValue("right", "anchor(top, 0px)", context));
+  EXPECT_EQ("0px", ComputedValue("bottom", "anchor(top, 0px)", context));
+  EXPECT_EQ("0px", ComputedValue("left", "anchor(top, 0px)", context));
+  EXPECT_EQ("1px", ComputedValue("width", "anchor-size(width, 0px)", context));
+  EXPECT_EQ("1px", ComputedValue("height", "anchor-size(width, 0px)", context));
+  EXPECT_EQ("1px",
+            ComputedValue("min-width", "anchor-size(width, 0px)", context));
+  EXPECT_EQ("1px",
+            ComputedValue("min-height", "anchor-size(width, 0px)", context));
+  EXPECT_EQ("1px",
+            ComputedValue("max-width", "anchor-size(width, 0px)", context));
+  EXPECT_EQ("1px",
+            ComputedValue("max-height", "anchor-size(width, 0px)", context));
 }
 
 }  // namespace blink

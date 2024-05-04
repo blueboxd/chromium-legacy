@@ -46,21 +46,6 @@ class PrefRegistrySyncable;
 // Registers preferences related to sign-in coordinator.
 + (void)registerBrowserStatePrefs:(user_prefs::PrefRegistrySyncable*)registry;
 
-// Returns a coordinator for user sign-in workflow.
-// `viewController` presents the sign-in.
-// `identity` is the identity preselected with the sign-in opens.
-// `accessPoint` is the view where the sign-in button was displayed.
-// `promoAction` is promo button used to trigger the sign-in.
-+ (instancetype)
-    userSigninCoordinatorWithBaseViewController:
-        (UIViewController*)viewController
-                                        browser:(Browser*)browser
-                                       identity:(id<SystemIdentity>)identity
-                                    accessPoint:
-                                        (signin_metrics::AccessPoint)accessPoint
-                                    promoAction:(signin_metrics::PromoAction)
-                                                    promoAction;
-
 // Returns a coordinator to sign-in the user without taps if the identity has
 // been selected with `identity`. Otherwise, it will ask the user to select
 // an identity, and starts the sign-in flow. If there is no identity on the
@@ -85,40 +70,12 @@ class PrefRegistrySyncable;
                                       accessPoint:(signin_metrics::AccessPoint)
                                                       accessPoint;
 
-// Returns a coordinator for the sign-in and sync workflow. The views will be
-// the newer FRE style views. `viewController` presents the sign-in.
-+ (instancetype)
-    twoScreensSigninCoordinatorWithBaseViewController:
-        (UIViewController*)viewController
-                                              browser:(Browser*)browser
-                                          accessPoint:
-                                              (signin_metrics::AccessPoint)
-                                                  accessPoint
-                                          promoAction:
-                                              (signin_metrics::PromoAction)
-                                                  promoAction;
-
 // Returns a coordinator for upgrade sign-in workflow.
 // `viewController` presents the sign-in.
 + (instancetype)upgradeSigninPromoCoordinatorWithBaseViewController:
                     (UIViewController*)viewController
                                                             browser:(Browser*)
                                                                         browser;
-
-// Returns a coordinator for advanced sign-in settings workflow.
-// `viewController` presents the sign-in.
-// `signinState` defines the user's sign-in state prior to all SigninCoordinator
-//               manipulations.
-+ (instancetype)
-    advancedSettingsSigninCoordinatorWithBaseViewController:
-        (UIViewController*)viewController
-                                                    browser:(Browser*)browser
-                                                signinState:
-                                                    (IdentitySigninState)
-                                                        signinState
-                                                accessPoint:(signin_metrics::
-                                                                 AccessPoint)
-                                                                accessPoint;
 
 // Returns a coordinator to add an account.
 // `viewController` presents the sign-in.

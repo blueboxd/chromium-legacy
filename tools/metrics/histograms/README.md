@@ -161,6 +161,8 @@ buckets are added later.
 ```c++
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
+//
+// LINT.IfChange(NewTabPageAction)
 enum class NewTabPageAction {
   kUseOmnibox = 0,
   kClickTitle = 1,
@@ -168,7 +170,13 @@ enum class NewTabPageAction {
   kOpenBookmark = 3,
   kMaxValue = kOpenBookmark,
 };
+// LINT.ThenChange(//path/to/enums.xml:NewTabPageActionEnum)
 ```
+
+The `LINT.IfChange / LINT.ThenChange` comments point between the code and XML
+definitions of the enum, to encourage them to be kept in sync. See
+[guide](https://www.chromium.org/chromium-os/developer-library/guides/development/keep-files-in-sync/)
+and [more details](http://go/gerrit-ifthisthenthat).
 
 `kMaxValue` is a special enumerator that must share the highest enumerator
 value, typically done by aliasing it with the enumerator with the highest
@@ -213,7 +221,16 @@ private static void logNewTabPageAction(@NewTabPageAction int action) {
 ```
 
 Finally, regardless of the programming language you are using, add the
-definition of the enumerator to [enums.xml](./enums.xml).
+definition of the enumerator to [enums.xml](./enums.xml), and add linter checks
+to keep the C++/Java and XML values in sync:
+
+```xml
+<!-- LINT.IfChange(NewTabPageActionEnum) -->
+<enum name="NewTabPageActionEnum">
+  ...
+</enum>
+<!-- LINT.ThenChange(//path/to/cpp_definition.h:NewTabPageAction) -->
+```
 
 #### Legacy Enums
 
@@ -318,9 +335,11 @@ that case—they do not pre-allocate their buckets).
 
 ### Timing Histograms
 
-You can easily emit a time duration (time delta) using UMA_HISTOGRAM_TIMES,
-UMA_HISTOGRAM_MEDIUM_TIMES, UMA_HISTOGRAM_LONG_TIMES macros, and their
-friends, as well as helpers like SCOPED_UMA_HISTOGRAM_TIMER. Many timing
+You can easily emit a time duration (time delta) using base::UmaHistogramTimes,
+base::UmaHistogramMediumTimes, base::UmaHistogramLongTimes, and their friends.
+For the critical path, UMA_HISTOGRAM_TIMES, UMA_HISTOGRAM_MEDIUM_TIMES,
+UMA_HISTOGRAM_LONG_TIMES macros, and their friends, as well as helpers like
+SCOPED_UMA_HISTOGRAM_TIMER are also available. Many timing
 histograms are used for performance monitoring; if this is the case for you,
 please read [this document about how to structure timing histograms to make
 them more useful and
@@ -419,24 +438,18 @@ new histograms don't turn out to have the properties the implementer wants,
 whether due to bugs in the implementation or simply an evolving understanding
 of what should be measured.
 
-#### How to choose expiry for histograms
-
-If you are adding a histogram to evaluate a feature launch, set an expiry date
-consistent with the expected feature launch date. Otherwise, we recommend
-choosing 3-6 months.
+#### Guidelines on expiry
 
 Here are some guidelines for common scenarios:
 
-*   If the listed owner moved to different project, find a new owner.
+*   If the listed owner moved to a different project, find a new owner.
 *   If neither the owner nor the team uses the histogram, remove it.
 *   If the histogram is not in use now, but might be useful in the far future,
     remove it.
 *   If the histogram is not in use now, but might be useful in the near
     future, pick ~3 months (also ~3 milestones) ahead.
-*   If the histogram is actively in use now and is useful in the short term,
-    pick 3-6 months (3-6 milestones) ahead.
-*   If the histogram is actively in use and seems useful for an indefinite time,
-    pick 1 year.
+*   Otherwise, pick an expiry that is reasonable for how long the metric should
+    be used, up to a year.
 
 We also have a tool that automatically extends expiry dates. The most frequently
 accessed histograms, currently 99%, have their expirations automatically
@@ -445,6 +458,20 @@ the [design
 doc](https://docs.google.com/document/d/1IEAeBF9UnYQMDfyh2gdvE7WlUKsfIXIZUw7qNoU89A4)
 of the program that does this.  The bottom line is: If the histogram is being
 checked, it should be extended without developer interaction.
+
+#### How to choose expiry for new histograms
+
+In general, set an expiry that is reasonable for how long the metric should
+be used, up to a year.
+
+Some common cases:
+
+*   When adding a histogram to evaluate a feature launch, set an expiry date
+    consistent with the expected feature launch date.
+*   If you expect the histogram to be useful for an indefinite time, set an
+    expiry date up to 1 year out. This gives a chance to re-evaluate whether
+    the histogram indeed proved to be useful.
+*   Otherwise, 3-6 months (3-6 milestones) is typically a good choice.
 
 #### How to extend an expired histogram {#extending}
 
@@ -539,6 +566,19 @@ histogram. Construct your tests using other means to validate your general
 logic, and only use
 [`HistogramTester`](https://cs.chromium.org/chromium/src/base/test/metrics/histogram_tester.h)
 to verify that the histogram values are being generated as you would expect.
+
+### Verify Enum and Variant Values
+
+If you have <enum> or <variant> entries that need to be updated to match code,
+you can use
+[HistogramEnumReader](https://cs.chromium.org/chromium/src/base/test/metrics/histogram_enum_reader.h)
+or
+[HistogramVariantsReader](https://cs.chromium.org/chromium/src/base/test/metrics/histogram_enum_reader.h)
+to read and verify the expected values in a unit test. This prevents a mismatch
+between code and histogram data from slipping through CQ.
+
+For an example, see
+[BrowserUserEducationServiceTest.CheckFeaturePromoHistograms](https://cs.chromium.org/chromium/src/chrome/browser/ui/views/user_education/browser_user_education_service_unittest.cc).
 
 ## Interpreting the Resulting Data
 
@@ -802,9 +842,9 @@ This example defines metadata for 12 (= 3 x 4) concrete histograms, such as
 </histogram>
 ```
 
-Each token `<variant>` defines what text should be substituted for it, 
-both in the histogram name and in the summary text. The name part gets 
-substituted into the histogram name; the summary part gets substituted in 
+Each token `<variant>` defines what text should be substituted for it,
+both in the histogram name and in the summary text. The name part gets
+substituted into the histogram name; the summary part gets substituted in
 the summary field (the histogram description). As shorthand, a
 `<variant>` that omits the `summary` attribute substitutes the value of
 the `name` attribute in the histogram's `<summary>` text as well.

@@ -33,12 +33,13 @@ class FedCmAccountSelectionViewBrowserTest : public DialogBrowserTest {
     std::vector<content::IdentityRequestAccount> accounts = {
         {"id", "email", "name", "given_name", GURL(),
          /*login_hints=*/std::vector<std::string>(),
-         /*domain_hints=*/std::vector<std::string>()}};
+         /*domain_hints=*/std::vector<std::string>(),
+         /*labels=*/std::vector<std::string>()}};
     account_selection_view()->Show(
         "top-frame-example.com",
         std::make_optional<std::string>("iframe-example.com"),
         {{"idp-example.com", accounts, content::IdentityProviderMetadata(),
-          content::ClientMetadata(GURL(), GURL()),
+          content::ClientMetadata(GURL(), GURL(), GURL()),
           blink::mojom::RpContext::kSignIn, /*request_permission=*/true,
           /*has_login_status_mismatch=*/false}},
         mode, blink::mojom::RpMode::kWidget,
@@ -133,7 +134,7 @@ IN_PROC_BROWSER_TEST_F(FedCmAccountSelectionViewBrowserTest,
   account_selection_view_->ShowModalDialog(GURL("https://example.test/"));
   // Because a modal dialog is up, this should save the accounts for later.
   ShowAccounts(Account::SignInMode::kAuto);
-  // This should trigger auto re-authn without crashing.
+  // This should trigger auto re-authn without crashing or UAF.
   account_selection_view_->CloseModalDialog();
   // The account selected callback should have been called, thus the view
   // should be null now.

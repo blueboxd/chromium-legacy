@@ -15,7 +15,7 @@
 
 namespace {
 constexpr int kMinIconSize = 16;
-constexpr int kDesiredIconSize = 24;
+constexpr int kDesiredIconSize = 28;
 constexpr int kMonogramSize = 20;
 
 const char kFaviconAvailabilityHistogramName[] =
@@ -57,7 +57,7 @@ gfx::ImageSkia SupervisedUserFaviconRequestHandler::GetFaviconOrFallback() {
     base::UmaHistogramEnumeration(kFaviconAvailabilityHistogramName,
                                   FaviconAvailability::kUnavailable);
     return gfx::ImageSkia::CreateFrom1xBitmap(favicon::GenerateMonogramFavicon(
-        page_url_, kMonogramSize, kDesiredIconSize));
+        page_url_, kDesiredIconSize, kMonogramSize));
   }
   base::UmaHistogramEnumeration(kFaviconAvailabilityHistogramName,
                                 FaviconAvailability::kAvailable);
@@ -105,7 +105,6 @@ void SupervisedUserFaviconRequestHandler::OnGetFaviconFromCacheFinished(
   large_icon_service_
       ->GetLargeIconOrFallbackStyleFromGoogleServerSkippingLocalCache(
           page_url_,
-          /*may_page_url_be_private=*/false,
           /*should_trim_page_url_path=*/false, traffic_annotation,
           base::BindOnce(&SupervisedUserFaviconRequestHandler::
                              OnGetFaviconFromGoogleServerFinished,

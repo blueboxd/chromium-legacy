@@ -633,14 +633,6 @@
     "label": "//content/shell/android:content_shell_test_apk",
     "type": "console_test_launcher",
   },
-  "content_shell_wpt": {
-    "label": "//:content_shell_wpt",
-    "type": "generated_script",
-    "args": [
-      "--results-directory",
-      "${ISOLATED_OUTDIR}",
-    ],
-  },
   "content_unittests": {
     "label": "//content/test:content_unittests",
     "type": "windowed_test_launcher",
@@ -653,6 +645,13 @@
     "label": "//courgette:courgette_unittests",
     "type": "console_test_launcher",
   },
+  "cq_medium_tast_tests": {
+    "label": "//chromeos:cq_medium_tast_tests",
+    "type": "generated_script",
+    "args": [
+      "--logs-dir=${ISOLATED_OUTDIR}",
+    ],
+  },
   "crashpad_tests": {
     "label": "//third_party/crashpad/crashpad:crashpad_tests",
     "type": "console_test_launcher",
@@ -662,7 +661,7 @@
     "type": "additional_compile_target",
   },
   "cronet_package_ci": {
-    "label": "//components/cronet:cronet_package_ci",
+    "label": "//components/cronet/android:cronet_package_ci",
     "type": "additional_compile_target",
   },
   "cronet_perf_test_apk": {
@@ -898,6 +897,14 @@
     "label": "//headless:headless_browsertests",
     "type": "console_test_launcher",
   },
+  "headless_shell_wpt": {
+    "label": "//:headless_shell_wpt",
+    "type": "generated_script",
+    "args": [
+      "--results-directory",
+      "${ISOLATED_OUTDIR}",
+    ],
+  },
   "headless_unittests": {
     "label": "//headless:headless_unittests",
     "type": "console_test_launcher",
@@ -1007,6 +1014,10 @@
   },
   "ipc_tests": {
     "label": "//ipc:ipc_tests",
+    "type": "console_test_launcher",
+  },
+  "jni_zero_sample_apk_test": {
+    "label": "//third_party/jni_zero/sample:jni_zero_sample_apk_test",
     "type": "console_test_launcher",
   },
   "junit_unit_tests": {
@@ -1244,6 +1255,10 @@
   "ondevice_model_example": {
     "label": "//components/optimization_guide/internal:ondevice_model_example",
     "type": "additional_compile_target",
+  },
+  "ondevice_quality_tests": {
+    "label": "//components/optimization_guide/internal/testing:ondevice_quality_tests",
+    "type": "generated_script",
   },
   "ondevice_stability_tests": {
     "label": "//components/optimization_guide/internal/testing:ondevice_stability_tests",
@@ -1653,10 +1668,6 @@
   "test_env_py_unittests": {
     "label": "//testing:test_env_py_unittests",
     "type": "generated_script",
-  },
-  "test_sample_jni_apk": {
-    "label": "//third_party/jni_zero/sample:test_sample_jni_apk",
-    "type": "console_test_launcher",
   },
   "test_serde_json_lenient": {
     "label": "//build/rust/tests/test_serde_json_lenient:test_serde_json_lenient",

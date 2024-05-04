@@ -21,7 +21,6 @@
 #include "chrome/browser/signin/account_reconcilor_factory.h"
 #include "chrome/browser/signin/header_modification_delegate_impl.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/signin/signin_features.h"
 #include "chrome/browser/signin/signin_ui_util.h"
 #include "chrome/browser/ui/webui/signin/signin_url_utils.h"
 #include "components/account_manager_core/account_manager_facade.h"
@@ -31,6 +30,7 @@
 #include "components/signin/public/base/account_consistency_method.h"
 #include "components/signin/public/base/consent_level.h"
 #include "components/signin/public/base/signin_buildflags.h"
+#include "components/signin/public/base/signin_switches.h"
 #include "components/signin/public/identity_manager/accounts_cookie_mutator.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -204,7 +204,7 @@ void ProcessMirrorHeader(
       << "when Mirror is disabled.";
 
   // Do not allow non-Google origins to open incognito windows.
-  // TODO(crbug.com/1449357): Expand this check to all Mirror headers,
+  // TODO(crbug.com/40064889): Expand this check to all Mirror headers,
   //                          regardless of `service_type`.
   if (service_type == GAIA_SERVICE_TYPE_INCOGNITO &&
       base::FeatureList::IsEnabled(kVerifyRequestInitiatorForMirrorHeaders)) {
@@ -351,9 +351,11 @@ void ProcessMirrorHeader(
     GURL url(manage_accounts_params.continue_url.empty()
                  ? chrome::kChromeUINativeNewTabURL
                  : manage_accounts_params.continue_url);
-    web_contents->OpenURL(content::OpenURLParams(
-        url, content::Referrer(), WindowOpenDisposition::OFF_THE_RECORD,
-        ui::PAGE_TRANSITION_AUTO_TOPLEVEL, false));
+    web_contents->OpenURL(
+        content::OpenURLParams(url, content::Referrer(),
+                               WindowOpenDisposition::OFF_THE_RECORD,
+                               ui::PAGE_TRANSITION_AUTO_TOPLEVEL, false),
+        /*navigation_handle_callback=*/{});
   } else {
     signin_metrics::LogAccountReconcilorStateOnGaiaResponse(
         account_reconcilor->GetState());
@@ -642,10 +644,7 @@ void ProcessAccountConsistencyResponseHeaders(ResponseAdapter* response,
   ProcessDiceResponseHeaderIfExists(response, is_off_the_record);
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
 
-  if (base::FeatureList::IsEnabled(kProcessGaiaRemoveLocalAccountHeader)) {
-    ProcessRemoveLocalAccountResponseHeaderIfExists(response,
-                                                    is_off_the_record);
-  }
+  ProcessRemoveLocalAccountResponseHeaderIfExists(response, is_off_the_record);
 }
 
 std::string ParseGaiaIdFromRemoveLocalAccountResponseHeaderForTesting(

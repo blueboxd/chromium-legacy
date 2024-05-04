@@ -12,6 +12,7 @@
 #include "build/build_config.h"
 #include "components/data_sharing/public/group_data.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/sync/model/model_type_sync_bridge.h"
 
 #if BUILDFLAG(IS_ANDROID)
 #include "base/android/jni_android.h"
@@ -30,11 +31,11 @@ class DataSharingService : public KeyedService, public base::SupportsUserData {
     Observer& operator=(const Observer&) = delete;
     ~Observer() override = default;
 
-    void OnGroupChanged(const GroupData& group_data);
+    virtual void OnGroupChanged(const GroupData& group_data) {}
     // User either created a new group or has been invited to the existing one.
-    void OnGroupAdded(const GroupData& group_data);
+    virtual void OnGroupAdded(const GroupData& group_data) {}
     // Either group has been deleted or user has been removed from the group.
-    void OnGroupRemoved(const std::string& group_id);
+    virtual void OnGroupRemoved(const std::string& group_id) {}
   };
 
   enum class PeopleGroupActionFailure { kTransientFailure, kPersistentFailure };
@@ -69,8 +70,15 @@ class DataSharingService : public KeyedService, public base::SupportsUserData {
   // using an empty service from the Chrome embedder.
   virtual bool IsEmptyService() = 0;
 
+  virtual void AddObserver(Observer* observer) = 0;
+  virtual void RemoveObserver(Observer* observer) = 0;
+
   // Returns the network loader for fetching data.
   virtual DataSharingNetworkLoader* GetDataSharingNetworkLoader() = 0;
+
+  // Returns ModelTypeControllerDelegate for the collaboration group datatype.
+  virtual base::WeakPtr<syncer::ModelTypeControllerDelegate>
+  GetCollaborationGroupControllerDelegate() = 0;
 
   // People Group API.
   // Refreshes data if necessary. On success passes to the `callback` a set of
@@ -97,13 +105,13 @@ class DataSharingService : public KeyedService, public base::SupportsUserData {
   // Attempts to invite a new user to the group.
   virtual void InviteMember(
       const std::string& group_id,
-      const std::string& invitee_gaia_id,
+      const std::string& invitee_email,
       base::OnceCallback<void(PeopleGroupActionOutcome)> callback) = 0;
 
   // Attempts to remove a user from the group.
   virtual void RemoveMember(
       const std::string& group_id,
-      const std::string& member_gaia_id,
+      const std::string& member_email,
       base::OnceCallback<void(PeopleGroupActionOutcome)> callback) = 0;
 };
 

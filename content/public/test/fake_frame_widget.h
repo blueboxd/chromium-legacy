@@ -62,6 +62,7 @@ class FakeFrameWidget : public blink::mojom::FrameWidget {
   void OnStartStylusWriting(OnStartStylusWritingCallback callback) override {}
   void SetBackgroundOpaque(bool value) override {}
   void SetTextDirection(base::i18n::TextDirection direction) override;
+  void NotifyClearedDisplayedGraphics() override {}
   void SetActive(bool active) override;
   void SetInheritedEffectiveTouchActionForSubFrame(
       const cc::TouchAction touch_action) override {}
@@ -73,16 +74,12 @@ class FakeFrameWidget : public blink::mojom::FrameWidget {
   void GetStringAtPoint(const gfx::Point& point_in_local_root,
                         GetStringAtPointCallback callback) override;
 #endif
-  void ShowContextMenu(ui::MenuSourceType source_type,
-                       const gfx::Point& location) override {}
   void EnableDeviceEmulation(
       const blink::DeviceEmulationParams& parameters) override {}
   void DisableDeviceEmulation() override {}
   void BindWidgetCompositor(
       mojo::PendingReceiver<blink::mojom::WidgetCompositor> receiver) override {
   }
-  void BindInputTargetClient(
-      mojo::PendingReceiver<viz::mojom::InputTargetClient> receiver) override {}
   void SetViewportIntersection(
       blink::mojom::ViewportIntersectionStatePtr intersection_state,
       const std::optional<blink::VisualProperties>& visual_properties) override;

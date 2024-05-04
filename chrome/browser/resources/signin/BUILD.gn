@@ -53,6 +53,7 @@ build_webui("build") {
 
   if (!is_chromeos_ash) {
     web_component_files += [
+      "managed_user_profile_notice/legacy_managed_user_profile_notice_app.ts",
       "managed_user_profile_notice/managed_user_profile_notice_app.ts",
       "profile_customization/profile_customization_app.ts",
       "signin_email_confirmation/signin_email_confirmation_app.ts",
@@ -98,9 +99,10 @@ build_webui("build") {
   ts_definitions = [ "//tools/typescript/definitions/chrome_send.d.ts" ]
   ts_deps = [
     "//third_party/polymer/v3_0:library",
-    "//ui/webui/resources/cr_components/customize_themes:build_ts",
     "//ui/webui/resources/cr_components/theme_color_picker:build_ts",
     "//ui/webui/resources/cr_elements:build_ts",
     "//ui/webui/resources/js:build_ts",
   ]
+
+  webui_context_type = "trusted"
 }

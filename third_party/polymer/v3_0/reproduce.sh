@@ -114,10 +114,6 @@ fi
 echo 'Stripping unnecessary prefixed CSS rules...'
 python css_strip_prefixes.py --file_extension=js
 
-echo 'Generating -rgb versions of --google-* vars in paper-style/colors.js...'
-python rgbify_hex_vars.py --filter-prefix=google --replace \
-    components-chromium/paper-styles/color.js
-
 # TODO create components summary
 
 echo 'Creating GN files for interfaces and externs...'

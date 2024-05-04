@@ -22,7 +22,6 @@
 #include "chrome/browser/web_applications/isolated_web_apps/signed_web_bundle_reader.h"
 #include "chrome/common/url_constants.h"
 #include "components/web_package/signed_web_bundles/signed_web_bundle_id.h"
-#include "components/web_package/signed_web_bundles/signed_web_bundle_signature_verifier.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "url/url_constants.h"
 
@@ -65,6 +64,9 @@ ToReadResponseHeadError(
       return base::unexpected(
           IsolatedWebAppReaderRegistry::ReadResponseHeadError::
               kResponseNotFoundError);
+    case IsolatedWebAppResponseReader::Error::Type::kNotTrusted:
+      return base::unexpected(
+          IsolatedWebAppReaderRegistry::ReadResponseHeadError::kAppNotTrusted);
   }
 }
 
@@ -79,13 +81,8 @@ void CloseReader(std::unique_ptr<IsolatedWebAppResponseReader> reader,
 }  // namespace
 
 IsolatedWebAppReaderRegistry::IsolatedWebAppReaderRegistry(
-    std::unique_ptr<IsolatedWebAppValidator> validator,
-    base::RepeatingCallback<
-        std::unique_ptr<web_package::SignedWebBundleSignatureVerifier>()>
-        signature_verifier_factory)
-    : reader_factory_(std::make_unique<IsolatedWebAppResponseReaderFactory>(
-          std::move(validator),
-          std::move(signature_verifier_factory))) {}
+    std::unique_ptr<IsolatedWebAppResponseReaderFactory> reader_factory)
+    : reader_factory_(std::move(reader_factory)) {}
 
 IsolatedWebAppReaderRegistry::~IsolatedWebAppReaderRegistry() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -98,8 +95,7 @@ void IsolatedWebAppReaderRegistry::ReadResponse(
     const network::ResourceRequest& resource_request,
     ReadResponseCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK_EQ(web_bundle_id.type(),
-            web_package::SignedWebBundleId::Type::kEd25519PublicKey);
+  DCHECK(!web_bundle_id.is_for_proxy_mode());
 
   Cache::Key cache_key{.path = web_bundle_path, .dev_mode = dev_mode};
 
@@ -311,9 +307,8 @@ IsolatedWebAppReaderRegistry::ReadResponseError::ForError(
     const IsolatedWebAppResponseReader::Error& error) {
   switch (error.type) {
     case IsolatedWebAppResponseReader::Error::Type::kParserInternalError:
-      return ForOtherError(base::StringPrintf(
-          "Failed to parse response head: %s", error.message.c_str()));
     case IsolatedWebAppResponseReader::Error::Type::kFormatError:
+    case IsolatedWebAppResponseReader::Error::Type::kNotTrusted:
       return ForOtherError(base::StringPrintf(
           "Failed to parse response head: %s", error.message.c_str()));
     case IsolatedWebAppResponseReader::Error::Type::kResponseNotFound:

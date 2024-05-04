@@ -6,6 +6,7 @@
 
 #include <linux/magic.h>
 #include <sys/statfs.h>
+
 #include <map>
 #include <set>
 #include <string>
@@ -40,7 +41,6 @@
 #include "chrome/browser/ash/login/ui/login_display_host.h"
 #include "chrome/browser/ash/login/wizard_controller.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
-#include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/arc/arc_web_contents_data.h"
 #include "chrome/browser/profiles/profile.h"
@@ -50,6 +50,7 @@
 #include "chrome/browser/ui/simple_message_box.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/ash/components/browser_context_helper/browser_context_helper.h"
+#include "chromeos/ash/components/settings/cros_settings.h"
 #include "chromeos/components/mgs/managed_guest_session_utils.h"
 #include "components/embedder_support/user_agent_utils.h"
 #include "components/prefs/pref_service.h"
@@ -156,7 +157,7 @@ bool IsArcCompatibleFilesystem(const base::FilePath& path) {
   // If it can be verified it is not on ecryptfs, then it is ok.
   struct statfs statfs_buf;
   if (statfs(path.value().c_str(), &statfs_buf) < 0) {
-    VLOG(1) << "statfs failed, errno=" << errno;
+    VPLOG(1) << "statfs failed";
     return false;
   }
   return statfs_buf.f_type != ECRYPTFS_SUPER_MAGIC;
@@ -170,8 +171,24 @@ FileSystemCompatibilityState GetFileSystemCompatibilityPref(
       pref) {
     return static_cast<FileSystemCompatibilityState>(pref.value());
   }
-  VLOG(1) << "arc.compatible_filesystem.chosen not set for user";
+  VLOG(1) << "arc.compatible_filesystem.chosen not set. Assuming incompatible.";
   return kFileSystemIncompatible;
+}
+
+// Similar to GetFileSystemCompatibilityPref, but when the pref is not found,
+// it optimistically assumes that the file system is compatible. This is for
+// the mitigation of issues like b/327969092 that unexpectedly clears the pref
+// during the initial sign-in.
+FileSystemCompatibilityState GetFileSystemCompatibilityPrefOptimistic(
+    const AccountId& account_id) {
+  user_manager::KnownUser known_user(g_browser_process->local_state());
+  if (auto pref = known_user.FindIntPath(account_id,
+                                         prefs::kArcCompatibleFilesystemChosen);
+      pref) {
+    return static_cast<FileSystemCompatibilityState>(pref.value());
+  }
+  VLOG(1) << "arc.compatible_filesystem.chosen not set. Assuming compatible.";
+  return kFileSystemCompatible;
 }
 
 // Stores the result of IsArcCompatibleFilesystem posted back from the blocking
@@ -459,7 +476,7 @@ bool IsArcCompatibleFileSystemUsedForUser(const user_manager::User* user) {
   // ash::UserSessionManager does the actual file system check and stores
   // the result to prefs, so that it survives crash-restart.
   FileSystemCompatibilityState filesystem_compatibility =
-      GetFileSystemCompatibilityPref(user->GetAccountId());
+      GetFileSystemCompatibilityPrefOptimistic(user->GetAccountId());
   const bool is_filesystem_compatible =
       filesystem_compatibility != kFileSystemIncompatible ||
       g_known_compatible_users.Get().count(user->GetAccountId()) != 0;

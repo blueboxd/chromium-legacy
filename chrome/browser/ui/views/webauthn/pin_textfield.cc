@@ -59,6 +59,10 @@ PinTextfield::PinTextfield(int pin_digits_amount)
 PinTextfield::~PinTextfield() = default;
 
 bool PinTextfield::AppendDigit(std::u16string digit) {
+  if (disabled_) {
+    return false;
+  }
+
   if (digits_typed_count_ >= pin_digits_count_) {
     return false;
   }
@@ -69,6 +73,10 @@ bool PinTextfield::AppendDigit(std::u16string digit) {
 }
 
 bool PinTextfield::RemoveDigit() {
+  if (disabled_) {
+    return false;
+  }
+
   if (digits_typed_count_ <= 0) {
     return false;
   }
@@ -86,6 +94,34 @@ std::u16string PinTextfield::GetPin() {
   return pin;
 }
 
+void PinTextfield::SetPin(const std::u16string& pin) {
+  int pin_length = std::min(static_cast<int>(pin.length()), pin_digits_count_);
+  for (int i = 0; i < pin_length; i++) {
+    render_texts_[i]->SetText(std::u16string(1, pin[i]));
+  }
+  digits_typed_count_ = pin_length;
+  SchedulePaint();
+}
+
+void PinTextfield::SetObscured(bool obscured) {
+  SetTextInputType(obscured ? ui::TEXT_INPUT_TYPE_PASSWORD
+                            : ui::TEXT_INPUT_TYPE_TEXT);
+  for (int i = 0; i < pin_digits_count_; i++) {
+    render_texts_[i]->SetObscured(obscured);
+  }
+}
+
+void PinTextfield::SetDisabled(bool disabled) {
+  if (disabled_ == disabled) {
+    return;
+  }
+
+  disabled_ = disabled;
+  SetTextInputType(disabled ? ui::TEXT_INPUT_TYPE_NONE
+                            : ui::TEXT_INPUT_TYPE_PASSWORD);
+  SchedulePaint();
+}
+
 void PinTextfield::OnPaint(gfx::Canvas* canvas) {
   View::OnPaintBackground(canvas);
 
@@ -93,6 +129,9 @@ void PinTextfield::OnPaint(gfx::Canvas* canvas) {
   paint_flags.setStyle(cc::PaintFlags::kStroke_Style);
   paint_flags.setAntiAlias(true);
 
+  SkColor background_color = GetColorProvider()->GetColor(
+      disabled_ ? ui::kColorTextfieldBackgroundDisabled
+                : ui::kColorTextfieldBackground);
   for (int i = 0; i < pin_digits_count_; i++) {
     paint_flags.setColor(GetColorProvider()->GetColor(
         HasCellFocus(i) ? ui::kColorFocusableBorderFocused
@@ -102,6 +141,8 @@ void PinTextfield::OnPaint(gfx::Canvas* canvas) {
 
     gfx::Rect cell_rect(i * (kCellWidth + kCellSpacing), 0, kCellWidth,
                         kCellHeight);
+    // Draw cell background.
+    canvas->FillRect(cell_rect, background_color);
     // Draw cell border.
     gfx::RectF cell_rect_f(cell_rect);
     cell_rect_f.Inset(stroke_width / 2.f);
@@ -112,7 +153,8 @@ void PinTextfield::OnPaint(gfx::Canvas* canvas) {
   }
 }
 
-gfx::Size PinTextfield::CalculatePreferredSize() const {
+gfx::Size PinTextfield::CalculatePreferredSize(
+    const views::SizeBounds& available_size) const {
   return gfx::Size(
       pin_digits_count_ * kCellWidth + (pin_digits_count_ - 1) * kCellSpacing,
       kCellHeight);

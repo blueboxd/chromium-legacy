@@ -33,6 +33,10 @@ class SaveCardOfferObserver;
 
 namespace autofill {
 
+// Time in sec to wait before showing virtual card enrollment if save card
+// confirmation prompt is still visible.
+inline constexpr base::TimeDelta kVirtualCardEnrollDelaySec = base::Seconds(3);
+
 // Manages logic for determining whether upload credit card save to Google
 // Payments is available as well as actioning both local and upload credit card
 // save logic.  Owned by FormDataImporter.
@@ -121,7 +125,7 @@ class CreditCardSaveManager {
   // CVC-only save. If card is unknown we will offer to save the the card
   // including it's CVC. `credit_card_import_type` is the credit card type
   // extracted from the form.
-  // TODO(crbug.com/1450749): Update param after resolving duplicate local and
+  // TODO(crbug.com/40270301): Update param after resolving duplicate local and
   // server card issue.
   virtual bool ShouldOfferCvcSave(
       const CreditCard& card,
@@ -184,7 +188,7 @@ class CreditCardSaveManager {
   friend class LocalCardMigrationBrowserTest;
   friend class TestCreditCardSaveManager;
   friend class SaveCardBubbleViewsFullFormBrowserTest;
-  friend class SaveCardInfobarEGTestHelper;
+  friend class FakeCreditCardServer;
   friend class ::SaveCardOfferObserver;
   FRIEND_TEST_ALL_PREFIXES(
       SaveCardBubbleViewsFullFormBrowserTestWithAutofillUpstream,
@@ -193,6 +197,25 @@ class CreditCardSaveManager {
                            StrikeDatabase_Local_FullFlowTest);
   FRIEND_TEST_ALL_PREFIXES(SaveCardBubbleViewsFullFormBrowserTestForStatusChip,
                            Feedback_CardSavingAnimation);
+
+  // Offers virtual card enrollment if the uploaded card is eligible. Prepares
+  // credit card to be enrolled with response details required for virtual card
+  // enrollment server request. Triggers `InitVirtualCardEnroll()` with or
+  // without delay depending on the visibility of save card confirmation prompt
+  // showing prior to virtual card enrollment.
+  void PrepareAndTriggerDelayedVirtualCardEnroll(
+      payments::PaymentsNetworkInterface::UploadCardResponseDetails
+          upload_card_response_details);
+
+  // Starts upstream virtual card enrollment flow. Takes `credit_card` and
+  // `get_details_for_enrollment_response_details` that gets used throughout
+  // the flow by VirtualCardEnrollmentManager to show virtual card enroll
+  // dialog.
+  void InitVirtualCardEnroll(
+      const CreditCard& credit_card,
+      std::optional<payments::PaymentsNetworkInterface::
+                        GetDetailsForEnrollmentResponseDetails>
+          get_details_for_enrollment_response_details);
 
   // Returns the CreditCardSaveStrikeDatabase for |client_|.
   CreditCardSaveStrikeDatabase* GetCreditCardSaveStrikeDatabase();

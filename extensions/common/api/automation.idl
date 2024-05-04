@@ -21,6 +21,7 @@
     // present in earlier versions of LaCros.
     ariaAttributeChangedDeprecated,
     ariaCurrentChanged,
+    ariaNotificationsPosted,
     atomicChanged,
     autoCompleteChanged,
     autocorrectionOccured,
@@ -31,7 +32,6 @@
     checkedStateChanged,
     checkedStateDescriptionChanged,
     childrenChanged,
-    classNameChanged,
     clicked,
     collapsed,
     controlsChanged,
@@ -93,7 +93,6 @@
     nameChanged,
     objectAttributeChanged,
     orientationChanged,
-    otherAttributeChanged,
     parentChanged,
     placeholderChanged,
     portalActivated,
@@ -175,7 +174,7 @@
     desktop,
     details,
     dialog,
-    directory,
+    directoryDeprecated,
     disclosureTriangle,
     disclosureTriangleGrouped,
     // --------------------------------------------------------------
@@ -327,6 +326,7 @@
     search,
     searchBox,
     section,
+    sectionWithoutName,
     slider,
     spinButton,
     splitter,
@@ -584,6 +584,7 @@ enum IntentInputEventType {
   insertTranspose,
   insertReplacementText,
   insertCompositionText,
+  insertLink,
   // Deletion.
   deleteWordBackward,
   deleteWordForward,

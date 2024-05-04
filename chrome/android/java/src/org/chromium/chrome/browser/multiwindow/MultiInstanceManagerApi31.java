@@ -30,6 +30,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.shared_preferences.SharedPreferencesManager;
 import org.chromium.base.supplier.ObservableSupplier;
+import org.chromium.base.supplier.Supplier;
 import org.chromium.build.BuildConfig;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.IntentHandler;
@@ -52,7 +53,10 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.tabmodel.TabWindowManager;
+import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
+import org.chromium.chrome.browser.ui.desktop_windowing.AppHeaderUtils;
+import org.chromium.chrome.browser.ui.desktop_windowing.DesktopWindowStateProvider;
 import org.chromium.chrome.browser.util.AndroidTaskUtils;
 import org.chromium.components.browser_ui.widget.MenuOrKeyboardActionController;
 import org.chromium.components.favicon.LargeIconBridge;
@@ -97,13 +101,16 @@ class MultiInstanceManagerApi31 extends MultiInstanceManager implements Activity
                 }
             };
 
+    private final Supplier<DesktopWindowStateProvider> mDesktopWindowStateProviderSupplier;
+
     MultiInstanceManagerApi31(
             Activity activity,
             ObservableSupplier<TabModelOrchestrator> tabModelOrchestratorSupplier,
             MultiWindowModeStateDispatcher multiWindowModeStateDispatcher,
             ActivityLifecycleDispatcher activityLifecycleDispatcher,
             ObservableSupplier<ModalDialogManager> modalDialogManagerSupplier,
-            MenuOrKeyboardActionController menuOrKeyboardActionController) {
+            MenuOrKeyboardActionController menuOrKeyboardActionController,
+            Supplier<DesktopWindowStateProvider> desktopWindowStateProviderSupplier) {
         super(
                 activity,
                 tabModelOrchestratorSupplier,
@@ -112,6 +119,7 @@ class MultiInstanceManagerApi31 extends MultiInstanceManager implements Activity
                 menuOrKeyboardActionController);
         mMaxInstances = MultiWindowUtils.getMaxInstances();
         mModalDialogManagerSupplier = modalDialogManagerSupplier;
+        mDesktopWindowStateProviderSupplier = desktopWindowStateProviderSupplier;
     }
 
     @Override
@@ -797,9 +805,13 @@ class MultiInstanceManagerApi31 extends MultiInstanceManager implements Activity
             // Close all tabs as the window is closing. This ensures the tabs are added to the
             // recent tabs page.
             //
-            // TODO(crbug/1304883): This only works for windows with live activities. It is
+            // TODO(crbug.com/40826734): This only works for windows with live activities. It is
             // non-trivial to add recent tab entries without an active {@link Tab} instance.
-            selector.closeAllTabs(/* uponExit= */ true);
+            var filterProvider = selector.getTabModelFilterProvider();
+            ((TabGroupModelFilter) filterProvider.getTabModelFilter(true))
+                    .closeAllTabs(/* uponExit= */ true, /* hideTabGroups= */ true);
+            ((TabGroupModelFilter) filterProvider.getTabModelFilter(false))
+                    .closeAllTabs(/* uponExit= */ true, /* hideTabGroups= */ true);
         }
         mTabModelOrchestratorSupplier.get().cleanupInstance(instanceId);
         Activity activity = getActivityById(instanceId);
@@ -942,7 +954,8 @@ class MultiInstanceManagerApi31 extends MultiInstanceManager implements Activity
      */
     @Override
     public void moveTabToWindow(Activity activity, Tab tab, int atIndex) {
-        if (!TabUiFeatureUtilities.isTabDragEnabled()) return;
+        if (!TabUiFeatureUtilities.isTabDragEnabled()
+                && !TabUiFeatureUtilities.isTabTearingEnabled()) return;
 
         // Get the current instance and move tab there.
         InstanceInfo info = getInstanceInfoFor(activity);
@@ -986,12 +999,12 @@ class MultiInstanceManagerApi31 extends MultiInstanceManager implements Activity
      * @param instanceId Instance Id of the Chrome window that needs to be closed.
      */
     private boolean canCloseChromeWindow(int instanceId) {
-        // Close the source instance window after reparenting if permitted by the feature flag and
-        // the source instance is known.
+        // Close the source instance window after tab reparenting if permitted by the feature flag
+        // or if the app is in a desktop window, and the source instance is known.
         if (instanceId == INVALID_INSTANCE_ID) return false;
 
         return TabUiFeatureUtilities.isTabDragAsWindowEnabled()
-                || TabUiFeatureUtilities.isTabTearingEnabled();
+                || AppHeaderUtils.isAppInDesktopWindow(mDesktopWindowStateProviderSupplier.get());
     }
 
     /**

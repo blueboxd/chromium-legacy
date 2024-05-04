@@ -18,7 +18,6 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/dice_tab_helper.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/signin/signin_features.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/signin/signin_util.h"
 #include "chrome/browser/themes/theme_service.h"
@@ -30,6 +29,7 @@
 #include "chrome/browser/ui/views/profiles/profile_picker_web_contents_host.h"
 #include "chrome/common/webui_url_constants.h"
 #include "components/signin/public/base/signin_metrics.h"
+#include "components/signin/public/base/signin_switches.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/context_menu_params.h"
@@ -155,7 +155,7 @@ void ProfilePickerDiceSignInProvider::AddNewContents(
   // external links like "Help", "Privacy" and "Terms" that will attempt to open
   // a browser. As long as those links are accessible, we should not try to open
   // them while Force Signin is enabled.
-  // TODO(https://crbug.com/1520921): Remove this check if the SAML speedbump is
+  // TODO(crbug.com/41493894): Remove this check if the SAML speedbump is
   // removed or if the links on the page are removed.
   if (signin_util::IsForceSigninEnabled() &&
       base::FeatureList::IsEnabled(kForceSigninFlowInProfilePicker)) {
@@ -314,7 +314,7 @@ void ProfilePickerDiceSignInProvider::InitializeDiceTabHelper(
       enable_sync_callback = base::BindRepeating(
           &ProfilePickerDiceSignInProvider::FinishFlowInPicker,
           weak_ptr_factory_.GetWeakPtr());
-      // TODO(https://crbug.com/1467483): Handle signin errors in the profile
+      // TODO(crbug.com/40276801): Handle signin errors in the profile
       // picker.
       show_signin_error_callback = base::DoNothing();
       break;

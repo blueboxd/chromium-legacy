@@ -117,8 +117,9 @@ void TestVDAVideoDecoder::Initialize(const VideoDecoderConfig& config,
     DVLOGF(2) << "Use VdVideoDecodeAccelerator";
     vda_config.is_deferred_initialization_allowed = true;
     decoder_ = media::VdVideoDecodeAccelerator::Create(
-        base::BindRepeating(&media::VideoDecoderPipeline::Create), this,
-        vda_config, false, base::SequencedTaskRunner::GetCurrentDefault());
+        base::BindRepeating(
+            &media::VideoDecoderPipeline::CreateForVDAAdapterForARC),
+        this, vda_config, base::SequencedTaskRunner::GetCurrentDefault());
 #endif  // BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
   } else {
     DVLOGF(2) << "Use original VDA";
@@ -191,8 +192,7 @@ int TestVDAVideoDecoder::GetMaxDecodeRequests() const {
 void TestVDAVideoDecoder::ProvidePictureBuffers(
     uint32_t requested_num_of_buffers,
     VideoPixelFormat format,
-    const gfx::Size& dimensions,
-    uint32_t texture_target) {
+    const gfx::Size& dimensions) {
   NOTIMPLEMENTED() << "VDA must call ProvidePictureBuffersWithVisibleRect()";
 }
 
@@ -200,8 +200,7 @@ void TestVDAVideoDecoder::ProvidePictureBuffersWithVisibleRect(
     uint32_t requested_num_of_buffers,
     VideoPixelFormat format,
     const gfx::Size& dimensions,
-    const gfx::Rect& visible_rect,
-    uint32_t texture_target) {
+    const gfx::Rect& visible_rect) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(vda_wrapper_sequence_checker_);
   DVLOGF(4) << "Requested " << requested_num_of_buffers
             << " picture buffers with size " << dimensions.width() << "x"

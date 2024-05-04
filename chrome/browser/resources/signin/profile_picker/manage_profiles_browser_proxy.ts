@@ -135,9 +135,9 @@ export interface ManageProfilesBrowserProxy {
   /**
    * Creates local profile and opens a profile customization modal dialog on a
    * browser window.
-   * TODO(https://crbug.com/1282157): Add createShortcut parameter.
+   * TODO(crbug.com/40209493): Add createShortcut parameter.
    */
-  createProfileAndOpenCustomizationDialog(profileColor: number): void;
+  continueWithoutAccount(profileColor: number): void;
 
   /**
    * Sets the local profile name.
@@ -248,8 +248,8 @@ export class ManageProfilesBrowserProxyImpl {
     return sendWithPromise('getAvailableIcons');
   }
 
-  createProfileAndOpenCustomizationDialog(profileColor: number) {
-    chrome.send('createProfileAndOpenCustomizationDialog', [profileColor]);
+  continueWithoutAccount(profileColor: number) {
+    chrome.send('continueWithoutAccount', [profileColor]);
   }
 
   setProfileName(profilePath: string, profileName: string) {

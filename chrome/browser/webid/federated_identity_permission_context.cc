@@ -14,16 +14,10 @@
 #include "google_apis/gaia/gaia_urls.h"
 #include "url/origin.h"
 
-namespace {
-const char kSharingIdpKey[] = "idp-origin";
-
-}  // namespace
-
 FederatedIdentityPermissionContext::FederatedIdentityPermissionContext(
     content::BrowserContext* browser_context)
     : sharing_context_(
-          new FederatedIdentityAccountKeyedPermissionContext(browser_context,
-                                                             kSharingIdpKey)),
+          new FederatedIdentityAccountKeyedPermissionContext(browser_context)),
       idp_signin_context_(
           new FederatedIdentityIdentityProviderSigninStatusContext(
               browser_context)),
@@ -49,6 +43,10 @@ void FederatedIdentityPermissionContext::Shutdown() {
 
 void FederatedIdentityPermissionContext::AddIdpSigninStatusObserver(
     IdpSigninStatusObserver* observer) {
+  if (idp_signin_status_observer_list_.HasObserver(observer)) {
+    return;
+  }
+
   idp_signin_status_observer_list_.AddObserver(observer);
 }
 
@@ -72,6 +70,21 @@ bool FederatedIdentityPermissionContext::HasSharingPermission(
   return sharing_context_->HasPermission(relying_party_requester);
 }
 
+bool FederatedIdentityPermissionContext::HasSharingPermission(
+    const net::SchemefulSite& relying_party_embedder,
+    const net::SchemefulSite& identity_provider) {
+  return sharing_context_->HasPermission(relying_party_embedder,
+                                         identity_provider);
+}
+
+void FederatedIdentityPermissionContext::MarkStorageAccessEligible(
+    const net::SchemefulSite& relying_party_embedder,
+    const net::SchemefulSite& identity_provider,
+    base::OnceClosure callback) {
+  sharing_context_->MarkStorageAccessEligible(
+      relying_party_embedder, identity_provider, std::move(callback));
+}
+
 void FederatedIdentityPermissionContext::GrantSharingPermission(
     const url::Origin& relying_party_requester,
     const url::Origin& relying_party_embedder,
@@ -89,7 +102,22 @@ void FederatedIdentityPermissionContext::RevokeSharingPermission(
     const std::string& account_id) {
   sharing_context_->RevokePermission(relying_party_requester,
                                      relying_party_embedder, identity_provider,
-                                     account_id);
+                                     account_id, base::DoNothing());
+}
+
+void FederatedIdentityPermissionContext::RefreshExistingSharingPermission(
+    const url::Origin& relying_party_requester,
+    const url::Origin& relying_party_embedder,
+    const url::Origin& identity_provider,
+    const std::string& account_id) {
+  sharing_context_->RefreshExistingPermission(relying_party_requester,
+                                              relying_party_embedder,
+                                              identity_provider, account_id);
+}
+
+ContentSettingsForOneType FederatedIdentityPermissionContext::
+    GetSharingPermissionGrantsAsContentSettings() {
+  return sharing_context_->GetSharingPermissionGrantsAsContentSettings();
 }
 
 void FederatedIdentityPermissionContext::GetAllDataKeys(

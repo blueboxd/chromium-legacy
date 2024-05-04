@@ -13,7 +13,6 @@
 #include "base/files/file_util.h"
 #include "base/functional/bind.h"
 #include "base/strings/pattern.h"
-#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -206,7 +205,7 @@ class RequestInterceptor {
  private:
   void ReadBody(base::OnceClosure completion_callback) {
     char buffer[128];
-    uint32_t num_bytes = sizeof(buffer);
+    size_t num_bytes = sizeof(buffer);
     MojoResult result = test_client_.response_body().ReadData(
         buffer, &num_bytes, MOJO_READ_DATA_FLAG_NONE);
 
@@ -318,7 +317,7 @@ class RequestInterceptor {
       original_client_->OnReceiveResponse(
           std::move(response_head), std::move(consumer_handle), std::nullopt);
 
-      uint32_t num_bytes = response_body.size();
+      size_t num_bytes = response_body.size();
       EXPECT_EQ(MOJO_RESULT_OK,
                 producer_handle->WriteData(response_body.data(), &num_bytes,
                                            MOJO_WRITE_DATA_FLAG_ALL_OR_NONE));
@@ -636,7 +635,7 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest,
   EXPECT_EQ("", interceptor.response_body());
 }
 
-// TODO(crbug.com/1448564): Remove support for old header names once API users
+// TODO(crbug.com/40269364): Remove support for old header names once API users
 // have switched.
 IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest,
                        FledgeAuctionOnlySignalsNotReadableFromFetch) {
@@ -745,7 +744,7 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest,
   // mode to avoid renderer kills which won't happen in practice as described
   // above.
   //
-  // TODO(https://crbug.com/962643): Consider enabling this test once Android
+  // TODO(crbug.com/40627228): Consider enabling this test once Android
   // Webview or WebView guests support OOPIFs and/or origin locks.
   if (AreAllSitesIsolatedForTesting())
     return;
@@ -1653,7 +1652,7 @@ IN_PROC_BROWSER_TEST_F(CrossSiteDocumentBlockingWebBundleTest,
       << "PNG in a same-origin webbundle should not be blocked";
 }
 
-// TODO(crbug.com/1448564): Remove support for old header names once API users
+// TODO(crbug.com/40269364): Remove support for old header names once API users
 // have switched.
 IN_PROC_BROWSER_TEST_F(CrossSiteDocumentBlockingWebBundleTest,
                        FledgeAuctionOnlySignalsNotReadableFromFetchWebBundle) {

@@ -27,6 +27,8 @@
 
 namespace {
 
+using content_settings::SettingSource;
+
 bool CanGroupVariants(EmbeddedPermissionPrompt::Variant a,
                       EmbeddedPermissionPrompt::Variant b) {
   // Ask and PreviouslyDenied are a special case and can be grouped together.
@@ -44,8 +46,8 @@ bool IsPermissionSetByAdministator(ContentSetting setting,
                                    const content_settings::SettingInfo& info) {
   return ((setting == ContentSetting::CONTENT_SETTING_BLOCK ||
            setting == ContentSetting::CONTENT_SETTING_ALLOW) &&
-          (info.source == content_settings::SETTING_SOURCE_POLICY ||
-           info.source == content_settings::SETTING_SOURCE_SUPERVISED));
+          (info.source == SettingSource::kPolicy ||
+           info.source == SettingSource::kSupervised));
 }
 
 #if BUILDFLAG(IS_MAC)
@@ -84,6 +86,30 @@ bool ShouldShowOSPromptViewOnMacOS(ContentSettingsType type) {
 }
 #endif
 
+permissions::ElementAnchoredBubbleVariant GetVariant(
+    EmbeddedPermissionPrompt::Variant variant) {
+  switch (variant) {
+    case EmbeddedPermissionPrompt::Variant::kUninitialized:
+      return permissions::ElementAnchoredBubbleVariant::UNINITIALIZED;
+    case EmbeddedPermissionPrompt::Variant::kAdministratorGranted:
+      return permissions::ElementAnchoredBubbleVariant::ADMINISTRATOR_GRANTED;
+    case EmbeddedPermissionPrompt::Variant::kPreviouslyGranted:
+      return permissions::ElementAnchoredBubbleVariant::PREVIOUSLY_GRANTED;
+    case EmbeddedPermissionPrompt::Variant::kOsSystemSettings:
+      return permissions::ElementAnchoredBubbleVariant::OS_SYSTEM_SETTINGS;
+    case EmbeddedPermissionPrompt::Variant::kOsPrompt:
+      return permissions::ElementAnchoredBubbleVariant::OS_PROMPT;
+    case EmbeddedPermissionPrompt::Variant::kAsk:
+      return permissions::ElementAnchoredBubbleVariant::ASK;
+    case EmbeddedPermissionPrompt::Variant::kPreviouslyDenied:
+      return permissions::ElementAnchoredBubbleVariant::PREVIOUSLY_DENIED;
+    case EmbeddedPermissionPrompt::Variant::kAdministratorDenied:
+      return permissions::ElementAnchoredBubbleVariant::ADMINISTRATOR_DENIED;
+  }
+
+  NOTREACHED();
+  return permissions::ElementAnchoredBubbleVariant::UNINITIALIZED;
+}
 }  // namespace
 
 EmbeddedPermissionPrompt::EmbeddedPermissionPrompt(
@@ -108,7 +134,7 @@ EmbeddedPermissionPrompt::DeterminePromptVariant(
   // First determine if we can directly show one of the OS views, if the
   // permission was granted (previously or by Administrator).
   if (setting == CONTENT_SETTING_ALLOW) {
-    // TODO(crbug.com/1462930): Handle going to Windows settings.
+    // TODO(crbug.com/40275129): Handle going to Windows settings.
 #if BUILDFLAG(IS_MAC)
     if (ShouldShowSystemSettingsViewOnMacOS(type)) {
       return Variant::kOsSystemSettings;
@@ -149,7 +175,7 @@ void EmbeddedPermissionPrompt::CloseCurrentViewAndMaybeShowNext(
       Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
   content_settings::SettingInfo info;
 
-  for (const permissions::PermissionRequest* request : delegate()->Requests()) {
+  for (const auto& request : delegate()->Requests()) {
     ContentSettingsType type = request->GetContentSettingsType();
     ContentSetting setting =
         map->GetContentSetting(delegate()->GetRequestingOrigin(),
@@ -167,11 +193,17 @@ void EmbeddedPermissionPrompt::CloseCurrentViewAndMaybeShowNext(
     case Variant::kAsk:
       prompt_view = new EmbeddedPermissionPromptAskView(
           browser(), weak_factory_.GetWeakPtr());
+      permissions::PermissionUmaUtil::RecordElementAnchoredBubbleVariantUMA(
+          delegate()->Requests(),
+          permissions::ElementAnchoredBubbleVariant::ASK);
       break;
     case Variant::kPreviouslyGranted:
       if (first_prompt) {
         prompt_view = new EmbeddedPermissionPromptPreviouslyGrantedView(
             browser(), weak_factory_.GetWeakPtr());
+        permissions::PermissionUmaUtil::RecordElementAnchoredBubbleVariantUMA(
+            delegate()->Requests(),
+            permissions::ElementAnchoredBubbleVariant::PREVIOUSLY_GRANTED);
       } else {
         delegate()->FinalizeCurrentRequests();
         return;
@@ -180,10 +212,17 @@ void EmbeddedPermissionPrompt::CloseCurrentViewAndMaybeShowNext(
     case Variant::kPreviouslyDenied:
       prompt_view = new EmbeddedPermissionPromptPreviouslyDeniedView(
           browser(), weak_factory_.GetWeakPtr());
+      permissions::PermissionUmaUtil::RecordElementAnchoredBubbleVariantUMA(
+          delegate()->Requests(),
+          permissions::ElementAnchoredBubbleVariant::PREVIOUSLY_DENIED);
       break;
     case Variant::kOsPrompt:
       prompt_view = new EmbeddedPermissionPromptShowSystemPromptView(
           browser(), weak_factory_.GetWeakPtr());
+      permissions::PermissionUmaUtil::RecordElementAnchoredBubbleVariantUMA(
+          delegate()->Requests(),
+          permissions::ElementAnchoredBubbleVariant::OS_PROMPT);
+      current_variant_first_display_time_ = base::Time::Now();
 // This view has no buttons, so the OS level prompt should be triggered at the
 // same time as the |EmbeddedPermissionPromptShowSystemPromptView|.
 #if BUILDFLAG(IS_MAC)
@@ -193,16 +232,26 @@ void EmbeddedPermissionPrompt::CloseCurrentViewAndMaybeShowNext(
     case Variant::kOsSystemSettings:
       prompt_view = new EmbeddedPermissionPromptSystemSettingsView(
           browser(), weak_factory_.GetWeakPtr());
+      permissions::PermissionUmaUtil::RecordElementAnchoredBubbleVariantUMA(
+          delegate()->Requests(),
+          permissions::ElementAnchoredBubbleVariant::OS_SYSTEM_SETTINGS);
+      current_variant_first_display_time_ = base::Time::Now();
       break;
     case Variant::kAdministratorGranted:
       prompt_view = new EmbeddedPermissionPromptPolicyView(
           browser(), weak_factory_.GetWeakPtr(),
           /*is_permission_allowed=*/true);
+      permissions::PermissionUmaUtil::RecordElementAnchoredBubbleVariantUMA(
+          delegate()->Requests(),
+          permissions::ElementAnchoredBubbleVariant::ADMINISTRATOR_GRANTED);
       break;
     case Variant::kAdministratorDenied:
       prompt_view = new EmbeddedPermissionPromptPolicyView(
           browser(), weak_factory_.GetWeakPtr(),
           /*is_permission_allowed=*/false);
+      permissions::PermissionUmaUtil::RecordElementAnchoredBubbleVariantUMA(
+          delegate()->Requests(),
+          permissions::ElementAnchoredBubbleVariant::ADMINISTRATOR_DENIED);
       break;
     case Variant::kUninitialized:
       NOTREACHED();
@@ -212,7 +261,8 @@ void EmbeddedPermissionPrompt::CloseCurrentViewAndMaybeShowNext(
     prompt_view_tracker_.SetView(prompt_view);
     content_scrim_widget_ =
         EmbeddedPermissionPromptContentScrimView::CreateScrimWidget(
-            weak_factory_.GetWeakPtr());
+            weak_factory_.GetWeakPtr(),
+            SkColorSetA(gfx::kGoogleGrey700, SK_AlphaOPAQUE * 0.5f));
     prompt_view->UpdateAnchor(content_scrim_widget_.get());
     prompt_view->Show();
   }
@@ -221,6 +271,27 @@ void EmbeddedPermissionPrompt::CloseCurrentViewAndMaybeShowNext(
 EmbeddedPermissionPrompt::TabSwitchingBehavior
 EmbeddedPermissionPrompt::GetTabSwitchingBehavior() {
   return TabSwitchingBehavior::kDestroyPromptButKeepRequestPending;
+}
+
+void EmbeddedPermissionPrompt::RecordOsMetrics(
+    permissions::OsScreenAction action) {
+  permissions::OsScreen screen;
+
+  switch (embedded_prompt_variant_) {
+    case Variant::kOsPrompt:
+      screen = permissions::OsScreen::OS_PROMPT;
+      break;
+    case Variant::kOsSystemSettings:
+      screen = permissions::OsScreen::OS_SYSTEM_SETTINGS;
+      break;
+    default:
+      return;
+  }
+
+  base::TimeDelta time_to_decision =
+      base::Time::Now() - current_variant_first_display_time_;
+  permissions::PermissionUmaUtil::RecordElementAnchoredBubbleOsMetrics(
+      delegate()->Requests(), screen, action, time_to_decision);
 }
 
 permissions::PermissionPromptDisposition
@@ -232,20 +303,77 @@ bool EmbeddedPermissionPrompt::ShouldFinalizeRequestAfterDecided() const {
   return false;
 }
 
+void EmbeddedPermissionPrompt::PrecalculateVariantsForMetrics() {
+  if (embedded_prompt_variant_ == Variant::kUninitialized) {
+    return;
+  }
+
+  site_level_prompt_variant_ = embedded_prompt_variant_;
+
+#if BUILDFLAG(IS_MAC)
+  if (os_prompt_variant_ == Variant::kUninitialized) {
+    for (const auto& request : delegate()->Requests()) {
+      if (ShouldShowOSPromptViewOnMacOS(request->GetContentSettingsType())) {
+        os_prompt_variant_ = Variant::kOsPrompt;
+        break;
+      }
+    }
+  }
+
+  if (os_system_settings_variant_ == Variant::kUninitialized) {
+    for (const auto& request : delegate()->Requests()) {
+      if (ShouldShowSystemSettingsViewOnMacOS(
+              request->GetContentSettingsType())) {
+        os_system_settings_variant_ = Variant::kOsSystemSettings;
+        break;
+      }
+    }
+  }
+#endif  // BUILDFLAG(IS_MAC)
+}
+
+std::vector<permissions::ElementAnchoredBubbleVariant>
+EmbeddedPermissionPrompt::GetPromptVariants() const {
+  std::vector<permissions::ElementAnchoredBubbleVariant> variants;
+
+  // Current prompt variant when the user takes an action on a site level
+  // prompt.
+  if (embedded_prompt_variant_ != Variant::kUninitialized) {
+    variants.push_back(GetVariant(embedded_prompt_variant_));
+  }
+
+#if BUILDFLAG(IS_MAC)
+  if (os_prompt_variant_ != Variant::kUninitialized) {
+    variants.push_back(GetVariant(os_prompt_variant_));
+  }
+  if (os_system_settings_variant_ != Variant::kUninitialized) {
+    variants.push_back(GetVariant(os_system_settings_variant_));
+  }
+#endif  // BUILDFLAG(IS_MAC)
+
+  return variants;
+}
+
 void EmbeddedPermissionPrompt::Allow() {
+  PrecalculateVariantsForMetrics();
   delegate_->Accept();
   CloseCurrentViewAndMaybeShowNext(/*first_prompt=*/false);
 }
 
 void EmbeddedPermissionPrompt::AllowThisTime() {
+  PrecalculateVariantsForMetrics();
   delegate_->AcceptThisTime();
   CloseCurrentViewAndMaybeShowNext(/*first_prompt=*/false);
 }
 
 void EmbeddedPermissionPrompt::Dismiss() {
-  delegate_->Dismiss();
+  PrecalculateVariantsForMetrics();
   permissions::PermissionUmaUtil::RecordElementAnchoredBubbleDismiss(
       delegate()->Requests(), permissions::DismissedReason::DISMISSED_X_BUTTON);
+
+  RecordOsMetrics(permissions::OsScreenAction::DISMISSED_X_BUTTON);
+
+  delegate_->Dismiss();
   delegate_->FinalizeCurrentRequests();
 }
 
@@ -257,6 +385,7 @@ void EmbeddedPermissionPrompt::Acknowledge() {
 }
 
 void EmbeddedPermissionPrompt::StopAllowing() {
+  PrecalculateVariantsForMetrics();
   delegate_->Deny();
   delegate_->FinalizeCurrentRequests();
 }
@@ -264,25 +393,20 @@ void EmbeddedPermissionPrompt::StopAllowing() {
 void EmbeddedPermissionPrompt::ShowSystemSettings() {
   const auto& requests = delegate()->Requests();
   CHECK_GT(requests.size(), 0U);
-// TODO(crbug.com/1462930) Chrome always shows the first permission in a group,
+// TODO(crbug.com/40275129) Chrome always shows the first permission in a group,
 // as it is not possible to open multiple System Setting pages. Figure out a
 // better way to handle this scenario.
 #if BUILDFLAG(IS_MAC)
+  RecordOsMetrics(permissions::OsScreenAction::SYSTEM_SETTINGS);
+
   if (requests_[0]->request_type() == permissions::RequestType::kCameraStream) {
     OpenCameraSystemSettingsOnMacOS();
   } else if (requests_[0]->request_type() ==
              permissions::RequestType::kMicStream) {
     OpenMicSystemSettingsOnMacOS();
   }
-#endif
-}
 
-void EmbeddedPermissionPrompt::DismissScrim() {
-  permissions::PermissionUmaUtil::RecordElementAnchoredBubbleDismiss(
-      delegate()->Requests(), permissions::DismissedReason::DISMISSED_SCRIM);
-  CloseView();
-  delegate_->Dismiss();
-  delegate_->FinalizeCurrentRequests();
+#endif
 }
 
 base::WeakPtr<permissions::PermissionPrompt::Delegate>
@@ -293,6 +417,24 @@ EmbeddedPermissionPrompt::GetPermissionPromptDelegate() const {
 const std::vector<raw_ptr<permissions::PermissionRequest, VectorExperimental>>&
 EmbeddedPermissionPrompt::Requests() const {
   return requests_;
+}
+
+void EmbeddedPermissionPrompt::DismissScrim() {
+  permissions::PermissionUmaUtil::RecordElementAnchoredBubbleDismiss(
+      delegate()->Requests(), permissions::DismissedReason::DISMISSED_SCRIM);
+
+  if (embedded_prompt_variant_ == Variant::kOsPrompt) {
+    RecordOsMetrics(permissions::OsScreenAction::DISMISSED_SCRIM);
+  }
+
+  if (embedded_prompt_variant_ == Variant::kOsSystemSettings) {
+    RecordOsMetrics(permissions::OsScreenAction::DISMISSED_SCRIM);
+  }
+
+  CloseView();
+  PrecalculateVariantsForMetrics();
+  delegate_->Dismiss();
+  delegate_->FinalizeCurrentRequests();
 }
 
 void EmbeddedPermissionPrompt::PromptForOsPermission() {

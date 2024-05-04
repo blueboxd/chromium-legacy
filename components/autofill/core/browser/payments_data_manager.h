@@ -14,42 +14,82 @@
 #include "base/functional/function_ref.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
+#include "base/observer_list_types.h"
 #include "components/autofill/core/browser/autofill_shared_storage_handler.h"
+#include "components/autofill/core/browser/country_type.h"
 #include "components/autofill/core/browser/data_model/autofill_offer_data.h"
 #include "components/autofill/core/browser/data_model/autofill_wallet_usage_data.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/data_model/credit_card_benefit.h"
 #include "components/autofill/core/browser/data_model/credit_card_cloud_token_data.h"
 #include "components/autofill/core/browser/data_model/iban.h"
+#include "components/autofill/core/browser/metrics/autofill_metrics.h"
+#include "components/autofill/core/browser/payments/account_info_getter.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service_observer.h"
+#include "components/prefs/pref_change_registrar.h"
+#include "components/prefs/pref_service.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
+#include "components/sync/service/sync_service_observer.h"
 #include "components/webdata/common/web_data_service_consumer.h"
 #include "ui/gfx/image/image.h"
 #include "url/gurl.h"
 
+namespace syncer {
+class SyncService;
+}  // namespace syncer
+
 namespace autofill {
 
 class AutofillImageFetcherBase;
+class AutofillOptimizationGuide;
 class BankAccount;
 struct CreditCardArtImage;
 class PaymentsDatabaseHelper;
-class PersonalDataManager;
-class TestPersonalDataManager;
 
+// Contains all payments-related logic of the `PersonalDataManager`. See comment
+// above the `PersonalDataManager` first.
+//
+// Technical details on how modifications are implemented:
+// `PaymentsDataManager` (PayDM) code simply posts a task to the DB sequence and
+// triggers a `Refresh()` afterwards. Since `Refresh()` itself simply posts
+// several read requests on the DB sequence, and because the DB sequence is a
+// sequence, the `Refresh()` is guaranteed to read the latest data. This is
+// unnecessarily inefficient, since any change causes the PayDM to reload all of
+// its data.
 class PaymentsDataManager : public AutofillWebDataServiceObserverOnUISequence,
-                            public WebDataServiceConsumer {
+                            public WebDataServiceConsumer,
+                            public AccountInfoGetter,
+                            public syncer::SyncServiceObserver,
+                            public signin::IdentityManager::Observer {
  public:
+  class Observer : public base::CheckedObserver {
+   public:
+    // Triggered after all pending read and write operations have finished.
+    virtual void OnPaymentsDataChanged() = 0;
+  };
+
   PaymentsDataManager(
       scoped_refptr<AutofillWebDataService> profile_database,
       scoped_refptr<AutofillWebDataService> account_database,
       AutofillImageFetcherBase* image_fetcher,
       std::unique_ptr<AutofillSharedStorageHandler> shared_storage_handler,
-      const std::string& app_locale,
-      PersonalDataManager* pdm);
+      PrefService* pref_service,
+      syncer::SyncService* sync_service,
+      signin::IdentityManager* identity_manager,
+      GeoIpCountryCode variations_country_code,
+      const std::string& app_locale);
 
   PaymentsDataManager(const PaymentsDataManager&) = delete;
   PaymentsDataManager& operator=(const PaymentsDataManager&) = delete;
   ~PaymentsDataManager() override;
+
+  // Only intended to be called during shutdown of the parent `KeyedService`.
+  void Shutdown();
+
+  void AddObserver(Observer* obs) { observers_.AddObserver(obs); }
+  void RemoveObserver(Observer* obs) { observers_.RemoveObserver(obs); }
 
   // AutofillWebDataServiceObserverOnUISequence:
   void OnAutofillChangedBySync(syncer::ModelType model_type) override;
@@ -58,6 +98,16 @@ class PaymentsDataManager : public AutofillWebDataServiceObserverOnUISequence,
   void OnWebDataServiceRequestDone(
       WebDataServiceBase::Handle h,
       std::unique_ptr<WDTypedResult> result) override;
+
+  // AccountInfoGetter:
+  CoreAccountInfo GetAccountInfoForPaymentsServer() const override;
+  bool IsSyncFeatureEnabledForPaymentsServerMetrics() const override;
+
+  // SyncServiceObserver:
+  void OnStateChanged(syncer::SyncService* sync) override;
+
+  // signin::IdentityManager::Observer:
+  void OnAccountsCookieDeletedByUserAction() override;
 
   // Reloads all payments data from the database.
   void Refresh();
@@ -107,6 +157,15 @@ class PaymentsDataManager : public AutofillWebDataServiceObserverOnUISequence,
       CreditCardBenefitBase::LinkedCardInstrumentId instrument_id,
       const url::Origin& merchant_origin) const;
 
+  // Returns an applicable benefit description string to display to the user
+  // based on the combination of `credit_card` and `origin`. However, if
+  // `credit_card.IsCardEligibleForBenefits()` == false, the benefit description
+  // will still be returned but not displayed to users.
+  std::u16string GetApplicableBenefitDescriptionForCardAndOrigin(
+      const CreditCard& credit_card,
+      const url::Origin& origin,
+      const AutofillOptimizationGuide* optimization_guide) const;
+
   // Returns just LOCAL_CARD cards.
   virtual std::vector<CreditCard*> GetLocalCreditCards() const;
   // Returns just server cards.
@@ -123,10 +182,14 @@ class PaymentsDataManager : public AutofillWebDataServiceObserverOnUISequence,
   // Returns all IBANs, server and local. All local IBANs that share the same
   // prefix, suffix, and length as any existing server IBAN will be considered a
   // duplicate IBAN. These duplicate IBANs will not be returned in the list.
-  virtual std::vector<const Iban*> GetIbansToSuggest() const;
+  // The returned IBANs are ranked by ranking score (see AutofillDataModel for
+  // details).
+  std::vector<Iban> GetOrderedIbansToSuggest() const;
 
+  // Returns true if the user has at least 1 masked bank account.
+  bool HasMaskedBankAccounts() const;
   // Returns the masked bank accounts that can be suggested to the user.
-  const std::vector<BankAccount> GetMaskedBankAccounts() const;
+  std::vector<BankAccount> GetMaskedBankAccounts() const;
 
   // Returns the Payments customer data. Returns nullptr if no data is present.
   virtual PaymentsCustomerData* GetPaymentsCustomerData() const;
@@ -143,6 +206,8 @@ class PaymentsDataManager : public AutofillWebDataServiceObserverOnUISequence,
   std::vector<const AutofillOfferData*>
   GetActiveAutofillPromoCodeOffersForOrigin(GURL origin) const;
 
+  AutofillImageFetcherBase* GetImageFetcher() { return image_fetcher_; }
+
   // Return the URL for the card art image, if available.
   GURL GetCardArtURL(const CreditCard& credit_card) const;
 
@@ -158,7 +223,7 @@ class PaymentsDataManager : public AutofillWebDataServiceObserverOnUISequence,
   // Returns the credit cards to suggest to the user. Those have been deduped
   // and ordered by frecency with the expired cards put at the end of the
   // vector.
-  const std::vector<CreditCard*> GetCreditCardsToSuggest() const;
+  std::vector<CreditCard*> GetCreditCardsToSuggest() const;
 
   // Adds `iban` to the web database as a local IBAN. Returns the guid of
   // `iban` if the add is successful, or an empty string otherwise.
@@ -204,9 +269,6 @@ class PaymentsDataManager : public AutofillWebDataServiceObserverOnUISequence,
   void RemoveServerCvc(int64_t instrument_id);
   virtual void ClearServerCvcs();
 
-  // Clears all the credit card benefits from the webdata database.
-  void ClearAllCreditCardBenefits();
-
   // Method to clear all local CVCs from the local web database.
   virtual void ClearLocalCvcs();
 
@@ -217,9 +279,21 @@ class PaymentsDataManager : public AutofillWebDataServiceObserverOnUISequence,
   // database by adding, updating and removing credit cards.
   void SetCreditCards(std::vector<CreditCard>* credit_cards);
 
+  // Try to save a credit card locally. If the card already exists, do nothing
+  // and return false. If the card is new, save it locally and return true.
+  virtual bool SaveCardLocallyIfNew(const CreditCard& imported_credit_card);
+
   // Removes the credit card or IBAN identified by `guid`.
   // Returns true if something was removed.
   virtual bool RemoveByGUID(const std::string& guid);
+
+  // Called to indicate `credit_card` was used (to fill in a form).
+  // Updates the database accordingly.
+  virtual void RecordUseOfCard(const CreditCard* card);
+
+  // Called to indicate `iban` was used (to fill in a form). Updates the
+  // database accordingly.
+  virtual void RecordUseOfIban(Iban& iban);
 
   // De-dupe credit card to suggest. Full server cards are preferred over their
   // local duplicates, and local cards are preferred over their masked server
@@ -236,24 +310,161 @@ class PaymentsDataManager : public AutofillWebDataServiceObserverOnUISequence,
   // present in the cache, this function will return a nullptr.
   gfx::Image* GetCachedCardArtImageForUrl(const GURL& card_art_url) const;
 
+  // Checks if a specific card is eligible to see benefits based on its issuer
+  // id.
+  bool IsCardEligibleForBenefits(const CreditCard& card) const;
+
+  // Checks if the user is in an experiment for seeing credit card benefits in
+  // Autofill suggestions.
+  bool IsCardBenefitsFeatureEnabled();
+
+  // Returns the value of the PaymentsCardBenefits pref.
+  // `IsCardBenefitsPrefEnabled() == false` indicates the user does not see card
+  // benefits and will not have card benefit metrics logged.
+  bool IsCardBenefitsPrefEnabled() const;
+
+  // Returns the value of the AutofillPaymentMethodsEnabled pref.
+  virtual bool IsAutofillPaymentMethodsEnabled() const;
+
+  // Returns the value of the kAutofillHasSeenIban pref.
+  bool IsAutofillHasSeenIbanPrefEnabled() const;
+
+  // Sets the value of the kAutofillHasSeenIban pref to true.
+  void SetAutofillHasSeenIban();
+
+  // Returns whether sync's integration with payments is on.
+  virtual bool IsAutofillWalletImportEnabled() const;
+
+  // Returns true if wallet sync is running in transport mode (meaning that
+  // Sync-the-feature is disabled).
+  virtual bool IsPaymentsWalletSyncTransportEnabled() const;
+
+  // Returns whether credit card download is active (meaning that wallet sync is
+  // running at least in transport mode).
+  bool IsPaymentsDownloadActive() const;
+
+  // Returns the current sync status for the purpose of metrics only (do not
+  // guard actual logic behind this value).
+  AutofillMetrics::PaymentsSigninState GetPaymentsSigninStateForMetrics() const;
+
+  // Check if `credit_card` has a duplicate card present in either Local or
+  // Server card lists.
+  bool IsCardPresentAsBothLocalAndServerCards(const CreditCard& credit_card);
+
+  // Returns a pointer to the server card that has duplicate information of the
+  // `local_card`. It is not guaranteed that a server card is found. If not,
+  // nullptr is returned.
+  const CreditCard* GetServerCardForLocalCard(
+      const CreditCard* local_card) const;
+
+  // Called when the user accepts the prompt to save the credit card locally.
+  // Records some metrics and attempts to save the imported card. Returns the
+  // guid of the new or updated card, or the empty string if no card was saved.
+  std::string OnAcceptedLocalCreditCardSave(
+      const CreditCard& imported_credit_card);
+
+  // Returns the GUID of `imported_iban` if it is successfully added or updated,
+  // or an empty string otherwise.
+  // Called when the user accepts the prompt to save the IBAN locally.
+  // The function will sets the GUID of `imported_iban` to the one that matches
+  // it in `local_ibans_` so that UpdateIban() will be able to update the
+  // specific IBAN.
+  std::string OnAcceptedLocalIbanSave(Iban imported_iban);
+
+  // This function assumes |credit_card| contains the full PAN. Returns |true|
+  // if the card number of |credit_card| is equal to any local card or any
+  // unmasked server card known by the browser, or |TypeAndLastFourDigits| of
+  // |credit_card| is equal to any masked server card known by the browser.
+  bool IsKnownCard(const CreditCard& credit_card) const;
+
+  // Check whether a card is a server card or has a duplicated server card.
+  bool IsServerCard(const CreditCard* credit_card) const;
+
+  // Returns whether a row to give the option of showing cards from the user's
+  // account should be shown in the dropdown.
+  bool ShouldShowCardsFromAccountOption() const;
+
+  // Triggered when a user selects the option to see cards from their account.
+  // Records the sync transport consent.
+  void OnUserAcceptedCardsFromAccountOption();
+
+  // Records the sync transport consent if the user is in sync transport mode.
+  virtual void OnUserAcceptedUpstreamOffer();
+
+  // The functions below are related to the payments mandatory re-auth feature.
+  // All of this functionality is done through per-profile per-device prefs.
+  // `SetPaymentMethodsMandatoryReauthEnabled()` is used to update the opt-in
+  // status of the feature, and is called when a user successfully completes a
+  // full re-auth opt-in flow (with a successful authentication).
+  // `IsPaymentMethodsMandatoryReauthEnabled()` is checked before triggering the
+  // re-auth feature during a payments autofill flow.
+  // `ShouldShowPaymentMethodsMandatoryReauthPromo()` is used to check whether
+  // we should show the re-auth opt-in promo once a user submits a form, and
+  // there was no interactive authentication for the most recent payments
+  // autofill flow. `IncrementPaymentMethodsMandatoryReauthPromoShownCounter()`
+  // increments the counter that denotes the number of times that the promo has
+  // been shown, and this counter is used very similarly to a strike database
+  // when it comes time to check whether we should show the promo.
+  virtual void SetPaymentMethodsMandatoryReauthEnabled(bool enabled);
+  virtual bool IsPaymentMethodsMandatoryReauthEnabled();
+  bool ShouldShowPaymentMethodsMandatoryReauthPromo();
+  void IncrementPaymentMethodsMandatoryReauthPromoShownCounter();
+
+  // Returns true if the user pref to store CVC is enabled.
+  virtual bool IsPaymentCvcStorageEnabled();
+
   // TODO(b/322170538): Remove.
   scoped_refptr<AutofillWebDataService> GetLocalDatabase();
   scoped_refptr<AutofillWebDataService> GetServerDatabase();
-  void SetUseAccountStorageForServerData(bool use_account_storage);
-  bool IsUsingAccountStorageForServerData();
+  bool IsUsingAccountStorageForServerDataForTest();
 
   // Cancels any pending queries to the server web database.
   void CancelPendingServerQueries();
 
- protected:
-  // TODO(b/322170538): Remove dependency.
-  friend class PersonalDataManager;
-  friend class PersonalDataManagerTestApi;
-  friend class TestPaymentsDataManager;
-  friend class TestPersonalDataManager;
+  // Logs the fact that the server card link was clicked including information
+  // about the current sync state.
+  void LogServerCardLinkClicked() const;
 
-  FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
-                           AddAndGetCreditCardArtImage);
+  // Logs the fact that the server IBAN link was clicked including information
+  // about the current sync state.
+  void LogServerIbanLinkClicked() const;
+
+  // Returns our best guess for the country a user is in, for experiment group
+  // purposes. The value is calculated once and cached, so it will only update
+  // when Chrome is restarted.
+  const std::string& GetCountryCodeForExperimentGroup() const;
+
+  // Returns if there are any pending queries to the web database.
+  bool HasPendingPaymentQueries() const;
+
+  bool is_payments_data_loaded() const { return is_payments_data_loaded_; }
+
+  void SetSyncServiceForTest(syncer::SyncService* sync_service);
+  void SetSyncingForTest(bool is_syncing_for_test) {
+    is_syncing_for_test_ = is_syncing_for_test;
+  }
+
+  // Add a bank account to the cached list of bank accounts in
+  // PaymentsDataManager.
+  void AddMaskedBankAccountForTest(const BankAccount& bank_account);
+
+  // Sets a server credit card for test.
+  //
+  // TODO(crbug.com/330865438): This method currently sets `server_cards_`
+  // directly which is not correct for the real PaymentsDataManager. It should
+  // be moved to TestPaymentsDataManager, and unittests should switch to that.
+  void AddServerCreditCardForTest(std::unique_ptr<CreditCard> credit_card);
+
+  // Add the credit-card-linked benefit to local cache for tests. This does
+  // not affect data in the real database.
+  void AddCreditCardBenefitForTest(CreditCardBenefit benefit);
+
+ protected:
+  friend class PaymentsDataManagerTestApi;
+
+  // Whether server cards or IBANs are enabled and should be suggested to the
+  // user.
+  virtual bool ShouldSuggestServerPaymentMethods() const;
 
   // Loads the saved credit cards from the web database.
   virtual void LoadCreditCards();
@@ -294,6 +505,10 @@ class PaymentsDataManager : public AutofillWebDataServiceObserverOnUISequence,
   // card, offer and IBAN.
   void LogStoredPaymentsDataMetrics() const;
 
+  void SetPrefService(PrefService* pref_service);
+
+  void NotifyObservers();
+
   // Stores the PaymentsCustomerData obtained from the database.
   std::unique_ptr<PaymentsCustomerData> payments_customer_data_;
 
@@ -329,12 +544,27 @@ class PaymentsDataManager : public AutofillWebDataServiceObserverOnUISequence,
   // merchant benefits that are available for users' online purchases.
   std::vector<CreditCardBenefit> credit_card_benefits_;
 
+  // When the manager makes a request from WebDataServiceBase, the database
+  // is queried on another sequence, we record the query handle until we
+  // get called back.
+  WebDataServiceBase::Handle pending_creditcards_query_ = 0;
+  WebDataServiceBase::Handle pending_server_creditcards_query_ = 0;
+  WebDataServiceBase::Handle pending_server_creditcard_cloud_token_data_query_ =
+      0;
+  WebDataServiceBase::Handle pending_local_ibans_query_ = 0;
+  WebDataServiceBase::Handle pending_server_ibans_query_ = 0;
+  WebDataServiceBase::Handle pending_masked_bank_accounts_query_ = 0;
+  WebDataServiceBase::Handle pending_customer_data_query_ = 0;
+  WebDataServiceBase::Handle pending_offer_data_query_ = 0;
+  WebDataServiceBase::Handle pending_virtual_card_usage_data_query_ = 0;
+  WebDataServiceBase::Handle pending_credit_card_benefit_query_ = 0;
+
   // True if personal data has been loaded from the web database.
   bool is_payments_data_loaded_ = false;
 
  private:
-  // Returns if there are any pending queries to the web database.
-  bool HasPendingPaymentQueries() const;
+  // Check if credit card benefits sync flag is enabled.
+  bool IsCardBenefitsSyncEnabled() const;
 
   // Triggered when all the card art image fetches have been completed,
   // regardless of whether all of them succeeded.
@@ -362,26 +592,26 @@ class PaymentsDataManager : public AutofillWebDataServiceObserverOnUISequence,
   // Whether MaskedBankAccounts are supported for the platform OS.
   bool AreBankAccountsSupported() const;
 
+  // Monitors the `kAutofillPaymentCardBenefits` preference for changes and
+  // controls the clearing/loading of credit card benefits into
+  // `credit_card_benefits_` accordingly.
+  void OnAutofillPaymentsCardBenefitsPrefChange();
+
+  // Clears all credit card benefits in `credit_card_benefits_`.
+  void ClearAllCreditCardBenefits();
+
+  // Saves |imported_credit_card| to the WebDB if it exists. Returns the guid of
+  // the new or updated card, or the empty string if no card was saved.
+  virtual std::string SaveImportedCreditCard(
+      const CreditCard& imported_credit_card);
+
+  // Invoked when the masked bank accounts cache is refreshed. This happens when
+  // the masked bank accounts are loaded for the first time as well as for any
+  // subsequent updates via ChromeSync invalidations.
+  void OnMaskedBankAccountsRefreshed();
+
   // Decides which database type to use for server and local cards.
   std::unique_ptr<PaymentsDatabaseHelper> database_helper_;
-
-  // When the manager makes a request from WebDataServiceBase, the database
-  // is queried on another sequence, we record the query handle until we
-  // get called back.
-  WebDataServiceBase::Handle pending_creditcards_query_ = 0;
-  WebDataServiceBase::Handle pending_server_creditcards_query_ = 0;
-  WebDataServiceBase::Handle pending_server_creditcard_cloud_token_data_query_ =
-      0;
-  WebDataServiceBase::Handle pending_local_ibans_query_ = 0;
-  WebDataServiceBase::Handle pending_server_ibans_query_ = 0;
-  WebDataServiceBase::Handle pending_masked_bank_accounts_query_ = 0;
-  WebDataServiceBase::Handle pending_customer_data_query_ = 0;
-  WebDataServiceBase::Handle pending_offer_data_query_ = 0;
-  WebDataServiceBase::Handle pending_virtual_card_usage_data_query_ = 0;
-  WebDataServiceBase::Handle pending_credit_card_benefit_query_ = 0;
-
-  // TODO(b/322170538): Remove dependency.
-  raw_ptr<PersonalDataManager> pdm_;
 
   // The image fetcher to fetch customized images for Autofill data.
   raw_ptr<AutofillImageFetcherBase> image_fetcher_ = nullptr;
@@ -389,8 +619,38 @@ class PaymentsDataManager : public AutofillWebDataServiceObserverOnUISequence,
   // The shared storage handler this instance uses.
   std::unique_ptr<AutofillSharedStorageHandler> shared_storage_handler_;
 
+  // The sync service this instance uses. Must outlive this instance.
+  raw_ptr<syncer::SyncService> sync_service_ = nullptr;
+  base::ScopedObservation<syncer::SyncService, syncer::SyncServiceObserver>
+      sync_observer_{this};
+
+  // The identity manager that this instance uses. Must outlive this instance.
+  const raw_ptr<signin::IdentityManager> identity_manager_ = nullptr;
+  base::ScopedObservation<signin::IdentityManager,
+                          signin::IdentityManager::Observer>
+      identity_observer_{this};
+
+  // The determined country code for experiment group purposes. Uses
+  // |variations_country_code_| if it exists but falls back to other methods if
+  // necessary to ensure it always has a value.
+  mutable std::string experiment_country_code_;
+
+  const GeoIpCountryCode variations_country_code_;
+
   // Stores the |app_locale| supplied on construction.
   const std::string app_locale_;
+
+  base::ObserverList<Observer> observers_;
+
+  // The PrefService that this instance uses to read and write preferences.
+  // Must outlive this instance.
+  raw_ptr<PrefService> pref_service_ = nullptr;
+
+  // Pref registrar for managing the change observers.
+  PrefChangeRegistrar pref_registrar_;
+
+  // Whether sync should be considered on in a test.
+  bool is_syncing_for_test_ = false;
 
   base::WeakPtrFactory<PaymentsDataManager> weak_factory_{this};
 };

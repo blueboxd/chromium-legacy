@@ -54,13 +54,6 @@ class ExtensionViewHost
   // Returns the browser associated with this ExtensionViewHost.
   virtual Browser* GetBrowser();
 
-  // Handles keyboard events that were not handled by HandleKeyboardEvent().
-  // Platform specific implementation may override this method to handle the
-  // event in platform specific way. Returns whether the events are handled.
-  virtual bool UnhandledKeyboardEvent(
-      content::WebContents* source,
-      const content::NativeWebKeyboardEvent& event);
-
   // ExtensionHost
   void OnDidStopFirstLoad() override;
   void LoadInitialURL() override;
@@ -69,7 +62,9 @@ class ExtensionViewHost
   // content::WebContentsDelegate
   content::WebContents* OpenURLFromTab(
       content::WebContents* source,
-      const content::OpenURLParams& params) override;
+      const content::OpenURLParams& params,
+      base::OnceCallback<void(content::NavigationHandle&)>
+          navigation_handle_callback) override;
   bool ShouldAllowRendererInitiatedCrossProcessNavigation(
       bool is_outermost_main_frame_navigation) override;
   content::KeyboardEventProcessingResult PreHandleKeyboardEvent(
@@ -117,6 +112,12 @@ class ExtensionViewHost
   // Returns whether the provided event is a raw escape keypress in a
   // mojom::ViewType::kExtensionPopup.
   bool IsEscapeInPopup(const content::NativeWebKeyboardEvent& event) const;
+
+  // Handles keyboard events that were not handled by HandleKeyboardEvent().
+  // Platform specific implementation may override this method to handle the
+  // event in platform specific way. Returns whether the events are handled.
+  bool UnhandledKeyboardEvent(content::WebContents* source,
+                              const content::NativeWebKeyboardEvent& event);
 
   // The browser associated with the ExtensionView, if any. Note: since this
   // ExtensionViewHost could be associated with a browser even if `browser_` is

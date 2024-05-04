@@ -46,7 +46,8 @@
 #include "components/security_interstitials/core/ssl_error_options_mask.h"
 #include "components/security_interstitials/core/ssl_error_ui.h"
 #include "components/security_interstitials/core/unsafe_resource.h"
-#include "components/supervised_user/core/common/buildflags.h"
+#include "components/supervised_user/core/browser/supervised_user_error_page.h"  // nogncheck
+#include "components/supervised_user/core/browser/supervised_user_interstitial.h"
 #include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -69,10 +70,6 @@
 #include "components/security_interstitials/content/captive_portal_blocking_page.h"
 #endif
 
-#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-#include "components/supervised_user/core/browser/supervised_user_error_page.h"  // nogncheck
-#include "components/supervised_user/core/browser/supervised_user_interstitial.h"
-#endif
 
 using security_interstitials::TestSafeBrowsingBlockingPageQuiet;
 
@@ -120,9 +117,7 @@ class InterstitialHTMLSource : public content::URLDataSource {
       content::URLDataSource::GotDataCallback callback) override;
 
  private:
-#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   std::string GetSupervisedUserInterstitialHTML(const std::string& path);
-#endif
 };
 
 std::unique_ptr<SSLBlockingPage> CreateSslBlockingPage(
@@ -283,7 +278,7 @@ CreateHttpsOnlyModePage(content::WebContents* web_contents) {
 std::unique_ptr<security_interstitials::SecurityInterstitialPage>
 CreateSafeBrowsingBlockingPage(content::WebContents* web_contents) {
   safe_browsing::SBThreatType threat_type =
-      safe_browsing::SB_THREAT_TYPE_URL_MALWARE;
+      safe_browsing::SBThreatType::SB_THREAT_TYPE_URL_MALWARE;
   GURL request_url("http://example.com");
   std::string url_param;
   if (net::GetValueForKeyInQuery(web_contents->GetVisibleURL(), "url",
@@ -299,15 +294,16 @@ CreateSafeBrowsingBlockingPage(content::WebContents* web_contents) {
   if (net::GetValueForKeyInQuery(web_contents->GetVisibleURL(), "type",
                                  &type_param)) {
     if (type_param == "malware") {
-      threat_type = safe_browsing::SB_THREAT_TYPE_URL_MALWARE;
+      threat_type = safe_browsing::SBThreatType::SB_THREAT_TYPE_URL_MALWARE;
     } else if (type_param == "phishing") {
-      threat_type = safe_browsing::SB_THREAT_TYPE_URL_PHISHING;
+      threat_type = safe_browsing::SBThreatType::SB_THREAT_TYPE_URL_PHISHING;
     } else if (type_param == "unwanted") {
-      threat_type = safe_browsing::SB_THREAT_TYPE_URL_UNWANTED;
+      threat_type = safe_browsing::SBThreatType::SB_THREAT_TYPE_URL_UNWANTED;
     } else if (type_param == "clientside_phishing") {
-      threat_type = safe_browsing::SB_THREAT_TYPE_URL_CLIENT_SIDE_PHISHING;
+      threat_type =
+          safe_browsing::SBThreatType::SB_THREAT_TYPE_URL_CLIENT_SIDE_PHISHING;
     } else if (type_param == "billing") {
-      threat_type = safe_browsing::SB_THREAT_TYPE_BILLING;
+      threat_type = safe_browsing::SBThreatType::SB_THREAT_TYPE_BILLING;
     }
   }
   auto* primary_main_frame = web_contents->GetPrimaryMainFrame();
@@ -366,7 +362,8 @@ std::unique_ptr<EnterpriseWarnPage> CreateEnterpriseWarnPage(
   resource.url = kRequestUrl;
   resource.is_subresource = false;
   resource.is_subframe = false;
-  resource.threat_type = safe_browsing::SB_THREAT_TYPE_MANAGED_POLICY_WARN;
+  resource.threat_type =
+      safe_browsing::SBThreatType::SB_THREAT_TYPE_MANAGED_POLICY_WARN;
   resource.render_process_id = primary_main_frame_id.child_id;
   resource.render_frame_token = primary_main_frame->GetFrameToken().value();
   resource.threat_source =
@@ -385,7 +382,7 @@ std::unique_ptr<EnterpriseWarnPage> CreateEnterpriseWarnPage(
 std::unique_ptr<TestSafeBrowsingBlockingPageQuiet>
 CreateSafeBrowsingQuietBlockingPage(content::WebContents* web_contents) {
   safe_browsing::SBThreatType threat_type =
-      safe_browsing::SB_THREAT_TYPE_URL_MALWARE;
+      safe_browsing::SBThreatType::SB_THREAT_TYPE_URL_MALWARE;
   GURL request_url("http://example.com");
   std::string url_param;
   if (net::GetValueForKeyInQuery(web_contents->GetVisibleURL(), "url",
@@ -399,15 +396,15 @@ CreateSafeBrowsingQuietBlockingPage(content::WebContents* web_contents) {
   if (net::GetValueForKeyInQuery(web_contents->GetVisibleURL(), "type",
                                  &type_param)) {
     if (type_param == "malware") {
-      threat_type = safe_browsing::SB_THREAT_TYPE_URL_MALWARE;
+      threat_type = safe_browsing::SBThreatType::SB_THREAT_TYPE_URL_MALWARE;
     } else if (type_param == "phishing") {
-      threat_type = safe_browsing::SB_THREAT_TYPE_URL_PHISHING;
+      threat_type = safe_browsing::SBThreatType::SB_THREAT_TYPE_URL_PHISHING;
     } else if (type_param == "unwanted") {
-      threat_type = safe_browsing::SB_THREAT_TYPE_URL_UNWANTED;
+      threat_type = safe_browsing::SBThreatType::SB_THREAT_TYPE_URL_UNWANTED;
     } else if (type_param == "billing") {
-      threat_type = safe_browsing::SB_THREAT_TYPE_BILLING;
+      threat_type = safe_browsing::SBThreatType::SB_THREAT_TYPE_BILLING;
     } else if (type_param == "giant") {
-      threat_type = safe_browsing::SB_THREAT_TYPE_URL_MALWARE;
+      threat_type = safe_browsing::SBThreatType::SB_THREAT_TYPE_URL_MALWARE;
       is_giant_webview = true;
     }
   }
@@ -522,7 +519,7 @@ void InterstitialHTMLSource::StartDataRequest(
     const GURL& request_url,
     const content::WebContents::Getter& wc_getter,
     content::URLDataSource::GotDataCallback callback) {
-  // TODO(crbug/1009127): Simplify usages of |path| since |request_url| is
+  // TODO(crbug.com/40050262): Simplify usages of |path| since |request_url| is
   // available.
   const std::string path =
       content::URLDataSource::URLToRequestPath(request_url);
@@ -571,10 +568,8 @@ void InterstitialHTMLSource::StartDataRequest(
         CreateSafeBrowsingQuietBlockingPage(web_contents);
     html = blocking_page->GetHTML();
     interstitial_delegate = std::move(blocking_page);
-#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   } else if (path_without_query == "/supervised_user") {
     html = GetSupervisedUserInterstitialHTML(path);
-#endif
   } else if (interstitial_delegate.get()) {
     html = interstitial_delegate.get()->GetHTMLContents();
   } else {
@@ -582,11 +577,10 @@ void InterstitialHTMLSource::StartDataRequest(
         IDR_SECURITY_INTERSTITIAL_UI_HTML);
   }
   scoped_refptr<base::RefCountedString> html_bytes = new base::RefCountedString;
-  html_bytes->data().assign(html.begin(), html.end());
+  html_bytes->as_string() = html;
   std::move(callback).Run(html_bytes.get());
 }
 
-#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
 std::string InterstitialHTMLSource::GetSupervisedUserInterstitialHTML(
     const std::string& path) {
   GURL url("https://localhost/" + path);
@@ -639,4 +633,3 @@ std::string InterstitialHTMLSource::GetSupervisedUserInterstitialHTML(
       g_browser_process->GetApplicationLocale(), /*already_sent_request=*/false,
       /*is_main_frame=*/true, show_banner);
 }
-#endif

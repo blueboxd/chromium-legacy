@@ -1034,7 +1034,7 @@ void AuraToplevel::OnConfigure(
   wl_array_init(&states);
   if (state_type == chromeos::WindowStateType::kMaximized)
     AddState(&states, XDG_TOPLEVEL_STATE_MAXIMIZED);
-  // TODO(crbug/1250129): Support snapped state.
+  // TODO(crbug.com/40197882): Support snapped state.
   if (IsFullscreenOrPinnedWindowStateType(state_type)) {
     // If pinned state is not yet supported, always set fullscreen.
     if (wl_resource_get_version(aura_toplevel_resource_) <
@@ -1052,7 +1052,7 @@ void AuraToplevel::OnConfigure(
         shell_surface_->GetWidget()->GetNativeWindow()->GetProperty(
             chromeos::kImmersiveImpliedByFullscreen)) {
       // Imemrsive state should NOT be set for pinned state.
-      // TODO(crbug.com/1511187): Lacros randomly enters/exits immersive state
+      // TODO(crbug.com/41483774): Lacros randomly enters/exits immersive state
       // when transitioning to pinned/unpinned state. Add CHECK to guarantee
       // `state_type` is as same as chrome::WindowStateType::kFullscreen here
       // after resolving this bug.

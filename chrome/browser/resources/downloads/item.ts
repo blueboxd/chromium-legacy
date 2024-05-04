@@ -3,19 +3,24 @@
 // found in the LICENSE file.
 
 import './icons.html.js';
+// <if expr="_google_chrome">
+import './internal/icons.html.js';
+// </if>
 import 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.js';
 import 'chrome://resources/cr_elements/cr_button/cr_button.js';
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.js';
 import 'chrome://resources/cr_elements/cr_icons.css.js';
 import 'chrome://resources/cr_elements/cr_hidden_style.css.js';
+// <if expr="_google_chrome">
+import 'chrome://resources/cr_elements/cr_link_row/cr_link_row.js';
+// </if>
+import 'chrome://resources/cr_elements/cr_progress/cr_progress.js';
 import 'chrome://resources/cr_elements/icons.html.js';
 import 'chrome://resources/cr_elements/cr_shared_vars.css.js';
 import 'chrome://resources/js/action_link.js';
 import 'chrome://resources/cr_elements/action_link.css.js';
 import './strings.m.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
-import 'chrome://resources/polymer/v3_0/paper-progress/paper-progress.js';
-import 'chrome://resources/polymer/v3_0/paper-styles/color.js';
 
 import {getInstance as getAnnouncerInstance} from 'chrome://resources/cr_elements/cr_a11y_announcer/cr_a11y_announcer.js';
 import type {CrActionMenuElement} from 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.js';
@@ -34,7 +39,7 @@ import {beforeNextRender, PolymerElement} from 'chrome://resources/polymer/v3_0/
 import {BrowserProxy} from './browser_proxy.js';
 import type {MojomData} from './data.js';
 import type {PageHandlerInterface} from './downloads.mojom-webui.js';
-import {DangerType, SafeBrowsingState, State} from './downloads.mojom-webui.js';
+import {DangerType, SafeBrowsingState, State, TailoredWarningType} from './downloads.mojom-webui.js';
 import {IconLoaderImpl} from './icon_loader.js';
 import {getTemplate} from './item.html.js';
 
@@ -186,6 +191,13 @@ export class DownloadsItemElement extends DownloadsItemElementBase {
         value: () => loadTimeData.getBoolean('improvedDownloadWarningsUX'),
       },
 
+      // <if expr="_google_chrome">
+      showEsbPromotion: {
+        type: Boolean,
+        value: false,
+      },
+      // </if>
+
       useFileIcon_: Boolean,
     };
   }
@@ -202,6 +214,9 @@ export class DownloadsItemElement extends DownloadsItemElementBase {
   }
 
   data: MojomData;
+  // <if expr="_google_chrome">
+  showEsbPromotion: boolean;
+  // </if>
   private mojoHandler_: PageHandlerInterface|null = null;
   private controlledBy_: string;
   private iconAriaLabel_: string;
@@ -451,10 +466,30 @@ export class DownloadsItemElement extends DownloadsItemElementBase {
           case DangerType.kDangerousContent:
           case DangerType.kDangerousHost:
             return loadTimeData.getString('dangerDownloadDesc');
-
+          case DangerType.kCookieTheft:
+            switch (data.tailoredWarningType) {
+              case TailoredWarningType.kCookieTheft:
+                return loadTimeData.getString('dangerDownloadCookieTheft');
+              case TailoredWarningType.kCookieTheftWithAccountInfo:
+                return data.accountEmail ?
+                    loadTimeData.getStringF(
+                        'dangerDownloadCookieTheftAndAccountDesc',
+                        data.accountEmail) :
+                    loadTimeData.getString('dangerDownloadCookieTheft');
+              case TailoredWarningType.kSuspiciousArchive:
+              case TailoredWarningType.kNoApplicableTailoredWarningType:
+                return loadTimeData.getString('dangerDownloadDesc');
+            }
           case DangerType.kUncommonContent:
-            return loadTimeData.getString('dangerUncommonDesc');
-
+            switch (data.tailoredWarningType) {
+              case TailoredWarningType.kSuspiciousArchive:
+                return loadTimeData.getString(
+                    'dangerUncommonSuspiciousArchiveDesc');
+              case TailoredWarningType.kCookieTheft:
+              case TailoredWarningType.kCookieTheftWithAccountInfo:
+              case TailoredWarningType.kNoApplicableTailoredWarningType:
+                return loadTimeData.getString('dangerUncommonDesc');
+            }
           case DangerType.kPotentiallyUnwanted:
             return loadTimeData.getString('dangerSettingsDesc');
 
@@ -806,6 +841,13 @@ export class DownloadsItemElement extends DownloadsItemElementBase {
           }
         });
   }
+
+  // <if expr="_google_chrome">
+  private onEsbPromotionClick_() {
+    assert(!!this.mojoHandler_);
+    this.mojoHandler_.openEsbSettings();
+  }
+  // </if>
 
   private onMoreActionsClick_() {
     assert(this.improvedDownloadWarningsUx_);

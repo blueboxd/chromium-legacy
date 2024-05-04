@@ -150,6 +150,12 @@ chromium-metrics-reviews@google.com.
   </int>
 </enum>
 
+<enum name="LinkPreviewUsage">
+  <int value="0" label="Not used"/>
+  <int value="1" label="Used but not promited"/>
+  <int value="2" label="Used and promoted"/>
+</enum>
+
 <enum name="MhtmlLoadResult">
   <int value="0" label="Success">Archive loaded successfully</int>
   <int value="1" label="Empty file">
@@ -164,6 +170,22 @@ chromium-metrics-reviews@google.com.
   <int value="4" label="Missing main resource">
     Failed to load archive because it had no main resource
   </int>
+</enum>
+
+<enum name="OriginTrialStatusChange">
+  <int value="0"
+      label="kDisabled: Origin-specific origin trial token was disabled (i.e.
+             removed from the top-level site's partition)"/>
+  <int value="1"
+      label="kDisabled_MatchesSubdomains: Subdomain-matching origin trial
+             token was disabled (i.e. removed from the top-level site's
+             partition)"/>
+  <int value="2"
+      label="kEnabled: Origin-specific token was used to enable the origin
+             trial"/>
+  <int value="3"
+      label="kEnabled_MatchesSubdomains: Subdomain-matching token was used to
+             enable the origin trial"/>
 </enum>
 
 <enum name="PageActionCTREvent">

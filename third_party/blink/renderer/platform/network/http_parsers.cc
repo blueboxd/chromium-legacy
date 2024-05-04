@@ -35,6 +35,7 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <string_view>
 #include <utility>
 
 #include "base/containers/flat_map.h"
@@ -56,6 +57,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
 #include "third_party/blink/renderer/platform/network/header_field_tokenizer.h"
 #include "third_party/blink/renderer/platform/network/http_names.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/date_math.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
@@ -250,12 +252,6 @@ blink::TimingAllowOriginPtr ConvertToBlink(const TimingAllowOriginPtr& in) {
   }
 }
 
-blink::VariantsHeaderPtr ConvertToBlink(const VariantsHeaderPtr& in) {
-  DCHECK(in);
-  return blink::VariantsHeader::New(ConvertToBlink(in->name),
-                                    ConvertToBlink(in->available_values));
-}
-
 blink::NoVarySearchWithParseErrorPtr ConvertToBlink(
     const NoVarySearchWithParseErrorPtr& in) {
   if (!in)
@@ -290,7 +286,8 @@ blink::ParsedHeadersPtr ConvertToBlink(const ParsedHeadersPtr& in) {
   return blink::ParsedHeaders::New(
       ConvertToBlink(in->content_security_policy),
       ConvertToBlink(in->allow_csp_from), in->cross_origin_embedder_policy,
-      in->cross_origin_opener_policy, in->origin_agent_cluster,
+      in->cross_origin_opener_policy, in->document_isolation_policy,
+      in->origin_agent_cluster,
       in->accept_ch.has_value()
           ? std::make_optional(ConvertToBlink(in->accept_ch.value()))
           : std::nullopt,
@@ -303,8 +300,11 @@ blink::ParsedHeadersPtr ConvertToBlink(const ParsedHeadersPtr& in) {
       in->reporting_endpoints.has_value()
           ? std::make_optional(ConvertToBlink(in->reporting_endpoints.value()))
           : std::nullopt,
-      in->variants_headers.has_value()
-          ? std::make_optional(ConvertToBlink(in->variants_headers.value()))
+      in->cookie_indices.has_value()
+          ? std::make_optional(ConvertToBlink(in->cookie_indices.value()))
+          : std::nullopt,
+      in->avail_language.has_value()
+          ? std::make_optional(ConvertToBlink(in->avail_language.value()))
           : std::nullopt,
       in->content_language.has_value()
           ? std::make_optional(ConvertToBlink(in->content_language.value()))
@@ -373,8 +373,6 @@ bool ParseRefreshTime(const String& source, base::TimeDelta& delay) {
   for (unsigned i = 0; i < source.length(); ++i) {
     UChar ch = source[i];
     if (ch == kFullstopCharacter) {
-      // TODO(tkent): According to the HTML specification, we should support
-      // only integers. However we support fractional numbers.
       if (++full_stop_count == 2)
         number_end = i;
     } else if (!IsASCIIDigit(ch)) {
@@ -383,6 +381,9 @@ bool ParseRefreshTime(const String& source, base::TimeDelta& delay) {
   }
   bool ok;
   double time = source.Left(number_end).ToDouble(&ok);
+  if (RuntimeEnabledFeatures::MetaRefreshNoFractionalEnabled()) {
+    time = floor(time);
+  }
   if (!ok)
     return false;
   delay = base::Seconds(time);
@@ -788,7 +789,7 @@ bool ParseMultipartHeadersFromBody(const char* bytes,
   for (const AtomicString& header : ReplaceHeaders()) {
     std::string value;
     StringUTF8Adaptor adaptor(header);
-    base::StringPiece header_string_piece(adaptor.AsStringPiece());
+    std::string_view header_string_piece(adaptor.AsStringView());
     size_t iterator = 0;
 
     response->ClearHttpHeaderField(header);
@@ -831,7 +832,7 @@ bool ParseMultipartFormHeadersFromBody(const char* bytes,
   for (const AtomicString* headerNamePointer : headerNamePointers) {
     StringUTF8Adaptor adaptor(*headerNamePointer);
     size_t iterator = 0;
-    base::StringPiece headerNameStringPiece = adaptor.AsStringPiece();
+    std::string_view headerNameStringPiece = adaptor.AsStringView();
     std::string value;
     while (responseHeaders->EnumerateHeader(&iterator, headerNameStringPiece,
                                             &value)) {
@@ -847,7 +848,7 @@ bool ParseContentRangeHeaderFor206(const String& content_range,
                                    int64_t* last_byte_position,
                                    int64_t* instance_length) {
   return net::HttpUtil::ParseContentRangeHeaderFor206(
-      StringUTF8Adaptor(content_range).AsStringPiece(), first_byte_position,
+      StringUTF8Adaptor(content_range).AsStringView(), first_byte_position,
       last_byte_position, instance_length);
 }
 

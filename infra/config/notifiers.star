@@ -120,14 +120,6 @@ luci.notifier(
     ],
 )
 
-luci.notifier(
-    name = "chrome-build-perf",
-    on_new_status = ["FAILURE"],
-    notify_emails = [
-        "chrome-build-team+alert@google.com",
-    ],
-)
-
 TREE_CLOSING_STEPS_REGEXP = "\\b({})\\b".format("|".join([
     "bot_update",
     "compile",
@@ -321,4 +313,14 @@ luci.notifier(
         name = "build_with_step_summary_template",
         body = io.read_file("templates/build_with_step_summary.template"),
     ),
+)
+
+luci.notifier(
+    name = "Chromium Build Time Watcher",
+    notify_emails = [
+        "jwata@google.com",
+        "pasthana@google.com",
+        "thakis@google.com",
+    ],
+    on_new_status = ["INFRA_FAILURE"],
 )

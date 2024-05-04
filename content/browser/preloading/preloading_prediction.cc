@@ -15,15 +15,18 @@ namespace content {
 
 PreloadingPrediction::PreloadingPrediction(
     PreloadingPredictor predictor,
-    double confidence,
+    PreloadingConfidence confidence,
     ukm::SourceId triggered_primary_page_source_id,
     PreloadingURLMatchCallback url_match_predicate)
     : predictor_type_(predictor),
-      confidence_(confidence),
       triggered_primary_page_source_id_(triggered_primary_page_source_id),
-      url_match_predicate_(std::move(url_match_predicate)) {}
+      url_match_predicate_(std::move(url_match_predicate)),
+      confidence_(confidence) {}
 
 PreloadingPrediction::~PreloadingPrediction() = default;
+PreloadingPrediction::PreloadingPrediction(PreloadingPrediction&&) = default;
+PreloadingPrediction& PreloadingPrediction::operator=(PreloadingPrediction&&) =
+    default;
 
 void PreloadingPrediction::RecordPreloadingPredictionUKMs(
     ukm::SourceId navigated_page_source_id) {
@@ -33,7 +36,7 @@ void PreloadingPrediction::RecordPreloadingPredictionUKMs(
   if (navigated_page_source_id != ukm::kInvalidSourceId) {
     ukm::builders::Preloading_Prediction builder(navigated_page_source_id);
     builder.SetPreloadingPredictor(predictor_type_.ukm_value())
-        .SetConfidence(confidence_)
+        .SetConfidence(static_cast<int>(confidence_))
         .SetAccuratePrediction(is_accurate_prediction_);
     if (time_to_next_navigation_) {
       builder.SetTimeToNextNavigation(ukm::GetExponentialBucketMinForCounts1000(
@@ -46,7 +49,7 @@ void PreloadingPrediction::RecordPreloadingPredictionUKMs(
     ukm::builders::Preloading_Prediction_PreviousPrimaryPage builder(
         triggered_primary_page_source_id_);
     builder.SetPreloadingPredictor(predictor_type_.ukm_value())
-        .SetConfidence(confidence_)
+        .SetConfidence(static_cast<int>(confidence_))
         .SetAccuratePrediction(is_accurate_prediction_);
     if (time_to_next_navigation_) {
       builder.SetTimeToNextNavigation(ukm::GetExponentialBucketMinForCounts1000(
@@ -71,19 +74,18 @@ void PreloadingPrediction::SetIsAccuratePrediction(const GURL& navigated_url) {
 }
 
 ExperimentalPreloadingPrediction::ExperimentalPreloadingPrediction(
-    base::StringPiece name,
+    std::string_view name,
     PreloadingURLMatchCallback url_match_predicate,
     float score,
     float min_score,
     float max_score,
     size_t buckets)
     : name_(name),
-      score_(score),
-      min_score_(min_score),
-      max_score_(max_score),
       buckets_(buckets),
+      normalized_score_((score - min_score) / (max_score - min_score)),
       url_match_predicate_(std::move(url_match_predicate)) {
-  CHECK(max_score > min_score);
+  CHECK_GT(max_score, min_score);
+  CHECK_LT(buckets, 101u);
 }
 
 void ExperimentalPreloadingPrediction::SetIsAccuratePrediction(
@@ -92,14 +94,17 @@ void ExperimentalPreloadingPrediction::SetIsAccuratePrediction(
 }
 
 ExperimentalPreloadingPrediction::~ExperimentalPreloadingPrediction() = default;
+ExperimentalPreloadingPrediction::ExperimentalPreloadingPrediction(
+    ExperimentalPreloadingPrediction&&) = default;
+ExperimentalPreloadingPrediction& ExperimentalPreloadingPrediction::operator=(
+    ExperimentalPreloadingPrediction&&) = default;
 
 void ExperimentalPreloadingPrediction::RecordToUMA() const {
   const auto uma_experimental_prediction =
       base::StrCat({"Preloading.Experimental.", PredictorName(), ".",
                     IsAccuratePrediction() ? "Positive" : "Negative"});
-  float normalized_param = (Score() - min_score_) / (max_score_ - min_score_);
   base::UmaHistogramExactLinear(uma_experimental_prediction,
-                                normalized_param * buckets_, buckets_ + 1);
+                                normalized_score_ * buckets_, buckets_ + 1);
 }
 
 }  // namespace content

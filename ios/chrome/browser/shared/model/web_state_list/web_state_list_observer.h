@@ -5,9 +5,11 @@
 #ifndef IOS_CHROME_BROWSER_SHARED_MODEL_WEB_STATE_LIST_WEB_STATE_LIST_OBSERVER_H_
 #define IOS_CHROME_BROWSER_SHARED_MODEL_WEB_STATE_LIST_WEB_STATE_LIST_OBSERVER_H_
 
-#include "base/observer_list_types.h"
+#import "base/observer_list_types.h"
+#import "components/tab_groups/tab_group_visual_data.h"
+#import "ios/chrome/browser/shared/model/web_state_list/tab_group_range.h"
+#import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
 
-class WebStateList;
 class TabGroup;
 
 namespace web {
@@ -42,6 +44,14 @@ class WebStateListChange {
     kReplace,
     // Used when a new WebState is inserted into WebStateList.
     kInsert,
+    // Used when a tab group is created.
+    kGroupCreate,
+    // Used when a group's visual data were updated.
+    kGroupVisualDataUpdate,
+    // Used when a tab group at the specified range is moved to a new range.
+    kGroupMove,
+    // Used when a tab group is deleted.
+    kGroupDelete,
   };
 
   // Non-copyable, non-moveable.
@@ -259,6 +269,109 @@ class WebStateListChangeInsert final : public WebStateListChange {
   raw_ptr<web::WebState> inserted_web_state_;
   const int index_;
   raw_ptr<const TabGroup> group_;
+};
+
+// Represents a change that corresponds to the creation of a tab group. The
+// group has no WebStates in it, but will soon get some, which will be
+// communicated via following Move or StatusOnly changes per WebState.
+class WebStateListChangeGroupCreate final : public WebStateListChange {
+ public:
+  static constexpr Type kType = Type::kGroupCreate;
+
+  WebStateListChangeGroupCreate(raw_ptr<const TabGroup> created_group);
+  ~WebStateListChangeGroupCreate() final = default;
+
+  Type type() const final;
+
+  // The group that was created.
+  raw_ptr<const TabGroup> created_group() const {
+    CHECK(created_group_);
+    return created_group_;
+  }
+
+ private:
+  raw_ptr<const TabGroup> created_group_;
+};
+
+// Represents a change that corresponds to updating a tab group's visual data.
+class WebStateListChangeGroupVisualDataUpdate final
+    : public WebStateListChange {
+ public:
+  static constexpr Type kType = Type::kGroupVisualDataUpdate;
+
+  explicit WebStateListChangeGroupVisualDataUpdate(
+      raw_ptr<const TabGroup> updated_group,
+      const tab_groups::TabGroupVisualData& old_visual_data);
+  ~WebStateListChangeGroupVisualDataUpdate() final = default;
+
+  Type type() const final;
+
+  // The group whose visual data got update.
+  raw_ptr<const TabGroup> updated_group() const { return updated_group_; }
+
+  // Returns the previous visual data.
+  const tab_groups::TabGroupVisualData old_visual_data() const {
+    return old_visual_data_;
+  }
+
+ private:
+  raw_ptr<const TabGroup> updated_group_;
+  const tab_groups::TabGroupVisualData old_visual_data_;
+};
+
+// Represents a change that corresponds to moving an entire tab group to a new
+// index in WebStateList. There is no change in the number of WebStates, nor to
+// the number of WebStates in any group.
+class WebStateListChangeGroupMove final : public WebStateListChange {
+ public:
+  static constexpr Type kType = Type::kGroupMove;
+
+  WebStateListChangeGroupMove(raw_ptr<const TabGroup> moved_group,
+                              TabGroupRange moved_from_range,
+                              TabGroupRange moved_to_range);
+  ~WebStateListChangeGroupMove() final = default;
+
+  Type type() const final;
+
+  // The group that is moved from `moved_from_index` to `moved_to_index`.
+  raw_ptr<const TabGroup> moved_group() const {
+    CHECK(moved_group_);
+    return moved_group_;
+  }
+
+  // The previous range of the group.
+  TabGroupRange moved_from_range() const { return moved_from_range_; }
+
+  // The current range of the group.
+  TabGroupRange moved_to_range() const { return moved_to_range_; }
+
+ private:
+  raw_ptr<const TabGroup> moved_group_;
+  const TabGroupRange moved_from_range_;
+  const TabGroupRange moved_to_range_;
+};
+
+// Represents a change that corresponds to the deletion of a tab group. The
+// group has no WebStates in it anymore, which were communicated via previous
+// Move or StatusOnly changes per WebState.
+// The pointer to the group must not be reused after this notification.
+class WebStateListChangeGroupDelete final : public WebStateListChange {
+ public:
+  static constexpr Type kType = Type::kGroupDelete;
+
+  WebStateListChangeGroupDelete(raw_ptr<const TabGroup> deleted_group);
+  ~WebStateListChangeGroupDelete() final = default;
+
+  Type type() const final;
+
+  // The group that was deleted.
+  raw_ptr<const TabGroup> deleted_group() const {
+    CHECK(deleted_group_);
+    return deleted_group_;
+  }
+
+ private:
+  raw_ptr<const TabGroup> deleted_group_;
 };
 
 // Represents what changed during a WebStateListChange for a given WebState.

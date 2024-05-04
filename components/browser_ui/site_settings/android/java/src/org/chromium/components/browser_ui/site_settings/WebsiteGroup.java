@@ -38,7 +38,7 @@ public class WebsiteGroup implements WebsiteEntry {
         // Put all the sites into an eTLD+1 -> list of origins mapping.
         Map<String, List<Website>> etldMap = new HashMap<>();
         for (Website website : websites) {
-            // TODO(crbug.com/1342991): Handle partitioned storage.
+            // TODO(crbug.com/40231223): Handle partitioned storage.
             String etld = website.getAddress().getDomainAndRegistry();
             List<Website> etldSites = etldMap.get(etld);
             if (etldSites == null) {
@@ -116,8 +116,27 @@ public class WebsiteGroup implements WebsiteEntry {
         return false;
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public boolean isPartOfRws() {
+        return getFPSInfo() != null;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public String getRwsOwner() {
+        return isPartOfRws() ? getFPSInfo().getOwner() : null;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public int getRwsSize() {
+        return isPartOfRws() ? getFPSInfo().getMembersCount() : 0;
+    }
+
     /**
      * Some Google-affiliated domains are not allowed to delete cookies for supervised accounts.
+     *
      * @return true only if every single website in the group has the deletion disabled.
      */
     @Override

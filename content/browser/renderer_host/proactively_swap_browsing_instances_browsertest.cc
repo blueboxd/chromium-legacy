@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <string_view>
+
 #include "base/test/scoped_feature_list.h"
 #include "content/browser/renderer_host/navigation_controller_impl.h"
 #include "content/browser/renderer_host/navigation_request.h"
@@ -82,14 +84,14 @@ class ProactivelySwapBrowsingInstancesTest : public RenderFrameHostManagerTest {
 
   ~ProactivelySwapBrowsingInstancesTest() override = default;
 
-  void ExpectTotalCount(base::StringPiece name,
+  void ExpectTotalCount(std::string_view name,
                         base::HistogramBase::Count count) {
     FetchHistogramsFromChildProcesses();
     histogram_tester_.ExpectTotalCount(name, count);
   }
 
   template <typename T>
-  void ExpectBucketCount(base::StringPiece name,
+  void ExpectBucketCount(std::string_view name,
                          T sample,
                          base::HistogramBase::Count expected_count) {
     FetchHistogramsFromChildProcesses();
@@ -1211,7 +1213,7 @@ IN_PROC_BROWSER_TEST_P(ProactivelySwapBrowsingInstancesTest,
   // Note that we're using a renderer-initiated navigation here. If we do a
   // browser-initiated navigation, it will hit the case at crbug.com/1094147
   // where we can't reuse |url_2|'s process even though |url_3| is same-site.
-  // TODO(crbug.com/1094147): Test with browser-initiated navigation too once
+  // TODO(crbug.com/40135315): Test with browser-initiated navigation too once
   // the issue is fixed.
   EXPECT_TRUE(NavigateToURLFromRenderer(shell(), cross_site_redirector_url,
                                         url_3 /* expected_commit_url */));
@@ -1497,7 +1499,7 @@ IN_PROC_BROWSER_TEST_P(ProactivelySwapBrowsingInstancesTest,
 // Tests that unload handlers of the old RFH are run during commit of the new
 // RFH when swapping RFH for same-site navigations due to proactive
 // BrowsingInstance swap.
-// TODO(crbug.com/1110744): support this.
+// TODO(crbug.com/40142288): support this.
 IN_PROC_BROWSER_TEST_P(ProactivelySwapBrowsingInstancesTest,
                        DISABLED_UnloadRunsDuringCommit) {
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -1555,7 +1557,7 @@ IN_PROC_BROWSER_TEST_P(
   if (IsBackForwardCacheEnabled()) {
     // bfcached subframes with unload/pagehide/visibilitychange handlers will
     // crash on a failed DCHECK due to crbug.com/1109742.
-    // TODO(crbug.com/1109742): don't skip this test when bfcache is enabled.
+    // TODO(crbug.com/40141877): don't skip this test when bfcache is enabled.
     return;
   }
   ASSERT_TRUE(embedded_test_server()->Start());

@@ -23,7 +23,7 @@ namespace ui {
 
 namespace {
 
-// TODO(https://crbug.com/1353873): Remove this method when Compositors other
+// TODO(crbug.com/40235357): Remove this method when Compositors other
 // than Exo comply with `wl_pointer.frame`.
 wl::EventDispatchPolicy EventDispatchPolicyForPlatform() {
   return
@@ -77,13 +77,13 @@ void WaylandPointer::OnEnter(void* data,
   const auto timestamp = EventTimeForNow();
   auto* self = static_cast<WaylandPointer*>(data);
 
-  if (self->connection_->IsDragInProgress()) {
-    VLOG(1) << "Ignoring enter event received during dnd session.";
-    return;
-  }
-
   self->connection_->serial_tracker().UpdateSerial(wl::SerialType::kMouseEnter,
                                                    serial);
+
+  if (self->SuppressFocusChangeEvents()) {
+    LOG(WARNING) << "Suppressing enter event received during window drag.";
+    return;
+  }
 
   WaylandWindow* window = wl::RootWindowFromWlSurface(surface);
   if (!window) {
@@ -107,12 +107,12 @@ void WaylandPointer::OnLeave(void* data,
   const auto timestamp = EventTimeForNow();
   auto* self = static_cast<WaylandPointer*>(data);
 
-  if (self->connection_->IsDragInProgress()) {
-    VLOG(1) << "Ignoring leave event received during dnd session.";
+  self->connection_->serial_tracker().ResetSerial(wl::SerialType::kMouseEnter);
+
+  if (self->SuppressFocusChangeEvents()) {
+    LOG(WARNING) << "Suppressing leave event received during window drag.";
     return;
   }
-
-  self->connection_->serial_tracker().ResetSerial(wl::SerialType::kMouseEnter);
 
   auto event_dispatch_policy = EventDispatchPolicyForPlatform();
 
@@ -128,11 +128,6 @@ void WaylandPointer::OnMotion(void* data,
                               wl_fixed_t surface_x,
                               wl_fixed_t surface_y) {
   auto* self = static_cast<WaylandPointer*>(data);
-
-  if (self->connection_->IsDragInProgress()) {
-    VLOG(1) << "Ignoring motion event received during dnd session.";
-    return;
-  }
 
   gfx::PointF location(wl_fixed_to_double(surface_x),
                        wl_fixed_to_double(surface_y));
@@ -253,7 +248,7 @@ void WaylandPointer::OnAxisDiscrete(void* data,
                                     wl_pointer* pointer,
                                     uint32_t axis,
                                     int32_t discrete) {
-  // TODO(crbug.com/1129259): Use this event for better handling of mouse wheel
+  // TODO(crbug.com/40720099): Use this event for better handling of mouse wheel
   // events.
   NOTIMPLEMENTED_LOG_ONCE();
 }
@@ -265,7 +260,7 @@ void WaylandPointer::OnAxisValue120(void* data,
                                     wl_pointer* pointer,
                                     uint32_t axis,
                                     int32_t value120) {
-  // TODO(crbug.com/1129259): Use this event for better handling of mouse wheel
+  // TODO(crbug.com/40720099): Use this event for better handling of mouse wheel
   // events.
   NOTIMPLEMENTED_LOG_ONCE();
 }
@@ -330,6 +325,25 @@ void WaylandPointer::OnTilt(void* data,
 
   self->delegate_->OnPointerStylusTiltChanged(
       gfx::Vector2dF(wl_fixed_to_double(tilt_x), wl_fixed_to_double(tilt_y)));
+}
+
+// Enter/Leave events cause undesirable tab detaches in window dragging
+// sessions. At least KWin and Mutter are known to send leave/enter events
+// before the events currently used by the window drag controller to detect
+// drop, see the crbug linked below for more details.
+//
+// TODO(crbug.com/329479345): Move this suppression logic to drag controller
+// code once they're refactored to intercept events for the whole session. Also,
+// limit it to apply only in between the first data_device.enter and
+// dnd_drop_performed.
+bool WaylandPointer::SuppressFocusChangeEvents() const {
+  // Compositor version is available only on Exo, via aura-shell protocol.
+  if (connection_->GetServerVersion().IsValid() &&
+      connection_->GetServerVersion() > base::Version("112.0.5615")) {
+    return false;
+  }
+  return connection_->window_drag_controller() &&
+         connection_->window_drag_controller()->IsDragInProgress();
 }
 
 }  // namespace ui

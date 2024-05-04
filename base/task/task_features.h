@@ -26,7 +26,7 @@ BASE_EXPORT BASE_DECLARE_FEATURE(kUseUtilityThreadGroup);
 BASE_EXPORT BASE_DECLARE_FEATURE(kNoWorkerThreadReclaim);
 
 // This feature controls whether ThreadPool WorkerThreads should hold off waking
-// up to purge partition alloc within the first minute of their lifetime. See
+// up to purge PartitionAlloc within the first minute of their lifetime. See
 // base::internal::GetSleepDurationBeforePurge.
 BASE_EXPORT BASE_DECLARE_FEATURE(kDelayFirstWorkerWake);
 
@@ -56,6 +56,11 @@ BASE_EXPORT BASE_DECLARE_FEATURE(kTimerSlackMac);
 // Under this feature, tasks that need high resolution timer are determined
 // based on explicit DelayPolicy rather than based on a threshold.
 BASE_EXPORT BASE_DECLARE_FEATURE(kExplicitHighResolutionTimerWin);
+
+// Under this feature, the Windows UI pump uses a WaitableEvent to wake itself
+// up when not in a native nested loop. It also uses different control flow,
+// calling Win32 MessagePump functions less often.
+BASE_EXPORT BASE_DECLARE_FEATURE(kUIPumpImprovementsWin);
 
 // Feature to run tasks by batches before pumping out messages.
 BASE_EXPORT BASE_DECLARE_FEATURE(kRunTasksByBatches);

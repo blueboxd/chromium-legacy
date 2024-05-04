@@ -10,6 +10,7 @@
 #include <optional>
 #include <set>
 #include <string>
+#include <string_view>
 #include <utility>
 
 #include "base/check.h"
@@ -19,7 +20,6 @@
 #include "base/debug/dump_without_crashing.h"
 #include "base/notreached.h"
 #include "base/strings/strcat.h"
-#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
@@ -142,7 +142,7 @@ const char* ConvertAppServiceToArcIntentAction(const std::string& action) {
 // Returns true if |pattern| is a Glob (as in PatternMatchType::kGlob) which
 // behaves like a Prefix pattern. That is, the only special characters are a
 // ".*" at the end of the string.
-bool IsPrefixOnlyGlob(base::StringPiece pattern) {
+bool IsPrefixOnlyGlob(std::string_view pattern) {
   if (!base::EndsWith(pattern, ".*")) {
     return false;
   }
@@ -190,7 +190,7 @@ apps::ConditionValuePtr ConvertArcPatternMatcherToConditionValue(
             apps::PatternMatchType::kPrefix);
       }
       break;
-    // TODO(crbug.com/1463908): support the new pattern types.
+    // TODO(crbug.com/40275407): support the new pattern types.
     case arc::mojom::PatternType::PATTERN_ADVANCED_GLOB:
     case arc::mojom::PatternType::PATTERN_SUFFIX:
     case arc::mojom::PatternType::kUnknown:

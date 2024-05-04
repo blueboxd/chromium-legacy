@@ -18,7 +18,7 @@ AXValidationMessage::AXValidationMessage(AXObjectCacheImpl& ax_object_cache)
 
 AXValidationMessage::~AXValidationMessage() {}
 
-bool AXValidationMessage::ComputeAccessibilityIsIgnored(
+bool AXValidationMessage::ComputeIsIgnored(
     IgnoredReasons* ignored_reasons) const {
   return false;
 }
@@ -59,7 +59,7 @@ bool AXValidationMessage::IsOffScreen() const {
 
 bool AXValidationMessage::IsVisible() const {
   bool is_visible = RelatedFormControlIfVisible();
-  DCHECK(!is_visible || CachedParentObject() == AXObjectCache().Root())
+  DCHECK(!is_visible || ParentObject() == AXObjectCache().Root())
       << "A visible validation message's parent must be the root object'.";
   return is_visible;
 }

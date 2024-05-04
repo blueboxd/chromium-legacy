@@ -236,7 +236,7 @@ const ClipboardFormatType& ClipboardFormatType::FileContentZeroType() {
   // used with CFSTR_FILECONTENTS (but used in Chromium--see
   // OSExchangeDataProviderWin::SetFileContents). Use FileContentAtIndexType
   // if TYMED_ISTREAM and TYMED_ISTORAGE are needed.
-  // TODO(https://crbug.com/950756): Should TYMED_ISTREAM / TYMED_ISTORAGE be
+  // TODO(crbug.com/41451800): Should TYMED_ISTREAM / TYMED_ISTORAGE be
   // used instead of TYMED_HGLOBAL in
   // OSExchangeDataProviderWin::SetFileContents.
   // The 0 constructor argument is used with CFSTR_FILECONTENTS to specify file
@@ -305,6 +305,20 @@ const ClipboardFormatType& ClipboardFormatType::WebCustomDataType() {
 const ClipboardFormatType& ClipboardFormatType::InternalSourceUrlType() {
   static base::NoDestructor<ClipboardFormatType> format(
       RegisterClipboardFormatChecked(L"Chromium internal source URL"));
+  return *format;
+}
+
+// static
+const ClipboardFormatType& ClipboardFormatType::ClipboardHistoryType() {
+  static base::NoDestructor<ClipboardFormatType> format(
+      ::RegisterClipboardFormat(L"CanIncludeInClipboardHistory"));
+  return *format;
+}
+
+// static
+const ClipboardFormatType& ClipboardFormatType::UploadCloudClipboardType() {
+  static base::NoDestructor<ClipboardFormatType> format(
+      ::RegisterClipboardFormat(L"CanUploadToCloudClipboard"));
   return *format;
 }
 

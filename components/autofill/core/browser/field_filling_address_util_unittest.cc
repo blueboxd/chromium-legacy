@@ -5,7 +5,6 @@
 #include "components/autofill/core/browser/field_filling_address_util.h"
 
 #include <memory>
-#include <optional>
 #include <vector>
 
 #include "base/path_service.h"
@@ -71,7 +70,7 @@ class FieldFillingAddressUtilTest : public testing::Test {
 TEST_F(FieldFillingAddressUtilTest,
        FillFormField_AutocompleteOffNotRespected_AddressField) {
   AutofillField field;
-  field.should_autocomplete = false;
+  field.set_should_autocomplete(false);
   field.set_heuristic_type(GetActiveHeuristicSource(), NAME_FIRST);
 
   AutofillProfile profile(i18n_model_definition::kLegacyHierarchyCountryCode);
@@ -116,7 +115,7 @@ TEST_P(PhoneNumberTest, FillPhoneNumber) {
   auto test_case = GetParam();
   AutofillField field;
   field.SetHtmlType(test_case.field_type, HtmlFieldMode());
-  field.max_length = test_case.field_max_length;
+  field.set_max_length(test_case.field_max_length);
 
   AutofillProfile profile(AddressCountryCode("US"));
   profile.SetRawInfo(PHONE_HOME_WHOLE_NUMBER,
@@ -140,7 +139,7 @@ INSTANTIATE_TEST_SUITE_P(
         AutofillPhoneFieldFillerTestCase{HtmlFieldType::kTelLocalSuffix,
                                          /*field_max_length=*/0, u"4578",
                                          u"+15145554578"},
-        // TODO(crbug.com/581485): There should be a test case where the full
+        // TODO(crbug.com/40453991): There should be a test case where the full
         // number is requested (HtmlFieldType::kTel) but a
         // field_max_length of 3 would fill the prefix. Filling a phone type
         // field with a max length of 4 should fill only the suffix.
@@ -294,7 +293,7 @@ INSTANTIATE_TEST_SUITE_P(
             u"Virginia",
             u"VA - Virginia"},
         // Do accidentally match "Virginia" to "West Virginia".
-        // TODO(crbug.com/624770): This test should not pass, but it does
+        // TODO(crbug.com/40475034): This test should not pass, but it does
         // because "Virginia" is a substring of "West Virginia".
         FillSelectTestCase{{"WV - West Virginia", "TX - Texas"},
                            u"Virginia",
@@ -323,7 +322,7 @@ TEST_F(FieldFillingAddressUtilTest, FillSelectWithCountries) {
 TEST_F(FieldFillingAddressUtilTest, FillStreetAddressTextArea) {
   AutofillField field;
   AutofillProfile profile(i18n_model_definition::kLegacyHierarchyCountryCode);
-  field.form_control_type = FormControlType::kTextArea;
+  field.set_form_control_type(FormControlType::kTextArea);
   field.set_heuristic_type(GetActiveHeuristicSource(),
                            ADDRESS_HOME_STREET_ADDRESS);
 
@@ -346,7 +345,7 @@ TEST_F(FieldFillingAddressUtilTest, FillStreetAddressTextArea) {
 TEST_F(FieldFillingAddressUtilTest, FillStreetAddressTextField) {
   AutofillField field;
   AutofillProfile profile(i18n_model_definition::kLegacyHierarchyCountryCode);
-  field.form_control_type = FormControlType::kInputText;
+  field.set_form_control_type(FormControlType::kInputText);
   field.set_server_predictions(
       {::autofill::test::CreateFieldPrediction(ADDRESS_HOME_STREET_ADDRESS)});
 
@@ -384,7 +383,7 @@ TEST_P(AutofillStateTextTest, FillStateText) {
   auto test_case = GetParam();
   AutofillField field;
   field.SetHtmlType(test_case.field_type, HtmlFieldMode());
-  field.max_length = test_case.field_max_length;
+  field.set_max_length(test_case.field_max_length);
 
   AutofillProfile profile = test::GetFullProfile();
   profile.SetRawInfo(ADDRESS_HOME_STATE, test_case.value_to_fill);
@@ -462,7 +461,7 @@ void DoTestFillAugmentedPhoneCountryCodeField(
   AutofillField field(test::CreateTestSelectOrSelectListField(
       /*label=*/"", /*name=*/"", /*value=*/"", /*autocomplete=*/"",
       /*values=*/{}, /*contents=*/{}, field_type));
-  field.options = test_case.phone_country_code_selection_options;
+  field.set_options(test_case.phone_country_code_selection_options);
   field.set_heuristic_type(GetActiveHeuristicSource(), PHONE_HOME_COUNTRY_CODE);
 
   AutofillProfile profile(AddressCountryCode("US"));
@@ -703,7 +702,7 @@ TEST_F(FieldFillingAddressUtilTest, FillStateAbbreviationInTextField) {
   AutofillField field(test::CreateTestFormField("State", "state", "",
                                                 FormControlType::kInputText));
   field.set_heuristic_type(GetActiveHeuristicSource(), ADDRESS_HOME_STATE);
-  field.max_length = 4;
+  field.set_max_length(4);
 
   AutofillProfile profile(AddressCountryCode("DE"));
   profile.SetRawInfo(ADDRESS_HOME_STATE, u"Bavaria");
@@ -777,7 +776,7 @@ TEST_F(FieldFillingAddressUtilTest, FillUpperCaseAbbreviationInStateTextField) {
   AutofillField field{test::CreateTestFormField("State", "state", "",
                                                 FormControlType::kInputText)};
   field.set_heuristic_type(GetActiveHeuristicSource(), ADDRESS_HOME_STATE);
-  field.max_length = 4;
+  field.set_max_length(4);
 
   AutofillProfile profile(AddressCountryCode("DE"));
   profile.SetRawInfo(ADDRESS_HOME_STATE, u"Bavaria");

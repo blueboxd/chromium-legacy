@@ -12,12 +12,13 @@
 #include "base/memory/raw_ptr.h"
 #include "base/time/time.h"
 #include "chrome/browser/cart/chrome_cart.mojom.h"
-#include "chrome/browser/new_tab_page/modules/drive/drive.mojom.h"
 #include "chrome/browser/new_tab_page/modules/feed/feed.mojom.h"
+#include "chrome/browser/new_tab_page/modules/file_suggestion/file_suggestion.mojom.h"
 #include "chrome/browser/new_tab_page/modules/history_clusters/history_clusters.mojom.h"
 #include "chrome/browser/new_tab_page/modules/photos/photos.mojom.h"
 #include "chrome/browser/new_tab_page/modules/recipes/recipes.mojom.h"
 #include "chrome/browser/new_tab_page/modules/v2/history_clusters/history_clusters_v2.mojom.h"
+#include "chrome/browser/new_tab_page/modules/v2/most_relevant_tab_resumption/most_relevant_tab_resumption.mojom.h"
 #include "chrome/browser/new_tab_page/modules/v2/tab_resumption/tab_resumption.mojom.h"
 #include "components/user_education/webui/help_bubble_handler.h"
 #include "ui/webui/resources/cr_components/help_bubble/help_bubble.mojom.h"
@@ -33,7 +34,7 @@
 #include "chrome/browser/themes/theme_service_observer.h"
 #include "chrome/browser/ui/webui/metrics_reporter/metrics_reporter.h"
 #include "chrome/browser/ui/webui/new_tab_page/new_tab_page.mojom.h"
-#include "components/omnibox/browser/omnibox.mojom-forward.h"
+#include "components/feed/buildflags.h"
 #include "components/page_image_service/mojom/page_image_service.mojom.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -47,6 +48,7 @@
 #include "ui/webui/resources/cr_components/color_change_listener/color_change_listener.mojom.h"
 #include "ui/webui/resources/cr_components/customize_themes/customize_themes.mojom.h"
 #include "ui/webui/resources/cr_components/most_visited/most_visited.mojom.h"
+#include "ui/webui/resources/cr_components/searchbox/searchbox.mojom-forward.h"
 #include "ui/webui/resources/js/metrics_reporter/metrics_reporter.mojom.h"
 
 namespace base {
@@ -80,13 +82,14 @@ class BrowserCommandHandler;
 class RealboxHandler;
 class RecipesHandler;
 class CartHandler;
-class DriveHandler;
+class FileSuggestionHandler;
 class PhotosHandler;
 namespace ntp {
 class FeedHandler;
 }
 class HistoryClustersPageHandler;
 class HistoryClustersPageHandlerV2;
+class MostRelevantTabResumptionPageHandler;
 class TabResumptionPageHandler;
 class NewTabPageUI
     : public ui::MojoWebUIController,
@@ -125,10 +128,10 @@ class NewTabPageUI
       mojo::PendingReceiver<color_change_listener::mojom::PageHandler>
           pending_receiver);
 
-  // Instantiates the implementor of the omnibox::mojom::PageHandler mojo
+  // Instantiates the implementor of the searchbox::mojom::PageHandler mojo
   // interface passing the pending receiver that will be internally bound.
-  void BindInterface(
-      mojo::PendingReceiver<omnibox::mojom::PageHandler> pending_page_handler);
+  void BindInterface(mojo::PendingReceiver<searchbox::mojom::PageHandler>
+                         pending_page_handler);
 
   // Instantiates the implementor of metrics_reporter::mojom::PageMetricsHost
   // mojo interface passing the pending receiver that will be internally bound.
@@ -162,10 +165,12 @@ class NewTabPageUI
   void BindInterface(
       mojo::PendingReceiver<recipes::mojom::RecipesHandler> pending_receiver);
 
-  // Instantiates the implementor of drive::mojom::DriveHandler mojo interface
-  // passing the pending receiver that will be internally bound.
+  // Instantiates the implementor of
+  // file_suggestion::mojom::FileSuggestionHandler mojo interface passing the
+  // pending receiver that will be internally bound.
   void BindInterface(
-      mojo::PendingReceiver<drive::mojom::DriveHandler> pending_receiver);
+      mojo::PendingReceiver<file_suggestion::mojom::FileSuggestionHandler>
+          pending_receiver);
 
   // Instantiates the implementor of photos::mojom::PhotosHandler mojo interface
   // passing the pending receiver that will be internally bound.
@@ -202,6 +207,10 @@ class NewTabPageUI
   void BindInterface(
       mojo::PendingReceiver<ntp::history_clusters_v2::mojom::PageHandler>
           pending_page_handler);
+
+  void BindInterface(mojo::PendingReceiver<
+                     ntp::most_relevant_tab_resumption::mojom::PageHandler>
+                         pending_page_handler);
 
   void BindInterface(
       mojo::PendingReceiver<ntp::tab_resumption::mojom::PageHandler>
@@ -293,6 +302,8 @@ class NewTabPageUI
   std::unique_ptr<CartHandler> cart_handler_;
   std::unique_ptr<HistoryClustersPageHandler> history_clusters_handler_;
   std::unique_ptr<HistoryClustersPageHandlerV2> history_clusters_handler_v2_;
+  std::unique_ptr<MostRelevantTabResumptionPageHandler>
+      most_relevant_tab_resumption_handler_;
   std::unique_ptr<TabResumptionPageHandler> tab_resumption_handler_;
   std::unique_ptr<page_image_service::ImageServiceHandler>
       image_service_handler_;
@@ -309,10 +320,11 @@ class NewTabPageUI
 
   // Mojo implementations for modules:
   std::unique_ptr<RecipesHandler> recipes_handler_;
-  std::unique_ptr<DriveHandler> drive_handler_;
+  std::unique_ptr<FileSuggestionHandler> file_handler_;
   std::unique_ptr<PhotosHandler> photos_handler_;
+#if BUILDFLAG(ENABLE_FEED_V2)
   std::unique_ptr<ntp::FeedHandler> feed_handler_;
-
+#endif  // BUILDFLAG(ENABLE_FEED_V2)
   PrefChangeRegistrar pref_change_registrar_;
 
   base::WeakPtrFactory<NewTabPageUI> weak_ptr_factory_{this};

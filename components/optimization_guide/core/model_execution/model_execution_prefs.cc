@@ -5,6 +5,7 @@
 #include "components/optimization_guide/core/model_execution/model_execution_prefs.h"
 
 #include "base/notreached.h"
+#include "components/optimization_guide/core/model_execution/feature_keys.h"
 #include "components/prefs/pref_registry_simple.h"
 
 namespace optimization_guide::model_execution::prefs {
@@ -35,18 +36,14 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
       PrefRegistry::LOSSY_PREF);
 }
 
-const char* GetEnterprisePolicyPrefName(proto::ModelExecutionFeature feature) {
+const char* GetEnterprisePolicyPrefName(UserVisibleFeatureKey feature) {
   switch (feature) {
-    case proto::ModelExecutionFeature::MODEL_EXECUTION_FEATURE_COMPOSE:
+    case UserVisibleFeatureKey::kCompose:
       return kComposeEnterprisePolicyAllowed;
-    case proto::ModelExecutionFeature::MODEL_EXECUTION_FEATURE_TAB_ORGANIZATION:
+    case UserVisibleFeatureKey::kTabOrganization:
       return kTabOrganizationEnterprisePolicyAllowed;
-    case proto::ModelExecutionFeature::MODEL_EXECUTION_FEATURE_WALLPAPER_SEARCH:
+    case UserVisibleFeatureKey::kWallpaperSearch:
       return kWallpaperSearchEnterprisePolicyAllowed;
-    case proto::ModelExecutionFeature::MODEL_EXECUTION_FEATURE_TEST:
-    case proto::ModelExecutionFeature::MODEL_EXECUTION_FEATURE_UNSPECIFIED:
-      NOTREACHED();
-      return nullptr;
   }
 }
 

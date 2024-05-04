@@ -10,7 +10,6 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
-#include "device/bluetooth/bluetooth_gatt_characteristic.h"
 #include "device/bluetooth/bluetooth_local_gatt_characteristic.h"
 #include "device/bluetooth/floss/bluetooth_local_gatt_descriptor_floss.h"
 #include "device/bluetooth/floss/bluetooth_local_gatt_service_floss.h"
@@ -18,12 +17,6 @@
 #include "device/bluetooth/public/cpp/bluetooth_uuid.h"
 
 namespace floss {
-
-struct GattReadRequest {
-  std::string address;
-  int32_t request_id;
-  int32_t offset;
-};
 
 class BluetoothLocalGattDescriptorFloss;
 
@@ -74,15 +67,20 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothLocalGattCharacteristicFloss
       bool needs_response,
       int32_t handle,
       std::vector<uint8_t> value) override;
+  void GattServerExecuteWrite(std::string address,
+                              int32_t request_id,
+                              bool execute_write) override;
 
   void ResolveInstanceId(const GattService& service);
   int32_t InstanceId() const { return floss_instance_id_; }
   const std::vector<std::unique_ptr<BluetoothLocalGattDescriptorFloss>>&
   GetDescriptors() const;
+  NotificationType CccdNotificationType();
 
  private:
   friend class BluetoothLocalGattServiceFloss;
   friend class BluetoothLocalGattDescriptorFloss;
+  friend class BluetoothLocalGattServiceFlossTest;
 
   BluetoothLocalGattCharacteristicFloss(
       const device::BluetoothUUID& uuid,
@@ -90,7 +88,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothLocalGattCharacteristicFloss
       Permissions permissions,
       BluetoothLocalGattServiceFloss* service);
 
-  // Convert this characteristic to GattCharacteristic struct.
+  // Convert this characteristic to DBUS |GattCharacteristic| struct.
   GattCharacteristic ToGattCharacteristic();
 
   // Adds a descriptor to this characteristic. Returns the index of the
@@ -105,8 +103,15 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothLocalGattCharacteristicFloss
       std::optional<BluetoothGattServiceFloss::GattErrorCode> error_code,
       const std::vector<uint8_t>& value);
 
-  // Cached instance of the latest pending read request, if one exists.
-  std::optional<GattReadRequest> pending_read_request_;
+  // Runs after the browser client has processed the write request and has sent
+  // a response.
+  void OnWriteRequestCallback(int32_t request_id,
+                              std::vector<uint8_t>& value,
+                              bool needs_response,
+                              bool success);
+
+  // Cached instance of the latest pending read/write request, if one exists.
+  std::optional<GattRequest> pending_request_;
 
   // Timer to stop waiting for a callback response.
   base::OneShotTimer response_timer_;
@@ -125,7 +130,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothLocalGattCharacteristicFloss
 
   // Client and Floss-assigned instance ids.
   int32_t client_instance_id_;
-  int32_t floss_instance_id_;
+  int32_t floss_instance_id_ = -1;
 
   // Index of this characteristic within the containing service.
   int32_t index_;

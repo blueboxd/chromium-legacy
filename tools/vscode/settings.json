@@ -69,8 +69,16 @@
   // src/ directory.
   "C_Cpp.clang_format_path": "${workspaceFolder}/third_party/depot_tools/clang-format",
   "C_Cpp.clang_format_sortIncludes": true,
+  // Avoid conflicts with vscode-clangd extension.
+  "C_Cpp.intelliSenseEngine": "disabled",
   "editor.formatOnSave": true,
   "editor.formatOnSaveMode": "modifications",
+
+  // Don't format HTML files automatically on save, as VSCode's default
+  // formatter doesn't deal well with Chromium Polymer files.
+  "[html]": {
+    "editor.formatOnSave": false,
+  },
 
   // Disable automatic task detection to speed up opening the task menu.
   "task.autoDetect": "off",
@@ -93,4 +101,6 @@
   //"workbench.editor.enablePreview": false,
   // Optional: Same for files opened from quick open (Ctrl+P).
   //"workbench.editor.enablePreviewFromQuickOpen": false,
+  // Optional: Enable Python type checking.
+  //"python.analysis.typeCheckingMode": "basic"
 }

@@ -30,7 +30,10 @@
 #include "components/viz/common/surfaces/video_capture_target.h"
 #include "components/viz/service/frame_sinks/gmb_video_frame_pool_context_provider.h"
 #include "components/viz/service/frame_sinks/video_capture/frame_sink_video_capturer_manager.h"
+#include "components/viz/test/test_context_provider.h"
 #include "gpu/command_buffer/client/client_shared_image.h"
+#include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
+#include "media/base/format_utils.h"
 #include "media/base/limits.h"
 #include "media/base/test_helpers.h"
 #include "media/base/video_util.h"
@@ -87,6 +90,15 @@ bool CompareVarsInCompositorFrameMetadata(
          gfx::PointF(*rso_x, *rso_y) == root_scroll_offset;
 }
 
+// The following functions, CopyOutputRequestFormatToVideoPixelFormat and
+// GetColorSpaceForPixelFormat only deal with pixel_format_ which is the user
+// requested format, so we only have to care media::PIXEL_FORMAT_ARGB, and
+// ResultFormat::RGBA. GetBufferFormatForVideoPixelFormat and
+// GetBufferSizeInPixelsForVideoPixelFormat needs to deal with the GMB and frame
+// result passed from the capture callback, it could be RGBA/BGRA depends on
+// which platform we are, so we have to handle both media::PIXEL_FORMAT_ARGB
+// and media::PIXEL_FORMAT_ABGR.
+
 media::VideoPixelFormat CopyOutputRequestFormatToVideoPixelFormat(
     CopyOutputRequest::ResultFormat format) {
   switch (format) {
@@ -114,23 +126,12 @@ gfx::ColorSpace GetColorSpaceForPixelFormat(media::VideoPixelFormat format) {
   }
 }
 
-gfx::BufferFormat GetBufferFormatForVideoPixelFormat(
-    media::VideoPixelFormat format) {
-  switch (format) {
-    case media::PIXEL_FORMAT_ABGR:
-      return gfx::BufferFormat::RGBA_8888;
-    case media::PIXEL_FORMAT_NV12:
-      return gfx::BufferFormat::YUV_420_BIPLANAR;
-    default:
-      NOTREACHED_NORETURN();
-  }
-}
-
 gfx::Size GetBufferSizeInPixelsForVideoPixelFormat(
     media::VideoPixelFormat format,
     const gfx::Size& coded_size) {
   switch (format) {
     case media::PIXEL_FORMAT_ABGR:
+    case media::PIXEL_FORMAT_ARGB:
       return coded_size;
     case media::PIXEL_FORMAT_NV12:
       return {cc::MathUtil::CheckedRoundUp(coded_size.width(), 2),
@@ -280,7 +281,7 @@ class MockConsumer : public mojom::FrameSinkVideoConsumer {
       auto gmb_dummy = std::make_unique<media::FakeGpuMemoryBuffer>(
           GetBufferSizeInPixelsForVideoPixelFormat(info->pixel_format,
                                                    info->coded_size),
-          GetBufferFormatForVideoPixelFormat(info->pixel_format));
+          VideoPixelFormatToGfxBufferFormat(info->pixel_format).value());
       gpu::MailboxHolder mailbox_dummy[4];
 
       // The frame is only gonna tell Letterbox to skip the test.
@@ -756,7 +757,8 @@ class TestVideoCaptureOverlay : public VideoCaptureOverlay {
 class TestGmbVideoFramePoolContext
     : public media::RenderableGpuMemoryBufferVideoFramePool::Context {
  public:
-  TestGmbVideoFramePoolContext() {}
+  TestGmbVideoFramePoolContext()
+      : context_provider_(TestContextProvider::Create()) {}
   ~TestGmbVideoFramePoolContext() override = default;
 
   std::unique_ptr<gfx::GpuMemoryBuffer> CreateGpuMemoryBuffer(
@@ -774,12 +776,10 @@ class TestGmbVideoFramePoolContext
       SkAlphaType alpha_type,
       uint32_t usage,
       gpu::SyncToken& sync_token) override {
-    return base::MakeRefCounted<gpu::ClientSharedImage>(
-        gpu::Mailbox::GenerateForSharedImage(),
-        gpu::SharedImageMetadata(si_format, gpu_memory_buffer->GetSize(),
-                                 color_space, surface_origin, alpha_type,
-                                 usage),
-        sync_token, nullptr);
+    return context_provider_->SharedImageInterface()->CreateSharedImage(
+        {si_format, gpu_memory_buffer->GetSize(), color_space, surface_origin,
+         alpha_type, usage, "FrameSinkVideoCapturerImplUnittest"},
+        gpu_memory_buffer->CloneHandle());
   }
 
   scoped_refptr<gpu::ClientSharedImage> CreateSharedImage(
@@ -790,18 +790,21 @@ class TestGmbVideoFramePoolContext
       SkAlphaType alpha_type,
       uint32_t usage,
       gpu::SyncToken& sync_token) override {
-    return base::MakeRefCounted<gpu::ClientSharedImage>(
-        gpu::Mailbox::GenerateForSharedImage(),
-        gpu::SharedImageMetadata(
-            GetSinglePlaneSharedImageFormat(gpu_memory_buffer->GetFormat()),
-            gpu_memory_buffer->GetSize(), color_space, surface_origin,
-            alpha_type, usage),
-        sync_token, nullptr);
+    return context_provider_->SharedImageInterface()->CreateSharedImage(
+        gpu_memory_buffer, /*gpu_memory_buffer_manager=*/nullptr, plane,
+        {color_space, surface_origin, alpha_type, usage,
+         "FrameSinkVideoCapturerImplUnittest"});
   }
 
   void DestroySharedImage(
       const gpu::SyncToken& sync_token,
-      scoped_refptr<gpu::ClientSharedImage> shared_image) override {}
+      scoped_refptr<gpu::ClientSharedImage> shared_image) override {
+    context_provider_->SharedImageInterface()->DestroySharedImage(
+        sync_token, std::move(shared_image));
+  }
+
+ private:
+  scoped_refptr<TestContextProvider> context_provider_;
 };
 
 class TestGmbVideoFramePoolContextProvider

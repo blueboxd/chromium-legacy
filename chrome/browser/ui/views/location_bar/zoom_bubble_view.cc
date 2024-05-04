@@ -375,7 +375,7 @@ void ZoomBubbleView::Init() {
   constexpr int kPercentLabelPadding = 64;
   const ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   const int spacing =
-      provider->GetDistanceMetric(DISTANCE_UNRELATED_CONTROL_HORIZONTAL);
+      provider->GetDistanceMetric(views::DISTANCE_UNRELATED_CONTROL_HORIZONTAL);
   gfx::Insets inset_border_insets =
       provider->GetInsetsMetric(INSETS_TOAST) - margins();
   inset_border_insets.set_top_bottom(0, 0);
@@ -520,7 +520,7 @@ void ZoomBubbleView::SetExtensionInfo(const extensions::Extension* extension) {
   // is an action icon (size-16) this is an acceptable alternative.
   const ExtensionIconSet* icons = &extensions::IconsInfo::GetIcons(extension);
   bool has_default_sized_icon =
-      !icons->Get(gfx::kFaviconSize, ExtensionIconSet::MATCH_EXACTLY).empty();
+      !icons->Get(gfx::kFaviconSize, ExtensionIconSet::Match::kExactly).empty();
 
   if (!has_default_sized_icon) {
     const extensions::ActionInfo* action =

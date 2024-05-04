@@ -23,7 +23,6 @@
 #include "build/chromeos_buildflags.h"
 #include "components/browsing_data/content/browsing_data_model.h"
 #include "components/browsing_data/content/cookie_helper.h"
-#include "components/browsing_data/content/local_shared_objects_container.h"
 #include "components/content_settings/common/content_settings_manager.mojom.h"
 #include "components/content_settings/core/browser/content_settings_observer.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -159,9 +158,6 @@ class PageSpecificContentSettings
         content::RenderFrameHost* rfh,
         RendererContentSettingRules* rules) = 0;
 
-    virtual browsing_data::CookieHelper::IsDeletionDisabledCallback
-    GetIsDeletionDisabledCallback() = 0;
-
     // Allows the delegate to provide additional logic for getting microphone
     // and camera state on top of the microphone and camera state at the last
     // media stream request.
@@ -179,6 +175,11 @@ class PageSpecificContentSettings
 
     // Notifies the delegate a particular content settings type was blocked.
     virtual void OnContentBlocked(ContentSettingsType type) = 0;
+
+    // Returns true if `render_frame_host` should be allowlisted for using
+    // JavaScript.
+    virtual bool IsFrameAllowlistedForJavaScript(
+        content::RenderFrameHost* render_frame_host) = 0;
   };
 
   // Classes that want to be notified about site data events must implement
@@ -207,6 +208,11 @@ class PageSpecificContentSettings
 
    private:
     raw_ptr<content::WebContents, DanglingUntriaged> web_contents_;
+  };
+
+  class PermissionUsageObserver : public base::CheckedObserver {
+   public:
+    virtual void OnPermissionUsageChange() = 0;
   };
 
   PageSpecificContentSettings(const PageSpecificContentSettings&) = delete;
@@ -276,6 +282,10 @@ class PageSpecificContentSettings
                             bool blocked_by_policy,
                             privacy_sandbox::CanonicalTopic topic);
 
+  // Called when notifications are accessed on `rfh`.
+  static void NotificationsAccessed(content::RenderFrameHost* rfh,
+                                    bool blocked);
+
   static content::WebContentsObserver* GetWebContentsObserverForTest(
       content::WebContents* web_contents);
 
@@ -285,6 +295,10 @@ class PageSpecificContentSettings
   base::WeakPtr<PageSpecificContentSettings> AsWeakPtr() {
     return weak_factory_.GetWeakPtr();
   }
+
+  // Add/remove observer.
+  void AddPermissionUsageObserver(PermissionUsageObserver* observer);
+  void RemovePermissionUsageObserver(PermissionUsageObserver* observer);
 
   // Changes the |content_blocked_| entry for popups.
   void ClearPopupsBlocked();
@@ -326,6 +340,15 @@ class PageSpecificContentSettings
     return geolocation_was_just_granted_on_site_level_;
   }
 
+  // Called when notifications permission was auto-denied because the system
+  // level permission for a PWA was previously denied. This is currently only
+  // possible/used on macOS.
+  void SetNotificationsWasDeniedBecauseOfSystemPermission();
+
+  bool notifications_was_denied_because_of_system_permission() {
+    return notifications_was_denied_because_of_system_permission_;
+  }
+
   // Returns the state of the camera and microphone usage.
   // The return value always includes all active media capture devices, on top
   // of the devices from the last request.
@@ -334,19 +357,6 @@ class PageSpecificContentSettings
   // Returns whether the camera or microphone permission or media device setting
   // has changed since the last permission request.
   bool IsMicrophoneCameraStateChanged() const;
-
-  // Returns the |LocalSharedObjectsContainer| instances corresponding to all
-  // allowed, and blocked, respectively, local shared objects like cookies,
-  // local storage, ... .
-  const browsing_data::LocalSharedObjectsContainer&
-  allowed_local_shared_objects() const {
-    return allowed_local_shared_objects_;
-  }
-
-  const browsing_data::LocalSharedObjectsContainer&
-  blocked_local_shared_objects() const {
-    return blocked_local_shared_objects_;
-  }
 
   int stateful_bounce_count() const { return stateful_bounce_count_; }
 
@@ -586,10 +596,6 @@ class PageSpecificContentSettings
   // Profile-bound, this will outlive this class (which is WebContents bound).
   raw_ptr<HostContentSettingsMap> map_;
 
-  // Stores the blocked/allowed cookies.
-  browsing_data::LocalSharedObjectsContainer allowed_local_shared_objects_;
-  browsing_data::LocalSharedObjectsContainer blocked_local_shared_objects_;
-
   // Stores the count of stateful bounces during the navigation that led to this
   // page.
   int stateful_bounce_count_ = 0u;
@@ -600,8 +606,8 @@ class PageSpecificContentSettings
   // The origin of the media stream request. Note that we only support handling
   // settings for one request per tab. The latest request's origin will be
   // stored here. http://crbug.com/259794
-  // TODO(crbug.com/1467791): Remove `media_stream_access_origin_` and calculate
-  // a proper origin internaly.
+  // TODO(crbug.com/40276922): Remove `media_stream_access_origin_` and
+  // calculate a proper origin internaly.
   GURL media_stream_access_origin_;
 
   // The microphone and camera state at the last media stream request.
@@ -621,6 +627,8 @@ class PageSpecificContentSettings
   bool camera_was_just_granted_on_site_level_ = false;
   bool mic_was_just_granted_on_site_level_ = false;
   bool geolocation_was_just_granted_on_site_level_ = false;
+
+  bool notifications_was_denied_because_of_system_permission_ = false;
 
   // The time when the media indicator was displayed.
   base::TimeTicks media_indicator_time_;
@@ -652,6 +660,8 @@ class PageSpecificContentSettings
   // Calls to |delegate_| and SiteDataObservers that have been queued up while
   // the page is prerendering. These calls are run when the page is activated.
   std::unique_ptr<PendingUpdates> updates_queued_during_prerender_;
+
+  base::ObserverList<PermissionUsageObserver> permission_usage_observers_;
 
   PAGE_USER_DATA_KEY_DECL();
 

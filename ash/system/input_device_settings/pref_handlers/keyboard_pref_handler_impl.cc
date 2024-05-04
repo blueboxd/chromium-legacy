@@ -98,6 +98,10 @@ bool ShouldAddExtendedFkeyProperties(const mojom::Keyboard& keyboard) {
 }
 
 const char* GetDefaultKeyboardPref(const mojom::Keyboard& keyboard) {
+  if (IsSplitModifierKeyboard(keyboard)) {
+    return prefs::kKeyboardDefaultSplitModifierSettings;
+  }
+
   return IsChromeOSKeyboard(keyboard)
              ? prefs::kKeyboardDefaultChromeOSSettings
              : prefs::kKeyboardDefaultNonChromeOSSettings;
@@ -209,7 +213,7 @@ GetModifierRemappings(PrefService* prefs, const mojom::Keyboard& keyboard) {
       // The meta key is handled separately.
       continue;
     }
-    auto* it = kKeyboardModifierMappings.find(modifier_key);
+    auto it = kKeyboardModifierMappings.find(modifier_key);
     DCHECK(it != kKeyboardModifierMappings.end());
     const auto pref_modifier_key =
         static_cast<ui::mojom::ModifierKey>(prefs->GetInteger(it->second));
@@ -237,7 +241,7 @@ GetModifierRemappingsKnownUser(const user_manager::KnownUser& known_user,
       // The meta key is handled separately.
       continue;
     }
-    auto* it = kKeyboardModifierMappings.find(modifier_key);
+    auto it = kKeyboardModifierMappings.find(modifier_key);
     DCHECK(it != kKeyboardModifierMappings.end());
     const auto pref_modifier_key = static_cast<ui::mojom::ModifierKey>(
         known_user.FindIntPath(account_id, it->second)
@@ -350,6 +354,13 @@ RetrieveModifierRemappings(const mojom::Keyboard& keyboard,
     // Do not add modifier remappings for modifier keys that do not exist on the
     // given keyboard.
     if (!base::Contains(keyboard.modifier_keys, from_key)) {
+      continue;
+    }
+
+    // Do not add modifier remappings for function key if function key is not a
+    // modifier key.
+    if (to_key == ui::mojom::ModifierKey::kFunction &&
+        !base::Contains(keyboard.modifier_keys, to_key)) {
       continue;
     }
 
@@ -868,6 +879,20 @@ void KeyboardPrefHandlerImpl::UpdateDefaultNonChromeOSKeyboardSettings(
       keyboard, keyboard_policies, /*force_persistence=*/{true},
       /*existing_settings_dict=*/nullptr);
   pref_service->SetDict(prefs::kKeyboardDefaultNonChromeOSSettings,
+                        std::move(settings_dict));
+}
+
+void KeyboardPrefHandlerImpl::UpdateDefaultSplitModifierKeyboardSettings(
+    PrefService* pref_service,
+    const mojom::KeyboardPolicies& keyboard_policies,
+    const mojom::Keyboard& keyboard) {
+  CHECK(IsSplitModifierKeyboard(keyboard));
+
+  // All settings should be persisted fully when storing defaults.
+  auto settings_dict = ConvertSettingsToDict(
+      keyboard, keyboard_policies, /*force_persistence=*/{true},
+      /*existing_settings_dict=*/nullptr);
+  pref_service->SetDict(prefs::kKeyboardDefaultSplitModifierSettings,
                         std::move(settings_dict));
 }
 

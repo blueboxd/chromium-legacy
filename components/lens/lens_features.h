@@ -11,8 +11,7 @@
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
 
-namespace lens {
-namespace features {
+namespace lens::features {
 
 // Enables context menu search by image sending to the Lens homepage.
 COMPONENT_EXPORT(LENS_FEATURES)
@@ -66,8 +65,9 @@ extern const base::FeatureParam<bool> kEnableLensHtmlRedirectFix;
 
 // Enable Lens loading state removal on
 // DocumentOnLoadCompletedInPrimaryMainFrame.
-// TODO(crbug/1452161): Clean up unused listeners and flags after determining
-// which ones we want to listen to for server-side rendering backends.
+// TODO(crbug.com/40916154): Clean up unused listeners and flags after
+// determining which ones we want to listen to for server-side rendering
+// backends.
 COMPONENT_EXPORT(LENS_FEATURES)
 extern const base::FeatureParam<bool>
     kDismissLoadingStateOnDocumentOnLoadCompletedInPrimaryMainFrame;
@@ -199,7 +199,68 @@ extern bool GetShouldIssueProcessPrewarmingForLens();
 // Returns whether the Lens overlay is enabled
 COMPONENT_EXPORT(LENS_FEATURES)
 extern bool IsLensOverlayEnabled();
-}  // namespace features
-}  // namespace lens
+
+// Returns the finch configured results search URL to use as base for queries.
+COMPONENT_EXPORT(LENS_FEATURES)
+extern std::string GetLensOverlayResultsSearchURL();
+
+// Returns the finch configured image compression quality for the Lens overlay
+// feature.
+COMPONENT_EXPORT(LENS_FEATURES)
+extern int GetLensOverlayImageCompressionQuality();
+
+// Returns the finch configured image compression quality for the full
+// screenshot being used for the lens overlay feature. This is different than
+// the "image" compression quality because it is stays on the client to be
+// displayed on the overlay.
+COMPONENT_EXPORT(LENS_FEATURES)
+extern int GetLensOverlayScreenshotRenderQuality();
+
+// Returns the finch configured max image area for the Lens overlay feature.
+COMPONENT_EXPORT(LENS_FEATURES)
+extern int GetLensOverlayImageMaxArea();
+
+// Returns the finch configured max image height for the Lens overlay feature.
+COMPONENT_EXPORT(LENS_FEATURES)
+extern int GetLensOverlayImageMaxHeight();
+
+// Returns the finch configured max image width for the Lens overlay feature.
+COMPONENT_EXPORT(LENS_FEATURES)
+extern int GetLensOverlayImageMaxWidth();
+
+// Returns the finch configured endpoint URL for the Lens overlay.
+COMPONENT_EXPORT(LENS_FEATURES)
+extern std::string GetLensOverlayEndpointURL();
+
+// Returns whether to highlight text and object bounding boxes for debugging.
+COMPONENT_EXPORT(LENS_FEATURES)
+extern bool IsLensOverlayDebuggingEnabled();
+
+// Returns whether to use oauth for signed in requests to the endpoint.
+COMPONENT_EXPORT(LENS_FEATURES)
+extern bool UseOauthForLensOverlayRequests();
+
+// Returns the time before the Lens overlay cluster info is invalid, in seconds.
+COMPONENT_EXPORT(LENS_FEATURES)
+extern int GetLensOverlayClusterInfoLifetimeSeconds();
+
+// Returns the margin in pixels to add to the top and bottom of word bounding
+// boxes.
+COMPONENT_EXPORT(LENS_FEATURES)
+extern int GetLensOverlayVerticalTextMargin();
+
+// Returns the margin in pixels to add to the left and right of word bounding
+// boxes.
+COMPONENT_EXPORT(LENS_FEATURES)
+extern int GetLensOverlayHorizontalTextMargin();
+
+// Returns whether to show the lens overlay search bubble.
+COMPONENT_EXPORT(LENS_FEATURES)
+extern bool IsLensOverlaySearchBubbleEnabled();
+
+// Returns whether to render the Lens overlay shimmer.
+COMPONENT_EXPORT(LENS_FEATURES)
+extern bool IsLensOverlayShimmerEnabled();
+}  // namespace lens::features
 
 #endif  // COMPONENTS_LENS_LENS_FEATURES_H_

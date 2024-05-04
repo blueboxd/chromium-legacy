@@ -143,26 +143,15 @@ void UninstallWebAppWithDialogFromStartupSwitch(const webapps::AppId& app_id,
             },
             std::move(scoped_keep_alive)));
   } else {
-    // There is a chance that a previous invalid uninstall operation (due
-    // to a crash or otherwise) could end up orphaning an OsSettings entry.
-    // In this case we clean up the OsSettings entry.
-    web_app::OsHooksOptions options;
-    options[OsHookType::kUninstallationViaOsSettings] = true;
-
-    auto synchronize_barrier =
-        web_app::OsIntegrationManager::GetBarrierForSynchronize(base::BindOnce(
-            [](std::unique_ptr<ScopedKeepAlive> scoped_keep_alive,
-               OsHooksErrors os_hooks_errors) {},
-            std::move(scoped_keep_alive)));
-    provider->os_integration_manager().UninstallOsHooks(app_id, options,
-                                                        synchronize_barrier);
-
     // This is necessary to remove all OS integrations if the app has
     // been uninstalled.
     SynchronizeOsOptions synchronize_options;
     synchronize_options.force_unregister_os_integration = true;
     provider->scheduler().SynchronizeOsIntegration(
-        app_id, base::BindOnce(synchronize_barrier, OsHooksErrors()),
+        app_id,
+        base::BindOnce(
+            [](std::unique_ptr<ScopedKeepAlive> scoped_keep_alive) {},
+            std::move(scoped_keep_alive)),
         synchronize_options);
   }
 }
@@ -472,7 +461,10 @@ content::WebContents* WebAppUiManagerImpl::CreateNewTab() {
   NavigateParams params(profile_, GURL(url::kAboutBlankURL),
                         ui::PAGE_TRANSITION_FROM_API);
   base::WeakPtr<content::NavigationHandle> handle = Navigate(&params);
-  return handle->GetWebContents();
+  if (handle) {
+    return handle->GetWebContents();
+  }
+  return nullptr;
 }
 
 bool WebAppUiManagerImpl::IsWebContentsActiveTabInBrowser(
@@ -816,7 +808,7 @@ void WebAppUiManagerImpl::ShowIPHPromoForAppsLaunchedViaLinkCapturing(
   }
 
   user_education::FeaturePromoParams promo_params(
-      feature_engagement::kIPHDesktopPWAsLinkCapturingLaunch);
+      feature_engagement::kIPHDesktopPWAsLinkCapturingLaunch, app_id);
   promo_params.close_callback =
       base::BindOnce(&WebAppUiManagerImpl::OnIPHPromoResponseForLinkCapturing,
                      weak_ptr_factory_.GetWeakPtr(), browser, app_id);
@@ -844,7 +836,8 @@ void WebAppUiManagerImpl::OnIPHPromoResponseForLinkCapturing(
 
   user_education::FeaturePromoClosedReason close_reason;
   feature_promo_controller->HasPromoBeenDismissed(
-      feature_engagement::kIPHDesktopPWAsLinkCapturingLaunch, &close_reason);
+      {feature_engagement::kIPHDesktopPWAsLinkCapturingLaunch, app_id},
+      &close_reason);
   switch (close_reason) {
     case user_education::FeaturePromoClosedReason::kAction:
       base::RecordAction(

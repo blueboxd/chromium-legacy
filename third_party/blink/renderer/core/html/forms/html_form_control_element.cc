@@ -214,10 +214,6 @@ void HTMLFormControlElement::SetAutofillState(WebAutofillState autofill_state) {
   PseudoStateChanged(CSSSelector::kPseudoAutofillPreviewed);
 }
 
-void HTMLFormControlElement::SetAutofillSection(const WebString& section) {
-  autofill_section_ = section;
-}
-
 bool HTMLFormControlElement::IsAutocompleteEmailUrlOrPassword() const {
   DEFINE_STATIC_LOCAL(HashSet<AtomicString>, values,
                       ({AtomicString("username"), AtomicString("new-password"),
@@ -368,7 +364,7 @@ HTMLFormControlElement::popoverTargetElement() {
   if (!target_element && RuntimeEnabledFeatures::StylableSelectEnabled()) {
     if (auto* button = DynamicTo<HTMLButtonElement>(this)) {
       if (auto* select = button->OwnerSelect()) {
-        if (auto* datalist = select->SlottedDatalist()) {
+        if (HTMLDataListElement* datalist = select->DisplayedDatalist()) {
           target_element = datalist;
         }
       }
@@ -411,7 +407,7 @@ Element* HTMLFormControlElement::invokeTargetElement() {
 }
 
 Element* HTMLFormControlElement::interestTargetElement() {
-  CHECK(RuntimeEnabledFeatures::HTMLInterestTargetAttributeEnabled());
+  CHECK(RuntimeEnabledFeatures::HTMLInvokeTargetAttributeEnabled());
 
   if (!IsInTreeScope() || IsDisabledFormControl()) {
     return nullptr;
@@ -452,8 +448,94 @@ AtomicString HTMLFormControlElement::invokeAction() const {
   return g_empty_atom;
 }
 
+InvokeAction HTMLFormControlElement::GetInvokeAction() const {
+  auto action = invokeAction();
+  if (action.empty()) {
+    return InvokeAction::kAuto;
+  }
+
+  // Custom Invoke Action
+  if (action.Contains('-')) {
+    return InvokeAction::kCustom;
+  }
+
+  // Popover Cases
+  if (EqualIgnoringASCIICase(action, keywords::kTogglePopover)) {
+    return InvokeAction::kTogglePopover;
+  }
+  if (EqualIgnoringASCIICase(action, keywords::kShowPopover)) {
+    return InvokeAction::kShowPopover;
+  }
+  if (EqualIgnoringASCIICase(action, keywords::kHidePopover)) {
+    return InvokeAction::kHidePopover;
+  }
+
+  // Dialog Cases
+  if (EqualIgnoringASCIICase(action, keywords::kClose)) {
+    return InvokeAction::kClose;
+  }
+  if (EqualIgnoringASCIICase(action, keywords::kShowModal)) {
+    return InvokeAction::kShowModal;
+  }
+
+  // V2 InvokeActions Go Below this
+
+  if (!RuntimeEnabledFeatures::HTMLInvokeActionsV2Enabled()) {
+    return InvokeAction::kNone;
+  }
+
+  // Input/Select Cases
+  if (EqualIgnoringASCIICase(action, keywords::kShowPicker)) {
+    return InvokeAction::kShowPicker;
+  }
+
+  // Number Input Cases
+  if (EqualIgnoringASCIICase(action, keywords::kStepUp)) {
+    return InvokeAction::kStepUp;
+  }
+  if (EqualIgnoringASCIICase(action, keywords::kStepDown)) {
+    return InvokeAction::kStepDown;
+  }
+
+  // Fullscreen Cases
+  if (EqualIgnoringASCIICase(action, keywords::kToggleFullscreen)) {
+    return InvokeAction::kToggleFullscreen;
+  }
+  if (EqualIgnoringASCIICase(action, keywords::kRequestFullscreen)) {
+    return InvokeAction::kRequestFullscreen;
+  }
+  if (EqualIgnoringASCIICase(action, keywords::kExitFullscreen)) {
+    return InvokeAction::kExitFullscreen;
+  }
+
+  // Details cases
+  if (EqualIgnoringASCIICase(action, keywords::kToggle)) {
+    return InvokeAction::kToggle;
+  }
+  if (EqualIgnoringASCIICase(action, keywords::kOpen)) {
+    return InvokeAction::kOpen;
+  }
+  // InvokeAction::kClose handled above in Dialog
+
+  // Media cases
+  if (EqualIgnoringASCIICase(action, keywords::kPlaypause)) {
+    return InvokeAction::kPlaypause;
+  }
+  if (EqualIgnoringASCIICase(action, keywords::kPause)) {
+    return InvokeAction::kPause;
+  }
+  if (EqualIgnoringASCIICase(action, keywords::kPlay)) {
+    return InvokeAction::kPlay;
+  }
+  if (EqualIgnoringASCIICase(action, keywords::kToggleMuted)) {
+    return InvokeAction::kToggleMuted;
+  }
+
+  return InvokeAction::kNone;
+}
+
 AtomicString HTMLFormControlElement::interestAction() const {
-  DCHECK(RuntimeEnabledFeatures::HTMLInterestTargetAttributeEnabled());
+  CHECK(RuntimeEnabledFeatures::HTMLInterestTargetAttributeEnabled());
   const AtomicString& attribute_value =
       FastGetAttribute(html_names::kInterestactionAttr);
   if (attribute_value && !attribute_value.IsNull() &&
@@ -482,12 +564,17 @@ void HTMLFormControlElement::DefaultEventHandler(Event& event) {
     // Buttons with an invoketarget will dispatch an InvokeEvent on the Invoker,
     // and run HandleInvokeInternal to perform default logic.
     if (invokee) {
-      auto action = invokeAction();
-      Event* invokeEvent =
-          InvokeEvent::Create(event_type_names::kInvoke, action, this);
-      invokee->DispatchEvent(*invokeEvent);
-      if (!invokeEvent->defaultPrevented()) {
-        invokee->HandleInvokeInternal(*this, action);
+      auto action = GetInvokeAction();
+      bool is_valid_builtin = invokee->IsValidInvokeAction(*this, action);
+      bool should_dispatch =
+          is_valid_builtin || action == InvokeAction::kCustom;
+      if (should_dispatch) {
+        Event* invokeEvent = InvokeEvent::Create(event_type_names::kInvoke,
+                                                 invokeAction(), this);
+        invokee->DispatchEvent(*invokeEvent);
+        if (is_valid_builtin && !invokeEvent->defaultPrevented()) {
+          invokee->HandleInvokeInternal(*this, action);
+        }
       }
 
     } else if (popover.popover) {
@@ -508,28 +595,29 @@ void HTMLFormControlElement::DefaultEventHandler(Event& event) {
       auto trigger_support = SupportsPopoverTriggering();
       CHECK_NE(trigger_support, PopoverTriggerSupport::kNone);
       CHECK_NE(popover.action, PopoverTriggerAction::kNone);
-      AtomicString action;
+      InvokeAction action;
 
       switch (popover.action) {
         case PopoverTriggerAction::kToggle:
-          action = keywords::kTogglePopover;
+          action = InvokeAction::kTogglePopover;
           break;
         case PopoverTriggerAction::kShow:
-          action = keywords::kShowPopover;
+          action = InvokeAction::kShowPopover;
           break;
         case PopoverTriggerAction::kHide:
-          action = keywords::kHidePopover;
+          action = InvokeAction::kHidePopover;
           break;
         case PopoverTriggerAction::kHover:
           CHECK(RuntimeEnabledFeatures::HTMLPopoverActionHoverEnabled());
-          action = keywords::kShowPopover;
+          action = InvokeAction::kShowPopover;
           break;
         case PopoverTriggerAction::kNone:
+          action = InvokeAction::kNone;
           NOTREACHED();
           break;
       }
 
-      CHECK(action);
+      CHECK(popover.popover->IsValidInvokeAction(*this, action));
       popover.popover->HandleInvokeInternal(*this, action);
     }
   }
@@ -543,6 +631,11 @@ void HTMLFormControlElement::SetHovered(bool hovered) {
 
 void HTMLFormControlElement::HandlePopoverInvokerHovered(bool hovered) {
   if (!IsInTreeScope()) {
+    return;
+  }
+  if (invokeTargetElement() ||
+      (RuntimeEnabledFeatures::HTMLInvokeTargetAttributeEnabled() &&
+       interestTargetElement())) {
     return;
   }
   auto target_info = popoverTargetElement();

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/web_applications/preinstalled_web_app_utils.h"
 
+#include <string_view>
+
 #include "base/files/file_util.h"
 #include "base/functional/bind.h"
 #include "base/strings/strcat.h"
@@ -145,11 +147,11 @@ constexpr char kOnlyUseOfflineManifest[] = "only_use_offline_manifest";
 constexpr char kOfflineManifest[] = "offline_manifest";
 
 // "name" manifest value to use for offline install. Cannot be updated.
-// TODO(crbug.com/1119699): Allow updating of name.
+// TODO(crbug.com/40145613): Allow updating of name.
 constexpr char kOfflineManifestName[] = "name";
 
 // "start_url" manifest value to use for offline install. Cannot be updated.
-// TODO(crbug.com/1119699): Allow updating of start_url.
+// TODO(crbug.com/40145613): Allow updating of start_url.
 constexpr char kOfflineManifestStartUrl[] = "start_url";
 
 // "scope" manifest value to use for offline install.
@@ -186,7 +188,14 @@ constexpr char kOemInstalled[] = "oem_installed";
 constexpr char kDisableIfTouchScreenWithStylusNotSupported[] =
     "disable_if_touchscreen_with_stylus_not_supported";
 
-void EnsureContains(base::Value::List& list, base::StringPiece value) {
+// Contains boolean that, if set to true, will set the app as the preferred app
+// for its supported links after installation. Note that this has no effect if
+// the app is already installed as the user may have already updated their
+// preference.
+constexpr char kIsPreferredAppForSupportedLinks[] =
+    "is_preferred_app_for_supported_links";
+
+void EnsureContains(base::Value::List& list, std::string_view value) {
   for (const base::Value& item : list) {
     if (item.is_string() && item.GetString() == value) {
       return;
@@ -453,6 +462,16 @@ OptionsOrError ParseConfig(FileUtilsWrapper& file_utils,
     options.disable_if_touchscreen_with_stylus_not_supported = value->GetBool();
   }
 
+  // is_preferred_app_for_supported_links
+  value = app_config_dict.Find(kIsPreferredAppForSupportedLinks);
+  if (value) {
+    if (!value->is_bool()) {
+      return base::StrCat({file.AsUTF8Unsafe(), " had an invalid ",
+                           kIsPreferredAppForSupportedLinks});
+    }
+    options.is_preferred_app_for_supported_links = value->GetBool();
+  }
+
   return options;
 }
 
@@ -632,8 +651,8 @@ WebAppInstallInfoFactoryOrError ParseOfflineManifest(
 }
 
 bool IsReinstallPastMilestoneNeeded(
-    base::StringPiece last_preinstall_synchronize_milestone_str,
-    base::StringPiece current_milestone_str,
+    std::string_view last_preinstall_synchronize_milestone_str,
+    std::string_view current_milestone_str,
     int force_reinstall_for_milestone) {
   int last_preinstall_synchronize_milestone = 0;
   if (!base::StringToInt(last_preinstall_synchronize_milestone_str,
@@ -677,7 +696,7 @@ void MarkAppAsMigratedToWebApp(Profile* profile,
   }
 }
 
-bool WasMigrationRun(Profile* profile, base::StringPiece feature_name) {
+bool WasMigrationRun(Profile* profile, std::string_view feature_name) {
   const base::Value::List& migrated_features =
       profile->GetPrefs()->GetList(prefs::kWebAppsDidMigrateDefaultChromeApps);
 
@@ -691,7 +710,7 @@ bool WasMigrationRun(Profile* profile, base::StringPiece feature_name) {
 }
 
 void SetMigrationRun(Profile* profile,
-                     base::StringPiece feature_name,
+                     std::string_view feature_name,
                      bool was_migrated) {
   ScopedListPrefUpdate update(profile->GetPrefs(),
                               prefs::kWebAppsDidMigrateDefaultChromeApps);

@@ -29,7 +29,7 @@ class ContextCollection;
 
 namespace resource_attribution::internal {
 
-struct QueryParams;
+class QueryParams;
 
 // QueryScheduler keeps track of all queries for a particular resource type and
 // owns the machinery that performs measurements.
@@ -59,6 +59,11 @@ class QueryScheduler
   // `query_params` and deletes `query_params`.
   void RemoveScopedQuery(std::unique_ptr<QueryParams> query_params);
 
+  // Notifies the scheduler that a scoped query will begin repeatedly requesting
+  // results. The query now needs a QueryId to track what results it has
+  // received.
+  void StartRepeatingQuery(QueryParams* query_params);
+
   // Requests the latest results for the given `query_params`, and passes them
   // to `callback`.
   void RequestResults(const QueryParams& query_params,
@@ -76,6 +81,9 @@ class QueryScheduler
 
   // Gives tests access to the query count for `resource_type`.
   uint32_t GetQueryCountForTesting(ResourceType resource_type) const;
+
+  // Logs metrics on Resource Attribution's memory usage to UMA.
+  void RecordMemoryMetrics();
 
  private:
   // Increases the CPU query count. `cpu_monitor_` will start monitoring CPU

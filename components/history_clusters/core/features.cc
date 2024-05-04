@@ -29,20 +29,12 @@ namespace internal {
 
 BASE_FEATURE(kJourneys, "Journeys", enabled_by_default_desktop_only);
 
-BASE_FEATURE(kJourneysLabels,
-             "JourneysLabel",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 BASE_FEATURE(kJourneysImages,
              "JourneysImages",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 const base::FeatureParam<bool> kJourneysImagesCover{
     &kJourneysImages, "JourneysImagesCover", true};
-
-BASE_FEATURE(kPersistedClusters,
-             "HistoryClustersPersistedClusters",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kOmniboxAction,
              "JourneysOmniboxAction",
@@ -79,12 +71,6 @@ BASE_FEATURE(kHistoryClustersKeywordFiltering,
 BASE_FEATURE(kHistoryClustersVisitDeduping,
              "HistoryClustersVisitDeduping",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-// TODO(manukh): Enabled by default in m122; clean up feature code in 2/21/24
-//   when m122 reaches stable.
-BASE_FEATURE(kJourneysIncludeSyncedVisits,
-             "JourneysIncludeSyncedVisits",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kJourneysPersistCachesToPrefs,
              "JourneysPersistCachesToPrefs",

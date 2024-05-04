@@ -30,6 +30,7 @@
 #include "components/web_package/signed_web_bundles/ed25519_public_key.h"
 #include "components/web_package/signed_web_bundles/signed_web_bundle_integrity_block.h"
 #include "components/web_package/signed_web_bundles/signed_web_bundle_signature_stack.h"
+#include "components/web_package/signed_web_bundles/signed_web_bundle_signature_stack_entry.h"
 #include "components/web_package/signed_web_bundles/signed_web_bundle_signature_verifier.h"
 #include "components/web_package/test_support/mock_web_bundle_parser_factory.h"
 #include "components/web_package/test_support/signed_web_bundles/web_bundle_signer.h"
@@ -43,6 +44,11 @@
 namespace web_app {
 
 namespace {
+
+using IntegritySignatureErrorForTesting =
+    web_package::WebBundleSigner::IntegritySignatureErrorForTesting;
+using IntegrityBlockErrorForTesting =
+    web_package::WebBundleSigner::IntegrityBlockErrorForTesting;
 
 using base::test::ErrorIs;
 using base::test::HasValue;
@@ -96,7 +102,6 @@ class SignedWebBundleReaderWithRealBundlesTest : public testing::Test {
     task_environment_.RunUntilIdle();
   }
 
-  using ErrorForTesting = web_package::WebBundleSigner::ErrorForTesting;
   using VerificationAction = SignedWebBundleReader::SignatureVerificationAction;
 
   std::unique_ptr<SignedWebBundleReader> CreateReaderAndInitialize(
@@ -128,10 +133,14 @@ class SignedWebBundleReaderWithRealBundlesTest : public testing::Test {
                 base::OnceCallback<void(VerificationAction)>
                     verification_action_callback) {
               EXPECT_THAT(integrity_block.signature_stack().size(), Eq(1ul));
-              EXPECT_THAT(integrity_block.signature_stack()
-                              .entries()[0]
-                              .public_key()
-                              .bytes(),
+
+              auto* ed25519_signature_info = absl::get_if<
+                  web_package::SignedWebBundleSignatureInfoEd25519>(
+                  &integrity_block.signature_stack()
+                       .entries()[0]
+                       .signature_info());
+              ASSERT_TRUE(ed25519_signature_info);
+              EXPECT_THAT(ed25519_signature_info->public_key().bytes(),
                           testing::ElementsAreArray(kTestPublicKey));
 
               std::move(verification_action_callback).Run(verification_action);
@@ -215,7 +224,9 @@ TEST_F(SignedWebBundleReaderWithRealBundlesTest,
       TestSignedWebBundleBuilder::BuildOptions()
           .SetBaseUrl(kUrl)
           .SetIndexHTMLContent(kHtmlString)
-          .SetErrorsForTesting({ErrorForTesting::kInvalidVersion}),
+          .SetErrorsForTesting(
+              {{IntegrityBlockErrorForTesting::kInvalidVersion},
+               /*signatures_errors=*/{}}),
       parse_status_future.GetCallback());
 
   auto parse_status = parse_status_future.Take();
@@ -236,7 +247,8 @@ TEST_F(SignedWebBundleReaderWithRealBundlesTest,
       TestSignedWebBundleBuilder::BuildOptions()
           .SetBaseUrl(kUrl)
           .SetErrorsForTesting(
-              {ErrorForTesting::kInvalidIntegrityBlockStructure}),
+              {{IntegrityBlockErrorForTesting::kInvalidIntegrityBlockStructure},
+               /*signatures_errors=*/{}}),
       parse_status_future.GetCallback());
 
   auto parse_status = parse_status_future.Take();
@@ -306,13 +318,19 @@ class SignedWebBundleReaderTest : public testing::Test {
     metadata_->primary_url = kUrl;
     metadata_->requests = std::move(items);
 
+    auto signature_info_ed25519 =
+        web_package::mojom::SignatureInfoEd25519::New();
+    signature_info_ed25519->public_key = web_package::Ed25519PublicKey::Create(
+        base::make_span(kEd25519PublicKey));
+    signature_info_ed25519->signature = web_package::Ed25519Signature::Create(
+        base::make_span(kEd25519Signature));
+
     web_package::mojom::BundleIntegrityBlockSignatureStackEntryPtr
         signature_stack_entry =
             web_package::mojom::BundleIntegrityBlockSignatureStackEntry::New();
-    signature_stack_entry->public_key = web_package::Ed25519PublicKey::Create(
-        base::make_span(kEd25519PublicKey));
-    signature_stack_entry->signature = web_package::Ed25519Signature::Create(
-        base::make_span(kEd25519Signature));
+    signature_stack_entry->signature_info =
+        web_package::mojom::SignatureInfo::NewEd25519(
+            std::move(signature_info_ed25519));
 
     std::vector<web_package::mojom::BundleIntegrityBlockSignatureStackEntryPtr>
         signature_stack;
@@ -364,10 +382,14 @@ class SignedWebBundleReaderTest : public testing::Test {
                 web_package::SignedWebBundleIntegrityBlock integrity_block,
                 base::OnceCallback<void(VerificationAction)> callback) {
               EXPECT_THAT(integrity_block.signature_stack().size(), Eq(1ul));
-              EXPECT_THAT(integrity_block.signature_stack()
-                              .entries()[0]
-                              .public_key()
-                              .bytes(),
+
+              auto* ed25519_signature_info = absl::get_if<
+                  web_package::SignedWebBundleSignatureInfoEd25519>(
+                  &integrity_block.signature_stack()
+                       .entries()[0]
+                       .signature_info());
+              ASSERT_TRUE(ed25519_signature_info);
+              EXPECT_THAT(ed25519_signature_info->public_key().bytes(),
                           Eq(kEd25519PublicKey));
 
               std::move(callback).Run(verification_action);
@@ -871,7 +893,7 @@ TEST_F(SignedWebBundleReaderTest, CloseWhileReadingResponseBody) {
 
   EXPECT_EQ(net::OK, on_response_read_callback.Get());
   std::vector<char> buffer(response_body_length);
-  uint32_t bytes_read = buffer.size();
+  size_t bytes_read = buffer.size();
   MojoResult read_result = response_body_consumer->ReadData(
       buffer.data(), &bytes_read, MOJO_READ_DATA_FLAG_NONE);
   EXPECT_EQ(MOJO_RESULT_OK, read_result);
@@ -964,8 +986,6 @@ INSTANTIATE_TEST_SUITE_P(All,
 
 class UnsecureSignedWebBundleReaderTest : public testing::Test {
  protected:
-  using ErrorForTesting = web_package::WebBundleSigner::ErrorForTesting;
-
   void SetUp() override {
     EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
     SetTrustedWebBundleIdsForTesting(
@@ -1008,12 +1028,16 @@ TEST_F(UnsecureSignedWebBundleReaderTest, ReadValidId) {
 }
 
 TEST_F(UnsecureSignedWebBundleReaderTest, ErrorId) {
-  for (auto error : {ErrorForTesting::kInvalidSignatureLength,
-                     ErrorForTesting::kInvalidPublicKeyLength,
-                     ErrorForTesting::kWrongSignatureStackEntryAttributeName,
-                     ErrorForTesting::kNoPublicKeySignatureStackEntryAttribute,
-                     ErrorForTesting::kAdditionalSignatureStackEntryAttribute,
-                     ErrorForTesting::kAdditionalSignatureStackEntryElement}) {
+  for (auto error : {IntegritySignatureErrorForTesting::kInvalidSignatureLength,
+                     IntegritySignatureErrorForTesting::kInvalidPublicKeyLength,
+                     IntegritySignatureErrorForTesting::
+                         kWrongSignatureStackEntryAttributeName,
+                     IntegritySignatureErrorForTesting::
+                         kNoPublicKeySignatureStackEntryAttribute,
+                     IntegritySignatureErrorForTesting::
+                         kAdditionalSignatureStackEntryAttribute,
+                     IntegritySignatureErrorForTesting::
+                         kAdditionalSignatureStackEntryElement}) {
     std::string swbn_file_name =
         base::NumberToString(base::to_underlying(error)) + "_test.swbn";
     SCOPED_TRACE(Message() << "Running testcase: "
@@ -1021,7 +1045,7 @@ TEST_F(UnsecureSignedWebBundleReaderTest, ErrorId) {
 
     TestSignedWebBundle bundle = TestSignedWebBundleBuilder::BuildDefault(
         TestSignedWebBundleBuilder::BuildOptions().SetErrorsForTesting(
-            {error}));
+            {/*integrity_block_errors=*/{}, {{error}}}));
     base::FilePath path =
         temp_dir_.GetPath().Append(base::FilePath::FromASCII(swbn_file_name));
     ASSERT_THAT(base::WriteFile(path, bundle.data), IsTrue());

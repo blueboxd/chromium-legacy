@@ -25,6 +25,7 @@
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_util.h"
 #include "components/autofill/core/common/form_data_predictions.h"
+#include "components/autofill/core/common/signatures.h"
 #include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
@@ -42,7 +43,7 @@ namespace autofill {
 
 namespace {
 
-// TODO(crbug.com/1117028): Remove once FormData objects aren't stored
+// TODO(crbug.com/40144964): Remove once FormData objects aren't stored
 // globally anymore.
 const FormData& WithNewVersion(const FormData& form) {
   static FormVersion version_counter;
@@ -51,7 +52,7 @@ const FormData& WithNewVersion(const FormData& form) {
   return form;
 }
 
-// TODO(crbug.com/1117028): Remove once FormData objects aren't stored
+// TODO(crbug.com/40144964): Remove once FormData objects aren't stored
 // globally anymore.
 const std::optional<FormData>& WithNewVersion(
     const std::optional<FormData>& form) {
@@ -61,7 +62,7 @@ const std::optional<FormData>& WithNewVersion(
   return form;
 }
 
-// TODO(crbug.com/1117028): Remove once FormData objects aren't stored
+// TODO(crbug.com/40144964): Remove once FormData objects aren't stored
 // globally anymore.
 const std::vector<FormData>& WithNewVersion(
     const std::vector<FormData>& forms) {
@@ -84,7 +85,7 @@ ContentAutofillDriver::ContentAutofillDriver(
     content::RenderFrameHost* render_frame_host,
     ContentAutofillDriverFactory* owner)
     : render_frame_host_(*render_frame_host), owner_(*owner) {
-  autofill_manager_ = owner_->client().CreateManager(/*pass_key=*/{}, *this);
+  autofill_manager_ = GetAutofillClient().CreateManager(/*pass_key=*/{}, *this);
 }
 
 ContentAutofillDriver::~ContentAutofillDriver() {
@@ -154,6 +155,10 @@ ContentAutofillDriver* ContentAutofillDriver::GetParent() {
     return nullptr;
   }
   return owner_->DriverForFrame(parent_rfh);
+}
+
+ContentAutofillClient& ContentAutofillDriver::GetAutofillClient() {
+  return owner_->client();
 }
 
 AutofillManager& ContentAutofillDriver::GetAutofillManager() {
@@ -239,9 +244,9 @@ base::flat_set<FieldGlobalId> ContentAutofillDriver::ApplyFormAction(
       field_type_map,
       [](autofill::AutofillDriver* target, mojom::FormActionType action_type,
          mojom::ActionPersistence action_persistence,
-         const FormData::FillData& form) {
-        cast(target)->GetAutofillAgent()->ApplyFormAction(
-            action_type, action_persistence, form);
+         const std::vector<FormFieldData::FillData>& fields) {
+        cast(target)->GetAutofillAgent()->ApplyFieldsAction(
+            action_type, action_persistence, fields);
       });
 }
 
@@ -291,8 +296,8 @@ void ContentAutofillDriver::ExtractForm(FormGlobalId form_id,
   // - since the response to make_request() is asynchronous, the only way to
   //   squeeze that in is through a separate callback.
   //
-  // TODO(crbug.com/1331312): Make ExtractForm() trigger a FormsSeen() event and
-  // await that event in the browser process, instead of having the response
+  // TODO(crbug.com/40227496): Make ExtractForm() trigger a FormsSeen() event
+  // and await that event in the browser process, instead of having the response
   // callback.
 
   auto set_version = base::BindOnce(
@@ -340,7 +345,7 @@ void ContentAutofillDriver::SendAutofillTypePredictionsToRenderer(
     const std::vector<raw_ptr<FormStructure, VectorExperimental>>& forms) {
   std::vector<FormDataPredictions> type_predictions =
       FormStructure::GetFieldTypePredictions(forms);
-  // TODO(crbug.com/1185232) Send the FormDataPredictions object only if the
+  // TODO(crbug.com/40753022) Send the FormDataPredictions object only if the
   // debugging flag is enabled.
   router().SendAutofillTypePredictionsToRenderer(
       this, type_predictions,
@@ -360,13 +365,6 @@ void ContentAutofillDriver::RendererShouldAcceptDataListSuggestion(
          const std::u16string& value) {
         cast(target)->GetAutofillAgent()->AcceptDataListSuggestion(field,
                                                                    value);
-      });
-}
-
-void ContentAutofillDriver::RendererShouldClearFilledSection() {
-  router().RendererShouldClearFilledSection(
-      this, [](autofill::AutofillDriver* target) {
-        cast(target)->GetAutofillAgent()->ClearSection();
       });
 }
 
@@ -608,7 +606,8 @@ void ContentAutofillDriver::SelectOrSelectListFieldOptionsDidChange(
 void ContentAutofillDriver::JavaScriptChangedAutofilledValue(
     const FormData& raw_form,
     const FormFieldData& raw_field,
-    const std::u16string& old_value) {
+    const std::u16string& old_value,
+    bool formatting_only) {
   if (!bad_message::CheckFrameNotPrerendering(render_frame_host())) {
     return;
   }
@@ -616,11 +615,12 @@ void ContentAutofillDriver::JavaScriptChangedAutofilledValue(
   FormFieldData field = raw_field;
   SetFrameAndFormMetaData(form, field);
   router().JavaScriptChangedAutofilledValue(
-      this, std::move(form), field, old_value,
+      this, std::move(form), field, old_value, formatting_only,
       [](autofill::AutofillDriver* target, const FormData& form,
-         const FormFieldData& field, const std::u16string& old_value) {
+         const FormFieldData& field, const std::u16string& old_value,
+         bool formatting_only) {
         target->GetAutofillManager().OnJavaScriptChangedAutofilledValue(
-            WithNewVersion(form), field, old_value);
+            WithNewVersion(form), field, old_value, formatting_only);
       });
 }
 
@@ -662,11 +662,11 @@ void ContentAutofillDriver::SetFrameAndFormMetaData(
   FormSignature form_signature = CalculateFormSignature(form);
 
   auto SetFieldMetaData = [&](FormFieldData& f) {
-    f.host_frame = form.host_frame;
-    f.host_form_id = form.renderer_id;
-    f.origin = render_frame_host_->GetLastCommittedOrigin();
-    f.host_form_signature = form_signature;
-    f.bounds = TransformBoundingBoxToViewportCoordinates(f.bounds);
+    f.set_host_frame(form.host_frame);
+    f.set_host_form_id(form.renderer_id);
+    f.set_origin(render_frame_host_->GetLastCommittedOrigin());
+    f.set_host_form_signature(form_signature);
+    f.set_bounds(TransformBoundingBoxToViewportCoordinates(f.bounds()));
   };
 
   for (FormFieldData& f : form.fields) {

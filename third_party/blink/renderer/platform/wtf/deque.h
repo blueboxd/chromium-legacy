@@ -38,6 +38,7 @@
 #include "base/check_op.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/construct_traits.h"
+#include "third_party/blink/renderer/platform/wtf/type_traits.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace WTF {
@@ -59,9 +60,6 @@ class Deque
                                 INLINE_CAPACITY,
                                 Allocator::kIsGarbageCollected>::value> {
   USE_ALLOCATOR(Deque, Allocator);
-
-  static_assert((inlineCapacity == 0) || !Allocator::kIsGarbageCollected,
-                "inlineCapacity not supported with garbage collection.");
 
  public:
   typedef DequeIterator<T, inlineCapacity, Allocator> iterator;
@@ -153,18 +151,6 @@ class Deque
   void Trace(auto visitor) const
     requires Allocator::kIsGarbageCollected;
 
-  static_assert(!std::is_polymorphic<T>::value ||
-                    !VectorTraits<T>::kCanInitializeWithMemset,
-                "Cannot initialize with memset if there is a vtable");
-  static_assert(Allocator::kIsGarbageCollected || !IsDisallowNew<T> ||
-                    !IsTraceable<T>::value,
-                "Cannot put DISALLOW_NEW objects that "
-                "have trace methods into an off-heap Deque");
-  static_assert(Allocator::kIsGarbageCollected ||
-                    !IsPointerToGarbageCollectedType<T>::value,
-                "Cannot put raw pointers to garbage-collected classes into a "
-                "Deque. Use HeapDeque<Member<T>> instead.");
-
  protected:
   T** GetBufferSlot() { return buffer_.BufferSlot(); }
   const T* const* GetBufferSlot() const { return buffer_.BufferSlot(); }
@@ -203,6 +189,27 @@ class Deque
   BackingBuffer buffer_;
   wtf_size_t start_;
   wtf_size_t end_;
+
+  struct TypeConstraints {
+    constexpr TypeConstraints() {
+      static_assert((inlineCapacity == 0) || !Allocator::kIsGarbageCollected,
+                    "inlineCapacity not supported with garbage collection.");
+      static_assert(!IsStackAllocatedType<T>);
+      static_assert(!std::is_polymorphic<T>::value ||
+                        !VectorTraits<T>::kCanInitializeWithMemset,
+                    "Cannot initialize with memset if there is a vtable");
+      static_assert(Allocator::kIsGarbageCollected || !IsDisallowNew<T> ||
+                        !IsTraceable<T>::value,
+                    "Cannot put DISALLOW_NEW objects that "
+                    "have trace methods into an off-heap Deque");
+      static_assert(
+          Allocator::kIsGarbageCollected ||
+              !IsPointerToGarbageCollectedType<T>::value,
+          "Cannot put raw pointers to garbage-collected classes into a "
+          "Deque. Use HeapDeque<Member<T>> instead.");
+    }
+  };
+  NO_UNIQUE_ADDRESS TypeConstraints type_constraints_;
 };
 
 template <typename T, wtf_size_t inlineCapacity, typename Allocator>

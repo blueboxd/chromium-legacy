@@ -13,9 +13,9 @@
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_vector.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
-#include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -35,30 +35,29 @@ class GamepadHapticActuator final : public ScriptWrappable,
                         device::GamepadHapticActuatorType type);
   ~GamepadHapticActuator() override;
 
+  const Vector<String>& effects() const { return supported_effects_; }
+
   const String& type() const { return type_; }
   void SetType(device::GamepadHapticActuatorType);
 
-  ScriptPromiseTyped<V8GamepadHapticsResult>
+  ScriptPromise<V8GamepadHapticsResult>
   playEffect(ScriptState*, const String&, const GamepadEffectParameters*);
 
-  ScriptPromiseTyped<V8GamepadHapticsResult> reset(ScriptState*);
-
-  bool canPlay(const String& type);
+  ScriptPromise<V8GamepadHapticsResult> reset(ScriptState*);
 
   void Trace(Visitor*) const override;
 
  private:
-  void OnPlayEffectCompleted(
-      ScriptPromiseResolverTyped<V8GamepadHapticsResult>*,
-      device::mojom::GamepadHapticsResult);
-  void OnResetCompleted(ScriptPromiseResolverTyped<V8GamepadHapticsResult>*,
+  void OnPlayEffectCompleted(ScriptPromiseResolver<V8GamepadHapticsResult>*,
+                             device::mojom::GamepadHapticsResult);
+  void OnResetCompleted(ScriptPromiseResolver<V8GamepadHapticsResult>*,
                         device::mojom::GamepadHapticsResult);
   void ResetVibrationIfNotPreempted();
 
   int pad_index_;
   String type_;
   bool should_reset_ = false;
-  HashSet<String> supported_effect_types_;
+  Vector<String> supported_effects_;
 
   Member<GamepadDispatcher> gamepad_dispatcher_;
 };

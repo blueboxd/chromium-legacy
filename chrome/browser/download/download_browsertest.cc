@@ -2345,11 +2345,9 @@ IN_PROC_BROWSER_TEST_P(PdfDownloadTestSplitCacheEnabled,
     ASSERT_TRUE(
         GetTestPdfViewerStreamManager()->WaitUntilPdfLoadedInFirstChild());
 
-    content::RenderFrameHost* extension_host =
-        pdf_extension_test_util::GetOnlyPdfExtensionHost(web_contents);
-    ASSERT_TRUE(extension_host);
-
-    document_frame = extension_host->GetParent();
+    document_frame =
+        pdf_extension_test_util::GetOnlyPdfPluginFrame(web_contents);
+    ASSERT_TRUE(document_frame);
   } else {
     InnerWebContentsAttachedWaiter waiter(web_contents);
 
@@ -2603,7 +2601,7 @@ IN_PROC_BROWSER_TEST_P(PdfDownloadTestSplitCacheEnabled,
             download_waiter->NumDownloadsSeenInState(DownloadItem::COMPLETE));
 }
 
-// TODO(crbug.com/1445746): Stop testing both modes after OOPIF PDF viewer
+// TODO(crbug.com/40268279): Stop testing both modes after OOPIF PDF viewer
 // launches.
 INSTANTIATE_FEATURE_OVERRIDE_TEST_SUITE(PdfDownloadTestSplitCacheEnabled);
 #endif  // BUILDFLAG(ENABLE_PDF)
@@ -2920,7 +2918,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, SaveImageInPostPage) {
   ASSERT_EQ(jpeg_url, download_items[0]->GetOriginalUrl());
 }
 
-// TODO(crbug.com/1326326): Flaky on lacros.
+// TODO(crbug.com/40840482): Flaky on lacros.
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
 #define MAYBE_DownloadErrorsServer DISABLED_DownloadErrorsServer
 #else
@@ -2965,7 +2963,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, MAYBE_DownloadErrorsServer) {
   DownloadFilesCheckErrors(std::size(download_info), download_info);
 }
 
-// TODO(crbug.com/1249757): Flaky on multiple platforms.
+// TODO(crbug.com/40197726): Flaky on multiple platforms.
 IN_PROC_BROWSER_TEST_F(DownloadTest, DISABLED_DownloadErrorsServerNavigate404) {
   DownloadInfo download_info[] = {
       {// Simulates clicking on <a href="http://..." download=""> where the URL
@@ -3327,7 +3325,7 @@ IN_PROC_BROWSER_TEST_P(DownloadReferrerPolicyTest, SaveLinkAsReferrerPolicy) {
   }
 }
 
-// TODO(crbug.com/1269422): Flaky on Lacros
+// TODO(crbug.com/40804227): Flaky on Lacros
 #if BUILDFLAG(IS_CHROMEOS)
 #define MAYBE_SaveLinkAsVsCrossOriginResourcePolicy \
   DISABLED_SaveLinkAsVsCrossOriginResourcePolicy
@@ -3810,7 +3808,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, MAYBE_DownloadTest_CrazyFilenames) {
     base::FilePath file_path(origin_directory.Append(
 #if BUILDFLAG(IS_WIN)
         crazy_w
-#elif BUILDFLAG(IS_POSIX) || BUILDFLAG(IS_FUCHSIA)
+#elif BUILDFLAG(IS_POSIX)
         crazy8
 #endif
         ));
@@ -4994,7 +4992,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTestWithFakeSafeBrowsing,
 #if !BUILDFLAG(IS_CHROMEOS)
 // Test that the download surface is shown by starting a download.
 //
-// TODO(crbug.com/1440818): This test is flaky. Perhaps because it depends on
+// TODO(crbug.com/40266279): This test is flaky. Perhaps because it depends on
 // focus, in which case it should be an interactive ui test instead of a
 // browser test?
 IN_PROC_BROWSER_TEST_F(DownloadTest, DISABLED_DownloadAndWait) {
@@ -5105,7 +5103,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest,
 // Verify that we have 1 window, and the download surface is not visible.
 //
 // Regression test for http://crbug.com/44454
-// TODO(crbug.com/1427917): Flaky on Linux.
+// TODO(crbug.com/40262026): Flaky on Linux.
 #if BUILDFLAG(IS_LINUX)
 #define MAYBE_NewWindow DISABLED_NewWindow
 #else

@@ -22,9 +22,9 @@ source_set("safe_browsing") {
     "//build:branding_buildflags",
     "//components/password_manager/core/common",
     "//components/prefs",
-    "//components/safe_browsing/core/browser/hashprefix_realtime:hash_realtime_utils",
     "//components/safe_browsing/core/common",
     "//components/safe_browsing/core/common:safe_browsing_prefs",
+    "//components/safe_browsing/core/common/hashprefix_realtime:hash_realtime_utils",
     "//components/signin/public/identity_manager/objc",
     "//components/strings",
     "//ios/chrome/app/strings",
@@ -63,4 +63,10 @@ source_set("safe_browsing_constants") {
     "safe_browsing_constants.h",
     "safe_browsing_constants.mm",
   ]
+}
+
+source_set("safe_browsing_promo_delegate") {
+  sources = [ "enhanced_safe_browsing_inline_promo_delegate.h" ]
+
+  frameworks = [ "Foundation.framework" ]
 }

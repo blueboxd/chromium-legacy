@@ -25,7 +25,6 @@ import org.chromium.chrome.browser.layouts.LayoutType;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.DestroyObserver;
 import org.chromium.chrome.browser.ntp.NewTabPage;
-import org.chromium.chrome.browser.omnibox.OmniboxFeatures;
 import org.chromium.chrome.browser.omnibox.UrlFocusChangeListener;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestionsDropdownScrollListener;
 import org.chromium.chrome.browser.status_indicator.StatusIndicatorCoordinator;
@@ -40,6 +39,7 @@ import org.chromium.chrome.browser.toolbar.top.TopToolbarCoordinator;
 import org.chromium.chrome.features.start_surface.StartSurface;
 import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.components.browser_ui.widget.scrim.ScrimProperties;
+import org.chromium.components.omnibox.OmniboxFeatures;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.util.ColorUtils;
@@ -47,7 +47,7 @@ import org.chromium.ui.util.ColorUtils;
 /**
  * Maintains the status bar color for a {@link Window}.
  *
- * <p>TODO(crbug.com/1450945): Prevent initialization of StatusBarColorController for automotive.
+ * <p>TODO(crbug.com/40915553): Prevent initialization of StatusBarColorController for automotive.
  */
 public class StatusBarColorController
         implements DestroyObserver,
@@ -111,8 +111,6 @@ public class StatusBarColorController
     private @ColorInt int mStatusIndicatorColor;
     private @ColorInt int mStatusBarColorWithoutStatusIndicator;
     private OneshotSupplier<StartSurface> mStartSurfaceSupplier;
-    private StartSurface mStartSurface;
-    private StartSurface.StateObserver mStartSurfaceStateObserver;
 
     // Tab strip transition states.
     private boolean mTabStripHiddenOnTablet;
@@ -184,14 +182,13 @@ public class StatusBarColorController
                 ChromeColors.getSurfaceColor(
                         context, R.dimen.home_surface_background_color_elevation);
         mStatusIndicatorColor = UNDEFINED_STATUS_BAR_COLOR;
-        if (OmniboxFeatures.shouldShowModernizeVisualUpdate(context)
-                && OmniboxFeatures.shouldShowActiveColorOnOmnibox()) {
-            // TODO(crbug.com/1521964): Share code with LocationBarCoordinator's constructor.
+        if (OmniboxFeatures.shouldShowModernizeVisualUpdate(context)) {
+            // TODO(crbug.com/41494931): Share code with LocationBarCoordinator's constructor.
             mActiveOmniboxDefaultColor =
                     ChromeColors.getSurfaceColor(
                             context, R.dimen.omnibox_suggestion_dropdown_bg_elevation);
             mIncognitoActiveOmniboxColor = context.getColor(R.color.omnibox_dropdown_bg_incognito);
-            // TODO(crbug.com/1521964): Share code with ToolbarPhone#getToolbarDefaultColor().
+            // TODO(crbug.com/41494931): Share code with ToolbarPhone#getToolbarDefaultColor().
             mStandardScrolledOmniboxColor =
                     ChromeColors.getSurfaceColor(context, R.dimen.toolbar_text_box_elevation);
             mIncognitoScrolledOmniboxColor =
@@ -304,6 +301,7 @@ public class StatusBarColorController
     private boolean shouldUpdateStatusBarColorForHomeSurface() {
         return mIsSurfacePolishEnabled
                 && !mIsIncognito
+                && mStartSurfaceSupplier != null
                 && mStartSurfaceSupplier.hasValue()
                 && mStartSurfaceSupplier.get().isHomepageShown();
     }
@@ -473,15 +471,11 @@ public class StatusBarColorController
         }
 
         if (mIsTablet) {
-            // When applicable, the status bar should use the focused activity tab strip color
-            // (default), and should not be affected by an activity focus change.
-            // TODO (crbug.com/326290073): Use another boolean to allow using the default color spec
-            // even when the activity is not in focus, to avoid any confusion stemming from why
-            // |isActivityFocused| is always true in this invocation here.
+            // When applicable, the status bar should use the default tab strip color, that is not
+            // affected by an activity focus change.
             return mTabStripHiddenOnTablet
                     ? mToolbarColor
-                    : TabUiThemeUtil.getTabStripBackgroundColor(
-                            mWindow.getContext(), mIsIncognito, /* isActivityFocused= */ true);
+                    : TabUiThemeUtil.getTabStripBackgroundColor(mWindow.getContext(), mIsIncognito);
         }
 
         // When Omnibox gains focus, we want to clear the status bar theme color.

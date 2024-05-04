@@ -25,91 +25,32 @@
 
 namespace blink {
 
-// Check if we shouldn't resolve a percentage/calc()/-webkit-fill-available
-// if we are in the intrinsic sizes phase.
-bool InlineLengthUnresolvable(const ConstraintSpace& constraint_space,
-                              const Length& length) {
-  // TODO(https://crbug.com/313072): This should be refactored to handle
-  // new things that calc-size() can hold (in particular, the
-  // possibility that we might need to check conditions for both
-  // percentages and intrinsic sizing keywords without doing a
-  // possibly-false early return for one of them), and the possibility
-  // introduced by calc-size() that a calc expression might *not* have
-  // a percent.
-
-  // TODO(https://crbug.com/313072): calc-size() doesn't work correctly
-  // when this function returns true.
-
-  if (length.HasPercent()) {
-    return constraint_space.PercentageResolutionInlineSize() == kIndefiniteSize;
-  }
-
-  if (length.IsFillAvailable())
-    return constraint_space.AvailableSize().inline_size == kIndefiniteSize;
-
-  if (length.IsFitContent())
-    return constraint_space.AvailableSize().inline_size == kIndefiniteSize;
-
-  return false;
-}
-
-// When the containing block size to resolve against is indefinite, we
-// cannot resolve percentages / calc() / -webkit-fill-available.
-bool BlockLengthUnresolvable(
-    const ConstraintSpace& constraint_space,
-    const Length& length,
-    const LayoutUnit* override_percentage_resolution_size) {
-  // TODO(https://crbug.com/313072): This should be refactored to handle
-  // new things that calc-size() can hold (in particular, the
-  // possibility that we might need to check conditions for both
-  // percentages and intrinsic sizing keywords without doing a
-  // possibly-false early return for one of them), and the possibility
-  // introduced by calc-size() that a calc expression might *not* have
-  // a percent.
-
-  // TODO(https://crbug.com/313072): calc-size() doesn't work correctly
-  // when this function returns true.
-
-  if (length.IsAuto() || length.IsMinContent() || length.IsMaxContent() ||
-      length.IsMinIntrinsic() || length.IsFitContent() || length.IsNone())
-    return true;
-  if (length.HasPercent()) {
-    const LayoutUnit percentage_resolution_size =
-        override_percentage_resolution_size
-            ? *override_percentage_resolution_size
-            : constraint_space.PercentageResolutionBlockSize();
-    return percentage_resolution_size == kIndefiniteSize;
-  }
-
-  if (length.IsFillAvailable())
-    return constraint_space.AvailableSize().block_size == kIndefiniteSize;
-
-  return false;
-}
-
 LayoutUnit ResolveInlineLengthInternal(
     const ConstraintSpace& constraint_space,
     const ComputedStyle& style,
     const BoxStrut& border_padding,
     MinMaxSizesFunctionRef min_max_sizes_func,
-    const Length& length,
+    const Length& original_length,
+    const Length* auto_length,
     LayoutUnit override_available_size,
     LayoutUnit unresolvable_length_result) {
   DCHECK_EQ(constraint_space.GetWritingMode(), style.GetWritingMode());
 
+  CHECK(!original_length.IsAuto() || auto_length);
+  // for min-inline-size, this might still be 'auto'
+  const Length& length =
+      LIKELY(original_length.IsAuto()) ? *auto_length : original_length;
+
   switch (length.GetType()) {
     case Length::kFillAvailable: {
-      LayoutUnit available_size = constraint_space.AvailableSize().inline_size;
+      const LayoutUnit available_size =
+          override_available_size == kIndefiniteSize
+              ? constraint_space.AvailableSize().inline_size
+              : override_available_size;
       if (available_size == kIndefiniteSize) {
-        // TODO(https://crbug.com/328572265): Should this check go after the
-        // overriding just below?  If so, should InlineLengthUnresolvable
-        // change to match?
         return unresolvable_length_result;
       }
       DCHECK_GE(available_size, LayoutUnit());
-      if (override_available_size != kIndefiniteSize) {
-        available_size = override_available_size;
-      }
       const BoxStrut margins = ComputeMarginsForSelf(constraint_space, style);
       return std::max(border_padding.InlineSum(),
                       available_size - margins.InlineSum());
@@ -128,7 +69,7 @@ LayoutUnit ResolveInlineLengthInternal(
           {.intrinsic_evaluator = [&](const Length& length_to_evaluate) {
             return ResolveInlineLengthInternal(
                 constraint_space, style, border_padding, min_max_sizes_func,
-                length_to_evaluate, override_available_size,
+                length_to_evaluate, auto_length, override_available_size,
                 unresolvable_length_result);
           }});
 
@@ -153,22 +94,21 @@ LayoutUnit ResolveInlineLengthInternal(
       if (length.IsMaxContent())
         return min_max_sizes.max_size;
 
-      LayoutUnit available_size = constraint_space.AvailableSize().inline_size;
+      const LayoutUnit available_size =
+          override_available_size == kIndefiniteSize
+              ? constraint_space.AvailableSize().inline_size
+              : override_available_size;
       if (available_size == kIndefiniteSize) {
-        // TODO(https://crbug.com/328572265): Should this check go after the
-        // overriding just below?  If so, should InlineLengthUnresolvable
-        // change to match?
         return unresolvable_length_result;
       }
       DCHECK_GE(available_size, LayoutUnit());
-      if (override_available_size != kIndefiniteSize)
-        available_size = override_available_size;
       BoxStrut margins = ComputeMarginsForSelf(constraint_space, style);
       LayoutUnit fill_available =
           (available_size - margins.InlineSum()).ClampNegativeToZero();
       return min_max_sizes.ShrinkToFit(fill_available);
     }
     case Length::kAuto:
+    case Length::kContent:
     case Length::kNone:
       return unresolvable_length_result;
     case Length::kDeviceWidth:
@@ -186,24 +126,27 @@ LayoutUnit ResolveBlockLengthInternal(
     const ConstraintSpace& constraint_space,
     const ComputedStyle& style,
     const BoxStrut& border_padding,
-    const Length& length,
+    const Length& original_length,
+    const Length* auto_length,
     bool use_intrinsic_size,
     LayoutUnit override_available_size,
     const LayoutUnit* override_percentage_resolution_size,
     IntrinsicBlockSizeFunctionRef unresolvable_block_size_func) {
   DCHECK_EQ(constraint_space.GetWritingMode(), style.GetWritingMode());
 
+  CHECK(!original_length.IsAuto() || auto_length);
+  // for min-block-size, this might still be 'auto'
+  const Length& length =
+      LIKELY(original_length.IsAuto()) ? *auto_length : original_length;
+
   switch (length.GetType()) {
     case Length::kFillAvailable: {
-      LayoutUnit available_size = constraint_space.AvailableSize().block_size;
+      const LayoutUnit available_size =
+          override_available_size == kIndefiniteSize
+              ? constraint_space.AvailableSize().block_size
+              : override_available_size;
       if (available_size == kIndefiniteSize) {
-        // TODO(https://crbug.com/328572265): Should this check go after the
-        // overriding just below?  If so, should BlockLengthUnresolvable
-        // change to match?
         return unresolvable_block_size_func();
-      }
-      if (override_available_size != kIndefiniteSize) {
-        available_size = override_available_size;
       }
       DCHECK_GE(available_size, LayoutUnit());
       const BoxStrut margins = ComputeMarginsForSelf(constraint_space, style);
@@ -226,7 +169,7 @@ LayoutUnit ResolveBlockLengthInternal(
           {.intrinsic_evaluator = [&](const Length& length_to_evaluate) {
             return ResolveBlockLengthInternal(
                 constraint_space, style, border_padding, length_to_evaluate,
-                use_intrinsic_size, override_available_size,
+                auto_length, use_intrinsic_size, override_available_size,
                 override_percentage_resolution_size,
                 unresolvable_block_size_func);
           }});
@@ -255,6 +198,7 @@ LayoutUnit ResolveBlockLengthInternal(
       return intrinsic_size;
     }
     case Length::kAuto:
+    case Length::kContent:
     case Length::kNone:
       return unresolvable_block_size_func();
     case Length::kDeviceWidth:
@@ -311,8 +255,8 @@ MinMaxSizesResult ComputeMinAndMaxContentContributionForReplaced(
   MinMaxSizes result;
   result = ComputeReplacedSize(child, space, border_padding).inline_size;
 
-  if (child_style.LogicalWidth().IsPercentOrCalc() ||
-      child_style.LogicalMaxWidth().IsPercentOrCalc()) {
+  if (child_style.LogicalWidth().HasPercent() ||
+      child_style.LogicalMaxWidth().HasPercent()) {
     // TODO(ikilpatrick): No browser does this today, but we'd get slightly
     // better results here if we also considered the min-block size, and
     // transferred through the aspect-ratio (if available).
@@ -330,11 +274,14 @@ MinMaxSizesResult ComputeMinAndMaxContentContributionForReplaced(
   // Replaced elements which have a percentage block-size always depend on
   // their block constraints (as they have an aspect-ratio which changes their
   // min/max content size).
+  // TODO(https://crbug.com/40339056): These should also check for 'stretch'
+  // values.  (We could add Length::MayHaveStretchOrPercentDependence or
+  // similar.)
   const bool depends_on_block_constraints =
-      child_style.LogicalHeight().IsPercentOrCalc() ||
-      child_style.LogicalMinHeight().IsPercentOrCalc() ||
-      child_style.LogicalMaxHeight().IsPercentOrCalc() ||
-      (child_style.LogicalHeight().IsAuto() &&
+      child_style.LogicalHeight().MayHavePercentDependence() ||
+      child_style.LogicalMinHeight().MayHavePercentDependence() ||
+      child_style.LogicalMaxHeight().MayHavePercentDependence() ||
+      (child_style.LogicalHeight().HasAuto() &&
        space.IsBlockAutoBehaviorStretch());
   return MinMaxSizesResult(result, depends_on_block_constraints);
 }
@@ -359,17 +306,19 @@ MinMaxSizesResult ComputeMinAndMaxContentContributionInternal(
       is_parent_writing_mode_horizontal ? style.Width() : style.Height();
 
   MinMaxSizesResult result;
-  if (inline_size.IsAuto() || inline_size.IsPercentOrCalc() ||
+  // TODO(https://crbug.com/313072): Rewrite this test for calc-size().
+  if (inline_size.HasAuto() || inline_size.HasPercent() ||
       inline_size.IsFillAvailable() || inline_size.IsFitContent()) {
     result = min_max_sizes_func(MinMaxSizesType::kContent);
   } else {
     const auto size =
         is_parallel_with_parent
             ? ResolveMainInlineLength(space, style, border_padding,
-                                      min_max_sizes_func, inline_size)
+                                      min_max_sizes_func, inline_size,
+                                      /* auto_length */ nullptr)
             : ResolveMainBlockLength(
                   space, style, border_padding, inline_size,
-                  [&]() -> LayoutUnit {
+                  /* auto_length */ nullptr, [&]() -> LayoutUnit {
                     return min_max_sizes_func(inline_size.IsMinIntrinsic()
                                                   ? MinMaxSizesType::kIntrinsic
                                                   : MinMaxSizesType::kContent)
@@ -478,7 +427,7 @@ LayoutUnit ComputeInlineSizeFromAspectRatio(const ConstraintSpace& space,
 
   const auto block_size = ComputeBlockSizeForFragment(
       space, style, border_padding, /* intrinsic_size */ kIndefiniteSize,
-      /* inline_size */ std::nullopt);
+      /* inline_size */ kIndefiniteSize);
 
   if (block_size == kIndefiniteSize)
     return kIndefiniteSize;
@@ -496,11 +445,13 @@ LayoutUnit ComputeInlineSizeForFragmentInternal(
   const auto& style = node.Style();
 
   auto extent = kIndefiniteSize;
-  auto logical_width = style.LogicalWidth();
-  auto min_length = style.LogicalMinWidth();
+  const Length& logical_width = style.LogicalWidth();
+  bool apply_automatic_min_size = false;
 
+  // TODO(https://crbug.com/313072): Fix these IsMinContent/IsMaxContent tests
+  // for calc-size().
   if (!style.AspectRatio().IsAuto() &&
-      ((logical_width.IsAuto() &&
+      ((logical_width.HasAuto() &&
         space.InlineAutoBehavior() != AutoSizeBehavior::kStretchExplicit) ||
        logical_width.IsMinContent() || logical_width.IsMaxContent())) {
     extent = ComputeInlineSizeFromAspectRatio(space, style, border_padding);
@@ -509,26 +460,31 @@ LayoutUnit ComputeInlineSizeForFragmentInternal(
       // This means we successfully applied aspect-ratio and now need to check
       // if we need to apply the implied minimum size:
       // https://drafts.csswg.org/css-sizing-4/#aspect-ratio-minimum
-      if (style.OverflowInlineDirection() == EOverflow::kVisible &&
-          min_length.IsAuto()) {
-        min_length = Length::MinIntrinsic();
+      if (style.OverflowInlineDirection() == EOverflow::kVisible) {
+        apply_automatic_min_size = true;
       }
     }
   }
 
   if (LIKELY(extent == kIndefiniteSize)) {
-    if (logical_width.IsAuto()) {
+    const Length& auto_length = ([&]() {
       if (space.AvailableSize().inline_size == kIndefiniteSize) {
-        logical_width = Length::MinContent();
-      } else if (space.IsInlineAutoBehaviorStretch()) {
-        logical_width = Length::FillAvailable();
-      } else {
-        logical_width = Length::FitContent();
+        return Length::MinContent();
       }
-    }
+      if (space.IsInlineAutoBehaviorStretch()) {
+        return Length::FillAvailable();
+      }
+      return Length::FitContent();
+    })();
     extent = ResolveMainInlineLength(space, style, border_padding,
-                                     min_max_sizes_func, logical_width);
+                                     min_max_sizes_func, logical_width,
+                                     &auto_length);
   }
+
+  const Length& min_length =
+      apply_automatic_min_size && style.LogicalMinWidth().HasAuto()
+          ? Length::MinIntrinsic()
+          : style.LogicalMinWidth();
 
   return ComputeMinMaxInlineSizes(space, node, border_padding,
                                   min_max_sizes_func, &min_length)
@@ -667,7 +623,7 @@ MinMaxSizes ComputeMinMaxInlineSizes(const ConstraintSpace& space,
 
   // This implements the transferred min/max sizes per:
   // https://drafts.csswg.org/css-sizing-4/#aspect-ratio-size-transfers
-  if (!style.AspectRatio().IsAuto() && style.LogicalWidth().IsAuto() &&
+  if (!style.AspectRatio().IsAuto() && style.LogicalWidth().HasAuto() &&
       space.InlineAutoBehavior() != AutoSizeBehavior::kStretchExplicit) {
     MinMaxSizes transferred_sizes =
         ComputeMinMaxInlineSizesFromAspectRatio(space, style, border_padding);
@@ -694,7 +650,7 @@ LayoutUnit ComputeBlockSizeForFragmentInternal(
     const ComputedStyle& style,
     const BoxStrut& border_padding,
     LayoutUnit intrinsic_size,
-    std::optional<LayoutUnit> inline_size,
+    LayoutUnit inline_size,
     LayoutUnit override_available_size = kIndefiniteSize) {
   MinMaxSizes min_max = ComputeMinMaxBlockSizes(space, style, border_padding,
                                                 override_available_size);
@@ -711,48 +667,53 @@ LayoutUnit ComputeBlockSizeForFragmentInternal(
     return min_max.min_size;
 
   const bool has_aspect_ratio = !style.AspectRatio().IsAuto();
-  Length logical_height = style.LogicalHeight();
+  const Length& logical_height = style.LogicalHeight();
+  const bool has_implicit_stretch =
+      logical_height.HasAuto() &&
+      space.BlockAutoBehavior() == AutoSizeBehavior::kStretchImplicit;
+
+  const Length& auto_length =
+      (space.IsBlockAutoBehaviorStretch() &&
+       space.AvailableSize().block_size != kIndefiniteSize)
+          ? Length::FillAvailable()
+          : Length::FitContent();
 
   LayoutUnit extent = kIndefiniteSize;
-  if (has_aspect_ratio && inline_size) {
-    DCHECK_GE(*inline_size, LayoutUnit());
-    const bool has_explicit_stretch =
-        logical_height.IsAuto() &&
-        space.BlockAutoBehavior() == AutoSizeBehavior::kStretchExplicit &&
-        space.AvailableSize().block_size != kIndefiniteSize;
-    if (BlockLengthUnresolvable(space, logical_height) &&
-        !has_explicit_stretch) {
+  if (has_aspect_ratio && inline_size != kIndefiniteSize) {
+    DCHECK_GE(inline_size, LayoutUnit());
+
+    if (!has_implicit_stretch) {
+      extent = ResolveMainBlockLength(space, style, border_padding,
+                                      logical_height, &auto_length,
+                                      kIndefiniteSize, override_available_size);
+    }
+
+    if (extent == kIndefiniteSize) {
       extent = BlockSizeFromAspectRatio(
           border_padding, style.LogicalAspectRatio(),
-          style.BoxSizingForAspectRatio(), *inline_size);
-      DCHECK_NE(extent, kIndefiniteSize);
+          style.BoxSizingForAspectRatio(), inline_size);
 
+      DCHECK_NE(extent, kIndefiniteSize);
       // Apply the automatic minimum size for aspect ratio:
       // https://drafts.csswg.org/css-sizing-4/#aspect-ratio-minimum
       // We also check for LayoutUnit::Max() because flexbox uses that as a
       // "placeholder" to compute the flex line length while still respecting
       // max-block-size.
-      if (style.LogicalMinHeight().IsAuto() &&
+      if (style.LogicalMinHeight().HasAuto() &&
           style.OverflowBlockDirection() == EOverflow::kVisible &&
           intrinsic_size != kIndefiniteSize &&
-          intrinsic_size != LayoutUnit::Max())
+          intrinsic_size != LayoutUnit::Max()) {
         min_max.min_size = intrinsic_size;
+      }
     }
   }
 
   if (extent == kIndefiniteSize) {
-    if (logical_height.IsAuto()) {
-      logical_height = (space.IsBlockAutoBehaviorStretch() &&
-                        space.AvailableSize().block_size != kIndefiniteSize)
-                           ? Length::FillAvailable()
-                           : Length::FitContent();
-    }
-
     // TODO(cbiesinger): Audit callers of ResolveMainBlockLength to see whether
     // they need to respect aspect ratio.
-    extent =
-        ResolveMainBlockLength(space, style, border_padding, logical_height,
-                               intrinsic_size, override_available_size);
+    extent = ResolveMainBlockLength(space, style, border_padding,
+                                    logical_height, &auto_length,
+                                    intrinsic_size, override_available_size);
   }
 
   if (extent == kIndefiniteSize) {
@@ -769,7 +730,7 @@ LayoutUnit ComputeBlockSizeForFragment(const ConstraintSpace& constraint_space,
                                        const ComputedStyle& style,
                                        const BoxStrut& border_padding,
                                        LayoutUnit intrinsic_size,
-                                       std::optional<LayoutUnit> inline_size,
+                                       LayoutUnit inline_size,
                                        LayoutUnit override_available_size) {
   // The |override_available_size| should only be used for <table>s.
   DCHECK(override_available_size == kIndefiniteSize ||
@@ -800,7 +761,7 @@ LayoutUnit ComputeInitialBlockSizeForFragment(
     const ComputedStyle& style,
     const BoxStrut& border_padding,
     LayoutUnit intrinsic_size,
-    std::optional<LayoutUnit> inline_size,
+    LayoutUnit inline_size,
     LayoutUnit override_available_size) {
   if (space.IsInitialBlockSizeIndefinite())
     return intrinsic_size;
@@ -919,24 +880,20 @@ LogicalSize ComputeReplacedSizeInternal(const BlockNode& node,
     } else if (!block_length.HasAutoOrContentOrIntrinsic() ||
                (space.IsBlockAutoBehaviorStretch() &&
                 space.AvailableSize().block_size != kIndefiniteSize)) {
-      Length block_length_to_resolve = block_length;
-      if (block_length_to_resolve.IsAuto()) {
-        DCHECK(space.IsBlockAutoBehaviorStretch());
-        block_length_to_resolve = Length::FillAvailable();
-      }
+      const Length& block_length_to_resolve =
+          block_length.HasAuto() ? Length::FillAvailable() : block_length;
 
       const LayoutUnit main_percentage_resolution_size =
           space.ReplacedPercentageResolutionBlockSize();
-      if (!BlockLengthUnresolvable(space, block_length_to_resolve,
-                                   &main_percentage_resolution_size)) {
-        replaced_block = ResolveMainBlockLength(
-            space, style, border_padding, block_length_to_resolve,
-            /* intrinsic_size */ kIndefiniteSize,
-            /* override_available_size */ kIndefiniteSize,
-            &main_percentage_resolution_size);
-        DCHECK_GE(*replaced_block, LayoutUnit());
-        replaced_block =
-            block_min_max_sizes.ClampSizeToMinAndMax(*replaced_block);
+      const LayoutUnit block_size = ResolveMainBlockLength(
+          space, style, border_padding, block_length_to_resolve,
+          /* auto_length*/ nullptr,
+          /* intrinsic_size */ kIndefiniteSize,
+          /* override_available_size */ kIndefiniteSize,
+          &main_percentage_resolution_size);
+      if (block_size != kIndefiniteSize) {
+        DCHECK_GE(block_size, LayoutUnit());
+        replaced_block = block_min_max_sizes.ClampSizeToMinAndMax(block_size);
       }
     }
   }
@@ -953,8 +910,12 @@ LogicalSize ComputeReplacedSizeInternal(const BlockNode& node,
       // TODO(crbug.com/1218055): Instead of using the default natural size, we
       // should be using the initial containing block size. When doing this
       // we'll need to invalidated (sparingly) on window resize.
-      if (inline_length.IsPercentOrCalc())
+      // TODO(https://crbug.com/313072): Values with intrinsic sizing or
+      // content sizing keywords should perhaps also get the natural size here
+      // (or be zero).
+      if (inline_length.HasPercent()) {
         size += ComputeDefaultNaturalSize(node).inline_size;
+      }
     } else {
       // Stretch to the available-size if it is definite.
       size = ResolveMainInlineLength(
@@ -963,7 +924,7 @@ LogicalSize ComputeReplacedSizeInternal(const BlockNode& node,
             NOTREACHED();
             return MinMaxSizesResult();
           },
-          Length::FillAvailable(),
+          Length::FillAvailable(), /* auto_length */ nullptr,
           /* override_available_size */ kIndefiniteSize);
     }
 
@@ -1011,32 +972,26 @@ LogicalSize ComputeReplacedSizeInternal(const BlockNode& node,
   } else {
     inline_min_max_sizes = {
         ResolveMinInlineLength(space, style, border_padding, MinMaxSizesFunc,
-                               style.LogicalMinWidth(),
-                               /* override_available_size */ kIndefiniteSize),
+                               style.LogicalMinWidth()),
         ResolveMaxInlineLength(space, style, border_padding, MinMaxSizesFunc,
-                               style.LogicalMaxWidth(),
-                               /* override_available_size */ kIndefiniteSize)};
+                               style.LogicalMaxWidth())};
 
     if (space.IsFixedInlineSize()) {
       replaced_inline = space.AvailableSize().inline_size;
       DCHECK_GE(*replaced_inline, 0);
-    } else if (!inline_length.IsAuto() ||
+    } else if (!inline_length.HasAuto() ||
                (space.IsInlineAutoBehaviorStretch() &&
                 space.AvailableSize().inline_size != kIndefiniteSize)) {
-      Length inline_length_to_resolve = inline_length;
-      if (inline_length_to_resolve.IsAuto()) {
-        DCHECK(space.IsInlineAutoBehaviorStretch());
-        inline_length_to_resolve = Length::FillAvailable();
-      }
-
-      if (!InlineLengthUnresolvable(space, inline_length_to_resolve)) {
-        replaced_inline = ResolveMainInlineLength(
-            space, style, border_padding, MinMaxSizesFunc,
-            inline_length_to_resolve,
-            /* override_available_size */ kIndefiniteSize);
-        DCHECK_GE(*replaced_inline, LayoutUnit());
+      const Length& auto_length = space.IsInlineAutoBehaviorStretch()
+                                      ? Length::FillAvailable()
+                                      : Length::FitContent();
+      const LayoutUnit inline_size =
+          ResolveMainInlineLength(space, style, border_padding, MinMaxSizesFunc,
+                                  inline_length, &auto_length);
+      if (inline_size != kIndefiniteSize) {
+        DCHECK_GE(inline_size, LayoutUnit());
         replaced_inline =
-            inline_min_max_sizes.ClampSizeToMinAndMax(*replaced_inline);
+            inline_min_max_sizes.ClampSizeToMinAndMax(inline_size);
       }
     }
   }
@@ -1168,20 +1123,26 @@ LogicalSize ComputeReplacedSize(const BlockNode& node,
   LogicalSize size =
       ComputeReplacedSizeInternal(node, space, border_padding, mode);
 
-  if (node.Style().LogicalWidth().IsPercentOrCalc()) {
+  if (node.Style().LogicalWidth().HasPercent()) {
     double factor = svg_root->LogicalSizeScaleFactorForPercentageLengths();
     if (factor != 1.0) {
+      // TODO(https://crbug.com/313072): Just because a calc *has* percentages
+      // doesn't mean *all* the lengths are percentages.
       size.inline_size *= factor;
     }
   }
 
   const Length& logical_height = node.Style().LogicalHeight();
-  if (logical_height.IsPercentOrCalc()) {
+  if (logical_height.HasPercent()) {
+    // TODO(https://crbug.com/313072): Might this also be needed for intrinsic
+    // sizing keywords?
     LayoutUnit height = ValueForLength(
         logical_height,
         node.GetDocument().GetLayoutView()->ViewLogicalHeightForPercentages());
     double factor = svg_root->LogicalSizeScaleFactorForPercentageLengths();
     if (factor != 1.0) {
+      // TODO(https://crbug.com/313072): Just because a calc *has* percentages
+      // doesn't mean *all* the lengths are percentages.
       height *= factor;
     }
     size.block_size = height;
@@ -1258,8 +1219,9 @@ LayoutUnit ColumnInlineProgression(LayoutUnit available_size,
   return column_inline_size + ResolveUsedColumnGap(available_size, style);
 }
 
-PhysicalBoxStrut ComputePhysicalMargins(const ComputedStyle& style,
-                                        LayoutUnit percentage_resolution_size) {
+PhysicalBoxStrut ComputePhysicalMargins(
+    const ComputedStyle& style,
+    LogicalSize percentage_resolution_size) {
   if (!style.MayHaveMargin())
     return PhysicalBoxStrut();
 
@@ -1269,11 +1231,15 @@ PhysicalBoxStrut ComputePhysicalMargins(const ComputedStyle& style,
   percentage_resolution_size =
       percentage_resolution_size.ClampIndefiniteToZero();
 
-  return {
-      MinimumValueForLength(style.MarginTop(), percentage_resolution_size),
-      MinimumValueForLength(style.MarginRight(), percentage_resolution_size),
-      MinimumValueForLength(style.MarginBottom(), percentage_resolution_size),
-      MinimumValueForLength(style.MarginLeft(), percentage_resolution_size)};
+  return PhysicalBoxStrut(
+      MinimumValueForLength(style.MarginTop(),
+                            percentage_resolution_size.block_size),
+      MinimumValueForLength(style.MarginRight(),
+                            percentage_resolution_size.inline_size),
+      MinimumValueForLength(style.MarginBottom(),
+                            percentage_resolution_size.block_size),
+      MinimumValueForLength(style.MarginLeft(),
+                            percentage_resolution_size.inline_size));
 }
 
 BoxStrut ComputeMarginsFor(const ConstraintSpace& constraint_space,
@@ -1281,8 +1247,8 @@ BoxStrut ComputeMarginsFor(const ConstraintSpace& constraint_space,
                            const ConstraintSpace& compute_for) {
   if (!style.MayHaveMargin() || constraint_space.IsAnonymous())
     return BoxStrut();
-  LayoutUnit percentage_resolution_size =
-      constraint_space.PercentageResolutionInlineSizeForParentWritingMode();
+  LogicalSize percentage_resolution_size =
+      constraint_space.MarginPaddingPercentageResolutionSize();
   return ComputePhysicalMargins(style, percentage_resolution_size)
       .ConvertToLogical(compute_for.GetWritingDirection());
 }
@@ -1290,8 +1256,10 @@ BoxStrut ComputeMarginsFor(const ConstraintSpace& constraint_space,
 namespace {
 
 BoxStrut ComputeBordersInternal(const ComputedStyle& style) {
-  return {style.BorderInlineStartWidth(), style.BorderInlineEndWidth(),
-          style.BorderBlockStartWidth(), style.BorderBlockEndWidth()};
+  return {LayoutUnit(style.BorderInlineStartWidth()),
+          LayoutUnit(style.BorderInlineEndWidth()),
+          LayoutUnit(style.BorderBlockStartWidth()),
+          LayoutUnit(style.BorderBlockEndWidth())};
 }
 
 }  // namespace
@@ -1344,17 +1312,17 @@ BoxStrut ComputePadding(const ConstraintSpace& constraint_space,
   // This function may be called for determining intrinsic padding, clamp
   // indefinite %-sizes to zero. See:
   // https://drafts.csswg.org/css-sizing-3/#min-percentage-contribution
-  LayoutUnit percentage_resolution_size =
-      constraint_space.PercentageResolutionInlineSizeForParentWritingMode()
+  LogicalSize percentage_resolution_size =
+      constraint_space.MarginPaddingPercentageResolutionSize()
           .ClampIndefiniteToZero();
   return {MinimumValueForLength(style.PaddingInlineStart(),
-                                percentage_resolution_size),
+                                percentage_resolution_size.inline_size),
           MinimumValueForLength(style.PaddingInlineEnd(),
-                                percentage_resolution_size),
+                                percentage_resolution_size.inline_size),
           MinimumValueForLength(style.PaddingBlockStart(),
-                                percentage_resolution_size),
+                                percentage_resolution_size.block_size),
           MinimumValueForLength(style.PaddingBlockEnd(),
-                                percentage_resolution_size)};
+                                percentage_resolution_size.block_size)};
 }
 
 BoxStrut ComputeScrollbarsForNonAnonymous(const BlockNode& node) {
@@ -1480,48 +1448,45 @@ FragmentGeometry CalculateInitialFragmentGeometry(
   const auto border_scrollbar_padding = border_padding + scrollbar;
 
   if (node.IsReplaced()) {
-    const auto border_box_size =
-        ComputeReplacedSize(node, space, border_padding);
+    const auto border_box_size = ComputeReplacedSize(
+        node, space, border_padding,
+        is_intrinsic ? ReplacedSizeMode::kIgnoreInlineLengths
+                     : ReplacedSizeMode::kNormal);
     return {border_box_size, border, scrollbar, padding};
   }
 
-  std::optional<LayoutUnit> inline_size;
-  const auto default_block_size = CalculateDefaultBlockSize(
-      space, node, break_token, border_scrollbar_padding);
+  const LayoutUnit inline_size =
+      is_intrinsic ? kIndefiniteSize
+                   : ComputeInlineSizeForFragment(space, node, border_padding,
+                                                  min_max_sizes_func);
 
-  if (!is_intrinsic &&
-      (space.IsFixedInlineSize() ||
-       !InlineLengthUnresolvable(space, style.LogicalWidth()))) {
-    inline_size = ComputeInlineSizeForFragment(space, node, border_padding,
-                                               min_max_sizes_func);
-
-    if (UNLIKELY(*inline_size < border_scrollbar_padding.InlineSum() &&
-                 scrollbar.InlineSum() && !space.IsAnonymous())) {
-      // Clamp the inline size of the scrollbar, unless it's larger than the
-      // inline size of the content box, in which case we'll return that
-      // instead. Scrollbar handling is quite bad in such situations, and this
-      // method here is just to make sure that left-hand scrollbars don't mess
-      // up scrollWidth. For the full story, visit http://crbug.com/724255.
-      const auto content_box_inline_size =
-          *inline_size - border_padding.InlineSum();
-
-      if (scrollbar.InlineSum() > content_box_inline_size) {
-        if (scrollbar.inline_end) {
-          DCHECK(!scrollbar.inline_start);
-          scrollbar.inline_end = content_box_inline_size;
-        } else {
-          DCHECK(scrollbar.inline_start);
-          scrollbar.inline_start = content_box_inline_size;
-        }
+  if (UNLIKELY(inline_size != kIndefiniteSize &&
+               inline_size < border_scrollbar_padding.InlineSum() &&
+               scrollbar.InlineSum() && !space.IsAnonymous())) {
+    // Clamp the inline size of the scrollbar, unless it's larger than the
+    // inline size of the content box, in which case we'll return that instead.
+    // Scrollbar handling is quite bad in such situations, and this method here
+    // is just to make sure that left-hand scrollbars don't mess up scrollWidth.
+    // For the full story, visit http://crbug.com/724255.
+    const auto content_box_inline_size =
+        inline_size - border_padding.InlineSum();
+    if (scrollbar.InlineSum() > content_box_inline_size) {
+      if (scrollbar.inline_end) {
+        DCHECK(!scrollbar.inline_start);
+        scrollbar.inline_end = content_box_inline_size;
+      } else {
+        DCHECK(scrollbar.inline_start);
+        scrollbar.inline_start = content_box_inline_size;
       }
     }
   }
 
+  const auto default_block_size = CalculateDefaultBlockSize(
+      space, node, break_token, border_scrollbar_padding);
   const auto block_size = ComputeInitialBlockSizeForFragment(
       space, style, border_padding, default_block_size, inline_size);
 
-  return {LogicalSize(inline_size.value_or(kIndefiniteSize), block_size),
-          border, scrollbar, padding};
+  return {LogicalSize(inline_size, block_size), border, scrollbar, padding};
 }
 
 FragmentGeometry CalculateInitialFragmentGeometry(
@@ -1632,7 +1597,7 @@ LogicalSize CalculateReplacedChildPercentageSize(
   if (space.IsTableCell() && style.LogicalHeight().IsFixed()) {
     LayoutUnit block_size = ComputeBlockSizeForFragmentInternal(
         space, style, border_padding, kIndefiniteSize /* intrinsic_size */,
-        std::nullopt /* inline_size */);
+        kIndefiniteSize /* inline_size */);
     DCHECK_NE(block_size, kIndefiniteSize);
     return {child_available_size.inline_size,
             (block_size - border_scrollbar_padding.BlockSum())
@@ -1679,7 +1644,7 @@ LayoutUnit ClampIntrinsicBlockSize(
 
   // Apply the "fills viewport" quirk if needed.
   if (!IsBreakInside(break_token) && node.IsQuirkyAndFillsViewport() &&
-      style.LogicalHeight().IsAuto() &&
+      style.LogicalHeight().HasAuto() &&
       space.AvailableSize().block_size != kIndefiniteSize) {
     DCHECK_EQ(node.IsBody() && !node.CreatesNewFormattingContext(),
               body_margin_block_sum.has_value());

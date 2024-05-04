@@ -15,7 +15,6 @@
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/incognito_interstitial/incognito_interstitial_constants.h"
 #import "ios/chrome/browser/ui/ntp/incognito/incognito_view.h"
-#import "ios/chrome/browser/ui/ntp/incognito/revamped_incognito_view.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
 #import "ios/chrome/grit/ios_branded_strings.h"
@@ -103,24 +102,12 @@ const CGFloat kTitleLabelLineHeightMultiple = 1.3;
   self.modalInPresentation = YES;
 
   // Creating the Incognito view (same one as NTP).
-  UIScrollView* incognitoView = NULL;
-  if (base::FeatureList::IsEnabled(kIncognitoNtpRevamp)) {
-    RevampedIncognitoView* revampedIncognitoView =
-        [[RevampedIncognitoView alloc] initWithFrame:CGRectZero
-                       showTopIncognitoImageAndTitle:NO
-                           stackViewHorizontalMargin:0
-                                   stackViewMaxWidth:CGFLOAT_MAX];
-    revampedIncognitoView.URLLoaderDelegate = self.URLLoaderDelegate;
-    incognitoView = revampedIncognitoView;
-  } else {
-    IncognitoView* revampedIncognitoView =
-        [[IncognitoView alloc] initWithFrame:CGRectZero
-               showTopIncognitoImageAndTitle:NO
-                   stackViewHorizontalMargin:0
-                           stackViewMaxWidth:CGFLOAT_MAX];
-    revampedIncognitoView.URLLoaderDelegate = self.URLLoaderDelegate;
-    incognitoView = revampedIncognitoView;
-  }
+  IncognitoView* incognitoView =
+      [[IncognitoView alloc] initWithFrame:CGRectZero
+             showTopIncognitoImageAndTitle:NO
+                 stackViewHorizontalMargin:0
+                         stackViewMaxWidth:CGFLOAT_MAX];
+  incognitoView.URLLoaderDelegate = self.URLLoaderDelegate;
   incognitoView.translatesAutoresizingMaskIntoConstraints = NO;
   incognitoView.bounces = NO;
 
@@ -171,7 +158,6 @@ const CGFloat kTitleLabelLineHeightMultiple = 1.3;
   [self.navigationBar pushNavigationItem:navigationRootItem animated:false];
   [self updateNavigationBarAppearance];
 
-  incognitoView.translatesAutoresizingMaskIntoConstraints = NO;
   [NSLayoutConstraint activateConstraints:@[
     [stackView.leadingAnchor
         constraintEqualToAnchor:self.specificContentView.leadingAnchor],

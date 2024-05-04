@@ -15,8 +15,7 @@
 class Browser;
 @protocol BrowserCommands;
 @protocol BrowsingDataCommands;
-enum class DefaultBrowserPromoSource;
-@protocol ImportDataControllerDelegate;
+enum class DefaultBrowserSettingsPageSource;
 @protocol SettingsRootViewControlling;
 @protocol SnackbarCommands;
 @class UserFeedbackData;
@@ -136,18 +135,6 @@ extern NSString* const kSettingsDoneButtonId;
                                          delegate
                     userFeedbackData:(UserFeedbackData*)userFeedbackData;
 
-// Creates and displays a new ImportDataTableViewController. `browserState`
-// should not be nil.
-// TODO(crbug.com/1018746) pass Browser instead of BrowserState
-+ (instancetype)
-    importDataControllerForBrowser:(Browser*)browser
-                          delegate:
-                              (id<SettingsNavigationControllerDelegate>)delegate
-                importDataDelegate:
-                    (id<ImportDataControllerDelegate>)importDataDelegate
-                         fromEmail:(NSString*)fromEmail
-                           toEmail:(NSString*)toEmail;
-
 // Creates a new AutofillProfileTableViewController and the chrome around
 // it. `browser` is the browser where settings are being displayed and should
 // not be nil. `delegate` may be nil.
@@ -192,7 +179,7 @@ extern NSString* const kSettingsDoneButtonId;
                               delegate:
                                   (id<SettingsNavigationControllerDelegate>)
                                       delegate
-                          sourceForUMA:(DefaultBrowserPromoSource)source;
+                          sourceForUMA:(DefaultBrowserSettingsPageSource)source;
 
 // Creates a new ClearBrowsingDataTableViewController and the chrome
 // around it. `browser` is the browser where settings are being displayed and

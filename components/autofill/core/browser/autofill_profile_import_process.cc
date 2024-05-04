@@ -6,9 +6,11 @@
 
 #include "base/ranges/algorithm.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/autofill/core/browser/address_data_manager.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/autofill_profile_comparator.h"
 #include "components/autofill/core/browser/field_types.h"
+#include "components/autofill/core/browser/metrics/profile_deduplication_metrics.h"
 #include "components/autofill/core/browser/metrics/profile_import_metrics.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/profile_requirement_utils.h"
@@ -27,7 +29,8 @@ using UserDecision = AutofillClient::AddressPromptUserDecision;
 // country of `profile` was guessed incorrectly. It does so by checking whether
 // any of the `existing_profiles` becomes mergeable after removing the country
 // of `profile`.
-// Comparisons are done using `comparator`.
+// Comparisons are done using `comparator`. Note that for two countries to be
+// mergeable, they must share the same address model.
 bool ShouldCountryApproximationBeRemoved(
     const AutofillProfile& profile,
     const std::vector<AutofillProfile*>& existing_profiles,
@@ -93,8 +96,8 @@ void ProfileImportProcess::DetermineProfileImportType() {
 
   DCHECK(personal_data_manager_);
   new_profiles_suppressed_for_domain_ =
-      personal_data_manager_->IsNewProfileImportBlockedForDomain(
-          form_source_url_);
+      personal_data_manager_->address_data_manager()
+          .IsNewProfileImportBlockedForDomain(form_source_url_);
 
   int number_of_unchanged_profiles = 0;
   std::optional<AutofillProfile> migration_candidate;
@@ -102,8 +105,8 @@ void ProfileImportProcess::DetermineProfileImportType() {
   // We don't offer an import if `observed_profile_` is a duplicate of an
   // existing profile.
   const std::vector<AutofillProfile*> existing_profiles =
-      personal_data_manager_->GetProfiles(
-          PersonalDataManager::ProfileOrder::kMostRecentlyUsedFirstDesc);
+      personal_data_manager_->address_data_manager().GetProfiles(
+          AddressDataManager::ProfileOrder::kMostRecentlyUsedFirstDesc);
 
   // If we have reason to believe that the country was complemented incorrectly,
   // remove it.
@@ -155,7 +158,7 @@ void ProfileImportProcess::DetermineProfileImportType() {
       // If the personal data manager is not available the profile is considered
       // as not blocked. Also, updates can be disabled by a feature flag.
       bool is_blocked_for_update =
-          personal_data_manager_->IsProfileUpdateBlocked(
+          personal_data_manager_->address_data_manager().IsProfileUpdateBlocked(
               existing_profile->guid()) ||
           base::FeatureList::IsEnabled(
               features::test::kAutofillDisableProfileUpdates);
@@ -259,9 +262,10 @@ void ProfileImportProcess::DetermineSourceOfImportCandidate() {
     return;
   }
   CHECK(import_candidate_);
-  if (personal_data_manager_->IsEligibleForAddressAccountStorage() &&
-      personal_data_manager_->IsCountryEligibleForAccountStorage(
-          base::UTF16ToUTF8(
+  if (personal_data_manager_->address_data_manager()
+          .IsEligibleForAddressAccountStorage() &&
+      personal_data_manager_->address_data_manager()
+          .IsCountryEligibleForAccountStorage(base::UTF16ToUTF8(
               import_candidate_->GetRawInfo(ADDRESS_HOME_COUNTRY)))) {
     import_candidate_ = import_candidate_->ConvertToAccountProfile();
   }
@@ -292,7 +296,8 @@ void ProfileImportProcess::ApplyImport() {
 
   // Apply silent updates.
   for (const AutofillProfile& updated_profile : silently_updated_profiles_) {
-    personal_data_manager_->UpdateProfile(updated_profile);
+    personal_data_manager_->address_data_manager().UpdateProfile(
+        updated_profile);
   }
 
   if (!confirmed_import_candidate_.has_value()) {
@@ -302,11 +307,14 @@ void ProfileImportProcess::ApplyImport() {
   // Confirming an import candidate corresponds to either a new/update profile
   // or a migration prompt.
   if (is_migration()) {
-    personal_data_manager_->MigrateProfileToAccount(confirmed_profile);
+    personal_data_manager_->address_data_manager().MigrateProfileToAccount(
+        confirmed_profile);
   } else if (is_confirmable_update()) {
-    personal_data_manager_->UpdateProfile(confirmed_profile);
+    personal_data_manager_->address_data_manager().UpdateProfile(
+        confirmed_profile);
   } else {
-    personal_data_manager_->AddProfile(confirmed_profile);
+    personal_data_manager_->address_data_manager().AddProfile(
+        confirmed_profile);
   }
 }
 
@@ -418,8 +426,10 @@ void ProfileImportProcess::set_prompt_was_shown() {
   prompt_shown_ = true;
 }
 
-void ProfileImportProcess::CollectMetrics(ukm::UkmRecorder* ukm_recorder,
-                                          ukm::SourceId source_id) const {
+void ProfileImportProcess::CollectMetrics(
+    ukm::UkmRecorder* ukm_recorder,
+    ukm::SourceId source_id,
+    const std::vector<AutofillProfile*>& existing_profiles) const {
   // Metrics should only be recorded after a user decision was supplied.
   DCHECK_NE(user_decision_, UserDecision::kUndefined);
 
@@ -451,6 +461,13 @@ void ProfileImportProcess::CollectMetrics(ukm::UkmRecorder* ukm_recorder,
   if (import_type_ == AutofillProfileImportType::kNewProfile) {
     autofill_metrics::LogNewProfileImportDecision(user_decision_);
     LogUkmMetrics(num_edited_fields);
+    if (base::FeatureList::IsEnabled(
+            features::kAutofillLogDeduplicationMetrics)) {
+      autofill_metrics::LogDeduplicationImportMetrics(
+          UserAccepted(),
+          UserAccepted() ? *confirmed_import_candidate_ : *import_candidate_,
+          existing_profiles, app_locale_);
+    }
   } else if (is_confirmable_update()) {
     autofill_metrics::LogProfileUpdateImportDecision(user_decision_);
 
@@ -482,12 +499,10 @@ int ProfileImportProcess::CollectedEditedTypeHistograms() const {
   if (user_decision_ != UserDecision::kEditAccepted) {
     return 0;
   }
-
   // Compute the number of edited settings-visible fields.
   std::vector<ProfileValueDifference> edit_difference =
       AutofillProfileComparator::GetSettingsVisibleProfileDifference(
           *import_candidate_, *confirmed_import_candidate_, app_locale_);
-
   // Log edited types.
   for (const ProfileValueDifference& difference : edit_difference) {
     if (import_type_ == AutofillProfileImportType::kNewProfile) {
@@ -499,19 +514,7 @@ int ProfileImportProcess::CollectedEditedTypeHistograms() const {
       autofill_metrics::LogProfileMigrationEditedType(difference.type);
     }
   }
-
-  // Log number of edited fields.
-  int num_edited_fields = edit_difference.size();
-  if (import_type_ == AutofillProfileImportType::kNewProfile) {
-    autofill_metrics::LogNewProfileNumberOfEditedFields(num_edited_fields);
-  } else if (is_confirmable_update()) {
-    autofill_metrics::LogUpdateProfileNumberOfEditedFields(num_edited_fields);
-  } else {
-    CHECK(is_migration());
-    autofill_metrics::LogProfileMigrationNumberOfEditedFields(
-        num_edited_fields);
-  }
-  return num_edited_fields;
+  return edit_difference.size();
 }
 
 }  // namespace autofill

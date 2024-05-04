@@ -8,17 +8,11 @@
 #include "ash/wm/window_restore/pine_contents_data.h"
 #include "ui/views/layout/box_layout_view.h"
 
-namespace views {
-class ImageView;
-}  // namespace views
-
 namespace ash {
-
-class PineItemsOverflowView;
 
 // An alternative to `PineItemView` when there are more than four windows in
 // `apps` and the remaining information needs to be condensed.
-class PineItemsOverflowView : public views::BoxLayoutView {
+class ASH_EXPORT PineItemsOverflowView : public views::BoxLayoutView {
   METADATA_HEADER(PineItemsOverflowView, views::BoxLayoutView)
 
  public:
@@ -27,29 +21,6 @@ class PineItemsOverflowView : public views::BoxLayoutView {
   PineItemsOverflowView(const PineItemsOverflowView&) = delete;
   PineItemsOverflowView& operator=(const PineItemsOverflowView&) = delete;
   ~PineItemsOverflowView() override;
-
-  void SetIconForIndex(int index, const gfx::ImageSkia& icon);
-
-  const base::flat_map<int, views::ImageView*>& image_view_map_for_testing()
-      const {
-    return image_view_map_;
-  }
-
-  const views::BoxLayoutView* top_row_view_for_testing() const {
-    return top_row_view_;
-  }
-  const views::BoxLayoutView* bottom_row_view_for_testing() const {
-    return bottom_row_view_;
-  }
-
- private:
-  base::flat_map<int, views::ImageView*> image_view_map_;
-
-  // These views are stacked vertically to act as rows of window icons.
-  raw_ptr<views::BoxLayoutView> top_row_view_ = nullptr;
-  raw_ptr<views::BoxLayoutView> bottom_row_view_ = nullptr;
-
-  base::WeakPtrFactory<PineItemsOverflowView> weak_ptr_factory_{this};
 };
 
 }  // namespace ash

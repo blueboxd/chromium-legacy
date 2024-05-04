@@ -255,7 +255,7 @@ bool SettingsFunction::IsAccessToStorageAllowed() {
   api::storage::AccessLevel access_level =
       GetSessionAccessLevel(extension()->id(), *browser_context());
 
-  // Only a blessed extension context is considered trusted.
+  // Only a privileged extension context is considered trusted.
   if (access_level == api::storage::AccessLevel::kTrustedContexts) {
     return source_context_type() == mojom::ContextType::kPrivilegedExtension;
   }
@@ -438,7 +438,7 @@ ExtensionFunction::ResponseValue StorageStorageAreaSetFunction::RunInSession() {
                     ->Set(extension_id(), std::move(values), changes);
 
   if (!result) {
-    // TODO(crbug.com/1185226): Add API test that triggers this behavior.
+    // TODO(crbug.com/40171997): Add API test that triggers this behavior.
     return Error(
         "Session storage quota bytes exceeded. Values were not stored.");
   }
@@ -529,8 +529,8 @@ void StorageStorageAreaClearFunction::GetQuotaLimitHeuristics(
 
 ExtensionFunction::ResponseValue
 StorageStorageAreaSetAccessLevelFunction::RunWithStorage(ValueStore* storage) {
-  // TODO(crbug.com/1508463). Support these storage areas. For now, we return an
-  // error.
+  // TODO(crbug.com/40949182). Support these storage areas. For now, we return
+  // an error.
   return Error("This StorageArea is not available for setting access level");
 }
 

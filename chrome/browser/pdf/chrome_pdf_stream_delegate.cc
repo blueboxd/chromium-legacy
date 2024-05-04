@@ -105,7 +105,7 @@ std::optional<GURL> ChromePdfStreamDelegate::MapToOriginalUrl(
   content::WebContents* contents = navigation_handle.GetWebContents();
   base::WeakPtr<extensions::StreamContainer> stream;
   content::RenderFrameHost* embedder_parent_frame = embedder_frame->GetParent();
-  if (base::FeatureList::IsEnabled(chrome_pdf::features::kPdfOopif)) {
+  if (chrome_pdf::features::IsOopifPdfEnabled()) {
     if (embedder_parent_frame) {
       // For the PDF viewer, the `embedder_frame` is the PDF extension frame.
       // The `StreamContainer` is stored using the PDF viewer's embedder frame,
@@ -193,7 +193,7 @@ ChromePdfStreamDelegate::GetStreamInfo(
 void ChromePdfStreamDelegate::OnPdfEmbedderSandboxed(int frame_tree_node_id) {
   // Clean up the stream for a sandboxed embedder frame, as sandboxed frames
   // should be unable to instantiate the PDF viewer.
-  CHECK(base::FeatureList::IsEnabled(chrome_pdf::features::kPdfOopif));
+  CHECK(chrome_pdf::features::IsOopifPdfEnabled());
 
   auto* web_contents =
       content::WebContents::FromFrameTreeNodeId(frame_tree_node_id);
@@ -210,4 +210,67 @@ void ChromePdfStreamDelegate::OnPdfEmbedderSandboxed(int frame_tree_node_id) {
   // The stream should always be unclaimed, since the navigation hasn't
   // committed.
   pdf_viewer_stream_manager->DeleteUnclaimedStreamInfo(frame_tree_node_id);
+}
+
+bool ChromePdfStreamDelegate::ShouldAllowPdfFrameNavigation(
+    content::NavigationHandle* navigation_handle) {
+  // Blocks any non-setup navigations in the PDF extension frame and the PDF
+  // content frame.
+
+  // OOPIF PDF viewer only.
+  if (!chrome_pdf::features::IsOopifPdfEnabled()) {
+    return true;
+  }
+
+  auto* pdf_viewer_stream_manager =
+      pdf::PdfViewerStreamManager::FromWebContents(
+          navigation_handle->GetWebContents());
+  if (!pdf_viewer_stream_manager) {
+    return true;
+  }
+
+  // The parent frame should always exist after main frame navigations are
+  // filtered out in `PdfNavigationThrottle::WillStartRequest()`. The
+  // parent frame could be the PDF extension frame, PDF embedder frame, or an
+  // unrelated frame.
+  content::RenderFrameHost* parent_frame = navigation_handle->GetParentFrame();
+  CHECK(parent_frame);
+
+  const GURL& url = navigation_handle->GetURL();
+
+  // If `parent_frame` is the PDF embedder frame and thus has an
+  // `extensions::StreamContainer`, then the current frame could be the PDF
+  // extension frame.
+  base::WeakPtr<extensions::StreamContainer> stream =
+      pdf_viewer_stream_manager->GetStreamContainer(parent_frame);
+  int frame_tree_node_id = navigation_handle->GetFrameTreeNodeId();
+  if (stream) {
+    // Allow navigations for unrelated frames, which might be injected by
+    // unrelated extensions. Only allow the PDF extension frame to navigate to
+    // the extension URL.
+    return !pdf_viewer_stream_manager->IsPdfExtensionFrameTreeNodeId(
+               parent_frame, frame_tree_node_id) ||
+           url == stream->handler_url();
+  }
+
+  // If this navigation is for a PDF content frame, then there should be a
+  // grandparent frame (the PDF embedder frame) with a stream container. If this
+  // navigation is unrelated to PDFs, then there may or may not be a grandparent
+  // frame, and there will not be a stream container. In that case, the
+  // navigation should not be blocked.
+  content::RenderFrameHost* grandparent_frame = parent_frame->GetParent();
+  if (!grandparent_frame) {
+    return true;
+  }
+  stream = pdf_viewer_stream_manager->GetStreamContainer(grandparent_frame);
+  if (!stream) {
+    return true;
+  }
+
+  // Allow navigations for unrelated frames, which might be injected by
+  // unrelated extensions. Only allow the PDF content frame to navigate to the
+  // original PDF URL.
+  return !pdf_viewer_stream_manager->IsPdfContentFrameTreeNodeId(
+             grandparent_frame, frame_tree_node_id) ||
+         url == stream->original_url();
 }

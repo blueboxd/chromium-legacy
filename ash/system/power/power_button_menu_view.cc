@@ -201,7 +201,7 @@ void PowerButtonMenuView::RecreateItems() {
   add_remove_item(
       true, PowerButtonMenuActionType::kPowerOff,
       base::BindRepeating(
-          &LockStateController::StartShutdownAnimation,
+          &LockStateController::RequestShutdown,
           base::Unretained(Shell::Get()->lock_state_controller()),
           shutdown_reason_),
       kSystemPowerButtonMenuPowerOffIcon,
@@ -285,7 +285,8 @@ void PowerButtonMenuView::Layout(PassKey) {
   }
 }
 
-gfx::Size PowerButtonMenuView::CalculatePreferredSize() const {
+gfx::Size PowerButtonMenuView::CalculatePreferredSize(
+    const views::SizeBounds& available_size) const {
   gfx::Size menu_size;
   DCHECK(power_off_item_);
   menu_size = gfx::Size(0, PowerButtonMenuItemView::kMenuItemHeight +

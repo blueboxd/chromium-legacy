@@ -10,7 +10,6 @@
 #include <optional>
 #include <set>
 
-#include "base/strings/string_piece.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/global_routing_id.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
@@ -117,7 +116,7 @@ class CONTENT_EXPORT BackForwardCache {
   // associated. This state will be set on the BackForwardCacheMetrics
   // associated with the main frame, is not persisted across session restores,
   // and only set in Android Custom tabs for now.
-  // TODO(crbug.com/1403292): Set this boolean for all platforms.
+  // TODO(crbug.com/40251494): Set this boolean for all platforms.
   static void SetHadFormDataAssociated(Page& page);
 
   // List of reasons the BackForwardCache was disabled for a specific test. If a

@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller_state_test.h"
+#include "chrome/browser/ui/tabs/tab_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "content/public/browser/web_contents.h"
@@ -60,12 +61,9 @@ class FullscreenControllerTestWindow : public TestBrowserWindow,
                        ExclusiveAccessBubbleType type,
                        int64_t display_id) override;
   void ExitFullscreen() override;
-  void UpdateExclusiveAccessExitBubbleContent(
-      const GURL& url,
-      ExclusiveAccessBubbleType bubble_type,
-      ExclusiveAccessBubbleHideCallback bubble_first_hide_callback,
-      bool notify_download,
-      bool force_update) override;
+  void UpdateExclusiveAccessBubble(
+      const ExclusiveAccessBubbleParams& params,
+      ExclusiveAccessBubbleHideCallback first_hide_callback) override;
   bool IsExclusiveAccessBubbleDisplayed() const override;
   void OnExclusiveAccessUserInput() override;
   bool CanUserExitFullscreen() const override;
@@ -182,12 +180,9 @@ content::WebContents* FullscreenControllerTestWindow::GetActiveWebContents() {
   return browser_->tab_strip_model()->GetActiveWebContents();
 }
 
-void FullscreenControllerTestWindow::UpdateExclusiveAccessExitBubbleContent(
-    const GURL& url,
-    ExclusiveAccessBubbleType bubble_type,
-    ExclusiveAccessBubbleHideCallback bubble_first_hide_callback,
-    bool notify_download,
-    bool force_update) {}
+void FullscreenControllerTestWindow::UpdateExclusiveAccessBubble(
+    const ExclusiveAccessBubbleParams& params,
+    ExclusiveAccessBubbleHideCallback first_hide_callback) {}
 
 bool FullscreenControllerTestWindow::IsExclusiveAccessBubbleDisplayed() const {
   return false;
@@ -505,8 +500,8 @@ TEST_F(FullscreenControllerStateUnitTest, ExitTabFullscreenViaDetachingTab) {
   ASSERT_TRUE(InvokeEvent(WINDOW_CHANGE));
   ASSERT_TRUE(browser()->window()->IsFullscreen());
 
-  std::unique_ptr<content::WebContents> web_contents =
-      browser()->tab_strip_model()->DetachWebContentsAtForInsertion(0);
+  std::unique_ptr<tabs::TabModel> detached_tab =
+      browser()->tab_strip_model()->DetachTabAtForInsertion(0);
   ChangeWindowFullscreenState();
   EXPECT_FALSE(browser()->window()->IsFullscreen());
 }
@@ -524,7 +519,7 @@ TEST_F(FullscreenControllerStateUnitTest, ExitTabFullscreenViaReplacingTab) {
       content::WebContents::Create(
           content::WebContents::CreateParams(profile()));
   std::unique_ptr<content::WebContents> old_web_contents =
-      browser()->tab_strip_model()->ReplaceWebContentsAt(
+      browser()->tab_strip_model()->DiscardWebContentsAt(
           0, std::move(new_web_contents));
   ChangeWindowFullscreenState();
   EXPECT_FALSE(browser()->window()->IsFullscreen());
@@ -889,10 +884,10 @@ TEST_F(FullscreenControllerStateUnitTest,
   // The tab should remain in fullscreen mode and neither browser window should
   // have expanded. It is correct for both FullscreenControllers to agree the
   // tab is in fullscreen mode.
-  std::unique_ptr<content::WebContents> owned_wc =
-      browser()->tab_strip_model()->DetachWebContentsAtForInsertion(0);
-  second_browser->tab_strip_model()->InsertWebContentsAt(
-      0, std::move(owned_wc), AddTabTypes::ADD_ACTIVE);
+  std::unique_ptr<tabs::TabModel> detached_tab =
+      browser()->tab_strip_model()->DetachTabAtForInsertion(0);
+  second_browser->tab_strip_model()->InsertDetachedTabAt(
+      0, std::move(detached_tab), AddTabTypes::ADD_ACTIVE);
   EXPECT_FALSE(browser()->window()->IsFullscreen());
   EXPECT_FALSE(second_browser->window()->IsFullscreen());
   EXPECT_TRUE(tab->IsFullscreen());
@@ -907,9 +902,8 @@ TEST_F(FullscreenControllerStateUnitTest,
   // Now, detach and reattach it back to the first browser window.  Again, the
   // tab should remain in fullscreen mode and neither browser window should have
   // expanded.
-  owned_wc =
-      second_browser->tab_strip_model()->DetachWebContentsAtForInsertion(0);
-  browser()->tab_strip_model()->InsertWebContentsAt(0, std::move(owned_wc),
+  detached_tab = second_browser->tab_strip_model()->DetachTabAtForInsertion(0);
+  browser()->tab_strip_model()->InsertDetachedTabAt(0, std::move(detached_tab),
                                                     AddTabTypes::ADD_ACTIVE);
   EXPECT_FALSE(browser()->window()->IsFullscreen());
   EXPECT_FALSE(second_browser->window()->IsFullscreen());

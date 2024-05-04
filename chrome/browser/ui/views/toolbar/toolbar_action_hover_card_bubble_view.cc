@@ -35,7 +35,7 @@ using HoverCardState = ToolbarActionViewController::HoverCardState;
 constexpr int kHoverCardWidth = 240;
 
 // Hover card margins.
-// TODO(crbug.com/1351778): Move to a base hover card class.
+// TODO(crbug.com/40857356): Move to a base hover card class.
 constexpr int kHorizontalMargin = 12;
 constexpr int kVerticalMargin = 12;
 
@@ -282,6 +282,17 @@ std::u16string ToolbarActionHoverCardBubbleView::GetTitleTextForTesting()
 std::u16string ToolbarActionHoverCardBubbleView::GetActionTitleTextForTesting()
     const {
   return action_title_label_->GetText();
+}
+
+std::u16string
+ToolbarActionHoverCardBubbleView::GetSiteAccessTitleTextForTesting() const {
+  return site_access_title_label_->GetText();
+}
+
+std::u16string
+ToolbarActionHoverCardBubbleView::GetSiteAccessDescriptionTextForTesting()
+    const {
+  return site_access_description_label_->GetText();
 }
 
 bool ToolbarActionHoverCardBubbleView::IsActionTitleVisible() const {

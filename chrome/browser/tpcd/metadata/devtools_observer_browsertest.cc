@@ -1,6 +1,8 @@
 // Copyright 2023 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+#include "chrome/browser/tpcd/metadata/devtools_observer.h"
+
 #include "base/files/file_path.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -8,7 +10,6 @@
 #include "chrome/browser/dips/dips_test_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/subresource_filter/subresource_filter_browser_test_harness.h"
-#include "chrome/browser/tpcd/metadata/devtools_observer.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/chrome_test_utils.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -16,8 +17,7 @@
 #include "components/content_settings/core/common/features.h"
 #include "components/prefs/pref_service.h"
 #include "components/subresource_filter/core/common/test_ruleset_utils.h"
-#include "components/tpcd/metadata/parser.h"
-#include "components/tpcd/metadata/parser_test_helper.h"
+#include "components/tpcd/metadata/browser/parser.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_devtools_protocol_client.h"
 #include "net/dns/mock_host_resolver.h"
@@ -72,19 +72,15 @@ class TpcdMetadataDevtoolsObserverBrowserTest
     ClearNotifications();
 
     // Initialize mock 3PCD metadata component.
-    std::vector<MetadataPair> metadata_pairs;
     const std::string first_party_pattern_spec = "[*.]a.test";
     const std::string third_party_pattern_spec_1 = "[*.]b.test";
     const std::string third_party_pattern_spec_2 = "c.test";
-    metadata_pairs.emplace_back(third_party_pattern_spec_1,
-                                first_party_pattern_spec);
-    metadata_pairs.emplace_back(third_party_pattern_spec_2,
-                                first_party_pattern_spec);
+
     Metadata metadata;
-    AddEntryToMetadata(metadata, third_party_pattern_spec_1,
-                       first_party_pattern_spec);
-    AddEntryToMetadata(metadata, third_party_pattern_spec_2,
-                       first_party_pattern_spec);
+    tpcd::metadata::helpers::AddEntryToMetadata(
+        metadata, third_party_pattern_spec_1, first_party_pattern_spec);
+    tpcd::metadata::helpers::AddEntryToMetadata(
+        metadata, third_party_pattern_spec_2, first_party_pattern_spec);
     tpcd::metadata::Parser::GetInstance()->ParseMetadata(
         metadata.SerializeAsString());
 

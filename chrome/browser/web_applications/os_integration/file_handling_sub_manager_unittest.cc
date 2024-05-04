@@ -43,12 +43,6 @@ class FileHandlingSubManagerConfigureTest : public WebAppTest {
 
   void SetUp() override {
     WebAppTest::SetUp();
-    {
-      base::ScopedAllowBlockingForTesting allow_blocking;
-      test_override_ =
-          OsIntegrationTestOverrideImpl::OverrideForTesting(base::GetHomeDir());
-    }
-
     provider_ = FakeWebAppProvider::Get(profile());
 
     auto file_handler_manager =
@@ -59,28 +53,16 @@ class FileHandlingSubManagerConfigureTest : public WebAppTest {
         profile(), file_handler_manager.get(), protocol_handler_manager.get());
     auto os_integration_manager = std::make_unique<OsIntegrationManager>(
         profile(), std::move(shortcut_manager), std::move(file_handler_manager),
-        std::move(protocol_handler_manager), /*url_handler_manager=*/nullptr);
+        std::move(protocol_handler_manager));
 
     provider_->SetOsIntegrationManager(std::move(os_integration_manager));
     test::AwaitStartWebAppProviderAndSubsystems(profile());
   }
 
-  void TearDown() override {
-    // Blocking required due to file operations in the shortcut override
-    // destructor.
-    test::UninstallAllWebApps(profile());
-    {
-      base::ScopedAllowBlockingForTesting allow_blocking;
-      test_override_.reset();
-    }
-    WebAppTest::TearDown();
-  }
-
   webapps::AppId InstallWebAppWithFileHandlers(
       apps::FileHandlers file_handlers) {
     std::unique_ptr<WebAppInstallInfo> info =
-        std::make_unique<WebAppInstallInfo>();
-    info->start_url = kWebAppUrl;
+        WebAppInstallInfo::CreateWithStartUrlForTesting(kWebAppUrl);
     info->title = u"Test App";
     info->user_display_mode = web_app::mojom::UserDisplayMode::kStandalone;
     info->file_handlers = file_handlers;
@@ -104,14 +86,9 @@ class FileHandlingSubManagerConfigureTest : public WebAppTest {
 
  protected:
   WebAppProvider& provider() { return *provider_; }
-  scoped_refptr<OsIntegrationTestOverrideImpl> test_override() {
-    return test_override_->test_override;
-  }
 
  private:
   raw_ptr<FakeWebAppProvider, DanglingUntriaged> provider_ = nullptr;
-  std::unique_ptr<OsIntegrationTestOverrideImpl::BlockingRegistration>
-      test_override_;
 };
 
 TEST_F(FileHandlingSubManagerConfigureTest, InstallWithFilehandlers) {
@@ -302,7 +279,7 @@ TEST_F(FileHandlingSubManagerConfigureAndExecuteTest, InstallWithFilehandlers) {
            os_integration_state.file_handling())) {
     ASSERT_EQ(
         IsFileHandlingEnabled(),
-        test_override()->IsFileExtensionHandled(
+        fake_os_integration().IsFileExtensionHandled(
             profile(), app_id,
             provider().registrar_unsafe().GetAppShortName(app_id), extension));
   }
@@ -335,7 +312,7 @@ TEST_F(FileHandlingSubManagerConfigureAndExecuteTest,
            os_integration_state.file_handling())) {
     ASSERT_EQ(
         IsFileHandlingEnabled(),
-        test_override()->IsFileExtensionHandled(
+        fake_os_integration().IsFileExtensionHandled(
             profile(), app_id,
             provider().registrar_unsafe().GetAppShortName(app_id), extension));
   }
@@ -355,7 +332,7 @@ TEST_F(FileHandlingSubManagerConfigureAndExecuteTest,
 
   for (const auto& extension : GetFileExtensionsFromFileHandlingProto(
            os_integration_state.file_handling())) {
-    ASSERT_FALSE(test_override()->IsFileExtensionHandled(
+    ASSERT_FALSE(fake_os_integration().IsFileExtensionHandled(
         profile(), app_id,
         provider().registrar_unsafe().GetAppShortName(app_id), extension));
   }
@@ -382,12 +359,12 @@ TEST_F(FileHandlingSubManagerConfigureAndExecuteTest, Uninstall) {
   auto state =
       provider().registrar_unsafe().GetAppCurrentOsIntegrationState(app_id);
   ASSERT_TRUE(state.has_value());
-  const proto::WebAppOsIntegrationState& os_integration_state = state.value();
+  proto::WebAppOsIntegrationState os_integration_state = state.value();
   for (const auto& extension : GetFileExtensionsFromFileHandlingProto(
            os_integration_state.file_handling())) {
     ASSERT_EQ(
         IsFileHandlingEnabled(),
-        test_override()->IsFileExtensionHandled(
+        fake_os_integration().IsFileExtensionHandled(
             profile(), app_id,
             provider().registrar_unsafe().GetAppShortName(app_id), extension));
   }
@@ -397,7 +374,7 @@ TEST_F(FileHandlingSubManagerConfigureAndExecuteTest, Uninstall) {
   ASSERT_FALSE(new_state.has_value());
   for (const auto& extension : GetFileExtensionsFromFileHandlingProto(
            os_integration_state.file_handling())) {
-    ASSERT_FALSE(test_override()->IsFileExtensionHandled(
+    EXPECT_FALSE(fake_os_integration().IsFileExtensionHandled(
         profile(), app_id,
         provider().registrar_unsafe().GetAppShortName(app_id), extension));
   }
@@ -431,8 +408,8 @@ TEST_F(FileHandlingSubManagerConfigureAndExecuteTest,
   for (const auto& extension : GetFileExtensionsFromFileHandlingProto(
            os_integration_state.file_handling())) {
     ASSERT_EQ(IsFileHandlingEnabled(),
-              test_override()->IsFileExtensionHandled(profile(), app_id,
-                                                      app_name, extension));
+              fake_os_integration().IsFileExtensionHandled(
+                  profile(), app_id, app_name, extension));
   }
 
   SynchronizeOsOptions options;
@@ -441,8 +418,8 @@ TEST_F(FileHandlingSubManagerConfigureAndExecuteTest,
 
   for (const auto& extension : GetFileExtensionsFromFileHandlingProto(
            os_integration_state.file_handling())) {
-    ASSERT_FALSE(test_override()->IsFileExtensionHandled(profile(), app_id,
-                                                         app_name, extension));
+    EXPECT_FALSE(fake_os_integration().IsFileExtensionHandled(
+        profile(), app_id, app_name, extension));
   }
 }
 
@@ -470,38 +447,31 @@ TEST_F(FileHandlingSubManagerConfigureAndExecuteTest,
   auto state =
       provider().registrar_unsafe().GetAppCurrentOsIntegrationState(app_id);
   ASSERT_TRUE(state.has_value());
-  const proto::WebAppOsIntegrationState& os_integration_state = state.value();
+  proto::WebAppOsIntegrationState os_integration_state = state.value();
   for (const auto& extension : GetFileExtensionsFromFileHandlingProto(
            os_integration_state.file_handling())) {
-    ASSERT_EQ(IsFileHandlingEnabled(),
-              test_override()->IsFileExtensionHandled(profile(), app_id,
-                                                      app_name, extension));
+    EXPECT_EQ(IsFileHandlingEnabled(),
+              fake_os_integration().IsFileExtensionHandled(
+                  profile(), app_id, app_name, extension));
   }
 
-  std::optional<OsIntegrationManager::ScopedSuppressForTesting> scoped_supress =
-      std::nullopt;
-  scoped_supress.emplace();
   test::UninstallAllWebApps(profile());
-  // File extensions should still be left behind, even though the app has been
-  // uninstalled.
   for (const auto& extension : GetFileExtensionsFromFileHandlingProto(
            os_integration_state.file_handling())) {
-    ASSERT_EQ(IsFileHandlingEnabled(),
-              test_override()->IsFileExtensionHandled(profile(), app_id,
-                                                      app_name, extension));
+    EXPECT_FALSE(fake_os_integration().IsFileExtensionHandled(
+        profile(), app_id, app_name, extension));
   }
   EXPECT_FALSE(provider().registrar_unsafe().IsInstalled(app_id));
 
+  // The file handling continues to not be registered.
   SynchronizeOsOptions options;
   options.force_unregister_os_integration = true;
   test::SynchronizeOsIntegration(profile(), app_id, options);
-
   for (const auto& extension : GetFileExtensionsFromFileHandlingProto(
            os_integration_state.file_handling())) {
-    ASSERT_FALSE(test_override()->IsFileExtensionHandled(profile(), app_id,
-                                                         app_name, extension));
+    EXPECT_FALSE(fake_os_integration().IsFileExtensionHandled(
+        profile(), app_id, app_name, extension));
   }
-  scoped_supress.reset();
 }
 
 }  // namespace

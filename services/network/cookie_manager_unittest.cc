@@ -123,7 +123,7 @@ class SynchronousCookieManager {
     return net::cookie_util::StripAccessResults(std::get<0>(future.Take()));
   }
 
-  // TODO(crbug.com/1225444): CookieManager should be able to see which cookies
+  // TODO(crbug.com/40188414): CookieManager should be able to see which cookies
   // are excluded because their partition key is not contained in the
   // key collection.
   net::CookieAccessResultList GetExcludedCookieList(
@@ -348,8 +348,10 @@ class CookieManagerTest : public testing::Test {
     context_builder->SetCookieStore(std::move(cookie_monster));
     url_request_context_ = context_builder->Build();
     cookie_service_ = std::make_unique<CookieManager>(
-        url_request_context_.get(), nullptr /* first_party_sets */,
-        std::move(cleanup_store), nullptr);
+        url_request_context_.get(),
+        /*first_party_sets_access_delegate=*/nullptr, std::move(cleanup_store),
+        /*params=*/nullptr,
+        /*tpcd_metadata_manager=*/nullptr);
     cookie_service_->AddReceiver(
         cookie_service_remote_.BindNewPipeAndPassReceiver());
     service_wrapper_ = std::make_unique<SynchronousCookieManager>(
@@ -993,9 +995,8 @@ TEST_F(CookieManagerTest, ConfirmSecureSetFails) {
 // from potentially trustworthy origins, even if non-cryptographic.
 TEST_F(CookieManagerTest, SecureCookieNonCryptographicPotentiallyTrustworthy) {
   GURL http_localhost_url("http://localhost/path");
-  auto http_localhost_cookie = net::CanonicalCookie::Create(
-      http_localhost_url, "http_localhost=1; Secure", base::Time::Now(),
-      std::nullopt, std::nullopt /* cookie_partition_key */);
+  auto http_localhost_cookie = net::CanonicalCookie::CreateForTesting(
+      http_localhost_url, "http_localhost=1; Secure", base::Time::Now());
 
   // Secure cookie can be set from non-cryptographic localhost URL.
   EXPECT_TRUE(service_wrapper()
@@ -1015,9 +1016,8 @@ TEST_F(CookieManagerTest, SecureCookieNonCryptographicPotentiallyTrustworthy) {
   EXPECT_TRUE(http_localhost_cookies[0].SecureAttribute());
 
   GURL http_other_url("http://other.test/path");
-  auto http_other_cookie = net::CanonicalCookie::Create(
-      http_other_url, "http_other=1; Secure", base::Time::Now(), std::nullopt,
-      std::nullopt /* cookie_partition_key */);
+  auto http_other_cookie = net::CanonicalCookie::CreateForTesting(
+      http_other_url, "http_other=1; Secure", base::Time::Now());
 
   // Secure cookie cannot be set from another non-cryptographic URL if there is
   // no CookieAccessDelegate.

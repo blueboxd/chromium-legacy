@@ -4,14 +4,22 @@
 
 #include "chrome/browser/ash/login/test/logged_in_user_mixin.h"
 
-#include <vector>
+#include <optional>
 
+#include "base/check.h"
+#include "chrome/browser/ash/login/test/cryptohome_mixin.h"
+#include "chrome/browser/ash/login/test/login_manager_mixin.h"
 #include "chrome/browser/ash/login/test/user_auth_config.h"
-#include "chrome/browser/ash/login/wizard_controller.h"
+#include "chrome/browser/ash/net/delay_network_call.h"
+#include "chrome/test/base/fake_gaia_mixin.h"
+#include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/mixin_based_in_process_browser_test.h"
 #include "chromeos/ash/components/login/auth/public/user_context.h"
 #include "chromeos/ash/components/login/auth/stub_authenticator_builder.h"
 #include "components/account_id/account_id.h"
+#include "components/user_manager/user_type.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 
 namespace ash {
 namespace {
@@ -42,17 +50,23 @@ LoggedInUserMixin::LoggedInUserMixin(
     InProcessBrowserTest* test_base,
     bool should_launch_browser,
     std::optional<AccountId> account_id,
+    std::optional<test::UserAuthConfig> auth_config,
     bool include_initial_user,
     bool use_embedded_policy_server)
     : InProcessBrowserTestMixin(mixin_host),
       user_(account_id.value_or(
                 AccountId::FromUserEmailGaiaId(FakeGaiaMixin::kFakeUserEmail,
                                                FakeGaiaMixin::kFakeUserGaiaId)),
-            test::kDefaultAuthSetup,
+            auth_config.value_or(
+                test::UserAuthConfig::Create(test::kDefaultAuthSetup)),
             ConvertUserType(type)),
+      include_initial_user_(include_initial_user),
+      fake_gaia_(mixin_host),
+      cryptohome_(mixin_host),
       login_manager_(mixin_host,
                      GetInitialUsers(user_, include_initial_user),
-                     &fake_gaia_),
+                     &fake_gaia_,
+                     &cryptohome_),
       embedded_policy_server_(mixin_host),
       user_policy_(
           mixin_host,
@@ -61,7 +75,6 @@ LoggedInUserMixin::LoggedInUserMixin(
       user_policy_helper_(user_.account_id.GetUserEmail(),
                           &embedded_policy_server_),
       embedded_test_server_setup_(mixin_host, embedded_test_server),
-      fake_gaia_(mixin_host),
       test_base_(test_base) {
   // By default, LoginManagerMixin will set up user session manager not to
   // launch browser as part of user session setup - use this to override that
@@ -90,10 +103,13 @@ void LoggedInUserMixin::LogInUser(bool issue_any_scope_token,
         << "wait_for_active_session must be false if skip_post_login_screen is "
            "false as there might not be an active session after a login.";
   }
-
+  login_manager_.set_should_wait_for_profile(wait_for_active_session);
   UserContext user_context = LoginManagerMixin::CreateDefaultUserContext(user_);
   user_context.SetRefreshToken(FakeGaiaMixin::kFakeRefreshToken);
   if (user_.user_type == user_manager::UserType::kChild) {
+    // TODO(b/333450354): Determine why this is necessary and fix.
+    SetDelayNetworkCallsForTesting(true);
+
     fake_gaia_.SetupFakeGaiaForChildUser(
         user_.account_id.GetUserEmail(), user_.account_id.GetGaiaId(),
         FakeGaiaMixin::kFakeRefreshToken, issue_any_scope_token);
@@ -107,14 +123,23 @@ void LoggedInUserMixin::LogInUser(bool issue_any_scope_token,
     // through login.
     GetUserPolicyMixin()->RequestPolicyUpdate();
   }
-  if (wait_for_active_session) {
-    login_manager_.LoginAndWaitForActiveSession(user_context);
-    // If should_launch_browser was set to true, then ensures
-    // InProcessBrowserTest::browser() doesn't return nullptr.
-    test_base_->SelectFirstBrowser();
+  if (!include_initial_user_) {
+    if (user_.user_type == user_manager::UserType::kChild) {
+      CHECK(user_.account_id.GetUserEmail() == FakeGaiaMixin::kFakeUserEmail);
+      CHECK(user_.account_id.GetGaiaId() == FakeGaiaMixin::kFakeUserGaiaId);
+      login_manager_.LoginAsNewChildUser();
+    } else {
+      login_manager_.LoginAsNewRegularUser(user_context);
+    }
   } else {
     login_manager_.AttemptLoginUsingAuthenticator(
         user_context, std::make_unique<StubAuthenticatorBuilder>(user_context));
+  }
+  if (wait_for_active_session) {
+    login_manager_.WaitForActiveSession();
+    // If should_launch_browser was set to true, then ensures
+    // InProcessBrowserTest::browser() doesn't return nullptr.
+    test_base_->SelectFirstBrowser();
   }
 }
 

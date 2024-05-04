@@ -11,12 +11,10 @@
 
 #include "ash/public/cpp/wallpaper/google_photos_wallpaper_params.h"
 #include "ash/public/cpp/wallpaper/online_wallpaper_params.h"
-#include "ash/public/cpp/wallpaper/sea_pen_image.h"
 #include "ash/public/cpp/wallpaper/wallpaper_controller.h"
 #include "ash/public/cpp/wallpaper/wallpaper_drivefs_delegate.h"
 #include "ash/public/cpp/wallpaper/wallpaper_types.h"
 #include "base/files/file_path.h"
-#include "base/json/json_reader.h"
 #include "base/observer_list.h"
 #include "base/strings/string_util.h"
 #include "components/account_id/account_id.h"
@@ -80,12 +78,6 @@ class TestWallpaperController : public ash::WallpaperController {
   }
   const std::optional<ash::WallpaperInfo>& wallpaper_info() const {
     return wallpaper_info_;
-  }
-  const ash::personalization_app::mojom::SeaPenQueryPtr& sea_pen_query() const {
-    return sea_pen_query_;
-  }
-  void set_sea_pen_metadata(const std::string& metadata) {
-    sea_pen_metadata_ = base::JSONReader::ReadDict(base::StringPiece(metadata));
   }
   int update_current_wallpaper_layout_count() const {
     return update_current_wallpaper_layout_count_;
@@ -160,21 +152,9 @@ class TestWallpaperController : public ash::WallpaperController {
                               const std::string& file_name,
                               ash::WallpaperLayout layout,
                               const gfx::ImageSkia& image) override;
-  void SetSeaPenWallpaper(
-      const AccountId& account_id,
-      const ash::SeaPenImage& sea_pen_image,
-      const ash::personalization_app::mojom::SeaPenQueryPtr& query,
-      SetWallpaperCallback callback) override;
-  void SetSeaPenWallpaperFromFile(const AccountId& account_id,
-                                  uint32_t id,
-                                  SetWallpaperCallback callback) override;
-  void GetSeaPenMetadata(const AccountId& account_id,
-                         uint32_t id,
-                         GetSeaPenMetadataCallback callback) override;
-  void DeleteRecentSeaPenImage(
-      const AccountId& account_id,
-      uint32_t id,
-      DeleteRecentSeaPenImageCallback callback) override;
+  void SetSeaPenWallpaper(const AccountId& account_id,
+                          uint32_t id,
+                          SetWallpaperCallback callback) override;
   void ConfirmPreviewWallpaper() override;
   void CancelPreviewWallpaper() override;
   void UpdateCurrentWallpaperLayout(const AccountId& account_id,
@@ -203,7 +183,6 @@ class TestWallpaperController : public ash::WallpaperController {
   bool IsWallpaperControlledByPolicy(
       const AccountId& account_id) const override;
   std::optional<ash::WallpaperInfo> GetActiveUserWallpaperInfo() const override;
-  bool ShouldShowWallpaperSetting() override;
   void SetDailyRefreshCollectionId(const AccountId& account_id,
                                    const std::string& collection_id) override;
   std::string GetDailyRefreshCollectionId(
@@ -228,8 +207,6 @@ class TestWallpaperController : public ash::WallpaperController {
   int one_shot_wallpaper_count_ = 0;
   int sea_pen_wallpaper_count_ = 0;
   std::optional<ash::WallpaperInfo> wallpaper_info_;
-  ash::personalization_app::mojom::SeaPenQueryPtr sea_pen_query_;
-  std::optional<base::Value::Dict> sea_pen_metadata_;
   int update_current_wallpaper_layout_count_ = 0;
   std::optional<ash::WallpaperLayout> update_current_wallpaper_layout_layout_;
   DailyGooglePhotosIdCache id_cache_;

@@ -28,7 +28,7 @@ void WakeUpQueue::RemoveAllCanceledDelayedTasksFromFront(LazyNow* lazy_now) {
   // needed because a different queue can become the top one once you remove the
   // canceled tasks.
   while (!wake_up_queue_.empty()) {
-    auto* top_queue = wake_up_queue_.top().queue.get();
+    auto* top_queue = wake_up_queue_.top().queue;
 
     // If no tasks are removed from the top queue, then it means the top queue
     // cannot change anymore.
@@ -126,7 +126,7 @@ std::optional<WakeUp> WakeUpQueue::GetNextDelayedWakeUp() const {
   // `wake_up.resolution` is not meaningful since it may be different from
   // has_pending_high_resolution_tasks(). Return WakeUpResolution::kLow here to
   // simplify comparison between wake ups.
-  // TODO(1153139): Drive resolution by DelayPolicy and return
+  // TODO(crbug.com/40158967): Drive resolution by DelayPolicy and return
   // has_pending_high_resolution_tasks() here.
   wake_up.resolution = WakeUpResolution::kLow;
   return wake_up;
@@ -135,7 +135,7 @@ std::optional<WakeUp> WakeUpQueue::GetNextDelayedWakeUp() const {
 Value::Dict WakeUpQueue::AsValue(TimeTicks now) const {
   Value::Dict state;
   state.Set("name", GetName());
-  // TODO(crbug.com/1334256): Make base::Value able to store an int64_t and
+  // TODO(crbug.com/40228085): Make base::Value able to store an int64_t and
   // remove this cast.
   state.Set("registered_delay_count", checked_cast<int>(wake_up_queue_.size()));
   if (!wake_up_queue_.empty()) {

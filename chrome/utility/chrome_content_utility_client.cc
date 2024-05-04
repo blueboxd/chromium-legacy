@@ -8,6 +8,7 @@
 
 #include <utility>
 
+#include "base/check.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"
@@ -16,18 +17,20 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/profiler/thread_profiler.h"
 #include "chrome/common/profiler/thread_profiler_configuration.h"
-#include "chrome/utility/browser_exposed_utility_interfaces.h"
 #include "chrome/utility/services.h"
 #include "components/heap_profiling/in_process/heap_profiler_controller.h"
 #include "components/metrics/call_stacks/call_stack_profile_builder.h"
 #include "content/public/child/child_thread.h"
 #include "content/public/common/content_switches.h"
-#include "sandbox/policy/mojom/sandbox.mojom.h"
-#include "sandbox/policy/sandbox_type.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chromeos/ash/components/mojo_service_manager/connection.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if BUILDFLAG(IS_WIN)
+#include "sandbox/policy/mojom/sandbox.mojom.h"
+#include "sandbox/policy/sandbox_type.h"
+#endif
 
 ChromeContentUtilityClient::ChromeContentUtilityClient() = default;
 
@@ -41,15 +44,6 @@ void ChromeContentUtilityClient::ExposeInterfacesToBrowser(
   utility_process_running_elevated_ =
       sandbox_type == sandbox::mojom::Sandbox::kNoSandboxAndElevatedPrivileges;
 #endif
-
-  // If our process runs with elevated privileges, only add elevated Mojo
-  // interfaces to the BinderMap.
-  //
-  // NOTE: Do not add interfaces directly from within this method. Instead,
-  // modify the definition of |ExposeElevatedChromeUtilityInterfacesToBrowser()|
-  // to ensure security review coverage.
-  if (!utility_process_running_elevated_)
-    ExposeElevatedChromeUtilityInterfacesToBrowser(binders);
 }
 
 void ChromeContentUtilityClient::UtilityThreadStarted() {
@@ -62,14 +56,13 @@ void ChromeContentUtilityClient::UtilityThreadStarted() {
   // An in-process utility thread may run in other processes, only set up
   // collector in a utility process.
   if (process_type == switches::kUtilityProcess) {
+    const auto* heap_profiler_controller =
+        heap_profiling::HeapProfilerController::GetInstance();
     // The HeapProfilerController should have been created in
     // ChromeMainDelegate::PostEarlyInitialization.
-    using HeapProfilerController = heap_profiling::HeapProfilerController;
-    DCHECK_NE(HeapProfilerController::GetProfilingEnabled(),
-              HeapProfilerController::ProfilingEnabled::kNoController);
+    CHECK(heap_profiler_controller);
     if (ThreadProfiler::ShouldCollectProfilesForChildProcess() ||
-        HeapProfilerController::GetProfilingEnabled() ==
-            HeapProfilerController::ProfilingEnabled::kEnabled) {
+        heap_profiler_controller->IsEnabled()) {
       mojo::PendingRemote<metrics::mojom::CallStackProfileCollector> collector;
       content::ChildThread::Get()->BindHostReceiver(
           collector.InitWithNewPipeAndPassReceiver());

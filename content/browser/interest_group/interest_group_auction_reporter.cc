@@ -79,6 +79,11 @@ const blink::InterestGroup::Ad& ChosenAd(
 bool IsKAnonForReporting(
     const SingleStorageInterestGroup& storage_interest_group,
     const blink::InterestGroup::Ad& chosen_ad) {
+  // K-anonymity enforcement is always disabled for the testing population.
+  if (base::FeatureList::IsEnabled(
+          features::kCookieDeprecationFacilitatedTesting)) {
+    return true;
+  }
   if (!base::FeatureList::IsEnabled(
           blink::features::kFledgeConsiderKAnonymity) ||
       !base::FeatureList::IsEnabled(
@@ -86,12 +91,12 @@ bool IsKAnonForReporting(
     return true;
   }
 
-  std::string reporting_key = KAnonKeyForAdNameReporting(
+  std::string reporting_key = HashedKAnonKeyForAdNameReporting(
       storage_interest_group->interest_group, chosen_ad);
   auto kanon = base::ranges::find(
       storage_interest_group->reporting_ads_kanon, reporting_key,
       [](const StorageInterestGroup::KAnonymityData& data) {
-        return data.key;
+        return data.hashed_key;
       });
   if (kanon == storage_interest_group->reporting_ads_kanon.end() ||
       !kanon->is_k_anonymous) {
@@ -350,6 +355,11 @@ void InterestGroupAuctionReporter::OnFledgePrivateAggregationRequests(
 }
 
 /* static */
+double InterestGroupAuctionReporter::RoundBidStochastically(double bid) {
+  return RoundStochasticallyToKBits(bid, kFledgeBidReportingBits.Get());
+}
+
+/* static */
 double InterestGroupAuctionReporter::RoundStochasticallyToKBits(double value,
                                                                 unsigned k) {
   int value_exp;
@@ -482,6 +492,10 @@ void InterestGroupAuctionReporter::OnSellerWorkletReceived(
     DCHECK(top_seller_signals);
     DCHECK(component_seller_winning_bid_info_);
     DCHECK(seller_info->component_auction_modified_bid_params);
+    std::optional<double> rounded_modified_bid;
+    if (seller_info->component_auction_modified_bid_params->bid.has_value()) {
+      rounded_modified_bid = top_level_seller_winning_bid_info_.rounded_bid;
+    }
     other_seller =
         auction_worklet::mojom::ComponentAuctionOtherSeller::NewTopLevelSeller(
             top_level_seller_winning_bid_info_.auction_config->seller);
@@ -489,9 +503,7 @@ void InterestGroupAuctionReporter::OnSellerWorkletReceived(
         auction_worklet::mojom::ComponentAuctionReportResultParams::New(
             /*top_level_seller_signals=*/std::move(top_seller_signals).value(),
             /*modified_bid=*/
-            RoundStochasticallyToKBits(
-                seller_info->component_auction_modified_bid_params->bid,
-                kFledgeBidReportingBits.Get()));
+            rounded_modified_bid);
   }
 
   double bid = seller_info->bid;
@@ -545,9 +557,7 @@ void InterestGroupAuctionReporter::OnSellerWorkletReceived(
       winning_bid_info_.storage_interest_group->interest_group.owner,
       /*browser_signal_buyer_and_seller_reporting_id=*/
       browser_signal_buyer_and_seller_reporting_id,
-      winning_bid_info_.render_url,
-      RoundStochasticallyToKBits(bid, kFledgeBidReportingBits.Get()),
-      bid_currency,
+      winning_bid_info_.render_url, seller_info->rounded_bid, bid_currency,
       RoundStochasticallyToKBits(seller_info->score,
                                  kFledgeScoreReportingBits.Get()),
       RoundStochasticallyToKBits(highest_scoring_other_bid,
@@ -587,6 +597,13 @@ void InterestGroupAuctionReporter::OnSellerReportResultComplete(
   timings.script_run_time = reporting_latency;
   for (auction_worklet::mojom::PrivateAggregationRequestPtr& request :
        pa_requests) {
+    // TODO(crbug.com/330744610): Allow filtering ID to be set.
+    if (request->contribution->is_histogram_contribution() &&
+        request->contribution->get_histogram_contribution()
+            ->filtering_id.has_value()) {
+      mojo::ReportBadMessage("Filtering ID set inappropriately");
+    }
+
     // reportResult() only gets executed for seller when there was an auction
     // winner so we consider is_winner to be true, which results in
     // "reserved.loss" reports not being reported. Bid reject reason is not
@@ -761,8 +778,7 @@ void InterestGroupAuctionReporter::OnBidderWorkletReceived(
   }
   // If k-anonymity enforcement is on we can only reveal the winning reporting
   // id in reportWin if the winning ad's reporting_ads_kanon entry is
-  // k-anonymous. Otherwise we simply provide the empty string, as well as hide
-  // the field name.
+  // k-anonymous.
   //
   // An exception to this is contextual bids, which have access to page
   // information anyway.
@@ -770,9 +786,13 @@ void InterestGroupAuctionReporter::OnBidderWorkletReceived(
       !IsKAnonForReporting(winning_bid_info_.storage_interest_group,
                            chosen_ad)) {
     reporting_id = "";
-    reporting_id_field =
-        auction_worklet::mojom::ReportingIdField::kInterestGroupName;
+    reporting_id_field = auction_worklet::mojom::ReportingIdField::kNone;
   }
+  base::UmaHistogramEnumeration(
+      top_level_seller_winning_bid_info_.saved_response.has_value()
+          ? "Ads.InterestGroup.ServerAuction.ReportingIdType"
+          : "Ads.InterestGroup.Auction.ReportingIdType",
+      reporting_id_field);
 
   bidder_worklet_handle_->AuthorizeSubresourceUrls(
       *seller_info.subresource_url_builder);
@@ -824,9 +844,7 @@ void InterestGroupAuctionReporter::OnBidderWorkletReceived(
       InterestGroupAuction::GetDirectFromSellerAuctionSignalsHeaderAdSlot(
           *seller_info.direct_from_seller_signals_header_ad_slot),
       signals_for_winner, kanon_mode_, bid_is_kanon_,
-      winning_bid_info_.render_url,
-      RoundStochasticallyToKBits(winning_bid_info_.bid,
-                                 kFledgeBidReportingBits.Get()),
+      winning_bid_info_.render_url, seller_info.rounded_bid,
       winning_bid_info_.bid_currency,
       /*browser_signal_highest_scoring_other_bid=*/
       RoundStochasticallyToKBits(highest_scoring_other_bid,
@@ -847,6 +865,7 @@ void InterestGroupAuctionReporter::OnBidderWorkletReceived(
       component_seller_winning_bid_info_
           ? top_level_seller_winning_bid_info_.auction_config->seller
           : std::optional<url::Origin>(),
+      auction_config->non_shared_params.reporting_timeout,
       winning_bid_info_.bidding_signals_data_version,
       top_level_seller_winning_bid_info_.trace_id,
       base::BindOnce(&InterestGroupAuctionReporter::OnBidderReportWinComplete,
@@ -900,6 +919,13 @@ void InterestGroupAuctionReporter::OnBidderReportWinComplete(
   timings.script_run_time = reporting_latency;
   for (auction_worklet::mojom::PrivateAggregationRequestPtr& request :
        pa_requests) {
+    // TODO(crbug.com/330744610): Allow filtering ID to be set.
+    if (request->contribution->is_histogram_contribution() &&
+        request->contribution->get_histogram_contribution()
+            ->filtering_id.has_value()) {
+      mojo::ReportBadMessage("Filtering ID set inappropriately");
+    }
+
     // Only winner's reportWin() gets executed, so is_winner is true, which
     // results in "reserved.loss" reports not being reported. Bid reject reason
     // is not meaningful thus not supported in reportWin(), so it is set to

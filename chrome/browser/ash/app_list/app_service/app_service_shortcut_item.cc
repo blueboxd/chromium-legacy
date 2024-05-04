@@ -101,7 +101,7 @@ AppServiceShortcutItem::AppServiceShortcutItem(
       profile_(profile) {
   SetName(shortcut_name);
   SetAccessibleName(GetAccessibilityLabel(profile, shortcut_id, shortcut_name));
-  // TODO(crbug.com/1412708): Consider renaming this interface.
+  // TODO(crbug.com/40255408): Consider renaming this interface.
   SetAppStatus(ash::AppStatus::kReady);
 
   if (sync_item && sync_item->item_ordinal.IsValid()) {
@@ -164,7 +164,7 @@ void AppServiceShortcutItem::OnLoadIcon(apps::IconValuePtr icon_value,
   // Temporary put the badge in with existing UI interface for testing purposes.
   // The actual visual will be done in the UI layer with the icon and badge raw
   // icons.
-  // TODO(crbug.com/1480423): Remove this when the actual visual is done in the
+  // TODO(crbug.com/40281395): Remove this when the actual visual is done in the
   // UI.
   if (ash::features::IsSeparateWebAppShortcutBadgeIconEnabled()) {
     SetIcon(icon_value->uncompressed, false);

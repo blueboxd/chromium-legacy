@@ -8,6 +8,7 @@
 #include <cmath>
 #include <memory>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -160,7 +161,7 @@ class GtkPrinterList {
 
 #if BUILDFLAG(ENABLE_OOP_PRINTING_NO_OOP_BASIC_PRINT_DIALOG)
 ScopedGKeyFile GetGKeyFileFromDict(const base::Value::Dict& data,
-                                   base::StringPiece key) {
+                                   std::string_view key) {
   const std::string* data_string = data.FindString(key);
   CHECK(data_string);
 
@@ -264,7 +265,7 @@ void PrintDialogGtk::UpdateSettings(
     // the Resolution PPD attribute. For this reason "cups-Resolution"
     // makes the most sense here.
     //
-    // TODO(crbug.com/1119956): Since PrintBackendCUPS parses the PPD file in
+    // TODO(crbug.com/40714448): Since PrintBackendCUPS parses the PPD file in
     // Chromium, it should be possible to store the resolution attribute name
     // as well as a map from the gfx::Size resolution to the std::string
     // serialized value (in case a non-standard value such as 500x500dpi is

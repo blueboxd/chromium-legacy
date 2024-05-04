@@ -6,7 +6,6 @@
 
 #import "base/notreached.h"
 #import "base/strings/utf_string_conversions.h"
-#import "components/safe_browsing/core/common/features.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/shared/ui/symbols/symbols.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_ui_features.h"
@@ -23,7 +22,7 @@ const CGFloat kSymbolLocationBarPointSize = 10;
 
 OmniboxSuggestionIconType GetOmniboxSuggestionIconTypeForAutocompleteMatchType(
     AutocompleteMatchType::Type type) {
-  // TODO(crbug.com/1122669): Handle trending zero-prefix suggestions by
+  // TODO(crbug.com/40716245): Handle trending zero-prefix suggestions by
   // checking the match subtype similar to AutocompleteMatch::GetVectorIcon().
 
   switch (type) {
@@ -68,7 +67,9 @@ OmniboxSuggestionIconType GetOmniboxSuggestionIconTypeForAutocompleteMatchType(
     case AutocompleteMatchType::NUM_TYPES:
     case AutocompleteMatchType::TILE_SUGGESTION:
     case AutocompleteMatchType::TILE_REPEATABLE_QUERY:
-      NOTREACHED();
+    case AutocompleteMatchType::HISTORY_EMBEDDINGS:
+    case AutocompleteMatchType::FEATURED_ENTERPRISE_SEARCH:
+      DUMP_WILL_BE_NOTREACHED_NORETURN();
       return OmniboxSuggestionIconType::kDefaultFavicon;
   }
 }
@@ -104,11 +105,7 @@ LocationBarSecurityIconType GetLocationBarSecurityIconTypeForSecurityState(
     case security_state::NONE:
       return INFO;
     case security_state::DANGEROUS:
-      if (base::FeatureList::IsEnabled(
-              safe_browsing::kRedInterstitialFacelift)) {
-        return DANGEROUS;
-      }
-      return NOT_SECURE_WARNING;
+      return DANGEROUS;
     case security_state::WARNING:
       return NOT_SECURE_WARNING;
     case security_state::SECURE:

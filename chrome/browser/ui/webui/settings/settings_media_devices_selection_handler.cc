@@ -71,14 +71,14 @@ void MediaDevicesSelectionHandler::OnJavascriptDisallowed() {
 
 void MediaDevicesSelectionHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
-      "getDefaultCaptureDevices",
+      "initializeCaptureDevices",
       base::BindRepeating(
-          &MediaDevicesSelectionHandler::GetDefaultCaptureDevices,
+          &MediaDevicesSelectionHandler::InitializeCaptureDevices,
           base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      "setDefaultCaptureDevice",
+      "setPreferredCaptureDevice",
       base::BindRepeating(
-          &MediaDevicesSelectionHandler::SetDefaultCaptureDevice,
+          &MediaDevicesSelectionHandler::SetPreferredCaptureDevice,
           base::Unretained(this)));
 }
 
@@ -104,7 +104,7 @@ void MediaDevicesSelectionHandler::SetWebUiForTest(content::WebUI* web_ui) {
   set_web_ui(web_ui);
 }
 
-void MediaDevicesSelectionHandler::GetDefaultCaptureDevices(
+void MediaDevicesSelectionHandler::InitializeCaptureDevices(
     const base::Value::List& args) {
   DCHECK_EQ(1U, args.size());
   if (!args[0].is_string()) {
@@ -123,7 +123,7 @@ void MediaDevicesSelectionHandler::GetDefaultCaptureDevices(
   }
 }
 
-void MediaDevicesSelectionHandler::SetDefaultCaptureDevice(
+void MediaDevicesSelectionHandler::SetPreferredCaptureDevice(
     const base::Value::List& args) {
   CHECK_EQ(2U, args.size());
   if (!args[0].is_string() || !args[1].is_string()) {
@@ -156,20 +156,30 @@ void MediaDevicesSelectionHandler::UpdateDevicesMenu(
     const std::vector<media::AudioDeviceDescription>& devices) {
   AllowJavascript();
 
+  auto real_default_device_id = media_effects::GetRealDefaultDeviceId(devices);
+
+  std::string selected_device_id;
   // Build the list of devices to send to JS.
   base::Value::List device_list;
   for (const auto& device : devices) {
+    if (real_default_device_id.has_value() &&
+        media::AudioDeviceDescription::IsDefaultDevice(device.unique_id)) {
+      continue;
+    }
+    if (selected_device_id.empty()) {
+      selected_device_id = device.unique_id;
+    }
     base::Value::Dict entry;
     entry.Set("name", GetDeviceDisplayName(device));
     entry.Set("id", device.unique_id);
     device_list.Append(std::move(entry));
   }
 
-  base::Value default_value(devices.empty() ? "" : devices.front().unique_id);
+  base::Value selected_value(selected_device_id);
   base::Value type_value(kAudio);
 
   FireWebUIListener("updateDevicesMenu", type_value, device_list,
-                    default_value);
+                    selected_value);
 }
 
 void MediaDevicesSelectionHandler::UpdateDevicesMenu(
@@ -185,12 +195,12 @@ void MediaDevicesSelectionHandler::UpdateDevicesMenu(
     device_list.Append(std::move(entry));
   }
 
-  base::Value default_value(
+  base::Value selected_device_id(
       devices.empty() ? "" : devices.front().descriptor.device_id);
   base::Value type_value(kVideo);
 
   FireWebUIListener("updateDevicesMenu", type_value, device_list,
-                    default_value);
+                    selected_device_id);
 }
 
 std::string MediaDevicesSelectionHandler::GetDeviceDisplayName(
@@ -199,6 +209,11 @@ std::string MediaDevicesSelectionHandler::GetDeviceDisplayName(
       media::AudioDeviceDescription::IsDefaultDevice(device.unique_id);
   if (is_virtual_default_device) {
     return l10n_util::GetStringUTF8(IDS_MEDIA_PREVIEW_SYSTEM_DEFAULT_MIC);
+  }
+  if (device.is_system_default) {
+    return l10n_util::GetStringFUTF8(
+        IDS_MEDIA_PREVIEW_SYSTEM_DEFAULT_MIC_PARENTHETICAL,
+        base::UTF8ToUTF16(device.device_name));
   }
   return device.device_name;
 }

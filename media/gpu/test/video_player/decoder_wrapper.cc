@@ -291,7 +291,7 @@ void DecoderWrapper::DecodeNextFragmentTask() {
   if (input_video_codec_ == media::VideoCodec::kH264 ||
       input_video_codec_ == media::VideoCodec::kHEVC) {
     has_config_info = media::test::EncodedDataHelper::HasConfigInfo(
-        bitstream_buffer->data(), bitstream_buffer->data_size(),
+        bitstream_buffer->data(), bitstream_buffer->size(),
         input_video_profile_);
   }
 
@@ -341,10 +341,14 @@ void DecoderWrapper::OnDecoderInitializedTask(DecoderStatus status) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(worker_sequence_checker_);
   DCHECK(state_ == DecoderWrapperState::kUninitialized ||
          state_ == DecoderWrapperState::kIdle);
-  ASSERT_TRUE(status.is_ok()) << "Initializing decoder failed";
 
-  state_ = DecoderWrapperState::kIdle;
-  FireEvent(DecoderListener::Event::kInitialized);
+  if (!status.is_ok()) {
+    state_ = DecoderWrapperState::kUninitialized;
+    FireEvent(DecoderListener::Event::kFailure);
+  } else {
+    state_ = DecoderWrapperState::kIdle;
+    FireEvent(DecoderListener::Event::kInitialized);
+  }
 }
 
 void DecoderWrapper::OnDecodeDoneTask(DecoderStatus status) {
@@ -365,9 +369,7 @@ void DecoderWrapper::OnDecodeDoneTask(DecoderStatus status) {
   // should (naively moving this task there doesn't work because it prevents the
   // V4L2VideoDecoder backend from polling the device driver).
 #if BUILDFLAG(USE_V4L2_CODEC)
-  delay = base::FeatureList::IsEnabled(kV4L2FlatStatefulVideoDecoder)
-              ? base::Milliseconds(5)
-              : base::Milliseconds(1);
+  delay = base::Milliseconds(1);
   static bool log_delay_message = true;
   if (log_delay_message) {
     LOG(INFO) << "Using a delay of " << delay

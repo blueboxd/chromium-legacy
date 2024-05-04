@@ -464,7 +464,6 @@ class ProxyResolverV8::Context {
     base::AutoReset<JSBindings*> bindings_reset(&js_bindings_, bindings);
     v8::Locker locked(isolate_);
     v8::Isolate::Scope isolate_scope(isolate_);
-    v8::Isolate::SafeForTerminationScope safe_for_termination(isolate_);
     v8::HandleScope scope(isolate_);
 
     v8::Local<v8::Context> context =
@@ -667,8 +666,7 @@ class ProxyResolverV8::Context {
     v8::TryCatch try_catch(isolate_);
 
     // Compile the script.
-    v8::ScriptOrigin origin = v8::ScriptOrigin(
-        isolate_, ASCIILiteralToV8String(isolate_, script_name));
+    v8::ScriptOrigin origin(ASCIILiteralToV8String(isolate_, script_name));
     v8::ScriptCompiler::Source script_source(script, origin);
     v8::Local<v8::Script> code;
     if (!v8::ScriptCompiler::Compile(

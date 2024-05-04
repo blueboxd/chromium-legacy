@@ -39,9 +39,9 @@ declare -A DISPLAY_RES=(
 [fhd]=1920x1080*1.25
 [wuxga]=1920x1200*1.6
 [qhd]=2560x1440*2
-[qhdp]=3200x1800*2.25
-[f4k]=3840x2160*2.66
-[slate]=3000x2000*2.25
+[qhdp]=3200x1800*2
+[f4k]=3840x2160*2.6666666
+[slate]=3000x2000*2.25225234
 )
 
 # Custom display configs is possible
@@ -58,7 +58,10 @@ declare -A DISPLAY_RES=(
 DISPLAY_CONFIG=${DISPLAY_RES[fhd]}
 
 LACROS_FEATURES=LacrosOnly
-FEATURES=OverviewButton
+LACROS_FLAGS="\
+--gpu-sandbox-start-early####\
+--enable-features=OzoneBubblesUsePlatformWidgets"
+FEATURES=
 
 LACROS_ENABLED=false
 
@@ -95,9 +98,9 @@ function ensure_user_dir {
 # Build command arguments
 function build_args {
   ARGS="--user-data-dir=${USER_DATA_DIR} \
-    --enable-wayland-server --ash-debug-shortcuts \
+    --enable-wayland-server --ash-debug-shortcuts --overview-button-for-tests \
     --enable-ui-devtools --ash-dev-shortcuts --login-manager \
-    --lacros-chrome-additional-args=--gpu-sandbox-start-early \
+    --lacros-chrome-additional-args=${LACROS_FLAGS} \
     --login-profile=user --lacros-mojo-socket-for-testing=$LACROS_SOCK_FILE \
     --ash-host-window-bounds=${DISPLAY_CONFIG} \
     --enable-features=${FEATURES} \
@@ -196,6 +199,8 @@ command
                          wxga(1280x800), fwxga(1355x768), hdp(1600,900),
                          fhd(1920x1080), wuxga(1920,1200), qhd(2560,1440),
                          qhdp(3200,1800), f4k(3840,2160)
+  --lacros-flags         additional flags to pass onto lacros, multiple flags
+                         should be separated by ####
   --<chrome commandline flags>
                          Pass extra command line flags to ash-chrome.
                          The script will reject if the string does not exist in
@@ -247,6 +252,10 @@ do
         echo "Unknown display panel: $panel"
         help
       fi
+      ;;
+    --lacros-flags=*)
+      flags=${1:15}
+      LACROS_FLAGS="${LACROS_FLAGS}####${flags}"
       ;;
     --*)
       if [ -f ${ASH_CHROME_BUILD_DIR}/chrome ]; then

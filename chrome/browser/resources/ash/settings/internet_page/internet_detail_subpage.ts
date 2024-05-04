@@ -17,7 +17,7 @@ import 'chrome://resources/ash/common/network/network_ip_config.js';
 import 'chrome://resources/ash/common/network/network_nameservers.js';
 import 'chrome://resources/ash/common/network/network_property_list_mojo.js';
 import 'chrome://resources/ash/common/network/network_siminfo.js';
-import 'chrome://resources/cr_components/settings_prefs/prefs.js';
+import '/shared/settings/prefs/prefs.js';
 import 'chrome://resources/ash/common/cr_elements/cr_button/cr_button.js';
 import 'chrome://resources/ash/common/cr_elements/cr_expand_button/cr_expand_button.js';
 import 'chrome://resources/ash/common/cr_elements/cr_shared_vars.css.js';
@@ -37,17 +37,18 @@ import './passpoint_remove_dialog.js';
 import './settings_traffic_counters.js';
 import './tether_connection_dialog.js';
 
+import {PrefsMixin, PrefsMixinInterface} from '/shared/settings/prefs/prefs_mixin.js';
 import {MojoConnectivityProvider} from 'chrome://resources/ash/common/connectivity/mojo_connectivity_provider.js';
 import {PasspointServiceInterface, PasspointSubscription} from 'chrome://resources/ash/common/connectivity/passpoint.mojom-webui.js';
-import {getApnDisplayName, isActiveSim, processDeviceState} from 'chrome://resources/ash/common/network/cellular_utils.js';
+import {CrToggleElement} from 'chrome://resources/ash/common/cr_elements/cr_toggle/cr_toggle.js';
+import {I18nMixin, I18nMixinInterface} from 'chrome://resources/ash/common/cr_elements/i18n_mixin.js';
+import {WebUiListenerMixin, WebUiListenerMixinInterface} from 'chrome://resources/ash/common/cr_elements/web_ui_listener_mixin.js';
+import {getApnDisplayName, isActiveSim, isCarrierLockedActiveSim, processDeviceState, shouldDisallowNetworkModifications} from 'chrome://resources/ash/common/network/cellular_utils.js';
 import {CrPolicyNetworkBehaviorMojo, CrPolicyNetworkBehaviorMojoInterface} from 'chrome://resources/ash/common/network/cr_policy_network_behavior_mojo.js';
 import {MojoInterfaceProviderImpl} from 'chrome://resources/ash/common/network/mojo_interface_provider.js';
 import {NetworkListenerBehavior, NetworkListenerBehaviorInterface} from 'chrome://resources/ash/common/network/network_listener_behavior.js';
 import {OncMojo} from 'chrome://resources/ash/common/network/onc_mojo.js';
-import {PrefsMixin, PrefsMixinInterface} from 'chrome://resources/cr_components/settings_prefs/prefs_mixin.js';
-import {CrToggleElement} from 'chrome://resources/ash/common/cr_elements/cr_toggle/cr_toggle.js';
-import {I18nMixin, I18nMixinInterface} from 'chrome://resources/ash/common/cr_elements/i18n_mixin.js';
-import {WebUiListenerMixin, WebUiListenerMixinInterface} from 'chrome://resources/ash/common/cr_elements/web_ui_listener_mixin.js';
+import {TrafficCountersAdapter} from 'chrome://resources/ash/common/traffic_counters/traffic_counters_adapter.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {ActivationStateType, ApnProperties, ConfigProperties, CrosNetworkConfigInterface, GlobalPolicy, HiddenSsidMode, IPConfigProperties, ManagedProperties, MatchType, NetworkStateProperties, ProxySettings, SecurityType, VpnType} from 'chrome://resources/mojo/chromeos/services/network_config/public/mojom/cros_network_config.mojom-webui.js';
 import {ConnectionStateType, DeviceStateType, IPConfigType, NetworkType, OncSource, PolicySource, PortalState} from 'chrome://resources/mojo/chromeos/services/network_config/public/mojom/network_types.mojom-webui.js';
@@ -278,6 +279,14 @@ export class SettingsInternetDetailPageElement extends
       },
 
       /**
+       * Tracks whether traffic counter info should be shown.
+       */
+      trafficCountersAvailable_: {
+        type: Boolean,
+        value: false,
+      },
+
+      /**
        * When true, all inputs that allow state to be changed (e.g., toggles,
        * inputs) are disabled.
        */
@@ -303,20 +312,20 @@ export class SettingsInternetDetailPageElement extends
         },
       },
 
-      isPasspointEnabled_: {
-        type: Boolean,
-        value() {
-          return loadTimeData.valueExists('isPasspointEnabled') &&
-              loadTimeData.getBoolean('isPasspointEnabled');
-        },
-      },
-
       isPasspointSettingsEnabled_: {
         type: Boolean,
         readOnly: true,
         value() {
           return loadTimeData.valueExists('isPasspointSettingsEnabled') &&
               loadTimeData.getBoolean('isPasspointSettingsEnabled');
+        },
+      },
+
+      isApnRevampAndPoliciesEnabled_: {
+        type: Boolean,
+        value() {
+          return loadTimeData.valueExists('isApnRevampAndPoliciesEnabled') &&
+              loadTimeData.getBoolean('isApnRevampAndPoliciesEnabled');
         },
       },
 
@@ -406,8 +415,8 @@ export class SettingsInternetDetailPageElement extends
   private isApnRevampEnabled_: boolean;
   private suppressTextMessagesOverride_: boolean;
   private isCellularCarrierLockEnabled_: boolean;
-  private isPasspointEnabled_: boolean;
   private isPasspointSettingsEnabled_: boolean;
+  private isApnRevampAndPoliciesEnabled_: boolean;
   private isRevampWayfindingEnabled_: boolean;
   private isSecondaryUser_: boolean;
   private isTrafficCountersEnabled_: boolean;
@@ -430,6 +439,8 @@ export class SettingsInternetDetailPageElement extends
   private showHiddenToggle_: boolean;
   private showMeteredToggle_: boolean;
   private showTechnologyBadge_: string;
+  private trafficCountersAdapter_: TrafficCountersAdapter;
+  private trafficCountersAvailable_: boolean;
 
   constructor() {
     super();
@@ -473,6 +484,8 @@ export class SettingsInternetDetailPageElement extends
     }
 
     this.osSyncBrowserProxy_ = OsSyncBrowserProxyImpl.getInstance();
+
+    this.trafficCountersAdapter_ = new TrafficCountersAdapter();
   }
 
   override connectedCallback(): void {
@@ -481,6 +494,7 @@ export class SettingsInternetDetailPageElement extends
     this.addWebUiListener(
         'os-sync-prefs-changed', this.handleOsSyncPrefsChanged_.bind(this));
     this.osSyncBrowserProxy_.sendOsSyncPrefsChanged();
+    this.computeTrafficCountersAvailable_();
   }
 
   private afterRenderShowDeepLink_(
@@ -1143,16 +1157,14 @@ export class SettingsInternetDetailPageElement extends
       if (this.isPortalState_(managedProperties.portalState)) {
         return this.i18n('networkListItemSignIn');
       }
-      if (managedProperties.portalState === PortalState.kPortalSuspected) {
-        return this.i18n('networkListItemConnectedLimited');
-      }
       if (managedProperties.portalState === PortalState.kNoInternet) {
         return this.i18n('networkListItemConnectedNoConnectivity');
       }
     }
 
-    if (this.isCellularCarrierLockEnabled_ &&
-        this.isCarrierLockedActiveSim_(managedProperties, deviceState)) {
+    if (isCarrierLockedActiveSim(
+            this.isCellularCarrierLockEnabled_, managedProperties,
+            deviceState)) {
       return this.i18n('networkMobileProviderLocked');
     }
 
@@ -1193,8 +1205,9 @@ export class SettingsInternetDetailPageElement extends
     }
 
     // Display carrier locked network as warning
-    if (this.isCellularCarrierLockEnabled_ &&
-        this.isCarrierLockedActiveSim_(managedProperties, deviceState)) {
+    if (isCarrierLockedActiveSim(
+            this.isCellularCarrierLockEnabled_, managedProperties,
+            deviceState)) {
       return true;
     }
 
@@ -1267,6 +1280,16 @@ export class SettingsInternetDetailPageElement extends
   private shouldShowApnRow_(): boolean {
     return this.isApnRevampEnabled_ &&
         this.isCellular_(this.managedProperties_);
+  }
+
+  private isApnManaged_(globalPolicy: GlobalPolicy|undefined): boolean {
+    if (!this.isApnRevampAndPoliciesEnabled_) {
+      return false;
+    }
+    if (!globalPolicy) {
+      return false;
+    }
+    return !globalPolicy.allowApnModification;
   }
 
   private shouldShowApnList_(): boolean {
@@ -1807,6 +1830,10 @@ export class SettingsInternetDetailPageElement extends
 
 
   private onApnRowClicked_(): void {
+    if (this.disabled_) {
+      return;
+    }
+
     if (!this.isCellular_(this.managedProperties_)) {
       console.error(
           'APN row should only be visible when cellular is available.');
@@ -1896,9 +1923,9 @@ export class SettingsInternetDetailPageElement extends
                    managedProperties, globalPolicy, managedNetworkAvailable,
                    isWifiSyncEnabled)) {
       first = 'synced';
-    } else if (
-        this.isCellularCarrierLockEnabled_ &&
-        this.isCarrierLockedActiveSim_(managedProperties, deviceState)) {
+    } else if (isCarrierLockedActiveSim(
+                   this.isCellularCarrierLockEnabled_, managedProperties,
+                   deviceState)) {
       first = 'carrierlocked';
     }
 
@@ -1916,7 +1943,9 @@ export class SettingsInternetDetailPageElement extends
       managedProperties: ManagedProperties, _globalPolicy: GlobalPolicy,
       _managedNetworkAvailable: boolean,
       deviceState: OncMojo.DeviceStateProperties|null): boolean {
-    if (this.isCarrierLockedActiveSim_(managedProperties, deviceState)) {
+    if (isCarrierLockedActiveSim(
+            this.isCellularCarrierLockEnabled_, managedProperties,
+            deviceState)) {
       return false;
     }
 
@@ -1928,26 +1957,8 @@ export class SettingsInternetDetailPageElement extends
   private isCarrierLockedActiveSim_(
       managedProperties: ManagedProperties|undefined,
       deviceState: OncMojo.DeviceStateProperties|null): boolean {
-    if (!this.isCellularCarrierLockEnabled_) {
-      return false;
-    }
-    if (!deviceState || deviceState.type !== NetworkType.kCellular) {
-      return false;
-    }
-    if (!managedProperties) {
-      return false;
-    }
-    const networkState =
-        OncMojo.managedPropertiesToNetworkState(managedProperties);
-
-    if (!isActiveSim(networkState, deviceState)) {
-      return false;
-    }
-    const simLockStatus = deviceState.simLockStatus;
-    if (!simLockStatus) {
-      return false;
-    }
-    return simLockStatus.lockType === 'network-pin';
+    return isCarrierLockedActiveSim(
+        this.isCellularCarrierLockEnabled_, managedProperties, deviceState);
   }
 
   private showAutoConnect_(
@@ -2193,14 +2204,26 @@ export class SettingsInternetDetailPageElement extends
     return fields;
   }
 
-  private showDataUsage_(managedProperties: ManagedProperties|
-                         undefined): boolean {
+  private async computeTrafficCountersAvailable_(): Promise<void> {
+    const networks = await this.trafficCountersAdapter_
+                         .requestTrafficCountersForActiveNetworks();
+    this.trafficCountersAvailable_ = networks.some(n => n.guid === this.guid);
+  }
+
+  private showDataUsage_(
+      managedProperties: ManagedProperties|undefined,
+      trafficCountersAvailable: boolean): boolean {
     if (!this.isTrafficCountersEnabled_) {
       return false;
     }
-    return !!managedProperties && this.guid !== '' &&
+    const connectedToCellular = !!managedProperties && this.guid !== '' &&
         this.isCellular_(managedProperties) &&
         this.isConnectedState_(managedProperties);
+    if (!connectedToCellular) {
+      return false;
+    }
+
+    return trafficCountersAvailable;
   }
 
   private hasAdvancedSection_(): boolean {
@@ -2261,9 +2284,6 @@ export class SettingsInternetDetailPageElement extends
 
   private isPasspointWifi_(managedProperties: ManagedProperties|
                            undefined): boolean {
-    if (!this.isPasspointEnabled_) {
-      return false;
-    }
     return !!managedProperties &&
         managedProperties.type === NetworkType.kWiFi &&
         managedProperties.typeProperties.wifi!.passpointId !== '' &&
@@ -2381,20 +2401,9 @@ export class SettingsInternetDetailPageElement extends
   }
 
   private computeDisabled_(): boolean {
-    if (!this.deviceState_ ||
-        this.deviceState_.type !== NetworkType.kCellular) {
-      return false;
-    }
-    // If device is carrier locked, all the settings should be
-    // disabled for non compatible SIMs.
-    if (this.isCellularCarrierLockEnabled_ &&
-        this.isCarrierLockedActiveSim_(
-            this.managedProperties_, this.deviceState_)) {
-      return true;
-    }
-    // If this is a cellular device and inhibited, state cannot be changed, so
-    // the page's inputs should be disabled.
-    return OncMojo.deviceIsInhibited(this.deviceState_);
+    return shouldDisallowNetworkModifications(
+        this.isCellularCarrierLockEnabled_, this.deviceState_,
+        this.managedProperties_);
   }
 
   private shouldShowMacAddress_(): boolean {
@@ -2424,7 +2433,7 @@ export class SettingsInternetDetailPageElement extends
 
   private isPortalState_(portalState: PortalState): boolean {
     return portalState === PortalState.kPortal ||
-        portalState === PortalState.kProxyAuthRequired;
+        portalState === PortalState.kPortalSuspected;
   }
 }
 

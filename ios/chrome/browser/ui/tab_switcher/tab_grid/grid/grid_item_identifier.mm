@@ -4,59 +4,65 @@
 
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_item_identifier.h"
 
+#import "ios/chrome/browser/ui/tab_switcher/item_utils.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_group_item.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher_item.h"
+#import "ios/chrome/browser/ui/tab_switcher/web_state_tab_switcher_item.h"
 #import "ios/web/public/web_state_id.h"
-
-namespace {
-
-// Hashing the identifier via NSNumber. NSNumber provides a simple hash,
-// seemingly based on Knuth's Multiplicative Hash. This gives a more uniform
-// repartition of the hash values than using the identifier as the hash
-// (identity, done for example by std::hash<int>).
-// Using an NSNumber should also be performant, as it is implemented as a tagged
-// pointer, eschewing the creation of a full object in memory.
-// Resources:
-// https://opensource.apple.com/source/CF/CF-550/ForFoundationOnly.h
-// https://en.cppreference.com/w/cpp/utility/hash#:~:text=some%20implementations%20use%20trivial%20(identity)%20hash%20functions%20which%20map%20an%20integer%20to%20itself.
-// https://www.mikeash.com/pyblog/friday-qa-2012-07-27-lets-build-tagged-pointers.html#:~:text=NSNumber%20uses%20a%20new%20runtime%20facility%20called%20tagged%20pointers%20to%20increase%20speed%20and%20reduce%20memory%20usage
-NSUInteger HashInt(int32_t identifier) {
-  return @(identifier).hash;
-}
-
-}  // namespace
 
 @implementation GridItemIdentifier {
   // The hash of this item identifier.
   NSUInteger _hash;
 }
 
-+ (instancetype)tabIdentifier:(TabSwitcherItem*)item {
-  GridItemIdentifier* identifier = [[self alloc] init];
-  identifier->_type = GridItemType::Tab;
-  identifier->_tabSwitcherItem = item;
-  identifier->_hash = HashInt(item.identifier.identifier());
-  return identifier;
++ (instancetype)tabIdentifier:(web::WebState*)webState {
+  return [[self alloc] initWithTabItem:[[WebStateTabSwitcherItem alloc]
+                                           initWithWebState:webState]];
 }
 
-+ (instancetype)groupIdentifier:(TabGroupItem*)item {
-  GridItemIdentifier* identifier = [[self alloc] init];
-  identifier->_type = GridItemType::Group;
-  identifier->_tabGroupItem = item;
-  identifier->_hash = [NSValue valueWithPointer:item.tabGroup].hash;
-  return identifier;
++ (instancetype)groupIdentifier:(const TabGroup*)group
+               withWebStateList:(WebStateList*)webStateList {
+  return [[self alloc]
+      initWithGroupItem:[[TabGroupItem alloc] initWithTabGroup:group
+                                                  webStateList:webStateList]];
 }
 
 + (instancetype)suggestedActionsIdentifier {
-  GridItemIdentifier* identifier = [[self alloc] init];
-  identifier->_type = GridItemType::SuggestedActions;
-  identifier->_hash =
-      HashInt(static_cast<int32_t>(GridItemType::SuggestedActions));
-  return identifier;
+  return [[self alloc] initForSuggestedAction];
+}
+
+- (instancetype)initWithTabItem:(TabSwitcherItem*)item {
+  self = [super init];
+  if (self) {
+    _type = GridItemType::Tab;
+    _tabSwitcherItem = item;
+    _hash = GetHashForTabSwitcherItem(item);
+  }
+  return self;
+}
+
+- (instancetype)initWithGroupItem:(TabGroupItem*)item {
+  self = [super init];
+  if (self) {
+    _type = GridItemType::Group;
+    _tabGroupItem = item;
+    _hash = GetHashForTabGroupItem(item);
+  }
+  return self;
+}
+
+- (instancetype)initForSuggestedAction {
+  self = [super init];
+  if (self) {
+    _type = GridItemType::SuggestedActions;
+    _hash = 0;
+  }
+  return self;
 }
 
 #pragma mark - NSObject
 
+// TODO(crbug.com/329073651): Refactor -hash and -isEqual.
 - (BOOL)isEqual:(id)object {
   if (self == object) {
     return YES;
@@ -67,6 +73,7 @@ NSUInteger HashInt(int32_t identifier) {
   return [self isEqualToItemIdentifier:object];
 }
 
+// TODO(crbug.com/329073651): Refactor -hash and -isEqual.
 - (NSUInteger)hash {
   return _hash;
 }
@@ -76,14 +83,11 @@ NSUInteger HashInt(int32_t identifier) {
 - (NSString*)description {
   switch (_type) {
     case GridItemType::Tab:
-      return [NSString
-          stringWithFormat:@"Tab ID: %d",
-                           self.tabSwitcherItem.identifier.identifier()];
+      return self.tabSwitcherItem.description;
     case GridItemType::Group:
-      return [NSString
-          stringWithFormat:@"Group Title: %@", self.tabGroupItem.title];
+      return self.tabGroupItem.description;
     case GridItemType::SuggestedActions:
-      return [NSString stringWithFormat:@"Suggested Action identifier."];
+      return @"Suggested Action identifier.";
   }
 }
 
@@ -98,10 +102,11 @@ NSUInteger HashInt(int32_t identifier) {
   }
   switch (_type) {
     case GridItemType::Tab:
-      return self.tabSwitcherItem.identifier ==
-             itemIdentifier.tabSwitcherItem.identifier;
+      return CompareTabSwitcherItems(self.tabSwitcherItem,
+                                     itemIdentifier.tabSwitcherItem);
     case GridItemType::Group:
-      return self.tabGroupItem.tabGroup == itemIdentifier.tabGroupItem.tabGroup;
+      return CompareTabGroupItems(self.tabGroupItem,
+                                  itemIdentifier.tabGroupItem);
     case GridItemType::SuggestedActions:
       return YES;
   }

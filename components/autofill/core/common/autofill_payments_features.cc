@@ -44,12 +44,6 @@ BASE_FEATURE(kAutofillEnableCardArtServerSideStretching,
              "AutofillEnableCardArtServerSideStretching",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// When enabled, card benefits offered by issuers will be shown in Payments
-// Autofill UI.
-BASE_FEATURE(kAutofillEnableCardBenefits,
-             "AutofillEnableCardBenefits",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 // When enabled, card benefits offered by American Express will be shown in
 // Payments Autofill UI.
 BASE_FEATURE(kAutofillEnableCardBenefitsForAmericanExpress,
@@ -92,8 +86,8 @@ BASE_FEATURE(kAutofillEnableNewCardArtAndNetworkImages,
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // When enabled, a progress dialog will display while authenticating with FIDO.
-// TODO(crbug.com/1337380): Clean up kAutofillEnableFIDOProgressDialog when it's
-// fully rolled out.
+// TODO(crbug.com/40229268): Clean up kAutofillEnableFIDOProgressDialog when
+// it's fully rolled out.
 BASE_FEATURE(kAutofillEnableFIDOProgressDialog,
              "AutofillEnableFIDOProgressDialog",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -105,9 +99,10 @@ BASE_FEATURE(kAutofillEnableFpanRiskBasedAuthentication,
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 #if BUILDFLAG(IS_ANDROID)
-// When enabled, the bottom sheet for IBAN save will be displayed on Android.
-BASE_FEATURE(kAutofillEnableIbanAndroidBottomSheet,
-             "AutofillEnableIbanAndroidBottomSheet",
+// When enabled, saving and autofilling local IBANs (International Bank Account
+// Numbers) will be offered.
+BASE_FEATURE(kAutofillEnableLocalIban,
+             "AutofillEnableLocalIban",
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
 
@@ -116,13 +111,6 @@ BASE_FEATURE(kAutofillEnableIbanAndroidBottomSheet,
 BASE_FEATURE(kAutofillEnableMerchantDomainInUnmaskCardRequest,
              "AutofillEnableMerchantDomainInUnmaskCardRequest",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-// When enabled, the user's avatar and email will appear in the bottom
-// footer of the upload card save bubble. This will provide users with more
-// context about which account the card is being saved to.
-BASE_FEATURE(kAutofillEnableUserAvatarInSaveCardFooter,
-             "AutofillEnableUserAvatarInSaveCardFooter",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // When enabled, the GPay logo will be moved to the right side in payments
 // autofill dialogs and bubbles on desktop.
@@ -142,30 +130,24 @@ BASE_FEATURE(kAutofillEnableOffersInClankKeyboardAccessory,
              "AutofillEnableOffersInClankKeyboardAccessory",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-#if BUILDFLAG(IS_ANDROID)
-// When enabled, the bottom sheet for save card and VCN enrollment will be
-// displayed instead of the info bar on Android.
-BASE_FEATURE(kAutofillEnablePaymentsAndroidBottomSheet,
-             "AutofillEnablePaymentsAndroidBottomSheet",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-// When enabled, the account email is included in the legal message provided
-// from the payments server. Only on Android.
-BASE_FEATURE(kAutofillEnablePaymentsAndroidBottomSheetAccountEmail,
-             "AutofillEnablePaymentsAndroidBottomSheetAccountEmail",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-#endif
-
 // When enabled, in use-cases where we would not have triggered any user-visible
 // authentication to autofill payment methods, we will trigger a device
 // authentication.
 BASE_FEATURE(kAutofillEnablePaymentsMandatoryReauth,
              "AutofillEnablePaymentsMandatoryReauth",
-#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_ANDROID)
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_ANDROID) || \
+    BUILDFLAG(IS_IOS)
              base::FEATURE_ENABLED_BY_DEFAULT);
 #else
              base::FEATURE_DISABLED_BY_DEFAULT);
-#endif  // BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_ANDROID)
+#endif  // BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_ANDROID) ||
+        // BUILDFLAG(IS_IOS)
+
+// When enabled, risk data is prefetched during payments autofill flows to reduce
+// user-perceived latency.
+BASE_FEATURE(kAutofillEnablePrefetchingRiskDataForRetrieval,
+             "AutofillEnablePrefetchingRiskDataForRetrieval",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // When enabled, some extra metrics logging for Autofill Downstream will start.
 BASE_FEATURE(kAutofillEnableRemadeDownstreamMetrics,
@@ -231,6 +213,11 @@ BASE_FEATURE(kAutofillEnableVirtualCardEnrollMetricsLogger,
              "AutofillEnableVirtualCardEnrollMetricsLogger",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+// When enabled, Verve-branded card art will be shown for Verve cards.
+BASE_FEATURE(kAutofillEnableVerveCardSupport,
+             "AutofillEnableVerveCardSupport",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // When enabled, Chrome will show metadata along with other card information
 // when the virtual card is presented to users.
 BASE_FEATURE(kAutofillEnableVirtualCardMetadata,
@@ -243,12 +230,13 @@ BASE_FEATURE(kAutofillParseVcnCardOnFileStandaloneCvcFields,
              "AutofillParseVcnCardOnFileStandaloneCvcFields",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// When enabled, Autofill suggestions that consist of a local and server
-// version of the same card will attempt to fill the server card upon selection
-// instead of the local card.
-BASE_FEATURE(kAutofillSuggestServerCardInsteadOfLocalCard,
-             "AutofillSuggestServerCardInsteadOfLocalCard",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+#if BUILDFLAG(IS_ANDROID)
+// When enabled, IBAN Autofill suggestions are shown via the keyboard accessory
+// instead of the bottom sheet.
+BASE_FEATURE(kAutofillSkipAndroidBottomSheetForIban,
+             "AutofillSkipAndroidBottomSheetForIban",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+#endif
 
 // When enabled, GPay-related links direct to the newer GPay Web site instead of
 // the legacy Payments Center.
@@ -280,7 +268,7 @@ BASE_FEATURE(kAutofillEnableVirtualCards,
 #endif
 
 bool ShouldShowImprovedUserConsentForCreditCardSave() {
-// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
+// TODO(crbug.com/40118868): Revisit the macro expression once build flag switch
 // of lacros-chrome is complete.
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE) || \
     (BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS))

@@ -13,12 +13,12 @@
 #include "chrome/browser/signin/dice_tab_helper.h"
 #include "chrome/browser/signin/force_signin_verifier.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/signin/signin_features.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/ui/views/profiles/profile_picker_view.h"
 #include "chrome/browser/ui/views/profiles/profile_picker_web_contents_host.h"
 #include "chrome/browser/ui/webui/signin/signin_ui_error.h"
 #include "chrome/common/webui_url_constants.h"
+#include "components/signin/public/base/signin_switches.h"
 #include "components/signin/public/identity_manager/accounts_mutator.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "content/public/browser/navigation_handle.h"
@@ -116,7 +116,7 @@ void ProfilePickerDiceReauthProvider::OnRefreshTokensLoaded() {
 }
 
 void ProfilePickerDiceReauthProvider::OnForceSigninVerifierTimeOut() {
-  // TODO(https://crbug.com/1478217): Improve the error message if this timeout
+  // TODO(crbug.com/40280498): Improve the error message if this timeout
   // occurs. Currently the error that will be displayed is the one that is shown
   // if the wrong account is being reauth-ed.
   Finish(false, ProfilePickerReauthResult::kTimeoutForceSigninVerifierCheck);

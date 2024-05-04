@@ -180,7 +180,6 @@ void getExpectedColorAndMask(GLenum src_internal_format,
       break;
     case GL_RGB:
     case GL_RGB8:
-    case GL_RGB_YCBCR_420V_CHROMIUM:
       setColor(color[0], color[1], color[2], 255, adjusted_color);
       break;
     case GL_RGBA:
@@ -205,7 +204,7 @@ void getExpectedColorAndMask(GLenum src_internal_format,
   }
 
   switch (dest_internal_format) {
-    // TODO(crbug.com/577144): Enable GL_ALPHA, GL_LUMINANCE and
+    // TODO(crbug.com/40452138): Enable GL_ALPHA, GL_LUMINANCE and
     // GL_LUMINANCE_ALPHA.
     case GL_R8:
     case GL_R16F:
@@ -638,7 +637,7 @@ class GLCopyTextureCHROMIUMES3Test : public GLCopyTextureCHROMIUMTest {
     DCHECK(!ShouldSkipTest());
 #if (BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)) && \
     (defined(ARCH_CPU_X86) || defined(ARCH_CPU_X86_64))
-    // // TODO(crbug.com/1046873): Fails on mac and linux intel.
+    // // TODO(crbug.com/40671060): Fails on mac and linux intel.
     return true;
 #else
     return false;
@@ -665,7 +664,7 @@ class GLCopyTextureCHROMIUMES3Test : public GLCopyTextureCHROMIUMTest {
       return;
     }
     if (IsMacArm64()) {
-      LOG(INFO) << "TODO(crbug.com/1135372): fails on Apple DTK. Skipping.";
+      LOG(INFO) << "TODO(crbug.com/40151839): fails on Apple DTK. Skipping.";
       return;
     }
     if (gl_.gpu_preferences().use_passthrough_cmd_decoder) {
@@ -675,7 +674,7 @@ class GLCopyTextureCHROMIUMES3Test : public GLCopyTextureCHROMIUMTest {
       return;
     }
     if (IsMac() && !gl_.gpu_preferences().use_passthrough_cmd_decoder) {
-      // TODO(crbug.com/1227853): Remove this suppression once this passes on
+      // TODO(crbug.com/40189400): Remove this suppression once this passes on
       // Mac 11.
       LOG(INFO) << "Validating decoder on Mac. Skipping.";
       return;

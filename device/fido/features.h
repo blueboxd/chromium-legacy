@@ -44,14 +44,6 @@ inline constexpr base::FeatureParam<bool> kWebAuthnAndroidGpmInCredMan{
 COMPONENT_EXPORT(DEVICE_FIDO)
 BASE_DECLARE_FEATURE(kWebAuthnHybridLinkWithoutNotifications);
 
-// Require up-to-date JSON formatting in remote-desktop contexts.
-COMPONENT_EXPORT(DEVICE_FIDO)
-BASE_DECLARE_FEATURE(kWebAuthnRequireUpToDateJSONForRemoteDesktop);
-
-// Enable support for iCloud Keychain
-COMPONENT_EXPORT(DEVICE_FIDO)
-BASE_DECLARE_FEATURE(kWebAuthnICloudKeychain);
-
 // These five feature flags control whether iCloud Keychain is the default
 // mechanism for platform credential creation in different situations.
 // "Active" means that the user is an active user of the profile authenticator,
@@ -78,22 +70,14 @@ BASE_DECLARE_FEATURE(kWebAuthnLinkingExperimentation);
 COMPONENT_EXPORT(DEVICE_FIDO)
 BASE_DECLARE_FEATURE(kWebAuthnEnclaveAuthenticator);
 
-// Use the new desktop passkey UI that has the following changes:
-// * Display passkeys from multiple sources, including from Windows Hello,
-//   alongside mechanisms on the modal UI.
-// * Merge the QR and USB screens when available.
-// * String tweaks on modal and conditional UI.
+// Enable use of Google Password Manager PIN.
 COMPONENT_EXPORT(DEVICE_FIDO)
-BASE_DECLARE_FEATURE(kWebAuthnNewPasskeyUI);
+BASE_DECLARE_FEATURE(kWebAuthnGpmPin);
 
 // Filter a priori discovered credentials on google.com to those that have a
 // user id that starts with "GOOGLE_ACCOUNT:".
 COMPONENT_EXPORT(DEVICE_FIDO)
 BASE_DECLARE_FEATURE(kWebAuthnFilterGooglePasskeys);
-
-// Support evaluating PRFs during create() calls.
-COMPONENT_EXPORT(DEVICE_FIDO)
-BASE_DECLARE_FEATURE(kWebAuthnPRFEvalDuringCreate);
 
 #if BUILDFLAG(IS_CHROMEOS)
 // Enable ChromeOS native passkey support.
@@ -128,6 +112,32 @@ BASE_DECLARE_FEATURE(kWebAuthnAndroidFidoJson);
 // authenticator if available.
 COMPONENT_EXPORT(DEVICE_FIDO)
 BASE_DECLARE_FEATURE(kWebAuthnPreferVirtualPlatformAuthenticator);
+
+// Enable the Chrome Android cable authenticator. This lets a Chrome module
+// handle cable requests from scanning a QR code, tapping on an FCM
+// notification, or coming from Play Services. The Chrome Android cable
+// authenticator has been replaced by an implementation in GMSCore, and this
+// flag is here to help us safely remove the code.
+//
+// Note that the USB cable authenticator is not controlled by this flag. That
+// feature hasn't shipped in GMSCore, so it is desirable to keep it around for a
+// while longer.
+COMPONENT_EXPORT(DEVICE_FIDO)
+BASE_DECLARE_FEATURE(kWebAuthnEnableAndroidCableAuthenticator);
+
+// Use insecure software unexportable keys to authenticate to the enclave.
+// For development purposes only.
+COMPONENT_EXPORT(DEVICE_FIDO)
+BASE_DECLARE_FEATURE(kWebAuthnUseInsecureSoftwareUnexportableKeys);
+
+// Enable a workaround for an interaction between Windows 10 and certain
+// security keys.
+COMPONENT_EXPORT(DEVICE_FIDO)
+BASE_DECLARE_FEATURE(kWebAuthnCredProtectWin10BugWorkaround);
+
+// Store recovery keys on iCloud keychain for the enclave authenticator.
+COMPONENT_EXPORT(DEVICE_FIDO)
+BASE_DECLARE_FEATURE(kWebAuthnICloudRecoveryKey);
 
 }  // namespace device
 

@@ -388,7 +388,7 @@ sk_sp<SkImage> ReadImage(
         // overhead with modern APIs leading to lesser scheduling concerns.
         // Also, eventually we want to move tile raster off the GPU main thread.
         // Based on these reasons, its okay to not flush for Graphite here.
-        // TODO(crbug.com/1463790): Revisit flushes for Graphite here if yield
+        // TODO(crbug.com/40922674): Revisit flushes for Graphite here if yield
         // to scheduler is needed.
         plane = SkImages::TextureFromImage(graphite_recorder, plane, props);
       }
@@ -639,20 +639,19 @@ sk_sp<SkImage> ServiceImageTransferCacheEntry::GetImageWithToneMapApplied(
   sk_sp<SkImage> image;
 
   // Apply tone mapping.
-  // TODO(https://crbug.com/1286088): Pass a shared cache as a parameter.
+  // TODO(crbug.com/40210699): Pass a shared cache as a parameter.
   gfx::ColorConversionSkFilterCache cache;
   if (has_gainmap_) {
     image = cache.ApplyGainmap(
         image_, gainmap_image_, gainmap_info_, hdr_headroom,
         image_->isTextureBacked() ? gr_context_ : nullptr,
         image_->isTextureBacked() ? graphite_recorder_ : nullptr);
-  } else if (use_tone_curve_) {
+  } else if (use_global_tone_map_) {
     // Images are always rendered as SDR-relative and the output color space
     // is SDR itself,
     image = cache.ApplyToneCurve(
-        image_, tone_curve_hdr_metadata_,
-        gfx::ColorSpace::kDefaultSDRWhiteLevel, hdr_headroom,
-        image_->isTextureBacked() ? gr_context_ : nullptr,
+        image_, hdr_metadata_, gfx::ColorSpace::kDefaultSDRWhiteLevel,
+        hdr_headroom, image_->isTextureBacked() ? gr_context_ : nullptr,
         image_->isTextureBacked() ? graphite_recorder_ : nullptr);
   }
   if (!image) {
@@ -689,8 +688,7 @@ bool ServiceImageTransferCacheEntry::Deserialize(
   // We don't need to populate the DeSerializeOptions here since the reader is
   // only used for de-serializing primitives.
   std::vector<uint8_t> scratch_buffer;
-  PaintOp::DeserializeOptions options(nullptr, nullptr, nullptr,
-                                      &scratch_buffer, false, nullptr);
+  PaintOp::DeserializeOptions options{.scratch_buffer = scratch_buffer};
   PaintOpReader reader(data.data(), data.size(), options);
 
   // Parameters common to RGBA and YUVA images.
@@ -702,7 +700,7 @@ bool ServiceImageTransferCacheEntry::Deserialize(
   if (has_hdr_metadata) {
     gfx::HDRMetadata hdr_metadata_value;
     reader.Read(&hdr_metadata_value);
-    tone_curve_hdr_metadata_ = hdr_metadata_value;
+    hdr_metadata_ = hdr_metadata_value;
   }
   sk_sp<SkColorSpace> target_color_space;
   reader.Read(&target_color_space);
@@ -743,7 +741,7 @@ bool ServiceImageTransferCacheEntry::Deserialize(
   }
 
   // Save the tone curve parameters, if they are to be used.
-  use_tone_curve_ =
+  use_global_tone_map_ =
       !has_gainmap_ && gfx::ColorConversionSkFilterCache::UseToneCurve(image_);
 
   // Perform color conversion (if no tone mapping is needed).
@@ -753,7 +751,7 @@ bool ServiceImageTransferCacheEntry::Deserialize(
       image_ =
           image_->makeColorSpace(graphite_recorder_, target_color_space, props);
     } else {
-      // TODO(crbug.com/1443068): It's possible for both `gr_context` and
+      // TODO(crbug.com/40267231): It's possible for both `gr_context` and
       // `graphite_recorder` to be nullptr if `image_` is not texture backed.
       // Need to handle this case (currently just goes through gr_context path
       // with nullptr context).

@@ -37,6 +37,7 @@ enum class RequestType {
   kFileSystemAccess,
 #endif
   kGeolocation,
+  kIdentityProvider,
   kIdleDetection,
 #if !BUILDFLAG(IS_ANDROID)
   kLocalFonts,
@@ -48,6 +49,10 @@ enum class RequestType {
   kNfcDevice,
 #endif
   kNotifications,
+#if !BUILDFLAG(IS_ANDROID)
+  kKeyboardLock,
+  kPointerLock,
+#endif
 #if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_WIN)
   kProtectedMediaIdentifier,
 #endif

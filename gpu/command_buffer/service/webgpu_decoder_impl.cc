@@ -12,6 +12,7 @@
 
 #include <memory>
 #include <optional>
+#include <string_view>
 #include <vector>
 
 #include "base/auto_reset.h"
@@ -55,6 +56,7 @@
 #include "gpu/webgpu/callback.h"
 #include "third_party/abseil-cpp/absl/base/attributes.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
+#include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/gpu/GrBackendSemaphore.h"
 #include "third_party/skia/include/gpu/ganesh/SkSurfaceGanesh.h"
 #include "third_party/skia/include/gpu/graphite/Context.h"
@@ -66,10 +68,6 @@
 #include <dawn/native/D3D12Backend.h>
 #include "ui/gl/gl_angle_util_win.h"
 #endif
-
-#if !BUILDFLAG(IS_ANDROID)
-#include "gpu/command_buffer/service/abstract_texture.h"
-#endif  // !BUILDFLAG(IS_ANDROID)
 
 namespace gpu {
 namespace webgpu {
@@ -248,26 +246,12 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
                           const volatile void* buffer,
                           int num_entries,
                           int* entries_processed) override;
-  base::StringPiece GetLogPrefix() override { return "WebGPUDecoderImpl"; }
+  std::string_view GetLogPrefix() override { return "WebGPUDecoderImpl"; }
   gles2::ContextGroup* GetContextGroup() override { return nullptr; }
   gles2::ErrorState* GetErrorState() override {
     NOTREACHED();
     return nullptr;
   }
-#if !BUILDFLAG(IS_ANDROID)
-  std::unique_ptr<gles2::AbstractTexture> CreateAbstractTexture(
-      GLenum target,
-      GLenum internal_format,
-      GLsizei width,
-      GLsizei height,
-      GLsizei depth,
-      GLint border,
-      GLenum format,
-      GLenum type) override {
-    NOTREACHED();
-    return nullptr;
-  }
-#endif
   bool IsCompressedTextureFormat(unsigned format) override {
     NOTREACHED();
     return false;
@@ -413,6 +397,8 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
 
   bool use_blocklist() const;
 
+  void ClearSharedImage(const Mailbox& mailbox);
+
   scoped_refptr<SharedContextState> shared_context_state_;
 
   std::unique_ptr<SharedImageRepresentationFactory>
@@ -457,6 +443,7 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
     virtual ~SharedImageRepresentationAndAccess() = default;
     // Get an unowned reference to the wgpu::Texture for the shared image.
     virtual wgpu::Texture texture() const = 0;
+    virtual Mailbox mailbox() const = 0;
   };
 
   // Wraps a |DawnImageRepresentation| as a wgpu::Texture.
@@ -470,6 +457,7 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
           access_(std::move(access)) {}
 
     wgpu::Texture texture() const override { return access_->texture(); }
+    Mailbox mailbox() const override { return representation_->mailbox(); }
 
    private:
     std::unique_ptr<DawnImageRepresentation> representation_;
@@ -491,7 +479,7 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
       // Include list of formats this is tested to work with.
       // See gpu/command_buffer/tests/webgpu_mailbox_unittest.cc
       if (format != viz::SinglePlaneFormat::kBGRA_8888 &&
-// TODO(crbug.com/1241369): Handle additional formats.
+// TODO(crbug.com/40823053): Support "rgba8unorm" canvas context format on Mac
 #if !BUILDFLAG(IS_MAC)
           format != viz::SinglePlaneFormat::kRGBA_8888 &&
 #endif
@@ -535,6 +523,7 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
     }
 
     wgpu::Texture texture() const override { return texture_.Get(); }
+    Mailbox mailbox() const override { return representation_->mailbox(); }
 
    private:
     SharedImageRepresentationAndAccessSkiaFallback(
@@ -611,7 +600,7 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
     }
 
     bool ReadPixelsIntoBuffer(void* dst_pointer, uint32_t bytes_per_row) {
-      // TODO(crbug.com/1467566): Support multiplanar format.
+      // TODO(crbug.com/40924444): Support multiplanar format.
       DCHECK(representation_->format().NumberOfPlanes() == 1);
       DCHECK(dst_pointer);
       std::vector<GrBackendSemaphore> begin_semaphores;
@@ -730,7 +719,7 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
     }
 
     bool UploadContentsToSkia() {
-      // TODO(crbug.com/1467566): Support multiplanar format.
+      // TODO(crbug.com/40924444): Support multiplanar format.
       DCHECK(representation_->format().NumberOfPlanes() == 1);
 
       uint32_t bytes_per_row;
@@ -881,7 +870,8 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
       : public SharedImageRepresentationAndAccess {
    public:
     ErrorSharedImageRepresentationAndAccess(const wgpu::Device& device,
-                                            wgpu::TextureUsage usage) {
+                                            wgpu::TextureUsage usage,
+                                            const Mailbox& mailbox) {
       // Note: the texture descriptor matters little since this texture won't be
       // used for reflection, and all validation check the error state of the
       // texture before the texture attributes.
@@ -894,13 +884,16 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
           .sampleCount = 1,
       };
       texture_ = device.CreateErrorTexture(&texture_desc);
+      mailbox_ = mailbox;
     }
     ~ErrorSharedImageRepresentationAndAccess() override = default;
 
     wgpu::Texture texture() const override { return texture_.Get(); }
+    Mailbox mailbox() const override { return mailbox_; }
 
    private:
     wgpu::Texture texture_;
+    Mailbox mailbox_;
   };
 
   // Map from the <ID, generation> pair for a wire texture to the shared image
@@ -1084,7 +1077,8 @@ WebGPUDecoderImpl::WebGPUDecoderImpl(
       memory_transfer_service_(new DawnServiceMemoryTransferService(this)),
       wire_serializer_(new DawnServiceSerializer(client)),
       isolation_key_provider_(isolation_key_provider) {
-  if (gpu_preferences.enable_webgpu_experimental_features) {
+  if (gpu_preferences.enable_webgpu_developer_features ||
+      gpu_preferences.enable_webgpu_experimental_features) {
     safety_level_ = webgpu::SafetyLevel::kSafeExperimental;
   }
   if (gpu_preferences.enable_unsafe_webgpu) {
@@ -1153,8 +1147,18 @@ void WebGPUDecoderImpl::Destroy(bool have_context) {
   queued_request_device_calls_.clear();
 
   associated_shared_image_map_.clear();
+
+  // Destroy all known devices to ensure that any service-side objects holding
+  // refs to these objects observe that the devices are lost and can drop their
+  // refs as well as any associated state they are holding.
+  for (auto& device_it : known_device_metadata_) {
+    device_it.first.Destroy();
+  }
+
   known_device_metadata_.clear();
   wire_server_ = nullptr;
+
+  dawn_instance_->DisconnectDawnPlatform();
 
   destroyed_ = true;
 }
@@ -1195,6 +1199,8 @@ bool WebGPUDecoderImpl::IsFeatureExposed(wgpu::FeatureName feature) const {
     case wgpu::FeatureName::ChromiumExperimentalSubgroups:
     case wgpu::FeatureName::ChromiumExperimentalSubgroupUniformControlFlow:
       return safety_level_ == webgpu::SafetyLevel::kUnsafe;
+    case wgpu::FeatureName::AdapterPropertiesD3D:
+    case wgpu::FeatureName::AdapterPropertiesVk:
     case wgpu::FeatureName::AdapterPropertiesMemoryHeaps:
       return safety_level_ == webgpu::SafetyLevel::kUnsafe ||
              safety_level_ == webgpu::SafetyLevel::kSafeExperimental;
@@ -1350,34 +1356,32 @@ void WebGPUDecoderImpl::RequestDeviceImpl(
   // SharedImage / interop methods that would need specific usages.
   required_features.push_back(wgpu::FeatureName::DawnInternalUsages);
 
-  // Always require "multi-planar-formats" as long as supported, although
-  // currently this feature is not exposed to render process if unsafe apis
-  // disallowed.
-  if (adapter_obj.HasFeature(wgpu::FeatureName::DawnMultiPlanarFormats)) {
-    required_features.push_back(wgpu::FeatureName::DawnMultiPlanarFormats);
-  }
+  const wgpu::FeatureName kOptionalFeatures[] = {
+      // Always require "multi-planar-formats" as long as supported, although
+      // currently this feature is not exposed to render process if unsafe apis
+      // disallowed.
+      wgpu::FeatureName::DawnMultiPlanarFormats,
 
-  // Require platform-specific SharedTextureMemory features for use by
-  // the relevant SharedImage backings. These features should always be
-  // supported when running on the corresponding backend.
-  if (adapter_obj.HasFeature(wgpu::FeatureName::SharedTextureMemoryIOSurface)) {
-    CHECK(adapter_obj.HasFeature(wgpu::FeatureName::SharedFenceMTLSharedEvent));
-    required_features.push_back(
-        wgpu::FeatureName::SharedTextureMemoryIOSurface);
-    required_features.push_back(wgpu::FeatureName::SharedFenceMTLSharedEvent);
-  }
+      // Require platform-specific SharedTextureMemory features for use by
+      // the relevant SharedImage backings. These features should always be
+      // supported when running on the corresponding backend.
+      wgpu::FeatureName::SharedTextureMemoryIOSurface,
+      wgpu::FeatureName::SharedFenceMTLSharedEvent,
 
 #if BUILDFLAG(IS_ANDROID)
-  if (adapter_obj.HasFeature(
-          wgpu::FeatureName::SharedTextureMemoryAHardwareBuffer)) {
-    required_features.push_back(
-        wgpu::FeatureName::SharedTextureMemoryAHardwareBuffer);
-  }
-  if (adapter_obj.HasFeature(wgpu::FeatureName::SharedFenceVkSemaphoreSyncFD)) {
-    required_features.push_back(
-        wgpu::FeatureName::SharedFenceVkSemaphoreSyncFD);
-  }
+      wgpu::FeatureName::SharedTextureMemoryAHardwareBuffer,
+      wgpu::FeatureName::SharedFenceVkSemaphoreSyncFD,
 #endif
+
+      wgpu::FeatureName::SharedTextureMemoryD3D11Texture2D,
+      wgpu::FeatureName::SharedTextureMemoryDXGISharedHandle,
+      wgpu::FeatureName::SharedFenceDXGISharedHandle,
+  };
+  for (const wgpu::FeatureName& feature : kOptionalFeatures) {
+    if (adapter_obj.HasFeature(feature)) {
+      required_features.push_back(feature);
+    }
+  }
 
 #if BUILDFLAG(USE_DAWN) && BUILDFLAG(DAWN_ENABLE_BACKEND_OPENGLES)
   // On Desktop GL via ANGLE, require GL texture sharing.
@@ -1691,16 +1695,18 @@ wgpu::Adapter WebGPUDecoderImpl::CreatePreferredAdapter(
   // `CanUseAdapter` is a helper to determine if an adapter is not blocklisted,
   // supports all required features, and matches the requested adapter options
   // (some of which may be set by command-line flags).
-  auto CanUseAdapter = [&](const dawn::native::Adapter& adapter) {
-    WGPUAdapterProperties adapter_properties = {};
+  auto CanUseAdapter = [&](const dawn::native::Adapter& native_adapter) {
+    wgpu::Adapter adapter(native_adapter.Get());
+
+    wgpu::AdapterProperties adapter_properties = {};
     adapter.GetProperties(&adapter_properties);
 
-    if (use_blocklist() && IsWebGPUAdapterBlocklisted(adapter_properties)) {
+    if (use_blocklist() && IsWebGPUAdapterBlocklisted(adapter)) {
       return false;
     }
 
     const bool is_swiftshader =
-        adapter_properties.adapterType == WGPUAdapterType_CPU &&
+        adapter_properties.adapterType == wgpu::AdapterType::CPU &&
         adapter_properties.vendorID == 0x1AE0 &&
         adapter_properties.deviceID == 0xC0DE;
 
@@ -1709,20 +1715,19 @@ wgpu::Adapter WebGPUDecoderImpl::CreatePreferredAdapter(
     // upload/readback to/from shared images.
     bool supports_external_textures = false;
 #if BUILDFLAG(IS_APPLE)
-    // On Apple, Chromium uses SharedTextureMemory to import IOSurfaces.
-    wgpu::Adapter adapter_obj(adapter.Get());
     supports_external_textures =
-        adapter_obj.HasFeature(wgpu::FeatureName::SharedTextureMemoryIOSurface);
+        adapter.HasFeature(wgpu::FeatureName::SharedTextureMemoryIOSurface);
+#elif BUILDFLAG(IS_ANDROID)
+    supports_external_textures = adapter.HasFeature(
+        wgpu::FeatureName::SharedTextureMemoryAHardwareBuffer);
 #else
-    // On all other platforms, Chromium currently uses the platform-specific
-    // ExternalImage API surfaces.
-    // NOTE: These platforms should be switched to the corresponding
+    // Chromium is in the midst of being transitioned to SharedTextureMemory
+    // platform by platform. On platforms that have not yet been transitioned,
+    // Chromium uses the platform-specific ExternalImage API surfaces.  NOTE:
+    // These platforms should be switched to the corresponding
     // SharedTextureMemory feature check as they are converted to using
     // SharedTextureMemory.
-    // TODO(crbug.com/327111284): Change this to check for
-    // SharedTextureMemoryAHardwareBuffer on Android-Vulkan once we've made the
-    // switch there.
-    supports_external_textures = adapter.SupportsExternalImages();
+    supports_external_textures = native_adapter.SupportsExternalImages();
 #endif
     if (!(supports_external_textures || is_swiftshader)) {
       return false;
@@ -1731,12 +1736,12 @@ wgpu::Adapter WebGPUDecoderImpl::CreatePreferredAdapter(
     // If the power preference is forced, only accept specific adapter
     // types.
     if (use_webgpu_power_preference_ == WebGPUPowerPreference::kForceLowPower &&
-        adapter_properties.adapterType != WGPUAdapterType_IntegratedGPU) {
+        adapter_properties.adapterType != wgpu::AdapterType::IntegratedGPU) {
       return false;
     }
     if (use_webgpu_power_preference_ ==
             WebGPUPowerPreference::kForceHighPerformance &&
-        adapter_properties.adapterType != WGPUAdapterType_DiscreteGPU) {
+        adapter_properties.adapterType != wgpu::AdapterType::DiscreteGPU) {
       return false;
     }
 
@@ -1746,30 +1751,30 @@ wgpu::Adapter WebGPUDecoderImpl::CreatePreferredAdapter(
   // Enumerate adapters in order of the preferred backend type.
   for (wgpu::BackendType backend_type : backend_types) {
     adapter_options.backendType = backend_type;
-    for (dawn::native::Adapter& adapter :
+    for (dawn::native::Adapter& native_adapter :
          dawn_instance_->EnumerateAdapters(&adapter_options)) {
-      adapter.SetUseTieredLimits(tiered_adapter_limits_);
+      native_adapter.SetUseTieredLimits(tiered_adapter_limits_);
 
-      if (!CanUseAdapter(adapter)) {
+      if (!CanUseAdapter(native_adapter)) {
         continue;
       }
 
-      return wgpu::Adapter(adapter.Get());
+      return wgpu::Adapter(native_adapter.Get());
     }
   }
 
   // If we still don't have an adapter, now try to find the fallback adapter.
   adapter_options.forceFallbackAdapter = true;
   adapter_options.backendType = wgpu::BackendType::Vulkan;
-  for (dawn::native::Adapter& adapter :
+  for (dawn::native::Adapter& native_adapter :
        dawn_instance_->EnumerateAdapters(&adapter_options)) {
-    adapter.SetUseTieredLimits(tiered_adapter_limits_);
+    native_adapter.SetUseTieredLimits(tiered_adapter_limits_);
 
-    if (!CanUseAdapter(adapter)) {
+    if (!CanUseAdapter(native_adapter)) {
       continue;
     }
 
-    return wgpu::Adapter(adapter.Get());
+    return wgpu::Adapter(native_adapter.Get());
   }
 
   // No adapter could be found.
@@ -1884,7 +1889,7 @@ error::Error WebGPUDecoderImpl::HandleDawnCommands(
     return error::kLostContext;
   }
 
-  // TODO(crbug.com/1174145): This is O(N) where N is the number of devices.
+  // TODO(crbug.com/40167398): This is O(N) where N is the number of devices.
   // Multiple submits would be O(N*M). We should find a way to more
   // intelligently poll for work on only the devices that need it.
   PerformPollingWork();
@@ -2030,6 +2035,15 @@ error::Error WebGPUDecoderImpl::HandleAssociateMailboxImmediate(
     return error::kInvalidArguments;
   }
 
+  {
+    std::tuple<uint32_t, uint32_t> id_and_generation{id, generation};
+    auto it = associated_shared_image_map_.find(id_and_generation);
+    if (it != associated_shared_image_map_.end()) {
+      DLOG(ERROR) << "AssociateMailbox to an already associated texture.";
+      return error::kInvalidArguments;
+    }
+  }
+
   std::unique_ptr<SharedImageRepresentationAndAccess> representation_and_access;
   auto it = known_device_metadata_.find(device);
   DCHECK(it != known_device_metadata_.end());
@@ -2048,8 +2062,8 @@ error::Error WebGPUDecoderImpl::HandleAssociateMailboxImmediate(
     // an error wgpu::Texture. Use an implementation of
     // SharedImageRepresentationAndAccess which always provides an error.
     representation_and_access =
-        std::make_unique<ErrorSharedImageRepresentationAndAccess>(device,
-                                                                  usage);
+        std::make_unique<ErrorSharedImageRepresentationAndAccess>(device, usage,
+                                                                  mailbox);
   }
 
   // Inject the texture in the dawn::wire::Server and remember which shared
@@ -2115,58 +2129,87 @@ error::Error WebGPUDecoderImpl::HandleDissociateMailboxForPresent(
     return error::kInvalidArguments;
   }
 
+  Mailbox mailbox = it->second->mailbox();
   wgpu::Texture texture = it->second->texture();
   DCHECK(texture);
-  if (!dawn::native::IsTextureSubresourceInitialized(texture.Get(), 0, 1, 0,
-                                                     1)) {
-    // The compositor renders uninitialized textures as red. If the texture is
-    // not initialized, we need to explicitly clear its contents to black.
-    // This may not successfully initialize the texture if the texture or device
-    // was explicitly destroyed, however the client ensures Dissociate is sent
-    // before destroy.
-
-    // Push an error scope to capture errors here. The texture may be
-    // an error texture, so this code would produce additional errors
-    // which should not be visible to the client.
-    device.PushErrorScope(wgpu::ErrorFilter::Validation);
-    wgpu::TextureView view = texture.CreateView();
-
-    wgpu::RenderPassColorAttachment color_attachment;
-    color_attachment.view = view;
-    color_attachment.loadOp = wgpu::LoadOp::Clear;
-    color_attachment.storeOp = wgpu::StoreOp::Store;
-    color_attachment.clearValue = {0.0, 0.0, 0.0, 0.0};
-
-    wgpu::RenderPassDescriptor render_pass_descriptor;
-    render_pass_descriptor.colorAttachmentCount = 1;
-    render_pass_descriptor.colorAttachments = &color_attachment;
-
-    wgpu::DawnEncoderInternalUsageDescriptor internal_usage_desc;
-    internal_usage_desc.useInternalUsages = true;
-    wgpu::CommandEncoderDescriptor command_encoder_desc = {
-        .nextInChain = &internal_usage_desc,
-    };
-
-    wgpu::CommandEncoder encoder =
-        device.CreateCommandEncoder(&command_encoder_desc);
-    wgpu::RenderPassEncoder pass =
-        encoder.BeginRenderPass(&render_pass_descriptor);
-    pass.End();
-    wgpu::CommandBuffer command_buffer = encoder.Finish();
-    device.GetQueue().Submit(1, &command_buffer);
-
-    // Pop the error scope and log errors.
-    device.PopErrorScope(
-        [](WGPUErrorType, const char* message, void*) {
-          if (message) {
-            DLOG(ERROR) << "Clear contents to black had error: " << message;
-          }
-        },
-        nullptr);
-  }
+  bool is_initialized =
+      dawn::native::IsTextureSubresourceInitialized(texture.Get(), 0, 1, 0, 1);
 
   associated_shared_image_map_.erase(it);
+  if (!is_initialized) {
+    // The compositor renders uninitialized textures as red. If the texture is
+    // not initialized, we need to explicitly clear its contents to black.
+    ClearSharedImage(mailbox);
+  }
   return error::kNoError;
+}
+
+void WebGPUDecoderImpl::ClearSharedImage(const Mailbox& mailbox) {
+  // Before using the shared context, ensure it is current if we're on GL.
+  if (shared_context_state_->GrContextIsGL()) {
+    shared_context_state_->MakeCurrent(/* gl_surface */ nullptr);
+  }
+
+  std::unique_ptr<SkiaImageRepresentation> representation =
+      shared_image_representation_factory_->ProduceSkia(
+          mailbox, shared_context_state_.get());
+  std::vector<GrBackendSemaphore> begin_semaphores;
+  std::vector<GrBackendSemaphore> end_semaphores;
+  auto scoped_write_access = representation->BeginScopedWriteAccess(
+      &begin_semaphores, &end_semaphores,
+      SharedImageRepresentation::AllowUnclearedAccess::kYes);
+  if (!scoped_write_access) {
+    DLOG(ERROR) << "ClearSharedImage: Couldn't begin shared image access";
+    return;
+  }
+
+  auto* surface = scoped_write_access->surface();
+  if (!begin_semaphores.empty()) {
+    // gr_context() must not be null when begin_semaphores is not empty.
+    DCHECK(shared_context_state_->gr_context());
+    bool wait_result = shared_context_state_->gr_context()->wait(
+        begin_semaphores.size(), begin_semaphores.data(),
+        /*deleteSemaphoresAfterWait=*/false);
+    DCHECK(wait_result);
+  }
+  auto* canvas = surface->getCanvas();
+  SkColor4f clear_color;
+  if (representation->alpha_type() == kOpaque_SkAlphaType) {
+    clear_color = {0, 0, 0, 1};
+  } else {
+    clear_color = {0, 0, 0, 0};
+  }
+  canvas->drawColor(clear_color, SkBlendMode::kSrc);
+  representation->SetCleared();
+
+  // It's ok to pass in empty GrFlushInfo here since SignalSemaphores()
+  // will populate it with semaphores and call GrDirectContext::flush.
+  if (shared_context_state_->gr_context()) {
+    skgpu::ganesh::Flush(surface);
+  } else {
+    DCHECK(shared_context_state_->graphite_context());
+    DCHECK(shared_context_state_->gpu_main_graphite_recorder());
+    GraphiteFlushAndSubmit(shared_context_state_->graphite_context(),
+                           shared_context_state_->gpu_main_graphite_recorder());
+  }
+  // Transition the image back to the desired end state. This is used for
+  // transitioning the image to the external queue for Vulkan/GL interop.
+  scoped_write_access->ApplyBackendSurfaceEndState();
+
+  if (!end_semaphores.empty()) {
+    // gr_context() must not be null when end_semaphores is not empty.
+    DCHECK(shared_context_state_->gr_context());
+    GrFlushInfo flush_info = {
+        .fNumSemaphores = end_semaphores.size(),
+        .fSignalSemaphores = end_semaphores.data(),
+    };
+    // Note: this is a no-op if vk_context_provider is null.
+    AddVulkanCleanupTaskForSkiaFlush(
+        shared_context_state_->vk_context_provider(), &flush_info);
+    auto flush_result = shared_context_state_->gr_context()->flush(flush_info);
+    DCHECK(flush_result == GrSemaphoresSubmitted::kYes);
+    shared_context_state_->gr_context()->submit();
+  }
 }
 
 void WebGPUDecoderImpl::OnGetIsolationKey(const std::string& isolation_key) {

@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <string_view>
 #include <vector>
 
 #include "base/base64.h"
@@ -19,7 +20,6 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
-#include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/single_thread_task_runner.h"
@@ -77,14 +77,13 @@ scoped_refptr<base::RefCountedString> EncodeBitmapAsPNG(
     const SkBitmap& bitmap) {
   scoped_refptr<base::RefCountedMemory> png_bytes =
       gfx::Image::CreateFrom1xBitmap(bitmap).As1xPNGBytes();
-  scoped_refptr<base::RefCountedString> str = new base::RefCountedString();
-  str->data().assign(png_bytes->front_as<char>(), png_bytes->size());
-  return str;
+  return base::MakeRefCounted<base::RefCountedString>(
+      std::string(base::as_string_view(*png_bytes)));
 }
 
 std::string EncodeBitmapAsPNGBase64(const SkBitmap& bitmap) {
   scoped_refptr<base::RefCountedString> png_bytes = EncodeBitmapAsPNG(bitmap);
-  return base::Base64Encode(png_bytes->data());
+  return base::Base64Encode(*png_bytes);
 }
 
 SkBitmap MakeBitmap(int width, int height) {
@@ -408,8 +407,8 @@ class LogoServiceImplTest : public ::testing::Test {
   void GetDecodedLogo(LogoCallback cached, LogoCallback fresh);
   void GetEncodedLogo(EncodedLogoCallback cached, EncodedLogoCallback fresh);
 
-  void AddSearchEngine(base::StringPiece keyword,
-                       base::StringPiece short_name,
+  void AddSearchEngine(std::string_view keyword,
+                       std::string_view short_name,
                        const std::string& url,
                        GURL doodle_url,
                        bool make_default);
@@ -502,8 +501,8 @@ void LogoServiceImplTest::GetEncodedLogo(EncodedLogoCallback cached,
   GetLogo(std::move(callbacks));
 }
 
-void LogoServiceImplTest::AddSearchEngine(base::StringPiece keyword,
-                                          base::StringPiece short_name,
+void LogoServiceImplTest::AddSearchEngine(std::string_view keyword,
+                                          std::string_view short_name,
                                           const std::string& url,
                                           GURL doodle_url,
                                           bool make_default) {

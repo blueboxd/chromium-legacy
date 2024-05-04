@@ -26,18 +26,18 @@ import './app_management_page/app_management_page.js';
 import './app_management_page/app_detail_view.js';
 import './app_management_page/uninstall_button.js';
 
+import {PrefsMixin} from '/shared/settings/prefs/prefs_mixin.js';
+import {I18nMixin} from 'chrome://resources/ash/common/cr_elements/i18n_mixin.js';
 import {App} from 'chrome://resources/cr_components/app_management/app_management.mojom-webui.js';
 import {AppManagementEntryPoint, AppManagementEntryPointsHistogramName} from 'chrome://resources/cr_components/app_management/constants.js';
 import {getAppIcon, getSelectedApp} from 'chrome://resources/cr_components/app_management/util.js';
-import {PrefsMixin} from 'chrome://resources/cr_components/settings_prefs/prefs_mixin.js';
-import {I18nMixin} from 'chrome://resources/ash/common/cr_elements/i18n_mixin.js';
 import {assert} from 'chrome://resources/js/assert.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {AppManagementStoreMixin} from '../common/app_management/store_mixin.js';
 import {DeepLinkingMixin} from '../common/deep_linking_mixin.js';
-import {androidAppsVisible, isArcVmEnabled, isPlayStoreAvailable, isPluginVmAvailable, isRevampWayfindingEnabled, shouldShowStartup} from '../common/load_time_booleans.js';
+import {androidAppsVisible, isAppParentalControlsFeatureAvailable, isArcVmEnabled, isPlayStoreAvailable, isPluginVmAvailable, isRevampWayfindingEnabled, shouldShowStartup} from '../common/load_time_booleans.js';
 import {RouteOriginMixin} from '../common/route_origin_mixin.js';
 import {DropdownMenuOptionList} from '../controls/settings_dropdown_menu.js';
 import {App as AppWithNotifications, AppNotificationsHandlerInterface, AppNotificationsObserverReceiver, Readiness} from '../mojom-webui/app_notification_handler.mojom-webui.js';
@@ -139,6 +139,14 @@ export class OsSettingsAppsPageElement extends OsSettingsAppsPageElementBase {
         value: () => {
           return isPluginVmAvailable();
         },
+      },
+
+      isAppParentalControlsFeatureAvailable_: {
+        type: Boolean,
+        value: () => {
+          return isAppParentalControlsFeatureAvailable();
+        },
+        readOnly: true,
       },
 
       /**
@@ -316,6 +324,24 @@ export class OsSettingsAppsPageElement extends OsSettingsAppsPageElementBase {
 
   private onClickAppNotifications_(): void {
     Router.getInstance().navigateTo(routes.APP_NOTIFICATIONS);
+  }
+
+  private onClickParentalControls_(): void {
+    const isParentalControlsSetup =
+        this.getPref('on_device_app_controls.setup_completed').value;
+    if (isParentalControlsSetup) {
+      Router.getInstance().navigateTo(routes.APP_PARENTAL_CONTROLS);
+    }
+  }
+
+  private setUpParentalControls_(e: Event): void {
+    this.setPrefValue('on_device_app_controls.setup_completed', true);
+    // Stop propagation to keep the subpage from opening.
+    e.stopPropagation();
+  }
+
+  private disableParentalControls_(): void {
+    this.setPrefValue('on_device_app_controls.setup_completed', false);
   }
 
   private onClickManageIsolatedWebApps_(): void {

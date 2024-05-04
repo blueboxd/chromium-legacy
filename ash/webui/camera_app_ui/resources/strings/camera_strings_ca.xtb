@@ -33,6 +33,8 @@
 <translation id="2244252133441425811">Activa el selector d'FPS per a vídeos</translation>
 <translation id="2271433936731426666">Activa la instantània del vídeo a mida completa</translation>
 <translation id="2320741269052147773">Desplaça cap a l'esquerra</translation>
+<translation id="2360840973209616515">El teu administrador gestiona l'aplicació de càmera.
+        Per obtenir més detalls, contacta amb aquesta persona.</translation>
 <translation id="2501278716633472235">Torna</translation>
 <translation id="2501853267655415902">S'ha aturat la gravació</translation>
 <translation id="2517472476991765520">Escaneja</translation>
@@ -106,6 +108,7 @@
 <translation id="5975083100439434680">Redueix</translation>
 <translation id="5976160379964388480">Altres</translation>
 <translation id="6073451960410192870">Atura la gravació</translation>
+<translation id="6165508094623778733">Més informació</translation>
 <translation id="6197807149213783179">Desa les metadades</translation>
 <translation id="6233780560267770709">3 per 3</translation>
 <translation id="6243827288366940320">Proporció àuria</translation>
@@ -159,6 +162,7 @@ Si els teus suggeriments fan referència a la qualitat d'imatge o de vídeo, adj
 <translation id="8609951387004618906">Obre <ph name="URL" /></translation>
 <translation id="8629662593426079630">360p</translation>
 <translation id="8711011893539266636">Deixa de silenciar el micròfon. La funció Silencia està activada.</translation>
+<translation id="8712637175834984815">Entesos</translation>
 <translation id="8730621377337864115">Fet</translation>
 <translation id="8732462232047530626">Previsualitza les metadades</translation>
 <translation id="874854738381978209">S'ha detectat una xarxa Wi-Fi.</translation>

@@ -261,6 +261,10 @@ const ui::AXNodeData& AXVirtualView::GetData() const {
   if (populate_data_callback_ && GetOwnerView())
     populate_data_callback_.Run(&node_data);
 
+  if (pruned_) {
+    node_data.AddState(ax::mojom::State::kIgnored);
+  }
+
   // According to the ARIA spec, the node should not be ignored if it is
   // focusable. This is to ensure that the focusable node is both understandable
   // and operable.
@@ -316,7 +320,7 @@ gfx::NativeViewAccessible AXVirtualView::GetNativeViewAccessible() {
 
 gfx::NativeViewAccessible AXVirtualView::GetParent() const {
   if (parent_view_) {
-    if (!parent_view_->IsIgnored())
+    if (!parent_view_->GetIsIgnored())
       return parent_view_->GetNativeObject();
     return GetDelegate()->GetParent();
   }
@@ -530,4 +534,17 @@ AXVirtualViewWrapper* AXVirtualView::GetOrCreateWrapper(
 #endif
 }
 
+void AXVirtualView::PruneVirtualSubtree() {
+  pruned_ = true;
+  for (auto& child : children()) {
+    child->PruneVirtualSubtree();
+  }
+}
+
+void AXVirtualView::UnpruneVirtualSubtree() {
+  pruned_ = false;
+  for (auto& child : children()) {
+    child->UnpruneVirtualSubtree();
+  }
+}
 }  // namespace views

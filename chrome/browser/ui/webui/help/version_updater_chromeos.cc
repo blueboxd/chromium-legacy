@@ -17,7 +17,6 @@
 #include "chrome/browser/ash/login/wizard_controller.h"
 #include "chrome/browser/ash/ownership/owner_settings_service_ash.h"
 #include "chrome/browser/ash/ownership/owner_settings_service_ash_factory.h"
-#include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/enterprise/browser_management/management_service_factory.h"
 #include "chrome/browser/ui/webui/help/help_utils_chromeos.h"
@@ -27,6 +26,7 @@
 #include "chromeos/ash/components/network/network_state.h"
 #include "chromeos/ash/components/network/network_state_handler.h"
 #include "chromeos/ash/components/network/network_type_pattern.h"
+#include "chromeos/ash/components/settings/cros_settings.h"
 #include "chromeos/ash/components/settings/cros_settings_names.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
@@ -222,7 +222,7 @@ void VersionUpdaterCros::OnSetUpdateOverCellularOneTimePermission(
     // One time permission is set successfully, so we can proceed to update.
     CheckForUpdate(callback_, VersionUpdater::PromoteCallback());
   } else {
-    // TODO(https://crbug.com/927452): invoke callback to signal about page to
+    // TODO(crbug.com/40612027): invoke callback to signal about page to
     // show appropriate error message.
     LOG(ERROR) << "Error setting update over cellular one time permission.";
     callback_.Run(VersionUpdater::FAILED, 0, false, false, std::string(), 0,

@@ -6,13 +6,13 @@
 
 #include <memory>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 
 #include "base/command_line.h"
 #include "base/functional/bind.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/strings/string_piece.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "components/feed/core/shared_prefs/pref_names.h"
@@ -97,7 +97,7 @@ void SupervisedUserPrefStore::Init(
               base::Unretained(this)));
 }
 
-bool SupervisedUserPrefStore::GetValue(base::StringPiece key,
+bool SupervisedUserPrefStore::GetValue(std::string_view key,
                                        const base::Value** value) const {
   return prefs_->GetValue(key, value);
 }
@@ -134,11 +134,6 @@ void SupervisedUserPrefStore::OnNewSettingsAvailable(
         prefs::kDefaultSupervisedUserFilteringBehavior,
         static_cast<int>(supervised_user::FilteringBehavior::kAllow));
 
-#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS)
-    prefs_->SetInteger(policy::policy_prefs::kForceYouTubeRestrict,
-                       safe_search_api::YOUTUBE_RESTRICT_MODERATE);
-#endif
-
     prefs_->SetBoolean(policy::policy_prefs::kHideWebStoreIcon, false);
     prefs_->SetBoolean(feed::prefs::kEnableSnippets,
                        supervised_user::IsKidFriendlyContentFeedAvailable());
@@ -165,15 +160,6 @@ void SupervisedUserPrefStore::OnNewSettingsAvailable(
           policy::policy_prefs::kIncognitoModeAvailability,
           static_cast<int>(policy::IncognitoModeAvailability::kDisabled));
     }
-
-#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS)
-    {
-      // This can't be set automatically as part of
-      // |kSupervisedUserSettingsPrefMapping|, because it is an int, not a bool.
-      prefs_->SetInteger(policy::policy_prefs::kForceYouTubeRestrict,
-                         safe_search_api::YOUTUBE_RESTRICT_MODERATE);
-    }
-#endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     {

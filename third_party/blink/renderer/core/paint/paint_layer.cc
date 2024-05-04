@@ -370,6 +370,7 @@ void PaintLayer::UpdateDescendantDependentFlags() {
     has_non_contained_absolute_position_descendant_ = false;
     has_stacked_descendant_in_current_stacking_context_ = false;
     has_self_painting_layer_descendant_ = false;
+    descendant_needs_check_position_visibility_ = false;
 
     bool can_contain_abs =
         GetLayoutObject().CanContainAbsolutePositionObjects();
@@ -421,6 +422,15 @@ void PaintLayer::UpdateDescendantDependentFlags() {
           has_self_painting_layer_descendant_ ||
           child->HasSelfPaintingLayerDescendant() ||
           child->IsSelfPaintingLayer();
+    }
+
+    // See SetInvisibleForPositionVisibility() for explanation for
+    // descendant_needs_check_position_visibility_.
+    if (InvisibleForPositionVisibility() &&
+        !GetLayoutObject().IsStackingContext() &&
+        has_self_painting_layer_descendant_) {
+      AncestorStackingContext()->descendant_needs_check_position_visibility_ =
+          true;
     }
 
     UpdateStackingNode();
@@ -1200,6 +1210,18 @@ PaintLayer* PaintLayer::HitTestLayer(
        HitTestRequest::kIgnoreZeroOpacityObjects) &&
       !layout_object.HasNonZeroEffectiveOpacity()) {
     return nullptr;
+  }
+
+  std::optional<CheckAncestorPositionVisibilityScope>
+      check_position_visibility_scope;
+  if (RuntimeEnabledFeatures::CSSPositionVisibilityEnabled()) {
+    if (InvisibleForPositionVisibility() ||
+        HasAncestorInvisibleForPositionVisibility()) {
+      return nullptr;
+    }
+    if (GetLayoutObject().IsStackingContext()) {
+      check_position_visibility_scope.emplace(*this);
+    }
   }
 
   // TODO(vmpstr): We need to add a simple document flag which says whether
@@ -2399,6 +2421,57 @@ void PaintLayer::SetPreviousPaintResult(PaintResult result) {
   DCHECK(previous_paint_result_ == static_cast<unsigned>(result));
 }
 
+void PaintLayer::SetInvisibleForPositionVisibility(
+    LayerPositionVisibility visibility,
+    bool invisible) {
+  if (!RuntimeEnabledFeatures::CSSPositionVisibilityEnabled()) {
+    return;
+  }
+  bool already_invisible = InvisibleForPositionVisibility();
+  if (invisible) {
+    invisible_for_position_visibility_ |= static_cast<int>(visibility);
+    // This will fail if subtree_invisible_for_position_visibility_ doesn't
+    // have enough bits.
+    CHECK(InvisibleForPositionVisibility());
+  } else {
+    invisible_for_position_visibility_ &= ~static_cast<int>(visibility);
+  }
+  if (InvisibleForPositionVisibility() != already_invisible) {
+    SetNeedsRepaint();
+    // If this layer is not a stacking context, during paint, self-painting
+    // descendants need to check their ancestor chain to know if they need to
+    // hide due to the position visibility hidden flag on this layer.
+    if (!already_invisible && !GetLayoutObject().IsStackingContext() &&
+        // If needs_descendant_dependent_flags_update_ is set, we can't call
+        // HasSelfPaintingLayerDescendants() now, but will update
+        // descendants_need_check_position_visibility_hidden_ during
+        // UpdateDescendantDependentFlags().
+        !needs_descendant_dependent_flags_update_ &&
+        HasSelfPaintingLayerDescendant()) {
+      // This flag is cleared during UpdateDescendantDependentFlags() only, so
+      // it may have false-positives which affects performance only in rare
+      // cases.
+      AncestorStackingContext()->descendant_needs_check_position_visibility_ =
+          true;
+    }
+  }
+}
+
+bool PaintLayer::HasAncestorInvisibleForPositionVisibility() const {
+  CHECK(RuntimeEnabledFeatures::CSSPositionVisibilityEnabled());
+  if (!CheckAncestorPositionVisibilityScope::ShouldCheck()) {
+    return false;
+  }
+  for (auto* layer = Parent();
+       layer && !layer->GetLayoutObject().IsStackingContext();
+       layer = layer->Parent()) {
+    if (layer->InvisibleForPositionVisibility()) {
+      return true;
+    }
+  }
+  return false;
+}
+
 void PaintLayer::Trace(Visitor* visitor) const {
   visitor->Trace(layout_object_);
   visitor->Trace(parent_);
@@ -2411,6 +2484,8 @@ void PaintLayer::Trace(Visitor* visitor) const {
   visitor->Trace(resource_info_);
   DisplayItemClient::Trace(visitor);
 }
+
+bool CheckAncestorPositionVisibilityScope::should_check_ = false;
 
 }  // namespace blink
 

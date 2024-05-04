@@ -108,8 +108,7 @@ void ExpectPrivacyIndicatorsTrayItemVisible(bool visible,
 
 class PrivacyIndicatorsControllerTest : public AshTestBase {
  public:
-  PrivacyIndicatorsControllerTest()
-      : scoped_feature_list_(features::kPrivacyIndicators) {}
+  PrivacyIndicatorsControllerTest() = default;
   PrivacyIndicatorsControllerTest(const PrivacyIndicatorsControllerTest&) =
       delete;
   PrivacyIndicatorsControllerTest& operator=(
@@ -162,9 +161,6 @@ class PrivacyIndicatorsControllerTest : public AshTestBase {
         ->notification_center_tray()
         ->privacy_indicators_view();
   }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 TEST_F(PrivacyIndicatorsControllerTest, NotificationMetadata) {
@@ -265,7 +261,7 @@ TEST_F(PrivacyIndicatorsControllerTest,
       l10n_util::GetStringUTF16(IDS_PRIVACY_NOTIFICATION_BUTTON_APP_SETTINGS),
       buttons[0].title);
 
-  // Clicking that button will trigger launching the app.
+  // Clicking that button will trigger launching the app settings.
   EXPECT_FALSE(delegate->launch_settings_called());
   ClickView(notification_view, 0);
   EXPECT_TRUE(delegate->launch_settings_called());
@@ -308,6 +304,49 @@ TEST_F(PrivacyIndicatorsControllerTest, NotificationClickWithTwoButtons) {
   EXPECT_FALSE(delegate->launch_settings_called());
   ClickView(notification_view, 1);
   EXPECT_TRUE(delegate->launch_settings_called());
+}
+
+TEST_F(PrivacyIndicatorsControllerTest, NotificationClickBody) {
+  std::string app_id = "test_app_id";
+  std::string notification_id = GetPrivacyIndicatorsNotificationId(app_id);
+  scoped_refptr<TestDelegate> delegate = base::MakeRefCounted<TestDelegate>(
+      /*has_launch_app_callback=*/true,
+      /*has_launch_settings_callback=*/false);
+  PrivacyIndicatorsController::Get()->UpdatePrivacyIndicators(
+      app_id, u"test_app_name",
+      /*is_camera_used=*/true,
+      /*is_microphone_used=*/true, delegate, PrivacyIndicatorsSource::kApps);
+
+  auto* notification_view =
+      GetNotificationViewFromMessageCenter(notification_id);
+
+  ASSERT_FALSE(delegate->launch_settings_called());
+  ASSERT_FALSE(delegate->launch_app_called());
+
+  // Clicking the notification body without a launch settings callback will not
+  // do anything.
+  LeftClickOn(notification_view);
+  EXPECT_FALSE(delegate->launch_settings_called());
+  EXPECT_FALSE(delegate->launch_app_called());
+
+  scoped_refptr<TestDelegate> delegate_with_settings_callback =
+      base::MakeRefCounted<TestDelegate>(
+          /*has_launch_app_callback=*/false,
+          /*has_launch_settings_callback=*/true);
+  PrivacyIndicatorsController::Get()->UpdatePrivacyIndicators(
+      app_id, u"test_app_name",
+      /*is_camera_used=*/true,
+      /*is_microphone_used=*/true, delegate_with_settings_callback,
+      PrivacyIndicatorsSource::kApps);
+
+  ASSERT_FALSE(delegate_with_settings_callback->launch_settings_called());
+  ASSERT_FALSE(delegate->launch_app_called());
+
+  // Clicking the notification body with a launch settings callback should
+  // launch the app settings.
+  LeftClickOn(notification_view);
+  EXPECT_TRUE(delegate_with_settings_callback->launch_settings_called());
+  EXPECT_FALSE(delegate->launch_app_called());
 }
 
 // Tests that privacy indicators notifications are working properly when there
@@ -354,30 +393,6 @@ TEST_F(PrivacyIndicatorsControllerTest, NotificationWithTwoApps) {
   EXPECT_FALSE(message_center->FindNotificationById(notification_id1));
   EXPECT_FALSE(message_center->FindNotificationById(notification_id2));
   EXPECT_FALSE(message_center->FindNotificationById(id_parent));
-}
-
-// Tests that a basic privacy indicator notification is disabled when the video
-// conference feature is enabled.
-TEST_F(PrivacyIndicatorsControllerTest,
-       DoNotShowNotificationWithVideoConferenceEnabled) {
-  base::test::ScopedFeatureList scoped_feature_list_;
-  scoped_feature_list_.InitWithFeatures(
-      {ash::features::kVideoConference,
-       ash::features::kCameraEffectsSupportedByHardware},
-      {});
-
-  // Try to show a notification.
-  std::string app_id = "test_app_id";
-  std::string notification_id = GetPrivacyIndicatorsNotificationId(app_id);
-  scoped_refptr<TestDelegate> delegate = base::MakeRefCounted<TestDelegate>();
-  PrivacyIndicatorsController::Get()->UpdatePrivacyIndicators(
-      app_id, u"test_app_name",
-      /*is_camera_used=*/true,
-      /*is_microphone_used=*/true, delegate, PrivacyIndicatorsSource::kApps);
-
-  // The notification should not exist.
-  EXPECT_FALSE(message_center::MessageCenter::Get()->FindNotificationById(
-      notification_id));
 }
 
 // Tests privacy indicators tray item visibility across all status area widgets.
@@ -772,18 +787,13 @@ TEST_F(PrivacyIndicatorsControllerTest, UpdateUsageStageInLockScreen) {
   EXPECT_FALSE(GetPrimaryDisplayPrivacyIndicatorsView()->GetVisible());
 }
 
-// Tests enabling both `kPrivacyIndicators` and `kVideoConference`.
+// Tests enabling `kVideoConference`.
 class PrivacyIndicatorsControllerVideoConferenceTest
     : public AshTestBase,
       public testing::WithParamInterface<bool> {
  public:
-  PrivacyIndicatorsControllerVideoConferenceTest() {
-    scoped_feature_list_.InitWithFeatureStates({
-        {features::kPrivacyIndicators, true},
-        {features::kVideoConference, true},
-        {features::kCameraEffectsSupportedByHardware, true},
-    });
-  }
+  PrivacyIndicatorsControllerVideoConferenceTest()
+      : scoped_feature_list_(features::kFeatureManagementVideoConference) {}
   PrivacyIndicatorsControllerVideoConferenceTest(
       const PrivacyIndicatorsControllerVideoConferenceTest&) = delete;
   PrivacyIndicatorsControllerVideoConferenceTest& operator=(
@@ -810,8 +820,8 @@ class PrivacyIndicatorsControllerVideoConferenceTest
   std::unique_ptr<FakeVideoConferenceTrayController> controller_;
 };
 
-// Make sure that when `kPrivacyIndicators` and `kVideoConference` are both
-// enabled, the privacy indicators view and the controller is not created.
+// Make sure that when `kVideoConference` is enabled, the privacy indicators
+// view and the controller is not created.
 TEST_F(PrivacyIndicatorsControllerVideoConferenceTest, ObjectsCreation) {
   EXPECT_FALSE(PrivacyIndicatorsController::Get());
 

@@ -23,13 +23,23 @@ chromium-metrics-reviews@google.com.
 <histograms>
 
 <histogram name="Windows.AcLayersLoaded" enum="BooleanLoaded"
-    expires_after="2024-07-15">
+    expires_after="2024-09-15">
   <owner>ajgo@chromium.org</owner>
   <owner>brucedawson@chromium.org</owner>
   <summary>
     Records if AcLayers.dll is loaded in the browser process, indicating that
     Chrome has been shimmed by Window's AppCompat mechanism. Reported once per
     browser session, on startup.
+  </summary>
+</histogram>
+
+<histogram name="Windows.AppCompatLayersRemoved" enum="Boolean"
+    expires_after="2024-07-30">
+  <owner>grt@chromium.org</owner>
+  <owner>wfh@chromium.org</owner>
+  <summary>
+    True if tokens were removed from the user's AppCompatFlags Layers value; see
+    http://crbug.com/581499. Recorded once shortly after browser startup.
   </summary>
 </histogram>
 
@@ -57,7 +67,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Windows.Enclave.{Type}.Available" enum="BooleanAvailable"
-    expires_after="2024-07-14">
+    expires_after="2024-09-15">
   <owner>ajgo@chromium.org</owner>
   <owner>wfh@chromium.org</owner>
   <summary>
@@ -101,7 +111,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Windows.HighResolutionTimerUsage" units="%"
-    expires_after="2024-07-21">
+    expires_after="2024-09-22">
   <owner>olivierli@chromium.org</owner>
   <owner>catan-team@chromium.org</owner>
   <summary>
@@ -112,7 +122,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Windows.HypervPresent" enum="BooleanEnabled"
-    expires_after="2024-08-04">
+    expires_after="2024-10-06">
   <owner>rkc@chromium.org</owner>
   <owner>vnagarnaik@google.com</owner>
   <owner>rockot@chromium.org</owner>
@@ -158,6 +168,18 @@ chromium-metrics-reviews@google.com.
     the installer. Recorded when Chrome is launched from the taskbar, and the
     install was done after the installer started pinning Chrome to the taskbar
     for Windows 10+.
+  </summary>
+</histogram>
+
+<histogram name="Windows.LegacyDisplayIdAlgorithm" enum="UsedDisplayIdFallback"
+    expires_after="2024-12-31">
+  <owner>btriebw@google.com</owner>
+  <owner>msw@google.com</owner>
+  <summary>
+    Records when a monitor is missing DISPLAYCONFIG_PATH_INFO to derive a
+    display ID and instead used the fallback legacy algorithm. Recorded once for
+    each monitor detected by the OS during startup of chrome and after any
+    monitor topology changes (addition/removal) thereafter.
   </summary>
 </histogram>
 
@@ -220,7 +242,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Windows.ProcessorFamily" enum="ProcessorFamily"
-    expires_after="2024-08-04">
+    expires_after="2024-10-06">
   <owner>rkc@chromium.org</owner>
   <owner>vnagarnaik@google.com</owner>
   <owner>rockot@chromium.org</owner>

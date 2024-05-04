@@ -90,7 +90,7 @@ class BackgroundTabLoadingBrowserTest : public InProcessBrowserTest {
 
 #if BUILDFLAG(ENABLE_SESSION_SERVICE)
 #if BUILDFLAG(IS_MAC)
-// TODO(crbug.com/1486393): Re-enable the test.
+// TODO(crbug.com/40282876): Re-enable the test.
 #define MAYBE_RestoreTab DISABLED_RestoreTab
 #else
 #define MAYBE_RestoreTab RestoreTab
@@ -116,8 +116,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundTabLoadingBrowserTest, MAYBE_RestoreTab) {
   Browser* restored_browser = BrowserList::GetInstance()->get(1);
 
   EXPECT_EQ(kDesiredNumberOfTabs, restored_browser->tab_strip_model()->count());
-  EXPECT_EQ(kDesiredNumberOfTabs - 1,
-            restored_browser->tab_strip_model()->active_index());
+  EXPECT_EQ(0, restored_browser->tab_strip_model()->active_index());
 
   // All tabs should be loaded by BackgroundTabLoadingPolicy.
   for (int i = 0; i < kDesiredNumberOfTabs; i++) {
@@ -126,8 +125,15 @@ IN_PROC_BROWSER_TEST_F(BackgroundTabLoadingBrowserTest, MAYBE_RestoreTab) {
   }
 }
 
+// TODO(crbug.com/335421977): Flaky on "Linux ChromiumOS MSan Tests"
+#if (BUILDFLAG(IS_CHROMEOS) && defined(MEMORY_SANITIZER))
+#define MAYBE_RestoredTabsAreLoadedGradually \
+  DISABLED_RestoredTabsAreLoadedGradually
+#else
+#define MAYBE_RestoredTabsAreLoadedGradually RestoredTabsAreLoadedGradually
+#endif
 IN_PROC_BROWSER_TEST_F(BackgroundTabLoadingBrowserTest,
-                       RestoredTabsAreLoadedGradually) {
+                       MAYBE_RestoredTabsAreLoadedGradually) {
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), url_, WindowOpenDisposition::NEW_WINDOW,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_BROWSER);
@@ -149,8 +155,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundTabLoadingBrowserTest,
   Browser* restored_browser = BrowserList::GetInstance()->get(1);
 
   EXPECT_EQ(kDesiredNumberOfTabs, restored_browser->tab_strip_model()->count());
-  EXPECT_EQ(kDesiredNumberOfTabs - 1,
-            restored_browser->tab_strip_model()->active_index());
+  EXPECT_EQ(0, restored_browser->tab_strip_model()->active_index());
 
   // These tabs should be loaded by BackgroundTabLoadingPolicy.
   EnsureTabFinishedRestoring(

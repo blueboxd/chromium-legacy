@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "media/filters/vpx_video_decoder.h"
+
 #include <memory>
 #include <string>
 #include <vector>
@@ -17,8 +19,8 @@
 #include "media/base/test_helpers.h"
 #include "media/base/video_frame.h"
 #include "media/ffmpeg/ffmpeg_common.h"
+#include "media/ffmpeg/scoped_av_packet.h"
 #include "media/filters/in_memory_url_protocol.h"
-#include "media/filters/vpx_video_decoder.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using ::testing::_;
@@ -320,15 +322,15 @@ TEST_F(VpxVideoDecoderTest, MemoryPoolAllowsMultipleDisplay) {
 
   scoped_refptr<DecoderBuffer> data =
       ReadTestDataFile("vp9-duplicate-frame.webm");
-  InMemoryUrlProtocol protocol(data->data(), data->data_size(), false);
+  InMemoryUrlProtocol protocol(data->data(), data->size(), false);
   FFmpegGlue glue(&protocol);
   ASSERT_TRUE(glue.OpenContext());
 
-  AVPacket packet = {};
-  while (av_read_frame(glue.format_context(), &packet) >= 0) {
+  auto packet = ScopedAVPacket::Allocate();
+  while (av_read_frame(glue.format_context(), packet.get()) >= 0) {
     DecoderStatus decode_status =
-        Decode(DecoderBuffer::CopyFrom(packet.data, packet.size));
-    av_packet_unref(&packet);
+        Decode(DecoderBuffer::CopyFrom(AVPacketData(*packet)));
+    av_packet_unref(packet.get());
     if (!decode_status.is_ok())
       break;
   }

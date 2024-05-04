@@ -42,6 +42,9 @@ BASE_DECLARE_FEATURE(kAppPreloadServiceForceRun);
 // are normally silently ignored.
 BASE_DECLARE_FEATURE(kAppPreloadServiceEnableTestApps);
 
+// Feature to allow installing arc apps returned by the server.
+BASE_DECLARE_FEATURE(kAppPreloadServiceEnableArcApps);
+
 class AppPreloadService : public KeyedService {
  public:
   explicit AppPreloadService(Profile* profile);
@@ -80,7 +83,9 @@ class AppPreloadService : public KeyedService {
   // Processes the list of apps retrieved by the server connector.
   void OnGetAppsForFirstLoginCompleted(
       base::TimeTicks start_time,
-      std::optional<std::vector<PreloadAppDefinition>> apps);
+      std::optional<std::vector<PreloadAppDefinition>> apps,
+      LauncherOrdering launcher_ordering,
+      ShelfPinOrdering shelf_pin_ordering);
   void OnAppInstallationsCompleted(base::TimeTicks start_time,
                                    const std::vector<bool>& results);
   // Called when the installation flow started by

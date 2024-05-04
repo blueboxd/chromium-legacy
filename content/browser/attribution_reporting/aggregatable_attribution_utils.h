@@ -5,11 +5,15 @@
 #ifndef CONTENT_BROWSER_ATTRIBUTION_REPORTING_AGGREGATABLE_ATTRIBUTION_UTILS_H_
 #define CONTENT_BROWSER_ATTRIBUTION_REPORTING_AGGREGATABLE_ATTRIBUTION_UTILS_H_
 
+#include <stdint.h>
+
 #include <optional>
 #include <vector>
 
+#include "base/numerics/checked_math.h"
 #include "components/attribution_reporting/source_type.mojom-forward.h"
 #include "content/common/content_export.h"
+#include "third_party/blink/public/mojom/aggregation_service/aggregatable_report.mojom-forward.h"
 
 namespace attribution_reporting {
 class AggregatableTriggerData;
@@ -24,12 +28,12 @@ class Time;
 
 namespace content {
 
-class AggregatableHistogramContribution;
 class AggregatableReportRequest;
 class AttributionReport;
 
 // Creates histograms from the specified source and trigger data.
-CONTENT_EXPORT std::vector<AggregatableHistogramContribution>
+CONTENT_EXPORT
+std::vector<blink::mojom::AggregatableReportHistogramContribution>
 CreateAggregatableHistogram(
     const attribution_reporting::FilterData& source_filter_data,
     attribution_reporting::mojom::SourceType,
@@ -52,7 +56,8 @@ enum class AssembleAggregatableReportStatus {
 CONTENT_EXPORT std::optional<AggregatableReportRequest>
 CreateAggregatableReportRequest(const AttributionReport& report);
 
-CONTENT_EXPORT base::Time RoundDownToWholeDaySinceUnixEpoch(base::Time);
+base::CheckedNumeric<int64_t> GetTotalAggregatableValues(
+    const std::vector<blink::mojom::AggregatableReportHistogramContribution>&);
 
 }  // namespace content
 

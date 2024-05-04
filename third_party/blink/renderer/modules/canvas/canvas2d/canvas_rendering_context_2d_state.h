@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_CANVAS_CANVAS2D_CANVAS_RENDERING_CONTEXT_2D_STATE_H_
 
 #include "base/types/pass_key.h"
+#include "cc/paint/draw_looper.h"
 #include "cc/paint/paint_flags.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_canvas_font_stretch.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_canvas_text_rendering.h"
@@ -53,6 +54,7 @@ class MODULES_EXPORT CanvasRenderingContext2DState final
     kSaveRestore,
     kBeginEndLayerOneSave,
     kBeginEndLayerTwoSaves,
+    kBeginEndLayerThreeSaves,
     kInitial
   };
 
@@ -91,7 +93,7 @@ class MODULES_EXPORT CanvasRenderingContext2DState final
 
   void SetTransform(const AffineTransform&);
   void ResetTransform();
-  AffineTransform GetTransform() const { return transform_; }
+  const AffineTransform& GetTransform() const { return transform_; }
   bool IsTransformInvertible() const { return is_transform_invertible_; }
 
   void ClipPath(const SkPath&, AntiAliasingMode);
@@ -284,12 +286,29 @@ class MODULES_EXPORT CanvasRenderingContext2DState final
                                  ShadowMode,
                                  ImageType = kNoImage) const;
 
+  static_assert(static_cast<int>(SaveType::kBeginEndLayerOneSave) + 1 ==
+                static_cast<int>(SaveType::kBeginEndLayerTwoSaves));
+  static_assert(static_cast<int>(SaveType::kBeginEndLayerTwoSaves) + 1 ==
+                static_cast<int>(SaveType::kBeginEndLayerThreeSaves));
   SaveType GetSaveType() const { return save_type_; }
   bool IsLayerSaveType() const {
-    return save_type_ == SaveType::kBeginEndLayerOneSave ||
-           save_type_ == SaveType::kBeginEndLayerTwoSaves;
+    return save_type_ >= SaveType::kBeginEndLayerOneSave &&
+           save_type_ <= SaveType::kBeginEndLayerThreeSaves;
+  }
+  int LayerSaveCount() {
+    if (!IsLayerSaveType()) {
+      return 0;
+    }
+    return static_cast<int>(save_type_) -
+           static_cast<int>(SaveType::kBeginEndLayerOneSave) + 1;
+  }
+  static SaveType LayerSaveCountToSaveType(int save_count) {
+    CHECK(1 <= save_count && save_count <= 3);
+    return static_cast<SaveType>(
+        static_cast<int>(SaveType::kBeginEndLayerOneSave) + save_count - 1);
   }
 
+  sk_sp<PaintFilter>& ShadowOnlyImageFilter() const;
   sk_sp<PaintFilter>& ShadowAndForegroundImageFilter() const;
 
  private:
@@ -297,10 +316,9 @@ class MODULES_EXPORT CanvasRenderingContext2DState final
   void UpdateFilterQuality() const;
   void UpdateFilterQuality(cc::PaintFlags::FilterQuality) const;
   void ShadowParameterChanged();
-  sk_sp<SkDrawLooper>& EmptyDrawLooper() const;
-  sk_sp<SkDrawLooper>& ShadowOnlyDrawLooper() const;
-  sk_sp<SkDrawLooper>& ShadowAndForegroundDrawLooper() const;
-  sk_sp<PaintFilter>& ShadowOnlyImageFilter() const;
+  sk_sp<cc::DrawLooper>& EmptyDrawLooper() const;
+  sk_sp<cc::DrawLooper>& ShadowOnlyDrawLooper() const;
+  sk_sp<cc::DrawLooper>& ShadowAndForegroundDrawLooper() const;
 
   String unparsed_stroke_color_;
   String unparsed_fill_color_;
@@ -314,9 +332,9 @@ class MODULES_EXPORT CanvasRenderingContext2DState final
   gfx::Vector2dF shadow_offset_;
   double shadow_blur_;
   Color shadow_color_;
-  mutable sk_sp<SkDrawLooper> empty_draw_looper_;
-  mutable sk_sp<SkDrawLooper> shadow_only_draw_looper_;
-  mutable sk_sp<SkDrawLooper> shadow_and_foreground_draw_looper_;
+  mutable sk_sp<cc::DrawLooper> empty_draw_looper_;
+  mutable sk_sp<cc::DrawLooper> shadow_only_draw_looper_;
+  mutable sk_sp<cc::DrawLooper> shadow_and_foreground_draw_looper_;
   mutable sk_sp<PaintFilter> shadow_only_image_filter_;
   mutable sk_sp<PaintFilter> shadow_and_foreground_image_filter_;
 

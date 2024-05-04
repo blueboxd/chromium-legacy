@@ -146,7 +146,7 @@ RemoteSafeBrowsingDatabaseManager::RemoteSafeBrowsingDatabaseManager()
     // By default, we check all types except a few.
     static_assert(
         network::mojom::RequestDestination::kMaxValue ==
-            network::mojom::RequestDestination::kJson,
+            network::mojom::RequestDestination::kSharedStorageWorklet,
         "Decide if new request destination should be skipped on mobile.");
     for (int t_int = 0;
          t_int <=
@@ -303,8 +303,8 @@ bool RemoteSafeBrowsingDatabaseManager::CheckUrlForSubresourceFilter(
           base::BindOnce(&ClientRequest::OnRequestDoneWeak, req->GetWeakPtr()));
   SafeBrowsingApiHandlerBridge::GetInstance().StartHashDatabaseUrlCheck(
       std::move(callback), url,
-      CreateSBThreatTypeSet(
-          {SB_THREAT_TYPE_SUBRESOURCE_FILTER, SB_THREAT_TYPE_URL_PHISHING}));
+      CreateSBThreatTypeSet({SBThreatType::SB_THREAT_TYPE_SUBRESOURCE_FILTER,
+                             SBThreatType::SB_THREAT_TYPE_URL_PHISHING}));
 
   current_requests_.push_back(req.release());
 
@@ -322,7 +322,7 @@ AsyncMatch RemoteSafeBrowsingDatabaseManager::CheckCsdAllowlistUrl(
     return AsyncMatch::MATCH;
   }
 
-  // TODO(crbug.com/995926): Make this call async.
+  // TODO(crbug.com/41477281): Make this call async.
   bool is_match =
       SafeBrowsingApiHandlerBridge::GetInstance().StartCSDAllowlistCheck(url);
   return is_match ? AsyncMatch::MATCH : AsyncMatch::NO_MATCH;
@@ -380,7 +380,7 @@ void RemoteSafeBrowsingDatabaseManager::StopOnSBThread(bool shutdown) {
   for (safe_browsing::RemoteSafeBrowsingDatabaseManager::ClientRequest* req :
        to_callback) {
     DVLOG(1) << "Stopping: Invoking unfinished req for URL " << req->url();
-    req->OnRequestDone(SB_THREAT_TYPE_SAFE, ThreatMetadata());
+    req->OnRequestDone(SBThreatType::SB_THREAT_TYPE_SAFE, ThreatMetadata());
   }
   enabled_ = false;
 

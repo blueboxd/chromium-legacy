@@ -19,7 +19,7 @@
 #endif
 
 // Some builds don't support memlog in which case the tests won't function.
-#if BUILDFLAG(USE_ALLOCATOR_SHIM)
+#if PA_BUILDFLAG(USE_ALLOCATOR_SHIM)
 
 namespace heap_profiling {
 
@@ -56,7 +56,7 @@ class MemlogBrowserTest : public PlatformBrowserTest,
   }
 };
 
-// TODO(crbug.com/1223739) Disabled due to flakiness.
+// TODO(crbug.com/40774799) Disabled due to flakiness.
 // Ensure invocations via TracingController can generate a valid JSON file with
 // expected data.
 IN_PROC_BROWSER_TEST_P(MemlogBrowserTest, DISABLED_EndToEnd) {
@@ -105,4 +105,4 @@ INSTANTIATE_TEST_SUITE_P(Memlog,
 
 }  // namespace heap_profiling
 
-#endif  // BUILDFLAG(USE_ALLOCATOR_SHIM)
+#endif  // PA_BUILDFLAG(USE_ALLOCATOR_SHIM)

@@ -215,7 +215,6 @@ interface Internals {
     sequence<DOMString> shortcutIconURLs(Document document);
     sequence<DOMString> allIconURLs(Document document);
     [RaisesException] long numberOfPages(optional double pageWidthInPixels = 800, optional double pageHeightInPixels = 600);
-    [RaisesException] DOMString pageProperty(DOMString propertyName, unsigned long pageNumber);
     [RaisesException] float pageScaleFactor();
     [RaisesException] void setPageScaleFactor(float scaleFactor);
     [RaisesException] void setPageScaleFactorLimits(float minScaleFactor, float maxScaleFactor);
@@ -264,7 +263,7 @@ interface Internals {
     // Overrides default behavior to support the app-region CSS property.
     // Setting to true enables collection of draggable/non-draggable
     // app regions.
-    void SetSupportsAppRegion(boolean supports_app_regions);
+    void SetSupportsDraggableRegions(boolean supports_draggable_regionss);
 
     // Returns a string with information about the mouse cursor used at the specified client location.
     DOMString getCurrentCursorInfo();
@@ -455,4 +454,8 @@ interface Internals {
     // failed. Returns element_locator format string.
     [CallWith=ScriptState] Promise<DOMString> LCPPrediction(Document document);
 
+    // Exempt `url` from fenced frames network revocation for the current
+    // NetworkContext. Intended to be used to allow remote context executors to
+    // continue functioning in fenced frame WPTs after network is revoked.
+    [CallWith=ScriptState] Promise<undefined> exemptUrlFromNetworkRevocation(USVString url);
 };

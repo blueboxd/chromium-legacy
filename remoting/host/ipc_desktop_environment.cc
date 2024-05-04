@@ -41,7 +41,6 @@ IpcDesktopEnvironment::IpcDesktopEnvironment(
     const DesktopEnvironmentOptions& options)
     : desktop_session_proxy_(
           base::MakeRefCounted<DesktopSessionProxy>(audio_task_runner,
-                                                    caller_task_runner,
                                                     io_task_runner,
                                                     client_session_control,
                                                     client_session_events,
@@ -91,8 +90,9 @@ IpcDesktopEnvironment::CreateActiveDisplayMonitor(
   return nullptr;
 }
 
-std::unique_ptr<DesktopCapturer> IpcDesktopEnvironment::CreateVideoCapturer() {
-  return desktop_session_proxy_->CreateVideoCapturer();
+std::unique_ptr<DesktopCapturer> IpcDesktopEnvironment::CreateVideoCapturer(
+    webrtc::ScreenId id) {
+  return desktop_session_proxy_->CreateVideoCapturer(id);
 }
 
 std::unique_ptr<FileOperations> IpcDesktopEnvironment::CreateFileOperations() {

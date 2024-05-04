@@ -89,8 +89,7 @@ void RecursivelyGenerateFrameEntries(
 
   if (!entry) {
     std::optional<GURL> initiator_base_url;
-    if (blink::features::IsNewBaseUrlInheritanceBehaviorEnabled() &&
-        state.initiator_base_url_string) {
+    if (state.initiator_base_url_string) {
       GURL initiator_base_url_from_state =
           GURL(UTF16ToUTF8(state.initiator_base_url_string.value()));
       // If `state.initiator_base_url_string` has a value, it should be
@@ -113,7 +112,7 @@ void RecursivelyGenerateFrameEntries(
         state.initiator_origin, initiator_base_url, std::vector<GURL>(),
         blink::PageState::CreateFromEncodedData(data), "GET", -1,
         nullptr /* blob_url_loader_factory */,
-        // TODO(https://crbug.com/1140393): We should restore the policy
+        // TODO(crbug.com/40053667): We should restore the policy
         // container.
         nullptr /* policy_container_policies */,
         state.protect_url_in_navigation_api);
@@ -474,7 +473,7 @@ void NavigationEntryImpl::SetDataURLAsString(
     scoped_refptr<base::RefCountedString> data_url) {
   if (data_url) {
     // A quick check that it's actually a data URL.
-    DCHECK(base::StartsWith(data_url->front_as<char>(), url::kDataScheme,
+    DCHECK(base::StartsWith(base::as_string_view(*data_url), url::kDataScheme,
                             base::CompareCase::SENSITIVE));
   }
   data_url_as_string_ = std::move(data_url);
@@ -905,7 +904,7 @@ NavigationEntryImpl::ConstructCommitNavigationParams(
   // Note that this is actually does not work as intended right now because
   // we're only copying the redirect URLs into the new CommitNavigationParams,
   // keeping redirect_response and redirect_infos as empty.
-  // TODO(https://crbug.com/1171225): Save redirect_response & redirect_infos in
+  // TODO(crbug.com/40166073): Save redirect_response & redirect_infos in
   // FNE and copy them too?
   std::vector<GURL> redirects;
   if (ui::PageTransitionIsNewNavigation(GetTransitionType())) {
@@ -971,15 +970,17 @@ NavigationEntryImpl::ConstructCommitNavigationParams(
           /*load_with_storage_access=*/false,
           /*browsing_context_group_info=*/std::nullopt,
           /*lcpp_hint=*/nullptr, blink::CreateDefaultRendererContentSettings(),
-          /*cookie_deprecation_label=*/std::nullopt);
+          /*cookie_deprecation_label=*/std::nullopt,
+          /*visited_link_salt=*/std::nullopt);
 #if BUILDFLAG(IS_ANDROID)
   // `data_url_as_string` is saved in NavigationEntry but should only be used by
   // main frames, because loadData* navigations can only happen on the main
   // frame.
   bool is_for_main_frame = (root_node()->frame_entry == &frame_entry);
+  scoped_refptr<const base::RefCountedString> string = GetDataURLAsString();
   if (is_for_main_frame &&
-      NavigationControllerImpl::ValidateDataURLAsString(GetDataURLAsString())) {
-    commit_params->data_url_as_string = GetDataURLAsString()->data();
+      NavigationControllerImpl::ValidateDataURLAsString(string)) {
+    commit_params->data_url_as_string = string->as_string();
   }
 #endif
 

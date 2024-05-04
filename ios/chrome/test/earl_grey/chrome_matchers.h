@@ -159,6 +159,9 @@ id<GREYMatcher> OmniboxText(const std::string& text);
 // Returns a matcher for `text` being a substring of the text in the omnibox.
 id<GREYMatcher> OmniboxContainingText(const std::string& text);
 
+// Returns a matcher for `text` being inline autocomplete text in the omnibox.
+id<GREYMatcher> OmniboxContainingAutocompleteText(NSString* text);
+
 // Returns a matcher for omnibox autocomplete.
 id<GREYMatcher> OmniboxAutocompleteLabel();
 
@@ -302,17 +305,6 @@ id<GREYMatcher> SettingsAccountButton();
 
 // Returns a matcher for the accounts collection view.
 id<GREYMatcher> SettingsAccountsCollectionView();
-
-// Returns a matcher for the Import Data cell in switch sync account view.
-id<GREYMatcher> SettingsImportDataImportButton();
-
-// Returns a matcher for the Keep Data Separate cell in switch sync account
-// view.
-id<GREYMatcher> SettingsImportDataKeepSeparateButton();
-
-// Returns a matcher for the Keep Data Separate cell in switch sync account
-// view.
-id<GREYMatcher> SettingsImportDataContinueButton();
 
 // Returns a matcher for the safety check table view.
 id<GREYMatcher> SettingsSafetyCheckTableView();
@@ -528,6 +520,15 @@ id<GREYMatcher> OpenInButton();
 // Returns a matcher for the cell at `index` in the tab grid.
 id<GREYMatcher> TabGridCellAtIndex(unsigned int index);
 
+// Returns a matcher for the group cell at `index` in the tab grid.
+id<GREYMatcher> TabGridGroupCellAtIndex(unsigned int index);
+
+// Returns a matcher for the cell at `index` in the tab strip.
+id<GREYMatcher> TabStripCellAtIndex(unsigned int index);
+
+// Returns a matcher for the group cell at `index` in the tab strip.
+id<GREYMatcher> TabStripGroupCellAtIndex(unsigned int index);
+
 // Returns a matcher for the button that closes the tab grid.
 id<GREYMatcher> TabGridDoneButton();
 
@@ -564,6 +565,16 @@ id<GREYMatcher> TabGridIncognitoTabsPanelButton();
 // Returns a matcher for the button to go to the other devices panel in
 // the tab grid.
 id<GREYMatcher> TabGridOtherDevicesPanelButton();
+
+// Returns a matcher for the button to go to the Tab Groups panel in
+// the tab grid.
+id<GREYMatcher> TabGridTabGroupsPanelButton();
+
+// Returns a matcher for the button to go to the third panel in
+// the tab grid. If Tab Group Sync is enabled, it's equivalent to
+// `TabGridTabGroupsPanelButton`. Otherwise, it's equivalent to
+// `TabGridOtherDevicesPanelButton`.
+id<GREYMatcher> TabGridThirdPanelButton();
 
 // Returns a matcher that matches tab grid normal mode page control - The
 // PageControl panel always exist only on the tab grid normal mode, So this can

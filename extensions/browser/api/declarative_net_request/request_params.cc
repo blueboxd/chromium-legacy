@@ -5,6 +5,7 @@
 #include "extensions/browser/api/declarative_net_request/request_params.h"
 
 #include <algorithm>
+#include <string_view>
 
 #include "base/check.h"
 #include "base/containers/flat_map.h"
@@ -12,7 +13,6 @@
 #include "base/functional/bind.h"
 #include "base/no_destructor.h"
 #include "base/ranges/algorithm.h"
-#include "base/strings/string_piece.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
@@ -34,7 +34,7 @@ namespace {
 namespace flat_rule = url_pattern_index::flat;
 
 // Returns whether the request to `url` is third party to its `document_origin`.
-// TODO(crbug.com/696822): Look into caching this.
+// TODO(crbug.com/40508457): Look into caching this.
 bool IsThirdPartyRequest(const GURL& url, const url::Origin& document_origin) {
   if (document_origin.opaque())
     return true;
@@ -72,8 +72,8 @@ bool MatchesHeaderConditions(
     const flatbuffers::Vector<flatbuffers::Offset<flat::HeaderCondition>>&
         header_conditions) {
   for (const flat::HeaderCondition* header_condition : header_conditions) {
-    base::StringPiece header =
-        CreateString<base::StringPiece>(*header_condition->header());
+    std::string_view header =
+        CreateString<std::string_view>(*header_condition->header());
     if (!response_headers.HasHeader(header)) {
       continue;
     }
@@ -87,7 +87,7 @@ bool MatchesHeaderConditions(
     auto has_header_value = [&response_headers,
                              header](const flatbuffers::String* value) {
       return response_headers.HasHeaderValue(
-          header, CreateString<base::StringPiece>(*value));
+          header, CreateString<std::string_view>(*value));
     };
 
     // The condition for `header` does not match if there's an excluded value,
@@ -184,7 +184,11 @@ RequestParams::RequestParams(
       parent_routing_id(info.parent_routing_id),
       embedder_conditions_matcher(base::BindRepeating(DoEmbedderConditionsMatch,
                                                       info.frame_data.tab_id,
-                                                      response_headers)) {
+                                                      response_headers)),
+      // Allow/allowAllRequest rules matched in earlier rule matching stages can
+      // influence rule matches for later matching stages. Hence this
+      // information is needed from `info`.
+      allow_rule_max_priority(info.allow_rule_max_priority) {
   is_third_party = IsThirdPartyRequest(*url, first_party_origin);
 }
 

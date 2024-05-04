@@ -113,7 +113,8 @@ class FileSuggestKeyedServiceBrowserTest
  public:
   FileSuggestKeyedServiceBrowserTest() {
     scoped_feature_list_.InitWithFeatureState(
-        ash::features::kLauncherContinueSectionWithRecents, UseDriveRecents());
+        ash::features::kLauncherContinueSectionWithRecentsRollout,
+        UseDriveRecents());
   }
   // drive::DriveIntegrationServiceBrowserTestBase:
   void SetUpOnMainThread() override {
@@ -299,8 +300,8 @@ IN_PROC_BROWSER_TEST_P(FileSuggestKeyedServiceBrowserTest,
     // Update the item suggest cache with two file ids: one is valid and the
     // other is not.
     std::string json_string = CreateItemSuggestUpdateJsonString(
-        {{available_files()[0], "display text 1", "You modified · just now"},
-         {available_files()[1], "display text 2", "You modified · just now"}},
+        {{available_files()[0], "display text 1", "You edited · just now"},
+         {available_files()[1], "display text 2", "You edited · just now"}},
         "suggestion id 1");
     DriveFileSuggestionProvider* file_suggestion_provider =
         static_cast<DriveFileSuggestionProvider*>(
@@ -320,11 +321,11 @@ IN_PROC_BROWSER_TEST_P(FileSuggestKeyedServiceBrowserTest,
 
             const auto& item1 = (*suggest_data)[0];
             EXPECT_EQ(GetTestFilePath(available_files()[0]), item1.file_path);
-            EXPECT_EQ(u"You modified · just now", item1.prediction_reason);
+            EXPECT_EQ(u"You edited · just now", item1.prediction_reason);
 
             const auto& item2 = (*suggest_data)[1];
             EXPECT_EQ(GetTestFilePath(available_files()[1]), item2.file_path);
-            EXPECT_EQ(u"You modified · just now", item2.prediction_reason);
+            EXPECT_EQ(u"You edited · just now", item2.prediction_reason);
 
             suggest_file_data_waiter.Quit();
           }));
@@ -336,11 +337,11 @@ IN_PROC_BROWSER_TEST_P(FileSuggestKeyedServiceBrowserTest,
 
   const auto& item1 = (*fetched_data)[0];
   EXPECT_EQ(GetTestFilePath(available_files()[0]), item1.file_path);
-  EXPECT_EQ(u"You modified · just now", item1.prediction_reason);
+  EXPECT_EQ(u"You edited · just now", item1.prediction_reason);
 
   const auto& item2 = (*fetched_data)[1];
   EXPECT_EQ(GetTestFilePath(available_files()[1]), item2.file_path);
-  EXPECT_EQ(u"You modified · just now", item2.prediction_reason);
+  EXPECT_EQ(u"You edited · just now", item2.prediction_reason);
 
   if (UseDriveRecents()) {
     histogram_tester.ExpectUniqueSample(
@@ -491,7 +492,7 @@ IN_PROC_BROWSER_TEST_P(FileSuggestKeyedServiceBrowserTest,
     // Update the item suggest cache with two file ids: one is valid and the
     // other is not.
     std::string json_string = CreateItemSuggestUpdateJsonString(
-        {{file_id, "display text 1", "You modified · just now"},
+        {{file_id, "display text 1", "You edited · just now"},
          {"unknown", "display text 2", "prediction reason 2"}},
         "suggestion id 1");
     DriveFileSuggestionProvider* file_suggestion_provider =
@@ -505,8 +506,7 @@ IN_PROC_BROWSER_TEST_P(FileSuggestKeyedServiceBrowserTest,
     EXPECT_TRUE(fetched_data.has_value());
     EXPECT_EQ(1u, fetched_data->size());
     EXPECT_EQ(GetTestFilePath(file_id), fetched_data->at(0).file_path);
-    EXPECT_EQ(u"You modified · just now",
-              *fetched_data->at(0).prediction_reason);
+    EXPECT_EQ(u"You edited · just now", *fetched_data->at(0).prediction_reason);
   }
 
   base::RunLoop suggest_file_data_waiter;
@@ -519,7 +519,7 @@ IN_PROC_BROWSER_TEST_P(FileSuggestKeyedServiceBrowserTest,
 
             const auto& item = (*suggest_data)[0];
             EXPECT_EQ(GetTestFilePath(file_id), item.file_path);
-            EXPECT_EQ(u"You modified · just now", item.prediction_reason);
+            EXPECT_EQ(u"You edited · just now", item.prediction_reason);
 
             suggest_file_data_waiter.Quit();
           }));

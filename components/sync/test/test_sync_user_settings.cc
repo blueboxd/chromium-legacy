@@ -14,6 +14,11 @@
 #include "components/sync/test/test_sync_service.h"
 
 namespace syncer {
+namespace {
+
+const char kDefaultPassphrase[] = "TestPassphrase";
+
+}  // namespace
 
 ModelTypeSet UserSelectableTypesToModelTypes(
     UserSelectableTypeSet selected_types) {
@@ -36,12 +41,7 @@ ModelTypeSet UserSelectableOsTypesToModelTypes(
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 TestSyncUserSettings::TestSyncUserSettings(TestSyncService* service)
-    : service_(service),
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-      selected_os_types_(UserSelectableOsTypeSet::All()),
-#endif
-      selected_types_(UserSelectableTypeSet::All()) {
-}
+    : service_(service) {}
 
 TestSyncUserSettings::~TestSyncUserSettings() = default;
 
@@ -62,7 +62,7 @@ bool TestSyncUserSettings::IsSyncEverythingEnabled() const {
 
 void TestSyncUserSettings::SetSelectedTypes(bool sync_everything,
                                             UserSelectableTypeSet types) {
-  // TODO(crbug.com/1330894): take custom logic for Lacros apps into account.
+  // TODO(crbug.com/40227318): take custom logic for Lacros apps into account.
 
   sync_everything_enabled_ = sync_everything;
 
@@ -85,11 +85,6 @@ void TestSyncUserSettings::SetSelectedType(UserSelectableType type,
 void TestSyncUserSettings::KeepAccountSettingsPrefsOnlyForUsers(
     const std::vector<signin::GaiaIdHash>& available_gaia_ids) {}
 
-#if BUILDFLAG(IS_IOS)
-void TestSyncUserSettings::SetBookmarksAndReadingListAccountStorageOptIn(
-    bool value) {}
-#endif  // BUILDFLAG(IS_IOS)
-
 UserSelectableTypeSet TestSyncUserSettings::GetSelectedTypes() const {
   return selected_types_;
 }
@@ -102,6 +97,15 @@ bool TestSyncUserSettings::IsTypeManagedByPolicy(
 bool TestSyncUserSettings::IsTypeManagedByCustodian(
     UserSelectableType type) const {
   return false;
+}
+
+SyncUserSettings::UserSelectableTypePrefState
+TestSyncUserSettings::GetTypePrefStateForAccount(
+    UserSelectableType type) const {
+  if (selected_types_.Has(type)) {
+    return SyncUserSettings::UserSelectableTypePrefState::kEnabledOrDefault;
+  }
+  return SyncUserSettings::UserSelectableTypePrefState::kDisabled;
 }
 
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
@@ -123,7 +127,7 @@ ModelTypeSet TestSyncUserSettings::GetPreferredDataTypes() const {
 
 UserSelectableTypeSet TestSyncUserSettings::GetRegisteredSelectableTypes()
     const {
-  return UserSelectableTypeSet::All();
+  return registered_selectable_types_;
 }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -189,23 +193,20 @@ void TestSyncUserSettings::SetAppsSyncEnabledByOs(bool apps_sync_enabled) {
 #endif
 
 bool TestSyncUserSettings::IsCustomPassphraseAllowed() const {
-  return true;
+  return custom_passphrase_allowed_;
 }
 
-void TestSyncUserSettings::SetCustomPassphraseAllowed(bool allowed) {}
+void TestSyncUserSettings::SetCustomPassphraseAllowed(bool allowed) {
+  custom_passphrase_allowed_ = allowed;
+}
 
 bool TestSyncUserSettings::IsEncryptEverythingEnabled() const {
-  return false;
+  return IsExplicitPassphrase(passphrase_type_);
 }
 
-ModelTypeSet TestSyncUserSettings::GetEncryptedDataTypes() const {
-  if (!IsUsingExplicitPassphrase()) {
-    // PASSWORDS and WIFI_CONFIGURATIONS are always encrypted.
-    return {PASSWORDS, WIFI_CONFIGURATIONS};
-  }
-  // Some types can never be encrypted, e.g. DEVICE_INFO and
-  // AUTOFILL_WALLET_DATA, so make sure we don't report them as encrypted.
-  return Intersection(GetPreferredDataTypes(), EncryptableUserTypes());
+ModelTypeSet TestSyncUserSettings::GetAllEncryptedDataTypes() const {
+  return IsUsingExplicitPassphrase() ? EncryptableUserTypes()
+                                     : AlwaysEncryptedUserTypes();
 }
 
 bool TestSyncUserSettings::IsPassphraseRequired() const {
@@ -213,7 +214,7 @@ bool TestSyncUserSettings::IsPassphraseRequired() const {
 }
 
 bool TestSyncUserSettings::IsPassphraseRequiredForPreferredDataTypes() const {
-  return passphrase_required_for_preferred_data_types_;
+  return IsPassphraseRequired() && IsEncryptedDatatypePreferred();
 }
 
 bool TestSyncUserSettings::IsPassphrasePromptMutedForCurrentProductVersion()
@@ -230,7 +231,7 @@ bool TestSyncUserSettings::IsTrustedVaultKeyRequired() const {
 
 bool TestSyncUserSettings::IsTrustedVaultKeyRequiredForPreferredDataTypes()
     const {
-  return trusted_vault_key_required_for_preferred_data_types_;
+  return IsTrustedVaultKeyRequired() && IsEncryptedDatatypePreferred();
 }
 
 bool TestSyncUserSettings::IsTrustedVaultRecoverabilityDegraded() const {
@@ -238,24 +239,31 @@ bool TestSyncUserSettings::IsTrustedVaultRecoverabilityDegraded() const {
 }
 
 bool TestSyncUserSettings::IsUsingExplicitPassphrase() const {
-  return using_explicit_passphrase_;
+  return IsExplicitPassphrase(passphrase_type_);
 }
 
 base::Time TestSyncUserSettings::GetExplicitPassphraseTime() const {
-  return base::Time();
+  return explicit_passphrase_time_;
 }
 
 std::optional<PassphraseType> TestSyncUserSettings::GetPassphraseType() const {
-  return IsUsingExplicitPassphrase() ? PassphraseType::kCustomPassphrase
-                                     : PassphraseType::kImplicitPassphrase;
+  return passphrase_type_;
 }
 
 void TestSyncUserSettings::SetEncryptionPassphrase(
-    const std::string& passphrase) {}
+    const std::string& passphrase) {
+  encryption_passphrase_ = passphrase;
+  SetIsUsingExplicitPassphrase(true);
+}
 
 bool TestSyncUserSettings::SetDecryptionPassphrase(
     const std::string& passphrase) {
-  return false;
+  if (passphrase.empty() || passphrase != encryption_passphrase_) {
+    return false;
+  }
+
+  passphrase_required_ = false;
+  return true;
 }
 
 void TestSyncUserSettings::SetExplicitPassphraseDecryptionNigoriKey(
@@ -264,6 +272,12 @@ void TestSyncUserSettings::SetExplicitPassphraseDecryptionNigoriKey(
 std::unique_ptr<Nigori>
 TestSyncUserSettings::GetExplicitPassphraseDecryptionNigoriKey() const {
   return nullptr;
+}
+
+void TestSyncUserSettings::SetRegisteredSelectableTypes(
+    UserSelectableTypeSet types) {
+  registered_selectable_types_ = types;
+  selected_types_ = Intersection(selected_types_, types);
 }
 
 void TestSyncUserSettings::SetInitialSyncFeatureSetupComplete() {
@@ -294,22 +308,19 @@ void TestSyncUserSettings::SetOsTypeIsManaged(UserSelectableOsType type,
 }
 #endif
 
-void TestSyncUserSettings::SetPassphraseRequired(bool required) {
-  passphrase_required_ = required;
+void TestSyncUserSettings::SetPassphraseRequired() {
+  SetPassphraseRequired(kDefaultPassphrase);
 }
 
-void TestSyncUserSettings::SetPassphraseRequiredForPreferredDataTypes(
-    bool required) {
-  passphrase_required_for_preferred_data_types_ = required;
+void TestSyncUserSettings::SetPassphraseRequired(
+    const std::string& passphrase) {
+  CHECK(!passphrase.empty());
+  encryption_passphrase_ = passphrase;
+  passphrase_required_ = true;
 }
 
 void TestSyncUserSettings::SetTrustedVaultKeyRequired(bool required) {
   trusted_vault_key_required_ = required;
-}
-
-void TestSyncUserSettings::SetTrustedVaultKeyRequiredForPreferredDataTypes(
-    bool required) {
-  trusted_vault_key_required_for_preferred_data_types_ = required;
 }
 
 void TestSyncUserSettings::SetTrustedVaultRecoverabilityDegraded(
@@ -318,7 +329,27 @@ void TestSyncUserSettings::SetTrustedVaultRecoverabilityDegraded(
 }
 
 void TestSyncUserSettings::SetIsUsingExplicitPassphrase(bool enabled) {
-  using_explicit_passphrase_ = enabled;
+  SetPassphraseType(enabled ? PassphraseType::kCustomPassphrase
+                            : PassphraseType::kKeystorePassphrase);
+}
+
+void TestSyncUserSettings::SetPassphraseType(PassphraseType type) {
+  CHECK(custom_passphrase_allowed_ || !IsExplicitPassphrase(type));
+  passphrase_type_ = type;
+}
+
+void TestSyncUserSettings::SetExplicitPassphraseTime(base::Time t) {
+  CHECK(IsUsingExplicitPassphrase());
+  explicit_passphrase_time_ = t;
+}
+
+const std::string& TestSyncUserSettings::GetEncryptionPassphrase() const {
+  return encryption_passphrase_;
+}
+
+bool TestSyncUserSettings::IsEncryptedDatatypePreferred() const {
+  return !Intersection(GetPreferredDataTypes(), GetAllEncryptedDataTypes())
+              .empty();
 }
 
 }  // namespace syncer

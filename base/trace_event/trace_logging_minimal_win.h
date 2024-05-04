@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40284755): Remove this and spanify to fix the errors.
+#pragma allow_unsafe_buffers
+#endif
+
 #ifndef BASE_TRACE_EVENT_TRACE_LOGGING_MINIMAL_WIN_H_
 #define BASE_TRACE_EVENT_TRACE_LOGGING_MINIMAL_WIN_H_
 
@@ -23,10 +28,11 @@
  * logging like TraceLoggingProvider.h.
  */
 
-#include <stdint.h>
 #include <windows.h>
-// Evntprov.h must come after windows.h.
+
 #include <evntprov.h>
+#include <stdint.h>
+
 #include <cstdint>
 // TODO(joel@microsoft.com) Update headers and use defined constants instead
 // of magic numbers after crbug.com/1089996 is resolved.

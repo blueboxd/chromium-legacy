@@ -142,7 +142,6 @@ HistoryClustersService::HistoryClustersService(
   }
 
   LoadCachesFromPrefs();
-  RepeatedlyUpdateClusters();
 }
 
 HistoryClustersService::~HistoryClustersService() = default;
@@ -237,7 +236,8 @@ HistoryClustersService::QueryClusters(
     bool recluster,
     QueryClustersCallback callback) {
   if (!IsJourneysEnabledAndVisible()) {
-    // TODO(crbug/1441974): Make this into a CHECK after verifying all callers.
+    // TODO(crbug.com/40266727): Make this into a CHECK after verifying all
+    // callers.
     std::move(callback).Run({}, QueryClustersContinuationParams::DoneParams());
     return nullptr;
   }
@@ -274,12 +274,9 @@ void HistoryClustersService::UpdateClusters() {
   if (update_clusters_task_ && !update_clusters_task_->Done())
     return;
 
-  // Make sure clusters aren't updated too frequently. If `persist_on_query` is
-  // false, this is already ensured by `update_clusters_period_timer_`. If
-  // update_clusters_task_ is null, this is the 1st request which shouldn't be
-  // delayed.
-  if (GetConfig().persist_on_query &&
-      update_clusters_timer_.Elapsed() <=
+  // Make sure clusters aren't updated too frequently. If update_clusters_task_
+  // is null, this is the 1st request which shouldn't be delayed.
+  if (update_clusters_timer_.Elapsed() <=
           base::Minutes(
               GetConfig().persist_clusters_in_history_db_period_minutes) &&
       update_clusters_task_) {
@@ -333,8 +330,7 @@ HistoryClustersService::DoesQueryMatchAnyCluster(const std::string& query) {
     return std::nullopt;
 
   StartKeywordCacheRefresh();
-  if (GetConfig().persist_on_query)
-    UpdateClusters();
+  UpdateClusters();
 
   // Early exit for single-character queries, even if it's an exact match.
   // We still want to allow for two-character exact matches like "uk".
@@ -389,35 +385,10 @@ void HistoryClustersService::OnURLVisited(
   }
 }
 
-void HistoryClustersService::OnURLsDeleted(
+void HistoryClustersService::OnHistoryDeletions(
     history::HistoryService* history_service,
     const history::DeletionInfo& deletion_info) {
   ClearKeywordCache();
-}
-
-void HistoryClustersService::RepeatedlyUpdateClusters() {
-  // If `persist_on_query` is enabled, clusters are updated on query and not on
-  // a timer.
-  if (!GetConfig().persist_clusters_in_history_db ||
-      GetConfig().persist_on_query) {
-    return;
-  }
-
-  // Update clusters, both periodically and once after startup because:
-  // 1) To avoid having very stale (up to 90 days) clusters for the initial
-  //    period after startup.
-  // 2) Likewise, to avoid having very stale keywords.
-  // 3) Some users might not keep chrome running for the period.
-  update_clusters_after_startup_delay_timer_.Start(
-      FROM_HERE,
-      base::Minutes(
-          GetConfig()
-              .persist_clusters_in_history_db_after_startup_delay_minutes),
-      this, &HistoryClustersService::UpdateClusters);
-  update_clusters_period_timer_.Start(
-      FROM_HERE,
-      base::Minutes(GetConfig().persist_clusters_in_history_db_period_minutes),
-      this, &HistoryClustersService::UpdateClusters);
 }
 
 void HistoryClustersService::StartKeywordCacheRefresh() {
@@ -473,6 +444,8 @@ void HistoryClustersService::StartKeywordCacheRefresh() {
                        weak_ptr_factory_.GetWeakPtr(), base::ElapsedTimer(),
                        all_keywords_cache_timestamp_,
                        std::make_unique<KeywordMap>(), &short_keyword_cache_));
+  } else if (keyword_cache_refresh_callback_for_testing_) {
+    std::move(keyword_cache_refresh_callback_for_testing_).Run();
   }
 }
 
@@ -504,12 +477,6 @@ void HistoryClustersService::PopulateClusterKeywordCache(
     if (visible_visits < 2) {
       // Only accept keywords from clusters with at least two visits. This is a
       // simple first-pass technique to avoid overtriggering the omnibox action.
-      continue;
-    }
-    if (!GetConfig().include_synced_visits &&
-        !cluster.originator_cache_guid.empty()) {
-      // Skip over remote clusters if remote visits do not intend to get
-      // incorporated.
       continue;
     }
     // Lowercase the keywords for case insensitive matching while adding to the
@@ -583,6 +550,10 @@ void HistoryClustersService::PopulateClusterKeywordCache(
                           populate_keywords_thread_timer.Elapsed());
   base::UmaHistogramMediumTimes("History.Clusters.KeywordCache.Latency",
                                 total_latency_timer.Elapsed());
+
+  if (keyword_cache_refresh_callback_for_testing_) {
+    std::move(keyword_cache_refresh_callback_for_testing_).Run();
+  }
 }
 
 void HistoryClustersService::LoadCachesFromPrefs() {

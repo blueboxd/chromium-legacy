@@ -110,6 +110,13 @@ mojom::ResultCode PrintBackendCUPS::PrinterBasicInfoFromCUPS(
   // "printer-make-and-model" specifies the printer description.
   if (info)
     printer_info->display_name = info;
+
+  // It is possible to create a printer with a blank display name, so just
+  // use the printer name in such a case.
+  if (printer_info->display_name.empty()) {
+    printer_info->display_name = printer.name;
+  }
+
   if (drv_info)
     printer_info->printer_description = drv_info;
 #else
@@ -130,10 +137,6 @@ std::string PrintBackendCUPS::PrinterDriverInfoFromCUPS(
   std::string_view info(
       cupsGetOption(kDriverNameTagName, printer.num_options, printer.options));
   return std::string(info);
-}
-
-void PrintBackendCUPS::DestinationDeleter::operator()(cups_dest_t* dest) const {
-  cupsFreeDests(1, dest);
 }
 
 mojom::ResultCode PrintBackendCUPS::EnumeratePrinters(
@@ -365,7 +368,7 @@ base::FilePath PrintBackendCUPS::GetPPD(const char* name) {
   return ppd_path;
 }
 
-PrintBackendCUPS::ScopedDestination PrintBackendCUPS::GetNamedDest(
+ScopedDestination PrintBackendCUPS::GetNamedDest(
     const std::string& printer_name) {
   cups_dest_t* dest;
   if (print_server_url_.is_empty()) {

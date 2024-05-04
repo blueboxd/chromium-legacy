@@ -41,7 +41,7 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
       private RenderProcessHostObserver {
  public:
   // Returns true when DevTools was ever attached to any RenderFrameHost.
-  // TODO(https://crbug.com/1434900): Remove this method after the experiment
+  // TODO(crbug.com/40264958): Remove this method after the experiment
   // associated with the bug entry.
   static bool WasEverAttachedToAnyFrame();
 
@@ -179,19 +179,19 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
 
   std::unique_ptr<FrameAutoAttacher> auto_attacher_;
   // The active host we are talking to.
-  RenderFrameHostImpl* frame_host_ = nullptr;
+  raw_ptr<RenderFrameHostImpl> frame_host_ = nullptr;
   base::flat_set<raw_ptr<NavigationRequest, CtnExperimental>>
       navigation_requests_;
   bool render_frame_alive_ = false;
   bool render_frame_crashed_ = false;
 
-  // TODO(https://crbug.com/1449114): Remove these fields once we collect enough
+  // TODO(crbug.com/40269649): Remove these fields once we collect enough
   // data.
   bool is_debugger_paused_ = false;
   bool is_debugger_pause_situation_recorded_ = false;
 
   // The FrameTreeNode associated with this agent.
-  FrameTreeNode* frame_tree_node_;
+  raw_ptr<FrameTreeNode> frame_tree_node_;
 };
 
 // Returns the ancestor FrameTreeNode* for which a RenderFrameDevToolsAgentHost

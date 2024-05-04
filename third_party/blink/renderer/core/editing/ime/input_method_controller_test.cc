@@ -3146,6 +3146,36 @@ TEST_F(InputMethodControllerTest,
 }
 
 TEST_F(InputMethodControllerTest,
+       DeleteSelectionAndBeforeInputEventHandlerChangingStyle) {
+  Element* div = InsertHTMLElement(
+      "<div id='sample' contenteditable>hello world</div>", "sample");
+
+  GetDocument().GetSettings()->SetScriptEnabled(true);
+  Element* script = GetDocument().CreateRawElement(html_names::kScriptTag);
+  script->setInnerHTML(
+      "document.getElementById('sample').addEventListener('beforeinput', "
+      "  event => {"
+      "    event.currentTarget.style.transform = 'rotate(7deg)';"
+      "});");
+  GetDocument().body()->AppendChild(script);
+  UpdateAllLifecyclePhasesForTest();
+
+  // Select "world".
+  GetFrame().Selection().SetSelection(
+      SelectionInDOMTree::Builder()
+          .SetBaseAndExtent(EphemeralRange(Position(div->firstChild(), 6),
+                                           Position(div->firstChild(), 11)))
+          .Build(),
+      SetSelectionOptions());
+
+  // Call DeleteSelection() will fire beforeinput event before deleting
+  // selection. The beforeinput event handler dirties the layout. We should
+  // update layout again before calling |TypingCommand::DeleteSelection()| to
+  // avoid crash.
+  EXPECT_EQ(true, Controller().DeleteSelection());
+}
+
+TEST_F(InputMethodControllerTest,
        CommitTextWithOpenCompositionAndCompositionEndEventHandlerChangingText) {
   InsertHTMLElement("<div id='sample' contenteditable>hello</div>", "sample");
 
@@ -3309,6 +3339,28 @@ TEST_F(InputMethodControllerTest,
                    .GetSelectionInDOMTree()
                    .Anchor()
                    .ComputeOffsetInContainerNode());
+}
+
+TEST_F(
+    InputMethodControllerTest,
+    SetCompositionFromExistingTextAndCompositionStartEventHandlerChangingStyle) {
+  InsertHTMLElement("<div id='sample' contenteditable>hello world</div>",
+                    "sample");
+
+  GetDocument().GetSettings()->SetScriptEnabled(true);
+  Element* script = GetDocument().CreateRawElement(html_names::kScriptTag);
+  script->setInnerHTML(
+      "document.getElementById('sample').addEventListener('compositionstart', "
+      "  event => {"
+      "    event.currentTarget.style.transform = 'rotate(7deg)';"
+      "});");
+  GetDocument().body()->AppendChild(script);
+  UpdateAllLifecyclePhasesForTest();
+
+  // Call SetCompositionFromExistingText() will fire compositionstart event. The
+  // compositionstart event handler dirties the layout. We should update layout
+  // again before getting visible selection to avoid crash.
+  Controller().SetCompositionFromExistingText(Vector<ImeTextSpan>(), 6, 11);
 }
 
 TEST_F(InputMethodControllerTest,

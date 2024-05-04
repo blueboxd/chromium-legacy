@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 #include <cstdint>
+#include <string_view>
 #include <vector>
+
 #include "base/json/json_reader.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/trace_event_analyzer.h"
@@ -68,7 +70,7 @@ class SoftNavigationTest : public MetricIntegrationTest,
 
   std::map<int64_t, double> GetSoftNavigationMetrics(
       const ukm::TestUkmRecorder& ukm_recorder,
-      base::StringPiece metric_name) {
+      std::string_view metric_name) {
     std::map<int64_t, double> source_id_to_metric_name;
     for (const ukm::mojom::UkmEntry* entry : ukm_recorder.GetEntriesByName(
              ukm::builders::SoftNavigation::kEntryName)) {
@@ -233,7 +235,7 @@ class SoftNavigationTest : public MetricIntegrationTest,
   }
 
   bool ExtractUKMPageLoadMetric(const ukm::TestUkmRecorder& ukm_recorder,
-                                base::StringPiece metric_name,
+                                std::string_view metric_name,
                                 int64_t* extracted_value) {
     std::map<ukm::SourceId, ukm::mojom::UkmEntryPtr> merged_entries =
         ukm_recorder.GetMergedEntriesByName(
@@ -329,7 +331,7 @@ class SoftNavigationTest : public MetricIntegrationTest,
   base::test::ScopedFeatureList feature_list_;
 };
 
-// TODO(crbug.com/1466868): Investigate timeout issue on linux-lacros-rel and
+// TODO(crbug.com/40924160): Investigate timeout issue on linux-lacros-rel and
 // linux-wayland when retrieving web exposed soft nav lcp entries using the
 // EvalJs method.
 #if BUILDFLAG(IS_CHROMEOS_LACROS) || BUILDFLAG(IS_LINUX)
@@ -524,7 +526,13 @@ IN_PROC_BROWSER_TEST_P(SoftNavigationTest, MAYBE_LargestContentfulPaint) {
   EXPECT_EQ(std::next(source_id_to_lcp_request_priority.cbegin())->second, 2u);
 }
 
-IN_PROC_BROWSER_TEST_P(SoftNavigationTest, NoSoftNavigation) {
+// TODO(crbug.com/334416161): Re-enable this test.
+#if BUILDFLAG(IS_WIN)
+#define MAYBE_NoSoftNavigation DISABLED_NoSoftNavigation
+#else
+#define MAYBE_NoSoftNavigation NoSoftNavigation
+#endif
+IN_PROC_BROWSER_TEST_P(SoftNavigationTest, MAYBE_NoSoftNavigation) {
   auto waiter = std::make_unique<page_load_metrics::PageLoadMetricsTestWaiter>(
       web_contents());
 
@@ -545,7 +553,13 @@ INSTANTIATE_TEST_SUITE_P(All,
                          SoftNavigationTest,
                          ::testing::Values(false, true));
 
-IN_PROC_BROWSER_TEST_P(SoftNavigationTest, INP_ClickWithPresentation) {
+// TODO(crbug.com/338061920): Flaky on win-asan.
+#if BUILDFLAG(IS_WIN) && defined(ADDRESS_SANITIZER)
+#define MAYBE_INP_ClickWithPresentation DISABLED_INP_ClickWithPresentation
+#else
+#define MAYBE_INP_ClickWithPresentation INP_ClickWithPresentation
+#endif  //  BUILDFLAG(IS_WIN) && defined(ADDRESS_SANITIZER)
+IN_PROC_BROWSER_TEST_P(SoftNavigationTest, MAYBE_INP_ClickWithPresentation) {
   // Add waiter to wait for the interaction is arrived in browser.
   auto waiter = std::make_unique<page_load_metrics::PageLoadMetricsTestWaiter>(
       web_contents());
@@ -588,7 +602,13 @@ IN_PROC_BROWSER_TEST_P(SoftNavigationTest, INP_ClickWithPresentation) {
   ASSERT_TRUE(VerifyInpUkmAndTraceData(*analyzer));
 }
 
-IN_PROC_BROWSER_TEST_P(SoftNavigationTest, LayoutShift) {
+// TODO(crbug.com/338061920): Flaky on win-asan.
+#if BUILDFLAG(IS_WIN) && defined(ADDRESS_SANITIZER)
+#define MAYBE_LayoutShift DISABLED_LayoutShift
+#else
+#define MAYBE_LayoutShift LayoutShift
+#endif  //  BUILDFLAG(IS_WIN) && defined(ADDRESS_SANITIZER)
+IN_PROC_BROWSER_TEST_P(SoftNavigationTest, MAYBE_LayoutShift) {
   auto waiter = std::make_unique<page_load_metrics::PageLoadMetricsTestWaiter>(
       web_contents());
 

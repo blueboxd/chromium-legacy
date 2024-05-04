@@ -160,13 +160,13 @@ constexpr char kServiceWorkerGlobalScopeTraceScope[] =
 // the same as the update interval value in the event queue.
 constexpr int kDefaultTimeoutSecondsForOfflineEvent = 10;
 
-void DidSkipWaiting(ScriptPromiseResolver* resolver, bool success) {
-  if (!resolver->GetExecutionContext() ||
-      resolver->GetExecutionContext()->IsContextDestroyed())
-    return;
+void DidSkipWaiting(ScriptPromiseResolver<IDLUndefined>* resolver,
+                    bool success) {
   // Per spec the promise returned by skipWaiting() can never reject.
-  if (!success)
+  if (!success) {
+    resolver->Detach();
     return;
+  }
   resolver->Resolve();
 }
 
@@ -594,14 +594,16 @@ ServiceWorkerRegistration* ServiceWorkerGlobalScope::registration() {
   return service_worker_.Get();
 }
 
-ScriptPromise ServiceWorkerGlobalScope::skipWaiting(ScriptState* script_state) {
+ScriptPromise<IDLUndefined> ServiceWorkerGlobalScope::skipWaiting(
+    ScriptState* script_state) {
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
   // FIXME: short-term fix, see details at:
   // https://codereview.chromium.org/535193002/.
   if (!execution_context)
-    return ScriptPromise();
+    return ScriptPromise<IDLUndefined>();
 
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  auto* resolver =
+      MakeGarbageCollected<ScriptPromiseResolver<IDLUndefined>>(script_state);
   GetServiceWorkerHost()->SkipWaiting(
       WTF::BindOnce(&DidSkipWaiting, WrapPersistent(resolver)));
   return resolver->Promise();
@@ -1645,20 +1647,6 @@ void ServiceWorkerGlobalScope::DispatchFetchEventForSubresource(
   remote.Bind(std::move(response_callback),
               GetThread()->GetTaskRunner(TaskType::kNetworking));
   fetch_response_callbacks_.Set(event_id, WrapDisallowNew(std::move(remote)));
-
-  if (params->race_network_request_loader_factory) {
-    UseCounter::Count(
-        this,
-        // If the runtime flag is enabled, that means the feature is enabled via
-        // OriginTrial. We count the feature usage separatefy from the a/b
-        // experiment to monitor the actual usage respectively.
-        RuntimeEnabledFeatures::ServiceWorkerRaceNetworkRequestEnabled(
-            ExecutionContext::From(ScriptController()->GetScriptState()))
-            ? WebFeature::
-                  kServiceWorkerBypassFetchHandlerForAllWithRaceNetworkRequestByOriginTrial
-            : WebFeature::
-                  kServiceWorkerBypassFetchHandlerForAllWithRaceNetworkRequest);
-  }
 
   if (RequestedTermination()) {
     event_queue_->EnqueuePending(

@@ -504,12 +504,11 @@ void WEBPImageDecoder::ReadColorProfile() {
     return;
   }
 
-  const char* profile_data =
-      reinterpret_cast<const char*>(chunk_iterator.chunk.bytes);
   wtf_size_t profile_size =
       base::checked_cast<wtf_size_t>(chunk_iterator.chunk.size);
 
-  if (auto profile = ColorProfile::Create(profile_data, profile_size)) {
+  if (auto profile = ColorProfile::Create(
+          base::span(chunk_iterator.chunk.bytes, profile_size))) {
     if (profile->GetProfile()->data_color_space == skcms_Signature_RGB) {
       SetEmbeddedColorProfile(std::move(profile));
     }
@@ -630,7 +629,10 @@ void WEBPImageDecoder::InitializeNewFrame(wtf_size_t index) {
     return;
   }
   WebPIterator animated_frame;
-  WebPDemuxGetFrame(demux_, index + 1, &animated_frame);
+  if (!WebPDemuxGetFrame(demux_, index + 1, &animated_frame)) {
+    SetFailed();
+    return;
+  }
   DCHECK_EQ(animated_frame.complete, 1);
   ImageFrame* buffer = &frame_buffer_cache_[index];
   gfx::Rect frame_rect(animated_frame.x_offset, animated_frame.y_offset,
@@ -704,7 +706,9 @@ bool WEBPImageDecoder::DecodeSingleFrameToYUV(const uint8_t* data_bytes,
 
   // Set up decoder_buffer_ with output mode
   if (!decoder_) {
-    WebPInitDecBuffer(&decoder_buffer_);
+    if (!WebPInitDecBuffer(&decoder_buffer_)) {
+      return SetFailed();
+    }
     decoder_buffer_.colorspace = MODE_YUV;  // TODO(crbug.com/910276): Change
                                             // after alpha YUV support is added.
   }
@@ -784,7 +788,9 @@ bool WEBPImageDecoder::DecodeSingleFrame(const uint8_t* data_bytes,
   const gfx::Rect& frame_rect = buffer.OriginalFrameRect();
   if (!decoder_) {
     // Set up decoder_buffer_ with output mode
-    WebPInitDecBuffer(&decoder_buffer_);
+    if (!WebPInitDecBuffer(&decoder_buffer_)) {
+      return SetFailed();
+    }
     decoder_buffer_.colorspace = RGBOutputMode();
     decoder_buffer_.u.RGBA.stride =
         Size().width() * sizeof(ImageFrame::PixelData);

@@ -4,7 +4,6 @@
 
 #include "chrome/updater/policy/service.h"
 
-#include <algorithm>
 #include <concepts>
 #include <functional>
 #include <optional>
@@ -67,11 +66,10 @@ PolicyService::PolicyManagers SortManagers(
 #if BUILDFLAG(IS_WIN)
 bool CloudPolicyOverridesPlatformPolicy(
     PolicyService::PolicyManagerVector providers) {
-  PolicyService::PolicyManagerVector::const_iterator it =
-      std::find_if(providers.begin(), providers.end(),
-                   [](scoped_refptr<PolicyManagerInterface> p) {
-                     return p && p->CloudPolicyOverridesPlatformPolicy();
-                   });
+  PolicyService::PolicyManagerVector::const_iterator it = base::ranges::find_if(
+      providers, [](scoped_refptr<PolicyManagerInterface> p) {
+        return p && p->CloudPolicyOverridesPlatformPolicy();
+      });
 
   return it == providers.end() ? false
                                : *(*it)->CloudPolicyOverridesPlatformPolicy();
@@ -94,7 +92,7 @@ PolicyService::PolicyManagerVector CreatePolicyManagerVector(
   //    has a higher priority than the group policy manger.
   PolicyService::PolicyManagerVector managers;
   if (dm_policy_manager) {
-    managers.push_back(std::move(dm_policy_manager));
+    managers.push_back(dm_policy_manager);
   }
   scoped_refptr<PolicyManagerInterface> external_constants_policy_manager =
       external_constants ? base::MakeRefCounted<PolicyManager>(
@@ -129,7 +127,8 @@ PolicyService::PolicyManagerVector CreatePolicyManagerVector(
 PolicyService::PolicyManagers::PolicyManagers(
     PolicyManagerVector manager_vector,
     PolicyManagerNameMap manager_name_map)
-    : vector(manager_vector), name_map(manager_name_map) {}
+    : vector(std::move(manager_vector)),
+      name_map(std::move(manager_name_map)) {}
 PolicyService::PolicyManagers::~PolicyManagers() = default;
 
 PolicyService::PolicyService(PolicyManagerVector managers)
@@ -142,7 +141,7 @@ PolicyService::PolicyService(PolicyManagerVector managers)
 PolicyService::PolicyService(
     scoped_refptr<ExternalConstants> external_constants)
     : policy_managers_(SortManagers(CreatePolicyManagerVector(
-          /*should_take_policy_critical_section*/ false,
+          /*should_take_policy_critical_section=*/false,
           external_constants,
           CreateDMPolicyManager(external_constants->IsMachineManaged())))),
       external_constants_(external_constants) {
@@ -155,17 +154,30 @@ PolicyService::~PolicyService() = default;
 void PolicyService::FetchPolicies(base::OnceCallback<void(int)> callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+  if (fetch_policies_callback_) {
+    // Combine with existing call.
+    fetch_policies_callback_ = base::BindOnce(
+        [](base::OnceCallback<void(int)> a, base::OnceCallback<void(int)> b,
+           int v) {
+          std::move(a).Run(v);
+          std::move(b).Run(v);
+        },
+        std::move(fetch_policies_callback_), std::move(callback));
+    return;
+  }
+
+  fetch_policies_callback_ = std::move(callback);
+
   auto fetcher = base::MakeRefCounted<PolicyFetcher>(
       external_constants_->DeviceManagementURL(),
       PolicyServiceProxyConfiguration::Get(this),
       external_constants_->IsMachineManaged());
-  fetcher->FetchPolicies(base::BindOnce(&PolicyService::FetchPoliciesDone, this,
-                                        fetcher, std::move(callback)));
+  fetcher->FetchPolicies(
+      base::BindOnce(&PolicyService::FetchPoliciesDone, this, fetcher));
 }
 
 void PolicyService::FetchPoliciesDone(
     scoped_refptr<PolicyFetcher> fetcher,
-    base::OnceCallback<void(int)> callback,
     int result,
     scoped_refptr<PolicyManagerInterface> dm_policy_manager) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -177,24 +189,25 @@ void PolicyService::FetchPoliciesDone(
           [](scoped_refptr<ExternalConstants> external_constants,
              scoped_refptr<PolicyManagerInterface> dm_policy_manager) {
             return CreatePolicyManagerVector(
-                /*should_take_policy_critical_section*/ true,
+                /*should_take_policy_critical_section=*/true,
                 external_constants, dm_policy_manager);
           },
           external_constants_,
           dm_policy_manager ? dm_policy_manager
-          : policy_managers_.name_map.count(kSourceDMPolicyManager)
+          : policy_managers_.name_map.contains(kSourceDMPolicyManager)
               ? policy_managers_.name_map[kSourceDMPolicyManager]
               : nullptr),
-      base::BindOnce(
-          [](scoped_refptr<PolicyService> self,
-             base::OnceCallback<void(int)> callback, int result,
-             PolicyService::PolicyManagerVector managers) {
-            self->policy_managers_ = SortManagers(std::move(managers));
-            VLOG(1) << "Policies after refresh:" << std::endl
-                    << self->GetAllPoliciesAsString();
-            std::move(callback).Run(result);
-          },
-          base::WrapRefCounted(this), std::move(callback), result));
+      base::BindOnce(&PolicyService::PolicyManagerLoaded,
+                     base::WrapRefCounted(this), result));
+}
+
+void PolicyService::PolicyManagerLoaded(
+    int result,
+    PolicyService::PolicyManagerVector managers) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  policy_managers_ = SortManagers(std::move(managers));
+  VLOG(1) << "Policies after refresh:" << std::endl << GetAllPoliciesAsString();
+  std::move(fetch_policies_callback_).Run(result);
 }
 
 std::string PolicyService::source() const {
@@ -264,6 +277,9 @@ PolicyStatus<int> PolicyService::GetPolicyForAppInstalls(
 PolicyStatus<int> PolicyService::GetPolicyForAppUpdates(
     const std::string& app_id) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (app_id == kUpdaterAppId) {
+    return {};  // Self-updates for the updater can't be disabled by policy.
+  }
   return QueryAppPolicy(
       &PolicyManagerInterface::GetEffectivePolicyForAppUpdates, app_id);
 }

@@ -43,7 +43,7 @@ import org.chromium.ui.modelutil.PropertyModel;
  * shown for managed accounts. This dialog can be used to only turn off sync without signing out
  * child accounts that are syncing.
  */
-public class SignOutDialogCoordinator {
+final class SignOutDialogCoordinator {
     private static final String CLEAR_DATA_PROGRESS_DIALOG_TAG = "clear_data_progress";
 
     /**
@@ -99,7 +99,7 @@ public class SignOutDialogCoordinator {
      *     be null.
      */
     @MainThread
-    public static void show(
+    static void show(
             Context context,
             Profile profile,
             FragmentManager fragmentManager,
@@ -167,7 +167,7 @@ public class SignOutDialogCoordinator {
     }
 
     private static int getCheckBoxVisibility(Profile profile) {
-        // TODO(crbug.com/1294761): extract logic for whether data wiping is allowed into
+        // TODO(crbug.com/40820738): extract logic for whether data wiping is allowed into
         // SigninManager.
         final boolean allowDeletingData =
                 UserPrefs.get(profile).getBoolean(Pref.ALLOW_DELETING_BROWSER_HISTORY);

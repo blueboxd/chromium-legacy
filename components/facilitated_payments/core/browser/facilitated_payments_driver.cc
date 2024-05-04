@@ -6,6 +6,8 @@
 
 #include <utility>
 
+#include "components/facilitated_payments/core/browser/facilitated_payments_manager.h"
+
 namespace payments::facilitated {
 
 FacilitatedPaymentsDriver::FacilitatedPaymentsDriver(
@@ -18,7 +20,7 @@ void FacilitatedPaymentsDriver::DidFinishNavigation() const {
   manager_->Reset();
 }
 
-void FacilitatedPaymentsDriver::DidFinishLoad(
+void FacilitatedPaymentsDriver::OnContentLoadedInThePrimaryMainFrame(
     const GURL& url,
     ukm::SourceId ukm_source_id) const {
   manager_->DelayedCheckAllowlistAndTriggerPixCodeDetection(url, ukm_source_id);

@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "components/version_info/version_info.h"
 #include "media/base/audio_parameters.h"
+#include "media/base/video_codecs.h"
 #include "media/formats/mp4/avc.h"
 #include "media/formats/mp4/box_definitions.h"
 #include "media/muxers/box_byte_stream.h"
@@ -47,8 +48,8 @@ void BuildTrack(
   track.header.flags = BuildFlags<TrackHeaderFlags>(
       {TrackHeaderFlags::kTrackEnabled, TrackHeaderFlags::kTrackInMovie});
 
-  track.header.track_id = track_index + 1;
-  track.header.is_audio = is_audio;
+  mp4::writable_boxes::TrackHeader track_header(track_index + 1, is_audio);
+  track.header = std::move(track_header);
 
   // `mdhd`
   track.media.header.timescale = timescale;
@@ -66,7 +67,7 @@ void BuildTrack(
       moov.extends.track_extends[track_index];
   audio_extends.track_id = track_index + 1;
 
-  // TODO(crbug.com/1464063): Various MP4 samples doesn't need
+  // TODO(crbug.com/40275472): Various MP4 samples doesn't need
   // default_sample_duration, default_sample_size, default_sample_flags. We need
   // to investigate it further though whether we need to set these fields.
   audio_extends.default_sample_description_index = 1;
@@ -75,8 +76,8 @@ void BuildTrack(
   audio_extends.default_sample_flags = 0;
 
   // `stbl`, `stco`, `stsz`, `stts`, `stsc'.
-  mp4::writable_boxes::SampleTable sample_table = {};
-  sample_table.sample_to_chunk = mp4::writable_boxes::SampleToChunk{};
+  mp4::writable_boxes::SampleTable sample_table;
+  sample_table.sample_to_chunk = mp4::writable_boxes::SampleToChunk();
   sample_table.decoding_time_to_sample =
       mp4::writable_boxes::DecodingTimeToSample();
   sample_table.sample_size = mp4::writable_boxes::SampleSize();
@@ -102,9 +103,16 @@ void CopyCreationTimeAndDuration(mp4::writable_boxes::Track& track,
 
 }  // namespace
 
-Mp4MuxerDelegate::Mp4MuxerDelegate(Muxer::WriteDataCB write_callback,
-                                   size_t audio_sample_count_per_fragment)
+Mp4MuxerDelegate::Mp4MuxerDelegate(
+    AudioCodec audio_codec,
+    std::optional<VideoCodecProfile> video_profile,
+    std::optional<VideoCodecLevel> video_level,
+    Muxer::WriteDataCB write_callback,
+    size_t audio_sample_count_per_fragment)
     : write_callback_(std::move(write_callback)),
+      audio_codec_(audio_codec),
+      video_profile_(std::move(video_profile)),
+      video_level_(std::move(video_level)),
       audio_sample_count_per_fragment_(audio_sample_count_per_fragment) {}
 
 Mp4MuxerDelegate::~Mp4MuxerDelegate() = default;
@@ -115,12 +123,24 @@ void Mp4MuxerDelegate::AddVideoFrame(
     std::optional<VideoEncoder::CodecDescription> codec_description,
     base::TimeTicks timestamp,
     bool is_key_frame) {
-  if (!video_track_index_.has_value()) {
-    DVLOG(1) << __func__ << ", " << params.AsHumanReadableString();
+  DVLOG(1) << __func__ << ", " << params.AsHumanReadableString();
 
-    CHECK(codec_description.has_value());
+  if (!video_track_index_.has_value()) {
+#if BUILDFLAG(IS_LINUX)
+    // TODO(crbug.com/333614631): Potential issue for the first frame.
+    if (!is_key_frame) {
+      CHECK_EQ(params.codec, VideoCodec::kVP9);
+      DVLOG(1) << __func__ << ", not a key frame";
+      return;
+    }
+#endif
+
+    CHECK(codec_description.has_value() || (params.codec == VideoCodec::kVP9));
     CHECK(is_key_frame);
     CHECK(start_video_time_.is_null());
+    CHECK_NE(params.codec, VideoCodec::kUnknown);
+
+    video_codec_ = params.codec;
 
     EnsureInitialized();
     last_video_time_ = start_video_time_ = timestamp;
@@ -134,7 +154,7 @@ void Mp4MuxerDelegate::AddVideoFrame(
     context_->SetVideoTrack({video_track_index_.value(), timescale});
     DVLOG(1) << __func__ << ", video track timescale:" << timescale;
 
-    BuildMovieVideoTrack(params, encoded_data, codec_description.value());
+    BuildMovieVideoTrack(params, encoded_data, std::move(codec_description));
   }
   last_video_time_ = timestamp;
 
@@ -144,29 +164,50 @@ void Mp4MuxerDelegate::AddVideoFrame(
 void Mp4MuxerDelegate::BuildMovieVideoTrack(
     const Muxer::VideoParameters& params,
     std::string encoded_data,
-    VideoEncoder::CodecDescription codec_description) {
+    std::optional<VideoEncoder::CodecDescription> codec_description) {
   DCHECK(video_track_index_.has_value());
 
   // `stsd`, `avc1`, `avcC`.
-  mp4::writable_boxes::SampleDescription description = {};
+  mp4::writable_boxes::SampleDescription description;
+  mp4::writable_boxes::VisualSampleEntry visual_sample_entry(video_codec_);
 
+  visual_sample_entry.coded_size = params.visible_rect_size;
+  visual_sample_entry.pixel_aspect_ratio =
+      mp4::writable_boxes::PixelAspectRatioBox();
+
+  if (video_codec_ == VideoCodec::kH264) {
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
-  mp4::writable_boxes::VisualSampleEntry visual_entry = {};
+    visual_sample_entry.compressor_name = "AVC1 Coding";
 
-  visual_entry.coded_size = params.visible_rect_size;
+    mp4::writable_boxes::AVCDecoderConfiguration avc_config;
+    mp4::AVCDecoderConfigurationRecord avc_config_record;
+    bool result = avc_config_record.Parse(codec_description.value().data(),
+                                          codec_description.value().size());
+    DCHECK(result);
 
-  visual_entry.compressor_name = version_info::GetProductName();
-
-  mp4::AVCDecoderConfigurationRecord avc_config;
-  bool result =
-      avc_config.Parse(codec_description.data(), codec_description.size());
-  DCHECK(result);
-
-  visual_entry.avc_decoder_configuration.avc_config_record =
-      std::move(avc_config);
-  visual_entry.pixel_aspect_ratio = mp4::writable_boxes::PixelAspectRatioBox();
-  description.visual_sample_entry = std::move(visual_entry);
+    avc_config.avc_config_record = std::move(avc_config_record);
+    visual_sample_entry.avc_decoder_configuration = std::move(avc_config);
+#else
+  NOTREACHED();
 #endif
+  } else if (video_codec_ == VideoCodec::kVP9) {
+    visual_sample_entry.compressor_name = "VPC Coding";
+
+    gfx::ColorSpace color_space;
+    if (params.color_space) {
+      color_space = *params.color_space;
+    }
+
+    // DefaultCodecProfile() returns VP9PROFILE_PROFILE0(VP9PROFILE_MIN).
+    mp4::writable_boxes::VPCodecConfiguration vp_config(
+        video_profile_.value_or(VP9PROFILE_PROFILE0), video_level_.value_or(0),
+        color_space);
+    visual_sample_entry.vp_decoder_configuration = std::move(vp_config);
+  } else {
+    NOTREACHED();
+  }
+
+  description.video_sample_entry = std::move(visual_sample_entry);
   description.entry_count = 1;
 
   BuildTrack(*moov_, video_track_index_.value(), false,
@@ -179,13 +220,14 @@ void Mp4MuxerDelegate::BuildMovieVideoTrack(
   video_track.header.natural_size = params.visible_rect_size;
 
   // `hdlr`
-  video_track.media.handler.handler_type = media::mp4::FOURCC_VIDE;
-  video_track.media.handler.name = kVideoHandlerName;
+  mp4::writable_boxes::MediaHandler media_handler(/*is_audio=*/false);
+  media_handler.name = kVideoHandlerName;
+  video_track.media.handler = std::move(media_handler);
 
   // `minf`
 
   // `vmhd`
-  mp4::writable_boxes::VideoMediaHeader video_header = {};
+  mp4::writable_boxes::VideoMediaHeader video_header;
   video_track.media.information.video_header = std::move(video_header);
 
   DVLOG(1) << __func__ << ", video track created";
@@ -214,7 +256,7 @@ void Mp4MuxerDelegate::AddAudioFrame(
   if (!audio_track_index_.has_value()) {
     DVLOG(1) << __func__ << ", " << params.AsHumanReadableString();
 
-    CHECK(codec_description.has_value());
+    CHECK(codec_description.has_value() || (audio_codec_ == AudioCodec::kOpus));
     CHECK(start_audio_time_.is_null());
 
     EnsureInitialized();
@@ -227,7 +269,7 @@ void Mp4MuxerDelegate::AddAudioFrame(
     context_->SetAudioTrack({audio_track_index_.value(),
                              static_cast<uint32_t>(audio_sample_rate_)});
 
-    BuildMovieAudioTrack(params, encoded_data, codec_description.value());
+    BuildMovieAudioTrack(params, encoded_data, std::move(codec_description));
   }
   last_audio_time_ = timestamp;
 
@@ -237,18 +279,36 @@ void Mp4MuxerDelegate::AddAudioFrame(
 void Mp4MuxerDelegate::BuildMovieAudioTrack(
     const AudioParameters& params,
     std::string encoded_data,
-    AudioEncoder::CodecDescription codec_description) {
+    std::optional<AudioEncoder::CodecDescription> codec_description) {
   DCHECK(audio_track_index_.has_value());
+  DCHECK(codec_description.has_value() || (audio_codec_ == AudioCodec::kOpus));
 
-  // `stsd`, `mp4a`, `esds`.
-  mp4::writable_boxes::SampleDescription description = {};
+  // `stsd`, `mp4a`, `esds`, 'opus', 'dops'.
+  mp4::writable_boxes::SampleDescription description;
+  mp4::writable_boxes::AudioSampleEntry audio_sample_entry(
+      audio_codec_, audio_sample_rate_, params.channels());
+
+  if (audio_codec_ == AudioCodec::kAAC) {
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
-  mp4::writable_boxes::AudioSampleEntry audio_entry = {};
-  audio_entry.sample_rate = audio_sample_rate_;
-  audio_entry.elementary_stream_descriptor.aac_codec_description =
-      std::move(codec_description);
-  description.audio_sample_entry = std::move(audio_entry);
+    mp4::writable_boxes::ElementaryStreamDescriptor
+        elementary_stream_descriptor;
+    elementary_stream_descriptor.aac_codec_description =
+        std::move(codec_description.value());
+    audio_sample_entry.elementary_stream_descriptor =
+        std::move(elementary_stream_descriptor);
+#else
+    NOTREACHED();
 #endif
+  } else {
+    // TODO(crbug.com/40281463): Ensure the below OpusSpecificBox is correct.
+    CHECK_EQ(audio_codec_, AudioCodec::kOpus);
+    mp4::writable_boxes::OpusSpecificBox opus_specific_box;
+    opus_specific_box.channel_count = audio_sample_entry.channel_count;
+    opus_specific_box.sample_rate = audio_sample_entry.sample_rate;
+    audio_sample_entry.opus_specific_box = std::move(opus_specific_box);
+  }
+
+  description.audio_sample_entry = std::move(audio_sample_entry);
   description.entry_count = 1;
 
   BuildTrack(*moov_, audio_track_index_.value(), true,
@@ -258,13 +318,13 @@ void Mp4MuxerDelegate::BuildMovieAudioTrack(
       moov_->tracks[audio_track_index_.value()];
 
   // `hdlr`
-  audio_track.media.handler.handler_type = media::mp4::FOURCC_SOUN;
-  audio_track.media.handler.name = kAudioHandlerName;
-
+  mp4::writable_boxes::MediaHandler media_handler(/*is_audio=*/true);
+  media_handler.name = kAudioHandlerName;
+  audio_track.media.handler = std::move(media_handler);
   // `minf`
 
   // `smhd`
-  mp4::writable_boxes::SoundMediaHeader sound_header = {};
+  mp4::writable_boxes::SoundMediaHeader sound_header;
   audio_track.media.information.sound_header = std::move(sound_header);
   DVLOG(1) << __func__ << ", audio track created";
 }
@@ -322,7 +382,8 @@ size_t Mp4MuxerDelegate::MaybeFlushFileTypeBoxForStartup() {
   }
 
   // Build and write `FTYP` box.
-  mp4::writable_boxes::FileType mp4_file_type_box;
+  mp4::writable_boxes::FileType mp4_file_type_box(
+      /*major_brand=*/mp4::FOURCC_MP41, 0);
   BuildFileTypeBox(mp4_file_type_box);
   Mp4FileTypeBoxWriter file_type_box_writer(*context_, mp4_file_type_box);
   written_file_type_box_size_ = file_type_box_writer.WriteAndFlush();
@@ -416,8 +477,6 @@ void Mp4MuxerDelegate::MaybeFlushMoofAndMfraBoxes(size_t written_offset) {
 
 void Mp4MuxerDelegate::BuildFileTypeBox(
     mp4::writable_boxes::FileType& mp4_file_type_box) {
-  mp4_file_type_box.major_brand = mp4::FOURCC_MP41;
-  mp4_file_type_box.minor_version = 0;
   mp4_file_type_box.compatible_brands.emplace_back(mp4::FOURCC_ISOM);
   mp4_file_type_box.compatible_brands.emplace_back(mp4::FOURCC_AVC1);
 }
@@ -538,8 +597,11 @@ void Mp4MuxerDelegate::EnsureInitialized() {
 
   moov_ = std::make_unique<mp4::writable_boxes::Movie>();
 
-  moov_->tracks.emplace_back(mp4::writable_boxes::Track());
-  moov_->tracks.emplace_back(mp4::writable_boxes::Track());
+  // We add two tracks to the moov box, one for video and one for audio, but
+  // we don't know which is which yet. The correct fields will be filled in
+  // when the first video or audio frame is added.
+  moov_->tracks.emplace_back(0, false);
+  moov_->tracks.emplace_back(0, false);
 
   moov_->extends.track_extends.emplace_back(
       mp4::writable_boxes::TrackExtends());

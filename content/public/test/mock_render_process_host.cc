@@ -30,8 +30,6 @@
 #include "content/public/browser/android/child_process_importance.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/global_request_id.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host_priority_client.h"
 #include "content/public/browser/render_widget_host_iterator.h"
 #include "content/public/browser/site_instance.h"
@@ -79,7 +77,6 @@ MockRenderProcessHost::MockRenderProcessHost(
       is_for_guests_only_(is_for_guests_only),
       is_process_backgrounded_(false),
       is_unused_(true),
-      keep_alive_ref_count_(0),
       worker_ref_count_(0),
       pending_reuse_ref_count_(0),
       foreground_service_worker_count_(0) {
@@ -115,8 +112,14 @@ void MockRenderProcessHost::SimulateRenderProcessExit(
   termination_info.renderer_has_visible_clients = VisibleClientCount() > 0;
 #endif
 
+  within_process_died_observer_ = true;
   for (auto& observer : observers_)
     observer.RenderProcessExited(this, termination_info);
+  within_process_died_observer_ = false;
+
+  if (delayed_cleanup_) {
+    Cleanup();
+  }
 }
 
 void MockRenderProcessHost::SimulateReady() {
@@ -291,6 +294,12 @@ MockRenderProcessHost::RegisterBlockStateChangedCallback(
 }
 
 void MockRenderProcessHost::Cleanup() {
+  if (within_process_died_observer_) {
+    delayed_cleanup_ = true;
+    return;
+  }
+  delayed_cleanup_ = false;
+
   if (listeners_.IsEmpty() && !deletion_callback_called_) {
     if (IsInitializedAndNotDead()) {
       ChildProcessTerminationInfo termination_info;
@@ -396,18 +405,6 @@ bool MockRenderProcessHost::IsProcessBackgrounded() {
   return is_process_backgrounded_;
 }
 
-size_t MockRenderProcessHost::GetKeepAliveRefCount() const {
-  return keep_alive_ref_count_;
-}
-
-void MockRenderProcessHost::IncrementKeepAliveRefCount(uint64_t handle_id) {
-  ++keep_alive_ref_count_;
-}
-
-void MockRenderProcessHost::DecrementKeepAliveRefCount(uint64_t handle_id) {
-  --keep_alive_ref_count_;
-}
-
 std::string MockRenderProcessHost::GetKeepAliveDurations() const {
   return std::string("MockRenderProcessHost: durations not tracked.");
 }
@@ -432,8 +429,8 @@ void MockRenderProcessHost::UnregisterRenderFrameHost(
 
 void MockRenderProcessHost::ForEachRenderFrameHost(
     base::FunctionRef<void(RenderFrameHost*)> on_render_frame_host) {
-  // TODO(crbug.com/652474): Clean up MockRenderProcessHost usage and merge this
-  // implementation with RenderProcessHostImpl::ForEachRenderFrameHost().
+  // TODO(crbug.com/40487508): Clean up MockRenderProcessHost usage and merge
+  // this implementation with RenderProcessHostImpl::ForEachRenderFrameHost().
   for (auto rfh_id : render_frame_host_id_set_) {
     RenderFrameHostImpl* rfh = RenderFrameHostImpl::FromID(rfh_id);
     // Note that some RenderFrameHosts in the set may not be found by FromID if
@@ -476,7 +473,6 @@ size_t MockRenderProcessHost::GetWorkerRefCount() const {
 }
 
 void MockRenderProcessHost::DisableRefCounts() {
-  keep_alive_ref_count_ = 0;
   worker_ref_count_ = 0;
   pending_reuse_ref_count_ = 0;
 
@@ -518,7 +514,7 @@ void MockRenderProcessHost::SetIsUsed() {
 }
 
 bool MockRenderProcessHost::HostHasNotBeenUsed() {
-  return IsUnused() && listeners_.IsEmpty() && GetKeepAliveRefCount() == 0;
+  return IsUnused() && listeners_.IsEmpty();
 }
 
 bool MockRenderProcessHost::IsSpare() const {

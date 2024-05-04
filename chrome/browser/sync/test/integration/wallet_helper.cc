@@ -17,6 +17,7 @@
 #include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/data_model/autofill_metadata.h"
 #include "components/autofill/core/browser/payments/payments_customer_data.h"
+#include "components/autofill/core/browser/payments_data_manager.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/webdata/autofill_sync_metadata_table.h"
 #include "components/autofill/core/browser/webdata/payments/payments_autofill_table.h"
@@ -337,14 +338,6 @@ sync_pb::ModelTypeState GetWalletModelTypeState(syncer::ModelType model_type,
   return result;
 }
 
-void UnmaskServerCard(int profile,
-                      const CreditCard& credit_card,
-                      const std::u16string& full_number) {
-  scoped_refptr<AutofillWebDataService> wds = GetProfileWebDataService(profile);
-  wds->UnmaskServerCreditCard(credit_card, full_number);
-  WaitForCurrentTasksToComplete(wds->GetDBTaskRunner());
-}
-
 sync_pb::SyncEntity CreateDefaultSyncWalletCard() {
   return CreateSyncWalletCard(kDefaultCardID, kDefaultCardLastFour,
                               kDefaultBillingAddressID);
@@ -487,20 +480,28 @@ void ExpectDefaultWalletCredentialValues(const CreditCard& card) {
 std::vector<CreditCard*> GetServerCreditCards(int profile) {
   WaitForPDMToRefresh(profile);
   PersonalDataManager* pdm = GetPersonalDataManager(profile);
-  return pdm->GetServerCreditCards();
+  return pdm->payments_data_manager().GetServerCreditCards();
 }
 
 }  // namespace wallet_helper
 
 AutofillWalletChecker::AutofillWalletChecker(int profile_a, int profile_b)
     : profile_a_(profile_a), profile_b_(profile_b) {
-  wallet_helper::GetPersonalDataManager(profile_a_)->AddObserver(this);
-  wallet_helper::GetPersonalDataManager(profile_b_)->AddObserver(this);
+  wallet_helper::GetPersonalDataManager(profile_a_)
+      ->payments_data_manager()
+      .AddObserver(this);
+  wallet_helper::GetPersonalDataManager(profile_b_)
+      ->payments_data_manager()
+      .AddObserver(this);
 }
 
 AutofillWalletChecker::~AutofillWalletChecker() {
-  wallet_helper::GetPersonalDataManager(profile_a_)->RemoveObserver(this);
-  wallet_helper::GetPersonalDataManager(profile_b_)->RemoveObserver(this);
+  wallet_helper::GetPersonalDataManager(profile_a_)
+      ->payments_data_manager()
+      .RemoveObserver(this);
+  wallet_helper::GetPersonalDataManager(profile_b_)
+      ->payments_data_manager()
+      .RemoveObserver(this);
 }
 
 bool AutofillWalletChecker::Wait() {
@@ -518,11 +519,12 @@ bool AutofillWalletChecker::IsExitConditionSatisfied(std::ostream* os) {
       wallet_helper::GetPersonalDataManager(profile_a_);
   autofill::PersonalDataManager* pdm_b =
       wallet_helper::GetPersonalDataManager(profile_b_);
-  return WalletDataAndMetadataMatch(profile_a_, pdm_a->GetServerCreditCards(),
-                                    profile_b_, pdm_b->GetServerCreditCards());
+  return WalletDataAndMetadataMatch(
+      profile_a_, pdm_a->payments_data_manager().GetServerCreditCards(),
+      profile_b_, pdm_b->payments_data_manager().GetServerCreditCards());
 }
 
-void AutofillWalletChecker::OnPersonalDataChanged() {
+void AutofillWalletChecker::OnPaymentsDataChanged() {
   CheckExitCondition();
 }
 
@@ -530,13 +532,21 @@ AutofillWalletMetadataSizeChecker::AutofillWalletMetadataSizeChecker(
     int profile_a,
     int profile_b)
     : profile_a_(profile_a), profile_b_(profile_b) {
-  wallet_helper::GetPersonalDataManager(profile_a_)->AddObserver(this);
-  wallet_helper::GetPersonalDataManager(profile_b_)->AddObserver(this);
+  wallet_helper::GetPersonalDataManager(profile_a_)
+      ->payments_data_manager()
+      .AddObserver(this);
+  wallet_helper::GetPersonalDataManager(profile_b_)
+      ->payments_data_manager()
+      .AddObserver(this);
 }
 
 AutofillWalletMetadataSizeChecker::~AutofillWalletMetadataSizeChecker() {
-  wallet_helper::GetPersonalDataManager(profile_a_)->RemoveObserver(this);
-  wallet_helper::GetPersonalDataManager(profile_b_)->RemoveObserver(this);
+  wallet_helper::GetPersonalDataManager(profile_a_)
+      ->payments_data_manager()
+      .RemoveObserver(this);
+  wallet_helper::GetPersonalDataManager(profile_b_)
+      ->payments_data_manager()
+      .RemoveObserver(this);
 }
 
 bool AutofillWalletMetadataSizeChecker::IsExitConditionSatisfied(
@@ -556,7 +566,7 @@ bool AutofillWalletMetadataSizeChecker::IsExitConditionSatisfied(
   return exit_condition_is_satisfied;
 }
 
-void AutofillWalletMetadataSizeChecker::OnPersonalDataChanged() {
+void AutofillWalletMetadataSizeChecker::OnPaymentsDataChanged() {
   CheckExitCondition();
 }
 

@@ -11,12 +11,10 @@
 #import "base/strings/sys_string_conversions.h"
 #import "components/feature_engagement/public/feature_constants.h"
 #import "components/signin/public/identity_manager/account_info.h"
-#import "components/sync/base/features.h"
 #import "components/sync/service/sync_service.h"
 #import "components/sync/service/sync_user_settings.h"
 #import "ios/chrome/browser/promos_manager/model/constants.h"
 #import "ios/chrome/browser/promos_manager/model/promo_config.h"
-#import "ios/chrome/browser/search_engine_choice/model/search_engine_choice_util.h"
 #import "ios/chrome/browser/shared/coordinator/scene/scene_state.h"
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
 #import "ios/chrome/browser/shared/model/browser/browser.h"
@@ -28,14 +26,13 @@
 #import "ios/chrome/browser/ui/authentication/signin/signin_constants.h"
 #import "ios/chrome/browser/ui/post_restore_signin/metrics.h"
 #import "ios/chrome/browser/ui/post_restore_signin/post_restore_signin_view_controller.h"
-#import "ios/chrome/browser/ui/search_engine_choice/search_engine_choice_coordinator.h"
 #import "ios/chrome/common/ui/promo_style/promo_style_view_controller.h"
 #import "ios/chrome/grit/ios_branded_strings.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ui/base/device_form_factor.h"
 #import "ui/base/l10n/l10n_util_mac.h"
 
-@interface PostRestoreSignInProvider () <SearchEngineChoiceCoordinatorDelegate>
+@interface PostRestoreSignInProvider ()
 
 // Returns the email address of the last account that was signed in pre-restore.
 @property(readonly) NSString* userEmail;
@@ -53,7 +50,6 @@
   std::optional<AccountInfo> _accountInfo;
   bool _historySyncEnabled;
   raw_ptr<Browser> _browser;
-  SearchEngineChoiceCoordinator* _searchEngineChoiceCoordinator;
 }
 
 #pragma mark - Initializers
@@ -98,7 +94,6 @@
   base::UmaHistogramEnumeration(kIOSPostRestoreSigninChoiceHistogram,
                                 IOSPostRestoreSigninChoice::Dismiss);
   ClearPreRestoreIdentity(_localState);
-  [self maybeDisplayChoiceScreen];
 }
 
 #pragma mark - StandardPromoAlertProvider
@@ -135,15 +130,6 @@
       IDS_IOS_POST_RESTORE_SIGN_IN_ALERT_PROMO_CANCEL_ACTION);
 }
 
-#pragma mark - SearchEngineChoiceCoordinatorDelegate
-
-- (void)choiceScreenWillBeDismissed:
-    (SearchEngineChoiceCoordinator*)coordinator {
-  CHECK_EQ(coordinator, _searchEngineChoiceCoordinator);
-  [_searchEngineChoiceCoordinator stop];
-  _searchEngineChoiceCoordinator = nil;
-}
-
 #pragma mark - Internal
 
 // Returns the user's pre-restore given name.
@@ -173,9 +159,7 @@
   __weak __typeof(self) weakSelf = self;
   ShowSigninCommandCompletionCallback callback =
       ^(SigninCoordinatorResult result, SigninCompletionInfo* completionInfo) {
-        if (base::FeatureList::IsEnabled(
-                syncer::kReplaceSyncPromosWithSignInPromos) &&
-            result == SigninCoordinatorResultSuccess) {
+        if (result == SigninCoordinatorResultSuccess) {
           [weakSelf signinDone];
         }
       };
@@ -195,22 +179,6 @@
                                      _historySyncEnabled);
   _syncUserSettings->SetSelectedType(syncer::UserSelectableType::kTabs,
                                      _historySyncEnabled);
-  [self maybeDisplayChoiceScreen];
-}
-
-- (void)maybeDisplayChoiceScreen {
-  if (ShouldDisplaySearchEngineChoiceScreen(
-          *_browser->GetBrowserState(), search_engines::ChoicePromo::kDialog)) {
-    // If the user is eligible for the search engine choice screen, it should
-    // be displayed right after the post-restore sign-in promo.
-    SceneState* sceneState = _browser->GetSceneState();
-    _searchEngineChoiceCoordinator = [[SearchEngineChoiceCoordinator alloc]
-        initWithBaseViewController:sceneState.browserProviderInterface
-                                       .currentBrowserProvider.viewController
-                           browser:_browser];
-    _searchEngineChoiceCoordinator.delegate = self;
-    [_searchEngineChoiceCoordinator start];
-  }
 }
 
 @end

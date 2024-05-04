@@ -24,10 +24,12 @@
 #include "ash/public/cpp/wallpaper/wallpaper_info.h"
 #include "ash/public/cpp/wallpaper/wallpaper_types.h"
 #include "ash/public/cpp/window_backdrop.h"
+#include "ash/wallpaper/sea_pen_wallpaper_manager.h"
 #include "ash/wallpaper/wallpaper_constants.h"
 #include "ash/wallpaper/wallpaper_utils/sea_pen_metadata_utils.h"
 #include "ash/wallpaper/wallpaper_utils/wallpaper_online_variant_utils.h"
 #include "ash/wallpaper/wallpaper_utils/wallpaper_resizer.h"
+#include "ash/webui/common/mojom/sea_pen.mojom.h"
 #include "ash/webui/personalization_app/mojom/personalization_app.mojom.h"
 #include "ash/webui/personalization_app/mojom/personalization_app_mojom_traits.h"
 #include "ash/webui/personalization_app/proto/backdrop_wallpaper.pb.h"
@@ -435,7 +437,7 @@ void PersonalizationAppWallpaperProviderImpl::OnWallpaperResized() {
         NotifyAttributionChanged(nullptr);
         return;
       }
-      // TODO(b/307757290) send a unique key and set description content.
+      // TODO(b/307757290) set description content.
       NotifyWallpaperChanged(
           ash::personalization_app::mojom::CurrentWallpaper::New(
               info->layout, info->type,
@@ -517,7 +519,7 @@ void PersonalizationAppWallpaperProviderImpl::SelectWallpaper(
   client->RecordWallpaperSourceUMA(ash::WallpaperType::kOnline);
 
   if (IsTimeOfDayWallpaper(collection_id) &&
-      features::IsTimeOfDayWallpaperForcedAutoScheduleEnabled()) {
+      features::IsTimeOfDayWallpaperEnabled()) {
     // Records the display count of the time of day wallpaper dialog when the
     // user selects one to determine whether to show it the next time.
     contextual_tooltip::HandleGesturePerformed(
@@ -802,7 +804,7 @@ void PersonalizationAppWallpaperProviderImpl::
     ShouldShowTimeOfDayWallpaperDialog(
         ShouldShowTimeOfDayWallpaperDialogCallback callback) {
   std::move(callback).Run(
-      features::IsTimeOfDayWallpaperForcedAutoScheduleEnabled() &&
+      features::IsTimeOfDayWallpaperEnabled() &&
       contextual_tooltip::ShouldShowNudge(
           profile_->GetPrefs(),
           contextual_tooltip::TooltipType::kTimeOfDayWallpaperDialog,
@@ -1101,10 +1103,10 @@ void PersonalizationAppWallpaperProviderImpl::FindImageMetadataInCollection(
 
 void PersonalizationAppWallpaperProviderImpl::FindSeaPenWallpaperAttribution(
     const uint32_t id) {
-  auto* wallpaper_controller = WallpaperController::Get();
-  DCHECK(wallpaper_controller);
+  auto* sea_pen_wallpaper_manager = SeaPenWallpaperManager::GetInstance();
+  DCHECK(sea_pen_wallpaper_manager);
 
-  wallpaper_controller->GetSeaPenMetadata(
+  sea_pen_wallpaper_manager->GetImageAndMetadata(
       GetAccountId(profile_), id,
       base::BindOnce(&PersonalizationAppWallpaperProviderImpl::
                          SendSeaPenWallpaperAttribution,
@@ -1113,21 +1115,10 @@ void PersonalizationAppWallpaperProviderImpl::FindSeaPenWallpaperAttribution(
 
 void PersonalizationAppWallpaperProviderImpl::SendSeaPenWallpaperAttribution(
     const uint32_t id,
-    std::optional<base::Value::Dict> sea_pen_metadata) {
-  DVLOG(3) << __func__ << " id: " << id << " metadata: "
-           << (sea_pen_metadata.has_value() ? sea_pen_metadata->DebugString()
-                                            : "null");
-  if (!sea_pen_metadata.has_value()) {
-    DVLOG(1) << __func__ << " the extracted metadata is not in JSON format";
-    NotifyAttributionChanged(
-        ash::personalization_app::mojom::CurrentAttribution::New(
-            std::vector<std::string>(), base::NumberToString(id)));
-    return;
-  }
-
-  auto sea_pen_image_info =
-      ash::SeaPenQueryDictToRecentImageInfo(std::move(*sea_pen_metadata));
-  if (!sea_pen_image_info) {
+    const gfx::ImageSkia& image,
+    mojom::RecentSeaPenImageInfoPtr sea_pen_metadata) {
+  if (sea_pen_metadata.is_null()) {
+    LOG(WARNING) << __func__ << " unable to get metadata";
     NotifyAttributionChanged(
         ash::personalization_app::mojom::CurrentAttribution::New(
             std::vector<std::string>(), base::NumberToString(id)));
@@ -1135,9 +1126,13 @@ void PersonalizationAppWallpaperProviderImpl::SendSeaPenWallpaperAttribution(
   }
 
   std::vector<std::string> attribution;
-  attribution.push_back(sea_pen_image_info->user_visible_query->text);
+  const std::string query_str = GetQueryString(sea_pen_metadata);
+  if (!query_str.empty()) {
+    attribution.push_back(std::move(query_str));
+  }
   attribution.push_back(
       l10n_util::GetStringUTF8(IDS_SEA_PEN_POWERED_BY_GOOGLE_AI));
+
   NotifyAttributionChanged(
       ash::personalization_app::mojom::CurrentAttribution::New(
           attribution, base::NumberToString(id)));

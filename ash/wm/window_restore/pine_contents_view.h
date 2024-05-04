@@ -22,10 +22,10 @@ class MenuRunner;
 
 namespace ash {
 
-class PillButton;
 class PineContextMenuModel;
-class PineItemsContainerView;
 
+// TODO(http://b/337339184): Change the layout when the display orientation
+// changes.
 class ASH_EXPORT PineContentsView : public views::BoxLayoutView {
   METADATA_HEADER(PineContentsView, views::BoxLayoutView)
 
@@ -35,19 +35,8 @@ class ASH_EXPORT PineContentsView : public views::BoxLayoutView {
   PineContentsView& operator=(const PineContentsView&) = delete;
   ~PineContentsView() override;
 
-  static std::unique_ptr<views::Widget> Create(aura::Window* root);
-
-  // TODO(b/327499182): Move test functions to a Pine test API.
-  const PillButton* restore_button_for_testing() const {
-    return restore_button_for_testing_;
-  }
-  const PillButton* cancel_button_for_testing() const {
-    return cancel_button_for_testing_;
-  }
-
-  const PineItemsContainerView* container_view_for_testing() const {
-    return container_view_;
-  }
+  static std::unique_ptr<views::Widget> Create(
+      const gfx::Rect& grid_bounds_in_screen);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(PineContextMenuModelTest,
@@ -62,7 +51,11 @@ class ASH_EXPORT PineContentsView : public views::BoxLayoutView {
   // `menu_model_adapter_`.
   void OnMenuClosed();
 
-  raw_ptr<views::ImageButton> settings_button_ = nullptr;
+  // Creates a builder for the settings button that opens up a context menu.
+  views::Builder<views::ImageButton> CreateSettingsButtonBuilder();
+  // Creates a builder for the container of the "No thanks" and "Restore" pill
+  // buttons.
+  views::Builder<views::BoxLayoutView> CreateButtonContainerBuilder();
 
   // The context menu model and its adapter for `settings_button_view_`.
   std::unique_ptr<PineContextMenuModel> context_menu_model_;
@@ -70,10 +63,13 @@ class ASH_EXPORT PineContentsView : public views::BoxLayoutView {
   // The menu runner that is responsible for the context menu.
   std::unique_ptr<views::MenuRunner> menu_runner_;
 
-  raw_ptr<PillButton> restore_button_for_testing_ = nullptr;
-  raw_ptr<PillButton> cancel_button_for_testing_ = nullptr;
+  // Time `this` was created. Used for metrics.
+  const base::TimeTicks creation_time_;
 
-  raw_ptr<PineItemsContainerView> container_view_ = nullptr;
+  bool showing_list_view_ = true;
+  bool close_metric_recorded_ = false;
+
+  raw_ptr<views::ImageButton> settings_button_ = nullptr;
 
   base::WeakPtrFactory<PineContentsView> weak_ptr_factory_{this};
 };

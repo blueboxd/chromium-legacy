@@ -3,8 +3,10 @@
 // found in the LICENSE file.
 
 import type {BrowserProxy} from 'chrome://resources/cr_components/commerce/browser_proxy.js';
-import type {BookmarkProductInfo, PageRemote, PriceInsightsInfo, ProductInfo} from 'chrome://resources/cr_components/commerce/shopping_service.mojom-webui.js';
+import type {BookmarkProductInfo, PageRemote, PriceInsightsInfo, ProductInfo, ProductSpecifications} from 'chrome://resources/cr_components/commerce/shopping_service.mojom-webui.js';
 import {PageCallbackRouter, PriceInsightsInfo_PriceBucket} from 'chrome://resources/cr_components/commerce/shopping_service.mojom-webui.js';
+import type {Uuid} from 'chrome://resources/mojo/mojo/public/mojom/base/uuid.mojom-webui.js';
+import type {Url} from 'chrome://resources/mojo/url/mojom/url.mojom-webui.js';
 import {TestBrowserProxy as BaseTestBrowserProxy} from 'chrome://webui-test/test_browser_proxy.js';
 
 export class TestBrowserProxy extends BaseTestBrowserProxy implements
@@ -34,6 +36,10 @@ export class TestBrowserProxy extends BaseTestBrowserProxy implements
     locale: '',
     currencyCode: '',
   };
+  private productSpecs_: ProductSpecifications = {
+    products: [],
+    productDimensionMap: new Map<bigint, string>(),
+  };
   private shoppingCollectionId_: bigint = BigInt(-1);
 
   constructor() {
@@ -44,6 +50,8 @@ export class TestBrowserProxy extends BaseTestBrowserProxy implements
       'untrackPriceForBookmark',
       'getProductInfoForCurrentUrl',
       'getPriceInsightsInfoForCurrentUrl',
+      'getUrlInfosForOpenTabs',
+      'getUrlInfosForRecentlyViewedTabs',
       'showInsightsSidePanelUi',
       'openUrlInNewTab',
       'showFeedback',
@@ -53,6 +61,11 @@ export class TestBrowserProxy extends BaseTestBrowserProxy implements
       'setPriceTrackingStatusForCurrentUrl',
       'getParentBookmarkFolderNameForCurrentUrl',
       'showBookmarkEditorForCurrentUrl',
+      'getProductInfoForUrl',
+      'getProductSpecificationsForUrls',
+      'getAllProductSpecificationsSets',
+      'addProductSpecificationsSet',
+      'deleteProductSpecificationsSet',
     ]);
 
     this.callbackRouter = new PageCallbackRouter();
@@ -87,6 +100,16 @@ export class TestBrowserProxy extends BaseTestBrowserProxy implements
     this.methodCalled('untrackPriceForBookmark', bookmarkId);
   }
 
+  getProductInfoForUrl(url: Url) {
+    this.methodCalled('getProductInfoForUrl', url);
+    return Promise.resolve({productInfo: this.product_});
+  }
+
+  getProductSpecificationsForUrls(urls: Url[]) {
+    this.methodCalled('getProductSpecificationsForUrls', urls);
+    return Promise.resolve({productSpecs: this.productSpecs_});
+  }
+
   getProductInfoForCurrentUrl() {
     this.methodCalled('getProductInfoForCurrentUrl');
     return Promise.resolve({productInfo: this.product_});
@@ -95,6 +118,16 @@ export class TestBrowserProxy extends BaseTestBrowserProxy implements
   getPriceInsightsInfoForCurrentUrl() {
     this.methodCalled('getPriceInsightsInfoForCurrentUrl');
     return Promise.resolve({priceInsightsInfo: this.priceInsights_});
+  }
+
+  getUrlInfosForOpenTabs() {
+    this.methodCalled('getUrlInfosForOpenTabs');
+    return Promise.resolve({urlInfos: []});
+  }
+
+  getUrlInfosForRecentlyViewedTabs() {
+    this.methodCalled('getUrlInfosForRecentlyVisitedTabs');
+    return Promise.resolve({urlInfos: []});
   }
 
   showInsightsSidePanelUi() {
@@ -135,6 +168,20 @@ export class TestBrowserProxy extends BaseTestBrowserProxy implements
 
   showBookmarkEditorForCurrentUrl() {
     this.methodCalled('showBookmarkEditorForCurrentUrl');
+  }
+
+  getAllProductSpecificationsSets() {
+    this.methodCalled('getAllProductSpecificationsSets');
+    return Promise.resolve({sets: []});
+  }
+
+  addProductSpecificationsSet(name: string, urls: Url[]) {
+    this.methodCalled('addProductSpecificationsSet', name, urls);
+    return Promise.resolve({createdSet: null});
+  }
+
+  deleteProductSpecificationsSet(uuid: Uuid) {
+    this.methodCalled('deleteProductSpecificationsSet', uuid);
   }
 
   getCallbackRouter() {

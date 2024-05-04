@@ -93,8 +93,11 @@ class CalculationValue;
 class Length;
 
 PLATFORM_EXPORT extern const Length& g_auto_length;
-PLATFORM_EXPORT extern const Length& g_none_length;
-PLATFORM_EXPORT extern const Length& g_fixed_zero_length;
+PLATFORM_EXPORT extern const Length& g_fill_available_length;
+PLATFORM_EXPORT extern const Length& g_fit_content_length;
+PLATFORM_EXPORT extern const Length& g_max_content_length;
+PLATFORM_EXPORT extern const Length& g_min_content_length;
+PLATFORM_EXPORT extern const Length& g_min_intrinsic_length;
 
 class PLATFORM_EXPORT Length {
   DISALLOW_NEW();
@@ -186,23 +189,25 @@ class PLATFORM_EXPORT Length {
   }
   bool operator!=(const Length& o) const { return !(*this == o); }
 
+  static const Length& Auto() { return g_auto_length; }
+  static const Length& FillAvailable() { return g_fill_available_length; }
+  static const Length& FitContent() { return g_fit_content_length; }
+  static const Length& MaxContent() { return g_max_content_length; }
+  static const Length& MinContent() { return g_min_content_length; }
+  static const Length& MinIntrinsic() { return g_min_intrinsic_length; }
+
+  static Length Content() { return Length(kContent); }
+  static Length Fixed() { return Length(kFixed); }
+  static Length None() { return Length(kNone); }
+
+  static Length ExtendToZoom() { return Length(kExtendToZoom); }
+  static Length DeviceWidth() { return Length(kDeviceWidth); }
+  static Length DeviceHeight() { return Length(kDeviceHeight); }
+
   template <typename NUMBER_TYPE>
   static Length Fixed(NUMBER_TYPE number) {
     return Length(number, kFixed);
   }
-  static Length Fixed() { return Length(kFixed); }
-  static const Length& FixedZero() { return g_fixed_zero_length; }
-  static const Length& Auto() { return g_auto_length; }
-  static Length FillAvailable() { return Length(kFillAvailable); }
-  static Length MinContent() { return Length(kMinContent); }
-  static Length MaxContent() { return Length(kMaxContent); }
-  static Length MinIntrinsic() { return Length(kMinIntrinsic); }
-  static Length ExtendToZoom() { return Length(kExtendToZoom); }
-  static Length DeviceWidth() { return Length(kDeviceWidth); }
-  static Length DeviceHeight() { return Length(kDeviceHeight); }
-  static const Length& None() { return g_none_length; }
-  static Length FitContent() { return Length(kFitContent); }
-  static Length Content() { return Length(kContent); }
   template <typename NUMBER_TYPE>
   static Length Percent(NUMBER_TYPE number) {
     return Length(number, kPercent);
@@ -263,21 +268,25 @@ class PLATFORM_EXPORT Length {
     return !value_;
   }
 
-  // For the layout purposes, if this |Length| is a block-axis size, see
-  // |HasAutoOrContentOrIntrinsic()|, it is usually a better choice.
+  // If this is a length in a property that accepts calc-size(), use
+  // |HasAuto()|.  If this |Length| is a block-axis size
+  // |HasAutoOrContentOrIntrinsic()| is usually a better choice.
   bool IsAuto() const { return GetType() == kAuto; }
   bool IsFixed() const { return GetType() == kFixed; }
 
   // For the block axis, intrinsic sizes such as `min-content` behave the same
   // as `auto`. https://www.w3.org/TR/css-sizing-3/#valdef-width-min-content
   // This includes content-based sizes in calc-size().
+  bool HasAuto() const;
   bool HasContentOrIntrinsic() const;
-  bool HasAutoOrContentOrIntrinsic() const {
-    // TODO(https://crbug.com/313072): Add support for 'auto' in 'calc-size()'
-    // here.
-    return GetType() == kAuto || HasContentOrIntrinsic();
-  }
+  bool HasAutoOrContentOrIntrinsic() const;
+  // HasPercent and HasPercentOrStretch refer to whether the toplevel value
+  // should be treated as a percentage type for web-exposed behavior
+  // decisions.  However, a value can still depend on a percentage when
+  // HasPercent() is false:  for example, calc-size(any, 20%).
   bool HasPercent() const;
+  bool HasPercentOrStretch() const;
+  bool HasStretch() const;
 
   bool IsSpecified() const {
     return GetType() == kFixed || GetType() == kPercent ||
@@ -293,17 +302,26 @@ class PLATFORM_EXPORT Length {
   bool IsFillAvailable() const { return GetType() == kFillAvailable; }
   bool IsFitContent() const { return GetType() == kFitContent; }
   bool IsPercent() const { return GetType() == kPercent; }
-  bool IsPercentOrCalc() const {
-    // TODO(https://crbug.com/313072): Not all calc()s have percentages;
-    // many callers may want HasPercent, above.
+  // MayHavePercentDependence should be used to decide whether to optimize
+  // away computing the value on which percentages depend or optimize away
+  // recomputation that results from changes to that value.  It is intended to
+  // be used *only* in cases where the implementation could be changed to one
+  // that returns true only if there are percentage values somewhere in the
+  // expression (that is, one that still returns true for calc-size(any, 30%)
+  // for which HasPercent() is false, but is false for calc-size(any, 30px)).
+  //
+  // We could (if we want) make this exact and remove "May" from the name.
+  // But this would require looking into the calculation value like HasPercent
+  // does.  However, it needs to be different from HasPercent because of cases
+  // where calc-size() erases percentage-ness from the type, like
+  // calc-size(any, 20%).
+  //
+  // For properties that cannot have calc-size in them, we currently use
+  // HasPercent() rather than MayHavePercentDependence() since it's a
+  // shorter/simpler function name, and the two functions are equivalent in
+  // that case.
+  bool MayHavePercentDependence() const {
     return GetType() == kPercent || GetType() == kCalculated;
-  }
-  bool IsPercentOrCalcOrStretch() const {
-    // TODO(https://crbug.com/313072): Not all calc()s have percentages;
-    // many callers may want a function like HasPercent, above (but that
-    // doesn't exist yet).
-    return GetType() == kPercent || GetType() == kCalculated ||
-           GetType() == kFillAvailable;
   }
   bool IsFlex() const { return GetType() == kFlex; }
   bool IsExtendToZoom() const { return GetType() == kExtendToZoom; }

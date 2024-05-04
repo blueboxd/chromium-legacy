@@ -15,7 +15,7 @@
 #import "content/browser/accessibility/browser_accessibility_cocoa.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/common/content_export.h"
-#include "content/public/browser/ax_event_notification_details.h"
+#include "ui/accessibility/ax_updates_and_events.h"
 
 namespace ui {
 class AXPlatformTreeManagerDelegate;
@@ -50,8 +50,14 @@ class CONTENT_EXPORT BrowserAccessibilityManagerMac
   void FireGeneratedEvent(ui::AXEventGenerator::Event event_type,
                           const ui::AXNode* node) override;
 
-  bool OnAccessibilityEvents(
-      const AXEventNotificationDetails& details) override;
+  void FireAriaNotificationEvent(
+      BrowserAccessibility* node,
+      const std::string& announcement,
+      const std::string& notification_id,
+      ax::mojom::AriaNotificationInterrupt interrupt_property,
+      ax::mojom::AriaNotificationPriority priority_property) override;
+
+  bool OnAccessibilityEvents(const ui::AXUpdatesAndEvents& details) override;
 
   id GetParentView();
   id GetWindow();

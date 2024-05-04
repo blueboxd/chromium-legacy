@@ -57,7 +57,8 @@ class TabStripSceneLayer : public SceneLayer {
                            jint scrim_color,
                            jfloat scrim_opacity,
                            jfloat left_padding,
-                           jfloat right_padding);
+                           jfloat right_padding,
+                           jfloat top_padding);
 
   void UpdateNewTabButton(
       JNIEnv* env,
@@ -67,6 +68,7 @@ class TabStripSceneLayer : public SceneLayer {
       jboolean should_apply_hover_highlight,
       jfloat x,
       jfloat y,
+      jfloat top_padding,
       jfloat touch_target_offset,
       jboolean visible,
       jint tint,
@@ -159,16 +161,21 @@ class TabStripSceneLayer : public SceneLayer {
       const base::android::JavaParamRef<jobject>& jlayer_title_cache,
       const base::android::JavaParamRef<jobject>& jresource_manager);
 
-  void PutGroupTitleLayer(JNIEnv* env,
-                          const base::android::JavaParamRef<jobject>& jobj,
-                          jint tint,
-                          jfloat x,
-                          jfloat y,
-                          jfloat width,
-                          jfloat height,
-                          jfloat default_margin,
-                          jfloat top_margin,
-                          jfloat corner_radius);
+  void PutGroupIndicatorLayer(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& jobj,
+      jboolean incognito,
+      jint id,
+      jint tint,
+      jfloat x,
+      jfloat y,
+      jfloat width,
+      jfloat height,
+      jfloat title_text_padding,
+      jfloat corner_radius,
+      jfloat bottom_indicator_width,
+      jfloat bottom_indicator_height,
+      const base::android::JavaParamRef<jobject>& jlayer_title_cache);
 
   bool ShouldShowBackground() override;
   SkColor GetBackgroundColor() override;
@@ -178,11 +185,13 @@ class TabStripSceneLayer : public SceneLayer {
       LayerTitleCache* layer_title_cache);
 
   scoped_refptr<cc::slim::SolidColorLayer> GetNextGroupTitleLayer();
+  scoped_refptr<cc::slim::SolidColorLayer> GetNextGroupBottomLayer();
 
   typedef std::vector<scoped_refptr<TabHandleLayer>> TabHandleLayerList;
 
   scoped_refptr<cc::slim::SolidColorLayer> tab_strip_layer_;
   scoped_refptr<cc::slim::Layer> scrollable_strip_layer_;
+  scoped_refptr<cc::slim::Layer> group_indicator_layer_;
   scoped_refptr<cc::slim::UIResourceLayer> new_tab_button_;
   scoped_refptr<cc::slim::UIResourceLayer> new_tab_button_background_;
   scoped_refptr<cc::slim::UIResourceLayer> left_fade_;
@@ -201,6 +210,7 @@ class TabStripSceneLayer : public SceneLayer {
   TabHandleLayerList tab_handle_layers_;
   unsigned group_write_index_ = 0;
   std::vector<scoped_refptr<cc::slim::SolidColorLayer>> group_title_layers_;
+  std::vector<scoped_refptr<cc::slim::SolidColorLayer>> group_bottom_layers_;
   raw_ptr<SceneLayer> content_tree_;
 };
 

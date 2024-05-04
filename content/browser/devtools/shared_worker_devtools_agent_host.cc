@@ -91,9 +91,8 @@ bool SharedWorkerDevToolsAgentHost::AttachSession(DevToolsSession* session,
   session->CreateAndAddHandler<protocol::InspectorHandler>();
   session->CreateAndAddHandler<protocol::NetworkHandler>(
       GetId(), devtools_worker_token_, GetIOContext(),
-      base::BindRepeating([] {}), session->GetClient()->MayReadLocalFiles(),
-      session->GetClient()->IsTrusted());
-  // TODO(crbug.com/1143100): support pushing updated loader factories down to
+      base::BindRepeating([] {}), session->GetClient());
+  // TODO(crbug.com/40154954): support pushing updated loader factories down to
   // renderer.
   session->CreateAndAddHandler<protocol::FetchHandler>(
       GetIOContext(),

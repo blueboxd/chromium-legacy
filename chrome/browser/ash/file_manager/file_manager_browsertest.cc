@@ -25,13 +25,16 @@
 #include "chrome/browser/ash/file_manager/copy_or_move_io_task_policy_impl.h"
 #include "chrome/browser/ash/file_manager/file_manager_browsertest_base.h"
 #include "chrome/browser/ash/file_manager/file_manager_browsertest_utils.h"
+#include "chrome/browser/ash/file_manager/file_manager_test_util.h"
 #include "chrome/browser/ash/file_manager/io_task.h"
 #include "chrome/browser/ash/login/test/device_state_mixin.h"
 #include "chrome/browser/ash/login/test/logged_in_user_mixin.h"
 #include "chrome/browser/ash/settings/scoped_testing_cros_settings.h"
 #include "chrome/browser/ash/settings/stub_cros_settings_provider.h"
 #include "chrome/browser/extensions/component_loader.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
@@ -156,7 +159,7 @@ class LoggedInUserFilesAppBrowserTest : public FilesAppBrowserTest {
       case kDeviceModeNotSet:
         CHECK(false) << "device_mode option must be set for "
                         "LoggedInUserFilesAppBrowserTest";
-        // TODO(crbug.com/1061742): `base::ImmediateCrash` is necessary.
+        // TODO(crbug.com/40122554): `base::ImmediateCrash` is necessary.
         base::ImmediateCrash();
       case kConsumerOwned:
         return ash::DeviceStateMixin::State::OOBE_COMPLETED_CONSUMER_OWNED;
@@ -209,11 +212,8 @@ class QuickOfficeBrowserTestBase : public InProcessBrowserTest {
  protected:
   // extensions::ExtensionApiTest:
   void SetUpOnMainThread() override {
-    extensions::ComponentLoader::EnableBackgroundExtensionsForTesting();
-    extensions::ExtensionService* service =
-        extensions::ExtensionSystem::Get(browser()->profile())
-            ->extension_service();
-    service->component_loader()->AddDefaultComponentExtensions(false);
+    file_manager::test::AddDefaultComponentExtensionsOnMainThread(
+        browser()->profile());
 
     embedded_test_server()->ServeFilesFromDirectory(GetTestDataDirectory());
     ASSERT_TRUE(embedded_test_server()->Start());
@@ -425,7 +425,15 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("fileDisplayCheckReadOnlyIconOnFakeDirectory"),
         TestCase("fileDisplayCheckNoReadOnlyIconOnDownloads"),
         TestCase("fileDisplayCheckNoReadOnlyIconOnLinuxFiles"),
-        TestCase("fileDisplayCheckNoReadOnlyIconOnGuestOs")));
+        TestCase("fileDisplayCheckNoReadOnlyIconOnGuestOs"),
+        TestCase("fileDisplayLocalFilesDisabledUnmountRemovable")
+            .DontMountVolumes()
+            .NewDirectoryTree()
+            .EnableSkyVault(),
+        TestCase("fileDisplayLocalFilesDisableInMyFiles")
+            .DontMountVolumes()
+            .NewDirectoryTree()
+            .EnableSkyVault()));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     OpenVideoMediaApp, /* open_video_media_app.js */
@@ -473,6 +481,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("zipFileOpenUsb").NewDirectoryTree(),
         TestCase("zipCreateFileUsb").NewDirectoryTree(),
         TestCase("zipExtractFromReadOnly").NewDirectoryTree(),
+        TestCase("zipCloseFromContextMenu").NewDirectoryTree(),
         // Section end - browser tests for new directory tree
         TestCase("zipFileOpenDownloads"),
         TestCase("zipFileOpenDownloads").InGuestMode(),
@@ -494,7 +503,8 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("zipExtractFromReadOnly"),
         TestCase("zipExtractShowPanel"),
         TestCase("zipExtractShowMultiPanel"),
-        TestCase("zipExtractSelectionMenus")));
+        TestCase("zipExtractSelectionMenus"),
+        TestCase("zipCloseFromContextMenu")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     CreateNewFolder, /* create_new_folder.js */
@@ -569,7 +579,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("keyboardCopyDownloads").EnableConflictDialog(),
         TestCase("keyboardCopyDrive"),
         TestCase("keyboardCopyDrive").EnableConflictDialog(),
-// TODO(crbug.com/1236842): Remove flakiness and enable this test.
+// TODO(crbug.com/40783093): Remove flakiness and enable this test.
 #if !defined(ADDRESS_SANITIZER) && defined(NDEBUG)
         TestCase("keyboardFocusOutlineVisible"),
         TestCase("keyboardFocusOutlineVisibleMouse"),
@@ -862,6 +872,8 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
             .NewDirectoryTree(),
         TestCase("directoryTreeHideExpandIconWhenLastSubFolderIsRemoved")
             .NewDirectoryTree(),
+        TestCase("directoryTreeKeepDriveOrderAfterReconnected")
+            .NewDirectoryTree(),
         // Section end - browser tests for new directory tree
         TestCase("directoryTreeActiveDirectory"),
         TestCase("directoryTreeSelectedDirectory"),
@@ -877,7 +889,8 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("directoryTreeExpandFolderOnDelayExpansionVolume"),
         TestCase("directoryTreeExpandAndSelectedOnDragMove"),
         TestCase("directoryTreeClickDriveRootWhenMyDriveIsActive"),
-        TestCase("directoryTreeHideExpandIconWhenLastSubFolderIsRemoved")));
+        TestCase("directoryTreeHideExpandIconWhenLastSubFolderIsRemoved"),
+        TestCase("directoryTreeKeepDriveOrderAfterReconnected")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     DirectoryTreeContextMenu, /* directory_tree_context_menu.js */
@@ -1250,14 +1263,14 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
             .FeatureIds({"screenplay-9e3628b5-86db-481f-8623-f13eac08d61a"}),
         TestCase("transferDragDropActiveDrop")
             .FeatureIds({"screenplay-9e3628b5-86db-481f-8623-f13eac08d61a"}),
-// TODO(crbug.com/1236842): Remove flakiness and enable this test.
+// TODO(crbug.com/40783093): Remove flakiness and enable this test.
 #if !defined(ADDRESS_SANITIZER) && defined(NDEBUG)
         TestCase("transferDragDropTreeItemDenies")
             .FeatureIds({"screenplay-9e3628b5-86db-481f-8623-f13eac08d61a"}),
 #endif
         TestCase("transferDragAndHoverTreeItemEntryList")
             .FeatureIds({"screenplay-9e3628b5-86db-481f-8623-f13eac08d61a"}),
-// TODO(crbug.com/1236842): Remove flakiness and enable this test.
+// TODO(crbug.com/40783093): Remove flakiness and enable this test.
 #if !defined(ADDRESS_SANITIZER) && defined(NDEBUG)
         TestCase("transferDragAndHoverTreeItemFakeEntry")
             .FeatureIds({"screenplay-9e3628b5-86db-481f-8623-f13eac08d61a"}),
@@ -1515,7 +1528,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
             .WithBrowser()
             .InGuestMode()
             .EnableCrosComponents()
-        // TODO(crbug.com/1236842): Remove flakiness and enable this test.
+        // TODO(crbug.com/40783093): Remove flakiness and enable this test.
         //      ,
         //      TestCase("tabindexSaveFileDialogDrive").WithBrowser(),
         //      TestCase("tabindexSaveFileDialogDownloads").WithBrowser(),
@@ -1655,7 +1668,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
             .InGuestMode()
             .FeatureIds({"screenplay-17a056b4-ed53-415f-a186-99204a7c2a21"}),
         TestCase("saveFileDialogDownloads").WithBrowser().InIncognito(),
-        // TODO(crbug.com/1236842): Remove flakiness and enable this test.
+        // TODO(crbug.com/40783093): Remove flakiness and enable this test.
         // TestCase("saveFileDialogDownloadsNewFolderButton").WithBrowser(),
         TestCase("saveFileDialogDownloadsNewFolderButton").WithBrowser(),
         TestCase("saveFileDialogPanelsDisabled").WithBrowser(),
@@ -1871,6 +1884,15 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("pluginVmFileDropFailErrorDialog")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
+    MaterializedViews, /* materialized_views.ts */
+    FilesAppBrowserTest,
+    ::testing::Values(
+        TestCase("mvDisplayInTree")
+            .EnableMaterializedViews()
+            .NewDirectoryTree(),
+        TestCase("mvScanner").EnableMaterializedViews().NewDirectoryTree()));
+
+WRAPPED_INSTANTIATE_TEST_SUITE_P(
     MyFiles, /* my_files.js */
     FilesAppBrowserTest,
     ::testing::Values(
@@ -2067,7 +2089,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("searchHierarchy"),
         TestCase("hideSearchInTrash"),
 // TODO(b/287169303): test is flaky on ChromiumOS MSan
-// TODO(crbug.com/1493224): Test is flaky on ChromiumOS Asan / Lsan.
+// TODO(crbug.com/40285759): Test is flaky on ChromiumOS Asan / Lsan.
 #if !defined(ADDRESS_SANITIZER) && !defined(LEAK_SANITIZER) && \
     !defined(MEMORY_SANITIZER)
         TestCase("searchTrashedFiles"),
@@ -2251,7 +2273,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
             .FeatureIds({"screenplay-a06f961a-17f5-4fbd-8285-49abb000dee1"}),
         TestCase("trashPermanentlyDelete"),
         TestCase("trashRestoreFromToast"),
-// TODO(crbug.com/1425820): Re-enable this test on ChromiumOS MSAN.
+// TODO(crbug.com/40261044): Re-enable this test on ChromiumOS MSAN.
 #if !defined(MEMORY_SANITIZER)
         TestCase("trashRestoreFromToast").EnableCrosComponents(),
 #endif

@@ -215,7 +215,26 @@ class BacklightApp extends HTMLElement implements ClientApi {
     this.updateHandler();
   }
 
-  async setViewport(_viewport: Rect) {}
+  async requestBitmap(_requestedPageId: string) {
+    return {
+      'page': {
+        'imageInfo': {
+          'alphaType': 1,
+          'width': 1,
+          'height': 1,
+          'colorTransferFunction': null,
+          'colorToXyzMatrix': null,
+        },
+        'pixelData': {
+          'bytes': [],
+          'sharedMemory': undefined,
+          'invalidBuffer': undefined,
+        },
+      },
+    };
+  }
+
+  async setViewport(_viewport: RectF) {}
 
   setDelegate(delegate: ClientApiDelegate|null) {
     this.delegate = delegate;

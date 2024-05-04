@@ -82,6 +82,54 @@ TEST(TelemetryDiagnosticRoutineConvertersTest, ConvertFanRoutineArgumentPtr) {
 }
 
 TEST(TelemetryDiagnosticRoutineConvertersTest,
+     ConvertLedLitUpRoutineArgumentPtr) {
+  auto input = crosapi::TelemetryDiagnosticLedLitUpRoutineArgument::New();
+  input->name = crosapi::TelemetryDiagnosticLedName::kBattery;
+  input->color = crosapi::TelemetryDiagnosticLedColor::kRed;
+
+  auto result = ConvertRoutinePtr(std::move(input));
+
+  ASSERT_TRUE(result);
+  EXPECT_EQ(result->name, healthd::LedName::kBattery);
+  EXPECT_EQ(result->color, healthd::LedColor::kRed);
+}
+
+TEST(TelemetryDiagnosticRoutineConvertersTest,
+     ConvertNetworkBandwidthRoutineArgumentPtr) {
+  auto input =
+      crosapi::TelemetryDiagnosticNetworkBandwidthRoutineArgument::New();
+
+  auto result = ConvertRoutinePtr(std::move(input));
+
+  ASSERT_TRUE(result);
+}
+
+TEST(TelemetryDiagnosticRoutineConvertersTest,
+     ConvertUnrecognizedRoutineInquiryReplyPtr) {
+  auto input =
+      crosapi::TelemetryDiagnosticRoutineInquiryReply::NewUnrecognizedReply(
+          true);
+
+  const auto result = ConvertRoutinePtr(std::move(input));
+
+  ASSERT_TRUE(result);
+  ASSERT_TRUE(result->is_unrecognizedReply());
+  EXPECT_TRUE(result->get_unrecognizedReply());
+}
+
+TEST(TelemetryDiagnosticRoutineConvertersTest,
+     ConvertRoutineCheckLedLitUpStateInquiryReplyPtr) {
+  auto input =
+      crosapi::TelemetryDiagnosticRoutineInquiryReply::NewCheckLedLitUpState(
+          crosapi::TelemetryDiagnosticCheckLedLitUpStateReply::New());
+
+  const auto result = ConvertRoutinePtr(std::move(input));
+
+  ASSERT_TRUE(result);
+  EXPECT_TRUE(result->is_check_led_lit_up_state());
+}
+
+TEST(TelemetryDiagnosticRoutineConvertersTest,
      ConvertTelemetryDiagnosticRoutineStateInitializedPtr) {
   EXPECT_EQ(ConvertRoutinePtr(healthd::RoutineStateInitialized::New()),
             crosapi::TelemetryDiagnosticRoutineStateInitialized::New());
@@ -93,12 +141,34 @@ TEST(TelemetryDiagnosticRoutineConvertersTest,
             crosapi::TelemetryDiagnosticRoutineStateRunning::New());
 }
 
+TEST(TelemetryDiagnosticRoutineConvertersTest, ConvertRoutineInquiryPtr) {
+  auto input = healthd::RoutineInquiry::NewUnrecognizedInquiry(true);
+
+  const auto result = ConvertRoutinePtr(std::move(input));
+
+  ASSERT_TRUE(result);
+  ASSERT_TRUE(result->is_unrecognizedInquiry());
+  EXPECT_TRUE(result->get_unrecognizedInquiry());
+}
+
+TEST(TelemetryDiagnosticRoutineConvertersTest,
+     ConvertRoutineInquiryCheckLedLitUpStatePtr) {
+  auto input = healthd::RoutineInquiry::NewCheckLedLitUpState(
+      healthd::CheckLedLitUpStateInquiry::New());
+
+  const auto result = ConvertRoutinePtr(std::move(input));
+
+  ASSERT_TRUE(result);
+  EXPECT_TRUE(result->is_check_led_lit_up_state());
+}
+
 TEST(TelemetryDiagnosticRoutineConvertersTest,
      ConvertTelemetryDiagnosticRoutineStateWaitingPtr) {
   constexpr char kMessage[] = "TEST";
 
   auto input = healthd::RoutineStateWaiting::New(
-      healthd::RoutineStateWaiting::Reason::kWaitingToBeScheduled, kMessage);
+      healthd::RoutineStateWaiting::Reason::kWaitingToBeScheduled, kMessage,
+      healthd::RoutineInteraction::NewUnrecognizedInteraction(true));
 
   auto result = ConvertRoutinePtr(std::move(input));
 
@@ -106,6 +176,56 @@ TEST(TelemetryDiagnosticRoutineConvertersTest,
   EXPECT_EQ(result->reason, crosapi::TelemetryDiagnosticRoutineStateWaiting::
                                 Reason::kWaitingToBeScheduled);
   EXPECT_EQ(result->message, kMessage);
+  ASSERT_TRUE(result->interaction);
+  EXPECT_TRUE(result->interaction->is_unrecognizedInteraction());
+  EXPECT_TRUE(result->interaction->get_unrecognizedInteraction());
+}
+
+TEST(TelemetryDiagnosticRoutineConvertersTest,
+     ConvertTelemetryDiagnosticLedName) {
+  EXPECT_EQ(healthd::LedName::kUnmappedEnumField,
+            Convert(crosapi::TelemetryDiagnosticLedName::kUnmappedEnumField));
+  EXPECT_EQ(healthd::LedName::kBattery,
+            Convert(crosapi::TelemetryDiagnosticLedName::kBattery));
+  EXPECT_EQ(healthd::LedName::kPower,
+            Convert(crosapi::TelemetryDiagnosticLedName::kPower));
+  EXPECT_EQ(healthd::LedName::kAdapter,
+            Convert(crosapi::TelemetryDiagnosticLedName::kAdapter));
+  EXPECT_EQ(healthd::LedName::kLeft,
+            Convert(crosapi::TelemetryDiagnosticLedName::kLeft));
+  EXPECT_EQ(healthd::LedName::kRight,
+            Convert(crosapi::TelemetryDiagnosticLedName::kRight));
+}
+
+TEST(TelemetryDiagnosticRoutineConvertersTest,
+     ConvertTelemetryDiagnosticLedColor) {
+  EXPECT_EQ(healthd::LedColor::kUnmappedEnumField,
+            Convert(crosapi::TelemetryDiagnosticLedColor::kUnmappedEnumField));
+  EXPECT_EQ(healthd::LedColor::kRed,
+            Convert(crosapi::TelemetryDiagnosticLedColor::kRed));
+  EXPECT_EQ(healthd::LedColor::kGreen,
+            Convert(crosapi::TelemetryDiagnosticLedColor::kGreen));
+  EXPECT_EQ(healthd::LedColor::kBlue,
+            Convert(crosapi::TelemetryDiagnosticLedColor::kBlue));
+  EXPECT_EQ(healthd::LedColor::kYellow,
+            Convert(crosapi::TelemetryDiagnosticLedColor::kYellow));
+  EXPECT_EQ(healthd::LedColor::kWhite,
+            Convert(crosapi::TelemetryDiagnosticLedColor::kWhite));
+  EXPECT_EQ(healthd::LedColor::kAmber,
+            Convert(crosapi::TelemetryDiagnosticLedColor::kAmber));
+}
+
+TEST(TelemetryDiagnosticRoutineConvertersTest,
+     ConvertTelemetryDiagnosticCheckLedLitUpStateReplyState) {
+  EXPECT_EQ(healthd::CheckLedLitUpStateReply::State::kUnmappedEnumField,
+            Convert(crosapi::TelemetryDiagnosticCheckLedLitUpStateReply::State::
+                        kUnmappedEnumField));
+  EXPECT_EQ(healthd::CheckLedLitUpStateReply::State::kCorrectColor,
+            Convert(crosapi::TelemetryDiagnosticCheckLedLitUpStateReply::State::
+                        kCorrectColor));
+  EXPECT_EQ(healthd::CheckLedLitUpStateReply::State::kNotLitUp,
+            Convert(crosapi::TelemetryDiagnosticCheckLedLitUpStateReply::State::
+                        kNotLitUp));
 }
 
 TEST(TelemetryDiagnosticRoutineConvertersTest,
@@ -239,6 +359,19 @@ TEST(TelemetryDiagnosticRoutineConvertersTest,
 }
 
 TEST(TelemetryDiagnosticRoutineConvertersTest,
+     ConvertTelemetryDiagnosticNetworkBandwidthRoutineDetailPtr) {
+  auto input = healthd::NetworkBandwidthRoutineDetail::New();
+  input->download_speed_kbps = 123.0;
+  input->upload_speed_kbps = 456.0;
+
+  auto result = ConvertRoutinePtr(std::move(input));
+
+  ASSERT_TRUE(result);
+  EXPECT_EQ(result->download_speed_kbps, 123.0);
+  EXPECT_EQ(result->upload_speed_kbps, 456.0);
+}
+
+TEST(TelemetryDiagnosticRoutineConvertersTest,
      ConvertTelemetryDiagnosticRoutineDetailPtr) {
   EXPECT_EQ(
       ConvertRoutinePtr(healthd::RoutineDetail::NewUnrecognizedArgument(true)),
@@ -249,15 +382,16 @@ TEST(TelemetryDiagnosticRoutineConvertersTest,
             crosapi::TelemetryDiagnosticRoutineDetail::NewMemory(
                 crosapi::TelemetryDiagnosticMemoryRoutineDetail::New()));
 
-  EXPECT_EQ(ConvertRoutinePtr(healthd::RoutineDetail::NewVolumeButton(
-                healthd::VolumeButtonRoutineDetail::New())),
-            crosapi::TelemetryDiagnosticRoutineDetail::NewVolumeButton(
-                crosapi::TelemetryDiagnosticVolumeButtonRoutineDetail::New()));
-
   EXPECT_EQ(ConvertRoutinePtr(healthd::RoutineDetail::NewFan(
                 healthd::FanRoutineDetail::New())),
             crosapi::TelemetryDiagnosticRoutineDetail::NewFan(
                 crosapi::TelemetryDiagnosticFanRoutineDetail::New()));
+
+  EXPECT_EQ(
+      ConvertRoutinePtr(healthd::RoutineDetail::NewNetworkBandwidth(
+          healthd::NetworkBandwidthRoutineDetail::New())),
+      crosapi::TelemetryDiagnosticRoutineDetail::NewNetworkBandwidth(
+          crosapi::TelemetryDiagnosticNetworkBandwidthRoutineDetail::New()));
 }
 
 TEST(TelemetryDiagnosticRoutineConvertersTest,
@@ -325,6 +459,36 @@ TEST(TelemetryDiagnosticRoutineConvertersTest,
   EXPECT_EQ(result->state_union,
             crosapi::TelemetryDiagnosticRoutineStateUnion::NewRunning(
                 crosapi::TelemetryDiagnosticRoutineStateRunning::New()));
+}
+
+TEST(TelemetryDiagnosticRoutineConvertersTest,
+     ConvertTelemetryDiagnosticRoutineRunningInfoPtr) {
+  EXPECT_EQ(
+      ConvertRoutinePtr(
+          healthd::RoutineRunningInfo::NewUnrecognizedArgument(true)),
+      crosapi::TelemetryDiagnosticRoutineRunningInfo::NewUnrecognizedArgument(
+          true));
+
+  EXPECT_EQ(ConvertRoutinePtr(healthd::RoutineRunningInfo::NewNetworkBandwidth(
+                healthd::NetworkBandwidthRoutineRunningInfo::New())),
+            crosapi::TelemetryDiagnosticRoutineRunningInfo::NewNetworkBandwidth(
+                crosapi::TelemetryDiagnosticNetworkBandwidthRoutineRunningInfo::
+                    New()));
+}
+
+TEST(TelemetryDiagnosticRoutineConvertersTest,
+     ConvertTelemetryDiagnosticNetworkBandwidthRoutineRunningInfoPtr) {
+  auto input = healthd::NetworkBandwidthRoutineRunningInfo::New();
+  input->type = healthd::NetworkBandwidthRoutineRunningInfo::Type::kDownload;
+  input->speed_kbps = 100.0;
+
+  auto result = ConvertRoutinePtr(std::move(input));
+
+  ASSERT_TRUE(result);
+  EXPECT_EQ(result->type,
+            crosapi::TelemetryDiagnosticNetworkBandwidthRoutineRunningInfo::
+                Type::kDownload);
+  EXPECT_EQ(result->speed_kbps, 100.0);
 }
 
 }  // namespace ash::converters

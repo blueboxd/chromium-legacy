@@ -92,8 +92,12 @@ void SuggestionWindowView::Show(const SuggestionDetails& details) {
   Reorient(Orientation::kVertical);
   completion_view_->SetVisible(true);
   completion_view_->SetView(details);
-  if (details.show_setting_link)
-    completion_view_->SetMinWidth(setting_link_->GetPreferredSize().width());
+  if (details.show_setting_link) {
+    completion_view_->SetMinWidth(
+        setting_link_
+            ->GetPreferredSize(views::SizeBounds(setting_link_->width(), {}))
+            .width());
+  }
 
   setting_link_->SetVisible(details.show_setting_link);
 
@@ -210,7 +214,7 @@ SuggestionWindowView::SuggestionWindowView(gfx::NativeView parent,
   setting_link_ = AddChildView(std::make_unique<views::Link>(
       l10n_util::GetStringUTF16(IDS_SUGGESTION_LEARN_MORE)));
   setting_link_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  // TODO(crbug/1102215): Implement proper UI layout using Insets constant.
+  // TODO(crbug.com/40138695): Implement proper UI layout using Insets constant.
   constexpr auto insets = gfx::Insets::TLBR(0, kPadding, kPadding, kPadding);
   setting_link_->SetBorder(views::CreateEmptyBorder(insets));
   constexpr int kSettingLinkFontSize = 11;
@@ -331,8 +335,9 @@ void SuggestionWindowView::SetCandidateHighlighted(
         ->SetHighlight(false);
   }
 
-  if (highlighted)
+  if (highlighted) {
     view->SetHighlight(highlighted);
+  }
 }
 
 BEGIN_METADATA(SuggestionWindowView)

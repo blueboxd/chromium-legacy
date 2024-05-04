@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40284755): Remove this and spanify to fix the errors.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "base/functional/bind.h"
 
 #include <functional>
@@ -12,10 +17,6 @@
 
 #include "base/allocator/partition_alloc_features.h"
 #include "base/allocator/partition_alloc_support.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/dangling_raw_ptr_checks.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_buildflags.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_for_testing.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_root.h"
 #include "base/functional/callback.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
@@ -27,6 +28,10 @@
 #include "base/test/gtest_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
+#include "partition_alloc/dangling_raw_ptr_checks.h"
+#include "partition_alloc/partition_alloc_buildflags.h"
+#include "partition_alloc/partition_alloc_for_testing.h"
+#include "partition_alloc/partition_root.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -1893,7 +1898,8 @@ TEST(BindDeathTest, BanFirstOwnerOfRefCountedType) {
   });
 }
 
-#if BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
+#if PA_BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT) && \
+    PA_BUILDFLAG(USE_RAW_PTR_BACKUP_REF_IMPL)
 
 void HandleOOM(size_t unused_size) {
   LOG(FATAL) << "Out of memory";
@@ -2137,7 +2143,8 @@ TEST_F(BindUnretainedDanglingDeathTest, UnretainedWeakReceiverDangling) {
 
 #endif  // defined(GTEST_HAS_DEATH_TEST) && !BUILDFLAG(IS_ANDROID)
 
-#endif  // BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
+#endif  // PA_BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT) &&
+        // PA_BUILDFLAG(USE_RAW_PTR_BACKUP_REF_IMPL)
 
 }  // namespace
 }  // namespace base

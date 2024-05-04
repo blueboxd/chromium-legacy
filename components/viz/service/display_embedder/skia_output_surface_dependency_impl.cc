@@ -90,10 +90,6 @@ SkiaOutputSurfaceDependencyImpl::GetGpuFeatureInfo() {
   return gpu_service_impl_->gpu_feature_info();
 }
 
-gpu::MailboxManager* SkiaOutputSurfaceDependencyImpl::GetMailboxManager() {
-  return gpu_service_impl_->mailbox_manager();
-}
-
 bool SkiaOutputSurfaceDependencyImpl::IsOffscreen() {
   return surface_handle_ == gpu::kNullSurfaceHandle;
 }
@@ -102,8 +98,8 @@ gpu::SurfaceHandle SkiaOutputSurfaceDependencyImpl::GetSurfaceHandle() {
   return surface_handle_;
 }
 
-scoped_refptr<gl::Presenter> SkiaOutputSurfaceDependencyImpl::CreatePresenter(
-    base::WeakPtr<gpu::ImageTransportSurfaceDelegate> stub) {
+scoped_refptr<gl::Presenter>
+SkiaOutputSurfaceDependencyImpl::CreatePresenter() {
   DCHECK(!IsOffscreen());
 
   auto context_state = GetSharedContextState();
@@ -116,21 +112,16 @@ scoped_refptr<gl::Presenter> SkiaOutputSurfaceDependencyImpl::CreatePresenter(
   }
 #endif
 
-  auto presenter = gpu::ImageTransportSurface::CreatePresenter(
-      context_state->display(), stub, surface_handle_);
-  if (presenter &&
-      GetGpuDriverBugWorkarounds().rely_on_implicit_sync_for_swap_buffers) {
-    presenter->SetRelyOnImplicitSync();
-  }
-  return presenter;
+  return gpu::ImageTransportSurface::CreatePresenter(
+      context_state->display(), GetGpuDriverBugWorkarounds(),
+      GetGpuFeatureInfo(), surface_handle_);
 }
 
 scoped_refptr<gl::GLSurface> SkiaOutputSurfaceDependencyImpl::CreateGLSurface(
-    base::WeakPtr<gpu::ImageTransportSurfaceDelegate> stub,
     gl::GLSurfaceFormat format) {
   CHECK(!IsOffscreen());
   return gpu::ImageTransportSurface::CreateNativeGLSurface(
-      GetSharedContextState()->display(), stub, surface_handle_, format);
+      GetSharedContextState()->display(), surface_handle_, format);
 }
 
 base::ScopedClosureRunner SkiaOutputSurfaceDependencyImpl::CachePresenter(

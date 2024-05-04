@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
 #include "build/config/coverage/buildflags.h"
 #include "chrome/browser/preloading/preloading_features.h"
 #include "chrome/common/chrome_features.h"
@@ -55,7 +56,7 @@ IN_PROC_BROWSER_TEST_F(SettingsTest, AppearanceFontsPage) {
 }
 
 #if !BUILDFLAG(IS_CHROMEOS)
-// TODO(crbug.com/1350019) Test is flaky on ChromeOS
+// TODO(crbug.com/40856240) Test is flaky on ChromeOS
 IN_PROC_BROWSER_TEST_F(SettingsTest, AppearancePage) {
   RunTest("settings/appearance_page_test.js", "mocha.run()");
 }
@@ -66,7 +67,7 @@ IN_PROC_BROWSER_TEST_F(SettingsTest, AutofillAddressValidation) {
           "mocha.run()");
 }
 
-// TODO(crbug.com/1420597): Clean up this test after Password Manager redesign
+// TODO(crbug.com/40258836): Clean up this test after Password Manager redesign
 // is launched.
 IN_PROC_BROWSER_TEST_F(SettingsTest, AutofillPage) {
   RunTest("settings/autofill_page_test.js", "mocha.run()");
@@ -110,6 +111,10 @@ IN_PROC_BROWSER_TEST_F(SettingsTest, ControlledButton) {
 
 IN_PROC_BROWSER_TEST_F(SettingsTest, ControlledRadioButton) {
   RunTest("settings/controlled_radio_button_test.js", "mocha.run()");
+}
+
+IN_PROC_BROWSER_TEST_F(SettingsTest, CrPolicyPrefIndicator) {
+  RunTest("settings/cr_policy_pref_indicator_test.js", "mocha.run()");
 }
 
 #if !BUILDFLAG(IS_CHROMEOS)
@@ -264,6 +269,14 @@ IN_PROC_BROWSER_TEST_F(SettingsTest, PeoplePageSyncControls) {
   RunTest("settings/people_page_sync_controls_test.js", "mocha.run()");
 }
 
+IN_PROC_BROWSER_TEST_F(SettingsTest, Prefs) {
+  RunTest("settings/settings_prefs_test.js", "mocha.run()");
+}
+
+IN_PROC_BROWSER_TEST_F(SettingsTest, PrefUtils) {
+  RunTest("settings/settings_pref_util_test.js", "mocha.run()");
+}
+
 class PeoplePageSyncPageTest : public SettingsBrowserTest {
  private:
   base::test::ScopedFeatureList scoped_feature_list_{
@@ -307,7 +320,7 @@ IN_PROC_BROWSER_TEST_F(SettingsTest, RelaunchConfirmationDialog) {
 }
 #endif
 
-// TODO(crbug.com/1127733): Flaky on all OSes. Enable the test.
+// TODO(crbug.com/40719198): Flaky on all OSes. Enable the test.
 IN_PROC_BROWSER_TEST_F(SettingsTest, DISABLED_ResetPage) {
   RunTest("settings/reset_page_test.js", "mocha.run()");
 }
@@ -412,7 +425,7 @@ IN_PROC_BROWSER_TEST_F(SettingsTest, SiteFavicon) {
 }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-// Copied from Polymer 2 test. TODO(crbug.com/929455): flaky, fix.
+// Copied from Polymer 2 test. TODO(crbug.com/41439813): flaky, fix.
 IN_PROC_BROWSER_TEST_F(SettingsTest, DISABLED_SiteListChromeOS) {
   RunTest("settings/site_list_tests_cros.js", "mocha.run()");
 }
@@ -446,7 +459,7 @@ IN_PROC_BROWSER_TEST_F(SettingsTest, StorageAccessSiteListEntry) {
 IN_PROC_BROWSER_TEST_F(SettingsTest, StorageAccessSiteList) {
   RunTest("settings/storage_access_site_list_test.js", "mocha.run()");
 }
-// Flaky on all OSes. TODO(crbug.com/1302405): Enable the test.
+// Flaky on all OSes. TODO(crbug.com/40825327): Enable the test.
 IN_PROC_BROWSER_TEST_F(SettingsTest, DISABLED_Subpage) {
   RunTest("settings/settings_subpage_test.js", "mocha.run()");
 }
@@ -502,7 +515,7 @@ class SettingsBasicPageTest : public SettingsBrowserTest {
   base::test::ScopedFeatureList scoped_feature_list_{features::kSafetyHub};
 };
 
-// TODO(crbug.com/1298753): Flaky on all platforms.
+// TODO(crbug.com/40823128): Flaky on all platforms.
 IN_PROC_BROWSER_TEST_F(SettingsBasicPageTest, DISABLED_BasicPage) {
   RunTest("settings/basic_page_test.js", "runMochaSuite('BasicPage')");
 }
@@ -531,7 +544,7 @@ IN_PROC_BROWSER_TEST_F(SettingsBasicPageTest, ExperimentalAdvanced) {
 
 using SettingsClearBrowsingDataTest = SettingsBrowserTest;
 
-// TODO(crbug.com/1107652): Flaky on Mac.
+// TODO(crbug.com/40707011): Flaky on Mac.
 #if BUILDFLAG(IS_MAC)
 #define MAYBE_ClearBrowsingDataAllPlatforms \
   DISABLED_ClearBrowsingDataAllPlatforms
@@ -553,20 +566,27 @@ IN_PROC_BROWSER_TEST_F(SettingsClearBrowsingDataTest,
 #endif
 
 IN_PROC_BROWSER_TEST_F(SettingsClearBrowsingDataTest,
+                       CbdTimeRangeExperiment_ExperimentOn) {
+  RunTest("settings/clear_browsing_data_test.js",
+          "runMochaSuite('CbdTimeRangeExperiment_ExperimentOn')");
+}
+
+IN_PROC_BROWSER_TEST_F(SettingsClearBrowsingDataTest,
+                       CbdTimeRangeExperiment_ExperimentOff) {
+  RunTest("settings/clear_browsing_data_test.js",
+          "runMochaSuite('CbdTimeRangeExperiment_ExperimentOff')");
+}
+
+IN_PROC_BROWSER_TEST_F(SettingsClearBrowsingDataTest,
                        ClearBrowsingDataForSupervisedUsers) {
   RunTest("settings/clear_browsing_data_test.js",
           "runMochaSuite('ClearBrowsingDataForSupervisedUsers')");
 }
 
 class SettingsCookiesPageTest : public SettingsBrowserTest {
- protected:
-  SettingsCookiesPageTest() {
-    scoped_feature_list_.InitAndEnableFeature(
-        privacy_sandbox::kPrivacySandboxFirstPartySetsUI);
-  }
-
  private:
-  base::test::ScopedFeatureList scoped_feature_list_;
+  base::test::ScopedFeatureList scoped_feature_list_{
+      privacy_sandbox::kPrivacySandboxFirstPartySetsUI};
 };
 
 #if ((BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)) && !defined(NDEBUG)) || \
@@ -575,20 +595,14 @@ class SettingsCookiesPageTest : public SettingsBrowserTest {
 #else
 #define MAYBE_CookiesPageTest CookiesPageTest
 #endif
-// TODO(crbug.com/1409653): fix flakiness on Linux and ChromeOS debug builds and
-// re-enable.
+// TODO(crbug.com/40889245): fix flakiness on Linux and ChromeOS debug builds
+// and re-enable.
 IN_PROC_BROWSER_TEST_F(SettingsCookiesPageTest, MAYBE_CookiesPageTest) {
   RunTest("settings/cookies_page_test.js", "runMochaSuite('CookiesPageTest')");
 }
 
 IN_PROC_BROWSER_TEST_F(SettingsCookiesPageTest, ExceptionsList) {
   RunTest("settings/cookies_page_test.js", "runMochaSuite('ExceptionsList')");
-}
-
-IN_PROC_BROWSER_TEST_F(SettingsCookiesPageTest,
-                       PreCookieSettingsUiAlignmentTest) {
-  RunTest("settings/cookies_page_test.js",
-          "runMochaSuite('PreCookieSettingsUiAlignmentTest')");
 }
 
 IN_PROC_BROWSER_TEST_F(SettingsCookiesPageTest, FirstPartySetsUIDisabled) {
@@ -599,6 +613,12 @@ IN_PROC_BROWSER_TEST_F(SettingsCookiesPageTest, FirstPartySetsUIDisabled) {
 IN_PROC_BROWSER_TEST_F(SettingsCookiesPageTest, IpProtectionToggle) {
   RunTest("settings/cookies_page_test.js",
           "runMochaSuite('IpProtectionToggle')");
+}
+
+IN_PROC_BROWSER_TEST_F(SettingsCookiesPageTest,
+                       FingerprintingProtectionToggle) {
+  RunTest("settings/cookies_page_test.js",
+          "runMochaSuite('FingerprintingProtectionToggle')");
 }
 
 IN_PROC_BROWSER_TEST_F(SettingsCookiesPageTest, TrackingProtectionSettings) {
@@ -658,15 +678,28 @@ IN_PROC_BROWSER_TEST_F(SettingsPerformancePageTest, Controls) {
           "runMochaSuite('PerformancePage')");
 }
 
-IN_PROC_BROWSER_TEST_F(SettingsPerformancePageTest, ExceptionList) {
+// TODO(crbug.com/337336425): Flaky on Windows.
+#if BUILDFLAG(IS_WIN)
+#define MAYBE_ExceptionList DISABLED_ExceptionList
+#else
+#define MAYBE_ExceptionList ExceptionList
+#endif
+IN_PROC_BROWSER_TEST_F(SettingsPerformancePageTest, MAYBE_ExceptionList) {
   RunTest("settings/performance_page_test.js",
           "runMochaSuite('TabDiscardExceptionList')");
 }
 
 class SettingsPerformancePageMultistateTest : public SettingsBrowserTest {
+ protected:
+  SettingsPerformancePageMultistateTest() {
+    scoped_feature_list_.InitWithFeatures(
+        {performance_manager::features::kMemorySaverMultistateMode,
+         performance_manager::features::kDiscardRingImprovements},
+        {});
+  }
+
  private:
-  base::test::ScopedFeatureList scoped_feature_list_{
-      performance_manager::features::kMemorySaverMultistateMode};
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 IN_PROC_BROWSER_TEST_F(SettingsPerformancePageMultistateTest, Controls) {
@@ -743,14 +776,25 @@ IN_PROC_BROWSER_TEST_F(SettingsPrivacyGuideTest, PrivacyGuideDialog) {
           "runMochaSuite('PrivacyGuideDialog')");
 }
 
-// TODO(https://crbug.com/1426530): Re-enable when no longer flaky.
+// TODO(crbug.com/40899379): Re-enable when no longer flaky.
 #if !BUILDFLAG(IS_LINUX) || defined(NDEBUG)
 IN_PROC_BROWSER_TEST_F(SettingsBrowserTest, Integration) {
   RunTest("settings/privacy_guide_integration_test.js", "mocha.run()");
 }
 #endif
 
-using SettingsPrivacyGuideFragmentsTest = SettingsBrowserTest;
+class SettingsPrivacyGuideFragmentsTest : public SettingsBrowserTest {
+ protected:
+  SettingsPrivacyGuideFragmentsTest() {
+    scoped_feature_list_.InitWithFeatures(
+        {content_settings::features::kTrackingProtection3pcd,
+         privacy_sandbox::kTrackingProtectionSettingsLaunch},
+        {});
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
 
 IN_PROC_BROWSER_TEST_F(SettingsPrivacyGuideFragmentsTest, WelcomeFragment) {
   RunTest("settings/privacy_guide_fragments_test.js",
@@ -787,6 +831,12 @@ IN_PROC_BROWSER_TEST_F(SettingsPrivacyGuideFragmentsTest,
                        CompletionFragmentPrivacySandboxRestricted) {
   RunTest("settings/privacy_guide_fragments_test.js",
           "runMochaSuite('CompletionFragmentPrivacySandboxRestricted')");
+}
+
+IN_PROC_BROWSER_TEST_F(SettingsPrivacyGuideFragmentsTest,
+                       CompletionFragmentWithTrackingProtection) {
+  RunTest("settings/privacy_guide_fragments_test.js",
+          "runMochaSuite('CompletionFragmentWithoutTrackingProtection')");
 }
 
 #if BUILDFLAG(IS_LINUX) && !defined(NDEBUG)
@@ -850,7 +900,9 @@ class SettingsPrivacyPageTest : public SettingsBrowserTest {
 #if BUILDFLAG(IS_CHROMEOS)
             blink::features::kWebPrinting,
 #endif
-            features::kSafetyHub},
+            features::kEnableCertManagementUIV2,
+            features::kSafetyHub,
+        },
         {});
     scoped_feature_list2_.InitAndEnableFeatureWithParameters(
         features::kFedCm, {
@@ -863,7 +915,7 @@ class SettingsPrivacyPageTest : public SettingsBrowserTest {
   base::test::ScopedFeatureList scoped_feature_list2_;
 };
 
-// TODO(crbug.com/1491942): This fails with the field trial testing config.
+// TODO(crbug.com/40285326): This fails with the field trial testing config.
 class SettingsPrivacyPageTestNoTestingConfig : public SettingsPrivacyPageTest {
  public:
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -886,8 +938,8 @@ IN_PROC_BROWSER_TEST_F(SettingsPrivacyPageTestWithoutWebPrinting,
           "runMochaSuite('WebPrintingNotShown')");
 }
 
-// TODO(crbug.com/1351019): Flaky on Linux Tests(dbg).
-#if BUILDFLAG(IS_LINUX)
+// Flaky on linux debug builds. https://crbug.com/331366001.
+#if BUILDFLAG(IS_LINUX) && !defined(NDEBUG)
 #define MAYBE_PrivacyPage DISABLED_PrivacyPage
 #else
 #define MAYBE_PrivacyPage PrivacyPage
@@ -899,6 +951,11 @@ IN_PROC_BROWSER_TEST_F(SettingsPrivacyPageTestNoTestingConfig,
 
 IN_PROC_BROWSER_TEST_F(SettingsPrivacyPageTest, PrivacySandbox) {
   RunTest("settings/privacy_page_test.js", "runMochaSuite('PrivacySandbox')");
+}
+
+IN_PROC_BROWSER_TEST_F(SettingsPrivacyPageTest, CertificateManagementV2) {
+  RunTest("settings/privacy_page_test.js",
+          "runMochaSuite('CertificateManagementV2')");
 }
 
 IN_PROC_BROWSER_TEST_F(SettingsPrivacyPageTest, CookiesSubpage) {
@@ -925,12 +982,12 @@ IN_PROC_BROWSER_TEST_F(SettingsPrivacyPageTest,
           "runMochaSuite('NotificationPermissionReviewSafetyHubDisabled')");
 }
 
-// TODO(crbug.com/1043665): flaky crash on Linux Tests (dbg).
+// TODO(crbug.com/40669164): flaky crash on Linux Tests (dbg).
 IN_PROC_BROWSER_TEST_F(SettingsPrivacyPageTest, DISABLED_PrivacyPageSound) {
   RunTest("settings/privacy_page_test.js", "runMochaSuite('PrivacyPageSound')");
 }
 
-// TODO(crbug.com/1113912): flaky failure on multiple platforms
+// TODO(crbug.com/40710522): flaky failure on multiple platforms
 IN_PROC_BROWSER_TEST_F(SettingsPrivacyPageTest,
                        DISABLED_HappinessTrackingSurveys) {
   RunTest("settings/privacy_page_test.js",
@@ -938,7 +995,7 @@ IN_PROC_BROWSER_TEST_F(SettingsPrivacyPageTest,
 }
 
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
-// TODO(crbug.com/1043665): disabling due to failures on several builders.
+// TODO(crbug.com/40669164): disabling due to failures on several builders.
 IN_PROC_BROWSER_TEST_F(SettingsPrivacyPageTest, DISABLED_CertificateManager) {
   RunTest("settings/privacy_page_test.js",
           "runMochaSuite('NativeCertificateManager')");
@@ -1032,6 +1089,22 @@ IN_PROC_BROWSER_TEST_F(ProactiveTopicsBlockingTest,
           "runMochaSuite('ManageTopicsAndAdTopicsPageState')");
 }
 
+class PrivacySandboxPageRedesign : public SettingsPrivacySandboxPageTest {
+ protected:
+  PrivacySandboxPageRedesign() {
+    scoped_feature_list_.InitAndEnableFeature(
+        privacy_sandbox::kPsRedesignAdPrivacyPage);
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(PrivacySandboxPageRedesign, RedesignToggles) {
+  RunTest("settings/privacy_sandbox_page_test.js",
+          "runMochaSuite('PrivacySandboxPageRedesignToggles')");
+}
+
 IN_PROC_BROWSER_TEST_F(SettingsTest, ReviewNotificationPermissions) {
   RunTest("settings/review_notification_permissions_test.js", "mocha.run()");
 }
@@ -1104,7 +1177,7 @@ IN_PROC_BROWSER_TEST_F(SettingsSafetyHubTest, SafetyHubModule) {
 }
 
 #if BUILDFLAG(USE_JAVASCRIPT_COVERAGE)
-// TODO(crbug.com/1523686): Webviews don't work properly with JS coverage.
+// TODO(crbug.com/41496635): Webviews don't work properly with JS coverage.
 #define MAYBE_SafetyHubPage DISABLED_SafetyHubPage
 #else
 #define MAYBE_SafetyHubPage SafetyHubPage
@@ -1131,8 +1204,11 @@ class SettingsSecurityPageTest : public SettingsBrowserTest {
  protected:
   SettingsSecurityPageTest() {
     scoped_feature_list_.InitWithFeatures(
-        {safe_browsing::kFriendlierSafeBrowsingSettingsEnhancedProtection,
-         safe_browsing::kFriendlierSafeBrowsingSettingsStandardProtection},
+        {
+            safe_browsing::kFriendlierSafeBrowsingSettingsEnhancedProtection,
+            safe_browsing::kFriendlierSafeBrowsingSettingsStandardProtection,
+            features::kEnableCertManagementUIV2,
+        },
         {});
   }
 
@@ -1154,9 +1230,9 @@ IN_PROC_BROWSER_TEST_F(SettingsSecurityPageTest,
           "runMochaSuite('SecurityPageHappinessTrackingSurveys')");
 }
 
-// TODO(crbug.com/1403969): SafeBrowsing suite is flaky on Mac.
-// TODO(crbug.com/1404109): SafeBrowsing suite is flaky on Linux and LaCrOS.
-#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
+// TODO(crbug/338155508): Enable this flaky test. This is flaky on Linux debug
+// build.
+#if BUILDFLAG(IS_LINUX) && !defined(NDEBUG)
 #define MAYBE_SafeBrowsing DISABLED_SafeBrowsing
 #else
 #define MAYBE_SafeBrowsing SafeBrowsing
@@ -1231,7 +1307,7 @@ IN_PROC_BROWSER_TEST_F(SettingsSiteListTest, SiteListEmbargoedOrigin) {
           "runMochaSuite('SiteListEmbargoedOrigin')");
 }
 
-// TODO(crbug.com/929455): When the bug is fixed, merge
+// TODO(crbug.com/41439813): When the bug is fixed, merge
 // SiteListCookiesExceptionTypes into SiteList.
 IN_PROC_BROWSER_TEST_F(SettingsSiteListTest, SiteListCookiesExceptionTypes) {
   RunTest("settings/site_list_test.js",
@@ -1266,7 +1342,7 @@ class SettingsSiteSettingsPageTest : public SettingsBrowserTest {
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
-// TODO(crbug.com/1401833): Flaky.
+// TODO(crbug.com/40884439): Flaky.
 #if BUILDFLAG(IS_LINUX) && !defined(NDEBUG)
 #define MAYBE_SiteSettingsPage DISABLED_SiteSettingsPage
 #else
@@ -1277,7 +1353,7 @@ IN_PROC_BROWSER_TEST_F(SettingsSiteSettingsPageTest, MAYBE_SiteSettingsPage) {
           "runMochaSuite('SiteSettingsPage')");
 }
 
-// TODO(crbug.com/1401833): Flaky.
+// TODO(crbug.com/40884439): Flaky.
 #if BUILDFLAG(IS_LINUX) && !defined(NDEBUG)
 #define MAYBE_UnusedSitePermissionsReview DISABLED_UnusedSitePermissionsReview
 #else
@@ -1289,7 +1365,7 @@ IN_PROC_BROWSER_TEST_F(SettingsSiteSettingsPageTest,
           "runMochaSuite('UnusedSitePermissionsReview')");
 }
 
-// TODO(crbug.com/1401833): Flaky.
+// TODO(crbug.com/40884439): Flaky.
 #if BUILDFLAG(IS_LINUX) && !defined(NDEBUG)
 #define MAYBE_UnusedSitePermissionsReviewDisabled \
   DISABLED_UnusedSitePermissionsReviewDisabled

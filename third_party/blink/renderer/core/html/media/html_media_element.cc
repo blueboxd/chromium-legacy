@@ -1440,26 +1440,29 @@ LocalFrame* HTMLMediaElement::LocalFrameForPlayer() {
                           : GetDocument().GetFrame();
 }
 
+bool HTMLMediaElement::IsValidInvokeAction(HTMLElement& invoker,
+                                           InvokeAction action) {
+  if (!RuntimeEnabledFeatures::HTMLInvokeActionsV2Enabled()) {
+    return HTMLElement::IsValidInvokeAction(invoker, action);
+  }
+
+  return HTMLElement::IsValidInvokeAction(invoker, action) ||
+         action == InvokeAction::kPlaypause || action == InvokeAction::kPause ||
+         action == InvokeAction::kPlay || action == InvokeAction::kToggleMuted;
+}
+
 bool HTMLMediaElement::HandleInvokeInternal(HTMLElement& invoker,
-                                            AtomicString& action) {
+                                            InvokeAction action) {
+  CHECK(IsValidInvokeAction(invoker, action));
+
   if (HTMLElement::HandleInvokeInternal(invoker, action)) {
     return true;
   }
 
-  if (!RuntimeEnabledFeatures::HTMLInvokeActionsV2Enabled()) {
-    return false;
-  }
-
-  if (!(EqualIgnoringASCIICase(action, keywords::kPlaypause) ||
-        EqualIgnoringASCIICase(action, keywords::kPause) ||
-        EqualIgnoringASCIICase(action, keywords::kPlay) ||
-        EqualIgnoringASCIICase(action, keywords::kToggleMuted))) {
-    return false;
-  }
   Document& document = GetDocument();
   LocalFrame* frame = document.GetFrame();
 
-  if (EqualIgnoringASCIICase(action, keywords::kPlaypause)) {
+  if (action == InvokeAction::kPlaypause) {
     if (paused_) {
       if (LocalFrame::HasTransientUserActivation(frame)) {
         Play();
@@ -1475,12 +1478,12 @@ bool HTMLMediaElement::HandleInvokeInternal(HTMLElement& invoker,
       pause();
       return true;
     }
-  } else if (EqualIgnoringASCIICase(action, keywords::kPause)) {
+  } else if (action == InvokeAction::kPause) {
     if (!paused_) {
       pause();
     }
     return true;
-  } else if (EqualIgnoringASCIICase(action, keywords::kPlay)) {
+  } else if (action == InvokeAction::kPlay) {
     if (paused_) {
       if (LocalFrame::HasTransientUserActivation(frame)) {
         Play();
@@ -1493,13 +1496,14 @@ bool HTMLMediaElement::HandleInvokeInternal(HTMLElement& invoker,
       }
     }
     return true;
-  } else {
-    CHECK(EqualIgnoringASCIICase(action, keywords::kToggleMuted));
+  } else if (action == InvokeAction::kToggleMuted) {
     // No user activation check as `setMuted` already handles the autoplay
     // policy check.
     setMuted(!muted_);
     return true;
   }
+
+  return false;
 }
 
 void HTMLMediaElement::StartPlayerLoad() {
@@ -2784,14 +2788,16 @@ WebMediaPlayer::Preload HTMLMediaElement::EffectivePreloadType() const {
   return preload;
 }
 
-ScriptPromise HTMLMediaElement::playForBindings(ScriptState* script_state) {
+ScriptPromise<IDLUndefined> HTMLMediaElement::playForBindings(
+    ScriptState* script_state) {
   // We have to share the same logic for internal and external callers. The
   // internal callers do not want to receive a Promise back but when ::play()
   // is called, |play_promise_resolvers_| needs to be populated. What this code
   // does is to populate |play_promise_resolvers_| before calling ::play() and
   // remove the Promise if ::play() failed.
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
-  ScriptPromise promise = resolver->Promise();
+  auto* resolver =
+      MakeGarbageCollected<ScriptPromiseResolver<IDLUndefined>>(script_state);
+  auto promise = resolver->Promise();
   play_promise_resolvers_.push_back(resolver);
 
   std::optional<DOMExceptionCode> code = Play();
@@ -3906,6 +3912,8 @@ void HTMLMediaElement::UpdatePlayState(bool pause_speech /* = true */) {
   ReportCurrentTimeToMediaSource();
   PseudoStateChanged(CSSSelector::kPseudoPaused);
   PseudoStateChanged(CSSSelector::kPseudoPlaying);
+
+  UpdateVideoVisibilityTracker();
 }
 
 void HTMLMediaElement::StopPeriodicTimers() {
@@ -4002,6 +4010,8 @@ void HTMLMediaElement::ContextDestroyed() {
 
   StopPeriodicTimers();
   removed_from_document_timer_.Stop();
+
+  UpdateVideoVisibilityTracker();
 }
 
 bool HTMLMediaElement::HasPendingActivity() const {
@@ -4525,7 +4535,7 @@ void HTMLMediaElement::ScheduleNotifyPlaying() {
 
 void HTMLMediaElement::ResolveScheduledPlayPromises() {
   for (auto& resolver : play_promise_resolve_list_)
-    resolver->Resolve();
+    resolver->DowncastTo<IDLUndefined>()->Resolve();
 
   play_promise_resolve_list_.clear();
 }

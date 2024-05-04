@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/shelf/hotseat_widget.h"
+
 #include <memory>
 #include <tuple>
 #include <vector>
@@ -17,7 +19,6 @@
 #include "ash/public/cpp/test/shell_test_api.h"
 #include "ash/shelf/drag_window_from_shelf_controller_test_api.h"
 #include "ash/shelf/home_button.h"
-#include "ash/shelf/hotseat_widget.h"
 #include "ash/shelf/scrollable_shelf_view.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_app_button.h"
@@ -39,6 +40,7 @@
 #include "ash/system/unified/unified_system_tray.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/layer_animation_verifier.h"
+#include "ash/utility/forest_util.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
 #include "ash/wm/window_state.h"
@@ -215,13 +217,26 @@ class HotseatWidgetTest
     GetEventGenerator()->GestureTapAt(overview_button_center);
   }
 
- private:
-  friend class StackedHotseatWidgetTest;
+ protected:
   const ShelfAutoHideBehavior shelf_auto_hide_behavior_;
   const bool is_assistant_enabled_;
   const bool navigation_buttons_shown_in_tablet_mode_;
   std::unique_ptr<AssistantTestApi> assistant_test_api_;
   base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+class HotseatWidgetForestTest : public HotseatWidgetTest {
+ public:
+  HotseatWidgetForestTest() = default;
+  ~HotseatWidgetForestTest() = default;
+
+  // HotseatWidgetTest:
+  void SetupFeatureLists() override {
+    scoped_feature_list_.InitWithFeatureStates(
+        {{features::kHideShelfControlsInTabletMode,
+          !navigation_buttons_shown_in_tablet_mode()},
+         {features::kForestFeature, true}});
+  }
 };
 
 class StackedHotseatWidgetTest : public HotseatWidgetTest {
@@ -341,6 +356,15 @@ class HotseatTransitionAnimationObserver
 INSTANTIATE_TEST_SUITE_P(
     All,
     HotseatWidgetTest,
+    testing::Combine(
+        testing::Values(ShelfAutoHideBehavior::kNever,
+                        ShelfAutoHideBehavior::kAlways),
+        /*is_assistant_enabled*/ testing::Bool(),
+        /*navigation_buttons_shown_in_tablet_mode*/ testing::Bool()));
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    HotseatWidgetForestTest,
     testing::Combine(
         testing::Values(ShelfAutoHideBehavior::kNever,
                         ShelfAutoHideBehavior::kAlways),
@@ -966,6 +990,12 @@ TEST_P(HotseatWidgetTest, ObserverCallsMatch) {
 
 // Tests that a swipe up on the shelf shows the hotseat while in split view.
 TEST_P(HotseatWidgetTest, DisableBlurDuringOverviewMode) {
+  // TODO(sammiequon): Remove this test when forest feature can no longer be
+  // disabled.
+  if (IsForestFeatureEnabled()) {
+    return;
+  }
+
   TabletModeControllerTestApi().EnterTabletMode();
 
   ASSERT_EQ(
@@ -986,6 +1016,31 @@ TEST_P(HotseatWidgetTest, DisableBlurDuringOverviewMode) {
   EXPECT_EQ(
       ShelfConfig::Get()->shelf_blur_radius(),
       GetShelfWidget()->hotseat_widget()->GetHotseatBackgroundBlurForTest());
+}
+
+TEST_P(HotseatWidgetForestTest, EnableBlurDuringOverviewMode) {
+  TabletModeControllerTestApi().EnterTabletMode();
+
+  const int expected_blur_radius = ShelfConfig::Get()->shelf_blur_radius();
+  ASSERT_EQ(
+      GetShelfWidget()->hotseat_widget()->GetHotseatBackgroundBlurForTest(),
+      expected_blur_radius);
+
+  // Go into overview and check that at the end of the animation, background
+  // blur is still enabled.
+  StartOverview();
+  WaitForOverviewAnimation(/*enter=*/true);
+  EXPECT_EQ(
+      GetShelfWidget()->hotseat_widget()->GetHotseatBackgroundBlurForTest(),
+      expected_blur_radius);
+
+  // Exit overview and check that at the end of the animation, background
+  // blur is still enabled.
+  EndOverview();
+  WaitForOverviewAnimation(/*enter=*/false);
+  EXPECT_EQ(
+      GetShelfWidget()->hotseat_widget()->GetHotseatBackgroundBlurForTest(),
+      expected_blur_radius);
 }
 
 // Tests that releasing the hotseat gesture below the threshold results in a
@@ -2791,7 +2846,7 @@ INSTANTIATE_TEST_SUITE_P(RTL, HotseatWidgetRTLTest, testing::Bool());
 
 // The test to verify the hotseat transition animation from the extended state
 // to the home launcher state.
-// TODO(https://crbug.com/1210530): Disable this test due to flakiness.
+// TODO(crbug.com/40182469): Disable this test due to flakiness.
 TEST_P(HotseatWidgetRTLTest,
        DISABLED_VerifyTransitionFromExtendedModeToHomeLauncher) {
   TabletModeControllerTestApi().EnterTabletMode();
@@ -2808,7 +2863,7 @@ TEST_P(HotseatWidgetRTLTest,
   EXPECT_EQ(HotseatState::kExtended, GetShelfLayoutManager()->hotseat_state());
 
   // Animation should be long enough in order to collect sufficient data.
-  // TODO(https://crbug.com/1208651): remove this line when we solve that issue.
+  // TODO(crbug.com/40181827): remove this line when we solve that issue.
   ui::ScopedAnimationDurationScaleMode animation_duration(
       ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
 

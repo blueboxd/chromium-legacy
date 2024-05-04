@@ -86,7 +86,7 @@ DedicatedWorkerHost::DedicatedWorkerHost(
       creator_(creator),
       ancestor_render_frame_host_id_(ancestor_render_frame_host_id),
       creator_origin_(creator_storage_key.origin()),
-      // TODO(https://crbug.com/1058759): Calculate the worker origin based on
+      // TODO(crbug.com/40051700): Calculate the worker origin based on
       // the worker script URL (the worker's storage key should have an opaque
       // origin if the worker script URL's scheme is data:).
       storage_key_(creator_storage_key),
@@ -219,6 +219,8 @@ void DedicatedWorkerHost::StartScriptLoad(
     mojo::PendingRemote<blink::mojom::BlobURLToken> blob_url_token,
     mojo::Remote<blink::mojom::DedicatedWorkerHostFactoryClient> client,
     bool has_storage_access) {
+  TRACE_EVENT("loading", "DedicatedWorkerHost::StartScriptLoad", "script_url",
+              script_url);
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(base::FeatureList::IsEnabled(blink::features::kPlzDedicatedWorker));
 
@@ -320,6 +322,8 @@ void DedicatedWorkerHost::StartScriptLoad(
       nearest_ancestor_render_frame_host->GetSiteInstance()->GetPartitionDomain(
           storage_partition_impl);
 
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN0(
+      "loading", "WorkerScriptFetcher CreateAndStart", TRACE_ID_LOCAL(this));
   WorkerScriptFetcher::CreateAndStart(
       worker_process_host_->GetID(), token_, script_url,
       nearest_ancestor_render_frame_host, creator_render_frame_host,
@@ -332,7 +336,8 @@ void DedicatedWorkerHost::StartScriptLoad(
       storage_partition_impl->GetServiceWorkerContext(),
       service_worker_handle_.get(), std::move(blob_url_loader_factory), nullptr,
       storage_partition_impl, partition_domain,
-      // TODO(crbug.com/1138622): Propagate dedicated worker ukm::SourceId here.
+      // TODO(crbug.com/40153087): Propagate dedicated worker ukm::SourceId
+      // here.
       ukm::kInvalidSourceId, DedicatedWorkerDevToolsAgentHost::GetFor(this),
       token_.value(),
       /*require_cross_site_request_for_cookies=*/false, has_storage_access,
@@ -354,6 +359,10 @@ void DedicatedWorkerHost::DidStartScriptLoad(
     const GURL& final_response_url) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(base::FeatureList::IsEnabled(blink::features::kPlzDedicatedWorker));
+  TRACE_EVENT_NESTABLE_ASYNC_END0(
+      "loading", "WorkerScriptFetcher CreateAndStart", TRACE_ID_LOCAL(this));
+  TRACE_EVENT("loading", "DedicatedWorkerHost::DidStartScriptLoad",
+              "final_response_url", final_response_url);
 
   if (!main_script_load_params) {
     ScriptLoadStartFailed(final_response_url,
@@ -361,7 +370,7 @@ void DedicatedWorkerHost::DidStartScriptLoad(
     return;
   }
 
-  // TODO(https://crbug.com/986188): Check if the main script's final response
+  // TODO(crbug.com/41471904): Check if the main script's final response
   // URL is committable.
   final_response_url_ = final_response_url;
   service_->NotifyWorkerFinalResponseURLDetermined(token_, final_response_url);
@@ -378,7 +387,7 @@ void DedicatedWorkerHost::DidStartScriptLoad(
 
   // https://html.spec.whatwg.org/C/#run-a-worker
   if (final_response_url.SchemeIsLocal()) {
-    // TODO(https://crbug.com/1146362): Inherit from the file creator instead
+    // TODO(crbug.com/40053797): Inherit from the file creator instead
     // once creator policies are persisted through the filesystem store.
     if (base::FeatureList::IsEnabled(
             features::kPrivateNetworkAccessForWorkers)) {
@@ -435,7 +444,7 @@ void DedicatedWorkerHost::DidStartScriptLoad(
       storage_partition->GetWeakPtr(), final_response_url,
       coep.reporting_endpoint, coep.report_only_reporting_endpoint,
       reporting_source_, isolation_info_.network_anonymization_key());
-  // TODO(crbug.com/1197041): Bind the receiver of ReportingObserver to the
+  // TODO(crbug.com/40176729): Bind the receiver of ReportingObserver to the
   // worker in the renderer process.
 
   // > 14.8 If the result of checking a global object's embedder policy with
@@ -489,6 +498,9 @@ void DedicatedWorkerHost::DidStartScriptLoad(
       subresource_loader_updater_.BindNewPipeAndPassReceiver(),
       std::move(controller),
       BindAndPassRemoteForBackForwardCacheControllerHost());
+  if (service_worker_handle_->container_host()) {
+    service_worker_handle_->container_host()->SetContainerReady();
+  }
 
   // |service_worker_remote_object| is an associated remote, so calls can't be
   // made on it until its receiver is sent. Now that the receiver was sent, it
@@ -562,7 +574,7 @@ DedicatedWorkerHost::CreateNetworkFactoryForSubresources(
       url_loader_factory::ContentClientParams(
           worker_process_host_->GetBrowserContext(),
           /*frame=*/nullptr, worker_process_host_->GetID(),
-          GetStorageKey().origin(),
+          GetStorageKey().origin(), isolation_info_,
           ukm::SourceIdObj::FromInt64(
               ancestor_render_frame_host->GetPageUkmSourceId()),
           bypass_redirect_checks),
@@ -806,7 +818,7 @@ void DedicatedWorkerHost::GetFileSystemAccessManager(
   manager->BindReceiver(
       FileSystemAccessManagerImpl::BindingContext(
           GetStorageKey(),
-          // TODO(https://crbug.com/989323): Obtain and use a better
+          // TODO(crbug.com/41473757): Obtain and use a better
           // URL for workers instead of the origin as source url.
           // This URL will be used for SafeBrowsing checks and for
           // the Quarantine Service.

@@ -20,6 +20,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/native_library.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/power_monitor/power_monitor.h"
@@ -83,7 +84,7 @@ GpuWatchdogThread::GpuWatchdogThread(base::TimeDelta timeout,
     watched_thread_name_str_uma_ = ".main";
 
 #if BUILDFLAG(IS_MAC)
-  // TODO(crbug.com/1223033): Remove this once macOS uses system-wide ids.
+  // TODO(crbug.com/40187449): Remove this once macOS uses system-wide ids.
   // On macOS the thread ids used by CrashPad are not the same as the ones
   // provided by PlatformThread
   uint64_t watched_thread_id;
@@ -732,7 +733,7 @@ void GpuWatchdogThread::DeliberatelyTerminateToRecoverFromHang() {
   // Short term investigation into report only mode, bug tracking report only
   // mode can be found at crbug.com/1356196. The Catan team has not seen the
   // expected rampup in crashes where report only mode is enabled.
-  // TODO(crbug.com/1356196): remove this when investigation is over.
+  // TODO(crbug.com/40236187): remove this when investigation is over.
   UMA_HISTOGRAM_BOOLEAN("GPU.ReportOnlyModeStatusAtHang", in_report_only_mode_);
 
   // Create a crash dump first

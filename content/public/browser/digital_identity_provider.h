@@ -10,12 +10,13 @@
 #include "base/functional/callback.h"
 #include "base/values.h"
 #include "content/common/content_export.h"
-#include "content/public/browser/web_contents.h"
 #include "url/origin.h"
 
 #include <string>
 
 namespace content {
+
+class WebContents;
 
 // Coordinates between the web and native apps such that the latter can share
 // vcs with the web API caller. The functions are platform agnostic and
@@ -47,7 +48,7 @@ class CONTENT_EXPORT DigitalIdentityProvider {
       RequestStatusForMetrics status_for_metrics)>;
   virtual void Request(WebContents* web_contents,
                        const url::Origin& origin,
-                       const base::Value::Dict& request,
+                       const std::string& request,
                        DigitalIdentityCallback callback) = 0;
 
  protected:

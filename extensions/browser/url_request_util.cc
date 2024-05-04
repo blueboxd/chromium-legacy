@@ -11,14 +11,20 @@
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"
 #include "extensions/browser/process_map.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
 #include "extensions/common/manifest_handlers/web_accessible_resources_info.h"
 #include "extensions/common/manifest_handlers/webview_info.h"
+#include "pdf/buildflags.h"
 #include "services/network/public/cpp/request_destination.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "third_party/blink/public/common/loader/resource_type_util.h"
+
+#if BUILDFLAG(ENABLE_PDF)
+#include "pdf/pdf_features.h"
+#endif  // BUILDFLAG(ENABLE_PDF)
 
 namespace extensions {
 namespace url_request_util {
@@ -99,6 +105,20 @@ bool AllowCrossRendererResourceLoad(
     return true;
   }
 
+  // If the request is initiated by an opaque origin, allow it if the origin's
+  // precursor matches the extension. This allows sandboxed data URLs and srcdoc
+  // documents from an extension to access its resources (necessary for
+  // backwards compatibility), even if they rendered in a non-extension process.
+  if (request.request_initiator && request.request_initiator.value().opaque()) {
+    const GURL precursor_url = request.request_initiator.value()
+                                   .GetTupleOrPrecursorTupleIfOpaque()
+                                   .GetURL();
+    if (extension->origin() == url::Origin::Create(precursor_url)) {
+      *allowed = true;
+      return true;
+    }
+  }
+
   // Allow web accessible extension resources to be loaded as
   // subresources/sub-frames.
   if (WebAccessibleResourcesInfo::IsResourceWebAccessible(
@@ -125,6 +145,15 @@ bool AllowCrossRendererResourceLoadHelper(bool is_guest,
                                           ui::PageTransition page_transition,
                                           bool* allowed) {
   if (is_guest) {
+#if BUILDFLAG(ENABLE_PDF)
+    // Allow the PDF Viewer extension to load in guests.
+    if (chrome_pdf::features::IsOopifPdfEnabled() &&
+        extension->id() == extension_misc::kPdfExtensionId) {
+      *allowed = true;
+      return true;
+    }
+#endif  // BUILDFLAG(ENABLE_PDF)
+
     // An extension's resources should only be accessible to WebViews owned by
     // that extension.
     if (owner_extension != extension) {

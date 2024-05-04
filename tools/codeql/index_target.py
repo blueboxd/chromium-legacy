@@ -14,6 +14,10 @@ import traceback
 import gn_sources_tools
 import targets_to_index
 
+from collections import namedtuple
+
+CommandOutput = namedtuple("CommandOutput", "output traceback")
+
 
 def log_subprocess_output(output, logger=None):
   """ Reads from a subprocess's stdout and writes it to `logger`,
@@ -59,7 +63,8 @@ def trace(processing_num, entry, *, codeql_binary_path, codeql_db_path,
         command)
     logger.info(traceback.format_exc())
     logger.info("Working directory was %s" % directory)
-    failed_commands.append(str(command))
+    failed_commands[str(command)] = CommandOutput(e.output,
+                                                  traceback.format_exc())
 
 
 class CodeQLDatabase:
@@ -98,16 +103,25 @@ def index_one_target(target_name,
   print("Generating compilation db.")
   compilation_db = []
 
-  print("Fetching all transitive source dependencies for " + str(target_name))
-  gn_sources_dict = gn_sources_tools.dictionary_of_all_transitive_sources(
-      target_name, out_path, gn_path)
-  initial_compilation_db = get_compilation_db(src_path, out_path)
-  print('Filtering compilation DB to only include matches '
-        'from GN transitive dependencies.')
-  compilation_db = []
-  for entry in initial_compilation_db:
-    if entry['file'] in gn_sources_dict:
-      compilation_db.append(entry)
+  # TODO(flowerhack): For reasons as-yet-undetermined, this filtering logic
+  # leads to a database that is broken in surprising ways for the
+  # //chrome:chrome target.
+  # Temporarily use ONLY the compilation DB to unbreak this.
+  if target_name != "//chrome:chrome":
+    print("Fetching all transitive source dependencies for " + str(target_name))
+    gn_sources_dict = gn_sources_tools.dictionary_of_all_transitive_sources(
+        target_name, out_path, gn_path)
+    initial_compilation_db = get_compilation_db(src_path, out_path)
+    print('Filtering compilation DB to only include matches '
+          'from GN transitive dependencies.')
+    for entry in initial_compilation_db:
+      if entry['file'] in gn_sources_dict:
+        compilation_db.append(entry)
+  else:
+    initial_compilation_db = get_compilation_db(src_path, out_path)
+    for entry in initial_compilation_db:
+      if "-DLLVMFuzzerTestOneInput" not in entry['command']:
+        compilation_db.append(entry)
 
   print("Initializing codeql.")
   codeql_db = ""
@@ -121,7 +135,7 @@ def index_one_target(target_name,
   if (logfile):
     print("Progress on trace compilation will be reported to %s" % logfile)
   my_cpu_count = int(multiprocessing.cpu_count())
-  failed_commands = multiprocessing.Manager().list()
+  failed_commands = multiprocessing.Manager().dict()
   successful_commands = multiprocessing.Manager().list()
   with multiprocessing.Pool(my_cpu_count) as p:
     results = p.starmap(
@@ -134,7 +148,14 @@ def index_one_target(target_name,
         [(num, entry) for num, entry in enumerate(compilation_db)])
 
   print("Successful commands: %s" % len(successful_commands))
-  print("Failed commands: %s" % len(failed_commands))
+  print("Failed commands: %s" % len(failed_commands.keys()))
+  if failed_commands:
+    print("Failed commands were:")
+    for failed_command in failed_commands.keys():
+      print("%s\n" % failed_command)
+      print("Combined stdout/stderr: %s\n" %
+            failed_commands[failed_command].output)
+      print("Traceback: %s\n\n" % failed_commands[failed_command].traceback)
 
   print("Finalizing codeql db.")
   try:
@@ -188,7 +209,7 @@ def main():
       type=str,
       help="absolute path to logfile for `trace` calls, if desired")
   parser.add_argument(
-      '--gn_target',
+      '--gn_targets',
       '-g',
       action='append',
       type=str,
@@ -218,10 +239,10 @@ def main():
   src_path = os.path.abspath(os.path.expanduser(src_path))
   args.db_path = os.path.abspath(os.path.expanduser(args.db_path))
 
-  if args.gn_target:
-    index_one_target(args.gn_target, src_path, args.db_path,
-                     args.codeql_binary_path, args.out_path, logger,
-                     args.gn_path, args.logfile)
+  if args.gn_targets:
+    for target in args.gn_targets:
+      index_one_target(target, src_path, args.db_path, args.codeql_binary_path,
+                       args.out_path, logger, args.gn_path, args.logfile)
     return
 
   # If no args.gn_target given, default to indexing everything in

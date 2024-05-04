@@ -13,8 +13,8 @@ import org.chromium.components.browser_ui.widget.gesture.BackPressHandler.Type;
 import org.chromium.ui.UiUtils;
 
 /**
- * A utility class to record back press related histograms. TODO(https://crbug.com/1509190): Move
- * other histogram recording to this class.
+ * A utility class to record back press related histograms. TODO(crbug.com/41481803): Move other
+ * histogram recording to this class.
  */
 public class BackPressMetrics {
     private static final String EDGE_HISTOGRAM = "Android.BackPress.SwipeEdge";
@@ -73,11 +73,11 @@ public class BackPressMetrics {
                 "Navigation.OnGestureStart.NavigationInProgress", isNavigationInProgress);
         if (UiUtils.isGestureNavigationMode(window)) {
             RecordHistogram.recordBooleanHistogram(
-                    "Navigation.OnNavigationStart.GestureInProgress.GestureMode",
+                    "Navigation.OnGestureStart.NavigationInProgress.GestureMode",
                     isNavigationInProgress);
         } else {
             RecordHistogram.recordBooleanHistogram(
-                    "Navigation.OnNavigationStart.GestureInProgress.3ButtonMode",
+                    "Navigation.OnGestureStart.NavigationInProgress.3ButtonMode",
                     isNavigationInProgress);
         }
     }

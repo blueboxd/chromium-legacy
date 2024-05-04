@@ -15,6 +15,7 @@ android_library("java") {
     "//components/embedder_support/android:util_java",
     "//third_party/androidx:androidx_annotation_annotation_java",
     "//third_party/androidx:androidx_core_core_java",
+    "//url:url_java",
   ]
   resources_package = "org.chromium.chrome.browser.ui.quickactionsearchwidget"
 }
@@ -73,6 +74,10 @@ android_resources("java_resources") {
     "java/res/layout/quick_action_search_widget_small_layout.xml",
     "java/res/layout/quick_action_search_widget_small_preview_layout.xml",
     "java/res/layout/quick_action_search_widget_xsmall_layout.xml",
+    "java/res/values-sw240dp/dimens.xml",
+    "java/res/values-sw240dp/styles.xml",
+    "java/res/values-sw280dp/dimens.xml",
+    "java/res/values-sw280dp/styles.xml",
     "java/res/values/dimens.xml",
     "java/res/values/styles.xml",
     "java/res/xml/quick_action_search_widget_dino_info.xml",

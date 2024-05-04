@@ -32,7 +32,8 @@ enum LayoutConstant {
   BOOKMARK_BAR_BUTTON_IMAGE_LABEL_PADDING,
 
   // The size of icons used in Download bubbles.
-  // TODO(crbug/1296323): We should be sourcing the size of the file icon from
+  // TODO(crbug.com/40214740): We should be sourcing the size of the file icon
+  // from
   // the layout
   // provider rather than relying on hardcoded constants.
   DOWNLOAD_ICON_SIZE,
@@ -78,7 +79,7 @@ enum LayoutConstant {
   LOCATION_BAR_TRAILING_DECORATION_EDGE_PADDING,
 
   // The size of the icons used inside the LocationBar.
-  // TODO(crbug.com/1399991): Deprecate this after the size of all location bar
+  // TODO(crbug.com/40883435): Deprecate this after the size of all location bar
   // icons have moved to
   // either `LOCATION_BAR_LEADING_ICON_SIZE` or
   // `LOCATION_BAR_TRAILING_ICON_SIZE`

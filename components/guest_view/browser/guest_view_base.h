@@ -212,7 +212,7 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   // for an extension, returns the host of its URL, which is an extension ID. If
   // the owner RenderFrameHost is a non-extension embedder of a Controlled
   // Frame, returns its serialized origin.
-  // TODO(crbug.com/1517391): Expose this information as a url::Origin.
+  // TODO(crbug.com/41490369): Expose this information as a url::Origin.
   std::string owner_host() const { return owner_host_; }
 
   // Whether the guest view is inside a plugin document.
@@ -367,7 +367,7 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   class OwnerContentsObserver;
   class OpenerLifetimeObserver;
 
-  // TODO(533069): Remove since BrowserPlugin has been removed.
+  // TODO(crbug.com/40436245): Remove since BrowserPlugin has been removed.
   void DidAttach();
 
   // BrowserPluginGuestDelegate implementation.
@@ -380,8 +380,7 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   // WebContentsDelegate implementation.
   void ActivateContents(content::WebContents* contents) final;
   void ContentsMouseEvent(content::WebContents* source,
-                          bool motion,
-                          bool exited) final;
+                          const ui::Event& event) final;
   void ContentsZoomChange(bool zoom_in) final;
   void LoadingStateChanged(content::WebContents* source,
                            bool should_show_loading_ui) final;

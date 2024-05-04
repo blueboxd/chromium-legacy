@@ -12,18 +12,13 @@
 namespace content {
 
 // static
-std::unique_ptr<ui::AXTreeFormatter>
-AXInspectFactory::CreatePlatformFormatter() {
-  return CreateFormatter(ui::AXApiType::kFuchsia);
+ui::AXApiType::Type AXInspectFactory::DefaultPlatformFormatterType() {
+  return ui::AXApiType::kFuchsia;
 }
 
 // static
-std::unique_ptr<ui::AXEventRecorder> AXInspectFactory::CreatePlatformRecorder(
-    BrowserAccessibilityManager* manager,
-    base::ProcessId pid,
-    const ui::AXTreeSelector& selector) {
-  return AXInspectFactory::CreateRecorder(ui::AXApiType::kFuchsia, manager, pid,
-                                          selector);
+ui::AXApiType::Type AXInspectFactory::DefaultPlatformRecorderType() {
+  return ui::AXApiType::kFuchsia;
 }
 
 // static
@@ -32,7 +27,7 @@ std::unique_ptr<ui::AXTreeFormatter> AXInspectFactory::CreateFormatter(
   // Developer mode: crash immediately on any accessibility fatal error.
   // This only runs during integration tests, or if a developer is
   // using an inspection tool, e.g. chrome://accessibility.
-  BrowserAccessibilityManager::AlwaysFailFast();
+  ui::AXTreeManager::AlwaysFailFast();
 
   switch (type) {
     case ui::AXApiType::kBlink:
@@ -48,13 +43,13 @@ std::unique_ptr<ui::AXTreeFormatter> AXInspectFactory::CreateFormatter(
 // static
 std::unique_ptr<ui::AXEventRecorder> AXInspectFactory::CreateRecorder(
     ui::AXApiType::Type type,
-    BrowserAccessibilityManager*,
+    ui::AXPlatformTreeManager*,
     base::ProcessId pid,
     const ui::AXTreeSelector& selector) {
   // Developer mode: crash immediately on any accessibility fatal error.
   // This only runs during integration tests, or if a developer is
   // using an inspection tool, e.g. chrome://accessibility.
-  BrowserAccessibilityManager::AlwaysFailFast();
+  ui::AXTreeManager::AlwaysFailFast();
 
   switch (type) {
     case ui::AXApiType::kFuchsia:

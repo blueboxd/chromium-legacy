@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 """Definitions of builders in the tryserver.chromium.infra builder group."""
 
-load("//lib/builders.star", "os")
+load("//lib/builders.star", "os", "reclient")
 load("//lib/try.star", "try_")
 load("//lib/consoles.star", "consoles")
 
@@ -85,7 +85,7 @@ try_.builder(
 
 try_.builder(
     name = "mega-cq-launcher",
-    # TODO(crbug.com/1227778): Document the Mega-CQ somewhere in markdown, then
+    # TODO(crbug.com/40189365): Document the Mega-CQ somewhere in markdown, then
     # link to it in the description here.
     description_html = "Triggers all builders needed for Chromium's Mega CQ.",
     executable = "recipe:chromium/mega_cq_launcher",
@@ -98,4 +98,27 @@ try_.builder(
     tryjob = try_.job(
         custom_cq_run_modes = [try_.MEGA_CQ_DRY_RUN_NAME, try_.MEGA_CQ_FULL_RUN_NAME],
     ),
+)
+
+try_.builder(
+    name = "linux-utr-tester",
+    description_html = "Tests the <a href=\"https://chromium.googlesource.com/chromium/src/+/HEAD/tools/utr/README.md\">Universal Test Runner</a> against cli changes.",
+    executable = "recipe:chromium/universal_test_runner_test",
+    builderless = True,
+    cores = 8,
+    os = os.LINUX_DEFAULT,
+    contact_team_email = "chrome-dev-infra-team@google.com",
+    execution_timeout = 2 * time.hour,
+    properties = {
+        "builder_suites": [{
+            "bucket": "try",
+            "builder_name": "linux-rel",
+            "test_names": [
+                "url_unittests",
+            ],
+            "build_dir": "out/linux-rel",
+        }],
+    },
+    reclient_instance = reclient.instance.DEFAULT_UNTRUSTED,
+    service_account = try_.DEFAULT_SERVICE_ACCOUNT,
 )

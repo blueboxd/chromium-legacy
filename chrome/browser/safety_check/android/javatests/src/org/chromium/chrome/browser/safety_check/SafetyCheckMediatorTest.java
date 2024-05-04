@@ -4,6 +4,9 @@
 
 package org.chromium.chrome.browser.safety_check;
 
+import static androidx.test.espresso.intent.Intents.intending;
+import static androidx.test.espresso.intent.matcher.IntentMatchers.anyIntent;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.mockito.ArgumentMatchers.any;
@@ -22,10 +25,14 @@ import static org.chromium.chrome.browser.safety_check.PasswordsCheckPreferenceP
 import static org.chromium.chrome.browser.safety_check.SafetyCheckProperties.SAFE_BROWSING_STATE;
 import static org.chromium.chrome.browser.safety_check.SafetyCheckProperties.UPDATES_STATE;
 
+import android.app.Activity;
+import android.app.Instrumentation.ActivityResult;
+import android.content.Intent;
 import android.os.Handler;
 
 import androidx.preference.Preference;
 import androidx.test.core.app.ApplicationProvider;
+import androidx.test.espresso.intent.Intents;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -42,7 +49,6 @@ import org.chromium.base.Callback;
 import org.chromium.base.CollectionUtil;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.base.metrics.UmaRecorderHolder;
 import org.chromium.base.shared_preferences.SharedPreferencesManager;
 import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.test.BaseRobolectricTestRule;
@@ -52,7 +58,11 @@ import org.chromium.chrome.browser.loading_modal.LoadingModalDialogCoordinator;
 import org.chromium.chrome.browser.password_check.PasswordCheck;
 import org.chromium.chrome.browser.password_check.PasswordCheckFactory;
 import org.chromium.chrome.browser.password_check.PasswordCheckUIStatus;
+import org.chromium.chrome.browser.password_manager.CredentialManagerLauncher;
+import org.chromium.chrome.browser.password_manager.CredentialManagerLauncher.CredentialManagerBackendException;
 import org.chromium.chrome.browser.password_manager.CredentialManagerLauncher.CredentialManagerError;
+import org.chromium.chrome.browser.password_manager.CredentialManagerLauncherFactory;
+import org.chromium.chrome.browser.password_manager.ManagePasswordsReferrer;
 import org.chromium.chrome.browser.password_manager.PasswordCheckupClientHelper;
 import org.chromium.chrome.browser.password_manager.PasswordCheckupClientHelper.PasswordCheckBackendException;
 import org.chromium.chrome.browser.password_manager.PasswordCheckupClientHelperFactory;
@@ -125,13 +135,14 @@ public class SafetyCheckMediatorTest {
     @Mock private SyncService mSyncService;
     @Mock private Handler mHandler;
     @Mock private PasswordCheck mPasswordCheck;
-    // TODO(crbug.com/1346235): Use existing fake instead of mocking
+    // TODO(crbug.com/40854050): Use existing fake instead of mocking
     @Mock private PasswordCheckupClientHelper mPasswordCheckupHelper;
+    @Mock private CredentialManagerLauncher mCredentialManagerLauncher;
     @Mock private PasswordStoreBridge mPasswordStoreBridge;
     @Mock private PrefService mPrefService;
     @Mock private UserPrefs.Natives mUserPrefsJniMock;
 
-    // TODO(crbug.com/1346235): Use fake instead of mocking
+    // TODO(crbug.com/40854050): Use fake instead of mocking
     @Mock private PasswordManagerBackendSupportHelper mBackendSupportHelperMock;
     @Mock private PasswordManagerUtilBridge.Natives mPasswordManagerUtilBridgeNativeMock;
     @Mock LoadingModalDialogCoordinator mLoadingModalDialogCoordinator;
@@ -201,7 +212,7 @@ public class SafetyCheckMediatorTest {
         when(mSyncService.getAccountInfo())
                 .thenReturn(CoreAccountInfo.createFromEmailAndGaiaId(TEST_EMAIL_ADDRESS, "0"));
 
-        // TODO(crbug.com/1511255): Parametrize the tests in SafetyCheckMediatorTest for local and
+        // TODO(crbug.com/41483841): Parametrize the tests in SafetyCheckMediatorTest for local and
         // account storage.
         // This will no longer be true once the local and account store split happens.
         if (mUseGmsApi) {
@@ -212,8 +223,37 @@ public class SafetyCheckMediatorTest {
         }
     }
 
+    private SafetyCheckMediator createSafetyCheckMediator(
+            PropertyModel passwordCheckAccountModel, PropertyModel passwordCheckLocalModel) {
+        return new SafetyCheckMediator(
+                mSafetyCheckModel,
+                passwordCheckAccountModel,
+                passwordCheckLocalModel,
+                mUpdatesDelegate,
+                new SafetyCheckBridge(mProfile),
+                mSettingsLauncher,
+                mSigninLauncher,
+                mSyncService,
+                mPrefService,
+                mPasswordStoreBridge,
+                mPasswordCheckControllerFactory,
+                PasswordManagerHelper.getForProfile(mProfile),
+                mHandler,
+                mModalDialogManagerSupplier);
+    }
+
+    private Preference.OnPreferenceClickListener getPasswordsClickListener(
+            PropertyModel passwordCheckModel) {
+        return (Preference.OnPreferenceClickListener)
+                passwordCheckModel.get(PasswordsCheckPreferenceProperties.PASSWORDS_CLICK_LISTENER);
+    }
+
+    private void click(Preference.OnPreferenceClickListener listener) {
+        listener.onPreferenceClick(new Preference(ContextUtils.getApplicationContext()));
+    }
+
     @Before
-    public void setUp() throws PasswordCheckBackendException {
+    public void setUp() throws PasswordCheckBackendException, CredentialManagerBackendException {
         MockitoAnnotations.initMocks(this);
         mJniMocker.mock(
                 PasswordManagerUtilBridgeJni.TEST_HOOKS, mPasswordManagerUtilBridgeNativeMock);
@@ -222,13 +262,13 @@ public class SafetyCheckMediatorTest {
 
         PasswordManagerBackendSupportHelper.setInstanceForTesting(mBackendSupportHelperMock);
         when(mBackendSupportHelperMock.isBackendPresent()).thenReturn(true);
-        when(mBackendSupportHelperMock.isUpdateNeeded()).thenReturn(false);
+        when(mPasswordManagerUtilBridgeNativeMock.areMinUpmRequirementsMet()).thenReturn(true);
 
         // Availability of the UPM backend will be checked by the SafetyCheckMediator using
         // PasswordManagerHelper so the bridge method needs to be mocked.
         // The parameter mUseGmsApi currently means that the mock SyncService will be configured to
         // sync passwords, which so far is the only case in which the GMS APIs can be used.
-        when(mPasswordManagerUtilBridgeNativeMock.canUseUPMBackend(mUseGmsApi, mPrefService))
+        when(mPasswordManagerUtilBridgeNativeMock.shouldUseUpmWiring(mUseGmsApi, mPrefService))
                 .thenReturn(mUseGmsApi);
 
         mJniMocker.mock(SafetyCheckBridgeJni.TEST_HOOKS, mSafetyCheckBridge);
@@ -243,46 +283,22 @@ public class SafetyCheckMediatorTest {
                 PasswordsCheckPreferenceProperties.createPasswordSafetyCheckModel("Passwords");
         mPasswordCheckControllerFactory = new FakePasswordCheckControllerFactory();
         if (mUseGmsApi) {
-            // TODO(crbug.com/1346235): Use existing fake instead of mocking
+            // TODO(crbug.com/40854050): Use existing fake instead of mocking
             PasswordCheckupClientHelperFactory mockPasswordCheckFactory =
                     mock(PasswordCheckupClientHelperFactory.class);
             when(mockPasswordCheckFactory.createHelper()).thenReturn(mPasswordCheckupHelper);
             PasswordCheckupClientHelperFactory.setFactoryForTesting(mockPasswordCheckFactory);
-            mMediator =
-                    new SafetyCheckMediator(
-                            mSafetyCheckModel,
-                            mPasswordCheckModel,
-                            /* passwordCheckLocalModel */ null,
-                            mUpdatesDelegate,
-                            new SafetyCheckBridge(mProfile),
-                            mSettingsLauncher,
-                            mSigninLauncher,
-                            mSyncService,
-                            mPrefService,
-                            mPasswordStoreBridge,
-                            mPasswordCheckControllerFactory,
-                            PasswordManagerHelper.getForProfile(mProfile),
-                            mHandler,
-                            mModalDialogManagerSupplier);
+            CredentialManagerLauncherFactory mockCredentialManagerLauncherFactory =
+                    mock(CredentialManagerLauncherFactory.class);
+            when(mockCredentialManagerLauncherFactory.createLauncher())
+                    .thenReturn(mCredentialManagerLauncher);
+            CredentialManagerLauncherFactory.setFactoryForTesting(
+                    mockCredentialManagerLauncherFactory);
         } else {
             PasswordCheckFactory.setPasswordCheckForTesting(mPasswordCheck);
-            mMediator =
-                    new SafetyCheckMediator(
-                            mSafetyCheckModel,
-                            mPasswordCheckModel,
-                            /* passwordCheckLocalModel */ null,
-                            mUpdatesDelegate,
-                            new SafetyCheckBridge(mProfile),
-                            mSettingsLauncher,
-                            mSigninLauncher,
-                            mSyncService,
-                            mPrefService,
-                            mPasswordStoreBridge,
-                            mPasswordCheckControllerFactory,
-                            PasswordManagerHelper.getForProfile(mProfile),
-                            mHandler,
-                            mModalDialogManagerSupplier);
         }
+        mMediator =
+                createSafetyCheckMediator(mPasswordCheckModel, /* passwordCheckLocalModel= */ null);
 
         // Execute any delayed tasks immediately.
         doAnswer(
@@ -296,7 +312,6 @@ public class SafetyCheckMediatorTest {
         // User is always signed in unless the test specifies otherwise.
         doReturn(true).when(mSafetyCheckBridge).userSignedIn(any(BrowserContextHandle.class));
         // Reset the histogram count.
-        UmaRecorderHolder.resetForTesting();
 
         mModalDialogManager =
                 new ModalDialogManager(
@@ -759,11 +774,7 @@ public class SafetyCheckMediatorTest {
                 new PasswordCheckResult(/* passwordsTotalCount= */ 20, /* breachedCount= */ 18));
         assertEquals(PasswordsState.COMPROMISED_EXIST, mPasswordCheckModel.get(PASSWORDS_STATE));
 
-        Preference.OnPreferenceClickListener listener =
-                (Preference.OnPreferenceClickListener)
-                        mPasswordCheckModel.get(
-                                PasswordsCheckPreferenceProperties.PASSWORDS_CLICK_LISTENER);
-        listener.onPreferenceClick(new Preference(ContextUtils.getApplicationContext()));
+        click(getPasswordsClickListener(mPasswordCheckModel));
 
         verify(mPasswordCheckupHelper, times(mUseGmsApi ? 1 : 0))
                 .getPasswordCheckupIntent(
@@ -781,41 +792,55 @@ public class SafetyCheckMediatorTest {
                 PasswordStorageType.ACCOUNT_STORAGE, new Exception("Test exception"));
 
         assertEquals(PasswordsState.ERROR, mPasswordCheckModel.get(PASSWORDS_STATE));
+        assertNull(getPasswordsClickListener(mPasswordCheckModel));
+    }
 
-        Preference.OnPreferenceClickListener listener =
-                (Preference.OnPreferenceClickListener)
-                        mPasswordCheckModel.get(
-                                PasswordsCheckPreferenceProperties.PASSWORDS_CLICK_LISTENER);
+    @Test
+    public void testClickListenerLeadsToPasswordSettingsWhenUnchecked() {
+        if (!mUseGmsApi) {
+            Intents.init();
 
-        assertNull(listener);
+            Intent settingsLauncherIntent = new Intent();
+            settingsLauncherIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            when(mSettingsLauncher.createSettingsActivityIntent(any(), any(), any()))
+                    .thenReturn(settingsLauncherIntent);
+            intending(anyIntent())
+                    .respondWith(new ActivityResult(Activity.RESULT_OK, new Intent()));
+        }
+        PropertyModel passwordCheckLocalModel =
+                PasswordsCheckPreferenceProperties.createPasswordSafetyCheckModel("Passwords");
+        PropertyModel passwordCheckAccountModel =
+                PasswordsCheckPreferenceProperties.createPasswordSafetyCheckModel(
+                        "Passwords for acount");
+        mMediator = createSafetyCheckMediator(passwordCheckAccountModel, passwordCheckLocalModel);
+
+        mMediator.setInitialState();
+        setUpPasswordCheckToReturnResult(
+                PasswordStorageType.LOCAL_STORAGE, new PasswordCheckResult(10, 0));
+
+        assertEquals(PasswordsState.UNCHECKED, passwordCheckLocalModel.get(PASSWORDS_STATE));
+        click(getPasswordsClickListener(passwordCheckLocalModel));
+
+        verify(mCredentialManagerLauncher, times(mUseGmsApi ? 1 : 0))
+                .getLocalCredentialManagerIntent(
+                        eq(ManagePasswordsReferrer.SAFETY_CHECK), any(), any());
+        verify(mSettingsLauncher, times(mUseGmsApi ? 0 : 1))
+                .createSettingsActivityIntent(any(), any(), any());
     }
 
     @Test
     public void testClickListenerLeadsToUPMLocalPasswordCheckup() {
-        // TODO(crbug.com/1511255): Parametrize the tests in SafetyCheckMediatorTest for local and
+        // TODO(crbug.com/41483841): Parametrize the tests in SafetyCheckMediatorTest for local and
         // account storage.
         // These behaviours are set here again because the tests are currently not parametrised in
         // a way to support UPM for non password syncing users.
         PropertyModel passwordCheckLocalModel =
                 PasswordsCheckPreferenceProperties.createPasswordSafetyCheckModel("Passwords");
         mMediator =
-                new SafetyCheckMediator(
-                        mSafetyCheckModel,
-                        /* passwordCheckAccountModel= */ null,
-                        passwordCheckLocalModel,
-                        mUpdatesDelegate,
-                        new SafetyCheckBridge(mProfile),
-                        mSettingsLauncher,
-                        mSigninLauncher,
-                        mSyncService,
-                        mPrefService,
-                        mPasswordStoreBridge,
-                        mPasswordCheckControllerFactory,
-                        PasswordManagerHelper.getForProfile(mProfile),
-                        mHandler,
-                        mModalDialogManagerSupplier);
+                createSafetyCheckMediator(
+                        /* passwordCheckAccountModel= */ null, passwordCheckLocalModel);
 
-        when(mPasswordManagerUtilBridgeNativeMock.canUseUPMBackend(false, mPrefService))
+        when(mPasswordManagerUtilBridgeNativeMock.shouldUseUpmWiring(false, mPrefService))
                 .thenReturn(mUseGmsApi);
         when(mSyncService.getSelectedTypes()).thenReturn(new HashSet<>());
 
@@ -832,11 +857,7 @@ public class SafetyCheckMediatorTest {
         assertEquals(
                 PasswordsState.COMPROMISED_EXIST, passwordCheckLocalModel.get(PASSWORDS_STATE));
 
-        Preference.OnPreferenceClickListener listener =
-                (Preference.OnPreferenceClickListener)
-                        passwordCheckLocalModel.get(
-                                PasswordsCheckPreferenceProperties.PASSWORDS_CLICK_LISTENER);
-        listener.onPreferenceClick(new Preference(ContextUtils.getApplicationContext()));
+        click(getPasswordsClickListener(passwordCheckLocalModel));
 
         verify(mPasswordCheckupHelper, times(mUseGmsApi ? 1 : 0))
                 .getPasswordCheckupIntent(eq(SAFETY_CHECK), eq(Optional.empty()), any(), any());
@@ -850,22 +871,7 @@ public class SafetyCheckMediatorTest {
                         "Passwords saved on " + TEST_EMAIL_ADDRESS);
         PropertyModel passwordCheckLocalModel =
                 PasswordsCheckPreferenceProperties.createPasswordSafetyCheckModel("Passwords");
-        mMediator =
-                new SafetyCheckMediator(
-                        mSafetyCheckModel,
-                        passwordCheckAccountModel,
-                        passwordCheckLocalModel,
-                        mUpdatesDelegate,
-                        new SafetyCheckBridge(mProfile),
-                        mSettingsLauncher,
-                        mSigninLauncher,
-                        mSyncService,
-                        mPrefService,
-                        mPasswordStoreBridge,
-                        mPasswordCheckControllerFactory,
-                        PasswordManagerHelper.getForProfile(mProfile),
-                        mHandler,
-                        mModalDialogManagerSupplier);
+        mMediator = createSafetyCheckMediator(passwordCheckAccountModel, passwordCheckLocalModel);
 
         // Order: initial state -> set result of the initial check -> password check -> set result
         // of the password check.

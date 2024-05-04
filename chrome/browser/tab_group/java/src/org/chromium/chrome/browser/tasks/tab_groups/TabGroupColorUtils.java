@@ -18,25 +18,28 @@ import java.util.Set;
 
 /** Helper class to handle tab group color related utilities. */
 public class TabGroupColorUtils {
+    public static final int INVALID_COLOR_ID = -1;
     private static final String TAB_GROUP_COLORS_FILE_NAME = "tab_group_colors";
     private static final String MIGRATION_CHECK = "migration_check";
-    private static final int INVALID_COLOR_ID = -1;
     private static final int MIGRATION_NOT_DONE = 0;
     private static final int MIGRATION_DONE = 1;
 
     /**
-     * This method stores tab group colors with reference to {@code tabRootId}.
+     * This method stores tab group colors with reference to {@code tabRootId}. Package protected as
+     * all access should route through the {@link TabGroupModelFilter}.
      *
      * @param tabRootId The tab root ID which is used as a reference to store group colors.
      * @param color The tab group color {@link TabGroupColorId} to store.
      */
-    public static void storeTabGroupColor(int tabRootId, int color) {
+    static void storeTabGroupColor(int tabRootId, int color) {
         assert tabRootId != Tab.INVALID_TAB_ID;
         getSharedPreferences().edit().putInt(String.valueOf(tabRootId), color).apply();
     }
 
     /**
      * This method deletes a specific stored tab group color with reference to {@code tabRootId}.
+     * While currently public, the intent is to make this package protected and force all access to
+     * go through the {@Link TabGroupModelFilter}.
      *
      * @param tabRootId The tab root ID whose related tab group color will be deleted.
      */
@@ -46,7 +49,9 @@ public class TabGroupColorUtils {
     }
 
     /**
-     * This method fetches tab group colors for the related tab group root ID.
+     * This method fetches tab group colors for the related tab group root ID. While currently
+     * public, the intent is to make this package protected and force all access to go through the
+     * {@Link TabGroupModelFilter}.
      *
      * @param tabRootId The tab root ID whose related tab group color will be fetched.
      * @return The stored color of the target tab group, default value is -1 (INVALID_COLOR_ID).
@@ -64,7 +69,8 @@ public class TabGroupColorUtils {
      * @param filter The {@link TabGroupModelFilter} used to fetch the next suggested color.
      * @return The stored or newly created color for the target tab group.
      */
-    public static int getOrCreateTabGroupColor(int tabRootId, TabGroupModelFilter filter) {
+    public static @TabGroupColorId int getOrCreateTabGroupColor(
+            int tabRootId, TabGroupModelFilter filter) {
         assert tabRootId != Tab.INVALID_TAB_ID;
         int color = getTabGroupColor(tabRootId);
 

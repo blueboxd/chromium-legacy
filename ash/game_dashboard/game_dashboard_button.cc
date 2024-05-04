@@ -14,6 +14,7 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/dark_light_mode_controller_impl.h"
 #include "ash/style/rounded_container.h"
+#include "ash/style/style_util.h"
 #include "ash/style/typography.h"
 #include "base/check.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
@@ -23,11 +24,11 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/color/color_id.h"
-#include "ui/color/color_provider.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rounded_corners_f.h"
 #include "ui/gfx/vector_icon_types.h"
+#include "ui/views/animation/ink_drop.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
@@ -41,7 +42,7 @@ namespace ash {
 
 namespace {
 
-constexpr float kContainerCornerRadius = 12.0f;
+constexpr float kContainerCornerRadius = 13.0f;
 constexpr int kBorderThickness = 1;
 constexpr int kIconHeight = 20;
 constexpr gfx::Insets kArrowMargins = gfx::Insets::TLBR(0, 6, 0, 0);
@@ -73,8 +74,10 @@ GameDashboardButton::GameDashboardButton(PressedCallback callback)
   layout->set_inside_border_insets(kButtonBorderInsets);
 
   SetPaintToLayer();
-  layer()->SetRoundedCornerRadius(gfx::RoundedCornersF(kContainerCornerRadius));
   layer()->SetFillsBoundsOpaquely(false);
+
+  ink_drop_container_ =
+      AddChildView(std::make_unique<views::InkDropContainerView>());
 
   // Add the gamepad icon view.
   gamepad_icon_view_ = AddChildView(std::make_unique<views::ImageView>());
@@ -87,6 +90,15 @@ GameDashboardButton::GameDashboardButton(PressedCallback callback)
   // Add the arrow icon view.
   arrow_icon_view_ = AddChildView(std::make_unique<views::ImageView>());
   arrow_icon_view_->SetProperty(views::kMarginsKey, kArrowMargins);
+
+  // Set up highlight ink drop and focus ring.
+  StyleUtil::InstallRoundedCornerHighlightPathGenerator(
+      this, gfx::RoundedCornersF(kContainerCornerRadius));
+  auto* ink_drop = views::InkDrop::Get(this);
+  ink_drop->SetMode(views::InkDropHost::InkDropMode::ON);
+  ink_drop->GetInkDrop()->SetShowHighlightOnHover(false);
+  ink_drop->SetVisibleOpacity(1.0f);  // The colors already contain opacity.
+  views::FocusRing::Get(this)->SetColorId(cros_tokens::kCrosSysPrimary);
 }
 
 GameDashboardButton::~GameDashboardButton() = default;
@@ -137,6 +149,21 @@ void GameDashboardButton::OnThemeChanged() {
   }
 }
 
+void GameDashboardButton::AddLayerToRegion(ui::Layer* new_layer,
+                                           views::LayerRegion region) {
+  DCHECK(ink_drop_container_);
+  // This routes background layers to `ink_drop_container_` instead of `this` to
+  // avoid painting effects underneath our background.
+  ink_drop_container_->AddLayerToRegion(new_layer, region);
+}
+
+void GameDashboardButton::RemoveLayerFromRegions(ui::Layer* old_layer) {
+  DCHECK(ink_drop_container_);
+  // This routes background layers to `ink_drop_container_` instead of `this` to
+  // avoid painting effects underneath our background.
+  ink_drop_container_->RemoveLayerFromRegions(old_layer);
+}
+
 void GameDashboardButton::StateChanged(ButtonState old_state) {
   UpdateViews();
 }
@@ -145,11 +172,11 @@ void GameDashboardButton::UpdateArrowIcon() {
   DCHECK(arrow_icon_view_);
   const gfx::VectorIcon& arrow_icon =
       toggled_ ? kGdButtonUpArrowIcon : kGdButtonDownArrowIcon;
-  const SkColor icon_color = GetColorProvider()->GetColor(
+  arrow_icon_view_->SetImage(ui::ImageModel::FromVectorIcon(
+      arrow_icon,
       GetEnabled() ? GetIconAndLabelEnabledColorId(is_recording_)
-                   : cros_tokens::kCrosSysDisabled);
-  arrow_icon_view_->SetImage(
-      ui::ImageModel::FromVectorIcon(arrow_icon, icon_color, kIconHeight));
+                   : cros_tokens::kCrosSysDisabled,
+      kIconHeight));
 }
 
 void GameDashboardButton::UpdateViews() {
@@ -162,6 +189,10 @@ void GameDashboardButton::UpdateViews() {
         IDS_ASH_GAME_DASHBOARD_GAME_DASHBOARD_BUTTON_TITLE));
   }
 
+  views::InkDrop::Get(this)->SetBaseColorId(
+      is_recording_ ? cros_tokens::kCrosSysRippleNeutralOnProminent
+                    : cros_tokens::kCrosSysRipplePrimary);
+
   SetBorder(views::CreateRoundedRectBorder(
       kBorderThickness, kContainerCornerRadius, gfx::Insets(),
       SkColorSetA(DarkLightModeControllerImpl::Get()->IsDarkModeEnabled()
@@ -169,20 +200,18 @@ void GameDashboardButton::UpdateViews() {
                       : cros_tokens::kCrosSysBlack,
                   kAlphaForButtonBorder)));
 
-  auto* color_provider = GetColorProvider();
-  DCHECK(color_provider);
-
   const bool enabled = GetEnabled();
-  SetBackground(views::CreateSolidBackground(color_provider->GetColor(
+  SetBackground(views::CreateThemedRoundedRectBackground(
       enabled ? GetBackgroundEnabledColorId(is_recording_)
-              : cros_tokens::kCrosSysDisabledContainer)));
+              : cros_tokens::kCrosSysDisabledContainer,
+      kContainerCornerRadius));
 
-  const SkColor icon_and_label_color = color_provider->GetColor(
+  const auto icon_and_label_color =
       enabled ? GetIconAndLabelEnabledColorId(is_recording_)
-              : cros_tokens::kCrosSysDisabled);
+              : cros_tokens::kCrosSysDisabled;
   gamepad_icon_view_->SetImage(ui::ImageModel::FromVectorIcon(
       chromeos::kGameDashboardGamepadIcon, icon_and_label_color, kIconHeight));
-  title_view_->SetEnabledColor(icon_and_label_color);
+  title_view_->SetEnabledColorId(icon_and_label_color);
   UpdateArrowIcon();
 }
 

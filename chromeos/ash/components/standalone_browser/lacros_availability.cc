@@ -19,7 +19,7 @@ namespace {
 
 // The conversion map for LacrosAvailability policy data. The values must match
 // the ones from LacrosAvailability.yaml.
-// TODO(crbug.com/1448575): Remove the side_by_side and lacros_primary values
+// TODO(crbug.com/40269372): Remove the side_by_side and lacros_primary values
 // from the policy.
 constexpr auto kLacrosAvailabilityMap =
     base::MakeFixedFlatMap<std::string_view, LacrosAvailability>({
@@ -38,7 +38,7 @@ BASE_FEATURE(kLacrosGooglePolicyRollout,
 
 std::optional<LacrosAvailability> ParseLacrosAvailability(
     std::string_view value) {
-  auto* it = kLacrosAvailabilityMap.find(value);
+  auto it = kLacrosAvailabilityMap.find(value);
   if (it != kLacrosAvailabilityMap.end()) {
     return it->second;
   }

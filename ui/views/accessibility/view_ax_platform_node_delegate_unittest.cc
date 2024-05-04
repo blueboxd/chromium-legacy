@@ -491,35 +491,14 @@ TEST_F(ViewAXPlatformNodeDelegateTest, SetNameAndDescription) {
   EXPECT_EQ(button_accessibility()->GetNameFrom(),
             ax::mojom::NameFrom::kAttributeExplicitlyEmpty);
 
-  // Setting the description to the empty string without explicitly setting
-  // the source to reflect that should trigger a DCHECK in SetDescription.
-  EXPECT_DCHECK_DEATH_WITH(
-      button_accessibility()->SetDescription(""),
-      "Check failed: description.empty\\(\\) == description_from == "
-      "ax::mojom::DescriptionFrom::kAttributeExplicitlyEmpty");
-
-  // Setting the description to a non-empty string with a DescriptionFrom of
-  // kAttributeExplicitlyEmpty should trigger a DCHECK in SetDescription.
-  EXPECT_DCHECK_DEATH_WITH(
-      button_accessibility()->SetDescription(
-          "foo", ax::mojom::DescriptionFrom::kAttributeExplicitlyEmpty),
-      "Check failed: description.empty\\(\\) == description_from == "
-      "ax::mojom::DescriptionFrom::kAttributeExplicitlyEmpty");
-
   button_accessibility()->SetDescription(
       "", ax::mojom::DescriptionFrom::kAttributeExplicitlyEmpty);
   EXPECT_EQ(button_accessibility()->GetDescription(), "");
   EXPECT_EQ(button_accessibility()->GetDescriptionFrom(),
             ax::mojom::DescriptionFrom::kAttributeExplicitlyEmpty);
 
-  // Overriding the name and description without specifying the sources
-  // should set the sources to kAttribute and kAriaDescription respectively.
-  button_accessibility()->SetName("Button's Name",
-                                  ax::mojom::NameFrom::kAttribute);
-  EXPECT_EQ(button_accessibility()->GetName(), "Button's Name");
-  EXPECT_EQ(button_accessibility()->GetNameFrom(),
-            ax::mojom::NameFrom::kAttribute);
-
+  // Overriding the description without specifying the source
+  // should set the source kAriaDescription.
   button_accessibility()->SetDescription("Button's description");
   EXPECT_EQ(button_accessibility()->GetDescription(), "Button's description");
   EXPECT_EQ(button_accessibility()->GetDescriptionFrom(),
@@ -787,8 +766,8 @@ TEST_F(ViewAXPlatformNodeDelegateTest, TreeNavigationWithLeafViews) {
   // all four children, not only the second child. It should not hide the parent
   // view. In this context, "hide" means that these views will be ignored (be
   // invisible) by platform accessibility APIs.
-  parent_view->OverrideIsLeaf(true);
-  child_view_2->OverrideIsLeaf(true);
+  parent_view->SetIsLeaf(true);
+  child_view_2->SetIsLeaf(true);
 
   EXPECT_EQ(3u, contents_view->GetChildCount());
   EXPECT_EQ(contents_view->GetNativeObject(), parent_view->GetParent());
@@ -810,7 +789,7 @@ TEST_F(ViewAXPlatformNodeDelegateTest, TreeNavigationWithLeafViews) {
   EXPECT_FALSE(contents_view->IsChildOfLeaf());
   EXPECT_FALSE(parent_view->IsChildOfLeaf());
 #if !BUILDFLAG(USE_ATK)
-  // TODO(crbug.com/1100047): IsChildOfLeaf always returns false on Linux.
+  // TODO(crbug.com/40702759): IsChildOfLeaf always returns false on Linux.
   EXPECT_TRUE(child_view_1->IsChildOfLeaf());
   EXPECT_TRUE(child_view_2->IsChildOfLeaf());
   EXPECT_TRUE(child_view_3->IsChildOfLeaf());
@@ -825,7 +804,7 @@ TEST_F(ViewAXPlatformNodeDelegateTest, TreeNavigationWithLeafViews) {
   // Try unhiding the parent view's descendants. Nothing should be hidden any
   // more. The second child has no descendants so marking it as a leaf should
   // have no effect.
-  parent_view->OverrideIsLeaf(false);
+  parent_view->SetIsLeaf(false);
 
   EXPECT_EQ(3u, contents_view->GetChildCount());
   EXPECT_EQ(contents_view->GetNativeObject(), parent_view->GetParent());

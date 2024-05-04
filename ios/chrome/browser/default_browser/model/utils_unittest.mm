@@ -44,7 +44,7 @@ constexpr base::TimeDelta k2Years = base::Days(2 * 365);
 // About 5 years.
 constexpr base::TimeDelta k5Years = base::Days(5 * 365);
 
-// TODO(crbug.com/1523056): We should reuse the ones from utils directly to
+// TODO(crbug.com/41496010): We should reuse the ones from utils directly to
 // avoid manual errors. Test key for recording the last time a http link
 // was opened via Chrome, which indicates that it's set as default browser.
 NSString* const kLastHTTPURLOpenTime = @"lastHTTPURLOpenTime";
@@ -121,26 +121,6 @@ TEST_F(DefaultBrowserUtilsTest, LogInterestingActivityEach) {
   EXPECT_FALSE(IsLikelyInterestedDefaultBrowserUser(DefaultPromoTypeAllTabs));
   LogLikelyInterestedDefaultBrowserUserActivity(DefaultPromoTypeAllTabs);
   EXPECT_TRUE(IsLikelyInterestedDefaultBrowserUser(DefaultPromoTypeAllTabs));
-}
-
-// Tests most recent interest type.
-TEST_F(DefaultBrowserUtilsTest, MostRecentInterestDefaultPromoType) {
-  DefaultPromoType type = MostRecentInterestDefaultPromoType(NO);
-  EXPECT_EQ(type, DefaultPromoTypeGeneral);
-
-  LogLikelyInterestedDefaultBrowserUserActivity(DefaultPromoTypeAllTabs);
-  type = MostRecentInterestDefaultPromoType(NO);
-  EXPECT_EQ(type, DefaultPromoTypeAllTabs);
-  type = MostRecentInterestDefaultPromoType(YES);
-  EXPECT_NE(type, DefaultPromoTypeAllTabs);
-
-  LogLikelyInterestedDefaultBrowserUserActivity(DefaultPromoTypeStaySafe);
-  type = MostRecentInterestDefaultPromoType(NO);
-  EXPECT_EQ(type, DefaultPromoTypeStaySafe);
-
-  LogLikelyInterestedDefaultBrowserUserActivity(DefaultPromoTypeMadeForIOS);
-  type = MostRecentInterestDefaultPromoType(NO);
-  EXPECT_EQ(type, DefaultPromoTypeMadeForIOS);
 }
 
 // Tests cooldown between fullscreen promos with cooldown refactor disabled and
@@ -394,7 +374,7 @@ TEST_F(DefaultBrowserUtilsTest,
   EXPECT_FALSE(HasUserInteractedWithFullscreenPromoBefore());
 
   // Test that logging first run doesn't affect it.
-  LogUserInteractionWithFirstRunPromo(true);
+  LogUserInteractionWithFirstRunPromo();
   EXPECT_FALSE(HasUserInteractedWithFullscreenPromoBefore());
 
   // Test with multiple interactions.
@@ -431,7 +411,7 @@ TEST_F(DefaultBrowserUtilsTest,
   EXPECT_FALSE(HasUserInteractedWithFullscreenPromoBefore());
 
   // Test that logging first run doesn't affect it.
-  LogUserInteractionWithFirstRunPromo(true);
+  LogUserInteractionWithFirstRunPromo();
   EXPECT_FALSE(HasUserInteractedWithFullscreenPromoBefore());
 
   // Test with multiple interactions.
@@ -480,7 +460,7 @@ TEST_F(DefaultBrowserUtilsTest, CooldownFromFRESlidingWindowEnabled) {
   EXPECT_FALSE(HasUserInteractedWithFullscreenPromoBefore());
 
   // Test that logging first run doesn't affect it.
-  LogUserInteractionWithFirstRunPromo(true);
+  LogUserInteractionWithFirstRunPromo();
   EXPECT_FALSE(HasUserInteractedWithFullscreenPromoBefore());
 
   // Test that logging a generic promo interaction will affect it.
@@ -740,7 +720,7 @@ TEST_F(DefaultBrowserUtilsTest,
   }
 
   // Adding current timestamp should be counted.
-  LogCopyPasteInOmniboxForDefaultBrowserPromo();
+  LogCopyPasteInOmniboxForCriteriaExperiment();
 
   {
     PromoStatistics* promo_stats = CalculatePromoStatistics();
@@ -1062,5 +1042,88 @@ TEST_F(DefaultBrowserUtilsTest, IsChromePotentiallyNoLongerDefaultBrowser) {
   EXPECT_FALSE(IsChromePotentiallyNoLongerDefaultBrowser(28, 14));
   EXPECT_FALSE(IsChromePotentiallyNoLongerDefaultBrowser(35, 14));
   EXPECT_FALSE(IsChromePotentiallyNoLongerDefaultBrowser(42, 21));
+}
+
+TEST_F(DefaultBrowserUtilsTest, GetDefaultBrowserFREPromoTimestampIfLastTest) {
+  // When total promo count is 0, returns unixepoch.
+  EXPECT_EQ(0, DisplayedFullscreenPromoCount());
+  EXPECT_EQ(base::Time::UnixEpoch(),
+            GetDefaultBrowserFREPromoTimestampIfLast());
+
+  // When total promo count is 1, returns valid timestamp.
+  LogUserInteractionWithFirstRunPromo();
+  EXPECT_EQ(1, DisplayedFullscreenPromoCount());
+  EXPECT_NE(base::Time::UnixEpoch(),
+            GetDefaultBrowserFREPromoTimestampIfLast());
+
+  // When total promo count is 2, returns unixepoch.
+  LogFullscreenDefaultBrowserPromoDisplayed();
+  LogUserInteractionWithFullscreenPromo();
+  EXPECT_EQ(2, DisplayedFullscreenPromoCount());
+  EXPECT_EQ(base::Time::UnixEpoch(),
+            GetDefaultBrowserFREPromoTimestampIfLast());
+}
+
+TEST_F(DefaultBrowserUtilsTest,
+       GetDefaultBrowserFREPromoTimestampIfLastTest_InvalidData) {
+  // When total promo count is 0, returns unixepoch.
+  EXPECT_EQ(0, DisplayedFullscreenPromoCount());
+  EXPECT_EQ(base::Time::UnixEpoch(),
+            GetDefaultBrowserFREPromoTimestampIfLast());
+
+  // When total promo count is 1, but it will return unixepoch because user
+  // hasn't interacted with the FRE.
+  LogFullscreenDefaultBrowserPromoDisplayed();
+  LogUserInteractionWithFullscreenPromo();
+  EXPECT_EQ(1, DisplayedFullscreenPromoCount());
+  EXPECT_EQ(base::Time::UnixEpoch(),
+            GetDefaultBrowserFREPromoTimestampIfLast());
+}
+
+TEST_F(DefaultBrowserUtilsTest, GetGenericDefaultBrowserPromoTimestampTest) {
+  feature_list_.InitWithFeatures({/*enabled=*/},
+                                 {/*disabled=*/feature_engagement::
+                                      kDefaultBrowserEligibilitySlidingWindow});
+  // When user hasn't seen generic promo, returns unixepoch.
+  EXPECT_FALSE(HasUserInteractedWithFullscreenPromoBefore());
+  EXPECT_EQ(base::Time::UnixEpoch(), GetGenericDefaultBrowserPromoTimestamp());
+
+  // When latest is not the generic promo and generic promo hasn't been seen,
+  // returns unixepoch.
+  LogUserInteractionWithTailoredFullscreenPromo();
+  EXPECT_FALSE(HasUserInteractedWithFullscreenPromoBefore());
+  EXPECT_EQ(base::Time::UnixEpoch(), GetGenericDefaultBrowserPromoTimestamp());
+
+  // When user seen a generic promo, returns the latest timestamp.
+  LogUserInteractionWithFullscreenPromo();
+  EXPECT_TRUE(HasUserInteractedWithFullscreenPromoBefore());
+  EXPECT_NE(base::Time::UnixEpoch(), GetGenericDefaultBrowserPromoTimestamp());
+
+  // When latest is not the generic promo, still returns the latest timestamp.
+  LogUserInteractionWithTailoredFullscreenPromo();
+  EXPECT_TRUE(HasUserInteractedWithFullscreenPromoBefore());
+  EXPECT_NE(base::Time::UnixEpoch(), GetGenericDefaultBrowserPromoTimestamp());
+}
+
+TEST_F(DefaultBrowserUtilsTest, GetTailoredDefaultBrowserPromoTimestampTest) {
+  // When user hasn't seen tailored promo, returns unixepoch.
+  EXPECT_FALSE(HasUserInteractedWithTailoredFullscreenPromoBefore());
+  EXPECT_EQ(base::Time::UnixEpoch(), GetTailoredDefaultBrowserPromoTimestamp());
+
+  // When latest is not the tailored promo and tailored promo hasn't been seen,
+  // returns unixepoch.
+  LogUserInteractionWithFullscreenPromo();
+  EXPECT_FALSE(HasUserInteractedWithTailoredFullscreenPromoBefore());
+  EXPECT_EQ(base::Time::UnixEpoch(), GetTailoredDefaultBrowserPromoTimestamp());
+
+  // When user seen a tailored promo, returns the latest timestamp.
+  LogUserInteractionWithTailoredFullscreenPromo();
+  EXPECT_TRUE(HasUserInteractedWithTailoredFullscreenPromoBefore());
+  EXPECT_NE(base::Time::UnixEpoch(), GetTailoredDefaultBrowserPromoTimestamp());
+
+  // When latest is not the tailored promo, still returns the latest timestamp.
+  LogUserInteractionWithFullscreenPromo();
+  EXPECT_TRUE(HasUserInteractedWithTailoredFullscreenPromoBefore());
+  EXPECT_NE(base::Time::UnixEpoch(), GetTailoredDefaultBrowserPromoTimestamp());
 }
 }  // namespace

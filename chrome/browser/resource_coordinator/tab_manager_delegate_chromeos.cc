@@ -43,6 +43,7 @@
 #include "chromeos/ash/components/dbus/debug_daemon/debug_daemon_client.h"
 #include "chromeos/ash/components/memory/pressure/system_memory_pressure_evaluator.h"
 #include "components/device_event_log/device_event_log.h"
+#include "components/performance_manager/public/features.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
@@ -62,7 +63,7 @@ namespace {
 // The default interval after which to adjust OOM scores.
 constexpr base::TimeDelta kAdjustmentInterval = base::Seconds(10);
 
-// The minimum interval between ReportProcesses.
+// The default minimum interval between ReportProcesses.
 constexpr base::TimeDelta kPidsReportMinimalInterval = base::Seconds(3);
 
 // When switching to a new tab the tab's renderer's OOM score needs to be
@@ -856,6 +857,13 @@ void TabManagerDelegate::DistributeOomScoreInRange(
 
 void TabManagerDelegate::ListProcessesThrottled() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  if (base::FeatureList::IsEnabled(
+          performance_manager::features::kUnthrottledTabProcessReporting)) {
+    ListProcesses();
+    return;
+  }
+
   ++tab_event_sequence_;
   base::TimeTicks now = base::TimeTicks::Now();
   if (now - last_pids_report_ > kPidsReportMinimalInterval) {
@@ -886,7 +894,20 @@ void TabManagerDelegate::ListProcesses() {
   tab_report_sequence_ = tab_event_sequence_;
 
   std::vector<ash::ResourcedClient::Process> processes;
-  for (LifecycleUnit* lifecycle_unit : GetLifecycleUnits()) {
+
+  base::flat_map<base::ProcessHandle, PageState> current_pages;
+
+  LifecycleUnitVector lifecycle_units = GetLifecycleUnits();
+
+  // GetLifecycleUnits() returns tabs in increasing priority order, but we want
+  // to visit the most important processes first, so reverse the list.
+  for (LifecycleUnit* lifecycle_unit : base::Reversed(lifecycle_units)) {
+    // Do not report tabs that have already been discarded since their memory
+    // cannot be freed again.
+    if (lifecycle_unit->GetState() == LifecycleUnitState::DISCARDED) {
+      continue;
+    }
+
     base::ProcessHandle pid = lifecycle_unit->GetProcessHandle();
     // lifecycle_units contains entries for already-discarded tabs. If the pid
     // is zero, we don't need to report it.
@@ -911,18 +932,40 @@ void TabManagerDelegate::ListProcesses() {
       }
       is_protected = true;
     }
-    processes.emplace_back(pid, is_protected, is_visible, is_focused);
+
+    // Insert the process in `current_pages` if not already there. Note: This
+    // is a no-op if the process was already added for a previously visited
+    // (more important) page.
+    current_pages.emplace(
+        std::piecewise_construct, std::forward_as_tuple(pid),
+        std::forward_as_tuple(
+            is_protected, is_visible, is_focused,
+            lifecycle_unit->GetLastFocusedTime() == base::TimeTicks::Max()
+                ? base::TimeTicks::Now()
+                : lifecycle_unit->GetLastFocusedTime()));
   }
 
-  ReportProcesses(processes);
+  if (current_pages != previously_reported_pages_) {
+    previously_reported_pages_ = current_pages;
+    ReportProcesses(std::move(current_pages));
+  }
 }
 
 void TabManagerDelegate::ReportProcesses(
-    const std::vector<ash::ResourcedClient::Process>& processes) {
+    const base::flat_map<base::ProcessHandle, PageState>& processes) {
+  std::vector<ash::ResourcedClient::Process> reported_processes;
+  reported_processes.reserve(processes.size());
+
+  for (const auto& process : processes) {
+    reported_processes.emplace_back(
+        process.first, process.second.is_protected, process.second.is_visible,
+        process.second.is_focused, process.second.last_visible);
+  }
+
   ash::ResourcedClient* client = ash::ResourcedClient::Get();
   if (client) {
     client->ReportBrowserProcesses(ash::ResourcedClient::Component::kAsh,
-                                   processes);
+                                   reported_processes);
   }
 }
 

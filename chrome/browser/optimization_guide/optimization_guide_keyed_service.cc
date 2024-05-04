@@ -43,6 +43,7 @@
 #include "components/metrics_services_manager/metrics_services_manager.h"
 #include "components/optimization_guide/core/command_line_top_host_provider.h"
 #include "components/optimization_guide/core/hints_processing_util.h"
+#include "components/optimization_guide/core/model_execution/feature_keys.h"
 #include "components/optimization_guide/core/model_execution/model_execution_features.h"
 #include "components/optimization_guide/core/model_execution/model_execution_features_controller.h"
 #include "components/optimization_guide/core/model_execution/model_execution_manager.h"
@@ -75,6 +76,7 @@
 
 #if BUILDFLAG(IS_ANDROID)
 #include "chrome/browser/commerce/price_tracking/android/price_tracking_notification_bridge.h"
+#include "chrome/browser/optimization_guide/android/optimization_guide_bridge.h"
 #include "chrome/browser/optimization_guide/android/optimization_guide_tab_url_provider_android.h"
 #else
 #include "chrome/browser/optimization_guide/optimization_guide_tab_url_provider.h"
@@ -288,6 +290,18 @@ OptimizationGuideKeyedService::~OptimizationGuideKeyedService() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 
+#if BUILDFLAG(IS_ANDROID)
+base::android::ScopedJavaLocalRef<jobject>
+OptimizationGuideKeyedService::GetJavaObject() {
+  if (!android_bridge_) {
+    android_bridge_ =
+        std::make_unique<optimization_guide::android::OptimizationGuideBridge>(
+            this);
+  }
+  return android_bridge_->GetJavaObject();
+}
+#endif
+
 download::BackgroundDownloadService*
 OptimizationGuideKeyedService::BackgroundDownloadServiceProvider() {
   Profile* profile = Profile::FromBrowserContext(browser_context_);
@@ -439,7 +453,7 @@ void OptimizationGuideKeyedService::Initialize() {
 
       model_execution_manager_ =
           std::make_unique<optimization_guide::ModelExecutionManager>(
-              url_loader_factory,
+              url_loader_factory, g_browser_process->local_state(),
               IdentityManagerFactory::GetForProfile(profile),
               std::move(service_controller), this,
               optimization_guide_logger_.get(),
@@ -456,7 +470,7 @@ void OptimizationGuideKeyedService::Initialize() {
   // Some previous paths were written in incorrect locations. Delete the
   // old paths.
   //
-  // TODO(crbug.com/1328981): Remove this code in 05/2023 since it should be
+  // TODO(crbug.com/40842340): Remove this code in 05/2023 since it should be
   // assumed that all clients that had the previous path have had their previous
   // stores deleted.
   DeleteOldStorePaths(profile_path);
@@ -559,7 +573,7 @@ void OptimizationGuideKeyedService::CanApplyOptimizationOnDemand(
     optimization_guide::proto::RequestContext request_context,
     optimization_guide::OnDemandOptimizationGuideDecisionRepeatingCallback
         callback,
-    optimization_guide::proto::RequestContextMetadata*
+    std::optional<optimization_guide::proto::RequestContextMetadata>
         request_context_metadata) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(request_context !=
@@ -570,9 +584,17 @@ void OptimizationGuideKeyedService::CanApplyOptimizationOnDemand(
                                                request_context_metadata);
 }
 
+bool OptimizationGuideKeyedService::CanCreateOnDeviceSession(
+    optimization_guide::ModelBasedCapabilityKey feature) {
+  if (!model_execution_manager_) {
+    return false;
+  }
+  return model_execution_manager_->CanCreateOnDeviceSession(feature);
+}
+
 std::unique_ptr<optimization_guide::OptimizationGuideModelExecutor::Session>
 OptimizationGuideKeyedService::StartSession(
-    optimization_guide::proto::ModelExecutionFeature feature,
+    optimization_guide::ModelBasedCapabilityKey feature,
     const std::optional<optimization_guide::SessionConfigParams>&
         config_params) {
   if (!model_execution_manager_) {
@@ -582,7 +604,7 @@ OptimizationGuideKeyedService::StartSession(
 }
 
 void OptimizationGuideKeyedService::ExecuteModel(
-    optimization_guide::proto::ModelExecutionFeature feature,
+    optimization_guide::ModelBasedCapabilityKey feature,
     const google::protobuf::MessageLite& request_metadata,
     optimization_guide::OptimizationGuideModelExecutionResultCallback
         callback) {
@@ -615,9 +637,8 @@ void OptimizationGuideKeyedService::UploadModelQualityLogs(
     return;
   }
 
-  optimization_guide::proto::ModelExecutionFeature feature =
-      optimization_guide::GetModelExecutionFeature(
-          log_entry->log_ai_data_request()->feature_case());
+  auto feature = optimization_guide::GetModelExecutionFeature(
+      log_entry->log_ai_data_request()->feature_case());
 
   TRACE_EVENT1(
       "browser", "OptimizationGuideKeyedService::UploadModelQualityLogs",
@@ -667,7 +688,7 @@ void OptimizationGuideKeyedService::OverrideTargetModelForTesting(
 }
 
 bool OptimizationGuideKeyedService::IsSettingVisible(
-    optimization_guide::proto::ModelExecutionFeature feature) const {
+    optimization_guide::UserVisibleFeatureKey feature) const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!model_execution_features_controller_) {
     return false;
@@ -676,7 +697,7 @@ bool OptimizationGuideKeyedService::IsSettingVisible(
 }
 
 bool OptimizationGuideKeyedService::ShouldFeatureBeCurrentlyEnabledForUser(
-    optimization_guide::proto::ModelExecutionFeature feature) const {
+    optimization_guide::UserVisibleFeatureKey feature) const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!model_execution_features_controller_) {
     return false;
@@ -686,7 +707,7 @@ bool OptimizationGuideKeyedService::ShouldFeatureBeCurrentlyEnabledForUser(
 }
 
 bool OptimizationGuideKeyedService::ShouldFeatureBeCurrentlyAllowedForLogging(
-    optimization_guide::proto::ModelExecutionFeature feature) const {
+    optimization_guide::UserVisibleFeatureKey feature) const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!model_execution_features_controller_) {
     return false;
@@ -707,21 +728,17 @@ bool OptimizationGuideKeyedService::ShouldShowExperimentalAIPromo() const {
   // At least one of the two features should be visible to user in settings, and
   // not currently enabled.
   if (model_execution_features_controller_->IsSettingVisible(
-          optimization_guide::proto::ModelExecutionFeature::
-              MODEL_EXECUTION_FEATURE_TAB_ORGANIZATION) &&
+          optimization_guide::UserVisibleFeatureKey::kTabOrganization) &&
       !model_execution_features_controller_
            ->ShouldFeatureBeCurrentlyEnabledForUser(
-               optimization_guide::proto::ModelExecutionFeature::
-                   MODEL_EXECUTION_FEATURE_TAB_ORGANIZATION)) {
+               optimization_guide::UserVisibleFeatureKey::kTabOrganization)) {
     return true;
   }
   if (model_execution_features_controller_->IsSettingVisible(
-          optimization_guide::proto::ModelExecutionFeature::
-              MODEL_EXECUTION_FEATURE_WALLPAPER_SEARCH) &&
+          optimization_guide::UserVisibleFeatureKey::kWallpaperSearch) &&
       !model_execution_features_controller_
            ->ShouldFeatureBeCurrentlyEnabledForUser(
-               optimization_guide::proto::ModelExecutionFeature::
-                   MODEL_EXECUTION_FEATURE_WALLPAPER_SEARCH)) {
+               optimization_guide::UserVisibleFeatureKey::kWallpaperSearch)) {
     return true;
   }
   return false;

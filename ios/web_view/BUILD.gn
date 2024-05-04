@@ -23,7 +23,7 @@ group("all_tests") {
 }
 
 config("config") {
-  # TODO(crbug.com/1055812): This will only guarantee ios/web_view source files
+  # TODO(crbug.com/40120082): This will only guarantee ios/web_view source files
   # are extension safe. We also need to pass this flag to all all dependencies.
   common_flags = [ "-fapplication-extension" ]
   cflags_objc = common_flags
@@ -200,8 +200,6 @@ ios_web_view_sources = [
   "internal/passwords/cwv_weak_check_utils_internal.h",
   "internal/passwords/web_view_account_password_store_factory.h",
   "internal/passwords/web_view_account_password_store_factory.mm",
-  "internal/passwords/web_view_affiliations_prefetcher_factory.h",
-  "internal/passwords/web_view_affiliations_prefetcher_factory.mm",
   "internal/passwords/web_view_bulk_leak_check_service_factory.h",
   "internal/passwords/web_view_bulk_leak_check_service_factory.mm",
   "internal/passwords/web_view_password_feature_manager.h",
@@ -335,6 +333,7 @@ ios_web_view_deps = [
   "//components/password_manager/core/browser/sharing",
   "//components/password_manager/core/common",
   "//components/password_manager/ios",
+  "//components/plus_addresses/webdata",
   "//components/pref_registry",
   "//components/prefs",
   "//components/profile_metrics",
@@ -381,7 +380,7 @@ ios_web_view_deps = [
   "//ios/components/security_interstitials/safe_browsing",
   "//ios/components/security_interstitials/safe_browsing:util",
 
-  # TODO(crbug.com/1471650): Remove this once AppStore stops blocking
+  # TODO(crbug.com/40069191): Remove this once AppStore stops blocking
   # __availability_version_check.
   "//ios/components/third_party/compiler-rt:os_version_check",
   "//ios/components/webui:provider",

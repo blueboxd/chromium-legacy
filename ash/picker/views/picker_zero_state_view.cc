@@ -11,9 +11,7 @@
 #include <utility>
 #include <vector>
 
-#include "ash/picker/model/picker_model.h"
 #include "ash/picker/picker_clipboard_provider.h"
-#include "ash/picker/views/picker_caps_nudge_view.h"
 #include "ash/picker/views/picker_category_type.h"
 #include "ash/picker/views/picker_icons.h"
 #include "ash/picker/views/picker_list_item_view.h"
@@ -21,19 +19,26 @@
 #include "ash/picker/views/picker_section_list_view.h"
 #include "ash/picker/views/picker_section_view.h"
 #include "ash/picker/views/picker_strings.h"
+#include "ash/picker/views/picker_zero_state_view_delegate.h"
 #include "ash/public/cpp/picker/picker_category.h"
+#include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
+#include "chromeos/components/editor_menu/public/cpp/icon.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/base/models/image_model.h"
+#include "ui/chromeos/styles/cros_tokens_color_mappings.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/gfx/geometry/transform.h"
+#include "ui/gfx/image/image.h"
 #include "ui/views/animation/animation_builder.h"
 #include "ui/views/animation/bounds_animator.h"
+#include "ui/views/controls/image_view.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/layout/flex_layout.h"
 #include "ui/views/layout/layout_manager.h"
@@ -43,42 +48,92 @@
 
 namespace ash {
 namespace {
-constexpr base::TimeDelta kNudgeHideAnimationDuration = base::Milliseconds(50);
+constexpr base::TimeDelta kClipboardRecency = base::Seconds(60);
+
+std::unique_ptr<PickerListItemView> CreateListItemViewForClipboardResult(
+    const PickerSearchResult::ClipboardData& data,
+    PickerListItemView::SelectItemCallback callback) {
+  auto item_view = std::make_unique<PickerListItemView>(std::move(callback));
+  item_view->SetLeadingIcon(ui::ImageModel::FromVectorIcon(
+      kClipboardIcon, cros_tokens::kCrosSysOnSurface));
+  item_view->SetSecondaryText(
+      l10n_util::GetStringUTF16(IDS_PICKER_FROM_CLIPBOARD_TEXT));
+  switch (data.display_format) {
+    case PickerSearchResult::ClipboardData::DisplayFormat::kFile:
+    case PickerSearchResult::ClipboardData::DisplayFormat::kText:
+      item_view->SetPrimaryText(data.display_text);
+      break;
+    case PickerSearchResult::ClipboardData::DisplayFormat::kImage:
+      if (!data.display_image.has_value()) {
+        return nullptr;
+      }
+      item_view->SetPrimaryImage(
+          std::make_unique<views::ImageView>(*data.display_image));
+      break;
+    case PickerSearchResult::ClipboardData::DisplayFormat::kHtml:
+      item_view->SetPrimaryText(
+          l10n_util::GetStringUTF16(IDS_PICKER_HTML_CONTENT));
+      break;
+  }
+  return item_view;
+}
+
+std::unique_ptr<PickerListItemView> CreateListItemViewForSearchResult(
+    const PickerSearchResult& result,
+    PickerListItemView::SelectItemCallback callback) {
+  // Only supports Clipboard results right now.
+  if (auto* data =
+          std::get_if<PickerSearchResult::ClipboardData>(&result.data())) {
+    return CreateListItemViewForClipboardResult(*data, std::move(callback));
+  }
+  return nullptr;
+}
+
 }  // namespace
 
 PickerZeroStateView::PickerZeroStateView(
-    int picker_view_width,
-    SelectCategoryCallback select_category_callback,
-    SelectSearchResultCallback select_result_callback) {
+    PickerZeroStateViewDelegate* delegate,
+    base::span<const PickerCategory> available_categories,
+    bool show_suggested_results,
+    int picker_view_width)
+    : delegate_(delegate) {
   SetLayoutManager(std::make_unique<views::FlexLayout>())
       ->SetOrientation(views::LayoutOrientation::kVertical);
-
-  caps_nudge_view_ =
-      AddChildView(std::make_unique<PickerCapsNudgeView>(base::BindRepeating(
-          &PickerZeroStateView::ClearCapsNudge, base::Unretained(this))));
-
-  suggested_section_view_ =
-      AddChildView(std::make_unique<PickerSectionView>(picker_view_width));
-  suggested_section_view_->AddTitleLabel(
-      l10n_util::GetStringUTF16(IDS_PICKER_SUGGESTED_SECTION_TITLE));
-  suggested_section_view_->SetVisible(false);
-
-  clipboard_provider_ = std::make_unique<PickerClipboardProvider>(
-      std::move(select_result_callback));
-  clipboard_provider_->FetchResult(
-      base::BindRepeating(&PickerZeroStateView::OnFetchSuggestedResult,
-                          weak_ptr_factory_.GetWeakPtr()));
 
   section_list_view_ =
       AddChildView(std::make_unique<PickerSectionListView>(picker_view_width));
 
-  for (auto category : PickerModel().GetAvailableCategories()) {
+  if (show_suggested_results) {
+    clipboard_provider_ = std::make_unique<PickerClipboardProvider>();
+    clipboard_provider_->FetchResults(
+        base::BindRepeating(&PickerZeroStateView::OnFetchSuggestedResults,
+                            weak_ptr_factory_.GetWeakPtr()),
+        u"", kClipboardRecency);
+  }
+
+  if (base::Contains(available_categories, PickerCategory::kEditorRewrite)) {
+    GetOrCreateSectionView(PickerCategory::kEditorRewrite)->SetVisible(false);
+
+    delegate_->GetSuggestedZeroStateEditorResults(base::BindOnce(
+        &PickerZeroStateView::OnFetchZeroStateEditorResults,
+        weak_ptr_factory_.GetWeakPtr(), PickerCategory::kEditorRewrite));
+  }
+
+  for (PickerCategory category : available_categories) {
+    // kEditorRewrite is not visible in the zero-state, since it's replaced with
+    // the rewrite suggestions.
+    if (category == PickerCategory::kEditorRewrite) {
+      continue;
+    }
+
     auto item_view = std::make_unique<PickerListItemView>(
-        base::BindRepeating(select_category_callback, category));
+        base::BindRepeating(&PickerZeroStateView::OnCategorySelected,
+                            weak_ptr_factory_.GetWeakPtr(), category));
     item_view->SetPrimaryText(GetLabelForPickerCategory(category));
     item_view->SetLeadingIcon(GetIconForPickerCategory(category));
     GetOrCreateSectionView(category)->AddListItem(std::move(item_view));
   }
+
   SetPseudoFocusedView(section_list_view_->GetTopItem());
 }
 
@@ -210,38 +265,13 @@ PickerSectionView* PickerZeroStateView::GetOrCreateSectionView(
   return section_view;
 }
 
-void PickerZeroStateView::ClearCapsNudge() {
-  // Animation builder needs layers to animate so add layers to the two views we
-  // are animating.
-  SetPaintToLayer();
-  caps_nudge_view_->SetPaintToLayer();
-  layer()->SetFillsBoundsOpaquely(false);
-  caps_nudge_view_->layer()->SetFillsBoundsOpaquely(false);
-  views::AnimationBuilder()
-      .SetPreemptionStrategy(ui::LayerAnimator::PreemptionStrategy::
-                                 IMMEDIATELY_ANIMATE_TO_NEW_TARGET)
-      .OnEnded(base::BindOnce(&PickerZeroStateView::DeleteNudge,
-                              weak_ptr_factory_.GetWeakPtr()))
-      .Once()
-      // Technically, the specs have easing functions for these - but its only 3
-      // frames so just use the defaults since the difference won't matter.
-      .SetDuration(kNudgeHideAnimationDuration)
-      // To hide the caps nudge, we just animate the entire view upwards whilst
-      // fading the opacity.
-      .SetTransform(this, gfx::Transform::MakeTranslation(
-                              0, -caps_nudge_view_->bounds().height()))
-      .SetOpacity(caps_nudge_view_, /*opacity=*/0);
+void PickerZeroStateView::OnCategorySelected(PickerCategory category) {
+  delegate_->SelectZeroStateCategory(category);
 }
 
-void PickerZeroStateView::DeleteNudge() {
-  // Now we are not animating, get rid of the layer.
-  DestroyLayer();
-  // If the nudge contains the currently pseudo focused view, move pseudo focus
-  // to an item before deleting the nudge.
-  if (caps_nudge_view_->Contains(pseudo_focused_view_)) {
-    SetPseudoFocusedView(section_list_view_->GetTopItem());
-  }
-  RemoveChildViewT(caps_nudge_view_.ExtractAsDangling());
+void PickerZeroStateView::OnSuggestedResultSelected(
+    const PickerSearchResult& result) {
+  delegate_->SelectSuggestedZeroStateResult(result);
 }
 
 void PickerZeroStateView::SetPseudoFocusedView(views::View* view) {
@@ -253,6 +283,7 @@ void PickerZeroStateView::SetPseudoFocusedView(views::View* view) {
   pseudo_focused_view_ = view;
   ApplyPickerPseudoFocusToView(pseudo_focused_view_);
   ScrollPseudoFocusedViewToVisible();
+  delegate_->NotifyPseudoFocusChanged(view);
 }
 
 void PickerZeroStateView::ScrollPseudoFocusedViewToVisible() {
@@ -281,10 +312,55 @@ void PickerZeroStateView::ScrollPseudoFocusedViewToVisible() {
   }
 }
 
-void PickerZeroStateView::OnFetchSuggestedResult(
-    std::unique_ptr<PickerListItemView> item_view) {
-  suggested_section_view_->AddListItem(std::move(item_view));
-  suggested_section_view_->SetVisible(true);
+void PickerZeroStateView::OnFetchSuggestedResults(
+    std::vector<PickerSearchResult> results) {
+  if (results.empty()) {
+    return;
+  }
+  if (!suggested_section_view_) {
+    suggested_section_view_ = section_list_view_->AddSectionAt(0);
+    suggested_section_view_->AddTitleLabel(
+        l10n_util::GetStringUTF16(IDS_PICKER_SUGGESTED_SECTION_TITLE));
+  }
+  for (const auto& result : results) {
+    if (std::unique_ptr<PickerListItemView> item_view =
+            CreateListItemViewForSearchResult(
+                result, base::BindRepeating(
+                            &PickerZeroStateView::OnSuggestedResultSelected,
+                            weak_ptr_factory_.GetWeakPtr(), result))) {
+      suggested_section_view_->AddListItem(std::move(item_view));
+    }
+  }
+  SetPseudoFocusedView(section_list_view_->GetTopItem());
+}
+
+void PickerZeroStateView::OnFetchZeroStateEditorResults(
+    PickerCategory category,
+    std::vector<PickerSearchResult> results) {
+  if (results.empty()) {
+    return;
+  }
+
+  PickerSectionView* section_view = GetOrCreateSectionView(category);
+  for (const PickerSearchResult& result : results) {
+    const auto* editor_data =
+        std::get_if<PickerSearchResult::EditorData>(&result.data());
+    CHECK(editor_data);
+
+    auto item_view = std::make_unique<PickerListItemView>(
+        base::BindRepeating(&PickerZeroStateView::OnSuggestedResultSelected,
+                            weak_ptr_factory_.GetWeakPtr(), result));
+    item_view->SetPrimaryText(editor_data->display_name);
+    if (editor_data->category.has_value()) {
+      item_view->SetLeadingIcon(ui::ImageModel::FromVectorIcon(
+          chromeos::editor_menu::GetIconForPresetQueryCategory(
+              *editor_data->category),
+          cros_tokens::kCrosSysOnSurface));
+    }
+    section_view->AddListItem(std::move(item_view));
+  }
+  section_view->SetVisible(true);
+  SetPseudoFocusedView(section_list_view_->GetTopItem());
 }
 
 BEGIN_METADATA(PickerZeroStateView)

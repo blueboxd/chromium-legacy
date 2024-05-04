@@ -41,6 +41,7 @@
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/border.h"
 #include "ui/views/bubble/bubble_border.h"
 #include "ui/views/bubble/bubble_frame_view.h"
@@ -376,17 +377,9 @@ SaveCardOfferBubbleViews::CreateLegalMessageView() {
       base::BindRepeating(&SaveCardOfferBubbleViews::LinkClicked,
                           base::Unretained(this));
 
-  if (base::FeatureList::IsEnabled(
-          features::kAutofillEnableUserAvatarInSaveCardFooter)) {
-    return (std::make_unique<LegalMessageView>(
-        message_lines, base::UTF8ToUTF16(controller()->GetAccountInfo().email),
-        GetProfileAvatar(controller()->GetAccountInfo()),
-        LegalMessageCallBack));
-  }
-
   return std::make_unique<LegalMessageView>(
-      message_lines, /*user_email=*/std::u16string(),
-      /*user_avatar=*/ui::ImageModel(), LegalMessageCallBack);
+      message_lines, base::UTF8ToUTF16(controller()->GetAccountInfo().email),
+      GetProfileAvatar(controller()->GetAccountInfo()), LegalMessageCallBack);
 }
 
 std::unique_ptr<views::View> SaveCardOfferBubbleViews::CreateLoadingRow() {
@@ -417,10 +410,15 @@ void SaveCardOfferBubbleViews::ShowThrobber() {
   }
 
   SetButtons(ui::DIALOG_BUTTON_NONE);
+  SetExtraView({nullptr});
 
   CHECK(loading_throbber_);
+
   loading_throbber_->Start();
   loading_row_->SetVisible(true);
+  loading_throbber_->GetViewAccessibility().AnnounceText(
+      l10n_util::GetStringUTF16(
+          IDS_AUTOFILL_SAVE_CARD_PROMPT_LOADING_THROBBER_ACCESSIBLE_NAME));
 
   DialogModelChanged();
 }

@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/types/expected.h"
+#include "third_party/abseil-cpp/absl/types/variant.h"
 
 namespace web_package {
 
@@ -23,7 +24,7 @@ class SignedWebBundleIntegrityBlock;
 // described in the explainer here:
 // github.com/WICG/webpackage/blob/main/explainers/integrity-signature.md
 //
-// TODO(crbug.com/1366303): Support more than one signature.
+// TODO(crbug.com/40239682): Support more than one signature.
 class SignedWebBundleSignatureVerifier {
  public:
   struct Error {
@@ -55,7 +56,7 @@ class SignedWebBundleSignatureVerifier {
   // success, or an instance of `Error` on error. Only one signature is
   // currently supported.
   //
-  // TODO(crbug.com/1366303): Support more than one signature.
+  // TODO(crbug.com/40239682): Support more than one signature.
   virtual void VerifySignatures(base::File file,
                                 SignedWebBundleIntegrityBlock integrity_block,
                                 SignatureVerificationCallback callback);
@@ -65,9 +66,11 @@ class SignedWebBundleSignatureVerifier {
   // large BoringSSL headers in a header file.
   static constexpr size_t kSHA512DigestLength = 64;
 
-  // Calculate the SHA512 hash of the Signed Web Bundle excluding the integrity
+  using SHA512Digest = std::array<uint8_t, kSHA512DigestLength>;
+
+  // Calculate the SHA-512 hash of the Signed Web Bundle excluding the integrity
   // block, i.e., the unsigned Web Bundle.
-  static base::expected<std::array<uint8_t, kSHA512DigestLength>, std::string>
+  static base::expected<SHA512Digest, std::string>
   CalculateHashOfUnsignedWebBundle(base::File file,
                                    int64_t web_bundle_chunk_size,
                                    int64_t integrity_block_size);
@@ -75,8 +78,7 @@ class SignedWebBundleSignatureVerifier {
   void OnHashOfUnsignedWebBundleCalculated(
       SignedWebBundleIntegrityBlock integrity_block,
       SignatureVerificationCallback callback,
-      base::expected<std::array<uint8_t, kSHA512DigestLength>, std::string>
-          unsigned_web_bundle_hash);
+      base::expected<SHA512Digest, std::string> unsigned_web_bundle_hash);
 
   const uint64_t web_bundle_chunk_size_;
 

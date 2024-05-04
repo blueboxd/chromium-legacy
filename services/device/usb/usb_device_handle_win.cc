@@ -441,37 +441,43 @@ void UsbDeviceHandleWin::ControlTransfer(
         recipient == UsbControlTransferRecipient::DEVICE &&
         request == USB_REQUEST_GET_DESCRIPTOR) {
       if ((value >> 8) == USB_DEVICE_DESCRIPTOR_TYPE) {
-        auto* node_connection_info = new USB_NODE_CONNECTION_INFORMATION_EX;
+        auto node_connection_info =
+            std::make_unique<USB_NODE_CONNECTION_INFORMATION_EX>();
         node_connection_info->ConnectionIndex = device_->port_number();
-
-        blocking_task_runner_->PostTaskAndReplyWithResult(
-            FROM_HERE,
+        auto task_callback =
             base::BindOnce(&DeviceIoControlBlocking, hub_handle_.Get(),
                            IOCTL_USB_GET_NODE_CONNECTION_INFORMATION_EX,
-                           node_connection_info, sizeof(*node_connection_info)),
+                           node_connection_info.get(),
+                           sizeof(USB_NODE_CONNECTION_INFORMATION_EX));
+        auto reply_callback =
             base::BindOnce(&UsbDeviceHandleWin::GotNodeConnectionInformation,
                            weak_factory_.GetWeakPtr(), std::move(callback),
-                           base::Owned(node_connection_info), buffer));
+                           std::move(node_connection_info), buffer);
+        blocking_task_runner_->PostTaskAndReplyWithResult(
+            FROM_HERE, std::move(task_callback), std::move(reply_callback));
         return;
       } else if (((value >> 8) == USB_CONFIGURATION_DESCRIPTOR_TYPE) ||
                  ((value >> 8) == USB_STRING_DESCRIPTOR_TYPE) ||
                  ((value >> 8) == USB_BOS_DESCRIPTOR_TYPE)) {
         size_t size = sizeof(USB_DESCRIPTOR_REQUEST) + buffer->size();
         auto request_buffer = base::MakeRefCounted<base::RefCountedBytes>(size);
-        USB_DESCRIPTOR_REQUEST* descriptor_request =
-            request_buffer->front_as<USB_DESCRIPTOR_REQUEST>();
-        descriptor_request->ConnectionIndex = device_->port_number();
-        descriptor_request->SetupPacket.bmRequest = BMREQUEST_DEVICE_TO_HOST;
-        descriptor_request->SetupPacket.bRequest = USB_REQUEST_GET_DESCRIPTOR;
-        descriptor_request->SetupPacket.wValue = value;
-        descriptor_request->SetupPacket.wIndex = index;
-        descriptor_request->SetupPacket.wLength = buffer->size();
+        USB_DESCRIPTOR_REQUEST descriptor_request;
+        descriptor_request.ConnectionIndex = device_->port_number();
+        descriptor_request.SetupPacket.bmRequest = BMREQUEST_DEVICE_TO_HOST;
+        descriptor_request.SetupPacket.bRequest = USB_REQUEST_GET_DESCRIPTOR;
+        descriptor_request.SetupPacket.wValue = value;
+        descriptor_request.SetupPacket.wIndex = index;
+        descriptor_request.SetupPacket.wLength = buffer->size();
+        base::span(request_buffer->as_vector())
+            .first<sizeof(USB_DESCRIPTOR_REQUEST)>()
+            .copy_from(base::byte_span_from_ref(descriptor_request));
 
         blocking_task_runner_->PostTaskAndReplyWithResult(
             FROM_HERE,
             base::BindOnce(&DeviceIoControlBlocking, hub_handle_.Get(),
                            IOCTL_USB_GET_DESCRIPTOR_FROM_NODE_CONNECTION,
-                           request_buffer->front(), size),
+                           request_buffer->as_vector().data(),
+                           request_buffer->as_vector().size()),
             base::BindOnce(&UsbDeviceHandleWin::GotDescriptorFromNodeConnection,
                            weak_factory_.GetWeakPtr(), std::move(callback),
                            request_buffer, buffer));
@@ -557,13 +563,13 @@ void UsbDeviceHandleWin::GenericTransfer(
   Request* request = MakeRequest(interface);
   BOOL result;
   if (direction == UsbTransferDirection::INBOUND) {
-    result = WinUsb_ReadPipe(interface->handle.Get(), endpoint_address,
-                             buffer->front(), buffer->size(), nullptr,
-                             request->overlapped());
+    result = WinUsb_ReadPipe(
+        interface->handle.Get(), endpoint_address, buffer->as_vector().data(),
+        buffer->as_vector().size(), nullptr, request->overlapped());
   } else {
-    result = WinUsb_WritePipe(interface->handle.Get(), endpoint_address,
-                              buffer->front(), buffer->size(), nullptr,
-                              request->overlapped());
+    result = WinUsb_WritePipe(
+        interface->handle.Get(), endpoint_address, buffer->as_vector().data(),
+        buffer->as_vector().size(), nullptr, request->overlapped());
   }
   DWORD last_error = GetLastError();
   request->MaybeStartWatching(
@@ -973,7 +979,8 @@ void UsbDeviceHandleWin::OnInterfaceOpenedForControlTransfer(
 
   Request* control_request = MakeRequest(interface);
   BOOL result = WinUsb_ControlTransfer(
-      interface->handle.Get(), setup, buffer->front(), buffer->size(),
+      interface->handle.Get(), setup, buffer->as_vector().data(),
+      buffer->as_vector().size(),
       /*LengthTransferred=*/nullptr, control_request->overlapped());
   DWORD last_error = GetLastError();
   control_request->MaybeStartWatching(
@@ -1010,7 +1017,7 @@ std::unique_ptr<UsbDeviceHandleWin::Request> UsbDeviceHandleWin::UnlinkRequest(
 
 void UsbDeviceHandleWin::GotNodeConnectionInformation(
     TransferCallback callback,
-    void* node_connection_info_ptr,
+    std::unique_ptr<USB_NODE_CONNECTION_INFORMATION_EX> node_connection_info,
     scoped_refptr<base::RefCountedBytes> buffer,
     std::pair<DWORD, DWORD> result_and_bytes_transferred) {
   if (result_and_bytes_transferred.first != ERROR_SUCCESS) {
@@ -1022,17 +1029,17 @@ void UsbDeviceHandleWin::GotNodeConnectionInformation(
 
   DCHECK_EQ(result_and_bytes_transferred.second,
             sizeof(USB_NODE_CONNECTION_INFORMATION_EX));
-  USB_NODE_CONNECTION_INFORMATION_EX* node_connection_info =
-      static_cast<USB_NODE_CONNECTION_INFORMATION_EX*>(
-          node_connection_info_ptr);
 
   device_->ActiveConfigurationChanged(
       node_connection_info->CurrentConfigurationValue);
 
   size_t bytes_transferred =
       std::min(sizeof(USB_DEVICE_DESCRIPTOR), buffer->size());
-  memcpy(buffer->front(), &node_connection_info->DeviceDescriptor,
-         bytes_transferred);
+  base::span(buffer->as_vector())
+      .first(bytes_transferred)
+      .copy_from(
+          base::byte_span_from_ref(node_connection_info->DeviceDescriptor)
+              .first(bytes_transferred));
   std::move(callback).Run(UsbTransferStatus::COMPLETED, buffer,
                           bytes_transferred);
 }
@@ -1063,9 +1070,11 @@ void UsbDeviceHandleWin::GotDescriptorFromNodeConnection(
       result_and_bytes_transferred.second - sizeof(USB_DESCRIPTOR_REQUEST);
   bytes_transferred = std::min(bytes_transferred, original_buffer->size());
 
-  memcpy(original_buffer->front(),
-         request_buffer->front() + sizeof(USB_DESCRIPTOR_REQUEST),
-         bytes_transferred);
+  base::span(original_buffer->as_vector())
+      .first(bytes_transferred)
+      .copy_from(
+          base::span(*request_buffer)
+              .subspan(sizeof(USB_DESCRIPTOR_REQUEST), bytes_transferred));
   std::move(callback).Run(UsbTransferStatus::COMPLETED, original_buffer,
                           bytes_transferred);
 }

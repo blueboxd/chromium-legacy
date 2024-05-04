@@ -106,11 +106,10 @@ void RichAnswersDefinitionView::AddHeaderViews() {
 
     // Display the phonetics label in the header view if it fits, otherwise show
     // it in a subheader view below.
-    int header_space_available = kDefinitionHeaderTextWidth -
-                                 word_label->CalculatePreferredSize().width();
+    int header_space_available =
+        kDefinitionHeaderTextWidth - word_label->GetPreferredSize().width();
     int phonetics_label_width =
-        phonetics_label->CalculatePreferredSize().width() +
-        kContentSingleSpacing;
+        phonetics_label->GetPreferredSize().width() + kContentSingleSpacing;
     if (phonetics_label_width <= header_space_available) {
       header_view->AddChildView(std::move(phonetics_label));
     } else {
@@ -217,11 +216,11 @@ void RichAnswersDefinitionView::MaybeAddSynonyms(views::View* container_view,
           l10n_util::GetStringUTF8(
               IDS_RICH_ANSWERS_VIEW_DEFINITION_SYNONYMS_LABEL_TEXT),
           GetFontList(TypographyToken::kCrosBody2), label_width,
-          /*is_multi_line=*/true, ui::kColorNativeColor2));
+          /*is_multi_line=*/true, ui::kColorCrosSysPositive));
   std::string synonyms_text =
       base::JoinString(sense.synonyms_list.value(), ", ");
   int synonyms_label_width = label_width -
-                             similar_label->CalculatePreferredSize().width() -
+                             similar_label->GetPreferredSize().width() -
                              kContentSingleSpacing;
   QuickAnswersTextLabel* synonyms_label =
       box_layout_view->AddChildView(QuickAnswersTextLabel::CreateLabelWithStyle(
@@ -261,7 +260,7 @@ void RichAnswersDefinitionView::AddSubsense(const Sense& subsense) {
   views::BoxLayoutView* subsense_view =
       box_layout_view->AddChildView(CreateVerticalBoxLayoutView());
   int subsense_labels_width = kSubContentTextWidth -
-                              bullet_label->CalculatePreferredSize().width() -
+                              bullet_label->GetPreferredSize().width() -
                               kContentSingleSpacing;
   subsense_view->SetMinimumCrossAxisSize(subsense_labels_width);
   AddDefinition(subsense_view, subsense, subsense_labels_width);

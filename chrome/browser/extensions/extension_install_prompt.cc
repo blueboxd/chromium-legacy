@@ -109,12 +109,14 @@ void ExtensionInstallPrompt::Prompt::SetWebstoreData(
     const std::string& localized_user_count,
     bool show_user_count,
     double average_rating,
-    int rating_count) {
+    int rating_count,
+    const std::string& localized_rating_count) {
   CHECK(AllowWebstoreData(type_));
   localized_user_count_ = localized_user_count;
   show_user_count_ = show_user_count;
   average_rating_ = average_rating;
   rating_count_ = rating_count;
+  localized_rating_count_ = localized_rating_count;
   has_webstore_data_ = true;
 }
 
@@ -177,14 +179,9 @@ std::u16string ExtensionInstallPrompt::Prompt::GetAcceptButtonLabel() const {
   int id = -1;
   switch (type_) {
     case INSTALL_PROMPT:
-#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-      if (requires_parent_permission())
+      if (requires_parent_permission()) {
         id = IDS_EXTENSION_INSTALL_PROMPT_ASK_A_PARENT_BUTTON;
-      else
-#endif
-          // NOTE: strange indentation formatting is due to intervening
-          // BUILDFLAG above.
-          if (extension_->is_app()) {
+      } else if (extension_->is_app()) {
         id = IDS_EXTENSION_INSTALL_PROMPT_ACCEPT_BUTTON_APP;
       } else if (extension_->is_theme()) {
         id = IDS_EXTENSION_INSTALL_PROMPT_ACCEPT_BUTTON_THEME;
@@ -322,7 +319,7 @@ void ExtensionInstallPrompt::Prompt::AppendRatingStars(
 std::u16string ExtensionInstallPrompt::Prompt::GetRatingCount() const {
   CHECK(AllowWebstoreData(type_));
   return l10n_util::GetStringFUTF16(IDS_EXTENSION_RATING_COUNT,
-                                    base::NumberToString16(rating_count_));
+                                    base::UTF8ToUTF16(localized_rating_count_));
 }
 
 std::u16string ExtensionInstallPrompt::Prompt::GetUserCount() const {
@@ -551,7 +548,7 @@ void ExtensionInstallPrompt::LoadImageIfNeeded() {
 
   extensions::ExtensionResource image = extensions::IconsInfo::GetIconResource(
       extension_.get(), extension_misc::EXTENSION_ICON_LARGE,
-      ExtensionIconSet::MATCH_BIGGER);
+      ExtensionIconSet::Match::kBigger);
 
   // Load the image asynchronously. The response will be sent to OnImageLoaded.
   extensions::ImageLoader* loader = extensions::ImageLoader::Get(profile_);
@@ -604,7 +601,7 @@ void ExtensionInstallPrompt::ShowConfirmation() {
 
   if (show_dialog_callback_.is_null())
     show_dialog_callback_ = GetDefaultShowDialogCallback();
-  // TODO(https://crbug.com/957713): Use OnceCallback and eliminate the need for
+  // TODO(crbug.com/40625151): Use OnceCallback and eliminate the need for
   // a callback on the stack.
   auto cb = std::move(done_callback_);
   std::move(show_dialog_callback_)
@@ -621,8 +618,7 @@ bool ExtensionInstallPrompt::AutoConfirmPromptIfEnabled() {
     // the real implementations it's highly likely the message loop will be
     // pumping a few times before the user clicks accept or cancel.
     case extensions::ScopedTestDialogAutoConfirm::ACCEPT:
-    case extensions::ScopedTestDialogAutoConfirm::ACCEPT_AND_OPTION:
-    case extensions::ScopedTestDialogAutoConfirm::ACCEPT_AND_REMEMBER_OPTION: {
+    case extensions::ScopedTestDialogAutoConfirm::ACCEPT_AND_OPTION: {
       // Permissions are withheld at installation when the prompt specifies it
       // and option wasn't selected (which grants permissions when selected).
       auto result =

@@ -16,26 +16,28 @@
 #include "base/scoped_observation.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/autofill/autofill_field_promo_controller.h"
+#include "chrome/browser/ui/autofill/autofill_suggestion_controller.h"
+#include "chrome/browser/ui/autofill/payments/chrome_payments_autofill_client.h"
 #include "chrome/browser/ui/hats/hats_service_desktop.h"
 #include "components/autofill/content/browser/content_autofill_client.h"
 #include "components/autofill/core/browser/autofill_driver.h"
 #include "components/autofill/core/browser/autofill_plus_address_delegate.h"
 #include "components/autofill/core/browser/country_type.h"
 #include "components/autofill/core/browser/crowdsourcing/autofill_crowdsourcing_manager.h"
+#include "components/autofill/core/browser/filling_product.h"
 #include "components/autofill/core/browser/logging/log_manager.h"
 #include "components/autofill/core/browser/payments/iban_access_manager.h"
 #include "components/autofill/core/browser/payments/legal_message_line.h"
-#include "components/autofill/core/browser/ui/payments/autofill_error_dialog_controller_impl.h"
 #include "components/autofill/core/browser/ui/payments/card_unmask_authentication_selection_dialog_controller_impl.h"
-#include "components/autofill/core/browser/ui/payments/card_unmask_prompt_controller_impl.h"
 #include "components/autofill/core/browser/ui/payments/card_unmask_prompt_options.h"
-#include "components/autofill/core/browser/ui/popup_item_ids.h"
+#include "components/autofill/core/browser/ui/suggestion_type.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "content/public/browser/visibility.h"
 #include "content/public/browser/web_contents_observer.h"
 
 #if BUILDFLAG(IS_ANDROID)
-#include "chrome/browser/touch_to_fill/autofill/android/touch_to_fill_credit_card_controller.h"
+#include "chrome/browser/touch_to_fill/autofill/android/touch_to_fill_payment_method_controller.h"
 #include "chrome/browser/ui/android/autofill/save_update_address_profile_flow_manager.h"
 #include "components/autofill/core/browser/ui/fast_checkout_client.h"
 #include "components/autofill/core/browser/ui/payments/card_expiration_date_fix_flow_controller_impl.h"
@@ -47,22 +49,17 @@
 
 namespace autofill {
 
-struct AutofillErrorDialogContext;
 class AutofillOptimizationGuide;
-class AutofillPopupControllerImpl;
 #if BUILDFLAG(IS_ANDROID)
-class AutofillSaveCardBottomSheetBridge;
 class AutofillSnackbarControllerImpl;
 class AutofillCvcSaveMessageDelegate;
 #endif  // BUILDFLAG(IS_ANDROID)
-class CardUnmaskOtpInputDialogControllerImpl;
+class FormFieldData;
 struct OfferNotificationOptions;
 struct VirtualCardEnrollmentFields;
-class VirtualCardEnrollmentManager;
 struct VirtualCardManualFallbackBubbleOptions;
 
 namespace payments {
-class PaymentsAutofillClient;
 class MandatoryReauthManager;
 }  // namespace payments
 
@@ -102,7 +99,7 @@ class ChromeAutofillClient : public ContentAutofillClient,
 
   // AutofillClient:
   version_info::Channel GetChannel() const override;
-  bool IsOffTheRecord() override;
+  bool IsOffTheRecord() const override;
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
   AutofillCrowdsourcingManager* GetCrowdsourcingManager() override;
   AutofillOptimizationGuide* GetAutofillOptimizationGuide() const override;
@@ -117,17 +114,13 @@ class ChromeAutofillClient : public ContentAutofillClient,
   void OfferPlusAddressCreation(const url::Origin& main_frame_origin,
                                 PlusAddressCallback callback) override;
   MerchantPromoCodeManager* GetMerchantPromoCodeManager() override;
-  CreditCardCvcAuthenticator* GetCvcAuthenticator() override;
-  CreditCardOtpAuthenticator* GetOtpAuthenticator() override;
   CreditCardRiskBasedAuthenticator* GetRiskBasedAuthenticator() override;
   PrefService* GetPrefs() override;
   const PrefService* GetPrefs() const override;
   syncer::SyncService* GetSyncService() override;
   signin::IdentityManager* GetIdentityManager() override;
   FormDataImporter* GetFormDataImporter() override;
-  payments::PaymentsAutofillClient* GetPaymentsAutofillClient() override;
-  payments::PaymentsNetworkInterface* GetPaymentsNetworkInterface() override;
-  payments::PaymentsWindowManager* GetPaymentsWindowManager() override;
+  payments::ChromePaymentsAutofillClient* GetPaymentsAutofillClient() override;
   StrikeDatabase* GetStrikeDatabase() override;
   ukm::UkmRecorder* GetUkmRecorder() override;
   ukm::SourceId GetUkmSourceId() override;
@@ -143,24 +136,13 @@ class ChromeAutofillClient : public ContentAutofillClient,
   FastCheckoutClient* GetFastCheckoutClient() override;
   std::unique_ptr<webauthn::InternalAuthenticator>
   CreateCreditCardInternalAuthenticator(AutofillDriver* driver) override;
-
   void ShowAutofillSettings(FillingProduct main_filling_product) override;
-  void ShowCardUnmaskOtpInputDialog(
-      const CardUnmaskChallengeOption& challenge_option,
-      base::WeakPtr<OtpUnmaskDelegate> delegate) override;
-  void OnUnmaskOtpVerificationResult(OtpUnmaskResult unmask_result) override;
-  void ShowUnmaskPrompt(
-      const CreditCard& card,
-      const CardUnmaskPromptOptions& card_unmask_prompt_options,
-      base::WeakPtr<CardUnmaskDelegate> delegate) override;
-  void OnUnmaskVerificationResult(PaymentsRpcResult result) override;
   void ShowUnmaskAuthenticatorSelectionDialog(
       const std::vector<CardUnmaskChallengeOption>& challenge_options,
       base::OnceCallback<void(const std::string&)>
           confirm_unmask_challenge_option_callback,
       base::OnceClosure cancel_unmasking_closure) override;
   void DismissUnmaskAuthenticatorSelectionDialog(bool server_success) override;
-  VirtualCardEnrollmentManager* GetVirtualCardEnrollmentManager() override;
   void ShowVirtualCardEnrollDialog(
       const VirtualCardEnrollmentFields& virtual_card_enrollment_fields,
       base::OnceClosure accept_virtual_card_callback,
@@ -172,10 +154,8 @@ class ChromeAutofillClient : public ContentAutofillClient,
       base::OnceClosure cancel_mandatory_reauth_callback,
       base::RepeatingClosure close_mandatory_reauth_callback) override;
   void ShowMandatoryReauthOptInConfirmation() override;
-#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
-  void HideVirtualCardEnrollBubbleAndIconIfVisible() override;
-#endif
 #if !BUILDFLAG(IS_ANDROID)
+  void HideVirtualCardEnrollBubbleAndIconIfVisible() override;
   void ShowWebauthnOfferDialog(
       WebauthnDialogCallback offer_dialog_callback) override;
   void ShowWebauthnVerifyPendingDialog(
@@ -228,28 +208,26 @@ class ChromeAutofillClient : public ContentAutofillClient,
       base::WeakPtr<TouchToFillDelegate> delegate,
       base::span<const autofill::CreditCard> cards_to_suggest) override;
   void HideTouchToFillCreditCard() override;
-  void ShowAutofillPopup(
+  void ShowAutofillSuggestions(
       const PopupOpenArgs& open_args,
       base::WeakPtr<AutofillPopupDelegate> delegate) override;
-  void UpdateAutofillPopupDataListValues(
+  void UpdateAutofillDataListValues(
       base::span<const SelectOption> datalist) override;
-  std::vector<Suggestion> GetPopupSuggestions() const override;
-  void PinPopupView() override;
-  PopupOpenArgs GetReopenPopupArgs(
-      AutofillSuggestionTriggerSource trigger_source) const override;
+  base::span<const Suggestion> GetAutofillSuggestions() const override;
+  void PinAutofillSuggestions() override;
   std::optional<PopupScreenLocation> GetPopupScreenLocation() const override;
   void UpdatePopup(const std::vector<Suggestion>& suggestions,
                    FillingProduct main_filling_product,
                    AutofillSuggestionTriggerSource trigger_source) override;
-  void HideAutofillPopup(PopupHidingReason reason) override;
+  void HideAutofillSuggestions(SuggestionHidingReason reason) override;
   void UpdateOfferNotification(
       const AutofillOfferData* offer,
       const OfferNotificationOptions& options) override;
   void DismissOfferNotification() override;
   void OnVirtualCardDataAvailable(
       const VirtualCardManualFallbackBubbleOptions& options) override;
-  void ShowAutofillErrorDialog(AutofillErrorDialogContext context) override;
   void TriggerUserPerceptionOfAutofillSurvey(
+      FillingProduct filling_product,
       const std::map<std::string, std::string>& field_filling_stats_data)
       override;
   bool IsAutocompleteEnabled() const override;
@@ -265,16 +243,32 @@ class ChromeAutofillClient : public ContentAutofillClient,
   FormInteractionsFlowId GetCurrentFormInteractionsFlowId() override;
   std::unique_ptr<device_reauth::DeviceAuthenticator> GetDeviceAuthenticator()
       override;
+  void ShowAutofillFieldIphForManualFallbackFeature(
+      const FormFieldData& field) override;
+  void HideAutofillFieldIphForManualFallbackFeature() override;
+  void NotifyAutofillManualFallbackUsed() override;
 
-  base::WeakPtr<AutofillPopupControllerImpl> popup_controller_for_testing() {
-    return popup_controller_;
+  // TODO(b/320634151): Create a test API.
+  base::WeakPtr<AutofillSuggestionController>
+  suggestion_controller_for_testing() {
+    return suggestion_controller_;
   }
-  void KeepPopupOpenForTesting() { keep_popup_open_for_testing_ = true; }
-  std::unique_ptr<CardUnmaskPromptControllerImpl>
-  SetCardUnmaskControllerForTesting(
-      std::unique_ptr<CardUnmaskPromptControllerImpl> test_controller) {
-    return std::exchange(unmask_controller_, std::move(test_controller));
+  void set_test_addresses(std::vector<AutofillProfile> test_addresses) override;
+  base::span<const AutofillProfile> GetTestAddresses() const override;
+#if defined(UNIT_TEST)
+  void SetKeepPopupOpenForTesting(bool keep_popup_open_for_testing) {
+    keep_popup_open_for_testing_ = keep_popup_open_for_testing;
+    if (suggestion_controller_) {
+      suggestion_controller_->SetKeepPopupOpenForTesting(
+          keep_popup_open_for_testing);
+    }
   }
+  void SetAutofillFieldPromoControllerManualFallbackForTesting(
+      std::unique_ptr<AutofillFieldPromoController> test_controller) {
+    autofill_field_promo_controller_manual_fallback_ =
+        std::move(test_controller);
+  }
+#endif  // defined(UNIT_TEST)
 
   // ContentAutofillClient:
   std::unique_ptr<AutofillManager> CreateManager(
@@ -283,32 +277,23 @@ class ChromeAutofillClient : public ContentAutofillClient,
 
  protected:
   explicit ChromeAutofillClient(content::WebContents* web_contents);
-#if BUILDFLAG(IS_ANDROID)
-  void SetAutofillSaveCardBottomSheetBridgeForTesting(
-      std::unique_ptr<AutofillSaveCardBottomSheetBridge>
-          autofill_save_card_bottom_sheet_bridge);
-#endif
 
  private:
   Profile* GetProfile() const;
   std::u16string GetAccountHolderName();
   bool SupportsConsentlessExecution(const url::Origin& origin);
-#if BUILDFLAG(IS_ANDROID)
-  AutofillSaveCardBottomSheetBridge*
-  GetOrCreateAutofillSaveCardBottomSheetBridge();
-#endif
+  void ShowAutofillSuggestionsImpl(
+      const PopupOpenArgs& open_args,
+      base::WeakPtr<AutofillPopupDelegate> delegate);
+  base::WeakPtr<ChromeAutofillClient> GetWeakPtr();
 
   std::unique_ptr<LogManager> log_manager_;
 
   // These members are initialized lazily in their respective getters.
   // Therefore, do not access the members directly.
   std::unique_ptr<AutofillCrowdsourcingManager> crowdsourcing_manager_;
-  std::unique_ptr<payments::PaymentsAutofillClient> payments_autofill_client_;
-  std::unique_ptr<payments::PaymentsNetworkInterface>
-      payments_network_interface_;
-  std::unique_ptr<payments::PaymentsWindowManager> payments_window_manager_;
-  std::unique_ptr<CreditCardCvcAuthenticator> cvc_authenticator_;
-  std::unique_ptr<CreditCardOtpAuthenticator> otp_authenticator_;
+  std::unique_ptr<payments::ChromePaymentsAutofillClient>
+      payments_autofill_client_;
   std::unique_ptr<CreditCardRiskBasedAuthenticator> risk_based_authenticator_;
   std::unique_ptr<CardUnmaskAuthenticationSelectionDialogControllerImpl>
       card_unmask_authentication_selection_controller_;
@@ -317,8 +302,8 @@ class ChromeAutofillClient : public ContentAutofillClient,
       payments_mandatory_reauth_manager_;
   std::unique_ptr<IbanAccessManager> iban_access_manager_;
 
-  base::WeakPtr<AutofillPopupControllerImpl> popup_controller_;
-  FormInteractionsFlowId flow_id_{};
+  base::WeakPtr<AutofillSuggestionController> suggestion_controller_;
+  FormInteractionsFlowId flow_id_;
   base::Time flow_id_date_;
   // If set to true, the popup will stay open regardless of external changes on
   // the test machine, that may normally cause the popup to be hidden
@@ -328,20 +313,19 @@ class ChromeAutofillClient : public ContentAutofillClient,
       card_expiration_date_fix_flow_controller_;
   CardNameFixFlowControllerImpl card_name_fix_flow_controller_;
   SaveUpdateAddressProfileFlowManager save_update_address_profile_flow_manager_;
-  TouchToFillCreditCardController touch_to_fill_credit_card_controller_{this};
+  TouchToFillPaymentMethodController touch_to_fill_payment_method_controller_{
+      this};
   std::unique_ptr<AutofillSnackbarControllerImpl>
       autofill_snackbar_controller_impl_;
   std::unique_ptr<FastCheckoutClient> fast_checkout_client_;
-  std::unique_ptr<AutofillSaveCardBottomSheetBridge>
-      autofill_save_card_bottom_sheet_bridge_;
   std::unique_ptr<AutofillCvcSaveMessageDelegate>
       autofill_cvc_save_message_delegate_;
 #endif
-  std::unique_ptr<CardUnmaskPromptControllerImpl> unmask_controller_;
-  std::unique_ptr<AutofillErrorDialogControllerImpl>
-      autofill_error_dialog_controller_;
-  std::unique_ptr<CardUnmaskOtpInputDialogControllerImpl>
-      card_unmask_otp_input_dialog_controller_;
+  std::unique_ptr<AutofillFieldPromoController>
+      autofill_field_promo_controller_manual_fallback_;
+  // Test addresses used to allow developers to test their forms.
+  std::vector<AutofillProfile> test_addresses_;
+  base::WeakPtrFactory<ChromeAutofillClient> weak_ptr_factory_{this};
 };
 
 }  // namespace autofill

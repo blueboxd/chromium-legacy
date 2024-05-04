@@ -75,9 +75,8 @@ webapps::AppId InstallDummyWebApp(
     const std::string& app_name,
     const GURL& start_url,
     const webapps::WebappInstallSource install_source) {
-  auto web_app_info = std::make_unique<WebAppInstallInfo>();
-
-  web_app_info->start_url = start_url;
+  auto web_app_info =
+      WebAppInstallInfo::CreateWithStartUrlForTesting(start_url);
   web_app_info->scope = start_url.GetWithoutFilename();
   web_app_info->title = base::UTF8ToUTF16(app_name);
   web_app_info->description = base::UTF8ToUTF16(app_name);
@@ -155,9 +154,10 @@ webapps::AppId InstallShortcut(Profile* profile,
                                const GURL& start_url,
                                bool create_default_icon,
                                bool is_policy_install) {
-  auto web_app_info = std::make_unique<WebAppInstallInfo>();
-
-  web_app_info->start_url = start_url;
+  auto web_app_info =
+      WebAppInstallInfo::CreateWithStartUrlForTesting(start_url);
+  // Explicitly clear the scope, because this is a shortcut.
+  web_app_info->scope = GURL();
   web_app_info->title = base::UTF8ToUTF16(shortcut_name);
   web_app_info->user_display_mode = mojom::UserDisplayMode::kBrowser;
   if (create_default_icon) {
@@ -199,9 +199,11 @@ webapps::AppId InstallShortcut(Profile* profile,
 void UninstallWebApp(Profile* profile, const webapps::AppId& app_id) {
   WebAppProvider* const provider = WebAppProvider::GetForTest(profile);
   base::test::TestFuture<webapps::UninstallResultCode> future;
+
   DCHECK(provider->registrar_unsafe().CanUserUninstallWebApp(app_id));
   provider->scheduler().RemoveUserUninstallableManagements(
       app_id, webapps::WebappUninstallSource::kAppMenu, future.GetCallback());
+
   EXPECT_TRUE(UninstallSucceeded(future.Get()));
 
   // Allow updates to be published to App Service listeners.

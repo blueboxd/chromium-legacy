@@ -11,7 +11,6 @@
 #include "chrome/browser/ash/borealis/borealis_util.h"
 #include "chrome/browser/ash/guest_os/guest_os_registry_service.h"
 #include "chrome/browser/ash/guest_os/guest_os_registry_service_factory.h"
-#include "chrome/browser/ui/views/borealis/borealis_installer_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/prefs/pref_service.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -34,7 +33,8 @@ void HandleInstallUrl(base::WeakPtr<Profile> profile, GURL url) {
   }
   BorealisService::GetForProfile(profile.get())
       ->AppLauncher()
-      .Launch(kClientAppId, base::DoNothing());
+      .Launch(kClientAppId, borealis::BorealisLaunchSource::kInstallUrl,
+              base::DoNothing());
 }
 }  // namespace
 

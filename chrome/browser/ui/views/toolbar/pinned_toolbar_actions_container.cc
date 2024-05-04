@@ -177,7 +177,7 @@ gfx::Size PinnedToolbarActionsContainer::CustomFlexRule(
 
   if ((remaining_pinned_available_width > 0) &&
       (remaining_pinned_available_width < minimum_pinned_container_width) &&
-      shrink_to_hide_divider) {
+      shrink_to_hide_divider && !GetAnimatingLayoutManager()->is_animating()) {
     return gfx::Size(popped_out_buttons_width,
                      DefaultFlexRule(size_bounds).height());
   }
@@ -608,7 +608,7 @@ void PinnedToolbarActionsContainer::RemoveButton(
 
 bool PinnedToolbarActionsContainer::IsOverflowed(const actions::ActionId& id) {
   const auto* const pinned_button = GetPinnedButtonFor(id);
-  // TODO(crbug.com/1508656): If this container is not visible treat the
+  // TODO(crbug.com/40949386): If this container is not visible treat the
   // elements inside as overflowed.
   // TODO(pengchaocai): Support popped out buttons overflow.
   return static_cast<views::LayoutManagerBase*>(GetLayoutManager())
@@ -622,9 +622,14 @@ views::View* PinnedToolbarActionsContainer::GetContainerView() {
 
 bool PinnedToolbarActionsContainer::ShouldAnyButtonsOverflow(
     gfx::Size available_size) const {
-  views::ProposedLayout proposed_layout =
-      GetAnimatingLayoutManager()->target_layout_manager()->GetProposedLayout(
-          available_size);
+  views::ProposedLayout proposed_layout;
+  if (GetAnimatingLayoutManager()->is_animating()) {
+    proposed_layout = GetAnimatingLayoutManager()->target_layout();
+  } else {
+    proposed_layout =
+        GetAnimatingLayoutManager()->target_layout_manager()->GetProposedLayout(
+            available_size);
+  }
   for (PinnedActionToolbarButton* pinned_button : pinned_buttons_) {
     if (views::ChildLayout* child_layout =
             proposed_layout.GetLayoutFor(pinned_button)) {

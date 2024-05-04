@@ -9,6 +9,7 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <string_view>
 #include <vector>
 
 #include "base/containers/flat_map.h"
@@ -160,7 +161,6 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   void GrantRequestOrigin(int child_id, const url::Origin& origin) override;
   void GrantRequestScheme(int child_id, const std::string& scheme) override;
   bool CanRequestURL(int child_id, const GURL& url) override;
-  bool CanCommitURL(int child_id, const GURL& url) override;
   bool CanReadFile(int child_id, const base::FilePath& file) override;
   bool CanCreateReadWriteFile(int child_id,
                               const base::FilePath& file) override;
@@ -176,8 +176,9 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   void GrantSendMidiMessage(int child_id) override;
   void GrantSendMidiSysExMessage(int child_id) override;
   bool CanAccessDataForOrigin(int child_id, const url::Origin& origin) override;
+  bool HostsOrigin(int child_id, const url::Origin& origin) override;
   void AddFutureIsolatedOrigins(
-      base::StringPiece origins_list,
+      std::string_view origins_list,
       IsolatedOriginSource source,
       BrowserContext* browser_context = nullptr) override;
   void AddFutureIsolatedOrigins(
@@ -192,6 +193,39 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
                                 IsolatedOriginSource source) override;
   void ClearIsolatedOriginsForTesting() override;
 
+  // Centralized internal implementation of site isolation enforcements,
+  // including CanAccessDataForOrigin and HostsOrigin. It supports the following
+  // types of access checks, in order of increasing strictness:
+  enum class AccessType {
+    // Whether the process can commit a navigation to an origin, allowing a
+    // document with that origin to be hosted in this process. This is
+    // specifically about whether a particular new origin may be introduced
+    // into a given process.
+    kCanCommitNewOrigin,
+    // Whether the process has previously committed a document or instantiated a
+    // worker with the particular origin. This can be used to verify whether a
+    // particular origin can be used as an initiator or source origin, e.g. in
+    // postMessage or other IPCs sent from this process. Unlike
+    // kCanCommitNewOrigin, this check assumes that the origin must already
+    // exist in the process. Because a document/worker destruction may race with
+    // processing legitimate IPCs on behalf of `origin`, this check also allows
+    // the case where an origin has been hosted by the process in the past, but
+    // not necessarily now.
+    kHostsOrigin,
+    // Whether the process can access data belonging to an origin already
+    // committed in the process, such as passwords, localStorage, or cookies.
+    // Similarly to kHostsOrigin, this check assumes that the origin must
+    // already
+    // exist in the process, but it is more strict for certain kinds of
+    // processes that aren't supposed to access any data. For example, sandboxed
+    // frame processes (which contain only opaque origins) or PDF processes
+    // cannot access data for any origin.
+    kCanAccessDataForCommittedOrigin,
+  };
+  bool CanAccessOrigin(int child_id,
+                       const url::Origin& origin,
+                       AccessType access_type);
+
   // Determines if the combination of origin, url and web_exposed_isolation_info
   // bundled in `url_info` are safe to commit to the process associated with
   // `child_id`.
@@ -204,6 +238,13 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
       int child_id,
       const IsolationContext& isolation_context,
       const UrlInfo& url_info);
+
+  // Whether the process is allowed to commit a document from the given URL.
+  // This is more restrictive than CanRequestURL, since CanRequestURL allows
+  // requests that might lead to cross-process navigations or external protocol
+  // handlers. Used primarily as a helper for CanCommitOriginAndUrl and thus not
+  // exposed publicly.
+  bool CanCommitURL(int child_id, const GURL& url);
 
   // This function will check whether |origin| requires process isolation
   // within |isolation_context|, and if so, it will return true and put the
@@ -386,6 +427,23 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
 
   // Revoke read raw cookies permission.
   void RevokeReadRawCookies(int child_id);
+
+  // Opaque origins loaded with LoadDataWithBaseURL are allowed to bypass some
+  // security checks, such as which URLs are allowed to commit. This method
+  // grants that ability to any document from such an opaque origin, because
+  // those actions could be taken from about:blank frames that inherit the same
+  // origin.
+  //
+  // Note that LoadDataWithBaseURL can be used with non-opaque origins as well,
+  // but in that case the bypass is only allowed for the document and not the
+  // entire origin, to prevent other code in the origin from bypassing checks.
+  void GrantOpaqueOriginForLoadDataWithBaseURL(int child_id,
+                                               const url::Origin& origin);
+
+  // Returns whether the given opaque origin was loaded via LoadDataWithBaseURL,
+  // allowing its navigations to bypass certain URL and origin checks.
+  bool IsOpaqueOriginForLoadDataWithBaseURL(int child_id,
+                                            const url::Origin& origin);
 
   // Explicit permissions checks for FileSystemURL specified files.
   bool CanReadFileSystemFile(int child_id,
@@ -762,7 +820,7 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   // two into IsolatedOriginPatterns, suitable for addition via
   // AddFutureIsolatedOrigins().
   static std::vector<IsolatedOriginPattern> ParseIsolatedOrigins(
-      base::StringPiece pattern_list);
+      std::string_view pattern_list);
 
   void AddFutureIsolatedOrigins(
       const std::vector<IsolatedOriginPattern>& patterns,
@@ -795,11 +853,18 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   static std::string GetKilledProcessOriginLock(
       const SecurityState* security_state);
 
-  // Helper for public CanAccessDataForOrigin overloads.
-  bool CanAccessDataForMaybeOpaqueOrigin(
-      int child_id,
-      const GURL& url,
-      bool url_is_precursor_of_opaque_origin);
+  // Helper for public CanAccessOrigin overloads.
+  bool CanAccessMaybeOpaqueOrigin(int child_id,
+                                  const GURL& url,
+                                  bool url_is_precursor_of_opaque_origin,
+                                  AccessType access_type);
+
+  // Helper used by CanAccessOrigin to impose additional restrictions on a
+  // sandboxed process locked to `process_lock`.
+  bool IsAccessAllowedForSandboxedProcess(const ProcessLock& process_lock,
+                                          const GURL& url,
+                                          bool url_is_for_opaque_origin,
+                                          AccessType access_type);
 
   // Utility function to simplify lookups for OriginAgentClusterOptInEntry
   // values by origin.

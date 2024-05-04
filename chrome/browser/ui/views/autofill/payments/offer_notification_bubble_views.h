@@ -42,7 +42,7 @@ class OfferNotificationBubbleViews : public AutofillBubbleBase,
       delete;
 
  private:
-  // TODO(crbug.com/1507113) : Remove these friended test and convert the test
+  // TODO(crbug.com/40947801) : Remove these friended test and convert the test
   // to use Kombucha framework.
   FRIEND_TEST_ALL_PREFIXES(OfferNotificationBubbleViewsInteractiveUiTest,
                            CopyPromoCode);
@@ -111,7 +111,7 @@ class OfferNotificationBubbleViews : public AutofillBubbleBase,
 
   raw_ptr<OfferNotificationBubbleController> controller_;
 
-  // TODO(crbug.com/1334806): Replace tests with Pixel tests.
+  // TODO(crbug.com/40228302): Replace tests with Pixel tests.
   raw_ptr<views::StyledLabel> promo_code_label_ = nullptr;
 
   raw_ptr<views::Label> instructions_label_ = nullptr;

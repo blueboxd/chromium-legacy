@@ -47,6 +47,7 @@
 #include "third_party/blink/renderer/core/html/forms/form_controller.h"
 #include "third_party/blink/renderer/core/html/forms/form_data.h"
 #include "third_party/blink/renderer/core/html/forms/text_control_inner_elements.h"
+#include "third_party/blink/renderer/core/html/html_br_element.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 #include "third_party/blink/renderer/core/html/shadow/shadow_element_names.h"
 #include "third_party/blink/renderer/core/html_names.h"
@@ -59,6 +60,7 @@
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
@@ -168,7 +170,9 @@ int HTMLTextAreaElement::scrollHeight() {
 
 void HTMLTextAreaElement::ChildrenChanged(const ChildrenChange& change) {
   HTMLElement::ChildrenChanged(change);
-  SetLastChangeWasNotUserEdit();
+  if (!RuntimeEnabledFeatures::TextAreaChildrenChangedStillValidatesEnabled()) {
+    SetLastChangeWasNotUserEdit();
+  }
   if (is_dirty_)
     SetInnerEditorValue(Value());
   else
@@ -553,12 +557,18 @@ void HTMLTextAreaElement::SetValueCommon(const String& new_value,
       break;
   }
 
-  // We set the Autofilled state again because setting the autofill value
-  // triggers JavaScript events and the site may override the autofilled value,
-  // which resets the autofill state. Even if the website modifies the from
-  // control element's content during the autofill operation, we want the state
-  // to show as as autofilled.
-  SetAutofillState(autofill_state);
+  if (!base::FeatureList::IsEnabled(
+          features::kAutofillDontSetAutofillStateAfterJavaScriptChanges)) {
+    // We set the Autofilled state again because setting the autofill value
+    // triggers JavaScript events and the site may override the autofilled
+    // value, which resets the autofill state. Even if the website modifies the
+    // form control element's content during the autofill operation, we want the
+    // state to show as autofilled.
+    // If kAutofillDontSetAutofillStateAfterJavaScriptChanges is enabled, the
+    // WebAutofillClient will monitor JavaScript induced changes and take care
+    // of resetting the autofill state when appropriate.
+    SetAutofillState(autofill_state);
+  }
 }
 
 String HTMLTextAreaElement::defaultValue() const {
@@ -763,6 +773,15 @@ String HTMLTextAreaElement::DefaultToolTip() const {
   if (FastHasAttribute(html_names::kNovalidateAttr))
     return String();
   return validationMessage();
+}
+
+void HTMLTextAreaElement::SetFocused(bool is_focused,
+                                     mojom::blink::FocusType focus_type) {
+  // See comment in HTMLInputElement::SetFocused.
+  if (UserHasEditedTheField()) {
+    SetUserHasEditedTheFieldAndBlurred();
+  }
+  TextControlElement::SetFocused(is_focused, focus_type);
 }
 
 }  // namespace blink

@@ -23,25 +23,31 @@ namespace ash {
 
 namespace {
 
-constexpr int kPanelDefaultWidth = 340;
-constexpr int kPanelDefaultHeight = 450;
-constexpr int kPanelHeightWithRefreshBanner = 482;
+constexpr int kPanelHeightWithRefreshBanner = 524;
 constexpr int kPanelBoundsPadding = 8;
+
+constexpr char kWidgetName[] = "MahiPanel";
 
 gfx::Rect CalculateWidgetBounds(aura::Window* root_window,
                                 bool refresh_banner_shown = false) {
   auto display =
       display::Screen::GetScreen()->GetDisplayNearestWindow(root_window);
   auto bottom_right = display.work_area().bottom_right();
+
+  // TODO(b/319731776): Use panel bounds here instead of `kPanelDefaultHeight`
+  // when the panel is resizable.
   int height = refresh_banner_shown ? kPanelHeightWithRefreshBanner
-                                    : kPanelDefaultHeight;
+                                    : mahi_constants::kPanelDefaultHeight;
 
   // The panel is positioned at the bottom right corner of the screen.
   // TODO(b/319476980): Make sure Mahi main panel bounds work when shelf
   // alignment changes.
-  return gfx::Rect(bottom_right.x() - kPanelDefaultWidth - kPanelBoundsPadding,
+  // TODO(b/319731776): Use panel bounds here instead of `kPanelDefaultWidth`
+  // when the panel is resizable.
+  return gfx::Rect(bottom_right.x() - mahi_constants::kPanelDefaultWidth -
+                       kPanelBoundsPadding,
                    bottom_right.y() - height - kPanelBoundsPadding,
-                   kPanelDefaultWidth, height);
+                   mahi_constants::kPanelDefaultWidth, height);
 }
 
 }  // namespace
@@ -57,12 +63,13 @@ MahiPanelWidget::MahiPanelWidget(InitParams params)
           .SetOrientation(views::BoxLayout::Orientation::kVertical)
           .Build());
 
-  refresh_view_ =
-      contents_view->AddChildView(std::make_unique<RefreshBannerView>());
+  refresh_view_ = contents_view->AddChildView(
+      std::make_unique<RefreshBannerView>(&ui_controller_));
   refresh_view_observation_.Observe(refresh_view_);
 
-  auto* panel_view =
-      contents_view->AddChildView(std::make_unique<MahiPanelView>());
+  auto* panel_view = contents_view->AddChildView(
+      std::make_unique<MahiPanelView>(&ui_controller_));
+
   // Make sure the `MahiPanelView` is sized to fill up the available space.
   contents_view->SetFlexForView(panel_view, 1.0);
 }
@@ -75,7 +82,7 @@ views::UniqueWidgetPtr MahiPanelWidget::CreatePanelWidget(int64_t display_id) {
 
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
-  params.name = "MahiPanel";
+  params.name = GetName();
   // TODO(b/319467834): Decide what container this widget should be on.
   params.parent = Shell::GetContainer(root_window, kShellWindowId_PipContainer);
 
@@ -90,16 +97,19 @@ views::UniqueWidgetPtr MahiPanelWidget::CreatePanelWidget(int64_t display_id) {
   return widget;
 }
 
-void MahiPanelWidget::SetRefreshViewVisible(bool visible) {
-  if (!refresh_view_) {
-    return;
-  }
+// static
+const char* MahiPanelWidget::GetName() {
+  return kWidgetName;
+}
 
-  if (refresh_view_->GetVisible() == visible) {
-    return;
-  }
+void MahiPanelWidget::NotifyRefreshAvailabilityChanged(bool available) {
+  ui_controller_.NotifyRefreshAvailabilityChanged(available);
+}
 
-  visible ? refresh_view_->Show() : refresh_view_->Hide();
+void MahiPanelWidget::SendQuestion(const std::u16string& question,
+                                   bool current_panel_content) {
+  ui_controller_.SendQuestion(question, current_panel_content,
+                              MahiUiController::QuestionSource::kMenuView);
 }
 
 void MahiPanelWidget::OnViewVisibilityChanged(views::View* observed_view,

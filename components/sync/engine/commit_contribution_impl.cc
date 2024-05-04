@@ -130,7 +130,8 @@ void CommitContributionImpl::AddToCommitMessage(
 
     // Record the size of the sync entity being committed.
     syncer::SyncRecordModelTypeEntitySizeHistogram(
-        type_, sync_entity->specifics().ByteSizeLong());
+        type_, commit_request->entity->is_deleted(),
+        sync_entity->specifics().ByteSizeLong(), sync_entity->ByteSizeLong());
 
     if (commit_request->entity->is_deleted()) {
       RecordEntityChangeMetrics(type_, ModelTypeEntityChange::kLocalDeletion);
@@ -253,7 +254,11 @@ void CommitContributionImpl::PopulateCommitProto(
   commit_proto->set_name(entity_data.name);
   commit_proto->set_mtime(TimeToProtoTime(entity_data.modification_time));
 
-  if (!entity_data.is_deleted()) {
+  if (entity_data.is_deleted()) {
+    if (entity_data.deletion_origin.has_value()) {
+      *commit_proto->mutable_deletion_origin() = *entity_data.deletion_origin;
+    }
+  } else {
     // Handle bookmarks separately.
     if (type == BOOKMARKS) {
       // Populate SyncEntity.folder for backward-compatibility.

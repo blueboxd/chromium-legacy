@@ -43,7 +43,7 @@ constexpr char kHatsShouldShowSurveyReasonHistogram[] =
 
 namespace {
 
-// TODO(crbug.com/1160661): When the minimum time between any survey, and the
+// TODO(crbug.com/40162245): When the minimum time between any survey, and the
 // minimum time between a specific survey, are the same, the logic supporting
 // the latter check is superfluous.
 constexpr base::TimeDelta kMinimumTimeBetweenSurveyStarts = base::Days(180);
@@ -655,12 +655,13 @@ void HatsServiceDesktop::CheckSurveyStatusAndMaybeShow(
                           base::TimeToValue(base::Time::Now()));
 
   DCHECK(!hats_next_dialog_exists_);
-  const auto& trigger_id =
-      supplied_trigger_id.has_value()
-          ? std::string(supplied_trigger_id.value())
-          : survey_configs_by_triggers_[trigger].trigger_id;
+  if (supplied_trigger_id.has_value()) {
+    survey_configs_by_triggers_[trigger].trigger_id =
+        std::string(supplied_trigger_id.value());
+  }
   browser->window()->ShowHatsDialog(
-      trigger_id, std::move(success_callback), std::move(failure_callback),
+      survey_configs_by_triggers_[trigger].trigger_id,
+      std::move(success_callback), std::move(failure_callback),
       product_specific_bits_data, product_specific_string_data);
   hats_next_dialog_exists_ = true;
 }

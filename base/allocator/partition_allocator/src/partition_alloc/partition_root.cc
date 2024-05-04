@@ -6,7 +6,7 @@
 
 #include <cstdint>
 
-#include "build/build_config.h"
+#include "partition_alloc/build_config.h"
 #include "partition_alloc/freeslot_bitmap.h"
 #include "partition_alloc/in_slot_metadata.h"
 #include "partition_alloc/oom.h"
@@ -44,6 +44,7 @@
 
 #if BUILDFLAG(IS_WIN)
 #include <windows.h>
+
 #include "wow64apiset.h"
 #endif
 
@@ -405,8 +406,11 @@ static size_t PartitionPurgeSlotSpan(PartitionRoot* root,
   uintptr_t slot_span_start = SlotSpanMetadata::ToSlotSpanStart(slot_span);
   // First, walk the freelist for this slot span and make a bitmap of which
   // slots are not in use.
+  const PartitionFreelistDispatcher* freelist_dispatcher =
+      root->get_freelist_dispatcher();
+
   for (PartitionFreelistEntry* entry = slot_span->get_freelist_head(); entry;
-       entry = entry->GetNext(slot_size)) {
+       entry = freelist_dispatcher->GetNext(entry, slot_size)) {
     size_t slot_number =
         bucket->GetSlotNumber(SlotStartPtr2Addr(entry) - slot_span_start);
     PA_DCHECK(slot_number < num_provisioned_slots);
@@ -417,7 +421,7 @@ static size_t PartitionPurgeSlotSpan(PartitionRoot* root,
     // return the original content or 0. (Note that this optimization won't be
     // effective on big-endian machines because the masking function is
     // negation.)
-    if (entry->IsEncodedNextPtrZero()) {
+    if (freelist_dispatcher->IsEncodedNextPtrZero(entry)) {
       last_slot = slot_number;
     }
 #endif
@@ -504,7 +508,7 @@ static size_t PartitionPurgeSlotSpan(PartitionRoot* root,
         auto* entry = static_cast<PartitionFreelistEntry*>(
             SlotStartAddr2Ptr(slot_span_start + (slot_size * slot_index)));
         if (num_new_freelist_entries) {
-          back->SetNext(entry);
+          freelist_dispatcher->SetNext(back, entry);
         } else {
           slot_span->SetFreelistHead(entry);
         }
@@ -518,7 +522,7 @@ static size_t PartitionPurgeSlotSpan(PartitionRoot* root,
           slot_span_start + (num_provisioned_slots * slot_size);
       bool skipped = false;
       for (PartitionFreelistEntry* entry = slot_span->get_freelist_head();
-           entry; entry = entry->GetNext(slot_size)) {
+           entry; entry = freelist_dispatcher->GetNext(entry, slot_size)) {
         uintptr_t entry_addr = SlotStartPtr2Addr(entry);
         if (entry_addr >= first_unprovisioned_slot) {
           skipped = true;
@@ -529,7 +533,7 @@ static size_t PartitionPurgeSlotSpan(PartitionRoot* root,
         // if no entry exists). Otherwise the link is already correct.
         if (skipped) {
           if (num_new_freelist_entries) {
-            back->SetNext(entry);
+            freelist_dispatcher->SetNext(back, entry);
           } else {
             slot_span->SetFreelistHead(entry);
           }
@@ -544,7 +548,7 @@ static size_t PartitionPurgeSlotSpan(PartitionRoot* root,
     if (straighten || unprovisioned_bytes) {
       if (num_new_freelist_entries) {
         PA_DCHECK(back);
-        PartitionFreelistEntry::EmplaceAndInitNull(back);
+        freelist_dispatcher->EmplaceAndInitNull(back);
 #if !BUILDFLAG(IS_WIN)
         // Memorize index of the last slot in the list, as it may be able to
         // participate in an optimization related to page discaring (below), due
@@ -994,12 +998,15 @@ void PartitionRoot::Init(PartitionOptions opts) {
     settings.scheduler_loop_quarantine =
         opts.scheduler_loop_quarantine == PartitionOptions::kEnabled;
     if (settings.scheduler_loop_quarantine) {
-      scheduler_loop_quarantine_capacity_in_bytes =
-          opts.scheduler_loop_quarantine_capacity_in_bytes;
-      scheduler_loop_quarantine_root.SetCapacityInBytes(
-          opts.scheduler_loop_quarantine_capacity_in_bytes);
+      internal::LightweightQuarantineBranchConfig global_config = {
+          .lock_required = true,
+          .branch_capacity_in_bytes =
+              opts.scheduler_loop_quarantine_branch_capacity_in_bytes,
+      };
+      scheduler_loop_quarantine_branch_capacity_in_bytes =
+          opts.scheduler_loop_quarantine_branch_capacity_in_bytes;
       scheduler_loop_quarantine.emplace(
-          scheduler_loop_quarantine_root.CreateBranch());
+          scheduler_loop_quarantine_root.CreateBranch(global_config));
     } else {
       // Deleting a running quarantine is not supported.
       PA_CHECK(!scheduler_loop_quarantine.has_value());
@@ -1020,9 +1027,14 @@ void PartitionRoot::Init(PartitionOptions opts) {
         opts.memory_tagging.reporting_mode;
 #endif  // BUILDFLAG(HAS_MEMORY_TAGGING)
 
+    settings.use_pool_offset_freelists =
+        opts.use_pool_offset_freelists == PartitionOptions::kEnabled;
+
     // brp_enabled() is not supported in the configurable pool because
     // BRP requires objects to be in a different Pool.
+#if BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
     PA_CHECK(!(settings.use_configurable_pool && brp_enabled()));
+#endif
 
 #if BUILDFLAG(ENABLE_THREAD_ISOLATION)
     // BRP and thread isolated mode use different pools, so they can't be
@@ -1041,19 +1053,9 @@ void PartitionRoot::Init(PartitionOptions opts) {
 
 #if BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
     if (brp_enabled()) {
-      size_t in_slot_metadata_size = internal::kInSlotMetadataSizeAdjustment;
-      in_slot_metadata_size =
-          internal::AlignUpInSlotMetadataSizeForApple(in_slot_metadata_size);
-#if PA_CONFIG(MAYBE_INCREASE_IN_SLOT_METADATA_SIZE_FOR_MTE)
-      // When MTE is enabled together with BRP (crbug.com/1445816) in the
-      // "previous slot" mode (note the brp_enabled() check above), there is a
-      // race that can be avoided by making in-slot metadata a multiple of the
-      // MTE granule and not tagging it.
-      if (IsMemoryTaggingEnabled() && !in_slot_metadata_in_same_slot_) {
-        in_slot_metadata_size = internal::base::bits::AlignUp(
-            in_slot_metadata_size, internal::kMemTagGranuleSize);
-      }
-#endif  // PA_CONFIG(MAYBE_INCREASE_IN_SLOT_METADATA_SIZE_FOR_MTE)
+      size_t in_slot_metadata_size =
+          internal::AlignUpInSlotMetadataSizeForApple(
+              internal::kInSlotMetadataSizeAdjustment);
       settings.in_slot_metadata_size = in_slot_metadata_size;
       PA_CHECK(internal::kInSlotMetadataSizeAdjustment <=
                in_slot_metadata_size);
@@ -1320,7 +1322,7 @@ bool PartitionRoot::TryReallocInPlaceForNormalBuckets(
   if (slot_span->CanStoreRawSize()) {
 #if BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT) && BUILDFLAG(PA_DCHECK_IS_ON)
     internal::InSlotMetadata* old_ref_count = nullptr;
-    if (brp_enabled()) {
+    if (PA_LIKELY(brp_enabled())) {
       old_ref_count = InSlotMetadataPointerFromSlotStartAndSize(
           slot_start, slot_span->bucket->slot_size);
     }
@@ -1329,7 +1331,7 @@ bool PartitionRoot::TryReallocInPlaceForNormalBuckets(
     size_t new_raw_size = AdjustSizeForExtrasAdd(new_size);
     slot_span->SetRawSize(new_raw_size);
 #if BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT) && BUILDFLAG(PA_DCHECK_IS_ON)
-    if (brp_enabled()) {
+    if (PA_LIKELY(brp_enabled())) {
       internal::InSlotMetadata* new_ref_count =
           InSlotMetadataPointerFromSlotStartAndSize(
               slot_start, slot_span->bucket->slot_size);
@@ -1408,7 +1410,8 @@ void PartitionRoot::ShrinkEmptySlotSpansRing(size_t limit) {
     // The ring is not always full, may be nullptr.
     if (slot_span) {
       slot_span->DecommitIfPossible(this);
-      global_empty_slot_span_ring[index] = nullptr;
+      // DecommitIfPossible() should set the buffer to null.
+      PA_DCHECK(!global_empty_slot_span_ring[index]);
     }
     index += 1;
     // Walk through the entirety of possible slots, even though the last ones
@@ -1522,6 +1525,15 @@ void PartitionRoot::DumpStats(const char* partition_name,
           true, &stats.current_thread_cache_stats);
       ThreadCacheRegistry::Instance().DumpStats(false,
                                                 &stats.all_thread_caches_stats);
+    }
+
+    stats.has_scheduler_loop_quarantine = settings.scheduler_loop_quarantine;
+    if (stats.has_scheduler_loop_quarantine) {
+      memset(
+          reinterpret_cast<void*>(&stats.scheduler_loop_quarantine_stats_total),
+          0, sizeof(LightweightQuarantineStats));
+      scheduler_loop_quarantine_root.AccumulateStats(
+          stats.scheduler_loop_quarantine_stats_total);
     }
   }
 
@@ -1637,6 +1649,12 @@ void PartitionRoot::ResetBookkeepingForTesting() {
   max_size_of_committed_pages.store(total_size_of_committed_pages);
 }
 
+void PartitionRoot::SetGlobalEmptySlotSpanRingIndexForTesting(int16_t index) {
+  ::partition_alloc::internal::ScopedGuard guard{
+      internal::PartitionRootLock(this)};
+  global_empty_slot_span_ring_index = index;
+}
+
 ThreadCache* PartitionRoot::MaybeInitThreadCache() {
   auto* tcache = ThreadCache::Get();
   // See comment in `EnableThreadCacheIfSupport()` for why this is an acquire
@@ -1676,11 +1694,6 @@ ThreadCache* PartitionRoot::MaybeInitThreadCache() {
   return tcache;
 }
 
-internal::LightweightQuarantineBranch
-PartitionRoot::CreateSchedulerLoopQuarantineBranch(bool lock_required) {
-  return scheduler_loop_quarantine_root.CreateBranch(lock_required);
-}
-
 // static
 void PartitionRoot::SetStraightenLargerSlotSpanFreeListsMode(
     StraightenLargerSlotSpanFreeListsMode new_value) {
@@ -1696,6 +1709,20 @@ void PartitionRoot::SetSortSmallerSlotSpanFreeListsEnabled(bool new_value) {
 void PartitionRoot::SetSortActiveSlotSpansEnabled(bool new_value) {
   sort_active_slot_spans_ = new_value;
 }
+
+#if BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
+PA_NOINLINE void PartitionRoot::QuarantineForBrp(
+    const SlotSpanMetadata* slot_span,
+    void* object) {
+  auto usable_size = GetSlotUsableSize(slot_span);
+  auto hook = PartitionAllocHooks::GetQuarantineOverrideHook();
+  if (PA_UNLIKELY(hook)) {
+    hook(object, usable_size);
+  } else {
+    internal::SecureMemset(object, internal::kQuarantinedByte, usable_size);
+  }
+}
+#endif  // BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
 
 // Explicitly define common template instantiations to reduce compile time.
 #define EXPORT_TEMPLATE \
@@ -1717,7 +1744,7 @@ EXPORT_TEMPLATE void* PartitionRoot::AlignedAlloc<AllocFlags::kNone>(size_t,
                                                                      size_t);
 #undef EXPORT_TEMPLATE
 
-// TODO(https://crbug.com/1500662) Stop ignoring the -Winvalid-offsetof warning.
+// TODO(crbug.com/40940915) Stop ignoring the -Winvalid-offsetof warning.
 #if defined(__clang__)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Winvalid-offsetof"

@@ -9,17 +9,26 @@
 
 #include "base/functional/bind.h"
 #include "build/build_config.h"
+#include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/tab_sharing/tab_sharing_infobar_delegate.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
+#include "chrome/browser/ui/views/chrome_typography.h"
 #include "components/infobars/content/content_infobar_manager.h"
+#include "components/vector_icons/vector_icons.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
+#include "ui/views/layout/layout_provider.h"
 #include "ui/views/style/platform_style.h"
 #include "ui/views/view_class_properties.h"
+
+namespace {
+constexpr auto kCapturedSurfaceControlIndicatorButtonInsets =
+    gfx::Insets::VH(4, 8);
+}  // namespace
 
 TabSharingInfoBar::TabSharingInfoBar(
     std::unique_ptr<TabSharingInfoBarDelegate> delegate)
@@ -28,12 +37,18 @@ TabSharingInfoBar::TabSharingInfoBar(
   label_ = AddChildView(CreateLabel(delegate_ptr->GetMessageText()));
   label_->SetElideBehavior(gfx::ELIDE_TAIL);
 
-  const auto buttons = delegate_ptr->GetButtons();
-  const auto create_button = [&](TabSharingInfoBarDelegate::InfoBarButton type,
-                                 void (TabSharingInfoBar::*click_function)()) {
+  const int buttons = delegate_ptr->GetButtons();
+  const auto create_button = [&](TabSharingInfoBarDelegate::
+                                     TabSharingInfoBarButton type,
+                                 void (TabSharingInfoBar::*click_function)(),
+                                 int button_context =
+                                     views::style::CONTEXT_BUTTON_MD) {
+    const bool use_text_color_for_icon =
+        type != TabSharingInfoBarDelegate::kCapturedSurfaceControlIndicator;
     auto* button = AddChildView(std::make_unique<views::MdTextButton>(
         base::BindRepeating(click_function, base::Unretained(this)),
-        delegate_ptr->GetButtonLabel(type)));
+        delegate_ptr->GetButtonLabel(type), button_context,
+        use_text_color_for_icon));
     button->SetProperty(
         views::kMarginsKey,
         gfx::Insets::VH(ChromeLayoutProvider::Get()->GetDistanceMetric(
@@ -41,29 +56,45 @@ TabSharingInfoBar::TabSharingInfoBar(
                         0));
 
     const bool is_default_button =
-        type == buttons || type == TabSharingInfoBarDelegate::BUTTON_OK;
+        type == buttons || type == TabSharingInfoBarDelegate::kStop;
     button->SetStyle(is_default_button ? ui::ButtonStyle::kProminent
                                        : ui::ButtonStyle::kTonal);
     button->SetImageModel(views::Button::STATE_NORMAL,
                           delegate_ptr->GetButtonImage(type));
-    button->SetEnabled(delegate_ptr->GetButtonEnabled(type));
+    button->SetEnabled(delegate_ptr->IsButtonEnabled(type));
     button->SetTooltipText(delegate_ptr->GetButtonTooltip(type));
     return button;
   };
 
-  if (buttons & TabSharingInfoBarDelegate::BUTTON_OK) {
-    ok_button_ = create_button(TabSharingInfoBarDelegate::BUTTON_OK,
-                               &TabSharingInfoBar::OkButtonPressed);
+  if (buttons & TabSharingInfoBarDelegate::kStop) {
+    stop_button_ = create_button(TabSharingInfoBarDelegate::kStop,
+                                 &TabSharingInfoBar::StopButtonPressed);
   }
 
-  if (buttons & TabSharingInfoBarDelegate::BUTTON_CANCEL) {
-    cancel_button_ = create_button(TabSharingInfoBarDelegate::BUTTON_CANCEL,
-                                   &TabSharingInfoBar::CancelButtonPressed);
+  if (buttons & TabSharingInfoBarDelegate::kShareThisTabInstead) {
+    share_this_tab_instead_button_ =
+        create_button(TabSharingInfoBarDelegate::kShareThisTabInstead,
+                      &TabSharingInfoBar::ShareThisTabInsteadButtonPressed);
   }
 
-  if (buttons & TabSharingInfoBarDelegate::BUTTON_EXTRA) {
-    extra_button_ = create_button(TabSharingInfoBarDelegate::BUTTON_EXTRA,
-                                  &TabSharingInfoBar::ExtraButtonPressed);
+  if (buttons & TabSharingInfoBarDelegate::kQuickNav) {
+    quick_nav_button_ =
+        create_button(TabSharingInfoBarDelegate::kQuickNav,
+                      &TabSharingInfoBar::QuickNavButtonPressed);
+  }
+
+  if (buttons & TabSharingInfoBarDelegate::kCapturedSurfaceControlIndicator) {
+    csc_indicator_button_ = create_button(
+        TabSharingInfoBarDelegate::kCapturedSurfaceControlIndicator,
+        &TabSharingInfoBar::OnCapturedSurfaceControlActivityIndicatorPressed,
+        CONTEXT_OMNIBOX_PRIMARY);
+    csc_indicator_button_->SetStyle(ui::ButtonStyle::kDefault);
+    csc_indicator_button_->SetCornerRadius(
+        GetLayoutConstant(TOOLBAR_CORNER_RADIUS));
+    csc_indicator_button_->SetCustomPadding(
+        kCapturedSurfaceControlIndicatorButtonInsets);
+    csc_indicator_button_->SetTextColorId(
+        views::Button::ButtonState::STATE_NORMAL, ui::kColorSysOnSurface);
   }
 
   // TODO(josephjoopark): It seems like link_ isn't always needed, but it's
@@ -76,16 +107,20 @@ TabSharingInfoBar::~TabSharingInfoBar() = default;
 void TabSharingInfoBar::Layout(PassKey) {
   LayoutSuperclass<InfoBarView>(this);
 
-  if (ok_button_) {
-    ok_button_->SizeToPreferredSize();
+  if (stop_button_) {
+    stop_button_->SizeToPreferredSize();
   }
 
-  if (cancel_button_) {
-    cancel_button_->SizeToPreferredSize();
+  if (share_this_tab_instead_button_) {
+    share_this_tab_instead_button_->SizeToPreferredSize();
   }
 
-  if (extra_button_) {
-    extra_button_->SizeToPreferredSize();
+  if (quick_nav_button_) {
+    quick_nav_button_->SizeToPreferredSize();
+  }
+
+  if (csc_indicator_button_) {
+    csc_indicator_button_->SizeToPreferredSize();
   }
 
   int x = GetStartX();
@@ -104,17 +139,20 @@ void TabSharingInfoBar::Layout(PassKey) {
   }
 
   // Add buttons into a vector to be displayed in an ordered row.
-  // Depending on the PlatformStyle, reverse the vector so the ok button will be
-  // on the correct leading style.
+  // Depending on the PlatformStyle, reverse the vector so the stop button will
+  // be on the correct leading style.
   std::vector<views::MdTextButton*> order_of_buttons;
-  if (ok_button_) {
-    order_of_buttons.push_back(ok_button_);
+  if (stop_button_) {
+    order_of_buttons.push_back(stop_button_);
   }
-  if (cancel_button_) {
-    order_of_buttons.push_back(cancel_button_);
+  if (share_this_tab_instead_button_) {
+    order_of_buttons.push_back(share_this_tab_instead_button_);
   }
-  if (extra_button_) {
-    order_of_buttons.push_back(extra_button_);
+  if (quick_nav_button_) {
+    order_of_buttons.push_back(quick_nav_button_);
+  }
+  if (csc_indicator_button_) {
+    order_of_buttons.push_back(csc_indicator_button_);
   }
 
   if (!views::PlatformStyle::kIsOkButtonLeading) {
@@ -131,31 +169,32 @@ void TabSharingInfoBar::Layout(PassKey) {
   link_->SetPosition(gfx::Point(GetEndX() - link_->width(), OffsetY(link_)));
 }
 
-void TabSharingInfoBar::OkButtonPressed() {
+void TabSharingInfoBar::StopButtonPressed() {
   if (!owner()) {
     return;  // We're closing; don't call anything, it might access the owner.
   }
-  if (GetDelegate()->Accept()) {
-    RemoveSelf();
-  }
+  GetDelegate()->Stop();
 }
 
-void TabSharingInfoBar::CancelButtonPressed() {
+void TabSharingInfoBar::ShareThisTabInsteadButtonPressed() {
   if (!owner()) {
     return;  // We're closing; don't call anything, it might access the owner.
   }
-  if (GetDelegate()->Cancel()) {
-    RemoveSelf();
-  }
+  GetDelegate()->ShareThisTabInstead();
 }
 
-void TabSharingInfoBar::ExtraButtonPressed() {
+void TabSharingInfoBar::QuickNavButtonPressed() {
   if (!owner()) {
     return;  // We're closing; don't call anything, it might access the owner.
   }
-  if (GetDelegate()->ExtraButtonPressed()) {
-    RemoveSelf();
+  GetDelegate()->QuickNav();
+}
+
+void TabSharingInfoBar::OnCapturedSurfaceControlActivityIndicatorPressed() {
+  if (!owner()) {
+    return;  // We're closing; don't call anything, it might access the owner.
   }
+  GetDelegate()->OnCapturedSurfaceControlActivityIndicatorPressed();
 }
 
 TabSharingInfoBarDelegate* TabSharingInfoBar::GetDelegate() {
@@ -176,16 +215,20 @@ int TabSharingInfoBar::NonLabelWidth() const {
       views::DISTANCE_RELATED_BUTTON_HORIZONTAL);
 
   const int button_count =
-      (ok_button_ ? 1 : 0) + (cancel_button_ ? 1 : 0) + (extra_button_ ? 1 : 0);
+      (stop_button_ ? 1 : 0) + (share_this_tab_instead_button_ ? 1 : 0) +
+      (quick_nav_button_ ? 1 : 0) + (csc_indicator_button_ ? 1 : 0);
 
   int width =
       (label_->GetText().empty() || button_count == 0) ? 0 : label_spacing;
 
   width += std::max(0, button_spacing * (button_count - 1));
 
-  width += ok_button_ ? ok_button_->width() : 0;
-  width += cancel_button_ ? cancel_button_->width() : 0;
-  width += extra_button_ ? extra_button_->width() : 0;
+  width += stop_button_ ? stop_button_->width() : 0;
+  width += share_this_tab_instead_button_
+               ? share_this_tab_instead_button_->width()
+               : 0;
+  width += quick_nav_button_ ? quick_nav_button_->width() : 0;
+  width += csc_indicator_button_ ? csc_indicator_button_->width() : 0;
 
   return width + ((width && !link_->GetText().empty()) ? label_spacing : 0);
 }

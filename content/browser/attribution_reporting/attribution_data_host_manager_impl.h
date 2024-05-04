@@ -23,7 +23,7 @@
 #include "base/timer/timer.h"
 #include "base/types/expected.h"
 #include "components/attribution_reporting/registration_eligibility.mojom-forward.h"
-#include "components/attribution_reporting/registration_header_type.mojom-forward.h"
+#include "components/attribution_reporting/registration_header_error.h"
 #include "content/browser/attribution_reporting/attribution_background_registrations_id.h"
 #include "content/browser/attribution_reporting/attribution_beacon_id.h"
 #include "content/browser/attribution_reporting/attribution_data_host_manager.h"
@@ -182,21 +182,33 @@ class CONTENT_EXPORT AttributionDataHostManagerImpl final
   // blink::mojom::AttributionDataHost:
   void SourceDataAvailable(
       attribution_reporting::SuitableOrigin reporting_origin,
-      attribution_reporting::SourceRegistration) override;
+      attribution_reporting::SourceRegistration,
+      bool was_fetched_via_service_worker) override;
   void TriggerDataAvailable(
       attribution_reporting::SuitableOrigin reporting_origin,
       attribution_reporting::TriggerRegistration,
-      std::vector<network::TriggerVerification>) override;
+      std::vector<network::TriggerVerification>,
+      bool was_fetched_via_service_worker) override;
   void OsSourceDataAvailable(
-      std::vector<attribution_reporting::OsRegistrationItem>) override;
+      attribution_reporting::SuitableOrigin reporting_origin,
+      std::vector<attribution_reporting::OsRegistrationItem>,
+      bool was_fetched_via_service_worker) override;
   void OsTriggerDataAvailable(
-      std::vector<attribution_reporting::OsRegistrationItem>) override;
+      attribution_reporting::SuitableOrigin reporting_origin,
+      std::vector<attribution_reporting::OsRegistrationItem>,
+      bool was_fetched_via_service_worker) override;
   void ReportRegistrationHeaderError(
       attribution_reporting::SuitableOrigin reporting_origin,
       const attribution_reporting::RegistrationHeaderError&) override;
 
   const RegistrationContext* GetReceiverRegistrationContextForSource();
   const RegistrationContext* GetReceiverRegistrationContextForTrigger();
+
+  [[nodiscard]] bool CheckRegistrarSupport(
+      attribution_reporting::Registrar,
+      attribution_reporting::mojom::RegistrationType,
+      const RegistrationContext&,
+      const attribution_reporting::SuitableOrigin& reporting_origin);
 
   void OnReceiverDisconnected();
 
@@ -236,8 +248,7 @@ class CONTENT_EXPORT AttributionDataHostManagerImpl final
   void MaybeLogAuditIssueAndReportHeaderError(
       const Registrations&,
       const HeaderPendingDecode&,
-      blink::mojom::AttributionReportingIssueType,
-      attribution_reporting::mojom::RegistrationHeaderType);
+      attribution_reporting::RegistrationHeaderErrorDetails);
 
   using OsParseResult =
       base::expected<net::structured_headers::List, std::string>;

@@ -4,8 +4,6 @@
 
 #include "chrome/browser/ash/arc/input_overlay/ui/editing_list.h"
 
-#include <memory>
-
 #include "ash/bubble/bubble_utils.h"
 #include "ash/constants/notifier_catalogs.h"
 #include "ash/public/cpp/new_window_delegate.h"
@@ -16,12 +14,14 @@
 #include "ash/style/icon_button.h"
 #include "ash/style/pill_button.h"
 #include "ash/style/style_util.h"
+#include "ash/style/system_shadow.h"
 #include "ash/style/typography.h"
 #include "ash/system/toast/anchored_nudge_manager_impl.h"
 #include "base/check_op.h"
 #include "base/notreached.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ash/arc/input_overlay/actions/action.h"
+#include "chrome/browser/ash/arc/input_overlay/arc_input_overlay_metrics.h"
 #include "chrome/browser/ash/arc/input_overlay/constants.h"
 #include "chrome/browser/ash/arc/input_overlay/display_overlay_controller.h"
 #include "chrome/browser/ash/arc/input_overlay/touch_injector.h"
@@ -47,6 +47,7 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/scroll_view.h"
+#include "ui/views/highlight_border.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/view_class_properties.h"
 #include "ui/views/view_utils.h"
@@ -56,6 +57,7 @@ namespace arc::input_overlay {
 namespace {
 
 constexpr int kMainContainerWidth = 296;
+constexpr int kMainContainerCornerRadius = 24;
 
 constexpr int kHeaderBottomMargin = 16;
 constexpr float kAddContainerCornerRadius = 16.0f;
@@ -74,8 +76,6 @@ constexpr int kSpaceForFocusRing = 1 - kFocusRingHaloInset;
 // Move the space of `kSpaceForFocusRing` to `scroll_content_` so the focus ring
 // will not be cut for the top and bottom list item.
 constexpr int kAddRowBottomMargin = 8 - kSpaceForFocusRing;
-
-constexpr size_t kMaxActionCount = 50;
 
 constexpr char kKeyEditNudgeID[] = "kGameControlsKeyEditNudge";
 constexpr char kHelpUrl[] =
@@ -135,6 +135,9 @@ class EditingList::AddContainerButton : public views::Button {
     add_button_ = AddChildView(std::make_unique<views::LabelButton>(callback));
     // Ignore `add_button_` for the screen reader.
     add_button_->GetViewAccessibility().SetIsIgnored(true);
+    // Never focus on `add_button_` since it is redundant with the
+    // `AddContainerButton` (b/331643468).
+    add_button_->SetFocusBehavior(FocusBehavior::NEVER);
     add_button_->SetBackground(views::CreateThemedRoundedRectBackground(
         cros_tokens::kCrosSysPrimary, kAddButtonCornerRadius));
     add_button_->SetBorder(views::CreateEmptyBorder(gfx::Insets::VH(6, 6)));
@@ -143,18 +146,18 @@ class EditingList::AddContainerButton : public views::Button {
         ui::ImageModel::FromVectorIcon(kGameControlsAddIcon,
                                        cros_tokens::kCrosSysOnPrimary,
                                        /*icon_size=*/20));
+    add_button_->SetImageModel(
+        views::Button::STATE_DISABLED,
+        ui::ImageModel::FromVectorIcon(kGameControlsAddIcon,
+                                       cros_tokens::kCrosSysInverseOnSurface,
+                                       /*icon_size=*/20));
     add_button_->SetImageCentered(true);
 
-    // Set up focus rings.
+    // Set up focus ring.
     views::HighlightPathGenerator::Install(
         this, std::make_unique<views::RoundRectHighlightPathGenerator>(
                   gfx::Insets(), kAddContainerCornerRadius));
-    views::HighlightPathGenerator::Install(
-        add_button_, std::make_unique<views::RoundRectHighlightPathGenerator>(
-                         gfx::Insets(), kAddButtonCornerRadius));
-
     UpdateFocusRingOnThemeChanged(this);
-    UpdateFocusRingOnThemeChanged(add_button_);
   }
 
   AddContainerButton(const AddContainerButton&) = delete;
@@ -169,10 +172,13 @@ class EditingList::AddContainerButton : public views::Button {
       return;
     }
 
-    SetBackground(add_background ? views::CreateThemedRoundedRectBackground(
-                                       cros_tokens::kCrosSysSystemOnBase,
-                                       kAddContainerCornerRadius)
-                                 : nullptr);
+    SetBackground(add_background
+                      ? views::CreateThemedRoundedRectBackground(
+                            GetState() != ButtonState::STATE_DISABLED
+                                ? cros_tokens::kCrosSysSystemOnBase
+                                : cros_tokens::kCrosSysInverseOnSurface,
+                            kAddContainerCornerRadius)
+                      : nullptr);
   }
 
   void UpdateTitle(bool is_zero_state) {
@@ -184,7 +190,15 @@ class EditingList::AddContainerButton : public views::Button {
   }
 
   void UpdateAddButtonState(size_t current_controls_size) {
-    add_button_->SetEnabled(current_controls_size < kMaxActionCount);
+    const ButtonState state = current_controls_size < kMaxActionCount
+                                  ? ButtonState::STATE_NORMAL
+                                  : ButtonState::STATE_DISABLED;
+    if (state == GetState()) {
+      return;
+    }
+
+    add_button_->SetState(state);
+    SetState(state);
   }
 
   views::LabelButton* add_button() { return add_button_; }
@@ -193,6 +207,20 @@ class EditingList::AddContainerButton : public views::Button {
   void OnTitleChanged() {
     CHECK(add_button_);
     add_button_->SetTooltipText(title_->GetText());
+  }
+
+  // views::Button:
+  void StateChanged(ButtonState old_state) override {
+    bool enabled = GetState() != ButtonState::STATE_DISABLED;
+    title_->SetEnabledColorId(enabled ? cros_tokens::kCrosSysOnSurface
+                                      : cros_tokens::kCrosSysDisabled);
+    if (auto* scroll_view = views::AsViewClass<views::ScrollView>(parent())) {
+      UpdateBackground(/*add_background=*/scroll_view->GetVisibleRect().y() ==
+                       0);
+    }
+    add_button_->SetBackground(views::CreateThemedRoundedRectBackground(
+        enabled ? cros_tokens::kCrosSysPrimary : cros_tokens::kCrosSysDisabled,
+        kAddButtonCornerRadius));
   }
 
   // Owned by views hierarchy.
@@ -228,17 +256,21 @@ void EditingList::UpdateWidget() {
 
 void EditingList::Init() {
   SetBackground(views::CreateThemedRoundedRectBackground(
-      cros_tokens::kCrosSysSystemBaseElevatedOpaque, /*radius=*/24));
-  SetBorder(views::CreateEmptyBorder(
-      gfx::Insets::VH(kEditingListInsideBorderInsets, 0)));
+      cros_tokens::kCrosSysSystemBaseElevatedOpaque,
+      kMainContainerCornerRadius));
+  SetBorder(std::make_unique<views::HighlightBorder>(
+      kMainContainerCornerRadius,
+      views::HighlightBorder::Type::kHighlightBorderOnShadow));
   SetLayoutManager(std::make_unique<views::BoxLayout>(
-                       views::BoxLayout::Orientation::kVertical))
+                       views::BoxLayout::Orientation::kVertical,
+                       gfx::Insets::VH(kEditingListInsideBorderInsets, 0)))
       ->set_main_axis_alignment(views::BoxLayout::MainAxisAlignment::kCenter);
 
   AddHeader();
   add_container_ =
       AddChildView(std::make_unique<AddContainerButton>(base::BindRepeating(
           &EditingList::OnAddButtonPressed, base::Unretained(this))));
+  add_container_->UpdateAddButtonState(controller_->GetActiveActionsSize());
 
   scroll_view_ = AddChildView(std::make_unique<views::ScrollView>());
   scroll_view_->SetBackgroundColor(std::nullopt);
@@ -260,6 +292,10 @@ void EditingList::Init() {
   }
 
   SizeToPreferredSize();
+
+  shadow_ = ash::SystemShadow::CreateShadowOnNinePatchLayerForView(
+      this, ash::SystemShadow::Type::kElevation12);
+  shadow_->SetRoundedCornerRadius(kMainContainerCornerRadius);
 }
 
 bool EditingList::HasControls() const {
@@ -304,14 +340,14 @@ void EditingList::AddHeader() {
   help_button->SetProperty(views::kMarginsKey, gfx::Insets::TLBR(0, 0, 0, 8));
 
   // Add done button.
-  auto* done_button =
+  done_button_ =
       header_container->AddChildView(std::make_unique<ash::PillButton>(
           base::BindRepeating(&EditingList::OnDoneButtonPressed,
                               base::Unretained(this)),
           l10n_util::GetStringUTF16(
               IDS_INPUT_OVERLAY_EDITING_DONE_BUTTON_LABEL),
           ash::PillButton::Type::kSecondaryWithoutIcon));
-  done_button->SetAccessibleName(l10n_util::GetStringUTF16(
+  done_button_->SetAccessibleName(l10n_util::GetStringUTF16(
       IDS_INPUT_OVERLAY_EDITING_LIST_DONE_BUTTON_A11Y_LABEL));
 }
 
@@ -407,10 +443,12 @@ void EditingList::OnAddButtonPressed() {
     ash::Shell::Get()->anchored_nudge_manager()->Cancel(kKeyEditNudgeID);
   }
   controller_->EnterButtonPlaceMode(ActionType::TAP);
+  RecordEditingListFunctionTriggered(EditingListFunction::kAdd);
 }
 
 void EditingList::OnDoneButtonPressed() {
   DCHECK(controller_);
+  RecordEditingListFunctionTriggered(EditingListFunction::kDone);
   controller_->OnCustomizeSave();
 }
 
@@ -520,6 +558,21 @@ gfx::Point EditingList::GetWidgetMagneticPositionLocal() {
   return window_origin;
 }
 
+ActionViewListItem* EditingList::GetListItemForAction(Action* action) {
+  const auto& list_items = scroll_content_->children();
+  auto it =
+      std::find_if(list_items.begin(), list_items.end(), [&](const auto& p) {
+        if (auto* list_item = views::AsViewClass<ActionViewListItem>(p)) {
+          return action == list_item->action();
+        } else {
+          return false;
+        }
+      });
+
+  return it == list_items.end() ? nullptr
+                                : views::AsViewClass<ActionViewListItem>(*it);
+}
+
 void EditingList::ClipScrollViewHeight(bool is_outside) {
   int max_height = controller_->touch_injector()->content_bounds().height() -
                    add_container_->GetPreferredSize().height() -
@@ -532,8 +585,11 @@ void EditingList::ClipScrollViewHeight(bool is_outside) {
   scroll_view_->ClipHeightTo(/*min_height=*/0, /*max_height=*/max_height);
 }
 
-gfx::Size EditingList::CalculatePreferredSize() const {
-  return gfx::Size(kMainContainerWidth, GetHeightForWidth(kMainContainerWidth));
+gfx::Size EditingList::CalculatePreferredSize(
+    const views::SizeBounds& available_size) const {
+  return gfx::Size(kMainContainerWidth,
+                   GetLayoutManager()->GetPreferredHeightForWidth(
+                       this, kMainContainerWidth));
 }
 
 bool EditingList::OnMousePressed(const ui::MouseEvent& event) {
@@ -578,7 +634,8 @@ void EditingList::VisibilityChanged(views::View* starting_from,
 
 void EditingList::OnActionAdded(Action& action) {
   DCHECK(scroll_content_);
-  if (controller_->GetActiveActionsSize() == 1u) {
+  const size_t active_action_size = controller_->GetActiveActionsSize();
+  if (active_action_size == 1u) {
     // Clear the zero-state.
     UpdateOnZeroState(/*is_zero_state=*/false);
     show_edu_ = true;
@@ -588,7 +645,7 @@ void EditingList::OnActionAdded(Action& action) {
   // Scroll the list to bottom when a new action is added.
   UpdateScrollView(/*scroll_to_bottom=*/true);
 
-  add_container_->UpdateAddButtonState(controller_->GetActiveActionsSize());
+  add_container_->UpdateAddButtonState(active_action_size);
 }
 
 void EditingList::OnActionRemoved(const Action& action) {
@@ -662,6 +719,10 @@ ash::AnchoredNudge* EditingList::GetKeyEditNudgeForTesting() const {
 
 views::LabelButton* EditingList::GetAddButtonForTesting() const {
   return add_container_->add_button();
+}
+
+views::Button* EditingList::GetAddContainerButtonForTesting() const {
+  return views::AsViewClass<views::Button>(add_container_);
 }
 
 BEGIN_METADATA(EditingList)

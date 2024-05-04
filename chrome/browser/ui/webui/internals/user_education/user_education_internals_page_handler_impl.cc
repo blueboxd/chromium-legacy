@@ -57,6 +57,12 @@ user_education::FeaturePromoRegistry* GetFeaturePromoRegistry(
   return service ? &service->feature_promo_registry() : nullptr;
 }
 
+user_education::NewBadgeRegistry* GetNewBadgeRegistry(Profile* profile) {
+  auto* const service =
+      UserEducationServiceFactory::GetForBrowserContext(profile);
+  return service ? service->new_badge_registry() : nullptr;
+}
+
 user_education::FeaturePromoStorageService* GetStorageService(
     Profile* profile) {
   auto* const service =
@@ -86,13 +92,21 @@ std::string GetPromoTypeString(
       return "Toast";
     case user_education::FeaturePromoSpecification::PromoType::kTutorial:
       return "Tutorial";
+    case user_education::FeaturePromoSpecification::PromoType::kRotating:
+      return "Rotating";
   }
 }
 
 const base::Feature* GetFeatureByName(const std::string& feature_name,
                                       Profile* profile) {
-  auto* const registry = GetFeaturePromoRegistry(profile);
-  if (registry) {
+  if (auto* const registry = GetFeaturePromoRegistry(profile)) {
+    for (const auto& [feature, spec] : registry->feature_data()) {
+      if (feature_name == feature->name) {
+        return feature;
+      }
+    }
+  }
+  if (auto* const registry = GetNewBadgeRegistry(profile)) {
     for (const auto& [feature, spec] : registry->feature_data()) {
       if (feature_name == feature->name) {
         return feature;
@@ -241,12 +255,28 @@ std::string RemoveStringPlaceholders(int message_id) {
 std::vector<std::string> GetPromoInstructions(
     const user_education::FeaturePromoSpecification& spec) {
   std::vector<std::string> instructions;
-  if (spec.bubble_title_string_id()) {
+  if (spec.promo_type() ==
+      user_education::FeaturePromoSpecification::PromoType::kRotating) {
+    for (const auto& promo : spec.rotating_promos()) {
+      std::ostringstream type_string;
+      type_string << promo->promo_type();
+      std::ostringstream oss;
+      oss << RemovePrefixAndCamelCase(type_string.str(), "k") << ": ";
+      if (promo->bubble_title_string_id()) {
+        oss << l10n_util::GetStringUTF8(promo->bubble_title_string_id())
+            << " - ";
+      }
+      oss << l10n_util::GetStringUTF8(promo->bubble_body_string_id());
+      instructions.push_back(oss.str());
+    }
+  } else {
+    if (spec.bubble_title_string_id()) {
+      instructions.push_back(
+          RemoveStringPlaceholders(spec.bubble_title_string_id()));
+    }
     instructions.push_back(
-        RemoveStringPlaceholders(spec.bubble_title_string_id()));
+        RemoveStringPlaceholders(spec.bubble_body_string_id()));
   }
-  instructions.push_back(
-      RemoveStringPlaceholders(spec.bubble_body_string_id()));
   return instructions;
 }
 
@@ -288,10 +318,10 @@ auto GetPromoData(
   if (storage_service) {
     auto promo_data = storage_service->ReadPromoData(*spec.feature());
     if (promo_data.has_value()) {
-      if (spec.promo_subtype() ==
-          user_education::FeaturePromoSpecification::PromoSubtype::kPerApp) {
+      if (spec.promo_subtype() == user_education::FeaturePromoSpecification::
+                                      PromoSubtype::kKeyedNotice) {
         result.emplace_back(FormatDemoPageData(
-            "Shown for apps", promo_data->shown_for_apps.size()));
+            "Shown for keys", promo_data->shown_for_keys.size()));
       } else {
         result.emplace_back(
             FormatDemoPageData("Show count", promo_data->show_count));
@@ -314,6 +344,11 @@ auto GetPromoData(
                                                promo_data->last_dismissed_by,
                                                /*is_constant=*/true));
       }
+      if (spec.promo_type() ==
+          user_education::FeaturePromoSpecification::PromoType::kRotating) {
+        result.emplace_back(FormatDemoPageData("Rotating promo index",
+                                               promo_data->promo_index));
+      }
     }
   }
   const bool is_enabled = base::FeatureList::IsEnabled(*spec.feature());
@@ -329,6 +364,19 @@ auto GetPromoData(
         FormatDemoPageData("Feature Engagement Tracker OK?",
                            tracker->WouldTriggerHelpUI(*spec.feature())));
   }
+  return result;
+}
+
+auto GetNewBadgeData(
+    const base::Feature& feature,
+    const user_education::FeaturePromoStorageService* storage_service) {
+  std::vector<FeaturePromoDemoPageDataPtr> result;
+  const auto data = storage_service->ReadNewBadgeData(feature);
+  result.emplace_back(
+      FormatDemoPageData("Feature enabled at", data.feature_enabled_time));
+  result.emplace_back(FormatDemoPageData("Show count", data.show_count));
+  result.emplace_back(
+      FormatDemoPageData("Feature used count", data.used_count));
   return result;
 }
 
@@ -510,7 +558,7 @@ void UserEducationInternalsPageHandlerImpl::ClearFeaturePromoData(
     ClearFeaturePromoDataCallback callback) {
   const base::Feature* feature = GetFeatureByName(feature_name, profile_);
   if (!feature) {
-    std::move(callback).Run(std::string("Cannot find IPH."));
+    std::move(callback).Run(std::string("Cannot find IPH: ") + feature_name);
     return;
   }
 
@@ -547,6 +595,52 @@ void UserEducationInternalsPageHandlerImpl::ClearSessionData(
   user_education::FeaturePromoSessionData session_data;
   session_data.most_recent_active_time = storage_service->GetCurrentTime();
   storage_service->SaveSessionData(session_data);
+
+  std::move(callback).Run(std::string());
+}
+
+void UserEducationInternalsPageHandlerImpl::GetNewBadges(
+    GetNewBadgesCallback callback) {
+  std::vector<FeaturePromoDemoPageInfoPtr> info_list;
+
+  auto* const registry = GetNewBadgeRegistry(profile_);
+  auto* const storage_service = GetStorageService(profile_);
+  if (registry) {
+    for (const auto& [feature, spec] : registry->feature_data()) {
+      info_list.emplace_back(FeaturePromoDemoPageInfo::New(
+          RemovePrefixAndCamelCase(feature->name, ""),
+          spec.metadata.additional_description, feature->name, "\"New\" Badge",
+          spec.metadata.launch_milestone,
+          GetSupportedPlatforms(spec.metadata.platforms),
+          GetRequiredFeatures(spec.metadata.required_features),
+          std::vector<std::string>(), "",
+          GetNewBadgeData(*feature, storage_service)));
+    }
+  }
+
+  return std::move(callback).Run(std::move(info_list));
+}
+
+void UserEducationInternalsPageHandlerImpl::ClearNewBadgeData(
+    const std::string& feature_name,
+    ClearNewBadgeDataCallback callback) {
+  const base::Feature* feature = GetFeatureByName(feature_name, profile_);
+  if (!feature) {
+    std::move(callback).Run(std::string("Cannot find feature: ") +
+                            feature_name);
+    return;
+  }
+
+  auto* const storage_service = GetStorageService(profile_);
+  if (!storage_service) {
+    std::move(callback).Run(std::string("No storage service."));
+    return;
+  }
+
+  auto data = storage_service->ReadNewBadgeData(*feature);
+  data.show_count = 0;
+  data.used_count = 0;
+  storage_service->SaveNewBadgeData(*feature, data);
 
   std::move(callback).Run(std::string());
 }

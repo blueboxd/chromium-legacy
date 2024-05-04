@@ -8,6 +8,7 @@
 
 #include <memory>
 #include <string>
+#include <string_view>
 #include <utility>
 
 #include "base/containers/flat_set.h"
@@ -33,6 +34,7 @@
 #include "chrome/common/media/cdm_registration.h"
 #include "chrome/common/ppapi_utils.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/common_resources.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/crash/core/common/crash_key.h"
@@ -187,6 +189,11 @@ void ChromeContentClient::AddPlugins(
 #endif  // BUILDFLAG(ENABLE_NACL)
 }
 
+std::vector<url::Origin>
+ChromeContentClient::GetPdfInternalPluginAllowedOrigins() {
+  return {url::Origin::Create(GURL(chrome::kChromeUIPrintURL))};
+}
+
 void ChromeContentClient::AddContentDecryptionModules(
     std::vector<content::CdmInfo>* cdms,
     std::vector<media::CdmHostFilePath>* cdm_host_file_paths) {
@@ -308,7 +315,7 @@ std::u16string ChromeContentClient::GetLocalizedString(
   return l10n_util::GetStringFUTF16(message_id, replacement);
 }
 
-base::StringPiece ChromeContentClient::GetDataResource(
+std::string_view ChromeContentClient::GetDataResource(
     int resource_id,
     ui::ResourceScaleFactor scale_factor) {
   return ui::ResourceBundle::GetSharedInstance().GetRawDataResourceForScale(

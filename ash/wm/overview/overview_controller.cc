@@ -117,7 +117,7 @@ OverviewController::OverviewController()
     : occlusion_pause_duration_for_start_(kOcclusionPauseDurationForStart),
       occlusion_pause_duration_for_end_(kOcclusionPauseDurationForEnd),
       delayed_animation_task_delay_(kTransition),
-      // TODO(crbug.com/1278648): Lacros windows now have a snapshot, but their
+      // TODO(crbug.com/40208263): Lacros windows now have a snapshot, but their
       // behavior may be a bit worse than ash windows. Keep this snapshot code
       // until we confirm it is fine to show lacros snapshotted windows all the
       // time.
@@ -193,11 +193,6 @@ bool OverviewController::EndOverview(OverviewEndAction end_action,
 
 bool OverviewController::CanEnterOverview() const {
   if (!DesksController::Get()->CanEnterOverview()) {
-    return false;
-  }
-
-  if (SnapGroupController* snap_group_controller = SnapGroupController::Get();
-      snap_group_controller && !snap_group_controller->CanEnterOverview()) {
     return false;
   }
 
@@ -514,6 +509,7 @@ void OverviewController::ToggleOverview(OverviewEnterExitType type) {
     overview_session_->set_enter_exit_overview_type(new_type);
     for (auto& observer : observers_)
       observer.OnOverviewModeStarting();
+
     overview_session_->Init(windows, hide_windows);
 
     overview_session_->UpdateFrameThrottling();

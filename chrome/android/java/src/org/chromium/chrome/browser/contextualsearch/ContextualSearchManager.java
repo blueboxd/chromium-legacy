@@ -18,12 +18,14 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.jni_zero.CalledByNative;
+import org.jni_zero.JniType;
 import org.jni_zero.NativeMethods;
 
 import org.chromium.base.Callback;
 import org.chromium.base.ObserverList;
 import org.chromium.base.SysUtils;
 import org.chromium.base.supplier.ObservableSupplier;
+import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.blink_public.input.SelectionGranularity;
 import org.chromium.cc.input.BrowserControlsState;
@@ -33,9 +35,8 @@ import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayContentDelegate;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.PanelState;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
+import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelStateProvider;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel;
-import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanelCoordinator;
-import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanelInterface;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.RelatedSearchesControl;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerImpl;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchInternalStateController.InternalState;
@@ -137,11 +138,12 @@ public class ContextualSearchManager
             new ObserverList<ContextualSearchSelectionObserver>();
 
     private final Activity mActivity;
+    private final Profile mProfile;
     private final ContextualSearchTabPromotionDelegate mTabPromotionDelegate;
     private final ViewTreeObserver.OnGlobalFocusChangeListener mOnFocusChangeListener;
     private final FullscreenManager.Observer mFullscreenObserver;
 
-    @VisibleForTesting protected final ContextualSearchTranslation mTranslateController;
+    private final ContextualSearchTranslation mTranslateController;
     private final ContextualSearchSelectionClient mContextualSearchSelectionClient;
 
     private final ScrimCoordinator mScrimCoordinator;
@@ -169,13 +171,14 @@ public class ContextualSearchManager
     private ContextualSearchInternalStateController mInternalStateController;
 
     // The panel.
-    private ContextualSearchPanelInterface mSearchPanel;
+    private ContextualSearchPanel mSearchPanel;
+    private ObservableSupplierImpl<OverlayPanelStateProvider> mOverlayPanelStateProviderSupplier =
+            new ObservableSupplierImpl<>();
 
     // The native manager associated with this object.
     private long mNativeContextualSearchManagerPtr;
 
     private ViewGroup mParentView;
-    private Profile mProfile;
     private RedirectHandler mRedirectHandler;
     private TabModelSelectorTabModelObserver mTabModelObserver;
     private TabModelSelectorTabObserver mTabModelSelectorTabObserver;
@@ -261,6 +264,7 @@ public class ContextualSearchManager
      * Constructs the manager for the given activity, and will attach views to the given parent.
      *
      * @param activity The {@link Activity} in use.
+     * @param profile The Profile associated with this ContextualSearchManager.
      * @param tabPromotionDelegate The {@link ContextualSearchTabPromotionDelegate} that is
      *     responsible for building tabs from contextual search {@link WebContents}.
      * @param scrimCoordinator A mechanism for showing and hiding the shared scrim.
@@ -275,6 +279,7 @@ public class ContextualSearchManager
      */
     public ContextualSearchManager(
             Activity activity,
+            Profile profile,
             ContextualSearchTabPromotionDelegate tabPromotionDelegate,
             ScrimCoordinator scrimCoordinator,
             Supplier<Tab> tabSupplier,
@@ -285,6 +290,7 @@ public class ContextualSearchManager
             Supplier<Long> lastUserInteractionTimeSupplier,
             ObservableSupplier<EdgeToEdgeController> edgeToEdgeControllerSupplier) {
         mActivity = activity;
+        mProfile = profile;
         mTabPromotionDelegate = tabPromotionDelegate;
         mScrimCoordinator = scrimCoordinator;
         mTabSupplier = tabSupplier;
@@ -324,8 +330,8 @@ public class ContextualSearchManager
         mSelectionController =
                 new ContextualSearchSelectionController(activity, this, mTabSupplier);
         mNetworkCommunicator = this;
-        mPolicy = new ContextualSearchPolicy(mSelectionController, mNetworkCommunicator);
-        mTranslateController = new ContextualSearchTranslationImpl();
+        mPolicy = new ContextualSearchPolicy(mProfile, mSelectionController, mNetworkCommunicator);
+        mTranslateController = new ContextualSearchTranslationImpl(mProfile);
         mInternalStateController =
                 new ContextualSearchInternalStateController(
                         mPolicy, getContextualSearchInternalStateHandler());
@@ -336,7 +342,6 @@ public class ContextualSearchManager
      * Initializes this manager.
      *
      * @param parentView The parent view to attach Contextual Search UX to.
-     * @param profile The Profile associated with this ContextualSearchManager.
      * @param layoutManager A means of attaching the OverlayPanel to the scene.
      * @param bottomSheetController The {@link BottomSheetController} that is used to show {@link
      *     BottomSheetContent}.
@@ -348,7 +353,6 @@ public class ContextualSearchManager
      */
     public void initialize(
             @NonNull ViewGroup parentView,
-            @NonNull Profile profile,
             @NonNull LayoutManagerImpl layoutManager,
             @NonNull BottomSheetController bottomSheetController,
             @NonNull CompositorViewHolder compositorViewHolder,
@@ -356,49 +360,31 @@ public class ContextualSearchManager
             @NonNull ToolbarManager toolbarManager,
             @ActivityType int activityType,
             @NonNull IntentRequestTracker intentRequestTracker) {
-        mNativeContextualSearchManagerPtr = ContextualSearchManagerJni.get().init(this, profile);
+        mNativeContextualSearchManagerPtr = ContextualSearchManagerJni.get().init(this, mProfile);
 
         mParentView = parentView;
         mParentView.getViewTreeObserver().addOnGlobalFocusChangeListener(mOnFocusChangeListener);
 
-        mProfile = profile;
-        mPolicy.setProfile(profile);
-
         mLayoutManager = layoutManager;
 
-        ContextualSearchPanelInterface panel;
-        if (ChromeFeatureList.isEnabled(
-                ChromeFeatureList.CONTEXTUAL_SEARCH_THIN_WEB_VIEW_IMPLEMENTATION)) {
-            panel =
-                    new ContextualSearchPanelCoordinator(
-                            mActivity,
-                            mWindowAndroid,
-                            bottomSheetController,
-                            this::getBasePageHeight,
-                            intentRequestTracker);
-        } else {
-            panel =
-                    new ContextualSearchPanel(
-                            mActivity,
-                            mLayoutManager,
-                            mLayoutManager.getOverlayPanelManager(),
-                            mBrowserControlsStateProvider,
-                            mWindowAndroid,
-                            profile,
-                            compositorViewHolder,
-                            toolbarHeightDp,
-                            toolbarManager,
-                            activityType,
-                            mTabSupplier,
-                            mEdgeToEdgeControllerSupplier);
-        }
-
+        ContextualSearchPanel panel =
+                new ContextualSearchPanel(
+                        mActivity,
+                        mLayoutManager,
+                        mLayoutManager.getOverlayPanelManager(),
+                        mBrowserControlsStateProvider,
+                        mWindowAndroid,
+                        mProfile,
+                        compositorViewHolder,
+                        toolbarHeightDp,
+                        toolbarManager,
+                        activityType,
+                        mTabSupplier,
+                        mEdgeToEdgeControllerSupplier);
         panel.setManagementDelegate(this);
-        setContextualSearchPanel(panel);
 
-        if (panel instanceof SceneOverlay) {
-            mLayoutManager.addSceneOverlay((SceneOverlay) panel);
-        }
+        setContextualSearchPanel(panel);
+        mLayoutManager.addSceneOverlay((SceneOverlay) panel);
 
         mRedirectHandler = RedirectHandler.create();
 
@@ -431,12 +417,14 @@ public class ContextualSearchManager
 
         if (mSearchPanel != null) mSearchPanel.destroy();
         mSearchPanel = null;
+        mOverlayPanelStateProviderSupplier.set(null);
     }
 
     @Override
-    public void setContextualSearchPanel(ContextualSearchPanelInterface panel) {
+    public void setContextualSearchPanel(ContextualSearchPanel panel) {
         assert panel != null;
         mSearchPanel = panel;
+        mOverlayPanelStateProviderSupplier.set(mSearchPanel);
         mPolicy.setContextualSearchPanel(panel);
     }
 
@@ -1454,7 +1442,7 @@ public class ContextualSearchManager
                         + "Please update crbug.com/1307267 with this repro.";
         assert (suggestionIndex - defaultSearchAdjustment) < mRelatedSearches.getQueries().size();
 
-        // TODO(crbug.com/1307267) remove this check once we figure out how this can happen.
+        // TODO(crbug.com/40828323) remove this check once we figure out how this can happen.
         if (mRelatedSearches == null) return;
 
         if (mSearchPanel.isPeeking()) {
@@ -2055,13 +2043,25 @@ public class ContextualSearchManager
         mPolicy = policy;
     }
 
-    /** @return The {@link ContextualSearchPanelInterface}, for testing purposes only. */
+    /**
+     * @return The {@link ContextualSearchPanel}, for testing purposes only.
+     */
     @VisibleForTesting
-    ContextualSearchPanelInterface getContextualSearchPanel() {
+    ContextualSearchPanel getContextualSearchPanel() {
         return mSearchPanel;
     }
 
-    /** @return The selection controller, for testing purposes. */
+    /**
+     * @return the {@link OverlayPanelStateProvider} for observing changes to the Overlay Panel
+     *     state.
+     */
+    public ObservableSupplier<OverlayPanelStateProvider> getOverlayPanelStateProviderSupplier() {
+        return mOverlayPanelStateProviderSupplier;
+    }
+
+    /**
+     * @return The selection controller, for testing purposes.
+     */
     @VisibleForTesting
     ContextualSearchSelectionController getSelectionController() {
         return mSelectionController;
@@ -2111,7 +2111,7 @@ public class ContextualSearchManager
 
     @NativeMethods
     interface Natives {
-        long init(ContextualSearchManager caller, Profile profile);
+        long init(ContextualSearchManager caller, @JniType("Profile*") Profile profile);
 
         void destroy(long nativeContextualSearchManager, ContextualSearchManager caller);
 

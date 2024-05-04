@@ -17,12 +17,14 @@
 #include "base/task/sequenced_task_runner.h"
 #include "build/build_config.h"
 #include "cc/base/math_util.h"
+#include "components/viz/common/resources/shared_image_format_utils.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/client_shared_image.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "gpu/command_buffer/client/shared_image_interface.h"
 #include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
+#include "media/base/format_utils.h"
 #include "media/base/media_switches.h"
 #include "media/base/video_frame.h"
 
@@ -157,8 +159,9 @@ FrameResources::FrameResources(scoped_refptr<InternalRefCountedPool> pool,
       format_(format),
       coded_size_(coded_size),
       color_space_(color_space) {
-  // Currently only support ARGB and NV12.
-  CHECK(format == PIXEL_FORMAT_ARGB || format == PIXEL_FORMAT_NV12);
+  // Currently only support ARGB, ABGR and NV12.
+  CHECK(format == PIXEL_FORMAT_ARGB || format == PIXEL_FORMAT_ABGR ||
+        format == PIXEL_FORMAT_NV12);
 }
 
 FrameResources::~FrameResources() {
@@ -172,22 +175,12 @@ FrameResources::~FrameResources() {
   }
 }
 
-gfx::BufferFormat GetBufferFormatForVideoPixelFormat(VideoPixelFormat format) {
-  switch (format) {
-    case PIXEL_FORMAT_ARGB:
-      return gfx::BufferFormat::RGBA_8888;
-    case PIXEL_FORMAT_NV12:
-      return gfx::BufferFormat::YUV_420_BIPLANAR;
-    default:
-      NOTREACHED_NORETURN();
-  }
-}
-
 gfx::Size GetBufferSizeInPixelsForVideoPixelFormat(
     VideoPixelFormat format,
     const gfx::Size& coded_size) {
   switch (format) {
     case PIXEL_FORMAT_ARGB:
+    case PIXEL_FORMAT_ABGR:
       return coded_size;
     case PIXEL_FORMAT_NV12:
       // Align number of rows to 2, because it's required by YUV_420_BIPLANAR
@@ -214,7 +207,7 @@ bool FrameResources::Initialize() {
       ;
 
   const gfx::BufferFormat buffer_format =
-      GetBufferFormatForVideoPixelFormat(format_);
+      VideoPixelFormatToGfxBufferFormat(format_).value();
 
   const gfx::Size buffer_size_in_pixels =
       GetBufferSizeInPixelsForVideoPixelFormat(format_, coded_size_);
@@ -250,12 +243,6 @@ bool FrameResources::Initialize() {
       gpu::SHARED_IMAGE_USAGE_RASTER_WRITE |
       gpu::SHARED_IMAGE_USAGE_DISPLAY_READ | gpu::SHARED_IMAGE_USAGE_SCANOUT;
 
-  uint32_t texture_target = GL_TEXTURE_2D;
-#if BUILDFLAG(IS_MAC)
-  // TODO(https://crbug.com/1311844): Use gpu::GetBufferTextureTarget() instead.
-  texture_target = gpu::GetPlatformSpecificTextureTarget();
-#endif
-
   switch (format_) {
     case PIXEL_FORMAT_NV12: {
       // TODO(crbug.com/40239769): Merge with ARGB code after multi-planar
@@ -268,7 +255,9 @@ bool FrameResources::Initialize() {
         if (shared_images_[0]) {
           mailbox_holders_[0].mailbox = shared_images_[0]->mailbox();
         }
-        mailbox_holders_[0].texture_target = texture_target;
+        mailbox_holders_[0].texture_target =
+            shared_images_[0] ? shared_images_[0]->GetTextureTargetForOverlays()
+                              : GL_TEXTURE_2D;
         return true;
       }
 
@@ -285,18 +274,25 @@ bool FrameResources::Initialize() {
         if (shared_images_[plane]) {
           mailbox_holders_[plane].mailbox = shared_images_[plane]->mailbox();
         }
-        mailbox_holders_[plane].texture_target = texture_target;
+        mailbox_holders_[plane].texture_target =
+            shared_images_[plane]
+                ? shared_images_[plane]->GetTextureTargetForOverlays()
+                : GL_TEXTURE_2D;
       }
       return true;
     }
+    case PIXEL_FORMAT_ABGR:
     case PIXEL_FORMAT_ARGB: {
+      const viz::SharedImageFormat image_format =
+          viz::GetSinglePlaneSharedImageFormat(buffer_format);
       shared_images_[0] = context->CreateSharedImage(
-          gpu_memory_buffer_.get(), viz::SinglePlaneFormat::kRGBA_8888,
-          color_space_, kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType,
-          kSharedImageUsage, mailbox_holders_[0].sync_token);
+          gpu_memory_buffer_.get(), image_format, color_space_,
+          kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType, kSharedImageUsage,
+          mailbox_holders_[0].sync_token);
       if (shared_images_[0]) {
         mailbox_holders_[0].mailbox = shared_images_[0]->mailbox();
-        mailbox_holders_[0].texture_target = texture_target;
+        mailbox_holders_[0].texture_target =
+            shared_images_[0]->GetTextureTargetForOverlays();
       }
       return true;
     }
@@ -325,7 +321,7 @@ FrameResources::CreateVideoFrameAndTakeGpuMemoryBuffer() {
 
   video_frame->set_color_space(color_space_);
 
-  // TODO(https://crbug.com/1191956): This should depend on the platform and
+  // TODO(crbug.com/40174702): This should depend on the platform and
   // format.
   video_frame->metadata().allow_overlay = true;
 
@@ -339,9 +335,7 @@ FrameResources::CreateVideoFrameAndTakeGpuMemoryBuffer() {
   }
 
   // Only native (non shared memory) GMBs require waiting on GPU fences.
-  const bool has_native_gmb =
-      video_frame->HasGpuMemoryBuffer() &&
-      video_frame->GetGpuMemoryBuffer()->GetType() != gfx::SHARED_MEMORY_BUFFER;
+  const bool has_native_gmb = video_frame->HasNativeGpuMemoryBuffer();
   video_frame->metadata().read_lock_fences_enabled = has_native_gmb;
 
   return video_frame;
@@ -416,7 +410,7 @@ void InternalRefCountedPool::OnVideoFrameDestroyed(
     return;
   }
 
-  // TODO(https://crbug.com/1191956): Determine if we can get away with just
+  // TODO(crbug.com/40174702): Determine if we can get away with just
   // having 1 available frame, or if that will cause flakey underruns.
   constexpr size_t kMaxAvailableFrames = 2;
   available_frame_resources_.push_back(std::move(frame_resources));

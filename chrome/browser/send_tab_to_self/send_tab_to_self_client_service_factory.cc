@@ -41,7 +41,7 @@ SendTabToSelfClientServiceFactory::SendTabToSelfClientServiceFactory()
           "SendTabToSelfClientService",
           ProfileSelections::Builder()
               .WithRegular(ProfileSelection::kOriginalOnly)
-              // TODO(crbug.com/1418376): Check if this service is needed in
+              // TODO(crbug.com/40257657): Check if this service is needed in
               // Guest mode.
               .WithGuest(ProfileSelection::kOriginalOnly)
               .Build()) {
@@ -76,7 +76,7 @@ SendTabToSelfClientServiceFactory::BuildServiceInstanceForBrowserContext(
     return nullptr;
 #endif
 
-  // TODO(crbug.com/976741) refactor profile out of STTSClient constructor.
+  // TODO(crbug.com/40632832) refactor profile out of STTSClient constructor.
   return std::make_unique<SendTabToSelfClientService>(
       profile, sync_service->GetSendTabToSelfModel());
 }

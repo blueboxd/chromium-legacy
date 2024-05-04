@@ -33,6 +33,12 @@ function waitForCompositorCommit() {
   });
 }
 
+async function waitForCompositorReady() {
+  const animation =
+      document.body.animate({ opacity: [ 0, 1 ] }, {duration: 1 });
+  return animation.finished;
+}
+
 // Returns a promise that resolves when the given condition is met or rejects
 // after 200 animation frames.
 function waitFor(condition, error_message = 'Reaches the maximum frames.') {
@@ -490,6 +496,11 @@ function mouseUpAt(xPosition, yPosition) {
       reject('This test requires chrome.gpuBenchmarking');
     }
   });
+}
+
+// Improves test readability by accepting a struct.
+function mouseClickHelper(point) {
+  return mouseClickOn(point.x, point.y, point.left_click, point.input_modifier);
 }
 
 // Simulate a mouse click on point.

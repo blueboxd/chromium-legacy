@@ -87,11 +87,11 @@ BlobURLStoreImpl::~BlobURLStoreImpl() {
 void BlobURLStoreImpl::Register(
     mojo::PendingRemote<blink::mojom::Blob> blob,
     const GURL& url,
-    // TODO(https://crbug.com/1224926): Remove these once experiment is over.
+    // TODO(crbug.com/40775506): Remove these once experiment is over.
     const base::UnguessableToken& unsafe_agent_cluster_id,
     const std::optional<net::SchemefulSite>& unsafe_top_level_site,
     RegisterCallback callback) {
-  // TODO(https://crbug.com/1376126): Generate blob URLs here, rather than
+  // TODO(crbug.com/40061399): Generate blob URLs here, rather than
   // validating the URLs the renderer process generated.
   if (!BlobUrlIsValid(url, "Register")) {
     std::move(callback).Run();
@@ -159,7 +159,7 @@ void BlobURLStoreImpl::ResolveForNavigation(
 
 bool BlobURLStoreImpl::BlobUrlIsValid(const GURL& url,
                                       const char* method) const {
-  // TODO(crbug.com/1278268): Remove crash keys.
+  // TODO(crbug.com/40810120): Remove crash keys.
   url::Origin storage_key_origin = storage_key_.origin();
   static crash_reporter::CrashKeyString<256> origin_key("origin");
   static crash_reporter::CrashKeyString<256> url_key("url");
@@ -186,7 +186,7 @@ bool BlobURLStoreImpl::BlobUrlIsValid(const GURL& url,
   if (url_origin.scheme() == url::kFileScheme) {
     valid_origin = storage_key_origin.scheme() == url::kFileScheme;
   } else if (url_origin.opaque()) {
-    // TODO(https://crbug.com/1058759): Once `storage_key_` corresponds to an
+    // TODO(crbug.com/40051700): Once `storage_key_` corresponds to an
     // opaque origin under the circumstances described in the crbug, remove the
     // ALLOW_OPAQUE_ORIGIN_STORAGE_KEY_MISMATCH workaround here.
     valid_origin =

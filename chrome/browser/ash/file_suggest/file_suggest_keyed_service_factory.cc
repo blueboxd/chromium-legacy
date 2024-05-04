@@ -23,7 +23,7 @@ FileSuggestKeyedServiceFactory::FileSuggestKeyedServiceFactory()
           "FileSuggestKeyedService",
           ProfileSelections::Builder()
               .WithRegular(ProfileSelection::kOwnInstance)
-              // TODO(crbug.com/1418376): Check if this service is needed in
+              // TODO(crbug.com/40257657): Check if this service is needed in
               // Guest mode.
               .WithGuest(ProfileSelection::kOwnInstance)
               .Build()) {
@@ -47,7 +47,7 @@ FileSuggestKeyedServiceFactory::BuildServiceInstanceForBrowserContext(
   // TODO(https://crbug.com/1368833): Right now, the service reuses the proto
   // originally for app list. The service should have its own proto that
   // contains file ids only.
-  app_list::PersistentProto<app_list::RemovedResultsProto> proto(
+  PersistentProto<app_list::RemovedResultsProto> proto(
       app_list::RankerStateDirectory(profile).AppendASCII("removed_results.pb"),
       /*write_delay=*/base::TimeDelta());
 

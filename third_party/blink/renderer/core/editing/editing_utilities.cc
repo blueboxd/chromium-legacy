@@ -57,14 +57,22 @@
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/html/canvas/html_canvas_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
+#include "third_party/blink/renderer/core/html/forms/html_select_element.h"
+#include "third_party/blink/renderer/core/html/forms/html_text_area_element.h"
 #include "third_party/blink/renderer/core/html/forms/text_control_element.h"
+#include "third_party/blink/renderer/core/html/html_body_element.h"
 #include "third_party/blink/renderer/core/html/html_br_element.h"
 #include "third_party/blink/renderer/core/html/html_div_element.h"
+#include "third_party/blink/renderer/core/html/html_dlist_element.h"
+#include "third_party/blink/renderer/core/html/html_embed_element.h"
 #include "third_party/blink/renderer/core/html/html_image_element.h"
 #include "third_party/blink/renderer/core/html/html_li_element.h"
+#include "third_party/blink/renderer/core/html/html_object_element.h"
+#include "third_party/blink/renderer/core/html/html_olist_element.h"
 #include "third_party/blink/renderer/core/html/html_paragraph_element.h"
 #include "third_party/blink/renderer/core/html/html_span_element.h"
 #include "third_party/blink/renderer/core/html/html_table_cell_element.h"
+#include "third_party/blink/renderer/core/html/html_table_element.h"
 #include "third_party/blink/renderer/core/html/html_ulist_element.h"
 #include "third_party/blink/renderer/core/html/image_document.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
@@ -1475,14 +1483,11 @@ bool IsRenderedAsNonInlineTableImageOrHR(const Node* node) {
   if (!node)
     return false;
   LayoutObject* layout_object = node->GetLayoutObject();
-  if (!layout_object) {
+  if (!layout_object || layout_object->IsInline()) {
     return false;
   }
-  bool is_hr = RuntimeEnabledFeatures::RubyInlinifyEnabled()
-                   ? (layout_object->IsHR() && !layout_object->IsInline())
-                   : layout_object->IsHR();
-  return (layout_object->IsTable() && !layout_object->IsInline()) ||
-         (layout_object->IsImage() && !layout_object->IsInline()) || is_hr;
+  return layout_object->IsTable() || layout_object->IsImage() ||
+         layout_object->IsHR();
 }
 
 bool IsNonTableCellHTMLBlockElement(const Node* node) {

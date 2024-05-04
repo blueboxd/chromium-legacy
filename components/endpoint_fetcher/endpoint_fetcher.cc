@@ -58,6 +58,7 @@ EndpointFetcher::EndpointFetcher(
     const base::TimeDelta& timeout,
     const std::string& post_data,
     const std::vector<std::string>& headers,
+    const std::vector<std::string>& cors_exempt_headers,
     const net::NetworkTrafficAnnotationTag& annotation_tag,
     bool is_stable_channel)
     : auth_type_(CHROME_API_KEY),
@@ -67,6 +68,7 @@ EndpointFetcher::EndpointFetcher(
       timeout_(timeout),
       post_data_(post_data),
       headers_(headers),
+      cors_exempt_headers_(cors_exempt_headers),
       annotation_tag_(annotation_tag),
       url_loader_factory_(url_loader_factory),
       identity_manager_(nullptr),
@@ -167,7 +169,7 @@ void EndpointFetcher::Fetch(EndpointFetcherCallback endpoint_fetcher_callback) {
     response->response = "No primary accounts found";
     response->error_type =
         std::make_optional<FetchErrorType>(FetchErrorType::kAuthError);
-    // TODO(crbug.com/993393) Add more detailed error messaging
+    // TODO(crbug.com/40640190) Add more detailed error messaging
     std::move(endpoint_fetcher_callback).Run(std::move(response));
     return;
   }
@@ -175,7 +177,7 @@ void EndpointFetcher::Fetch(EndpointFetcherCallback endpoint_fetcher_callback) {
   signin::AccessTokenFetcher::TokenCallback token_callback = base::BindOnce(
       &EndpointFetcher::OnAuthTokenFetched, weak_ptr_factory_.GetWeakPtr(),
       std::move(endpoint_fetcher_callback));
-  // TODO(crbug.com/997018) Make access_token_fetcher_ local variable passed
+  // TODO(crbug.com/40641804) Make access_token_fetcher_ local variable passed
   // to callback
   access_token_fetcher_ =
       std::make_unique<signin::PrimaryAccountAccessTokenFetcher>(
@@ -195,7 +197,7 @@ void EndpointFetcher::OnAuthTokenFetched(
     response->response = "There was an authentication error";
     response->error_type =
         std::make_optional<FetchErrorType>(FetchErrorType::kAuthError);
-    // TODO(crbug.com/993393) Add more detailed error messaging
+    // TODO(crbug.com/40640190) Add more detailed error messaging
     std::move(endpoint_fetcher_callback).Run(std::move(response));
     return;
   }
@@ -240,7 +242,7 @@ void EndpointFetcher::PerformRequest(
     default:
       break;
   }
-  // TODO(crbug.com/997018) Make simple_url_loader_ local variable passed to
+  // TODO(crbug.com/40641804) Make simple_url_loader_ local variable passed to
   // callback
   simple_url_loader_ = network::SimpleURLLoader::Create(
       std::move(resource_request), annotation_tag_);

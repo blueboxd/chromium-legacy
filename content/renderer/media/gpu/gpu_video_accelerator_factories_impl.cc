@@ -19,6 +19,7 @@
 #include "base/unguessable_token.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "content/public/common/content_features.h"
 #include "content/renderer/media/codec_factory.h"
 #include "content/renderer/render_thread_impl.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
@@ -36,16 +37,27 @@
 namespace content {
 namespace {
 
-// Kill switch for using multiplanar YV12 instead of I420 with 3x single planar.
-BASE_FEATURE(kUseYV12MultiPlanar,
-             "UseYV12MultiPlanar",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+#if !BUILDFLAG(IS_FUCHSIA)
+// Controls if this should always use a single NV12 GMB with multiplanar path.
+bool UseSingleNV12() {
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
+  // Mac + Windows have used this path for an extended period so no need for
+  // kill switch.
+  return true;
+#else
+  static BASE_FEATURE(kUseSingleNV12ForSoftwareGMB,
+                      "UseSingleNV12ForSoftwareGMB",
+#if BUILDFLAG(IS_LINUX)
+                      base::FEATURE_ENABLED_BY_DEFAULT);
+#else
+                      base::FEATURE_DISABLED_BY_DEFAULT);
+#endif
 
-bool UseYV12MultiPlanar() {
-  return base::FeatureList::IsEnabled(
-             media::kUseMultiPlaneFormatForSoftwareVideo) &&
-         base::FeatureList::IsEnabled(kUseYV12MultiPlanar);
+  return media::IsMultiPlaneFormatForSoftwareVideoEnabled() &&
+         base::FeatureList::IsEnabled(kUseSingleNV12ForSoftwareGMB);
+#endif
 }
+#endif
 
 }  // namespace
 
@@ -299,9 +311,12 @@ GpuVideoAcceleratorFactoriesImpl::VideoFrameOutputFormat(
 media::GpuVideoAcceleratorFactories::OutputFormat
 GpuVideoAcceleratorFactoriesImpl::VideoFrameOutputFormatImpl(
     media::VideoPixelFormat pixel_format) {
+  using OutputFormat = media::GpuVideoAcceleratorFactories::OutputFormat;
+
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
-  if (CheckContextLost())
+  if (CheckContextLost()) {
     return media::GpuVideoAcceleratorFactories::OutputFormat::UNDEFINED;
+  }
 #if BUILDFLAG(IS_CHROMEOS_ASH) && BUILDFLAG(IS_OZONE)
   // TODO(sugoi): This configuration is currently used only for testing ChromeOS
   // on Linux and doesn't support hardware acceleration. OSMesa did not support
@@ -309,14 +324,15 @@ GpuVideoAcceleratorFactoriesImpl::VideoFrameOutputFormatImpl(
   // revealed this issue. See https://crbug.com/859946
   if (gpu_channel_host_->gpu_info().gl_renderer.find("SwiftShader") !=
       std::string::npos) {
-    return media::GpuVideoAcceleratorFactories::OutputFormat::UNDEFINED;
+    return OutputFormat::UNDEFINED;
   }
 #endif
   auto capabilities = context_provider_->ContextCapabilities();
   const size_t bit_depth = media::BitDepth(pixel_format);
   if (bit_depth > 8) {
-    if (capabilities.image_ycbcr_p010 && bit_depth == 10)
-      return media::GpuVideoAcceleratorFactories::OutputFormat::P010;
+    if (capabilities.image_ycbcr_p010 && bit_depth == 10) {
+      return OutputFormat::P010;
+    }
 
 #if !BUILDFLAG(IS_MAC)
     // If high bit depth rendering is enabled, bail here, otherwise try and use
@@ -324,8 +340,9 @@ GpuVideoAcceleratorFactoriesImpl::VideoFrameOutputFormatImpl(
     // a reduced bit depth of 8 bits per component.
     // TODO(mcasas): continue working on this, avoiding dropping information as
     // long as the hardware may support it https://crbug.com/798485.
-    if (rendering_color_space_.IsHDR())
-      return media::GpuVideoAcceleratorFactories::OutputFormat::UNDEFINED;
+    if (rendering_color_space_.IsHDR()) {
+      return OutputFormat::UNDEFINED;
+    }
 #endif
 
 #if !BUILDFLAG(IS_WIN)
@@ -334,45 +351,54 @@ GpuVideoAcceleratorFactoriesImpl::VideoFrameOutputFormatImpl(
     // just x010ToAR30 conversions, https://crbug.com/libyuv/751.
     if (bit_depth == 10) {
       if (capabilities.image_ar30) {
-        return media::GpuVideoAcceleratorFactories::OutputFormat::XR30;
+        return OutputFormat::XR30;
       } else if (capabilities.image_ab30) {
-        return media::GpuVideoAcceleratorFactories::OutputFormat::XB30;
+        return OutputFormat::XB30;
       }
     }
 #endif
     if (capabilities.texture_rg) {
-      if (UseYV12MultiPlanar()) {
-        return media::GpuVideoAcceleratorFactories::OutputFormat::YV12;
+      if (media::IsMultiPlaneFormatForSoftwareVideoEnabled()) {
+        return OutputFormat::YV12;
       }
-      return media::GpuVideoAcceleratorFactories::OutputFormat::I420;
+      return OutputFormat::I420;
     }
-    return media::GpuVideoAcceleratorFactories::OutputFormat::UNDEFINED;
+    return OutputFormat::UNDEFINED;
   }
 
   if (pixel_format == media::PIXEL_FORMAT_I420A) {
 #if SK_PMCOLOR_BYTE_ORDER(B, G, R, A)
-    return media::GpuVideoAcceleratorFactories::OutputFormat::BGRA;
+    return OutputFormat::BGRA;
 #elif SK_PMCOLOR_BYTE_ORDER(R, G, B, A)
-    return media::GpuVideoAcceleratorFactories::OutputFormat::RGBA;
+    return OutputFormat::RGBA;
 #endif
   }
 
+#if BUILDFLAG(IS_FUCHSIA)
+  // Hardware support for NV12 GMBs is expected to be present on all supported
+  // Fuchsia devices.
+  CHECK(capabilities.image_ycbcr_420v);
+  CHECK(!capabilities.image_ycbcr_420v_disabled_for_video_frames);
+  return OutputFormat::NV12_SINGLE_GMB;
+#else
   if (capabilities.image_ycbcr_420v &&
       !capabilities.image_ycbcr_420v_disabled_for_video_frames) {
-    return media::GpuVideoAcceleratorFactories::OutputFormat::NV12_SINGLE_GMB;
+    return OutputFormat::NV12_SINGLE_GMB;
   }
-  if (capabilities.texture_rg) {
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
-    // Windows supports binding single shmem GMB as separate shared images. We
-    // prefer single GMB because it makes dcomp overlay code simpler.
-    // UseMultiPlaneFormatForSoftwareVideo is enabled by default on mac so we
-    // can use NV12_SINGLE_GMB.
-    return media::GpuVideoAcceleratorFactories::OutputFormat::NV12_SINGLE_GMB;
-#else
-    return media::GpuVideoAcceleratorFactories::OutputFormat::NV12_DUAL_GMB;
+
+#if BUILDFLAG(IS_CHROMEOS)
+  if (base::FeatureList::IsEnabled(
+          features::kGateNV12GMBVideoFramesOnHWSupport)) {
+    return OutputFormat::UNDEFINED;
+  }
 #endif
+
+  if (capabilities.texture_rg) {
+    return UseSingleNV12() ? OutputFormat::NV12_SINGLE_GMB
+                           : OutputFormat::NV12_DUAL_GMB;
   }
-  return media::GpuVideoAcceleratorFactories::OutputFormat::UNDEFINED;
+  return OutputFormat::UNDEFINED;
+#endif  // BUILDFLAG(IS_FUCHSIA)
 }
 
 gpu::SharedImageInterface*

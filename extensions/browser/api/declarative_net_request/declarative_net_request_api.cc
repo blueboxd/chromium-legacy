@@ -734,7 +734,7 @@ DeclarativeNetRequestTestMatchOutcomeFunction::Run() {
   auto method = params->request.method == dnr_api::RequestMethod::kNone
                     ? dnr_api::RequestMethod::kGet
                     : params->request.method;
-  // TODO(crbug.com/1141166): Add response header support for ruleset test
+  // TODO(crbug.com/40727004): Add response header support for ruleset test
   // matching.
   declarative_net_request::RequestParams request_params(
       url, initiator, params->request.type, method, tab_id,
@@ -770,7 +770,10 @@ DeclarativeNetRequestTestMatchOutcomeFunction::Run() {
 
   // Check for "before request" matches (e.g. allow/block rules).
   declarative_net_request::CompositeMatcher::ActionInfo before_request_action =
-      matcher->GetBeforeRequestAction(request_params, page_access);
+      matcher->GetAction(
+          request_params,
+          declarative_net_request::RulesetMatchingStage::kOnBeforeRequest,
+          page_access);
   if (before_request_action.action) {
     dnr_api::MatchedRule match;
     match.rule_id = before_request_action.action->rule_id;

@@ -116,11 +116,9 @@ CC_BASE_EXPORT BASE_DECLARE_FEATURE(kReclaimResourcesFlushInBackground);
 
 // When LayerTreeHostImpl::ReclaimResources() is called in background, trigger a
 // additional delayed flush to reclaim resources.
+//
+// Enabled 03/2024, kept to run a holdback experiment.
 CC_BASE_EXPORT BASE_DECLARE_FEATURE(kReclaimResourcesDelayedFlushInBackground);
-
-// Try to play a longer list of ops before giving up in solid color analysis for
-// tiles.
-CC_BASE_EXPORT BASE_DECLARE_FEATURE(kMoreAggressiveSolidColorDetection);
 
 // Allow CC FrameRateEstimater to reduce the frame rate to half of the default
 // if the condition meets the requirement.
@@ -139,9 +137,6 @@ CC_BASE_EXPORT BASE_DECLARE_FEATURE(kSmallerInterestArea);
 constexpr static int kDefaultInterestAreaSizeInPixels = 3000;
 constexpr static int kDefaultInterestAreaSizeInPixelsWhenEnabled = 500;
 CC_BASE_EXPORT extern const base::FeatureParam<int> kInterestAreaSizeInPixels;
-
-// Whether images marked "no-cache" are cached. When disabled, they are.
-CC_BASE_EXPORT BASE_DECLARE_FEATURE(kImageCacheNoCache);
 
 // When enabled, old prepaint tiles in the "eventually" region get reclaimed
 // after some time.
@@ -169,16 +164,20 @@ CC_BASE_EXPORT BASE_DECLARE_FEATURE(kAdjustFastMainThreadThreshold);
 // that haven't been imported into viz.
 CC_BASE_EXPORT BASE_DECLARE_FEATURE(kClearCanvasResourcesInBackground);
 
-// Re-enables legacy cc/metrics V1 termination path, to validate if some shifts
-// in V3 metrics were from the interactions of these paths.
-CC_BASE_EXPORT BASE_DECLARE_FEATURE(kUseV1MetricsTermination);
-
 // Currently CC Metrics does a lot of calculations for UMA and Tracing. While
 // Traces themselves won't run when we are not tracing, some of the calculation
 // work is done regardless. When enabled this feature reduces extra calculation
 // to when tracing is enabled.
 CC_BASE_EXPORT BASE_DECLARE_FEATURE(kMetricsTracingCalculationReduction);
 
+// Temporary features to enable the fix for b/328665503 independently from
+// adding the implementation.
+CC_BASE_EXPORT BASE_DECLARE_FEATURE(kPaintWithGainmapShader);
+CC_BASE_EXPORT BASE_DECLARE_FEATURE(kPaintWithGlobalToneMapFilter);
+
+// When enabled we will restore older FrameSequenceTracker sequence order
+// enforcing that can miss backfilled frames.
+CC_BASE_EXPORT BASE_DECLARE_FEATURE(kMetricsBackfillAdjustmentHoldback);
 }  // namespace features
 
 #endif  // CC_BASE_FEATURES_H_

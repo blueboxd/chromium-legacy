@@ -10,14 +10,52 @@
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 
 namespace {
-// Top and bottom padding for the button.
-static const CGFloat kChipVerticalPadding = 14;
-// Left and right padding for the button.
-static const CGFloat kChipHorizontalPadding = 14;
-// Vertical margins for the button. How much bigger the tap target is.
-static const CGFloat kChipVerticalMargin = 4;
+
+// Corner radius for the button.
+constexpr CGFloat kChipCornerRadius = 20;
+
+// Padding for the button. Used when the kIOSKeyboardAccessoryUpgrade feature is
+// disabled.
+constexpr CGFloat kChipPadding = 14;
+
+// Leading and trailing padding for the button. Used when the
+// kIOSKeyboardAccessoryUpgrade feature is enabled.
+constexpr CGFloat kChipHorizontalPadding = 12;
+
+// Top and bottom padding for the button. Used when the
+// kIOSKeyboardAccessoryUpgrade feature is enabled.
+constexpr CGFloat kChipVerticalPadding = 11.5;
+
+// Vertical margin for the button. How much bigger the tap target is. Used when
+// the kIOSKeyboardAccessoryUpgrade feature is disabled.
+constexpr CGFloat kChipVerticalMargin = 4;
+
+// Minimal height and width for the button.
+constexpr CGFloat kChipMinSize = 40;
+
 // Font size for the button's title.
-static const CGFloat kFontSize = 14;
+constexpr CGFloat kFontSize = 14;
+
+// Line spacing for the button's title.
+constexpr CGFloat kLineSpacing = 6;
+
+// Returns the vertical margin to use.
+CGFloat GetChipVerticalMargin() {
+  return IsKeyboardAccessoryUpgradeEnabled() ? 0 : kChipVerticalMargin;
+}
+
+// Returns the horizontal padding to use.
+CGFloat GetChipHorizontalPadding() {
+  return IsKeyboardAccessoryUpgradeEnabled() ? kChipHorizontalPadding
+                                             : kChipPadding;
+}
+
+// Returns the vertical padding to use.
+CGFloat GetChipVerticalPadding() {
+  return IsKeyboardAccessoryUpgradeEnabled() ? kChipVerticalPadding
+                                             : kChipPadding;
+}
+
 }  // namespace
 
 @interface ChipButton ()
@@ -60,8 +98,12 @@ static const CGFloat kFontSize = 14;
 
 - (void)layoutSubviews {
   [super layoutSubviews];
-  self.backgroundView.layer.cornerRadius =
-      self.backgroundView.bounds.size.height / 2.0;
+  if (IsKeyboardAccessoryUpgradeEnabled()) {
+    self.backgroundView.layer.cornerRadius = kChipCornerRadius;
+  } else {
+    self.backgroundView.layer.cornerRadius =
+        self.backgroundView.bounds.size.height / 2.0;
+  }
 }
 
 - (void)setHighlighted:(BOOL)highlighted {
@@ -74,8 +116,7 @@ static const CGFloat kFontSize = 14;
 - (void)setEnabled:(BOOL)enabled {
   [super setEnabled:enabled];
   self.backgroundView.hidden = !enabled;
-  UIButtonConfiguration* buttonConfiguration =
-      [UIButtonConfiguration plainButtonConfiguration];
+  UIButtonConfiguration* buttonConfiguration = self.configuration;
   buttonConfiguration.contentInsets = enabled
                                           ? [self chipNSDirectionalEdgeInsets]
                                           : NSDirectionalEdgeInsetsZero;
@@ -94,7 +135,14 @@ static const CGFloat kFontSize = 14;
   }
 
   UIFont* font = [UIFont systemFontOfSize:kFontSize weight:UIFontWeightMedium];
-  _titleAttributes = @{NSFontAttributeName : font};
+  NSMutableParagraphStyle* paragraphStyle =
+      [[NSMutableParagraphStyle alloc] init];
+  paragraphStyle.lineSpacing = kLineSpacing;
+  _titleAttributes = @{
+    NSFontAttributeName :
+        [[UIFontMetrics defaultMetrics] scaledFontForFont:font],
+    NSParagraphStyleAttributeName : paragraphStyle,
+  };
 
   return _titleAttributes;
 }
@@ -117,9 +165,11 @@ static const CGFloat kFontSize = 14;
 #pragma mark - Private
 
 - (NSDirectionalEdgeInsets)chipNSDirectionalEdgeInsets {
-  return NSDirectionalEdgeInsetsMake(
-      kChipVerticalPadding, kChipHorizontalPadding, kChipVerticalPadding,
-      kChipHorizontalPadding);
+  CGFloat horizontalPadding = GetChipHorizontalPadding();
+  CGFloat verticalPadding = GetChipVerticalPadding();
+
+  return NSDirectionalEdgeInsetsMake(verticalPadding, horizontalPadding,
+                                     verticalPadding, horizontalPadding);
 }
 
 - (void)initializeStyling {
@@ -130,14 +180,25 @@ static const CGFloat kFontSize = 14;
 
   [self addSubview:_backgroundView];
   [self sendSubviewToBack:_backgroundView];
+
+  if (IsKeyboardAccessoryUpgradeEnabled()) {
+    [NSLayoutConstraint activateConstraints:@[
+      [_backgroundView.heightAnchor
+          constraintGreaterThanOrEqualToConstant:kChipMinSize],
+      [_backgroundView.widthAnchor
+          constraintGreaterThanOrEqualToConstant:kChipMinSize],
+    ]];
+  }
+
   [NSLayoutConstraint activateConstraints:@[
     [_backgroundView.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
     [_backgroundView.trailingAnchor
         constraintEqualToAnchor:self.trailingAnchor],
     [_backgroundView.topAnchor constraintEqualToAnchor:self.topAnchor
-                                              constant:kChipVerticalMargin],
-    [_backgroundView.bottomAnchor constraintEqualToAnchor:self.bottomAnchor
-                                                 constant:-kChipVerticalMargin]
+                                              constant:GetChipVerticalMargin()],
+    [_backgroundView.bottomAnchor
+        constraintEqualToAnchor:self.bottomAnchor
+                       constant:-GetChipVerticalMargin()]
   ]];
 
   self.translatesAutoresizingMaskIntoConstraints = NO;
@@ -145,6 +206,7 @@ static const CGFloat kFontSize = 14;
   self.titleLabel.adjustsFontForContentSizeCategory = YES;
 
   [self updateTitleLabelFont];
+
   UIButtonConfiguration* buttonConfiguration =
       [UIButtonConfiguration plainButtonConfiguration];
   buttonConfiguration.contentInsets = [self chipNSDirectionalEdgeInsets];

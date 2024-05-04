@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
+#include "third_party/blink/renderer/core/html/forms/html_select_element.h"
 #include "third_party/blink/renderer/core/html/html_marquee_element.h"
 #include "third_party/blink/renderer/core/input_type_names.h"
 #include "third_party/blink/renderer/core/layout/block_break_token.h"
@@ -58,11 +59,12 @@
 #include "third_party/blink/renderer/core/layout/mathml/math_token_layout_algorithm.h"
 #include "third_party/blink/renderer/core/layout/mathml/math_under_over_layout_algorithm.h"
 #include "third_party/blink/renderer/core/layout/min_max_sizes.h"
-#include "third_party/blink/renderer/core/layout/page_layout_algorithm.h"
+#include "third_party/blink/renderer/core/layout/paginated_root_layout_algorithm.h"
 #include "third_party/blink/renderer/core/layout/replaced_layout_algorithm.h"
 #include "third_party/blink/renderer/core/layout/shapes/shape_outside_info.h"
 #include "third_party/blink/renderer/core/layout/simplified_layout_algorithm.h"
 #include "third_party/blink/renderer/core/layout/space_utils.h"
+#include "third_party/blink/renderer/core/layout/svg/layout_svg_root.h"
 #include "third_party/blink/renderer/core/layout/table/layout_table_cell.h"
 #include "third_party/blink/renderer/core/layout/table/table_layout_algorithm.h"
 #include "third_party/blink/renderer/core/layout/table/table_row_layout_algorithm.h"
@@ -194,7 +196,7 @@ NOINLINE void DetermineAlgorithmAndRun(const LayoutAlgorithmParams& params,
   else if (GetFlowThread(box) && style.SpecifiesColumns()) {
     CreateAlgorithmAndRun<ColumnLayoutAlgorithm>(params, callback);
   } else if (UNLIKELY(!box.Parent() && params.node.IsPaginatedRoot())) {
-    CreateAlgorithmAndRun<PageLayoutAlgorithm>(params, callback);
+    CreateAlgorithmAndRun<PaginatedRootLayoutAlgorithm>(params, callback);
   } else {
     CreateAlgorithmAndRun<BlockLayoutAlgorithm>(params, callback);
   }
@@ -204,7 +206,7 @@ inline const LayoutResult* LayoutWithAlgorithm(
     const LayoutAlgorithmParams& params) {
   const LayoutResult* result = nullptr;
   DetermineAlgorithmAndRun(params,
-                           [&result](LayoutAlgorithmOperations* algorithm) {
+                           [&result]<typename Algorithm>(Algorithm* algorithm) {
                              result = algorithm->Layout();
                            });
   return result;
@@ -214,10 +216,10 @@ inline MinMaxSizesResult ComputeMinMaxSizesWithAlgorithm(
     const LayoutAlgorithmParams& params,
     const MinMaxSizesFloatInput& float_input) {
   MinMaxSizesResult result;
-  DetermineAlgorithmAndRun(
-      params, [&result, &float_input](LayoutAlgorithmOperations* algorithm) {
-        result = algorithm->ComputeMinMaxSizes(float_input);
-      });
+  DetermineAlgorithmAndRun(params, [&result, &float_input]<typename Algorithm>(
+                                       Algorithm* algorithm) {
+    result = algorithm->ComputeMinMaxSizes(float_input);
+  });
   return result;
 }
 
@@ -235,16 +237,16 @@ bool CanUseCachedIntrinsicInlineSizes(const ConstraintSpace& constraint_space,
 
   // Check if we have any percentage padding.
   const auto& style = node.Style();
-  if (style.MayHavePadding() && (style.PaddingTop().IsPercentOrCalc() ||
-                                 style.PaddingRight().IsPercentOrCalc() ||
-                                 style.PaddingBottom().IsPercentOrCalc() ||
-                                 style.PaddingLeft().IsPercentOrCalc())) {
+  if (style.MayHavePadding() &&
+      (style.PaddingTop().HasPercent() || style.PaddingRight().HasPercent() ||
+       style.PaddingBottom().HasPercent() ||
+       style.PaddingLeft().HasPercent())) {
     return false;
   }
 
   if (node.HasAspectRatio() &&
-      (style.LogicalMinHeight().IsPercentOrCalcOrStretch() ||
-       style.LogicalMaxHeight().IsPercentOrCalcOrStretch())) {
+      (style.LogicalMinHeight().HasPercentOrStretch() ||
+       style.LogicalMaxHeight().HasPercentOrStretch())) {
     return false;
   }
 
@@ -258,8 +260,8 @@ bool CanUseCachedIntrinsicInlineSizes(const ConstraintSpace& constraint_space,
   // "grid-template-columns: repeat(auto-fill, 50px); min-width: 50%;"
   // In this specific case our min/max sizes are now dependent on what
   // "min-width" resolves to - which is unique to grid.
-  if (node.IsGrid() && (style.LogicalMinWidth().IsPercentOrCalcOrStretch() ||
-                        style.LogicalMaxWidth().IsPercentOrCalcOrStretch())) {
+  if (node.IsGrid() && (style.LogicalMinWidth().HasPercentOrStretch() ||
+                        style.LogicalMaxWidth().HasPercentOrStretch())) {
     return false;
   }
 
@@ -281,8 +283,9 @@ std::optional<LayoutUnit> ContentMinimumInlineSize(
   const auto& style = block_node.Style();
   const auto& main_inline_size = style.LogicalWidth();
 
-  if (!main_inline_size.IsPercentOrCalc())
+  if (!main_inline_size.HasPercent()) {
     return std::nullopt;
+  }
 
   // Manually resolve the main-length against zero. calc() expressions may
   // resolve to something greater than "zero".
@@ -746,19 +749,17 @@ void BlockNode::FinishLayout(
   const auto& physical_fragment =
       To<PhysicalBoxFragment>(layout_result->GetPhysicalFragment());
 
-  if (auto* replaced = DynamicTo<LayoutReplaced>(*box_)) {
+  if (auto* svg_root = DynamicTo<LayoutSVGRoot>(GetLayoutBox())) {
     // Calculate the new content rect for SVG roots.
     PhysicalRect content_rect = physical_fragment.LocalRect();
     content_rect.Contract(physical_fragment.Borders() +
                           physical_fragment.Padding());
 
-    if (!box_->NeedsLayout()) {
-      box_->SetNeedsLayout(layout_invalidation_reason::kSizeChanged,
-                           kMarkOnlyThis);
+    if (!svg_root->NeedsLayout()) {
+      svg_root->SetNeedsLayout(layout_invalidation_reason::kSizeChanged,
+                               kMarkOnlyThis);
     }
-    replaced->SetNewContentRect(&content_rect);
-    box_->LayoutIfNeeded();
-    replaced->SetNewContentRect(nullptr);
+    svg_root->LayoutRoot(content_rect);
   }
 
   // If we miss the cache for one result (fragment), we need to clear the
@@ -891,28 +892,40 @@ MinMaxSizesResult BlockNode::ComputeMinMaxSizes(
                             layout_result->GetPhysicalFragment())
                 .InlineSize();
     const bool depends_on_block_constraints =
-        Style().LogicalWidth().IsAuto() ||
-        Style().LogicalWidth().IsPercentOrCalcOrStretch() ||
-        Style().LogicalMinWidth().IsPercentOrCalcOrStretch() ||
-        Style().LogicalMaxWidth().IsPercentOrCalcOrStretch();
+        Style().LogicalWidth().HasAuto() ||
+        Style().LogicalWidth().HasPercentOrStretch() ||
+        Style().LogicalMinWidth().HasPercentOrStretch() ||
+        Style().LogicalMaxWidth().HasPercentOrStretch();
     return MinMaxSizesResult(sizes, depends_on_block_constraints);
   }
 
   // Returns if we are (directly) dependent on any block constraints.
   auto DependsOnBlockConstraints = [&]() -> bool {
-    return Style().LogicalHeight().IsPercentOrCalcOrStretch() ||
-           Style().LogicalMinHeight().IsPercentOrCalcOrStretch() ||
-           Style().LogicalMaxHeight().IsPercentOrCalcOrStretch() ||
-           (Style().LogicalHeight().IsAuto() &&
+    return Style().LogicalHeight().HasPercentOrStretch() ||
+           Style().LogicalMinHeight().HasPercentOrStretch() ||
+           Style().LogicalMaxHeight().HasPercentOrStretch() ||
+           (Style().LogicalHeight().HasAuto() &&
             constraint_space.IsBlockAutoBehaviorStretch());
   };
 
-  if (!Style().AspectRatio().IsAuto() && !IsReplaced() &&
-      type == MinMaxSizesType::kContent) {
-    const FragmentGeometry fragment_geometry =
-        CalculateInitialFragmentGeometry(constraint_space, *this,
-                                         /* break_token */ nullptr,
-                                         /* is_intrinsic */ true);
+  auto IntrinsicFragmentGeometry = [&]() -> FragmentGeometry {
+    return CalculateInitialFragmentGeometry(constraint_space, *this,
+                                            /* break_token */ nullptr,
+                                            /* is_intrinsic */ true);
+  };
+
+  // Directly handle replaced elements, caching doesn't have substantial gains
+  // as most layouts are interested in the min/max content contribution which
+  // calls `ComputeReplacedSize` directly. This is mainly used by flex.
+  if (IsReplaced()) {
+    MinMaxSizes sizes;
+    sizes = IntrinsicFragmentGeometry().border_box_size.inline_size;
+    return {sizes, DependsOnBlockConstraints()};
+  }
+
+  const bool has_aspect_ratio = !Style().AspectRatio().IsAuto();
+  if (has_aspect_ratio && type == MinMaxSizesType::kContent) {
+    const FragmentGeometry fragment_geometry = IntrinsicFragmentGeometry();
     const BoxStrut border_padding =
         fragment_geometry.border + fragment_geometry.padding;
     if (fragment_geometry.border_box_size.block_size != kIndefiniteSize) {
@@ -940,9 +953,7 @@ MinMaxSizesResult BlockNode::ComputeMinMaxSizes(
     return box_->CachedIndefiniteIntrinsicLogicalWidths();
   }
 
-  const FragmentGeometry fragment_geometry = CalculateInitialFragmentGeometry(
-      constraint_space, *this, /* break_token */ nullptr,
-      /* is_intrinsic */ true);
+  const FragmentGeometry fragment_geometry = IntrinsicFragmentGeometry();
   const LayoutUnit initial_block_size =
       fragment_geometry.border_box_size.block_size;
 
@@ -969,10 +980,9 @@ MinMaxSizesResult BlockNode::ComputeMinMaxSizes(
   bool depends_on_block_constraints =
       (DependsOnBlockConstraints() ||
        UseParentPercentageResolutionBlockSizeForChildren()) &&
-      result.depends_on_block_constraints;
+      (result.depends_on_block_constraints || has_aspect_ratio);
 
-  if (!Style().AspectRatio().IsAuto() &&
-      BlockLengthUnresolvable(constraint_space, Style().LogicalHeight())) {
+  if (has_aspect_ratio && initial_block_size == kIndefiniteSize) {
     // If the block size will be computed from the aspect ratio, we need
     // to take the max-block-size into account.
     // https://drafts.csswg.org/css-sizing-4/#aspect-ratio
@@ -980,10 +990,6 @@ MinMaxSizesResult BlockNode::ComputeMinMaxSizes(
         constraint_space, Style(), border_padding);
     result.sizes.min_size = min_max.ClampSizeToMinAndMax(result.sizes.min_size);
     result.sizes.max_size = min_max.ClampSizeToMinAndMax(result.sizes.max_size);
-    depends_on_block_constraints =
-        depends_on_block_constraints ||
-        Style().LogicalMinHeight().IsPercentOrCalcOrStretch() ||
-        Style().LogicalMaxHeight().IsPercentOrCalcOrStretch();
   }
 
   box_->SetIntrinsicLogicalWidths(
@@ -1143,26 +1149,17 @@ void BlockNode::CopyFragmentDataToLayoutBox(
   if (UNLIKELY(!is_last_fragment))
     return;
 
-  LayoutBlock* block = DynamicTo<LayoutBlock>(box_.Get());
-  bool needs_full_invalidation = false;
-  if (LIKELY(block)) {
-    if (UNLIKELY(flow_thread && Style().HasColumnRule())) {
-      // Issue full invalidation, in case the number of column rules have
-      // changed.
-      needs_full_invalidation = true;
-    }
-
-    block->SetNeedsOverflowRecalc(
-        LayoutObject::OverflowRecalcType::kOnlyVisualOverflowRecalc);
-    block->SetScrollableOverflowFromLayoutResults();
-  }
-
+  box_->SetNeedsOverflowRecalc(
+      LayoutObject::OverflowRecalcType::kOnlyVisualOverflowRecalc);
+  box_->SetScrollableOverflowFromLayoutResults();
   box_->UpdateAfterLayout();
 
-  if (needs_full_invalidation)
+  if (UNLIKELY(flow_thread && Style().HasColumnRule())) {
+    // Issue full invalidation, in case the number of column rules have changed.
     box_->ClearNeedsLayoutWithFullPaintInvalidation();
-  else
+  } else {
     box_->ClearNeedsLayout();
+  }
 
   // We should notify the display lock that we've done layout on self, and if
   // it's not blocked, on children.
@@ -1297,6 +1294,14 @@ void BlockNode::CopyChildFragmentPosition(
   if (!layout_box)
     return;
 
+  if (child_fragment.GetBoxType() == PhysicalFragment::kPageContainer ||
+      child_fragment.GetBoxType() == PhysicalFragment::kPageBorderBox) {
+    // These fragment types don't need to write anything back to their
+    // LayoutBox. Furthermore, they have no parent, so the check below would
+    // fail.
+    return;
+  }
+
   DCHECK(layout_box->Parent()) << "Should be called on children only.";
 
   LayoutPoint point = LayoutBoxUtils::ComputeLocation(
@@ -1316,6 +1321,17 @@ void BlockNode::MakeRoomForExtraColumns(LayoutUnit block_size) const {
           ->LastMultiColumnSet()
           ->LastFragmentainerGroup();
   last_group.ExtendLogicalBottomInFlowThread(block_size);
+}
+
+void BlockNode::FinishPageContainerLayout(const LayoutResult* result) const {
+  DCHECK_EQ(result->Status(), LayoutResult::kSuccess);
+  DCHECK(result->GetPhysicalFragment().GetBoxType() ==
+             PhysicalFragment::kPageContainer ||
+         result->GetPhysicalFragment().GetBoxType() ==
+             PhysicalFragment::kPageBorderBox);
+  DCHECK(
+      To<PhysicalBoxFragment>(result->GetPhysicalFragment()).IsOnlyForNode());
+  StoreResultInLayoutBox(result, /*BlockBreakToken=*/nullptr);
 }
 
 void BlockNode::CopyFragmentItemsToLayoutBox(
@@ -1562,7 +1578,7 @@ void BlockNode::UpdateMarginPaddingInfoIfNeeded(
     const auto* containing_block = box_->ContainingBlock();
     if (UNLIKELY(containing_block && containing_block->IsLayoutGrid())) {
       box_->SetOverrideContainingBlockContentLogicalWidth(
-          space.PercentageResolutionInlineSizeForParentWritingMode());
+          space.MarginPaddingPercentageResolutionSize().inline_size);
     }
   }
 }

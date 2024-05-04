@@ -223,13 +223,19 @@ v8::MaybeLocal<v8::Script> CompileScriptInternal(
       return v8::ScriptCompiler::Compile(script_state->GetContext(), &source,
                                          compile_options, no_cache_reason);
     }
-    case v8::ScriptCompiler::kProduceCompileHints:
+    case v8::ScriptCompiler::kProduceCompileHints: {
       base::UmaHistogramEnumeration(
           v8_compile_hints::kStatusHistogram,
           v8_compile_hints::Status::kProduceCompileHintsClassicNonStreaming);
-      [[fallthrough]];
+      v8::ScriptCompiler::Source source(code, origin);
+      return v8::ScriptCompiler::Compile(script_state->GetContext(), &source,
+                                         compile_options, no_cache_reason);
+    }
     case v8::ScriptCompiler::kNoCompileOptions:
     case v8::ScriptCompiler::kEagerCompile: {
+      base::UmaHistogramEnumeration(
+          v8_compile_hints::kStatusHistogram,
+          v8_compile_hints::Status::kNoCompileHintsClassicNonStreaming);
       v8::ScriptCompiler::Source source(code, origin);
       return v8::ScriptCompiler::Compile(script_state->GetContext(), &source,
                                          compile_options, no_cache_reason);
@@ -355,8 +361,7 @@ v8::MaybeLocal<v8::Module> V8ScriptRunner::CompileModule(
   // |resource_is_shared_cross_origin| is always true and |resource_is_opaque|
   // is always false because CORS is enforced to module scripts.
   v8::ScriptOrigin origin(
-      isolate, V8String(isolate, file_name),
-      start_position.line_.ZeroBasedInt(),
+      V8String(isolate, file_name), start_position.line_.ZeroBasedInt(),
       start_position.column_.ZeroBasedInt(),
       true,                        // resource_is_shared_cross_origin
       -1,                          // script id
@@ -380,16 +385,16 @@ v8::MaybeLocal<v8::Module> V8ScriptRunner::CompileModule(
         code, origin);
   } else {
     switch (compile_options) {
+      // TODO(chromium:1406506): Compile hints for modules.
+      case v8::ScriptCompiler::kProduceCompileHints:
       case v8::ScriptCompiler::kConsumeCompileHints:
-        // TODO(chromium:1406506): Compile hints for modules.
         compile_options = v8::ScriptCompiler::kNoCompileOptions;
         ABSL_FALLTHROUGH_INTENDED;
       case v8::ScriptCompiler::kNoCompileOptions:
-      case v8::ScriptCompiler::kEagerCompile:
-      case v8::ScriptCompiler::kProduceCompileHints: {
+      case v8::ScriptCompiler::kEagerCompile: {
         base::UmaHistogramEnumeration(
             v8_compile_hints::kStatusHistogram,
-            v8_compile_hints::Status::kProduceCompileHintsModuleNonStreaming);
+            v8_compile_hints::Status::kNoCompileHintsModuleNonStreaming);
         v8::ScriptCompiler::Source source(code, origin);
         script = v8::ScriptCompiler::CompileModule(
             isolate, &source, compile_options, no_cache_reason);
@@ -481,7 +486,6 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::RunCompiledScript(
       DCHECK(!ScriptForbiddenScope::WillBeScriptForbidden());
     }
 
-    v8::Isolate::SafeForTerminationScope safe_for_termination(isolate);
     v8::MicrotasksScope microtasks_scope(isolate, microtask_queue,
                                          v8::MicrotasksScope::kRunMicrotasks);
     v8::Local<v8::String> script_url;
@@ -609,6 +613,11 @@ ScriptEvaluationResult V8ScriptRunner::CompileAndRunScript(
     if (V8ScriptRunner::CompileScript(script_state, *classic_script, origin,
                                       compile_options, no_cache_reason)
             .ToLocal(&script)) {
+      DEVTOOLS_TIMELINE_TRACE_EVENT_WITH_CATEGORIES(
+          TRACE_DISABLED_BY_DEFAULT("devtools.target-rundown"),
+          "ScriptCompiled", inspector_target_rundown_event::Data,
+          execution_context, isolate, script_state,
+          script->GetUnboundScript()->GetId());
       maybe_result = V8ScriptRunner::RunCompiledScript(
           isolate, script, origin.GetHostDefinedOptions(), execution_context);
       probe::DidProduceCompilationCache(
@@ -773,7 +782,6 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::CallAsConstructor(
   CHECK(constructor->IsFunction());
   v8::Local<v8::Function> function = constructor.As<v8::Function>();
 
-  v8::Isolate::SafeForTerminationScope safe_for_termination(isolate);
   v8::MicrotasksScope microtasks_scope(isolate, ToMicrotaskQueue(context),
                                        v8::MicrotasksScope::kRunMicrotasks);
   probe::CallFunction probe(context, isolate->GetCurrentContext(), function,
@@ -829,7 +837,6 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::CallFunction(
   DCHECK(!window || !window->GetFrame() ||
          BindingSecurity::ShouldAllowAccessTo(
              ToLocalDOMWindow(function->GetCreationContextChecked()), window));
-  v8::Isolate::SafeForTerminationScope safe_for_termination(isolate);
   v8::MicrotasksScope microtasks_scope(isolate, microtask_queue,
                                        v8::MicrotasksScope::kRunMicrotasks);
   if (!depth) {
@@ -933,7 +940,6 @@ ScriptEvaluationResult V8ScriptRunner::EvaluateModule(
 
     TRACE_EVENT0("v8,devtools.timeline", "v8.evaluateModule");
     RUNTIME_CALL_TIMER_SCOPE(isolate, RuntimeCallStats::CounterId::kV8);
-    v8::Isolate::SafeForTerminationScope safe_for_termination(isolate);
 
     // Do not perform a microtask checkpoint here. A checkpoint is performed
     // only after module error handling to ensure proper timing with and
@@ -957,6 +963,10 @@ ScriptEvaluationResult V8ScriptRunner::EvaluateModule(
 
   // [not specced] Store V8 code cache on successful evaluation.
   if (result.GetResultType() == ScriptEvaluationResult::ResultType::kSuccess) {
+    DEVTOOLS_TIMELINE_TRACE_EVENT_WITH_CATEGORIES(
+        TRACE_DISABLED_BY_DEFAULT("devtools.target-rundown"), "ModuleEvaluated",
+        inspector_target_rundown_event::Data, execution_context, isolate,
+        script_state, module_script->V8Module()->ScriptId());
     execution_context->GetTaskRunner(TaskType::kNetworking)
         ->PostTask(
             FROM_HERE,
@@ -969,15 +979,12 @@ ScriptEvaluationResult V8ScriptRunner::EvaluateModule(
     // <spec step="7"> If report errors is true, then upon rejection of
     // evaluationPromise with reason, report the exception given by reason
     // for script.</spec>
-    v8::Local<v8::Function> callback_failure =
-        MakeGarbageCollected<ScriptFunction>(
-            script_state,
-            MakeGarbageCollected<ModuleEvaluationRejectionCallback>())
-            ->V8Function();
+    auto* callback_failure = MakeGarbageCollected<ScriptFunction>(
+        script_state,
+        MakeGarbageCollected<ModuleEvaluationRejectionCallback>());
     // Add a rejection handler to report back errors once the result
     // promise is rejected.
-    result.GetPromise(script_state)
-        .Then(v8::Local<v8::Function>(), callback_failure);
+    result.GetPromise(script_state).Then(nullptr, callback_failure);
   }
 
   // <spec step="8">Clean up after running script with settings.</spec>

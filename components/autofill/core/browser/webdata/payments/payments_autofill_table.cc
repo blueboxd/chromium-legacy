@@ -768,11 +768,13 @@ bool PaymentsAutofillTable::RemoveCreditCard(const std::string& guid) {
   return DeleteWhereColumnEq(db_, kCreditCardsTable, kGuid, guid);
 }
 
-bool PaymentsAutofillTable::AddFullServerCreditCard(const CreditCard& credit_card) {
-  // TODO(crbug.com/1497734): Remove this method entirely.
-  DCHECK_EQ(CreditCard::RecordType::kFullServerCard, credit_card.record_type());
+bool PaymentsAutofillTable::AddServerCreditCardForTesting(
+    const CreditCard& credit_card) {
+  DCHECK_EQ(CreditCard::RecordType::kMaskedServerCard,
+            credit_card.record_type());
   DCHECK(!credit_card.number().empty());
   DCHECK(!credit_card.server_id().empty());
+  DCHECK(!credit_card.network().empty());
 
   sql::Transaction transaction(db_);
   if (!transaction.Begin())
@@ -781,12 +783,7 @@ bool PaymentsAutofillTable::AddFullServerCreditCard(const CreditCard& credit_car
   // Make sure there aren't duplicates for this card.
   DeleteFromMaskedCreditCards(credit_card.server_id());
 
-  CreditCard masked(credit_card);
-  masked.set_record_type(CreditCard::RecordType::kMaskedServerCard);
-  masked.SetNumber(credit_card.LastFourDigits());
-  masked.RecordAndLogUse();
-  DCHECK(!masked.network().empty());
-  AddMaskedCreditCards({masked});
+  AddMaskedCreditCards({credit_card});
 
   transaction.Commit();
 
@@ -871,7 +868,8 @@ bool PaymentsAutofillTable::GetServerCreditCards(
         CreditCard::RecordType::kMaskedServerCard, server_id);
     card->SetRawInfo(CREDIT_CARD_NUMBER, last_four);
     card->set_use_count(s.ColumnInt64(index++));
-    card->set_use_date(base::Time::FromInternalValue(s.ColumnInt64(index++)));
+    card->set_use_date(base::Time::FromDeltaSinceWindowsEpoch(
+        base::Microseconds(s.ColumnInt64(index++))));
     // Modification date is not tracked for server cards. Explicitly set it here
     // to override the default value of AutofillClock::Now().
     card->set_modification_date(base::Time());
@@ -924,23 +922,6 @@ void PaymentsAutofillTable::SetServerCreditCards(
   transaction.Commit();
 }
 
-bool PaymentsAutofillTable::UnmaskServerCreditCard(const CreditCard& masked,
-                                           const std::u16string& full_number) {
-  sql::Transaction transaction(db_);
-  if (!transaction.Begin())
-    return false;
-
-  CreditCard unmasked = masked;
-  unmasked.set_record_type(CreditCard::RecordType::kFullServerCard);
-  unmasked.SetNumber(full_number);
-  unmasked.RecordAndLogUse();
-  UpdateServerCardMetadata(unmasked);
-
-  transaction.Commit();
-
-  return db_->GetLastChangeCount() > 0;
-}
-
 bool PaymentsAutofillTable::AddServerCvc(const ServerCvc& server_cvc) {
   if (server_cvc.cvc.empty()) {
     return false;
@@ -974,14 +955,19 @@ bool PaymentsAutofillTable::ClearServerCvcs() {
   return db_->GetLastChangeCount() > 0;
 }
 
-bool PaymentsAutofillTable::ReconcileServerCvcs() {
+std::vector<std::unique_ptr<ServerCvc>>
+PaymentsAutofillTable::DeleteOrphanedServerCvcs() {
+  std::vector<std::unique_ptr<ServerCvc>> cvcs_to_be_deleted;
   sql::Statement s(db_->GetUniqueStatement(
       base::StrCat({"DELETE FROM ", kServerStoredCvcTable, " WHERE ",
                     kInstrumentId, " NOT IN (SELECT ", kInstrumentId, " FROM ",
-                    kMaskedCreditCardsTable, ")"})
+                    kMaskedCreditCardsTable, ") RETURNING *"})
           .c_str()));
-  s.Run();
-  return db_->GetLastChangeCount() > 0;
+  while (s.Step()) {
+    cvcs_to_be_deleted.push_back(
+        ServerCvcFromStatement(s, *autofill_table_encryptor_));
+  }
+  return cvcs_to_be_deleted;
 }
 
 std::vector<std::unique_ptr<ServerCvc>> PaymentsAutofillTable::GetAllServerCvcs()
@@ -1069,8 +1055,8 @@ bool PaymentsAutofillTable::GetServerCardsMetadata(
     AutofillMetadata card_metadata;
     card_metadata.id = s.ColumnString(index++);
     card_metadata.use_count = s.ColumnInt64(index++);
-    card_metadata.use_date =
-        base::Time::FromInternalValue(s.ColumnInt64(index++));
+    card_metadata.use_date = base::Time::FromDeltaSinceWindowsEpoch(
+        base::Microseconds(s.ColumnInt64(index++)));
     card_metadata.billing_address_id = s.ColumnString(index++);
     cards_metadata.push_back(card_metadata);
   }
@@ -1112,8 +1098,8 @@ bool PaymentsAutofillTable::GetServerIbansMetadata(
     AutofillMetadata iban_metadata;
     iban_metadata.id = s.ColumnString(index++);
     iban_metadata.use_count = s.ColumnInt64(index++);
-    iban_metadata.use_date =
-        base::Time::FromInternalValue(s.ColumnInt64(index++));
+    iban_metadata.use_date = base::Time::FromDeltaSinceWindowsEpoch(
+        base::Microseconds((s.ColumnInt64(index++))));
     ibans_metadata.push_back(iban_metadata);
   }
   return s.Succeeded();
@@ -1238,7 +1224,8 @@ bool PaymentsAutofillTable::GetServerIbans(std::vector<std::unique_ptr<Iban>>& i
     std::unique_ptr<Iban> iban =
         std::make_unique<Iban>(Iban::InstrumentId(instrument_id));
     iban->set_use_count(s.ColumnInt64(index++));
-    iban->set_use_date(base::Time::FromTimeT(s.ColumnInt64(index++)));
+    iban->set_use_date(base::Time::FromDeltaSinceWindowsEpoch(
+        base::Microseconds(s.ColumnInt64(index++))));
     iban->set_nickname(s.ColumnString16(index++));
     iban->set_prefix(s.ColumnString16(index++));
     iban->set_suffix(s.ColumnString16(index++));
@@ -1539,18 +1526,6 @@ bool PaymentsAutofillTable::ClearAllServerData() {
   return changed;
 }
 
-bool PaymentsAutofillTable::ClearAllLocalData() {
-  sql::Transaction transaction(db_);
-  if (!transaction.Begin())
-    return false;  // Some error, nothing was changed.
-
-  ClearLocalPaymentMethodsData();
-  bool changed = db_->GetLastChangeCount() > 0;
-
-  transaction.Commit();
-  return changed;
-}
-
 bool PaymentsAutofillTable::RemoveAutofillDataModifiedBetween(
     const base::Time& delete_begin,
     const base::Time& delete_end,
@@ -1630,12 +1605,6 @@ bool PaymentsAutofillTable::RemoveOriginURLsModifiedBetween(
   return true;
 }
 
-void PaymentsAutofillTable::ClearLocalPaymentMethodsData() {
-  Delete(db_, kLocalStoredCvcTable);
-  Delete(db_, kCreditCardsTable);
-  Delete(db_, kLocalIbansTable);
-}
-
 bool PaymentsAutofillTable::SetCreditCardBenefits(
     const std::vector<CreditCardBenefit>& credit_card_benefits) {
   sql::Transaction transaction(db_);
@@ -1649,7 +1618,7 @@ bool PaymentsAutofillTable::SetCreditCardBenefits(
   }
 
   for (const CreditCardBenefit& credit_card_benefit : credit_card_benefits) {
-    if (!absl::visit([](const auto& a) { return a.IsValid(); },
+    if (!absl::visit([](const auto& a) { return a.IsValidForWriteFromSync(); },
                      credit_card_benefit)) {
       continue;
     }

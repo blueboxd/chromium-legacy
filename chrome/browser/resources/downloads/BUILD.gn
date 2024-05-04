@@ -33,6 +33,10 @@ build_webui("build") {
 
   icons_html_files = [ "icons.html" ]
 
+  if (is_chrome_branded) {
+    icons_html_files += [ "internal/icons.html" ]
+  }
+
   mojo_files_deps =
       [ "//chrome/browser/ui/webui/downloads:mojo_bindings_ts__generator" ]
   mojo_files = [
@@ -49,6 +53,7 @@ build_webui("build") {
     "//ui/webui/resources/mojo:build_ts",
   ]
 
+  webui_context_type = "trusted"
   optimize = optimize_webui
   if (optimize) {
     optimize_webui_host = "downloads"

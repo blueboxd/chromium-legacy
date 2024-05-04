@@ -10,7 +10,6 @@
 
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/common/content_export.h"
-#include "third_party/blink/public/mojom/render_accessibility.mojom-forward.h"
 
 namespace ui {
 
@@ -94,7 +93,7 @@ class CONTENT_EXPORT BrowserAccessibilityManagerAndroid
   // BrowserAccessibilityManager overrides.
   BrowserAccessibility* GetFocus() const override;
   void SendLocationChangeEvents(
-      const std::vector<blink::mojom::LocationChangesPtr>& changes) override;
+      const std::vector<ui::AXLocationChanges>& changes) override;
   ui::AXNode* RetargetForEvents(ui::AXNode* node,
                                 RetargetEventType type) const override;
   void FireBlinkEvent(ax::mojom::Event event_type,
@@ -102,6 +101,13 @@ class CONTENT_EXPORT BrowserAccessibilityManagerAndroid
                       int action_request_id) override;
   void FireGeneratedEvent(ui::AXEventGenerator::Event event_type,
                           const ui::AXNode* node) override;
+
+  void FireAriaNotificationEvent(
+      BrowserAccessibility* node,
+      const std::string& announcement,
+      const std::string& notification_id,
+      ax::mojom::AriaNotificationInterrupt interrupt_property,
+      ax::mojom::AriaNotificationPriority priority_property) override;
 
   void FireLocationChanged(BrowserAccessibility* node);
 
@@ -126,6 +132,8 @@ class CONTENT_EXPORT BrowserAccessibilityManagerAndroid
   void ClearNodeInfoCacheForGivenId(int32_t unique_id);
 
   std::u16string GenerateAccessibilityNodeInfoString(int32_t unique_id);
+
+  std::vector<std::string> GetMetadataForTree() const;
 
  private:
   // AXTreeObserver overrides.

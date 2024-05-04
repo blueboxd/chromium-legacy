@@ -18,6 +18,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
+#include "base/notreached.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
@@ -363,8 +364,13 @@ void HttpNetworkTransaction::PrepareForAuthRestart(HttpAuth::Target target) {
   // Authorization schemes incompatible with HTTP/2 are unsupported for proxies.
   if (target == HttpAuth::AUTH_SERVER &&
       auth_controllers_[target]->NeedsHTTP11()) {
+    // SetHTTP11Requited requires URLs be rewritten first, if there are any
+    // applicable rules.
+    GURL rewritten_url = request_->url;
+    session_->params().host_mapping_rules.RewriteUrl(rewritten_url);
+
     session_->http_server_properties()->SetHTTP11Required(
-        url::SchemeHostPort(request_->url), network_anonymization_key_);
+        url::SchemeHostPort(rewritten_url), network_anonymization_key_);
   }
 
   bool keep_alive = false;
@@ -620,7 +626,7 @@ void HttpNetworkTransaction::OnStreamReady(const ProxyInfo& used_proxy_info,
   stream_ = std::move(stream);
   stream_->SetRequestHeadersCallback(request_headers_callback_);
   proxy_info_ = used_proxy_info;
-  // TODO(crbug.com/621512): Remove `was_alpn_negotiated` when we remove
+  // TODO(crbug.com/40473589): Remove `was_alpn_negotiated` when we remove
   // chrome.loadTimes API.
   response_.was_alpn_negotiated =
       stream_request_->negotiated_protocol() != kProtoUnknown;
@@ -628,7 +634,7 @@ void HttpNetworkTransaction::OnStreamReady(const ProxyInfo& used_proxy_info,
       NextProtoToString(stream_request_->negotiated_protocol());
   response_.alternate_protocol_usage =
       stream_request_->alternate_protocol_usage();
-  // TODO(crbug.com/1286835): Stop using `was_fetched_via_spdy`.
+  // TODO(crbug.com/40815866): Stop using `was_fetched_via_spdy`.
   response_.was_fetched_via_spdy =
       stream_request_->negotiated_protocol() == kProtoHTTP2;
   response_.dns_aliases = stream_->GetDnsAliases();
@@ -1195,8 +1201,15 @@ int HttpNetworkTransaction::DoReadHeadersComplete(int result) {
   if (result == ERR_SSL_CLIENT_AUTH_CERT_NEEDED) {
     DCHECK(stream_.get());
     DCHECK(IsSecureRequest());
-    response_.cert_request_info = base::MakeRefCounted<SSLCertRequestInfo>();
-    stream_->GetSSLCertRequestInfo(response_.cert_request_info.get());
+    // Unclear if this is needed. Copied behavior from an earlier version of
+    // Chrome.
+    //
+    // TODO(https://crbug.com/332234173): Assuming this isn't hit, replace with
+    // a CHECK.
+    if (!response_.cert_request_info) {
+      DUMP_WILL_BE_NOTREACHED_NORETURN();
+      response_.cert_request_info = base::MakeRefCounted<SSLCertRequestInfo>();
+    }
     total_received_bytes_ += stream_->GetTotalReceivedBytes();
     total_sent_bytes_ += stream_->GetTotalSentBytes();
     stream_->Close(true);
@@ -1241,7 +1254,7 @@ int HttpNetworkTransaction::DoReadHeadersComplete(int result) {
       return ERR_FAILED;
     }
 
-    // TODO(https://crbug.com/671310): Validate headers?  "Content-Encoding" etc
+    // TODO(crbug.com/40496584): Validate headers?  "Content-Encoding" etc
     // should not appear since informational responses can't contain content.
     // https://www.rfc-editor.org/rfc/rfc9110#name-informational-1xx
 
@@ -1659,7 +1672,7 @@ int HttpNetworkTransaction::HandleSSLClientAuthError(int error) {
 
   bool is_server = !UsingHttpProxyWithoutTunnel();
   HostPortPair host_port_pair;
-  // TODO(https://crbug.com/1491092): Remove check and return error when
+  // TODO(crbug.com/40284947): Remove check and return error when
   // multi-proxy chain.
   if (is_server) {
     host_port_pair = HostPortPair::FromURL(request_->url);
@@ -1955,7 +1968,7 @@ void HttpNetworkTransaction::ResetConnectionAndRequestForResend(
 }
 
 bool HttpNetworkTransaction::ShouldApplyProxyAuth() const {
-  // TODO(https://crbug.com/1491092): Update to handle multi-proxy chains.
+  // TODO(crbug.com/40284947): Update to handle multi-proxy chains.
   if (proxy_info_.proxy_chain().is_multi_proxy()) {
     return false;
   }
@@ -2003,13 +2016,13 @@ bool HttpNetworkTransaction::HaveAuth(HttpAuth::Target target) const {
 GURL HttpNetworkTransaction::AuthURL(HttpAuth::Target target) const {
   switch (target) {
     case HttpAuth::AUTH_PROXY: {
-      // TODO(https://crbug.com/1491092): Update to handle multi-proxy chain.
+      // TODO(crbug.com/40284947): Update to handle multi-proxy chain.
       CHECK(proxy_info_.proxy_chain().is_single_proxy());
       if (!proxy_info_.proxy_chain().IsValid() ||
           proxy_info_.proxy_chain().is_direct()) {
         return GURL();  // There is no proxy chain.
       }
-      // TODO(https://crbug.com/1103768): Mapping proxy addresses to
+      // TODO(crbug.com/40704785): Mapping proxy addresses to
       // URLs is a lossy conversion, shouldn't do this.
       auto& proxy_server = proxy_info_.proxy_chain().First();
       const char* scheme =
@@ -2096,11 +2109,9 @@ void HttpNetworkTransaction::RecordQuicProtocolErrorMetrics(
   if (!stream_) {
     return;
   }
-  std::optional<quic::QuicErrorCode> connection_error =
-      stream_->GetQuicErrorCode();
-  std::optional<quic::QuicRstStreamErrorCode> stream_error =
-      stream_->GetQuicRstStreamErrorCode();
-  if (!connection_error || !stream_error) {
+  std::optional<HttpStream::QuicErrorDetails> error_details =
+      stream_->GetQuicErrorDetails();
+  if (!error_details) {
     return;
   }
   switch (retry_status) {
@@ -2120,8 +2131,10 @@ void HttpNetworkTransaction::RecordQuicProtocolErrorMetrics(
       histogram += ".RetryAltServiceNotBroken";
       break;
   }
-  base::UmaHistogramSparse(histogram + ".QuicErrorCode", *connection_error);
-  base::UmaHistogramSparse(histogram + ".QuicStreamErrorCode", *stream_error);
+  base::UmaHistogramSparse(histogram + ".QuicErrorCode",
+                           error_details->connection_error);
+  base::UmaHistogramSparse(histogram + ".QuicStreamErrorCode",
+                           error_details->stream_error);
 }
 
 // static

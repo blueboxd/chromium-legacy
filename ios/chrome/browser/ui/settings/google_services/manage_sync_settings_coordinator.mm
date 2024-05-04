@@ -40,8 +40,6 @@
 #import "ios/chrome/browser/signin/model/system_identity_manager.h"
 #import "ios/chrome/browser/sync/model/sync_observer_bridge.h"
 #import "ios/chrome/browser/sync/model/sync_service_factory.h"
-#import "ios/chrome/browser/sync/model/sync_setup_service.h"
-#import "ios/chrome/browser/sync/model/sync_setup_service_factory.h"
 #import "ios/chrome/browser/ui/authentication/signout_action_sheet/signout_action_sheet_coordinator.h"
 #import "ios/chrome/browser/ui/settings/google_services/bulk_upload/bulk_upload_coordinator.h"
 #import "ios/chrome/browser/ui/settings/google_services/bulk_upload/bulk_upload_coordinator_delegate.h"
@@ -52,6 +50,7 @@
 #import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_constants.h"
 #import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_mediator.h"
 #import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_table_view_controller.h"
+#import "ios/chrome/browser/ui/settings/google_services/personalize_google_services_coordinator.h"
 #import "ios/chrome/browser/ui/settings/google_services/sync_error_settings_command_handler.h"
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
 #import "ios/chrome/browser/ui/settings/sync/sync_encryption_passphrase_table_view_controller.h"
@@ -68,6 +67,7 @@ using DismissViewCallback = SystemIdentityManager::DismissViewCallback;
     BulkUploadCoordinatorDelegate,
     ManageSyncSettingsCommandHandler,
     ManageSyncSettingsTableViewControllerPresentationDelegate,
+    PersonalizeGoogleServicesCoordinatorDelegate,
     SettingsNavigationControllerDelegate,
     SignoutActionSheetCoordinatorDelegate,
     SyncErrorSettingsCommandHandler,
@@ -112,6 +112,14 @@ using DismissViewCallback = SystemIdentityManager::DismissViewCallback;
   // The navigation controller to use only when presenting the
   // ManageSyncSettings modally.
   SettingsNavigationController* _navigationControllerInModalView;
+  // The coordinator for the Personalize Google Services view.
+  PersonalizeGoogleServicesCoordinator* _personalizeGoogleServicesCoordinator;
+  // Prevents any data from syncing while the UI is open.
+  // TODO(crbug.com/330772894): This is currently needed for syncing users,
+  // otherwise accidentally touching a toggle immediately uploads existing data.
+  // For non-syncing users that's not true. So remove this after the syncing
+  // state is gone on iOS.
+  std::unique_ptr<syncer::SyncSetupInProgressHandle> _syncSetupInProgressHandle;
 }
 
 @synthesize baseNavigationController = _baseNavigationController;
@@ -142,14 +150,13 @@ using DismissViewCallback = SystemIdentityManager::DismissViewCallback;
 
 - (void)start {
   ChromeBrowserState* browserState = self.browser->GetBrowserState();
-  SyncSetupService* syncSetupService =
-      SyncSetupServiceFactory::GetForBrowserState(browserState);
+  syncer::SyncService* syncService =
+      SyncServiceFactory::GetForBrowserState(browserState);
   switch (_accountState) {
-    case SyncSettingsAccountState::kAdvancedInitialSyncSetup:
     case SyncSettingsAccountState::kSyncing:
       // Ensure that SyncService::IsSetupInProgress is true while the
       // manage-sync-settings UI is open.
-      syncSetupService->PrepareForFirstSyncSetup();
+      _syncSetupInProgressHandle = syncService->GetSetupInProgressHandle();
       break;
     case SyncSettingsAccountState::kSignedIn:
       break;
@@ -226,17 +233,14 @@ using DismissViewCallback = SystemIdentityManager::DismissViewCallback;
   _accountsCoordinator = nil;
   self.mediator = nil;
   self.viewController = nil;
-  // This coordinator displays the main view and it is in charge to enable sync
-  // or not when being closed.
-  SyncSetupService* syncSetupService =
-      SyncSetupServiceFactory::GetForBrowserState(
-          self.browser->GetBrowserState());
-  // Resets sync blocker if any gets set by PrepareForFirstSyncSetup.
-  syncSetupService->CommitSyncChanges();
+  // Unblock any sync data type changes.
+  _syncSetupInProgressHandle.reset();
 
   _syncObserver.reset();
   [self.signoutActionSheetCoordinator stop];
   _signoutActionSheetCoordinator = nil;
+
+  [self stopPersonalizedGoogleServicesCoordinator];
 }
 
 #pragma mark - Properties
@@ -277,6 +281,11 @@ using DismissViewCallback = SystemIdentityManager::DismissViewCallback;
   [_bulkUploadCoordinator stop];
   _bulkUploadCoordinator.delegate = nil;
   _bulkUploadCoordinator = nil;
+}
+
+- (void)stopPersonalizedGoogleServicesCoordinator {
+  [_personalizeGoogleServicesCoordinator stop];
+  _personalizeGoogleServicesCoordinator = nil;
 }
 
 // Closes the Manage sync settings view controller.
@@ -338,6 +347,14 @@ using DismissViewCallback = SystemIdentityManager::DismissViewCallback;
   [self.delegate manageSyncSettingsCoordinatorWasRemoved:self];
 }
 
+#pragma mark - PersonalizeGoogleServicesCoordinatorDelegate
+
+- (void)personalizeGoogleServicesCoordinatorWasRemoved:
+    (PersonalizeGoogleServicesCoordinator*)coordinator {
+  CHECK_EQ(_personalizeGoogleServicesCoordinator, coordinator);
+  [self stopPersonalizedGoogleServicesCoordinator];
+}
+
 #pragma mark - ManageSyncSettingsCommandHandler
 
 - (void)openBulkUpload {
@@ -363,7 +380,17 @@ using DismissViewCallback = SystemIdentityManager::DismissViewCallback;
 }
 
 - (void)openPersonalizeGoogleServices {
-  // TODO(crbug.com/324091979): Different behavior for EEA users.
+  CHECK(!_personalizeGoogleServicesCoordinator);
+
+  base::RecordAction(base::UserMetricsAction(
+      "Signin_AccountSettings_PersonalizeGoogleServicesClicked"));
+
+  _personalizeGoogleServicesCoordinator = [[PersonalizeGoogleServicesCoordinator
+      alloc]
+      initWithBaseNavigationController:self.navigationControllerForChildPages
+                               browser:self.browser];
+  _personalizeGoogleServicesCoordinator.delegate = self;
+  [_personalizeGoogleServicesCoordinator start];
 }
 
 - (void)openDataFromChromeSyncWebPage {
@@ -563,7 +590,7 @@ using DismissViewCallback = SystemIdentityManager::DismissViewCallback;
   if (self.signOutFlowInProgress) {
     return;
   }
-  if (!self.syncService->GetDisableReasons().Empty()) {
+  if (!self.syncService->GetDisableReasons().empty()) {
     [self closeManageSyncSettings];
   }
 }

@@ -8,8 +8,10 @@
 #include <concepts>
 #include <functional>
 #include <memory>
+#include <string_view>
 #include <type_traits>
 #include <utility>
+#include <variant>
 #include <vector>
 
 #include "base/strings/strcat.h"
@@ -20,7 +22,6 @@
 #include "build/build_config.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/abseil-cpp/absl/types/variant.h"
 #include "ui/base/interaction/element_identifier.h"
 #include "ui/base/interaction/element_tracker.h"
 #include "ui/base/interaction/interaction_sequence.h"
@@ -81,7 +82,7 @@ class InteractiveTestApi {
   bool RunTestSequenceInContext(ElementContext context, Args&&... steps);
 
   // An ElementSpecifier holds either an ElementIdentifier or a
-  // base::StringPiece denoting a named element in the test sequence.
+  // std::string_view denoting a named element in the test sequence.
   using ElementSpecifier = internal::ElementSpecifier;
 
   // Convenience methods for creating interaction steps of type kShown. The
@@ -259,7 +260,7 @@ class InteractiveTestApi {
       ElementSpecifier element_to_check);
 
   // Specifies an element not relative to any particular other element.
-  using AbsoluteElementSpecifier = absl::variant<
+  using AbsoluteElementSpecifier = std::variant<
       // Specify an element that is known at the time the sequence is created.
       // The element must persist until the step executes.
       TrackedElement*,
@@ -276,7 +277,7 @@ class InteractiveTestApi {
   // context, the context of the current step will be used.
   //
   // For Views, prefer `InteractiveViewsTest::NameView()`.
-  [[nodiscard]] StepBuilder NameElement(base::StringPiece name,
+  [[nodiscard]] StepBuilder NameElement(std::string_view name,
                                         AbsoluteElementSpecifier spec);
 
   // Calls `find_callback` to locate an element relative to element
@@ -286,7 +287,7 @@ class InteractiveTestApi {
   template <typename C>
     requires internal::HasSignature<C, TrackedElement*(TrackedElement*)>
   [[nodiscard]] StepBuilder NameElementRelative(ElementSpecifier relative_to,
-                                                base::StringPiece name,
+                                                std::string_view name,
                                                 C&& find_callback);
 
   // Ensures that the next step does not piggyback on the previous step(s), but
@@ -522,7 +523,7 @@ class InteractiveTestApi {
   static void AddStep(MultiStep& dest, MultiStep src);
 
   // Equivalent to calling FormatDescription(format) on every step in `steps`.
-  static void AddDescription(MultiStep& steps, const base::StringPiece& format);
+  static void AddDescription(MultiStep& steps, std::string_view format);
 
  private:
   // Implementation for RunTestSequenceInContext().
@@ -704,7 +705,7 @@ template <typename C>
   requires internal::HasSignature<C, TrackedElement*(TrackedElement*)>
 InteractionSequence::StepBuilder InteractiveTestApi::NameElementRelative(
     ElementSpecifier relative_to,
-    base::StringPiece name,
+    std::string_view name,
     C&& find_callback) {
   StepBuilder builder;
   builder.SetDescription(

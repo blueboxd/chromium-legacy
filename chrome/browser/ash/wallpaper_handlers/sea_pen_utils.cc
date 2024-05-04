@@ -6,9 +6,11 @@
 
 #include <string>
 
+#include "ash/wallpaper/wallpaper_utils/sea_pen_metadata_utils.h"
+#include "ash/wallpaper/wallpaper_utils/sea_pen_utils_generated.h"
 #include "ash/webui/common/mojom/sea_pen.mojom.h"
 #include "base/logging.h"
-#include "chrome/browser/ash/wallpaper_handlers/sea_pen_utils_generated.h"
+#include "base/strings/stringprintf.h"
 #include "components/manta/proto/manta.pb.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -41,46 +43,16 @@ gfx::Size GetLargestDisplaySizeLandscape() {
   return largest_size;
 }
 
-bool IsValidOutput(manta::proto::OutputData output,
+bool IsValidOutput(const manta::proto::OutputData& output,
                    const std::string_view source) {
   if (!output.has_generation_seed()) {
     LOG(WARNING) << "Manta output data missing id for " << source;
     return false;
   }
-  if (!output.has_image() || !output.image().has_serialized_bytes()) {
+  if (!output.has_image() || !output.image().has_serialized_bytes() ||
+      output.image().serialized_bytes().empty()) {
     LOG(WARNING) << "Manta output data missing image for" << source;
     return false;
-  }
-  return true;
-}
-
-bool IsValidTemplateQuery(
-    const ash::personalization_app::mojom::SeaPenTemplateQueryPtr& query) {
-  const auto query_id = query->id;
-  const auto query_options = query->options;
-  if (!TemplateToChipSet().contains(query_id)) {
-    LOG(WARNING) << "Template id not found.";
-    return false;
-  }
-
-  const auto chip_set = TemplateToChipSet().find(query_id)->second;
-  if (chip_set.size() != query_options.size()) {
-    LOG(WARNING) << "The chip size does not match the expected chip size.";
-    return false;
-  }
-
-  for (const auto& [query_chip, query_option] : query_options) {
-    if (!chip_set.contains(query_chip)) {
-      // The query chip is not in the template's chip set.
-      LOG(WARNING) << "Chip id is not found.";
-      return false;
-    }
-    const auto available_options = ChipToOptionSet().find(query_chip)->second;
-    if (!available_options.contains(query_option)) {
-      // The query's option is not an allowed option.
-      LOG(WARNING) << "Option id not found.";
-      return false;
-    }
   }
   return true;
 }
@@ -121,16 +93,45 @@ manta::proto::Request CreateMantaRequest(
   if (query->is_text_query()) {
     input_data.set_text(query->get_text_query());
   } else if (query->is_template_query() &&
-             IsValidTemplateQuery(query->get_template_query())) {
+             ash::IsValidTemplateQuery(query->get_template_query())) {
     input_data.set_tag(kTemplateIdTag.data());
-    input_data.set_text(TemplateIdToString(query->get_template_query()->id));
+    input_data.set_text(
+        ash::TemplateIdToString(query->get_template_query()->id));
     for (auto option : query->get_template_query()->options) {
       manta::proto::InputData& input_option = *request.add_input_data();
-      input_option.set_tag(TemplateChipToString(option.first));
-      input_option.set_text(TemplateOptionToString(option.second));
+      input_option.set_tag(ash::TemplateChipToString(option.first));
+      input_option.set_text(ash::TemplateOptionToString(option.second));
     }
   }
   return request;
+}
+
+std::string GetFeedbackText(
+    const ash::personalization_app::mojom::SeaPenTemplateQueryPtr& query,
+    const ash::personalization_app::mojom::SeaPenFeedbackMetadataPtr&
+        metadata) {
+  if (!ash::IsValidTemplateQuery(query)) {
+    return "";
+  }
+
+  std::string feedback_text;
+  base::StringAppendF(&feedback_text, "%s %s: %s\n",
+                      metadata->log_id.starts_with("VcBackground")
+                          ? "#VCBackground"
+                          : "#AIWallpaper",
+                      metadata->is_positive ? "Positive" : "Negative",
+                      query->user_visible_query->text.c_str());
+  base::StringAppendF(&feedback_text, "template: %s\n",
+                      metadata->log_id.c_str());
+  base::StringAppendF(&feedback_text, "options: ");
+  for (const auto& [chip, option] : query->options) {
+    base::StringAppendF(&feedback_text, "(%s, %s)",
+                        ash::TemplateChipToString(chip).c_str(),
+                        ash::TemplateOptionToString(option).c_str());
+  }
+  base::StringAppendF(&feedback_text, "\ngeneration_seed: %u\n",
+                      metadata->generation_seed);
+  return feedback_text;
 }
 
 }  // namespace wallpaper_handlers

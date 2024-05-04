@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/test_with_browser_view.h"
 #include "chrome/browser/ui/views/side_panel/read_anything/read_anything_controller.h"
+#include "chrome/browser/ui/views/side_panel/read_anything/read_anything_side_panel_web_view.h"
 #include "chrome/browser/ui/views/side_panel/side_panel_coordinator.h"
 #include "chrome/browser/ui/views/side_panel/side_panel_entry.h"
 #include "chrome/browser/ui/views/side_panel/side_panel_registry.h"
@@ -113,8 +114,8 @@ class ReadAnythingCoordinatorTest : public TestWithBrowserView {
   std::unique_ptr<MockEmbeddedA11yExtensionLoader> mock_extension_loader_;
 };
 
-// TODO(crbug.com/1344891): Fix the memory leak on destruction observed on these
-// tests on asan mac.
+// TODO(crbug.com/40853217): Fix the memory leak on destruction observed on
+// these tests on asan mac.
 #if !BUILDFLAG(IS_MAC) || !defined(ADDRESS_SANITIZER)
 
 TEST_F(ReadAnythingCoordinatorTest, ModelAndControllerPersist) {
@@ -157,7 +158,11 @@ TEST_F(ReadAnythingCoordinatorTest,
   entry->OnEntryHidden();
 }
 
-TEST_F(ReadAnythingCoordinatorTest, EmbeddedA11yExtensionLoaderCalled) {
+TEST_F(
+    ReadAnythingCoordinatorTest,
+    // TODO(crbug.com/324143642): Re-enable this test when the docs integration
+    // flag is enabled.
+    DISABLED_SidePanelShowAndHide_NonLacros_CallEmbeddedA11yExtensionLoader) {
   SidePanelEntry* entry = side_panel_registry_->GetEntryForKey(
       SidePanelEntry::Key(SidePanelEntry::Id::kReadAnything));
 
@@ -188,6 +193,43 @@ TEST_F(ReadAnythingCoordinatorTest, OnActivePageDistillableCalled) {
 
   ActivePageDistillable();
   ActivePageNotDistillable();
+}
+
+TEST_F(ReadAnythingCoordinatorTest, WithWebUIFlagDisabled_ShowsViewsToolbar) {
+  ASSERT_STREQ("ReadAnythingContainerView",
+               CreateContainerView()->GetClassName());
+}
+
+class ReadAnythingCoordinatorWebUIToolbarTest : public TestWithBrowserView {
+ public:
+  void SetUp() override {
+    base::test::ScopedFeatureList features;
+    scoped_feature_list_.InitWithFeatures(
+        {features::kReadAnything, features::kReadAnythingWebUIToolbar}, {});
+    TestWithBrowserView::SetUp();
+
+    read_anything_coordinator_ =
+        ReadAnythingCoordinator::GetOrCreateForBrowser(browser());
+  }
+
+  void TearDown() override {
+    read_anything_coordinator_ = nullptr;
+    TestWithBrowserView::TearDown();
+  }
+
+  std::unique_ptr<views::View> CreateContainerView() {
+    return read_anything_coordinator_->CreateContainerView();
+  }
+
+ protected:
+  raw_ptr<ReadAnythingCoordinator> read_anything_coordinator_;
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+TEST_F(ReadAnythingCoordinatorWebUIToolbarTest,
+       WithWebUIFlagEnabled_ShowsWebUIToolbar) {
+  ASSERT_STREQ("ReadAnythingSidePanelWebView",
+               CreateContainerView()->GetClassName());
 }
 
 class ReadAnythingCoordinatorScreen2xDataCollectionModeTest

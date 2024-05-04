@@ -9,6 +9,8 @@
 #include <vector>
 
 #include "base/component_export.h"
+#include "gpu/command_buffer/service/shared_context_state.h"
+#include "gpu/config/gpu_feature_info.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "services/webnn/public/mojom/webnn_context_provider.mojom.h"
@@ -22,7 +24,12 @@ class WebNNContextImpl;
 class COMPONENT_EXPORT(WEBNN_SERVICE) WebNNContextProviderImpl
     : public mojom::WebNNContextProvider {
  public:
-  explicit WebNNContextProviderImpl(bool is_gpu_supported);
+  explicit WebNNContextProviderImpl(
+#if !BUILDFLAG(IS_CHROMEOS)
+      scoped_refptr<gpu::SharedContextState> shared_context_state,
+      gpu::GpuFeatureInfo gpu_feature_info
+#endif
+  );
 
   WebNNContextProviderImpl(const WebNNContextProviderImpl&) = delete;
   WebNNContextProviderImpl& operator=(const WebNNContextProviderImpl&) = delete;
@@ -30,6 +37,15 @@ class COMPONENT_EXPORT(WEBNN_SERVICE) WebNNContextProviderImpl
   ~WebNNContextProviderImpl() override;
 
   static void Create(
+      mojo::PendingReceiver<mojom::WebNNContextProvider> receiver
+#if !BUILDFLAG(IS_CHROMEOS)
+      ,
+      scoped_refptr<gpu::SharedContextState> shared_context_state,
+      gpu::GpuFeatureInfo gpu_feature_info
+#endif
+  );
+
+  static void CreateForTesting(
       mojo::PendingReceiver<mojom::WebNNContextProvider> receiver,
       bool is_gpu_supported = true);
 
@@ -56,8 +72,8 @@ class COMPONENT_EXPORT(WEBNN_SERVICE) WebNNContextProviderImpl
                           CreateWebNNContextCallback callback) override;
 
   std::vector<std::unique_ptr<WebNNContextImpl>> impls_;
-
-  const bool is_gpu_supported_;
+  scoped_refptr<gpu::SharedContextState> shared_context_state_;
+  const gpu::GpuFeatureInfo gpu_feature_info_;
 };
 
 }  // namespace webnn

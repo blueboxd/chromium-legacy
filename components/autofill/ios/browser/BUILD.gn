@@ -89,7 +89,9 @@ optimize_js("autofill_js") {
 
   deps = [
     "//components/autofill/ios/form_util:fill_js_dependencies",
+    "//ios/web/public/js_messaging:frame_id",
     "//ios/web/public/js_messaging:gcrweb",
+    "//ios/web/public/js_messaging:util_scripts",
   ]
 }
 
@@ -126,6 +128,7 @@ source_set("unit_tests") {
     "autofill_across_iframes_unittest.mm",
     "autofill_agent_unittests.mm",
     "autofill_util_unittests.mm",
+    "autofill_xhr_sumission_detection_unittest.mm",
     "form_suggestion_provider_query_unittests.mm",
   ]
   deps = [
@@ -136,6 +139,7 @@ source_set("unit_tests") {
     "//base/test:test_support",
     "//components/autofill/core/browser:test_support",
     "//components/autofill/core/common",
+    "//components/autofill/ios/common",
     "//components/autofill/ios/form_util",
     "//components/autofill/ios/form_util:child_frame_registrar",
     "//components/autofill/ios/form_util:form_handler_feature",

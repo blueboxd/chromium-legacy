@@ -9,8 +9,10 @@
 #include "base/test/task_environment.h"
 #include "components/autofill/core/browser/address_data_cleaner_test_api.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
-#include "components/autofill/core/browser/personal_data_manager.h"
-#include "components/autofill/core/browser/test_personal_data_manager.h"
+#include "components/autofill/core/browser/data_model/autofill_profile_comparator.h"
+#include "components/autofill/core/browser/profile_token_quality.h"
+#include "components/autofill/core/browser/profile_token_quality_test_api.h"
+#include "components/autofill/core/browser/test_address_data_manager.h"
 #include "components/autofill/core/browser/test_utils/test_profiles.h"
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_constants.h"
@@ -31,7 +33,7 @@ class AddressDataCleanerTest : public testing::Test {
  public:
   AddressDataCleanerTest()
       : prefs_(test::PrefServiceForTesting()),
-        data_cleaner_(test_pdm_,
+        data_cleaner_(test_adm_,
                       &sync_service_,
                       *prefs_,
                       /*alternative_state_name_map_updater=*/nullptr) {}
@@ -40,7 +42,7 @@ class AddressDataCleanerTest : public testing::Test {
   base::test::TaskEnvironment task_environment_;
   std::unique_ptr<PrefService> prefs_;
   syncer::TestSyncService sync_service_;
-  TestPersonalDataManager test_pdm_;
+  TestAddressDataManager test_adm_;
   AddressDataCleaner data_cleaner_;
 };
 
@@ -81,23 +83,23 @@ TEST_F(AddressDataCleanerTest, ApplyDeduplicationRoutine_MergedProfileValues) {
   profile1.SetRawInfo(ADDRESS_HOME_LINE1, u"742. Evergreen Terrace");
   profile1.set_use_count(10);
   profile1.set_use_date(AutofillClock::Now() - base::Days(1));
-  test_pdm_.AddProfile(profile1);
+  test_adm_.AddProfile(profile1);
 
-  AutofillProfile profile2(AddressCountryCode(""));
+  AutofillProfile profile2(AddressCountryCode("US"));
   profile2.SetRawInfo(NAME_MIDDLE, u"Jay");
   profile2.SetRawInfo(ADDRESS_HOME_LINE1, u"742 Evergreen Terrace");
   profile2.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, u"12345678910");
   profile2.set_use_count(5);
   profile2.set_use_date(AutofillClock::Now() - base::Days(3));
-  test_pdm_.AddProfile(profile2);
+  test_adm_.AddProfile(profile2);
 
-  AutofillProfile profile3(AddressCountryCode(""));
+  AutofillProfile profile3(AddressCountryCode("US"));
   profile3.SetRawInfo(NAME_MIDDLE, u"J");
   profile3.SetRawInfo(ADDRESS_HOME_LINE1, u"742 Evergreen Terrace");
   profile3.SetRawInfo(COMPANY_NAME, u"Fox");
   profile3.set_use_count(3);
   profile3.set_use_date(AutofillClock::Now() - base::Days(5));
-  test_pdm_.AddProfile(profile3);
+  test_adm_.AddProfile(profile3);
 
   base::HistogramTester histogram_tester;
   test_api(data_cleaner_).ApplyDeduplicationRoutine();
@@ -105,8 +107,8 @@ TEST_F(AddressDataCleanerTest, ApplyDeduplicationRoutine_MergedProfileValues) {
   // `profile1` should have been merged into `profile2` which should then have
   // been merged into `profile3`. Therefore there should only be 1 saved
   // profile.
-  ASSERT_EQ(1U, test_pdm_.GetProfiles().size());
-  AutofillProfile deduped_profile = *test_pdm_.GetProfiles()[0];
+  ASSERT_EQ(1U, test_adm_.GetProfiles().size());
+  AutofillProfile deduped_profile = *test_adm_.GetProfiles()[0];
 
   // Since profiles with higher ranking scores are merged into profiles with
   // lower ranking scores, the result of the merge should be contained in
@@ -145,20 +147,20 @@ TEST_F(AddressDataCleanerTest, ApplyDeduplicationRoutine_UnrelatedProfile) {
   // `StandardProfile()`, but the `UpdateableStandardProfile()` remains
   // unaffected.
   AutofillProfile standard_profile = test::StandardProfile();
-  test_pdm_.AddProfile(standard_profile);
-  test_pdm_.AddProfile(test::UpdateableStandardProfile());
+  test_adm_.AddProfile(standard_profile);
+  test_adm_.AddProfile(test::UpdateableStandardProfile());
   AutofillProfile different_profile = test::DifferentFromStandardProfile();
-  test_pdm_.AddProfile(different_profile);
+  test_adm_.AddProfile(different_profile);
 
   test_api(data_cleaner_).ApplyDeduplicationRoutine();
-  EXPECT_THAT(test_pdm_.GetProfiles(),
+  EXPECT_THAT(test_adm_.GetProfiles(),
               UnorderedElementsAre(Pointee(standard_profile),
                                    Pointee(different_profile)));
 }
 
 TEST_F(AddressDataCleanerTest, ApplyDeduplicationRoutine_Metrics) {
-  test_pdm_.AddProfile(test::StandardProfile());
-  test_pdm_.AddProfile(test::UpdateableStandardProfile());
+  test_adm_.AddProfile(test::StandardProfile());
+  test_adm_.AddProfile(test::UpdateableStandardProfile());
 
   base::HistogramTester histogram_tester;
   test_api(data_cleaner_).ApplyDeduplicationRoutine();
@@ -170,25 +172,25 @@ TEST_F(AddressDataCleanerTest, ApplyDeduplicationRoutine_Metrics) {
 
 // Tests that deduplication is not run a second time on the same major version.
 TEST_F(AddressDataCleanerTest, ApplyDeduplicationRoutine_OncePerVersion) {
-  test_pdm_.AddProfile(test::StandardProfile());
-  test_pdm_.AddProfile(test::UpdateableStandardProfile());
+  test_adm_.AddProfile(test::StandardProfile());
+  test_adm_.AddProfile(test::UpdateableStandardProfile());
   // Pretend that deduplication was already run this milestone.
   prefs_->SetInteger(prefs::kAutofillLastVersionDeduped, CHROME_VERSION_MAJOR);
   data_cleaner_.MaybeCleanupAddressData();
-  EXPECT_EQ(2U, test_pdm_.GetProfiles().size());
+  EXPECT_EQ(2U, test_adm_.GetProfiles().size());
 }
 
 // Tests that `kAccount` profiles are not deduplicated against each other.
 TEST_F(AddressDataCleanerTest, Deduplicate_kAccountPairs) {
   AutofillProfile account_profile1 = test::StandardProfile();
   account_profile1.set_source_for_testing(AutofillProfile::Source::kAccount);
-  test_pdm_.AddProfile(account_profile1);
+  test_adm_.AddProfile(account_profile1);
   AutofillProfile account_profile2 = test::StandardProfile();
   account_profile2.set_source_for_testing(AutofillProfile::Source::kAccount);
-  test_pdm_.AddProfile(account_profile2);
+  test_adm_.AddProfile(account_profile2);
 
   test_api(data_cleaner_).ApplyDeduplicationRoutine();
-  EXPECT_THAT(test_pdm_.GetProfiles(),
+  EXPECT_THAT(test_adm_.GetProfiles(),
               UnorderedElementsAre(Pointee(account_profile1),
                                    Pointee(account_profile2)));
 }
@@ -203,13 +205,13 @@ TEST_F(AddressDataCleanerTest, Deduplicate_kAccountSuperset) {
   account_profile.set_initial_creator_id(non_chrome_service);
   account_profile.set_last_modifier_id(non_chrome_service);
   account_profile.set_source_for_testing(AutofillProfile::Source::kAccount);
-  test_pdm_.AddProfile(account_profile);
-  test_pdm_.AddProfile(test::SubsetOfStandardProfile());
+  test_adm_.AddProfile(account_profile);
+  test_adm_.AddProfile(test::SubsetOfStandardProfile());
 
   // Expect that only the account profile remains and that it became a Chrome-
   // originating profile.
   test_api(data_cleaner_).ApplyDeduplicationRoutine();
-  std::vector<AutofillProfile*> deduped_profiles = test_pdm_.GetProfiles();
+  std::vector<AutofillProfile*> deduped_profiles = test_adm_.GetProfiles();
   ASSERT_THAT(deduped_profiles, UnorderedElementsAre(Pointee(account_profile)));
   EXPECT_EQ(deduped_profiles[0]->initial_creator_id(),
             AutofillProfile::kInitialCreatorOrModifierChrome);
@@ -222,29 +224,124 @@ TEST_F(AddressDataCleanerTest, Deduplicate_kAccountSuperset) {
 TEST_F(AddressDataCleanerTest, Deduplicate_kAccountSubset) {
   AutofillProfile account_profile = test::SubsetOfStandardProfile();
   account_profile.set_source_for_testing(AutofillProfile::Source::kAccount);
-  test_pdm_.AddProfile(account_profile);
+  test_adm_.AddProfile(account_profile);
   AutofillProfile local_profile = test::StandardProfile();
-  test_pdm_.AddProfile(local_profile);
+  test_adm_.AddProfile(local_profile);
 
   test_api(data_cleaner_).ApplyDeduplicationRoutine();
   EXPECT_THAT(
-      test_pdm_.GetProfiles(),
+      test_adm_.GetProfiles(),
       UnorderedElementsAre(Pointee(account_profile), Pointee(local_profile)));
+}
+
+// Tests that quasi duplicates are not silently removed, if the corresponding
+// token doesn't have low quality.
+TEST_F(AddressDataCleanerTest, Deduplicate_QuasiDuplicate_NoQuality) {
+  base::test::ScopedFeatureList features;
+  features.InitWithFeatures(
+      /*enabled_features=*/{features::kAutofillTrackProfileTokenQuality,
+                            features::kAutofillSilentlyRemoveQuasiDuplicates},
+      /*disabled_features=*/{});
+  const AutofillProfile profile = test::GetFullProfile();
+  test_adm_.AddProfile(profile);
+  AutofillProfile quasi_duplicate = test::GetFullProfile();
+  quasi_duplicate.SetRawInfo(COMPANY_NAME, u"some company");
+  test_adm_.AddProfile(quasi_duplicate);
+
+  test_api(data_cleaner_).ApplyDeduplicationRoutine();
+  EXPECT_THAT(test_adm_.GetProfiles(),
+              UnorderedElementsAre(Pointee(profile), Pointee(quasi_duplicate)));
+}
+
+// Tests that quasi duplicates are silently removed, if the corresponding
+// token has low quality.
+TEST_F(AddressDataCleanerTest, Deduplicate_QuasiDuplicate_LowQuality) {
+  base::test::ScopedFeatureList features;
+  features.InitWithFeatures(
+      /*enabled_features=*/{features::kAutofillTrackProfileTokenQuality,
+                            features::kAutofillSilentlyRemoveQuasiDuplicates},
+      /*disabled_features=*/{});
+  const AutofillProfile profile = test::GetFullProfile();
+  test_adm_.AddProfile(profile);
+  AutofillProfile quasi_duplicate = test::GetFullProfile();
+  quasi_duplicate.SetRawInfo(COMPANY_NAME, u"some company");
+  for (int i = 0; i < 5; ++i) {
+    test_api(quasi_duplicate.token_quality())
+        .AddObservation(COMPANY_NAME,
+                        ProfileTokenQuality::ObservationType::kEditedFallback);
+  }
+  test_adm_.AddProfile(quasi_duplicate);
+
+  test_api(data_cleaner_).ApplyDeduplicationRoutine();
+  EXPECT_THAT(test_adm_.GetProfiles(), UnorderedElementsAre(Pointee(profile)));
 }
 
 TEST_F(AddressDataCleanerTest, DeleteDisusedAddresses) {
   // Create a disused address (deletable).
   AutofillProfile profile1 = test::GetFullProfile();
   profile1.set_use_date(AutofillClock::Now() - base::Days(400));
-  test_pdm_.AddProfile(profile1);
+  test_adm_.AddProfile(profile1);
 
   // Create a recently-used address (not deletable).
   AutofillProfile profile2 = test::GetFullCanadianProfile();
   profile1.set_use_date(AutofillClock::Now() - base::Days(4));
-  test_pdm_.AddProfile(profile2);
+  test_adm_.AddProfile(profile2);
 
   test_api(data_cleaner_).DeleteDisusedAddresses();
-  EXPECT_THAT(test_pdm_.GetProfiles(), UnorderedElementsAre(Pointee(profile2)));
+  EXPECT_THAT(test_adm_.GetProfiles(), UnorderedElementsAre(Pointee(profile2)));
+}
+
+TEST_F(AddressDataCleanerTest, CalculateMinimalIncompatibleTypeSets) {
+  const AutofillProfileComparator comparator("en_US");
+  AutofillProfile profile = test::GetFullProfile();
+  std::vector<AutofillProfile> other_profiles;
+  // FullProfile2 differs from `profile` in numerious ways.
+  other_profiles.push_back(test::GetFullProfile2());
+  // Add a profile that only differs from `profile` in its email address.
+  other_profiles.emplace_back(test::GetFullProfile())
+      .SetRawInfo(EMAIL_ADDRESS, u"other-email@gmail.com");
+  // Expect that the only minimal set is the email address.
+  EXPECT_THAT(AddressDataCleaner::CalculateMinimalIncompatibleTypeSets(
+                  profile, other_profiles, comparator),
+              testing::UnorderedElementsAre(FieldTypeSet{EMAIL_ADDRESS}));
+  // Add one more profile that only differs from `profile` in its phone number.
+  other_profiles.emplace_back(test::GetFullProfile())
+      .SetRawInfo(PHONE_HOME_WHOLE_NUMBER, u"+49 1578 7912345");
+  // Expect that both minimal sets are returned.
+  EXPECT_THAT(
+      AddressDataCleaner::CalculateMinimalIncompatibleTypeSets(
+          profile, other_profiles, comparator),
+      testing::UnorderedElementsAre(FieldTypeSet{EMAIL_ADDRESS},
+                                    FieldTypeSet{PHONE_HOME_WHOLE_NUMBER}));
+}
+
+TEST_F(AddressDataCleanerTest, IsTokenLowQualityForDeduplicationPurposes) {
+  base::test::ScopedFeatureList feature{
+      features::kAutofillTrackProfileTokenQuality};
+  using ObservationType = ProfileTokenQuality::ObservationType;
+
+  AutofillProfile profile = test::GetFullProfile();
+  test_api(profile.token_quality())
+      .AddObservation(NAME_FULL, ObservationType::kEditedFallback);
+  // Not enough observation.
+  EXPECT_FALSE(AddressDataCleaner::IsTokenLowQualityForDeduplicationPurposes(
+      profile, NAME_FULL));
+
+  test_api(profile.token_quality())
+      .AddObservation(NAME_FULL, ObservationType::kAccepted);
+  test_api(profile.token_quality())
+      .AddObservation(NAME_FULL, ObservationType::kEditedFallback);
+  test_api(profile.token_quality())
+      .AddObservation(NAME_FULL, ObservationType::kEditedFallback);
+  // Enough observations, and enough of them are "bad".
+  EXPECT_TRUE(AddressDataCleaner::IsTokenLowQualityForDeduplicationPurposes(
+      profile, NAME_FULL));
+
+  test_api(profile.token_quality())
+      .AddObservation(NAME_FULL, ObservationType::kAccepted);
+  // Too many "good" observations for the token to be considered low quality.
+  EXPECT_FALSE(AddressDataCleaner::IsTokenLowQualityForDeduplicationPurposes(
+      profile, NAME_FULL));
 }
 
 }  // namespace autofill

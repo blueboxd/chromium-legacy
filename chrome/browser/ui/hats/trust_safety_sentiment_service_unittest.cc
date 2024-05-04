@@ -751,7 +751,7 @@ TEST_F(TrustSafetySentimentServiceTest, PrivacySettingsProductSpecificData) {
       content_settings::PartitionKey::GetDefaultForTesting());
   content_settings::TestUtils::OverrideProvider(
       content_settings, std::move(managed_provider),
-      HostContentSettingsMap::POLICY_PROVIDER);
+      content_settings::ProviderType::kPolicyProvider);
   EXPECT_CALL(*mock_hats_service(),
               LaunchSurvey(kHatsSurveyTriggerTrustSafetyPrivacySettings, _, _,
                            expected_psd, _));
@@ -1311,7 +1311,7 @@ TEST_F(TrustSafetySentimentServiceTest, V2_SafeBrowsingInterstitial) {
       LaunchSurvey(kHatsSurveyTriggerTrustSafetyV2SafeBrowsingInterstitial, _,
                    _, _, _));
   service()->InteractedWithSafeBrowsingInterstitial(
-      true, safe_browsing::SB_THREAT_TYPE_URL_PHISHING);
+      true, safe_browsing::SBThreatType::SB_THREAT_TYPE_URL_PHISHING);
   service()->OpenedNewTabPage();
   CheckHistograms(
       {TrustSafetySentimentService::FeatureArea::kSafeBrowsingInterstitial},

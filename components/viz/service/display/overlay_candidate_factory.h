@@ -5,8 +5,6 @@
 #ifndef COMPONENTS_VIZ_SERVICE_DISPLAY_OVERLAY_CANDIDATE_FACTORY_H_
 #define COMPONENTS_VIZ_SERVICE_DISPLAY_OVERLAY_CANDIDATE_FACTORY_H_
 
-#include <optional>
-
 #include "base/containers/flat_map.h"
 #include "base/memory/raw_ptr.h"
 #include "build/build_config.h"
@@ -71,7 +69,7 @@ class VIZ_SERVICE_EXPORT OverlayCandidateFactory {
   // produced by this factory.
   OverlayCandidateFactory(
       const AggregatedRenderPass* render_pass,
-      DisplayResourceProvider* resource_provider,
+      const DisplayResourceProvider* resource_provider,
       const SurfaceDamageRectList* surface_damage_rect_list,
       const SkM44* output_color_matrix,
       const gfx::RectF primary_rect,
@@ -171,7 +169,7 @@ class VIZ_SERVICE_EXPORT OverlayCandidateFactory {
   void SetDisplayRect(const DrawQuad& quad, OverlayCandidate& candidate) const;
 
   raw_ptr<const AggregatedRenderPass> render_pass_;
-  raw_ptr<DisplayResourceProvider> resource_provider_;
+  raw_ptr<const DisplayResourceProvider> resource_provider_;
   raw_ptr<const SurfaceDamageRectList> surface_damage_rect_list_;
   const gfx::RectF primary_rect_;
   raw_ptr<const OverlayProcessorInterface::FilterOperationsMap>

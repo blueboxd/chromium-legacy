@@ -45,7 +45,7 @@
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
-#include "chromeos/crosapi/mojom/crosapi.mojom.h"
+#include "chromeos/crosapi/mojom/browser_service.mojom.h"
 #include "chromeos/lacros/lacros_service.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
@@ -73,7 +73,7 @@ using IgnoreUnloadHandlers =
 
 void AttemptRestartInternal(IgnoreUnloadHandlers ignore_unload_handlers) {
   // TODO(beng): Can this use ProfileManager::GetLoadedProfiles instead?
-  // TODO(crbug.com/1205798): Unset SaveSessionState if the restart fails.
+  // TODO(crbug.com/40180622): Unset SaveSessionState if the restart fails.
   for (Browser* browser : *BrowserList::GetInstance()) {
     browser->profile()->SaveSessionState();
 #if BUILDFLAG(ENABLE_SESSION_SERVICE)
@@ -213,7 +213,7 @@ void SessionEnding() {
   std::optional<ShutdownWatcherHelper> shutdown_watcher;
   std::optional<base::WatchHangsInScope> watch_hangs_scope;
   if (base::HangWatcher::IsCrashReportingEnabled()) {
-    // TODO(crbug.com/1327000): Migrate away from ShutdownWatcher and its old
+    // TODO(crbug.com/40840897): Migrate away from ShutdownWatcher and its old
     // timing.
     constexpr base::TimeDelta kShutdownHangDelay{base::Seconds(30)};
     watch_hangs_scope.emplace(kShutdownHangDelay);

@@ -556,7 +556,7 @@ void CastActivityManager::OnSessionAddedOrUpdated(const MediaSinkInternal& sink,
 
   // If |activity| is null, we have discovered a non-local activity.
   if (activity_it == activities_.end()) {
-    // TODO(crbug.com/954797): Test this case.
+    // TODO(crbug.com/40623998): Test this case.
     AddNonLocalActivity(sink, session);
     NotifyAllOnRoutesUpdated();
     return;
@@ -1052,7 +1052,8 @@ std::string CastActivityManager::ChooseAppId(
     if (sink_capabilities.HasAll(info.required_capabilities))
       return info.app_id;
   }
-  NOTREACHED() << "Can't determine app ID from capabilities.";
+  DUMP_WILL_BE_NOTREACHED_NORETURN()
+      << "Can't determine app ID from capabilities.";
   return source.app_infos()[0].app_id;
 }
 

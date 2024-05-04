@@ -40,8 +40,10 @@ namespace gpu {
 namespace {
 
 gfx::BufferUsage GetBufferUsage(uint32_t usage) {
-  if (usage &
-      (SHARED_IMAGE_USAGE_WEBGPU_READ | SHARED_IMAGE_USAGE_WEBGPU_WRITE)) {
+  if (usage & SHARED_IMAGE_USAGE_PROTECTED_VIDEO) {
+    return gfx::BufferUsage::PROTECTED_SCANOUT;
+  } else if (usage & (SHARED_IMAGE_USAGE_WEBGPU_READ |
+                      SHARED_IMAGE_USAGE_WEBGPU_WRITE)) {
     // Just use SCANOUT for WebGPU since the memory doesn't need to be linear.
     return gfx::BufferUsage::SCANOUT;
   } else if (usage & SHARED_IMAGE_USAGE_SCANOUT) {
@@ -58,24 +60,26 @@ gfx::BufferUsage GetBufferUsage(uint32_t usage) {
 
 constexpr uint32_t kSupportedUsage =
     SHARED_IMAGE_USAGE_GLES2_READ | SHARED_IMAGE_USAGE_GLES2_WRITE |
-    SHARED_IMAGE_USAGE_GLES2_FRAMEBUFFER_HINT |
+    SHARED_IMAGE_USAGE_GLES2_FOR_RASTER_ONLY |
     SHARED_IMAGE_USAGE_DISPLAY_WRITE | SHARED_IMAGE_USAGE_DISPLAY_READ |
     SHARED_IMAGE_USAGE_RASTER_READ | SHARED_IMAGE_USAGE_RASTER_WRITE |
+    SHARED_IMAGE_USAGE_RASTER_OVER_GLES2_ONLY |
     SHARED_IMAGE_USAGE_OOP_RASTERIZATION | SHARED_IMAGE_USAGE_SCANOUT |
     SHARED_IMAGE_USAGE_WEBGPU_READ | SHARED_IMAGE_USAGE_WEBGPU_WRITE |
     SHARED_IMAGE_USAGE_CONCURRENT_READ_WRITE | SHARED_IMAGE_USAGE_VIDEO_DECODE |
     SHARED_IMAGE_USAGE_WEBGPU_SWAP_CHAIN_TEXTURE |
     SHARED_IMAGE_USAGE_RASTER_DELEGATED_COMPOSITING |
     SHARED_IMAGE_USAGE_HIGH_PERFORMANCE_GPU | SHARED_IMAGE_USAGE_CPU_UPLOAD |
-    SHARED_IMAGE_USAGE_CPU_WRITE | SHARED_IMAGE_USAGE_WEBGPU_STORAGE_TEXTURE;
+    SHARED_IMAGE_USAGE_CPU_WRITE | SHARED_IMAGE_USAGE_WEBGPU_STORAGE_TEXTURE |
+    SHARED_IMAGE_USAGE_PROTECTED_VIDEO;
 
 }  // namespace
 
 OzoneImageBackingFactory::OzoneImageBackingFactory(
-    SharedContextState* shared_context_state,
+    scoped_refptr<SharedContextState> shared_context_state,
     const GpuDriverBugWorkarounds& workarounds)
     : SharedImageBackingFactory(kSupportedUsage),
-      shared_context_state_(shared_context_state),
+      shared_context_state_(std::move(shared_context_state)),
       workarounds_(workarounds) {}
 
 OzoneImageBackingFactory::~OzoneImageBackingFactory() = default;
@@ -122,7 +126,7 @@ OzoneImageBackingFactory::CreateSharedImageInternal(
   return std::make_unique<OzoneImageBacking>(
       mailbox, format, gfx::BufferPlane::DEFAULT, size, color_space,
       surface_origin, alpha_type, usage, std::move(debug_label),
-      shared_context_state_.get(), std::move(pixmap), workarounds_,
+      shared_context_state_, std::move(pixmap), workarounds_,
       std::move(buffer_usage));
 }
 
@@ -137,7 +141,7 @@ std::unique_ptr<SharedImageBacking> OzoneImageBackingFactory::CreateSharedImage(
     uint32_t usage,
     std::string debug_label,
     bool is_thread_safe) {
-  DCHECK(!is_thread_safe);
+  CHECK(!is_thread_safe);
   return CreateSharedImageInternal(mailbox, format, surface_handle, size,
                                    color_space, surface_origin, alpha_type,
                                    usage, std::move(debug_label));
@@ -152,7 +156,9 @@ std::unique_ptr<SharedImageBacking> OzoneImageBackingFactory::CreateSharedImage(
     SkAlphaType alpha_type,
     uint32_t usage,
     std::string debug_label,
+    bool is_thread_safe,
     base::span<const uint8_t> pixel_data) {
+  CHECK(!is_thread_safe);
   SurfaceHandle surface_handle = SurfaceHandle();
   auto backing = CreateSharedImageInternal(
       mailbox, format, surface_handle, size, color_space, surface_origin,
@@ -205,7 +211,7 @@ std::unique_ptr<SharedImageBacking> OzoneImageBackingFactory::CreateSharedImage(
       GetPlaneBufferFormat(plane, buffer_format));
   auto backing = std::make_unique<OzoneImageBacking>(
       mailbox, plane_format, plane, plane_size, color_space, surface_origin,
-      alpha_type, usage, std::move(debug_label), shared_context_state_.get(),
+      alpha_type, usage, std::move(debug_label), shared_context_state_,
       std::move(pixmap), workarounds_);
   backing->SetCleared();
 
@@ -237,7 +243,7 @@ std::unique_ptr<SharedImageBacking> OzoneImageBackingFactory::CreateSharedImage(
   auto backing = std::make_unique<OzoneImageBacking>(
       mailbox, format, gfx::BufferPlane::DEFAULT, size, color_space,
       surface_origin, alpha_type, usage, std::move(debug_label),
-      shared_context_state_.get(), std::move(pixmap), workarounds_);
+      shared_context_state_, std::move(pixmap), workarounds_);
   backing->SetCleared();
 
   return backing;
@@ -301,7 +307,8 @@ bool OzoneImageBackingFactory::IsSupported(
   }
 
   ui::GLOzone* gl_ozone = factory->GetCurrentGLOzone();
-  if (used_by_gl && (!gl_ozone || !gl_ozone->CanImportNativePixmap())) {
+  if (used_by_gl &&
+      (!gl_ozone || !gl_ozone->CanImportNativePixmap(ToBufferFormat(format)))) {
     return false;
   }
 
@@ -344,7 +351,7 @@ bool OzoneImageBackingFactory::IsSupported(
   }
 
   // For now just use OzoneImageBacking for primary plane buffers.
-  // TODO(crbug.com/1310026): When Vulkan/GL interop is supported on Fuchsia
+  // TODO(crbug.com/40219694): When Vulkan/GL interop is supported on Fuchsia
   // OzoneImageBacking should be used for all scanout buffers.
   constexpr uint32_t kPrimaryPlaneUsageFlags =
       SHARED_IMAGE_USAGE_DISPLAY_READ | SHARED_IMAGE_USAGE_DISPLAY_WRITE |
@@ -401,7 +408,7 @@ bool OzoneImageBackingFactory::CanImportNativePixmapToWebGPU() {
   // Safe to always return true here, as it's not possible to create a WebGPU
   // adapter that doesn't support importing native pixmaps:
   // https://source.chromium.org/chromium/chromium/src/+/main:gpu/command_buffer/service/webgpu_decoder_impl.cc;drc=daed597d580d450d36578c0cc53b4f72d3b507da;l=1291
-  // TODO(crbug.com/1349189): To check it without vk_context_provider.
+  // TODO(crbug.com/40855765): To check it without vk_context_provider.
   return true;
 #else
   // Assume that if skia/vulkan vkDevice supports the Vulkan extensions

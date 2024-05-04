@@ -6,11 +6,11 @@
 
 #include "base/android/jni_array.h"
 #include "base/base64.h"
+#include "base/feature_list.h"
 #include "base/functional/bind.h"
 #include "base/logging.h"
 #include "base/memory/raw_ptr_exclusion.h"
 #include "base/no_destructor.h"
-#include "base/sys_byteorder.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "chrome/browser/browser_process.h"
@@ -306,7 +306,9 @@ GetSyncDataIfRegisteredInternal() {
     }
   }
 
-  if (!state->device_supports_cable()) {
+  if (!base::FeatureList::IsEnabled(
+          device::kWebAuthnEnableAndroidCableAuthenticator) ||
+      !state->device_supports_cable()) {
     return syncer::DeviceInfo::PhoneAsASecurityKeyInfo::NoSupport();
   }
 

@@ -96,7 +96,7 @@ public class MessageContainer extends FrameLayout {
         super.addView(view, index);
         onChildCountChanged();
 
-        // TODO(crbug.com/1178965): clipChildren should be set to false only when the message is in
+        // TODO(crbug.com/40749472): clipChildren should be set to false only when the message is in
         // motion.
     }
 
@@ -140,7 +140,7 @@ public class MessageContainer extends FrameLayout {
 
     public int getMessageBannerHeight() {
         assert getChildCount() > 0;
-        // TODO(https://crbug.com/1382275): remove this log after fix.
+        // TODO(crbug.com/40877229): remove this log after fix.
         if (getChildAt(0) == null) {
             Log.w(TAG, "Null child in message container; child count %s", getChildCount());
         }

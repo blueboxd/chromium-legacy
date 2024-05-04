@@ -29,7 +29,7 @@
 
 import logging
 import re
-from typing import List, Optional
+from typing import List, NamedTuple, Optional, Union
 
 from blinkpy.common.memoized import memoized
 from blinkpy.common.system.executive import Executive, ScriptError
@@ -38,7 +38,15 @@ from blinkpy.common.system.filesystem import FileSystem
 _log = logging.getLogger(__name__)
 
 
-class Git(object):
+class CommitRange(NamedTuple):
+    start: str
+    end: str
+
+    def __str__(self) -> str:
+        return f'{self.start}...{self.end}'
+
+
+class Git:
     # Unless otherwise specified, methods are expected to return paths relative
     # to self.checkout_root.
 
@@ -243,6 +251,18 @@ class Git(object):
         """Return the commit hash of HEAD."""
         return self.run(['rev-parse', 'HEAD']).strip()
 
+    def new_branch(self, name: str, stack: bool = True):
+        """Create and switch to a new branch.
+
+        Arguments:
+            stack: If true, track the current branch (if it exists). Otherwise,
+                track tip-of-tree (origin/main).
+        """
+        if stack and self.current_branch():
+            self.run(['new-branch', '--upstream-current', name])
+        else:
+            self.run(['new-branch', name])
+
     def _upstream_branch(self):
         current_branch = self.current_branch()
         return self._branch_from_ref(
@@ -271,14 +291,22 @@ class Git(object):
         return self._remote_merge_base()
 
     def changed_files(self,
-                      git_commit=None,
-                      diff_filter='ADM',
+                      commits: Union[None, str, CommitRange] = None,
+                      diff_filter: str = 'ADM',
                       path: Optional[str] = None):
         # FIXME: --diff-filter could be used to avoid the "extract_filenames" step.
+        if isinstance(commits, CommitRange):
+            commit_arg = str(commits)
+        else:
+            commit_arg = self._merge_base(commits)
         status_command = [
-            'diff', '-r', '--name-status', '--no-renames', '--no-ext-diff',
+            'diff',
+            '-r',
+            '--name-status',
+            '--no-renames',
+            '--no-ext-diff',
             '--full-index',
-            self._merge_base(git_commit)
+            commit_arg,
         ]
         if path:
             status_command.append(path)
@@ -317,13 +345,38 @@ class Git(object):
     def display_name(self):
         return 'git'
 
-    def most_recent_log_matching(self, grep_str, path):
+    def most_recent_log_matching(self,
+                                 grep_str: str,
+                                 path: Optional[str] = None,
+                                 commits: Union[None, str, CommitRange] = None,
+                                 format_pattern: Optional[str] = None) -> str:
+        """Find and return the most recent commit message matching a pattern.
+
+        Arguments:
+            grep_str: A grep-style regular expression.
+            path: A path that matching commits should modify.
+            commits: A revision range to search, where:
+              * `None` searches the full history up to `HEAD` (inclusive).
+              * `str` searches the history up to that revision (inclusive).
+              * `CommitRange` searches between the explicit start (exclusive)
+                and end (inclusive) revisions.
+            format_pattern: How `git log` should format the message, if found.
+        """
         # We use '--grep=' + foo rather than '--grep', foo because
         # git 1.7.0.4 (and earlier) didn't support the separate arg.
-        return self.run([
-            'log', '-1', '--grep=' + grep_str, '--date=iso',
-            self.find_checkout_root(path)
-        ])
+        command = [
+            'log',
+            '-1',
+            f'--grep={grep_str}',
+            '--date=iso',
+        ]
+        if format_pattern:
+            command.append(f'--format={format_pattern}')
+        if commits:
+            command.append(str(commits))
+        if path:
+            command.extend(['--', path])
+        return self.run(command)
 
     def _commit_position_from_git_log(self, git_log):
         match = re.search(

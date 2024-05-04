@@ -23,11 +23,11 @@ android_library("java") {
 android_resources("java_resources") {
   sources = [
     "java/res/color/chip_text_color_secondary_list.xml",
+    "java/res/color/color_on_surface_with_alpha_10.xml",
     "java/res/color/color_primary_with_alpha_10.xml",
     "java/res/color/color_primary_with_alpha_15.xml",
     "java/res/color/color_primary_with_alpha_20.xml",
     "java/res/color/color_primary_with_alpha_5.xml",
-    "java/res/color/default_icon_color_accent1_container_tint_list.xml",
     "java/res/color/default_icon_color_accent1_tint_list.xml",
     "java/res/color/default_icon_color_dark_tint_list.xml",
     "java/res/color/default_icon_color_disabled.xml",
@@ -51,6 +51,7 @@ android_resources("java_resources") {
     "java/res/color/text_button_ripple_color_list.xml",
     "java/res/color/text_highlight_color.xml",
     "java/res/color/toolbar_button_highlight_color.xml",
+    "java/res/color/toolbar_icon_unfocused_activity_tint_list.xml",
     "java/res/drawable-hdpi/btn_star_filled.png",
     "java/res/drawable-hdpi/ic_chrome.png",
     "java/res/drawable-hdpi/ic_delete_white_24dp.png",

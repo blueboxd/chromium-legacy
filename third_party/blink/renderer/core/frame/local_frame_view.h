@@ -101,6 +101,7 @@ class LayoutView;
 class LocalFrame;
 class MobileFriendlinessChecker;
 class Page;
+class PaginationState;
 class PaintArtifactCompositor;
 class PaintController;
 class PaintLayer;
@@ -114,7 +115,7 @@ class TapFriendlinessChecker;
 class TransformState;
 class LocalFrameUkmAggregator;
 class WebPluginContainerImpl;
-struct AnnotatedRegionValue;
+struct DraggableRegionValue;
 struct IntrinsicSizingInfo;
 struct PhysicalOffset;
 struct PhysicalRect;
@@ -265,6 +266,7 @@ class CORE_EXPORT LocalFrameView final
 
   void Dispose() override;
   void PropagateFrameRects() override;
+  void ZoomChanged(float zoom_factor) override;
   void InvalidateAllCustomScrollbarsOnActiveChanged();
 
   void UsesOverlayScrollbarsChanged();
@@ -316,7 +318,7 @@ class CORE_EXPORT LocalFrameView final
 
   void HandleLoadCompleted();
 
-  void UpdateDocumentAnnotatedRegions() const;
+  void UpdateDocumentDraggableRegions() const;
 
   void DidAttachDocument();
 
@@ -435,6 +437,14 @@ class CORE_EXPORT LocalFrameView final
   void DisableAutoSizeMode();
 
   void ForceLayoutForPagination(float maximum_shrink_factor);
+
+  const PaginationState* GetPaginationState() const {
+    return pagination_state_.Get();
+  }
+  PaginationState* GetPaginationState() { return pagination_state_.Get(); }
+
+  // Clean up after having been paginated.
+  void DestroyPaginationLayout();
 
   // Updates the fragment anchor element based on URL's fragment identifier.
   // Updates corresponding ':target' CSS pseudo class on the anchor element.
@@ -629,6 +639,8 @@ class CORE_EXPORT LocalFrameView final
                                     bool subtree_throttled,
                                     bool display_locked,
                                     bool recurse = false) override;
+
+  void SetThrottledForViewTransition(bool throttled);
 
   void BeginLifecycleUpdates();
 
@@ -959,8 +971,8 @@ class CORE_EXPORT LocalFrameView final
 
   void SetLayoutSizeInternal(const gfx::Size&);
 
-  void CollectAnnotatedRegions(LayoutObject&,
-                               Vector<AnnotatedRegionValue>&) const;
+  void CollectDraggableRegions(LayoutObject&,
+                               Vector<DraggableRegionValue>&) const;
 
   void ForAllChildViewsAndPlugins(
       base::FunctionRef<void(EmbeddedContentView&)>);
@@ -1029,8 +1041,6 @@ class CORE_EXPORT LocalFrameView final
 
   DarkModeFilter& EnsureDarkModeFilter();
 
-  bool HasViewTransitionThrottlingRendering() const;
-
   void UpdateCanCompositeBackgroundAttachmentFixed();
 
   void EnqueueSnapChangingFromImplIfNecessary();
@@ -1080,6 +1090,7 @@ class CORE_EXPORT LocalFrameView final
   BoxModelObjectSet background_attachment_fixed_objects_;
   Member<FrameViewAutoSizeInfo> auto_size_info_;
 
+  Member<PaginationState> pagination_state_;
   gfx::Size layout_size_;
   bool layout_size_fixed_to_frame_size_;
 
@@ -1137,6 +1148,8 @@ class CORE_EXPORT LocalFrameView final
   // main frames.
   bool have_deferred_main_frame_commits_ = false;
 
+  bool throttled_for_view_transition_ = false;
+
   bool visual_viewport_or_overlay_needs_repaint_ = false;
 
   // Whether to collect layer debug information for debugging, tracing,
@@ -1151,8 +1164,8 @@ class CORE_EXPORT LocalFrameView final
   // Used by |PaintTree()| to collect the updated |PaintArtifact| which will be
   // passed to the compositor. It caches display items and subsequences across
   // frame updates and repaints.
-  std::unique_ptr<PaintController> paint_controller_;
-  std::unique_ptr<PaintArtifactCompositor> paint_artifact_compositor_;
+  Member<PaintController> paint_controller_;
+  Member<PaintArtifactCompositor> paint_artifact_compositor_;
 
   MainThreadScrollingReasons main_thread_scrolling_reasons_;
 

@@ -49,6 +49,9 @@ public class HubManagerImpl implements HubManager, HubController {
 
     private HubCoordinator mHubCoordinator;
 
+    private int mStatusIndicatorHeight;
+    private int mAppHeaderHeight;
+
     /** See {@link HubManagerFactory#createHubManager}. */
     public HubManagerImpl(
             @NonNull Context context,
@@ -66,7 +69,8 @@ public class HubManagerImpl implements HubManager, HubController {
         mTabSupplier = tabSupplier;
         mMenuButtonCoordinator = menuButtonCoordinator;
 
-        // TODO(crbug/1487315): Consider making this a xml file so the entire core UI is inflated.
+        // TODO(crbug.com/40283238): Consider making this a xml file so the entire core UI is
+        // inflated.
         mHubContainerView = new HubContainerView(mContext);
         LayoutParams params =
                 new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
@@ -101,7 +105,18 @@ public class HubManagerImpl implements HubManager, HubController {
     public void setStatusIndicatorHeight(int height) {
         LayoutParams params = (LayoutParams) mHubContainerView.getLayoutParams();
         assert params != null : "HubContainerView should always have layout params.";
-        params.topMargin = height;
+        mStatusIndicatorHeight = height;
+        params.topMargin = mStatusIndicatorHeight + mAppHeaderHeight;
+        mHubContainerView.setLayoutParams(params);
+    }
+
+    @Override
+    public void setAppHeaderHeight(int height) {
+        if (mAppHeaderHeight == height) return;
+        LayoutParams params = (LayoutParams) mHubContainerView.getLayoutParams();
+        assert params != null : "HubContainerView should always have layout params.";
+        mAppHeaderHeight = height;
+        params.topMargin = mStatusIndicatorHeight + mAppHeaderHeight;
         mHubContainerView.setLayoutParams(params);
     }
 
@@ -137,7 +152,7 @@ public class HubManagerImpl implements HubManager, HubController {
 
     @Override
     public void onHubLayoutDoneHiding() {
-        // TODO(crbug/1487315): Consider deferring this destruction till after a timeout.
+        // TODO(crbug.com/40283238): Consider deferring this destruction till after a timeout.
         mHubContainerView.removeAllViews();
         destroyHubCoordinator();
         mHubVisibilitySupplier.set(false);

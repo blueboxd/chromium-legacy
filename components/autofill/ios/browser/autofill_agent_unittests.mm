@@ -4,58 +4,61 @@
 
 #import "components/autofill/ios/browser/autofill_agent.h"
 
-#include "base/apple/bundle_locations.h"
+#import "base/apple/bundle_locations.h"
 #import "base/memory/raw_ptr.h"
-#include "base/memory/weak_ptr.h"
-#include "base/strings/strcat.h"
-#include "base/strings/sys_string_conversions.h"
-#include "base/strings/utf_string_conversions.h"
-#include "base/test/gtest_util.h"
+#import "base/memory/weak_ptr.h"
+#import "base/strings/strcat.h"
+#import "base/strings/sys_string_conversions.h"
+#import "base/strings/utf_string_conversions.h"
+#import "base/test/gtest_util.h"
 #import "base/test/ios/wait_util.h"
-#include "base/test/scoped_feature_list.h"
+#import "base/test/scoped_feature_list.h"
 #import "base/test/test_timeouts.h"
-#include "components/autofill/core/browser/autofill_test_utils.h"
-#include "components/autofill/core/browser/data_model/credit_card.h"
-#include "components/autofill/core/browser/filling_product.h"
-#include "components/autofill/core/browser/test_autofill_client.h"
-#include "components/autofill/core/browser/ui/mock_autofill_popup_delegate.h"
-#include "components/autofill/core/browser/ui/popup_item_ids.h"
-#include "components/autofill/core/browser/ui/suggestion.h"
-#include "components/autofill/core/common/autofill_features.h"
-#include "components/autofill/core/common/autofill_payments_features.h"
-#include "components/autofill/core/common/autofill_prefs.h"
-#include "components/autofill/core/common/form_data.h"
-#include "components/autofill/core/common/mojom/autofill_types.mojom-shared.h"
-#include "components/autofill/ios/browser/autofill_driver_ios.h"
-#include "components/autofill/ios/browser/autofill_driver_ios_factory.h"
+#import "components/autofill/core/browser/autofill_test_utils.h"
+#import "components/autofill/core/browser/data_model/credit_card.h"
+#import "components/autofill/core/browser/filling_product.h"
+#import "components/autofill/core/browser/test_autofill_client.h"
+#import "components/autofill/core/browser/ui/mock_autofill_popup_delegate.h"
+#import "components/autofill/core/browser/ui/suggestion.h"
+#import "components/autofill/core/browser/ui/suggestion_type.h"
+#import "components/autofill/core/common/autofill_features.h"
+#import "components/autofill/core/common/autofill_payments_features.h"
+#import "components/autofill/core/common/autofill_prefs.h"
+#import "components/autofill/core/common/field_data_manager.h"
+#import "components/autofill/core/common/form_data.h"
+#import "components/autofill/core/common/mojom/autofill_types.mojom-shared.h"
+#import "components/autofill/ios/browser/autofill_driver_ios.h"
+#import "components/autofill/ios/browser/autofill_driver_ios_factory.h"
 #import "components/autofill/ios/browser/autofill_java_script_feature.h"
+#import "components/autofill/ios/browser/autofill_util.h"
+#import "components/autofill/ios/common/field_data_manager_factory_ios.h"
 #import "components/autofill/ios/form_util/form_handlers_java_script_feature.h"
 #import "components/autofill/ios/form_util/form_util_java_script_feature.h"
-#include "components/autofill/ios/form_util/unique_id_data_tab_helper.h"
-#include "components/prefs/pref_service.h"
-#include "ios/web/public/test/fakes/fake_browser_state.h"
-#include "ios/web/public/test/fakes/fake_web_frame.h"
+#import "components/prefs/pref_service.h"
+#import "ios/web/public/test/fakes/fake_browser_state.h"
+#import "ios/web/public/test/fakes/fake_web_frame.h"
 #import "ios/web/public/test/fakes/fake_web_frames_manager.h"
 #import "ios/web/public/test/fakes/fake_web_state.h"
-#include "ios/web/public/test/web_test.h"
-#include "services/metrics/public/cpp/ukm_builders.h"
-#include "testing/gmock/include/gmock/gmock.h"
-#include "testing/gtest/include/gtest/gtest.h"
+#import "ios/web/public/test/web_test.h"
+#import "services/metrics/public/cpp/ukm_builders.h"
+#import "testing/gmock/include/gmock/gmock.h"
+#import "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
-#include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/image/image_unittest_util.h"
-#include "url/gurl.h"
+#import "ui/base/resource/resource_bundle.h"
+#import "ui/gfx/image/image_unittest_util.h"
+#import "url/gurl.h"
 
 using autofill::AutofillJavaScriptFeature;
 using autofill::FieldDataManager;
 using autofill::FieldRendererId;
 using autofill::FillingProduct;
 using autofill::FormRendererId;
-using autofill::PopupItemId;
+using autofill::SuggestionType;
 using base::test::ios::WaitUntilConditionOrTimeout;
 
 @interface AutofillAgent (Testing)
-- (void)updateFieldManagerWithFillingResults:(NSString*)jsonString;
+- (void)updateFieldManagerWithFillingResults:(NSString*)jsonString
+                                     inFrame:(web::WebFrame*)frame;
 @end
 
 // Test fixture for AutofillAgent testing.
@@ -101,7 +104,6 @@ class AutofillAgentTests : public web::WebTest {
     prefs_ = autofill::test::PrefServiceForTesting();
     autofill::prefs::SetAutofillProfileEnabled(prefs_.get(), true);
     autofill::prefs::SetAutofillPaymentMethodsEnabled(prefs_.get(), true);
-    UniqueIDDataTabHelper::CreateForWebState(&fake_web_state_);
     autofill_agent_ =
         [[AutofillAgent alloc] initWithPrefService:prefs_.get()
                                           webState:&fake_web_state_];
@@ -143,53 +145,50 @@ TEST_F(AutofillAgentTests,
   autofill::AutofillDriverIOSFactory::CreateForWebState(&fake_web_state_,
                                                         &client_, nil, locale);
 
-  autofill::FormData form;
-  form.url = GURL("https://myform.com");
-  form.action = GURL("https://myform.com/submit");
-  form.name = u"CC form";
-  form.renderer_id = FormRendererId(1);
-
+  std::vector<autofill::FormFieldData::FillData> fill_data;
   autofill::FormFieldData field;
-  field.form_control_type = autofill::FormControlType::kInputText;
-  field.label = u"Card number";
-  field.name = u"number";
-  field.name_attribute = field.name;
-  field.id_attribute = u"number";
-  field.value = u"number_value";
-  field.is_autofilled = true;
-  field.renderer_id = FieldRendererId(2);
-  form.fields.push_back(field);
-  field.label = u"Name on Card";
-  field.name = u"name";
-  field.name_attribute = field.name;
-  field.id_attribute = u"name";
-  field.value = u"name_value";
-  field.is_autofilled = true;
-  field.renderer_id = FieldRendererId(3);
-  form.fields.push_back(field);
-  field.label = u"Expiry Month";
-  field.name = u"expiry_month";
-  field.name_attribute = field.name;
-  field.id_attribute = u"expiry_month";
-  field.value = u"01";
-  field.is_autofilled = false;
-  field.renderer_id = FieldRendererId(4);
-  form.fields.push_back(field);
-  field.label = u"Unknown field";
-  field.name = u"unknown";
-  field.name_attribute = field.name;
-  field.id_attribute = u"unknown";
-  field.value = u"";
-  field.is_autofilled = true;
-  field.renderer_id = FieldRendererId(5);
-  form.fields.push_back(field);
-  [autofill_agent_ fillFormData:form
-                        inFrame:fake_web_frames_manager_->GetMainWebFrame()];
+  field.set_form_control_type(autofill::FormControlType::kInputText);
+  field.set_label(u"Card number");
+  field.set_name(u"number");
+  field.set_name_attribute(field.name());
+  field.set_id_attribute(u"number");
+  field.set_value(u"number_value");
+  field.set_is_autofilled(true);
+  field.set_renderer_id(FieldRendererId(2));
+  fill_data.push_back(autofill::FormFieldData::FillData(field));
+  field.set_label(u"Name on Card");
+  field.set_name(u"name");
+  field.set_name_attribute(field.name());
+  field.set_id_attribute(u"name");
+  field.set_value(u"name_value");
+  field.set_is_autofilled(true);
+  field.set_renderer_id(FieldRendererId(3));
+  fill_data.push_back(autofill::FormFieldData::FillData(field));
+  field.set_label(u"Expiry Month");
+  field.set_name(u"expiry_month");
+  field.set_name_attribute(field.name());
+  field.set_id_attribute(u"expiry_month");
+  field.set_value(u"01");
+  field.set_is_autofilled(false);
+  field.set_renderer_id(FieldRendererId(4));
+  fill_data.push_back(autofill::FormFieldData::FillData(field));
+  field.set_label(u"Unknown field");
+  field.set_name(u"unknown");
+  field.set_name_attribute(field.name());
+  field.set_id_attribute(u"unknown");
+  field.set_value(u"");
+  field.set_is_autofilled(true);
+  field.set_renderer_id(FieldRendererId(5));
+  fill_data.push_back(autofill::FormFieldData::FillData(field));
+
+  [autofill_agent_ fillData:fill_data
+                    inFrame:fake_web_frames_manager_->GetMainWebFrame()];
   fake_web_state_.WasShown();
-  EXPECT_EQ(u"__gCrWeb.autofill.fillForm({\"fields\":{\"2\":{\"section\":\"-"
-            u"default\",\"value\":\"number_value\"},\"3\":{\"section\":\"-"
-            u"default\",\"value\":\"name_value\"}},\"formName\":\"CC "
-            u"form\",\"formRendererID\":1}, 0);",
+
+  EXPECT_EQ(u"__gCrWeb.autofill.fillForm({\"fields\":{\"2\":{\"hostFormId\":0,"
+            u"\"section\":\"-default\",\"value\":\"number_value\"},\"3\":{"
+            u"\"hostFormId\":0,\"section\":\"-default\","
+            u"\"value\":\"name_value\"}}}, 0);",
             fake_main_frame_->GetLastJavaScriptCall());
 }
 
@@ -201,17 +200,17 @@ TEST_F(AutofillAgentTests, FillSpecificFormField) {
                                                         &client_, nil, locale);
 
   autofill::FormFieldData field;
-  field.form_control_type = autofill::FormControlType::kInputText;
-  field.label = u"Card number";
-  field.name = u"number";
-  field.name_attribute = field.name;
-  field.id_attribute = u"number";
-  field.value = u"number_value";
-  field.is_autofilled = true;
-  field.renderer_id = FieldRendererId(2);
+  field.set_form_control_type(autofill::FormControlType::kInputText);
+  field.set_label(u"Card number");
+  field.set_name(u"number");
+  field.set_name_attribute(field.name());
+  field.set_id_attribute(u"number");
+  field.set_value(u"number_value");
+  field.set_is_autofilled(true);
+  field.set_renderer_id(FieldRendererId(2));
 
   [autofill_agent_
-      fillSpecificFormField:field.renderer_id
+      fillSpecificFormField:field.renderer_id()
                   withValue:u"mattwashere"
                     inFrame:fake_web_frames_manager_->GetMainWebFrame()];
   fake_web_state_.WasShown();
@@ -228,14 +227,14 @@ TEST_F(AutofillAgentTests, DriverFillSpecificFormField) {
       &fake_web_state_, &client_, autofill_agent_, locale);
 
   autofill::FormFieldData field;
-  field.form_control_type = autofill::FormControlType::kInputText;
-  field.label = u"Card number";
-  field.name = u"number";
-  field.name_attribute = field.name;
-  field.id_attribute = u"number";
-  field.value = u"number_value";
-  field.is_autofilled = true;
-  field.renderer_id = FieldRendererId(2);
+  field.set_form_control_type(autofill::FormControlType::kInputText);
+  field.set_label(u"Card number");
+  field.set_name(u"number");
+  field.set_name_attribute(field.name());
+  field.set_id_attribute(u"number");
+  field.set_value(u"number_value");
+  field.set_is_autofilled(true);
+  field.set_renderer_id(FieldRendererId(2));
 
   autofill::AutofillDriverIOS* main_frame_driver =
       autofill::AutofillDriverIOS::FromWebStateAndWebFrame(
@@ -259,14 +258,14 @@ TEST_F(AutofillAgentTests, DriverPreviewSpecificFormField) {
       &fake_web_state_, &client_, autofill_agent_, locale);
 
   autofill::FormFieldData field;
-  field.form_control_type = autofill::FormControlType::kInputText;
-  field.label = u"Card number";
-  field.name = u"number";
-  field.name_attribute = field.name;
-  field.id_attribute = u"number";
-  field.value = u"number_value";
-  field.is_autofilled = true;
-  field.renderer_id = FieldRendererId(2);
+  field.set_form_control_type(autofill::FormControlType::kInputText);
+  field.set_label(u"Card number");
+  field.set_name(u"number");
+  field.set_name_attribute(field.name());
+  field.set_id_attribute(u"number");
+  field.set_value(u"number_value");
+  field.set_is_autofilled(true);
+  field.set_renderer_id(FieldRendererId(2));
 
   autofill::AutofillDriverIOS* main_frame_driver =
       autofill::AutofillDriverIOS::FromWebStateAndWebFrame(
@@ -291,9 +290,9 @@ TEST_F(AutofillAgentTests,
 
   FormSuggestionProviderQuery* form_query =
       [[FormSuggestionProviderQuery alloc] initWithFormName:@"form"
-                                               uniqueFormID:FormRendererId(1)
+                                             formRendererID:FormRendererId(1)
                                             fieldIdentifier:@"address"
-                                              uniqueFieldID:FieldRendererId(2)
+                                            fieldRendererID:FieldRendererId(2)
                                                   fieldType:@"text"
                                                        type:@"focus"
                                                  typedValue:@""
@@ -327,7 +326,7 @@ TEST_F(AutofillAgentTests, onSuggestionsReady_ShowAccountCards) {
   std::vector<autofill::Suggestion> autofillSuggestions;
   autofillSuggestions.push_back(
       autofill::Suggestion("", "", autofill::Suggestion::Icon::kNoIcon,
-                           PopupItemId::kShowAccountCards));
+                           SuggestionType::kShowAccountCards));
   [autofill_agent_ showAutofillPopup:autofillSuggestions
                        popupDelegate:mock_delegate.GetWeakPtr()];
 
@@ -339,9 +338,9 @@ TEST_F(AutofillAgentTests, onSuggestionsReady_ShowAccountCards) {
   };
   FormSuggestionProviderQuery* form_query =
       [[FormSuggestionProviderQuery alloc] initWithFormName:@"form"
-                                               uniqueFormID:FormRendererId(1)
+                                             formRendererID:FormRendererId(1)
                                             fieldIdentifier:@"address"
-                                              uniqueFieldID:FieldRendererId(2)
+                                            fieldRendererID:FieldRendererId(2)
                                                   fieldType:@"text"
                                                        type:@"focus"
                                                  typedValue:@""
@@ -359,7 +358,7 @@ TEST_F(AutofillAgentTests, onSuggestionsReady_ShowAccountCards) {
 
   // "Show credit cards from account" should be the only suggestion.
   EXPECT_EQ(1U, completion_handler_suggestions.count);
-  EXPECT_EQ(PopupItemId::kShowAccountCards,
+  EXPECT_EQ(SuggestionType::kShowAccountCards,
             completion_handler_suggestions[0].popupItemId);
 }
 
@@ -395,10 +394,10 @@ TEST_F(AutofillAgentTests, showAutofillPopup_ShowVirtualCards) {
       autofill::Suggestion("Virtual card", "Quicksilver ••1111",
                            expiration_date_label,
                            autofill::Suggestion::Icon::kCardVisa,
-                           autofill::PopupItemId::kVirtualCreditCardEntry),
+                           autofill::SuggestionType::kVirtualCreditCardEntry),
       autofill::Suggestion("Quicksilver ••1111", "", expiration_date_label,
                            autofill::Suggestion::Icon::kCardVisa,
-                           autofill::PopupItemId::kCreditCardEntry),
+                           autofill::SuggestionType::kCreditCardEntry),
   };
 
   // Completion handler to retrieve suggestions.
@@ -444,7 +443,7 @@ TEST_F(AutofillAgentTests, showAutofillPopup_ShowVirtualCards) {
               virtual_card_suggestion.displayDescription);
   EXPECT_TRUE(
       gfx::test::PlatformImagesEqual(virtual_card_suggestion.icon, visa_icon));
-  EXPECT_EQ(autofill::PopupItemId::kVirtualCreditCardEntry,
+  EXPECT_EQ(autofill::SuggestionType::kVirtualCreditCardEntry,
             virtual_card_suggestion.popupItemId);
   EXPECT_NSEQ(@"", virtual_card_suggestion.backendIdentifier);
   EXPECT_EQ(false, virtual_card_suggestion.requiresReauth);
@@ -457,7 +456,7 @@ TEST_F(AutofillAgentTests, showAutofillPopup_ShowVirtualCards) {
               credit_card_suggestion.displayDescription);
   EXPECT_TRUE(
       gfx::test::PlatformImagesEqual(credit_card_suggestion.icon, visa_icon));
-  EXPECT_EQ(autofill::PopupItemId::kCreditCardEntry,
+  EXPECT_EQ(autofill::SuggestionType::kCreditCardEntry,
             credit_card_suggestion.popupItemId);
   EXPECT_NSEQ(@"", credit_card_suggestion.backendIdentifier);
   EXPECT_EQ(false, credit_card_suggestion.requiresReauth);
@@ -478,11 +477,11 @@ TEST_F(AutofillAgentTests,
   // Initialize suggestion.
   std::vector<autofill::Suggestion> autofillSuggestions = {
       autofill::Suggestion("", "", autofill::Suggestion::Icon::kCardVisa,
-                           autofill::PopupItemId::kCreditCardEntry),
+                           autofill::SuggestionType::kCreditCardEntry),
       // This suggestion has a valid credit card icon, but the Suggestion type
       // (kShowAccountCards) is wrong.
       autofill::Suggestion("", "", autofill::Suggestion::Icon::kCardVisa,
-                           autofill::PopupItemId::kShowAccountCards),
+                           autofill::SuggestionType::kShowAccountCards),
   };
   // Completion handler to retrieve suggestions.
   auto completionHandler = ^(NSArray<FormSuggestion*>* suggestions,
@@ -530,7 +529,7 @@ TEST_F(AutofillAgentTests, showAutofillPopup_EmptyIconInCreditCardSuggestion) {
 
   std::vector<autofill::Suggestion> autofillSuggestions = {
       autofill::Suggestion("", "", autofill::Suggestion::Icon::kNoIcon,
-                           autofill::PopupItemId::kCreditCardEntry)};
+                           autofill::SuggestionType::kCreditCardEntry)};
 
   // Completion handler to retrieve suggestions.
   auto completionHandler = ^(NSArray<FormSuggestion*>* suggestions,
@@ -559,10 +558,10 @@ TEST_F(AutofillAgentTests, showAutofillPopup_PlusAddresses) {
   std::vector<autofill::Suggestion> autofillSuggestions = {
       autofill::Suggestion(createSuggestionText, "",
                            autofill::Suggestion::Icon::kNoIcon,
-                           autofill::PopupItemId::kCreateNewPlusAddress),
+                           autofill::SuggestionType::kCreateNewPlusAddress),
       autofill::Suggestion(fillExistingSuggestionText, "",
                            autofill::Suggestion::Icon::kNoIcon,
-                           autofill::PopupItemId::kFillExistingPlusAddress)};
+                           autofill::SuggestionType::kFillExistingPlusAddress)};
 
   // Completion handler to retrieve suggestions.
   auto completionHandler = ^(NSArray<FormSuggestion*>* suggestions,
@@ -588,11 +587,11 @@ TEST_F(AutofillAgentTests, showAutofillPopup_PlusAddresses) {
   // The plus address suggestions should be handled by the conversion to
   // `FormSuggestion` objects.
   EXPECT_EQ(2U, completion_handler_suggestions.count);
-  EXPECT_EQ(PopupItemId::kCreateNewPlusAddress,
+  EXPECT_EQ(SuggestionType::kCreateNewPlusAddress,
             completion_handler_suggestions[0].popupItemId);
   EXPECT_NSEQ(base::SysUTF8ToNSString(createSuggestionText),
               completion_handler_suggestions[0].value);
-  EXPECT_EQ(autofill::PopupItemId::kFillExistingPlusAddress,
+  EXPECT_EQ(autofill::SuggestionType::kFillExistingPlusAddress,
             completion_handler_suggestions[1].popupItemId);
   EXPECT_NSEQ(base::SysUTF8ToNSString(fillExistingSuggestionText),
               completion_handler_suggestions[1].value);
@@ -625,7 +624,7 @@ TEST_F(AutofillAgentTests,
   // Initialize suggestion, initially without a custom icon.
   std::vector<autofill::Suggestion> autofillSuggestions = {
       autofill::Suggestion("", "", suggestion_network_icon,
-                           autofill::PopupItemId::kCreditCardEntry)};
+                           autofill::SuggestionType::kCreditCardEntry)};
   ASSERT_TRUE(autofillSuggestions[0].custom_icon.IsEmpty());
 
   // When the custom icon is not present, the default icon should be used.
@@ -659,12 +658,12 @@ TEST_F(AutofillAgentTests, onSuggestionsReady_ClearForm) {
   std::vector<autofill::Suggestion> autofillSuggestions;
   autofillSuggestions.push_back(
       autofill::Suggestion("", "", autofill::Suggestion::Icon::kNoIcon,
-                           autofill::PopupItemId::kAddressEntry));
+                           autofill::SuggestionType::kAddressEntry));
   autofillSuggestions.push_back(
       autofill::Suggestion("", "", autofill::Suggestion::Icon::kNoIcon,
-                           autofill::PopupItemId::kAddressEntry));
+                           autofill::SuggestionType::kAddressEntry));
   autofillSuggestions.push_back(autofill::Suggestion(
-      "", "", autofill::Suggestion::Icon::kNoIcon, PopupItemId::kClearForm));
+      "", "", autofill::Suggestion::Icon::kNoIcon, SuggestionType::kClearForm));
   [autofill_agent_
       showAutofillPopup:autofillSuggestions
           popupDelegate:base::WeakPtr<autofill::AutofillPopupDelegate>()];
@@ -677,9 +676,9 @@ TEST_F(AutofillAgentTests, onSuggestionsReady_ClearForm) {
   };
   FormSuggestionProviderQuery* form_query =
       [[FormSuggestionProviderQuery alloc] initWithFormName:@"form"
-                                               uniqueFormID:FormRendererId(1)
+                                             formRendererID:FormRendererId(1)
                                             fieldIdentifier:@"address"
-                                              uniqueFieldID:FieldRendererId(2)
+                                            fieldRendererID:FieldRendererId(2)
                                                   fieldType:@"text"
                                                        type:@"focus"
                                                  typedValue:@""
@@ -698,11 +697,11 @@ TEST_F(AutofillAgentTests, onSuggestionsReady_ClearForm) {
   // "Clear Form" should appear as the first suggestion. Otherwise, the order of
   // suggestions should not change.
   EXPECT_EQ(3U, completion_handler_suggestions.count);
-  EXPECT_EQ(PopupItemId::kClearForm,
+  EXPECT_EQ(SuggestionType::kClearForm,
             completion_handler_suggestions[0].popupItemId);
-  EXPECT_EQ(autofill::PopupItemId::kAddressEntry,
+  EXPECT_EQ(autofill::SuggestionType::kAddressEntry,
             completion_handler_suggestions[1].popupItemId);
-  EXPECT_EQ(autofill::PopupItemId::kAddressEntry,
+  EXPECT_EQ(autofill::SuggestionType::kAddressEntry,
             completion_handler_suggestions[2].popupItemId);
 }
 
@@ -716,12 +715,12 @@ TEST_F(AutofillAgentTests, onSuggestionsReady_ClearFormWithGPay) {
   std::vector<autofill::Suggestion> autofillSuggestions;
   autofillSuggestions.push_back(
       autofill::Suggestion("", "", autofill::Suggestion::Icon::kNoIcon,
-                           autofill::PopupItemId::kCreditCardEntry));
+                           autofill::SuggestionType::kCreditCardEntry));
   autofillSuggestions.push_back(
       autofill::Suggestion("", "", autofill::Suggestion::Icon::kNoIcon,
-                           autofill::PopupItemId::kCreditCardEntry));
+                           autofill::SuggestionType::kCreditCardEntry));
   autofillSuggestions.push_back(autofill::Suggestion(
-      "", "", autofill::Suggestion::Icon::kNoIcon, PopupItemId::kClearForm));
+      "", "", autofill::Suggestion::Icon::kNoIcon, SuggestionType::kClearForm));
   [autofill_agent_
       showAutofillPopup:autofillSuggestions
           popupDelegate:base::WeakPtr<autofill::AutofillPopupDelegate>()];
@@ -734,9 +733,9 @@ TEST_F(AutofillAgentTests, onSuggestionsReady_ClearFormWithGPay) {
   };
   FormSuggestionProviderQuery* form_query =
       [[FormSuggestionProviderQuery alloc] initWithFormName:@"form"
-                                               uniqueFormID:FormRendererId(1)
+                                             formRendererID:FormRendererId(1)
                                             fieldIdentifier:@"address"
-                                              uniqueFieldID:FieldRendererId(2)
+                                            fieldRendererID:FieldRendererId(2)
                                                   fieldType:@"text"
                                                        type:@"focus"
                                                  typedValue:@""
@@ -753,11 +752,11 @@ TEST_F(AutofillAgentTests, onSuggestionsReady_ClearFormWithGPay) {
       }));
 
   EXPECT_EQ(3U, completion_handler_suggestions.count);
-  EXPECT_EQ(PopupItemId::kClearForm,
+  EXPECT_EQ(SuggestionType::kClearForm,
             completion_handler_suggestions[0].popupItemId);
-  EXPECT_EQ(autofill::PopupItemId::kCreditCardEntry,
+  EXPECT_EQ(autofill::SuggestionType::kCreditCardEntry,
             completion_handler_suggestions[1].popupItemId);
-  EXPECT_EQ(autofill::PopupItemId::kCreditCardEntry,
+  EXPECT_EQ(autofill::SuggestionType::kCreditCardEntry,
             completion_handler_suggestions[2].popupItemId);
 }
 
@@ -881,13 +880,16 @@ TEST_F(AutofillAgentTests, FrameInitializationOrderFrames) {
 TEST_F(AutofillAgentTests, UpdateFieldManagerWithFillingResults) {
   auto test_recorder = std::make_unique<ukm::TestAutoSetUkmRecorder>();
 
-  [autofill_agent_ updateFieldManagerWithFillingResults:@"{\"2\":\"Val1\"}"];
+  std::string locale("en");
+  autofill::AutofillDriverIOSFactory::CreateForWebState(&fake_web_state_,
+                                                        &client_, nil, locale);
+
+  [autofill_agent_ updateFieldManagerWithFillingResults:@"{\"2\":\"Val1\"}"
+                                                inFrame:fake_main_frame_];
 
   // Check recorded FieldDataManager data.
-  UniqueIDDataTabHelper* uniqueIDDataTabHelper =
-      UniqueIDDataTabHelper::FromWebState(&fake_web_state_);
-  scoped_refptr<FieldDataManager> fieldDataManager =
-      uniqueIDDataTabHelper->GetFieldDataManager();
+  FieldDataManager* fieldDataManager =
+      autofill::FieldDataManagerFactoryIOS::FromWebFrame(fake_main_frame_);
   EXPECT_TRUE(fieldDataManager->WasAutofilledOnUserTrigger(FieldRendererId(2)));
 
   // Check recorded UKM.

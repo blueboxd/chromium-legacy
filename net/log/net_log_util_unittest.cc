@@ -5,6 +5,7 @@
 #include "net/log/net_log_util.h"
 
 #include <set>
+#include <string_view>
 #include <vector>
 
 #include "base/containers/contains.h"
@@ -12,7 +13,6 @@
 #include "base/files/file_path.h"
 #include "base/metrics/field_trial.h"
 #include "base/ranges/algorithm.h"
-#include "base/strings/string_piece.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/values.h"
@@ -94,9 +94,9 @@ TEST(NetLogUtil, GetNetInfoIncludesFieldTrials) {
 // Demonstrate that disabling a provider causes it to be added to the list of
 // disabled DoH providers.
 //
-// TODO(https://crbug.com/1306495) Stop using the real DoH provider list.
+// TODO(crbug.com/40218379) Stop using the real DoH provider list.
 TEST(NetLogUtil, GetNetInfoIncludesDisabledDohProviders) {
-  constexpr base::StringPiece kArbitraryProvider = "Google";
+  constexpr std::string_view kArbitraryProvider = "Google";
   base::test::TaskEnvironment task_environment;
 
   for (bool provider_enabled : {false, true}) {

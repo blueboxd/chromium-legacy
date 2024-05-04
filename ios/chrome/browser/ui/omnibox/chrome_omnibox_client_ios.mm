@@ -15,6 +15,7 @@
 #import "components/feature_engagement/public/tracker.h"
 #import "components/omnibox/browser/autocomplete_match.h"
 #import "components/omnibox/browser/autocomplete_result.h"
+#import "components/omnibox/browser/location_bar_model.h"
 #import "components/omnibox/browser/omnibox_log.h"
 #import "components/omnibox/browser/shortcuts_backend.h"
 #import "components/omnibox/common/omnibox_features.h"
@@ -24,7 +25,7 @@
 #import "ios/chrome/browser/autocomplete/model/shortcuts_backend_factory.h"
 #import "ios/chrome/browser/bookmarks/model/bookmark_model_factory.h"
 #import "ios/chrome/browser/bookmarks/model/bookmarks_utils.h"
-#import "ios/chrome/browser/default_browser/model/utils.h"
+#import "ios/chrome/browser/default_browser/model/default_browser_interest_signals.h"
 #import "ios/chrome/browser/https_upgrades/model/https_upgrade_service_factory.h"
 #import "ios/chrome/browser/intents/intents_donation_helper.h"
 #import "ios/chrome/browser/prerender/model/prerender_service.h"
@@ -135,6 +136,37 @@ gfx::Image ChromeOmniboxClientIOS::GetIconIfExtensionMatch(
   return gfx::Image();
 }
 
+std::u16string ChromeOmniboxClientIOS::GetFormattedFullURL() const {
+  return location_bar_->GetLocationBarModel()->GetFormattedFullURL();
+}
+
+std::u16string ChromeOmniboxClientIOS::GetURLForDisplay() const {
+  return location_bar_->GetLocationBarModel()->GetURLForDisplay();
+}
+
+GURL ChromeOmniboxClientIOS::GetNavigationEntryURL() const {
+  return location_bar_->GetLocationBarModel()->GetURL();
+}
+
+metrics::OmniboxEventProto::PageClassification
+ChromeOmniboxClientIOS::GetPageClassification(OmniboxFocusSource focus_source,
+                                              bool is_prefetch) {
+  return location_bar_->GetLocationBarModel()->GetPageClassification(
+      focus_source, is_prefetch);
+}
+
+security_state::SecurityLevel ChromeOmniboxClientIOS::GetSecurityLevel() const {
+  return location_bar_->GetLocationBarModel()->GetSecurityLevel();
+}
+
+net::CertStatus ChromeOmniboxClientIOS::GetCertStatus() const {
+  return location_bar_->GetLocationBarModel()->GetCertStatus();
+}
+
+const gfx::VectorIcon& ChromeOmniboxClientIOS::GetVectorIcon() const {
+  return location_bar_->GetLocationBarModel()->GetVectorIcon();
+}
+
 bool ChromeOmniboxClientIOS::ProcessExtensionKeyword(
     const std::u16string& text,
     const TemplateURL* template_url,
@@ -146,7 +178,7 @@ bool ChromeOmniboxClientIOS::ProcessExtensionKeyword(
 
 void ChromeOmniboxClientIOS::OnFocusChanged(OmniboxFocusState state,
                                             OmniboxFocusChangeReason reason) {
-  // TODO(crbug.com/754050): OnFocusChanged is not the correct place to be
+  // TODO(crbug.com/40534385): OnFocusChanged is not the correct place to be
   // canceling prerenders, but this is the closest match to the original
   // location of this code, which was in OmniboxViewIOS::OnDidEndEditing().  The
   // goal of this code is to cancel prerenders when the omnibox loses focus.
@@ -165,10 +197,8 @@ void ChromeOmniboxClientIOS::OnUserPastedInOmniboxResultingInValidURL() {
   base::RecordAction(
       base::UserMetricsAction("Mobile.Omnibox.iOS.PastedValidURL"));
 
-  if (!browser_state_->IsOffTheRecord() &&
-      HasRecentValidURLPastesAndRecordsCurrentPaste()) {
-    engagement_tracker_->NotifyEvent(
-        feature_engagement::events::kBlueDotPromoCriterionMet);
+  if (!browser_state_->IsOffTheRecord()) {
+    default_browser::NotifyOmniboxURLCopyPaste(engagement_tracker_);
   }
 }
 
@@ -190,7 +220,7 @@ void ChromeOmniboxClientIOS::OnResultChanged(
   const AutocompleteMatch& match = result.match_at(0);
   bool is_inline_autocomplete = !match.inline_autocompletion.empty();
 
-  // TODO(crbug.com/228480): When prerendering the result of a paste
+  // TODO(crbug.com/40311794): When prerendering the result of a paste
   // operation, we should change the transition to LINK instead of TYPED.
 
   // Only prerender HISTORY_URL matches, which come from the history DB.  Do
@@ -265,10 +295,6 @@ void ChromeOmniboxClientIOS::OnAutocompleteAccept(
   location_bar_->OnNavigate(destination_url, post_content, disposition,
                             transition, destination_url_entered_without_scheme,
                             match);
-}
-
-LocationBarModel* ChromeOmniboxClientIOS::GetLocationBarModel() {
-  return location_bar_->GetLocationBarModel();
 }
 
 base::WeakPtr<OmniboxClient> ChromeOmniboxClientIOS::AsWeakPtr() {

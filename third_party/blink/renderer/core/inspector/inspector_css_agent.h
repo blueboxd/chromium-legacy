@@ -165,6 +165,7 @@ class CORE_EXPORT InspectorCSSAgent final
           protocol::Array<protocol::CSS::InheritedPseudoElementMatches>>*,
       protocol::Maybe<protocol::Array<protocol::CSS::CSSKeyframesRule>>*,
       protocol::Maybe<protocol::Array<protocol::CSS::CSSPositionFallbackRule>>*,
+      protocol::Maybe<protocol::Array<protocol::CSS::CSSPositionTryRule>>*,
       protocol::Maybe<protocol::Array<protocol::CSS::CSSPropertyRule>>*,
       protocol::Maybe<protocol::Array<protocol::CSS::CSSPropertyRegistration>>*,
       protocol::Maybe<protocol::CSS::CSSFontPaletteValuesRule>*
@@ -248,6 +249,11 @@ class CORE_EXPORT InspectorCSSAgent final
   protocol::Response getLayersForNode(
       int node_id,
       std::unique_ptr<protocol::CSS::CSSLayerData>* root_layer) override;
+  protocol::Response getLocationForSelector(
+      const String& style_sheet_id,
+      const String& selector_text,
+      std::unique_ptr<protocol::Array<protocol::CSS::SourceRange>>* ranges)
+      override;
   protocol::Response setEffectivePropertyValueForNode(
       int node_id,
       const String& property_name,
@@ -341,8 +347,8 @@ class CORE_EXPORT InspectorCSSAgent final
       std::unique_ptr<protocol::Array<protocol::CSS::StyleDeclarationEdit>>,
       HeapVector<Member<StyleSheetAction>>* actions);
 
-  std::unique_ptr<protocol::Array<protocol::CSS::CSSPositionFallbackRule>>
-  PositionFallbackRulesForNode(Element* element);
+  std::unique_ptr<protocol::Array<protocol::CSS::CSSPositionTryRule>>
+  PositionTryRulesForElement(Element* element);
 
   std::pair<
       std::unique_ptr<protocol::Array<protocol::CSS::CSSPropertyRule>>,

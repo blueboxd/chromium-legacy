@@ -4,8 +4,9 @@
 
 #include "ui/base/ime/win/tsf_input_scope.h"
 
-#include <stddef.h>
 #include <windows.h>
+
+#include <stddef.h>
 
 #include "base/check.h"
 #include "base/compiler_specific.h"
@@ -178,7 +179,7 @@ typedef HRESULT(WINAPI* SetInputScopeFunc)(HWND window_handle,
 SetInputScopeFunc g_set_input_scope = NULL;
 bool g_get_set_input_scope_done = false;
 
-void SetPrivateInputScope(HWND window_handle) {
+void SetInputScope(HWND window_handle, InputScope input_scope) {
   CHECK(base::CurrentUIThread::IsSet());
   // Thread safety is not required because this function is under UI thread.
   if (!g_get_set_input_scope_done) {
@@ -191,10 +192,12 @@ void SetPrivateInputScope(HWND window_handle) {
           GetProcAddress(module, "SetInputScope"));
     }
   }
+
   if (g_set_input_scope) {
-    HRESULT hr = g_set_input_scope(window_handle, IS_PRIVATE);
+    HRESULT hr = g_set_input_scope(window_handle, input_scope);
     if (hr != S_OK) {
-      TRACE_EVENT1("ime", "SetPrivateInputScope", "hr", hr);
+      TRACE_EVENT2("ime", "SetInputScope", "input_scope", input_scope, "hr",
+                   hr);
     }
   }
 }

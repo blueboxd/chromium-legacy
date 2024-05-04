@@ -31,6 +31,7 @@
 #include "services/network/public/mojom/http_raw_headers.mojom.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
+#include "services/network/public/mojom/shared_dictionary_error.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "services/network/test/client_security_state_builder.h"
@@ -349,6 +350,9 @@ class MockDevToolsObserver : public mojom::DevToolsObserver {
       override {
     on_raw_response_called_ = true;
   }
+  void OnEarlyHintsResponse(
+      const std::string& devtools_request_id,
+      std::vector<network::mojom::HttpRawHeaderPairPtr> headers) override {}
   void OnCorsPreflightRequest(
       const base::UnguessableToken& devtool_request_id,
       const net::HttpRequestHeaders& request_headers,
@@ -390,6 +394,11 @@ class MockDevToolsObserver : public mojom::DevToolsObserver {
       const ::GURL& url,
       const std::string& error_message,
       const std::optional<std::string>& bundle_request_devtools_id) override {}
+
+  void OnSharedDictionaryError(
+      const std::string& devtool_request_id,
+      const GURL& url,
+      network::mojom::SharedDictionaryError error) override {}
 
   void OnCorsError(const std::optional<std::string>& devtool_request_id,
                    const std::optional<::url::Origin>& initiator_origin,
@@ -1089,7 +1098,7 @@ TEST_F(PreflightControllerTest, CheckPreflightAccessDetectsErrorStatus) {
             result0.error().cors_error);
 }
 
-// TODO(https://crbug.com/1455123): Add test for private network access
+// TODO(crbug.com/40272627): Add test for private network access
 // permission.
 
 }  // namespace

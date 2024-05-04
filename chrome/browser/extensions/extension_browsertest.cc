@@ -76,6 +76,8 @@
 #include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/browser/uninstall_reason.h"
 #include "extensions/browser/updater/extension_cache_fake.h"
+#include "extensions/common/api/web_accessible_resources.h"
+#include "extensions/common/api/web_accessible_resources_mv2.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_id.h"
 #include "extensions/common/extension_set.h"
@@ -92,7 +94,7 @@ using extensions::mojom::ManifestLocation;
 
 namespace extensions {
 
-using extensions::service_worker_test_utils::TestRegistrationObserver;
+using extensions::service_worker_test_utils::TestServiceWorkerContextObserver;
 
 namespace {
 
@@ -196,6 +198,76 @@ bool CreateTempDirectoryCopy(const base::FilePath& temp_dir,
   return true;
 }
 
+// Moves match patterns from the `permissions_key` list to the
+// `host_permissions_key` list.
+void DoMoveHostPermissions(base::Value::Dict& manifest_dict,
+                           const char* permissions_key,
+                           const char* host_permissions_key) {
+  base::Value::List* const permissions =
+      manifest_dict.FindList(permissions_key);
+  if (!permissions) {
+    return;
+  }
+
+  // Add the permissions to the appropriate destinations, then update/add
+  // the target lists as appropriate.
+  base::Value::List permissions_list;
+  base::Value::List host_permissions_list;
+  for (auto& value : *permissions) {
+    CHECK(value.is_string());
+    const std::string& str_value = value.GetString();
+    if (str_value == "<all_urls>" ||
+        str_value.find("://") != std::string::npos) {
+      host_permissions_list.Append(std::move(value));
+    } else {
+      permissions_list.Append(std::move(value));
+    }
+  }
+
+  if (permissions_list.empty()) {
+    manifest_dict.Remove(permissions_key);
+  } else {
+    *permissions = std::move(permissions_list);
+  }
+
+  if (!host_permissions_list.empty()) {
+    manifest_dict.Set(host_permissions_key, std::move(host_permissions_list));
+  }
+}
+
+// Moves match patterns from permissions/optional_permissions to the
+// host_permissions/optional_host_permissions.
+void MoveHostPermissions(base::Value::Dict& manifest_dict) {
+  DoMoveHostPermissions(manifest_dict, manifest_keys::kPermissions,
+                        manifest_keys::kHostPermissions);
+  DoMoveHostPermissions(manifest_dict, manifest_keys::kOptionalPermissions,
+                        manifest_keys::kOptionalHostPermissions);
+}
+
+using web_accessible_resource =
+    api::web_accessible_resources::WebAccessibleResource;
+
+// Upgrades MV2 format to MV3 format.
+void UpgradeWebAccessibleResources(base::Value::Dict& manifest_dict) {
+  base::Value::List* const web_accessible_resources = manifest_dict.FindList(
+      api::web_accessible_resources::ManifestKeys::kWebAccessibleResources);
+  if (!web_accessible_resources) {
+    return;
+  }
+
+  // Copy all of the entries to a single dictionary entry that matches all
+  // URLs.
+  auto war_dict = base::Value::Dict()
+                      .Set(web_accessible_resource::kResources,
+                           web_accessible_resources->Clone())
+                      .Set(web_accessible_resource::kMatches,
+                           base::Value::List().Append("<all_urls>"));
+
+  // Clear the list and append the dictionary.
+  web_accessible_resources->clear();
+  web_accessible_resources->Append(std::move(war_dict));
+}
+
 // Modifies `manifest_dict` changing its manifest version to 3.
 bool ModifyManifestForManifestVersion3(base::Value::Dict& manifest_dict) {
   // This should only be used for manifest v2 extension.
@@ -206,15 +278,19 @@ bool ModifyManifestForManifestVersion3(base::Value::Dict& manifest_dict) {
     return false;
   }
 
+  UpgradeWebAccessibleResources(manifest_dict);
+  MoveHostPermissions(manifest_dict);
+
   manifest_dict.Set(manifest_keys::kManifestVersion, 3);
+
   return true;
 }
 
 // Modifies extension at `extension_root` and its `manifest_dict` converting it
 // to a service worker based extension.
 // NOTE: The conversion works only for extensions with background.scripts and
-// background.persistent = false; persistent background pages and
-// background.page are not supported.
+// requires the background.persistent key. The background.page key is not
+// supported.
 bool ModifyExtensionForServiceWorker(const base::FilePath& extension_root,
                                      base::Value::Dict& manifest_dict) {
   base::ScopedAllowBlockingForTesting allow_blocking;
@@ -240,23 +316,17 @@ bool ModifyExtensionForServiceWorker(const base::FilePath& extension_root,
   }
   base::Value::List* background_scripts_list =
       background_dict->FindList("scripts");
-  if (!background_scripts_list) {
-    ADD_FAILURE() << extension_root.value()
-                  << ": Only event pages with JS script(s) can be loaded "
-                     "as SW extension.";
-    return false;
-  }
-
   // Number of JS scripts must be >= 1.
-  if (background_scripts_list->size() < 1) {
+  if (!background_scripts_list || background_scripts_list->empty()) {
     ADD_FAILURE() << extension_root.value()
-                  << ": Only event pages with JS script(s) can be loaded "
-                     " as SW extension.";
+                  << ": Only extensions with JS script(s) can be loaded "
+                     "as a sw-based extension.";
     return false;
   }
 
   // Generate combined script as Service Worker script using importScripts().
-  constexpr const char kGeneratedSWFileName[] = "generated_service_worker__.js";
+  static constexpr const char kGeneratedSWFileName[] =
+      "generated_service_worker__.js";
 
   std::vector<std::string> script_filenames;
   for (const base::Value& script : *background_scripts_list)
@@ -296,8 +366,8 @@ ExtensionBrowserTest::ExtensionBrowserTest(ContextType context_type)
       set_chromeos_user_(true),
 #endif
       context_type_(context_type),
-      // TODO(crbug/1427323): Move this ScopedCurrentChannel down into tests
-      // that specifically require it.
+      // TODO(crbug.com/40261741): Move this ScopedCurrentChannel down into
+      // tests that specifically require it.
       current_channel_(version_info::Channel::UNKNOWN),
       override_prompt_for_external_extensions_(
           FeatureSwitch::prompt_for_external_extensions(),
@@ -315,6 +385,14 @@ ExtensionBrowserTest::ExtensionBrowserTest(ContextType context_type)
 }
 
 ExtensionBrowserTest::~ExtensionBrowserTest() {
+}
+
+ExtensionService* ExtensionBrowserTest::extension_service() {
+  return ExtensionSystem::Get(profile())->extension_service();
+}
+
+ExtensionRegistry* ExtensionBrowserTest::extension_registry() {
+  return ExtensionRegistry::Get(profile());
 }
 
 void ExtensionBrowserTest::OnExtensionLoaded(
@@ -435,7 +513,7 @@ const Extension* ExtensionBrowserTest::LoadExtension(
     return nullptr;
 
   if (options.load_as_component) {
-    // TODO(https://crbug.com/1171429): Decide if other load options
+    // TODO(crbug.com/40166157): Decide if other load options
     // can/should be supported when load_as_component is true.
     DCHECK(!options.allow_in_incognito);
     DCHECK(!options.allow_file_access);
@@ -455,11 +533,11 @@ const Extension* ExtensionBrowserTest::LoadExtension(
     loader.set_install_param(options.install_param);
   }
 
-  std::unique_ptr<TestRegistrationObserver> registration_observer;
+  std::unique_ptr<TestServiceWorkerContextObserver> registration_observer;
 
   if (options.wait_for_registration_stored) {
     registration_observer =
-        std::make_unique<TestRegistrationObserver>(profile_);
+        std::make_unique<TestServiceWorkerContextObserver>(profile_);
   }
 
   scoped_refptr<const Extension> extension =
@@ -897,12 +975,14 @@ bool ExtensionBrowserTest::ModifyExtensionIfNeeded(
     base::FilePath* out_path) {
   base::ScopedAllowBlockingForTesting scoped_allow_blocking;
 
+  const ContextType context_type_to_use =
+      options.context_type == ContextType::kNone ? context_type_
+                                                 : options.context_type;
+
   // Use context_type_ if LoadOptions.context_type is unspecified.
   // Otherwise, use LoadOptions.context_type.
   const bool load_as_service_worker =
-      (context_type_ == ContextType::kServiceWorker &&
-       options.context_type == ContextType::kNone) ||
-      options.context_type == ContextType::kServiceWorker;
+      IsServiceWorkerContext(context_type_to_use);
 
   // Early return if no modification is needed.
   if (!load_as_service_worker && !options.load_as_manifest_version_3) {
@@ -940,7 +1020,12 @@ bool ExtensionBrowserTest::ModifyExtensionIfNeeded(
     return false;
   }
 
-  if (options.load_as_manifest_version_3 &&
+  const bool is_service_worker_mv3 =
+      context_type_to_use == ContextType::kServiceWorker;
+
+  // Update the manifest if converting to a service worker MV3-based
+  // extension or if requested in `options`.
+  if ((is_service_worker_mv3 || options.load_as_manifest_version_3) &&
       !ModifyManifestForManifestVersion3(*manifest_dict)) {
     return false;
   }

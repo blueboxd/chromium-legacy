@@ -58,6 +58,9 @@ BubbleDialogModelHost::FieldType GetFieldTypeForField(
       return BubbleDialogModelHost::FieldType::kControl;
     case ui::DialogModelField::kMenuItem:
       return BubbleDialogModelHost::FieldType::kMenuItem;
+    case ui::DialogModelField::kTitleItem:
+      // No need to handle titles.
+      NOTREACHED_NORETURN();
     case ui::DialogModelField::kSection:
       // TODO(pbos): Handle nested/multiple sections.
       NOTREACHED_NORETURN();
@@ -149,14 +152,10 @@ class CheckboxControl : public Checkbox {
     AddChildView(std::move(label));
   }
 
-  void Layout(PassKey) override {
+  gfx::Size CalculatePreferredSize(
+      const SizeBounds& available_size) const override {
     // Skip LabelButton to use LayoutManager.
-    LayoutSuperclass<View>(this);
-  }
-
-  gfx::Size CalculatePreferredSize() const override {
-    // Skip LabelButton to use LayoutManager.
-    return View::CalculatePreferredSize();
+    return View::CalculatePreferredSize(available_size);
   }
 
   int GetHeightForWidth(int width) const override {
@@ -170,7 +169,7 @@ class CheckboxControl : public Checkbox {
     // LabelButton::Layout().
     image_container_view()->SetBorder(CreateEmptyBorder(gfx::Insets::TLBR(
         (label_line_height_ -
-         image_container_view()->GetPreferredSize().height()) /
+         image_container_view()->GetPreferredSize({}).height()) /
             2,
         0, 0, 0)));
   }
@@ -185,13 +184,13 @@ struct DialogModelHostField {
   raw_ptr<ui::DialogModelField> dialog_model_field = nullptr;
 
   // View representing the entire field.
-  raw_ptr<View, DanglingUntriaged> field_view = nullptr;
+  raw_ptr<View> field_view = nullptr;
 
   // Child view to |field_view|, if any, that's used for focus. For instance,
   // a textfield row would be a container that contains both a
   // views::Textfield and a descriptive label. In this case |focusable_view|
   // would refer to the views::Textfield which is also what would gain focus.
-  raw_ptr<View, DanglingUntriaged> focusable_view = nullptr;
+  raw_ptr<View> focusable_view = nullptr;
 };
 
 View* GetTargetView(const DialogModelHostField& field_view_info) {
@@ -220,11 +219,12 @@ class LayoutConsensusGroup {
   void RemoveView(View* view) { children_.erase(view); }
 
   // Get the union of all preferred sizes within the group.
-  gfx::Size GetMaxPreferredSize() const {
+  gfx::Size GetMaxPreferredSize(const SizeBounds& available_size) const {
     gfx::Size size;
     for (View* child : children_) {
       DCHECK_EQ(1u, child->children().size());
-      size.SetToMax(child->children().front()->GetPreferredSize());
+      size.SetToMax(
+          child->children().front()->GetPreferredSize(available_size));
     }
     return size;
   }
@@ -256,10 +256,13 @@ class LayoutConsensusView : public View {
 
   ~LayoutConsensusView() override { group_->RemoveView(this); }
 
-  gfx::Size CalculatePreferredSize() const override {
-    const gfx::Size group_preferred_size = group_->GetMaxPreferredSize();
+  gfx::Size CalculatePreferredSize(
+      const SizeBounds& available_size) const override {
+    const gfx::Size group_preferred_size =
+        group_->GetMaxPreferredSize(available_size);
     DCHECK_EQ(1u, children().size());
-    const gfx::Size child_preferred_size = children()[0]->GetPreferredSize();
+    const gfx::Size child_preferred_size =
+        children()[0]->GetPreferredSize(available_size);
     // TODO(pbos): This uses the max width, but could be configurable to use
     // either direction.
     return gfx::Size(group_preferred_size.width(),
@@ -344,6 +347,9 @@ class BubbleDialogModelHostContentsView final : public DialogModelSectionHost {
       case ui::DialogModelField::kMenuItem:
         AddOrUpdateMenuItem(field->AsMenuItem());
         break;
+      case ui::DialogModelField::kTitleItem:
+        // No need to handle titles.
+        NOTREACHED_NORETURN();
       case ui::DialogModelField::kSection:
         // TODO(pbos): Handle nested/multiple sections.
         NOTREACHED_NORETURN();
@@ -380,9 +386,9 @@ class BubbleDialogModelHostContentsView final : public DialogModelSectionHost {
   // outlives us. Currently we do outlive them. Widget, WidgetDelegate and
   // RootView lifetimes are complicated.
   void Detach() {
+    fields_.clear();
     RemoveAllChildViews();
     contents_ = nullptr;
-    fields_.clear();
   }
 
   void AddOrUpdateParagraph(ui::DialogModelParagraph* model_field) {
@@ -457,7 +463,7 @@ class BubbleDialogModelHostContentsView final : public DialogModelSectionHost {
   void AddOrUpdateMenuItem(ui::DialogModelMenuItem* model_field) {
     // TODO(pbos): Handle updating existing field.
 
-    // TODO(crbug.com/1324298): Implement this for enabled items. Sorry!
+    // TODO(crbug.com/40224983): Implement this for enabled items. Sorry!
     DCHECK(!model_field->is_enabled());
 
     auto item = std::make_unique<LabelButton>(
@@ -748,7 +754,10 @@ BubbleDialogModelHost::BubbleDialogModelHost(
     View* anchor_view,
     BubbleBorder::Arrow arrow,
     ui::ModalType modal_type)
-    : BubbleDialogDelegate(anchor_view, arrow),
+    : BubbleDialogDelegate(anchor_view,
+                           arrow,
+                           views::BubbleBorder::DIALOG_SHADOW,
+                           true),
       model_(std::move(model)),
       // Make sure the modal type is set before calling InitContentsView which
       // uses IsModalDialog().
@@ -969,7 +978,6 @@ void BubbleDialogModelHost::OnWidgetInitialized() {
     // The banner is supposed to be purely decorative.
     banner_view->GetViewAccessibility().SetIsIgnored(true);
     GetBubbleFrameView()->SetHeaderView(std::move(banner_view));
-    SizeToContents();
   }
 }
 
@@ -1010,12 +1018,12 @@ BubbleDialogModelHostContentsView* BubbleDialogModelHost::InitContentsView(
     // (so they are always present when scrolling), we add
     // `kScrollViewVerticalMargin` inside the contents view and later remove it
     // from the dialog margins.
-    // TODO(crbug.com/1348165): Remove this workaround when contents view
+    // TODO(crbug.com/40855129): Remove this workaround when contents view
     // directly supports a scroll view.
     contents_view_unique->SetInsideBorderInsets(
         gfx::Insets::VH(kScrollViewVerticalMargin, 0));
 
-    // TODO(crbug.com/1348165): Non modal dialogs size is not dependent on its
+    // TODO(crbug.com/40855129): Non modal dialogs size is not dependent on its
     // content. Thus, the content has to be manually set by the view inside a
     // scroll view. Modal dialogs handle their own size via constrained windows,
     // so we can add a scroll view to the DialogModel directly.
@@ -1034,18 +1042,10 @@ BubbleDialogModelHostContentsView* BubbleDialogModelHost::InitContentsView(
 
 void BubbleDialogModelHost::OnContentsViewChanged() {
   UpdateSpacingAndMargins();
-
-  if (GetBubbleFrameView()) {
-    SizeToContents();
-  }
 }
 
 void BubbleDialogModelHost::OnDialogButtonChanged() {
   UpdateDialogButtons();
-
-  // If the contents of the dialog change (text, field visitiblity, etc.), the
-  // dialog may need to be resized.
-  SizeToContents();
 }
 
 void BubbleDialogModelHost::UpdateWindowIcon() {
@@ -1111,7 +1111,7 @@ void BubbleDialogModelHost::UpdateSpacingAndMargins() {
   contents_view_->InvalidateLayout();
   // Set margins based on the first and last item. Note that we remove margins
   // that were already added to contents view at construction.
-  // TODO(crbug.com/1348165): Remove the extra margin workaround when contents
+  // TODO(crbug.com/40855129): Remove the extra margin workaround when contents
   // view directly supports a scroll view.
   const int extra_margin = scroll_view ? kScrollViewVerticalMargin : 0;
   const int top_margin =

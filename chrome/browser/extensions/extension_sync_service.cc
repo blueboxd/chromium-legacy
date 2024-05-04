@@ -55,7 +55,7 @@ bool IsCorrectSyncType(const Extension& extension, syncer::ModelType type) {
 }
 
 // Predicate for PendingExtensionManager.
-// TODO(crbug.com/862665): The !is_theme check should be unnecessary after all
+// TODO(crbug.com/41401013): The !is_theme check should be unnecessary after all
 // the bad data from crbug.com/558299 has been cleaned up.
 bool ShouldAllowInstall(const Extension* extension,
                         content::BrowserContext* context) {
@@ -387,7 +387,7 @@ void ExtensionSyncService::ApplySyncData(
   // not-yet-approved remote installs. It's redundant now that disable reasons
   // are synced (DISABLE_REMOTE_INSTALL should be among them already), but some
   // old sync data may still be around, and it doesn't hurt to add the reason.
-  // TODO(crbug.com/587804): Deprecate and eventually remove |remote_install|.
+  // TODO(crbug.com/41240022): Deprecate and eventually remove |remote_install|.
   if (extension_sync_data.remote_install())
     disable_reasons |= extensions::disable_reason::DISABLE_REMOTE_INSTALL;
 

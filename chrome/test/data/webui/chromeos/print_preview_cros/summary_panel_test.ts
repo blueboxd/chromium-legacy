@@ -5,7 +5,7 @@
 import 'chrome://os-print/js/summary_panel.js';
 
 import {PrintTicketManager} from 'chrome://os-print/js/data/print_ticket_manager.js';
-import {FakePrintPreviewPageHandler} from 'chrome://os-print/js/fakes/fake_print_preview_page_handler.js';
+import {FAKE_PRINT_SESSION_CONTEXT_SUCCESSFUL, FakePrintPreviewPageHandler} from 'chrome://os-print/js/fakes/fake_print_preview_page_handler.js';
 import {SummaryPanelElement} from 'chrome://os-print/js/summary_panel.js';
 import {PRINT_BUTTON_DISABLED_CHANGED_EVENT, SHEETS_USED_CHANGED_EVENT, SummaryPanelController} from 'chrome://os-print/js/summary_panel_controller.js';
 import {setPrintPreviewPageHandlerForTesting} from 'chrome://os-print/js/utils/mojo_data_providers.js';
@@ -172,17 +172,18 @@ suite('SummaryPanel', () => {
     const printDisabledEvent1 =
         eventToPromise(PRINT_BUTTON_DISABLED_CHANGED_EVENT, controller);
     const delay = 10;
-    printPreviewPageHandler.useTestDelay(delay);
+    printPreviewPageHandler.setTestDelay(delay);
 
     const printButton =
         strictQuery<Button>(printButtonSelector, element!.shadowRoot, Button);
     assertFalse(
         printButton.disabled, 'Print should be enabled before request sent');
 
+    const printTicketManger = PrintTicketManager.getInstance();
+    printTicketManger.initializeSession(FAKE_PRINT_SESSION_CONTEXT_SUCCESSFUL);
     printButton.click();
     await printDisabledEvent1;
 
-    const printTicketManger = PrintTicketManager.getInstance();
     assertTrue(
         printTicketManger.isPrintRequestInProgress(),
         'Print request in progress');

@@ -23,6 +23,7 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_enums.h"
+#include "chrome/browser/ui/tabs/tab_model.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/browser/web_applications/web_app_id_constants.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
@@ -745,7 +746,7 @@ IN_PROC_BROWSER_TEST_F(WebsiteMetricsBrowserTest, MultipleBrowser) {
   EXPECT_TRUE(url_infos().empty());
 }
 
-// TODO(crbug.com/1441731): Test is flaky.
+// TODO(crbug.com/40910130): Test is flaky.
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
 #define MAYBE_MoveActivatedTabToNewBrowser DISABLED_MoveActivatedTabToNewBrowser
 #else
@@ -795,11 +796,11 @@ IN_PROC_BROWSER_TEST_F(WebsiteMetricsBrowserTest,
   wm::GetActivationClient(window1->GetRootWindow())->DeactivateWindow(window1);
 
   // Detach `tab1`.
-  auto detached =
-      browser1->tab_strip_model()->DetachWebContentsAtForInsertion(0);
+  std::unique_ptr<tabs::TabModel> detached_tab =
+      browser1->tab_strip_model()->DetachTabAtForInsertion(0);
 
   // Attach `tab1` to `browser2`.
-  browser2->tab_strip_model()->InsertWebContentsAt(0, std::move(detached),
+  browser2->tab_strip_model()->InsertDetachedTabAt(0, std::move(detached_tab),
                                                    AddTabTypes::ADD_ACTIVE);
   auto* tab3 = browser2->tab_strip_model()->GetWebContentsAt(0);
 
@@ -922,11 +923,11 @@ IN_PROC_BROWSER_TEST_F(WebsiteMetricsBrowserTest,
   wm::GetActivationClient(window1->GetRootWindow())->DeactivateWindow(window1);
 
   // Detach `tab2`.
-  auto detached =
-      browser1->tab_strip_model()->DetachWebContentsAtForInsertion(1);
+  std::unique_ptr<tabs::TabModel> detached_tab =
+      browser1->tab_strip_model()->DetachTabAtForInsertion(1);
 
   // Attach `tab2` to `browser2`.
-  browser2->tab_strip_model()->InsertWebContentsAt(0, std::move(detached),
+  browser2->tab_strip_model()->InsertDetachedTabAt(0, std::move(detached_tab),
                                                    AddTabTypes::ADD_ACTIVE);
   auto* tab3 = browser2->tab_strip_model()->GetWebContentsAt(0);
 
@@ -1005,7 +1006,7 @@ IN_PROC_BROWSER_TEST_F(WebsiteMetricsBrowserTest, WindowedWebApp) {
   EXPECT_TRUE(webcontents_to_ukm_key().empty());
 }
 
-IN_PROC_BROWSER_TEST_F(WebsiteMetricsBrowserTest, OnURLsDeleted) {
+IN_PROC_BROWSER_TEST_F(WebsiteMetricsBrowserTest, OnHistoryDeletions) {
   // Setup: two browsers with one tabs each.
   auto* browser1 = CreateBrowser();
   auto* window1 = browser1->window()->GetNativeWindow();
@@ -1034,12 +1035,12 @@ IN_PROC_BROWSER_TEST_F(WebsiteMetricsBrowserTest, OnURLsDeleted) {
   VerifyUrlInfo(GURL("https://b.example.org"),
                 /*is_activated=*/true, /*promotable=*/false);
 
-  // Simulate OnURLsDeleted is called for an expiration. Nothing should be
+  // Simulate OnHistoryDeletions is called for an expiration. Nothing should be
   // cleared.
   auto info = history::DeletionInfo(
       history::DeletionTimeRange(base::Time(), base::Time::Now()),
       /*is_from_expiration=*/true, {}, {}, std::optional<std::set<GURL>>());
-  website_metrics()->OnURLsDeleted(nullptr, info);
+  website_metrics()->OnHistoryDeletions(nullptr, info);
   EXPECT_EQ(2u, window_to_web_contents().size());
   EXPECT_EQ(2u, webcontents_to_observer_map().size());
   EXPECT_TRUE(base::Contains(webcontents_to_observer_map(),
@@ -1065,9 +1066,9 @@ IN_PROC_BROWSER_TEST_F(WebsiteMetricsBrowserTest, OnURLsDeleted) {
   VerifyUrlInfoInPref(GURL("https://b.example.org"),
                       /*promotable=*/false);
 
-  // Simulate OnURLsDeleted again for an expiration. The prefs should not be
-  // affected
-  website_metrics()->OnURLsDeleted(nullptr, info);
+  // Simulate OnHistoryDeletions again for an expiration. The prefs should not
+  // be affected
+  website_metrics()->OnHistoryDeletions(nullptr, info);
   EXPECT_EQ(2u, webcontents_to_ukm_key().size());
   EXPECT_EQ(2u, url_infos().size());
   EXPECT_EQ(webcontents_to_ukm_key()[tab_app1], GURL("https://a.example.org"));
@@ -1077,10 +1078,10 @@ IN_PROC_BROWSER_TEST_F(WebsiteMetricsBrowserTest, OnURLsDeleted) {
   VerifyUrlInfoInPref(GURL("https://b.example.org"),
                       /*promotable=*/false);
 
-  // Simulate OnURLsDeleted for a non-expiration and ensure prefs and
+  // Simulate OnHistoryDeletions for a non-expiration and ensure prefs and
   // in-memory usage data is cleared.
-  website_metrics()->OnURLsDeleted(nullptr,
-                                   history::DeletionInfo::ForAllHistory());
+  website_metrics()->OnHistoryDeletions(nullptr,
+                                        history::DeletionInfo::ForAllHistory());
   EXPECT_EQ(2u, window_to_web_contents().size());
   EXPECT_EQ(2u, webcontents_to_observer_map().size());
   EXPECT_TRUE(webcontents_to_ukm_key().empty());

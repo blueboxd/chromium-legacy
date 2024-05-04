@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40284755): Remove this and spanify to fix the errors.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "base/metrics/persistent_memory_allocator.h"
 
 #include <assert.h>
@@ -9,6 +14,7 @@
 #include <algorithm>
 #include <atomic>
 #include <optional>
+#include <string_view>
 
 #include "base/bits.h"
 #include "base/containers/contains.h"
@@ -24,7 +30,6 @@
 #include "base/numerics/checked_math.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/strcat.h"
-#include "base/strings/string_piece.h"
 #include "base/system/sys_info.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "build/build_config.h"
@@ -311,7 +316,7 @@ PersistentMemoryAllocator::PersistentMemoryAllocator(void* base,
                                                      size_t size,
                                                      size_t page_size,
                                                      uint64_t id,
-                                                     base::StringPiece name,
+                                                     std::string_view name,
                                                      AccessMode access_mode)
     : PersistentMemoryAllocator(Memory(base, MEM_EXTERNAL),
                                 size,
@@ -324,7 +329,7 @@ PersistentMemoryAllocator::PersistentMemoryAllocator(Memory memory,
                                                      size_t size,
                                                      size_t page_size,
                                                      uint64_t id,
-                                                     base::StringPiece name,
+                                                     std::string_view name,
                                                      AccessMode access_mode)
     : mem_base_(static_cast<char*>(memory.base)),
       mem_type_(memory.type),
@@ -486,7 +491,7 @@ const char* PersistentMemoryAllocator::Name() const {
 }
 
 void PersistentMemoryAllocator::CreateTrackingHistograms(
-    base::StringPiece name) {
+    std::string_view name) {
   if (name.empty() || access_mode_ == kReadOnly) {
     return;
   }
@@ -664,7 +669,8 @@ PersistentMemoryAllocator::Reference PersistentMemoryAllocator::AllocateImpl(
   // Round up the requested size, plus header, to the next allocation alignment.
   size_t size = bits::AlignUp(req_size + sizeof(BlockHeader), kAllocAlignment);
   if (size <= sizeof(BlockHeader) || size > mem_page_) {
-    NOTREACHED();
+    // This shouldn't be reached through normal means.
+    debug::DumpWithoutCrashing();
     return kReferenceNull;
   }
 
@@ -713,7 +719,7 @@ PersistentMemoryAllocator::Reference PersistentMemoryAllocator::AllocateImpl(
       // In production, with the current state of the code, this code path
       // should not be reached. However, crash reports have been hinting that it
       // is. Add crash keys to investigate this.
-      // TODO(crbug.com/1432981): Remove them once done.
+      // TODO(crbug.com/40064026): Remove them once done.
       SCOPED_CRASH_KEY_NUMBER("PersistentMemoryAllocator", "mem_size_",
                               mem_size_);
       SCOPED_CRASH_KEY_NUMBER("PersistentMemoryAllocator", "mem_page_",
@@ -1029,7 +1035,7 @@ void PersistentMemoryAllocator::UpdateTrackingHistograms() {
 LocalPersistentMemoryAllocator::LocalPersistentMemoryAllocator(
     size_t size,
     uint64_t id,
-    base::StringPiece name)
+    std::string_view name)
     : PersistentMemoryAllocator(AllocateLocalMemory(size, name),
                                 size,
                                 0,
@@ -1044,7 +1050,7 @@ LocalPersistentMemoryAllocator::~LocalPersistentMemoryAllocator() {
 // static
 PersistentMemoryAllocator::Memory
 LocalPersistentMemoryAllocator::AllocateLocalMemory(size_t size,
-                                                    base::StringPiece name) {
+                                                    std::string_view name) {
   void* address;
 
 #if BUILDFLAG(IS_WIN)
@@ -1108,7 +1114,7 @@ WritableSharedPersistentMemoryAllocator::
     WritableSharedPersistentMemoryAllocator(
         base::WritableSharedMemoryMapping memory,
         uint64_t id,
-        base::StringPiece name)
+        std::string_view name)
     : PersistentMemoryAllocator(Memory(memory.memory(), MEM_SHARED),
                                 memory.size(),
                                 0,
@@ -1132,7 +1138,7 @@ ReadOnlySharedPersistentMemoryAllocator::
     ReadOnlySharedPersistentMemoryAllocator(
         base::ReadOnlySharedMemoryMapping memory,
         uint64_t id,
-        base::StringPiece name)
+        std::string_view name)
     : PersistentMemoryAllocator(
           Memory(const_cast<void*>(memory.memory()), MEM_SHARED),
           memory.size(),
@@ -1158,7 +1164,7 @@ FilePersistentMemoryAllocator::FilePersistentMemoryAllocator(
     std::unique_ptr<MemoryMappedFile> file,
     size_t max_size,
     uint64_t id,
-    base::StringPiece name,
+    std::string_view name,
     AccessMode access_mode)
     : PersistentMemoryAllocator(
           Memory(const_cast<uint8_t*>(file->data()), MEM_FILE),
@@ -1263,8 +1269,8 @@ span<uint8_t> DelayedPersistentAllocation::GetUntyped() const {
   Reference ref = reference_->load(std::memory_order_acquire);
 
 #if !BUILDFLAG(IS_NACL)
-  // TODO(crbug/1432981): Remove these. They are used to investigate unexpected
-  // failures.
+  // TODO(crbug.com/40064026): Remove these. They are used to investigate
+  // unexpected failures.
   bool ref_found = (ref != 0);
   bool raced = false;
 #endif  // !BUILDFLAG(IS_NACL)
@@ -1298,7 +1304,7 @@ span<uint8_t> DelayedPersistentAllocation::GetUntyped() const {
   uint8_t* mem = allocator_->GetAsArray<uint8_t>(ref, type_, size_);
   if (!mem) {
 #if !BUILDFLAG(IS_NACL)
-    // TODO(crbug/1432981): Remove these. They are used to investigate
+    // TODO(crbug.com/40064026): Remove these. They are used to investigate
     // unexpected failures.
     SCOPED_CRASH_KEY_BOOL("PersistentMemoryAllocator", "full",
                           allocator_->IsFull());

@@ -16,6 +16,7 @@
 #include "components/content_settings/core/common/content_settings_constraints.h"
 #include "components/content_settings/core/common/content_settings_metadata.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
+#include "components/content_settings/core/common/content_settings_rules.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 
 // Different settings that can be assigned for a particular content type.  We
@@ -92,38 +93,47 @@ struct RendererContentSettingRules {
 
   bool operator==(const RendererContentSettingRules& other) const;
 
-  ContentSettingsForOneType image_rules;
-  ContentSettingsForOneType script_rules;
-  ContentSettingsForOneType popup_redirect_rules;
   ContentSettingsForOneType mixed_content_rules;
-  ContentSettingsForOneType auto_dark_content_rules;
 };
 
 namespace content_settings {
 
+using ProviderType = mojom::ProviderType;
+
 // Enum containing the various source for content settings. Settings can be
 // set by policy, extension, the user or by the custodian of a supervised user.
 // Certain (internal) origins are allowlisted. For these origins the source is
-// |SETTING_SOURCE_ALLOWLIST|.
-enum SettingSource {
-  SETTING_SOURCE_NONE,
-  SETTING_SOURCE_POLICY,
-  SETTING_SOURCE_EXTENSION,
-  SETTING_SOURCE_USER,
-  SETTING_SOURCE_ALLOWLIST,
-  SETTING_SOURCE_SUPERVISED,
-  SETTING_SOURCE_INSTALLED_WEBAPP,
-  SETTING_SOURCE_TPCD_GRANT,
+// |SettingSource::kAllowList|.
+enum class SettingSource {
+  kNone,
+  kPolicy,
+  kExtension,
+  kUser,
+  kAllowList,
+  kSupervised,
+  kInstalledWebApp,
+  kTpcdGrant,
 };
 
 // |SettingInfo| provides meta data for content setting values. |source|
 // contains the source of a value. |primary_pattern| and |secondary_pattern|
 // contains the patterns of the appling rule.
 struct SettingInfo {
-  SettingSource source = SETTING_SOURCE_NONE;
+  SettingSource source = SettingSource::kNone;
   ContentSettingsPattern primary_pattern;
   ContentSettingsPattern secondary_pattern;
   RuleMetaData metadata;
+
+  void SetAttributes(const content_settings::RuleEntry& rule_entry) {
+    primary_pattern = rule_entry.first.primary_pattern;
+    secondary_pattern = rule_entry.first.secondary_pattern;
+    metadata = rule_entry.second.metadata;
+  }
+  void SetAttributes(const ContentSettingPatternSource& content_setting) {
+    primary_pattern = content_setting.primary_pattern;
+    secondary_pattern = content_setting.secondary_pattern;
+    metadata = content_setting.metadata;
+  }
 };
 
 }  // namespace content_settings

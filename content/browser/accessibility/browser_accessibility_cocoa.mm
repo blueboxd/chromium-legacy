@@ -1395,7 +1395,7 @@ bool content::IsNSRange(id value) {
   if ([self internalRole] == ax::mojom::Role::kDescriptionList)
     return NSAccessibilityDefinitionListSubrole;
 
-  if ([self internalRole] == ax::mojom::Role::kDirectory ||
+  if ([self internalRole] == ax::mojom::Role::kDirectoryDeprecated ||
       [self internalRole] == ax::mojom::Role::kList) {
     return NSAccessibilityContentListSubrole;
   }
@@ -1589,14 +1589,14 @@ bool content::IsNSRange(id value) {
           ->GetManagerForRootFrame()
           ->ToBrowserAccessibilityManagerMac();
   if (!root_manager) {
-    // TODO(crbug.com/1350583) Find out why this happens -- there should always
+    // TODO(crbug.com/40234203) Find out why this happens -- there should always
     // be a root manager whenever an object is instanceActive. This used to be a
     // CHECK() but caused too many crashes, with unknown cause.
     return nil;
   }
   if (!root_manager->GetParentView()) {
-    // TODO(crbug.com/1425682) Find out why this happens, there should always be
-    // a parent view. This used to be a CHECK() but caused too many crashes.
+    // TODO(crbug.com/40898856) Find out why this happens, there should always
+    // be a parent view. This used to be a CHECK() but caused too many crashes.
     // Repro steps are available in the bug.
     return nil;
   }

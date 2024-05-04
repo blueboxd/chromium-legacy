@@ -427,7 +427,7 @@ void BackgroundModeManager::LaunchBackgroundApplication(
           base::DoNothing());
 #else
   // background mode is not used in Chrome OS platform.
-  // TODO(crbug.com/1291803): Remove the background mode manager from Chrome OS
+  // TODO(crbug.com/40212901): Remove the background mode manager from Chrome OS
   // build.
   NOTIMPLEMENTED();
 #endif
@@ -554,7 +554,9 @@ void BackgroundModeManager::OnProfileWillBeRemoved(
     const base::FilePath& profile_path) {
   Profile* profile =
       g_browser_process->profile_manager()->GetProfileByPath(profile_path);
-  DCHECK(profile);
+  if (!profile) {
+    return;
+  }
   UnregisterProfile(profile);
 }
 

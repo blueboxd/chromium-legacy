@@ -19,7 +19,7 @@
 #include "components/attribution_reporting/features.h"
 #include "components/browsing_data/content/browsing_data_quota_helper.h"
 #include "components/browsing_data/content/shared_worker_info.h"
-#include "components/browsing_data/core/features.h"
+#include "components/browsing_data/core/browsing_data_utils.h"
 #include "components/services/storage/public/mojom/storage_usage_info.mojom.h"
 #include "components/services/storage/shared_storage/shared_storage_manager.h"
 #include "content/public/browser/browser_context.h"
@@ -109,7 +109,7 @@ template <>
 BrowsingDataModel::DataOwner
 GetDataOwner::GetOwningOriginOrHost<blink::StorageKey>(
     const blink::StorageKey& data_key) const {
-  // TODO(crbug.com/1271155): This logic is useful for testing during the
+  // TODO(crbug.com/40205603): This logic is useful for testing during the
   // implementation of the model, but ultimately these storage types may not
   // coexist.
   switch (storage_type_) {
@@ -198,7 +198,7 @@ struct StorageRemoverHelper {
       content::StoragePartition* storage_partition,
       scoped_refptr<BrowsingDataQuotaHelper> quota_helper,
       BrowsingDataModel::Delegate* delegate
-      // TODO(crbug.com/1271155): Inject other dependencies.
+      // TODO(crbug.com/40205603): Inject other dependencies.
       )
       : storage_partition_(storage_partition),
         quota_helper_(quota_helper),
@@ -362,7 +362,7 @@ void StorageRemoverHelper::Visitor::operator()<net::CanonicalCookie>(
         helper->delegate_->IsCookieDeletionDisabled(
             net::cookie_util::CookieOriginToURL(cookie.Domain(),
                                                 cookie.SecureAttribute()))) {
-      // TODO(crbug.com/1500256): Expand test coverage for this block.
+      // TODO(crbug.com/40940636): Expand test coverage for this block.
       return;
     }
     helper->storage_partition_->GetCookieManagerForBrowserProcess()
@@ -644,6 +644,46 @@ const std::string BrowsingDataModel::GetHost(const DataOwner& data_owner) {
       data_owner);
 }
 
+const url::Origin BrowsingDataModel::GetOriginForDataKey(
+    const BrowsingDataModel::DataKey& data_key) {
+  return absl::visit(
+      base::Overloaded{
+          [](const url::Origin& origin) { return origin; },
+          [](const content::InterestGroupManager::InterestGroupDataKey
+                 interest_group_key) { return interest_group_key.owner; },
+          [](const content::AttributionDataModel::DataKey
+                 attribution_reporting_key) {
+            return attribution_reporting_key.reporting_origin();
+          },
+          [](const content::PrivateAggregationDataModel::DataKey
+                 private_aggregation_key) {
+            return private_aggregation_key.reporting_origin();
+          },
+          [](const blink::StorageKey& storage_key) {
+            return storage_key.origin();
+          },
+          [](const content::SessionStorageUsageInfo& info) {
+            return info.storage_key.origin();
+          },
+          [](const browsing_data::SharedWorkerInfo& info) {
+            return info.storage_key.origin();
+          },
+          [](const net::SharedDictionaryIsolationKey& key) {
+            return key.frame_origin();
+          },
+          [](const net::CanonicalCookie& cookie) {
+            GURL cookie_url = net::cookie_util::CookieOriginToURL(
+                cookie.Domain(), browsing_data::IsHttpsCookieSourceScheme(
+                                     cookie.SourceScheme()));
+            return url::Origin::Create(cookie_url);
+          },
+          [](const webid::FederatedIdentityDataModel::DataKey& data_key) {
+            return data_key.relying_party_embedder();
+          },
+      },
+      data_key);
+}
+
 bool BrowsingDataModel::BrowsingDataEntryView::Matches(
     const url::Origin& origin) const {
   return absl::visit(base::Overloaded{[&](const std::string& entry_host) {
@@ -799,7 +839,8 @@ std::unique_ptr<BrowsingDataModel> BrowsingDataModel::BuildEmpty(
 void BrowsingDataModel::AddBrowsingData(const DataKey& data_key,
                                         StorageType storage_type,
                                         uint64_t storage_size,
-                                        uint64_t cookie_count) {
+                                        uint64_t cookie_count,
+                                        bool blocked_third_party) {
   DataOwner data_owner =
       absl::visit(GetDataOwner(delegate_.get(), storage_type), data_key);
 
@@ -810,6 +851,7 @@ void BrowsingDataModel::AddBrowsingData(const DataKey& data_key,
   // Per canonical cookie the count should always be 1, otherwise this count is
   // irrelevant.
   entry.cookie_count = cookie_count;
+  entry.blocked_third_party = blocked_third_party;
   entry.storage_types.Put(storage_type);
 }
 
@@ -935,8 +977,6 @@ void BrowsingDataModel::PopulateFromDisk(base::OnceClosure finished_callback) {
       attribution_reporting::features::kConversionMeasurement);
   bool is_private_aggregation_enabled =
       base::FeatureList::IsEnabled(blink::features::kPrivateAggregationApi);
-  bool is_cookies_tree_model_deprecated = base::FeatureList::IsEnabled(
-      browsing_data::features::kDeprecateCookiesTreeModel);
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
   bool is_cdm_storage_database_enabled =
       base::FeatureList::IsEnabled(features::kCdmStorageDatabase);
@@ -962,6 +1002,11 @@ void BrowsingDataModel::PopulateFromDisk(base::OnceClosure finished_callback) {
       base::BindOnce(&OnQuotaStorageLoaded, this, completion));
   storage_partition_->GetDOMStorageContext()->GetLocalStorageUsage(
       base::BindOnce(&OnLocalStorageLoaded, this, completion));
+
+  // Cookies
+  storage_partition_->GetCookieManagerForBrowserProcess()->GetAllCookies(
+      base::BindOnce(&OnCookiesLoaded, this, completion));
+
   // Shared storage origins
   if (is_shared_storage_enabled) {
     storage_partition_->GetSharedStorageManager()->FetchOrigins(
@@ -992,16 +1037,11 @@ void BrowsingDataModel::PopulateFromDisk(base::OnceClosure finished_callback) {
         base::BindOnce(&OnPrivateAggregationLoaded, this, completion));
   }
 
-  // Cookies
-  if (is_cookies_tree_model_deprecated) {
-    storage_partition_->GetCookieManagerForBrowserProcess()->GetAllCookies(
-        base::BindOnce(&OnCookiesLoaded, this, completion));
-  }
-
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
   if (is_cdm_storage_database_enabled && !is_cdm_migration_enabled) {
     storage_partition_->GetCdmStorageDataModel()->GetUsagePerAllStorageKeys(
-        base::BindOnce(&OnCdmStorageLoaded, this, completion));
+        base::BindOnce(&OnCdmStorageLoaded, this, completion),
+        base::Time::Min(), base::Time::Max());
   }
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 

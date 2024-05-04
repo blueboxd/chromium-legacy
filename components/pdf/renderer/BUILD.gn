@@ -21,6 +21,8 @@ static_library("renderer") {
   sources = [
     "internal_plugin_renderer_helpers.cc",
     "pdf_accessibility_tree.cc",
+    "pdf_accessibility_tree_builder.cc",
+    "pdf_accessibility_tree_builder.h",
     "pdf_ax_action_target.cc",
     "pdf_internal_plugin_delegate.cc",
     "pdf_view_web_plugin_client.cc",
@@ -65,6 +67,10 @@ static_library("renderer") {
   }
 
   if (enable_screen_ai_service) {
+    sources += [
+      "pdf_ocr_helper.cc",
+      "pdf_ocr_helper.h",
+    ]
     deps += [ "//components/language/core/common" ]
   }
 }
@@ -80,7 +86,7 @@ source_set("unit_tests") {
     "//testing/gtest",
     "//ui/gfx/geometry",
 
-    # TODO(crbug.com/1233217): The V8 dependency should have been propagated
+    # TODO(crbug.com/40191420): The V8 dependency should have been propagated
     # from ":renderer".
     "//v8",
   ]

@@ -51,10 +51,10 @@ constexpr base::TimeDelta kDefaultUpdateDiscoveryFrequency = base::Hours(5);
 // installation of Isolated Web App updates. Currently, it is only updating
 // policy-installed IWAs on ChromeOS.
 //
-// TODO(crbug.com/1459160): Implement updates for unmanaged IWAs once we have
+// TODO(crbug.com/40274186): Implement updates for unmanaged IWAs once we have
 // designed that process.
 //
-// TODO(crbug.com/1459161): Consider only executing update discovery tasks when
+// TODO(crbug.com/40274187): Consider only executing update discovery tasks when
 // the user is not on a metered/paid internet connection.
 class IsolatedWebAppUpdateManager : public WebAppInstallManagerObserver {
  public:
@@ -112,6 +112,11 @@ class IsolatedWebAppUpdateManager : public WebAppInstallManagerObserver {
       const webapps::AppId& app_id,
       webapps::WebappUninstallSource uninstall_source) override;
 
+  // Queues an update discovery task for the provided `app_id`. Returns a
+  // boolean indicating whether an update discovery task was queued
+  // successfully.
+  bool MaybeDiscoverUpdatesForApp(const webapps::AppId& app_id);
+
   // Used to queue update discovery tasks manually from the
   // chrome://web-app-internals page. Returns the number of tasks queued.
   size_t DiscoverUpdatesNow();
@@ -120,7 +125,7 @@ class IsolatedWebAppUpdateManager : public WebAppInstallManagerObserver {
   // (as opposed to an update discovered through the Update Manifest of a
   // production app), and prioritizes applying it.
   void DiscoverApplyAndPrioritizeLocalDevModeUpdate(
-      const IsolatedWebAppStorageLocation& location,
+      const IwaSourceDevModeWithFileOp& location,
       const IsolatedWebAppUrlInfo& url_info,
       base::OnceCallback<void(base::expected<base::Version, std::string>)>
           callback);
@@ -164,7 +169,7 @@ class IsolatedWebAppUpdateManager : public WebAppInstallManagerObserver {
     // Removes all tasks for the provided `app_id` that haven't yet started from
     // the queue.
     //
-    // TODO(crbug.com/1444407): Ideally, we'd also cancel tasks that have
+    // TODO(crbug.com/40267691): Ideally, we'd also cancel tasks that have
     // already started, especially update discovery tasks, but the task
     // implementation currently does not support cancellation of ongoing tasks.
     void ClearNonStartedTasksOfApp(const webapps::AppId& app_id);
@@ -212,6 +217,14 @@ class IsolatedWebAppUpdateManager : public WebAppInstallManagerObserver {
   // Queues new update discovery tasks and returns the number of new tasks that
   // have been queued.
   size_t QueueUpdateDiscoveryTasks();
+
+  // Tries to queue an update discovery task for the provided `web_app`. It
+  // might fail if the Update Manifest URL cannot be determined or if the app is
+  // not an Isolated Web App.
+  bool MaybeQueueUpdateDiscoveryTask(
+      const WebApp& web_app,
+      const base::flat_map<web_package::SignedWebBundleId, GURL>&
+          id_to_update_manifest_map);
 
   base::flat_map<web_package::SignedWebBundleId, GURL>
   GetForceInstalledBundleIdToUpdateManifestUrlMap();

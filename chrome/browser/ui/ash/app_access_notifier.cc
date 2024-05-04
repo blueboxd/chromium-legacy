@@ -71,11 +71,9 @@ std::optional<std::u16string> MapAppIdToShortName(
 // when the application starts using the camera and false when the application
 // stops using the camera.
 void SendActiveCameraApplicationsChangedNotification(bool application_added) {
-  if (ash::features::IsCrosPrivacyHubEnabled()) {
-    auto* camera_controller = ash::CameraPrivacySwitchController::Get();
-    CHECK(camera_controller);
-    camera_controller->ActiveApplicationsChanged(application_added);
-  }
+  auto* camera_controller = ash::CameraPrivacySwitchController::Get();
+  CHECK(camera_controller);
+  camera_controller->ActiveApplicationsChanged(application_added);
 }
 
 }  // namespace
@@ -184,7 +182,8 @@ void AppAccessNotifier::OnCapabilityAccessUpdate(
     std::erase(mic_using_app_ids_[active_user_account_id_], update.AppId());
   }
 
-  if (ash::features::IsPrivacyIndicatorsEnabled()) {
+  // Privacy indicators is only enabled when Video Conference is disabled.
+  if (!ash::features::IsVideoConferenceEnabled()) {
     // TODO(b/251686202): Finish Launch App functionality.
     auto launch_app_callback = std::nullopt;
 

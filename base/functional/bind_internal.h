@@ -14,8 +14,6 @@
 #include <type_traits>
 #include <utility>
 
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_buildflags.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_config.h"
 #include "base/check.h"
 #include "base/compiler_specific.h"
 #include "base/functional/callback_internal.h"
@@ -31,6 +29,8 @@
 #include "base/types/is_instantiation.h"
 #include "base/types/to_address.h"
 #include "build/build_config.h"
+#include "partition_alloc/partition_alloc_buildflags.h"
+#include "partition_alloc/partition_alloc_config.h"
 #include "third_party/abseil-cpp/absl/functional/function_ref.h"
 
 // See docs/callback.md for user documentation.
@@ -330,8 +330,8 @@ class UnretainedRefWrapperReceiver {
 // invocation mechanism.
 template <typename T>
 struct MethodReceiverStorage {
-  using Type =
-      std::conditional_t<IsPointerV<T>, scoped_refptr<RemovePointerT<T>>, T>;
+  using Type = std::
+      conditional_t<IsRawPointer<T>, scoped_refptr<RemoveRawPointerT<T>>, T>;
 };
 
 template <typename T, typename UnretainedTrait, RawPtrTraits PtrTraits>
@@ -409,7 +409,7 @@ class OwnedRefWrapper {
 //  2) `is_valid_` is distinct from `nullptr` because it is valid to bind a null
 //     scoper to a `Callback` and allow the `Callback` to execute once.
 //
-// TODO(crbug.com/1326449): We have rvalue references and such now. Remove.
+// TODO(crbug.com/40840557): We have rvalue references and such now. Remove.
 template <typename T>
 class PassedWrapper {
  public:
@@ -1042,12 +1042,12 @@ struct Invoker<Traits, StorageType, R(UnboundArgs...)> {
                           BoundArgsTuple&& bound,
                           std::index_sequence<indices...>,
                           UnboundArgs&&... unbound_args) {
-#if BUILDFLAG(USE_ASAN_BACKUP_REF_PTR)
+#if PA_BUILDFLAG(USE_ASAN_BACKUP_REF_PTR)
     RawPtrAsanBoundArgTracker raw_ptr_asan_bound_arg_tracker;
     raw_ptr_asan_bound_arg_tracker.AddArgs(
         std::get<indices>(std::forward<BoundArgsTuple>(bound))...,
         std::forward<UnboundArgs>(unbound_args)...);
-#endif  // BUILDFLAG(USE_ASAN_BACKUP_REF_PTR)
+#endif  // PA_BUILDFLAG(USE_ASAN_BACKUP_REF_PTR)
 
     using DecayedArgsTuple = std::decay_t<BoundArgsTuple>;
     static constexpr bool kIsWeakCall =
@@ -1072,15 +1072,15 @@ struct Invoker<Traits, StorageType, R(UnboundArgs...)> {
 };
 
 // Allow binding a method call with no receiver.
-// TODO(crbug.com/1511757): Remove or make safe.
+// TODO(crbug.com/41484339): Remove or make safe.
 template <typename... Unused>
 void VerifyMethodReceiver(Unused&&...) {}
 
 template <typename Receiver, typename... Unused>
 void VerifyMethodReceiver(Receiver&& receiver, Unused&&...) {
   // Asserts that a callback is not the first owner of a ref-counted receiver.
-  if constexpr (IsPointerV<std::decay_t<Receiver>> &&
-                IsRefCountedType<RemovePointerT<std::decay_t<Receiver>>>) {
+  if constexpr (IsRawPointer<std::decay_t<Receiver>> &&
+                IsRefCountedType<RemoveRawPointerT<std::decay_t<Receiver>>>) {
     DCHECK(receiver);
 
     // It's error prone to make the implicit first reference to ref-counted
@@ -1294,8 +1294,8 @@ struct ValidateBindStateType<true,
     }();
   };
 
-  template <bool v = !IsPointerV<DecayedReceiver> ||
-                     IsRefCountedType<RemovePointerT<DecayedReceiver>>>
+  template <bool v = !IsRawPointer<DecayedReceiver> ||
+                     IsRefCountedType<RemoveRawPointerT<DecayedReceiver>>>
   struct ReceiverIsNotRawPtr {
     static constexpr bool value = [] {
       static_assert(v,

@@ -317,7 +317,8 @@ bool IsAACSupported(const AudioType& type) {
     return true;
   return false;
 #elif BUILDFLAG(IS_WIN)
-  return base::win::GetVersion() >= base::win::Version::WIN11_22H2;
+  return base::win::GetVersion() >= base::win::Version::WIN11_22H2 &&
+         !base::win::OSInfo::GetInstance()->IsWindowsNSku();
 #else
   return false;
 #endif

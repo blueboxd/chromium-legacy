@@ -5,18 +5,13 @@
 #ifndef COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_SKIA_OUTPUT_DEVICE_DCOMP_H_
 #define COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_SKIA_OUTPUT_DEVICE_DCOMP_H_
 
-#include <memory>
 #include <vector>
 
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/memory/raw_ptr.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "components/viz/service/display_embedder/skia_output_device.h"
-#include "gpu/command_buffer/service/shared_image/shared_image_representation.h"
-#include "third_party/skia/include/gpu/gl/GrGLTypes.h"
-#include "ui/gfx/frame_data.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/presenter.h"
 
@@ -72,7 +67,6 @@ class SkiaOutputDeviceDComp : public SkiaOutputDevice {
                int sample_count,
                float device_scale_factor,
                gfx::OverlayTransform transform) override;
-  bool SetDrawRectangle(const gfx::Rect& draw_rectangle) override;
   SkSurface* BeginPaint(
       std::vector<GrBackendSemaphore>* end_semaphores) override;
   void EndPaint() override;

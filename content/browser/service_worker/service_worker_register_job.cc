@@ -12,6 +12,7 @@
 #include "base/functional/callback_helpers.h"
 #include "base/location.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
@@ -911,18 +912,16 @@ void ServiceWorkerRegisterJob::AddRegistrationToMatchingContainerHosts(
   // Include bfcached clients because they need to have the correct
   // information about the matching registrations if, e.g., claim() is called
   // while they are in bfcache or after they are restored from bfcache.
-  for (std::unique_ptr<ServiceWorkerContextCore::ContainerHostIterator> it =
-           context_->GetClientContainerHostIterator(
-               registration->key(), true /* include_reserved_clients */,
-               true /* include_back_forward_cached_clients */);
-       !it->IsAtEnd(); it->Advance()) {
-    ServiceWorkerContainerHost* container_host = it->GetContainerHost();
-    DCHECK(container_host->IsContainerForClient());
-    if (!blink::ServiceWorkerScopeMatches(
-            registration->scope(), container_host->GetUrlForScopeMatch())) {
+  for (auto it = context_->GetServiceWorkerClients(
+           registration->key(), true /* include_reserved_clients */,
+           true /* include_back_forward_cached_clients */);
+       !it.IsAtEnd(); ++it) {
+    DCHECK(it->IsContainerForClient());
+    if (!blink::ServiceWorkerScopeMatches(registration->scope(),
+                                          it->GetUrlForScopeMatch())) {
       continue;
     }
-    container_host->AddMatchingRegistration(registration);
+    it->AddMatchingRegistration(registration);
   }
 }
 

@@ -5,29 +5,47 @@
 #ifndef CHROME_BROWSER_ASH_FILE_MANAGER_FILE_MANAGER_BROWSERTEST_BASE_H_
 #define CHROME_BROWSER_ASH_FILE_MANAGER_FILE_MANAGER_BROWSERTEST_BASE_H_
 
+#include <stdint.h>
+
+#include <iosfwd>
 #include <map>
 #include <memory>
+#include <optional>
 #include <string>
 #include <vector>
 
 #include "base/base_paths.h"
 #include "base/containers/flat_map.h"
+#include "base/files/file_path.h"
 #include "base/memory/raw_ptr.h"
+#include "base/process/kill.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/metrics/user_action_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/values.h"
 #include "chrome/browser/ash/crostini/fake_crostini_features.h"
 #include "chrome/browser/ash/drive/drive_integration_service.h"
 #include "chrome/browser/ash/login/test/logged_in_user_mixin.h"
 #include "chrome/browser/extensions/mixin_based_extension_apitest.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/test/base/devtools_listener.h"
+#include "components/account_id/account_id.h"
 #include "components/webapps/common/web_app_id.h"
+#include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/devtools_agent_host_observer.h"
 #include "storage/browser/file_system/file_system_url.h"
 
 class NotificationDisplayServiceTester;
 class SelectFileDialogExtensionTestFactory;
+class Profile;
+
+namespace base {
+class CommandLine;
+
+namespace test {
+class ScopedFeatureList;
+}  // namespace test
+}  // namespace base
 
 namespace arc {
 class FakeFileSystemInstance;
@@ -204,8 +222,14 @@ class FileManagerBrowserTestBase
     // Whether to enable jellybean UI elements.
     bool enable_cros_components = false;
 
+    // Whether to enable the materialized views feature.
+    bool enable_materialized_views = false;
+
     // Whether to enable new directory tree implementation.
     bool enable_new_directory_tree = false;
+
+    // Whether test should enable the SkyVault feature.
+    bool enable_skyvault = false;
 
     // Feature IDs associated for mapping test cases and features.
     std::vector<std::string> feature_ids;

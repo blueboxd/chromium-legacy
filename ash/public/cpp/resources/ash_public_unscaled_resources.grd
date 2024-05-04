@@ -18,7 +18,6 @@
       <include name="IDR_CAPTURE_IMAGE_CURSOR" file="unscaled_resources/capture_image_cursor.png" type="BINDATA" />
       <include name="IDR_CAPTURE_VIDEO_CURSOR" file="unscaled_resources/capture_video_cursor.png" type="BINDATA" />
       <!-- CrOS internal apps images -->
-      <include name="IDR_SHORTCUT_VIEWER_LOGO_192" file="unscaled_resources/shortcut_viewer_logo_192.png" type="BINDATA" />
       <include name="IDR_SETTINGS_LOGO_192" file="unscaled_resources/settings_logo_192.png" type="BINDATA" />
       <include name="IDR_OS_FLAGS_APP_ICONS_48_PNG" file="unscaled_resources/os_flags_app_icon_48.png" type="BINDATA" />
       <include name="IDR_OS_FLAGS_APP_ICONS_128_PNG" file="unscaled_resources/os_flags_app_icon_128.png" type="BINDATA" />
@@ -54,6 +53,16 @@
       <!-- Clipboard Nudge -->
       <structure type="lottie" name="IDR_CLIPBOARD_NUDGE_COPIED_IMAGE" file="unscaled_resources/clipboard_nudge_copied.json" compress="gzip" />
       <structure type="lottie" name="IDR_CLIPBOARD_NUDGE_SELECT_IMAGE" file="unscaled_resources/clipboard_nudge_select.json" compress="gzip" />
+      <!-- Pine -->
+      <structure type="lottie" name="IDR_PINE_NUDGE_IMAGE_DM" file="unscaled_resources/pine_nudge_dm.json" compress="gzip" />
+      <structure type="lottie" name="IDR_PINE_NUDGE_IMAGE_LM" file="unscaled_resources/pine_nudge_lm.json" compress="gzip" />
+      <structure type="lottie" name="IDR_PINE_ONBOARDING_IMAGE" file="unscaled_resources/pine_onboarding.json" compress="gzip" />
+      <!-- Focus Mode -->
+      <structure type="lottie" name="IDR_FOCUS_MODE_EQUALIZER_ANIMATION" file="unscaled_resources/equalizer.json" compress="gzip" />
+      <!-- Birch -->
+      <structure type="lottie" name="IDR_BIRCH_RELEASE_NOTES_ICON" file="unscaled_resources/birch_release_notes_icon.json" compress="gzip" />
+      <!-- Mahi -->
+      <structure type="lottie" name="IDR_MAHI_GENERAL_ERROR_STATUS_IMAGE" file="unscaled_resources/mahi_general_error_status_image.json" compress="gzip" />
     </structures>
   </release>
 </grit>

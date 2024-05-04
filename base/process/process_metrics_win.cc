@@ -120,25 +120,26 @@ struct SYSTEM_PERFORMANCE_INFORMATION {
   ULONG SystemCalls;
 };
 
-TimeDelta GetImpreciseCumulativeCPUUsage(const win::ScopedHandle& process) {
+base::expected<TimeDelta, ProcessCPUUsageError> GetImpreciseCumulativeCPUUsage(
+    const win::ScopedHandle& process) {
   FILETIME creation_time;
   FILETIME exit_time;
   FILETIME kernel_time;
   FILETIME user_time;
 
   if (!process.is_valid()) {
-    return TimeDelta();
+    return base::unexpected(ProcessCPUUsageError::kSystemError);
   }
 
   if (!GetProcessTimes(process.get(), &creation_time, &exit_time, &kernel_time,
                        &user_time)) {
     // This should never fail when the handle is valid.
     NOTREACHED(NotFatalUntil::M125);
-    return TimeDelta();
+    return base::unexpected(ProcessCPUUsageError::kSystemError);
   }
 
-  return TimeDelta::FromFileTime(kernel_time) +
-         TimeDelta::FromFileTime(user_time);
+  return base::ok(TimeDelta::FromFileTime(kernel_time) +
+                  TimeDelta::FromFileTime(user_time));
 }
 
 }  // namespace
@@ -160,7 +161,8 @@ std::unique_ptr<ProcessMetrics> ProcessMetrics::CreateProcessMetrics(
   return WrapUnique(new ProcessMetrics(process));
 }
 
-TimeDelta ProcessMetrics::GetCumulativeCPUUsage() {
+base::expected<TimeDelta, ProcessCPUUsageError>
+ProcessMetrics::GetCumulativeCPUUsage() {
 #if defined(ARCH_CPU_ARM64)
   // Precise CPU usage is not available on Arm CPUs because they don't support
   // constant rate TSC.
@@ -180,18 +182,18 @@ TimeDelta ProcessMetrics::GetCumulativeCPUUsage() {
   }
 
   if (!process_.is_valid()) {
-    return TimeDelta();
+    return base::unexpected(ProcessCPUUsageError::kProcessNotFound);
   }
 
   ULONG64 process_cycle_time = 0;
   if (!QueryProcessCycleTime(process_.get(), &process_cycle_time)) {
     // This should never fail when the handle is valid.
     NOTREACHED(NotFatalUntil::M125);
-    return TimeDelta();
+    return base::unexpected(ProcessCPUUsageError::kSystemError);
   }
 
   const double process_time_seconds = process_cycle_time / tsc_ticks_per_second;
-  return Seconds(process_time_seconds);
+  return base::ok(Seconds(process_time_seconds));
 #endif  // !defined(ARCH_CPU_ARM64)
 }
 
@@ -201,16 +203,16 @@ ProcessMetrics::ProcessMetrics(ProcessHandle process) {
     return;
   }
   HANDLE duplicate_handle = INVALID_HANDLE_VALUE;
-  BOOL result =
-      ::DuplicateHandle(::GetCurrentProcess(), process, ::GetCurrentProcess(),
-                        &duplicate_handle, PROCESS_QUERY_INFORMATION, FALSE, 0);
+  BOOL result = ::DuplicateHandle(::GetCurrentProcess(), process,
+                                  ::GetCurrentProcess(), &duplicate_handle,
+                                  PROCESS_QUERY_LIMITED_INFORMATION, FALSE, 0);
   if (!result) {
-    // Duplicating a handle can fail with an access error if the target process
-    // has a higher integrity level than the current process.
+    // TODO(crbug.com/326136373): Remove this crash key and just CHECK(result)
+    // after verifying that DuplicateHandle doesn't fail for unexpected reasons
+    // in production.
     const DWORD last_error = ::GetLastError();
     SCOPED_CRASH_KEY_NUMBER("ProcessMetrics", "dup_handle_error", last_error);
-    CHECK_EQ(last_error, static_cast<DWORD>(ERROR_ACCESS_DENIED),
-             NotFatalUntil::M125);
+    NOTREACHED(NotFatalUntil::M126);
     return;
   }
 

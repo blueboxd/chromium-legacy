@@ -52,14 +52,8 @@ class TestProfileOAuth2TokenServiceDelegateChromeOS
   GoogleServiceAuthError GetAuthError(
       const CoreAccountId& account_id) const override;
   std::vector<CoreAccountId> GetAccounts() const override;
-  void LoadCredentials(const CoreAccountId& primary_account_id,
-                       bool is_syncing) override;
-  void UpdateCredentials(const CoreAccountId& account_id,
-                         const std::string& refresh_token) override;
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory()
       const override;
-  void RevokeCredentials(const CoreAccountId& account_id) override;
-  void RevokeAllCredentials() override;
   const net::BackoffEntry* BackoffEntry() const override;
   void ClearAuthError(const std::optional<CoreAccountId>& account_id) override;
   GoogleServiceAuthError BackOffError() const override;
@@ -70,10 +64,21 @@ class TestProfileOAuth2TokenServiceDelegateChromeOS
   void OnRefreshTokenRevoked(const CoreAccountId& account_id) override;
   void OnEndBatchChanges() override;
   void OnRefreshTokensLoaded() override;
-  void OnAuthErrorChanged(const CoreAccountId& account_id,
-                          const GoogleServiceAuthError& auth_error) override;
+  void OnAuthErrorChanged(
+      const CoreAccountId& account_id,
+      const GoogleServiceAuthError& auth_error,
+      signin_metrics::SourceForRefreshTokenOperation source) override;
 
  private:
+  // ProfileOAuth2TokenServiceDelegate implementation:
+  void LoadCredentialsInternal(const CoreAccountId& primary_account_id,
+                               bool is_syncing) override;
+  void UpdateCredentialsInternal(const CoreAccountId& account_id,
+                                 const std::string& refresh_token) override;
+  void RevokeCredentialsInternal(const CoreAccountId& account_id) override;
+  void RevokeAllCredentialsInternal(
+      signin_metrics::SourceForRefreshTokenOperation source) override;
+
   // Owning pointer to TestNetworkConnectionTracker. Set only if it wasn't
   // created before initialization of this class.
   std::unique_ptr<network::TestNetworkConnectionTracker> owned_tracker_;

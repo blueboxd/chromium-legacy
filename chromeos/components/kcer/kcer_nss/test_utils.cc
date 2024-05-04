@@ -16,6 +16,9 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "crypto/signature_verifier.h"
+#include "net/test/cert_builder.h"
+#include "net/test/test_data_directory.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/boringssl/src/pki/pem.h"
 
 using SignatureAlgorithm = crypto::SignatureVerifier::SignatureAlgorithm;
@@ -156,6 +159,42 @@ std::optional<std::vector<uint8_t>> ReadPemFileReturnDer(
     return std::nullopt;
   }
   return std::vector<uint8_t>(tokenizer.data().begin(), tokenizer.data().end());
+}
+
+std::unique_ptr<net::CertBuilder> MakeCertIssuer() {
+  auto issuer = std::make_unique<net::CertBuilder>(/*orig_cert=*/nullptr,
+                                                   /*issuer=*/nullptr);
+  issuer->SetSubjectCommonName("IssuerSubjectCommonName");
+  issuer->GenerateRSAKey();
+  return issuer;
+}
+
+// Creates a certificate builder that can generate a self-signed certificate for
+// the `public_key`.
+std::unique_ptr<net::CertBuilder> MakeCertBuilder(
+    net::CertBuilder* issuer,
+    const std::vector<uint8_t>& public_key) {
+  std::unique_ptr<net::CertBuilder> cert_builder =
+      net::CertBuilder::FromSubjectPublicKeyInfo(public_key, issuer);
+  cert_builder->SetSignatureAlgorithm(
+      bssl::SignatureAlgorithm::kRsaPkcs1Sha256);
+  auto now = base::Time::Now();
+  cert_builder->SetValidity(now, now + base::Days(30));
+  cert_builder->SetSubjectCommonName("SubjectCommonName");
+
+  return cert_builder;
+}
+
+std::vector<uint8_t> ReadTestFile(const std::string& file_name) {
+  base::FilePath file_path =
+      net::GetTestCertsDirectory().AppendASCII(file_name);
+  std::optional<std::vector<uint8_t>> file_data =
+      base::ReadFileToBytes(file_path);
+  if (!file_data.has_value()) {
+    ADD_FAILURE() << "Couldn't read " << file_path;
+    return {};
+  }
+  return file_data.value();
 }
 
 }  // namespace kcer

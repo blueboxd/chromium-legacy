@@ -115,26 +115,26 @@ class FastCheckoutClientImpl
   CreateFastCheckoutController();
 
  private:
-  friend class FastCheckoutClientImplTest;
+  friend class DISABLED_FastCheckoutClientImplTest;
   FRIEND_TEST_ALL_PREFIXES(
-      FastCheckoutClientImplTest,
+      DISABLED_FastCheckoutClientImplTest,
       DestroyingAutofillDriver_ResetsAutofillManagerPointer);
   FRIEND_TEST_ALL_PREFIXES(
-      FastCheckoutClientImplTest,
+      DISABLED_FastCheckoutClientImplTest,
       OnOptionsSelected_LocalCard_SavesFormsAndAutofillDataSelections);
   FRIEND_TEST_ALL_PREFIXES(
-      FastCheckoutClientImplTest,
+      DISABLED_FastCheckoutClientImplTest,
       OnOptionsSelected_ServerCard_SavesFormsAndAutofillDataSelections);
-  FRIEND_TEST_ALL_PREFIXES(FastCheckoutClientImplTest,
+  FRIEND_TEST_ALL_PREFIXES(DISABLED_FastCheckoutClientImplTest,
                            OnAfterLoadedServerPredictions_FillsForms);
   FRIEND_TEST_ALL_PREFIXES(
-      FastCheckoutClientImplTest,
+      DISABLED_FastCheckoutClientImplTest,
       OnAfterDidFillAutofillFormData_SetsFillingFormsToFilledAndStops);
   FRIEND_TEST_ALL_PREFIXES(
-      FastCheckoutClientImplTest,
+      DISABLED_FastCheckoutClientImplTest,
       OnFullCardRequestSucceeded_InvokesCreditCardFormFill);
   FRIEND_TEST_ALL_PREFIXES(
-      FastCheckoutClientImplTest,
+      DISABLED_FastCheckoutClientImplTest,
       TryToFillForms_LocalCreditCard_ImmediatelyFillsCreditCardForm);
 
   // From autofill::PersonalDataManagerObserver.
@@ -212,7 +212,7 @@ class FastCheckoutClientImpl
   // `allow_further_runs == false` to have any effect. The `IsShowing()` guard
   // is currently required because of uncontrolled `HideFastCheckout()` calls
   // in `BrowserAutofillManager::OnHidePopupImpl()`.
-  // TODO(crbug.com/1334642): remove `HideFastCheckout()` call from
+  // TODO(crbug.com/40228235): remove `HideFastCheckout()` call from
   // `BrowserAutofillManger` by introducing a new `AutofillManager::Observer`
   // methods pair, then remove this method in favor of `Stop()`.
   void InternalStop(bool allow_further_runs);

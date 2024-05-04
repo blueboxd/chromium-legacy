@@ -136,7 +136,7 @@ class WebBundleURLLoaderClient : public network::mojom::URLLoaderClient {
   void OnReceiveRedirect(
       const net::RedirectInfo& redirect_info,
       network::mojom::URLResponseHeadPtr response_head) override {
-    // TODO(crbug.com/1242281): Support redirection for WebBundle requests.
+    // TODO(crbug.com/40786524): Support redirection for WebBundle requests.
     if (factory_) {
       factory_->ReportErrorAndCancelPendingLoaders(
           WebBundleURLLoaderFactory::SubresourceWebBundleLoadResult::
@@ -271,7 +271,7 @@ class WebBundleURLLoaderFactory::URLLoader : public mojom::URLLoader {
   void BlockResponseForOrb(mojom::URLResponseHeadPtr response_head) {
     // A minimum implementation to block ORB-protected resources.
     //
-    // TODO(crbug.com/1082020): Re-use
+    // TODO(crbug.com/40130781): Re-use
     // network::URLLoader::BlockResponseForOrb(), instead of copying
     // essential parts from there, so that the two implementations won't
     // diverge further. That requires non-trivial refactoring.
@@ -561,7 +561,7 @@ WebBundleURLLoaderFactory::WebBundleURLLoaderFactory(
   if (bundle_url != web_bundle_token_params.bundle_url) {
     // This happens when WebBundle request is redirected by WebRequest extension
     // API.
-    // TODO(crbug.com/1242281): Support redirection for WebBundle requests.
+    // TODO(crbug.com/40786524): Support redirection for WebBundle requests.
     ReportErrorAndCancelPendingLoaders(
         SubresourceWebBundleLoadResult::kWebBundleRedirected,
         mojom::WebBundleErrorType::kWebBundleRedirected,
@@ -868,7 +868,7 @@ void WebBundleURLLoaderFactory::SendResponseToLoader(
   mojom::URLResponseHeadPtr response_head =
       web_package::CreateResourceResponseFromHeaderString(headers);
   // Currently we allow only net::HTTP_OK responses in bundles.
-  // TODO(crbug.com/990733): Revisit this once
+  // TODO(crbug.com/41474458): Revisit this once
   // https://github.com/WICG/webpackage/issues/478 is resolved.
   if (response_head->headers->response_code() != net::HTTP_OK) {
     web_bundle_handle_->OnWebBundleError(
@@ -901,7 +901,7 @@ void WebBundleURLLoaderFactory::SendResponseToLoader(
   // is allowed to read those, and only the browser process can issue trusted
   // requests.
   std::string auction_only;
-  // TODO(crbug.com/1448564): Remove old names once API users have migrated to
+  // TODO(crbug.com/40269364): Remove old names once API users have migrated to
   // new names.
   if (!loader->is_trusted() && response_head->headers &&
       (response_head->headers->GetNormalizedHeader("Ad-Auction-Only",

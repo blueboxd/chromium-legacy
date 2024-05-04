@@ -109,9 +109,10 @@ class GeolocationServiceUnitTest : public DeviceServiceTestBase {
 #else
 TEST_F(GeolocationServiceUnitTest, UrlWithApiKey) {
 // To align with user expectation we do not make Network Location Requests
-// on macOS unless the browser has Location Permission from the OS.
+// unless the browser has location system permission from the supported
+// operating systems.
 #if BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_CHROMEOS)
-  fake_geolocation_manager_->SetSystemPermission(
+  fake_geolocation_system_permission_manager_->SetSystemPermission(
       LocationSystemPermissionStatus::kAllowed);
 #endif
 
@@ -135,8 +136,8 @@ TEST_F(GeolocationServiceUnitTest, UrlWithApiKey) {
 }
 #endif
 
-// TODO(https://crbug.com/912057): Flaky on Chrome OS / Fails often on *San.
-// TODO(https://crbug.com/999409): Also flaky on other platforms.
+// TODO(crbug.com/41430104): Flaky on Chrome OS / Fails often on *San.
+// TODO(crbug.com/41479143): Also flaky on other platforms.
 TEST_F(GeolocationServiceUnitTest, DISABLED_GeolocationConfig) {
   BindGeolocationConfig();
   {

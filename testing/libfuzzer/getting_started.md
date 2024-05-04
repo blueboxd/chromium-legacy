@@ -54,28 +54,18 @@ More detail in all the following sections.
 
 ## Creating a new `FUZZ_TEST` target
 
-*** note
-**Note:** Fuzztests don't yet build on Windows component builds.
-We recommend wrapping these new targets in `if (fuzztest_supported) { }`
-blocks in your `gn` file for now. We'll remove these in future when it works on
-all platforms.
-***
-
 ```
-import("//build/config/sanitizers/sanitizers.gni")
 import("//testing/test.gni")
 
-if (fuzztest_supported) {
-  test("hypothetical_fuzztests") {
-    sources = [ "hypothetical_fuzztests.cc" ]
+test("hypothetical_fuzztests") {
+  sources = [ "hypothetical_fuzztests.cc" ]
 
-    fuzztests = ['MyApiTest.MyApiCanSuccessfullyParseAnyString']
+  fuzztests = ["MyApiTest.MyApiCanSuccessfullyParseAnyString"]
 
-    deps = [
-      ":hypothetical_component",
-      "//third_party/fuzztest:fuzztest_gtest_main",
-    ]
-  }
+  deps = [
+    ":hypothetical_component",
+    "//third_party/fuzztest:fuzztest_gtest_main",
+  ]
 }
 ```
 
@@ -93,18 +83,16 @@ In the near future we'll support adding `FUZZ_TEST`s alongside existing
 unit tests, even in the same .cc file.
 
 ```
-if (is_linux) {
-  test("existing_unit_tests") {
-    sources = [ "existing_unit_tests.cc" ] # add FUZZ_TESTs here
+test("existing_unit_tests") {
+  sources = [ "existing_unit_tests.cc" ] # add FUZZ_TESTs here
 
-    fuzztests = ['MyApiTest.ApiWorksAlways']
-      # Add this!
+  fuzztests = ["MyApiTest.ApiWorksAlways"]
+    # Add this!
 
-    deps = [
-      ":existing_component",
-      # Other stuff
-    ]
-  }
+  deps = [
+    ":existing_component",
+    # Other stuff
+  ]
 }
 ```
 

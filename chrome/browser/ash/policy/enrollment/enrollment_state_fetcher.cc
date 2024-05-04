@@ -5,6 +5,8 @@
 #include "chrome/browser/ash/policy/enrollment/enrollment_state_fetcher.h"
 
 #include <memory>
+#include <optional>
+#include <string>
 #include <string_view>
 #include <tuple>
 
@@ -22,9 +24,11 @@
 #include "base/types/expected.h"
 #include "base/uuid.h"
 #include "base/values.h"
+#include "chrome/browser/ash/login/oobe_configuration.h"
 #include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
 #include "chrome/browser/ash/policy/enrollment/auto_enrollment_state.h"
 #include "chrome/browser/ash/policy/enrollment/auto_enrollment_type_checker.h"
+#include "chrome/browser/ash/policy/enrollment/flex_enrollment_token_provider.h"
 #include "chrome/browser/ash/policy/server_backed_state/server_backed_device_state.h"
 #include "chrome/browser/ash/policy/server_backed_state/server_backed_state_keys_broker.h"
 #include "chrome/browser/ash/settings/device_settings_service.h"
@@ -137,6 +141,13 @@ struct DeterminationContext {
   // Interface for checking ownership.
   // Must be set before sequence starts.
   raw_ptr<ash::DeviceSettingsService> device_settings_service;
+
+  // Enrollment token, included in state retrieval requests in order to obtain
+  // enrollment-related data (e.g. license type) associated server-side with
+  // the token. If this value is set, the device will make a state retrieval
+  // request even if PSM returns false. As of writing, enrollment_token
+  // is only included for Flex devices, to facilitate Flex Auto Enrollment.
+  std::optional<std::string> enrollment_token;
 
   // RLZ brand code and serial numbers retrieved using `statistics_provider`.
   // Used for state availability determination (PSM) and state retrieval
@@ -517,6 +528,18 @@ class RlweQuery {
             : em::DeviceRegisterRequest::PSM_RESULT_SUCCESSFUL_WITHOUT_STATE);
   }
 
+  void MarkResultIgnoredForTokenBasedEnrollment(PrefService* local_state) {
+    local_state->SetTime(prefs::kEnrollmentPsmDeterminationTime,
+                         base::Time::Now());
+    // TODO(b/331285209): Consider changing name of
+    // PSM_SKIPPED_FOR_FLEX_AUTO_ENROLLMENT (unlikely since it's in a shared
+    // proto), or adding a new value, to remove "Flex" from the name, and
+    // change "skipped" to "ignored", as "skipped" isn't entirely accurate here.
+    local_state->SetInteger(
+        prefs::kEnrollmentPsmResult,
+        em::DeviceRegisterRequest::PSM_SKIPPED_FOR_FLEX_AUTO_ENROLLMENT);
+  }
+
  private:
   std::unique_ptr<DeviceManagementService::Job> job_;
   base::WeakPtrFactory<RlweQuery> weak_factory_{this};
@@ -534,15 +557,20 @@ class StateKeys {
   StateKeys& operator=(const StateKeys&) = delete;
 
   using CompletionCallback = base::OnceCallback<void(
-      base::expected<std::string, ServerBackedStateKeysBroker::ErrorType>)>;
+      base::expected<std::optional<std::string>,
+                     ServerBackedStateKeysBroker::ErrorType>)>;
 
-  // This will try up to `kMaxAttempts` times to obtain the state keys.  If
-  // successful, it will return the current state key by calling the completion
-  // callback.
-  // Otherwise, it will return `std::nullopt`.
+  // If FRE is enabled, this will try up to `kMaxAttempts` times to obtain the
+  // state keys. If successful, it will call the completion callback with the
+  // current state key as the callback's expected value. If unsuccessful, the
+  // callback will be passed an unexpected (error) value.
+  //
+  // If FRE is not enabled, the completion callback will be called with the
+  // `std::nullopt` as the callback's expected value.
   void Retrieve(ServerBackedStateKeysBroker* state_key_broker,
                 CompletionCallback completion_callback) {
     ++attempts_;
+    LOG(WARNING) << "Requesting state keys. Attempt " << attempts_ << ".";
     state_key_broker->RequestStateKeys(base::BindOnce(
         &StateKeys::OnStateKeysRetrieved, weak_factory_.GetWeakPtr(),
         state_key_broker, std::move(completion_callback)));
@@ -598,6 +626,10 @@ class EnrollmentState {
     auto* request = config->request()->mutable_device_state_retrieval_request();
     if (context.state_key.has_value()) {
       request->set_server_backed_state_key(context.state_key.value());
+    }
+    if (context.enrollment_token.has_value()) {
+      VLOG(1) << "Setting enrollment token on DeviceStateRetrievalRequest";
+      request->set_enrollment_token(context.enrollment_token.value());
     }
     request->set_brand_code(std::string(context.rlz_brand_code));
     request->set_serial_number(std::string(context.serial_number));
@@ -740,8 +772,6 @@ class EnrollmentState {
 
     switch (initial_enrollment_mode) {
       case Response::INITIAL_ENROLLMENT_MODE_NONE:
-      // Do nothing initially with token-based enrollment mode.
-      case Response::INITIAL_ENROLLMENT_MODE_TOKEN_ENROLLMENT_ENFORCED:
         return {AutoEnrollmentResult::kNoEnrollment, std::string()};
       case Response::INITIAL_ENROLLMENT_MODE_ENROLLMENT_ENFORCED:
         return {AutoEnrollmentResult::kEnrollment,
@@ -751,6 +781,9 @@ class EnrollmentState {
                 kDeviceStateInitialModeEnrollmentZeroTouch};
       case Response::INITIAL_ENROLLMENT_MODE_DISABLED:
         return {AutoEnrollmentResult::kDisabled, kDeviceStateModeDisabled};
+      case Response::INITIAL_ENROLLMENT_MODE_TOKEN_ENROLLMENT_ENFORCED:
+        return {AutoEnrollmentResult::kEnrollment,
+                kDeviceStateInitialModeTokenEnrollment};
     }
   }
 
@@ -845,7 +878,8 @@ class EnrollmentStateFetcherImpl : public EnrollmentStateFetcher {
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       ash::SystemClockClient* system_clock_client,
       ServerBackedStateKeysBroker* state_key_broker,
-      ash::DeviceSettingsService* device_settings_service) {
+      ash::DeviceSettingsService* device_settings_service,
+      ash::OobeConfiguration* oobe_configuration) {
     DCHECK(report_result);
     DCHECK(local_state);
     DCHECK(rlwe_client_factory);
@@ -854,6 +888,7 @@ class EnrollmentStateFetcherImpl : public EnrollmentStateFetcher {
     DCHECK(system_clock_client);
     DCHECK(state_key_broker);
     DCHECK(device_settings_service);
+    DCHECK(oobe_configuration);
 
     call_sequence_ = std::make_unique<Sequence>(
         std::move(report_result), local_state,
@@ -861,7 +896,8 @@ class EnrollmentStateFetcherImpl : public EnrollmentStateFetcher {
                              ash::system::StatisticsProvider::GetInstance(),
                              device_management_service, url_loader_factory,
                              system_clock_client, state_key_broker,
-                             device_settings_service});
+                             device_settings_service,
+                             GetFlexEnrollmentToken(oobe_configuration)});
   }
 
   void Start() override;
@@ -900,13 +936,10 @@ class EnrollmentStateFetcherImpl::Sequence {
       return ReportResult(AutoEnrollmentResult::kNoEnrollment);
     }
 
-    // Flex devices do not support FRE, hence there is no need to perform state
-    // determination. Users are still able to manually enroll devices though.
-    const bool is_on_flex = ash::switches::IsRevenBranding();
-    base::UmaHistogramBoolean(kUMAStateDeterminationOnFlex, is_on_flex);
-    if (is_on_flex) {
-      return ReportResult(AutoEnrollmentResult::kNoEnrollment);
-    }
+    // Report whether we're doing FRE on Flex or not.
+    base::UmaHistogramBoolean(kUMAStateDeterminationOnFlex,
+                              ash::switches::IsRevenBranding());
+
     // TODO(b/265923216): Investigate the possibility of using bypassing PSM and
     // using state key to directly request state when identifiers are missing.
     if (!device_identifiers_.Retrieve(context_.statistics_provider,
@@ -981,6 +1014,7 @@ class EnrollmentStateFetcherImpl::Sequence {
 
   void OnQueryRequestDone(RlweQuery::Result result) {
     ReportStepDurationAndResetTimer(kUMASuffixQueryRequest);
+
     if (!result.has_value()) {
       StorePsmError(local_state_);
       if (absl::holds_alternative<AutoEnrollmentPsmError>(result.error())) {
@@ -994,23 +1028,38 @@ class EnrollmentStateFetcherImpl::Sequence {
         ConstructPlainttextId(context_.rlz_brand_code, context_.serial_number);
     // Use WARNING level to preserve PSM ID in the logs.
     LOG(WARNING) << "PSM determination successful. Identifier "
-                 << psm_id.sensitive_id() << " is "
+                 << psm_id.sensitive_id() << " is"
                  << (result.value() ? "" : " not") << " present on the server";
 
     base::UmaHistogramBoolean(kUMAStateDeterminationPsmReportedAvailableState,
                               result.value());
+
     if (!result.value()) {
-      return ReportResult(AutoEnrollmentResult::kNoEnrollment);
+      if (context_.enrollment_token.has_value()) {
+        query_.MarkResultIgnoredForTokenBasedEnrollment(local_state_);
+      } else {
+        // There is no PSM record nor enrollment token present, device doesn't
+        // need to proceed to further steps.
+        return ReportResult(AutoEnrollmentResult::kNoEnrollment);
+      }
+    } else {
+      query_.StoreResponse(local_state_, result.value());
     }
-    query_.StoreResponse(local_state_, result.value());
-    state_keys_.Retrieve(context_.state_key_broker,
-                         base::BindOnce(&Sequence::OnStateKeysRetrieved,
-                                        weak_factory_.GetWeakPtr()));
+
+    if (AutoEnrollmentTypeChecker::IsFREEnabled()) {
+      state_keys_.Retrieve(context_.state_key_broker,
+                           base::BindOnce(&Sequence::OnStateKeyRetrieved,
+                                          weak_factory_.GetWeakPtr()));
+    } else {
+      LOG(WARNING) << "Forced re-enrollment is not enabled. No need to "
+                      "retrieve a re-enrollment (a.k.a. state) key.";
+      OnStateKeyRetrieved(std::nullopt);
+    }
   }
 
-  void OnStateKeysRetrieved(
-      base::expected<std::string, ServerBackedStateKeysBroker::ErrorType>
-          state_key) {
+  void OnStateKeyRetrieved(
+      base::expected<std::optional<std::string>,
+                     ServerBackedStateKeysBroker::ErrorType> state_key) {
     ReportStepDurationAndResetTimer(kUMASuffixStateKeysRetrieval);
     base::UmaHistogramEnumeration(
         kUMAStateDeterminationStateKeysRetrievalErrorType,
@@ -1021,7 +1070,8 @@ class EnrollmentStateFetcherImpl::Sequence {
       switch (state_key.error()) {
         case ServerBackedStateKeysBroker::ErrorType::kMissingIdentifiers:
           // Missing identifiers is typically a permanent error, hence we
-          // proceed to attempt ZTE with just serial number and brand code.
+          // proceed to attempt state retrieval with just serial number
+          // and brand code.
           LOG(WARNING)
               << "Failed to obtain state keys due to missing identifiers";
           context_.state_key.reset();
@@ -1118,11 +1168,12 @@ std::unique_ptr<EnrollmentStateFetcher> EnrollmentStateFetcher::Create(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     ash::SystemClockClient* system_clock_client,
     ServerBackedStateKeysBroker* state_key_broker,
-    ash::DeviceSettingsService* device_settings_service) {
+    ash::DeviceSettingsService* device_settings_service,
+    ash::OobeConfiguration* oobe_configuration) {
   return std::make_unique<EnrollmentStateFetcherImpl>(
       std::move(report_result), local_state, rlwe_client_factory,
       device_management_service, url_loader_factory, system_clock_client,
-      state_key_broker, device_settings_service);
+      state_key_broker, device_settings_service, oobe_configuration);
 }
 
 // static

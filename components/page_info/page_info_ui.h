@@ -40,10 +40,9 @@ class X509Certificate;
 // etc.).
 class PageInfoUI {
  public:
-  enum class SecuritySummaryColor {
-    RED,
-    GREEN,
-  };
+  // Specifies security icons and sections shown for the page info UI. For
+  // ENTERPRISE, a red business icon is shown in the omnibox.
+  enum class SecuritySummaryColor { RED, GREEN, ENTERPRISE };
 
   enum class SecurityDescriptionType {
     // The UI describes whether the connection is secure, e.g. secure
@@ -86,7 +85,7 @@ class PageInfoUI {
 
   // |CookiesNewInfo| contains information about the sites that are allowed
   // to access cookies and fps cookies info for new UI.
-  // TODO(crbug.com/1346305):  Change the name to "CookieInfo" after finishing
+  // TODO(crbug.com/40854087):  Change the name to "CookieInfo" after finishing
   // cookies subpage implementation
   struct CookiesNewInfo {
     CookiesNewInfo();

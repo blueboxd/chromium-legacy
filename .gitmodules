@@ -143,6 +143,14 @@
 	path = net/third_party/quiche/src
 	url = https://quiche.googlesource.com/quiche
 	ignore = all
+[submodule "testing/libfuzzer/fuzzers/wasm_corpus"]
+	path = testing/libfuzzer/fuzzers/wasm_corpus
+	url = https://chromium.googlesource.com/v8/fuzzer_wasm_corpus
+	ignore = all
+[submodule "third_party/accessibility_test_framework/src"]
+	path = third_party/accessibility_test_framework/src
+	url = https://chromium.googlesource.com/external/github.com/google/Accessibility-Test-Framework-for-Android
+	ignore = all
 [submodule "third_party/android_protobuf/src"]
 	path = third_party/android_protobuf/src
 	url = https://android.googlesource.com/platform/external/protobuf
@@ -333,6 +341,11 @@
 [submodule "third_party/harfbuzz-ng/src"]
 	path = third_party/harfbuzz-ng/src
 	url = https://chromium.googlesource.com/external/github.com/harfbuzz/harfbuzz
+	ignore = all	
+[submodule "third_party/instrumented_libs"]
+	path = third_party/instrumented_libs
+	url = https://chromium.googlesource.com/chromium/third_party/instrumented_libraries
+	gclient-condition = checkout_instrumented_libraries
 	ignore = all
 [submodule "third_party/jszip/src"]
 	path = third_party/jszip/src
@@ -355,6 +368,7 @@
 	path = third_party/google_toolbox_for_mac/src
 	url = https://chromium.googlesource.com/external/github.com/google/google-toolbox-for-mac
 	gclient-condition = checkout_ios or checkout_mac
+	ignore = all
 [submodule "third_party/google-truth/src"]
 	path = third_party/google-truth/src
 	url = https://chromium.googlesource.com/external/github.com/google/truth
@@ -424,6 +438,10 @@
 [submodule "third_party/libavif/src"]
 	path = third_party/libavif/src
 	url = https://chromium.googlesource.com/external/github.com/AOMediaCodec/libavif
+	ignore = all
+[submodule "third_party/crabbyavif/src"]
+	path = third_party/crabbyavif/src
+	url = https://chromium.googlesource.com/external/github.com/webmproject/CrabbyAvif
 	ignore = all
 [submodule "third_party/libavifinfo/src"]
 	path = third_party/libavifinfo/src
@@ -533,6 +551,11 @@
 	url = https://chromium.googlesource.com/external/github.com/google/material-design-icons
 	gclient-condition = checkout_ios
 	ignore = all
+[submodule "third_party/microsoft_dxheaders/src"]
+	path = third_party/microsoft_dxheaders/src
+	url = https://chromium.googlesource.com/external/github.com/microsoft/DirectX-Headers
+	gclient-condition = checkout_win
+	ignore = all
 [submodule "third_party/minigbm/src"]
 	path = third_party/minigbm/src
 	url = https://chromium.googlesource.com/chromiumos/platform/minigbm
@@ -581,6 +604,10 @@
 	path = third_party/perl
 	url = https://chromium.googlesource.com/chromium/deps/perl
 	gclient-condition = checkout_win
+	ignore = all
+[submodule "third_party/protobuf-javascript/src"]
+	path = third_party/protobuf-javascript/src
+	url = https://chromium.googlesource.com/external/github.com/protocolbuffers/protobuf-javascript
 	ignore = all
 [submodule "third_party/pthreadpool/src"]
 	path = third_party/pthreadpool/src
@@ -729,9 +756,19 @@
 	url = https://android.googlesource.com/platform/prebuilts/build-tools
 	gclient-condition = checkout_android_prebuilts_build_tools
 	ignore = all
+[submodule "chromeos/ash/resources/internal"]
+	path = chromeos/ash/resources/internal
+	url = https://chrome-internal.googlesource.com/chrome/chromeos/ash/resources/internal
+	gclient-condition = checkout_src_internal and checkout_chromeos
+	ignore = all
 [submodule "chromeos/assistant/internal"]
 	path = chromeos/assistant/internal
 	url = https://chrome-internal.googlesource.com/chrome/assistant
+	gclient-condition = checkout_src_internal and checkout_chromeos
+	ignore = all
+[submodule "ash/webui/conch"]
+	path = ash/webui/conch
+	url = https://chrome-internal.googlesource.com/ash/webui/conch
 	gclient-condition = checkout_src_internal and checkout_chromeos
 	ignore = all
 [submodule "build/fuchsia/internal"]
@@ -784,10 +821,10 @@
 	url = https://chrome-internal.googlesource.com/chrome/browser/platform_experience/win
 	gclient-condition = checkout_src_internal
 	ignore = all
-[submodule "chrome/browser/resources/chromeos/quickoffice"]
-	path = chrome/browser/resources/chromeos/quickoffice
-	url = https://chrome-internal.googlesource.com/quickoffice/crx
-	gclient-condition = (checkout_chromeos or checkout_linux) and checkout_src_internal
+[submodule "chrome/browser/resources/downloads/internal"]
+	path = chrome/browser/resources/downloads/internal
+	url = https://chrome-internal.googlesource.com/chrome/browser/resources/downloads_internal
+	gclient-condition = checkout_src_internal
 	ignore = all
 [submodule "chrome/browser/resources/settings/internal"]
 	path = chrome/browser/resources/settings/internal
@@ -798,6 +835,11 @@
 	path = chrome/browser/spellchecker/internal
 	url = https://chrome-internal.googlesource.com/chrome/spellchecker/internal
 	gclient-condition = checkout_src_internal
+	ignore = all
+[submodule "chrome/elevation_service/internal"]
+	path = chrome/elevation_service/internal
+	url = https://chrome-internal.googlesource.com/chrome/elevation_service/internal
+	gclient-condition = checkout_src_internal and checkout_win
 	ignore = all
 [submodule "chrome/installer/mac/internal"]
 	path = chrome/installer/mac/internal
@@ -837,11 +879,6 @@
 [submodule "chrome/test/media_router/internal"]
 	path = chrome/test/media_router/internal
 	url = https://chrome-internal.googlesource.com/chrome/test/media_router/internal
-	gclient-condition = checkout_src_internal
-	ignore = all
-[submodule "chrome/test/python_tests"]
-	path = chrome/test/python_tests
-	url = https://chrome-internal.googlesource.com/chrome/test/python_tests
 	gclient-condition = checkout_src_internal
 	ignore = all
 [submodule "chrome/tools/memory"]
@@ -928,15 +965,11 @@
 	url = https://chrome-internal.googlesource.com/chrome/ios_internal
 	gclient-condition = checkout_ios and checkout_src_internal
 	ignore = all
-[submodule "remoting/android/internal"]
-	path = remoting/android/internal
-	url = https://chrome-internal.googlesource.com/chrome/remoting/android/internal
-	gclient-condition = checkout_android and checkout_src_internal
-	ignore = all
 [submodule "remoting/host/installer/linux/internal"]
 	path = remoting/host/installer/linux/internal
 	url = https://chrome-internal.googlesource.com/chrome/remoting/host/installer/linux/internal
 	gclient-condition = checkout_linux and checkout_src_internal
+	ignore = all
 [submodule "remoting/internal"]
 	path = remoting/internal
 	url = https://chrome-internal.googlesource.com/chrome/remoting/internal
@@ -1046,3 +1079,4 @@
 	path = webkit/data/test_shell/plugins
 	url = https://chrome-internal.googlesource.com/chrome/data/webkit_plugin_tests
 	gclient-condition = checkout_src_internal
+	ignore = all

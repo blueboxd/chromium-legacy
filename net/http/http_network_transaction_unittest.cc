@@ -13,6 +13,7 @@
 #include <optional>
 #include <set>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -26,7 +27,6 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
-#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -3700,7 +3700,7 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthProxyNoKeepAliveHttp10) {
       NetLogEventType::HTTP_TRANSACTION_READ_TUNNEL_RESPONSE_HEADERS,
       NetLogEventPhase::NONE);
 
-  // TODO(crbug.com/986744): Fix handling of OnConnected() when proxy
+  // TODO(crbug.com/40637204): Fix handling of OnConnected() when proxy
   // authentication is required. We should notify the callback that a connection
   // was established, even though the stream might not be ready for us to send
   // data through it.
@@ -3859,7 +3859,7 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthProxyNoKeepAliveHttp11) {
   EXPECT_EQ(PacResultElementToProxyChain("PROXY myproxy:70"),
             response->proxy_chain);
 
-  // TODO(crbug.com/986744): Fix handling of OnConnected() when proxy
+  // TODO(crbug.com/40637204): Fix handling of OnConnected() when proxy
   // authentication is required. We should notify the callback that a connection
   // was established, even though the stream might not be ready for us to send
   // data through it.
@@ -6889,7 +6889,7 @@ TEST_P(HttpNetworkTransactionTest, HttpsNestedProxySpdyGet) {
 
   MockRead spdy_reads[] = {
       CreateMockRead(proxy2_connect_resp, 1),
-      // TODO(https://crbug.com/497228): We have to manually delay this read so
+      // TODO(crbug.com/41180906): We have to manually delay this read so
       // that the higher-level SPDY stream doesn't get notified of an available
       // read before the write it initiated (the second CONNECT) finishes,
       // triggering a DCHECK.
@@ -7045,7 +7045,7 @@ TEST_P(HttpNetworkTransactionTest, HttpsNestedProxySameProxyTwiceSpdyGet) {
 
   MockRead spdy_reads[] = {
       CreateMockRead(proxy_connect_resp, 1),
-      // TODO(https://crbug.com/497228): We have to manually delay this read so
+      // TODO(crbug.com/41180906): We have to manually delay this read so
       // that the higher-level SPDY stream doesn't get notified of an available
       // read before the write it initiated (the second CONNECT) finishes,
       // triggering a DCHECK.
@@ -7168,7 +7168,7 @@ TEST_P(HttpNetworkTransactionTest, NestedProxyHttpOverSpdyProtocolError) {
 
   MockRead spdy_reads[] = {
       CreateMockRead(proxy2_connect_resp, 1),
-      // TODO(https://crbug.com/497228): We have to manually delay this read so
+      // TODO(crbug.com/41180906): We have to manually delay this read so
       // that the higher-level SPDY stream doesn't get notified of an available
       // read before the write it initiated (the second CONNECT) finishes,
       // triggering a DCHECK.
@@ -7214,7 +7214,7 @@ TEST_P(HttpNetworkTransactionTest, NestedProxyHttpOverSpdyProtocolError) {
 }
 
 // Test that a proxy server requesting a client auth cert doesn't cause a crash.
-// TODO(https://crbug.com/1491092): This test can be deleted once we no longer
+// TODO(crbug.com/40284947): This test can be deleted once we no longer
 // need the multi-proxy chain version below, since this functionality should
 // be sufficiently tested elsewhere. For now this test just shows that
 // single-proxy and multi-proxy behavior is consistent (when a read returns
@@ -7280,7 +7280,7 @@ TEST_P(HttpNetworkTransactionTest, HttpsClientAuthCertNeededNoCrash) {
 
 // Test that the first proxy server in a multi-proxy chain requesting a client
 // auth cert doesn't cause a crash.
-// TODO(https://crbug.com/1491092): Support client auth certificates for
+// TODO(crbug.com/40284947): Support client auth certificates for
 // multi-proxy chains and then replace this test with a more robust one (for
 // instance, a version of the AuthEverywhere test that uses a multi-proxy
 // chain).
@@ -7355,7 +7355,7 @@ TEST_P(HttpNetworkTransactionTest,
 
 // Same as above but using a different method to request the client auth
 // certificate.
-// TODO(https://crbug.com/1491092): Support client auth certificates for
+// TODO(crbug.com/40284947): Support client auth certificates for
 // multi-proxy chains and then replace this test with a more robust one (for
 // instance, a version of the AuthEverywhere test that uses a multi-proxy
 // chain).
@@ -7416,7 +7416,7 @@ TEST_P(HttpNetworkTransactionTest,
 
 // Test that a read returning ERR_SSL_CLIENT_AUTH_CERT_NEEDED after the first
 // CONNECT doesn't result in a crash when a multi-proxy chain is in use.
-// TODO(https://crbug.com/1491092): Support client auth certificates for
+// TODO(crbug.com/40284947): Support client auth certificates for
 // multi-proxy chains and then replace this test with a more robust one (for
 // instance, a version of the AuthEverywhere test that uses a multi-proxy
 // chain).
@@ -7470,7 +7470,7 @@ TEST_P(HttpNetworkTransactionTest,
 
   MockRead spdy_reads[] = {
       CreateMockRead(proxy2_connect_resp, 1),
-      // TODO(https://crbug.com/497228): We have to manually delay this read so
+      // TODO(crbug.com/41180906): We have to manually delay this read so
       // that the higher-level SPDY stream doesn't get notified of an available
       // read before the write it initiated (the second CONNECT) finishes,
       // triggering a DCHECK.
@@ -7516,7 +7516,7 @@ TEST_P(HttpNetworkTransactionTest,
 
 // Test that the second proxy server in a multi-proxy chain requesting a client
 // auth cert doesn't cause a crash.
-// TODO(https://crbug.com/1491092): Support client auth certificates for
+// TODO(crbug.com/40284947): Support client auth certificates for
 // multi-proxy chains and then replace this test with a more robust one (for
 // instance, a version of the AuthEverywhere test that uses a multi-proxy
 // chain).
@@ -7602,7 +7602,7 @@ TEST_P(HttpNetworkTransactionTest,
 
 // Test that the endpoint requesting a client auth cert over a multi-proxy chain
 // tunnel doesn't cause a crash.
-// TODO(https://crbug.com/1491092): Support client auth certificates for
+// TODO(crbug.com/40284947): Support client auth certificates for
 // multi-proxy chains and then replace this test with a more robust one (for
 // instance, a version of the AuthEverywhere test that uses a multi-proxy
 // chain).
@@ -7665,7 +7665,7 @@ TEST_P(HttpNetworkTransactionTest,
 
   MockRead spdy_reads[] = {
       CreateMockRead(proxy2_connect_resp, 1, ASYNC),
-      // TODO(https://crbug.com/497228): We have to manually delay this read so
+      // TODO(crbug.com/41180906): We have to manually delay this read so
       // that the higher-level SPDY stream doesn't get notified of an available
       // read before the write it initiated (the second CONNECT) finishes,
       // triggering a DCHECK.
@@ -8072,7 +8072,7 @@ TEST_P(HttpNetworkTransactionTest, HttpsNestedProxySpdyConnectHttps) {
 
   MockRead spdy_reads[] = {
       CreateMockRead(proxy2_connect_resp, 1, ASYNC),
-      // TODO(https://crbug.com/497228): We have to manually delay this read so
+      // TODO(crbug.com/41180906): We have to manually delay this read so
       // that the higher-level SPDY stream doesn't get notified of an available
       // read before the write it initiated (the second CONNECT) finishes,
       // triggering a DCHECK.
@@ -8655,7 +8655,7 @@ TEST_P(HttpNetworkTransactionTest,
 
   MockRead spdy_reads[] = {
       CreateMockRead(proxy2_connect_resp, 1, ASYNC),
-      // TODO(https://crbug.com/497228): We have to manually delay this read so
+      // TODO(crbug.com/41180906): We have to manually delay this read so
       // that the higher-level SPDY stream doesn't get notified of an available
       // read before the write it initiated (the second CONNECT) finishes,
       // triggering a DCHECK.
@@ -9026,7 +9026,7 @@ TEST_P(HttpNetworkTransactionTest,
 
   MockRead spdy_reads1[] = {
       CreateMockRead(proxy2_connect_resp, 1, ASYNC),
-      // TODO(https://crbug.com/497228): We have to manually delay this read so
+      // TODO(crbug.com/41180906): We have to manually delay this read so
       // that the higher-level SPDY stream doesn't get notified of an available
       // read before the write it initiated (the second CONNECT) finishes,
       // triggering a DCHECK.
@@ -9310,7 +9310,7 @@ TEST_P(HttpNetworkTransactionTest,
 
   MockRead spdy_reads1[] = {
       CreateMockRead(proxy2_connect_resp, 1, ASYNC),
-      // TODO(https://crbug.com/497228): We have to manually delay this read so
+      // TODO(crbug.com/41180906): We have to manually delay this read so
       // that the higher-level SPDY stream doesn't get notified of an available
       // read before the write it initiated (the second CONNECT) finishes,
       // triggering a DCHECK.
@@ -9318,7 +9318,7 @@ TEST_P(HttpNetworkTransactionTest,
       CreateMockRead(wrapped_endpoint_connect_resp, 4, ASYNC),
       CreateMockRead(wrapped_wrapped_get_resp, 6, ASYNC),
       CreateMockRead(wrapped_wrapped_body, 7, ASYNC),
-      // TODO(https://crbug.com/497228): We have to manually delay this read so
+      // TODO(crbug.com/41180906): We have to manually delay this read so
       // that the higher-level SPDY stream doesn't get notified of an available
       // read before the write it initiated (the second CONNECT) finishes,
       // triggering a DCHECK.
@@ -9499,7 +9499,7 @@ TEST_P(HttpNetworkTransactionTest, HttpsNestedProxySpdySocketReuseAfterError) {
 
   MockRead spdy_reads[] = {
       CreateMockRead(proxy2_connect_resp, 1, ASYNC),
-      // TODO(https://crbug.com/497228): We have to manually delay this read so
+      // TODO(crbug.com/41180906): We have to manually delay this read so
       // that the higher-level SPDY stream doesn't get notified of an available
       // read before the write it initiated (the second CONNECT) finishes,
       // triggering a DCHECK.
@@ -11232,13 +11232,13 @@ TEST_P(HttpNetworkTransactionTest, NTLMAuthV2) {
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   // Generate the NTLM messages based on known test data.
-  std::string negotiate_msg = base::Base64Encode(base::StringPiece(
+  std::string negotiate_msg = base::Base64Encode(std::string_view(
       reinterpret_cast<const char*>(ntlm::test::kExpectedNegotiateMsg),
       std::size(ntlm::test::kExpectedNegotiateMsg)));
-  std::string challenge_msg = base::Base64Encode(base::StringPiece(
+  std::string challenge_msg = base::Base64Encode(std::string_view(
       reinterpret_cast<const char*>(ntlm::test::kChallengeMsgFromSpecV2),
       std::size(ntlm::test::kChallengeMsgFromSpecV2)));
-  std::string authenticate_msg = base::Base64Encode(base::StringPiece(
+  std::string authenticate_msg = base::Base64Encode(std::string_view(
       reinterpret_cast<const char*>(
           ntlm::test::kExpectedAuthenticateMsgEmptyChannelBindingsV2),
       std::size(ntlm::test::kExpectedAuthenticateMsgEmptyChannelBindingsV2)));
@@ -11378,13 +11378,13 @@ TEST_P(HttpNetworkTransactionTest, NTLMAuthV2WrongThenRightPassword) {
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   // Generate the NTLM messages based on known test data.
-  std::string negotiate_msg = base::Base64Encode(base::StringPiece(
+  std::string negotiate_msg = base::Base64Encode(std::string_view(
       reinterpret_cast<const char*>(ntlm::test::kExpectedNegotiateMsg),
       std::size(ntlm::test::kExpectedNegotiateMsg)));
-  std::string challenge_msg = base::Base64Encode(base::StringPiece(
+  std::string challenge_msg = base::Base64Encode(std::string_view(
       reinterpret_cast<const char*>(ntlm::test::kChallengeMsgFromSpecV2),
       std::size(ntlm::test::kChallengeMsgFromSpecV2)));
-  std::string authenticate_msg = base::Base64Encode(base::StringPiece(
+  std::string authenticate_msg = base::Base64Encode(std::string_view(
       reinterpret_cast<const char*>(
           ntlm::test::kExpectedAuthenticateMsgEmptyChannelBindingsV2),
       std::size(ntlm::test::kExpectedAuthenticateMsgEmptyChannelBindingsV2)));
@@ -11596,7 +11596,7 @@ TEST_P(HttpNetworkTransactionTest, NTLMOverHttp2) {
   HttpAuthNtlmMechanism::ScopedProcSetter proc_setter(
       MockGetMSTime, MockGenerateRandom, MockGetHostName);
 
-  const char* kUrl = "https://server/kids/login.aspx";
+  const char kUrl[] = "https://server/kids/login.aspx";
 
   HttpRequestInfo request;
   request.method = "GET";
@@ -11620,13 +11620,13 @@ TEST_P(HttpNetworkTransactionTest, NTLMOverHttp2) {
   spdy_util_.UpdateWithStreamDestruction(1);
 
   // Generate the NTLM messages based on known test data.
-  std::string negotiate_msg = base::Base64Encode(base::StringPiece(
+  std::string negotiate_msg = base::Base64Encode(std::string_view(
       reinterpret_cast<const char*>(ntlm::test::kExpectedNegotiateMsg),
       std::size(ntlm::test::kExpectedNegotiateMsg)));
-  std::string challenge_msg = base::Base64Encode(base::StringPiece(
+  std::string challenge_msg = base::Base64Encode(std::string_view(
       reinterpret_cast<const char*>(ntlm::test::kChallengeMsgFromSpecV2),
       std::size(ntlm::test::kChallengeMsgFromSpecV2)));
-  std::string authenticate_msg = base::Base64Encode(base::StringPiece(
+  std::string authenticate_msg = base::Base64Encode(std::string_view(
       reinterpret_cast<const char*>(
           ntlm::test::kExpectedAuthenticateMsgEmptyChannelBindingsV2),
       std::size(ntlm::test::kExpectedAuthenticateMsgEmptyChannelBindingsV2)));
@@ -11743,6 +11743,172 @@ TEST_P(HttpNetworkTransactionTest, NTLMOverHttp2) {
   EXPECT_TRUE(data0.AllWriteDataConsumed());
   EXPECT_TRUE(data1.AllReadDataConsumed());
   EXPECT_TRUE(data1.AllWriteDataConsumed());
+
+  EXPECT_TRUE(session->http_server_properties()->RequiresHTTP11(
+      url::SchemeHostPort(request.url), NetworkAnonymizationKey()));
+}
+
+// Same as above, but with a host mapping in place. The mapped host is the one
+// that should be tagged as requiring HTTP11.
+TEST_P(HttpNetworkTransactionTest, NTLMOverHttp2WithHostMapping) {
+  HttpAuthNtlmMechanism::ScopedProcSetter proc_setter(
+      MockGetMSTime, MockGenerateRandom, MockGetHostName);
+
+  const char kUrl[] = "https://server/kids/login.aspx";
+  const char kMappedUrl[] = "https://server2:12345/kids/login.aspx";
+  session_deps_.host_mapping_rules.AddRuleFromString(
+      "MAP server server2:12345");
+
+  HttpRequestInfo request;
+  request.method = "GET";
+  request.url = GURL(kUrl);
+  request.traffic_annotation =
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+
+  // First request without credentials.
+  spdy::Http2HeaderBlock request_headers0(
+      spdy_util_.ConstructGetHeaderBlock(kUrl));
+  spdy::SpdySerializedFrame request0(spdy_util_.ConstructSpdyHeaders(
+      1, std::move(request_headers0), LOWEST, true));
+
+  spdy::Http2HeaderBlock response_headers0;
+  response_headers0[spdy::kHttp2StatusHeader] = "401";
+  response_headers0["www-authenticate"] = "NTLM";
+  spdy::SpdySerializedFrame resp(spdy_util_.ConstructSpdyResponseHeaders(
+      1, std::move(response_headers0), true));
+
+  // Stream 1 is closed.
+  spdy_util_.UpdateWithStreamDestruction(1);
+
+  // Generate the NTLM messages based on known test data.
+  std::string negotiate_msg = base::Base64Encode(std::string_view(
+      reinterpret_cast<const char*>(ntlm::test::kExpectedNegotiateMsg),
+      std::size(ntlm::test::kExpectedNegotiateMsg)));
+  std::string challenge_msg = base::Base64Encode(std::string_view(
+      reinterpret_cast<const char*>(ntlm::test::kChallengeMsgFromSpecV2),
+      std::size(ntlm::test::kChallengeMsgFromSpecV2)));
+  std::string authenticate_msg = base::Base64Encode(std::string_view(
+      reinterpret_cast<const char*>(
+          ntlm::test::kExpectedAuthenticateMsgEmptyChannelBindingsV2),
+      std::size(ntlm::test::kExpectedAuthenticateMsgEmptyChannelBindingsV2)));
+
+  MockWrite writes0[] = {CreateMockWrite(request0, 0)};
+  MockRead reads0[] = {CreateMockRead(resp, 1),
+                       MockRead(SYNCHRONOUS, ERR_IO_PENDING, 2)};
+
+  // Retry yet again using HTTP/1.1.
+  MockWrite writes1[] = {
+      // After restarting with a null identity, this is the
+      // request we should be issuing -- the final header line contains a Type
+      // 1 message.
+      MockWrite("GET /kids/login.aspx HTTP/1.1\r\n"
+                "Host: server\r\n"
+                "Connection: keep-alive\r\n"
+                "Authorization: NTLM "),
+      MockWrite(negotiate_msg.c_str()),
+      MockWrite("\r\n\r\n"),
+
+      // After calling trans.RestartWithAuth(), we should send a Type 3 message
+      // (the credentials for the origin server).  The second request continues
+      // on the same connection.
+      MockWrite("GET /kids/login.aspx HTTP/1.1\r\n"
+                "Host: server\r\n"
+                "Connection: keep-alive\r\n"
+                "Authorization: NTLM "),
+      MockWrite(authenticate_msg.c_str()),
+      MockWrite("\r\n\r\n"),
+  };
+
+  MockRead reads1[] = {
+      // The origin server responds with a Type 2 message.
+      MockRead("HTTP/1.1 401 Access Denied\r\n"),
+      MockRead("WWW-Authenticate: NTLM "),
+      MockRead(challenge_msg.c_str()),
+      MockRead("\r\n"),
+      MockRead("Content-Length: 42\r\n"),
+      MockRead("Content-Type: text/html\r\n\r\n"),
+      MockRead("You are not authorized to view this page\r\n"),
+
+      // Lastly we get the desired content.
+      MockRead("HTTP/1.1 200 OK\r\n"),
+      MockRead("Content-Type: text/html; charset=utf-8\r\n"),
+      MockRead("Content-Length: 14\r\n\r\n"),
+      MockRead("Please Login\r\n"),
+  };
+  SequencedSocketData data0(reads0, writes0);
+  StaticSocketDataProvider data1(reads1, writes1);
+  session_deps_.socket_factory->AddSocketDataProvider(&data0);
+  session_deps_.socket_factory->AddSocketDataProvider(&data1);
+
+  SSLSocketDataProvider ssl0(ASYNC, OK);
+  ssl0.next_proto = kProtoHTTP2;
+  ssl0.next_protos_expected_in_ssl_config =
+      NextProtoVector{kProtoHTTP2, kProtoHTTP11};
+  SSLSocketDataProvider ssl1(ASYNC, OK);
+  // When creating the second connection, only HTTP/1.1 should be allowed.
+  ssl1.next_protos_expected_in_ssl_config = NextProtoVector{kProtoHTTP11};
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl0);
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl1);
+
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
+
+  TestCompletionCallback callback1;
+  int rv = trans.Start(&request, callback1.callback(), NetLogWithSource());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+
+  rv = callback1.WaitForResult();
+  EXPECT_THAT(rv, IsOk());
+
+  EXPECT_FALSE(trans.IsReadyToRestartForAuth());
+
+  const HttpResponseInfo* response = trans.GetResponseInfo();
+  ASSERT_TRUE(response);
+  EXPECT_TRUE(CheckNTLMServerAuth(response->auth_challenge));
+
+  TestCompletionCallback callback2;
+
+  rv = trans.RestartWithAuth(
+      AuthCredentials(ntlm::test::kDomainUserCombined, ntlm::test::kPassword),
+      callback2.callback());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+
+  rv = callback2.WaitForResult();
+  EXPECT_THAT(rv, IsOk());
+
+  EXPECT_TRUE(trans.IsReadyToRestartForAuth());
+
+  response = trans.GetResponseInfo();
+  ASSERT_TRUE(response);
+  EXPECT_FALSE(response->auth_challenge.has_value());
+
+  TestCompletionCallback callback3;
+
+  rv = trans.RestartWithAuth(AuthCredentials(), callback3.callback());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+
+  rv = callback3.WaitForResult();
+  EXPECT_THAT(rv, IsOk());
+
+  response = trans.GetResponseInfo();
+  ASSERT_TRUE(response);
+  EXPECT_FALSE(response->auth_challenge.has_value());
+  EXPECT_EQ(14, response->headers->GetContentLength());
+
+  std::string response_data;
+  rv = ReadTransaction(&trans, &response_data);
+  EXPECT_THAT(rv, IsOk());
+  EXPECT_EQ("Please Login\r\n", response_data);
+
+  EXPECT_TRUE(data0.AllReadDataConsumed());
+  EXPECT_TRUE(data0.AllWriteDataConsumed());
+  EXPECT_TRUE(data1.AllReadDataConsumed());
+  EXPECT_TRUE(data1.AllWriteDataConsumed());
+
+  EXPECT_FALSE(session->http_server_properties()->RequiresHTTP11(
+      url::SchemeHostPort(request.url), NetworkAnonymizationKey()));
+  EXPECT_TRUE(session->http_server_properties()->RequiresHTTP11(
+      url::SchemeHostPort(GURL(kMappedUrl)), NetworkAnonymizationKey()));
 }
 
 #if BUILDFLAG(ENABLE_WEBSOCKETS)
@@ -11806,13 +11972,13 @@ TEST_P(HttpNetworkTransactionTest, NTLMOverHttp2WithWebsockets) {
                        MockRead(SYNCHRONOUS, ERR_IO_PENDING, 6)};
 
   // Generate the NTLM messages based on known test data.
-  std::string negotiate_msg = base::Base64Encode(base::StringPiece(
+  std::string negotiate_msg = base::Base64Encode(std::string_view(
       reinterpret_cast<const char*>(ntlm::test::kExpectedNegotiateMsg),
       std::size(ntlm::test::kExpectedNegotiateMsg)));
-  std::string challenge_msg = base::Base64Encode(base::StringPiece(
+  std::string challenge_msg = base::Base64Encode(std::string_view(
       reinterpret_cast<const char*>(ntlm::test::kChallengeMsgFromSpecV2),
       std::size(ntlm::test::kChallengeMsgFromSpecV2)));
-  std::string authenticate_msg = base::Base64Encode(base::StringPiece(
+  std::string authenticate_msg = base::Base64Encode(std::string_view(
       reinterpret_cast<const char*>(
           ntlm::test::kExpectedAuthenticateMsgEmptyChannelBindingsV2),
       std::size(ntlm::test::kExpectedAuthenticateMsgEmptyChannelBindingsV2)));
@@ -11985,13 +12151,13 @@ TEST_P(HttpNetworkTransactionTest, NTLMProxyTLSHandshakeReset) {
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   // Generate the NTLM messages based on known test data.
-  std::string negotiate_msg = base::Base64Encode(base::StringPiece(
+  std::string negotiate_msg = base::Base64Encode(std::string_view(
       reinterpret_cast<const char*>(ntlm::test::kExpectedNegotiateMsg),
       std::size(ntlm::test::kExpectedNegotiateMsg)));
-  std::string challenge_msg = base::Base64Encode(base::StringPiece(
+  std::string challenge_msg = base::Base64Encode(std::string_view(
       reinterpret_cast<const char*>(ntlm::test::kChallengeMsgFromSpecV2),
       std::size(ntlm::test::kChallengeMsgFromSpecV2)));
-  std::string authenticate_msg = base::Base64Encode(base::StringPiece(
+  std::string authenticate_msg = base::Base64Encode(std::string_view(
       reinterpret_cast<const char*>(
           ntlm::test::kExpectedAuthenticateMsgEmptyChannelBindingsV2),
       std::size(ntlm::test::kExpectedAuthenticateMsgEmptyChannelBindingsV2)));
@@ -19965,7 +20131,7 @@ TEST_P(HttpNetworkTransactionTest, NoIPConnectionPoolingForProxyAndHostSpdy) {
 
   MockRead spdy_reads[] = {
       CreateMockRead(conn_resp1, 1),
-      // TODO(https://crbug.com/497228): We have to manually delay this read so
+      // TODO(crbug.com/41180906): We have to manually delay this read so
       // that the higher-level SPDY stream doesn't get notified of an available
       // read before the write it initiated (the second CONNECT) finishes,
       // triggering a DCHECK.
@@ -20248,7 +20414,7 @@ TEST_P(HttpNetworkTransactionTest, NoIPConnectionPoolingForTwoProxiesSpdy) {
 
   MockRead spdy_reads[] = {
       CreateMockRead(conn_resp1, 1),
-      // TODO(https://crbug.com/497228): We have to manually delay this read so
+      // TODO(crbug.com/41180906): We have to manually delay this read so
       // that the higher-level SPDY stream doesn't get notified of an available
       // read before the write it initiated (the second CONNECT) finishes,
       // triggering a DCHECK.
@@ -20329,7 +20495,7 @@ TEST_P(HttpNetworkTransactionTest, NoIPConnectionPoolingForTwoProxiesSpdy) {
 
   MockRead spdy_reads2[] = {
       CreateMockRead(conn_resp2, 1),
-      // TODO(https://crbug.com/497228): We have to manually delay this read so
+      // TODO(crbug.com/41180906): We have to manually delay this read so
       // that the higher-level SPDY stream doesn't get notified of an available
       // read before the write it initiated (the second CONNECT) finishes,
       // triggering a DCHECK.
@@ -25029,7 +25195,7 @@ TEST_P(HttpNetworkTransactionTest, ZeroRTTReject) {
 
       // The retry succeeds.
       //
-      // TODO(https://crbug.com/950705): If |reject_error| is
+      // TODO(crbug.com/41451775): If |reject_error| is
       // ERR_EARLY_DATA_REJECTED, the retry should happen over the same socket.
       MockWrite data2_writes[] = {
           request.method == "POST"

@@ -4,6 +4,7 @@
 
 #include "components/sync/model/syncable_service_based_bridge.h"
 
+#include <string_view>
 #include <utility>
 
 #include "base/functional/bind.h"
@@ -41,7 +42,7 @@ using testing::Pair;
 using testing::Return;
 
 const ModelType kModelType = PREFERENCES;
-const base::StringPiece kSyncableServiceStartTimeHistogramName =
+const std::string_view kSyncableServiceStartTimeHistogramName =
     "Sync.SyncableServiceStartTime.PREFERENCE";
 
 sync_pb::EntitySpecifics GetTestSpecifics(const std::string& name = "name") {
@@ -448,7 +449,7 @@ TEST_F(SyncableServiceBasedBridgeTest, ShouldPropagateLocalDeletion) {
   ASSERT_THAT(GetAllData(),
               ElementsAre(Pair(kClientTagHash.value(), HasName("name1"))));
 
-  EXPECT_CALL(mock_processor_, Delete(kClientTagHash.value(), NotNull()));
+  EXPECT_CALL(mock_processor_, Delete(kClientTagHash.value(), _, NotNull()));
 
   SyncChangeList change_list;
   change_list.emplace_back(FROM_HERE, SyncChange::ACTION_DELETE,

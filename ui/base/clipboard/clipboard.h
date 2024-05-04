@@ -12,6 +12,7 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <string_view>
 #include <vector>
 
 #include "base/component_export.h"
@@ -69,6 +70,22 @@ class COMPONENT_EXPORT(UI_BASE_CLIPBOARD) Clipboard
   using ReadBookmarkCallback =
       base::OnceCallback<void(std::u16string title, GURL url)>;
   using ReadDataCallback = base::OnceCallback<void(std::string result)>;
+
+  // This enum is used to specify different privacy types of the clipboard
+  // data. If a password is copied to the clipboard, based on platform support,
+  // it can be marked as concealed or a combination of types can be used to
+  // treat it as confidential.
+  // `kNoCloudClipboard` - The clipboard data should not be uploaded to the
+  // cloud.
+  // `kNoLocalClipboardHistory` - The clipboard data should not be stored in the
+  // local clipboard history.
+  // `kNoDisplay` - The clipboard data should be concealed.
+  enum PrivacyTypes {
+    kNone = 0,
+    kNoCloudClipboard = 1 << 0,
+    kNoLocalClipboardHistory = 1 << 1,
+    kNoDisplay = 1 << 2,  // Passwords and other credentials
+  };
 
   // An observer interface for content copied to the clipboard.
   class ClipboardWriteObserver : public base::CheckedObserver {
@@ -161,11 +178,6 @@ class COMPONENT_EXPORT(UI_BASE_CLIPBOARD) Clipboard
   // as confidential information, like passwords, might legitimately need to be
   // manipulated.
   virtual bool IsMarkedByOriginatorAsConfidential() const;
-
-  // Mark the data on the clipboard as being confidential. This isn't
-  // implemented for all platforms yet, but this call should be made on every
-  // platform so that when it is implemented on other platforms it is picked up.
-  virtual void MarkAsConfidential();
 
   // Clear the clipboard data.
   virtual void Clear(ClipboardBuffer buffer) = 0;
@@ -297,7 +309,7 @@ class COMPONENT_EXPORT(UI_BASE_CLIPBOARD) Clipboard
 
   // Notify all subscribers of new text pasted to the clipboard when there is a
   // source URL.
-  void NotifyCopyWithUrl(const base::StringPiece text,
+  void NotifyCopyWithUrl(const std::string_view text,
                          const GURL& frame,
                          const GURL& main_frame);
 
@@ -450,14 +462,14 @@ class COMPONENT_EXPORT(UI_BASE_CLIPBOARD) Clipboard
       ClipboardBuffer buffer,
       const ObjectMap& objects,
       std::vector<Clipboard::PlatformRepresentation> platform_representations,
-      std::unique_ptr<DataTransferEndpoint> data_src) = 0;
+      std::unique_ptr<DataTransferEndpoint> data_src,
+      uint32_t privacy_types) = 0;
 
   void DispatchPortableRepresentation(PortableFormat format,
                                       const ObjectMapParams& params);
 
-  // Write directly to the system clipboard.
-  void DispatchPlatformRepresentations(
-      std::vector<Clipboard::PlatformRepresentation> platform_representations);
+  virtual void WriteHTML(std::string_view markup,
+                         std::optional<std::string_view> source_url) = 0;
 
   virtual void WriteText(const char* text_data, size_t text_len) = 0;
 
@@ -492,6 +504,17 @@ class COMPONENT_EXPORT(UI_BASE_CLIPBOARD) Clipboard
   virtual void WriteData(const ClipboardFormatType& format,
                          const char* data_data,
                          size_t data_len) = 0;
+
+  // Prevent data from being written to the clipboard history and cloud.
+  virtual void WriteClipboardHistory() = 0;
+  virtual void WriteUploadCloudClipboard() = 0;
+  virtual void WriteConfidentialDataForPassword() = 0;
+
+  void DispatchPortableRepresentation(const ObjectMapParams& params);
+
+  // Write directly to the system clipboard.
+  void DispatchPlatformRepresentations(
+      std::vector<Clipboard::PlatformRepresentation> platform_representations);
 
  private:
   // For access to WritePortableRepresentations().

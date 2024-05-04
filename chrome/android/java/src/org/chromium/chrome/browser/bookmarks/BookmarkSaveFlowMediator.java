@@ -330,7 +330,7 @@ public class BookmarkSaveFlowMediator extends BookmarkModelObserver
         }
 
         // Make sure the notification channel is initialized when the user tracks a product.
-        // TODO(crbug.com/1382191): Add a SubscriptionsObserver in the PriceDropNotificationManager
+        // TODO(crbug.com/40245507): Add a SubscriptionsObserver in the PriceDropNotificationManager
         // and initialize the channel there.
         if (toggled && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             PriceDropNotificationManagerFactory.create().createNotificationChannel();
@@ -473,7 +473,7 @@ public class BookmarkSaveFlowMediator extends BookmarkModelObserver
 
     private void onFolderSelectClicked(View v) {
         RecordUserAction.record("MobileBookmark.SaveFlow.EditFolder");
-        BookmarkUtils.startFolderSelectActivity(mContext, mBookmarkId);
+        BookmarkUtils.startFolderPickerActivity(mContext, mBookmarkId);
         TrackerFactory.getTrackerForProfile(mProfile)
                 .notifyEvent(EventConstants.SHOPPING_LIST_SAVE_FLOW_FOLDER_TAP);
         mCloseRunnable.run();

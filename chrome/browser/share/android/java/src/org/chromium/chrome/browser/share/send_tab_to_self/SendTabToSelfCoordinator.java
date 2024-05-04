@@ -6,8 +6,6 @@ package org.chromium.chrome.browser.share.send_tab_to_self;
 
 import android.content.Context;
 
-import androidx.annotation.StringRes;
-
 import org.chromium.base.Callback;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -15,7 +13,6 @@ import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.services.SigninManager;
 import org.chromium.chrome.browser.sync.SyncServiceFactory;
 import org.chromium.chrome.browser.ui.signin.account_picker.AccountPickerBottomSheetCoordinator;
-import org.chromium.chrome.browser.ui.signin.account_picker.AccountPickerBottomSheetCoordinator.EntryPoint;
 import org.chromium.chrome.browser.ui.signin.account_picker.AccountPickerBottomSheetMediator;
 import org.chromium.chrome.browser.ui.signin.account_picker.AccountPickerBottomSheetStrings;
 import org.chromium.chrome.browser.ui.signin.account_picker.AccountPickerDelegate;
@@ -110,9 +107,26 @@ public class SendTabToSelfCoordinator {
             mSigninManager = signinManager;
         }
 
+        /** Implements {@link AccountPickerDelegate}. */
         @Override
         public void onAccountPickerDestroy() {}
 
+        /** Implements {@link AccountPickerDelegate}. */
+        @Override
+        public boolean canHandleAddAccount() {
+            return false;
+        }
+
+        /** Implements {@link AccountPickerDelegate}. */
+        @Override
+        public void addAccount() {
+            // TODO(b/326019991): Remove this exception along with the delegate implementation once
+            // all bottom sheet entry points will be started from `SigninAndHistoryOptInActivity`.
+            throw new UnsupportedOperationException(
+                    "SendTabToSelfAccountPickerDelegate.addAccount() should never be called.");
+        }
+
+        /** Implements {@link AccountPickerDelegate}. */
         @Override
         public void signIn(CoreAccountInfo accountInfo, AccountPickerBottomSheetMediator mediator) {
             mSigninManager.signin(
@@ -131,24 +145,22 @@ public class SendTabToSelfCoordinator {
                     });
         }
 
+        /** Implements {@link AccountPickerDelegate}. */
         @Override
         public void isAccountManaged(CoreAccountInfo accountInfo, Callback<Boolean> callback) {
             mSigninManager.isAccountManaged(accountInfo, callback);
         }
 
+        /** Implements {@link AccountPickerDelegate}. */
         @Override
         public void setUserAcceptedAccountManagement(boolean confirmed) {
             mSigninManager.setUserAcceptedAccountManagement(confirmed);
         }
 
+        /** Implements {@link AccountPickerDelegate}. */
         @Override
         public String extractDomainName(String accountEmail) {
             return mSigninManager.extractDomainName(accountEmail);
-        }
-
-        @Override
-        public @EntryPoint int getEntryPoint() {
-            return EntryPoint.SEND_TAB_TO_SELF;
         }
     }
 
@@ -186,7 +198,7 @@ public class SendTabToSelfCoordinator {
             case EntryPointDisplayReason.INFORM_NO_TARGET_DEVICE:
                 MetricsRecorder.recordSendingEvent(SendingEvent.SHOW_NO_TARGET_DEVICE_MESSAGE);
                 mController.requestShowContent(
-                        new NoTargetDeviceBottomSheetContent(mContext), true);
+                        new NoTargetDeviceBottomSheetContent(mContext, mProfile), true);
                 return;
             case EntryPointDisplayReason.OFFER_FEATURE:
                 MetricsRecorder.recordSendingEvent(SendingEvent.SHOW_DEVICE_LIST);
@@ -200,15 +212,26 @@ public class SendTabToSelfCoordinator {
             case EntryPointDisplayReason.OFFER_SIGN_IN:
                 {
                     MetricsRecorder.recordSendingEvent(SendingEvent.SHOW_SIGNIN_PROMO);
+                    AccountPickerBottomSheetStrings strings =
+                            new AccountPickerBottomSheetStrings.Builder(
+                                            R.string
+                                                    .signin_account_picker_bottom_sheet_title_for_send_tab_to_self)
+                                    .setSubtitleStringId(
+                                            R.string
+                                                    .signin_account_picker_bottom_sheet_subtitle_for_send_tab_to_self)
+                                    .setDismissButtonStringId(R.string.cancel)
+                                    .build();
                     new AccountPickerBottomSheetCoordinator(
                             mWindowAndroid,
                             mController,
                             new SendTabToSelfAccountPickerDelegate(
                                     this::onSignInComplete,
                                     IdentityServicesProvider.get().getSigninManager(mProfile)),
-                            new BottomSheetStrings(),
+                            strings,
                             mDeviceLockActivityLauncher,
-                            AccountPickerLaunchMode.DEFAULT);
+                            AccountPickerLaunchMode.DEFAULT,
+                            /* isWebSignin= */ false,
+                            SigninAccessPoint.SEND_TAB_TO_SELF_PROMO);
                     return;
                 }
         }
@@ -221,26 +244,5 @@ public class SendTabToSelfCoordinator {
     private void onTargetDeviceListReady() {
         mController.hideContent(mController.getCurrentSheetContent(), /* animate= */ true);
         show();
-    }
-
-    /** A class to store the STTS specific strings for the signin bottom sheet */
-    public static class BottomSheetStrings implements AccountPickerBottomSheetStrings {
-        /** Returns the title string for the bottom sheet dialog. */
-        @Override
-        public @StringRes int getTitle() {
-            return R.string.signin_account_picker_bottom_sheet_title_for_send_tab_to_self;
-        }
-
-        /** Returns the subtitle string for the bottom sheet dialog. */
-        @Override
-        public @StringRes int getSubtitle() {
-            return R.string.signin_account_picker_bottom_sheet_subtitle_for_send_tab_to_self;
-        }
-
-        /** Returns the cancel button string for the bottom sheet dialog. */
-        @Override
-        public @StringRes int getDismissButton() {
-            return R.string.cancel;
-        }
     }
 }

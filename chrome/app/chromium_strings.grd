@@ -562,6 +562,13 @@ If you want to use this account one-time only, you can use <ph name="GUEST_LINK_
 Permissions you've already given to websites and apps may apply to this account. You can manage your Google Accounts in <ph name="SETTINGS_LINK_BEGIN">&lt;a id="osSettingsLink" href="$3<ex>https://google.com/</ex>"&gt;</ph>Settings<ph name="SETTINGS_LINK_END">&lt;/a&gt;</ph>.
         </message>
       </if>
+
+      <if expr="is_linux">
+        <message name="IDS_DESKTOP_SHORTCUT_COMMENT" desc="Description of the desktop shortcut file which will open a Chrome tab at a given url.">
+          Open <ph name="URL">$1<ex>https://www.example-url.com/</ex></ph> in a new tab in Chromium.
+        </message>
+      </if>
+
       <!-- Crash Recovery Dialog -->
       <message name="IDS_CRASH_RECOVERY_TITLE" desc="Title of dialog shown when the browser crashes." translateable="false">
         Chromium
@@ -690,21 +697,9 @@ Permissions you've already given to websites and apps may apply to this account.
       </if>
 
       <!-- Download Bubble Items -->
-      <message name="IDS_DOWNLOAD_BUBBLE_DANGEROUS_FILE"
-               desc="Message shown to the user to validate the download of a dangerous file.">
-        Chromium blocked this file because this type of file is dangerous
-      </message>
-      <message name="IDS_DOWNLOAD_BUBBLE_MALICIOUS_URL_BLOCKED"
-               desc="Message shown to the user to validate the download when the download url is classified to lead to malware by the safebrowsing database.">
-        Chromium blocked this file because it is dangerous
-      </message>
       <message name="IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_UNKNOWN_SOURCE"
                desc="Summary of dangerous warning for a file (like an extension) from an unknown source.">
         Extensions, apps, and themes from unknown sources can harm your device. Chromium recommends only installing them from the <ph name="IDS_EXTENSION_WEB_STORE_TITLE">$1<ex>Chrome Web Store</ex></ph>
-      </message>
-      <message name="IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_MALWARE"
-               desc="Subpage summary for malware warning for the user.">
-        Chromium blocked this file because it has malware
       </message>
       <message name="IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_WARNING_BLOCKED_LEARN_MORE_LINK"
                desc="Text for the link to the help page about why Chromium blocks some downloaded files.">
@@ -756,9 +751,21 @@ Permissions you've already given to websites and apps may apply to this account.
                desc="On the chrome://downloads page, the description shown for a blocked file that is dangerous.">
         Chromium blocked this download because the file is dangerous
       </message>
+      <message name="IDS_BLOCK_DOWNLOAD_REASON_DANGEROUS_COOKIE_THEFT"
+               desc="On the chrome://downloads page, the description shown for a blocked file that is dangerous because of cookie theft.">
+        Chromium blocked this download because the file can harm your personal and social network accounts
+      </message>
+      <message name="IDS_BLOCK_DOWNLOAD_REASON_DANGEROUS_COOKIE_THEFT_AND_ACCOUNT"
+               desc="On the chrome://downloads page, the description with account info shown for a blocked file that is dangerous because of cookie theft.">
+        Chromium blocked this download because the file can harm your personal and social network accounts, including <ph name="USER_EMAIL">$1<ex>john@google.com</ex></ph>
+      </message>
       <message name="IDS_BLOCK_DOWNLOAD_REASON_UNCOMMON"
                desc="On the chrome://downloads page, the description shown for a blocked file that is uncommon.">
         Chromium blocked this download because the file isn't commonly downloaded and it may be dangerous
+      </message>
+      <message name="IDS_BLOCK_DOWNLOAD_REASON_UNCOMMON_SUSPICIOUS_ARCHIVE"
+               desc="On the chrome://downloads page, the description shown for a blocked file that is suspicious archive.">
+        Chromium blocked this download because the archive file includes other files that may hide malware
       </message>
       <message name="IDS_BLOCK_DOWNLOAD_REASON_POTENTIALLY_UNWANTED"
                desc="On the chrome://downloads page, the description shown for a blocked file that is potentially unwanted.">
@@ -836,8 +843,22 @@ Permissions you've already given to websites and apps may apply to this account.
       <message name="IDS_EXTENSIONS_SAFETY_CHECK_PRIMARY_LABEL" desc="Alerts the user that the extension should be reviewed.">
         Chromium recommends you review this extension
       </message>
+      <message name="IDS_EXTENSIONS_SAFETY_CHECK_OFFSTORE" desc="Alerts the user that the extension is not from the Chrome web store.">
+        Chromium can't verify where this extension comes from, and it might be unsafe. Remove it from Chromium so it can no longer see and change your data on sites you visit, including personal info.
+      </message>
+      <message name="IDS_EXTENSIONS_SAFETY_CHECK_OFFSTORE_ON" desc="Alerts the user that the extension is not from the Chrome web store.">
+        On • Chromium can't verify where this extension comes from
+      </message>
+      <message name="IDS_EXTENSIONS_SAFETY_CHECK_OFFSTORE_OFF" desc="Alerts the user that the extension is not from the Chrome web store.">
+        Off • Chromium can't verify where this extension comes from
+      </message>
 
       <!-- chrome://settings/extensions page -->
+  <message name="IDS_EXTENSIONS_SC_DESCRIPTION" desc="Detailed message displayed in the Safety Check description section.">
+    {NUM_EXTENSIONS, plural,
+     =1 {Chromium recommends that you remove it}
+     other {Chromium recommends that you remove them}}
+  </message>
       <message name="IDS_EXTENSIONS_ITEM_SHOW_ACCESS_REQUESTS_IN_TOOLBAR" desc="The label on the toggle to allow the extension to show site access requests in the toolbar.">
         Allow extension to show access requests in the Chromium toolbar
       </message>
@@ -920,12 +941,6 @@ Permissions you've already given to websites and apps may apply to this account.
         </message>
       </if>
 
-      <if expr="is_win or is_macosx or is_linux">
-        <message name="IDS_RELAUNCH_TO_UPDATE_ALT" desc="Alternate text label of the relaunch to update Chrome menu item" translateable="false">
-        Not used in Chromium. Placeholder to keep resource maps in sync.
-        </message>
-      </if>
-
       <if expr="is_macosx">
         <message name="IDS_APP_MENU_PRODUCT_NAME" desc="The application's short name, used for the Mac's application menu, activity monitor, etc. This should be less than 16 characters. Example: Chrome, not Google Chrome." translateable="false">
           Chromium
@@ -984,6 +999,9 @@ Permissions you've already given to websites and apps may apply to this account.
         </message>
         <message name="IDS_ENTERPRISE_SIGNIN_WORK_PROFILE_EXPLANATION" desc="The warning message displayed to an enterprise user about to link their profile to their Google account. This message is followed by a 'Learn more' link.">
           Any Chromium data that is generated during the use of this profile (such as the creation of bookmarks, history, passwords, and other settings) can be removed by the work profile administrator. <ph name="LEARN_MORE">$1<ex>Learn more</ex></ph>
+        </message>
+        <message name="IDS_ENTERPRISE_WELCOME_PROFILE_INFORMATION_DETAILS" desc="Paragraph disclaiming to the user what their organization can do with their profile information.">
+          Your organization can see and manage browsing data in your work profile, such as your bookmarks, history, and passwords. It can’t see browsing data in personal Chromium profiles.
         </message>
         <!-- New one-click sign-in dialog contents for SAML support -->
         <message name="IDS_ONE_CLICK_SIGNIN_DIALOG_TITLE_NEW" desc="The title of the modal dialog window that opens when the user chooses to use one click sign-in.">
@@ -1048,18 +1066,45 @@ Permissions you've already given to websites and apps may apply to this account.
         <message name="IDS_SIGNIN_DICE_WEB_INTERCEPT_CONSUMER_BUBBLE_DESC_V2" desc="Body of the web signin interception bubble. It is shown when the user signs in on the web while they already have another account present in the current profile.">
           Another account is already signed in. To keep your browsing separate, Chromium can create your own profile for you.
         </message>
-        <message name="IDS_SIGNIN_DICE_WEB_INTERCEPT_BUBBLE_CHROME_SIGNIN_TITLE" desc="Title of the Chrome Signin Bubble intercept that is shown when a signed out user signs in on the web with it's first account.">
-          Make Chromium your own
+        <message name="IDS_SIGNIN_DICE_WEB_INTERCEPT_BUBBLE_CHROME_SIGNIN_SUBTITLE" desc="Subtitle of the Chromium Signin Bubble intercept that is shown when a signed out user signs in on the web with it's first account.">
+          To save and use your passwords and more on all your devices, sign in to Chromium
         </message>
-        <message name="IDS_SIGNIN_DICE_WEB_INTERCEPT_BUBBLE_CHROME_SIGNIN_SUBTITLE" desc="Subtitle of the Chrome Signin Bubble intercept that is shown when a signed out user signs in on the web with it's first account.">
-          Sign in to get the most out of Chromium
+        <message name="IDS_CHROME_SIGNOUT_CONFIRMATION_PROMPT_VERIFY_BODY" translateable="false"  desc="This is the subtitle of an error message dialog that appears when the user opens the Chrome Profile Menu and chooses 'Sign out of Chrome'. The error message appears when the user has saved some data (like a password or payment method) to Chrome, but Chrome wasn't able to save the data to the user's Google Account due to a sign-in error; but, the data has been saved locally to Chrome. This subtitle is after the 'Some data isn’t saved yet' string. The tone should be cautionary, because we want to explain to the user that their data is not saved to their Google Account. This string provides a path to resolution because it explains how the user can properly save their data before they sign out of Chrome.">
+          Chromium needs to verify it’s you before some data can be saved in your Google Account and used on all your devices. If you sign out, this data will stay on this device.
         </message>
-        <message name="IDS_SIGNIN_DICE_WEB_INTERCEPT_BUBBLE_CHROME_SIGNIN_DECLINE_TEXT" desc="Label of the Decline button of the Chrome Signin Bubble intercept that is shown when a signed out user signs in on the web with it's first account.">
-          Use Chromium without an account
+        <message name="IDS_CHROME_SIGNOUT_CONFIRMATION_PROMPT_UNSYNCED_BODY" translateable="false"  desc="This is the subtitle of an error message dialog that appears when the user opens the Chrome Profile Menu and chooses 'Sign out of Chrome'. The error message appears when the user has saved some data (like a password or payment method) to Chrome, but Chrome wasn't able to save the data to the user's Google Account due to a sign-in error; but, the data has been saved locally to Chrome. This subtitle is after the 'Some data isn’t saved yet' string. The tone should be cautionary, because we want to explain to the user that their data is not saved to their Google Account. This string provides a path to resolution because it explains how the user can properly save their data before they sign out of Chrome.">
+          Some of your Chromium data hasn't been saved in your Google Account yet. Try waiting a few minutes before signing out.
         </message>
-        <message name="IDS_AVATAR_BUTTON_INTERCEPT_BUBBLE_CHROME_SIGNIN_TEXT" desc="Text asking the user to sign into Chromium while the Chrome Signin Bubble intercept is shown.">
-          Sign in to Chromium?
+        <message name="IDS_CLOSE_WARNING_FOR_CLEAR_COOKIES_ON_EXIT_TEXT" desc="Body of a notice displayed when closing the last Chrome window, to inform the user about a change in the way the 'Clear cookie on exit' setting works.">
+          You’ll be signed out of most sites when you close all Chromium windows, except your Google Account if you’re signed in to Chromium. To let sites remember you, <ph name="SETTINGS_LINK">$1<ex>go to settings</ex></ph>.
         </message>
+
+        <if expr="not use_titlecase">
+          <message name="IDS_AVATAR_BUTTON_INTERCEPT_BUBBLE_CHROME_SIGNIN_TEXT"
+            desc="Text asking the user to sign into Chromium while the Chromium Signin Bubble intercept is shown.">
+            Sign in to Chromium?
+          </message>
+          <message name="IDS_SIGNIN_DICE_WEB_INTERCEPT_BUBBLE_CHROME_SIGNIN_TITLE" desc="Title of the Chromium Signin Bubble intercept that is shown when a signed out user signs in on the web with it's first account.">
+            Make Chromium your own
+          </message>
+          <message name="IDS_SIGNIN_DICE_WEB_INTERCEPT_BUBBLE_CHROME_SIGNIN_DECLINE_TEXT"
+            desc="Label of the Decline button of the Chromium Signin Bubble intercept that is shown when a signed out user signs in on the web with it's first account.">
+            Use Chromium without an account
+          </message>
+        </if>
+        <if expr="use_titlecase">
+          <message name="IDS_AVATAR_BUTTON_INTERCEPT_BUBBLE_CHROME_SIGNIN_TEXT"
+            desc="Text asking the user to sign into Chromium while the Chromium Signin Bubble intercept is shown.">
+            Sign In to Chromium?
+          </message>
+          <message name="IDS_SIGNIN_DICE_WEB_INTERCEPT_BUBBLE_CHROME_SIGNIN_TITLE" desc="Title of the Chromium Signin Bubble intercept that is shown when a signed out user signs in on the web with it's first account.">
+            Make Chromium Your Own
+          </message>
+          <message name="IDS_SIGNIN_DICE_WEB_INTERCEPT_BUBBLE_CHROME_SIGNIN_DECLINE_TEXT"
+            desc="Label of the Decline button of the Chromium Signin Bubble intercept that is shown when a signed out user signs in on the web with it's first account.">
+            Use Chromium Without an Account
+          </message>
+        </if>
       </if>
 
       <if expr="not chromeos_ash and not is_android">
@@ -1233,6 +1278,16 @@ Permissions you've already given to websites and apps may apply to this account.
         </message>
         <message name="IDS_PASSWORD_MANAGER_IPH_CREATE_SHORTCUT_BODY" desc="Body of the in Product Help shown after successfully logging into a website telling user about how to create a shortcut">
           Add a shortcut to Password Manager
+        </message>
+      </if>
+
+      <if expr="not is_android">
+        <!-- Desktop User Education IPH Strings -->
+        <message name="IDS_SIDE_PANEL_GENERIC_MENU_IPH" desc="The body text of the IPH describing how to find side panel entry points in the app menu.">
+          You can open bookmarks, reading mode, and more from the Chromium menu
+        </message>
+        <message name="IDS_SIDE_PANEL_GENERIC_MENU_IPH_SCREENREADER" desc="The screen reader text of the IPH describing how to find side panel entry points in the app menu. The phrase 'top right' should read as 'top left' in rtl languages.">
+          You can open bookmarks, reading mode, and more from the Chromium menu at the top right
         </message>
       </if>
 
@@ -1429,6 +1484,9 @@ Permissions you've already given to websites and apps may apply to this account.
         <message name="IDS_MESSAGE_MISSING_AR_CAMERA_PERMISSION_TEXT" desc="Text shown in a prompt ui when a website has requested access to augmented reality capabilities, but Chrome is missing the Android camera permission.">
           Chromium needs camera permission to create a 3D map of your surroundings
         </message>
+        <message name="IDS_MESSAGE_MISSING_XR_PERMISSION_TEXT" desc="Text shown in an infobar when a website has requested access to mixed reality capabilities, but Chrome is missing the Android scene understanding and hand tracking permission.">
+          Chromium needs scene understanding and hand tracking permission to start an immersive session
+        </message>
         <message name="IDS_MESSAGE_MISSING_CAMERA_PERMISSION_TEXT" desc="Text shown in a prompt ui when a website has requested access to the camera capabilities, but Chrome is missing the Android camera permission.">
           Chromium needs camera permission for this site
         </message>
@@ -1587,7 +1645,7 @@ Permissions you've already given to websites and apps may apply to this account.
       </if>
 
       <!-- Chrome parent extension/app install blocking dialog. -->
-      <if expr="enable_extensions and enable_supervised_users">
+      <if expr="enable_extensions">
         <message name="IDS_EXTENSION_PERMISSIONS_BLOCKED_BY_PARENT_PROMPT_MESSAGE" desc="Text for the dialog indicating that a parent has blocked extensions and apps.">
          Your parent has turned off "Permissions for sites, apps and extensions" for Chromium
         </message>
@@ -1659,14 +1717,6 @@ Permissions you've already given to websites and apps may apply to this account.
             desc="This string appears as a heading on a full-page screen that asks the user to sign in to Chromium with their Google Account. It appears when the user launches Chromium for the first time. When they sign in, they can personalize and customize Chromium and remember their settings in their Google Account. The tone should be inviting and alluring.">
             Sign in to Chromium
           </message>
-          <message name="IDS_FRE_SIGN_IN_TITLE_1"
-            desc="This string appears as a heading on a full-page screen that asks the user to sign in to Chromium with their Google Account. It appears when the user launches Chromium for the first time. When they sign in, they can personalize and customize Chromium and remember their settings in their Google Account. The tone should be inviting and alluring.">
-            Make Chromium your own
-          </message>
-          <message name="IDS_FRE_SIGN_IN_TITLE_2"
-            desc="This string appears as a heading on a full-page screen that tells users the benefits of signing in to Chromium. It appears when the user launches Chromium for the first time. When they sign in, they can personalize and customize Chromium and remember their settings in their Google Account. The tone should be inviting and alluring.">
-            Do more with Chromium
-          </message>
         </if>
 
         <!-- Default Browser Promo -->
@@ -1679,6 +1729,15 @@ Permissions you've already given to websites and apps may apply to this account.
         <message name="IDS_FRE_DEFAULT_BROWSER_ILLUSTRATION_ALT_TEXT" desc="Alt text for the illustration in the page that prompts user to set Chromium as their default browser.">
           Chromium logo inside a computer screen.
         </message>
+        <message name="IDS_APP_MENU_TOOLTIP_DEFAULT_PROMPT" desc="The tooltip to show for the browser menu when the default browser prompt is displayed">
+          Customize and control Chromium. Set Chromium as your default.
+        </message>
+        <message name="IDS_APP_MENU_BUTTON_DEFAULT_PROMPT" desc="Text in the browser menu chip indicating that the user can change their default browser">
+          Set Chromium as your default
+        </message>
+        <message name="IDS_SET_BROWSER_AS_DEFAULT_MENU_ITEM" desc="Menu item that prompts user to set Chromium as their default browser.">
+          Set Chromium as your default browser
+        </message>
 
         <!-- Profile switch IPH -->
         <message name="IDS_PROFILE_SWITCH_PROMO" desc="Text of the In-Product-Help bubble for profile switching.">
@@ -1689,6 +1748,14 @@ Permissions you've already given to websites and apps may apply to this account.
         </message>
         <message name="IDS_PASSWORD_MANAGER_IPH_BODY_WEB_APP_PROFILE_SWITCH" desc="Body of the in Product Help for profile switching shown in the password manager web app.">
           You can switch to see passwords from another Chromium profile
+        </message>
+
+        <!-- Web Signout Intercept IPH -->
+        <message name="IDS_SIGNOUT_DICE_WEB_INTERCEPT_BUBBLE_CHROME_SIGNOUT_IPH_TEXT" translateable="false" desc="This confirmation message is intended to help users to understand that signing out of a Google service (like Gmail) will not sign them out of Chrome. It appears in a blue in-product help bubble, which points to the Chrome Profile Menu; it appears after the user signs out of a Google service (like Gmail). The user can open the Profile Menu and sign out of Chrome, if they wish to do so.">
+          To remove your Google Account from Chromium, sign out
+        </message>
+        <message name="IDS_SIGNOUT_DICE_WEB_INTERCEPT_BUBBLE_CHROME_SIGNOUT_IPH_TEXT_SCREENREADER" translateable="false" desc="Text announced by screenreaders related to the confirmation message is intended to help users to understand that signing out of a Google service (like Gmail) will not sign them out of Chrome. It appears in a blue in-product help bubble, which points to the Chrome Profile Menu; it appears after the user signs out of a Google service (like Gmail). The user can open the Profile Menu and sign out of Chrome, if they wish to do so.">
+          To remove your Google Account from Chromium, sign out of Chromium in the Settings page
         </message>
       </if>
 
@@ -1877,7 +1944,7 @@ Permissions you've already given to websites and apps may apply to this account.
         <!--Network errors.-->
         <message name="IDS_NO_NETWORK_PRESENT_ERROR"
                  desc="Error message displayed in the main dialog when the Updater is unable to connect to the network.">
-          Unable to connect to the Internet. If you use a firewall, please allowlist <ph name="PRODUCT_EXE_NAME">$1<ex>ChromiumUpdater.exe</ex></ph>.
+          Unable to connect to the Internet. If you use a firewall, please ensure <ph name="PRODUCT_EXE_NAME">$1<ex>ChromiumUpdater.exe</ex></ph> is in the allowlist.
         </message>
         <message name="IDS_ERROR_HTTPSTATUS_UNAUTHORIZED"
                  desc="Error message displayed in the main dialog when an update check or download fails due to unauthorized access, usually due to proxy problems.">
@@ -1999,10 +2066,17 @@ Permissions you've already given to websites and apps may apply to this account.
         </if>
       </if>
 
-      <!-- Clear Browsing Data -->
-      <message name="IDS_SETTINGS_CLEAR_BROWSING_DATA_SIGNED_IN" desc="Description in the footer of the Clear Browsing Data dialog when the user is signed.">
-        To clear browsing data from this device only, while keeping it in your Google Account, <ph name="BEGIN_LINK">&lt;a href="#" target=&quot;_blank&quot;&gt;</ph>sign out of Chromium<ph name="END_LINK">&lt;/a&gt;</ph>.
+      <!-- Delete Browsing Data -->
+      <message name="IDS_SETTINGS_CLEAR_BROWSING_DATA_SIGNED_IN" desc="Description in the footer of the Delete Browsing Data dialog when the user is signed.">
+        To delete browsing data from this device only, while keeping it in your Google Account, <ph name="BEGIN_LINK">&lt;a href="#" target=&quot;_blank&quot;&gt;</ph>sign out of Chromium<ph name="END_LINK">&lt;/a&gt;</ph>.
       </message>
+
+      <!-- New Create Shortcut View Strings -->
+      <if expr="not is_android and not is_chromeos">
+        <message name="IDS_CREATE_SHORTCUT_NOT_APPS_DIALOG_SUBTITLE" desc="Subtitle of the updated Create Shortcut dialog about how the site opens for Chromium">
+          Shortcuts open in Chromium
+        </message>
+      </if>
     </messages>
   </release>
 </grit>

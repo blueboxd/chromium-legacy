@@ -4,55 +4,52 @@
 
 #include "chrome/browser/ui/autofill/autofill_popup_controller_impl_mac.h"
 
+#import <utility>
+
+#import "chrome/browser/ui/autofill/popup_controller_common.h"
 #import "chrome/browser/ui/cocoa/touchbar/web_textfield_touch_bar_controller.h"
 #include "components/autofill/core/browser/filling_product.h"
 #include "components/autofill/core/browser/ui/autofill_popup_delegate.h"
-#include "components/autofill/core/browser/ui/popup_item_ids.h"
+#include "components/autofill/core/browser/ui/suggestion_type.h"
 
 using base::WeakPtr;
 
 namespace autofill {
 
 // static
-WeakPtr<AutofillPopupControllerImpl> AutofillPopupControllerImpl::GetOrCreate(
-    WeakPtr<AutofillPopupControllerImpl> previous,
+WeakPtr<AutofillSuggestionController> AutofillSuggestionController::GetOrCreate(
+    WeakPtr<AutofillSuggestionController> previous,
     WeakPtr<AutofillPopupDelegate> delegate,
     content::WebContents* web_contents,
-    gfx::NativeView container_view,
-    const gfx::RectF& element_bounds,
-    base::i18n::TextDirection text_direction,
+    PopupControllerCommon controller_common,
     int32_t form_control_ax_id) {
-  if (previous.get() && previous->delegate_.get() == delegate.get() &&
-      previous->container_view() == container_view) {
-    previous->controller_common_.element_bounds = element_bounds;
-    previous->form_control_ax_id_ = form_control_ax_id;
-    previous->ClearState();
-    return previous;
+  if (AutofillPopupControllerImpl* previous_impl =
+          static_cast<AutofillPopupControllerImpl*>(previous.get());
+      previous_impl && previous_impl->delegate_.get() == delegate.get() &&
+      previous_impl->container_view() == controller_common.container_view) {
+    previous_impl->controller_common_ = std::move(controller_common);
+    previous_impl->form_control_ax_id_ = form_control_ax_id;
+    previous_impl->ClearState();
+    return previous_impl->GetWeakPtr();
   }
 
   if (previous.get())
-    previous->Hide(PopupHidingReason::kViewDestroyed);
+    previous->Hide(SuggestionHidingReason::kViewDestroyed);
 
-  AutofillPopupControllerImpl* controller = new AutofillPopupControllerImplMac(
-      delegate, web_contents, container_view, element_bounds, text_direction,
-      form_control_ax_id);
+  auto* controller = new AutofillPopupControllerImplMac(
+      delegate, web_contents, std::move(controller_common), form_control_ax_id);
   return controller->GetWeakPtr();
 }
 
 AutofillPopupControllerImplMac::AutofillPopupControllerImplMac(
     base::WeakPtr<AutofillPopupDelegate> delegate,
     content::WebContents* web_contents,
-    gfx::NativeView container_view,
-    const gfx::RectF& element_bounds,
-    base::i18n::TextDirection text_direction,
+    PopupControllerCommon controller_common,
     int32_t form_control_ax_id)
     : AutofillPopupControllerImpl(delegate,
                                   web_contents,
-                                  container_view,
-                                  element_bounds,
-                                  text_direction,
+                                  std::move(controller_common),
                                   form_control_ax_id,
-                                  base::DoNothing(),
                                   std::nullopt),
       touch_bar_controller_(nil),
       is_credit_card_popup_(delegate->GetMainFillingProduct() ==

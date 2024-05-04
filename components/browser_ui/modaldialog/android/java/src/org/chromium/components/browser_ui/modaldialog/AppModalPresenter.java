@@ -11,8 +11,10 @@ import android.view.Window;
 import android.view.WindowManager;
 
 import androidx.activity.ComponentDialog;
+import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
+import org.chromium.base.Callback;
 import org.chromium.base.StrictModeContext;
 import org.chromium.ui.LayoutInflaterUtils;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
@@ -60,7 +62,8 @@ public class AppModalPresenter extends ModalDialogManager.Presenter {
     }
 
     @Override
-    protected void addDialogView(PropertyModel model) {
+    protected void addDialogView(
+            PropertyModel model, @Nullable Callback<ComponentDialog> onDialogCreatedCallback) {
         int styles[][] = {
             {
                 R.style.ThemeOverlay_BrowserUI_ModalDialog_TextPrimaryButton,
@@ -92,7 +95,8 @@ public class AppModalPresenter extends ModalDialogManager.Presenter {
         }
         int buttonIndex = 0;
         int buttonStyle = model.get(ModalDialogProperties.BUTTON_STYLES);
-        if (buttonStyle == ModalDialogProperties.ButtonStyles.PRIMARY_FILLED_NEGATIVE_OUTLINE) {
+        if (buttonStyle == ModalDialogProperties.ButtonStyles.PRIMARY_FILLED_NEGATIVE_OUTLINE
+                || buttonStyle == ModalDialogProperties.ButtonStyles.PRIMARY_FILLED_NO_NEGATIVE) {
             buttonIndex = 1;
         } else if (buttonStyle
                 == ModalDialogProperties.ButtonStyles.PRIMARY_OUTLINE_NEGATIVE_FILLED) {
@@ -100,8 +104,9 @@ public class AppModalPresenter extends ModalDialogManager.Presenter {
         }
         mDialog = new ComponentDialog(mContext, styles[buttonIndex][dialogIndex]);
         mDialog.setOnCancelListener(
-                dialogInterface ->
-                        dismissCurrentDialog(DialogDismissalCause.NAVIGATE_BACK_OR_TOUCH_OUTSIDE));
+                dialogInterface -> {
+                    dismissCurrentDialog(DialogDismissalCause.NAVIGATE_BACK_OR_TOUCH_OUTSIDE);
+                });
 
         // Cancel on touch outside should be disabled by default. The ModelChangeProcessor wouldn't
         // notify change if the property is not set during initialization.
@@ -118,6 +123,10 @@ public class AppModalPresenter extends ModalDialogManager.Presenter {
                 (dialogInterface) -> {
                     dialogView.onEnterAnimationStarted(ENTER_ANIMATION_ESTIMATION_MS);
                 });
+
+        if (onDialogCreatedCallback != null) {
+            onDialogCreatedCallback.onResult(mDialog);
+        }
 
         try {
             mDialog.show();

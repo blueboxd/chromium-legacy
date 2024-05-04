@@ -224,10 +224,10 @@ PASS childWindow.visualViewport.offsetLeft is 0
 PASS childWindow.visualViewport.offsetTop is 0
 PASS childWindow.visualViewport.onresize is null
 PASS childWindow.visualViewport.onscroll is null
+PASS childWindow.visualViewport.onscrollend is null
 PASS childWindow.visualViewport.pageLeft is 0
 PASS childWindow.visualViewport.pageTop is 0
 PASS childWindow.visualViewport.scale is 0
-PASS childWindow.visualViewport.segments is null
 PASS childWindow.visualViewport.width is 0
 PASS successfullyParsed is true
 

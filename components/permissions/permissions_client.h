@@ -127,7 +127,7 @@ class PermissionsClient {
 
   // Returns whether cookie deletion is allowed for |browser_context| and
   // |origin|.
-  // TODO(crbug.com/1081944): Remove this method and all code depending on it
+  // TODO(crbug.com/40130734): Remove this method and all code depending on it
   // when a proper fix is landed.
   virtual bool IsCookieDeletionDisabled(
       content::BrowserContext* browser_context,
@@ -203,7 +203,8 @@ class PermissionsClient {
   // If the embedder returns an origin here, any requests matching that origin
   // will be approved. Requests that do not match the returned origin will
   // immediately be finished without granting/denying the permission.
-  virtual std::optional<url::Origin> GetAutoApprovalOrigin();
+  virtual std::optional<url::Origin> GetAutoApprovalOrigin(
+      content::BrowserContext* browser_context);
 
   // Allows the embedder to bypass checking the embedding origin when performing
   // permission availability checks. This is used for example when a permission
@@ -277,7 +278,7 @@ class PermissionsClient {
   virtual int MapToJavaDrawableId(int resource_id);
 #else
   // Creates a permission prompt.
-  // TODO(crbug.com/1025609): Move the desktop permission prompt
+  // TODO(crbug.com/40107932): Move the desktop permission prompt
   // implementation into //components/permissions and remove this.
   virtual std::unique_ptr<PermissionPrompt> CreatePrompt(
       content::WebContents* web_contents,

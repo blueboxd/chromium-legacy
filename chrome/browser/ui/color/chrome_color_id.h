@@ -22,11 +22,13 @@
   E_CPONLY(kColorAppMenuHighlightSeverityHigh) \
   E_CPONLY(kColorAppMenuHighlightSeverityMedium) \
   E_CPONLY(kColorAppMenuHighlightDefault) \
+  E_CPONLY(kColorAppMenuHighlightPrimary) \
   E_CPONLY(kColorAppMenuExpandedForegroundDefault) \
+  E_CPONLY(kColorAppMenuExpandedForegroundPrimary) \
   E_CPONLY(kColorAppMenuChipInkDropHover) \
   E_CPONLY(kColorAppMenuChipInkDropRipple) \
   /* Avatar colors. */ \
-  /* TODO(crbug.com/1422119): Refactor the Avatar Button colors as Profile */ \
+  /* TODO(crbug.com/40259490): Refactor the Avatar Button colors as Profile */ \
   /* Menu Button colors. */ \
   E_CPONLY(kColorAvatarButtonHighlightDefault) \
   E_CPONLY(kColorAvatarButtonHighlightNormal) \
@@ -77,6 +79,8 @@
   E_CPONLY(kColorComposeDialogResultForeground) \
   E_CPONLY(kColorComposeDialogResultForegroundWhileLoading) \
   E_CPONLY(kColorComposeDialogResultIcon) \
+  E_CPONLY(kColorComposeDialogResultButtonsDivider) \
+  E_CPONLY(kColorComposeDialogResultContainerScrollbarThumb) \
   E_CPONLY(kColorComposeDialogScrollbarThumb) \
   E_CPONLY(kColorComposeDialogTitle) \
   E_CPONLY(kColorComposeDialogTextarea) \
@@ -85,6 +89,7 @@
   E_CPONLY(kColorComposeDialogTextareaReadonlyBackground) \
   E_CPONLY(kColorComposeDialogTextareaReadonlyForeground) \
   E_CPONLY(kColorComposeDialogTextareaIcon) \
+  E_CPONLY(kColorComposeDialogSelectOptionDisabled) \
   /* Desktop media tab list colors. */ \
   E_CPONLY(kColorDesktopMediaTabListBorder) \
   E_CPONLY(kColorDesktopMediaTabListPreviewBackground) \
@@ -98,6 +103,7 @@
   E_CPONLY(kColorDownloadBubbleInfoIcon) \
   E_CPONLY(kColorDownloadBubbleRowHover) \
   E_CPONLY(kColorDownloadBubbleShowAllDownloadsIcon) \
+  E_CPONLY(kColorDownloadBubblePrimaryIcon) \
   /* Download shelf colors. */ \
   E_CPONLY(kColorDownloadItemForeground) \
   E_CPONLY(kColorDownloadItemForegroundDangerous) \
@@ -244,6 +250,7 @@
   E_CPONLY(kColorNewTabPageModuleControlBorder) \
   E_CPONLY(kColorNewTabPageModuleContextMenuDivider) \
   E_CPONLY(kColorNewTabPageModuleBackground) \
+  E_CPONLY(kColorNewTabPageModuleIconBackground) \
   E_CPONLY(kColorNewTabPageModuleElementDivider) \
   E_CPONLY(kColorNewTabPageModuleIconContainerBackground) \
   E_CPONLY(kColorNewTabPageModuleItemBackground) \
@@ -272,7 +279,11 @@
   E_CPONLY(kColorNewTabPageTextUnthemed) \
   E_CPONLY(kColorNewTabPageTextLight) \
   E_CPONLY(kColorNewTabPageWallpaperSearchButtonBackground) \
+  E_CPONLY(kColorNewTabPageWallpaperSearchButtonBackgroundHovered) \
   E_CPONLY(kColorNewTabPageWallpaperSearchButtonForeground) \
+  /* New Tab Page Colors for Doodle Share Button. */ \
+  E_CPONLY(kColorNewTabPageDoodleShareButtonBackground) \
+  E_CPONLY(kColorNewTabPageDoodleShareButtonIcon) \
   /* Omnibox colors. */ \
   E_CPONLY(kColorOmniboxAnswerIconBackground) \
   E_CPONLY(kColorOmniboxAnswerIconForeground) \
@@ -298,6 +309,7 @@
   E_CPONLY(kColorOmniboxResultsBackground) \
   E_CPONLY(kColorOmniboxResultsBackgroundHovered) \
   E_CPONLY(kColorOmniboxResultsBackgroundSelected) \
+  E_CPONLY(kColorOmniboxResultsBackgroundIPH) \
   E_CPONLY(kColorOmniboxResultsButtonBorder) \
   E_CPONLY(kColorOmniboxResultsButtonIcon) \
   E_CPONLY(kColorOmniboxResultsButtonIconSelected) \
@@ -373,7 +385,12 @@
   E_CPONLY(kColorPipWindowSkipAdButtonBackground) \
   E_CPONLY(kColorPipWindowSkipAdButtonBorder) \
   /* Product Specifications colors */ \
+  E_CPONLY(kColorProductSpecificationsButtonBackground) \
   E_CPONLY(kColorProductSpecificationsContentBackground) \
+  E_CPONLY(kColorProductSpecificationsDivider) \
+  E_CPONLY(kColorProductSpecificationsPageBackground) \
+  E_CPONLY(kColorProductSpecificationsPrimaryTitle) \
+  E_CPONLY(kColorProductSpecificationsSecondaryTitle) \
   E_CPONLY(kColorProductSpecificationsSummaryBackground) \
   /* Profile Menu colors. */ \
   E_CPONLY(kColorProfileMenuBackground) \
@@ -575,6 +592,7 @@
   E_CPONLY(kColorSidePanelFilterChipBackgroundSelected) \
   E_CPONLY(kColorSidePanelHeaderButtonIcon) \
   E_CPONLY(kColorSidePanelHeaderButtonIconDisabled) \
+  E_CPONLY(kColorSidePanelHoverResizeAreaHandle) \
   E_CPONLY(kColorSidePanelResizeAreaHandle) \
   E_CPONLY(kColorSidePanelScrollbarThumb) \
   E_CPONLY(kColorSidePanelTextfieldBorder) \

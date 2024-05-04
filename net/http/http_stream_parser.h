@@ -10,11 +10,11 @@
 
 #include <memory>
 #include <string>
+#include <string_view>
 
 #include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "crypto/ec_private_key.h"
 #include "net/base/completion_once_callback.h"
@@ -33,7 +33,6 @@ struct HttpRequestInfo;
 class HttpRequestHeaders;
 class HttpResponseInfo;
 class IOBuffer;
-class SSLCertRequestInfo;
 class StreamSocket;
 class UploadDataStream;
 
@@ -109,8 +108,6 @@ class NET_EXPORT_PRIVATE HttpStreamParser {
   }
   base::TimeTicks first_early_hints_time() { return first_early_hints_time_; }
 
-  void GetSSLCertRequestInfo(SSLCertRequestInfo* cert_request_info);
-
   // Encodes the given |payload| in the chunked format to |output|.
   // Returns the number of bytes written to |output|. |output_size| should
   // be large enough to store the encoded chunk, which is payload.size() +
@@ -119,7 +116,7 @@ class NET_EXPORT_PRIVATE HttpStreamParser {
   //
   // The output will look like: "HEX\r\n[payload]\r\n"
   // where HEX is a length in hexdecimal (without the "0x" prefix).
-  static int EncodeChunk(base::StringPiece payload,
+  static int EncodeChunk(std::string_view payload,
                          char* output,
                          size_t output_size);
 
@@ -301,7 +298,7 @@ class NET_EXPORT_PRIVATE HttpStreamParser {
   // The underlying socket, owned by the caller. The HttpStreamParser must be
   // destroyed before the caller destroys the socket, or relinquishes ownership
   // of it.
-  raw_ptr<StreamSocket, AcrossTasksDanglingUntriaged> stream_socket_;
+  raw_ptr<StreamSocket> stream_socket_;
 
   // Whether the socket has already been used. Only used in HTTP/0.9 detection
   // logic.

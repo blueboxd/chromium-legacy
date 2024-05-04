@@ -44,7 +44,8 @@ TEST_P(MLGraphXnnpackTest, SharedXnnpackContextTest) {
                              scope.GetExceptionState());
     auto* output = builder->relu(input, scope.GetExceptionState());
     ASSERT_THAT(output, testing::NotNull());
-    auto [graph, exception] = BuildGraph(scope, builder, {{"output", output}});
+    auto [graph, error_name, error_message] =
+        BuildGraph(scope, builder, {{"output", output}});
     ASSERT_THAT(graph, testing::NotNull());
   }
   {
@@ -61,7 +62,8 @@ TEST_P(MLGraphXnnpackTest, SharedXnnpackContextTest) {
                              scope.GetExceptionState());
     auto* output = builder->relu(input, scope.GetExceptionState());
     ASSERT_THAT(output, testing::NotNull());
-    auto [graph, exception] = BuildGraph(scope, builder, {{"output", output}});
+    auto [graph, error_name, error_message] =
+        BuildGraph(scope, builder, {{"output", output}});
     ASSERT_THAT(graph, testing::NotNull());
   }
 }
@@ -154,7 +156,8 @@ TEST_P(MLGraphXnnpackTest, DefineXnnpackValuesTest) {
     auto* output = BuildElementWiseBinary(
         scope, builder, webnn::mojom::blink::ElementWiseBinary::Kind::kAdd,
         input0, input1);
-    auto [graph, exception] = BuildGraph(scope, builder, {{"output", output}});
+    auto [graph, error_name, error_message] =
+        BuildGraph(scope, builder, {{"output", output}});
     ASSERT_THAT(graph, testing::NotNull());
     MLGraphXnnpack* xnnpack_graph = static_cast<MLGraphXnnpack*>(graph.Get());
     const auto& output_externals =
@@ -187,7 +190,8 @@ TEST_P(MLGraphXnnpackTest, DefineXnnpackValuesTest) {
     auto* output = BuildElementWiseBinary(
         scope, builder, webnn::mojom::blink::ElementWiseBinary::Kind::kAdd,
         input, constant);
-    auto [graph, exception] = BuildGraph(scope, builder, {{"output", output}});
+    auto [graph, error_name, error_message] =
+        BuildGraph(scope, builder, {{"output", output}});
     ASSERT_THAT(graph, testing::NotNull());
     MLGraphXnnpack* xnnpack_graph = static_cast<MLGraphXnnpack*>(graph.Get());
     const auto& output_externals =
@@ -228,7 +232,8 @@ TEST_P(MLGraphXnnpackTest, DefineXnnpackValuesTest) {
     auto* output = BuildElementWiseBinary(
         scope, builder, webnn::mojom::blink::ElementWiseBinary::Kind::kAdd,
         intermediate, constant1);
-    auto [graph, exception] = BuildGraph(scope, builder, {{"output", output}});
+    auto [graph, error_name, error_message] =
+        BuildGraph(scope, builder, {{"output", output}});
     ASSERT_THAT(graph, testing::NotNull());
     MLGraphXnnpack* xnnpack_graph = static_cast<MLGraphXnnpack*>(graph.Get());
     const auto& output_externals =
@@ -271,7 +276,7 @@ TEST_P(MLGraphXnnpackTest, DefineXnnpackValuesTest) {
     auto* output1 = BuildElementWiseBinary(
         scope, builder, webnn::mojom::blink::ElementWiseBinary::Kind::kAdd,
         intermediate, input2);
-    auto [graph, exception] = BuildGraph(
+    auto [graph, error_name, error_message] = BuildGraph(
         scope, builder, {{"output0", output0}, {"output1", output1}});
     ASSERT_THAT(graph, testing::NotNull());
     MLGraphXnnpack* xnnpack_graph = static_cast<MLGraphXnnpack*>(graph.Get());
@@ -348,9 +353,12 @@ TEST_P(MLGraphXnnpackTest, PowTest) {
   auto* output = BuildElementWiseBinary(
       scope, builder, webnn::mojom::blink::ElementWiseBinary::Kind::kPow,
       input0, input1);
-  auto [graph, exception] = BuildGraph(scope, builder, {{"output", output}});
+  auto [graph, error_name, error_message] =
+      BuildGraph(scope, builder, {{"output", output}});
   EXPECT_THAT(graph, testing::IsNull());
-  EXPECT_EQ(exception->message(),
+  EXPECT_EQ(error_name,
+            DOMException::GetErrorName(DOMExceptionCode::kNotSupportedError));
+  EXPECT_EQ(error_message,
             "The value of scalar operand b must be 2 or 0.5 for pow.");
 }
 
@@ -375,7 +383,8 @@ TEST_P(MLGraphXnnpackTest, InvokeXnnpackRuntimeTest) {
   auto* output = BuildElementWiseBinary(
       scope, builder, webnn::mojom::blink::ElementWiseBinary::Kind::kAdd,
       input0, input1);
-  auto [graph, exception] = BuildGraph(scope, builder, {{"output", output}});
+  auto [graph, error_name, error_message] =
+      BuildGraph(scope, builder, {{"output", output}});
   ASSERT_THAT(graph, testing::NotNull());
   auto* xnnpack_graph = static_cast<MLGraphXnnpack*>(graph.Get());
   {
@@ -388,13 +397,15 @@ TEST_P(MLGraphXnnpackTest, InvokeXnnpackRuntimeTest) {
     MLNamedArrayBufferViews inputs = {{"input0", input0_buffer},
                                       {"input1", input1_buffer}};
     MLNamedArrayBufferViews outputs = {{"output", output_buffer}};
-    auto* compute_exception = ComputeGraph(scope, graph, inputs, outputs);
-    EXPECT_THAT(compute_exception, testing::IsNull());
+    std::tie(error_name, error_message) =
+        ComputeGraph(scope, graph, inputs, outputs);
+    EXPECT_TRUE(error_name.IsNull());
     CheckExternalValues(xnnpack_graph, inputs, outputs);
     auto results = GetArrayBufferViewValues<float>(outputs[0].second);
     EXPECT_EQ(results, Vector<float>({6.0, 8.0, 10.0, 12.0}));
-    compute_exception = ComputeGraph(scope, graph, inputs, outputs);
-    EXPECT_THAT(compute_exception, testing::IsNull());
+    std::tie(error_name, error_message) =
+        ComputeGraph(scope, graph, inputs, outputs);
+    EXPECT_TRUE(error_name.IsNull());
     CheckExternalValues(xnnpack_graph, inputs, outputs);
     results = GetArrayBufferViewValues<float>(outputs[0].second);
     EXPECT_EQ(results, Vector<float>({6.0, 8.0, 10.0, 12.0}));
@@ -410,15 +421,17 @@ TEST_P(MLGraphXnnpackTest, InvokeXnnpackRuntimeTest) {
     MLNamedArrayBufferViews inputs = {{"input0", input0_buffer},
                                       {"input1", input1_buffer}};
     MLNamedArrayBufferViews outputs = {{"output", output_buffer}};
-    auto* compute_exception = ComputeGraph(scope, graph, inputs, outputs);
-    EXPECT_THAT(compute_exception, testing::IsNull());
+    std::tie(error_name, error_message) =
+        ComputeGraph(scope, graph, inputs, outputs);
+    EXPECT_TRUE(error_name.IsNull());
     CheckExternalValues(xnnpack_graph, inputs, outputs);
     auto results = GetArrayBufferViewValues<float>(outputs[0].second);
     EXPECT_EQ(results, Vector<float>({6.0, 8.0, 10.0, 12.0}));
     SetArrayBufferViewValues<float>(inputs[0].second, {2.0, 3.0, 4.0, 5.0});
     SetArrayBufferViewValues<float>(inputs[1].second, {6.0, 7.0, 8.0, 9.0});
-    compute_exception = ComputeGraph(scope, graph, inputs, outputs);
-    EXPECT_THAT(compute_exception, testing::IsNull());
+    std::tie(error_name, error_message) =
+        ComputeGraph(scope, graph, inputs, outputs);
+    EXPECT_TRUE(error_name.IsNull());
     CheckExternalValues(xnnpack_graph, inputs, outputs);
     results = GetArrayBufferViewValues<float>(outputs[0].second);
     EXPECT_EQ(results, Vector<float>({8.0, 10.0, 12.0, 14.0}));
@@ -433,8 +446,9 @@ TEST_P(MLGraphXnnpackTest, InvokeXnnpackRuntimeTest) {
     MLNamedArrayBufferViews inputs = {{"input0", input0_buffer},
                                       {"input1", input1_buffer}};
     MLNamedArrayBufferViews outputs = {{"output", output_buffer}};
-    auto* compute_exception = ComputeGraph(scope, graph, inputs, outputs);
-    EXPECT_THAT(compute_exception, testing::IsNull());
+    std::tie(error_name, error_message) =
+        ComputeGraph(scope, graph, inputs, outputs);
+    EXPECT_TRUE(error_name.IsNull());
     CheckExternalValues(xnnpack_graph, inputs, outputs);
     auto results = GetArrayBufferViewValues<float>(outputs[0].second);
     EXPECT_EQ(results, Vector<float>({6.0, 8.0, 10.0, 12.0}));
@@ -443,8 +457,9 @@ TEST_P(MLGraphXnnpackTest, InvokeXnnpackRuntimeTest) {
     auto new_input1_buffer =
         CreateArrayBufferViewForOperand<float>(input1, {6.0, 7.0, 8.0, 9.0});
     inputs = {{"input0", new_input0_buffer}, {"input1", new_input1_buffer}};
-    compute_exception = ComputeGraph(scope, graph, inputs, outputs);
-    EXPECT_THAT(compute_exception, testing::IsNull());
+    std::tie(error_name, error_message) =
+        ComputeGraph(scope, graph, inputs, outputs);
+    EXPECT_TRUE(error_name.IsNull());
     CheckExternalValues(xnnpack_graph, inputs, outputs);
     results = GetArrayBufferViewValues<float>(outputs[0].second);
     EXPECT_EQ(results, Vector<float>({8.0, 10.0, 12.0, 14.0}));
@@ -459,15 +474,17 @@ TEST_P(MLGraphXnnpackTest, InvokeXnnpackRuntimeTest) {
     MLNamedArrayBufferViews inputs = {{"input0", input0_buffer},
                                       {"input1", input1_buffer}};
     MLNamedArrayBufferViews outputs = {{"output", output_buffer}};
-    auto* compute_exception = ComputeGraph(scope, graph, inputs, outputs);
-    EXPECT_THAT(compute_exception, testing::IsNull());
+    std::tie(error_name, error_message) =
+        ComputeGraph(scope, graph, inputs, outputs);
+    EXPECT_TRUE(error_name.IsNull());
     CheckExternalValues(xnnpack_graph, inputs, outputs);
     auto results = GetArrayBufferViewValues<float>(outputs[0].second);
     EXPECT_EQ(results, Vector<float>({6.0, 8.0, 10.0, 12.0}));
     auto new_output_buffer = CreateArrayBufferViewForOperand(output);
     outputs = {{"output", new_output_buffer}};
-    compute_exception = ComputeGraph(scope, graph, inputs, outputs);
-    EXPECT_THAT(compute_exception, testing::IsNull());
+    std::tie(error_name, error_message) =
+        ComputeGraph(scope, graph, inputs, outputs);
+    EXPECT_TRUE(error_name.IsNull());
     CheckExternalValues(xnnpack_graph, inputs, outputs);
     results = GetArrayBufferViewValues<float>(outputs[0].second);
     EXPECT_EQ(results, Vector<float>({6.0, 8.0, 10.0, 12.0}));
@@ -493,7 +510,8 @@ TEST_P(MLGraphXnnpackTest, InputAndOutputUseSameNameTest) {
         BuildInput(builder, "x", shape, V8MLOperandDataType::Enum::kFloat32,
                    scope.GetExceptionState());
     auto* output = builder->relu(input, scope.GetExceptionState());
-    auto [graph, exception] = BuildGraph(scope, builder, {{"x", output}});
+    auto [graph, error_name, error_message] =
+        BuildGraph(scope, builder, {{"x", output}});
     ASSERT_THAT(graph, testing::NotNull());
     auto* xnnpack_graph = static_cast<MLGraphXnnpack*>(graph.Get());
     auto input_buffer =
@@ -501,8 +519,9 @@ TEST_P(MLGraphXnnpackTest, InputAndOutputUseSameNameTest) {
     auto output_buffer = CreateArrayBufferViewForOperand(output);
     MLNamedArrayBufferViews inputs = {{"x", input_buffer}};
     MLNamedArrayBufferViews outputs = {{"x", output_buffer}};
-    auto* compute_exception = ComputeGraph(scope, graph, inputs, outputs);
-    EXPECT_THAT(compute_exception, testing::IsNull());
+    std::tie(error_name, error_message) =
+        ComputeGraph(scope, graph, inputs, outputs);
+    EXPECT_TRUE(error_name.IsNull());
     CheckExternalValues(xnnpack_graph, inputs, outputs);
     auto results = GetArrayBufferViewValues<float>(outputs[0].second);
     EXPECT_EQ(results, Vector<float>({0.0, 0.0, 0.5, 10.0}));
@@ -523,7 +542,8 @@ TEST_P(MLGraphXnnpackTest, InputAndOutputUseSameNameTest) {
     auto* output = BuildElementWiseBinary(
         scope, builder, webnn::mojom::blink::ElementWiseBinary::Kind::kAdd,
         input0, input1);
-    auto [graph, exception] = BuildGraph(scope, builder, {{"y", output}});
+    auto [graph, error_name, error_message] =
+        BuildGraph(scope, builder, {{"y", output}});
     ASSERT_THAT(graph, testing::NotNull());
     auto* xnnpack_graph = static_cast<MLGraphXnnpack*>(graph.Get());
     auto input0_buffer =
@@ -534,8 +554,9 @@ TEST_P(MLGraphXnnpackTest, InputAndOutputUseSameNameTest) {
     MLNamedArrayBufferViews inputs = {{"x", input0_buffer},
                                       {"y", input1_buffer}};
     MLNamedArrayBufferViews outputs = {{"y", output_buffer}};
-    auto* compute_exception = ComputeGraph(scope, graph, inputs, outputs);
-    EXPECT_THAT(compute_exception, testing::IsNull());
+    std::tie(error_name, error_message) =
+        ComputeGraph(scope, graph, inputs, outputs);
+    EXPECT_TRUE(error_name.IsNull());
     CheckExternalValues(xnnpack_graph, inputs, outputs);
     auto results = GetArrayBufferViewValues<float>(outputs[0].second);
     EXPECT_EQ(results, Vector<float>({6.0, 8.0, 10.0, 12.0}));
@@ -579,7 +600,7 @@ TEST_F(MLGraphXnnpackTest, ComputeTest) {
     auto b_buffer_view = CreateArrayBufferViewForOperand(b_operand);
     auto output_buffer_view = CreateArrayBufferViewForOperand(output_operand);
     auto* resolver =
-        MakeGarbageCollected<ScriptPromiseResolverTyped<MLComputeResult>>(
+        MakeGarbageCollected<ScriptPromiseResolver<MLComputeResult>>(
             scope.GetScriptState());
     ScriptPromiseTester tester(scope.GetScriptState(), resolver->Promise());
     graph->Compute(
@@ -587,13 +608,11 @@ TEST_F(MLGraphXnnpackTest, ComputeTest) {
         {{"output", output_buffer_view}}, resolver, scope.GetExceptionState());
     tester.WaitUntilSettled();
     EXPECT_FALSE(tester.IsFulfilled());
-    auto* exception = V8DOMException::ToWrappable(scope.GetIsolate(),
-                                                  tester.Value().V8Value());
-    ASSERT_THAT(exception, testing::NotNull());
-    EXPECT_EQ(exception->name(),
-              DOMException::GetErrorName(DOMExceptionCode::kDataError));
+    auto [error_name, error_message] =
+        GetErrorNameAndMessage(&scope, tester.Value());
+    EXPECT_EQ(error_name, "TypeError");
     EXPECT_EQ(
-        exception->message(),
+        error_message,
         "Invalid inputs: The array buffer view with name \"a\" is detached.");
     // Other ArrayBufferViews should not be detached.
     EXPECT_FALSE(b_buffer_view->IsDetached());
@@ -607,7 +626,7 @@ TEST_F(MLGraphXnnpackTest, ComputeTest) {
     ASSERT_TRUE(b_buffer_view->IsDetached());
     auto output_buffer_view = CreateArrayBufferViewForOperand(output_operand);
     auto* resolver =
-        MakeGarbageCollected<ScriptPromiseResolverTyped<MLComputeResult>>(
+        MakeGarbageCollected<ScriptPromiseResolver<MLComputeResult>>(
             scope.GetScriptState());
     ScriptPromiseTester tester(scope.GetScriptState(), resolver->Promise());
     graph->Compute(
@@ -615,13 +634,11 @@ TEST_F(MLGraphXnnpackTest, ComputeTest) {
         {{"output", output_buffer_view}}, resolver, scope.GetExceptionState());
     tester.WaitUntilSettled();
     EXPECT_FALSE(tester.IsFulfilled());
-    auto* exception = V8DOMException::ToWrappable(scope.GetIsolate(),
-                                                  tester.Value().V8Value());
-    ASSERT_THAT(exception, testing::NotNull());
-    EXPECT_EQ(exception->name(),
-              DOMException::GetErrorName(DOMExceptionCode::kDataError));
+    auto [error_name, error_message] =
+        GetErrorNameAndMessage(&scope, tester.Value());
+    EXPECT_EQ(error_name, "TypeError");
     EXPECT_EQ(
-        exception->message(),
+        error_message,
         "Invalid inputs: The array buffer view with name \"b\" is detached.");
     // Other ArrayBufferViews should not be detached.
     EXPECT_FALSE(a_buffer_view->IsDetached());
@@ -635,7 +652,7 @@ TEST_F(MLGraphXnnpackTest, ComputeTest) {
     output_buffer_view->DetachForTesting();
     ASSERT_TRUE(output_buffer_view->IsDetached());
     auto* resolver =
-        MakeGarbageCollected<ScriptPromiseResolverTyped<MLComputeResult>>(
+        MakeGarbageCollected<ScriptPromiseResolver<MLComputeResult>>(
             scope.GetScriptState());
     ScriptPromiseTester tester(scope.GetScriptState(), resolver->Promise());
     graph->Compute(
@@ -643,12 +660,10 @@ TEST_F(MLGraphXnnpackTest, ComputeTest) {
         {{"output", output_buffer_view}}, resolver, scope.GetExceptionState());
     tester.WaitUntilSettled();
     EXPECT_FALSE(tester.IsFulfilled());
-    auto* exception = V8DOMException::ToWrappable(scope.GetIsolate(),
-                                                  tester.Value().V8Value());
-    ASSERT_THAT(exception, testing::NotNull());
-    EXPECT_EQ(exception->name(),
-              DOMException::GetErrorName(DOMExceptionCode::kDataError));
-    EXPECT_EQ(exception->message(),
+    auto [error_name, error_message] =
+        GetErrorNameAndMessage(&scope, tester.Value());
+    EXPECT_EQ(error_name, "TypeError");
+    EXPECT_EQ(error_message,
               "Invalid outputs: The array buffer view with name \"output\" is "
               "detached.");
     // Other ArrayBufferViews should not be detached.
@@ -662,7 +677,7 @@ TEST_F(MLGraphXnnpackTest, ComputeTest) {
     auto b_buffer_view = CreateArrayBufferViewForOperand(b_operand);
     auto output_buffer_view = CreateArrayBufferViewForOperand(output_operand);
     auto* resolver =
-        MakeGarbageCollected<ScriptPromiseResolverTyped<MLComputeResult>>(
+        MakeGarbageCollected<ScriptPromiseResolver<MLComputeResult>>(
             scope.GetScriptState());
     ScriptPromiseTester tester(scope.GetScriptState(), resolver->Promise());
     graph->Compute(
@@ -704,7 +719,7 @@ TEST_F(MLGraphXnnpackTest, ComputeTest) {
     size_t output_buffer_view_byte_length = output_buffer_view->byteLength();
     void* output_buffer_view_base_address = output_buffer_view->BaseAddress();
     auto* resolver =
-        MakeGarbageCollected<ScriptPromiseResolverTyped<MLComputeResult>>(
+        MakeGarbageCollected<ScriptPromiseResolver<MLComputeResult>>(
             scope.GetScriptState());
     ScriptPromiseTester tester(scope.GetScriptState(), resolver->Promise());
     graph->Compute(
@@ -802,7 +817,7 @@ struct EluTester {
                    scope.GetExceptionState());
     auto* output_operand =
         builder->elu(input_operand, options, scope.GetExceptionState());
-    auto [graph, build_exception] =
+    auto [graph, error_name, error_message] =
         helper.BuildGraph(scope, builder, {{"output", output_operand}});
     ASSERT_THAT(graph, testing::NotNull());
 
@@ -812,9 +827,9 @@ struct EluTester {
           CreateArrayBufferViewForOperand(input_operand, input.values)}});
     MLNamedArrayBufferViews outputs(
         {{"output", CreateArrayBufferViewForOperand(output_operand)}});
-    auto* compute_exception =
+    std::tie(error_name, error_message) =
         helper.ComputeGraph(scope, graph, inputs, outputs);
-    EXPECT_THAT(compute_exception, testing::IsNull());
+    EXPECT_TRUE(error_name.IsNull());
     auto results = GetArrayBufferViewValues<float>(outputs[0].second);
 
     // Compare the results of WebNN graph and XNNPACK operator.
@@ -822,7 +837,9 @@ struct EluTester {
   }
 };
 
-TEST_P(MLGraphXnnpackTest, EluTest) {
+// TODO: crbug.com/327337526 - Migrate this to WPTs. This test is temporarily
+// disabled due to suspected undefined behavior causing crashes on bots.
+TEST_P(MLGraphXnnpackTest, DISABLED_EluTest) {
   V8TestingScope scope;
   {
     // Test elu operator with default options.
@@ -904,7 +921,7 @@ struct SoftmaxTester {
                    scope.GetExceptionState());
     auto* output_operand =
         builder->softmax(input_operand, scope.GetExceptionState());
-    auto [graph, build_exception] =
+    auto [graph, error_name, error_message] =
         helper.BuildGraph(scope, builder, {{"output", output_operand}});
     ASSERT_THAT(graph, testing::NotNull());
 
@@ -914,9 +931,9 @@ struct SoftmaxTester {
           CreateArrayBufferViewForOperand(input_operand, input.values)}});
     MLNamedArrayBufferViews outputs(
         {{"output", CreateArrayBufferViewForOperand(output_operand)}});
-    auto* compute_exception =
+    std::tie(error_name, error_message) =
         helper.ComputeGraph(scope, graph, inputs, outputs);
-    EXPECT_THAT(compute_exception, testing::IsNull());
+    EXPECT_TRUE(error_name.IsNull());
     auto results = GetArrayBufferViewValues<float>(outputs[0].second);
 
     // Compare the results of WebNN graph and XNNPACK operator.
@@ -924,7 +941,9 @@ struct SoftmaxTester {
   }
 };
 
-TEST_P(MLGraphXnnpackTest, SoftmaxTest) {
+// TODO: crbug.com/327337526 - Migrate this to WPTs. This test is temporarily
+// disabled due to suspected undefined behavior causing crashes on bots.
+TEST_P(MLGraphXnnpackTest, DISABLED_SoftmaxTest) {
   V8TestingScope scope;
   {
     // Test softmax operator for input operand with [2, 2] dimensions.
@@ -1006,7 +1025,7 @@ struct SigmoidTester {
                    scope.GetExceptionState());
     auto* output_operand =
         builder->sigmoid(input_operand, scope.GetExceptionState());
-    auto [graph, build_exception] =
+    auto [graph, error_name, error_message] =
         helper.BuildGraph(scope, builder, {{"output", output_operand}});
     ASSERT_THAT(graph, testing::NotNull());
 
@@ -1016,9 +1035,9 @@ struct SigmoidTester {
           CreateArrayBufferViewForOperand(input_operand, input.values)}});
     MLNamedArrayBufferViews outputs(
         {{"output", CreateArrayBufferViewForOperand(output_operand)}});
-    auto* compute_exception =
+    std::tie(error_name, error_message) =
         helper.ComputeGraph(scope, graph, inputs, outputs);
-    EXPECT_THAT(compute_exception, testing::IsNull());
+    EXPECT_TRUE(error_name.IsNull());
     auto results = GetArrayBufferViewValues<float>(outputs[0].second);
 
     // Compare the results of WebNN graph and XNNPACK operator.
@@ -1121,7 +1140,7 @@ struct TanhTester {
                    scope.GetExceptionState());
     auto* output_operand =
         builder->tanh(input_operand, scope.GetExceptionState());
-    auto [graph, build_exception] =
+    auto [graph, error_name, error_message] =
         helper.BuildGraph(scope, builder, {{"output", output_operand}});
     ASSERT_THAT(graph, testing::NotNull());
 
@@ -1131,9 +1150,9 @@ struct TanhTester {
           CreateArrayBufferViewForOperand(input_operand, input.values)}});
     MLNamedArrayBufferViews outputs(
         {{"output", CreateArrayBufferViewForOperand(output_operand)}});
-    auto* compute_exception =
+    std::tie(error_name, error_message) =
         helper.ComputeGraph(scope, graph, inputs, outputs);
-    EXPECT_THAT(compute_exception, testing::IsNull());
+    EXPECT_TRUE(error_name.IsNull());
     auto results = GetArrayBufferViewValues<float>(outputs[0].second);
 
     // Compare the results of WebNN graph and XNNPACK operator.
@@ -1177,11 +1196,12 @@ TEST_P(MLGraphXnnpackTest, PreluTest) {
                    scope.GetExceptionState());
     auto* output_operand =
         builder->prelu(input_operand, slope_operand, scope.GetExceptionState());
-    auto [graph, exception] =
+    auto [graph, error_name, error_message] =
         BuildGraph(scope, builder, {{"output", output_operand}});
     EXPECT_THAT(graph, testing::IsNull());
-    EXPECT_EQ(exception->message(),
-              "Slope should be defined as a constant operand.");
+    EXPECT_EQ(error_name,
+              DOMException::GetErrorName(DOMExceptionCode::kDataError));
+    EXPECT_EQ(error_message, "Slope should be defined as a constant operand.");
   }
   {
     // Test throwing exception when slope is a scalar.
@@ -1196,10 +1216,12 @@ TEST_P(MLGraphXnnpackTest, PreluTest) {
                       Vector<float>({0.1}), scope.GetExceptionState());
     auto* output_operand =
         builder->prelu(input_operand, slope_operand, scope.GetExceptionState());
-    auto [graph, exception] =
+    auto [graph, error_name, error_message] =
         BuildGraph(scope, builder, {{"output", output_operand}});
     EXPECT_THAT(graph, testing::IsNull());
-    EXPECT_EQ(exception->message(), "Slope should not be a scalar.");
+    EXPECT_EQ(error_name,
+              DOMException::GetErrorName(DOMExceptionCode::kNotSupportedError));
+    EXPECT_EQ(error_message, "Slope should not be a scalar.");
   }
 }
 
@@ -1224,7 +1246,7 @@ struct ThreadPoolTester {
                                      scope.GetExceptionState());
     auto* output_operand =
         builder->relu(input_operand, scope.GetExceptionState());
-    auto [graph, build_exception] =
+    auto [graph, error_name, error_message] =
         helper.BuildGraph(scope, builder, {{"output", output_operand}});
     ASSERT_THAT(graph, testing::NotNull());
 
@@ -1235,9 +1257,9 @@ struct ThreadPoolTester {
               input_operand, Vector<float>({-10.0, -1.0, 1.0, 10.0}))}});
     MLNamedArrayBufferViews outputs(
         {{"output", CreateArrayBufferViewForOperand(output_operand)}});
-    auto* compute_exception =
+    std::tie(error_name, error_message) =
         helper.ComputeGraph(scope, graph, inputs, outputs);
-    EXPECT_THAT(compute_exception, testing::IsNull());
+    EXPECT_TRUE(error_name.IsNull());
     auto results = GetArrayBufferViewValues<float>(outputs[0].second);
     EXPECT_EQ(results, Vector<float>({0.0, 0.0, 1.0, 10.0}));
   }

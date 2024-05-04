@@ -16,11 +16,11 @@
 #include "chrome/browser/screen_ai/screen_ai_service_router_factory.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/common/pdf_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/language/core/common/language_util.h"
+#include "components/pdf/common/pdf_util.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/render_view_host.h"
@@ -108,10 +108,6 @@ std::vector<content::WebContents*> GetPdfHtmlWebContentses(Profile* profile) {
 
 // Invoke screen reader alert to notify the user of the state.
 void AnnounceToScreenReader(const int message_id) {
-// TODO(crbug.com/1442928): Sending announcements results in a failure in
-// `AuraLinuxAccessibilityInProcessBrowserTest::IndexInParentWithModal` and
-// flaky fail when running Chrome.
-#if !BUILDFLAG(IS_LINUX)
   const Browser* browser = BrowserList::GetInstance()->GetLastActive();
   if (!browser) {
     VLOG(2) << "Browser is not ready to announce";
@@ -125,7 +121,6 @@ void AnnounceToScreenReader(const int message_id) {
 
   browser_view->GetViewAccessibility().AnnounceText(
       l10n_util::GetStringUTF16(message_id));
-#endif
 }
 
 void RecordAcceptLanguages(const std::string& accept_languages) {
@@ -135,7 +130,7 @@ void RecordAcceptLanguages(const std::string& accept_languages) {
     // Convert to a Chrome language code synonym. This language synonym is then
     // converted into a `LocaleCodeISO639` enum value for a UMA histogram.
     language::ToChromeLanguageSynonym(&language);
-    // TODO(crbug.com/1443346): Add a browser test to validate this UMA metric.
+    // TODO(crbug.com/40267312): Add a browser test to validate this UMA metric.
     base::UmaHistogramSparse("Accessibility.PdfOcr.UserAcceptLanguage",
                              base::HashMetricName(language));
   }

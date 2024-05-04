@@ -236,7 +236,7 @@ int RendererMain(MainFunctionParams parameters) {
   // NOTE: On linux, this call could already have been made from
   // zygote_main_linux.cc.  However, calling multiple times from the same thread
   // is OK.
-  InitializeWebRtcModule();
+  InitializeWebRtcModuleBeforeSandbox();
 
   {
     content::ContentRendererClient* client = GetContentClient()->renderer();
@@ -270,7 +270,8 @@ int RendererMain(MainFunctionParams parameters) {
     // It also needs to be registered before the process has multiple threads,
     // which may race with application of the sandbox.
     if (base::FeatureList::IsEnabled(
-            features::kHandleChildThreadTypeChangesInBrowser)) {
+            features::kHandleChildThreadTypeChangesInBrowser) ||
+        base::FeatureList::IsEnabled(features::kSchedQoSOnResourcedForChrome)) {
       SandboxedProcessThreadTypeHandler::Create();
 
       // Change the main thread type. On Linux and ChromeOS this needs to be

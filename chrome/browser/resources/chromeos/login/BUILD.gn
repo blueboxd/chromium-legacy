@@ -50,6 +50,21 @@ build_webui("build") {
     "oobe_screen.css",
   ]
 
+  mojo_files_deps = [
+    "//chrome/browser/ui/webui/ash/login/mojom:mojom",
+    "//chrome/browser/ui/webui/ash/login/mojom:mojom_ts__generator",
+  ]
+
+  mojo_files = [
+    "$root_gen_dir/chrome/browser/ui/webui/ash/login/mojom/screens_common.mojom-webui.ts",
+    "$root_gen_dir/chrome/browser/ui/webui/ash/login/mojom/screens_factory.mojom-webui.ts",
+    "$root_gen_dir/chrome/browser/ui/webui/ash/login/mojom/screens_login.mojom-webui.ts",
+    "$root_gen_dir/chrome/browser/ui/webui/ash/login/mojom/screens_oobe.mojom-webui.ts",
+    "$root_gen_dir/chrome/browser/ui/webui/ash/login/mojom/screens_osauth.mojom-webui.ts",
+  ]
+
+  mojo_base_path = "mojom-webui"
+
   web_component_files = [
     # Oobe screens
     "screens/oobe/auto_enrollment_check.ts",
@@ -68,10 +83,12 @@ build_webui("build") {
     # Common screens
     "screens/common/adb_sideloading.ts",
     "screens/common/add_child.ts",
+    "screens/common/ai_intro.ts",
     "screens/common/app_downloading.ts",
     "screens/common/app_launch_splash.ts",
     "screens/common/assistant_optin.ts",
     "screens/common/autolaunch.ts",
+    "screens/common/categories_selection.ts",
     "screens/common/choobe.ts",
     "screens/common/consolidated_consent.ts",
     "screens/common/device_disabled.ts",
@@ -108,6 +125,7 @@ build_webui("build") {
     "screens/common/theme_selection.ts",
     "screens/common/touchpad_scroll.ts",
     "screens/common/tpm_error.ts",
+    "screens/common/tuna.ts",
     "screens/common/user_allowlist_check_screen.ts",
     "screens/common/user_creation.ts",
     "screens/common/wrong_hwid.ts",
@@ -198,6 +216,7 @@ build_webui("build") {
     "oobe.ts",
     "oobe_trace.ts",
     "oobe_trace_start.ts",
+    "oobe_screens_factory_proxy.ts",
     "priority_screens_common_flow.ts",
     "priority_screens_oobe_flow.ts",
     "screens.ts",
@@ -237,6 +256,8 @@ build_webui("build") {
     "//tools/typescript/definitions/quick_unlock_private.d.ts",
   ]
 
+  ts_composite = true
+
   ts_deps = [
     "//ash/webui/common/resources:build_ts",
     "//ash/webui/common/resources/cr_elements:build_ts",
@@ -252,6 +273,7 @@ build_webui("build") {
         rebase_path("//chrome/browser/resources/gaia_auth_host/*",
                     target_gen_dir) ]
 
+  webui_context_type = "trusted"
   extra_grdp_deps = [ "../supervision:build_oobe_grdp" ]
   extra_grdp_files = [ "$root_gen_dir/chrome/browser/resources/chromeos/supervision/supervision_oobe_resources.grdp" ]
 }

@@ -41,6 +41,7 @@
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_core_service.h"
 #include "chrome/browser/download/download_core_service_factory.h"
+#include "chrome/browser/download/download_item_warning_data.h"
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router.h"
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -75,6 +76,7 @@
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/download/public/common/download_danger_type.h"
 #include "components/download/public/common/mock_download_item.h"
+#include "components/enterprise/buildflags/buildflags.h"
 #include "components/enterprise/common/proto/connectors.pb.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
@@ -122,15 +124,11 @@
 #include "third_party/zlib/google/zip.h"
 #include "url/gurl.h"
 
-// TODO(b/283093731): Replace the platforms below with a condition for cloud
-// content scanning.
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
-    BUILDFLAG(IS_CHROMEOS)
+#if BUILDFLAG(ENTERPRISE_CLOUD_CONTENT_ANALYSIS)
 #include "chrome/browser/enterprise/connectors/connectors_service.h"
 #include "chrome/browser/enterprise/connectors/reporting/realtime_reporting_client_factory.h"
 #include "chrome/browser/enterprise/connectors/test/deep_scanning_test_utils.h"
-#endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) ||
-        // BUILDFLAG(IS_CHROMEOS)
+#endif  // BUILDFLAG(ENTERPRISE_CLOUD_CONTENT_ANALYSIS)
 
 using base::RunLoop;
 using content::BrowserThread;
@@ -382,15 +380,11 @@ class DownloadProtectionServiceTestBase
             profile(),
             base::BindRepeating(&BuildSafeBrowsingPrivateEventRouter));
 
-// TODO(b/283093731): Replace the platforms below with a condition for cloud
-// content scanning.
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
-    BUILDFLAG(IS_CHROMEOS)
+#if BUILDFLAG(ENTERPRISE_CLOUD_CONTENT_ANALYSIS)
     enterprise_connectors::RealtimeReportingClientFactory::GetInstance()
         ->SetTestingFactory(profile(),
                             base::BindRepeating(&BuildRealtimeReportingClient));
-#endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) ||
-        // BUILDFLAG(IS_CHROMEOS)
+#endif  // BUILDFLAG(ENTERPRISE_CLOUD_CONTENT_ANALYSIS)
     client_ = std::make_unique<policy::MockCloudPolicyClient>();
 
     SetDMTokenForTesting(policy::DMToken::CreateValidToken("dm_token"));
@@ -445,7 +439,7 @@ class DownloadProtectionServiceTestBase
                 content::BrowserContext, password_manager::TestPasswordStore>));
     // It's fine to override unconditionally, GetForProfile() will still return
     // null if account storage is disabled.
-    // TODO(crbug.com/1516660): Remove the comment above when the account store
+    // TODO(crbug.com/41489644): Remove the comment above when the account store
     // is always non-null.
     factories.emplace_back(
         AccountPasswordStoreFactory::GetInstance(),
@@ -856,7 +850,7 @@ void DownloadProtectionServiceTestBase::CheckClientDownloadReportCorruptArchive(
   Mock::VerifyAndClearExpectations(binary_feature_extractor_.get());
 }
 
-// TODO(crbug.com/721964): Create specific unit tests for
+// TODO(crbug.com/41319255): Create specific unit tests for
 // check_client_download_request.*, download_url_sb_client.*, and
 // ppapi_download_request.*.
 TEST_F(DownloadProtectionServiceTest, CheckClientDownloadInvalidUrl) {
@@ -2353,20 +2347,7 @@ TEST_F(DownloadProtectionServiceTest, TestCheckDownloadUrl) {
   {
     EXPECT_CALL(*sb_service_->mock_database_manager(),
                 CheckDownloadUrl(ContainerEq(url_chain), NotNull()))
-        .WillOnce(
-            DoAll(CheckDownloadUrlDone(SB_THREAT_TYPE_SAFE), Return(false)));
-    RunLoop run_loop;
-    download_service_->CheckDownloadUrl(
-        &item, base::BindOnce(&DownloadProtectionServiceTest::CheckDoneCallback,
-                              base::Unretained(this), run_loop.QuitClosure()));
-    run_loop.Run();
-    EXPECT_TRUE(IsResult(DownloadCheckResult::SAFE));
-    Mock::VerifyAndClearExpectations(sb_service_.get());
-  }
-  {
-    EXPECT_CALL(*sb_service_->mock_database_manager(),
-                CheckDownloadUrl(ContainerEq(url_chain), NotNull()))
-        .WillOnce(DoAll(CheckDownloadUrlDone(SB_THREAT_TYPE_URL_MALWARE),
+        .WillOnce(DoAll(CheckDownloadUrlDone(SBThreatType::SB_THREAT_TYPE_SAFE),
                         Return(false)));
     RunLoop run_loop;
     download_service_->CheckDownloadUrl(
@@ -2379,7 +2360,22 @@ TEST_F(DownloadProtectionServiceTest, TestCheckDownloadUrl) {
   {
     EXPECT_CALL(*sb_service_->mock_database_manager(),
                 CheckDownloadUrl(ContainerEq(url_chain), NotNull()))
-        .WillOnce(DoAll(CheckDownloadUrlDone(SB_THREAT_TYPE_URL_BINARY_MALWARE),
+        .WillOnce(DoAll(
+            CheckDownloadUrlDone(SBThreatType::SB_THREAT_TYPE_URL_MALWARE),
+            Return(false)));
+    RunLoop run_loop;
+    download_service_->CheckDownloadUrl(
+        &item, base::BindOnce(&DownloadProtectionServiceTest::CheckDoneCallback,
+                              base::Unretained(this), run_loop.QuitClosure()));
+    run_loop.Run();
+    EXPECT_TRUE(IsResult(DownloadCheckResult::SAFE));
+    Mock::VerifyAndClearExpectations(sb_service_.get());
+  }
+  {
+    EXPECT_CALL(*sb_service_->mock_database_manager(),
+                CheckDownloadUrl(ContainerEq(url_chain), NotNull()))
+        .WillOnce(DoAll(CheckDownloadUrlDone(
+                            SBThreatType::SB_THREAT_TYPE_URL_BINARY_MALWARE),
                         Return(false)));
     RunLoop run_loop;
     download_service_->CheckDownloadUrl(
@@ -2558,7 +2554,10 @@ namespace {
 
 class MockPageNavigator : public content::PageNavigator {
  public:
-  MOCK_METHOD1(OpenURL, content::WebContents*(const content::OpenURLParams&));
+  MOCK_METHOD2(OpenURL,
+               content::WebContents*(
+                   const content::OpenURLParams&,
+                   base::OnceCallback<void(content::NavigationHandle&)>));
 };
 
 // A custom matcher that matches a OpenURLParams value with a url with a query
@@ -2580,7 +2579,8 @@ TEST_F(DownloadProtectionServiceTest, ShowDetailsForDownloadHasContext) {
 
   EXPECT_CALL(mock_download_item, GetDangerType())
       .WillOnce(Return(download::DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST));
-  EXPECT_CALL(mock_page_navigator, OpenURL(OpenURLParamsWithContextValue("7")));
+  EXPECT_CALL(mock_page_navigator,
+              OpenURL(OpenURLParamsWithContextValue("7"), _));
 
   download_service_->ShowDetailsForDownload(&mock_download_item,
                                             &mock_page_navigator);
@@ -2913,10 +2913,7 @@ TEST_F(DownloadProtectionServiceTest,
   validate_report_contents(/* show_download_in_folder */ true);
 }
 
-// TODO(b/283093731): Replace the platforms below with a condition for cloud
-// content scanning.
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
-    BUILDFLAG(IS_CHROMEOS)
+#if BUILDFLAG(ENTERPRISE_CLOUD_CONTENT_ANALYSIS)
 TEST_F(DownloadProtectionServiceTest,
        VerifyBypassReportSentImmediatelyIfVerdictDangerous) {
   enterprise_connectors::RealtimeReportingClientFactory::GetForProfile(
@@ -3209,8 +3206,7 @@ TEST_F(DownloadProtectionServiceTest,
       &item, download::DOWNLOAD_DANGER_TYPE_SENSITIVE_CONTENT_BLOCK);
 }
 
-#endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) ||
-        // BUILDFLAG(IS_CHROMEOS)
+#endif  // BUILDFLAG(ENTERPRISE_CLOUD_CONTENT_ANALYSIS)
 
 TEST_F(DownloadProtectionServiceTest, VerifyDangerousDownloadOpenedAPICall) {
   NiceMockDownloadItem item;
@@ -3478,10 +3474,7 @@ TEST_F(DownloadProtectionServiceTest, DoesNotSendPingForCancelledDownloads) {
   EXPECT_FALSE(HasClientDownloadRequest());
 }
 
-// TODO(b/283093731): Replace the platforms below with a condition for cloud
-// content scanning.
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
-    BUILDFLAG(IS_CHROMEOS)
+#if BUILDFLAG(ENTERPRISE_CLOUD_CONTENT_ANALYSIS)
 TEST_F(DeepScanningDownloadTest, PasswordProtectedArchivesBlockedByPreference) {
   base::FilePath test_zip;
   EXPECT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &test_zip));
@@ -3639,8 +3632,7 @@ TEST_F(DeepScanningDownloadTest, LargeFileBlockedByPreference) {
     ClearClientDownloadRequest();
   }
 }
-#endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) ||
-        // BUILDFLAG(IS_CHROMEOS)
+#endif  // BUILDFLAG(ENTERPRISE_CLOUD_CONTENT_ANALYSIS)
 
 TEST_F(DownloadProtectionServiceTest, FileSystemAccessWriteRequest_NotABinary) {
   auto item = PrepareBasicFileSystemAccessWriteItem(
@@ -4432,10 +4424,7 @@ TEST_F(DownloadProtectionServiceTest,
   testing_profile_manager_.DeleteTestingProfile("profile 2");
 }
 
-// TODO(b/283093731): Replace the platforms below with a condition for cloud
-// content scanning.
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
-    BUILDFLAG(IS_CHROMEOS)
+#if BUILDFLAG(ENTERPRISE_CLOUD_CONTENT_ANALYSIS)
 TEST_F(DeepScanningDownloadTest, PolicyEnabled) {
   NiceMockDownloadItem item;
   PrepareBasicDownloadItem(&item, {"http://www.evil.com/a.exe"},  // url_chain
@@ -4600,8 +4589,7 @@ TEST_F(DeepScanningDownloadTest, SafeVerdictPrecedence) {
     test_upload_service->ClearWasCalled();
   }
 }
-#endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) ||
-        // BUILDFLAG(IS_CHROMEOS)
+#endif  // BUILDFLAG(ENTERPRISE_CLOUD_CONTENT_ANALYSIS)
 
 TEST_F(DownloadProtectionServiceTest, AdvancedProtectionRequestScan) {
   PrepareResponse(ClientDownloadResponse::UNCOMMON, net::HTTP_OK, net::OK,
@@ -4944,10 +4932,7 @@ class EnterpriseCsdDownloadTest : public DownloadProtectionServiceTestBase {
   EnterpriseCsdDownloadTest() = default;
 };
 
-// TODO(b/283093731): Replace the platforms below with a condition for cloud
-// content scanning.
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
-    BUILDFLAG(IS_CHROMEOS)
+#if BUILDFLAG(ENTERPRISE_CLOUD_CONTENT_ANALYSIS)
 TEST_F(EnterpriseCsdDownloadTest, SkipsConsumerCsdWhenEnabled) {
   NiceMockDownloadItem item;
   PrepareBasicDownloadItem(&item, {"http://www.evil.com/a.exe"},  // url_chain
@@ -5071,7 +5056,150 @@ TEST_F(EnterpriseCsdDownloadTest, StillDoesMetadataCheckForLargeFile) {
   EXPECT_TRUE(test_upload_service->was_called());
   EXPECT_TRUE(IsResult(DownloadCheckResult::SAFE));
 }
-#endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) ||
-        // BUILDFLAG(IS_CHROMEOS)
+#endif  // BUILDFLAG(ENTERPRISE_CLOUD_CONTENT_ANALYSIS)
+
+class ImmediateDeepScanTest : public DownloadProtectionServiceTest {
+ public:
+  ImmediateDeepScanTest() { EnableFeatures({kDeepScanningPromptRemoval}); }
+
+  void SetUp() override {
+    DownloadProtectionServiceTest::SetUp();
+
+    profile()->GetPrefs()->SetBoolean(
+        prefs::kSafeBrowsingAutomaticDeepScanningIPHSeen, true);
+  }
+};
+
+TEST_F(ImmediateDeepScanTest, ESBRequestScan) {
+  PrepareResponse(ClientDownloadResponse::UNCOMMON, net::HTTP_OK, net::OK,
+                  /*upload_requested=*/true, /*request_deep_scan=*/true);
+  NiceMockDownloadItem item;
+  PrepareBasicDownloadItem(&item, {"http://www.evil.com/a.exe"},  // url_chain
+                           "http://www.google.com/",              // referrer
+                           FILE_PATH_LITERAL("a.tmp"),            // tmp_path
+                           FILE_PATH_LITERAL("a.exe"));           // final_path
+  EXPECT_CALL(*binary_feature_extractor_.get(), CheckSignature(tmp_path_, _))
+      .Times(1);
+  EXPECT_CALL(*sb_service_->mock_database_manager(),
+              MatchDownloadAllowlistUrl(_, _))
+      .WillRepeatedly(
+          [](const GURL& url, base::OnceCallback<void(bool)> callback) {
+            std::move(callback).Run(false);
+          });
+  EXPECT_CALL(*binary_feature_extractor_.get(),
+              ExtractImageFeatures(
+                  tmp_path_, BinaryFeatureExtractor::kDefaultOptions, _, _));
+
+  // Testing Scenario with request_deep_scan response is true and
+  // user is enrolled in the Enhanced Protection Program.
+  safe_browsing::SetEnhancedProtectionPrefForTests(profile()->GetPrefs(),
+                                                   /*value*/ true);
+
+  content::DownloadItemUtils::AttachInfoForTesting(&item, profile(), nullptr);
+  RunLoop run_loop;
+  download_service_->CheckClientDownload(
+      &item,
+      base::BindRepeating(&DownloadProtectionServiceTest::CheckDoneCallback,
+                          base::Unretained(this), run_loop.QuitClosure()));
+  run_loop.Run();
+  EXPECT_TRUE(IsResult(DownloadCheckResult::IMMEDIATE_DEEP_SCAN));
+}
+
+TEST_F(ImmediateDeepScanTest, APPRequestScan) {
+  PrepareResponse(ClientDownloadResponse::UNCOMMON, net::HTTP_OK, net::OK,
+                  /*upload_requested=*/true, /*request_deep_scan=*/true);
+  NiceMockDownloadItem item;
+  PrepareBasicDownloadItem(&item, {"http://www.evil.com/a.exe"},  // url_chain
+                           "http://www.google.com/",              // referrer
+                           FILE_PATH_LITERAL("a.tmp"),            // tmp_path
+                           FILE_PATH_LITERAL("a.exe"));           // final_path
+  EXPECT_CALL(*binary_feature_extractor_.get(), CheckSignature(tmp_path_, _))
+      .Times(1);
+  EXPECT_CALL(*sb_service_->mock_database_manager(),
+              MatchDownloadAllowlistUrl(_, _))
+      .WillRepeatedly(
+          [](const GURL& url, base::OnceCallback<void(bool)> callback) {
+            std::move(callback).Run(false);
+          });
+  EXPECT_CALL(*binary_feature_extractor_.get(),
+              ExtractImageFeatures(
+                  tmp_path_, BinaryFeatureExtractor::kDefaultOptions, _, _));
+
+  // Testing Scenario with request_deep_scan response is true and
+  // user is enrolled in the the Advanced Protection Program
+  AdvancedProtectionStatusManagerFactory::GetForProfile(profile())
+      ->SetAdvancedProtectionStatusForTesting(/*enrolled=*/true);
+
+  content::DownloadItemUtils::AttachInfoForTesting(&item, profile(), nullptr);
+  RunLoop run_loop;
+  download_service_->CheckClientDownload(
+      &item,
+      base::BindRepeating(&DownloadProtectionServiceTest::CheckDoneCallback,
+                          base::Unretained(this), run_loop.QuitClosure()));
+  run_loop.Run();
+  // Advanced Protection users do not immediately deep scan.
+  EXPECT_TRUE(IsResult(DownloadCheckResult::PROMPT_FOR_SCANNING));
+}
+
+TEST_F(ImmediateDeepScanTest, EncryptedArchive) {
+  PrepareResponse(ClientDownloadResponse::UNCOMMON, net::HTTP_OK, net::OK,
+                  /*upload_requested=*/true, /*request_deep_scan=*/true);
+
+  base::FilePath test_zip;
+  EXPECT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &test_zip));
+  test_zip = test_zip.AppendASCII("safe_browsing")
+                 .AppendASCII("download_protection")
+                 .AppendASCII("encrypted.zip");
+
+  NiceMockDownloadItem item;
+  PrepareBasicDownloadItemWithFullPaths(
+      &item, {"http://www.evil.com/encrypted.zip"},  // url_chain
+      "http://www.google.com/",                      // referrer
+      test_zip,                                      // tmp_path
+      temp_dir_.GetPath().Append(
+          FILE_PATH_LITERAL("encrypted.zip")));  // final_path
+  content::DownloadItemUtils::AttachInfoForTesting(&item, profile(), nullptr);
+
+  // Testing Scenario with request_deep_scan response is true and
+  // user is enrolled in the Enhanced Protection Program.
+  safe_browsing::SetEnhancedProtectionPrefForTests(profile()->GetPrefs(),
+                                                   /*value*/ true);
+
+  content::DownloadItemUtils::AttachInfoForTesting(&item, profile(), nullptr);
+  RunLoop run_loop;
+  download_service_->CheckClientDownload(
+      &item,
+      base::BindRepeating(&DownloadProtectionServiceTest::CheckDoneCallback,
+                          base::Unretained(this), run_loop.QuitClosure()));
+  run_loop.Run();
+  // Downloads of encrypted archives cannot immediately deep scan
+  EXPECT_TRUE(IsResult(DownloadCheckResult::PROMPT_FOR_SCANNING));
+}
+
+TEST_F(ImmediateDeepScanTest, ImmediateDeepScansSetPref) {
+  base::FilePath test_zip;
+  EXPECT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &test_zip));
+  test_zip = test_zip.AppendASCII("safe_browsing")
+                 .AppendASCII("download_protection")
+                 .AppendASCII("encrypted.zip");
+
+  NiceMockDownloadItem item;
+  PrepareBasicDownloadItemWithFullPaths(
+      &item, {"http://www.evil.com/encrypted.zip"},  // url_chain
+      "http://www.google.com/",                      // referrer
+      test_zip,                                      // tmp_path
+      temp_dir_.GetPath().Append(
+          FILE_PATH_LITERAL("encrypted.zip")));  // final_path
+  content::DownloadItemUtils::AttachInfoForTesting(&item, profile(), nullptr);
+
+  EXPECT_FALSE(profile()->GetPrefs()->GetBoolean(
+      prefs::kSafeBrowsingAutomaticDeepScanPerformed));
+  safe_browsing::DownloadProtectionService::UploadForConsumerDeepScanning(
+      &item,
+      DownloadItemWarningData::DeepScanTrigger::TRIGGER_IMMEDIATE_DEEP_SCAN,
+      /*password=*/std::nullopt);
+  EXPECT_TRUE(profile()->GetPrefs()->GetBoolean(
+      prefs::kSafeBrowsingAutomaticDeepScanPerformed));
+}
 
 }  // namespace safe_browsing

@@ -47,13 +47,6 @@ class ProfileOAuth2TokenServiceDelegateAndroid
 
   std::vector<CoreAccountId> GetAccounts() const override;
 
-  // Overridden from ProfileOAuth2TokenService to complete signout of all
-  // POA2TService aware accounts.
-  void RevokeAllCredentials() override;
-
-  void LoadCredentials(const CoreAccountId& primary_account_id,
-                       bool is_syncing) override;
-
   void ReloadAllAccountsFromSystemWithPrimaryAccount(
       const std::optional<CoreAccountId>& primary_account_id) override;
 
@@ -64,7 +57,7 @@ class ProfileOAuth2TokenServiceDelegateAndroid
       const std::optional<CoreAccountId>& primary_account_id) override;
 
   // Resumes the reload of accounts once the account seeding is complete.
-  // TODO(crbug.com/934688) Once ProfileOAuth2TokenServiceDelegate.java is
+  // TODO(crbug.com/40615112) Once ProfileOAuth2TokenServiceDelegate.java is
   // internalized, use CoreAccountId instead of String.
   void ReloadAllAccountsWithPrimaryAccountAfterSeeding(
       JNIEnv* env,
@@ -99,6 +92,15 @@ class ProfileOAuth2TokenServiceDelegateAndroid
   void FireRefreshTokensLoaded() override;
 
  private:
+  // ProfileOAuth2TokenServiceDelegate implementation:
+  // Overridden from ProfileOAuth2TokenService to complete signout of all
+  // POA2TService aware accounts.
+  void RevokeAllCredentialsInternal(
+      signin_metrics::SourceForRefreshTokenOperation source) override;
+
+  void LoadCredentialsInternal(const CoreAccountId& primary_account_id,
+                               bool is_syncing) override;
+
   std::string MapAccountIdToAccountName(const CoreAccountId& account_id) const;
   CoreAccountId MapAccountNameToAccountId(
       const std::string& account_name) const;

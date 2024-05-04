@@ -59,7 +59,7 @@ class PasswordManagerDriver {
   // should be shown even without password suggestions. This is set to true if
   // the popup will include another item that the driver doesn't know about
   // (e.g. a promo to unlock passwords from the user's Google Account).
-  // TODO(https://crbug.com/621355): Remove and observe FormFetcher instead.
+  // TODO(crbug.com/41259715): Remove and observe FormFetcher instead.
   virtual void InformNoSavedCredentials(
       bool should_show_popup_without_passwords) {}
 
@@ -69,7 +69,8 @@ class PasswordManagerDriver {
       const autofill::PasswordFormGenerationData& form) {}
 
   // Notifies the driver that the user has accepted a generated password.
-  // TODO(crbug/936011): delete this method. The UI should call the one below.
+  // TODO(crbug.com/40615624): delete this method. The UI should call the one
+  // below.
   virtual void GeneratedPasswordAccepted(const std::u16string& password) = 0;
 
   // Notifies the password manager that the user has accepted a generated

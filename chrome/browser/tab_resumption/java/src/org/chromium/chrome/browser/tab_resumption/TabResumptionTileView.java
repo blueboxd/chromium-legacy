@@ -7,22 +7,33 @@ package org.chromium.chrome.browser.tab_resumption;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
-import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 
-import org.chromium.chrome.browser.tab_resumption.TabResumptionModuleUtils.SuggestionClickCallback;
-import org.chromium.url.GURL;
+import org.chromium.components.browser_ui.widget.RoundedCornerImageView;
 
 /**
  * The view for a tab suggestion tile. These tile comes in two variants: A larger one for the
  * "single-tile" case, and a smaller one for the "multi-tile" case.
  */
 public class TabResumptionTileView extends RelativeLayout {
+    private RoundedCornerImageView mIconView;
+    private final int mSalientImageCornerRadiusPx;
+
     public TabResumptionTileView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
+        mSalientImageCornerRadiusPx =
+                context.getResources()
+                        .getDimensionPixelSize(
+                                R.dimen.tab_resumption_module_icon_rounded_corner_radius);
+    }
+
+    @Override
+    protected void onFinishInflate() {
+        super.onFinishInflate();
+        mIconView = findViewById(R.id.tile_icon);
     }
 
     void destroy() {
@@ -59,13 +70,16 @@ public class TabResumptionTileView extends RelativeLayout {
 
     /** Assigns the main URL image. */
     public void setImageDrawable(Drawable drawable) {
-        ((ImageView) findViewById(R.id.tile_icon)).setImageDrawable(drawable);
+        mIconView.setImageDrawable(drawable);
     }
 
-    /** Binds the click handler with an associated URL. */
-    public void bindSuggestionClickCallback(SuggestionClickCallback callback, GURL url) {
-        setOnClickListener(v -> callback.onSuggestionClick(url));
-        // Handle and return false to avoid obstructing long click handling of containing Views.
-        setOnLongClickListener(v -> false);
+    /** Updates the image view to show a salient image. */
+    public void updateForSalientImage() {
+        mIconView.setPadding(0, 0, 0, 0);
+        mIconView.setRoundedCorners(
+                mSalientImageCornerRadiusPx,
+                mSalientImageCornerRadiusPx,
+                mSalientImageCornerRadiusPx,
+                mSalientImageCornerRadiusPx);
     }
 }

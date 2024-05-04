@@ -14,6 +14,7 @@
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/ash/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ash/arc/arc_util.h"
+#include "chrome/browser/ash/child_accounts/on_device_controls/app_controls_service_factory.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_features.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_pref_names.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_util.h"
@@ -43,6 +44,7 @@ using ::chromeos::settings::mojom::kAppDetailsSubpagePath;
 using ::chromeos::settings::mojom::kAppManagementSubpagePath;
 using ::chromeos::settings::mojom::kAppNotificationsManagerSubpagePath;
 using ::chromeos::settings::mojom::kAppNotificationsSubpagePath;
+using ::chromeos::settings::mojom::kAppParentalControlsSubpagePath;
 using ::chromeos::settings::mojom::kAppsSectionPath;
 using ::chromeos::settings::mojom::kArcVmUsbPreferencesSubpagePath;
 using ::chromeos::settings::mojom::kGooglePlayStoreSubpagePath;
@@ -404,6 +406,18 @@ void AddBorealisStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedStrings(kLocalizedStrings);
 }
 
+void AddAppParentalControlsStrings(content::WebUIDataSource* html_source) {
+  static constexpr webui::LocalizedString kLocalizedStrings[] = {
+      {"appParentalControlsTitle", IDS_OS_SETTINGS_APP_PARENTAL_CONTROLS_LABEL},
+      {"appParentalControlsSubtitle",
+       IDS_OS_SETTINGS_APP_PARENTAL_CONTROLS_SUBLABEL},
+      {"appParentalControlsSetUpButton",
+       IDS_OS_SETTINGS_APP_PARENTAL_CONTROLS_SET_UP_BUTTON},
+  };
+
+  html_source->AddLocalizedStrings(kLocalizedStrings);
+}
+
 bool ShowPluginVm(const Profile* profile, const PrefService& pref_service) {
   // Even if not allowed, we still want to show Plugin VM if the VM image is on
   // disk, so that users are still able to delete the image at will.
@@ -512,6 +526,18 @@ void AppsSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
       {"enableIsolatedWebAppsToggleLabel",
        IDS_SETTINGS_ENABLE_ISOLATED_WEB_APPS_LABEL},
       {"appManagementAppLanguageLabel", IDS_APP_MANAGEMENT_APP_LANGUAGE_LABEL},
+      {"permissionAllowedTextWithTurnOnCameraAccessButton",
+       IDS_APP_MANAGEMENT_PERMISSION_ALLOWED_TEXT_WITH_TURN_ON_SYSTEM_CAMERA_ACCESS_BUTTON},
+      {"permissionAllowedTextWithTurnOnMicrophoneAccessButton",
+       IDS_APP_MANAGEMENT_PERMISSION_ALLOWED_TEXT_WITH_TURN_ON_SYSTEM_MICROPHONE_ACCESS_BUTTON},
+      {"permissionAllowedTextWithTurnOnLocationAccessButton",
+       IDS_APP_MANAGEMENT_PERMISSION_ALLOWED_TEXT_WITH_TURN_ON_SYSTEM_LOCATION_ACCESS_BUTTON},
+      {"permissionAllowedTextWithDetailsAndTurnOnCameraAccessButton",
+       IDS_APP_MANAGEMENT_PERMISSION_ALLOWED_TEXT_WITH_DETAILS_AND_TURN_ON_SYSTEM_CAMERA_ACCESS_BUTTON},
+      {"permissionAllowedTextWithDetailsAndTurnOnMicrophoneAccessButton",
+       IDS_APP_MANAGEMENT_PERMISSION_ALLOWED_TEXT_WITH_DETAILS_AND_TURN_ON_SYSTEM_MICROPHONE_ACCESS_BUTTON},
+      {"permissionAllowedTextWithDetailsAndTurnOnLocationAccessButton",
+       IDS_APP_MANAGEMENT_PERMISSION_ALLOWED_TEXT_WITH_DETAILS_AND_TURN_ON_SYSTEM_LOCATION_ACCESS_BUTTON},
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
 
@@ -547,11 +573,22 @@ void AppsSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
       l10n_util::GetStringFUTF16(IDS_SETTINGS_ISOLATED_WEB_APPS_DESCRIPTION,
                                  chrome::kIsolatedWebAppsLearnMoreUrl));
 
+  html_source->AddBoolean("privacyHubAppPermissionsV2Enabled",
+                          features::IsCrosPrivacyHubAppPermissionsV2Enabled());
+
+  html_source->AddBoolean("privacyHubLocationAccessControlEnabled",
+                          ash::features::IsCrosPrivacyHubLocationEnabled());
+
+  html_source->AddBoolean("isAppParentalControlsFeatureAvailable",
+                          on_device_controls::AppControlsServiceFactory::
+                              IsOnDeviceAppControlsAvailable(profile()));
+
   AddAppManagementStrings(html_source);
   AddGuestOsStrings(html_source);
   AddAndroidAppStrings(html_source);
   AddPluginVmLoadTimeData(html_source);
   AddBorealisStrings(html_source);
+  AddAppParentalControlsStrings(html_source);
 
   // Startup subsection exists only when OsSettingsRevampWayfinding is disabled.
   if (startup_subsection_) {
@@ -684,6 +721,13 @@ void AppsSection::RegisterHierarchy(HierarchyGenerator* generator) const {
       mojom::SearchResultIcon::kGooglePlay,
       mojom::SearchResultDefaultRank::kMedium,
       mojom::kArcVmUsbPreferencesSubpagePath);
+
+  // On-device parental controls for apps
+  generator->RegisterTopLevelSubpage(
+      IDS_OS_SETTINGS_APP_PARENTAL_CONTROLS_LABEL,
+      mojom::Subpage::kAppParentalControls, mojom::SearchResultIcon::kAppsGrid,
+      mojom::SearchResultDefaultRank::kMedium,
+      mojom::kAppParentalControlsSubpagePath);
 
   // Startup subsection exists only when OsSettingsRevampWayfinding is disabled.
   if (startup_subsection_) {

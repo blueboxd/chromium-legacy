@@ -16,7 +16,7 @@
 #include "chrome/browser/search_engine_choice/search_engine_choice_service_factory.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "components/search_engines/search_engine_choice/search_engine_choice_service.h"
-#include "components/search_engines/search_engine_choice_utils.h"
+#include "components/search_engines/search_engine_choice/search_engine_choice_utils.h"
 #include "components/search_engines/search_engines_pref_names.h"
 #include "components/search_engines/search_engines_switches.h"
 #include "components/search_engines/template_url_service.h"
@@ -128,8 +128,7 @@ bool SearchEngineChoiceDialogServiceFactory::
 std::unique_ptr<KeyedService>
 SearchEngineChoiceDialogServiceFactory::BuildServiceInstanceForBrowserContext(
     content::BrowserContext* context) const {
-#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_FUCHSIA) || \
-    BUILDFLAG(CHROME_FOR_TESTING)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(CHROME_FOR_TESTING)
   return nullptr;
 #else
   if (!g_is_chrome_build && !base::CommandLine::ForCurrentProcess()->HasSwitch(

@@ -30,7 +30,10 @@ namespace apps {
 
 namespace {
 
-const PackageId kTestPackageId(AppType::kWeb, "https://example.com/");
+using ResponseFuture =
+    base::test::TestFuture<base::expected<AppInstallData, DownloadError>>;
+
+const PackageId kTestPackageId(PackageType::kWeb, "https://example.com/");
 
 }  // namespace
 
@@ -66,9 +69,9 @@ TEST_F(AppInstallAlmanacConnectorTest, GetAppInstallInfoRequest) {
         body = network::GetUploadData(request);
       }));
 
-  connector_.GetAppInstallInfo(PackageId(AppType::kWeb, "https://example.com/"),
-                               device_info, test_url_loader_factory_,
-                               base::DoNothing());
+  connector_.GetAppInstallInfo(
+      PackageId(PackageType::kWeb, "https://example.com/"), device_info,
+      test_url_loader_factory_, base::DoNothing());
 
   EXPECT_EQ(method, "POST");
   EXPECT_EQ(method_override_header, "GET");
@@ -90,11 +93,29 @@ TEST_F(AppInstallAlmanacConnectorTest, GetAppInstallInfoSuccessfulResponse) {
   instance.set_package_id("web:https://example.com/");
   instance.set_name("Example");
   instance.set_description("Description.");
-  proto::AppInstallResponse_Icon& icon = *instance.add_icons();
-  icon.set_url("https://example.com/icon.png");
-  icon.set_width_in_pixels(144);
-  icon.set_mime_type("image/png");
-  icon.set_is_masking_allowed(true);
+  {
+    proto::AppInstallResponse_Icon& icon = *instance.mutable_icon();
+    icon.set_url("https://example.com/icon.png");
+    icon.set_width_in_pixels(144);
+    icon.set_mime_type("image/png");
+    icon.set_is_masking_allowed(true);
+  }
+  {
+    proto::AppInstallResponse_Screenshot& screenshot =
+        *instance.add_screenshots();
+    screenshot.set_url("https://example.com/screenshot1.png");
+    screenshot.set_mime_type("image/png");
+    screenshot.set_width_in_pixels(400);
+    screenshot.set_height_in_pixels(400);
+  }
+  {
+    proto::AppInstallResponse_Screenshot& screenshot =
+        *instance.add_screenshots();
+    screenshot.set_url("https://example.com/screenshot2.png");
+    screenshot.set_mime_type("image/png");
+    screenshot.set_width_in_pixels(800);
+    screenshot.set_height_in_pixels(800);
+  }
   proto::AppInstallResponse_WebExtras& web_app_extras =
       *instance.mutable_web_extras();
   web_app_extras.set_document_url("https://example.com/start.html");
@@ -106,29 +127,42 @@ TEST_F(AppInstallAlmanacConnectorTest, GetAppInstallInfoSuccessfulResponse) {
       AppInstallAlmanacConnector::GetEndpointUrlForTesting().spec(),
       response.SerializeAsString());
 
-  base::test::TestFuture<std::optional<AppInstallData>> response_future;
+  ResponseFuture response_future;
   connector_.GetAppInstallInfo(kTestPackageId, DeviceInfo(),
                                test_url_loader_factory_,
                                response_future.GetCallback());
   EXPECT_TRUE(response_future.Get().has_value());
 
   AppInstallData expected_data(
-      PackageId(AppType::kWeb, "https://example.com/"));
+      PackageId(PackageType::kWeb, "https://example.com/"));
   expected_data.name = "Example";
   expected_data.description = "Description.";
-  expected_data.icons = {{
+  expected_data.icon = AppInstallIcon{
       .url = GURL("https://example.com/icon.png"),
       .width_in_pixels = 144,
       .mime_type = "image/png",
       .is_masking_allowed = true,
-  }};
+  };
+  expected_data.screenshots = {
+      AppInstallScreenshot{
+          .url = GURL("https://example.com/screenshot1.png"),
+          .mime_type = "image/png",
+          .width_in_pixels = 400,
+          .height_in_pixels = 400,
+      },
+      AppInstallScreenshot{
+          .url = GURL("https://example.com/screenshot2.png"),
+          .mime_type = "image/png",
+          .width_in_pixels = 800,
+          .height_in_pixels = 800,
+      }};
   auto& web_app_data = expected_data.app_type_data.emplace<WebAppInstallData>();
   web_app_data.original_manifest_url =
       GURL("https://example.com/manifest.json");
   web_app_data.proxied_manifest_url =
       GURL("https://almanac.chromium.org/example_manifest.json");
   web_app_data.document_url = GURL("https://example.com/start.html");
-  EXPECT_EQ(base::ToString(*response_future.Get()),
+  EXPECT_EQ(base::ToString(response_future.Get().value()),
             base::ToString(expected_data));
 }
 
@@ -142,11 +176,12 @@ TEST_F(AppInstallAlmanacConnectorTest, GetAppInstallInfoIncompleteResponse) {
       AppInstallAlmanacConnector::GetEndpointUrlForTesting().spec(),
       response.SerializeAsString());
 
-  base::test::TestFuture<std::optional<AppInstallData>> response_future;
+  ResponseFuture response_future;
   connector_.GetAppInstallInfo(kTestPackageId, DeviceInfo(),
                                test_url_loader_factory_,
                                response_future.GetCallback());
-  EXPECT_FALSE(response_future.Get().has_value());
+  EXPECT_EQ(response_future.Get().error().type,
+            DownloadError::kConnectionError);
 }
 
 TEST_F(AppInstallAlmanacConnectorTest, GetAppInstallInfoMalformedResponse) {
@@ -154,11 +189,12 @@ TEST_F(AppInstallAlmanacConnectorTest, GetAppInstallInfoMalformedResponse) {
       AppInstallAlmanacConnector::GetEndpointUrlForTesting().spec(),
       "Not a valid proto");
 
-  base::test::TestFuture<std::optional<AppInstallData>> response_future;
+  ResponseFuture response_future;
   connector_.GetAppInstallInfo(kTestPackageId, DeviceInfo(),
                                test_url_loader_factory_,
                                response_future.GetCallback());
-  EXPECT_FALSE(response_future.Get().has_value());
+  EXPECT_EQ(response_future.Get().error().type,
+            DownloadError::kConnectionError);
 }
 
 TEST_F(AppInstallAlmanacConnectorTest, GetAppInstallInfoServerError) {
@@ -166,11 +202,12 @@ TEST_F(AppInstallAlmanacConnectorTest, GetAppInstallInfoServerError) {
       AppInstallAlmanacConnector::GetEndpointUrlForTesting().spec(),
       /*content=*/"", net::HTTP_INTERNAL_SERVER_ERROR);
 
-  base::test::TestFuture<std::optional<AppInstallData>> response_future;
+  ResponseFuture response_future;
   connector_.GetAppInstallInfo(kTestPackageId, DeviceInfo(),
                                test_url_loader_factory_,
                                response_future.GetCallback());
-  EXPECT_FALSE(response_future.Get().has_value());
+  EXPECT_EQ(response_future.Get().error().type,
+            DownloadError::kConnectionError);
 }
 
 TEST_F(AppInstallAlmanacConnectorTest, GetAppInstallInfoNetworkError) {
@@ -179,11 +216,26 @@ TEST_F(AppInstallAlmanacConnectorTest, GetAppInstallInfoNetworkError) {
       network::mojom::URLResponseHead::New(), /*content=*/"",
       network::URLLoaderCompletionStatus(net::ERR_TIMED_OUT));
 
-  base::test::TestFuture<std::optional<AppInstallData>> response_future;
+  ResponseFuture response_future;
   connector_.GetAppInstallInfo(kTestPackageId, DeviceInfo(),
                                test_url_loader_factory_,
                                response_future.GetCallback());
-  EXPECT_FALSE(response_future.Get().has_value());
+  EXPECT_EQ(response_future.Get().error().type,
+            DownloadError::kConnectionError);
+}
+
+TEST_F(AppInstallAlmanacConnectorTest, GetAppInstallInfoNotFound) {
+  test_url_loader_factory_.AddResponse(
+      AppInstallAlmanacConnector::GetEndpointUrlForTesting().spec(),
+      /*content=*/"",
+
+      net::HTTP_NOT_FOUND);
+
+  ResponseFuture response_future;
+  connector_.GetAppInstallInfo(kTestPackageId, DeviceInfo(),
+                               test_url_loader_factory_,
+                               response_future.GetCallback());
+  EXPECT_EQ(response_future.Get().error().type, DownloadError::kBadRequest);
 }
 
 }  // namespace apps

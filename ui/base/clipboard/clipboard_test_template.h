@@ -22,6 +22,7 @@
 #include <string>
 #include <vector>
 
+#include "base/containers/span.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -241,8 +242,8 @@ TYPED_TEST(ClipboardTest, SvgTest) {
 }
 
 #if !BUILDFLAG(IS_ANDROID)
-// TODO(crbug/1064968): This test fails with ClipboardAndroid, but passes with
-// the TestClipboard as RTF isn't implemented in ClipboardAndroid.
+// TODO(crbug.com/40681589): This test fails with ClipboardAndroid, but passes
+// with the TestClipboard as RTF isn't implemented in ClipboardAndroid.
 TYPED_TEST(ClipboardTest, RTFTest) {
   std::string rtf =
       "{\\rtf1\\ansi{\\fonttbl\\f0\\fswiss Helvetica;}\\f0\\pard\n"
@@ -623,7 +624,8 @@ static void TestBitmapWriteAndPngRead(Clipboard* clipboard,
 }
 
 #if !BUILDFLAG(IS_ANDROID)
-// TODO(crbug.com/815537): Re-enable this test once death tests work on Android.
+// TODO(crbug.com/41372437): Re-enable this test once death tests work on
+// Android.
 
 // Only kN32_SkColorType bitmaps are allowed into the clipboard to prevent
 // surprising buffer overflows due to bits-per-pixel assumptions.
@@ -686,7 +688,7 @@ TYPED_TEST(ClipboardTest, PickleTest) {
   this->clipboard().ReadData(kFormat, /* data_dst = */ nullptr, &output);
   ASSERT_FALSE(output.empty());
 
-  base::Pickle read_pickle(output.data(), output.size());
+  base::Pickle read_pickle = base::Pickle::WithData(base::as_byte_span(output));
   base::PickleIterator iter(read_pickle);
   std::string unpickled_string;
   ASSERT_TRUE(iter.ReadString(&unpickled_string));
@@ -723,7 +725,8 @@ TYPED_TEST(ClipboardTest, MultiplePickleTest) {
   this->clipboard().ReadData(kFormat2, /* data_dst = */ nullptr, &output2);
   ASSERT_FALSE(output2.empty());
 
-  base::Pickle read_pickle2(output2.data(), output2.size());
+  base::Pickle read_pickle2 =
+      base::Pickle::WithData(base::as_byte_span(output2));
   base::PickleIterator iter2(read_pickle2);
   std::string unpickled_string2;
   ASSERT_TRUE(iter2.ReadString(&unpickled_string2));
@@ -746,7 +749,8 @@ TYPED_TEST(ClipboardTest, MultiplePickleTest) {
   this->clipboard().ReadData(kFormat1, /* data_dst = */ nullptr, &output1);
   ASSERT_FALSE(output1.empty());
 
-  base::Pickle read_pickle1(output1.data(), output1.size());
+  base::Pickle read_pickle1 =
+      base::Pickle::WithData(base::as_byte_span(output1));
   base::PickleIterator iter1(read_pickle1);
   std::string unpickled_string1;
   ASSERT_TRUE(iter1.ReadString(&unpickled_string1));
@@ -892,7 +896,7 @@ TYPED_TEST(ClipboardTest, DataAndPortableFormatTest) {
 // the Windows implicitly converts this to UNICODE as expected.
 TYPED_TEST(ClipboardTest, PlatformSpecificDataTest) {
   // We're testing platform-specific behavior, so use PlatformClipboardTest.
-  // TODO(https://crbug.com/1083050): The template shouldn't know about its
+  // TODO(crbug.com/40692232): The template shouldn't know about its
   // instantiations. Move this information up using a flag, virtual method, or
   // creating separate test files for different platforms.
   std::string test_suite_name = ::testing::UnitTest::GetInstance()
@@ -1021,7 +1025,60 @@ TYPED_TEST(ClipboardTest, HtmlTest) {
       "</html>\r\n\r\n",
       "<p>Foo</p>");
 }
+
+TYPED_TEST(ClipboardTest, PrivacyMetadataTest) {
+  // We're testing platform-specific behavior, so use PlatformClipboardTest.
+  std::string test_suite_name = ::testing::UnitTest::GetInstance()
+                                    ->current_test_info()
+                                    ->test_suite_name();
+  if (test_suite_name != std::string("ClipboardTest/PlatformClipboardTest")) {
+    return;
+  }
+
+  {
+    ScopedClipboardWriter clipboard_writer(ClipboardBuffer::kCopyPaste);
+    clipboard_writer.WriteText(u"foo");
+    clipboard_writer.MarkAsOffTheRecord();
+  }
+
+  EXPECT_TRUE(this->clipboard().IsFormatAvailable(
+      ClipboardFormatType::ClipboardHistoryType(), ClipboardBuffer::kCopyPaste,
+      /* data_dst = */ nullptr));
+  EXPECT_TRUE(this->clipboard().IsFormatAvailable(
+      ClipboardFormatType::UploadCloudClipboardType(),
+      ClipboardBuffer::kCopyPaste,
+      /* data_dst = */ nullptr));
+  std::string result;
+  this->clipboard().ReadData(ClipboardFormatType::ClipboardHistoryType(),
+                             /* data_dst = */ nullptr, &result);
+  DWORD history_data = std::strtoul(result.c_str(), nullptr, 16);
+  EXPECT_EQ(0ul, history_data);
+  this->clipboard().ReadData(ClipboardFormatType::UploadCloudClipboardType(),
+                             /* data_dst = */ nullptr, &result);
+  DWORD cloud_data = std::strtoul(result.c_str(), nullptr, 16);
+  EXPECT_EQ(0ul, cloud_data);
+}
 #endif  // BUILDFLAG(IS_WIN)
+
+#if BUILDFLAG(IS_MAC)
+TYPED_TEST(ClipboardTest, PasswordTest) {
+  // We're testing platform-specific behavior, so use PlatformClipboardTest.
+  std::string test_suite_name = ::testing::UnitTest::GetInstance()
+                                    ->current_test_info()
+                                    ->test_suite_name();
+  if (test_suite_name != std::string("ClipboardTest/PlatformClipboardTest")) {
+    return;
+  }
+
+  {
+    ScopedClipboardWriter clipboard_writer(ClipboardBuffer::kCopyPaste);
+    clipboard_writer.WriteText(u"password");
+    clipboard_writer.MarkAsConfidential();
+  }
+
+  EXPECT_TRUE(this->clipboard().IsMarkedByOriginatorAsConfidential());
+}
+#endif  // BUILDFLAG(IS_MAC)
 
 // Test writing all formats we have simultaneously.
 TYPED_TEST(ClipboardTest, WriteEverything) {

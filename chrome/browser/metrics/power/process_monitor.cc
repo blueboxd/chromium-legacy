@@ -16,6 +16,8 @@
 #include "base/process/process_metrics.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "base/types/expected.h"
+#include "base/types/optional_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/chrome_content_browser_client_extensions_part.h"
 #include "chrome/browser/metrics/power/power_metrics_constants.h"
@@ -58,7 +60,8 @@ std::unique_ptr<base::ProcessMetrics> CreateProcessMetrics(
 ProcessMonitor::Metrics SampleMetrics(base::ProcessMetrics& process_metrics) {
   ProcessMonitor::Metrics metrics;
 
-  metrics.cpu_usage = process_metrics.GetPlatformIndependentCPUUsage();
+  metrics.cpu_usage = base::OptionalFromExpected(
+      process_metrics.GetPlatformIndependentCPUUsage());
 
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || \
     BUILDFLAG(IS_AIX)
@@ -74,7 +77,9 @@ ProcessMonitor::Metrics SampleMetrics(base::ProcessMetrics& process_metrics) {
 
 // Scales every metrics by |factor|.
 void ScaleMetrics(ProcessMonitor::Metrics* metrics, double factor) {
-  metrics->cpu_usage *= factor;
+  if (metrics->cpu_usage.has_value()) {
+    metrics->cpu_usage.value() *= factor;
+  }
 
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || \
     BUILDFLAG(IS_AIX)
@@ -155,10 +160,14 @@ MonitoredProcessType GetMonitoredProcessTypeForNonRendererChildProcess(
   }
 }
 
-// Adds the values from |rhs| to |lhs|.
+// Adds the values from |rhs| to |lhs|. If both parameters have nullopt for
+// `cpu_usage`, the result will also have nullopt, otherwise the result will
+// have the sum of all non-nullopt `cpu_usage`.
 ProcessMonitor::Metrics& operator+=(ProcessMonitor::Metrics& lhs,
                                     const ProcessMonitor::Metrics& rhs) {
-  lhs.cpu_usage += rhs.cpu_usage;
+  if (lhs.cpu_usage.has_value() || rhs.cpu_usage.has_value()) {
+    lhs.cpu_usage = lhs.cpu_usage.value_or(0.0) + rhs.cpu_usage.value_or(0.0);
+  }
 
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || \
     BUILDFLAG(IS_AIX)
@@ -311,10 +320,12 @@ void ProcessMonitor::RenderProcessExited(
     return;
   }
 
-  // Remember the metrics from when the process exited.
-  const ProcessInfo& process_info = it->second;
-  exited_processes_metrics_[process_info.type] +=
-      GetLastIntervalMetrics(*process_info.process_metrics, info.cpu_usage);
+  // Remember the metrics from when the process exited, if available.
+  if (info.cpu_usage.has_value()) {
+    const ProcessInfo& process_info = it->second;
+    exited_processes_metrics_[process_info.type] += GetLastIntervalMetrics(
+        *process_info.process_metrics, info.cpu_usage.value());
+  }
 
   render_process_infos_.erase(it);
 }
@@ -405,10 +416,12 @@ void ProcessMonitor::OnBrowserChildProcessExited(
   }
 
   DCHECK(it != browser_child_process_infos_.end());
-  // Remember the metrics from when the process exited.
-  const ProcessInfo& process_info = it->second;
-  exited_processes_metrics_[process_info.type] +=
-      GetLastIntervalMetrics(*process_info.process_metrics, info.cpu_usage);
+  // Remember the metrics from when the process exited, if available.
+  if (info.cpu_usage.has_value()) {
+    const ProcessInfo& process_info = it->second;
+    exited_processes_metrics_[process_info.type] += GetLastIntervalMetrics(
+        *process_info.process_metrics, info.cpu_usage.value());
+  }
 
   browser_child_process_infos_.erase(it);
 }

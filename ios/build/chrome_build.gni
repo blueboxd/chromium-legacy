@@ -37,12 +37,16 @@ declare_args() {
   # Enable iOS shortcut widget in WidgetKit extension.
   ios_enable_shortcuts_widget = true
 
-  # Enable iOS search passwords widget in WidgetKit extension.
-  ios_enable_search_passwords_widget = true
+  # Enable iOS Push Notification Service extension.
+  ios_enable_push_notification_service_extension = false
 
   # Label of the target providing implementation for AccountVerificationProvider.
   # Overridden when using the Google-internal repository to build Chrome on iOS.
   ios_account_verification_provider_target = "//ios/chrome/credential_provider_extension:account_verification_provider_implementation"
+
+  # Label of the target providing implementation for the PushNotificationServiceExtension.
+  # Overridden when using the Google-internal repository to build Chrome on iOS.
+  ios_push_notification_service_extension_target = "//ios/chrome/push_notification_service_extension:push_notification_service_extension_implementation"
 
   # The API key to query Google services in the Credential Provider Extension.
   ios_credential_provider_extension_api_key = ""
@@ -84,6 +88,12 @@ declare_args() {
 
   # Enable memory debugging.
   ios_enable_memory_debugging = !is_chrome_branded
+
+  # The iOS app bundle id.
+  ios_chromium_bundle_id = "$ios_app_bundle_id_prefix.chrome.ios.dev"
+
+  # Path to a PrivacyInfo.xcprivacy file to be included in app extensions.
+  ios_app_extension_privacy_manifest = ""
 }
 
 if (target_environment == "catalyst") {
@@ -94,10 +104,28 @@ if (target_environment == "catalyst") {
   ios_enable_widget_kit_extension = false
   ios_enable_prebuilt_widget_kit_extension = false
   ios_enable_open_extension = false
+  ios_enable_push_notification_service_extension = false
 
   # ScreenTime framework is not available in the iOS support libraries provided
   # by "catalyst" environment.
   ios_enable_screen_time = false
+}
+
+if (ios_chrome_generate_order_file) {
+  assert(
+      !enable_stripping && !is_debug,
+      "An orderfile should only be generated if enable_stripping is false and is_debug is false to ensure all function calls are included.")
+
+  # Disable all extensions as the order file is only generated based on running
+  # the primary application.
+  ios_enable_content_widget_extension = false
+  ios_enable_search_widget_extension = false
+  ios_enable_credential_provider_extension = false
+  ios_enable_widget_kit_extension = false
+  ios_enable_prebuilt_widget_kit_extension = false
+  ios_enable_share_extension = false
+  ios_enable_open_extension = false
+  ios_enable_intents_extension = false
 }
 
 # Configure is_official_release.
@@ -108,7 +136,6 @@ if (is_official_build && is_chrome_branded) {
   is_official_release = false
 }
 
-chromium_bundle_id = "$ios_app_bundle_id_prefix.chrome.ios.dev"
 chromium_handoff_id = "$ios_app_bundle_id_prefix.chrome.handoff"
 ios_move_tab_activity_type = "$ios_app_bundle_id_prefix.chrome.move-tab"
 

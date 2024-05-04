@@ -17,11 +17,13 @@ import org.chromium.base.ResettersForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskTraits;
+import org.chromium.blink.mojom.WebFeature;
 import org.chromium.components.embedder_support.util.UrlUtilities;
 import org.chromium.components.external_intents.ExternalNavigationHandler.OverrideUrlLoadingResult;
 import org.chromium.components.external_intents.ExternalNavigationHandler.OverrideUrlLoadingResultType;
 import org.chromium.components.external_intents.ExternalNavigationParams.AsyncActionTakenParams;
 import org.chromium.components.navigation_interception.InterceptNavigationDelegate;
+import org.chromium.content_public.browser.ContentWebFeatureUsageUtils;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.NavigationHandle;
@@ -36,17 +38,13 @@ import org.chromium.url.Origin;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * Class that controls navigations and allows to intercept them. It is used on Android to 'convert'
- * certain navigations to Intents to 3rd party applications.
- * Note the Intent is often created together with a new empty tab which then should be closed
- * immediately. Closing the tab will cancel the navigation that this delegate is running for,
- * hence can cause UAF error. It should be done in an asynchronous fashion to avoid it.
- * See https://crbug.com/732260.
+ * certain navigations to Intents to 3rd party applications. Note the Intent is often created
+ * together with a new empty tab which then should be closed immediately. Closing the tab will
+ * cancel the navigation that this delegate is running for, hence can cause UAF error. It should be
+ * done in an asynchronous fashion to avoid it. See https://crbug.com/732260.
  */
 @JNINamespace("external_intents")
 public class InterceptNavigationDelegateImpl extends InterceptNavigationDelegate {
@@ -108,9 +106,8 @@ public class InterceptNavigationDelegateImpl extends InterceptNavigationDelegate
         int NUM_ENTRIES = 6;
     }
 
-    private static final List<String> MDOC_SCHEMES =
-            new ArrayList<String>(Arrays.asList("mdoc", "mdl-openid4vp", "mdoc-openid4vp"));
-    private static final String OPENID4VP_SCHEME = "openid4vp";
+    private static final String MDOC_SCHEME = "mdoc";
+    private static final String OPENID4VP_SCHEME_SUFFIX = "openid4vp";
 
     private static final String MAIN_FRAME_INTENT_LAUNCH_NAME =
             "Android.Intent.MainFrameIntentLaunch";
@@ -329,10 +326,28 @@ public class InterceptNavigationDelegateImpl extends InterceptNavigationDelegate
             scheme = InterceptScheme.ACCEPTED_SCHEME;
         } else if (UrlUtilities.hasIntentScheme(escapedUrl)) {
             scheme = InterceptScheme.INTENT_SCHEME;
-        } else if (MDOC_SCHEMES.contains(escapedUrl.getScheme())) {
+        } else if (MDOC_SCHEME.equals(escapedUrl.getScheme())) {
             scheme = InterceptScheme.MDOC_SCHEME;
-        } else if (OPENID4VP_SCHEME.equals(escapedUrl.getScheme())) {
+            ContentWebFeatureUsageUtils.logWebFeatureForCurrentPage(
+                    mClient.getWebContents(), WebFeature.IDENTITY_DIGITAL_CREDENTIALS_DEEP_LINK);
+            // Record spread of `result` in order to get an idea of by how much the
+            // IDENTITY_DIGITAL_CREDENTIALS_DEEP_LINK use counter is over counting as a user may
+            // cancel the OverrideUrlLoadingResultType.OVERRIDE_WITH_ASYNC_ACTION dialog.
+            RecordHistogram.recordEnumeratedHistogram(
+                    "Android.TabNavigationInterceptResult.ForMdoc",
+                    result.getResultType(),
+                    OverrideUrlLoadingResultType.NUM_ENTRIES);
+        } else if (escapedUrl.getScheme().endsWith(OPENID4VP_SCHEME_SUFFIX)) {
             scheme = InterceptScheme.OPENID4VP_SCHEME;
+            ContentWebFeatureUsageUtils.logWebFeatureForCurrentPage(
+                    mClient.getWebContents(), WebFeature.IDENTITY_DIGITAL_CREDENTIALS_DEEP_LINK);
+            // Record spread of `result` in order to get an idea of by how much the
+            // IDENTITY_DIGITAL_CREDENTIALS_DEEP_LINK use counter is over counting as a user may
+            // cancel the OverrideUrlLoadingResultType.OVERRIDE_WITH_ASYNC_ACTION dialog.
+            RecordHistogram.recordEnumeratedHistogram(
+                    "Android.TabNavigationInterceptResult.ForOpenId4Vp",
+                    result.getResultType(),
+                    OverrideUrlLoadingResultType.NUM_ENTRIES);
         }
         RecordHistogram.recordEnumeratedHistogram(
                 "Android.TabNavigationIntercept.Scheme", scheme, InterceptScheme.NUM_ENTRIES);

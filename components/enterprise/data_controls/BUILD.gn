@@ -15,6 +15,7 @@ source_set("features") {
 
 source_set("data_controls") {
   sources = [
+    "action_context.cc",
     "action_context.h",
     "and_condition.cc",
     "and_condition.h",
@@ -58,6 +59,20 @@ source_set("data_controls") {
   }
 }
 
+source_set("test_support") {
+  testonly = true
+  sources = [
+    "test_utils.cc",
+    "test_utils.h",
+  ]
+  public_deps = [
+    ":data_controls",
+    "//base",
+    "//components/policy/core/common:common_constants",
+    "//components/prefs",
+  ]
+}
+
 source_set("unit_tests") {
   testonly = true
 
@@ -72,6 +87,7 @@ source_set("unit_tests") {
 
   deps = [
     ":data_controls",
+    ":test_support",
     "//base",
     "//base/test:test_support",
     "//testing/gtest",

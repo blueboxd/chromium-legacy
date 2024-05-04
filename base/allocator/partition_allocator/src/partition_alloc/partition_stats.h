@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_ALLOCATOR_PARTITION_ALLOCATOR_SRC_PARTITION_ALLOC_PARTITION_STATS_H_
-#define BASE_ALLOCATOR_PARTITION_ALLOCATOR_SRC_PARTITION_ALLOC_PARTITION_STATS_H_
+#ifndef PARTITION_ALLOC_PARTITION_STATS_H_
+#define PARTITION_ALLOC_PARTITION_STATS_H_
 
 #include <cstddef>
 #include <cstdint>
@@ -92,6 +92,9 @@ struct PartitionMemoryStats {
   ThreadCacheStats current_thread_cache_stats;
   ThreadCacheStats all_thread_caches_stats;
 
+  bool has_scheduler_loop_quarantine;
+  LightweightQuarantineStats scheduler_loop_quarantine_stats_total;
+
   // Count and total duration of system calls made since process start. May not
   // be reported on all platforms.
   uint64_t syscall_count;
@@ -159,4 +162,4 @@ class PA_COMPONENT_EXPORT(PARTITION_ALLOC) SimplePartitionStatsDumper
 
 }  // namespace partition_alloc
 
-#endif  // BASE_ALLOCATOR_PARTITION_ALLOCATOR_SRC_PARTITION_ALLOC_PARTITION_STATS_H_
+#endif  // PARTITION_ALLOC_PARTITION_STATS_H_

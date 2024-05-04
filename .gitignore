@@ -84,6 +84,9 @@ vs-chromium-project.txt
 # gclient-new-workdir.
 .vscode
 .vscode-server
+# VS Code Bazel Extension
+/MODULE.bazel
+/MODULE.bazel.lock
 
 /_out
 /android_emulator_sdk
@@ -124,6 +127,7 @@ vs-chromium-project.txt
 /chrome/browser/protector/internal
 /chrome/browser/resources/chromeos/mako/resources/
 /chrome/browser/resources/chromeos/seal/resources/
+/chrome/browser/resources/downloads/internal/
 /chrome/browser/resources/pdf/html_office
 /chrome/browser/resources/media_router/extension/src/
 /chrome/browser/resources/preinstalled_web_apps/internal/
@@ -193,7 +197,6 @@ vs-chromium-project.txt
 /components/suggestions.xml
 /components/variations.xml
 /components/vector_icons/google_chrome/
-/components/zucchini/testdata/*.exe
 /content/browser/service_worker/proto.xml
 /content/content_browsertests_run.xml
 /content/content_common_mojo_bindings.xml
@@ -310,3 +313,10 @@ vs-chromium-project.txt
 
 # ignore rust build files
 third_party/rust/target/
+
+# b/328065301: This file is temporarily used as a migration toggle between
+# GCS hooks and first class deps.
+**/*_is_first_class_gcs
+# These files are created by first class GCS deps.
+**/*_hash
+**/*_content_names

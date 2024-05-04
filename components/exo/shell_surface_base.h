@@ -306,7 +306,8 @@ class ShellSurfaceBase : public SurfaceTreeHost,
   void OnWidgetClosing(views::Widget* widget) override;
 
   // views::View:
-  gfx::Size CalculatePreferredSize() const override;
+  gfx::Size CalculatePreferredSize(
+      const views::SizeBounds& available_size) const override;
   // This returns the surface's min/max size. If you want to know the
   // widget/window's min/mx size, you must use
   // ShellSurfaceBase::GetWidget()->GetXxxSize.
@@ -374,6 +375,10 @@ class ShellSurfaceBase : public SurfaceTreeHost,
   // Window corners radii in dps.
   const std::optional<gfx::RoundedCornersF>& window_corners_radii() const {
     return window_corners_radii_dp_;
+  }
+
+  const std::optional<gfx::RoundedCornersF>& shadow_corner_radii() const {
+    return shadow_corners_radii_dp_;
   }
 
   // Returns true if the shell surface has completed its initial configure

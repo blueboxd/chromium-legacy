@@ -46,7 +46,7 @@
 namespace {
 // The time delay after firstSceneWillEnterForeground: before checking for main
 // intent signals.
-const int kMainIntentCheckDelay = 1;
+constexpr base::TimeDelta kMainIntentCheckDelay = base::Seconds(1);
 }  // namespace
 
 @interface MainApplicationDelegate () <AppStateObserver> {
@@ -241,12 +241,28 @@ const int kMainIntentCheckDelay = 1;
                             true);
   web::GetUIThreadTaskRunner({})->PostTask(
       FROM_HERE, base::BindOnce(^{
-        // TODO(b/325287919): Add separate call to register with Chime for
-        // Content notifications.
-        [self.pushNotificationDelegate
-            applicationDidRegisterWithAPNS:deviceToken];
         if (IsContentPushNotificationsEnabled()) {
-          [self.pushNotificationDelegate registerNotificationCategories];
+          Browser* browser = self.mainController.browserProviderInterface
+                                 .mainBrowserProvider.browser;
+          if (browser) {
+            [self.pushNotificationDelegate
+                applicationDidRegisterWithAPNS:deviceToken
+                                  browserState:browser->GetBrowserState()];
+            // Logs when a Registration succeeded. (BrowserState loaded).
+            base::UmaHistogramBoolean(
+                "ContentNotifications.Registration.BrowserStateUnavailable",
+                false);
+          } else {
+            // Logs when a Registration failed. (BrowserState not available).
+            // Does not register the user and instead waits for the next
+            // registration opportunity/call.
+            base::UmaHistogramBoolean(
+                "IOS.PushNotification.APNSDeviceRegistration", true);
+          }
+        } else {
+          [self.pushNotificationDelegate
+              applicationDidRegisterWithAPNS:deviceToken
+                                browserState:nil];
         }
       }));
 }
@@ -273,7 +289,7 @@ const int kMainIntentCheckDelay = 1;
   Browser* browser =
       _mainController.browserProviderInterface.mainBrowserProvider.browser;
   if (!browser) {
-    // TODO(crbug.com/1368617): We should store the completionHandler and wait
+    // TODO(crbug.com/40240359): We should store the completionHandler and wait
     // for mainBrowserProvider creation.
     completionHandler();
     return;
@@ -316,7 +332,7 @@ const int kMainIntentCheckDelay = 1;
   if (!sceneDelegate)
     return;
 
-  // TODO(crbug.com/1060645): This should be called later, or this flow should
+  // TODO(crbug.com/40679152): This should be called later, or this flow should
   // be changed completely.
   if (self.foregroundSceneCount == 0) {
     [_appState applicationWillEnterForeground:UIApplication.sharedApplication
@@ -345,33 +361,14 @@ const int kMainIntentCheckDelay = 1;
 }
 
 - (void)firstSceneWillEnterForeground:(NSNotification*)notification {
+  // This method may be invoked really early in the application lifetime
+  // even before the creation of the main loop. Thus it is not possible
+  // to use PostTask API here, and we have to use dispatch_async(...).
   __weak MainApplicationDelegate* weakSelf = self;
-  // Delay Main Intent check since signals for intents like spotlight actions
-  // are not guaranteed to occur before firstSceneWillEnterForeground.
   dispatch_after(
-      dispatch_time(DISPATCH_TIME_NOW,
-                    static_cast<int64_t>(kMainIntentCheckDelay * NSEC_PER_SEC)),
+      dispatch_time(DISPATCH_TIME_NOW, kMainIntentCheckDelay.InNanoseconds()),
       dispatch_get_main_queue(), ^{
-        MainApplicationDelegate* strongSelf = weakSelf;
-        if (!strongSelf) {
-          return;
-        }
-
-        BOOL appStartupFromExternalIntent = NO;
-        for (SceneState* scene in strongSelf.appState.connectedScenes) {
-          if (scene.startupHadExternalIntent) {
-            appStartupFromExternalIntent = YES;
-            scene.startupHadExternalIntent = NO;
-          }
-        }
-        if (!appStartupFromExternalIntent) {
-          base::UmaHistogramEnumeration(kAppLaunchSource,
-                                        AppLaunchSource::APP_ICON);
-          base::RecordAction(base::UserMetricsAction("IOSOpenByMainIntent"));
-        } else {
-          [self notifyFETAppStartupFromExternalIntent];
-          base::RecordAction(base::UserMetricsAction("IOSOpenByViewIntent"));
-        }
+        [weakSelf firstSceneDidEnterForeground];
       });
 
   if (_startupInformation.isColdStart) {
@@ -429,6 +426,37 @@ const int kMainIntentCheckDelay = 1;
 }
 
 #pragma mark - Private
+
+// Returns whether the application was started via an external intent or
+// directly (i.e. by tapping on the app button directly).
+- (BOOL)appStartupFromExternalIntent {
+  for (SceneState* scene in self.appState.connectedScenes) {
+    if (scene.startupHadExternalIntent) {
+      return YES;
+    }
+  }
+
+  return NO;
+}
+
+// Invoked on the main sequence after -firstSceneWillEnterForeground: is
+// called, after a small delay. The delay is there to give time for the
+// intents to be received by the application (as they are not guaranteed
+// to happen before -firstSceneWillEnterForeground:).
+- (void)firstSceneDidEnterForeground {
+  if ([self appStartupFromExternalIntent]) {
+    base::RecordAction(base::UserMetricsAction("IOSOpenByViewIntent"));
+    [self applicationStartupFromExternalIntent];
+  } else {
+    base::RecordAction(base::UserMetricsAction("IOSOpenByMainIntent"));
+    base::UmaHistogramEnumeration(kAppLaunchSource, AppLaunchSource::APP_ICON);
+  }
+}
+
+// Invoked when the app is started by an external intent.
+- (void)applicationStartupFromExternalIntent {
+  [self notifyFETAppStartupFromExternalIntent];
+}
 
 // Notifies the Feature Engagement Tracker (FET) that the app has launched from
 // an external intent (i.e. through the share sheet), which is an eligibility

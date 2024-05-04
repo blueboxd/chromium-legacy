@@ -25,7 +25,6 @@
 #include "gpu/command_buffer/service/copy_texture_chromium_mock.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/command_buffer/service/logger.h"
-#include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/program_manager.h"
 #include "gpu/command_buffer/service/service_utils.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
@@ -111,6 +110,9 @@ void RasterDecoderTestBase::InitDecoder(const InitState& init) {
   // in turn initialize FeatureInfo, which needs a context to determine
   // extension support.
   context_ = new StrictMock<GLContextMock>();
+  // The stub ctx needs to be initialized so that the gl::GLContext can
+  // store the offscreen stub |surface|.
+  context_->Initialize(surface_.get(), {});
   context_->SetExtensionsString(all_extensions.c_str());
   context_->SetGLVersionString(init.gl_version.c_str());
 

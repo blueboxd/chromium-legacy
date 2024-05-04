@@ -149,7 +149,7 @@ void BackForwardCacheMetrics::DidCommitNavigation(
     // back/forward cache, the logged reasons must match the actual condition of
     // the navigation and other logged data.
     bool served_from_bfcache_not_match =
-        did_store && !page_store_result_->not_restored_reasons().Empty();
+        did_store && !page_store_result_->not_restored_reasons().empty();
     bool browsing_instance_not_swapped_not_match =
         page_store_result_->HasNotRestoredReason(
             NotRestoredReason::kBrowsingInstanceNotSwapped) &&
@@ -161,7 +161,7 @@ void BackForwardCacheMetrics::DidCommitNavigation(
     bool blocklisted_features_not_match =
         page_store_result_->HasNotRestoredReason(
             NotRestoredReason::kBlocklistedFeatures) &&
-        page_store_result_->blocklisted_features().Empty();
+        page_store_result_->blocklisted_features().empty();
     if (served_from_bfcache_not_match ||
         browsing_instance_not_swapped_not_match || disable_for_rfh_not_match ||
         blocklisted_features_not_match) {
@@ -169,7 +169,7 @@ void BackForwardCacheMetrics::DidCommitNavigation(
           DebugScenario::kDebugBackForwardCacheMetricsMismatch);
     }
 
-    // TODO(https://crbug.com/1338089): Remove this.
+    // TODO(crbug.com/40229455): Remove this.
     if (served_from_bfcache_not_match) {
       SCOPED_CRASH_KEY_BOOL("BFCacheMismatch", "did_store", did_store);
       SCOPED_CRASH_KEY_BOOL("BFCacheMismatch", "can_restore", can_restore);
@@ -423,13 +423,6 @@ void BackForwardCacheMetrics::AddNotRestoredFlattenedReasonsToExistingResult(
   if (not_restored_reasons.Has(NotRestoredReason::kRendererProcessKilled)) {
     renderer_killed_timestamp_ = Now();
   }
-  if (!not_restored_reasons.Has(NotRestoredReason::kHTTPStatusNotOK) &&
-      !not_restored_reasons.Has(NotRestoredReason::kSchemeNotHTTPOrHTTPS) &&
-      not_restored_reasons.Has(NotRestoredReason::kNoResponseHead)) {
-    CaptureTraceForNavigationDebugScenario(
-        DebugScenario::kDebugNoResponseHeadForHttpOrHttps);
-    base::debug::DumpWithoutCrashing();
-  }
 }
 
 void BackForwardCacheMetrics::SetNotRestoredReasons(
@@ -465,8 +458,8 @@ void BackForwardCacheMetrics::UpdateNotRestoredReasonsForNavigation(
 
   // This should not happen, but record this as an 'unknown' reason just in
   // case.
-  if (page_store_result_->not_restored_reasons().Empty() &&
-      new_blocking_reasons.not_restored_reasons().Empty() &&
+  if (page_store_result_->not_restored_reasons().empty() &&
+      new_blocking_reasons.not_restored_reasons().empty() &&
       !navigation->IsServedFromBackForwardCache()) {
     // TODO(altimin): Add a (D)CHECK here, but this code is reached in
     // unittests.

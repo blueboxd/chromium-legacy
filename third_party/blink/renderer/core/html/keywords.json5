@@ -74,12 +74,18 @@
     "togglePopover",
     "hidePopover",
     "showPopover",
+    // invokeaction for dialog
+    "showModal",
+    "close",
     // invokeaction for details
     "toggle",
     "close",
     "open",
     // invokeaction for input and select
     "showPicker",
+    // invokeaction for number input
+    "stepUp",
+    "stepDown",
     // invokeaction for fullscreen
     "toggleFullscreen",
     "requestFullscreen",

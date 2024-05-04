@@ -4,12 +4,11 @@
 
 #include "components/wifi/wifi_service.h"
 
-// clang-format off
-#include <windows.h>  // Must be in front of other Windows header files.
-// clang-format on
+#include <objbase.h>
+
+#include <windows.h>
 
 #include <iphlpapi.h>
-#include <objbase.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <wlanapi.h>
@@ -22,6 +21,7 @@
 #include <utility>
 
 #include "base/base_paths_win.h"
+#include "base/containers/heap_array.h"
 #include "base/files/file_path.h"
 #include "base/functional/bind.h"
 #include "base/logging.h"
@@ -1143,9 +1143,9 @@ DWORD WiFiServiceImpl::FindAdapterIndexMapByGUID(
   ULONG buffer_length = 0;
   DWORD error = ::GetInterfaceInfo(nullptr, &buffer_length);
   if (error == ERROR_INSUFFICIENT_BUFFER) {
-    std::unique_ptr<unsigned char[]> buffer(new unsigned char[buffer_length]);
+    auto buffer = base::HeapArray<unsigned char>::Uninit(buffer_length);
     IP_INTERFACE_INFO* interface_info =
-        reinterpret_cast<IP_INTERFACE_INFO*>(buffer.get());
+        reinterpret_cast<IP_INTERFACE_INFO*>(buffer.data());
     error = GetInterfaceInfo(interface_info, &buffer_length);
     if (error == ERROR_SUCCESS) {
       for (int adapter = 0; adapter < interface_info->NumAdapters; ++adapter) {

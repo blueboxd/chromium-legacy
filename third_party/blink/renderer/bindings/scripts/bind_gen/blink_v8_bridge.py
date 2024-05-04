@@ -382,7 +382,7 @@ def blink_type_info(idl_type):
         if "IDLTypeImplementedAsV8Promise" in real_type.extended_attributes:
             type_name = "v8::Local<v8::Promise>"
         else:
-            type_name = "ScriptPromise"
+            type_name = "ScriptPromiseUntyped"
         return TypeInfo(type_name,
                         ref_fmt="{}&",
                         const_ref_fmt="const {}&",
@@ -733,7 +733,7 @@ def make_v8_to_blink_value(blink_var_name,
                            v8_value_expr,
                            idl_type,
                            argument=None,
-                           error_exit_return_statement="return;",
+                           error_exit_return_statement=None,
                            cg_context=None):
     """
     Returns a SymbolNode whose definition converts a v8::Value to a Blink value.

@@ -193,7 +193,7 @@ TEST_F(AHardwareBufferImageBackingFactoryTest, InitialData) {
   uint32_t usage = SHARED_IMAGE_USAGE_DISPLAY_READ;
   auto backing = backing_factory_->CreateSharedImage(
       mailbox, format, size, color_space, surface_origin, alpha_type, usage,
-      "TestLabel", initial_data);
+      "TestLabel", /*is_thread_safe=*/false, initial_data);
   EXPECT_TRUE(backing);
 
   std::unique_ptr<SharedImageRepresentationFactoryRef> factory_ref =
@@ -212,7 +212,7 @@ TEST_F(AHardwareBufferImageBackingFactoryTest, InitialData) {
 // Test to check invalid format support.
 TEST_F(AHardwareBufferImageBackingFactoryTest, InvalidFormat) {
   auto mailbox = Mailbox::GenerateForSharedImage();
-  auto format = viz::LegacyMultiPlaneFormat::kNV12;
+  auto format = viz::MultiPlaneFormat::kNV12;
   gfx::Size size(256, 256);
   auto color_space = gfx::ColorSpace::CreateSRGB();
   GrSurfaceOrigin surface_origin = kTopLeft_GrSurfaceOrigin;

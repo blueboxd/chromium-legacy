@@ -183,7 +183,6 @@ after discussions on the right group.
       <annotation id="extension_manifest_fetcher"/>
       <annotation id="extension_crx_fetcher"/>
       <annotation id="proxy_config_headless"/>
-      <annotation id="cast_udp_transport"/>
       <annotation id="certificate_verifier_url_request"/>
       <annotation id="bidirectional_stream"/>
       <annotation id="proxy_config_system"/>
@@ -213,7 +212,6 @@ after discussions on the right group.
     <sender name="Recently Added">
       <annotation id="fast_pair_image_decoder"/>
       <annotation id="drivefs_http_client"/>
-      <annotation id="pending_beacon_api"/>
       <annotation id="download_bubble_retry_download"/>
       <annotation id="quick_answers_loader"/>
       <annotation id="chrome_search_suggest_service"/>
@@ -231,7 +229,7 @@ after discussions on the right group.
       <annotation id="nearby_share_contacts"/>
       <annotation id="nearby_share_list_public_certificates"/>
       <annotation id="nearby_presence_update_device"/>
-      <annotation id="nearby_presence_list_public_certificates"/>
+      <annotation id="nearby_presence_list_shared_credentials"/>
       <annotation id="managed_acccount_signin_restrictions_secure_connect_chromeos"/>
       <annotation id="fenced_frame_reporting_beacon"/>
       <annotation id="ntp_custom_background"/>
@@ -293,7 +291,6 @@ after discussions on the right group.
       <annotation id="metrics_report_appkm"/>
       <annotation id="metrics_report_ukm_and_appkm"/>
       <annotation id="search_engine_adapter"/>
-      <annotation id="launcher_manatee"/>
       <annotation id="prewarm_http_disk_cache"/>
       <annotation id="admin_specified_ppd_fetch"/>
       <annotation id="shopping_list_ui_image_fetcher"/>
@@ -316,6 +313,16 @@ after discussions on the right group.
       <annotation id="weather_icon"/>
       <annotation id="birch_calendar_provider"/>
       <annotation id="recovery_key_store_fetch"/>
+      <annotation id="enterprise_logo_fetcher"/>
+      <annotation id="remoting_corp_logging_report_session_disconnected"/>
+      <annotation id="focus_mode_sounds_image_downloader"/>
+      <annotation id="help_me_write_request"/>
+      <annotation id="camera_background_request"/>
+      <annotation id="wallpaper_request"/>
+      <annotation id="cws_fetch_item_snippet"/>
+      <annotation id="remoting_cloud_provision_gce_instance"/>
+      <annotation id="lens_overlay"/>
+      <annotation id="register_push_notification_service"/>
     </sender>
   </group>
   <group name="Admin Features" hidden="true">

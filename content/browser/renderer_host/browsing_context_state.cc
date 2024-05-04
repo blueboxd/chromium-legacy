@@ -217,7 +217,7 @@ bool BrowsingContextState::CommitFramePolicy(
   // Documents create iframes, iframes host new documents. Both are associated
   // with sandbox flags. They are required to be stricter or equal to their
   // owner when they change, as we go down.
-  // TODO(https://crbug.com/1262061). Enforce the invariant mentioned above,
+  // TODO(crbug.com/40202483). Enforce the invariant mentioned above,
   // once the interactions with fenced frame has been tested and clarified.
 
   bool did_change_flags = new_frame_policy.sandbox_flags !=
@@ -368,15 +368,40 @@ void BrowsingContextState::SetIsAdFrame(bool is_ad_frame) {
 
 void BrowsingContextState::ActiveFrameCountIsZero(
     SiteInstanceGroup* site_instance_group) {
-  // |site_instance_group| no longer contains any active RenderFrameHosts, so we
-  // don't need to maintain a proxy there anymore.
+  CheckIfSiteInstanceGroupIsUnused(site_instance_group, kActiveFrameCount);
+}
+
+void BrowsingContextState::KeepAliveCountIsZero(
+    SiteInstanceGroup* site_instance_group) {
+  CheckIfSiteInstanceGroupIsUnused(site_instance_group, kKeepAliveCount);
+}
+
+void BrowsingContextState::CheckIfSiteInstanceGroupIsUnused(
+    SiteInstanceGroup* site_instance_group,
+    RefCountType ref_count_type) {
+  // Only delete the proxy if both counts are zero.
+  if (site_instance_group->keep_alive_count() > 0 ||
+      site_instance_group->active_frame_count() > 0) {
+    return;
+  }
+
+  // |site_instance_group| no longer contains any active RenderFrameHosts or
+  // NavigationStateKeepAlive objects, so we don't need to maintain a proxy
+  // there anymore.
   RenderFrameProxyHost* proxy = GetRenderFrameProxyHost(site_instance_group);
   CHECK(proxy);
 
-  TRACE_EVENT_INSTANT("navigation",
-                      "BrowsingContextState::ActiveFrameCountIsZero",
-                      ChromeTrackEvent::kBrowsingContextState, this,
-                      ChromeTrackEvent::kRenderFrameProxyHost, proxy);
+  if (kActiveFrameCount) {
+    TRACE_EVENT_INSTANT("navigation",
+                        "BrowsingContextState::ActiveFrameCountIsZero",
+                        ChromeTrackEvent::kBrowsingContextState, this,
+                        ChromeTrackEvent::kRenderFrameProxyHost, proxy);
+  } else if (kKeepAliveCount) {
+    TRACE_EVENT_INSTANT("navigation",
+                        "BrowsingContextState::KeepAliveCountIsZero",
+                        ChromeTrackEvent::kBrowsingContextState, this,
+                        ChromeTrackEvent::kRenderFrameProxyHost, proxy);
+  }
 
   DeleteRenderFrameProxyHost(site_instance_group);
 }

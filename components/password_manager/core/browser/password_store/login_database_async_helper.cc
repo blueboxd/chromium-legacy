@@ -9,12 +9,17 @@
 #include "base/functional/bind.h"
 #include "base/task/sequenced_task_runner.h"
 #include "components/os_crypt/sync/os_crypt.h"
+#include "components/password_manager/core/browser/password_manager_buildflags.h"
 #include "components/password_manager/core/browser/password_store/login_database.h"
 #include "components/password_manager/core/browser/sync/password_proto_utils.h"
 #include "components/password_manager/core/browser/sync/password_sync_bridge.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/model/client_tag_based_model_type_processor.h"
 #include "components/sync/model/model_type_controller_delegate.h"
+
+#if !BUILDFLAG(USE_LOGIN_DATABASE_AS_BACKEND)
+#include "components/password_manager/core/browser/features/password_features.h"
+#endif
 
 namespace password_manager {
 
@@ -75,12 +80,21 @@ bool LoginDatabaseAsyncHelper::Initialize(
         base::Seconds(30));
   }
 
-  password_sync_bridge_ = std::make_unique<PasswordSyncBridge>(
-      std::make_unique<syncer::ClientTagBasedModelTypeProcessor>(
-          syncer::PASSWORDS, base::DoNothing()),
-      static_cast<PasswordStoreSync*>(this),
-      wipe_model_upon_sync_disabled_behavior_,
-      std::move(sync_enabled_or_disabled_cb));
+  password_sync_bridge_ =
+#if !BUILDFLAG(USE_LOGIN_DATABASE_AS_BACKEND)
+      features::IsUnifiedPasswordManagerSyncOnlyInGMSCoreEnabled()
+          // This ensures all the changes to the passwords made while M4 feature
+          // flag is enabled won't propagate to the sync server even if the
+          // feature gets disabled.
+          ? nullptr
+          :
+#endif
+          std::make_unique<PasswordSyncBridge>(
+              std::make_unique<syncer::ClientTagBasedModelTypeProcessor>(
+                  syncer::PASSWORDS, base::DoNothing()),
+              static_cast<PasswordStoreSync*>(this),
+              wipe_model_upon_sync_disabled_behavior_,
+              std::move(sync_enabled_or_disabled_cb));
 
 // On Windows encryption capability is expected to be available by default.
 // On MacOS encrpytion is also expected to be available unless the user didn't
@@ -161,7 +175,7 @@ PasswordChangesOrError LoginDatabaseAsyncHelper::AddLogin(
   AddCredentialError error = AddCredentialError::kNone;
   PasswordStoreChangeList changes = AddLoginImpl(form, &error);
   if (password_sync_bridge_ && !changes.empty()) {
-    password_sync_bridge_->ActOnPasswordStoreChanges(changes);
+    password_sync_bridge_->ActOnPasswordStoreChanges(FROM_HERE, changes);
   }
   // Sync metadata get updated in ActOnPasswordStoreChanges(). Therefore,
   // CommitTransaction() must be called after ActOnPasswordStoreChanges(),
@@ -182,7 +196,7 @@ PasswordChangesOrError LoginDatabaseAsyncHelper::UpdateLogin(
   UpdateCredentialError error = UpdateCredentialError::kNone;
   PasswordStoreChangeList changes = UpdateLoginImpl(form, &error);
   if (password_sync_bridge_ && !changes.empty()) {
-    password_sync_bridge_->ActOnPasswordStoreChanges(changes);
+    password_sync_bridge_->ActOnPasswordStoreChanges(FROM_HERE, changes);
   }
   // Sync metadata get updated in ActOnPasswordStoreChanges(). Therefore,
   // CommitTransaction() must be called after ActOnPasswordStoreChanges(),
@@ -197,13 +211,14 @@ PasswordChangesOrError LoginDatabaseAsyncHelper::UpdateLogin(
 }
 
 PasswordChangesOrError LoginDatabaseAsyncHelper::RemoveLogin(
+    const base::Location& location,
     const PasswordForm& form) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   BeginTransaction();
   PasswordStoreChangeList changes;
   if (login_db_ && login_db_->RemoveLogin(form, &changes)) {
     if (password_sync_bridge_ && !changes.empty()) {
-      password_sync_bridge_->ActOnPasswordStoreChanges(changes);
+      password_sync_bridge_->ActOnPasswordStoreChanges(location, changes);
     }
   }
   // Sync metadata get updated in ActOnPasswordStoreChanges(). Therefore,
@@ -215,6 +230,7 @@ PasswordChangesOrError LoginDatabaseAsyncHelper::RemoveLogin(
 }
 
 PasswordChangesOrError LoginDatabaseAsyncHelper::RemoveLoginsCreatedBetween(
+    const base::Location& location,
     base::Time delete_begin,
     base::Time delete_end) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -223,7 +239,7 @@ PasswordChangesOrError LoginDatabaseAsyncHelper::RemoveLoginsCreatedBetween(
   bool success = login_db_ && login_db_->RemoveLoginsCreatedBetween(
                                   delete_begin, delete_end, &changes);
   if (success && password_sync_bridge_ && !changes.empty()) {
-    password_sync_bridge_->ActOnPasswordStoreChanges(changes);
+    password_sync_bridge_->ActOnPasswordStoreChanges(location, changes);
   }
   // Sync metadata get updated in ActOnPasswordStoreChanges(). Therefore,
   // CommitTransaction() must be called after ActOnPasswordStoreChanges(),
@@ -237,6 +253,7 @@ PasswordChangesOrError LoginDatabaseAsyncHelper::RemoveLoginsCreatedBetween(
 }
 
 PasswordChangesOrError LoginDatabaseAsyncHelper::RemoveLoginsByURLAndTime(
+    const base::Location& location,
     const base::RepeatingCallback<bool(const GURL&)>& url_filter,
     base::Time delete_begin,
     base::Time delete_end,
@@ -258,7 +275,7 @@ PasswordChangesOrError LoginDatabaseAsyncHelper::RemoveLoginsByURLAndTime(
     }
   }
   if (password_sync_bridge_ && !changes.empty()) {
-    password_sync_bridge_->ActOnPasswordStoreChanges(changes);
+    password_sync_bridge_->ActOnPasswordStoreChanges(location, changes);
   }
   // Sync metadata get updated in ActOnPasswordStoreChanges(). Therefore,
   // CommitTransaction() must be called after ActOnPasswordStoreChanges(),
@@ -351,6 +368,7 @@ void LoginDatabaseAsyncHelper::RemoveStatisticsByOriginAndTime(
 base::WeakPtr<syncer::ModelTypeControllerDelegate>
 LoginDatabaseAsyncHelper::GetSyncControllerDelegate() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  CHECK(password_sync_bridge_);
   return password_sync_bridge_->change_processor()->GetControllerDelegate();
 }
 

@@ -24,6 +24,7 @@ using autofill::AutofillType;
 using autofill::CalculateFieldSignatureForField;
 using autofill::CalculateFormSignature;
 using autofill::CONFIRMATION_PASSWORD;
+using autofill::CREDIT_CARD_NUMBER;
 using autofill::CREDIT_CARD_VERIFICATION_CODE;
 using autofill::EMAIL_ADDRESS;
 using autofill::FieldGlobalId;
@@ -81,6 +82,14 @@ TEST(FormPredictionsTest, ConvertToFormPredictions) {
        CREDIT_CARD_VERIFICATION_CODE,
        false,
        {CREDIT_CARD_VERIFICATION_CODE}},
+      // `CREDIT_CARD_NUMBER` takes precedence over any credential related
+      // types.
+      {"cc-number",
+       FormControlType::kInputPassword,
+       PASSWORD,
+       CREDIT_CARD_NUMBER,
+       false,
+       {CREDIT_CARD_NUMBER}},
       // non-password, non-cvc types in |additional_types| are ignored.
       {"email",
        FormControlType::kInputText,
@@ -95,9 +104,9 @@ TEST(FormPredictionsTest, ConvertToFormPredictions) {
       autofill_predictions;
   for (size_t i = 0; i < std::size(test_fields); ++i) {
     FormFieldData field;
-    field.renderer_id = autofill::FieldRendererId(i + 1000);
-    field.name = ASCIIToUTF16(test_fields[i].name);
-    field.form_control_type = test_fields[i].form_control_type;
+    field.set_renderer_id(autofill::FieldRendererId(i + 1000));
+    field.set_name(ASCIIToUTF16(test_fields[i].name));
+    field.set_form_control_type(test_fields[i].form_control_type);
 
     AutofillType::ServerPrediction prediction;
     prediction.server_predictions.push_back(
@@ -169,9 +178,9 @@ TEST(FormPredictionsTest, ConvertToFormPredictions_SynthesiseConfirmation) {
         autofill_predictions;
     for (size_t i = 0; i < test_form.size(); ++i) {
       FormFieldData field;
-      field.renderer_id = autofill::FieldRendererId(i + 1000);
-      field.name = ASCIIToUTF16(test_form[i].name);
-      field.form_control_type = test_form[i].form_control_type;
+      field.set_renderer_id(autofill::FieldRendererId(i + 1000));
+      field.set_name(ASCIIToUTF16(test_form[i].name));
+      field.set_form_control_type(test_form[i].form_control_type);
 
       AutofillType::ServerPrediction new_prediction;
       new_prediction.server_predictions = {
@@ -235,7 +244,7 @@ TEST(FormPredictionsTest, ConvertToFormPredictions_OverrideFlagPropagated) {
 
   FormData form;
   FormFieldData single_username_field;
-  single_username_field.renderer_id = autofill::FieldRendererId(1000);
+  single_username_field.set_renderer_id(autofill::FieldRendererId(1000));
   form.fields.push_back(single_username_field);
 
   base::flat_map<FieldGlobalId, AutofillType::ServerPrediction>
@@ -250,7 +259,7 @@ TEST(FormPredictionsTest, ConvertToFormPredictions_OverrideFlagPropagated) {
   expected_result.driver_id = driver_id;
   expected_result.form_signature = CalculateFormSignature(form);
   expected_result.fields.push_back(
-      {single_username_field.renderer_id,
+      {single_username_field.renderer_id(),
        CalculateFieldSignatureForField(single_username_field),
        autofill::SINGLE_USERNAME, /*may_use_prefilled_placeholder=*/false,
        /*is_override=*/true});

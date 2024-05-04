@@ -153,8 +153,7 @@ class TestObserver : public NoteTakingHelper::Observer {
   int num_updates() const { return num_updates_; }
   void reset_num_updates() { num_updates_ = 0; }
 
-  const std::vector<raw_ptr<Profile, VectorExperimental>>
-  preferred_app_updates() const {
+  const std::vector<raw_ptr<Profile>> preferred_app_updates() const {
     return preferred_app_updates_;
   }
   void clear_preferred_app_updates() { preferred_app_updates_.clear(); }
@@ -171,7 +170,7 @@ class TestObserver : public NoteTakingHelper::Observer {
   int num_updates_ = 0;
 
   // Profiles for which OnPreferredNoteTakingAppUpdated was called.
-  std::vector<raw_ptr<Profile, VectorExperimental>> preferred_app_updates_;
+  std::vector<raw_ptr<Profile>> preferred_app_updates_;
 };
 
 }  // namespace
@@ -392,7 +391,7 @@ class NoteTakingHelperTest : public BrowserWithTestWindowTest {
   // BrowserWithTestWindowTest:
   std::string GetDefaultProfileName() override { return kTestProfileName; }
 
-  // TODO(crbug.com/1494005): merge into BrowserWithTestWindowTest.
+  // TODO(crbug.com/40286020): merge into BrowserWithTestWindowTest.
   void LogIn(const std::string& email) override {
     AccountId account_id = AccountId::FromUserEmail(email);
     user_manager()->AddUser(account_id);
@@ -748,16 +747,16 @@ TEST_F(NoteTakingHelperTest, NoteTakingWebAppsListed) {
   Init(ENABLE_PALETTE);
 
   {
-    auto app_info = std::make_unique<web_app::WebAppInstallInfo>();
-    app_info->start_url = GURL("http://some1.url");
+    auto app_info = web_app::WebAppInstallInfo::CreateWithStartUrlForTesting(
+        GURL("http://some1.url"));
     app_info->scope = GURL("http://some1.url");
     app_info->title = u"Web App 1";
     web_app::test::InstallWebApp(profile(), std::move(app_info));
   }
   std::string app2_id;
   {
-    auto app_info = std::make_unique<web_app::WebAppInstallInfo>();
-    app_info->start_url = GURL("http://some2.url");
+    auto app_info = web_app::WebAppInstallInfo::CreateWithStartUrlForTesting(
+        GURL("http://some2.url"));
     app_info->scope = GURL("http://some2.url");
     app_info->title = u"Web App 2";
     // Set a note_taking_new_note_url on one app.
@@ -775,15 +774,15 @@ TEST_F(NoteTakingHelperTest, NoteTakingWebAppsListed) {
 
 // Web apps with a lock_screen_start_url should show as supported on the lock
 // screen only when `kWebLockScreenApi` is enabled.
-// TODO(crbug.com/1332379): Move this to a lock screen apps unittest file.
+// TODO(crbug.com/40227659): Move this to a lock screen apps unittest file.
 TEST_F(NoteTakingHelperTest, LockScreenWebAppsListed) {
   Init(ENABLE_PALETTE);
   DCHECK(!base::FeatureList::IsEnabled(::features::kWebLockScreenApi));
 
   std::string app1_id;
   {
-    auto app_info = std::make_unique<web_app::WebAppInstallInfo>();
-    app_info->start_url = GURL("http://some1.url");
+    auto app_info = web_app::WebAppInstallInfo::CreateWithStartUrlForTesting(
+        GURL("http://some1.url"));
     app_info->scope = GURL("http://some1.url");
     app_info->title = u"Web App 1";
     // Currently only note-taking apps can be used on the lock screen.
@@ -792,8 +791,8 @@ TEST_F(NoteTakingHelperTest, LockScreenWebAppsListed) {
   }
   std::string app2_id;
   {
-    auto app_info = std::make_unique<web_app::WebAppInstallInfo>();
-    app_info->start_url = GURL("http://some2.url");
+    auto app_info = web_app::WebAppInstallInfo::CreateWithStartUrlForTesting(
+        GURL("http://some2.url"));
     app_info->scope = GURL("http://some2.url");
     app_info->title = u"Web App 2";
     app_info->note_taking_new_note_url = GURL("http://some2.url/new-note");
@@ -819,15 +818,15 @@ class NoteTakingHelperTest_WebLockScreenApiEnabled
 
 // Web apps with a lock_screen_start_url should show as supported on the lock
 // screen only when `kWebLockScreenApi` is enabled.
-// TODO(crbug.com/1332379): Move this to a lock screen apps unittest file.
+// TODO(crbug.com/40227659): Move this to a lock screen apps unittest file.
 TEST_F(NoteTakingHelperTest_WebLockScreenApiEnabled, LockScreenWebAppsListed) {
   Init(ENABLE_PALETTE);
   DCHECK(base::FeatureList::IsEnabled(::features::kWebLockScreenApi));
 
   std::string app1_id;
   {
-    auto app_info = std::make_unique<web_app::WebAppInstallInfo>();
-    app_info->start_url = GURL("http://some1.url");
+    auto app_info = web_app::WebAppInstallInfo::CreateWithStartUrlForTesting(
+        GURL("http://some1.url"));
     app_info->scope = GURL("http://some1.url");
     app_info->title = u"Web App 1";
     // Currently only note-taking apps can be used on the lock screen.
@@ -836,8 +835,8 @@ TEST_F(NoteTakingHelperTest_WebLockScreenApiEnabled, LockScreenWebAppsListed) {
   }
   std::string app2_id;
   {
-    auto app_info = std::make_unique<web_app::WebAppInstallInfo>();
-    app_info->start_url = GURL("http://some2.url");
+    auto app_info = web_app::WebAppInstallInfo::CreateWithStartUrlForTesting(
+        GURL("http://some2.url"));
     app_info->scope = GURL("http://some2.url");
     app_info->title = u"Web App 2";
     app_info->note_taking_new_note_url = GURL("http://some2.url/new-note");
@@ -915,8 +914,8 @@ TEST_F(NoteTakingHelperTest, FallBackIfPreferredAppUnavailable) {
   {
     // Install a default-allowed web app corresponding to ID of
     // |NoteTakingHelper::kNoteTakingWebAppIdTest|.
-    auto app_info = std::make_unique<web_app::WebAppInstallInfo>();
-    app_info->start_url = GURL("https://yielding-large-chef.glitch.me/");
+    auto app_info = web_app::WebAppInstallInfo::CreateWithStartUrlForTesting(
+        GURL("https://yielding-large-chef.glitch.me/"));
     app_info->title = u"Default Allowed Web App";
     std::string app_id =
         web_app::test::InstallWebApp(profile(), std::move(app_info));
@@ -1262,7 +1261,7 @@ TEST_F(NoteTakingHelperTest, NotifyObserverAboutPreferredAppChanges) {
 
   // Observers should be notified when preferred app is set.
   helper()->SetPreferredApp(profile(), prod_keep_extension->id());
-  EXPECT_EQ(std::vector<vector_experimental_raw_ptr<Profile>>{profile()},
+  EXPECT_EQ(std::vector<raw_ptr<Profile>>{profile()},
             observer.preferred_app_updates());
   observer.clear_preferred_app_updates();
 
@@ -1272,13 +1271,13 @@ TEST_F(NoteTakingHelperTest, NotifyObserverAboutPreferredAppChanges) {
 
   // Observers should be notified when preferred app is changed.
   helper()->SetPreferredApp(profile(), dev_keep_extension->id());
-  EXPECT_EQ(std::vector<vector_experimental_raw_ptr<Profile>>{profile()},
+  EXPECT_EQ(std::vector<raw_ptr<Profile>>{profile()},
             observer.preferred_app_updates());
   observer.clear_preferred_app_updates();
 
   // Observers should be notified when preferred app is cleared.
   helper()->SetPreferredApp(profile(), "");
-  EXPECT_EQ(std::vector<vector_experimental_raw_ptr<Profile>>{profile()},
+  EXPECT_EQ(std::vector<raw_ptr<Profile>>{profile()},
             observer.preferred_app_updates());
   observer.clear_preferred_app_updates();
 
@@ -1297,14 +1296,14 @@ TEST_F(NoteTakingHelperTest, NotifyObserverAboutPreferredAppChanges) {
   // profile preferred app changes.
   helper()->SetPreferredApp(second_profile,
                             second_profile_prod_keep_extension->id());
-  EXPECT_EQ(std::vector<vector_experimental_raw_ptr<Profile>>{second_profile},
+  EXPECT_EQ(std::vector<raw_ptr<Profile>>{second_profile},
             observer.preferred_app_updates());
   observer.clear_preferred_app_updates();
 
   // Clearing preferred app in secondary ptofile should fire observers with the
   // secondary profile.
   helper()->SetPreferredApp(second_profile, "");
-  EXPECT_EQ(std::vector<vector_experimental_raw_ptr<Profile>>{second_profile},
+  EXPECT_EQ(std::vector<raw_ptr<Profile>>{second_profile},
             observer.preferred_app_updates());
   observer.clear_preferred_app_updates();
 
@@ -1328,13 +1327,13 @@ TEST_F(NoteTakingHelperTest,
 
   // Set the app that supports lock screen note taking as preferred.
   helper()->SetPreferredApp(profile(), dev_extension->id());
-  EXPECT_EQ(std::vector<vector_experimental_raw_ptr<Profile>>{profile()},
+  EXPECT_EQ(std::vector<raw_ptr<Profile>>{profile()},
             observer.preferred_app_updates());
   observer.clear_preferred_app_updates();
 
   // Disable the preferred app on the lock screen.
   EXPECT_TRUE(helper()->SetPreferredAppEnabledOnLockScreen(profile(), false));
-  EXPECT_EQ(std::vector<vector_experimental_raw_ptr<Profile>>{profile()},
+  EXPECT_EQ(std::vector<raw_ptr<Profile>>{profile()},
             observer.preferred_app_updates());
   observer.clear_preferred_app_updates();
 
@@ -1345,7 +1344,7 @@ TEST_F(NoteTakingHelperTest,
   // Change the state of the preferred app - it should succeed, and a
   // notification should be fired.
   EXPECT_TRUE(helper()->SetPreferredAppEnabledOnLockScreen(profile(), true));
-  EXPECT_EQ(std::vector<vector_experimental_raw_ptr<Profile>>{profile()},
+  EXPECT_EQ(std::vector<raw_ptr<Profile>>{profile()},
             observer.preferred_app_updates());
   observer.clear_preferred_app_updates();
 
@@ -1355,7 +1354,7 @@ TEST_F(NoteTakingHelperTest,
 
   // Set an app that does not support lock screen as primary.
   helper()->SetPreferredApp(profile(), prod_extension->id());
-  EXPECT_EQ(std::vector<vector_experimental_raw_ptr<Profile>>{profile()},
+  EXPECT_EQ(std::vector<raw_ptr<Profile>>{profile()},
             observer.preferred_app_updates());
   observer.clear_preferred_app_updates();
 
@@ -1391,7 +1390,7 @@ TEST_F(NoteTakingHelperTest, SetAppEnabledOnLockScreen) {
   helper()->SetPreferredApp(profile(), prod_app->id());
 
   // Setting preferred app should fire observers.
-  EXPECT_EQ(std::vector<vector_experimental_raw_ptr<Profile>>{profile()},
+  EXPECT_EQ(std::vector<raw_ptr<Profile>>{profile()},
             observer.preferred_app_updates());
   observer.clear_preferred_app_updates();
 
@@ -1424,7 +1423,7 @@ TEST_F(NoteTakingHelperTest, SetAppEnabledOnLockScreen) {
                                  base::Value::List().Append(dev_app->id()));
 
   // The preferred app status changed, so observers are expected to be notified.
-  EXPECT_EQ(std::vector<vector_experimental_raw_ptr<Profile>>{profile()},
+  EXPECT_EQ(std::vector<raw_ptr<Profile>>{profile()},
             observer.preferred_app_updates());
   observer.clear_preferred_app_updates();
 
@@ -1444,7 +1443,7 @@ TEST_F(NoteTakingHelperTest, SetAppEnabledOnLockScreen) {
   // Switch preferred note taking app to one that does not support lock screen.
   helper()->SetPreferredApp(profile(), unsupported_app->id());
 
-  EXPECT_EQ(std::vector<vector_experimental_raw_ptr<Profile>>{profile()},
+  EXPECT_EQ(std::vector<raw_ptr<Profile>>{profile()},
             observer.preferred_app_updates());
   observer.clear_preferred_app_updates();
 
@@ -1495,7 +1494,7 @@ TEST_F(NoteTakingHelperTest,
                                  base::Value::List());
 
   // Preferred app settings changed - observers should be notified.
-  EXPECT_EQ(std::vector<vector_experimental_raw_ptr<Profile>>{profile()},
+  EXPECT_EQ(std::vector<raw_ptr<Profile>>{profile()},
             observer.preferred_app_updates());
   observer.clear_preferred_app_updates();
 
@@ -1508,7 +1507,7 @@ TEST_F(NoteTakingHelperTest,
   // lock screen again.
   profile_prefs_->RemoveManagedPref(prefs::kNoteTakingAppsLockScreenAllowlist);
 
-  EXPECT_EQ(std::vector<vector_experimental_raw_ptr<Profile>>{profile()},
+  EXPECT_EQ(std::vector<raw_ptr<Profile>>{profile()},
             observer.preferred_app_updates());
   observer.clear_preferred_app_updates();
 
@@ -1534,7 +1533,7 @@ TEST_F(NoteTakingHelperTest,
 
   // Set test app as preferred note taking app.
   helper()->SetPreferredApp(profile(), app->id());
-  EXPECT_EQ(std::vector<vector_experimental_raw_ptr<Profile>>{profile()},
+  EXPECT_EQ(std::vector<raw_ptr<Profile>>{profile()},
             observer.preferred_app_updates());
   observer.clear_preferred_app_updates();
 
@@ -1569,7 +1568,7 @@ TEST_F(NoteTakingHelperTest, LockScreenSupportInSecondaryProfile) {
 
   // Setting preferred app should fire observers for secondary profile.
   helper()->SetPreferredApp(second_profile, prod_app->id());
-  EXPECT_EQ(std::vector<vector_experimental_raw_ptr<Profile>>{second_profile},
+  EXPECT_EQ(std::vector<raw_ptr<Profile>>{second_profile},
             observer.preferred_app_updates());
   observer.clear_preferred_app_updates();
 

@@ -8,8 +8,7 @@
   }
 
   cr-url-list-item[size=compact] {
-    padding-inline-end: 14px;
-    padding-inline-start: 14px;
+    --cr-url-list-item-padding: 6px 14px;
   }
 
   /* Visually hide the label but allow the screen reader to pick it up. */
@@ -21,9 +20,6 @@
 
   cr-input {
     --cr-input-background-color: transparent;
-    --cr-input-border-bottom: 1px solid var(--cr-secondary-text-color);
-    --cr-input-border-radius: 0;
-    --cr-input-padding-start: 0;
     --cr-input-error-display: none;
     width: 100%;
   }
@@ -41,15 +37,15 @@
 
 <cr-url-list-item id="crUrlListItem"
     role="listitem"
-    size="[[getItemSize_(compact)]]"
+    size="[[listItemSize_]]"
     url="[[bookmark.url]]"
     image-urls="[[imageUrls]]"
     count="[[bookmark.children.length]]"
     title="[[bookmark.title]]"
     description="[[description]]"
     description-meta="[[descriptionMeta]]"
-    button-aria-label="[[rowAriaLabel]]"
-    button-aria-description="[[rowAriaDescription]]"
+    item-aria-label="[[rowAriaLabel]]"
+    item-aria-description="[[rowAriaDescription]]"
     on-click="onRowClicked_"
     on-auxclick="onRowClicked_"
     on-contextmenu="onContextMenu_"
@@ -77,7 +73,7 @@
   <template is="dom-if" if="[[showTrailingIcon_(hasInput, hasCheckbox)]]"
       on-dom-change="onInputDisplayChange_">
     <slot slot="badges" id="badges" name="badges"></slot>
-    <cr-icon-button slot="suffix-icon" iron-icon="[[trailingIcon]]"
+    <cr-icon-button slot="suffix" iron-icon="[[trailingIcon]]"
         hidden="[[!trailingIcon]]" on-click="onTrailingIconClicked_"
         title="[[trailingIconTooltip]]"
         aria-label="[[trailingIconAriaLabel]]"></cr-icon-button>

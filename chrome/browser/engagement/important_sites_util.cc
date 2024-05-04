@@ -8,6 +8,7 @@
 #include <map>
 #include <memory>
 #include <set>
+#include <string_view>
 #include <unordered_set>
 #include <utility>
 
@@ -18,9 +19,9 @@
 #include "build/build_config.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/installable/installable_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/web_app_utils.h"
+#include "chrome/browser/webapps/installable/installable_utils.h"
 #include "chrome/common/pref_names.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/url_and_title.h"
@@ -363,7 +364,7 @@ std::string ImportantSitesUtil::GetRegisterableDomainOrIP(const GURL& url) {
 }
 
 std::string ImportantSitesUtil::GetRegisterableDomainOrIPFromHost(
-    base::StringPiece host) {
+    std::string_view host) {
   std::string registerable_domain =
       net::registry_controlled_domains::GetDomainAndRegistry(
           host, net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);

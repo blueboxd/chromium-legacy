@@ -17,6 +17,7 @@
 #include "ash/system/notification_center/notification_center_test_api.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/status_area_widget_test_helper.h"
+#include "base/containers/fixed_flat_set.h"
 #include "base/functional/bind.h"
 #include "base/metrics/metrics_hashes.h"
 #include "base/metrics/statistics_recorder.h"
@@ -122,6 +123,9 @@ static const char* kEnglishDictationCommands[] = {
     "move to the next sentence",
     "move to the previous sentence"};
 
+constexpr auto kOfflineNotSupportedLocaleSet =
+    base::MakeFixedFlatSet<std::string_view>({"af-ZA", "kn-IN"});
+
 PrefService* GetActiveUserPrefs() {
   return ProfileManager::GetActiveUserProfile()->GetPrefs();
 }
@@ -151,38 +155,6 @@ class TestConfig {
  private:
   speech::SpeechRecognitionType speech_recognition_type_;
   EditableType editable_type_;
-};
-
-// Listens for changes to the histogram provided at construction. This class
-// only allows `Wait()` to be called once. If you need to call `Wait()` multiple
-// times, create multiple instances of this class.
-class HistogramWaiter {
- public:
-  explicit HistogramWaiter(const char* metric_name) {
-    histogram_observer_ = std::make_unique<
-        base::StatisticsRecorder::ScopedHistogramSampleObserver>(
-        metric_name, base::BindRepeating(&HistogramWaiter::OnHistogramCallback,
-                                         base::Unretained(this)));
-  }
-  ~HistogramWaiter() { histogram_observer_.reset(); }
-
-  HistogramWaiter(const HistogramWaiter&) = delete;
-  HistogramWaiter& operator=(const HistogramWaiter&) = delete;
-
-  // Waits for the next update to the observed histogram.
-  void Wait() { run_loop_.Run(); }
-
-  void OnHistogramCallback(const char* metric_name,
-                           uint64_t name_hash,
-                           base::HistogramBase::Sample sample) {
-    run_loop_.Quit();
-    histogram_observer_.reset();
-  }
-
- private:
-  std::unique_ptr<base::StatisticsRecorder::ScopedHistogramSampleObserver>
-      histogram_observer_;
-  base::RunLoop run_loop_;
 };
 
 }  // namespace
@@ -318,7 +290,6 @@ class DictationTestBase : public AccessibilityFeatureBrowserTest,
   }
 
   DictationTestUtils* utils() { return utils_.get(); }
-
  private:
   std::unique_ptr<DictationTestUtils> utils_;
   base::test::ScopedFeatureList scoped_feature_list_;
@@ -361,13 +332,16 @@ IN_PROC_BROWSER_TEST_P(DictationTest, GetAllSupportedLocales) {
     bool installed = it.second.installed;
     if (speech_recognition_type() == speech::SpeechRecognitionType::kOnDevice &&
         locale == speech::kUsEnglishLocale) {
-      // Currently, the only locale supported by SODA is en-US. It should work
-      // offline and be installed.
+      // We are certain that en_US works offline, so that must be true. There
+      // are others too (depending on flags) but we can't test them.  We can be
+      // certain that we haven't installed them though.
       EXPECT_TRUE(works_offline);
       EXPECT_TRUE(installed);
     } else {
-      EXPECT_FALSE(works_offline);
-      EXPECT_FALSE(installed);
+      EXPECT_FALSE(installed) << " for locale " << locale;
+      if (base::Contains(kOfflineNotSupportedLocaleSet, locale)) {
+        EXPECT_FALSE(works_offline) << " for locale " << locale;
+      }
     }
   }
 
@@ -384,13 +358,16 @@ IN_PROC_BROWSER_TEST_P(DictationTest, GetAllSupportedLocales) {
     bool works_offline = it.second.works_offline;
     bool installed = it.second.installed;
     if (locale == speech::kUsEnglishLocale) {
-      // en-US should be marked as "works offline", but it shouldn't be
-      // installed.
+      // We are certain that en_US works offline, so that must be true. There
+      // are others too (depending on flags) but we can't test them.  We can be
+      // certain that we haven't installed them though.
       EXPECT_TRUE(works_offline);
       EXPECT_FALSE(installed);
     } else {
-      EXPECT_FALSE(works_offline);
-      EXPECT_FALSE(installed);
+      EXPECT_FALSE(installed) << " for locale " << locale;
+      if (base::Contains(kOfflineNotSupportedLocaleSet, locale)) {
+        EXPECT_FALSE(works_offline) << " for locale " << locale;
+      }
     }
   }
 }
@@ -1264,7 +1241,7 @@ IN_PROC_BROWSER_TEST_P(DictationRegexCommandsTest,
                                          "A square is also rectangle.");
 }
 
-// TODO(crbug.com/1430861): Test is flaky.
+// TODO(crbug.com/40901980): Test is flaky.
 IN_PROC_BROWSER_TEST_P(DictationRegexCommandsTest,
                        DISABLED_SmartReplacePhrase) {
   SendFinalResultAndWaitForEditableValue("This is a difficult test.",
@@ -2236,15 +2213,6 @@ class DictationKeyboardImprovementsTest : public DictationTestBase {
       const DictationKeyboardImprovementsTest&) = delete;
 
  protected:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    DictationTestBase::SetUpCommandLine(command_line);
-
-    std::vector<base::test::FeatureRef> enabled_features{
-        ::features::kAccessibilityDictationKeyboardImprovements};
-    scoped_feature_list_.InitWithFeatures(
-        enabled_features, std::vector<base::test::FeatureRef>());
-  }
-
   void SetUpOnMainThread() override {
     DictationTestBase::SetUpOnMainThread();
     test_api_ = AccessibilityControllerTestApi::Create();
@@ -2282,7 +2250,6 @@ class DictationKeyboardImprovementsTest : public DictationTestBase {
  private:
   std::unique_ptr<AccessibilityControllerTestApi> test_api_;
   std::unique_ptr<AccessibilityToastCallbackManager> toast_callback_manager_;
-  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 INSTANTIATE_TEST_SUITE_P(

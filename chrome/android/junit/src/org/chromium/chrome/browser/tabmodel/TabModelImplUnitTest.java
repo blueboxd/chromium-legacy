@@ -30,7 +30,6 @@ import org.chromium.base.Callback;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Features;
 import org.chromium.base.test.util.JniMocker;
-import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.flags.ActivityType;
 import org.chromium.chrome.browser.homepage.HomepageManager;
 import org.chromium.chrome.browser.price_tracking.PriceTrackingFeatures;
@@ -40,6 +39,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabCreationState;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab.TabSelectionType;
+import org.chromium.chrome.browser.tab_ui.TabContentManager;
 
 import java.util.Arrays;
 
@@ -86,7 +86,8 @@ public class TabModelImplUnitTest {
         PriceTrackingFeatures.setPriceTrackingEnabledForTesting(false);
 
         mJniMocker.mock(TabModelJniBridgeJni.TEST_HOOKS, mTabModelJniBridge);
-        when(mTabModelJniBridge.init(any(), any(), anyInt())).thenReturn(FAKE_NATIVE_ADDRESS);
+        when(mTabModelJniBridge.init(any(), any(), anyInt(), anyBoolean()))
+                .thenReturn(FAKE_NATIVE_ADDRESS);
 
         when(mTabModelDelegate.isReparentingInProgress()).thenReturn(false);
 
@@ -116,17 +117,6 @@ public class TabModelImplUnitTest {
         return tab;
     }
 
-    private Tab createBackgroundTab(final TabModel model) {
-        MockTab tab = MockTab.createAndInitialize(mNextTabId++, model.getProfile());
-        tab.setIsInitialized(true);
-        model.addTab(
-                tab,
-                TabList.INVALID_TAB_INDEX,
-                TabLaunchType.FROM_LONGPRESS_BACKGROUND,
-                TabCreationState.LIVE_IN_BACKGROUND);
-        return tab;
-    }
-
     private void selectTab(final TabModel model, final Tab tab) {
         model.setIndex(model.indexOf(tab), TabSelectionType.FROM_USER, false);
     }
@@ -149,7 +139,8 @@ public class TabModelImplUnitTest {
                         () -> NextTabPolicy.HIERARCHICAL,
                         realAsyncTabParamsManager,
                         mTabModelDelegate,
-                        /* supportsUndo= */ false);
+                        /* supportUndo= */ true,
+                        /* trackInNativeModelList= */ true);
         when(mTabModelSelector.getModel(isIncognito)).thenReturn(tabModel);
         tabModel.setActive(isActive);
         if (isActive) {
@@ -369,5 +360,24 @@ public class TabModelImplUnitTest {
         assertEquals(tab1, inactiveNormal.getCurrentTabSupplier().get());
         assertEquals(1, inactiveNormal.getTabCountSupplier().get().intValue());
         verify(mTabSupplierObserver, times(2)).onResult(eq(tab1));
+    }
+
+    @Test
+    @SmallTest
+    public void testGetTabById() {
+        TabModel tabModel = createTabModel(/* isActive= */ true, /* isIncognito= */ false);
+        createTabModel(/* isActive= */ false, /* isIncognito= */ true);
+
+        Tab tab1 = createTab(tabModel);
+        assertEquals(tab1, tabModel.getTabById(tab1.getId()));
+
+        tabModel.closeTab(tab1, /* uponExit= */ false, /* canUndo= */ true);
+        assertEquals(null, tabModel.getTabById(tab1.getId()));
+
+        tabModel.cancelTabClosure(tab1.getId());
+        assertEquals(tab1, tabModel.getTabById(tab1.getId()));
+
+        tabModel.destroy();
+        assertEquals(null, tabModel.getTabById(tab1.getId()));
     }
 }

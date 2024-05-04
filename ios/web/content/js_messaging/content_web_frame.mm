@@ -68,7 +68,7 @@ bool ContentWebFrame::IsMainFrame() const {
 }
 
 GURL ContentWebFrame::GetSecurityOrigin() const {
-  // TODO(crbug.com/1423501):  Once GetSecurityOrigin is changed to return an
+  // TODO(crbug.com/40260077):  Once GetSecurityOrigin is changed to return an
   // Origin instead of a URL, this should use GetLastCommittedOrigin().
   return render_frame_host_->GetLastCommittedURL().DeprecatedGetOriginAsURL();
 }
@@ -89,7 +89,7 @@ bool ContentWebFrame::CallJavaScriptFunction(
     const base::Value::List& parameters,
     base::OnceCallback<void(const base::Value*)> callback,
     base::TimeDelta timeout) {
-  // TODO(crbug.com/1423527): Handle timeouts.
+  // TODO(crbug.com/40260088): Handle timeouts.
   return ExecuteJavaScript(CreateFunctionCallWithParameters(name, parameters),
                            std::move(callback));
 }
@@ -98,7 +98,7 @@ bool ContentWebFrame::CallJavaScriptFunctionInContentWorld(
     const std::string& name,
     const base::Value::List& parameters,
     JavaScriptContentWorld* content_world) {
-  // TODO(crbug.com/1423527): Handle injecting into an isolated world.
+  // TODO(crbug.com/40260088): Handle injecting into an isolated world.
   return ExecuteJavaScript(CreateFunctionCallWithParameters(name, parameters));
 }
 
@@ -108,7 +108,7 @@ bool ContentWebFrame::CallJavaScriptFunctionInContentWorld(
     JavaScriptContentWorld* content_world,
     base::OnceCallback<void(const base::Value*)> callback,
     base::TimeDelta timeout) {
-  // TODO(crbug.com/1423527): Handle timeouts and injecting into an isolated
+  // TODO(crbug.com/40260088): Handle timeouts and injecting into an isolated
   // world.
   return ExecuteJavaScript(CreateFunctionCallWithParameters(name, parameters),
                            std::move(callback));

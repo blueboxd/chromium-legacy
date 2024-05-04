@@ -71,7 +71,7 @@ gfx::Rect GetWorkAreaSync(x11::Future<x11::GetPropertyReply> future) {
   if (!response || response->format != 32 || response->value_len != 4) {
     return gfx::Rect();
   }
-  const uint32_t* value = response->value->front_as<uint32_t>();
+  const uint32_t* value = response->value->cast_to<uint32_t>();
   return gfx::Rect(value[0], value[1], value[2], value[3]);
 }
 
@@ -92,11 +92,11 @@ x11::Future<x11::GetPropertyReply> GetIccProfileFuture(
 
 gfx::ICCProfile GetIccProfileSync(x11::Future<x11::GetPropertyReply> future) {
   auto response = future.Sync();
-  if (!response || !response->value->size()) {
+  if (!response || !response->value_len) {
     return gfx::ICCProfile();
   }
-  return gfx::ICCProfile::FromData(response->value->data(),
-                                   response->value->size());
+  return gfx::ICCProfile::FromData(response->value->bytes(),
+                                   response->value_len * response->format / 8u);
 }
 
 x11::Future<x11::RandR::GetOutputPropertyReply> GetEdidFuture(
@@ -522,7 +522,7 @@ base::TimeDelta GetPrimaryDisplayRefreshIntervalFromXrandr() {
                                               &primary_display_index);
   CHECK_LT(primary_display_index, displays.size());
 
-  // TODO(crbug.com/726842): It might make sense here to pick the output that
+  // TODO(crbug.com/41321728): It might make sense here to pick the output that
   // the window is on. On the other hand, if compositing is enabled, all drawing
   // might be synced to the primary output anyway. Needs investigation.
   auto frequency = displays[primary_display_index].display_frequency();

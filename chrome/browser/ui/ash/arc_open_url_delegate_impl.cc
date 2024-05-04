@@ -426,7 +426,7 @@ void ArcOpenUrlDelegateImpl::OpenArcCustomTab(
   custom_tab_browser->tab_strip_model()->AppendWebContents(
       std::move(web_contents), /* foreground= */ true);
 
-  // TODO(crbug.com/955171): Remove this temporary conversion to InterfacePtr
+  // TODO(crbug.com/41454219): Remove this temporary conversion to InterfacePtr
   // once OnOpenCustomTab from //ash/components/arc/mojom/intent_helper.mojom
   // could take pending_remote directly. Refer to crrev.com/c/1868870.
   auto custom_tab_remote(
@@ -435,7 +435,7 @@ void ArcOpenUrlDelegateImpl::OpenArcCustomTab(
 }
 
 void ArcOpenUrlDelegateImpl::OpenChromePageFromArc(ChromePage page) {
-  if (auto* it = kOSSettingsMap.find(page); it != kOSSettingsMap.end()) {
+  if (auto it = kOSSettingsMap.find(page); it != kOSSettingsMap.end()) {
     Profile* profile = ProfileManager::GetActiveUserProfile();
     std::string sub_page = it->second;
     chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(profile,
@@ -443,13 +443,13 @@ void ArcOpenUrlDelegateImpl::OpenChromePageFromArc(ChromePage page) {
     return;
   }
 
-  if (auto* it = kBrowserSettingsMap.find(page);
+  if (auto it = kBrowserSettingsMap.find(page);
       it != kBrowserSettingsMap.end()) {
     OpenUrlFromArc(GURL(chrome::kChromeUISettingsURL).Resolve(it->second));
     return;
   }
 
-  if (auto* it = kAboutPagesMap.find(page); it != kAboutPagesMap.end()) {
+  if (auto it = kAboutPagesMap.find(page); it != kAboutPagesMap.end()) {
     OpenUrlFromArc(GURL(it->second));
     return;
   }

@@ -8,6 +8,7 @@
 #include "base/functional/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/notreached.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/task/sequenced_task_runner.h"
 #include "chrome/browser/offline_pages/offline_page_utils.h"
 #include "chrome/browser/renderer_host/chrome_navigation_ui_data.h"
@@ -92,7 +93,7 @@ OfflinePageURLLoader::OfflinePageURLLoader(
       frame_tree_node_id_(frame_tree_node_id),
       transition_type_(tentative_resource_request.transition_type),
       loader_callback_(std::move(callback)) {
-  // TODO(crbug.com/876527): Figure out how offline page interception should
+  // TODO(crbug.com/40590410): Figure out how offline page interception should
   // interact with URLLoaderThrottles. It might be incorrect to use
   // |tentative_resource_request.headers| here, since throttles can rewrite
   // headers between now and when the request handler passed to
@@ -158,7 +159,7 @@ void OfflinePageURLLoader::NotifyReadRawDataComplete(int bytes_read) {
     return;
   }
 
-  bytes_of_raw_data_to_transfer_ = bytes_read;
+  bytes_of_raw_data_to_transfer_ = base::checked_cast<size_t>(bytes_read);
   write_position_ = 0;
 
   TransferRawData();
@@ -167,8 +168,7 @@ void OfflinePageURLLoader::NotifyReadRawDataComplete(int bytes_read) {
 void OfflinePageURLLoader::TransferRawData() {
   while (true) {
     DCHECK_GE(bytes_of_raw_data_to_transfer_, write_position_);
-    uint32_t write_size =
-        static_cast<uint32_t>(bytes_of_raw_data_to_transfer_ - write_position_);
+    size_t write_size = bytes_of_raw_data_to_transfer_ - write_position_;
     // If all the read data have been transferred, read more.
     if (write_size == 0) {
       ReadRawData();
@@ -243,7 +243,7 @@ void OfflinePageURLLoader::OnReceiveResponse(
     const network::ResourceRequest& /* resource_request */,
     mojo::PendingReceiver<network::mojom::URLLoader> receiver,
     mojo::PendingRemote<network::mojom::URLLoaderClient> client) {
-  // TODO(crbug.com/876527): Figure out how offline page interception should
+  // TODO(crbug.com/40590410): Figure out how offline page interception should
   // interact with URLLoaderThrottles. It might be incorrect to ignore
   // |resource_request| here, since it's the current request after
   // throttles.

@@ -76,33 +76,36 @@ void RecordLargestContentfulPaintImageLoadTiming(
     const page_load_metrics::mojom::LargestContentfulPaintTiming&
         largest_contentful_paint,
     base::TimeDelta document_ttfb) {
-  if (largest_contentful_paint.largest_image_load_start.has_value()) {
+  if (largest_contentful_paint.resource_load_timings->load_start.has_value()) {
     UMA_HISTOGRAM_BOOLEAN(
         internal::kImageLoadStartLessThanDocumentTTFB,
-        largest_contentful_paint.largest_image_load_start < document_ttfb);
+        largest_contentful_paint.resource_load_timings->load_start <
+            document_ttfb);
   }
 
-  if (largest_contentful_paint.largest_image_load_start.has_value() &&
-      largest_contentful_paint.largest_image_load_end.has_value()) {
+  if (largest_contentful_paint.resource_load_timings->load_start.has_value() &&
+      largest_contentful_paint.resource_load_timings->load_end.has_value()) {
     UMA_HISTOGRAM_BOOLEAN(
         internal::kImageLoadEndLessThanLoadStart,
-        largest_contentful_paint.largest_image_load_end <
-            largest_contentful_paint.largest_image_load_start);
+        largest_contentful_paint.resource_load_timings->load_end <
+            largest_contentful_paint.resource_load_timings->load_start);
   }
 
-  if (largest_contentful_paint.largest_image_load_end.has_value() &&
+  if (largest_contentful_paint.resource_load_timings->load_end.has_value() &&
       largest_contentful_paint.largest_image_paint.has_value()) {
-    UMA_HISTOGRAM_BOOLEAN(internal::kImageLCPLessThanLoadEnd,
-                          largest_contentful_paint.largest_image_paint <
-                              largest_contentful_paint.largest_image_load_end);
+    UMA_HISTOGRAM_BOOLEAN(
+        internal::kImageLCPLessThanLoadEnd,
+        largest_contentful_paint.largest_image_paint <
+            largest_contentful_paint.resource_load_timings->load_end);
   }
 
   // If the images load_start is less than document_ttfb, then something may be
   // wrong with the metric. Attempt to diagnose the cause and record it to UMA,
   // or report 'Unknown' if no cause is identified. This code may be removed
   // when https://crbug.com/1431906 is resolved.
-  if (largest_contentful_paint.largest_image_load_start.has_value() &&
-      largest_contentful_paint.largest_image_load_start < document_ttfb) {
+  if (largest_contentful_paint.resource_load_timings->load_start.has_value() &&
+      largest_contentful_paint.resource_load_timings->load_start <
+          document_ttfb) {
     if (largest_contentful_paint.is_loaded_from_memory_cache &&
         largest_contentful_paint.is_preloaded_with_early_hints) {
       RecordImageLoadStartLessThanDocumentTtfbCause(
@@ -148,11 +151,11 @@ PageEndReason EndReasonForPageTransition(ui::PageTransition transition) {
 }
 
 bool IsNavigationUserInitiated(content::NavigationHandle* handle) {
-  // TODO(crbug.com/617904): Browser initiated navigations should have
+  // TODO(crbug.com/41257523): Browser initiated navigations should have
   // HasUserGesture() set to true. In the meantime, we consider all
   // browser-initiated navigations to be user initiated.
   //
-  // TODO(crbug.com/637345): Some browser-initiated navigations incorrectly
+  // TODO(crbug.com/40480474): Some browser-initiated navigations incorrectly
   // report that they are renderer-initiated. We will currently report that
   // these navigations are not user initiated, when in fact they are user
   // initiated.
@@ -589,6 +592,14 @@ void PageLoadTracker::Commit(content::NavigationHandle* navigation_handle) {
               ->GetPage()
               .GetContentsMimeType()),
       /*permit_forwarding=*/false);
+  InvokeAndPruneObservers(
+      "PageLoadMetricsObserver::ShouldObserveScheme",
+      base::BindRepeating(
+          [](const GURL& url, PageLoadMetricsObserverInterface* observer) {
+            return observer->ShouldObserveScheme(url);
+          },
+          navigation_handle->GetURL()),
+      /*permit_forwarding=*/false);
   InvokeAndPruneObservers("PageLoadMetricsObserver::OnCommit",
                           base::BindRepeating(
                               [](content::NavigationHandle* navigation_handle,
@@ -1017,7 +1028,7 @@ void PageLoadTracker::OnTimingChanged() {
 
   // Record UMA if the LCP candidate changes.
 
-  // TODO(crbug.com/1431906): This is to track irregularities in the LCP timing
+  // TODO(crbug.com/40902605): This is to track irregularities in the LCP timing
   // values in the UKM recording. We would remove this code once we have
   // identified all of the conditions where these irregularities happen.
   bool largest_contentful_image_changed =
@@ -1126,7 +1137,7 @@ void PageLoadTracker::OnSoftNavigationChanged(
     return;
   }
 
-  // TODO(crbug.com/1451911): For soft navigation detections, the count and
+  // TODO(crbug.com/40065440): For soft navigation detections, the count and
   // start time should be monotonically increasing and navigation id different
   // each time. But we do see check failures on
   // soft_navigation_metrics.count >= soft_navigation_metrics_->count when this
@@ -1299,7 +1310,7 @@ std::optional<base::TimeDelta> PageLoadTracker::GetTimeToPageEnd() const {
     return DurationSinceNavigationStartForTime(page_end_time_);
   }
   DCHECK(page_end_time_.is_null());
-  return std::optional<base::TimeDelta>();
+  return std::nullopt;
 }
 
 const base::TimeTicks& PageLoadTracker::GetPageEndTime() const {
@@ -1471,6 +1482,12 @@ void PageLoadTracker::OnV8MemoryChanged(
 void PageLoadTracker::OnSharedStorageWorkletHostCreated() {
   for (const auto& observer : observers_) {
     observer->OnSharedStorageWorkletHostCreated();
+  }
+}
+
+void PageLoadTracker::OnSharedStorageSelectURLCalled() {
+  for (const auto& observer : observers_) {
+    observer->OnSharedStorageSelectURLCalled();
   }
 }
 

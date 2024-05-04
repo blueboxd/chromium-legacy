@@ -20,18 +20,18 @@
 #include "chrome/browser/browser_features.h"
 #include "chrome/browser/buildflags.h"
 #include "chrome/browser/cart/cart_handler.h"
-#include "chrome/browser/image_service/image_service_factory.h"
 #include "chrome/browser/new_tab_page/feature_promo_helper/new_tab_page_feature_promo_helper.h"
-#include "chrome/browser/new_tab_page/modules/drive/drive_handler.h"
-#include "chrome/browser/new_tab_page/modules/feed/feed_handler.h"
+#include "chrome/browser/new_tab_page/modules/file_suggestion/file_suggestion_handler.h"
 #include "chrome/browser/new_tab_page/modules/history_clusters/history_clusters.mojom.h"
 #include "chrome/browser/new_tab_page/modules/history_clusters/history_clusters_page_handler.h"
 #include "chrome/browser/new_tab_page/modules/new_tab_page_modules.h"
 #include "chrome/browser/new_tab_page/modules/photos/photos_handler.h"
 #include "chrome/browser/new_tab_page/modules/recipes/recipes_handler.h"
 #include "chrome/browser/new_tab_page/modules/v2/history_clusters/history_clusters_page_handler_v2.h"
+#include "chrome/browser/new_tab_page/modules/v2/most_relevant_tab_resumption/most_relevant_tab_resumption_page_handler.h"
 #include "chrome/browser/new_tab_page/modules/v2/tab_resumption/tab_resumption_page_handler.h"
 #include "chrome/browser/new_tab_page/new_tab_page_util.h"
+#include "chrome/browser/page_image_service/image_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/background/ntp_custom_background_service_factory.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -50,8 +50,9 @@
 #include "chrome/browser/ui/webui/new_tab_page/new_tab_page_handler.h"
 #include "chrome/browser/ui/webui/new_tab_page/ntp_pref_names.h"
 #include "chrome/browser/ui/webui/new_tab_page/untrusted_source.h"
-#include "chrome/browser/ui/webui/realbox/realbox_handler.h"
 #include "chrome/browser/ui/webui/sanitized_image_source.h"
+#include "chrome/browser/ui/webui/searchbox/realbox_handler.h"
+#include "chrome/browser/ui/webui/searchbox/searchbox_handler.h"
 #include "chrome/browser/ui/webui/theme_source.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/pref_names.h"
@@ -102,6 +103,10 @@
 #if !defined(OFFICIAL_BUILD)
 #include "chrome/browser/ui/webui/new_tab_page/foo/foo_handler.h"
 #endif
+
+#if BUILDFLAG(ENABLE_FEED_V2)
+#include "chrome/browser/new_tab_page/modules/feed/feed_handler.h"
+#endif  // BUILDFLAG(ENABLE_FEED_V2)
 
 using content::BrowserContext;
 using content::WebContents;
@@ -207,15 +212,20 @@ content::WebUIDataSource* CreateAndAddNewTabPageUiHtmlSource(Profile* profile) {
       base::FeatureList::IsEnabled(
           ntp_features::kNtpHandleMostVisitedNavigationExplicitly));
 
-  source->AddBoolean(
-      "prerenderEnabled",
-      base::FeatureList::IsEnabled(features::kNewTabPageTriggerForPrerender2));
   source->AddInteger(
       "prerenderStartTimeThreshold",
       features::kNewTabPagePrerenderStartDelayOnMouseHoverByMiliSeconds.Get());
   source->AddInteger(
       "preconnectStartTimeThreshold",
       features::kNewTabPagePreconnectStartDelayOnMouseHoverByMiliSeconds.Get());
+  source->AddBoolean(
+      "prerenderOnPressEnabled",
+      base::FeatureList::IsEnabled(features::kNewTabPageTriggerForPrerender2) &&
+          features::kPrerenderNewTabPageOnMousePressedTrigger.Get());
+  source->AddBoolean(
+      "prerenderOnHoverEnabled",
+      base::FeatureList::IsEnabled(features::kNewTabPageTriggerForPrerender2) &&
+          features::kPrerenderNewTabPageOnMouseHoverTrigger.Get());
 
   source->AddBoolean(
       "oneGoogleBarEnabled",
@@ -269,6 +279,13 @@ content::WebUIDataSource* CreateAndAddNewTabPageUiHtmlSource(Profile* profile) {
   source->AddBoolean("historyClustersImagesEnabled",
                      !base::FeatureList::IsEnabled(
                          ntp_features::kNtpHistoryClustersModuleTextOnly));
+  source->AddBoolean("mostRelevantTabResumptionEnabled",
+                     base::FeatureList::IsEnabled(
+                         ntp_features::kNtpMostRelevantTabResumptionModule));
+  source->AddBoolean(
+      "mostRelevantTabResumptionDeviceIconEnabled",
+      base::FeatureList::IsEnabled(
+          ntp_features::kNtpMostRelevantTabResumptionModuleDeviceIcon));
 
   static constexpr webui::LocalizedString kStrings[] = {
       {"doneButton", IDS_DONE},
@@ -331,6 +348,9 @@ content::WebUIDataSource* CreateAndAddNewTabPageUiHtmlSource(Profile* profile) {
       {"wallpaperSearchButton", IDS_NTP_WALLPAPER_SEARCH_PAGE_HEADER},
 
       // Voice search.
+      // TODO(crbug.com/328827188): Consider moving the voice search overlay
+      // code (here and elsewhere) into the searchbox directories or a new
+      // component.
       {"audioError", IDS_NEW_TAB_VOICE_AUDIO_ERROR},
       {"close", IDS_NEW_TAB_VOICE_CLOSE_TOOLTIP},
       {"details", IDS_NEW_TAB_VOICE_DETAILS},
@@ -345,14 +365,15 @@ content::WebUIDataSource* CreateAndAddNewTabPageUiHtmlSource(Profile* profile) {
       {"permissionError", IDS_NEW_TAB_VOICE_PERMISSION_ERROR},
       {"speak", IDS_NEW_TAB_VOICE_READY},
       {"tryAgain", IDS_NEW_TAB_VOICE_TRY_AGAIN},
-      {"voiceSearchButtonLabel", IDS_TOOLTIP_MIC_SEARCH},
       {"waiting", IDS_NEW_TAB_VOICE_WAITING},
 
       // Lens image search.
-      {"lensSearchButtonLabel", IDS_TOOLTIP_LENS_SEARCH},
+      // TODO(crbug.com/328827188): Consider moving the Lens upload dialog code
+      // (here and elsewhere) into the searchbox directories or a new component.
       {"lensSearchUploadDialogCloseButtonLabel",
        IDS_LENS_SEARCH_UPLOAD_DIALOG_CLOSE_BUTTON_LABEL},
-      {"lensSearchUploadDialogTitle", IDS_LENS_SEARCH_UPLOAD_DIALOG_TITLE},
+      {"lensSearchUploadDialogTitle",
+       IDS_LENS_SEARCH_UPLOAD_DIALOG_TITLE_SHORT},
       {"lensSearchUploadDialogDragTitle",
        IDS_LENS_SEARCH_UPLOAD_DIALOG_DRAG_TITLE},
       {"lensSearchUploadDialogUploadFileTitle",
@@ -445,6 +466,13 @@ content::WebUIDataSource* CreateAndAddNewTabPageUiHtmlSource(Profile* profile) {
       {"modulesDriveInfo", IDS_NTP_MODULES_DRIVE_INFO},
       {"modulesDummyTitle", IDS_NTP_MODULES_DUMMY_TITLE},
       {"modulesFeedTitle", IDS_NTP_MODULES_FEED_TITLE},
+      {"modulesTodayCalendarHeader", IDS_NTP_MODULES_TODAY_CALENDAR_HEADER},
+      {"modulesGoogleCalendarTitle", IDS_NTP_MODULES_GOOGLE_CALENDAR_TITLE},
+      {"modulesGoogleCalendarDisableButtonText",
+       IDS_NTP_MODULES_GOOGLE_CALENDAR_DISABLE_BUTTON_TEXT},
+      {"modulesOutlookCalendarTitle", IDS_NTP_MODULES_OUTLOOK_CALENDAR_TITLE},
+      {"modulesOutlookCalendarDisableButtonText",
+       IDS_NTP_MODULES_OUTLOOK_CALENDAR_DISABLE_BUTTON_TEXT},
       {"modulesKaleidoscopeTitle", IDS_NTP_MODULES_KALEIDOSCOPE_TITLE},
       {"modulesPhotosInfo", IDS_NTP_MODULES_PHOTOS_INFO},
       {"modulesPhotosSentence", IDS_NTP_MODULES_PHOTOS_MEMORIES_TITLE},
@@ -633,7 +661,11 @@ content::WebUIDataSource* CreateAndAddNewTabPageUiHtmlSource(Profile* profile) {
 
   webui::SetupChromeRefresh2023(source);
 
-  RealboxHandler::SetupWebUIDataSource(source, profile);
+  SearchboxHandler::SetupWebUIDataSource(
+      source, profile,
+      /*enable_voice_search=*/true,
+      /*enable_lens_search=*/
+      profile->GetPrefs()->GetBoolean(prefs::kLensDesktopNTPSearchEnabled));
 
   webui::SetupWebUIDataSource(
       source, base::make_span(kNewTabPageResources, kNewTabPageResourcesSize),
@@ -791,7 +823,7 @@ void NewTabPageUI::ResetProfilePrefs(PrefService* prefs) {
 
 // static
 bool NewTabPageUI::IsDriveModuleEnabledForProfile(Profile* profile) {
-  // TODO(crbug.com/1321896): Explore not requiring sync for the drive
+  // TODO(crbug.com/40837656): Explore not requiring sync for the drive
   // module to be enabled.
   auto* sync_service = SyncServiceFactory::GetForProfile(profile);
   if (!IsDriveModuleEnabled() || !sync_service ||
@@ -803,7 +835,7 @@ bool NewTabPageUI::IsDriveModuleEnabledForProfile(Profile* profile) {
           ntp_features::kNtpDriveModuleManagedUsersOnlyParam, true)) {
     return true;
   }
-  // TODO(crbug.com/1213351): Stop calling the private method
+  // TODO(crbug.com/40183609): Stop calling the private method
   // FindExtendedPrimaryAccountInfo().
   auto* identity_manager = IdentityManagerFactory::GetForProfile(profile);
   return /* Can be null if Chrome signin is disabled. */ identity_manager &&
@@ -830,10 +862,11 @@ void NewTabPageUI::BindInterface(
 }
 
 void NewTabPageUI::BindInterface(
-    mojo::PendingReceiver<omnibox::mojom::PageHandler> pending_page_handler) {
+    mojo::PendingReceiver<searchbox::mojom::PageHandler> pending_page_handler) {
   realbox_handler_ = std::make_unique<RealboxHandler>(
       std::move(pending_page_handler), profile_, web_contents(),
-      &metrics_reporter_, /*omnibox_controller=*/nullptr);
+      &metrics_reporter_, /*lens_searchbox_client=*/nullptr,
+      /*omnibox_controller=*/nullptr);
 }
 
 void NewTabPageUI::BindInterface(
@@ -875,9 +908,10 @@ void NewTabPageUI::BindInterface(
 }
 
 void NewTabPageUI::BindInterface(
-    mojo::PendingReceiver<drive::mojom::DriveHandler> pending_receiver) {
-  drive_handler_ =
-      std::make_unique<DriveHandler>(std::move(pending_receiver), profile_);
+    mojo::PendingReceiver<file_suggestion::mojom::FileSuggestionHandler>
+        pending_receiver) {
+  file_handler_ = std::make_unique<FileSuggestionHandler>(
+      std::move(pending_receiver), profile_);
 }
 
 void NewTabPageUI::BindInterface(
@@ -888,8 +922,10 @@ void NewTabPageUI::BindInterface(
 
 void NewTabPageUI::BindInterface(
     mojo::PendingReceiver<ntp::feed::mojom::FeedHandler> pending_receiver) {
+#if BUILDFLAG(ENABLE_FEED_V2)
   feed_handler_ =
       ntp::FeedHandler::Create(std::move(pending_receiver), profile_);
+#endif  // BUILDFLAG(ENABLE_FEED_V2)
 }
 
 #if !defined(OFFICIAL_BUILD)
@@ -918,6 +954,14 @@ void NewTabPageUI::BindInterface(
         pending_page_handler) {
   history_clusters_handler_v2_ = std::make_unique<HistoryClustersPageHandlerV2>(
       std::move(pending_page_handler), web_contents());
+}
+
+void NewTabPageUI::BindInterface(
+    mojo::PendingReceiver<ntp::most_relevant_tab_resumption::mojom::PageHandler>
+        pending_page_handler) {
+  most_relevant_tab_resumption_handler_ =
+      std::make_unique<MostRelevantTabResumptionPageHandler>(
+          std::move(pending_page_handler), web_contents());
 }
 
 void NewTabPageUI::BindInterface(

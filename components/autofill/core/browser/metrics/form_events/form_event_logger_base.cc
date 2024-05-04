@@ -85,7 +85,7 @@ FormEventLoggerBase::FormEventLoggerBase(
       client_(*client) {}
 
 FormEventLoggerBase::~FormEventLoggerBase() {
-  DCHECK(has_called_on_destoryed_);
+  DCHECK(has_called_on_destroyed_);
 }
 
 void FormEventLoggerBase::OnDidInteractWithAutofillableForm(
@@ -145,7 +145,7 @@ void FormEventLoggerBase::OnDidShowSuggestions(
     OnSuggestionsShownOnce(form);
   }
 
-  has_logged_autocomplete_off_ |= field.autocomplete_attribute == "off";
+  has_logged_autocomplete_off_ |= field.autocomplete_attribute() == "off";
 
   RecordShowSuggestions();
 }
@@ -188,7 +188,7 @@ void FormEventLoggerBase::SetAblationStatus(
   ablation_group_ = ablation_group;
   // For each form, the ablation group should be stable (except in the rare
   // event that a day boundary is crossed). In practice, it is possible,
-  // however, that a the condtional_ablation_group is reported as kDefault
+  // however, that the conditional_ablation_group is reported as kDefault
   // because the user has typed a prefix into an input element that filtered
   // all filling options. In this case, we should still consider this an
   // ablation experience if suggestions were available when the field was empty.
@@ -259,8 +259,8 @@ void FormEventLoggerBase::OnEditedAutofilledField() {
 }
 
 void FormEventLoggerBase::OnDestroyed() {
-  DCHECK(!has_called_on_destoryed_);
-  has_called_on_destoryed_ = true;
+  DCHECK(!has_called_on_destroyed_);
+  has_called_on_destroyed_ = true;
   // Don't record Funnel and Key metrics for the ablation group as they don't
   // represent the true quality metrics.
   if (ablation_group_ != AblationGroup::kAblation) {
@@ -536,10 +536,6 @@ void FormEventLoggerBase::RecordUndoMetrics() const {
   if (has_logged_form_filling_suggestion_filled_) {
     base::UmaHistogramBoolean("Autofill.UndoAfterFill." + form_type_name_,
                               has_logged_undo_after_fill_);
-  }
-  if (has_logged_undo_after_fill_) {
-    base::UmaHistogramBoolean("Autofill.FillAfterUndo." + form_type_name_,
-                              has_logged_fill_after_undo_);
   }
 }
 

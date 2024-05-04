@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/css/properties/css_parsing_utils.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/execution_context/security_context.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 #include "third_party/blink/renderer/core/media_type_names.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -75,8 +76,9 @@ class MediaQueryFeatureSet : public MediaQueryParser::FeatureSet {
            feature == media_feature_names::kPrefersColorSchemeMediaFeature ||
            feature == media_feature_names::kPrefersContrastMediaFeature ||
            feature == media_feature_names::kPrefersReducedMotionMediaFeature ||
-           (feature == media_feature_names::kUpdateMediaFeature &&
-            RuntimeEnabledFeatures::CSSUpdateMediaFeatureEnabled()) ||
+           feature == media_feature_names::kOverflowInlineMediaFeature ||
+           feature == media_feature_names::kOverflowBlockMediaFeature ||
+           feature == media_feature_names::kUpdateMediaFeature ||
            (feature == media_feature_names::kPrefersReducedDataMediaFeature &&
             RuntimeEnabledFeatures::PrefersReducedDataEnabled()) ||
            feature ==
@@ -90,16 +92,14 @@ class MediaQueryFeatureSet : public MediaQueryParser::FeatureSet {
                 execution_context)) ||
            (feature ==
                 media_feature_names::kHorizontalViewportSegmentsMediaFeature &&
-            RuntimeEnabledFeatures::ViewportSegmentsEnabled()) ||
+            RuntimeEnabledFeatures::ViewportSegmentsEnabled(
+                execution_context)) ||
            (feature ==
                 media_feature_names::kVerticalViewportSegmentsMediaFeature &&
-            RuntimeEnabledFeatures::ViewportSegmentsEnabled()) ||
+            RuntimeEnabledFeatures::ViewportSegmentsEnabled(
+                execution_context)) ||
            (feature == media_feature_names::kDevicePostureMediaFeature &&
-            RuntimeEnabledFeatures::DevicePostureEnabled()) ||
-           (feature == media_feature_names::kOverflowInlineMediaFeature &&
-            RuntimeEnabledFeatures::CSSOverflowMediaFeaturesEnabled()) ||
-           (feature == media_feature_names::kOverflowBlockMediaFeature &&
-            RuntimeEnabledFeatures::CSSOverflowMediaFeaturesEnabled()) ||
+            RuntimeEnabledFeatures::DevicePostureEnabled(execution_context)) ||
            (feature == media_feature_names::kInvertedColorsMediaFeature &&
             RuntimeEnabledFeatures::InvertedColorsEnabled()) ||
            CSSVariableParser::IsValidVariableName(feature) ||
@@ -165,7 +165,10 @@ MediaQueryParser::MediaQueryParser(ParserType parser_type,
       syntax_level_(syntax_level),
       fake_context_(*MakeGarbageCollected<CSSParserContext>(
           kHTMLStandardMode,
-          SecureContextMode::kInsecureContext)) {}
+          SecureContextMode::kInsecureContext,
+          DynamicTo<LocalDOMWindow>(execution_context)
+              ? DynamicTo<LocalDOMWindow>(execution_context)->document()
+              : nullptr)) {}
 
 MediaQueryParser::~MediaQueryParser() = default;
 

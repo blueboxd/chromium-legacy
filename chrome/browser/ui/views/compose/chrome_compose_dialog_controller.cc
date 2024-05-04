@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/compose/chrome_compose_dialog_controller.h"
 
 #include "base/functional/callback.h"
+#include "base/task/sequenced_task_runner.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -12,6 +13,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "components/compose/core/browser/compose_features.h"
 #include "components/compose/core/browser/compose_metrics.h"
+#include "components/compose/core/browser/config.h"
 #include "ui/views/bubble/bubble_border.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 
@@ -53,7 +55,6 @@ void ChromeComposeDialogController::ShowComposeDialog(
       std::make_unique<WebUIContentsWrapperT<ComposeUntrustedUI>>(
           GURL(chrome::kChromeUIUntrustedComposeUrl), profile,
           IDS_COMPOSE_DIALOG_TITLE);
-  bubble_wrapper->ReloadWebContents();
 
   // This WebUI needs to know the calling BrowserContents so that the compose
   // request/result can be properly associated with the triggering form.
@@ -123,10 +124,23 @@ bool ChromeComposeDialogController::IsDialogShowing() {
 
 void ChromeComposeDialogController::OnWidgetDestroying(views::Widget* widget) {
   if (focus_lost_callback_) {
-    std::move(focus_lost_callback_).Run();
+    const compose::Config& config = compose::GetComposeConfig();
+    // TODO(b/328730979): Add slight delay so that focus lost callback can be
+    // called after all focus-related events have been processed.
+    base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
+        FROM_HERE,
+        base::BindOnce(&ChromeComposeDialogController::OnAfterWidgetDestroyed,
+                       weak_ptr_factory_.GetWeakPtr()),
+        base::Milliseconds(config.focus_lost_delay_milliseconds));
   }
   // This will no-op if there is no observation.
   widget_observation_.Reset();
+}
+
+void ChromeComposeDialogController::OnAfterWidgetDestroyed() {
+  if (focus_lost_callback_) {
+    std::move(focus_lost_callback_).Run();
+  }
 }
 
 ChromeComposeDialogController::ChromeComposeDialogController(

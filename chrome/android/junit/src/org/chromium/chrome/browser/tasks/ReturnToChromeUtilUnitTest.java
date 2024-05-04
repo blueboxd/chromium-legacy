@@ -77,7 +77,6 @@ import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.tasks.ReturnToChromeUtil.FailToShowHomeSurfaceReason;
-import org.chromium.chrome.browser.tasks.ReturnToChromeUtilUnitTest.ShadowHomepageManager;
 import org.chromium.chrome.browser.tasks.ReturnToChromeUtilUnitTest.ShadowHomepagePolicyManager;
 import org.chromium.chrome.browser.ui.fold_transitions.FoldTransitionController;
 import org.chromium.chrome.browser.ui.native_page.FrozenNativePage;
@@ -94,27 +93,10 @@ import org.chromium.url.JUnitTestGURLs;
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(
         manifest = Config.NONE,
-        shadows = {ShadowHomepageManager.class, ShadowHomepagePolicyManager.class})
+        shadows = {ShadowHomepagePolicyManager.class})
 @CommandLineFlags.Add({BaseSwitches.DISABLE_LOW_END_DEVICE_MODE})
 @DisableFeatures({ChromeFeatureList.SHOW_NTP_AT_STARTUP_ANDROID})
 public class ReturnToChromeUtilUnitTest {
-    /** Shadow for {@link HomepageManager}. */
-    @Implements(HomepageManager.class)
-    static class ShadowHomepageManager {
-        static GURL sHomepageGurl;
-        static boolean sIsHomepageEnabled;
-
-        @Implementation
-        public static boolean isHomepageEnabled() {
-            return sIsHomepageEnabled;
-        }
-
-        @Implementation
-        public static GURL getHomepageGurl() {
-            return sHomepageGurl;
-        }
-    }
-
     @Implements(HomepagePolicyManager.class)
     static class ShadowHomepagePolicyManager {
         static boolean sIsInitialized;
@@ -142,6 +124,7 @@ public class ReturnToChromeUtilUnitTest {
     @Mock private HomeSurfaceTracker mHomeSurfaceTracker;
     @Mock private Bundle mSaveInstanceState;
     @Captor private ArgumentCaptor<TabModelObserver> mTabModelObserverCaptor;
+    @Mock private HomepageManager mHomepageManager;
 
     @Before
     public void setUp() {
@@ -151,10 +134,9 @@ public class ReturnToChromeUtilUnitTest {
         ChromeFeatureList.sStartSurfaceAndroid.setForTesting(true);
 
         // HomepageManager:
-        ShadowHomepageManager.sHomepageGurl = UrlConstants.ntpGurl();
-        ShadowHomepageManager.sIsHomepageEnabled = true;
-        Assert.assertEquals(UrlConstants.ntpGurl(), HomepageManager.getHomepageGurl());
-        assertTrue(HomepageManager.isHomepageEnabled());
+        HomepageManager.setInstanceForTesting(mHomepageManager);
+        doReturn(true).when(mHomepageManager).isHomepageEnabled();
+        doReturn(UrlConstants.ntpGurl()).when(mHomepageManager).getHomepageGurl();
 
         ShadowHomepagePolicyManager.sIsInitialized = true;
         assertTrue(HomepagePolicyManager.isInitializedWithNative());
@@ -502,7 +484,7 @@ public class ReturnToChromeUtilUnitTest {
         assertTrue(ReturnToChromeUtil.isStartSurfaceEnabled(mContext));
 
         // Sets a customized homepage:
-        ShadowHomepageManager.sHomepageGurl = new GURL("http://foo.com");
+        doReturn(new GURL("http://foo.com")).when(mHomepageManager).getHomepageGurl();
         Assert.assertFalse(ReturnToChromeUtil.useChromeHomepage());
 
         // Sets main intent from launcher:
@@ -536,7 +518,7 @@ public class ReturnToChromeUtilUnitTest {
                         mInactivityTracker,
                         /* isTablet= */ false));
 
-        ShadowHomepageManager.sHomepageGurl = UrlConstants.ntpGurl();
+        doReturn(UrlConstants.ntpGurl()).when(mHomepageManager).getHomepageGurl();
         ChromeSharedPreferences.getInstance()
                 .removeKey(ChromePreferenceKeys.TABBED_ACTIVITY_LAST_BACKGROUNDED_TIME_MS_PREF);
     }
@@ -559,8 +541,8 @@ public class ReturnToChromeUtilUnitTest {
 
         // When homepage is disabled, verifies that Start isn't shown when there isn't any Tab, even
         // if the return time has arrived.
-        ShadowHomepageManager.sIsHomepageEnabled = false;
-        Assert.assertFalse(HomepageManager.isHomepageEnabled());
+        doReturn(false).when(mHomepageManager).isHomepageEnabled();
+
         doReturn(true).when(mTabModelSelector).isTabStateInitialized();
         doReturn(0).when(mTabModelSelector).getTotalTabCount();
         Assert.assertFalse(
@@ -637,7 +619,7 @@ public class ReturnToChromeUtilUnitTest {
         // HomepagePolicyManager isn't initialized.
         doReturn(true).when(mTabModelSelector).isTabStateInitialized();
         doReturn(0).when(mTabModelSelector).getTotalTabCount();
-        assertTrue(HomepageManager.isHomepageEnabled());
+
         Assert.assertFalse(ReturnToChromeUtil.useChromeHomepage());
         Assert.assertFalse(
                 ReturnToChromeUtil.shouldShowOverviewPageOnStart(
@@ -670,7 +652,6 @@ public class ReturnToChromeUtilUnitTest {
 
     @Test
     @SmallTest
-    @EnableFeatures(ChromeFeatureList.START_SURFACE_ON_TABLET)
     public void testShouldShowNtpAsHomeSurfaceAtStartupOnTablet() {
         assertTrue(StartSurfaceConfiguration.isNtpAsHomeSurfaceEnabled(true));
 
@@ -688,7 +669,7 @@ public class ReturnToChromeUtilUnitTest {
         doReturn(true).when(mTabModelSelector).isTabStateInitialized();
         doReturn(0).when(mTabModelSelector).getTotalTabCount();
         assertTrue(HomepagePolicyManager.isInitializedWithNative());
-        assertTrue(HomepageManager.isHomepageEnabled());
+
         assertTrue(IntentUtils.isMainIntentFromLauncher(intent));
         Assert.assertFalse(
                 ReturnToChromeUtil.shouldShowNtpAsHomeSurfaceAtStartup(
@@ -732,7 +713,6 @@ public class ReturnToChromeUtilUnitTest {
 
     @Test
     @SmallTest
-    @EnableFeatures(ChromeFeatureList.START_SURFACE_ON_TABLET)
     public void testShowNtpAsHomeSurfaceAtResumeOnTabletWithExistingNtp() {
         assertTrue(StartSurfaceConfiguration.isNtpAsHomeSurfaceEnabled(true));
 
@@ -810,7 +790,6 @@ public class ReturnToChromeUtilUnitTest {
 
     @Test
     @SmallTest
-    @EnableFeatures(ChromeFeatureList.START_SURFACE_ON_TABLET)
     public void testShowNtpAsHomeSurfaceAtResumeOnTabletWithoutAnyExistingNtp() {
         assertTrue(StartSurfaceConfiguration.isNtpAsHomeSurfaceEnabled(true));
 
@@ -856,7 +835,6 @@ public class ReturnToChromeUtilUnitTest {
 
     @Test
     @SmallTest
-    @EnableFeatures(ChromeFeatureList.START_SURFACE_ON_TABLET)
     public void testShowNtpAsHomeSurfaceAtResumeOnTabletWithMixedNtps() {
         assertTrue(StartSurfaceConfiguration.isNtpAsHomeSurfaceEnabled(true));
 
@@ -921,7 +899,6 @@ public class ReturnToChromeUtilUnitTest {
 
     @Test
     @SmallTest
-    @EnableFeatures(ChromeFeatureList.START_SURFACE_ON_TABLET)
     public void testNoAnyTabCase() {
         assertTrue(StartSurfaceConfiguration.isNtpAsHomeSurfaceEnabled(true));
 
@@ -940,7 +917,6 @@ public class ReturnToChromeUtilUnitTest {
 
     @Test
     @SmallTest
-    @EnableFeatures(ChromeFeatureList.START_SURFACE_ON_TABLET)
     public void testColdStartupWithOnlyLastActiveTabUrl() {
         assertTrue(StartSurfaceConfiguration.isNtpAsHomeSurfaceEnabled(true));
 
@@ -970,11 +946,7 @@ public class ReturnToChromeUtilUnitTest {
 
     @Test
     @SmallTest
-    @EnableFeatures({
-        ChromeFeatureList.START_SURFACE_ON_TABLET,
-        ChromeFeatureList.SURFACE_POLISH,
-        ChromeFeatureList.MAGIC_STACK_ANDROID
-    })
+    @EnableFeatures({ChromeFeatureList.SURFACE_POLISH, ChromeFeatureList.MAGIC_STACK_ANDROID})
     public void testColdStartupWithOnlyLastActiveTabUrl_MagicStack() {
         assertTrue(StartSurfaceConfiguration.isNtpAsHomeSurfaceEnabled(true));
         assertTrue(StartSurfaceConfiguration.useMagicStack());
@@ -1108,10 +1080,7 @@ public class ReturnToChromeUtilUnitTest {
 
     @Test
     @DisableFeatures({ChromeFeatureList.SURFACE_POLISH})
-    @EnableFeatures({
-        ChromeFeatureList.SHOW_SCROLLABLE_MVT_ON_NTP_ANDROID,
-        ChromeFeatureList.START_SURFACE_ON_TABLET
-    })
+    @EnableFeatures({ChromeFeatureList.SHOW_SCROLLABLE_MVT_ON_NTP_ANDROID})
     public void testIsScrollableMvtEnabled_SurfacePolishDisabled_ScrollableMvtEnabled_tablets() {
         StartSurfaceConfiguration.SURFACE_POLISH_SCROLLABLE_MVT.setForTesting(false);
 
@@ -1125,7 +1094,7 @@ public class ReturnToChromeUtilUnitTest {
 
         // Verifies if feature ChromeFeatureList.SURFACE_POLISH is disabled on tablets, the
         // scrollable MV tiles is only shown when both features
-        // SHOW_SCROLLABLE_MVT_ON_NTP_ANDROID and START_SURFACE_ON_TABLET are enabled.
+        // SHOW_SCROLLABLE_MVT_ON_NTP_ANDROID is enabled.
         assertTrue(ReturnToChromeUtil.isScrollableMvtEnabled(mContext));
     }
 
@@ -1134,7 +1103,6 @@ public class ReturnToChromeUtilUnitTest {
         ChromeFeatureList.SURFACE_POLISH,
         ChromeFeatureList.SHOW_SCROLLABLE_MVT_ON_NTP_ANDROID
     })
-    @EnableFeatures({ChromeFeatureList.START_SURFACE_ON_TABLET})
     public void testIsScrollableMvtEnabled_SurfacePolishDisabled_ScrollableMvtDisabled_tablets() {
         StartSurfaceConfiguration.SURFACE_POLISH_SCROLLABLE_MVT.setForTesting(false);
 

@@ -10,11 +10,9 @@
 #import "base/containers/contains.h"
 #import "base/memory/raw_ptr.h"
 #import "base/strings/sys_string_conversions.h"
-#import "base/test/scoped_feature_list.h"
 #import "components/bookmarks/browser/bookmark_node.h"
 #import "components/bookmarks/browser/core_bookmark_model.h"
 #import "components/bookmarks/common/bookmark_features.h"
-#import "components/sync/base/features.h"
 #import "ios/chrome/browser/bookmarks/model/bookmark_ios_unit_test_support.h"
 #import "ios/chrome/browser/bookmarks/model/legacy_bookmark_model.h"
 #import "ios/chrome/browser/shared/model/browser_state/test_chrome_browser_state.h"
@@ -133,10 +131,11 @@ class BookmarksFolderChooserSubDataSourceImplTest
   }
 
   void RemoveNode(const BookmarkNode* node) {
-    model()->Remove(node, bookmarks::metrics::BookmarkEditSource::kUser);
+    model()->Remove(node, bookmarks::metrics::BookmarkEditSource::kUser,
+                    FROM_HERE);
   }
 
-  void RemoveAllNodes() { bookmark_model_->RemoveAllUserBookmarks(); }
+  void RemoveAllNodes() { bookmark_model_->RemoveAllUserBookmarks(FROM_HERE); }
 
   void MoveNode(const BookmarkNode* node, const BookmarkNode* new_parent) {
     model()->Move(node, new_parent, new_parent->children().size());

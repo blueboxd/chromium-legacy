@@ -32,10 +32,15 @@ class PinTextfield : public views::Textfield {
 
   // Returns currently typed pin.
   std::u16string GetPin();
+  void SetPin(const std::u16string& pin);
+
+  void SetObscured(bool obscured);
+  void SetDisabled(bool disabled);
 
   // views::View:
   void OnPaint(gfx::Canvas* canvas) override;
-  gfx::Size CalculatePreferredSize() const override;
+  gfx::Size CalculatePreferredSize(
+      const views::SizeBounds& available_size) const override;
   void OnThemeChanged() override;
 
  private:
@@ -51,6 +56,9 @@ class PinTextfield : public views::Textfield {
 
   // Amount of digits that are currently typed.
   int digits_typed_count_ = 0;
+
+  // Whether entering pin is currently disabled.
+  bool disabled_ = false;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_WEBAUTHN_PIN_TEXTFIELD_H_

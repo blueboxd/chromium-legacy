@@ -26,6 +26,7 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/html/forms/html_button_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_data_list_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_data_list_options_collection.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
@@ -312,7 +313,6 @@ void ThemePainter::PaintSliderTicks(const LayoutObject& o,
           NonStandardAppearanceValueSliderVerticalEnabled() &&
       part == kSliderVerticalPart;
   bool is_writing_mode_vertical =
-      RuntimeEnabledFeatures::FormControlsVerticalWritingModeSupportEnabled() &&
       !IsHorizontalWritingMode(o.StyleRef().GetWritingMode());
   if (!(part == kSliderHorizontalPart || is_slider_vertical)) {
     return;

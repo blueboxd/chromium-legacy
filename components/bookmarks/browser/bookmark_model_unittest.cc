@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
+#include <optional>
 #include <set>
 #include <string>
 #include <unordered_set>
@@ -294,31 +296,37 @@ class BookmarkModelTest : public testing::Test, public BookmarkModelObserver {
   struct ObserverDetails {
     ObserverDetails() {
       Set(nullptr, nullptr, static_cast<size_t>(-1), static_cast<size_t>(-1),
-          false);
+          false, FROM_HERE);
     }
 
     void Set(const BookmarkNode* node1,
              const BookmarkNode* node2,
              size_t index1,
              size_t index2,
-             bool added_by_user) {
+             bool added_by_user,
+             const base::Location& location) {
       node1_ = node1;
       node2_ = node2;
       index1_ = index1;
       index2_ = index2;
       added_by_user_ = added_by_user;
+      location_ = location;
     }
 
     void ExpectEquals(const BookmarkNode* node1,
                       const BookmarkNode* node2,
                       size_t index1,
                       size_t index2,
-                      bool added_by_user) {
+                      bool added_by_user,
+                      std::optional<base::Location> location = std::nullopt) {
       EXPECT_EQ(node1_, node1);
       EXPECT_EQ(node2_, node2);
       EXPECT_EQ(index1_, index1);
       EXPECT_EQ(index2_, index2);
       EXPECT_EQ(added_by_user_, added_by_user);
+      if (location.has_value()) {
+        EXPECT_EQ(location_, *location);
+      }
     }
 
    private:
@@ -327,6 +335,7 @@ class BookmarkModelTest : public testing::Test, public BookmarkModelObserver {
     size_t index1_;
     size_t index2_;
     bool added_by_user_;
+    base::Location location_;
   };
 
   struct AllNodesRemovedDetail {
@@ -362,7 +371,8 @@ class BookmarkModelTest : public testing::Test, public BookmarkModelObserver {
                          const BookmarkNode* new_parent,
                          size_t new_index) override {
     ++moved_count_;
-    observer_details_.Set(old_parent, new_parent, old_index, new_index, false);
+    observer_details_.Set(old_parent, new_parent, old_index, new_index, false,
+                          FROM_HERE);
   }
 
   void BookmarkNodeAdded(const BookmarkNode* parent,
@@ -370,28 +380,30 @@ class BookmarkModelTest : public testing::Test, public BookmarkModelObserver {
                          bool added_by_user) override {
     ++added_count_;
     observer_details_.Set(parent, nullptr, index, static_cast<size_t>(-1),
-                          added_by_user);
+                          added_by_user, FROM_HERE);
   }
 
   void OnWillRemoveBookmarks(const BookmarkNode* parent,
                              size_t old_index,
-                             const BookmarkNode* node) override {
+                             const BookmarkNode* node,
+                             const base::Location& location) override {
     ++before_remove_count_;
   }
 
   void BookmarkNodeRemoved(const BookmarkNode* parent,
                            size_t old_index,
                            const BookmarkNode* node,
-                           const std::set<GURL>& removed_urls) override {
+                           const std::set<GURL>& removed_urls,
+                           const base::Location& location) override {
     ++removed_count_;
     observer_details_.Set(parent, nullptr, old_index, static_cast<size_t>(-1),
-                          false);
+                          false, location);
   }
 
   void BookmarkNodeChanged(const BookmarkNode* node) override {
     ++changed_count_;
     observer_details_.Set(node, nullptr, static_cast<size_t>(-1),
-                          static_cast<size_t>(-1), false);
+                          static_cast<size_t>(-1), false, FROM_HERE);
   }
 
   void OnWillChangeBookmarkNode(const BookmarkNode* node) override {
@@ -419,13 +431,15 @@ class BookmarkModelTest : public testing::Test, public BookmarkModelObserver {
     ++extensive_changes_ended_count_;
   }
 
-  void BookmarkAllUserNodesRemoved(
-      const std::set<GURL>& removed_urls) override {
+  void BookmarkAllUserNodesRemoved(const std::set<GURL>& removed_urls,
+                                   const base::Location& location) override {
     ++all_bookmarks_removed_;
     all_bookmarks_removed_details_.emplace_back(removed_urls);
   }
 
-  void OnWillRemoveAllUserBookmarks() override { ++before_remove_all_count_; }
+  void OnWillRemoveAllUserBookmarks(const base::Location& location) override {
+    ++before_remove_all_count_;
+  }
 
   void GroupedBookmarkChangesBeginning() override {
     ++grouped_changes_beginning_count_;
@@ -610,8 +624,7 @@ TEST_F(BookmarkModelTest,
   // TestBookmarkClient exercises the regular `Load()` codepath, so pretend here
   // that `LoadAccountBookmarksFileAsLocalOrSyncableBookmarks()` was used
   // instead.
-  model_
-      ->SetLoadedAccountBookmarksFileAsLocalOrSyncableBookmarksForUmaForTest();
+  model_->SetLoadedAccountBookmarksFileAsLocalOrSyncableBookmarksForTest();
 
   model_->AddNewURL(model_->bookmark_bar_node(), 0, u"title",
                     GURL("http://foo.com"));
@@ -646,7 +659,7 @@ TEST_F(BookmarkModelTest, AddNewURLLocalStorageNotSyncing) {
 // Tests recording user action when adding a bookmark in local storage syncing.
 TEST_F(BookmarkModelTest, AddNewURLLocalStorageSyncing) {
   static_cast<TestBookmarkClient*>(model_->client())
-      ->SetIsSyncFeatureEnabledIncludingBookmarksForUma(true);
+      ->SetIsSyncFeatureEnabledIncludingBookmarks(true);
 
   model_->AddNewURL(model_->bookmark_bar_node(), 0, u"title",
                     GURL("http://foo.com"));
@@ -677,7 +690,7 @@ TEST_F(BookmarkModelTest, AddNewFolderLocalStorageNotSyncing) {
 // Tests recording user action when adding a folder in local storage syncing.
 TEST_F(BookmarkModelTest, AddNewFolderLocalStorageSyncing) {
   static_cast<TestBookmarkClient*>(model_->client())
-      ->SetIsSyncFeatureEnabledIncludingBookmarksForUma(true);
+      ->SetIsSyncFeatureEnabledIncludingBookmarks(true);
 
   model_->AddFolder(model_->mobile_node(), 0, u"title");
   EXPECT_EQ(1, user_action_tester()->GetActionCount("Bookmarks.FolderAdded"));
@@ -864,11 +877,13 @@ TEST_F(BookmarkModelTest, RemoveURL) {
   const BookmarkNode* bookmark_bar_node = model_->bookmark_bar_node();
   const std::u16string title(u"foo");
   const GURL url("http://foo.com");
+  const base::Location location = FROM_HERE;
+
   model_->AddURL(bookmark_bar_node, 0, title, url);
   ClearCounts();
 
   model_->Remove(bookmark_bar_node->children().front().get(),
-                 bookmarks::metrics::BookmarkEditSource::kOther);
+                 bookmarks::metrics::BookmarkEditSource::kOther, location);
   ASSERT_EQ(0u, bookmark_bar_node->children().size());
   histogram_tester()->ExpectTotalCount("Bookmarks.RemovedSource", 1);
   histogram_tester()->ExpectBucketCount(
@@ -876,7 +891,7 @@ TEST_F(BookmarkModelTest, RemoveURL) {
       static_cast<int>(metrics::BookmarkEditSource::kOther), 1);
   AssertObserverCount(0, 0, 1, 0, 0, 1, 0, 0, 0);
   observer_details_.ExpectEquals(bookmark_bar_node, nullptr, 0,
-                                 static_cast<size_t>(-1), false);
+                                 static_cast<size_t>(-1), false, location);
 
   // Make sure there is no mapping for the URL.
   ASSERT_TRUE(model_->GetMostRecentlyAddedUserNodeForURL(url) == nullptr);
@@ -897,7 +912,7 @@ TEST_F(BookmarkModelTest, RemoveFolder) {
 
   // Now remove the folder.
   model_->Remove(bookmark_bar_node->children().front().get(),
-                 bookmarks::metrics::BookmarkEditSource::kOther);
+                 bookmarks::metrics::BookmarkEditSource::kOther, FROM_HERE);
   ASSERT_EQ(0u, bookmark_bar_node->children().size());
   histogram_tester()->ExpectTotalCount("Bookmarks.RemovedSource", 1);
   histogram_tester()->ExpectBucketCount(
@@ -930,7 +945,7 @@ TEST_F(BookmarkModelTest, RemoveAllUserBookmarks) {
 
   size_t permanent_node_count = model_->root_node()->children().size();
 
-  model_->RemoveAllUserBookmarks();
+  model_->RemoveAllUserBookmarks(FROM_HERE);
 
   EXPECT_EQ(0u, bookmark_bar_node->children().size());
   // No permanent node should be removed.
@@ -1177,7 +1192,7 @@ TEST_F(BookmarkModelTest, Move) {
   // And remove the folder.
   ClearCounts();
   model_->Remove(bookmark_bar_node->children().front().get(),
-                 bookmarks::metrics::BookmarkEditSource::kOther);
+                 bookmarks::metrics::BookmarkEditSource::kOther, FROM_HERE);
   AssertObserverCount(0, 0, 1, 0, 0, 1, 0, 0, 0);
   observer_details_.ExpectEquals(bookmark_bar_node, nullptr, 0,
                                  static_cast<size_t>(-1), false);
@@ -1296,6 +1311,52 @@ TEST_F(BookmarkModelTest, MoveFolder) {
   matches.clear();
 }
 
+TEST_F(BookmarkModelTest, MoveWithUuidCollision) {
+  model_->CreateAccountPermanentFolders();
+  const BookmarkNode* bookmark_bar_node = model_->bookmark_bar_node();
+  const BookmarkNode* account_bookmark_bar_node =
+      model_->account_bookmark_bar_node();
+
+  ASSERT_NE(nullptr, account_bookmark_bar_node);
+
+  // Create two folders with the same UUID. One is local and the other one is an
+  // account bookmark, so using the same UUID is allowed.
+  const BookmarkNode* folder1 =
+      model_->AddFolder(bookmark_bar_node, 0, u"local folder");
+  const base::Uuid kInitialUuid = folder1->uuid();
+  const BookmarkNode* folder2 =
+      model_->AddFolder(account_bookmark_bar_node, 0, u"account folder",
+                        /*meta_info=*/nullptr,
+                        /*creation_time=*/std::nullopt, kInitialUuid);
+
+  ClearCounts();
+
+  model_->Move(folder1, account_bookmark_bar_node, 0);
+
+  // Should update the hierarchy.
+  AssertObserverCount(0, 1, 0, 0, 0, 0, 0, 0, 0);
+  observer_details_.ExpectEquals(bookmark_bar_node, account_bookmark_bar_node,
+                                 0, 0, false);
+  EXPECT_EQ(bookmark_bar_node->children().size(), 0u);
+  EXPECT_EQ(account_bookmark_bar_node->children().size(), 2u);
+
+  // The UUID should have changed for the moved folder.
+  EXPECT_NE(folder1->uuid(), kInitialUuid);
+
+  // The other folder involved in the collision should continue having the
+  // original UUID.
+  EXPECT_EQ(folder2->uuid(), kInitialUuid);
+
+  EXPECT_EQ(nullptr,
+            model_->GetNodeByUuid(
+                kInitialUuid, NodeTypeForUuidLookup::kLocalOrSyncableNodes));
+  EXPECT_EQ(folder2, model_->GetNodeByUuid(
+                         kInitialUuid, NodeTypeForUuidLookup::kAccountNodes));
+  EXPECT_EQ(folder1,
+            model_->GetNodeByUuid(folder1->uuid(),
+                                  NodeTypeForUuidLookup::kAccountNodes));
+}
+
 TEST_F(BookmarkModelTest, Copy) {
   const BookmarkNode* bookmark_bar_node = model_->bookmark_bar_node();
   static const std::string model_string("a 1:[ b c ] d 2:[ e f g ] h ");
@@ -1409,7 +1470,7 @@ TEST_F(BookmarkModelTest, MostRecentlyModifiedFolders) {
   // Nuke the folder and do another fetch, making sure folder isn't in the
   // returned list.
   model_->Remove(folder->parent()->children().front().get(),
-                 bookmarks::metrics::BookmarkEditSource::kOther);
+                 bookmarks::metrics::BookmarkEditSource::kOther, FROM_HERE);
   most_recent_folders = GetMostRecentlyModifiedUserFolders(model_.get(), 1);
   ASSERT_EQ(1U, most_recent_folders.size());
   ASSERT_TRUE(most_recent_folders[0] != folder);
@@ -1787,7 +1848,7 @@ TEST_F(BookmarkModelTest, TitledUrlIndexUpdatedOnRemove) {
 
   // Remove the node and make sure we don't get back any results.
   model_->Remove(bookmark_bar_node->children().front().get(),
-                 bookmarks::metrics::BookmarkEditSource::kOther);
+                 bookmarks::metrics::BookmarkEditSource::kOther, FROM_HERE);
   EXPECT_EQ(0U, model_
                     ->GetBookmarksMatching(
                         title, 1, query_parser::MatchingAlgorithm::DEFAULT)
@@ -2084,14 +2145,16 @@ TEST_F(BookmarkModelTest, GetNodeByUuidAfterRemove) {
   ASSERT_EQ(folder2, model_->GetNodeByUuid(
                          uuid2, NodeTypeForUuidLookup::kLocalOrSyncableNodes));
 
-  model_->Remove(folder1, bookmarks::metrics::BookmarkEditSource::kOther);
+  model_->Remove(folder1, bookmarks::metrics::BookmarkEditSource::kOther,
+                 FROM_HERE);
 
   EXPECT_EQ(nullptr, model_->GetNodeByUuid(
                          uuid1, NodeTypeForUuidLookup::kLocalOrSyncableNodes));
   EXPECT_EQ(folder2, model_->GetNodeByUuid(
                          uuid2, NodeTypeForUuidLookup::kLocalOrSyncableNodes));
 
-  model_->Remove(folder2, bookmarks::metrics::BookmarkEditSource::kOther);
+  model_->Remove(folder2, bookmarks::metrics::BookmarkEditSource::kOther,
+                 FROM_HERE);
 
   EXPECT_EQ(nullptr, model_->GetNodeByUuid(
                          uuid2, NodeTypeForUuidLookup::kLocalOrSyncableNodes));
@@ -2111,7 +2174,7 @@ TEST_F(BookmarkModelTest, GetNodeByUuidAfterRemoveAllUserBookmarks) {
   ASSERT_EQ(folder2, model_->GetNodeByUuid(
                          uuid2, NodeTypeForUuidLookup::kLocalOrSyncableNodes));
 
-  model_->RemoveAllUserBookmarks();
+  model_->RemoveAllUserBookmarks(FROM_HERE);
 
   EXPECT_EQ(nullptr, model_->GetNodeByUuid(
                          uuid1, NodeTypeForUuidLookup::kLocalOrSyncableNodes));
@@ -2540,6 +2603,78 @@ TEST_F(BookmarkModelTest, RemoveAccountPermanentFolders) {
   AssertObserverCount(0, 0, 3, 0, 0, 3, 0, 0, 0);
 }
 
+TEST_F(BookmarkModelTest, IsLocalOnlyNodeWithSyncFeatureOff) {
+  static_cast<TestBookmarkClient*>(model_->client())
+      ->SetIsSyncFeatureEnabledIncludingBookmarks(false);
+
+  model_->CreateAccountPermanentFolders();
+
+  ASSERT_NE(nullptr, model_->bookmark_bar_node());
+  ASSERT_NE(nullptr, model_->other_node());
+  ASSERT_NE(nullptr, model_->mobile_node());
+
+  const BookmarkNode* local_folder =
+      model_->AddFolder(model_->bookmark_bar_node(), 0, u"local_folder");
+  const BookmarkNode* account_folder = model_->AddFolder(
+      model_->account_bookmark_bar_node(), 0, u"account_folder");
+
+  EXPECT_TRUE(model_->IsLocalOnlyNode(*model_->root_node()));
+  EXPECT_TRUE(model_->IsLocalOnlyNode(*model_->bookmark_bar_node()));
+  EXPECT_TRUE(model_->IsLocalOnlyNode(*model_->other_node()));
+  EXPECT_TRUE(model_->IsLocalOnlyNode(*model_->mobile_node()));
+  EXPECT_TRUE(model_->IsLocalOnlyNode(*local_folder));
+  EXPECT_FALSE(model_->IsLocalOnlyNode(*model_->account_bookmark_bar_node()));
+  EXPECT_FALSE(model_->IsLocalOnlyNode(*model_->account_other_node()));
+  EXPECT_FALSE(model_->IsLocalOnlyNode(*model_->account_mobile_node()));
+  EXPECT_FALSE(model_->IsLocalOnlyNode(*account_folder));
+}
+
+TEST_F(BookmarkModelTest, IsLocalOnlyNodeWithSyncFeatureOn) {
+  static_cast<TestBookmarkClient*>(model_->client())
+      ->SetIsSyncFeatureEnabledIncludingBookmarks(true);
+
+  const BookmarkNode* folder =
+      model_->AddFolder(model_->bookmark_bar_node(), 0, u"local_folder");
+
+  EXPECT_TRUE(model_->IsLocalOnlyNode(*model_->root_node()));
+  EXPECT_FALSE(model_->IsLocalOnlyNode(*model_->bookmark_bar_node()));
+  EXPECT_FALSE(model_->IsLocalOnlyNode(*model_->other_node()));
+  EXPECT_FALSE(model_->IsLocalOnlyNode(*model_->mobile_node()));
+  EXPECT_FALSE(model_->IsLocalOnlyNode(*folder));
+}
+
+TEST_F(BookmarkModelTest,
+       IsLocalOnlyNodeIfAccountNodesPopulatedAsLocalOrSyncable) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(
+      syncer::kEnableBookmarkFoldersForAccountStorage);
+
+  const GURL node_url("http://google.com/");
+  base::test::TaskEnvironment task_environment{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
+
+  base::ScopedTempDir tmp_dir;
+  ASSERT_TRUE(tmp_dir.CreateUniqueTempDir());
+
+  auto model =
+      std::make_unique<BookmarkModel>(std::make_unique<TestBookmarkClient>());
+  model->LoadAccountBookmarksFileAsLocalOrSyncableBookmarks(tmp_dir.GetPath());
+  test::WaitForBookmarkModelToLoad(model.get());
+
+  ASSERT_EQ(nullptr, model->account_bookmark_bar_node());
+  ASSERT_EQ(nullptr, model->account_other_node());
+  ASSERT_EQ(nullptr, model->account_mobile_node());
+
+  const BookmarkNode* folder =
+      model->AddFolder(model->bookmark_bar_node(), 0, u"folder");
+
+  EXPECT_TRUE(model->IsLocalOnlyNode(*model->root_node()));
+  EXPECT_FALSE(model->IsLocalOnlyNode(*model->bookmark_bar_node()));
+  EXPECT_FALSE(model->IsLocalOnlyNode(*model->other_node()));
+  EXPECT_FALSE(model->IsLocalOnlyNode(*model->mobile_node()));
+  EXPECT_FALSE(model->IsLocalOnlyNode(*folder));
+}
+
 }  // namespace
 
 class BookmarkModelFaviconTest : public testing::Test,
@@ -2591,7 +2726,8 @@ class BookmarkModelFaviconTest : public testing::Test,
   void BookmarkNodeRemoved(const BookmarkNode* parent,
                            size_t old_index,
                            const BookmarkNode* node,
-                           const std::set<GURL>& removed_urls) override {}
+                           const std::set<GURL>& removed_urls,
+                           const base::Location& location) override {}
 
   void BookmarkNodeChanged(const BookmarkNode* node) override {}
 
@@ -2601,8 +2737,8 @@ class BookmarkModelFaviconTest : public testing::Test,
 
   void BookmarkNodeChildrenReordered(const BookmarkNode* node) override {}
 
-  void BookmarkAllUserNodesRemoved(
-      const std::set<GURL>& removed_urls) override {}
+  void BookmarkAllUserNodesRemoved(const std::set<GURL>& removed_urls,
+                                   const base::Location& location) override {}
 
   std::unique_ptr<BookmarkModel> model_;
   std::vector<raw_ptr<const BookmarkNode, VectorExperimental>> updated_nodes_;
@@ -2693,7 +2829,8 @@ TEST_F(BookmarkModelFaviconTest, ShouldResetFaviconStatusAfterRestore) {
   model_->GetFavicon(node);
   ASSERT_TRUE(node->is_favicon_loading());
 
-  model_->Remove(node, bookmarks::metrics::BookmarkEditSource::kOther);
+  model_->Remove(node, bookmarks::metrics::BookmarkEditSource::kOther,
+                 FROM_HERE);
 
   ASSERT_TRUE(static_cast<TestBookmarkClientWithUndo*>(model_->client())
                   ->RestoreLastRemovedBookmark());
@@ -2738,11 +2875,12 @@ TEST_F(BookmarkDualModelTest, MoveToOtherModel) {
 
   testing::Sequence local_or_syncable_sequence;
   EXPECT_CALL(local_or_syncable_observer_,
-              OnWillRemoveBookmarks(mobile_node, 0, folder))
+              OnWillRemoveBookmarks(mobile_node, 0, folder, testing::_))
       .InSequence(local_or_syncable_sequence);
   std::set<GURL> removed_urls{GURL("http://foo.com"), GURL("http://bar.com")};
-  EXPECT_CALL(local_or_syncable_observer_,
-              BookmarkNodeRemoved(mobile_node, 0, folder, removed_urls))
+  EXPECT_CALL(
+      local_or_syncable_observer_,
+      BookmarkNodeRemoved(mobile_node, 0, folder, removed_urls, testing::_))
       .InSequence(local_or_syncable_sequence);
 
   testing::Sequence account_sequence;

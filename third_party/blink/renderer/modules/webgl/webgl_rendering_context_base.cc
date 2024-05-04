@@ -877,28 +877,29 @@ scoped_refptr<StaticBitmapImage> WebGLRenderingContextBase::GetImage(
   return resource_provider->Snapshot(reason);
 }
 
-ScriptPromise WebGLRenderingContextBase::makeXRCompatible(
+ScriptPromise<IDLUndefined> WebGLRenderingContextBase::makeXRCompatible(
     ScriptState* script_state,
     ExceptionState& exception_state) {
   if (isContextLost()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "Context lost.");
-    return ScriptPromise();
+    return ScriptPromise<IDLUndefined>();
   }
 
   // Return a resolved promise if we're already xr compatible. Once we're
   // compatible, we should always be compatible unless a context lost occurs.
   // DispatchContextLostEvent() resets this flag to false.
   if (xr_compatible_)
-    return ScriptPromise::CastUndefined(script_state);
+    return ToResolvedUndefinedPromise(script_state);
 
   // If there's a request currently in progress, return the same promise.
   if (make_xr_compatible_resolver_)
     return make_xr_compatible_resolver_->Promise();
 
-  make_xr_compatible_resolver_ = MakeGarbageCollected<ScriptPromiseResolver>(
-      script_state, exception_state.GetContext());
-  ScriptPromise promise = make_xr_compatible_resolver_->Promise();
+  make_xr_compatible_resolver_ =
+      MakeGarbageCollected<ScriptPromiseResolver<IDLUndefined>>(
+          script_state, exception_state.GetContext());
+  auto promise = make_xr_compatible_resolver_->Promise();
 
   MakeXrCompatibleAsync();
 
@@ -4260,9 +4261,7 @@ ScriptValue WebGLRenderingContextBase::getUniform(
   if (!ValidateWebGLProgramOrShader("getUniform", program))
     return ScriptValue::CreateNull(script_state->GetIsolate());
   DCHECK(uniform_location);
-  if (uniform_location->Program() != program) {
-    SynthesizeGLError(GL_INVALID_OPERATION, "getUniform",
-                      "no uniformlocation or not valid for this program");
+  if (!ValidateUniformLocation("getUniform", uniform_location, program)) {
     return ScriptValue::CreateNull(script_state->GetIsolate());
   }
   GLint location = uniform_location->Location();
@@ -5260,7 +5259,9 @@ GLenum WebGLRenderingContextBase::ConvertTexInternalFormat(
 void WebGLRenderingContextBase::GetCurrentUnpackState(TexImageParams& params) {
   params.unpack_premultiply_alpha = unpack_premultiply_alpha_;
   params.unpack_flip_y = unpack_flip_y_;
-  if (params.source_type == kSourceHTMLImageElement) {
+  if (params.source_type == kSourceHTMLImageElement ||
+      params.source_type == kSourceHTMLVideoElement ||
+      params.source_type == kSourceVideoFrame) {
     params.unpack_colorspace_conversion =
         unpack_colorspace_conversion_ != GL_NONE;
   }
@@ -5675,7 +5676,7 @@ void WebGLRenderingContextBase::TexImageHelperDOMArrayBufferView(
     TexImageParams params,
     DOMArrayBufferView* pixels,
     NullDisposition null_disposition,
-    GLuint src_offset) {
+    int64_t src_offset) {
   const char* func_name = GetTexImageFunctionName(params.function_id);
   if (isContextLost())
     return;
@@ -6390,13 +6391,12 @@ void WebGLRenderingContextBase::TexImageHelperMediaVideoFrame(
   }
 
   // TODO(https://crbug.com/1341235): The choice of color type will clamp
-  // higher precision sources to 8 bit per color. The choice of color space
-  // should match the unpack color space.
+  // higher precision sources to 8 bit per color.
   const auto resource_provider_info = SkImageInfo::Make(
       gfx::SizeToSkISize(dest_rect.size()), kN32_SkColorType,
       media::IsOpaque(media_video_frame->format()) ? kOpaque_SkAlphaType
                                                    : kPremul_SkAlphaType,
-      nullptr);
+      media_video_frame->CompatRGBColorSpace().ToSkColorSpace());
 
   // Since TexImageStaticBitmapImage() and TexImageGPU() don't know how to
   // handle tagged orientation, we set |prefer_tagged_orientation| to false.
@@ -6710,9 +6710,7 @@ void WebGLRenderingContextBase::uniform1f(const WebGLUniformLocation* location,
   if (isContextLost() || !location)
     return;
 
-  if (location->Program() != current_program_) {
-    SynthesizeGLError(GL_INVALID_OPERATION, "uniform1f",
-                      "location not for current program");
+  if (!ValidateUniformLocation("uniform1f", location, current_program_)) {
     return;
   }
 
@@ -6748,9 +6746,7 @@ void WebGLRenderingContextBase::uniform1i(const WebGLUniformLocation* location,
   if (isContextLost() || !location)
     return;
 
-  if (location->Program() != current_program_) {
-    SynthesizeGLError(GL_INVALID_OPERATION, "uniform1i",
-                      "location not for current program");
+  if (!ValidateUniformLocation("uniform1i", location, current_program_)) {
     return;
   }
 
@@ -6787,9 +6783,7 @@ void WebGLRenderingContextBase::uniform2f(const WebGLUniformLocation* location,
   if (isContextLost() || !location)
     return;
 
-  if (location->Program() != current_program_) {
-    SynthesizeGLError(GL_INVALID_OPERATION, "uniform2f",
-                      "location not for current program");
+  if (!ValidateUniformLocation("uniform2f", location, current_program_)) {
     return;
   }
 
@@ -6826,9 +6820,7 @@ void WebGLRenderingContextBase::uniform2i(const WebGLUniformLocation* location,
   if (isContextLost() || !location)
     return;
 
-  if (location->Program() != current_program_) {
-    SynthesizeGLError(GL_INVALID_OPERATION, "uniform2i",
-                      "location not for current program");
+  if (!ValidateUniformLocation("uniform2i", location, current_program_)) {
     return;
   }
 
@@ -6866,9 +6858,7 @@ void WebGLRenderingContextBase::uniform3f(const WebGLUniformLocation* location,
   if (isContextLost() || !location)
     return;
 
-  if (location->Program() != current_program_) {
-    SynthesizeGLError(GL_INVALID_OPERATION, "uniform3f",
-                      "location not for current program");
+  if (!ValidateUniformLocation("uniform3f", location, current_program_)) {
     return;
   }
 
@@ -6906,9 +6896,7 @@ void WebGLRenderingContextBase::uniform3i(const WebGLUniformLocation* location,
   if (isContextLost() || !location)
     return;
 
-  if (location->Program() != current_program_) {
-    SynthesizeGLError(GL_INVALID_OPERATION, "uniform3i",
-                      "location not for current program");
+  if (!ValidateUniformLocation("uniform3i", location, current_program_)) {
     return;
   }
 
@@ -6947,9 +6935,7 @@ void WebGLRenderingContextBase::uniform4f(const WebGLUniformLocation* location,
   if (isContextLost() || !location)
     return;
 
-  if (location->Program() != current_program_) {
-    SynthesizeGLError(GL_INVALID_OPERATION, "uniform4f",
-                      "location not for current program");
+  if (!ValidateUniformLocation("uniform4f", location, current_program_)) {
     return;
   }
 
@@ -6988,9 +6974,7 @@ void WebGLRenderingContextBase::uniform4i(const WebGLUniformLocation* location,
   if (isContextLost() || !location)
     return;
 
-  if (location->Program() != current_program_) {
-    SynthesizeGLError(GL_INVALID_OPERATION, "uniform4i",
-                      "location not for current program");
+  if (!ValidateUniformLocation("uniform4i", location, current_program_)) {
     return;
   }
 
@@ -8186,7 +8170,7 @@ bool WebGLRenderingContextBase::ValidateTexFuncData(
     const TexImageParams& params,
     DOMArrayBufferView* pixels,
     NullDisposition disposition,
-    GLuint src_offset) {
+    int64_t src_offset) {
   const char* function_name = GetTexImageFunctionName(params.function_id);
   TexImageDimension tex_dimension;
   if (params.function_id == kTexImage2D || params.function_id == kTexSubImage2D)

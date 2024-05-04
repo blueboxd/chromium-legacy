@@ -13,7 +13,7 @@ namespace ui {
 // Keep sorted!
 
 // Feature controlling whether or not HDR is enabled on Android.
-// TODO(https://crbug.com/1430768): Leave this as a kill switch until Android U
+// TODO(crbug.com/40263227): Leave this as a kill switch until Android U
 // ships.
 UI_ANDROID_EXPORT BASE_DECLARE_FEATURE(kAndroidHDR);
 
@@ -32,6 +32,11 @@ UI_ANDROID_EXPORT BASE_DECLARE_FEATURE(kReportAllAvailablePointerTypes);
 // Kill switch to turn off validation in TextViewWithLeading that requires a
 // leading value to be configured.
 UI_ANDROID_EXPORT BASE_DECLARE_FEATURE(kRequireLeadingInTextViewWithLeading);
+
+// TODO(b/328601354): Cleanup flag after investigating nothing is broken after
+// changing the default behavior for EventForwarder observers.
+UI_ANDROID_EXPORT BASE_DECLARE_FEATURE(
+    kSendTouchMovesToEventForwarderObservers);
 
 }  // namespace ui
 

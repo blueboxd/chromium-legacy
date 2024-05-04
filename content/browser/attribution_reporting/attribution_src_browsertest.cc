@@ -11,11 +11,11 @@
 #include "base/location.h"
 #include "base/run_loop.h"
 #include "base/strings/strcat.h"
-#include "base/strings/string_piece.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
+#include "components/attribution_reporting/constants.h"
 #include "components/attribution_reporting/destination_set.h"
 #include "components/attribution_reporting/event_trigger_data.h"
 #include "components/attribution_reporting/os_registration.h"
@@ -25,7 +25,6 @@
 #include "components/attribution_reporting/suitable_origin.h"
 #include "components/attribution_reporting/test_utils.h"
 #include "components/attribution_reporting/trigger_registration.h"
-#include "content/browser/attribution_reporting/attribution_constants.h"
 #include "content/browser/attribution_reporting/attribution_data_host_manager_impl.h"
 #include "content/browser/attribution_reporting/attribution_manager.h"
 #include "content/browser/attribution_reporting/attribution_manager_impl.h"
@@ -89,6 +88,8 @@ using ::testing::ElementsAre;
 using ::testing::Field;
 using ::testing::Property;
 using ::testing::StrictMock;
+
+using attribution_reporting::kAttributionReportingRegisterSourceHeader;
 
 }  // namespace
 
@@ -1174,6 +1175,9 @@ IN_PROC_BROWSER_TEST_P(AttributionSrcFencedFrameBrowserTest,
       fenced_frame_helper_->CreateFencedFrame(
           root_rfh, GURL(url::kAboutBlankURL), net::OK,
           blink::FencedFrame::DeprecatedFencedFrameMode::kOpaqueAds));
+  FrameTreeNode* fenced_frame_node =
+      static_cast<RenderFrameHostImpl*>(&(*fenced_frame_host))
+          ->frame_tree_node();
   bool rfh_should_change =
       fenced_frame_host->ShouldChangeRenderFrameHostOnSameSiteNavigation();
   TestFrameNavigationObserver observer(fenced_frame_host.get());
@@ -1187,7 +1191,7 @@ IN_PROC_BROWSER_TEST_P(AttributionSrcFencedFrameBrowserTest,
   if (rfh_should_change) {
     EXPECT_TRUE(fenced_frame_host.WaitUntilRenderFrameDeleted());
   } else {
-    ASSERT_NE(fenced_frame_host.get(), nullptr);
+    ASSERT_NE(fenced_frame_node->current_frame_host(), nullptr);
   }
 
   RenderFrameHostWrapper fenced_frame_host2(

@@ -4,7 +4,6 @@
 
 #include "content/browser/android/web_contents_observer_proxy.h"
 
-#include <optional>
 #include <string>
 
 #include "base/android/jni_android.h"
@@ -14,6 +13,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/android/navigation_handle_proxy.h"
+#include "content/browser/media/session/media_session_android.h"
+#include "content/browser/media/session/media_session_impl.h"
 #include "content/browser/renderer_host/navigation_request.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -89,7 +90,8 @@ void WebContentsObserverProxy::RenderFrameDeleted(
 void WebContentsObserverProxy::PrimaryMainFrameRenderProcessGone(
     base::TerminationStatus termination_status) {
   JNIEnv* env = AttachCurrentThread();
-  Java_WebContentsObserverProxy_renderProcessGone(env, java_observer_);
+  Java_WebContentsObserverProxy_primaryMainFrameRenderProcessGone(
+      env, java_observer_, termination_status);
 }
 
 void WebContentsObserverProxy::DidStartLoading() {
@@ -230,6 +232,11 @@ void WebContentsObserverProxy::DidChangeThemeColor() {
   Java_WebContentsObserverProxy_didChangeThemeColor(env, java_observer_);
 }
 
+void WebContentsObserverProxy::OnBackgroundColorChanged() {
+  JNIEnv* env = AttachCurrentThread();
+  Java_WebContentsObserverProxy_onBackgroundColorChanged(env, java_observer_);
+}
+
 void WebContentsObserverProxy::MediaStartedPlaying(
     const MediaPlayerInfo& video_type,
     const MediaPlayerId& id) {
@@ -328,6 +335,15 @@ void WebContentsObserverProxy::OnWebContentsFocused(RenderWidgetHost*) {
 void WebContentsObserverProxy::OnWebContentsLostFocus(RenderWidgetHost*) {
   JNIEnv* env = AttachCurrentThread();
   Java_WebContentsObserverProxy_onWebContentsLostFocus(env, java_observer_);
+}
+
+void WebContentsObserverProxy::MediaSessionCreated(MediaSession* session) {
+  JNIEnv* env = AttachCurrentThread();
+  Java_WebContentsObserverProxy_mediaSessionCreated(
+      env, java_observer_,
+      static_cast<MediaSessionImpl*>(session)
+          ->GetMediaSessionAndroid()
+          ->GetJavaObject());
 }
 
 }  // namespace content

@@ -519,7 +519,7 @@ void TableView::Layout(PassKey) {
     }
   }
   // We have to override Layout like this since we're contained in a ScrollView.
-  gfx::Size pref = GetPreferredSize();
+  gfx::Size pref = GetPreferredSize({});
   int width = pref.width();
   int height = pref.height();
   if (parent()) {
@@ -530,13 +530,14 @@ void TableView::Layout(PassKey) {
   if (header_) {
     header_->SetBoundsRect(
         gfx::Rect(header_->bounds().origin(),
-                  gfx::Size(width, header_->GetPreferredSize().height())));
+                  gfx::Size(width, header_->GetPreferredSize({}).height())));
   }
 
   views::FocusRing::Get(this)->DeprecatedLayoutImmediately();
 }
 
-gfx::Size TableView::CalculatePreferredSize() const {
+gfx::Size TableView::CalculatePreferredSize(
+    const SizeBounds& /*available_size*/) const {
   int width = 50;
   if (header_ && !visible_columns_.empty())
     width = visible_columns_.back().x + visible_columns_.back().width;
@@ -625,7 +626,7 @@ bool TableView::OnKeyPressed(const ui::KeyEvent& event) {
       break;
 
     case ui::VKEY_RIGHT:
-      // TODO(crbug.com/1221001): Update TableView to support keyboard
+      // TODO(crbug.com/40773239): Update TableView to support keyboard
       // navigation to table cells on Mac when "Full keyboard access" is
       // specified.
       if (PlatformStyle::kTableViewSupportsKeyboardNavigationByCell) {

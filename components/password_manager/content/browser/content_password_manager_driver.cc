@@ -70,15 +70,33 @@ bool HasValidURL(content::RenderFrameHost* render_frame_host) {
 }
 
 bool IsRenderFrameHostSupported(content::RenderFrameHost* rfh) {
-  // [spec] https://wicg.github.io/anonymous-iframe/#spec-autofill
-  // > Browsers that implement autofill or password manager functionalities
-  //   should make them unavailable in credentialless iframes.
-  if (rfh->IsCredentialless()) {
-    return false;
+  // Explanation of current PasswordManagerDriver limitations:
+  // * Currently, PasswordManagerDriver binding has RenderFrameHost lifetime,
+  //   not document lifetime. This can lead to premature binding in rare race
+  //   conditions (see https://crbug.com/329989911).
+  // * Due to this, we can't reliably determine if the document will be
+  //   credentialless at this stage. Returning 'false' speculatively would be
+  //   destructive.
+  // * Workaround: Temporarily return 'true'; the function will be re-evaluated
+  //   on commit via `DidNavigate`.
+  //
+  // TODO(https://crbug.com/40615943): After RenderDocument is enabled, consider
+  // simplifying by binding PasswordManagerDriver via `PopulateFrameBinders`
+  // instead of `RegisterAssociatedInterfaceBindersForRenderFrameHost`.
+  if (rfh->GetLifecycleState() ==
+      content::RenderFrameHost::LifecycleState::kPendingCommit) {
+    return true;
   }
 
   if (rfh->GetLifecycleState() ==
       content::RenderFrameHost::LifecycleState::kPrerendering) {
+    return false;
+  }
+
+  // [spec] https://wicg.github.io/anonymous-iframe/#spec-autofill
+  // > Browsers that implement autofill or password manager functionalities
+  //   should make them unavailable in credentialless iframes.
+  if (rfh->IsCredentialless()) {
     return false;
   }
 
@@ -194,7 +212,7 @@ void ContentPasswordManagerDriver::GeneratedPasswordAccepted(
     const std::u16string& password) {
   // In case we can't obtain a valid URL or a frame isn't allowed to perform an
   // operation with generated URL, don't forward anything to password manager.
-  // TODO(crbug.com/1233990): Test that PasswordManager doesn't receive url
+  // TODO(crbug.com/40191770): Test that PasswordManager doesn't receive url
   // and full_url from renderer.
   if (!HasValidURL(render_frame_host_))
     return;
@@ -390,7 +408,7 @@ void ContentPasswordManagerDriver::InformAboutUserInput(
 
   // In case we can't obtain a valid URL or a frame isn't allowed to perform an
   // operation with generated URL, don't forward anything to password manager.
-  // TODO(crbug.com/1233990): Test that PasswordManager doesn't receive url
+  // TODO(crbug.com/40191770): Test that PasswordManager doesn't receive url
   // and full_url from renderer.
   if (!HasValidURL(render_frame_host_))
     return;
@@ -497,14 +515,14 @@ void ContentPasswordManagerDriver::ShowPasswordSuggestions(
 #if BUILDFLAG(IS_ANDROID)
   if (base::FeatureList::IsEnabled(
           features::kPasswordSuggestionBottomSheetV2)) {
-    // TODO(crbug.com/1448579): Remove the parameter
+    // TODO(crbug.com/40269373): Remove the parameter
     // autofill::mojom::SubmissionReadinessState::kNoInformation when the
     // feature is launched.
     if (client_->ShowKeyboardReplacingSurface(
             this,
-            SubmissionReadinessParams(
+            PasswordFillingParams(
                 request.form_data, request.username_field_index,
-                request.password_field_index,
+                request.password_field_index, request.element_id,
                 autofill::mojom::SubmissionReadinessState::kNoInformation),
             request.show_webauthn_credentials)) {
       return;
@@ -528,8 +546,15 @@ void ContentPasswordManagerDriver::ShowKeyboardReplacingSurface(
     return;
   }
   autofill::FormData form;
+  // This is only called when `kPasswordSuggestionBottomSheetV2` feature flag is
+  // disabled. In this scenario only `submission_readiness` field of the
+  // `PasswordFillingParams` is used later, other fields are not needed. This
+  // call will be removed after launching the `kPasswordSuggestionBottomSheetV2`
+  // feature.
   client_->ShowKeyboardReplacingSurface(
-      this, SubmissionReadinessParams(form, 0, 0, submission_readiness),
+      this,
+      PasswordFillingParams(form, 0, 0, autofill::FieldRendererId(),
+                            submission_readiness),
       is_webauthn_form);
 }
 #endif

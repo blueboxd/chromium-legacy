@@ -124,14 +124,13 @@
 ; Reads of signed Mach-O blobs created by the CVMS server.
 ; https://crbug.com/850021
 (define (allow-cvms-blobs)
-  (if (>= os-version 1014)
-    (begin
-      (allow file-read* file-write-unlink
-        (prefix "/private/tmp/cvmsCodeSignObj"))
-      (allow file-read*
-        (extension "com.apple.cvms.kernel")
-        (prefix "/private/var/db/CVMS/cvmsCodeSignObj"))
-)))
+  (begin
+    (allow file-read* file-write-unlink
+      (prefix "/private/tmp/cvmsCodeSignObj"))
+    (allow file-read*
+      (extension "com.apple.cvms.kernel")
+      (prefix "/private/var/db/CVMS/cvmsCodeSignObj"))
+))
 
 ; Allow logging for all processes.
 (if (not (defined? 'vnode-type))
@@ -208,6 +207,15 @@
   (subpath "/System/Library/Preferences/Logging")
   (subpath "/System/Library/PrivateFrameworks")
   (subpath "/usr/lib")
+)
+
+; In some circumstances, Safari updates are installed below /Library/Apple and
+; SafariServices.framework in /System/Library/Frameworks is replaced with a
+; symlink into that directory tree. These paths must be readable to allow
+; the framework to be loaded.
+(allow file-read*
+  (subpath "/Library/Apple/System/Library/Frameworks")
+  (subpath "/Library/Apple/System/Library/PrivateFrameworks")
 )
 
 ; Reads from /etc.

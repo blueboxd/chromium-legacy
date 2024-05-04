@@ -19,8 +19,8 @@ import '../sharing/metrics_utils.js';
 import '../dialogs/move_single_password_dialog.js';
 
 import type {CrToastElement} from '//resources/cr_elements/cr_toast/cr_toast.js';
+import {PrefsMixin} from '/shared/settings/prefs/prefs_mixin.js';
 import {HelpBubbleMixin} from 'chrome://resources/cr_components/help_bubble/help_bubble_mixin.js';
-import {PrefsMixin} from 'chrome://resources/cr_components/settings_prefs/prefs_mixin.js';
 import type {CrButtonElement} from 'chrome://resources/cr_elements/cr_button/cr_button.js';
 import type {CrIconButtonElement} from 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.js';
 import type {CrInputElement} from 'chrome://resources/cr_elements/cr_input/cr_input.js';
@@ -28,6 +28,7 @@ import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
+import type {PasswordsMovedEvent} from '../password_manager_app.js';
 import {PasswordManagerImpl, PasswordViewPageInteractions} from '../password_manager_proxy.js';
 import {PasswordSharingActions, recordPasswordSharingInteraction} from '../sharing/metrics_utils.js';
 import {ShowPasswordMixin} from '../show_password_mixin.js';
@@ -42,12 +43,11 @@ export const PASSWORD_SHARE_BUTTON_BUTTON_ELEMENT_ID =
 
 export type PasswordRemovedEvent =
     CustomEvent<{removedFromStores: chrome.passwordsPrivate.PasswordStoreSet}>;
-export type PasswordMovedEvent = CustomEvent<{accountEmail: string}>;
 
 declare global {
   interface HTMLElementEventMap {
     'password-removed': PasswordRemovedEvent;
-    'password-moved': PasswordMovedEvent;
+    'passwords-moved': PasswordsMovedEvent;
   }
 }
 

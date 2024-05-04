@@ -51,7 +51,7 @@ message AutofillProfileSpecifics {
   // accept updates to verified profiles through Sync if the remote profile is
   // verified as well. For this reason, M115 clients and above always set the
   // origin to kSettingsOrigin.
-  // TODO(crbug.com/1441905): Remove in a few milestones.
+  // TODO(crbug.com/40266694): Remove in a few milestones.
   optional string deprecated_origin = 16;
   optional int64 use_count = 22;
 
@@ -106,8 +106,8 @@ message AutofillProfileSpecifics {
   // joining address_home_line1/2 with a newline ("\n").
   // Full deprecation can not be achieved before all sync profiles have been
   // updated with a M86+ client.
-  // TODO(crbug/1111740): Remove usages of address_home_line1/2 and mark field
-  // as deprecated.
+  // TODO(crbug.com/40142711): Remove usages of address_home_line1/2 and mark
+  // field as deprecated.
   optional string address_home_line1 = 7;
   optional string address_home_line2 = 8;
   optional string address_home_city = 9;
@@ -161,6 +161,10 @@ message AutofillProfileSpecifics {
   // address_home_dependent_locality. Note that some address forms require the
   // combination of both in a single field as opposed to each one separately.
   optional string address_home_street_location_and_locality = 89;
+  // Combination of types address_home_thoroughfare_number and
+  // address_home_apt. Note that some address forms require the combination of
+  // both in a single field as opposed to each one separately.
+  optional string address_home_thoroughfare_number_and_apt = 91;
 
   // Validation status records for address fields.
   optional VerificationStatus address_home_city_status = 43;
@@ -178,6 +182,8 @@ message AutofillProfileSpecifics {
   optional VerificationStatus address_home_overflow_and_landmark_status = 84;
   optional VerificationStatus address_home_street_location_and_locality_status =
       90;
+  optional VerificationStatus address_home_thoroughfare_number_and_apt_status =
+      92;
   optional VerificationStatus address_home_street_address_status = 47;
   optional VerificationStatus address_home_sorting_code_status = 48;
   optional VerificationStatus address_home_dependent_locality_status = 49;
@@ -246,7 +252,7 @@ message AutofillSpecifics {
   reserved "credit_card";
 }
 
-// TODO(crbug.com/1020740): Deprecated, remove this once dependent change is
+// TODO(crbug.com/40105930): Deprecated, remove this once dependent change is
 // done. Use WalletCreditCardCloudTokenData instead.
 message CloudTokenData {
   // Last 4-5 digits of the Cloud Primary Account Number (CPAN).
@@ -355,6 +361,7 @@ message WalletMaskedCreditCard {
     VISA = 8;
     UNIONPAY = 9;
     ELO = 10;
+    VERVE = 11;
   }
 
   enum VirtualCardEnrollmentState {
@@ -397,7 +404,7 @@ message WalletMaskedCreditCard {
   // Issuing Bank name which is internationalized (e.g. "Chase", "工商银行")
   optional string bank_name = 10;
 
-  // TODO(crbug.com/1020740): Deprecated, remove this once dependent change is
+  // TODO(crbug.com/40105930): Deprecated, remove this once dependent change is
   // done.
   // Use WalletCreditCardCloudTokenData instead. This field will be set if
   // a cloud token is available for the instrument.
@@ -436,7 +443,7 @@ message WalletMaskedCreditCard {
 }
 
 // Unused by the client since M121.
-// TODO(crbug.com/1457187): Some server-side code still relies on this message.
+// TODO(crbug.com/40273491): Some server-side code still relies on this message.
 // To keep the protos in sync, it is kept until that code is cleaned up.
 // Different than an AutofillProfile because this represents some known address
 // on the server that is pulled down rather than synced between Chromes.
@@ -604,7 +611,7 @@ message AutofillWalletSpecifics {
 
   // Unused by the client since M121.
   // This field exists if and only if the `type` equals POSTAL_ADDRESS.
-  // TODO(crbug.com/1457187): Some server-side code still relies on this field.
+  // TODO(crbug.com/40273491): Some server-side code still relies on this field.
   // To keep the protos in sync, it is kept until that code is cleaned up.
   optional WalletPostalAddress address = 3;
 
@@ -630,7 +637,7 @@ message WalletMetadataSpecifics {
     UNKNOWN = 0;
     CARD = 1;
     // Unused by the client since M121.
-    // TODO(crbug.com/1457187): Some server-side code still relies on this.
+    // TODO(crbug.com/40273491): Some server-side code still relies on this.
     // To keep the protos in sync, it is kept until that code is cleaned up.
     ADDRESS = 2;
     IBAN = 3;
@@ -657,7 +664,7 @@ message WalletMetadataSpecifics {
   optional string card_billing_address_id = 5;
 
   // Unused by the client since M121.
-  // TODO(crbug.com/1457187): Some server-side code still relies on this field.
+  // TODO(crbug.com/40273491): Some server-side code still relies on this field.
   // To keep the protos in sync, it is kept until that code is cleaned up.
   optional bool address_has_converted = 6;
 }

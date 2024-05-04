@@ -38,7 +38,7 @@ class SyncService;
 @property(nonatomic, assign) signin::IdentityManager* identityManager;
 
 // SingleSignOnService used by DiscoverFeedService.
-@property(nonatomic, strong) id<SingleSignOnService> ssoService;
+@property(nonatomic, strong) id<SingleSignOnService> singleSignOnService;
 
 // Feed metrics recorder used by DiscoverFeedService.
 @property(nonatomic, strong) FeedMetricsRecorder* metricsRecorder;

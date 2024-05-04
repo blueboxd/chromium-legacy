@@ -15,6 +15,8 @@ import("//ui/base/ui_features.gni")
 import("//ui/webui/webui_features.gni")
 import("chrome_repack_locales.gni")
 
+assert(!is_fuchsia, "Fuchsia shouldn't use anything in //chrome")
+
 # Generates a rule to repack a set of resources, substituting a given string
 # in for the percentage (e.g. "100", "200"). It generates the repacked files in
 # the "gen" directory, and then introduces a copy rule to copy it to the root
@@ -104,6 +106,7 @@ template("chrome_extra_paks") {
       "$root_gen_dir/chrome/browser_resources.pak",
       "$root_gen_dir/chrome/chrome_unscaled_resources.pak",
       "$root_gen_dir/chrome/common_resources.pak",
+      "$root_gen_dir/chrome/data_sharing_internals_resources.pak",
       "$root_gen_dir/chrome/segmentation_internals_resources.pak",
       "$root_gen_dir/components/autofill/core/browser/autofill_address_rewriter_resources.pak",
       "$root_gen_dir/components/components_resources.pak",
@@ -151,7 +154,7 @@ template("chrome_extra_paks") {
         "$root_gen_dir/chrome/access_code_cast_resources.pak",
         "$root_gen_dir/chrome/app_service_internals_resources.pak",
         "$root_gen_dir/chrome/bookmarks_resources.pak",
-        "$root_gen_dir/chrome/commerce_resources.pak",
+        "$root_gen_dir/chrome/commerce_product_specifications_resources.pak",
         "$root_gen_dir/chrome/component_extension_resources.pak",
         "$root_gen_dir/chrome/dev_ui_resources.pak",
         "$root_gen_dir/chrome/downloads_resources.pak",
@@ -161,6 +164,8 @@ template("chrome_extra_paks") {
         "$root_gen_dir/chrome/history_resources.pak",
         "$root_gen_dir/chrome/identity_internals_resources.pak",
         "$root_gen_dir/chrome/inline_login_resources.pak",
+        "$root_gen_dir/chrome/key_value_pair_viewer_shared_resources.pak",
+        "$root_gen_dir/chrome/lens_search_bubble_resources.pak",
         "$root_gen_dir/chrome/lens_untrusted_resources.pak",
         "$root_gen_dir/chrome/management_resources.pak",
         "$root_gen_dir/chrome/new_tab_page_instant_resources.pak",
@@ -196,8 +201,9 @@ template("chrome_extra_paks") {
       deps += [
         "//chrome/browser/resources:component_extension_resources",
         "//chrome/browser/resources:dev_ui_paks",
-        "//chrome/browser/resources/commerce:resources",
+        "//chrome/browser/resources/commerce/product_specifications:resources",
         "//chrome/browser/resources/lens/overlay:resources",
+        "//chrome/browser/resources/lens/overlay/search_bubble:resources",
         "//chrome/browser/resources/search_engine_choice:resources",
         "//content/browser/devtools:devtools_resources",
         "//content/browser/tracing:resources",
@@ -226,6 +232,8 @@ template("chrome_extra_paks") {
     if (is_chromeos_ash) {
       sources += [
         "$root_gen_dir/ash/public/cpp/resources/ash_public_unscaled_resources.pak",
+        "$root_gen_dir/ash/system/mahi/resources/mahi_resources.pak",
+        "$root_gen_dir/ash/system/video_conference/resources/vc_resources.pak",
         "$root_gen_dir/ash/webui/ash_camera_app_resources.pak",
         "$root_gen_dir/ash/webui/ash_color_internals_resources.pak",
         "$root_gen_dir/ash/webui/ash_demo_mode_app_resources.pak",
@@ -234,6 +242,7 @@ template("chrome_extra_paks") {
         "$root_gen_dir/ash/webui/ash_eche_bundle_resources.pak",
         "$root_gen_dir/ash/webui/ash_files_internals_resources.pak",
         "$root_gen_dir/ash/webui/ash_firmware_update_app_resources.pak",
+        "$root_gen_dir/ash/webui/ash_focus_mode_resources.pak",
         "$root_gen_dir/ash/webui/ash_help_app_resources.pak",
         "$root_gen_dir/ash/webui/ash_media_app_resources.pak",
         "$root_gen_dir/ash/webui/ash_multidevice_debug_resources.pak",
@@ -307,6 +316,8 @@ template("chrome_extra_paks") {
       deps += [
         "//ash/components/arc/input_overlay/resources",
         "//ash/public/cpp/resources:ash_public_unscaled_resources",
+        "//ash/system/mahi/resources:mahi_resources",
+        "//ash/system/video_conference/resources:vc_resources",
         "//ash/webui/color_internals/resources:resources",
         "//ash/webui/common/resources:resources",
         "//ash/webui/common/resources/office_fallback:resources",
@@ -315,6 +326,7 @@ template("chrome_extra_paks") {
         "//ash/webui/file_manager/resources:file_manager_swa_resources",
         "//ash/webui/file_manager/untrusted_resources:file_manager_untrusted_resources",
         "//ash/webui/firmware_update_ui/resources:resources",
+        "//ash/webui/focus_mode/resources:resources",
         "//ash/webui/os_feedback_ui/resources:resources",
         "//ash/webui/os_feedback_ui/untrusted_resources:resources",
         "//ash/webui/personalization_app/resources:resources",
@@ -359,6 +371,12 @@ template("chrome_extra_paks") {
         ]
       }
 
+      if (is_chrome_branded) {
+        sources +=
+            [ "$root_gen_dir/ash/webui/conch/resources/conch_resources.pak" ]
+        deps += [ "//ash/webui/conch/resources" ]
+      }
+
       if (include_ash_ambient_animation_resources) {
         sources += [ "$root_gen_dir/ash/ambient/resources/ash_ambient_lottie_resources.pak" ]
         deps += [ "//ash/ambient/resources:lottie_resources" ]
@@ -391,7 +409,7 @@ template("chrome_extra_paks") {
       ]
     }
 
-    if (is_win || is_mac || is_linux || is_fuchsia) {
+    if (is_win || is_mac || is_linux) {
       sources += [ "$root_gen_dir/chrome/app_home_resources.pak" ]
       deps += [ "//chrome/browser/resources/app_home:resources" ]
     }
@@ -411,12 +429,12 @@ template("chrome_extra_paks") {
       deps += [ "//chrome/browser/resources/dlp_internals:resources" ]
     }
 
-    if (is_win || is_mac || is_linux || is_chromeos_lacros || is_fuchsia) {
+    if (is_win || is_mac || is_linux || is_chromeos_lacros) {
       sources += [ "$root_gen_dir/chrome/browser_switch_resources.pak" ]
       deps += [ "//chrome/browser/resources/browser_switch:resources" ]
     }
 
-    if (is_win || is_mac || is_linux || is_chromeos || is_fuchsia) {
+    if (is_win || is_mac || is_linux || is_chromeos) {
       sources += [ "$root_gen_dir/chrome/discards_resources.pak" ]
       deps += [ "//chrome/browser/resources/discards:resources" ]
     }

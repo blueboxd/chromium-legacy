@@ -202,10 +202,6 @@ ExtensionFunction::ResponseAction TabGroupsUpdateFunction::Run() {
         Error(tabs_constants::kTabStripDoesNotSupportTabGroupsError));
   TabGroup* tab_group = tab_strip_model->group_model()->GetTabGroup(id);
 
-  if (tab_groups_util::IsGroupSaved(id, tab_strip_model)) {
-    return RespondNow(Error(tabs_constants::kSavedTabGroupNotEditableError));
-  }
-
   tab_groups::TabGroupVisualData new_visual_data(title, color, collapsed);
   tab_group->SetVisualData(std::move(new_visual_data));
 
@@ -281,7 +277,7 @@ bool TabGroupsMoveFunction::MoveGroup(int group_id,
       return false;
     }
 
-    // TODO(crbug.com/990158): Rather than calling is_type_normal(), should
+    // TODO(crbug.com/40638654): Rather than calling is_type_normal(), should
     // this call SupportsWindowFeature(Browser::FEATURE_TABSTRIP)?
     if (!target_browser->is_type_normal()) {
       *error = tabs_constants::kCanOnlyMoveTabsWithinNormalWindowsError;

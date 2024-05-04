@@ -13,6 +13,7 @@
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/native_app_window.h"
 #include "extensions/browser/app_window/size_constraints.h"
+#include "third_party/blink/public/mojom/page/draggable_region.mojom-forward.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/controls/webview/unhandled_keyboard_event_handler.h"
@@ -120,9 +121,8 @@ class NativeAppWindowViews : public extensions::NativeAppWindow,
   bool IsFullscreenOrPending() const override;
   void UpdateWindowIcon() override;
   void UpdateWindowTitle() override;
-  void UpdateDraggableRegions(
-      const std::vector<extensions::mojom::DraggableRegionPtr>& regions)
-      override;
+  void DraggableRegionsChanged(
+      const std::vector<blink::mojom::DraggableRegionPtr>& regions) override;
   SkRegion* GetDraggableRegion() override;
   void UpdateShape(std::unique_ptr<ShapeRects> rects) override;
   bool HandleKeyboardEvent(

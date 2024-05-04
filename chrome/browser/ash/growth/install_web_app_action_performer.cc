@@ -19,7 +19,6 @@
 
 namespace {
 
-inline constexpr char kInstallWebAppParams[] = "installWebAppParams";
 inline constexpr char kLaunchInStandaloneWindow[] = "launchInStandaloneWindow";
 inline constexpr char kAppTitle[] = "appTitle";
 inline constexpr char kUrl[] = "url";
@@ -63,13 +62,7 @@ ParseInstallWebAppActionPerformerParams(const base::Value::Dict* params) {
     return nullptr;
   }
 
-  auto* install_params = params->FindDict(kInstallWebAppParams);
-  if (!install_params) {
-    LOG(ERROR) << kInstallWebAppParams << " parameter not found.";
-    return nullptr;
-  }
-
-  return GetAppInstallInfo(*install_params);
+  return GetAppInstallInfo(*params);
 }
 
 void InstallWebAppResult(growth::ActionPerformer::Callback callback,
@@ -125,6 +118,7 @@ InstallWebAppActionPerformer::InstallWebAppActionPerformer() = default;
 InstallWebAppActionPerformer::~InstallWebAppActionPerformer() = default;
 
 void InstallWebAppActionPerformer::Run(
+    int campaign_id,
     const base::Value::Dict* params,
     growth::ActionPerformer::Callback callback) {
   if (!GetWebAppProvider()) {

@@ -39,6 +39,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+import android.widget.FrameLayout.LayoutParams;
 
 import androidx.test.ext.junit.rules.ActivityScenarioRule;
 import androidx.test.filters.SmallTest;
@@ -58,6 +59,7 @@ import org.robolectric.shadows.ShadowLooper;
 import org.chromium.base.Callback;
 import org.chromium.base.supplier.LazyOneshotSupplier;
 import org.chromium.base.supplier.ObservableSupplierImpl;
+import org.chromium.base.supplier.Supplier;
 import org.chromium.base.supplier.SyncOneshotSupplierImpl;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.JniMocker;
@@ -67,7 +69,6 @@ import org.chromium.chrome.browser.compositor.layouts.Layout.ViewportMode;
 import org.chromium.chrome.browser.compositor.layouts.LayoutRenderHost;
 import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
 import org.chromium.chrome.browser.compositor.layouts.components.LayoutTab;
-import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.compositor.scene_layer.SolidColorSceneLayer;
 import org.chromium.chrome.browser.compositor.scene_layer.SolidColorSceneLayerJni;
 import org.chromium.chrome.browser.compositor.scene_layer.StaticTabSceneLayer;
@@ -78,7 +79,9 @@ import org.chromium.chrome.browser.layouts.scene_layer.SceneLayer;
 import org.chromium.chrome.browser.layouts.scene_layer.SceneLayerJni;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabHidingType;
+import org.chromium.chrome.browser.tab_ui.TabContentManager;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.ui.desktop_windowing.DesktopWindowStateProvider;
 import org.chromium.ui.base.TestActivity;
 import org.chromium.ui.resources.ResourceManager;
 
@@ -88,7 +91,8 @@ import java.util.function.DoubleConsumer;
 /**
  * Unit tests for {@link HubLayout}.
  *
- * <p>TODO(crbug/1487209): Once integrated with LayoutManager we should also add integration tests.
+ * <p>TODO(crbug.com/40283200): Once integrated with LayoutManager we should also add integration
+ * tests.
  */
 @RunWith(BaseRobolectricTestRunner.class)
 public class HubLayoutUnitTest {
@@ -132,6 +136,7 @@ public class HubLayoutUnitTest {
     @Mock private TabModelSelector mTabModelSelector;
     @Mock private Tab mTab;
     @Mock private DoubleConsumer mOnAlphaChange;
+    @Mock private DesktopWindowStateProvider mDesktopWindowStateProvider;
 
     private UserActionTester mActionTester;
 
@@ -142,6 +147,7 @@ public class HubLayoutUnitTest {
     private HubContainerView mHubContainerView;
 
     private SyncOneshotSupplierImpl<HubLayoutAnimator> mHubLayoutAnimatorSupplier;
+    private Supplier<TabModelSelector> mTabModelSelectorSupplier;
     private ObservableSupplierImpl<Pane> mPaneSupplier = new ObservableSupplierImpl<>();
 
     @Before
@@ -260,6 +266,8 @@ public class HubLayoutUnitTest {
         mFrameLayout = new FrameLayout(mActivity);
         mHubContainerView = new HubContainerView(mActivity);
         View hubLayout = LayoutInflater.from(activity).inflate(R.layout.hub_layout, null);
+        mHubContainerView.setLayoutParams(
+                new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
         mHubContainerView.addView(hubLayout);
         mActivity.setContentView(mFrameLayout);
 
@@ -275,6 +283,7 @@ public class HubLayoutUnitTest {
                 new HubLayoutDependencyHolder(
                         hubManagerSupplier, rootViewSupplier, mScrimController, mOnAlphaChange);
 
+        mTabModelSelectorSupplier = () -> mTabModelSelector;
         mHubLayout =
                 spy(
                         new HubLayout(
@@ -282,7 +291,9 @@ public class HubLayoutUnitTest {
                                 mUpdateHost,
                                 mRenderHost,
                                 mLayoutStateProvider,
-                                dependencyHolder));
+                                dependencyHolder,
+                                mTabModelSelectorSupplier,
+                                mDesktopWindowStateProvider));
         mHubLayout.setTabModelSelector(mTabModelSelector);
         mHubLayout.setTabContentManager(mTabContentManager);
         mHubLayout.onFinishNativeInitialization();
@@ -304,7 +315,7 @@ public class HubLayoutUnitTest {
         assertNull(mHubLayout.getEventFilter());
         assertEquals(LayoutType.TAB_SWITCHER, mHubLayout.getLayoutType());
 
-        // TODO(crbug/1487209): These may be dynamic after further development.
+        // TODO(crbug.com/40283200): These may be dynamic after further development.
         assertFalse(mHubLayout.onBackPressed());
         assertTrue(mHubLayout.canHostBeFocusable());
     }
@@ -653,6 +664,7 @@ public class HubLayoutUnitTest {
             @HubLayoutAnimationType int expectedAnimationType) {
         assertFalse(mHubLayout.isRunningAnimations());
         assertFalse(mHubLayout.onUpdateAnimation(FAKE_TIME, false));
+        assertFalse(mHubLayout.forceHideBrowserControlsAndroidView());
 
         startShowing(fromLayout, animate);
 
@@ -672,6 +684,7 @@ public class HubLayoutUnitTest {
         assertFalse(mHubLayout.isRunningAnimations());
         assertFalse(mHubLayout.onUpdateAnimation(FAKE_TIME, false));
         verify(mHubLayout).doneShowing();
+        assertTrue(mHubLayout.forceHideBrowserControlsAndroidView());
         assertEquals(1, mActionTester.getActionCount("MobileToolbarShowStackView"));
         verify(mTab).hide(eq(TabHidingType.TAB_SWITCHER_SHOWN));
         if (fromLayout == LayoutType.START_SURFACE) {
@@ -693,6 +706,7 @@ public class HubLayoutUnitTest {
             assertFalse(mHubLayout.isRunningAnimations());
             assertFalse(mHubLayout.onUpdateAnimation(FAKE_TIME, false));
             startHiding(nextLayout, nextTabId);
+            assertFalse(mHubLayout.forceHideBrowserControlsAndroidView());
         }
 
         assertEquals(expectedAnimationType, mHubLayout.getCurrentAnimationType());
@@ -708,6 +722,7 @@ public class HubLayoutUnitTest {
         verify(mHubController, times(1)).onHubLayoutDoneHiding();
         assertEquals(0, mFrameLayout.getChildCount());
         verify(mHubLayout).doneHiding();
+        assertFalse(mHubLayout.forceHideBrowserControlsAndroidView());
         assertEquals(1, mActionTester.getActionCount("MobileExitStackView"));
 
         if (nextLayout == LayoutType.START_SURFACE) {

@@ -37,9 +37,8 @@
 #include "content/public/common/content_features.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "url/origin.h"
-
 #include "third_party/blink/public/common/features.h"
+#include "url/origin.h"
 
 namespace privacy_sandbox {
 
@@ -91,11 +90,13 @@ class PrivacySandboxSettingsTest : public testing::Test {
         false /* restore_session */, false /* should_record_metrics */);
     tracking_protection_settings_ =
         std::make_unique<privacy_sandbox::TrackingProtectionSettings>(
-            &prefs_,
+            &prefs_, host_content_settings_map_.get(),
             /*onboarding_service=*/nullptr, /*is_incognito=*/false);
     cookie_settings_ = new content_settings::CookieSettings(
         host_content_settings_map_.get(), &prefs_,
-        tracking_protection_settings_.get(), false, "chrome-extension");
+        tracking_protection_settings_.get(), false,
+        content_settings::CookieSettings::NoFedCmSharingPermissionsCallback(),
+        /*tpcd_metadata_manager=*/nullptr, "chrome-extension");
   }
   ~PrivacySandboxSettingsTest() override {
     cookie_settings()->ShutdownOnUIThread();
@@ -668,40 +669,30 @@ struct PrivateAggregationDebugModeTestCase {
 
 class PrivacySandboxSettingsPrivateAggregationDebugModeTest
     : public PrivacySandboxSettingsTest,
-      public testing::WithParamInterface<
-          PrivateAggregationDebugModeTestCase::TupleT> {
- public:
-  PrivacySandboxSettingsPrivateAggregationDebugModeTest() = default;
-
-  // TODO(https://crbug.com/1517710): Once gtest provides
-  // ::testing::ConvertGenerator(), we can skip the tuple and parameterize
-  // directly on PrivateAggregationDebugModeTestCase.
-  PrivateAggregationDebugModeTestCase GetTestCase() const {
-    return PrivateAggregationDebugModeTestCase(GetParam());
-  }
+      public testing::WithParamInterface<PrivateAggregationDebugModeTestCase> {
 };
 
 INSTANTIATE_TEST_SUITE_P(
     All,
     PrivacySandboxSettingsPrivateAggregationDebugModeTest,
-    testing::Combine(testing::Bool(),
-                     testing::Bool(),
-                     testing::Bool(),
-                     testing::Bool()),
+    testing::ConvertGenerator<PrivateAggregationDebugModeTestCase::TupleT>(
+        testing::Combine(testing::Bool(),
+                         testing::Bool(),
+                         testing::Bool(),
+                         testing::Bool())),
     // Creates a human-readable name for each test. Per gtest docs, test names
     // must contain only alphanumeric characters.
-    [](const testing::TestParamInfo<
-        PrivateAggregationDebugModeTestCase::TupleT>& info) -> std::string {
-      const PrivateAggregationDebugModeTestCase test_case(info.param);
+    [](const testing::TestParamInfo<PrivateAggregationDebugModeTestCase>& info)
+        -> std::string {
       return base::StringPrintf(
           "BypassFeature%s"
           "And3pcdExperiment%s"
           "AndExplicitUserSetting%s"
           "AndCookieControlsModePref%s",
-          test_case.bypass_feature_enabled ? "On" : "Off",
-          test_case.cookies_blocked_by_experiment ? "On" : "Off",
-          test_case.cookies_blocked_by_user_setting ? "Blocks3pc" : "IsNotSet",
-          test_case.cookie_controls_mode_ui_pref ? "On" : "Off");
+          info.param.bypass_feature_enabled ? "On" : "Off",
+          info.param.cookies_blocked_by_experiment ? "On" : "Off",
+          info.param.cookies_blocked_by_user_setting ? "Blocks3pc" : "IsNotSet",
+          info.param.cookie_controls_mode_ui_pref ? "On" : "Off");
     });
 
 // Test that Private Aggregation Debug Mode can be enabled in some circumstances
@@ -716,7 +707,7 @@ TEST_P(PrivacySandboxSettingsPrivateAggregationDebugModeTest,
   //
   // Note that `test_case.cookie_controls_mode_pref` does not affect the value
   // of `expect_debug_mode`.
-  const PrivateAggregationDebugModeTestCase test_case = GetTestCase();
+  const PrivateAggregationDebugModeTestCase& test_case = GetParam();
   const bool expect_debug_mode = test_case.bypass_feature_enabled &&
                                  test_case.cookies_blocked_by_experiment &&
                                  !test_case.cookies_blocked_by_user_setting;
@@ -835,10 +826,10 @@ class PrivacySandboxSettingsM1Test : public PrivacySandboxSettingsTest {
 
     content_settings::TestUtils::OverrideProvider(
         host_content_settings_map(), std::move(user_provider),
-        HostContentSettingsMap::PREF_PROVIDER);
+        content_settings::ProviderType::kPrefProvider);
     content_settings::TestUtils::OverrideProvider(
         host_content_settings_map(), std::move(managed_provider),
-        HostContentSettingsMap::POLICY_PROVIDER);
+        content_settings::ProviderType::kPolicyProvider);
 
     privacy_sandbox_test_util::RunTestCase(
         task_environment(), prefs(), host_content_settings_map(),
@@ -1457,16 +1448,14 @@ TEST_F(PrivacySandboxSettingsM1Test, TopicsConsentStatus) {
 class PrivacySandboxSettingsM1RestrictedNotice
     : public PrivacySandboxSettingsM1Test {
   void InitializeFeaturesBeforeStart() override {
-    feature_list_.InitAndEnableFeatureWithParameters(
-        privacy_sandbox::kPrivacySandboxSettings4,
-        {{"notice-required", "true"},
-         {privacy_sandbox::kPrivacySandboxSettings4RestrictedNotice.name,
-          "true"}});
+    // Do not set default handlers so each call must be mocked.
   }
 };
 
 TEST_F(PrivacySandboxSettingsM1RestrictedNotice,
        AllApisAreOffExceptMeasurementForRestrictedAccounts) {
+  ON_CALL(*mock_delegate(), IsRestrictedNoticeEnabled())
+      .WillByDefault(testing::Return(true));
   RunTestCase(
       TestState{{MultipleStateKeys{kM1TopicsEnabledUserPrefValue,
                                    kM1FledgeEnabledUserPrefValue,
@@ -1522,7 +1511,7 @@ class PrivacySandboxAttestationsTest : public base::test::WithFeatureOverride,
         ->SetAllPrivacySandboxAttestedForTesting(false);
   }
 
-  bool IsAttestationsDefaultAllowed() { return IsParamFeatureEnabled(); }
+  bool IsAttestationsDefaultAllowed() const { return IsParamFeatureEnabled(); }
 };
 
 // When the attestations map has not yet been downloaded, or the browser hasn't
@@ -1538,8 +1527,8 @@ TEST_P(PrivacySandboxAttestationsTest, AttestationsFileNotYetReady) {
                              kM1FledgeEnabledUserPrefValue,
                              kM1AdMeasurementEnabledUserPrefValue},
            true},
-          {kAttestationsMap,
-           std::optional<privacy_sandbox::PrivacySandboxAttestationsMap>()}},
+          {kAttestationsMap, std::nullopt},
+      },
       TestInput{
           {kTopicsURL, enrollee_url},
           {kTopFrameOrigin, url::Origin::Create(top_frame_url)},

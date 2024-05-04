@@ -27,7 +27,6 @@
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/image_decoder/image_decoder.h"
-#include "chrome/browser/nearby_sharing/common/nearby_share_enums.h"
 #include "chrome/browser/nearby_sharing/common/nearby_share_features.h"
 #include "chrome/browser/nearby_sharing/common/nearby_share_prefs.h"
 #include "chrome/browser/nearby_sharing/common/nearby_share_resource_getter.h"
@@ -361,7 +360,7 @@ std::optional<std::u16string> GetReceivedNotificationTextMessage(
 }
 
 ui::ImageModel GetImageFromShareTarget(const ShareTarget& share_target) {
-  // TODO(crbug.com/1102348): Create or get profile picture of |share_target|.
+  // TODO(crbug.com/40138752): Create or get profile picture of |share_target|.
   return ui::ImageModel();
 }
 
@@ -759,11 +758,12 @@ bool ShouldShowNearbyDeviceTryingToShareNotification(
 }
 
 bool ShouldShowNearbyVisibilityReminderNotification(PrefService* pref_service) {
-  Visibility visibility = static_cast<Visibility>(
-      pref_service->GetInteger(prefs::kNearbySharingBackgroundVisibilityName));
+  nearby_share::mojom::Visibility visibility =
+      static_cast<nearby_share::mojom::Visibility>(pref_service->GetInteger(
+          prefs::kNearbySharingBackgroundVisibilityName));
 
-  return visibility == Visibility::kAllContacts ||
-         visibility == Visibility::kSelectedContacts;
+  return visibility == nearby_share::mojom::Visibility::kAllContacts ||
+         visibility == nearby_share::mojom::Visibility::kSelectedContacts;
 }
 
 void UpdateNearbyDeviceTryingToShareDismissedTime(PrefService* pref_service) {

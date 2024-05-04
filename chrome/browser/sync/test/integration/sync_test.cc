@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/containers/to_vector.h"
 #include "base/files/file_util.h"
@@ -193,15 +194,23 @@ SyncTest::SyncTest(TestType test_type)
     }
   }
 
+  std::vector<base::test::FeatureRefAndParams> enabled_features;
   if (num_clients_ > 1) {
     // Workaround to turn off single client optimization for sync standalone
     // invalidations in tests.
-    // TODO(crbug.com/1438806): remove once resolved.
-    feature_list_.InitWithFeaturesAndParameters(
-        /*enabled_features=*/{{switches::
-                                   kSyncFilterOutInactiveDevicesForSingleClient,
-                               {{"SyncActiveDeviceMargin", "-2d"}}}},
-        /*disabled_features=*/{});
+    // TODO(crbug.com/40908214): Remove once resolved.
+    enabled_features.push_back(
+        {switches::kSyncFilterOutInactiveDevicesForSingleClient,
+         {{switches::kSyncActiveDeviceMargin.name, "-2d"}}});
+  }
+  std::vector<base::test::FeatureRef> disabled_features;
+#if BUILDFLAG(IS_ANDROID)
+  // TODO(crbug.com/329426609): Re-enable the feature after fixing the flakes.
+  disabled_features.push_back(switches::kSeedAccountsRevamp);
+#endif
+  if (!enabled_features.empty() || !disabled_features.empty()) {
+    feature_list_.InitWithFeaturesAndParameters(enabled_features,
+                                                disabled_features);
   }
 
 #if !BUILDFLAG(IS_ANDROID)
@@ -214,7 +223,9 @@ SyncTest::~SyncTest() = default;
 
 void SyncTest::SetUp() {
 #if BUILDFLAG(IS_ANDROID)
-  sync_test_utils_android::SetUpAuthForTesting();
+  if (server_type_ == IN_PROCESS_FAKE_SERVER) {
+    sync_test_utils_android::SetUpAuthForTesting();
+  }
 #endif
 
   base::CommandLine* cl = base::CommandLine::ForCurrentProcess();
@@ -262,7 +273,9 @@ void SyncTest::PostRunTestOnMainThread() {
   PlatformBrowserTest::PostRunTestOnMainThread();
 
 #if BUILDFLAG(IS_ANDROID)
-  sync_test_utils_android::TearDownAuthForTesting();
+  if (server_type_ == IN_PROCESS_FAKE_SERVER) {
+    sync_test_utils_android::TearDownAuthForTesting();
+  }
 #endif
 }
 
@@ -280,7 +293,7 @@ void SyncTest::SetUpCommandLine(base::CommandLine* cl) {
     cl->AppendSwitch(syncer::kSyncShortNudgeDelayForTest);
   }
 
-  // TODO(crbug.com/1060366): This is a temporary switch to allow having two
+  // TODO(crbug.com/40122009): This is a temporary switch to allow having two
   // profiles syncing the same account. Having a profile outside of the user
   // directory isn't supported in Chrome.
   if (!cl->HasSwitch(switches::kAllowProfilesOutsideUserDir)) {
@@ -289,7 +302,7 @@ void SyncTest::SetUpCommandLine(base::CommandLine* cl) {
 
 #if !BUILDFLAG(IS_ANDROID)
   if (cl->HasSwitch(syncer::kSyncServiceURL)) {
-    // TODO(crbug.com/1243653): setup real SecurityDomainService if
+    // TODO(crbug.com/40787402): setup real SecurityDomainService if
     // server_type_ == EXTERNAL_LIVE_SERVER.
     // Effectively disables interaction with SecurityDomainService for E2E
     // tests.
@@ -353,24 +366,26 @@ bool SyncTest::CreateProfile(int index) {
 
   BeforeSetupClient(index, profile_path);
 
+#if BUILDFLAG(IS_ANDROID)
+  // Use default profile no matter running against an EXTERNAL_LIVE_SERVER or
+  // IN_PROCESS_FAKE_SERVER
+  DCHECK_EQ(index, 0);
+  Profile* profile = ProfileManager::GetLastUsedProfile();
+  InitializeProfile(index, profile);
+#else   // BUILDFLAG(IS_ANDROID)
   if (server_type_ == EXTERNAL_LIVE_SERVER) {
     // If running against an EXTERNAL_LIVE_SERVER, we signin profiles using real
     // GAIA server. This requires creating profiles with no test hooks.
     InitializeProfile(index, MakeProfileForUISignin(profile_path));
   } else {
-// Use default profile for Android.
-#if BUILDFLAG(IS_ANDROID)
-    DCHECK(index == 0);
-    Profile* profile = ProfileManager::GetLastUsedProfile();
-#else
     // Without need of real GAIA authentication, we create new test profiles.
     Profile* profile =
         g_browser_process->profile_manager()->GetProfile(profile_path);
-#endif
 
     SetupMockGaiaResponsesForProfile(profile);
     InitializeProfile(index, profile);
   }
+#endif  // BUILDFLAG(IS_ANDROID)
 
   // Once profile initialization has kicked off, wait for it to finish.
   WaitForDataModels(GetProfile(index));
@@ -595,7 +610,9 @@ bool SyncTest::SetupClients() {
 }
 
 void SyncTest::InitializeProfile(int index, Profile* profile) {
-  DCHECK(profile);
+  CHECK(profile);
+  CHECK(!profiles_[index]) << " for index " << index;
+
   profiles_[index] = profile;
   profile->AddObserver(this);
 
@@ -667,7 +684,7 @@ void SyncTest::SetupSyncInternal(SetupSyncMode setup_mode) {
       // AwaitQuiescence() because Android commits Session for "about:blank"
       // page, hence AwaitQuiescence() would wait for downloading updates
       // forever.
-      // TODO(crbug.com/1188034): remove this workaround once SetupSync doesn't
+      // TODO(crbug.com/40173160): remove this workaround once SetupSync doesn't
       // rely on self-notifications.
       DCHECK(GetSyncService(client_index)->IsEngineInitialized());
       GetSyncService(client_index)->SetInvalidationsForSessionsEnabled(true);
@@ -697,18 +714,6 @@ void SyncTest::SetupSyncInternal(SetupSyncMode setup_mode) {
     LOG(INFO) << "SetupSync for client " << client_index << " finished, "
               << "cache guid: " << GetCacheGuid(client_index);
   }
-}
-
-void SyncTest::ClearProfiles() {
-  // This method is called for only a live server, so it shouldn't use
-  // FakeGCMDriver.
-  DCHECK(profile_to_fake_gcm_driver_.empty());
-  profiles_.clear();
-  scoped_temp_dirs_.clear();
-#if !BUILDFLAG(IS_ANDROID)
-  browsers_.clear();
-#endif
-  clients_.clear();
 }
 
 bool SyncTest::SetupSync(SetupSyncMode setup_mode) {
@@ -782,10 +787,25 @@ void SyncTest::TearDownOnMainThread() {
     fake_server_.reset();
   }
 
-  for (Profile* profile : profiles_) {
+  for (size_t index = 0; index < profiles_.size(); ++index) {
     // Profile could be removed earlier.
-    if (profile) {
-      profile->RemoveObserver(this);
+    if (profiles_[index]) {
+      profiles_[index]->RemoveObserver(this);
+
+#if BUILDFLAG(IS_ANDROID)
+      if (server_type_ == EXTERNAL_LIVE_SERVER) {
+        // A profile could have backend tasks from the associate sync engine.
+        // In browser tests, on non-Android platforms, these tasks are cancelled
+        // during the browser process shutdown.
+        // On Android, however, browser process is not shutdown after test run.
+        // As a result, these backend tasks could keep running and cause timeout
+        // error during test shutdown.
+        // To fix this issue, we explicitly call SyncServiceImpl::StopAndClear
+        // to cancel any ongoing sync engine's backend tasks.
+        GetSyncService(index)->StopAndClear();
+      }
+#endif  // BUILDFLAG(IS_ANDROID)
+
     }
   }
 
@@ -795,7 +815,7 @@ void SyncTest::TearDownOnMainThread() {
   profiles_.clear();
   clients_.clear();
   profile_to_fake_gcm_driver_.clear();
-  // TODO(crbug.com/1260897): There are various other Profile-related members
+  // TODO(crbug.com/40798524): There are various other Profile-related members
   // around like profile_to_*_map_ - those should probably be cleaned up too.
 
 #if !BUILDFLAG(IS_ANDROID)
@@ -877,43 +897,55 @@ std::unique_ptr<KeyedService> SyncTest::CreateGCMProfileService(
 }
 
 void SyncTest::ResetSyncForPrimaryAccount() {
-  if (server_type_ == EXTERNAL_LIVE_SERVER) {
-    base::ScopedAllowBlockingForTesting allow_blocking;
-    // For external server testing, we need to have a clean account.
-    // The following code will sign in one chrome browser, get
-    // the client id and access token, then clean the server data.
-    int old_num_clients = num_clients_;
-    int old_use_new_user_data_dir = use_new_user_data_dir_;
-    use_new_user_data_dir_ = true;
-    num_clients_ = 1;
-    // Do not wait for sync complete. Some tests set passphrase and sync
-    // will fail. NO_WAITING mode gives access token and birthday so
-    // SyncServiceImplHarness::ResetSyncForPrimaryAccount() can succeed.
-    // The passphrase will be reset together with the rest of the sync data
-    // clearing.
-    ASSERT_TRUE(SetupSync(NO_WAITING));
-    GetClient(0)->ResetSyncForPrimaryAccount();
-    // After reset account, the client should get a NOT_MY_BIRTHDAY error
-    // and disable sync. Adding a wait to make sure this is propagated.
-    ASSERT_TRUE(SyncDisabledChecker(GetSyncService(0)).Wait());
+  if (server_type_ != EXTERNAL_LIVE_SERVER) {
+    // No-op for anything other than when external servers are used.
+    return;
+  }
+
+  // FakeGCMDriver isn't used in combination with external servers.
+  CHECK(profile_to_fake_gcm_driver_.empty());
+
+  base::ScopedAllowBlockingForTesting allow_blocking;
+  // For external server testing, we need to have a clean account. The following
+  // code will sign in one chrome browser, get the client id and access token,
+  // then clean the server data.
+  base::AutoReset<bool> scoped_user_new_user_data_dir(&use_new_user_data_dir_,
+                                                      true);
+  base::AutoReset<int> scoped_num_clients(&num_clients_, 1);
+  // Do not wait for sync complete. Some tests set passphrase and sync will
+  // fail. NO_WAITING mode gives access token and birthday so
+  // SyncServiceImplHarness::ResetSyncForPrimaryAccount() can succeed. The
+  // passphrase will be reset together with the rest of the sync data clearing.
+  ASSERT_TRUE(SetupSync(NO_WAITING));
+  GetClient(0)->ResetSyncForPrimaryAccount();
+  // After reset account, the client should get a NOT_MY_BIRTHDAY error and
+  // disable sync. Adding a wait to make sure this is propagated.
+  ASSERT_TRUE(SyncDisabledChecker(GetSyncService(0)).Wait());
 
 #if !BUILDFLAG(IS_ANDROID)
-    if (browsers_[0]) {
-      CloseBrowserSynchronously(browsers_[0]);
-    }
+  if (browsers_[0]) {
+    CloseBrowserSynchronously(browsers_[0]);
+  }
 #endif
 
-    // After reset, this client will disable sync. It may log some messages
-    // that do not contribute to test failures. It includes:
-    //   PostClientToServerMessage with SERVER_RETURN_NOT_MY_BIRTHDAY
-    //   PostClientToServerMessage with NETWORK_CONNECTION_UNAVAILABLE
-    //   mcs_client fails with 401.
-    LOG(WARNING) << "Finished reset account. Warning logs before "
-                 << "this log may be safe to ignore.";
-    ClearProfiles();
-    use_new_user_data_dir_ = old_use_new_user_data_dir;
-    num_clients_ = old_num_clients;
-  }
+  // After reset, this client will disable sync. It may log some messages that
+  // do not contribute to test failures. It includes:
+  //   PostClientToServerMessage with SERVER_RETURN_NOT_MY_BIRTHDAY
+  //   PostClientToServerMessage with NETWORK_CONNECTION_UNAVAILABLE
+  //   mcs_client fails with 401.
+  LOG(WARNING) << "Finished reset account. Warning logs before "
+               << "this log may be safe to ignore.";
+
+  CHECK_EQ(1u, profiles_.size());
+  CHECK(profiles_[0]);
+  profiles_[0]->RemoveObserver(this);
+  profiles_.clear();
+
+  scoped_temp_dirs_.clear();
+#if !BUILDFLAG(IS_ANDROID)
+  browsers_.clear();
+#endif
+  clients_.clear();
 }
 
 void SyncTest::SetUpOnMainThread() {
@@ -1121,7 +1153,7 @@ void SyncTest::ExcludeDataTypesFromCheckForDataTypeFailures(
 }
 
 syncer::ModelTypeSet AllowedTypesInStandaloneTransportMode() {
-  static_assert(51 == syncer::GetNumModelTypes(),
+  static_assert(52 == syncer::GetNumModelTypes(),
                 "Add new types below if they can run in transport mode");
   // Only some types will run by default in transport mode (i.e. without their
   // own separate opt-in).
@@ -1151,8 +1183,7 @@ syncer::ModelTypeSet AllowedTypesInStandaloneTransportMode() {
 #if !BUILDFLAG(IS_ANDROID)
   // This is an approximation because passwords are only enabled if the signin
   // is explicit (they are not enabled for users who signed in through Dice).
-  allow_passwords &= switches::IsExplicitBrowserSigninUIOnDesktopEnabled(
-      switches::ExplicitBrowserSigninPhase::kExperimental);
+  allow_passwords &= switches::IsExplicitBrowserSigninUIOnDesktopEnabled();
 #endif
 
   if (allow_passwords) {
@@ -1176,6 +1207,11 @@ syncer::ModelTypeSet AllowedTypesInStandaloneTransportMode() {
     allowed_types.Put(syncer::COLLABORATION_GROUP);
     allowed_types.Put(syncer::SHARED_TAB_GROUP_DATA);
   }
+#if BUILDFLAG(IS_ANDROID)
+  if (base::FeatureList::IsEnabled(syncer::kWebApkBackupAndRestoreBackend)) {
+    allowed_types.Put(syncer::WEB_APKS);
+  }
+#endif
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   // On Lacros, Apps-related types may run in transport mode.

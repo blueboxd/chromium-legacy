@@ -161,7 +161,17 @@ void TaskManagerView::SetSortDescriptor(const TableSortDescriptor& descriptor) {
   tab_table_->SetSortDescriptors(descriptor_list);
 }
 
-gfx::Size TaskManagerView::CalculatePreferredSize() const {
+void TaskManagerView::MaybeHighlightActiveTask() {
+  if (table_model_ && tab_table_->selection_model().empty()) {
+    std::optional<size_t> row = table_model_->GetRowForActiveTask();
+    if (row.has_value()) {
+      tab_table_->Select(row.value());
+    }
+  }
+}
+
+gfx::Size TaskManagerView::CalculatePreferredSize(
+    const views::SizeBounds& available_size) const {
   // The TaskManagerView's preferred size is used to size the hosting Widget
   // when the Widget does not have `initial_restored_bounds_` set. The minimum
   // width below ensures that there is sufficient space for the task manager's
@@ -193,7 +203,7 @@ bool TaskManagerView::ExecuteWindowsCommand(int command_id) {
 ui::ImageModel TaskManagerView::GetWindowIcon() {
   TRACE_EVENT0("ui", "TaskManagerView::GetWindowIcon");
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  // TODO(crbug.com/1162514): Move apps::CreateStandardIconImage to some
+  // TODO(crbug.com/40739545): Move apps::CreateStandardIconImage to some
   // where lower in the stack.
   return ui::ImageModel::FromImageSkia(apps::CreateStandardIconImage(
       *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(

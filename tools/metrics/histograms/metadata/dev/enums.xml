@@ -785,6 +785,11 @@ Called by update_protocol_commands_enum.py.-->
   <int value="140" label="Autofill event received"/>
   <int value="141"
       label="Autofill event received and auto-opening Autofill tab"/>
+  <int value="142" label="Animations panel - Animation group selected"/>
+  <int value="143"
+      label="Animations panel - Scroll driven animation group selected"/>
+  <int value="144"
+      label="Animations panel - Scroll driven animation group scrubbed"/>
 </enum>
 
 <enum name="DevToolsAnimationPlaybackRateChanged">
@@ -802,18 +807,6 @@ Called by update_protocol_commands_enum.py.-->
   <int value="4" label="Other"/>
 </enum>
 
-<enum name="DevToolsBadgeActivated">
-  <int value="0" label="Grid"/>
-  <int value="1" label="Subgrid"/>
-  <int value="2" label="Flex"/>
-  <int value="3" label="Ad"/>
-  <int value="4" label="Scroll snap"/>
-  <int value="5" label="Container"/>
-  <int value="6" label="Slot"/>
-  <int value="7" label="Top layer"/>
-  <int value="8" label="Reveal"/>
-</enum>
-
 <enum name="DevToolsBreakpointEditDialogRevealedFrom">
   <int value="0" label="Breakpoint sidebar context menu"/>
   <int value="1" label="Breakpoint sidebar edit button"/>
@@ -822,24 +815,6 @@ Called by update_protocol_commands_enum.py.-->
   <int value="4" label="Keyboard Shortcut"/>
   <int value="5" label="Linkifier"/>
   <int value="6" label="Mouse click"/>
-</enum>
-
-<enum name="DevToolsBreakpointsRestoredFromStorageCount">
-  <int value="0" label="Less than 100"/>
-  <int value="1" label="Less than 300"/>
-  <int value="2" label="Less than 1000"/>
-  <int value="3" label="Less than 3000"/>
-  <int value="4" label="Less than 10000"/>
-  <int value="5" label="Less than 30000"/>
-  <int value="6" label="Less than 100000"/>
-  <int value="7" label="Less than 300000"/>
-  <int value="8" label="Less than 1000000"/>
-  <int value="9" label="Above 1000000"/>
-</enum>
-
-<enum name="DevToolsBreakpointWithConditionAdded">
-  <int value="0" label="Logpoint"/>
-  <int value="1" label="Conditional Breakpoint"/>
 </enum>
 
 <enum name="DevToolsColorConvertedFrom">
@@ -896,17 +871,6 @@ Called by update_protocol_commands_enum.py.-->
   <int value="6" label="SchemeData"/>
   <int value="7" label="SchemeFile"/>
   <int value="8" label="SchemeBlob"/>
-</enum>
-
-<enum name="DevToolsElementsSidebarTab">
-  <int value="0" label="Other sidebar pane"/>
-  <int value="1" label="Elements - Styles"/>
-  <int value="2" label="Elements - Computed"/>
-  <int value="3" label="Elements - Layout"/>
-  <int value="4" label="Elements - Event Listeners"/>
-  <int value="5" label="Elements - DOM Breakpoints"/>
-  <int value="6" label="Elements - Properties"/>
-  <int value="7" label="Elements - Accessibility"/>
 </enum>
 
 <enum name="DevtoolsExperiments">
@@ -994,6 +958,7 @@ Called by update_protocol_commands_enum.py.-->
   <int value="83" label="sourcesFrameIndentationMarkersTemporarilyDisable"/>
   <int value="84" label="heapSnapshotTreatBackingStoreAsContainingObject"/>
   <int value="85" label="cssTypeComponentLengthDeprecate"/>
+  <int value="86" label="timelineShowPostMessageEvents"/>
 </enum>
 
 <enum name="DevToolsIssueCreated">
@@ -1477,7 +1442,7 @@ Called by update_protocol_commands_enum.py.-->
 
 <enum name="DevToolsPanel">
   <int value="1" label="Elements"/>
-  <int value="2" label="Resources"/>
+  <int value="2" label="Application"/>
   <int value="3" label="Network"/>
   <int value="4" label="Sources"/>
   <int value="5" label="Performance"/>
@@ -1548,8 +1513,8 @@ Called by update_protocol_commands_enum.py.-->
 <enum name="DevToolsPanelWithLocation">
   <int value="1" label="Elements - Main"/>
   <int value="2" label="Elements - Drawer"/>
-  <int value="3" label="Resources - Main"/>
-  <int value="4" label="Resources - Drawer"/>
+  <int value="3" label="Application - Main"/>
+  <int value="4" label="Application - Drawer"/>
   <int value="5" label="Network - Main"/>
   <int value="6" label="Network - Drawer"/>
   <int value="7" label="Sources - Main"/>
@@ -1834,11 +1799,6 @@ Called by update_protocol_commands_enum.py.-->
   <int value="2" label="Chrome Sync 'Settings' ModelType disabled"/>
   <int value="3" label="DevTools settings sync disabled"/>
   <int value="4" label="DevTools settings sync enabled"/>
-</enum>
-
-<enum name="DevToolsVMInlineScriptType">
-  <int value="0" label="Module Script"/>
-  <int value="1" label="Classic Script"/>
 </enum>
 
 </enums>

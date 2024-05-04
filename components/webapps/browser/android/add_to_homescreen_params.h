@@ -29,6 +29,23 @@ struct AddToHomescreenParams {
     COUNT = WEBAPK_DIY,
   };
 
+  AddToHomescreenParams() = delete;
+  AddToHomescreenParams(AppType type,
+                        std::unique_ptr<ShortcutInfo> info,
+                        const SkBitmap& primary_icon,
+                        const InstallableStatusCode status_code,
+                        const WebappInstallSource source);
+  AddToHomescreenParams(
+      const std::string& package_name,
+      const base::android::ScopedJavaGlobalRef<jobject> native_java_app_data,
+      const SkBitmap& primary_icon,
+      const WebappInstallSource source);
+  ~AddToHomescreenParams();
+
+  bool HasMaskablePrimaryIcon() const;
+  bool IsWebApk() const;
+  static bool IsWebApk(AppType type);
+
   AppType app_type;
   SkBitmap primary_icon;
   std::unique_ptr<ShortcutInfo> shortcut_info;
@@ -37,10 +54,7 @@ struct AddToHomescreenParams {
   std::string native_app_package_name;
   base::android::ScopedJavaGlobalRef<jobject> native_app_data;
 
-  AddToHomescreenParams();
-  ~AddToHomescreenParams();
 
-  bool HasMaskablePrimaryIcon();
 };
 
 }  // namespace webapps

@@ -167,9 +167,6 @@ class BLINK_EXPORT WebDocument : public WebNode {
   // Returns true if the document has a Document Picture-in-Picture window.
   bool HasDocumentPictureInPictureWindow() const;
 
-  // Return true if  accessibility processing has been enabled.
-  bool IsAccessibilityEnabled();
-
   // Adds `callback` to the post-prerendering activation steps.
   // https://wicg.github.io/nav-speculation/prerendering.html#document-post-prerendering-activation-steps-list
   void AddPostPrerenderingActivationStep(base::OnceClosure callback);
@@ -184,6 +181,11 @@ class BLINK_EXPORT WebDocument : public WebNode {
 
   // Returns the referrer for this document.
   WebString OutgoingReferrer() const;
+
+  // (Experimental) Initiates Link Preview for `url`.
+  //
+  // It is intended to be used in WebLinkPreviewTriggerer.
+  void InitiatePreview(const WebURL& url);
 
 #if INSIDE_BLINK
   WebDocument(Document*);

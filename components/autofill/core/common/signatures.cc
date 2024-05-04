@@ -4,11 +4,12 @@
 
 #include "components/autofill/core/common/signatures.h"
 
+#include <string_view>
+
 #include "base/containers/span.h"
 #include "base/hash/sha1.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -92,11 +93,11 @@ FormSignature CalculateFormSignature(const FormData& form_data) {
   std::string form_signature_field_names;
 
   for (const FormFieldData& field : form_data.fields) {
-    if (!IsCheckable(field.check_status)) {
+    if (!IsCheckable(field.check_status())) {
       // Add all supported form fields (including with empty names) to the
       // signature.  This is a requirement for Autofill servers.
       base::StrAppend(&form_signature_field_names,
-                      {"&", StripDigitsIfRequired(UTF16ToUTF8(field.name))});
+                      {"&", StripDigitsIfRequired(UTF16ToUTF8(field.name()))});
     }
   }
 
@@ -120,14 +121,15 @@ FormSignature CalculateAlternativeFormSignature(const FormData& form_data) {
 
   std::string form_signature_field_types;
   for (const FormFieldData& field : form_data.fields) {
-    if (!IsCheckable(field.check_status)) {
+    if (!IsCheckable(field.check_status())) {
       // Add all supported form fields' form control types to the signature.
       // We use the string representation of the FormControlType because
       // changing the signature algorithm is non-trivial. If and when the
       // sectioning algorithm, we could use the raw FormControlType enum
       // instead.
-      base::StrAppend(&form_signature_field_types,
-                      {"&", FormControlTypeToString(field.form_control_type)});
+      base::StrAppend(
+          &form_signature_field_types,
+          {"&", FormControlTypeToString(field.form_control_type())});
     }
   }
 
@@ -153,7 +155,7 @@ FormSignature CalculateAlternativeFormSignature(const FormData& form_data) {
 }
 
 FieldSignature CalculateFieldSignatureByNameAndType(
-    base::StringPiece16 field_name,
+    std::u16string_view field_name,
     FormControlType field_type) {
   return FieldSignature(StrToHash32Bit(base::StrCat(
       {UTF16ToUTF8(field_name), "&", FormControlTypeToString(field_type)})));
@@ -161,8 +163,8 @@ FieldSignature CalculateFieldSignatureByNameAndType(
 
 FieldSignature CalculateFieldSignatureForField(
     const FormFieldData& field_data) {
-  return CalculateFieldSignatureByNameAndType(field_data.name,
-                                              field_data.form_control_type);
+  return CalculateFieldSignatureByNameAndType(field_data.name(),
+                                              field_data.form_control_type());
 }
 
 uint64_t StrToHash64Bit(std::string_view str) {

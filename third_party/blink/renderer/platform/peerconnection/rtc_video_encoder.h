@@ -19,11 +19,16 @@
 #include "media/base/video_decoder_config.h"
 #include "media/media_buildflags.h"
 #include "media/video/video_encode_accelerator.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/webrtc/api/video/video_bitrate_allocation.h"
 #include "third_party/webrtc/modules/video_coding/include/video_codec_interface.h"
 #include "ui/gfx/geometry/size.h"
+
+#if BUILDFLAG(RTC_USE_H265)
+#include "third_party/blink/renderer/platform/peerconnection/h265_parameter_sets_tracker.h"
+#endif  // BUILDFLAG(RTC_USE_H265)
 
 namespace base {
 class SequencedTaskRunner;
@@ -40,6 +45,7 @@ namespace blink {
 namespace features {
 PLATFORM_EXPORT BASE_DECLARE_FEATURE(kWebRtcScreenshareSwEncoding);
 PLATFORM_EXPORT BASE_DECLARE_FEATURE(kForcingSoftwareIncludes360);
+PLATFORM_EXPORT BASE_DECLARE_FEATURE(kKeepEncoderInstanceOnRelease);
 }
 
 // RTCVideoEncoder uses a media::VideoEncodeAccelerator to implement a
@@ -75,13 +81,14 @@ class PLATFORM_EXPORT RTCVideoEncoder : public webrtc::VideoEncoder {
       const webrtc::VideoEncoder::RateControlParameters& parameters) override;
   EncoderInfo GetEncoderInfo() const override;
 
-  // Returns true if there's VP9 HW support for spatial layers.
-  static bool Vp9HwSupportForSpatialLayers();
-
   void SetErrorCallbackForTesting(
       WTF::CrossThreadOnceClosure error_callback_for_testing) {
     error_callback_for_testing_ = std::move(error_callback_for_testing);
   }
+#if BUILDFLAG(RTC_USE_H265)
+  void SetH265ParameterSetsTrackerForTesting(
+      std::unique_ptr<H265ParameterSetsTracker> tracker);
+#endif
 
  private:
   class Impl;
@@ -96,11 +103,19 @@ class PLATFORM_EXPORT RTCVideoEncoder : public webrtc::VideoEncoder {
   void UpdateEncoderInfo(
       media::VideoEncoderInfo encoder_info,
       std::vector<webrtc::VideoFrameBuffer::Type> preferred_pixel_formats);
-  void SetError();
+  void SetError(uint32_t impl_id);
+  void ReleaseImpl();
+
+  bool CodecSettingsUsableForFrameSizeChange(
+      const webrtc::VideoCodec& codec_settings) const;
+
+  int32_t DrainEncoderAndUpdateFrameSize(const gfx::Size& frame_size);
 
   const media::VideoCodecProfile profile_;
 
   const bool is_constrained_h264_;
+
+  webrtc::VideoCodec codec_settings_;
 
   // Factory for creating VEAs, shared memory buffers, etc.
   const raw_ptr<media::GpuVideoAcceleratorFactories> gpu_factories_;
@@ -140,9 +155,15 @@ class PLATFORM_EXPORT RTCVideoEncoder : public webrtc::VideoEncoder {
 
   // The RTCVideoEncoder::Impl that does all the work.
   std::unique_ptr<Impl> impl_;
+  // |impl_id_| starts from 0 and increases by 1 when creating a new instance of
+  // Impl.
+  uint32_t impl_id_ = 0;
 
   // This weak pointer is bound to |gpu_task_runner_|.
   base::WeakPtr<Impl> weak_impl_;
+
+  bool impl_initialized_;
+  bool frame_size_change_supported_{false};
 
   // |weak_this_| is bound to |webrtc_sequence_checker_|.
   base::WeakPtr<RTCVideoEncoder> weak_this_;

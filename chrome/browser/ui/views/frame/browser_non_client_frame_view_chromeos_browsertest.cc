@@ -207,8 +207,8 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewChromeOSTestNoWebUiTabStrip,
       return window->GetProperty(chromeos::kWindowStateTypeKey) ==
              chromeos::WindowStateType::kMaximized;
     }));
-    // TODO(crbug.com/1466385): Remove waiting for bounds change when the bug is
-    // fixed.
+    // TODO(crbug.com/40276379): Remove waiting for bounds change when the bug
+    // is fixed.
     ASSERT_TRUE(base::test::RunUntil(
         [&]() { return frame_view->bounds() != old_bounds; }));
   }
@@ -246,18 +246,9 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_EQ(HTCLIENT, frame_view->NonClientHitTest(top_point));
 }
 
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-// TODO(crbug.com/1494785): Find out why the test fails and fix it. May require
-// ui_controls for global touch events.
-#define MAYBE_TabletSplitViewSwipeDownFromEdgeOpensWebUiTabStrip \
-  DISABLED_TabletSplitViewSwipeDownFromEdgeOpensWebUiTabStrip
-#else
-#define MAYBE_TabletSplitViewSwipeDownFromEdgeOpensWebUiTabStrip \
-  TabletSplitViewSwipeDownFromEdgeOpensWebUiTabStrip
-#endif
 IN_PROC_BROWSER_TEST_F(
     BrowserNonClientFrameViewChromeOSTouchTestWithWebUiTabStrip,
-    MAYBE_TabletSplitViewSwipeDownFromEdgeOpensWebUiTabStrip) {
+    TabletSplitViewSwipeDownFromEdgeOpensWebUiTabStrip) {
   if (!IsSnapWindowSupported()) {
     GTEST_SKIP() << "Ash is too old.";
   }
@@ -273,9 +264,10 @@ IN_PROC_BROWSER_TEST_F(
   EnterTabletMode();
   SnapWindow(widget->GetNativeWindow(), crosapi::mojom::SnapPosition::kPrimary);
 
-  // A point above the window, but not in the center horizontally, as a swipe
-  // down from the top center will show the chromeos tablet mode multitask menu.
-  gfx::Point edge_point(100, -1);
+  // A point at the top of the window, but not in the center horizontally, as a
+  // swipe down from the top center will show the chromeos tablet mode multitask
+  // menu.
+  gfx::Point edge_point(100, 0);
 
   ASSERT_FALSE(browser_view->webui_tab_strip()->GetVisible());
   aura::Window* window = widget->GetNativeWindow();
@@ -292,7 +284,7 @@ IN_PROC_BROWSER_TEST_F(
 // This test does not make sense for the webUI tabstrip, since the frame is not
 // painted in that case.
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
-// TODO(crbug.com/1466385): Reenable when bug is fixed.
+// TODO(crbug.com/40276379): Reenable when bug is fixed.
 #define MAYBE_NonImmersiveFullscreen DISABLED_NonImmersiveFullscreen
 #else
 #define MAYBE_NonImmersiveFullscreen NonImmersiveFullscreen
@@ -328,7 +320,7 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewChromeOSTestNoWebUiTabStrip,
 
 // Tests that caption buttons are hidden when entering tab fullscreen.
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
-// TODO(crbug.com/1466385): Reenable when bug is fixed.
+// TODO(crbug.com/40276379): Reenable when bug is fixed.
 #define MAYBE_CaptionButtonsHiddenNonImmersiveFullscreen \
   DISABLED_CaptionButtonsHiddenNonImmersiveFullscreen
 #else
@@ -1197,7 +1189,7 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewChromeOSTest,
 using FloatBrowserNonClientFrameViewChromeOSTest =
     TopChromeMdParamTest<ChromeOSBrowserUITest>;
 
-// TODO(crbug.com/1494785): Port this test to Lacros.
+// TODO(crbug.com/40286309): Port this test to Lacros.
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 IN_PROC_BROWSER_TEST_P(FloatBrowserNonClientFrameViewChromeOSTest,
                        TabletModeMultitaskMenu) {
@@ -1276,7 +1268,7 @@ IN_PROC_BROWSER_TEST_P(FloatBrowserNonClientFrameViewChromeOSTest,
 // Test that for a browser app window, its caption buttons may or may not hide
 // in tablet mode.
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
-// TODO(crbug.com/1505656): Finish porting to Lacros when the bug is fixed.
+// TODO(crbug.com/40946296): Finish porting to Lacros when the bug is fixed.
 #define MAYBE_BrowserAppHeaderVisibilityInTabletModeTest \
   DISABLED_BrowserAppHeaderVisibilityInTabletModeTest
 #else
@@ -1350,9 +1342,22 @@ IN_PROC_BROWSER_TEST_P(FloatBrowserNonClientFrameViewChromeOSTest,
   ASSERT_TRUE(base::test::RunUntil(
       [&]() { return size_button->IsMultitaskMenuShown(); }));
 
-  // Pressing accelerator a second time should close the menu.
-  event_generator.PressAndReleaseKeyAndModifierKeys(ui::VKEY_Z,
-                                                    ui::EF_COMMAND_DOWN);
+  // With platform bubble, key event is routed to the platform bubble at ozone
+  // level, so dispatch it to the multitask_menu_widget directly.
+  if (views::test::IsOzoneBubblesUsingPlatformWidgets()) {
+    ui::test::EventGenerator multitask_view_event_generator(
+        size_button->multitask_menu_widget_for_testing()
+            ->GetNativeWindow()
+            ->GetRootWindow());
+    // Pressing accelerator a second time should close the menu.
+    multitask_view_event_generator.PressAndReleaseKeyAndModifierKeys(
+        ui::VKEY_Z, ui::EF_COMMAND_DOWN);
+  } else {
+    // Pressing accelerator a second time should close the menu.
+    event_generator.PressAndReleaseKeyAndModifierKeys(ui::VKEY_Z,
+                                                      ui::EF_COMMAND_DOWN);
+  }
+
   ASSERT_TRUE(base::test::RunUntil(
       [&]() { return !size_button->IsMultitaskMenuShown(); }));
 }
@@ -1391,7 +1396,7 @@ IN_PROC_BROWSER_TEST_P(HomeLauncherBrowserNonClientFrameViewChromeOSTest,
   }
 }
 
-// TODO(crbug.com/993974): When the test flake has been addressed, improve
+// TODO(crbug.com/40640473): When the test flake has been addressed, improve
 // performance by consolidating this unit test with
 // |TabletModeBrowserCaptionButtonVisibility|. Do not forget to remove the
 // corresponding |FRIEND_TEST_ALL_PREFIXES| usage from
@@ -1406,7 +1411,7 @@ IN_PROC_BROWSER_TEST_P(HomeLauncherBrowserNonClientFrameViewChromeOSTest,
 }
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
-// TODO(crbug.com/1505656): Finish porting to Lacros when the bug is fixed.
+// TODO(crbug.com/40946296): Finish porting to Lacros when the bug is fixed.
 #define MAYBE_TabletModeAppCaptionButtonVisibility \
   DISABLED_TabletModeAppCaptionButtonVisibility
 #else
@@ -1482,7 +1487,7 @@ IN_PROC_BROWSER_TEST_P(TabSearchFrameCaptionButtonTest,
             test.custom_button());
 }
 
-// TODO(crbug.com/1494785): Port this kiosk test to Lacros?
+// TODO(crbug.com/40286309): Port this kiosk test to Lacros?
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 namespace {
 
@@ -1543,7 +1548,7 @@ IN_PROC_BROWSER_TEST_P(LockedFullscreenBrowserNonClientFrameViewChromeOSTest,
   EXPECT_TRUE(browser_view->GetWidget()->IsFullscreen());
   EXPECT_FALSE(browser_view->immersive_mode_controller()->IsEnabled());
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
-  // TODO(crbug.com/1466385): Enable this assertion once the bug is fixed (at
+  // TODO(crbug.com/40276379): Enable this assertion once the bug is fixed (at
   // the moment PinWindow returns too early).
 #else
   EXPECT_FALSE(IsShelfVisible());

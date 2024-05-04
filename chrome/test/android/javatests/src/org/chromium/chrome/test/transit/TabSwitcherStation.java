@@ -27,9 +27,8 @@ import androidx.annotation.CallSuper;
 import org.hamcrest.Matcher;
 
 import org.chromium.base.test.transit.Elements;
-import org.chromium.base.test.transit.TransitStation;
+import org.chromium.base.test.transit.Station;
 import org.chromium.base.test.transit.Trip;
-import org.chromium.base.test.transit.UiThreadCondition;
 import org.chromium.base.test.transit.ViewElement;
 import org.chromium.base.test.util.ViewActionOnDescendant;
 import org.chromium.chrome.browser.hub.HubFieldTrial;
@@ -51,7 +50,7 @@ import org.chromium.chrome.test.util.ToolbarTestUtils;
  *   <li>IncognitoTabSwitcherStation
  * </ul>
  */
-public abstract class TabSwitcherStation extends TransitStation {
+public abstract class TabSwitcherStation extends Station {
     public static final ViewElement TOOLBAR =
             sharedViewElement(withId(ToolbarTestUtils.TAB_SWITCHER_TOOLBAR));
     public static final ViewElement TOOLBAR_NEW_TAB_BUTTON =
@@ -122,14 +121,14 @@ public abstract class TabSwitcherStation extends TransitStation {
     public PageStation openNewTab() {
         recheckActiveConditions();
 
-        PageStation page = new PageStation(mChromeTabbedActivityTestRule, false, true);
-        return Trip.travelSync(
-                this,
-                page,
-                (t) -> {
-                    t.addCondition(new TabSwitcherLayoutNotShowing());
-                    TOOLBAR_NEW_TAB_BUTTON.perform(click());
-                });
+        PageStation page =
+                PageStation.newPageStationBuilder()
+                        .withActivityTestRule(mChromeTabbedActivityTestRule)
+                        .withIncognito(mIsIncognito)
+                        .withIsOpeningTab(true)
+                        .withIsSelectingTab(true)
+                        .build();
+        return Trip.travelSync(this, page, () -> TOOLBAR_NEW_TAB_BUTTON.perform(click()));
     }
 
     public <T extends TabSwitcherStation> T closeTabAtIndex(
@@ -161,20 +160,24 @@ public abstract class TabSwitcherStation extends TransitStation {
         return Trip.travelSync(
                 this,
                 tabSwitcher,
-                (t) ->
+                () ->
                         ViewActionOnDescendant.performOnRecyclerViewNthItemDescendant(
                                 RECYCLER_VIEW.getViewMatcher(), index, TAB_CLOSE_BUTTON, click()));
     }
 
-    public BasePageStation selectTabAtIndex(int index) {
-        BasePageStation page =
-                new PageStation(
-                        mChromeTabbedActivityTestRule, mIsIncognito, /* isOpeningTab= */ false);
+    public PageStation selectTabAtIndex(int index) {
+        PageStation page =
+                PageStation.newPageStationBuilder()
+                        .withActivityTestRule(mChromeTabbedActivityTestRule)
+                        .withIncognito(mIsIncognito)
+                        .withIsOpeningTab(false)
+                        .withIsSelectingTab(true)
+                        .build();
 
         return Trip.travelSync(
                 this,
                 page,
-                (t) ->
+                () ->
                         ViewActionOnDescendant.performOnRecyclerViewNthItemDescendant(
                                 RECYCLER_VIEW.getViewMatcher(), index, TAB_THUMBNAIL, click()));
     }
@@ -188,20 +191,5 @@ public abstract class TabSwitcherStation extends TransitStation {
                 mChromeTabbedActivityTestRule.getActivity().getLayoutManager();
         // TODO: Use #isLayoutFinishedShowing(LayoutType.TAB_SWITCHER) once available.
         return layoutManager.isLayoutVisible(LayoutType.TAB_SWITCHER);
-    }
-
-    protected class TabSwitcherLayoutNotShowing extends UiThreadCondition {
-        @Override
-        public boolean check() {
-            LayoutManager layoutManager =
-                    mChromeTabbedActivityTestRule.getActivity().getLayoutManager();
-            // TODO: Use #isLayoutHidden(LayoutType.TAB_SWITCHER) once available.
-            return !layoutManager.isLayoutVisible(LayoutType.TAB_SWITCHER);
-        }
-
-        @Override
-        public String buildDescription() {
-            return "LayoutManager is not showing TAB_SWITCHER";
-        }
     }
 }

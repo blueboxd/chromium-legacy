@@ -264,8 +264,7 @@ void MainSection::AddChromeOSUserStrings(
   std::string primary_user_email = primary_user->GetDisplayEmail();
 
   html_source->AddString("primaryUserEmail", primary_user_email);
-  html_source->AddBoolean("isActiveDirectoryUser",
-                          user && user->IsActiveDirectoryUser());
+
   html_source->AddBoolean(
       "isSecondaryUser",
       user && user->GetAccountId() != primary_user->GetAccountId());

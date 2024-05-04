@@ -14,8 +14,7 @@
 #import "ios/chrome/browser/shared/ui/symbols/symbols.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_constants.h"
-#import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/group_grid_configurable_view.h"
-#import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/group_tab_view.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/tab_groups/tab_group_snapshots_view.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
 #import "ios/chrome/grit/ios_strings.h"
@@ -57,7 +56,7 @@ const CGFloat kGroupColorViewSize = 18;
   UIButton* _closeTapTargetButton;
   UIView* _border;
 
-  GroupGridConfigurableView* _groupSnapshotsView;
+  TabGroupSnapshotsView* _groupSnapshotsView;
 }
 
 // `-dequeueReusableCellWithReuseIdentifier:forIndexPath:` calls this method to
@@ -79,9 +78,11 @@ const CGFloat kGroupColorViewSize = 18;
     contentView.layer.cornerRadius = kGridCellCornerRadius;
     contentView.layer.masksToBounds = YES;
     [self setupTopBar];
-    _groupSnapshotsView =
-        [[GroupGridConfigurableView alloc] initWithIsMainGroupView:YES];
-
+    _groupSnapshotsView = [[TabGroupSnapshotsView alloc]
+        initWithTabGroupInfos:nil
+                         size:0
+                        light:self.theme == GridThemeLight
+                         cell:YES];
     _groupSnapshotsView.translatesAutoresizingMaskIntoConstraints = NO;
 
     _closeTapTargetButton =
@@ -196,8 +197,7 @@ const CGFloat kGroupColorViewSize = 18;
   [super prepareForReuse];
   self.title = nil;
   self.titleHidden = NO;
-  self.groupColorName = nil;
-  [self configureWithGroupTabInfos:nil totalTabsCount:0];
+  self.groupColor = nil;
   self.selected = NO;
   self.opacity = 1.0;
 }
@@ -209,7 +209,7 @@ const CGFloat kGroupColorViewSize = 18;
   // title and close button.
   return YES;
 }
-// TODO(crbug.com/1511982): Add the accessibility custom actions.
+// TODO(crbug.com/41484563): Add the accessibility custom actions.
 
 #pragma mark - Public
 
@@ -240,18 +240,19 @@ const CGFloat kGroupColorViewSize = 18;
   _theme = theme;
 }
 
-- (void)setGroupColorName:(NSString*)groupColorName {
-  if (groupColorName) {
-    _groupColorName = groupColorName;
-    _groupColorView.backgroundColor = [UIColor colorNamed:_groupColorName];
+- (void)setGroupColor:(UIColor*)groupColor {
+  if (groupColor) {
+    _groupColor = groupColor;
+    _groupColorView.backgroundColor = groupColor;
   }
 }
 
 - (void)configureWithGroupTabInfos:(NSArray<GroupTabInfo*>*)groupTabInfos
                     totalTabsCount:(NSInteger)totalTabsCount {
   CHECK_LE((int)groupTabInfos.count, totalTabsCount);
-  [_groupSnapshotsView configureWithGroupTabInfos:groupTabInfos
-                                   totalTabsCount:totalTabsCount];
+  [_groupSnapshotsView
+      configureTabGroupSnapshotsViewWithTabGroupInfos:groupTabInfos
+                                                 size:totalTabsCount];
 }
 
 - (void)setTitle:(NSString*)title {
@@ -449,7 +450,7 @@ const CGFloat kGroupColorViewSize = 18;
   }
 
   _state = state;
-  // TODO(crbug.com/1501837): Add the accessibility value for selected and
+  // TODO(crbug.com/40942154): Add the accessibility value for selected and
   // unselected states.
   self.accessibilityValue = nil;
   _closeTapTargetButton.enabled = ![self isInSelectionMode];

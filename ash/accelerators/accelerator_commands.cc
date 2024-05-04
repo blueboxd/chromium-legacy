@@ -83,6 +83,7 @@
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/ui/base/display_util.h"
 #include "chromeos/ui/base/window_properties.h"
+#include "chromeos/ui/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "chromeos/ui/frame/caption_buttons/frame_size_button.h"
 #include "chromeos/ui/frame/frame_utils.h"
 #include "chromeos/ui/wm/desks/chromeos_desks_histogram_enums.h"
@@ -577,11 +578,7 @@ bool CanSwapPrimaryDisplay() {
 }
 
 bool CanEnableOrToggleDictation() {
-  if (::features::IsAccessibilityDictationKeyboardImprovementsEnabled()) {
-    return true;
-  }
-
-  return Shell::Get()->accessibility_controller()->dictation().enabled();
+  return true;
 }
 
 bool CanToggleFloatingWindow() {
@@ -1113,10 +1110,6 @@ void ShowEmojiPicker(const base::TimeTicks accelerator_timestamp) {
   ui::ShowEmojiPanel();
 }
 
-void ShowKeyboardShortcutViewer() {
-  ShowShortcutCustomizationApp();
-}
-
 void ShowShortcutCustomizationApp() {
   NewWindowDelegate::GetInstance()->ShowShortcutCustomizationApp();
 }
@@ -1132,7 +1125,9 @@ void StopScreenRecording() {
 }
 
 void Suspend() {
-  chromeos::PowerManagerClient::Get()->RequestSuspend();
+  chromeos::PowerManagerClient::Get()->RequestSuspend(
+      /*wakeup_count=*/std::nullopt, /*duration_secs=*/0,
+      power_manager::REQUEST_SUSPEND_DEFAULT);
 }
 
 void SwitchToNextIme() {

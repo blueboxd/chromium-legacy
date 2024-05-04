@@ -227,13 +227,13 @@ bool ShouldDisplayCredentialAsMuted(
         return MatchesRealmUsernameAndPassword(password, credential);
       });
   if (it == _credentials.end()) {
-    // TODO(crbug.com/1359392): Convert into DCHECK.
+    // TODO(crbug.com/40862365): Convert into DCHECK.
     return;
   }
 
   // Use the iterator before std::erase() makes it invalid.
   self.savedPasswordsPresenter->RemoveCredential(*it);
-  // TODO(crbug.com/1359392). Once kPasswordsGrouping launches, the mediator
+  // TODO(crbug.com/40862365). Once kPasswordsGrouping launches, the mediator
   // should update the passwords model and receive the updates via
   // SavedPasswordsPresenterObserver, instead of replicating the updates to its
   // own copy and calling [self providePasswordsToConsumer:]. Today when the
@@ -439,7 +439,7 @@ bool ShouldDisplayCredentialAsMuted(
 - (NSMutableDictionary<NSString*, NSMutableSet<NSString*>*>*)
     usernamesWithSameDomainDict {
   if (!_usernamesWithSameDomainDict) {
-    // TODO(crbug.com/1400692): Improve saved passwords logic when helper is
+    // TODO(crbug.com/40883869): Improve saved passwords logic when helper is
     // available in SavedPasswordsPresenter.
     _usernamesWithSameDomainDict = [[NSMutableDictionary alloc] init];
     NSMutableSet<NSString*>* signonRealms = [[NSMutableSet alloc] init];

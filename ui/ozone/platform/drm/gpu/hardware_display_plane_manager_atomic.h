@@ -30,6 +30,9 @@ class HardwareDisplayPlaneManagerAtomic : public HardwareDisplayPlaneManager {
   bool Commit(HardwareDisplayPlaneList* plane_list,
               scoped_refptr<PageFlipRequest> page_flip_request,
               gfx::GpuFenceHandle* release_fence) override;
+
+  bool TestSeamlessMode(int32_t crtc_id, const drmModeModeInfo& mode) override;
+
   bool DisableOverlayPlanes(HardwareDisplayPlaneList* plane_list) override;
 
   bool ValidatePrimarySize(const DrmOverlayPlane& primary,
@@ -47,10 +50,12 @@ class HardwareDisplayPlaneManagerAtomic : public HardwareDisplayPlaneManager {
  private:
   bool InitializePlanes() override;
   std::unique_ptr<HardwareDisplayPlane> CreatePlane(uint32_t plane_id) override;
-  void SetAtomicPropsForCommit(drmModeAtomicReq* atomic_request,
-                               HardwareDisplayPlaneList* plane_list,
-                               const std::vector<uint32_t>& crtcs,
-                               bool test_only);
+  void SetAtomicPropsForCommit(
+      drmModeAtomicReq* atomic_request,
+      HardwareDisplayPlaneList* plane_list,
+      const std::vector<uint32_t>& crtcs,
+      std::vector<ScopedDrmPropertyBlob>& pending_blobs,
+      bool test_only);
 
   bool SetCrtcProps(drmModeAtomicReq* atomic_request,
                     uint32_t crtc_id,
@@ -60,7 +65,7 @@ class HardwareDisplayPlaneManagerAtomic : public HardwareDisplayPlaneManager {
   bool SetConnectorProps(drmModeAtomicReq* atomic_request,
                          uint32_t connector_id,
                          uint32_t crtc_id);
-  bool CommitPendingCrtcState(CrtcState* state) override;
+  bool CommitPendingCrtcState(CrtcState& state) override;
   bool AddOutFencePtrProperties(
       drmModeAtomicReq* property_set,
       const std::vector<uint32_t>& crtcs,

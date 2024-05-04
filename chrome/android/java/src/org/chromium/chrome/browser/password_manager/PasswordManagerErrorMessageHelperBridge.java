@@ -18,12 +18,12 @@ import org.chromium.chrome.browser.preferences.ChromeSharedPreferences;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
+import org.chromium.chrome.browser.sync.SyncServiceFactory;
 import org.chromium.chrome.browser.sync.TrustedVaultClient;
 import org.chromium.chrome.browser.sync.ui.SyncTrustedVaultProxyActivity;
 import org.chromium.components.prefs.PrefService;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.base.CoreAccountInfo;
-import org.chromium.chrome.browser.sync.SyncServiceFactory;
 import org.chromium.components.signin.identitymanager.ConsentLevel;
 import org.chromium.components.sync.TrustedVaultUserActionTriggerForUMA;
 import org.chromium.components.user_prefs.UserPrefs;
@@ -52,7 +52,7 @@ public class PasswordManagerErrorMessageHelperBridge {
      * @return whether the UI can be shown given the conditions above.
      */
     @CalledByNative
-    static boolean shouldShowErrorUi(Profile profile) {
+    static boolean shouldShowSignInErrorUI(Profile profile) {
         final CoreAccountInfo primaryAccountInfo =
                 IdentityServicesProvider.get()
                         .getIdentityManager(profile)
@@ -71,6 +71,24 @@ public class PasswordManagerErrorMessageHelperBridge {
         long currentTime = TimeUtils.currentTimeMillis();
         return (currentTime - lastShownTimestamp > MINIMAL_INTERVAL_BETWEEN_PROMPTS_MS)
                 && (currentTime - lastShownSyncErrorTimestamp) > MINIMAL_INTERVAL_TO_SYNC_ERROR_MS;
+    }
+
+    /**
+     * Checks whether the right amount of time has passed since the last error UI messages were
+     * shown.
+     *
+     * <p>The error UI should be shown at least {@link #MINIMAL_INTERVAL_BETWEEN_PROMPTS_MS} from
+     * the previous one.
+     *
+     * @return whether the UI can be shown given the conditions above.
+     */
+    @CalledByNative
+    static boolean shouldShowUpdateGMSCoreErrorUI(Profile profile) {
+        PrefService prefService = UserPrefs.get(profile);
+        long lastShownTimestamp =
+                Long.valueOf(prefService.getString(Pref.UPM_ERROR_UI_SHOWN_TIMESTAMP));
+        long currentTime = TimeUtils.currentTimeMillis();
+        return currentTime - lastShownTimestamp > MINIMAL_INTERVAL_BETWEEN_PROMPTS_MS;
     }
 
     /** Saves the timestamp in ms since UNIX epoch at which the error UI was shown. */
@@ -120,11 +138,21 @@ public class PasswordManagerErrorMessageHelperBridge {
                 .createKeyRetrievalIntent(primaryAccountInfo)
                 .then(
                         (intent) -> {
-                            var action = TrustedVaultUserActionTriggerForUMA.PASSWORD_MANAGER_ERROR_MESSAGE;
+                            var action =
+                                    TrustedVaultUserActionTriggerForUMA
+                                            .PASSWORD_MANAGER_ERROR_MESSAGE;
                             var proxyIntent =
                                     SyncTrustedVaultProxyActivity.createKeyRetrievalProxyIntent(
-                                                    intent, action);
+                                            intent, action);
                             IntentUtils.safeStartActivity(activity, proxyIntent);
                         });
+    }
+
+    /** Starts the Google Play services page where the user can choose to update GMSCore. */
+    @CalledByNative
+    static void launchGmsUpdate(WindowAndroid windowAndroid) {
+        assert windowAndroid.getActivity().get() != null;
+        Activity activity = windowAndroid.getActivity().get();
+        PasswordManagerHelper.launchGmsUpdate(activity);
     }
 }

@@ -8,6 +8,7 @@
 
 #include "content/browser/preloading/preloading.h"
 #include "content/browser/preloading/preloading_attempt_impl.h"
+#include "content/browser/preloading/preloading_data_impl.h"
 #include "content/browser/preloading/preloading_trigger_type_impl.h"
 #include "content/browser/preloading/prerender/prerender_attributes.h"
 #include "content/browser/preloading/prerender/prerender_features.h"
@@ -27,7 +28,6 @@ struct PrerendererImpl::PrerenderInfo {
   blink::mojom::SpeculationEagerness eagerness;
   int prerender_host_id;
   GURL url;
-  Referrer referrer;
 };
 
 PrerendererImpl::PrerendererImpl(RenderFrameHost& render_frame_host)
@@ -191,22 +191,32 @@ void PrerendererImpl::ProcessCandidatesForPrerender(
   base::ranges::sort(candidates_to_start, std::less<>(),
                      [](const auto& p) { return p.first; });
   for (const auto& [_, candidate] : candidates_to_start) {
-    MaybePrerender(candidate);
+    PreloadingTriggerType trigger_type =
+        PreloadingTriggerTypeFromSpeculationInjectionType(
+            candidate->injection_type);
+    // Eager candidates are enacted by the same predictor that creates them.
+    PreloadingPredictor enacting_predictor =
+        GetPredictorForPreloadingTriggerType(trigger_type);
+    MaybePrerender(candidate, enacting_predictor, PreloadingConfidence{100});
   }
 }
 
 void PrerendererImpl::OnLCPPredicted() {
   blocked_ = false;
-  for (auto& candidate : std::move(blocked_candidates_)) {
-    MaybePrerender(candidate);
+  for (auto& [candidate, enacting_predictor, confidence] :
+       std::move(blocked_candidates_)) {
+    MaybePrerender(candidate, enacting_predictor, confidence);
   }
 }
 
 bool PrerendererImpl::MaybePrerender(
-    const blink::mojom::SpeculationCandidatePtr& candidate) {
+    const blink::mojom::SpeculationCandidatePtr& candidate,
+    const PreloadingPredictor& enacting_predictor,
+    PreloadingConfidence confidence) {
   CHECK_EQ(candidate->action, blink::mojom::SpeculationAction::kPrerender);
   if (blocked_) {
-    blocked_candidates_.push_back(candidate->Clone());
+    blocked_candidates_.emplace_back(candidate->Clone(), enacting_predictor,
+                                     confidence);
     return false;
   }
 
@@ -236,7 +246,7 @@ bool PrerendererImpl::MaybePrerender(
           candidate->injection_type),
       candidate->eagerness);
 
-  // TODO(crbug.com/1176054): Remove it after supporting cross-site
+  // TODO(crbug.com/40168192): Remove it after supporting cross-site
   // prerender.
   if (!prerender_navigation_utils::IsSameSite(candidate->url,
                                               rfhi.GetLastCommittedOrigin())) {
@@ -250,17 +260,17 @@ bool PrerendererImpl::MaybePrerender(
             url::Origin::Create(candidate->url).Serialize().c_str()));
   }
 
-  Referrer referrer(*(candidate->referrer));
   PrerenderAttributes attributes(
       candidate->url,
       PreloadingTriggerTypeFromSpeculationInjectionType(
           candidate->injection_type),
       /*embedder_histogram_suffix=*/"",
-      candidate->target_browsing_context_name_hint, referrer,
-      candidate->eagerness, rfhi.GetLastCommittedOrigin(),
-      rfhi.GetProcess()->GetID(), web_contents->GetWeakPtr(),
-      rfhi.GetFrameToken(), rfhi.GetFrameTreeNodeId(),
-      rfhi.GetPageUkmSourceId(), ui::PAGE_TRANSITION_LINK,
+      candidate->target_browsing_context_name_hint,
+      Referrer{*candidate->referrer}, candidate->eagerness,
+      rfhi.GetLastCommittedOrigin(), rfhi.GetProcess()->GetID(),
+      web_contents->GetWeakPtr(), rfhi.GetFrameToken(),
+      rfhi.GetFrameTreeNodeId(), rfhi.GetPageUkmSourceId(),
+      ui::PAGE_TRANSITION_LINK,
       /*url_match_predicate=*/{},
       /*prerender_navigation_handle_callback=*/{},
       rfhi.GetDevToolsNavigationToken());
@@ -268,11 +278,11 @@ bool PrerendererImpl::MaybePrerender(
   PreloadingTriggerType trigger_type =
       PreloadingTriggerTypeFromSpeculationInjectionType(
           candidate->injection_type);
-  PreloadingPredictor predictor =
+  PreloadingPredictor creating_predictor =
       GetPredictorForPreloadingTriggerType(trigger_type);
   int prerender_host_id = [&] {
-    // TODO(crbug.com/1354049): Handle the case where multiple speculation rules
-    // have the same URL but its `target_browsing_context_name_hint` is
+    // TODO(crbug.com/40235424): Handle the case where multiple speculation
+    // rules have the same URL but its `target_browsing_context_name_hint` is
     // different. In the current implementation, only the first rule is
     // triggered.
     switch (candidate->target_browsing_context_name_hint) {
@@ -281,8 +291,8 @@ bool PrerendererImpl::MaybePrerender(
                 blink::features::kPrerender2InNewTab)) {
           // For the prerender-in-new-tab, PreloadingAttempt will be managed by
           // a prerender WebContents to be created later.
-          return registry_->CreateAndStartHostForNewTab(attributes,
-                                                        std::move(predictor));
+          return registry_->CreateAndStartHostForNewTab(
+              attributes, creating_predictor, enacting_predictor, confidence);
         }
         // Handle the rule as kNoHint if the prerender-in-new-tab is not
         // enabled.
@@ -293,13 +303,13 @@ bool PrerendererImpl::MaybePrerender(
         // Create new PreloadingAttempt and pass all the values corresponding to
         // this prerendering attempt.
         auto* preloading_data =
-            PreloadingData::GetOrCreateForWebContents(web_contents);
+            PreloadingDataImpl::GetOrCreateForWebContents(web_contents);
         PreloadingURLMatchCallback same_url_matcher =
             PreloadingData::GetSameURLMatcher(candidate->url);
         auto* preloading_attempt = static_cast<PreloadingAttemptImpl*>(
             preloading_data->AddPreloadingAttempt(
-                std::move(predictor), PreloadingType::kPrerender,
-                std::move(same_url_matcher),
+                creating_predictor, enacting_predictor,
+                PreloadingType::kPrerender, std::move(same_url_matcher),
                 web_contents->GetPrimaryMainFrame()->GetPageUkmSourceId()));
         preloading_attempt->SetSpeculationEagerness(candidate->eagerness);
         return registry_->CreateAndStartHost(attributes, preloading_attempt);
@@ -321,8 +331,7 @@ bool PrerendererImpl::MaybePrerender(
   started_prerenders_.insert(end, {.injection_type = candidate->injection_type,
                                    .eagerness = candidate->eagerness,
                                    .prerender_host_id = prerender_host_id,
-                                   .url = candidate->url,
-                                   .referrer = referrer});
+                                   .url = candidate->url});
 
   return true;
 }
@@ -347,7 +356,7 @@ void PrerendererImpl::OnCancel(int host_frame_tree_node_id,
   }
 
   switch (reason.final_status()) {
-    // TODO(crbug.com/1464021): Support other final status cases.
+    // TODO(crbug.com/40275452): Support other final status cases.
     case PrerenderFinalStatus::kMaxNumOfRunningNonEagerPrerendersExceeded:
     case PrerenderFinalStatus::kSpeculationRuleRemoved: {
       auto erasing_prerender_it = std::find_if(

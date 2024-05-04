@@ -30,6 +30,7 @@
 #include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/ash/arc/session/arc_session_manager.h"
 #include "chrome/browser/ash/assistant/assistant_util.h"
+#include "chrome/browser/ash/crosapi/browser_manager.h"
 #include "chrome/browser/ash/crosapi/crosapi_ash.h"
 #include "chrome/browser/ash/crosapi/crosapi_manager.h"
 #include "chrome/browser/ash/crosapi/desk_profiles_ash.h"
@@ -123,12 +124,16 @@ content::WebContents* GetActiveWebContentsForNativeBrowserWindow(
 chrome::FeedbackSource ToChromeFeedbackSource(
     ash::ShellDelegate::FeedbackSource source) {
   switch (source) {
+    case ash::ShellDelegate::FeedbackSource::kBirch:
+      return chrome::FeedbackSource::kFeedbackSourceBirch;
     case ash::ShellDelegate::FeedbackSource::kFocusMode:
       return chrome::FeedbackSource::kFeedbackSourceFocusMode;
     case ash::ShellDelegate::FeedbackSource::kGameDashboard:
       return chrome::FeedbackSource::kFeedbackSourceGameDashboard;
     case ash::ShellDelegate::FeedbackSource::kOverview:
       return chrome::FeedbackSource::kFeedbackSourceOverview;
+    case ash::ShellDelegate::FeedbackSource::kSnapGroups:
+      return chrome::FeedbackSource::kFeedbackSourceSnapGroups;
     case ash::ShellDelegate::FeedbackSource::kWindowLayoutMenu:
       return chrome::FeedbackSource::kFeedbackSourceWindowLayoutMenu;
   }
@@ -211,7 +216,7 @@ ChromeShellDelegate::CreateUserEducationDelegate() const {
 }
 
 scoped_refptr<network::SharedURLLoaderFactory>
-ChromeShellDelegate::GetGeolocationUrlLoaderFactory() const {
+ChromeShellDelegate::GetBrowserProcessUrlLoaderFactory() const {
   return g_browser_process->shared_url_loader_factory();
 }
 
@@ -322,7 +327,7 @@ void ChromeShellDelegate::SetUpEnvironmentForLockedFullscreen(
   ui::Clipboard::GetForCurrentThread()->Clear(ui::ClipboardBuffer::kCopyPaste);
   content::DevToolsAgentHost::DetachAllClients();
 
-  // TODO(crbug/1243104): This might be interesting for DLP to change.
+  // TODO(crbug.com/40195284): This might be interesting for DLP to change.
   // Disable both screenshots and video screen captures via the capture mode
   // feature.
   ChromeCaptureModeDelegate::Get()->SetIsScreenCaptureLocked(locked);

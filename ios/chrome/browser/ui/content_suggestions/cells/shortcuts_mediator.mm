@@ -22,7 +22,6 @@
 #import "ios/chrome/browser/ui/content_suggestions/cells/shortcuts_consumer_source.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_constants.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_consumer.h"
-#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_mediator_util.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_metrics_recorder.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_metrics_delegate.h"
 #import "ios/chrome/browser/ui/whats_new/whats_new_util.h"
@@ -127,10 +126,8 @@
     return;
   }
   [self.NTPMetricsDelegate shortcutTileOpened];
-  if (IsMagicStackEnabled()) {
     [self.delegate logMagicStackEngagementForType:ContentSuggestionsModuleType::
                                                       kShortcuts];
-  }
   [self.contentSuggestionsMetricsRecorder
       recordShortcutTileTapped:shortcutsItem.collectionShortcutType];
   switch (shortcutsItem.collectionShortcutType) {
@@ -178,7 +175,7 @@
     return NO;
   }
 
-  // TODO(crbug.com/1510484): The FET is not ready upon app launch in the NTP.
+  // TODO(crbug.com/41483080): The FET is not ready upon app launch in the NTP.
   // Consequently, we must load a URL first and then load the NTP where the FET
   // becomes ready.
   DCHECK(_tracker);

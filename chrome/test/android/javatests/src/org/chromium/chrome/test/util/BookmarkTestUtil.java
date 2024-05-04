@@ -26,8 +26,8 @@ import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.app.bookmarks.BookmarkActivity;
-import org.chromium.chrome.browser.app.bookmarks.BookmarkAddEditFolderActivity;
 import org.chromium.chrome.browser.app.bookmarks.BookmarkEditActivity;
+import org.chromium.chrome.browser.app.bookmarks.BookmarkFolderPickerActivity;
 import org.chromium.chrome.browser.bookmarks.BookmarkDelegate;
 import org.chromium.chrome.browser.bookmarks.BookmarkModel;
 import org.chromium.chrome.browser.offlinepages.OfflinePageItem;
@@ -70,7 +70,7 @@ public class BookmarkTestUtil {
     }
 
     /** Opens the mobile bookmarks folder in the bookmarks manager. */
-    // TODO(crbug.com/1467286): Remove use of waitForIdleSync here.
+    // TODO(crbug.com/40276708): Remove use of waitForIdleSync here.
     public static void openMobileBookmarks(
             RecyclerView recyclerView,
             BookmarkDelegate bookmarkDelegate,
@@ -82,7 +82,7 @@ public class BookmarkTestUtil {
     }
 
     /** Opens the reading list folder in the bookmarks manager. */
-    // TODO(crbug.com/1467286): Remove use of waitForIdleSync here.
+    // TODO(crbug.com/40276708): Remove use of waitForIdleSync here.
     public static void openReadingList(
             RecyclerView recyclerView,
             BookmarkDelegate bookmarkDelegate,
@@ -160,15 +160,15 @@ public class BookmarkTestUtil {
         return (BookmarkEditActivity) ApplicationStatus.getLastTrackedFocusedActivity();
     }
 
-    public static BookmarkAddEditFolderActivity waitForAddEditFolderActivity() {
+    public static BookmarkFolderPickerActivity waitForFolderPickerActivity() {
         CriteriaHelper.pollUiThread(
                 () -> {
                     Criteria.checkThat(
                             ApplicationStatus.getLastTrackedFocusedActivity(),
-                            IsInstanceOf.instanceOf(BookmarkAddEditFolderActivity.class));
+                            IsInstanceOf.instanceOf(BookmarkFolderPickerActivity.class));
                 });
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
-        return (BookmarkAddEditFolderActivity) ApplicationStatus.getLastTrackedFocusedActivity();
+        return (BookmarkFolderPickerActivity) ApplicationStatus.getLastTrackedFocusedActivity();
     }
 
     public static void waitForOfflinePageSaved(GURL url) {

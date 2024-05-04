@@ -54,25 +54,6 @@ void InitWhenObjectManagerKnown(base::OnceClosure callback) {
       std::move(callback));
 }
 
-BluetoothDeviceFloss::ConnectErrorCode BtifStatusToConnectErrorCode(
-    uint32_t status) {
-  switch (static_cast<FlossAdapterClient::BtifStatus>(status)) {
-    case FlossAdapterClient::BtifStatus::kFail:
-      return BluetoothDeviceFloss::ConnectErrorCode::ERROR_FAILED;
-    case FlossAdapterClient::BtifStatus::kAuthFailure:
-      return BluetoothDeviceFloss::ConnectErrorCode::ERROR_AUTH_FAILED;
-    case FlossAdapterClient::BtifStatus::kAuthRejected:
-      return BluetoothDeviceFloss::ConnectErrorCode::ERROR_AUTH_REJECTED;
-    case FlossAdapterClient::BtifStatus::kDone:
-    case FlossAdapterClient::BtifStatus::kBusy:
-      return BluetoothDeviceFloss::ConnectErrorCode::ERROR_INPROGRESS;
-    case FlossAdapterClient::BtifStatus::kUnsupported:
-      return BluetoothDeviceFloss::ConnectErrorCode::ERROR_UNSUPPORTED_DEVICE;
-    default:
-      return BluetoothDeviceFloss::ConnectErrorCode::ERROR_UNKNOWN;
-  }
-}
-
 bool DeviceNeedsToReadProperties(device::BluetoothDevice* device) {
   if (device) {
     BluetoothDeviceFloss* floss_device =
@@ -198,7 +179,6 @@ void BluetoothAdapterFloss::AddAdapterObservers() {
   FlossDBusManager::Get()->GetAdapterClient()->AddObserver(this);
   FlossDBusManager::Get()->GetLEScanClient()->AddObserver(this);
   FlossDBusManager::Get()->GetBatteryManagerClient()->AddObserver(this);
-  FlossDBusManager::Get()->GetGattManagerClient()->AddServerObserver(this);
 #if BUILDFLAG(IS_CHROMEOS)
   FlossDBusManager::Get()->GetAdminClient()->AddObserver(this);
 #endif  // BUILDFLAG(IS_CHROMEOS)
@@ -208,7 +188,6 @@ void BluetoothAdapterFloss::RemoveAdapterObservers() {
   // Clean up observers
   FlossDBusManager::Get()->GetAdapterClient()->RemoveObserver(this);
   FlossDBusManager::Get()->GetLEScanClient()->RemoveObserver(this);
-  FlossDBusManager::Get()->GetGattManagerClient()->RemoveServerObserver(this);
 #if BUILDFLAG(IS_CHROMEOS)
   FlossDBusManager::Get()->GetAdminClient()->RemoveObserver(this);
 #endif  // BUILDFLAG(IS_CHROMEOS)
@@ -1117,7 +1096,9 @@ void BluetoothAdapterFloss::DeviceBondStateChanged(
     }
     LOG(ERROR) << "Received BondStateChanged with error status = " << status
                << " for " << remote_device.address;
-    device->SetBondState(bond_state, BtifStatusToConnectErrorCode(status));
+    device->SetBondState(bond_state,
+                         FlossDBusClient::BtifStatusToConnectErrorCode(
+                             static_cast<FlossDBusClient::BtifStatus>(status)));
     if (bond_state == FlossAdapterClient::BondState::kNotBonded) {
       // Since we're no longer bonded, update connection state so that
       // ConnectCallback can process the error correctly.
@@ -1423,7 +1404,6 @@ void BluetoothAdapterFloss::RemoveLocalGattService(
     return;
   }
 
-  // TODO(@sarveshkalwit): Unregister registered service.
   owned_gatt_services_.erase(service_iter);
 }
 
@@ -1484,18 +1464,15 @@ bool BluetoothAdapterFloss::SendValueChanged(
     return false;
   }
 
+  bool confirm =
+      characteristic->CccdNotificationType() ==
+      device::BluetoothLocalGattCharacteristic::NotificationType::kIndication;
   std::string service_name =
       FlossDBusManager::Get()->GetGattManagerClient()->ServiceName();
   FlossDBusManager::Get()->GetGattManagerClient()->ServerSendNotification(
-      base::DoNothing(), service_name, characteristic->InstanceId(),
-      /*confirm=*/false, value);
-  // TODO(@sarveshkalwit) How to confirm success?
+      base::DoNothing(), service_name, characteristic->InstanceId(), confirm,
+      value);
   return true;
-}
-
-void BluetoothAdapterFloss::GattServerNotificationSent(std::string address,
-                                                       GattStatus status) {
-  NOTIMPLEMENTED();
 }
 
 #if BUILDFLAG(IS_CHROMEOS)

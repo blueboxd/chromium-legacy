@@ -50,6 +50,7 @@
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/screen_pinning_controller.h"
+#include "ash/wm/snap_group/snap_group_controller.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
@@ -1147,8 +1148,11 @@ ShelfBackgroundType ShelfLayoutManager::ComputeShelfBackgroundType() const {
   const bool in_split_view_mode =
       SplitViewController::Get(shelf_widget_->GetNativeWindow())
           ->InSplitViewMode();
+  SnapGroupController* snap_group_controller = SnapGroupController::Get();
+  const bool has_visible_snap_group =
+      snap_group_controller && snap_group_controller->GetTopmostSnapGroup();
   const bool maximized =
-      in_split_view_mode ||
+      in_split_view_mode || has_visible_snap_group ||
       state_.window_state == WorkspaceWindowState::kFullscreen ||
       state_.window_state == WorkspaceWindowState::kMaximized;
   const bool in_overview =
@@ -1635,14 +1639,16 @@ void ShelfLayoutManager::SetState(ShelfVisibilityState visibility_state,
 HotseatState ShelfLayoutManager::CalculateHotseatState(
     ShelfVisibilityState visibility_state,
     ShelfAutoHideState auto_hide_state) const {
-  if (!Shell::Get()->IsInTabletMode() || !shelf_->IsHorizontalAlignment())
+  if (!Shell::Get()->IsInTabletMode() || !shelf_->IsHorizontalAlignment()) {
     return HotseatState::kShownClamshell;
+  }
 
   auto* app_list_controller = Shell::Get()->app_list_controller();
   // If the app list controller is null, we are probably in the middle of
   // a shutdown, let's not change the hotseat state.
-  if (!app_list_controller)
+  if (!app_list_controller) {
     return hotseat_state();
+  }
   const auto* overview_controller = Shell::Get()->overview_controller();
   const bool in_overview =
       ((overview_controller && overview_controller->InOverviewSession()) ||
@@ -1653,14 +1659,16 @@ HotseatState ShelfLayoutManager::CalculateHotseatState(
       app_list_controller->ShouldHomeLauncherBeVisible();
 
   // TODO(https://crbug.com/1058205): Test this behavior.
-  if (ShelfConfig::Get()->is_virtual_keyboard_shown())
+  if (ShelfConfig::Get()->is_virtual_keyboard_shown()) {
     return HotseatState::kHidden;
+  }
 
   // Only force to show if there is not a pending drag operation.
   if (shelf_widget_->IsHotseatForcedShowInTabletMode() &&
-      drag_status_ == kDragNone)
+      drag_status_ == kDragNone) {
     return app_list_target_visibility ? HotseatState::kShownHomeLauncher
                                       : HotseatState::kExtended;
+  }
 
   bool in_split_view = false;
   if (in_overview) {
@@ -1673,28 +1681,33 @@ HotseatState ShelfLayoutManager::CalculateHotseatState(
   switch (drag_status_) {
     case kDragNone:
     case kDragHomeToOverviewInProgress: {
-      if (app_list_target_visibility)
+      if (app_list_target_visibility && !in_overview) {
         return HotseatState::kShownHomeLauncher;
-
+      }
       // Show the hotseat if the shelf view's context menu is showing.
-      if (shelf_->hotseat_widget()->IsShowingShelfMenu())
-        return HotseatState::kExtended;
-
-      if (in_overview) {
-        if (in_split_view)
-          return HotseatState::kExtended;
-        // Maintain the ShownHomeLauncher state if we enter overview mode
-        // from it.
-        if (hotseat_state() == HotseatState::kShownHomeLauncher)
-          return HotseatState::kShownHomeLauncher;
+      if (shelf_->hotseat_widget()->IsShowingShelfMenu()) {
         return HotseatState::kExtended;
       }
 
-      if (state_forced_by_back_gesture_)
+      if (in_overview) {
+        if (in_split_view) {
+          return HotseatState::kExtended;
+        }
+        // Maintain the ShownHomeLauncher state if we enter overview mode
+        // from it.
+        if (hotseat_state() == HotseatState::kShownHomeLauncher) {
+          return HotseatState::kShownHomeLauncher;
+        }
         return HotseatState::kExtended;
+      }
 
-      if (visibility_state == SHELF_AUTO_HIDE)
+      if (state_forced_by_back_gesture_) {
+        return HotseatState::kExtended;
+      }
+
+      if (visibility_state == SHELF_AUTO_HIDE) {
         return HotseatState::kHidden;
+      }
 
       if (shelf_->hotseat_widget()->is_manually_extended() &&
           !should_hide_hotseat_) {
@@ -1721,17 +1734,21 @@ HotseatState ShelfLayoutManager::CalculateHotseatState(
     case kDragCancelInProgress: {
       // If the drag being completed is not a Hotseat drag, don't change the
       // state.
-      if (!hotseat_is_in_drag_)
+      if (!hotseat_is_in_drag_) {
         return hotseat_state();
+      }
 
-      if (app_list_target_visibility)
+      if (app_list_target_visibility) {
         return HotseatState::kShownHomeLauncher;
+      }
 
-      if (in_overview && !in_split_view)
+      if (in_overview && !in_split_view) {
         return HotseatState::kExtended;
+      }
 
-      if (shelf_->hotseat_widget()->IsExtended())
+      if (shelf_->hotseat_widget()->IsExtended()) {
         return HotseatState::kExtended;
+      }
 
       // |drag_amount_| is relative to the top of the hotseat when the drag
       // begins with an extended hotseat. Correct for this to get
@@ -1752,12 +1769,14 @@ HotseatState ShelfLayoutManager::CalculateHotseatState(
       const bool dragged_to_bezel =
           std::ceil(end_of_drag_in_screen) >= screen_bottom;
 
-      if (dragged_to_bezel)
+      if (dragged_to_bezel) {
         return HotseatState::kHidden;
+      }
 
       if (std::abs(last_drag_velocity_) >= 120) {
-        if (last_drag_velocity_ > 0)
+        if (last_drag_velocity_ > 0) {
           return HotseatState::kHidden;
+        }
         return HotseatState::kExtended;
       }
 
@@ -1766,8 +1785,9 @@ HotseatState ShelfLayoutManager::CalculateHotseatState(
           shelf_->hotseat_widget()->GetWindowBoundsInScreen().y();
       const bool dragged_over_half_hotseat_size =
           top_of_hotseat_to_screen_bottom < hotseat_size / 2;
-      if (dragged_over_half_hotseat_size)
+      if (dragged_over_half_hotseat_size) {
         return HotseatState::kHidden;
+      }
 
       return HotseatState::kExtended;
     }
@@ -1995,20 +2015,11 @@ void ShelfLayoutManager::UpdateWorkAreaInsetsAndNotifyObservers(
 }
 
 void ShelfLayoutManager::HandleScrollableShelfContainerBoundsChange() {
+  // Update desk button widget layout with animation.
   DeskButtonWidget* desk_button = shelf_widget_->desk_button_widget();
   if (desk_button && desk_button->ShouldReserveSpaceFromShelf()) {
-    // If desk button widget changes its state, update hotseat widget layout.
-    const bool old_zero_state = desk_button->zero_state();
     CalculateDeskButtonAndHotseatTargetBounds();
-    if (desk_button->zero_state() != old_zero_state) {
-      // Update hotseat widget layout with animation.
-      shelf_->hotseat_widget()->UpdateLayout(/*animate=*/true);
-      // Update desk button widget layout without animation.
-      shelf_->desk_button_widget()->UpdateLayout(/*animate=*/false);
-    } else {
-      // Update desk button widget layout with animation.
-      shelf_->desk_button_widget()->UpdateLayout(/*animate=*/true);
-    }
+    desk_button->UpdateLayout(/*animate=*/true);
   }
 }
 
@@ -2018,7 +2029,7 @@ void ShelfLayoutManager::UpdateTargetBoundsForGesture(
   if (hotseat_target_state == HotseatState::kShownHomeLauncher)
     return;
 
-  // TODO(https://crbug.com/1002132): Add tests for the hotseat bounds logic.
+  // TODO(crbug.com/40646496): Add tests for the hotseat bounds logic.
   CHECK_EQ(kDragInProgress, drag_status_);
 
   bool shelf_hidden_at_start = false;
@@ -2198,7 +2209,7 @@ ShelfAutoHideState ShelfLayoutManager::CalculateAutoHideState(
     return state_.auto_hide_state;
 
   // Shelf is not available before login.
-  // TODO(crbug.com/701157): Remove this when the login webui fake-shelf is
+  // TODO(crbug.com/40510582): Remove this when the login webui fake-shelf is
   // replaced with views.
   if (!Shell::Get()->session_controller()->IsActiveUserSessionStarted())
     return SHELF_AUTO_HIDE_HIDDEN;
@@ -3189,9 +3200,8 @@ void ShelfLayoutManager::CalculateDeskButtonAndHotseatTargetBounds() {
         shelf_->desk_button_widget()->ShouldReserveSpaceFromShelf());
 
   auto reserve_space_for_desk_button_widget = [](Shelf* shelf) {
-    const int length_needed = DeskButtonWidget::GetMaxLength(
-        shelf->IsHorizontalAlignment(),
-        shelf->desk_button_widget()->zero_state());
+    const int length_needed =
+        DeskButtonWidget::GetMaxLength(shelf->IsHorizontalAlignment());
     shelf->hotseat_widget()->ReserveSpaceForAdjacentWidgets(
         shelf->IsHorizontalAlignment()
             ? (base::i18n::IsRTL() ? gfx::Insets::TLBR(0, 0, 0, length_needed)
@@ -3199,27 +3209,10 @@ void ShelfLayoutManager::CalculateDeskButtonAndHotseatTargetBounds() {
             : gfx::Insets::TLBR(length_needed, 0, 0, 0));
   };
 
-  // First calculate target bounds of the hotseat widget.
-  if (shelf_->IsHorizontalAlignment() &&
-      !shelf_->desk_button_widget()->IsForcedZeroState()) {
-    // Try to reserve length for expanded desk button widget first.
-    shelf_->desk_button_widget()->set_zero_state(false);
-    reserve_space_for_desk_button_widget(shelf_);
-    shelf_->hotseat_widget()->CalculateTargetBounds();
-
-    // If hotseat overflows, reserve length for zero state desk button widget
-    // to save shelf space.
-    if (shelf_->hotseat_widget()->CalculateShelfOverflow(
-            /*use_target_bounds=*/true)) {
-      shelf_->desk_button_widget()->set_zero_state(true);
-      reserve_space_for_desk_button_widget(shelf_);
-      shelf_->hotseat_widget()->CalculateTargetBounds();
-    }
-  } else {
-    shelf_->desk_button_widget()->set_zero_state(true);
-    reserve_space_for_desk_button_widget(shelf_);
-    shelf_->hotseat_widget()->CalculateTargetBounds();
-  }
+  // First reserve space for the desk button widget and calculate target bounds
+  // of the hotseat widget.
+  reserve_space_for_desk_button_widget(shelf_);
+  shelf_->hotseat_widget()->CalculateTargetBounds();
 
   // Then calculate target bounds of the desk button widget.
   shelf_->desk_button_widget()->CalculateTargetBounds();

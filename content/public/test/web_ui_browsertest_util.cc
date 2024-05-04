@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <string>
+#include <string_view>
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -48,7 +49,7 @@ void GetResource(const std::string& id,
   CHECK(base::ReadFileToString(path, &contents)) << path.value();
 
   base::RefCountedString* ref_contents = new base::RefCountedString;
-  ref_contents->data() = contents;
+  ref_contents->as_string() = contents;
   std::move(callback).Run(ref_contents);
 }
 
@@ -233,7 +234,7 @@ GURL GetChromeUntrustedUIURL(const std::string& host_and_path) {
               url::kStandardSchemeSeparator + host_and_path);
 }
 
-TestWebUIConfig::TestWebUIConfig(base::StringPiece host)
+TestWebUIConfig::TestWebUIConfig(std::string_view host)
     : WebUIConfig(content::kChromeUIScheme, host) {}
 
 std::unique_ptr<WebUIController> TestWebUIConfig::CreateWebUIController(

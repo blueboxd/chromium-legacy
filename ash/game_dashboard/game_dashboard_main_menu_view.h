@@ -8,6 +8,7 @@
 #include <string>
 
 #include "ash/ash_export.h"
+#include "ash/system/unified/feature_tile.h"
 #include "base/memory/raw_ptr.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
@@ -19,7 +20,6 @@ class BoxLayoutView;
 namespace ash {
 
 class AnchoredNudge;
-class FeatureTile;
 class GameDashboardContext;
 class IconButton;
 class PillButton;
@@ -100,12 +100,18 @@ class ASH_EXPORT GameDashboardMainMenuView
   // size to the `main_menu_container_`.
   void MaybeAddArcFeatureRows();
 
-  // Adds Game Controls feature tile in `container` if it is the ARC game window
-  // and Game Controls is available.
-  void MaybeAddGameControlsTile(views::View* container);
+  // Adds Game Controls feature tile of type `tile_type` to a specified
+  // `container`.
+  void AddGameControlsTile(views::View* container,
+                           FeatureTile::TileType tile_type);
 
   // Adds menu controls row for Game Controls.
   void AddGameControlsDetailsRow(views::View* container);
+
+  // Adds Record Game feature tile of type `tile_type` to a specified
+  // `container`.
+  void AddRecordGameTile(views::View* container,
+                         FeatureTile::TileType tile_type);
 
   // Adds a row to access a settings page controlling the screen size if the
   // given game window is an ARC app.
@@ -122,15 +128,6 @@ class ASH_EXPORT GameDashboardMainMenuView
   // true, then the tile will change to a stop button, otherwise it will show
   // the default UI.
   void UpdateRecordGameTile(bool is_recording_game_window);
-
-  // Adds pulse animation and an education nudge for
-  // `game_controls_setup_button_` if it exists and `is_o4c` is false. `is_o4c`
-  // is true if the ARC game is optimized for ChromeOS.
-  void MaybeDecorateSetupButton(bool is_o4c);
-  // Performs pulse animation for `game_controls_setup_button_`.
-  void PerformPulseAnimationForSetupButton(int pulse_count);
-  // Shows education nudge for `game_controls_setup_button_`.
-  void ShowNudgeForSetupButton();
 
   // Creates the `settings_view_container_` and adds all rows pertaining to the
   // settings view to it.
@@ -183,9 +180,6 @@ class ASH_EXPORT GameDashboardMainMenuView
 
   // Back button in the `settings_view_container_`. Visible for testing.
   raw_ptr<IconButton> settings_view_back_button_ = nullptr;
-
-  // Layer for setup button pulse animation.
-  std::unique_ptr<ui::Layer> gc_setup_button_pulse_layer_;
 };
 
 }  // namespace ash

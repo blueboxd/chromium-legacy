@@ -28,28 +28,17 @@ class NetworkPortalDetectorTestImpl : public NetworkPortalDetector {
   ~NetworkPortalDetectorTestImpl() override;
 
   void SetDefaultNetworkForTesting(const std::string& guid);
-  void SetDetectionResultsForTesting(const std::string& guid,
-                                     CaptivePortalStatus status,
-                                     int response_code);
 
   // Returns the GUID of the network the detector considers to be default.
   std::string GetDefaultNetworkGuid() const;
 
   // NetworkPortalDetector implementation:
-  CaptivePortalStatus GetCaptivePortalStatus() override;
   bool IsEnabled() override;
   void Enable() override;
-  void RequestCaptivePortalDetection() override;
-
-  int captive_portal_detection_requested() {
-    return captive_portal_detection_requested_;
-  }
 
  private:
   bool enabled_ = false;
   std::unique_ptr<NetworkState> default_network_;
-  std::map<std::string, CaptivePortalStatus> portal_status_map_;
-  int captive_portal_detection_requested_ = 0;
 };
 
 }  // namespace ash

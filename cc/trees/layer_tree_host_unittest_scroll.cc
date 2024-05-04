@@ -13,6 +13,7 @@
 #include "cc/animation/animation_host.h"
 #include "cc/base/completion_event.h"
 #include "cc/base/features.h"
+#include "cc/input/browser_controls_offset_manager.h"
 #include "cc/input/main_thread_scrolling_reason.h"
 #include "cc/input/scroll_elasticity_helper.h"
 #include "cc/layers/layer.h"
@@ -761,7 +762,7 @@ class LayerTreeHostScrollTestCaseWithChild : public LayerTreeHostScrollTest {
   raw_ptr<Layer> expected_no_scroll_layer_;
 };
 
-// TODO(crbug.com/1517753): Test is flaky on asan on multiple platforms.
+// TODO(crbug.com/41490731): Test is flaky on asan on multiple platforms.
 #if defined(ADDRESS_SANITIZER)
 #define MAYBE_DeviceScaleFactor1_ScrollChild \
   DISABLED_DeviceScaleFactor1_ScrollChild
@@ -775,7 +776,7 @@ TEST_F(LayerTreeHostScrollTestCaseWithChild,
   RunTest(CompositorMode::THREADED);
 }
 
-// TODO(crbug.com/1517753): Test is flaky on (at least) Mac and Linux asan.
+// TODO(crbug.com/41490731): Test is flaky on (at least) Mac and Linux asan.
 #if defined(ADDRESS_SANITIZER)
 #define MAYBE_DeviceScaleFactor15_ScrollChild \
   DISABLED_DeviceScaleFactor15_ScrollChild
@@ -789,8 +790,8 @@ TEST_F(LayerTreeHostScrollTestCaseWithChild,
   RunTest(CompositorMode::THREADED);
 }
 
-// TODO(crbug.com/1521921): Test is flaky on Mac asan.
-#if BUILDFLAG(IS_MAC) && defined(ADDRESS_SANITIZER)
+// TODO(crbug.com/41494888): Test is flaky on asan on multiple platforms.
+#if defined(ADDRESS_SANITIZER)
 #define MAYBE_DeviceScaleFactor2_ScrollChild \
   DISABLED_DeviceScaleFactor2_ScrollChild
 #else
@@ -803,8 +804,9 @@ TEST_F(LayerTreeHostScrollTestCaseWithChild,
   RunTest(CompositorMode::THREADED);
 }
 
-// TODO(crbug.com/1521395): Test is flaky on Linux and Mac.
-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_MAC)
+// TODO(crbug.com/41494364): Test is flaky on asan on multiple platforms.
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_MAC) || \
+    defined(ADDRESS_SANITIZER)
 #define MAYBE_DeviceScaleFactor1_ScrollRootScrollLayer \
   DISABLED_DeviceScaleFactor1_ScrollRootScrollLayer
 #else
@@ -818,9 +820,10 @@ TEST_F(LayerTreeHostScrollTestCaseWithChild,
   RunTest(CompositorMode::THREADED);
 }
 
-// TODO(crbug.com/1521926): Test is flaky on Win asan.
-// TODO(crbug.com/1517753): Test is flaky on Mac asan.
-#if (BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)) && defined(ADDRESS_SANITIZER)
+// TODO(crbug.com/41494893): Test is flaky on Win asan.
+// TODO(crbug.com/41490731): Test is flaky on Mac asan.
+// Test is flaky on asan on multiple platforms.
+#if defined(ADDRESS_SANITIZER)
 #define MAYBE_DeviceScaleFactor15_ScrollRootScrollLayer \
   DISABLED_DeviceScaleFactor15_ScrollRootScrollLayer
 #else
@@ -834,8 +837,9 @@ TEST_F(LayerTreeHostScrollTestCaseWithChild,
   RunTest(CompositorMode::THREADED);
 }
 
-#if BUILDFLAG(IS_MAC) && defined(ADDRESS_SANITIZER)
-// TODO(https://crbug.com/1521778): Fix the flakiness on Mac ASan and re-enable.
+// Test is flaky on asan on multiple platforms.
+#if defined(ADDRESS_SANITIZER)
+// TODO(crbug.com/41494746): Fix the flakiness on Mac ASan and re-enable.
 #define MAYBE_DeviceScaleFactor2_ScrollRootScrollLayer \
   DISABLED_DeviceScaleFactor2_ScrollRootScrollLayer
 #else
@@ -1107,8 +1111,8 @@ class LayerTreeHostScrollTestImplOnlyScroll : public LayerTreeHostScrollTest {
 // This tests scrolling on the impl side which is only possible with a thread.
 MULTI_THREAD_TEST_F(LayerTreeHostScrollTestImplOnlyScroll);
 
-// TODO(crbug.com/574283): Mac currently doesn't support smooth scrolling wheel
-// events.
+// TODO(crbug.com/40451005): Mac currently doesn't support smooth scrolling
+// wheel events.
 #if !BUILDFLAG(IS_MAC)
 // This test simulates scrolling on the impl thread such that it starts a scroll
 // animation. It ensures that RequestScrollAnimationEndNotification() correctly
@@ -1363,8 +1367,8 @@ class LayerTreeHostScrollTestImplOnlyScrollSnap
   bool snap_animation_finished_ = false;
 };
 
-// TODO(crbug.com/1201662): Flaky on Fuchsia, ChromeOS, and Linux.
-// TODO(crbug.com/1522172): Flaky on Windows ASAN.
+// TODO(crbug.com/40762489): Flaky on Fuchsia, ChromeOS, and Linux.
+// TODO(crbug.com/41495136): Flaky on Windows ASAN.
 #if !BUILDFLAG(IS_FUCHSIA) && !BUILDFLAG(IS_CHROMEOS) && \
     !BUILDFLAG(IS_LINUX) && !(BUILDFLAG(IS_WIN) && defined(ADDRESS_SANITIZER))
 MULTI_THREAD_TEST_F(LayerTreeHostScrollTestImplOnlyScrollSnap);
@@ -1520,7 +1524,7 @@ class LayerTreeHostScrollTestImplOnlyMultipleScrollSnap
   ElementId snap_area_b_id_;
 };
 
-// TODO(crbug.com/1243814): Test is flaky on Chrome OS (both Ash and Lacros).
+// TODO(crbug.com/40787490): Test is flaky on Chrome OS (both Ash and Lacros).
 #if !BUILDFLAG(IS_CHROMEOS)
 MULTI_THREAD_TEST_F(LayerTreeHostScrollTestImplOnlyMultipleScrollSnap);
 #endif

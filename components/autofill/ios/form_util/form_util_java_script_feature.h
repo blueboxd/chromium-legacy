@@ -22,12 +22,11 @@ class FormUtilJavaScriptFeature : public web::JavaScriptFeature {
   // needed.
   static FormUtilJavaScriptFeature* GetInstance();
 
-  // Sets up the next available unique ID value in a document.
-  void SetUpForUniqueIDsWithInitialState(web::WebFrame* frame,
-                                         uint32_t next_available_id);
-
   // Enables/disables the AutofillAcrossIframes feature in `frame`.
   void SetAutofillAcrossIframes(web::WebFrame* frame, bool enabled);
+
+  // Enables/disables XHR form submission detection in `frame`.
+  void SetAutofillXHRSubmissionDetection(web::WebFrame* frame, bool enabled);
 
  private:
   friend class base::NoDestructor<FormUtilJavaScriptFeature>;

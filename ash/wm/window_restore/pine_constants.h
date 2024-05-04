@@ -20,6 +20,10 @@ inline constexpr int kMaxItems = 4;
 // items displayed alongside `PineItemsOverflowView`.
 inline constexpr int kOverflowMinThreshold = kMaxItems - 1;
 
+// The maximum number of elements that can be shown inside the screenshot icon
+// row.
+inline constexpr int kScreenshotIconRowMaxElements = 5;
+
 // The preferred size of the rounded background behind each window's icon.
 inline constexpr gfx::Size kItemIconBackgroundPreferredSize(40, 40);
 
@@ -41,12 +45,50 @@ inline constexpr gfx::Insets kItemsContainerInsets = gfx::Insets::VH(15, 15);
 inline constexpr int kAppImageSize = 64;
 
 // The text color for `PineItemView` and `PineItemOverflowView`.
-inline constexpr ui::ColorId kPineItemTextColor =
+inline constexpr ui::ColorId kPineItemTextColorId =
     cros_tokens::kCrosSysOnSurface;
 
 // The background color behind each app displayed in `PineItemsContainerView`.
-inline constexpr ui::ColorId kIconBackgroundColor =
+inline constexpr ui::ColorId kIconBackgroundColorId =
     cros_tokens::kCrosSysSystemOnBase;
+
+// Width of the preview container inside the pine dialog. Contents of the
+// preview can be either the items view or the screenshot.
+inline constexpr int kPreviewContainerWidth = 344;
+
+// Corner radius of the preview container inside the pine dialog.
+inline constexpr int kPreviewContainerRadius = 12;
+
+inline constexpr gfx::Size kOverflowIconPreferredSize(20, 20);
+
+// Constants for the icon row inside the screenshot preview.
+inline constexpr int kScreenshotIconRowChildSpacing = 4;
+inline constexpr int kScreenshotIconRowIconSize = 20;
+inline constexpr gfx::Size kScreenshotIconRowImageViewSize(20, 20);
+inline constexpr int kScreenshotFaviconSpacing = 2;
+
+inline constexpr char kSuggestionsNudgeId[] = "PineSuggestionsNudge";
+inline constexpr char kOnboardingToastId[] = "PineOnboardingTabletToast";
+
+// IDs used for the views that compose the pine dialog UI. Use these for easy
+// access to the views during the unit tests. Note that these IDs are only
+// guaranteed to be unique inside `PineContentsView`. We don't use an enum class
+// to avoid too many explicit casts at callsites.
+enum ViewID : int {
+  kRestoreButtonID = 1,
+  kCancelButtonID,
+  kSettingsButtonID,
+  kOverflowViewID,
+  kOverflowTopRowViewID,
+  kOverflowBottomRowViewID,
+  kOverflowImageViewID,
+  kScreenshotImageViewID,
+  kScreenshotIconRowViewID,
+  kFaviconContainerViewID,
+  kPreviewContainerViewID,
+  kItemImageViewID,
+  kItemViewID,
+};
 
 }  // namespace ash::pine
 

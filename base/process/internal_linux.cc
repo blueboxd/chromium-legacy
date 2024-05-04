@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40284755): Remove this and spanify to fix the errors.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "base/process/internal_linux.h"
 
 #include <limits.h>
@@ -9,11 +14,13 @@
 
 #include <map>
 #include <string>
+#include <string_view>
 #include <vector>
 
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/notreached.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -75,14 +82,13 @@ bool ReadProcFile(const FilePath& file, std::string* buffer) {
   ScopedAllowBlocking scoped_allow_blocking;
 
   if (!ReadFileToString(file, buffer)) {
-    DLOG(WARNING) << "Failed to read " << file.MaybeAsASCII();
     return false;
   }
   return !buffer->empty();
 }
 
 bool ReadProcFileToTrimmedStringPairs(pid_t pid,
-                                      StringPiece filename,
+                                      std::string_view filename,
                                       StringPairs* key_value_pairs) {
   std::string status_data;
   FilePath status_file = GetProcPidDir(pid).Append(filename);
@@ -94,7 +100,7 @@ bool ReadProcFileToTrimmedStringPairs(pid_t pid,
   return true;
 }
 
-size_t ReadProcStatusAndGetKbFieldAsSizeT(pid_t pid, StringPiece field) {
+size_t ReadProcStatusAndGetKbFieldAsSizeT(pid_t pid, std::string_view field) {
   StringPairs pairs;
   if (!ReadProcFileToTrimmedStringPairs(pid, "status", &pairs)) {
     return 0;
@@ -107,7 +113,7 @@ size_t ReadProcStatusAndGetKbFieldAsSizeT(pid_t pid, StringPiece field) {
       continue;
     }
 
-    std::vector<StringPiece> split_value_str =
+    std::vector<std::string_view> split_value_str =
         SplitStringPiece(value_str, " ", TRIM_WHITESPACE, SPLIT_WANT_ALL);
     if (split_value_str.size() != 2 || split_value_str[1] != "kB") {
       NOTREACHED();
@@ -126,7 +132,7 @@ size_t ReadProcStatusAndGetKbFieldAsSizeT(pid_t pid, StringPiece field) {
 }
 
 bool ReadProcStatusAndGetFieldAsUint64(pid_t pid,
-                                       StringPiece field,
+                                       std::string_view field,
                                        uint64_t* result) {
   StringPairs pairs;
   if (!ReadProcFileToTrimmedStringPairs(pid, "status", &pairs)) {
@@ -206,10 +212,17 @@ void ParseProcStat(const std::string& contents, ProcStatMap* output) {
 int64_t GetProcStatsFieldAsInt64(const std::vector<std::string>& proc_stats,
                                  ProcStatsFields field_num) {
   DCHECK_GE(field_num, VM_PPID);
-  CHECK_LT(static_cast<size_t>(field_num), proc_stats.size());
+  return GetProcStatsFieldAsOptionalInt64(proc_stats, field_num).value_or(0);
+}
 
+std::optional<int64_t> GetProcStatsFieldAsOptionalInt64(
+    base::span<const std::string> proc_stats,
+    ProcStatsFields field_num) {
   int64_t value;
-  return StringToInt64(proc_stats[field_num], &value) ? value : 0;
+  if (StringToInt64(proc_stats[size_t{field_num}], &value)) {
+    return value;
+  }
+  return std::nullopt;
 }
 
 size_t GetProcStatsFieldAsSizeT(const std::vector<std::string>& proc_stats,
@@ -242,8 +255,7 @@ int64_t ReadProcSelfStatsAndGetFieldAsInt64(ProcStatsFields field_num) {
   return ReadStatFileAndGetFieldAsInt64(stat_file, field_num);
 }
 
-size_t ReadProcStatsAndGetFieldAsSizeT(pid_t pid,
-                                       ProcStatsFields field_num) {
+size_t ReadProcStatsAndGetFieldAsSizeT(pid_t pid, ProcStatsFields field_num) {
   std::string stats_data;
   if (!ReadProcStats(pid, &stats_data))
     return 0;

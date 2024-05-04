@@ -5,6 +5,7 @@
 #include "ash/system/toast/anchored_nudge.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shelf_types.h"
@@ -76,7 +77,10 @@ bool CalculateIsCornerAnchored(views::BubbleBorder::Arrow arrow) {
 
 }  // namespace
 
-AnchoredNudge::AnchoredNudge(AnchoredNudgeData& nudge_data)
+AnchoredNudge::AnchoredNudge(
+    AnchoredNudgeData& nudge_data,
+    base::RepeatingCallback<void(/*has_hover_or_focus=*/bool)>
+        hover_or_focus_changed_callback)
     : views::BubbleDialogDelegateView(nudge_data.GetAnchorView(),
                                       nudge_data.arrow,
                                       views::BubbleBorder::NO_SHADOW),
@@ -84,15 +88,22 @@ AnchoredNudge::AnchoredNudge(AnchoredNudgeData& nudge_data)
       catalog_name_(nudge_data.catalog_name),
       anchored_to_shelf_(nudge_data.anchored_to_shelf),
       is_corner_anchored_(CalculateIsCornerAnchored(nudge_data.arrow)),
+      set_anchor_view_as_parent_(nudge_data.set_anchor_view_as_parent),
       click_callback_(std::move(nudge_data.click_callback)),
       dismiss_callback_(std::move(nudge_data.dismiss_callback)) {
   SetButtons(ui::DIALOG_BUTTON_NONE);
   set_color(SK_ColorTRANSPARENT);
   set_margins(gfx::Insets());
   set_close_on_deactivate(false);
+  set_highlight_button_when_shown(nudge_data.highlight_anchor_button);
   SetLayoutManager(std::make_unique<views::FlexLayout>());
-  system_nudge_view_ =
-      AddChildView(std::make_unique<SystemNudgeView>(nudge_data));
+  system_nudge_view_ = AddChildView(std::make_unique<SystemNudgeView>(
+      nudge_data, std::move(hover_or_focus_changed_callback)));
+
+  // Make nudge not focus traversable if it does not have any buttons.
+  if (nudge_data.primary_button_text.empty()) {
+    set_focus_traversable_from_anchor_view(false);
+  }
 
   if (anchored_to_shelf_ || !GetAnchorView()) {
     Shell::Get()->AddShellObserver(this);
@@ -138,6 +149,12 @@ gfx::Rect AnchoredNudge::GetBubbleBounds() {
 
 void AnchoredNudge::OnBeforeBubbleWidgetInit(views::Widget::InitParams* params,
                                              views::Widget* widget) const {
+  if (set_anchor_view_as_parent_ && GetAnchorView() &&
+      GetAnchorView()->GetWidget()) {
+    params->parent = GetAnchorView()->GetWidget()->GetNativeView();
+    return;
+  }
+
   params->parent = Shell::GetRootWindowForNewWindows()->GetChildById(
       kShellWindowId_SettingBubbleContainer);
 }

@@ -23,6 +23,7 @@
 
 #if BUILDFLAG(IS_WIN)
 #include <windows.h>
+
 #include "winbase.h"
 #elif BUILDFLAG(IS_POSIX) || BUILDFLAG(IS_FUCHSIA)
 #include <sys/mman.h>
@@ -477,7 +478,8 @@ TEST(ProcessMemoryDumpTest, GuidsTest) {
 
 #if defined(COUNT_RESIDENT_BYTES_SUPPORTED)
 #if BUILDFLAG(IS_FUCHSIA)
-// TODO(crbug.com/851760): Counting resident bytes is not supported on Fuchsia.
+// TODO(crbug.com/42050620): Counting resident bytes is not supported on
+// Fuchsia.
 #define MAYBE_CountResidentBytes DISABLED_CountResidentBytes
 #else
 #define MAYBE_CountResidentBytes CountResidentBytes
@@ -507,7 +509,8 @@ TEST(ProcessMemoryDumpTest, MAYBE_CountResidentBytes) {
 }
 
 #if BUILDFLAG(IS_FUCHSIA)
-// TODO(crbug.com/851760): Counting resident bytes is not supported on Fuchsia.
+// TODO(crbug.com/42050620): Counting resident bytes is not supported on
+// Fuchsia.
 #define MAYBE_CountResidentBytesInSharedMemory \
   DISABLED_CountResidentBytesInSharedMemory
 #else

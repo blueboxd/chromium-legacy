@@ -11,7 +11,6 @@
 #import "base/test/ios/wait_util.h"
 #import "base/test/metrics/histogram_tester.h"
 #import "base/test/metrics/user_action_tester.h"
-#import "components/sync/base/features.h"
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
 #import "ios/chrome/browser/shared/model/browser/test/test_browser.h"
 #import "ios/chrome/browser/shared/model/browser_state/test_chrome_browser_state.h"
@@ -25,7 +24,6 @@
 #import "ios/chrome/browser/ui/authentication/history_sync/history_sync_view_controller.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_completion_info.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_constants.h"
-#import "ios/chrome/browser/ui/authentication/tangible_sync/tangible_sync_view_controller.h"
 #import "ios/chrome/browser/ui/first_run/signin/signin_screen_view_controller.h"
 #import "ios/chrome/test/ios_chrome_scoped_testing_local_state.h"
 #import "ios/web/public/test/web_task_environment.h"
@@ -165,16 +163,9 @@ TEST_F(TwoScreensSigninCoordinatorTest, PresentScreens) {
 
   NextScreen();
 
-  if (base::FeatureList::IsEnabled(
-          syncer::kReplaceSyncPromosWithSignInPromos)) {
-    // Expect the history sync opt-in screen to be presented.
-    EXPECT_TRUE(
-        [TopViewController() isKindOfClass:[HistorySyncViewController class]]);
-  } else {
-    // Expect the tangible sync screen to be presented.
-    EXPECT_TRUE(
-        [TopViewController() isKindOfClass:[TangibleSyncViewController class]]);
-  }
+  // Expect the history sync opt-in screen to be presented.
+  EXPECT_TRUE(
+      [TopViewController() isKindOfClass:[HistorySyncViewController class]]);
 
   // Shut it down.
   __block BOOL interrupt_completion_done = NO;

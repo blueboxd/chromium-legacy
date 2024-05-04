@@ -216,7 +216,7 @@ ArcMetricsService::~ArcMetricsService() {
 
   ui::GamepadProviderOzone::GetInstance()->RemoveGamepadObserver(this);
   // If WMHelper is already destroyed, do nothing.
-  // TODO(crbug.com/748380): Fix shutdown order.
+  // TODO(crbug.com/40531599): Fix shutdown order.
   if (exo::WMHelper::HasInstance())
     exo::WMHelper::GetInstance()->RemoveActivationObserver(this);
   arc_bridge_service_->process()->RemoveObserver(&process_observer_);
@@ -818,12 +818,12 @@ void ArcMetricsService::ReportWebViewProcessStarted() {
 
 void ArcMetricsService::ReportNewQosSocketCount(int count) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  base::UmaHistogramCounts100000("Arc.Qos.NewQosSocketCount", count);
+  base::UmaHistogramCounts100000("Arc.Net.Qos.NewQosSocketCount", count);
 }
 
 void ArcMetricsService::ReportQosSocketPercentage(int perc) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  base::UmaHistogramCounts100("Arc.Qos.QosSocketPercentage", perc);
+  base::UmaHistogramCounts100("Arc.Net.Qos.QosSocketPercentage", perc);
 }
 
 void ArcMetricsService::ReportArcKeyMintError(mojom::ArcKeyMintError error) {

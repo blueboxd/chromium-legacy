@@ -26,7 +26,7 @@ constexpr char kLoginPublicAccountUserViewClassName[] =
     "LoginPublicAccountUserView";
 
 // Distance from the top of the user view to the user icon.
-constexpr int kDistanceFromTopOfBigUserViewToUserIconDp = 54;
+constexpr int kDistanceFromTopOfBigUserViewToUserIconDp = 24;
 
 // Distance from the top of the user view to the user icon.
 constexpr int kDistanceFromUserViewToArrowButton = 44;
@@ -157,8 +157,9 @@ const LoginUserInfo& LoginPublicAccountUserView::current_user() const {
   return user_view_->current_user();
 }
 
-gfx::Size LoginPublicAccountUserView::CalculatePreferredSize() const {
-  gfx::Size size = views::View::CalculatePreferredSize();
+gfx::Size LoginPublicAccountUserView::CalculatePreferredSize(
+    const views::SizeBounds& available_size) const {
+  gfx::Size size = views::View::CalculatePreferredSize(available_size);
   // Make sure we are at least as big as the user view. If we do not do this the
   // view will be below minimum size when no auth methods are displayed.
   size.SetToMax(user_view_->GetPreferredSize());

@@ -8,11 +8,13 @@
 #include "services/webnn/public/mojom/webnn_context_provider.mojom-blink.h"
 #include "services/webnn/public/mojom/webnn_graph.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_ml_device_preference.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_ml_device_type.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_ml_model_format.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_ml_power_preference.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/core/typed_arrays/array_buffer_view_helpers.h"
 #include "third_party/blink/renderer/modules/ml/ml_trace.h"
 #include "third_party/blink/renderer/modules/ml/webnn/ml_graph.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
@@ -28,7 +30,6 @@ class MLBuffer;
 class MLBufferDescriptor;
 class MLComputeResult;
 class MLContextOptions;
-class MLModelLoader;
 
 class MODULES_EXPORT MLContext : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
@@ -36,7 +37,7 @@ class MODULES_EXPORT MLContext : public ScriptWrappable {
  public:
   // Resolves `resolver` with a newly created MLContext. The caller must call
   // `Promise()` on `resolver` before calling this method.
-  static void ValidateAndCreate(ScriptPromiseResolver* resolver,
+  static void ValidateAndCreate(ScriptPromiseResolver<MLContext>* resolver,
                                 MLContextOptions* options,
                                 ML* ml);
 
@@ -62,23 +63,54 @@ class MODULES_EXPORT MLContext : public ScriptWrappable {
   void LogConsoleWarning(const String& message);
 
   ML* GetML();
-  // This method returns a MLModelLoader that's used and shared by WebNN APIs
-  // invoked on this MLContext.
-  MLModelLoader* GetModelLoaderForWebNN(ScriptState* script_state);
 
   void Trace(Visitor* visitor) const override;
 
   // IDL interface:
-  ScriptPromiseTyped<MLComputeResult> compute(
-      ScriptState* script_state,
-      MLGraph* graph,
-      const MLNamedArrayBufferViews& inputs,
-      const MLNamedArrayBufferViews& outputs,
-      ExceptionState& exception_state);
+  ScriptPromise<MLComputeResult> compute(ScriptState* script_state,
+                                         MLGraph* graph,
+                                         const MLNamedArrayBufferViews& inputs,
+                                         const MLNamedArrayBufferViews& outputs,
+                                         ExceptionState& exception_state);
 
   MLBuffer* createBuffer(ScriptState* script_state,
                          const MLBufferDescriptor* descriptor,
                          ExceptionState& exception_state);
+
+  // Writes data specified by array buffer view from offset in elements.
+  void writeBuffer(ScriptState* script_state,
+                   MLBuffer* dst_buffer,
+                   const MaybeShared<DOMArrayBufferView>& src_data,
+                   uint64_t src_element_offset,
+                   ExceptionState& exception_state);
+
+  // Writes data specified by array buffer view from offset and size in
+  // elements.
+  void writeBuffer(ScriptState* script_state,
+                   MLBuffer* dst_buffer,
+                   const MaybeShared<DOMArrayBufferView>& src_data,
+                   uint64_t src_element_offset,
+                   uint64_t src_element_count,
+                   ExceptionState& exception_state);
+
+  // Writes array buffer data from offset in bytes.
+  void writeBuffer(ScriptState* script_state,
+                   MLBuffer* dst_buffer,
+                   const DOMArrayBufferBase* src_data,
+                   uint64_t src_byte_offset,
+                   ExceptionState& exception_state);
+
+  // Writes array buffer data from offset and size in bytes.
+  void writeBuffer(ScriptState* script_state,
+                   MLBuffer* dst_buffer,
+                   const DOMArrayBufferBase* src_data,
+                   uint64_t src_byte_offset,
+                   uint64_t src_byte_size,
+                   ExceptionState& exception_state);
+
+  ScriptPromise<DOMArrayBuffer> readBuffer(ScriptState* script_state,
+                                           MLBuffer* src_buffer,
+                                           ExceptionState& exception_state);
 
   // Creates a platform-specific compute graph described by `graph_info`.
   void CreateWebNNGraph(
@@ -86,18 +118,32 @@ class MODULES_EXPORT MLContext : public ScriptWrappable {
       webnn::mojom::blink::WebNNContext::CreateGraphCallback callback);
 
   // Creates platform specific buffer described by `buffer_info`.
-  void CreateWebNNBuffer(
-      mojo::PendingReceiver<webnn::mojom::blink::WebNNBuffer> receiver,
-      webnn::mojom::blink::BufferInfoPtr buffer_info,
-      const base::UnguessableToken& buffer_handle);
+  void CreateWebNNBuffer(mojo::PendingAssociatedReceiver<
+                             webnn::mojom::blink::WebNNBuffer> receiver,
+                         webnn::mojom::blink::BufferInfoPtr buffer_info,
+                         const base::UnguessableToken& buffer_handle);
 
  private:
   // The callback of creating `WebNNContext` mojo interface from WebNN Service.
   // Return `CreateContextResult::kNotSupported` on non-supported input
   // configuration.
   void OnCreateWebNNContext(ScopedMLTrace scoped_trace,
-                            ScriptPromiseResolver* resolver,
+                            ScriptPromiseResolver<MLContext>* resolver,
                             webnn::mojom::blink::CreateContextResultPtr result);
+
+  // Validate and write ArrayBuffer data to hardware accelerated OS
+  // machine learning buffers in the WebNN Service.
+  // `src_data` is the source span of the array buffer data.
+  // `src_element_offset` is the start of the data to write from in the span.
+  // `src_element_count` is optional to denote when the entire span will be
+  // written.
+  void WriteWebNNBuffer(ScriptState* script_state,
+                        MLBuffer* dst_buffer,
+                        base::span<const uint8_t> src_data,
+                        uint64_t src_element_offset,
+                        unsigned src_data_type_size_bytes,
+                        std::optional<uint64_t> src_element_count,
+                        ExceptionState& exception_state);
 
   V8MLDevicePreference device_preference_;
   V8MLDeviceType device_type_;
@@ -106,12 +152,6 @@ class MODULES_EXPORT MLContext : public ScriptWrappable {
   unsigned int num_threads_;
 
   Member<ML> ml_;
-
-  // WebNN uses this MLModelLoader to build a computational graph.
-  //
-  // TODO: crbug.com/326356909 - Remove this once the TFLite converter has been
-  // completely moved to a utility process.
-  Member<MLModelLoader> ml_model_loader_;
 
   // The `WebNNContext` is a initialized context that can be used by the
   // hardware accelerated OS machine learning API.

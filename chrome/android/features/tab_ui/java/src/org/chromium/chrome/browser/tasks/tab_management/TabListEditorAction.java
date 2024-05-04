@@ -236,10 +236,7 @@ public abstract class TabListEditorAction {
         assert mCurrentTabModelFilterSupplier != null;
         assert mSelectionDelegate != null;
 
-        List<Tab> tabs =
-                editorSupportsActionOnRelatedTabs()
-                        ? getTabsAndRelatedTabsFromSelection()
-                        : getTabsFromSelection();
+        List<Tab> tabs = getTabsOrTabsAndRelatedTabsFromSelection();
         if (shouldNotifyObserversOfAction()) {
             for (ActionObserver obs : mObsevers) {
                 obs.preProcessSelectedTabs(tabs);
@@ -316,7 +313,7 @@ public abstract class TabListEditorAction {
         return selectedTabs;
     }
 
-    protected List<Tab> getTabsAndRelatedTabsFromSelection() {
+    private List<Tab> getTabsAndRelatedTabsFromSelection() {
         TabGroupModelFilter filter = (TabGroupModelFilter) mCurrentTabModelFilterSupplier.get();
 
         List<Tab> tabs = new ArrayList<>();
@@ -326,12 +323,18 @@ public abstract class TabListEditorAction {
         return tabs;
     }
 
+    protected List<Tab> getTabsOrTabsAndRelatedTabsFromSelection() {
+        return editorSupportsActionOnRelatedTabs()
+                ? getTabsAndRelatedTabsFromSelection()
+                : getTabsFromSelection();
+    }
+
     public static int getTabCountIncludingRelatedTabs(
             TabGroupModelFilter tabGroupModelFilter, List<Integer> tabIds) {
         int tabCount = 0;
         for (int tabId : tabIds) {
             Tab tab = TabModelUtils.getTabById(tabGroupModelFilter.getTabModel(), tabId);
-            // TODO(crbug/1522226): Find out how we can have a tab ID that is no longer
+            // TODO(crbug.com/41495189): Find out how we can have a tab ID that is no longer
             // in the tab model here.
             if (tab == null) continue;
             tabCount += tabGroupModelFilter.getRelatedTabCountForRootId(tab.getRootId());

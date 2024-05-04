@@ -67,7 +67,8 @@ SwitchAccessMenuButton::SwitchAccessMenuButton(std::string action_name,
       kLabelTopPaddingDefaultDip);
 
   // The layout padding changes with the size of the text label.
-  gfx::Size label_size = label_->CalculatePreferredSize();
+  gfx::Size label_size =
+      label_->CalculatePreferredSize(views::SizeBounds(label_->width(), {}));
   int left_padding_dip = (kWidthDip - label_size.width()) / 2;
   int right_padding_dip = kWidthDip - left_padding_dip - label_size.width();
   int bottom_padding_dip = kButtonBottomPaddingDefaultDip;
@@ -81,7 +82,7 @@ SwitchAccessMenuButton::SwitchAccessMenuButton(std::string action_name,
   SetLayoutManager(std::move(layout));
 
   GetViewAccessibility().SetName(label_text, ax::mojom::NameFrom::kAttribute);
-  GetViewAccessibility().OverrideIsLeaf(true);
+  GetViewAccessibility().SetIsLeaf(true);
 }
 
 void SwitchAccessMenuButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {

@@ -6,6 +6,7 @@
 
 #include <sstream>
 
+#include "base/containers/heap_array.h"
 #include "base/debug/alias.h"
 #include "media/base/subsample_entry.h"
 
@@ -17,23 +18,17 @@ DecoderBuffer::TimeInfo::TimeInfo(const TimeInfo&) = default;
 DecoderBuffer::TimeInfo& DecoderBuffer::TimeInfo::operator=(const TimeInfo&) =
     default;
 
-DecoderBuffer::DecoderBuffer(size_t size) : size_(size), is_key_frame_(false) {
+DecoderBuffer::DecoderBuffer(size_t size) : size_(size) {
   Initialize();
 }
 
-DecoderBuffer::DecoderBuffer(const uint8_t* data, size_t size)
-    : size_(size), is_key_frame_(false) {
-  if (!data) {
-    CHECK_EQ(size_, 0u);
-    return;
-  }
-
+DecoderBuffer::DecoderBuffer(base::span<const uint8_t> data)
+    : size_(data.size()) {
   Initialize();
-
-  memcpy(data_.get(), data, size_);
+  data_.copy_from(data);
 }
 
-DecoderBuffer::DecoderBuffer(std::unique_ptr<uint8_t[]> data, size_t size)
+DecoderBuffer::DecoderBuffer(base::HeapArray<uint8_t> data, size_t size)
     : data_(std::move(data)), size_(size) {}
 
 DecoderBuffer::DecoderBuffer(base::ReadOnlySharedMemoryMapping mapping,
@@ -48,27 +43,26 @@ DecoderBuffer::DecoderBuffer(std::unique_ptr<ExternalMemory> external_memory)
     : size_(external_memory->span().size()),
       external_memory_(std::move(external_memory)) {}
 
-DecoderBuffer::~DecoderBuffer() {
-  data_.reset();
-}
+DecoderBuffer::DecoderBuffer(DecoderBufferType decoder_buffer_type)
+    : is_end_of_stream_(decoder_buffer_type ==
+                        DecoderBufferType::kEndOfStream) {}
+
+DecoderBuffer::~DecoderBuffer() = default;
 
 void DecoderBuffer::Initialize() {
-  data_.reset(new uint8_t[size_]);
+  data_ = base::HeapArray<uint8_t>::Uninit(size_);
 }
 
 // static
-scoped_refptr<DecoderBuffer> DecoderBuffer::CopyFrom(const uint8_t* data,
-                                                     size_t data_size) {
-  // If you hit this CHECK you likely have a bug in a demuxer. Go fix it.
-  CHECK(data);
-  return base::WrapRefCounted(new DecoderBuffer(data, data_size));
+scoped_refptr<DecoderBuffer> DecoderBuffer::CopyFrom(
+    base::span<const uint8_t> data) {
+  return base::WrapRefCounted(new DecoderBuffer(data));
 }
 
 // static
 scoped_refptr<DecoderBuffer> DecoderBuffer::FromArray(
-    std::unique_ptr<uint8_t[]> data,
+    base::HeapArray<uint8_t> data,
     size_t size) {
-  CHECK(data);
   return base::WrapRefCounted(new DecoderBuffer(std::move(data), size));
 }
 
@@ -114,7 +108,8 @@ scoped_refptr<DecoderBuffer> DecoderBuffer::FromExternalMemory(
 
 // static
 scoped_refptr<DecoderBuffer> DecoderBuffer::CreateEOSBuffer() {
-  return base::WrapRefCounted(new DecoderBuffer(nullptr, 0));
+  return base::WrapRefCounted(
+      new DecoderBuffer(DecoderBufferType::kEndOfStream));
 }
 
 // static
@@ -133,7 +128,7 @@ bool DecoderBuffer::DoSubsamplesMatch(const DecoderBuffer& buffer) {
   if (subsamples.empty()) {
     return true;
   }
-  return VerifySubsamplesMatchSize(subsamples, buffer.data_size());
+  return VerifySubsamplesMatchSize(subsamples, buffer.size());
 }
 
 DecoderBufferSideData& DecoderBuffer::WritableSideData() {
@@ -182,8 +177,7 @@ bool DecoderBuffer::MatchesForTesting(const DecoderBuffer& buffer) const {
     return true;
 
   DCHECK(!buffer.end_of_stream());
-  return data_size() == buffer.data_size() &&
-         memcmp(data(), buffer.data(), data_size()) == 0;
+  return base::span(*this) == base::span(buffer);
 }
 
 std::string DecoderBuffer::AsHumanReadableString(bool verbose) const {
@@ -214,6 +208,33 @@ std::string DecoderBuffer::AsHumanReadableString(bool verbose) const {
 void DecoderBuffer::set_timestamp(base::TimeDelta timestamp) {
   DCHECK(!end_of_stream());
   time_info_.timestamp = timestamp;
+}
+
+size_t DecoderBuffer::GetMemoryUsage() const {
+  size_t memory_usage = sizeof(DecoderBuffer);
+
+  if (end_of_stream()) {
+    return memory_usage;
+  }
+
+  memory_usage += size();
+
+  // Side data and decrypt config would not change after construction.
+  if (has_side_data()) {
+    memory_usage += sizeof(decltype(side_data_->spatial_layers)::value_type) *
+                    side_data_->spatial_layers.capacity();
+    memory_usage += sizeof(decltype(side_data_->alpha_data)::value_type) *
+                    side_data_->alpha_data.capacity();
+  }
+  if (decrypt_config_) {
+    memory_usage += sizeof(DecryptConfig);
+    memory_usage += decrypt_config_->key_id().capacity();
+    memory_usage += decrypt_config_->iv().capacity();
+    memory_usage +=
+        sizeof(SubsampleEntry) * decrypt_config_->subsamples().capacity();
+  }
+
+  return memory_usage;
 }
 
 }  // namespace media

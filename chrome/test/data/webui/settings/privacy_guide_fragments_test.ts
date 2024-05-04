@@ -9,8 +9,9 @@ import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min
 import type {PrivacyGuideCompletionFragmentElement, PrivacyGuideCookiesFragmentElement, PrivacyGuideDescriptionItemElement, PrivacyGuideHistorySyncFragmentElement, PrivacyGuideMsbbFragmentElement, PrivacyGuideSafeBrowsingFragmentElement, PrivacyGuideWelcomeFragmentElement, SettingsCollapseRadioButtonElement, SettingsRadioGroupElement} from 'chrome://settings/lazy_load.js';
 import {CookiePrimarySetting, SafeBrowsingSetting} from 'chrome://settings/lazy_load.js';
 import type {SettingsPrefsElement, SyncPrefs} from 'chrome://settings/settings.js';
-import {CrSettingsPrefs, MetricsBrowserProxyImpl, PrivacyGuideInteractions, PrivacyGuideSettingsStates, Router, routes, SyncBrowserProxyImpl, syncPrefsIndividualDataTypes} from 'chrome://settings/settings.js';
+import {CrSettingsPrefs, MetricsBrowserProxyImpl, OpenWindowProxyImpl, PrivacyGuideInteractions, PrivacyGuideSettingsStates, Router, routes, SyncBrowserProxyImpl, syncPrefsIndividualDataTypes} from 'chrome://settings/settings.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
+import {TestOpenWindowProxy} from 'chrome://webui-test/test_open_window_proxy.js';
 import {eventToPromise, isChildVisible} from 'chrome://webui-test/test_util.js';
 import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
 
@@ -568,7 +569,7 @@ suite('SafeBrowsingFragment', function() {
       assertEquals(spSubLabel, standardProtection.subLabel);
     });
   });
-  // TODO(crbug.com/1466292): Remove once friendlier safe browsing settings
+  // TODO(crbug.com/40923883): Remove once friendlier safe browsing settings
   // standard protection is launched.
   suite('HashPrefixRealTimeEnabled_FriendlierSettingsDisabled', function() {
     suiteSetup(function() {
@@ -618,7 +619,7 @@ suite('SafeBrowsingFragment', function() {
       });
     });
 
-    // TODO(crbug.com/1466292): Remove once friendlier safe browsing settings
+    // TODO(crbug.com/40923883): Remove once friendlier safe browsing settings
     // standard protection is launched.
     test('NotUpdatedStandardProtectionPrivacyGuide', function() {
       const standardProtection =
@@ -653,7 +654,7 @@ suite('SafeBrowsingFragment', function() {
           privacyDesc1Label, standardProtectionPrivacyDescription1.label);
     });
 
-    // TODO(crbug.com/1470385): Remove once friendlier safe browsing settings
+    // TODO(crbug.com/40068815): Remove once friendlier safe browsing settings
     // enhanced protection is launched.
     test('NotUpdatedEnhancedProtectionPrivacyGuide', function() {
       const enhancedProtection =
@@ -797,6 +798,7 @@ suite('CookiesFragment', function() {
 suite('CompletionFragment', function() {
   let fragment: PrivacyGuideCompletionFragmentElement;
   let testMetricsBrowserProxy: TestMetricsBrowserProxy;
+  let openWindowProxy: TestOpenWindowProxy;
 
   suiteSetup(function() {
     loadTimeData.overrideValues({
@@ -808,6 +810,8 @@ suite('CompletionFragment', function() {
   setup(function() {
     testMetricsBrowserProxy = new TestMetricsBrowserProxy();
     MetricsBrowserProxyImpl.setInstance(testMetricsBrowserProxy);
+    openWindowProxy = new TestOpenWindowProxy();
+    OpenWindowProxyImpl.setInstance(openWindowProxy);
 
     document.body.innerHTML = window.trustedTypes!.emptyHTML;
     fragment = document.createElement('privacy-guide-completion-fragment');
@@ -856,9 +860,16 @@ suite('CompletionFragment', function() {
     fragment.shadowRoot!.querySelector<HTMLElement>('#waaRow')!.click();
     flush();
 
-    const result = await testMetricsBrowserProxy.whenCalled(
-        'recordPrivacyGuideEntryExitHistogram');
-    assertEquals(PrivacyGuideInteractions.SWAA_COMPLETION_LINK, result);
+    assertEquals(
+        PrivacyGuideInteractions.SWAA_COMPLETION_LINK,
+        await testMetricsBrowserProxy.whenCalled(
+            'recordPrivacyGuideEntryExitHistogram'));
+    assertEquals(
+        'Settings.PrivacyGuide.CompletionSWAAClick',
+        await testMetricsBrowserProxy.whenCalled('recordAction'));
+    assertEquals(
+        loadTimeData.getString('activityControlsUrlInPrivacyGuide'),
+        await openWindowProxy.whenCalled('openUrl'));
   });
 
   test('privacySandboxLinkClick', async function() {
@@ -866,10 +877,13 @@ suite('CompletionFragment', function() {
                             '#privacySandboxRow')!.click();
     flush();
 
-    const result = await testMetricsBrowserProxy.whenCalled(
-        'recordPrivacyGuideEntryExitHistogram');
     assertEquals(
-        PrivacyGuideInteractions.PRIVACY_SANDBOX_COMPLETION_LINK, result);
+        PrivacyGuideInteractions.PRIVACY_SANDBOX_COMPLETION_LINK,
+        await testMetricsBrowserProxy.whenCalled(
+            'recordPrivacyGuideEntryExitHistogram'));
+    assertEquals(
+        'Settings.PrivacyGuide.CompletionPSClick',
+        await testMetricsBrowserProxy.whenCalled('recordAction'));
   });
 
   test('updateFragmentFromSignIn', function() {
@@ -881,6 +895,21 @@ suite('CompletionFragment', function() {
     setSignInState(false);
     assertTrue(isChildVisible(fragment, '#privacySandboxRow'));
     assertFalse(isChildVisible(fragment, '#waaRow'));
+  });
+
+  test('TrackingProtectionLinkClick', async function() {
+    assertTrue(isChildVisible(fragment, '#trackingProtectionRow'));
+    fragment.shadowRoot!.querySelector<HTMLElement>(
+                            '#trackingProtectionRow')!.click();
+    flush();
+
+    const result = await testMetricsBrowserProxy.whenCalled(
+        'recordPrivacyGuideEntryExitHistogram');
+    assertEquals(
+        PrivacyGuideInteractions.TRACKING_PROTECTION_COMPLETION_LINK, result);
+    assertEquals(
+        'Settings.PrivacyGuide.CompletionTrackingProtectionClick',
+        await testMetricsBrowserProxy.whenCalled('recordAction'));
   });
 });
 
@@ -921,9 +950,10 @@ suite('CompletionFragmentPrivacySandboxRestricted', function() {
 
     setSignInState(false);
     assertFalse(isChildVisible(fragment, '#privacySandboxRow'));
+    assertTrue(isChildVisible(fragment, '#trackingProtectionRow'));
     assertFalse(isChildVisible(fragment, '#waaRow'));
     assertEquals(
-        fragment.i18n('privacyGuideCompletionCardSubHeaderNoLinks'),
+        fragment.i18n('privacyGuideCompletionCardSubHeader'),
         subheader.innerText);
   });
 });
@@ -958,3 +988,49 @@ suite(
         assertTrue(isChildVisible(fragment, '#privacySandboxRow'));
       });
     });
+
+// TODO(https://b/333527273): Remove after TP is launched.
+suite('CompletionFragmentWithoutTrackingProtection', function() {
+  let fragment: PrivacyGuideCompletionFragmentElement;
+
+  suiteSetup(function() {
+    loadTimeData.overrideValues({
+      isPrivacySandboxRestricted: true,
+      isPrivacySandboxRestrictedNoticeEnabled: false,
+      enableTrackingProtectionRolloutUx: false,
+    });
+  });
+
+  setup(function() {
+    document.body.innerHTML = window.trustedTypes!.emptyHTML;
+    fragment = document.createElement('privacy-guide-completion-fragment');
+    document.body.appendChild(fragment);
+
+    return flushTasks();
+  });
+
+  teardown(function() {
+    fragment.remove();
+    // The browser instance is shared among the tests, hence the route needs
+    // to be reset between tests.
+    Router.getInstance().navigateTo(routes.BASIC);
+  });
+
+  test('trackingProtectionLinkHidden', function() {
+    // The link to Tracking Protection should be hidden outside of the
+    // experiment.
+    assertFalse(isChildVisible(fragment, '#trackingProtectionRow'));
+  });
+
+  test('noLinksShown', function() {
+    setSignInState(false);
+    assertFalse(isChildVisible(fragment, '#privacySandboxRow'));
+    assertFalse(isChildVisible(fragment, '#trackingProtectionRow'));
+    assertFalse(isChildVisible(fragment, '#waaRow'));
+    const subheader =
+        fragment.shadowRoot!.querySelector<HTMLElement>('.cr-secondary-text')!;
+    assertEquals(
+        fragment.i18n('privacyGuideCompletionCardSubHeaderNoLinks'),
+        subheader.innerText);
+  });
+});

@@ -9,9 +9,10 @@
 #include "components/autofill/core/browser/browser_autofill_manager.h"
 #include "components/autofill/core/browser/data_model/autofill_offer_data.h"
 #include "components/autofill/core/browser/metrics/payments/offers_metrics.h"
+#include "components/autofill/core/browser/payments_data_manager.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/suggestions_context.h"
-#include "components/autofill/core/browser/ui/popup_item_ids.h"
+#include "components/autofill/core/browser/ui/suggestion_type.h"
 
 namespace autofill {
 
@@ -35,8 +36,9 @@ bool MerchantPromoCodeManager::OnGetSingleFieldSuggestions(
   // profile is not OTR, show the promo code offers.
   if (!is_off_the_record_ && personal_data_manager_) {
     const std::vector<const AutofillOfferData*> promo_code_offers =
-        personal_data_manager_->GetActiveAutofillPromoCodeOffersForOrigin(
-            context.form_structure->main_frame_origin().GetURL());
+        personal_data_manager_->payments_data_manager()
+            .GetActiveAutofillPromoCodeOffersForOrigin(
+                context.form_structure->main_frame_origin().GetURL());
     if (!promo_code_offers.empty()) {
       SendPromoCodeSuggestions(std::move(promo_code_offers), field,
                                std::move(on_suggestions_returned));
@@ -53,12 +55,12 @@ void MerchantPromoCodeManager::OnWillSubmitFormWithFields(
 void MerchantPromoCodeManager::OnRemoveCurrentSingleFieldSuggestion(
     const std::u16string& field_name,
     const std::u16string& value,
-    PopupItemId popup_item_id) {}
+    SuggestionType type) {}
 
 void MerchantPromoCodeManager::OnSingleFieldSuggestionSelected(
     const std::u16string& value,
-    PopupItemId popup_item_id) {
-  uma_recorder_.OnOfferSuggestionSelected(popup_item_id);
+    SuggestionType type) {
+  uma_recorder_.OnOfferSuggestionSelected(type);
 }
 
 void MerchantPromoCodeManager::Init(PersonalDataManager* personal_data_manager,
@@ -97,8 +99,8 @@ void MerchantPromoCodeManager::UMARecorder::OnOffersSuggestionsShown(
 }
 
 void MerchantPromoCodeManager::UMARecorder::OnOfferSuggestionSelected(
-    PopupItemId popup_item_id) {
-  if (popup_item_id == PopupItemId::kMerchantPromoCodeEntry) {
+    SuggestionType type) {
+  if (type == SuggestionType::kMerchantPromoCodeEntry) {
     // We log every time an individual offer suggestion is selected, regardless
     // if the user is repeatedly autofilling the same field.
     autofill_metrics::LogIndividualOfferSuggestionEvent(
@@ -114,7 +116,7 @@ void MerchantPromoCodeManager::UMARecorder::OnOfferSuggestionSelected(
               kOfferSuggestionSelectedOnce,
           AutofillOfferData::OfferType::GPAY_PROMO_CODE_OFFER);
     }
-  } else if (popup_item_id == PopupItemId::kSeePromoCodeDetails) {
+  } else if (type == SuggestionType::kSeePromoCodeDetails) {
     // We log every time the see offer details suggestion in the footer is
     // selected, regardless if the user is repeatedly autofilling the same
     // field.
@@ -146,7 +148,7 @@ void MerchantPromoCodeManager::SendPromoCodeSuggestions(
   // If the input box content equals any of the available promo codes, then
   // assume the promo code has been filled, and don't show any suggestions.
   for (const AutofillOfferData* promo_code_offer : promo_code_offers) {
-    if (field.value == base::ASCIIToUTF16(promo_code_offer->GetPromoCode())) {
+    if (field.value() == base::ASCIIToUTF16(promo_code_offer->GetPromoCode())) {
       std::move(on_suggestions_returned).Run(field.global_id(), {});
       return;
     }

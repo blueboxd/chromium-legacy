@@ -27,9 +27,11 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/metrics/document_update_reason.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_element.h"
 #include "third_party/blink/public/web/web_form_element.h"
+#include "third_party/blink/public/web/web_frame_widget.h"
 #include "third_party/blink/public/web/web_input_element.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 
@@ -98,10 +100,10 @@ class FakeContentAutofillDriver : public mojom::AutofillDriver {
     select_control_changed_ = std::make_unique<FormFieldData>(field);
   }
 
-  void JavaScriptChangedAutofilledValue(
-      const FormData& form,
-      const FormFieldData& field,
-      const std::u16string& old_value) override {}
+  void JavaScriptChangedAutofilledValue(const FormData& form,
+                                        const FormFieldData& field,
+                                        const std::u16string& old_value,
+                                        bool formatting_only) override {}
 
   void AskForValuesToFill(
       const FormData& form,
@@ -161,9 +163,9 @@ void VerifyReceivedRendererMessages(
   // The tuple also includes a timestamp, which is ignored.
   const FormData& submitted_form = *(fake_driver.form_submitted());
   ASSERT_LE(2U, submitted_form.fields.size());
-  EXPECT_EQ(u"fname", submitted_form.fields[0].name);
-  EXPECT_EQ(base::UTF8ToUTF16(fname), submitted_form.fields[0].value);
-  EXPECT_EQ(u"lname", submitted_form.fields[1].name);
+  EXPECT_EQ(u"fname", submitted_form.fields[0].name());
+  EXPECT_EQ(base::UTF8ToUTF16(fname), submitted_form.fields[0].value());
+  EXPECT_EQ(u"lname", submitted_form.fields[1].name());
   EXPECT_EQ(expect_known_success, fake_driver.known_success());
   EXPECT_EQ(expect_submission_source,
             mojo::ConvertTo<SubmissionSource>(fake_driver.submission_source()));
@@ -179,8 +181,8 @@ void VerifyReceivedAddressRendererMessages(
   // The tuple also includes a timestamp, which is ignored.
   const FormData& submitted_form = *(fake_driver.form_submitted());
   ASSERT_LE(1U, submitted_form.fields.size());
-  EXPECT_EQ(u"address", submitted_form.fields[0].name);
-  EXPECT_EQ(base::UTF8ToUTF16(address), submitted_form.fields[0].value);
+  EXPECT_EQ(u"address", submitted_form.fields[0].name());
+  EXPECT_EQ(base::UTF8ToUTF16(address), submitted_form.fields[0].value());
   EXPECT_EQ(expect_known_success, fake_driver.known_success());
   EXPECT_EQ(expect_submission_source,
             mojo::ConvertTo<SubmissionSource>(fake_driver.submission_source()));
@@ -194,7 +196,7 @@ void VerifyNoSubmitMessagesReceived(
   EXPECT_EQ(nullptr, fake_driver.form_submitted());
 }
 
-// TODO(crbug.com/1522821): Update.
+// TODO(crbug.com/41495779): Update.
 FormData CreateAutofillFormData(blink::WebLocalFrame* main_frame) {
   FormData data;
   data.name = u"name";
@@ -211,21 +213,32 @@ FormData CreateAutofillFormData(blink::WebLocalFrame* main_frame) {
           .To<WebFormControlElement>();
 
   FormFieldData field_data;
-  field_data.name = u"fname";
-  field_data.value = u"John";
-  field_data.is_autofilled = true;
-  field_data.renderer_id = form_util::GetFieldRendererId(fname_element);
+  field_data.set_name(u"fname");
+  field_data.set_value(u"John");
+  field_data.set_is_autofilled(true);
+  field_data.set_renderer_id(form_util::GetFieldRendererId(fname_element));
   data.fields.push_back(field_data);
 
   if (!lname_element.IsNull()) {
-    field_data.name = u"lname";
-    field_data.value = u"Smith";
-    field_data.is_autofilled = true;
-    field_data.renderer_id = form_util::GetFieldRendererId(lname_element);
+    field_data.set_name(u"lname");
+    field_data.set_value(u"Smith");
+    field_data.set_is_autofilled(true);
+    field_data.set_renderer_id(form_util::GetFieldRendererId(lname_element));
     data.fields.push_back(field_data);
   }
 
   return data;
+}
+
+std::vector<FormFieldData::FillData> GetFieldsForFilling(
+    const std::vector<FormData>& forms) {
+  std::vector<FormFieldData::FillData> fields;
+  for (const FormData& form : forms) {
+    for (const FormFieldData& field : form.fields) {
+      fields.emplace_back(field);
+    }
+  }
+  return fields;
 }
 
 void SimulateFillForm(const FormData& form_data,
@@ -242,9 +255,9 @@ void SimulateFillForm(const FormData& form_data,
   autofill_agent->FormControlElementClicked(
       fname_element.To<WebInputElement>());
 
-  autofill_agent->ApplyFormAction(mojom::FormActionType::kFill,
-                                  mojom::ActionPersistence::kFill,
-                                  FormData::FillData(form_data));
+  autofill_agent->ApplyFieldsAction(mojom::FormActionType::kFill,
+                                    mojom::ActionPersistence::kFill,
+                                    GetFieldsForFilling({form_data}));
 }
 
 // Simulates receiving a message from the browser to fill a form.
@@ -273,7 +286,7 @@ void SimulateFillFormWithNonFillableFields(
           .To<WebFormControlElement>();
   ASSERT_FALSE(lname_element.IsNull());
 
-  // TODO(crbug.com/1522821): Update.
+  // TODO(crbug.com/41495779): Update.
   FormData form;
   form.name = u"name";
   form.url = GURL("http://example.com/");
@@ -281,23 +294,23 @@ void SimulateFillFormWithNonFillableFields(
   form.renderer_id = test::MakeFormRendererId();  // Default value.
 
   FormFieldData field;
-  field.name = u"fname";
-  field.value = u"John";
-  field.is_autofilled = true;
-  field.renderer_id = form_util::GetFieldRendererId(fname_element);
+  field.set_name(u"fname");
+  field.set_value(u"John");
+  field.set_is_autofilled(true);
+  field.set_renderer_id(form_util::GetFieldRendererId(fname_element));
   form.fields.push_back(field);
 
-  field.name = u"lname";
-  field.value = u"Smith";
-  field.is_autofilled = true;
-  field.renderer_id = form_util::GetFieldRendererId(lname_element);
+  field.set_name(u"lname");
+  field.set_value(u"Smith");
+  field.set_is_autofilled(true);
+  field.set_renderer_id(form_util::GetFieldRendererId(lname_element));
   form.fields.push_back(field);
 
   // Additional non-autofillable field.
-  field.name = u"mname";
-  field.value = u"James";
-  field.is_autofilled = false;
-  field.renderer_id = form_util::GetFieldRendererId(mname_element);
+  field.set_name(u"mname");
+  field.set_value(u"James");
+  field.set_is_autofilled(false);
+  field.set_renderer_id(form_util::GetFieldRendererId(mname_element));
   form.fields.push_back(field);
 
   // This call is necessary to setup the autofill agent appropriate for the
@@ -305,9 +318,9 @@ void SimulateFillFormWithNonFillableFields(
   autofill_agent->FormControlElementClicked(
       fname_element.To<WebInputElement>());
 
-  autofill_agent->ApplyFormAction(mojom::FormActionType::kFill,
-                                  mojom::ActionPersistence::kFill,
-                                  FormData::FillData(form));
+  autofill_agent->ApplyFieldsAction(mojom::FormActionType::kFill,
+                                    mojom::ActionPersistence::kFill,
+                                    GetFieldsForFilling({form}));
 }
 
 class FormAutocompleteTest : public ChromeRenderViewTest {
@@ -347,6 +360,12 @@ class FormAutocompleteTest : public ChromeRenderViewTest {
     ASSERT_FALSE(element.IsNull());
     WebInputElement fname_element = element.To<WebInputElement>();
     SimulateUserInputChangeForElement(&fname_element, value);
+  }
+
+  // This triggers a layout update to apply JS changes like display = 'none'.
+  void ForceLayoutUpdate() {
+    GetWebFrameWidget()->UpdateAllLifecyclePhases(
+        blink::DocumentUpdateReason::kTest);
   }
 
   std::string GetFocusLog() {
@@ -548,9 +567,23 @@ TEST_F(FormAutocompleteTest, AcceptDataListSuggestion) {
   }
 }
 
+// TODO(crbug.com/337690061): Remove the test suite when the new focus events
+// are launched. The new tests are `AutofillAgentTestFocus` in
+// `autofill_agent_browsertest.cc`.
+class FormAutocompleteTestFocus : public FormAutocompleteTest {
+ public:
+  FormAutocompleteTestFocus() {
+    scoped_feature_list_.InitAndDisableFeature(
+        autofill::features::kAutofillNewFocusEvents);
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
 // Test that a FocusNoLongerOnForm message is sent if focus goes from a
 // focused but uninteracted form to a null element.
-TEST_F(FormAutocompleteTest,
+TEST_F(FormAutocompleteTestFocus,
        UninteractedFormFocusChangesToNull_FocusNoLongerOnForm) {
   // Load a form.
   LoadHTML(
@@ -578,7 +611,7 @@ TEST_F(FormAutocompleteTest,
 
 // Test that a FocusNoLongerOnForm message is sent if focus goes from an
 // interacted form to a null element.
-TEST_F(FormAutocompleteTest,
+TEST_F(FormAutocompleteTestFocus,
        InteractedFormFocusChangesToNull_FocusNoLongerOnForm) {
   // Load a form.
   LoadHTML(
@@ -608,7 +641,7 @@ TEST_F(FormAutocompleteTest,
 
 // Test that a FocusNoLongerOnForm message is sent if focus goes from an
 // interacted form to an element outside the form.
-TEST_F(FormAutocompleteTest,
+TEST_F(FormAutocompleteTestFocus,
        InteractedFormFocusChangesToExternalElement_FocusNoLongerOnForm) {
   // Load a form.
   LoadHTML(
@@ -640,7 +673,8 @@ TEST_F(FormAutocompleteTest,
 
 // Test that a FocusNoLongerOnForm message is sent if focus goes from one
 // interacted form to another.
-TEST_F(FormAutocompleteTest, InteractingInDifferentForms_FocusNoLongerOnForm) {
+TEST_F(FormAutocompleteTestFocus,
+       InteractingInDifferentForms_FocusNoLongerOnForm) {
   // Load a form.
   LoadHTML(
       "<html><form id='myForm' action='http://example.com/blade.php'>"
@@ -697,12 +731,12 @@ TEST_F(FormAutocompleteTest, SelectControlChanged) {
 
   const FormFieldData* field = fake_driver_.select_control_changed();
   ASSERT_TRUE(field);
-  EXPECT_EQ(u"color", field->name);
-  EXPECT_EQ(u"blue", field->value);
+  EXPECT_EQ(u"color", field->name());
+  EXPECT_EQ(u"blue", field->value());
 }
 
 // Parameterized test for submission detection. The parameter dictates whether
-// the tests run with `kAutofillImproveSubmissionDetection` enabled or not.
+// the tests run with `kAutofillReplaceFormElementObserver` enabled or not.
 class FormAutocompleteSubmissionTest
     : public FormAutocompleteTest,
       public testing::WithParamInterface<bool> {
@@ -712,11 +746,11 @@ class FormAutocompleteSubmissionTest
       scoped_feature_list_.InitWithFeatures(
           /*enabled_features=*/
           {features::kAutofillReplaceCachedWebElementsByRendererIds,
-           features::kAutofillImproveSubmissionDetection},
+           features::kAutofillReplaceFormElementObserver},
           /*disabled_features=*/{});
     } else {
       scoped_feature_list_.InitAndDisableFeature(
-          features::kAutofillImproveSubmissionDetection);
+          features::kAutofillReplaceFormElementObserver);
     }
   }
 
@@ -1029,6 +1063,7 @@ TEST_P(FormAutocompleteSubmissionTest, AjaxSucceeded_FormlessElements) {
   ExecuteJavaScriptForTests(
       "var element = document.getElementById('fname');"
       "element.style.display = 'none';");
+  ForceLayoutUpdate();
 
   // Simulate AJAX request.
   static_cast<blink::WebAutofillClient*>(autofill_agent_)->AjaxSucceeded();
@@ -1122,8 +1157,8 @@ TEST_P(FormAutocompleteSubmissionTest, FormSubmittedByDOMMutationAfterXHR) {
   std::string hide_elements =
       "var address = document.getElementById('address_field');"
       "address.style = 'display:none';";
-
   ExecuteJavaScriptForTests(hide_elements.c_str());
+  ForceLayoutUpdate();
   base::RunLoop().RunUntilIdle();
 
   VerifyReceivedAddressRendererMessages(fake_driver_, "City",

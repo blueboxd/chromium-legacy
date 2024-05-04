@@ -183,14 +183,6 @@ void AutofillWebDataService::RemoveCreditCard(const std::string& guid) {
                                 autofill_backend_, guid));
 }
 
-void AutofillWebDataService::AddFullServerCreditCard(
-    const CreditCard& credit_card) {
-  wdbs_->ScheduleDBTask(
-      FROM_HERE,
-      base::BindOnce(&AutofillWebDataBackendImpl::AddFullServerCreditCard,
-                     autofill_backend_, credit_card));
-}
-
 void AutofillWebDataService::AddLocalIban(const Iban& iban) {
   wdbs_->ScheduleDBTask(
       FROM_HERE, base::BindOnce(&AutofillWebDataBackendImpl::AddLocalIban,
@@ -284,15 +276,6 @@ WebDataServiceBase::Handle AutofillWebDataService::GetServerCreditCards(
       consumer);
 }
 
-void AutofillWebDataService::UnmaskServerCreditCard(
-    const CreditCard& credit_card,
-    const std::u16string& full_number) {
-  wdbs_->ScheduleDBTask(
-      FROM_HERE,
-      base::BindOnce(&AutofillWebDataBackendImpl::UnmaskServerCreditCard,
-                     autofill_backend_, credit_card, full_number));
-}
-
 WebDataServiceBase::Handle AutofillWebDataService::GetPaymentsCustomerData(
     WebDataServiceConsumer* consumer) {
   return wdbs_->ScheduleDBTaskWithResult(
@@ -358,12 +341,6 @@ void AutofillWebDataService::ClearAllCreditCardBenefits() {
 void AutofillWebDataService::ClearAllServerData() {
   wdbs_->ScheduleDBTask(
       FROM_HERE, base::BindOnce(&AutofillWebDataBackendImpl::ClearAllServerData,
-                                autofill_backend_));
-}
-
-void AutofillWebDataService::ClearAllLocalData() {
-  wdbs_->ScheduleDBTask(
-      FROM_HERE, base::BindOnce(&AutofillWebDataBackendImpl::ClearAllLocalData,
                                 autofill_backend_));
 }
 
@@ -445,6 +422,14 @@ AutofillWebDataService::RemoveExpiredAutocompleteEntries(
           &AutofillWebDataBackendImpl::RemoveExpiredAutocompleteEntries,
           autofill_backend_),
       consumer);
+}
+
+void AutofillWebDataService::AddServerCreditCardForTesting(
+    const CreditCard& credit_card) {
+  wdbs_->ScheduleDBTask(
+      FROM_HERE,
+      base::BindOnce(&AutofillWebDataBackendImpl::AddServerCreditCardForTesting,
+                     autofill_backend_, credit_card));
 }
 
 AutofillWebDataService::~AutofillWebDataService() = default;

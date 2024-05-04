@@ -125,28 +125,17 @@ MultipartUploadRequest::MultipartUploadRequest(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 
-MultipartUploadRequest::~MultipartUploadRequest() {
-  // Take ownership of the file in `data_pipe_getter_` if there is one to close
-  // it on another thread since it makes blocking calls.
-  if (!data_pipe_getter_)
-    return;
-
-  auto file = data_pipe_getter_->ReleaseFile();
-  if (file) {
-    base::ThreadPool::PostTask(
-        FROM_HERE, {base::MayBlock()},
-        base::BindOnce(
-            [](std::unique_ptr<
-                ConnectorDataPipeGetter::InternalMemoryMappedFile> file) {},
-            std::move(file)));
-  }
-}
+MultipartUploadRequest::~MultipartUploadRequest() = default;
 
 void MultipartUploadRequest::Start() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   start_time_ = base::Time::Now();
   SendRequest();
+}
+
+std::string MultipartUploadRequest::GetUploadInfo() {
+  return scan_complete_ ? "Multipart - Complete" : "Multipart - Pending";
 }
 
 std::string MultipartUploadRequest::GenerateRequestBody(
@@ -180,6 +169,10 @@ void MultipartUploadRequest::SetRequestHeaders(
   } else {
     SetAccessTokenAndClearCookieInResourceRequest(request, access_token_);
   }
+}
+
+void MultipartUploadRequest::MarkScanAsCompleteForTesting() {
+  scan_complete_ = true;
 }
 
 void MultipartUploadRequest::SendRequest() {
@@ -301,6 +294,8 @@ void MultipartUploadRequest::CreateDatapipe(
 void MultipartUploadRequest::OnURLLoaderComplete(
     std::optional<std::string> response_body) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  scan_complete_ = true;
+
   int response_code = 0;
   if (url_loader_->ResponseInfo() && url_loader_->ResponseInfo()->headers)
     response_code = url_loader_->ResponseInfo()->headers->response_code();
@@ -334,10 +329,7 @@ void MultipartUploadRequest::RetryOrFinish(
 }
 
 // static
-MultipartUploadRequestFactory* MultipartUploadRequest::factory_ = nullptr;
-
-// static
-std::unique_ptr<MultipartUploadRequest>
+std::unique_ptr<ConnectorUploadRequest>
 MultipartUploadRequest::CreateStringRequest(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const GURL& base_url,
@@ -357,7 +349,7 @@ MultipartUploadRequest::CreateStringRequest(
 }
 
 // static
-std::unique_ptr<MultipartUploadRequest>
+std::unique_ptr<ConnectorUploadRequest>
 MultipartUploadRequest::CreateFileRequest(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const GURL& base_url,
@@ -372,13 +364,17 @@ MultipartUploadRequest::CreateFileRequest(
         traffic_annotation, std::move(callback));
   }
 
+  // Note that multipart uploads only handle data that is less than
+  // `kMaxUploadSizeBytes` and not encrypted.  Therefore `Result::SUCCESS` is
+  // passed as the `get_data_result` argument.
   return factory_->CreateFileRequest(url_loader_factory, base_url, metadata,
-                                     path, file_size, traffic_annotation,
+                                     BinaryUploadService::Result::SUCCESS, path,
+                                     file_size, traffic_annotation,
                                      std::move(callback));
 }
 
 // static
-std::unique_ptr<MultipartUploadRequest>
+std::unique_ptr<ConnectorUploadRequest>
 MultipartUploadRequest::CreatePageRequest(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const GURL& base_url,
@@ -393,6 +389,7 @@ MultipartUploadRequest::CreatePageRequest(
   }
 
   return factory_->CreatePageRequest(url_loader_factory, base_url, metadata,
+                                     BinaryUploadService::Result::SUCCESS,
                                      std::move(page_region), traffic_annotation,
                                      std::move(callback));
 }

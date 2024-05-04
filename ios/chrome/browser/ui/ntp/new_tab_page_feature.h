@@ -16,7 +16,7 @@
 BASE_DECLARE_FEATURE(kEnableDiscoverFeedPreview);
 
 // Feature flag to enable static resource serving for the Discover feed.
-// TODO(crbug.com/1385512): Remove this.
+// TODO(crbug.com/40246814): Remove this.
 BASE_DECLARE_FEATURE(kEnableDiscoverFeedStaticResourceServing);
 
 // Feature flag to enable discofeed endpoint for the Discover feed.
@@ -27,7 +27,7 @@ BASE_DECLARE_FEATURE(kEnableDiscoverFeedTopSyncPromo);
 
 // Feature flag to fix the NTP view hierarchy if it is broken before applying
 // constraints.
-// TODO(crbug.com/1262536): Remove this when it is fixed.
+// TODO(crbug.com/40799579): Remove this when it is fixed.
 BASE_DECLARE_FEATURE(kEnableNTPViewHierarchyRepair);
 
 // Flag to modify the feed header through the server. Enabling this feature on
@@ -47,16 +47,20 @@ BASE_DECLARE_FEATURE(kEnableSignedOutViewDemotion);
 // Feature flag to enable ghost cards on the iPad feeds.
 BASE_DECLARE_FEATURE(kEnableiPadFeedGhostCards);
 
+// Feature flag to enable account-switching UI when tapping the NTP identity
+// disc.
+BASE_DECLARE_FEATURE(kIdentityDiscAccountSwitch);
+
 #pragma mark - Feature parameters
 
 // A parameter to indicate whether Reconstructed Templates is enabled for static
 // resource serving.
-// TODO(crbug.com/1385512): Remove this.
+// TODO(crbug.com/40246814): Remove this.
 extern const char kDiscoverFeedSRSReconstructedTemplatesEnabled[];
 
 // A parameter to indicate whether Preload Templates is enabled for static
 // resource serving.
-// TODO(crbug.com/1385512): Remove this.
+// TODO(crbug.com/40246814): Remove this.
 extern const char kDiscoverFeedSRSPreloadTemplatesEnabled[];
 
 // Parameter for the feed top sync promo's style.

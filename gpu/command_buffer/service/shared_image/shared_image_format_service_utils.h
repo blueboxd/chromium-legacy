@@ -147,10 +147,11 @@ GPU_GLES2_EXPORT wgpu::TextureFormat ToDawnTextureViewFormat(
 // `supports_multiplanar_rendering` indicates if the dawn texture supports
 // drawing to multiplanar render targets.
 wgpu::TextureUsage SupportedDawnTextureUsage(
-    bool is_yuv_plane = false,
-    bool is_dcomp_surface = false,
-    bool supports_multiplanar_rendering = false,
-    bool supports_multiplanar_copy = false);
+    viz::SharedImageFormat format,
+    bool is_yuv_plane,
+    bool is_dcomp_surface,
+    bool supports_multiplanar_rendering,
+    bool supports_multiplanar_copy);
 
 // Returns wgpu::TextureAspect corresponding to `plane_index`. `is_yuv_plane`
 // indicates if the aspect corresponds to a plane of a multi-planar
@@ -196,6 +197,7 @@ GPU_GLES2_EXPORT skgpu::graphite::DawnTextureInfo DawnBackendTextureInfo(
     bool readonly,
     bool is_yuv_plane,
     int plane_index,
+    int array_slice,
     bool mipmapped,
     bool scanout_dcomp_surface,
     bool supports_multiplanar_rendering,
@@ -209,6 +211,10 @@ GPU_GLES2_EXPORT skgpu::graphite::MtlTextureInfo GraphiteMetalTextureInfo(
     bool is_yuv_plane = false,
     bool mipmapped = false);
 #endif
+
+GPU_GLES2_EXPORT
+skgpu::graphite::TextureInfo FallbackGraphiteBackendTextureInfo(
+    const skgpu::graphite::TextureInfo& texture_info);
 
 }  // namespace gpu
 

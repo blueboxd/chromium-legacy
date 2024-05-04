@@ -8,10 +8,19 @@ component("cpp") {
   defines = [ "IS_EDITOR_MENU_PUBLIC_CPP_IMPL" ]
 
   sources = [
+    "icon.cc",
+    "icon.h",
+    "preset_text_query.cc",
+    "preset_text_query.h",
     "read_write_card_controller.h",
     "read_write_cards_manager.cc",
     "read_write_cards_manager.h",
   ]
 
-  deps = [ "//base" ]
+  deps = [
+    "//base",
+    "//chromeos/ui/vector_icons",
+    "//components/vector_icons",
+    "//ui/gfx",
+  ]
 }

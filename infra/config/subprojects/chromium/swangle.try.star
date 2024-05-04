@@ -25,6 +25,7 @@ try_.defaults.set(
     reclient_instance = reclient.instance.DEFAULT_UNTRUSTED,
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
     service_account = "chromium-try-gpu-builder@chops-service-accounts.iam.gserviceaccount.com",
+    siso_enabled = True,
     subproject_list_view = "luci.chromium.try",
     task_template_canary_percentage = 5,
 )

@@ -55,7 +55,7 @@ void AutomationClientImpl::DispatchAccessibilityEvents(
 }
 
 void AutomationClientImpl::DispatchAccessibilityLocationChange(
-    const content::AXLocationChangeNotificationDetails& details) {
+    const ui::AXLocationChanges& details) {
   ui::AXTreeID tree_id = details.ax_tree_id;
   if (tree_id == ui::AXTreeIDUnknown())
     return;
@@ -103,7 +103,7 @@ void AutomationClientImpl::Disable() {
   AutomationManagerAura::GetInstance()->Disable();
 }
 
-void AutomationClientImpl::EnableTree(const ui::AXTreeID& tree_id) {
+void AutomationClientImpl::EnableChildTree(const ui::AXTreeID& tree_id) {
   // TODO(crbug.com/1355633): Refactor logic from extensions namespace to a
   // common location.
   extensions::AutomationInternalEnableTreeFunction::EnableTree(

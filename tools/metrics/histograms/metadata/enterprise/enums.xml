@@ -31,6 +31,52 @@ chromium-metrics-reviews@google.com.
   <int value="1" label="Warned"/>
 </enum>
 
+<enum name="CertificatePrivateKeySource">
+  <int value="0" label="Unexportable"/>
+  <int value="1" label="Software"/>
+</enum>
+
+<enum name="CertificateProvisioningError">
+  <int value="0" label="Identity Loading Failed"/>
+  <int value="1" label="Temporary Identity Loading Failed"/>
+  <int value="2" label="Missing Private Key"/>
+  <int value="3" label="Missing Temporary Private Key"/>
+  <int value="4" label="Private Key Creation Failed"/>
+  <int value="5" label="Certificate Creation Failed"/>
+  <int value="6" label="Certificate Commit Failed"/>
+</enum>
+
+<enum name="CertificateStoreError">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Invalid Identity Name"/>
+  <int value="2" label="Invalid Database State"/>
+  <int value="3" label="Get Database Entry Failed"/>
+  <int value="4" label="Conflicting Identity"/>
+  <int value="5" label="Create Key Failed"/>
+  <int value="6" label="Save Key Failed"/>
+  <int value="7" label="Invalid Certificate Input"/>
+  <int value="8" label="Certificate Commit Failed"/>
+  <int value="9" label="Load Key Failed"/>
+  <int value="10" label="Invalid Final Identity Name"/>
+  <int value="11" label="Identity Not Found"/>
+</enum>
+
+<enum name="CertificateUploadClientError">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Invalid Key Parameter"/>
+  <int value="2" label="Signature Creation Failed"/>
+  <int value="3" label="Missing DM Token"/>
+  <int value="4" label="Missing Upload URL"/>
+  <int value="5" label="Invalid Upload URL"/>
+</enum>
+
+<enum name="DataProtectionURLVerdictSource">
+  <int value="0" label="Page UserData"/>
+  <int value="1" label="Cached lookup result"/>
+  <int value="2" label="Post navigation lookup"/>
+  <int value="3" label="WebContents UserData"/>
+</enum>
+
 <enum name="DeviceIdentifierStatus">
   <int value="0" label="all device identifiers are present"/>
   <int value="1" label="serial number is missing"/>
@@ -434,6 +480,7 @@ chromium-metrics-reviews@google.com.
   <int value="27" label="FAILURE_HOST_INVALID_DOMAIN_ERROR"/>
   <int value="28" label="HOST_SESSION_DISCONNECTED"/>
   <int value="29" label="FAILURE_UNKNOWN_ERROR"/>
+  <int value="30" label="FAILURE_REAUTHZ_POLICY_CHECK_FAILED"/>
 </enum>
 
 <enum name="EnterpriseDeviceManagementStatus">
@@ -2064,9 +2111,29 @@ chromium-metrics-reviews@google.com.
   <int value="1230" label="DefaultDirectSocketsSetting"/>
   <int value="1231" label="DirectSocketsAllowedForUrls"/>
   <int value="1232" label="DirectSocketsBlockedForUrls"/>
-  <int value="1233" label="ProductSpecificationsEnabled"/>
   <int value="1234" label="PrefixedVideoFullscreenApiAvailability"/>
   <int value="1235" label="PrivacySandboxIpProtectionEnabled"/>
+  <int value="1236" label="OrcaEnabled"/>
+  <int value="1237" label="EnterpriseLogoUrl"/>
+  <int value="1238" label="CustomProfileLabel"/>
+  <int value="1239" label="ProfileLabel"/>
+  <int value="1240" label="PrivacySandboxFingerprintingProtectionEnabled"/>
+  <int value="1241" label="MultiScreenCaptureAllowedForUrls"/>
+  <int value="1244" label="BoundSessionCredentialsEnabled"/>
+  <int value="1245" label="UiAutomationProviderEnabled"/>
+  <int value="1246" label="ApplicationBoundEncryptionEnabled"/>
+  <int value="1247" label="DeviceAuthenticationFlowAutoReloadInterval"/>
+  <int value="1248" label="ShowAiIntroScreenEnabled"/>
+  <int value="1249" label="ShowTunaScreenEnabled"/>
+  <int value="1250" label="EnterpriseBadgingTemporarySetting"/>
+  <int value="1251"
+      label="GenAILocalFoundationalModelEnterprisePolicySettings"/>
+  <int value="1252" label="DeviceExtensionsSystemLogEnabled"/>
+  <int value="1253" label="ChromeDataRegionSetting"/>
+  <int value="1254" label="ContextualGoogleIntegrationsEnabled"/>
+  <int value="1255" label="ContextualGoogleIntegrationsConfiguration"/>
+  <int value="1256" label="PdfViewerOutOfProcessIframeEnabled"/>
+  <int value="1257" label="LockScreenAutoStartOnlineReauth"/>
 </enum>
 
 <enum name="EnterprisePoliciesSources">
@@ -2335,7 +2402,8 @@ chromium-metrics-reviews@google.com.
   <int value="18" label="Clear the cache and cookies command"/>
   <int value="19" label="Resets the cellular EUICC command"/>
   <int value="20" label="Rotate attestation credentials command"/>
-  <int value="21" label="Fetch support packet command"/>
+  <int value="21" label="Fetch CRD availability info command"/>
+  <int value="22" label="Fetch support packet command"/>
 </enum>
 
 <enum name="ReportSchedulerReportTrigger">
@@ -2383,12 +2451,6 @@ chromium-metrics-reviews@google.com.
   <int value="6" label="Canvas"/>
   <int value="7" label="[Deprecated] Google News"/>
   <int value="8" label="Explore"/>
-</enum>
-
-<enum name="VPDCacheReadResult">
-  <int value="0" label="Success"/>
-  <int value="1" label="File missing"/>
-  <int value="2" label="Parsing failed"/>
 </enum>
 
 <enum name="WmiQueryError">

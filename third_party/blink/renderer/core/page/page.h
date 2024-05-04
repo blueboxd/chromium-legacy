@@ -100,6 +100,7 @@ class ScrollingCoordinator;
 class ScrollbarTheme;
 class Settings;
 class SpatialNavigationController;
+class SVGResourceDocumentCache;
 class TopDocumentRootScrollerController;
 class ValidationMessageClient;
 class VisualViewport;
@@ -165,7 +166,7 @@ class CORE_EXPORT Page final : public GarbageCollected<Page>,
 
   void EmulateForcedColors(bool is_dark_theme);
   void DisableEmulatedForcedColors();
-  void UpdateColorProviders(
+  bool UpdateColorProviders(
       const ColorProviderColorMaps& color_provider_colors);
   void UpdateColorProvidersForTest();
   const ui::ColorProvider* GetColorProviderForPainting(
@@ -234,6 +235,7 @@ class CORE_EXPORT Page final : public GarbageCollected<Page>,
   DragController& GetDragController() const { return *drag_controller_; }
   FocusController& GetFocusController() const { return *focus_controller_; }
   SpatialNavigationController& GetSpatialNavigationController();
+  SVGResourceDocumentCache& GetSVGResourceDocumentCache();
   ContextMenuController& GetContextMenuController() const {
     return *context_menu_controller_;
   }
@@ -499,6 +501,9 @@ class CORE_EXPORT Page final : public GarbageCollected<Page>,
 
   void InvalidateColorScheme();
 
+  // Connect the Page to the `opener_`'s related pages, if those exist.
+  void LinkRelatedPagesIfNeeded();
+
   // Typically, the main frame and Page should both be owned by the embedder,
   // which must call Page::willBeDestroyed() prior to destroying Page. This
   // call detaches the main frame and clears this pointer, thus ensuring that
@@ -549,6 +554,7 @@ class CORE_EXPORT Page final : public GarbageCollected<Page>,
   const Member<VisualViewport> visual_viewport_;
   const Member<LinkHighlight> link_highlight_;
   Member<SpatialNavigationController> spatial_navigation_controller_;
+  Member<SVGResourceDocumentCache> svg_resource_document_cache_;
 
   Member<PluginData> plugin_data_;
 
@@ -608,6 +614,9 @@ class CORE_EXPORT Page final : public GarbageCollected<Page>,
   // browsing context.  See also RelatedPages method.
   Member<Page> next_related_page_;
   Member<Page> prev_related_page_;
+
+  // The Page that opened this Page.
+  WeakMember<Page> opener_;
 
   // A handle to notify the scheduler whether this page has other related
   // pages or not.

@@ -28,7 +28,6 @@
 #include "gpu/command_buffer/service/error_state.h"
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/framebuffer_manager.h"
-#include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/command_buffer/service/service_discardable_manager.h"
 #include "ui/gl/gl_context.h"
@@ -356,13 +355,6 @@ bool SizedFormatAvailable(const FeatureInfo* feature_info,
     return true;
   }
 
-  if ((feature_info->feature_flags().chromium_image_ycbcr_420v &&
-       internal_format == GL_RGB_YCBCR_420V_CHROMIUM) ||
-      (feature_info->feature_flags().chromium_image_ycbcr_p010 &&
-       internal_format == GL_RGB_YCBCR_P010_CHROMIUM)) {
-    return true;
-  }
-
   if (internal_format == GL_RGB10_A2_EXT &&
       (feature_info->feature_flags().chromium_image_ar30 ||
        feature_info->feature_flags().chromium_image_ab30)) {
@@ -506,7 +498,6 @@ TexturePassthrough::TexturePassthrough(GLuint service_id, GLenum target)
 }
 
 TexturePassthrough::~TexturePassthrough() {
-  DeleteFromMailboxManager();
   if (have_context_) {
     glDeleteTextures(1, &owned_service_id_);
   }
@@ -546,9 +537,7 @@ Texture::Texture(GLuint service_id)
     : TextureBase(service_id),
       owned_service_id_(service_id) {}
 
-Texture::~Texture() {
-  DeleteFromMailboxManager();
-}
+Texture::~Texture() = default;
 
 void Texture::AddTextureRef(TextureRef* ref) {
   DCHECK(!base::Contains(refs_, ref));
@@ -1763,12 +1752,7 @@ bool Texture::CanRenderTo(const FeatureInfo* feature_info, GLint level) const {
   if (target_ == 0)
     return false;
   if (target_ == GL_TEXTURE_EXTERNAL_OES) {
-    if (level != 0 || !feature_info->feature_flags().oes_egl_image_external ||
-        !feature_info->feature_flags().ext_yuv_target)
-      return false;
-    auto format = face_infos_[0].level_infos[0].internal_format;
-    return format == GL_RGB_YCBCR_420V_CHROMIUM ||
-           format == GL_RGB_YCRCB_420_CHROMIUM;
+    return false;
   }
   DCHECK_LT(0u, face_infos_.size());
   // In GLES2, cube completeness is not required for framebuffer completeness.
@@ -3539,8 +3523,6 @@ GLenum TextureManager::ExtractFormatFromStorageFormat(GLenum internalformat) {
     case GL_RGB9_E5:
     case GL_RGB16F:
     case GL_RGB32F:
-    case GL_RGB_YCBCR_420V_CHROMIUM:
-    case GL_RGB_YCRCB_420_CHROMIUM:
       return GL_RGB;
     case GL_RGB8UI:
     case GL_RGB8I:

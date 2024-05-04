@@ -35,6 +35,9 @@ export function setupFakeInputDeviceSettingsProvider(): void {
       fakeGraphicsTabletButtonActions);
   provider.setFakeActionsForMouseButtonCustomization(fakeMouseButtonActions);
   provider.setFakeHasLauncherButton(true);
+  provider.setFakeIsRgbKeyboardSupported(true);
+  provider.setFakeHasKeyboardBacklight(true);
+  provider.setFakeHasAmbientLightSensor(true);
   inputDeviceSettingsProvider = provider;
 }
 

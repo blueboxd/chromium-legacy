@@ -5,8 +5,8 @@
 #include "chrome/browser/ash/login/users/chrome_user_manager_util.h"
 
 #include "base/values.h"
-#include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/ash/settings/device_settings_provider.h"
+#include "chromeos/ash/components/settings/cros_settings.h"
 #include "chromeos/ash/components/settings/cros_settings_names.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/policy_constants.h"
@@ -76,33 +76,6 @@ bool IsManagedGuestSessionOrEphemeralLogin() {
       user_manager::UserManager::Get();
   return user_manager->IsLoggedInAsManagedGuestSession() ||
          user_manager->IsCurrentUserCryptohomeDataEphemeral();
-}
-
-user_manager::UserList FindLoginAllowedUsers(
-    const user_manager::UserList& users) {
-  bool show_users_on_signin;
-  CrosSettings::Get()->GetBoolean(kAccountsPrefShowUserNamesOnSignIn,
-                                  &show_users_on_signin);
-  user_manager::UserList found_users;
-  for (user_manager::User* user : users) {
-    // Skip kiosk apps for login screen user list. Kiosk apps as pods (aka new
-    // kiosk UI) is currently disabled and it gets the apps directly from
-    // KioskChromeAppManager, ArcKioskAppManager and WebKioskAppManager.
-    if (user->IsKioskType()) {
-      continue;
-    }
-    const bool meets_allowlist_requirements =
-        !user->HasGaiaAccount() ||
-        user_manager::UserManager::Get()->IsGaiaUserAllowed(*user);
-    // Public session accounts are always shown on login screen.
-    const bool meets_show_users_requirements =
-        show_users_on_signin ||
-        user->GetType() == user_manager::UserType::kPublicAccount;
-    if (meets_allowlist_requirements && meets_show_users_requirements) {
-      found_users.push_back(user);
-    }
-  }
-  return found_users;
 }
 
 }  // namespace ash::chrome_user_manager_util

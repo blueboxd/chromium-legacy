@@ -20,9 +20,9 @@ import org.chromium.chrome.browser.hub.PaneId;
 import org.chromium.chrome.browser.incognito.reauth.IncognitoReauthManager.IncognitoReauthCallback;
 import org.chromium.chrome.browser.layouts.LayoutManager;
 import org.chromium.chrome.browser.layouts.LayoutType;
+import org.chromium.chrome.browser.tab_ui.TabSwitcherCustomViewManager;
 import org.chromium.chrome.browser.tabmodel.IncognitoTabHostUtils;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
-import org.chromium.chrome.browser.tasks.tab_management.TabSwitcherCustomViewManager;
 import org.chromium.components.browser_ui.settings.SettingsLauncher;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 
@@ -49,8 +49,8 @@ public class IncognitoReauthCoordinatorFactory {
     /**
      * A boolean to distinguish between tabbedActivity or CCT, during coordinator creation.
      *
-     * TODO(crbug.com/1227656): Remove the need for this and instead populate the
-     * various {@link Runnable} that we create here at the client site directly.
+     * <p>TODO(crbug.com/40056462): Remove the need for this and instead populate the various {@link
+     * Runnable} that we create here at the client site directly.
      */
     private final boolean mIsTabbedActivity;
 

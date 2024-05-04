@@ -9,13 +9,13 @@
 #import "components/safe_browsing/core/common/features.h"
 #import "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/autofill/model/form_suggestion_constants.h"
+#import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/shared/ui/symbols/symbols.h"
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_switch_cell.h"
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_switch_item.h"
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_url_item.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_constants.h"
-#import "ios/chrome/browser/ui/authentication/signin/advanced_settings_signin/advanced_settings_signin_constants.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/address_view_controller.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/card_coordinator.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/card_view_controller.h"
@@ -42,14 +42,13 @@
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_constants.h"
 #import "ios/chrome/browser/ui/settings/autofill/autofill_add_credit_card_view_controller.h"
-#import "ios/chrome/browser/ui/settings/autofill/autofill_constants.h"
 #import "ios/chrome/browser/ui/settings/autofill/autofill_credit_card_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/autofill/autofill_profile_table_view_controller.h"
+#import "ios/chrome/browser/ui/settings/autofill/autofill_settings_constants.h"
 #import "ios/chrome/browser/ui/settings/cells/clear_browsing_data_constants.h"
 #import "ios/chrome/browser/ui/settings/clear_browsing_data/clear_browsing_data_ui_constants.h"
 #import "ios/chrome/browser/ui/settings/google_services/google_services_settings_constants.h"
 #import "ios/chrome/browser/ui/settings/google_services/manage_accounts/accounts_table_view_controller_constants.h"
-#import "ios/chrome/browser/ui/settings/import_data_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/notifications/notifications_constants.h"
 #import "ios/chrome/browser/ui/settings/notifications/tracking_price/tracking_price_constants.h"
 #import "ios/chrome/browser/ui/settings/password/password_settings/password_settings_constants.h"
@@ -65,6 +64,7 @@
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_constants.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/inactive_tabs/inactive_tabs_constants.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_constants.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_strip/ui/swift_constants_for_objective_c.h"
 #import "ios/chrome/browser/ui/toolbar/primary_toolbar_view.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
 #import "ios/chrome/common/ui/promo_style/constants.h"
@@ -79,9 +79,31 @@
 
 namespace {
 
-// Identifer for cell at given `index` in the tab grid.
-NSString* IdentifierForCellAtIndex(unsigned int index) {
+// Identifier the for cell at given `index` in the tab grid.
+NSString* IdentifierForGridCellAtIndex(unsigned int index) {
   return [NSString stringWithFormat:@"%@%u", kGridCellIdentifierPrefix, index];
+}
+
+// Identifier for the group cell at given `index` in the tab grid.
+NSString* IdentifierForGridGroupCellAtIndex(unsigned int index) {
+  return [NSString
+      stringWithFormat:@"%@%u", kGroupGridCellIdentifierPrefix, index];
+}
+
+// Identifier the for cell at given `index` in the tab strip.
+NSString* IdentifierForStripCellAtIndex(unsigned int index) {
+  return [NSString stringWithFormat:@"%@%u",
+                                    TabStripCollectionViewConstants
+                                        .tabStripTabCellPrefixIdentifier,
+                                    index];
+}
+
+// Identifier for the group cell at given `index` in the tab strip.
+NSString* IdentifierForStripGroupCellAtIndex(unsigned int index) {
+  return [NSString stringWithFormat:@"%@%u",
+                                    TabStripCollectionViewConstants
+                                        .tabStripTabCellPrefixIdentifier,
+                                    index];
 }
 
 id<GREYMatcher> TableViewSwitchIsToggledOn(BOOL is_toggled_on) {
@@ -455,6 +477,31 @@ UIWindow* WindowWithAccessibilityIdentifier(NSString* accessibility_id) {
   return matcher;
 }
 
++ (id<GREYMatcher>)omniboxContainingAutocompleteText:(NSString*)text {
+  if (!text) {
+    text = @"";
+  }
+
+  GREYElementMatcherBlock* matcher = [GREYElementMatcherBlock
+      matcherWithMatchesBlock:^BOOL(id element) {
+        OmniboxTextFieldIOS* omnibox =
+            base::apple::ObjCCast<OmniboxTextFieldIOS>(element);
+
+        NSArray* textComponents =
+            [omnibox.accessibilityValue componentsSeparatedByString:@"||||"];
+
+        return textComponents.count >= 2 &&
+               [textComponents[1] isEqualToString:text];
+      }
+      descriptionBlock:^void(id<GREYDescription> description) {
+        [description
+            appendText:[NSString stringWithFormat:
+                                     @"Omnibox contains autocomplete text '%@'",
+                                     text]];
+      }];
+  return matcher;
+}
+
 + (id<GREYMatcher>)omniboxAutocompleteLabel {
   return grey_allOf(
       grey_accessibilityID(kOmniboxAutocompleteLabelAccessibilityIdentifier),
@@ -711,18 +758,6 @@ UIWindow* WindowWithAccessibilityIdentifier(NSString* accessibility_id) {
   return grey_accessibilityID(kSettingsAccountsTableViewId);
 }
 
-+ (id<GREYMatcher>)settingsImportDataImportButton {
-  return grey_accessibilityID(kImportDataImportCellId);
-}
-
-+ (id<GREYMatcher>)settingsImportDataKeepSeparateButton {
-  return grey_accessibilityID(kImportDataKeepSeparateCellId);
-}
-
-+ (id<GREYMatcher>)settingsImportDataContinueButton {
-  return grey_accessibilityID(kImportDataContinueButtonId);
-}
-
 + (id<GREYMatcher>)settingsSafetyCheckTableView {
   return grey_accessibilityID(
       SafetyCheckTableViewController.accessibilityIdentifier);
@@ -842,12 +877,12 @@ UIWindow* WindowWithAccessibilityIdentifier(NSString* accessibility_id) {
   return grey_accessibilityID(kSettingsSafetyCheckCellId);
 }
 
-// TODO(crbug.com/1021752): Remove this stub.
+// TODO(crbug.com/40106317): Remove this stub.
 + (id<GREYMatcher>)paymentRequestView {
   return nil;
 }
 
-// TODO(crbug.com/1021752): Remove this stub.
+// TODO(crbug.com/40106317): Remove this stub.
 + (id<GREYMatcher>)paymentRequestErrorView {
   return nil;
 }
@@ -932,17 +967,17 @@ UIWindow* WindowWithAccessibilityIdentifier(NSString* accessibility_id) {
       buttonWithAccessibilityLabelID:IDS_IOS_DISCOVER_FEED_MENU_TURN_OFF_ITEM];
 }
 
-// TODO(crbug.com/1021752): Remove this stub.
+// TODO(crbug.com/40106317): Remove this stub.
 + (id<GREYMatcher>)warningMessageView {
   return nil;
 }
 
-// TODO(crbug.com/1021752): Remove this stub.
+// TODO(crbug.com/40106317): Remove this stub.
 + (id<GREYMatcher>)paymentRequestPickerRow {
   return nil;
 }
 
-// TODO(crbug.com/1021752): Remove this stub.
+// TODO(crbug.com/40106317): Remove this stub.
 + (id<GREYMatcher>)paymentRequestPickerSearchBar {
   return nil;
 }
@@ -1042,8 +1077,25 @@ UIWindow* WindowWithAccessibilityIdentifier(NSString* accessibility_id) {
 }
 
 + (id<GREYMatcher>)tabGridCellAtIndex:(unsigned int)index {
-  return grey_allOf(grey_accessibilityID(IdentifierForCellAtIndex(index)),
+  return grey_allOf(grey_accessibilityID(IdentifierForGridCellAtIndex(index)),
                     grey_sufficientlyVisible(), nil);
+}
+
++ (id<GREYMatcher>)tabGridGroupCellAtIndex:(unsigned int)index {
+  return grey_allOf(
+      grey_accessibilityID(IdentifierForGridGroupCellAtIndex(index)),
+      grey_sufficientlyVisible(), nil);
+}
+
++ (id<GREYMatcher>)tabStripCellAtIndex:(unsigned int)index {
+  return grey_allOf(grey_accessibilityID(IdentifierForStripCellAtIndex(index)),
+                    grey_sufficientlyVisible(), nil);
+}
+
++ (id<GREYMatcher>)tabStripGroupCellAtIndex:(unsigned int)index {
+  return grey_allOf(
+      grey_accessibilityID(IdentifierForStripGroupCellAtIndex(index)),
+      grey_sufficientlyVisible(), nil);
 }
 
 + (id<GREYMatcher>)tabGridDoneButton {
@@ -1097,14 +1149,24 @@ UIWindow* WindowWithAccessibilityIdentifier(NSString* accessibility_id) {
   return grey_accessibilityID(kTabGridRemoteTabsPageButtonIdentifier);
 }
 
++ (id<GREYMatcher>)tabGridTabGroupsPanelButton {
+  return grey_accessibilityID(kTabGridTabGroupsPageButtonIdentifier);
+}
+
++ (id<GREYMatcher>)tabGridThirdPanelButton {
+  if (IsTabGroupSyncEnabled()) {
+    return [self tabGridTabGroupsPanelButton];
+  }
+  return [self tabGridOtherDevicesPanelButton];
+}
+
 + (id<GREYMatcher>)tabGridNormalModePageControl {
   return grey_allOf(
       grey_kindOfClassName(@"UIControl"),
       grey_descendant(
           [ChromeMatchersAppInterface tabGridIncognitoTabsPanelButton]),
       grey_descendant([ChromeMatchersAppInterface tabGridOpenTabsPanelButton]),
-      grey_descendant(
-          [ChromeMatchersAppInterface tabGridOtherDevicesPanelButton]),
+      grey_descendant([ChromeMatchersAppInterface tabGridThirdPanelButton]),
       grey_ancestor(grey_kindOfClassName(@"UIToolbar")),
       grey_sufficientlyVisible(), nil);
 }
@@ -1129,7 +1191,7 @@ UIWindow* WindowWithAccessibilityIdentifier(NSString* accessibility_id) {
 
 + (id<GREYMatcher>)tabGridCloseButtonForCellAtIndex:(unsigned int)index {
   return grey_allOf(
-      grey_ancestor(grey_accessibilityID(IdentifierForCellAtIndex(index))),
+      grey_ancestor(grey_accessibilityID(IdentifierForGridCellAtIndex(index))),
       grey_accessibilityID(kGridCellCloseButtonIdentifier),
       grey_sufficientlyVisible(), nil);
 }

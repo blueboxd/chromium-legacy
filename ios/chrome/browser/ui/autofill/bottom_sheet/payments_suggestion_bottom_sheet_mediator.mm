@@ -7,6 +7,7 @@
 #import "base/memory/raw_ptr.h"
 #import "base/metrics/histogram_functions.h"
 #import "base/strings/sys_string_conversions.h"
+#import "components/autofill/core/browser/payments_data_manager.h"
 #import "components/autofill/core/browser/personal_data_manager.h"
 #import "components/autofill/core/browser/personal_data_manager_observer.h"
 #import "components/autofill/core/common/autofill_payments_features.h"
@@ -70,10 +71,6 @@ using PaymentsSuggestionBottomSheetExitReason::kBadProvider;
                               autofill::PersonalDataManagerObserver>>
       _scopedPersonalDataManagerObservation;
 
-  // Whether the field that triggered the bottom sheet will need to refocus when
-  // the bottom sheet is dismissed. Default is true.
-  bool _needsRefocus;
-
   // Information regarding the triggering form for this bottom sheet.
   autofill::FormActivityParams _params;
 }
@@ -89,7 +86,6 @@ using PaymentsSuggestionBottomSheetExitReason::kBadProvider;
                  personalDataManager:
                      (autofill::PersonalDataManager*)personalDataManager {
   if (self = [super init]) {
-    _needsRefocus = true;
     _params = params;
     _hasCreditCards = NO;
     _webStateList = webStateList;
@@ -144,7 +140,7 @@ using PaymentsSuggestionBottomSheetExitReason::kBadProvider;
 - (autofill::CreditCard*)creditCardForIdentifier:(NSString*)identifier {
   CHECK(identifier);
   CHECK(_personalDataManager);
-  return _personalDataManager->GetCreditCardByGUID(
+  return _personalDataManager->payments_data_manager().GetCreditCardByGUID(
       base::SysNSStringToUTF8(identifier));
 }
 
@@ -171,7 +167,8 @@ using PaymentsSuggestionBottomSheetExitReason::kBadProvider;
     return;
   }
 
-  const auto& creditCards = _personalDataManager->GetCreditCardsToSuggest();
+  const auto& creditCards =
+      _personalDataManager->payments_data_manager().GetCreditCardsToSuggest();
   if (creditCards.empty()) {
     [_consumer dismiss];
     return;
@@ -232,12 +229,11 @@ using PaymentsSuggestionBottomSheetExitReason::kBadProvider;
     // Last resort safety exit: On the unlikely event that the provider was set
     // incorrectly (for example if local predictions and server predictions are
     // different), simply exit and open the keyboard.
-    _needsRefocus = true;
-    [self disableBottomSheet];
+    [self disableBottomSheetAndRefocus:YES];
     [self logExitReason:kBadProvider];
     return;
   }
-  _needsRefocus = false;
+  [self disableBottomSheetAndRefocus:NO];
 
   // Create a form suggestion containing the selected credit card's backend id
   // so that the suggestion provider can properly fill the form.
@@ -252,8 +248,9 @@ using PaymentsSuggestionBottomSheetExitReason::kBadProvider;
                                    kAutofillEnableVirtualCards) &&
                            ([creditCardData recordType] ==
                             autofill::CreditCard::RecordType::kVirtualCard))
-                              ? autofill::PopupItemId::kVirtualCreditCardEntry
-                              : autofill::PopupItemId::kCreditCardEntry)
+                              ? autofill::SuggestionType::
+                                    kVirtualCreditCardEntry
+                              : autofill::SuggestionType::kCreditCardEntry)
                backendIdentifier:[creditCardData backendIdentifier]
                   requiresReauth:NO
       acceptanceA11yAnnouncement:
@@ -263,11 +260,11 @@ using PaymentsSuggestionBottomSheetExitReason::kBadProvider;
   [provider didSelectSuggestion:suggestion params:_params];
 }
 
-- (void)disableBottomSheet {
+- (void)disableBottomSheetAndRefocus:(BOOL)refocus {
   if (_webStateList) {
     web::WebState* activeWebState = _webStateList->GetActiveWebState();
     AutofillBottomSheetTabHelper::FromWebState(activeWebState)
-        ->DetachPaymentsListenersForAllFrames(_needsRefocus);
+        ->DetachPaymentsListenersForAllFrames(refocus);
   }
 }
 
@@ -321,7 +318,7 @@ using PaymentsSuggestionBottomSheetExitReason::kBadProvider;
 // that FormSuggestionController's "_provider" member is set, which happens
 // within [FormSuggestionController onSuggestionsReady:provider:], before the
 // credit card suggestion is selected.
-// TODO(crbug.com/1479175): Remove this dependency on suggestions.
+// TODO(crbug.com/40929827): Remove this dependency on suggestions.
 - (void)setupSuggestionsProvider {
   web::WebState* activeWebState = _webStateList->GetActiveWebState();
   if (!activeWebState) {
@@ -349,10 +346,11 @@ using PaymentsSuggestionBottomSheetExitReason::kBadProvider;
 // Returns the icon associated with the provided credit card.
 - (UIImage*)iconForCreditCard:(const autofill::CreditCard*)creditCard {
   // Check if custom card art is available.
-  GURL cardArtURL = _personalDataManager->GetCardArtURL(*creditCard);
+  GURL cardArtURL =
+      _personalDataManager->payments_data_manager().GetCardArtURL(*creditCard);
   if (!cardArtURL.is_empty() && cardArtURL.is_valid()) {
-    gfx::Image* image =
-        _personalDataManager->GetCreditCardArtImageForUrl(cardArtURL);
+    gfx::Image* image = _personalDataManager->payments_data_manager()
+                            .GetCreditCardArtImageForUrl(cardArtURL);
     if (image) {
       return image->ToUIImage();
     }

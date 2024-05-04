@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <string_view>
 #include <vector>
 
 #include "base/functional/callback.h"
@@ -42,6 +43,10 @@ enum class GetLoginMatchType {
   kAffiliated,
   // eTLD + 1 match.
   kPSL,
+  // Singon realm is grouped with the requesting page URL as determined by the
+  // `AffiliationService`. This relation to the requesting page is weaker than
+  // `kAffiliated`.
+  kGrouped,
 };
 
 // Update |credential| to reflect usage.
@@ -78,7 +83,7 @@ bool IsAbleToSavePasswords(password_manager::PasswordManagerClient* client);
 // example if the signon_realm is "https://www.google.com/", after
 // excluding protocol it becomes "www.google.com/".
 // This assumes that the |form|'s host is a substring of the signon_realm.
-base::StringPiece GetSignonRealmWithProtocolExcluded(
+std::string_view GetSignonRealmWithProtocolExcluded(
     const password_manager::PasswordForm& form);
 
 // For credentials returned from PasswordStore::GetLogins, specifies the type of
@@ -146,7 +151,7 @@ GURL StripAuthAndParams(const GURL& gurl);
 // by default. For ip-addresses, scheme "http://" is used.
 GURL ConstructGURLWithScheme(const std::string& url);
 
-// TODO(crbug.com/1261752): Deduplicate GetSignonRealm implementations.
+// TODO(crbug.com/40202333): Deduplicate GetSignonRealm implementations.
 // Returns the value of PasswordForm::signon_realm for an HTML form with the
 // origin |url|.
 std::string GetSignonRealm(const GURL& url);

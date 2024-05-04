@@ -25,29 +25,21 @@ class View;
 
 namespace ash {
 
-class PickerCapsNudgeView;
 class PickerClipboardProvider;
-class PickerListItemView;
 class PickerSearchResult;
 class PickerSectionListView;
 class PickerSectionView;
+class PickerZeroStateViewDelegate;
 
 class ASH_EXPORT PickerZeroStateView : public PickerPageView {
   METADATA_HEADER(PickerZeroStateView, PickerPageView)
 
  public:
-  // Indicates the user has selected a category.
-  using SelectCategoryCallback =
-      base::RepeatingCallback<void(PickerCategory category)>;
-
-  // Indicates the user has selected a result.
-  using SelectSearchResultCallback =
-      base::RepeatingCallback<void(const PickerSearchResult& result)>;
-
   explicit PickerZeroStateView(
-      int picker_view_width,
-      SelectCategoryCallback select_category_callback,
-      SelectSearchResultCallback select_result_callback);
+      PickerZeroStateViewDelegate* delegate,
+      base::span<const PickerCategory> available_categories,
+      bool show_suggested_results,
+      int picker_view_width);
   PickerZeroStateView(const PickerZeroStateView&) = delete;
   PickerZeroStateView& operator=(const PickerZeroStateView&) = delete;
   ~PickerZeroStateView() override;
@@ -65,18 +57,13 @@ class ASH_EXPORT PickerZeroStateView : public PickerPageView {
     return section_views_;
   }
 
-  PickerCapsNudgeView* CapsNudgeViewForTesting() const {
-    return caps_nudge_view_;
-  }
-
   PickerSectionView* SuggestedSectionForTesting() const {
     return suggested_section_view_;
   }
 
  private:
-  void ClearCapsNudge();
-
-  void DeleteNudge();
+  void OnCategorySelected(PickerCategory category);
+  void OnSuggestedResultSelected(const PickerSearchResult& result);
 
   // Gets or creates the section to contain `category`.
   PickerSectionView* GetOrCreateSectionView(PickerCategory category);
@@ -85,7 +72,12 @@ class ASH_EXPORT PickerZeroStateView : public PickerPageView {
 
   void ScrollPseudoFocusedViewToVisible();
 
-  void OnFetchSuggestedResult(std::unique_ptr<PickerListItemView> item_view);
+  void OnFetchSuggestedResults(std::vector<PickerSearchResult> result);
+
+  void OnFetchZeroStateEditorResults(PickerCategory category,
+                                     std::vector<PickerSearchResult> result);
+
+  raw_ptr<PickerZeroStateViewDelegate> delegate_;
 
   // The section list view, contains the section views.
   raw_ptr<PickerSectionListView> section_list_view_ = nullptr;
@@ -93,12 +85,11 @@ class ASH_EXPORT PickerZeroStateView : public PickerPageView {
   // Used to track the section view for each category type.
   std::map<PickerCategoryType, raw_ptr<PickerSectionView>> section_views_;
 
-  raw_ptr<PickerCapsNudgeView> caps_nudge_view_;
   // The currently pseudo focused view, which responds to user actions that
   // trigger `DoPseudoFocusedAction`.
   raw_ptr<views::View> pseudo_focused_view_ = nullptr;
 
-  raw_ptr<PickerSectionView> suggested_section_view_;
+  raw_ptr<PickerSectionView> suggested_section_view_ = nullptr;
   std::unique_ptr<PickerClipboardProvider> clipboard_provider_;
 
   base::WeakPtrFactory<PickerZeroStateView> weak_ptr_factory_{this};

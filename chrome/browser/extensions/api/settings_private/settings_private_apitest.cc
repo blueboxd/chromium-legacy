@@ -15,6 +15,7 @@
 #include "chrome/browser/extensions/api/settings_private/settings_private_delegate.h"
 #include "chrome/browser/extensions/api/settings_private/settings_private_delegate_factory.h"
 #include "chrome/browser/extensions/extension_apitest.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/settings_private.h"
 #include "chrome/common/pref_names.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -131,7 +132,7 @@ IN_PROC_BROWSER_TEST_P(SettingsPrivateApiTest, GetPartiallyManagedPref) {
       content_settings::PartitionKey::GetDefaultForTesting());
   content_settings::TestUtils::OverrideProvider(
       HostContentSettingsMapFactory::GetForProfile(profile()),
-      std::move(provider), HostContentSettingsMap::POLICY_PROVIDER);
+      std::move(provider), content_settings::ProviderType::kPolicyProvider);
   EXPECT_TRUE(RunSettingsSubtest("getPartiallyManagedPref")) << message_;
 }
 
@@ -152,7 +153,7 @@ IN_PROC_BROWSER_TEST_P(SettingsPrivateApiTest, GetManagedByParentPref) {
       content_settings::PartitionKey::GetDefaultForTesting());
   content_settings::TestUtils::OverrideProvider(
       HostContentSettingsMapFactory::GetForProfile(profile()),
-      std::move(provider), HostContentSettingsMap::SUPERVISED_PROVIDER);
+      std::move(provider), content_settings::ProviderType::kSupervisedProvider);
   EXPECT_TRUE(RunSettingsSubtest("getManagedByParentPref")) << message_;
 }
 

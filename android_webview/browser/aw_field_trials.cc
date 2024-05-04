@@ -69,7 +69,7 @@ void AwFieldTrials::OnVariationsSetupComplete() {
   }
 }
 
-// TODO(crbug.com/1453407): Consider to migrate all WebView feature overrides
+// TODO(crbug.com/40271903): Consider to migrate all WebView feature overrides
 // from the AwMainDelegate to the new mechanism here.
 void AwFieldTrials::RegisterFeatureOverrides(base::FeatureList* feature_list) {
   if (!feature_list) {
@@ -80,6 +80,12 @@ void AwFieldTrials::RegisterFeatureOverrides(base::FeatureList* feature_list) {
   // Disable third-party storage partitioning on WebView.
   aw_feature_overrides.DisableFeature(
       net::features::kThirdPartyStoragePartitioning);
+
+  // TODO(crbug.com/323992884): Re-enable support for partitioning Blob URLs
+  // once a fix is in place for WebViews becoming unresponsive when an attempt
+  // to register a Blob URL is made after WebView destruction.
+  aw_feature_overrides.DisableFeature(
+      net::features::kSupportPartitionedBlobUrl);
 
   // Disable the passthrough on WebView.
   aw_feature_overrides.DisableFeature(
@@ -105,6 +111,7 @@ void AwFieldTrials::RegisterFeatureOverrides(base::FeatureList* feature_list) {
 
   // Disable Shared Storage on WebView.
   aw_feature_overrides.DisableFeature(blink::features::kSharedStorageAPI);
+  aw_feature_overrides.DisableFeature(blink::features::kSharedStorageAPIM125);
 
   // Disable scrollbar-color on WebView.
   aw_feature_overrides.DisableFeature(blink::features::kScrollbarColor);
@@ -134,14 +141,14 @@ void AwFieldTrials::RegisterFeatureOverrides(base::FeatureList* feature_list) {
   // SurfaceControl is controlled by kWebViewSurfaceControl flag.
   aw_feature_overrides.DisableFeature(::features::kAndroidSurfaceControl);
 
-  // TODO(https://crbug.com/963653): WebOTP is not yet supported on
+  // TODO(crbug.com/40627649): WebOTP is not yet supported on
   // WebView.
   aw_feature_overrides.DisableFeature(::features::kWebOTP);
 
-  // TODO(https://crbug.com/1012899): WebXR is not yet supported on WebView.
+  // TODO(crbug.com/40652382): WebXR is not yet supported on WebView.
   aw_feature_overrides.DisableFeature(::features::kWebXr);
 
-  // TODO(https://crbug.com/1312827): Digital Goods API is not yet supported
+  // TODO(crbug.com/40831925): Digital Goods API is not yet supported
   // on WebView.
   aw_feature_overrides.DisableFeature(::features::kDigitalGoodsApi);
 
@@ -163,15 +170,15 @@ void AwFieldTrials::RegisterFeatureOverrides(base::FeatureList* feature_list) {
   // Disable dr-dc on webview.
   aw_feature_overrides.DisableFeature(::features::kEnableDrDc);
 
-  // TODO(crbug.com/1100993): Web Bluetooth is not yet supported on WebView.
+  // TODO(crbug.com/40703318): Web Bluetooth is not yet supported on WebView.
   aw_feature_overrides.DisableFeature(::features::kWebBluetooth);
 
-  // TODO(crbug.com/933055): WebUSB is not yet supported on WebView.
+  // TODO(crbug.com/41441927): WebUSB is not yet supported on WebView.
   aw_feature_overrides.DisableFeature(::features::kWebUsb);
 
   // Disable TFLite based language detection on webview until webview supports
   // ML model delivery via Optimization Guide component.
-  // TODO(crbug.com/1292622): Enable the feature on Webview.
+  // TODO(crbug.com/40819484): Enable the feature on Webview.
   aw_feature_overrides.DisableFeature(
       ::translate::kTFLiteLanguageDetectionEnabled);
 
@@ -188,8 +195,6 @@ void AwFieldTrials::RegisterFeatureOverrides(base::FeatureList* feature_list) {
   aw_feature_overrides.DisableFeature(
       ::features::kMouseAndTrackpadDropdownMenu);
 
-  // Disable the MPA ViewTransition + BFCache fix on WebView. It's enabled on
-  // all other platforms but WebView requires a slower rollout.
-  aw_feature_overrides.DisableFeature(
-      ::features::kInvalidateLocalSurfaceIdPreCommit);
+  // TODO(crbug.com/40272633): Web MIDI permission prompt for all usage.
+  aw_feature_overrides.DisableFeature(blink::features::kBlockMidiByDefault);
 }

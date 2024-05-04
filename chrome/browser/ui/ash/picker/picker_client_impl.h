@@ -27,6 +27,7 @@
 class EndpointFetcher;
 class Profile;
 class ChromeSearchResult;
+class PickerFileSuggester;
 
 namespace app_list {
 class SearchEngine;
@@ -60,8 +61,6 @@ class PickerClientImpl
   ~PickerClientImpl() override;
 
   // ash::PickerClient:
-  std::unique_ptr<ash::AshWebView> CreateWebView(
-      const ash::AshWebView::InitParams& params) override;
   scoped_refptr<network::SharedURLLoaderFactory> GetSharedURLLoaderFactory()
       override;
   void FetchGifSearch(const std::string& query,
@@ -71,6 +70,12 @@ class PickerClientImpl
                        std::optional<ash::PickerCategory> category,
                        CrosSearchResultsCallback callback) override;
   void StopCrosQuery() override;
+  ShowEditorCallback CacheEditorContext() override;
+  void GetSuggestedEditorResults(
+      SuggestedEditorResultsCallback callback) override;
+  void GetRecentLocalFileResults(RecentFilesCallback callback) override;
+  void GetRecentDriveFileResults(RecentFilesCallback callback) override;
+  void GetSuggestedLinkResults(SuggestedLinksCallback callback) override;
 
   // user_manager::UserManager::UserSessionStateObserver:
   void ActiveUserChanged(user_manager::User* active_user) override;
@@ -82,11 +87,6 @@ class PickerClientImpl
    public:
     PickerAppListControllerDelegate();
     ~PickerAppListControllerDelegate() override;
-
-    // Returns the URL for the given search result.
-    // TODO: b/324154130 - Remove this once we have an API to get the URL from
-    // CrOS Search.
-    std::optional<GURL> GetUrlForSearchResult(ChromeSearchResult& result);
 
     // AppListControllerDelegate overrides:
     void DismissView() override;
@@ -103,9 +103,6 @@ class PickerClientImpl
                  const GURL& url,
                  ui::PageTransition transition,
                  WindowOpenDisposition disposition) override;
-
-   private:
-    std::optional<GURL> last_opened_url_;
   };
 
   void OnGifSearchResponse(PickerClientImpl::FetchGifsCallback callback,
@@ -116,11 +113,20 @@ class PickerClientImpl
       CrosSearchResultsCallback callback,
       ash::AppListSearchResultType result_type,
       std::vector<std::unique_ptr<ChromeSearchResult>> results);
+  void OnZeroStateLinksSearchResultsUpdated(
+      SuggestedLinksCallback callback,
+      ash::AppListSearchResultType result_type,
+      std::vector<std::unique_ptr<ChromeSearchResult>> results);
   void SetProfileByUser(const user_manager::User* user);
   void SetProfile(Profile* profile);
 
-  std::unique_ptr<app_list::SearchProvider> CreateOmniboxProvider(
-      int provider_types);
+  std::unique_ptr<app_list::SearchProvider>
+  CreateOmniboxProvider(bool bookmarks, bool history, bool open_tabs);
+  std::unique_ptr<app_list::SearchProvider> CreateSearchProviderForCategory(
+      ash::PickerCategory category);
+
+  void ShowEditor(std::optional<std::string> preset_query_id,
+                  std::optional<std::string> freeform_text);
 
   raw_ptr<ash::PickerController> controller_ = nullptr;
   raw_ptr<Profile> profile_ = nullptr;
@@ -131,6 +137,12 @@ class PickerClientImpl
   // A dedicated cros search engine for filtered searches.
   std::unique_ptr<app_list::SearchEngine> filtered_search_engine_;
   std::optional<ash::PickerCategory> current_filter_category_;
+
+  std::unique_ptr<PickerFileSuggester> file_suggester_;
+
+  // A dedicated cros search engine for zero state results for links.
+  // TODO: b/330938446 - Replace with proper zero-state logic.
+  std::unique_ptr<app_list::SearchEngine> zero_state_links_search_engine_;
 
   ash::GifTenorApiFetcher gif_tenor_api_fetcher_;
   std::optional<std::string> current_gif_search_query_;

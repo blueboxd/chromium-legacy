@@ -12,6 +12,7 @@
 
 #include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/memory/stack_allocated.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
@@ -140,6 +141,7 @@ class GPU_GLES2_EXPORT SharedImageBacking {
   bool is_thread_safe() const { return !!lock_; }
   bool is_ref_counted() const { return is_ref_counted_; }
   gfx::BufferUsage buffer_usage() const { return buffer_usage_.value(); }
+  const std::string& debug_label() const { return debug_label_; }
 
   void OnContextLost();
 
@@ -203,10 +205,24 @@ class GPU_GLES2_EXPORT SharedImageBacking {
   // pixmap per plane.
   virtual bool ReadbackToMemory(const std::vector<SkPixmap>& pixmaps);
 
-  // Copy from the backing's GPU texture to its GpuMemoryBuffer if present. This
-  // is needed on Windows where the renderer process can only create shared
-  // memory GMBs and an explicit copy is needed. Returns true on success.
+  // Performs asynchronous readback of pixels from GPU texture into memory.
+  // `pixmaps` should have one pixmap per plane.
+  virtual void ReadbackToMemoryAsync(const std::vector<SkPixmap>& pixmaps,
+                                     base::OnceCallback<void(bool)> callback);
+
+  // Copy from the backing's GPU texture to its GpuMemoryBuffer if present.
+  // Returns whether the copy was successful. The copy, if successful, is
+  // complete when this returns. This is needed on Windows where the renderer
+  // process can only create shared memory GMBs and an explicit copy is needed.
   virtual bool CopyToGpuMemoryBuffer();
+
+  // Copy from the backing's GPU texture to its GpuMemoryBuffer if present.
+  // Runs `callback` with copy success status. The copy, if successful, is
+  // complete when the callback runs. Necessary on platforms like Windows where
+  // we use shared memory GMBs for readback from D3D texture shared images.
+  // Returns true on success.
+  virtual void CopyToGpuMemoryBufferAsync(
+      base::OnceCallback<void(bool)> callback);
 
   // Present the swap chain corresponding to this backing. Presents only if the
   // backing is the back buffer of the swap chain. Returns true on success.
@@ -262,8 +278,6 @@ class GPU_GLES2_EXPORT SharedImageBacking {
   // Used by SharedImageManager.
   friend class SharedImageManager;
   friend class CompoundImageBacking;
-
-  const std::string& debug_label() const { return debug_label_; }
 
   virtual std::unique_ptr<GLTextureImageRepresentation> ProduceGLTexture(
       SharedImageManager* manager,
@@ -347,6 +361,8 @@ class GPU_GLES2_EXPORT SharedImageBacking {
 
   // Helper class used by subclasses to acquire |lock_| if it exists.
   class SCOPED_LOCKABLE GPU_GLES2_EXPORT AutoLock {
+    STACK_ALLOCATED();
+
    public:
     explicit AutoLock(const SharedImageBacking* shared_image_backing)
         EXCLUSIVE_LOCK_FUNCTION(shared_image_backing->lock_);

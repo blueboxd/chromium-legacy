@@ -4,8 +4,9 @@
 
 #include "ios/chrome/browser/sync/model/prefs/ios_chrome_syncable_prefs_database.h"
 
+#include <string_view>
+
 #include "base/containers/fixed_flat_map.h"
-#include "base/strings/string_piece.h"
 #include "components/handoff/pref_names_ios.h"
 #include "ios/chrome/browser/shared/model/prefs/pref_names.h"
 #include "ios/chrome/browser/voice/model/voice_search_prefs.h"
@@ -47,7 +48,7 @@ enum {
 
 // iOS specific list of syncable preferences.
 constexpr auto kIOSChromeSyncablePrefsAllowlist =
-    base::MakeFixedFlatMap<base::StringPiece,
+    base::MakeFixedFlatMap<std::string_view,
                            sync_preferences::SyncablePrefMetadata>({
         {prefs::kArticlesForYouEnabled,
          {syncable_prefs_ids::kArticlesForYouEnabled, syncer::PREFERENCES,
@@ -100,7 +101,7 @@ constexpr auto kIOSChromeSyncablePrefsAllowlist =
 std::optional<sync_preferences::SyncablePrefMetadata>
 IOSChromeSyncablePrefsDatabase::GetSyncablePrefMetadata(
     const std::string& pref_name) const {
-  const auto* it = kIOSChromeSyncablePrefsAllowlist.find(pref_name);
+  const auto it = kIOSChromeSyncablePrefsAllowlist.find(pref_name);
   if (it != kIOSChromeSyncablePrefsAllowlist.end()) {
     DCHECK(!common_syncable_prefs_database_.GetSyncablePrefMetadata(pref_name)
                 .has_value());
@@ -110,9 +111,9 @@ IOSChromeSyncablePrefsDatabase::GetSyncablePrefMetadata(
   return common_syncable_prefs_database_.GetSyncablePrefMetadata(pref_name);
 }
 
-std::map<base::StringPiece, sync_preferences::SyncablePrefMetadata>
+std::map<std::string_view, sync_preferences::SyncablePrefMetadata>
 IOSChromeSyncablePrefsDatabase::GetAllSyncablePrefsForTest() const {
-  std::map<base::StringPiece, sync_preferences::SyncablePrefMetadata>
+  std::map<std::string_view, sync_preferences::SyncablePrefMetadata>
       syncable_prefs;
   base::ranges::copy(kIOSChromeSyncablePrefsAllowlist,
                      std::inserter(syncable_prefs, syncable_prefs.end()));

@@ -3,16 +3,21 @@
 // found in the LICENSE file.
 
 #include <memory>
+#include <vector>
 
 #include "ash/ash_element_identifiers.h"
 #include "ash/picker/picker_controller.h"
 #include "ash/picker/views/picker_emoji_item_view.h"
 #include "ash/picker/views/picker_list_item_view.h"
 #include "ash/shell.h"
+#include "base/strings/string_util.h"
 #include "base/time/time_override.h"
+#include "chrome/browser/ash/accessibility/accessibility_manager.h"
+#include "chrome/browser/ash/accessibility/speech_monitor.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/test/base/chromeos/crosier/interactive_ash_test.h"
 #include "content/public/test/browser_test_utils.h"
+#include "extensions/browser/browsertest_util.h"
 #include "ui/base/interaction/element_identifier.h"
 #include "ui/base/interaction/state_observer.h"
 #include "ui/views/controls/textfield/textfield.h"
@@ -56,10 +61,57 @@ class ViewFocusObserver
 DEFINE_LOCAL_STATE_IDENTIFIER_VALUE(ViewFocusObserver,
                                     kSearchFieldFocusedState);
 
+class ReusableSpeechMonitor {
+ public:
+  ReusableSpeechMonitor() { CreateNewSpeechMonitor(); }
+
+  void ExpectSpeechPattern(const std::string& pattern,
+                           const base::Location& location = FROM_HERE) {
+    GetActiveSpeechMonitor().ExpectSpeechPattern(pattern, location);
+  }
+
+  void Call(base::FunctionRef<void()> func,
+            const base::Location& location = FROM_HERE) {
+    GetActiveSpeechMonitor().Call([func]() { func(); }, location);
+  }
+
+  void Replay() {
+    GetActiveSpeechMonitor().Replay();
+
+    // Create a new SpeechMonitor since `Replay` can only be called once.
+    CreateNewSpeechMonitor();
+  }
+
+ private:
+  ash::test::SpeechMonitor& GetActiveSpeechMonitor() {
+    return *speech_monitors_.back();
+  }
+
+  void CreateNewSpeechMonitor() {
+    speech_monitors_.push_back(std::make_unique<ash::test::SpeechMonitor>());
+  }
+
+  // A pool of SpeechMonitors.
+  // Old SpeechMonitors are not deleted until the test ends, since the
+  // SpeechMonitor destructor will unintentionally create a TtsEngineDelegate
+  // that will block future utterances.
+  std::vector<std::unique_ptr<ash::test::SpeechMonitor>> speech_monitors_;
+};
+
+void SendKeyPress(ui::KeyboardCode keyboard_code) {
+  ui_controls::SendKeyPress(/*window=*/nullptr, keyboard_code,
+                            /*control=*/false, /*shift=*/false,
+                            /*alt=*/false, /*command=*/false);
+}
+
 void TogglePickerByAccelerator() {
   ui_controls::SendKeyPress(/*window=*/nullptr, ui::VKEY_S,
                             /*control=*/false, /*shift=*/false,
                             /*alt=*/false, /*command=*/true);
+}
+
+void TogglePicker() {
+  ash::Shell::Get()->picker_controller()->ToggleWidget();
 }
 
 class PickerInteractiveUiTest : public InteractiveAshTest {
@@ -193,7 +245,15 @@ IN_PROC_BROWSER_TEST_F(PickerInteractiveUiTest, SearchAndInsertDate) {
 
 // Searches for '1 + 1', checks the top result is '2', and inserts it
 // into a web input field.
-IN_PROC_BROWSER_TEST_F(PickerInteractiveUiTest, SearchAndInsertMath) {
+// TODO(crbug.com/40240570): Re-enable once MSan stops failing on Rust-side
+// allocations.
+// TODO(crbug.com/338153458): Re-enable once LSan stops failing on Chromium OS.
+#if defined(MEMORY_SANITIZER) || defined(LEAK_SANITIZER)
+#define MAYBE_SearchAndInsertMath DISABLED_SearchAndInsertMath
+#else
+#define MAYBE_SearchAndInsertMath SearchAndInsertMath
+#endif
+IN_PROC_BROWSER_TEST_F(PickerInteractiveUiTest, MAYBE_SearchAndInsertMath) {
   ASSERT_TRUE(CreateBrowserWindow(
       GURL("data:text/html,<input type=\"text\" autofocus/>")));
   const ui::ElementContext browser_context =
@@ -228,6 +288,118 @@ IN_PROC_BROWSER_TEST_F(PickerInteractiveUiTest, SearchAndInsertMath) {
               })),
       PressButton(kMathResultName), WaitForHide(ash::kPickerElementId),
       InContext(browser_context, WaitForWebInputFieldValue(kExpectedResult)));
+}
+
+class PickerSpokenFeedbackInteractiveUiTest : public PickerInteractiveUiTest {
+ public:
+  void SetUpOnMainThread() override {
+    PickerInteractiveUiTest::SetUpOnMainThread();
+
+    ash::AccessibilityManager::Get()->EnableSpokenFeedback(true);
+    // Ignore the intro.
+    sm_.ExpectSpeechPattern("*");
+    // Disable earcons which can be annoying in tests.
+    sm_.Call([this]() {
+      ImportJSModuleForChromeVox("ChromeVox",
+                                 "/chromevox/background/chromevox.js");
+      DisableEarcons();
+    });
+    sm_.Replay();
+  }
+
+  void TearDownOnMainThread() override {
+    ash::AccessibilityManager::Get()->EnableSpokenFeedback(false);
+    PickerInteractiveUiTest::TearDownOnMainThread();
+  }
+
+ protected:
+  ReusableSpeechMonitor sm_;
+
+ private:
+  void ImportJSModuleForChromeVox(std::string_view name,
+                                  std::string_view path) {
+    extensions::browsertest_util::ExecuteScriptInBackgroundPageDeprecated(
+        ash::AccessibilityManager::Get()->profile(),
+        extension_misc::kChromeVoxExtensionId,
+        base::ReplaceStringPlaceholders(
+            R"(import('$1').then(mod => {
+            globalThis.$2 = mod.$2;
+            window.domAutomationController.send('done');
+          }))",
+            {std::string(path), std::string(name)}, nullptr));
+  }
+
+  void DisableEarcons() {
+    extensions::browsertest_util::ExecuteScriptInBackgroundPageNoWait(
+        ash::AccessibilityManager::Get()->profile(),
+        extension_misc::kChromeVoxExtensionId,
+        "ChromeVox.earcons.playEarcon = function() {};");
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(PickerSpokenFeedbackInteractiveUiTest,
+                       AnnouncesOnWindowShown) {
+  ASSERT_TRUE(CreateBrowserWindow(
+      GURL("data:text/html,<input type=\"text\" autofocus/>")));
+  const ui::ElementContext browser_context =
+      chrome::FindLastActive()->window()->GetElementContext();
+  views::Textfield* picker_search_field = nullptr;
+
+  RunTestSequence(
+      InContext(browser_context, Steps(InstrumentTab(kWebContentsElementId),
+                                       WaitForWebInputFieldFocus())),
+      Do([]() { TogglePicker(); }),
+      AfterShow(ash::kPickerSearchFieldTextfieldElementId,
+                [&picker_search_field](ui::TrackedElement* el) {
+                  picker_search_field = AsView<views::Textfield>(el);
+                }),
+      ObserveState(kSearchFieldFocusedState, std::ref(picker_search_field)),
+      WaitForState(kSearchFieldFocusedState, true));
+
+  // TODO(b/309706053): Replace this once the strings are finalized.
+  sm_.ExpectSpeechPattern("placeholder");
+  sm_.ExpectSpeechPattern("Edit text");
+  sm_.ExpectSpeechPattern("window");
+  sm_.Replay();
+}
+
+IN_PROC_BROWSER_TEST_F(PickerSpokenFeedbackInteractiveUiTest,
+                       AnnouncesKeyboardNavigationOnZeroState) {
+  ASSERT_TRUE(CreateBrowserWindow(
+      GURL("data:text/html,<input type=\"text\" autofocus/>")));
+  const ui::ElementContext browser_context =
+      chrome::FindLastActive()->window()->GetElementContext();
+  views::Textfield* picker_search_field = nullptr;
+
+  RunTestSequence(
+      InContext(browser_context, Steps(InstrumentTab(kWebContentsElementId),
+                                       WaitForWebInputFieldFocus())),
+      Do([]() { TogglePicker(); }),
+      AfterShow(ash::kPickerSearchFieldTextfieldElementId,
+                [&picker_search_field](ui::TrackedElement* el) {
+                  picker_search_field = AsView<views::Textfield>(el);
+                }),
+      ObserveState(kSearchFieldFocusedState, std::ref(picker_search_field)),
+      WaitForState(kSearchFieldFocusedState, true), Do([&sm = sm_]() {
+        SendKeyPress(ui::VKEY_DOWN);
+
+        sm.ExpectSpeechPattern("*Browsing history*");
+        // TODO: b/338142316 - Use correct role for zero state items.
+        sm.ExpectSpeechPattern("*");
+        sm.Replay();
+
+        SendKeyPress(ui::VKEY_DOWN);
+        sm.ExpectSpeechPattern("*Emojis*");
+        // TODO: b/338142316 - Use correct role for zero state items.
+        sm.ExpectSpeechPattern("*");
+        sm.Replay();
+
+        SendKeyPress(ui::VKEY_UP);
+        sm.ExpectSpeechPattern("*Browsing history*");
+        // TODO: b/338142316 - Use correct role for zero state items.
+        sm.ExpectSpeechPattern("*");
+        sm.Replay();
+      }));
 }
 
 }  // namespace

@@ -11,19 +11,29 @@
 #include "ash/public/mojom/input_device_settings.mojom-shared.h"
 #include "ash/public/mojom/input_device_settings.mojom.h"
 #include "ash/shell.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "ash/system/input_device_settings/input_device_settings_pref_names.h"
+#include "ash/system/toast/anchored_nudge.h"
+#include "ash/system/toast/anchored_nudge_manager_impl.h"
 #include "ash/test/ash_test_base.h"
 #include "base/containers/contains.h"
+#include "base/run_loop.h"
 #include "base/values.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/events/ash/mojom/simulate_right_click_modifier.mojom-shared.h"
 #include "ui/events/ash/mojom/six_pack_shortcut_modifier.mojom-shared.h"
+#include "ui/events/keycodes/keyboard_codes_posix.h"
 #include "ui/message_center/fake_message_center.h"
 
 namespace ash {
 
 namespace {
+
+constexpr char kTopRowKeyNoMatchNudgeId[] = "top-row-key-no-match-nudge-id";
+constexpr char kSixPackKeyNoMatchNudgeId[] = "six-patch-key-no-match-nudge-id";
+constexpr char kCapsLockNoMatchNudgeId[] = "caps-lock-no-match-nudge-id";
 
 const mojom::Mouse kMouse1 = mojom::Mouse(
     /*name=*/"Razer Basilisk V3",
@@ -33,7 +43,8 @@ const mojom::Mouse kMouse1 = mojom::Mouse(
     /*customization_restriction=*/
     mojom::CustomizationRestriction::kAllowCustomizations,
     /*mouse_button_config=*/mojom::MouseButtonConfig::kNoConfig,
-    mojom::MouseSettings::New());
+    mojom::MouseSettings::New(),
+    mojom::BatteryInfo::New());
 
 const mojom::GraphicsTablet kGraphicsTablet2 = mojom::GraphicsTablet(
     /*name=*/"Wacom Intuos S",
@@ -43,7 +54,8 @@ const mojom::GraphicsTablet kGraphicsTablet2 = mojom::GraphicsTablet(
     ::ash::mojom::CustomizationRestriction::kAllowCustomizations,
     /*graphics_tablet_button_config=*/
     mojom::GraphicsTabletButtonConfig::kNoConfig,
-    mojom::GraphicsTabletSettings::New());
+    mojom::GraphicsTabletSettings::New(),
+    mojom::BatteryInfo::New());
 
 int GetPrefNotificationCount(const char* pref_name) {
   PrefService* prefs =
@@ -84,6 +96,11 @@ class MockNewWindowDelegate : public testing::NiceMock<TestNewWindowDelegate> {
               (const GURL& url, OpenUrlFrom from, Disposition disposition),
               (override));
 };
+
+void CancelNudge(const std::string& id) {
+  Shell::Get()->anchored_nudge_manager()->Cancel(id);
+  base::RunLoop().RunUntilIdle();
+}
 
 }  // namespace
 
@@ -420,6 +437,7 @@ TEST_F(InputDeviceSettingsNotificationControllerTest,
   mojom::MousePtr mojom_mouse = mojom::Mouse::New();
   mojom_mouse->device_key = "0001:0001";
   mojom_mouse->id = 1;
+  mojom_mouse->settings = mojom::MouseSettings::New();
 
   PrefService* prefs =
       Shell::Get()->session_controller()->GetActivePrefService();
@@ -448,6 +466,23 @@ TEST_F(InputDeviceSettingsNotificationControllerTest,
   EXPECT_EQ(expected_notification_count, message_center()->NotificationCount());
   EXPECT_TRUE(message_center()->FindVisibleNotificationById(
       "peripheral_customization_mouse_2"));
+
+  mojom_mouse->id = 3;
+  mojom_mouse->device_key = "0001:0003";
+  mojom_mouse->settings->button_remappings.push_back(
+      mojom::ButtonRemapping::New(
+          /*name=*/"Button 1",
+          mojom::Button::NewCustomizableButton(
+              mojom::CustomizableButton::kBack),
+          /*remapping_action=*/nullptr));
+  controller()->NotifyMouseFirstTimeConnected(*mojom_mouse);
+  EXPECT_EQ(prefs->GetList(prefs::kPeripheralNotificationMiceSeen).size(), 3u);
+  EXPECT_TRUE(
+      base::Contains(prefs->GetList(prefs::kPeripheralNotificationMiceSeen),
+                     base::Value("0001:0003")));
+  EXPECT_EQ(expected_notification_count, message_center()->NotificationCount());
+  EXPECT_FALSE(message_center()->FindVisibleNotificationById(
+      "peripheral_customization_mouse_3"));
 }
 
 TEST_F(InputDeviceSettingsNotificationControllerTest,
@@ -456,13 +491,13 @@ TEST_F(InputDeviceSettingsNotificationControllerTest,
   mojom::GraphicsTabletPtr mojom_graphics_tablet = mojom::GraphicsTablet::New();
   mojom_graphics_tablet->id = 1;
   mojom_graphics_tablet->device_key = "0002:0001";
+  mojom_graphics_tablet->settings = mojom::GraphicsTabletSettings::New();
   PrefService* prefs =
       Shell::Get()->session_controller()->GetActivePrefService();
 
   EXPECT_TRUE(prefs->GetList(prefs::kPeripheralNotificationGraphicsTabletsSeen)
                   .empty());
-  controller()->NotifyGraphicsTabletFirstTimeConnected(
-      mojom_graphics_tablet.get());
+  controller()->NotifyGraphicsTabletFirstTimeConnected(*mojom_graphics_tablet);
   EXPECT_EQ(
       prefs->GetList(prefs::kPeripheralNotificationGraphicsTabletsSeen).size(),
       1u);
@@ -474,8 +509,7 @@ TEST_F(InputDeviceSettingsNotificationControllerTest,
   EXPECT_TRUE(base::Contains(
       prefs->GetList(prefs::kPeripheralNotificationGraphicsTabletsSeen),
       base::Value("0002:0001")));
-  controller()->NotifyGraphicsTabletFirstTimeConnected(
-      mojom_graphics_tablet.get());
+  controller()->NotifyGraphicsTabletFirstTimeConnected(*mojom_graphics_tablet);
   EXPECT_EQ(
       prefs->GetList(prefs::kPeripheralNotificationGraphicsTabletsSeen).size(),
       1u);
@@ -483,8 +517,7 @@ TEST_F(InputDeviceSettingsNotificationControllerTest,
   mojom_graphics_tablet->id = 2;
   mojom_graphics_tablet->device_key = "0002:0002";
 
-  controller()->NotifyGraphicsTabletFirstTimeConnected(
-      mojom_graphics_tablet.get());
+  controller()->NotifyGraphicsTabletFirstTimeConnected(*mojom_graphics_tablet);
   EXPECT_EQ(
       prefs->GetList(prefs::kPeripheralNotificationGraphicsTabletsSeen).size(),
       2u);
@@ -494,6 +527,162 @@ TEST_F(InputDeviceSettingsNotificationControllerTest,
   EXPECT_EQ(expected_notification_count, message_center()->NotificationCount());
   EXPECT_TRUE(message_center()->FindVisibleNotificationById(
       "peripheral_customization_graphics_tablet_2"));
+
+  mojom_graphics_tablet->id = 3;
+  mojom_graphics_tablet->device_key = "0002:0003";
+  mojom_graphics_tablet->settings->pen_button_remappings.push_back(
+      mojom::ButtonRemapping::New(
+          /*name=*/"Button 1",
+          mojom::Button::NewCustomizableButton(
+              mojom::CustomizableButton::kBack),
+          /*remapping_action=*/nullptr));
+
+  controller()->NotifyGraphicsTabletFirstTimeConnected(*mojom_graphics_tablet);
+  EXPECT_EQ(
+      prefs->GetList(prefs::kPeripheralNotificationGraphicsTabletsSeen).size(),
+      3u);
+  EXPECT_TRUE(base::Contains(
+      prefs->GetList(prefs::kPeripheralNotificationGraphicsTabletsSeen),
+      base::Value("0002:0003")));
+  EXPECT_EQ(expected_notification_count, message_center()->NotificationCount());
+  EXPECT_FALSE(message_center()->FindVisibleNotificationById(
+      "peripheral_customization_graphics_tablet_3"));
+
+  mojom_graphics_tablet->id = 4;
+  mojom_graphics_tablet->device_key = "0002:0004";
+  mojom_graphics_tablet->settings->pen_button_remappings.clear();
+  mojom_graphics_tablet->settings->tablet_button_remappings.push_back(
+      mojom::ButtonRemapping::New(
+          /*name=*/"Button 1",
+          mojom::Button::NewCustomizableButton(
+              mojom::CustomizableButton::kBack),
+          /*remapping_action=*/nullptr));
+
+  controller()->NotifyGraphicsTabletFirstTimeConnected(*mojom_graphics_tablet);
+  EXPECT_EQ(
+      prefs->GetList(prefs::kPeripheralNotificationGraphicsTabletsSeen).size(),
+      4u);
+  EXPECT_TRUE(base::Contains(
+      prefs->GetList(prefs::kPeripheralNotificationGraphicsTabletsSeen),
+      base::Value("0002:0004")));
+  EXPECT_EQ(expected_notification_count, message_center()->NotificationCount());
+  EXPECT_FALSE(message_center()->FindVisibleNotificationById(
+      "peripheral_customization_graphics_tablet_4"));
+}
+
+TEST_F(InputDeviceSettingsNotificationControllerTest,
+       ShowTopRowRewritingNudge) {
+  AnchoredNudgeManagerImpl* nudge_manager =
+      Shell::Get()->anchored_nudge_manager();
+  ASSERT_TRUE(nudge_manager);
+  EXPECT_FALSE(nudge_manager->GetNudgeIfShown(kTopRowKeyNoMatchNudgeId));
+
+  controller()->ShowTopRowRewritingNudge();
+  EXPECT_TRUE(nudge_manager->GetNudgeIfShown(kTopRowKeyNoMatchNudgeId));
+}
+
+TEST_F(InputDeviceSettingsNotificationControllerTest,
+       ShowSixPackKeyRewritingNudge) {
+  const AnchoredNudge* nudge =
+      Shell::Get()->anchored_nudge_manager()->GetNudgeIfShown(
+          kSixPackKeyNoMatchNudgeId);
+  ASSERT_FALSE(nudge);
+  base::Value::Dict overrides;
+  overrides.Set(prefs::kSixPackKeyInsert, /*kSearch*/ 2);
+  overrides.Set(prefs::kSixPackKeyDelete, /*kAlt*/ 1);
+  overrides.Set(prefs::kSixPackKeyHome, /*kSearch*/ 2);
+  overrides.Set(prefs::kSixPackKeyPageUp, /*kAlt*/ 1);
+  overrides.Set(prefs::kSixPackKeyEnd, /*kSearch*/ 2);
+  base::Value::Dict remappings;
+  remappings.Set(prefs::kKeyboardSettingSixPackKeyRemappings,
+                 std::move(overrides));
+  Shell::Get()->session_controller()->GetActivePrefService()->SetDict(
+      prefs::kKeyboardDefaultChromeOSSettings, std::move(remappings));
+  AnchoredNudgeManagerImpl* nudge_manager =
+      Shell::Get()->anchored_nudge_manager();
+  ASSERT_TRUE(nudge_manager);
+
+  // Display nudge for VKEY_INSERT.
+  controller()->ShowSixPackKeyRewritingNudge(
+      ui::VKEY_INSERT, ui::mojom::SixPackShortcutModifier::kSearch);
+
+  EXPECT_TRUE(nudge_manager->GetNudgeIfShown(kSixPackKeyNoMatchNudgeId));
+  EXPECT_EQ(
+      nudge_manager->GetNudgeBodyTextForTest(kSixPackKeyNoMatchNudgeId),
+      l10n_util::GetStringUTF16(
+          IDS_ASH_SETTINGS_KEYBOARD_USE_FN_KEY_FOR_SEARCH_PLUS_SHIFT_BACKSPACE_NUDGE_DESCRIPTION));
+  CancelNudge(kSixPackKeyNoMatchNudgeId);
+  EXPECT_FALSE(nudge_manager->GetNudgeIfShown(kSixPackKeyNoMatchNudgeId));
+
+  // Display nudge for VKEY_DELETE.
+  controller()->ShowSixPackKeyRewritingNudge(
+      ui::VKEY_DELETE, ui::mojom::SixPackShortcutModifier::kSearch);
+  // Modifier not match, nudge should not show.
+  EXPECT_FALSE(nudge_manager->GetNudgeIfShown(kSixPackKeyNoMatchNudgeId));
+  controller()->ShowSixPackKeyRewritingNudge(
+      ui::VKEY_DELETE, ui::mojom::SixPackShortcutModifier::kAlt);
+  EXPECT_TRUE(nudge_manager->GetNudgeIfShown(kSixPackKeyNoMatchNudgeId));
+  EXPECT_EQ(
+      nudge_manager->GetNudgeBodyTextForTest(kSixPackKeyNoMatchNudgeId),
+      l10n_util::GetStringUTF16(
+          IDS_ASH_SETTINGS_KEYBOARD_USE_FN_KEY_FOR_ALT_PLUS_BACKSPACE_NUDGE_DESCRIPTION));
+  CancelNudge(kSixPackKeyNoMatchNudgeId);
+  EXPECT_FALSE(nudge_manager->GetNudgeIfShown(kSixPackKeyNoMatchNudgeId));
+
+  // Display nudge for VKEY_HOME.
+  controller()->ShowSixPackKeyRewritingNudge(
+      ui::VKEY_HOME, ui::mojom::SixPackShortcutModifier::kSearch);
+  EXPECT_TRUE(nudge_manager->GetNudgeIfShown(kSixPackKeyNoMatchNudgeId));
+  EXPECT_EQ(
+      nudge_manager->GetNudgeBodyTextForTest(kSixPackKeyNoMatchNudgeId),
+      l10n_util::GetStringUTF16(
+          IDS_ASH_SETTINGS_KEYBOARD_USE_FN_KEY_FOR_SEARCH_PLUS_LEFT_NUDGE_DESCRIPTION));
+  CancelNudge(kSixPackKeyNoMatchNudgeId);
+  EXPECT_FALSE(nudge_manager->GetNudgeIfShown(kSixPackKeyNoMatchNudgeId));
+
+  // Display nudge for VKEY_END.
+  controller()->ShowSixPackKeyRewritingNudge(
+      ui::VKEY_END, ui::mojom::SixPackShortcutModifier::kSearch);
+  EXPECT_TRUE(nudge_manager->GetNudgeIfShown(kSixPackKeyNoMatchNudgeId));
+  EXPECT_EQ(
+      nudge_manager->GetNudgeBodyTextForTest(kSixPackKeyNoMatchNudgeId),
+      l10n_util::GetStringUTF16(
+          IDS_ASH_SETTINGS_KEYBOARD_USE_FN_KEY_FOR_SEARCH_PLUS_RIGHT_NUDGE_DESCRIPTION));
+  CancelNudge(kSixPackKeyNoMatchNudgeId);
+  EXPECT_FALSE(nudge_manager->GetNudgeIfShown(kSixPackKeyNoMatchNudgeId));
+
+  // Display nudge for VKEY_PRIOR.
+  controller()->ShowSixPackKeyRewritingNudge(
+      ui::VKEY_PRIOR, ui::mojom::SixPackShortcutModifier::kAlt);
+  EXPECT_TRUE(nudge_manager->GetNudgeIfShown(kSixPackKeyNoMatchNudgeId));
+  EXPECT_EQ(
+      nudge_manager->GetNudgeBodyTextForTest(kSixPackKeyNoMatchNudgeId),
+      l10n_util::GetStringUTF16(
+          IDS_ASH_SETTINGS_KEYBOARD_USE_FN_KEY_FOR_ALT_PLUS_UP_NUDGE_DESCRIPTION));
+  CancelNudge(kSixPackKeyNoMatchNudgeId);
+  EXPECT_FALSE(nudge_manager->GetNudgeIfShown(kSixPackKeyNoMatchNudgeId));
+
+  // Six pack key VKEY_NEXT is not in the prefDict, should not show anything.
+  controller()->ShowSixPackKeyRewritingNudge(
+      ui::VKEY_NEXT, ui::mojom::SixPackShortcutModifier::kSearch);
+  EXPECT_FALSE(nudge_manager->GetNudgeIfShown(kSixPackKeyNoMatchNudgeId));
+
+  // Call the method with a non six pack key, should not show anything.
+  // Six pack key VKEY_NEXT is not in the prefDict, should not show anything.
+  controller()->ShowSixPackKeyRewritingNudge(
+      ui::VKEY_BRIGHTNESS_UP, ui::mojom::SixPackShortcutModifier::kSearch);
+  EXPECT_FALSE(nudge_manager->GetNudgeIfShown(kSixPackKeyNoMatchNudgeId));
+}
+
+TEST_F(InputDeviceSettingsNotificationControllerTest,
+       ShowCapsLockRewritingNudge) {
+  AnchoredNudgeManagerImpl* nudge_manager =
+      Shell::Get()->anchored_nudge_manager();
+  ASSERT_TRUE(nudge_manager);
+  EXPECT_FALSE(nudge_manager->GetNudgeIfShown(kCapsLockNoMatchNudgeId));
+
+  controller()->ShowCapsLockRewritingNudge();
+  EXPECT_TRUE(nudge_manager->GetNudgeIfShown(kCapsLockNoMatchNudgeId));
 }
 
 }  // namespace ash

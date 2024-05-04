@@ -220,6 +220,7 @@ class CORE_EXPORT CSSSelector {
   enum PseudoType {
     kPseudoActive,
     kPseudoActiveViewTransition,
+    kPseudoActiveViewTransitionType,
     kPseudoAfter,
     kPseudoAny,
     kPseudoAnyLink,
@@ -290,8 +291,10 @@ class CORE_EXPORT CSSSelector {
     kPseudoScrollbarThumb,
     kPseudoScrollbarTrack,
     kPseudoScrollbarTrackPiece,
-    kPseudoSelectAuthorButton,
-    kPseudoSelectAuthorDatalist,
+    kPseudoSelectFallbackButton,
+    kPseudoSelectFallbackButtonIcon,
+    kPseudoSelectFallbackButtonText,
+    kPseudoSelectFallbackDatalist,
     kPseudoSelection,
     kPseudoSelectorFragmentAnchor,
     kPseudoSingleButton,
@@ -364,14 +367,16 @@ class CORE_EXPORT CSSSelector {
 
     // The following selectors are used to target pseudo elements created for
     // ViewTransition.
-    // See
-    // https://github.com/WICG/view-transitions/blob/main/explainer.md
+    // See https://drafts.csswg.org/css-view-transitions-1/#pseudo
     // for details.
     kPseudoViewTransition,
     kPseudoViewTransitionGroup,
     kPseudoViewTransitionImagePair,
     kPseudoViewTransitionNew,
     kPseudoViewTransitionOld,
+    // Scroll markers pseudos for Carousel
+    kPseudoScrollMarker,
+    kPseudoScrollMarkers,
   };
 
   enum class AttributeMatchType : int {
@@ -496,6 +501,9 @@ class CORE_EXPORT CSSSelector {
     return GetPseudoType() == kPseudoHost ||
            GetPseudoType() == kPseudoHostContext;
   }
+  // Test for combinations including :host() or :host-context()
+  // (See Example 3 under https://drafts.csswg.org/selectors-4/#data-model).
+  bool IsOrContainsHostPseudoClass() const;
   bool IsUserActionPseudoClass() const;
   bool IsIdClassOrAttributeSelector() const;
 
@@ -565,7 +573,7 @@ class CORE_EXPORT CSSSelector {
   bool FollowsSlotted() const;
 
   // True if the selector was added implicitly. This can happen for e.g.
-  // nested rules that would otherwise lack the nesting selector (&).
+  // nested rules that would otherwise lack the scoping selector (:scope).
   bool IsImplicit() const { return bits_.get<IsImplicitlyAddedField>(); }
 
   // Returns true for simple selectors whose evaluation depends on DOM tree
@@ -726,7 +734,7 @@ class CORE_EXPORT CSSSelector {
     Member<CSSSelectorList>
         selector_list_;  // Used :is, :not, :-webkit-any, etc.
     std::unique_ptr<Vector<AtomicString>>
-        ident_list_;  // Used for ::part(), :active-view-transition().
+        ident_list_;  // Used for ::part(), :active-view-transition-type().
 
     void Trace(Visitor* visitor) const;
   };

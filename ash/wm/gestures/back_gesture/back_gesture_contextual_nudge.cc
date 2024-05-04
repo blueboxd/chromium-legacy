@@ -87,8 +87,8 @@ std::unique_ptr<views::Widget> CreateWidget() {
       kShellWindowId_OverlayContainer);
   widget->Init(std::move(params));
 
-  // TODO(crbug.com/1009005): Get the bounds of the display that should show the
-  // nudge, which may based on the conditions to show the nudge.
+  // TODO(crbug.com/40100889): Get the bounds of the display that should show
+  // the nudge, which may based on the conditions to show the nudge.
   const gfx::Rect display_bounds =
       display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
   gfx::Rect widget_bounds;
@@ -232,7 +232,8 @@ class BackGestureContextualNudge::ContextualNudgeView
     void Layout(PassKey) override {
       const gfx::Rect bounds = GetLocalBounds();
       gfx::Rect label_rect(bounds);
-      label_rect.ClampToCenteredSize(label_->GetPreferredSize());
+      label_rect.ClampToCenteredSize(
+          label_->GetPreferredSize(views::SizeBounds(label_->width(), {})));
       label_rect.set_x(bounds.x() + 2 * kCircleRadius +
                        kPaddingBetweenCircleAndLabel + kLabelCornerRadius);
       label_->SetBoundsRect(label_rect);

@@ -4,6 +4,8 @@
 
 #include "content/browser/interest_group/ad_auction_url_loader_interceptor.h"
 
+#include <string_view>
+
 #include "base/base64url.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/test/bind.h"
@@ -24,6 +26,7 @@
 #include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/public/cpp/wrapper_shared_url_loader_factory.h"
+#include "services/network/public/mojom/early_hints.mojom.h"
 #include "services/network/public/mojom/parsed_headers.mojom.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -40,7 +43,7 @@ constexpr char kLegitimateAdAuctionSignals[] =
 using FollowRedirectParams =
     network::TestURLLoaderFactory::TestURLLoader::FollowRedirectParams;
 
-std::string base64Decode(base::StringPiece input) {
+std::string base64Decode(std::string_view input) {
   std::string bytes;
   CHECK(base::Base64UrlDecode(
       input, base::Base64UrlDecodePolicy::IGNORE_PADDING, &bytes));

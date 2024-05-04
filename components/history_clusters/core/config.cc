@@ -71,64 +71,12 @@ Config::Config() {
             sort_clusters_within_batch_for_query);
   }
 
-  // The `kJourneysLabels` feature and child params.
-  {
-    labels_from_hostnames = GetFieldTrialParamByFeatureAsBool(
-        internal::kJourneysLabels, "labels_from_hostnames",
-        labels_from_hostnames);
-
-    labels_from_entities = GetFieldTrialParamByFeatureAsBool(
-        internal::kJourneysLabels, "labels_from_entities",
-        labels_from_entities);
-
-    labels_from_search_visit_entities = GetFieldTrialParamByFeatureAsBool(
-        internal::kJourneysLabels, "labels_from_search_visit_entities",
-        labels_from_search_visit_entities);
-  }
-
   // The `kJourneysImages` feature.
   {
     images = base::FeatureList::IsEnabled(internal::kJourneysImages);
 
     images_cover = GetFieldTrialParamByFeatureAsBool(
         internal::kJourneysImages, "JourneysImagesCover", images_cover);
-  }
-
-  // The `kPersistedClusters` feature and child params.
-  {
-    persist_clusters_in_history_db =
-        base::FeatureList::IsEnabled(internal::kPersistedClusters);
-
-    persist_clusters_in_history_db_after_startup_delay_minutes =
-        base::GetFieldTrialParamByFeatureAsInt(
-            internal::kPersistedClusters,
-            "JourneysPersistClustersInHistoryDbAfterStartupDelayMinutes",
-            persist_clusters_in_history_db_after_startup_delay_minutes);
-
-    persist_clusters_in_history_db_period_minutes =
-        base::GetFieldTrialParamByFeatureAsInt(
-            internal::kPersistedClusters,
-            "JourneysPersistClustersInHistoryDbPeriodMinutes",
-            persist_clusters_in_history_db_period_minutes);
-
-    persist_on_query = base::GetFieldTrialParamByFeatureAsBool(
-        internal::kPersistedClusters, "persist_on_query", persist_on_query);
-
-    max_persisted_clusters_to_fetch = base::GetFieldTrialParamByFeatureAsInt(
-        internal::kPersistedClusters, "max_persisted_clusters_to_fetch",
-        max_persisted_clusters_to_fetch);
-
-    max_persisted_cluster_visits_to_fetch_soft_cap =
-        base::GetFieldTrialParamByFeatureAsInt(
-            internal::kPersistedClusters,
-            "max_persisted_cluster_visits_to_fetch_soft_cap",
-            max_persisted_cluster_visits_to_fetch_soft_cap);
-
-    persist_clusters_recluster_window_days =
-        base::GetFieldTrialParamByFeatureAsInt(
-            internal::kPersistedClusters,
-            "persist_clusters_recluster_window_days",
-            persist_clusters_recluster_window_days);
   }
 
   // The `kOmniboxAction` feature and child params.
@@ -363,9 +311,6 @@ Config::Config() {
     should_show_all_clusters_unconditionally_on_prominent_ui_surfaces =
         base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kShouldShowAllClustersOnProminentUiSurfaces);
-
-    include_synced_visits =
-        base::FeatureList::IsEnabled(internal::kJourneysIncludeSyncedVisits);
 
     persist_caches_to_prefs =
         base::FeatureList::IsEnabled(internal::kJourneysPersistCachesToPrefs);

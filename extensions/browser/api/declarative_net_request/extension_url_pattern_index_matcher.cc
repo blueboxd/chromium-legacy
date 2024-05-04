@@ -69,16 +69,20 @@ ExtensionUrlPatternIndexMatcher::ExtensionUrlPatternIndexMatcher(
       metadata_list_(metadata_list),
       before_request_matchers_(GetMatchers(before_request_index_list)),
       headers_received_matchers_(GetMatchers(headers_received_index_list)),
+      before_request_rules_count_(
+          GetRulesCountInternal(before_request_matchers_)),
+      headers_received_rules_count_(
+          GetRulesCountInternal(headers_received_matchers_)),
+      // Currently, this is set to true if there exist any rules that match on,
+      // or modify headers. This is why we check if there are any rules to be
+      // matched in the onHeadersReceived phase since they need to match on
+      // response headers.
       // TODO(kelvinjiang): Consider separating this condition for request and
       // response headers so extra headers are only included for the phases
       // that need them.
       is_extra_headers_matcher_(
           IsExtraHeadersMatcherInternal(before_request_matchers_) ||
-          IsExtraHeadersMatcherInternal(headers_received_matchers_)),
-      before_request_rules_count_(
-          GetRulesCountInternal(before_request_matchers_)),
-      headers_received_rules_count_(
-          GetRulesCountInternal(headers_received_matchers_)) {}
+          headers_received_rules_count_ > 0) {}
 
 ExtensionUrlPatternIndexMatcher::~ExtensionUrlPatternIndexMatcher() = default;
 
@@ -100,10 +104,12 @@ size_t ExtensionUrlPatternIndexMatcher::GetHeadersReceivedRulesCount() const {
 
 std::optional<RequestAction>
 ExtensionUrlPatternIndexMatcher::GetAllowAllRequestsAction(
-    const RequestParams& params) const {
+    const RequestParams& params,
+    RulesetMatchingStage stage) const {
   const flat_rule::UrlRule* rule = GetMatchingRule(
-      params, before_request_matchers_, flat::IndexType_allow_all_requests,
+      params, GetMatchersForStage(stage), flat::IndexType_allow_all_requests,
       FindRuleStrategy::kHighestPriority);
+  ;
   if (!rule)
     return std::nullopt;
 
@@ -114,7 +120,7 @@ std::vector<RequestAction>
 ExtensionUrlPatternIndexMatcher::GetModifyHeadersActions(
     const RequestParams& params,
     std::optional<uint64_t> min_priority) const {
-  // TODO(crbug.com/1083178): Plumb |min_priority| into UrlPatternIndexMatcher
+  // TODO(crbug.com/40131283): Plumb |min_priority| into UrlPatternIndexMatcher
   // to prune more rules before matching on url filters.
   std::vector<const flat_rule::UrlRule*> rules = GetAllMatchingRules(
       params, before_request_matchers_, flat::IndexType_modify_headers);
@@ -132,19 +138,9 @@ std::optional<RequestAction>
 ExtensionUrlPatternIndexMatcher::GetActionIgnoringAncestors(
     const RequestParams& params,
     RulesetMatchingStage stage) const {
-  switch (stage) {
-    case RulesetMatchingStage::kOnBeforeRequest:
-      return GetMaxPriorityAction(
-          GetActionHelper(params, before_request_matchers_),
-          GetAllowAllRequestsAction(params));
-    case RulesetMatchingStage::kOnHeadersReceived:
-      // TODO(crbug.com/1141166): Investigate how matching allowAllRequests
-      // rules from other request stages may affect which action to return.
-      return GetActionHelper(params, headers_received_matchers_);
-  }
-
-  NOTREACHED();
-  return std::nullopt;
+  return GetMaxPriorityAction(
+      GetActionHelper(params, GetMatchersForStage(stage)),
+      GetAllowAllRequestsAction(params, stage));
 }
 
 std::optional<RequestAction> ExtensionUrlPatternIndexMatcher::GetActionHelper(
@@ -217,6 +213,20 @@ ExtensionUrlPatternIndexMatcher::GetAllMatchingRules(
       flat_rule::ActivationType_NONE, params.method, params.is_third_party,
       kDisableGenericRules, params.embedder_conditions_matcher,
       disabled_rule_ids_);
+}
+
+const std::vector<url_pattern_index::UrlPatternIndexMatcher>&
+ExtensionUrlPatternIndexMatcher::GetMatchersForStage(
+    RulesetMatchingStage stage) const {
+  switch (stage) {
+    case RulesetMatchingStage::kOnBeforeRequest:
+      return before_request_matchers_;
+    case RulesetMatchingStage::kOnHeadersReceived:
+      return headers_received_matchers_;
+  }
+
+  NOTREACHED();
+  return before_request_matchers_;
 }
 
 void ExtensionUrlPatternIndexMatcher::SetDisabledRuleIds(

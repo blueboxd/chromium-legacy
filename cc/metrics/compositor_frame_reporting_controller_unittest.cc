@@ -334,9 +334,7 @@ class CompositorFrameReportingControllerTest : public testing::Test {
   viz::FrameTokenGenerator current_token_;
   DroppedFrameCounter dropped_counter_;
   TotalFrameCounter total_frame_counter_;
-#if BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
   ::base::test::TracingEnvironment tracing_environment_;
-#endif  // BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
 };
 
 TEST_F(CompositorFrameReportingControllerTest, ActiveReporterCounts) {
@@ -1337,31 +1335,21 @@ TEST_F(CompositorFrameReportingControllerTest,
     const char* name;
     const base::HistogramBase::Count count;
   } expected_counts[] = {
-      {"EventLatency.GestureScrollBegin.Wheel.TotalLatency", 1},
       {"EventLatency.GestureScrollBegin.Wheel.TotalLatency2", 1},
-      {"EventLatency.FirstGestureScrollUpdate.Wheel.TotalLatency", 1},
       {"EventLatency.FirstGestureScrollUpdate.Wheel.TotalLatency2", 1},
-      {"EventLatency.GestureScrollUpdate.Wheel.TotalLatency", 1},
       {"EventLatency.GestureScrollUpdate.Wheel.TotalLatency2", 1},
-      {"EventLatency.InertialGestureScrollUpdate.Wheel.TotalLatency", 1},
-      {"EventLatency.InertialGestureScrollUpdate.Wheel.TotalLatency", 1},
+      {"EventLatency.InertialGestureScrollUpdate.Wheel.TotalLatency2", 1},
       {"EventLatency.GestureScrollBegin.Touchscreen.TotalLatency2", 1},
-      {"EventLatency.FirstGestureScrollUpdate.Touchscreen.TotalLatency", 1},
       {"EventLatency.FirstGestureScrollUpdate.Touchscreen.TotalLatency2", 1},
       {"EventLatency.GestureScrollUpdate.Touchscreen.TotalLatency", 1},
       {"EventLatency.GestureScrollUpdate.Touchscreen.TotalLatency2", 1},
-      {"EventLatency.InertialGestureScrollUpdate.Touchscreen.TotalLatency", 1},
       {"EventLatency.InertialGestureScrollUpdate.Touchscreen.TotalLatency2", 1},
-      {"EventLatency.GestureScrollBegin.TotalLatency", 2},
       {"EventLatency.GestureScrollBegin.TotalLatency2", 2},
       {"EventLatency.GestureScrollBegin.GenerationToBrowserMain", 2},
-      {"EventLatency.FirstGestureScrollUpdate.TotalLatency", 2},
       {"EventLatency.FirstGestureScrollUpdate.TotalLatency2", 2},
       {"EventLatency.FirstGestureScrollUpdate.GenerationToBrowserMain", 2},
-      {"EventLatency.GestureScrollUpdate.TotalLatency", 2},
       {"EventLatency.GestureScrollUpdate.TotalLatency2", 2},
       {"EventLatency.GestureScrollUpdate.GenerationToBrowserMain", 2},
-      {"EventLatency.InertialGestureScrollUpdate.TotalLatency", 2},
       {"EventLatency.InertialGestureScrollUpdate.TotalLatency2", 2},
       {"EventLatency.InertialGestureScrollUpdate.GenerationToBrowserMain", 2},
       {"EventLatency.TotalLatency", 8},
@@ -1377,39 +1365,21 @@ TEST_F(CompositorFrameReportingControllerTest,
     const char* name;
     const base::HistogramBase::Sample latency_ms;
   } expected_latencies[] = {
-      {"EventLatency.GestureScrollBegin.Wheel.TotalLatency",
-       static_cast<base::HistogramBase::Sample>(
-           (presentation_time - event_times[0]).InMicroseconds())},
       {"EventLatency.GestureScrollBegin.Wheel.TotalLatency2",
        static_cast<base::HistogramBase::Sample>(
            (presentation_time - event_times[0]).InMicroseconds())},
-      {"EventLatency.FirstGestureScrollUpdate.Wheel.TotalLatency",
-       static_cast<base::HistogramBase::Sample>(
-           (presentation_time - event_times[1]).InMicroseconds())},
       {"EventLatency.FirstGestureScrollUpdate.Wheel.TotalLatency2",
        static_cast<base::HistogramBase::Sample>(
            (presentation_time - event_times[1]).InMicroseconds())},
-      {"EventLatency.GestureScrollUpdate.Wheel.TotalLatency",
-       static_cast<base::HistogramBase::Sample>(
-           (presentation_time - event_times[2]).InMicroseconds())},
       {"EventLatency.GestureScrollUpdate.Wheel.TotalLatency2",
        static_cast<base::HistogramBase::Sample>(
            (presentation_time - event_times[2]).InMicroseconds())},
-      {"EventLatency.InertialGestureScrollUpdate.Wheel.TotalLatency",
-       static_cast<base::HistogramBase::Sample>(
-           (presentation_time - event_times[3]).InMicroseconds())},
       {"EventLatency.InertialGestureScrollUpdate.Wheel.TotalLatency2",
        static_cast<base::HistogramBase::Sample>(
            (presentation_time - event_times[3]).InMicroseconds())},
-      {"EventLatency.GestureScrollBegin.Touchscreen.TotalLatency",
-       static_cast<base::HistogramBase::Sample>(
-           (presentation_time - event_times[4]).InMicroseconds())},
       {"EventLatency.GestureScrollBegin.Touchscreen.TotalLatency2",
        static_cast<base::HistogramBase::Sample>(
            (presentation_time - event_times[4]).InMicroseconds())},
-      {"EventLatency.FirstGestureScrollUpdate.Touchscreen.TotalLatency",
-       static_cast<base::HistogramBase::Sample>(
-           (presentation_time - event_times[5]).InMicroseconds())},
       {"EventLatency.FirstGestureScrollUpdate.Touchscreen.TotalLatency2",
        static_cast<base::HistogramBase::Sample>(
            (presentation_time - event_times[5]).InMicroseconds())},
@@ -1419,9 +1389,6 @@ TEST_F(CompositorFrameReportingControllerTest,
       {"EventLatency.GestureScrollUpdate.Touchscreen.TotalLatency2",
        static_cast<base::HistogramBase::Sample>(
            (presentation_time - event_times[6]).InMicroseconds())},
-      {"EventLatency.InertialGestureScrollUpdate.Touchscreen.TotalLatency",
-       static_cast<base::HistogramBase::Sample>(
-           (presentation_time - event_times[7]).InMicroseconds())},
       {"EventLatency.InertialGestureScrollUpdate.Touchscreen.TotalLatency2",
        static_cast<base::HistogramBase::Sample>(
            (presentation_time - event_times[7]).InMicroseconds())},
@@ -1491,9 +1458,6 @@ TEST_F(CompositorFrameReportingControllerTest,
   base::TimeDelta expected_latency_1 =
       details_1.presentation_feedback.timestamp - start_time_1;
   histogram_tester.ExpectBucketCount(
-      "EventLatency.FirstGestureScrollUpdate.Wheel.TotalLatency",
-      expected_latency_1.InMicroseconds(), 1);
-  histogram_tester.ExpectBucketCount(
       "EventLatency.FirstGestureScrollUpdate.Wheel.TotalLatency2",
       expected_latency_1.InMicroseconds(), 1);
 
@@ -1501,9 +1465,6 @@ TEST_F(CompositorFrameReportingControllerTest,
   // final-update presentation (details_2).
   base::TimeDelta expected_latency_2 =
       details_2.presentation_feedback.timestamp - start_time_2;
-  histogram_tester.ExpectBucketCount(
-      "EventLatency.GestureScrollUpdate.Wheel.TotalLatency",
-      expected_latency_2.InMicroseconds(), 1);
   histogram_tester.ExpectBucketCount(
       "EventLatency.GestureScrollUpdate.Wheel.TotalLatency2",
       expected_latency_2.InMicroseconds(), 1);
@@ -2193,10 +2154,8 @@ TEST_F(CompositorFrameReportingControllerTest, MainFrameBeforeCommit) {
 // BF3->BMF3->PF2->SF(3+1)->PF(3+1)
 TEST_F(CompositorFrameReportingControllerTest,
        ScrollJankMetricsPresentationOrderAbortedMain) {
-#if BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
   base::test::TestTraceProcessor ttp;
   ttp.StartTrace("input");
-#endif
 
   std::unique_ptr<EventMetrics> metrics_1 = CreateScrollUpdateEventMetrics(
       ui::ScrollInputType::kWheel, /*is_inertial=*/false,
@@ -2280,7 +2239,6 @@ TEST_F(CompositorFrameReportingControllerTest,
   reporting_controller_.DidPresentCompositorFrame(*current_token_,
                                                   details_3);  // PF(3+1)
 
-#if BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
   absl::Status status = ttp.StopAndParseTrace();
   ASSERT_TRUE(status.ok()) << status.message();
   std::string query =
@@ -2295,7 +2253,6 @@ TEST_F(CompositorFrameReportingControllerTest,
   EXPECT_THAT(result.value(),
               ::testing::ElementsAre(std::vector<std::string>{"cnt"},
                                      std::vector<std::string>{"0"}));
-#endif
 }
 
 // This test verifies a main thread scroll scenario where a frame with
@@ -2313,10 +2270,8 @@ TEST_F(CompositorFrameReportingControllerTest,
        ScrollJankMetricsPresentationOrderDroppedPartialOnMainScroll) {
   base::HistogramTester histogram_tester;
 
-#if BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
   base::test::TestTraceProcessor ttp;
   ttp.StartTrace("input");
-#endif
 
   std::unique_ptr<EventMetrics> metrics_1 = CreateScrollUpdateEventMetrics(
       ui::ScrollInputType::kWheel, /*is_inertial=*/false,
@@ -2386,7 +2341,6 @@ TEST_F(CompositorFrameReportingControllerTest,
   reporting_controller_.DidPresentCompositorFrame(*current_token_,
                                                   details_3);  // PF(3+1)
 
-#if BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
   absl::Status status = ttp.StopAndParseTrace();
   ASSERT_TRUE(status.ok()) << status.message();
   std::string query =
@@ -2402,7 +2356,6 @@ TEST_F(CompositorFrameReportingControllerTest,
   EXPECT_THAT(result.value(),
               ::testing::ElementsAre(std::vector<std::string>{"cnt"},
                                      std::vector<std::string>{"0"}));
-#endif
 
   histogram_tester.ExpectTotalCount("Event.ScrollJank.MissedVsyncs.PerFrame",
                                     1);
@@ -2420,10 +2373,8 @@ TEST_F(CompositorFrameReportingControllerTest,
        ScrollJankMetricsPresentationOrderDroppedPartialOnImplScroll) {
   base::HistogramTester histogram_tester;
 
-#if BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
   base::test::TestTraceProcessor ttp;
   ttp.StartTrace("input");
-#endif
 
   std::unique_ptr<EventMetrics> metrics_1 = CreateScrollUpdateEventMetrics(
       ui::ScrollInputType::kWheel, /*is_inertial=*/false,
@@ -2474,7 +2425,6 @@ TEST_F(CompositorFrameReportingControllerTest,
   reporting_controller_.DidPresentCompositorFrame(*current_token_,
                                                   details_2);  // PF(2+1)
 
-#if BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
   absl::Status status = ttp.StopAndParseTrace();
   ASSERT_TRUE(status.ok()) << status.message();
   std::string query =
@@ -2489,7 +2439,6 @@ TEST_F(CompositorFrameReportingControllerTest,
   EXPECT_THAT(result.value(),
               ::testing::ElementsAre(std::vector<std::string>{"cnt"},
                                      std::vector<std::string>{"0"}));
-#endif
 
   histogram_tester.ExpectTotalCount("Event.ScrollJank.MissedVsyncs.PerFrame",
                                     1);
@@ -2511,10 +2460,8 @@ TEST_F(CompositorFrameReportingControllerTest,
        ScrollJankMetricsPresentationOrderReceivedDroppedEventsAreNotPassed) {
   base::HistogramTester histogram_tester;
 
-#if BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
   base::test::TestTraceProcessor ttp;
   ttp.StartTrace("input");
-#endif
 
   std::unique_ptr<EventMetrics> metrics_1 = CreateScrollUpdateEventMetrics(
       ui::ScrollInputType::kWheel, /*is_inertial=*/false,
@@ -2612,7 +2559,6 @@ TEST_F(CompositorFrameReportingControllerTest,
   reporting_controller_.DidPresentCompositorFrame(*current_token_,
                                                   details_4);  // PF(4+2)
 
-#if BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
   absl::Status status = ttp.StopAndParseTrace();
   ASSERT_TRUE(status.ok()) << status.message();
   std::string query =
@@ -2625,7 +2571,6 @@ TEST_F(CompositorFrameReportingControllerTest,
   EXPECT_THAT(result.value(),
               ::testing::ElementsAre(std::vector<std::string>{"cnt"},
                                      std::vector<std::string>{"0"}));
-#endif
 
   // Expect reporters R3impl, R2main to report data to scroll jank tracker.
   // R3impl - The events it received from previously dropped frames.
@@ -2634,7 +2579,6 @@ TEST_F(CompositorFrameReportingControllerTest,
                                     2);
 }
 
-#if BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
 TEST_F(CompositorFrameReportingControllerTest, EmitsEventLatencyId) {
   base::test::TestTraceProcessor ttp;
   ttp.StartTrace("input");
@@ -2828,7 +2772,6 @@ TEST_F(CompositorFrameReportingControllerTest, VsyncIntervalArg) {
                                   std::vector<std::string>{"32", "1"}));
 }
 
-#endif
 
 }  // namespace
 }  // namespace cc

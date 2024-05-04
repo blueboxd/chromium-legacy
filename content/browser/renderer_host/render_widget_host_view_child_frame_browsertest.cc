@@ -148,7 +148,8 @@ class AutoResizeWebContentsDelegate : public WebContentsDelegate {
 // resizes the top level widget.
 // d) When auto-resize is enabled for the nested main frame and the renderer
 // resizes the nested widget.
-#if BUILDFLAG(IS_FUCHSIA)
+// TODO(b/40945321): Flaky on Fuchsia and Linux.
+#if BUILDFLAG(IS_FUCHSIA) || BUILDFLAG(IS_LINUX)
 #define MAYBE_VisualPropertiesPropagation_VisibleViewportSize \
   DISABLED_VisualPropertiesPropagation_VisibleViewportSize
 #else
@@ -432,7 +433,7 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewChildFrameBrowserTest,
     // cancelled something else is wrong, so the loop will time out and fail
     // the test.
     //
-    // TODO(crbug.com/1288560): Remove this once the race condition is
+    // TODO(crbug.com/40817022): Remove this once the race condition is
     // fixed.
     if (!got_incomplete_tab_switch &&
         !histogram_tester
@@ -461,7 +462,7 @@ class DisplayModeControllingWebContentsDelegate : public WebContentsDelegate {
   blink::mojom::DisplayMode mode_ = blink::mojom::DisplayMode::kBrowser;
 };
 
-// TODO(crbug.com/1060336): Unlike most VisualProperties, the DisplayMode does
+// TODO(crbug.com/40121997): Unlike most VisualProperties, the DisplayMode does
 // not propagate down the tree of RenderWidgets, but is sent independently to
 // each RenderWidget.
 IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewChildFrameBrowserTest,

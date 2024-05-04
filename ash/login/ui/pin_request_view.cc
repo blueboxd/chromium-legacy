@@ -157,7 +157,7 @@ PinRequestViewState PinRequestView::TestApi::state() const {
   return view_->state_;
 }
 
-// TODO(crbug.com/1061008): Make dialog look good on small screens with high
+// TODO(crbug.com/40679369): Make dialog look good on small screens with high
 // zoom factor.
 PinRequestView::PinRequestView(PinRequest request, Delegate* delegate)
     : delegate_(delegate),
@@ -344,7 +344,7 @@ PinRequestView::PinRequestView(PinRequest request, Delegate* delegate)
                             base::Unretained(this)),
         base::BindRepeating(&PinRequestView::OnBack, base::Unretained(this)),
         request.obscure_pin);
-    flex_code_input->SetAccessibleName(default_accessible_title_);
+    flex_code_input->SetAccessibleNameOnTextfield(default_accessible_title_);
     access_code_view_ = AddChildView(std::move(flex_code_input));
   }
 
@@ -426,7 +426,8 @@ void PinRequestView::RequestFocus() {
   access_code_view_->RequestFocus();
 }
 
-gfx::Size PinRequestView::CalculatePreferredSize() const {
+gfx::Size PinRequestView::CalculatePreferredSize(
+    const views::SizeBounds& available_size) const {
   return GetPinRequestViewSize();
 }
 
@@ -522,7 +523,7 @@ void PinRequestView::SetInputEnabled(bool input_enabled) {
 }
 
 void PinRequestView::UpdatePreferredSize() {
-  SetPreferredSize(CalculatePreferredSize());
+  SetPreferredSize(CalculatePreferredSize({}));
   if (GetWidget()) {
     GetWidget()->CenterWindow(GetPreferredSize());
   }

@@ -9,6 +9,7 @@
 
 #include "base/metrics/histogram_functions.h"
 #include "build/build_config.h"
+#include "chrome/browser/after_startup_task_utils.h"
 #include "chrome/browser/predictors/lcp_critical_path_predictor/lcp_critical_path_predictor_util.h"
 #include "chrome/browser/predictors/lcp_critical_path_predictor/prewarm_http_disk_cache_manager.h"
 #include "chrome/browser/predictors/loading_data_collector.h"
@@ -20,7 +21,6 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/origin_util.h"
 #include "net/base/network_anonymization_key.h"
-#include "net/base/network_change_notifier.h"
 #include "services/network/public/cpp/request_destination.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
@@ -218,15 +218,15 @@ bool LoadingPredictor::PrepareForPageLoad(
   // without optimization guide.
   if (base::FeatureList::IsEnabled(
           blink::features::kLCPPAutoPreconnectLcpOrigin)) {
-    std::optional<LcppData> lcpp_data =
-        resource_prefetch_predictor()->GetLcppData(url);
-    if (lcpp_data) {
+    std::optional<LcppStat> lcpp_stat =
+        resource_prefetch_predictor()->GetLcppStat(url);
+    if (lcpp_stat) {
       auto network_anonymization_key =
           net::NetworkAnonymizationKey::CreateSameSite(
               net::SchemefulSite(url::Origin::Create(url)));
       size_t count = 0;
       for (const GURL& preconnect_origin :
-           PredictPreconnectableOrigins(*lcpp_data)) {
+           PredictPreconnectableOrigins(*lcpp_stat)) {
         prediction.requests.emplace_back(url::Origin::Create(preconnect_origin),
                                          1, network_anonymization_key);
         ++count;
@@ -237,29 +237,21 @@ bool LoadingPredictor::PrepareForPageLoad(
   }
 
   // LCPP: set fonts to be prefetched to prefetch_requests.
-  // TODO(crbug.com/1493768): make prefetch work for platforms without the
+  // TODO(crbug.com/40285959): make prefetch work for platforms without the
   // optimization guide.
-  double max_bandwidth_mbps;
-  net::NetworkChangeNotifier::ConnectionType connection_type;
-  net::NetworkChangeNotifier::GetMaxBandwidthAndConnectionType(
-      &max_bandwidth_mbps, &connection_type);
   if (base::FeatureList::IsEnabled(blink::features::kLCPPFontURLPredictor) &&
       blink::features::kLCPPFontURLPredictorEnablePrefetch.Get() &&
-      connection_type !=
-          net::NetworkChangeNotifier::ConnectionType::CONNECTION_UNKNOWN &&
-      max_bandwidth_mbps >
-          blink::features::kLCPPFontURLPredictorPrefetchThresholdInMbps.Get() &&
       base::FeatureList::IsEnabled(features::kLoadingPredictorPrefetch) &&
       features::kLoadingPredictorPrefetchSubresourceType.Get() ==
           features::PrefetchSubresourceType::kAll) {
-    std::optional<LcppData> lcpp_data =
-        resource_prefetch_predictor()->GetLcppData(url);
-    if (lcpp_data) {
+    std::optional<LcppStat> lcpp_stat =
+        resource_prefetch_predictor()->GetLcppStat(url);
+    if (lcpp_stat) {
       auto network_anonymization_key =
           net::NetworkAnonymizationKey::CreateSameSite(
               net::SchemefulSite(url::Origin::Create(url)));
       size_t count = 0;
-      for (const GURL& font_url : PredictFetchedFontUrls(*lcpp_data)) {
+      for (const GURL& font_url : PredictFetchedFontUrls(*lcpp_stat)) {
         prediction.prefetch_requests.emplace_back(
             font_url, network_anonymization_key,
             network::mojom::RequestDestination::kFont);
@@ -411,7 +403,10 @@ void LoadingPredictor::CleanupAbandonedHintsAndNavigations(
 void LoadingPredictor::MaybeAddPreconnect(const GURL& url,
                                           PreconnectPrediction prediction) {
   CHECK(!shutdown_);
-  if (!prediction.prefetch_requests.empty()) {
+  if (!prediction.prefetch_requests.empty() &&
+      (AfterStartupTaskUtils::IsBrowserStartupComplete() ||
+       !base::FeatureList::IsEnabled(
+           features::kAvoidLoadingPredictorPrefetchDuringBrowserStartup))) {
     CHECK(base::FeatureList::IsEnabled(features::kLoadingPredictorPrefetch));
     prefetch_manager()->Start(url, std::move(prediction.prefetch_requests));
   }
@@ -561,10 +556,10 @@ void LoadingPredictor::MaybePrewarmResources(
     return;
   }
 
-  std::optional<LcppData> lcpp_data =
-      resource_prefetch_predictor()->GetLcppData(top_frame_main_resource_url);
+  std::optional<LcppStat> lcpp_stat =
+      resource_prefetch_predictor()->GetLcppStat(top_frame_main_resource_url);
 
-  if (!lcpp_data || !IsValidLcppStat(lcpp_data->lcpp_stat())) {
+  if (!lcpp_stat || !IsValidLcppStat(*lcpp_stat)) {
     return;
   }
 
@@ -576,7 +571,7 @@ void LoadingPredictor::MaybePrewarmResources(
   }
 
   prewarm_http_disk_cache_manager_->MaybePrewarmResources(
-      top_frame_main_resource_url, PredictFetchedSubresourceUrls(*lcpp_data));
+      top_frame_main_resource_url, PredictFetchedSubresourceUrls(*lcpp_stat));
 }
 
 }  // namespace predictors

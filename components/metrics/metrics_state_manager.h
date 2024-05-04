@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <string_view>
 
 #include "base/callback_list.h"
 #include "base/files/file_path.h"
@@ -192,7 +193,7 @@ class MetricsStateManager final {
   // randomization source value will be generated for this client. This
   // parameter can only be false before the limited entropy synthetic trial
   // completes (See limited_entropy_synthetic_trial.h), after which it should be
-  // removed (TODO(crbug.com/1508150)).
+  // removed (TODO(crbug.com/40948861)).
   std::unique_ptr<const variations::EntropyProviders> CreateEntropyProviders(
       bool enable_limited_entropy_mode);
 
@@ -221,7 +222,7 @@ class MetricsStateManager final {
       EntropyParams entropy_params = {},
       StoreClientInfoCallback store_client_info = StoreClientInfoCallback(),
       LoadClientInfoCallback load_client_info = LoadClientInfoCallback(),
-      base::StringPiece external_client_id = base::StringPiece());
+      std::string_view external_client_id = std::string_view());
 
   // Registers local state prefs used by this class.
   static void RegisterPrefs(PrefRegistrySimple* registry);
@@ -297,7 +298,7 @@ class MetricsStateManager final {
                       StartupVisibility startup_visibility,
                       StoreClientInfoCallback store_client_info,
                       LoadClientInfoCallback load_client_info,
-                      base::StringPiece external_client_id);
+                      std::string_view external_client_id);
 
   // Returns a MetricsStateManagerProvider instance and sets its
   // |log_normal_metric_state_.gen| with the provided random seed.

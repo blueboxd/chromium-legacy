@@ -4,6 +4,8 @@
 
 #include "components/metrics/persistent_histograms.h"
 
+#include <string_view>
+
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/functional/bind.h"
@@ -160,7 +162,7 @@ void InstantiatePersistentHistogramsImpl(const base::FilePath& metrics_dir,
   // directory must have embedded system profiles. If the directory can't be
   // created, the file will just be deleted below.
   base::FilePath upload_dir = metrics_dir.AppendASCII(kBrowserMetricsName);
-  // TODO(crbug.com/1183166): Only create the dir in kMappedFile mode.
+  // TODO(crbug.com/40751882): Only create the dir in kMappedFile mode.
   base::CreateDirectory(upload_dir);
 
   InitResult result;
@@ -178,7 +180,7 @@ void InstantiatePersistentHistogramsImpl(const base::FilePath& metrics_dir,
       break;
     case kNotEnabled:
       // Persistent metric storage is disabled. Must return here.
-      // TODO(crbug.com/1183166): Log the histogram below in this case too.
+      // TODO(crbug.com/40751882): Log the histogram below in this case too.
       return;
   }
 
@@ -214,7 +216,7 @@ BASE_FEATURE(
     kPersistentHistogramsFeature,
     "PersistentHistograms",
 #if BUILDFLAG(IS_FUCHSIA)
-    // TODO(crbug.com/1295119): Enable once writable mmap() is supported. Also
+    // TODO(crbug.com/42050425): Enable once writable mmap() is supported. Also
     // move the initialization earlier to chrome/app/chrome_main_delegate.cc.
     base::FEATURE_DISABLED_BY_DEFAULT
 #else
@@ -234,7 +236,7 @@ const char kDeferredBrowserMetricsName[] = "DeferredBrowserMetrics";
 
 void InstantiatePersistentHistograms(const base::FilePath& metrics_dir,
                                      bool persistent_histograms_enabled,
-                                     base::StringPiece storage) {
+                                     std::string_view storage) {
   PersistentHistogramsMode mode = kNotEnabled;
   // Note: The extra feature check is needed so that we don't use the default
   // value of the storage param if the feature is disabled.
@@ -246,7 +248,7 @@ void InstantiatePersistentHistograms(const base::FilePath& metrics_dir,
     }
   }
 
-// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
+// TODO(crbug.com/40118868): Revisit the macro expression once build flag switch
 // of lacros-chrome is complete.
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
   // Linux kernel 4.4.0.* shows a huge number of SIGBUS crashes with persistent

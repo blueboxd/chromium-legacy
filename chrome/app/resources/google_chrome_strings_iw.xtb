@@ -4,6 +4,7 @@
 <translation id="1001534784610492198">‏הארכיון של המתקין פגום או שאינו חוקי. יש להוריד שוב את Google Chrome.</translation>
 <translation id="1026101648481255140">המשך בהתקנה</translation>
 <translation id="102763973188675173">‏כדי להתאים אישית את Google Chrome ולשלוט בו טוב יותר, יש להוריד את העדכון החדש.</translation>
+<translation id="1028061813283459617">‏כדי למחוק את נתוני הגלישה מהמכשיר הזה בלבד ועדיין לשמור אותם בחשבון שלך ב-Google, <ph name="BEGIN_LINK" />עליך לצאת מהחשבון ב-Chrome<ph name="END_LINK" />.</translation>
 <translation id="1065672644894730302">לא הייתה אפשרות לקרוא את ההעדפות שלך. ייתכן שחלק מהתכונות לא יהיו זמינות ושינויים בהעדפות לא יישמרו.</translation>
 <translation id="1088300314857992706">‏בכתובת <ph name="USER_EMAIL_ADDRESS" /> השתמשו בעבר ב-Chrome</translation>
 <translation id="110877069173485804">‏זה ה-Chrome שלך</translation>
@@ -14,6 +15,7 @@
 <translation id="1154147086299354128">‏&amp;פתיחה ב-Chrome</translation>
 <translation id="1194807384646768652">‏Chrome חסם את ההורדה הזאת כי לרוב לא מתבצעת הורדה של קבצים מהסוג הזה ויכול להיות שהקובץ מסוכן</translation>
 <translation id="1203500561924088507">תודה שהתקנת. עליך להפעיל מחדש את הדפדפן לפני השימוש ב-<ph name="BUNDLE_NAME" />.</translation>
+<translation id="1229096353876452996">‏‫Google ממליצה להגדיר את Chrome כברירת המחדל</translation>
 <translation id="1278833599417554002">‏הפעלה מחדש לצורך עדכון &amp;Chrome</translation>
 <translation id="1302523850133262269">‏יש להמתין בזמן ש-Chrome מתקין את עדכוני המערכת האחרונים.</translation>
 <translation id="1335640173511558774">‏לפי דרישת <ph name="MANAGER" />, צריך לקרוא את התנאים וההגבלות הבאים ולהסכים להם לפני השימוש במכשיר הזה. התנאים האלה לא מרחיבים, משנים או מגבילים את התנאים לשימוש ב-Google ChromeOS Flex.</translation>
@@ -69,7 +71,6 @@
 <translation id="2123055963409958220">‏דיווח על <ph name="BEGIN_LINK" />ההגדרות הנוכחיות<ph name="END_LINK" /> יעזור לשפר את Chrome</translation>
 <translation id="2126108037660393668">נכשל האימות של הקובץ שהורד.</translation>
 <translation id="2128411189117340671">‏ניהול הפרופילים ב-Chrome</translation>
-<translation id="2130870084309816036">לא ניתן להתחבר לאינטרנט. אם משתמשים בחומת אש, יש להוסיף את <ph name="PRODUCT_EXE_NAME" /> לרשימת ההיתרים.</translation>
 <translation id="2131230230468101642">‏כדי להגן על הפרטיות שלך, תחומי עניין שהוגדרו לפני יותר מ-4 שבועות נמחקים אוטומטית. עם המשך הגלישה, תחום עניין כלשהו עשוי להופיע שוב ברשימה. יש גם אפשרות להסיר תחומי עניין מ-Chrome כדי שלא יילקחו בחשבון.</translation>
 <translation id="2139300032719313227">‏הפעלה מחדש של ChromeOS</translation>
 <translation id="2151406531797534936">‏יש להפעיל מחדש את Chrome עכשיו</translation>
@@ -80,7 +81,6 @@
 <translation id="2258103955319320201">‏כדי לקבל גישה אל הפריטים שלך בדפדפן Chrome בכל המכשירים, צריך להיכנס לחשבון ולהפעיל את הסנכרון</translation>
 <translation id="2290014774651636340">‏המפתחות של Google API חסרים. פונקציונליות מסוימת של Google Chrome תהיה מושבתת.</translation>
 <translation id="2290095356545025170">‏ברצונך באמת להסיר את Google Chrome?</translation>
-<translation id="2298849085402457754">‏כדי לנקות את נתוני הגלישה מהמכשיר הזה בלבד ועדיין לשמור אותם בחשבון Google שלך, <ph name="BEGIN_LINK" />עליך לצאת מהחשבון ב-Chrome<ph name="END_LINK" />.</translation>
 <translation id="2309047409763057870">‏זוהי התקנה משנית של Google Chrome, ולא ניתן להפוך אותו לדפדפן ברירת המחדל שלך.</translation>
 <translation id="2345992953227471816">‏התוספים האלה שנמצאו ב-Chrome מכילים תכונה זדונית:</translation>
 <translation id="2348335408836342058">‏Chrome זקוק להרשאת גישה אל המצלמה והמיקרופון בשביל האתר הזה</translation>
@@ -96,7 +96,6 @@
 <translation id="2485422356828889247">הסרת התקנה</translation>
 <translation id="2513154137948333830">נדרשת הפעלה מחדש: <ph name="INSTALL_SUCCESS" /></translation>
 <translation id="2534365042754120737">‏כדי להגן על הנתונים שלך, כדאי לאפשר ל-Chrome להסיר הרשאות מאתרים שלא נכנסת אליהם לאחרונה. המערכת תמשיך לשלוח התראות.</translation>
-<translation id="2534507159460261402">‏Google Pay (‏הועתק ל-Chrome)</translation>
 <translation id="2556847002339236023">‏לפי הגדרת הארגון, Chrome נסגר אוטומטית כשלא משתמשים בו במשך <ph name="TIMEOUT_DURATION" />. נתוני הגלישה נמחקו. בין הנתונים שנמחקו: היסטוריה, מילוי אוטומטי והורדות.</translation>
 <translation id="2559253115192232574">‏לאחר מכן, אתר שבו ביקרת יכול לשלוח בקשה ל-Chrome כדי לגלות מהם תחומי העניין שלך ולהתאים אישית את המודעות שמוצגות לך. Chrome יכול לשתף עד 3 תחומי עניין.</translation>
 <translation id="2563121210305478421">‏להפעיל את Chrome מחדש?</translation>
@@ -111,7 +110,6 @@
 <translation id="2649768380733403658">‏Chrome מוודא בקביעות שלדפדפן שלך יש את ההגדרות הבטוחות ביותר. נודיע לך אם צריך לבדוק משהו.</translation>
 <translation id="2652691236519827073">‏פתיחת הקישור ב&amp;כרטיסיית Chrome חדשה</translation>
 <translation id="2665296953892887393">‏שיפור Google Chrome על ידי שליחת <ph name="UMA_LINK" /> ודוחות קריסה אל Google</translation>
-<translation id="2712234843277364121">צריך להפעיל מחדש כדי לעדכן – הכרטיסיות ייפתחו מחדש</translation>
 <translation id="2738871930057338499">‏לא ניתן להתחבר לאינטרנט. HTTP 403: קוד איסור. צריך לבדוק את ההגדרה של שרת ה-proxy.</translation>
 <translation id="2742320827292110288">‏אזהרה: Google Chrome לא יכול למנוע מתוספים לתעד את היסטוריית הגלישה שלך. כדי להשבית את התוסף הזה במצב אנונימי, יש לבטל את הבחירה באפשרות הזו.</translation>
 <translation id="2765403129283291972">‏Chrome זקוק להרשאת גישה למיקרופון בשביל האתר הזה</translation>
@@ -148,6 +146,7 @@
 <translation id="3100998948628680988">‏בחירת שם לפרופיל Chrome שלך</translation>
 <translation id="3112458742631356345">‏Chrome חסם את ההורדה הזאת כי לרוב לא מתבצעת הורדה של קבצים כאלה ויכול להיות שהקובץ מסוכן</translation>
 <translation id="3114643501466072395">‏כדי לבדוק אם הסיסמאות האחרות מוגנות מפני פרצות באבטחת מידע ובעיות אבטחה אחרות, <ph name="BEGIN_LINK" />יש להיכנס ל-Chrome<ph name="END_LINK" />.</translation>
+<translation id="3119573284443908657">‏‫Chrome חסם את ההורדה הזו כי קובץ הארכיון כולל קבצים אחרים שעלולים להסתיר תוכנות זדוניות</translation>
 <translation id="3140883423282498090">‏השינויים ייכנסו לתוקף בפעם הבאה ש-Google Chrome יופעל מחדש.</translation>
 <translation id="3149510190863420837">‏אפליקציות Chrome</translation>
 <translation id="3169523567916669830">‏במהלך הפעולה של גרסאות הניסיון, תהיה לך אפשרות לראות ולהסיר את תחומי העניין שלפיהם האתרים הציגו לך את המודעות. ההערכה של תחומי העניין ב-Chrome מתבססת על היסטוריית הגלישה שלך מהזמן האחרון.</translation>
@@ -197,6 +196,7 @@
 <translation id="4053720452172726777">‏הגדרת Google Chrome בהתאם לרצונך</translation>
 <translation id="4106587138345390261">‏אנחנו בודקים תכונות חדשות ב-Chrome שמאפשרות לאתרים לספק את אותה חוויית הגלישה תוך שימוש בפחות פרטים אישיים</translation>
 <translation id="4110895483821904099">‏הגדרת הפרופיל החדש שלך ב-Chrome</translation>
+<translation id="4111566860456076004">‏‫Chrome לא יכול לאמת את מקור התוסף הזה, ויכול להיות שהוא לא בטוח. צריך להסיר אותו מ-Chrome כדי לא לאפשר לו יותר לראות ולשנות את הנתונים שלך באתרים שאליהם תתבצע כניסה, כולל הפרטים האישיים שלך.</translation>
 <translation id="4128488089242627000">‏דפדפן Chrome פועל מהר יותר ותכונות שמשתמשות ב-JavaScript אמורות לפעול כמו שצריך (מומלץ)</translation>
 <translation id="4147555960264124640">‏בחרת להיכנס לחשבון מנוהל, ומנהל המערכת שלו יקבל שליטה על הפרופיל שלך ב-Chrome. הנתונים שלך ב-Chrome, כגון אפליקציות, סימניות, היסטוריה, סיסמאות והגדרות אחרות ייקשרו באופן קבוע ל-<ph name="USER_NAME" />. ניתן למחוק את הנתונים האלה באמצעות מרכז השליטה של חשבונות Google, אבל לא ניתן יהיה לשייך את הנתונים האלה לחשבון אחר. <ph name="LEARN_MORE" /></translation>
 <translation id="4148957013307229264">מתקין...</translation>
@@ -215,9 +215,12 @@
 <translation id="4293420128516039005">‏כניסה לחשבון תסנכרן ותתאים אישית את Chrome בכל המכשירים שברשותך</translation>
 <translation id="430327780270213103">‏מתן הרשאה לתוסף להציג בקשות גישה בסרגל הכלים של Chrome</translation>
 <translation id="4328355335528187361">‏גרסת הפיתוח של Google Chrome ‏(mDNS-In)</translation>
+<translation id="4329315893554541805">‏כדי להשתמש בהתאמה אישית ובתכונות אחרות, צריך לכלול את Chrome ב'פעילות באינטרנט ובאפליקציות' ובשירותי Google המקושרים</translation>
 <translation id="4334294535648607276">ההורדה הושלמה.</translation>
 <translation id="4335235004908507846">‏Chrome עוזר להגן עליך מפני פרצות באבטחת המידע, תוספים לא תקינים ועוד</translation>
 <translation id="4343195214584226067">‏<ph name="EXTENSION_NAME" /> נוסף ל-‏Chrome</translation>
+<translation id="4348548358339558429">‏כדי להשתמש בהתאמה אישית, צריך לכלול את Chrome ב'פעילות באינטרנט ובאפליקציות'</translation>
+<translation id="436060642166082913">‏‫Chrome חסם את ההורדה הזו כי הקובץ יכול לפגוע בחשבונות האישיים ובחשבונות שלך ברשתות החברתיות</translation>
 <translation id="4384570495110188418">‏Chrome לא יכול לבדוק את הסיסמאות שלך כי לא נכנסת לחשבון</translation>
 <translation id="4389991535395284064">‏בגלישה במצב פרטי, Chrome יציג אזהרה לפני טעינת אתר באמצעות חיבור לא מאובטח</translation>
 <translation id="4427306783828095590">עם ההגנה המשופרת, החסימה של פישינג ותוכנות זדוניות מקיפה יותר</translation>
@@ -244,6 +247,7 @@
 <translation id="4793679854893018356">‏איך מערכת Chromium שומרת על האבטחה שלך</translation>
 <translation id="4828579605166583682">‏Google Chrome מנסה להחליף סיסמאות קיימות. כדי לאפשר זאת, יש להזין את הסיסמה שלך ל-Windows.</translation>
 <translation id="4842397268809523050">‏לא ניתן היה לסנכרן את הנתונים שלך ב-ChromeOS Flex כי הסנכרון לא זמין בדומיין שלך.</translation>
+<translation id="4862446263930606916">‏האדמין בארגון שלך יכול לראות ולנהל את נתוני הגלישה בפרופיל העבודה שלך, כמו הסימניות, ההיסטוריה והסיסמאות. אין לאדמין אפשרות לראות את נתוני הגלישה בפרופילים אישיים של Chrome.</translation>
 <translation id="4873692836499071887">‏כדי לקבל עדכונים של Google Chrome בעתיד, צריך להשתמש ב-macOS מגרסה 11 ואילך. במחשב הזה פועלת גרסה 10.15 של macOS.</translation>
 <translation id="4873783916118289636">‏בדיקה של אמצעי הבקרה החשובים ביותר על פרטיות ואבטחה ב-Chrome</translation>
 <translation id="4891791193823137474">‏לאפשר ל-Google Chrome לפעול ברקע</translation>
@@ -254,7 +258,6 @@
 <translation id="4969674060580488087">‏לא ניתן לסנכרן את הנתונים שלך ב-ChromeOS Flex כי פרטי הכניסה של החשבון שלך לא מעודכנים.</translation>
 <translation id="4970761609246024540">‏ברוך בואך לפרופילים של Chrome</translation>
 <translation id="4970880042055371251">‏גרסת ChromeOS</translation>
-<translation id="4970947549776831107">‏סוג הקובץ הזה מסוכן ולכן הקובץ נחסם על ידי Chrome</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5003967926796347400">‏לוחצים על 'מנהל הסיסמאות של Google'</translation>
 <translation id="5126049312684316860">‏כדי שהדפים שבהם מבקרים ייטענו מהר יותר, מערכת Chrome טוענת מראש עוד יותר דפים שיש סיכוי גבוה שייפתחו</translation>
@@ -321,6 +324,7 @@
 <translation id="6251759518630934363">‏מקבלים אזהרות לגבי אתרים מסוכנים, גם כאלה שלא היו ידועים ל-Google לפני כן, בעזרת ניתוח של יותר נתונים מאתרים בהשוואה להגנה הרגילה. אפשר לדלג על האזהרות מ-Chrome.</translation>
 <translation id="6273793429163604305">למקומות…</translation>
 <translation id="6277547788421725101">‏ההורה שלך השבית ב-Chrome את ההגדרה 'הרשאות לאתרים, לאפליקציות ולתוספים'</translation>
+<translation id="627882678981830918">‏אפשר להתאים אישית את Chrome ולנהל אותו. הגדרת Chrome כדפדפן ברירת המחדל.</translation>
 <translation id="6291089322031436445">‏אפליקציות לגרסת הפיתוח של Chrome</translation>
 <translation id="6291549208091401781">‏Google Chrome כבר מותקן במחשב ונגיש לכל המשתמשים.</translation>
 <translation id="6326175484149238433">‏הסרה מ-Chrome</translation>
@@ -329,7 +333,9 @@
 <translation id="6412673304250309937">‏המערכת בודקת כתובות URL ששמורות ב-Chrome ומכילות רשימות של אתרים לא בטוחים. אם אתר מסוים מנסה לגנוב סיסמה או אם המערכת מזהה הורדה של קובץ מזיק, Chrome עשוי גם לשלוח כתובות URL לבדיקה באמצעות 'גלישה בטוחה'. הנתונים שנשלחים לבדיקה כוללים ביטים מהתוכן של הדף.</translation>
 <translation id="6417690341895039567">{COUNT,plural, =1{‏לפי הגדרת הארגון, Chrome נסגר אוטומטית כשלא משתמשים בו במשך דקה. נתוני הגלישה נמחקים. בין הנתונים שיימחקו: היסטוריה, מילוי אוטומטי והורדות.}one{‏לפי הגדרת הארגון, Chrome נסגר אוטומטית כשלא משתמשים בו במשך # דקות. נתוני הגלישה נמחקים. בין הנתונים שיימחקו: היסטוריה, מילוי אוטומטי והורדות.}two{‏לפי הגדרת הארגון, Chrome נסגר אוטומטית כשלא משתמשים בו במשך # דקות. נתוני הגלישה נמחקים. בין הנתונים שיימחקו: היסטוריה, מילוי אוטומטי והורדות.}other{‏לפי הגדרת הארגון, Chrome נסגר אוטומטית כשלא משתמשים בו במשך # דקות. נתוני הגלישה נמחקים. בין הנתונים שיימחקו: היסטוריה, מילוי אוטומטי והורדות.}}</translation>
 <translation id="6418662306461808273">‏לעבור לפרופיל Chrome קיים?</translation>
+<translation id="6481963882741794338">‏אפשר לקשר את Chrome לשירותי Google אחרים לצורך התאמה אישית ולמטרות אחרות</translation>
 <translation id="648319183876919572">הגרסה המשופרת של הגלישה הבטוחה מגנה עליך טוב יותר מפני הורדות ואתרים מסוכנים</translation>
+<translation id="6489302989675808168">‏מופעל • Chrome לא יכול לאמת את מקור התוסף הזה</translation>
 <translation id="6493527311031785448">‏Google Chrome מנסה <ph name="AUTHENTICATION_PURPOSE" /></translation>
 <translation id="6497147134301593682">‏Chrome נסגר באופן אוטומטי</translation>
 <translation id="6506909944137591434">‏נדרשת הרשאת גישה למצלמה ב-Chrome כדי ליצור מפה תלת-ממדית של הסביבה שלך</translation>
@@ -347,12 +353,14 @@
 <translation id="677276454032249905">‏לסגור את Chrome בכל זאת?</translation>
 <translation id="6794858689789885890">‏מחיקת נתונים מאתרים מהמכשיר בכל פעם שסוגרים את Chrome</translation>
 <translation id="683440813066116847">‏כלל נכנס עבור הגרסה הניסיונית של Google Chrome על מנת לאפשר תנועת mDNS.</translation>
+<translation id="684888714667046800">לא ניתן להתחבר לאינטרנט. אם משתמשים בחומת אש, צריך לוודא ש-<ph name="PRODUCT_EXE_NAME" /> ברשימת ההיתרים.</translation>
 <translation id="6851981911629679515">‏הפעלת הגנה נוספת במנוע WebAssembly ו-JavaScript של Chrome</translation>
 <translation id="6881299373831449287">‏מתבצע עדכון של Chrome</translation>
 <translation id="6885412569789873916">‏אפליקציות לגרסת הבטא של Chrome</translation>
 <translation id="6933858244219479645">‏מערכת ChromeOS</translation>
 <translation id="6938166777909186039">‏כדי לקבל עדכונים של Google Chrome בעתיד, צריך להשתמש ב-Windows מגרסה 10 ואילך. במחשב הזה פועלת מערכת Windows 8.1.</translation>
 <translation id="6943584222992551122">‏נתוני הגלישה של האדם הזה יימחקו מהמכשיר. כדי לשחזר את הנתונים, יש להיכנס ל-Chrome בתור<ph name="USER_EMAIL" />.</translation>
+<translation id="6944202724043006419">‏כדי להתחיל פעילות של מציאות משולבת, נדרשת ל-Chrome הרשאה ל'הבנת סצנות' ולמעקב אחר תנועות הידיים</translation>
 <translation id="6967962315388095737">‏כלל נכנס לגרסת הבטא של Google Chrome כדי לאפשר תנועת mDNS.</translation>
 <translation id="6989339256997917931">‏Google Chrome עודכן, אך לא השתמשת בו לפחות 30 ימים.</translation>
 <translation id="7011190694940573312">ההתקנה נכשלה כי הגרסה הזו של מערכת ההפעלה לא נתמכת.</translation>
@@ -379,7 +387,6 @@
 <translation id="7308322188646931570">‏Chrome זקוק לגישה לאחסון כדי להוריד קבצים</translation>
 <translation id="7339898014177206373">חלון חדש</translation>
 <translation id="7398801000654795464">‏התחברת ל-Chrome כ-<ph name="USER_EMAIL_ADDRESS" />. יש להשתמש באותו חשבון כדי להיכנס שוב.</translation>
-<translation id="7410958280246779049">‏הקובץ הזה מסוכן ולכן הוא נחסם על ידי Chrome</translation>
 <translation id="7412494426921990001">‏לוחצים על תפריט Chrome</translation>
 <translation id="742463671275348370">{NUM_DEVICES,plural, =0{‏תוסף אחד לפחות ל-Chrome ניגש להתקן USB אחד}=1{‏תוסף אחד לפחות ל-Chrome ניגש להתקן USB אחד}one{‏תוסף אחד לפחות ל-Chrome ניגש ל-# התקני USB}two{‏תוסף אחד לפחות ל-Chrome ניגש ל-# התקני USB}other{‏תוסף אחד לפחות ל-Chrome ניגש ל-# התקני USB}}</translation>
 <translation id="7426611252293106642">‏יכול להיות ש-Google Chrome לא יפעל כראוי כי הוא כבר לא נתמך בגרסה הזו של Linux</translation>
@@ -388,6 +395,7 @@
 <translation id="7477130805345743099">‏Chrome יציג אזהרה לפני טעינת אתר כלשהו באמצעות חיבור לא מאובטח</translation>
 <translation id="7481213027396403996">‏רוצה להשיג את רמת האבטחה הגבוהה ביותר של Chrome?</translation>
 <translation id="7535429826459677826">‏גרסת הפיתוח של Google Chrome</translation>
+<translation id="7572537927358445944">‏מושבת • Chrome לא יכול לאמת את מקור התוסף הזה</translation>
 <translation id="7583399374488819119">מנהל ההתקנה של <ph name="COMPANY_NAME" /></translation>
 <translation id="7606334485649076285">Google ChromeOS Flex</translation>
 <translation id="7626032353295482388">‏ברוך בואך אל Chrome</translation>
@@ -452,7 +460,6 @@
 <translation id="8451192282033883849">‏החשבון שלך מנוהל על ידי <ph name="MANAGER_NAME" />. האדמין שלך יכול לראות ולערוך את הפרופיל הזה של דפדפן Chrome ואת הנתונים שלו, כמו סימניות, היסטוריה וסיסמאות.</translation>
 <translation id="8496177819998570653">‏מנהל &amp;הסיסמאות של Google</translation>
 <translation id="8498858610309223613">‏בוצע עדכון אבטחה מיוחד של Google Chrome. עכשיו עליך להפעיל מחדש את Chrome ואנחנו נשחזר את הכרטיסיות.</translation>
-<translation id="8504220326736535258">‏בקובץ הזה יש תוכנה זדונית ולכן הוא נחסם על ידי Chrome</translation>
 <translation id="8516431725144212809">‏תחומי העניין שלך בהתאם להערכה של Chrome</translation>
 <translation id="8521348052903287641">‏כלל נכנס לגרסת הפיתוח של Google Chrome כדי לאפשר תנועת mDNS.</translation>
 <translation id="8550334526674375523">פרופיל העבודה שלך נפרד לחלוטין מהפרופיל האישי שלך.</translation>
@@ -471,11 +478,13 @@
 <translation id="873133009373065397">‏Google Chrome אינו יכול לקבוע או להגדיר את דפדפן ברירת המחדל</translation>
 <translation id="8765470054473112089">‏כשמקלידים טקסט בסרגל הכתובות או בתיבת החיפוש, Chrome שולח את הטקסט הזה למנוע החיפוש שמוגדר כברירת מחדל כדי לקבל הצעות טובות יותר. האפשרות הזו מושבתת במצב הפרטי.</translation>
 <translation id="878572486461146056">שגיאת התקנה: מנהל הרשת החיל מדיניות קבוצתית שמונעת את ההתקנה: <ph name="INSTALL_ERROR" /></translation>
+<translation id="8796073561259064743">‏‫Chrome חסם את ההורדה הזו כי הקובץ יכול לפגוע בחשבונות האישיים ובחשבונות שלך ברשתות החברתיות, כולל <ph name="USER_EMAIL" /></translation>
 <translation id="8801657293260363985">‏‫V8 הוא מנוע WebAssembly ו-JavaScript של Chrome שמשמש לשיפור ביצועי האתרים</translation>
 <translation id="8821043148920470810">‏כדי לקבל עדכונים של Google Chrome בעתיד, צריך להשתמש ב-Windows מגרסה 10 ואילך. במחשב הזה פועלת מערכת Windows 7.</translation>
 <translation id="8823341990149967727">‏Chrome אינו מעודכן</translation>
 <translation id="8825634023950448068">‏כדי להגן על הפרטיות שלך, תחומי עניין שהוגדרו לפני יותר מ-4 שבועות נמחקים אוטומטית. עם המשך הגלישה, תחום עניין כלשהו עשוי להופיע שוב ברשימה. אם ב-Chrome הוגדר תחום עניין שגוי או שאינך רוצה לראות מודעות מסוימות, יש לך אפשרות להסיר תחומי עניין.</translation>
 <translation id="8834965163890861871">‏Google Chrome מנסה לערוך את הסיסמאות. כדי לאפשר את הפעולה הזו, יש להקליד את הסיסמה שלך ל-Windows.</translation>
+<translation id="8851180723659088381">{NUM_EXTENSIONS,plural, =1{‏ההמלצה של Chrome היא להסיר אותו}one{‏ההמלצה של Chrome היא להסיר אותם}two{‏ההמלצה של Chrome היא להסיר אותם}other{‏ההמלצה של Chrome היא להסיר אותם}}</translation>
 <translation id="8862326446509486874">אין לך זכויות שמתאימות להתקנה ברמת המערכת. יש לנסות להפעיל שוב את המתקין כמנהל מערכת.</translation>
 <translation id="8914504000324227558">‏הפעלה מחדש של Chrome</translation>
 <translation id="8922193594870374009">‏כדי לשלוח מספר מ-<ph name="ORIGIN" /> לטלפון Android, יש להיכנס אל Chrome בשני המכשירים.</translation>
@@ -483,8 +492,8 @@
 <translation id="8989968390305463310">‏היסטוריית הגלישה שלך משפיעה על המודעות שמוצגות לך ועל תחומי העניין המשוערים שמופיעים בהמשך. כדי להגן על הפרטיות שלך, מתבצעת ב-Chrome מחיקה אוטומטית של תחומי העניין שלך על בסיס מתחלף מדי חודש. תחומי עניין שלא הוסרו עוברים רענון.</translation>
 <translation id="8999117580775242387">‏כש-HTTPS לא יהיה זמין, Chrome ישתמש בחיבור לא מאובטח בלי להציג אזהרה</translation>
 <translation id="8999208279178790196">{0,plural, =0{‏יש עדכון זמין ל-Chrome}=1{‏יש עדכון זמין ל-Chrome}one{‏עדכון ל-Chrome זמין כבר # ימים}two{‏עדכון ל-Chrome זמין כבר # ימים}other{‏עדכון ל-Chrome זמין כבר # ימים}}</translation>
+<translation id="9024318700713112071">‏הגדרת Chrome כדפדפן ברירת המחדל</translation>
 <translation id="9053892488859122171">‏מערכת ChromeOS Flex</translation>
-<translation id="9054037008353851982">צריך להפעיל מחדש כדי לעדכן – הכרטיסיות ייפתחו מחדש</translation>
 <translation id="9090566250983691233">‏למה קבצים מסוימים נחסמים ב-Chrome</translation>
 <translation id="911206726377975832">למחוק גם את נתוני הגלישה שלך?</translation>
 <translation id="9138603949443464873">‏כדי להחיל את השינויים שביצעת, יש להפעיל מחדש את Chrome</translation>

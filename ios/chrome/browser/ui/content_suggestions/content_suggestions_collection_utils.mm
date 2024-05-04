@@ -55,11 +55,11 @@ const CGFloat kNTPShrunkLogoSearchFieldBottomPadding = 20;
 const CGFloat kGoogleSearchDoodleHeight = 120;
 
 // Height for the shrunk doodle frame.
-// TODO(crbug.com/1170491): clean up post-launch.
+// TODO(crbug.com/40744549): clean up post-launch.
 const CGFloat kGoogleSearchDoodleShrunkHeight = 68;
 
 // Height for the shrunk logo frame.
-// TODO(crbug.com/1170491): clean up post-launch.
+// TODO(crbug.com/40744549): clean up post-launch.
 const CGFloat kGoogleSearchLogoHeight = 36;
 const CGFloat kLargeFakeboxGoogleSearchLogoHeight = 50;
 
@@ -68,7 +68,6 @@ const CGFloat kSymbolContentSuggestionsPointSize = 18;
 
 // Constants for a symbol button with an new badge.
 const CGFloat kSymbolButtonSize = 37.0;
-const CGFloat kSymbolWithNewBadgePointSize = 18.0;
 const CGFloat kButtonShadowOpacity = 0.35;
 const CGFloat kButtonShadowRadius = 1.0;
 const CGFloat kButtonShadowVerticalOffset = 1.0;
@@ -102,27 +101,14 @@ CGFloat FakeToolbarVerticalMargin() {
 
 // Returns the color to use for the Lens and Voice icons in the Fakebox.
 UIColor* FakeboxIconColor() {
-  if (IsIOSLargeFakeboxEnabled()) {
-    return [UIColor colorNamed:kGrey700Color];
-  } else if (IsMagicStackEnabled()) {
-    return [UIColor colorNamed:@"fake_omnibox_placeholder_color"];
-  }
-  return [UIColor colorNamed:kTextfieldPlaceholderColor];
+  return [UIColor colorNamed:kGrey700Color];
 }
 
-// Sets up fakebox button with a symbol and a round background.
-void SetUpButtonWithNewFeatureBadge(UIButton* button, NSString* symbol_name) {
+// Sets up fakebox button with a round background and new badge view.
+void SetUpButtonWithNewFeatureBadge(UIButton* button) {
   [button setTranslatesAutoresizingMaskIntoConstraints:NO];
-  UIImageSymbolConfiguration* configuration = [UIImageSymbolConfiguration
-      configurationWithPointSize:kSymbolWithNewBadgePointSize
-                          weight:UIImageSymbolWeightSemibold
-                           scale:UIImageSymbolScaleMedium];
-
-  UIImage* icon = MakeSymbolMulticolor(
-      CustomSymbolWithConfiguration(symbol_name, configuration));
 
   button.backgroundColor = [UIColor colorNamed:kOmniboxKeyboardButtonColor];
-  [button setImage:icon forState:UIControlStateNormal];
   button.layer.cornerRadius = kSymbolButtonSize / 2;
 
   button.layer.shadowColor = [UIColor blackColor].CGColor;
@@ -154,7 +140,6 @@ namespace content_suggestions {
 
 const CGFloat kHintTextScale = 0.15;
 const CGFloat kReturnToRecentTabSectionBottomMargin = 25;
-const CGFloat kModuleWidth = 0.92;
 
 CGFloat DoodleHeight(BOOL logo_is_showing,
                      BOOL doodle_is_showing,
@@ -288,10 +273,8 @@ void ConfigureSearchHintLabel(UILabel* search_hint_label,
 }
 
 void ConfigureVoiceSearchButton(UIButton* voice_search_button,
-                                UIView* search_tab_target,
                                 BOOL use_color_icon) {
   [voice_search_button setTranslatesAutoresizingMaskIntoConstraints:NO];
-  [search_tab_target addSubview:voice_search_button];
 
   UIButtonConfiguration* buttonConfig =
       [UIButtonConfiguration plainButtonConfiguration];
@@ -331,17 +314,33 @@ void ConfigureLensButtonAppearance(UIButton* lens_button,
   lens_button.pointerStyleProvider =
       CreateLiftEffectCirclePointerStyleProvider();
 
+  // Use a monochrome or colored symbol with no background.
+  UIImage* camera_image = CustomSymbolWithPointSize(
+      kCameraLensSymbol, kSymbolContentSuggestionsPointSize);
+  camera_image = use_color_icon ? MakeSymbolMulticolor(camera_image)
+                                : MakeSymbolMonochrome(camera_image);
+  [lens_button setImage:camera_image forState:UIControlStateNormal];
+  lens_button.tintColor = FakeboxIconColor();
+
   if (use_new_badge) {
     // Show the "New" badge and colored symbol.
-    SetUpButtonWithNewFeatureBadge(lens_button, kCameraLensSymbol);
-  } else {
-    // Use a monochrome or colored symbol with no background.
-    UIImage* camera_image = CustomSymbolWithPointSize(
-        kCameraLensSymbol, kSymbolContentSuggestionsPointSize);
-    camera_image = use_color_icon ? MakeSymbolMulticolor(camera_image)
-                                  : MakeSymbolMonochrome(camera_image);
-    [lens_button setImage:camera_image forState:UIControlStateNormal];
-    lens_button.tintColor = FakeboxIconColor();
+    SetUpButtonWithNewFeatureBadge(lens_button);
+  }
+}
+
+void ConfigureLensButtonWithNewBadgeAlpha(UIButton* lens_button,
+                                          CGFloat new_badge_alpha) {
+  // Fade button background.
+  lens_button.backgroundColor =
+      [[UIColor colorNamed:kOmniboxKeyboardButtonColor]
+          colorWithAlphaComponent:new_badge_alpha];
+  lens_button.layer.shadowOpacity = kButtonShadowOpacity * new_badge_alpha;
+
+  // Scale the N badge.
+  for (UIView* subview in lens_button.imageView.subviews) {
+    subview.alpha = new_badge_alpha;
+    subview.transform = CGAffineTransformScale(
+        CGAffineTransformIdentity, new_badge_alpha, new_badge_alpha);
   }
 }
 
@@ -356,12 +355,7 @@ UIView* NearestAncestor(UIView* view, Class of_class) {
 }
 
 UIColor* SearchHintLabelColor() {
-  if (IsIOSLargeFakeboxEnabled()) {
-    return [UIColor colorNamed:kGrey800Color];
-  } else if (IsMagicStackEnabled()) {
-    return [UIColor colorNamed:@"fake_omnibox_placeholder_color"];
-  }
-  return [UIColor colorNamed:kTextfieldPlaceholderColor];
+  return [UIColor colorNamed:kGrey800Color];
 }
 
 int SetUpListTitleStringID() {

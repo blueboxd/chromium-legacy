@@ -154,6 +154,12 @@ class BrowsingHistoryService : public HistoryServiceObserver,
   virtual void QueryHistory(const std::u16string& search_text,
                             const QueryOptions& options);
 
+  // Fetch all the app IDs used in the database.
+  void GetAllAppIds();
+
+  // Callback invoked when the app ID fetching task is completed.
+  void OnGetAllAppIds(GetAllAppIdsResult result);
+
   // Gets a version of the last time any webpage on the given host was visited,
   // by using the min("last navigation time", x minutes ago) as the upper bound
   // of the GetLastVisitToHost query. This is done in order to provide the user
@@ -247,8 +253,8 @@ class BrowsingHistoryService : public HistoryServiceObserver,
   void RemoveWebHistoryComplete(bool success);
 
   // HistoryServiceObserver implementation.
-  void OnURLsDeleted(HistoryService* history_service,
-                     const DeletionInfo& deletion_info) override;
+  void OnHistoryDeletions(HistoryService* history_service,
+                          const DeletionInfo& deletion_info) override;
 
   // WebHistoryServiceObserver implementation.
   void OnWebHistoryDeleted() override;

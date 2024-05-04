@@ -6,9 +6,9 @@
 
 #import "base/notreached.h"
 #import "base/strings/sys_string_conversions.h"
-#import "components/sync/base/features.h"
 #import "ios/chrome/browser/shared/public/commands/tos_commands.h"
 #import "ios/chrome/browser/shared/ui/elements/activity_overlay_view.h"
+#import "ios/chrome/browser/shared/ui/symbols/symbols.h"
 #import "ios/chrome/browser/ui/authentication/views/identity_button_control.h"
 #import "ios/chrome/browser/ui/first_run/first_run_constants.h"
 #import "ios/chrome/browser/ui/settings/elements/enterprise_info_popover_view_controller.h"
@@ -25,8 +25,6 @@ namespace {
 // Top margin for the managed icon in the enteprised image view
 constexpr CGFloat kTopMarginForManagedIcon = 16.;
 
-// Banner at the top of the view.
-NSString* const kSigninBannerName = @"signin_banner";
 // Enterprise icon in the bottom view.
 NSString* const kEnterpriseIconName = @"enterprise_icon";
 
@@ -63,43 +61,40 @@ NSString* const kEnterpriseIconName = @"enterprise_icon";
       l10n_util::GetNSString(IDS_IOS_FIRST_RUN_SCREEN_READ_MORE);
 
   // Set banner.
-  self.bannerName = kSigninBannerName;
+#if BUILDFLAG(IOS_USE_BRANDED_SYMBOLS)
+  self.bannerName = kChromeSigninBannerImage;
+#else
+  self.bannerName = kChromiumSigninBannerImage;
+#endif
 
   // Set `self.titleText` and `self.subtitleText`.
   switch (self.signinStatus) {
     case SigninScreenConsumerSigninStatusAvailable: {
-      if (!base::FeatureList::IsEnabled(
-              syncer::kReplaceSyncPromosWithSignInPromos)) {
-        self.titleText = l10n_util::GetNSString(IDS_IOS_FIRST_RUN_SIGNIN_TITLE);
-        self.subtitleText =
-            l10n_util::GetNSString(IDS_IOS_FIRST_RUN_SIGNIN_SUBTITLE_SHORT);
-      } else {
-        switch (self.screenIntent) {
-          case SigninScreenConsumerScreenIntentSigninOnly:
-            // Use in the context of the upgrade promo dialog.
-            self.titleText =
-                l10n_util::GetNSString(IDS_IOS_UNO_UPGRADE_PROMO_SIGNIN_TITLE);
-            self.subtitleText =
-                self.syncEnabled
-                    ? l10n_util::GetNSString(
-                          IDS_IOS_UNO_UPGRADE_PROMO_SIGNIN_SUBTITLE)
-                    : l10n_util::GetNSString(
-                          IDS_IOS_UNO_UPGRADE_PROMO_SIGNIN_SUBTITLE_SYNC_DISABLED);
+      switch (self.screenIntent) {
+        case SigninScreenConsumerScreenIntentSigninOnly:
+          // Use in the context of the upgrade promo dialog.
+          self.titleText =
+              l10n_util::GetNSString(IDS_IOS_UNO_UPGRADE_PROMO_SIGNIN_TITLE);
+          self.subtitleText =
+              self.syncEnabled
+                  ? l10n_util::GetNSString(
+                        IDS_IOS_UNO_UPGRADE_PROMO_SIGNIN_SUBTITLE)
+                  : l10n_util::GetNSString(
+                        IDS_IOS_UNO_UPGRADE_PROMO_SIGNIN_SUBTITLE_SYNC_DISABLED);
 
-            break;
-          case SigninScreenConsumerScreenIntentWelcomeAndSignin:
-          case SigninScreenConsumerScreenIntentWelcomeWithoutUMAAndSignin:
-            // Use in the context of the FRE dialog.
-            self.titleText =
-                l10n_util::GetNSString(IDS_IOS_FIRST_RUN_SIGNIN_TITLE);
-            self.subtitleText =
-                self.syncEnabled
-                    ? l10n_util::GetNSString(
-                          IDS_IOS_FIRST_RUN_SIGNIN_BENEFITS_SUBTITLE_SHORT)
-                    : l10n_util::GetNSString(
-                          IDS_IOS_FIRST_RUN_SIGNIN_SUBTITLE_SHORT);
-            break;
-        }
+          break;
+        case SigninScreenConsumerScreenIntentWelcomeAndSignin:
+        case SigninScreenConsumerScreenIntentWelcomeWithoutUMAAndSignin:
+          // Use in the context of the FRE dialog.
+          self.titleText =
+              l10n_util::GetNSString(IDS_IOS_FIRST_RUN_SIGNIN_TITLE);
+          self.subtitleText =
+              self.syncEnabled
+                  ? l10n_util::GetNSString(
+                        IDS_IOS_FIRST_RUN_SIGNIN_BENEFITS_SUBTITLE_SHORT)
+                  : l10n_util::GetNSString(
+                        IDS_IOS_FIRST_RUN_SIGNIN_SUBTITLE_SHORT);
+          break;
       }
       break;
     }

@@ -580,7 +580,7 @@ TEST_F(WebEngineIntegrationTest, PermissionGranted) {
   RunPermissionTest(true);
 }
 
-// TODO(crbug.com/1299352): Flaky.
+// TODO(crbug.com/40823475): Flaky.
 TEST_F(WebEngineIntegrationMediaTest,
        DISABLED_MicrophoneAccess_WithPermission) {
   StartWebEngine(base::CommandLine(base::CommandLine::NO_PROGRAM));
@@ -673,7 +673,7 @@ TEST_F(WebEngineIntegrationTest, WebGLContextAbsentWithoutVulkanFeature) {
 }
 
 #if defined(ARCH_CPU_ARM_FAMILY)
-// TODO(crbug.com/1377994): Enable on ARM64 when bots support Vulkan.
+// TODO(crbug.com/42050537): Enable on ARM64 when bots support Vulkan.
 #define MAYBE_VulkanWebEngineIntegrationTest \
   DISABLED_VulkanWebEngineIntegrationTest
 #else

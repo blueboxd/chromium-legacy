@@ -16,7 +16,7 @@
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/ash/ownership/owner_settings_service_ash.h"
-#include "chrome/browser/ash/settings/cros_settings.h"
+#include "chromeos/ash/components/settings/cros_settings.h"
 #include "chromeos/ash/components/settings/cros_settings_names.h"
 #include "components/account_id/account_id.h"
 #include "components/user_manager/user_names.h"
@@ -137,7 +137,7 @@ bool IsDeviceLocalAccountUser(const std::string& user_id,
 
 void SetDeviceLocalAccounts(ash::OwnerSettingsServiceAsh* service,
                             const std::vector<DeviceLocalAccount>& accounts) {
-  // TODO(https://crbug.com/984021): handle TYPE_SAML_PUBLIC_SESSION
+  // TODO(crbug.com/40636049): handle TYPE_SAML_PUBLIC_SESSION
   base::Value::List list;
   for (std::vector<DeviceLocalAccount>::const_iterator it = accounts.begin();
        it != accounts.end(); ++it) {
@@ -190,7 +190,7 @@ void SetDeviceLocalAccounts(ash::OwnerSettingsServiceAsh* service,
 
 std::vector<DeviceLocalAccount> GetDeviceLocalAccounts(
     ash::CrosSettings* cros_settings) {
-  // TODO(https://crbug.com/984021): handle TYPE_SAML_PUBLIC_SESSION
+  // TODO(crbug.com/40636049): handle TYPE_SAML_PUBLIC_SESSION
   std::vector<DeviceLocalAccount> accounts;
 
   const base::Value::List* list = nullptr;

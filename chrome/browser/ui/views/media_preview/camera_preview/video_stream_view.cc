@@ -22,9 +22,10 @@ VideoStreamView::VideoStreamView()
     : current_aspect_ratio_(video_format_comparison::kDefaultAspectRatio),
       rounded_radius_(ChromeLayoutProvider::Get()->GetCornerRadiusMetric(
           views::Emphasis::kHigh)) {
-  SetAccessibleName(l10n_util::GetStringUTF16(
-      IDS_MEDIA_PREVIEW_VIDEO_STREAM_ACCESSIBLE_NAME));
-  SetAccessibleRole(ax::mojom::Role::kImage);
+  SetAccessibilityProperties(
+      ax::mojom::Role::kImage,
+      l10n_util::GetStringUTF16(
+          IDS_MEDIA_PREVIEW_VIDEO_STREAM_ACCESSIBLE_NAME));
 
   raster_context_provider_ =
       content::GetContextFactory()->SharedMainThreadRasterContextProvider();
@@ -76,8 +77,13 @@ void VideoStreamView::ClearFrame() {
   has_updated_preferred_size_ = false;
   video_renderer_.ResetCache();
   latest_frame_.reset();
+  rendered_frame_count_ = 0;
   PreferredSizeChanged();
   SchedulePaint();
+}
+
+size_t VideoStreamView::GetRenderedFrameCount() {
+  return rendered_frame_count_;
 }
 
 void VideoStreamView::OnPaint(gfx::Canvas* canvas) {
@@ -88,6 +94,8 @@ void VideoStreamView::OnPaint(gfx::Canvas* canvas) {
     canvas->DrawRoundRect(background_rect, rounded_radius_, background_flags);
     return;
   }
+
+  ++rendered_frame_count_;
 
   // Centers the video frame horizontally in the view
   int rendered_frame_width =
@@ -119,7 +127,8 @@ int VideoStreamView::GetHeightForWidth(int w) const {
   return w / current_aspect_ratio_;
 }
 
-gfx::Size VideoStreamView::CalculatePreferredSize() const {
+gfx::Size VideoStreamView::CalculatePreferredSize(
+    const views::SizeBounds& /*available_size*/) const {
   return gfx::Size(width(), GetHeightForWidth(width()));
 }
 

@@ -118,7 +118,7 @@ public class ChildProcessConnection {
     /** The string passed to bindToCaller to identify this class loader. */
     @VisibleForTesting
     public static String getBindToCallerClazz() {
-        // TODO(crbug.com/1057102): Have embedder explicitly set separate different strings since
+        // TODO(crbug.com/40677220): Have embedder explicitly set separate different strings since
         // this could still collide in theory.
         ClassLoader cl = ChildProcessConnection.class.getClassLoader();
         return cl.toString() + cl.hashCode();
@@ -618,7 +618,7 @@ public class ChildProcessConnection {
                 // browser process launched (i.e. if the install somehow did not kill our process)
                 PackageInfo latestPackage = PackageUtils.getApplicationPackageInfo(0);
                 long latestVersionCode = BuildInfo.packageVersionCode(latestPackage);
-                long loadedVersionCode = BuildInfo.getInstance().versionCode;
+                long loadedVersionCode = BuildConfig.VERSION_CODE;
                 if (latestVersionCode != loadedVersionCode) {
                     // Crashing the process is likely to improve the situation - when we are next
                     // launched, we should be running the new version and match new children.

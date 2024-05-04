@@ -6,6 +6,7 @@
 
 load("@builtin//path.star", "path")
 load("@builtin//struct.star", "module")
+load("./config.star", "config")
 load("./fuchsia.star", "fuchsia")
 
 # TODO: b/323091468 - Propagate fuchsia arch and version from GN,
@@ -27,6 +28,12 @@ def __filegroups(ctx):
                 "lib/*.so",
                 "lib/rustlib/src/rust/library/std/src/lib.rs",
                 "lib/rustlib/x86_64-unknown-linux-gnu/lib/*",
+            ],
+        },
+        "third_party/rust:rustlib": {
+            "type": "glob",
+            "includes": [
+                "*.rs",
             ],
         },
         "build/linux/debian_bullseye_amd64-sysroot:rustlink": {
@@ -96,12 +103,20 @@ def __rust_bin_handler(ctx, cmd):
 
     ctx.actions.fix(inputs = cmd.inputs + inputs)
 
+def __rust_build_handler(ctx, cmd):
+    inputs = []
+    for i, arg in enumerate(cmd.args):
+        if arg == "--src-dir":
+            inputs.append(ctx.fs.canonpath(cmd.args[i + 1]))
+    ctx.actions.fix(inputs = cmd.inputs + inputs)
+
 __handlers = {
     "rust_bin_handler": __rust_bin_handler,
+    "rust_build_handler": __rust_build_handler,
 }
 
 def __step_config(ctx, step_config):
-    remote_run = True  # Turn this to False when you do file access trace.
+    remote_run = not config.get(ctx, "clang-tot")  # Turn this to False when you do file access trace.
     platform_ref = "large"  # Rust actions run faster on large workers.
     clang_inputs = [
         "build/linux/debian_bullseye_amd64-sysroot:rustlink",
@@ -143,7 +158,7 @@ def __step_config(ctx, step_config):
             "indirect_inputs": rust_indirect_inputs,
             "deps": "none",  # disable gcc scandeps
             "remote": remote_run,
-            "canonicalize_dir": True,
+            # "canonicalize_dir": True,  # TODO(b/300352286)
             "timeout": "2m",
             "platform_ref": platform_ref,
         },
@@ -153,8 +168,8 @@ def __step_config(ctx, step_config):
             "inputs": rust_inputs + clang_inputs,
             "indirect_inputs": rust_indirect_inputs,
             "deps": "none",  # disable gcc scandeps
+            # "canonicalize_dir": True,  # TODO(b/300352286)
             "remote": remote_run,
-            "canonicalize_dir": True,
             "timeout": "2m",
             "platform_ref": platform_ref,
         },
@@ -176,9 +191,34 @@ def __step_config(ctx, step_config):
             "indirect_inputs": rust_indirect_inputs,
             "deps": "none",  # disable gcc scandeps
             "remote": remote_run,
-            "canonicalize_dir": True,
+            # "canonicalize_dir": True,  # TODO(b/300352286)
             "timeout": "2m",
             "platform_ref": platform_ref,
+        },
+        {
+            "name": "rust/run_build_script",
+            "command_prefix": "python3 ../../build/rust/run_build_script.py",
+            "inputs": [
+                "build/action_helpers.py",
+                "build/gn_helpers.py",
+                "third_party/rust-toolchain:toolchain",
+                "third_party/rust:rustlib",
+            ],
+            "handler": "rust_build_handler",
+            "remote": config.get(ctx, "cog"),
+            "input_root_absolute_path": True,
+            "timeout": "2m",
+        },
+        {
+            "name": "rust/find_std_rlibs",
+            "command_prefix": "python3 ../../build/rust/std/find_std_rlibs.py",
+            "inputs": [
+                "third_party/rust-toolchain:toolchain",
+                "third_party/rust-toolchain/lib/rustlib:rlib",
+            ],
+            "remote": config.get(ctx, "cog"),
+            "input_root_absolute_path": True,
+            "timeout": "2m",
         },
     ])
     return step_config

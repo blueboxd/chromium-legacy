@@ -30,14 +30,6 @@ struct UpdateScrollbarThemeParams {
 };
 
 struct UpdateSystemColorInfoParams {
-  bool is_dark_mode;
-  bool forced_colors;
-
-  // uint32 represents a SkColor in the map.
-  // TODO(crbug.com/1251637): These colors should be consolidated into the
-  // renderer's ColorProviders.
-  map<SystemThemeColor, uint32> colors;
-
   // Accent color used by the system. Currently only set on ChromeOS.
   uint32? accent_color;
 };
@@ -166,7 +158,7 @@ interface Renderer {
   // Similarly to the `SetIsCrossOriginIsolated()` method above, this flag is
   // process global, and called at most once, prior to committing a navigation.
   //
-  // TODO(crbug.com/1206150): We need a specification for this restriction.
+  // TODO(crbug.com/40180791): We need a specification for this restriction.
   SetIsIsolatedContext(bool value);
 
   // Initialize renderer user agent string, user agent metadata, CORS exempt

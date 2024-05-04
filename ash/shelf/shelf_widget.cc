@@ -34,6 +34,7 @@
 #include "ash/style/ash_color_id.h"
 #include "ash/style/style_util.h"
 #include "ash/system/status_area_widget.h"
+#include "ash/utility/forest_util.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/work_area_insets.h"
 #include "base/command_line.h"
@@ -488,10 +489,17 @@ void ShelfWidget::DelegateView::UpdateOpaqueBackground() {
   const bool tablet_mode = Shell::Get()->IsInTabletMode();
   const bool in_app = ShelfConfig::Get()->is_in_app();
 
+  const bool in_overview_mode = ShelfConfig::Get()->in_overview_mode();
+  const bool in_oak_session =
+      in_overview_mode &&
+      (features::IsOakFeatureEnabled() || IsForestFeatureEnabled());
   const bool split_view = ShelfConfig::Get()->in_split_view_with_overview();
-  bool show_opaque_background = !tablet_mode || in_app || split_view;
-  if (show_opaque_background != opaque_background_layer()->visible())
-    opaque_background_layer()->SetVisible(show_opaque_background);
+  bool show_opaque_background =
+      (!in_oak_session) && (!tablet_mode || in_app || split_view);
+  auto* opaque_back_ground_layer = opaque_background_layer();
+  if (show_opaque_background != opaque_back_ground_layer->visible()) {
+    opaque_back_ground_layer->SetVisible(show_opaque_background);
+  }
 
   // Extend the opaque layer a little bit to handle "overshoot" gestures
   // gracefully (the user drags the shelf further than it can actually go).
@@ -509,9 +517,10 @@ void ShelfWidget::DelegateView::UpdateOpaqueBackground() {
       0, -shelf->SelectValueForShelfAlignment(0, safety_margin, 0),
       -shelf->SelectValueForShelfAlignment(safety_margin, 0, 0),
       -shelf->SelectValueForShelfAlignment(0, 0, safety_margin)));
+  opaque_back_ground_layer->SetBounds(opaque_background_bounds);
 
   const bool is_vertical_alignment_in_overview =
-      !shelf->IsHorizontalAlignment() && ShelfConfig::Get()->in_overview_mode();
+      in_overview_mode && !shelf->IsHorizontalAlignment();
 
   // Show rounded corners except in maximized (which includes split view) mode,
   // or whenever we are "in app", or the shelf is on the vertical alignment in
@@ -524,7 +533,6 @@ void ShelfWidget::DelegateView::UpdateOpaqueBackground() {
   } else {
     opaque_background_.SetRoundedCornerRadius(radius);
   }
-  opaque_background_layer()->SetBounds(opaque_background_bounds);
 
   UpdateDragHandle();
   UpdateBackgroundBlur();
@@ -946,6 +954,14 @@ void ShelfWidget::UpdateTargetBoundsForGesture(int shelf_position) {
   }
 }
 
+void ShelfWidget::OnOverviewModeStarting() {
+  delegate_view_->UpdateOpaqueBackground();
+}
+
+void ShelfWidget::OnOverviewModeEnding(OverviewSession* overview_session) {
+  delegate_view_->UpdateOpaqueBackground();
+}
+
 gfx::Rect ShelfWidget::GetTargetBounds() const {
   return target_bounds_;
 }
@@ -982,7 +998,7 @@ void ShelfWidget::OnSessionStateChanged(session_manager::SessionState state) {
     // be painted over the hotseat/navigation buttons/status area). Make sure
     // the shelf widget is restacked at the bottom of the shelf container when
     // the session state changes.
-    // TODO(https://crbug.com/1057207): Ideally, the shelf widget position at
+    // TODO(crbug.com/40120650): Ideally, the shelf widget position at
     // the bottom of window stack would be maintained using a "stacked at
     // bottom" window property - switch to that approach once it's ready for
     // usage.

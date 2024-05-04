@@ -278,7 +278,7 @@ void FakeSkiaOutputSurface::CopyOutput(
   if (request->result_format() != CopyOutputResult::Format::RGBA ||
       request->is_scaled() ||
       geometry.result_bounds != geometry.result_selection) {
-    // TODO(crbug.com/644851): Complete the implementation for all request
+    // TODO(crbug.com/40483986): Complete the implementation for all request
     // types, scaling, etc.
     NOTIMPLEMENTED();
     return;
@@ -322,7 +322,7 @@ void FakeSkiaOutputSurface::CopyOutput(
   // Send copy request by copying into a bitmap.
   SkBitmap bitmap;
   copy_image->asLegacyBitmap(&bitmap);
-  // TODO(crbug.com/795132): Plumb color space throughout SkiaRenderer up to
+  // TODO(crbug.com/40554816): Plumb color space throughout SkiaRenderer up to
   // the SkSurface/SkImage here. Until then, play "musical chairs" with the
   // SkPixelRef to hack-in the RenderPass's |color_space|.
   sk_sp<SkPixelRef> pixels(SkSafeRef(bitmap.pixelRef()));

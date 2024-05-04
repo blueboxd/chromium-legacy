@@ -35,7 +35,10 @@ namespace {
 class PriceTrackingUtilsTest : public testing::Test {
  protected:
   void SetUp() override {
-    bookmark_model_ = bookmarks::TestBookmarkClient::CreateModel();
+    auto client = std::make_unique<bookmarks::TestBookmarkClient>();
+    client->SetIsSyncFeatureEnabledIncludingBookmarks(true);
+    bookmark_model_ =
+        bookmarks::TestBookmarkClient::CreateModelWithClient(std::move(client));
     shopping_service_ = std::make_unique<MockShoppingService>();
     shopping_service_->SetBookmarkModelUsedForSync(bookmark_model_.get());
     pref_service_ = std::make_unique<TestingPrefServiceSimple>();
@@ -568,8 +571,8 @@ TEST_F(PriceTrackingUtilsTest, GetShoppingCollection) {
 
   // Deleting the collection should behave like any other bookmark node
   // deletion.
-  bookmark_model_->Remove(collection,
-                          bookmarks::metrics::BookmarkEditSource::kUser);
+  bookmark_model_->Remove(
+      collection, bookmarks::metrics::BookmarkEditSource::kUser, FROM_HERE);
 
   collection = GetShoppingCollectionBookmarkFolder(bookmark_model_.get());
 

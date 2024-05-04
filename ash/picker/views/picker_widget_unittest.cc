@@ -6,11 +6,13 @@
 
 #include <memory>
 
+#include "ash/picker/views/picker_preview_bubble.h"
 #include "ash/picker/views/picker_view.h"
 #include "ash/picker/views/picker_view_delegate.h"
 #include "ash/test/ash_test_base.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/aura/window.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
@@ -28,16 +30,21 @@ constexpr gfx::Rect kDefaultAnchorBounds(200, 100, 0, 10);
 class FakePickerViewDelegate : public PickerViewDelegate {
  public:
   // PickerViewDelegate:
-  std::unique_ptr<AshWebView> CreateWebView(
-      const AshWebView::InitParams& params) override {
-    return nullptr;
-  }
+  std::vector<PickerCategory> GetAvailableCategories() override { return {}; }
+  bool ShouldShowSuggestedResults() override { return false; }
   void GetResultsForCategory(PickerCategory category,
                              SearchResultsCallback callback) override {}
+  void TransformSelectedText(PickerCategory category) override {}
   void StartSearch(const std::u16string& query,
                    std::optional<PickerCategory> category,
                    SearchResultsCallback callback) override {}
   void InsertResultOnNextFocus(const PickerSearchResult& result) override {}
+  void ShowEmojiPicker(ui::EmojiPickerCategory category) override {}
+  void ShowEditor(std::optional<std::string> preset_query_id,
+                  std::optional<std::string> freeform_text) override {}
+  void SetCapsLockEnabled(bool enabled) override {}
+  void GetSuggestedEditorResults(
+      SuggestedEditorResultsCallback callback) override {}
   PickerAssetFetcher* GetAssetFetcher() override { return nullptr; }
 };
 
@@ -75,6 +82,44 @@ TEST_F(PickerWidgetTest, ClickingOutsideClosesPickerWidget) {
   GetEventGenerator()->ClickLeftButton();
 
   EXPECT_TRUE(widget->IsClosed());
+}
+
+TEST_F(PickerWidgetTest, LosingFocusClosesPickerWidget) {
+  // Create something other than the picker to focus.
+  auto window = CreateTestWindow();
+  window->Show();
+
+  // Create the fake picker and make sure it has focus.
+  FakePickerViewDelegate delegate;
+  auto picker_widget = PickerWidget::Create(&delegate, kDefaultAnchorBounds);
+  picker_widget->Show();
+  EXPECT_THAT(picker_widget->GetFocusManager()->GetFocusedView(),
+              testing::NotNull());
+
+  // Focus the other Widget and expect the picker to have closed.
+  window->Focus();
+  EXPECT_TRUE(window->HasFocus());
+
+  EXPECT_TRUE(picker_widget->IsClosed());
+}
+
+TEST_F(PickerWidgetTest, PreviewBubbleDoesNotStealFocusPickerWidget) {
+  std::unique_ptr<views::Widget> anchor_widget = CreateFramelessTestWidget();
+  anchor_widget->SetContentsView(std::make_unique<views::View>());
+
+  // Create the PickerWidget and make sure it has focus.
+  FakePickerViewDelegate delegate;
+  auto picker_widget = PickerWidget::Create(&delegate, kDefaultAnchorBounds);
+  picker_widget->Show();
+
+  // Show bubble widget and expect the PickerWidget to not close.
+  views::View* bubble_view =
+      new PickerPreviewBubbleView(anchor_widget->GetContentsView());
+  bubble_view->GetWidget()->Show();
+
+  EXPECT_FALSE(picker_widget->IsClosed());
+
+  bubble_view->GetWidget()->CloseNow();
 }
 
 }  // namespace

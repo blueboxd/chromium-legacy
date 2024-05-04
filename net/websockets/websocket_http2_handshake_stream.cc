@@ -5,6 +5,7 @@
 #include "net/websockets/websocket_http2_handshake_stream.h"
 
 #include <set>
+#include <string_view>
 #include <utility>
 
 #include "base/check.h"
@@ -210,13 +211,6 @@ void WebSocketHttp2HandshakeStream::GetSSLInfo(SSLInfo* ssl_info) {
     stream_->GetSSLInfo(ssl_info);
 }
 
-void WebSocketHttp2HandshakeStream::GetSSLCertRequestInfo(
-    SSLCertRequestInfo* cert_request_info) {
-  // A multiplexed stream cannot request client certificates. Client
-  // authentication may only occur during the initial SSL handshake.
-  NOTREACHED();
-}
-
 int WebSocketHttp2HandshakeStream::GetRemoteEndpoint(IPEndPoint* endpoint) {
   if (!session_)
     return ERR_SOCKET_NOT_CONNECTED;
@@ -250,7 +244,7 @@ const std::set<std::string>& WebSocketHttp2HandshakeStream::GetDnsAliases()
   return dns_aliases_;
 }
 
-base::StringPiece WebSocketHttp2HandshakeStream::GetAcceptChViaAlps() const {
+std::string_view WebSocketHttp2HandshakeStream::GetAcceptChViaAlps() const {
   return {};
 }
 

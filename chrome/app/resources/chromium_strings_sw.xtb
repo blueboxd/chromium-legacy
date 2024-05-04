@@ -62,7 +62,6 @@ Huenda ruhusa ambazo tayari umezipa tovuti na programu zikatumika kwenye akaunti
 <translation id="2088953378266246249">Maelezo kuhusu jinsi Chromium inavyodhibiti vyeti vyake vya msingi</translation>
 <translation id="2120965832000301375">{COUNT,plural, =1{Shirika lako hufuta kiotomatiki data ya kuvinjari Chromium isipotumika kwa dakika 1. Data hii inaweza kujumuisha historia, maelezo yaliyojazwa kiotomatiki na vipakuliwa. Vichupo vyako havitafungwa.}other{Shirika lako hufuta kiotomatiki data ya kuvinjari Chromium isipotumika kwa dakika #. Data hii inaweza kujumuisha historia, maelezo yaliyojazwa kiotomatiki na vipakuliwa. Vichupo vyako havitafungwa.}}</translation>
 <translation id="2126108037660393668">Faili iliyopakuliwa imeshindwa kuthibitishwa.</translation>
-<translation id="2130870084309816036">Imeshindwa kuunganisha kwenye Intaneti. Iwapo unatumia kinga mtandao, tafadhali weka <ph name="PRODUCT_EXE_NAME" /> kwenye orodha ya vilivyoruhusiwa.</translation>
 <translation id="215352261310130060">Chromium imezuia upakuaji huu kwa sababu tovuti haitumii muunganisho salama na huenda faili imeharibiwa</translation>
 <translation id="2174178932569897599">Weka mipangilio ya Chromium upendavyo</translation>
 <translation id="2174917724755363426">Usakinishaji haujakamilika. Je, una uhakika unataka kughairi?</translation>
@@ -73,7 +72,6 @@ Huenda ruhusa ambazo tayari umezipa tovuti na programu zikatumika kwenye akaunti
 <translation id="2329088755516916767">Chromium ikiwashwa, huwa inapakia mapema kurasa, hali inayofanya shughuli za utafutaji na kuvinjari ziwe za haraka zaidi.</translation>
 <translation id="2343156876103232566">Ili uweze kutuma namba kwa simu yako ya Android kutoka hapa, ingia katika akaunti kwenye Chromium ukitumia vifaa vyote viwili.</translation>
 <translation id="2359808026110333948">Endelea</translation>
-<translation id="2359920621792549529">Ili ufute data ya kuvinjari kwenye kifaa hiki pekee, huku ukiihifadhi katika Akaunti yako ya Google, <ph name="BEGIN_LINK" />ondoka kwenye akaunti ya Chromium<ph name="END_LINK" />.</translation>
 <translation id="2384373936468275798">Mfumo wa Uendeshaji wa Chromium haukusawazisha data yako kwa sababu maelezo ya kuingia katika akaunti yako yamepitwa na wakati.</translation>
 <translation id="2398377054246527950">{NUM_DEVICES,plural, =0{Kiendelezi kimoja au zaidi cha Chromium kilikuwa kinafikia kifaa 1 cha HID}=1{Kiendelezi kimoja au zaidi cha Chromium kinafikia kifaa 1 cha HID}other{Kiendelezi kimoja au zaidi cha Chromium kinafikia vifaa # vya HID}}</translation>
 <translation id="2401032172288869980">Chromium inahitaji ruhusa ya kufikia kamera na maikrofoni kwa ajili ya tovuti hii</translation>
@@ -152,6 +150,7 @@ Huenda ruhusa ambazo tayari umezipa tovuti na programu zikatumika kwenye akaunti
 <translation id="3702352323269013324">Pata maelezo zaidi kuhusu kuweka mapendeleo ya matangazo kwenye Chromium</translation>
 <translation id="370962675267501463">{COUNT,plural, =0{Msimamizi wako anataka ufungue Chromium tena ili utumie sasisho hili}=1{Msimamizi wako anataka ufungue Chromium tena ili utumie sasisho hili. Haitafungua upya dirisha fiche.}other{Msimamizi wako anataka ufungue Chromium tena ili utumie sasisho hili. Haitafungua upya madirisha # fiche.}}</translation>
 <translation id="3713809861844741608">Fungua kiungo katika kichupo kipya cha Chromium</translation>
+<translation id="3728124580182886854">Unganisha Chromium na huduma nyingine za Google ili upate mapendeleo na madhumuni mengine</translation>
 <translation id="3788675262216168505">Dhibiti Wasifu wa Chromium</translation>
 <translation id="378917192836375108">Chromium hukuruhusu kubofya namba ya simu kwenye wavuti na kuipiga kwa Skype.</translation>
 <translation id="3790262771324122253">Fahamu kwa nini Chromium huzuia baadhi ya vipakuliwa</translation>
@@ -178,6 +177,7 @@ Huenda ruhusa ambazo tayari umezipa tovuti na programu zikatumika kwenye akaunti
 <translation id="4095980151185649725">{COUNT,plural, =1{Shirika lako hufunga Chromium kiotomatiki isipotumika kwa dakika 1. Data ya kuvinjari hufutwa. Data hii inaweza kujumuisha historia, maelezo yaliyojazwa kiotomatiki na vipakuliwa.}other{Shirika lako hufunga Chromium kiotomatiki isipotumika kwa dakika #. Data ya kuvinjari hufutwa. Data hii inaweza kujumuisha historia, maelezo yaliyojazwa kiotomatiki na vipakuliwa.}}</translation>
 <translation id="4118474109249235144">Hali fiche kwenye Chromium</translation>
 <translation id="4148957013307229264">Inasakinisha...</translation>
+<translation id="4149336151887611710">Shirika lako linaweza kuona na kudhibiti data ya kuvinjari katika wasifu wako wa kazini, kama vile alamisho, historia na manenosiri yako. Haliwezi kuona data ya kuvinjari katika wasifu wa binafsi kwenye Chromium.</translation>
 <translation id="419998258129752635"><ph name="PAGE_TITLE" /> - Kuingia katika Akaunt ya Mtandao - Chromium</translation>
 <translation id="421369550622382712">Gundua programu, michezo, viendelezi na mandhari bora ya Chromium.</translation>
 <translation id="4216212958613226427">Lugha hii inatumiwa kuonyesha Kiolesura cha Chromium</translation>
@@ -233,6 +233,7 @@ Huenda ruhusa ambazo tayari umezipa tovuti na programu zikatumika kwenye akaunti
 <translation id="5352361688875342522">Wasifu Nyingine za Chromium</translation>
 <translation id="5358375970380395591">Unaingia katika akaunti inayodhibitiwa na kumpa msimamizi wa akaunti hiyo udhibiti wa wasifu wako kwenye Chromium. Data yako ya Chromium, kama vile programu zako, alamisho, historia, manenosiri, na mipangilio miingine itahusishwa na <ph name="USER_NAME" /> kabisa. Utaweza kufuta data hii kupitia Dashibodi ya Akaunti za Google, lakini hutaweza  kuunganisha data hii na akaunti nyingine. <ph name="LEARN_MORE" /></translation>
 <translation id="5368118228313795342">Msimbo wa ziada: <ph name="EXTRA_CODE" />.</translation>
+<translation id="5377622451696208284">Ili upate mapendeleo, jumuisha Chromium katika Historia ya Shughuli kwenye Wavuti na Programu</translation>
 <translation id="5383439451358640070">Fahamu kwa nini Chromium huzuia baadhi ya faili</translation>
 <translation id="5386450000063123300">Inasasisha Chromium (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="538767207339317086">Ruhusu kuingia katika akaunti ya Chromium</translation>
@@ -241,6 +242,7 @@ Huenda ruhusa ambazo tayari umezipa tovuti na programu zikatumika kwenye akaunti
 <translation id="5427571867875391349">Weka Chromium kuwa kivinjari chako chaguomsingi</translation>
 <translation id="5438241569118040789"><ph name="PAGE_TITLE" /> - Beta ya Chromium</translation>
 <translation id="5473971139929175403">Huenda Chromium haitafanya kazi vizuri kwa sababu haitumiki tena kwenye toleo hili la Linux</translation>
+<translation id="5475924890392386523">Chromium imezuia upakuaji huu kwa sababu faili inaweza kuathiri akaunti zako binafsi na za mitandao ya kijamii</translation>
 <translation id="5480860683791598150">Chromium inahitaji kufikia maelezo ya mahali ulipo ili kushiriki mahali ulipo na tovuti hii</translation>
 <translation id="5487574057737591516">Ili kulinda faragha yako, tunafuta kiotomatiki mambo yanayokuvutia ambayo yapo kwenye orodha kwa zaidi ya wiki nne. Kadiri unavyoendelea kuvinjari, jambo linalokuvutia linaweza kuonekana tena kwenye orodha. Na iwapo Chromium itakosea au usingependa kuona matangazo fulani, unaweza kuondoa jambo hilo linalokuvutia.</translation>
 <translation id="549669000822060376">Tafadhali subiri Chromium inaposakinisha sasisho mpya ya mfumo.</translation>
@@ -252,6 +254,7 @@ Huenda ruhusa ambazo tayari umezipa tovuti na programu zikatumika kwenye akaunti
 <translation id="5690427481109656848">Google LLC</translation>
 <translation id="5698481217667032250">Onyesha Chromium katika lugha hii</translation>
 <translation id="569897634095159764">Imeshindwa kuunganisha kwenye Intaneti. Seva mbadala inahitaji uthibitishaji.</translation>
+<translation id="5800158606660203929">Dhibiti na uweke mapendeleo kwenye Chromium. Ifanye Chromium iwe kivinjari chako chaguomsingi.</translation>
 <translation id="5809516625706423866">Imeshindwa kuunganisha kwenye Intaneti. HTTP 401 Haijaidhinishwa. Tafadhali angalia mipangilio yako ya seva mbadala.</translation>
 <translation id="5862307444128926510">Karibu kwenye Chromium</translation>
 <translation id="5883558403894052917">Chromium imegundua kwamba vipengee hivi vina programu hasidi:</translation>
@@ -274,6 +277,7 @@ Huenda ruhusa ambazo tayari umezipa tovuti na programu zikatumika kwenye akaunti
 <translation id="608006075545470555">Ongeza Wasifu wa Kazini kwenye kivinjari hiki</translation>
 <translation id="6096348254544841612">Weka mapendeleo na udhibiti Chromium. Sasisho linapatikana.</translation>
 <translation id="6102072151902574948">Ukiwasha mipangilio hii, Chromium huhifadhi chaji ya betri kwa kudhibiti shughuli ya chinichini na madoido, kama vile usogezaji rahisi na kasi ya picha ya video.</translation>
+<translation id="6107893135096467929">Kimewashwa • Chromium haiwezi kuthibitisha sehemu kinapotoka kiendelezi hiki</translation>
 <translation id="6119438414301547735">Ruhusu kiendelezi kionyeshe maombi ya ufikiaji katika upau wa vidhibiti wa Chromium</translation>
 <translation id="6120345080069858279">Chromium itahifadhi nenosiri hili kwenye Akaunti yako ya Google. Hutahitaji kulikumbuka.</translation>
 <translation id="6129621093834146363"><ph name="FILE_NAME" /> ni hatari, kwa hivyo Chromium imeizuia.</translation>
@@ -297,7 +301,6 @@ Huenda ruhusa ambazo tayari umezipa tovuti na programu zikatumika kwenye akaunti
 <translation id="6290827346642914212">Upe wasifu wako wa Chromium jina</translation>
 <translation id="6295779123002464101">Huenda <ph name="FILE_NAME" /> ni hatari, kwa hivyo Chromium imeizuia.</translation>
 <translation id="6309712487085796862">Chromium inatumia kamera yako.</translation>
-<translation id="632355235628111698">Chromium imezuia faili hii kwa sababu si salama</translation>
 <translation id="6327105987658262776">Hakuna sasisho linalopatikana.</translation>
 <translation id="6333502561965082103">Shughuli nyingine zinaendelea kwenye Chromium. Tafadhali jaribu tena baadaye.</translation>
 <translation id="6334986366598267305">Sasa ni rahisi zaidi kutumia Chromium pamoja na Akaunti yako ya Google na kwenye kompyuta zinazoshirikiwa.</translation>
@@ -309,6 +312,7 @@ Huenda ruhusa ambazo tayari umezipa tovuti na programu zikatumika kwenye akaunti
 <translation id="6403826409255603130">Chromium ni kivinjari cha wavuti kinachoendesha kurasa za wavuti na programu kwa kasi ya umeme. Ni ya haraka, imara, na rahisi kutumia. Vinjari wavuti kwa usalama zaidi dhidi ya hadaa na programu hasidi ukiwa na ulinzi uliojengwa ndani ya Chromium.</translation>
 <translation id="6442900851116057561">Zima kisha uwashe Mfumo wa Uendeshaji wa Chromium</translation>
 <translation id="6443470774889161065">Chromium hupakia mapema kurasa nyingi zaidi ambazo huenda ukatembelea, ili zipakiwe kwa haraka zaidi unapozitembelea</translation>
+<translation id="645458117210240797">Kimezimwa • Chromium haiwezi kuthibitisha sehemu kinapotoka kiendelezi hiki</translation>
 <translation id="6455857529632101747">Karibu kwenye kipengele cha wasifu kwenye Chromium</translation>
 <translation id="6475912303565314141">Pia inadhibiti ukurasa unaoonyeshwa unapoanzisha Chromium.</translation>
 <translation id="648319183876919572">Kipengele cha Kuvinjari Salama Kilichoboreshwa hufanya mengi zaidi ili kukulinda dhidi ya tovuti na vipakuliwa hatarishi.</translation>
@@ -331,14 +335,14 @@ Huenda ruhusa ambazo tayari umezipa tovuti na programu zikatumika kwenye akaunti
 <translation id="6717134281241384636">Wasifu wako hauwezi kutumiwa kwa sababu umetoka katika toleo jipya la Chromium.
 
 Baadhi ya vipengele huenda visipatikane. Tafadhali bainisha saraka tofauti ya wasifu au utumie toleo jipya la Chromium.</translation>
+<translation id="6729124504294600478">Ili upate mapendeleo na vipengele vingine, jumuisha Chromium katika Historia ya Shughuli kwenye Wavuti na Programu pamoja na huduma za Google zilizounganishwa</translation>
 <translation id="6734291798041940871">Tayari Chromium imesakinishwa kwa watumiaji wote kwenye kompyuta yako.</translation>
 <translation id="673636774878526923">Ili uweze kufikia vitu vyako vya Chromium kwenye vifaa vyako vyote, ingia katika akaunti kisha uwashe kipengele cha kusawazisha.</translation>
 <translation id="67706546131546258">Chromium inapendekeza kuchanganua faili hii kwa sababu huenda isiwe salama.</translation>
 <translation id="6779406956731413166">Mfumo wa uendeshaji wa Chromium umewezeshwa na <ph name="BEGIN_LINK_CROS_OSS" />programu huria<ph name="END_LINK_CROS_OSS" /> za ziada.</translation>
 <translation id="6847869444787758381">Chromium hukuruhusu ujue iwapo manenosiri yako yameathiriwa</translation>
-<translation id="6852530923436401894">Chromium imezuia faili hii kwa sababu ina programu hasidi</translation>
+<translation id="684888714667046800">Imeshindwa kuunganisha kwenye Intaneti. Iwapo unatumia kinga mtandao, tafadhali hakikisha <ph name="PRODUCT_EXE_NAME" /> iko kwenye orodha ya zilizoruhusiwa.</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
-<translation id="6863361426438995919">Google Pay (imenakiliwa kwenye Chromium)</translation>
 <translation id="6873893289264747459">Chromium imegundua kwamba "<ph name="EXTENSION_NAME" />" ina programu hasidi</translation>
 <translation id="6893813176749746474">Chromium imesasishwa, lakini hujaitumia angalau kwa siku 30.</translation>
 <translation id="691026815377248078">Chromium inahitaji ruhusa ya kufikia Bluetooth ili iendelee 
@@ -360,9 +364,11 @@ Baadhi ya vipengele huenda visipatikane. Tafadhali bainisha saraka tofauti ya wa
 <translation id="718435575166326686">Chromium inahitaji ruhusa ya kufikia kamera kwa ajili ya tovuti hii</translation>
 <translation id="7196312274710523067">Imeshindwa kuanzisha Chromium. Jaribu tena.</translation>
 <translation id="7197677400338048821">Chromium imeshindwa kukagua manenosiri yako. Jaribu tena baada ya saa 24.</translation>
+<translation id="7198365860059291213">Chromium inahitaji kuelewa muktadha na ruhusa ya kufuatilia mijongeo ya mikono ili ianzishe kipindi cha hali ya kina</translation>
 <translation id="7213407614656404070">Tumia Chromium wakati wowote unabofya viungo kwenye ujumbe, hati na programu nyinginezo</translation>
 <translation id="7223968959479464213">Kidhibiti cha Shughuli - Chromium</translation>
 <translation id="7246575524853130370">Mambo yanayokuvutia kama yanavyokadiriwa na Chromium</translation>
+<translation id="7295544978856094497">{NUM_EXTENSIONS,plural, =1{Chromium inapendekeza ukiondoe}other{Chromium inapendekeza uviondoe}}</translation>
 <translation id="7309928523159922338">Upimaji wa tangazo huruhusu tovuti unazotembelea ziombe maelezo kutoka Chromium ambayo yanasaidia tovuti kupima ufanisi wa matangazo yao. Upimaji wa tangazo huzuia ufuatiliaji katika tovuti mbalimbali kwa kuhamisha maelezo machache kadiri iwezekanavyo miongoni mwa tovuti.</translation>
 <translation id="731795002583552498">Inasasisha Chromium</translation>
 <translation id="7318036098707714271">Faili yako ya mapendeleo imeharibika au ni batili. 
@@ -371,6 +377,7 @@ Chromium haiwezi kufufua mipangilio yako.</translation>
 <translation id="7339898014177206373">Dirisha jipya</translation>
 <translation id="734373864078049451">Wavuti, alamisho, na mambo yako mengine ya Chromium yanapatikana hapa.</translation>
 <translation id="7349591376906416160">Msimamizi wa mfumo unaotumia ameweka mipangilio ya Chromium ifungue <ph name="ALTERNATIVE_BROWSER_NAME" /> ili kufikia <ph name="TARGET_URL_HOSTNAME" />.</translation>
+<translation id="7355355292030546812">Chromium imezuia upakuaji huu kwa sababu faili inaweza kuathiri akaunti zako binafsi na za mitandao ya kijamii, ikijumuisha <ph name="USER_EMAIL" /></translation>
 <translation id="7398989605938454041">Ukitumia kipengele cha wasifu kwenye Chromium, unaweza kutenganisha vitu vyako vyote vya Chromium. Hali hii hukurahisishia mchakato wa kutenganisha kazi na burudani.</translation>
 <translation id="7449453770951226939"><ph name="PAGE_TITLE" /> - Chromium ya Wasanidi Programu</translation>
 <translation id="7451052299415159299">Chromium inahitaji ruhusa ya kufikia kamera yako katika tovuti hii</translation>
@@ -399,6 +406,7 @@ Chromium haiwezi kufufua mipangilio yako.</translation>
 <translation id="7867198900892795913">Chromium imeshindwa kusasisha toleo jipya, kwa hivyo hutapata masasisho ya usalama na vipengele vipya.</translation>
 <translation id="7872446069773932638">Inapakua... Zimesalia sekunde <ph name="SECONDS" /></translation>
 <translation id="7877292582355102282"><ph name="BEGIN_BOLD" />Jinsi unavyoweza kudhibiti data yako:<ph name="END_BOLD" /> Ili kulinda faragha yako, tunafuta kiotomatiki mambo yanayokuvutia ambayo yamehifadhiwa kwa zaidi ya wiki nne. Kadiri unavyoendelea kuvinjari, jambo linalokuvutia linaweza kuonekana tena kwenye orodha. Au unaweza kuondoa mambo yanayokuvutia ambayo usingependa Chromium iyazingatie.</translation>
+<translation id="7888981273428720788">Ifanye Chromium iwe kivinjari chako chaguomsingi</translation>
 <translation id="7937630085815544518">Uliingia kwenye Chromium kama <ph name="USER_EMAIL_ADDRESS" />. Tafadhali tumia akaunti hiyo hiyo kuingia tena.</translation>
 <translation id="7975919845073681630">Huu ni usakinishaji wa pili wa Chromium, na haiwezi kufanywa kuwa kivinjari chako chaguomsingi.</translation>
 <translation id="7997934263947464652">Viendelezi, programu na mandhari kutoka kwenye vyanzo visivyojulikana vinaweza kuathiri kifaa chako. Chromium inapendekeza usakinishaji kutoka <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> tu</translation>
@@ -411,7 +419,7 @@ Chromium haiwezi kufufua mipangilio yako.</translation>
 <translation id="813913629614996137">Inaanzisha…</translation>
 <translation id="8166782796394721554">Washa ulinzi wa ziada katika mtambo wa JavaScript na WebAssembly wa Chromium</translation>
 <translation id="81770708095080097">Faili hii ni hatari, kwa hivyo Chromium imeizuia.</translation>
-<translation id="8213374284266571500">Chromium imezuia faili hii kwa sababu aina hii ya faili si salama</translation>
+<translation id="8232193495299001329">Chromium haiwezi kuthibitisha chanzo cha kiendelezi hiki na huenda si salama. Kiondoe kwenye Chromium ili kisiweze tena kuona na kubadilisha data yako kwenye tovuti unazotembelea, ikiwa ni pamoja na taarifa zako binafsi.</translation>
 <translation id="8248265253516264921">Ikiwa picha haina ufafanuzi muhimu, Chromium itajaribu kukuwekea. Ili kuweka ufafanuzi, tutatuma picha kwa Google. Unaweza kuzima mipangilio hii wakati wowote.</translation>
 <translation id="8266560134891435528">Chromium imeshindwa kukagua manenosiri yako kwa sababu hujaingia katika akaunti</translation>
 <translation id="8286943863733751221"><ph name="BEGIN_LINK" />Chromium inakuonya<ph name="END_LINK" /> kuhusu tovuti na vipakuliwa ambavyo si salama</translation>
@@ -458,6 +466,7 @@ Chromium haiwezi kufufua mipangilio yako.</translation>
 <translation id="8988036198400390003">Dhibiti wasifu wa Chromium</translation>
 <translation id="9019929317751753759">Ili kufanya Chromium salama zaidi, tumezima kiendelezi kinachofuata ambacho hakijaorodheshwa katika <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> na huenda kimeongezwa bila ridhaa yako.</translation>
 <translation id="9022552996538154597">Ingia kwenye Chromium</translation>
+<translation id="904366664621834601">Chromium imezuia upakuaji huu kwa sababu faili iliyo kwenye kumbukumbu inajumuisha faili nyingine ambazo huenda zimeficha programu hasidi</translation>
 <translation id="907832235989677238">Ingia katika akaunti kwenye Chromium. Iwapo ungependa kuingia katika akaunti mara moja tu, unaweza <ph name="GUEST_LINK_BEGIN" />kutumia kifaa kama mgeni<ph name="GUEST_LINK_END" />.</translation>
 <translation id="9078733879136747090">Chromium ilifungwa kiotomatiki</translation>
 <translation id="9089354809943900324">Chromium imepitwa na wakati</translation>

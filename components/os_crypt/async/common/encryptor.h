@@ -50,7 +50,7 @@ class COMPONENT_EXPORT(OS_CRYPT_ASYNC) Encryptor {
 
     ~Key();
 
-    static const size_t kAES256GCMKeySize = 256u / 8u;
+    static constexpr size_t kAES256GCMKeySize = 256u / 8u;
 
     // Mojo uses this public constructor for serialization.
     explicit Key(mojo::DefaultConstruct::Tag);
@@ -63,10 +63,15 @@ class COMPONENT_EXPORT(OS_CRYPT_ASYNC) Encryptor {
     friend class Encryptor;
     // OSCryptAsync and tests need to be able to Clone() keys.
     friend class OSCryptAsync;
+    friend class EncryptorTestBase;
     friend struct mojo::StructTraits<os_crypt_async::mojom::KeyDataView,
                                      os_crypt_async::Encryptor::Key>;
     FRIEND_TEST_ALL_PREFIXES(EncryptorTestBase, MultipleKeys);
     FRIEND_TEST_ALL_PREFIXES(EncryptorTraitsTest, TraitsRoundTrip);
+
+    Key(base::span<const uint8_t> key,
+        const mojom::Algorithm& algo,
+        bool encrypted);
 
     std::vector<uint8_t> Encrypt(base::span<const uint8_t> plaintext) const;
     std::optional<std::vector<uint8_t>> Decrypt(
@@ -78,6 +83,21 @@ class COMPONENT_EXPORT(OS_CRYPT_ASYNC) Encryptor {
     // being serialized to/from mojo.
     std::optional<mojom::Algorithm> algorithm_;
     std::vector<uint8_t> key_;
+    bool is_os_crypt_sync_compatible_ = false;
+#if BUILDFLAG(IS_WIN)
+    bool encrypted_ = false;
+#endif
+  };
+
+  enum class Option {
+    // No Encryptor options.
+    kNone = 0,
+    // Indicates that the Encryptor returned should be data-compatible with
+    // OSCrypt Sync for both Encrypt and Decrypt operations. Note that Decrypt
+    // operations are always backwards compatible with previous Encrypt
+    // operations from OSCrypt Sync even if no option is specified: this option
+    // only affects the behavior of Encrypt operations.
+    kEncryptSyncCompat = 1,
   };
 
   using KeyRing = std::map</*tag=*/std::string, Key>;
@@ -119,6 +139,7 @@ class COMPONENT_EXPORT(OS_CRYPT_ASYNC) Encryptor {
                                    os_crypt_async::Encryptor>;
 
   FRIEND_TEST_ALL_PREFIXES(EncryptorTraitsTest, TraitsRoundTrip);
+  FRIEND_TEST_ALL_PREFIXES(EncryptorTestBase, Clone);
 
   // Create an encryptor with no keys or encryption provider. In this case, all
   // encryption operations will be delegated to OSCrypt.
@@ -129,8 +150,8 @@ class COMPONENT_EXPORT(OS_CRYPT_ASYNC) Encryptor {
   // corresponding key in `keys`.
   Encryptor(KeyRing keys, const std::string& provider_for_encryption);
 
-  // Clone is used by the factory to vend instances.
-  Encryptor Clone() const;
+  // Clone is used internally by the factory to vend instances.
+  Encryptor Clone(Option option) const;
 
   // A KeyRing consists of a set of provider names and Key values. Encrypted
   // data is always tagged with the provider name and this is used to look up

@@ -3,10 +3,16 @@
 # found in the LICENSE file.
 
 import("//build/config/android/rules.gni")
+import("//third_party/jni_zero/jni_zero.gni")
+
+generate_jni("pdf_jni_headers") {
+  sources = [ "java/src/org/chromium/chrome/browser/pdf/PdfUtils.java" ]
+}
 
 android_library("java") {
   sources = [
     "java/src/org/chromium/chrome/browser/pdf/PdfCoordinator.java",
+    "java/src/org/chromium/chrome/browser/pdf/PdfInfo.java",
     "java/src/org/chromium/chrome/browser/pdf/PdfPage.java",
     "java/src/org/chromium/chrome/browser/pdf/PdfUtils.java",
   ]
@@ -14,13 +20,18 @@ android_library("java") {
     ":java_resources",
     "//base:base_java",
     "//chrome/browser/profiles/android:java",
+    "//chrome/browser/ui/android/fakepdf:java",
     "//chrome/browser/ui/android/native_page:java",
+    "//chrome/browser/util:java",
     "//components/embedder_support/android:util_java",
     "//content/public/android:content_java",
     "//third_party/androidx:androidx_annotation_annotation_java",
+    "//third_party/androidx:androidx_core_core_java",
     "//third_party/androidx:androidx_fragment_fragment_java",
+    "//third_party/jni_zero:jni_zero_java",
     "//ui/android:ui_java",
   ]
+  srcjar_deps = [ ":pdf_jni_headers" ]
   resources_package = "org.chromium.chrome.browser.pdf"
 }
 
@@ -40,7 +51,9 @@ robolectric_library("junit") {
     "//base:base_java_test_support",
     "//base:base_junit_test_support",
     "//chrome/browser/profiles/android:java",
+    "//chrome/browser/ui/android/fakepdf:java",
     "//chrome/browser/ui/android/native_page:java",
+    "//chrome/browser/util:java",
     "//components/embedder_support/android:util_java",
     "//content/public/android:content_full_java",
     "//third_party/androidx:androidx_test_core_java",

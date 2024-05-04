@@ -78,7 +78,7 @@ namespace {
 char const kFullScreenStateHistogram[] = "IOS.Fullscreen.State";
 }  // namespace
 
-// TODO(crbug.com/1174560): Allow usage of iOS15 interactionState on iOS 14 SDK
+// TODO(crbug.com/40746865): Allow usage of iOS15 interactionState on iOS 14 SDK
 // based builds.
 #if !defined(__IPHONE_15_0) || __IPHONE_OS_VERSION_MAX_ALLOWED < __IPHONE_15_0
 @interface WKWebView (Additions)
@@ -109,7 +109,7 @@ char const kFullScreenStateHistogram[] = "IOS.Fullscreen.State";
   BOOL _currentURLLoadWasTrigerred;
   BOOL _isBeingDestroyed;  // YES if in the process of closing.
   // The actual URL of the document object (i.e., the last committed URL).
-  // TODO(crbug.com/549616): Remove this in favor of just updating the
+  // TODO(crbug.com/41213672): Remove this in favor of just updating the
   // navigation manager and treating that as authoritative.
   GURL _documentURL;
   // Actions to execute once the page load is complete.
@@ -183,7 +183,7 @@ char const kFullScreenStateHistogram[] = "IOS.Fullscreen.State";
 // -------------------
 // The associated NavigationManagerImpl.
 @property(nonatomic, readonly) NavigationManagerImpl* navigationManagerImpl;
-// TODO(crbug.com/692871): Remove these functions and replace with more
+// TODO(crbug.com/40506829): Remove these functions and replace with more
 // appropriate NavigationItem getters.
 // Returns the navigation item for the current page.
 @property(nonatomic, readonly) web::NavigationItemImpl* currentNavItem;
@@ -484,7 +484,7 @@ char const kFullScreenStateHistogram[] = "IOS.Fullscreen.State";
   _webStateImpl = nullptr;
 
   DCHECK(!self.webView);
-  // TODO(crbug.com/662860): Don't set the delegate to nil.
+  // TODO(crbug.com/41284914): Don't set the delegate to nil.
   [_containerView setDelegate:nil];
   _touchTrackingRecognizer.touchTrackingDelegate = nil;
   [[_webViewProxy scrollViewProxy] removeObserver:self];
@@ -505,7 +505,7 @@ char const kFullScreenStateHistogram[] = "IOS.Fullscreen.State";
   // The web view URL is the current URL only if it is neither a placeholder URL
   // (used to hold WKBackForwardListItem for WebUI) nor a restore_session.html
   // (used to replay session history in WKWebView).
-  // TODO(crbug.com/738020): Investigate if this method is still needed and if
+  // TODO(crbug.com/40528091): Investigate if this method is still needed and if
   // it can be implemented using NavigationManager API after removal of legacy
   // navigation stack.
   if (self.webView && !IsWKInternalUrl(self.webView.URL)) {
@@ -529,7 +529,7 @@ char const kFullScreenStateHistogram[] = "IOS.Fullscreen.State";
 
 - (void)reloadWithRendererInitiatedNavigation:(BOOL)rendererInitiated {
   // Clear last user interaction.
-  // TODO(crbug.com/546337): Move to after the load commits, in the subclass
+  // TODO(crbug.com/41211432): Move to after the load commits, in the subclass
   // implementation. This will be inaccurate if the reload fails or is
   // cancelled.
   _userInteractionState.SetLastUserInteraction(nullptr);
@@ -589,7 +589,7 @@ char const kFullScreenStateHistogram[] = "IOS.Fullscreen.State";
   } else if (!_currentURLLoadWasTrigerred) {
     [self ensureContainerViewCreated];
 
-    // TODO(crbug.com/796608): end the practice of calling `loadCurrentURL`
+    // TODO(crbug.com/41361784): end the practice of calling `loadCurrentURL`
     // when it is possible there is no current URL. If the call performs
     // necessary initialization, break that out.
     [self loadCurrentURLWithRendererInitiatedNavigation:NO];
@@ -1730,7 +1730,7 @@ CrFullscreenState CrFullscreenStateFromWKFullscreenState(
                                             webView:self.webView];
   newContext->SetHasCommitted(!isSameDocumentNavigation);
   self.webStateImpl->OnNavigationFinished(newContext.get());
-  // TODO(crbug.com/792515): It is OK, but very brittle, to call
+  // TODO(crbug.com/41359661): It is OK, but very brittle, to call
   // `didFinishNavigation:` here because the gating condition is mutually
   // exclusive with the condition below. Refactor this method after
   // deprecating self.navigationHandler.pendingNavigationInfo.

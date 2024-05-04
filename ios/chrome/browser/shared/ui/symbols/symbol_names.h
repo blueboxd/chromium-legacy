@@ -14,18 +14,40 @@
 /// Import `symbols.h` and not this file directly.
 /// *******
 
-// Custom symbol names.
+// Branded symbol names.
 #if BUILDFLAG(IOS_USE_BRANDED_SYMBOLS)
+extern NSString* const kChromeDefaultBrowserIllustrationImage;
+extern NSString* const kChromeDefaultBrowserScreenBannerImage;
+extern NSString* const kChromeNotificationsOptInBannerImage;
+extern NSString* const kChromeNotificationsOptInBannerLandscapeImage;
+extern NSString* const kChromeSigninBannerImage;
+extern NSString* const kChromeSigninPromoLogoImage;
 extern NSString* const kGoogleIconSymbol;
 extern NSString* const kGoogleShieldSymbol;
-extern NSString* const kMulticolorChromeballSymbol;
 extern NSString* const kGoogleMapsSymbol;
+extern NSString* const kGooglePasswordManagerWidgetPromoImage;
+extern NSString* const kGooglePasswordManagerWidgetPromoDisabledImage;
 extern NSString* const kGooglePhotosSymbol;
+extern NSString* const kGoogleSettingsPasswordsInOtherAppsBannerImage;
+extern NSString* const kLensKeyboardAccessoryImage;
+extern NSString* const kMulticolorChromeballSymbol;
 extern NSString* const kPageInsightsSymbol;
 extern NSString* const kFedexCarrierImage;
 extern NSString* const kUPSCarrierImage;
 extern NSString* const kUSPSCarrierImage;
+#else
+extern NSString* const kChromiumDefaultBrowserIllustrationImage;
+extern NSString* const kChromiumDefaultBrowserScreenBannerImage;
+extern NSString* const kChromiumNotificationsOptInBannerImage;
+extern NSString* const kChromiumNotificationsOptInBannerLandscapeImage;
+extern NSString* const kChromiumPasswordManagerWidgetPromoImage;
+extern NSString* const kChromiumPasswordManagerWidgetPromoDisabledImage;
+extern NSString* const kChromiumSettingsPasswordsInOtherAppsBannerImage;
+extern NSString* const kChromiumSigninBannerImage;
+extern NSString* const kChromiumSigninPromoLogoImage;
 #endif  // BUILDFLAG(IOS_USE_BRANDED_SYMBOLS)
+
+// Custom symbol names.
 extern NSString* const kPrivacySymbol;
 extern NSString* const kSyncDisabledSymbol;
 extern NSString* const kSafetyCheckSymbol;
@@ -39,6 +61,7 @@ extern NSString* const kPhotoBadgePlusSymbol;
 extern NSString* const kPhotoBadgeMagnifyingglassSymbol;
 extern NSString* const kReadingListSymbol;
 extern NSString* const kRecentTabsSymbol;
+extern NSString* const kTabGroupsSymbol;
 extern NSString* const kLanguageSymbol;
 extern NSString* const kLocationSymbol;
 extern NSString* const kPasswordSymbol;
@@ -86,11 +109,11 @@ extern NSString* const kChartBarXAxisSymbol;
 extern NSString* const kCircleSymbol;
 extern NSString* const kCircleFillSymbol;
 extern NSString* const kSyncEnabledSymbol;
-extern NSString* const kSyncCircleSymbol;
 extern NSString* const kDefaultBrowserSymbol;
 extern NSString* const kDefaultBrowseriOS14Symbol;
 extern NSString* const kDiscoverSymbol;
 extern NSString* const kBellSymbol;
+extern NSString* const kBellSlashSymbol;
 extern NSString* const kBellBadgeSymbol;
 extern NSString* const kCachedDataSymbol;
 extern NSString* const kAutofillDataSymbol;
@@ -100,7 +123,7 @@ extern NSString* const kRefineQuerySymbol;
 extern NSString* const kLinkActionSymbol;
 extern NSString* const kQRCodeFinderActionSymbol;
 extern NSString* const kNewTabActionSymbol;
-extern NSString* const kNewTabCircleActionSymbol;
+extern NSString* const kPlusInCircleSymbol;
 extern NSString* const kClipboardActionSymbol;
 extern NSString* const kDeleteActionSymbol;
 extern NSString* const kEditActionSymbol;
@@ -211,6 +234,8 @@ extern NSString* const kMoveTabToGroupActionSymbol;
 extern NSString* const kClockSymbol;
 extern NSString* const kUngroupTabGroupSymbol;
 extern NSString* const kPlusInSquareSymbol;
+extern NSString* const kMinusInCircleSymbol;
+extern NSString* const kMultiIdentitySymbol;
 
 // Names of the default symbol being non-monochrome by default. When using them,
 // you probably want to set their color to monochrome.

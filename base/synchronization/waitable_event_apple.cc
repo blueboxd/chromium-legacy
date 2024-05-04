@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40284755): Remove this and spanify to fix the errors.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "base/synchronization/waitable_event.h"
 
 #include <dispatch/dispatch.h>
@@ -57,8 +62,6 @@ WaitableEvent::WaitableEvent(ResetPolicy reset_policy,
     Signal();
   }
 }
-
-WaitableEvent::~WaitableEvent() = default;
 
 void WaitableEvent::Reset() {
   PeekPort(receive_right_->Name(), true);

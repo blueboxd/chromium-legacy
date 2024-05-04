@@ -191,7 +191,7 @@ class CONTENT_EXPORT FileSystemAccessWatcherManager
   // Watches changes to the all bucket file systems. Though this is technically
   // a change source which is owned by this instance, it is not included in
   // `owned_sources_` simply because this watcher should never be revoked.
-  // TODO(https://crbug.com/1019297): Consider making the lifetime of this
+  // TODO(crbug.com/40105284): Consider making the lifetime of this
   // watcher match other owned sources; creating an instance on-demand and then
   // destroying it when it is no longer needed.
   std::unique_ptr<FileSystemAccessBucketPathWatcher> bucket_path_watcher_
@@ -201,7 +201,7 @@ class CONTENT_EXPORT FileSystemAccessWatcherManager
                  base::UniquePtrComparator>
       observer_hosts_;
 
-  // TODO(https://crbug.com/1489057): Make more efficient mappings to observers
+  // TODO(crbug.com/40283894): Make more efficient mappings to observers
   // and sources. For now, most actions requires iterating through lists.
 
   // Observations to which this instance will notify of changes within their

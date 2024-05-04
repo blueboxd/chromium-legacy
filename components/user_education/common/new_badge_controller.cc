@@ -9,13 +9,18 @@
 
 namespace user_education {
 
+// static
+bool NewBadgeController::disable_new_badges_ = false;
+
 NewBadgeController::NewBadgeController(
     NewBadgeRegistry& registry,
     FeaturePromoStorageService& storage_service,
     std::unique_ptr<NewBadgePolicy> policy)
     : registry_(registry),
       storage_service_(storage_service),
-      policy_(std::move(policy)) {
+      policy_(std::move(policy)) {}
+
+void NewBadgeController::InitData() {
   // Ensure that all registered New Badge features that are enabled have their
   // `feature_enabled_time` set.
   for (const auto& [feature, spec] : registry_->feature_data()) {
@@ -32,6 +37,10 @@ NewBadgeController::NewBadgeController(
 NewBadgeController::~NewBadgeController() = default;
 
 bool NewBadgeController::MaybeShowNewBadge(const base::Feature& feature) {
+  if (disable_new_badges_) {
+    return false;
+  }
+
   if (!CheckPrerequisites(feature, /*allow_not_registered=*/false)) {
     return false;
   }
@@ -49,6 +58,7 @@ bool NewBadgeController::MaybeShowNewBadge(const base::Feature& feature) {
 
   ++data.show_count;
   storage_service_->SaveNewBadgeData(feature, data);
+  policy_->RecordNewBadgeShown(feature, data.show_count);
   return true;
 }
 
@@ -68,8 +78,15 @@ void NewBadgeController::NotifyFeatureUsedImpl(const base::Feature& feature,
   }
 
   NewBadgeData data = storage_service_->ReadNewBadgeData(feature);
-  ++data.used_count;
-  storage_service_->SaveNewBadgeData(feature, data);
+
+  // Maybe record histograms.
+  policy_->RecordFeatureUsed(feature, ++data.used_count);
+
+  // Maybe save the updated data.
+  const int cap = policy_->GetFeatureUsedStorageCap();
+  if (data.used_count <= cap) {
+    storage_service_->SaveNewBadgeData(feature, data);
+  }
 }
 
 bool NewBadgeController::CheckPrerequisites(const base::Feature& feature,
@@ -94,6 +111,11 @@ bool NewBadgeController::CheckPrerequisites(const base::Feature& feature,
   }
 
   return true;
+}
+
+// static
+NewBadgeController::TestLock NewBadgeController::DisableNewBadgesForTesting() {
+  return std::make_unique<base::AutoReset<bool>>(&disable_new_badges_, true);
 }
 
 }  // namespace user_education

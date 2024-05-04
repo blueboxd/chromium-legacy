@@ -20,6 +20,10 @@ namespace autofill {
 class PersonalDataManager;
 }
 
+namespace feature_engagement {
+class Tracker;
+}
+
 namespace web {
 class WebState;
 }
@@ -59,7 +63,8 @@ class WebStateList;
           (scoped_refptr<password_manager::PasswordStoreInterface>)
               accountPasswordStore
       securityAlertHandler:(id<SecurityAlertCommands>)securityAlertHandler
-    reauthenticationModule:(ReauthenticationModule*)reauthenticationModule;
+    reauthenticationModule:(ReauthenticationModule*)reauthenticationModule
+         engagementTracker:(feature_engagement::Tracker*)engagementTracker;
 
 // Unavailable, use initWithConsumer:webStateList: instead.
 - (instancetype)init NS_UNAVAILABLE;
@@ -71,13 +76,8 @@ class WebStateList;
 // omnibox position.
 @property(nonatomic, assign) PrefService* originalPrefService;
 
-// Disables suggestions updates and asks the consumer to remove the current
-// ones.
-- (void)disableSuggestions;
-
-// Enables suggestions updates and sends the current ones, if any, to the
-// consumer.
-- (void)enableSuggestions;
+// Whether suggestions updates are enabled. The setter updates the consumer.
+@property(nonatomic, assign) BOOL suggestionsEnabled;
 
 // Stops observing all objects.
 - (void)disconnect;

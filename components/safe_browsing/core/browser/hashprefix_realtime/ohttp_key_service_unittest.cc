@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/functional/bind.h"
 #include "base/strings/escape.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/bind.h"
@@ -16,9 +17,10 @@
 #include "base/time/time.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
-#include "components/safe_browsing/core/browser/hashprefix_realtime/hash_realtime_utils.h"
 #include "components/safe_browsing/core/common/features.h"
+#include "components/safe_browsing/core/common/hashprefix_realtime/hash_realtime_utils.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
+#include "components/variations/pref_names.h"
 #include "google_apis/google_api_keys.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
@@ -52,20 +54,25 @@ scoped_refptr<net::HttpResponseHeaders> CreateKeyRotatedHeaders() {
 
 class OhttpKeyServiceTest : public ::testing::Test {
  public:
-  OhttpKeyServiceTest() {
-    feature_list_.InitWithFeatures(
-        /*enabled_features=*/{kHashPrefixRealTimeLookups},
-        /*disabled_features=*/{});
-  }
+  OhttpKeyServiceTest() = default;
 
   void SetUp() override {
+    if (is_feature_enabled_) {
+      feature_list_.InitAndEnableFeature(kHashPrefixRealTimeLookups);
+    } else {
+      feature_list_.InitAndDisableFeature(kHashPrefixRealTimeLookups);
+    }
     RegisterProfilePrefs(pref_service_.registry());
+    local_state_.registry()->RegisterStringPref(
+        variations::prefs::kVariationsCountry, std::string());
     test_url_loader_factory_ =
         std::make_unique<network::TestURLLoaderFactory>();
     test_shared_loader_factory_ =
         test_url_loader_factory_->GetSafeWeakWrapper();
     ohttp_key_service_ = std::make_unique<OhttpKeyService>(
-        test_shared_loader_factory_, &pref_service_);
+        test_shared_loader_factory_, &pref_service_, &local_state_,
+        base::BindRepeating(&OhttpKeyServiceTest::GetCountry,
+                            base::Unretained(this)));
     std::string key = google_apis::GetAPIKey();
     key_param_ =
         !key.empty()
@@ -75,6 +82,8 @@ class OhttpKeyServiceTest : public ::testing::Test {
   }
 
   void TearDown() override { ohttp_key_service_->Shutdown(); }
+
+  std::optional<std::string> GetCountry() { return country_; }
 
  protected:
   std::string GetExpectedKeyFetchServerUrl() {
@@ -120,11 +129,24 @@ class OhttpKeyServiceTest : public ::testing::Test {
   std::unique_ptr<network::TestURLLoaderFactory> test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
   TestingPrefServiceSimple pref_service_;
+  TestingPrefServiceSimple local_state_;
   std::string key_param_;
   base::HistogramTester histogram_tester_;
+  std::optional<std::string> country_;
+  bool is_feature_enabled_ = true;
 
  private:
   hash_realtime_utils::GoogleChromeBrandingPretenderForTesting apply_branding_;
+};
+
+class OhttpKeyServiceFeatureOffTest : public OhttpKeyServiceTest {
+ public:
+  OhttpKeyServiceFeatureOffTest() { is_feature_enabled_ = false; }
+};
+
+class OhttpKeyServiceLocationDisabledTest : public OhttpKeyServiceTest {
+ public:
+  OhttpKeyServiceLocationDisabledTest() { country_ = "cn"; }
 };
 
 TEST_F(OhttpKeyServiceTest, GetOhttpKey_Success) {
@@ -243,7 +265,7 @@ TEST_F(OhttpKeyServiceTest, GetOhttpKey_WithExpiredCache) {
   task_environment_.RunUntilIdle();
 }
 
-TEST_F(OhttpKeyServiceTest, GetOhttpKey_Disabled) {
+TEST_F(OhttpKeyServiceTest, GetOhttpKey_SafeBrowsingDisabled) {
   SetupSuccessResponse();
   SetSafeBrowsingState(&pref_service_, SafeBrowsingState::NO_SAFE_BROWSING);
   base::MockCallback<OhttpKeyService::Callback> response_callback;
@@ -253,6 +275,52 @@ TEST_F(OhttpKeyServiceTest, GetOhttpKey_Disabled) {
   task_environment_.RunUntilIdle();
 }
 
+TEST_F(OhttpKeyServiceLocationDisabledTest, GetOhttpKey_LocationDisabled) {
+  SetupSuccessResponse();
+  base::MockCallback<OhttpKeyService::Callback> response_callback;
+  EXPECT_CALL(response_callback, Run(Eq(std::nullopt))).Times(1);
+
+  ohttp_key_service_->GetOhttpKey(response_callback.Get());
+  task_environment_.RunUntilIdle();
+}
+
+TEST_F(OhttpKeyServiceFeatureOffTest, GetOhttpKey_FeatureDisabled) {
+  SetupSuccessResponse();
+  base::MockCallback<OhttpKeyService::Callback> response_callback;
+  EXPECT_CALL(response_callback, Run(Eq(std::nullopt))).Times(1);
+
+  ohttp_key_service_->GetOhttpKey(response_callback.Get());
+  task_environment_.RunUntilIdle();
+}
+
+TEST_F(OhttpKeyServiceLocationDisabledTest, GetOhttpKey_FreshnessHistogram) {
+  SetupSuccessResponse();
+  base::MockCallback<OhttpKeyService::Callback> response_callback;
+  EXPECT_CALL(response_callback, Run(Eq(std::nullopt))).Times(1);
+
+  ohttp_key_service_->GetOhttpKey(response_callback.Get());
+  task_environment_.RunUntilIdle();
+  histogram_tester_.ExpectBucketCount(
+      "SafeBrowsing.HPRT.OhttpKeyService.IsEnabledFreshnessOnKeyFetch",
+      /*sample=*/true,
+      /*expected_count=*/1);
+  histogram_tester_.ExpectTotalCount(
+      "SafeBrowsing.HPRT.OhttpKeyService.IsEnabledFreshnessOnKeyFetch", 1);
+
+  country_ = std::nullopt;
+  base::MockCallback<OhttpKeyService::Callback> response_callback2;
+  EXPECT_CALL(response_callback2, Run(Eq(std::nullopt))).Times(1);
+
+  ohttp_key_service_->GetOhttpKey(response_callback2.Get());
+  task_environment_.RunUntilIdle();
+  histogram_tester_.ExpectBucketCount(
+      "SafeBrowsing.HPRT.OhttpKeyService.IsEnabledFreshnessOnKeyFetch",
+      /*sample=*/false,
+      /*expected_count=*/1);
+  histogram_tester_.ExpectTotalCount(
+      "SafeBrowsing.HPRT.OhttpKeyService.IsEnabledFreshnessOnKeyFetch", 2);
+}
+
 TEST_F(OhttpKeyServiceTest, PopulateKeyFromPref_ValidKey) {
   pref_service_.SetString(prefs::kSafeBrowsingHashRealTimeOhttpKey,
                           kEncodedTestOhttpKey);
@@ -260,7 +328,9 @@ TEST_F(OhttpKeyServiceTest, PopulateKeyFromPref_ValidKey) {
                         base::Time::Now() + base::Days(10));
 
   auto ohttp_key_service = std::make_unique<OhttpKeyService>(
-      test_shared_loader_factory_, &pref_service_);
+      test_shared_loader_factory_, &pref_service_, &local_state_,
+      base::BindRepeating(&OhttpKeyServiceTest::GetCountry,
+                          base::Unretained(this)));
 
   std::optional<OhttpKeyService::OhttpKeyAndExpiration> ohttp_key =
       ohttp_key_service->get_ohttp_key_for_testing();
@@ -272,7 +342,9 @@ TEST_F(OhttpKeyServiceTest, PopulateKeyFromPref_ValidKey) {
                         base::Time::Now() - base::Days(10));
 
   ohttp_key_service = std::make_unique<OhttpKeyService>(
-      test_shared_loader_factory_, &pref_service_);
+      test_shared_loader_factory_, &pref_service_, &local_state_,
+      base::BindRepeating(&OhttpKeyServiceTest::GetCountry,
+                          base::Unretained(this)));
   ohttp_key = ohttp_key_service->get_ohttp_key_for_testing();
   EXPECT_FALSE(ohttp_key.has_value());
 }
@@ -282,7 +354,9 @@ TEST_F(OhttpKeyServiceTest, PopulateKeyFromPref_EmptyKey) {
                         base::Time::Now() + base::Days(10));
 
   auto ohttp_key_service = std::make_unique<OhttpKeyService>(
-      test_shared_loader_factory_, &pref_service_);
+      test_shared_loader_factory_, &pref_service_, &local_state_,
+      base::BindRepeating(&OhttpKeyServiceTest::GetCountry,
+                          base::Unretained(this)));
 
   std::optional<OhttpKeyService::OhttpKeyAndExpiration> ohttp_key =
       ohttp_key_service->get_ohttp_key_for_testing();
@@ -322,29 +396,29 @@ TEST_F(OhttpKeyServiceTest, AsyncFetch_PrefChanges) {
   SetupSuccessResponse();
 
   task_environment_.RunUntilIdle();
-  auto original_expiration = base::Time::Now() + base::Days(7);
+  auto expiration1 = base::Time::Now() + base::Days(7);
   EXPECT_EQ(ohttp_key_service_->get_ohttp_key_for_testing()->expiration,
-            original_expiration);
+            expiration1);
 
   SetSafeBrowsingState(&pref_service_, SafeBrowsingState::NO_SAFE_BROWSING);
   task_environment_.FastForwardBy(base::Days(6));
   task_environment_.RunUntilIdle();
   // The expiration is not extended because the service is disabled.
   EXPECT_EQ(ohttp_key_service_->get_ohttp_key_for_testing()->expiration,
-            original_expiration);
+            expiration1);
 
   SetSafeBrowsingState(&pref_service_, SafeBrowsingState::ENHANCED_PROTECTION);
   task_environment_.FastForwardBy(base::Days(6));
   task_environment_.RunUntilIdle();
   EXPECT_EQ(ohttp_key_service_->get_ohttp_key_for_testing()->expiration,
-            original_expiration);
+            expiration1);
 
-  auto new_expiration = base::Time::Now() + base::Days(7);
+  auto expiration2 = base::Time::Now() + base::Days(7);
   SetSafeBrowsingState(&pref_service_, SafeBrowsingState::STANDARD_PROTECTION);
   task_environment_.RunUntilIdle();
   // The service is re-enabled, so the expiration date is updated.
   EXPECT_EQ(ohttp_key_service_->get_ohttp_key_for_testing()->expiration,
-            new_expiration);
+            expiration2);
 
   pref_service_.SetBoolean(prefs::kHashPrefixRealTimeChecksAllowedByPolicy,
                            false);
@@ -352,10 +426,28 @@ TEST_F(OhttpKeyServiceTest, AsyncFetch_PrefChanges) {
   task_environment_.RunUntilIdle();
   // The expiration is not extended because the service is disabled.
   EXPECT_EQ(ohttp_key_service_->get_ohttp_key_for_testing()->expiration,
-            new_expiration);
+            expiration2);
 
+  auto expiration3 = base::Time::Now() + base::Days(7);
   pref_service_.SetBoolean(prefs::kHashPrefixRealTimeChecksAllowedByPolicy,
                            true);
+  task_environment_.RunUntilIdle();
+  // The service is re-enabled, so the expiration date is updated.
+  EXPECT_EQ(ohttp_key_service_->get_ohttp_key_for_testing()->expiration,
+            expiration3);
+
+  country_ = "cn";
+  local_state_.SetString(variations::prefs::kVariationsCountry,
+                         country_.value());
+  task_environment_.FastForwardBy(base::Days(6));
+  task_environment_.RunUntilIdle();
+  // The expiration is not extended because the service is disabled.
+  EXPECT_EQ(ohttp_key_service_->get_ohttp_key_for_testing()->expiration,
+            expiration3);
+
+  country_ = "us";
+  local_state_.SetString(variations::prefs::kVariationsCountry,
+                         country_.value());
   task_environment_.RunUntilIdle();
   // The service is re-enabled, so the expiration date is updated.
   EXPECT_EQ(ohttp_key_service_->get_ohttp_key_for_testing()->expiration,

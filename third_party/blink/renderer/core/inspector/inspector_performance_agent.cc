@@ -9,6 +9,7 @@
 #include "base/process/process.h"
 #include "base/process/process_metrics.h"
 #include "base/time/time_override.h"
+#include "base/types/expected.h"
 #include "build/build_config.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/execution_context/agent.h"
@@ -50,8 +51,7 @@ std::unique_ptr<base::ProcessMetrics> GetCurrentProcessMetrics() {
 base::TimeDelta GetCurrentProcessTime() {
   std::unique_ptr<base::ProcessMetrics> process_metrics =
       GetCurrentProcessMetrics();
-  base::TimeDelta process_time = process_metrics->GetCumulativeCPUUsage();
-  return process_time;
+  return process_metrics->GetCumulativeCPUUsage().value_or(base::TimeDelta());
 }
 
 }  // namespace

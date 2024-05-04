@@ -2,10 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40284755): Remove this and spanify to fix the errors.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "base/metrics/sparse_histogram.h"
 
 #include <memory>
 #include <string>
+#include <string_view>
 #include <vector>
 
 #include "base/logging.h"
@@ -22,7 +28,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
 
@@ -266,7 +271,7 @@ TEST_P(SparseHistogramTest, MacroBasicTest) {
   const HistogramBase* const sparse_histogram = histograms[0];
 
   EXPECT_EQ(SPARSE_HISTOGRAM, sparse_histogram->GetHistogramType());
-  EXPECT_EQ("Sparse", StringPiece(sparse_histogram->histogram_name()));
+  EXPECT_STREQ("Sparse", sparse_histogram->histogram_name());
   EXPECT_EQ(
       HistogramBase::kUmaTargetedHistogramFlag |
           (use_persistent_histogram_allocator_ ? HistogramBase::kIsPersistent

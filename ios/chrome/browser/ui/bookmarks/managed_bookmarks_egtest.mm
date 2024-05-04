@@ -142,7 +142,7 @@ void SearchBookmarksForText(NSString* search_text) {
 
 // Tests that the managed bookmarks folder does not exist when the policy data
 // is empty.
-// Flaky. TODO(crbug.com/1132310): Re-enable.
+// Flaky. TODO(crbug.com/40721889): Re-enable.
 - (void)DISABLED_testEmptyManagedBookmarks {
   [BookmarkEarlGreyUI openBookmarks];
 
@@ -279,8 +279,8 @@ void SearchBookmarksForText(NSString* search_text) {
 // Tests that the context menu for long-press on managed URLs disables the
 // 'edit bookmark' option. For managed folders, 'edit folder' and 'move' are
 // disabled.
-// TODO(crbug.com/1070845): Long press unexpectedly triggers a tap (only in earl
-// grey tests).
+// TODO(crbug.com/40684788): Long press unexpectedly triggers a tap (only in
+// earl grey tests).
 - (void)DISABLED_testContextMenuWithDisabledEditOption {
   [BookmarkEarlGreyUI openBookmarks];
   [self openCustomManagedBookmarksFolder];
@@ -338,8 +338,8 @@ void SearchBookmarksForText(NSString* search_text) {
 }
 
 // Tests long presses on managed bookmark items in search results.
-// TODO(crbug.com/1070845): Long press unexpectedly triggers a tap (only in earl
-// grey tests).
+// TODO(crbug.com/40684788): Long press unexpectedly triggers a tap (only in
+// earl grey tests).
 - (void)DISABLED_testLongPressOnSearchResults {
   [BookmarkEarlGreyUI openBookmarks];
   SearchBookmarksForText(@"URL\n");

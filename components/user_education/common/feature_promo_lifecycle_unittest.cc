@@ -41,6 +41,7 @@ BASE_FEATURE(kTestIPHFeature2,
              base::FEATURE_ENABLED_BY_DEFAULT);
 constexpr char kAppName[] = "App1";
 constexpr char kAppName2[] = "App2";
+constexpr int kNumRotatingPromos = 3;
 DEFINE_LOCAL_ELEMENT_IDENTIFIER_VALUE(kTestElementId);
 const ui::ElementContext kTestElementContext{1};
 
@@ -111,10 +112,11 @@ class FeaturePromoLifecycleTest : public testing::Test {
       const base::Feature& feature,
       const char* app_id = nullptr) {
     if (!app_id) {
-      app_id = promo_subtype() == PromoSubtype::kPerApp ? kAppName : "";
+      app_id = promo_subtype() == PromoSubtype::kKeyedNotice ? kAppName : "";
     }
     return std::make_unique<FeaturePromoLifecycle>(
-        &storage_service_, app_id, &feature, promo_type(), promo_subtype());
+        &storage_service_, app_id, &feature, promo_type(), promo_subtype(),
+        promo_type() == PromoType::kRotating ? kNumRotatingPromos : 0);
   }
 
   std::unique_ptr<test::TestHelpBubble> CreateHelpBubble() {
@@ -138,8 +140,8 @@ class FeaturePromoLifecycleTest : public testing::Test {
 
     std::string name = "";
     switch (lifecycle->promo_subtype()) {
-      case PromoSubtype::kPerApp:
-        name = "PerApp.";
+      case PromoSubtype::kKeyedNotice:
+        name = "KeyedNotice.";
         break;
       case PromoSubtype::kLegalNotice:
         name = "LegalNotice.";
@@ -166,6 +168,9 @@ class FeaturePromoLifecycleTest : public testing::Test {
         break;
       case PromoType::kTutorial:
         name.append("Tutorial");
+        break;
+      case PromoType::kRotating:
+        name.append("Rotating");
         break;
       case PromoType::kUnspecified:
         NOTREACHED();
@@ -281,9 +286,9 @@ TEST_F(FeaturePromoLifecycleTest, ClosePromoBubbleAndContinue_kLegalNotice) {
   EXPECT_EQ(1, promo_data->show_count);
 }
 
-TEST_F(FeaturePromoLifecycleTest, ClosePromoBubbleAndContinue_kPerApp) {
+TEST_F(FeaturePromoLifecycleTest, ClosePromoBubbleAndContinue_kKeyedNotice) {
   set_promo_type(PromoType::kTutorial);
-  set_promo_subtype(PromoSubtype::kPerApp);
+  set_promo_subtype(PromoSubtype::kKeyedNotice);
   auto lifecycle = CreateLifecycle(kTestIPHFeature);
   lifecycle->OnPromoShown(CreateHelpBubble(), &tracker_);
   lifecycle->OnPromoEnded(CloseReason::kAction, true);
@@ -300,6 +305,60 @@ TEST_F(FeaturePromoLifecycleTest, ClosePromoBubbleAndContinue_kPerApp) {
   EXPECT_EQ(CloseReason::kAction, promo_data->last_dismissed_by);
   EXPECT_EQ(0, promo_data->snooze_count);
   EXPECT_EQ(1, promo_data->show_count);
+}
+
+TEST_F(FeaturePromoLifecycleTest, RotatingPromoGetIndex) {
+  set_promo_type(PromoType::kRotating);
+
+  // The tracker will be dismissed every time the promo is ended.
+  EXPECT_CALL(tracker_, Dismissed).Times(4);
+
+  auto lifecycle = CreateLifecycle(kTestIPHFeature);
+  EXPECT_EQ(0, lifecycle->GetPromoIndex());
+  EXPECT_TRUE(lifecycle->CanShow());
+  lifecycle->OnPromoShown(CreateHelpBubble(), &tracker_);
+  lifecycle->OnPromoEnded(CloseReason::kDismiss, false);
+  auto promo_data = storage_service_.ReadPromoData(kTestIPHFeature);
+  EXPECT_EQ(1, promo_data->promo_index);
+
+  lifecycle = CreateLifecycle(kTestIPHFeature);
+  EXPECT_EQ(1, lifecycle->GetPromoIndex());
+  lifecycle->OnPromoShown(CreateHelpBubble(), &tracker_);
+  lifecycle->OnPromoEnded(CloseReason::kDismiss, false);
+  promo_data = storage_service_.ReadPromoData(kTestIPHFeature);
+  EXPECT_EQ(2, promo_data->promo_index);
+
+  lifecycle = CreateLifecycle(kTestIPHFeature);
+  EXPECT_EQ(2, lifecycle->GetPromoIndex());
+  EXPECT_TRUE(lifecycle->CanShow());
+  lifecycle->OnPromoShown(CreateHelpBubble(), &tracker_);
+  lifecycle->OnPromoEnded(CloseReason::kDismiss, false);
+  promo_data = storage_service_.ReadPromoData(kTestIPHFeature);
+  EXPECT_EQ(3, promo_data->promo_index);
+
+  lifecycle = CreateLifecycle(kTestIPHFeature);
+  EXPECT_EQ(0, lifecycle->GetPromoIndex());
+  lifecycle->OnPromoShown(CreateHelpBubble(), &tracker_);
+  lifecycle->OnPromoEnded(CloseReason::kDismiss, false);
+  promo_data = storage_service_.ReadPromoData(kTestIPHFeature);
+  EXPECT_EQ(1, promo_data->promo_index);
+}
+
+TEST_F(FeaturePromoLifecycleTest, RotatingPromoSetIndex) {
+  set_promo_type(PromoType::kRotating);
+
+  // The tracker will be dismissed every time the promo is ended.
+  EXPECT_CALL(tracker_, Dismissed).Times(1);
+
+  // Load the lifecycle but skip to promo at index 2.
+  auto lifecycle = CreateLifecycle(kTestIPHFeature);
+  EXPECT_EQ(0, lifecycle->GetPromoIndex());
+  lifecycle->SetPromoIndex(2);
+  EXPECT_EQ(2, lifecycle->GetPromoIndex());
+  lifecycle->OnPromoShown(CreateHelpBubble(), &tracker_);
+  lifecycle->OnPromoEnded(CloseReason::kDismiss, false);
+  auto promo_data = storage_service_.ReadPromoData(kTestIPHFeature);
+  EXPECT_EQ(3, promo_data->promo_index);
 }
 
 template <typename... Args>
@@ -328,10 +387,11 @@ class FeaturePromoLifecycleParamTest
       const base::Feature& feature,
       const char* app_id = nullptr) {
     if (!app_id) {
-      app_id = promo_subtype() == PromoSubtype::kPerApp ? kAppName : "";
+      app_id = promo_subtype() == PromoSubtype::kKeyedNotice ? kAppName : "";
     }
     return std::make_unique<FeaturePromoLifecycle>(
-        &storage_service_, app_id, &feature, promo_type(), promo_subtype());
+        &storage_service_, app_id, &feature, promo_type(), promo_subtype(),
+        promo_type() == PromoType::kRotating ? kNumRotatingPromos : 0);
   }
 };
 
@@ -343,7 +403,7 @@ INSTANTIATE_TEST_SUITE_P(
     FeaturePromoLifecycleWriteDataTest,
     testing::Combine(testing::Values(PromoType::kTutorial),
                      testing::Values(PromoSubtype::kNormal,
-                                     PromoSubtype::kPerApp,
+                                     PromoSubtype::kKeyedNotice,
                                      PromoSubtype::kActionableAlert,
                                      PromoSubtype::kLegalNotice),
                      testing::Values(CloseReason::kDismiss,
@@ -355,7 +415,7 @@ INSTANTIATE_TEST_SUITE_P(
                                      CloseReason::kFeatureEngaged)),
     (ParamToString<PromoType, PromoSubtype, CloseReason>));
 
-TEST_P(FeaturePromoLifecycleWriteDataTest, DemoDoesNotWriteData) {
+TEST_P(FeaturePromoLifecycleWriteDataTest, DoesDemoWriteData) {
   auto lifecycle = CreateLifecycle(kTestIPHFeature);
   lifecycle->OnPromoShownForDemo(CreateHelpBubble());
   lifecycle->OnPromoEnded(GetParamT<CloseReason>());
@@ -426,7 +486,7 @@ INSTANTIATE_TEST_SUITE_P(
                                      PromoType::kTutorial,
                                      PromoType::kCustomAction),
                      testing::Values(PromoSubtype::kNormal,
-                                     PromoSubtype::kPerApp,
+                                     PromoSubtype::kKeyedNotice,
                                      PromoSubtype::kActionableAlert,
                                      PromoSubtype::kLegalNotice)),
     (ParamToString<PromoType, PromoSubtype>));
@@ -524,8 +584,33 @@ TEST_P(FeaturePromoLifecycleTypesTest, SnoozeNonInteractedIPH) {
 TEST_P(FeaturePromoLifecycleTypesTest, MaxShowCountReached) {
   FeaturePromoData data;
   data.show_count = features::GetMaxPromoShowCount();
-  data.first_show_time = base::Time::Now();
-  data.last_show_time = base::Time::Now();
+  const auto abort_cooldown = features::GetAbortCooldown();
+  data.first_show_time = base::Time::Now() - abort_cooldown * 3;
+  data.last_show_time = base::Time::Now() - abort_cooldown * 2;
+  storage_service_.SavePromoData(kTestIPHFeature, data);
+  auto lifecycle = CreateLifecycle(kTestIPHFeature);
+  EXPECT_EQ(GetExceededResult(), lifecycle->CanShow());
+}
+
+TEST_P(FeaturePromoLifecycleTypesTest, MaxShowCountNotReachedDueToSnooze) {
+  FeaturePromoData data;
+  data.show_count = features::GetMaxPromoShowCount();
+  data.snooze_count = 1;
+  const auto abort_cooldown = features::GetAbortCooldown();
+  data.first_show_time = base::Time::Now() - abort_cooldown * 3;
+  data.last_show_time = base::Time::Now() - abort_cooldown * 2;
+  storage_service_.SavePromoData(kTestIPHFeature, data);
+  auto lifecycle = CreateLifecycle(kTestIPHFeature);
+  EXPECT_EQ(FeaturePromoResult::Success(), lifecycle->CanShow());
+}
+
+TEST_P(FeaturePromoLifecycleTypesTest, MaxShowCountReachedAfterSnooze) {
+  FeaturePromoData data;
+  data.show_count = features::GetMaxPromoShowCount() + 2;
+  data.snooze_count = 2;
+  const auto abort_cooldown = features::GetAbortCooldown();
+  data.first_show_time = base::Time::Now() - abort_cooldown * 3;
+  data.last_show_time = base::Time::Now() - abort_cooldown * 2;
   storage_service_.SavePromoData(kTestIPHFeature, data);
   auto lifecycle = CreateLifecycle(kTestIPHFeature);
   EXPECT_EQ(GetExceededResult(), lifecycle->CanShow());
@@ -540,10 +625,10 @@ INSTANTIATE_TEST_SUITE_P(
                                      PromoType::kToast,
                                      PromoType::kTutorial,
                                      PromoType::kCustomAction),
-                     testing::Values(PromoSubtype::kPerApp)),
+                     testing::Values(PromoSubtype::kKeyedNotice)),
     (ParamToString<PromoType, PromoSubtype>));
 
-TEST_P(FeaturePromoLifecycleAppTest, IPHBlockedPerApp) {
+TEST_P(FeaturePromoLifecycleAppTest, IPHBlockedKeyedNotice) {
   // Show and confirm for one app.
   auto lifecycle = CreateLifecycle(kTestIPHFeature, kAppName);
   lifecycle->OnPromoShown(CreateHelpBubble(), &tracker_);

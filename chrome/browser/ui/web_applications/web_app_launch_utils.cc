@@ -44,6 +44,7 @@
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_enums.h"
+#include "chrome/browser/ui/tabs/tab_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/ui/web_applications/web_app_browser_controller.h"
@@ -142,17 +143,17 @@ Browser* ReparentWebContentsIntoAppBrowser(content::WebContents* contents,
     if (HasPinnedHomeTab(target_tabstrip)) {
       // Insert the web contents into the pinned home tab and delete the
       // existing home tab.
-      target_tabstrip->InsertWebContentsAt(
+      target_tabstrip->InsertDetachedTabAt(
           /*index=*/0,
-          source_tabstrip->DetachWebContentsAtForInsertion(
+          source_tabstrip->DetachTabAtForInsertion(
               source_tabstrip->GetIndexOfWebContents(contents)),
           (AddTabTypes::ADD_INHERIT_OPENER | AddTabTypes::ADD_ACTIVE |
            AddTabTypes::ADD_PINNED));
       target_tabstrip->DetachAndDeleteWebContentsAt(1);
     } else {
-      target_tabstrip->InsertWebContentsAt(
+      target_tabstrip->InsertDetachedTabAt(
           /*index=*/0,
-          source_tabstrip->DetachWebContentsAtForInsertion(
+          source_tabstrip->DetachTabAtForInsertion(
               source_tabstrip->GetIndexOfWebContents(contents)),
           (AddTabTypes::ADD_INHERIT_OPENER | AddTabTypes::ADD_ACTIVE |
            AddTabTypes::ADD_PINNED));
@@ -160,8 +161,8 @@ Browser* ReparentWebContentsIntoAppBrowser(content::WebContents* contents,
     SetWebContentsIsPinnedHomeTab(target_tabstrip->GetWebContentsAt(0));
   } else {
     MaybeAddPinnedHomeTab(target_browser, app_id);
-    target_tabstrip->AppendWebContents(
-        source_tabstrip->DetachWebContentsAtForInsertion(
+    target_tabstrip->AppendTab(
+        source_tabstrip->DetachTabAtForInsertion(
             source_tabstrip->GetIndexOfWebContents(contents)),
         true);
   }
@@ -365,7 +366,7 @@ Browser* ReparentWebContentsIntoAppBrowser(content::WebContents* contents,
           .TargetsExistingClients() ||
       registrar.IsPreventCloseEnabled(web_app->app_id())) {
     if (AppBrowserController::FindForWebApp(*profile, app_id)) {
-      // TODO(crbug.com/1385226): Use apps::AppServiceProxy::LaunchAppWithUrl()
+      // TODO(crbug.com/40246677): Use apps::AppServiceProxy::LaunchAppWithUrl()
       // instead to ensure all the usual wrapping code around web app launches
       // gets executed.
       apps::AppLaunchParams params(
@@ -570,7 +571,7 @@ content::WebContents* NavigateWebAppUsingParams(const std::string& app_id,
   // storage partition.
   if (base::FeatureList::IsEnabled(
           chromeos::features::kExperimentalWebAppStoragePartitionIsolation)) {
-    // TODO(crbug.com/1425284): Cover other app launch paths (e.g. restore
+    // TODO(crbug.com/40260833): Cover other app launch paths (e.g. restore
     // apps).
     auto partition_config = content::StoragePartitionConfig::Create(
         nav_params.browser->profile(),
@@ -781,9 +782,8 @@ void LaunchWebApp(apps::AppLaunchParams params,
     if (lock.registrar().IsInstalled(params.app_id)) {
       container = params.container;
       if (WebAppLaunchProcess::GetOpenApplicationCallbackForTesting()) {
-        web_contents =
-            WebAppLaunchProcess::GetOpenApplicationCallbackForTesting().Run(
-                std::move(params));
+        WebAppLaunchProcess::GetOpenApplicationCallbackForTesting().Run(
+            std::move(params));
       } else {
         web_contents = WebAppLaunchProcess::CreateAndRun(
             profile, lock.registrar(), lock.os_integration_manager(), params);

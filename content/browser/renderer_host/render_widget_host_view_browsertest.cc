@@ -394,6 +394,8 @@ IN_PROC_BROWSER_TEST_F(NoCompositingRenderWidgetHostViewBrowserTest,
   // is maintained as the fallback. The DelegatedFrameHost should have not have
   // a valid active viz::LocalSurfaceId until the first surface after navigation
   // has been embedded.
+  rwhva = static_cast<RenderWidgetHostViewAndroid*>(rwhvb);
+  dfh = rwhva->delegated_frame_host_for_testing();
   EXPECT_TRUE(dfh->HasPrimarySurface());
   EXPECT_FALSE(dfh->IsPrimarySurfaceEvicted());
   EXPECT_EQ(initial_local_surface_id,
@@ -430,6 +432,7 @@ IN_PROC_BROWSER_TEST_F(NoCompositingRenderWidgetHostViewBrowserTest,
   ASSERT_TRUE(rwhvb);
   viz::LocalSurfaceId rwhvb_local_surface_id = rwhvb->GetLocalSurfaceId();
   EXPECT_TRUE(rwhvb_local_surface_id.is_valid());
+  viz::SurfaceId initial_surface_id = rwhvb->GetCurrentSurfaceId();
 
   // Hide the view before performing the next navigation.
   shell()->web_contents()->WasHidden();
@@ -462,11 +465,23 @@ IN_PROC_BROWSER_TEST_F(NoCompositingRenderWidgetHostViewBrowserTest,
   // If this takes too long we hit a timeout that attempts to reset us back to
   // the initial surface. So that some content state can be presented.
   //
-  // If a navigation were to fail, then this would be invoked before any new
-  // surface is embedded. For which we expect it to clear out the fallback
-  // surfaces. As we cannot fallback to a surface from before navigation.
+  // If a navigation were to fail and stayed in the same RenderFrameHost, then
+  // this would be invoked before any new surface is embedded. For which we
+  // expect it to clear out the fallback surfaces. As we cannot fallback to a
+  // surface from before navigation.
+  //
+  // However, if the navigation involves a change of RenderFrameHosts (and thus
+  // RenderWidgetViewHosts) we will embed a new surface early on when creating
+  // the speculative RenderFrameHosts. This is OK because the surface is not
+  // related to the previous page's surface, so we won't be showing the previous
+  // page's content as a fallback.
   rwhvb->ResetFallbackToFirstNavigationSurface();
-  EXPECT_FALSE(rwhvb->HasFallbackSurface());
+  if (ShouldCreateNewHostForAllFrames()) {
+    EXPECT_TRUE(rwhvb->HasFallbackSurface());
+    EXPECT_NE(rwhvb->GetFallbackSurfaceIdForTesting(), initial_surface_id);
+  } else {
+    EXPECT_FALSE(rwhvb->HasFallbackSurface());
+  }
 
 #if BUILDFLAG(IS_ANDROID)
   // Navigating while hidden should not generate a new surface.
@@ -474,6 +489,8 @@ IN_PROC_BROWSER_TEST_F(NoCompositingRenderWidgetHostViewBrowserTest,
   // The DelegatedFrameHost should have not have a valid active
   // viz::LocalSurfaceId until the first surface after navigation has been
   // embedded.
+  rwhva = static_cast<RenderWidgetHostViewAndroid*>(rwhvb);
+  dfh = rwhva->delegated_frame_host_for_testing();
   EXPECT_FALSE(dfh->HasPrimarySurface());
   EXPECT_TRUE(dfh->IsPrimarySurfaceEvicted());
   EXPECT_FALSE(dfh->content_layer()->surface_id().is_valid());
@@ -1687,7 +1704,7 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewPresentationFeedbackBrowserTest,
 // when the RWHV is visible. These tests add a parent layer to make sure that
 // presentation feedback is logged when the state is UseParentLayerCompositor.
 
-// TODO(https://crbug.com/1164477): These tests don't match the behaviour of the
+// TODO(crbug.com/40163556): These tests don't match the behaviour of the
 // browser. In production the Browser.Tabs.* histograms are logged but in this
 // test, the presentation time request is swallowed during the
 // UseParentLayerCompositor state. Need to find out what's wrong with the test
@@ -1898,7 +1915,7 @@ namespace {
 //    BFCached, but the OOPIF still has reference to a RWHV/NativeView that it
 //    shouldn't have.
 //
-// TODO(https://crbug.com/1492600):
+// TODO(crbug.com/40285569):
 // - A page shouldn't be BFCached if it is no longer reachable via session
 //   history navigations (i.e., if the navigation entry is replaced).
 // - When the browser is in a steady state with no on-going navigations, there
@@ -1998,7 +2015,7 @@ std::string DescribeBFCacheFeatureStatus(
 
 }  // namespace
 
-// TODO(https://crbug.com/1492600): When fix the BFCache behavior, move this
+// TODO(crbug.com/40285569): When fix the BFCache behavior, move this
 // test into "back_forward_cache_basics_browsertest.cc". Temporarily placed here
 // to reuse the testing harness.
 IN_PROC_BROWSER_TEST_P(
@@ -2023,7 +2040,7 @@ IN_PROC_BROWSER_TEST_P(
 
   bool bfcache_enabled = GetParam();
   if (bfcache_enabled) {
-    // TODO(https://crbug.com/1492600): We shouldn't store the old page and its
+    // TODO(crbug.com/40285569): We shouldn't store the old page and its
     // OOPIF in the BFCache.
     ASSERT_FALSE(old_main_frame.IsDestroyed());
     ASSERT_FALSE(subframe_rfh.IsDestroyed());
@@ -2065,7 +2082,7 @@ IN_PROC_BROWSER_TEST_P(
   // Three RWHV when BFCache is enabled: old main frame and its OOPIF, and the
   // new main frame.
   //
-  // TODO(https://crbug.com/1492600): The number of RWHVs should be one,
+  // TODO(crbug.com/40285569): The number of RWHVs should be one,
   // regardless of BFCache.
   size_t num_expected_rwhv = bfcache_enabled ? 3u : 1u;
   size_t num_actual_rwhv = 0u;
@@ -2083,7 +2100,7 @@ IN_PROC_BROWSER_TEST_P(
   // instead of three, when the old main frame and the OOPIF are BFCached. See
   // `WebContentsViewAndroid::RenderViewHostChanged()`.
   //
-  // TODO(https://crbug.com/1492600): The number of `ui::ViewAndroid`s should be
+  // TODO(crbug.com/40285569): The number of `ui::ViewAndroid`s should be
   // one, regardless of BFCache.
   size_t num_expected_native_view = bfcache_enabled ? 2u : 1u;
   auto* web_contents_view_android =

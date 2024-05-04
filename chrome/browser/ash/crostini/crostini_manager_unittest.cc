@@ -22,6 +22,7 @@
 #include "chrome/browser/ash/crostini/ansible/ansible_management_service.h"
 #include "chrome/browser/ash/crostini/ansible/ansible_management_test_helper.h"
 #include "chrome/browser/ash/crostini/crostini_pref_names.h"
+#include "chrome/browser/ash/crostini/crostini_simple_types.h"
 #include "chrome/browser/ash/crostini/crostini_test_util.h"
 #include "chrome/browser/ash/crostini/crostini_types.mojom-shared.h"
 #include "chrome/browser/ash/crostini/crostini_util.h"
@@ -32,7 +33,6 @@
 #include "chrome/browser/ash/guest_os/public/guest_os_service.h"
 #include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/ash/settings/scoped_cros_settings_test_helper.h"
-#include "chrome/browser/component_updater/fake_cros_component_manager.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/browser/notifications/system_notification_helper.h"
 #include "chrome/browser/ui/views/crostini/crostini_ansible_software_config_view.h"
@@ -56,6 +56,7 @@
 #include "chromeos/ash/components/dbus/vm_concierge/concierge_service.pb.h"
 #include "chromeos/ash/components/disks/mock_disk_mount_manager.h"
 #include "components/account_id/account_id.h"
+#include "components/component_updater/ash/fake_component_manager_ash.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
@@ -180,14 +181,14 @@ class CrostiniManagerTest : public testing::Test {
 
   void SetUp() override {
     component_manager_ =
-        base::MakeRefCounted<component_updater::FakeCrOSComponentManager>();
+        base::MakeRefCounted<component_updater::FakeComponentManagerAsh>();
     component_manager_->set_supported_components({"cros-termina"});
     component_manager_->ResetComponentState(
         "cros-termina",
-        component_updater::FakeCrOSComponentManager::ComponentInfo(
-            component_updater::CrOSComponentManager::Error::NONE,
+        component_updater::FakeComponentManagerAsh::ComponentInfo(
+            component_updater::ComponentManagerAsh::Error::NONE,
             base::FilePath("/install/path"), base::FilePath("/mount/path")));
-    browser_part_.InitializeCrosComponentManager(component_manager_);
+    browser_part_.InitializeComponentManager(component_manager_);
     ash::DlcserviceClient::InitializeFake();
 
     scoped_feature_list_.InitWithFeatures(
@@ -226,7 +227,7 @@ class CrostiniManagerTest : public testing::Test {
     profile_.reset();
     fake_user_manager_.Reset();
     ash::DlcserviceClient::Shutdown();
-    browser_part_.ShutdownCrosComponentManager();
+    browser_part_.ShutdownComponentManager();
     component_manager_.reset();
   }
 
@@ -252,7 +253,7 @@ class CrostiniManagerTest : public testing::Test {
 
  private:
   std::unique_ptr<ScopedTestingLocalState> local_state_;
-  scoped_refptr<component_updater::FakeCrOSComponentManager> component_manager_;
+  scoped_refptr<component_updater::FakeComponentManagerAsh> component_manager_;
   BrowserProcessPlatformPartTestApi browser_part_;
 };
 
@@ -985,6 +986,20 @@ TEST_F(CrostiniManagerRestartTest, CancelDuringStartContainer) {
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(crostini_manager()->HasRestarterForTesting(container_id()));
   EXPECT_FALSE(fake_cicerone_client_->configure_for_arc_sideload_called());
+}
+
+TEST_F(CrostiniManagerRestartTest, TimeoutWaitingForRestarterStart) {
+  crostini_manager_->AddStoppingVmForTesting(container_id().vm_name);
+
+  TestFuture<CrostiniResult> result_future;
+  RestartCrostini(container_id(), result_future.GetCallback(), this);
+  task_environment_.FastForwardBy(kLongTime);
+  task_environment_.RunUntilIdle();
+
+  EXPECT_EQ(result_future.Get(), CrostiniResult::START_TIMED_OUT);
+
+  EXPECT_EQ(fake_concierge_client_->create_disk_image_call_count(), 0);
+  ExpectRestarterUmaCount(1);
 }
 
 TEST_F(CrostiniManagerRestartTest, TimeoutDuringComponentLoadedFirstInstall) {

@@ -111,7 +111,8 @@ void WebDialogView::AddedToWidget() {
   SetWebViewCornersRadii(corner_radii);
 }
 
-gfx::Size WebDialogView::CalculatePreferredSize() const {
+gfx::Size WebDialogView::CalculatePreferredSize(
+    const SizeBounds& available_size) const {
   gfx::Size out;
   if (delegate_)
     delegate_->GetDialogSize(&out);
@@ -395,13 +396,20 @@ void WebDialogView::CloseContents(WebContents* source) {
 
 content::WebContents* WebDialogView::OpenURLFromTab(
     content::WebContents* source,
-    const content::OpenURLParams& params) {
+    const content::OpenURLParams& params,
+    base::OnceCallback<void(content::NavigationHandle&)>
+        navigation_handle_callback) {
   content::WebContents* new_contents = nullptr;
+  auto split_navigation_handle_callback =
+      base::SplitOnceCallback(std::move(navigation_handle_callback));
   if (delegate_ &&
-      delegate_->HandleOpenURLFromTab(source, params, &new_contents)) {
+      delegate_->HandleOpenURLFromTab(
+          source, params, std::move(split_navigation_handle_callback.first),
+          &new_contents)) {
     return new_contents;
   }
-  return WebDialogWebContentsDelegate::OpenURLFromTab(source, params);
+  return WebDialogWebContentsDelegate::OpenURLFromTab(
+      source, params, std::move(split_navigation_handle_callback.second));
 }
 
 void WebDialogView::AddNewContents(
@@ -458,6 +466,38 @@ bool WebDialogView::CheckMediaAccessPermission(
   if (delegate_) {
     return delegate_->CheckMediaAccessPermission(render_frame_host,
                                                  security_origin, type);
+  }
+  return false;
+}
+
+void WebDialogView::EnterFullscreenModeForTab(
+    content::RenderFrameHost* requesting_frame,
+    const blink::mojom::FullscreenOptions& options) {
+  if (delegate_) {
+    delegate_->EnterFullscreenModeForTab(requesting_frame, options);
+  }
+}
+
+void WebDialogView::ExitFullscreenModeForTab(
+    content::WebContents* web_contents) {
+  if (delegate_) {
+    delegate_->ExitFullscreenModeForTab(web_contents);
+  }
+}
+
+content::KeyboardEventProcessingResult WebDialogView::PreHandleKeyboardEvent(
+    content::WebContents* source,
+    const content::NativeWebKeyboardEvent& event) {
+  if (delegate_) {
+    return delegate_->PreHandleKeyboardEvent(source, event);
+  }
+  return content::KeyboardEventProcessingResult::NOT_HANDLED;
+}
+
+bool WebDialogView::IsFullscreenForTabOrPending(
+    const content::WebContents* web_contents) {
+  if (delegate_) {
+    return delegate_->IsFullscreenForTabOrPending(web_contents);
   }
   return false;
 }

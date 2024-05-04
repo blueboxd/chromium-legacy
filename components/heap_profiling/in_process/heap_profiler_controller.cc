@@ -11,23 +11,29 @@
 #include <vector>
 
 #include "base/allocator/dispatcher/reentry_guard.h"
-#include "base/check.h"
-#include "base/debug/stack_trace.h"
+#include "base/check_op.h"
+#include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
 #include "base/functional/callback_helpers.h"
-#include "base/memory/raw_ptr.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/notreached.h"
 #include "base/numerics/clamped_math.h"
+#include "base/profiler/frame.h"
 #include "base/profiler/module_cache.h"
 #include "base/rand_util.h"
 #include "base/sampling_heap_profiler/sampling_heap_profiler.h"
+#include "base/sequence_checker.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_piece.h"
+#include "base/task/sequenced_task_runner.h"
+#include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/time/time.h"
-#include "build/build_config.h"
 #include "components/heap_profiling/in_process/heap_profiler_parameters.h"
+#include "components/heap_profiling/in_process/switches.h"
 #include "components/metrics/call_stacks/call_stack_profile_builder.h"
 #include "components/metrics/call_stacks/call_stack_profile_params.h"
 #include "components/services/heap_profiling/public/cpp/merge_samples.h"
@@ -36,17 +42,22 @@
 
 namespace heap_profiling {
 
+BASE_FEATURE(kHeapProfilerIncludeZero,
+             "HeapProfilerIncludeZero",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kHeapProfilerCentralControl,
+             "HeapProfilerCentralControl",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 namespace {
 
-using ProfilingEnabled = HeapProfilerController::ProfilingEnabled;
-
-// Records whether heap profiling is enabled for this process.
-// HeapProfilerController will set this on creation, and reset it to
-// kNoController on destruction, so that it's always reset to the default
-// state after each unit test that creates a HeapProfilerController.
-ProfilingEnabled g_profiling_enabled = ProfilingEnabled::kNoController;
-
 using ProcessType = metrics::CallStackProfileParams::Process;
+
+// The heap profiler for this process. HeapProfilerController will set this on
+// creation, and reset it to nullptr on destruction, so that it's always unset
+// after each unit test that creates a HeapProfilerController.
+HeapProfilerController* g_instance = nullptr;
 
 base::TimeDelta RandomInterval(base::TimeDelta mean) {
   // Time intervals between profile collections form a Poisson stream with
@@ -99,137 +110,56 @@ std::string ProcessHistogramName(base::StringPiece base_name,
   }
 }
 
-ProfilingEnabled DecideIfCollectionIsEnabled(version_info::Channel channel,
-                                             ProcessType process_type) {
+double GetChannelProbability(version_info::Channel channel,
+                             const HeapProfilerParameters& params) {
+  switch (channel) {
+    case version_info::Channel::STABLE:
+    case version_info::Channel::UNKNOWN:
+      // If the channel can't be determined, treat it as `stable` for safety.
+      // Don't disable heap profiling completely so that developers can still
+      // enable it with --enable-feature flags.
+      return params.stable_probability;
+    case version_info::Channel::BETA:
+    case version_info::Channel::DEV:
+    case version_info::Channel::CANARY:
+      return params.nonstable_probability;
+  }
+  NOTREACHED_NORETURN();
+}
+
+bool DecideIfCollectionIsEnabled(version_info::Channel channel,
+                                 ProcessType process_type) {
+  // Check the feature before the process type so that users are assigned to
+  // groups in the browser process.
+  if (base::FeatureList::IsEnabled(kHeapProfilerCentralControl) &&
+      process_type != ProcessType::kBrowser) {
+    // The browser process decided whether profiling is enabled and used
+    // AppendCommandLineSwitchForChildProcess() to pass on the decision.
+    const bool is_enabled = base::CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kSubprocessHeapProfiling);
+
+    // If this check fails, some code path that launches a child process hasn't
+    // set the appropriate switch.
+    // TODO(https://crbug.com/40840943): Remove kNoSubprocessHeapProfiling after
+    // validating that this check never fails.
+    CHECK(is_enabled || base::CommandLine::ForCurrentProcess()->HasSwitch(
+                            switches::kNoSubprocessHeapProfiling));
+    return is_enabled;
+  }
+
+  // Randomly determine whether profiling is enabled.
   HeapProfilerParameters params =
       GetHeapProfilerParametersForProcess(process_type);
-  if (!params.is_supported)
-    return ProfilingEnabled::kDisabled;
-  const double probability = (channel == version_info::Channel::STABLE)
-                                 ? params.stable_probability
-                                 : params.nonstable_probability;
-  if (base::RandDouble() >= probability)
-    return ProfilingEnabled::kDisabled;
-  return ProfilingEnabled::kEnabled;
+  if (!params.is_supported) {
+    return false;
+  }
+  if (base::RandDouble() >= GetChannelProbability(channel, params)) {
+    return false;
+  }
+  return true;
 }
-
-// Records a time histogram for the `interval` between snapshots, using the
-// appropriate histogram buckets for the platform (desktop or mobile).
-// `recording_time` must be one of the {RecordingTime} token variants in the
-// definition of HeapProfiling.InProcess.SnapshotInterval.{Platform}.
-// {RecordingTime} in tools/metrics/histograms/metadata/memory/histograms.xml.
-void RecordUmaSnapshotInterval(base::TimeDelta interval,
-                               base::StringPiece recording_time,
-                               ProcessType process_type) {
-#if BUILDFLAG(IS_IOS) || BUILDFLAG(IS_ANDROID)
-  // On mobile, the interval is distributed around a mean of 30 minutes.
-  constexpr base::TimeDelta kMinHistogramTime = base::Seconds(30);
-  constexpr base::TimeDelta kMaxHistogramTime = base::Hours(3);
-  constexpr const char* const kPlatform = "Mobile";
-#else
-  // On desktop, the interval is distributed around a mean of 1 day.
-  constexpr base::TimeDelta kMinHistogramTime = base::Minutes(30);
-  constexpr base::TimeDelta kMaxHistogramTime = base::Days(6);
-  constexpr const char* const kPlatform = "Desktop";
-#endif
-
-  const auto base_name =
-      base::StrCat({"HeapProfiling.InProcess.SnapshotInterval.", kPlatform, ".",
-                    recording_time});
-  base::UmaHistogramCustomTimes(ProcessHistogramName(base_name, process_type),
-                                interval, kMinHistogramTime, kMaxHistogramTime,
-                                50);
-  // Also summarize over all process types.
-  base::UmaHistogramCustomTimes(base_name, interval, kMinHistogramTime,
-                                kMaxHistogramTime, 50);
-}
-
-#if BUILDFLAG(IS_ANDROID)
-// Records metrics about the quality of each stack that is sampled.
-class StackQualityMetricsRecorder {
- public:
-  StackQualityMetricsRecorder(ProcessType process_type,
-                              base::ModuleCache& module_cache)
-      : process_type_(process_type),
-        chrome_module_(GetCurrentModule(module_cache)) {}
-
-  // Records that a new stack is being processed.
-  void NewStack(size_t stack_size) {
-    stack_size_ = stack_size;
-    num_non_chrome_frames_ = 0;
-  }
-
-  // Records that a frame was found in `module` in the ModuleCache.
-  void AddFrameInModule(const base::ModuleCache::Module* module) {
-    // If the chrome module couldn't be found, record all frames as non-chrome.
-    if (!chrome_module_ || !module ||
-        module->GetBaseAddress() != chrome_module_->GetBaseAddress()) {
-      num_non_chrome_frames_ += 1;
-    }
-  }
-
-  // Records summary metrics through UMA.
-  void RecordUmaMetrics() {
-    // From inspecting reports received on Android, most reports with only 1 to
-    // 3 frames are clearly truncated, suggesting a problem with the unwinder,
-    // or contain a JNI base call that directly allocates. (These are not broken
-    // but don't have anything actionable in them.) Reports with 4 frames are
-    // more likely to be useful but still have a large proportion of truncated
-    // or non-actionable stacks. With 5 or more frames the stacks are more
-    // likely than not to be actionable.
-    constexpr size_t kMinFramesForGoodQuality = 5;
-
-    const bool has_few_frames = stack_size_ < kMinFramesForGoodQuality;
-    base::UmaHistogramBoolean("HeapProfiling.InProcess.AndroidShortStacks",
-                              has_few_frames);
-    base::UmaHistogramBoolean(
-        ProcessHistogramName("HeapProfiling.InProcess.AndroidShortStacks",
-                             process_type_),
-        has_few_frames);
-
-    if (stack_size_ > 0) {
-      const double non_chrome_frame_percent =
-          100.0 * num_non_chrome_frames_ / stack_size_;
-      base::UmaHistogramPercentage(
-          "HeapProfiling.InProcess.AndroidNonChromeFrames",
-          non_chrome_frame_percent);
-      base::UmaHistogramPercentage(
-          ProcessHistogramName("HeapProfiling.InProcess.AndroidNonChromeFrames",
-                               process_type_),
-          non_chrome_frame_percent);
-    }
-  }
-
- private:
-  static const base::ModuleCache::Module* GetCurrentModule(
-      base::ModuleCache& module_cache) {
-    // Get the address of the current function.
-    const uintptr_t address = reinterpret_cast<const uintptr_t>(
-        &StackQualityMetricsRecorder::GetCurrentModule);
-    return module_cache.GetModuleForAddress(address);
-  }
-
-  ProcessType process_type_;
-  raw_ptr<const base::ModuleCache::Module> chrome_module_;
-  size_t stack_size_ = 0;
-  size_t num_non_chrome_frames_ = 0;
-};
-#else
-// No-op implementation of StackQualityMetricsRecorder.
-class StackQualityMetricsRecorder {
- public:
-  StackQualityMetricsRecorder(ProcessType, base::ModuleCache&) {}
-  void NewStack(size_t) {}
-  void AddFrameInModule(const base::ModuleCache::Module*) {}
-  void RecordUmaMetrics() {}
-};
-#endif
 
 }  // namespace
-
-BASE_FEATURE(kHeapProfilerIncludeZero,
-             "HeapProfilerIncludeZero",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 HeapProfilerController::SnapshotParams::SnapshotParams(
     base::TimeDelta mean_interval,
@@ -237,7 +167,7 @@ HeapProfilerController::SnapshotParams::SnapshotParams(
     scoped_refptr<StoppedFlag> stopped,
     ProcessType process_type,
     base::TimeTicks profiler_creation_time,
-    base::OnceCallback<void(bool)> on_first_snapshot_callback)
+    base::OnceClosure on_first_snapshot_callback)
     : mean_interval(mean_interval),
       use_random_interval(use_random_interval),
       stopped(std::move(stopped)),
@@ -255,50 +185,47 @@ HeapProfilerController::SnapshotParams::operator=(SnapshotParams&& other) =
     default;
 
 // static
-ProfilingEnabled HeapProfilerController::GetProfilingEnabled() {
-  return g_profiling_enabled;
+HeapProfilerController* HeapProfilerController::GetInstance() {
+  return g_instance;
 }
 
 HeapProfilerController::HeapProfilerController(version_info::Channel channel,
                                                ProcessType process_type)
     : process_type_(process_type),
-      stopped_(base::MakeRefCounted<StoppedFlag>()) {
+      profiling_enabled_(DecideIfCollectionIsEnabled(channel, process_type)),
+      stopped_(base::MakeRefCounted<StoppedFlag>()),
+      snapshot_task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
+          {base::TaskPriority::BEST_EFFORT})) {
   // Only one HeapProfilerController should exist at a time in each
-  // process. The class is not a singleton so it can be created and
-  // destroyed in tests.
-  DCHECK_EQ(g_profiling_enabled, ProfilingEnabled::kNoController);
-  g_profiling_enabled = DecideIfCollectionIsEnabled(channel, process_type);
+  // process.
+  CHECK(!g_instance);
+  g_instance = this;
 
   // Before starting the profiler, record the ReentryGuard's TLS slot to a crash
   // key to debug reentry into the profiler.
-  // TODO(crbug.com/1411454): Remove this after diagnosing reentry crashes.
+  // TODO(crbug.com/40062835): Remove this after diagnosing reentry crashes.
   base::allocator::dispatcher::ReentryGuard::RecordTLSSlotToCrashKey();
 }
 
 HeapProfilerController::~HeapProfilerController() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   stopped_->data.Set();
-  g_profiling_enabled = ProfilingEnabled::kNoController;
+  CHECK_EQ(g_instance, this);
+  g_instance = nullptr;
 }
 
 bool HeapProfilerController::StartIfEnabled() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  const bool profiling_enabled =
-      g_profiling_enabled == ProfilingEnabled::kEnabled;
   // Only supported processes are assigned a patterned histogram.
   if (HasProcessHistogramName(process_type_)) {
     constexpr char kEnabledHistogramName[] = "HeapProfiling.InProcess.Enabled";
     base::UmaHistogramBoolean(
         ProcessHistogramName(kEnabledHistogramName, process_type_),
-        profiling_enabled);
+        profiling_enabled_);
     // Also summarize over all supported process types.
-    base::UmaHistogramBoolean(kEnabledHistogramName, profiling_enabled);
+    base::UmaHistogramBoolean(kEnabledHistogramName, profiling_enabled_);
   }
-  if (!profiling_enabled) {
-    if (!on_first_snapshot_callback_.is_null()) {
-      // Snapshot will never be scheduled, so break out of any waiting loop.
-      std::move(on_first_snapshot_callback_).Run(false);
-    }
+  if (!profiling_enabled_) {
     return false;
   }
   HeapProfilerParameters profiler_params =
@@ -315,17 +242,44 @@ bool HeapProfilerController::StartIfEnabled() {
       profiler_params.collection_interval,
       /*use_random_interval=*/!suppress_randomness_for_testing_, stopped_,
       process_type_, creation_time_, std::move(on_first_snapshot_callback_));
-  ScheduleNextSnapshot(std::move(params));
+  snapshot_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&HeapProfilerController::ScheduleNextSnapshot,
+                                std::move(params)));
   return true;
 }
 
 void HeapProfilerController::SuppressRandomnessForTesting() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   suppress_randomness_for_testing_ = true;
 }
 
 void HeapProfilerController::SetFirstSnapshotCallbackForTesting(
-    base::OnceCallback<void(bool)> callback) {
+    base::OnceClosure callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   on_first_snapshot_callback_ = std::move(callback);
+}
+
+void HeapProfilerController::AppendCommandLineSwitchForChildProcess(
+    base::CommandLine* command_line,
+    metrics::CallStackProfileParams::Process child_process_type) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  CHECK_EQ(process_type_, ProcessType::kBrowser);
+  CHECK_NE(child_process_type, ProcessType::kBrowser);
+  if (!base::FeatureList::IsEnabled(kHeapProfilerCentralControl)) {
+    return;
+  }
+  // Only enable subprocess profiling when the browser process is being
+  // profiled.
+  if (profiling_enabled_ &&
+      GetHeapProfilerParametersForProcess(child_process_type).is_supported) {
+    command_line->AppendSwitch(switches::kSubprocessHeapProfiling);
+    return;
+  }
+  // Record that HeapProfilerController had a chance to update the child's
+  // command line.
+  // TODO(https://crbug.com/40840943): Remove this after verifying that the
+  // CHECK in DecideIfCollectionIsEnabled() never fails.
+  command_line->AppendSwitch(switches::kNoSubprocessHeapProfiling);
 }
 
 // static
@@ -333,31 +287,23 @@ void HeapProfilerController::ScheduleNextSnapshot(SnapshotParams params) {
   base::TimeDelta interval = params.use_random_interval
                                  ? RandomInterval(params.mean_interval)
                                  : params.mean_interval;
-  RecordUmaSnapshotInterval(interval, "Scheduled", params.process_type);
-  base::ThreadPool::PostDelayedTask(
-      FROM_HERE, {base::TaskPriority::BEST_EFFORT},
-      base::BindOnce(&HeapProfilerController::TakeSnapshot, std::move(params),
-                     /*previous_interval=*/interval),
+  base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&HeapProfilerController::TakeSnapshot, std::move(params)),
       interval);
 }
 
 // static
-void HeapProfilerController::TakeSnapshot(SnapshotParams params,
-                                          base::TimeDelta previous_interval) {
-  // Use DoNothing instead of null to simplify control flow.
-  base::OnceCallback<void(bool)> on_snapshot_callback =
-      params.on_first_snapshot_callback.is_null()
-          ? base::DoNothing()
-          : std::move(params.on_first_snapshot_callback);
+void HeapProfilerController::TakeSnapshot(SnapshotParams params) {
   if (params.stopped->data.IsSet()) {
-    std::move(on_snapshot_callback).Run(false);
     return;
   }
-  RecordUmaSnapshotInterval(previous_interval, "Taken", params.process_type);
+  if (!params.on_first_snapshot_callback.is_null()) {
+    std::move(params.on_first_snapshot_callback).Run();
+  }
   RetrieveAndSendSnapshot(
       params.process_type,
-      base::TimeTicks::Now() - params.profiler_creation_time,
-      std::move(on_snapshot_callback));
+      base::TimeTicks::Now() - params.profiler_creation_time);
   // Callback should be left as null for next snapshot.
   CHECK(params.on_first_snapshot_callback.is_null());
   ScheduleNextSnapshot(std::move(params));
@@ -366,8 +312,7 @@ void HeapProfilerController::TakeSnapshot(SnapshotParams params,
 // static
 void HeapProfilerController::RetrieveAndSendSnapshot(
     ProcessType process_type,
-    base::TimeDelta time_since_profiler_creation,
-    base::OnceCallback<void(bool)> on_snapshot_callback) {
+    base::TimeDelta time_since_profiler_creation) {
   using Sample = base::SamplingHeapProfiler::Sample;
 
   // Always log the total sampled memory before returning. If `samples` is empty
@@ -391,13 +336,10 @@ void HeapProfilerController::RetrieveAndSendSnapshot(
   // Also summarize over all process types.
   base::UmaHistogramCounts100000("HeapProfiling.InProcess.SamplesPerSnapshot",
                                  samples.size());
-  CHECK(!on_snapshot_callback.is_null());
   if (!base::FeatureList::IsEnabled(kHeapProfilerIncludeZero) &&
       samples.empty()) {
-    std::move(on_snapshot_callback).Run(false);
     return;
   }
-  std::move(on_snapshot_callback).Run(true);
 
   base::ModuleCache module_cache;
   metrics::CallStackProfileParams params(
@@ -408,7 +350,6 @@ void HeapProfilerController::RetrieveAndSendSnapshot(
 
   SampleMap merged_samples = MergeSamples(samples);
 
-  StackQualityMetricsRecorder quality_recorder(process_type, module_cache);
   for (auto& pair : merged_samples) {
     const Sample& sample = pair.first;
     const SampleValue& value = pair.second;
@@ -417,15 +358,12 @@ void HeapProfilerController::RetrieveAndSendSnapshot(
     std::vector<base::Frame> frames;
     frames.reserve(stack_size);
 
-    quality_recorder.NewStack(stack_size);
     for (const void* frame : sample.stack) {
       const uintptr_t address = reinterpret_cast<const uintptr_t>(frame);
       const base::ModuleCache::Module* module =
           module_cache.GetModuleForAddress(address);
-      quality_recorder.AddFrameInModule(module);
       frames.emplace_back(address, module);
     }
-    quality_recorder.RecordUmaMetrics();
 
     // Heap "samples" represent allocation stacks aggregated over time so
     // do not have a meaningful timestamp.

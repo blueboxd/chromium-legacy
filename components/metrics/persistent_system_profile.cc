@@ -5,11 +5,13 @@
 #include "components/metrics/persistent_system_profile.h"
 
 #include <set>
+#include <string_view>
 #include <vector>
 
 #include "base/atomicops.h"
 #include "base/bits.h"
 #include "base/containers/contains.h"
+#include "base/containers/span.h"
 #include "base/debug/crash_logging.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/persistent_memory_allocator.h"
@@ -92,7 +94,7 @@ void PersistentSystemProfile::RecordAllocator::Reset() {
 }
 
 bool PersistentSystemProfile::RecordAllocator::Write(RecordType type,
-                                                     base::StringPiece record) {
+                                                     std::string_view record) {
   const char* data = record.data();
   size_t remaining_size = record.size();
 
@@ -252,7 +254,7 @@ bool PersistentSystemProfile::RecordAllocator::ReadData(
   size_t read_size = header.as_parts.amount;
   if (end_offset_ + sizeof(header) + read_size > alloc_size_) {
 #if !BUILDFLAG(IS_NACL)
-    // TODO(crbug/1432981): Remove these. They are used to investigate
+    // TODO(crbug.com/40064026): Remove these. They are used to investigate
     // unexpected failures.
     SCOPED_CRASH_KEY_NUMBER("PersistentSystemProfile", "end_offset_",
                             end_offset_);
@@ -339,8 +341,8 @@ void PersistentSystemProfile::SetSystemProfile(
   SetSystemProfile(serialized_profile, complete);
 }
 
-void PersistentSystemProfile::AddFieldTrial(base::StringPiece trial,
-                                            base::StringPiece group) {
+void PersistentSystemProfile::AddFieldTrial(std::string_view trial,
+                                            std::string_view group) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!trial.empty());
 
@@ -349,10 +351,10 @@ void PersistentSystemProfile::AddFieldTrial(base::StringPiece trial,
   pickler.WriteString(group);
 
   WriteToAll(kFieldTrialInfo,
-             base::StringPiece(pickler.data_as_char(), pickler.size()));
+             std::string_view(pickler.data_as_char(), pickler.size()));
 }
 
-void PersistentSystemProfile::RemoveFieldTrial(base::StringPiece trial) {
+void PersistentSystemProfile::RemoveFieldTrial(std::string_view trial) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!trial.empty());
 
@@ -361,7 +363,7 @@ void PersistentSystemProfile::RemoveFieldTrial(base::StringPiece trial) {
   pickler.WriteString(kFieldTrialDeletionSentinel);
 
   WriteToAll(kFieldTrialInfo,
-             base::StringPiece(pickler.data_as_char(), pickler.size()));
+             std::string_view(pickler.data_as_char(), pickler.size()));
 }
 // static
 bool PersistentSystemProfile::HasSystemProfile(
@@ -428,10 +430,11 @@ void PersistentSystemProfile::MergeUpdateRecords(
           }
         }
 
-        base::Pickle pickler(record.data(), record.size());
+        base::Pickle pickler =
+            base::Pickle::WithUnownedBuffer(base::as_byte_span(record));
         base::PickleIterator iter(pickler);
-        base::StringPiece trial;
-        base::StringPiece group;
+        std::string_view trial;
+        std::string_view group;
         if (iter.ReadStringPiece(&trial) && iter.ReadStringPiece(&group)) {
           variations::ActiveGroupId field_ids =
               variations::MakeActiveGroupId(trial, group);
@@ -463,7 +466,7 @@ void PersistentSystemProfile::MergeUpdateRecords(
 }
 
 void PersistentSystemProfile::WriteToAll(RecordType type,
-                                         base::StringPiece record) {
+                                         std::string_view record) {
   for (auto& allocator : allocators_)
     allocator.Write(type, record);
 }

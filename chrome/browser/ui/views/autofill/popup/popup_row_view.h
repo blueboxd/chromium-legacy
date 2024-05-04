@@ -11,8 +11,6 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/raw_ref.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/ui/autofill/autofill_popup_controller.h"
-#include "chrome/browser/ui/user_education/scoped_new_badge_tracker.h"
 #include "chrome/browser/ui/views/autofill/popup/popup_view_utils.h"
 #include "content/public/common/input/native_web_keyboard_event.h"
 #include "ui/base/metadata/metadata_header_macros.h"
@@ -24,8 +22,6 @@
 namespace content {
 struct NativeWebKeyboardEvent;
 }  // namespace content
-
-class ScopedNewBadgeTracker;
 
 namespace autofill {
 
@@ -74,29 +70,10 @@ class PopupRowView : public views::View, public views::ViewObserver {
                                  PopupCellSelectionSource source) = 0;
   };
 
-  // The tracker for a "new" badge that a row might have.
-  class ScopedNewBadgeTrackerWithAcceptAction {
-   public:
-    ScopedNewBadgeTrackerWithAcceptAction(
-        std::unique_ptr<ScopedNewBadgeTracker> tracker,
-        const char* action_name);
-    ~ScopedNewBadgeTrackerWithAcceptAction();
-
-    ScopedNewBadgeTrackerWithAcceptAction(
-        ScopedNewBadgeTrackerWithAcceptAction&&);
-    ScopedNewBadgeTrackerWithAcceptAction& operator=(
-        ScopedNewBadgeTrackerWithAcceptAction&&);
-
-    // Notifies the tracker that the accept action was performed, i.e. the
-    // feature was opened.
-    void OnSuggestionAccepted();
-
-   private:
-    // The actual badge tracker.
-    std::unique_ptr<ScopedNewBadgeTracker> tracker_;
-    // The name of the action that is triggered on accepting the suggestion.
-    const char* action_name_;
-  };
+  // Returns the margin on the left and right of the row. When hovering in the
+  // content cell, this is the distance one sees between the updated
+  // background and the edge of the row.
+  static int GetHorizontalMargin();
 
   PopupRowView(AccessibilitySelectionDelegate& a11y_selection_delegate,
                SelectionDelegate& selection_delegate,
@@ -106,11 +83,6 @@ class PopupRowView : public views::View, public views::ViewObserver {
   PopupRowView(const PopupRowView&) = delete;
   PopupRowView& operator=(const PopupRowView&) = delete;
   ~PopupRowView() override;
-
-  void set_new_badge_tracker(
-      std::optional<ScopedNewBadgeTrackerWithAcceptAction> new_badge_tracker) {
-    new_badge_tracker_ = std::move(new_badge_tracker);
-  }
 
   // views::View:
   bool OnMouseDragged(const ui::MouseEvent& event) override;
@@ -155,8 +127,6 @@ class PopupRowView : public views::View, public views::ViewObserver {
   int line_number() const { return line_number_; }
 
  private:
-  void RunOnAccepted();
-
   AccessibilitySelectionDelegate& GetA11ySelectionDelegate() {
     return a11y_selection_delegate_.get();
   }
@@ -173,9 +143,6 @@ class PopupRowView : public views::View, public views::ViewObserver {
   const base::WeakPtr<AutofillPopupController> controller_;
   // The position of the row in the vertical list of suggestions.
   const int line_number_;
-  // A tracker for "new" badges inside a cell. If set, it logs a performed
-  // action on accepting the suggestion.
-  std::optional<ScopedNewBadgeTrackerWithAcceptAction> new_badge_tracker_;
 
   // Which (if any) cell of this row is currently selected.
   std::optional<CellType> selected_cell_;

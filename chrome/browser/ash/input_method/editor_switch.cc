@@ -12,11 +12,18 @@
 #include "chrome/browser/ash/input_method/editor_consent_enums.h"
 #include "chrome/browser/ash/input_method/editor_identity_utils.h"
 #include "chrome/browser/ash/input_method/url_utils.h"
+#include "chrome/browser/ash/login/demo_mode/demo_session.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/manta/manta_service_factory.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/web_applications/web_app_id_constants.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chromeos/components/kiosk/kiosk_utils.h"
 #include "chromeos/constants/chromeos_features.h"
+#include "components/language/core/common/locale_util.h"
+#include "components/manta/manta_service.h"
 #include "extensions/common/constants.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "net/base/network_change_notifier.h"
@@ -26,8 +33,8 @@ namespace ash::input_method {
 namespace {
 
 constexpr std::string_view kCountryAllowlist[] = {
-    "au", "be", "ch", "cz", "de", "dk", "es", "fi", "fr",
-    "gb", "ie", "in", "it", "jp", "kr", "lu", "mx", "no",
+    "au", "be", "ca", "ch", "cz", "de", "dk", "es", "fi",
+    "fr", "gb", "ie", "in", "it", "jp", "lu", "mx", "no",
     "nz", "nl", "pl", "pt", "se", "us", "za",
 };
 
@@ -41,26 +48,36 @@ constexpr AppType kAppTypeDenylist[] = {
 };
 
 const char* kWorkspaceDomainsWithPathDenylist[][2] = {
-    {"calendar.google", ""},
-    {"docs.google", "/document"},
-    {"docs.google", "/presentation"},
-    {"docs.google", "/spreadsheets"},
-    {"drive.google", ""},
-    {"keep.google", ""},
-    {"mail.google", "/chat"},
-    {"mail.google", "/mail"},
+    {"calendar.google", ""}, {"docs.google", ""},      {"drive.google", ""},
+    {"keep.google", ""},     {"mail.google", "/chat"}, {"mail.google", "/mail"},
     {"meet.google", ""},
 };
 
 const char* kWorkspaceAppIdDenylist[] = {
-    extension_misc::kGmailAppId,        extension_misc::kCalendarAppId,
-    extension_misc::kGoogleDocsAppId,   extension_misc::kGoogleSlidesAppId,
-    extension_misc::kGoogleSheetsAppId, extension_misc::kGoogleDriveAppId,
-    extension_misc::kGoogleKeepAppId,   web_app::kGmailAppId,
-    web_app::kGoogleChatAppId,          web_app::kGoogleMeetAppId,
-    web_app::kGoogleDocsAppId,          web_app::kGoogleSlidesAppId,
-    web_app::kGoogleSheetsAppId,        web_app::kGoogleDriveAppId,
-    web_app::kGoogleKeepAppId,          web_app::kGoogleCalendarAppId,
+    extension_misc::kGmailAppId,
+    extension_misc::kCalendarAppId,
+    extension_misc::kGoogleDocsAppId,
+    extension_misc::kGoogleSlidesAppId,
+    extension_misc::kGoogleSheetsAppId,
+    extension_misc::kGoogleDriveAppId,
+    extension_misc::kGoogleKeepAppId,
+    extension_misc::kGoogleMeetPwaAppId,
+    extension_misc::kGoogleDocsPwaAppId,
+    extension_misc::kGoogleSheetsPwaAppId,
+    // App ids in demo mode
+    extension_misc::kCalendarDemoAppId,
+    extension_misc::kGoogleDocsDemoAppId,
+    extension_misc::kGoogleSheetsDemoAppId,
+    extension_misc::kGoogleSlidesDemoAppId,
+    web_app::kGmailAppId,
+    web_app::kGoogleChatAppId,
+    web_app::kGoogleMeetAppId,
+    web_app::kGoogleDocsAppId,
+    web_app::kGoogleSlidesAppId,
+    web_app::kGoogleSheetsAppId,
+    web_app::kGoogleDriveAppId,
+    web_app::kGoogleKeepAppId,
+    web_app::kGoogleCalendarAppId,
 };
 
 const char* kNonWorkspaceAppIdDenylist[] = {
@@ -74,9 +91,90 @@ constexpr char kExperimentName[] = "OrcaEnabled";
 
 constexpr char kImeAllowlistLabel[] = "ime_allowlist";
 
-bool IsDeviceManaged(Profile* profile_) {
+std::vector<std::string> Combine(
+    const std::vector<std::vector<std::string>>& vecs) {
+  std::vector<std::string> combined;
+  for (auto& vec : vecs) {
+    combined.insert(combined.end(), vec.begin(), vec.end());
+  }
+  return combined;
+}
+
+const std::vector<std::string>& EnglishInputMethods() {
+  static const base::NoDestructor<std::vector<std::string>> input_methods({
+      "xkb:ca:eng:eng",           // Canada
+      "xkb:gb::eng",              // UK
+      "xkb:gb:extd:eng",          // UK Extended
+      "xkb:gb:dvorak:eng",        // UK Dvorak
+      "xkb:in::eng",              // India
+      "xkb:pk::eng",              // Pakistan
+      "xkb:us:altgr-intl:eng",    // US Extended
+      "xkb:us:colemak:eng",       // US Colemak
+      "xkb:us:dvorak:eng",        // US Dvorak
+      "xkb:us:dvp:eng",           // US Programmer Dvorak
+      "xkb:us:intl_pc:eng",       // US Intl (PC)
+      "xkb:us:intl:eng",          // US Intl
+      "xkb:us:workman-intl:eng",  // US Workman Intl
+      "xkb:us:workman:eng",       // US Workman
+      "xkb:us::eng",              // US
+      "xkb:za:gb:eng"             // South Africa
+  });
+  return *input_methods;
+}
+
+const std::vector<std::string>& FrenchInputMethods() {
+  static const base::NoDestructor<std::vector<std::string>> input_methods({
+      "xkb:be::fra",        // French (Belgium)
+      "xkb:ca::fra",        // French (Canada)
+      "xkb:ca:multix:fra",  // French (Canada) with multilingual keyboard
+      "xkb:fr::fra",        // French (France)
+      "xkb:fr:bepo:fra",    // French (France) with bepo keyboard
+      "xkb:ch:fr:fra",      // French (Switzerland)
+  });
+  return *input_methods;
+}
+
+const std::vector<std::string>& GermanInputMethods() {
+  static const base::NoDestructor<std::vector<std::string>> input_methods({
+      "xkb:be::ger",     // German (Belgium)
+      "xkb:de::ger",     // German (Germany)
+      "xkb:de:neo:ger",  // German (Germany) with neo keyboard
+      "xkb:ch::ger",     // German (Switzerland)
+  });
+  return *input_methods;
+}
+
+const std::vector<std::string>& JapaneseInputMethods() {
+  static const base::NoDestructor<std::vector<std::string>> input_methods({
+      "xkb:jp::jpn",   // Alphanumeric with Japanese keyboard
+      "nacl_mozc_us",  // Japanese with US keyboard
+      "nacl_mozc_jp",  // Japanese
+  });
+  return *input_methods;
+}
+
+const std::vector<std::string>& AllowedInputMethods() {
+  static const base::NoDestructor<std::vector<std::string>> input_methods(
+      base::FeatureList::IsEnabled(features::kOrcaInternationalize)
+          ? Combine({EnglishInputMethods(), FrenchInputMethods(),
+                     GermanInputMethods(), JapaneseInputMethods()})
+          : EnglishInputMethods());
+  return *input_methods;
+}
+
+manta::FeatureSupportStatus FetchOrcaAccountCapabilityFromMantaService(
+    Profile* profile) {
+  if (manta::MantaService* service =
+          manta::MantaServiceFactory::GetForProfile(profile)) {
+    return service->SupportsOrca();
+  }
+
+  return manta::FeatureSupportStatus::kUnknown;
+}
+
+bool IsProfileManaged(Profile* profile) {
   policy::ProfilePolicyConnector* profile_policy_connector =
-      profile_->GetProfilePolicyConnector();
+      profile->GetProfilePolicyConnector();
 
   return (profile_policy_connector != nullptr &&
           profile_policy_connector->IsManaged());
@@ -148,21 +246,7 @@ bool IsTriggerableFromTextLength(int text_length) {
 }
 
 std::vector<std::string> GetAllowedInputMethodEngines() {
-  // Default English IMEs.
-  std::vector<std::string> allowed_imes = {
-      "xkb:gb::eng",
-      "xkb:gb:extd:eng",          // UK
-      "xkb:gb:dvorak:eng",        // UK Extended
-      "xkb:us:altgr-intl:eng",    // US Extended
-      "xkb:us:colemak:eng",       // US Colemak
-      "xkb:us:dvorak:eng",        // US Dvorak
-      "xkb:us:dvp:eng",           // US Programmer Dvorak
-      "xkb:us:intl_pc:eng",       // US Intl (PC)
-      "xkb:us:intl:eng",          // US Intl
-      "xkb:us:workman-intl:eng",  // US Workman Intl
-      "xkb:us:workman:eng",       // US Workman
-      "xkb:us::eng",              // US
-  };
+  std::vector<std::string> allowed_imes = AllowedInputMethods();
 
   // Loads allowed imes from field trials
   if (auto parsed = base::JSONReader::Read(
@@ -179,6 +263,50 @@ std::vector<std::string> GetAllowedInputMethodEngines() {
 }
 
 }  // namespace
+
+bool IsAllowedForUseInDemoMode(std::string_view country_code) {
+  return base::FeatureList::IsEnabled(chromeos::features::kOrca) &&
+         base::FeatureList::IsEnabled(
+             chromeos::features::kFeatureManagementOrca) &&
+         IsCountryAllowed(country_code);
+}
+
+bool IsAllowedForUseInNonDemoMode(Profile* profile,
+                                  std::string_view country_code) {
+  if (!base::FeatureList::IsEnabled(chromeos::features::kOrca) ||
+      !base::FeatureList::IsEnabled(
+          chromeos::features::kFeatureManagementOrca) ||
+      !IsCountryAllowed(country_code) ||
+      (base::FeatureList::IsEnabled(
+           ash::features::kOrcaUseAccountCapabilities) &&
+       FetchOrcaAccountCapabilityFromMantaService(profile) !=
+           manta::FeatureSupportStatus::kSupported)) {
+    return false;
+  }
+
+  // Always allow the feature on unmanaged users.
+  if (!IsProfileManaged(profile)) {
+    return true;
+  }
+
+  // For managed users, if the feature flag `OrcaControlledByPolicy `is set, let
+  // the feature enablement be driven by the policy.
+  if (base::FeatureList::IsEnabled(features::kOrcaControlledByPolicy)) {
+    return profile->GetPrefs()->IsManagedPreference(prefs::kManagedOrcaEnabled)
+               ? profile->GetPrefs()->GetBoolean(prefs::kManagedOrcaEnabled)
+               : false;
+  }
+
+  // If the Orca policy is not ready to launch on managed users, disallow the
+  // feature.
+  return false;
+}
+
+bool IsSystemInEnglishLanguage() {
+  return g_browser_process != nullptr &&
+         language::ExtractBaseLanguage(
+             g_browser_process->GetApplicationLocale()) == "en";
+}
 
 EditorSwitch::EditorSwitch(Delegate* delegate,
                            Profile* profile,
@@ -203,11 +331,10 @@ bool EditorSwitch::IsAllowedForUse() const {
     return false;
   }
 
-  return (base::FeatureList::IsEnabled(chromeos::features::kOrca) &&
-          base::FeatureList::IsEnabled(
-              chromeos::features::kFeatureManagementOrca) &&
-          IsCountryAllowed(country_code_)) &&
-         !IsDeviceManaged(profile_);
+  return base::FeatureList::IsEnabled(ash::features::kOrcaSupportDemoMode) &&
+                 ash::DemoSession::IsDeviceInDemoMode()
+             ? IsAllowedForUseInDemoMode(country_code_)
+             : IsAllowedForUseInNonDemoMode(profile_, country_code_);
 }
 
 EditorOpportunityMode EditorSwitch::GetEditorOpportunityMode() const {
@@ -227,8 +354,24 @@ std::vector<EditorBlockedReason> EditorSwitch::GetBlockedReasons() const {
           EditorBlockedReason::kBlockedByUnsupportedRegion);
     }
 
-    if (IsDeviceManaged(profile_)) {
+    if (IsProfileManaged(profile_)) {
       blocked_reasons.push_back(EditorBlockedReason::kBlockedByManagedStatus);
+    }
+
+    if (base::FeatureList::IsEnabled(
+            ash::features::kOrcaUseAccountCapabilities)) {
+      switch (FetchOrcaAccountCapabilityFromMantaService(profile_)) {
+        case manta::FeatureSupportStatus::kUnsupported:
+          blocked_reasons.push_back(
+              EditorBlockedReason::kBlockedByUnsupportedCapability);
+          break;
+        case manta::FeatureSupportStatus::kUnknown:
+          blocked_reasons.push_back(
+              EditorBlockedReason::kBlockedByUnknownCapability);
+          break;
+        case manta::FeatureSupportStatus::kSupported:
+          break;
+      }
     }
   }
 
@@ -292,7 +435,9 @@ bool EditorSwitch::CanBeTriggered() const {
          !net::NetworkChangeNotifier::IsOffline() && !tablet_mode_enabled_ &&
          // user pref value
          profile_->GetPrefs()->GetBoolean(prefs::kOrcaEnabled) &&
-         text_length_ <= kTextLengthMaxLimit;
+         text_length_ <= kTextLengthMaxLimit &&
+         (!base::FeatureList::IsEnabled(features::kOrcaOnlyInEnglishLocales) ||
+          IsSystemInEnglishLanguage());
 }
 
 EditorMode EditorSwitch::GetEditorMode() const {
@@ -340,10 +485,6 @@ void EditorSwitch::OnTextSelectionLengthChanged(size_t text_length) {
   EditorMode prev_mode = GetEditorMode();
   text_length_ = text_length;
   MaybeNotifyEditorModeChanged(prev_mode);
-}
-
-void EditorSwitch::SetProfile(Profile* profile) {
-  profile_ = profile;
 }
 
 void EditorSwitch::MaybeNotifyEditorModeChanged(const EditorMode& prev_mode) {

@@ -20,6 +20,7 @@
 #include "ash/wm/overview/overview_item_view.h"
 #include "ash/wm/overview/overview_utils.h"
 #include "ash/wm/overview/scoped_overview_animation_settings.h"
+#include "ash/wm/scoped_layer_tree_synchronizer.h"
 #include "ash/wm/snap_group/snap_group.h"
 #include "ash/wm/snap_group/snap_group_controller.h"
 #include "ash/wm/splitview/split_view_controller.h"
@@ -33,7 +34,10 @@
 #include "base/functional/bind.h"
 #include "base/memory/raw_ptr.h"
 #include "base/task/single_thread_task_runner.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/ui/base/window_properties.h"
+#include "chromeos/ui/base/window_state_type.h"
+#include "chromeos/ui/frame/frame_utils.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/transient_window_client.h"
 #include "ui/aura/scoped_window_event_targeting_blocker.h"
@@ -43,8 +47,11 @@
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/layer_observer.h"
 #include "ui/gfx/geometry/insets.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_conversions.h"
+#include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/rounded_corners_f.h"
+#include "ui/gfx/geometry/rrect_f.h"
 #include "ui/gfx/geometry/transform_util.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 #include "ui/views/widget/widget.h"
@@ -99,36 +106,6 @@ class UndoPropertyObserver : public ui::ImplicitAnimationObserver,
   // Guaranteed to be not null for the duration of `this`.
   raw_ptr<aura::Window> window_;
 };
-
-// Returns the rounded corners to be applied on the transformed window based on
-// whether the given `window` belongs to a group or not.
-gfx::RoundedCornersF GetRoundedCornersForTransformWindow(aura::Window* window,
-                                                         float scale) {
-  const int corner_radius = window_util::GetMiniWindowRoundedCornerRadius();
-  if (SnapGroupController* snap_group_controller = SnapGroupController::Get()) {
-    if (SnapGroup* snap_group =
-            snap_group_controller->GetSnapGroupForGivenWindow(window)) {
-      return window == snap_group->window1()
-                 ? gfx::RoundedCornersF(
-                       /*upper_left=*/0,
-                       /*upper_right=*/0, /*lower_right=*/0,
-                       /*lower_left=*/
-                       corner_radius / scale)
-                 : gfx::RoundedCornersF(
-                       /*upper_left=*/0,
-                       /*upper_right=*/0,
-                       /*lower_right=*/
-                       corner_radius / scale,
-                       /*lower_left=*/0);
-    }
-  }
-
-  return gfx::RoundedCornersF(
-      /*upper_left=*/0,
-      /*upper_right=*/0,
-      /*lower_right=*/corner_radius / scale,
-      /*lower_left=*/corner_radius / scale);
-}
 
 }  // namespace
 
@@ -228,6 +205,14 @@ ScopedOverviewTransformWindow::ScopedOverviewTransformWindow(
         window_->parent()->StackChildBelow(window_, snapped_window);
     }
   }
+
+  // In overview, each window, along with its transient window, has the
+  // display's root window as a common ancestor.
+  // Note: windows in the overview belong to different containers. For instance,
+  // normal windows belong to a desk container, floated windows to a float
+  // container, and always-on-top windows to their respective container.
+  window_tree_synchronizer_ = std::make_unique<ScopedWindowTreeSynchronizer>(
+      window_->GetRootWindow(), /*restore_tree=*/true);
 }
 
 ScopedOverviewTransformWindow::~ScopedOverviewTransformWindow() {
@@ -247,8 +232,6 @@ ScopedOverviewTransformWindow::~ScopedOverviewTransformWindow() {
 
   UpdateRoundedCorners(/*show=*/false);
   aura::client::GetTransientWindowClient()->RemoveObserver(this);
-
-  window_observations_.RemoveAllObservations();
 }
 
 // static
@@ -331,6 +314,8 @@ void ScopedOverviewTransformWindow::RestoreWindow(bool reset_transform,
   } else {
     SetClipping(gfx::Rect(original_clip_rect_.size()));
   }
+
+  window_tree_synchronizer_->Restore();
 }
 
 void ScopedOverviewTransformWindow::BeginScopedAnimation(
@@ -561,15 +546,45 @@ void ScopedOverviewTransformWindow::UpdateRoundedCorners(bool show) {
     return;
   }
 
+  const gfx::RectF contents_bounds_in_screen = GetTransformedBounds();
+
   // Depending on the size of `backdrop_view`, we might not want to round the
   // window associated with `layer`.
   const bool has_rounding = window_util::ShouldRoundThumbnailWindow(
-      overview_item_->GetBackDropView(), GetTransformedBounds());
+      overview_item_->GetBackDropView(), contents_bounds_in_screen);
 
   const float scale = layer->transform().To2dScale().x();
   layer->SetRoundedCornerRadius(
-      has_rounding ? GetRoundedCornersForTransformWindow(window_, scale)
+      has_rounding ? window_util::GetMiniWindowRoundedCorners(
+                         window(), /*include_header_rounding=*/false, scale)
                    : gfx::RoundedCornersF(0));
+
+  if (!chromeos::features::IsRoundedWindowsEnabled()) {
+    return;
+  }
+
+  gfx::RectF contents_bounds_in_root(contents_bounds_in_screen);
+  wm::TranslateRectFromScreen(window_->GetRootWindow(),
+                              &contents_bounds_in_root);
+
+  const gfx::RRectF rounded_contents_bounds(
+      contents_bounds_in_root,
+      window_util::GetMiniWindowRoundedCorners(
+          window(), /*include_header_rounding=*/false));
+
+  // Synchronizing the rounded corners of a window and its transient hierarchy
+  // against `rounded_contents_bounds` yields two outcomes:
+  // * We can apply the specified rounding without the need for a render
+  //   surface.
+  // * It ensures that the transient windows' corners are correctly rounded,
+  //   ensuring that all four corners of the WindowMiniView appear rounded.
+  //   See b/325635179.
+  window_tree_synchronizer_->SynchronizeRoundedCorners(
+      window(), /*consider_curvature=*/false, rounded_contents_bounds,
+      /*ignore_predicate=*/base::BindRepeating([](aura::Window* window) {
+        return window->GetProperty(kHideInOverviewKey) ||
+               window->GetProperty(kExcludeFromTransientTreeTransformKey);
+      }));
 }
 
 void ScopedOverviewTransformWindow::OnTransientChildWindowAdded(
@@ -614,6 +629,24 @@ void ScopedOverviewTransformWindow::OnWindowPropertyChanged(
     aura::Window* window,
     const void* key,
     intptr_t old) {
+  if (window == window_ && key == chromeos::kWindowStateTypeKey) {
+    const auto old_window_state = static_cast<chromeos::WindowStateType>(old);
+
+    // During the restore process, the synchronizer attempts to restore the
+    // rounded corners of the window's layer tree to the state it was in just
+    // before entering overview.
+    // However, this is not always be desirable. For instance, if an overview
+    // item is dragged into a snapped state, the synchronizer may hold an
+    // outdated original state. While the original state was for a
+    // rounded window, the window is now square in the snapped state.
+    if (chromeos::ShouldWindowHaveRoundedCorners(window) !=
+        chromeos::ShouldWindowStateHaveRoundedCorners(old_window_state)) {
+      window_tree_synchronizer_->ResetCachedLayerInfo();
+    }
+
+    return;
+  }
+
   if (key != kHideInOverviewKey)
     return;
 

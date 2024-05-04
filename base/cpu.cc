@@ -2,19 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40284755): Remove this and spanify to fix the errors.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "base/cpu.h"
 
-#include <inttypes.h>
-#include <limits.h>
-#include <stddef.h>
 #include <stdint.h>
 #include <string.h>
 
-#include <algorithm>
-#include <sstream>
+#include <string>
+#include <string_view>
 #include <utility>
 
-#include "base/no_destructor.h"
+#include "base/memory/protected_memory.h"
 #include "build/build_config.h"
 
 #if defined(ARCH_CPU_ARM_FAMILY) && \
@@ -145,7 +147,7 @@ uint64_t xgetbv(uint32_t xcr) {
 #if defined(ARCH_CPU_ARM_FAMILY) && \
     (BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS))
 StringPairs::const_iterator FindFirstProcCpuKey(const StringPairs& pairs,
-                                                StringPiece key) {
+                                                std::string_view key) {
   return ranges::find_if(pairs, [key](const StringPairs::value_type& pair) {
     return TrimWhitespaceASCII(pair.first, base::TRIM_ALL) == key;
   });
@@ -183,8 +185,7 @@ const ProcCpuInfo& ParseProcCpu() {
     if (model_name == pairs.end())
       model_name = FindFirstProcCpuKey(pairs, kProcessorPrefix);
     if (model_name != pairs.end()) {
-      info.brand =
-          std::string(TrimWhitespaceASCII(model_name->second, TRIM_ALL));
+      TrimWhitespaceASCII(model_name->second, TRIM_ALL, &info.brand);
     }
 
     auto implementer_string = FindFirstProcCpuKey(pairs, "CPU implementer");
@@ -210,16 +211,13 @@ const ProcCpuInfo& ParseProcCpu() {
 #endif  // defined(ARCH_CPU_ARM_FAMILY) && (BUILDFLAG(IS_ANDROID) ||
         // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS))
 
+DEFINE_PROTECTED_DATA base::ProtectedMemory<CPU, true> g_cpu_instance;
+
 }  // namespace
 
 void CPU::Initialize(bool require_branding) {
 #if defined(ARCH_CPU_X86_FAMILY)
   int cpu_info[4] = {-1};
-  // This array is used to temporarily hold the vendor name and then the brand
-  // name. Thus it has to be big enough for both use cases. There are
-  // static_asserts below for each of the use cases to make sure this array is
-  // big enough.
-  char cpu_string[sizeof(cpu_info) * 3 + 1];
 
   // __cpuid with an InfoType argument of 0 returns the number of
   // valid Ids in CPUInfo[0] and the CPU identification string in
@@ -231,12 +229,8 @@ void CPU::Initialize(bool require_branding) {
   __cpuid(cpu_info, 0);
   int num_ids = cpu_info[0];
   std::swap(cpu_info[2], cpu_info[3]);
-  static constexpr size_t kVendorNameSize = 3 * sizeof(cpu_info[1]);
-  static_assert(kVendorNameSize < std::size(cpu_string),
-                "cpu_string too small");
-  memcpy(cpu_string, &cpu_info[1], kVendorNameSize);
-  cpu_string[kVendorNameSize] = '\0';
-  cpu_vendor_ = cpu_string;
+  memcpy(cpu_vendor_, &cpu_info[1], kVendorNameSize);
+  cpu_vendor_[kVendorNameSize] = '\0';
 
   // Interpret CPU feature information.
   if (num_ids > 0) {
@@ -300,19 +294,18 @@ void CPU::Initialize(bool require_branding) {
   static constexpr uint32_t kParameterEnd = 0x80000004;
   static constexpr uint32_t kParameterSize =
       kParameterEnd - kParameterStart + 1;
-  static_assert(kParameterSize * sizeof(cpu_info) + 1 == std::size(cpu_string),
-                "cpu_string has wrong size");
+  static_assert(kParameterSize * sizeof(cpu_info) == kBrandNameSize,
+                "cpu_brand_ has wrong size");
 
   if (max_parameter >= kParameterEnd) {
     size_t i = 0;
     for (uint32_t parameter = kParameterStart; parameter <= kParameterEnd;
          ++parameter) {
       __cpuid(cpu_info, static_cast<int>(parameter));
-      memcpy(&cpu_string[i], cpu_info, sizeof(cpu_info));
+      memcpy(&cpu_brand_[i], cpu_info, sizeof(cpu_info));
       i += sizeof(cpu_info);
     }
-    cpu_string[i] = '\0';
-    cpu_brand_ = cpu_string;
+    cpu_brand_[i] = '\0';
   }
 
   static constexpr uint32_t kParameterContainingNonStopTimeStampCounter =
@@ -343,7 +336,13 @@ void CPU::Initialize(bool require_branding) {
 #if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
   if (require_branding) {
     const ProcCpuInfo& info = ParseProcCpu();
-    cpu_brand_ = info.brand;
+
+    // Ensure the brand can be stored in the internal array.
+    CHECK_LE(info.brand.size(), kBrandNameSize);
+
+    const size_t chars_copied = info.brand.copy(cpu_brand_, kBrandNameSize);
+    cpu_brand_[chars_copied] = '\0';
+
     implementer_ = info.implementer;
     part_number_ = info.part_number;
   }
@@ -379,9 +378,9 @@ CPU::IntelMicroArchitecture CPU::GetIntelMicroArchitecture() const {
 #endif
 
 const CPU& CPU::GetInstanceNoAllocation() {
-  static const base::NoDestructor<const CPU> cpu(CPU(false));
+  static ProtectedMemoryInitializer cpu_initializer(g_cpu_instance, CPU(false));
 
-  return *cpu;
+  return *g_cpu_instance;
 }
 
 }  // namespace base

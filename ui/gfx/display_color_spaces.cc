@@ -44,7 +44,7 @@ size_t GetIndex(ContentColorUsage color_usage, bool needs_alpha) {
 }  // namespace
 
 DisplayColorSpaces::DisplayColorSpaces() {
-  // TODO(crbug/1309228): Revert back to range-based for loops if possible
+  // TODO(crbug.com/40219387): Revert back to range-based for loops if possible
   for (size_t i = 0; i < kConfigCount; i++) {
     color_spaces_[i] = gfx::ColorSpace::CreateSRGB();
     buffer_formats_[i] = DefaultBufferFormat();
@@ -210,11 +210,10 @@ bool DisplayColorSpaces::operator!=(const DisplayColorSpaces& other) const {
 }
 
 // static
-bool DisplayColorSpaces::EqualExceptForHdrParameters(
+bool DisplayColorSpaces::EqualExceptForHdrHeadroom(
     const DisplayColorSpaces& a,
     const DisplayColorSpaces& b) {
   DisplayColorSpaces b_with_a_params = b;
-  b_with_a_params.sdr_max_luminance_nits_ = a.sdr_max_luminance_nits_;
   b_with_a_params.hdr_max_luminance_relative_ = a.hdr_max_luminance_relative_;
   return a == b_with_a_params;
 }

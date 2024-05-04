@@ -184,7 +184,8 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
   // FrameEvictorClient implementation.
   void EvictDelegatedFrame(
       const std::vector<viz::SurfaceId>& surface_ids) override;
-  std::vector<viz::SurfaceId> CollectSurfaceIdsForEviction() const override;
+  viz::FrameEvictorClient::EvictIds CollectSurfaceIdsForEviction()
+      const override;
   viz::SurfaceId GetCurrentSurfaceId() const override;
   viz::SurfaceId GetPreNavigationSurfaceId() const override;
 
@@ -236,7 +237,7 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
   // The LocalSurfaceId of the currently embedded surface. If surface sync is
   // on, this surface is not necessarily active.
   //
-  // TODO(https://crbug.com/1459238): this value is a copy of what the browser
+  // TODO(crbug.com/40274223): this value is a copy of what the browser
   // wants to embed. The source of truth is stored else where. We should
   // consider de-dup this ID.
   viz::LocalSurfaceId local_surface_id_;

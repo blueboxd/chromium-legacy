@@ -170,7 +170,7 @@ void HistoryClustersPageHandler::GetDiscountsForCluster(
 
 void HistoryClustersPageHandler::ShowJourneysSidePanel(
     const std::string& query) {
-  // TODO(crbug.com/1341399): Revisit integration with the side panel once the
+  // TODO(crbug.com/40851017): Revisit integration with the side panel once the
   // referenced bug is resolved.
   auto* history_clusters_tab_helper =
       side_panel::HistoryClustersTabHelper::FromWebContents(web_contents_);
@@ -193,18 +193,21 @@ void HistoryClustersPageHandler::OpenUrlsInTabGroup(
     return;
   }
 
-  browser->OpenURL({urls.front(), content::Referrer(),
-                    WindowOpenDisposition::CURRENT_TAB,
-                    ui::PAGE_TRANSITION_AUTO_BOOKMARK,
-                    /*is_renderer_initiated=*/false});
+  browser->OpenURL(
+      {urls.front(), content::Referrer(), WindowOpenDisposition::CURRENT_TAB,
+       ui::PAGE_TRANSITION_AUTO_BOOKMARK,
+       /*is_renderer_initiated=*/false},
+      /*navigation_handle_callback=*/{});
 
   auto* model = browser->tab_strip_model();
   std::vector<int> tab_indices;
   tab_indices.reserve(urls.size());
   for (size_t i = 1; i < urls.size(); i++) {
-    auto* opened_web_contents = browser->OpenURL(content::OpenURLParams(
-        urls[i], content::Referrer(), WindowOpenDisposition::NEW_BACKGROUND_TAB,
-        ui::PAGE_TRANSITION_AUTO_BOOKMARK, false));
+    auto* opened_web_contents = browser->OpenURL(
+        content::OpenURLParams(urls[i], content::Referrer(),
+                               WindowOpenDisposition::NEW_BACKGROUND_TAB,
+                               ui::PAGE_TRANSITION_AUTO_BOOKMARK, false),
+        /*navigation_handle_callback=*/{});
 
     // Only add those tabs to a new group that actually opened in this
     // browser.

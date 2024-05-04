@@ -14,6 +14,7 @@
 #include "base/strings/string_util.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/task/task_runner.h"
+#include "base/types/fixed_array.h"
 #include "chromeos/ash/components/carrier_lock/carrier_lock.pb.h"
 #include "chromeos/ash/components/carrier_lock/fcm_topic_subscriber_impl.h"
 #include "chromeos/ash/components/carrier_lock/metrics.h"
@@ -233,6 +234,7 @@ std::unique_ptr<CarrierLockManager> CarrierLockManager::CreateForTesting(
   manager->config_ = std::move(provisioning_config_fetcher);
   manager->psm_ = std::move(psm_claim_verifier);
   manager->fcm_ = std::move(fcm_topic_subscriber);
+  manager->imei_ = "00000000";
   manager->manufacturer_ = "Google";
   manager->model_ = "Pixel 20";
   manager->fcm_->Initialize(
@@ -329,7 +331,7 @@ void CarrierLockManager::Initialize() {
 
   // Check Disable flag.
   if (local_state_->GetBoolean(kDisableManagerPref)) {
-    VLOG(2) << "Manager is Disabled by local flag!";
+    LOG(WARNING) << "Manager is Disabled by local flag!";
     return;
   }
 
@@ -337,7 +339,7 @@ void CarrierLockManager::Initialize() {
   const base::FilePath modem_path = base::FilePath(kFirmwareVariantPath);
   if (!base::PathExists(modem_path)) {
     local_state_->SetBoolean(kDisableManagerPref, true);
-    VLOG(2) << "No modem found. Manager will be disabled.";
+    LOG(WARNING) << "No modem found. Manager will be disabled.";
     return;
   }
 
@@ -370,24 +372,24 @@ void CarrierLockManager::Initialize() {
   if (base::PathExists(oem_path)) {
     base::File file(oem_path, base::File::FLAG_OPEN | base::File::FLAG_READ);
     int64_t length = file.GetLength();
-    std::unique_ptr<char[]> buffer(new char[length + 1]);
-    file.Read(0, buffer.get(), length);
+    base::FixedArray<char> buffer(length + 1);
+    file.Read(0, buffer.data(), length);
     buffer[length] = '\0';
-    manufacturer_ = buffer.get();
+    manufacturer_ = buffer.data();
   } else {
-    LOG(ERROR) << "Manufacturer name file doesn't exist!";
+    LOG(WARNING) << "Manufacturer name file doesn't exist!";
   }
 
   const base::FilePath model_path(kModelNamePath);
   if (base::PathExists(model_path)) {
     base::File file(model_path, base::File::FLAG_OPEN | base::File::FLAG_READ);
     int64_t length = file.GetLength();
-    std::unique_ptr<char[]> buffer(new char[length + 1]);
-    file.Read(0, buffer.get(), length);
+    base::FixedArray<char> buffer(length + 1);
+    file.Read(0, buffer.data(), length);
     buffer[length] = '\0';
-    model_ = buffer.get();
+    model_ = buffer.data();
   } else {
-    LOG(ERROR) << "Model name file doesn't exist!";
+    LOG(WARNING) << "Model name file doesn't exist!";
   }
 
   DCHECK(base::SingleThreadTaskRunner::HasCurrentDefault());
@@ -595,27 +597,9 @@ void CarrierLockManager::LogError(Result result) {
 }
 
 void CarrierLockManager::CheckState() {
-  system::StatisticsProvider* statistics;
-  const DeviceState* cellular_device =
-      network_state_handler_->GetDeviceStateByType(
-          ash::NetworkTypePattern::Cellular());
-  if (!cellular_device) {
-    LOG(ERROR) << "Cellular device not found or invalid.";
-    LogError(Result::kModemNotFound);
-    RetryStep();
-    return;
-  }
-
-  imei_ = cellular_device->imei();
-  if (imei_.empty()) {
-    LOG(ERROR) << "Cellular device has invalid IMEI.";
-    LogError(Result::kInvalidImei);
-    RetryStep();
-    return;
-  }
-
   if (serial_.empty()) {
-    statistics = system::StatisticsProvider::GetInstance();
+    system::StatisticsProvider* statistics =
+        system::StatisticsProvider::GetInstance();
     if (!statistics) {
       LOG(ERROR) << "StatisticsProvider is not initialized.";
       LogError(Result::kSerialProviderFailed);
@@ -635,12 +619,12 @@ void CarrierLockManager::CheckState() {
     if (const std::optional<std::string_view> model =
             statistics->GetMachineStatistic(kMachineModelName)) {
       model_ = model.value();
-      VLOG(2) << "Model changed to " << model_ << ".";
+      LOG(WARNING) << "Model changed to " << model_ << ".";
     }
     if (const std::optional<std::string_view> oem =
             statistics->GetMachineStatistic(kMachineOemName)) {
       manufacturer_ = oem.value();
-      VLOG(2) << "Manufacturer changed to " << manufacturer_ << ".";
+      LOG(WARNING) << "Manufacturer changed to " << manufacturer_ << ".";
     }
   }
 
@@ -660,6 +644,25 @@ void CarrierLockManager::CheckState() {
                                   InitialState::kObsoleteConfiguration);
     is_first_setup_ = false;
     RunStep(ConfigurationState::kFcmGetToken);
+    return;
+  }
+
+  // Get IMEI of cellular modem.
+  const DeviceState* cellular_device =
+      network_state_handler_->GetDeviceStateByType(
+          ash::NetworkTypePattern::Cellular());
+  if (!cellular_device) {
+    LOG(ERROR) << "Cellular device not found or invalid.";
+    LogError(Result::kModemNotFound);
+    RetryStep();
+    return;
+  }
+
+  imei_ = cellular_device->imei();
+  if (imei_.empty()) {
+    LOG(ERROR) << "Cellular device has invalid IMEI.";
+    LogError(Result::kInvalidImei);
+    RetryStep();
     return;
   }
 
@@ -702,7 +705,7 @@ void CarrierLockManager::PsmCallback(Result result) {
     base::UmaHistogramEnumeration(kPsmClaimResponse, PsmResult::kDeviceLocked);
     RunStep(ConfigurationState::kFcmGetToken);
   } else {
-    VLOG(2) << "Not a member in PSM group, manager will be disabled.";
+    LOG(WARNING) << "Not a member in PSM group, manager will be disabled.";
     base::UmaHistogramEnumeration(kPsmClaimResponse,
                                   PsmResult::kDeviceUnlocked);
     RunStep(ConfigurationState::kDeviceUnlocked);
@@ -710,6 +713,26 @@ void CarrierLockManager::PsmCallback(Result result) {
 }
 
 void CarrierLockManager::RequestConfig() {
+  if (imei_.empty()) {
+    const DeviceState* cellular_device =
+        network_state_handler_->GetDeviceStateByType(
+            ash::NetworkTypePattern::Cellular());
+    if (!cellular_device) {
+      LOG(ERROR) << "Cellular device not found or invalid.";
+      LogError(Result::kModemNotFound);
+      RetryStep();
+      return;
+    }
+
+    imei_ = cellular_device->imei();
+    if (imei_.empty()) {
+      LOG(ERROR) << "Cellular device has invalid IMEI.";
+      LogError(Result::kInvalidImei);
+      RetryStep();
+      return;
+    }
+  }
+
   config_->RequestConfig(serial_, imei_, manufacturer_, model_, fcm_token_,
                          base::BindOnce(&CarrierLockManager::ConfigCallback,
                                         weak_ptr_factory_.GetWeakPtr()));

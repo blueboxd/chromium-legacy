@@ -297,7 +297,7 @@ bool ReadNextChild(OnDeviceModelParams* params, MatchCandidate* candidate) {
       candidate->address = score_or_address;
       candidate->is_complete_suggestion = false;
 
-      // TODO(crbug.com/1506547): remove this guard after evaluating the fix.
+      // TODO(crbug.com/40947213): remove this guard after evaluating the fix.
       if (OmniboxFieldTrial::ShouldApplyOnDeviceHeadModelSelectionFix()) {
         MatchCandidate unused_candidate;
         uint32_t address = params->GetModelFileStream()->tellg();
@@ -461,7 +461,7 @@ std::unique_ptr<OnDeviceModelParams> OnDeviceModelParams::Create(
     const uint32_t max_num_matches_to_return) {
   std::unique_ptr<OnDeviceModelParams> params(new OnDeviceModelParams());
 
-  // TODO(crbug.com/925072): Add DCHECK and code to report failures to UMA
+  // TODO(crbug.com/40610979): Add DCHECK and code to report failures to UMA
   // histogram.
   if (!OpenModelFileStream(params.get(), model_filename, 0)) {
     DVLOG(1) << "On Device Head Params: cannot access on device head params "

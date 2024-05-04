@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "base/base64.h"
@@ -64,7 +65,6 @@ namespace ash::onc {
 namespace {
 
 // Scheme strings for supported |net::ProxyServer::SCHEME_*| enum values.
-constexpr char kQuicScheme[] = "quic";
 constexpr char kSocksScheme[] = "socks";
 constexpr char kSocks4Scheme[] = "socks4";
 constexpr char kSocks5Scheme[] = "socks5";
@@ -149,7 +149,10 @@ std::string SchemeToString(net::ProxyServer::Scheme scheme) {
     case net::ProxyServer::SCHEME_HTTPS:
       return url::kHttpsScheme;
     case net::ProxyServer::SCHEME_QUIC:
-      return kQuicScheme;
+      // Re-map the legacy "quic://" proxy protocol scheme to "https://",
+      // because that's how it's actually treated. See
+      // https://issues.chromium.org/issues/40141686.
+      return url::kHttpsScheme;
     case net::ProxyServer::SCHEME_INVALID:
       break;
   }

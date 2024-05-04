@@ -529,7 +529,7 @@ class PreflightController::PreflightLoader final {
 
     // Avoid overwriting if `CheckPreflightResult()` succeeds, just in case
     // there was a PNA warning in `detected_error_status`.
-    // TODO(https://crbug.com/1268378): Simplify this by always overwriting
+    // TODO(crbug.com/40204695): Simplify this by always overwriting
     // `detected_error_status` once preflights are always enforced.
     if (check_error_status.has_value()) {
       net_error = net::ERR_FAILED;
@@ -563,7 +563,7 @@ class PreflightController::PreflightLoader final {
     std::optional<std::string> name =
         GetHeaderString(head.headers, header_names::kPrivateNetworkDeviceName);
 
-    // TODO(https://crbug.com/1455395): `target_ip_address_space` should be
+    // TODO(crbug.com/40272755): `target_ip_address_space` should be
     // checked in `CorsURLLoaderFactory`. Remove the following bit after that.
     if (!url_loader_network_service_observer_ ||
         original_request_.target_ip_address_space ==

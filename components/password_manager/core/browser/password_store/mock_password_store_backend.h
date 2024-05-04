@@ -68,11 +68,14 @@ class MockPasswordStoreBackend : public PasswordStoreBackend {
               (override));
   MOCK_METHOD(void,
               RemoveLoginAsync,
-              (const PasswordForm& form, PasswordChangesOrErrorReply callback),
+              (const base::Location&,
+               const PasswordForm& form,
+               PasswordChangesOrErrorReply callback),
               (override));
   MOCK_METHOD(void,
               RemoveLoginsByURLAndTimeAsync,
-              (const base::RepeatingCallback<bool(const GURL&)>& url_filter,
+              (const base::Location&,
+               const base::RepeatingCallback<bool(const GURL&)>& url_filter,
                base::Time delete_begin,
                base::Time delete_end,
                base::OnceCallback<void(bool)> sync_completion,
@@ -80,7 +83,8 @@ class MockPasswordStoreBackend : public PasswordStoreBackend {
               (override));
   MOCK_METHOD(void,
               RemoveLoginsCreatedBetweenAsync,
-              (base::Time delete_begin,
+              (const base::Location&,
+               base::Time delete_begin,
                base::Time delete_end,
                PasswordChangesOrErrorReply callback),
               (override));
@@ -90,7 +94,7 @@ class MockPasswordStoreBackend : public PasswordStoreBackend {
                base::OnceClosure),
               (override));
   MOCK_METHOD(SmartBubbleStatsStore*, GetSmartBubbleStatsStore, (), (override));
-  MOCK_METHOD(std::unique_ptr<syncer::ProxyModelTypeControllerDelegate>,
+  MOCK_METHOD(std::unique_ptr<syncer::ModelTypeControllerDelegate>,
               CreateSyncControllerDelegate,
               (),
               (override));

@@ -12,7 +12,9 @@
 #include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/singleton.h"
-#include "base/values.h"
+#include "chrome/browser/policy/messaging_layer/upload/encrypted_reporting_client.h"
+#include "chrome/browser/policy/messaging_layer/util/upload_declarations.h"
+#include "chrome/browser/policy/messaging_layer/util/upload_response_parser.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_core.h"
 #include "components/policy/core/common/cloud/cloud_policy_manager.h"
@@ -24,8 +26,6 @@
 
 namespace reporting {
 
-class EncryptedReportingClient;
-
 BASE_DECLARE_FEATURE(kEnableReportingFromUnmanagedDevices);
 
 // Singleton wrapper of a reporting server client used when uploading events
@@ -34,8 +34,7 @@ BASE_DECLARE_FEATURE(kEnableReportingFromUnmanagedDevices);
 // with a dedicated reporting client.
 class ReportingServerConnector : public ::policy::CloudPolicyCore::Observer {
  public:
-  using ResponseCallback =
-      base::OnceCallback<void(StatusOr<base::Value::Dict>)>;
+  using ResponseCallback = EncryptedReportingClient::ResponseCallback;
 
   class Observer {
    public:
@@ -68,6 +67,7 @@ class ReportingServerConnector : public ::policy::CloudPolicyCore::Observer {
                                     int config_file_version,
                                     std::vector<EncryptedRecord> records,
                                     ScopedReservation scoped_reservation,
+                                    UploadEnqueuedCallback enqueued_cb,
                                     ResponseCallback callback);
 
   // Adds/removes observer to the Connector.
@@ -98,11 +98,12 @@ class ReportingServerConnector : public ::policy::CloudPolicyCore::Observer {
   void OnCoreDisconnecting(::policy::CloudPolicyCore* core) override;
   void OnCoreDestruction(::policy::CloudPolicyCore* core) override;
 
+  // Presets uploads and forwards the data.
   void UploadEncryptedReportInternal(bool need_encryption_key,
                                      int config_file_version,
                                      std::vector<EncryptedRecord> records,
                                      ScopedReservation scoped_reservation,
-                                     std::optional<base::Value::Dict> context,
+                                     UploadEnqueuedCallback enqueued_cb,
                                      ResponseCallback callback);
 
   // Onwed by CloudPolicyManager. Cached here (only on UI task runner).

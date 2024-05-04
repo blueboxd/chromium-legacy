@@ -8,7 +8,7 @@
 #import "base/ios/ios_util.h"
 #import "components/bookmarks/common/bookmark_features.h"
 #import "components/signin/public/base/consent_level.h"
-#import "components/sync/base/features.h"
+#import "components/signin/public/base/signin_pref_names.h"
 #import "ios/chrome/browser/bookmarks/model/bookmark_model_type.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/shared/ui/elements/activity_overlay_egtest_util.h"
@@ -45,18 +45,12 @@ using chrome_test_util::SecondarySignInButton;
   AppLaunchConfiguration config;
   if ([self isRunningTest:@selector
             (testPromoViewNotShownWhenSyncDataNotRemoved)]) {
-    config.features_disabled.push_back(
-        syncer::kReplaceSyncPromosWithSignInPromos);
     config.features_disabled.push_back(kEnableBatchUploadFromBookmarksManager);
   } else if ([self
                  isRunningTest:@selector
                  (testSignInPromoWhenSyncDataNotRemovedIfBatchUploadEnabled)]) {
-    config.features_disabled.push_back(
-        syncer::kReplaceSyncPromosWithSignInPromos);
     config.features_enabled.push_back(kEnableBatchUploadFromBookmarksManager);
   } else {
-    config.features_enabled.push_back(
-        syncer::kReplaceSyncPromosWithSignInPromos);
     config.features_enabled.push_back(kEnableBatchUploadFromBookmarksManager);
   }
   return config;
@@ -111,8 +105,8 @@ using chrome_test_util::SecondarySignInButton;
 // See http://crbug.com/1428495.
 - (void)testSignInPromoAfterSignOut {
   FakeSystemIdentity* fakeIdentity1 = [FakeSystemIdentity fakeIdentity1];
-  // Sign-in+sync with identity1.
-  [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity1 enableSync:YES];
+  // Sign-in with identity1.
+  [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity1];
   [ChromeEarlGrey signOutAndClearIdentitiesAndWaitForCompletion];
   // Sign-in with bookmark account storage with identity2.
   FakeSystemIdentity* fakeIdentity2 = [FakeSystemIdentity fakeIdentity2];
@@ -132,11 +126,12 @@ using chrome_test_util::SecondarySignInButton;
 // Tests that the signin promo is not shown when last signed-in user did not
 // remove data during sign-out.
 - (void)testPromoViewNotShownWhenSyncDataNotRemoved {
-  // Sign-in with sync with `fakeIdentity1`.
-  [SigninEarlGreyUI signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]
-                                enableSync:YES];
-  // Sign-out without removing data.
-  [SigninEarlGrey signOut];
+  // Simulate data from a previous account being leftover by setting
+  // kGoogleServicesLastSyncingGaiaId.
+  FakeSystemIdentity* fakeIdentity1 = [FakeSystemIdentity fakeIdentity1];
+  [SigninEarlGrey addFakeIdentity:fakeIdentity1];
+  [ChromeEarlGrey setStringValue:fakeIdentity1.gaiaID
+                     forUserPref:prefs::kGoogleServicesLastSyncingGaiaId];
 
   [BookmarkEarlGrey
       setupStandardBookmarksInStorage:BookmarkModelType::kLocalOrSyncable];
@@ -148,12 +143,12 @@ using chrome_test_util::SecondarySignInButton;
 
 // Tests that signin promo is shown even if local data exists.
 - (void)testSignInPromoWhenSyncDataNotRemovedIfBatchUploadEnabled {
-  // Sign-in with sync with `fakeIdentity1`.
+  // Simulate data from a previous account being leftover by setting
+  // kGoogleServicesLastSyncingGaiaId.
   FakeSystemIdentity* fakeIdentity1 = [FakeSystemIdentity fakeIdentity1];
-  [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity1 enableSync:YES];
-
-  // Sign-out without removing data.
-  [SigninEarlGrey signOut];
+  [SigninEarlGrey addFakeIdentity:fakeIdentity1];
+  [ChromeEarlGrey setStringValue:fakeIdentity1.gaiaID
+                     forUserPref:prefs::kGoogleServicesLastSyncingGaiaId];
 
   [BookmarkEarlGrey
       setupStandardBookmarksInStorage:BookmarkModelType::kLocalOrSyncable];
@@ -170,6 +165,11 @@ using chrome_test_util::SecondarySignInButton;
   // Result: the sign-in is successful without any issue.
   [SigninEarlGrey verifyPrimaryAccountWithEmail:fakeIdentity1.userEmail
                                         consent:signin::ConsentLevel::kSignin];
+  // Verify that the batch upload dialog is visible.
+  [ChromeEarlGrey
+      waitForSufficientlyVisibleElementWithMatcher:
+          grey_accessibilityID(
+              kBookmarksHomeBatchUploadRecommendationItemIdentifier)];
 }
 
 // Tests to sign-in in incognito mode with the promo.
@@ -194,9 +194,8 @@ using chrome_test_util::SecondarySignInButton;
 
 // Tests that the account model is not shown on sign-out.
 - (void)testAccountModelNotShownOnSignout {
-  // Sign-in with sync with `fakeIdentity1`.
-  [SigninEarlGreyUI signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]
-                                enableSync:YES];
+  // Sign-in with `fakeIdentity1`.
+  [SigninEarlGreyUI signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]];
 
   // Add bookmarks to account model.
   [BookmarkEarlGrey
@@ -224,9 +223,8 @@ using chrome_test_util::SecondarySignInButton;
 
 // Tests that only the account model is not shown on sign-out.
 - (void)testOnlyAccountModelNotShownOnSignout {
-  // Sign-in with sync with `fakeIdentity1`.
-  [SigninEarlGreyUI signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]
-                                enableSync:YES];
+  // Sign-in with `fakeIdentity1`.
+  [SigninEarlGreyUI signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]];
 
   // Add bookmarks to local and account models.
   [BookmarkEarlGrey

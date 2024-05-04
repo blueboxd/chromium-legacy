@@ -9,8 +9,8 @@
 
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/ui/chromeos/read_write_cards/read_write_cards_view.h"
 #include "chrome/browser/ui/views/editor_menu/utils/focus_search.h"
-#include "chrome/browser/ui/views/editor_menu/utils/pre_target_handler.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/unique_widget_ptr.h"
@@ -27,8 +27,8 @@ namespace quick_answers {
 // |intent_type| and |intent_text| are used to generate the consent title
 // including predicted intent information. Fallback to title without intent
 // information if any of these two strings are empty.
-class UserConsentView : public views::View {
-  METADATA_HEADER(UserConsentView, views::View)
+class UserConsentView : public chromeos::ReadWriteCardsView {
+  METADATA_HEADER(UserConsentView, chromeos::ReadWriteCardsView)
 
  public:
   static constexpr char kWidgetName[] = "UserConsentViewWidget";
@@ -43,36 +43,29 @@ class UserConsentView : public views::View {
 
   ~UserConsentView() override;
 
-  static views::UniqueWidgetPtr CreateWidget(
-      const gfx::Rect& anchor_view_bounds,
-      const std::u16string& intent_type,
-      const std::u16string& intent_text,
-      base::WeakPtr<QuickAnswersUiController> controller);
-
-  // views::View:
-  gfx::Size CalculatePreferredSize() const override;
+  // chromeos::ReadWriteCardsView:
+  gfx::Size CalculatePreferredSize(
+      const views::SizeBounds& available_size) const override;
   void OnFocus() override;
   void OnThemeChanged() override;
   views::FocusTraversable* GetPaneFocusTraversable() override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
+  void UpdateBoundsForQuickAnswers() override;
 
-  void UpdateAnchorViewBounds(const gfx::Rect& anchor_view_bounds);
+  views::LabelButton* allow_button_for_test() { return allow_button_; }
+  views::LabelButton* no_thanks_button_for_test() { return no_thanks_button_; }
 
  private:
   void InitLayout();
   void InitContent();
   void InitButtonBar();
-  void UpdateWidgetBounds();
 
   // FocusSearch::GetFocusableViewsCallback to poll currently focusable views.
   std::vector<views::View*> GetFocusableViews();
 
-  // Cached bounds of the anchor this view is tied to.
-  gfx::Rect anchor_view_bounds_;
   // Cached title text.
   std::u16string title_text_;
 
-  chromeos::editor_menu::PreTargetHandler event_handler_;
   base::WeakPtr<QuickAnswersUiController> controller_;
   chromeos::editor_menu::FocusSearch focus_search_;
 

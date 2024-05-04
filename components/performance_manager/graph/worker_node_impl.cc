@@ -20,11 +20,13 @@ using PriorityAndReason = execution_context_priority::PriorityAndReason;
 WorkerNodeImpl::WorkerNodeImpl(const std::string& browser_context_id,
                                WorkerType worker_type,
                                ProcessNodeImpl* process_node,
-                               const blink::WorkerToken& worker_token)
+                               const blink::WorkerToken& worker_token,
+                               const url::Origin& origin)
     : browser_context_id_(browser_context_id),
       worker_type_(worker_type),
       process_node_(process_node),
-      worker_token_(worker_token) {
+      worker_token_(worker_token),
+      origin_(origin) {
   // Nodes are created on the UI thread, then accessed on the PM sequence.
   // `weak_this_` can be returned from GetWeakPtrOnUIThread() and dereferenced
   // on the PM sequence.
@@ -68,6 +70,11 @@ const GURL& WorkerNodeImpl::GetURL() const {
   return url_;
 }
 
+const url::Origin& WorkerNodeImpl::GetOrigin() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return origin_;
+}
+
 const PriorityAndReason& WorkerNodeImpl::GetPriorityAndReason() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return priority_and_reason_.value();
@@ -85,20 +92,27 @@ uint64_t WorkerNodeImpl::GetPrivateFootprintKbEstimate() const {
 
 void WorkerNodeImpl::AddClientFrame(FrameNodeImpl* frame_node) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  for (auto& observer : GetObservers()) {
+    observer.OnBeforeClientFrameAdded(this, frame_node);
+  }
+
   bool inserted = client_frames_.insert(frame_node).second;
   DCHECK(inserted);
 
   frame_node->AddChildWorker(this);
 
-  for (auto* observer : GetObservers())
-    observer->OnClientFrameAdded(this, frame_node);
+  for (auto& observer : GetObservers()) {
+    observer.OnClientFrameAdded(this, frame_node);
+  }
 }
 
 void WorkerNodeImpl::RemoveClientFrame(FrameNodeImpl* frame_node) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  for (auto* observer : GetObservers())
-    observer->OnBeforeClientFrameRemoved(this, frame_node);
+  for (auto& observer : GetObservers()) {
+    observer.OnBeforeClientFrameRemoved(this, frame_node);
+  }
 
   frame_node->RemoveChildWorker(this);
 
@@ -125,20 +139,26 @@ void WorkerNodeImpl::AddClientWorker(WorkerNodeImpl* worker_node) {
       break;
   }
 
+  for (auto& observer : GetObservers()) {
+    observer.OnBeforeClientWorkerAdded(this, worker_node);
+  }
+
   bool inserted = client_workers_.insert(worker_node).second;
   DCHECK(inserted);
 
   worker_node->AddChildWorker(this);
 
-  for (auto* observer : GetObservers())
-    observer->OnClientWorkerAdded(this, worker_node);
+  for (auto& observer : GetObservers()) {
+    observer.OnClientWorkerAdded(this, worker_node);
+  }
 }
 
 void WorkerNodeImpl::RemoveClientWorker(WorkerNodeImpl* worker_node) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  for (auto* observer : GetObservers())
-    observer->OnBeforeClientWorkerRemoved(this, worker_node);
+  for (auto& observer : GetObservers()) {
+    observer.OnBeforeClientWorkerRemoved(this, worker_node);
+  }
 
   worker_node->RemoveChildWorker(this);
 
@@ -167,8 +187,9 @@ void WorkerNodeImpl::OnFinalResponseURLDetermined(const GURL& url) {
   DCHECK(url_.is_empty());
   url_ = url;
 
-  for (auto* observer : GetObservers())
-    observer->OnFinalResponseURLDetermined(this);
+  for (auto& observer : GetObservers()) {
+    observer.OnFinalResponseURLDetermined(this);
+  }
 }
 
 ProcessNodeImpl* WorkerNodeImpl::process_node() const {

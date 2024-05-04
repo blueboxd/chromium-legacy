@@ -7,7 +7,10 @@
 
 #include <vector>
 
+#include "base/check.h"
 #include "base/containers/span.h"
+#include "base/functional/overloaded.h"
+#include "base/notreached.h"
 #include "components/web_package/mojom/web_bundle_parser.mojom-forward.h"
 #include "components/web_package/signed_web_bundles/signed_web_bundle_id.h"
 #include "components/web_package/signed_web_bundles/signed_web_bundle_signature_stack_entry.h"
@@ -48,8 +51,23 @@ class SignedWebBundleSignatureStack {
 
   // Returns the Web Bundle ID derived from the signature stack.
   SignedWebBundleId derived_web_bundle_id() const {
-    return SignedWebBundleId::CreateForEd25519PublicKey(
-        entries()[0].public_key());
+    auto bundle_id =
+        absl::visit(base::Overloaded{
+                        [](const SignedWebBundleSignatureInfoEd25519&
+                               ed25519_signature_info) -> SignedWebBundleId {
+                          return SignedWebBundleId::CreateForEd25519PublicKey(
+                              ed25519_signature_info.public_key());
+                        },
+                        [](const SignedWebBundleSignatureInfoEcdsaP256SHA256&
+                               ecdsa_p256_sha256_signature_info) {
+                          return SignedWebBundleId::CreateForEcdsaP256PublicKey(
+                              ecdsa_p256_sha256_signature_info.public_key());
+                        },
+                        [](const SignedWebBundleSignatureInfoUnknown&)
+                            -> SignedWebBundleId { NOTREACHED_NORETURN(); }},
+                    entries()[0].signature_info());
+
+    return bundle_id;
   }
 
  private:

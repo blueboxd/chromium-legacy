@@ -9,9 +9,10 @@
 
 #include <ostream>
 
-#include "base/big_endian.h"
 #include "base/check.h"
 #include "base/check_op.h"
+#include "base/containers/span.h"
+#include "base/containers/span_writer.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/rand_util.h"
 #include "base/ranges/algorithm.h"
@@ -37,15 +38,15 @@ using PackedMaskType = size_t;
 #endif  // defined(COMPILER_GCC) &&
         // (defined(ARCH_CPU_X86_FAMILY) || defined(ARCH_CPU_ARM_FAMILY))
 
-const uint8_t kFinalBit = 0x80;
-const uint8_t kReserved1Bit = 0x40;
-const uint8_t kReserved2Bit = 0x20;
-const uint8_t kReserved3Bit = 0x10;
-const uint8_t kOpCodeMask = 0xF;
-const uint8_t kMaskBit = 0x80;
-const uint64_t kMaxPayloadLengthWithoutExtendedLengthField = 125;
-const uint64_t kPayloadLengthWithTwoByteExtendedLengthField = 126;
-const uint64_t kPayloadLengthWithEightByteExtendedLengthField = 127;
+constexpr uint8_t kFinalBit = 0x80;
+constexpr uint8_t kReserved1Bit = 0x40;
+constexpr uint8_t kReserved2Bit = 0x20;
+constexpr uint8_t kReserved3Bit = 0x10;
+constexpr uint8_t kOpCodeMask = 0xF;
+constexpr uint8_t kMaskBit = 0x80;
+constexpr uint64_t kMaxPayloadLengthWithoutExtendedLengthField = 125;
+constexpr uint64_t kPayloadLengthWithTwoByteExtendedLengthField = 126;
+constexpr uint64_t kPayloadLengthWithEightByteExtendedLengthField = 127;
 
 inline void MaskWebSocketFramePayloadByBytes(
     const WebSocketMaskingKey& masking_key,
@@ -131,8 +132,7 @@ int WriteWebSocketFrameHeader(const WebSocketFrameHeader& header,
     return ERR_INVALID_ARGUMENT;
   }
 
-  base::BigEndianWriter writer(buffer);
-  const size_t original_remaining = writer.remaining();
+  base::SpanWriter writer(buffer);
 
   uint8_t first_byte = 0u;
   first_byte |= header.final ? kFinalBit : 0u;
@@ -140,7 +140,7 @@ int WriteWebSocketFrameHeader(const WebSocketFrameHeader& header,
   first_byte |= header.reserved2 ? kReserved2Bit : 0u;
   first_byte |= header.reserved3 ? kReserved3Bit : 0u;
   first_byte |= header.opcode & kOpCodeMask;
-  writer.WriteU8(first_byte);
+  writer.WriteU8BigEndian(first_byte);
 
   int extended_length_size = 0;
   uint8_t second_byte = 0u;
@@ -154,25 +154,25 @@ int WriteWebSocketFrameHeader(const WebSocketFrameHeader& header,
     second_byte |= kPayloadLengthWithEightByteExtendedLengthField;
     extended_length_size = 8;
   }
-  writer.WriteU8(second_byte);
+  writer.WriteU8BigEndian(second_byte);
 
   // Writes "extended payload length" field.
   if (extended_length_size == 2) {
-    writer.WriteU16(static_cast<uint16_t>(header.payload_length));
+    writer.WriteU16BigEndian(static_cast<uint16_t>(header.payload_length));
   } else if (extended_length_size == 8) {
-    writer.WriteU64(header.payload_length);
+    writer.WriteU64BigEndian(header.payload_length);
   }
 
   // Writes "masking key" field, if needed.
   if (header.masked) {
     DCHECK(masking_key);
-    writer.WriteSpan(masking_key->key);
+    writer.Write(masking_key->key);
   } else {
     DCHECK(!masking_key);
   }
 
   // Verify we wrote the expected number of bytes.
-  DCHECK_EQ(header_size, original_remaining - writer.remaining());
+  DCHECK_EQ(header_size, writer.num_written());
   return header_size;
 }
 
@@ -189,7 +189,7 @@ void MaskWebSocketFramePayload(const WebSocketMaskingKey& masking_key,
                                uint64_t frame_offset,
                                char* const data,
                                int data_size) {
-  static const size_t kMaskingKeyLength =
+  static constexpr size_t kMaskingKeyLength =
       WebSocketFrameHeader::kMaskingKeyLength;
 
   DCHECK_GE(data_size, 0);
@@ -198,7 +198,7 @@ void MaskWebSocketFramePayload(const WebSocketMaskingKey& masking_key,
   // the beginning and the end of the buffer which may be unaligned.
   // PackedMaskType must be a multiple of kMaskingKeyLength in size.
   PackedMaskType packed_mask_key;
-  static const size_t kPackedMaskKeySize = sizeof(packed_mask_key);
+  static constexpr size_t kPackedMaskKeySize = sizeof(packed_mask_key);
   static_assert((kPackedMaskKeySize >= kMaskingKeyLength &&
                  kPackedMaskKeySize % kMaskingKeyLength == 0),
                 "PackedMaskType size is not a multiple of mask length");

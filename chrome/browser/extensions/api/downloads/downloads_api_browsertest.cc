@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <memory>
 #include <optional>
+#include <string_view>
 
 #include "base/containers/circular_deque.h"
 #include "base/files/file_util.h"
@@ -879,7 +880,7 @@ class HTML5FileWriter {
     // Create a temp file.
     base::FilePath temp_file;
     if (!base::CreateTemporaryFile(&temp_file) ||
-        !base::WriteFile(temp_file, base::StringPiece(data, length))) {
+        !base::WriteFile(temp_file, std::string_view(data, length))) {
       return false;
     }
     // Invoke the fileapi to copy it into the sandboxed filesystem.
@@ -2007,8 +2008,16 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
 }
 
 // Test that we disallow certain headers case-insensitively.
+// TODO(crbug.com/335421977): Flaky on "Linux ChromiumOS MSan Tests"
+#if (BUILDFLAG(IS_CHROMEOS) && defined(MEMORY_SANITIZER))
+#define MAYBE_DownloadExtensionTest_Download_UnsafeHeaders \
+  DISABLED_DownloadExtensionTest_Download_UnsafeHeaders
+#else
+#define MAYBE_DownloadExtensionTest_Download_UnsafeHeaders \
+  DownloadExtensionTest_Download_UnsafeHeaders
+#endif
 IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
-                       DownloadExtensionTest_Download_UnsafeHeaders) {
+                       MAYBE_DownloadExtensionTest_Download_UnsafeHeaders) {
   LoadExtension("downloads_split");
   ASSERT_TRUE(StartEmbeddedTestServer());
   GoOnTheRecord();
@@ -2797,7 +2806,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
                           result_id)));
 }
 
-// TODO(https://crbug.com/392288): Flaky on macOS
+// TODO(crbug.com/41119270): Flaky on macOS
 #if BUILDFLAG(IS_MAC)
 #define MAYBE_DownloadExtensionTest_Download_FileSystemURL \
         DISABLED_DownloadExtensionTest_Download_FileSystemURL
@@ -4336,7 +4345,7 @@ IN_PROC_BROWSER_TEST_F(
         current_browser(),
         // This code used to use a mock class that no longer works, due to the
         // NetworkService shipping.
-        // TODO(https://crbug.com/700382): Fix or delete this test.
+        // TODO(crbug.com/41306723): Fix or delete this test.
         GURL(), WindowOpenDisposition::CURRENT_TAB,
         ui_test_utils::BROWSER_TEST_NO_WAIT);
     observer->WaitForFinished();
@@ -4377,7 +4386,7 @@ IN_PROC_BROWSER_TEST_F(
       current_browser(),
       // This code used to use a mock class that no longer works, due to the
       // NetworkService shipping.
-      // TODO(https://crbug.com/700382): Fix or delete this test.
+      // TODO(crbug.com/41306723): Fix or delete this test.
       GURL(), WindowOpenDisposition::NEW_BACKGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
 

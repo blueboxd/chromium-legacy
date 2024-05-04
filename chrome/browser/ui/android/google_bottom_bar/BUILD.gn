@@ -1,0 +1,48 @@
+# Copyright 2024 The Chromium Authors
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/config/android/config.gni")
+import("//build/config/android/rules.gni")
+
+android_library("java") {
+  sources = [
+    "java/src/org/chromium/chrome/browser/ui/google_bottom_bar/BottomBarConfig.java",
+    "java/src/org/chromium/chrome/browser/ui/google_bottom_bar/BottomBarConfigCreator.java",
+    "java/src/org/chromium/chrome/browser/ui/google_bottom_bar/GoogleBottomBarCoordinator.java",
+    "java/src/org/chromium/chrome/browser/ui/google_bottom_bar/GoogleBottomBarViewCreator.java",
+  ]
+  deps = [
+    ":java_resources",
+    ":proto_java",
+    "//base:base_java",
+    "//chrome/browser/android/browserservices/intents:java",
+    "//chrome/browser/flags:java",
+    "//components/optimization_guide/proto:optimization_guide_proto_java",
+    "//third_party/android_deps:protobuf_lite_runtime_java",
+    "//third_party/androidx:androidx_annotation_annotation_java",
+  ]
+  resources_package = "org.chromium.chrome.browser.ui.google_bottom_bar"
+}
+
+android_resources("java_resources") {
+  sources = [ "java/res/values/dimens.xml" ]
+}
+
+robolectric_library("junit") {
+  sources = [ "java/src/org/chromium/chrome/browser/ui/google_bottom_bar/BottomBarConfigCreatorTest.java" ]
+  deps = [
+    ":java",
+    "//base:base_java",
+    "//base:base_java_test_support",
+    "//base:base_junit_test_support",
+    "//chrome/browser/android/browserservices/intents:java",
+    "//third_party/junit",
+    "//third_party/mockito:mockito_java",
+  ]
+}
+
+proto_java_library("proto_java") {
+  proto_path = "java/src/org/chromium/chrome/browser/ui/google_bottom_bar/proto"
+  sources = [ "$proto_path/intent_params.proto" ]
+}

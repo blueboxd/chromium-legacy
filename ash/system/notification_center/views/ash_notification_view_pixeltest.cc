@@ -5,15 +5,18 @@
 #include "ash/system/notification_center/message_popup_animation_waiter.h"
 #include "ash/system/notification_center/notification_center_test_api.h"
 #include "ash/system/notification_center/notification_center_tray.h"
+#include "ash/system/notification_center/views/ash_notification_expand_button.h"
 #include "ash/system/notification_center/views/ash_notification_view.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_util.h"
 #include "ash/test/pixel/ash_pixel_differ.h"
 #include "ash/test/pixel/ash_pixel_test_init_params.h"
+#include "base/test/scoped_feature_list.h"
 #include "ui/base/models/image_model.h"
 #include "ui/compositor/layer.h"
 #include "ui/message_center/public/cpp/notification.h"
 #include "ui/message_center/public/cpp/notifier_id.h"
+#include "ui/message_center/views/message_popup_view.h"
 #include "ui/message_center/views/notification_control_buttons_view.h"
 
 namespace ash {
@@ -53,6 +56,11 @@ class AshNotificationViewPixelTest : public AshTestBase {
 
   // AshTestBase:
   void SetUp() override {
+    scoped_features_.InitWithFeatures({::features::kChromeRefresh2023,
+                                       ::features::kChromeRefreshSecondary2023,
+                                       ::features::kChromeRefresh2023NTB},
+                                      {});
+
     AshTestBase::SetUp();
     test_api_ = std::make_unique<NotificationCenterTestApi>();
   }
@@ -61,6 +69,8 @@ class AshNotificationViewPixelTest : public AshTestBase {
 
  private:
   std::unique_ptr<NotificationCenterTestApi> test_api_;
+
+  base::test::ScopedFeatureList scoped_features_;
 };
 
 // Tests that a notification's close button is visible when it is focused.
@@ -178,6 +188,75 @@ TEST_F(AshNotificationViewPixelTest, SettingsAndCloseControlButtons) {
   // proper spacing between them.
   EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
       "settings_and_close_control_buttons", /*revision_number=*/4,
+      notification_view));
+}
+
+// Tests the inline reply UI for AshNotificationView.
+TEST_F(AshNotificationViewPixelTest, InlineReply) {
+  message_center::RichNotificationData rich_data;
+  message_center::ButtonInfo button_info(u"Reply");
+  button_info.placeholder = std::make_optional(u"Send Message");
+  rich_data.buttons.push_back(button_info);
+
+  const std::string id = test_api()->AddCustomNotification(
+      /*title=*/u"title", /*message=*/u"message", /*icon=*/ui::ImageModel(),
+      /*display_source=*/std::u16string(), /*url=*/GURL(),
+      /*notifier_id=*/message_center::NotifierId(),
+      /*optional_fields=*/rich_data);
+
+  test_api()->ToggleBubble();
+  auto* notification_view = static_cast<AshNotificationView*>(
+      test_api()->GetNotificationViewForId(id));
+
+  LeftClickOn(notification_view->GetActionButtonsForTest().front());
+
+  // Verify with a pixel test that the inline reply field is correctly drawn.
+  EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
+      "inline_reply_focused", /*revision_number=*/0, notification_view));
+}
+
+// Tests the focus ring for the expand button in AshNotificationView.
+TEST_F(AshNotificationViewPixelTest, ExpandButtonFocusRing) {
+  const std::string id = test_api()->AddNotification();
+  test_api()->ToggleBubble();
+
+  auto* notification_view = views::AsViewClass<AshNotificationView>(
+      test_api()->GetNotificationViewForId(id));
+  while (!notification_view->expand_button_for_test()->HasFocus()) {
+    PressAndReleaseKey(ui::VKEY_TAB);
+  }
+
+  EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
+      "expand_button_focus_ring", /*revision_number=*/0, notification_view));
+}
+
+TEST_F(AshNotificationViewPixelTest, NotificationViewFocusRing) {
+  const std::string id = test_api()->AddNotification();
+  test_api()->ToggleBubble();
+
+  PressAndReleaseKey(ui::VKEY_TAB);
+  auto* notification_view = test_api()->GetNotificationViewForId(id);
+  ASSERT_TRUE(notification_view->HasFocus());
+
+  EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
+      "notification_view_focus_ring", /*revision_number=*/0,
+      notification_view));
+}
+
+TEST_F(AshNotificationViewPixelTest, NotificationPopupFocusRing) {
+  const std::string id = test_api()->AddNotification();
+
+  // Wait until the notification popup shows.
+  MessagePopupAnimationWaiter(
+      GetPrimaryNotificationCenterTray()->popup_collection())
+      .Wait();
+
+  auto* notification_view = test_api()->GetPopupViewForId(id);
+  notification_view->message_view()->RequestFocus();
+  ASSERT_TRUE(notification_view->message_view()->HasFocus());
+
+  EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
+      "notification_popup_focus_ring", /*revision_number=*/0,
       notification_view));
 }
 

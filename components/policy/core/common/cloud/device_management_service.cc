@@ -246,7 +246,11 @@ std::string DeviceManagementService::JobConfiguration::GetJobTypeAsString(
       return "Registration";
     case DeviceManagementService::JobConfiguration::TYPE_REMOTE_COMMANDS:
       return "RemoteCommands";
-    case DeviceManagementService::JobConfiguration::TYPE_TOKEN_ENROLLMENT:
+    // Type TOKEN_ENROLLMENT was renamed to BROWSER_REGISTRATION when device
+    // token-based enrollment was added, but unfortunately we have to keep the
+    // stringified job type as "TokenEnrollment" because this string defines
+    // an UMA metric.
+    case DeviceManagementService::JobConfiguration::TYPE_BROWSER_REGISTRATION:
       return "TokenEnrollment";
     case DeviceManagementService::JobConfiguration::TYPE_UNREGISTRATION:
       return "Unregistration";
@@ -265,6 +269,9 @@ std::string DeviceManagementService::JobConfiguration::GetJobTypeAsString(
       return "UploadrealtimeReport";
     case DeviceManagementService::JobConfiguration::TYPE_UPLOAD_STATUS:
       return "UploadStatus";
+    case DeviceManagementService::JobConfiguration::
+        TYPE_TOKEN_BASED_DEVICE_REGISTRATION:
+      return "TokenBasedDeviceRegistration";
     // TODO(b/263367348): Remove the Active Directory types below, after they're
     // removed from the corresponding enum.
     case DeviceManagementService::JobConfiguration::

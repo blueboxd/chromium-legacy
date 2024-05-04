@@ -12,18 +12,18 @@
 #import "ios/chrome/browser/shared/model/browser/browser.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
-#import "ios/chrome/browser/tabs/model/features.h"
 #import "ios/chrome/browser/tabs/model/tabs_closer.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_collection_consumer.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_consumer.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_toolbars_configuration_provider.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_toolbars_mutator.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_idle_status_handler.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_metrics.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_paging.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/toolbars/tab_grid_toolbars_configuration.h"
 #import "ios/web/public/web_state.h"
 
-// TODO(crbug.com/1457146): Needed for `TabPresentationDelegate`, should be
+// TODO(crbug.com/40273478): Needed for `TabPresentationDelegate`, should be
 // refactored.
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_view_controller.h"
 
@@ -43,8 +43,8 @@
   [super closeItemWithID:itemID];
 }
 
-// TODO(crbug.com/1457146): Refactor the grid commands to have the same function
-// name to close all.
+// TODO(crbug.com/40273478): Refactor the grid commands to have the same
+// function name to close all.
 - (void)closeAllItems {
   NOTREACHED_NORETURN() << "Regular tabs should be saved before close all.";
 }
@@ -88,17 +88,16 @@
 
     [self configureToolbarsButtons];
   }
-  // TODO(crbug.com/1457146): Implement.
+  // TODO(crbug.com/40273478): Implement.
 }
 
 #pragma mark - TabGridToolbarsGridDelegate
 
 - (void)closeAllButtonTapped:(id)sender {
-  // TODO(crbug.com/1457146): Clean this in order to have "Close All" and "Undo"
-  // separated actions.
-  // This was saved as a stack: first save the inactive tabs, then the active
-  // tabs. So undo in the reverse order: first undo the active tabs, then the
-  // inactive tabs.
+  // TODO(crbug.com/40273478): Clean this in order to have "Close All" and
+  // "Undo" separated actions. This was saved as a stack: first save the
+  // inactive tabs, then the active tabs. So undo in the reverse order: first
+  // undo the active tabs, then the inactive tabs.
   if ([self canUndoCloseRegularOrInactiveTabs]) {
     if ([self.consumer respondsToSelector:@selector(willUndoCloseAll)]) {
       [self.consumer willUndoCloseAll];
@@ -134,14 +133,13 @@
     return;
   }
 
-  [self.gridConsumer setPageIdleStatus:NO];
+  [self.tabGridIdleStatusHandler
+      tabGridDidPerformAction:TabGridActionType::kInPageAction];
   base::RecordAction(base::UserMetricsAction("MobileTabNewTab"));
   [self.gridConsumer prepareForDismissal];
   // Shows the tab only if has been created.
   if ([self addNewItem]) {
-    [self.gridConsumer setActivePageFromPage:TabGridPageRegularTabs];
-    [self.tabPresentationDelegate showActiveTabInPage:TabGridPageRegularTabs
-                                         focusOmnibox:NO];
+    [self displayActiveTab];
     base::RecordAction(
         base::UserMetricsAction("MobileTabGridCreateRegularTab"));
   } else {
@@ -190,6 +188,12 @@
   }
 
   [self.toolbarsMutator setToolbarConfiguration:toolbarsConfiguration];
+}
+
+- (void)displayActiveTab {
+  [self.gridConsumer setActivePageFromPage:TabGridPageRegularTabs];
+  [self.tabPresentationDelegate showActiveTabInPage:TabGridPageRegularTabs
+                                       focusOmnibox:NO];
 }
 
 #pragma mark - Private

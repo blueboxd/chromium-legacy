@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifdef BASE_ALLOCATOR_PARTITION_ALLOCATOR_SRC_PARTITION_ALLOC_SHIM_ALLOCATOR_SHIM_FUNCTIONS_H_
+#ifdef PARTITION_ALLOC_SHIM_ALLOCATOR_SHIM_FUNCTIONS_H_
 #error This header is meant to be included only once by allocator_shim*.cc except allocator_shim_win_component.cc
 #endif
 
-#ifndef BASE_ALLOCATOR_PARTITION_ALLOCATOR_SRC_PARTITION_ALLOC_SHIM_ALLOCATOR_SHIM_FUNCTIONS_H_
-#define BASE_ALLOCATOR_PARTITION_ALLOCATOR_SRC_PARTITION_ALLOC_SHIM_ALLOCATOR_SHIM_FUNCTIONS_H_
+#ifndef PARTITION_ALLOC_SHIM_ALLOCATOR_SHIM_FUNCTIONS_H_
+#define PARTITION_ALLOC_SHIM_ALLOCATOR_SHIM_FUNCTIONS_H_
 
 #include <atomic>
 #include <cstddef>
 #include <new>
 
-#include "build/build_config.h"
+#include "partition_alloc/build_config.h"
 #include "partition_alloc/partition_alloc_base/compiler_specific.h"
 #include "partition_alloc/partition_alloc_check.h"
 #include "partition_alloc/shim/allocator_dispatch.h"
@@ -73,9 +73,12 @@ void UncheckedFree(void* ptr) {
 
 void InsertAllocatorDispatch(AllocatorDispatch* dispatch) {
   // Loop in case of (an unlikely) race on setting the list head.
-  size_t kMaxRetries = 7;
+  constexpr size_t kMaxRetries = 7;
+  const AllocatorDispatch original_dispatch = *dispatch;
   for (size_t i = 0; i < kMaxRetries; ++i) {
     const AllocatorDispatch* chain_head = internal::GetChainHead();
+
+    dispatch->OptimizeAllocatorDispatchTable(&original_dispatch, chain_head);
     dispatch->next = chain_head;
 
     // This function guarantees to be thread-safe w.r.t. concurrent
@@ -99,10 +102,16 @@ void InsertAllocatorDispatch(AllocatorDispatch* dispatch) {
 }
 
 void RemoveAllocatorDispatchForTesting(AllocatorDispatch* dispatch) {
+  // See `AllocatorDispatch::OptimizeAllocatorDispatchTable`. Only the chain
+  // head can be removed. Otherwise, the optimization gets broken.
   PA_DCHECK(internal::GetChainHead() == dispatch);
   internal::g_chain_head.store(dispatch->next, std::memory_order_relaxed);
 }
 
+const AllocatorDispatch* GetAllocatorDispatchChainHeadForTesting() {
+  return internal::GetChainHead();
+}
+
 }  // namespace allocator_shim
 
-#endif  // BASE_ALLOCATOR_PARTITION_ALLOCATOR_SRC_PARTITION_ALLOC_SHIM_ALLOCATOR_SHIM_FUNCTIONS_H_
+#endif  // PARTITION_ALLOC_SHIM_ALLOCATOR_SHIM_FUNCTIONS_H_

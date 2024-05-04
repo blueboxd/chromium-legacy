@@ -389,11 +389,9 @@ class PaymentsAutofillTable : public WebDatabaseTable {
   // credit card to remove.
   bool RemoveCreditCard(const std::string& guid);
 
-  // Adds to the masked_credit_cards table.
-  //
-  // TODO(crbug.com/1497734): Remove this method entirely; server cards should
-  // only be added via AddCreditCard.
-  bool AddFullServerCreditCard(const CreditCard& credit_card);
+  // Adds to the masked_credit_cards table. Only tests add cards this way - in
+  // production server cards are set directly via `SetServerCreditCards`.
+  bool AddServerCreditCardForTesting(const CreditCard& credit_card);
 
   // Retrieves a credit card with guid |guid|.
   std::unique_ptr<CreditCard> GetCreditCard(const std::string& guid);
@@ -406,14 +404,6 @@ class PaymentsAutofillTable : public WebDatabaseTable {
 
   // Replaces all server credit cards with the given vector.
   void SetServerCreditCards(const std::vector<CreditCard>& credit_cards);
-
-  // Cards synced from the server may be "masked" (only last 4 digits
-  // available) or "unmasked" (everything is available). This function changes
-  // that state.
-  //
-  // TODO(crbug.com/1497734): Remove this method entirely.
-  bool UnmaskServerCreditCard(const CreditCard& masked,
-                              const std::u16string& full_number);
 
   // Methods to add, update, remove, clear and get cvc in the
   // `server_stored_cvc` table. Return value indicates if the operation is
@@ -430,7 +420,9 @@ class PaymentsAutofillTable : public WebDatabaseTable {
   // Payment cannot delete the CVC from server side directly, and this has to be
   // done on the Chrome side. So this ReconcileServerCvc will be invoked when
   // card sync happens and will remove orphaned CVC from the current client.
-  bool ReconcileServerCvcs();
+  // The list of deleted CVCs will also be returned back to trigger the deletion
+  // flow for the sync server.
+  std::vector<std::unique_ptr<ServerCvc>> DeleteOrphanedServerCvcs();
   // Get all server cvcs from `server_stored_cvc` table.
   std::vector<std::unique_ptr<ServerCvc>> GetAllServerCvcs() const;
 
@@ -515,17 +507,12 @@ class PaymentsAutofillTable : public WebDatabaseTable {
   // "error").
   bool ClearAllServerData();
 
-  // Deletes all data from the local card table. Returns true if any data was
-  // deleted, false if not (so false means "commit not needed" rather than
-  // "error").
-  bool ClearAllLocalData();
-
   // Removes rows from credit_cards if they were created on or after
   // `delete_begin` and strictly before `delete_end`. Returns the list of
   // deleted cards in `credit_cards`. Return value is true if all rows were
   // successfully removed. Returns false on database error. In that case, the
   // output vector state is undefined, and may be partially filled.
-  // TODO(crbug.com/1135188): This function is solely used to remove browsing
+  // TODO(crbug.com/40151750): This function is solely used to remove browsing
   // data. Once explicit save dialogs are fully launched, it can be removed.
   bool RemoveAutofillDataModifiedBetween(
       const base::Time& delete_begin,
@@ -537,9 +524,6 @@ class PaymentsAutofillTable : public WebDatabaseTable {
   // rows were successfully updated and false on a database error.
   bool RemoveOriginURLsModifiedBetween(const base::Time& delete_begin,
                                        const base::Time& delete_end);
-
-  // Clear all local payment methods (credit cards and IBANs).
-  void ClearLocalPaymentMethodsData();
 
   // Set, get, and clear the `credit_card_benefits` table and the
   // 'benefit_merchant_domains' table. Return true if the operation

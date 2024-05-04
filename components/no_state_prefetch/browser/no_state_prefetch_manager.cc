@@ -242,7 +242,7 @@ NoStatePrefetchManager::StartPrefetchingFromLinkRelPrerender(
         content::PreloadingData::GetOrCreateForWebContents(source_web_contents);
     // In case of link-rel, the confidence is set as 100 as the URL
     // was not predicted and confidence in this case is not defined.
-    int64_t confidence = 100;
+    int confidence = 100;
 
     // Create PreloadingPrediction and PreloadingAttempt for NoStatePrefetch.
     ukm::SourceId triggered_primary_page_source_id =
@@ -272,17 +272,6 @@ NoStatePrefetchManager::StartPrefetchingFromOmnibox(
 }
 
 std::unique_ptr<NoStatePrefetchHandle>
-NoStatePrefetchManager::AddIsolatedPrerender(
-    const GURL& url,
-    SessionStorageNamespace* session_storage_namespace,
-    const gfx::Size& size) {
-  // The preconnect fallback won't happen.
-  return StartPrefetchingWithPreconnectFallback(
-      ORIGIN_ISOLATED_PRERENDER, url, content::Referrer(), std::nullopt,
-      gfx::Rect(size), session_storage_namespace);
-}
-
-std::unique_ptr<NoStatePrefetchHandle>
 NoStatePrefetchManager::AddSameOriginSpeculation(
     const GURL& url,
     content::SessionStorageNamespace* session_storage_namespace,
@@ -292,28 +281,6 @@ NoStatePrefetchManager::AddSameOriginSpeculation(
   return StartPrefetchingWithPreconnectFallback(
       ORIGIN_SAME_ORIGIN_SPECULATION, url, content::Referrer(),
       initiator_origin, gfx::Rect(size), session_storage_namespace);
-}
-
-std::unique_ptr<NoStatePrefetchHandle>
-NoStatePrefetchManager::StartPrefetchingFromExternalRequest(
-    const GURL& url,
-    const content::Referrer& referrer,
-    SessionStorageNamespace* session_storage_namespace,
-    const gfx::Rect& bounds) {
-  return StartPrefetchingWithPreconnectFallback(ORIGIN_EXTERNAL_REQUEST, url,
-                                                referrer, std::nullopt, bounds,
-                                                session_storage_namespace);
-}
-
-std::unique_ptr<NoStatePrefetchHandle>
-NoStatePrefetchManager::AddForcedPrerenderFromExternalRequest(
-    const GURL& url,
-    const content::Referrer& referrer,
-    SessionStorageNamespace* session_storage_namespace,
-    const gfx::Rect& bounds) {
-  return StartPrefetchingWithPreconnectFallback(
-      ORIGIN_EXTERNAL_REQUEST_FORCED_PRERENDER, url, referrer, std::nullopt,
-      bounds, session_storage_namespace);
 }
 
 void NoStatePrefetchManager::CancelAllPrerenders() {
@@ -952,14 +919,6 @@ void NoStatePrefetchManager::SetPrefetchFinalStatusForUrl(
   }
 }
 
-bool NoStatePrefetchManager::HasRecentlyPrefetchedUrlForTesting(
-    const GURL& url) {
-  return base::ranges::any_of(prefetches_, [url](const NavigationRecord& r) {
-    return r.url == url &&
-           r.final_status == FINAL_STATUS_NOSTATE_PREFETCH_FINISHED;
-  });
-}
-
 void NoStatePrefetchManager::OnPrefetchUsed(const GURL& url) {
   // Loading a prefetched URL resets the revalidation bypass. Remove all
   // matching urls from the prefetch list for more accurate metrics.
@@ -1031,8 +990,7 @@ void NoStatePrefetchManager::SkipNoStatePrefetchContentsAndMaybePreconnect(
   prefetch_history_->AddEntry(entry);
   histograms_->RecordFinalStatus(origin, final_status);
 
-  if (origin == ORIGIN_ISOLATED_PRERENDER ||
-      origin == ORIGIN_SAME_ORIGIN_SPECULATION) {
+  if (origin == ORIGIN_SAME_ORIGIN_SPECULATION) {
     // Prefetch Proxy should not preconnect since that can't be done in a fully
     // isolated way. Same origin speculation should already have an open
     // connection.
@@ -1051,13 +1009,6 @@ void NoStatePrefetchManager::SkipNoStatePrefetchContentsAndMaybePreconnect(
   static_assert(
       FINAL_STATUS_MAX == FINAL_STATUS_PREFETCH_HOLDBACK + 1,
       "Consider whether a failed prefetch should fallback to preconnect");
-}
-
-void NoStatePrefetchManager::RecordNetworkBytesConsumed(
-    Origin origin,
-    int64_t prerender_bytes) {
-  last_recorded_browser_context_network_bytes_ = browser_context_network_bytes_;
-  histograms_->RecordNetworkBytesConsumed(origin, prerender_bytes);
 }
 
 void NoStatePrefetchManager::AddPrerenderProcessHost(

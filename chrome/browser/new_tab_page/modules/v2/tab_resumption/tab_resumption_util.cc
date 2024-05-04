@@ -4,8 +4,12 @@
 
 #include "chrome/browser/new_tab_page/modules/v2/tab_resumption/tab_resumption_util.h"
 
+#include <memory>
+#include <string>
+
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/history/core/browser/mojom/history_types.mojom.h"
 #include "components/search/ntp_features.h"
@@ -23,7 +27,9 @@ std::unique_ptr<sessions::SessionTab> SampleSessionTab(
 
   sessions::SerializedNavigationEntry navigation;
   navigation.set_title(u"Test");
-  navigation.set_virtual_url(GURL(kSampleUrl));
+  size_t url_suffix = (base::Time::Now() - timestamp).InMinutes();
+  navigation.set_virtual_url(GURL(
+      kSampleUrl + (url_suffix != 0 ? base::NumberToString(url_suffix) : "")));
   navigation.set_timestamp(base::Time::Now());
   navigation.set_favicon_url(GURL(kSampleUrl));
   session_tab->navigations.push_back(navigation);
@@ -82,6 +88,19 @@ SampleSession(const char session_name[], int num_windows, int num_tabs) {
   sample_session->SetModifiedTime(base::Time::Now());
 
   return sample_session;
+}
+
+std::vector<std::unique_ptr<sync_sessions::SyncedSession>> SampleSessions(
+    int num_sessions,
+    int num_tabs,
+    std::vector<base::Time> timestamps) {
+  std::vector<std::unique_ptr<sync_sessions::SyncedSession>> sample_sessions;
+  for (int i = 0; i < num_sessions; i++) {
+    sample_sessions.push_back(
+        SampleSession(("Test Name " + base::NumberToString(i)).c_str(), 1,
+                      num_tabs, timestamps));
+  }
+  return sample_sessions;
 }
 
 base::flat_set<std::string> GetTabResumptionCategories(

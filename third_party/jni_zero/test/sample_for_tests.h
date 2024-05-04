@@ -8,9 +8,37 @@
 #include <jni.h>
 #include <map>
 #include <string>
+#include <vector>
 #include "third_party/jni_zero/jni_zero.h"
 
+// In case concepts are not defined, have placeholder implementations of array
+// conversion functions so that tests compile.
+#if !defined(__cpp_concepts)
+namespace jni_zero {
+template <typename T>
+struct ConvertArray<std::vector<T>> {
+  static std::vector<T> FromJniType(JNIEnv* env,
+                                    const JavaRef<jobjectArray>& j_array) {
+    return {};
+  }
+
+  static ScopedJavaLocalRef<jobjectArray> ToJniType(JNIEnv* env,
+                                                    const std::vector<T>& vec,
+                                                    jclass clazz) {
+    return nullptr;
+  }
+};
+}  // namespace jni_zero
+#endif  // !defined(__cpp_concepts)
+
 namespace jni_zero::tests {
+
+enum class MyEnum {
+  kFirstOption = 0,
+  kSecondOption = 1,
+  kMaxValue = kSecondOption
+};
+
 // This file is used to:
 // - document the best practices and guidelines on JNI usage.
 // - ensure sample_for_tests_jni.h compiles and the functions declared in it
@@ -39,9 +67,13 @@ class CPPClass {
                           const jni_zero::JavaParamRef<jobject>& caller);
   };
 
-  void Destroy(JNIEnv* env, const jni_zero::JavaParamRef<jobject>& caller);
+  void Destroy(JNIEnv* env,
+               const jni_zero::JavaParamRef<jobject>& caller,
+               std::vector<uint8_t>& bytes);
 
-  jint Method(JNIEnv* env, const jni_zero::JavaParamRef<jobject>& caller);
+  jint Method(JNIEnv* env,
+              const jni_zero::JavaParamRef<jobject>& caller,
+              std::vector<std::string>& strings);
 
   void AddStructB(JNIEnv* env,
                   const jni_zero::JavaParamRef<jobject>& caller,

@@ -6,14 +6,18 @@
 
 #include <set>
 #include <string>
+#include <string_view>
 #include <utility>
 
 #include "base/allocator/buildflags.h"
 #include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_buildflags.h"
+#include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/functional/bind.h"
+#include "base/logging.h"
+#include "base/memory/page_size.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/process/process_metrics.h"
@@ -24,6 +28,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/tab_footprint_aggregator.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/common/chrome_switches.h"
 #include "components/metrics/metrics_data_validation.h"
 #include "components/performance_manager/public/graph/frame_node.h"
 #include "components/performance_manager/public/graph/graph.h"
@@ -290,7 +295,7 @@ const Metric kAllocatorDumpNamesForMetrics[] = {
     {"malloc/partitions/allocator", "Malloc.Allocator.ObjectCount",
      MetricSize::kTiny, MemoryAllocatorDump::kNameObjectCount,
      EmitTo::kSizeInUmaOnly, nullptr},
-#if BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
+#if PA_BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
     {"malloc/partitions/allocator", "Malloc.BRPQuarantined", MetricSize::kSmall,
      "brp_quarantined_size", EmitTo::kSizeInUmaOnly, nullptr},
     {"malloc/partitions/allocator", "Malloc.BRPQuarantinedCount",
@@ -320,14 +325,50 @@ const Metric kAllocatorDumpNamesForMetrics[] = {
     {"partition_alloc/partitions/array_buffer",
      "PartitionAlloc.BRPQuarantinedCount.ArrayBuffer", MetricSize::kTiny,
      "brp_quarantined_count", EmitTo::kSizeInUmaOnly, nullptr},
-#endif  // BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
+#endif  // PA_BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
     {"malloc/partitions", "Malloc.BRPQuarantinedBytesPerMinute",
      MetricSize::kSmall, "brp_quarantined_bytes_per_minute",
      EmitTo::kSizeInUmaOnly, nullptr},
     {"malloc/partitions", "Malloc.BRPQuarantinedCountPerMinute",
      MetricSize::kTiny, "brp_quarantined_count_per_minute",
      EmitTo::kSizeInUmaOnly, nullptr},
-#if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
+#if PA_BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
+    {"malloc/extreme_lud", "Malloc.ExtremeLUD.Count", MetricSize::kTiny,
+     "count", EmitTo::kSizeInUmaOnly, nullptr},
+    {"malloc/extreme_lud", "Malloc.ExtremeLUD.SizeInBytes", MetricSize::kSmall,
+     "size_in_bytes", EmitTo::kSizeInUmaOnly, nullptr},
+    {"malloc/extreme_lud", "Malloc.ExtremeLUD.CumulativeCount",
+     MetricSize::kTiny, "cumulative_count", EmitTo::kSizeInUmaOnly, nullptr},
+    {"malloc/extreme_lud", "Malloc.ExtremeLUD.CumulativeSizeInBytes",
+     MetricSize::kSmall, "cumulative_size_in_bytes", EmitTo::kSizeInUmaOnly,
+     nullptr},
+    {"malloc/extreme_lud", "Malloc.ExtremeLUD.QuarantineMissCount",
+     MetricSize::kTiny, "quarantine_miss_count", EmitTo::kSizeInUmaOnly,
+     nullptr},
+    {"malloc/extreme_lud", "Malloc.ExtremeLUD.BytesPerMinute",
+     MetricSize::kTiny, "bytes_per_minute", EmitTo::kSizeInUmaOnly, nullptr},
+    {"malloc/extreme_lud", "Malloc.ExtremeLUD.CountPerMinute",
+     MetricSize::kTiny, "count_per_minute", EmitTo::kSizeInUmaOnly, nullptr},
+    {"malloc/extreme_lud", "Malloc.ExtremeLUD.MissCountPerMinute",
+     MetricSize::kTiny, "miss_count_per_minute", EmitTo::kSizeInUmaOnly,
+     nullptr},
+    {"malloc/extreme_lud", "Malloc.ExtremeLUD.QuarantinedTime",
+     MetricSize::kTiny, "quarantined_time", EmitTo::kSizeInUmaOnly, nullptr},
+    {"malloc/partitions/allocator/scheduler_loop_quarantine",
+     "Malloc.SchedulerLoopQuarantine.Count", MetricSize::kTiny, "count",
+     EmitTo::kSizeInUmaOnly, nullptr},
+    {"malloc/partitions/allocator/scheduler_loop_quarantine",
+     "Malloc.SchedulerLoopQuarantine.SizeInBytes", MetricSize::kSmall,
+     "size_in_bytes", EmitTo::kSizeInUmaOnly, nullptr},
+    {"malloc/partitions/allocator/scheduler_loop_quarantine",
+     "Malloc.SchedulerLoopQuarantine.CumulativeCount", MetricSize::kTiny,
+     "cumulative_count", EmitTo::kSizeInUmaOnly, nullptr},
+    {"malloc/partitions/allocator/scheduler_loop_quarantine",
+     "Malloc.SchedulerLoopQuarantine.CumulativeSizeInBytes", MetricSize::kSmall,
+     "cumulative_size_in_bytes", EmitTo::kSizeInUmaOnly, nullptr},
+    {"malloc/partitions/allocator/scheduler_loop_quarantine/",
+     "Malloc.SchedulerLoopQuarantine.QuarantineMissCount", MetricSize::kTiny,
+     "quarantine_miss_count", EmitTo::kSizeInUmaOnly, nullptr},
     {"malloc/partitions/allocator/thread_cache", "Malloc.ThreadCache",
      MetricSize::kSmall, kSize, EmitTo::kSizeInUmaOnly, nullptr},
     {"malloc/partitions/allocator", "Malloc.MaxAllocatedSize",
@@ -342,7 +383,7 @@ const Metric kAllocatorDumpNamesForMetrics[] = {
      MetricSize::kPercentage, "fragmentation", EmitTo::kSizeInUmaOnly, nullptr},
     {"malloc", "Malloc.SyscallsPerMinute", MetricSize::kTiny,
      "syscalls_per_minute", EmitTo::kSizeInUmaOnly, nullptr},
-#endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
+#endif  // PA_BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
     {"mojo", "NumberOfMojoHandles", MetricSize::kSmall,
      MemoryAllocatorDump::kNameObjectCount, EmitTo::kCountsInUkmOnly,
      &Memory_Experimental::SetNumberOfMojoHandles},
@@ -428,7 +469,7 @@ const Metric kAllocatorDumpNamesForMetrics[] = {
     {"partition_alloc/partitions/fast_malloc",
      "PartitionAlloc.Wasted.FastMalloc", MetricSize::kLarge, "wasted",
      EmitTo::kSizeInUmaOnly, nullptr},
-#if !BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
+#if !PA_BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
     {"partition_alloc/partitions/fast_malloc/thread_cache",
      "PartitionAlloc.Partitions.FastMalloc.ThreadCache", MetricSize::kSmall,
      kSize, EmitTo::kSizeInUmaOnly, nullptr},
@@ -617,7 +658,7 @@ const Metric kAllocatorDumpNamesForMetrics[] = {
 #endif
 };
 
-#if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
+#if PA_BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
 // Metrics specific to PartitionAlloc's address space stats (cf.
 // kAllocatorDumpNamesForMetrics above). All of these metrics come in
 // three variants: bare, after 1 hour, and after 24 hours. These metrics
@@ -678,7 +719,7 @@ const Metric kPartitionAllocAddressSpaceMetrics[] = {
         .metric = "thread_isolated_pool_usage",
     },
 };
-#endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
+#endif  // PA_BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
 
 // Record a memory size in megabytes, over a potential interval up to 32 GB.
 #define UMA_HISTOGRAM_LARGE_MEMORY_MB(name, sample) \
@@ -720,7 +761,7 @@ void EmitProcessUma(HistogramProcessType process_type,
 
   // Always use "Gpu" in process name for command buffers to be
   // consistent even in single process mode.
-  if (base::StringPiece(item.uma_name) == "CommandBuffer") {
+  if (std::string_view(item.uma_name) == "CommandBuffer") {
     uma_name =
         EXPERIMENTAL_UMA_PREFIX "Gpu" VERSION_SUFFIX_NORMAL "CommandBuffer";
     DCHECK(item.metric_size == MetricSize::kLarge);
@@ -786,9 +827,9 @@ void EmitPartitionAllocWastedStat(const GlobalMemoryDump::ProcessDump& pmd,
 void EmitMallocStats(const GlobalMemoryDump::ProcessDump& pmd,
                      HistogramProcessType process_type,
                      const std::optional<base::TimeDelta>& uptime) {
-#if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
+#if PA_BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
   const char* const kMallocDumpName = "malloc/partitions/allocator";
-#endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
+#endif  // PA_BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
 
   static constexpr int kRecordHours[] = {1, 24};
   // First element of the pair is the name as found in memory dumps, second
@@ -803,14 +844,14 @@ void EmitMallocStats(const GlobalMemoryDump::ProcessDump& pmd,
     if (uptime <= base::Hours(hours))
       continue;
 
-#if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
+#if PA_BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
     EmitPartitionAllocFragmentationStat(
         pmd, process_type, kMallocDumpName,
         base::StringPrintf("Malloc.Fragmentation.After%dH", hours).c_str());
     EmitPartitionAllocWastedStat(
         pmd, process_type, kMallocDumpName,
         base::StringPrintf("Malloc.Wasted.After%dH", hours).c_str());
-#endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
+#endif  // PA_BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
 
     for (const auto& partition_name : kPartitionNames) {
       const auto* dump_name = partition_name.first;
@@ -829,7 +870,7 @@ void EmitMallocStats(const GlobalMemoryDump::ProcessDump& pmd,
   }
 }
 
-#if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
+#if PA_BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
 void EmitPartitionAllocAddressSpaceStatVariants(
     const Metric& metric,
     const uint64_t metric_value,
@@ -874,7 +915,7 @@ void EmitPartitionAllocAddressSpaceStats(
                                                process_type, uptime);
   }
 }
-#endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
+#endif  // PA_BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
 
 void EmitProcessUmaAndUkm(const GlobalMemoryDump::ProcessDump& pmd,
                           HistogramProcessType process_type,
@@ -944,9 +985,9 @@ void EmitProcessUmaAndUkm(const GlobalMemoryDump::ProcessDump& pmd,
 
   if (record_uma) {
     EmitMallocStats(pmd, process_type, uptime);
-#if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
+#if PA_BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
     EmitPartitionAllocAddressSpaceStats(pmd, process_type, uptime);
-#endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
+#endif  // PA_BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
   }
 }
 
@@ -1123,6 +1164,27 @@ ProcessMemoryMetricsEmitter::ProcessMemoryMetricsEmitter(
 void ProcessMemoryMetricsEmitter::FetchAndEmitProcessMemoryMetrics() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+// https://crbug.com/330751658 (hopefully temporary).
+#if BUILDFLAG(IS_ANDROID) && defined(ARCH_CPU_X86_64)
+  // Do not skip when command-line is used to specifically test it.
+  if (base::GetPageSize() == 16 * 1024) {
+    const base::CommandLine* command_line =
+        base::CommandLine::ForCurrentProcess();
+    int test_delay_in_minutes = 0;
+    if (command_line->HasSwitch(switches::kTestMemoryLogDelayInMinutes)) {
+      base::StringToInt(command_line->GetSwitchValueASCII(
+                            switches::kTestMemoryLogDelayInMinutes),
+                        &test_delay_in_minutes);
+    }
+    // Allow a negative value to test the crashing scenario.
+    if (test_delay_in_minutes >= 0) {
+      LOG(WARNING) << "Ignoring dump request to avoid emulator crash. "
+                   << "https://crbug.com/330751658";
+      return;
+    }
+  }
+#endif
+
   MarkServiceRequestsInProgress();
 
   auto* instrumentation =
@@ -1136,9 +1198,9 @@ void ProcessMemoryMetricsEmitter::FetchAndEmitProcessMemoryMetrics() {
     std::vector<std::string> mad_list;
     for (const auto& metric : kAllocatorDumpNamesForMetrics)
       mad_list.push_back(metric.dump_name);
-#if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
+#if PA_BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
     mad_list.push_back("partition_alloc/address_space");
-#endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
+#endif  // PA_BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
     if (pid_scope_ != base::kNullProcessId) {
       instrumentation->RequestGlobalDumpForPid(pid_scope_, mad_list,
                                                std::move(callback));

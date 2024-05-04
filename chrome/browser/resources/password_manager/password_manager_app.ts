@@ -6,7 +6,7 @@ import 'chrome://resources/cr_elements/cr_shared_style.css.js';
 import 'chrome://resources/cr_elements/cr_toast/cr_toast.js';
 import 'chrome://resources/polymer/v3_0/iron-media-query/iron-media-query.js';
 import 'chrome://resources/polymer/v3_0/iron-pages/iron-pages.js';
-import 'chrome://resources/cr_components/settings_prefs/prefs.js';
+import '/shared/settings/prefs/prefs.js';
 import './checkup_section.js';
 import './checkup_details_section.js';
 import './password_details_section.js';
@@ -20,18 +20,19 @@ import './toolbar.js';
 import type {CrToastElement} from '//resources/cr_elements/cr_toast/cr_toast.js';
 import {focusWithoutInk} from '//resources/js/focus_without_ink.js';
 import {loadTimeData} from '//resources/js/load_time_data.js';
-import type {SettingsPrefsElement} from 'chrome://resources/cr_components/settings_prefs/prefs.js';
+import type {SettingsPrefsElement} from '/shared/settings/prefs/prefs.js';
 import {CrContainerShadowMixin} from 'chrome://resources/cr_elements/cr_container_shadow_mixin.js';
 import type {CrDrawerElement} from 'chrome://resources/cr_elements/cr_drawer/cr_drawer.js';
 import {FindShortcutMixin} from 'chrome://resources/cr_elements/find_shortcut_mixin.js';
 import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
+import {PluralStringProxyImpl} from 'chrome://resources/js/plural_string_proxy.js';
 import {getDeepActiveElement, listenOnce} from 'chrome://resources/js/util.js';
 import type {IronPagesElement} from 'chrome://resources/polymer/v3_0/iron-pages/iron-pages.js';
 import type {DomIf} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import type {CheckupSectionElement} from './checkup_section.js';
-import type {PasswordMovedEvent, PasswordRemovedEvent} from './credential_details/password_details_card.js';
+import type {PasswordRemovedEvent} from './credential_details/password_details_card.js';
 import type {FocusConfig} from './focus_config.js';
 import {getTemplate} from './password_manager_app.html.js';
 import {PasswordManagerImpl} from './password_manager_proxy.js';
@@ -54,6 +55,9 @@ function isEditable(element: Element): boolean {
         /^(?:text|search|email|number|tel|url|password)$/i.test(
             (element as HTMLInputElement).type)));
 }
+
+export type PasswordsMovedEvent =
+    CustomEvent<{accountEmail: string, numberOfPasswords: number}>;
 
 export interface PasswordManagerAppElement {
   $: {
@@ -273,7 +277,7 @@ export class PasswordManagerAppElement extends PasswordManagerAppElementBase {
   }
 
   private onPasswordRemoved_(_event: PasswordRemovedEvent) {
-    // TODO(crbug.com/1350947): Show different message if account store user.
+    // TODO(crbug.com/40234318): Show different message if account store user.
     this.showUndo_ = true;
     this.toastMessage_ = this.i18n('passwordDeleted');
     this.$.toast.show();
@@ -285,10 +289,13 @@ export class PasswordManagerAppElement extends PasswordManagerAppElementBase {
     this.$.toast.show();
   }
 
-  private onPasswordMoved_(event: PasswordMovedEvent) {
+  private async onPasswordsMoved_(event: PasswordsMovedEvent) {
     this.showUndo_ = false;
     this.toastMessage_ =
-        this.i18n('passwordMovedToastMessage', event.detail.accountEmail);
+        await PluralStringProxyImpl.getInstance()
+            .getPluralString(
+                'passwordsMovedToastMessage', event.detail.numberOfPasswords)
+            .then(label => label.replace('$1', event.detail.accountEmail));
     this.$.toast.show();
   }
 

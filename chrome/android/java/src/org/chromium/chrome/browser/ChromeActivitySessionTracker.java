@@ -33,8 +33,10 @@ import org.chromium.chrome.browser.password_manager.PasswordManagerLifecycleHelp
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.ChromeSharedPreferences;
 import org.chromium.chrome.browser.preferences.Pref;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.profiles.ProfileManager;
 import org.chromium.chrome.browser.profiles.ProfileManagerUtils;
+import org.chromium.chrome.browser.safety_hub.SafetyHubFetchService;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.translate.TranslateBridge;
 import org.chromium.components.browser_ui.accessibility.DeviceAccessibilitySettingsHandler;
@@ -157,17 +159,16 @@ public class ChromeActivitySessionTracker {
                 TraceEvent.scoped("ChromeActivitySessionTracker.onForegroundSessionStart")) {
             UmaUtils.recordForegroundStartTimeWithNative();
             updatePasswordEchoState();
-            FontSizePrefs.getInstance(ProfileManager.getLastUsedRegularProfile())
-                    .onSystemFontScaleChanged();
-            DeviceAccessibilitySettingsHandler.getInstance(
-                            ProfileManager.getLastUsedRegularProfile())
-                    .updateFontWeightAdjustment();
+            Profile profile = ProfileManager.getLastUsedRegularProfile();
+            FontSizePrefs.getInstance(profile).onSystemFontScaleChanged();
+            DeviceAccessibilitySettingsHandler.getInstance(profile).updateFontWeightAdjustment();
             ChromeLocalizationUtils.recordUiLanguageStatus();
-            updateAcceptLanguages();
+            updateAcceptLanguages(profile);
             mVariationsSession.start();
             mOmahaServiceStartDelayer.onForegroundSessionStart();
             AppHooks.get().getChimeDelegate().startSession();
             PasswordManagerLifecycleHelper.getInstance().onStartForegroundSession();
+            SafetyHubFetchService.onForegroundSessionStart();
 
             // Track the ratio of Chrome startups that are caused by notification clicks.
             // TODO(johnme): Add other reasons (and switch to recordEnumeratedHistogram).
@@ -218,10 +219,10 @@ public class ChromeActivitySessionTracker {
 
     /**
      * Update the accept languages after changing Android locale setting. Doing so kills the
-     * Activities but it doesn't kill the Application, so this should be called in
-     * {@link #onStart} instead of {@link #initialize}.
+     * Activities but it doesn't kill the Application, so this should be called in {@link #onStart}
+     * instead of {@link #initialize}.
      */
-    private void updateAcceptLanguages() {
+    private void updateAcceptLanguages(Profile profile) {
         String currentLocale = LocaleUtils.getDefaultLocaleListString();
         String previousLocale =
                 ChromeSharedPreferences.getInstance()
@@ -230,14 +231,14 @@ public class ChromeActivitySessionTracker {
         if (!TextUtils.equals(previousLocale, currentLocale)) {
             ChromeSharedPreferences.getInstance()
                     .writeString(ChromePreferenceKeys.APP_LOCALE, currentLocale);
-            TranslateBridge.resetAcceptLanguages(currentLocale);
+            TranslateBridge.resetAcceptLanguages(profile, currentLocale);
             if (previousLocale != null) {
                 // Clear cache so that accept-languages change can be applied immediately.
                 // TODO(changwan): The underlying BrowsingDataRemover::Remove() is an asynchronous
                 // call. So cache-clearing may not be effective if URL rendering can happen before
                 // OnBrowsingDataRemoverDone() is called, in which case we may have to reload as
                 // well. Check if it can happen.
-                BrowsingDataBridge.getForProfile(ProfileManager.getLastUsedRegularProfile())
+                BrowsingDataBridge.getForProfile(profile)
                         .clearBrowsingData(
                                 null, new int[] {BrowsingDataType.CACHE}, TimePeriod.ALL_TIME);
             }

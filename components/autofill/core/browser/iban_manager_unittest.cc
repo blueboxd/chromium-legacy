@@ -15,6 +15,7 @@
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/mock_autofill_optimization_guide.h"
+#include "components/autofill/core/browser/payments_data_manager.h"
 #include "components/autofill/core/browser/suggestions_context.h"
 #include "components/autofill/core/browser/test_autofill_client.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
@@ -48,7 +49,8 @@ class IbanManagerTest : public testing::Test {
   IbanManagerTest() : iban_manager_(&personal_data_manager_) {}
 
   void SetUp() override {
-    personal_data_manager_.SetAutofillPaymentMethodsEnabled(true);
+    personal_data_manager_.test_payments_data_manager()
+        .SetAutofillPaymentMethodsEnabled(true);
     original_resource_bundle_ =
         ui::ResourceBundle::SwapSharedInstanceForTesting(nullptr);
 
@@ -73,7 +75,7 @@ class IbanManagerTest : public testing::Test {
     Iban iban;
     iban.set_value(base::UTF8ToUTF16(std::string(value)));
     iban.set_nickname(base::UTF8ToUTF16(std::string(nickname)));
-    personal_data_manager_.AddAsLocalIban(iban);
+    personal_data_manager_.payments_data_manager().AddAsLocalIban(iban);
     return iban;
   }
 
@@ -88,7 +90,7 @@ class IbanManagerTest : public testing::Test {
     iban.set_suffix(base::UTF8ToUTF16(std::string(suffix)));
     iban.set_length(length);
     iban.set_nickname(base::UTF8ToUTF16(std::string(nickname)));
-    personal_data_manager_.AddServerIban(iban);
+    personal_data_manager_.test_payments_data_manager().AddServerIban(iban);
     return iban;
   }
 
@@ -108,20 +110,20 @@ class IbanManagerTest : public testing::Test {
   // Get an IBAN suggestion with the given `iban`.
   Suggestion GetSuggestionForIban(const Iban& iban) {
     Suggestion iban_suggestion(iban.GetIdentifierStringForAutofillDisplay());
-    iban_suggestion.popup_item_id = PopupItemId::kIbanEntry;
+    iban_suggestion.type = SuggestionType::kIbanEntry;
     return iban_suggestion;
   }
 
   Suggestion SetUpSeparator() {
     Suggestion separator;
-    separator.popup_item_id = PopupItemId::kSeparator;
+    separator.type = SuggestionType::kSeparator;
     return separator;
   }
 
   Suggestion SetUpFooterManagePaymentMethods() {
     Suggestion footer_suggestion(
         l10n_util::GetStringUTF16(IDS_AUTOFILL_MANAGE_PAYMENT_METHODS));
-    footer_suggestion.popup_item_id = PopupItemId::kAutofillOptions;
+    footer_suggestion.type = SuggestionType::kAutofillOptions;
     footer_suggestion.icon = Suggestion::Icon::kSettings;
     return footer_suggestion;
   }
@@ -136,13 +138,13 @@ class IbanManagerTest : public testing::Test {
   raw_ptr<ui::ResourceBundle> original_resource_bundle_;
 };
 
-MATCHER_P(MatchesTextAndPopupItemId, suggestion, "") {
-  return arg.main_text == suggestion.main_text &&
-         arg.popup_item_id == suggestion.popup_item_id;
+MATCHER_P(MatchesTextAndSuggestionType, suggestion, "") {
+  return arg.main_text == suggestion.main_text && arg.type == suggestion.type;
 }
 
 TEST_F(IbanManagerTest, ShowsAllIbanSuggestions) {
-  personal_data_manager_.SetAutofillWalletImportEnabled(true);
+  personal_data_manager_.test_payments_data_manager()
+      .SetAutofillWalletImportEnabled(true);
   Suggestion local_iban_suggestion_0 =
       GetSuggestionForIban(SetUpLocalIban(test::kIbanValue, kNickname_0));
   Suggestion local_iban_suggestion_1 =
@@ -165,12 +167,12 @@ TEST_F(IbanManagerTest, ShowsAllIbanSuggestions) {
   EXPECT_CALL(mock_callback,
               Run(test_field.global_id(),
                   testing::UnorderedElementsAre(
-                      MatchesTextAndPopupItemId(local_iban_suggestion_0),
-                      MatchesTextAndPopupItemId(local_iban_suggestion_1),
-                      MatchesTextAndPopupItemId(server_iban_suggestion_0),
-                      MatchesTextAndPopupItemId(server_iban_suggestion_1),
-                      MatchesTextAndPopupItemId(seperator_suggestion),
-                      MatchesTextAndPopupItemId(footer_suggestion))));
+                      MatchesTextAndSuggestionType(local_iban_suggestion_0),
+                      MatchesTextAndSuggestionType(local_iban_suggestion_1),
+                      MatchesTextAndSuggestionType(server_iban_suggestion_0),
+                      MatchesTextAndSuggestionType(server_iban_suggestion_1),
+                      MatchesTextAndSuggestionType(seperator_suggestion),
+                      MatchesTextAndSuggestionType(footer_suggestion))));
 
   // Simulate request for suggestions.
   // Because all criteria are met to trigger returning to the handler,
@@ -180,7 +182,8 @@ TEST_F(IbanManagerTest, ShowsAllIbanSuggestions) {
 }
 
 TEST_F(IbanManagerTest, PaymentsAutofillEnabledPrefOff_NoIbanSuggestionsShown) {
-  personal_data_manager_.SetAutofillPaymentMethodsEnabled(false);
+  personal_data_manager_.test_payments_data_manager()
+      .SetAutofillPaymentMethodsEnabled(false);
   GetSuggestionForIban(SetUpLocalIban(test::kIbanValue, kNickname_0));
   GetSuggestionForIban(SetUpLocalIban(test::kIbanValue_1, kNickname_1));
 
@@ -212,9 +215,9 @@ TEST_F(IbanManagerTest, IbanSuggestions_SeparatorAndFooter) {
   EXPECT_CALL(mock_callback,
               Run(test_field.global_id(),
                   testing::UnorderedElementsAre(
-                      MatchesTextAndPopupItemId(iban_suggestion_0),
-                      MatchesTextAndPopupItemId(iban_suggestion_1),
-                      MatchesTextAndPopupItemId(iban_suggestion_2))));
+                      MatchesTextAndSuggestionType(iban_suggestion_0),
+                      MatchesTextAndSuggestionType(iban_suggestion_1),
+                      MatchesTextAndSuggestionType(iban_suggestion_2))));
 
   // Simulate request for suggestions.
   // Because all criteria are met to trigger returning to the handler,
@@ -231,7 +234,7 @@ TEST_F(IbanManagerTest,
       SetUpLocalIban("CH56 0483 5012 3456 7800 9", kNickname_1));
 
   AutofillField test_field;
-  test_field.value = u"CH5604835012345678009";
+  test_field.set_value(u"CH5604835012345678009");
   SuggestionsContext context = GetIbanFocusedSuggestionsContext(test_field);
 
   // The field contains value matches existing IBAN already, so check that we do
@@ -256,7 +259,7 @@ TEST_F(IbanManagerTest,
   Suggestion iban_suggestion_3 = SetUpFooterManagePaymentMethods();
 
   AutofillField test_field;
-  test_field.value = u"CH";
+  test_field.set_value(u"CH");
   SuggestionsContext context = GetIbanFocusedSuggestionsContext(test_field);
 
   // Setting up mock to verify that the handler is returned a list of
@@ -267,10 +270,10 @@ TEST_F(IbanManagerTest,
   EXPECT_CALL(mock_callback,
               Run(test_field.global_id(),
                   testing::UnorderedElementsAre(
-                      MatchesTextAndPopupItemId(iban_suggestion_0),
-                      MatchesTextAndPopupItemId(iban_suggestion_1),
-                      MatchesTextAndPopupItemId(iban_suggestion_2),
-                      MatchesTextAndPopupItemId(iban_suggestion_3))));
+                      MatchesTextAndSuggestionType(iban_suggestion_0),
+                      MatchesTextAndSuggestionType(iban_suggestion_1),
+                      MatchesTextAndSuggestionType(iban_suggestion_2),
+                      MatchesTextAndSuggestionType(iban_suggestion_3))));
 
   // Simulate request for suggestions.
   // Because all criteria are met to trigger returning to the handler,
@@ -278,7 +281,7 @@ TEST_F(IbanManagerTest,
   EXPECT_TRUE(iban_manager_.OnGetSingleFieldSuggestions(
       test_field, autofill_client_, mock_callback.Get(), context));
 
-  test_field.value = u"CH5604";
+  test_field.set_value(u"CH5604");
 
   // Setting up mock to verify that the handler is returned only one
   // IBAN-based suggestion whose prefix matches `prefix_`. Only one of the two
@@ -287,9 +290,9 @@ TEST_F(IbanManagerTest,
   EXPECT_CALL(mock_callback,
               Run(test_field.global_id(),
                   testing::UnorderedElementsAre(
-                      MatchesTextAndPopupItemId(iban_suggestion_0),
-                      MatchesTextAndPopupItemId(iban_suggestion_2),
-                      MatchesTextAndPopupItemId(iban_suggestion_3))));
+                      MatchesTextAndSuggestionType(iban_suggestion_0),
+                      MatchesTextAndSuggestionType(iban_suggestion_2),
+                      MatchesTextAndSuggestionType(iban_suggestion_3))));
 
   // Simulate request for suggestions.
   // Because all criteria are met to trigger returning to the handler,
@@ -297,7 +300,7 @@ TEST_F(IbanManagerTest,
   EXPECT_TRUE(iban_manager_.OnGetSingleFieldSuggestions(
       test_field, autofill_client_, mock_callback.Get(), context));
 
-  test_field.value = u"AB56";
+  test_field.set_value(u"AB56");
 
   // Verify that the handler is not triggered because no IBAN suggestions match
   // the given prefix.
@@ -314,7 +317,8 @@ TEST_F(IbanManagerTest,
 // with matching prefixes should be returned.
 TEST_F(IbanManagerTest,
        OnGetSingleFieldSuggestions_ServerIbansMatchingPrefix_Shows_All) {
-  personal_data_manager_.SetAutofillWalletImportEnabled(true);
+  personal_data_manager_.test_payments_data_manager()
+      .SetAutofillWalletImportEnabled(true);
   // Set up two server IBANs with different prefixes except for the first two
   // characters, and with same suffixes and lengths.
   Suggestion server_iban_suggestion_0 = GetSuggestionForIban(SetUpServerIban(
@@ -327,7 +331,7 @@ TEST_F(IbanManagerTest,
   Suggestion footer_suggestion = SetUpFooterManagePaymentMethods();
 
   AutofillField test_field;
-  test_field.value = u"CH";
+  test_field.set_value(u"CH");
   SuggestionsContext context = GetIbanFocusedSuggestionsContext(test_field);
 
   // Expect that a list of IBAN suggestions whose prefixes match input field is
@@ -337,10 +341,10 @@ TEST_F(IbanManagerTest,
   EXPECT_CALL(mock_callback,
               Run(test_field.global_id(),
                   testing::UnorderedElementsAre(
-                      MatchesTextAndPopupItemId(server_iban_suggestion_0),
-                      MatchesTextAndPopupItemId(server_iban_suggestion_1),
-                      MatchesTextAndPopupItemId(separator_suggestion),
-                      MatchesTextAndPopupItemId(footer_suggestion))));
+                      MatchesTextAndSuggestionType(server_iban_suggestion_0),
+                      MatchesTextAndSuggestionType(server_iban_suggestion_1),
+                      MatchesTextAndSuggestionType(separator_suggestion),
+                      MatchesTextAndSuggestionType(footer_suggestion))));
 
   // Simulate request for suggestions.
   // Because all criteria are met to trigger returning to the handler,
@@ -353,7 +357,8 @@ TEST_F(IbanManagerTest,
 // with matching prefixes should be returned.
 TEST_F(IbanManagerTest,
        OnGetSingleFieldSuggestions_ServerIbansMatchingPrefix_Shows_Some) {
-  personal_data_manager_.SetAutofillWalletImportEnabled(true);
+  personal_data_manager_.test_payments_data_manager()
+      .SetAutofillWalletImportEnabled(true);
   // Set up two server IBANs with different prefixes except for the first two
   // characters, and with same suffixes and lengths.
   Suggestion server_iban_suggestion_0 = GetSuggestionForIban(SetUpServerIban(
@@ -366,7 +371,7 @@ TEST_F(IbanManagerTest,
   Suggestion footer_suggestion = SetUpFooterManagePaymentMethods();
 
   AutofillField test_field;
-  test_field.value = u"CH567";
+  test_field.set_value(u"CH567");
   SuggestionsContext context = GetIbanFocusedSuggestionsContext(test_field);
 
   // Expect that only one of the two IBANs should stay because the other will be
@@ -376,9 +381,9 @@ TEST_F(IbanManagerTest,
   EXPECT_CALL(mock_callback,
               Run(test_field.global_id(),
                   testing::UnorderedElementsAre(
-                      MatchesTextAndPopupItemId(server_iban_suggestion_0),
-                      MatchesTextAndPopupItemId(separator_suggestion),
-                      MatchesTextAndPopupItemId(footer_suggestion))));
+                      MatchesTextAndSuggestionType(server_iban_suggestion_0),
+                      MatchesTextAndSuggestionType(separator_suggestion),
+                      MatchesTextAndSuggestionType(footer_suggestion))));
 
   // Simulate request for suggestions.
   // Because all criteria are met to trigger returning to the handler,
@@ -393,7 +398,8 @@ TEST_F(IbanManagerTest,
 TEST_F(
     IbanManagerTest,
     OnGetSingleFieldSuggestions_ServerIbansLackingPrefix_ShowsIfFewCharsInField) {
-  personal_data_manager_.SetAutofillWalletImportEnabled(true);
+  personal_data_manager_.test_payments_data_manager()
+      .SetAutofillWalletImportEnabled(true);
   // Set up three server IBANs with empty `prefix`.
   Suggestion server_iban_suggestion_0 = GetSuggestionForIban(SetUpServerIban(
       /*instrument_id=*/12345, /*prefix=*/"", /*suffix=*/"8009",
@@ -415,11 +421,11 @@ TEST_F(
   EXPECT_CALL(mock_callback,
               Run(test_field.global_id(),
                   testing::UnorderedElementsAre(
-                      MatchesTextAndPopupItemId(server_iban_suggestion_0),
-                      MatchesTextAndPopupItemId(server_iban_suggestion_1),
-                      MatchesTextAndPopupItemId(server_iban_suggestion_2),
-                      MatchesTextAndPopupItemId(separator_suggestion),
-                      MatchesTextAndPopupItemId(footer_suggestion))));
+                      MatchesTextAndSuggestionType(server_iban_suggestion_0),
+                      MatchesTextAndSuggestionType(server_iban_suggestion_1),
+                      MatchesTextAndSuggestionType(server_iban_suggestion_2),
+                      MatchesTextAndSuggestionType(separator_suggestion),
+                      MatchesTextAndSuggestionType(footer_suggestion))));
 
   // Simulate request for suggestions.
   // Because all criteria are met to trigger returning to the handler,
@@ -427,18 +433,18 @@ TEST_F(
   EXPECT_TRUE(iban_manager_.OnGetSingleFieldSuggestions(
       test_field, autofill_client_, mock_callback.Get(), context));
 
-  test_field.value = u"AB567";
+  test_field.set_value(u"AB567");
 
   // Expect that all server IBANs are returned because the count of input
   // character is less than `kFieldLengthLimitOnServerIbanSuggestion`.
   EXPECT_CALL(mock_callback,
               Run(test_field.global_id(),
                   testing::UnorderedElementsAre(
-                      MatchesTextAndPopupItemId(server_iban_suggestion_0),
-                      MatchesTextAndPopupItemId(server_iban_suggestion_1),
-                      MatchesTextAndPopupItemId(server_iban_suggestion_2),
-                      MatchesTextAndPopupItemId(separator_suggestion),
-                      MatchesTextAndPopupItemId(footer_suggestion))));
+                      MatchesTextAndSuggestionType(server_iban_suggestion_0),
+                      MatchesTextAndSuggestionType(server_iban_suggestion_1),
+                      MatchesTextAndSuggestionType(server_iban_suggestion_2),
+                      MatchesTextAndSuggestionType(separator_suggestion),
+                      MatchesTextAndSuggestionType(footer_suggestion))));
 
   // Simulate request for suggestions.
   // Because all criteria are met to trigger returning to the handler,
@@ -453,7 +459,8 @@ TEST_F(
 TEST_F(
     IbanManagerTest,
     OnGetSingleFieldSuggestions_ServerIbansLackingPrefix_HidesIfManyCharsInField) {
-  personal_data_manager_.SetAutofillWalletImportEnabled(true);
+  personal_data_manager_.test_payments_data_manager()
+      .SetAutofillWalletImportEnabled(true);
   // Set up three server IBANs with empty `prefix`.
   Suggestion server_iban_suggestion_0 = GetSuggestionForIban(SetUpServerIban(
       /*instrument_id=*/12345, /*prefix=*/"", /*suffix=*/"8009",
@@ -468,7 +475,7 @@ TEST_F(
   Suggestion footer_suggestion = SetUpFooterManagePaymentMethods();
 
   AutofillField test_field;
-  test_field.value = u"AB5678";
+  test_field.set_value(u"AB5678");
   SuggestionsContext context = GetIbanFocusedSuggestionsContext(test_field);
 
   // Expect that no suggestions are returned because length of input field
@@ -519,7 +526,7 @@ TEST_F(IbanManagerTest, ShowsIbanSuggestions_OptimizationGuideNotPresent) {
   EXPECT_CALL(mock_callback,
               Run(test_field.global_id(),
                   testing::IsSupersetOf(
-                      {MatchesTextAndPopupItemId(iban_suggestion_0)})));
+                      {MatchesTextAndSuggestionType(iban_suggestion_0)})));
 
   // Simulate request for suggestions.
   // Because all criteria are met to trigger returning to the handler,
@@ -532,7 +539,7 @@ TEST_F(IbanManagerTest, NotIbanFieldFocused_NoSuggestionsShown) {
   SetUpLocalIban(test::kIbanValue, kNickname_0);
 
   AutofillField test_field;
-  test_field.value = std::u16string(test::kIbanValue16);
+  test_field.set_value(std::u16string(test::kIbanValue16));
   // Set the field type to any type than "IBAN_VALUE".
   SuggestionsContext context = GetIbanFocusedSuggestionsContext(
       test_field, CREDIT_CARD_VERIFICATION_CODE);
@@ -554,7 +561,7 @@ TEST_F(IbanManagerTest, Metrics_Suggestions_Allowed) {
   SetUpLocalIban(test::kIbanValue, kNickname_0);
 
   AutofillField test_field;
-  test_field.renderer_id = test::MakeFieldRendererId();
+  test_field.set_renderer_id(test::MakeFieldRendererId());
   SuggestionsContext context = GetIbanFocusedSuggestionsContext(test_field);
   // Simulate request for suggestions.
   // TODO: handle return value.
@@ -621,7 +628,7 @@ TEST_F(IbanManagerTest, Metrics_SuggestionsShown) {
   SetUpLocalIban(test::kIbanValue, kNickname_0);
 
   AutofillField test_field;
-  test_field.renderer_id = test::MakeFieldRendererId();
+  test_field.set_renderer_id(test::MakeFieldRendererId());
   SuggestionsContext context = GetIbanFocusedSuggestionsContext(test_field);
 
   // Simulate request for suggestions.
@@ -651,14 +658,15 @@ TEST_F(IbanManagerTest, Metrics_SuggestionSelected) {
   SetUpLocalIban(test::kIbanValue_2, "");
 
   AutofillField test_field;
-  test_field.renderer_id = test::MakeFieldRendererId();
+  test_field.set_renderer_id(test::MakeFieldRendererId());
   SuggestionsContext context = GetIbanFocusedSuggestionsContext(test_field);
 
   // Simulate request for suggestions and select one suggested IBAN.
   MockSuggestionsReturnedCallback mock_callback;
   EXPECT_TRUE(iban_manager_.OnGetSingleFieldSuggestions(
       test_field, autofill_client_, mock_callback.Get(), context));
-  iban_manager_.OnSingleFieldSuggestionSelected(u"", PopupItemId::kIbanEntry);
+  iban_manager_.OnSingleFieldSuggestionSelected(u"",
+                                                SuggestionType::kIbanEntry);
 
   histogram_tester.ExpectBucketCount(
       "Autofill.Iban.Suggestions",
@@ -669,7 +677,8 @@ TEST_F(IbanManagerTest, Metrics_SuggestionSelected) {
 
   EXPECT_TRUE(iban_manager_.OnGetSingleFieldSuggestions(
       test_field, autofill_client_, mock_callback.Get(), context));
-  iban_manager_.OnSingleFieldSuggestionSelected(u"", PopupItemId::kIbanEntry);
+  iban_manager_.OnSingleFieldSuggestionSelected(u"",
+                                                SuggestionType::kIbanEntry);
 
   histogram_tester.ExpectBucketCount(
       "Autofill.Iban.Suggestions",
@@ -686,7 +695,7 @@ TEST_F(IbanManagerTest, Metrics_NoSuggestionShown) {
   AutofillField test_field;
   // Input a prefix that does not have any matching IBAN value so that no IBAN
   // suggestions will be shown.
-  test_field.value = u"XY";
+  test_field.set_value(u"XY");
   SuggestionsContext context = GetIbanFocusedSuggestionsContext(test_field);
 
   MockSuggestionsReturnedCallback mock_callback;

@@ -10,6 +10,7 @@
 #include <optional>
 #include <set>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -115,7 +116,7 @@ constexpr net::NetworkTrafficAnnotationTag kReportingBeaconNetworkTag =
         }
       )");
 
-base::StringPiece ReportingDestinationAsString(
+std::string_view ReportingDestinationAsString(
     const blink::FencedFrame::ReportingDestination& destination) {
   switch (destination) {
     case blink::FencedFrame::ReportingDestination::kBuyer:
@@ -132,7 +133,7 @@ base::StringPiece ReportingDestinationAsString(
   NOTREACHED();
 }
 
-base::StringPiece InvokingAPIAsString(
+std::string_view InvokingAPIAsString(
     const PrivacySandboxInvokingAPI invoking_api) {
   switch (invoking_api) {
     case PrivacySandboxInvokingAPI::kProtectedAudience:
@@ -335,6 +336,14 @@ FencedFrameReporter::~FencedFrameReporter() {
           pending_event.attribution_reporting_data);
     }
   }
+
+  base::UmaHistogramCustomCounts(blink::kFencedFrameBeaconReportingCountUMA,
+                                 beacons_sent_same_origin_, /*min=*/1,
+                                 /*exclusive_max=*/20, /*buckets=*/20);
+  base::UmaHistogramCustomCounts(
+      blink::kFencedFrameBeaconReportingCountCrossOriginUMA,
+      beacons_sent_cross_origin_, /*min=*/1, /*exclusive_max=*/20,
+      /*buckets=*/20);
 }
 
 void FencedFrameReporter::OnUrlMappingReady(
@@ -653,7 +662,7 @@ bool FencedFrameReporter::SendReportInternal(
   // Allow cookies on automatic beacons while third party cookies are enabled
   // to help with adoption/debugging.
   // (https://github.com/WICG/turtledove/issues/866)
-  // TODO(crbug.com/1496395): After 3PCD, this will be dead code and should be
+  // TODO(crbug.com/40286778): After 3PCD, this will be dead code and should be
   // removed.
   if (base::FeatureList::IsEnabled(
           blink::features::kFencedFramesAutomaticBeaconCredentials) &&
@@ -699,23 +708,26 @@ bool FencedFrameReporter::SendReportInternal(
         NetworkServiceDevToolsObserver::MakeSelfOwned(
             initiator_frame_tree_node);
   }
+
+  std::optional<std::string> event_data;
+  if (absl::holds_alternative<DestinationEnumEvent>(event_variant)) {
+    event_data.emplace(absl::get<DestinationEnumEvent>(event_variant).data);
+  }
+  if (absl::holds_alternative<AutomaticBeaconEvent>(event_variant)) {
+    event_data.emplace(absl::get<AutomaticBeaconEvent>(event_variant).data);
+  }
+
   devtools_instrumentation::OnFencedFrameReportRequestSent(
-      initiator_frame_tree_node_id, devtools_request_id, *request);
+      initiator_frame_tree_node_id, devtools_request_id, *request,
+      event_data.value_or(""));
 
   // Create and configure `SimpleURLLoader` instance.
   std::unique_ptr<network::SimpleURLLoader> simple_url_loader =
       network::SimpleURLLoader::Create(std::move(request),
                                        kReportingBeaconNetworkTag);
-
-  if (absl::holds_alternative<DestinationEnumEvent>(event_variant)) {
+  if (event_data.has_value()) {
     simple_url_loader->AttachStringForUpload(
-        absl::get<DestinationEnumEvent>(event_variant).data,
-        /*upload_content_type=*/"text/plain;charset=UTF-8");
-  }
-  if (absl::holds_alternative<AutomaticBeaconEvent>(event_variant)) {
-    simple_url_loader->AttachStringForUpload(
-        absl::get<AutomaticBeaconEvent>(event_variant).data,
-        /*upload_content_type=*/"text/plain;charset=UTF-8");
+        event_data.value(), /*upload_content_type=*/"text/plain;charset=UTF-8");
   }
 
   network::SimpleURLLoader* simple_url_loader_ptr = simple_url_loader.get();
@@ -804,6 +816,22 @@ bool FencedFrameReporter::SendReportInternal(
             event_variant, std::move(simple_url_loader),
             initiator_frame_tree_node_id, devtools_request_id));
   }
+
+  // The associated histograms will be sent out in the FencedFrameReporter
+  // destructor.
+  absl::visit(
+      [&](const auto& event) {
+        using Event = std::decay_t<decltype(event)>;
+        if constexpr (std::is_same_v<Event, DestinationEnumEvent> ||
+                      std::is_same_v<Event, DestinationURLEvent>) {
+          if (event.cross_origin_exposed) {
+            beacons_sent_cross_origin_++;
+          } else {
+            beacons_sent_same_origin_++;
+          }
+        }
+      },
+      event_variant);
 
   return true;
 }

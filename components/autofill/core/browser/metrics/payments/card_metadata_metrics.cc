@@ -36,6 +36,15 @@ CardMetadataLoggingContext& CardMetadataLoggingContext::operator=(
     const CardMetadataLoggingContext&) = default;
 CardMetadataLoggingContext::~CardMetadataLoggingContext() = default;
 
+void CardMetadataLoggingContext::SetSelectedCardInfo(
+    const CreditCard& credit_card) {
+  selected_card_has_metadata_available =
+      instruments_with_metadata_available.contains(credit_card.instrument_id());
+  selected_issuer_or_network_to_metadata_availability = {
+      {credit_card.issuer_id(), selected_card_has_metadata_available},
+      {credit_card.network(), selected_card_has_metadata_available}};
+}
+
 std::string_view GetCardIssuerIdOrNetworkSuffix(
     const std::string& card_issuer_id_or_network) {
   if (card_issuer_id_or_network == kAmexCardIssuerId) {
@@ -104,24 +113,25 @@ CardMetadataLoggingContext GetMetadataLoggingContext(
           card_has_metadata;
     }
 
-    // If there is at least one card having product description or rich card
-    // art, denote in the `metadata_logging_context`.
     if (card_has_metadata) {
-      metadata_logging_context.card_metadata_available = true;
+      metadata_logging_context.instruments_with_metadata_available.insert(
+          card.instrument_id());
     }
   }
 
   return metadata_logging_context;
 }
 
-// TODO(crbug.com/1521067): Refactor and cleanup FormEvent logging.
+// TODO(crbug.com/41494039): Refactor and cleanup FormEvent logging.
 void LogCardWithMetadataFormEventMetric(
     CardMetadataLoggingEvent event,
     const CardMetadataLoggingContext& context,
     HasBeenLogged has_been_logged) {
   bool selected_with_metadata_logged = false;
   for (const auto& [issuer_or_network, has_metadata] :
-       context.issuer_or_network_to_metadata_availability) {
+       context.selected_issuer_or_network_to_metadata_availability.has_value()
+           ? *context.selected_issuer_or_network_to_metadata_availability
+           : context.issuer_or_network_to_metadata_availability) {
     const std::string_view& histogram_issuer_or_network =
         GetCardIssuerIdOrNetworkSuffix(issuer_or_network);
     if (histogram_issuer_or_network.empty()) {
@@ -227,6 +237,11 @@ void LogAcceptanceLatency(base::TimeDelta latency,
                       ".", issuer_or_network_suffix}),
         latency);
   }
+}
+
+void LogIsCreditCardBenefitsEnabledAtStartup(bool enabled) {
+  base::UmaHistogramBoolean(
+      "Autofill.PaymentMethods.CardBenefitsIsEnabled.Startup", enabled);
 }
 
 }  // namespace autofill::autofill_metrics

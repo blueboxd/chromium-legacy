@@ -4,6 +4,8 @@
 
 #include "components/segmentation_platform/internal/stats.h"
 
+#include <string_view>
+
 #include "base/functional/bind.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
@@ -48,6 +50,7 @@ GetOptimizationTargetOutputDescription(SegmentId segment_id) {
     case SegmentId::OPTIMIZATION_TARGET_SEGMENTATION_FEED_USER:
     case SegmentId::OPTIMIZATION_TARGET_CONTEXTUAL_PAGE_ACTION_PRICE_TRACKING:
     case SegmentId::OPTIMIZATION_TARGET_WEB_APP_INSTALLATION_PROMO:
+    case SegmentId::OPTIMIZATION_TARGET_SEGMENTATION_COMPOSE_PROMOTION:
       return proto::SegmentationModelMetadata::RETURN_TYPE_PROBABILITY;
     case SegmentId::OPTIMIZATION_TARGET_SEGMENTATION_SEARCH_USER:
     case SegmentId::OPTIMIZATION_TARGET_SEGMENTATION_TABLET_PRODUCTIVITY_USER:
@@ -152,7 +155,7 @@ AdaptiveToolbarSegmentSwitch GetAdaptiveToolbarSegmentSwitch(
 
 // Should map to ModelExecutionStatus variant string in
 // //tools/metrics/histograms/metadata/segmentation_platform/histograms.xml.
-std::optional<base::StringPiece> ModelExecutionStatusToHistogramVariant(
+std::optional<std::string_view> ModelExecutionStatusToHistogramVariant(
     ModelExecutionStatus status) {
   switch (status) {
     case ModelExecutionStatus::kSuccess:
@@ -411,7 +414,7 @@ void RecordModelExecutionDurationModel(SegmentId segment_id,
                                        base::TimeDelta duration) {
   ModelExecutionStatus status = success ? ModelExecutionStatus::kSuccess
                                         : ModelExecutionStatus::kExecutionError;
-  std::optional<base::StringPiece> status_variant =
+  std::optional<std::string_view> status_variant =
       ModelExecutionStatusToHistogramVariant(status);
   if (!status_variant)
     return;
@@ -425,7 +428,7 @@ void RecordModelExecutionDurationModel(SegmentId segment_id,
 void RecordModelExecutionDurationTotal(SegmentId segment_id,
                                        ModelExecutionStatus status,
                                        base::TimeDelta duration) {
-  std::optional<base::StringPiece> status_variant =
+  std::optional<std::string_view> status_variant =
       ModelExecutionStatusToHistogramVariant(status);
   if (!status_variant)
     return;

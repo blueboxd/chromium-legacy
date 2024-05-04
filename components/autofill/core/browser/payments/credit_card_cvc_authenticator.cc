@@ -13,6 +13,7 @@
 #include "components/autofill/core/browser/metrics/payments/card_unmask_authentication_metrics.h"
 #include "components/autofill/core/browser/payments/card_unmask_challenge_option.h"
 #include "components/autofill/core/browser/payments/full_card_request.h"
+#include "components/autofill/core/browser/payments/payments_autofill_client.h"
 
 namespace autofill {
 
@@ -39,7 +40,9 @@ void CreditCardCvcAuthenticator::Authenticate(
         payments::FullCardRequest::FailureType::GENERIC_FAILURE);
   }
   full_card_request_ = std::make_unique<payments::FullCardRequest>(
-      client_, client_->GetPaymentsNetworkInterface(), personal_data_manager);
+      client_,
+      client_->GetPaymentsAutofillClient()->GetPaymentsNetworkInterface(),
+      personal_data_manager);
 
   CreditCard::RecordType card_record_type = card->record_type();
   autofill_metrics::LogCvcAuthAttempt(card_record_type);
@@ -141,12 +144,13 @@ void CreditCardCvcAuthenticator::ShowUnmaskPrompt(
     const CreditCard& card,
     const CardUnmaskPromptOptions& card_unmask_prompt_options,
     base::WeakPtr<CardUnmaskDelegate> delegate) {
-  client_->ShowUnmaskPrompt(card, card_unmask_prompt_options, delegate);
+  client_->GetPaymentsAutofillClient()->ShowUnmaskPrompt(
+      card, card_unmask_prompt_options, delegate);
 }
 
 void CreditCardCvcAuthenticator::OnUnmaskVerificationResult(
     AutofillClient::PaymentsRpcResult result) {
-  client_->OnUnmaskVerificationResult(result);
+  client_->GetPaymentsAutofillClient()->OnUnmaskVerificationResult(result);
 }
 
 #if BUILDFLAG(IS_ANDROID)
@@ -161,12 +165,13 @@ bool CreditCardCvcAuthenticator::UserOptedInToFidoFromSettingsPageOnMobile()
 #endif
 
 payments::FullCardRequest* CreditCardCvcAuthenticator::GetFullCardRequest() {
-  // TODO(crbug.com/951669): iOS and Android clients should use
+  // TODO(crbug.com/40622637): iOS and Android clients should use
   // CreditCardAccessManager to retrieve cards from payments instead of calling
   // this function directly.
   if (!full_card_request_) {
     full_card_request_ = std::make_unique<payments::FullCardRequest>(
-        client_, client_->GetPaymentsNetworkInterface(),
+        client_,
+        client_->GetPaymentsAutofillClient()->GetPaymentsNetworkInterface(),
         client_->GetPersonalDataManager());
   }
   return full_card_request_.get();

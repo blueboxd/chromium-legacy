@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <deque>
 #include <string>
+#include <string_view>
 #include <vector>
 
 #include "base/base64.h"
@@ -155,7 +156,7 @@ FieldType FirstNonCapturedType(const FormStructure& form,
       // possible_type was determined by a valid email address found within the
       // field's content. The kAutofillUploadVotesForFieldsWithEmail feature
       // handles this scenario.
-      if (type == EMAIL_ADDRESS && IsValidEmailAddress(field->value) &&
+      if (type == EMAIL_ADDRESS && IsValidEmailAddress(field->value()) &&
           base::FeatureList::IsEnabled(
               features::kAutofillUploadVotesForFieldsWithEmail)) {
         continue;
@@ -200,7 +201,7 @@ void EncodeRandomizedValue(const RandomizedEncoder& encoder,
                            FormSignature form_signature,
                            FieldSignature field_signature,
                            std::string_view data_type,
-                           base::StringPiece16 data_value,
+                           std::u16string_view data_value,
                            bool include_checksum,
                            AutofillRandomizedValue* output) {
   EncodeRandomizedValue(encoder, form_signature, field_signature, data_type,
@@ -249,54 +250,54 @@ void PopulateRandomizedFieldMetadata(
     AutofillRandomizedFieldMetadata* metadata) {
   const FormSignature form_signature = form.form_signature();
   const FieldSignature field_signature = field.GetFieldSignature();
-  if (!field.id_attribute.empty()) {
+  if (!field.id_attribute().empty()) {
     EncodeRandomizedValue(encoder, form_signature, field_signature,
-                          RandomizedEncoder::FIELD_ID, field.id_attribute,
+                          RandomizedEncoder::FIELD_ID, field.id_attribute(),
                           /*include_checksum=*/false, metadata->mutable_id());
   }
-  if (!field.name_attribute.empty()) {
+  if (!field.name_attribute().empty()) {
     EncodeRandomizedValue(encoder, form_signature, field_signature,
-                          RandomizedEncoder::FIELD_NAME, field.name_attribute,
+                          RandomizedEncoder::FIELD_NAME, field.name_attribute(),
                           /*include_checksum=*/false, metadata->mutable_name());
   }
   EncodeRandomizedValue(encoder, form_signature, field_signature,
                         RandomizedEncoder::FIELD_CONTROL_TYPE,
-                        FormControlTypeToString(field.form_control_type),
+                        FormControlTypeToString(field.form_control_type()),
                         /*include_checksum=*/false, metadata->mutable_type());
-  if (!field.label.empty()) {
+  if (!field.label().empty()) {
     EncodeRandomizedValue(encoder, form_signature, field_signature,
-                          RandomizedEncoder::FIELD_LABEL, field.label,
+                          RandomizedEncoder::FIELD_LABEL, field.label(),
                           /*include_checksum=*/false,
                           metadata->mutable_label());
   }
-  if (!field.aria_label.empty()) {
-    EncodeRandomizedValue(encoder, form_signature, field_signature,
-                          RandomizedEncoder::FIELD_ARIA_LABEL, field.aria_label,
-                          /*include_checksum=*/false,
-                          metadata->mutable_aria_label());
-  }
-  if (!field.aria_description.empty()) {
-    EncodeRandomizedValue(encoder, form_signature, field_signature,
-                          RandomizedEncoder::FIELD_ARIA_DESCRIPTION,
-                          field.aria_description, /*include_checksum=*/false,
-                          metadata->mutable_aria_description());
-  }
-  if (!field.css_classes.empty()) {
-    EncodeRandomizedValue(encoder, form_signature, field_signature,
-                          RandomizedEncoder::FIELD_CSS_CLASS, field.css_classes,
-                          /*include_checksum=*/false,
-                          metadata->mutable_css_class());
-  }
-  if (!field.placeholder.empty()) {
-    EncodeRandomizedValue(encoder, form_signature, field_signature,
-                          RandomizedEncoder::FIELD_PLACEHOLDER,
-                          field.placeholder, /*include_checksum=*/false,
-                          metadata->mutable_placeholder());
-  }
-  if (!field.autocomplete_attribute.empty()) {
+  if (!field.aria_label().empty()) {
     EncodeRandomizedValue(
         encoder, form_signature, field_signature,
-        RandomizedEncoder::FIELD_AUTOCOMPLETE, field.autocomplete_attribute,
+        RandomizedEncoder::FIELD_ARIA_LABEL, field.aria_label(),
+        /*include_checksum=*/false, metadata->mutable_aria_label());
+  }
+  if (!field.aria_description().empty()) {
+    EncodeRandomizedValue(encoder, form_signature, field_signature,
+                          RandomizedEncoder::FIELD_ARIA_DESCRIPTION,
+                          field.aria_description(), /*include_checksum=*/false,
+                          metadata->mutable_aria_description());
+  }
+  if (!field.css_classes().empty()) {
+    EncodeRandomizedValue(
+        encoder, form_signature, field_signature,
+        RandomizedEncoder::FIELD_CSS_CLASS, field.css_classes(),
+        /*include_checksum=*/false, metadata->mutable_css_class());
+  }
+  if (!field.placeholder().empty()) {
+    EncodeRandomizedValue(encoder, form_signature, field_signature,
+                          RandomizedEncoder::FIELD_PLACEHOLDER,
+                          field.placeholder(), /*include_checksum=*/false,
+                          metadata->mutable_placeholder());
+  }
+  if (!field.autocomplete_attribute().empty()) {
+    EncodeRandomizedValue(
+        encoder, form_signature, field_signature,
+        RandomizedEncoder::FIELD_AUTOCOMPLETE, field.autocomplete_attribute(),
         /*include_checksum=*/false, metadata->mutable_autocomplete());
   }
 }
@@ -310,7 +311,7 @@ void EncodeFormFieldsForUpload(const FormStructure& form,
 
   for (AutofillField* field : upload_fields) {
     // Don't upload checkable fields.
-    if (IsCheckable(field->check_status)) {
+    if (IsCheckable(field->check_status())) {
       continue;
     }
     // Do not upload fields that were filled with a fallback type, as this would
@@ -345,8 +346,8 @@ void EncodeFormFieldsForUpload(const FormStructure& form,
 
     added_field->set_signature(field->GetFieldSignature().value());
 
-    if (field->properties_mask) {
-      added_field->set_properties_mask(field->properties_mask);
+    if (field->properties_mask()) {
+      added_field->set_properties_mask(field->properties_mask());
     }
 
     if (form.randomized_encoder().has_value()) {
@@ -395,7 +396,8 @@ void EncodeFormForQuery(const autofill::FormStructure& form,
         queried_form_signatures.push_back(form);
 
         for (const auto& field : fields) {
-          if (IsCheckable(field->check_status) || !necessary_condition(field)) {
+          if (IsCheckable(field->check_status()) ||
+              !necessary_condition(field)) {
             continue;
           }
 
@@ -409,10 +411,11 @@ void EncodeFormForQuery(const autofill::FormStructure& form,
             form.alternative_form_signature(), [](auto& f) { return true; });
 
   for (const auto& field : form.fields()) {
-    if (field->host_form_signature) {
-      AddFormIf(form.fields(), field->host_form_signature,
+    if (field->host_form_signature()) {
+      AddFormIf(form.fields(), field->host_form_signature(),
                 form.alternative_form_signature(), [&](const auto& f) {
-                  return f->host_form_signature == field->host_form_signature;
+                  return f->host_form_signature() ==
+                         field->host_form_signature();
                 });
     }
   }
@@ -508,7 +511,7 @@ std::optional<FieldSuggestion> GetFieldSuggestion(
   std::optional<FieldSuggestion> main_frame_field_suggestion =
       get_suggestion(form.form_signature(), field.GetFieldSignature());
   std::optional<FieldSuggestion> iframe_field_suggestion =
-      get_suggestion(field.host_form_signature, field.GetFieldSignature());
+      get_suggestion(field.host_form_signature(), field.GetFieldSignature());
   // NOTE: Suggestions from alternative form signatures are always overrides.
   std::optional<FieldSuggestion> alternative_field_suggestion = get_suggestion(
       form.alternative_form_signature(), field.GetFieldSignature());
@@ -665,8 +668,8 @@ std::vector<AutofillUploadContents> EncodeUploadRequest(
   std::erase_if(upload_fields, [&form](const AutofillField* field) {
     // Autofill on iOS and the Password Manager in general have a null
     // FormFieldData::host_form_signature.
-    return !field->host_form_signature ||
-           field->host_form_signature == form.form_signature();
+    return !field->host_form_signature() ||
+           field->host_form_signature() == form.form_signature();
   });
   // Partition `upload_fields` with respect to the forms' renderer id.
   base::ranges::stable_sort(upload_fields, /*comp=*/{},
@@ -678,7 +681,7 @@ std::vector<AutofillUploadContents> EncodeUploadRequest(
     upload_content.set_client_version(
         std::string(version_info::GetProductNameAndVersionForUserAgent()));
     upload_content.set_form_signature(
-        (*subform_begin)->host_form_signature.value());
+        (*subform_begin)->host_form_signature().value());
     upload_content.set_autofill_used(false);
     upload_content.set_data_present(data_present);
 
@@ -837,9 +840,7 @@ void ProcessServerPredictionsQueryResponse(
     form->UpdateAutofillCount();
     form->RationalizeFormStructure(form_interactions_ukm_logger, log_manager);
 
-    // TODO(crbug.com/1154080): By calling this with true, autocomplete section
-    // attributes will be ignored.
-    form->IdentifySections(/*ignore_autocomplete=*/true);
+    AssignSections(form->fields());
     // Metrics are intentionally only emitted after the sever response, not when
     // determining heuristic types. This is done to reduce noise in the metrics,
     // since generally only this sectioning result is used.
@@ -850,13 +851,13 @@ void ProcessServerPredictionsQueryResponse(
     // The sections are mapped to consecutive natural numbers starting at 1.
     std::map<Section, size_t> section_id_map;
     for (const auto& field : form->fields()) {
-      if (!base::Contains(section_id_map, field->section)) {
+      if (!base::Contains(section_id_map, field->section())) {
         size_t next_section_id = section_id_map.size() + 1;
-        section_id_map[field->section] = next_section_id;
+        section_id_map[field->section()] = next_section_id;
       }
       field->AppendLogEventIfNotRepeated(RationalizationFieldLogEvent{
           .field_type = field->Type().GetStorableType(),
-          .section_id = section_id_map[field->section],
+          .section_id = section_id_map[field->section()],
           .type_changed = field->Type().GetStorableType() !=
                           field->ComputedType().GetStorableType(),
       });

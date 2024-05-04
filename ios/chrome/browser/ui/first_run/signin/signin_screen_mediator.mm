@@ -18,8 +18,8 @@
 #import "ios/chrome/browser/signin/model/system_identity.h"
 #import "ios/chrome/browser/sync/model/enterprise_utils.h"
 #import "ios/chrome/browser/ui/authentication/authentication_flow.h"
-#import "ios/chrome/browser/ui/authentication/signin/user_signin/logging/first_run_signin_logger.h"
-#import "ios/chrome/browser/ui/authentication/signin/user_signin/logging/user_signin_logger.h"
+#import "ios/chrome/browser/ui/authentication/signin/logging/first_run_signin_logger.h"
+#import "ios/chrome/browser/ui/authentication/signin/logging/user_signin_logger.h"
 #import "ios/chrome/browser/ui/first_run/first_run_util.h"
 #import "ios/chrome/browser/ui/first_run/signin/signin_screen_consumer.h"
 
@@ -138,8 +138,7 @@
         return;
       [weakSelf.logger
           logSigninCompletedWithResult:SigninCoordinatorResultSuccess
-                          addedAccount:weakSelf.addedAccount
-                 advancedSettingsShown:NO];
+                          addedAccount:weakSelf.addedAccount];
       if (completion)
         completion();
     }];
@@ -151,7 +150,7 @@
     // This case is possible if the user signs in with the FRE, and quits Chrome
     // without completed the FRE. And the user starts Chrome again.
     // See crbug.com/1312449.
-    // TODO(crbug.com/1314012): Need test for this case.
+    // TODO(crbug.com/40832610): Need test for this case.
     self.authenticationService->SignOut(
         signin_metrics::ProfileSignout::kAbortSignin,
         /*force_clear_browsing_data=*/false, startSignInCompletion);
@@ -172,7 +171,7 @@
   // This case is possible if the user signs in with the FRE, and quits Chrome
   // without completed the FRE. And the user starts Chrome again.
   // See crbug.com/1312449.
-  // TODO(crbug.com/1314012): Need test for this case.
+  // TODO(crbug.com/40832610): Need test for this case.
   __weak __typeof(self) weakSelf = self;
   ProceduralBlock signOutCompletion = ^() {
     [weakSelf.consumer setUIEnabled:YES];
@@ -322,7 +321,7 @@
 
 - (void)onChromeAccountManagerServiceShutdown:
     (ChromeAccountManagerService*)accountManagerService {
-  // TODO(crbug.com/1489595): Remove `[self disconnect]`.
+  // TODO(crbug.com/40284086): Remove `[self disconnect]`.
   [self disconnect];
 }
 

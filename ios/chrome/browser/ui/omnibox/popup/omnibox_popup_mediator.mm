@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_mediator.h"
-#import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_mediator+Testing.h"
 
 #import "base/feature_list.h"
 #import "base/ios/ios_util.h"
@@ -28,11 +27,10 @@
 #import "components/strings/grit/components_strings.h"
 #import "components/variations/variations_associated_data.h"
 #import "components/variations/variations_ids_provider.h"
-#import "ios/chrome/browser/default_browser/model/utils.h"
+#import "ios/chrome/browser/default_browser/model/default_browser_interest_signals.h"
 #import "ios/chrome/browser/favicon/model/favicon_loader.h"
 #import "ios/chrome/browser/net/model/crurl.h"
 #import "ios/chrome/browser/ntp/model/new_tab_page_util.h"
-#import "ios/chrome/browser/shared/coordinator/default_browser_promo/default_browser_promo_scene_agent_utils.h"
 #import "ios/chrome/browser/shared/model/prefs/pref_backed_boolean.h"
 #import "ios/chrome/browser/shared/model/prefs/pref_names.h"
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
@@ -40,6 +38,7 @@
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/shared/public/features/system_flags.h"
 #import "ios/chrome/browser/shared/ui/util/pasteboard_util.h"
+#import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/menu/browser_action_factory.h"
 #import "ios/chrome/browser/ui/omnibox/popup/autocomplete_controller_observer_bridge.h"
 #import "ios/chrome/browser/ui/omnibox/popup/autocomplete_match_formatter.h"
@@ -47,6 +46,7 @@
 #import "ios/chrome/browser/ui/omnibox/popup/carousel/carousel_item.h"
 #import "ios/chrome/browser/ui/omnibox/popup/carousel/carousel_item_menu_provider.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_pedal_annotator.h"
+#import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_mediator+Testing.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_presenter.h"
 #import "ios/chrome/browser/ui/omnibox/popup/pedal_section_extractor.h"
 #import "ios/chrome/browser/ui/omnibox/popup/pedal_suggestion_wrapper.h"
@@ -139,7 +139,7 @@ const NSUInteger kMaxSuggestTileTypePosition = 15;
     _remoteSuggestionsService = remoteSuggestionsService;
     _tracker = tracker;
     _cachedImages = [[NSCache alloc] init];
-    // This is logged only when `IsBottomOmniboxSteadyStateEnabled` is enabled.
+    // This is logged only when `IsBottomOmniboxAvailable`.
     _preferredOmniboxPosition = metrics::OmniboxEventProto::UNKNOWN_POSITION;
   }
   return self;
@@ -210,7 +210,7 @@ const NSUInteger kMaxSuggestTileTypePosition = 15;
 
 - (void)setOriginalPrefService:(PrefService*)originalPrefService {
   _originalPrefService = originalPrefService;
-  if (IsBottomOmniboxSteadyStateEnabled() && _originalPrefService) {
+  if (IsBottomOmniboxAvailable() && _originalPrefService) {
     _bottomOmniboxEnabled =
         [[PrefBackedBoolean alloc] initWithPrefService:_originalPrefService
                                               prefName:prefs::kBottomOmnibox];
@@ -283,11 +283,16 @@ const NSUInteger kMaxSuggestTileTypePosition = 15;
     const AutocompleteMatch& match =
         autocompleteMatchFormatter.autocompleteMatch;
 
-    // Don't log pastes in incognito.
-    if (!self.incognito && match.type == AutocompleteMatchType::CLIPBOARD_URL) {
-      NotifyDefaultBrowserPromoUserPastedInOmnibox(self.sceneState);
-      LogToFETUserPastedURLIntoOmnibox(self.tracker);
+    // A search using clipboard link or text is activity that should indicate a
+    // user that would be interested in setting the browser as the default.
+    if (match.type == AutocompleteMatchType::CLIPBOARD_URL) {
+      default_browser::NotifyOmniboxURLCopyPasteAndNavigate(
+          self.incognito, self.tracker, self.sceneState);
     }
+    if (match.type == AutocompleteMatchType::CLIPBOARD_TEXT) {
+      default_browser::NotifyOmniboxTextCopyPasteAndNavigate(self.tracker);
+    }
+
     if (!self.incognito &&
         match.type == AutocompleteMatchType::TILE_NAVSUGGEST) {
       [self logSelectedAutocompleteTile:match];

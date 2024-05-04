@@ -57,8 +57,10 @@ class LoginHandlerViews : public LoginHandler {
     // manager may not be available during the shutdown process of the
     // WebContents, which can trigger DidFinishNavigation events.
     // See https://crbug.com/328462789.
-    if (!web_modal::WebContentsModalDialogManager::FromWebContents(
-            constrained_window::GetTopLevelWebContents(web_contents()))) {
+    web_modal::WebContentsModalDialogManager* manager =
+        web_modal::WebContentsModalDialogManager::FromWebContents(
+            constrained_window::GetTopLevelWebContents(web_contents()));
+    if (!manager || !manager->delegate()) {
       return false;
     }
     dialog_ = new Dialog(this, web_contents(), authority, explanation,
@@ -110,7 +112,7 @@ class LoginHandlerViews : public LoginHandler {
           [](Dialog* dialog) {
             if (!dialog->handler_)
               return;
-            dialog->handler_->CancelAuth();
+            dialog->handler_->CancelAuth(/*notify_others=*/true);
           },
           base::Unretained(this)));
       SetModalType(ui::MODAL_TYPE_CHILD);
@@ -146,7 +148,7 @@ class LoginHandlerViews : public LoginHandler {
       // Reference is no longer valid.
       widget_ = nullptr;
       if (handler_)
-        handler_->CancelAuth();
+        handler_->CancelAuth(/*notify_others=*/true);
     }
 
     views::View* GetInitiallyFocusedView() override {

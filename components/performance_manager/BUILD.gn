@@ -16,8 +16,6 @@ static_library("performance_manager") {
     "browser_child_process_watcher.h",
     "decorators/frame_visibility_decorator.cc",
     "decorators/frame_visibility_decorator.h",
-    "decorators/freezing_vote_decorator.cc",
-    "decorators/freezing_vote_decorator.h",
     "decorators/page_live_state_decorator.cc",
     "decorators/page_load_tracker_decorator.cc",
     "decorators/page_load_tracker_decorator.h",
@@ -41,6 +39,8 @@ static_library("performance_manager") {
     "execution_context_priority/ad_frame_voter.h",
     "execution_context_priority/boosting_vote_aggregator.cc",
     "execution_context_priority/boosting_vote_aggregator.h",
+    "execution_context_priority/child_frame_booster.cc",
+    "execution_context_priority/child_frame_booster.h",
     "execution_context_priority/execution_context_priority.cc",
     "execution_context_priority/execution_context_priority_decorator.cc",
     "execution_context_priority/execution_context_priority_decorator.h",
@@ -59,9 +59,13 @@ static_library("performance_manager") {
     "execution_context_priority/root_vote_observer.cc",
     "execution_context_priority/root_vote_observer.h",
     "features.cc",
+    "freezing/cannot_freeze_reason.cc",
+    "freezing/cannot_freeze_reason.h",
+    "freezing/freezer.cc",
+    "freezing/freezer.h",
     "freezing/freezing.cc",
-    "freezing/freezing_vote_aggregator.cc",
-    "freezing/freezing_vote_aggregator.h",
+    "freezing/freezing_policy.cc",
+    "freezing/freezing_policy.h",
     "graph/frame_node.cc",
     "graph/frame_node_impl.cc",
     "graph/frame_node_impl.h",
@@ -169,6 +173,7 @@ static_library("performance_manager") {
     "public/resource_attribution/cpu_proportion_tracker.h",
     "public/resource_attribution/frame_context.h",
     "public/resource_attribution/memory_measurement_delegate.h",
+    "public/resource_attribution/origin_in_page_context.h",
     "public/resource_attribution/page_context.h",
     "public/resource_attribution/process_context.h",
     "public/resource_attribution/queries.h",
@@ -197,12 +202,14 @@ static_library("performance_manager") {
     "resource_attribution/cpu_measurement_monitor.h",
     "resource_attribution/cpu_proportion_tracker.cc",
     "resource_attribution/frame_context.cc",
+    "resource_attribution/graph_change.cc",
     "resource_attribution/graph_change.h",
     "resource_attribution/memory_measurement_delegate.cc",
     "resource_attribution/memory_measurement_provider.cc",
     "resource_attribution/memory_measurement_provider.h",
     "resource_attribution/node_data_describers.cc",
     "resource_attribution/node_data_describers.h",
+    "resource_attribution/origin_in_page_context.cc",
     "resource_attribution/page_context.cc",
     "resource_attribution/performance_manager_aliases.h",
     "resource_attribution/process_context.cc",
@@ -309,6 +316,13 @@ static_library("performance_manager") {
       "power/dbus_power_manager_sampling_event_source.h",
     ]
   }
+
+  if (is_win) {
+    sources += [
+      "graph/policies/prefetch_virtual_memory_policy.cc",
+      "graph/policies/prefetch_virtual_memory_policy.h",
+    ]
+  }
 }
 
 source_set("unit_tests") {
@@ -317,7 +331,6 @@ source_set("unit_tests") {
   sources = [
     "decorators/decorators_utils_unittest.cc",
     "decorators/frame_visibility_decorator_unittest.cc",
-    "decorators/freezing_vote_decorator_unittest.cc",
     "decorators/page_live_state_decorator_unittest.cc",
     "decorators/page_load_tracker_decorator_unittest.cc",
     "decorators/process_hosted_content_types_aggregator_unittest.cc",
@@ -329,6 +342,7 @@ source_set("unit_tests") {
     "execution_context/execution_context_registry_impl_unittest.cc",
     "execution_context_priority/ad_frame_voter_unittest.cc",
     "execution_context_priority/boosting_vote_aggregator_unittest.cc",
+    "execution_context_priority/child_frame_booster_unittest.cc",
     "execution_context_priority/execution_context_priority_unittest.cc",
     "execution_context_priority/frame_audible_voter_unittest.cc",
     "execution_context_priority/frame_capturing_media_stream_voter_unittest.cc",
@@ -337,7 +351,6 @@ source_set("unit_tests") {
     "execution_context_priority/max_vote_aggregator_unittest.cc",
     "execution_context_priority/override_vote_aggregator_unittest.cc",
     "execution_context_priority/root_vote_observer_unittest.cc",
-    "freezing/freezing_vote_aggregator_unittest.cc",
     "graph/frame_node_impl_unittest.cc",
     "graph/graph_impl_operations_unittest.cc",
     "graph/graph_impl_unittest.cc",
@@ -363,6 +376,7 @@ source_set("unit_tests") {
     "render_process_host_id_unittest.cc",
     "resource_attribution/cpu_measurement_monitor_unittest.cc",
     "resource_attribution/frame_context_unittest.cc",
+    "resource_attribution/origin_in_page_context_unittest.cc",
     "resource_attribution/page_context_unittest.cc",
     "resource_attribution/process_context_unittest.cc",
     "resource_attribution/queries_unittest.cc",
@@ -408,6 +422,8 @@ source_set("unit_tests") {
   if (!is_android) {
     sources += [
       "decorators/site_data_recorder_unittest.cc",
+      "freezing/freezer_unittest.cc",
+      "freezing/freezing_policy_unittest.cc",
       "freezing/freezing_unittest.cc",
       "persistence/site_data/exponential_moving_average_unittest.cc",
       "persistence/site_data/leveldb_site_data_store_unittest.cc",
@@ -418,7 +434,7 @@ source_set("unit_tests") {
       "persistence/site_data/site_data_reader_unittest.cc",
       "persistence/site_data/site_data_writer_unittest.cc",
 
-      # TODO(crbug.com/1225070): Consider using this policy on Android.
+      # TODO(crbug.com/40188246): Consider using this policy on Android.
       "graph/policies/bfcache_policy_unittest.cc",
     ]
   }

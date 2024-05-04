@@ -135,8 +135,12 @@ public abstract class PageInfoControllerDelegate {
     /** Show Tracking Protection settings. */
     public abstract void showTrackingProtectionSettings();
 
+    /** Show RWS (related website sets) sites in all site settings filtered by {@param rwsOwner}. */
+    public abstract void showAllSettingsForRws(String rwsOwner);
+
     /**
      * Shows cookie feedback UI.
+     *
      * @param activity The Activity where the feedback is shown.
      */
     public abstract void showCookieFeedback(Activity activity);
@@ -186,9 +190,18 @@ public abstract class PageInfoControllerDelegate {
 
     public abstract boolean isIncognito();
 
-    /** @return Whether the Tracking Protection UI should be shown instead of the cookies one. */
+    /**
+     * @return Whether the Tracking Protection UI should be shown instead of the cookies one.
+     */
     public abstract boolean showTrackingProtectionUI();
 
-    /** @return Whether all 3PCs are blocked when Tracking Protection is on. */
+    /**
+     * @return Whether the 3PCD 100% Tracking Protection UI should be shown.
+     */
+    public abstract boolean showTrackingProtectionLaunchUI();
+
+    /**
+     * @return Whether all 3PCs are blocked when Tracking Protection is on.
+     */
     public abstract boolean allThirdPartyCookiesBlockedTrackingProtection();
 }

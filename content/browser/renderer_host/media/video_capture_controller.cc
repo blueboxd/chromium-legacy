@@ -27,11 +27,11 @@
 #include "media/base/video_frame.h"
 #include "media/base/video_types.h"
 #include "media/capture/mojom/video_capture_types.mojom.h"
-#include "media/capture/mojom/video_effects_manager.mojom.h"
 #include "media/capture/video/video_capture_buffer_pool.h"
 #include "media/capture/video/video_capture_buffer_tracker_factory_impl.h"
 #include "media/capture/video/video_capture_device_client.h"
 #include "media/capture/video/video_capture_metrics.h"
+#include "services/video_effects/public/mojom/video_effects_processor.mojom-forward.h"
 
 #if !BUILDFLAG(IS_ANDROID)
 #include "content/browser/compositor/image_transport_factory.h"
@@ -166,17 +166,18 @@ VideoCaptureController::BufferContext::CloneBufferHandle() {
     // VideoCaptureBufferPool which, among other use cases, provides decoder
     // output buffers.
     //
-    // TODO(crbug.com/793446): BroadcastingReceiver::BufferContext also defines
-    // CloneBufferHandle and independently decides on handle permissions. The
-    // permissions should be coordinated between these two classes.
+    // TODO(crbug.com/40553989): BroadcastingReceiver::BufferContext also
+    // defines CloneBufferHandle and independently decides on handle
+    // permissions. The permissions should be coordinated between these two
+    // classes.
     return media::mojom::VideoBufferHandle::NewUnsafeShmemRegion(
         buffer_handle_->get_unsafe_shmem_region().Duplicate());
   } else if (buffer_handle_->is_read_only_shmem_region()) {
     return media::mojom::VideoBufferHandle::NewReadOnlyShmemRegion(
         buffer_handle_->get_read_only_shmem_region().Duplicate());
-  } else if (buffer_handle_->is_mailbox_handles()) {
-    return media::mojom::VideoBufferHandle::NewMailboxHandles(
-        buffer_handle_->get_mailbox_handles()->Clone());
+  } else if (buffer_handle_->is_shared_image_handles()) {
+    return media::mojom::VideoBufferHandle::NewSharedImageHandles(
+        buffer_handle_->get_shared_image_handles()->Clone());
   } else if (buffer_handle_->is_gpu_memory_buffer_handle()) {
     return media::mojom::VideoBufferHandle::NewGpuMemoryBufferHandle(
         buffer_handle_->get_gpu_memory_buffer_handle().Clone());
@@ -654,8 +655,8 @@ void VideoCaptureController::CreateAndStartDeviceAsync(
     const media::VideoCaptureParams& params,
     VideoCaptureDeviceLaunchObserver* observer,
     base::OnceClosure done_cb,
-    mojo::PendingRemote<media::mojom::VideoEffectsManager>
-        video_effects_manager) {
+    mojo::PendingRemote<video_effects::mojom::VideoEffectsProcessor>
+        video_effects_processor) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("video_and_image_capture"),
                "VideoCaptureController::CreateAndStartDeviceAsync");
@@ -670,7 +671,7 @@ void VideoCaptureController::CreateAndStartDeviceAsync(
       device_id_, stream_type_, params, GetWeakPtrForIOThread(),
       base::BindOnce(&VideoCaptureController::OnDeviceConnectionLost,
                      GetWeakPtrForIOThread()),
-      this, std::move(done_cb), std::move(video_effects_manager));
+      this, std::move(done_cb), std::move(video_effects_processor));
 }
 
 void VideoCaptureController::ReleaseDeviceAsync(base::OnceClosure done_cb) {

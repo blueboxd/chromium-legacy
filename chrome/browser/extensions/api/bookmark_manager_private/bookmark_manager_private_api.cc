@@ -373,8 +373,9 @@ ExtensionFunction::ResponseValue ClipboardBookmarkManagerFunction::CopyOrCut(
     return Error(bookmark_keys::kModifyManagedError);
   if (cut && HasPermanentNodes(nodes))
     return Error(bookmark_keys::kModifySpecialError);
-  bookmarks::CopyToClipboard(
-      model, nodes, cut, bookmarks::metrics::BookmarkEditSource::kExtension);
+  bookmarks::CopyToClipboard(model, nodes, cut,
+                             bookmarks::metrics::BookmarkEditSource::kExtension,
+                             GetProfile()->IsOffTheRecord());
   return NoArguments();
 }
 
@@ -768,8 +769,8 @@ BookmarkManagerPrivateImportFunction::RunOnReady() {
     return Error(bookmark_api_constants::kEditBookmarksDisabled);
   ShowSelectFileDialog(ui::SelectFileDialog::SELECT_OPEN_FILE,
                        base::FilePath());
-  // TODO(crbug.com/1073255): This will respond before a file is selected, which
-  // seems incorrect. Waiting and responding until after
+  // TODO(crbug.com/40127463): This will respond before a file is selected,
+  // which seems incorrect. Waiting and responding until after
   // ui::SelectFileDialog::Listener is fired should be right thing to do, but
   // that requires auditing bookmark page callsites.
   return NoArguments();
@@ -808,8 +809,8 @@ BookmarkManagerPrivateExportFunction::RunOnReady() {
       base::BindOnce(&GetDefaultFilepathForBookmarkExport),
       base::BindOnce(&BookmarkManagerPrivateIOFunction::ShowSelectFileDialog,
                      this, ui::SelectFileDialog::SELECT_SAVEAS_FILE));
-  // TODO(crbug.com/1073255): This will respond before a file is selected, which
-  // seems incorrect. Waiting and responding until after
+  // TODO(crbug.com/40127463): This will respond before a file is selected,
+  // which seems incorrect. Waiting and responding until after
   // ui::SelectFileDialog::Listener is fired should be right thing to do, but
   // that requires auditing bookmark page callsites.
   return NoArguments();

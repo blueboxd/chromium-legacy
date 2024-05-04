@@ -8,13 +8,14 @@
 #include <utility>
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/webid/digital_identity_request.mojom.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_credential_creation_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_credential_request_options.h"
-#include "third_party/blink/renderer/bindings/modules/v8/v8_digital_credential_provider.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_digital_credential_request_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_identity_credential_request_options.h"
-#include "third_party/blink/renderer/bindings/modules/v8/v8_identity_provider_request_options.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_identity_request_provider.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/modules/credentialmanagement/credential.h"
@@ -23,28 +24,52 @@
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/task_environment.h"
+#include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
 namespace blink {
 
 namespace {
 
+// Mock mojom::DigitalIdentityRequest which succeeds and returns "token".
+class MockDigitalIdentityRequest : public mojom::DigitalIdentityRequest {
+ public:
+  MockDigitalIdentityRequest() = default;
+
+  MockDigitalIdentityRequest(const MockDigitalIdentityRequest&) = delete;
+  MockDigitalIdentityRequest& operator=(const MockDigitalIdentityRequest&) =
+      delete;
+
+  void Bind(mojo::PendingReceiver<mojom::DigitalIdentityRequest> receiver) {
+    receiver_.Bind(std::move(receiver));
+  }
+
+  void Request(blink::mojom::DigitalCredentialProviderPtr provider,
+               RequestCallback callback) override {
+    std::move(callback).Run(mojom::RequestDigitalIdentityStatus::kSuccess,
+                            "token");
+  }
+  void Abort() override {}
+
+ private:
+  mojo::Receiver<mojom::DigitalIdentityRequest> receiver_{this};
+};
+
 CredentialRequestOptions* CreateOptionsWithProviders(
-    const HeapVector<Member<IdentityProviderRequestOptions>>& providers) {
-  IdentityCredentialRequestOptions* identity_credential_request =
-      IdentityCredentialRequestOptions::Create();
-  identity_credential_request->setProviders(providers);
+    const HeapVector<Member<IdentityRequestProvider>>& providers) {
+  DigitalCredentialRequestOptions* digital_credential_request =
+      DigitalCredentialRequestOptions::Create();
+  digital_credential_request->setProviders(providers);
   CredentialRequestOptions* options = CredentialRequestOptions::Create();
-  options->setIdentity(identity_credential_request);
+  options->setDigital(digital_credential_request);
   return options;
 }
 
 CredentialRequestOptions* CreateValidOptions() {
-  IdentityProviderRequestOptions* identity_provider_request =
-      IdentityProviderRequestOptions::Create();
-  identity_provider_request->setHolder(DigitalCredentialProvider::Create());
-  HeapVector<Member<IdentityProviderRequestOptions>> identity_providers;
-  identity_providers.push_back(identity_provider_request);
+  IdentityRequestProvider* identity_provider =
+      IdentityRequestProvider::Create();
+  HeapVector<Member<IdentityRequestProvider>> identity_providers;
+  identity_providers.push_back(identity_provider);
   return CreateOptionsWithProviders(identity_providers);
 }
 
@@ -71,16 +96,32 @@ TEST_F(DigitalIdentityCredentialTest, IdentityDigitalCredentialUseCounter) {
   ScopedWebIdentityDigitalCredentialsForTest scoped_digital_credentials(
       /*enabled=*/true);
 
+  std::unique_ptr mock_request = std::make_unique<MockDigitalIdentityRequest>();
+  auto mock_request_ptr = mock_request.get();
+  context.GetWindow().GetBrowserInterfaceBroker().SetBinderForTesting(
+      mojom::DigitalIdentityRequest::Name_,
+      WTF::BindRepeating(
+          [](MockDigitalIdentityRequest* mock_request_ptr,
+             mojo::ScopedMessagePipeHandle handle) {
+            mock_request_ptr->Bind(
+                mojo::PendingReceiver<mojom::DigitalIdentityRequest>(
+                    std::move(handle)));
+          },
+          WTF::Unretained(mock_request_ptr)));
+
   ScriptState* script_state = context.GetScriptState();
   auto* resolver =
-      MakeGarbageCollected<ScriptPromiseResolverTyped<IDLNullable<Credential>>>(
+      MakeGarbageCollected<ScriptPromiseResolver<IDLNullable<Credential>>>(
           script_state);
   auto promise = DiscoverDigitalIdentityCredentialFromExternalSource(
-      script_state, resolver, *CreateValidOptions(),
-      IGNORE_EXCEPTION_FOR_TESTING);
+      resolver, *CreateValidOptions());
+
+  test::RunPendingTasks();
 
   EXPECT_TRUE(context.GetWindow().document()->IsUseCounted(
       blink::mojom::WebFeature::kIdentityDigitalCredentials));
+  EXPECT_TRUE(context.GetWindow().document()->IsUseCounted(
+      blink::mojom::WebFeature::kIdentityDigitalCredentialsSuccess));
 }
 
 }  // namespace blink

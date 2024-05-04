@@ -4,19 +4,20 @@
 
 import './settings_ui/settings_ui.js';
 
+export {CrPolicyPrefIndicatorElement} from '/shared/settings/controls/cr_policy_pref_indicator.js';
 export {ExtensionControlledIndicatorElement} from '/shared/settings/controls/extension_controlled_indicator.js';
 export {DEFAULT_CHECKED_VALUE, DEFAULT_UNCHECKED_VALUE} from '/shared/settings/controls/settings_boolean_control_mixin.js';
 export {ExtensionControlBrowserProxy, ExtensionControlBrowserProxyImpl} from '/shared/settings/extension_control_browser_proxy.js';
 export {LifetimeBrowserProxy, LifetimeBrowserProxyImpl} from '/shared/settings/lifetime_browser_proxy.js';
 export {ProfileInfo, ProfileInfoBrowserProxy, ProfileInfoBrowserProxyImpl} from '/shared/settings/people_page/profile_info_browser_proxy.js';
-export {PageStatus, StatusAction, StoredAccount, SyncBrowserProxy, SyncBrowserProxyImpl, SyncPrefs, syncPrefsIndividualDataTypes, SyncStatus, TrustedVaultBannerState} from '/shared/settings/people_page/sync_browser_proxy.js';
+export {ChromeSigninUserChoice, ChromeSigninUserChoiceInfo, PageStatus, SignedInState, StatusAction, StoredAccount, SyncBrowserProxy, SyncBrowserProxyImpl, SyncPrefs, syncPrefsIndividualDataTypes, SyncStatus, TrustedVaultBannerState} from '/shared/settings/people_page/sync_browser_proxy.js';
+export {prefToString, stringToPrefValue} from '/shared/settings/prefs/pref_util.js';
+export {SettingsPrefsElement} from '/shared/settings/prefs/prefs.js';
+export {PrefsMixin, PrefsMixinInterface} from '/shared/settings/prefs/prefs_mixin.js';
+export {CrSettingsPrefs} from '/shared/settings/prefs/prefs_types.js';
 export {MetricsReporting, PrivacyPageBrowserProxy, PrivacyPageBrowserProxyImpl, ResolverOption, SecureDnsMode, SecureDnsSetting, SecureDnsUiManagementMode} from '/shared/settings/privacy_page/privacy_page_browser_proxy.js';
 export {CustomizeColorSchemeModeBrowserProxy} from 'chrome://resources/cr_components/customize_color_scheme_mode/browser_proxy.js';
 export {ColorSchemeMode, CustomizeColorSchemeModeClientCallbackRouter, CustomizeColorSchemeModeClientRemote, CustomizeColorSchemeModeHandlerRemote} from 'chrome://resources/cr_components/customize_color_scheme_mode/customize_color_scheme_mode.mojom-webui.js';
-export {prefToString, stringToPrefValue} from 'chrome://resources/cr_components/settings_prefs/pref_util.js';
-export {SettingsPrefsElement} from 'chrome://resources/cr_components/settings_prefs/prefs.js';
-export {PrefsMixin, PrefsMixinInterface} from 'chrome://resources/cr_components/settings_prefs/prefs_mixin.js';
-export {CrSettingsPrefs} from 'chrome://resources/cr_components/settings_prefs/prefs_types.js';
 export {CrActionMenuElement} from 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.js';
 export {CrButtonElement} from 'chrome://resources/cr_elements/cr_button/cr_button.js';
 export {CrDialogElement} from 'chrome://resources/cr_elements/cr_dialog/cr_dialog.js';
@@ -60,7 +61,7 @@ export {SettingsDefaultBrowserPageElement} from './default_browser_page/default_
 // </if>
 export {HatsBrowserProxy, HatsBrowserProxyImpl, SafeBrowsingSetting, SecurityPageInteraction, TrustSafetyInteraction} from './hats_browser_proxy.js';
 export {loadTimeData} from './i18n_setup.js';
-export {CvcDeletionUserAction, DeleteBrowsingDataAction, MetricsBrowserProxy, MetricsBrowserProxyImpl, PrivacyElementInteractions, PrivacyGuideInteractions, PrivacyGuideSettingsStates, PrivacyGuideStepsEligibleAndReached, SafeBrowsingInteractions, SafetyCheckInteractions, SafetyCheckNotificationsModuleInteractions, SafetyCheckUnusedSitePermissionsModuleInteractions, SafetyHubCardState, SafetyHubEntryPoint, SafetyHubModuleType, SafetyHubSurfaces} from './metrics_browser_proxy.js';
+export {CardBenefitsUserAction, CvcDeletionUserAction, DeleteBrowsingDataAction, MetricsBrowserProxy, MetricsBrowserProxyImpl, PrivacyElementInteractions, PrivacyGuideInteractions, PrivacyGuideSettingsStates, PrivacyGuideStepsEligibleAndReached, SafeBrowsingInteractions, SafetyCheckInteractions, SafetyCheckNotificationsModuleInteractions, SafetyCheckUnusedSitePermissionsModuleInteractions, SafetyHubCardState, SafetyHubEntryPoint, SafetyHubModuleType, SafetyHubSurfaces} from './metrics_browser_proxy.js';
 export {NtpExtension, OnStartupBrowserProxy, OnStartupBrowserProxyImpl} from './on_startup_page/on_startup_browser_proxy.js';
 export {SettingsOnStartupPageElement} from './on_startup_page/on_startup_page.js';
 export {SettingsStartupUrlDialogElement} from './on_startup_page/startup_url_dialog.js';
@@ -76,7 +77,7 @@ export {MAX_SIGNIN_PROMO_IMPRESSION, SettingsSyncAccountControlElement} from './
 export {BATTERY_SAVER_MODE_PREF, SettingsBatteryPageElement} from './performance_page/battery_page.js';
 export {PerformanceBrowserProxy, PerformanceBrowserProxyImpl} from './performance_page/performance_browser_proxy.js';
 export {BatterySaverModeState, MemorySaverModeExceptionListAction, MemorySaverModeState, PerformanceMetricsProxy, PerformanceMetricsProxyImpl} from './performance_page/performance_metrics_proxy.js';
-export {MEMORY_SAVER_MODE_PREF, SettingsPerformancePageElement} from './performance_page/performance_page.js';
+export {DISCARD_RING_PREF, MEMORY_SAVER_MODE_PREF, SettingsPerformancePageElement} from './performance_page/performance_page.js';
 export {SpeedPageElement} from './performance_page/speed_page.js';
 export {ExceptionEditDialogElement} from './performance_page/tab_discard/exception_edit_dialog.js';
 export {ExceptionEntryElement} from './performance_page/tab_discard/exception_entry.js';

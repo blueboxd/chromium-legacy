@@ -11,11 +11,14 @@
 #include "cc/slim/solid_color_layer.h"
 #include "cc/slim/ui_resource_layer.h"
 #include "chrome/android/chrome_jni_headers/TabStripSceneLayer_jni.h"
+#include "chrome/browser/android/compositor/decoration_title.h"
 #include "chrome/browser/android/compositor/layer/tab_handle_layer.h"
 #include "chrome/browser/android/compositor/layer_title_cache.h"
 #include "chrome/browser/flags/android/chrome_feature_list.h"
 #include "ui/android/resources/nine_patch_resource.h"
 #include "ui/android/resources/resource_manager_impl.h"
+#include "ui/base/l10n/l10n_util_android.h"
+#include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/rounded_corners_f.h"
 #include "ui/gfx/geometry/transform.h"
 
@@ -29,6 +32,7 @@ TabStripSceneLayer::TabStripSceneLayer(JNIEnv* env,
     : SceneLayer(env, jobj),
       tab_strip_layer_(cc::slim::SolidColorLayer::Create()),
       scrollable_strip_layer_(cc::slim::Layer::Create()),
+      group_indicator_layer_(cc::slim::Layer::Create()),
       new_tab_button_(cc::slim::UIResourceLayer::Create()),
       new_tab_button_background_(cc::slim::UIResourceLayer::Create()),
       left_fade_(cc::slim::UIResourceLayer::Create()),
@@ -51,10 +55,13 @@ TabStripSceneLayer::TabStripSceneLayer(JNIEnv* env,
   right_padding_layer_->SetIsDrawable(true);
 
   // When the ScrollingStripStacker is used, the new tab button and tabs scroll,
-  // while the incognito button and left/ride fade stay fixed. Put the new tab
-  // button and tabs in a separate layer placed visually below the others.
+  // while the incognito button and left/right fade stay fixed. Put the new tab
+  // button and tabs in a separate layer placed visually below the others. Put
+  // tab group indicators in a separate layer placed visually below the tabs.
+  group_indicator_layer_->SetIsDrawable(true);
   scrollable_strip_layer_->SetIsDrawable(true);
   tab_strip_layer_->SetIsDrawable(true);
+  tab_strip_layer_->AddChild(group_indicator_layer_);
   tab_strip_layer_->AddChild(scrollable_strip_layer_);
 
   tab_strip_layer_->AddChild(left_fade_);
@@ -114,11 +121,16 @@ void TabStripSceneLayer::FinishBuildingFrame(
   for (unsigned i = group_write_index_; i < group_title_layers_.size(); ++i) {
     group_title_layers_[i]->RemoveFromParent();
   }
+  for (unsigned i = group_write_index_; i < group_bottom_layers_.size(); ++i) {
+    group_bottom_layers_[i]->RemoveFromParent();
+  }
 
   tab_handle_layers_.erase(tab_handle_layers_.begin() + write_index_,
                            tab_handle_layers_.end());
   group_title_layers_.erase(group_title_layers_.begin() + group_write_index_,
                             group_title_layers_.end());
+  group_bottom_layers_.erase(group_bottom_layers_.begin() + group_write_index_,
+                             group_bottom_layers_.end());
 }
 
 void TabStripSceneLayer::UpdateTabStripLayer(JNIEnv* env,
@@ -130,12 +142,19 @@ void TabStripSceneLayer::UpdateTabStripLayer(JNIEnv* env,
                                              jint scrim_color,
                                              jfloat scrim_opacity,
                                              jfloat left_padding,
-                                             jfloat right_padding) {
+                                             jfloat right_padding,
+                                             jfloat top_padding) {
   gfx::RectF content(0, y_offset, width, height);
   layer()->SetPosition(gfx::PointF(0, y_offset));
   tab_strip_layer_->SetBounds(gfx::Size(width, height));
-  scrollable_strip_layer_->SetBounds(gfx::Size(width, height));
   tab_strip_layer_->SetBackgroundColor(SkColor4f::FromColor(background_color));
+
+  float scrollable_strip_height = height - top_padding;
+  scrollable_strip_layer_->SetBounds(gfx::Size(width, scrollable_strip_height));
+  scrollable_strip_layer_->SetPosition(gfx::PointF(0, top_padding));
+
+  group_indicator_layer_->SetBounds(gfx::Size(width, scrollable_strip_height));
+  group_indicator_layer_->SetPosition(gfx::PointF(0, top_padding));
 
   // Content tree should not be affected by tab strip scene layer visibility.
   if (content_tree_)
@@ -184,6 +203,7 @@ void TabStripSceneLayer::UpdateNewTabButton(
     jboolean should_apply_hover_highlight,
     jfloat x,
     jfloat y,
+    jfloat top_padding,
     jfloat touch_target_offset,
     jboolean visible,
     jint tint,
@@ -217,6 +237,9 @@ void TabStripSceneLayer::UpdateNewTabButton(
 
   // Move new tab button visually towards tabs when tab strip is not full.
   x += left_offset;
+  // Move new tab button down with respect to top padding.
+  // TODO(crbug/331678185): Use a container layer to position the NTB.
+  y += top_padding;
 
   // Only show button bg if btn is being hovered on.
   if (!should_apply_hover_highlight) {
@@ -359,7 +382,7 @@ void TabStripSceneLayer::UpdateTabStripLeftFade(
 
   // Set bounds. Use the parent layer height so the 1px fade resource is
   // stretched vertically.
-  float height = scrollable_strip_layer_->bounds().height();
+  float height = tab_strip_layer_->bounds().height();
   left_fade_->SetBounds(gfx::Size(fade_resource->size().width(), height));
 
   // Set position. The rotation set above requires the layer to be offset
@@ -397,7 +420,7 @@ void TabStripSceneLayer::UpdateTabStripRightFade(
 
   // Set bounds. Use the parent layer height so the 1px fade resource is
   // stretched vertically.
-  float height = scrollable_strip_layer_->bounds().height();
+  float height = tab_strip_layer_->bounds().height();
   right_fade_->SetBounds(gfx::Size(fade_resource->size().width(), height));
 
   // Set position. The right fade is positioned at the end of the tab strip.
@@ -476,30 +499,76 @@ void TabStripSceneLayer::PutStripTabLayer(
       opacity);
 }
 
-void TabStripSceneLayer::PutGroupTitleLayer(
+void TabStripSceneLayer::PutGroupIndicatorLayer(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& jobj,
+    jboolean incognito,
+    jint id,
     jint tint,
     jfloat x,
     jfloat y,
     jfloat width,
     jfloat height,
-    jfloat default_margin,
-    jfloat top_margin,
-    jfloat corner_radius) {
-  // Reuse existing layer if it exists.
-  scoped_refptr<cc::slim::SolidColorLayer> layer = GetNextGroupTitleLayer();
+    jfloat title_text_padding,
+    jfloat corner_radius,
+    jfloat bottom_indicator_width,
+    jfloat bottom_indicator_height,
+    const JavaParamRef<jobject>& jlayer_title_cache) {
+  LayerTitleCache* layer_title_cache =
+      LayerTitleCache::FromJavaObject(jlayer_title_cache);
 
-  // Set container properties.
-  layer->SetPosition(gfx::PointF(x + default_margin, y + top_margin));
-  layer->SetBounds(gfx::Size(width - (default_margin * 2),
-                             height - default_margin - top_margin));
-  layer->SetRoundedCorner(gfx::RoundedCornersF(corner_radius, corner_radius,
-                                               corner_radius, corner_radius));
-  layer->SetBackgroundColor(SkColor4f::FromColor(tint));
+  // Reuse existing layer if it exists.
+  scoped_refptr<cc::slim::SolidColorLayer> title_indicator_layer =
+      GetNextGroupTitleLayer();
+  scoped_refptr<cc::slim::SolidColorLayer> bottom_indicator_layer =
+      GetNextGroupBottomLayer();
+  group_write_index_++;
+
+  // Set title indicator container properties.
+  title_indicator_layer->SetPosition(gfx::PointF(x, y));
+  title_indicator_layer->SetBounds(gfx::Size(width, height));
+  title_indicator_layer->SetRoundedCorner(gfx::RoundedCornersF(
+      corner_radius, corner_radius, corner_radius, corner_radius));
+  title_indicator_layer->SetBackgroundColor(SkColor4f::FromColor(tint));
 
   // Set title.
-  // TODO(crbug.com/327289979): Add title bitmap.
+  DecorationTitle* title_layer =
+      layer_title_cache->GetGroupTitleLayer(id, incognito);
+  if (title_layer) {
+    float title_y = (height - title_layer->size().height()) / 2.f;
+    title_layer->setOpacity(1.0f);
+    title_layer->setBounds(gfx::Size(width - (title_text_padding * 2), height));
+    title_layer->layer()->SetPosition(gfx::PointF(title_text_padding, title_y));
+    if (title_indicator_layer->children().size() == 0) {
+      title_indicator_layer->AddChild(title_layer->layer());
+    } else {
+      title_indicator_layer->ReplaceChild(
+          title_indicator_layer->children()[0].get(), title_layer->layer());
+    }
+    title_layer->SetUIResourceIds();
+  } else {
+    title_indicator_layer->RemoveAllChildren();
+  }
+
+  // Set bottom indicator properties.
+  float bottom_indicator_x = x;
+  float bottom_indicator_y =
+      group_indicator_layer_->bounds().height() - bottom_indicator_height;
+  if (l10n_util::IsLayoutRtl()) {
+    bottom_indicator_x -= (bottom_indicator_width - width);
+  }
+
+  // Use ceiling value to prevent height float from getting truncated, otherwise
+  // it could result in bottom indicator looks thinner than intended in certain
+  // screen densities.
+  bottom_indicator_layer->SetBounds(
+      gfx::Size(bottom_indicator_width, ceil(bottom_indicator_height)));
+
+  // Use the floor value to position vertically to prevent bottom indicator from
+  // getting cut off in certain screen densities.
+  bottom_indicator_layer->SetPosition(
+      gfx::PointF(bottom_indicator_x, floor(bottom_indicator_y)));
+  bottom_indicator_layer->SetBackgroundColor(SkColor4f::FromColor(tint));
 }
 
 scoped_refptr<TabHandleLayer> TabStripSceneLayer::GetNextLayer(
@@ -518,15 +587,28 @@ scoped_refptr<TabHandleLayer> TabStripSceneLayer::GetNextLayer(
 scoped_refptr<cc::slim::SolidColorLayer>
 TabStripSceneLayer::GetNextGroupTitleLayer() {
   if (group_write_index_ < group_title_layers_.size()) {
-    return group_title_layers_[group_write_index_++];
+    return group_title_layers_[group_write_index_];
   }
 
   scoped_refptr<cc::slim::SolidColorLayer> layer =
       cc::slim::SolidColorLayer::Create();
   layer->SetIsDrawable(true);
   group_title_layers_.push_back(layer);
-  scrollable_strip_layer_->AddChild(layer);
-  group_write_index_++;
+  group_indicator_layer_->AddChild(layer);
+  return layer;
+}
+
+scoped_refptr<cc::slim::SolidColorLayer>
+TabStripSceneLayer::GetNextGroupBottomLayer() {
+  if (group_write_index_ < group_bottom_layers_.size()) {
+    return group_bottom_layers_[group_write_index_];
+  }
+
+  scoped_refptr<cc::slim::SolidColorLayer> layer =
+      cc::slim::SolidColorLayer::Create();
+  layer->SetIsDrawable(true);
+  group_bottom_layers_.push_back(layer);
+  group_indicator_layer_->AddChild(layer);
   return layer;
 }
 

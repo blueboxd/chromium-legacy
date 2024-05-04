@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/browser_state/model/browser_state_keyed_service_factories.h"
 
 #import "base/feature_list.h"
+#import "components/page_content_annotations/core/page_content_annotations_features.h"
 #import "ios/chrome/browser/affiliations/model/ios_chrome_affiliation_service_factory.h"
 #import "ios/chrome/browser/autocomplete/model/autocomplete_classifier_factory.h"
 #import "ios/chrome/browser/autocomplete/model/in_memory_url_index_factory.h"
@@ -21,8 +22,10 @@
 #import "ios/chrome/browser/browsing_data/model/browsing_data_remover_factory.h"
 #import "ios/chrome/browser/commerce/model/shopping_service_factory.h"
 #import "ios/chrome/browser/consent_auditor/model/consent_auditor_factory.h"
+#import "ios/chrome/browser/content_notification/model/content_notification_service_factory.h"
 #import "ios/chrome/browser/content_settings/model/cookie_settings_factory.h"
 #import "ios/chrome/browser/contextual_panel/model/contextual_panel_model_service_factory.h"
+#import "ios/chrome/browser/contextual_panel/sample/model/sample_panel_model_factory.h"
 #import "ios/chrome/browser/crash_report/model/breadcrumbs/breadcrumb_manager_keyed_service_factory.h"
 #import "ios/chrome/browser/credential_provider/model/credential_provider_buildflags.h"
 #import "ios/chrome/browser/device_sharing/model/device_sharing_manager_factory.h"
@@ -52,6 +55,7 @@
 #import "ios/chrome/browser/metrics/model/google_groups_updater_service_factory.h"
 #import "ios/chrome/browser/metrics/model/ios_profile_session_durations_service_factory.h"
 #import "ios/chrome/browser/optimization_guide/model/optimization_guide_service_factory.h"
+#import "ios/chrome/browser/page_content_annotations/model/page_content_annotations_service_factory.h"
 #import "ios/chrome/browser/page_info/about_this_site_service_factory.h"
 #import "ios/chrome/browser/passwords/model/ios_chrome_account_password_store_factory.h"
 #import "ios/chrome/browser/passwords/model/ios_chrome_password_check_manager_factory.h"
@@ -60,6 +64,7 @@
 #import "ios/chrome/browser/plus_addresses/model/plus_address_service_factory.h"
 #import "ios/chrome/browser/policy/model/cloud/user_policy_signin_service_factory.h"
 #import "ios/chrome/browser/policy_url_blocking/model/policy_url_blocking_service.h"
+#import "ios/chrome/browser/price_insights/model/price_insights_model_factory.h"
 #import "ios/chrome/browser/promos_manager/model/promos_manager_factory.h"
 #import "ios/chrome/browser/push_notification/model/push_notification_browser_state_service_factory.h"
 #import "ios/chrome/browser/reading_list/model/reading_list_model_factory.h"
@@ -94,14 +99,13 @@
 #import "ios/chrome/browser/sync/model/ios_user_event_service_factory.h"
 #import "ios/chrome/browser/sync/model/model_type_store_service_factory.h"
 #import "ios/chrome/browser/sync/model/sync_service_factory.h"
-#import "ios/chrome/browser/sync/model/sync_setup_service_factory.h"
 #import "ios/chrome/browser/tabs_search/model/tabs_search_service_factory.h"
 #import "ios/chrome/browser/text_selection/model/text_classifier_model_service_factory.h"
 #import "ios/chrome/browser/translate/model/translate_ranker_factory.h"
 #import "ios/chrome/browser/trusted_vault/model/ios_trusted_vault_service_factory.h"
-#import "ios/chrome/browser/ui/voice/text_to_speech_playback_controller_factory.h"
 #import "ios/chrome/browser/unified_consent/model/unified_consent_service_factory.h"
 #import "ios/chrome/browser/unit_conversion/unit_conversion_service_factory.h"
+#import "ios/chrome/browser/voice/ui_bundled/text_to_speech_playback_controller_factory.h"
 #import "ios/chrome/browser/webdata_services/model/web_data_service_factory.h"
 
 #if BUILDFLAG(IOS_CREDENTIAL_PROVIDER_ENABLED)
@@ -164,6 +168,7 @@ void EnsureBrowserStateKeyedServiceFactoriesBuilt() {
   ChromeAccountManagerServiceFactory::GetInstance();
   ChromePasswordProtectionServiceFactory::GetInstance();
   ConsentAuditorFactory::GetInstance();
+  ContentNotificationServiceFactory::GetInstance();
   ContextualPanelModelServiceFactory::GetInstance();
   DeviceSharingManagerFactory::GetInstance();
   DiscoverFeedServiceFactory::GetInstance();
@@ -202,6 +207,8 @@ void EnsureBrowserStateKeyedServiceFactoriesBuilt() {
   RealTimeUrlLookupServiceFactory::GetInstance();
   SafeBrowsingClientFactory::GetInstance();
   SafeBrowsingMetricsCollectorFactory::GetInstance();
+  SamplePanelModelFactory::GetInstance();
+  PriceInsightsModelFactory::GetInstance();
   segmentation_platform::SegmentationPlatformServiceFactory::GetInstance();
   SessionRestorationServiceFactory::GetInstance();
   SigninBrowserStateInfoUpdaterFactory::GetInstance();
@@ -210,7 +217,6 @@ void EnsureBrowserStateKeyedServiceFactoriesBuilt() {
   SupervisedUserServiceFactory::GetInstance();
   SupervisedUserSettingsServiceFactory::GetInstance();
   SyncServiceFactory::GetInstance();
-  SyncSetupServiceFactory::GetInstance();
   TabsSearchServiceFactory::GetInstance();
   TextClassifierModelServiceFactory::GetInstance();
   TextToSpeechPlaybackControllerFactory::GetInstance();
@@ -224,6 +230,11 @@ void EnsureBrowserStateKeyedServiceFactoriesBuilt() {
   // All factories that are only conditionally added go below here.
   if (base::FeatureList::IsEnabled(kIOSSaveToDrive)) {
     drive::DriveServiceFactory::GetInstance();
+  }
+
+  if (page_content_annotations::features::
+          ShouldEnablePageContentAnnotations()) {
+    PageContentAnnotationsServiceFactory::GetInstance();
   }
 
 #if BUILDFLAG(IOS_CREDENTIAL_PROVIDER_ENABLED)

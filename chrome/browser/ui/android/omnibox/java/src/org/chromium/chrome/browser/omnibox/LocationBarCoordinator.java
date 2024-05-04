@@ -34,7 +34,6 @@ import org.chromium.chrome.browser.omnibox.status.StatusCoordinator;
 import org.chromium.chrome.browser.omnibox.status.StatusCoordinator.PageInfoAction;
 import org.chromium.chrome.browser.omnibox.status.StatusView;
 import org.chromium.chrome.browser.omnibox.styles.OmniboxResourceProvider;
-import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteControllerProvider;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteCoordinator;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteDelegate;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxLoadUrlParams;
@@ -142,8 +141,7 @@ public class LocationBarCoordinator
      * @param reportExceptionCallback A {@link Callback} to report exceptions.
      * @param backPressManager The {@link BackPressManager} for intercepting back press.
      * @param tabModelSelectorSupplier Supplier of the {@link TabModelSelector}.
-     * @param forcePhoneStyleOmnibox Whether a "phone-style" (full bleed, unrounded corners) omnibox
-     *     suggestions list should be used even when the screen width is >600dp.
+     * @param uiOverrides embedder-specific UI overrides
      * @param baseChromeLayout The base view hosting Chrome that certain views (e.g. the omnibox
      *     suggestion list) will position themselves relative to. If null, the content view will be
      *     used.
@@ -178,11 +176,11 @@ public class LocationBarCoordinator
             BrowserStateBrowserControlsVisibilityDelegate browserControlsVisibilityDelegate,
             Callback<Throwable> reportExceptionCallback,
             @Nullable BackPressManager backPressManager,
-            @NonNull
+            @Nullable
                     OmniboxSuggestionsDropdownScrollListener
                             omniboxSuggestionsDropdownScrollListener,
             @Nullable ObservableSupplier<TabModelSelector> tabModelSelectorSupplier,
-            boolean forcePhoneStyleOmnibox,
+            LocationBarEmbedderUiOverrides uiOverrides,
             @Nullable View baseChromeLayout) {
         mLocationBarLayout = (LocationBarLayout) locationBarLayout;
         mWindowDelegate = windowDelegate;
@@ -198,17 +196,18 @@ public class LocationBarCoordinator
                         mWindowDelegate,
                         autocompleteAnchorView,
                         mLocationBarLayout,
-                        forcePhoneStyleOmnibox,
+                        uiOverrides.isForcedPhoneStyleOmnibox(),
                         baseChromeLayout);
 
         mUrlBar = mLocationBarLayout.findViewById(R.id.url_bar);
-        // TODO(crbug.com/1151513): Inject LocaleManager instance to LocationBarCoordinator instead
+        // TODO(crbug.com/40733049): Inject LocaleManager instance to LocationBarCoordinator instead
         // of using the singleton.
         mLocationBarMediator =
                 new LocationBarMediator(
                         context,
                         mLocationBarLayout,
                         locationBarDataProvider,
+                        uiOverrides,
                         profileObservableSupplier,
                         privacyPreferencesManager,
                         overrideUrlLoadingDelegate,
@@ -242,7 +241,6 @@ public class LocationBarCoordinator
         mAutocompleteCoordinator =
                 new AutocompleteCoordinator(
                         mLocationBarLayout,
-                        AutocompleteControllerProvider.from(windowAndroid),
                         this,
                         mOmniboxDropdownEmbedderImpl,
                         mUrlCoordinator,
@@ -256,7 +254,9 @@ public class LocationBarCoordinator
                         bookmarkState,
                         omniboxActionDelegate,
                         omniboxSuggestionsDropdownScrollListener,
-                        forcePhoneStyleOmnibox);
+                        mActivityLifecycleDispatcher,
+                        uiOverrides.isForcedPhoneStyleOmnibox(),
+                        windowAndroid);
         StatusView statusView = mLocationBarLayout.findViewById(R.id.location_bar_status);
         mStatusCoordinator =
                 new StatusCoordinator(
@@ -804,21 +804,6 @@ public class LocationBarCoordinator
         return isIncognito
                 ? mSuggestionIncognitoBackgroundColor
                 : mSuggestionStandardBackgroundColor;
-    }
-
-    /**
-     * @see LocationBarMediator#setIsSurfacePolishOmniboxColorEnabled(boolean)
-     */
-    public void setIsSurfacePolishOmniboxColorEnabled(boolean isSurfacePolishOmniboxColorEnabled) {
-        mLocationBarMediator.setIsSurfacePolishOmniboxColorEnabled(
-                isSurfacePolishOmniboxColorEnabled);
-    }
-
-    /**
-     * @see LocationBarMediator#updateButtonTints(boolean)
-     */
-    public void updateButtonTints() {
-        mLocationBarMediator.updateButtonTints();
     }
 
     /**

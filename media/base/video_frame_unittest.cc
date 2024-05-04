@@ -509,14 +509,12 @@ TEST(VideoFrame, WrapExternalGpuMemoryBuffer) {
       std::make_unique<FakeGpuMemoryBuffer>(
           coded_size, gfx::BufferFormat::YUV_420_BIPLANAR, modifier);
   gfx::GpuMemoryBuffer* gmb_raw_ptr = gmb.get();
-  gpu::MailboxHolder mailbox_holders[VideoFrame::kMaxPlanes] = {
-      gpu::MailboxHolder(gpu::Mailbox::GenerateForSharedImage(),
-                         gpu::SyncToken(), 5),
-      gpu::MailboxHolder(gpu::Mailbox::GenerateForSharedImage(),
-                         gpu::SyncToken(), 10)};
+  scoped_refptr<gpu::ClientSharedImage> shared_images[VideoFrame::kMaxPlanes] =
+      {gpu::ClientSharedImage::CreateForTesting(),
+       gpu::ClientSharedImage::CreateForTesting()};
   auto frame = VideoFrame::WrapExternalGpuMemoryBuffer(
-      visible_rect, coded_size, std::move(gmb), mailbox_holders,
-      base::DoNothing(), timestamp);
+      visible_rect, coded_size, std::move(gmb), shared_images, gpu::SyncToken(),
+      5, base::DoNothing(), timestamp);
 
   EXPECT_EQ(frame->layout().format(), PIXEL_FORMAT_NV12);
   EXPECT_EQ(frame->layout().coded_size(), coded_size);
@@ -534,8 +532,8 @@ TEST(VideoFrame, WrapExternalGpuMemoryBuffer) {
   EXPECT_EQ(frame->timestamp(), timestamp);
   EXPECT_EQ(frame->HasTextures(), true);
   EXPECT_EQ(frame->HasReleaseMailboxCB(), true);
-  EXPECT_EQ(frame->mailbox_holder(0).mailbox, mailbox_holders[0].mailbox);
-  EXPECT_EQ(frame->mailbox_holder(1).mailbox, mailbox_holders[1].mailbox);
+  EXPECT_EQ(frame->mailbox_holder(0).mailbox, shared_images[0]->mailbox());
+  EXPECT_EQ(frame->mailbox_holder(1).mailbox, shared_images[1]->mailbox());
 }
 
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
@@ -612,10 +610,11 @@ TEST(VideoFrame, TextureNoLongerNeededCallbackIsCalled) {
                                    gpu::CommandBufferId::FromUnsafeValue(1), 1);
 
   {
-    gpu::MailboxHolder holders[VideoFrame::kMaxPlanes] = {gpu::MailboxHolder(
-        gpu::Mailbox::GenerateForSharedImage(), gpu::SyncToken(), 5)};
-    scoped_refptr<VideoFrame> frame = VideoFrame::WrapNativeTextures(
-        PIXEL_FORMAT_ARGB, holders,
+    scoped_refptr<gpu::ClientSharedImage>
+        shared_images[VideoFrame::kMaxPlanes] = {
+            gpu::ClientSharedImage::CreateForTesting()};
+    scoped_refptr<VideoFrame> frame = VideoFrame::WrapSharedImages(
+        PIXEL_FORMAT_ARGB, shared_images, gpu::SyncToken(), 5,
         base::BindOnce(&TextureCallback, &called_sync_token),
         gfx::Size(10, 10),   // coded_size
         gfx::Rect(10, 10),   // visible_rect
@@ -640,10 +639,10 @@ TEST(VideoFrame,
       gpu::CommandBufferNamespace::GPU_IO;
   const gpu::CommandBufferId kCommandBufferId =
       gpu::CommandBufferId::FromUnsafeValue(0x123);
-  gpu::Mailbox mailbox[kPlanesNum];
+  scoped_refptr<gpu::ClientSharedImage> shared_images[VideoFrame::kMaxPlanes];
   for (int i = 0; i < kPlanesNum; ++i) {
-    mailbox[i].name[0] = 50 + 1;
-  }
+    shared_images[i] = gpu::ClientSharedImage::CreateForTesting();
+  };
 
   gpu::SyncToken sync_token(kNamespace, kCommandBufferId, 7);
   sync_token.SetVerifyFlush();
@@ -653,13 +652,8 @@ TEST(VideoFrame,
 
   gpu::SyncToken called_sync_token;
   {
-    gpu::MailboxHolder holders[VideoFrame::kMaxPlanes] = {
-        gpu::MailboxHolder(mailbox[VideoFrame::kYPlane], sync_token, target),
-        gpu::MailboxHolder(mailbox[VideoFrame::kUPlane], sync_token, target),
-        gpu::MailboxHolder(mailbox[VideoFrame::kVPlane], sync_token, target),
-    };
-    scoped_refptr<VideoFrame> frame = VideoFrame::WrapNativeTextures(
-        PIXEL_FORMAT_I420, holders,
+    scoped_refptr<VideoFrame> frame = VideoFrame::WrapSharedImages(
+        PIXEL_FORMAT_I420, shared_images, sync_token, target,
         base::BindOnce(&TextureCallback, &called_sync_token),
         gfx::Size(10, 10),   // coded_size
         gfx::Rect(10, 10),   // visible_rect
@@ -672,7 +666,8 @@ TEST(VideoFrame,
     EXPECT_TRUE(frame->HasTextures());
     for (size_t i = 0; i < VideoFrame::NumPlanes(frame->format()); ++i) {
       const gpu::MailboxHolder& mailbox_holder = frame->mailbox_holder(i);
-      EXPECT_EQ(mailbox[i].name[0], mailbox_holder.mailbox.name[0]);
+      EXPECT_EQ(shared_images[i]->mailbox().name[0],
+                mailbox_holder.mailbox.name[0]);
       EXPECT_EQ(target, mailbox_holder.texture_target);
       EXPECT_EQ(sync_token, mailbox_holder.sync_token);
     }

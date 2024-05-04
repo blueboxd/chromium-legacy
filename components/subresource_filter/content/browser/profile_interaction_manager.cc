@@ -10,9 +10,9 @@
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/subresource_filter/content/browser/ads_intervention_manager.h"
 #include "components/subresource_filter/content/browser/content_subresource_filter_throttle_manager.h"
-#include "components/subresource_filter/content/browser/content_subresource_filter_web_contents_helper.h"
 #include "components/subresource_filter/content/browser/subresource_filter_content_settings_manager.h"
 #include "components/subresource_filter/content/browser/subresource_filter_profile_context.h"
+#include "components/subresource_filter/content/shared/common/subresource_filter_utils.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/page.h"
@@ -57,7 +57,7 @@ void ProfileInteractionManager::OnReloadRequested() {
   GetWebContents()->GetController().Reload(content::ReloadType::NORMAL, true);
 }
 
-// TODO(https://crbug.com/1131969): Consider adding reporting when
+// TODO(crbug.com/40721689): Consider adding reporting when
 // ads violations are triggered.
 void ProfileInteractionManager::OnAdsViolationTriggered(
     content::RenderFrameHost* rfh,
@@ -74,12 +74,12 @@ void ProfileInteractionManager::OnAdsViolationTriggered(
   // enforcing on ads: do not record new interventions if we would be enforcing
   // an intervention on ads already.
   //
-  // TODO(https://crbug.com/1131971): Add support for enabling ads interventions
+  // TODO(crbug.com/40721691): Add support for enabling ads interventions
   // separately for different ads violations.
   const GURL& url = rfh->GetLastCommittedURL();
   std::optional<AdsInterventionManager::LastAdsIntervention> last_intervention =
       profile_context_->ads_intervention_manager()->GetLastAdsIntervention(url);
-  // TODO(crbug.com/1131971): If a host triggers multiple times on a single
+  // TODO(crbug.com/40721691): If a host triggers multiple times on a single
   // navigate and the durations don't match, we'll use the last duration rather
   // than the longest. The metadata should probably store the activation with
   // the longest duration.
@@ -158,7 +158,7 @@ void ProfileInteractionManager::MaybeShowNotification() {
     }
 #endif
 
-    // TODO(https://crbug.com/1103176): Plumb the actual frame reference here
+    // TODO(crbug.com/40139135): Plumb the actual frame reference here
     // (it comes from
     // ContentSubresourceFilterThrottleManager::DidDisallowFirstSubresource,
     // which comes from a specific frame).

@@ -562,8 +562,11 @@ suite('PaymentsSection', function() {
 
     assertTrue(!!cvcStorageToggle);
     assertEquals(
-        cvcStorageToggle.subLabelWithLink.toString(),
-        loadTimeData.getString('enableCvcStorageSublabel'));
+        loadTimeData.getString('enableCvcStorageSublabel'),
+        cvcStorageToggle.subLabelWithLink.toString());
+    assertEquals(
+        loadTimeData.getString('enableCvcStorageAriaLabelForNoCvcSaved'),
+        cvcStorageToggle.ariaLabel);
   });
 
   test('verifyCvcStorageToggleSublabelWithDeletionIsShown', async function() {
@@ -583,8 +586,11 @@ suite('PaymentsSection', function() {
 
     assertTrue(!!cvcStorageToggle);
     assertEquals(
-        cvcStorageToggle.subLabelWithLink.toString(),
-        loadTimeData.getString('enableCvcStorageDeleteDataSublabel'));
+        loadTimeData.getString('enableCvcStorageDeleteDataSublabel'),
+        cvcStorageToggle.subLabelWithLink.toString());
+    assertEquals(
+        loadTimeData.getString('enableCvcStorageLabel'),
+        cvcStorageToggle.ariaLabel);
   });
 
   test(
@@ -758,5 +764,27 @@ suite('PaymentsSection', function() {
 
     const url = await openWindowProxy.whenCalled('openUrl');
     assertEquals(GOOGLE_PAY_HELP_URL, url);
+  });
+
+  test('verifyCardBenefitsPrefIsFalseWhenToggleIsOff', async function() {
+    loadTimeData.overrideValues({
+      autofillCardBenefitsAvailable: true,
+    });
+
+    const section = await createPaymentsSection(
+        /*creditCards=*/[], /*ibans=*/[], {
+          credit_card_enabled: {value: true},
+          payment_card_benefits: {value: true},
+        });
+    const cardBenefitsToggle =
+        section.shadowRoot!.querySelector<SettingsToggleButtonElement>(
+            '#cardBenefitsToggle');
+    assertTrue(!!cardBenefitsToggle);
+    assertTrue(cardBenefitsToggle.checked);
+
+    cardBenefitsToggle.click();
+
+    assertFalse(cardBenefitsToggle.checked);
+    assertFalse(cardBenefitsToggle.pref!.value);
   });
 });

@@ -222,7 +222,7 @@ void SyncEngineImpl::StartHandlingInvalidations() {
   // UpdateStandaloneInvalidationsState() must be called after AddListener(),
   // the invalidations should not be considered as initialized until any
   // outstanding FCM messages are handled.
-  // TODO(crbug.com/1425026): this logic is quite fragile and should be
+  // TODO(crbug.com/40260679): this logic is quite fragile and should be
   // revisited.
   UpdateStandaloneInvalidationsState();
 }
@@ -301,7 +301,7 @@ void SyncEngineImpl::Shutdown(ShutdownReason reason) {
 }
 
 void SyncEngineImpl::ConfigureDataTypes(ConfigureParams params) {
-  DCHECK(Difference(params.to_download, ProtocolTypes()).Empty());
+  DCHECK(Difference(params.to_download, ProtocolTypes()).empty());
 
   sync_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&SyncEngineBackend::DoPurgeDisabledTypes,
@@ -623,7 +623,7 @@ void SyncEngineImpl::UpdateStandaloneInvalidationsState() {
   // sync standalone invalidations are disabled).
   DCHECK_NE(sync_invalidations_service_->GetFCMRegistrationToken().value(), "");
 
-  // TODO(crbug.com/1442156): wait for FCM token to be committed before change
+  // TODO(crbug.com/40266819): wait for FCM token to be committed before change
   // the state to enabled.
   OnInvalidatorStateChange(/*enabled=*/true);
 }

@@ -65,9 +65,25 @@ BASE_FEATURE(kDelegatedCompositing,
 #endif
 );
 
-BASE_FEATURE(kVideoDetectorIgnoreNonVideos,
-             "VideoDetectorIgnoreNonVideos",
+#if BUILDFLAG(IS_WIN)
+// Enable partially delegated compositing. In this mode, the web contents will
+// be forced into its own render pass instead of merging into the root pass.
+// This effectively makes it so only the browser UI quads get delegated
+// compositing.
+// TODO(crbug.com/324460866): Consider removing partially delegated compositing.
+BASE_FEATURE(kDelegatedCompositingLimitToUi,
+             "DelegatedCompositingLimitToUi",
              base::FEATURE_ENABLED_BY_DEFAULT);
+#endif
+
+BASE_FEATURE(kRenderPassDrawnRect,
+             "RenderPassDrawnRect",
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+             base::FEATURE_ENABLED_BY_DEFAULT
+#else
+             base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+);
 
 #if BUILDFLAG(IS_ANDROID)
 // When wide color gamut content from the web is encountered, promote our
@@ -82,12 +98,6 @@ BASE_FEATURE(kDynamicColorGamut,
 BASE_FEATURE(kVizFrameSubmissionForWebView,
              "VizFrameSubmissionForWebView",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Whether we should use the real buffers corresponding to overlay candidates in
-// order to do a pageflip test rather than allocating test buffers.
-BASE_FEATURE(kUseRealBuffersForPageFlipTest,
-             "UseRealBuffersForPageFlipTest",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 #if BUILDFLAG(IS_FUCHSIA)
 // Enables SkiaOutputDeviceBufferQueue instead of Vulkan swapchain on Fuchsia.
@@ -130,6 +140,19 @@ BASE_FEATURE(kUseSurfaceLayerForVideoDefault,
 
 BASE_FEATURE(kWebViewNewInvalidateHeuristic,
              "WebViewNewInvalidateHeuristic",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// If enabled, WebView reports the set of threads involved in frame production
+// to HWUI, and they're included in the HWUI ADPF session.
+BASE_FEATURE(kWebViewEnableADPF,
+             "WebViewEnableADPF",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// If enabled, Renderer Main is included in the set of threads reported to the
+// HWUI. This feature works only when WebViewEnableADPF is enabled, otherwise
+// this is a no-op.
+BASE_FEATURE(kWebViewEnableADPFRendererMain,
+             "WebViewEnableADPFRendererMain",
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
 
@@ -174,23 +197,34 @@ const base::FeatureParam<int> kCALayerNewLimitManyVideos{&kCALayerNewLimit,
                                                          "many-videos", -1};
 #endif
 
-#if BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_OZONE)
+#if BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_OZONE) || BUILDFLAG(IS_WIN)
 BASE_FEATURE(kCanSkipRenderPassOverlay,
              "CanSkipRenderPassOverlay",
              base::FEATURE_ENABLED_BY_DEFAULT);
 #endif
 
 #if BUILDFLAG(IS_MAC)
+// Use the system CVDisplayLink callbacks for the BeginFrame source, so
+// BeginFrame is aligned with HW VSync.
 BASE_FEATURE(kCVDisplayLinkBeginFrameSource,
              "CVDisplayLinkBeginFrameSource",
              base::FEATURE_ENABLED_BY_DEFAULT);
-#endif
 
-// Allow SkiaRenderer to skip drawing render passes that contain a single
-// RenderPassDrawQuad.
-BASE_FEATURE(kAllowBypassRenderPassQuads,
-             "AllowBypassRenderPassQuads",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+// Whether the presentation should be delayed until the next CVDisplayLink
+// callback when kCVDisplayLinkBeginFrameSource is enabled. This flag has no
+// effect if kCVDisplayLinkBeginFrameSource is disabled.
+BASE_FEATURE(kVSyncAlignedPresent,
+             "VSyncAlignedPresent",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// The paramters for the number of supported pending Frames.
+// 1: Support one pending frame. This is the old default.
+// 2: Support two pending frames. New. This is the number of max pending
+//    swap in the scheduler.
+// Others: Error! It will be overwritten to 2 pending frames.
+const base::FeatureParam<int> kNumPendingFrames{&kVSyncAlignedPresent,
+                                                "PendingFrames", 2};
+#endif
 
 BASE_FEATURE(kAllowUndamagedNonrootRenderPassToSkip,
              "AllowUndamagedNonrootRenderPassToSkip",
@@ -202,48 +236,26 @@ BASE_FEATURE(kAllowForceMergeRenderPassWithRequireOverlayQuads,
              "AllowForceMergeRenderPassWithRequireOverlayQuads",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-// Whether to:
-// - Perform periodic inactive frame culling.
-// - Cull *all* frames in case of critical memory pressure, rather than keeping
-//   one.
-BASE_FEATURE(kAggressiveFrameCulling,
-             "AggressiveFrameCulling",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-// If enabled, do not rely on surface garbage collection to happen
-// periodically, but trigger it eagerly, to avoid missing calls.
-BASE_FEATURE(kEagerSurfaceGarbageCollection,
-             "EagerSurfaceGarbageCollection",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-// Only applies when a caller has requested a custom BeginFrame rate via the
-// Throttle() API in frame_sink_manager.mojom. If enabled, parameters related
-// to the BeginFrame rate are overridden in viz to reflect the throttled rate
-// before being circulated in the system. The most notable are the interval and
-// deadline in BeginFrameArgs. If disabled, these parameters reflect the default
-// vsync rate (the behavior at the time this feature was created.)
-BASE_FEATURE(kOverrideThrottledFrameRateParams,
-             "OverrideThrottledFrameRateParams",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Used to gate calling SetPurgeable on OutputPresenter::Image from
 // SkiaOutputDeviceBufferQueue.
 BASE_FEATURE(kBufferQueueImageSetPurgeable,
              "BufferQueueImageSetPurgeable",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-// On platforms using SkiaOutputDeviceBufferQueue, when this is true
-// SkiaRenderer will allocate and maintain a buffer queue of images for the root
-// render pass, instead of SkiaOutputDeviceBufferQueue itself.
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
+// On platforms using SkiaOutputDeviceBufferQueue and not yet universally using
+// SkiaRenderer-allocated images, when this is true SkiaRenderer will allocate
+// and maintain a buffer queue of images for the root render pass, instead of
+// SkiaOutputDeviceBufferQueue itself.
 BASE_FEATURE(kRendererAllocatesImages,
              "RendererAllocatesImages",
-#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_FUCHSIA) || \
-    BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_MAC)
+#if BUILDFLAG(IS_MAC)
              base::FEATURE_ENABLED_BY_DEFAULT
 #else
              base::FEATURE_DISABLED_BY_DEFAULT
 #endif
 );
+#endif
 
 // If enabled, CompositorFrameSinkClient::OnBeginFrame is also treated as the
 // DidReceiveCompositorFrameAck. Both in providing the Ack for the previous
@@ -287,21 +299,18 @@ const base::FeatureParam<base::TimeDelta> kADPFBoostTimeout{
     &kEnableADPFScrollBoost, "adpf_boost_mode_timeout",
     base::Milliseconds(200)};
 
-// Allows delegating transforms over Wayland when it is also supported by Ash.
-BASE_FEATURE(kDelegateTransforms,
-             "DelegateTransforms",
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-             base::FEATURE_ENABLED_BY_DEFAULT
-#else
-             base::FEATURE_DISABLED_BY_DEFAULT
-#endif
-);
-
 // If enabled, Chrome includes the Renderer Main thread(s) into the
 // ADPF(Android Dynamic Performance Framework) hint session.
 BASE_FEATURE(kEnableADPFRendererMain,
              "EnableADPFRendererMain",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+// If enabled, Chrome includes the Compositor GPU Thread into the
+// ADPF(Android Dynamic Performance Framework) hint session, instead
+// of the GPU Main Thread.
+BASE_FEATURE(kEnableADPFGpuCompositorThread,
+             "EnableADPFGpuCompositorThread",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // If enabled, surface activation and draw do not block on dependencies.
 BASE_FEATURE(kDrawImmediatelyWhenInteractive,
@@ -335,9 +344,11 @@ BASE_FEATURE(kHideDelegatedFrameHostMac,
 
 // When enabled, ClientResourceProvider will attempt to unlock and delete
 // TransferableResources that have been returned as a part of eviction.
+//
+// Enabled by default 03/2014, kept to run a holdback experiment.
 BASE_FEATURE(kEvictionUnlocksResources,
              "EvictionUnlocksResources",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // If enabled, FrameRateDecider will toggle to half framerate if there's only
 // one video on screen whose framerate is lower than the display vsync and in
@@ -349,9 +360,11 @@ BASE_FEATURE(kSingleVideoFrameRateThrottling,
 // When enabled, ClientResourceProvider will take callbacks intended to be ran
 // on the Main-thread, and will batch them into a single jump to that thread.
 // Rather than each performing its own separate post task.
+//
+// Enabled 03/2024, kept to run a holdback experiment.
 BASE_FEATURE(kBatchMainThreadReleaseCallbacks,
              "BatchMainThreadReleaseCallbacks",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // If enabled, snapshot the root surface when it is evicted.
 BASE_FEATURE(kSnapshotEvictedRootSurface,
@@ -369,12 +382,14 @@ BASE_FEATURE(kSnapshotEvictedRootSurface,
 const base::FeatureParam<double> kSnapshotEvictedRootSurfaceScale{
     &kSnapshotEvictedRootSurface, "scale", 0.4};
 
+// Do HDR color conversion per render pass update rect in renderer instead of
+// inserting a separate color conversion pass during surface aggregation.
+BASE_FEATURE(kColorConversionInRenderer,
+             "ColorConversionInRenderer",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 bool IsDelegatedCompositingEnabled() {
   return base::FeatureList::IsEnabled(kDelegatedCompositing);
-}
-
-bool ShouldDelegateTransforms() {
-  return base::FeatureList::IsEnabled(features::kDelegateTransforms);
 }
 
 #if BUILDFLAG(IS_ANDROID)
@@ -390,10 +405,6 @@ bool IsDynamicColorGamutEnabled() {
 
 bool IsUsingVizFrameSubmissionForWebView() {
   return base::FeatureList::IsEnabled(kVizFrameSubmissionForWebView);
-}
-
-bool ShouldUseRealBuffersForPageFlipTest() {
-  return base::FeatureList::IsEnabled(kUseRealBuffersForPageFlipTest);
 }
 
 bool ShouldWebRtcLogCapturePipeline() {
@@ -436,11 +447,23 @@ bool ShouldUsePlatformDelegatedInk() {
   return base::FeatureList::IsEnabled(kUsePlatformDelegatedInk);
 }
 
+#if BUILDFLAG(IS_ANDROID)
+bool UseWebViewNewInvalidateHeuristic() {
+  // For Android TVs we bundle this with WebViewSurfaceControlForTV.
+  if (base::android::BuildInfo::GetInstance()->is_tv()) {
+    return base::FeatureList::IsEnabled(kWebViewSurfaceControlForTV);
+  }
+
+  return base::FeatureList::IsEnabled(kWebViewNewInvalidateHeuristic);
+}
+#endif
+
 bool UseSurfaceLayerForVideo() {
 #if BUILDFLAG(IS_ANDROID)
   // SurfaceLayer video should work fine with new heuristic.
-  if (base::FeatureList::IsEnabled(kWebViewNewInvalidateHeuristic))
+  if (UseWebViewNewInvalidateHeuristic()) {
     return true;
+  }
 
   // Allow enabling UseSurfaceLayerForVideo if webview is using surface control.
   if (::features::IsAndroidSurfaceControlEnabled()) {
@@ -487,21 +510,15 @@ int MaxOverlaysConsidered() {
                                                 kMaxOverlaysParam, 8);
 }
 
-bool ShouldVideoDetectorIgnoreNonVideoFrames() {
-  return base::FeatureList::IsEnabled(kVideoDetectorIgnoreNonVideos);
-}
-
-bool ShouldOverrideThrottledFrameRateParams() {
-  return base::FeatureList::IsEnabled(kOverrideThrottledFrameRateParams);
-}
-
 bool ShouldOnBeginFrameThrottleVideo() {
   return base::FeatureList::IsEnabled(features::kOnBeginFrameThrottleVideo);
 }
 
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
 bool ShouldRendererAllocateImages() {
   return base::FeatureList::IsEnabled(kRendererAllocatesImages);
 }
+#endif
 
 bool IsOnBeginFrameAcksEnabled() {
   return base::FeatureList::IsEnabled(features::kOnBeginFrameAcks);
@@ -519,4 +536,25 @@ std::optional<double> SnapshotEvictedRootSurfaceScale() {
   return kSnapshotEvictedRootSurfaceScale.Get();
 }
 
+#if BUILDFLAG(IS_MAC)
+bool IsCVDisplayLinkBeginFrameSourceEnabled() {
+  return base::FeatureList::IsEnabled(features::kCVDisplayLinkBeginFrameSource);
+}
+
+bool IsVSyncAlignedPresentEnabled() {
+  return base::FeatureList::IsEnabled(features::kVSyncAlignedPresent);
+}
+
+int NumPendingFrameSupported() {
+  // Return the old default if this feature is not enabled.
+  if (!base::FeatureList::IsEnabled(kVSyncAlignedPresent)) {
+    return 1;
+  }
+
+  // Unless 1 pending frame is specified, overwrite all other params to the new
+  // default, 2 pending frames.
+  int num = kNumPendingFrames.Get() == 1 ? 1 : 2;
+  return num;
+}
+#endif
 }  // namespace features

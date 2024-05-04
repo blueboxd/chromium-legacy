@@ -11,6 +11,7 @@
 #include "base/functional/callback_helpers.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
@@ -18,8 +19,10 @@
 #include "chrome/browser/android/webapk/webapk_database_factory.h"
 #include "chrome/browser/android/webapk/webapk_helpers.h"
 #include "chrome/browser/android/webapk/webapk_registry_update.h"
+#include "chrome/browser/android/webapk/webapk_restore_task.h"
 #include "chrome/browser/android/webapk/webapk_specifics_fetcher.h"
 #include "chrome/common/channel_info.h"
+#include "components/sync/base/deletion_origin.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/report_unrecoverable_error.h"
 #include "components/sync/model/client_tag_based_model_type_processor.h"
@@ -28,6 +31,7 @@
 #include "components/sync/model/model_type_store.h"
 #include "components/sync/model/mutable_data_batch.h"
 #include "components/sync/protocol/web_app_specifics.pb.h"
+#include "components/webapps/browser/android/shortcut_info.h"
 #include "components/webapps/common/web_app_id.h"
 #include "url/gurl.h"
 
@@ -59,6 +63,8 @@ webapps::AppId ManifestIdStrToAppId(const std::string& manifest_id) {
 namespace {
 
 constexpr base::TimeDelta kRecentAppMaxAge = base::Days(30);
+constexpr char kSyncedWebApkAdditionHistogramName[] =
+    "WebApk.Sync.SyncedWebApkAddition";
 
 const WebApkProto* GetAppById(const Registry& registry,
                               const webapps::AppId& app_id) {
@@ -106,6 +112,22 @@ bool AppWasUsedRecentlyComparedTo(const sync_pb::WebApkSpecifics* specifics,
   base::Time app_last_used = base::Time::FromDeltaSinceWindowsEpoch(
       base::Microseconds(specifics->last_used_time_windows_epoch_micros()));
   return time - app_last_used < kRecentAppMaxAge;
+}
+
+std::unique_ptr<webapps::ShortcutInfo> CreateShortcutInfoFromSpecifics(
+    const sync_pb::WebApkSpecifics& webapk_specifics) {
+  auto shortcut_info = std::make_unique<webapps::ShortcutInfo>(
+      GURL(webapk_specifics.start_url()));
+  shortcut_info->manifest_id = GURL(webapk_specifics.manifest_id());
+  shortcut_info->scope = GURL(webapk_specifics.scope());
+  shortcut_info->user_title = base::UTF8ToUTF16(webapk_specifics.name());
+  shortcut_info->name = shortcut_info->user_title;
+  shortcut_info->short_name = shortcut_info->user_title;
+  if (webapk_specifics.icon_infos().size() > 0) {
+    shortcut_info->best_primary_icon_url =
+        GURL(webapk_specifics.icon_infos(0).url());
+  }
+  return shortcut_info;
 }
 
 }  // anonymous namespace
@@ -275,8 +297,19 @@ void WebApkSyncBridge::MergeSyncDataForTesting(
   for (auto const& app : app_vector) {
     std::unique_ptr<sync_pb::WebApkSpecifics> specifics =
         std::make_unique<sync_pb::WebApkSpecifics>();
+    specifics->set_start_url(app[0]);
     specifics->set_manifest_id(app[0]);
     specifics->set_name(app[1]);
+
+    const std::string icon_url = app[2];
+    const int32_t icon_size_in_px = 256;
+    const sync_pb::WebApkIconInfo_Purpose icon_purpose =
+        sync_pb::WebApkIconInfo_Purpose_ANY;
+    sync_pb::WebApkIconInfo* icon_info = specifics->add_icon_infos();
+    icon_info->set_size_in_px(icon_size_in_px);
+    icon_info->set_url(icon_url);
+    icon_info->set_purpose(icon_purpose);
+
     base::Time time = base::Time::Now() - base::Days(last_used_days_vector[i]);
     specifics->set_last_used_time_windows_epoch_micros(
         time.ToDeltaSinceWindowsEpoch().InMicroseconds());
@@ -333,13 +366,15 @@ std::optional<syncer::ModelError> WebApkSyncBridge::ApplyIncrementalSyncChanges(
 }
 
 void WebApkSyncBridge::OnWebApkUsed(
-    std::unique_ptr<sync_pb::WebApkSpecifics> app_specifics) {
+    std::unique_ptr<sync_pb::WebApkSpecifics> app_specifics,
+    bool is_install) {
   if (!change_processor()->IsTrackingMetadata()) {
     return;
   }
 
   AddOrModifyAppInSync(
-      WebApkProtoFromSpecifics(app_specifics.get(), true /* installed */));
+      WebApkProtoFromSpecifics(app_specifics.get(), true /* installed */),
+      is_install);
 }
 
 void WebApkSyncBridge::OnWebApkUninstalled(const std::string& manifest_id) {
@@ -376,8 +411,28 @@ void WebApkSyncBridge::OnWebApkUninstalled(const std::string& manifest_id) {
                      weak_ptr_factory_.GetWeakPtr(), base::DoNothing()));
 }
 
-void WebApkSyncBridge::GetData(StorageKeyList storage_keys,
-                               DataCallback callback) {
+std::vector<WebApkRestoreData> WebApkSyncBridge::GetRestorableAppsShortcutInfo()
+    const {
+  std::vector<WebApkRestoreData> results;
+  for (auto const& [appId, proto] : registry_) {
+    if (!proto->is_locally_installed() &&
+        AppWasUsedRecently(&proto->sync_data())) {
+      results.emplace_back(WebApkRestoreData(
+          appId, CreateShortcutInfoFromSpecifics(proto->sync_data()),
+          base::Time::FromDeltaSinceWindowsEpoch(base::Microseconds(
+              proto->sync_data().last_used_time_windows_epoch_micros()))));
+    }
+  }
+  return results;
+}
+
+const WebApkProto* WebApkSyncBridge::GetWebApkByAppId(
+    webapps::AppId app_id) const {
+  return GetAppById(registry_, app_id);
+}
+
+void WebApkSyncBridge::GetDataForCommit(StorageKeyList storage_keys,
+                                        DataCallback callback) {
   auto data_batch = std::make_unique<syncer::MutableDataBatch>();
 
   for (const webapps::AppId& app_id : storage_keys) {
@@ -440,8 +495,11 @@ void WebApkSyncBridge::RemoveOldWebAPKsFromSync(
   DeleteAppsFromSync(app_ids);
 }
 
-void WebApkSyncBridge::AddOrModifyAppInSync(std::unique_ptr<WebApkProto> app) {
+void WebApkSyncBridge::AddOrModifyAppInSync(std::unique_ptr<WebApkProto> app,
+                                            bool is_install) {
   webapps::AppId app_id = ManifestIdStrToAppId(app->sync_data().manifest_id());
+  RecordSyncedWebApkAdditionHistogram(is_install, registry_.count(app_id) > 0);
+
   std::unique_ptr<syncer::EntityData> entity_data =
       CreateSyncEntityDataFromSpecifics(app->sync_data());
 
@@ -464,13 +522,18 @@ void WebApkSyncBridge::AddOrModifyAppInSync(std::unique_ptr<WebApkProto> app) {
 
 void WebApkSyncBridge::DeleteAppsFromSync(
     const std::vector<webapps::AppId>& app_ids) {
+  if (app_ids.size() > 0) {
+    RecordSyncedWebApkRemovalCountHistogram(app_ids.size());
+  }
+
   std::unique_ptr<syncer::MetadataChangeList> metadata_change_list =
       syncer::ModelTypeStore::WriteBatch::CreateMetadataChangeList();
   std::unique_ptr<RegistryUpdateData> registry_update =
       std::make_unique<RegistryUpdateData>();
 
   for (const webapps::AppId& app_id : app_ids) {
-    change_processor()->Delete(app_id, metadata_change_list.get());
+    change_processor()->Delete(app_id, syncer::DeletionOrigin::Unspecified(),
+                               metadata_change_list.get());
     registry_update->apps_to_delete.push_back(app_id);
   }
 
@@ -493,6 +556,34 @@ const Registry& WebApkSyncBridge::GetRegistryForTesting() const {
 base::WeakPtr<syncer::ModelTypeControllerDelegate>
 WebApkSyncBridge::GetModelTypeControllerDelegate() {
   return change_processor()->GetControllerDelegate();
+}
+
+void WebApkSyncBridge::RecordSyncedWebApkAdditionHistogram(
+    bool is_install,
+    bool already_exists_in_sync) const {
+  if (is_install && !already_exists_in_sync) {
+    base::UmaHistogramEnumeration(
+        kSyncedWebApkAdditionHistogramName,
+        AddOrModifyType::kNewInstallOnDeviceAndNewAddToSync);
+  } else if (is_install && already_exists_in_sync) {
+    base::UmaHistogramEnumeration(
+        kSyncedWebApkAdditionHistogramName,
+        AddOrModifyType::kNewInstallOnDeviceAndModificationToSync);
+  } else if (!is_install && !already_exists_in_sync) {
+    base::UmaHistogramEnumeration(
+        kSyncedWebApkAdditionHistogramName,
+        AddOrModifyType::kLaunchOnDeviceAndNewAddToSync);
+  } else {
+    base::UmaHistogramEnumeration(
+        kSyncedWebApkAdditionHistogramName,
+        AddOrModifyType::kLaunchOnDeviceAndModificationToSync);
+  }
+}
+
+void WebApkSyncBridge::RecordSyncedWebApkRemovalCountHistogram(
+    int num_web_apks_removed) const {
+  base::UmaHistogramExactLinear("WebApk.Sync.SyncedWebApkRemovalCount",
+                                num_web_apks_removed, 51 /* max_count */);
 }
 
 }  // namespace webapk

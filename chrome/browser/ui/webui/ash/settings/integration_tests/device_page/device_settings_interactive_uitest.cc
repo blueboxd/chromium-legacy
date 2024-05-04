@@ -10,11 +10,13 @@
 #include "ash/shell.h"
 #include "ash/webui/settings/public/constants/routes.mojom-forward.h"
 #include "base/test/scoped_feature_list.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/test/base/chromeos/crosier/interactive_ash_test.h"
 #include "device/udev_linux/fake_udev_loader.h"
 #include "ui/base/interaction/element_identifier.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/events/ash/keyboard_capability.h"
 #include "ui/events/devices/device_data_manager_test_api.h"
 #include "ui/events/devices/input_device.h"
@@ -65,7 +67,11 @@ class FakeDeviceManager {
     keyboard_info.device_type =
         ui::KeyboardCapability::DeviceType::kDeviceInternalKeyboard;
     keyboard_info.top_row_layout =
-        ui::KeyboardCapability::KeyboardTopRowLayout::kKbdTopRowLayoutDefault;
+        ui::KeyboardCapability::KeyboardTopRowLayout::kKbdTopRowLayout1;
+
+    keyboard_info.top_row_action_keys = std::vector<ui::TopRowActionKey>(
+        std::begin(ui::kLayout1TopRowActionKeys),
+        std::end(ui::kLayout1TopRowActionKeys));
 
     Shell::Get()->keyboard_capability()->SetKeyboardInfoForTesting(
         fake_keyboard, std::move(keyboard_info));
@@ -98,10 +104,13 @@ class DeviceSettingsInteractiveUiTest : public InteractiveAshTest {
     DEFINE_LOCAL_ELEMENT_IDENTIFIER_VALUE(kOsSettingsWebContentsId);
     webcontents_id_ = kOsSettingsWebContentsId;
 
-    feature_list_.InitWithFeatures({features::kInputDeviceSettingsSplit,
-                                    features::kAltClickAndSixPackCustomization,
-                                    features::kPeripheralCustomization},
-                                   {});
+    feature_list_.InitWithFeatures(
+        {features::kInputDeviceSettingsSplit,
+         features::kAltClickAndSixPackCustomization,
+         features::kPeripheralCustomization,
+         features::kEnableKeyboardBacklightControlInSettings,
+         ::features::kSupportF11AndF12KeyShortcuts},
+        {});
   }
 
   DeviceSettingsInteractiveUiTest(const DeviceSettingsInteractiveUiTest&) =
@@ -203,7 +212,7 @@ class DeviceSettingsInteractiveUiTest : public InteractiveAshTest {
   auto SendKeyPressEvent(ui::KeyboardCode key, int modifier = ui::EF_NONE) {
     return Do([key, modifier]() {
       ui::test::EventGenerator(Shell::GetPrimaryRootWindow())
-          .PressKey(key, modifier, kDeviceId1);
+          .PressKeyAndModifierKeys(key, modifier, kDeviceId1);
     });
   }
 
@@ -228,6 +237,24 @@ class DeviceSettingsInteractiveUiTest : public InteractiveAshTest {
     base::RunLoop().RunUntilIdle();
     ui::DeviceDataManagerTestApi().SetPointingStickDevices(pointing_sticks);
     ui::DeviceDataManagerTestApi().OnDeviceListsComplete();
+  }
+
+  auto SendKeyPressAndReleaseEvent(ui::KeyboardCode key, int modifier) {
+    return Do([key, modifier]() {
+      ui::test::EventGenerator(Shell::GetPrimaryRootWindow())
+          .PressAndReleaseKeyAndModifierKeys(key, modifier, kDeviceId1);
+    });
+  }
+
+  auto WaitForDropdownContainsValue(const DeepQuery& query, int value) {
+    DEFINE_LOCAL_CUSTOM_ELEMENT_EVENT_TYPE(kOptionFound);
+    StateChange change;
+    change.event = kOptionFound;
+    change.where = query;
+    change.type = StateChange::Type::kExistsAndConditionTrue;
+    change.test_function =
+        base::StringPrintf("e => e.selectedIndex === %i", value);
+    return WaitForStateChange(webcontents_id_, change);
   }
 
  protected:
@@ -618,8 +645,8 @@ IN_PROC_BROWSER_TEST_F(DeviceSettingsInteractiveUiTest,
       WaitForElementExists(webcontents_id_, kKeyCombinationSaveQuery),
       Log("Typing Key Combination"), Do([&]() {
         ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
-        generator.PressAndReleaseKey(ui::VKEY_C, ui::EF_COMMAND_DOWN,
-                                     kDeviceId1);
+        generator.PressAndReleaseKeyAndModifierKeys(
+            ui::VKEY_C, ui::EF_COMMAND_DOWN, kDeviceId1);
       }),
       Log("Clicking Save Button"),
       ClickElement(webcontents_id_, kKeyCombinationSaveQuery),
@@ -763,6 +790,59 @@ IN_PROC_BROWSER_TEST_F(DeviceSettingsInteractiveUiTest,
       WaitForStateChange(webcontents_id_, scrolling_speed_slider_disabled),
       ClickElement(webcontents_id_, kControlledScrollingButtonQuery),
       WaitForStateChange(webcontents_id_, scrolling_speed_slider_enabled));
+}
+
+IN_PROC_BROWSER_TEST_F(DeviceSettingsInteractiveUiTest, KeyboardFkeys) {
+  const DeepQuery kF11DropdownQuery{
+      "os-settings-ui",       "os-settings-main", "main-page-container",
+      "settings-device-page", "#remap-keys",      "#f11",
+      "#keyDropdown",         "#dropdownMenu",
+  };
+
+  const DeepQuery kF12DropdownQuery{
+      "os-settings-ui",       "os-settings-main", "main-page-container",
+      "settings-device-page", "#remap-keys",      "#f12",
+      "#keyDropdown",         "#dropdownMenu",
+  };
+
+  DEFINE_LOCAL_ELEMENT_IDENTIFIER_VALUE(kDevToolsId);
+
+  RunTestSequence(
+      SetupInternalKeyboard(),
+      LaunchSettingsApp(
+          webcontents_id_,
+          chromeos::settings::mojom::kPerDeviceKeyboardSubpagePath),
+      Log("Waiting for internal keyboard to exist"),
+      WaitForElementTextContains(webcontents_id_, kKeyboardNameQuery,
+                                 "Built-in Keyboard"),
+      Log("Navigating to 'Customize keyboard keys' subpage"),
+      ClickElement(webcontents_id_, kCustomizeKeyboardKeysInternalQuery),
+      Log("Remapping the 'F11' action to the shortcut that uses the shift "
+          "modifier"),
+      ScrollIntoView(webcontents_id_, kF11DropdownQuery),
+      ExecuteJsAt(webcontents_id_, kF11DropdownQuery,
+                  "(el) => {el.selectedIndex = 1; el.dispatchEvent(new "
+                  "Event('change'));}"),
+      Log("Verifying 'F11' action contains the shift shortcut"),
+      WaitForDropdownContainsValue(kF11DropdownQuery, /*value=*/1),
+      SendKeyPressAndReleaseEvent(ui::VKEY_F1,
+                                  ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN),
+      ScrollIntoView(webcontents_id_, kF11DropdownQuery),
+      Log("Remapping the 'F12' action to the shortcut that uses the shift "
+          "modifier"),
+      ExecuteJsAt(webcontents_id_, kF12DropdownQuery,
+                  "(el) => {el.selectedIndex = 1; el.dispatchEvent(new "
+                  "Event('change'));}"),
+      Log("Verifying 'F12' action contains the shift shortcut"),
+      WaitForDropdownContainsValue(kF12DropdownQuery, /*value=*/1),
+      SendKeyPressAndReleaseEvent(ui::VKEY_F2,
+                                  ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN),
+      InstrumentNextTab(kDevToolsId, AnyBrowser()),
+      Log("Verifying that 'F12' shortcut opens the developer console"),
+      WaitForShow(kDevToolsId));
+  // Get settings browser and verify that the window is maximized.
+  Browser* browser = BrowserList::GetInstance()->get(0);
+  EXPECT_TRUE(browser->window()->IsFullscreen());
 }
 
 }  // namespace

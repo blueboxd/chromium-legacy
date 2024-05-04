@@ -4,7 +4,6 @@
 #include "chromeos/ash/components/heatmap/heatmap_palm_detector_impl.h"
 
 #include "base/strings/strcat.h"
-
 #include "chromeos/services/machine_learning/public/cpp/service_connection.h"
 
 namespace ash {
@@ -16,7 +15,9 @@ using ::chromeos::machine_learning::mojom::LoadHeatmapPalmRejectionResult;
 namespace {
 
 constexpr char kSystemModelDir[] = "/opt/google/chrome/ml_models/";
-constexpr int kTimestampDiffThresholdInMicros = 20000;
+constexpr base::TimeDelta kTimestampDiffThreshold = base::Milliseconds(20);
+constexpr base::TimeDelta kReconnectInitialDelay = base::Seconds(1);
+constexpr base::TimeDelta kReconnectMaxDelay = base::Minutes(10);
 
 struct HeatmapModelMetadata {
   std::string model_file;
@@ -37,21 +38,31 @@ MetadataMap GetHeatmapModelMetadata() {
                .input_node = 0,
                .output_node = 23,
                .palm_threshold = 0.6,
+           }},
+          {HeatmapPalmDetectorImpl::ModelId::kGeralt,
+           {
+               .model_file =
+                   "mlservice-model-poncho-palm_rejection_g-20240313-v0.tflite",
+               .input_node = 0,
+               .output_node = 21,
+               .palm_threshold = 0.6,
            }}};
 }
 
 bool CanBeMatched(base::Time t1, base::Time t2) {
-  return (t1 - t2).magnitude().InMicroseconds() <
-         kTimestampDiffThresholdInMicros;
+  return (t1 - t2).magnitude() < kTimestampDiffThreshold;
 }
 }  // namespace
 
-HeatmapPalmDetectorImpl::HeatmapPalmDetectorImpl() : client_(this) {}
+HeatmapPalmDetectorImpl::HeatmapPalmDetectorImpl()
+    : reconnect_delay_(kReconnectInitialDelay), client_(this) {}
 
 HeatmapPalmDetectorImpl::~HeatmapPalmDetectorImpl() = default;
 
 void HeatmapPalmDetectorImpl::Start(ModelId model_id,
                                     std::string_view hidraw_path) {
+  model_id_ = model_id;
+  hidraw_path_ = hidraw_path;
   const MetadataMap model_metadata = GetHeatmapModelMetadata();
   const auto metadata_lookup = model_metadata.find(model_id);
   if (metadata_lookup == model_metadata.end()) {
@@ -85,10 +96,20 @@ void HeatmapPalmDetectorImpl::OnConnectionError() {
   is_ready_ = false;
   std::queue<TouchRecord>().swap(touch_records_);
   palm_tracking_ids_.clear();
+
+  delay_timer_.Start(
+      FROM_HERE, reconnect_delay_,
+      base::BindOnce(&HeatmapPalmDetectorImpl::Start,
+                     weak_factory_.GetWeakPtr(), model_id_, hidraw_path_));
+  if (reconnect_delay_ <
+      kReconnectMaxDelay) {  // exponential backoff with max limit
+    reconnect_delay_ *= 2;
+  }
 }
 
 void HeatmapPalmDetectorImpl::OnLoadHeatmapPalmRejection(
     LoadHeatmapPalmRejectionResult result) {
+  reconnect_delay_ = kReconnectInitialDelay;
   if (result == LoadHeatmapPalmRejectionResult::OK) {
     std::queue<TouchRecord>().swap(touch_records_);
     palm_tracking_ids_.clear();

@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/check.h"
+#include "base/containers/flat_set.h"
 #include "base/logging.h"
 #include "components/sync/base/data_type_histogram.h"
 #include "components/sync/base/time.h"
@@ -32,7 +33,8 @@ ClientTagBasedRemoteUpdateHandler::ClientTagBasedRemoteUpdateHandler(
 std::optional<ModelError>
 ClientTagBasedRemoteUpdateHandler::ProcessIncrementalUpdate(
     const sync_pb::ModelTypeState& model_type_state,
-    UpdateResponseDataList updates) {
+    UpdateResponseDataList updates,
+    std::optional<sync_pb::GarbageCollectionDirective> gc_directive) {
   std::unique_ptr<MetadataChangeList> metadata_changes =
       bridge_->CreateMetadataChangeList();
   EntityChangeList entity_changes;
@@ -103,6 +105,21 @@ ClientTagBasedRemoteUpdateHandler::ProcessIncrementalUpdate(
     }
   }
 
+  if (gc_directive && gc_directive->has_collaboration_gc()) {
+    auto active_collaborations = base::MakeFlatSet<std::string>(
+        gc_directive->collaboration_gc().active_collaboration_ids());
+    std::vector<std::string> removed_storage_keys =
+        entity_tracker_->RemoveInactiveCollaborations(active_collaborations);
+    DVLOG(2) << "Storage keys to remove for inactive collaborations: "
+             << removed_storage_keys.size();
+    for (const std::string& removed_storage_key : removed_storage_keys) {
+      metadata_changes->ClearMetadata(removed_storage_key);
+      entity_changes.push_back(
+          EntityChange::CreateDeletedCollaborationMembership(
+              removed_storage_key));
+    }
+  }
+
   if (got_new_encryption_requirements) {
     // TODO(pavely): Currently we recommit all entities. We should instead
     // recommit only the ones whose encryption key doesn't match the one in
@@ -163,7 +180,7 @@ ProcessorEntity* ClientTagBasedRemoteUpdateHandler::ProcessUpdate(
     return nullptr;
   }
 
-  // TODO(crbug.com/1409462): Remove the storage key check as storage keys
+  // TODO(crbug.com/40889096): Remove the storage key check as storage keys
   // should not be empty after IsEntityDataValid() has been implemented by all
   // bridges.
   if (!data.is_deleted() && (!bridge_->IsEntityDataValid(data) ||
@@ -264,7 +281,7 @@ void ClientTagBasedRemoteUpdateHandler::ResolveConflict(
       // Record the update and squash the pending commit. Trimming should not be
       // called for matching deleted entities to avoid failing its requirement
       // to have a `password` field present.
-      // TODO(crbug.com/1296159): Consider introducing a dedicated function for
+      // TODO(crbug.com/40214653): Consider introducing a dedicated function for
       // recording exact matching updates.
       entity->RecordForcedRemoteUpdate(
           update, update.entity.is_deleted()

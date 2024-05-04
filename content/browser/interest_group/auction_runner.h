@@ -56,6 +56,9 @@ class CONTENT_EXPORT AuctionRunner : public blink::mojom::AbortableAdAuction {
   // auctions are likely still running.
   static constexpr base::TimeDelta kPostAuctionInterestGroupUpdateDelay =
       base::Seconds(3);
+  // Max reporting timeout for seller's reportResult() and buyer's reportWin().
+  static constexpr base::TimeDelta kMaxReportingTimeout = base::Seconds(5);
+
   using PrivateAggregationRequests =
       std::vector<auction_worklet::mojom::PrivateAggregationRequestPtr>;
 
@@ -206,6 +209,9 @@ class CONTENT_EXPORT AuctionRunner : public blink::mojom::AbortableAdAuction {
       blink::mojom::AuctionAdConfigAuctionIdPtr auction) override;
   void Abort() override;
 
+  // Normalize reporting timeouts, including those in component auction configs.
+  void NormalizeReportingTimeouts();
+
   // Fails the auction, invoking `callback_` and prevents any future calls into
   // `this` by closing mojo pipes and disposing of weak pointers. The owner must
   // be able to safely delete `this` when the callback is invoked. May only be
@@ -218,11 +224,16 @@ class CONTENT_EXPORT AuctionRunner : public blink::mojom::AbortableAdAuction {
                        blink::InterestGroupSet());
 
  private:
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
   enum class State {
-    kLoadingGroupsPhase,
-    kBiddingAndScoringPhase,
-    kSucceeded,
-    kFailed,
+    kNotYetStarted = 0,
+    kLoadingGroupsPhase = 1,
+    kBiddingAndScoringPhase = 2,
+    kSucceeded = 3,
+    kFailed = 4,
+
+    kMaxValue = kFailed
   };
 
   AuctionRunner(
@@ -335,7 +346,7 @@ class CONTENT_EXPORT AuctionRunner : public blink::mojom::AbortableAdAuction {
   AuctionMetricsRecorder auction_metrics_recorder_;
 
   InterestGroupAuction auction_;
-  State state_ = State::kLoadingGroupsPhase;
+  State state_ = State::kNotYetStarted;
 
   base::WeakPtrFactory<AuctionRunner> weak_ptr_factory_{this};
 };

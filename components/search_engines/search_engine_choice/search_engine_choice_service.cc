@@ -5,6 +5,7 @@
 #include "components/search_engines/search_engine_choice/search_engine_choice_service.h"
 
 #include <memory>
+#include <optional>
 
 #include "base/callback_list.h"
 #include "base/check_deref.h"
@@ -16,15 +17,15 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/no_destructor.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/time/time.h"
 #include "base/version.h"
 #include "build/chromeos_buildflags.h"
 #include "components/country_codes/country_codes.h"
 #include "components/policy/core/common/policy_service.h"
 #include "components/policy/policy_constants.h"
-#include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/eea_countries_ids.h"
-#include "components/search_engines/search_engine_choice_utils.h"
+#include "components/search_engines/search_engine_choice/search_engine_choice_utils.h"
 #include "components/search_engines/search_engine_type.h"
 #include "components/search_engines/search_engines_pref_names.h"
 #include "components/search_engines/search_engines_switches.h"
@@ -108,6 +109,17 @@ void MarkSearchEngineChoiceCompleted(PrefService& prefs) {
                   version_info::GetVersionNumber());
 }
 
+std::optional<base::Time> GetChoiceScreenCompletionTimestamp(
+    PrefService& prefs) {
+  if (!prefs.HasPrefPath(
+          prefs::kDefaultSearchProviderChoiceScreenCompletionTimestamp)) {
+    return std::nullopt;
+  }
+
+  return base::Time::FromDeltaSinceWindowsEpoch(base::Seconds(prefs.GetInt64(
+      prefs::kDefaultSearchProviderChoiceScreenCompletionTimestamp)));
+}
+
 // Returns true if the version is valid and can be compared to the current
 // Chrome version.
 bool IsValidVersionFormat(const base::Version& version) {
@@ -149,6 +161,7 @@ SearchEngineChoiceService::SearchEngineChoiceService(PrefService& profile_prefs,
     : profile_prefs_(profile_prefs),
       variations_country_id_(variations_country_id) {
   PreprocessPrefsForReprompt();
+  ProcessPendingChoiceScreenDisplayState();
 }
 
 SearchEngineChoiceService::~SearchEngineChoiceService() = default;
@@ -292,11 +305,13 @@ SearchEngineChoiceService::GetDynamicChoiceScreenConditions(
 }
 
 int SearchEngineChoiceService::GetCountryId() {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kSearchEngineChoiceCountry)) {
-    return country_codes::CountryStringToCountryID(
-        base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-            switches::kSearchEngineChoiceCountry));
+  std::optional<SearchEngineCountryOverride> country_override =
+      GetSearchEngineCountryOverride();
+  if (country_override.has_value()) {
+    if (absl::holds_alternative<int>(country_override.value())) {
+      return absl::get<int>(country_override.value());
+    }
+    return country_codes::kCountryIDUnknown;
   }
 
   bool force_eea_country =
@@ -342,6 +357,62 @@ void SearchEngineChoiceService::RecordChoiceMade(
   }
 }
 
+void SearchEngineChoiceService::MaybeRecordChoiceScreenDisplayState(
+    const ChoiceScreenDisplayState& display_state,
+    bool is_from_cached_state) const {
+  if (!IsEeaChoiceCountry(display_state.country_id)) {
+    // Tests or command line can force this, but we want to avoid polluting the
+    // histograms with unwanted country data.
+    return;
+  }
+
+  if (display_state.list_is_modified_by_current_default) {
+    // This typically indicates that we have an extra search engine added to the
+    // usual ones. This should be very rare (see histogram data from
+    // `RecordIsDefaultProviderAddedToChoices()`) and might point to some corner
+    // case we might have not handled correctly. To avoid messing up the main
+    // metrics, we don't record positions here.
+    return;
+  }
+
+  // TODO(b/337114717): This could crash if for some reason this is called
+  // multiple times in a row for the same profile. This would clearly be a bug
+  // that needs to be fixed, but this is not the most obvious way to detect
+  // such an issue. The API should be cleanup to handle this case a bit better.
+  CHECK_EQ(is_from_cached_state,
+           profile_prefs_->HasPrefPath(
+               prefs::kDefaultSearchProviderPendingChoiceScreenDisplayState),
+           base::NotFatalUntil::M127);
+
+  if (!is_from_cached_state &&
+      display_state.selected_engine_index.has_value()) {
+    RecordChoiceScreenSelectedIndex(
+        display_state.selected_engine_index.value());
+  }
+
+  if (display_state.country_id != variations_country_id_) {
+    // Not recording if adding position data, which can be used as a proxy for
+    // the profile country, would add new hard to control location info to a
+    // logs session.
+    if (!is_from_cached_state) {
+      // Persist the data so we can attempt to send it later.
+      RecordChoiceScreenPositionsCountryMismatch(true);
+      profile_prefs_->SetDict(
+          prefs::kDefaultSearchProviderPendingChoiceScreenDisplayState,
+          display_state.ToDict());
+    }
+    return;
+  }
+
+  RecordChoiceScreenPositions(display_state.search_engines);
+  if (is_from_cached_state) {
+    profile_prefs_->ClearPref(
+        prefs::kDefaultSearchProviderPendingChoiceScreenDisplayState);
+  } else {
+    RecordChoiceScreenPositionsCountryMismatch(false);
+  }
+}
+
 void SearchEngineChoiceService::PreprocessPrefsForReprompt() {
   if (!IsChoiceScreenFlagEnabled(ChoicePromo::kAny)) {
     return;
@@ -360,6 +431,16 @@ void SearchEngineChoiceService::PreprocessPrefsForReprompt() {
     return;
   }
 
+  // Check parameters from `switches::kSearchEngineChoiceTriggerRepromptParams`.
+  std::optional<base::Value::Dict> reprompt_params = base::JSONReader::ReadDict(
+      switches::kSearchEngineChoiceTriggerRepromptParams.Get());
+  if (!reprompt_params) {
+    // No valid reprompt parameters.
+    base::UmaHistogramEnumeration(kSearchEngineChoiceRepromptHistogram,
+                                  RepromptResult::kInvalidDictionary);
+    return;
+  }
+
   // If existing prefs are missing or have a wrong format, force a reprompt.
   if (!profile_prefs_->HasPrefPath(
           prefs::kDefaultSearchProviderChoiceScreenCompletionVersion)) {
@@ -375,16 +456,6 @@ void SearchEngineChoiceService::PreprocessPrefsForReprompt() {
     WipeSearchEngineChoicePrefs(
         profile_prefs_.get(),
         WipeSearchEngineChoiceReason::kInvalidChoiceVersion);
-    return;
-  }
-
-  // Check parameters from `switches::kSearchEngineChoiceTriggerRepromptParams`.
-  std::optional<base::Value::Dict> reprompt_params = base::JSONReader::ReadDict(
-      switches::kSearchEngineChoiceTriggerRepromptParams.Get());
-  if (!reprompt_params) {
-    // No valid reprompt parameters.
-    base::UmaHistogramEnumeration(kSearchEngineChoiceRepromptHistogram,
-                                  RepromptResult::kInvalidDictionary);
     return;
   }
 
@@ -433,6 +504,37 @@ void SearchEngineChoiceService::PreprocessPrefsForReprompt() {
                                 WipeSearchEngineChoiceReason::kReprompt);
     return;
   }
+}
+
+void SearchEngineChoiceService::ProcessPendingChoiceScreenDisplayState() {
+  if (!profile_prefs_->HasPrefPath(
+          prefs::kDefaultSearchProviderPendingChoiceScreenDisplayState)) {
+    return;
+  }
+
+  const base::Value::Dict& dict = profile_prefs_->GetDict(
+      prefs::kDefaultSearchProviderPendingChoiceScreenDisplayState);
+  std::optional<ChoiceScreenDisplayState> display_state =
+      ChoiceScreenDisplayState::FromDict(dict);
+  if (display_state.has_value()) {
+    // Check if the obtained display state is still valid.
+    std::optional<base::Time> completion_time =
+        GetChoiceScreenCompletionTimestamp(profile_prefs_.get());
+    constexpr base::TimeDelta kDisplayStateMaxPendingDuration = base::Days(7);
+    if (base::Time::Now() - completion_time.value_or(base::Time::Min()) >
+        kDisplayStateMaxPendingDuration) {
+      display_state = std::nullopt;
+    }
+  }
+
+  if (!display_state.has_value()) {
+    profile_prefs_->ClearPref(
+        prefs::kDefaultSearchProviderPendingChoiceScreenDisplayState);
+    return;
+  }
+
+  MaybeRecordChoiceScreenDisplayState(display_state.value(),
+                                      /*is_from_cached_state=*/true);
 }
 
 int SearchEngineChoiceService::GetCountryIdInternal() {

@@ -46,19 +46,19 @@ FormUtilJavaScriptFeature::FormUtilJavaScriptFeature()
 
 FormUtilJavaScriptFeature::~FormUtilJavaScriptFeature() = default;
 
-void FormUtilJavaScriptFeature::SetUpForUniqueIDsWithInitialState(
-    web::WebFrame* frame,
-    uint32_t next_available_id) {
-  CallJavaScriptFunction(
-      frame, "fill.setUpForUniqueIDs",
-      base::Value::List().Append(static_cast<int>(next_available_id)));
-}
-
 void FormUtilJavaScriptFeature::SetAutofillAcrossIframes(web::WebFrame* frame,
                                                          bool enabled) {
   CallJavaScriptFunction(frame,
                          "autofill_form_features.setAutofillAcrossIframes",
                          base::Value::List().Append(enabled));
+}
+
+void FormUtilJavaScriptFeature::SetAutofillXHRSubmissionDetection(
+    web::WebFrame* frame,
+    bool enabled) {
+  CallJavaScriptFunction(
+      frame, "autofill_form_features.setAutofillXHRSubmissionDetection",
+      base::Value::List().Append(enabled));
 }
 
 }  // namespace autofill

@@ -7,6 +7,7 @@
 #include <cmath>
 #include <memory>
 #include <string>
+#include <string_view>
 #include <utility>
 
 #include "base/base64.h"
@@ -128,7 +129,7 @@ class LogsPrefWriter {
 };
 
 bool GetString(const base::Value::Dict& dict,
-               base::StringPiece key,
+               std::string_view key,
                std::string& out) {
   const std::string* value = dict.FindString(key);
   if (!value)
@@ -149,7 +150,7 @@ void UnsentLogStore::LogInfo::Init(const std::string& log_data,
   DCHECK(!log_data.empty());
 
   if (!compression::GzipCompress(log_data, &compressed_log_data)) {
-    NOTREACHED();
+    DUMP_WILL_BE_NOTREACHED_NORETURN();
     return;
   }
 
@@ -260,7 +261,7 @@ void UnsentLogStore::StageNextLog() {
   DCHECK(has_staged_log());
 }
 
-void UnsentLogStore::DiscardStagedLog(base::StringPiece reason) {
+void UnsentLogStore::DiscardStagedLog(std::string_view reason) {
   DCHECK(has_staged_log());
   DCHECK_LT(static_cast<size_t>(staged_log_index_), list_.size());
   NotifyLogEvent(MetricsLogsEventManager::LogEvent::kLogDiscarded,
@@ -419,8 +420,8 @@ std::string UnsentLogStore::ReplaceLogAtIndex(size_t index,
   metrics_->RecordCompressionRatio(info->compressed_log_data.size(),
                                    new_log_data.size());
 
-  // TODO(crbug/1363747): Pass a message to make it clear that the new log is
-  // replacing the old log.
+  // TODO(crbug.com/40238818): Pass a message to make it clear that the new log
+  // is replacing the old log.
   NotifyLogEvent(MetricsLogsEventManager::LogEvent::kLogDiscarded, old_hash);
   NotifyLogCreated(*info, MetricsLogsEventManager::CreateReason::kUnknown);
   list_[index] = std::move(info);
@@ -564,8 +565,8 @@ void UnsentLogStore::NotifyLogsCreated(
 }
 
 void UnsentLogStore::NotifyLogEvent(MetricsLogsEventManager::LogEvent event,
-                                    base::StringPiece log_hash,
-                                    base::StringPiece message) {
+                                    std::string_view log_hash,
+                                    std::string_view message) {
   if (!logs_event_manager_)
     return;
   logs_event_manager_->NotifyLogEvent(event, log_hash, message);
@@ -573,7 +574,7 @@ void UnsentLogStore::NotifyLogEvent(MetricsLogsEventManager::LogEvent event,
 
 void UnsentLogStore::NotifyLogsEvent(base::span<std::unique_ptr<LogInfo>> logs,
                                      MetricsLogsEventManager::LogEvent event,
-                                     base::StringPiece message) {
+                                     std::string_view message) {
   if (!logs_event_manager_)
     return;
   for (const std::unique_ptr<LogInfo>& info : logs) {

@@ -203,7 +203,7 @@ class PaymentsNetworkInterfaceTest : public PaymentsNetworkInterfaceTestBase,
     legal_message_.reset();
     payments_network_interface_ = std::make_unique<PaymentsNetworkInterface>(
         test_shared_loader_factory_, identity_test_env_.identity_manager(),
-        &test_personal_data_);
+        &test_personal_data_.payments_data_manager());
   }
 
   void TearDown() override { payments_network_interface_.reset(); }
@@ -215,8 +215,9 @@ class PaymentsNetworkInterfaceTest : public PaymentsNetworkInterfaceTestBase,
     unmask_details_ = unmask_details;
   }
 
-  void OnDidGetRealPan(AutofillClient::PaymentsRpcResult result,
-                       PaymentsNetworkInterface::UnmaskResponseDetails& response) {
+  void OnDidGetRealPan(
+      AutofillClient::PaymentsRpcResult result,
+      const PaymentsNetworkInterface::UnmaskResponseDetails& response) {
     result_ = result;
     unmask_response_details_ = response;
   }
@@ -1254,7 +1255,8 @@ TEST_F(PaymentsNetworkInterfaceTest, GetUploadAccountFromSyncTest) {
   // Set up a different account.
   const AccountInfo& secondary_account_info =
       identity_test_env_.MakeAccountAvailable("secondary@gmail.com");
-  test_personal_data_.SetAccountInfoForPayments(secondary_account_info);
+  test_personal_data_.test_payments_data_manager().SetAccountInfoForPayments(
+      secondary_account_info);
 
   StartUploading(UploadCardOptions());
   ReturnResponse(payments_network_interface_.get(), net::HTTP_OK, "{}");

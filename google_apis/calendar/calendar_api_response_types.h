@@ -44,6 +44,10 @@ class SingleCalendar {
   const std::string& id() const { return id_; }
   void set_id(const std::string& id) { id_ = id; }
 
+  // The Calendar summary (i.e. name of the calendar shown in Google Calendar)
+  const std::string& summary() const { return summary_; }
+  void set_summary(const std::string& summary) { summary_ = summary; }
+
   // The color ID of the calendar
   const std::string& color_id() const { return color_id_; }
   void set_color_id(const std::string& color_id) { color_id_ = color_id; }
@@ -61,6 +65,7 @@ class SingleCalendar {
 
  private:
   std::string id_;
+  std::string summary_;
   std::string color_id_;
   bool selected_ = false;
   bool primary_ = false;
@@ -153,10 +158,15 @@ class Attachment {
   const GURL& icon_link() const { return icon_link_; }
   void set_icon_link(const GURL& icon_link) { icon_link_ = icon_link; }
 
+  // The file ID of the attachment.
+  const std::string& file_id() const { return file_id_; }
+  void set_file_id(const std::string& file_id) { file_id_ = file_id; }
+
  private:
   std::string title_;
   GURL file_url_;
   GURL icon_link_;
+  std::string file_id_;
 };
 
 // Parses the event item from the response. Not every field is parsed. If you

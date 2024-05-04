@@ -12,6 +12,7 @@
 #include "base/containers/span.h"
 #include "base/time/time.h"
 #include "base/unguessable_token.h"
+#include "base/uuid.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/mojom/link_header.mojom-shared.h"
 #include "services/network/public/mojom/referrer_policy.mojom-shared.h"
@@ -76,7 +77,7 @@ struct BLINK_EXPORT WebNavigationInfo {
   WebURLRequest url_request;
 
   // The base url of the requestor. Only used for about:srcdoc and about:blank
-  // navigations, and if NewBaseUrlInheritanceBehavior is enabled.
+  // navigations.
   WebURL requestor_base_url;
 
   // The frame type. This must not be kNone. See RequestContextFrameType.
@@ -213,11 +214,12 @@ struct BLINK_EXPORT WebNavigationParams {
   WebNavigationParams();
   ~WebNavigationParams();
 
-  // Construct with a specific `document_token` and `devtools_navigation_token`,
-  // rather than randomly creating new ones.
+  // Construct with a specific `document_token`, `devtools_navigation_token`,
+  // and `base_auction_nonce` rather than randomly creating new ones.
   explicit WebNavigationParams(
       const blink::DocumentToken& document_token,
-      const base::UnguessableToken& devtools_navigation_token);
+      const base::UnguessableToken& devtools_navigation_token,
+      const base::Uuid& base_auction_nonce);
 
   // Shortcut for navigating based on WebNavigationInfo parameters.
   //
@@ -286,8 +288,7 @@ struct BLINK_EXPORT WebNavigationParams {
 
   // If `url` is about:srcdoc or about:blank, this is the default base URL to
   // use for the new document. It corresponds to the initiator's base URL
-  // snapshotted when the navigation started. Note: this value is only used when
-  // the NewBaseUrlInheritanceBehavior feature is enabled in the embedder.
+  // snapshotted when the navigation started.
   WebURL fallback_base_url;
 
   // The net error code for failed navigation. Must be non-zero when
@@ -383,6 +384,10 @@ struct BLINK_EXPORT WebNavigationParams {
   // The devtools token for this navigation. See DocumentLoader
   // for details.
   base::UnguessableToken devtools_navigation_token;
+
+  // Seed for all PAAPI Auction Nonces generated in this document.
+  base::Uuid base_auction_nonce;
+
   // Known timings related to navigation. If the navigation has
   // started in another process, timings are propagated from there.
   WebNavigationTimings navigation_timings;

@@ -6,6 +6,7 @@
 
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/power_monitor/cpu_frequency_utils.h"
 #include "base/process/process_metrics.h"
 #include "base/system/sys_info.h"
 #include "base/timer/timer.h"
@@ -29,6 +30,7 @@ uint64_t kBytesPerMb = 1024 * 1024;
 #if BUILDFLAG(IS_MAC)
 uint64_t kKilobytesPerMb = 1024;
 #endif
+
 }  // namespace
 
 // Tracks the proportion of time a specific mode was enabled during this
@@ -153,7 +155,7 @@ void MetricsProviderDesktop::ProvideCurrentSessionData(
     metrics::ChromeUserMetricsExtension* uma_proto) {
   // It's valid for this to be called when `initialized_` is false if the finch
   // features controlling battery saver and memory saver are disabled.
-  // TODO(crbug.com/1348590): CHECK(initialized_) when the features are enabled
+  // TODO(crbug.com/40233418): CHECK(initialized_) when the features are enabled
   // and removed.
   base::UmaHistogramEnumeration("PerformanceManager.UserTuning.EfficiencyMode",
                                 current_mode_);
@@ -177,6 +179,13 @@ MetricsProviderDesktop::MetricsProviderDesktop(PrefService* local_state)
       FROM_HERE, base::Minutes(2),
       base::BindRepeating(&MetricsProviderDesktop::RecordAvailableMemoryMetrics,
                           base::Unretained(this)));
+
+  if constexpr (ShouldCollectCpuFrequencyMetrics()) {
+    cpu_frequency_metrics_timer_.Start(
+        FROM_HERE, base::Minutes(5),
+        base::BindRepeating(&MetricsProviderDesktop::RecordCpuFrequencyMetrics,
+                            base::Unretained(this)));
+  }
 }
 
 void MetricsProviderDesktop::OnBatterySaverActiveChanged(bool is_active) {
@@ -205,7 +214,7 @@ MetricsProviderDesktop::ComputeCurrentMode() const {
   // It's valid for this to be uninitialized if the battery saver/high
   // efficiency modes are unavailable. In that case, the browser is running in
   // normal mode, so return kNormal.
-  // TODO(crbug.com/1348590): Change this to a DCHECK when the features are
+  // TODO(crbug.com/40233418): Change this to a DCHECK when the features are
   // enabled and removed.
   if (!initialized_) {
     return EfficiencyMode::kNormal;
@@ -270,4 +279,26 @@ void MetricsProviderDesktop::ResetTrackers() {
       "PerformanceManager.UserTuning.MemorySaverModeEnabledPercent");
 }
 
+void MetricsProviderDesktop::RecordCpuFrequencyMetrics() {
+  CHECK(ShouldCollectCpuFrequencyMetrics());
+
+  static const double kHzInMhz = 1000 * 1000;
+
+  double estimated_mhz = base::EstimateCpuFrequency() / kHzInMhz;
+  unsigned long max_mhz = base::GetCpuMaxMhz();
+  unsigned long mhz_limit = base::GetCpuMhzLimit();
+
+  if (max_mhz > 0UL) {
+    base::UmaHistogramPercentage(
+        "CPU.Experimental.EstimatedFrequencyAsPercentOfMax",
+        static_cast<int>(estimated_mhz * 100.0 / static_cast<double>(max_mhz)));
+  }
+
+  if (mhz_limit > 0UL) {
+    base::UmaHistogramPercentage(
+        "CPU.Experimental.EstimatedFrequencyAsPercentOfLimit",
+        static_cast<int>(estimated_mhz * 100.0 /
+                         static_cast<double>(mhz_limit)));
+  }
+}
 }  // namespace performance_manager

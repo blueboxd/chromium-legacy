@@ -11,7 +11,7 @@
 
 namespace {
 
-// Top and bottom margins for buttons.
+// Top and bottom margins for the button content.
 static const CGFloat kButtonVerticalMargin = 12;
 
 }  // namespace
@@ -57,8 +57,7 @@ static const CGFloat kButtonVerticalMargin = 12;
   UIButtonConfiguration* buttonConfiguration =
       [UIButtonConfiguration plainButtonConfiguration];
   buttonConfiguration.contentInsets = NSDirectionalEdgeInsetsMake(
-      kButtonVerticalMargin, kButtonHorizontalMargin, kButtonVerticalMargin,
-      kButtonHorizontalMargin);
+      kButtonVerticalMargin, kCellMargin, kButtonVerticalMargin, kCellMargin);
   buttonConfiguration.titleLineBreakMode = NSLineBreakByTruncatingTail;
   self.configuration = buttonConfiguration;
 }

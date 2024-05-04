@@ -62,8 +62,6 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkState : public ManagedState {
     kPortalSuspected,
     // The network is in a portal state with a redirect URL.
     kPortal,
-    // A proxy requiring authentication is detected.
-    kProxyAuthRequired,
     // The network is connected but no internet is available and no proxy was
     // detected.
     kNoInternet,
@@ -168,6 +166,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkState : public ManagedState {
   const std::string& activation_type() const { return activation_type_; }
   const std::string& activation_state() const { return activation_state_; }
   bool allow_roaming() const { return allow_roaming_; }
+  const std::string& payment_method() const { return payment_method_; }
   const std::string& payment_url() const { return payment_url_; }
   const std::string& payment_post_data() const { return payment_post_data_; }
   bool cellular_out_of_credits() const { return cellular_out_of_credits_; }
@@ -383,6 +382,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkState : public ManagedState {
   std::string roaming_;
   bool allow_roaming_ = false;
   bool provider_requires_roaming_ = false;
+  std::string payment_method_;
   std::string payment_url_;
   std::string payment_post_data_;
   bool cellular_out_of_credits_ = false;

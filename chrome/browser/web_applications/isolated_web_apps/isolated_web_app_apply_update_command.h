@@ -9,19 +9,18 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <string_view>
 #include <type_traits>
 
 #include "base/functional/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
-#include "base/strings/string_piece.h"
 #include "base/types/expected.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/keep_alive/scoped_profile_keep_alive.h"
 #include "chrome/browser/web_applications/commands/web_app_command.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_install_command_helper.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_url_info.h"
-#include "chrome/browser/web_applications/os_integration/os_integration_manager.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
@@ -35,14 +34,12 @@ class WebContents;
 }
 
 namespace webapps {
+class WebAppUrlLoader;
+enum class WebAppUrlLoaderResult;
 enum class InstallResultCode;
 }
 
 namespace web_app {
-
-class WebAppUrlLoader;
-
-enum class WebAppUrlLoaderResult;
 
 struct IsolatedWebAppApplyUpdateCommandError {
   std::string message;
@@ -88,7 +85,7 @@ class IsolatedWebAppApplyUpdateCommand
   void StartWithLock(std::unique_ptr<AppLock> lock) override;
 
  private:
-  void ReportFailure(base::StringPiece message);
+  void ReportFailure(std::string_view message);
   void ReportSuccess();
 
   template <typename T, std::enable_if_t<std::is_void_v<T>, bool> = true>
@@ -139,8 +136,7 @@ class IsolatedWebAppApplyUpdateCommand
   void Finalize(WebAppInstallInfo info);
 
   void OnFinalized(const webapps::AppId& app_id,
-                   webapps::InstallResultCode update_result_code,
-                   OsHooksErrors os_hooks_errors);
+                   webapps::InstallResultCode update_result_code);
 
   void CleanupOnFailure(base::OnceClosure next_step_callback);
 
@@ -151,7 +147,7 @@ class IsolatedWebAppApplyUpdateCommand
   const IsolatedWebAppUrlInfo url_info_;
 
   std::unique_ptr<content::WebContents> web_contents_;
-  std::unique_ptr<WebAppUrlLoader> url_loader_;
+  std::unique_ptr<webapps::WebAppUrlLoader> url_loader_;
 
   const std::unique_ptr<ScopedKeepAlive> optional_keep_alive_;
   const std::unique_ptr<ScopedProfileKeepAlive> optional_profile_keep_alive_;

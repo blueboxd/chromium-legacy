@@ -326,6 +326,12 @@ class BASE_EXPORT File {
   // Serialise this object into a trace.
   void WriteIntoTrace(perfetto::TracedValue context) const;
 
+#if BUILDFLAG(IS_APPLE)
+  // Initializes experiments. Must be invoked early in process startup, but
+  // after `FeatureList` initialization.
+  static void InitializeFeatures();
+#endif  // BUILDFLAG(IS_APPLE)
+
 #if BUILDFLAG(IS_WIN)
   // Sets or clears the DeleteFile disposition on the file. Returns true if
   // the disposition was set or cleared, as indicated by |delete_on_close|.
@@ -359,18 +365,18 @@ class BASE_EXPORT File {
   //   deleted in the event of untimely process termination, and then clearing
   //   this state once the file is suitable for persistence.
   bool DeleteOnClose(bool delete_on_close);
-#endif
 
-#if BUILDFLAG(IS_WIN)
+  // Precondition: last_error is not 0, also known as ERROR_SUCCESS.
   static Error OSErrorToFileError(DWORD last_error);
 #elif BUILDFLAG(IS_POSIX) || BUILDFLAG(IS_FUCHSIA)
+  // Precondition: saved_errno is not 0.
   static Error OSErrorToFileError(int saved_errno);
 #endif
 
   // Gets the last global error (errno or GetLastError()) and converts it to the
-  // closest base::File::Error equivalent via OSErrorToFileError(). The returned
-  // value is only trustworthy immediately after another base::File method
-  // fails. base::File never resets the global error to zero.
+  // closest base::File::Error equivalent via OSErrorToFileError(). It should
+  // therefore only be called immediately after another base::File method fails.
+  // base::File never resets the global error to zero.
   static Error GetLastFileError();
 
   // Converts an error value to a human-readable form. Used for logging.
@@ -378,11 +384,11 @@ class BASE_EXPORT File {
 
 #if BUILDFLAG(IS_POSIX) || BUILDFLAG(IS_FUCHSIA)
   // Wrapper for stat().
-  static int Stat(const char* path, stat_wrapper_t* sb);
+  static int Stat(const FilePath& path, stat_wrapper_t* sb);
   // Wrapper for fstat().
   static int Fstat(int fd, stat_wrapper_t* sb);
   // Wrapper for lstat().
-  static int Lstat(const char* path, stat_wrapper_t* sb);
+  static int Lstat(const FilePath& path, stat_wrapper_t* sb);
 #endif
 
   // This function can be used to augment `flags` with the correct flags

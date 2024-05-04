@@ -31,6 +31,7 @@
 #include "chrome/browser/ash/child_accounts/child_user_service_factory.h"
 #include "chrome/browser/ash/child_accounts/event_based_status_reporting_service_factory.h"
 #include "chrome/browser/ash/child_accounts/family_user_metrics_service_factory.h"
+#include "chrome/browser/ash/child_accounts/on_device_controls/app_controls_service_factory.h"
 #include "chrome/browser/ash/child_accounts/screen_time_controller_factory.h"
 #include "chrome/browser/ash/concierge_helper_service.h"
 #include "chrome/browser/ash/crosapi/keystore_service_factory_ash.h"
@@ -44,6 +45,7 @@
 #include "chrome/browser/ash/crostini/crostini_shared_devices.h"
 #include "chrome/browser/ash/crostini/crostini_upgrader.h"
 #include "chrome/browser/ash/crostini/throttle/crostini_throttle.h"
+#include "chrome/browser/ash/data_migration/data_migration_factory.h"
 #include "chrome/browser/ash/early_prefs/early_prefs_export_service_factory.h"
 #include "chrome/browser/ash/eche_app/eche_app_manager_factory.h"
 #include "chrome/browser/ash/extensions/file_manager/event_router_factory.h"
@@ -60,13 +62,14 @@
 #include "chrome/browser/ash/guest_os/guest_os_share_path_factory.h"
 #include "chrome/browser/ash/guest_os/public/guest_os_service_factory.h"
 #include "chrome/browser/ash/kcer/kcer_factory_ash.h"
+#include "chrome/browser/ash/kcer/nssdb_migration/pkcs12_migrator.h"
 #include "chrome/browser/ash/kerberos/kerberos_credentials_manager_factory.h"
 #include "chrome/browser/ash/lock_screen_apps/lock_screen_apps.h"
 #include "chrome/browser/ash/login/extensions/login_screen_extensions_content_script_manager_factory.h"
 #include "chrome/browser/ash/login/extensions/login_screen_extensions_lifetime_manager_factory.h"
+#include "chrome/browser/ash/login/lock/online_reauth/lock_screen_reauth_manager_factory.h"
 #include "chrome/browser/ash/login/osauth/profile_prefs_auth_policy_connector_factory.h"
 #include "chrome/browser/ash/login/quick_unlock/quick_unlock_factory.h"
-#include "chrome/browser/ash/login/saml/in_session_password_sync_manager_factory.h"
 #include "chrome/browser/ash/login/saml/password_sync_token_verifier_factory.h"
 #include "chrome/browser/ash/login/security_token_session_controller_factory.h"
 #include "chrome/browser/ash/login/signin/auth_error_observer_factory.h"
@@ -176,6 +179,7 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
 #if BUILDFLAG(USE_CUPS)
   CupsProxyServiceManagerFactory::GetInstance();
 #endif
+  data_migration::DataMigrationFactory::GetInstance();
   EarlyPrefsExportServiceFactory::GetInstance();
   eche_app::EcheAppManagerFactory::GetInstance();
   EventBasedStatusReportingServiceFactory::GetInstance();
@@ -196,11 +200,12 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   guest_os::GuestOsSharePathFactory::GetInstance();
   help_app::HelpAppManagerFactory::GetInstance();
   HoldingSpaceKeyedServiceFactory::GetInstance();
-  InSessionPasswordSyncManagerFactory::GetInstance();
   kcer::KcerFactoryAsh::EnsureFactoryBuilt();
+  kcer::Pkcs12MigratorFactory::GetInstance();
   KerberosCredentialsManagerFactory::GetInstance();
   KioskAppUpdateServiceFactory::GetInstance();
   LockScreenAppsFactory::GetInstance();
+  LockScreenReauthManagerFactory::GetInstance();
   login::SecurityTokenSessionControllerFactory::GetInstance();
   login::SigninPartitionManager::Factory::GetInstance();
   LoginScreenExtensionsContentScriptManagerFactory::GetInstance();
@@ -213,6 +218,7 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   nearby::NearbyProcessManagerFactory::GetInstance();
   nearby::presence::NearbyPresenceServiceFactory::GetInstance();
   OAuth2LoginManagerFactory::GetInstance();
+  on_device_controls::AppControlsServiceFactory::GetInstance();
   OfflineSigninLimiterFactory::GetInstance();
   OwnerSettingsServiceAshFactory::GetInstance();
   PasswordSyncTokenVerifierFactory::GetInstance();

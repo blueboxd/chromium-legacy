@@ -4,7 +4,9 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/v8_local_compile_hints_producer.h"
 
+#include "base/metrics/histogram_functions.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/page/v8_compile_hints_histograms.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_code_cache.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_compile_hints_common.h"
@@ -17,7 +19,7 @@ namespace blink::v8_compile_hints {
 
 V8LocalCompileHintsProducer::V8LocalCompileHintsProducer(LocalFrame* frame)
     : frame_(frame) {
-  should_generate_data_ =
+  should_generate_data_ = frame->IsMainFrame() &&
       base::FeatureList::IsEnabled(features::kLocalCompileHints);
 }
 
@@ -37,7 +39,11 @@ void V8LocalCompileHintsProducer::RecordScript(
   cache_handlers_.emplace_back(cache_handler);
 }
 
-void V8LocalCompileHintsProducer::GenerateData() {
+void V8LocalCompileHintsProducer::GenerateData(bool final_data) {
+  if (cache_handlers_.empty()) {
+    return;
+  }
+
   LocalDOMWindow* window = frame_->DomWindow();
   CHECK(window);
   ExecutionContext* execution_context = window->GetExecutionContext();
@@ -50,11 +56,25 @@ void V8LocalCompileHintsProducer::GenerateData() {
   for (wtf_size_t i = 0; i < cache_handlers_.size(); ++i) {
     CachedMetadataHandler* cache_handler = cache_handlers_.at(i);
 
+    if (V8CodeCache::HasCodeCache(cache_handler,
+                                  CachedMetadataHandler::kAllowUnchecked)) {
+      // We're trying to set compile hints even though the code cache exists
+      // already. This can happen if the user navigated around on the website
+      // and the script became so hot that a code cache was created.
+      base::UmaHistogramBoolean(kLocalCompileHintsObsoletedByCodeCacheHistogram,
+                                true);
+      return;
+    }
+    base::UmaHistogramBoolean(kLocalCompileHintsObsoletedByCodeCacheHistogram,
+                              false);
+
+    V8CodeCache::RecordCacheSetStatistics(
+        final_data
+            ? V8CodeCache::SetMetadataType::kLocalCompileHintsAtInteractive
+            : V8CodeCache::SetMetadataType::kLocalCompileHintsAtFMP);
+
     v8::Local<v8::Script> script = v8_scripts_[i].Get(isolate);
     std::vector<int> compile_hints = script->GetProducedCompileHints();
-    if (compile_hints.size() == 0) {
-      continue;
-    }
 
     uint64_t timestamp = V8CodeCache::GetTimestamp();
     std::unique_ptr<v8::ScriptCompiler::CachedData> data(
@@ -66,8 +86,16 @@ void V8LocalCompileHintsProducer::GenerateData() {
         code_cache_host, V8CodeCache::TagForCompileHints(cache_handler),
         data->data, data->length);
   }
-  cache_handlers_.clear();
-  v8_scripts_.clear();
+  if (final_data) {
+    cache_handlers_.clear();
+    v8_scripts_.clear();
+    base::UmaHistogramEnumeration(kLocalCompileHintsGeneratedHistogram,
+                                  LocalCompileHintsGenerated::kFinal);
+
+  } else {
+    base::UmaHistogramEnumeration(kLocalCompileHintsGeneratedHistogram,
+                                  LocalCompileHintsGenerated::kNonFinal);
+  }
 }
 
 v8::ScriptCompiler::CachedData*

@@ -21,18 +21,18 @@ TestDocumentLoader::TestDocumentLoader(
     Client* client,
     const base::FilePath::StringType& pdf_name)
     : client_(client) {
-  base::FilePath pdf_path;
-  CHECK(base::PathService::Get(base::DIR_SRC_TEST_DATA_ROOT, &pdf_path));
-  pdf_path = pdf_path.Append(FILE_PATH_LITERAL("pdf"))
-                 .Append(FILE_PATH_LITERAL("test"))
-                 .Append(FILE_PATH_LITERAL("data"))
-                 .Append(pdf_name);
+  base::FilePath pdf_path =
+      base::PathService::CheckedGet(base::DIR_SRC_TEST_DATA_ROOT)
+          .Append(FILE_PATH_LITERAL("pdf"))
+          .Append(FILE_PATH_LITERAL("test"))
+          .Append(FILE_PATH_LITERAL("data"))
+          .Append(pdf_name);
   CHECK(base::ReadFileToString(pdf_path, &pdf_data_));
 }
 
 TestDocumentLoader::~TestDocumentLoader() = default;
 
-// TODO(crbug.com/1056817): Consider faking out URLLoaderWrapper, to avoid
+// TODO(crbug.com/40120473): Consider faking out URLLoaderWrapper, to avoid
 // simulating the behavior of DocumentLoaderImpl (although that would result in
 // 64 KiB loads).
 bool TestDocumentLoader::SimulateLoadData(uint32_t max_bytes) {

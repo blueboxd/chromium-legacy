@@ -378,6 +378,7 @@ void BrowserAccessibilityManagerMac::FireGeneratedEvent(
     // Currently unused events on this platform.
     case ui::AXEventGenerator::Event::NONE:
     case ui::AXEventGenerator::Event::ACCESS_KEY_CHANGED:
+    case ui::AXEventGenerator::Event::ARIA_NOTIFICATIONS_POSTED:
     case ui::AXEventGenerator::Event::ATK_TEXT_OBJECT_ATTRIBUTE_CHANGED:
     case ui::AXEventGenerator::Event::ATOMIC_CHANGED:
     case ui::AXEventGenerator::Event::AUTO_COMPLETE_CHANGED:
@@ -386,18 +387,15 @@ void BrowserAccessibilityManagerMac::FireGeneratedEvent(
     case ui::AXEventGenerator::Event::CHECKED_STATE_DESCRIPTION_CHANGED:
     case ui::AXEventGenerator::Event::CHILDREN_CHANGED:
     case ui::AXEventGenerator::Event::CONTROLS_CHANGED:
-    case ui::AXEventGenerator::Event::CLASS_NAME_CHANGED:
     case ui::AXEventGenerator::Event::DETAILS_CHANGED:
     case ui::AXEventGenerator::Event::DESCRIBED_BY_CHANGED:
     case ui::AXEventGenerator::Event::DESCRIPTION_CHANGED:
     case ui::AXEventGenerator::Event::DOCUMENT_TITLE_CHANGED:
-    case ui::AXEventGenerator::Event::DROPEFFECT_CHANGED:
     case ui::AXEventGenerator::Event::EDITABLE_TEXT_CHANGED:
     case ui::AXEventGenerator::Event::ENABLED_CHANGED:
     case ui::AXEventGenerator::Event::FOCUS_CHANGED:
     case ui::AXEventGenerator::Event::FLOW_FROM_CHANGED:
     case ui::AXEventGenerator::Event::FLOW_TO_CHANGED:
-    case ui::AXEventGenerator::Event::GRABBED_CHANGED:
     case ui::AXEventGenerator::Event::HASPOPUP_CHANGED:
     case ui::AXEventGenerator::Event::HIERARCHICAL_LEVEL_CHANGED:
     case ui::AXEventGenerator::Event::IGNORED_CHANGED:
@@ -413,7 +411,6 @@ void BrowserAccessibilityManagerMac::FireGeneratedEvent(
     case ui::AXEventGenerator::Event::MULTISELECTABLE_STATE_CHANGED:
     case ui::AXEventGenerator::Event::OBJECT_ATTRIBUTE_CHANGED:
     case ui::AXEventGenerator::Event::ORIENTATION_CHANGED:
-    case ui::AXEventGenerator::Event::OTHER_ATTRIBUTE_CHANGED:
     case ui::AXEventGenerator::Event::PARENT_CHANGED:
     case ui::AXEventGenerator::Event::PLACEHOLDER_CHANGED:
     case ui::AXEventGenerator::Event::PORTAL_ACTIVATED:
@@ -441,6 +438,37 @@ void BrowserAccessibilityManagerMac::FireGeneratedEvent(
   FireNativeMacNotification(mac_notification, wrapper);
 }
 
+void BrowserAccessibilityManagerMac::FireAriaNotificationEvent(
+    BrowserAccessibility* node,
+    const std::string& announcement,
+    const std::string& notification_id,
+    ax::mojom::AriaNotificationInterrupt interrupt_property,
+    ax::mojom::AriaNotificationPriority priority_property) {
+  DCHECK(node);
+
+  auto* root_manager = GetManagerForRootFrame();
+  if (!root_manager) {
+    return;
+  }
+
+  auto* root_manager_mac = root_manager->ToBrowserAccessibilityManagerMac();
+
+  auto MapPropertiesToNSAccessibilityPriorityLevel =
+      [&]() -> NSAccessibilityPriorityLevel {
+    switch (priority_property) {
+      case ax::mojom::AriaNotificationPriority::kNone:
+        return NSAccessibilityPriorityMedium;
+      case ax::mojom::AriaNotificationPriority::kImportant:
+        return NSAccessibilityPriorityHigh;
+    }
+    NOTREACHED_NORETURN();
+  };
+
+  PostAnnouncementNotification(base::SysUTF8ToNSString(announcement),
+                               [root_manager_mac->GetParentView() window],
+                               MapPropertiesToNSAccessibilityPriorityLevel());
+}
+
 void BrowserAccessibilityManagerMac::FireNativeMacNotification(
     NSString* mac_notification,
     BrowserAccessibility* node) {
@@ -456,7 +484,7 @@ void BrowserAccessibilityManagerMac::FireNativeMacNotification(
 }
 
 bool BrowserAccessibilityManagerMac::OnAccessibilityEvents(
-    const AXEventNotificationDetails& details) {
+    const ui::AXUpdatesAndEvents& details) {
   text_edits_.clear();
   return BrowserAccessibilityManager::OnAccessibilityEvents(details);
 }

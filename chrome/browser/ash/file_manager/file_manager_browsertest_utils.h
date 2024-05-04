@@ -62,6 +62,8 @@ struct TestCase {
 
   TestCase& EnableSinglePartitionFormat();
 
+  TestCase& EnableMaterializedViews();
+
   TestCase& NewDirectoryTree();
 
   // Show the startup browser. Some tests invoke the file picker dialog during
@@ -115,6 +117,8 @@ struct TestCase {
   TestCase& SetTestAccountType(TestAccountType test_account_type);
 
   TestCase& EnableCrosComponents();
+
+  TestCase& EnableSkyVault();
 
   std::string GetFullName() const;
 

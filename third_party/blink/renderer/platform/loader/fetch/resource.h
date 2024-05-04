@@ -69,6 +69,7 @@ class Clock;
 
 namespace blink {
 
+class BackgroundResponseProcessor;
 class BlobDataHandle;
 class FetchParameters;
 class ResourceFinishObserver;
@@ -158,7 +159,7 @@ class PLATFORM_EXPORT Resource : public GarbageCollected<Resource>,
   void Trace(Visitor*) const override;
 
   virtual WTF::TextEncoding Encoding() const { return WTF::TextEncoding(); }
-  virtual void AppendData(const char*, size_t);
+  virtual void AppendData(base::span<const char>);
   virtual void FinishAsError(const ResourceError&,
                              base::SingleThreadTaskRunner*);
 
@@ -435,11 +436,14 @@ class PLATFORM_EXPORT Resource : public GarbageCollected<Resource>,
 
   void SetIsPreloadedByEarlyHints() { is_preloaded_by_early_hints_ = true; }
 
-  bool IsPreloadedByEarlyHints() { return is_preloaded_by_early_hints_; }
+  bool IsPreloadedByEarlyHints() const { return is_preloaded_by_early_hints_; }
 
   void SetIsLoadedFromMemoryCache() { is_loaded_from_memory_cache_ = true; }
 
   bool IsLoadedFromMemoryCache() { return is_loaded_from_memory_cache_; }
+
+  virtual scoped_refptr<BackgroundResponseProcessor>
+  MaybeCreateBackgroundResponseProcessor();
 
  protected:
   Resource(const ResourceRequestHead&,

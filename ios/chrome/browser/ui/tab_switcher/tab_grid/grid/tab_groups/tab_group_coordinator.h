@@ -7,14 +7,30 @@
 
 #import "ios/chrome/browser/shared/coordinator/chrome_coordinator/chrome_coordinator.h"
 
+@protocol TabContextMenuDelegate;
+@protocol TabGridIdleStatusHandler;
 class TabGroup;
+@protocol TabGroupPositioner;
 @class TabGroupViewController;
 
 // Coordinator to display the given tab group.
 @interface TabGroupCoordinator : ChromeCoordinator
 
 // View controller for tab groups.
-@property(weak, readonly) TabGroupViewController* viewController;
+@property(nonatomic, weak, readonly) TabGroupViewController* viewController;
+
+// Whether this coordinator should be presented with animations. Default YES.
+@property(nonatomic, assign) BOOL animatedPresentation;
+
+// Handler that trackes and updates the idle status of the tab grid.
+@property(nonatomic, weak) id<TabGridIdleStatusHandler>
+    tabGridIdleStatusHandler;
+
+// Tab Context Menu delegate.
+@property(nonatomic, weak) id<TabContextMenuDelegate> tabContextMenuDelegate;
+
+// Positioner providing layer information for Tab Group.
+@property(nonatomic, weak) id<TabGroupPositioner> tabGroupPositioner;
 
 // Init the coordinator with the tab group to display.
 // - `tabGroup` should not be nil.
@@ -24,6 +40,10 @@ class TabGroup;
     NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
                                    browser:(Browser*)browser NS_UNAVAILABLE;
+
+// Stops all child coordinators.
+- (void)stopChildCoordinators;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_TAB_SWITCHER_TAB_GRID_GRID_TAB_GROUPS_TAB_GROUP_COORDINATOR_H_

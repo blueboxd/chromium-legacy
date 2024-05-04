@@ -130,6 +130,7 @@ component("modules") {
     "//third_party/blink/renderer/modules/netinfo",
     "//third_party/blink/renderer/modules/nfc",
     "//third_party/blink/renderer/modules/notifications",
+    "//third_party/blink/renderer/modules/on_device_translation",
     "//third_party/blink/renderer/modules/payments",
     "//third_party/blink/renderer/modules/payments/goods",
     "//third_party/blink/renderer/modules/peerconnection",
@@ -178,7 +179,7 @@ component("modules") {
   # generating the snapshot for android, blink is compiled with
   # current_os="linux" and target_os="android". Using target_os is necessary as
   # we need to compile in the same way as would happen when current_os="android".
-  if (target_os == "android") {
+  if (target_os_is_android) {
     sub_modules += [ "//third_party/blink/renderer/modules/remote_objects" ]
   } else {
     sub_modules += [
@@ -224,6 +225,8 @@ source_set("modules_testing") {
     "accessibility/testing/internals_accessibility.h",
     "credentialmanagement/testing/internals_fed_cm.cc",
     "credentialmanagement/testing/internals_fed_cm.h",
+    "device_posture/testing/internals_device_posture.cc",
+    "device_posture/testing/internals_device_posture.h",
     "fuzzing/internals_fuzzing.cc",
     "fuzzing/internals_fuzzing.h",
     "mediastream/testing/internals_media_stream.cc",
@@ -408,7 +411,6 @@ source_set("unit_tests") {
     "broadcastchannel/broadcast_channel_unittest.cc",
     "cache_storage/cache_test.cc",
     "canvas/canvas2d/base_rendering_context_2d_test.cc",
-    "canvas/canvas2d/canvas_color_cache_test.cc",
     "canvas/canvas2d/canvas_filter_operation_resolver_test.cc",
     "canvas/canvas2d/canvas_filter_test.cc",
     "canvas/canvas2d/canvas_filter_test_utils.cc",
@@ -418,12 +420,16 @@ source_set("unit_tests") {
     "canvas/canvas2d/canvas_rendering_context_2d_test.cc",
     "canvas/canvas2d/canvas_style_test_utils.cc",
     "canvas/canvas2d/canvas_style_test_utils.h",
+    "canvas/canvas2d/identifiability_study_helper_test.cc",
     "canvas/canvas2d/recording_test_utils.cc",
     "canvas/canvas2d/recording_test_utils.h",
     "canvas/htmlcanvas/html_canvas_element_module_test.cc",
     "canvas/offscreencanvas/offscreen_canvas_rendering_api_ukm_metrics_test.cc",
     "canvas/offscreencanvas/offscreen_canvas_test.cc",
     "canvas/offscreencanvas2d/offscreen_canvas_rendering_context_2d_test.cc",
+    "compute_pressure/pressure_observer_test.cc",
+    "compute_pressure/pressure_observer_test_utils.cc",
+    "compute_pressure/pressure_observer_test_utils.h",
     "content_extraction/inner_html_builder_unittest.cc",
     "content_extraction/inner_text_builder_unittest.cc",
     "content_index/content_description_type_converter_test.cc",
@@ -431,7 +437,6 @@ source_set("unit_tests") {
     "credentialmanagement/credential_manager_type_converters_unittest.cc",
     "credentialmanagement/digital_identity_credential_test.cc",
     "credentialmanagement/password_credential_test.cc",
-    "credentialmanagement/web_identity_requester_test.cc",
     "csspaint/document_paint_definition_test.cc",
     "csspaint/nativepaint/background_color_paint_definition_test.cc",
     "csspaint/nativepaint/clip_path_paint_definition_test.cc",
@@ -454,7 +459,9 @@ source_set("unit_tests") {
     "manifest/manifest_manager_unittest.cc",
     "manifest/manifest_parser_unittest.cc",
     "media/audio/audio_output_ipc_factory_test.cc",
+    "media/audio/audio_renderer_mixer_input_test.cc",
     "media/audio/audio_renderer_mixer_manager_test.cc",
+    "media/audio/audio_renderer_mixer_test.cc",
     "media/audio/audio_renderer_sink_cache_test.cc",
     "media/audio/mojo_audio_input_ipc_test.cc",
     "media/audio/mojo_audio_output_ipc_test.cc",
@@ -523,7 +530,6 @@ source_set("unit_tests") {
     "payments/can_make_payment_test.cc",
     "payments/complete_test.cc",
     "payments/goods/digital_goods_type_converters_unittest.cc",
-    "payments/merchant_validation_event_test.cc",
     "payments/on_payment_response_test.cc",
     "payments/payment_address_test.cc",
     "payments/payment_event_data_conversion_test.cc",
@@ -544,6 +550,7 @@ source_set("unit_tests") {
     "peerconnection/peer_connection_dependency_factory_test.cc",
     "peerconnection/peer_connection_tracker_test.cc",
     "peerconnection/rtc_data_channel_test.cc",
+    "peerconnection/rtc_encoded_audio_frame_test.cc",
     "peerconnection/rtc_encoded_audio_underlying_sink_test.cc",
     "peerconnection/rtc_encoded_audio_underlying_source_test.cc",
     "peerconnection/rtc_encoded_video_frame_test.cc",
@@ -713,7 +720,7 @@ source_set("unit_tests") {
   # generating the snapshot for android, blink is compiled with
   # current_os="linux" and target_os="android". Using target_os is necessary as
   # we need to compile in the same way as would happen when current_os="android".
-  if (target_os != "android") {
+  if (!target_os_is_android) {
     deps += [
       "//third_party/blink/renderer/modules/direct_sockets:unit_tests",
       "//third_party/blink/renderer/modules/serial:unit_tests",

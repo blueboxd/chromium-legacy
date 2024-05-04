@@ -37,11 +37,12 @@ class VideoConferenceTrayPixelTest : public AshTestBase {
   void SetUp() override {
     scoped_feature_list_.InitWithFeatures(
         /*enabled_features=*/{chromeos::features::kJellyroll,
-                              features::kVideoConference,
                               features::kVcStopAllScreenShare,
                               chromeos::features::kJelly,
-                              features::kCameraEffectsSupportedByHardware},
-        /*disabled_features=*/{});
+                              features::kFeatureManagementVideoConference},
+        /*disabled_features=*/{features::kVcBackgroundReplace});
+    // TODO(b/334375880): Add a specific pixel test for the feature
+    // VcBackgroundReplace.
 
     // Instantiates a fake controller (the real one is created in
     // ChromeBrowserMainExtraPartsAsh::PreProfileInit() which is not called in

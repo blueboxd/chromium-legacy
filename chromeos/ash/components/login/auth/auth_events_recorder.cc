@@ -185,6 +185,7 @@ std::string GetConfiguredAuthFactorsHistogramSuffix(
       return "";
     case cryptohome::AuthFactorType::kUnknownLegacy:
     case cryptohome::AuthFactorType::kLegacyFingerprint:
+    case cryptohome::AuthFactorType::kFingerprint:
     case cryptohome::AuthFactorType::kKiosk:
       // These factors are not recorded.
       DCHECK(false);
@@ -478,6 +479,10 @@ void AuthEventsRecorder::OnUserVaultPrepared(UserVaultType user_vault_type,
   const std::string crash_key_prefix =
       GetUserVaultTypeName(user_vault_type) + "_vault_prepare";
   AddAuthEvent(GetCrashKeyStringWithStatus(crash_key_prefix, success));
+}
+
+void AuthEventsRecorder::OnAddUser() {
+  AddAuthEvent("add_user");
 }
 
 std::string AuthEventsRecorder::GetAuthEventsLog() {

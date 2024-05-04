@@ -255,9 +255,11 @@ class UserAddingScreenIndicator : public views::View {
   ~UserAddingScreenIndicator() override = default;
 
   // views::View:
-  gfx::Size CalculatePreferredSize() const override {
+  gfx::Size CalculatePreferredSize(
+      const views::SizeBounds& available_size) const override {
     return gfx::Size(kUserAddingScreenIndicatorWidth,
-                     GetHeightForWidth(kUserAddingScreenIndicatorWidth));
+                     GetLayoutManager()->GetPreferredHeightForWidth(
+                         this, kUserAddingScreenIndicatorWidth));
   }
 
  private:
@@ -1099,9 +1101,9 @@ void LockContentsView::OnSystemInfoChanged(
 
   LayoutTopHeader();
 
-  // TODO(crbug.com/1141348): Separate ADB sideloading from system info changed.
-  // Note that if ADB is enabled and the device is enrolled, only the ADB
-  // warning message will be displayed.
+  // TODO(crbug.com/40727114): Separate ADB sideloading from system info
+  // changed. Note that if ADB is enabled and the device is enrolled, only the
+  // ADB warning message will be displayed.
   if (adb_sideloading_enabled) {
     ShowAdbEnabled();
   }

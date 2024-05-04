@@ -10,13 +10,20 @@ PineContentsData::PineContentsData() = default;
 
 PineContentsData::~PineContentsData() = default;
 
-PineContentsData::AppInfo::AppInfo(const std::string& app_id)
-    : app_id(app_id) {}
+PineContentsData::AppInfo::AppInfo(const std::string& app_id,
+                                   const std::string& title)
+    : app_id(app_id), title(title) {}
 
 PineContentsData::AppInfo::AppInfo(const std::string& app_id,
-                                   const std::u16string& tab_title,
-                                   const std::vector<GURL>& tab_urls)
-    : app_id(app_id), tab_title(tab_title), tab_urls(tab_urls) {}
+                                   const std::string& title,
+                                   const std::vector<GURL>& tab_urls,
+                                   const size_t tab_count,
+                                   uint64_t lacros_profile_id)
+    : app_id(app_id),
+      title(title),
+      tab_urls(tab_urls),
+      tab_count(tab_count),
+      lacros_profile_id(lacros_profile_id) {}
 
 PineContentsData::AppInfo::AppInfo(const AppInfo&) = default;
 

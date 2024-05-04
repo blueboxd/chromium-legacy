@@ -170,6 +170,19 @@ TEST_F(PageLoadTrackerTest, PrimaryPageType) {
   EXPECT_NE(ukm::kInvalidSourceId, GetObservedUkmSourceIdFor(kTestUrl));
 }
 
+TEST_F(PageLoadTrackerTest, PrimaryPageTypeDataScheme) {
+  // ScopedPrerenderWebContentsDelegate web_contents_delegate(*web_contents());
+  // Target URL to monitor the tracker via the test observer.
+  SetTargetUrl("data:text/html,Hello world");
+
+  // Navigate in.
+  NavigateAndCommit(GURL("data:text/html,Hello world"));
+
+  // Check observer behaviors.
+  EXPECT_TRUE(GetEvents().was_started);
+  EXPECT_FALSE(GetEvents().was_committed);
+}
+
 TEST_F(PageLoadTrackerTest, EventForwarding) {
   ScopedPrerenderWebContentsDelegate web_contents_delegate(*web_contents());
 
@@ -216,7 +229,7 @@ TEST_F(PageLoadTrackerTest, EventForwarding) {
   EXPECT_EQ(1u, GetEvents().sub_frame_navigation_count);
   // MetricsWebContentsObserver::RenderFrameDeleted is called in the first
   // navigation for iframes but not for fenced frames.
-  // TODO(https://crbug.com/1301880): Make a reason clear.
+  // TODO(crbug.com/40216775): Make a reason clear.
   EXPECT_EQ(0u, GetEvents().render_frame_deleted_count);
   EXPECT_EQ(0u, GetEvents().sub_frame_deleted_count);
 
@@ -316,7 +329,7 @@ TEST_F(PageLoadTrackerTest, EventForwarding) {
   // comment of the method. (This behavior can be observerved by putting printf
   // in PageLoadTracker::FrameTreeNodeDeleted and inspecting forwarding doesn't
   // occur.)
-  // TODO(https://crbug.com/1301880): Fix
+  // TODO(crbug.com/40216775): Fix
   // MetricsWebContentsObserver::GetPageLoadTracker
   EXPECT_EQ(2u, GetEvents().sub_frame_deleted_count);
 }
@@ -501,10 +514,10 @@ TEST_F(PageLoadTrackerTest, LargestImageIncorrectLoadTimings) {
   page_load_metrics::InitPageLoadTimingForTest(&timing);
   timing.navigation_start = base::Time::Now();
 
-  timing.paint_timing->largest_contentful_paint->largest_image_load_start =
-      base::Milliseconds(56);
-  timing.paint_timing->largest_contentful_paint->largest_image_load_end =
-      base::Milliseconds(45);
+  timing.paint_timing->largest_contentful_paint->resource_load_timings
+      ->load_start = base::Milliseconds(56);
+  timing.paint_timing->largest_contentful_paint->resource_load_timings
+      ->load_end = base::Milliseconds(45);
   timing.paint_timing->largest_contentful_paint->largest_image_paint =
       base::Milliseconds(34);
 
@@ -600,10 +613,10 @@ class IrregularLcpPageLoadTrackerTest
     page_load_metrics::InitPageLoadTimingForTest(&timing);
     timing.navigation_start = base::Time::Now();
 
-    timing.paint_timing->largest_contentful_paint->largest_image_load_start =
-        base::Milliseconds(56);
-    timing.paint_timing->largest_contentful_paint->largest_image_load_end =
-        base::Milliseconds(45);
+    timing.paint_timing->largest_contentful_paint->resource_load_timings
+        ->load_start = base::Milliseconds(56);
+    timing.paint_timing->largest_contentful_paint->resource_load_timings
+        ->load_end = base::Milliseconds(45);
     timing.paint_timing->largest_contentful_paint->largest_image_paint =
         base::Milliseconds(34);
 

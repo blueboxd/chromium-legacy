@@ -9,6 +9,7 @@
 #include "base/strings/strcat.h"
 #include "base/trace_event/trace_event.h"
 #include "components/optimization_guide/core/access_token_helper.h"
+#include "components/optimization_guide/core/model_execution/feature_keys.h"
 #include "components/optimization_guide/core/model_quality/feature_type_map.h"
 #include "components/optimization_guide/core/model_quality/model_quality_log_entry.h"
 #include "components/optimization_guide/core/model_quality/model_quality_util.h"
@@ -34,7 +35,7 @@ namespace optimization_guide {
 
 namespace {
 
-void RecordUploadStatusHistogram(proto::ModelExecutionFeature feature,
+void RecordUploadStatusHistogram(UserVisibleFeatureKey feature,
                                  ModelQualityLogsUploadStatus status) {
   base::UmaHistogramEnumeration(
       base::StrCat(
@@ -43,7 +44,7 @@ void RecordUploadStatusHistogram(proto::ModelExecutionFeature feature,
       status);
 }
 
-void RecordUserFeedbackHistogram(proto::ModelExecutionFeature feature,
+void RecordUserFeedbackHistogram(UserVisibleFeatureKey feature,
                                  proto::UserFeedback user_feedback) {
   base::UmaHistogramEnumeration(
       base::StrCat({"OptimizationGuide.ModelQuality.UserFeedback.",
@@ -67,19 +68,16 @@ GURL GetModelQualityLogsUploaderServiceURL() {
 void RecordUserFeedbackHistogram(proto::LogAiDataRequest* log_ai_data_request) {
   proto::UserFeedback user_feedback =
       proto::UserFeedback::USER_FEEDBACK_UNSPECIFIED;
-  proto::ModelExecutionFeature feature =
-      proto::ModelExecutionFeature::MODEL_EXECUTION_FEATURE_UNSPECIFIED;
-  switch (log_ai_data_request->feature_case()) {
-    case proto::LogAiDataRequest::FeatureCase::kCompose:
-      feature = proto::ModelExecutionFeature::MODEL_EXECUTION_FEATURE_COMPOSE;
+  auto feature =
+      GetModelExecutionFeature(log_ai_data_request->feature_case()).value();
+  switch (feature) {
+    case UserVisibleFeatureKey::kCompose:
       user_feedback =
           GetModelQualityData<ComposeFeatureTypeMap>(log_ai_data_request)
               ->user_feedback();
       RecordUserFeedbackHistogram(feature, user_feedback);
       break;
-    case proto::LogAiDataRequest::FeatureCase::kTabOrganization:
-      feature = proto::ModelExecutionFeature::
-          MODEL_EXECUTION_FEATURE_TAB_ORGANIZATION;
+    case UserVisibleFeatureKey::kTabOrganization:
       // If there is no tab organization, we don't have any user_feedback mark
       // it as unspecified.
       if (GetModelQualityData<TabOrganizationFeatureTypeMap>(
@@ -87,27 +85,32 @@ void RecordUserFeedbackHistogram(proto::LogAiDataRequest* log_ai_data_request) {
               ->organizations()
               .empty()) {
         RecordUserFeedbackHistogram(feature, user_feedback);
-      }
-      for (auto organization :
-           GetModelQualityData<TabOrganizationFeatureTypeMap>(
-               log_ai_data_request)
-               ->organizations()) {
-        // We assume there is only one tab organizations when we upload the
-        // model quality data for this version.
-        user_feedback = organization.user_feedback();
+      } else if (GetModelQualityData<TabOrganizationFeatureTypeMap>(
+                     log_ai_data_request)
+                     ->user_feedback()) {
+        user_feedback = GetModelQualityData<TabOrganizationFeatureTypeMap>(
+                            log_ai_data_request)
+                            ->user_feedback();
         RecordUserFeedbackHistogram(feature, user_feedback);
+      } else {
+        for (auto organization :
+             GetModelQualityData<TabOrganizationFeatureTypeMap>(
+                 log_ai_data_request)
+                 ->organizations()) {
+          // TODO(b/331852814): Remove this else case along with the multi tab
+          // organization flag
+          // We assume there is only one tab organization when we upload the
+          // model quality data for this version.
+          user_feedback = organization.user_feedback();
+          RecordUserFeedbackHistogram(feature, user_feedback);
+        }
       }
       break;
-    case proto::LogAiDataRequest::FeatureCase::kWallpaperSearch:
-      feature = proto::ModelExecutionFeature::
-          MODEL_EXECUTION_FEATURE_WALLPAPER_SEARCH;
+    case UserVisibleFeatureKey::kWallpaperSearch:
       user_feedback = GetModelQualityData<WallpaperSearchFeatureTypeMap>(
                           log_ai_data_request)
                           ->user_feedback();
       RecordUserFeedbackHistogram(feature, user_feedback);
-      break;
-    default:
-      NOTREACHED();
       break;
   }
 }
@@ -115,7 +118,7 @@ void RecordUserFeedbackHistogram(proto::LogAiDataRequest* log_ai_data_request) {
 // URL load completion callback.
 void OnURLLoadComplete(
     std::unique_ptr<network::SimpleURLLoader> active_url_loader,
-    proto::ModelExecutionFeature feature,
+    UserVisibleFeatureKey feature,
     std::unique_ptr<std::string> response_body) {
   CHECK(active_url_loader) << "loader shouldn't be null\n";
   TRACE_EVENT1("browser", "ModelQualityLogsUploaderService::OnURLLoadComplete",
@@ -191,7 +194,7 @@ ModelQualityLogsUploaderService::ModelQualityLogsUploaderService(
 ModelQualityLogsUploaderService::~ModelQualityLogsUploaderService() = default;
 
 bool ModelQualityLogsUploaderService::CanUploadLogs(
-    optimization_guide::proto::ModelExecutionFeature feature) {
+    UserVisibleFeatureKey feature) {
   return false;
 }
 
@@ -219,8 +222,8 @@ void ModelQualityLogsUploaderService::UploadModelQualityLogs(
   // Log User Feedback Histogram corresponding to the LogAiDataRequest.
   RecordUserFeedbackHistogram(log_ai_data_request.get());
 
-  proto::ModelExecutionFeature feature =
-      GetModelExecutionFeature(log_ai_data_request->feature_case());
+  auto feature =
+      GetModelExecutionFeature(log_ai_data_request->feature_case()).value();
 
   TRACE_EVENT1("browser",
                "ModelQualityLogsUploaderService::UploadModelQualityLogs",

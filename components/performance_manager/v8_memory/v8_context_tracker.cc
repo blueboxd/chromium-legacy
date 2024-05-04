@@ -4,6 +4,7 @@
 
 #include "components/performance_manager/v8_memory/v8_context_tracker.h"
 
+#include <string_view>
 #include <utility>
 
 #include "base/functional/bind.h"
@@ -38,7 +39,7 @@ using V8ContextData = internal::V8ContextData;
 
 // A function that can be bound to as a mojo::ReportBadMessage
 // callback. Only used in testing.
-void FakeReportBadMessageForTesting(base::StringPiece error) {
+void FakeReportBadMessageForTesting(std::string_view error) {
   // This is used in DCHECK death tests, so must use a DCHECK.
   DCHECK(false) << "Bad mojo message: " << error;
 }
@@ -245,7 +246,7 @@ void V8ContextTracker::OnRemoteIframeAttached(
     // OnRemoteIframeAttached, but the parent frame disappears shortly
     // afterward.
     //
-    // TODO(crbug.com/1085129): Write an end-to-end browsertest that covers
+    // TODO(crbug.com/40132061): Write an end-to-end browsertest that covers
     // this case once all parts of the measure memory API are hooked up.
     if (data->frame_node && data->parent_frame_node) {
       auto* frame_node = FrameNodeImpl::FromNode(data->frame_node.get());

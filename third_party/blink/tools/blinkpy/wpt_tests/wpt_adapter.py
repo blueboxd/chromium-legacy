@@ -134,6 +134,7 @@ class WPTAdapter:
     PORT_NAME_BY_PRODUCT = {
         'android_webview': 'webview',
         'chrome': 'chrome',
+        'chrome_android': 'android',
     }
 
     def __init__(self, product, port, options, paths):
@@ -148,7 +149,8 @@ class WPTAdapter:
             self.fs,
             self.port,
             artifacts_dir=self.port.artifacts_directory(),
-            reset_results=self.options.reset_results)
+            reset_results=self.options.reset_results,
+            processes=product.processes)
         self._expectations = TestExpectations(self.port)
 
     @classmethod
@@ -168,7 +170,7 @@ class WPTAdapter:
         else:
             port = host.port_factory.get(port_name, options)
 
-        if options.product == 'chrome':
+        if options.product in ['chrome', 'headless_shell']:
             port.set_option_default('driver_name', port.CHROME_NAME)
         product = make_product(port, options)
         return WPTAdapter(product, port, options, tests)
@@ -231,7 +233,8 @@ class WPTAdapter:
                 mozlog.commandline.log_formatters[name][1],
             )
 
-        runner_options = parser.parse_args(['--product', self.product.name])
+        product_name = 'chrome' if self.product.name == 'headless_shell' else self.product.name
+        runner_options = parser.parse_args(['--product', product_name])
         runner_options.include = []
         runner_options.exclude = []
 
@@ -274,8 +277,14 @@ class WPTAdapter:
         if verbose_level >= 2:
             runner_options.log_mach_level = 'debug'
         if verbose_level >= 3:
+            runner_options.webdriver_args.append('--verbose')
+        else:
+            # Disable all `chromedriver` logs except from `chrome_launcher.cc`,
+            # which logs the `chrome` command that `WPTResultsProcessor` will
+            # extract.
             runner_options.webdriver_args.extend([
-                '--verbose',
+                '--log-level=INFO',
+                '--vmodule=chrome_launcher=0,*/chrome/test/chromedriver/*=-1',
             ])
 
         if self.using_upstream_wpt:
@@ -318,6 +327,10 @@ class WPTAdapter:
             'MAP *.test 127.0.0.1, MAP *.test. 127.0.0.1',
             *self.port.additional_driver_flags(),
         ])
+        if self.options.product == 'headless_shell':
+            runner_options.binary_args.append('--headless=old')
+            runner_options.binary_args.append('--enable-bfcache')
+
         # Implicitly pass `--enable-blink-features=MojoJS,MojoJSTest` to Chrome.
         runner_options.mojojs_path = self.port.generated_sources_directory()
 
@@ -534,10 +547,7 @@ class WPTAdapter:
             logger.debug('Using WPT tools from %s', self.tools_root)
 
             runner_options.run_info = tmp_dir
-            # The filename must be `mozinfo.json` for wptrunner to read it from the
-            # `--run-info` directory.
-            self._create_extra_run_info(self.fs.join(tmp_dir, 'mozinfo.json'),
-                                        tests_root)
+            self._initialize_tmp_dir(tmp_dir, tests_root)
 
             TestLoader.install(self.port, self._expectations)
             stack.enter_context(
@@ -580,7 +590,8 @@ class WPTAdapter:
             logger._state.has_shutdown = False
             return 1 if exit_code or self._processor.num_regressions > 0 else 0
 
-    def _create_extra_run_info(self, run_info_path, tests_root):
+    def _initialize_tmp_dir(self, tmp_dir: str, tests_root: str):
+        assert self.fs.isdir(tmp_dir), tmp_dir
         run_info = {
             # This property should always be a string so that the metadata
             # updater works, even when wptrunner is not running a flag-specific
@@ -600,8 +611,19 @@ class WPTAdapter:
             run_info['revision'] = self.host.git(
                 path=tests_root).current_revision()
 
+        # The filename must be `mozinfo.json` for wptrunner to read it from the
+        # `--run-info` directory.
+        run_info_path = self.fs.join(tmp_dir, 'mozinfo.json')
         with self.fs.open_text_file_for_writing(run_info_path) as file_handle:
             json.dump(run_info, file_handle)
+
+        # The `//third_party/fontconfig/` library embedded into Chromium
+        # recursively searches `$XDG_DATA_HOME/fonts` for locally vended fonts.
+        ahem_path = self.fs.join(tmp_dir, 'fonts', 'Ahem.ttf')
+        self.fs.maybe_make_directory(self.fs.dirname(ahem_path))
+        self.fs.copyfile(self.fs.join(tests_root, 'fonts', 'Ahem.ttf'),
+                         ahem_path)
+        self.host.environ['XDG_DATA_HOME'] = tmp_dir
 
     @contextlib.contextmanager
     def process_and_upload_results(self, runner_options: argparse.Namespace):
@@ -714,6 +736,7 @@ def _install_xcode(xcode_build_version: str):
                         xcode_build_version)
     else:
         logger.warning('Skip the Xcode installation, no xcode_build_version.')
+
 
 def _run_with_upstream_wpt(host: Host, argv: List[str]) -> int:
     checkout_path = _checkout_upstream_wpt(host)

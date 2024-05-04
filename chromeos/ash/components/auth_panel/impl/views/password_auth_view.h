@@ -57,7 +57,8 @@ class PasswordAuthView : public FactorAuthView,
 
   // views::View:
   bool OnKeyPressed(const ui::KeyEvent& event) override;
-  gfx::Size CalculatePreferredSize() const override;
+  gfx::Size CalculatePreferredSize(
+      const views::SizeBounds& available_size) const override;
 
   // ImeControllerImpl::Observer
   void OnCapsLockChanged(bool enabled) override;
@@ -96,7 +97,7 @@ class PasswordAuthView : public FactorAuthView,
   void OnDisplayPasswordButtonPressed();
   void SetCapsLockIconHighlighted(bool highlight);
 
-  raw_ptr<AuthPanelEventDispatcher> dispatcher_ = nullptr;
+  raw_ptr<AuthPanelEventDispatcher, DanglingUntriaged> dispatcher_ = nullptr;
 
   raw_ptr<LoginPasswordRow> password_row_ = nullptr;
 

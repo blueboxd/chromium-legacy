@@ -50,6 +50,9 @@ class NetworkServiceDevToolsObserver : public network::mojom::DevToolsObserver {
       int32_t http_status_code,
       const std::optional<net::CookiePartitionKey>& cookie_partition_key)
       override;
+  void OnEarlyHintsResponse(
+      const std::string& devtools_request_id,
+      std::vector<network::mojom::HttpRawHeaderPairPtr> headers) override;
   void OnTrustTokenOperationDone(
       const std::string& devtools_request_id,
       network::mojom::TrustTokenOperationResultPtr result) override;
@@ -94,6 +97,10 @@ class NetworkServiceDevToolsObserver : public network::mojom::DevToolsObserver {
       const GURL& url,
       const std::string& error_message,
       const std::optional<std::string>& bundle_request_devtools_id) override;
+  void OnSharedDictionaryError(
+      const std::string& devtool_request_id,
+      const GURL& url,
+      network::mojom::SharedDictionaryError error) override;
   void Clone(mojo::PendingReceiver<network::mojom::DevToolsObserver> listener)
       override;
 

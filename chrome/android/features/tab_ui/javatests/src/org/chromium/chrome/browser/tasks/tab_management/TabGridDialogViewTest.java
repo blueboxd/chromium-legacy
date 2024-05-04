@@ -16,6 +16,7 @@ import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import androidx.test.annotation.UiThreadTest;
 import androidx.test.filters.MediumTest;
 import androidx.test.filters.SmallTest;
 
@@ -26,7 +27,6 @@ import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.test.UiThreadTest;
 import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.Criteria;
@@ -340,7 +340,7 @@ public class TabGridDialogViewTest extends BlankUiTestActivityTestCase {
     @Test
     @MediumTest
     public void testDialog_ZoomInZoomOut() {
-        // TODO(crbug.com/1075677): figure out a stable way to separate different stages of the
+        // TODO(crbug.com/40687819): figure out a stable way to separate different stages of the
         // animation so that we can verify the alpha and view hierarchy of the animation-related
         // views.
         AtomicReference<ViewGroup> parentViewReference = new AtomicReference<>();

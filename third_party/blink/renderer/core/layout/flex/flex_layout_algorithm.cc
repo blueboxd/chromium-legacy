@@ -171,14 +171,11 @@ LayoutUnit FlexLayoutAlgorithm::MainAxisContentExtent(
     // the term "content".
     const LayoutUnit border_scrollbar_padding =
         BorderScrollbarPadding().BlockSum();
-    std::optional<LayoutUnit> inline_size;
-    if (container_builder_.InlineSize() != kIndefiniteSize)
-      inline_size = container_builder_.InlineSize();
     return ComputeBlockSizeForFragment(
                GetConstraintSpace(), Style(), BorderPadding(),
                sum_hypothetical_main_size.ClampNegativeToZero() +
                    border_scrollbar_padding,
-               inline_size) -
+               container_builder_.InlineSize()) -
            border_scrollbar_padding;
   }
   return ChildAvailableSize().inline_size;
@@ -379,11 +376,6 @@ void FlexLayoutAlgorithm::HandleOutOfFlowPositionedItems(
   }
 }
 
-bool FlexLayoutAlgorithm::IsColumnContainerMainSizeDefinite() const {
-  DCHECK(is_column_);
-  return ChildAvailableSize().block_size != kIndefiniteSize;
-}
-
 bool FlexLayoutAlgorithm::IsContainerCrossSizeDefinite() const {
   // A column flexbox's cross axis is an inline size, so is definite.
   if (is_column_)
@@ -395,8 +387,9 @@ bool FlexLayoutAlgorithm::IsContainerCrossSizeDefinite() const {
 bool FlexLayoutAlgorithm::DoesItemStretch(const BlockNode& child) const {
   // Note: Unresolvable % cross size doesn't count as auto for stretchability.
   // As discussed in https://github.com/w3c/csswg-drafts/issues/4312.
-  if (!DoesItemCrossSizeComputeToAuto(child))
+  if (!DoesItemComputedCrossSizeHaveAuto(child)) {
     return false;
+  }
   const ComputedStyle& child_style = child.Style();
   // https://drafts.csswg.org/css-flexbox/#valdef-align-items-stretch
   // If the cross size property of the flex item computes to auto, and neither
@@ -411,48 +404,13 @@ bool FlexLayoutAlgorithm::DoesItemStretch(const BlockNode& child) const {
          ItemPosition::kStretch;
 }
 
-bool FlexLayoutAlgorithm::IsUsedFlexBasisDefinite(
-    const BlockNode& child,
-    Length* out_flex_basis = nullptr) const {
-  const Length& flex_basis = GetUsedFlexBasis(child);
-  if (out_flex_basis)
-    *out_flex_basis = flex_basis;
-  if (flex_basis.IsAuto() || flex_basis.IsContent())
-    return false;
-  const ConstraintSpace& space = BuildSpaceForFlexBasis(child);
-  if (MainAxisIsInlineAxis(child))
-    return !InlineLengthUnresolvable(space, flex_basis);
-  return !BlockLengthUnresolvable(space, flex_basis);
-}
-
-bool FlexLayoutAlgorithm::IsItemCrossAxisLengthDefinite(
-    const BlockNode& child,
-    const Length& length) const {
-  // We don't consider inline value of 'auto' for the cross-axis min/main/max
-  // size to be definite. Block value of 'auto' is always indefinite.
-  if (length.IsAuto())
-    return false;
-  if (MainAxisIsInlineAxis(child))
-    return !BlockLengthUnresolvable(BuildSpaceForFlexBasis(child), length);
-  return !InlineLengthUnresolvable(BuildSpaceForFlexBasis(child), length);
-}
-
-bool FlexLayoutAlgorithm::DoesItemCrossSizeComputeToAuto(
+bool FlexLayoutAlgorithm::DoesItemComputedCrossSizeHaveAuto(
     const BlockNode& child) const {
   const ComputedStyle& child_style = child.Style();
   if (is_horizontal_flow_) {
-    return child_style.Height().IsAuto();
+    return child_style.Height().HasAuto();
   }
-  return child_style.Width().IsAuto();
-}
-
-bool FlexLayoutAlgorithm::AspectRatioProvidesMainSize(
-    const BlockNode& child) const {
-  const Length& cross_axis_length =
-      is_horizontal_flow_ ? child.Style().Height() : child.Style().Width();
-  return child.HasAspectRatio() &&
-         (IsItemCrossAxisLengthDefinite(child, cross_axis_length) ||
-          WillChildCrossSizeBeContainerCrossSize(child));
+  return child_style.Width().HasAuto();
 }
 
 bool FlexLayoutAlgorithm::WillChildCrossSizeBeContainerCrossSize(
@@ -529,29 +487,10 @@ ConstraintSpace FlexLayoutAlgorithm::BuildSpaceForFlexBasis(
   return space_builder.ToConstraintSpace();
 }
 
-// This can return an indefinite Length.
-Length FlexLayoutAlgorithm::GetUsedFlexBasis(const BlockNode& child) const {
-  const ComputedStyle& child_style = child.Style();
-  const Length& specified_length_in_main_axis =
-      is_horizontal_flow_ ? child_style.Width() : child_style.Height();
-  const Length& specified_flex_basis = child_style.FlexBasis();
-
-  if (specified_flex_basis.IsAuto()) {
-    if (specified_length_in_main_axis.IsAuto() &&
-        Style().IsDeprecatedWebkitBox() &&
-        (Style().BoxOrient() == EBoxOrient::kHorizontal ||
-         Style().BoxAlign() != EBoxAlignment::kStretch)) {
-      // 'auto' for items within a -webkit-box resolve as 'fit-content'.
-      return Length::FitContent();
-    }
-    return specified_length_in_main_axis;
-  }
-  return specified_flex_basis;
-}
-
 ConstraintSpace FlexLayoutAlgorithm::BuildSpaceForLayout(
     const BlockNode& flex_item_node,
     LayoutUnit item_main_axis_final_size,
+    bool is_initial_block_size_indefinite,
     std::optional<LayoutUnit> override_inline_size,
     std::optional<LayoutUnit> line_cross_size_for_stretch,
     std::optional<LayoutUnit> block_offset_for_fragmentation,
@@ -583,15 +522,6 @@ ConstraintSpace FlexLayoutAlgorithm::BuildSpaceForLayout(
     if (line_cross_size_for_stretch ||
         WillChildCrossSizeBeContainerCrossSize(flex_item_node))
       space_builder.SetInlineAutoBehavior(AutoSizeBehavior::kStretchExplicit);
-    // https://drafts.csswg.org/css-flexbox/#definite-sizes
-    // If the flex container has a definite main size, a flex item's
-    // post-flexing main size is treated as definite, even though it can
-    // rely on the indefinite sizes of any flex items in the same line.
-    if (!IsColumnContainerMainSizeDefinite() &&
-        !IsUsedFlexBasisDefinite(flex_item_node) &&
-        !AspectRatioProvidesMainSize(flex_item_node)) {
-      space_builder.SetIsInitialBlockSizeIndefinite(true);
-    }
   } else {
     DCHECK(!override_inline_size.has_value());
     available_size.inline_size = item_main_axis_final_size;
@@ -602,6 +532,9 @@ ConstraintSpace FlexLayoutAlgorithm::BuildSpaceForLayout(
     if (line_cross_size_for_stretch ||
         WillChildCrossSizeBeContainerCrossSize(flex_item_node))
       space_builder.SetBlockAutoBehavior(AutoSizeBehavior::kStretchExplicit);
+  }
+  if (is_initial_block_size_indefinite) {
+    space_builder.SetIsInitialBlockSizeIndefinite(true);
   }
   if (!line_cross_size_for_stretch && DoesItemStretch(flex_item_node)) {
     // For the first layout pass of stretched items, the goal is to determine
@@ -723,7 +656,7 @@ void FlexLayoutAlgorithm::ConstructAndAppendFlexItems(
 
     const Length& cross_axis_length =
         is_horizontal_flow_ ? child.Style().Height() : child.Style().Width();
-    all_items_have_non_auto_cross_sizes &= !cross_axis_length.IsAuto();
+    all_items_have_non_auto_cross_sizes &= !cross_axis_length.HasAuto();
 
     std::optional<MinMaxSizesResult> min_max_sizes;
     auto MinMaxSizesFunc = [&](MinMaxSizesType type) -> MinMaxSizesResult {
@@ -761,48 +694,13 @@ void FlexLayoutAlgorithm::ConstructAndAppendFlexItems(
           MinMaxSizesFunc);
     }
 
-    auto ComputeTransferredMainSize = [&]() -> LayoutUnit {
-      DCHECK(!IsItemCrossAxisLengthDefinite(child, cross_axis_length) ||
-             !WillChildCrossSizeBeContainerCrossSize(child))
-          << "IsItemCrossAxisLengthDefinite and "
-             "WillChildCrossSizeBeContainerCrossSize should be mutually "
-             "exclusive.";
-      LayoutUnit cross_size;
-      Length cross_axis_length_to_resolve = Length::FitContent();
-      if (IsItemCrossAxisLengthDefinite(child, cross_axis_length))
-        cross_axis_length_to_resolve = cross_axis_length;
-      else if (WillChildCrossSizeBeContainerCrossSize(child))
-        cross_axis_length_to_resolve = Length::FillAvailable();
-      if (MainAxisIsInlineAxis(child)) {
-        cross_size = ResolveMainBlockLength(
-            flex_basis_space, child_style, border_padding_in_child_writing_mode,
-            cross_axis_length_to_resolve, kIndefiniteSize);
-      } else {
-        if (cross_axis_length_to_resolve.IsFitContent() &&
-            flex_basis_space.AvailableSize().inline_size == kIndefiniteSize) {
-          // TODO(dgrogan): Figure out if orthogonal items require a similar
-          // branch in the MainAxisIsInlineAxis case just above this.
-          DCHECK(phase == Phase::kColumnWrapIntrinsicSize);
-          cross_size = *max_content_contribution;
-        } else {
-          cross_size = ResolveMainInlineLength(
-              flex_basis_space, child_style,
-              border_padding_in_child_writing_mode, MinMaxSizesFunc,
-              cross_axis_length_to_resolve);
-        }
-      }
-
-      DCHECK_GE(cross_size, LayoutUnit());
-      cross_size = min_max_sizes_in_cross_axis_direction.ClampSizeToMinAndMax(
-          cross_size);
-      if (MainAxisIsInlineAxis(child)) {
-        return InlineSizeFromAspectRatio(
-            border_padding_in_child_writing_mode, child.GetAspectRatio(),
-            child_style.BoxSizingForAspectRatio(), cross_size);
-      }
-      return BlockSizeFromAspectRatio(
-          border_padding_in_child_writing_mode, child.GetAspectRatio(),
-          child_style.BoxSizingForAspectRatio(), cross_size);
+    auto InlineSizeFunc = [&]() -> LayoutUnit {
+      DCHECK(!MainAxisIsInlineAxis(child));
+      const ConstraintSpace child_space =
+          BuildSpaceForIntrinsicBlockSize(child, max_content_contribution);
+      return CalculateInitialFragmentGeometry(child_space, child,
+                                              /* break_token */ nullptr)
+          .border_box_size.inline_size;
     };
 
     const LayoutResult* layout_result = nullptr;
@@ -810,12 +708,13 @@ void FlexLayoutAlgorithm::ConstructAndAppendFlexItems(
       if (!layout_result) {
         ConstraintSpace child_space =
             BuildSpaceForIntrinsicBlockSize(child, max_content_contribution);
-        // TODO(crbug.com/1272533): This shouldn't return border/padding for
-        // children which are layout-clean. More cache slots are needed to
-        // handle the performance degradation to allow a layout within the
-        // min/max sizing pass.
+        std::optional<DisableLayoutSideEffectsScope> disable_side_effects;
         if (phase != Phase::kLayout && !Node().GetLayoutBox()->NeedsLayout()) {
-          return border_padding_in_child_writing_mode.BlockSum();
+          if (RuntimeEnabledFeatures::LayoutFlexUnderInvalidationFixEnabled()) {
+            disable_side_effects.emplace();
+          } else {
+            return border_padding_in_child_writing_mode.BlockSum();
+          }
         }
         layout_result = child.Layout(child_space, /* break_token */ nullptr);
         DCHECK(layout_result);
@@ -823,145 +722,161 @@ void FlexLayoutAlgorithm::ConstructAndAppendFlexItems(
       return layout_result->IntrinsicBlockSize();
     };
     auto ContentBlockSizeFunc = [&]() -> LayoutUnit {
+      DCHECK(!MainAxisIsInlineAxis(child));
+
       if (child.HasAspectRatio() && !child.IsReplaced()) {
-        // We don't enter here for replaced children because (a) this block
-        // doesn't account for natural sizes so wouldn't work for replaced
-        // elements, and (b) IntrinsicBlockSize() below already returns the
-        // kContent block size for replaced elements.
-        DCHECK(!AspectRatioProvidesMainSize(child))
-            << "We only ever call ContentBlockSizeFunc for "
-               "determing flex base size in case E. If "
-               "AspectRatioProvidesMainSize==true, we would have fallen into "
-               "case B, not case E.";
-        DCHECK(!MainAxisIsInlineAxis(child))
-            << "We assume that the main axis is block axis in the call to "
-               "BlockSum() below.";
-        return AdjustMainSizeForAspectRatioCrossAxisMinAndMax(
-            child, ComputeTransferredMainSize(),
-            min_max_sizes_in_cross_axis_direction,
-            border_padding_in_child_writing_mode);
+        const LayoutUnit inline_size = InlineSizeFunc();
+        if (inline_size != kIndefiniteSize) {
+          return BlockSizeFromAspectRatio(
+              border_padding_in_child_writing_mode, child.GetAspectRatio(),
+              child_style.BoxSizingForAspectRatio(), inline_size);
+        }
+
+        const MinMaxSizes min_max = ComputeTransferredMinMaxBlockSizes(
+            child.GetAspectRatio(), min_max_sizes_in_cross_axis_direction,
+            border_padding_in_child_writing_mode,
+            child.Style().BoxSizingForAspectRatio());
+        return min_max.ClampSizeToMinAndMax(IntrinsicBlockSizeFunc());
       }
       return IntrinsicBlockSizeFunc();
     };
 
-    Length flex_basis_length;
-    LayoutUnit flex_base_border_box;
-    if (is_column_ && child_style.FlexBasis().IsPercentOrCalc())
+    const Length& flex_basis = child_style.FlexBasis();
+    if (is_column_ && flex_basis.MayHavePercentDependence()) {
       has_column_percent_flex_basis_ = true;
-    if (!IsUsedFlexBasisDefinite(child, &flex_basis_length)) {
-      // This block means that the used flex-basis is 'content'. In here we
-      // implement parts B,C,D,E of 9.2.3
-      // https://drafts.csswg.org/css-flexbox/#algo-main-item
-      if (AspectRatioProvidesMainSize(child)) {
-        // This is Part B of 9.2.3
-        // https://drafts.csswg.org/css-flexbox/#algo-main-item It requires that
-        // the item has a definite cross size.
-        flex_base_border_box = ComputeTransferredMainSize();
-      } else if (MainAxisIsInlineAxis(child)) {
-        // We're now in parts C, D, and E for what are usually (horizontal-tb
-        // containers AND children) row flex containers. I _think_ the C and D
-        // cases are correctly handled by this code, which was originally
-        // written for case E.
-        flex_base_border_box =
-            MinMaxSizesFunc(MinMaxSizesType::kContent).sizes.max_size;
-      } else {
-        // Parts C, D, and E for what are usually column flex containers.
-        flex_base_border_box = ContentBlockSizeFunc();
-      }
-    } else {
-      DCHECK(!flex_basis_length.IsAuto());
-      DCHECK(!flex_basis_length.IsContent());
-      // Part A of 9.2.3 https://drafts.csswg.org/css-flexbox/#algo-main-item
+    }
+
+    // This bool is set to true while calculating the base size, the flex-basis
+    // is "content" based (e.g. dependent on the child's content).
+    bool is_used_flex_basis_indefinite = false;
+
+    const LayoutUnit flex_base_border_box = ([&]() -> LayoutUnit {
+      const Length& specified_length_in_main_axis =
+          is_horizontal_flow_ ? child_style.Width() : child_style.Height();
+      // TODO(https://crbug.com/313072): 'flex-basis' should support
+      // calc-size()
+      const Length& used_flex_basis_length =
+          flex_basis.IsAuto() ? specified_length_in_main_axis : flex_basis;
+
+      // 'auto' for items within a -webkit-box resolve as 'fit-content'.
+      const Length& auto_flex_basis_length =
+          (Style().IsDeprecatedWebkitBox() &&
+           (Style().BoxOrient() == EBoxOrient::kHorizontal ||
+            Style().BoxAlign() != EBoxAlignment::kStretch))
+              ? Length::FitContent()
+              : Length::MaxContent();
+
       if (MainAxisIsInlineAxis(child)) {
-        flex_base_border_box = ResolveMainInlineLength(
+        const LayoutUnit inline_size = ResolveMainInlineLength(
             flex_basis_space, child_style, border_padding_in_child_writing_mode,
-            MinMaxSizesFunc, flex_basis_length);
-      } else {
-        // Flex container's main axis is in child's block direction. Child's
-        // flex basis is in child's block direction.
-        flex_base_border_box = ResolveMainBlockLength(
-            flex_basis_space, child_style, border_padding_in_child_writing_mode,
-            flex_basis_length, IntrinsicBlockSizeFunc);
+            [&](MinMaxSizesType type) -> MinMaxSizesResult {
+              is_used_flex_basis_indefinite = true;
+              return MinMaxSizesFunc(type);
+            },
+            used_flex_basis_length, &auto_flex_basis_length);
+
+        if (inline_size != kIndefiniteSize) {
+          return inline_size;
+        }
+
+        // We weren't able to resolve the length (i.e. we were a unresolvable
+        // %-age or similar), fallback to the max-content size.
+        is_used_flex_basis_indefinite = true;
+        return MinMaxSizesFunc(MinMaxSizesType::kContent).sizes.max_size;
+      }
+
+      // The block-axis is slightly different to the inline-axis - first
+      // attempt to resolve the length using an indefinite intrinsic-size.
+      //
+      // By doing this we can optionally add the caption block-size below.
+      // (Adding the caption to something content based would be incorrect).
+      const LayoutUnit block_size = ResolveMainBlockLength(
+          flex_basis_space, child_style, border_padding_in_child_writing_mode,
+          used_flex_basis_length, &auto_flex_basis_length,
+          /* intrinsic_size */ kIndefiniteSize);
+
+      if (block_size != kIndefiniteSize) {
+        // 1. A table interprets forced block-size as the block-size of its
+        //    captions and rows.
+        // 2. The specified block-size of a table only applies to its rows.
+        // 3. If the block-size resolved, add the caption block-size so that
+        //    the forced block-size works correctly.
+        LayoutUnit caption_block_size;
         if (const auto* table_child = DynamicTo<TableNode>(&child)) {
-          // (1) A table interprets forced block size as the height of its
-          // captions + rows.
-          // (2) The specified height of a table only applies to the rows.
-          // (3) So when we read the specified height here, we have to add the
-          // height of the captions before sending it through the flexing
-          // algorithm, which will eventually lead to a forced block size.
-          LayoutUnit caption_block_size = table_child->ComputeCaptionBlockSize(
+          caption_block_size = table_child->ComputeCaptionBlockSize(
               BuildSpaceForIntrinsicBlockSize(*table_child,
                                               max_content_contribution));
-          flex_base_border_box += caption_block_size;
         }
+        return block_size + caption_block_size;
       }
-    }
+
+      // We weren't able to resolve the length (i.e. it was content based), try
+      // to re-resolve passing the content block-size callback.
+      is_used_flex_basis_indefinite = true;
+      return ResolveMainBlockLength(
+          flex_basis_space, child_style, border_padding_in_child_writing_mode,
+          used_flex_basis_length, &auto_flex_basis_length,
+          ContentBlockSizeFunc);
+    })();
 
     // Spec calls this "flex base size"
     // https://www.w3.org/TR/css-flexbox-1/#algo-main-item
     // Blink's FlexibleBoxAlgorithm expects it to be content + scrollbar widths,
     // but no padding or border.
     DCHECK_GE(flex_base_border_box, main_axis_border_padding);
-    LayoutUnit flex_base_content_size =
+    const LayoutUnit flex_base_content_size =
         flex_base_border_box - main_axis_border_padding;
 
     const Length& min = is_horizontal_flow_ ? child.Style().MinWidth()
                                             : child.Style().MinHeight();
     if (algorithm_.ShouldApplyMinSizeAutoForChild(*child.GetLayoutBox())) {
-      LayoutUnit content_size_suggestion;
-      if (MainAxisIsInlineAxis(child)) {
-        content_size_suggestion =
-            MinMaxSizesFunc(MinMaxSizesType::kContent).sizes.min_size;
-      } else {
-        content_size_suggestion = IntrinsicBlockSizeFunc();
-      }
+      const LayoutUnit content_size_suggestion = ([&]() -> LayoutUnit {
+        const LayoutUnit intrinsic_size =
+            MainAxisIsInlineAxis(child)
+                ? MinMaxSizesFunc(MinMaxSizesType::kIntrinsic).sizes.min_size
+                : IntrinsicBlockSizeFunc();
+
+        // If appropriate clamp by the transferred min/max sizes.
+        if (child.HasAspectRatio()) {
+          auto transferred_min_max_func =
+              MainAxisIsInlineAxis(child) ? ComputeTransferredMinMaxInlineSizes
+                                          : ComputeTransferredMinMaxBlockSizes;
+          const MinMaxSizes transferred_min_max = transferred_min_max_func(
+              child.GetAspectRatio(), min_max_sizes_in_cross_axis_direction,
+              border_padding_in_child_writing_mode,
+              child.Style().BoxSizingForAspectRatio());
+          return transferred_min_max.ClampSizeToMinAndMax(intrinsic_size);
+        }
+
+        return intrinsic_size;
+      })();
       DCHECK_GE(content_size_suggestion, main_axis_border_padding);
 
-      if (child.HasAspectRatio() && !MainAxisIsInlineAxis(child)) {
-        content_size_suggestion =
-            AdjustMainSizeForAspectRatioCrossAxisMinAndMax(
-                child, content_size_suggestion,
-                min_max_sizes_in_cross_axis_direction,
-                border_padding_in_child_writing_mode);
-      }
-
-      LayoutUnit specified_size_suggestion = LayoutUnit::Max();
-      const Length& specified_length_in_main_axis =
-          is_horizontal_flow_ ? child_style.Width() : child_style.Height();
-      // If the item’s computed main size property is definite, then the
-      // specified size suggestion is that size.
-      if (MainAxisIsInlineAxis(child)) {
-        if (!specified_length_in_main_axis.IsAuto() &&
-            !InlineLengthUnresolvable(flex_basis_space,
-                                      specified_length_in_main_axis)) {
-          // Note: we may have already resolved specified_length_in_main_axis
-          // when calculating flex basis. Reusing that in the current code
-          // structure is a lot of work, so just recalculate here.
-          specified_size_suggestion = ResolveMainInlineLength(
-              flex_basis_space, child_style,
-              border_padding_in_child_writing_mode, MinMaxSizesFunc,
-              specified_length_in_main_axis);
+      const LayoutUnit specified_size_suggestion = ([&]() -> LayoutUnit {
+        const Length& specified_length_in_main_axis =
+            is_horizontal_flow_ ? child_style.Width() : child_style.Height();
+        if (specified_length_in_main_axis.HasAuto()) {
+          return LayoutUnit::Max();
         }
-      } else if (!BlockLengthUnresolvable(flex_basis_space,
-                                          specified_length_in_main_axis)) {
-        specified_size_suggestion = ResolveMainBlockLength(
-            flex_basis_space, child_style, border_padding_in_child_writing_mode,
-            specified_length_in_main_axis, IntrinsicBlockSizeFunc);
-        DCHECK_NE(specified_size_suggestion, kIndefiniteSize);
-      }
+        const LayoutUnit resolved_size =
+            MainAxisIsInlineAxis(child)
+                ? ResolveMainInlineLength(
+                      flex_basis_space, child_style,
+                      border_padding_in_child_writing_mode, MinMaxSizesFunc,
+                      specified_length_in_main_axis, /* auto_length */ nullptr)
+                : ResolveMainBlockLength(flex_basis_space, child_style,
+                                         border_padding_in_child_writing_mode,
+                                         specified_length_in_main_axis,
+                                         /* auto_length */ nullptr,
+                                         IntrinsicBlockSizeFunc);
 
-      LayoutUnit transferred_size_suggestion = LayoutUnit::Max();
-      if (specified_size_suggestion == LayoutUnit::Max() &&
-          child.IsReplaced() && AspectRatioProvidesMainSize(child)) {
-        transferred_size_suggestion = ComputeTransferredMainSize();
-      }
-
-      DCHECK(specified_size_suggestion == LayoutUnit::Max() ||
-             transferred_size_suggestion == LayoutUnit::Max());
+        // Coerce an indefinite size to LayoutUnit::Max().
+        return resolved_size == kIndefiniteSize ? LayoutUnit::Max()
+                                                : resolved_size;
+      })();
 
       min_max_sizes_in_main_axis_direction.min_size =
           std::min({specified_size_suggestion, content_size_suggestion,
-                    transferred_size_suggestion,
                     min_max_sizes_in_main_axis_direction.max_size});
     } else if (MainAxisIsInlineAxis(child)) {
       min_max_sizes_in_main_axis_direction.min_size = ResolveMinInlineLength(
@@ -990,6 +905,28 @@ void FlexLayoutAlgorithm::ConstructAndAppendFlexItems(
 
     const BoxStrut scrollbars = ComputeScrollbarsForNonAnonymous(child);
 
+    auto AspectRatioProvidesBlockMainSize = [&]() -> bool {
+      if (MainAxisIsInlineAxis(child)) {
+        return false;
+      }
+      if (child.IsReplaced()) {
+        return false;
+      }
+      return child.HasAspectRatio() && InlineSizeFunc() != kIndefiniteSize;
+    };
+
+    // For flex-items whose main-axis is the block-axis we treat the initial
+    // block-size as indefinite if:
+    //  - The flex container has an indefinite main-size.
+    //  - The used flex-basis is indefinite.
+    //  - The aspect-ratio doesn't provide the main-size.
+    //
+    // See: // https://drafts.csswg.org/css-flexbox/#definite-sizes
+    const bool is_initial_block_size_indefinite =
+        is_column_ && !MainAxisIsInlineAxis(child) &&
+        ChildAvailableSize().block_size == kIndefiniteSize &&
+        is_used_flex_basis_indefinite && !AspectRatioProvidesBlockMainSize();
+
     const auto container_writing_direction =
         GetConstraintSpace().GetWritingDirection();
     bool is_last_baseline =
@@ -1008,7 +945,8 @@ void FlexLayoutAlgorithm::ConstructAndAppendFlexItems(
                       min_max_sizes_in_cross_axis_direction,
                       main_axis_border_padding, cross_axis_border_padding,
                       physical_child_margins, scrollbars, baseline_writing_mode,
-                      baseline_group, min_max_sizes.has_value())
+                      baseline_group, is_initial_block_size_indefinite,
+                      is_used_flex_basis_indefinite, min_max_sizes.has_value())
         .ng_input_node_ = child;
     // Save the layout result so that we can maybe reuse it later.
     if (layout_result) {
@@ -1032,22 +970,6 @@ void FlexLayoutAlgorithm::ConstructAndAppendFlexItems(
                         WebFeature::kFlexboxAlignSingleLineDifference);
     }
   }
-}
-
-LayoutUnit FlexLayoutAlgorithm::AdjustMainSizeForAspectRatioCrossAxisMinAndMax(
-    const BlockNode& child,
-    LayoutUnit main_axis_size,
-    const MinMaxSizes& cross_min_max,
-    const BoxStrut& border_padding_in_child_writing_mode) {
-  DCHECK(child.HasAspectRatio());
-  auto transferred_min_max_func = MainAxisIsInlineAxis(child)
-                                      ? ComputeTransferredMinMaxInlineSizes
-                                      : ComputeTransferredMinMaxBlockSizes;
-  auto min_max =
-      transferred_min_max_func(child.GetAspectRatio(), cross_min_max,
-                               border_padding_in_child_writing_mode,
-                               child.Style().BoxSizingForAspectRatio());
-  return min_max.ClampSizeToMinAndMax(main_axis_size);
 }
 
 const LayoutResult* FlexLayoutAlgorithm::Layout() {
@@ -1293,9 +1215,14 @@ void FlexLayoutAlgorithm::PlaceFlexItems(
       flex_item.offset_ = &flex_item_output.offset;
       flex_item_output.ng_input_node = flex_item.ng_input_node_;
       flex_item_output.main_axis_final_size = flex_item.FlexedBorderBoxSize();
+      flex_item_output.is_initial_block_size_indefinite =
+          flex_item.is_initial_block_size_indefinite_;
+      flex_item_output.is_used_flex_basis_indefinite =
+          flex_item.is_used_flex_basis_indefinite_;
 
       ConstraintSpace child_space = BuildSpaceForLayout(
           flex_item.ng_input_node_, flex_item.FlexedBorderBoxSize(),
+          flex_item.is_initial_block_size_indefinite_,
           flex_item.max_content_contribution_);
 
       // We need to get the item's cross axis size given its new main size. If
@@ -1465,6 +1392,7 @@ LayoutResult::EStatus FlexLayoutAlgorithm::GiveItemsFinalPositionAndSize(
       if (DoesItemStretch(flex_item.ng_input_node)) {
         ConstraintSpace child_space = BuildSpaceForLayout(
             flex_item.ng_input_node, flex_item.main_axis_final_size,
+            flex_item.is_initial_block_size_indefinite,
             /* override_inline_size */ std::nullopt,
             line_output.line_cross_size);
         layout_result =
@@ -1550,8 +1478,12 @@ LayoutResult::EStatus FlexLayoutAlgorithm::GiveItemsFinalPositionAndSize(
     AdjustButtonBaseline(final_content_cross_size);
   } else if (Node().IsSlider()) {
     DCHECK(!InvolvedInBlockFragmentation(container_builder_));
-    container_builder_.SetBaselines(BorderScrollbarPadding().BlockSum() +
-                                    final_content_cross_size);
+    if (RuntimeEnabledFeatures::LayoutBaselineFixEnabled()) {
+      container_builder_.ClearBaselines();
+    } else {
+      container_builder_.SetBaselines(BorderScrollbarPadding().BlockSum() +
+                                      final_content_cross_size);
+    }
   }
 
   // Signal if we need to relayout with new child scrollbar information.
@@ -1795,6 +1727,7 @@ FlexLayoutAlgorithm::GiveItemsFinalPositionAndSizeForFragmentation(
         MinBlockSizeShouldEncompassIntrinsicSize(*flex_item);
     ConstraintSpace child_space = BuildSpaceForLayout(
         flex_item->ng_input_node, flex_item->main_axis_final_size,
+        flex_item->is_initial_block_size_indefinite,
         /* override_inline_size */ std::nullopt, line_cross_size_for_stretch,
         offset.block_offset, min_block_size_should_encompass_intrinsic_size);
     const LayoutResult* layout_result = flex_item->ng_input_node.Layout(
@@ -2102,6 +2035,9 @@ void FlexLayoutAlgorithm::AdjustButtonBaseline(
   // See LayoutButton::BaselinePosition()
   if (!Node().HasLineIfEmpty() && !Node().ShouldApplyLayoutContainment() &&
       !container_builder_.FirstBaseline()) {
+    if (RuntimeEnabledFeatures::LayoutBaselineFixEnabled()) {
+      return;
+    }
     // To ensure that we have a consistent baseline when we have no children,
     // even when we have the anonymous LayoutBlock child, we calculate the
     // baseline for the empty case manually here.
@@ -2176,7 +2112,8 @@ FlexLayoutAlgorithm::ComputeMinMaxSizeOfMultilineColumnContainer() {
     largest_inline_size_contributions.max_size =
         flex_line_outputs.back().line_cross_size +
         flex_line_outputs.back().cross_axis_offset -
-        flex_line_outputs.front().cross_axis_offset;
+        flex_line_outputs.front().cross_axis_offset +
+        (flex_line_outputs.size() - 1) * algorithm_.gap_between_lines_;
   }
 
   DCHECK_GE(largest_inline_size_contributions.min_size, 0);
@@ -2185,11 +2122,11 @@ FlexLayoutAlgorithm::ComputeMinMaxSizeOfMultilineColumnContainer() {
 
   largest_inline_size_contributions += BorderScrollbarPadding().InlineSum();
 
-  // TODO(crbug.com/1272533): depends_on_block_constraints should be true.
-  // However we need more cache slots to handle the performance degradation we
-  // currently experience. See bug for more details.
+  // This always depends on block constraints because if block constraints
+  // change, this flexbox could get a different number of columns.
   return {largest_inline_size_contributions,
-          /* depends_on_block_constraints */ false};
+          /* depends_on_block_constraints */ RuntimeEnabledFeatures::
+              LayoutFlexUnderInvalidationFixEnabled()};
 }
 
 MinMaxSizesResult FlexLayoutAlgorithm::ComputeMinMaxSizeOfRowContainerV3() {
@@ -2221,8 +2158,6 @@ MinMaxSizesResult FlexLayoutAlgorithm::ComputeMinMaxSizeOfRowContainerV3() {
         item.flex_base_content_size_ + item.main_axis_border_padding_;
     const LayoutUnit hypothetical_main_size_border_box =
         item.hypothetical_main_content_size_ + item.main_axis_border_padding_;
-    const bool is_used_flex_basis_definite =
-        IsUsedFlexBasisDefinite(item.ng_input_node_);
 
     if (algorithm_.IsMultiline()) {
       const LayoutUnit main_axis_margins =
@@ -2238,7 +2173,7 @@ MinMaxSizesResult FlexLayoutAlgorithm::ComputeMinMaxSizeOfRowContainerV3() {
                               child_style.ResolvedFlexGrow(Style()) == 0.f) ||
                              (min_contribution < flex_base_size_border_box &&
                               child_style.ResolvedFlexShrink(Style()) == 0.f);
-      if (cant_move && is_used_flex_basis_definite) {
+      if (cant_move && !item.is_used_flex_basis_indefinite_) {
         item_final_contribution.min_size = hypothetical_main_size_border_box;
       } else {
         item_final_contribution.min_size = min_contribution;
@@ -2251,7 +2186,7 @@ MinMaxSizesResult FlexLayoutAlgorithm::ComputeMinMaxSizeOfRowContainerV3() {
                             child_style.ResolvedFlexGrow(Style()) == 0.f) ||
                            (max_contribution < flex_base_size_border_box &&
                             child_style.ResolvedFlexShrink(Style()) == 0.f);
-    if (cant_move && is_used_flex_basis_definite) {
+    if (cant_move && !item.is_used_flex_basis_indefinite_) {
       item_final_contribution.max_size = hypothetical_main_size_border_box;
     } else {
       item_final_contribution.max_size = max_contribution;
@@ -2562,12 +2497,13 @@ bool FlexLayoutAlgorithm::MinBlockSizeShouldEncompassIntrinsicSize(
 
   if (is_column_) {
     bool can_shrink = item_style.ResolvedFlexShrink(Style()) != 0.f &&
-                      IsColumnContainerMainSizeDefinite();
+                      ChildAvailableSize().block_size != kIndefiniteSize;
 
     // Only allow growth if the item can't shrink and the flex-basis is
     // content-based.
-    if (!IsUsedFlexBasisDefinite(item.ng_input_node) && !can_shrink)
+    if (item.is_used_flex_basis_indefinite && !can_shrink) {
       return true;
+    }
 
     // Only allow growth if the item's block-size is auto and either the item
     // can't shrink or its min-height is auto.
@@ -2584,8 +2520,9 @@ bool FlexLayoutAlgorithm::MinBlockSizeShouldEncompassIntrinsicSize(
     }
 
     // Only allow growth if the item's cross size is auto.
-    if (DoesItemCrossSizeComputeToAuto(item.ng_input_node))
+    if (DoesItemComputedCrossSizeHaveAuto(item.ng_input_node)) {
       return true;
+    }
   }
   return false;
 }

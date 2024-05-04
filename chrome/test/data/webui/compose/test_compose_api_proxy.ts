@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import type {CloseReason, ComposeState, OpenMetadata, StyleModifiers} from 'chrome-untrusted://compose/compose.mojom-webui.js';
+import type { CloseReason, ComposeState, OpenMetadata, StyleModifier } from 'chrome-untrusted://compose/compose.mojom-webui.js';
 import {ComposeUntrustedDialogCallbackRouter, UserFeedback} from 'chrome-untrusted://compose/compose.mojom-webui.js';
 import type {ComposeApiProxy} from 'chrome-untrusted://compose/compose_api_proxy.js';
 import {TestBrowserProxy} from 'chrome-untrusted://webui-test/test_browser_proxy.js';
@@ -38,6 +38,8 @@ export class TestComposeApiProxy extends TestBrowserProxy implements
       new ComposeUntrustedDialogCallbackRouter();
   remote = this.router_.$.bindNewPipeAndPassRemote();
   private undoResponse_: ComposeState|null = null;
+  private responseBeforeError_: ComposeState|null = null;
+  private redoResponse_: ComposeState|null = null;
 
   constructor() {
     super([
@@ -56,6 +58,9 @@ export class TestComposeApiProxy extends TestBrowserProxy implements
       'setUserFeedback',
       'showUi',
       'undo',
+      'recoverFromErrorState',
+      'editResult',
+      'redo',
     ]);
   }
 
@@ -82,7 +87,7 @@ export class TestComposeApiProxy extends TestBrowserProxy implements
     this.methodCalled('compose', {input, edited});
   }
 
-  rewrite(style: StyleModifiers): void {
+  rewrite(style: StyleModifier): void {
     this.methodCalled('rewrite', style);
   }
 
@@ -93,6 +98,21 @@ export class TestComposeApiProxy extends TestBrowserProxy implements
   undo(): Promise<(ComposeState | null)> {
     this.methodCalled('undo');
     return Promise.resolve(this.undoResponse_);
+  }
+
+  recoverFromErrorState(): Promise<(ComposeState | null)> {
+    this.methodCalled('recoverFromErrorState');
+    return Promise.resolve(this.responseBeforeError_);
+  }
+
+  editResult(result: string): Promise<boolean> {
+    this.methodCalled('editResult', result);
+    return Promise.resolve(false);
+  }
+
+  redo(): Promise<(ComposeState | null)> {
+    this.methodCalled('redo');
+    return Promise.resolve(this.redoResponse_);
   }
 
   getRouter() {
@@ -141,6 +161,14 @@ export class TestComposeApiProxy extends TestBrowserProxy implements
 
   setUndoResponse(state: ComposeState|null) {
     this.undoResponse_ = state;
+  }
+
+  setResponseBeforeError(state: ComposeState|null) {
+    this.responseBeforeError_ = state;
+  }
+
+  setRedoResponse(state: ComposeState|null) {
+    this.redoResponse_ = state;
   }
 
   showUi() {

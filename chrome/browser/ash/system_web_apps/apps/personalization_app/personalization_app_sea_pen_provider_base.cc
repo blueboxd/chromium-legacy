@@ -11,23 +11,25 @@
 #include <vector>
 
 #include "ash/constants/ash_features.h"
-#include "ash/controls/contextual_tooltip.h"
 #include "ash/wallpaper/wallpaper_utils/sea_pen_metadata_utils.h"
 #include "ash/wallpaper/wallpaper_utils/wallpaper_resizer.h"
 #include "ash/webui/common/mojom/sea_pen.mojom-forward.h"
 #include "ash/webui/common/mojom/sea_pen.mojom.h"
 #include "base/functional/bind.h"
+#include "base/json/json_writer.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/ash/system_web_apps/apps/personalization_app/personalization_app_utils.h"
 #include "chrome/browser/ash/wallpaper_handlers/sea_pen_fetcher.h"
+#include "chrome/browser/ash/wallpaper_handlers/sea_pen_utils.h"
 #include "chrome/browser/ash/wallpaper_handlers/wallpaper_fetcher_delegate.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
+#include "components/feedback/feedback_constants.h"
 #include "components/manta/features.h"
 #include "components/manta/manta_status.h"
 #include "content/public/browser/web_ui.h"
@@ -156,9 +158,10 @@ void PersonalizationAppSeaPenProviderBase::GetRecentSeaPenImageThumbnail(
   }
 
   GetRecentSeaPenImageThumbnailInternal(
-      id, base::BindOnce(&PersonalizationAppSeaPenProviderBase::
-                             OnGetRecentSeaPenImageThumbnail,
-                         weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+      id,
+      base::BindOnce(&PersonalizationAppSeaPenProviderBase::
+                         OnGetRecentSeaPenImageThumbnail,
+                     weak_ptr_factory_.GetWeakPtr(), id, std::move(callback)));
 }
 
 wallpaper_handlers::SeaPenFetcher*
@@ -216,9 +219,10 @@ void PersonalizationAppSeaPenProviderBase::OnGetRecentSeaPenImages(
 }
 
 void PersonalizationAppSeaPenProviderBase::OnGetRecentSeaPenImageThumbnail(
+    const uint32_t id,
     GetRecentSeaPenImageThumbnailCallback callback,
     const gfx::ImageSkia& image,
-    std::optional<base::Value::Dict> sea_pen_metadata) {
+    mojom::RecentSeaPenImageInfoPtr image_info) {
   if (image.isNull()) {
     DVLOG(1) << __func__ << " failed to decode image";
     std::move(callback).Run(nullptr);
@@ -229,49 +233,36 @@ void PersonalizationAppSeaPenProviderBase::OnGetRecentSeaPenImageThumbnail(
       *WallpaperResizer::GetResizedImage(image, kSeaPenImageThumbnailSizeDip)
            .bitmap()));
 
-  if (!sea_pen_metadata.has_value()) {
-    DVLOG(1) << __func__ << " the extracted metadata is not in JSON format";
-    std::move(callback).Run(mojom::RecentSeaPenThumbnailData::New(
-        std::move(thumbnail_url), nullptr));
-    return;
-  }
-
-  auto sea_pen_image_info =
-      ash::SeaPenQueryDictToRecentImageInfo(std::move(*sea_pen_metadata));
-  if (!sea_pen_image_info) {
-    DVLOG(1) << __func__ << " invalid extracted metadata";
+  if (!image_info) {
+    DVLOG(1) << __func__ << " Unable to get image info for image " << id;
     std::move(callback).Run(mojom::RecentSeaPenThumbnailData::New(
         std::move(thumbnail_url), nullptr));
     return;
   }
 
   std::move(callback).Run(mojom::RecentSeaPenThumbnailData::New(
-      std::move(thumbnail_url), std::move(sea_pen_image_info)));
+      std::move(thumbnail_url), std::move(image_info)));
 }
 
 void PersonalizationAppSeaPenProviderBase::OpenFeedbackDialog(
     const mojom::SeaPenFeedbackMetadataPtr metadata) {
-  const std::string hashtag = metadata->log_id.starts_with("VcBackground")
-                                  ? "#VCBackground"
-                                  : "#AIWallpaper";
-  const std::string feedback_type =
-      metadata->is_positive ? "Positive" : "Negative";
   CHECK(last_query_);
-  const std::string user_visible_query_text =
-      (last_query_->is_text_query())
-          ? last_query_->get_text_query()
-          : last_query_->get_template_query()->user_visible_query->text;
-  const std::string description_template =
-      hashtag + " " + feedback_type + ": " + user_visible_query_text + "\n";
+  // Text query is not supported.
+  if (last_query_->is_text_query()) {
+    return;
+  }
+
+  std::string feedback_text = wallpaper_handlers::GetFeedbackText(
+      last_query_->get_template_query(), metadata);
 
   base::Value::Dict ai_metadata;
-  ai_metadata.Set("from_chromeos", "true");
-  ai_metadata.Set("log_id", metadata->log_id);
+  ai_metadata.Set(feedback::kSeaPenMetadataKey, "true");
 
   base::RecordAction(base::UserMetricsAction("SeaPen_FeedbackPressed"));
   chrome::ShowFeedbackPage(
       /*browser=*/chrome::FindBrowserWithProfile(profile_),
-      /*source=*/chrome::kFeedbackSourceAI, description_template,
+      /*source=*/chrome::kFeedbackSourceAI,
+      /*description_template=*/feedback_text,
       /*description_placeholder_text=*/
       base::UTF16ToUTF8(
           l10n_util::GetStringUTF16(IDS_SEA_PEN_FEEDBACK_PLACEHOLDER)),
@@ -280,31 +271,22 @@ void PersonalizationAppSeaPenProviderBase::OpenFeedbackDialog(
       /*autofill_data=*/base::Value::Dict(), std::move(ai_metadata));
 }
 
-void PersonalizationAppSeaPenProviderBase::ShouldShowSeaPenTermsOfServiceDialog(
-    ShouldShowSeaPenTermsOfServiceDialogCallback callback) {
+void PersonalizationAppSeaPenProviderBase::ShouldShowSeaPenIntroductionDialog(
+    ShouldShowSeaPenIntroductionDialogCallback callback) {
   if (!features::IsSeaPenEnabled() &&
       !features::IsVcBackgroundReplaceEnabled()) {
     sea_pen_receiver_.ReportBadMessage(
-        "Cannot call `ShouldShowSeaPenWallpaperTermsDialog()` without Sea Pen "
+        "Cannot call `ShouldShowSeaPenIntroductionDialog()` without Sea Pen "
         "feature enabled");
     return;
   }
 
-  // TODO(b/315032845): confirm how to store and retrieve the terms of service
-  // records instead of using contextual tooltip.
-  std::move(callback).Run(contextual_tooltip::ShouldShowNudge(
-      profile_->GetPrefs(),
-      contextual_tooltip::TooltipType::kSeaPenWallpaperTermsDialog,
-      /*recheck_delay=*/nullptr));
+  ShouldShowSeaPenIntroductionDialogInternal(std::move(callback));
 }
 
 void PersonalizationAppSeaPenProviderBase::
-    HandleSeaPenTermsOfServiceAccepted() {
-  // TODO(b/315032845): confirm how to store and retrieve the terms of service
-  // records instead of using contextual tooltip.
-  contextual_tooltip::HandleGesturePerformed(
-      profile_->GetPrefs(),
-      contextual_tooltip::TooltipType::kSeaPenWallpaperTermsDialog);
+    HandleSeaPenIntroductionDialogClosed() {
+  HandleSeaPenIntroductionDialogClosedInternal();
 }
 
 }  // namespace ash::personalization_app

@@ -54,7 +54,7 @@ import org.chromium.url.GURL;
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 @EnableFeatures({SyncFeatureMap.ENABLE_BOOKMARK_FOLDERS_FOR_ACCOUNT_STORAGE})
-// TODO(crbug.com/1168590): Once SyncTestRule supports batching, investigate batching this suite.
+// TODO(crbug.com/40743432): Once SyncTestRule supports batching, investigate batching this suite.
 @DoNotBatch(reason = "SyncTestRule doesn't support batching.")
 public class AccountBookmarkTest {
     private static final String BOOKMARKS_TYPE_STRING = "Bookmarks";
@@ -144,7 +144,7 @@ public class AccountBookmarkTest {
     }
 
     private void checkTopLevelAccountFoldersDisplayed() {
-        // TODO(crbug.com/1510547): This is currently broken because the account reading list
+        // TODO(crbug.com/41483140): This is currently broken because the account reading list
         // folder doesn't show up without a restart. This should be updated once that folder is
         // available.
         checkToolbarTitleMatches("Bookmarks");

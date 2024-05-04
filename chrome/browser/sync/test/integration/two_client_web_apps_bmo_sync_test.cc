@@ -52,7 +52,7 @@ using testing::Not;
 std::unique_ptr<KeyedService> CreateFakeWebAppProvider(Profile* profile) {
   auto provider = std::make_unique<FakeWebAppProvider>(profile);
   provider->SetOsIntegrationManager(std::make_unique<FakeOsIntegrationManager>(
-      profile, nullptr, nullptr, nullptr, nullptr));
+      profile, nullptr, nullptr, nullptr));
   provider->StartWithSubsystems();
   DCHECK(provider);
   return provider;
@@ -299,8 +299,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientWebAppsBMOSyncTest, DisplayMode) {
   }
   WebAppProvider::GetForTest(GetProfile(1))
       ->sync_bridge_unsafe()
-      .SetAppUserDisplayMode(app_id, mojom::UserDisplayMode::kBrowser,
-                             /*is_user_action=*/false);
+      .SetAppUserDisplayModeForTesting(app_id,
+                                       mojom::UserDisplayMode::kBrowser);
 
   ASSERT_TRUE(AwaitWebAppQuiescence());
 
@@ -391,8 +391,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientWebAppsBMOSyncTest, NotSyncedThenSynced) {
   // on profile 0. So changes should propagate from profile 0 to profile 1 now.
   WebAppProvider::GetForTest(GetProfile(0))
       ->sync_bridge_unsafe()
-      .SetAppUserDisplayMode(app_id, mojom::UserDisplayMode::kBrowser,
-                             /*is_user_action=*/false);
+      .SetAppUserDisplayModeForTesting(app_id,
+                                       mojom::UserDisplayMode::kBrowser);
 
   ASSERT_TRUE(AwaitWebAppQuiescence());
 
@@ -672,30 +672,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientWebAppsBMOSyncTest, NoShortcutsCreatedOnSync) {
     EXPECT_THAT(GetAllAppIdsForProfile(GetProfile(0)),
                 ElementsAreArray(GetAllAppIdsForProfile(GetProfile(1))));
   }
-  EXPECT_EQ(
-      1u, GetOsIntegrationManager(GetProfile(0)).num_create_shortcuts_calls());
-#if BUILDFLAG(IS_CHROMEOS)
-  std::optional<InstallOsHooksOptions> last_options =
-      GetOsIntegrationManager(GetProfile(1)).get_last_install_options();
-  EXPECT_TRUE(last_options.has_value());
-  OsHooksOptions expected_os_hook_requests;
-  expected_os_hook_requests[OsHookType::kShortcuts] = true;
-  expected_os_hook_requests[OsHookType::kRunOnOsLogin] = false;
-  expected_os_hook_requests[OsHookType::kShortcutsMenu] = true;
-  expected_os_hook_requests[OsHookType::kUninstallationViaOsSettings] = true;
-  expected_os_hook_requests[OsHookType::kFileHandlers] = true;
-  expected_os_hook_requests[OsHookType::kProtocolHandlers] = true;
-  expected_os_hook_requests[OsHookType::kUrlHandlers] = false;
-  EXPECT_EQ(expected_os_hook_requests, last_options->os_hooks);
-  EXPECT_TRUE(last_options->add_to_desktop);
-  EXPECT_FALSE(last_options->add_to_quick_launch_bar);
-  EXPECT_EQ(
-      1u, GetOsIntegrationManager(GetProfile(1)).num_create_shortcuts_calls());
-#else
-  EXPECT_FALSE(GetOsIntegrationManager(GetProfile(1))
-                   .get_last_install_options()
-                   .has_value());
-#endif
 }
 
 }  // namespace

@@ -66,9 +66,8 @@ void PersonalDataManagerTestBase::TearDownTest() {
   OSCryptMocker::TearDown();
 }
 
-void PersonalDataManagerTestBase::ResetPersonalDataManager(
-    bool use_sync_transport_mode,
-    PersonalDataManager* personal_data) {
+void PersonalDataManagerTestBase::MakePrimaryAccountAvailable(
+    bool use_sync_transport_mode) {
   std::string email = use_sync_transport_mode ? kSyncTransportAccountEmail
                                               : kPrimaryAccountEmail;
   // Set the account in both IdentityManager and SyncService.
@@ -94,32 +93,20 @@ void PersonalDataManagerTestBase::ResetPersonalDataManager(
 #endif
   sync_service_.SetAccountInfo(account_info);
   sync_service_.SetHasSyncConsent(!use_sync_transport_mode);
+}
 
-  PersonalDataChangedWaiter waiter(*personal_data);
-  personal_data->Init(
+std::unique_ptr<PersonalDataManager>
+PersonalDataManagerTestBase::InitPersonalDataManager(
+    bool use_sync_transport_mode) {
+  MakePrimaryAccountAvailable(use_sync_transport_mode);
+  auto personal_data = std::make_unique<PersonalDataManager>(
       profile_database_service_, account_database_service_, prefs_.get(),
       prefs_.get(), identity_test_env_.identity_manager(),
       /*history_service=*/nullptr, &sync_service_, strike_database_.get(),
-      /*image_fetcher=*/nullptr, /*shared_storage_handler=*/nullptr);
-  personal_data->AddObserver(&personal_data_observer_);
-  personal_data->OnStateChanged(&sync_service_);
-  std::move(waiter).Wait();
-}
-
-[[nodiscard]] bool PersonalDataManagerTestBase::TurnOnSyncFeature(
-    PersonalDataManager* personal_data) {
-  sync_service_.SetHasSyncConsent(true);
-  if (!sync_service_.IsSyncFeatureEnabled()) {
-    return false;
-  }
-  personal_data->OnStateChanged(&sync_service_);
-
-  return personal_data->IsSyncFeatureEnabledForPaymentsServerMetrics();
-}
-
-void PersonalDataManagerTestBase::SetServerCards(
-    std::vector<CreditCard> server_cards) {
-  test::SetServerCreditCards(account_autofill_table_, server_cards);
+      /*image_fetcher=*/nullptr, /*shared_storage_handler=*/nullptr, "en-US",
+      "US");
+  PersonalDataChangedWaiter(*personal_data).Wait();
+  return personal_data;
 }
 
 }  // namespace autofill

@@ -42,6 +42,7 @@ import org.chromium.chrome.browser.feed.sections.SectionHeaderListProperties;
 import org.chromium.chrome.browser.feed.sections.SectionHeaderView;
 import org.chromium.chrome.browser.feed.sections.SectionHeaderViewBinder;
 import org.chromium.chrome.browser.feed.sort_ui.FeedOptionsCoordinator;
+import org.chromium.chrome.browser.feed.webfeed.WebFeedBridge;
 import org.chromium.chrome.browser.feedback.HelpAndFeedbackLauncher;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.ntp.NewTabPageLaunchOrigin;
@@ -49,6 +50,7 @@ import org.chromium.chrome.browser.ntp.NewTabPageLayout;
 import org.chromium.chrome.browser.privacy.settings.PrivacyPreferencesManagerImpl;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.share.ShareDelegate;
+import org.chromium.chrome.browser.toolbar.ToolbarFeatures;
 import org.chromium.chrome.browser.toolbar.top.Toolbar;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.ui.native_page.TouchEnabledDelegate;
@@ -56,6 +58,7 @@ import org.chromium.chrome.browser.ui.signin.PersonalizedSigninPromoView;
 import org.chromium.chrome.browser.user_education.UserEducationHelper;
 import org.chromium.chrome.browser.xsurface.HybridListRenderer;
 import org.chromium.chrome.browser.xsurface.ProcessScope;
+import org.chromium.chrome.browser.xsurface.feed.FeedCardOpeningReliabilityLogger;
 import org.chromium.chrome.browser.xsurface.feed.FeedLaunchReliabilityLogger;
 import org.chromium.chrome.browser.xsurface.feed.FeedLaunchReliabilityLogger.SurfaceType;
 import org.chromium.chrome.browser.xsurface.feed.FeedSurfaceScope;
@@ -96,7 +99,6 @@ public class FeedSurfaceCoordinator
     private final SnackbarManager mSnackbarManager;
     @Nullable private final View mNtpHeader;
     private final boolean mShowDarkBackground;
-    private final boolean mIsPlaceholderShownInitially;
     private final FeedSurfaceDelegate mDelegate;
     private final BottomSheetController mBottomSheetController;
     private final WindowAndroid mWindowAndroid;
@@ -355,7 +357,6 @@ public class FeedSurfaceCoordinator
      * @param showDarkBackground Whether is shown on dark background.
      * @param delegate The constructing {@link FeedSurfaceDelegate}.
      * @param profile The current user profile.
-     * @param isPlaceholderShownInitially Whether the placeholder is shown initially.
      * @param bottomSheetController The bottom sheet controller.
      * @param shareDelegateSupplier The supplier for the share delegate used to share articles.
      * @param launchOrigin The origin of what launched the feed.
@@ -382,7 +383,6 @@ public class FeedSurfaceCoordinator
             boolean showDarkBackground,
             FeedSurfaceDelegate delegate,
             Profile profile,
-            boolean isPlaceholderShownInitially,
             BottomSheetController bottomSheetController,
             Supplier<ShareDelegate> shareDelegateSupplier,
             @Nullable ScrollableContainerDelegate externalScrollableContainerDelegate,
@@ -401,7 +401,6 @@ public class FeedSurfaceCoordinator
         mSnackbarManager = snackbarManager;
         mNtpHeader = ntpHeader;
         mShowDarkBackground = showDarkBackground;
-        mIsPlaceholderShownInitially = isPlaceholderShownInitially;
         mDelegate = delegate;
         mBottomSheetController = bottomSheetController;
         mProfile = profile;
@@ -425,7 +424,7 @@ public class FeedSurfaceCoordinator
 
         mRootView = new RootView(mActivity);
         mRootView.setPadding(0, mTabStripHeightSupplier.get(), 0, 0);
-        if (ChromeFeatureList.sDynamicTopChrome.isEnabled()) {
+        if (ToolbarFeatures.isDynamicTopChromeEnabled()) {
             mTabStripHeightChangeCallback =
                     newHeight ->
                             mRootView.setPadding(
@@ -454,7 +453,7 @@ public class FeedSurfaceCoordinator
         mHandler = new Handler(Looper.getMainLooper());
 
         // MVC setup for feed header.
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.WEB_FEED)) {
+        if (WebFeedBridge.isWebFeedEnabled()) {
             mSectionHeaderView =
                     (SectionHeaderView)
                             LayoutInflater.from(mActivity)
@@ -706,12 +705,9 @@ public class FeedSurfaceCoordinator
         return mFeedSurfaceLifecycleManager;
     }
 
-    /** @return Whether the placeholder is shown. */
-    public boolean isPlaceholderShown() {
-        return mMediator.isPlaceholderShown();
-    }
-
-    /** @return whether this coordinator is currently active. */
+    /**
+     * @return whether this coordinator is currently active.
+     */
     @Override
     public boolean isActive() {
         return mIsActive;
@@ -805,7 +801,11 @@ public class FeedSurfaceCoordinator
                         ChromeFeatureList.FEED_USER_INTERACTION_RELIABILITY_REPORT)) {
                     userInteractionLogger = mSurfaceScope.getUserInteractionReliabilityLogger();
                 }
-                mReliabilityLogger = new FeedReliabilityLogger(launchLogger, userInteractionLogger);
+                FeedCardOpeningReliabilityLogger cardOpeningLogger =
+                        mSurfaceScope.getCardOpeningReliabilityLogger();
+                mReliabilityLogger =
+                        new FeedReliabilityLogger(
+                                launchLogger, userInteractionLogger, cardOpeningLogger);
                 launchLogger.logUiStarting(mSurfaceType, mEmbeddingSurfaceCreatedTimeNs);
             }
 
@@ -922,7 +922,6 @@ public class FeedSurfaceCoordinator
                 mActivity,
                 mSnackbarManager,
                 mBottomSheetController,
-                mIsPlaceholderShownInitially,
                 mWindowAndroid,
                 mShareSupplier,
                 kind,
@@ -1139,26 +1138,6 @@ public class FeedSurfaceCoordinator
         // RefreshIphScrollListener.onHeaderOffsetChanged may still be triggered which will call
         // into this method.
         return (mSwipeRefreshLayout == null) ? true : mSwipeRefreshLayout.canScrollVertically(-1);
-    }
-
-    @Override
-    public int getHeaderCount() {
-        return mHeaderCount;
-    }
-
-    @Override
-    public int getItemCount() {
-        return mRecyclerView.getLayoutManager().getItemCount();
-    }
-
-    @Override
-    public int getFirstVisiblePosition() {
-        return mHybridListRenderer.getListLayoutHelper().findFirstVisibleItemPosition();
-    }
-
-    @Override
-    public int getLastVisiblePosition() {
-        return mHybridListRenderer.getListLayoutHelper().findLastVisibleItemPosition();
     }
 
     @Override

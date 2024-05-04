@@ -95,6 +95,8 @@ component("ax_base") {
     "ax_tree_update.cc",
     "ax_tree_update.h",
     "ax_tree_update_forward.h",
+    "ax_updates_and_events.cc",
+    "ax_updates_and_events.h",
   ]
 
   if (!is_chromeos) {
@@ -258,6 +260,8 @@ static_library("test_support") {
     "platform/inspect/ax_inspect_test_helper.h",
     "platform/provide_ax_platform_for_tests.cc",
     "platform/provide_ax_platform_for_tests.h",
+    "platform/test_ax_platform_tree_manager_delegate.cc",
+    "platform/test_ax_platform_tree_manager_delegate.h",
     "test_ax_node_helper.cc",
     "test_ax_node_helper.h",
     "test_ax_tree_update.cc",
@@ -357,7 +361,7 @@ test("accessibility_unittests") {
 
     if (is_fuchsia) {
       additional_manifest_fragments = [
-        # TODO(https://crbug.com/1185811): Investigate removing the requirement
+        # TODO(crbug.com/40055105): Investigate removing the requirement
         # for VmexResource.
         "//build/config/fuchsia/test/mark_vmo_executable.shard.test-cml",
         "//build/config/fuchsia/test/network.shard.test-cml",

@@ -32,6 +32,7 @@
 #include "components/omnibox/browser/omnibox_client.h"
 #include "components/omnibox/browser/omnibox_controller.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
+#include "components/omnibox/browser/omnibox_feature_configs.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/omnibox_popup_selection.h"
 #include "components/omnibox/browser/vector_icons.h"
@@ -39,6 +40,8 @@
 #include "components/strings/grit/components_strings.h"
 #include "components/vector_icons/vector_icons.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
+#include "third_party/omnibox_proto/answer_data.pb.h"
+#include "third_party/omnibox_proto/rich_answer_template.pb.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -315,8 +318,16 @@ std::unique_ptr<views::Background> OmniboxResultView::GetPopupCellBackground(
                           view->GetNativeTheme()->UserHasContrastPreference();
   // TODO(tapted): Consider using background()->SetNativeControlColor() and
   // always have a background.
-  if (part_state == OmniboxPartState::NORMAL && !prefers_contrast)
+  if (part_state == OmniboxPartState::NORMAL && !prefers_contrast) {
     return nullptr;
+  }
+
+  if (OmniboxFieldTrial::IsStarterPackIPHEnabled() &&
+      part_state == OmniboxPartState::IPH) {
+    return views::CreateThemedRoundedRectBackground(
+        GetOmniboxBackgroundColorId(part_state), /*radius=*/8,
+        /*for_border_thickness=*/0);
+  }
 
   if (OmniboxFieldTrial::IsChromeRefreshSuggestHoverFillShapeEnabled()) {
     gfx::RoundedCornersF radii = {0, static_cast<float>(view->height()),
@@ -340,7 +351,17 @@ void OmniboxResultView::SetMatch(const AutocompleteMatch& match) {
 
   suggestion_view_->content()->SetTextWithStyling(match_.contents,
                                                   match_.contents_class);
-  if (match_.answer) {
+  if (omnibox_feature_configs::SuggestionAnswerMigration::Get().enabled &&
+      match_.answer_template.has_value()) {
+    omnibox::AnswerData answer_data = match_.answer_template->answers(0);
+    suggestion_view_->content()->SetTextWithStyling(
+        /*formatted_string=*/answer_data.headline(), /*fragment_index=*/1u,
+        /*answer_type=*/match_.answer_template->answer_type());
+    // The subhead text may be multiline.
+    suggestion_view_->description()->SetMultilineText(
+        /*formatted_string=*/answer_data.subhead(),
+        /*answer_type=*/match_.answer_template->answer_type());
+  } else if (match_.answer) {
     suggestion_view_->content()->AppendExtraText(match_.answer->first_line());
     suggestion_view_->description()->SetTextWithStyling(
         match_.answer->second_line(), false);
@@ -380,8 +401,9 @@ void OmniboxResultView::ApplyThemeAndRefreshIcons(bool force_reapply_styles) {
                                     ? kColorOmniboxResultsTextDimmedSelected
                                     : kColorOmniboxResultsTextDimmed;
   suggestion_view_->separator()->ApplyTextColor(dimmed_id);
-  if (remove_suggestion_button_->GetVisible())
+  if (remove_suggestion_button_->GetVisible()) {
     views::FocusRing::Get(remove_suggestion_button_)->SchedulePaint();
+  }
 
   // Recreate the icons in case the color needs to change.
   // Note: if this is an extension icon or favicon then this can be done in
@@ -389,10 +411,11 @@ void OmniboxResultView::ApplyThemeAndRefreshIcons(bool force_reapply_styles) {
   //       be an optimization opportunity here.
   // TODO(dschuyler): determine whether to optimize the color changes.
   auto icon = GetIcon();
-  if (icon.IsEmpty())
+  if (icon.IsEmpty()) {
     suggestion_view_->ClearIcon();
-  else
+  } else {
     suggestion_view_->SetIcon(*icon.ToImageSkia(), match_);
+  }
 
   // We must reapply colors for all the text fields here. If we don't, we can
   // break theme changes for ZeroSuggest. See https://crbug.com/1095205.
@@ -403,12 +426,18 @@ void OmniboxResultView::ApplyThemeAndRefreshIcons(bool force_reapply_styles) {
       selected ? kColorOmniboxResultsTextSelected : kColorOmniboxText;
   bool prefers_contrast =
       GetNativeTheme() && GetNativeTheme()->UserHasContrastPreference();
-  if (match_.answer ||
-      match_.type == AutocompleteMatchType::SEARCH_SUGGEST_ENTITY) {
+  if (omnibox_feature_configs::SuggestionAnswerMigration::Get().enabled
+          ? match_.answer_template.has_value()
+          : match_.answer ||
+                match_.type == AutocompleteMatchType::SEARCH_SUGGEST_ENTITY) {
     suggestion_view_->content()->ApplyTextColor(default_id);
     suggestion_view_->description()->ApplyTextColor(dimmed_id);
   } else if (match_.type == AutocompleteMatchType::NULL_RESULT_MESSAGE) {
-    suggestion_view_->content()->ApplyTextColor(kColorOmniboxText);
+    bool is_iph = OmniboxFieldTrial::IsStarterPackIPHEnabled() &&
+                  match_.provider->type() ==
+                      AutocompleteProvider::Type::TYPE_FEATURED_SEARCH;
+    suggestion_view_->content()->ApplyTextColor(
+        is_iph ? kColorOmniboxResultsTextDimmed : kColorOmniboxText);
   } else if (prefers_contrast || force_reapply_styles) {
     // Normally, OmniboxTextView caches its appearance, but in high contrast,
     // selected-ness changes the text colors, so the styling of the text part of
@@ -421,8 +450,7 @@ void OmniboxResultView::ApplyThemeAndRefreshIcons(bool force_reapply_styles) {
 
   // The selection indicator indicates when the suggestion is focused. Do not
   // show the selection indicator if an auxiliary button is selected.
-  if (OmniboxFieldTrial::IsKeywordModeRefreshEnabled() &&
-      match_.HasInstantKeyword(
+  if (match_.HasInstantKeyword(
           popup_view_->controller()->client()->GetTemplateURLService())) {
     const OmniboxPopupSelection::LineState line_state =
         popup_view_->GetSelection().state;
@@ -483,11 +511,22 @@ OmniboxPartState OmniboxResultView::GetThemeState() const {
   // NULL_RESULT_MESSAGE matches are no-op suggestions that only deliver a
   // message. The selected and hovered states imply an action can be taken from
   // that suggestion, so do not allow those states for this result.
-  if (match_.type == AutocompleteMatchType::NULL_RESULT_MESSAGE)
-    return OmniboxPartState::NORMAL;
+  //
+  // IPH messages originate from the Featured Search Provider and show a
+  // different theme state (colored background).
+  // TODO(crbug.com/333762301): Probably makes sense to find a more sustainable
+  // way to differentiate IPH from the "No Results Found" suggestion. Maybe a
+  // different autocomplete match type.
+  if (match_.type == AutocompleteMatchType::NULL_RESULT_MESSAGE) {
+    bool is_iph = OmniboxFieldTrial::IsStarterPackIPHEnabled() &&
+                  match_.provider->type() ==
+                      AutocompleteProvider::Type::TYPE_FEATURED_SEARCH;
+    return is_iph ? OmniboxPartState::IPH : OmniboxPartState::NORMAL;
+  }
 
-  if (GetMatchSelected())
+  if (GetMatchSelected()) {
     return OmniboxPartState::SELECTED;
+  }
 
   // If we don't highlight the whole row when the user has the mouse over the
   // remove suggestion button, it's unclear which suggestion is being removed.
@@ -552,10 +591,9 @@ bool OmniboxResultView::OnMouseDragged(const ui::MouseEvent& event) {
 }
 
 void OmniboxResultView::OnMouseReleased(const ui::MouseEvent& event) {
-  if (OmniboxFieldTrial::IsKeywordModeRefreshEnabled() &&
-      match_.type == AutocompleteMatchType::STARTER_PACK) {
-    // Starter pack matches in the keyword mode refresh are a special case that
-    // does not commit the omnibox by opening a selected match.
+  if (AutocompleteMatch::IsFeaturedSearchType(match_.type)) {
+    // Featured search matches in the keyword mode refresh are a special case
+    // that does not commit the omnibox by opening a selected match.
     OmniboxEditModel* model = popup_view_->model();
     model->ClearKeyword();
     model->SetPopupSelection(OmniboxPopupSelection(
@@ -617,8 +655,9 @@ void OmniboxResultView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
                              autocomplete_controller->result().size());
 
   node_data->AddBoolAttribute(ax::mojom::BoolAttribute::kSelected, is_selected);
-  if (IsMouseHovered())
+  if (IsMouseHovered()) {
     node_data->AddState(ax::mojom::State::kHovered);
+  }
 }
 
 void OmniboxResultView::OnThemeChanged() {
@@ -688,8 +727,9 @@ void OmniboxResultView::UpdateRemoveSuggestionVisibility() {
 
   remove_suggestion_button_->SetVisible(new_visibility);
 
-  if (old_visibility != new_visibility)
+  if (old_visibility != new_visibility) {
     InvalidateLayout();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

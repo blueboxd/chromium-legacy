@@ -22,12 +22,12 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "cc/paint/draw_looper.h"
 #include "cc/paint/paint_canvas.h"
 #include "cc/paint/paint_shader.h"
 #include "third_party/icu/source/common/unicode/rbbi.h"
 #include "third_party/icu/source/common/unicode/uchar.h"
 #include "third_party/icu/source/common/unicode/utf16.h"
-#include "third_party/skia/include/core/SkDrawLooper.h"
 #include "third_party/skia/include/core/SkFontStyle.h"
 #include "third_party/skia/include/core/SkTextBlob.h"
 #include "third_party/skia/include/core/SkTypeface.h"
@@ -143,7 +143,7 @@ sk_sp<cc::PaintShader> CreateFadeShader(const FontList& font_list,
 
   const SkPoint points[2] = { PointToSkPoint(text_rect.origin()),
                               PointToSkPoint(text_rect.top_right()) };
-  // TODO(crbug/1308932): Remove this helper vector colors4f and make all
+  // TODO(crbug.com/40219248): Remove this helper vector colors4f and make all
   // SkColor4f.
   std::vector<SkColor4f> colors4f;
   colors4f.reserve(colors.size());
@@ -317,7 +317,7 @@ namespace internal {
 SkiaTextRenderer::SkiaTextRenderer(Canvas* canvas)
     : canvas_(canvas), canvas_skia_(canvas->sk_canvas()) {
   DCHECK(canvas_skia_);
-  flags_.setStyle(cc::PaintFlags::kFill_Style);
+  SetFillStyle(cc::PaintFlags::kFill_Style);
 
   font_.setEdging(SkFont::Edging::kSubpixelAntiAlias);
   font_.setSubpixel(true);
@@ -327,7 +327,7 @@ SkiaTextRenderer::SkiaTextRenderer(Canvas* canvas)
 SkiaTextRenderer::~SkiaTextRenderer() {
 }
 
-void SkiaTextRenderer::SetDrawLooper(sk_sp<SkDrawLooper> draw_looper) {
+void SkiaTextRenderer::SetDrawLooper(sk_sp<cc::DrawLooper> draw_looper) {
   flags_.setLooper(std::move(draw_looper));
 }
 
@@ -350,6 +350,14 @@ void SkiaTextRenderer::SetForegroundColor(SkColor foreground) {
 
 void SkiaTextRenderer::SetShader(sk_sp<cc::PaintShader> shader) {
   flags_.setShader(std::move(shader));
+}
+
+void SkiaTextRenderer::SetFillStyle(cc::PaintFlags::Style fill_style) {
+  flags_.setStyle(fill_style);
+}
+
+void SkiaTextRenderer::SetStrokeWidth(SkScalar stroke_width) {
+  flags_.setStrokeWidth(stroke_width);
 }
 
 void SkiaTextRenderer::DrawPosText(const SkPoint* pos,
@@ -395,20 +403,27 @@ void SkiaTextRenderer::DrawStrike(int x,
   canvas_skia_->drawRect(r, flags_);
 }
 
-StyleIterator::StyleIterator(const BreakList<SkColor>* colors,
-                             const BreakList<BaselineStyle>* baselines,
-                             const BreakList<int>* font_size_overrides,
-                             const BreakList<Font::Weight>* weights,
-                             const StyleArray* styles)
+StyleIterator::StyleIterator(
+    const BreakList<SkColor>* colors,
+    const BreakList<BaselineStyle>* baselines,
+    const BreakList<int>* font_size_overrides,
+    const BreakList<Font::Weight>* weights,
+    const BreakList<cc::PaintFlags::Style>* fill_styles,
+    const BreakList<SkScalar>* stroke_widths,
+    const StyleArray* styles)
     : colors_(colors),
       baselines_(baselines),
       font_size_overrides_(font_size_overrides),
       weights_(weights),
+      fill_styles_(fill_styles),
+      stroke_widths_(stroke_widths),
       styles_(styles) {
   color_ = colors_->breaks().begin();
   baseline_ = baselines_->breaks().begin();
   font_size_override_ = font_size_overrides_->breaks().begin();
   weight_ = weights_->breaks().begin();
+  fill_style_ = fill_styles_->breaks().begin();
+  stroke_width_ = stroke_widths_->breaks().begin();
   for (size_t i = 0; i < styles_->size(); ++i)
     style_[i] = (*styles_)[i].breaks().begin();
 }
@@ -425,6 +440,8 @@ Range StyleIterator::GetTextBreakingRange() const {
   Range range = baselines_->GetRange(baseline_);
   range = range.Intersect(font_size_overrides_->GetRange(font_size_override_));
   range = range.Intersect(weights_->GetRange(weight_));
+  range = range.Intersect(fill_styles_->GetRange(fill_style_));
+  range = range.Intersect(stroke_widths_->GetRange(stroke_width_));
   for (size_t i = 0; i < styles_->size(); ++i)
     range = range.Intersect((*styles_)[i].GetRange(style_[i]));
   return range;
@@ -437,6 +454,10 @@ void StyleIterator::IncrementToPosition(size_t position) {
   font_size_override_ = IncrementBreakListIteratorToPosition(
       *font_size_overrides_, font_size_override_, position);
   weight_ = IncrementBreakListIteratorToPosition(*weights_, weight_, position);
+  fill_style_ = IncrementBreakListIteratorToPosition(*fill_styles_, fill_style_,
+                                                     position);
+  stroke_width_ = IncrementBreakListIteratorToPosition(*stroke_widths_,
+                                                       stroke_width_, position);
   for (size_t i = 0; i < styles_->size(); ++i) {
     style_[i] = IncrementBreakListIteratorToPosition((*styles_)[i], style_[i],
                                                      position);
@@ -503,6 +524,8 @@ std::unique_ptr<RenderText> RenderText::CreateInstanceOfSameStyle(
   render_text->font_size_overrides_ = font_size_overrides_;
   render_text->colors_ = colors_;
   render_text->weights_ = weights_;
+  render_text->fill_styles_ = fill_styles_;
+  render_text->stroke_widths_ = stroke_widths_;
   render_text->glyph_width_for_test_ = glyph_width_for_test_;
   return render_text;
 }
@@ -520,6 +543,8 @@ void RenderText::SetText(std::u16string text) {
   baselines_.SetValue(baselines_.breaks().front().second);
   font_size_overrides_.SetValue(font_size_overrides_.breaks().front().second);
   weights_.SetValue(weights_.breaks().front().second);
+  fill_styles_.SetValue(fill_styles_.breaks().front().second);
+  stroke_widths_.SetValue(stroke_widths_.breaks().front().second);
   for (auto& style : styles_)
     style.SetValue(style.breaks().front().second);
   elidings_.SetValue(false);
@@ -637,7 +662,7 @@ size_t RenderText::GetTextIndexOfLine(size_t line) {
 }
 
 void RenderText::SetWordWrapBehavior(WordWrapBehavior behavior) {
-  // TODO(1150235): ELIDE_LONG_WORDS is not supported.
+  // TODO(crbug.com/40157791): ELIDE_LONG_WORDS is not supported.
   DCHECK_NE(behavior, ELIDE_LONG_WORDS);
 
   if (word_wrap_behavior_ != behavior) {
@@ -923,6 +948,30 @@ void RenderText::ApplyWeight(Font::Weight weight, const Range& range) {
   }
 }
 
+void RenderText::SetFillStyle(cc::PaintFlags::Style style) {
+  if (fill_styles_.SetValue(style)) {
+    OnLayoutTextAttributeChanged(false);
+  }
+}
+
+void RenderText::ApplyFillStyle(cc::PaintFlags::Style style,
+                                const Range& range) {
+  if (fill_styles_.ApplyValue(style, range)) {
+    OnLayoutTextAttributeChanged(false);
+  }
+}
+
+void RenderText::SetStrokeWidth(SkScalar stroke_width) {
+  if (stroke_widths_.SetValue(stroke_width)) {
+    OnLayoutTextAttributeChanged(false);
+  }
+}
+
+void RenderText::ApplyStrokeWidth(SkScalar stroke_width, const Range& range) {
+  if (stroke_widths_.ApplyValue(stroke_width, range)) {
+    OnLayoutTextAttributeChanged(false);
+  }
+}
 void RenderText::SetEliding(bool value) {
   elidings_.SetValue(value);
   OnLayoutTextAttributeChanged(false);
@@ -1090,7 +1139,7 @@ SelectionModel RenderText::FindCursorPosition(const Point& view_point,
   const float point_offset_relative_run =
       point_offset_relative_segment + segment_offset_relative_run;
 
-  // TODO(crbug.com/676287): Use offset within the glyph to return the correct
+  // TODO(crbug.com/40499140): Use offset within the glyph to return the correct
   // grapheme position within a multi-grapheme glyph.
   for (size_t i = 0; i < run.shape.glyph_count; ++i) {
     const float end = i + 1 == run.shape.glyph_count
@@ -1469,13 +1518,15 @@ RenderText::RenderText() = default;
 
 internal::StyleIterator RenderText::GetTextStyleIterator() const {
   return internal::StyleIterator(&colors_, &baselines_, &font_size_overrides_,
-                                 &weights_, &styles_);
+                                 &weights_, &fill_styles_, &stroke_widths_,
+                                 &styles_);
 }
 
 internal::StyleIterator RenderText::GetLayoutTextStyleIterator() const {
   EnsureLayoutTextUpdated();
   return internal::StyleIterator(&layout_colors_, &layout_baselines_,
                                  &layout_font_size_overrides_, &layout_weights_,
+                                 &layout_fill_styles_, &layout_stroke_widths_,
                                  &layout_styles_);
 }
 
@@ -1703,6 +1754,8 @@ void RenderText::EnsureLayoutTextUpdated() const {
       layout_baselines_.ApplyValue(styles.baseline(), range);
       layout_font_size_overrides_.ApplyValue(styles.font_size_override(),
                                              range);
+      layout_fill_styles_.ApplyValue(styles.fill_style(), range);
+      layout_stroke_widths_.ApplyValue(styles.stroke_width(), range);
       layout_weights_.ApplyValue(styles.weight(), range);
       for (size_t i = 0; i < layout_styles_.size(); ++i) {
         layout_styles_[i].ApplyValue(styles.style(static_cast<TextStyle>(i)),
@@ -1806,7 +1859,7 @@ Point RenderText::ToViewPoint(const PointF& point, size_t line) {
       x -= shaped_text->lines()[l].size.width();
     }
   } else {
-    // TODO(crbug.com/1163587): This doesn't account for line breaks caused by
+    // TODO(crbug.com/40163177): This doesn't account for line breaks caused by
     // wrapping, in which case the cursor may end up right after the trailing
     // space on the top line instead of before the first character of the second
     // line depending on which direction the cursor is moving. Both positions
@@ -1961,6 +2014,8 @@ void RenderText::UpdateStyleLengths() {
   baselines_.SetMax(text_length);
   font_size_overrides_.SetMax(text_length);
   weights_.SetMax(text_length);
+  fill_styles_.SetMax(text_length);
+  stroke_widths_.SetMax(text_length);
   for (auto& style : styles_)
     style.SetMax(text_length);
   elidings_.SetMax(text_length);
@@ -1971,6 +2026,8 @@ void RenderText::UpdateLayoutStyleLengths(size_t max_length) const {
   layout_baselines_.SetMax(max_length);
   layout_font_size_overrides_.SetMax(max_length);
   layout_weights_.SetMax(max_length);
+  layout_fill_styles_.SetMax(max_length);
+  layout_stroke_widths_.SetMax(max_length);
   for (auto& layout_style : layout_styles_)
     layout_style.SetMax(max_length);
 }
@@ -2190,6 +2247,8 @@ std::u16string RenderText::Elide(const std::u16string& text,
     RestoreBreakList(render_text.get(), &render_text->font_size_overrides_);
     render_text->weights_ = weights_;
     RestoreBreakList(render_text.get(), &render_text->weights_);
+    RestoreBreakList(render_text.get(), &render_text->fill_styles_);
+    RestoreBreakList(render_text.get(), &render_text->stroke_widths_);
 
     // We check the width of the whole desired string at once to ensure we
     // handle kerning/ligatures/etc. correctly.

@@ -47,20 +47,34 @@ Config::Config() {
       features::kComposeInnerText, "inner_text_max_bytes",
       inner_text_max_bytes);
 
+  trimmed_inner_text_max_chars = base::GetFieldTrialParamByFeatureAsInt(
+      features::kComposeInnerText, "trimmed_inner_text_max_chars",
+      trimmed_inner_text_max_chars);
+
+  trimmed_inner_text_header_length = base::GetFieldTrialParamByFeatureAsInt(
+      features::kComposeInnerText, "trimmed_inner_text_header_length",
+      trimmed_inner_text_header_length);
+
   auto_submit_with_selection =
       base::FeatureList::IsEnabled(features::kComposeAutoSubmit);
 
-  popup_with_saved_state = base::GetFieldTrialParamByFeatureAsBool(
-      features::kEnableComposeNudge, "popup_with_saved_state",
-      popup_with_saved_state);
+  saved_state_nudge_enabled =
+      base::FeatureList::IsEnabled(features::kEnableComposeNudge);
 
-  popup_with_no_saved_state = base::GetFieldTrialParamByFeatureAsBool(
-      features::kEnableComposeNudge, "popup_with_no_saved_state",
-      popup_with_no_saved_state);
+  proactive_nudge_enabled =
+      base::FeatureList::IsEnabled(features::kEnableComposeProactiveNudge);
+
+  proactive_nudge_show_probability = base::GetFieldTrialParamByFeatureAsDouble(
+      features::kEnableComposeProactiveNudge,
+      "proactive_nudge_show_probability", proactive_nudge_show_probability);
 
   saved_state_timeout_milliseconds = base::GetFieldTrialParamByFeatureAsInt(
       features::kEnableComposeSavedStateNotification,
       "saved_state_timeout_milliseconds", saved_state_timeout_milliseconds);
+
+  focus_lost_delay_milliseconds = base::GetFieldTrialParamByFeatureAsInt(
+      features::kEnableComposeSavedStateNotification,
+      "focus_lost_delay_milliseconds", focus_lost_delay_milliseconds);
 
   stay_in_window_bounds = base::GetFieldTrialParamByFeatureAsBool(
       features::kComposeUiParams, "stay_in_window_bounds",

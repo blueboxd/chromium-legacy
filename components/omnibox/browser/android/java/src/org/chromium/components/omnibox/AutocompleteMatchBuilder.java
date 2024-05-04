@@ -9,7 +9,6 @@ import androidx.collection.ArraySet;
 
 import org.chromium.chrome.browser.omnibox.MatchClassificationStyle;
 import org.chromium.components.omnibox.action.OmniboxAction;
-import org.chromium.components.query_tiles.QueryTile;
 import org.chromium.url.GURL;
 import org.chromium.url.JUnitTestGURLs;
 
@@ -31,6 +30,7 @@ public class AutocompleteMatchBuilder {
     private String mDescription;
     private List<AutocompleteMatch.MatchClassification> mDescriptionClassifications;
     private SuggestionAnswer mAnswer;
+    private byte[] mSerializedAnswerTemplate;
     private String mFillIntoEdit;
     private GURL mUrl;
     private GURL mImageUrl;
@@ -41,11 +41,12 @@ public class AutocompleteMatchBuilder {
     private String mPostContentType;
     private byte[] mPostData;
     private int mGroupId;
-    private List<QueryTile> mQueryTiles;
     private byte[] mClipboardImageData;
     private boolean mHasTabMatch;
-    private List<AutocompleteMatch.SuggestTile> mSuggestTiles;
     private List<OmniboxAction> mActions;
+    private boolean mAllowedToBeDefaultMatch;
+    private String mInlineAutocompletion;
+    private String mAdditionalText;
 
     /**
      * Create a suggestion builder for a search suggestion.
@@ -79,6 +80,7 @@ public class AutocompleteMatchBuilder {
         mDescription = null;
         mDescriptionClassifications = new ArrayList<>();
         mAnswer = null;
+        mSerializedAnswerTemplate = null;
         mFillIntoEdit = null;
         mUrl = GURL.emptyGURL();
         mImageUrl = GURL.emptyGURL();
@@ -89,11 +91,12 @@ public class AutocompleteMatchBuilder {
         mPostContentType = null;
         mPostData = null;
         mGroupId = AutocompleteMatch.INVALID_GROUP;
-        mQueryTiles = null;
         mClipboardImageData = null;
         mHasTabMatch = false;
-        mSuggestTiles = null;
         mActions = null;
+        mAllowedToBeDefaultMatch = false;
+        mInlineAutocompletion = null;
+        mAdditionalText = null;
 
         mDisplayTextClassifications.add(
                 new AutocompleteMatch.MatchClassification(0, MatchClassificationStyle.NONE));
@@ -119,6 +122,7 @@ public class AutocompleteMatchBuilder {
                 mDescription,
                 mDescriptionClassifications,
                 mAnswer,
+                mSerializedAnswerTemplate,
                 mFillIntoEdit,
                 mUrl,
                 mImageUrl,
@@ -127,11 +131,12 @@ public class AutocompleteMatchBuilder {
                 mPostContentType,
                 mPostData,
                 mGroupId,
-                mQueryTiles,
                 mClipboardImageData,
                 mHasTabMatch,
-                mSuggestTiles,
-                mActions);
+                mActions,
+                mAllowedToBeDefaultMatch,
+                mInlineAutocompletion,
+                mAdditionalText);
     }
 
     /**
@@ -279,15 +284,6 @@ public class AutocompleteMatchBuilder {
     }
 
     /**
-     * @param tiles Suggest tiles to associate with the suggestion.
-     * @return Omnibox suggestion builder.
-     */
-    public AutocompleteMatchBuilder setSuggestTiles(List<AutocompleteMatch.SuggestTile> tiles) {
-        mSuggestTiles = tiles;
-        return this;
-    }
-
-    /**
      * @param actions List of actions to add to the AutocompleteMatch.
      * @return Omnibox suggestion builder.
      */
@@ -302,6 +298,35 @@ public class AutocompleteMatchBuilder {
      */
     public AutocompleteMatchBuilder setDeletable(boolean isDeletable) {
         mIsDeletable = isDeletable;
+        return this;
+    }
+
+    /**
+     * @param allowedToBeDefaultMatch Whether the match is allowed to be the default match.
+     * @return Omnibox suggestion builder.
+     */
+    public AutocompleteMatchBuilder setAllowedToBeDefaultMatch(boolean allowedToBeDefaultMatch) {
+        mAllowedToBeDefaultMatch = allowedToBeDefaultMatch;
+        return this;
+    }
+
+    /**
+     * @param inlineAutocompletion The inline autocompletion to display after the user's input in
+     *     the omnibox.
+     * @return Omnibox suggestion builder.
+     */
+    public AutocompleteMatchBuilder setInlineAutocompletion(String inlineAutocompletion) {
+        mInlineAutocompletion = inlineAutocompletion;
+        return this;
+    }
+
+    /**
+     * @param additionalText This string is displayed adjacent to the omnibox if this match is the
+     *     default.
+     * @return Omnibox suggestion builder.
+     */
+    public AutocompleteMatchBuilder setAdditionalText(String additionalText) {
+        mAdditionalText = additionalText;
         return this;
     }
 }

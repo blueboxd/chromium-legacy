@@ -40,7 +40,7 @@ namespace {
 namespace dnr_api = extensions::api::declarative_net_request;
 
 // A class to help in indexing multiple rulesets.
-// TODO(crbug.com/1254680): Look into unifying this with the InstallIndexHelper
+// TODO(crbug.com/40794487): Look into unifying this with the InstallIndexHelper
 //                          class, moving any differing logic to the clients.
 class IndexHelper : public base::RefCountedThreadSafe<IndexHelper> {
  public:
@@ -293,7 +293,7 @@ bool UpdateAndIndexDynamicRules(const FileBackedRulesetSource& source,
     if (!base::Contains(rule_ids_to_add, warning.rule_id)) {
       // Any rule added earlier which is ignored now (say due to exceeding the
       // regex memory limit), will be silently ignored.
-      // TODO(crbug.com/1050780): Notify the extension about the same.
+      // TODO(crbug.com/40118204): Notify the extension about the same.
       continue;
     }
 

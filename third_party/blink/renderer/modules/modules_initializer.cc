@@ -10,7 +10,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/task/thread_pool.h"
 #include "build/build_config.h"
-#include "cc/raster/categorized_worker_pool.h"
 #include "mojo/public/cpp/bindings/binder_map.h"
 #include "third_party/blink/public/mojom/dom_storage/session_storage_namespace.mojom-blink.h"
 #include "third_party/blink/public/mojom/filesystem/file_system.mojom-blink.h"
@@ -110,6 +109,7 @@
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/webrtc_overrides/init_webrtc.h"
 #include "ui/accessibility/accessibility_features.h"
 
 #if BUILDFLAG(IS_ANDROID)
@@ -122,12 +122,6 @@
 
 namespace blink {
 namespace {
-
-// Controls whether media players use base::ThreadPool or (legacy) the
-// CategorizedWorkerPool, which predates the base thread pool.
-BASE_FEATURE(kBlinkMediaPlayerUsesBaseThreadPool,
-             "BlinkMediaPlayerUsesThreadPool",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Serves as a kill switch.
 BASE_FEATURE(kBlinkEnableInnerTextAgent,
@@ -238,6 +232,8 @@ void ModulesInitializer::Initialize() {
 
   V8PerIsolateData::SetTaskAttributionTrackerFactory(
       &scheduler::TaskAttributionTrackerImpl::Create);
+
+  ::InitializeWebRtcModule();
 }
 
 void ModulesInitializer::InitLocalFrame(LocalFrame& frame) const {
@@ -363,10 +359,7 @@ std::unique_ptr<WebMediaPlayer> ModulesInitializer::CreateWebMediaPlayer(
       source, media_player_client, context_impl, &encrypted_media,
       encrypted_media.ContentDecryptionModule(), sink_id,
       frame_widget->GetLayerTreeSettings(),
-      base::FeatureList::IsEnabled(kBlinkMediaPlayerUsesBaseThreadPool)
-          ? base::ThreadPool::CreateTaskRunner(base::TaskTraits{})
-          : cc::CategorizedWorkerPool::GetOrCreate(
-                &BlinkCategorizedWorkerPoolDelegate::Get())));
+          base::ThreadPool::CreateTaskRunner(base::TaskTraits{})));
 }
 
 WebRemotePlaybackClient* ModulesInitializer::CreateWebRemotePlaybackClient(

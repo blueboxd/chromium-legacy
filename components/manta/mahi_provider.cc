@@ -14,6 +14,8 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "components/endpoint_fetcher/endpoint_fetcher.h"
+#include "components/manta/base_provider.h"
+#include "components/manta/features.h"
 #include "components/manta/manta_service_callbacks.h"
 #include "components/manta/manta_status.h"
 #include "components/manta/proto/manta.pb.h"
@@ -26,12 +28,6 @@ namespace manta {
 namespace {
 
 constexpr char kOauthConsumerName[] = "manta_mahi";
-constexpr char kHttpMethod[] = "POST";
-constexpr char kHttpContentType[] = "application/x-protobuf";
-constexpr char kAutopushEndpointUrl[] =
-    "https://autopush-aratea-pa.sandbox.googleapis.com/generate";
-constexpr char kOAuthScope[] = "https://www.googleapis.com/auth/mdi.aratea";
-constexpr base::TimeDelta kTimeout = base::Seconds(30);
 
 void OnServerResponseOrErrorReceived(
     MantaGenericCallback callback,
@@ -47,8 +43,18 @@ void OnServerResponseOrErrorReceived(
 
   if (manta_response->output_data_size() < 1 ||
       !manta_response->output_data(0).has_text()) {
+    std::string message = std::string();
+
+    // Tries to find more information from filtered_data
+    if (manta_response->filtered_data_size() > 0 &&
+        manta_response->filtered_data(0).is_output_data()) {
+      message = base::StringPrintf(
+          "filtered output for: %s",
+          proto::FilteredReason_Name(manta_response->filtered_data(0).reason())
+              .c_str());
+    }
     std::move(callback).Run(base::Value::Dict(),
-                            {MantaStatusCode::kBlockedOutputs, std::string()});
+                            {MantaStatusCode::kBlockedOutputs, message});
     return;
   }
 
@@ -62,10 +68,18 @@ void OnServerResponseOrErrorReceived(
 
 MahiProvider::MahiProvider(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+    signin::IdentityManager* identity_manager,
+    bool is_demo_mode,
+    const std::string& chrome_version)
+    : BaseProvider(url_loader_factory,
+                   identity_manager,
+                   is_demo_mode,
+                   chrome_version) {}
+
+MahiProvider::MahiProvider(
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     signin::IdentityManager* identity_manager)
-    : url_loader_factory_(url_loader_factory) {
-  CHECK(identity_manager);
-  identity_manager_observation_.Observe(identity_manager);
+    : MahiProvider(url_loader_factory, identity_manager, false, std::string()) {
 }
 
 MahiProvider::~MahiProvider() = default;
@@ -73,13 +87,20 @@ MahiProvider::~MahiProvider() = default;
 void MahiProvider::Summarize(const std::string& input,
                              MantaGenericCallback done_callback) {
   proto::Request request;
-  request.set_feature_name(proto::FeatureName::CHROMEOS_READER);
+  request.set_feature_name(proto::FeatureName::CHROMEOS_READER_SUMMARY);
 
   auto* input_data = request.add_input_data();
   input_data->set_tag("model_input");
   input_data->set_text(input);
 
-  RequestInternal(request, std::move(done_callback));
+  // TODO(b:333459933): MISSING_TRAFFIC_ANNOTATION should be resolved before
+  // launch.
+  RequestInternal(
+      GURL{GetProviderEndpoint(features::IsMahiUseProdServerEnabled())},
+      kOauthConsumerName, MISSING_TRAFFIC_ANNOTATION, request,
+      MantaMetricType::kMahiSummary,
+      base::BindOnce(&OnServerResponseOrErrorReceived,
+                     std::move(done_callback)));
 }
 
 void MahiProvider::Outline(const std::string& input,
@@ -89,54 +110,39 @@ void MahiProvider::Outline(const std::string& input,
            {MantaStatusCode::kGenericError, "Unimplemented"});
 }
 
-void MahiProvider::RequestInternal(const proto::Request& request,
-                                   MantaGenericCallback done_callback) {
-  if (!identity_manager_observation_.IsObserving()) {
-    std::move(done_callback)
-        .Run(base::Value::Dict(), {MantaStatusCode::kNoIdentityManager});
-    return;
+void MahiProvider::QuestionAndAnswer(const std::string& original_content,
+                                     const std::vector<MahiQAPair> QAHistory,
+                                     const std::string& question,
+                                     MantaGenericCallback done_callback) {
+  proto::Request request;
+  request.set_feature_name(proto::FeatureName::CHROMEOS_READER_Q_AND_A);
+
+  auto* input_data = request.add_input_data();
+  input_data->set_tag("original_content");
+  input_data->set_text(original_content);
+
+  input_data = request.add_input_data();
+  input_data->set_tag("new_question");
+  input_data->set_text(question);
+
+  for (const auto& [previous_question, previous_answer] : QAHistory) {
+    input_data = request.add_input_data();
+    input_data->set_tag("previous_question");
+    input_data->set_text(previous_question);
+
+    input_data = request.add_input_data();
+    input_data->set_tag("previous_answer");
+    input_data->set_text(previous_answer);
   }
 
-  std::string serialized_request;
-  request.SerializeToString(&serialized_request);
-
-  std::unique_ptr<EndpointFetcher> fetcher = CreateEndpointFetcher(
-      GURL{kAutopushEndpointUrl}, {kOAuthScope}, serialized_request);
-
-  EndpointFetcher* const fetcher_ptr = fetcher.get();
-  MantaProtoResponseCallback internal_callback = base::BindOnce(
-      &OnServerResponseOrErrorReceived, std::move(done_callback));
-  fetcher_ptr->Fetch(base::BindOnce(&OnEndpointFetcherComplete,
-                                    std::move(internal_callback),
-                                    std::move(fetcher)));
-}
-
-void MahiProvider::OnIdentityManagerShutdown(
-    signin::IdentityManager* identity_manager) {
-  if (identity_manager_observation_.IsObservingSource(identity_manager)) {
-    identity_manager_observation_.Reset();
-  }
-}
-
-std::unique_ptr<EndpointFetcher> MahiProvider::CreateEndpointFetcher(
-    const GURL& url,
-    const std::vector<std::string>& scopes,
-    const std::string& post_data) {
-  CHECK(identity_manager_observation_.IsObserving());
   // TODO(b:288019728): MISSING_TRAFFIC_ANNOTATION should be resolved before
   // launch.
-  return std::make_unique<EndpointFetcher>(
-      /*url_loader_factory=*/url_loader_factory_,
-      /*oauth_consumer_name=*/kOauthConsumerName,
-      /*url=*/url,
-      /*http_method=*/kHttpMethod,
-      /*content_type=*/kHttpContentType,
-      /*scopes=*/scopes,
-      /*timeout=*/kTimeout,
-      /*post_data=*/post_data,
-      /*annotation_tag=*/MISSING_TRAFFIC_ANNOTATION,
-      /*identity_manager=*/identity_manager_observation_.GetSource(),
-      /*consent_level=*/signin::ConsentLevel::kSignin);
+  RequestInternal(
+      GURL{GetProviderEndpoint(features::IsMahiUseProdServerEnabled())},
+      kOauthConsumerName, MISSING_TRAFFIC_ANNOTATION, request,
+      MantaMetricType::kMahiQA,
+      base::BindOnce(&OnServerResponseOrErrorReceived,
+                     std::move(done_callback)));
 }
 
 }  // namespace manta

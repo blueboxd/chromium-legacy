@@ -10,11 +10,11 @@
 #include <memory>
 
 #include "base/containers/queue.h"
+#include "base/containers/span.h"
 #include "base/numerics/byte_conversions.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/sys_byteorder.h"
 #include "base/test/task_environment.h"
 #include "components/speech/audio_buffer.h"
 #include "content/browser/speech/speech_recognition_engine.h"
@@ -30,9 +30,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/speech/speech_recognition_error.mojom.h"
 #include "third_party/blink/public/mojom/speech/speech_recognition_result.mojom.h"
-
-using base::HostToNet32;
-using base::checked_cast;
 
 namespace content {
 
@@ -587,9 +584,9 @@ void NetworkSpeechRecognitionEngineImplTest::ProvideMockProtoResultDownstream(
 
   std::string response_string = SerializeProtobufResponse(result);
   response_buffer_.append(response_string);
-  uint32_t written = 0;
+  size_t written = 0;
   while (written < response_string.size()) {
-    uint32_t write_bytes = response_string.size() - written;
+    size_t write_bytes = response_string.size() - written;
     MojoResult mojo_result = downstream_data_pipe_->WriteData(
         response_string.data() + written, &write_bytes,
         MOJO_WRITE_DATA_FLAG_NONE);
@@ -741,7 +738,7 @@ std::string NetworkSpeechRecognitionEngineImplTest::ConsumeChunkedUploadData() {
     base::RunLoop().RunUntilIdle();
 
     const void* data;
-    uint32_t num_bytes;
+    size_t num_bytes;
     MojoResult mojo_result = upstream_data_pipe_->BeginReadData(
         &data, &num_bytes, MOJO_READ_DATA_FLAG_NONE);
     if (mojo_result == MOJO_RESULT_OK) {
@@ -765,8 +762,8 @@ std::string NetworkSpeechRecognitionEngineImplTest::SerializeProtobufResponse(
 
   // Prepend 4 byte prefix length indication to the protobuf message as
   // envisaged by the google streaming recognition webservice protocol.
-  uint32_t prefix = HostToNet32(checked_cast<uint32_t>(msg_string.size()));
-  msg_string.insert(0, reinterpret_cast<char*>(&prefix), sizeof(prefix));
+  msg_string.insert(0u, base::as_string_view(base::numerics::U32ToBigEndian(
+                            base::checked_cast<uint32_t>(msg_string.size()))));
 
   return msg_string;
 }

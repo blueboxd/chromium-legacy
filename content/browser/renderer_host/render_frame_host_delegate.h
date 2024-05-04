@@ -46,6 +46,7 @@
 #include "third_party/blink/public/mojom/frame/frame.mojom-forward.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom.h"
 #include "third_party/blink/public/mojom/media/capture_handle_config.mojom.h"
+#include "third_party/blink/public/mojom/page/draggable_region.mojom-forward.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_mode.h"
 #include "ui/base/window_open_disposition.h"
@@ -98,6 +99,8 @@ class SharedDictionaryAccessDetails;
 
 namespace ui {
 class ClipboardFormatType;
+struct AXUpdatesAndEvents;
+struct AXLocationChanges;
 }
 
 namespace content {
@@ -106,8 +109,6 @@ class PrerenderHostRegistry;
 class RenderWidgetHostImpl;
 class SessionStorageNamespace;
 class SiteInstanceGroup;
-struct AXEventNotificationDetails;
-struct AXLocationChangeNotificationDetails;
 struct ContextMenuParams;
 struct CookieAccessDetails;
 struct GlobalRequestID;
@@ -299,13 +300,13 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   // from a render frame, when the accessibility mode has the
   // ui::AXMode::kWebContents flag set.
   virtual void AccessibilityEventReceived(
-      const AXEventNotificationDetails& details) {}
+      const ui::AXUpdatesAndEvents& details) {}
   virtual void AccessibilityLocationChangesReceived(
-      const std::vector<AXLocationChangeNotificationDetails>& details) {}
+      const std::vector<ui::AXLocationChanges>& details) {}
 
   // Indicates an unrecoverable error in accessibility. Gracefully turns off
   // accessibility in all frames.
-  virtual void AccessibilityFatalError() {}
+  virtual void UnrecoverableAccessibilityError() {}
 
   // Gets the GeolocationContext associated with this delegate.
   virtual device::mojom::GeolocationContext* GetGeolocationContext();
@@ -317,9 +318,7 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
 #endif
 
   // Returns whether entering fullscreen with EnterFullscreenMode() is allowed.
-  virtual bool CanEnterFullscreenMode(
-      RenderFrameHostImpl* requesting_frame,
-      const blink::mojom::FullscreenOptions& options);
+  virtual bool CanEnterFullscreenMode(RenderFrameHostImpl* requesting_frame);
 
   // Notification that the frame with the given host wants to enter fullscreen
   // mode. Must only be called if CanEnterFullscreenMode returns true.
@@ -382,7 +381,7 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   virtual void DidCallFocus() {}
 
   // Returns whether this delegate is an inner WebContents for a guest.
-  // TODO(https://crbug.com/1295431): Remove in favor of tracking pending guest
+  // TODO(crbug.com/40214326): Remove in favor of tracking pending guest
   // initializations instead.
   virtual bool IsInnerWebContentsForGuest();
 
@@ -601,13 +600,6 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
           blink_widget_host,
       mojo::PendingAssociatedRemote<blink::mojom::Widget> blink_widget);
 
-  // Returns true if the popup is shown through WebContentsObserver. Else, the
-  // Android / Mac flavors of `RenderViewHostDelegateView` will show the popup
-  // menu correspondingly, and `WebContentsViewChildFrame` will show the popup
-  // for Mac's GuestView.
-  virtual bool ShowPopupMenu(RenderFrameHostImpl* render_frame_host,
-                             const gfx::Rect& bounds);
-
   virtual void DidLoadResourceFromMemoryCache(
       RenderFrameHostImpl* source,
       const GURL& url,
@@ -630,6 +622,11 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   virtual void OnSharedDictionaryAccessed(
       RenderFrameHostImpl* render_frame_host,
       const network::mojom::SharedDictionaryAccessDetails& details) {}
+
+  virtual void NotifyStorageAccessed(
+      RenderFrameHostImpl* render_frame_host,
+      blink::mojom::StorageTypeAccessed storage_type,
+      bool blocked) {}
 
   // Notified that the renderer responded after calling GetSavableResourceLinks.
   virtual void SavableResourceLinksResponse(
@@ -715,6 +712,10 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   // returned the default non-isolated permissions policy will be applied.
   virtual std::optional<blink::ParsedPermissionsPolicy>
   GetPermissionsPolicyForIsolatedWebApp(RenderFrameHostImpl* source);
+
+  // Updates the draggable regions defined by the app-region CSS property.
+  virtual void DraggableRegionsChanged(
+      const std::vector<blink::mojom::DraggableRegionPtr>& regions) {}
 
  protected:
   virtual ~RenderFrameHostDelegate() = default;

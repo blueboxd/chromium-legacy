@@ -175,7 +175,7 @@ ExtensionMessagePort::ExtensionMessagePort(
   CHECK(tab);
   frame_tracker_->TrackTabFrames(tab);
   if (include_child_frames) {
-    // TODO(https://crbug.com/1227787) We don't yet support MParch for
+    // TODO(crbug.com/40189370) We don't yet support MParch for
     // prerender so make sure `include_child_frames` is only provided for
     // primary main frames.
     CHECK(render_frame_host->IsInPrimaryMainFrame());
@@ -491,7 +491,7 @@ void ExtensionMessagePort::IncrementLazyKeepaliveCount(
 
   // Increment keepalive count for service workers of the extension managed by
   // this port.
-  // TODO(https://crbug.com/1514471): Add a check to only increment count if
+  // TODO(crbug.com/41487026): Add a check to only increment count if
   // the port is in lazy context.
   for (const auto& worker_id :
        pm->GetServiceWorkersForExtension(extension_id_)) {
@@ -521,7 +521,7 @@ void ExtensionMessagePort::DecrementLazyKeepaliveCount(
 
   // Decrement keepalive count for service workers of the extension managed by
   // this port.
-  // TODO(https://crbug.com/1514471): Add a check to only decrement count if
+  // TODO(crbug.com/41487026): Add a check to only decrement count if
   // the port is in lazy context.
   for (const auto& worker_id :
        pm->GetServiceWorkersForExtension(extension_id_)) {
@@ -745,7 +745,7 @@ bool ExtensionMessagePort::ShouldSkipFrameForBFCache(
     // enabled, so no message will be sent to the BFCached target. There could
     // be some messages that were created before the ExtensionMessagePort is
     // disconnected, and they should be discarded.
-    // TODO(crbug.com/1488379): clean up the flag.
+    // TODO(crbug.com/40283601): clean up the flag.
     if (!base::FeatureList::IsEnabled(
             features::kDisconnectExtensionMessagePortWhenPageEntersBFCache)) {
       content::BackForwardCache::DisableForRenderFrameHost(

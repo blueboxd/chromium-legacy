@@ -35,7 +35,6 @@ import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.LayoutRenderHost;
 import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
 import org.chromium.chrome.browser.compositor.layouts.components.LayoutTab;
-import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.compositor.scene_layer.SolidColorSceneLayer;
 import org.chromium.chrome.browser.compositor.scene_layer.StaticTabSceneLayer;
 import org.chromium.chrome.browser.compositor.scene_layer.TabListSceneLayer;
@@ -53,10 +52,15 @@ import org.chromium.chrome.browser.tab.TabHidingType;
 import org.chromium.chrome.browser.tab.TabLoadIfNeededCaller;
 import org.chromium.chrome.browser.tab.TabSelectionType;
 import org.chromium.chrome.browser.tab.TabUtils;
+import org.chromium.chrome.browser.tab_ui.TabContentManager;
+import org.chromium.chrome.browser.tab_ui.TabSwitcher;
+import org.chromium.chrome.browser.tab_ui.TabSwitcher.TabListDelegate;
+import org.chromium.chrome.browser.tab_ui.TabSwitcher.TabSwitcherViewObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
-import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher.TabListDelegate;
-import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher.TabSwitcherViewObserver;
+import org.chromium.chrome.browser.ui.desktop_windowing.AppHeaderState;
+import org.chromium.chrome.browser.ui.desktop_windowing.DesktopWindowStateProvider;
+import org.chromium.chrome.browser.ui.desktop_windowing.DesktopWindowStateProvider.AppHeaderObserver;
 import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
 import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator;
@@ -78,7 +82,7 @@ import java.util.List;
 import java.util.Locale;
 
 /** A {@link Layout} that shows all tabs in one grid or list view. */
-public class TabSwitcherLayout extends Layout {
+public class TabSwitcherLayout extends Layout implements AppHeaderObserver {
     private static final String TAG = "TSLayout";
 
     @IntDef({TransitionType.NONE, TransitionType.SHRINK, TransitionType.EXPAND})
@@ -164,6 +168,7 @@ public class TabSwitcherLayout extends Layout {
     @Nullable private final ScrimCoordinator mScrimCoordinator;
     private final TabSwitcher.TabListDelegate mGridTabListDelegate;
     private final LayoutStateProvider mLayoutStateProvider;
+    @Nullable private final DesktopWindowStateProvider mDesktopWindowStateProvider;
 
     private boolean mIsInitialized;
 
@@ -257,7 +262,8 @@ public class TabSwitcherLayout extends Layout {
             BrowserControlsStateProvider browserControlsStateProvider,
             TabSwitcher tabSwitcher,
             @Nullable ViewGroup tabSwitcherScrimAnchor,
-            @Nullable ScrimCoordinator scrimCoordinator) {
+            @Nullable ScrimCoordinator scrimCoordinator,
+            @Nullable DesktopWindowStateProvider desktopWindowStateProvider) {
         super(context, updateHost, renderHost);
         mBrowserControlsStateProvider = browserControlsStateProvider;
         mTabSwitcher = tabSwitcher;
@@ -284,6 +290,16 @@ public class TabSwitcherLayout extends Layout {
                                 Math.round(getWidth()), Math.round(getHeight())));
 
         mController.addTabSwitcherViewObserver(mTabSwitcherObserver);
+        mDesktopWindowStateProvider = desktopWindowStateProvider;
+        if (mDesktopWindowStateProvider != null) {
+            mDesktopWindowStateProvider.addObserver(this);
+            maybeUpdateLayout();
+        }
+    }
+
+    @Override
+    public void onAppHeaderStateChanged(AppHeaderState newState) {
+        maybeUpdateLayout();
     }
 
     @Override
@@ -331,6 +347,9 @@ public class TabSwitcherLayout extends Layout {
         if (mTabListSceneLayer != null) {
             mTabListSceneLayer.destroy();
             mTabListSceneLayer = null;
+        }
+        if (mDesktopWindowStateProvider != null) {
+            mDesktopWindowStateProvider.removeObserver(this);
         }
     }
 
@@ -855,7 +874,7 @@ public class TabSwitcherLayout extends Layout {
                         yEndValueSupplier,
                         ZOOMING_DURATION,
                         Interpolators.EMPHASIZED));
-        // TODO(crbug.com/964406): when shrinking to the bottom row, bottom of the tab goes up and
+        // TODO(crbug.com/40627995): when shrinking to the bottom row, bottom of the tab goes up and
         // down, making the "create group" visible for a while.
         animationList.add(
                 CompositorAnimator.ofWritableFloatPropertyKey(
@@ -1151,7 +1170,7 @@ public class TabSwitcherLayout extends Layout {
                         0f,
                         ZOOMING_DURATION,
                         Interpolators.EMPHASIZED));
-        // TODO(crbug.com/964406): when shrinking to the bottom row, bottom of the tab goes up and
+        // TODO(crbug.com/40627995): when shrinking to the bottom row, bottom of the tab goes up and
         // down, making the "create group" visible for a while.
         animationList.add(
                 CompositorAnimator.ofWritableFloatPropertyKey(
@@ -1209,7 +1228,7 @@ public class TabSwitcherLayout extends Layout {
                         mController.getTabSwitcherContainer(),
                         View.TRANSLATION_Y,
                         mController.getTabSwitcherContainer().getHeight(),
-                        0f);
+                        getAppHeaderHeight());
         translateUp.setInterpolator(Interpolators.EMPHASIZED_DECELERATE);
         translateUp.setDuration(TRANSLATE_DURATION_MS);
 
@@ -1228,7 +1247,7 @@ public class TabSwitcherLayout extends Layout {
                     @Override
                     public void onAnimationEnd(Animator animation) {
                         mTabToSwitcherAnimation = null;
-                        mController.getTabSwitcherContainer().setY(0);
+                        mController.getTabSwitcherContainer().setY(getAppHeaderHeight());
                         doneShowing();
 
                         reportTabletAnimationPerf(true);
@@ -1246,7 +1265,7 @@ public class TabSwitcherLayout extends Layout {
                 ObjectAnimator.ofFloat(
                         mController.getTabSwitcherContainer(),
                         View.TRANSLATION_Y,
-                        0f,
+                        getAppHeaderHeight(),
                         mController.getTabSwitcherContainer().getHeight());
         translateDown.setInterpolator(Interpolators.EMPHASIZED_ACCELERATE);
         translateDown.setDuration(TRANSLATE_DURATION_MS);
@@ -1339,7 +1358,7 @@ public class TabSwitcherLayout extends Layout {
         final float fps = metrics.getFramesPerSecond();
         final long totalDurationMs = metrics.getLastFrameTimeMs() - transitionStartTime;
 
-        // TODO(crbug.com/964406): stop logging it after this feature stabilizes.
+        // TODO(crbug.com/40627995): stop logging it after this feature stabilizes.
         if (!VersionInfo.isStableBuild()) {
             String message =
                     String.format(
@@ -1354,7 +1373,7 @@ public class TabSwitcherLayout extends Layout {
 
         String suffix = transitionTypeToString(animationTransitionType);
 
-        // TODO(crbug.com/982018): Separate histograms for carousel tab switcher.
+        // TODO(crbug.com/40635216): Separate histograms for carousel tab switcher.
         RecordHistogram.recordCount100Histogram(
                 "GridTabSwitcher.FramePerSecond" + suffix, (int) fps);
         RecordHistogram.recordTimesHistogram(
@@ -1367,7 +1386,7 @@ public class TabSwitcherLayout extends Layout {
     }
 
     private void reportTabletAnimationPerf(boolean translatingUp) {
-        // TODO(crbug.com/1304926): Record metrics for tablet animations.
+        // TODO(crbug.com/40826761): Record metrics for tablet animations.
     }
 
     @Override
@@ -1497,5 +1516,20 @@ public class TabSwitcherLayout extends Layout {
     private void onTabSelecting(int tabId) {
         TabModelUtils.selectTabById(mTabModelSelector, tabId, TabSelectionType.FROM_USER, false);
         startHiding();
+    }
+
+    private int getAppHeaderHeight() {
+        return (mDesktopWindowStateProvider != null
+                        && mDesktopWindowStateProvider.getAppHeaderState() != null)
+                ? mDesktopWindowStateProvider.getAppHeaderState().getAppHeaderHeight()
+                : 0;
+    }
+
+    /** Update the y-offset of the container view in response to an app header state change. */
+    private void maybeUpdateLayout() {
+        if (isActive()) {
+            // TODO (crbug/334156232): Update the container height.
+            mController.getTabSwitcherContainer().setY(getAppHeaderHeight());
+        }
     }
 }

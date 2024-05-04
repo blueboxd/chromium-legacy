@@ -14,11 +14,9 @@
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/crowdsourcing/autofill_crowdsourcing_manager.h"
 #include "components/autofill/core/browser/logging/log_manager.h"
-#include "components/autofill/core/browser/payments/card_unmask_delegate.h"
 #include "components/autofill/core/browser/payments/legal_message_line.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/strike_databases/strike_database.h"
-#include "components/autofill/core/browser/ui/payments/card_unmask_prompt_options.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync/service/sync_service.h"
 #import "ios/web/public/web_state.h"
@@ -40,7 +38,6 @@ class WebViewAutofillClientIOS : public AutofillClient {
       ios_web_view::WebViewBrowserState* browser_state);
 
   WebViewAutofillClientIOS(
-      const std::string& locale,
       PrefService* pref_service,
       PersonalDataManager* personal_data_manager,
       AutocompleteHistoryManager* autocomplete_history_manager,
@@ -56,19 +53,17 @@ class WebViewAutofillClientIOS : public AutofillClient {
   ~WebViewAutofillClientIOS() override;
 
   // AutofillClient:
-  bool IsOffTheRecord() override;
+  bool IsOffTheRecord() const override;
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
   AutofillCrowdsourcingManager* GetCrowdsourcingManager() override;
   PersonalDataManager* GetPersonalDataManager() override;
   AutocompleteHistoryManager* GetAutocompleteHistoryManager() override;
-  CreditCardCvcAuthenticator* GetCvcAuthenticator() override;
   PrefService* GetPrefs() override;
   const PrefService* GetPrefs() const override;
   syncer::SyncService* GetSyncService() override;
   signin::IdentityManager* GetIdentityManager() override;
   FormDataImporter* GetFormDataImporter() override;
   payments::PaymentsAutofillClient* GetPaymentsAutofillClient() override;
-  payments::PaymentsNetworkInterface* GetPaymentsNetworkInterface() override;
   StrikeDatabase* GetStrikeDatabase() override;
   ukm::UkmRecorder* GetUkmRecorder() override;
   ukm::SourceId GetUkmSourceId() override;
@@ -79,11 +74,6 @@ class WebViewAutofillClientIOS : public AutofillClient {
   const translate::LanguageState* GetLanguageState() override;
   translate::TranslateDriver* GetTranslateDriver() override;
   void ShowAutofillSettings(FillingProduct main_filling_product) override;
-  void ShowUnmaskPrompt(
-      const CreditCard& card,
-      const CardUnmaskPromptOptions& card_unmask_prompt_options,
-      base::WeakPtr<CardUnmaskDelegate> delegate) override;
-  void OnUnmaskVerificationResult(PaymentsRpcResult result) override;
   void ConfirmSaveCreditCardToCloud(
       const CreditCard& card,
       const LegalMessageLines& legal_message_lines,
@@ -108,19 +98,16 @@ class WebViewAutofillClientIOS : public AutofillClient {
       base::WeakPtr<TouchToFillDelegate> delegate,
       base::span<const autofill::CreditCard> cards_to_suggest) override;
   void HideTouchToFillCreditCard() override;
-  void ShowAutofillPopup(
+  void ShowAutofillSuggestions(
       const AutofillClient::PopupOpenArgs& open_args,
       base::WeakPtr<AutofillPopupDelegate> delegate) override;
-  void UpdateAutofillPopupDataListValues(
+  void UpdateAutofillDataListValues(
       base::span<const autofill::SelectOption> datalist) override;
-  std::vector<Suggestion> GetPopupSuggestions() const override;
-  void PinPopupView() override;
-  AutofillClient::PopupOpenArgs GetReopenPopupArgs(
-      AutofillSuggestionTriggerSource trigger_source) const override;
+  void PinAutofillSuggestions() override;
   void UpdatePopup(const std::vector<Suggestion>& suggestions,
                    FillingProduct main_filling_product,
                    AutofillSuggestionTriggerSource trigger_source) override;
-  void HideAutofillPopup(PopupHidingReason reason) override;
+  void HideAutofillSuggestions(SuggestionHidingReason reason) override;
   bool IsAutocompleteEnabled() const override;
   bool IsPasswordManagerEnabled() override;
   void DidFillOrPreviewForm(mojom::ActionPersistence action_persistence,
@@ -147,9 +134,6 @@ class WebViewAutofillClientIOS : public AutofillClient {
   signin::IdentityManager* identity_manager_;
   std::unique_ptr<payments::IOSWebViewPaymentsAutofillClient>
       payments_autofill_client_;
-  std::unique_ptr<payments::PaymentsNetworkInterface>
-      payments_network_interface_;
-  std::unique_ptr<CreditCardCvcAuthenticator> cvc_authenticator_;
   std::unique_ptr<FormDataImporter> form_data_importer_;
   StrikeDatabase* strike_database_;
   syncer::SyncService* sync_service_ = nullptr;

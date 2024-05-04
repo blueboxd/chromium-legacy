@@ -36,19 +36,26 @@ inline constexpr char16_t kStreetNameRe[] =
     u"|((?<!do |de )endere[çc]o)"  // pt-BR
     u"|logradouro"                 // pt-BR
     u"|dirección"                  // es-MX
-    u"|calle";                     // es-MX
+    u"|calle"                      // es-MX
+    u"|ulica|ulicy";               // pl
 inline constexpr char16_t kHouseNumberRe[] =
-    u"(house.?|street.?|^)(number|no\\.?$)"    // en
-    u"|(haus|^)(nummer|nr)"                    // de
-    u"|^\\*?.?número(.?\\*?$| da residência)"  // pt-BR, pt-PT
-    u"|exterior"                               // es
-    u"|дом|номер.?дома";                       // ru
+    u"(house.?|street.?|^)(number|no\\.?$)"        // en
+    u"|(haus.?|^)(nummer|nr)"                      // de
+    u"|^\\*?.?número(.?\\*?$| da residência)"      // pt-BR, pt-PT
+    u"|exterior|(?:no|n[úu]m(?:ero)?)\\.?\\s*ext"  // es
+    u"|(?:nr|numer)[.\\s]*(?:domu|budynku)"        // pl
+    u"|дом|номер.?дома";                           // ru
 inline constexpr char16_t kApartmentNumberRe[] =
-    u"apartment"                      // en
-    u"|interior|departamento"         // es-MX
-    u"|n(u|ú)mero.*app?art(a|e)ment"  // es,fr,it
-    u"|wohnung"                       // de
-    u"|квартир";                      // ru
+    u"apartment"                                                  // en
+    u"|interior|departamento"                                     // es-MX
+    u"|(?:(?<!teléfo)no|n[úu]m(?:ero)?)\\.?\\s*(int\\b|interno)"  // es-MX
+    u"|n(u|ú)mero.*app?art(a|e)ment"                              // es,fr,it
+    u"|wohnung"                                                   // de
+    u"|(?:nr|numer)?[.\\s]*(?:lokalu|(?<!za)mieszkani[ae])"       // pl
+    u"|квартир";                                                  // ru
+inline constexpr char16_t kHouseNumberAndAptRe[] =
+    u"(?:domu|budynku)(?:[.,\\s/]|nr|numer)*(?:lokalu|mieszkani[ae])";  // pl
+
 inline constexpr char16_t kAddressLine1Re[] =
     u"^address$|address[_-]?line(one)?|address1|addr1|street"
     u"|(?:shipping|billing)address$"
@@ -63,7 +70,8 @@ inline constexpr char16_t kAddressLine1Re[] =
     u"|地址"                                   // zh-CN
     u"|(\\b|_)adres(?! tarifi)(\\b|_)"         // tr
     u"|^주소.?$|주소.?1"                       // ko-KR
-    u"|^alamat";                               // id
+    u"|^alamat"                                // id
+    u"|ulica|ulicy";                           // pl
 inline constexpr char16_t kAddressLine1LabelRe[] =
     u"(^\\W*address)"
     u"|(address\\W*$)"
@@ -85,8 +93,9 @@ inline constexpr char16_t kAddressLine1LabelRe[] =
     u"|улиц.*(дом|корпус|квартир|этаж)|(дом|корпус|квартир|этаж).*улиц";  // ru
 inline constexpr char16_t kAddressLine2Re[] =
     u"address[_-]?line(2|two)|address2|addr2|street|suite|unit"
-    u"|adresszusatz|ergänzende.?angaben"        // de-DE
-    u"|direccion2|adicional"                    // es
+    u"|adresszusatz|ergänzende.?angaben|adresszeile 2"  // de-DE
+    u"|direcci[óo]n.*2|informaci[óo]n\\s*adicional"
+    u"|complemento.*direcci[óo]n"               // es
     u"|addresssuppl|complementnom|appartement"  // fr-FR
     u"|indirizzo2"                              // it-IT
     u"|住所2"                                   // ja-JP
@@ -119,12 +128,12 @@ inline constexpr char16_t kCountryLocationRe[] = u"location";
 inline constexpr char16_t kZipCodeRe[] =
     u"((?<!\\.))zip"  // .zip indicates a file extension
     u"|postal|post.*code|pcode"
-    u"|pin.?code"     // en-IN
-    u"|postleitzahl"  // de-DE
-    u"|\\bcp\\b"      // es
-    u"|\\bcdp\\b"     // fr-FR
-    u"|\\bcap\\b"     // it-IT
-    u"|郵便番号"      // ja-JP
+    u"|pin.?code"               // en-IN
+    u"|postleitzahl|\\bplz\\b"  // de-DE
+    u"|\\bcp\\b"                // es
+    u"|\\bcdp\\b"               // fr-FR
+    u"|\\bcap\\b"               // it-IT
+    u"|郵便番号"                // ja-JP
     // The negative lookahead "segur" after codigo is for "código de segurança"
     // (pt-BR) and "código de seguridad" (es), which refer to CVCs.
     u"|codigo(?!.*segur)|codpos|\\bcep\\b"  // pt-BR, pt-PT
@@ -155,6 +164,7 @@ inline constexpr char16_t kCityRe[] =
     u"|localita"                                         // it-IT
     u"|市区町村"                                         // ja-JP
     u"|cidade"                                           // pt-BR
+    u"|miasto|miejscowość"                               // pl
     u"|Город|Насел(е|ё)нный.?пункт"                      // ru
     u"|市"                                               // zh-CN
     u"|分區"                                             // zh-TW
@@ -267,19 +277,23 @@ inline constexpr char16_t kNameOnCardRe[] =
     u"|持卡人姓名";                     // zh-TW
 inline constexpr char16_t kNameOnCardContextualRe[] = u"name";
 inline constexpr char16_t kCardNumberRe[] =
-    u"(?:card|cc|acct).?(?:number|#|no|num|field|pan)"
-    u"|(?<!telefon|haus|person|fødsels|kunden)nummer"  // de-DE, sv-SE, no
-    u"|カード番号"                                     // ja-JP
-    u"|Номер.*карты"                                   // ru
-    u"|no.*kartu"                                      // id
-    u"|信用卡号|信用卡号码"                            // zh-CN
-    u"|信用卡卡號"                                     // zh-TW
-    u"|카드"                                           // ko-KR
+    u"(?:card|cc|acct).?(?:number|#|no|num|field(?!s)|pan)"
+    u"|(?<!telefon|telefoon|haus|person|fødsels|kunden|post|mobil|mobiel|handy|"
+    u"produkt|sendungs|verfolgungs|artikel|konto).?nummer"  // de-DE, sv-SE, no
+    u"|(?<!sim|kunden|geschenk|freundschafts|benachrichtigungs|service|"
+    u"personal|more|leistungs).?karten.?nr"  // de-DE
+    u"|カード番号"                           // ja-JP
+    u"|Номер.*карты"                         // ru
+    u"|no.*kartu"                            // id
+    u"|信用卡号|信用卡号码"                  // zh-CN
+    u"|信用卡卡號"                           // zh-TW
+    u"|카드"                                 // ko-KR
     // es/pt/fr
     // E.g. "número de (?:la )?tarjeta" in es-MX, "número do cartão" in pt-BR
     u"|(numero|número|numéro)(?!.*(document|fono|phone|réservation))"
     u"|0000 ?0000 ?0000 ?0000"
-    u"|1234 ?1234 ?1234 ?1234";
+    u"|1234 ?1234 ?1234 ?1234"
+    u"|^xxxx ?xxxx ?xxxx ?xxxx$";
 
 inline constexpr char16_t kCardCvcRe[] =
     u"verification|card.?identification|security.?code|card.?code"
@@ -287,6 +301,7 @@ inline constexpr char16_t kCardCvcRe[] =
     u"|security.?number|card.?pin|c-v-v"
     u"|código de segurança"  // pt-BR
     u"|código de seguridad"  // es-MX
+    u"|karten.?prüfn"        // de-DE
     u"|(?:cvn|cvv|cvc|csc|cvd|ccv)"
     // We used to match "cid", but it is a substring of "cidade" (Portuguese for
     // "city") and needs to be handled carefully.
@@ -337,13 +352,14 @@ inline constexpr char16_t kExpirationYearRe[] =
 //  - (optional) Prepended with some text similar to "Expiration Date".
 // Tested in components/autofill/core/browser/autofill_regexes_unittest.cc
 inline constexpr char16_t kExpirationDate2DigitYearRe[] =
-    u"(?:exp.*date[^y\\n\\r]*|mm\\s*[-/]?\\s*)yy(?:[^y]|$)";
+    u"(?:exp.*date[^y\\n\\r]*|mm\\s*[-/]?\\s*)(?:yy(?!y)|aa(?!a)|jj(?!j))";
 // Used to match a expiration date field with a four digit year.
 // Same requirements as |kExpirationDate2DigitYearRe| except:
 //  - Exactly four adjacent y's.
 // Tested in components/autofill/core/browser/autofill_regexes_unittest.cc
 inline constexpr char16_t kExpirationDate4DigitYearRe[] =
-    u"(?:exp.*date[^y\\n\\r]*|mm\\s*[-/]?\\s*)yyyy(?:[^y]|$)";
+    u"(?:exp.*date[^y\\n\\r]*|mm\\s*[-/]?\\s*)"
+    u"(?:yyyy(?!y)|aaaa(?!a)|jjjj(?!j))";
 // Used to match expiration date fields that do not specify a year length.
 inline constexpr char16_t kExpirationDateRe[] =
     u"expir|exp.*date|^expfield$"
@@ -659,7 +675,7 @@ inline constexpr char16_t kUPIVirtualPaymentAddressRe[] =
     u")$";
 
 // Used to match field value that might be an International Bank Account Number.
-// TODO(crbug.com/977377): The regex doesn't match IBANs for Saint Lucia (LC),
+// TODO(crbug.com/40633135): The regex doesn't match IBANs for Saint Lucia (LC),
 // Kazakhstan (KZ) and Romania (RO). Consider replace the regex with something
 // like "(?:IT|SM)\d{2}[A-Z]\d{22}|CY\d{2}[A-Z]\d{23}...". For reference:
 //    - https://www.swift.com/resource/iban-registry-pdf

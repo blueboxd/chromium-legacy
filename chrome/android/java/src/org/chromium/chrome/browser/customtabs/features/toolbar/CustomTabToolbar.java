@@ -65,6 +65,8 @@ import org.chromium.chrome.browser.compositor.bottombar.ephemeraltab.EphemeralTa
 import org.chromium.chrome.browser.crash.ChromePureJavaExceptionReporter;
 import org.chromium.chrome.browser.customtabs.CustomTabFeatureOverridesManager;
 import org.chromium.chrome.browser.customtabs.features.branding.ToolbarBrandingDelegate;
+import org.chromium.chrome.browser.customtabs.features.branding.ToolbarBrandingOverlayCoordinator;
+import org.chromium.chrome.browser.customtabs.features.branding.ToolbarBrandingOverlayProperties;
 import org.chromium.chrome.browser.customtabs.features.minimizedcustomtab.CustomTabMinimizeDelegate;
 import org.chromium.chrome.browser.customtabs.features.minimizedcustomtab.MinimizedFeatureUtils;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -96,7 +98,6 @@ import org.chromium.chrome.browser.toolbar.top.ToolbarLayout;
 import org.chromium.chrome.browser.toolbar.top.ToolbarPhone;
 import org.chromium.chrome.browser.toolbar.top.ToolbarSnapshotDifference;
 import org.chromium.chrome.browser.toolbar.top.TopToolbarCoordinator.ToolbarColorObserver;
-import org.chromium.chrome.browser.ui.native_page.NativePage;
 import org.chromium.chrome.browser.ui.theme.BrandedColorScheme;
 import org.chromium.chrome.browser.user_education.UserEducationHelper;
 import org.chromium.components.browser_ui.styles.ChromeColors;
@@ -115,6 +116,7 @@ import org.chromium.ui.base.Clipboard;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.interpolators.Interpolators;
 import org.chromium.ui.modaldialog.ModalDialogManager;
+import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.text.SpanApplier;
 import org.chromium.ui.text.SpanApplier.SpanInfo;
 import org.chromium.ui.widget.Toast;
@@ -343,12 +345,12 @@ public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickL
 
     /**
      * Initialize the maximize button for side sheet CCT. Create one if not instantiated.
+     *
      * @param maximizedOnInit {@code true} if the side sheet is starting in maximized state.
      * @param onMaximizeClicked Callback to invoke when maximize button gets clicked.
      */
     public void initSideSheetMaximizeButton(
             boolean maximizedOnInit, MaximizeButtonCallback callback) {
-        if (!ChromeFeatureList.sCctResizableSideSheet.isEnabled()) return;
         var maximizeButton = (ImageButton) findViewById(R.id.custom_tabs_sidepanel_maximize);
         if (maximizeButton == null) {
             ViewStub maximizeButtonStub = findViewById(R.id.maximize_button_stub);
@@ -447,7 +449,6 @@ public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickL
 
     /** Remove maximize button from side sheet CCT toolbar. */
     public void removeSideSheetMaximizeButton() {
-        if (!ChromeFeatureList.sCctResizableSideSheet.isEnabled()) return;
         var maximizeButton = (ImageButton) findViewById(R.id.custom_tabs_sidepanel_maximize);
         maximizeButton.setOnClickListener(null);
         maximizeButton.setVisibility(View.GONE);
@@ -1105,11 +1106,14 @@ public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickL
                 (v, l, t, r, b, ol, ot, or, ob) -> setButtonsVisibility();
         private boolean mCurrentlyShowingBranding;
         private boolean mBrandingStarted;
+        private boolean mOmniboxEnabled;
+        private Drawable mOmniboxBackground;
         private CallbackController mCallbackController = new CallbackController();
         // Cached the state before branding start so we can reset to the state when its done.
         private @Nullable Integer mPreBandingState;
         private PageInfoIPHController mPageInfoIPHController;
         private int mTouchTargetSize;
+        private ToolbarBrandingOverlayCoordinator mBrandingOverlayCoordinator;
 
         public View getLayout() {
             return mLocationBarFrameLayout;
@@ -1131,6 +1135,26 @@ public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickL
         @Override
         public void showBrandingLocationBar() {
             mBrandingStarted = true;
+
+            if (ChromeFeatureList.sCctRevampedBranding.isEnabled()) {
+                ViewStub stub = findViewById(R.id.branding_stub);
+
+                if (stub != null) {
+                    PropertyModel model =
+                            new PropertyModel.Builder(ToolbarBrandingOverlayProperties.ALL_KEYS)
+                                    .with(
+                                            ToolbarBrandingOverlayProperties.COLOR_DATA,
+                                            new ToolbarBrandingOverlayProperties.ColorData(
+                                                    getBackground().getColor(),
+                                                    mBrandedColorScheme))
+                                    .build();
+                    mBrandingOverlayCoordinator =
+                            new ToolbarBrandingOverlayCoordinator(stub, model);
+
+                    return;
+                }
+            }
+
             // Store the title and domain setting, if the empty state is not in used. Otherwise
             // regular state has already been stored.
             if (!mCurrentlyShowingBranding) {
@@ -1163,6 +1187,13 @@ public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickL
         @Override
         public void showRegularToolbar() {
             mCurrentlyShowingBranding = false;
+
+            if (ChromeFeatureList.sCctRevampedBranding.isEnabled()) {
+                if (mBrandingOverlayCoordinator != null) {
+                    mBrandingOverlayCoordinator.hideAndDestroy();
+                }
+            }
+
             recoverFromRegularState();
             runAfterBrandingRunnables();
             mAnimDelegate.setUseRotationSecurityButtonTransition(false);
@@ -1411,9 +1442,7 @@ public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickL
             }
             if (mBlockingStatus3pcd != CookieBlocking3pcdStatus.NOT_IN3PCD) {
                 if (!mCookieControlsVisible || !mThirdPartyCookiesBlocked) return;
-                mPageInfoIPHController.showCookieControlsReminderIPH(
-                        COOKIE_CONTROLS_ICON_DISPLAY_TIMEOUT,
-                        R.string.cookie_controls_reminder_iph_message);
+                // TODO(b/332761678): Add reminder IPH here.
             } else if (mShouldHighlightCookieControlsIcon) {
                 mPageInfoIPHController.showCookieControlsIPH(
                         COOKIE_CONTROLS_ICON_DISPLAY_TIMEOUT, R.string.cookie_controls_iph_message);
@@ -1586,12 +1615,6 @@ public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickL
 
             GURL publisherUrl = TrustedCdn.getPublisherUrl(tab);
             GURL url = getUrl();
-            // Don't show anything for Chrome URLs.
-            if (NativePage.isNativePageUrl(url, getCurrentTab().isIncognito())) {
-                mUrlCoordinator.setUrlBarData(
-                        UrlBarData.EMPTY, UrlBar.ScrollType.NO_SCROLL, SelectionState.SELECT_ALL);
-                return;
-            }
             final CharSequence displayText;
             final int originStart;
             final int originEnd;
@@ -1617,7 +1640,10 @@ public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickL
             } else {
                 UrlBarData urlBarData = mLocationBarDataProvider.getUrlBarData();
                 originStart = 0;
-                if (urlBarData.displayText != null) {
+                if (mOmniboxEnabled) {
+                    displayText = urlBarData.displayText;
+                    originEnd = 0;
+                } else if (urlBarData.displayText != null) {
                     displayText =
                             urlBarData.displayText.subSequence(
                                     urlBarData.originStartIndex, urlBarData.originEndIndex);
@@ -1657,6 +1683,7 @@ public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickL
         }
 
         private void updateColors() {
+            updateOmniboxBackground();
             updateButtonsTint();
 
             if (mUrlCoordinator.setBrandedColorScheme(mBrandedColorScheme)) {
@@ -1667,6 +1694,18 @@ public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickL
             mTitleBar.setTextColor(
                     OmniboxResourceProvider.getUrlBarPrimaryTextColor(
                             getContext(), mBrandedColorScheme));
+        }
+
+        private void updateOmniboxBackground() {
+            if (mOmniboxBackground == null) return;
+            @ColorInt int background = getBackground().getColor();
+            @ColorInt
+            int bg =
+                    ThemeUtils.getTextBoxColorForToolbarBackgroundInNonNativePage(
+                            getContext(),
+                            background,
+                            mBrandedColorScheme == BrandedColorScheme.INCOGNITO);
+            mOmniboxBackground.setTint(bg);
         }
 
         @Override
@@ -1739,6 +1778,10 @@ public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickL
                 mLocationBarDataProvider.removeObserver(this);
                 mLocationBarDataProvider = null;
             }
+            if (mBrandingOverlayCoordinator != null) {
+                mBrandingOverlayCoordinator.destroy();
+                mBrandingOverlayCoordinator = null;
+            }
         }
 
         @Override
@@ -1788,6 +1831,16 @@ public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickL
         }
 
         void setOmniboxEnabled() {
+            mOmniboxEnabled = true;
+            mOmniboxBackground =
+                    AppCompatResources.getDrawable(
+                            getContext(),
+                            R.drawable.modern_toolbar_text_box_background_with_primary_color);
+            mOmniboxBackground.mutate();
+            mOmniboxBackground.setTint(
+                    ChromeColors.getSurfaceColor(getContext(), R.dimen.toolbar_text_box_elevation));
+            mLocationBarFrameLayout.setBackground(mOmniboxBackground);
+
             mTitleUrlContainer.setOnClickListener(
                     v -> {
                         RecordUserAction.record("CustomTabs.OmniboxClicked");

@@ -63,7 +63,8 @@ TEST_F(CameraAppEventsSenderTest, StartSession) {
   params->launch_type = ash::camera_app::mojom::LaunchType::kAssistant;
 
   cros_events::CameraApp_StartSession expected_event;
-  expected_event.SetLaunchType(static_cast<int64_t>(params->launch_type));
+  expected_event.SetLaunchType(
+      static_cast<cros_events::CameraAppLaunchType>(params->launch_type));
   expected_event.SetLanguage(kTestLanguageValue);
 
   events_sender_->SendStartSessionEvent(std::move(params));
@@ -115,29 +116,35 @@ TEST_F(CameraAppEventsSenderTest, Capture) {
   params->capture_details = std::move(capture_details);
 
   cros_events::CameraApp_Capture expected_event;
-  expected_event.SetMode(static_cast<int64_t>(params->mode))
-      .SetFacing(static_cast<int64_t>(params->facing))
+  expected_event.SetMode(static_cast<cros_events::CameraAppMode>(params->mode))
+      .SetFacing(static_cast<cros_events::CameraAppFacing>(params->facing))
       .SetIsMirrored(static_cast<int64_t>(params->is_mirrored))
-      .SetGridType(static_cast<int64_t>(params->grid_type))
-      .SetTimerType(static_cast<int64_t>(params->timer_type))
-      .SetShutterType(static_cast<int64_t>(params->shutter_type))
+      .SetGridType(
+          static_cast<cros_events::CameraAppGridType>(params->grid_type))
+      .SetTimerType(
+          static_cast<cros_events::CameraAppTimerType>(params->timer_type))
+      .SetShutterType(
+          static_cast<cros_events::CameraAppShutterType>(params->shutter_type))
       .SetAndroidIntentResultType(
-          static_cast<int64_t>(params->android_intent_result_type))
+          static_cast<cros_events::CameraAppAndroidIntentResultType>(
+              params->android_intent_result_type))
       .SetIsWindowMaximized(static_cast<int64_t>(params->is_window_maximized))
       .SetIsWindowPortrait(static_cast<int64_t>(params->is_window_portrait))
       .SetResolutionWidth(static_cast<int64_t>(params->resolution_width))
       .SetResolutionHeight(static_cast<int64_t>(params->resolution_height))
-      .SetResolutionLevel(static_cast<int64_t>(params->resolution_level))
-      .SetAspectRatioSet(static_cast<int64_t>(params->aspect_ratio_set))
+      .SetResolutionLevel(static_cast<cros_events::CameraAppResolutionLevel>(
+          params->resolution_level))
+      .SetAspectRatioSet(static_cast<cros_events::CameraAppAspectRatioSet>(
+          params->aspect_ratio_set))
       .SetIsVideoSnapshot(static_cast<int64_t>(false))
       .SetIsMuted(static_cast<int64_t>(video_details->is_muted))
       .SetFps(static_cast<int64_t>(video_details->fps))
       .SetEverPaused(static_cast<int64_t>(video_details->ever_paused))
       .SetDuration(static_cast<int64_t>(video_details->duration))
-      .SetRecordType(
-          static_cast<int64_t>(ash::camera_app::mojom::RecordType::kTimelapse))
-      .SetGifResultType(
-          static_cast<int64_t>(ash::camera_app::mojom::GifResultType::kNotGif))
+      .SetRecordType(static_cast<cros_events::CameraAppRecordType>(
+          ash::camera_app::mojom::RecordType::kTimelapse))
+      .SetGifResultType(static_cast<cros_events::CameraAppGifResultType>(
+          ash::camera_app::mojom::GifResultType::kNotGif))
       .SetTimelapseSpeed(
           static_cast<int64_t>(timelapse_video_details->timelapse_speed));
 
@@ -160,7 +167,7 @@ TEST_F(CameraAppEventsSenderTest, AndroidIntent) {
   params->is_secure = true;
 
   cros_events::CameraApp_AndroidIntent expected_event;
-  expected_event.SetMode(static_cast<int64_t>(params->mode))
+  expected_event.SetMode(static_cast<cros_events::CameraAppMode>(params->mode))
       .SetShouldHandleResult(static_cast<int64_t>(params->should_handle_result))
       .SetShouldDownscale(static_cast<int64_t>(params->should_downscale))
       .SetIsSecure(static_cast<int64_t>(params->is_secure));
@@ -203,7 +210,9 @@ TEST_F(CameraAppEventsSenderTest, DocScanAction) {
   params->action_type = ash::camera_app::mojom::DocScanActionType::kFix;
 
   cros_events::CameraApp_DocScanAction expected_event;
-  expected_event.SetActionType(static_cast<int64_t>(params->action_type));
+  expected_event.SetActionType(
+      static_cast<cros_events::CameraAppDocScanActionType>(
+          params->action_type));
 
   events_sender_->SendDocScanActionEvent(std::move(params));
 
@@ -225,7 +234,9 @@ TEST_F(CameraAppEventsSenderTest, DocScanResult) {
   params->page_count = 1;
 
   cros_events::CameraApp_DocScanResult expected_event;
-  expected_event.SetResultType(static_cast<int64_t>(params->result_type))
+  expected_event
+      .SetResultType(static_cast<cros_events::CameraAppDocScanResultType>(
+          params->result_type))
       .SetFixTypes(static_cast<int64_t>(params->fix_types_mask))
       .SetFixCount(static_cast<int64_t>(params->fix_count))
       .SetPageCount(static_cast<int64_t>(params->page_count));
@@ -239,6 +250,175 @@ TEST_F(CameraAppEventsSenderTest, DocScanResult) {
   auto& received_event = events[0];
   EXPECT_EQ(received_event.event_name(), expected_event.event_name());
   EXPECT_EQ(received_event.metric_values(), expected_event.metric_values());
+}
+
+TEST_F(CameraAppEventsSenderTest, OpenCamera) {
+  constexpr char kTestCameraModuleId[] = "foo:bar";
+
+  auto params = ash::camera_app::mojom::OpenCameraEventParams::New();
+  auto usb_camera = ash::camera_app::mojom::UsbCameraModule::New();
+  usb_camera->id = kTestCameraModuleId;
+  auto camera_module =
+      ash::camera_app::mojom::CameraModule::NewUsbCamera(usb_camera.Clone());
+  params->camera_module = camera_module.Clone();
+
+  cros_events::CameraApp_OpenCamera expected_event;
+  expected_event.SetCameraModuleId(kTestCameraModuleId);
+
+  events_sender_->SendOpenCameraEvent(std::move(params));
+
+  const std::vector<metrics::structured::Event>& events =
+      metrics_recorder_->GetEvents();
+  ASSERT_EQ(events.size(), 1U);
+
+  auto& received_event = events[0];
+  EXPECT_EQ(received_event.event_name(), expected_event.event_name());
+  EXPECT_EQ(received_event.metric_values(), expected_event.metric_values());
+}
+
+TEST_F(CameraAppEventsSenderTest, LowStorageAction) {
+  auto params = ash::camera_app::mojom::LowStorageActionEventParams::New();
+  params->action_type =
+      ash::camera_app::mojom::LowStorageActionType::kShowWarningMessage;
+
+  cros_events::CameraApp_LowStorageAction expected_event;
+  expected_event.SetActionType(
+      static_cast<cros_events::CameraAppLowStorageActionType>(
+          params->action_type));
+
+  events_sender_->SendLowStorageActionEvent(std::move(params));
+
+  const std::vector<metrics::structured::Event>& events =
+      metrics_recorder_->GetEvents();
+  ASSERT_EQ(events.size(), 1U);
+
+  auto& received_event = events[0];
+  EXPECT_EQ(received_event.event_name(), expected_event.event_name());
+  EXPECT_EQ(received_event.metric_values(), expected_event.metric_values());
+}
+
+TEST_F(CameraAppEventsSenderTest, BarcodeDetected) {
+  auto params = ash::camera_app::mojom::BarcodeDetectedEventParams::New();
+  params->content_type = ash::camera_app::mojom::BarcodeContentType::kWiFi;
+  params->wifi_security_type = ash::camera_app::mojom::WifiSecurityType::kWpa;
+
+  cros_events::CameraApp_BarcodeDetected expected_event;
+  expected_event
+      .SetContentType(static_cast<cros_events::CameraAppBarcodeContentType>(
+          params->content_type))
+      .SetWifiSecurityType(static_cast<cros_events::CameraAppWifiSecurityType>(
+          params->wifi_security_type));
+
+  events_sender_->SendBarcodeDetectedEvent(std::move(params));
+
+  const std::vector<metrics::structured::Event>& events =
+      metrics_recorder_->GetEvents();
+  ASSERT_EQ(events.size(), 1U);
+
+  auto& received_event = events[0];
+  EXPECT_EQ(received_event.event_name(), expected_event.event_name());
+  EXPECT_EQ(received_event.metric_values(), expected_event.metric_values());
+}
+
+TEST_F(CameraAppEventsSenderTest, Perf) {
+  auto params = ash::camera_app::mojom::PerfEventParams::New();
+  params->event_type =
+      ash::camera_app::mojom::PerfEventType::kVideoCapturePostProcessing;
+  params->duration = 10000;
+  params->facing = ash::camera_app::mojom::Facing::kUnknown;
+  params->resolution_width = 1920;
+  params->resolution_height = 1080;
+
+  cros_events::CameraApp_Perf expected_event;
+  expected_event
+      .SetEventType(
+          static_cast<cros_events::CameraAppPerfEventType>(params->event_type))
+      .SetDuration(static_cast<int64_t>(params->duration))
+      .SetFacing(static_cast<cros_events::CameraAppFacing>(params->facing))
+      .SetResolutionWidth(static_cast<int64_t>(params->resolution_width))
+      .SetResolutionHeight(static_cast<int64_t>(params->resolution_height));
+
+  events_sender_->SendPerfEvent(std::move(params));
+
+  const std::vector<metrics::structured::Event>& events =
+      metrics_recorder_->GetEvents();
+  ASSERT_EQ(events.size(), 1U);
+
+  auto& received_event = events[0];
+  EXPECT_EQ(received_event.event_name(), expected_event.event_name());
+  EXPECT_EQ(received_event.metric_values(), expected_event.metric_values());
+}
+
+TEST_F(CameraAppEventsSenderTest, UnsupportedProtocol) {
+  cros_events::CameraApp_UnsupportedProtocol expected_event;
+
+  events_sender_->SendUnsupportedProtocolEvent();
+  const std::vector<metrics::structured::Event>& events =
+      metrics_recorder_->GetEvents();
+  ASSERT_EQ(events.size(), 1U);
+
+  auto& received_event = events[0];
+  EXPECT_EQ(received_event.event_name(), expected_event.event_name());
+}
+
+TEST_F(CameraAppEventsSenderTest, EndSession) {
+  // To send a end session event, a start session event should be sent first.
+  auto start_session_params =
+      ash::camera_app::mojom::StartSessionEventParams::New();
+  start_session_params->launch_type =
+      ash::camera_app::mojom::LaunchType::kAssistant;
+  events_sender_->SendStartSessionEvent(std::move(start_session_params));
+
+  // The end session event will be sent when the mojo connection dropped.
+  events_sender_->OnMojoDisconnected();
+
+  // [0]: Start Session Event.
+  // [1]: End Session Event.
+  const std::vector<metrics::structured::Event>& events =
+      metrics_recorder_->GetEvents();
+  ASSERT_EQ(events.size(), 2U);
+  auto& received_event = events[1];
+
+  cros_events::CameraApp_EndSession expected_event;
+  EXPECT_EQ(received_event.event_name(), expected_event.event_name());
+}
+
+TEST_F(CameraAppEventsSenderTest, MemoryUsage) {
+  // To send a memory usage event, a start session event should be sent first.
+  auto start_session_params =
+      ash::camera_app::mojom::StartSessionEventParams::New();
+  start_session_params->launch_type =
+      ash::camera_app::mojom::LaunchType::kAssistant;
+  events_sender_->SendStartSessionEvent(std::move(start_session_params));
+
+  // Updates the memory usage event to be brought with the end session event.
+  auto params = ash::camera_app::mojom::MemoryUsageEventParams::New();
+  params->behaviors_mask = static_cast<uint32_t>(
+      ash::camera_app::mojom::UserBehavior::kRecordTimelapseVideo);
+  params->memory_usage = 10000;
+  events_sender_->UpdateMemoryUsageEventParams(params.Clone());
+
+  // The memory usage event will be sent when the mojo connection dropped.
+  events_sender_->OnMojoDisconnected();
+
+  // [0]: Start Session Event.
+  // [1]: End Session Event.
+  // [2]: Memory usage Event.
+  const std::vector<metrics::structured::Event>& events =
+      metrics_recorder_->GetEvents();
+  ASSERT_EQ(events.size(), 3U);
+  auto& received_event = events[2];
+
+  cros_events::CameraApp_MemoryUsage expected_event;
+  expected_event.SetBehaviors(static_cast<int64_t>(params->behaviors_mask))
+      .SetMemoryUsage(static_cast<int64_t>(params->memory_usage));
+
+  EXPECT_EQ(received_event.event_name(), expected_event.event_name());
+  auto& received_metrics = received_event.metric_values();
+  auto& expected_metrics = expected_event.metric_values();
+  for (auto it = received_metrics.begin(); it != received_metrics.end(); it++) {
+    EXPECT_EQ(it->second, expected_metrics.at(it->first));
+  }
 }
 
 }  // namespace ash

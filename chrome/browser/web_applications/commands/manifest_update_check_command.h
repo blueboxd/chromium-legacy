@@ -18,6 +18,7 @@
 #include "chrome/browser/web_applications/scope_extension_info.h"
 #include "chrome/browser/web_applications/web_app_callback_app_identity.h"
 #include "chrome/browser/web_applications/web_app_icon_manager.h"
+#include "chrome/browser/web_applications/web_app_origin_association_manager.h"
 #include "chrome/browser/web_applications/web_contents/web_app_data_retriever.h"
 #include "chrome/browser/web_applications/web_contents/web_app_icon_downloader.h"
 #include "components/webapps/common/web_app_id.h"
@@ -53,7 +54,7 @@ class ManifestUpdateCheckCommand
                            std::optional<WebAppInstallInfo>>,
       public content::WebContentsObserver {
  public:
-  // TODO(crbug.com/1409710): Merge ManifestUpdateDataFetchCommand and
+  // TODO(crbug.com/40254036): Merge ManifestUpdateDataFetchCommand and
   // ManifestUpdateFinalizeCommand into one so we don't have to return optional
   // early exit results to the caller.
   using CompletedCallback = base::OnceCallback<void(

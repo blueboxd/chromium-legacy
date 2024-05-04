@@ -7,7 +7,7 @@
  * 'settings-privacy-guide-page' is the settings page that helps users guide
  * various privacy settings.
  */
-import 'chrome://resources/cr_components/settings_prefs/prefs.js';
+import '/shared/settings/prefs/prefs.js';
 import 'chrome://resources/cr_elements/cr_button/cr_button.js';
 import 'chrome://resources/cr_elements/cr_shared_style.css.js';
 import '../../settings_shared.css.js';
@@ -21,9 +21,9 @@ import './privacy_guide_welcome_fragment.js';
 import './step_indicator.js';
 
 import type {SyncBrowserProxy, SyncStatus} from '/shared/settings/people_page/sync_browser_proxy.js';
-import {SyncBrowserProxyImpl} from '/shared/settings/people_page/sync_browser_proxy.js';
-import {PrefsMixin} from 'chrome://resources/cr_components/settings_prefs/prefs_mixin.js';
-import {CrSettingsPrefs} from 'chrome://resources/cr_components/settings_prefs/prefs_types.js';
+import {SignedInState, SyncBrowserProxyImpl} from '/shared/settings/people_page/sync_browser_proxy.js';
+import {PrefsMixin} from '/shared/settings/prefs/prefs_mixin.js';
+import {CrSettingsPrefs} from '/shared/settings/prefs/prefs_types.js';
 import type {CrViewManagerElement} from 'chrome://resources/cr_elements/cr_view_manager/cr_view_manager.js';
 import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
 import {WebUiListenerMixin} from 'chrome://resources/cr_elements/web_ui_listener_mixin.js';
@@ -496,7 +496,8 @@ export class SettingsPrivacyGuidePageElement extends PrivacyGuideBase {
 
   private isSyncOn_(): boolean {
     assert(this.syncStatus_);
-    return !!this.syncStatus_.signedIn && !this.syncStatus_.hasError;
+    return this.syncStatus_.signedInState === SignedInState.SYNCING &&
+        !this.syncStatus_.hasError;
   }
 
   private shouldShowCookiesCard_(): boolean {

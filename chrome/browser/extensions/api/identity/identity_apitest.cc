@@ -149,10 +149,6 @@ void InitNetwork() {
   auto* portal_detector = new ash::NetworkPortalDetectorTestImpl();
   portal_detector->SetDefaultNetworkForTesting(default_network->guid());
 
-  portal_detector->SetDetectionResultsForTesting(
-      default_network->guid(),
-      ash::NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE, 204);
-
   ash::network_portal_detector::InitializeForTesting(portal_detector);
 }
 #endif
@@ -3792,8 +3788,8 @@ IN_PROC_BROWSER_TEST_F(LaunchWebAuthFlowFunctionTestWithBrowserTab,
       IdentityLaunchWebAuthFlowFunction::Error::kNone, 1);
 }
 
-// TODO(crbug/1421278): This test should be adapted after the implementation of
-// the bug. Multiple TODOs in the test to fix.
+// TODO(crbug.com/40259192): This test should be adapted after the
+// implementation of the bug. Multiple TODOs in the test to fix.
 IN_PROC_BROWSER_TEST_F(LaunchWebAuthFlowFunctionTestWithBrowserTab,
                        SimilarExtensionAndArgsShouldGenerateSameFlow) {
   std::unique_ptr<net::EmbeddedTestServer> https_server = LaunchHttpsServer();
@@ -3822,7 +3818,7 @@ IN_PROC_BROWSER_TEST_F(LaunchWebAuthFlowFunctionTestWithBrowserTab,
       function1->GetWebAuthFlowForTesting()->web_contents();
   content::WebContents* consent_web_contents2 =
       function2->GetWebAuthFlowForTesting()->web_contents();
-  // TODO(crbug/1421278): These two should be equal, EXPECT_EQ.
+  // TODO(crbug.com/40259192): These two should be equal, EXPECT_EQ.
   EXPECT_NE(consent_web_contents1, consent_web_contents2);
 
   // `SimulateUrlRedirect()` on first action should not affect the second
@@ -3832,12 +3828,12 @@ IN_PROC_BROWSER_TEST_F(LaunchWebAuthFlowFunctionTestWithBrowserTab,
   base::Value output1;
   WaitForOneResult(function1.get(), &output1);
   EXPECT_FALSE(function1->GetWebAuthFlowForTesting());
-  // TODO(crbug/1421278): This should be EXPECT_FALSE.
+  // TODO(crbug.com/40259192): This should be EXPECT_FALSE.
   EXPECT_TRUE(function2->GetWebAuthFlowForTesting());
   EXPECT_TRUE(output1.GetString().find(final_url.spec()) != std::string::npos);
   EXPECT_TRUE(output1.GetString().find("#access_token="));
 
-  // TODO(crbug/1421278): 2 samples should be recorded instead of 1.
+  // TODO(crbug.com/40259192): 2 samples should be recorded instead of 1.
   histogram_tester()->ExpectUniqueSample(
       kLaunchWebAuthFlowResultHistogramName,
       IdentityLaunchWebAuthFlowFunction::Error::kNone, 1);
@@ -3899,8 +3895,8 @@ IN_PROC_BROWSER_TEST_F(LaunchWebAuthFlowFunctionTestWithBrowserTab,
       IdentityLaunchWebAuthFlowFunction::Error::kNone, 2);
 }
 
-// TODO(crbug/1421278): This test should be adapted after the implementation of
-// the bug.
+// TODO(crbug.com/40259192): This test should be adapted after the
+// implementation of the bug.
 IN_PROC_BROWSER_TEST_F(
     LaunchWebAuthFlowFunctionTestWithBrowserTab,
     ExtensionWithDifferentArgsShouldGenerateDifferentFlowsInAQueue) {
@@ -3929,7 +3925,7 @@ IN_PROC_BROWSER_TEST_F(
       function1->GetWebAuthFlowForTesting()->web_contents();
   content::WebContents* consent_web_contents2 =
       function2->GetWebAuthFlowForTesting()->web_contents();
-  // TODO(crbug/1421278): `function2->GetWebAuthFlowForTesting()` should be
+  // TODO(crbug.com/40259192): `function2->GetWebAuthFlowForTesting()` should be
   // null after the changes since it would be in a queue.
   EXPECT_NE(consent_web_contents1, consent_web_contents2);
 
@@ -3946,7 +3942,7 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_FALSE(function1->GetWebAuthFlowForTesting());
   EXPECT_TRUE(output1.GetString().find(final_url.spec()) != std::string::npos);
 
-  // TODO(crbug/1421278): function2 should now run, check for that once the
+  // TODO(crbug.com/40259192): function2 should now run, check for that once the
   // queue is implemented.
 
   histogram_tester()->ExpectUniqueSample(

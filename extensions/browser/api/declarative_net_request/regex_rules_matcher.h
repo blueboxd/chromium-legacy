@@ -131,7 +131,8 @@ class RegexRulesMatcher final : public RulesetMatcherBase {
 
   // RulesetMatcherBase override:
   std::optional<RequestAction> GetAllowAllRequestsAction(
-      const RequestParams& params) const override;
+      const RequestParams& params,
+      RulesetMatchingStage stage) const override;
   std::optional<RequestAction> GetActionIgnoringAncestors(
       const RequestParams& params,
       RulesetMatchingStage stage) const override;
@@ -158,6 +159,7 @@ class RegexRulesMatcher final : public RulesetMatcherBase {
 
   const raw_ptr<const ExtensionMetadataList> metadata_list_;
 
+  // Whether this matcher contains rules that will match on, or modify headers.
   const bool is_extra_headers_matcher_;
 };
 

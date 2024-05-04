@@ -29,7 +29,9 @@ enum class RequestOutcome {
   kGrantedByUser = 2,
   // The request was denied because the requesting site and the top level site
   // were not in the same First-Party Set.
-  kDeniedByFirstPartySet = 3,
+  // This variant is no longer used.
+  // kDeniedByFirstPartySet = 3,
+
   // The request was denied by the user.
   kDeniedByUser = 4,
   // The request was denied because it lacked user gesture, or one of the
@@ -55,8 +57,10 @@ enum class RequestOutcome {
   // The request was aborted by the browser (e.g. because the RenderFrameHost
   // was deleted).
   kDeniedAborted = 13,
+  // The request was allowed by SAA/FedCM integration.
+  kAllowedByFedCM = 14,
 
-  kMaxValue = kDeniedAborted,
+  kMaxValue = kAllowedByFedCM,
 };
 
 class StorageAccessGrantPermissionContext

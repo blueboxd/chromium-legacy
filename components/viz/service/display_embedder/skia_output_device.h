@@ -151,12 +151,6 @@ class VIZ_SERVICE_EXPORT SkiaOutputDevice {
                        OutputSurfaceFrame frame) = 0;
   virtual bool EnsureMinNumberOfBuffers(size_t n);
 
-  // Set the rectangle that will be drawn into on the surface.
-  virtual bool SetDrawRectangle(const gfx::Rect& draw_rectangle);
-
-  // Enable or disable DC layers. Must be called before DC layers are scheduled.
-  virtual void SetEnableDCLayers(bool enabled);
-
   virtual void SetVSyncDisplayID(int64_t display_id) {}
 
   // Whether the output device's primary plane is an overlay. This returns true
@@ -261,7 +255,7 @@ class VIZ_SERVICE_EXPORT SkiaOutputDevice {
       std::vector<gpu::Mailbox> released_overlays = {},
       const gpu::Mailbox& primary_plane_mailbox = gpu::Mailbox());
 
-  // TODO(crbug.com/1442268): Reset device on context loss to fix dangling ptr.
+  // TODO(crbug.com/40266876): Reset device on context loss to fix dangling ptr.
   const raw_ptr<GrDirectContext, DanglingUntriaged> gr_context_;
   const raw_ptr<skgpu::graphite::Context> graphite_context_;
 

@@ -53,7 +53,6 @@
 #include "ui/ozone/platform/wayland/host/wayland_shm.h"
 #include "ui/ozone/platform/wayland/host/wayland_window.h"
 #include "ui/ozone/platform/wayland/host/wayland_window_drag_controller.h"
-#include "ui/ozone/platform/wayland/host/wayland_zaura_output_manager.h"
 #include "ui/ozone/platform/wayland/host/wayland_zaura_output_manager_v2.h"
 #include "ui/ozone/platform/wayland/host/wayland_zaura_shell.h"
 #include "ui/ozone/platform/wayland/host/wayland_zcr_color_management_output.h"
@@ -150,8 +149,6 @@ bool WaylandConnection::Initialize(bool use_threaded_polling) {
                               &SinglePixelBuffer::Instantiate);
   RegisterGlobalObjectFactory(SurfaceAugmenter::kInterfaceName,
                               &SurfaceAugmenter::Instantiate);
-  RegisterGlobalObjectFactory(WaylandZAuraOutputManager::kInterfaceName,
-                              &WaylandZAuraOutputManager::Instantiate);
   RegisterGlobalObjectFactory(WaylandZAuraOutputManagerV2::kInterfaceName,
                               &WaylandZAuraOutputManagerV2::Instantiate);
   RegisterGlobalObjectFactory(WaylandDataDeviceManager::kInterfaceName,
@@ -321,12 +318,9 @@ void WaylandConnection::SetCursorBitmap(const std::vector<SkBitmap>& bitmaps,
 
 bool WaylandConnection::IsDragInProgress() const {
   // |data_drag_controller_| can be null when running on headless weston.
-  return (data_drag_controller_ &&
-          data_drag_controller_->state() !=
-              WaylandDataDragController::State::kIdle) ||
+  return (data_drag_controller_ && data_drag_controller_->IsDragInProgress()) ||
          (window_drag_controller_ &&
-          window_drag_controller_->state() !=
-              WaylandWindowDragController::State::kIdle);
+          window_drag_controller_->IsDragInProgress());
 }
 
 bool WaylandConnection::SupportsSetWindowGeometry() const {
@@ -468,9 +462,8 @@ base::TimeTicks WaylandConnection::ConvertPresentationTime(uint32_t tv_sec_hi,
   if (ret < 0) {
     presentation_now.tv_sec = 0;
     presentation_now.tv_nsec = 0;
-    LOG(ERROR) << "Error: failure to read the wp_presentation clock "
-               << presentation_clk_id_ << ": '" << strerror(errno) << "' "
-               << errno;
+    PLOG(ERROR) << "Error: failure to read the wp_presentation clock "
+                << presentation_clk_id_;
     return base::TimeTicks::Now();
   }
 
@@ -525,21 +518,35 @@ void WaylandConnection::DumpState(std::ostream& out) const {
     out << std::endl;
   }
 
-  if (zaura_output_manager_) {
-    zaura_output_manager_->DumpState(out);
+  if (zaura_output_manager_v2_) {
+    zaura_output_manager_v2_->DumpState(out);
     out << std::endl;
   }
 }
 
 bool WaylandConnection::ShouldUseOverlayDelegation() const {
-  return IsWaylandOverlayDelegationEnabled() && !overlay_delegation_disabled_;
+  // Since using fractional_scale_v1 requires using viewport to rescale the
+  // window to Wayland logical coordinates, using overlays in conjunction with
+  // fractional_scale_v1 would require support for subpixel viewport
+  // destination sizes and subpixel subsurface positions, which currently
+  // isn't present on any non-exo Wayland compositors.
+  bool should_use_overlay_delegation =
+      IsWaylandOverlayDelegationEnabled() && !fractional_scale_manager_v1();
+#if BUILDFLAG(IS_LINUX)
+  // Overlay delegation also requires a single-pixel-buffer protocol, which
+  // allows creation of non-backed solid color buffers. Even though only video
+  // overlays can be supported on Linux, these color buffers are still needed
+  // due to a peculiarity of the design of the Ozone/Wayland with the
+  // WaylandOverlayDelegation feature enabled, which implies usage of a
+  // transparent background buffer for a root surface while the content itself
+  // is attached to a subsurface.
+  should_use_overlay_delegation &= !!single_pixel_buffer();
+#endif
+  return should_use_overlay_delegation;
 }
 
 bool WaylandConnection::IsUsingZAuraOutputManager() const {
-  // TODO(crbug.com/324111902): Remove zaura_output_manager after
-  // zaura_output_manager_v2 has landed and existed for sufficient version
-  // skew.
-  return zaura_output_manager_ || zaura_output_manager_v2_;
+  return !!zaura_output_manager_v2_;
 }
 
 // static

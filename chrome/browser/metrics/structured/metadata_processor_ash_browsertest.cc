@@ -229,8 +229,7 @@ class MetadataProcessorTest : public policy::DevicePolicyCrosBrowserTest,
 
   void SetUp() override {
     // These tests are only applicable if structured metrics service is enabled.
-    if (!base::FeatureList::IsEnabled(kEnabledStructuredMetricsService) ||
-        !base::FeatureList::IsEnabled(kEventSequenceLogging)) {
+    if (!base::FeatureList::IsEnabled(kEnabledStructuredMetricsService)) {
       GTEST_SKIP() << "Skipping test: Structured Metrics Service and CrOS "
                       "Events must be enabled";
     }
@@ -375,7 +374,7 @@ class MetadataProcessorTest : public policy::DevicePolicyCrosBrowserTest,
       &mixin_host_, ash::LoggedInUserMixin::LogInType::kRegular,
       embedded_test_server(), this,
       /*should_launch_browser=*/true, GetPrimaryAccountId(),
-      /*include_initial_user=*/true,
+      /*auth_config=*/std::nullopt, /*include_initial_user=*/true,
       // Don't use EmbeddedPolicyTestServer because it does not support
       // customizing PolicyData.
       // TODO(crbug/1112885): Use EmbeddedPolicyTestServer when this is fixed.
@@ -392,7 +391,7 @@ class MetadataProcessorTest : public policy::DevicePolicyCrosBrowserTest,
           kAppInstallUrl,
           policy::DeviceLocalAccount::TYPE_WEB_KIOSK_APP));
   // Not strictly necessary, but makes kiosk tests run much faster.
-  std::unique_ptr<base::AutoReset<bool>> skip_splash_wait_override_ =
+  base::AutoReset<bool> skip_splash_wait_override_ =
       KioskLaunchController::SkipSplashScreenWaitForTesting();
   std::unique_ptr<ScopedDeviceSettings> settings_;
 };

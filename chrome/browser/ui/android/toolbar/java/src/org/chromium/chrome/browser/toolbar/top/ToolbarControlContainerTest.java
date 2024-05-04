@@ -7,10 +7,16 @@ package org.chromium.chrome.browser.toolbar.top;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
 
+import android.graphics.Rect;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.LayerDrawable;
 import android.view.View;
 
 import org.junit.Before;
@@ -21,11 +27,11 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
+import org.robolectric.Robolectric;
 import org.robolectric.shadows.ShadowLooper;
 
 import org.chromium.base.FeatureList;
 import org.chromium.base.FeatureList.TestValues;
-import org.chromium.base.metrics.UmaRecorderHolder;
 import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.supplier.OneshotSupplierImpl;
 import org.chromium.base.supplier.Supplier;
@@ -36,6 +42,7 @@ import org.chromium.base.test.util.Features.JUnitProcessor;
 import org.chromium.base.test.util.HistogramWatcher;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.cc.input.BrowserControlsState;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.browser_controls.BrowserStateBrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
@@ -47,6 +54,9 @@ import org.chromium.chrome.browser.toolbar.top.CaptureReadinessResult.TopToolbar
 import org.chromium.chrome.browser.toolbar.top.CaptureReadinessResult.TopToolbarBlockCaptureReason;
 import org.chromium.chrome.browser.toolbar.top.ToolbarControlContainer.ToolbarViewResourceAdapter;
 import org.chromium.chrome.browser.toolbar.top.ToolbarControlContainer.ToolbarViewResourceAdapter.ToolbarInMotionStage;
+import org.chromium.chrome.browser.ui.desktop_windowing.AppHeaderState;
+import org.chromium.components.browser_ui.styles.ChromeColors;
+import org.chromium.ui.base.TestActivity;
 
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BooleanSupplier;
@@ -94,7 +104,7 @@ public class ToolbarControlContainerTest {
 
     private void makeAdapter() {
         mAdapter =
-                new ToolbarViewResourceAdapter(mToolbarContainer, false) {
+                new ToolbarViewResourceAdapter(mToolbarContainer) {
                     @Override
                     public void onResourceRequested() {
                         // No-op normal functionality and just count calls instead.
@@ -182,8 +192,6 @@ public class ToolbarControlContainerTest {
     @Before
     public void before() {
         mJniMocker.mock(ResourceFactoryJni.TEST_HOOKS, mResourceFactoryJni);
-        UmaRecorderHolder.resetForTesting();
-        ToolbarFeatures.resetShouldBlockCapturesForFullscreenForTesting();
         when(mToolbarContainer.getWidth()).thenReturn(1);
         when(mToolbarContainer.getHeight()).thenReturn(1);
         when(mToolbarContainer.findViewById(anyInt())).thenReturn(mToolbarHairline);
@@ -390,11 +398,8 @@ public class ToolbarControlContainerTest {
         TestValues testValues = new TestValues();
         testValues.addFeatureFlagOverride(ChromeFeatureList.SUPPRESS_TOOLBAR_CAPTURES, true);
         testValues.addFieldTrialParamOverride(
-                ChromeFeatureList.SUPPRESS_TOOLBAR_CAPTURES,
-                ToolbarFeatures.BLOCK_FOR_FULLSCREEN,
-                "true");
+                ChromeFeatureList.sShouldBlockCapturesForFullscreenParam, "true");
         FeatureList.setTestValues(testValues);
-        ToolbarFeatures.resetShouldBlockCapturesForFullscreenForTesting();
 
         final @ToolbarSnapshotDifference int difference = ToolbarSnapshotDifference.URL_TEXT;
         when(mFullscreenManager.getPersistentFullscreenMode()).thenReturn(true);
@@ -405,5 +410,96 @@ public class ToolbarControlContainerTest {
 
         when(mFullscreenManager.getPersistentFullscreenMode()).thenReturn(false);
         verifyIsDirtyWasAllowedForSnapshot(difference);
+    }
+
+    @Test
+    public void testTempDrawableWithAppHeaderState() {
+        TestActivity activity = Robolectric.buildActivity(TestActivity.class).get();
+        ToolbarControlContainer controlContainer = new ToolbarControlContainer(activity, null);
+        // This is needed for the control container to read the height of the toolbar.
+        controlContainer.setToolbarForTesting(mToolbar);
+
+        // Set app header with 10px padding on left, 20px on right, and 50px height.
+        doReturn(50).when(mToolbar).getTabStripHeight();
+        var appHeaderState =
+                new AppHeaderState(new Rect(0, 0, 100, 50), new Rect(10, 0, 80, 50), true);
+        controlContainer.onAppHeaderStateChanged(appHeaderState);
+        assertNotNull(
+                "Control container background is null after app header state change.",
+                controlContainer.getBackground());
+
+        LayerDrawable background = (LayerDrawable) controlContainer.getBackground();
+        final int tabDrawableIndex = 1;
+        assertEquals(
+                "Left padding for tab drawable is wrong.",
+                10,
+                background.getLayerInsetLeft(tabDrawableIndex));
+        assertEquals(
+                "Right padding for tab drawable is wrong.",
+                20,
+                background.getLayerInsetRight(tabDrawableIndex));
+
+        controlContainer.onAppHeaderStateChanged(new AppHeaderState());
+        background = (LayerDrawable) controlContainer.getBackground();
+        assertEquals(
+                "Left padding for tab drawable is wrong.",
+                0,
+                background.getLayerInsetLeft(tabDrawableIndex));
+        assertEquals(
+                "Right padding for tab drawable is wrong.",
+                0,
+                background.getLayerInsetRight(tabDrawableIndex));
+
+        activity.finish();
+    }
+
+    @Test
+    public void testTempDrawableAfterCompositorInitialized() {
+        TestActivity activity = Robolectric.buildActivity(TestActivity.class).get();
+        ToolbarControlContainer controlContainer = new ToolbarControlContainer(activity, null);
+        // This is needed for the control container to read the height of the toolbar.
+        controlContainer.setToolbarForTesting(mToolbar);
+        controlContainer.setCompositorBackgroundInitialized();
+        assertNull(
+                "Control container background should be null after app header state change.",
+                controlContainer.getBackground());
+
+        // Set app header with 10px padding on left, 20px on right, and 50px height.
+        doReturn(50).when(mToolbar).getTabStripHeight();
+        var appHeaderState =
+                new AppHeaderState(new Rect(0, 0, 100, 50), new Rect(10, 0, 80, 50), true);
+        controlContainer.onAppHeaderStateChanged(appHeaderState);
+        assertNull(
+                "Control container background should not respond to app header state anymore.",
+                controlContainer.getBackground());
+
+        activity.finish();
+    }
+
+    @Test
+    public void testTempDrawableInUnfocusedDesktopWindow() {
+        TestActivity activity = Robolectric.buildActivity(TestActivity.class).get();
+        ToolbarControlContainer controlContainer = new ToolbarControlContainer(activity, null);
+        // This is needed for the control container to read the height of the toolbar.
+        controlContainer.setToolbarForTesting(mToolbar);
+
+        // Assume that the app started in an unfocused desktop window.
+        controlContainer.setAppInUnfocusedDesktopWindow(true);
+
+        // Simulate invocation of app header state change at startup that sets the temp drawable.
+        doReturn(50).when(mToolbar).getTabStripHeight();
+        var appHeaderState =
+                new AppHeaderState(new Rect(0, 0, 100, 50), new Rect(10, 0, 80, 50), true);
+        controlContainer.onAppHeaderStateChanged(appHeaderState);
+
+        var backgroundLayerDrawable = (LayerDrawable) controlContainer.getBackground();
+        var stripBackgroundColorDrawable = (ColorDrawable) backgroundLayerDrawable.getDrawable(0);
+        assertEquals(
+                "Tab strip background color drawable color is incorrect.",
+                ChromeColors.getSurfaceColor(
+                        controlContainer.getContext(), R.dimen.default_elevation_2),
+                stripBackgroundColorDrawable.getColor());
+
+        activity.finish();
     }
 }

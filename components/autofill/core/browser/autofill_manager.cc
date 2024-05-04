@@ -120,7 +120,7 @@ AutofillField* FindAutofillFillField(const FormStructure& form,
 }
 
 // Returns true if |live_form| does not match |cached_form|.
-// TODO(crbug.com/1211834): This should be some form of FormData::DeepEqual().
+// TODO(crbug.com/40183094): This should be some form of FormData::DeepEqual().
 bool CachedFormNeedsUpdate(const FormData& live_form,
                            const FormStructure& cached_form) {
   if (cached_form.version() > live_form.version)
@@ -151,13 +151,11 @@ void AutofillManager::LogAutofillTypePredictionsAvailable(
                       << std::move(buffer);
 }
 
-AutofillManager::AutofillManager(AutofillDriver* driver, AutofillClient* client)
+AutofillManager::AutofillManager(AutofillDriver* driver)
     : driver_(CHECK_DEREF(driver)),
-      client_(CHECK_DEREF(client)),
-      log_manager_(client->GetLogManager()),
+      log_manager_(unsafe_client().GetLogManager()),
       form_interactions_ukm_logger_(CreateFormInteractionsUkmLogger()) {
-  translate::TranslateDriver* translate_driver = client->GetTranslateDriver();
-  if (translate_driver) {
+  if (auto* translate_driver = unsafe_client().GetTranslateDriver()) {
     translate_observation_.Observe(translate_driver);
   }
 }
@@ -167,8 +165,8 @@ AutofillManager::~AutofillManager() {
   translate_observation_.Reset();
 }
 
-// TODO(crbug.com/1309848): Unify form parsing logic.
-// TODO(crbug.com/1465926): ML predictions are not computed here since
+// TODO(crbug.com/40219607): Unify form parsing logic.
+// TODO(crbug.com/40276177): ML predictions are not computed here since
 // `kAutofillPageLanguageDetection` is disabled by default. Once the form
 // parsing logic is unified with `ParseFormsAsync()`, this won't be necessary
 // anymore.
@@ -203,7 +201,7 @@ void AutofillManager::OnLanguageDetermined(
 
   // To be run on a different task (must not access global or member
   // variables).
-  // TODO(crbug.com/1309848): We can't pass a UKM logger because it's a member
+  // TODO(crbug.com/40219607): We can't pass a UKM logger because it's a member
   // variable. To be fixed.
   auto RunHeuristics = [](AsyncContext context) {
     SCOPED_UMA_HISTOGRAM_TIMER(
@@ -341,10 +339,6 @@ void AutofillManager::OnFormsParsed(const std::vector<FormData>& forms) {
     OnFormProcessed(form, *form_structure);
   }
 
-  if (!queryable_forms.empty() || !non_queryable_forms.empty()) {
-    OnAfterProcessParsedForms(form_types);
-  }
-
   // Send the current type predictions to the renderer. For non-queryable forms
   // this is all the information about them that will ever be available. The
   // queryable forms will be updated once the field type query is complete.
@@ -378,7 +372,7 @@ void AutofillManager::OnTextFieldDidChange(const FormData& form,
                             bounding_box, timestamp)
                 .Then(NotifyObserversCallback(
                     &Observer::OnAfterTextFieldDidChange, form.global_id(),
-                    field.global_id(), field.value)));
+                    field.global_id(), field.value())));
 }
 
 void AutofillManager::OnTextFieldDidScroll(const FormData& form,
@@ -433,9 +427,13 @@ void AutofillManager::OnFocusOnFormField(const FormData& form,
                                          const gfx::RectF& bounding_box) {
   if (!IsValidFormData(form) || !IsValidFormFieldData(field))
     return;
+  NotifyObservers(&Observer::OnBeforeFocusOnFormField, form.global_id(),
+                  field.global_id(), form);
   ParseFormAsync(form, ParsingCallback(&AutofillManager::OnFocusOnFormFieldImpl,
                                        field, bounding_box)
-                           .Then(NotifyNoObserversCallback()));
+                           .Then(NotifyObserversCallback(
+                               &Observer::OnAfterFocusOnFormField,
+                               form.global_id(), field.global_id())));
 }
 
 void AutofillManager::OnFocusNoLongerOnForm(bool had_interacted_form) {
@@ -468,7 +466,8 @@ void AutofillManager::OnSelectOrSelectListFieldOptionsDidChange(
 void AutofillManager::OnJavaScriptChangedAutofilledValue(
     const FormData& form,
     const FormFieldData& field,
-    const std::u16string& old_value) {
+    const std::u16string& old_value,
+    bool formatting_only) {
   if (!IsValidFormData(form))
     return;
   NotifyObservers(&Observer::OnBeforeJavaScriptChangedAutofilledValue,
@@ -476,7 +475,7 @@ void AutofillManager::OnJavaScriptChangedAutofilledValue(
   ParseFormAsync(
       form,
       ParsingCallback(&AutofillManager::OnJavaScriptChangedAutofilledValueImpl,
-                      field, old_value)
+                      field, old_value, formatting_only)
           .Then(NotifyObserversCallback(
               &Observer::OnAfterJavaScriptChangedAutofilledValue,
               form.global_id(), field.global_id())));
@@ -609,7 +608,7 @@ void AutofillManager::ParseFormsAsync(
 
   // To be run on a different task (must not access global or member
   // variables).
-  // TODO(crbug.com/1309848): We can't pass a UKM logger because it's a member
+  // TODO(crbug.com/40219607): We can't pass a UKM logger because it's a member
   // variable. To be fixed.
   auto run_heuristics = [](AsyncContext context) {
     SCOPED_UMA_HISTOGRAM_TIMER("Autofill.Timing.ParseFormsAsync.RunHeuristics");
@@ -732,7 +731,7 @@ void AutofillManager::ParseFormAsync(
 
   // To be run on a different task (must not access global or member
   // variables).
-  // TODO(crbug.com/1309848): We can't pass a UKM logger because it's a member
+  // TODO(crbug.com/40219607): We can't pass a UKM logger because it's a member
   // variable. To be fixed.
   auto run_heuristics = [](AsyncContext context) {
     SCOPED_UMA_HISTOGRAM_TIMER("Autofill.Timing.ParseFormAsync.RunHeuristics");
@@ -746,9 +745,9 @@ void AutofillManager::ParseFormAsync(
   // The reason this takes both `form_data` and `form_structure` is that they
   // may disagree on the form's values: if the form is seen for the second time,
   // RetrieveFromCache() resets the `form_structure`'s fields.
-  // TODO(crbug/1345089): Make FormStructure's and FormData's fields correspond,
-  // migrate all event handlers in BrowserAutofillManager take a FormStructure,
-  // and drop the FormData from UpdateCache().
+  // TODO(crbug.com/40232021): Make FormStructure's and FormData's fields
+  // correspond, migrate all event handlers in BrowserAutofillManager take a
+  // FormStructure, and drop the FormData from UpdateCache().
   auto update_cache = base::BindOnce(
       [](base::WeakPtr<AutofillManager> self,
          base::OnceCallback<void(AutofillManager&, const FormData&)> callback,
@@ -825,8 +824,8 @@ void AutofillManager::OnLoadedServerPredictions(
   // and therefore appear only once. This ensures that
   // FindCachedFormsBySignature() produces an output without duplicates in the
   // forms.
-  // TODO(crbug/1064709): |queried_forms| could be a set data structure; their
-  // order should be irrelevant.
+  // TODO(crbug.com/40123827): |queried_forms| could be a set data structure;
+  // their order should be irrelevant.
   DCHECK_EQ(queried_forms.size(),
             std::set<FormStructure*>(queried_forms.begin(), queried_forms.end())
                 .size());

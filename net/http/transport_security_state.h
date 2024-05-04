@@ -40,11 +40,6 @@ enum class CTPolicyCompliance;
 class HostPortPair;
 class X509Certificate;
 
-// Feature that controls whether Certificate Transparency is enforced. This
-// feature is default enabled and meant only as an emergency killswitch. It
-// will not enable enforcement in platforms that otherwise have it disabled.
-NET_EXPORT BASE_DECLARE_FEATURE(kCertificateTransparencyEnforcement);
-
 void NET_EXPORT_PRIVATE SetTransportSecurityStateSourceForTesting(
     const TransportSecurityStateSource* source);
 
@@ -431,10 +426,6 @@ class NET_EXPORT TransportSecurityState {
   void AssertCalledOnValidThread() const {
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   }
-
-  // For unit tests only. Forces CheckCTRequirements() to unconditionally
-  // check compliance.
-  static void SetRequireCTForTesting(bool required);
 
   // For unit tests only.
   void EnableStaticPinsForTesting() { enable_static_pins_ = true; }

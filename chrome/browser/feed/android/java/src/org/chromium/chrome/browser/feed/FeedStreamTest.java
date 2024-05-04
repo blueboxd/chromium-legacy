@@ -93,7 +93,7 @@ import java.util.Map;
 /** Unit tests for {@link FeedStream}. */
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
-// TODO(crbug.com/1210371): Rewrite using paused loop. See crbug for details.
+// TODO(crbug.com/40182398): Rewrite using paused loop. See crbug for details.
 @LooperMode(LooperMode.Mode.LEGACY)
 public class FeedStreamTest {
     private static final int LOAD_MORE_TRIGGER_LOOKAHEAD = 5;
@@ -198,7 +198,6 @@ public class FeedStreamTest {
                         mActivity,
                         mSnackbarManager,
                         mBottomSheetController,
-                        /* isPlaceholderShown= */ false,
                         mWindowAndroid,
                         mShareDelegateSupplier,
                         /* isInterestFeed= */ StreamKind.FOR_YOU,
@@ -531,7 +530,8 @@ public class FeedStreamTest {
                         eq(org.chromium.ui.mojom.WindowOpenDisposition.CURRENT_TAB),
                         any(),
                         eq(false),
-                        any(),
+                        anyInt(),
+                        eq(handler),
                         any());
     }
 
@@ -561,7 +561,8 @@ public class FeedStreamTest {
                         eq(org.chromium.ui.mojom.WindowOpenDisposition.CURRENT_TAB),
                         mLoadUrlParamsCaptor.capture(),
                         eq(false),
-                        any(),
+                        anyInt(),
+                        eq(handler),
                         any());
 
         assertEquals(
@@ -598,7 +599,8 @@ public class FeedStreamTest {
                         eq(org.chromium.ui.mojom.WindowOpenDisposition.CURRENT_TAB),
                         mLoadUrlParamsCaptor.capture(),
                         eq(false),
-                        any(),
+                        anyInt(),
+                        eq(handler),
                         any());
 
         assertEquals(
@@ -615,7 +617,7 @@ public class FeedStreamTest {
                 (FeedStream.FeedSurfaceActionsHandler)
                         mContentManager.getContextValues(0).get(SurfaceActionsHandler.KEY);
         handler.openUrl(OpenMode.SAME_TAB, TEST_URL, DEFAULT_OPEN_URL_OPTIONS);
-        verify(mReliabilityLogger).onOpenCard();
+        verify(mReliabilityLogger).onOpenCard(anyInt(), anyInt());
     }
 
     @Test
@@ -628,7 +630,7 @@ public class FeedStreamTest {
         handler.openUrl(OpenMode.NEW_TAB, TEST_URL, DEFAULT_OPEN_URL_OPTIONS);
 
         // Don't report card opened if the card was opened in a new tab in the background.
-        verify(mReliabilityLogger, never()).onOpenCard();
+        verify(mReliabilityLogger, never()).onOpenCard(anyInt(), anyInt());
     }
 
     @Test
@@ -640,7 +642,7 @@ public class FeedStreamTest {
                         mContentManager.getContextValues(0).get(SurfaceActionsHandler.KEY);
         handler.openUrl(OpenMode.NEW_TAB, TEST_URL, DEFAULT_OPEN_URL_OPTIONS);
         // Don't report card opened if the card was opened in a new tab in the background.
-        verify(mReliabilityLogger, never()).onOpenCard();
+        verify(mReliabilityLogger, never()).onOpenCard(anyInt(), anyInt());
     }
 
     @Test
@@ -651,7 +653,7 @@ public class FeedStreamTest {
                 (FeedStream.FeedSurfaceActionsHandler)
                         mContentManager.getContextValues(0).get(SurfaceActionsHandler.KEY);
         handler.openUrl(OpenMode.INCOGNITO_TAB, TEST_URL, DEFAULT_OPEN_URL_OPTIONS);
-        verify(mReliabilityLogger).onOpenCard();
+        verify(mReliabilityLogger).onOpenCard(anyInt(), anyInt());
     }
 
     @Test
@@ -668,7 +670,8 @@ public class FeedStreamTest {
                         eq(org.chromium.ui.mojom.WindowOpenDisposition.NEW_BACKGROUND_TAB),
                         any(),
                         eq(false),
-                        any(),
+                        anyInt(),
+                        eq(handler),
                         any());
     }
 
@@ -686,7 +689,8 @@ public class FeedStreamTest {
                         eq(org.chromium.ui.mojom.WindowOpenDisposition.NEW_BACKGROUND_TAB),
                         any(),
                         eq(true),
-                        any(),
+                        anyInt(),
+                        eq(handler),
                         any());
     }
 
@@ -703,7 +707,8 @@ public class FeedStreamTest {
                         eq(org.chromium.ui.mojom.WindowOpenDisposition.OFF_THE_RECORD),
                         any(),
                         eq(false),
-                        any(),
+                        anyInt(),
+                        eq(handler),
                         any());
     }
 
@@ -1185,7 +1190,6 @@ public class FeedStreamTest {
                         mActivity,
                         mSnackbarManager,
                         mBottomSheetController,
-                        /* isPlaceholderShown= */ false,
                         mWindowAndroid,
                         mShareDelegateSupplier,
                         /* isInterestFeed= */ StreamKind.FOR_YOU,
@@ -1209,7 +1213,6 @@ public class FeedStreamTest {
                         mActivity,
                         mSnackbarManager,
                         mBottomSheetController,
-                        /* isPlaceholderShown= */ false,
                         mWindowAndroid,
                         mShareDelegateSupplier,
                         /* isInterestFeed= */ StreamKind.FOLLOWING,
@@ -1234,7 +1237,6 @@ public class FeedStreamTest {
                         mActivity,
                         mSnackbarManager,
                         mBottomSheetController,
-                        /* isPlaceholderShown= */ false,
                         mWindowAndroid,
                         mShareDelegateSupplier,
                         StreamKind.FOLLOWING,
@@ -1259,7 +1261,6 @@ public class FeedStreamTest {
                         mActivity,
                         mSnackbarManager,
                         mBottomSheetController,
-                        /* isPlaceholderShown= */ false,
                         mWindowAndroid,
                         mShareDelegateSupplier,
                         StreamKind.FOR_YOU,
@@ -1283,7 +1284,6 @@ public class FeedStreamTest {
                         mActivity,
                         mSnackbarManager,
                         mBottomSheetController,
-                        /* isPlaceholderShown= */ false,
                         mWindowAndroid,
                         mShareDelegateSupplier,
                         StreamKind.FOR_YOU,
@@ -1307,7 +1307,6 @@ public class FeedStreamTest {
                         mActivity,
                         mSnackbarManager,
                         mBottomSheetController,
-                        /* isPlaceholderShown= */ false,
                         mWindowAndroid,
                         mShareDelegateSupplier,
                         StreamKind.FOLLOWING,
@@ -1331,7 +1330,6 @@ public class FeedStreamTest {
                         mActivity,
                         mSnackbarManager,
                         mBottomSheetController,
-                        /* isPlaceholderShown= */ false,
                         mWindowAndroid,
                         mShareDelegateSupplier,
                         StreamKind.FOLLOWING,

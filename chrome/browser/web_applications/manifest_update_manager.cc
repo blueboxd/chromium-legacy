@@ -78,7 +78,7 @@ ManifestUpdateManager::ScopedBypassWindowCloseWaitingForTesting::
   BypassWindowCloseWaitingForTesting() = false;  // IN-TEST
 }
 
-// TODO(crbug.com/1453661): Also handle DidFinishNavigation() and
+// TODO(crbug.com/40272003): Also handle DidFinishNavigation() and
 // do not start the ManifestUpdateCheckCommand if different origin
 // navigation happens.
 class ManifestUpdateManager::PreUpdateWebContentsObserver
@@ -99,7 +99,7 @@ class ManifestUpdateManager::PreUpdateWebContentsObserver
   }
 
   // content::WebContentsObserver:
-  // TODO(crbug.com/1376155): Investigate what other functions can be observed
+  // TODO(crbug.com/40873503): Investigate what other functions can be observed
   //  so that for WebAppIntegrationTestDriver::CloseCustomToolbar(), the same
   //  observer can be used.
   void DidFinishLoad(content::RenderFrameHost* render_frame_host,
@@ -243,18 +243,15 @@ void ManifestUpdateManager::MaybeUpdate(
     return;
   }
 
-  if (provider_->registrar_unsafe().IsShortcutApp(*app_id) &&
-      (base::FeatureList::IsEnabled(
-           webapps::features::kCreateShortcutIgnoresManifest)
 #if BUILDFLAG(IS_CHROMEOS)
-       || chromeos::features::IsCrosShortstandEnabled()
-#endif
-           )) {
+  if (provider_->registrar_unsafe().IsShortcutApp(*app_id) &&
+      chromeos::features::IsCrosShortstandEnabled()) {
     // When create shortcut ignores manifest, we should not update manifest for
     // shortcuts.
     NotifyResult(url, *app_id, ManifestUpdateResult::kShortcutIgnoresManifest);
     return;
   }
+#endif
 
   if (base::Contains(update_stages_, *app_id)) {
     return;
@@ -352,7 +349,6 @@ void ManifestUpdateManager::OnManifestCheckAwaitAppWindowClose(
 
   UpdateStage& update_stage = update_stage_it->second;
   CHECK_EQ(update_stage.stage, UpdateStage::Stage::kCheckingManifestDiff);
-  update_stage.stage = UpdateStage::Stage::kPendingAppWindowClose;
 
   if (check_result != ManifestUpdateCheckResult::kAppUpdateNeeded) {
     OnUpdateStopped(url, app_id,
@@ -371,44 +367,8 @@ void ManifestUpdateManager::OnManifestCheckAwaitAppWindowClose(
         profile, ProfileKeepAliveOrigin::kWebAppUpdate);
   }
 
-  if (base::FeatureList::IsEnabled(
-          features::kWebAppManifestImmediateUpdating) ||
-      BypassWindowCloseWaitingForTesting()) {
-    StartManifestWriteAfterWindowsClosed(url, app_id, std::move(keep_alive),
-                                         std::move(profile_keep_alive),
-                                         std::move(install_info.value()));
-  } else {
-    provider_->ui_manager().NotifyOnAllAppWindowsClosed(
-        app_id,
-        base::BindOnce(
-            &ManifestUpdateManager::StartManifestWriteAfterWindowsClosed,
-            weak_factory_.GetWeakPtr(), url, app_id, std::move(keep_alive),
-            std::move(profile_keep_alive), std::move(install_info.value())));
-    UpdatePendingCallback* callback =
-        GetUpdatePendingCallbackMutableForTesting();  // IN-TEST
-    if (!callback->is_null())
-      std::move(*callback).Run(url);
-  }
-}
-
-void ManifestUpdateManager::StartManifestWriteAfterWindowsClosed(
-    const GURL& url,
-    const webapps::AppId& app_id,
-    std::unique_ptr<ScopedKeepAlive> keep_alive,
-    std::unique_ptr<ScopedProfileKeepAlive> profile_keep_alive,
-    WebAppInstallInfo install_info) {
-  auto update_stage_it = update_stages_.find(app_id);
-  if (update_stage_it == update_stages_.end()) {
-    // If the web_app already has already been uninstalled after the
-    // manifest update data fetch has happened, then we can early exit.
-    return;
-  }
-
-  UpdateStage& update_stage = update_stage_it->second;
-  CHECK_EQ(update_stage.stage, UpdateStage::Stage::kPendingAppWindowClose);
-
   provider_->scheduler().ScheduleManifestUpdateFinalize(
-      url, app_id, std::move(install_info), std::move(keep_alive),
+      url, app_id, std::move(install_info.value()), std::move(keep_alive),
       std::move(profile_keep_alive),
       base::BindOnce(&ManifestUpdateManager::OnUpdateStopped,
                      weak_factory_.GetWeakPtr()));
@@ -525,17 +485,6 @@ bool ManifestUpdateManager::HasUpdatesPendingLoadFinishForTesting() {
 void ManifestUpdateManager::SetLoadFinishedCallbackForTesting(
     base::OnceClosure load_finished_callback) {
   load_finished_callback_ = std::move(load_finished_callback);
-}
-
-base::flat_set<webapps::AppId>
-ManifestUpdateManager::GetAppsPendingWindowsClosingForTesting() {
-  base::flat_set<webapps::AppId> apps_pending_window_closed;
-  for (const auto& data : update_stages_) {
-    if (data.second.stage == UpdateStage::Stage::kPendingAppWindowClose) {
-      apps_pending_window_closed.emplace(data.first);
-    }
-  }
-  return apps_pending_window_closed;
 }
 
 bool ManifestUpdateManager::IsAppPendingPageAndManifestUrlLoadForTesting(

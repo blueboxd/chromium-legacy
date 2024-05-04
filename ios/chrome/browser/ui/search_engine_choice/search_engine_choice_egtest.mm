@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #import "base/strings/sys_string_conversions.h"
-#import "components/search_engines/search_engines_pref_names.h"
 #import "components/search_engines/search_engines_switches.h"
 #import "ios/chrome/browser/ui/search_engine_choice/search_engine_choice_constants.h"
 #import "ios/chrome/browser/ui/search_engine_choice/search_engine_choice_earl_grey_ui_test_util.h"
@@ -23,16 +22,14 @@
 - (void)setUp {
   [[self class] testForStartup];
   [super setUp];
+  // Make sure the search engine has been reset, to avoid any issues if it was
+  // not by a previous test.
+  [SettingsAppInterface resetSearchEngine];
 }
 
 - (void)tearDown {
-  // Clear the "choice was made" timestamp pref.
-  [ChromeEarlGrey
-      clearUserPrefWithName:
-          prefs::kDefaultSearchProviderChoiceScreenCompletionTimestamp];
   // Reset the default search engine to Google
   [SettingsAppInterface resetSearchEngine];
-
   [super tearDown];
 }
 
@@ -62,10 +59,9 @@
   [SearchEngineChoiceEarlGreyUI verifySearchEngineChoiceScreenIsDisplayed];
 }
 
-// TODO(b/325441139): Test fails on device and simulator.
 // Tests that search engine choice dialog is moved to the other active scene
 // when the current scene is removed.
-- (void)DISABLED_testOpenSecondWindow {
+- (void)testOpenSecondWindow {
   if (![ChromeEarlGrey areMultipleWindowsSupported]) {
     EARL_GREY_TEST_DISABLED(@"Multiple windows can't be opened.");
   }
@@ -78,28 +74,36 @@
   [SearchEngineChoiceEarlGreyUI verifySearchEngineChoiceScreenIsDisplayed];
 }
 
-// TODO(b/325441139): Test fails on device and simulator.
 // Tests that the Search Engine Choice screen is displayed, that the primary
 // button is correctly updated when the user selects a search engine then
 // scrolls down and that it correctly sets the default search engine.
-- (void)DISABLED_testSearchEngineChoiceScreenSelectThenScroll {
+// TODO(crbug.com/329210226): Re-enable the test.
+- (void)FLAKY_testSearchEngineChoiceScreenSelectThenScroll {
   // Checks that the choice screen is shown
   [SearchEngineChoiceEarlGreyUI verifySearchEngineChoiceScreenIsDisplayed];
-  // Verifies that the primary button is initially the "More" button.
   id<GREYMatcher> moreButtonMatcher =
       grey_accessibilityID(kSearchEngineMoreButtonIdentifier);
-  [[EarlGrey selectElementWithMatcher:moreButtonMatcher]
-      assertWithMatcher:grey_allOf(grey_enabled(), grey_notNil(), nil)];
-
+  // The more button is not visible on iPads, only on iPhones.
+  // TODO(crbug.com/329579023): We need have a more reliable way to know if
+  // there is a more button or not instead of checking if the test is running
+  // on iPad or iPhone.
+  BOOL moreButtonVisible = ![ChromeEarlGrey isIPadIdiom];
+  if (moreButtonVisible) {
+    // Verifies that the primary button is initially the "More" button.
+    [[EarlGrey selectElementWithMatcher:moreButtonMatcher]
+        assertWithMatcher:grey_allOf(grey_enabled(), grey_notNil(), nil)];
+  }
   // Selects a search engine.
   NSString* searchEngineToSelect = @"Bing";
   [SearchEngineChoiceEarlGreyUI
       selectSearchEngineCellWithName:searchEngineToSelect
                      scrollDirection:kGREYDirectionDown
                               amount:50];
-  // Taps the primary button. This scrolls the table down to the bottom.
-  [[[EarlGrey selectElementWithMatcher:moreButtonMatcher]
-      assertWithMatcher:grey_notNil()] performAction:grey_tap()];
+  if (moreButtonVisible) {
+    // Taps the primary button. This scrolls the table down to the bottom.
+    [[[EarlGrey selectElementWithMatcher:moreButtonMatcher]
+        assertWithMatcher:grey_notNil()] performAction:grey_tap()];
+  }
   // Verify that the "More" button has been removed.
   [[EarlGrey selectElementWithMatcher:moreButtonMatcher]
       assertWithMatcher:grey_nil()];
@@ -109,23 +113,32 @@
       verifyDefaultSearchEngineSetting:searchEngineToSelect];
 }
 
-// TODO(b/325441139): Test fails on device and simulator.
 // Tests that the Search Engine Choice screen is displayed, that the
 // primary button is correctly updated when the user scrolls down then selects a
 // search engine and that it correctly sets the default search engine.
-- (void)DISABLED_testSearchEngineChoiceScreenScrollThenSelect {
+// TODO(crbug.com/329210226): Re-enable the test.
+- (void)FLAKY_testSearchEngineChoiceScreenScrollThenSelect {
   // Checks that the choice screen is shown
   [SearchEngineChoiceEarlGreyUI verifySearchEngineChoiceScreenIsDisplayed];
-  // Verifies that the primary button is initially the "More" button.
   id<GREYMatcher> moreButtonMatcher =
       grey_accessibilityID(kSearchEngineMoreButtonIdentifier);
-  [[EarlGrey selectElementWithMatcher:moreButtonMatcher]
-      assertWithMatcher:grey_allOf(grey_enabled(), grey_notNil(), nil)];
-
-  // Taps the primary button. This scrolls the table down to the bottom.
-  [[[EarlGrey selectElementWithMatcher:moreButtonMatcher]
-      assertWithMatcher:grey_notNil()] performAction:grey_tap()];
-
+  // The more button is not visible on iPads, only on iPhones.
+  // TODO(crbug.com/329579023): We need have a more reliable way to know if
+  // there is a more button or not instead of checking if the test is running
+  // on iPad or iPhone.
+  BOOL moreButtonVisible = ![ChromeEarlGrey isIPadIdiom];
+  if (moreButtonVisible) {
+    // Verifies that the primary button is initially the "More" button.
+    [[EarlGrey selectElementWithMatcher:moreButtonMatcher]
+        assertWithMatcher:grey_allOf(grey_enabled(), grey_notNil(), nil)];
+    // Taps the primary button. This scrolls the table down to the bottom.
+    [[[EarlGrey selectElementWithMatcher:moreButtonMatcher]
+        assertWithMatcher:grey_notNil()] performAction:grey_tap()];
+  } else {
+    // Verify that the more button is not visible.
+    [[EarlGrey selectElementWithMatcher:moreButtonMatcher]
+        assertWithMatcher:grey_nil()];
+  }
   // Verifies that the primary button is now the disabled "Set as Default"
   // button.
   id<GREYMatcher> primaryActionButtonMatcher =
@@ -143,6 +156,33 @@
   [SearchEngineChoiceEarlGreyUI confirmSearchEngineChoiceScreen];
   [SearchEngineChoiceEarlGreyUI
       verifyDefaultSearchEngineSetting:searchEngineToSelect];
+}
+
+// Test that the snippet can be expanded or collapsed.
+// TODO(crbug.com/333519732): Fix this flaky test.
+- (void)FLAKY_testUserActionWhenExpandingSnippetChevron {
+  // Checks that the choice screen is shown
+  [SearchEngineChoiceEarlGreyUI verifySearchEngineChoiceScreenIsDisplayed];
+  if ([ChromeEarlGrey isIPadIdiom]) {
+    return;
+  }
+  NSString* googleSearchEngineIdentifier = @"Google";
+  [SearchEngineChoiceEarlGreyUI
+      selectSearchEngineCellWithName:googleSearchEngineIdentifier
+                     scrollDirection:kGREYDirectionDown
+                              amount:50];
+  id<GREYMatcher> oneLineChevronMatcher = grey_accessibilityID([NSString
+      stringWithFormat:@"%@%@",
+                       kSnippetSearchEngineOneLineChevronIdentifierPrefix,
+                       googleSearchEngineIdentifier]);
+  [[[EarlGrey selectElementWithMatcher:oneLineChevronMatcher]
+      assertWithMatcher:grey_notNil()] performAction:grey_tap()];
+  id<GREYMatcher> expandedChevronMatcher = grey_accessibilityID([NSString
+      stringWithFormat:@"%@%@",
+                       kSnippetSearchEngineExpandedChevronIdentifierPrefix,
+                       googleSearchEngineIdentifier]);
+  [[[EarlGrey selectElementWithMatcher:expandedChevronMatcher]
+      assertWithMatcher:grey_notNil()] performAction:grey_tap()];
 }
 
 @end

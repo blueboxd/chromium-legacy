@@ -10,6 +10,7 @@
 
 #import "base/notreached.h"
 #import "base/strings/sys_string_conversions.h"
+#import "base/uuid.h"
 #import "components/sessions/core/session_types.h"
 #import "components/tab_groups/tab_group_id.h"
 #import "components/tab_groups/tab_group_visual_data.h"
@@ -97,6 +98,14 @@ bool LiveTabContextBrowserAgent::IsTabPinned(int index) const {
   return false;
 }
 
+const std::optional<base::Uuid>
+LiveTabContextBrowserAgent::GetSavedTabGroupIdForGroup(
+    const tab_groups::TabGroupId& group) const {
+  // Not supported by iOS... yet.
+  NOTREACHED();
+  return std::nullopt;
+}
+
 void LiveTabContextBrowserAgent::SetVisualDataForGroup(
     const tab_groups::TabGroupId& group,
     const tab_groups::TabGroupVisualData& visual_data) {
@@ -119,38 +128,23 @@ std::string LiveTabContextBrowserAgent::GetWorkspace() const {
 }
 
 sessions::LiveTab* LiveTabContextBrowserAgent::AddRestoredTab(
-    const std::vector<sessions::SerializedNavigationEntry>& navigations,
+    const sessions::tab_restore::Tab& tab,
     int tab_index,
-    int selected_navigation,
-    const std::string& extension_app_id,
-    std::optional<tab_groups::TabGroupId> group,
-    const tab_groups::TabGroupVisualData& group_visual_data,
-    bool select,
-    bool pin,
-    const sessions::PlatformSpecificTabData* tab_platform_data,
-    const sessions::SerializedUserAgentOverride& user_agent_override,
-    const std::map<std::string, std::string>& extra_data,
-    const SessionID* tab_id) {
-  // TODO(crbug.com/661636): Handle tab-switch animation somehow...
+    bool select) {
+  // TODO(crbug.com/40491734): Handle tab-switch animation somehow...
   web_state_list_->InsertWebState(
       session_util::CreateWebStateWithNavigationEntries(
-          browser_state_, selected_navigation, navigations),
+          browser_state_, tab.normalized_navigation_index(), tab.navigations),
       WebStateList::InsertionParams::AtIndex(tab_index).Activate());
   return nullptr;
 }
 
 sessions::LiveTab* LiveTabContextBrowserAgent::ReplaceRestoredTab(
-    const std::vector<sessions::SerializedNavigationEntry>& navigations,
-    std::optional<tab_groups::TabGroupId> group,
-    int selected_navigation,
-    const std::string& extension_app_id,
-    const sessions::PlatformSpecificTabData* tab_platform_data,
-    const sessions::SerializedUserAgentOverride& user_agent_override,
-    const std::map<std::string, std::string>& extra_data) {
+    const sessions::tab_restore::Tab& tab) {
   web_state_list_->ReplaceWebStateAt(
       web_state_list_->active_index(),
       session_util::CreateWebStateWithNavigationEntries(
-          browser_state_, selected_navigation, navigations));
+          browser_state_, tab.normalized_navigation_index(), tab.navigations));
 
   return nullptr;
 }

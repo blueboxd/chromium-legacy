@@ -175,8 +175,8 @@ bool IsNodeIdIntAttribute(ax::mojom::IntAttribute attr) {
     case ax::mojom::IntAttribute::kImageAnnotationStatus:
     case ax::mojom::IntAttribute::kDropeffectDeprecated:
     case ax::mojom::IntAttribute::kDOMNodeId:
-    case ax::mojom::IntAttribute::kAriaNotificationInterrupt:
-    case ax::mojom::IntAttribute::kAriaNotificationPriority:
+    case ax::mojom::IntAttribute::kAriaNotificationInterruptDeprecated:
+    case ax::mojom::IntAttribute::kAriaNotificationPriorityDeprecated:
       return false;
   }
 
@@ -221,6 +221,8 @@ bool IsNodeIdIntListAttribute(ax::mojom::IntListAttribute attr) {
     case ax::mojom::IntListAttribute::kTextOperationEndAnchorIds:
     case ax::mojom::IntListAttribute::kTextOperationStartAnchorIds:
     case ax::mojom::IntListAttribute::kTextOperations:
+    case ax::mojom::IntListAttribute::kAriaNotificationInterruptProperties:
+    case ax::mojom::IntListAttribute::kAriaNotificationPriorityProperties:
       return false;
   }
 }
@@ -481,11 +483,30 @@ bool AXNodeData::GetHtmlAttribute(const char* attribute,
 }
 
 void AXNodeData::AddChildTreeId(const AXTreeID& tree_id) {
-  ax::mojom::StringAttribute attribute =
-      ax::mojom::StringAttribute::kChildTreeId;
-  if (HasStringAttribute(attribute))
-    RemoveStringAttribute(attribute);
-  string_attributes.emplace_back(attribute, tree_id.ToString());
+  DCHECK(!HasChildTreeID());
+  if (tree_id.type() == ax::mojom::AXTreeIDType::kUnknown) {
+    DUMP_WILL_BE_NOTREACHED_NORETURN();
+    return;
+  }
+  std::string tree_id_str = tree_id.ToString();
+  DCHECK(!tree_id_str.empty());
+  string_attributes.emplace_back(ax::mojom::StringAttribute::kChildTreeId,
+                                 tree_id_str);
+}
+
+bool AXNodeData::HasChildTreeID() const {
+  return HasStringAttribute(ax::mojom::StringAttribute::kChildTreeId);
+}
+
+std::optional<AXTreeID> AXNodeData::GetChildTreeID() const {
+  std::string child_tree_id_str;
+  if (!GetStringAttribute(ax::mojom::StringAttribute::kChildTreeId,
+                          &child_tree_id_str)) {
+    return std::nullopt;
+  }
+
+  DCHECK(!child_tree_id_str.empty());
+  return AXTreeID::FromString(child_tree_id_str);
 }
 
 void AXNodeData::AddBoolAttribute(ax::mojom::BoolAttribute attribute,
@@ -623,7 +644,7 @@ void AXNodeData::SetName(const std::string& name) {
   // Elements with role='presentation' have Role::kNone. They should not be
   // named. Objects with Role::kUnknown were never given a role. This check
   // is only relevant if the name is not empty.
-  // TODO(crbug.com/1361972): It would be nice to have a means to set the name
+  // TODO(crbug.com/40863978): It would be nice to have a means to set the name
   // and role at the same time to avoid this ordering requirement.
   DCHECK(name.empty() ||
          (role != ax::mojom::Role::kNone && role != ax::mojom::Role::kUnknown))
@@ -753,13 +774,6 @@ bool AXNodeData::HasTextStyle(ax::mojom::TextStyle text_style_enum) const {
                    static_cast<uint32_t>(text_style_enum));
 }
 
-bool AXNodeData::HasDropeffect(ax::mojom::Dropeffect dropeffect_enum) const {
-  int32_t dropeffect =
-      GetIntAttribute(ax::mojom::IntAttribute::kDropeffectDeprecated);
-  return IsFlagSet(static_cast<uint32_t>(dropeffect),
-                   static_cast<uint32_t>(dropeffect_enum));
-}
-
 void AXNodeData::AddState(ax::mojom::State state_enum) {
   DCHECK_GT(static_cast<int>(state_enum),
             static_cast<int>(ax::mojom::State::kNone));
@@ -837,6 +851,14 @@ void AXNodeData::AddAction(ax::mojom::Action action_enum) {
   }
 
   actions = ModifyFlag(actions, static_cast<uint32_t>(action_enum), true);
+}
+
+void AXNodeData::RemoveAction(ax::mojom::Action action_enum) {
+  DCHECK_GT(static_cast<int>(action_enum),
+            static_cast<int>(ax::mojom::Action::kNone));
+  DCHECK_LE(static_cast<int>(action_enum),
+            static_cast<int>(ax::mojom::Action::kMaxValue));
+  actions = ModifyFlag(actions, static_cast<uint64_t>(action_enum), false);
 }
 
 void AXNodeData::AddTextStyle(ax::mojom::TextStyle text_style_enum) {
@@ -1649,30 +1671,16 @@ std::string AXNodeData::ToString(bool verbose) const {
       case ax::mojom::IntAttribute::kDOMNodeId:
         result += " dom_node_id=" + value;
         break;
-      case ax::mojom::IntAttribute::kAriaNotificationInterrupt:
-        switch (static_cast<ax::mojom::AriaNotificationInterrupt>(
-            int_attribute.second)) {
-          case ax::mojom::AriaNotificationInterrupt::kNone:
-            result += " aria_notification_interrupt=none";
-            break;
-          case ax::mojom::AriaNotificationInterrupt::kAll:
-            result += " aria_notification_interrupt=all";
-            break;
-          case ax::mojom::AriaNotificationInterrupt::kPending:
-            result += " aria_notification_interrupt=pending";
-            break;
-        }
+      case ax::mojom::IntAttribute::kAriaNotificationInterruptDeprecated:
+        result +=
+            std::string(" aria_notification_interrupt=") +
+            ui::ToString(static_cast<ax::mojom::AriaNotificationInterrupt>(
+                int_attribute.second));
         break;
-      case ax::mojom::IntAttribute::kAriaNotificationPriority:
-        switch (static_cast<ax::mojom::AriaNotificationPriority>(
-            int_attribute.second)) {
-          case ax::mojom::AriaNotificationPriority::kNone:
-            result += " aria_notification_priority=none";
-            break;
-          case ax::mojom::AriaNotificationPriority::kImportant:
-            result += " aria_notification_priority=important";
-            break;
-        }
+      case ax::mojom::IntAttribute::kAriaNotificationPriorityDeprecated:
+        result += std::string(" aria_notification_priority=") +
+                  ui::ToString(static_cast<ax::mojom::AriaNotificationPriority>(
+                      int_attribute.second));
         break;
       case ax::mojom::IntAttribute::kNone:
         break;
@@ -1695,10 +1703,10 @@ std::string AXNodeData::ToString(bool verbose) const {
       case ax::mojom::StringAttribute::kAriaBrailleRoleDescription:
         result += " aria_braille_role_description=" + value;
         break;
-      case ax::mojom::StringAttribute::kAriaNotificationAnnouncement:
+      case ax::mojom::StringAttribute::kAriaNotificationAnnouncementDeprecated:
         result += " aria_notification_announcement=" + value;
         break;
-      case ax::mojom::StringAttribute::kAriaNotificationId:
+      case ax::mojom::StringAttribute::kAriaNotificationIdDeprecated:
         result += " aria_notification_id=" + value;
         break;
       case ax::mojom::StringAttribute::kCheckedStateDescription:
@@ -1708,7 +1716,9 @@ std::string AXNodeData::ToString(bool verbose) const {
         result += " autocomplete=" + value;
         break;
       case ax::mojom::StringAttribute::kChildTreeId:
-        result += " child_tree_id=" + value.substr(0, 8);
+        // This is covered by has_child_tree above. The exact value of the
+        // child tree is not added to the string as it varies, and adding it
+        // would cause tesrt failures.
         break;
       case ax::mojom::StringAttribute::kChildTreeNodeAppId:
         result += " child_tree_node_app_id=" + value.substr(0, 8);
@@ -2023,6 +2033,22 @@ std::string AXNodeData::ToString(bool verbose) const {
       case ax::mojom::IntListAttribute::kTextOperations:
         result += " text_operations=" + IntVectorToString(values);
         break;
+      case ax::mojom::IntListAttribute::kAriaNotificationInterruptProperties:
+        result +=
+            " aria_notification_interrupt_properties=" +
+            VectorToString(values, [](int32_t interrupt) {
+              return ui::ToString(
+                  static_cast<ax::mojom::AriaNotificationInterrupt>(interrupt));
+            });
+        break;
+      case ax::mojom::IntListAttribute::kAriaNotificationPriorityProperties:
+        result +=
+            " aria_notification_priority_properties=" +
+            VectorToString(values, [](int32_t priority) {
+              return ui::ToString(
+                  static_cast<ax::mojom::AriaNotificationPriority>(priority));
+            });
+        break;
     }
   }
 
@@ -2031,9 +2057,16 @@ std::string AXNodeData::ToString(bool verbose) const {
        stringlist_attributes) {
     const std::vector<std::string>& values = stringlist_attribute.second;
     switch (stringlist_attribute.first) {
+      case ax::mojom::StringListAttribute::kAriaNotificationAnnouncements:
+        result +=
+            " aria_notification_announcements=" + base::JoinString(values, ",");
+        break;
+      case ax::mojom::StringListAttribute::kAriaNotificationIds:
+        result += " aria_notification_ids=" + base::JoinString(values, ",");
+        break;
       case ax::mojom::StringListAttribute::kCustomActionDescriptions:
         result +=
-            " custom_action_descriptions: " + base::JoinString(values, ",");
+            " custom_action_descriptions=" + base::JoinString(values, ",");
         break;
       case ax::mojom::StringListAttribute::kNone:
         break;
@@ -2104,25 +2137,6 @@ size_t AXNodeData::AXNodeDataSize::ByteSize() const {
   return int_attribute_size + float_attribute_size + bool_attribute_size +
          string_attribute_size + int_list_attribhute_size +
          string_list_attribute_size + html_attribute_size + child_ids_size;
-}
-
-std::string AXNodeData::DropeffectBitfieldToString() const {
-  if (!HasIntAttribute(ax::mojom::IntAttribute::kDropeffectDeprecated)) {
-    return "";
-  }
-
-  std::string str;
-  for (int dropeffect_idx = static_cast<int>(ax::mojom::Dropeffect::kMinValue);
-       dropeffect_idx <= static_cast<int>(ax::mojom::Dropeffect::kMaxValue);
-       ++dropeffect_idx) {
-    ax::mojom::Dropeffect dropeffect_enum =
-        static_cast<ax::mojom::Dropeffect>(dropeffect_idx);
-    if (HasDropeffect(dropeffect_enum))
-      str += " " + std::string(ui::ToString(dropeffect_enum));
-  }
-
-  // Removing leading space in final string.
-  return str.substr(1);
 }
 
 }  // namespace ui

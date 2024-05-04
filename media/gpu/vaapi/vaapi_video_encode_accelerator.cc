@@ -15,6 +15,7 @@
 
 #include "base/bits.h"
 #include "base/containers/contains.h"
+#include "base/containers/fixed_flat_map.h"
 #include "base/feature_list.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
@@ -134,7 +135,6 @@ bool VaapiVideoEncodeAccelerator::Initialize(
     Client* client,
     std::unique_ptr<MediaLog> media_log) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(child_sequence_checker_);
-  DCHECK_EQ(state_, kUninitialized);
   VLOGF(2) << "Initializing VAVEA, " << config.AsHumanReadableString();
 
   if (!can_use_encoder_) {
@@ -175,7 +175,7 @@ bool VaapiVideoEncodeAccelerator::Initialize(
     }
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
-    // TODO(crbug.com/1186051): Remove this restriction.
+    // TODO(crbug.com/40172317): Remove this restriction.
     for (size_t i = 0; i < config.spatial_layers.size(); ++i) {
       for (size_t j = i + 1; j < config.spatial_layers.size(); ++j) {
         if (config.spatial_layers[i].width == config.spatial_layers[j].width &&
@@ -217,9 +217,9 @@ bool VaapiVideoEncodeAccelerator::Initialize(
     return false;
   }
 
-  native_input_mode_ =
+  bool native_input_mode =
       config.storage_type == Config::StorageType::kGpuMemoryBuffer;
-  if (native_input_mode_ && config.input_format != PIXEL_FORMAT_NV12) {
+  if (native_input_mode && config.input_format != PIXEL_FORMAT_NV12) {
     // TODO(crbug.com/894381): Support other formats.
     MEDIA_LOG(ERROR, media_log.get())
         << "Unsupported format for native input mode: "
@@ -227,7 +227,7 @@ bool VaapiVideoEncodeAccelerator::Initialize(
     return false;
   }
 
-  if (config.HasSpatialLayer() && !native_input_mode_) {
+  if (config.HasSpatialLayer() && !native_input_mode) {
     MEDIA_LOG(ERROR, media_log.get())
         << "Spatial scalability is only supported for native input now";
     return false;
@@ -265,6 +265,9 @@ void VaapiVideoEncodeAccelerator::InitializeTask(const Config& config) {
   DCHECK_EQ(state_, kUninitialized);
   VLOGF(2);
 
+  native_input_mode_ =
+      config.storage_type == Config::StorageType::kGpuMemoryBuffer;
+
   output_codec_ = VideoCodecProfileToVideoCodec(config.output_profile);
   DCHECK_EQ(IsConfiguredForTesting(), !!vaapi_wrapper_);
   if (!IsConfiguredForTesting()) {
@@ -286,10 +289,12 @@ void VaapiVideoEncodeAccelerator::InitializeTask(const Config& config) {
         return;
     }
 
-    vaapi_wrapper_ = VaapiWrapper::CreateForVideoCodec(
-        mode, config.output_profile, EncryptionScheme::kUnencrypted,
-        base::BindRepeating(&ReportVaapiErrorToUMA,
-                            "Media.VaapiVideoEncodeAccelerator.VAAPIError"));
+    vaapi_wrapper_ =
+        VaapiWrapper::CreateForVideoCodec(
+            mode, config.output_profile, EncryptionScheme::kUnencrypted,
+            base::BindRepeating(&ReportVaapiErrorToUMA,
+                                "Media.VaapiVideoEncodeAccelerator.VAAPIError"))
+            .value_or(nullptr);
 
     if (!vaapi_wrapper_) {
       NotifyError({EncoderStatus::Codes::kEncoderInitializationError,
@@ -486,6 +491,7 @@ void VaapiVideoEncodeAccelerator::ReturnBitstreamBuffer(
               << (metadata.key_frame ? "(keyframe)" : "")
               << " id: " << buffer.id() << " size: " << data_size;
   } else {
+    CHECK(metadata.dropped_frame());
     CHECK_EQ(metadata.payload_size_bytes, 0u);
     DVLOGF(4) << "Drop frame bitstream_buffer_id=" << buffer.id();
   }
@@ -668,6 +674,7 @@ scoped_refptr<VASurface> VaapiVideoEncodeAccelerator::CreateInputSurface(
     VaapiWrapper& vaapi_wrapper,
     const gfx::Size& encode_size,
     const std::vector<VaapiWrapper::SurfaceUsageHint>& surface_usage_hints) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(encoder_sequence_checker_);
   if (!base::Contains(input_surfaces_, encode_size)) {
     auto surface =
         CreateScopedSurface(vaapi_wrapper, encode_size, surface_usage_hints);
@@ -731,11 +738,14 @@ scoped_refptr<VaapiWrapper>
 VaapiVideoEncodeAccelerator::CreateVppVaapiWrapper() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(encoder_sequence_checker_);
   DCHECK(!vpp_vaapi_wrapper_);
-  auto vpp_vaapi_wrapper = VaapiWrapper::Create(
-      VaapiWrapper::kVideoProcess, VAProfileNone,
-      EncryptionScheme::kUnencrypted,
-      base::BindRepeating(&ReportVaapiErrorToUMA,
-                          "Media.VaapiVideoEncodeAccelerator.Vpp.VAAPIError"));
+  auto vpp_vaapi_wrapper =
+      VaapiWrapper::Create(
+          VaapiWrapper::kVideoProcess, VAProfileNone,
+          EncryptionScheme::kUnencrypted,
+          base::BindRepeating(
+              &ReportVaapiErrorToUMA,
+              "Media.VaapiVideoEncodeAccelerator.Vpp.VAAPIError"))
+          .value_or(nullptr);
   if (!vpp_vaapi_wrapper) {
     NotifyError({EncoderStatus::Codes::kEncoderUnsupportedConfig,
                  "Failed to initialize VppVaapiWrapper"});
@@ -793,6 +803,7 @@ std::unique_ptr<VaapiVideoEncoderDelegate::EncodeJob>
 VaapiVideoEncodeAccelerator::CreateEncodeJob(
     bool force_keyframe,
     base::TimeDelta frame_timestamp,
+    uint8_t spatial_index,
     bool end_of_picture,
     const VASurface& input_surface,
     scoped_refptr<VASurface> reconstructed_surface) {
@@ -834,8 +845,8 @@ VaapiVideoEncodeAccelerator::CreateEncodeJob(
   }
 
   return std::make_unique<EncodeJob>(
-      force_keyframe, frame_timestamp, end_of_picture, input_surface.id(),
-      std::move(picture), std::move(coded_buffer));
+      force_keyframe, frame_timestamp, spatial_index, end_of_picture,
+      input_surface.id(), std::move(picture), std::move(coded_buffer));
 }
 
 void VaapiVideoEncodeAccelerator::EncodePendingInputs() {
@@ -903,6 +914,7 @@ void VaapiVideoEncodeAccelerator::EncodePendingInputs() {
           (spatial_idx == 0 ? input_frame.force_keyframe : false);
       const bool end_of_picture = spatial_idx == num_spatial_layers - 1;
       job = CreateEncodeJob(force_key, input_frame.frame->timestamp(),
+                            base::checked_cast<uint8_t>(spatial_idx),
                             end_of_picture, *input_surfaces[spatial_idx],
                             std::move(reconstructed_surfaces[spatial_idx]));
       if (!job)
@@ -957,12 +969,6 @@ void VaapiVideoEncodeAccelerator::UseOutputBitstreamBuffer(
   DVLOGF(4) << "id: " << buffer.id();
   DCHECK_CALLED_ON_VALID_SEQUENCE(child_sequence_checker_);
 
-  if (buffer.size() < output_buffer_byte_size_) {
-    NotifyError({EncoderStatus::Codes::kInvalidOutputBuffer,
-                 "Provided bitstream buffer too small"});
-    return;
-  }
-
   encoder_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&VaapiVideoEncodeAccelerator::UseOutputBitstreamBufferTask,
@@ -973,6 +979,12 @@ void VaapiVideoEncodeAccelerator::UseOutputBitstreamBufferTask(
     BitstreamBuffer buffer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(encoder_sequence_checker_);
   DCHECK_NE(state_, kUninitialized);
+
+  if (buffer.size() < output_buffer_byte_size_) {
+    NotifyError({EncoderStatus::Codes::kInvalidOutputBuffer,
+                 "Provided bitstream buffer too small"});
+    return;
+  }
 
   available_bitstream_buffers_.push(std::move(buffer));
   TryToReturnBitstreamBuffers();
@@ -1124,7 +1136,16 @@ void VaapiVideoEncodeAccelerator::SetState(State state) {
     return;
   }
 
-  VLOGF(2) << "setting state to: " << state;
+  DCHECK_CALLED_ON_VALID_SEQUENCE(encoder_sequence_checker_);
+  if (VLOG_IS_ON(2)) {
+    constexpr auto kStateToString = base::MakeFixedFlatMap<State, const char*>(
+        {{kUninitialized, "kUninitialized"},
+         {kEncoding, "kEncoding"},
+         {kError, "kError"}});
+    CHECK(base::Contains(kStateToString, state));
+    VLOGF(2) << "setting state to: " << kStateToString.at(state);
+  }
+
   state_ = state;
 }
 

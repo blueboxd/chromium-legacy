@@ -122,7 +122,7 @@ base::expected<blink_mojom::GraphInfoPtr, String> BuildWebNNGraphInfo(
 void MLGraphMojo::ValidateAndBuild(ScopedMLTrace scoped_trace,
                                    MLContext* context,
                                    const MLNamedOperands& named_outputs,
-                                   ScriptPromiseResolver* resolver) {
+                                   ScriptPromiseResolver<MLGraph>* resolver) {
   auto* graph =
       MakeGarbageCollected<MLGraphMojo>(resolver->GetScriptState(), context);
   scoped_trace.AddStep("MLGraphMojo::ValidateAndBuild");
@@ -144,12 +144,12 @@ void MLGraphMojo::Trace(Visitor* visitor) const {
 
 void MLGraphMojo::BuildImpl(ScopedMLTrace scoped_trace,
                             const MLNamedOperands& outputs,
-                            ScriptPromiseResolver* resolver) {
+                            ScriptPromiseResolver<MLGraph>* resolver) {
   auto graph_info = BuildWebNNGraphInfo(outputs);
   if (!graph_info.has_value()) {
-    resolver->Reject(MakeGarbageCollected<DOMException>(
-        DOMExceptionCode::kDataError,
-        "Failed to build graph: " + graph_info.error()));
+    resolver->RejectWithDOMException(
+        DOMExceptionCode::kNotSupportedError,
+        "Failed to build graph: " + graph_info.error());
     return;
   }
   ml_context_->CreateWebNNGraph(
@@ -158,40 +158,37 @@ void MLGraphMojo::BuildImpl(ScopedMLTrace scoped_trace,
                     std::move(scoped_trace), WrapPersistent(resolver)));
 }
 
-void MLGraphMojo::ComputeImpl(
-    ScopedMLTrace scoped_trace,
-    const MLNamedArrayBufferViews& inputs,
-    const MLNamedArrayBufferViews& outputs,
-    ScriptPromiseResolverTyped<MLComputeResult>* resolver,
-    ExceptionState& exception_state) {
+void MLGraphMojo::ComputeImpl(ScopedMLTrace scoped_trace,
+                              const MLNamedArrayBufferViews& inputs,
+                              const MLNamedArrayBufferViews& outputs,
+                              ScriptPromiseResolver<MLComputeResult>* resolver,
+                              ExceptionState& exception_state) {
+  // The inputs were already verified in the base class so we can fill the
+  // buffer directly with the input tensors.
+  HashMap<String, mojo_base::BigBuffer> name_to_buffer_map;
+  for (const auto& [name, array_buffer_view] : inputs) {
+    name_to_buffer_map.insert(
+        name, mojo_base::BigBuffer(array_buffer_view->ByteSpan()));
+  }
+
   // TransferNamedArrayBufferViews deteches input and output array buffers, so
   // JavaScript can't modify them during Compute().
+  //
+  // TODO(crbug.com/332772485): Call `TransferNamedArrayBufferViews()` from
+  // backend-independent validation logic.
   auto inputs_info = TransferNamedArrayBufferViews(
       resolver->GetScriptState()->GetIsolate(), inputs, exception_state);
   if (!inputs_info) {
-    resolver->Reject(MakeGarbageCollected<DOMException>(
-        DOMExceptionCode::kDataError,
-        "Invalid inputs: " + exception_state.Message()));
+    resolver->Reject(exception_state);
     return;
   }
   auto outputs_info = TransferNamedArrayBufferViews(
       resolver->GetScriptState()->GetIsolate(), outputs, exception_state);
   if (!outputs_info) {
-    resolver->Reject(MakeGarbageCollected<DOMException>(
-        DOMExceptionCode::kDataError,
-        "Invalid outputs: " + exception_state.Message()));
+    resolver->Reject(exception_state);
     return;
   }
 
-  // The inputs were already verified in the base class so we can fill the
-  // buffer directly with the input tensors.
-  HashMap<String, mojo_base::BigBuffer> name_to_buffer_map;
-  for (const auto& [name, input_info] : *inputs_info) {
-    name_to_buffer_map.insert(
-        name,
-        base::make_span(static_cast<const uint8_t*>(input_info.contents.Data()),
-                        input_info.contents.DataLength()));
-  }
   remote_graph_->Compute(
       std::move(name_to_buffer_map),
       WTF::BindOnce(&MLGraphMojo::OnDidCompute, WrapPersistent(this),
@@ -201,53 +198,58 @@ void MLGraphMojo::ComputeImpl(
 
 void MLGraphMojo::OnDidCompute(
     ScopedMLTrace scoped_trace,
-    ScriptPromiseResolverTyped<MLComputeResult>* resolver,
+    ScriptPromiseResolver<MLComputeResult>* resolver,
     std::unique_ptr<Vector<std::pair<String, ArrayBufferViewInfo>>> inputs_info,
     std::unique_ptr<Vector<std::pair<String, ArrayBufferViewInfo>>>
         outputs_info,
     blink_mojom::ComputeResultPtr mojo_result) {
   if (mojo_result->is_error()) {
     const auto& compute_error = mojo_result->get_error();
-    resolver->Reject(MakeGarbageCollected<DOMException>(
+    resolver->RejectWithDOMException(
         ConvertWebNNErrorCodeToDOMExceptionCode(compute_error->code),
-        compute_error->message));
+        compute_error->message);
     return;
   }
 
   const auto& mojo_outputs = mojo_result->get_named_outputs();
-  for (const auto& [output_name, output_view_info] : *outputs_info) {
+  auto* outputs = MakeGarbageCollected<MLNamedArrayBufferViews>();
+  outputs->reserve(outputs_info->size());
+  for (auto& [output_name, output_view_info] : *outputs_info) {
     // The verification before computing ensures the `ml_outputs` match graph's
     // expectation, so we only need to verify the result `mojo_outputs` from
     // WebNN Service here.
     auto output_buffer_iter = mojo_outputs.find(output_name);
     if (output_buffer_iter == mojo_outputs.end()) {
-      resolver->Reject(MakeGarbageCollected<DOMException>(
+      resolver->RejectWithDOMException(
           DOMExceptionCode::kOperationError,
           "There is an unknown output tensor in the computation result: " +
-              output_name));
+              output_name);
       return;
     }
-    const auto output_byte_length = output_view_info.contents.DataLength();
-    if (output_buffer_iter->value.size() != output_byte_length) {
-      resolver->Reject(MakeGarbageCollected<DOMException>(
+    DOMArrayBufferView* output_view =
+        CreateArrayBufferView(std::move(output_view_info));
+    CHECK(output_view);
+    auto output_buffer = base::make_span(output_buffer_iter->value);
+    if (output_buffer.size() != output_view->byteLength()) {
+      resolver->RejectWithDOMException(
           DOMExceptionCode::kUnknownError,
           "The output tensor size does not match graph's expectation: " +
-              output_name));
+              output_name);
       return;
     }
-    memcpy(output_view_info.contents.Data(), output_buffer_iter->value.data(),
-           output_byte_length);
+    output_view->ByteSpan().copy_from(output_buffer);
+    outputs->push_back(std::make_pair(output_name, output_view));
   }
   auto* result = MLComputeResult::Create();
   result->setInputs(*CreateNamedArrayBufferViews(std::move(inputs_info)));
-  result->setOutputs(*CreateNamedArrayBufferViews(std::move(outputs_info)));
+  result->setOutputs(*outputs);
   resolver->Resolve(result);
 }
 
 // TODO: crbug.com/325612086 - Once all backends use mojo, consider refactoring
 // MLGraph creation such that this logic can live in MLContext.
 void MLGraphMojo::OnCreateWebNNGraph(ScopedMLTrace scoped_trace,
-                                     ScriptPromiseResolver* resolver,
+                                     ScriptPromiseResolver<MLGraph>* resolver,
                                      blink_mojom::CreateGraphResultPtr result) {
   ScriptState* script_state = resolver->GetScriptState();
   if (!script_state) {
@@ -257,9 +259,9 @@ void MLGraphMojo::OnCreateWebNNGraph(ScopedMLTrace scoped_trace,
   // Handle error message and throw exception.
   if (result->is_error()) {
     const auto& create_graph_error = result->get_error();
-    resolver->Reject(MakeGarbageCollected<DOMException>(
+    resolver->RejectWithDOMException(
         ConvertWebNNErrorCodeToDOMExceptionCode(create_graph_error->code),
-        create_graph_error->message));
+        create_graph_error->message);
     return;
   }
 

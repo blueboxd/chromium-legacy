@@ -17,7 +17,6 @@
 #include "chrome/browser/ui/android/autofill/autofill_vcn_enroll_bottom_sheet_bridge.h"
 #include "components/autofill/core/browser/payments/autofill_virtual_card_enrollment_infobar_delegate_mobile.h"
 #include "components/autofill/core/browser/payments/autofill_virtual_card_enrollment_infobar_mobile.h"
-#include "components/infobars/content/content_infobar_manager.h"
 #include "components/infobars/core/infobar.h"
 #else
 #include "chrome/browser/ui/browser.h"
@@ -102,8 +101,7 @@ VirtualCardEnrollBubbleControllerImpl::GetVirtualCardBubbleView() const {
 #if !BUILDFLAG(IS_ANDROID)
 void VirtualCardEnrollBubbleControllerImpl::HideIconAndBubble() {
   HideBubble();
-  bubble_state_ = BubbleState::kHidden;
-  enrollment_status_ = EnrollmentStatus::kNone;
+  ResetBubble();
   UpdatePageActionIcon();
 }
 
@@ -191,9 +189,11 @@ void VirtualCardEnrollBubbleControllerImpl::OnLinkClicked(
         link_type, GetVirtualCardEnrollmentBubbleSource());
   }
 
-  web_contents()->OpenURL(content::OpenURLParams(
-      url, content::Referrer(), WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      ui::PAGE_TRANSITION_LINK, false));
+  web_contents()->OpenURL(
+      content::OpenURLParams(url, content::Referrer(),
+                             WindowOpenDisposition::NEW_FOREGROUND_TAB,
+                             ui::PAGE_TRANSITION_LINK, false),
+      /*navigation_handle_callback=*/{});
 
 #if !BUILDFLAG(IS_ANDROID)
   bubble_state_ = BubbleState::kShowingIconAndBubble;
@@ -267,6 +267,16 @@ void VirtualCardEnrollBubbleControllerImpl::OnBubbleClosed(
           is_user_gesture_, ui_model_.enrollment_fields.previously_declined);
     }
   }
+
+#if !BUILDFLAG(IS_ANDROID)
+  // If the bubble is closed with the enrollment_status_ as
+  // kCompleted, hide the bubble and icon and reset bubble to its initial
+  // state.
+  if (enrollment_status_ == EnrollmentStatus::kCompleted) {
+    ResetBubble();
+    UpdatePageActionIcon();
+  }
+#endif
 }
 
 base::OnceCallback<void(PaymentsBubbleClosedReason)>
@@ -314,20 +324,10 @@ void VirtualCardEnrollBubbleControllerImpl::DoShowBubble() {
   auto delegate_mobile =
       std::make_unique<AutofillVirtualCardEnrollmentInfoBarDelegateMobile>(
           this);
-  if (base::FeatureList::IsEnabled(
-          features::kAutofillEnablePaymentsAndroidBottomSheet)) {
-    autofill_vcn_enroll_bottom_sheet_bridge_ =
-        std::make_unique<AutofillVCNEnrollBottomSheetBridge>();
-    autofill_vcn_enroll_bottom_sheet_bridge_->RequestShowContent(
-        web_contents(), std::move(delegate_mobile));
-  } else {
-    infobars::ContentInfoBarManager* infobar_manager =
-        infobars::ContentInfoBarManager::FromWebContents(web_contents());
-    DCHECK(infobar_manager);
-    infobar_manager->RemoveAllInfoBars(true);
-    infobar_manager->AddInfoBar(
-        CreateVirtualCardEnrollmentInfoBarMobile(std::move(delegate_mobile)));
-  }
+  autofill_vcn_enroll_bottom_sheet_bridge_ =
+      std::make_unique<AutofillVCNEnrollBottomSheetBridge>();
+  autofill_vcn_enroll_bottom_sheet_bridge_->RequestShowContent(
+      web_contents(), std::move(delegate_mobile));
 #else
   // If bubble is already showing for another card, close it.
   if (bubble_view()) {
@@ -410,6 +410,12 @@ bool VirtualCardEnrollBubbleControllerImpl::IsWebContentsActive() {
 
   return active_browser->tab_strip_model()->GetActiveWebContents() ==
          web_contents();
+}
+
+void VirtualCardEnrollBubbleControllerImpl::ResetBubble() {
+  bubble_state_ = BubbleState::kHidden;
+  enrollment_status_ = EnrollmentStatus::kNone;
+  confirmation_ui_params_.reset();
 }
 #endif
 

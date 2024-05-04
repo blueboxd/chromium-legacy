@@ -11,6 +11,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/time/default_tick_clock.h"
 #include "mock_quic_data.h"
 #include "net/base/test_proxy_delegate.h"
@@ -75,6 +76,9 @@ inline constexpr char kMsg33[] = "bye!bye!";
 inline constexpr int kLen33 = kLen3 + kLen3;
 inline constexpr char kMsg333[] = "bye!bye!bye!";
 inline constexpr int kLen333 = kLen3 + kLen3 + kLen3;
+
+inline constexpr char kDatagramPayload[] = "youveGotMail";
+inline constexpr int kDatagramLen = 12;
 
 static inline constexpr int k0ByteConnectionId = 0;
 static inline constexpr int k8ByteConnectionId = 8;
@@ -186,6 +190,10 @@ class QuicProxyClientSocketTestBase
       uint64_t packet_number,
       std::string_view data);
 
+  std::unique_ptr<quic::QuicReceivedPacket> ConstructServerDatagramPacket(
+      uint64_t packet_number,
+      std::string_view data);
+
   std::unique_ptr<quic::QuicReceivedPacket> ConstructServerDataFinPacket(
       uint64_t packet_number,
       std::string_view data);
@@ -283,6 +291,8 @@ class QuicProxyClientSocketTestBase
   TestCompletionCallback write_callback_;
 
   quic::test::NoopQpackStreamSenderDelegate noop_qpack_stream_sender_delegate_;
+
+  base::HistogramTester histogram_tester_;
 };
 }  // namespace net
 

@@ -4,6 +4,7 @@
 
 #import <UIKit/UIKit.h>
 
+#import "base/apple/foundation_util.h"
 #import "base/files/file_path.h"
 #import "base/files/file_util.h"
 #import "base/files/scoped_temp_dir.h"
@@ -11,7 +12,6 @@
 #import "base/functional/callback_forward.h"
 #import "base/run_loop.h"
 #import "base/strings/sys_string_conversions.h"
-#import "base/test/scoped_feature_list.h"
 #import "base/time/time.h"
 #import "components/sessions/core/session_id.h"
 #import "ios/chrome/browser/snapshots/model/features.h"
@@ -439,22 +439,15 @@ class ImageFileManagerTest : public PlatformTest {
       return false;
     }
 
-    NSURL* storage_url = [NSURL
-        fileURLWithPath:[NSString stringWithUTF8String:scoped_temp_directory_
-                                                           .GetPath()
-                                                           .value()
-                                                           .c_str()]];
-    NSURL* legacy_url = [NSURL
-        fileURLWithPath:[NSString
-                            stringWithUTF8String:
-                                scoped_temp_directory_for_legacy_path_.GetPath()
-                                    .value()
-                                    .c_str()]];
+    NSURL* storage_url =
+        base::apple::FilePathToNSURL(scoped_temp_directory_.GetPath());
+    NSURL* legacy_url = base::apple::FilePathToNSURL(
+        scoped_temp_directory_for_legacy_path_.GetPath());
     image_file_manager_ =
         [[ImageFileManager alloc] initWithStorageDirectoryUrl:storage_url
                                            legacyDirectoryUrl:legacy_url];
     // Make sure that the storage directory is ready.
-    [image_file_manager_ waitForAllTasks];
+    FlushRunLoops();
 
     CGFloat scale = [SnapshotImageScale floatImageScaleForDevice];
 
@@ -499,6 +492,19 @@ class ImageFileManagerTest : public PlatformTest {
         }];
   }
 
+  void FlushRunLoops() {
+    if (!image_file_manager_) {
+      return;
+    }
+
+    base::RunLoop run_loop;
+    base::RunLoop* run_loop_ptr = &run_loop;
+    [image_file_manager_ waitForAllTasksForTestingWithCallback:(^() {
+                           run_loop_ptr->QuitClosure().Run();
+                         })];
+    run_loop.Run();
+  }
+
   // This function removes all snapshots stored in disk.
   void ClearAllImages() {
     if (!image_file_manager_) {
@@ -506,7 +512,7 @@ class ImageFileManagerTest : public PlatformTest {
     }
 
     [image_file_manager_ removeAllImages];
-    [image_file_manager_ waitForAllTasks];
+    FlushRunLoops();
 
     __block BOOL foundImage = NO;
     __block NSUInteger numCallbacks = 0;
@@ -530,7 +536,7 @@ class ImageFileManagerTest : public PlatformTest {
     }
 
     // Expect that all the callbacks ran and that none retrieved an image.
-    [image_file_manager_ waitForAllTasks];
+    FlushRunLoops();
 
     EXPECT_EQ(test_images_.size(), numCallbacks);
     EXPECT_FALSE(foundImage);
@@ -585,7 +591,7 @@ TEST_F(ImageFileManagerTest, CheckImageColors) {
     __weak UIImage* image = it->second;
     [file_manager writeWithImage:image snapshotID:snapshot_id];
   }
-  [file_manager waitForAllTasks];
+  FlushRunLoops();
 
   for (auto it = test_images_.begin(); it != test_images_.end(); ++it) {
     __weak SnapshotIDWrapper* snapshot_id = it->first;
@@ -644,7 +650,7 @@ TEST_F(ImageFileManagerTest, PurgeImagesOlderThan) {
     __weak UIImage* image = it->second;
     [file_manager writeWithImage:image snapshotID:snapshot_id];
   }
-  [file_manager waitForAllTasks];
+  FlushRunLoops();
 
   NSArray* live_snapshot_ids =
       [[NSArray alloc] initWithObjects:test_images_.begin()->first, nil];
@@ -654,7 +660,7 @@ TEST_F(ImageFileManagerTest, PurgeImagesOlderThan) {
   [file_manager purgeImagesOlderThanWithThresholdDate:
                     [NSDate dateWithTimeIntervalSinceNow:-3600]
                                       liveSnapshotIDs:live_snapshot_ids];
-  [file_manager waitForAllTasks];
+  FlushRunLoops();
 
   // Check that nothing has been deleted.
   for (auto it = test_images_.begin(); it != test_images_.end(); ++it) {
@@ -668,7 +674,7 @@ TEST_F(ImageFileManagerTest, PurgeImagesOlderThan) {
   // Purge the storage.
   [file_manager purgeImagesOlderThanWithThresholdDate:[NSDate now]
                                       liveSnapshotIDs:live_snapshot_ids];
-  [file_manager waitForAllTasks];
+  FlushRunLoops();
 
   // Check that the file have been deleted.
   for (auto it = test_images_.begin(); it != test_images_.end(); ++it) {
@@ -706,7 +712,7 @@ TEST_F(ImageFileManagerTest, RenameSnapshots) {
   SnapshotIDWrapper* new_id = [[SnapshotIDWrapper alloc]
       initWithSnapshotID:SnapshotID(SessionID::NewUnique().id())];
   [file_manager renameSnapshotsWithOldIDs:@[ image1_id ] newIDs:@[ new_id ]];
-  [file_manager waitForAllTasks];
+  FlushRunLoops();
 
   // image1 should have been moved.
   EXPECT_FALSE(
@@ -733,7 +739,7 @@ TEST_F(ImageFileManagerTest, SizeAndScalePreservation) {
   SnapshotIDWrapper* snapshot_id = [[SnapshotIDWrapper alloc]
       initWithSnapshotID:SnapshotID(SessionID::NewUnique().id())];
   [file_manager writeWithImage:image snapshotID:snapshot_id];
-  [file_manager waitForAllTasks];
+  FlushRunLoops();
 
   // Retrive the image and have the callback verify the size and scale.
   __block BOOL callbackComplete = NO;
@@ -746,7 +752,7 @@ TEST_F(ImageFileManagerTest, SizeAndScalePreservation) {
                      callbackComplete = YES;
                    }];
 
-  [file_manager waitForAllTasks];
+  FlushRunLoops();
   EXPECT_TRUE(callbackComplete);
 }
 
@@ -766,7 +772,7 @@ TEST_F(ImageFileManagerTest, DeleteRetinaImages) {
   SnapshotIDWrapper* snapshot_id = [[SnapshotIDWrapper alloc]
       initWithSnapshotID:SnapshotID(SessionID::NewUnique().id())];
   [file_manager writeWithImage:image snapshotID:snapshot_id];
-  [file_manager waitForAllTasks];
+  FlushRunLoops();
 
   // Verify the file was written with @2x in the file name.
   NSURL* retinaFile = [file_manager imagePathWithSnapshotID:snapshot_id];
@@ -775,7 +781,7 @@ TEST_F(ImageFileManagerTest, DeleteRetinaImages) {
 
   // Delete the image and ensure the file is removed.
   [file_manager removeImageWithSnapshotID:snapshot_id];
-  [file_manager waitForAllTasks];
+  FlushRunLoops();
 
   EXPECT_FALSE(
       [[NSFileManager defaultManager] fileExistsAtPath:[retinaFile path]]);
@@ -791,7 +797,7 @@ TEST_F(ImageFileManagerTest, ImageDeleted) {
   SnapshotIDWrapper* snapshot_id = [[SnapshotIDWrapper alloc]
       initWithSnapshotID:SnapshotID(SessionID::NewUnique().id())];
   [file_manager writeWithImage:image snapshotID:snapshot_id];
-  [file_manager waitForAllTasks];
+  FlushRunLoops();
 
   NSURL* image_url = [file_manager imagePathWithSnapshotID:snapshot_id];
   EXPECT_TRUE(
@@ -799,7 +805,7 @@ TEST_F(ImageFileManagerTest, ImageDeleted) {
 
   // Remove the image and ensure the file is removed.
   [file_manager removeImageWithSnapshotID:snapshot_id];
-  [file_manager waitForAllTasks];
+  FlushRunLoops();
 
   EXPECT_FALSE(
       [[NSFileManager defaultManager] fileExistsAtPath:[image_url path]]);
@@ -819,7 +825,7 @@ TEST_F(ImageFileManagerTest, AllImagesDeleted) {
 
   [file_manager writeWithImage:image snapshotID:snapshot_id1];
   [file_manager writeWithImage:image snapshotID:snapshot_id2];
-  [file_manager waitForAllTasks];
+  FlushRunLoops();
 
   NSURL* image_url1 = [file_manager imagePathWithSnapshotID:snapshot_id1];
   NSURL* image_url2 = [file_manager imagePathWithSnapshotID:snapshot_id2];
@@ -830,7 +836,7 @@ TEST_F(ImageFileManagerTest, AllImagesDeleted) {
 
   // Remove all images and ensure the files are removed.
   [file_manager removeAllImages];
-  [file_manager waitForAllTasks];
+  FlushRunLoops();
 
   EXPECT_FALSE(
       [[NSFileManager defaultManager] fileExistsAtPath:[image_url1 path]]);

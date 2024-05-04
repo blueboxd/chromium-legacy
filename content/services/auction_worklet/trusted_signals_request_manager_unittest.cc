@@ -462,7 +462,8 @@ TEST_F(TrustedSignalsRequestManagerTest, BiddingSignalsOneRequestNullKeys) {
           /*trusted_bidding_signals_keys=*/std::nullopt);
   ASSERT_TRUE(signals);
   EXPECT_FALSE(error_msg_.has_value());
-  const auto* priority_vector = signals->GetPriorityVector("name1");
+  const auto priority_vector =
+      signals->GetPerGroupData("name1")->priority_vector;
   ASSERT_TRUE(priority_vector);
   EXPECT_EQ((TrustedSignals::Result::PriorityVector{{"foo", 1}}),
             *priority_vector);
@@ -480,7 +481,8 @@ TEST_F(TrustedSignalsRequestManagerTest, BiddingSignalsOneRequest) {
   EXPECT_FALSE(error_msg_.has_value());
   EXPECT_EQ(R"({"key2":[2],"key1":1})",
             ExtractBiddingSignals(signals.get(), kKeys));
-  const auto* priority_vector = signals->GetPriorityVector("name1");
+  const auto priority_vector =
+      signals->GetPerGroupData("name1")->priority_vector;
   ASSERT_TRUE(priority_vector);
   EXPECT_EQ((TrustedSignals::Result::PriorityVector{{"foo", 1}}),
             *priority_vector);
@@ -544,7 +546,7 @@ TEST_F(TrustedSignalsRequestManagerTest, BiddingSignalsSequentialRequests) {
   EXPECT_FALSE(error_msg_.has_value());
   EXPECT_EQ(R"({"key1":1,"key3":3})",
             ExtractBiddingSignals(signals1.get(), kKeys1));
-  const auto* priority_vector = signals1->GetPriorityVector("name1");
+  auto priority_vector = signals1->GetPerGroupData("name1")->priority_vector;
   ASSERT_TRUE(priority_vector);
   EXPECT_EQ((TrustedSignals::Result::PriorityVector{{"foo", 1}}),
             *priority_vector);
@@ -563,7 +565,7 @@ TEST_F(TrustedSignalsRequestManagerTest, BiddingSignalsSequentialRequests) {
   EXPECT_FALSE(error_msg_.has_value());
   EXPECT_EQ(R"({"key2":[2],"key3":[3]})",
             ExtractBiddingSignals(signals2.get(), kKeys2));
-  priority_vector = signals2->GetPriorityVector("name2");
+  priority_vector = signals2->GetPerGroupData("name2")->priority_vector;
   ASSERT_TRUE(priority_vector);
   EXPECT_EQ((TrustedSignals::Result::PriorityVector{{"foo", 2}}),
             *priority_vector);
@@ -700,7 +702,7 @@ TEST_F(TrustedSignalsRequestManagerTest,
   ASSERT_TRUE(signals1);
   EXPECT_EQ(R"({"key1":1,"key3":3})",
             ExtractBiddingSignals(signals1.get(), kKeys1));
-  const auto* priority_vector = signals1->GetPriorityVector("name1");
+  auto priority_vector = signals1->GetPerGroupData("name1")->priority_vector;
   ASSERT_TRUE(priority_vector);
   EXPECT_EQ((TrustedSignals::Result::PriorityVector{{"foo", 1}}),
             *priority_vector);
@@ -710,7 +712,7 @@ TEST_F(TrustedSignalsRequestManagerTest,
   ASSERT_TRUE(signals2);
   EXPECT_EQ(R"({"key2":[2],"key3":[3]})",
             ExtractBiddingSignals(signals2.get(), kKeys2));
-  priority_vector = signals2->GetPriorityVector("name2");
+  priority_vector = signals2->GetPerGroupData("name2")->priority_vector;
   ASSERT_TRUE(priority_vector);
   EXPECT_EQ((TrustedSignals::Result::PriorityVector{{"foo", 2}}),
             *priority_vector);
@@ -853,7 +855,7 @@ TEST_F(TrustedSignalsRequestManagerTest, BiddingSignalsBatchedRequests) {
   ASSERT_TRUE(signals1);
   EXPECT_EQ(R"({"key1":1,"key3":"3"})",
             ExtractBiddingSignals(signals1.get(), kKeys1));
-  const auto* priority_vector = signals1->GetPriorityVector("name1");
+  auto priority_vector = signals1->GetPerGroupData("name1")->priority_vector;
   ASSERT_TRUE(priority_vector);
   EXPECT_EQ((TrustedSignals::Result::PriorityVector{{"foo", 1}}),
             *priority_vector);
@@ -863,7 +865,7 @@ TEST_F(TrustedSignalsRequestManagerTest, BiddingSignalsBatchedRequests) {
   ASSERT_TRUE(signals2);
   EXPECT_EQ(R"({"key2":[2],"key3":"3"})",
             ExtractBiddingSignals(signals2.get(), kKeys2));
-  priority_vector = signals2->GetPriorityVector("name2");
+  priority_vector = signals2->GetPerGroupData("name2")->priority_vector;
   ASSERT_TRUE(priority_vector);
   EXPECT_EQ((TrustedSignals::Result::PriorityVector{{"foo", 2}}),
             *priority_vector);
@@ -953,6 +955,110 @@ TEST_F(TrustedSignalsRequestManagerTest, ScoringSignalsBatchedRequests) {
                                   kAdComponentRenderUrls3));
 }
 
+// Test of Pause()/Resume() with explicitly controlled batches.
+TEST_F(TrustedSignalsRequestManagerTest, ScoringSignalsBatchedRequestsPause) {
+  scoring_request_manager_.Pause();
+
+  const GURL kRenderUrl1 = GURL("https://foo.test/");
+  const std::vector<std::string> kAdComponentRenderUrls1{
+      "https://foosub.test/", "https://bazsub.test/"};
+
+  const GURL kRenderUrl2 = GURL("https://bar.test/");
+  const std::vector<std::string> kAdComponentRenderUrls2{
+      "https://barsub.test/", "https://bazsub.test/"};
+
+  base::RunLoop run_loop1;
+  scoped_refptr<TrustedSignals::Result> signals1;
+  std::optional<std::string> error_msg1;
+  auto request1 = scoring_request_manager_.RequestScoringSignals(
+      kRenderUrl1, kAdComponentRenderUrls1,
+      /*max_trusted_scoring_signals_url_length=*/0,
+      base::BindOnce(&LoadSignalsCallback, &signals1, &error_msg1,
+                     run_loop1.QuitClosure()));
+
+  base::RunLoop run_loop2;
+  scoped_refptr<TrustedSignals::Result> signals2;
+  std::optional<std::string> error_msg2;
+  auto request2 = scoring_request_manager_.RequestScoringSignals(
+      kRenderUrl2, kAdComponentRenderUrls2,
+      /*max_trusted_scoring_signals_url_length=*/0,
+      base::BindOnce(&LoadSignalsCallback, &signals2, &error_msg2,
+                     run_loop2.QuitClosure()));
+
+  scoring_request_manager_.StartBatchedTrustedSignalsRequest();
+  task_environment_.RunUntilIdle();
+  // Nothing issued yet despite explicit StartBatchedTrustedSignalsRequest()
+  // since we're paused.
+  EXPECT_EQ(0, url_loader_factory_.NumPending());
+
+  // Queued fetches get issued after resume.
+  scoring_request_manager_.Resume();
+  EXPECT_EQ(1, url_loader_factory_.NumPending());
+
+  AddJsonResponse(
+      &url_loader_factory_,
+      GURL("https://url.test/"
+           "?hostname=publisher&renderUrls=https%3A%2F%2Fbar.test%2F,https%3A%"
+           "2F%2Ffoo.test%2F&adComponentRenderUrls=https%3A%2F%2Fbarsub.test%"
+           "2F,https%3A%2F%2Fbazsub.test%2F,https%3A%2F%2Ffoosub.test%2F"),
+      kBaseScoringJson);
+
+  run_loop1.Run();
+  EXPECT_FALSE(error_msg1);
+  ASSERT_TRUE(signals1);
+  EXPECT_EQ(R"({"renderURL":{"https://foo.test/":1},)"
+            R"("renderUrl":{"https://foo.test/":1},)"
+            R"("adComponentRenderURLs":{"https://foosub.test/":2,)"
+            R"("https://bazsub.test/":"4"},)"
+            R"("adComponentRenderUrls":{"https://foosub.test/":2,)"
+            R"("https://bazsub.test/":"4"}})",
+            ExtractScoringSignals(signals1.get(), kRenderUrl1,
+                                  kAdComponentRenderUrls1));
+
+  run_loop2.Run();
+  EXPECT_FALSE(error_msg2);
+  ASSERT_TRUE(signals2);
+  EXPECT_EQ(R"({"renderURL":{"https://bar.test/":[2]},)"
+            R"("renderUrl":{"https://bar.test/":[2]},)"
+            R"("adComponentRenderURLs":{"https://barsub.test/":[3],)"
+            R"("https://bazsub.test/":"4"},)"
+            R"("adComponentRenderUrls":{"https://barsub.test/":[3],)"
+            R"("https://bazsub.test/":"4"}})",
+            ExtractScoringSignals(signals2.get(), kRenderUrl2,
+                                  kAdComponentRenderUrls2));
+
+  const GURL kRenderUrl3 = GURL("https://foo.test/");
+  const std::vector<std::string> kAdComponentRenderUrls3{};
+
+  base::RunLoop run_loop3;
+  scoped_refptr<TrustedSignals::Result> signals3;
+  std::optional<std::string> error_msg3;
+  auto request3 = scoring_request_manager_.RequestScoringSignals(
+      kRenderUrl3, kAdComponentRenderUrls3,
+      /*max_trusted_scoring_signals_url_length=*/0,
+      base::BindOnce(&LoadSignalsCallback, &signals3, &error_msg3,
+                     run_loop3.QuitClosure()));
+
+  // Since we're not paused anymore, issuing happens at
+  // StartBatchedTrustedSignalsRequest call.
+  EXPECT_EQ(0, url_loader_factory_.NumPending());
+  scoring_request_manager_.StartBatchedTrustedSignalsRequest();
+  EXPECT_EQ(1, url_loader_factory_.NumPending());
+
+  AddJsonResponse(
+      &url_loader_factory_,
+      GURL("https://url.test/"
+           "?hostname=publisher&renderUrls=https%3A%2F%2Ffoo.test%2F"),
+      kBaseScoringJson);
+  run_loop3.Run();
+  EXPECT_FALSE(error_msg3);
+  ASSERT_TRUE(signals3);
+  EXPECT_EQ(R"({"renderURL":{"https://foo.test/":1},)"
+            R"("renderUrl":{"https://foo.test/":1}})",
+            ExtractScoringSignals(signals3.get(), kRenderUrl3,
+                                  kAdComponentRenderUrls3));
+}
+
 // Make two requests, cancel both, then try to start a network request. No
 // requests should be made. Only test bidders, since sellers have no significant
 // differences in this path.
@@ -1012,7 +1118,8 @@ TEST_F(TrustedSignalsRequestManagerTest, CancelOneRequest) {
   EXPECT_FALSE(error_msg2);
   ASSERT_TRUE(signals2);
   EXPECT_EQ(R"({"key2":[2]})", ExtractBiddingSignals(signals2.get(), kKeys2));
-  const auto* priority_vector = signals2->GetPriorityVector("name2");
+  const auto priority_vector =
+      signals2->GetPerGroupData("name2")->priority_vector;
   ASSERT_TRUE(priority_vector);
   EXPECT_EQ((TrustedSignals::Result::PriorityVector{{"foo", 2}}),
             *priority_vector);
@@ -1087,7 +1194,8 @@ TEST_F(TrustedSignalsRequestManagerTest, CancelOneLiveRequest) {
   EXPECT_FALSE(error_msg2);
   ASSERT_TRUE(signals2);
   EXPECT_EQ(R"({"key2":[2]})", ExtractBiddingSignals(signals2.get(), kKeys2));
-  const auto* priority_vector = signals2->GetPriorityVector("name2");
+  const auto priority_vector =
+      signals2->GetPerGroupData("name2")->priority_vector;
   ASSERT_TRUE(priority_vector);
   EXPECT_EQ((TrustedSignals::Result::PriorityVector{{"foo", 2}}),
             *priority_vector);
@@ -1189,6 +1297,381 @@ TEST_F(TrustedSignalsRequestManagerTest, AutomaticallySendRequestsEnabled) {
   EXPECT_FALSE(error_msg3);
   ASSERT_TRUE(signals3);
   EXPECT_EQ(R"({"key3":"3"})", ExtractBiddingSignals(signals3.get(), kKeys3));
+}
+
+TEST_F(TrustedSignalsRequestManagerTest, AutomaticallySendRequestsPause) {
+  const GURL kRenderUrl1 = GURL("https://foo.test/");
+  const GURL kRenderUrl2 = GURL("https://bar.test/");
+
+  // Create a new scoring request manager with `automatically_send_requests`
+  // enabled.
+  TrustedSignalsRequestManager scoring_request_manager(
+      TrustedSignalsRequestManager::Type::kScoringSignals, &url_loader_factory_,
+      /*auction_network_events_handler=*/
+      auction_network_events_handler_.CreateRemote(),
+      /*automatically_send_requests=*/true,
+      url::Origin::Create(GURL(kTopLevelOrigin)), trusted_signals_url_,
+      /*experiment_group_id=*/std::nullopt,
+      /*trusted_bidding_signals_slot_size_param=*/"", v8_helper_.get());
+  scoring_request_manager.Pause();
+
+  // Create one Request.
+  base::RunLoop run_loop1;
+  scoped_refptr<TrustedSignals::Result> signals1;
+  std::optional<std::string> error_msg1;
+  auto request1 = scoring_request_manager.RequestScoringSignals(
+      kRenderUrl1, /*ad_component_render_urls=*/{},
+      /*max_trusted_scoring_signals_url_length=*/0,
+      base::BindOnce(&LoadSignalsCallback, &signals1, &error_msg1,
+                     run_loop1.QuitClosure()));
+
+  // Wait until just before the timer triggers. No network requests should be
+  // made.
+  task_environment_.FastForwardBy(TrustedSignalsRequestManager::kAutoSendDelay -
+                                  kTinyTime);
+  EXPECT_EQ(0, url_loader_factory_.NumPending());
+
+  // Nor after the timer, since this is paused.
+  task_environment_.FastForwardBy(kTinyTime);
+  ASSERT_EQ(0, url_loader_factory_.NumPending());
+
+  // Create another Request.
+  base::RunLoop run_loop2;
+  scoped_refptr<TrustedSignals::Result> signals2;
+  std::optional<std::string> error_msg2;
+  auto request2 = scoring_request_manager.RequestScoringSignals(
+      kRenderUrl2, /*ad_component_render_urls=*/{},
+      /*max_trusted_scoring_signals_url_length=*/0,
+      base::BindOnce(&LoadSignalsCallback, &signals2, &error_msg2,
+                     run_loop2.QuitClosure()));
+
+  // Wait until almost the timer time, and Resume. This means the next timer
+  // firing will be shortly after.
+  ASSERT_EQ(0, url_loader_factory_.NumPending());
+  task_environment_.FastForwardBy(TrustedSignalsRequestManager::kAutoSendDelay -
+                                  kTinyTime);
+  EXPECT_EQ(0, url_loader_factory_.NumPending());
+
+  // Upon resume, the first two requests are issued.
+  scoring_request_manager.Resume();
+  EXPECT_EQ(1, url_loader_factory_.NumPending());
+
+  AddJsonResponse(&url_loader_factory_,
+                  GURL("https://url.test/"
+                       "?hostname=publisher&renderUrls=https%3A%2F%2Fbar.test%"
+                       "2F,https%3A%2F%2Ffoo.test%2F"),
+                  kBaseScoringJson);
+
+  run_loop1.Run();
+  EXPECT_FALSE(error_msg1) << *error_msg1;
+  ASSERT_TRUE(signals1);
+  EXPECT_EQ(R"({"renderURL":{"https://foo.test/":1},)"
+            R"("renderUrl":{"https://foo.test/":1}})",
+            ExtractScoringSignals(signals1.get(), kRenderUrl1,
+                                  /*ad_component_render_urls=*/{}));
+
+  run_loop2.Run();
+  EXPECT_FALSE(error_msg2) << *error_msg2;
+  ASSERT_TRUE(signals2);
+  EXPECT_EQ(R"({"renderURL":{"https://bar.test/":[2]},)"
+            R"("renderUrl":{"https://bar.test/":[2]}})",
+            ExtractScoringSignals(signals2.get(), kRenderUrl2,
+                                  /*ad_component_render_urls=*/{}));
+
+  // Queue up a third request.
+  const std::vector<std::string> kAdComponentRenderUrls{"https://foosub.test/",
+                                                        "https://bazsub.test/"};
+  base::RunLoop run_loop3;
+  scoped_refptr<TrustedSignals::Result> signals3;
+  std::optional<std::string> error_msg3;
+  auto request3 = scoring_request_manager.RequestScoringSignals(
+      kRenderUrl1, kAdComponentRenderUrls,
+      /*max_trusted_scoring_signals_url_length=*/0,
+      base::BindOnce(&LoadSignalsCallback, &signals3, &error_msg3,
+                     run_loop3.QuitClosure()));
+
+  // Not issued yet.
+  EXPECT_EQ(0, url_loader_factory_.NumPending());
+
+  // Going ahead by kTinyTime isn't enough either; the timer is started on first
+  // post-Resume request, not kept through the pause period.
+  task_environment_.FastForwardBy(kTinyTime);
+  EXPECT_EQ(0, url_loader_factory_.NumPending());
+
+  task_environment_.FastForwardBy(TrustedSignalsRequestManager::kAutoSendDelay -
+                                  kTinyTime);
+  EXPECT_EQ(1, url_loader_factory_.NumPending());
+
+  // Complete the request.
+  AddJsonResponse(&url_loader_factory_,
+                  GURL("https://url.test/"
+                       "?hostname=publisher&renderUrls=https%3A%2F%2Ffoo.test%"
+                       "2F&adComponentRenderUrls=https%3A%2F%2Fbazsub.test%2F,"
+                       "https%3A%2F%2Ffoosub.test%2F"),
+                  kBaseScoringJson);
+  run_loop3.Run();
+  EXPECT_FALSE(error_msg3) << *error_msg3;
+  ASSERT_TRUE(signals3);
+  EXPECT_EQ(R"({"renderURL":{"https://foo.test/":1},)"
+            R"("renderUrl":{"https://foo.test/":1},)"
+            R"("adComponentRenderURLs":{"https://foosub.test/":2,)"
+            R"("https://bazsub.test/":"4"},)"
+            R"("adComponentRenderUrls":{"https://foosub.test/":2,)"
+            R"("https://bazsub.test/":"4"}})",
+            ExtractScoringSignals(signals3.get(), kRenderUrl1,
+                                  kAdComponentRenderUrls));
+}
+
+TEST_F(TrustedSignalsRequestManagerTest, AutomaticallySendRequestsLatePause) {
+  const GURL kRenderUrl1 = GURL("https://foo.test/");
+  const GURL kRenderUrl2 = GURL("https://bar.test/");
+
+  // Create a new scoring request manager with `automatically_send_requests`
+  // enabled.
+  TrustedSignalsRequestManager scoring_request_manager(
+      TrustedSignalsRequestManager::Type::kScoringSignals, &url_loader_factory_,
+      /*auction_network_events_handler=*/
+      auction_network_events_handler_.CreateRemote(),
+      /*automatically_send_requests=*/true,
+      url::Origin::Create(GURL(kTopLevelOrigin)), trusted_signals_url_,
+      /*experiment_group_id=*/std::nullopt,
+      /*trusted_bidding_signals_slot_size_param=*/"", v8_helper_.get());
+
+  // Create one Request.
+  base::RunLoop run_loop1;
+  scoped_refptr<TrustedSignals::Result> signals1;
+  std::optional<std::string> error_msg1;
+  auto request1 = scoring_request_manager.RequestScoringSignals(
+      kRenderUrl1, /*ad_component_render_urls=*/{},
+      /*max_trusted_scoring_signals_url_length=*/0,
+      base::BindOnce(&LoadSignalsCallback, &signals1, &error_msg1,
+                     run_loop1.QuitClosure()));
+
+  // Wait until a bit before the timer triggers. No network requests should be
+  // made.
+  task_environment_.FastForwardBy(TrustedSignalsRequestManager::kAutoSendDelay -
+                                  kTinyTime - kTinyTime);
+  EXPECT_EQ(0, url_loader_factory_.NumPending());
+
+  // Pause and resume at this point.
+  scoring_request_manager.Pause();
+  scoring_request_manager.Resume();
+
+  // Nothing is issued still, since we haven't gotten to batch end.
+  ASSERT_EQ(0, url_loader_factory_.NumPending());
+
+  // Not yet.
+  task_environment_.FastForwardBy(kTinyTime);
+  ASSERT_EQ(0, url_loader_factory_.NumPending());
+
+  // Create another Request.
+  base::RunLoop run_loop2;
+  scoped_refptr<TrustedSignals::Result> signals2;
+  std::optional<std::string> error_msg2;
+  auto request2 = scoring_request_manager.RequestScoringSignals(
+      kRenderUrl2, /*ad_component_render_urls=*/{},
+      /*max_trusted_scoring_signals_url_length=*/0,
+      base::BindOnce(&LoadSignalsCallback, &signals2, &error_msg2,
+                     run_loop2.QuitClosure()));
+
+  // Now it's up to timer time.
+  task_environment_.FastForwardBy(kTinyTime);
+
+  EXPECT_EQ(1, url_loader_factory_.NumPending());
+
+  AddJsonResponse(&url_loader_factory_,
+                  GURL("https://url.test/"
+                       "?hostname=publisher&renderUrls=https%3A%2F%2Fbar.test%"
+                       "2F,https%3A%2F%2Ffoo.test%2F"),
+                  kBaseScoringJson);
+
+  run_loop1.Run();
+  EXPECT_FALSE(error_msg1) << *error_msg1;
+  ASSERT_TRUE(signals1);
+  EXPECT_EQ(R"({"renderURL":{"https://foo.test/":1},)"
+            R"("renderUrl":{"https://foo.test/":1}})",
+            ExtractScoringSignals(signals1.get(), kRenderUrl1,
+                                  /*ad_component_render_urls=*/{}));
+
+  run_loop2.Run();
+  EXPECT_FALSE(error_msg2) << *error_msg2;
+  ASSERT_TRUE(signals2);
+  EXPECT_EQ(R"({"renderURL":{"https://bar.test/":[2]},)"
+            R"("renderUrl":{"https://bar.test/":[2]}})",
+            ExtractScoringSignals(signals2.get(), kRenderUrl2,
+                                  /*ad_component_render_urls=*/{}));
+}
+
+TEST_F(TrustedSignalsRequestManagerTest, AutomaticallySendRequestsEarlyResume) {
+  const GURL kRenderUrl1 = GURL("https://foo.test/");
+  const GURL kRenderUrl2 = GURL("https://bar.test/");
+
+  // Create a new scoring request manager with `automatically_send_requests`
+  // enabled.
+  TrustedSignalsRequestManager scoring_request_manager(
+      TrustedSignalsRequestManager::Type::kScoringSignals, &url_loader_factory_,
+      /*auction_network_events_handler=*/
+      auction_network_events_handler_.CreateRemote(),
+      /*automatically_send_requests=*/true,
+      url::Origin::Create(GURL(kTopLevelOrigin)), trusted_signals_url_,
+      /*experiment_group_id=*/std::nullopt,
+      /*trusted_bidding_signals_slot_size_param=*/"", v8_helper_.get());
+  scoring_request_manager.Pause();
+
+  // Create one Request.
+  base::RunLoop run_loop1;
+  scoped_refptr<TrustedSignals::Result> signals1;
+  std::optional<std::string> error_msg1;
+  auto request1 = scoring_request_manager.RequestScoringSignals(
+      kRenderUrl1, /*ad_component_render_urls=*/{},
+      /*max_trusted_scoring_signals_url_length=*/0,
+      base::BindOnce(&LoadSignalsCallback, &signals1, &error_msg1,
+                     run_loop1.QuitClosure()));
+
+  // Wait until a bit before the timer triggers. No network requests should be
+  // made.
+  task_environment_.FastForwardBy(TrustedSignalsRequestManager::kAutoSendDelay -
+                                  kTinyTime - kTinyTime);
+  EXPECT_EQ(0, url_loader_factory_.NumPending());
+
+  scoring_request_manager.Resume();
+
+  // Nothing is issued still, since we haven't gotten to batch end.
+  ASSERT_EQ(0, url_loader_factory_.NumPending());
+
+  // Not yet.
+  task_environment_.FastForwardBy(kTinyTime);
+  ASSERT_EQ(0, url_loader_factory_.NumPending());
+
+  // Create another Request.
+  base::RunLoop run_loop2;
+  scoped_refptr<TrustedSignals::Result> signals2;
+  std::optional<std::string> error_msg2;
+  auto request2 = scoring_request_manager.RequestScoringSignals(
+      kRenderUrl2, /*ad_component_render_urls=*/{},
+      /*max_trusted_scoring_signals_url_length=*/0,
+      base::BindOnce(&LoadSignalsCallback, &signals2, &error_msg2,
+                     run_loop2.QuitClosure()));
+
+  // Now it's up to timer time.
+  task_environment_.FastForwardBy(kTinyTime);
+
+  EXPECT_EQ(1, url_loader_factory_.NumPending());
+
+  AddJsonResponse(&url_loader_factory_,
+                  GURL("https://url.test/"
+                       "?hostname=publisher&renderUrls=https%3A%2F%2Fbar.test%"
+                       "2F,https%3A%2F%2Ffoo.test%2F"),
+                  kBaseScoringJson);
+
+  run_loop1.Run();
+  EXPECT_FALSE(error_msg1) << *error_msg1;
+  ASSERT_TRUE(signals1);
+  EXPECT_EQ(R"({"renderURL":{"https://foo.test/":1},)"
+            R"("renderUrl":{"https://foo.test/":1}})",
+            ExtractScoringSignals(signals1.get(), kRenderUrl1,
+                                  /*ad_component_render_urls=*/{}));
+
+  run_loop2.Run();
+  EXPECT_FALSE(error_msg2) << *error_msg2;
+  ASSERT_TRUE(signals2);
+  EXPECT_EQ(R"({"renderURL":{"https://bar.test/":[2]},)"
+            R"("renderUrl":{"https://bar.test/":[2]}})",
+            ExtractScoringSignals(signals2.get(), kRenderUrl2,
+                                  /*ad_component_render_urls=*/{}));
+}
+
+TEST_F(TrustedSignalsRequestManagerTest,
+       AutomaticallySendRequestsPauseWithExplicitFlush) {
+  const GURL kRenderUrl1 = GURL("https://foo.test/");
+  const GURL kRenderUrl2 = GURL("https://bar.test/");
+
+  // Create a new scoring request manager with `automatically_send_requests`
+  // enabled.
+  TrustedSignalsRequestManager scoring_request_manager(
+      TrustedSignalsRequestManager::Type::kScoringSignals, &url_loader_factory_,
+      /*auction_network_events_handler=*/
+      auction_network_events_handler_.CreateRemote(),
+      /*automatically_send_requests=*/true,
+      url::Origin::Create(GURL(kTopLevelOrigin)), trusted_signals_url_,
+      /*experiment_group_id=*/std::nullopt,
+      /*trusted_bidding_signals_slot_size_param=*/"", v8_helper_.get());
+
+  // Create one Request.
+  base::RunLoop run_loop1;
+  scoped_refptr<TrustedSignals::Result> signals1;
+  std::optional<std::string> error_msg1;
+  auto request1 = scoring_request_manager.RequestScoringSignals(
+      kRenderUrl1, /*ad_component_render_urls=*/{},
+      /*max_trusted_scoring_signals_url_length=*/0,
+      base::BindOnce(&LoadSignalsCallback, &signals1, &error_msg1,
+                     run_loop1.QuitClosure()));
+
+  // Pause before it gets chance to issue.
+  scoring_request_manager.Pause();
+
+  // Explicitly ask for a send; still doesn't send.
+  scoring_request_manager.StartBatchedTrustedSignalsRequest();
+  EXPECT_EQ(0, url_loader_factory_.NumPending());
+
+  // Wait until just before the timer triggers. No network requests should be
+  // made.
+  task_environment_.FastForwardBy(TrustedSignalsRequestManager::kAutoSendDelay -
+                                  kTinyTime);
+  EXPECT_EQ(0, url_loader_factory_.NumPending());
+
+  scoring_request_manager.Resume();
+
+  // The request got sent now.
+  ASSERT_EQ(1, url_loader_factory_.NumPending());
+  AddJsonResponse(
+      &url_loader_factory_,
+      GURL("https://url.test/"
+           "?hostname=publisher&renderUrls=https%3A%2F%2Ffoo.test%2F"),
+      kBaseScoringJson);
+
+  run_loop1.Run();
+  EXPECT_FALSE(error_msg1) << *error_msg1;
+  ASSERT_TRUE(signals1);
+  EXPECT_EQ(R"({"renderURL":{"https://foo.test/":1},)"
+            R"("renderUrl":{"https://foo.test/":1}})",
+            ExtractScoringSignals(signals1.get(), kRenderUrl1,
+                                  /*ad_component_render_urls=*/{}));
+
+  // Create another Request.
+  base::RunLoop run_loop2;
+  scoped_refptr<TrustedSignals::Result> signals2;
+  std::optional<std::string> error_msg2;
+  auto request2 = scoring_request_manager.RequestScoringSignals(
+      kRenderUrl2, /*ad_component_render_urls=*/{},
+      /*max_trusted_scoring_signals_url_length=*/0,
+      base::BindOnce(&LoadSignalsCallback, &signals2, &error_msg2,
+                     run_loop2.QuitClosure()));
+
+  // Up to timer time from initial request, it's still not sent.
+  task_environment_.FastForwardBy(kTinyTime);
+  EXPECT_EQ(0, url_loader_factory_.NumPending());
+
+  // Need to get to timer time after resume.
+  task_environment_.FastForwardBy(TrustedSignalsRequestManager::kAutoSendDelay -
+                                  kTinyTime - kTinyTime);
+  EXPECT_EQ(0, url_loader_factory_.NumPending());
+  task_environment_.FastForwardBy(kTinyTime);
+  EXPECT_EQ(1, url_loader_factory_.NumPending());
+
+  AddJsonResponse(
+      &url_loader_factory_,
+      GURL("https://url.test/"
+           "?hostname=publisher&renderUrls=https%3A%2F%2Fbar.test%2F"),
+      kBaseScoringJson);
+
+  run_loop2.Run();
+  EXPECT_FALSE(error_msg2) << *error_msg2;
+  ASSERT_TRUE(signals2);
+  EXPECT_EQ(R"({"renderURL":{"https://bar.test/":[2]},)"
+            R"("renderUrl":{"https://bar.test/":[2]}})",
+            ExtractScoringSignals(signals2.get(), kRenderUrl2,
+                                  /*ad_component_render_urls=*/{}));
 }
 
 TEST_F(TrustedSignalsRequestManagerTest,
@@ -1341,7 +1824,8 @@ TEST_F(TrustedSignalsRequestManagerTest, BiddingExperimentGroupIds) {
   EXPECT_FALSE(error_msg);
   ASSERT_TRUE(signals);
   EXPECT_EQ(R"({"key1":1})", ExtractBiddingSignals(signals.get(), kKeys));
-  const auto* priority_vector = signals->GetPriorityVector("name1");
+  const auto priority_vector =
+      signals->GetPerGroupData("name1")->priority_vector;
   ASSERT_TRUE(priority_vector);
   EXPECT_EQ((TrustedSignals::Result::PriorityVector{{"foo", 1}}),
             *priority_vector);
@@ -1413,7 +1897,8 @@ TEST_F(TrustedSignalsRequestManagerSplitURLTest,
   EXPECT_FALSE(error_msg_.has_value());
   EXPECT_EQ(R"({"key2":[2],"key1":1})",
             ExtractBiddingSignals(signals.get(), kKeys));
-  const auto* priority_vector = signals->GetPriorityVector("name1");
+  const auto priority_vector =
+      signals->GetPerGroupData("name1")->priority_vector;
   ASSERT_TRUE(priority_vector);
   EXPECT_EQ((TrustedSignals::Result::PriorityVector{{"foo", 1}}),
             *priority_vector);
@@ -1477,7 +1962,8 @@ TEST_F(TrustedSignalsRequestManagerSplitURLTest,
   EXPECT_FALSE(error_msg_.has_value());
   EXPECT_EQ(R"({"key2":[2],"key1":1})",
             ExtractBiddingSignals(signals.get(), kKeys));
-  const auto* priority_vector = signals->GetPriorityVector("name1");
+  const auto priority_vector =
+      signals->GetPerGroupData("name1")->priority_vector;
   ASSERT_TRUE(priority_vector);
   EXPECT_EQ((TrustedSignals::Result::PriorityVector{{"foo", 1}}),
             *priority_vector);
@@ -1541,7 +2027,8 @@ TEST_F(TrustedSignalsRequestManagerSplitURLTest,
   EXPECT_FALSE(error_msg_.has_value());
   EXPECT_EQ(R"({"key2":[2],"key1":1})",
             ExtractBiddingSignals(signals.get(), kKeys));
-  const auto* priority_vector = signals->GetPriorityVector("name1");
+  const auto priority_vector =
+      signals->GetPerGroupData("name1")->priority_vector;
   ASSERT_TRUE(priority_vector);
   EXPECT_EQ((TrustedSignals::Result::PriorityVector{{"foo", 1}}),
             *priority_vector);
@@ -1631,7 +2118,7 @@ TEST_F(TrustedSignalsRequestManagerSplitURLTest,
   ASSERT_TRUE(signals1);
   EXPECT_EQ(R"({"key1":1,"key3":"3"})",
             ExtractBiddingSignals(signals1.get(), kKeys1));
-  const auto* priority_vector = signals1->GetPriorityVector("name1");
+  auto priority_vector = signals1->GetPerGroupData("name1")->priority_vector;
   ASSERT_TRUE(priority_vector);
   EXPECT_EQ((TrustedSignals::Result::PriorityVector{{"foo", 1}}),
             *priority_vector);
@@ -1641,7 +2128,7 @@ TEST_F(TrustedSignalsRequestManagerSplitURLTest,
   ASSERT_TRUE(signals2);
   EXPECT_EQ(R"({"key2":[2],"key3":"3"})",
             ExtractBiddingSignals(signals2.get(), kKeys2));
-  priority_vector = signals2->GetPriorityVector("name2");
+  priority_vector = signals2->GetPerGroupData("name2")->priority_vector;
   ASSERT_TRUE(priority_vector);
   EXPECT_EQ((TrustedSignals::Result::PriorityVector{{"foo", 2}}),
             *priority_vector);
@@ -1784,7 +2271,7 @@ TEST_F(TrustedSignalsRequestManagerSplitURLTest,
   ASSERT_TRUE(signals1);
   EXPECT_EQ(R"({"key1":1,"key3":3})",
             ExtractBiddingSignals(signals1.get(), kKeys1));
-  const auto* priority_vector = signals1->GetPriorityVector("name1");
+  auto priority_vector = signals1->GetPerGroupData("name1")->priority_vector;
   ASSERT_TRUE(priority_vector);
   EXPECT_EQ((TrustedSignals::Result::PriorityVector{{"foo", 1}}),
             *priority_vector);
@@ -1794,7 +2281,7 @@ TEST_F(TrustedSignalsRequestManagerSplitURLTest,
   ASSERT_TRUE(signals2);
   EXPECT_EQ(R"({"key2":[2],"key3":[3]})",
             ExtractBiddingSignals(signals2.get(), kKeys2));
-  priority_vector = signals2->GetPriorityVector("name2");
+  priority_vector = signals2->GetPerGroupData("name2")->priority_vector;
   ASSERT_TRUE(priority_vector);
   EXPECT_EQ((TrustedSignals::Result::PriorityVector{{"foo", 2}}),
             *priority_vector);
@@ -1953,7 +2440,7 @@ TEST_F(TrustedSignalsRequestManagerSplitURLTest,
   ASSERT_TRUE(signals1);
   EXPECT_EQ(R"({"key1":1,"key3":"3"})",
             ExtractBiddingSignals(signals1.get(), kKeys1));
-  const auto* priority_vector = signals1->GetPriorityVector("name1");
+  auto priority_vector = signals1->GetPerGroupData("name1")->priority_vector;
   ASSERT_TRUE(priority_vector);
   EXPECT_EQ((TrustedSignals::Result::PriorityVector{{"foo", 1}}),
             *priority_vector);
@@ -1963,7 +2450,7 @@ TEST_F(TrustedSignalsRequestManagerSplitURLTest,
   ASSERT_TRUE(signals2);
   EXPECT_EQ(R"({"key2":[2],"key3":"3"})",
             ExtractBiddingSignals(signals2.get(), kKeys2));
-  priority_vector = signals2->GetPriorityVector("name2");
+  priority_vector = signals2->GetPerGroupData("name2")->priority_vector;
   ASSERT_TRUE(priority_vector);
   EXPECT_EQ((TrustedSignals::Result::PriorityVector{{"foo", 2}}),
             *priority_vector);
@@ -1973,7 +2460,7 @@ TEST_F(TrustedSignalsRequestManagerSplitURLTest,
   ASSERT_TRUE(signals3);
   EXPECT_EQ(R"({"key1":[2],"key2":[3]})",
             ExtractBiddingSignals(signals3.get(), kKeys3));
-  priority_vector = signals3->GetPriorityVector("name3");
+  priority_vector = signals3->GetPerGroupData("name3")->priority_vector;
   ASSERT_TRUE(priority_vector);
   EXPECT_EQ((TrustedSignals::Result::PriorityVector{{"foo", 3}}),
             *priority_vector);
@@ -2160,8 +2647,8 @@ TEST_F(TrustedSignalsRequestManagerSplitURLTest,
   ASSERT_TRUE(signals1);
   EXPECT_EQ(R"({"key1":[2],"key3":[3]})",
             ExtractBiddingSignals(signals1.get(), kKeys1));
-  const auto* priority_vector =
-      signals1->GetPriorityVector("extremelyLongName");
+  auto priority_vector =
+      signals1->GetPerGroupData("extremelyLongName")->priority_vector;
   ASSERT_TRUE(priority_vector);
   EXPECT_EQ((TrustedSignals::Result::PriorityVector{{"foo", 3}}),
             *priority_vector);
@@ -2171,7 +2658,7 @@ TEST_F(TrustedSignalsRequestManagerSplitURLTest,
   ASSERT_TRUE(signals2);
   EXPECT_EQ(R"({"key2":[2],"key3":"3"})",
             ExtractBiddingSignals(signals2.get(), kKeys2));
-  priority_vector = signals2->GetPriorityVector("name1");
+  priority_vector = signals2->GetPerGroupData("name1")->priority_vector;
   ASSERT_TRUE(priority_vector);
   EXPECT_EQ((TrustedSignals::Result::PriorityVector{{"foo", 1}}),
             *priority_vector);
@@ -2181,7 +2668,7 @@ TEST_F(TrustedSignalsRequestManagerSplitURLTest,
   ASSERT_TRUE(signals3);
   EXPECT_EQ(R"({"key1":1,"key2":[2]})",
             ExtractBiddingSignals(signals3.get(), kKeys3));
-  priority_vector = signals3->GetPriorityVector("name2");
+  priority_vector = signals3->GetPerGroupData("name2")->priority_vector;
   ASSERT_TRUE(priority_vector);
   EXPECT_EQ((TrustedSignals::Result::PriorityVector{{"foo", 2}}),
             *priority_vector);
@@ -2343,7 +2830,7 @@ TEST_F(TrustedSignalsRequestManagerSplitURLTest,
   run_loop1.Run();
   EXPECT_FALSE(error_msg1);
   ASSERT_TRUE(signals1);
-  const auto* priority_vector = signals1->GetPriorityVector("name");
+  auto priority_vector = signals1->GetPerGroupData("name")->priority_vector;
   ASSERT_TRUE(priority_vector);
   EXPECT_EQ((TrustedSignals::Result::PriorityVector{{"foo", 1}}),
             *priority_vector);
@@ -2351,7 +2838,7 @@ TEST_F(TrustedSignalsRequestManagerSplitURLTest,
   run_loop2.Run();
   EXPECT_FALSE(error_msg2);
   ASSERT_TRUE(signals2);
-  priority_vector = signals2->GetPriorityVector("name");
+  priority_vector = signals2->GetPerGroupData("name")->priority_vector;
   ASSERT_TRUE(priority_vector);
   EXPECT_EQ((TrustedSignals::Result::PriorityVector{{"foo", 1}}),
             *priority_vector);

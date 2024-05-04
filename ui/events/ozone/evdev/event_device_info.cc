@@ -46,6 +46,10 @@ struct DeviceId {
   }
 };
 
+constexpr auto kKeyboardAllowlist = base::MakeFixedFlatSet<DeviceId>({
+    {0x2516, 0x0016},  // CM Storm Quickfire Pro Ultimate
+});
+
 constexpr auto kKeyboardBlocklist = base::MakeFixedFlatSet<DeviceId>({
     {0x0111, 0x1830},  // SteelSeries Rival 3 Wireless (Bluetooth)
     {0x0111, 0x183a},  // SteelSeries Aerox 3 Wireless (Bluetooth)
@@ -327,6 +331,10 @@ bool IsForceLibinput(const EventDeviceInfo& devinfo) {
 const uint16_t kSteelSeriesBluetoothVendorId = 0x0111;
 const uint16_t kSteelSeriesStratusDuoBluetoothProductId = 0x1431;
 const uint16_t kSteelSeriesStratusPlusBluetoothProductId = 0x1434;
+
+const uint16_t kFlossVirtualSuspendVendorId = 0x0000;
+const uint16_t kFlossVirtualSuspendProductId = 0x0000;
+const char kFlossVirtualSuspendName[] = "VIRTUAL_SUSPEND_UHID";
 
 bool GetEventBits(int fd,
                   const base::FilePath& path,
@@ -816,11 +824,21 @@ bool IsInKeyboardBlockList(input_id input_id_) {
   return false;
 }
 
+bool IsInKeyboardAllowList(input_id input_id_) {
+  DeviceId id = {input_id_.vendor, input_id_.product};
+  return kKeyboardAllowlist.contains(id);
+}
+
 bool EventDeviceInfo::HasKeyboard() const {
-  return GetKeyboardType() == KeyboardType::VALID_KEYBOARD;
+  KeyboardType type = GetKeyboardType();
+  return type == KeyboardType::VALID_KEYBOARD ||
+         type == KeyboardType::IN_ALLOWLIST;
 }
 
 KeyboardType EventDeviceInfo::GetKeyboardType() const {
+  if (IsInKeyboardAllowList(input_id_)) {
+    return KeyboardType::IN_ALLOWLIST;
+  }
   if (!HasEventType(EV_KEY))
     return KeyboardType::NOT_KEYBOARD;
   if (IsInKeyboardBlockList(input_id_))
@@ -844,6 +862,15 @@ bool EventDeviceInfo::HasMouse() const {
   if (input_id_.vendor == kSteelSeriesBluetoothVendorId &&
       (input_id_.product == kSteelSeriesStratusDuoBluetoothProductId ||
       input_id_.product == kSteelSeriesStratusPlusBluetoothProductId)) {
+    return false;
+  }
+
+  // When floss is enabled, it presents a virtual device used to wake the device
+  // on bluetooth connection. This long term should be reduced down to not
+  // appear as a mouse. For now, filter it out directly. (b/309017352)
+  if (input_id_.vendor == kFlossVirtualSuspendVendorId &&
+      input_id_.product == kFlossVirtualSuspendProductId &&
+      name_ == kFlossVirtualSuspendName) {
     return false;
   }
 
@@ -952,6 +979,7 @@ ui::InputDeviceType EventDeviceInfo::GetInputDeviceTypeFromId(input_id id) {
       {0x18d1, 0x5057},  // Google, eel PID (wormdingler)
       {0x18d1, 0x505B},  // Google, Duck PID (quackingstick)
       {0x18d1, 0x5061},  // Google, Jewel PID (starmie)
+      {0x18d1, 0x5067},  // Google, Spikyrock (wugtrio)
       {0x1fd2, 0x8103},  // LG, Internal TouchScreen PID
   };
 
@@ -1040,6 +1068,8 @@ std::ostream& operator<<(std::ostream& os, const KeyboardType value) {
       return os << "ui::KeyboardType::STYLUS_BUTTON_DEVICE";
     case KeyboardType::VALID_KEYBOARD:
       return os << "ui::KeyboardType::VALID_KEYBOARD";
+    case KeyboardType::IN_ALLOWLIST:
+      return os << "ui::KeyboardType::IN_ALLOWLIST";
   }
   return os << "ui::KeyboardType::unknown_value("
             << static_cast<unsigned int>(value) << ")";

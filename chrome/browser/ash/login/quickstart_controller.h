@@ -22,6 +22,8 @@
 
 namespace ash::quick_start {
 
+class QuickStartMetrics;
+
 // Main orchestrator of the QuickStart flow in OOBE
 //
 // QuickStartController holds all the logic for QuickStart and acts as the
@@ -33,13 +35,8 @@ class QuickStartController
       public TargetDeviceBootstrapController::Observer,
       public bluetooth_config::mojom::SystemPropertiesObserver {
  public:
-  // QuickStart flow entry point locations.
-  enum class EntryPoint {
-    WELCOME_SCREEN,
-    NETWORK_SCREEN,
-    GAIA_INFO_SCREEN,
-    GAIA_SCREEN,
-  };
+  using AbortFlowReason = QuickStartMetrics::AbortFlowReason;
+  using EntryPoint = QuickStartMetrics::EntryPoint;
 
   // Main state used by the controller.
   // TODO(b:283965994) - Finalize states.
@@ -53,16 +50,8 @@ class QuickStartController
     CONNECTED,
     // TODO(b:283965994) - Replace with more appropriate state.
     CONTINUING_AFTER_ENROLLMENT_CHECKS,
+    FALLBACK_URL_FLOW_ON_GAIA_SCREEN,
     SETUP_COMPLETE,
-  };
-
-  enum class AbortFlowReason {
-    USER_CLICKED_BACK,
-    USER_CLICKED_CANCEL,
-    SIGNIN_SCHOOL,
-    ENTERPRISE_ENROLLMENT,
-    QUICK_START_FLOW_COMPLETE,
-    ERROR,
   };
 
   // Implemented by the QuickStartScreen
@@ -81,6 +70,8 @@ class QuickStartController
       SIGNING_IN,
       // Same state as 'SIGNING_IN' but without the 'Cancel' button.
       CREATING_ACCOUNT,
+      // Triggers a screen exit into the Gaia screen for the fallback URL flow.
+      FALLBACK_URL_FLOW,
       SETUP_COMPLETE,
       // Exits the screen.
       EXIT_SCREEN,
@@ -139,6 +130,17 @@ class QuickStartController
   std::string GetDiscoverableName() { return discoverable_name_.value(); }
   UserInfo GetUserInfo() { return user_info_; }
   std::string GetWiFiName() { return wifi_name_.value(); }
+  std::string GetFallbackUrl() { return fallback_url_.value(); }
+
+  // If we're already connected to Wi-Fi at the start of the flow we won't
+  // request Wi-Fi details from the source device. This lets us reflect that in
+  // the UI.
+  bool WillRequestWiFi();
+
+  // Called by the Gaia screen during the 'CompleteAuthentication' call. This
+  // notifies us that the flow succeeded and we use this signal to show the
+  // 'setup complete' step of QuickStart.
+  void OnFallbackUrlFlowSuccess();
 
   // Triggered when the user clicks on 'Turn on Bluetooth'
   void OnBluetoothPermissionGranted();
@@ -148,11 +150,18 @@ class QuickStartController
 
   // Exposes TargetDeviceBootstrapController::PrepareForUpdate() to the OOBE
   // UpdateScreen and ConsumerUpdateScreen.
-  void PrepareForUpdate();
+  void PrepareForUpdate(bool is_forced);
 
   // Resumes current session if an update is aborted on
   // the OOBE UpdateScreen or ConsumerUpdateScreen.
   void ResumeSessionAfterCancelledUpdate();
+
+  // Called after a user clicks "next" on final Setup Complete UI.
+  void RecordFlowFinished();
+
+  bool did_transfer_wifi() const {
+    return bootstrap_controller_->did_transfer_wifi();
+  }
 
  private:
   // Initializes the BootstrapController and starts to observe it.
@@ -168,6 +177,12 @@ class QuickStartController
   // bluetooth_config::mojom::SystemPropertiesObserver
   void OnPropertiesUpdated(bluetooth_config::mojom::BluetoothSystemPropertiesPtr
                                properties) override;
+
+  // Records ScreenOpened metric when UiState or OOBE screen changes.
+  void MaybeRecordQuickStartScreenOpened(UiState new_ui);
+
+  // Records ScreenClosed metric when UiState or OOBE screen changes.
+  void MaybeRecordQuickStartScreenAdvanced(std::optional<UiState> closed_ui);
 
   // Updates the UI state and notifies the frontend.
   void UpdateUiState(UiState ui_state);
@@ -232,6 +247,9 @@ class QuickStartController
   // PIN to be shown on the UI when requested.
   std::optional<std::string> pin_;
 
+  // Fallback URL to be used on the Gaia screen when needed.
+  std::optional<std::string> fallback_url_;
+
   // User information that is shown while 'Signing in...'
   UserInfo user_info_;
 
@@ -249,6 +267,8 @@ class QuickStartController
   // is shown. UI updates happen over this observation path.
   base::ObserverList<UiDelegate> ui_delegates_;
 
+  std::unique_ptr<QuickStartMetrics> metrics_;
+
   // Gaia credentials used for account creation.
   TargetDeviceBootstrapController::GaiaCredentials gaia_creds_;
 
@@ -260,6 +280,12 @@ class QuickStartController
 
   bluetooth_config::mojom::BluetoothSystemState bluetooth_system_state_ =
       bluetooth_config::mojom::BluetoothSystemState::kUnavailable;
+
+  // Whether OOBE is transitioning to the QuickStartScreen. Used for recording
+  // UI metrics.
+  bool is_transitioning_to_quick_start_screen_ = false;
+
+  bool should_resume_quick_start_after_update_ = false;
 
   base::ScopedObservation<OobeUI, OobeUI::Observer> observation_{this};
   base::WeakPtrFactory<QuickStartController> weak_ptr_factory_{this};

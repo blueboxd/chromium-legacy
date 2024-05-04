@@ -27,6 +27,10 @@ bool AuthenticatorRequestSheetModel::IsForgotGPMPinButtonVisible() const {
   return false;
 }
 
+bool AuthenticatorRequestSheetModel::IsGPMPinOptionsButtonVisible() const {
+  return false;
+}
+
 std::u16string AuthenticatorRequestSheetModel::GetOtherMechanismButtonLabel()
     const {
   return std::u16string();
@@ -34,4 +38,7 @@ std::u16string AuthenticatorRequestSheetModel::GetOtherMechanismButtonLabel()
 
 void AuthenticatorRequestSheetModel::OnManageDevices() {}
 
-void AuthenticatorRequestSheetModel::OnForgotGPMPin() {}
+void AuthenticatorRequestSheetModel::OnForgotGPMPin() const {}
+
+void AuthenticatorRequestSheetModel::OnGPMPinOptionChosen(
+    bool is_arbitrary) const {}

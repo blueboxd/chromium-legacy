@@ -18,8 +18,8 @@ import java.util.Set;
 
 /**
  * Java version of the native SyncService interface. Must only be used on the UI thread.
- * TODO(crbug.com/1451811): Update to no reference UI thread.
- * TODO(crbug.com/1158816): Document the remaining methods.
+ * TODO(crbug.com/40270701): Update to no reference UI thread. TODO(crbug.com/40161455): Document
+ * the remaining methods.
  */
 public interface SyncService {
     /** Listener for the underlying sync status. */
@@ -120,12 +120,15 @@ public interface SyncService {
     /**
      * Gets the set of types that the user has selected.
      *
-     * NOTE: This returns "all types" by default, even if the user has never
-     *       enabled Sync, or if only Sync-the-transport is running.
-     *
      * @return UserSelectableType set of selected types.
      */
     public Set<Integer> getSelectedTypes();
+
+    /**
+     * Returns the datatypes which have local changes that have not yet been synced with the server.
+     * Note: This includes deletions as well.
+     */
+    public void getTypesWithUnsyncedData(Callback<Set<Integer>> callback);
 
     public boolean hasKeepEverythingSynced();
 
@@ -195,7 +198,7 @@ public interface SyncService {
      * Returns the time the current explicit passphrase was set (if any). Null if no explicit
      * passphrase is in use, or no time is available.
      */
-    // TODO(crbug.com/1503649): Remove this method since no usage exists anymore.
+    // TODO(crbug.com/40944114): Remove this method since no usage exists anymore.
     public @Nullable Date getExplicitPassphraseTime();
 
     /**

@@ -13,7 +13,27 @@ enum FeatureName {
   CHROMEOS_VC_BACKGROUNDS = 300;
   CHROMEOS_WALLPAPER = 301;
   TEXT_TEST = 302;
-  CHROMEOS_READER = 303;
+  CHROMEOS_READER_SUMMARY = 303;
+  CHROMEOS_READER_TOC = 312;
+  CHROMEOS_READER_Q_AND_A = 313;
+  reserved 304 to 311;
+}
+
+message ClientInfo {
+  enum ClientType {
+    reserved 0, 1;
+    CHROME = 2;
+  }
+
+  optional ClientType client_type = 1;
+  optional ChromeClientInfo chrome_client_info = 4;
+  reserved 2, 3;
+}
+
+message ChromeClientInfo {
+  optional string chrome_version = 1;
+  optional string locale = 4;
+  reserved 2, 3;
 }
 
 enum ImageResolution {
@@ -70,9 +90,8 @@ message InputData {
 }
 
 message Request {
-  reserved 2;
-
   optional FeatureName feature_name = 1;
+  optional ClientInfo client_info = 2;
   optional RequestConfig request_config = 3;
   repeated InputData input_data = 4;
 }
@@ -91,8 +110,24 @@ message OutputData {
   optional uint32 generation_seed = 6;
 }
 
+enum FilteredReason {
+  UNSPECIFIED = 0;
+  TEXT_SAFETY = 2;
+  TEXT_LOW_QUALITY = 3;
+  TEXT_BLOCKLIST = 4;
+
+  reserved 1, 5, 6, 7;
+}
+
+message FilteredData {
+  reserved 1;
+  optional bool is_output_data = 2;
+  optional FilteredReason reason = 3;
+}
+
 message Response {
-  reserved 2, 3;
+  reserved 3;
 
   repeated OutputData output_data = 1;
+  repeated FilteredData filtered_data = 2;
 }

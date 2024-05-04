@@ -2,14 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'chrome-untrusted://read-anything-side-panel.top-chrome/read_anything_toolbar.js';
+import 'chrome-untrusted://read-anything-side-panel.top-chrome/read_anything.js';
 
 import {BrowserProxy} from '//resources/cr_components/color_change_listener/browser_proxy.js';
 import type {CrIconButtonElement} from '//resources/cr_elements/cr_icon_button/cr_icon_button.js';
-import type {ReadAnythingToolbarElement} from 'chrome-untrusted://read-anything-side-panel.top-chrome/read_anything_toolbar.js';
+import {flush} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {FONT_EVENT} from 'chrome-untrusted://read-anything-side-panel.top-chrome/read_anything.js';
+import type {ReadAnythingToolbarElement} from 'chrome-untrusted://read-anything-side-panel.top-chrome/read_anything.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome-untrusted://webui-test/chai_assert.js';
 
-import {suppressInnocuousErrors} from './common.js';
+import {getItemsInMenu, stubAnimationFrame, suppressInnocuousErrors} from './common.js';
 import {FakeReadingMode} from './fake_reading_mode.js';
 import {TestColorUpdaterBrowserProxy} from './test_color_updater_browser_proxy.js';
 
@@ -29,7 +31,7 @@ suite('FontMenu', () => {
     chrome.readingMode = readingMode as unknown as typeof chrome.readingMode;
     chrome.readingMode.supportedFonts = [];
     fontEmitted = '';
-    document.addEventListener('font-change', event => {
+    document.addEventListener(FONT_EVENT, event => {
       fontEmitted = (event as CustomEvent).detail.fontName;
     });
   });
@@ -37,6 +39,7 @@ suite('FontMenu', () => {
   function createToolbar(): void {
     toolbar = document.createElement('read-anything-toolbar');
     document.body.appendChild(toolbar);
+    flush();
     menuButton =
         toolbar.shadowRoot!.querySelector<CrIconButtonElement>('#font');
     fontSelect =
@@ -57,27 +60,33 @@ suite('FontMenu', () => {
       createToolbar();
     });
 
-    function udpateFonts(supportedFonts: string[]): void {
+    function updateFonts(supportedFonts: string[]): void {
       chrome.readingMode.supportedFonts = supportedFonts;
       toolbar.updateFonts();
-      fontMenuOptions =
-          Array.from(toolbar.$.fontMenu.querySelectorAll<HTMLButtonElement>(
-              '.dropdown-item'));
+      fontMenuOptions = getItemsInMenu(toolbar.$.fontMenu);
     }
 
     test('is dropdown menu', () => {
+      stubAnimationFrame();
+
       menuButton!.click();
-      assertTrue(toolbar.$.fontMenu.open);
+      flush();
+
+      assertTrue(toolbar.$.fontMenu.get().open);
     });
 
     test('shows only supported fonts', () => {
-      udpateFonts(['font 1', 'font 2', 'font 3', 'font 4']);
+      updateFonts(['font 1', 'font 2', 'font 3', 'font 4']);
       assertEquals(fontMenuOptions.length, 4);
 
-      udpateFonts(['font 1']);
+      updateFonts(['font 1']);
       assertEquals(fontMenuOptions.length, 1);
 
-      udpateFonts([
+      // initial-count in the dom-repeat for the fonts menu limits the
+      // size of the font menu, so adding more than 8 fonts is difficult to
+      // test. If more than 8 fonts are added on the actual menu, we can
+      // increase the initial-count.
+      updateFonts([
         'font 1',
         'font 2',
         'font 3',
@@ -86,22 +95,49 @@ suite('FontMenu', () => {
         'font 6',
         'font 7',
         'font 8',
-        'font 9',
-        'font 10',
       ]);
-      assertEquals(fontMenuOptions.length, 10);
+      assertEquals(fontMenuOptions.length, 8);
+    });
+
+    test('uses the first font if font not available', () => {
+      // Set the current font to one that will be removed
+      const fonts = ['Andika', 'Poppins', 'STIX Two Text'];
+      chrome.readingMode.fontName = 'EB Garamond';
+      updateFonts(fonts.concat(chrome.readingMode.fontName));
+
+      // Update the fonts to exclude the previously chosen font
+      updateFonts(fonts);
+
+      const checkMarks = toolbar.$.fontMenu.get().querySelectorAll<HTMLElement>(
+          '.check-mark-hidden-false');
+      const hiddenCheckMarks =
+          toolbar.$.fontMenu.get().querySelectorAll<HTMLElement>(
+              '.check-mark-hidden-true');
+      assertEquals(checkMarks.length, 1);
+      assertEquals(hiddenCheckMarks.length, 2);
+      assertEquals(chrome.readingMode.fontName, fonts[0]);
+      assertEquals(toolbar.style.fontFamily, fonts[0]);
     });
 
     test('each font option is styled with the font that it is', () => {
-      udpateFonts(['Serif', 'Andika', 'Poppins', 'STIX Two Text']);
+      updateFonts(['Serif', 'Andika', 'Poppins', 'STIX Two Text']);
+      toolbar.setFontsLoaded();
       fontMenuOptions.forEach(option => {
         assertFontsEqual(option.style.fontFamily, option.innerText);
       });
     });
 
+    test('each font option is loading', () => {
+      updateFonts(['Serif', 'Andika', 'Poppins', 'STIX Two Text']);
+      fontMenuOptions.forEach(option => {
+        assertFontsEqual(
+            option.style.fontFamily + '\u00A0(loading)', option.innerText);
+      });
+    });
+
     suite('on font option clicked', () => {
       setup(() => {
-        udpateFonts(['Serif', 'Poppins', 'STIX Two Text']);
+        updateFonts(['Serif', 'Poppins', 'STIX Two Text']);
         menuButton!.click();
       });
 
@@ -126,7 +162,7 @@ suite('FontMenu', () => {
       test('closes menu', () => {
         fontMenuOptions.forEach((option) => {
           option.click();
-          assertFalse(toolbar.$.fontMenu.open);
+          assertFalse(toolbar.$.fontMenu.get().open);
         });
       });
     });
@@ -138,9 +174,10 @@ suite('FontMenu', () => {
       createToolbar();
     });
 
-    function udpateFonts(supportedFonts: string[]): void {
+    function updateFonts(supportedFonts: string[]): void {
       chrome.readingMode.supportedFonts = supportedFonts;
       toolbar.updateFonts();
+      flush();
     }
 
     test('is select menu', () => {
@@ -149,14 +186,28 @@ suite('FontMenu', () => {
     });
 
     test('shows only supported fonts', () => {
-      udpateFonts(['font 1', 'font 2', 'font 3', 'font 4']);
+      updateFonts(['font 1', 'font 2', 'font 3', 'font 4']);
       assertEquals(
           chrome.readingMode.supportedFonts.length, fontSelect!.options.length);
     });
 
+    test('uses the first font if font not available', () => {
+      // Set the current font to one that will be removed
+      const fonts = ['Andika', 'Poppins', 'STIX Two Text'];
+      chrome.readingMode.fontName = 'EB Garamond';
+      updateFonts(fonts.concat(chrome.readingMode.fontName));
+
+      // Update the fonts to exclude the previously chosen font
+      updateFonts(fonts);
+
+      assertEquals(fontSelect!.selectedIndex, 0);
+      assertEquals(chrome.readingMode.fontName, fonts[0]);
+      assertEquals(toolbar.style.fontFamily, fonts[0]);
+    });
+
     suite('on font option clicked', () => {
       setup(() => {
-        udpateFonts(['Serif', 'Poppins', 'STIX Two Text']);
+        updateFonts(['Serif', 'Poppins', 'STIX Two Text']);
       });
 
       test('propagates font', () => {

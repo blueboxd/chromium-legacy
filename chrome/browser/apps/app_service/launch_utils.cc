@@ -6,13 +6,13 @@
 
 #include <memory>
 #include <optional>
+#include <string_view>
 #include <utility>
 
 #include "base/check.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/notreached.h"
-#include "base/strings/string_piece.h"
 #include "build/build_config.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/file_utils.h"
@@ -326,6 +326,8 @@ extensions::AppLaunchSource GetAppLaunchSource(LaunchSource launch_source) {
       return extensions::AppLaunchSource::kSourceUntracked;
     case LaunchSource::kFromAppHomePage:
       return extensions::AppLaunchSource::kSourceAppHomePage;
+    case LaunchSource::kFromFocusMode:
+      return extensions::AppLaunchSource::kSourceFocusMode;
     // No equivalent extensions launch source or not needed in extensions:
     case LaunchSource::kFromReparenting:
     case LaunchSource::kFromProfileMenu:

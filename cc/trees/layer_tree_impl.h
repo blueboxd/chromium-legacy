@@ -18,7 +18,6 @@
 #include "base/memory/raw_ptr_exclusion.h"
 #include "base/time/time.h"
 #include "cc/base/synced_property.h"
-#include "cc/input/browser_controls_offset_manager.h"
 #include "cc/input/event_listener_properties.h"
 #include "cc/input/layer_selection_bound.h"
 #include "cc/input/overscroll_behavior.h"
@@ -319,9 +318,9 @@ class CC_EXPORT LayerTreeImpl {
   TakePresentationCallbacks();
 
   void AddSuccessfulPresentationCallbacks(
-      std::vector<PresentationTimeCallbackBuffer::SuccessfulCallback>
+      std::vector<PresentationTimeCallbackBuffer::SuccessfulCallbackWithDetails>
           callbacks);
-  std::vector<PresentationTimeCallbackBuffer::SuccessfulCallback>
+  std::vector<PresentationTimeCallbackBuffer::SuccessfulCallbackWithDetails>
   TakeSuccessfulPresentationCallbacks();
 
   // The following viewport related property nodes will only ever be set on the
@@ -420,6 +419,9 @@ class CC_EXPORT LayerTreeImpl {
   bool new_local_surface_id_request_for_testing() const {
     return new_local_surface_id_request_;
   }
+
+  void SetScreenshotDestinationToken(base::UnguessableToken destination_token);
+  base::UnguessableToken TakeScreenshotDestinationToken();
 
   void SetDeviceViewportRect(const gfx::Rect& device_viewport_rect);
 
@@ -624,10 +626,11 @@ class CC_EXPORT LayerTreeImpl {
   LayerImpl* FindLayerThatIsHitByPointInWheelEventHandlerRegion(
       const gfx::PointF& screen_space_point);
 
-  // Returns all layers up to the first scroller, scrollbar layer or a layer
-  // opaque to hit test, inclusive. The returned vector is sorted in order of
-  // top most come first. The back of the vector will be the scrollable layer
-  // or the first layer opaque to hit test, if one was hit.
+  // Returns all layers up to the first scroller or scrollbar layer (when
+  // enable_hit_test_opaqueness is false) or a layer opaque to hit test (when
+  // enable_hit_test_opaqueness is true), inclusive. The returned vector is
+  // sorted in order of top most come first. The back of the vector will be the
+  // scrollable layer or the first layer opaque to hit test, if one was hit.
   std::vector<const LayerImpl*> FindLayersUpToFirstScrollableOrOpaqueToHitTest(
       const gfx::PointF& screen_space_point);
   bool PointHitsNonFastScrollableRegion(const gfx::PointF& scree_space_point,
@@ -958,7 +961,7 @@ class CC_EXPORT LayerTreeImpl {
   gfx::OverlayTransform display_transform_hint_ = gfx::OVERLAY_TRANSFORM_NONE;
 
   std::vector<PresentationTimeCallbackBuffer::Callback> presentation_callbacks_;
-  std::vector<PresentationTimeCallbackBuffer::SuccessfulCallback>
+  std::vector<PresentationTimeCallbackBuffer::SuccessfulCallbackWithDetails>
       successful_presentation_callbacks_;
 
   // Event metrics that are reported back from the main thread.
@@ -975,6 +978,9 @@ class CC_EXPORT LayerTreeImpl {
   // The cumulative time spent performing visual updates for the current
   // Surface.
   base::TimeDelta visual_update_duration_;
+
+  // See `CommitState::screenshot_destination_token`.
+  base::UnguessableToken screenshot_destination_;
 };
 
 }  // namespace cc

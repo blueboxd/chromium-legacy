@@ -54,7 +54,7 @@ uint32_t ComputeCheckedDefaultBitrate(const gfx::Size& frame_size) {
 }
 
 uint32_t ComputeCheckedPeakBitrate(uint32_t target_bitrate) {
-  // TODO(crbug.com/1342850): Reconsider whether this is good peak bps.
+  // TODO(crbug.com/40851972): Reconsider whether this is good peak bps.
   base::CheckedNumeric<uint32_t> checked_bitrate_product =
       base::CheckMul<uint32_t>(target_bitrate, 10u);
   return checked_bitrate_product.ValueOrDefault(
@@ -814,13 +814,12 @@ void VideoEncodeAcceleratorAdapter::BitstreamBufferReady(
     uint8_t* src = static_cast<uint8_t*>(mapping.memory());
     size_t dst_size = result.size;
     size_t actual_output_size = 0;
-    auto dst = std::make_unique<uint8_t[]>(dst_size);
+    auto dst = base::HeapArray<uint8_t>::Uninit(dst_size);
     bool config_changed = false;
     media::MP4Status status;
     if (h264_converter_) {
       status = h264_converter_->ConvertChunk(
-          base::span<uint8_t>(src, result.size),
-          base::span<uint8_t>(dst.get(), dst_size), &config_changed,
+          base::span<uint8_t>(src, result.size), dst, &config_changed,
           &actual_output_size);
       if (status.code() == MP4Status::Codes::kBufferTooSmall) {
         // Between AnnexB and AVCC bitstream formats, the start code length and
@@ -828,10 +827,9 @@ void VideoEncodeAcceleratorAdapter::BitstreamBufferReady(
         // http://www.itu.int/rec/T-REC-H.264. Retry the conversion if the
         // output buffer size is too small.
         dst_size = actual_output_size;
-        dst = std::make_unique<uint8_t[]>(dst_size);
+        dst = base::HeapArray<uint8_t>::Uninit(dst_size);
         status = h264_converter_->ConvertChunk(
-            base::span<uint8_t>(src, result.size),
-            base::span<uint8_t>(dst.get(), dst_size), &config_changed,
+            base::span<uint8_t>(src, result.size), dst, &config_changed,
             &actual_output_size);
       }
 
@@ -858,15 +856,13 @@ void VideoEncodeAcceleratorAdapter::BitstreamBufferReady(
     BUILDFLAG(ENABLE_HEVC_PARSER_AND_HW_DECODER)
       if (h265_converter_) {
         status = h265_converter_->ConvertChunk(
-            base::span<uint8_t>(src, result.size),
-            base::span<uint8_t>(dst.get(), dst_size), &config_changed,
+            base::span<uint8_t>(src, result.size), dst, &config_changed,
             &actual_output_size);
         if (status.code() == MP4Status::Codes::kBufferTooSmall) {
           dst_size = actual_output_size;
-          dst = std::make_unique<uint8_t[]>(dst_size);
+          dst = base::HeapArray<uint8_t>::Uninit(dst_size);
           status = h265_converter_->ConvertChunk(
-              base::span<uint8_t>(src, result.size),
-              base::span<uint8_t>(dst.get(), dst_size), &config_changed,
+              base::span<uint8_t>(src, result.size), dst, &config_changed,
               &actual_output_size);
         }
 
@@ -895,8 +891,8 @@ void VideoEncodeAcceleratorAdapter::BitstreamBufferReady(
     }
 #endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
     if (!stream_converted) {
-      result.data = std::make_unique<uint8_t[]>(result.size);
-      memcpy(result.data.get(), mapping.memory(), result.size);
+      result.data = base::HeapArray<uint8_t>::Uninit(result.size);
+      memcpy(result.data.data(), mapping.memory(), result.size);
     }
   }
 
@@ -972,7 +968,9 @@ void VideoEncodeAcceleratorAdapter::NotifyEncoderInfoChange(
     const VideoEncoderInfo& info) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(accelerator_sequence_checker_);
   supports_frame_size_change_ = info.supports_frame_size_change;
-  info_cb_.Run(info);
+  if (info_cb_) {
+    info_cb_.Run(info);
+  }
 }
 
 void VideoEncodeAcceleratorAdapter::InitCompleted(EncoderStatus status) {

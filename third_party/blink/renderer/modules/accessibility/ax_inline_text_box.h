@@ -72,7 +72,7 @@ class AXInlineTextBox final : public AXObject {
     NOTREACHED();
     return ax::mojom::blink::Role::kInlineTextBox;
   }
-  void ClearChildren() const override;
+  void ClearChildren() override;
   AbstractInlineTextBox* GetInlineTextBox() const override;
 
  protected:
@@ -87,7 +87,7 @@ class AXInlineTextBox final : public AXObject {
   void AddChildren() override {}
 
  private:
-  bool ComputeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
+  bool ComputeIsIgnored(IgnoredReasons* = nullptr) const override;
 
   Member<AbstractInlineTextBox> inline_text_box_;
 };

@@ -8,6 +8,7 @@
 #include "base/metrics/metrics_hashes.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
+#include "components/autofill/core/browser/address_data_manager.h"
 #include "components/autofill/core/browser/autofill_form_test_utils.h"
 #include "components/autofill/core/browser/autofill_suggestion_generator.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
@@ -63,7 +64,7 @@ class AutofillMetricsBaseTest {
 
   // Removes all existing credit cards and then invokes CreateCreditCards to
   // create the cards.
-  // TODO(crbug/1216615): Migrate this to a params builder pattern or
+  // TODO(crbug.com/40770602): Migrate this to a params builder pattern or
   // something.
   void RecreateCreditCards(bool include_local_credit_card,
                            bool include_masked_server_credit_card,
@@ -110,7 +111,7 @@ class AutofillMetricsBaseTest {
   void SimulateUserChangedTextField(const FormData& form,
                                     FormFieldData& field,
                                     base::TimeTicks timestamp = {}) {
-    SimulateUserChangedTextFieldTo(form, field, field.value + u"_changed",
+    SimulateUserChangedTextFieldTo(form, field, field.value() + u"_changed",
                                    timestamp);
   }
 
@@ -123,19 +124,19 @@ class AutofillMetricsBaseTest {
                                       const std::u16string& new_value,
                                       base::TimeTicks timestamp = {}) {
     // Assert that the field is actually set to a different value.
-    ASSERT_NE(field.value, new_value);
-    field.is_autofilled = false;
-    field.value = new_value;
+    ASSERT_NE(field.value(), new_value);
+    field.set_is_autofilled(false);
+    field.set_value(new_value);
     autofill_manager().OnTextFieldDidChange(form, field, gfx::RectF(),
                                             timestamp);
   }
 
-  // TODO(crbug.com/1368096): Remove this method once the metrics are fixed.
+  // TODO(crbug.com/40240189): Remove this method once the metrics are fixed.
   void SimulateUserChangedTextFieldWithoutActuallyChangingTheValue(
       const FormData& form,
       FormFieldData& field,
       base::TimeTicks timestamp = {}) {
-    field.is_autofilled = false;
+    field.set_is_autofilled(false);
     autofill_manager().OnTextFieldDidChange(form, field, gfx::RectF(),
                                             timestamp);
   }
@@ -174,9 +175,9 @@ class AutofillMetricsBaseTest {
   void DidShowAutofillSuggestions(
       const FormData& form,
       size_t field_index = 0,
-      PopupItemId suggestion_type = PopupItemId::kAddressEntry) {
+      SuggestionType suggestion_type = SuggestionType::kAddressEntry) {
     autofill_manager().DidShowSuggestions(
-        std::vector<PopupItemId>({suggestion_type}), form,
+        std::vector<SuggestionType>({suggestion_type}), form,
         form.fields[field_index]);
   }
 
@@ -188,7 +189,7 @@ class AutofillMetricsBaseTest {
                          const std::string& profile_guid) {
     autofill_manager().FillOrPreviewProfileForm(
         mojom::ActionPersistence::kFill, form, form.fields.front(),
-        *personal_data().GetProfileByGUID(profile_guid),
+        *personal_data().address_data_manager().GetProfileByGUID(profile_guid),
         {.trigger_source = AutofillTriggerSource::kPopup});
   }
 

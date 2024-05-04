@@ -46,7 +46,7 @@ FormSuggestion* SuggestionForSingleUsernameForm() {
              suggestionWithValue:@"foo"
               displayDescription:nil
                             icon:nil
-                     popupItemId:autofill::PopupItemId::kAutocompleteEntry
+                     popupItemId:autofill::SuggestionType::kAutocompleteEntry
                backendIdentifier:nil
                   requiresReauth:NO
       acceptanceA11yAnnouncement:nil
@@ -96,9 +96,9 @@ NSString* PrimaryActionLabelForUsernameFill() {
 @implementation PasswordSuggestionBottomSheetMediatorTestSuggestionProvider {
   NSArray<FormSuggestion*>* _suggestions;
   NSString* _formName;
-  autofill::FormRendererId _uniqueFormID;
+  autofill::FormRendererId _formRendererID;
   NSString* _fieldIdentifier;
-  autofill::FieldRendererId _uniqueFieldID;
+  autofill::FieldRendererId _fieldRendererID;
   NSString* _frameID;
   FormSuggestion* _suggestion;
 }
@@ -113,13 +113,13 @@ NSString* PrimaryActionLabelForUsernameFill() {
         suggestionWithValue:@"foo"
          displayDescription:nil
                        icon:nil
-                popupItemId:autofill::PopupItemId::kAutocompleteEntry
+                popupItemId:autofill::SuggestionType::kAutocompleteEntry
           backendIdentifier:nil
              requiresReauth:NO],
     [FormSuggestion suggestionWithValue:@"bar"
                      displayDescription:nil
                                    icon:nil
-                            popupItemId:autofill::PopupItemId::kAddressEntry
+                            popupItemId:autofill::SuggestionType::kAddressEntry
                       backendIdentifier:nil
                          requiresReauth:NO]
   ];
@@ -171,17 +171,17 @@ NSString* PrimaryActionLabelForUsernameFill() {
 
 - (void)didSelectSuggestion:(FormSuggestion*)suggestion
                        form:(NSString*)formName
-               uniqueFormID:(autofill::FormRendererId)uniqueFormID
+             formRendererID:(autofill::FormRendererId)formRendererID
             fieldIdentifier:(NSString*)fieldIdentifier
-              uniqueFieldID:(autofill::FieldRendererId)uniqueFieldID
+            fieldRendererID:(autofill::FieldRendererId)fieldRendererID
                     frameID:(NSString*)frameID
           completionHandler:(SuggestionHandledCompletion)completion {
   self.selected = YES;
   _suggestion = suggestion;
   _formName = [formName copy];
-  _uniqueFormID = uniqueFormID;
+  _formRendererID = formRendererID;
   _fieldIdentifier = [fieldIdentifier copy];
-  _uniqueFieldID = uniqueFieldID;
+  _fieldRendererID = fieldRendererID;
   _frameID = [frameID copy];
   completion();
 }
@@ -260,7 +260,8 @@ class PasswordSuggestionBottomSheetMediatorTest : public PlatformTest {
                            URL:URL()
           profilePasswordStore:store_
           accountPasswordStore:nullptr
-        sharedURLLoaderFactory:nullptr];
+        sharedURLLoaderFactory:nullptr
+             engagementTracker:nil];
   }
 
   // Creates the bottom sheet mediator with custom suggestions `providers`.
@@ -413,7 +414,7 @@ TEST_F(PasswordSuggestionBottomSheetMediatorTest, SuggestionUsernameHasSuffix) {
                                                kPasswordFormSuggestionSuffix]
        displayDescription:nil
                      icon:nil
-              popupItemId:autofill::PopupItemId::kAutocompleteEntry
+              popupItemId:autofill::SuggestionType::kAutocompleteEntry
         backendIdentifier:nil
            requiresReauth:NO];
   std::optional<password_manager::CredentialUIEntry> credential =
@@ -440,7 +441,7 @@ TEST_F(PasswordSuggestionBottomSheetMediatorTest,
       suggestionWithValue:@"test1"
        displayDescription:nil
                      icon:nil
-              popupItemId:autofill::PopupItemId::kAutocompleteEntry
+              popupItemId:autofill::SuggestionType::kAutocompleteEntry
         backendIdentifier:nil
            requiresReauth:NO];
   std::optional<password_manager::CredentialUIEntry> credential =

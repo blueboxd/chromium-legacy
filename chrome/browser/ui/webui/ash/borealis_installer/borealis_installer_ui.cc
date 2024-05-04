@@ -20,11 +20,6 @@
 
 namespace ash {
 
-bool BorealisInstallerUIConfig::IsWebUIEnabled(
-    content::BrowserContext* browser_context) {
-  return base::FeatureList::IsEnabled(features::kBorealisWebUIInstaller);
-}
-
 BorealisInstallerUI::BorealisInstallerUI(content::WebUI* web_ui)
     : ui::MojoWebDialogUI{web_ui}, web_ui_(web_ui) {
   // Set up the chrome://borealis-installer source.
@@ -34,6 +29,7 @@ BorealisInstallerUI::BorealisInstallerUI(content::WebUI* web_ui)
           chrome::kChromeUIBorealisInstallerHost);
   static constexpr webui::LocalizedString kStrings[] = {
       {"cancel", IDS_CANCEL},
+      {"close", IDS_CLOSE},
       {"install", IDS_INSTALL},
       {"confirmationTitle", IDS_BOREALIS_INSTALLER_CONFIRMATION_TITLE},
       {"confirmationMessage", IDS_BOREALIS_INSTALLER_CONFIRMATION_MESSAGE},

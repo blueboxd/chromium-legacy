@@ -20,9 +20,9 @@ defaults are provided for the `bucket` and `executable` arguments, removing the
 need to create a wrapper function just to set those default values for a bucket.
 Can also be accessed through `builders.defaults`.
 
-The `cpu`, `os`, and `goma` module members are structs that provide constants
+The `cpu`, and `os` module members are structs that provide constants
 for use with the corresponding arguments to `builder`. Can also be accessed
-through `builders.cpu`, `builders.os` and `builders.goma` respectively.
+through `builders.cpu` and `builders.os` respectively.
 """
 
 load("//project.star", "settings")
@@ -84,35 +84,15 @@ os = struct(
     MAC_12 = os_enum(os_category.MAC, "Mac-12"),
     MAC_13 = os_enum(os_category.MAC, "Mac-13"),
     MAC_14 = os_enum(os_category.MAC, "Mac-14"),
-    MAC_DEFAULT = os_enum(os_category.MAC, "Mac-13"),
+    MAC_DEFAULT = os_enum(os_category.MAC, "Mac-14"),
     MAC_ANY = os_enum(os_category.MAC, "Mac"),
     MAC_BETA = os_enum(os_category.MAC, "Mac-14"),
     WINDOWS_10 = os_enum(os_category.WINDOWS, "Windows-10"),
-    # TODO(crbug.com/1519680): remove after slow compile issue resolved.
+    # TODO(crbug.com/41492657): remove after slow compile issue resolved.
     WINDOWS_10_1909 = os_enum(os_category.WINDOWS, "Windows-10-18363"),
     WINDOWS_11 = os_enum(os_category.WINDOWS, "Windows-11"),
     WINDOWS_DEFAULT = os_enum(os_category.WINDOWS, "Windows-10"),
     WINDOWS_ANY = os_enum(os_category.WINDOWS, "Windows"),
-)
-
-# The constants to be used for the goma_backend and goma_jobs parameters of the
-# builder function
-goma = struct(
-    backend = struct(
-        RBE_PROD = {
-            "server_host": "goma.chromium.org",
-            "rpc_extra_params": "?prod",
-        },
-        RBE_STAGING = {
-            "server_host": "staging-goma.chromium.org",
-            "rpc_extra_params": "?staging",
-        },
-    ),
-    jobs = struct(
-        # This is for 4 cores mac. -j40 is too small, especially for clobber
-        # builder.
-        J80 = 80,
-    ),
 )
 
 reclient = struct(
@@ -127,14 +107,8 @@ reclient = struct(
         LOW_JOBS_FOR_CI = 80,
         HIGH_JOBS_FOR_CI = 500,
         LOW_JOBS_FOR_CQ = 150,
-        HIGH_JOBS_FOR_CQ = 500,
-    ),
-)
-
-siso = struct(
-    project = struct(
-        DEFAULT_TRUSTED = reclient.instance.DEFAULT_TRUSTED,
-        DEFAULT_UNTRUSTED = reclient.instance.DEFAULT_UNTRUSTED,
+        # Calculated based on the number of CPUs inside Siso.
+        HIGH_JOBS_FOR_CQ = -1,
     ),
 )
 
@@ -180,23 +154,6 @@ _DEFAULT_BUILDERLESS_OS_CATEGORIES = [os_category.LINUX, os_category.WINDOWS]
 # Macs all have SSDs, so it doesn't make sense to use the default behavior of
 # setting ssd:0 dimension
 _EXCLUDE_BUILDERLESS_SSD_OS_CATEGORIES = [os_category.MAC]
-
-def _goma_property(*, goma_backend, goma_enable_ats, goma_jobs):
-    goma_properties = {}
-
-    goma_backend = defaults.get_value("goma_backend", goma_backend)
-    if goma_backend == None:
-        return None
-    goma_properties.update(goma_backend)
-
-    if goma_enable_ats != None:
-        goma_properties["enable_ats"] = goma_enable_ats
-
-    goma_jobs = defaults.get_value("goma_jobs", goma_jobs)
-    if goma_jobs != None:
-        goma_properties["jobs"] = goma_jobs
-
-    return goma_properties
 
 def _code_coverage_property(
         *,
@@ -369,9 +326,6 @@ defaults = args.defaults(
     cpu = None,
     disallow_gce = False,
     fully_qualified_builder_dimension = False,
-    goma_backend = None,
-    goma_enable_ats = args.COMPUTE,
-    goma_jobs = None,
     console_view = args.COMPUTE,
     list_view = args.COMPUTE,
     os = None,
@@ -404,10 +358,9 @@ defaults = args.defaults(
     reclient_ensure_verified = None,
     reclient_disable_bq_upload = None,
     siso_enabled = None,
-    siso_configs = None,
-    siso_project = None,
-    siso_enable_cloud_profiler = None,
-    siso_enable_cloud_trace = None,
+    siso_configs = ["builder"],
+    siso_enable_cloud_profiler = True,
+    siso_enable_cloud_trace = True,
     siso_experiments = [],
     siso_remote_jobs = None,
     health_spec = None,
@@ -418,7 +371,6 @@ defaults = args.defaults(
     shadow_pool = None,
     shadow_service_account = None,
     shadow_reclient_instance = None,
-    shadow_siso_project = None,
 
     # Provide vars for bucket and executable so users don't have to
     # unnecessarily make wrapper functions
@@ -458,9 +410,6 @@ def builder(
         xcode = args.DEFAULT,
         console_view_entry = None,
         list_view = args.DEFAULT,
-        goma_backend = args.DEFAULT,
-        goma_enable_ats = args.DEFAULT,
-        goma_jobs = args.DEFAULT,
         coverage_gs_bucket = args.DEFAULT,
         use_clang_coverage = args.DEFAULT,
         use_java_coverage = args.DEFAULT,
@@ -486,7 +435,6 @@ def builder(
         reclient_disable_bq_upload = None,
         siso_enabled = args.DEFAULT,
         siso_configs = args.DEFAULT,
-        siso_project = args.DEFAULT,
         siso_enable_cloud_profiler = args.DEFAULT,
         siso_enable_cloud_trace = args.DEFAULT,
         siso_experiments = args.DEFAULT,
@@ -498,9 +446,9 @@ def builder(
         shadow_pool = args.DEFAULT,
         shadow_service_account = args.DEFAULT,
         shadow_reclient_instance = args.DEFAULT,
-        shadow_siso_project = args.DEFAULT,
         gn_args = None,
         targets = None,
+        targets_settings = None,
         contact_team_email = args.DEFAULT,
         **kwargs):
     """Define a builder.
@@ -620,22 +568,6 @@ def builder(
         disallow_gce: A boolean indicating whether the builder can run on GCE
             machines. If True, emits a 'gce:0' dimension. By default, gce is
             allowed.
-        goma_backend: a member of the `goma.backend` enum indicating the goma
-            backend the builder should use. Will be incorporated into the
-            '$build/goma' property. By default, considered None.
-        goma_enable_ats: a boolean indicating whether ats should be enabled for
-            goma or args.COMPUTE if ats should be enabled where it is needed.
-            If True or False are explicitly set, the 'enable_ats' field will be
-            set in the '$build/goma' property.  By default, args.COMPUTE is set
-            and 'enable_ats' fields is set only if ats need to be enabled by
-            default. The 'enable_ats' on Windows will control cross compiling in
-            server side. cross compile if `enable_ats` is False.
-            Note: if goma_enable_ats is not set, goma recipe modules sets
-            GOMA_ARBITRARY_TOOLCHAIN_SUPPORT=true on windows by default.
-        goma_jobs: a member of the `goma.jobs` enum indicating the number of
-            jobs to be used by the builder. Sets the 'jobs' field of the
-            '$build/goma' property will be set according to the enum member. By
-            default, the 'jobs' considered None.
         coverage_gs_bucket: a string specifying the GS bucket to upload
             coverage data to. Will be copied to '$build/code_coverage' property.
             By default, considered None.
@@ -706,8 +638,6 @@ def builder(
             be used at compile step.
         siso_configs: a list of siso configs to enable. available values are defined in
             //build/config/siso/config.star.
-        siso_project: a string indicating the GCP project hosting the RBE
-            instance and other Cloud services. e.g. logging, trace etc.
         siso_enable_cloud_profiler: If True, enable cloud profiler in siso.
         siso_enable_cloud_trace: If True, enable cloud trace in siso.
         siso_experiments: a list of experiment flags for siso.
@@ -733,9 +663,6 @@ def builder(
             use this as the reclient instance instead of reclient_instance. The
             other reclient_* values will continue to be used for the shadow
             build.
-        shadow_siso_project: If set, then led builds for this builder will
-            use this as the siso project instead of siso_project. The other
-            siso_* values will continue to be used for the shadow build.
         gn_args: If set, the GN args config to use for the builder. It can be
             set to the name of a predeclared config or an unnamed
             gn_args.config declaration for an unphased config. A builder can use
@@ -746,6 +673,8 @@ def builder(
             define a bundle with the same name containing only that target), a
             targets.bundle instance or a list where each element is the name of
             a targets bundle or a targets.bundle instance.
+        targets_settings: The settings to use when expanding the targets for the
+            builder.
         contact_team_email: The e-mail of the team responsible for the health of
             the builder.
         **kwargs: Additional keyword arguments to forward on to `luci.builder`.
@@ -772,9 +701,6 @@ def builder(
     if "sheriff_rotations" in properties:
         fail('Setting "sheriff_rotations" property is not supported: ' +
              "use sheriff_rotations instead")
-    if "$build/goma" in properties:
-        fail('Setting "$build/goma" property is not supported: ' +
-             "use goma_backend, goma_enable_ats and goma_jobs instead")
     if "$build/code_coverage" in properties:
         fail('Setting "$build/code_coverage" property is not supported: ' +
              "use coverage_gs_bucket, use_clang_coverage, use_java_coverage, " +
@@ -864,22 +790,6 @@ def builder(
     if disallow_gce:
         dimensions["gce"] = "0"
 
-    goma_enable_ats = defaults.get_value("goma_enable_ats", goma_enable_ats)
-
-    # Enable ATS on linux by default.
-    if goma_enable_ats == args.COMPUTE:
-        if os and os.category == os_category.LINUX:
-            goma_enable_ats = True
-        else:
-            goma_enable_ats = None
-    gp = _goma_property(
-        goma_backend = goma_backend,
-        goma_enable_ats = goma_enable_ats,
-        goma_jobs = goma_jobs,
-    )
-    if gp != None:
-        properties["$build/goma"] = gp
-
     code_coverage = _code_coverage_property(
         coverage_gs_bucket = coverage_gs_bucket,
         use_clang_coverage = use_clang_coverage,
@@ -915,8 +825,11 @@ def builder(
         ensure_verified = reclient_ensure_verified,
         disable_bq_upload = reclient_disable_bq_upload,
     )
+    rbe_project = None
+    shadow_rbe_project = None
     if reclient != None:
         properties["$build/reclient"] = reclient
+        rbe_project = reclient["instance"]
         shadow_reclient_instance = defaults.get_value("shadow_reclient_instance", shadow_reclient_instance)
         shadow_reclient = _reclient_property(
             instance = shadow_reclient_instance,
@@ -933,24 +846,23 @@ def builder(
         )
         if shadow_reclient:
             shadow_properties["$build/reclient"] = shadow_reclient
-
-    siso_project = defaults.get_value("siso_project", siso_project)
-    use_siso = defaults.get_value("siso_enabled", siso_enabled) and siso_project
+            shadow_rbe_project = shadow_reclient["instance"]
+    use_siso = defaults.get_value("siso_enabled", siso_enabled) and rbe_project
     if use_siso:
         siso = {
             "configs": defaults.get_value("siso_configs", siso_configs),
             "enable_cloud_profiler": defaults.get_value("siso_enable_cloud_profiler", siso_enable_cloud_profiler),
             "enable_cloud_trace": defaults.get_value("siso_enable_cloud_trace", siso_enable_cloud_trace),
             "experiments": defaults.get_value("siso_experiments", siso_experiments),
-            "project": siso_project,
+            "project": rbe_project,
         }
         remote_jobs = defaults.get_value("siso_remote_jobs", siso_remote_jobs)
         if remote_jobs:
             siso["remote_jobs"] = remote_jobs
         properties["$build/siso"] = siso
-        if defaults.get_value("shadow_siso_project", shadow_siso_project):
+        if shadow_rbe_project:
             shadow_siso = dict(siso)
-            shadow_siso["project"] = defaults.get_value("shadow_siso_project", shadow_siso_project)
+            shadow_siso["project"] = shadow_rbe_project
             shadow_properties["$build/siso"] = shadow_siso
 
     pgo = _pgo_property(
@@ -1044,6 +956,7 @@ def builder(
         mirrors,
         builder_config_settings,
         targets,
+        targets_settings,
         additional_exclusions,
     )
 
@@ -1121,7 +1034,6 @@ builders = struct(
     builder = builder,
     cpu = cpu,
     defaults = defaults,
-    goma = goma,
     os = os,
     sheriff_rotations = sheriff_rotations,
     free_space = free_space,

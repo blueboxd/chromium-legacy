@@ -51,6 +51,8 @@ import org.chromium.chrome.browser.commerce.ShoppingServiceFactory;
 import org.chromium.chrome.browser.enterprise.util.ManagedBrowserUtils;
 import org.chromium.chrome.browser.enterprise.util.ManagedBrowserUtilsJni;
 import org.chromium.chrome.browser.feed.FeedFeatures;
+import org.chromium.chrome.browser.feed.webfeed.WebFeedBridge;
+import org.chromium.chrome.browser.feed.webfeed.WebFeedBridgeJni;
 import org.chromium.chrome.browser.feed.webfeed.WebFeedSnackbarController;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.incognito.reauth.IncognitoReauthController;
@@ -95,14 +97,8 @@ import java.util.List;
 
 /** Unit tests for {@link TabbedAppMenuPropertiesDelegate}. */
 @RunWith(BaseRobolectricTestRunner.class)
-@EnableFeatures({
-    ChromeFeatureList.WEB_FEED,
-    UiAccessibilityFeatures.START_SURFACE_ACCESSIBILITY_CHECK
-})
-@DisableFeatures({
-    ChromeFeatureList.SYNC_SHOW_IDENTITY_ERRORS_FOR_SIGNED_IN_USERS,
-    ChromeFeatureList.PWA_UNIVERSAL_INSTALL_UI
-})
+@EnableFeatures({UiAccessibilityFeatures.START_SURFACE_ACCESSIBILITY_CHECK})
+@DisableFeatures({ChromeFeatureList.PWA_UNIVERSAL_INSTALL_UI})
 public class TabbedAppMenuPropertiesDelegateUnitTest {
     // Constants defining flags that determines multi-window menu items visibility.
     private static final boolean TAB_M = true; // multiple tabs
@@ -155,6 +151,7 @@ public class TabbedAppMenuPropertiesDelegateUnitTest {
     @Mock private AppBannerManager.Natives mAppBannerManagerJniMock;
     @Mock private ReadAloudController mReadAloudController;
     @Mock private PrefService mPrefService;
+    @Mock private WebFeedBridge.Natives mWebFeedBridgeJniMock;
 
     private OneshotSupplierImpl<LayoutStateProvider> mLayoutStateProviderSupplier =
             new OneshotSupplierImpl<>();
@@ -208,6 +205,8 @@ public class TabbedAppMenuPropertiesDelegateUnitTest {
         jniMocker.mock(AppBannerManagerJni.TEST_HOOKS, mAppBannerManagerJniMock);
         Mockito.when(mAppBannerManagerJniMock.getInstallableWebAppManifestId(any()))
                 .thenReturn(null);
+        jniMocker.mock(WebFeedBridgeJni.TEST_HOOKS, mWebFeedBridgeJniMock);
+        when(mWebFeedBridgeJniMock.isWebFeedEnabled()).thenReturn(true);
 
         Context context =
                 new ContextThemeWrapper(

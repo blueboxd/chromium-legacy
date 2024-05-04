@@ -258,7 +258,7 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
   bool CanSkipRenderPass(const AggregatedRenderPass* render_pass) const;
   void UseRenderPass(const AggregatedRenderPass* render_pass);
   gfx::Rect ComputeScissorRectForRenderPass(
-      const AggregatedRenderPass* render_pass) const;
+      const AggregatedRenderPass* render_pass);
 
   void DoDrawPolygon(const DrawPolygon& poly,
                      const gfx::Rect& render_pass_scissor,
@@ -270,6 +270,13 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
       AggregatedRenderPassId render_pass_id) const;
   const std::optional<gfx::RRectF> BackdropFilterBoundsForPass(
       AggregatedRenderPassId render_pass_id) const;
+
+  virtual void SetRenderPassBackingDrawnRect(
+      const AggregatedRenderPassId& render_pass_id,
+      const gfx::Rect& drawn_rect) {}
+
+  virtual gfx::Rect GetRenderPassBackingDrawnRect(
+      const AggregatedRenderPassId& render_pass_id);
 
   // Private interface implemented by subclasses for use by DirectRenderer.
   virtual bool CanPartialSwap() = 0;
@@ -284,12 +291,14 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
       const AggregatedRenderPassId& render_pass_id) const = 0;
   virtual gfx::Size GetRenderPassBackingPixelSize(
       const AggregatedRenderPassId& render_pass_id) = 0;
+
   virtual void BindFramebufferToOutputSurface() = 0;
   virtual void BindFramebufferToTexture(
       const AggregatedRenderPassId render_pass_id) = 0;
   virtual void SetScissorTestRect(const gfx::Rect& scissor_rect) = 0;
   // |render_pass_update_rect| is in render pass backing buffer space.
   virtual void BeginDrawingRenderPass(
+      const AggregatedRenderPass* render_pass,
       bool needs_clear,
       const gfx::Rect& render_pass_update_rect) = 0;
   // |clip_region| is a (possibly null) pointer to a quad in the same
@@ -311,7 +320,6 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
   virtual void CopyDrawnRenderPass(
       const copy_output::RenderPassGeometry& geometry,
       std::unique_ptr<CopyOutputRequest> request) = 0;
-  virtual void GenerateMipmap() = 0;
   virtual bool SupportsBGRA() const;
 
   gfx::Size surface_size_for_swap_buffers() const {
@@ -326,7 +334,6 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
 
   float CurrentFrameSDRWhiteLevel() const;
   gfx::ColorSpace RootRenderPassColorSpace() const;
-  gfx::ColorSpace CurrentRenderPassColorSpace() const;
   gfx::ColorSpace RenderPassColorSpace(
       const AggregatedRenderPass* render_pass) const;
   SharedImageFormat GetColorSpaceSharedImageFormat(
@@ -335,8 +342,8 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
   // CurrentRenderPassColorSpace, this color space has the value of
   // CurrentFrameSDRWhiteLevel incorporated into it.
   sk_sp<SkColorSpace> CurrentRenderPassSkColorSpace() const {
-    return CurrentRenderPassColorSpace().ToSkColorSpace(
-        CurrentFrameSDRWhiteLevel());
+    return RenderPassColorSpace(current_frame()->current_render_pass)
+        .ToSkColorSpace(CurrentFrameSDRWhiteLevel());
   }
 
   const raw_ptr<const RendererSettings> settings_;
@@ -355,6 +362,11 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
 
   // Whether partial swap can be used.
   bool use_partial_swap_ = false;
+
+  // Whether render pass drawn rect functionality can be used. This means we
+  // will be tracking the drawn area of a render pass to determine what needs to
+  // be redrawn every frame.
+  bool use_render_pass_drawn_rect_ = false;
 
   // A map from RenderPass id to the single quad present in and replacing the
   // RenderPass. The DrawQuads are owned by their RenderPasses, which outlive

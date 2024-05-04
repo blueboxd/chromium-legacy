@@ -229,8 +229,7 @@ class SupervisedUserExtensionsParentalControlsUiTest
       FamilyLinkSwitch family_link_switch,
       FamilyLinkSwitchState switch_state,
       ui::ElementIdentifier kParentControlsTab) {
-    bool pref_target_value =
-        switch_state == FamilyLinkSwitchState::kEnabled ? true : false;
+    bool pref_target_value = switch_state == FamilyLinkSwitchState::kEnabled;
 
     if (family_link_switch == FamilyLinkSwitch::kPermissionsSwitch) {
       // Parent sets the FL switch "Permissions" to ON.
@@ -383,7 +382,7 @@ INSTANTIATE_TEST_SUITE_P(
     All,
     SupervisedUserExtensionsParentalControlsUiTest,
     testing::Combine(
-        testing::Values(FamilyIdentifier("FAMILY_DMA_ELIGIBILE_NO_CONSENT"),
+        testing::Values(FamilyIdentifier("FAMILY_DMA_ELIGIBLE_NO_CONSENT"),
                         FamilyIdentifier("FAMILY_DMA_ELIGIBLE_WITH_CONSENT"),
                         FamilyIdentifier("FAMILY_DMA_INELIGIBLE")),
         /*permissions_switch_target_value=*/

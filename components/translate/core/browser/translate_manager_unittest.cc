@@ -52,7 +52,6 @@ using testing::SetArgPointee;
 namespace translate {
 namespace {
 
-const char kInitiationStatusName[] = "Translate.InitiationStatus.v2";
 const char kMenuTranslationIsAvailableName[] =
     "Translate.MenuTranslation.IsAvailable";
 
@@ -1203,7 +1202,7 @@ TEST_F(TranslateManagerTest, PredefinedTargetLanguage_AutoTranslate) {
                       TriggerDecision::kAutomaticTranslationToPredefinedTarget),
                   1)));
 
-  // TODO(https://crbug.com/1169461): This test as well as many of the other
+  // TODO(crbug.com/40743872): This test as well as many of the other
   // tests in this file should be verifying the state of the TranslateManager
   // after the translation happens, once the MockTranslateDriver is changed to
   // update the TranslateManager after a translation is performed.
@@ -1239,8 +1238,6 @@ TEST_F(TranslateManagerTest, ShowTranslateUI_NoTranslation) {
   network_notifier_.SimulateOnline();
 
   translate_manager_->ShowTranslateUI();
-
-  histogram_tester.ExpectTotalCount(kInitiationStatusName, 0);
 }
 
 TEST_F(TranslateManagerTest, ShowTranslateUI_Translation) {

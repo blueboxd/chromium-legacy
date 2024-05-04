@@ -11,7 +11,6 @@ formatted version XML.
 
 import textwrap as tw
 import xml.etree.ElementTree as ET
-from typing import List
 import re
 
 import sync.model_util as util
@@ -22,13 +21,6 @@ DEFAULT_KEY_ROTATION_PERIOD = 90
 
 # Default scope if not explicitly specified in the XML.
 DEFAULT_PROJECT_SCOPE = "device"
-
-# Project name for event sequencing.
-#
-# This project name should be consistent with the name in structured.xml as well
-# as the server.
-EVENT_SEQUENCE_PROJECT_NAME = "CrOSEvents"
-
 
 def wrap(text: str, indent: str) -> str:
   wrapper = tw.TextWrapper(width=80,
@@ -342,13 +334,13 @@ class Metric:
     if self.type == "int-array":
       self.max_size = int(util.get_attr(elem, "max", Model.MAX_REGEX))
 
-    if self.type == "raw-string" and (project.id != "none" and project.name
-                                      != EVENT_SEQUENCE_PROJECT_NAME):
+    if self.type == "raw-string" and (project.id != "none" and
+                                      not project.is_event_sequence_project):
       util.error(
           elem,
           "raw-string metrics must be in a project with id type "
-          f"'none' or project name '{EVENT_SEQUENCE_PROJECT_NAME}',"
-          f" but {project.name} has id type '{project.id}'",
+          f"'none' or sequenced project, but {project.name} has "
+          f"id type '{project.id}'",
       )
 
   def is_array(self) -> bool:

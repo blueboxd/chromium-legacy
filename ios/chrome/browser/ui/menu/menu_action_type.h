@@ -59,8 +59,12 @@ enum class MenuActionType {
   RenameTabGroup = 46,
   NewTabInGroup = 47,
   UngroupTabGroup = 48,
-  ClaseTabGroup = 49,
-  kMaxValue = ClaseTabGroup
+  CloseTabGroup = 49,
+  DeleteTabGroup = 50,
+  MoveTabToExistingGroup = 51,
+  RemoveTabFromGroup = 52,
+  OpenLinkInNewGroup = 53,
+  kMaxValue = OpenLinkInNewGroup
 };
 // LINT.ThenChange(/tools/metrics/histograms/metadata/mobile/enums.xml)
 

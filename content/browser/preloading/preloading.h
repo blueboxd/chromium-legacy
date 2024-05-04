@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_PRELOADING_PRELOADING_H_
 #define CONTENT_BROWSER_PRELOADING_PRELOADING_H_
 
+#include <string_view>
+
 #include "content/public/browser/preloading.h"
 #include "content/public/browser/preloading_trigger_type.h"
 
@@ -49,11 +51,11 @@ static constexpr PreloadingPredictor kSpeculationRulesFromAutoSpeculationRules(
     53,
     "SpeculationRulesFromAutoSpeculationRules");
 
-// TODO(crbug.com/1309934): Add more predictors as we integrate Preloading
+// TODO(crbug.com/40219645): Add more predictors as we integrate Preloading
 // logging.
 }  // namespace content_preloading_predictor
 
-CONTENT_EXPORT base::StringPiece PreloadingTypeToString(PreloadingType type);
+CONTENT_EXPORT std::string_view PreloadingTypeToString(PreloadingType type);
 
 CONTENT_EXPORT PreloadingPredictor
 GetPredictorForPreloadingTriggerType(PreloadingTriggerType trigger_type);

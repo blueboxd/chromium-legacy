@@ -9,15 +9,14 @@ import android.view.View;
 
 import org.chromium.chrome.browser.share.page_info_sheet.PageInfoBottomSheetCoordinator.PageInfoContents;
 import org.chromium.chrome.browser.share.page_info_sheet.PageInfoBottomSheetProperties.PageInfoState;
+import org.chromium.chrome.browser.share.page_info_sheet.PageSummaryMetrics.PageSummarySheetEvents;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController.SheetState;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController.StateChangeReason;
 import org.chromium.components.browser_ui.bottomsheet.EmptyBottomSheetObserver;
 import org.chromium.ui.modelutil.PropertyModel;
 
-/**
- * PageInfoBottomSheetMediator is responsible for retrieving, refreshing and attaching page info.
- */
+/** PageInfoBottomSheetMediator is responsible for retrieving, and attaching page info. */
 class PageInfoBottomSheetMediator extends EmptyBottomSheetObserver {
 
     private final PropertyModel mModel;
@@ -45,13 +44,31 @@ class PageInfoBottomSheetMediator extends EmptyBottomSheetObserver {
                                 PageInfoBottomSheetProperties.ON_CANCEL_CLICKED,
                                 this::onCancelClicked)
                         .with(
-                                PageInfoBottomSheetProperties.ON_REFRESH_CLICKED,
-                                this::onRefreshClicked)
+                                PageInfoBottomSheetProperties.ON_LEARN_MORE_CLICKED,
+                                this::onLearnMoreClicked)
+                        .with(
+                                PageInfoBottomSheetProperties.ON_POSITIVE_FEEDBACK_CLICKED,
+                                this::onPositiveFeedbackClicked)
+                        .with(
+                                PageInfoBottomSheetProperties.ON_NEGATIVE_FEEDBACK_CLICKED,
+                                this::onNegativeFeedbackClicked)
                         .with(PageInfoBottomSheetProperties.STATE, PageInfoState.INITIALIZING)
                         .build();
 
         mBottomSheetController.addObserver(this);
         mPageInfoDelegate.getContentSupplier().addObserver(this::onContentsChanged);
+    }
+
+    private void onLearnMoreClicked(View view) {
+        mPageInfoDelegate.onLearnMore();
+    }
+
+    private void onNegativeFeedbackClicked(View view) {
+        mPageInfoDelegate.onNegativeFeedback();
+    }
+
+    private void onPositiveFeedbackClicked(View view) {
+        mPageInfoDelegate.onPositiveFeedback();
     }
 
     private void onContentsChanged(PageInfoContents contents) {
@@ -80,24 +97,41 @@ class PageInfoBottomSheetMediator extends EmptyBottomSheetObserver {
             case StateChangeReason.BACK_PRESS,
                     StateChangeReason.SWIPE,
                     StateChangeReason.TAP_SCRIM -> {
-                mPageInfoDelegate.onCancel();
-                destroySheet();
+                dismissSheet();
             }
         }
     }
 
     private void onAcceptClicked(View view) {
         mPageInfoDelegate.onAccept();
-        destroySheet();
     }
 
     private void onCancelClicked(View view) {
-        mPageInfoDelegate.onCancel();
-        destroySheet();
+        dismissSheet();
     }
 
-    private void onRefreshClicked(View view) {
-        mPageInfoDelegate.onRefresh();
+    private void dismissSheet() {
+        recordStateOnDismiss();
+        mPageInfoDelegate.onCancel();
+    }
+
+    private void recordStateOnDismiss() {
+        @PageInfoState int state = mModel.get(PageInfoBottomSheetProperties.STATE);
+        @PageSummarySheetEvents
+        int stateOnDismiss = PageSummarySheetEvents.CLOSE_SHEET_WHILE_INITIALIZING;
+        switch (state) {
+            case PageInfoState.ERROR:
+                stateOnDismiss = PageSummarySheetEvents.CLOSE_SHEET_ON_ERROR;
+                break;
+            case PageInfoState.LOADING:
+                stateOnDismiss = PageSummarySheetEvents.CLOSE_SHEET_WHILE_LOADING;
+                break;
+            case PageInfoState.SUCCESS:
+                stateOnDismiss = PageSummarySheetEvents.CLOSE_SHEET_AFTER_SUCCESS;
+                break;
+        }
+
+        PageSummaryMetrics.recordSummarySheetEvent(stateOnDismiss);
     }
 
     @Override

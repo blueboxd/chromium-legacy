@@ -6,8 +6,6 @@ source_set("side_swipe") {
   sources = [
     "card_side_swipe_view.h",
     "card_side_swipe_view.mm",
-    "side_swipe_gesture_recognizer.h",
-    "side_swipe_gesture_recognizer.mm",
     "side_swipe_mediator+Testing.h",
     "side_swipe_mediator.h",
     "side_swipe_mediator.mm",
@@ -18,8 +16,8 @@ source_set("side_swipe") {
     "swipe_view.h",
     "swipe_view.mm",
   ]
+  public_deps = [ ":gesture_recognizer" ]
   deps = [
-    "resources:side_swipe_navigation_back",
     "//base",
     "//components/feature_engagement/public",
     "//components/reading_list/core",
@@ -31,12 +29,14 @@ source_set("side_swipe") {
     "//ios/chrome/browser/shared/model/url",
     "//ios/chrome/browser/shared/model/url:constants",
     "//ios/chrome/browser/shared/model/web_state_list",
+    "//ios/chrome/browser/shared/public/commands",
     "//ios/chrome/browser/shared/public/features",
     "//ios/chrome/browser/shared/ui/elements",
     "//ios/chrome/browser/shared/ui/util",
     "//ios/chrome/browser/snapshots/model",
     "//ios/chrome/browser/ui/fullscreen",
     "//ios/chrome/browser/ui/ntp",
+    "//ios/chrome/browser/ui/side_swipe/resources",
     "//ios/chrome/browser/ui/tab_switcher/tab_grid/grid:grid_ui_constants",
     "//ios/chrome/browser/ui/tabs/requirements",
     "//ios/chrome/browser/ui/toolbar/public",
@@ -50,6 +50,14 @@ source_set("side_swipe") {
     "//ui/base",
     "//url",
   ]
+}
+
+source_set("gesture_recognizer") {
+  sources = [
+    "side_swipe_gesture_recognizer.h",
+    "side_swipe_gesture_recognizer.mm",
+  ]
+  deps = [ "//base" ]
   frameworks = [ "UIKit.framework" ]
 }
 

@@ -13,16 +13,19 @@
 #include "base/check.h"
 #include "base/check_op.h"
 #include "base/functional/overloaded.h"
+#include "base/numerics/checked_math.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "components/attribution_reporting/aggregatable_trigger_config.h"
 #include "components/attribution_reporting/source_type.h"
 #include "components/attribution_reporting/suitable_origin.h"
+#include "content/browser/attribution_reporting/aggregatable_attribution_utils.h"
 #include "content/browser/attribution_reporting/common_source_info.h"
 #include "content/browser/attribution_reporting/stored_source.h"
 #include "net/http/http_request_headers.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
+#include "third_party/blink/public/mojom/aggregation_service/aggregatable_report.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 #include "url/url_canon.h"
@@ -119,7 +122,8 @@ AttributionReport::CommonAggregatableData::~CommonAggregatableData() = default;
 
 AttributionReport::AggregatableAttributionData::AggregatableAttributionData(
     CommonAggregatableData common_data,
-    std::vector<AggregatableHistogramContribution> contributions,
+    std::vector<blink::mojom::AggregatableReportHistogramContribution>
+        contributions,
     StoredSource source)
     : common_data(std::move(common_data)),
       contributions(std::move(contributions)),
@@ -144,11 +148,7 @@ AttributionReport::AggregatableAttributionData::~AggregatableAttributionData() =
 
 base::CheckedNumeric<int64_t>
 AttributionReport::AggregatableAttributionData::BudgetRequired() const {
-  base::CheckedNumeric<int64_t> budget_required = 0;
-  for (const AggregatableHistogramContribution& contribution : contributions) {
-    budget_required += contribution.value();
-  }
-  return budget_required;
+  return GetTotalAggregatableValues(contributions);
 }
 
 AttributionReport::NullAggregatableData::NullAggregatableData(

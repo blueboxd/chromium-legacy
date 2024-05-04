@@ -13,6 +13,7 @@ import android.view.accessibility.AccessibilityNodeInfo;
 import android.widget.TextView;
 
 import androidx.annotation.ColorRes;
+import androidx.annotation.VisibleForTesting;
 import androidx.appcompat.content.res.AppCompatResources;
 import androidx.preference.PreferenceViewHolder;
 import androidx.preference.SwitchPreferenceCompat;
@@ -38,6 +39,8 @@ public class ChromeSwitchPreference extends SwitchPreferenceCompat {
      */
     private String mSummaryOverrideForScreenReader;
 
+    private boolean mUseSummaryAsTitle;
+
     public ChromeSwitchPreference(Context context) {
         this(context, null);
     }
@@ -46,9 +49,12 @@ public class ChromeSwitchPreference extends SwitchPreferenceCompat {
         super(context, attrs);
 
         mHasCustomLayout = ManagedPreferencesUtils.isCustomLayoutApplied(context, attrs);
+        mUseSummaryAsTitle = true;
     }
 
-    /** Sets the ManagedPreferenceDelegate which will determine whether this preference is managed. */
+    /**
+     * Sets the ManagedPreferenceDelegate which will determine whether this preference is managed.
+     */
     public void setManagedPreferenceDelegate(ManagedPreferenceDelegate delegate) {
         mManagedPrefDelegate = delegate;
         ManagedPreferencesUtils.initPreference(
@@ -89,7 +95,7 @@ public class ChromeSwitchPreference extends SwitchPreferenceCompat {
         }
 
         // Use summary as title if title is empty.
-        if (TextUtils.isEmpty(getTitle())) {
+        if (mUseSummaryAsTitle && TextUtils.isEmpty(getTitle())) {
             title.setText(summary.getText());
             title.setVisibility(View.VISIBLE);
             if (summaryOverrideDelegate != null) {
@@ -105,7 +111,8 @@ public class ChromeSwitchPreference extends SwitchPreferenceCompat {
     }
 
     @Override
-    protected void onClick() {
+    @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
+    public void onClick() {
         if (ManagedPreferencesUtils.onClickPreference(mManagedPrefDelegate, this)) return;
         super.onClick();
     }
@@ -128,6 +135,11 @@ public class ChromeSwitchPreference extends SwitchPreferenceCompat {
      */
     public void setSummaryOverrideForScreenReader(String text) {
         mSummaryOverrideForScreenReader = text;
+    }
+
+    /** Controls whether the summary is used as title when the title is empty. */
+    public void setUseSummaryAsTitle(boolean value) {
+        mUseSummaryAsTitle = value;
     }
 
     private void updateBackground() {

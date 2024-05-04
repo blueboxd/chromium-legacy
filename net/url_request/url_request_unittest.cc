@@ -11,6 +11,7 @@
 #include <limits>
 #include <memory>
 #include <optional>
+#include <string_view>
 #include <utility>
 
 #include "base/base64url.h"
@@ -31,7 +32,6 @@
 #include "base/strings/escape.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -156,8 +156,10 @@
 
 #if BUILDFLAG(IS_WIN)
 #include <objbase.h>
-#include <shlobj.h>
+
 #include <windows.h>
+
+#include <shlobj.h>
 #include <wrl/client.h>
 
 #include "base/win/scoped_com_initializer.h"
@@ -327,7 +329,7 @@ class PriorityMonitoringURLRequestJob : public URLRequestTestJob {
 // Do a case-insensitive search through |haystack| for |needle|.
 bool ContainsString(const std::string& haystack, const char* needle) {
   std::string::const_iterator it =
-      base::ranges::search(haystack, base::StringPiece(needle),
+      base::ranges::search(haystack, std::string_view(needle),
                            base::CaseInsensitiveCompareASCII<char>());
   return it != haystack.end();
 }
@@ -622,7 +624,7 @@ bool GetTestRootCertSPKIHash(SHA256HashValue* root_hash) {
       ImportCertFromFile(GetTestCertsDirectory(), "root_ca_cert.pem");
   if (!root_cert)
     return false;
-  base::StringPiece root_spki;
+  std::string_view root_spki;
   if (!asn1::ExtractSPKIFromDERCert(
           x509_util::CryptoBufferAsStringPiece(root_cert->cert_buffer()),
           &root_spki)) {
@@ -684,8 +686,7 @@ class URLRequestTest : public PlatformTest, public WithTaskEnvironment {
         base::MakeAbsoluteFilePath(temp_dir_.GetPath());
 
     ASSERT_TRUE(base::CreateTemporaryFileInDir(absolute_temp_dir, test_file));
-    ASSERT_TRUE(
-        base::WriteFile(*test_file, base::StringPiece(data, data_size)));
+    ASSERT_TRUE(base::WriteFile(*test_file, std::string_view(data, data_size)));
   }
 
   static std::unique_ptr<ConfiguredProxyResolutionService>
@@ -1972,17 +1973,15 @@ TEST_F(URLRequestTest, DelayedCookieCallbackAsync) {
   replace_scheme.SetSchemeStr("https");
   GURL url = test_server.base_url().ReplaceComponents(replace_scheme);
 
-  auto cookie1 = CanonicalCookie::Create(
-      url, "AlreadySetCookie=1;Secure", base::Time::Now(),
-      std::nullopt /* server_time */, std::nullopt /* cookie_partition_key */);
+  auto cookie1 = CanonicalCookie::CreateForTesting(
+      url, "AlreadySetCookie=1;Secure", base::Time::Now());
   auto delayed_cm = std::make_unique<DelayedCookieMonster>();
   delayed_cm->SetCanonicalCookieAsync(std::move(cookie1), url,
                                       net::CookieOptions::MakeAllInclusive(),
                                       CookieStore::SetCookiesCallback());
 
-  auto cookie2 = CanonicalCookie::Create(
-      url, "AlreadySetCookie=1;Secure", base::Time::Now(),
-      std::nullopt /* server_time */, std::nullopt /* cookie_partition_key */);
+  auto cookie2 = CanonicalCookie::CreateForTesting(
+      url, "AlreadySetCookie=1;Secure", base::Time::Now());
   auto cm = std::make_unique<CookieMonster>(nullptr, nullptr);
   cm->SetCanonicalCookieAsync(std::move(cookie2), url,
                               net::CookieOptions::MakeAllInclusive(),
@@ -2237,7 +2236,7 @@ TEST_F(URLRequestTest, DoNotSendCookies_ViaPolicy) {
   }
 }
 
-// TODO(crbug.com/564656) This test is flaky on iOS.
+// TODO(crbug.com/41225288) This test is flaky on iOS.
 #if BUILDFLAG(IS_IOS)
 #define MAYBE_DoNotSaveCookies_ViaPolicy FLAKY_DoNotSaveCookies_ViaPolicy
 #else
@@ -3553,7 +3552,7 @@ TEST_F(URLRequestTest, PartitionedCookiesRedirect) {
 
   // Set partitioned cookie with same-site partitionkey.
   {
-    auto same_site_partitioned_cookie = CanonicalCookie::Create(
+    auto same_site_partitioned_cookie = CanonicalCookie::CreateForTesting(
         create_cookie_url, "samesite_partitioned=1;Secure;Partitioned",
         base::Time::Now(), std::nullopt,
         CookiePartitionKey::FromURLForTesting(create_cookie_url));
@@ -3570,7 +3569,7 @@ TEST_F(URLRequestTest, PartitionedCookiesRedirect) {
   // In the redirect below from site B to A, this cookie's partition key is site
   // B it should not be sent in the redirected request.
   {
-    auto cross_site_partitioned_cookie = CanonicalCookie::Create(
+    auto cross_site_partitioned_cookie = CanonicalCookie::CreateForTesting(
         create_cookie_url, "xsite_partitioned=1;Secure;Partitioned",
         base::Time::Now(), std::nullopt,
         CookiePartitionKey::FromURLForTesting(
@@ -3767,7 +3766,7 @@ TEST_F(URLRequestTest, StrictSecureCookiesOnNonsecureOrigin) {
 // value for the `fixed_date_` member.
 class FixedDateNetworkDelegate : public TestNetworkDelegate {
  public:
-  explicit FixedDateNetworkDelegate(base::StringPiece fixed_date)
+  explicit FixedDateNetworkDelegate(std::string_view fixed_date)
       : fixed_date_(fixed_date) {}
 
   FixedDateNetworkDelegate(const FixedDateNetworkDelegate&) = delete;
@@ -3775,7 +3774,7 @@ class FixedDateNetworkDelegate : public TestNetworkDelegate {
 
   ~FixedDateNetworkDelegate() override = default;
 
-  void set_fixed_date(base::StringPiece fixed_date) {
+  void set_fixed_date(std::string_view fixed_date) {
     fixed_date_ = static_cast<std::string>(fixed_date);
   }
 
@@ -4083,7 +4082,7 @@ class URLRequestTestHTTP : public URLRequestTest {
           << "request failed. Error: " << d.request_status();
 
       EXPECT_FALSE(d.received_data_before_response());
-      EXPECT_EQ(base::StringPiece(uploadBytes.get(), kMsgSize),
+      EXPECT_EQ(std::string_view(uploadBytes.get(), kMsgSize),
                 d.data_received());
     }
   }
@@ -7766,9 +7765,8 @@ TEST_F(URLRequestTest, NoCookieInclusionStatusWarningIfWouldBeExcludedAnyway) {
   network_delegate.set_block_annotate_cookies();
   {
     GURL url = test_server.GetURL("/");
-    auto cookie1 = CanonicalCookie::Create(
-        url, "cookienosamesite=1", base::Time::Now(), std::nullopt,
-        std::nullopt /* cookie_partition_key */);
+    auto cookie1 = CanonicalCookie::CreateForTesting(url, "cookienosamesite=1",
+                                                     base::Time::Now());
     base::RunLoop run_loop;
     CookieAccessResult access_result;
     cm.SetCanonicalCookieAsync(
@@ -7809,9 +7807,8 @@ TEST_F(URLRequestTest, NoCookieInclusionStatusWarningIfWouldBeExcludedAnyway) {
   // Get cookies
   {
     GURL url = test_server.GetURL("/");
-    auto cookie2 = CanonicalCookie::Create(
-        url, "cookiewithpath=1;path=/foo", base::Time::Now(), std::nullopt,
-        std::nullopt /* cookie_partition_key */);
+    auto cookie2 = CanonicalCookie::CreateForTesting(
+        url, "cookiewithpath=1;path=/foo", base::Time::Now());
     base::RunLoop run_loop;
     // Note: cookie1 from the previous testcase is still in the cookie store.
     CookieAccessResult access_result;
@@ -7955,10 +7952,9 @@ TEST_F(URLRequestTestHTTP, AuthChallengeWithFilteredCookies) {
     auto context = context_builder->Build();
 
     auto* cm = static_cast<CookieMonster*>(context->cookie_store());
-    auto another_cookie = CanonicalCookie::Create(
-        url_requiring_auth_wo_cookies, "another_cookie=true", base::Time::Now(),
-        std::nullopt /* server_time */,
-        std::nullopt /* cookie_partition_key */);
+    auto another_cookie = CanonicalCookie::CreateForTesting(
+        url_requiring_auth_wo_cookies, "another_cookie=true",
+        base::Time::Now());
     cm->SetCanonicalCookieAsync(std::move(another_cookie),
                                 url_requiring_auth_wo_cookies,
                                 net::CookieOptions::MakeAllInclusive(),
@@ -7985,10 +7981,9 @@ TEST_F(URLRequestTestHTTP, AuthChallengeWithFilteredCookies) {
     // Check maybe_sent_cookies on second roundtrip.
     request->set_maybe_sent_cookies({});
     cm->DeleteAllAsync(CookieStore::DeleteCallback());
-    auto one_more_cookie = CanonicalCookie::Create(
+    auto one_more_cookie = CanonicalCookie::CreateForTesting(
         url_requiring_auth_wo_cookies, "one_more_cookie=true",
-        base::Time::Now(), std::nullopt /* server_time */,
-        std::nullopt /* cookie_partition_key */);
+        base::Time::Now());
     cm->SetCanonicalCookieAsync(std::move(one_more_cookie),
                                 url_requiring_auth_wo_cookies,
                                 net::CookieOptions::MakeAllInclusive(),
@@ -8376,10 +8371,8 @@ TEST_F(URLRequestTestHTTP, RedirectWithFilteredCookies) {
     auto context = context_builder->Build();
 
     auto* cm = static_cast<CookieMonster*>(context->cookie_store());
-    auto another_cookie = CanonicalCookie::Create(
-        original_url, "another_cookie=true", base::Time::Now(),
-        std::nullopt /* server_time */,
-        std::nullopt /* cookie_partition_key */);
+    auto another_cookie = CanonicalCookie::CreateForTesting(
+        original_url, "another_cookie=true", base::Time::Now());
     cm->SetCanonicalCookieAsync(std::move(another_cookie), original_url,
                                 net::CookieOptions::MakeAllInclusive(),
                                 CookieStore::SetCookiesCallback());
@@ -8403,10 +8396,8 @@ TEST_F(URLRequestTestHTTP, RedirectWithFilteredCookies) {
     // Check maybe_sent_cookies on second round trip
     request->set_maybe_sent_cookies({});
     cm->DeleteAllAsync(CookieStore::DeleteCallback());
-    auto one_more_cookie = CanonicalCookie::Create(
-        original_url_wo_cookie, "one_more_cookie=true", base::Time::Now(),
-        std::nullopt /* server_time */,
-        std::nullopt /* cookie_partition_key */);
+    auto one_more_cookie = CanonicalCookie::CreateForTesting(
+        original_url_wo_cookie, "one_more_cookie=true", base::Time::Now());
     cm->SetCanonicalCookieAsync(std::move(one_more_cookie),
                                 original_url_wo_cookie,
                                 net::CookieOptions::MakeAllInclusive(),
@@ -8678,7 +8669,7 @@ TEST_F(URLRequestTestHTTP, DefaultUserAgent) {
 
 // Check that if request overrides the User-Agent header,
 // the default is not appended.
-// TODO(crbug.com/564656) This test is flaky on iOS.
+// TODO(crbug.com/41225288) This test is flaky on iOS.
 #if BUILDFLAG(IS_IOS)
 #define MAYBE_OverrideUserAgent FLAKY_OverrideUserAgent
 #else
@@ -10391,7 +10382,7 @@ class HTTPSCertNetFetchingTest : public HTTPSRequestTest {
   }
 
   void DoConnectionWithDelegate(
-      base::StringPiece hostname,
+      std::string_view hostname,
       const EmbeddedTestServer::ServerCertificateConfig& cert_config,
       TestDelegate* delegate,
       SSLInfo* out_ssl_info) {
@@ -10423,7 +10414,7 @@ class HTTPSCertNetFetchingTest : public HTTPSRequestTest {
   }
 
   void DoConnection(
-      base::StringPiece hostname,
+      std::string_view hostname,
       const EmbeddedTestServer::ServerCertificateConfig& cert_config,
       CertStatus* out_cert_status) {
     // Always overwrite |out_cert_status|.
@@ -12907,16 +12898,72 @@ TEST_F(URLRequestTest, SetIsolationInfoFromNak) {
 }
 
 TEST_F(URLRequestTest, CookiePartitionKey) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      features::kAncestorChainBitEnabledInPartitionedCookies);
+
   const url::Origin kOrigin = url::Origin::Create(GURL("http://foo.test/"));
-  TestDelegate d;
-  std::unique_ptr<URLRequest> r(
-      default_context().CreateRequest(GURL("ws://foo.test/"), DEFAULT_PRIORITY,
-                                      &d, TRAFFIC_ANNOTATION_FOR_TESTS));
-  r->set_isolation_info(
-      IsolationInfo::Create(IsolationInfo::RequestType::kMainFrame, kOrigin,
-                            kOrigin, SiteForCookies::FromOrigin(kOrigin)));
-  EXPECT_TRUE(r->cookie_partition_key());
-  EXPECT_EQ(r->cookie_partition_key()->site(), SchemefulSite(kOrigin));
+  const url::Origin kCrossSiteOrigin =
+      url::Origin::Create(GURL("http://b.test/"));
+
+  struct {
+    const GURL request_url;
+    IsolationInfo::RequestType request_type;
+    const url::Origin frame_origin;
+    const SiteForCookies site_for_cookies;
+    const url::Origin initiator;
+    bool expected_third_party;
+    // If present, change the initiator
+    std::optional<GURL> change_initator = std::nullopt;
+
+  } cases[]{
+      // Request from the main frame: first party partitioned
+      {GURL("ws://foo.test/"), IsolationInfo::RequestType::kMainFrame, kOrigin,
+       SiteForCookies::FromOrigin(kOrigin), kOrigin, false},
+      // Request from the main frame with 3rd party initiator: first party
+      // partitioned
+      {GURL("ws://foo.test/"), IsolationInfo::RequestType::kMainFrame, kOrigin,
+       SiteForCookies::FromOrigin(kOrigin), kOrigin, false,
+       GURL("ws://b.test/")},
+      // Request from first party subframe to cross-site subframe: third party
+      // partitioned
+      {GURL("ws://foo.test/"), IsolationInfo::RequestType::kSubFrame, kOrigin,
+       SiteForCookies(), kCrossSiteOrigin, true},
+      // Request from cross-site subframe: third party partitioned
+      {GURL("ws://b.test/"), IsolationInfo::RequestType::kSubFrame,
+       kCrossSiteOrigin, SiteForCookies(), kCrossSiteOrigin, true},
+      // Request from cross-site subframe with 1st party initiator: third party
+      // partitioned
+      {GURL("ws://b.test/"), IsolationInfo::RequestType::kSubFrame,
+       kCrossSiteOrigin, SiteForCookies(), kCrossSiteOrigin, true,
+       GURL("ws://foo.test/")},
+      // Check that mismatch between request initiator and SiteForCookies: third
+      // party partitioned
+      {GURL("ws://b.test/"), IsolationInfo::RequestType::kSubFrame,
+       kCrossSiteOrigin, SiteForCookies::FromOrigin(kOrigin), kCrossSiteOrigin,
+       true},
+      // Request from first party subframe with null SiteForCookies indicating
+      // A1->B->A2 embed: third party partitioned.
+      {GURL("ws://foo.test/"), IsolationInfo::RequestType::kSubFrame, kOrigin,
+       SiteForCookies(), kOrigin, true},
+  };
+
+  for (const auto& tc : cases) {
+    TestDelegate d;
+    std::unique_ptr<URLRequest> r(default_context().CreateRequest(
+        tc.request_url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
+
+    r->set_isolation_info(IsolationInfo::Create(
+        tc.request_type, kOrigin, tc.frame_origin, tc.site_for_cookies));
+
+    if (tc.change_initator.has_value()) {
+      r->set_initiator(url::Origin::Create(tc.change_initator.value()));
+    }
+    EXPECT_TRUE(r->cookie_partition_key().has_value());
+    EXPECT_EQ(r->cookie_partition_key()->site(), SchemefulSite(kOrigin));
+    EXPECT_EQ(r->cookie_partition_key()->IsThirdParty(),
+              tc.expected_third_party);
+  }
 }
 
 class URLRequestMaybeAsyncFirstPartySetsTest

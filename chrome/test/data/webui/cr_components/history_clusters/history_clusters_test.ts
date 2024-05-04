@@ -118,6 +118,23 @@ suite('history-clusters', () => {
     return clustersElement;
   }
 
+  test('Updates IsEmpty attribute', async () => {
+    const clustersElement = new HistoryClustersElement();
+    document.body.appendChild(clustersElement);
+    await handler.whenCalled('startQueryClusters');
+
+    callbackRouterRemote.onClustersQueryResult({
+      query: '',
+      clusters: [],
+      canLoadMore: false,
+      isContinuation: false,
+    });
+    await callbackRouterRemote.$.flushForTesting();
+    await flushTasks();
+
+    assertTrue(clustersElement.isEmpty);
+  });
+
   test('List displays one element per cluster', async () => {
     const clustersElement = await setupClustersElement();
 
@@ -259,5 +276,50 @@ suite('history-clusters', () => {
     assertTrue(!!newPageUrl);
     assertEquals('https://something-different.com', newPageUrl.url);
     assertTrue(!icon.getImageUrlForTesting());
+  });
+
+  test('sets scroll target', async () => {
+    const clustersElement = await setupClustersElement();
+    clustersElement.scrollTarget = document.body;
+
+    assertEquals(document.body, clustersElement.$.clusters.scrollTarget);
+    assertEquals(document.body, clustersElement.$.scrollThreshold.scrollTarget);
+  });
+
+  test('loads more results for tall monitors', async () => {
+    const clustersElement = new HistoryClustersElement();
+    clustersElement.scrollTarget = document.body;
+    document.body.appendChild(clustersElement);
+    await handler.whenCalled('startQueryClusters');
+    handler.reset();
+
+    // `canLoadMore` set to false should not load more results.
+    callbackRouterRemote.onClustersQueryResult(
+        Object.assign(getTestResult(), {canLoadMore: false}));
+    await new Promise(resolve => requestIdleCallback(resolve));
+    assertEquals(
+        0, handler.getCallCount('loadMoreClusters'),
+        'should not load more results');
+
+    // Make scroll target very short. Even if `canLoadMore` is set to true,
+    // more results should not be loaded since the scroll target is already
+    // filled.
+    document.body.style.height = '2px';
+    callbackRouterRemote.onClustersQueryResult(
+        Object.assign(getTestResult(), {canLoadMore: true}));
+    await new Promise(resolve => requestIdleCallback(resolve));
+    assertEquals(
+        0, handler.getCallCount('loadMoreClusters'),
+        'should not load more results for short scroll target');
+
+    // Make scroll target very tall. Now, more results should be loaded since
+    // the scroll target has plenty of extra unfilled space.
+    document.body.style.height = '2000px';
+    callbackRouterRemote.onClustersQueryResult(
+        Object.assign(getTestResult(), {canLoadMore: true}));
+    await new Promise(resolve => requestIdleCallback(resolve));
+    assertEquals(
+        1, handler.getCallCount('loadMoreClusters'),
+        'should load more results for tall scroll target');
   });
 });

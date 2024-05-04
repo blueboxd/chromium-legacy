@@ -17,7 +17,6 @@
 #include "base/threading/thread_checker.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
-#include "third_party/blink/renderer/platform/wtf/threading_primitives.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "third_party/webrtc/api/metronome/metronome.h"
 #include "third_party/webrtc/api/scoped_refptr.h"
@@ -45,15 +44,9 @@ class PLATFORM_EXPORT RTCEncodedVideoStreamTransformer {
   // creating a circular reference.
   class PLATFORM_EXPORT Broker : public WTF::ThreadSafeRefCounted<Broker> {
    public:
-    void RegisterTransformedFrameCallback(
-        rtc::scoped_refptr<webrtc::TransformedFrameCallback>
-            send_frame_to_sink_callback);
-
     void RegisterTransformedFrameSinkCallback(
         rtc::scoped_refptr<webrtc::TransformedFrameCallback>,
         uint32_t ssrc);
-
-    void UnregisterTransformedFrameCallback();
 
     void UnregisterTransformedFrameSinkCallback(uint32_t ssrc);
 
@@ -96,8 +89,6 @@ class PLATFORM_EXPORT RTCEncodedVideoStreamTransformer {
   // Called by WebRTC to let us know about a callback object to send
   // transformed frames to the WebRTC decoder. Runs on the thread which
   // created this object. The callback can run on any thread.
-  void RegisterTransformedFrameCallback(
-      rtc::scoped_refptr<webrtc::TransformedFrameCallback>);
   void RegisterTransformedFrameSinkCallback(
       rtc::scoped_refptr<webrtc::TransformedFrameCallback>,
       uint32_t ssrc);
@@ -106,9 +97,6 @@ class PLATFORM_EXPORT RTCEncodedVideoStreamTransformer {
   // reported by RegisterTransformedFrameCallback() should be released since
   // the callback is no longer useful and is intended for destruction.
   // Runs on the thread which created this object.
-  // TODO(crbug.com/1065838): Remove the non-ssrc version once WebRTC uses the
-  // ssrc version in all cases.
-  void UnregisterTransformedFrameCallback();
   void UnregisterTransformedFrameSinkCallback(uint32_t ssrc);
 
   // Called by WebRTC to notify of new untransformed frames from the WebRTC

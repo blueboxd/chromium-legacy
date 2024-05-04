@@ -10,6 +10,7 @@
 #import "base/strings/sys_string_conversions.h"
 #import "ios/chrome/browser/qr_scanner/ui_bundled/qr_scanner_app_interface.h"
 #import "ios/chrome/browser/ui/scanner/camera_state.h"
+#import "ios/chrome/browser/ui/settings/settings_app_interface.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
@@ -148,7 +149,7 @@ void TapButton(id<GREYMatcher> button) {
 // Appends the given `editText` to the `text` already in the omnibox and presses
 // the keyboard return key.
 void EditOmniboxTextAndTapKeyboardReturn(std::string text, NSString* editText) {
-  // TODO(crbug.com/1454516): Use simulatePhysicalKeyboardEvent until
+  // TODO(crbug.com/40916974): Use simulatePhysicalKeyboardEvent until
   // replaceText can properly handle \n.
   [ChromeEarlGrey simulatePhysicalKeyboardEvent:editText flags:0];
   [ChromeEarlGrey simulatePhysicalKeyboardEvent:@"\n" flags:0];
@@ -156,7 +157,7 @@ void EditOmniboxTextAndTapKeyboardReturn(std::string text, NSString* editText) {
 
 // Presses the keyboard return key.
 void TapKeyboardReturnKeyInOmniboxWithText(std::string text) {
-  // TODO(crbug.com/1454516): Use simulatePhysicalKeyboardEvent until
+  // TODO(crbug.com/40916974): Use simulatePhysicalKeyboardEvent until
   // replaceText can properly handle \n.
   [ChromeEarlGrey simulatePhysicalKeyboardEvent:@"\n" flags:0];
 }
@@ -225,12 +226,12 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 
   NSString* templateURL =
       base::SysUTF8ToNSString(_testQuery.spec() + kTestQueryURLParams);
-  [QRScannerAppInterface overrideSearchEngine:templateURL];
+  [SettingsAppInterface overrideSearchEngineWithURL:templateURL];
 }
 
 - (void)tearDown {
   [super tearDown];
-  [QRScannerAppInterface resetSearchEngine];
+  [SettingsAppInterface resetSearchEngine];
   _camera_controller_swizzler.reset();
 }
 
@@ -591,7 +592,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 }
 
 // Tests that a new dialog replaces an old dialog if the camera state changes.
-// TODO(crbug.com/1019211): Re-enable test on iOS12.
+// TODO(crbug.com/40105250): Re-enable test on iOS12.
 #if TARGET_IPHONE_SIMULATOR
 #define MAYBE_testDialogIsReplacedIfCameraStateChanges \
   testDialogIsReplacedIfCameraStateChanges

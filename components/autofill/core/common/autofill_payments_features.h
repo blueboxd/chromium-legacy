@@ -16,7 +16,6 @@ namespace features {
 BASE_DECLARE_FEATURE(kAutofillEnableAndroidNKeyForFidoAuthentication);
 BASE_DECLARE_FEATURE(kAutofillEnableCardArtImage);
 BASE_DECLARE_FEATURE(kAutofillEnableCardArtServerSideStretching);
-BASE_DECLARE_FEATURE(kAutofillEnableCardBenefits);
 BASE_DECLARE_FEATURE(kAutofillEnableCardBenefitsForAmericanExpress);
 BASE_DECLARE_FEATURE(kAutofillEnableCardBenefitsForCapitalOne);
 BASE_DECLARE_FEATURE(kAutofillEnableCardBenefitsSync);
@@ -26,7 +25,7 @@ BASE_DECLARE_FEATURE(kAutofillEnableFIDOProgressDialog);
 BASE_DECLARE_FEATURE(kAutofillEnableFpanRiskBasedAuthentication);
 
 #if BUILDFLAG(IS_ANDROID)
-BASE_DECLARE_FEATURE(kAutofillEnableIbanAndroidBottomSheet);
+BASE_DECLARE_FEATURE(kAutofillEnableLocalIban);
 #endif
 
 BASE_DECLARE_FEATURE(kAutofillEnableMerchantDomainInUnmaskCardRequest);
@@ -34,13 +33,8 @@ BASE_DECLARE_FEATURE(kAutofillEnableMovingGPayLogoToTheRightOnDesktop);
 BASE_DECLARE_FEATURE(kAutofillEnableMovingGPayLogoToTheRightOnClank);
 BASE_DECLARE_FEATURE(kAutofillEnableNewCardArtAndNetworkImages);
 BASE_DECLARE_FEATURE(kAutofillEnableOffersInClankKeyboardAccessory);
-
-#if BUILDFLAG(IS_ANDROID)
-BASE_DECLARE_FEATURE(kAutofillEnablePaymentsAndroidBottomSheet);
-BASE_DECLARE_FEATURE(kAutofillEnablePaymentsAndroidBottomSheetAccountEmail);
-#endif
-
 BASE_DECLARE_FEATURE(kAutofillEnablePaymentsMandatoryReauth);
+BASE_DECLARE_FEATURE(kAutofillEnablePrefetchingRiskDataForRetrieval);
 BASE_DECLARE_FEATURE(kAutofillEnableRemadeDownstreamMetrics);
 BASE_DECLARE_FEATURE(kAutofillEnableSaveCardLoadingAndConfirmation);
 BASE_DECLARE_FEATURE(kAutofillEnableSaveCardLocalSaveFallback);
@@ -51,14 +45,16 @@ BASE_DECLARE_FEATURE(kAutofillEnableStickyManualFallbackForCards);
 BASE_DECLARE_FEATURE(kAutofillEnableSyncingOfPixBankAccounts);
 #endif
 
-BASE_DECLARE_FEATURE(kAutofillEnableUserAvatarInSaveCardFooter);
 BASE_DECLARE_FEATURE(kAutofillEnableVcn3dsAuthentication);
 BASE_DECLARE_FEATURE(kAutofillEnableVcnEnrollLoadingAndConfirmation);
 BASE_DECLARE_FEATURE(kAutofillEnableVcnGrayOutForMerchantOptOut);
 BASE_DECLARE_FEATURE(kAutofillEnableVirtualCardEnrollMetricsLogger);
+BASE_DECLARE_FEATURE(kAutofillEnableVerveCardSupport);
 BASE_DECLARE_FEATURE(kAutofillEnableVirtualCardMetadata);
 BASE_DECLARE_FEATURE(kAutofillParseVcnCardOnFileStandaloneCvcFields);
-BASE_DECLARE_FEATURE(kAutofillSuggestServerCardInsteadOfLocalCard);
+#if BUILDFLAG(IS_ANDROID)
+BASE_DECLARE_FEATURE(kAutofillSkipAndroidBottomSheetForIban);
+#endif
 BASE_DECLARE_FEATURE(kAutofillUpdateChromeSettingsLinkToGPayWeb);
 BASE_DECLARE_FEATURE(kAutofillUpstream);
 

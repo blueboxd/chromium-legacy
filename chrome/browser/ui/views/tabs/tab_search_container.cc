@@ -5,8 +5,10 @@
 #include "chrome/browser/ui/views/tabs/tab_search_container.h"
 
 #include "base/metrics/histogram_macros.h"
+#include "base/time/time.h"
 #include "chrome/browser/ui/tabs/organization/tab_organization_service.h"
 #include "chrome/browser/ui/tabs/organization/tab_organization_service_factory.h"
+#include "chrome/browser/ui/tabs/organization/tab_organization_utils.h"
 #include "chrome/browser/ui/views/tabs/tab_organization_button.h"
 #include "chrome/browser/ui/views/tabs/tab_search_button.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
@@ -29,6 +31,14 @@ enum class TriggerOutcome {
   kMaxValue = kTimedOut,
 };
 
+constexpr base::TimeDelta kExpansionInDuration = base::Milliseconds(500);
+constexpr base::TimeDelta kExpansionOutDuration = base::Milliseconds(250);
+constexpr base::TimeDelta kFlatEdgeInDuration = base::Milliseconds(400);
+constexpr base::TimeDelta kFlatEdgeOutDuration = base::Milliseconds(250);
+constexpr base::TimeDelta kOpacityInDuration = base::Milliseconds(300);
+constexpr base::TimeDelta kOpacityOutDuration = base::Milliseconds(100);
+constexpr base::TimeDelta kOpacityDelay = base::Milliseconds(100);
+constexpr base::TimeDelta kShowDuration = base::Seconds(16);
 constexpr char kTriggerOutcomeName[] = "Tab.Organization.Trigger.Outcome";
 
 Edge GetFlatEdge(bool is_search_button, bool before_tab_strip) {
@@ -43,10 +53,12 @@ Edge GetFlatEdge(bool is_search_button, bool before_tab_strip) {
 }  // namespace
 
 TabSearchContainer::TabSearchContainer(TabStripController* tab_strip_controller,
+                                       TabStripModel* tab_strip_model,
                                        bool before_tab_strip,
                                        View* locked_expansion_view)
     : AnimationDelegateViews(this),
-      locked_expansion_view_(locked_expansion_view) {
+      locked_expansion_view_(locked_expansion_view),
+      tab_strip_model_(tab_strip_model) {
   mouse_watcher_ = std::make_unique<views::MouseWatcher>(
       std::make_unique<views::MouseWatcherViewHost>(locked_expansion_view,
                                                     gfx::Insets()),
@@ -69,8 +81,8 @@ TabSearchContainer::TabSearchContainer(TabStripController* tab_strip_controller,
   int tab_search_button_index = GetIndexOf(tab_search_button_).value();
   int index =
       before_tab_strip ? tab_search_button_index + 1 : tab_search_button_index;
-  // TODO(1469126): Consider hiding the button when the request has started,
-  // vs. when the button as clicked.
+  // TODO(crbug.com/40925230): Consider hiding the button when the request has
+  // started, vs. when the button as clicked.
   tab_organization_button_ = AddChildViewAt(
       std::make_unique<TabOrganizationButton>(
           tab_strip_controller,
@@ -171,22 +183,37 @@ void TabSearchContainer::SetLockedExpansionMode(LockedExpansionMode mode) {
 }
 
 void TabSearchContainer::ExecuteShowTabOrganization() {
-  expansion_animation_.SetSlideDuration(base::Milliseconds(500));
+  // browser_ may be null in tests
+  if (browser_ &&
+      !TabOrganizationUtils::GetInstance()->IsEnabled(browser_->profile())) {
+    return;
+  }
 
-  flat_edge_animation_.SetSlideDuration(base::Milliseconds(400));
+  // If the tab strip already has a modal UI showing, exit early.
+  if (!tab_strip_model_->CanShowModalUI()) {
+    return;
+  }
+
+  scoped_tab_strip_modal_ui_ = tab_strip_model_->ShowModalUI();
+
+  expansion_animation_.SetSlideDuration(
+      GetAnimationDuration(kExpansionInDuration));
+
+  flat_edge_animation_.SetSlideDuration(
+      GetAnimationDuration(kFlatEdgeInDuration));
   flat_edge_animation_.SetTweenType(gfx::Tween::Type::LINEAR);
 
-  opacity_animation_.SetSlideDuration(base::Milliseconds(300));
-  const base::TimeDelta delay = base::Milliseconds(100);
+  opacity_animation_.SetSlideDuration(GetAnimationDuration(kOpacityInDuration));
+  const base::TimeDelta delay = GetAnimationDuration(kOpacityDelay);
   opacity_animation_delay_timer_.Start(
       FROM_HERE, delay, this, &TabSearchContainer::ShowOpacityAnimation);
 
   expansion_animation_.Show();
   flat_edge_animation_.Show();
 
-  const base::TimeDelta delta = base::Seconds(16);
   hide_tab_organization_timer_.Start(
-      FROM_HERE, delta, this, &TabSearchContainer::OnOrganizeButtonTimeout);
+      FROM_HERE, kShowDuration, this,
+      &TabSearchContainer::OnOrganizeButtonTimeout);
 }
 
 void TabSearchContainer::ShowOpacityAnimation() {
@@ -194,14 +221,17 @@ void TabSearchContainer::ShowOpacityAnimation() {
 }
 
 void TabSearchContainer::ExecuteHideTabOrganization() {
-  expansion_animation_.SetSlideDuration(base::Milliseconds(250));
+  expansion_animation_.SetSlideDuration(
+      GetAnimationDuration(kExpansionOutDuration));
   expansion_animation_.Hide();
 
-  flat_edge_animation_.SetSlideDuration(base::Milliseconds(250));
+  flat_edge_animation_.SetSlideDuration(
+      GetAnimationDuration(kFlatEdgeOutDuration));
   flat_edge_animation_.SetTweenType(gfx::Tween::Type::ACCEL_20_DECEL_100);
   flat_edge_animation_.Hide();
 
-  opacity_animation_.SetSlideDuration(base::Milliseconds(100));
+  opacity_animation_.SetSlideDuration(
+      GetAnimationDuration(kOpacityOutDuration));
   opacity_animation_.Hide();
 }
 
@@ -210,11 +240,18 @@ void TabSearchContainer::MouseMovedOutOfHost() {
 }
 
 void TabSearchContainer::AnimationCanceled(const gfx::Animation* animation) {
-  ApplyAnimationValue(animation);
+  AnimationEnded(animation);
 }
 
 void TabSearchContainer::AnimationEnded(const gfx::Animation* animation) {
   ApplyAnimationValue(animation);
+  // If the button went from shown -> hidden, unblock the tab strip from
+  // showing other modal UIs. Compare to 0.5 to distinguish between show/hide
+  // while avoiding potentially inexact float comparison to 0.0.
+  if (animation == &expansion_animation_ &&
+      animation->GetCurrentValue() < 0.5 && scoped_tab_strip_modal_ui_) {
+    scoped_tab_strip_modal_ui_.reset();
+  }
 }
 
 void TabSearchContainer::AnimationProgressed(const gfx::Animation* animation) {
@@ -231,6 +268,12 @@ void TabSearchContainer::ApplyAnimationValue(const gfx::Animation* animation) {
   } else if (animation == &opacity_animation_) {
     tab_organization_button_->SetOpacity(value);
   }
+}
+
+base::TimeDelta TabSearchContainer::GetAnimationDuration(
+    base::TimeDelta duration) {
+  return gfx::Animation::ShouldRenderRichAnimation() ? duration
+                                                     : base::TimeDelta();
 }
 
 void TabSearchContainer::OnToggleActionUIState(const Browser* browser,

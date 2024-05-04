@@ -156,10 +156,10 @@ class IndexedDBBrowserTest : public ContentBrowserTest {
   storage::mojom::IndexedDBControl& GetControl(Shell* browser = nullptr) {
     if (!browser)
       browser = shell();
-    StoragePartition* partition = browser->web_contents()
-                                      ->GetBrowserContext()
-                                      ->GetDefaultStoragePartition();
-    return partition->GetIndexedDBControl();
+    return browser->web_contents()
+        ->GetBrowserContext()
+        ->GetDefaultStoragePartition()
+        ->GetIndexedDBControl();
   }
 
   mojo::Remote<storage::mojom::IndexedDBControlTest> GetControlTest(
@@ -175,11 +175,11 @@ class IndexedDBBrowserTest : public ContentBrowserTest {
     if (!browser) {
       browser = shell();
     }
-    StoragePartition* partition = browser->web_contents()
-                                      ->GetBrowserContext()
-                                      ->GetDefaultStoragePartition();
-    auto& control = partition->GetIndexedDBControl();
-    control.BindTestInterface(std::move(receiver));
+    browser->web_contents()
+        ->GetBrowserContext()
+        ->GetDefaultStoragePartition()
+        ->GetIndexedDBControl()
+        .BindTestInterface(std::move(receiver));
   }
 
   void SetQuota(int per_host_quota_kilobytes) {
@@ -818,6 +818,36 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DeleteBucketDataDeletesBlobs) {
   EXPECT_EQ(0, RequestUsage());
 }
 
+// Regression test for crbug.com/330868483
+// In this test,
+//   1. the page reads a blob
+//   2. the backing store is force-closed
+//   3. the reference to the blob is GC'd
+//      . this disconnects the IndexedDBDataItemReader *after* the backing store
+//        is already reset
+//   4. the page reads the same blob, reusing the IndexedDBDataItemReader
+//   5. the blob reference is dropped and GC'd again
+//   6. don't crash
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTestWithGCExposed, ForceCloseWithBlob) {
+  const GURL kTestUrl = GetTestUrl("indexeddb", "write_and_read_blob.html");
+  SimpleTest(kTestUrl);
+  DeleteBucketData(
+      blink::StorageKey::CreateFirstParty(url::Origin::Create(kTestUrl)));
+  std::ignore = EvalJs(shell(), "gc()");
+
+  // Run the test again, but don't reset the object stores first to make sure
+  // the same blob is read again.
+  std::ignore = EvalJs(shell(), "testThenGc()");
+  while (true) {
+    std::string result = shell()->web_contents()->GetLastCommittedURL().ref();
+    if (!result.empty()) {
+      EXPECT_EQ(result, "pass");
+      break;
+    }
+    base::RunLoop().RunUntilIdle();
+  }
+}
+
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DeleteBucketDataIncognito) {
   const GURL test_url = GetTestUrl("indexeddb", "fill_up_5k.html");
   const blink::StorageKey kTestStorageKey =
@@ -1144,35 +1174,6 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, PRE_NullKeyPathPersistence) {
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, NullKeyPathPersistence) {
   NavigateAndWaitForTitle(shell(), "bug_90635.html", "#part2",
                           "pass - second run");
-}
-
-// Verify that a VERSION_CHANGE transaction is rolled back after a
-// renderer/browser crash
-IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest,
-                       PRE_PRE_VersionChangeCrashResilience) {
-  NavigateAndWaitForTitle(shell(), "version_change_crash.html", "#part1",
-                          "pass - part1 - complete");
-}
-
-IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, PRE_VersionChangeCrashResilience) {
-  NavigateAndWaitForTitle(shell(), "version_change_crash.html", "#part2",
-                          "pass - part2 - crash me");
-  // Previously this test would abruptly terminate the browser process
-  // to ensure that the version update was not partially committed,
-  // which was possible in the very early implementation (circa 2011).
-  // This test no longer abruptly terminates the process, but the
-  // commit scheme has changed so it's not plausible any more anyway.
-  // TODO(jsbell): Delete or rename the test.
-}
-
-// Fails to cleanup GPU processes on swarming.
-// http://crbug.com/552543
-// Flaky on TSAN: crbug.com/1061251
-// Flaky on mac, linux, cast, chromeos, lacros bots: crbug.com/1061251
-IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest,
-                       DISABLED_VersionChangeCrashResilience) {
-  NavigateAndWaitForTitle(shell(), "version_change_crash.html", "#part3",
-                          "pass - part3 - rolled back");
 }
 
 // Disable this test on Android due to failures. See crbug.com/427529 and

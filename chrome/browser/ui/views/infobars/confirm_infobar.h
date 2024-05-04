@@ -19,8 +19,11 @@ class MdTextButton;
 // right-aligned link.  This is commonly used to do things like:
 // "Would you like to do X?  [Yes]  [No]    _Learn More_ [x]"
 class ConfirmInfoBar : public InfoBarView {
+  METADATA_HEADER(ConfirmInfoBar, InfoBarView)
+
  public:
-  DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(kInfoBarElementId);
+  DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(kOkButtonElementId);
+  DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(kCancelButtonElementId);
 
   explicit ConfirmInfoBar(std::unique_ptr<ConfirmInfoBarDelegate> delegate);
 
@@ -35,6 +38,8 @@ class ConfirmInfoBar : public InfoBarView {
   ConfirmInfoBarDelegate* GetDelegate();
 
   views::MdTextButton* ok_button_for_testing() { return ok_button_; }
+
+  int target_height_for_testing() const { return target_height(); }
 
  protected:
   // InfoBarView:

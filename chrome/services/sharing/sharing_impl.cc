@@ -34,7 +34,7 @@ void SharingImpl::Connect(
     NearbyDependenciesPtr deps,
     mojo::PendingReceiver<NearbyConnectionsMojom> connections_receiver,
     mojo::PendingReceiver<NearbyPresenceMojom> presence_receiver,
-    mojo::PendingReceiver<sharing::mojom::NearbySharingDecoder>
+    mojo::PendingReceiver<::sharing::mojom::NearbySharingDecoder>
         decoder_receiver,
     mojo::PendingReceiver<ash::quick_start::mojom::QuickStartDecoder>
         quick_start_decoder_receiver) {
@@ -46,15 +46,16 @@ void SharingImpl::Connect(
 
   InitializeNearbySharedRemotes(std::move(deps));
 
-  nearby_connections_ = std::make_unique<NearbyConnections>(
-      std::move(connections_receiver), min_log_severity,
-      base::BindOnce(&SharingImpl::OnDisconnect, weak_ptr_factory_.GetWeakPtr(),
-                     MojoDependencyName::kNearbyConnections));
-
   nearby_presence_ = std::make_unique<NearbyPresence>(
       std::move(presence_receiver),
       base::BindOnce(&SharingImpl::OnDisconnect, weak_ptr_factory_.GetWeakPtr(),
                      MojoDependencyName::kNearbyPresence));
+
+  nearby_connections_ = std::make_unique<NearbyConnections>(
+      std::move(connections_receiver),
+      nearby_presence_->GetLocalDeviceProvider(), min_log_severity,
+      base::BindOnce(&SharingImpl::OnDisconnect, weak_ptr_factory_.GetWeakPtr(),
+                     MojoDependencyName::kNearbyConnections));
 
   nearby_decoder_ = std::make_unique<NearbySharingDecoder>(
       std::move(decoder_receiver),

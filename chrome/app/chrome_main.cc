@@ -59,7 +59,7 @@ DLLEXPORT int __cdecl ChromeMain(HINSTANCE instance,
                                  sandbox::SandboxInterfaceInfo* sandbox_info,
                                  int64_t exe_entry_point_ticks);
 }
-#elif BUILDFLAG(IS_POSIX) || BUILDFLAG(IS_FUCHSIA)
+#elif BUILDFLAG(IS_POSIX)
 extern "C" {
 // This function must be marked with NO_STACK_PROTECTOR or it may crash on
 // return, see the --change-stack-guard-on-fork command line flag.
@@ -74,7 +74,7 @@ ChromeMain(int argc, const char** argv);
 DLLEXPORT int __cdecl ChromeMain(HINSTANCE instance,
                                  sandbox::SandboxInterfaceInfo* sandbox_info,
                                  int64_t exe_entry_point_ticks) {
-#elif BUILDFLAG(IS_POSIX) || BUILDFLAG(IS_FUCHSIA)
+#elif BUILDFLAG(IS_POSIX)
 int ChromeMain(int argc, const char** argv) {
   int64_t exe_entry_point_ticks = 0;
 #else
@@ -164,7 +164,7 @@ int ChromeMain(int argc, const char** argv) {
   // On some platforms pthreads can malloc internally to access higher-numbered
   // TLS slots, which can cause reentry in the heap profiler. (See the comment
   // on ReentryGuard::InitTLSSlot().)
-  // TODO(https://crbug.com/1411454): Clean up other paths that call this Init()
+  // TODO(crbug.com/40062835): Clean up other paths that call this Init()
   // function, which are now redundant.
   base::PoissonAllocationSampler::Init();
 

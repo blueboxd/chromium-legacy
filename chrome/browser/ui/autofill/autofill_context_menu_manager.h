@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_AUTOFILL_AUTOFILL_CONTEXT_MENU_MANAGER_H_
 
 #include "base/memory/raw_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/types/strong_alias.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/core/common/unique_ids.h"
@@ -13,6 +14,10 @@
 #include "components/renderer_context_menu/render_view_context_menu_observer.h"
 #include "content/public/browser/context_menu_params.h"
 #include "ui/base/models/simple_menu_model.h"
+
+namespace password_manager {
+class ContentPasswordManagerDriver;
+}  // namespace password_manager
 
 namespace autofill {
 
@@ -65,27 +70,33 @@ class AutofillContextMenuManager : public RenderViewContextMenuObserver {
   void ExecuteAutofillFeedbackCommand(const LocalFrameToken& frame_token,
                                       AutofillManager& manager);
 
-  // Conditionally adds the address and / or payments Autofill manual fallbacks
-  // to the context menu model depending on whether there's data to suggest
-  // and corresponding feature flags are enabled.
-  void MaybeAddAutofillManualFallbackItems(ContentAutofillDriver& driver);
+  // Conditionally adds the feedback manual fallback item if Autofill is
+  // available for the field.
+  void MaybeAddAutofillFeedbackItem();
+
+  // Conditionally adds the address, payments and / or passwords Autofill manual
+  // fallbacks to the context menu model depending on whether there's data to
+  // suggest.
+  void MaybeAddAutofillManualFallbackItems();
 
   // Checks if the manual fallback context menu entry can be shown for the
   // currently focused field.
-  bool ShouldAddAddressManualFallbackItem(ContentAutofillDriver& driver);
+  bool ShouldAddAddressManualFallbackItem(
+      ContentAutofillDriver& autofill_driver);
 
-  // Checks if the currently focused field has unrecognized autocomplete but is
-  // classified and can be filled with user address data.
-  bool ShouldAddAddressManualFallbackForAutocompleteUnrecognized(
-      ContentAutofillDriver& driver);
+  // Checks if the currently focused field is a password field and whether
+  // password filling is enabled.
+  bool ShouldAddPasswordsManualFallbackItem(
+      password_manager::ContentPasswordManagerDriver& password_manager_driver);
 
   // Emits metrics about showing the manual fallback context menu entries to the
   // user.
   // `address_option_shown` specifies whether address manual fallback was
   // available, same for `payments_option_shown`.
-  void LogManualFallbackContextMenuEntryShown(ContentAutofillDriver& driver,
-                                              bool address_option_shown,
-                                              bool payments_option_shown);
+  void LogManualFallbackContextMenuEntryShown(
+      ContentAutofillDriver* autofill_driver,
+      bool address_option_shown,
+      bool payments_option_shown);
 
   // Emits metrics about accepting the manual fallback context menu entries
   // shown to the user. `filling_product` defines which manual fallback option
@@ -112,10 +123,16 @@ class AutofillContextMenuManager : public RenderViewContextMenuObserver {
   AutofillField* GetAutofillField(AutofillManager& manager,
                                   const LocalFrameToken& frame_token) const;
 
-  const raw_ptr<PersonalDataManager> personal_data_manager_;
+  // Dangling on linux-lacros-rel in:
+  // AutofillContextMenuManagerFeedbackUILacrosBrowserTest
+  //   .CloseTabWhileUIIsOpenShouldNotCrash.
+  const raw_ptr<PersonalDataManager, DanglingUntriaged> personal_data_manager_;
   const raw_ptr<ui::SimpleMenuModel> menu_model_;
   const raw_ptr<RenderViewContextMenuBase> delegate_;
+  ui::SimpleMenuModel passwords_submenu_model_;
   content::ContextMenuParams params_;
+
+  base::WeakPtrFactory<AutofillContextMenuManager> weak_ptr_factory_{this};
 };
 
 }  // namespace autofill

@@ -16,8 +16,10 @@
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_id_helper.h"
+#include "base/types/expected.h"
 #include "net/base/io_buffer.h"
 #include "services/network/public/cpp/request_destination.h"
+#include "services/network/public/mojom/shared_dictionary_error.mojom.h"
 #include "services/network/shared_dictionary/shared_dictionary_manager_on_disk.h"
 #include "services/network/shared_dictionary/shared_dictionary_on_disk.h"
 #include "services/network/shared_dictionary/shared_dictionary_writer_on_disk.h"
@@ -231,40 +233,46 @@ void SharedDictionaryStorageOnDisk::GetDictionary(
       url, destination, std::move(callback)));
 }
 
-scoped_refptr<SharedDictionaryWriter>
+base::expected<scoped_refptr<SharedDictionaryWriter>,
+               mojom::SharedDictionaryError>
 SharedDictionaryStorageOnDisk::CreateWriter(
     const GURL& url,
+    base::Time last_fetch_time,
     base::Time response_time,
     base::TimeDelta expiration,
     const std::string& match,
     const std::set<mojom::RequestDestination>& match_dest,
-    const std::string& id) {
+    const std::string& id,
+    std::unique_ptr<SimpleUrlPatternMatcher> matcher) {
+  CHECK(matcher);
   if (!manager_) {
-    return nullptr;
+    return base::unexpected(
+        mojom::SharedDictionaryError::kWriteErrorShuttingDown);
   }
 
-  std::unique_ptr<SimpleUrlPatternMatcher> matcher;
-  auto matcher_create_result = SimpleUrlPatternMatcher::Create(match, url);
-  if (!matcher_create_result.has_value()) {
-    return nullptr;
-  }
-  matcher = std::move(matcher_create_result.value());
   return manager_->CreateWriter(
-      isolation_key_, url, response_time, expiration, match, match_dest, id,
+      isolation_key_, url, last_fetch_time, response_time, expiration, match,
+      match_dest, id,
       base::BindOnce(&SharedDictionaryStorageOnDisk::OnDictionaryWritten,
                      weak_factory_.GetWeakPtr(), std::move(matcher)));
 }
 
-bool SharedDictionaryStorageOnDisk::IsAlreadyRegistered(
+bool SharedDictionaryStorageOnDisk::UpdateLastFetchTimeIfAlreadyRegistered(
     const GURL& url,
     base::Time response_time,
     base::TimeDelta expiration,
     const std::string& match,
     const std::set<mojom::RequestDestination>& match_dest,
-    const std::string& id) {
-  return IsAlreadyRegisteredInDictionaryInfoMap(dictionary_info_map_, url,
-                                                response_time, expiration,
-                                                match, match_dest, id);
+    const std::string& id,
+    base::Time last_fetch_time) {
+  WrappedDictionaryInfo* matched_info = FindRegisteredInDictionaryInfoMap(
+      dictionary_info_map_, url, response_time, expiration, match, match_dest,
+      id);
+  if (matched_info) {
+    manager_->UpdateDictionaryLastFetchTime(*matched_info, last_fetch_time);
+    return true;
+  }
+  return false;
 }
 
 void SharedDictionaryStorageOnDisk::OnDatabaseRead(

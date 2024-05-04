@@ -11,10 +11,9 @@
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/frame/test_with_browser_view.h"
 #include "chrome/common/accessibility/read_anything_constants.h"
-#include "content/public/browser/ax_event_notification_details.h"
 #include "testing/gmock/include/gmock/gmock.h"
-
 #include "ui/accessibility/accessibility_features.h"
+#include "ui/accessibility/ax_updates_and_events.h"
 
 using testing::_;
 using testing::FloatNear;
@@ -70,10 +69,10 @@ class ReadAnythingModelTest : public TestWithBrowserView {
   MockReadAnythingModelObserver model_observer_3_;
 };
 
-// TODO(crbug.com/1344891): Fix the memory leak on destruction observed on these
-// tests on asan mac.
+// TODO(crbug.com/40853217): Fix the memory leak on destruction observed on
+// these tests on asan mac.
 #if !BUILDFLAG(IS_MAC) || !defined(ADDRESS_SANITIZER)
-// TODO(crbug.com/1494163): Test is flaky on all platforms.
+// TODO(crbug.com/40286096): Test is flaky on all platforms.
 TEST_F(ReadAnythingModelTest,
        DISABLED_AddingModelObserverNotifiesAllObservers) {
   model_->AddObserver(&model_observer_1_);

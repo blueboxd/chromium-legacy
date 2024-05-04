@@ -25,6 +25,7 @@
 #include "components/sync/protocol/collaboration_group_specifics.pb.h"
 #include "components/sync/protocol/compare_specifics.pb.h"
 #include "components/sync/protocol/contact_info_specifics.pb.h"
+#include "components/sync/protocol/cookie_specifics.pb.h"
 #include "components/sync/protocol/data_type_progress_marker.pb.h"
 #include "components/sync/protocol/dictionary_specifics.pb.h"
 #include "components/sync/protocol/entity_specifics.pb.h"
@@ -46,7 +47,6 @@
 #include "components/sync/protocol/reading_list_specifics.pb.h"
 #include "components/sync/protocol/saved_tab_group_specifics.pb.h"
 #include "components/sync/protocol/search_engine_specifics.pb.h"
-#include "components/sync/protocol/segmentation_specifics.pb.h"
 #include "components/sync/protocol/send_tab_to_self_specifics.pb.h"
 #include "components/sync/protocol/session_specifics.pb.h"
 #include "components/sync/protocol/sharing_message_specifics.pb.h"
@@ -253,7 +253,7 @@ class ToValueVisitor {
   // AutofillWalletSpecifics
   base::Value ToValue(const sync_pb::AutofillWalletSpecifics& proto) const {
     base::Value::Dict dict = ToValueDictImpl(proto);
-    // TODO(crbug.com/1406388): consider whether the VISIT_SECRET macro in
+    // TODO(crbug.com/40252694): consider whether the VISIT_SECRET macro in
     // proto_visitors.h could replace this.
     if (proto.type() != sync_pb::AutofillWalletSpecifics::POSTAL_ADDRESS) {
       dict.Remove("address");
@@ -349,6 +349,7 @@ IMPLEMENT_PROTO_TO_VALUE(ClientConfigParams)
 IMPLEMENT_PROTO_TO_VALUE(CollaborationGroupSpecifics)
 IMPLEMENT_PROTO_TO_VALUE(CompareSpecifics)
 IMPLEMENT_PROTO_TO_VALUE(ContactInfoSpecifics)
+IMPLEMENT_PROTO_TO_VALUE(CookieSpecifics)
 IMPLEMENT_PROTO_TO_VALUE(CrossUserSharingPublicKey)
 IMPLEMENT_PROTO_TO_VALUE(DebugEventInfo)
 IMPLEMENT_PROTO_TO_VALUE(DebugInfo)
@@ -388,7 +389,6 @@ IMPLEMENT_PROTO_TO_VALUE(SavedTabGroupSpecifics)
 IMPLEMENT_PROTO_TO_VALUE(SearchEngineSpecifics)
 IMPLEMENT_PROTO_TO_VALUE(SecurityEventSpecifics)
 IMPLEMENT_PROTO_TO_VALUE(SendTabToSelfSpecifics)
-IMPLEMENT_PROTO_TO_VALUE(SegmentationSpecifics)
 IMPLEMENT_PROTO_TO_VALUE(SessionHeader)
 IMPLEMENT_PROTO_TO_VALUE(SessionSpecifics)
 IMPLEMENT_PROTO_TO_VALUE(SessionTab)

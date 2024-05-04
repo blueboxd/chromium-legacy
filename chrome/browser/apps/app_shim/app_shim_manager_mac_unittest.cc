@@ -32,7 +32,6 @@
 #include "chrome/test/base/test_browser_window.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/prefs/testing_pref_service.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/test/browser_task_environment.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -214,7 +213,10 @@ class TestingAppShimHostBootstrap : public AppShimHostBootstrap {
       chrome::mojom::AppShimLaunchType launch_type,
       const std::vector<base::FilePath>& files,
       const std::vector<GURL>& urls,
-      chrome::mojom::AppShimLoginItemRestoreState login_item_restore_state) {
+      chrome::mojom::AppShimLoginItemRestoreState login_item_restore_state,
+      mojo::PendingReceiver<
+          mac_notifications::mojom::MacNotificationActionHandler>
+          notification_action_handler) {
     mojo::Remote<chrome::mojom::AppShimHost> host;
     auto app_shim_info = chrome::mojom::AppShimInfo::New();
     app_shim_info->profile_path = profile_path_;
@@ -226,6 +228,8 @@ class TestingAppShimHostBootstrap : public AppShimHostBootstrap {
     app_shim_info->files = files;
     app_shim_info->urls = urls;
     app_shim_info->login_item_restore_state = login_item_restore_state;
+    app_shim_info->notification_action_handler =
+        std::move(notification_action_handler);
     OnShimConnected(
         host.BindNewPipeAndPassReceiver(), std::move(app_shim_info),
         base::BindOnce(&TestingAppShimHostBootstrap::DoTestLaunchDone,
@@ -291,6 +295,9 @@ class TestAppShim : public chrome::mojom::AppShim,
       RequestNotificationPermissionCallback callback) override {
     request_notification_permission_callback_.SetValue(std::move(callback));
   }
+  void BindChildHistogramFetcherFactory(
+      mojo::PendingReceiver<metrics::mojom::ChildHistogramFetcherFactory>
+          receiver) override {}
 
   // mac_notifications::mojom::MacNotificationProvider:
   void BindNotificationService(
@@ -516,11 +523,15 @@ class AppShimManagerTest : public testing::Test {
       chrome::mojom::AppShimLaunchType launch_type,
       const std::vector<base::FilePath>& files,
       const std::vector<GURL>& urls,
-      chrome::mojom::AppShimLoginItemRestoreState login_item_restore_state) {
+      chrome::mojom::AppShimLoginItemRestoreState login_item_restore_state,
+      mojo::PendingReceiver<
+          mac_notifications::mojom::MacNotificationActionHandler>
+          notification_action_handler = mojo::NullReceiver()) {
     if (host) {
       manager_->SetHostForCreate(std::move(host));
     }
-    bootstrap->DoTestLaunch(launch_type, files, urls, login_item_restore_state);
+    bootstrap->DoTestLaunch(launch_type, files, urls, login_item_restore_state,
+                            std::move(notification_action_handler));
   }
 
   void NormalLaunch(base::WeakPtr<TestingAppShimHostBootstrap> bootstrap,
@@ -537,6 +548,20 @@ class AppShimManagerTest : public testing::Test {
                  chrome::mojom::AppShimLaunchType::kRegisterOnly,
                  std::vector<base::FilePath>(), std::vector<GURL>(),
                  chrome::mojom::AppShimLoginItemRestoreState::kNone);
+  }
+
+  void NotificationActionLaunch(
+      base::WeakPtr<TestingAppShimHostBootstrap> bootstrap,
+      std::unique_ptr<TestHost> host,
+      mac_notifications::mojom::NotificationActionInfoPtr notification) {
+    mojo::Remote<mac_notifications::mojom::MacNotificationActionHandler>
+        notification_remote;
+    DoShimLaunch(bootstrap, std::move(host),
+                 chrome::mojom::AppShimLaunchType::kNotificationAction,
+                 std::vector<base::FilePath>(), std::vector<GURL>(),
+                 chrome::mojom::AppShimLoginItemRestoreState::kNone,
+                 notification_remote.BindNewPipeAndPassReceiver());
+    notification_remote->OnNotificationAction(std::move(notification));
   }
 
   // Completely launch a shim host and leave it running.
@@ -936,6 +961,9 @@ TEST_F(AppShimManagerTest, AppLifetimeOld) {
 }
 
 TEST_F(AppShimManagerTest, FailToLaunch) {
+  AppShimRegistry::Get()->OnAppInstalledForProfile(kTestAppIdA,
+                                                   profile_path_a_);
+
   // When the app activates, it requests a launch.
   ShimLaunchedCallback launch_callback;
   delegate_->SetCaptureShimLaunchedCallback(&launch_callback);
@@ -965,6 +993,9 @@ TEST_F(AppShimManagerTest, FailToLaunch) {
 }
 
 TEST_F(AppShimManagerTest, FailToConnect) {
+  AppShimRegistry::Get()->OnAppInstalledForProfile(kTestAppIdA,
+                                                   profile_path_a_);
+
   // When the app activates, it requests a launch.
   ShimLaunchedCallback launched_callback;
   delegate_->SetCaptureShimLaunchedCallback(&launched_callback);
@@ -1010,6 +1041,9 @@ TEST_F(AppShimManagerTest, FailToConnect) {
 }
 
 TEST_F(AppShimManagerTest, FailCodeSignature) {
+  AppShimRegistry::Get()->OnAppInstalledForProfile(kTestAppIdA,
+                                                   profile_path_a_);
+
   manager_->SetAcceptablyCodeSigned(false);
   ShimLaunchedCallback launched_callback;
   delegate_->SetCaptureShimLaunchedCallback(&launched_callback);
@@ -1164,6 +1198,72 @@ TEST_F(AppShimManagerTest, DontCreateHost) {
             *bootstrap_ab_result_);
   // And we should create no host.
   EXPECT_FALSE(manager_->FindHost(&profile_a_, kTestAppIdB));
+}
+
+TEST_F(AppShimManagerTest, NotificationAction) {
+  class AppShimObserver : public AppShimManager::AppShimObserver {
+   public:
+    void OnShimProcessConnectedAndAllLaunchesDone(
+        base::ProcessId pid,
+        chrome::mojom::AppShimLaunchResult result) override {
+      launch_result_.SetValue(result);
+    }
+    bool OnNotificationAction(
+        mac_notifications::mojom::NotificationActionInfoPtr& info) override {
+      notification_action_.SetValue(std::move(info));
+      return false;
+    }
+
+    base::test::TestFuture<chrome::mojom::AppShimLaunchResult> launch_result_;
+    base::test::TestFuture<mac_notifications::mojom::NotificationActionInfoPtr>
+        notification_action_;
+  };
+
+  scoped_feature_list_.InitWithFeatures(
+      {features::kAppShimNotificationAttribution}, {});
+
+  // Use SetAppCanCreateHost to simulate the case where there isn't already a
+  // loaded profile.
+  delegate_->SetAppCanCreateHost(false);
+
+  AppShimObserver observer;
+  manager_->SetAppShimObserverForTesting(&observer);
+
+  // Create a test notification action.
+  auto profile_identifier = mac_notifications::mojom::ProfileIdentifier::New(
+      profile_a_.GetBaseName().AsUTF8Unsafe(), /*incognito=*/false);
+  auto notification_identifier =
+      mac_notifications::mojom::NotificationIdentifier::New(
+          "notificaiton-id", std::move(profile_identifier));
+  auto notification = mac_notifications::mojom::NotificationActionInfo::New();
+  notification->meta = mac_notifications::mojom::NotificationMetadata::New(
+      std::move(notification_identifier), /*notification_type=*/0,
+      /*origin_url=*/GURL("https://example.com"), /*user_data_dir=*/"");
+  notification->operation = NotificationOperation::kClick;
+  notification->button_index = -1;
+
+  // For an chrome::mojom::AppShimLaunchType::kNotificationAction, don't launch
+  // the app.
+  EXPECT_CALL(*delegate_, LaunchApp(_, _, _, _, _, _, _)).Times(0);
+  NotificationActionLaunch(bootstrap_aa_, std::move(host_aa_unique_),
+                           std::move(notification));
+  // Should not have a result yet since the notification action hasn't been
+  // handled yet.
+  EXPECT_FALSE(bootstrap_aa_result_.has_value());
+  EXPECT_FALSE(observer.launch_result_.IsReady());
+  EXPECT_FALSE(observer.notification_action_.IsReady());
+
+  // Wait for the notification action to be handled.
+  ASSERT_TRUE(observer.notification_action_.Wait());
+  EXPECT_FALSE(observer.launch_result_.IsReady());
+
+  // Which should now allow to launch to finish.
+  EXPECT_EQ(chrome::mojom::AppShimLaunchResult::kSuccessAndDisconnect,
+            observer.launch_result_.Get());
+  ASSERT_TRUE(bootstrap_aa_result_.has_value());
+  EXPECT_EQ(chrome::mojom::AppShimLaunchResult::kSuccessAndDisconnect,
+            *bootstrap_aa_result_);
+  EXPECT_FALSE(manager_->FindHost(&profile_a_, kTestAppIdA));
 }
 
 TEST_F(AppShimManagerTest, LoadProfile) {

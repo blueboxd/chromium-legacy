@@ -78,10 +78,9 @@ bool SourceAllowHost(const mojom::CSPSource& source, const std::string& host) {
     // The renderer version of this function counts how many times it happens.
     // It might be useful to do it outside of blink too.
     // See third_party/blink/renderer/core/frame/csp/csp_source.cc
-    return base::EndsWith(host, '.' + source.host,
-                          base::CompareCase::INSENSITIVE_ASCII);
+    return base::EndsWith(host, '.' + source.host);
   } else {
-    return base::EqualsCaseInsensitiveASCII(host, source.host);
+    return host == source.host;
   }
 }
 
@@ -191,7 +190,7 @@ bool CheckCSPSource(const mojom::CSPSource& source,
                     bool has_followed_redirect,
                     bool is_opaque_fenced_frame) {
   // Opaque fenced frames only allow https urls.
-  // TODO(crbug.com/1243568): Update the DCHECK and the return condition below
+  // TODO(crbug.com/40195488): Update the DCHECK and the return condition below
   // if opaque fenced frames can map to non-https potentially trustworthy urls.
   if (is_opaque_fenced_frame)
     DCHECK_EQ(url.scheme(), url::kHttpsScheme);

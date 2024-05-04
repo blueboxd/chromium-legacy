@@ -49,6 +49,7 @@ const char kInnerTextNodeOffsetFound[] =
 const char kComposeContextMenuCtr[] = "Compose.ContextMenu.CTR";
 const char kOpenComposeDialogResult[] =
     "Compose.ContextMenu.OpenComposeDialogResult";
+const char kComposeSelectAll[] = "Compose.ContextMenu.SelectedAll";
 
 namespace {
 
@@ -117,21 +118,38 @@ void LogComposeSessionEventCounts(std::optional<EvalLocation> eval_location,
     base::UmaHistogramEnumeration(histogram,
                                   ComposeSessionEventTypes::kUndoClicked);
   }
+  if (session_events.redo_count > 0) {
+    base::UmaHistogramEnumeration(histogram,
+                                  ComposeSessionEventTypes::kRedoClicked);
+  }
+  if (session_events.result_edit_count > 0) {
+    base::UmaHistogramEnumeration(histogram,
+                                  ComposeSessionEventTypes::kResultEdited);
+  }
+  bool has_used_modifier = false;
   if (session_events.shorten_count > 0) {
+    has_used_modifier = true;
     base::UmaHistogramEnumeration(histogram,
                                   ComposeSessionEventTypes::kShortenClicked);
   }
   if (session_events.lengthen_count > 0) {
+    has_used_modifier = true;
     base::UmaHistogramEnumeration(histogram,
                                   ComposeSessionEventTypes::kElaborateClicked);
   }
   if (session_events.casual_count > 0) {
+    has_used_modifier = true;
     base::UmaHistogramEnumeration(histogram,
                                   ComposeSessionEventTypes::kCasualClicked);
   }
   if (session_events.formal_count > 0) {
+    has_used_modifier = true;
     base::UmaHistogramEnumeration(histogram,
                                   ComposeSessionEventTypes::kFormalClicked);
+  }
+  if (has_used_modifier) {
+    base::UmaHistogramEnumeration(histogram,
+                                  ComposeSessionEventTypes::kAnyModifierUsed);
   }
   if (session_events.has_thumbs_down) {
     base::UmaHistogramEnumeration(histogram,
@@ -144,6 +162,10 @@ void LogComposeSessionEventCounts(std::optional<EvalLocation> eval_location,
   if (session_events.inserted_results) {
     base::UmaHistogramEnumeration(histogram,
                                   ComposeSessionEventTypes::kInsertClicked);
+  }
+  if (session_events.edited_result_inserted) {
+    base::UmaHistogramEnumeration(
+        histogram, ComposeSessionEventTypes::kEditedResultInserted);
   }
   if (session_events.close_clicked) {
     base::UmaHistogramEnumeration(histogram,
@@ -172,13 +194,20 @@ void PageUkmTracker::MenuItemShown() {
   event_was_recorded_ = true;
   ++menu_item_shown_count_;
 }
+
 void PageUkmTracker::MenuItemClicked() {
   event_was_recorded_ = true;
   ++menu_item_clicked_count_;
 }
+
 void PageUkmTracker::ComposeTextInserted() {
   event_was_recorded_ = true;
   ++compose_text_inserted_count_;
+}
+
+void PageUkmTracker::ComposeProactiveNudgeShouldShow() {
+  event_was_recorded_ = true;
+  ++compose_proactive_nudge_should_show_;
 }
 
 void PageUkmTracker::ShowDialogAbortedDueToMissingFormData() {
@@ -203,6 +232,8 @@ void PageUkmTracker::MaybeLogUkm() {
           ukm::GetExponentialBucketMinForCounts1000(menu_item_clicked_count_))
       .SetComposeTextInserted(ukm::GetExponentialBucketMinForCounts1000(
           compose_text_inserted_count_))
+      .SetProactiveNudgeShouldShow(ukm::GetExponentialBucketMinForCounts1000(
+          compose_proactive_nudge_should_show_))
       .SetMissingFormData(
           ukm::GetExponentialBucketMinForCounts1000(missing_form_data_count_))
       .SetMissingFormFieldData(ukm::GetExponentialBucketMinForCounts1000(
@@ -468,6 +499,10 @@ void LogComposeRequestFeedback(EvalLocation eval_location,
       base::StrCat(
           {"Compose.", EvalLocationString(eval_location), ".Request.Feedback"}),
       feedback);
+}
+
+void LogComposeSelectAllStatus(ComposeSelectAllStatus select_all_status) {
+  base::UmaHistogramEnumeration(kComposeSelectAll, select_all_status);
 }
 
 }  // namespace compose

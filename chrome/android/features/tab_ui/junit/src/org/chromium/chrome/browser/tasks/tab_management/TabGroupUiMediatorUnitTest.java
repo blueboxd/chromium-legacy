@@ -25,6 +25,7 @@ import static org.mockito.Mockito.when;
 
 import android.content.Context;
 import android.content.res.Resources;
+import android.graphics.Color;
 import android.view.View;
 
 import androidx.annotation.Nullable;
@@ -90,6 +91,8 @@ public class TabGroupUiMediatorUnitTest {
     private static final int TAB1_ROOT_ID = TAB1_ID;
     private static final int TAB2_ROOT_ID = TAB2_ID;
     private static final int TAB3_ROOT_ID = TAB2_ID;
+    private static final int PRIMARY_BACKGROUND_COLOR = Color.WHITE;
+    private static final int INCOGNITO_BACKGROUND_COLOR = Color.GRAY;
 
     @Mock BottomControlsCoordinator.BottomControlsVisibilityController mVisibilityController;
     @Mock TabGroupUiMediator.ResetHandler mResetHandler;
@@ -188,7 +191,9 @@ public class TabGroupUiMediatorUnitTest {
                         mLayoutStateProviderSupplier,
                         mIncognitoStateProvider,
                         mDialogControllerSupplier,
-                        mOmniboxFocusStateSupplier);
+                        mOmniboxFocusStateSupplier,
+                        PRIMARY_BACKGROUND_COLOR,
+                        INCOGNITO_BACKGROUND_COLOR);
 
         if (currentTab == null) {
             verifyNeverReset();
@@ -463,7 +468,7 @@ public class TabGroupUiMediatorUnitTest {
 
         // Mock closing tab 2, and tab 3 then gets selected. They are in the same group assume that
         // that Tab 3 is the last tab in the group.
-        mTabModelObserverArgumentCaptor.getValue().willCloseTab(mTab2, true, true);
+        mTabModelObserverArgumentCaptor.getValue().willCloseTab(mTab2, true);
         verifyResetStrip(false, null);
 
         mTabModelObserverArgumentCaptor
@@ -484,7 +489,7 @@ public class TabGroupUiMediatorUnitTest {
 
         // Mock closing tab 2, and tab 3 then gets selected. They are in the same group assume that
         // that Tab 3 is the last tab in the group, but tab groups of size 1 are supported.
-        mTabModelObserverArgumentCaptor.getValue().willCloseTab(mTab2, true, true);
+        mTabModelObserverArgumentCaptor.getValue().willCloseTab(mTab2, true);
         mTabModelObserverArgumentCaptor
                 .getValue()
                 .didSelectTab(mTab3, TabSelectionType.FROM_CLOSE, TAB2_ID);
@@ -502,7 +507,7 @@ public class TabGroupUiMediatorUnitTest {
         doReturn(false).when(mTabGroupModelFilter).isTabInTabGroup(mTab3);
 
         // Mock closing tab 3, and tab 2 remains selected.
-        mTabModelObserverArgumentCaptor.getValue().willCloseTab(mTab3, true, true);
+        mTabModelObserverArgumentCaptor.getValue().willCloseTab(mTab3, true);
 
         // Strip should reset since since we don't have a group anymore.
         verifyResetStrip(false, null);
@@ -517,7 +522,7 @@ public class TabGroupUiMediatorUnitTest {
         doReturn(false).when(mTabGroupModelFilter).isTabInTabGroup(mTab3);
 
         // Mock closing tab 3, and tab 2 remains selected.
-        mTabModelObserverArgumentCaptor.getValue().willCloseTab(mTab3, true, true);
+        mTabModelObserverArgumentCaptor.getValue().willCloseTab(mTab3, true);
 
         // Strip should not be reset since we are still in this group.
         verifyNeverReset();
@@ -528,7 +533,7 @@ public class TabGroupUiMediatorUnitTest {
         initAndAssertProperties(mTab1);
 
         // Mock closing tab 1, and tab 2 then gets selected. They are in different group.
-        mTabModelObserverArgumentCaptor.getValue().willCloseTab(mTab1, true, true);
+        mTabModelObserverArgumentCaptor.getValue().willCloseTab(mTab1, true);
         mTabModelObserverArgumentCaptor
                 .getValue()
                 .didSelectTab(mTab2, TabSelectionType.FROM_CLOSE, TAB1_ID);
@@ -537,7 +542,7 @@ public class TabGroupUiMediatorUnitTest {
         verifyResetStrip(true, mTabGroup2);
     }
 
-    // TODO(988199): Ignore this test until we have a conclusion from the attached bug.
+    // TODO(crbug.com/40637854): Ignore this test until we have a conclusion from the attached bug.
     @Ignore
     @Test
     public void tabClosure_LastTabInGroup_GroupUiVisible() {
@@ -545,12 +550,12 @@ public class TabGroupUiMediatorUnitTest {
 
         // Mock closing tab 2 and tab, then tab 1 gets selected. They are in different group. Right
         // now tab group UI is visible.
-        mTabModelObserverArgumentCaptor.getValue().willCloseTab(mTab2, true, true);
+        mTabModelObserverArgumentCaptor.getValue().willCloseTab(mTab2, true);
         mTabModelObserverArgumentCaptor
                 .getValue()
                 .didSelectTab(mTab3, TabSelectionType.FROM_CLOSE, TAB2_ID);
         doReturn(new ArrayList<>()).when(mTabGroupModelFilter).getRelatedTabList(TAB3_ID);
-        mTabModelObserverArgumentCaptor.getValue().willCloseTab(mTab3, true, true);
+        mTabModelObserverArgumentCaptor.getValue().willCloseTab(mTab3, true);
         mTabModelObserverArgumentCaptor
                 .getValue()
                 .didSelectTab(mTab1, TabSelectionType.FROM_CLOSE, TAB3_ID);
@@ -1022,6 +1027,22 @@ public class TabGroupUiMediatorUnitTest {
         mIncognitoStateObserverArgumentCaptor.getValue().onIncognitoStateChanged(true);
 
         assertThat(mModel.get(TabGroupUiProperties.IS_INCOGNITO), equalTo(true));
+        assertThat(
+                mModel.get(TabGroupUiProperties.BACKGROUND_COLOR),
+                equalTo(INCOGNITO_BACKGROUND_COLOR));
+        mVisibilityControllerInOrder
+                .verify(mVisibilityController)
+                .setBottomControlsColor(INCOGNITO_BACKGROUND_COLOR);
+
+        mIncognitoStateObserverArgumentCaptor.getValue().onIncognitoStateChanged(false);
+
+        assertThat(mModel.get(TabGroupUiProperties.IS_INCOGNITO), equalTo(false));
+        assertThat(
+                mModel.get(TabGroupUiProperties.BACKGROUND_COLOR),
+                equalTo(PRIMARY_BACKGROUND_COLOR));
+        mVisibilityControllerInOrder
+                .verify(mVisibilityController)
+                .setBottomControlsColor(PRIMARY_BACKGROUND_COLOR);
     }
 
     @Test

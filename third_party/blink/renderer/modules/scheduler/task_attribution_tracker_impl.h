@@ -5,6 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_SCHEDULER_TASK_ATTRIBUTION_TRACKER_IMPL_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_SCHEDULER_TASK_ATTRIBUTION_TRACKER_IMPL_H_
 
+#include <optional>
+
 #include "base/containers/contains.h"
 #include "base/memory/raw_ptr.h"
 #include "third_party/blink/public/common/scheduler/task_attribution_id.h"
@@ -18,6 +20,7 @@
 namespace blink {
 class AbortSignal;
 class DOMTaskSignal;
+class SoftNavigationContext;
 }  // namespace blink
 
 namespace v8 {
@@ -25,6 +28,7 @@ class Isolate;
 }  // namespace v8
 
 namespace blink::scheduler {
+class TaskAttributionInfo;
 
 // This class is used to keep track of tasks posted on the main thread and their
 // ancestry. It assigns an incerementing ID per task, and gets notified when a
@@ -39,22 +43,22 @@ class MODULES_EXPORT TaskAttributionTrackerImpl
 
   TaskAttributionInfo* RunningTask() const override;
 
-  bool IsAncestor(const TaskAttributionInfo& task,
-                  TaskAttributionId ancestor_id) override;
-  void ForEachAncestor(
-      const TaskAttributionInfo& task,
-      base::FunctionRef<IterationStatus(const TaskAttributionInfo& task)>
-          visitor) override;
-
   TaskScope CreateTaskScope(ScriptState* script_state,
-                            TaskAttributionInfo* parent_task,
+                            TaskAttributionInfo* task_state,
                             TaskScopeType type) override;
 
   TaskScope CreateTaskScope(ScriptState* script_state,
-                            TaskAttributionInfo* parent_task,
+                            SoftNavigationContext*) override;
+
+  TaskScope CreateTaskScope(ScriptState* script_state,
+                            TaskAttributionInfo* task_state,
                             TaskScopeType type,
                             AbortSignal* abort_source,
                             DOMTaskSignal* priority_source) override;
+
+  std::optional<TaskScope> MaybeCreateTaskScopeForCallback(
+      ScriptState*,
+      TaskAttributionInfo* task_state) override;
 
   ObserverScope RegisterObserver(Observer* observer) override;
   void AddSameDocumentNavigationTask(TaskAttributionInfo* task) override;
@@ -68,7 +72,6 @@ class MODULES_EXPORT TaskAttributionTrackerImpl
   void OnObserverScopeDestroyed(const ObserverScope&) override;
 
   TaskAttributionId next_task_id_;
-  Persistent<TaskAttributionInfo> running_task_ = nullptr;
   Persistent<Observer> observer_ = nullptr;
 
   // A queue of TaskAttributionInfo objects representing tasks that initiated a

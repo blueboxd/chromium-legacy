@@ -333,12 +333,13 @@ void StorageHandler::UpdateOverallStatistics() {
   if (total_bytes <= 0 || available_bytes < 0) {
     // We can't get useful information from the storage page if total_bytes <= 0
     // or available_bytes is less than 0. This is not expected to happen.
-    NOTREACHED() << "Unable to retrieve total or available disk space";
+    DUMP_WILL_BE_NOTREACHED_NORETURN()
+        << "Unable to retrieve total or available disk space";
     return;
   }
 
   if (in_use_bytes < 0) {
-    // TODO(crbug.com/1409774): This shouldn't happen, but we still need to
+    // TODO(crbug.com/40889316): This shouldn't happen, but we still need to
     // clarify when and how often it does. To be replaced with
     // CHECK_GE(in_use_bytes, 0).
     LOG(WARNING) << "Calculated total space (" << total_bytes

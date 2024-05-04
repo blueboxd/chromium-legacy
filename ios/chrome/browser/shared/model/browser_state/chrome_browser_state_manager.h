@@ -30,10 +30,10 @@ class ChromeBrowserStateManager {
   // states was used last. Do *not* use it as a singleton getter to fetch "the"
   // browser state. Always assume there could be multiple browser states and
   // use GetLoadedBrowserStates() instead.
-  virtual ChromeBrowserState* GetLastUsedBrowserState() = 0;
+  virtual ChromeBrowserState* GetLastUsedBrowserStateDeprecatedDoNotUse() = 0;
 
-  // Returns the ChromeBrowserState associated with `path`, creating one if
-  // necessary.
+  // Returns the ChromeBrowserState associated with `path`, returns nullptr if
+  // there is no loaded ChromeBrowserState at `path`.
   virtual ChromeBrowserState* GetBrowserState(const base::FilePath& path) = 0;
 
   // Returns the BrowserStateInfoCache associated with this manager.

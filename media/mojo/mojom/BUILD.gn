@@ -8,7 +8,7 @@ import("//mojo/public/tools/bindings/mojom.gni")
 mojom("mojom") {
   generate_java = true
 
-  # TODO(crbug.com/676224): Conditionally add source files in this list when we
+  # TODO(crbug.com/40499115): Conditionally add source files in this list when we
   # support EnabledIf attribute in mojom files.
   sources = [
     "audio_data_pipe.mojom",
@@ -87,6 +87,7 @@ mojom("mojom") {
     "//services/network/public/mojom",
     "//services/network/public/mojom:cookies_mojom",
     "//services/service_manager/public/mojom",
+    "//services/viz/public/mojom:shared_image_format",
     "//ui/gfx/geometry/mojom",
     "//ui/gfx/mojom",
     "//ui/gfx/mojom:hdr_metadata",
@@ -108,6 +109,10 @@ mojom("mojom") {
   enabled_features = []
   if (is_linux || is_chromeos) {
     enabled_features += [ "is_linux_or_chromeos" ]
+  }
+
+  if (allow_oop_video_decoder) {
+    enabled_features += [ "allow_oop_video_decoder" ]
   }
 
   # Help select ServiceSandbox for media_service.mojom.

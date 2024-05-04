@@ -90,7 +90,7 @@ public class TabContext {
 
         /** Creates a new TabInfo object from {@link Tab} */
         public static TabInfo createFromTab(Tab tab) {
-            // TODO(crbug/783819): convert TabInfo to GURL
+            // TODO(crbug.com/40549331): convert TabInfo to GURL
             return new TabInfo(
                     tab.getId(),
                     tab.getTitle(),
@@ -184,7 +184,7 @@ public class TabContext {
 
             assert currentTab != null : "currentTab should not be null";
 
-            // TODO(crbug.com/1146320): Investigate the NPE.
+            // TODO(crbug.com/40729994): Investigate the NPE.
             if (currentTab == null) continue;
 
             List<Tab> relatedTabs = tabModelFilter.getRelatedTabList(currentTab.getId());

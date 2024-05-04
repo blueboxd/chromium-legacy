@@ -116,7 +116,6 @@ test("device_unittests") {
   deps = [
     "//base",
     "//base/test:test_support",
-    "//base/third_party/dynamic_annotations:dynamic_annotations",
     "//build:chromeos_buildflags",
     "//components/apdu",
     "//components/cbor",
@@ -140,6 +139,7 @@ test("device_unittests") {
     "//net",
     "//testing/gmock",
     "//testing/gtest",
+    "//third_party/abseil-cpp:absl",
     "//third_party/blink/public:blink_headers",
     "//ui/base",
     "//url",
@@ -177,6 +177,10 @@ test("device_unittests") {
       "fido/ctap_request_unittest.cc",
       "fido/ctap_response_unittest.cc",
       "fido/enclave/enclave_protocol_utils_unittest.cc",
+      "fido/enclave/verify/claim_unittest.cc",
+      "fido/enclave/verify/endorsement_unittest.cc",
+      "fido/enclave/verify/rekor_unittest.cc",
+      "fido/enclave/verify/utils_unittest.cc",
       "fido/fake_fido_discovery_unittest.cc",
       "fido/fido_device_authenticator_unittest.cc",
       "fido/fido_device_discovery_unittest.cc",
@@ -205,6 +209,11 @@ test("device_unittests") {
       "//services/data_decoder/public/cpp:test_support",
     ]
 
+    data = [
+      "fido/enclave/verify/testdata/logentry.json",
+      "fido/enclave/verify/testdata/logentry_noverification.json",
+    ]
+
     if (is_chromeos_lacros) {
       deps += [ "//chromeos/startup" ]
     }
@@ -216,6 +225,7 @@ test("device_unittests") {
 
   if (is_mac) {
     sources += [
+      "fido/enclave/icloud_recovery_key_mac_unittest.mm",
       "fido/mac/authenticator_unittest.mm",
       "fido/mac/browsing_data_deletion_unittest.mm",
       "fido/mac/credential_metadata_unittest.cc",
@@ -225,7 +235,10 @@ test("device_unittests") {
       "fido/mac/make_credential_operation_unittest_mac.mm",
       "fido/mac/util_unittest.cc",
     ]
-    deps += [ "//device/fido:icloud_keychain_test_support" ]
+    deps += [
+      "//components/trusted_vault",
+      "//device/fido:icloud_keychain_test_support",
+    ]
   }
 
   if (is_win) {
@@ -302,6 +315,7 @@ test("device_unittests") {
       "bluetooth/dbus/bluetooth_gatt_characteristic_service_provider_unittest.cc",
       "bluetooth/floss/bluetooth_floss_unittest.cc",
       "bluetooth/floss/bluetooth_gatt_floss_unittest.cc",
+      "bluetooth/floss/bluetooth_local_gatt_service_floss_unittest.cc",
       "bluetooth/floss/bluetooth_socket_floss_unittest.cc",
       "bluetooth/floss/exported_callback_manager_unittest.cc",
       "bluetooth/floss/floss_adapter_client_unittest.cc",

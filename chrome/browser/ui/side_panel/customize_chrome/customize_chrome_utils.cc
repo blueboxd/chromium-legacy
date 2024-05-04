@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/side_panel/customize_chrome/customize_chrome_utils.h"
 
 #include "base/feature_list.h"
+#include "chrome/browser/new_tab_page/new_tab_page_util.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service_factory.h"
 #include "components/optimization_guide/core/optimization_guide_features.h"
@@ -20,7 +21,7 @@ bool IsSidePanelEnabled() {
 bool IsWallpaperSearchEnabledForProfile(Profile* profile) {
   OptimizationGuideKeyedService* optimization_guide_keyed_service =
       OptimizationGuideKeyedServiceFactory::GetForProfile(profile);
-  return base::FeatureList::IsEnabled(
+  return IsEnUSLocaleOnlyFeatureEnabled(
              ntp_features::kCustomizeChromeWallpaperSearch) &&
          base::FeatureList::IsEnabled(
              optimization_guide::features::kOptimizationGuideModelExecution) &&
@@ -28,8 +29,7 @@ bool IsWallpaperSearchEnabledForProfile(Profile* profile) {
          (optimization_guide_keyed_service &&
           optimization_guide_keyed_service
               ->ShouldFeatureBeCurrentlyEnabledForUser(
-                  optimization_guide::proto::ModelExecutionFeature::
-                      MODEL_EXECUTION_FEATURE_WALLPAPER_SEARCH));
+                  optimization_guide::UserVisibleFeatureKey::kWallpaperSearch));
 }
 
 }  // namespace customize_chrome

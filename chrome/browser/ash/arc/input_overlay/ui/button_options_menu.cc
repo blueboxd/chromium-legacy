@@ -14,6 +14,7 @@
 #include "ash/style/typography.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ash/arc/input_overlay/actions/action.h"
+#include "chrome/browser/ash/arc/input_overlay/arc_input_overlay_metrics.h"
 #include "chrome/browser/ash/arc/input_overlay/display_overlay_controller.h"
 #include "chrome/browser/ash/arc/input_overlay/touch_injector.h"
 #include "chrome/browser/ash/arc/input_overlay/ui/action_type_button_group.h"
@@ -82,6 +83,15 @@ class ButtonOptionsActionEdit : public ActionEditView {
         IDS_INPUT_OVERLAY_BUTTON_OPTIONS_ASSIGNED_KEY));
   }
 
+  // views::View:
+  void VisibilityChanged(views::View* starting_from, bool is_visible) override {
+    if (is_visible && action_->is_new() &&
+        labels_view_->IsFirstLabelUnassigned() &&
+        controller_->HasSingleUserAddedAction()) {
+      PerformPulseAnimation();
+    }
+  }
+
  private:
   friend class ButtonOptionsMenuTest;
   friend class EditLabelTest;
@@ -106,8 +116,8 @@ class DoneButton : public views::LabelButton {
       : LabelButton(std::move(pressed_callback),
                     l10n_util::GetStringUTF16(
                         IDS_INPUT_OVERLAY_EDITING_DONE_BUTTON_LABEL)) {
-    // TODO(b/279117180): Replace with proper accessible name.
-    SetAccessibleName(u"done");
+    SetAccessibleName(
+        l10n_util::GetStringUTF16(IDS_INPUT_OVERLAY_EDITING_DONE_BUTTON_LABEL));
 
     SetBackground(views::CreateThemedRoundedRectBackground(
         cros_tokens::kCrosSysSystemOnBase,
@@ -272,11 +282,15 @@ void ButtonOptionsMenu::AddDoneButton() {
 }
 
 void ButtonOptionsMenu::OnTrashButtonPressed() {
+  RecordButtonOptionsMenuFunctionTriggered(ButtonOptionsMenuFunction::kDelete);
   controller_->RemoveAction(action_);
 }
 
 void ButtonOptionsMenu::OnDoneButtonPressed() {
   controller_->SaveToProtoFile();
+  RecordButtonOptionsMenuFunctionTriggered(ButtonOptionsMenuFunction::kDone);
+
+  controller_->SetEditingListVisibility(/*visible=*/true);
 
   // Remove this view at last.
   controller_->RemoveButtonOptionsMenuWidget();
@@ -286,6 +300,10 @@ void ButtonOptionsMenu::OnActionRemoved(const Action& action) {
   if (action_ != &action) {
     return;
   }
+
+  controller_->SetEditingListVisibility(/*visible=*/true);
+
+  // Remove this view at last.
   controller_->RemoveButtonOptionsMenuWidget();
 }
 

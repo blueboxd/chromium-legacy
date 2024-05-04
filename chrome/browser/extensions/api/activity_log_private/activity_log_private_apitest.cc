@@ -10,6 +10,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/extensions/activity_log/activity_log.h"
 #include "chrome/browser/extensions/extension_apitest.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/test/browser_test.h"
 #include "extensions/common/extension_builder.h"
@@ -60,7 +61,7 @@ class ActivityLogApiTest : public ExtensionApiTest {
 };
 
 #if !defined(NDEBUG)
-// TODO(crbug.com/299393): This test is very long and can time out in debug
+// TODO(crbug.com/40334711): This test is very long and can time out in debug
 // builds.
 #define MAYBE_TriggerEvent DISABLED_TriggerEvent
 #else

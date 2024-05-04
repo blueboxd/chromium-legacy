@@ -9,9 +9,12 @@
 
 #import <UIKit/UIKit.h>
 
-class PrefService;
 class TemplateURLService;
 @protocol SearchEngineChoiceConsumer;
+
+namespace search_engines {
+class SearchEngineChoiceService;
+}  // namespace search_engines
 
 @interface SearchEngineChoiceMediator : NSObject<SearchEngineChoiceMutator>
 
@@ -19,9 +22,10 @@ class TemplateURLService;
 // table view.
 @property(nonatomic, weak) id<SearchEngineChoiceConsumer> consumer;
 
-- (instancetype)initWithTemplateURLService:
-                    (TemplateURLService*)templateURLService
-                               prefService:(PrefService*)prefService
+- (instancetype)
+    initWithTemplateURLService:(TemplateURLService*)templateURLService
+     searchEngineChoiceService:
+         (search_engines::SearchEngineChoiceService*)searchEngineChoiceService
     NS_DESIGNATED_INITIALIZER;
 - (instancetype)init NS_UNAVAILABLE;
 

@@ -10,6 +10,7 @@
 #include "base/functional/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
+#include "base/notimplemented.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -82,7 +83,7 @@ bool FakePeripheral::AllResponsesConsumed() {
 
 void FakePeripheral::SimulateGATTDisconnection() {
   gatt_services_.clear();
-  // TODO(crbug.com/728870): Only set get_connected_ to false once system
+  // TODO(crbug.com/41322843): Only set get_connected_ to false once system
   // connected peripherals are supported and Web Bluetooth uses them. See issue
   // for more details.
   system_connected_ = false;
@@ -195,7 +196,7 @@ bool FakePeripheral::IsConnected() const {
 }
 
 bool FakePeripheral::IsGattConnected() const {
-  // TODO(crbug.com/728870): Return gatt_connected_ only once system connected
+  // TODO(crbug.com/41322843): Return gatt_connected_ only once system connected
   // peripherals are supported and Web Bluetooth uses them. See issue for more
   // details.
   return system_connected_ || gatt_connected_;
@@ -297,7 +298,7 @@ void FakePeripheral::CreateGattConnection(
     std::optional<device::BluetoothUUID> service_uuid) {
   create_gatt_connection_callbacks_.push_back(std::move(callback));
 
-  // TODO(crbug.com/728870): Stop overriding CreateGattConnection once
+  // TODO(crbug.com/41322843): Stop overriding CreateGattConnection once
   // IsGattConnected() is fixed. See issue for more details.
   if (gatt_connected_)
     return DidConnectGatt(/*error_code=*/std::nullopt);
@@ -317,7 +318,7 @@ bool FakePeripheral::IsGattServicesDiscoveryComplete() const {
   // Bluetooth needs to initiate a Service Discovery procedure and post
   // a task to call GattServicesDiscovered to simulate that the procedure has
   // completed.
-  // TODO(crbug.com/729456): Remove this override and run
+  // TODO(crbug.com/41323173): Remove this override and run
   // DiscoverGattServices() callback with next_discovery_response_ once
   // DiscoverGattServices() is implemented.
   if (!pending_gatt_discovery_ && !discovery_complete) {
@@ -329,6 +330,13 @@ bool FakePeripheral::IsGattServicesDiscoveryComplete() const {
 
   return discovery_complete;
 }
+
+#if BUILDFLAG(IS_APPLE)
+bool FakePeripheral::IsLowEnergyDevice() {
+  NOTIMPLEMENTED();
+  return true;
+}
+#endif  // BUILDFLAG(IS_APPLE)
 
 void FakePeripheral::CreateGattConnectionImpl(
     std::optional<device::BluetoothUUID>) {

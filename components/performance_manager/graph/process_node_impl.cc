@@ -92,7 +92,7 @@ ProcessNodeImpl::ProcessNodeImpl(content::ProcessType process_type,
 ProcessNodeImpl::~ProcessNodeImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Crash if this process node is destroyed while still hosting a worker node.
-  // TODO(https://crbug.com/1058705): Turn this into a DCHECK once the issue is
+  // TODO(crbug.com/40051698): Turn this into a DCHECK once the issue is
   //                                  resolved.
   CHECK(worker_nodes_.empty());
   DCHECK(!frozen_frame_data_);
@@ -433,8 +433,9 @@ base::flat_set<const WorkerNode*> ProcessNodeImpl::GetWorkerNodes() const {
 void ProcessNodeImpl::OnAllFramesInProcessFrozen() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(process_type_, content::PROCESS_TYPE_RENDERER);
-  for (auto* observer : GetObservers())
-    observer->OnAllFramesInProcessFrozen(this);
+  for (auto& observer : GetObservers()) {
+    observer.OnAllFramesInProcessFrozen(this);
+  }
 }
 
 void ProcessNodeImpl::OnJoiningGraph() {

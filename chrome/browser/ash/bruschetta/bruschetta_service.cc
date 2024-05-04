@@ -5,6 +5,7 @@
 #include "chrome/browser/ash/bruschetta/bruschetta_service.h"
 
 #include <memory>
+#include <string_view>
 #include <utility>
 
 #include "ash/constants/ash_features.h"
@@ -24,8 +25,8 @@
 #include "chrome/browser/ash/guest_os/public/guest_os_service.h"
 #include "chrome/browser/ash/guest_os/public/types.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
-#include "chrome/browser/ash/settings/cros_settings.h"
 #include "chromeos/ash/components/dbus/dlcservice/dlcservice_client.h"
+#include "chromeos/ash/components/settings/cros_settings.h"
 #include "chromeos/ash/components/settings/cros_settings_names.h"
 #include "components/prefs/pref_service.h"
 #include "third_party/cros_system_api/dbus/dlcservice/dbus-constants.h"
@@ -304,7 +305,7 @@ void BruschettaService::OnRemoveVm(base::OnceCallback<void(bool)> callback,
 void BruschettaService::OnUninstallToolsDlc(
     base::OnceCallback<void(bool)> callback,
     guest_os::GuestId guest_id,
-    const std::string& result) {
+    std::string_view result) {
   ash::DlcserviceClient::Get()->Uninstall(
       kUefiDlc,
       base::BindOnce(&BruschettaService::OnUninstallAllDlcs,
@@ -315,8 +316,8 @@ void BruschettaService::OnUninstallToolsDlc(
 void BruschettaService::OnUninstallAllDlcs(
     base::OnceCallback<void(bool)> callback,
     guest_os::GuestId guest_id,
-    const std::string& tools_result,
-    const std::string& firmware_result) {
+    std::string_view tools_result,
+    std::string_view firmware_result) {
   if ((tools_result != dlcservice::kErrorNone &&
        tools_result != dlcservice::kErrorInvalidDlc) ||
       (firmware_result != dlcservice::kErrorNone &&

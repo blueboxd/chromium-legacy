@@ -77,6 +77,11 @@ AppleKeychainV2::KeyCopyAttributes(SecKeyRef key) {
       SecKeyCopyAttributes(key));
 }
 
+OSStatus AppleKeychainV2::ItemAdd(CFDictionaryRef attributes,
+                                  CFTypeRef* result) {
+  return SecItemAdd(attributes, result);
+}
+
 OSStatus AppleKeychainV2::ItemCopyMatching(
     CFDictionaryRef query, CFTypeRef* result) {
   return SecItemCopyMatching(query, result);
@@ -100,5 +105,11 @@ AppleKeychainV2::TaskCopyValueForEntitlement(SecTaskRef task,
       SecTaskCopyValueForEntitlement(task, entitlement, error));
 }
 #endif  // !BUILDFLAG(IS_IOS)
+
+BOOL AppleKeychainV2::LAContextCanEvaluatePolicy(LAPolicy policy,
+                                                 NSError** error) {
+  LAContext* context = [[LAContext alloc] init];
+  return [context canEvaluatePolicy:policy error:error];
+}
 
 }  // namespace crypto

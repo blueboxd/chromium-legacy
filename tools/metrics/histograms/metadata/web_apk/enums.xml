@@ -61,7 +61,12 @@ chromium-metrics-reviews@google.com.
   <int value="1" label="Install app"/>
   <int value="2" label="Open existing app"/>
   <int value="3" label="Create shortcut (regular)"/>
-  <int value="4" label="Create shortcut (to app"/>
+  <int value="4" label="Create shortcut (to app)"/>
+  <int value="5" label="Dialog shown after timeout"/>
+  <int value="6" label="Dialog cancelled (Back)"/>
+  <int value="7" label="Redirect to shortcut creation"/>
+  <int value="8" label="Redirect to install crafted app"/>
+  <int value="9" label="Redirect to install homebrew app"/>
 </enum>
 
 <enum name="WebApkAppType">
@@ -144,6 +149,13 @@ chromium-metrics-reviews@google.com.
   <int value="7" label="Request invalid"/>
   <int value="8" label="Not enough space"/>
   <int value="9" label="Download icon and hash error"/>
+</enum>
+
+<enum name="WebApkSyncAddOrModifyType">
+  <int value="0" label="New install on device, and new addition to Sync"/>
+  <int value="1" label="New install on device, and modification to Sync"/>
+  <int value="2" label="Launch on device, and new addition to Sync"/>
+  <int value="3" label="Launch on device, and modification to Sync"/>
 </enum>
 
 <enum name="WebApkUpdateRequestQueued">

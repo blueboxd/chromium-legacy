@@ -88,10 +88,6 @@ SkiaOutputSurfaceDependencyWebView::GetGpuFeatureInfo() {
   return gpu_service_->gpu_feature_info();
 }
 
-gpu::MailboxManager* SkiaOutputSurfaceDependencyWebView::GetMailboxManager() {
-  return gpu_service_->mailbox_manager();
-}
-
 void SkiaOutputSurfaceDependencyWebView::ScheduleGrContextCleanup() {
   shared_context_state_->ScheduleSkiaCleanup();
 }
@@ -110,13 +106,11 @@ gpu::SurfaceHandle SkiaOutputSurfaceDependencyWebView::GetSurfaceHandle() {
 }
 
 scoped_refptr<gl::Presenter>
-SkiaOutputSurfaceDependencyWebView::CreatePresenter(
-    base::WeakPtr<gpu::ImageTransportSurfaceDelegate> stub) {
+SkiaOutputSurfaceDependencyWebView::CreatePresenter() {
   return nullptr;
 }
 scoped_refptr<gl::GLSurface>
 SkiaOutputSurfaceDependencyWebView::CreateGLSurface(
-    base::WeakPtr<gpu::ImageTransportSurfaceDelegate> stub,
     gl::GLSurfaceFormat format) {
   return gl_surface_.get();
 }

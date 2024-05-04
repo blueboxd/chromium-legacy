@@ -18,6 +18,7 @@ import sys
 assert sys.version_info >= (3, 0), 'This script requires Python 3.'
 
 import argparse
+import glob
 import os
 import platform
 import shutil
@@ -35,8 +36,8 @@ import zlib
 # https://chromium.googlesource.com/chromium/src/+/main/docs/updating_clang.md
 # Reverting problematic clang rolls is safe, though.
 # This is the output of `git describe` and is usable as a commit-ish.
-CLANG_REVISION = 'llvmorg-19-init-2941-ga0b3dbaf'
-CLANG_SUB_REVISION = 22
+CLANG_REVISION = 'llvmorg-19-init-9433-g76ea5feb'
+CLANG_SUB_REVISION = 1
 
 PACKAGE_VERSION = '%s-%s' % (CLANG_REVISION, CLANG_SUB_REVISION)
 RELEASE_VERSION = '19'
@@ -138,7 +139,7 @@ def DownloadUrl(url, output_file):
         output_file.write(gzip_decode.flush())
       print(' Done.')
       return
-    except urllib.error.URLError as e:
+    except (ConnectionError, urllib.error.URLError) as e:
       sys.stdout.write('\n')
       print(e)
       if num_retries == 0 or isinstance(
@@ -277,7 +278,11 @@ def UpdatePackage(package_name, host_os, dir=LLVM_BUILD_DIR):
     os.remove(OLD_STAMP_FILE)
 
   expected_stamp = ','.join([PACKAGE_VERSION] + target_os)
-  if ReadStampFile(stamp_file) == expected_stamp:
+  # This file is created by first class GCS deps. If this file exists,
+  # clear the entire directory and download with this script instead.
+  if glob.glob(os.path.join(dir, '.*_is_first_class_gcs')):
+    RmTree(dir)
+  elif ReadStampFile(stamp_file) == expected_stamp:
     return 0
 
   # Updating the main clang package nukes the output dir. Any other packages

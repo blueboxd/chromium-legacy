@@ -27,8 +27,6 @@
 #include "components/find_in_page/find_tab_helper.h"
 #include "components/find_in_page/find_types.h"
 #include "components/omnibox/common/omnibox_features.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test.h"
@@ -112,7 +110,7 @@ class FindResulStateObserver : public ui::test::ObservationStateObserver<
 };
 DEFINE_LOCAL_STATE_IDENTIFIER_VALUE(FindResulStateObserver, kFindResultState);
 
-// TODO(crbug.com/1509945): Remaining tests should be migrated to
+// TODO(crbug.com/41482547): Remaining tests should be migrated to
 // FindInPageTest.
 class LegacyFindInPageTest : public InProcessBrowserTest {
  public:
@@ -678,8 +676,7 @@ IN_PROC_BROWSER_TEST_F(LegacyFindInPageTest, MAYBE_CtrlEnter) {
 
   EXPECT_EQ(u"link", GetFindBarText());
 
-  ui_test_utils::UrlLoadObserver observer(
-      GURL("about:blank"), content::NotificationService::AllSources());
+  ui_test_utils::UrlLoadObserver observer(GURL("about:blank"));
 
   // Send Ctrl-Enter, should cause navigation to about:blank.
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
@@ -734,7 +731,8 @@ IN_PROC_BROWSER_TEST_F(LegacyFindInPageTest, ActiveMatchAfterNoResults) {
   EXPECT_EQ(0, details.active_match_ordinal());
 }
 
-IN_PROC_BROWSER_TEST_F(LegacyFindInPageTest, SelectionDuringFind) {
+// TODO (crbug.com/337186755): Investigate flakiness.
+IN_PROC_BROWSER_TEST_F(LegacyFindInPageTest, DISABLED_SelectionDuringFind) {
   ASSERT_TRUE(embedded_test_server()->Start());
   // Make sure Chrome is in the foreground, otherwise sending input
   // won't do anything and the test will hang.

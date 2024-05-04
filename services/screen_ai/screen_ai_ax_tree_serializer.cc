@@ -40,11 +40,13 @@ ScreenAIAXTreeSerializer::ScreenAIAXTreeSerializer(
 
   if (!tree_->Unserialize(update))
     LOG(FATAL) << tree_->error();
-  tree_source_ = base::WrapUnique<ui::AXTreeSource<const ui::AXNode*>>(
+  tree_source_ = base::WrapUnique<
+      ui::AXTreeSource<const ui::AXNode*, ui::AXTreeData*, ui::AXNodeData>>(
       tree_->CreateTreeSource());
   DCHECK(tree_source_);
   serializer_ = std::make_unique<
-      ui::AXTreeSerializer<const ui::AXNode*, std::vector<const ui::AXNode*>>>(
+      ui::AXTreeSerializer<const ui::AXNode*, std::vector<const ui::AXNode*>,
+                           ui::AXTreeUpdate*, ui::AXTreeData*, ui::AXNodeData>>(
       tree_source_.get(), /* crash_on_error */ true);
 }
 

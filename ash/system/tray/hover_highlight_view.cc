@@ -283,8 +283,9 @@ void HoverHighlightView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->SetCheckedState(checked_state);
 }
 
-gfx::Size HoverHighlightView::CalculatePreferredSize() const {
-  gfx::Size size = views::Button::CalculatePreferredSize();
+gfx::Size HoverHighlightView::CalculatePreferredSize(
+    const views::SizeBounds& available_size) const {
+  gfx::Size size = views::Button::CalculatePreferredSize(available_size);
 
   if (!expandable_ || size.height() < kTrayPopupItemMinHeight) {
     size.set_height(kTrayPopupItemMinHeight);
@@ -294,7 +295,7 @@ gfx::Size HoverHighlightView::CalculatePreferredSize() const {
 }
 
 int HoverHighlightView::GetHeightForWidth(int width) const {
-  return GetPreferredSize().height();
+  return GetPreferredSize(views::SizeBounds(width, {})).height();
 }
 
 void HoverHighlightView::OnFocus() {

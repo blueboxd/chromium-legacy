@@ -17,24 +17,24 @@
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "base/version.h"
-#include "chrome/browser/ash/crosapi/browser_util.h"
+#include "chromeos/ash/components/standalone_browser/lacros_selection.h"
 
 namespace component_updater {
-class CrOSComponentManager;
+class ComponentManagerAsh;
 }  // namespace component_updater
 
 namespace crosapi {
 
 class LacrosSelectionLoader;
 class LacrosSelectionLoaderFactory;
-using browser_util::LacrosSelection;
+using ash::standalone_browser::LacrosSelection;
 
 // Manages download of the lacros-chrome binary.
 // This class is a part of ash-chrome.
 class BrowserLoader {
  public:
   explicit BrowserLoader(
-      scoped_refptr<component_updater::CrOSComponentManager> manager);
+      scoped_refptr<component_updater::ComponentManagerAsh> manager);
 
   // Constructor for testing.
   explicit BrowserLoader(std::unique_ptr<LacrosSelectionLoaderFactory> factory);

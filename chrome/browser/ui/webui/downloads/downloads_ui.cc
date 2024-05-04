@@ -35,6 +35,8 @@
 #include "chrome/grit/downloads_resources_map.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
+#include "components/feature_engagement/public/feature_constants.h"
+#include "components/feature_engagement/public/feature_list.h"
 #include "components/google/core/common/google_util.h"
 #include "components/history/core/common/pref_names.h"
 #include "components/prefs/pref_service.h"
@@ -75,16 +77,15 @@ content::WebUIDataSource* CreateAndAddDownloadsUIHTMLSource(Profile* profile) {
   source->AddBoolean("requestsApVerdicts", requests_ap_verdicts);
 
   static constexpr webui::LocalizedString kStrings[] = {
-      {"title", IDS_DOWNLOAD_TITLE},
+      {"title", IDS_DOWNLOAD_HISTORY_TITLE},
       {"searchResultsPlural", IDS_SEARCH_RESULTS_PLURAL},
       {"searchResultsSingular", IDS_SEARCH_RESULTS_SINGULAR},
-      {"downloads", IDS_DOWNLOAD_TITLE},
       {"actionMenuDescription", IDS_DOWNLOAD_ACTION_MENU_DESCRIPTION},
       {"clearAll", IDS_DOWNLOAD_LINK_CLEAR_ALL},
       {"clearSearch", IDS_CLEAR_SEARCH},
       {"openDownloadsFolder", IDS_DOWNLOAD_LINK_OPEN_DOWNLOADS_FOLDER},
       {"moreActions", IDS_DOWNLOAD_MORE_ACTIONS},
-      {"search", IDS_DOWNLOAD_SEARCH},
+      {"search", IDS_DOWNLOAD_HISTORY_SEARCH},
 
       // No results message that shows instead of the downloads list.
       {"noDownloads", IDS_DOWNLOAD_NO_DOWNLOADS},
@@ -166,6 +167,11 @@ content::WebUIDataSource* CreateAndAddDownloadsUIHTMLSource(Profile* profile) {
       {"warningBypassDialogLearnMoreLink",
        IDS_DOWNLOAD_WARNING_BYPASS_DIALOG_LEARN_MORE_LINK},
       {"warningBypassDialogCancel", IDS_CANCEL},
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+      // ESB Download Row Promo
+      {"esbDownloadRowPromoString", IDS_DOWNLOAD_ROW_ESB_PROMOTION},
+      {"esbDownloadRowPromoA11y", IDS_DOWNLOAD_ROW_ESB_PROMO_A11Y},
+#endif
   };
   source->AddLocalizedStrings(kStrings);
 
@@ -184,11 +190,28 @@ content::WebUIDataSource* CreateAndAddDownloadsUIHTMLSource(Profile* profile) {
                                  ? IDS_BLOCK_DOWNLOAD_REASON_DANGEROUS
                                  : IDS_BLOCK_REASON_DANGEROUS_DOWNLOAD);
   source->AddLocalizedString(
+      "dangerDownloadCookieTheft",
+      improved_download_warnings_ux
+          ? IDS_BLOCK_DOWNLOAD_REASON_DANGEROUS_COOKIE_THEFT
+          : IDS_BLOCK_REASON_DANGEROUS_DOWNLOAD);
+  source->AddLocalizedString(
+      "dangerDownloadCookieTheftAndAccountDesc",
+      improved_download_warnings_ux
+          ? IDS_BLOCK_DOWNLOAD_REASON_DANGEROUS_COOKIE_THEFT_AND_ACCOUNT
+          : IDS_BLOCK_REASON_DANGEROUS_DOWNLOAD);
+  source->AddLocalizedString(
       "dangerUncommonDesc",
       requests_ap_verdicts
           ? IDS_BLOCK_REASON_UNCOMMON_DOWNLOAD_IN_ADVANCED_PROTECTION
           : (improved_download_warnings_ux
                  ? IDS_BLOCK_DOWNLOAD_REASON_UNCOMMON
+                 : IDS_BLOCK_REASON_UNCOMMON_DOWNLOAD));
+  source->AddLocalizedString(
+      "dangerUncommonSuspiciousArchiveDesc",
+      requests_ap_verdicts
+          ? IDS_BLOCK_REASON_UNCOMMON_DOWNLOAD_IN_ADVANCED_PROTECTION
+          : (improved_download_warnings_ux
+                 ? IDS_BLOCK_DOWNLOAD_REASON_UNCOMMON_SUSPICIOUS_ARCHIVE
                  : IDS_BLOCK_REASON_UNCOMMON_DOWNLOAD));
   source->AddLocalizedString(
       "dangerSettingsDesc", improved_download_warnings_ux
@@ -209,9 +232,16 @@ content::WebUIDataSource* CreateAndAddDownloadsUIHTMLSource(Profile* profile) {
   source->AddLocalizedString("toastDeletedFromHistory",
                              IDS_DOWNLOADS_TOAST_DELETED_FROM_HISTORY);
 
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  // Download Row ESB Promo:
+  source->AddBoolean("esbDownloadRowPromo",
+                     base::FeatureList::IsEnabled(
+                         feature_engagement::kEsbDownloadRowPromoFeature));
+#endif
+
   // Build an Accelerator to describe undo shortcut
   // NOTE: the undo shortcut is also defined in downloads/downloads.html
-  // TODO(crbug/893033): de-duplicate shortcut by moving all shortcut
+  // TODO(crbug.com/40597071): de-duplicate shortcut by moving all shortcut
   // definitions from JS to C++.
   ui::Accelerator undo_accelerator(ui::VKEY_Z, ui::EF_PLATFORM_ACCELERATOR);
   source->AddString("undoDescription", l10n_util::GetStringFUTF16(
@@ -262,7 +292,10 @@ DownloadsUIConfig::CreateWebUIController(content::WebUI* web_ui,
 ///////////////////////////////////////////////////////////////////////////////
 
 DownloadsUI::DownloadsUI(content::WebUI* web_ui)
-    : ui::MojoWebUIController(web_ui, true) {
+    : ui::MojoWebUIController(web_ui, true),
+      webui_load_timer_(web_ui->GetWebContents(),
+                        "Download.WebUi.DocumentLoadedInMainFrameTime",
+                        "Download.WebUi.LoadCompletedInMainFrame") {
   Profile* profile = Profile::FromWebUI(web_ui);
   web_ui->AddMessageHandler(std::make_unique<MetricsHandler>());
 

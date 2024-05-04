@@ -122,20 +122,21 @@ void SavePasswordProgressLogger::LogMessage(
 // static
 std::string SavePasswordProgressLogger::GetFormFieldDataLogString(
     const FormFieldData& field) {
-  const char* const is_visible = field.is_focusable ? "visible" : "invisible";
-  const char* const is_empty = field.value.empty() ? "empty" : "non-empty";
+  const char* const is_visible = field.is_focusable() ? "visible" : "invisible";
+  const char* const is_empty = field.value().empty() ? "empty" : "non-empty";
   std::string autocomplete =
-      field.autocomplete_attribute.empty()
+      field.autocomplete_attribute().empty()
           ? std::string()
-          : (", autocomplete=" + ScrubElementID(field.autocomplete_attribute));
+          : (", autocomplete=" +
+             ScrubElementID(field.autocomplete_attribute()));
   return base::StringPrintf(
       "%s: signature=%s, type=%s, renderer_id=%s, %s, %s%s",
-      ScrubElementID(field.name).c_str(),
+      ScrubElementID(field.name()).c_str(),
       base::NumberToString(*CalculateFieldSignatureForField(field)).c_str(),
       ScrubElementID(std::string(autofill::FormControlTypeToString(
-                         field.form_control_type)))
+                         field.form_control_type())))
           .c_str(),
-      NumberToString(*field.renderer_id).c_str(), is_visible, is_empty,
+      NumberToString(*field.renderer_id()).c_str(), is_visible, is_empty,
       autocomplete.c_str());
 }
 
@@ -364,6 +365,10 @@ std::string SavePasswordProgressLogger::GetStringFromID(
       return "Password reused from ";
     case SavePasswordProgressLogger::STRING_GENERATION_DISABLED_SAVING_DISABLED:
       return "Generation disabled: saving disabled";
+    case SavePasswordProgressLogger::
+        STRING_GENERATION_DISABLED_CHROME_DOES_NOT_SYNC_PASSWORDS:
+      return "Generation disabled: Chrome no longer syncs passwords and GMS is "
+             "no up to date to do it either";
     case SavePasswordProgressLogger::
         STRING_GENERATION_DISABLED_NOT_ABLE_TO_SAVE_PASSWORDS:
       return "Generation disabled: not able to save passwords";

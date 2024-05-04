@@ -424,10 +424,19 @@ bool Device::SetInputFormat(VideoCodec codec,
   format.fmt.pix_mp.num_planes = 1;
   format.fmt.pix_mp.plane_fmt[0].sizeimage = encoded_buffer_size;
 
-  if (!IoctlDevice(VIDIOC_S_FMT, &format) ||
-      format.fmt.pix_mp.pixelformat != pix_fmt) {
-    DVLOGF(1) << "Failed to set format fourcc: " << FourccToString(pix_fmt);
+  if (!IoctlDevice(VIDIOC_S_FMT, &format)) {
+    return false;
+  }
 
+  if (format.fmt.pix_mp.pixelformat != pix_fmt) {
+    DVLOGF(1) << "Failed to set format fourcc: " << FourccToString(pix_fmt);
+    return false;
+  }
+
+  if (format.fmt.pix_mp.plane_fmt[0].sizeimage < encoded_buffer_size) {
+    DVLOGF(1) << "Requested a buffer of size (" << encoded_buffer_size
+              << ") but only (" << format.fmt.pix_mp.plane_fmt[0].sizeimage
+              << ") provided.";
     return false;
   }
 
@@ -596,7 +605,8 @@ bool Device::OpenDevice() {
   // we will just fail to open immediately.
   for (int i = 0; i < 10; ++i) {
     const auto path = kDecoderDevicePrefix + base::NumberToString(i);
-    device_fd_.reset(HANDLE_EINTR(open(path.c_str(), O_RDWR | O_CLOEXEC, 0)));
+    device_fd_.reset(
+        HANDLE_EINTR(open(path.c_str(), O_RDWR | O_NONBLOCK | O_CLOEXEC, 0)));
     if (!device_fd_.is_valid()) {
       LOG(ERROR) << "Failed to open media device: " << path;
       continue;

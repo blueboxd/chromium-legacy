@@ -68,6 +68,7 @@ struct RuleMetaData {
   SessionModel session_model;
   mojo_base.mojom.TimeDelta lifetime;
   TpcdMetadataRuleSource tpcd_metadata_rule_source;
+  TpcdMetadataCohort tpcd_metadata_cohort;
 };
 
 // This mirrors the C++ type in content_settings.h.
@@ -81,11 +82,7 @@ struct ContentSettingPatternSource {
 };
 
 // This mirrors the C++ type in content_settings.h.
-// TODO(https://crbug.com/1485360): This should be removed.
+// TODO(crbug.com/40282541): This should be removed.
 struct RendererContentSettingRules {
-  array<ContentSettingPatternSource> image_rules;
-  array<ContentSettingPatternSource> script_rules;
-  array<ContentSettingPatternSource> popup_redirect_rules;
   array<ContentSettingPatternSource> mixed_content_rules;
-  array<ContentSettingPatternSource> auto_dark_content_rules;
 };

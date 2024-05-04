@@ -1,4 +1,3 @@
-
 // Copyright 2023 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
@@ -7,6 +6,7 @@
 #define CHROME_BROWSER_PRIVACY_SANDBOX_TRACKING_PROTECTION_NOTICE_SERVICE_H_
 
 #include <memory>
+
 #include "base/memory/raw_ptr.h"
 #include "base/scoped_observation.h"
 #include "base/time/time.h"
@@ -56,6 +56,9 @@ class TrackingProtectionNoticeService
       TrackingProtectionOnboarding* onboarding_service);
   ~TrackingProtectionNoticeService() override;
 
+  // KeyedService:
+  void Shutdown() override;
+
   enum class TrackingProtectionMetricsNoticeEvent {
     kNoticeObjectCreated = 0,
     kActiveTabChanged = 1,
@@ -92,9 +95,6 @@ class TrackingProtectionNoticeService
     // contents::WebContentsObserver:
     void DidFinishNavigation(
         content::NavigationHandle* navigation_handle) override;
-
-    // contents::WebContentsObserver:
-    void PrimaryPageChanged(content::Page& page) override;
 
     WEB_CONTENTS_USER_DATA_KEY_DECL();
   };
@@ -201,13 +201,6 @@ class TrackingProtectionNoticeService
 
   // TrackingProtectionOnboarding::Observer
   void OnShouldShowNoticeUpdated() override;
-
-  // Runs the Hats Logic, which means could either Register the profile for a
-  // group if eligible, or trigger a survey.
-  void RunHatsLogic();
-
-  // Whether or not the Hats logic is required for the current client/profile.
-  bool IsHatsLogicRequired();
 
   raw_ptr<Profile> profile_;
   raw_ptr<TrackingProtectionOnboarding> onboarding_service_;

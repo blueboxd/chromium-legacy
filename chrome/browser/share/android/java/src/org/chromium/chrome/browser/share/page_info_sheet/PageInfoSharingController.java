@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.share.page_info_sheet;
 
 import android.content.Context;
 
+import org.chromium.chrome.browser.feedback.HelpAndFeedbackLauncher;
 import org.chromium.chrome.browser.share.share_sheet.ChromeOptionShareCallback;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
@@ -14,13 +15,20 @@ import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 public interface PageInfoSharingController {
 
     /**
-     * Determines if the current tab can be shared at this moment.
+     * Initializes this controller, should be done close to startup to ensure it's available when
+     * the user wants to share something.
+     */
+    void initialize();
+
+    /**
+     * Determines if a summary option should be shown in the share sheet for the current tab. This
+     * emits metrics, so it should be called once every time the share sheet is shown.
      *
-     * @param tab A tab to share;
+     * @param tab A tab to share.
      * @return True if the current tab supports page info sharing and there's no other tab sharing
      *     sheet open.
      */
-    boolean isAvailableForTab(Tab tab);
+    boolean shouldShowInShareSheet(Tab tab);
 
     /**
      * Starts the process of sharing page info.
@@ -34,5 +42,14 @@ public interface PageInfoSharingController {
             Context context,
             BottomSheetController bottomSheetController,
             ChromeOptionShareCallback chromeOptionShareCallback,
+            HelpAndFeedbackLauncher helpAndFeedbackLauncher,
             Tab tab);
+
+    /**
+     * Removes page info from a share sheet.
+     *
+     * @param chromeOptionShareCallback Callback to create a new Android share sheet.
+     * @param tab A tab to share without page info.
+     */
+    void shareWithoutPageInfo(ChromeOptionShareCallback chromeOptionShareCallback, Tab tab);
 }

@@ -247,8 +247,8 @@ WatchHangsInScope::WatchHangsInScope(TimeDelta timeout) {
   auto [old_flags, old_deadline] =
       current_hang_watch_state->GetFlagsAndDeadline();
 
-  // TODO(crbug.com/1034046): Check whether we are over deadline already for the
-  // previous WatchHangsInScope here by issuing only one TimeTicks::Now()
+  // TODO(crbug.com/40111620): Check whether we are over deadline already for
+  // the previous WatchHangsInScope here by issuing only one TimeTicks::Now()
   // and resuing the value.
 
   previous_deadline_ = old_deadline;
@@ -315,7 +315,7 @@ WatchHangsInScope::~WatchHangsInScope() {
   // Reset the deadline to the value it had before entering this
   // WatchHangsInScope.
   state->SetDeadline(previous_deadline_);
-  // TODO(crbug.com/1034046): Log when a WatchHangsInScope exits after its
+  // TODO(crbug.com/40111620): Log when a WatchHangsInScope exits after its
   // deadline and that went undetected by the HangWatcher.
 
   state->DecrementNestingLevel();
@@ -767,7 +767,7 @@ void HangWatcher::WatchStateSnapShot::Init(
             this, perfetto::ThreadTrack::ForThread(thread_id));
         TRACE_EVENT_BEGIN("base", "HangWatcher::ThreadHung", track, deadline);
         TRACE_EVENT_END("base", track, now);
-        // TODO(crbug.com/1021571): Remove this once fixed.
+        // TODO(crbug.com/40657156): Remove this once fixed.
         PERFETTO_INTERNAL_ADD_EMPTY_EVENT();
       }
 #endif
@@ -1083,7 +1083,7 @@ void HangWatchDeadline::SetDeadline(TimeTicks new_deadline) {
               std::memory_order_relaxed);
 }
 
-// TODO(crbug.com/1087026): Add flag DCHECKs here.
+// TODO(crbug.com/40132796): Add flag DCHECKs here.
 bool HangWatchDeadline::SetShouldBlockOnHang(uint64_t old_flags,
                                              TimeTicks old_deadline) {
   DCHECK(old_deadline <= Max()) << "Value too high to be represented.";
@@ -1182,7 +1182,7 @@ uint64_t HangWatchDeadline::SwitchBitsForTesting() {
 
 HangWatchState::HangWatchState(HangWatcher::ThreadType thread_type)
     : resetter_(&hang_watch_state, this, nullptr), thread_type_(thread_type) {
-// TODO(crbug.com/1223033): Remove this once macOS uses system-wide ids.
+// TODO(crbug.com/40187449): Remove this once macOS uses system-wide ids.
 // On macOS the thread ids used by CrashPad are not the same as the ones
 // provided by PlatformThread. Make sure to use the same for correct
 // attribution.

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/autocomplete/zero_suggest_cache_service_factory.h"
 
+#include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 
@@ -25,6 +26,7 @@ ZeroSuggestCacheServiceFactory::BuildServiceInstanceForBrowserContext(
     content::BrowserContext* context) const {
   Profile* profile = Profile::FromBrowserContext(context);
   return std::make_unique<ZeroSuggestCacheService>(
+      std::make_unique<ChromeAutocompleteSchemeClassifier>(profile),
       profile->GetPrefs(), OmniboxFieldTrial::kZeroSuggestCacheMaxSize.Get());
 }
 
@@ -33,7 +35,7 @@ ZeroSuggestCacheServiceFactory::ZeroSuggestCacheServiceFactory()
           "ZeroSuggestCacheServiceFactory",
           ProfileSelections::Builder()
               .WithRegular(ProfileSelection::kOriginalOnly)
-              // TODO(crbug.com/1418376): Check if this service is needed in
+              // TODO(crbug.com/40257657): Check if this service is needed in
               // Guest mode.
               .WithGuest(ProfileSelection::kOriginalOnly)
               .Build()) {}

@@ -6,6 +6,7 @@
 #define UI_GL_DIRECT_COMPOSITION_CHILD_SURFACE_WIN_H_
 
 #include <windows.h>
+
 #include <d3d11.h>
 #include <dcomp.h>
 #include <wrl/client.h>
@@ -39,15 +40,16 @@ class GL_EXPORT DirectCompositionChildSurfaceWin : public GLSurfaceEGL {
   gfx::SurfaceOrigin GetOrigin() const override;
   bool SupportsPostSubBuffer() override;
   bool OnMakeCurrent(GLContext* context) override;
-  bool SupportsDCLayers() const override;
-  bool SetDrawRectangle(const gfx::Rect& rect) override;
-  gfx::Vector2d GetDrawOffset() const override;
   void SetVSyncEnabled(bool enabled) override;
   bool Resize(const gfx::Size& size,
               float scale_factor,
               const gfx::ColorSpace& color_space,
               bool has_alpha) override;
-  bool SetEnableDCLayers(bool enable) override;
+
+  bool SupportsDCLayers() const;
+  bool SetDrawRectangle(const gfx::Rect& rect);
+  bool SetEnableDCLayers(bool enable);
+  gfx::Vector2d GetDrawOffset() const;
 
   // Finish a draw started by |SetDrawRectangle|. Internally, calls presents the
   // swap chain or calls |EndDraw| on the DComp surface.

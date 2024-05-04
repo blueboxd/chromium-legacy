@@ -16,6 +16,7 @@
 
 #include "base/check.h"
 #include "base/feature_list.h"
+#include "base/not_fatal_until.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_util.h"
 #include "content/services/auction_worklet/auction_v8_helper.h"
@@ -24,7 +25,7 @@
 #include "third_party/abseil-cpp/absl/numeric/int128.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
 #include "third_party/blink/public/common/features.h"
-#include "third_party/blink/public/mojom/private_aggregation/aggregatable_report.mojom.h"
+#include "third_party/blink/public/mojom/aggregation_service/aggregatable_report.mojom.h"
 #include "third_party/blink/public/mojom/private_aggregation/private_aggregation_host.mojom.h"
 #include "v8/include/v8-context.h"
 #include "v8/include/v8-exception.h"
@@ -462,7 +463,7 @@ void PrivateAggregationBindings::ContributeToHistogram(
   std::optional<absl::uint128> maybe_bucket =
       ConvertBigIntToUint128(idl_bucket, &error);
   if (!maybe_bucket.has_value()) {
-    DCHECK(base::IsStringUTF8(error));
+    CHECK(base::IsStringUTF8(error), base::NotFatalUntil::M128);
     isolate->ThrowException(v8::Exception::TypeError(
         v8_helper->CreateUtf8String(error).ToLocalChecked()));
     return;
@@ -475,11 +476,12 @@ void PrivateAggregationBindings::ContributeToHistogram(
     return;
   }
 
+  // TODO(crbug.com/330744610): Allow filtering ID to be set.
   bindings->private_aggregation_contributions_.push_back(
       auction_worklet::mojom::AggregatableReportContribution::
           NewHistogramContribution(
               blink::mojom::AggregatableReportHistogramContribution::New(
-                  bucket, idl_value)));
+                  bucket, idl_value, /*filtering_id=*/std::nullopt)));
 }
 
 void PrivateAggregationBindings::ContributeToHistogramOnEvent(
@@ -604,7 +606,7 @@ void PrivateAggregationBindings::EnableDebugMode(
     std::optional<uint64_t> maybe_debug_key =
         ParseDebugKey(js_debug_key, &error);
     if (!maybe_debug_key.has_value()) {
-      DCHECK(base::IsStringUTF8(error));
+      CHECK(base::IsStringUTF8(error), base::NotFatalUntil::M128);
       isolate->ThrowException(v8::Exception::TypeError(
           v8_helper->CreateUtf8String(error).ToLocalChecked()));
       return;

@@ -22,7 +22,7 @@ size_t PaintArtifact::ApproximateUnsharedMemoryUsage() const {
 
 PaintRecord PaintArtifact::GetPaintRecord(const PropertyTreeState& replay_state,
                                           const gfx::Rect* cull_rect) const {
-  return PaintChunksToCcLayer::Convert(PaintChunkSubset(this), replay_state,
+  return PaintChunksToCcLayer::Convert(PaintChunkSubset(*this), replay_state,
                                        cull_rect);
 }
 
@@ -88,6 +88,12 @@ void PaintArtifact::AppendChunksAsJSON(wtf_size_t start_chunk_index,
 #endif
     json_array.PushObject(std::move(json_object));
   }
+}
+
+void PaintArtifact::clear() {
+  display_item_list_.clear();
+  chunks_.clear();
+  debug_info_.clear();
 }
 
 std::ostream& operator<<(std::ostream& os, const PaintArtifact& artifact) {

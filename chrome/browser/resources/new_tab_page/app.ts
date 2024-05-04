@@ -5,8 +5,9 @@
 import './iframe.js';
 import './logo.js';
 import './strings.m.js';
-import 'chrome://resources/cr_components/omnibox/realbox.js';
+import 'chrome://resources/cr_components/searchbox/realbox.js';
 import 'chrome://resources/cr_elements/cr_button/cr_button.js';
+import 'chrome://resources/cr_elements/cr_icons.css.js';
 import 'chrome://resources/cr_elements/cr_shared_style.css.js';
 
 import {ColorChangeUpdater} from 'chrome://resources/cr_components/color_change_listener/colors_css_updater.js';
@@ -170,12 +171,6 @@ export class AppElement extends AppElementBase {
         reflectToAttribute: true,
       },
 
-      showCustomizeDialog_: {
-        type: Boolean,
-        computed:
-            'computeShowCustomizeDialog_(customizeChromeEnabled_, showCustomize_)',
-      },
-
       selectedCustomizeDialogPage_: {
         type: String,
         value: () =>
@@ -230,11 +225,6 @@ export class AppElement extends AppElementBase {
       singleColoredLogo_: {
         computed: 'computeSingleColoredLogo_(theme_)',
         type: Boolean,
-      },
-
-      realboxLensSearchEnabled_: {
-        type: Boolean,
-        value: () => loadTimeData.getBoolean('realboxLensSearch'),
       },
 
       realboxShown_: {
@@ -363,7 +353,6 @@ export class AppElement extends AppElementBase {
   private showCustomize_: boolean;
   private showCustomizeChromeText_: boolean;
   private showWallpaperSearch_: boolean;
-  private showCustomizeDialog_: boolean;
   private selectedCustomizeDialogPage_: string|null;
   private showVoiceSearchOverlay_: boolean;
   private showBackgroundImage_: boolean;
@@ -374,7 +363,6 @@ export class AppElement extends AppElementBase {
   private customizeChromeEnabled_: boolean;
   private logoColor_: string;
   private singleColoredLogo_: boolean;
-  private realboxLensSearchEnabled_: boolean;
   private realboxShown_: boolean;
   private showLensUploadDialog_: boolean = false;
   private logoEnabled_: boolean;
@@ -561,10 +549,6 @@ export class AppElement extends AppElementBase {
     }
   }
 
-  private computeShowCustomizeDialog_(): boolean {
-    return !this.customizeChromeEnabled_ && this.showCustomize_;
-  }
-
   private computeShowCustomizeChromeText_(): boolean {
     if (this.wallpaperSearchButtonEnabled_) {
       return false;
@@ -621,7 +605,7 @@ export class AppElement extends AppElementBase {
   }
 
   private onCustomizeClick_() {
-    // Let customize dialog or side panel decide what page or section to show.
+    // Let side panel decide what page or section to show.
     this.selectedCustomizeDialogPage_ = null;
     if (this.customizeChromeEnabled_) {
       this.setCustomizeChromeSidePanelVisible_(!this.showCustomize_);
@@ -630,9 +614,6 @@ export class AppElement extends AppElementBase {
         recordCustomizeChromeOpen(
             NtpCustomizeChromeEntryPoint.CUSTOMIZE_BUTTON);
       }
-    } else {
-      this.showCustomize_ = true;
-      recordCustomizeChromeOpen(NtpCustomizeChromeEntryPoint.CUSTOMIZE_BUTTON);
     }
   }
 
@@ -654,12 +635,6 @@ export class AppElement extends AppElementBase {
       recordCustomizeChromeOpen(
           NtpCustomizeChromeEntryPoint.WALLPAPER_SEARCH_BUTTON);
     }
-  }
-
-  private onCustomizeDialogClose_() {
-    this.showCustomize_ = false;
-    // Let customize dialog decide what page to show on next open.
-    this.selectedCustomizeDialogPage_ = null;
   }
 
   private onVoiceSearchOverlayClose_() {

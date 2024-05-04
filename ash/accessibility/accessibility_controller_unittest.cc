@@ -21,10 +21,13 @@
 #include "ash/session/session_controller_impl.h"
 #include "ash/session/test_pref_service_provider.h"
 #include "ash/shell.h"
+#include "ash/system/toast/anchored_nudge_manager_impl.h"
 #include "ash/test/ash_test_base.h"
 #include "base/functional/bind.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/time/time.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "components/live_caption/pref_names.h"
 #include "components/prefs/pref_service.h"
@@ -38,6 +41,13 @@
 using message_center::MessageCenter;
 
 namespace ash {
+
+namespace {
+
+constexpr char kDictationLanguageUpgradedNudgeId[] =
+    "dictation_language_upgraded.nudge_id";
+
+}  // namespace
 
 class TestAccessibilityObserver : public AccessibilityObserver {
  public:
@@ -53,6 +63,43 @@ class TestAccessibilityObserver : public AccessibilityObserver {
   int status_changed_count_ = 0;
 };
 
+class AccessibilityControllerDefaultCaretIntervalTest : public AshTestBase {
+ protected:
+  AccessibilityControllerDefaultCaretIntervalTest() = default;
+  AccessibilityControllerDefaultCaretIntervalTest(
+      const AccessibilityControllerDefaultCaretIntervalTest&) = delete;
+  AccessibilityControllerDefaultCaretIntervalTest& operator=(
+      const AccessibilityControllerDefaultCaretIntervalTest&) = delete;
+  ~AccessibilityControllerDefaultCaretIntervalTest() override = default;
+
+  void SetUp() override {
+    scoped_feature_list_.InitAndDisableFeature(
+        ::features::kAccessibilityCaretBlinkIntervalSetting);
+    AshTestBase::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+TEST_F(AccessibilityControllerDefaultCaretIntervalTest,
+       DefaultCaretBlinkInterval) {
+  PrefService* prefs =
+      Shell::Get()->session_controller()->GetLastActiveUserPrefService();
+  // The pref is not registered.
+  EXPECT_FALSE(prefs->FindPreference(prefs::kAccessibilityCaretBlinkInterval));
+
+  auto* native_theme_dark = ui::NativeTheme::GetInstanceForDarkUI();
+  auto* native_theme_web = ui::NativeTheme::GetInstanceForWeb();
+  auto* native_theme = ui::NativeTheme::GetInstanceForNativeUi();
+
+  // All NativeThemes use the default value.
+  base::TimeDelta default_interval = base::Milliseconds(500);
+  EXPECT_EQ(default_interval, native_theme_dark->GetCaretBlinkInterval());
+  EXPECT_EQ(default_interval, native_theme_web->GetCaretBlinkInterval());
+  EXPECT_EQ(default_interval, native_theme->GetCaretBlinkInterval());
+}
+
 class AccessibilityControllerTest : public AshTestBase {
  protected:
   AccessibilityControllerTest() = default;
@@ -66,14 +113,23 @@ class AccessibilityControllerTest : public AshTestBase {
         /*enabled_features=*/{media::kLiveCaption,
                               media::kLiveCaptionSystemWideOnChromeOS,
                               ash::features::kOnDeviceSpeechRecognition,
-                              ::features::kAccessibilityFaceGaze},
-        /*disabled_feaures=*/{
-            ::features::kAccessibilityDictationKeyboardImprovements});
+                              ::features::kAccessibilityFaceGaze,
+                              ::features::kAccessibilityMouseKeys,
+                              ::features::
+                                  kAccessibilityCaretBlinkIntervalSetting},
+        /*disabled_feaures=*/{});
     AshTestBase::SetUp();
+  }
+
+  void ExpectSessionDurationMetricCount(const std::string& feature_name,
+                                        int count) {
+    histogram_tester_.ExpectTotalCount(
+        "Accessibility." + feature_name + ".SessionDuration", count);
   }
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
+  base::HistogramTester histogram_tester_;
 };
 
 TEST_F(AccessibilityControllerTest, ChangingCursorSizePrefChangesCursorSize) {
@@ -113,6 +169,17 @@ TEST_F(AccessibilityControllerTest, PrefsAreRegistered) {
   EXPECT_TRUE(prefs->FindPreference(prefs::kAccessibilityLargeCursorDipSize));
   EXPECT_TRUE(prefs->FindPreference(::prefs::kLiveCaptionEnabled));
   EXPECT_TRUE(prefs->FindPreference(prefs::kAccessibilityMonoAudioEnabled));
+  EXPECT_TRUE(prefs->FindPreference(prefs::kAccessibilityMouseKeysEnabled));
+  EXPECT_TRUE(prefs->FindPreference(
+      prefs::kAccessibilityMouseKeysShortcutToPauseEnabled));
+  EXPECT_TRUE(
+      prefs->FindPreference(prefs::kAccessibilityMouseKeysDisableInTextFields));
+  EXPECT_TRUE(
+      prefs->FindPreference(prefs::kAccessibilityMouseKeysAcceleration));
+  EXPECT_TRUE(prefs->FindPreference(prefs::kAccessibilityMouseKeysMaxSpeed));
+  EXPECT_TRUE(
+      prefs->FindPreference(prefs::kAccessibilityMouseKeysDominantHand));
+  EXPECT_TRUE(prefs->FindPreference(prefs::kAccessibilityAutoclickDelayMs));
   EXPECT_TRUE(
       prefs->FindPreference(prefs::kAccessibilityScreenMagnifierEnabled));
   EXPECT_TRUE(prefs->FindPreference(
@@ -191,6 +258,23 @@ TEST_F(AccessibilityControllerTest, PrefsAreRegistered) {
   EXPECT_TRUE(
       prefs->FindPreference(prefs::kAccessibilityColorVisionCorrectionAmount));
   EXPECT_TRUE(prefs->FindPreference(prefs::kAccessibilityFaceGazeEnabled));
+  EXPECT_TRUE(
+      prefs->FindPreference(prefs::kAccessibilityFaceGazeCursorSpeedUp));
+  EXPECT_TRUE(
+      prefs->FindPreference(prefs::kAccessibilityFaceGazeCursorSpeedDown));
+  EXPECT_TRUE(
+      prefs->FindPreference(prefs::kAccessibilityFaceGazeCursorSpeedLeft));
+  EXPECT_TRUE(
+      prefs->FindPreference(prefs::kAccessibilityFaceGazeCursorSpeedRight));
+  EXPECT_TRUE(
+      prefs->FindPreference(prefs::kAccessibilityFaceGazeCursorSmoothing));
+  EXPECT_TRUE(prefs->FindPreference(
+      prefs::kAccessibilityFaceGazeCursorUseAcceleration));
+  EXPECT_TRUE(
+      prefs->FindPreference(prefs::kAccessibilityFaceGazeGesturesToMacros));
+  EXPECT_TRUE(
+      prefs->FindPreference(prefs::kAccessibilityFaceGazeGesturesToConfidence));
+  EXPECT_TRUE(prefs->FindPreference(prefs::kAccessibilityCaretBlinkInterval));
 }
 
 TEST_F(AccessibilityControllerTest, SetAutoclickEnabled) {
@@ -205,10 +289,12 @@ TEST_F(AccessibilityControllerTest, SetAutoclickEnabled) {
   controller->autoclick().SetEnabled(true);
   EXPECT_TRUE(controller->autoclick().enabled());
   EXPECT_EQ(1, observer.status_changed_count_);
+  ExpectSessionDurationMetricCount("CrosAutoclick", 0);
 
   controller->autoclick().SetEnabled(false);
   EXPECT_FALSE(controller->autoclick().enabled());
   EXPECT_EQ(2, observer.status_changed_count_);
+  ExpectSessionDurationMetricCount("CrosAutoclick", 1);
 
   controller->RemoveObserver(&observer);
 }
@@ -225,10 +311,12 @@ TEST_F(AccessibilityControllerTest, SetCaretHighlightEnabled) {
   controller->caret_highlight().SetEnabled(true);
   EXPECT_TRUE(controller->caret_highlight().enabled());
   EXPECT_EQ(1, observer.status_changed_count_);
+  ExpectSessionDurationMetricCount("CrosCaretHighlight", 0);
 
   controller->caret_highlight().SetEnabled(false);
   EXPECT_FALSE(controller->caret_highlight().enabled());
   EXPECT_EQ(2, observer.status_changed_count_);
+  ExpectSessionDurationMetricCount("CrosCaretHighlight", 1);
 
   controller->RemoveObserver(&observer);
 }
@@ -247,6 +335,7 @@ TEST_F(AccessibilityControllerTest, SetColorCorrectionEnabled) {
   controller->color_correction().SetEnabled(true);
   EXPECT_TRUE(controller->color_correction().enabled());
   EXPECT_EQ(1, observer.status_changed_count_);
+  ExpectSessionDurationMetricCount("CrosColorCorrection", 0);
 
   // The first time we should show the settings for color correction.
   EXPECT_EQ(1, GetSystemTrayClient()->show_color_correction_settings_count());
@@ -254,10 +343,12 @@ TEST_F(AccessibilityControllerTest, SetColorCorrectionEnabled) {
   controller->color_correction().SetEnabled(false);
   EXPECT_FALSE(controller->color_correction().enabled());
   EXPECT_EQ(2, observer.status_changed_count_);
+  ExpectSessionDurationMetricCount("CrosColorCorrection", 1);
 
   controller->color_correction().SetEnabled(true);
   EXPECT_TRUE(controller->color_correction().enabled());
   EXPECT_EQ(3, observer.status_changed_count_);
+  ExpectSessionDurationMetricCount("CrosColorCorrection", 1);
 
   // The second time, the settings window should not be opened.
   EXPECT_EQ(1, GetSystemTrayClient()->show_color_correction_settings_count());
@@ -265,6 +356,7 @@ TEST_F(AccessibilityControllerTest, SetColorCorrectionEnabled) {
   controller->color_correction().SetEnabled(false);
   EXPECT_FALSE(controller->color_correction().enabled());
   EXPECT_EQ(4, observer.status_changed_count_);
+  ExpectSessionDurationMetricCount("CrosColorCorrection", 2);
 
   controller->RemoveObserver(&observer);
 }
@@ -281,10 +373,12 @@ TEST_F(AccessibilityControllerTest, SetCursorHighlightEnabled) {
   controller->cursor_highlight().SetEnabled(true);
   EXPECT_TRUE(controller->cursor_highlight().enabled());
   EXPECT_EQ(1, observer.status_changed_count_);
+  ExpectSessionDurationMetricCount("CrosCursorHighlight", 0);
 
   controller->cursor_highlight().SetEnabled(false);
   EXPECT_FALSE(controller->cursor_highlight().enabled());
   EXPECT_EQ(2, observer.status_changed_count_);
+  ExpectSessionDurationMetricCount("CrosCursorHighlight", 1);
 
   controller->RemoveObserver(&observer);
 }
@@ -301,10 +395,12 @@ TEST_F(AccessibilityControllerTest, SetCursorColorEnabled) {
   controller->cursor_color().SetEnabled(true);
   EXPECT_TRUE(controller->cursor_color().enabled());
   EXPECT_EQ(1, observer.status_changed_count_);
+  ExpectSessionDurationMetricCount("CrosCursorColor", 0);
 
   controller->cursor_color().SetEnabled(false);
   EXPECT_FALSE(controller->cursor_color().enabled());
   EXPECT_EQ(2, observer.status_changed_count_);
+  ExpectSessionDurationMetricCount("CrosCursorColor", 1);
 
   controller->RemoveObserver(&observer);
 }
@@ -321,10 +417,12 @@ TEST_F(AccessibilityControllerTest, SetFaceGazeEnabled) {
   controller->face_gaze().SetEnabled(true);
   EXPECT_TRUE(controller->face_gaze().enabled());
   EXPECT_EQ(1, observer.status_changed_count_);
+  ExpectSessionDurationMetricCount("CrosFaceGaze", 0);
 
   controller->face_gaze().SetEnabled(false);
   EXPECT_FALSE(controller->face_gaze().enabled());
   EXPECT_EQ(2, observer.status_changed_count_);
+  ExpectSessionDurationMetricCount("CrosFaceGaze", 1);
 
   controller->RemoveObserver(&observer);
 }
@@ -381,10 +479,12 @@ TEST_F(AccessibilityControllerTest, SetFocusHighlightEnabled) {
   controller->focus_highlight().SetEnabled(true);
   EXPECT_TRUE(controller->focus_highlight().enabled());
   EXPECT_EQ(1, observer.status_changed_count_);
+  ExpectSessionDurationMetricCount("CrosFocusHighlight", 0);
 
   controller->focus_highlight().SetEnabled(false);
   EXPECT_FALSE(controller->focus_highlight().enabled());
   EXPECT_EQ(2, observer.status_changed_count_);
+  ExpectSessionDurationMetricCount("CrosFocusHighlight", 1);
 
   controller->RemoveObserver(&observer);
 }
@@ -401,10 +501,12 @@ TEST_F(AccessibilityControllerTest, SetHighContrastEnabled) {
   controller->high_contrast().SetEnabled(true);
   EXPECT_TRUE(controller->high_contrast().enabled());
   EXPECT_EQ(1, observer.status_changed_count_);
+  ExpectSessionDurationMetricCount("CrosHighContrast", 0);
 
   controller->high_contrast().SetEnabled(false);
   EXPECT_FALSE(controller->high_contrast().enabled());
   EXPECT_EQ(2, observer.status_changed_count_);
+  ExpectSessionDurationMetricCount("CrosHighContrast", 1);
 
   controller->RemoveObserver(&observer);
 }
@@ -421,10 +523,12 @@ TEST_F(AccessibilityControllerTest, SetLargeCursorEnabled) {
   controller->large_cursor().SetEnabled(true);
   EXPECT_TRUE(controller->large_cursor().enabled());
   EXPECT_EQ(1, observer.status_changed_count_);
+  ExpectSessionDurationMetricCount("CrosLargeCursor", 0);
 
   controller->large_cursor().SetEnabled(false);
   EXPECT_FALSE(controller->large_cursor().enabled());
   EXPECT_EQ(2, observer.status_changed_count_);
+  ExpectSessionDurationMetricCount("CrosLargeCursor", 1);
 
   controller->RemoveObserver(&observer);
 }
@@ -481,10 +585,12 @@ TEST_F(AccessibilityControllerTest, SetLiveCaptionEnabled) {
   controller->live_caption().SetEnabled(true);
   EXPECT_TRUE(controller->live_caption().enabled());
   EXPECT_EQ(1, observer.status_changed_count_);
+  ExpectSessionDurationMetricCount("CrosLiveCaption", 0);
 
   controller->live_caption().SetEnabled(false);
   EXPECT_FALSE(controller->live_caption().enabled());
   EXPECT_EQ(2, observer.status_changed_count_);
+  ExpectSessionDurationMetricCount("CrosLiveCaption", 1);
 
   controller->RemoveObserver(&observer);
 }
@@ -601,6 +707,29 @@ TEST_F(AccessibilityControllerTest, MonoAudioTrayMenuVisibility) {
   EXPECT_FALSE(controller->IsMonoAudioSettingVisibleInTray());
 }
 
+TEST_F(AccessibilityControllerTest, SetMouseKeysEnabled) {
+  AccessibilityController* controller =
+      Shell::Get()->accessibility_controller();
+  auto& mouse_keys = controller->mouse_keys();
+  EXPECT_FALSE(mouse_keys.enabled());
+
+  TestAccessibilityObserver observer;
+  controller->AddObserver(&observer);
+  EXPECT_EQ(0, observer.status_changed_count_);
+
+  mouse_keys.SetEnabled(true);
+  EXPECT_TRUE(mouse_keys.enabled());
+  EXPECT_EQ(1, observer.status_changed_count_);
+  ExpectSessionDurationMetricCount("CrosMouseKeys", 0);
+
+  mouse_keys.SetEnabled(false);
+  EXPECT_FALSE(mouse_keys.enabled());
+  EXPECT_EQ(2, observer.status_changed_count_);
+  ExpectSessionDurationMetricCount("CrosMouseKeys", 1);
+
+  controller->RemoveObserver(&observer);
+}
+
 TEST_F(AccessibilityControllerTest, DictationTrayMenuVisibility) {
   // Check that when the pref isn't being controlled by any policy will be
   // visible in the accessibility tray menu despite its value.
@@ -641,6 +770,32 @@ TEST_F(AccessibilityControllerTest, DictationTrayMenuVisibility) {
       prefs->IsManagedPreference(prefs::kAccessibilityDictationEnabled));
   EXPECT_FALSE(controller->dictation().enabled());
   EXPECT_FALSE(controller->IsDictationSettingVisibleInTray());
+}
+
+TEST_F(AccessibilityControllerTest, DictationLanguageUpgradedNudge) {
+  struct {
+    std::string locale;
+    std::string application_locale;
+    std::string label;
+  } kTestCases[] = {
+      {"en-US", "en-US", "English"},
+      {"es-ES", "en-US", "Spanish"},
+      {"en-US", "es-ES", "inglés"},
+      {"es-ES", "es-ES", "español"},
+  };
+
+  auto* accessibility_controller = Shell::Get()->accessibility_controller();
+  auto* nudge_manager = Shell::Get()->anchored_nudge_manager();
+  for (const auto& testcase : kTestCases) {
+    accessibility_controller->ShowDictationLanguageUpgradedNudge(
+        testcase.locale, testcase.application_locale);
+    ASSERT_TRUE(nudge_manager->IsNudgeShown(kDictationLanguageUpgradedNudgeId));
+
+    const std::string body_text =
+        base::UTF16ToUTF8(nudge_manager->GetNudgeBodyTextForTest(
+            kDictationLanguageUpgradedNudgeId));
+    EXPECT_THAT(body_text, testing::HasSubstr(testcase.label));
+  }
 }
 
 TEST_F(AccessibilityControllerTest, CursorHighlightTrayMenuVisibility) {
@@ -1105,9 +1260,16 @@ TEST_F(AccessibilityControllerTest, StickyKeysTrayMenuVisibility) {
   EXPECT_FALSE(controller->IsStickyKeysSettingVisibleInTray());
 }
 
-TEST_F(AccessibilityControllerTest, DisableLargeCursorResetsSize) {
+TEST_F(AccessibilityControllerTest, DisableLargeCursorDoesNotResetSize) {
+  auto* shell = Shell::Get();
+  shell->cursor_manager()->ShowCursor();
+  auto* cursor_window_controller =
+      shell->window_tree_host_manager()->cursor_window_controller();
+  ASSERT_NE(nullptr, cursor_window_controller);
+  EXPECT_FALSE(cursor_window_controller->is_cursor_compositing_enabled());
+
   PrefService* prefs =
-      Shell::Get()->session_controller()->GetLastActiveUserPrefService();
+      shell->session_controller()->GetLastActiveUserPrefService();
   EXPECT_EQ(kDefaultLargeCursorSize,
             prefs->GetInteger(prefs::kAccessibilityLargeCursorDipSize));
 
@@ -1115,11 +1277,25 @@ TEST_F(AccessibilityControllerTest, DisableLargeCursorResetsSize) {
   // custom size.
   prefs->SetBoolean(prefs::kAccessibilityLargeCursorEnabled, true);
   prefs->SetInteger(prefs::kAccessibilityLargeCursorDipSize, 48);
+  EXPECT_EQ(48, prefs->GetInteger(prefs::kAccessibilityLargeCursorDipSize));
 
-  // Turning off large cursor resets the size to the default.
+  // Cursor compositing should be enabled and the size should be 48 dip.
+  EXPECT_TRUE(cursor_window_controller->is_cursor_compositing_enabled());
+  EXPECT_EQ(cursor_window_controller->GetBoundsForTest().width(), 48);
+  EXPECT_EQ(cursor_window_controller->GetBoundsForTest().height(), 48);
+
+  // Turning off large cursor does not reset the size to the default.
   prefs->SetBoolean(prefs::kAccessibilityLargeCursorEnabled, false);
-  EXPECT_EQ(kDefaultLargeCursorSize,
-            prefs->GetInteger(prefs::kAccessibilityLargeCursorDipSize));
+  EXPECT_EQ(48, prefs->GetInteger(prefs::kAccessibilityLargeCursorDipSize));
+  // It does stop cursor compositing, though, and the cursor is small again.
+  EXPECT_FALSE(cursor_window_controller->is_cursor_compositing_enabled());
+
+  // Turning it on again doesn't impact the preferred size pref either.
+  prefs->SetBoolean(prefs::kAccessibilityLargeCursorEnabled, true);
+  EXPECT_EQ(48, prefs->GetInteger(prefs::kAccessibilityLargeCursorDipSize));
+  EXPECT_TRUE(cursor_window_controller->is_cursor_compositing_enabled());
+  EXPECT_EQ(cursor_window_controller->GetBoundsForTest().width(), 48);
+  EXPECT_EQ(cursor_window_controller->GetBoundsForTest().height(), 48);
 }
 
 TEST_F(AccessibilityControllerTest, ChangingCursorColorPrefChangesCursorColor) {
@@ -1142,6 +1318,7 @@ TEST_F(AccessibilityControllerTest, ChangingCursorColorPrefChangesCursorColor) {
 
   // Expect cursor color in cursor_window_controller to be green.
   EXPECT_EQ(SK_ColorGREEN, cursor_window_controller->GetCursorColorForTest());
+  ExpectSessionDurationMetricCount("CrosCursorColor", 0);
 
   // Simulate using chrome settings webui to set cursor color to black, which
   // which also turns off the cursor color enabled pref.
@@ -1149,6 +1326,7 @@ TEST_F(AccessibilityControllerTest, ChangingCursorColorPrefChangesCursorColor) {
   prefs->SetBoolean(prefs::kAccessibilityCursorColorEnabled, false);
   EXPECT_EQ(kDefaultCursorColor,
             cursor_window_controller->GetCursorColorForTest());
+  ExpectSessionDurationMetricCount("CrosCursorColor", 1);
 }
 
 TEST_F(AccessibilityControllerTest, SetMonoAudioEnabled) {
@@ -1163,10 +1341,12 @@ TEST_F(AccessibilityControllerTest, SetMonoAudioEnabled) {
   controller->mono_audio().SetEnabled(true);
   EXPECT_TRUE(controller->mono_audio().enabled());
   EXPECT_EQ(1, observer.status_changed_count_);
+  ExpectSessionDurationMetricCount("CrosMonoAudio", 0);
 
   controller->mono_audio().SetEnabled(false);
   EXPECT_FALSE(controller->mono_audio().enabled());
   EXPECT_EQ(2, observer.status_changed_count_);
+  ExpectSessionDurationMetricCount("CrosMonoAudio", 1);
 
   controller->RemoveObserver(&observer);
 }
@@ -1183,10 +1363,12 @@ TEST_F(AccessibilityControllerTest, SetSpokenFeedbackEnabled) {
   controller->SetSpokenFeedbackEnabled(true, A11Y_NOTIFICATION_SHOW);
   EXPECT_TRUE(controller->spoken_feedback().enabled());
   EXPECT_EQ(1, observer.status_changed_count_);
+  ExpectSessionDurationMetricCount("CrosSpokenFeedback", 0);
 
   controller->SetSpokenFeedbackEnabled(false, A11Y_NOTIFICATION_NONE);
   EXPECT_FALSE(controller->spoken_feedback().enabled());
   EXPECT_EQ(2, observer.status_changed_count_);
+  ExpectSessionDurationMetricCount("CrosSpokenFeedback", 1);
 
   controller->RemoveObserver(&observer);
 }
@@ -1245,11 +1427,13 @@ TEST_F(AccessibilityControllerTest, SetStickyKeysEnabled) {
   EXPECT_TRUE(sticky_keys_controller->enabled_for_test());
   EXPECT_TRUE(controller->sticky_keys().enabled());
   EXPECT_EQ(1, observer.status_changed_count_);
+  ExpectSessionDurationMetricCount("CrosStickyKeys", 0);
 
   controller->sticky_keys().SetEnabled(false);
   EXPECT_FALSE(sticky_keys_controller->enabled_for_test());
   EXPECT_FALSE(controller->sticky_keys().enabled());
   EXPECT_EQ(2, observer.status_changed_count_);
+  ExpectSessionDurationMetricCount("CrosStickyKeys", 1);
 
   controller->RemoveObserver(&observer);
 }
@@ -1267,11 +1451,13 @@ TEST_F(AccessibilityControllerTest, SetVirtualKeyboardEnabled) {
   EXPECT_TRUE(keyboard::GetAccessibilityKeyboardEnabled());
   EXPECT_TRUE(controller->virtual_keyboard().enabled());
   EXPECT_EQ(1, observer.status_changed_count_);
+  ExpectSessionDurationMetricCount("CrosVirtualKeyboard", 0);
 
   controller->virtual_keyboard().SetEnabled(false);
   EXPECT_FALSE(keyboard::GetAccessibilityKeyboardEnabled());
   EXPECT_FALSE(controller->virtual_keyboard().enabled());
   EXPECT_EQ(2, observer.status_changed_count_);
+  ExpectSessionDurationMetricCount("CrosVirtualKeyboard", 1);
 
   controller->RemoveObserver(&observer);
 }
@@ -1466,79 +1652,31 @@ TEST_F(AccessibilityControllerTest, VerifyFeatureData) {
   EXPECT_TRUE(accessibility_controller->VerifyFeaturesDataForTesting());
 }
 
-// Verifies the behavior of EnableOrToggleDictation without the keyboard
-// improvements feature (current behavior).
-TEST_F(AccessibilityControllerTest, EnableOrToggleDictation) {
-  AccessibilityController* controller =
-      Shell::Get()->accessibility_controller();
-  TestAccessibilityControllerClient client;
-  controller->SetClient(&client);
+TEST_F(AccessibilityControllerTest, ChangingPrefChangesCaretBlinkInterval) {
   PrefService* prefs =
       Shell::Get()->session_controller()->GetLastActiveUserPrefService();
 
-  // If Dictation is disabled, then EnableOrToggleDictation should do nothing.
-  prefs->SetBoolean(prefs::kDictationAcceleratorDialogHasBeenAccepted, false);
-  ASSERT_FALSE(controller->dictation().enabled());
-  ASSERT_FALSE(controller->dictation_active());
-  ASSERT_FALSE(controller->IsDictationKeyboardDialogShowingForTesting());
-  controller->EnableOrToggleDictationFromSource(
-      DictationToggleSource::kKeyboard);
-  ASSERT_FALSE(controller->dictation().enabled());
-  ASSERT_FALSE(controller->dictation_active());
-  ASSERT_FALSE(controller->IsDictationKeyboardDialogShowingForTesting());
+  // Starts with default value.
+  EXPECT_EQ(prefs->GetInteger(prefs::kAccessibilityCaretBlinkInterval), 500);
 
-  prefs->SetBoolean(prefs::kDictationAcceleratorDialogHasBeenAccepted, true);
-  ASSERT_FALSE(controller->dictation().enabled());
-  ASSERT_FALSE(controller->dictation_active());
-  controller->EnableOrToggleDictationFromSource(
-      DictationToggleSource::kKeyboard);
-  ASSERT_FALSE(controller->dictation().enabled());
-  ASSERT_FALSE(controller->dictation_active());
-  ASSERT_FALSE(controller->IsDictationKeyboardDialogShowingForTesting());
+  auto* native_theme_dark = ui::NativeTheme::GetInstanceForDarkUI();
+  auto* native_theme_web = ui::NativeTheme::GetInstanceForWeb();
+  auto* native_theme = ui::NativeTheme::GetInstanceForNativeUi();
 
-  // If Dictation is enabled, then EnableOrToggleDictation should toggle
-  // Dictation on/off.
-  ASSERT_TRUE(
-      prefs->GetBoolean(prefs::kDictationAcceleratorDialogHasBeenAccepted));
-  ASSERT_FALSE(controller->dictation_active());
-  controller->dictation().SetEnabled(true);
-  controller->EnableOrToggleDictationFromSource(
-      DictationToggleSource::kKeyboard);
-  ASSERT_TRUE(controller->dictation().enabled());
-  ASSERT_TRUE(controller->dictation_active());
-  ASSERT_FALSE(controller->IsDictationKeyboardDialogShowingForTesting());
-  controller->EnableOrToggleDictationFromSource(
-      DictationToggleSource::kKeyboard);
-  ASSERT_TRUE(controller->dictation().enabled());
-  ASSERT_FALSE(controller->dictation_active());
-  ASSERT_FALSE(controller->IsDictationKeyboardDialogShowingForTesting());
+  base::TimeDelta expected_interval = base::Milliseconds(500);
+  EXPECT_EQ(expected_interval, native_theme_dark->GetCaretBlinkInterval());
+  EXPECT_EQ(expected_interval, native_theme_web->GetCaretBlinkInterval());
+  EXPECT_EQ(expected_interval, native_theme->GetCaretBlinkInterval());
+
+  // Native Themes should be updated.
+  prefs->SetInteger(prefs::kAccessibilityCaretBlinkInterval, 42);
+  expected_interval = base::Milliseconds(42);
+  EXPECT_EQ(expected_interval, native_theme_dark->GetCaretBlinkInterval());
+  EXPECT_EQ(expected_interval, native_theme_web->GetCaretBlinkInterval());
+  EXPECT_EQ(expected_interval, native_theme->GetCaretBlinkInterval());
 }
 
-class AccessibilityControllerDictationKeyboardImprovementsTest
-    : public AshTestBase {
- protected:
-  AccessibilityControllerDictationKeyboardImprovementsTest() = default;
-  AccessibilityControllerDictationKeyboardImprovementsTest(
-      const AccessibilityControllerDictationKeyboardImprovementsTest&) = delete;
-  AccessibilityControllerDictationKeyboardImprovementsTest& operator=(
-      const AccessibilityControllerDictationKeyboardImprovementsTest&) = delete;
-  ~AccessibilityControllerDictationKeyboardImprovementsTest() override =
-      default;
-
-  void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(
-        ::features::kAccessibilityDictationKeyboardImprovements);
-    AshTestBase::SetUp();
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
-// Verifies the behavior of EnableOrToggleDictation with the keyboard
-// improvements feature (new behavior).
-TEST_F(AccessibilityControllerDictationKeyboardImprovementsTest,
-       EnableOrToggleDictation) {
+TEST_F(AccessibilityControllerTest, EnableOrToggleDictation) {
   AccessibilityController* controller =
       Shell::Get()->accessibility_controller();
   TestAccessibilityControllerClient client;
@@ -1589,6 +1727,41 @@ TEST_F(AccessibilityControllerDictationKeyboardImprovementsTest,
   ASSERT_TRUE(controller->dictation().enabled());
   ASSERT_FALSE(controller->dictation_active());
   ASSERT_FALSE(controller->IsDictationKeyboardDialogShowingForTesting());
+}
+
+TEST_F(AccessibilityControllerTest, LogsDurationAtSessionLogout) {
+  AccessibilityController* controller =
+      Shell::Get()->accessibility_controller();
+  controller->large_cursor().SetEnabled(true);
+  ExpectSessionDurationMetricCount("CrosLargeCursor", 0);
+
+  // Logging out causes a duration to be logged.
+  GetSessionControllerClient()->SetSessionState(
+      session_manager::SessionState::LOGIN_PRIMARY);
+  ExpectSessionDurationMetricCount("CrosLargeCursor", 1);
+}
+
+TEST_F(AccessibilityControllerTest, LogsDurationAtSessionLock) {
+  AccessibilityController* controller =
+      Shell::Get()->accessibility_controller();
+  controller->large_cursor().SetEnabled(true);
+  ExpectSessionDurationMetricCount("CrosLargeCursor", 0);
+
+  // Locking the device causes a duration to be logged.
+  GetSessionControllerClient()->SetSessionState(
+      session_manager::SessionState::LOCKED);
+  ExpectSessionDurationMetricCount("CrosLargeCursor", 1);
+}
+
+TEST_F(AccessibilityControllerTest, LogsDurationAtShutdown) {
+  AccessibilityController* controller =
+      Shell::Get()->accessibility_controller();
+  controller->large_cursor().SetEnabled(true);
+  ExpectSessionDurationMetricCount("CrosLargeCursor", 0);
+
+  // Shutdown causes a duration to be logged.
+  controller->Shutdown();
+  ExpectSessionDurationMetricCount("CrosLargeCursor", 1);
 }
 
 namespace {
@@ -1655,11 +1828,13 @@ TEST_P(AccessibilityControllerSigninTest, EnableOnLoginScreenAndLogin) {
   EXPECT_FALSE(accessibility->high_contrast().enabled());
   EXPECT_FALSE(accessibility->autoclick().enabled());
   EXPECT_FALSE(accessibility->mono_audio().enabled());
+  EXPECT_FALSE(accessibility->mouse_keys().enabled());
   EXPECT_FALSE(docked_magnifier->GetEnabled());
   using prefs::kAccessibilityAutoclickEnabled;
   using prefs::kAccessibilityHighContrastEnabled;
   using prefs::kAccessibilityLargeCursorEnabled;
   using prefs::kAccessibilityMonoAudioEnabled;
+  using prefs::kAccessibilityMouseKeysEnabled;
   using prefs::kAccessibilitySpokenFeedbackEnabled;
   using prefs::kDockedMagnifierEnabled;
   PrefService* signin_prefs = session->GetSigninScreenPrefService();
@@ -1668,6 +1843,7 @@ TEST_P(AccessibilityControllerSigninTest, EnableOnLoginScreenAndLogin) {
   EXPECT_FALSE(signin_prefs->GetBoolean(kAccessibilityHighContrastEnabled));
   EXPECT_FALSE(signin_prefs->GetBoolean(kAccessibilityAutoclickEnabled));
   EXPECT_FALSE(signin_prefs->GetBoolean(kAccessibilityMonoAudioEnabled));
+  EXPECT_FALSE(signin_prefs->GetBoolean(kAccessibilityMouseKeysEnabled));
   EXPECT_FALSE(signin_prefs->GetBoolean(kDockedMagnifierEnabled));
 
   // Verify that toggling prefs at the signin screen changes the signin setting.
@@ -1676,6 +1852,7 @@ TEST_P(AccessibilityControllerSigninTest, EnableOnLoginScreenAndLogin) {
   accessibility->high_contrast().SetEnabled(true);
   accessibility->autoclick().SetEnabled(true);
   accessibility->mono_audio().SetEnabled(true);
+  accessibility->mouse_keys().SetEnabled(true);
   docked_magnifier->SetEnabled(true);
   docked_magnifier->SetScale(kMagnifierScale);
   // TODO(afakhry): Test the Fullscreen magnifier prefs once the
@@ -1686,6 +1863,7 @@ TEST_P(AccessibilityControllerSigninTest, EnableOnLoginScreenAndLogin) {
   EXPECT_TRUE(accessibility->high_contrast().enabled());
   EXPECT_TRUE(accessibility->autoclick().enabled());
   EXPECT_TRUE(accessibility->mono_audio().enabled());
+  EXPECT_TRUE(accessibility->mouse_keys().enabled());
   EXPECT_TRUE(docked_magnifier->GetEnabled());
   EXPECT_FLOAT_EQ(kMagnifierScale, docked_magnifier->GetScale());
   EXPECT_TRUE(signin_prefs->GetBoolean(kAccessibilityLargeCursorEnabled));
@@ -1693,6 +1871,7 @@ TEST_P(AccessibilityControllerSigninTest, EnableOnLoginScreenAndLogin) {
   EXPECT_TRUE(signin_prefs->GetBoolean(kAccessibilityHighContrastEnabled));
   EXPECT_TRUE(signin_prefs->GetBoolean(kAccessibilityAutoclickEnabled));
   EXPECT_TRUE(signin_prefs->GetBoolean(kAccessibilityMonoAudioEnabled));
+  EXPECT_TRUE(signin_prefs->GetBoolean(kAccessibilityMouseKeysEnabled));
   EXPECT_TRUE(signin_prefs->GetBoolean(kDockedMagnifierEnabled));
 
   SimulateLogin();
@@ -1709,6 +1888,7 @@ TEST_P(AccessibilityControllerSigninTest, EnableOnLoginScreenAndLogin) {
     EXPECT_TRUE(accessibility->high_contrast().enabled());
     EXPECT_TRUE(accessibility->autoclick().enabled());
     EXPECT_TRUE(accessibility->mono_audio().enabled());
+    EXPECT_TRUE(accessibility->mouse_keys().enabled());
     EXPECT_TRUE(docked_magnifier->GetEnabled());
     EXPECT_FLOAT_EQ(kMagnifierScale, docked_magnifier->GetScale());
     EXPECT_TRUE(user_prefs->GetBoolean(kAccessibilityLargeCursorEnabled));
@@ -1716,6 +1896,7 @@ TEST_P(AccessibilityControllerSigninTest, EnableOnLoginScreenAndLogin) {
     EXPECT_TRUE(user_prefs->GetBoolean(kAccessibilityHighContrastEnabled));
     EXPECT_TRUE(user_prefs->GetBoolean(kAccessibilityAutoclickEnabled));
     EXPECT_TRUE(user_prefs->GetBoolean(kAccessibilityMonoAudioEnabled));
+    EXPECT_TRUE(user_prefs->GetBoolean(kAccessibilityMouseKeysEnabled));
     EXPECT_TRUE(user_prefs->GetBoolean(kDockedMagnifierEnabled));
   } else {
     EXPECT_FALSE(accessibility->large_cursor().enabled());
@@ -1723,6 +1904,7 @@ TEST_P(AccessibilityControllerSigninTest, EnableOnLoginScreenAndLogin) {
     EXPECT_FALSE(accessibility->high_contrast().enabled());
     EXPECT_FALSE(accessibility->autoclick().enabled());
     EXPECT_FALSE(accessibility->mono_audio().enabled());
+    EXPECT_FALSE(accessibility->mouse_keys().enabled());
     EXPECT_FALSE(docked_magnifier->GetEnabled());
     EXPECT_NE(kMagnifierScale, docked_magnifier->GetScale());
     EXPECT_FALSE(user_prefs->GetBoolean(kAccessibilityLargeCursorEnabled));
@@ -1730,6 +1912,7 @@ TEST_P(AccessibilityControllerSigninTest, EnableOnLoginScreenAndLogin) {
     EXPECT_FALSE(user_prefs->GetBoolean(kAccessibilityHighContrastEnabled));
     EXPECT_FALSE(user_prefs->GetBoolean(kAccessibilityAutoclickEnabled));
     EXPECT_FALSE(user_prefs->GetBoolean(kAccessibilityMonoAudioEnabled));
+    EXPECT_FALSE(user_prefs->GetBoolean(kAccessibilityMouseKeysEnabled));
     EXPECT_FALSE(user_prefs->GetBoolean(kDockedMagnifierEnabled));
   }
 }

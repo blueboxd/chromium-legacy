@@ -51,8 +51,11 @@ class SigninView extends LinearLayout {
     private OnClickListener mAcceptOnClickListener;
     private ConsentTextUpdater mAcceptConsentTextUpdater;
 
+    private @ScreenMode int mScreenMode;
+
     public SigninView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
+        mScreenMode = ScreenMode.PENDING;
     }
 
     @Override
@@ -153,7 +156,46 @@ class SigninView extends LinearLayout {
         if (this.mAcceptOnClickListener == null) {
             return;
         }
+
+        switch (mScreenMode) {
+            case ScreenMode.UNRESTRICTED:
+                MinorModeHelper.recordButtonClicked(
+                        MinorModeHelper.SyncButtonClicked.SYNC_OPT_IN_NOT_EQUAL_WEIGHTED);
+                break;
+            case ScreenMode.RESTRICTED:
+                MinorModeHelper.recordButtonClicked(
+                        MinorModeHelper.SyncButtonClicked.SYNC_OPT_IN_EQUAL_WEIGHTED);
+                break;
+            default:
+                // Do not record metrics in other cases.
+        }
         this.mAcceptOnClickListener.onClick(view);
+    }
+
+    void refuseButtonClicked() {
+        if (mScreenMode == ScreenMode.PENDING) {
+            return;
+        }
+        if (mScreenMode == ScreenMode.UNRESTRICTED) {
+            MinorModeHelper.recordButtonClicked(
+                    MinorModeHelper.SyncButtonClicked.SYNC_CANCEL_NOT_EQUAL_WEIGHTED);
+        } else {
+            MinorModeHelper.recordButtonClicked(
+                    MinorModeHelper.SyncButtonClicked.SYNC_CANCEL_EQUAL_WEIGHTED);
+        }
+    }
+
+    void settingsClicked() {
+        if (mScreenMode == ScreenMode.PENDING) {
+            return;
+        }
+        if (mScreenMode == ScreenMode.UNRESTRICTED) {
+            MinorModeHelper.recordButtonClicked(
+                    MinorModeHelper.SyncButtonClicked.SYNC_SETTINGS_NOT_EQUAL_WEIGHTED);
+        } else {
+            MinorModeHelper.recordButtonClicked(
+                    MinorModeHelper.SyncButtonClicked.SYNC_SETTINGS_EQUAL_WEIGHTED);
+        }
     }
 
     /**
@@ -202,20 +244,52 @@ class SigninView extends LinearLayout {
         addButtonsToButtonBar();
     }
 
-    /**
-     * Removes buttons from button bar and readds them keeping their configuration. Buttons are
-     * themed according to {@link screenMode} param.
-     */
-    void recreateButtons(@ScreenMode int screenMode) {
-        mButtonBar.removeAllViews();
+    /** Recreates buttons for the add account purpose. */
+    void recreateAddAccountButtons() {
+        recreateButtons(DualControlLayout.ButtonType.PRIMARY_FILLED);
+        mScreenMode = ScreenMode.PENDING;
+    }
 
-        Button oldButton = mAcceptButton;
+    /**
+     * Prepares buttons for the sync consent purpose.
+     *
+     * <p>If the buttons are already in the request configuration, this is a no-op. Otherwise,
+     * buttons are removed and re-added in the right configuration.
+     *
+     * Buttons in this mode record click and impression metrics.
+     *
+     * @param screenMode determines the appearance of the buttons.
+     */
+    void recreateSyncConsentButtons(@ScreenMode int screenMode) {
+        if (screenMode == mScreenMode) {
+            return;
+        }
+        mScreenMode = screenMode;
 
         @DualControlLayout.ButtonType
         int acceptButtonType =
                 screenMode == ScreenMode.UNRESTRICTED
                         ? DualControlLayout.ButtonType.PRIMARY_FILLED
                         : DualControlLayout.ButtonType.PRIMARY_TEXT;
+        recreateButtons(acceptButtonType);
+
+        // Only at this point buttons were made visible and added to the button bar, so record the
+        // displayed button type.
+        if (mScreenMode == ScreenMode.UNRESTRICTED) {
+            MinorModeHelper.recordButtonsShown(
+                    MinorModeHelper.SyncButtonsType.SYNC_NOT_EQUAL_WEIGHTED);
+        } else {
+            MinorModeHelper.recordButtonsShown(MinorModeHelper.SyncButtonsType.SYNC_EQUAL_WEIGHTED);
+        }
+    }
+
+    /**
+     * Removes buttons from button bar and readds them keeping their configuration. The primery
+     * buttons is themed as indicated by the {@link acceptButtonType} param.
+     */
+    private void recreateButtons(@DualControlLayout.ButtonType int acceptButtonType) {
+        mButtonBar.removeAllViews();
+        Button oldButton = mAcceptButton;
 
         mAcceptButton =
                 DualControlLayout.createButtonForLayout(

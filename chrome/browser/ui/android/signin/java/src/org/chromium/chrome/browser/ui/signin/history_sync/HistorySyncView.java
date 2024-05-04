@@ -21,6 +21,7 @@ class HistorySyncView extends LinearLayout {
     private ImageView mAccountImage;
     private Button mDeclineButton;
     private Button mAcceptButton;
+    private TextView mDetailsDescription;
 
     public HistorySyncView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
@@ -30,17 +31,16 @@ class HistorySyncView extends LinearLayout {
     protected void onFinishInflate() {
         super.onFinishInflate();
 
-        // TODO(crbug.com/1520791): Set up scrollView.
-        mAccountImage = findViewById(R.id.account_image);
+        // TODO(crbug.com/41493766): Set up scrollView.
+        mAccountImage = findViewById(R.id.history_sync_account_image);
         TextView title = findViewById(R.id.sync_consent_title);
         TextView subtitle = findViewById(R.id.sync_consent_subtitle);
-        TextView detailsDescription = findViewById(R.id.sync_consent_details_description);
+        mDetailsDescription = findViewById(R.id.sync_consent_details_description);
 
-        // TODO(crbug.com/1520791): Confirm that these are the correct title and subtitle strings.
+        // TODO(crbug.com/41493766): Confirm that these are the correct title and subtitle strings.
         // Using group C from the strings variation experiment as a placeholder in the meantime.
         title.setText(R.string.history_sync_consent_title_c);
         subtitle.setText(R.string.history_sync_consent_subtitle_c);
-        detailsDescription.setText(R.string.sync_consent_details_description);
     }
 
     ImageView getAccountImageView() {
@@ -55,15 +55,21 @@ class HistorySyncView extends LinearLayout {
         return mAcceptButton;
     }
 
+    TextView getDetailsDescription() {
+        return mDetailsDescription;
+    }
+
     void createButtons(boolean isButtonBar) {
         if (isButtonBar) {
             createButtonBar();
+        } else {
+            mAcceptButton = findViewById(R.id.button_primary);
+            mDeclineButton = findViewById(R.id.button_secondary);
+            mAcceptButton.setVisibility(VISIBLE);
+            mDeclineButton.setVisibility(VISIBLE);
         }
-        mAcceptButton = findViewById(R.id.button_primary);
-        assert mAcceptButton != null;
+        assert mAcceptButton != null && mDeclineButton != null;
         mAcceptButton.setText(R.string.signin_accept_button);
-        mDeclineButton = findViewById(R.id.button_secondary);
-        assert mDeclineButton != null;
         mDeclineButton.setText(R.string.no_thanks);
     }
 
@@ -78,5 +84,6 @@ class HistorySyncView extends LinearLayout {
         buttonBar.addView(mAcceptButton);
         buttonBar.addView(mDeclineButton);
         buttonBar.setAlignment(DualControlLayout.DualControlLayoutAlignment.END);
+        buttonBar.setVisibility(VISIBLE);
     }
 }

@@ -35,6 +35,7 @@ import androidx.core.widget.ImageViewCompat;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.base.ResettersForTesting;
+import org.chromium.chrome.browser.tab_ui.TabThumbnailView;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator;
 import org.chromium.components.browser_ui.widget.scrim.ScrimProperties;
@@ -244,7 +245,7 @@ public class TabGridDialogView extends FrameLayout {
                         mDialogContainerView.requestFocus();
                         mDialogContainerView.sendAccessibilityEvent(
                                 AccessibilityEvent.TYPE_VIEW_FOCUSED);
-                        // TODO(crbug.com/1101561): Move clear/restore accessibility importance
+                        // TODO(crbug.com/40138401): Move clear/restore accessibility importance
                         // logic to ScrimView so that it can be shared by all components using
                         // ScrimView.
                         clearBackgroundViewAccessibilityImportance();
@@ -873,6 +874,11 @@ public class TabGridDialogView extends FrameLayout {
             manageBar.setVisibility(View.GONE);
             inviteButton.setVisibility(View.VISIBLE);
         }
+    }
+
+    void refreshScrim() {
+        assert mScrimCoordinator != null && mScrimPropertyModel != null;
+        mScrimCoordinator.showScrim(mScrimPropertyModel);
     }
 
     /** Show {@link PopupWindow} for dialog with animation. */

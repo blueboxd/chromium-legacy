@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/auto_reset.h"
+#include "base/debug/alias.h"
 #include "base/functional/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -70,10 +71,10 @@ void ClientTagBasedModelTypeProcessor::OnSyncStarting(
     StartCallback start_callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DVLOG(1) << "Sync is starting for " << ModelTypeToDebugString(type_);
-  DCHECK(request.IsValid()) << ModelTypeToDebugString(type_);
-  DCHECK(start_callback) << ModelTypeToDebugString(type_);
-  DCHECK(!start_callback_) << ModelTypeToDebugString(type_);
-  DCHECK(!IsConnected()) << ModelTypeToDebugString(type_);
+  DUMP_WILL_BE_CHECK(request.IsValid()) << ModelTypeToDebugString(type_);
+  DUMP_WILL_BE_CHECK(start_callback) << ModelTypeToDebugString(type_);
+  DUMP_WILL_BE_CHECK(!start_callback_) << ModelTypeToDebugString(type_);
+  DUMP_WILL_BE_CHECK(!IsConnected()) << ModelTypeToDebugString(type_);
 
   start_callback_ = std::move(start_callback);
   activation_request_ = request;
@@ -87,7 +88,7 @@ void ClientTagBasedModelTypeProcessor::OnSyncStarting(
 
 void ClientTagBasedModelTypeProcessor::OnModelStarting(
     ModelTypeSyncBridge* bridge) {
-  DCHECK(bridge);
+  DUMP_WILL_BE_CHECK(bridge);
   bridge_ = bridge;
 }
 
@@ -95,8 +96,8 @@ void ClientTagBasedModelTypeProcessor::ModelReadyToSync(
     std::unique_ptr<MetadataBatch> batch) {
   TRACE_EVENT0("sync", "ClientTagBasedModelTypeProcessor::ModelReadyToSync");
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(!entity_tracker_);
-  DCHECK(!model_ready_to_sync_);
+  DUMP_WILL_BE_CHECK(!entity_tracker_);
+  DUMP_WILL_BE_CHECK(!model_ready_to_sync_);
 
   model_ready_to_sync_ = true;
 
@@ -118,11 +119,11 @@ void ClientTagBasedModelTypeProcessor::ModelReadyToSync(
       // If initial sync isn't done, there must be no entity metadata (if there
       // was, ClearPersistedMetadataIfInvalid() would've detected the
       // inconsistency).
-      DCHECK(batch->GetAllMetadata().empty());
+      DUMP_WILL_BE_CHECK(batch->GetAllMetadata().empty());
     }
   }
 
-  DCHECK(model_ready_to_sync_);
+  DUMP_WILL_BE_CHECK(model_ready_to_sync_);
   ConnectIfReady();
 }
 
@@ -144,7 +145,7 @@ void ClientTagBasedModelTypeProcessor::ConnectIfReady() {
   if (!model_ready_to_sync_) {
     return;
   }
-  DCHECK(!pending_clear_metadata_);
+  DUMP_WILL_BE_CHECK(!pending_clear_metadata_);
 
   ClearPersistedMetadataIfInconsistentWithActivationRequest();
 
@@ -173,7 +174,7 @@ void ClientTagBasedModelTypeProcessor::ConnectIfReady() {
           sync_pb::ModelTypeState_InitialSyncState_INITIAL_SYNC_UNNECESSARY);
       OnFullUpdateReceived(model_type_state, UpdateResponseDataList(),
                            /*gc_directive=*/std::nullopt);
-      DCHECK(entity_tracker_);
+      DUMP_WILL_BE_CHECK(entity_tracker_);
     } else {
       activation_response->model_type_state = model_type_state;
     }
@@ -183,8 +184,8 @@ void ClientTagBasedModelTypeProcessor::ConnectIfReady() {
     activation_response->model_type_state = entity_tracker_->model_type_state();
   }
 
-  DCHECK_EQ(activation_response->model_type_state.cache_guid(),
-            activation_request_.cache_guid);
+  DUMP_WILL_BE_CHECK_EQ(activation_response->model_type_state.cache_guid(),
+                        activation_request_.cache_guid);
 
   activation_response->type_processor =
       std::make_unique<ModelTypeProcessorProxy>(
@@ -210,8 +211,8 @@ void ClientTagBasedModelTypeProcessor::OnSyncStopping(
     SyncStopMetadataFate metadata_fate) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Disabling sync for a type never happens before the model is ready to sync.
-  DCHECK(model_ready_to_sync_);
-  DCHECK(!start_callback_);
+  DUMP_WILL_BE_CHECK(model_ready_to_sync_);
+  DUMP_WILL_BE_CHECK(!start_callback_);
 
   // Reset `activation_request_`. This acts as a flag that the processor has
   // been stopped or has not been started yet. Note: this avoids calling
@@ -224,18 +225,18 @@ void ClientTagBasedModelTypeProcessor::OnSyncStopping(
       // The model is still ready to sync (with the same |bridge_|) and same
       // sync metadata.
       ResetState(KEEP_METADATA);
-      DCHECK(model_ready_to_sync_);
+      DUMP_WILL_BE_CHECK(model_ready_to_sync_);
       break;
     }
 
     case CLEAR_METADATA: {
       ClearAllTrackedMetadataAndResetState();
-      DCHECK(model_ready_to_sync_);
+      DUMP_WILL_BE_CHECK(model_ready_to_sync_);
       break;
     }
   }
 
-  DCHECK(!IsConnected());
+  DUMP_WILL_BE_CHECK(!IsConnected());
 }
 
 void ClientTagBasedModelTypeProcessor::ClearAllTrackedMetadataAndResetState() {
@@ -276,7 +277,7 @@ void ClientTagBasedModelTypeProcessor::ClearAllMetadataAndResetStateImpl(
   if (change_list) {
     bridge_->ApplyDisableSyncChanges(std::move(change_list));
   } else {
-    // TODO(crbug.com/1428905): This mimics the behavior previous to
+    // TODO(crbug.com/40900767): This mimics the behavior previous to
     // https://crrev.com/c/4372288 but is quite questionable: it means sync was
     // disabled before the initial download completed, which has nothing to do
     // with sync-paused.
@@ -373,7 +374,7 @@ ClientTagBasedModelTypeProcessor::GetControllerDelegate() {
 void ClientTagBasedModelTypeProcessor::ConnectSync(
     std::unique_ptr<CommitQueue> worker) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(!model_error_);
+  DUMP_WILL_BE_CHECK(!model_error_);
 
   DVLOG(1) << "Successfully connected " << ModelTypeToDebugString(type_);
 
@@ -384,8 +385,8 @@ void ClientTagBasedModelTypeProcessor::ConnectSync(
 
 void ClientTagBasedModelTypeProcessor::DisconnectSync() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(IsConnected());
-  DCHECK(!model_error_);
+  DUMP_WILL_BE_CHECK(IsConnected());
+  DUMP_WILL_BE_CHECK(!model_error_);
 
   DVLOG(1) << "Disconnecting sync for " << ModelTypeToDebugString(type_);
   weak_ptr_factory_for_worker_.InvalidateWeakPtrs();
@@ -401,12 +402,12 @@ void ClientTagBasedModelTypeProcessor::Put(
     std::unique_ptr<EntityData> data,
     MetadataChangeList* metadata_change_list) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(IsAllowingChanges());
-  DCHECK(data);
-  DCHECK(!data->is_deleted());
-  DCHECK(!data->specifics.has_encrypted());
-  DCHECK(!storage_key.empty());
-  DCHECK_EQ(type_, GetModelTypeFromSpecifics(data->specifics));
+  DUMP_WILL_BE_CHECK(IsAllowingChanges());
+  DUMP_WILL_BE_CHECK(data);
+  DUMP_WILL_BE_CHECK(!data->is_deleted());
+  DUMP_WILL_BE_CHECK(!data->specifics.has_encrypted());
+  DUMP_WILL_BE_CHECK(!storage_key.empty());
+  DUMP_WILL_BE_CHECK_EQ(type_, GetModelTypeFromSpecifics(data->specifics));
 
   if (!entity_tracker_) {
     // Ignore changes before the initial sync is done.
@@ -416,7 +417,7 @@ void ClientTagBasedModelTypeProcessor::Put(
   // Local changes based on remote update is discouraged because it may lead to
   // ping-pong issues between clients and result in uncontrolled traffic to the
   // server.
-  // TODO(crbug.com/1473599): this could be a CHECK instead, add a metric to
+  // TODO(crbug.com/40927082): this could be a CHECK instead, add a metric to
   // find out first which data types have such behavior.
   if (processing_incremental_updates_) {
     base::UmaHistogramEnumeration("Sync.LocalChangeDuringRemoteUpdate",
@@ -434,14 +435,14 @@ void ClientTagBasedModelTypeProcessor::Put(
     // The bridge is creating a new entity. The bridge may or may not populate
     // |data->client_tag_hash|, so let's ask for the client tag if needed.
     if (data->client_tag_hash.value().empty()) {
-      DCHECK(bridge_->SupportsGetClientTag());
+      DUMP_WILL_BE_CHECK(bridge_->SupportsGetClientTag());
       data->client_tag_hash =
           ClientTagHash::FromUnhashed(type_, bridge_->GetClientTag(*data));
     } else if (bridge_->SupportsGetClientTag()) {
       // If the Put() call already included the client tag, let's verify that
       // it's consistent with the bridge's regular GetClientTag() function (if
       // supported by the bridge).
-      DCHECK_EQ(
+      DUMP_WILL_BE_CHECK_EQ(
           data->client_tag_hash,
           ClientTagHash::FromUnhashed(type_, bridge_->GetClientTag(*data)));
     }
@@ -452,7 +453,7 @@ void ClientTagBasedModelTypeProcessor::Put(
     // entity.
     entity = entity_tracker_->GetEntityForTagHash(data->client_tag_hash);
     if (entity != nullptr) {
-      DCHECK(storage_key != entity->storage_key());
+      DUMP_WILL_BE_CHECK(storage_key != entity->storage_key());
       if (!entity->metadata().is_deleted()) {
         // The bridge overrides an entity that is not deleted. This is
         // unexpected but the processor tolerates it. It is very likely a
@@ -482,7 +483,7 @@ void ClientTagBasedModelTypeProcessor::Put(
     entity->RecordLocalUpdate(std::move(data), std::move(trimmed_specifics));
   }
 
-  DCHECK(entity->IsUnsynced());
+  DUMP_WILL_BE_CHECK(entity->IsUnsynced());
 
   metadata_change_list->UpdateMetadata(storage_key, entity->metadata());
 
@@ -491,9 +492,10 @@ void ClientTagBasedModelTypeProcessor::Put(
 
 void ClientTagBasedModelTypeProcessor::Delete(
     const std::string& storage_key,
+    const DeletionOrigin& origin,
     MetadataChangeList* metadata_change_list) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(IsAllowingChanges());
+  DUMP_WILL_BE_CHECK(IsAllowingChanges());
 
   if (!entity_tracker_) {
     // Ignore changes before the initial sync is done.
@@ -507,10 +509,11 @@ void ClientTagBasedModelTypeProcessor::Delete(
     return;
   }
 
-  if (entity->RecordLocalDeletion())
+  if (entity->RecordLocalDeletion(origin)) {
     metadata_change_list->UpdateMetadata(storage_key, entity->metadata());
-  else
+  } else {
     RemoveEntity(entity->storage_key(), metadata_change_list);
+  }
 
   NudgeForCommitIfNeeded();
 }
@@ -520,16 +523,16 @@ void ClientTagBasedModelTypeProcessor::UpdateStorageKey(
     const std::string& storage_key,
     MetadataChangeList* metadata_change_list) {
   const ClientTagHash& client_tag_hash = entity_data.client_tag_hash;
-  DCHECK(!client_tag_hash.value().empty());
-  DCHECK(!storage_key.empty());
-  DCHECK(!bridge_->SupportsGetStorageKey());
-  DCHECK(entity_tracker_);
+  DUMP_WILL_BE_CHECK(!client_tag_hash.value().empty());
+  DUMP_WILL_BE_CHECK(!storage_key.empty());
+  DUMP_WILL_BE_CHECK(!bridge_->SupportsGetStorageKey());
+  DUMP_WILL_BE_CHECK(entity_tracker_);
 
   const ProcessorEntity* entity =
       entity_tracker_->GetEntityForTagHash(client_tag_hash);
-  DCHECK(entity);
+  DUMP_WILL_BE_CHECK(entity);
 
-  DCHECK(entity->storage_key().empty());
+  DUMP_WILL_BE_CHECK(entity->storage_key().empty());
   entity_tracker_->UpdateOrOverrideStorageKey(client_tag_hash, storage_key);
 
   metadata_change_list->UpdateMetadata(storage_key, entity->metadata());
@@ -546,7 +549,7 @@ void ClientTagBasedModelTypeProcessor::UntrackEntityForStorageKey(
 
 void ClientTagBasedModelTypeProcessor::UntrackEntityForClientTagHash(
     const ClientTagHash& client_tag_hash) {
-  DCHECK(!client_tag_hash.value().empty());
+  DUMP_WILL_BE_CHECK(!client_tag_hash.value().empty());
   if (!entity_tracker_) {
     // Ignore changes before the initial sync is done.
     return;
@@ -627,9 +630,14 @@ void ClientTagBasedModelTypeProcessor::GetLocalChanges(
     size_t max_entries,
     GetLocalChangesCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK_GT(max_entries, 0U);
-  DCHECK(IsConnected());
-  DCHECK(!model_error_);
+  DUMP_WILL_BE_CHECK_GT(max_entries, 0U);
+  DUMP_WILL_BE_CHECK(IsConnected());
+  DUMP_WILL_BE_CHECK(!model_error_);
+
+  // Use base::debug::Alias() to ensure that crash dumps in reports include
+  // ModelType.
+  const ModelType model_type = type_;
+  base::debug::Alias(&model_type);
 
   // In some cases local changes may be requested before entity tracker is
   // loaded. Just invoke the callback with empty list.
@@ -651,7 +659,7 @@ void ClientTagBasedModelTypeProcessor::GetLocalChanges(
     // loaded successfully.
     std::unordered_set<std::string> storage_keys_to_load(
         entities_requiring_data.begin(), entities_requiring_data.end());
-    bridge_->GetData(
+    bridge_->GetDataForCommit(
         std::move(entities_requiring_data),
         base::BindOnce(&ClientTagBasedModelTypeProcessor::OnPendingDataLoaded,
                        weak_ptr_factory_for_worker_.GetWeakPtr(), max_entries,
@@ -668,12 +676,17 @@ void ClientTagBasedModelTypeProcessor::OnCommitCompleted(
     const CommitResponseDataList& committed_response_list,
     const FailedCommitResponseDataList& error_response_list) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(IsConnected());
-  DCHECK(!model_error_);
+  DUMP_WILL_BE_CHECK(IsConnected());
+  DUMP_WILL_BE_CHECK(!model_error_);
 
-  DCHECK(entity_tracker_)
+  DUMP_WILL_BE_CHECK(entity_tracker_)
       << "Received commit response when entity tracker is null. Type: "
       << ModelTypeToDebugString(type_);
+
+  // Use base::debug::Alias() to ensure that crash dumps in reports include
+  // ModelType.
+  const ModelType model_type = type_;
+  base::debug::Alias(&model_type);
 
   // |error_response_list| is ignored, because all errors are treated as
   // transientand the processor with eventually retry.
@@ -724,7 +737,7 @@ void ClientTagBasedModelTypeProcessor::OnCommitCompleted(
   // Entities not mentioned in response_list weren't committed. We should reset
   // their commit_requested_sequence_number so they are committed again on next
   // sync cycle.
-  // TODO(crbug.com/740757): Iterating over all entities is inefficient. It is
+  // TODO(crbug.com/41329567): Iterating over all entities is inefficient. It is
   // better to remember in GetLocalChanges which entities are being committed
   // and adjust only them. Alternatively we can make worker return commit status
   // for all entities, not just successful ones and use that to lookup entities
@@ -753,8 +766,13 @@ bool HasClearAllDirective(
 void ClientTagBasedModelTypeProcessor::OnCommitFailed(
     SyncCommitError commit_error) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(IsConnected());
-  DCHECK(!model_error_);
+  DUMP_WILL_BE_CHECK(IsConnected());
+  DUMP_WILL_BE_CHECK(!model_error_);
+
+  // Use base::debug::Alias() to ensure that crash dumps in reports include
+  // ModelType.
+  const ModelType model_type = type_;
+  base::debug::Alias(&model_type);
 
   switch (bridge_->OnCommitAttemptFailed(commit_error)) {
     case ModelTypeSyncBridge::CommitAttemptFailedBehavior::
@@ -776,14 +794,15 @@ void ClientTagBasedModelTypeProcessor::OnUpdateReceived(
     UpdateResponseDataList updates,
     std::optional<sync_pb::GarbageCollectionDirective> gc_directive) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(model_ready_to_sync_);
-  DCHECK(IsConnected());
-  DCHECK(!model_error_);
-  DCHECK(!model_type_state.progress_marker().has_gc_directive());
+  DUMP_WILL_BE_CHECK(model_ready_to_sync_);
+  DUMP_WILL_BE_CHECK(IsConnected());
+  DUMP_WILL_BE_CHECK(!model_error_);
+  DUMP_WILL_BE_CHECK(!model_type_state.progress_marker().has_gc_directive());
 
-  const bool is_initial_sync = !IsTrackingMetadata();
-  LogUpdatesReceivedByProcessorHistogram(type_, is_initial_sync,
-                                         updates.size());
+  // Use base::debug::Alias() to ensure that crash dumps in reports include
+  // ModelType.
+  const ModelType model_type = type_;
+  base::debug::Alias(&model_type);
 
   if (!ValidateUpdate(model_type_state, updates, gc_directive)) {
     return;
@@ -798,13 +817,15 @@ void ClientTagBasedModelTypeProcessor::OnUpdateReceived(
   // always clear all data. We do this to allow the server to replace all data
   // on the client, without having to know exactly which entities the client
   // has.
+  const bool is_initial_sync = !IsTrackingMetadata();
   const bool treating_as_full_update =
       is_initial_sync || HasClearAllDirective(gc_directive);
   if (treating_as_full_update) {
     error = OnFullUpdateReceived(model_type_state, std::move(updates),
                                  std::move(gc_directive));
   } else {
-    error = OnIncrementalUpdateReceived(model_type_state, std::move(updates));
+    error = OnIncrementalUpdateReceived(model_type_state, std::move(updates),
+                                        std::move(gc_directive));
   }
 
   if (error) {
@@ -819,10 +840,10 @@ void ClientTagBasedModelTypeProcessor::OnUpdateReceived(
                                   activation_request_.configuration_start_time);
   }
 
-  DCHECK(entity_tracker_);
+  DUMP_WILL_BE_CHECK(entity_tracker_);
   // If there were entities with empty storage keys, they should have been
   // updated by bridge as part of ApplyIncrementalSyncChanges.
-  DCHECK(entity_tracker_->AllStorageKeysPopulated());
+  DUMP_WILL_BE_CHECK(entity_tracker_->AllStorageKeysPopulated());
   // There may be new reasons to commit by the time this function is done.
   NudgeForCommitIfNeeded();
 }
@@ -832,6 +853,12 @@ void ClientTagBasedModelTypeProcessor::StorePendingInvalidations(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CHECK(IsConnected());
   CHECK(bridge_);
+
+  // Use base::debug::Alias() to ensure that crash dumps in reports include
+  // ModelType.
+  const ModelType model_type = type_;
+  base::debug::Alias(&model_type);
+
   if (model_error_ || !entity_tracker_) {
     // It's possible to have incoming invalidations while the data type is not
     // fully initialized (e.g. before the initial sync).
@@ -895,17 +922,17 @@ ClientTagBasedModelTypeProcessor::OnFullUpdateReceived(
     std::optional<sync_pb::GarbageCollectionDirective> gc_directive) {
   std::unique_ptr<MetadataChangeList> metadata_changes =
       bridge_->CreateMetadataChangeList();
-  DCHECK(model_ready_to_sync_);
+  DUMP_WILL_BE_CHECK(model_ready_to_sync_);
 
   // Check that the worker correctly marked initial sync as (at least) partially
   // done for this update.
-  DCHECK(IsInitialSyncDone(model_type_state.initial_sync_state()) ||
-         (ApplyUpdatesImmediatelyTypes().Has(type_) &&
-          IsInitialSyncAtLeastPartiallyDone(
-              model_type_state.initial_sync_state())));
+  DUMP_WILL_BE_CHECK(IsInitialSyncDone(model_type_state.initial_sync_state()) ||
+                     (ApplyUpdatesImmediatelyTypes().Has(type_) &&
+                      IsInitialSyncAtLeastPartiallyDone(
+                          model_type_state.initial_sync_state())));
 
   // Ensure that this is the initial sync, and it was not already marked done.
-  DCHECK(HasClearAllDirective(gc_directive) || !entity_tracker_);
+  DUMP_WILL_BE_CHECK(HasClearAllDirective(gc_directive) || !entity_tracker_);
 
   if (entity_tracker_ && HasClearAllDirective(gc_directive)) {
     ExpireAllEntries(metadata_changes.get());
@@ -917,12 +944,12 @@ ClientTagBasedModelTypeProcessor::OnFullUpdateReceived(
         model_type_state, EntityMetadataMap());
   }
 
-  // TODO(crbug.com/1041888): the comment below may be wrong in case where a
+  // TODO(crbug.com/40668179): the comment below may be wrong in case where a
   // datatype supports non-incremental updates and local updates are
   // acceptable.
   // Given that we either just removed all existing sync entities (in the full
   // update case).
-  DCHECK(!entity_tracker_->size());
+  DUMP_WILL_BE_CHECK(!entity_tracker_->size());
 
   metadata_changes->UpdateModelTypeState(entity_tracker_->model_type_state());
 
@@ -964,9 +991,9 @@ ClientTagBasedModelTypeProcessor::OnFullUpdateReceived(
     std::string storage_key;
     if (bridge_->SupportsGetStorageKey()) {
       storage_key = bridge_->GetStorageKey(update.entity);
-      // TODO(crbug.com/1057947): Make this a DCHECK as storage keys should not
-      // be empty after IsEntityDataValid() has been implemented by all
-      // bridges.
+      // TODO(crbug.com/40677711): Make this a DUMP_WILL_BE_CHECK as storage
+      // keys should not be empty after IsEntityDataValid() has been implemented
+      // by all bridges.
       if (storage_key.empty()) {
         SyncRecordModelTypeUpdateDropReason(
             UpdateDropReason::kCannotGenerateStorageKey, type_);
@@ -976,7 +1003,7 @@ ClientTagBasedModelTypeProcessor::OnFullUpdateReceived(
       }
     }
 #if DCHECK_IS_ON()
-    // TODO(crbug.com/872360): The CreateEntity() call below assumes that no
+    // TODO(crbug.com/41406929): The CreateEntity() call below assumes that no
     // entity with this client_tag_hash exists already, but in some cases it
     // does.
     if (entity_tracker_->GetEntityForTagHash(client_tag_hash)) {
@@ -1015,20 +1042,21 @@ ClientTagBasedModelTypeProcessor::OnFullUpdateReceived(
 std::optional<ModelError>
 ClientTagBasedModelTypeProcessor::OnIncrementalUpdateReceived(
     const sync_pb::ModelTypeState& model_type_state,
-    UpdateResponseDataList updates) {
-  DCHECK(model_ready_to_sync_);
-  DCHECK(IsInitialSyncDone(model_type_state.initial_sync_state()) ||
-         (ApplyUpdatesImmediatelyTypes().Has(type_) &&
-          IsInitialSyncAtLeastPartiallyDone(
-              model_type_state.initial_sync_state())));
-  DCHECK(entity_tracker_);
+    UpdateResponseDataList updates,
+    std::optional<sync_pb::GarbageCollectionDirective> gc_directive) {
+  DUMP_WILL_BE_CHECK(model_ready_to_sync_);
+  DUMP_WILL_BE_CHECK(IsInitialSyncDone(model_type_state.initial_sync_state()) ||
+                     (ApplyUpdatesImmediatelyTypes().Has(type_) &&
+                      IsInitialSyncAtLeastPartiallyDone(
+                          model_type_state.initial_sync_state())));
+  DUMP_WILL_BE_CHECK(entity_tracker_);
 
   ClientTagBasedRemoteUpdateHandler updates_handler(type_, bridge_,
                                                     entity_tracker_.get());
   base::AutoReset<bool> auto_reset_processing_updates(
       &processing_incremental_updates_, true);
-  return updates_handler.ProcessIncrementalUpdate(model_type_state,
-                                                  std::move(updates));
+  return updates_handler.ProcessIncrementalUpdate(
+      model_type_state, std::move(updates), std::move(gc_directive));
 }
 
 void ClientTagBasedModelTypeProcessor::OnPendingDataLoaded(
@@ -1049,7 +1077,7 @@ void ClientTagBasedModelTypeProcessor::OnPendingDataLoaded(
 void ClientTagBasedModelTypeProcessor::ConsumeDataBatch(
     std::unordered_set<std::string> storage_keys_to_load,
     std::unique_ptr<DataBatch> data_batch) {
-  DCHECK(entity_tracker_);
+  DUMP_WILL_BE_CHECK(entity_tracker_);
   while (data_batch->HasNext()) {
     auto [storage_key, data] = data_batch->Next();
 
@@ -1088,8 +1116,8 @@ void ClientTagBasedModelTypeProcessor::ConsumeDataBatch(
     return;
   }
 
-  DCHECK(model_ready_to_sync_);
-  DCHECK(IsTrackingMetadata());
+  DUMP_WILL_BE_CHECK(model_ready_to_sync_);
+  DUMP_WILL_BE_CHECK(IsTrackingMetadata());
 
   std::unique_ptr<MetadataChangeList> metadata_changes =
       bridge_->CreateMetadataChangeList();
@@ -1106,8 +1134,8 @@ void ClientTagBasedModelTypeProcessor::ConsumeDataBatch(
 void ClientTagBasedModelTypeProcessor::CommitLocalChanges(
     size_t max_entries,
     GetLocalChangesCallback callback) {
-  DCHECK(!model_error_);
-  DCHECK(entity_tracker_);
+  DUMP_WILL_BE_CHECK(!model_error_);
+  DUMP_WILL_BE_CHECK(entity_tracker_);
   // Prepares entities commit request data for entities which are
   // out of sync with the sync thread.
   CommitRequestDataList commit_requests;
@@ -1155,8 +1183,8 @@ bool ClientTagBasedModelTypeProcessor::IsModelReadyToSyncForTest() const {
 
 void ClientTagBasedModelTypeProcessor::ExpireAllEntries(
     MetadataChangeList* metadata_changes) {
-  DCHECK(metadata_changes);
-  DCHECK(entity_tracker_);
+  DUMP_WILL_BE_CHECK(metadata_changes);
+  DUMP_WILL_BE_CHECK(entity_tracker_);
 
   std::vector<std::string> storage_key_to_be_deleted;
   for (const ProcessorEntity* entity :
@@ -1174,9 +1202,9 @@ void ClientTagBasedModelTypeProcessor::ExpireAllEntries(
 void ClientTagBasedModelTypeProcessor::RemoveEntity(
     const std::string& storage_key,
     MetadataChangeList* metadata_change_list) {
-  DCHECK(!storage_key.empty());
-  DCHECK(entity_tracker_);
-  DCHECK(entity_tracker_->GetEntityForStorageKey(storage_key));
+  DUMP_WILL_BE_CHECK(!storage_key.empty());
+  DUMP_WILL_BE_CHECK(entity_tracker_);
+  DUMP_WILL_BE_CHECK(entity_tracker_->GetEntityForStorageKey(storage_key));
   metadata_change_list->ClearMetadata(storage_key);
   entity_tracker_->RemoveEntityForStorageKey(storage_key);
 }
@@ -1335,7 +1363,7 @@ void ClientTagBasedModelTypeProcessor::
   // Check for a mismatch in authenticated account id. The id can change after
   // restart (and this does not mean the account has changed, this is checked
   // later here by cache_guid mismatch). Easy to fix in place.
-  // TODO(crbug.com/1423326): This doesn't fit the method name. It's also not
+  // TODO(crbug.com/40897441): This doesn't fit the method name. It's also not
   // clear if this codepath is even required
   if (model_type_state.authenticated_account_id() !=
       activation_request_.authenticated_account_id.ToString()) {
@@ -1361,7 +1389,7 @@ void ClientTagBasedModelTypeProcessor::
 
   ClearAllTrackedMetadataAndResetState();
   // Not having `entity_tracker_` results in doing the initial sync again.
-  DCHECK(!entity_tracker_);
+  DUMP_WILL_BE_CHECK(!entity_tracker_);
 }
 
 void ClientTagBasedModelTypeProcessor::GetTypeEntitiesCountForDebugging(
@@ -1385,8 +1413,8 @@ void ClientTagBasedModelTypeProcessor::RecordMemoryUsageAndCountsHistograms() {
 const sync_pb::EntitySpecifics&
 ClientTagBasedModelTypeProcessor::GetPossiblyTrimmedRemoteSpecifics(
     const std::string& storage_key) const {
-  DCHECK(entity_tracker_);
-  DCHECK(!storage_key.empty());
+  DUMP_WILL_BE_CHECK(entity_tracker_);
+  DUMP_WILL_BE_CHECK(!storage_key.empty());
 
   ProcessorEntity* entity =
       entity_tracker_->GetEntityForStorageKey(storage_key);
@@ -1423,7 +1451,7 @@ void ClientTagBasedModelTypeProcessor::ClearMetadataIfStopped() {
     // Proceed only if there is metadata to clear and no error has been reported
     // yet.
     LogClearMetadataWhileStoppedHistogram(type_, /*is_delayed_call=*/false);
-    DCHECK(!activation_request_.IsValid());
+    DUMP_WILL_BE_CHECK(!activation_request_.IsValid());
     // This will incur an I/O operation by asking the bridge to clear the
     // metadata in storage.
     ClearAllTrackedMetadataAndResetState();

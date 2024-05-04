@@ -36,12 +36,12 @@ NSString* GetAlternateDiscoverFeedServerURL();
 
 // Returns true if the prefs for the notice card views count and clicks count
 // should be reset to zero on feed start.
-// TODO(crbug.com/1189232): Remove after launch.
+// TODO(crbug.com/40173621): Remove after launch.
 bool ShouldResetNoticeCardOnFeedStart();
 
 // Returns true if the count of showing the First Follow modal should be reset
 // to zero.
-// TODO(crbug.com/1312124): Remove after launch.
+// TODO(crbug.com/40220465): Remove after launch.
 bool ShouldResetFirstFollowCount();
 
 // Returns true if the top of feed signin promo should be shown regardless of
@@ -58,17 +58,17 @@ bool ShouldIgnoreTileAblationConditions();
 
 // Should be called after the count has been reset so that the resetting flag
 // can be turned off.
-// TODO(crbug.com/1312124): Remove after launch.
+// TODO(crbug.com/40220465): Remove after launch.
 void DidResetFirstFollowCount();
 
 // Returns true if the First Follow modal should always be shown when the user
 // follows a channel.
-// TODO(crbug.com/1312124): Remove after launch.
+// TODO(crbug.com/40220465): Remove after launch.
 bool ShouldAlwaysShowFirstFollow();
 
 // Returns true if the Follow IPH should always be shown when the user
 // browsing a eligible website in non-incognito mode.
-// TODO(crbug.com/1340154): Remove after launch.
+// TODO(crbug.com/40230248): Remove after launch.
 bool ShouldAlwaysShowFollowIPH();
 
 // Whether memory debugging tools are enabled.
@@ -137,6 +137,10 @@ bool SimulatePostDeviceRestore();
 // recently or too many consecutive times. If this function is true, those
 // limits are suppressed for simpler testing.
 bool ShouldIgnoreHistorySyncDeclineLimits();
+
+// Whether the developer-mode Switch Profile UI will be be displayed, returns
+// the number of test profiles that should be created.
+std::optional<int> DisplaySwitchProfile();
 
 }  // namespace experimental_flags
 

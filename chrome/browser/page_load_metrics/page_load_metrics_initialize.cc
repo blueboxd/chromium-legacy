@@ -26,6 +26,7 @@
 #include "chrome/browser/page_load_metrics/observers/loading_predictor_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/local_network_requests_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/multi_tab_loading_page_load_metrics_observer.h"
+#include "chrome/browser/page_load_metrics/observers/new_tab_page_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/non_tab_webui_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/omnibox_suggestion_used_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/optimization_guide_page_load_metrics_observer.h"
@@ -117,7 +118,7 @@ PageLoadMetricsEmbedder::~PageLoadMetricsEmbedder() = default;
 
 void PageLoadMetricsEmbedder::RegisterEmbedderObservers(
     page_load_metrics::PageLoadTracker* tracker) {
-  // TODO(crbug.com/1299103): Integrate side panel metrics with UKM.
+  // TODO(crbug.com/40823327): Integrate side panel metrics with UKM.
   if (IsSidePanel(web_contents())) {
 #if defined(TOOLKIT_VIEWS)
     if (auto side_search_observer =
@@ -199,6 +200,7 @@ void PageLoadMetricsEmbedder::RegisterEmbedderObservers(
         std::make_unique<TabStripPageLoadMetricsObserver>(web_contents()));
     tracker->AddObserver(std::make_unique<PreviewPageLoadMetricsObserver>());
     tracker->AddObserver(std::make_unique<BookmarkBarMetricsObserver>());
+    tracker->AddObserver(std::make_unique<NewTabPagePageLoadMetricsObserver>());
     tracker->AddObserver(
         std::make_unique<ThirdPartyCookieDeprecationMetricsObserver>(
             web_contents()->GetBrowserContext()));

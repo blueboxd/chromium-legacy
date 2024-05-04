@@ -32,9 +32,9 @@ static void SigUSR1Handler(int signal) {}
 #endif
 
 #if BUILDFLAG(IS_WIN)
-#include "base/win/windows_version.h"
-
 #include <windows.h>
+
+#include "base/win/windows_version.h"
 #endif
 
 namespace content {
@@ -43,7 +43,7 @@ namespace {
 
 #if BUILDFLAG(IS_WIN)
 
-std::wstring ToNativeString(base::StringPiece string) {
+std::wstring ToNativeString(std::string_view string) {
   return base::ASCIIToWide(string);
 }
 

@@ -12,22 +12,22 @@ namespace blink {
 
 namespace {
 
-WGPUSamplerDescriptor AsDawnType(const GPUSamplerDescriptor* webgpu_desc,
-                                 std::string* label) {
+wgpu::SamplerDescriptor AsDawnType(const GPUSamplerDescriptor* webgpu_desc,
+                                   std::string* label) {
   DCHECK(webgpu_desc);
   DCHECK(label);
 
-  WGPUSamplerDescriptor dawn_desc = {};
-  dawn_desc.nextInChain = nullptr;
-  dawn_desc.addressModeU = AsDawnEnum(webgpu_desc->addressModeU());
-  dawn_desc.addressModeV = AsDawnEnum(webgpu_desc->addressModeV());
-  dawn_desc.addressModeW = AsDawnEnum(webgpu_desc->addressModeW());
-  dawn_desc.magFilter = AsDawnEnum(webgpu_desc->magFilter());
-  dawn_desc.minFilter = AsDawnEnum(webgpu_desc->minFilter());
-  dawn_desc.mipmapFilter = AsDawnEnum(webgpu_desc->mipmapFilter());
-  dawn_desc.lodMinClamp = webgpu_desc->lodMinClamp();
-  dawn_desc.lodMaxClamp = webgpu_desc->lodMaxClamp();
-  dawn_desc.maxAnisotropy = webgpu_desc->maxAnisotropy();
+  wgpu::SamplerDescriptor dawn_desc = {
+      .addressModeU = AsDawnEnum(webgpu_desc->addressModeU()),
+      .addressModeV = AsDawnEnum(webgpu_desc->addressModeV()),
+      .addressModeW = AsDawnEnum(webgpu_desc->addressModeW()),
+      .magFilter = AsDawnEnum(webgpu_desc->magFilter()),
+      .minFilter = AsDawnEnum(webgpu_desc->minFilter()),
+      .mipmapFilter = AsDawnEnum(webgpu_desc->mipmapFilter()),
+      .lodMinClamp = webgpu_desc->lodMinClamp(),
+      .lodMaxClamp = webgpu_desc->lodMaxClamp(),
+      .maxAnisotropy = webgpu_desc->maxAnisotropy(),
+  };
   if (webgpu_desc->hasCompare()) {
     dawn_desc.compare = AsDawnEnum(webgpu_desc->compare());
   }
@@ -47,17 +47,16 @@ GPUSampler* GPUSampler::Create(GPUDevice* device,
   DCHECK(device);
   DCHECK(webgpu_desc);
   std::string label;
-  WGPUSamplerDescriptor dawn_desc = AsDawnType(webgpu_desc, &label);
+  wgpu::SamplerDescriptor dawn_desc = AsDawnType(webgpu_desc, &label);
   GPUSampler* sampler = MakeGarbageCollected<GPUSampler>(
-      device,
-      device->GetProcs().deviceCreateSampler(device->GetHandle(), &dawn_desc),
+      device, device->GetHandle().CreateSampler(&dawn_desc),
       webgpu_desc->label());
   return sampler;
 }
 
 GPUSampler::GPUSampler(GPUDevice* device,
-                       WGPUSampler sampler,
+                       wgpu::Sampler sampler,
                        const String& label)
-    : DawnObject<WGPUSampler>(device, sampler, label) {}
+    : DawnObject<wgpu::Sampler>(device, std::move(sampler), label) {}
 
 }  // namespace blink

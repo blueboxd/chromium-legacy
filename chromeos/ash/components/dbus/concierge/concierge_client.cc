@@ -87,7 +87,8 @@ class ConciergeClientImpl : public ConciergeClient {
       const concierge::CreateDiskImageRequest& request,
       chromeos::DBusMethodCallback<concierge::CreateDiskImageResponse> callback)
       override {
-    CallMethod(concierge::kCreateDiskImageMethod, request, std::move(callback));
+    CallMethodWithFds(concierge::kCreateDiskImageMethod, request,
+                      std::vector<base::ScopedFD>(), std::move(callback));
   }
 
   void CreateDiskImageWithFd(
@@ -95,8 +96,11 @@ class ConciergeClientImpl : public ConciergeClient {
       const concierge::CreateDiskImageRequest& request,
       chromeos::DBusMethodCallback<concierge::CreateDiskImageResponse> callback)
       override {
-    CallMethodWithFd(concierge::kCreateDiskImageMethod, request, std::move(fd),
-                     std::move(callback));
+    std::vector<base::ScopedFD> fds;
+    fds.emplace_back(std::move(fd));
+
+    CallMethodWithFds(concierge::kCreateDiskImageMethod, request,
+                      std::move(fds), std::move(callback));
   }
 
   void DestroyDiskImage(
@@ -139,7 +143,7 @@ class ConciergeClientImpl : public ConciergeClient {
   void StartVm(const concierge::StartVmRequest& request,
                chromeos::DBusMethodCallback<concierge::StartVmResponse>
                    callback) override {
-    CallMethodWithFds(concierge::kStartVm2Method, request, {},
+    CallMethodWithFds(concierge::kStartVmMethod, request, {},
                       std::move(callback));
   }
 
@@ -150,7 +154,7 @@ class ConciergeClientImpl : public ConciergeClient {
           callback) override {
     std::vector<base::ScopedFD> fds;
     fds.emplace_back(std::move(fd));
-    CallMethodWithFds(concierge::kStartVm2Method, request, std::move(fds),
+    CallMethodWithFds(concierge::kStartVmMethod, request, std::move(fds),
                       std::move(callback));
   }
 
@@ -159,7 +163,7 @@ class ConciergeClientImpl : public ConciergeClient {
       const vm_tools::concierge::StartVmRequest& request,
       chromeos::DBusMethodCallback<vm_tools::concierge::StartVmResponse>
           callback) override {
-    CallMethodWithFds(concierge::kStartVm2Method, request, std::move(fds),
+    CallMethodWithFds(concierge::kStartVmMethod, request, std::move(fds),
                       std::move(callback));
   }
 
@@ -222,24 +226,8 @@ class ConciergeClientImpl : public ConciergeClient {
       const concierge::AttachUsbDeviceRequest& request,
       chromeos::DBusMethodCallback<concierge::AttachUsbDeviceResponse> callback)
       override {
-    dbus::MethodCall method_call(concierge::kVmConciergeInterface,
-                                 concierge::kAttachUsbDeviceMethod);
-    dbus::MessageWriter writer(&method_call);
-
-    if (!writer.AppendProtoAsArrayOfBytes(request)) {
-      LOG(ERROR) << "Failed to encode AttachUsbDeviceRequest protobuf";
-      base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
-          FROM_HERE, base::BindOnce(std::move(callback), std::nullopt));
-      return;
-    }
-
-    writer.AppendFileDescriptor(fd.get());
-
-    concierge_proxy_->CallMethod(
-        &method_call, kConciergeDBusTimeoutMs,
-        base::BindOnce(&ConciergeClientImpl::OnDBusProtoResponse<
-                           concierge::AttachUsbDeviceResponse>,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+    CallMethodWithFd(concierge::kAttachUsbDeviceMethod, request, std::move(fd),
+                     std::move(callback));
   }
 
   void DetachUsbDevice(
@@ -360,8 +348,7 @@ class ConciergeClientImpl : public ConciergeClient {
 
     if (!writer.AppendProtoAsArrayOfBytes(request)) {
       LOG(ERROR) << "Failed to encode protobuf for " << method_name;
-      base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
-          FROM_HERE, base::BindOnce(std::move(callback), std::nullopt));
+      std::move(callback).Run(std::nullopt);
       return;
     }
 
@@ -391,16 +378,11 @@ class ConciergeClientImpl : public ConciergeClient {
 
     if (!writer.AppendProtoAsArrayOfBytes(request)) {
       LOG(ERROR) << "Failed to encode protobuf for " << method_name;
-      base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
-          FROM_HERE, base::BindOnce(std::move(callback), std::nullopt));
+      std::move(callback).Run(std::nullopt);
       return;
     }
 
-    // TODO(b/324960184): Keep this check for compatibility until we update
-    // CreateDiskImage and ExportDiskImage
-    if (fd.is_valid()) {
-      writer.AppendFileDescriptor(fd.get());
-    }
+    writer.AppendFileDescriptor(fd.get());
 
     concierge_proxy_->CallMethod(
         &method_call, kConciergeDBusTimeoutMs,
@@ -412,8 +394,21 @@ class ConciergeClientImpl : public ConciergeClient {
   void CallMethod(const std::string& method_name,
                   const RequestProto& request,
                   chromeos::DBusMethodCallback<ResponseProto> callback) {
-    CallMethodWithFd(method_name, request, base::ScopedFD(),
-                     std::move(callback));
+    dbus::MethodCall method_call(concierge::kVmConciergeInterface, method_name);
+    dbus::MessageWriter writer(&method_call);
+
+    if (!writer.AppendProtoAsArrayOfBytes(request)) {
+      LOG(ERROR) << "Failed to encode protobuf for " << method_name;
+      // TODO(uekawa): Check if posttask is needed.
+      base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+          FROM_HERE, base::BindOnce(std::move(callback), std::nullopt));
+      return;
+    }
+
+    concierge_proxy_->CallMethod(
+        &method_call, kConciergeDBusTimeoutMs,
+        base::BindOnce(&ConciergeClientImpl::OnDBusProtoResponse<ResponseProto>,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
   template <typename ResponseProto>
@@ -554,10 +549,10 @@ class ConciergeClientImpl : public ConciergeClient {
 
   base::ObserverList<Observer> observer_list_{
       ConciergeClient::kObserverListPolicy};
-  base::ObserverList<VmObserver>::Unchecked vm_observer_list_{
-      ConciergeClient::kObserverListPolicy};
-  base::ObserverList<DiskImageObserver>::Unchecked disk_image_observer_list_{
-      ConciergeClient::kObserverListPolicy};
+  base::ObserverList<VmObserver>::UncheckedAndDanglingUntriaged
+      vm_observer_list_{ConciergeClient::kObserverListPolicy};
+  base::ObserverList<DiskImageObserver>::UncheckedAndDanglingUntriaged
+      disk_image_observer_list_{ConciergeClient::kObserverListPolicy};
 
   bool is_vm_started_signal_connected_ = false;
   bool is_vm_stopped_signal_connected_ = false;

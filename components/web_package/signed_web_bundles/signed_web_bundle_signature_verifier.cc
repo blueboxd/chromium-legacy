@@ -7,15 +7,18 @@
 #include <utility>
 #include <vector>
 
+#include "base/containers/extend.h"
 #include "base/containers/span.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
+#include "base/functional/overloaded.h"
 #include "base/numerics/checked_math.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/types/expected_macros.h"
+#include "components/web_package/signed_web_bundles/ecdsa_p256_utils.h"
 #include "components/web_package/signed_web_bundles/integrity_block_parser.h"
 #include "components/web_package/signed_web_bundles/signed_web_bundle_integrity_block.h"
 #include "components/web_package/signed_web_bundles/signed_web_bundle_signature_stack_entry.h"
@@ -30,15 +33,11 @@ namespace {
 // Creates a CBOR-encoded integrity block with an empty signature stack.
 std::vector<uint8_t> CreateIntegrityBlockCBOR() {
   std::vector<uint8_t> integrity_block;
-  integrity_block.insert(
-      integrity_block.end(),
-      std::begin(IntegrityBlockParser::kIntegrityBlockMagicBytes),
-      std::end(IntegrityBlockParser::kIntegrityBlockMagicBytes));
-  integrity_block.insert(
-      integrity_block.end(),
-      std::begin(IntegrityBlockParser::kIntegrityBlockVersionMagicBytes),
-      std::end(IntegrityBlockParser::kIntegrityBlockVersionMagicBytes));
-
+  base::Extend(integrity_block,
+               base::span(IntegrityBlockParser::kIntegrityBlockMagicBytes));
+  base::Extend(
+      integrity_block,
+      base::span(IntegrityBlockParser::kIntegrityBlockVersionMagicBytes));
   // Encode the length of the signature stack array, which is an empty array.
   integrity_block.push_back(static_cast<uint8_t>(0x80));
   return integrity_block;
@@ -48,7 +47,9 @@ std::vector<uint8_t> CreateIntegrityBlockCBOR() {
 
 SignedWebBundleSignatureVerifier::SignedWebBundleSignatureVerifier(
     uint64_t web_bundle_chunk_size)
-    : web_bundle_chunk_size_(web_bundle_chunk_size) {}
+    : web_bundle_chunk_size_(web_bundle_chunk_size) {
+  static_assert(kSHA512DigestLength == SHA512_DIGEST_LENGTH);
+}
 
 SignedWebBundleSignatureVerifier::~SignedWebBundleSignatureVerifier() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -76,9 +77,7 @@ void SignedWebBundleSignatureVerifier::VerifySignatures(
 }
 
 // static
-base::expected<
-    std::array<uint8_t, SignedWebBundleSignatureVerifier::kSHA512DigestLength>,
-    std::string>
+base::expected<SignedWebBundleSignatureVerifier::SHA512Digest, std::string>
 SignedWebBundleSignatureVerifier::CalculateHashOfUnsignedWebBundle(
     base::File file,
     int64_t web_bundle_chunk_size,
@@ -91,43 +90,41 @@ SignedWebBundleSignatureVerifier::CalculateHashOfUnsignedWebBundle(
     return base::unexpected(base::File::ErrorToString(file.GetLastFileError()));
   }
 
-  auto secure_hash = crypto::SecureHash::Create(crypto::SecureHash::SHA512);
+  auto secure_hash =
+      crypto::SecureHash::Create(crypto::SecureHash::Algorithm::SHA512);
 
   // Calculate the hash of the Signed Web Bundle excluding its integrity block.
   // The file might be too big to read it into memory all at once, which is why
   // it is read in chunks of size `web_bundle_chunk_size`.
   for (int64_t offset = integrity_block_size; offset < file_length;) {
-    std::vector<char> data(
+    std::vector<uint8_t> data(
         // The size of the last chunk (`file_length - offset`) might be smaller
         // than `web_bundle_chunk_size`. Make sure to only reserve as much
         // memory as is really needed.
         std::min(web_bundle_chunk_size, file_length - offset));
-    int bytes_read = file.Read(offset, data.data(), data.size());
-    if (bytes_read < 0) {
+    std::optional<size_t> bytes_read = file.Read(offset, data);
+    if (!bytes_read) {
       return base::unexpected(
           base::File::ErrorToString(file.GetLastFileError()));
     }
-    data.resize(bytes_read);
+    data.resize(*bytes_read);
     secure_hash->Update(data.data(), data.size());
 
-    if (!base::CheckAdd(offset, bytes_read).AssignIfValid(&offset)) {
+    if (!base::CheckAdd(offset, *bytes_read).AssignIfValid(&offset)) {
       return base::unexpected("The Signed Web Bundle is too large.");
     }
   }
 
-  std::array<uint8_t, kSHA512DigestLength> unsigned_bundle_hash;
-  DCHECK_EQ(static_cast<size_t>(kSHA512DigestLength),
-            secure_hash->GetHashLength());
-  static_assert(kSHA512DigestLength == SHA512_DIGEST_LENGTH);
-  secure_hash->Finish(unsigned_bundle_hash.data(), unsigned_bundle_hash.size());
-  return unsigned_bundle_hash;
+  CHECK_EQ(kSHA512DigestLength, secure_hash->GetHashLength());
+  SHA512Digest digest;
+  secure_hash->Finish(digest.data(), digest.size());
+  return digest;
 }
 
 void SignedWebBundleSignatureVerifier::OnHashOfUnsignedWebBundleCalculated(
     SignedWebBundleIntegrityBlock integrity_block,
     SignatureVerificationCallback callback,
-    base::expected<std::array<uint8_t, kSHA512DigestLength>, std::string>
-        unsigned_web_bundle_hash) {
+    base::expected<SHA512Digest, std::string> unsigned_web_bundle_hash) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   RETURN_IF_ERROR(unsigned_web_bundle_hash, [&](std::string error) {
@@ -156,20 +153,26 @@ void SignedWebBundleSignatureVerifier::OnHashOfUnsignedWebBundleCalculated(
   // "Rule Of 2". Any CBOR parsing must occur in `WebBundleParser`.
   //
   // Similarly, magic bytes and version of the integrity block are read deep
-  // within the low-level `IntegrityBlockParser`. The code that
-  // checks that the signature stack entry attributes only contain the
-  // `ed25519PublicKey` attribute also lives in that class.
+  // within the low-level `IntegrityBlockParser`.
   //
   // [1]
-  // https://github.com/WICG/webpackage/blob/3f95ec365b87ed19d2cb5186e473ccc4d011e2af/explainers/integrity-signature.md
+  // https://github.com/WICG/webpackage/blob/main/explainers/integrity-signature.md
   std::vector<uint8_t> payload_to_verify = CreateSignaturePayload({
       .unsigned_web_bundle_hash = *unsigned_web_bundle_hash,
       .integrity_block_cbor = CreateIntegrityBlockCBOR(),
       .attributes_cbor = signature_stack_entry.attributes_cbor(),
   });
 
-  if (!signature_stack_entry.signature().Verify(
-          payload_to_verify, signature_stack_entry.public_key())) {
+  bool valid_signature = absl::visit(
+      base::Overloaded{
+          [&payload_to_verify](const auto& signature_info) {
+            return signature_info.signature().Verify(
+                payload_to_verify, signature_info.public_key());
+          },
+          [](const SignedWebBundleSignatureInfoUnknown&) { return false; }},
+      signature_stack_entry.signature_info());
+
+  if (!valid_signature) {
     std::move(callback).Run(
         Error::ForInvalidSignature("The signature is invalid."));
     return;

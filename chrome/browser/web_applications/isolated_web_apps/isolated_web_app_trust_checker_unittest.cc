@@ -32,6 +32,12 @@
 #include "chrome/browser/web_applications/isolated_web_apps/policy/isolated_web_app_policy_constants.h"
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/constants/ash_features.h"
+#include "chrome/common/chromeos/extensions/chromeos_system_extension_info.h"  // nogncheck
+#include "chromeos/ash/components/browser_context_helper/browser_context_types.h"
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
 namespace web_app {
 
 namespace {
@@ -46,26 +52,12 @@ constexpr std::array<uint8_t, 32> kPublicKeyBytes2 = {
     0xb6, 0xc2, 0xd9, 0xf2, 0x02, 0x03, 0x42, 0x18, 0x10, 0x12, 0x26,
     0x62, 0x88, 0xf6, 0xa3, 0xa5, 0x47, 0x14, 0x69, 0x00, 0x73};
 
-web_package::SignedWebBundleIntegrityBlock MakeIntegrityBlock(
-    const std::vector<web_package::Ed25519PublicKey>& public_keys) {
-  auto raw_integrity_block = web_package::mojom::BundleIntegrityBlock::New();
-  raw_integrity_block->size = 123;
-
-  for (const web_package::Ed25519PublicKey& public_key : public_keys) {
-    auto raw_signature_stack_entry =
-        web_package::mojom::BundleIntegrityBlockSignatureStackEntry::New();
-    raw_signature_stack_entry->public_key = public_key;
-
-    raw_integrity_block->signature_stack.push_back(
-        std::move(raw_signature_stack_entry));
-  }
-
-  auto integrity_block = web_package::SignedWebBundleIntegrityBlock::Create(
-      std::move(raw_integrity_block));
-  CHECK(integrity_block.has_value()) << integrity_block.error();
-
-  return *integrity_block;
-}
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+constexpr std::array<uint8_t, 32> kShimless3pDiagnosticsDevPublicKeyBytes = {
+    0x7c, 0xf4, 0x9c, 0x48, 0x1f, 0xc5, 0x37, 0xaf, 0x33, 0x42, 0x0d,
+    0x3a, 0xc1, 0x13, 0x91, 0x88, 0x13, 0x53, 0x50, 0x06, 0x8b, 0x9b,
+    0x19, 0x42, 0xcd, 0xe8, 0xce, 0x10, 0x45, 0x12, 0xf1, 0x00};
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 }  // namespace
 
@@ -117,50 +109,28 @@ class IsolatedWebAppTrustCheckerTest : public WebAppTest {
   std::unique_ptr<IsolatedWebAppTrustChecker> isolated_web_app_trust_checker_;
 };
 
-TEST_F(IsolatedWebAppTrustCheckerTest, TwoPublicKeys) {
-  IsolatedWebAppTrustChecker::Result result = trust_checker().IsTrusted(
-      kWebBundleId1, MakeIntegrityBlock({kPublicKey1, kPublicKey2}),
-      /*is_dev_mode_bundle=*/false);
-  EXPECT_EQ(result.status, IsolatedWebAppTrustChecker::Result::Status::
-                               kErrorInvalidSignatureStackLength);
-}
-
 TEST_F(IsolatedWebAppTrustCheckerTest, DevWebBundleId) {
   IsolatedWebAppTrustChecker::Result result = trust_checker().IsTrusted(
-      web_package::SignedWebBundleId::CreateRandomForDevelopment(),
-      MakeIntegrityBlock({kPublicKey1}),
+      web_package::SignedWebBundleId::CreateRandomForProxyMode(),
       /*is_dev_mode_bundle=*/false);
   EXPECT_EQ(result.status, IsolatedWebAppTrustChecker::Result::Status::
                                kErrorUnsupportedWebBundleIdType);
 }
 
-TEST_F(IsolatedWebAppTrustCheckerTest, WebBundleIdAndPublicKeyDiffer) {
-  IsolatedWebAppTrustChecker::Result result = trust_checker().IsTrusted(
-      kWebBundleId1, MakeIntegrityBlock({kPublicKey2}),
-      /*is_dev_mode_bundle=*/false);
-  EXPECT_EQ(result.status, IsolatedWebAppTrustChecker::Result::Status::
-                               kErrorWebBundleIdNotDerivedFromFirstPublicKey);
-  EXPECT_EQ(result.message,
-            base::StrCat({"The Web Bundle ID (", kWebBundleId2.id(),
-                          ") derived from the public key does not match the "
-                          "expected Web Bundle ID (",
-                          kWebBundleId1.id(), ")."}));
-}
-
 TEST_F(IsolatedWebAppTrustCheckerTest, UntrustedByDefault) {
   {
-    IsolatedWebAppTrustChecker::Result result = trust_checker().IsTrusted(
-        kWebBundleId1, MakeIntegrityBlock({kPublicKey1}),
-        /*is_dev_mode_bundle=*/false);
+    IsolatedWebAppTrustChecker::Result result =
+        trust_checker().IsTrusted(kWebBundleId1,
+                                  /*is_dev_mode_bundle=*/false);
     EXPECT_EQ(
         result.status,
         IsolatedWebAppTrustChecker::Result::Status::kErrorPublicKeysNotTrusted);
   }
 
   {
-    IsolatedWebAppTrustChecker::Result result = trust_checker().IsTrusted(
-        kWebBundleId2, MakeIntegrityBlock({kPublicKey2}),
-        /*is_dev_mode_bundle=*/false);
+    IsolatedWebAppTrustChecker::Result result =
+        trust_checker().IsTrusted(kWebBundleId2,
+                                  /*is_dev_mode_bundle=*/false);
     EXPECT_EQ(
         result.status,
         IsolatedWebAppTrustChecker::Result::Status::kErrorPublicKeysNotTrusted);
@@ -189,17 +159,17 @@ TEST_F(IsolatedWebAppTrustCheckerTest, TrustedViaPolicy) {
                          std::move(force_install_list));
 
   {
-    IsolatedWebAppTrustChecker::Result result = trust_checker().IsTrusted(
-        kWebBundleId1, MakeIntegrityBlock({kPublicKey1}),
-        /*is_dev_mode_bundle=*/false);
+    IsolatedWebAppTrustChecker::Result result =
+        trust_checker().IsTrusted(kWebBundleId1,
+                                  /*is_dev_mode_bundle=*/false);
     EXPECT_EQ(result.status,
               IsolatedWebAppTrustChecker::Result::Status::kTrusted);
   }
 
   {
-    IsolatedWebAppTrustChecker::Result result = trust_checker().IsTrusted(
-        kWebBundleId2, MakeIntegrityBlock({kPublicKey2}),
-        /*is_dev_mode_bundle=*/false);
+    IsolatedWebAppTrustChecker::Result result =
+        trust_checker().IsTrusted(kWebBundleId2,
+                                  /*is_dev_mode_bundle=*/false);
     EXPECT_EQ(
         result.status,
         IsolatedWebAppTrustChecker::Result::Status::kErrorPublicKeysNotTrusted);
@@ -213,9 +183,9 @@ TEST_F(IsolatedWebAppTrustCheckerTest,
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(features::kIsolatedWebAppDevMode);
 
-  IsolatedWebAppTrustChecker::Result result = trust_checker().IsTrusted(
-      kWebBundleId1, MakeIntegrityBlock({kPublicKey1}),
-      /*is_dev_mode_bundle=*/false);
+  IsolatedWebAppTrustChecker::Result result =
+      trust_checker().IsTrusted(kWebBundleId1,
+                                /*is_dev_mode_bundle=*/false);
   EXPECT_EQ(
       result.status,
       IsolatedWebAppTrustChecker::Result::Status::kErrorPublicKeysNotTrusted);
@@ -223,9 +193,9 @@ TEST_F(IsolatedWebAppTrustCheckerTest,
 
 TEST_F(IsolatedWebAppTrustCheckerTest, TrustedViaDevMode) {
   {
-    IsolatedWebAppTrustChecker::Result result = trust_checker().IsTrusted(
-        kWebBundleId1, MakeIntegrityBlock({kPublicKey1}),
-        /*is_dev_mode_bundle=*/true);
+    IsolatedWebAppTrustChecker::Result result =
+        trust_checker().IsTrusted(kWebBundleId1,
+                                  /*is_dev_mode_bundle=*/true);
     EXPECT_EQ(
         result.status,
         IsolatedWebAppTrustChecker::Result::Status::kErrorPublicKeysNotTrusted);
@@ -234,9 +204,9 @@ TEST_F(IsolatedWebAppTrustCheckerTest, TrustedViaDevMode) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(features::kIsolatedWebAppDevMode);
   {
-    IsolatedWebAppTrustChecker::Result result = trust_checker().IsTrusted(
-        kWebBundleId1, MakeIntegrityBlock({kPublicKey1}),
-        /*is_dev_mode_bundle=*/true);
+    IsolatedWebAppTrustChecker::Result result =
+        trust_checker().IsTrusted(kWebBundleId1,
+                                  /*is_dev_mode_bundle=*/true);
     EXPECT_EQ(result.status,
               IsolatedWebAppTrustChecker::Result::Status::kTrusted);
   }
@@ -245,9 +215,9 @@ TEST_F(IsolatedWebAppTrustCheckerTest, TrustedViaDevMode) {
       base::to_underlying(
           policy::DeveloperToolsPolicyHandler::Availability::kDisallowed));
   {
-    IsolatedWebAppTrustChecker::Result result = trust_checker().IsTrusted(
-        kWebBundleId1, MakeIntegrityBlock({kPublicKey1}),
-        /*is_dev_mode_bundle=*/true);
+    IsolatedWebAppTrustChecker::Result result =
+        trust_checker().IsTrusted(kWebBundleId1,
+                                  /*is_dev_mode_bundle=*/true);
     EXPECT_EQ(
         result.status,
         IsolatedWebAppTrustChecker::Result::Status::kErrorPublicKeysNotTrusted);
@@ -258,21 +228,89 @@ TEST_F(IsolatedWebAppTrustCheckerTest, TrustedWebBundleIDsForTesting) {
   SetTrustedWebBundleIdsForTesting({kWebBundleId1});
 
   {
-    IsolatedWebAppTrustChecker::Result result = trust_checker().IsTrusted(
-        kWebBundleId1, MakeIntegrityBlock({kPublicKey1}),
-        /*is_dev_mode_bundle=*/false);
+    IsolatedWebAppTrustChecker::Result result =
+        trust_checker().IsTrusted(kWebBundleId1,
+                                  /*is_dev_mode_bundle=*/false);
     EXPECT_EQ(result.status,
               IsolatedWebAppTrustChecker::Result::Status::kTrusted);
   }
 
   {
-    IsolatedWebAppTrustChecker::Result result = trust_checker().IsTrusted(
-        kWebBundleId2, MakeIntegrityBlock({kPublicKey2}),
-        /*is_dev_mode_bundle=*/false);
+    IsolatedWebAppTrustChecker::Result result =
+        trust_checker().IsTrusted(kWebBundleId2,
+                                  /*is_dev_mode_bundle=*/false);
     EXPECT_EQ(
         result.status,
         IsolatedWebAppTrustChecker::Result::Status::kErrorPublicKeysNotTrusted);
   }
 }
+
+// TODO(b/292227137): Migrate Shimless RMA app to LaCrOS.
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+
+class ShimlessProfileIsolatedWebAppTrustCheckerTest : public ::testing::Test {
+ public:
+  void SetUp() override {
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+    TestingProfile::Builder profile_builder;
+    profile_builder.SetPath(temp_dir_.GetPath().AppendASCII(
+        ash::kShimlessRmaAppBrowserContextBaseName));
+    shimless_profile_ = profile_builder.Build();
+    isolated_web_app_trust_checker_ =
+        std::make_unique<IsolatedWebAppTrustChecker>(*shimless_profile_.get());
+  }
+
+  void TearDown() override { isolated_web_app_trust_checker_.reset(); }
+
+  IsolatedWebAppTrustChecker& trust_checker() {
+    return *isolated_web_app_trust_checker_;
+  }
+
+  const web_package::Ed25519PublicKey k3pDiagnosticsDevPublicKey =
+      web_package::Ed25519PublicKey::Create(
+          base::make_span(kShimless3pDiagnosticsDevPublicKeyBytes));
+  const web_package::SignedWebBundleId k3pDiagnosticsDevWebBundleId =
+      web_package::SignedWebBundleId::CreateForEd25519PublicKey(
+          k3pDiagnosticsDevPublicKey);
+
+ private:
+  content::BrowserTaskEnvironment task_environment_;
+  base::test::ScopedFeatureList scoped_feature_list_;
+  std::unique_ptr<IsolatedWebAppTrustChecker> isolated_web_app_trust_checker_;
+  std::unique_ptr<TestingProfile> shimless_profile_;
+  base::ScopedTempDir temp_dir_;
+  content::RenderViewHostTestEnabler rvh_test_enabler_;
+};
+
+TEST_F(ShimlessProfileIsolatedWebAppTrustCheckerTest,
+       TrustedVia3pDiagnosticsApp) {
+  auto scoped_info =
+      chromeos::ScopedChromeOSSystemExtensionInfo::CreateForTesting();
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatureStates({});
+  scoped_info->ApplyCommandLineSwitchesForTesting();
+  // Does not trust the key if the dev key is not allowlisted via feature flag.
+  {
+    IsolatedWebAppTrustChecker::Result result =
+        trust_checker().IsTrusted(k3pDiagnosticsDevWebBundleId,
+                                  /*is_dev_mode_bundle=*/false);
+    EXPECT_EQ(
+        result.status,
+        IsolatedWebAppTrustChecker::Result::Status::kErrorPublicKeysNotTrusted);
+  }
+  feature_list.Reset();
+  feature_list.InitWithFeatureStates(
+      {{ash::features::kShimlessRMA3pDiagnosticsDevMode, true}});
+  scoped_info->ApplyCommandLineSwitchesForTesting();
+  {
+    IsolatedWebAppTrustChecker::Result result =
+        trust_checker().IsTrusted(k3pDiagnosticsDevWebBundleId,
+                                  /*is_dev_mode_bundle=*/false);
+    EXPECT_EQ(result.status,
+              IsolatedWebAppTrustChecker::Result::Status::kTrusted);
+  }
+}
+
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 }  // namespace web_app

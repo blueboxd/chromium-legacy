@@ -52,7 +52,7 @@ enum class HighlightedTabDiscardStatus {
 // length is likely shorter than this, as the Label will elide it to fit the UI.
 constexpr const int kMaxPreviewTitleLength = 500;
 
-// TODO(crbug.com/1224342): Refer to central Desktop UI constants rather than
+// TODO(crbug.com/40187992): Refer to central Desktop UI constants rather than
 // hardcoding this.
 const int kListWidth = 346;
 
@@ -200,8 +200,7 @@ void TabListViewObserver::OnKeyDown(ui::KeyboardCode virtual_keycode) {
 
 std::unique_ptr<views::ScrollView> CreateScrollViewWithTable(
     std::unique_ptr<views::TableView> table) {
-  if (base::FeatureList::IsEnabled(kDisplayMediaPickerRedesign) &&
-      features::IsChromeRefresh2023()) {
+  if (features::IsChromeRefresh2023()) {
     auto scroll_view = std::make_unique<views::ScrollView>(
         views::ScrollView::ScrollWithLayers::kEnabled);
     scroll_view->SetDrawOverflowIndicator(false);
@@ -294,12 +293,8 @@ std::unique_ptr<views::View> DesktopMediaTabList::BuildUI(
   scroll_view_->SetPreferredSize(gfx::Size(kListWidth, 0));
   full_panel->AddChildView(std::move(preview_sidebar));
 
-  const gfx::Insets kFullPannelInset =
-      base::FeatureList::IsEnabled(kDisplayMediaPickerRedesign)
-          ? gfx::Insets(16)
-          : gfx::Insets::TLBR(15, 0, 0, 0);
-  const int kChildSpacing =
-      base::FeatureList::IsEnabled(kDisplayMediaPickerRedesign) ? 16 : 12;
+  const gfx::Insets kFullPannelInset = gfx::Insets(16);
+  const int kChildSpacing = 16;
   views::BoxLayout* layout =
       full_panel->SetLayoutManager(std::make_unique<views::BoxLayout>(
           views::BoxLayout::Orientation::kHorizontal, kFullPannelInset,
@@ -331,13 +326,13 @@ DesktopMediaTabList::~DesktopMediaTabList() {
   table_->set_observer(nullptr);
 }
 
-gfx::Size DesktopMediaTabList::CalculatePreferredSize() const {
+gfx::Size DesktopMediaTabList::CalculatePreferredSize(
+    const views::SizeBounds& /*available_size*/) const {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // If the DisplayMediaPickerRedesign flag is active, height should be 9 rows
   // to allow space for the audio-toggle controller, otherwise default to 10
   // rows.
-  const int preferred_item_count =
-      base::FeatureList::IsEnabled(kDisplayMediaPickerRedesign) ? 9 : 10;
+  const int preferred_item_count = 9;
   return gfx::Size(0, table_->GetRowHeight() * preferred_item_count);
 }
 
@@ -348,7 +343,7 @@ int DesktopMediaTabList::GetHeightForWidth(int width) const {
   // which would return something based on the total number of rows, since
   // TableView expects to always be sized by its container. Avoid even asking it
   // by using the same height as CalculatePreferredSize().
-  return CalculatePreferredSize().height();
+  return CalculatePreferredSize(views::SizeBounds(width, {})).height();
 }
 
 void DesktopMediaTabList::OnThemeChanged() {
@@ -363,8 +358,7 @@ void DesktopMediaTabList::OnThemeChanged() {
         color_provider->GetColor(kColorDesktopMediaTabListBorder)));
   }
 
-  if (base::FeatureList::IsEnabled(kDisplayMediaPickerRedesign) &&
-      features::IsChromeRefresh2023()) {
+  if (features::IsChromeRefresh2023()) {
     scroll_view_->SetBackground(views::CreateRoundedRectBackground(
         GetColorProvider()->GetColor(ui::kColorSysSurface4), 8));
     const SkColor background_color =

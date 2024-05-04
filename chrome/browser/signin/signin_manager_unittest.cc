@@ -3,12 +3,15 @@
 // found in the LICENSE file.
 #include "chrome/browser/signin/signin_manager.h"
 
+#include <tuple>
+
 #include "base/memory/raw_ptr.h"
 #include "base/scoped_observation.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/buildflag.h"
 #include "build/chromeos_buildflags.h"
+#include "components/signin/public/base/consent_level.h"
 #include "components/signin/public/base/signin_pref_names.h"
 #include "components/signin/public/base/signin_switches.h"
 #include "components/signin/public/base/test_signin_client.h"
@@ -18,7 +21,6 @@
 #include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
 #include "components/signin/public/identity_manager/primary_account_mutator.h"
-#include "components/supervised_user/core/common/buildflags.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -64,10 +66,20 @@ class FakeIdentityManagerObserver : public IdentityManager::Observer {
       identity_manager_observation_{this};
 };
 
+struct SigninManagerTestParams {
+  using TupleType = std::tuple<bool, bool>;
+  bool explicit_browser_signin;
+  bool is_signout_allowed;
+  explicit SigninManagerTestParams(TupleType params)
+      : explicit_browser_signin(std::get<0>(params)),
+        is_signout_allowed(std::get<1>(params)) {}
+};
+
 }  // namespace
 
-class SigninManagerTest : public testing::Test,
-                          public ::testing::WithParamInterface<bool> {
+class SigninManagerTest
+    : public testing::Test,
+      public ::testing::WithParamInterface<SigninManagerTestParams> {
  public:
   SigninManagerTest()
       : client_(&prefs_),
@@ -75,7 +87,13 @@ class SigninManagerTest : public testing::Test,
                            /*pref_service=*/&prefs_,
                            &client_),
         observer_(identity_test_env_.identity_manager()) {
-    scoped_feature_list_.InitAndDisableFeature(switches::kUnoDesktop);
+    if (explicit_browser_signin()) {
+      scoped_feature_list_.InitAndEnableFeature(
+          switches::kExplicitBrowserSigninUIOnDesktop);
+    } else {
+      scoped_feature_list_.InitAndDisableFeature(
+          switches::kExplicitBrowserSigninUIOnDesktop);
+    }
     RecreateSigninManager();
   }
 
@@ -95,7 +113,28 @@ class SigninManagerTest : public testing::Test,
     }
   }
 
-  bool is_signout_allowed() const { return GetParam(); }
+  bool is_signout_allowed() const { return GetParam().is_signout_allowed; }
+
+  bool explicit_browser_signin() {
+    // The `SigninManager` will not automatically set the primary account.
+    // The account will be updated only if it was implicitly sign in.
+    // In practice, this can only happen if the user was signed in prior to the
+    // feature being enabled.
+    return GetParam().explicit_browser_signin;
+  }
+
+  void SigninImplicitlyWithAccount(
+      const std::string& email,
+      ConsentLevel consent_level = ConsentLevel::kSignin) {
+    identity_test_env()->MakeAccountAvailable(
+        identity_test_env()
+            ->CreateAccountAvailabilityOptionsBuilder()
+            .WithAccessPoint(
+                signin_metrics::AccessPoint::ACCESS_POINT_WEB_SIGNIN)
+            .AsPrimary(consent_level)
+            .Build(email));
+    CHECK(identity_manager()->HasPrimaryAccount(consent_level));
+  }
 
   void ExpectUnconsentedPrimaryAccountSetEvent(
       const CoreAccountInfo& expected_primary_account) {
@@ -168,10 +207,6 @@ class SigninManagerTest : public testing::Test,
         identity_test_env_.MakeAccountAvailable(builder.Build(email));
     signin::CookieParamsForTest cookie_params = {account.email, account.gaia};
     identity_test_env_.SetCookieAccounts({cookie_params});
-    EXPECT_TRUE(identity_manager()->HasPrimaryAccount(ConsentLevel::kSignin));
-    EXPECT_EQ(account,
-              identity_manager()->GetPrimaryAccountInfo(ConsentLevel::kSignin));
-    EXPECT_FALSE(identity_manager()->HasPrimaryAccount(ConsentLevel::kSync));
     return account;
   }
 
@@ -204,9 +239,14 @@ TEST_P(
     UnconsentedPrimaryAccountUpdatedOnItsAccountRefreshTokenUpdateWithValidTokenWhenNoSyncConsent) {
   // Add an unconsented primary account, incl. proper cookies.
   AccountInfo account = MakeAccountAvailableWithCookies(kTestEmail);
-  ExpectUnconsentedPrimaryAccountSetEvent(account);
-  EXPECT_EQ(account,
-            identity_manager()->GetPrimaryAccountInfo(ConsentLevel::kSignin));
+  if (explicit_browser_signin()) {
+    EXPECT_EQ(0U, observer().events().size());
+    EXPECT_FALSE(identity_manager()->HasPrimaryAccount(ConsentLevel::kSignin));
+  } else {
+    ExpectUnconsentedPrimaryAccountSetEvent(account);
+    EXPECT_EQ(account,
+              identity_manager()->GetPrimaryAccountInfo(ConsentLevel::kSignin));
+  }
 }
 
 TEST_P(
@@ -214,6 +254,9 @@ TEST_P(
     UnconsentedPrimaryAccountUpdatedOnItsAccountRefreshTokenUpdateWithInvalidTokenWhenNoSyncConsent) {
   // Prerequisite: add an unconsented primary account, incl. proper cookies.
   AccountInfo account = MakeAccountAvailableWithCookies(kTestEmail);
+  if (explicit_browser_signin()) {
+    SigninImplicitlyWithAccount(account.email);
+  }
   ExpectUnconsentedPrimaryAccountSetEvent(account);
   InitializeSignoutDecision();
 
@@ -230,9 +273,16 @@ TEST_P(
     EXPECT_FALSE(identity_manager()->HasPrimaryAccount(ConsentLevel::kSignin));
     // Update with a valid token.
     SetRefreshTokenForAccount(identity_manager(), account.account_id, "");
-    ExpectUnconsentedPrimaryAccountSetEvent(account);
-    EXPECT_EQ(identity_manager()->GetPrimaryAccountInfo(ConsentLevel::kSignin),
-              account);
+    if (explicit_browser_signin()) {
+      EXPECT_EQ(0U, observer().events().size());
+      EXPECT_FALSE(
+          identity_manager()->HasPrimaryAccount(ConsentLevel::kSignin));
+    } else {
+      ExpectUnconsentedPrimaryAccountSetEvent(account);
+      EXPECT_EQ(
+          identity_manager()->GetPrimaryAccountInfo(ConsentLevel::kSignin),
+          account);
+    }
 #endif
   } else {
     EXPECT_TRUE(identity_manager()->HasPrimaryAccount(ConsentLevel::kSignin));
@@ -246,6 +296,9 @@ TEST_P(
     UnconsentedPrimaryAccountRemovedOnItsAccountRefreshTokenRemovalWhenNoSyncConsent) {
   // Prerequisite: Add an unconsented primary account, incl. proper cookies.
   AccountInfo account = MakeAccountAvailableWithCookies(kTestEmail);
+  if (explicit_browser_signin()) {
+    SigninImplicitlyWithAccount(account.email);
+  }
   ExpectUnconsentedPrimaryAccountSetEvent(account);
   InitializeSignoutDecision();
 
@@ -263,6 +316,10 @@ TEST_P(
 TEST_P(SigninManagerTest, UnconsentedPrimaryAccountChangedBlockedByHandle) {
   // Prerequisite: Add an unconsented primary account, incl. proper cookies.
   AccountInfo account = MakeAccountAvailableWithCookies(kTestEmail);
+  if (explicit_browser_signin()) {
+    // Set the primary account and mark it to be implicitly signed in.
+    SigninImplicitlyWithAccount(account.email);
+  }
   ExpectUnconsentedPrimaryAccountSetEvent(account);
   InitializeSignoutDecision();
 
@@ -322,6 +379,9 @@ TEST_P(SigninManagerTest,
        UnconsentedPrimaryAccountTokenRevokedWithStaleCookies) {
   // Prerequisite: add an unconsented primary account, incl. proper cookies.
   AccountInfo account = MakeAccountAvailableWithCookies(kTestEmail);
+  if (explicit_browser_signin()) {
+    SigninImplicitlyWithAccount(account.email);
+  }
   ExpectUnconsentedPrimaryAccountSetEvent(account);
   InitializeSignoutDecision();
 
@@ -352,7 +412,9 @@ TEST_P(SigninManagerTest,
   identity_test_env()->SetCookieAccounts(
       {{main_account.email, main_account.gaia},
        {secondary_account.email, secondary_account.gaia}});
-
+  if (explicit_browser_signin()) {
+    SigninImplicitlyWithAccount(main_account.email);
+  }
   EXPECT_TRUE(identity_manager()->HasPrimaryAccount(ConsentLevel::kSignin));
   EXPECT_FALSE(identity_manager()->HasPrimaryAccount(ConsentLevel::kSync));
   EXPECT_EQ(main_account,
@@ -379,6 +441,10 @@ TEST_P(SigninManagerTest,
        SameUnconsentedPrimaryAccountTokenWithRemovedCookies) {
   // Prerequisite: add an unconsented primary account, incl. proper cookies.
   AccountInfo account = MakeAccountAvailableWithCookies(kTestEmail);
+  if (explicit_browser_signin()) {
+    // Set the primary account and mark it to be implicitly signed in.
+    SigninImplicitlyWithAccount(account.email);
+  }
   ExpectUnconsentedPrimaryAccountSetEvent(account);
   InitializeSignoutDecision();
 
@@ -386,19 +452,6 @@ TEST_P(SigninManagerTest,
   identity_test_env()->SetCookieAccounts({});
   EXPECT_TRUE(identity_manager()->HasPrimaryAccount(ConsentLevel::kSignin));
   EXPECT_EQ(0U, observer().events().size());
-}
-
-TEST_F(SigninManagerTest, UnconsentedPrimaryAccountRemovedCookiesEmpty) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(kPreventSignoutIfAccountValid);
-  // Prerequisite: add an unconsented primary account, incl. proper cookies.
-  AccountInfo account = MakeAccountAvailableWithCookies(kTestEmail);
-  ExpectUnconsentedPrimaryAccountSetEvent(account);
-
-  // Set Gaia accounts in the cookie to empty.
-  identity_test_env()->SetCookieAccounts({});
-  EXPECT_FALSE(identity_manager()->HasPrimaryAccount(ConsentLevel::kSignin));
-  ExpectUnconsentedPrimaryAccountClearedEvent(account);
 }
 #endif  // !BUILDFLAG(IS_CHROMEOS_LACROS)
 
@@ -411,6 +464,10 @@ TEST_P(SigninManagerTest, UnconsentedPrimaryAccountDuringLoad) {
   identity_test_env()->SetCookieAccounts(
       {{main_account.email, main_account.gaia},
        {secondary_account.email, secondary_account.gaia}});
+  if (explicit_browser_signin()) {
+    // Set the primary account and mark it to be implicitly signed in.
+    SigninImplicitlyWithAccount(main_account.email);
+  }
   ASSERT_EQ(main_account,
             identity_manager()->GetPrimaryAccountInfo(ConsentLevel::kSignin));
   ASSERT_FALSE(identity_manager()->HasPrimaryAccount(ConsentLevel::kSync));
@@ -465,14 +522,17 @@ TEST_P(SigninManagerTest,
   identity_test_env()->SetCookieAccounts(
       {{first_account.email, first_account.gaia},
        {second_account.email, second_account.gaia}});
+  if (explicit_browser_signin()) {
+    SigninImplicitlyWithAccount(first_account.email);
+  }
   ASSERT_EQ(first_account,
             identity_manager()->GetPrimaryAccountInfo(ConsentLevel::kSignin));
   ExpectUnconsentedPrimaryAccountSetEvent(first_account);
 
   // Set the sync primary account to the second account in cookies.
   // The unconsented primary account should be updated.
-  identity_test_env()->SetPrimaryAccount(second_account.email,
-                                         signin::ConsentLevel::kSync);
+  SigninImplicitlyWithAccount(second_account.email,
+                              signin::ConsentLevel::kSync);
   InitializeSignoutDecision();
 
   EXPECT_EQ(second_account,
@@ -543,16 +603,21 @@ TEST_P(SigninManagerTest, UnconsentedPrimaryAccountUpdatedOnHandleDestroyed) {
   identity_test_env()->SetCookieAccounts(
       {{first_account.email, first_account.gaia},
        {second_account.email, second_account.gaia}});
+  signin_metrics::AccessPoint access_point =
+      signin_metrics::AccessPoint::ACCESS_POINT_DESKTOP_SIGNIN_MANAGER;
+  if (explicit_browser_signin()) {
+    SigninImplicitlyWithAccount(first_account.email);
+    access_point = signin_metrics::AccessPoint::ACCESS_POINT_WEB_SIGNIN;
+  }
   ASSERT_EQ(first_account,
             identity_manager()->GetPrimaryAccountInfo(ConsentLevel::kSignin));
   ExpectUnconsentedPrimaryAccountSetEvent(first_account);
-  histogram_tester.ExpectUniqueSample(
-      "Signin.SignIn.Completed",
-      signin_metrics::AccessPoint::ACCESS_POINT_DESKTOP_SIGNIN_MANAGER, 1);
-  histogram_tester.ExpectUniqueSample(
-      "Signin.SigninManager.SigninAccessPoint",
-      signin_metrics::AccessPoint::ACCESS_POINT_DESKTOP_SIGNIN_MANAGER, 1);
-
+  if (!explicit_browser_signin()) {
+    histogram_tester.ExpectUniqueSample("Signin.SignIn.Completed", access_point,
+                                        1);
+    histogram_tester.ExpectUniqueSample(
+        "Signin.SigninManager.SigninAccessPoint", access_point, 1);
+  }
   std::unique_ptr<AccountSelectionInProgressHandle> handle =
       signin_manager_->CreateAccountSelectionInProgressHandle();
   ASSERT_TRUE(handle);
@@ -560,17 +625,18 @@ TEST_P(SigninManagerTest, UnconsentedPrimaryAccountUpdatedOnHandleDestroyed) {
   // Set the primary account to the second account in cookies. This simulates
   // that the user chose the second account as the to-be-synced account.
   // The unconsented primary account should be updated.
-  identity_test_env()->SetPrimaryAccount(second_account.email,
-                                         ConsentLevel::kSignin);
+  SigninImplicitlyWithAccount(second_account.email);
   InitializeSignoutDecision();
   EXPECT_EQ(second_account,
             identity_manager()->GetPrimaryAccountInfo(ConsentLevel::kSignin));
   EXPECT_FALSE(identity_manager()->HasPrimaryAccount(ConsentLevel::kSync));
-  // TODO(crbug.com/1261772): The change should be logged in some way.
-  histogram_tester.ExpectUniqueSample(
-      "Signin.SignIn.Completed",
-      signin_metrics::AccessPoint::ACCESS_POINT_DESKTOP_SIGNIN_MANAGER, 1);
-  histogram_tester.ExpectTotalCount("Signin.SignOut.Completed", 0);
+  if (!explicit_browser_signin()) {
+    // TODO(crbug.com/40202341): The change should be logged in some way.
+    histogram_tester.ExpectUniqueSample(
+        "Signin.SignIn.Completed",
+        signin_metrics::AccessPoint::ACCESS_POINT_DESKTOP_SIGNIN_MANAGER, 1);
+    histogram_tester.ExpectTotalCount("Signin.SignOut.Completed", 0);
+  }
   observer().Reset();
 
   // Release the handle. The unconsented primary account should be updated to be
@@ -598,11 +664,13 @@ TEST_P(SigninManagerTest, UnconsentedPrimaryAccountUpdatedOnHandleDestroyed) {
     EXPECT_EQ(0U, observer().events().size());
   }
 #endif
-  // TODO(crbug.com/1261772): The change should be logged in some way.
-  histogram_tester.ExpectUniqueSample(
-      "Signin.SignIn.Completed",
-      signin_metrics::AccessPoint::ACCESS_POINT_DESKTOP_SIGNIN_MANAGER, 1);
-  histogram_tester.ExpectTotalCount("Signin.SignOut.Completed", 0);
+  // TODO(crbug.com/40202341): The change should be logged in some way.
+  if (!explicit_browser_signin()) {
+    histogram_tester.ExpectUniqueSample(
+        "Signin.SignIn.Completed",
+        signin_metrics::AccessPoint::ACCESS_POINT_DESKTOP_SIGNIN_MANAGER, 1);
+    histogram_tester.ExpectTotalCount("Signin.SignOut.Completed", 0);
+  }
 }
 
 TEST_P(SigninManagerTest, ClearPrimaryAccountAndSignOut) {
@@ -628,6 +696,10 @@ TEST_P(SigninManagerTest,
        UnconsentedPrimaryAccountClearedWhenSigninDisallowed) {
   // Prerequisite: add an unconsented primary account.
   AccountInfo account = MakeAccountAvailableWithCookies(kTestEmail);
+  if (explicit_browser_signin()) {
+    // Set the primary account and mark it to be implicitly signed in.
+    SigninImplicitlyWithAccount(account.email);
+  }
   ExpectUnconsentedPrimaryAccountSetEvent(account);
 
   prefs_.SetBoolean(prefs::kSigninAllowed, false);
@@ -645,9 +717,10 @@ TEST_P(SigninManagerTest,
 }
 #endif  // !BUILDFLAG(IS_CHROMEOS_LACROS)
 
-INSTANTIATE_TEST_SUITE_P(SignoutAllowed, SigninManagerTest, ::testing::Bool());
-
-TEST_F(SigninManagerTest, SigninCompletedMetric) {
+TEST_P(SigninManagerTest, SigninCompletedMetric) {
+  if (explicit_browser_signin()) {
+    GTEST_SKIP();
+  }
   base::HistogramTester histogram_tester;
 
   signin_metrics::AccessPoint access_point =
@@ -661,7 +734,20 @@ TEST_F(SigninManagerTest, SigninCompletedMetric) {
                                       access_point, 1);
 }
 
-#if BUILDFLAG(ENABLE_DICE_SUPPORT) && BUILDFLAG(ENABLE_SUPERVISED_USERS)
+INSTANTIATE_TEST_SUITE_P(
+    ,
+    SigninManagerTest,
+    ::testing::ConvertGenerator<SigninManagerTestParams::TupleType>(
+        ::testing::Combine(::testing::Bool(), ::testing::Bool())),
+    [](const ::testing::TestParamInfo<SigninManagerTestParams>& info) {
+      std::string name = base::StrCat(
+          {info.param.explicit_browser_signin ? "Explicit" : "Implicit", "And",
+           info.param.is_signout_allowed ? "SignoutAllowed"
+                                         : "SignoutRestricted"});
+      return name;
+    });
+
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
 class SigninManagerSupervisedUserTest : public SigninManagerTest {
  public:
   SigninManagerSupervisedUserTest() = default;
@@ -683,7 +769,7 @@ class SigninManagerSupervisedUserTest : public SigninManagerTest {
   base::test::ScopedFeatureList feature_list_;
 };
 
-TEST_F(SigninManagerSupervisedUserTest, SignoutOnCookiesDeletedNotAllowed) {
+TEST_P(SigninManagerSupervisedUserTest, SignoutOnCookiesDeletedNotAllowed) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures({}, {kPreventSignoutIfAccountValid});
   AddSupervisedAccount(ConsentLevel::kSignin);
@@ -696,6 +782,12 @@ TEST_F(SigninManagerSupervisedUserTest, SignoutOnCookiesDeletedNotAllowed) {
   EXPECT_EQ(0U, observer().events().size());
   EXPECT_TRUE(identity_manager()->HasPrimaryAccount(ConsentLevel::kSignin));
 }
-#endif  // BUILDFLAG(ENABLE_DICE_SUPPORT) && BUILDFLAG(ENABLE_SUPERVISED_USERS)
+
+INSTANTIATE_TEST_SUITE_P(,
+                         SigninManagerSupervisedUserTest,
+                         ::testing::Values(SigninManagerTestParams(
+                             {/*explicit_browser_signin=*/false,
+                              /*is_signout_allowed=*/true})));
+#endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
 
 }  // namespace signin

@@ -20,6 +20,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace performance_manager {
 namespace policies {
@@ -65,10 +66,11 @@ class PageDiscardingHelperTest
                                       FrameNodeImpl* frame = nullptr) {
     page = page ? page : page_node();
     frame = frame ? frame : frame_node();
-    page->OnMainFrameNavigationCommitted(false, base::TimeTicks::Now(),
-                                         page->GetNavigationID() + 1, url,
-                                         mime_type);
-    frame->OnNavigationCommitted(url, false);
+    page->OnMainFrameNavigationCommitted(
+        false, base::TimeTicks::Now(), page->GetNavigationID() + 1, url,
+        mime_type, /* notification_permission_status=*/
+        blink::mojom::PermissionStatus::ASK);
+    frame->OnNavigationCommitted(url, url::Origin::Create(url), false);
   }
 
   // Convenience wrappers for PageNodeHelper::CanDiscard().
@@ -94,7 +96,7 @@ class PageDiscardingHelperTest
 };
 
 TEST_F(PageDiscardingHelperTest, TestCanDiscardMultipleCurrentMainFrames) {
-  // TODO(crbug.com/1441986): It shouldn't be possible to have two main frames
+  // TODO(crbug.com/40910297): It shouldn't be possible to have two main frames
   // both marked "current", but due to a state tracking bug this sometimes
   // occurs. Until the bug is fixed, make sure CanDiscard works around it. (See
   // comment at
@@ -183,9 +185,10 @@ TEST_F(PageDiscardingHelperTest, TestCanDiscardNeverAudiblePage) {
       CreateFrameNodeAutoId(process_node(), new_page_node.get());
   new_page_node->SetIsVisible(false);
   const GURL kUrl("https://example.com");
-  new_page_node->OnMainFrameNavigationCommitted(false, base::TimeTicks::Now(),
-                                                42, kUrl, "text/html");
-  new_frame_node->OnNavigationCommitted(kUrl, false);
+  new_page_node->OnMainFrameNavigationCommitted(
+      false, base::TimeTicks::Now(), 42, kUrl, "text/html",
+      /* notification_permission_status=*/blink::mojom::PermissionStatus::ASK);
+  new_frame_node->OnNavigationCommitted(kUrl, url::Origin::Create(kUrl), false);
 
   EXPECT_FALSE(new_page_node->IsAudible());
 
@@ -349,30 +352,16 @@ TEST_F(PageDiscardingHelperTest, TestCannotDiscardActiveTab) {
 
 TEST_F(PageDiscardingHelperTest,
        TestCannotProactivelyDiscardWithNotificationPermission) {
-  // The page is discardable if notifications are blocked.
-  PageLiveStateDecorator::Data::GetOrCreateForPageNode(page_node())
-      ->SetContentSettingsForTesting({
-          {ContentSettingsType::NOTIFICATIONS, CONTENT_SETTING_BLOCK},
-      });
+  // The page is discardable if notification permission is denied.
+  page_node()->OnNotificationPermissionStatusChange(
+      blink::mojom::PermissionStatus::DENIED);
   EXPECT_TRUE(CanDiscard(page_node(), DiscardReason::URGENT));
   EXPECT_TRUE(CanDiscard(page_node(), DiscardReason::PROACTIVE));
   EXPECT_TRUE(CanDiscard(page_node(), DiscardReason::EXTERNAL));
 
-  // The page is discardable if notifications aren't found in its permissions
-  // list.
-  PageLiveStateDecorator::Data::GetOrCreateForPageNode(page_node())
-      ->SetContentSettingsForTesting({
-          {ContentSettingsType::AUTO_SELECT_CERTIFICATE, CONTENT_SETTING_ALLOW},
-      });
-  EXPECT_TRUE(CanDiscard(page_node(), DiscardReason::URGENT));
-  EXPECT_TRUE(CanDiscard(page_node(), DiscardReason::PROACTIVE));
-  EXPECT_TRUE(CanDiscard(page_node(), DiscardReason::EXTERNAL));
-
-  // The page is not proactively discardable if it can send notifications.
-  PageLiveStateDecorator::Data::GetOrCreateForPageNode(page_node())
-      ->SetContentSettingsForTesting({
-          {ContentSettingsType::NOTIFICATIONS, CONTENT_SETTING_ALLOW},
-      });
+  // The page is discardable if notification permission is granted.
+  page_node()->OnNotificationPermissionStatusChange(
+      blink::mojom::PermissionStatus::GRANTED);
   EXPECT_TRUE(CanDiscard(page_node(), DiscardReason::URGENT));
   EXPECT_FALSE(CanDiscard(page_node(), DiscardReason::PROACTIVE));
   EXPECT_TRUE(CanDiscard(page_node(), DiscardReason::EXTERNAL));

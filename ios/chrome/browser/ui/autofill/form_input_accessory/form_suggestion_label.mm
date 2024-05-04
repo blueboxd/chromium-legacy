@@ -31,6 +31,9 @@ const CGFloat kIphoneFontSize = 14.0f;
 
 // The horizontal space between the edge of the background and the text.
 const CGFloat kBorderWidth = 14.0f;
+// The horizontal space between the edge of the background and the text for the
+// large keyboard accessory.
+const CGFloat kSmallBorderWidth = 12.0f;
 // The space between items in the label.
 const CGFloat kSpacing = 4.0f;
 // The corner radius of the label.
@@ -49,7 +52,7 @@ const CGFloat kSuggestionIconWidth = 40;
 // represents the width of the stack view minus the width of the first
 // suggestion.
 const CGFloat kHalfCreditCardIconOffset =
-    2 * kBorderWidth + 2 * kSpacing + 0.5 * kSuggestionIconWidth;
+    2 * kSmallBorderWidth + 2 * kSpacing + 0.5 * kSuggestionIconWidth;
 
 // Creates a label with the given `text` and `alpha` suitable for use in a
 // suggestion button in the keyboard accessory view.
@@ -93,13 +96,13 @@ UILabel* TextLabel(NSString* text, UIColor* textColor, BOOL bold) {
     stackView.alignment = UIStackViewAlignmentCenter;
     stackView.layoutMarginsRelativeArrangement = YES;
     stackView.layoutMargins =
-        UIEdgeInsetsMake(0, kBorderWidth, 0, kBorderWidth);
+        UIEdgeInsetsMake(0, [self borderWidth], 0, [self borderWidth]);
     stackView.spacing = kSpacing;
     stackView.translatesAutoresizingMaskIntoConstraints = NO;
     [self addSubview:stackView];
     AddSameConstraints(stackView, self);
 
-    if (suggestion.icon != nil) {
+    if (suggestion.icon) {
       UIImage* icon = suggestion.icon;
       if (IsKeyboardAccessoryUpgradeEnabled()) {
         if (icon && (icon.size.width > 0) &&
@@ -123,7 +126,8 @@ UILabel* TextLabel(NSString* text, UIColor* textColor, BOOL bold) {
       verticalStackView.axis = UILayoutConstraintAxisVertical;
       verticalStackView.alignment = UIStackViewAlignmentLeading;
       verticalStackView.layoutMarginsRelativeArrangement = YES;
-      verticalStackView.layoutMargins = UIEdgeInsetsMake(0, kBorderWidth, 0, 0);
+      verticalStackView.layoutMargins =
+          UIEdgeInsetsMake(0, suggestion.icon ? [self borderWidth] : 0, 0, 0);
       [stackView addArrangedSubview:verticalStackView];
 
       // Insert the next subviews vertically instead of horizonatally.
@@ -133,6 +137,10 @@ UILabel* TextLabel(NSString* text, UIColor* textColor, BOOL bold) {
         suggestionText = [suggestionText
             substringToIndex:suggestionText.length -
                              kPasswordFormSuggestionSuffix.length];
+        if ([suggestionText length] == 0) {
+          suggestionText =
+              l10n_util::GetNSString(IDS_IOS_AUTOFILL_PASSWORD_NO_USERNAME);
+        }
       }
     }
 
@@ -162,7 +170,9 @@ UILabel* TextLabel(NSString* text, UIColor* textColor, BOOL bold) {
                                     IDS_IOS_AUTOFILL_ACCNAME_SUGGESTION,
                                     base::SysNSStringToUTF16(suggestion.value),
                                     base::SysNSStringToUTF16(
-                                        suggestion.displayDescription),
+                                        suggestion.displayDescription))];
+    [self setAccessibilityValue:l10n_util::GetNSStringF(
+                                    IDS_IOS_AUTOFILL_SUGGESTION_INDEX_VALUE,
                                     base::NumberToString16(index + 1),
                                     base::NumberToString16(numSuggestions))];
     [self
@@ -187,7 +197,8 @@ UILabel* TextLabel(NSString* text, UIColor* textColor, BOOL bold) {
     self.layer.shadowRadius = kShadowRadius;
     self.layer.shadowOffset = CGSizeMake(0, kShadowVerticalOffset);
     self.layer.shadowOpacity = kShadowOpacity;
-    self.layer.shadowColor = [UIColor colorNamed:kGrey400Color].CGColor;
+    self.layer.shadowColor =
+        [UIColor colorNamed:kBackgroundShadowColor].CGColor;
     self.layer.masksToBounds = NO;
   }
 }
@@ -221,7 +232,7 @@ UILabel* TextLabel(NSString* text, UIColor* textColor, BOOL bold) {
 // Color of the suggestion chips.
 - (UIColor*)customBackgroundColor {
   return
-      [UIColor colorNamed:IsKeyboardAccessoryUpgradeEnabled() ? kSolidWhiteColor
+      [UIColor colorNamed:IsKeyboardAccessoryUpgradeEnabled() ? kBackgroundColor
                                                               : kGrey100Color];
 }
 
@@ -229,6 +240,10 @@ UILabel* TextLabel(NSString* text, UIColor* textColor, BOOL bold) {
 - (CGFloat)cornerRadius {
   return IsKeyboardAccessoryUpgradeEnabled() ? kCornerRadius
                                              : self.bounds.size.height / 2.0;
+}
+
+- (CGFloat)borderWidth {
+  return IsKeyboardAccessoryUpgradeEnabled() ? kSmallBorderWidth : kBorderWidth;
 }
 
 // Computes the suggestion label's maximum width.
@@ -240,14 +255,14 @@ UILabel* TextLabel(NSString* text, UIColor* textColor, BOOL bold) {
   CGSize windowSize = [[UIScreen mainScreen] bounds].size;
   CGFloat portraitScreenWidth = MIN(windowSize.width, windowSize.height);
   switch (_suggestion.popupItemId) {
-    case autofill::PopupItemId::kCreditCardEntry: {
+    case autofill::SuggestionType::kCreditCardEntry: {
       // Max width is just enough to show half of the credit card icon on the
       // 2nd suggestion, in portrait mode.
       CGFloat staticButtonsWidth = accessoryTrailingView.frame.size.width;
       maxWidth = (portraitScreenWidth - staticButtonsWidth) -
                  kHalfCreditCardIconOffset;
     } break;
-    case autofill::PopupItemId::kAddressEntry:
+    case autofill::SuggestionType::kAddressEntry:
       // Max width is half width, in portrait mode.
       maxWidth = portraitScreenWidth * 0.5;
       break;

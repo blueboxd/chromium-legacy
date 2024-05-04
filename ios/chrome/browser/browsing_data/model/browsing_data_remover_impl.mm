@@ -12,6 +12,7 @@
 #import "base/functional/callback.h"
 #import "base/functional/callback_helpers.h"
 #import "base/ios/block_types.h"
+#import "base/location.h"
 #import "base/logging.h"
 #import "base/metrics/histogram_macros.h"
 #import "base/metrics/user_metrics.h"
@@ -454,7 +455,7 @@ void BrowsingDataRemoverImpl::RemoveImpl(base::Time delete_begin,
       // It doesn't matter whether any logins were removed so bool argument can
       // be omitted.
       profile_password_store->RemoveLoginsCreatedBetween(
-          delete_begin, delete_end,
+          FROM_HERE, delete_begin, delete_end,
           IgnoreArgument<bool>(CreatePendingTaskCompletionClosure()));
     }
 
@@ -465,7 +466,7 @@ void BrowsingDataRemoverImpl::RemoveImpl(base::Time delete_begin,
 
     if (account_password_store) {
       account_password_store->RemoveLoginsCreatedBetween(
-          delete_begin, delete_end,
+          FROM_HERE, delete_begin, delete_end,
           IgnoreArgument<bool>(CreatePendingTaskCompletionClosure()));
     }
   }
@@ -538,9 +539,10 @@ void BrowsingDataRemoverImpl::RemoveImpl(base::Time delete_begin,
     // safe as the callback is always invoked, even if ChromeBrowserState is
     // destroyed, and BookmarkRemoverHelper supports being deleted while the
     // callback is run.
-    bookmarks_remover_helper_ptr->RemoveAllUserBookmarksIOS(base::BindOnce(
-        &BookmarkClearedAdapter, std::move(bookmarks_remover_helper),
-        CreatePendingTaskCompletionClosure()));
+    bookmarks_remover_helper_ptr->RemoveAllUserBookmarksIOS(
+        FROM_HERE, base::BindOnce(&BookmarkClearedAdapter,
+                                  std::move(bookmarks_remover_helper),
+                                  CreatePendingTaskCompletionClosure()));
   }
 
   if (IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_READING_LIST)) {
@@ -554,9 +556,9 @@ void BrowsingDataRemoverImpl::RemoveImpl(base::Time delete_begin,
     // ChromeBrowserState is destroyed, and ReadingListRemoverHelper supports
     // being deleted while the callback is run..
     reading_list_remover_helper_ptr->RemoveAllUserReadingListItemsIOS(
-        base::BindOnce(&ReadingListClearedAdapter,
-                       std::move(reading_list_remover_helper),
-                       CreatePendingTaskCompletionClosure()));
+        FROM_HERE, base::BindOnce(&ReadingListClearedAdapter,
+                                  std::move(reading_list_remover_helper),
+                                  CreatePendingTaskCompletionClosure()));
   }
 
   if (IsRemoveDataMaskSet(mask,
@@ -566,6 +568,8 @@ void BrowsingDataRemoverImpl::RemoveImpl(base::Time delete_begin,
     // last username, as there will be no data to be merged.
     browser_state_->GetPrefs()->ClearPref(
         prefs::kGoogleServicesLastSyncingGaiaId);
+    browser_state_->GetPrefs()->ClearPref(
+        prefs::kGoogleServicesLastSignedInUsername);
     browser_state_->GetPrefs()->ClearPref(
         prefs::kGoogleServicesLastSyncingUsername);
   }
@@ -707,7 +711,7 @@ void BrowsingDataRemoverImpl::NotifyRemovalComplete() {
 void BrowsingDataRemoverImpl::OnTaskComplete() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  // TODO(crbug.com/305259): This should also observe session clearing (what
+  // TODO(crbug.com/40336135): This should also observe session clearing (what
   // about other things such as passwords, etc.?) and wait for them to complete
   // before continuing.
 

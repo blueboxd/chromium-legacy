@@ -157,14 +157,17 @@ struct Padding2d {
 
 // Represents a 2-D convolution given the input and filter tensors.
 //
-// * conv2d (Type == kDirect) only supports `oihw` (output_channels,
-//   input_channels/groups, height, width) filter layout
-// * convTranspose2d (Type == kTransposed) only supports `iohw` (input_channels,
+// * conv2d (Kind == kDirect):  `nchw` input layout only supports `oihw` (
+//   output_channels, input_channels/groups, height, width) filter layout,
+//   `nhwc` input layout only supports `ohwi` for regular conv2d and `ihwo` (1,
+//   height, width, options.groups) filter layout for depthwise conv2d that is
+//   `options.groups = inputChannels = outputChannels`.
+// * convTranspose2d (Kind == kTransposed) only supports `iohw` (input_channels,
 //   output_channels/groups, height, width) filter layout
 // Support for other layouts are being discussed in the working group
 // https://github.com/webmachinelearning/webnn/issues/324.
 struct Conv2d {
-  enum Type {
+  enum Kind {
     // Represents a 2-D convolution given 4-D input and filter tensors.
     kDirect,
     // Represents a 2-D transposed convolution given 4-D input and filter
@@ -172,8 +175,8 @@ struct Conv2d {
     kTransposed,
   };
 
-  // The type of 2-D convolution.
-  Type type;
+  // The kind of 2-D convolution.
+  Kind kind;
   // The id of input operand is used to get the `Operand` description from
   // `GraphInfo.id_to_operand_map`.
   uint64 input_operand_id;
@@ -227,13 +230,13 @@ struct ElementWiseBinary {
   Kind kind;
   // The id of lhs operand is used to get the `Operand` description from
   // `GraphInfo.id_to_operand_map`.
-  uint64 lhs_operand;
+  uint64 lhs_operand_id;
   // The id of rhs operand is used to get the `Operand` description from
   // `GraphInfo.id_to_operand_map`.
-  uint64 rhs_operand;
+  uint64 rhs_operand_id;
   // The id of output operand is used to get the `Operand` description from
   // `GraphInfo.id_to_operand_map`.
-  uint64 output_operand;
+  uint64 output_operand_id;
 };
 
 // Represents an element-wise unary operation, mathematically equivalent to:
@@ -495,12 +498,11 @@ struct Elu {
 // of `-N` (inclusive) to `N` (exclusive), where `N = input.dimensions[axis]`,
 // and negative index means indexing from the end of the `axis` dimension.
 //
-// TODO(crbug.com/1273291): Spec issue, finalize out-of-bounds indices
-// sanitization behavior.
+// Need to finalize out-of-bounds indices sanitization behavior, tracked by spec
+// issue: https://github.com/webmachinelearning/webnn/issues/486
 //
-// TODO(crbug.com/1273291): Add conformance test cases for gather's
-// out-of-bounds access. Tracked by issue
-// https://github.com/webmachinelearning/webnn/issues/244#issuecomment-1820092158
+// TODO(crbug.com/329134204): Add conformance test cases for gather's
+// out-of-bounds access.
 struct Gather {
   // The input operand (referenced by input_operand_id) and the indices operand
   // (referenced by indices_operand_id) must be distinct from the output
@@ -513,6 +515,16 @@ struct Gather {
   uint32 axis = 0;
 };
 
+// Corresponds to `MLOperand gelu(MLOperand input)` that computes the gelu
+// function of the input tensor following the expression
+// 0.5 * x * (1 + erf(x / sqrt(2))).
+struct Gelu {
+  // The input operand (referenced by input_operand_id) must be distinct from
+  // the output operand (referenced by output_operand_id).
+  uint64 input_operand_id;
+  uint64 output_operand_id;
+};
+
 // Represents the processing direction of the input sequence for the recurrent
 // network.
 enum RecurrentNetworkDirection {
@@ -521,14 +533,14 @@ enum RecurrentNetworkDirection {
   kBoth,
 };
 
+// The ordering of the weight for the update (z), reset (r), new (n) gates.
+enum GruWeightLayout {
+  kZrn,
+  kRzn,
+};
+
 // Represents the Gated Recurrent Unit [GRU] recurrent network.
 struct Gru {
-  // The ordering of the weight for the update (z), reset (r), new (n) gates.
-  enum GruWeightLayout {
-    kZrn,
-    kRzn,
-  };
-
   // The id of the input operand.
   uint64 input_operand_id;
   // The id of the weight operand.
@@ -548,18 +560,49 @@ struct Gru {
   uint64? recurrent_bias_operand_id;
   // The id of the initial hidden state operand.
   uint64? initial_hidden_state_operand_id;
-  // Indicates whether to apply the reset gate after or before matrix multiplication.
+  // Indicates whether to apply the reset gate after or before matrix
+  // multiplication.
   bool reset_after;
-  // Indicates whether to also return the entire sequence with every output from each time step.
+  // Indicates whether to also return the entire sequence with every output from
+  // each time step.
   bool return_sequence;
   // The processing direction of the input sequence.
   RecurrentNetworkDirection direction;
   // The ordering of the weight and bias vectors for the internal gates of GRU.
   GruWeightLayout layout;
-  // Specifies a pair of activation functions for the update, reset and new gates.
+  // Specifies a pair of activation functions for the update, reset and new
+  // gates.
   array<Activation, 2> activations;
 };
 
+// Represents a single step of Gated Recurrent Unit [GRU] recurrent network.
+struct GruCell {
+  // The id of the input operand.
+  uint64 input_operand_id;
+  // The id of the weight operand.
+  uint64 weight_operand_id;
+  // The id of the recurrent weight operand.
+  uint64 recurrent_weight_operand_id;
+  // The id of the hidden state operand.
+  uint64 hidden_state_operand_id;
+  // The number of features in the hidden state.
+  uint32 hidden_size;
+  // The id of the output operand must be distinct from other operand ids.
+  uint64 output_operand_id;
+
+  // The id of the bias operand.
+  uint64? bias_operand_id;
+  // The id of the recurrent bias operand.
+  uint64? recurrent_bias_operand_id;
+  // Indicates whether to apply the reset gate after or before matrix
+  // multiplication.
+  bool reset_after;
+  // The ordering of the weight and bias vectors for the internal gates of GRU.
+  GruWeightLayout layout;
+  // Specifies a pair of activation functions for the update, reset and new
+  // gates.
+  array<Activation, 2> activations;
+};
 
 // Represents general matrix multiplication (gemm) operation in the expression
 // `alpha * A * B + beta * C`.
@@ -666,15 +709,15 @@ struct Linear {
   float beta = 0;
 };
 
+// The ordering of the weight for the input (i), output (o), forget (f) and
+// cell (g) gates.
+enum LstmWeightLayout {
+  kIofg,
+  kIfgo,
+};
+
 // Represents an operation of Long Short-Term Memory (LSTM) recurrent network.
 struct Lstm {
-  // The ordering of the weight for the input (i), output (o), forget (f) and
-  // cell (g) gates.
-  enum WeightLayout {
-    kIofg,
-    kIfgo,
-  };
-
   // The id of the input operand.
   uint64 input_operand_id;
   // The id of the weight operand.
@@ -702,11 +745,42 @@ struct Lstm {
 
   // Indicates whether to return the entire sequence of outputs from each time
   // step.
-  bool return_sequence = false;
+  bool return_sequence;
   // The processing direction of the input sequence.
   RecurrentNetworkDirection direction;
   // The ordering of both weight and bias vectors.
-  WeightLayout layout;
+  LstmWeightLayout layout;
+  // The activation functions for the input, output and forget gates.
+  array<Activation, 3> activations;
+};
+
+// Represents a single step of Long Short-Term Memory (LSTM) recurrent network.
+struct LstmCell {
+  // The id of the input operand.
+  uint64 input_operand_id;
+  // The id of the weight operand.
+  uint64 weight_operand_id;
+  // The id of the recurrent weight operand.
+  uint64 recurrent_weight_operand_id;
+  // The id of the hidden state operand.
+  uint64 hidden_state_operand_id;
+  // The id of the cell state operand.
+  uint64 cell_state_operand_id;
+  // The ids of the output operands must be distinct from other operand ids.
+  array<uint64, 2> output_operand_ids;
+
+  // The number of features in the hidden state.
+  uint32 hidden_size;
+
+  // The id of the bias operand.
+  uint64? bias_operand_id;
+  // The id of the recurrent bias operand.
+  uint64? recurrent_bias_operand_id;
+  // The id of the peephole weight operand.
+  uint64? peephole_weight_operand_id;
+
+  // The ordering of both weight and bias vectors.
+  LstmWeightLayout layout;
   // The activation functions for the input, output and forget gates.
   array<Activation, 3> activations;
 };
@@ -771,16 +845,12 @@ struct Softmax {
 };
 
 // Corresponds to `MLOperand softplus(MLOperand x)` that computes the softplus
-// function of the input tensor following the expression
-// ln(1 + exp(steepness * x)) / steepness.
+// function of the input tensor following the expression ln(1 + exp(x)).
 struct Softplus {
   // The input operand (referenced by input_operand_id) must be distinct from
   // the output operand (referenced by output_operand_id).
   uint64 input_operand_id;
   uint64 output_operand_id;
-
-  // The steepness value defaults to 1.0.
-  float steepness = 1.0;
 };
 
 // Corresponds to `MLOperand softsign(MLOperand x)` that computes the softsign
@@ -910,6 +980,7 @@ struct Where {
 union Activation {
   Clamp clamp;
   Elu elu;
+  Gelu gelu;
   HardSigmoid hard_sigmoid;
   LeakyRelu leaky_relu;
   Linear linear;
@@ -934,8 +1005,10 @@ union Operation {
   ElementWiseUnary element_wise_unary;
   Expand expand;
   Gather gather;
+  Gelu gelu;
   Gemm gemm;
   Gru gru;
+  GruCell gru_cell;
   HardSigmoid hard_sigmoid;
   HardSwish hard_swish;
   LayerNormalization layer_normalization;
@@ -943,6 +1016,7 @@ union Operation {
   LeakyRelu leaky_relu;
   Linear linear;
   Lstm lstm;
+  LstmCell lstm_cell;
   Matmul matmul;
   Pad pad;
   Pool2d pool2d;

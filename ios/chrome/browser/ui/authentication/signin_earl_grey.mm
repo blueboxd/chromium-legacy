@@ -20,13 +20,27 @@ using base::test::ios::WaitUntilConditionOrTimeout;
 @implementation SigninEarlGreyImpl
 
 - (void)addFakeIdentity:(FakeSystemIdentity*)fakeIdentity {
-  [SigninEarlGreyAppInterface addFakeIdentity:fakeIdentity];
+  [self addFakeIdentity:fakeIdentity withUnknownCapabilities:NO];
+}
+
+- (void)addFakeIdentity:(FakeSystemIdentity*)fakeIdentity
+    withUnknownCapabilities:(BOOL)usingUnknownCapabilities {
+  [SigninEarlGreyAppInterface addFakeIdentity:fakeIdentity
+                      withUnknownCapabilities:usingUnknownCapabilities];
 }
 
 - (void)addFakeIdentityForSSOAuthAddAccountFlow:
     (FakeSystemIdentity*)fakeIdentity {
+  [self addFakeIdentityForSSOAuthAddAccountFlow:fakeIdentity
+                        withUnknownCapabilities:NO];
+}
+
+- (void)addFakeIdentityForSSOAuthAddAccountFlow:
+            (FakeSystemIdentity*)fakeIdentity
+                        withUnknownCapabilities:(BOOL)usingUnknownCapabilities {
   [SigninEarlGreyAppInterface
-      addFakeIdentityForSSOAuthAddAccountFlow:fakeIdentity];
+      addFakeIdentityForSSOAuthAddAccountFlow:fakeIdentity
+                      withUnknownCapabilities:usingUnknownCapabilities];
 }
 
 - (void)setIsSubjectToParentalControls:(BOOL)value
@@ -70,6 +84,12 @@ using base::test::ios::WaitUntilConditionOrTimeout;
 - (void)signinWithFakeIdentity:(FakeSystemIdentity*)identity {
   [SigninEarlGreyAppInterface signinWithFakeIdentity:identity];
   [self verifySignedInWithFakeIdentity:identity];
+}
+
+- (void)signinAndEnableLegacySyncFeature:(FakeSystemIdentity*)identity {
+  [SigninEarlGreyAppInterface signinAndEnableLegacySyncFeature:identity];
+  [self verifyPrimaryAccountWithEmail:identity.userEmail
+                              consent:signin::ConsentLevel::kSync];
 }
 
 - (void)triggerReauthDialogWithFakeIdentity:(FakeSystemIdentity*)identity {

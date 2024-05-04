@@ -267,7 +267,8 @@ void BookmarkEventRouter::BookmarkNodeRemoved(
     const BookmarkNode* parent,
     size_t index,
     const BookmarkNode* node,
-    const std::set<GURL>& removed_urls) {
+    const std::set<GURL>& removed_urls,
+    const base::Location& location) {
   api::bookmarks::OnRemoved::RemoveInfo remove_info;
   remove_info.parent_id = base::NumberToString(parent->id());
   remove_info.index = static_cast<int>(index);
@@ -281,8 +282,9 @@ void BookmarkEventRouter::BookmarkNodeRemoved(
 }
 
 void BookmarkEventRouter::BookmarkAllUserNodesRemoved(
-    const std::set<GURL>& removed_urls) {
-  // TODO(crbug.com/1468324): This used to be used only on Android, but that's
+    const std::set<GURL>& removed_urls,
+    const base::Location& location) {
+  // TODO(crbug.com/40277078): This used to be used only on Android, but that's
   // no longer the case. We need to implement a new event to handle this.
 }
 
@@ -482,9 +484,9 @@ ExtensionFunction::ResponseValue BookmarksSearchFunction::RunOnReady() {
     bookmarks::QueryFields query;
     query.word_phrase_query = std::make_unique<std::u16string>(
         base::UTF8ToUTF16(*params->query.as_string));
-    bookmarks::GetBookmarksMatchingProperties(
+    nodes = bookmarks::GetBookmarksMatchingProperties(
         BookmarkModelFactory::GetForBrowserContext(GetProfile()), query,
-        std::numeric_limits<int>::max(), &nodes);
+        std::numeric_limits<int>::max());
   } else {
     DCHECK(params->query.as_object);
     const api::bookmarks::Search::Params::Query::Object& object =
@@ -500,9 +502,9 @@ ExtensionFunction::ResponseValue BookmarksSearchFunction::RunOnReady() {
     if (object.title)
       query.title =
           std::make_unique<std::u16string>(base::UTF8ToUTF16(*object.title));
-    bookmarks::GetBookmarksMatchingProperties(
+    nodes = bookmarks::GetBookmarksMatchingProperties(
         BookmarkModelFactory::GetForBrowserContext(GetProfile()), query,
-        std::numeric_limits<int>::max(), &nodes);
+        std::numeric_limits<int>::max());
   }
 
   std::vector<BookmarkTreeNode> tree_nodes;
@@ -604,6 +606,10 @@ ExtensionFunction::ResponseValue BookmarksMoveFunction::RunOnReady() {
 
   if (!parent->is_folder()) {
     return Error(bookmark_api_constants::kInvalidParentError);
+  }
+
+  if (parent->HasAncestor(node)) {
+    return Error(bookmark_api_constants::kInvalidMoveDestinationError);
   }
 
   size_t index;

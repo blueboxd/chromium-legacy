@@ -33,6 +33,7 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.test.annotation.UiThreadTest;
 import androidx.test.filters.SmallTest;
 
 import org.hamcrest.Matchers;
@@ -45,7 +46,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import org.chromium.base.test.UiThreadTest;
 import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
@@ -85,6 +85,7 @@ public class TabGridDialogViewBinderTest extends BlankUiTestActivityTestCase {
     private ChromeImageView mRightButton;
     private ChromeImageView mLeftButton;
     private EditText mTitleTextView;
+    private FrameLayout mColorIconContainer;
     private ImageView mColorIcon;
     private View mMainContent;
     private ScrimCoordinator mScrimCoordinator;
@@ -129,6 +130,8 @@ public class TabGridDialogViewBinderTest extends BlankUiTestActivityTestCase {
                     mLeftButton = mToolbarView.findViewById(R.id.toolbar_left_button);
                     mRightButton = mToolbarView.findViewById(R.id.toolbar_right_button);
                     mTitleTextView = mToolbarView.findViewById(R.id.title);
+                    mColorIconContainer =
+                            mToolbarView.findViewById(R.id.tab_group_color_icon_container);
                     mColorIcon = mToolbarView.findViewById(R.id.tab_group_color_icon);
                     mMainContent = mToolbarView.findViewById(R.id.main_content);
                     mScrimCoordinator =
@@ -241,7 +244,7 @@ public class TabGridDialogViewBinderTest extends BlankUiTestActivityTestCase {
     @SmallTest
     @UiThreadTest
     public void testSetPrimaryColor() {
-        int color = ContextCompat.getColor(getActivity(), R.color.modern_blue_300);
+        int color = ContextCompat.getColor(getActivity(), R.color.baseline_primary_80);
 
         mModel.set(TabGridDialogProperties.PRIMARY_COLOR, color);
 
@@ -587,14 +590,14 @@ public class TabGridDialogViewBinderTest extends BlankUiTestActivityTestCase {
     public void testSetColorIconClickListener() {
         AtomicBoolean colorIconClicked = new AtomicBoolean();
         colorIconClicked.set(false);
-        mColorIcon.performClick();
+        mColorIconContainer.performClick();
         Assert.assertFalse(colorIconClicked.get());
 
         mModel.set(
                 TabGridDialogProperties.COLOR_ICON_CLICK_LISTENER,
                 (View view) -> colorIconClicked.set(true));
 
-        mColorIcon.performClick();
+        mColorIconContainer.performClick();
         Assert.assertTrue(colorIconClicked.get());
     }
 

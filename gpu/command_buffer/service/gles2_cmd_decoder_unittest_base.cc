@@ -14,6 +14,7 @@
 
 #include "base/command_line.h"
 #include "base/containers/contains.h"
+#include "base/containers/heap_array.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "build/build_config.h"
@@ -24,7 +25,6 @@
 #include "gpu/command_buffer/service/copy_texture_chromium_mock.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/command_buffer/service/logger.h"
-#include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/program_manager.h"
 #include "gpu/command_buffer/service/service_utils.h"
 #include "gpu/command_buffer/service/test_helper.h"
@@ -205,13 +205,12 @@ ContextResult GLES2DecoderTestBase::MaybeInitDecoderWithWorkarounds(
   scoped_refptr<FeatureInfo> feature_info =
       new FeatureInfo(workarounds, gpu_feature_info);
 
-  group_ = scoped_refptr<ContextGroup>(
-      new ContextGroup(gpu_preferences_, GetParam(), &mailbox_manager_,
-                       std::move(memory_tracker_), &shader_translator_cache_,
-                       &framebuffer_completeness_cache_, feature_info,
-                       normalized_init.bind_generates_resource,
-                       nullptr /* progress_reporter */, gpu_feature_info,
-                       &discardable_manager_, nullptr, &shared_image_manager_));
+  group_ = scoped_refptr<ContextGroup>(new ContextGroup(
+      gpu_preferences_, GetParam(), std::move(memory_tracker_),
+      &shader_translator_cache_, &framebuffer_completeness_cache_, feature_info,
+      normalized_init.bind_generates_resource, nullptr /* progress_reporter */,
+      gpu_feature_info, &discardable_manager_, nullptr,
+      &shared_image_manager_));
   bool use_default_textures = normalized_init.bind_generates_resource;
 
   InSequence sequence;
@@ -771,7 +770,7 @@ void GLES2DecoderTestBase::SetBucketAsCStrings(uint32_t bucket_id,
                                                char str_end) {
   uint32_t header_size = sizeof(GLint) * (count + 1);
   uint32_t total_size = header_size;
-  std::unique_ptr<GLint[]> header(new GLint[count + 1]);
+  auto header = base::HeapArray<GLint>::Uninit(count + 1);
   header[0] = static_cast<GLint>(count_in_header);
   for (GLsizei ii = 0; ii < count; ++ii) {
     header[ii + 1] = str && str[ii] ? strlen(str[ii]) : 0;
@@ -780,7 +779,7 @@ void GLES2DecoderTestBase::SetBucketAsCStrings(uint32_t bucket_id,
   cmd::SetBucketSize cmd1;
   cmd1.Init(bucket_id, total_size);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd1));
-  memcpy(shared_memory_address_, header.get(), header_size);
+  memcpy(shared_memory_address_, header.data(), header_size);
   uint32_t offset = header_size;
   for (GLsizei ii = 0; ii < count; ++ii) {
     if (str && str[ii]) {
@@ -2431,7 +2430,7 @@ void GLES2DecoderPassthroughTestBase::SetUp() {
 
   scoped_refptr<gles2::FeatureInfo> feature_info = new gles2::FeatureInfo();
   group_ = new gles2::ContextGroup(
-      gpu_preferences_, true, &mailbox_manager_, nullptr /* memory_tracker */,
+      gpu_preferences_, true, nullptr /* memory_tracker */,
       &shader_translator_cache_, &framebuffer_completeness_cache_, feature_info,
       context_creation_attribs_.bind_generates_resource,
       nullptr /* progress_reporter */, GpuFeatureInfo(), &discardable_manager_,

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_ALLOCATOR_PARTITION_ALLOCATOR_SRC_PARTITION_ALLOC_PARTITION_ALLOC_INL_H_
-#define BASE_ALLOCATOR_PARTITION_ALLOCATOR_SRC_PARTITION_ALLOC_PARTITION_ALLOC_INL_H_
+#ifndef PARTITION_ALLOC_PARTITION_ALLOC_INL_H_
+#define PARTITION_ALLOC_PARTITION_ALLOC_INL_H_
 
 #include <algorithm>
 #include <cstring>
 
-#include "build/build_config.h"
+#include "partition_alloc/build_config.h"
 #include "partition_alloc/in_slot_metadata.h"
 #include "partition_alloc/partition_alloc_base/compiler_specific.h"
 #include "partition_alloc/partition_alloc_base/debug/debugging_buildflags.h"
@@ -33,7 +33,7 @@ namespace partition_alloc::internal {
 // MSVC only supports inline assembly on x86. This preprocessor directive
 // is intended to be a replacement for the same.
 //
-// TODO(crbug.com/1351310): Make sure inlining doesn't degrade this into
+// TODO(crbug.com/40234441): Make sure inlining doesn't degrade this into
 // a no-op or similar. The documentation doesn't say.
 #pragma optimize("", off)
 #endif
@@ -101,4 +101,4 @@ PA_ALWAYS_INLINE uintptr_t SlotStartPtr2Addr(const void* slot_start) {
 
 }  // namespace partition_alloc::internal
 
-#endif  // BASE_ALLOCATOR_PARTITION_ALLOCATOR_SRC_PARTITION_ALLOC_PARTITION_ALLOC_INL_H_
+#endif  // PARTITION_ALLOC_PARTITION_ALLOC_INL_H_

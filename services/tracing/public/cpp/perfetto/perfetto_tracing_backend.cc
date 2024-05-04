@@ -37,7 +37,7 @@ using ShmemMode = perfetto::SharedMemoryArbiter::ShmemMode;
 namespace tracing {
 namespace {
 
-// TODO(crbug.com/83907): Find a good compromise between performance and
+// TODO(crbug.com/40574593): Find a good compromise between performance and
 // data granularity (mainly relevant to running with small buffer sizes
 // when we use background tracing) on Android.
 #if BUILDFLAG(IS_ANDROID)
@@ -46,7 +46,7 @@ constexpr size_t kDefaultSMBPageSizeBytes = 4 * 1024;
 constexpr size_t kDefaultSMBPageSizeBytes = 32 * 1024;
 #endif
 
-// TODO(crbug.com/839071): Figure out a good buffer size.
+// TODO(crbug.com/40574594): Figure out a good buffer size.
 constexpr size_t kDefaultSMBSizeBytes = 4 * 1024 * 1024;
 
 constexpr char kErrorTracingFailed[] = "Tracing failed";
@@ -352,7 +352,7 @@ class ConsumerEndpoint : public perfetto::ConsumerEndpoint,
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     trace_config_ = trace_config;
 #if BUILDFLAG(IS_WIN)
-    // TODO(crbug.com/1158482): Add support on Windows.
+    // TODO(crbug.com/40736989): Add support on Windows.
     DCHECK(!file)
         << "Tracing directly to a file isn't supported on Windows yet";
 #else
@@ -663,13 +663,11 @@ PerfettoTracingBackend::ConnectProducer(const ConnectProducerArgs& args) {
   if (shmem_page_size_hint == 0)
     shmem_page_size_hint = kDefaultSMBPageSizeBytes;
 
-#if BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
   if (args.use_producer_provided_smb) {
     shm = std::make_unique<ChromeBaseSharedMemory>(shmem_size_hint);
     arbiter = perfetto::SharedMemoryArbiter::CreateUnboundInstance(
         shm.get(), shmem_page_size_hint, ShmemMode::kDefault);
   }
-#endif  // BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
 
   auto producer_endpoint = std::make_unique<ProducerEndpoint>(
       args.producer_name, args.producer, args.task_runner, shmem_page_size_hint,

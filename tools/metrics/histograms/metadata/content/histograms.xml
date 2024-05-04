@@ -153,6 +153,16 @@ chromium-metrics-reviews@google.com.
   <summary>The status of the push notifications client for Content.</summary>
 </histogram>
 
+<histogram name="ContentNotifications.OpenURLAction.HasURL" enum="Boolean"
+    expires_after="2024-10-10">
+  <owner>guiperez@google.com</owner>
+  <owner>chrome-sherlock@google.com</owner>
+  <summary>
+    After a notification interaction, if the URL has successfully been parsed or
+    if it has failed.
+  </summary>
+</histogram>
+
 <histogram name="ContentNotifications.Promo.Prompt.Action"
     enum="ContentNotificationPromptAction" expires_after="2024-06-20">
   <owner>tinazwang@chromium.org</owner>
@@ -175,7 +185,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContentNotifications.Promo.SetUpList.Action"
-    enum="ContentNotificationSetUpListPromoAction" expires_after="2024-06-20">
+    enum="ContentNotificationSetUpListPromoAction" expires_after="2024-09-29">
   <owner>tinazwang@chromium.org</owner>
   <owner>chrome-sherlock@google.com</owner>
   <summary>
@@ -201,7 +211,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContentNotifications.Promo.TopOfFeed.Action"
-    enum="ContentNotificationTopOfFeedPromoAction" expires_after="2024-06-20">
+    enum="ContentNotificationTopOfFeedPromoAction" expires_after="2024-09-29">
   <owner>guiperez@google.com</owner>
   <owner>chrome-sherlock@google.com</owner>
   <summary>
@@ -216,6 +226,16 @@ chromium-metrics-reviews@google.com.
   <owner>chrome-sherlock@google.com</owner>
   <summary>
     An event from the the Top of Feed Content Notifications promo.
+  </summary>
+</histogram>
+
+<histogram name="ContentNotifications.Registration.BrowserStateUnavailable"
+    enum="Boolean" expires_after="2024-11-03">
+  <owner>guiperez@google.com</owner>
+  <owner>chrome-sherlock@google.com</owner>
+  <summary>
+    This logs if a SNo registration has not succeeded due to a BrowserState
+    being unavailable at the time due to a Browser not being initialized.
   </summary>
 </histogram>
 
@@ -279,7 +299,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContentSettings.GetContentSetting.Network.Duration"
-    units="microseconds" expires_after="2024-08-18">
+    units="microseconds" expires_after="2024-10-20">
   <owner>trishalfonso@google.com</owner>
   <owner>wanderview@chromium.org</owner>
   <summary>
@@ -377,7 +397,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContentSettings.Popups.StrongBlockerActions"
-    enum="StrongPopupBlockerAction" expires_after="2024-07-21">
+    enum="StrongPopupBlockerAction" expires_after="2024-09-22">
   <owner>csharrison@chromium.org</owner>
   <summary>
     Counts of various events related to the strong popup blocker (aka abusive
@@ -386,7 +406,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContentSettings.RegularProfile.DefaultAutoVerifySetting"
-    enum="ContentSetting" expires_after="2024-08-18">
+    enum="ContentSetting" expires_after="2024-10-20">
   <owner>ryankalla@google.com</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
   <summary>
@@ -396,7 +416,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContentSettings.RegularProfile.DefaultBackgroundSyncSetting"
-    enum="ContentSetting" expires_after="2024-08-11">
+    enum="ContentSetting" expires_after="2024-10-13">
   <owner>tungnh@chromium.org</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
   <summary>
@@ -406,7 +426,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContentSettings.RegularProfile.DefaultStorageAccessSetting"
-    enum="ContentSetting" expires_after="2024-08-25">
+    enum="ContentSetting" expires_after="2024-10-27">
   <owner>dullweber@chromium.org</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
   <summary>
@@ -640,7 +660,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="ContentSettings.{RegularProfileFiltered}DefaultRequestDesktopSiteSetting"
-    enum="ContentSetting" expires_after="2024-08-11">
+    enum="ContentSetting" expires_after="2024-10-13">
   <owner>shuyng@google.com</owner>
   <owner>twellington@chromium.org</owner>
   <summary>
@@ -814,7 +834,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.ActivityLoggingEnabled" enum="Boolean"
-    expires_after="2024-08-11">
+    expires_after="2024-10-13">
   <owner>dewittj@chromium.org</owner>
   <owner>feed@chromium.org</owner>
   <summary>
@@ -971,7 +991,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.DisplayStatusOnOpen"
-    enum="ContentSuggestionsDisplayStatus" expires_after="2024-07-07">
+    enum="ContentSuggestionsDisplayStatus" expires_after="2024-09-15">
   <owner>carlosk@chromium.org</owner>
   <owner>harringtond@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -1068,7 +1088,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.LoadStreamStatus.LoadMore"
-    enum="FeedLoadStreamStatus" expires_after="2024-07-14">
+    enum="FeedLoadStreamStatus" expires_after="2024-09-15">
   <owner>harringtond@chromium.org</owner>
   <owner>carlosk@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -1106,7 +1126,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.Network.Duration{NetworkEvent}"
-    units="ms" expires_after="2024-07-23">
+    units="ms" expires_after="2024-09-22">
   <owner>sczs@chromium.org</owner>
   <owner>harringtond@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -1135,7 +1155,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.Network.RequestSizeKB.Compressed"
-    units="KB" expires_after="2024-07-28">
+    units="KB" expires_after="2024-09-29">
   <owner>carlosk@chromium.org</owner>
   <owner>harringtond@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -1169,7 +1189,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.Network.ResponseStatus{Type}"
-    enum="CombinedHttpResponseAndNetErrorCode" expires_after="2024-07-28">
+    enum="CombinedHttpResponseAndNetErrorCode" expires_after="2024-09-29">
   <owner>carlosk@chromium.org</owner>
   <owner>harringtond@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -1202,7 +1222,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.NoticeCardFulfilled2" enum="Boolean"
-    expires_after="2024-07-21">
+    expires_after="2024-09-22">
   <owner>vincb@google.com</owner>
   <owner>feed@chromium.org</owner>
   <summary>
@@ -1328,7 +1348,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.UploadVisibilityLog.{LogType}"
-    enum="Boolean" expires_after="2024-07-28">
+    enum="Boolean" expires_after="2024-09-29">
   <owner>freedjm@google.com</owner>
   <owner>feed@chromium.org</owner>
   <summary>
@@ -1418,7 +1438,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="ContentSuggestions.Feed.UserJourney.{Surface}.{Status}Duration"
-    units="ms" expires_after="2024-07-28">
+    units="ms" expires_after="2024-09-29">
   <owner>harringtond@chromium.org</owner>
   <owner>carlosk@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -1516,7 +1536,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.WebFeed.FollowCount.{Event}"
-    units="follows" expires_after="2024-07-28">
+    units="follows" expires_after="2024-09-29">
   <owner>harringtond@chromium.org</owner>
   <owner>feed@chromium.org</owner>
   <summary>
@@ -1775,7 +1795,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContentSuggestions.{FeedType}.Activity.ByProvider"
-    enum="FeedActivityBucket" expires_after="2024-07-14">
+    enum="FeedActivityBucket" expires_after="2024-09-15">
   <owner>guiperez@google.com</owner>
   <owner>feed@chromium.org</owner>
   <summary>
@@ -1838,7 +1858,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContentSuggestions.{FeedType}.FollowCount.Engaged2"
-    units="follows" expires_after="2024-07-28">
+    units="follows" expires_after="2024-09-29">
   <owner>harringtond@chromium.org</owner>
   <owner>feed@chromium.org</owner>
   <summary>
@@ -1881,7 +1901,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContentSuggestions.{FeedType}.LoadedCardCount" units="index"
-    expires_after="2024-07-28">
+    expires_after="2024-09-29">
   <owner>harringtond@chromium.org</owner>
   <owner>feed@chromium.org</owner>
   <summary>
@@ -1952,7 +1972,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContentSuggestions.{FeedType}.LoadStreamStatus.Initial"
-    enum="FeedLoadStreamStatus" expires_after="2024-07-28">
+    enum="FeedLoadStreamStatus" expires_after="2024-09-29">
   <owner>harringtond@chromium.org</owner>
   <owner>carlosk@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -1970,7 +1990,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="ContentSuggestions.{FeedType}.LoadStreamStatus.InitialFromStore"
-    enum="FeedLoadStreamStatus" expires_after="2024-07-28">
+    enum="FeedLoadStreamStatus" expires_after="2024-09-29">
   <owner>harringtond@chromium.org</owner>
   <owner>carlosk@chromium.org</owner>
   <owner>feed@chromium.org</owner>

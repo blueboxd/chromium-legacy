@@ -17,7 +17,6 @@
 #import "components/password_manager/core/browser/sharing/password_receiver_service.h"
 #import "components/prefs/pref_service.h"
 #import "components/send_tab_to_self/send_tab_to_self_sync_service.h"
-#import "components/supervised_user/core/common/buildflags.h"
 #import "components/sync/base/command_line_switches.h"
 #import "components/sync/base/sync_util.h"
 #import "components/sync/service/sync_service.h"
@@ -33,6 +32,7 @@
 #import "ios/chrome/browser/bookmarks/model/local_or_syncable_bookmark_model_factory.h"
 #import "ios/chrome/browser/bookmarks/model/local_or_syncable_bookmark_sync_service_factory.h"
 #import "ios/chrome/browser/consent_auditor/model/consent_auditor_factory.h"
+#import "ios/chrome/browser/data_sharing/model/data_sharing_service_factory.h"
 #import "ios/chrome/browser/favicon/model/favicon_service_factory.h"
 #import "ios/chrome/browser/gcm/model/ios_chrome_gcm_profile_service_factory.h"
 #import "ios/chrome/browser/history/model/history_service_factory.h"
@@ -49,6 +49,7 @@
 #import "ios/chrome/browser/signin/model/about_signin_internals_factory.h"
 #import "ios/chrome/browser/signin/model/chrome_account_manager_service_factory.h"
 #import "ios/chrome/browser/signin/model/identity_manager_factory.h"
+#import "ios/chrome/browser/supervised_user/model/supervised_user_settings_service_factory.h"
 #import "ios/chrome/browser/sync/model/device_info_sync_service_factory.h"
 #import "ios/chrome/browser/sync/model/ios_chrome_sync_client.h"
 #import "ios/chrome/browser/sync/model/ios_user_event_service_factory.h"
@@ -63,11 +64,6 @@
 #import "ios/web/public/thread/web_thread.h"
 #import "services/network/public/cpp/shared_url_loader_factory.h"
 #import "url/gurl.h"
-
-#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-#import "ios/chrome/browser/supervised_user/model/supervised_user_settings_service_factory.h"
-#endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
-
 namespace {
 
 std::unique_ptr<KeyedService> BuildSyncService(web::BrowserState* context) {
@@ -81,7 +77,7 @@ std::unique_ptr<KeyedService> BuildSyncService(web::BrowserState* context) {
   // being signed out.
   IOSChromeGCMProfileServiceFactory::GetForBrowserState(browser_state);
 
-  // TODO(crbug.com/171406): Change AboutSigninInternalsFactory to load on
+  // TODO(crbug.com/40299450): Change AboutSigninInternalsFactory to load on
   // startup once bug has been fixed.
   ios::AboutSigninInternalsFactory::GetForBrowserState(browser_state);
 
@@ -100,7 +96,7 @@ std::unique_ptr<KeyedService> BuildSyncService(web::BrowserState* context) {
       std::make_unique<syncer::SyncServiceImpl>(std::move(init_params));
   sync_service->Initialize();
 
-  // TODO(crbug.com/1400663): Remove the workaround below once
+  // TODO(crbug.com/40250371): Remove the workaround below once
   // PrivacySandboxSettingsFactory correctly declares its KeyedServices
   // dependencies.
   if (history::IsSyncSegmentsDataEnabled()) {
@@ -199,6 +195,7 @@ SyncServiceFactory::SyncServiceFactory()
   // destruction order.
   DependsOn(ChromeAccountManagerServiceFactory::GetInstance());
   DependsOn(ConsentAuditorFactory::GetInstance());
+  DependsOn(data_sharing::DataSharingServiceFactory::GetInstance());
   DependsOn(DeviceInfoSyncServiceFactory::GetInstance());
   DependsOn(SendTabToSelfSyncServiceFactory::GetInstance());
   // Sync needs this service to still be present when the sync engine is
@@ -225,11 +222,7 @@ SyncServiceFactory::SyncServiceFactory()
   DependsOn(ModelTypeStoreServiceFactory::GetInstance());
   DependsOn(ReadingListModelFactory::GetInstance());
   DependsOn(SessionSyncServiceFactory::GetInstance());
-
-#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   DependsOn(SupervisedUserSettingsServiceFactory::GetInstance());
-#endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
-
   DependsOn(SyncInvalidationsServiceFactory::GetInstance());
 }
 

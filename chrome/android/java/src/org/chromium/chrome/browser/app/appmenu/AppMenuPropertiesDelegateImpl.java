@@ -58,7 +58,6 @@ import org.chromium.chrome.browser.quick_delete.QuickDeleteController;
 import org.chromium.chrome.browser.readaloud.ReadAloudController;
 import org.chromium.chrome.browser.share.ShareHelper;
 import org.chromium.chrome.browser.share.ShareUtils;
-import org.chromium.chrome.browser.sync.SyncServiceFactory;
 import org.chromium.chrome.browser.sync.settings.SyncSettingsUtils;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -83,13 +82,13 @@ import org.chromium.components.commerce.core.SubscriptionType;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.embedder_support.util.UrlUtilities;
-import org.chromium.components.sync.SyncService;
 import org.chromium.components.webapk.lib.client.WebApkValidator;
 import org.chromium.components.webapps.AppBannerManager;
 import org.chromium.components.webapps.WebappsUtils;
 import org.chromium.net.ConnectionType;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.modelutil.MVCListAdapter;
+import org.chromium.ui.modelutil.MVCListAdapter.ListItem;
 import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.url.GURL;
@@ -97,6 +96,7 @@ import org.chromium.url.GURL;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -120,7 +120,11 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
     private ObservableSupplier<BookmarkModel> mBookmarkModelSupplier;
     private boolean mUpdateMenuItemVisible;
     private ShareUtils mShareUtils;
-    @Nullable private final Supplier<ReadAloudController> mReadAloudControllerSupplier;
+    private final Supplier<ReadAloudController> mReadAloudControllerSupplier;
+    private @Nullable ModelList mModelList;
+    private int mReadAloudPos;
+    @Nullable protected Runnable mReadAloudAppMenuResetter;
+    private boolean mHasReadAloudInserted;
 
     /**
      * This is non null for the case of ChromeTabbedActivity when the corresponding {@link
@@ -235,6 +239,22 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
             mCallbackController.destroy();
             mCallbackController = null;
         }
+        if (mReadAloudControllerSupplier.get() != null) {
+            mReadAloudControllerSupplier
+                    .get()
+                    .removeReadabilityUpdateListener(mReadAloudAppMenuResetter);
+        }
+    }
+
+    @VisibleForTesting(otherwise = VisibleForTesting.PACKAGE_PRIVATE)
+    Runnable getReadAloudmenuResetter() {
+        return mReadAloudAppMenuResetter;
+    }
+
+    @VisibleForTesting(otherwise = VisibleForTesting.PACKAGE_PRIVATE)
+    @Nullable
+    ModelList getModelList() {
+        return mModelList;
     }
 
     /**
@@ -318,21 +338,34 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
     @Override
     public ModelList getMenuItems(
             CustomItemViewTypeProvider customItemViewTypeProvider, AppMenuHandler handler) {
-        ModelList modelList = new ModelList();
-
+        mReadAloudPos = -1;
         PopupMenu popup = new PopupMenu(mContext, mDecorView);
         Menu menu = popup.getMenu();
         MenuInflater inflater = popup.getMenuInflater();
         inflater.inflate(getAppMenuLayoutId(), menu);
 
-        prepareMenu(menu, handler);
+        return getMenuItemsForMenu(menu, customItemViewTypeProvider, handler);
+    }
 
-        // TODO(crbug.com/1119550): Programmatically create menu item's PropertyModel instead of
+    @VisibleForTesting
+    ModelList getMenuItemsForMenu(
+            Menu menu,
+            CustomItemViewTypeProvider customItemViewTypeProvider,
+            AppMenuHandler handler) {
+        ModelList modelList = new ModelList();
+        prepareMenu(menu, handler);
+        // TODO(crbug.com/40145539): Programmatically create menu item's PropertyModel instead of
         // converting from MenuItems.
+        int visibleBeforeReadAloudCount = 0;
         for (int i = 0; i < menu.size(); ++i) {
             MenuItem item = menu.getItem(i);
-            if (!item.isVisible()) continue;
-
+            if (!item.isVisible()) {
+                if (item.getItemId() == R.id.readaloud_menu_id) {
+                    mReadAloudPos = visibleBeforeReadAloudCount;
+                }
+                continue;
+            }
+            visibleBeforeReadAloudCount++;
             PropertyModel propertyModel = AppMenuUtil.menuItemToPropertyModel(item);
             propertyModel.set(AppMenuItemProperties.ICON_COLOR_RES, getMenuItemIconColorRes(item));
             propertyModel.set(
@@ -343,7 +376,8 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
             if (item.hasSubMenu()) {
                 // Only support top level menu items have SUBMENU, and a SUBMENU item cannot have a
                 // SUBMENU.
-                // TODO(crbug.com/1183234) : Create a new SubMenuItemProperties property key set for
+                // TODO(crbug.com/40171109) : Create a new SubMenuItemProperties property key set
+                // for
                 // SUBMENU items.
                 ModelList subList = new ModelList();
                 for (int j = 0; j < item.getSubMenu().size(); ++j) {
@@ -383,7 +417,7 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
             }
             modelList.add(new MVCListAdapter.ListItem(menutype, propertyModel));
         }
-
+        mModelList = modelList;
         return modelList;
     }
 
@@ -410,9 +444,10 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
         boolean isCurrentTabNotNull = currentTab != null;
 
         GURL url = isCurrentTabNotNull ? currentTab.getUrl() : GURL.emptyGURL();
-        final boolean isChromeScheme =
+        final boolean isNativePage =
                 url.getScheme().equals(UrlConstants.CHROME_SCHEME)
-                        || url.getScheme().equals(UrlConstants.CHROME_NATIVE_SCHEME);
+                        || url.getScheme().equals(UrlConstants.CHROME_NATIVE_SCHEME)
+                        || (isCurrentTabNotNull && currentTab.isNativePage());
         final boolean isFileScheme = url.getScheme().equals(UrlConstants.FILE_SCHEME);
         final boolean isContentScheme = url.getScheme().equals(UrlConstants.CONTENT_SCHEME);
 
@@ -483,7 +518,7 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
         menu.findItem(R.id.paint_preview_show_id)
                 .setVisible(
                         isCurrentTabNotNull
-                                && shouldShowPaintPreview(isChromeScheme, currentTab, isIncognito));
+                                && shouldShowPaintPreview(isNativePage, currentTab, isIncognito));
 
         // Enable image descriptions if touch exploration is currently enabled, but not on the
         // native NTP or Start surface.
@@ -518,10 +553,8 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
                                 && shouldShowWebContentsDependentMenuItem(currentTab)
                                 && PageZoomCoordinator.shouldShowMenuItem());
 
-        // Disable find in page on the native NTP or on Start surface.
-        menu.findItem(R.id.find_in_page_id)
-                .setVisible(
-                        isCurrentTabNotNull && shouldShowWebContentsDependentMenuItem(currentTab));
+        // Disable find in page on the native NTP (except for PDF native page) or on Start surface.
+        updateFindInPageMenuItem(menu, currentTab);
 
         // Prepare translate menu button.
         prepareTranslateMenuItem(menu, currentTab);
@@ -533,11 +566,11 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
                 menu,
                 currentTab,
                 shouldShowHomeScreenMenuItem(
-                        isChromeScheme, isFileScheme, isContentScheme, isIncognito, url));
+                        isNativePage, isFileScheme, isContentScheme, isIncognito, url));
 
-        updateRequestDesktopSiteMenuItem(menu, currentTab, true /* can show */, isChromeScheme);
+        updateRequestDesktopSiteMenuItem(menu, currentTab, true /* can show */, isNativePage);
 
-        updateAutoDarkMenuItem(menu, currentTab, isChromeScheme);
+        updateAutoDarkMenuItem(menu, currentTab, isNativePage);
 
         // Only display reader mode settings menu option if the current page is in reader mode.
         menu.findItem(R.id.reader_mode_prefs_id)
@@ -773,21 +806,21 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
     }
 
     /**
-     * @param isChromeScheme Whether URL for the current tab starts with the chrome:// scheme.
+     * @param isNativePage Whether the current tab is a native page.
      * @param currentTab The currentTab for which the app menu is showing.
      * @param isIncognito Whether the currentTab is incognito.
      * @return Whether the paint preview menu item should be displayed.
      */
     @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
     public boolean shouldShowPaintPreview(
-            boolean isChromeScheme, @NonNull Tab currentTab, boolean isIncognito) {
-        return ChromeFeatureList.sPaintPreviewDemo.isEnabled() && !isChromeScheme && !isIncognito;
+            boolean isNativePage, @NonNull Tab currentTab, boolean isIncognito) {
+        return ChromeFeatureList.sPaintPreviewDemo.isEnabled() && !isNativePage && !isIncognito;
     }
 
     /**
      * @param currentTab The currentTab for which the app menu is showing.
-     * @return Whether the currentTab should show an app menu item that requires a webContents.
-     *         This will return false for the Start service or native NTP, and true otherwise.
+     * @return Whether the currentTab should show an app menu item that requires a webContents. This
+     *     will return false for the Start surface or native NTP, and true otherwise.
      */
     protected boolean shouldShowWebContentsDependentMenuItem(@NonNull Tab currentTab) {
         return !currentTab.isNativePage() && currentTab.getWebContents() != null;
@@ -805,7 +838,7 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
     }
 
     /**
-     * @param isChromeScheme Whether URL for the current tab starts with the chrome:// scheme.
+     * @param isNativePage Whether the current tab is a native page.
      * @param isFileScheme Whether URL for the current tab starts with the file:// scheme.
      * @param isContentScheme Whether URL for the current tab starts with the file:// scheme.
      * @param isIncognito Whether the current tab is incognito.
@@ -813,13 +846,13 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
      * @return Whether the homescreen menu item should be displayed.
      */
     protected boolean shouldShowHomeScreenMenuItem(
-            boolean isChromeScheme,
+            boolean isNativePage,
             boolean isFileScheme,
             boolean isContentScheme,
             boolean isIncognito,
             @NonNull GURL url) {
         // Hide 'Add to homescreen' for the following:
-        // * chrome:// pages - Android doesn't know how to direct those URLs.
+        // * native pages - Android doesn't know how to direct those URLs.
         // * incognito pages - To avoid problems where users create shortcuts in incognito
         //                      mode and then open the webapp in regular mode.
         // * file:// - After API 24, file: URIs are not supported in VIEW intents and thus
@@ -829,7 +862,7 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
         //                is not persisted when adding to the homescreen.
         // * If creating shortcuts it not supported by the current home screen.
         return WebappsUtils.isAddToHomeIntentSupported()
-                && !isChromeScheme
+                && !isNativePage
                 && !isFileScheme
                 && !isContentScheme
                 && !isIncognito
@@ -869,18 +902,17 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
 
         boolean openWebApkItemVisible =
                 resolveInfo != null && resolveInfo.activityInfo.packageName != null;
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.PWA_UNIVERSAL_INSTALL_UI)) {
+            // When Universal Install is active, we only show this menu item if we are browsing
+            // the root page of an already installed app.
+            openWebApkItemVisible &= "/".equals(currentTab.getUrl().getPath());
+        }
 
         if (openWebApkItemVisible) {
             // This is the 'webapp is already installed' case, so we offer to open the webapp.
             String appName = resolveInfo.loadLabel(mContext.getPackageManager()).toString();
             openWebApkItem.setTitle(mContext.getString(R.string.menu_open_webapk, appName));
             openWebApkItem.setVisible(true);
-
-            // If universal install flag is enabled, we also offer the universal install dialog so
-            // that the user still has the option to setup a shortcut to the webapp.
-            if (ChromeFeatureList.isEnabled(ChromeFeatureList.PWA_UNIVERSAL_INSTALL_UI)) {
-                universalInstallItem.setVisible(true);
-            }
             return;
         }
 
@@ -936,37 +968,96 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
     /** Sets visibility of the "Listen to this page" menu item. */
     protected void prepareReadAloudMenuItem(Menu menu, @Nullable Tab currentTab) {
         boolean visible = false;
-        if (mReadAloudControllerSupplier != null) {
+
+        if (mReadAloudControllerSupplier.get() != null) {
             ReadAloudController readAloudController = mReadAloudControllerSupplier.get();
             visible =
                     readAloudController != null
                             && currentTab != null
                             && readAloudController.isReadable(currentTab);
+
+            if (mReadAloudAppMenuResetter == null) {
+                mReadAloudAppMenuResetter =
+                        () -> {
+                            boolean isReadable =
+                                    mReadAloudControllerSupplier.get().isReadable(currentTab);
+                            MenuItem item = menu.findItem(R.id.readaloud_menu_id);
+                            if (isReadable) {
+                                maybeInsertReadAloudItem(item);
+                            } else {
+                                maybeFindAndRemoveReadAloudItem(item);
+                            }
+                        };
+
+                readAloudController.addReadabilityUpdateListener(mReadAloudAppMenuResetter);
+            }
         }
+        mHasReadAloudInserted = visible;
         menu.findItem(R.id.readaloud_menu_id).setVisible(visible);
+    }
+
+    /**
+     * Try finding ReadAloud in the mModelList (being in the model means it was visible in the app
+     * menu). If found, remove it from the model, update MenuItem visibility state and update the
+     * last position on the read aloud item in the menu.
+     */
+    private void maybeFindAndRemoveReadAloudItem(MenuItem item) {
+        if (mModelList == null) {
+            return;
+        }
+        Iterator<ListItem> it = mModelList.iterator();
+        int counter = 0;
+        while (it.hasNext()) {
+            ListItem li = it.next();
+            int id = li.model.get(AppMenuItemProperties.MENU_ITEM_ID);
+            if (id == item.getItemId()) {
+                mReadAloudPos = counter;
+                mModelList.remove(li);
+                mHasReadAloudInserted = false;
+                return;
+            }
+            counter++;
+        }
+    }
+
+    /** If ReadAloud is not present in the mModelList, insert it at the saved position. */
+    private void maybeInsertReadAloudItem(MenuItem item) {
+        if (mModelList == null) {
+            return;
+        }
+        // Already on the list, return early
+        if (mHasReadAloudInserted) {
+            return;
+        }
+
+        // now try to insert it.
+        assert mReadAloudPos != 1 : "Unexpectedly missing position for the read aloud menu item";
+        if (mReadAloudPos != -1) {
+            item.setVisible(true);
+            mHasReadAloudInserted = true;
+            PropertyModel propertyModel = AppMenuUtil.menuItemToPropertyModel(item);
+            propertyModel.set(AppMenuItemProperties.ICON_COLOR_RES, getMenuItemIconColorRes(item));
+            propertyModel.set(AppMenuItemProperties.SUPPORT_ENTER_ANIMATION, true);
+            propertyModel.set(AppMenuItemProperties.MENU_ICON_AT_START, isMenuIconAtStart());
+            mModelList.add(
+                    mReadAloudPos,
+                    new MVCListAdapter.ListItem(AppMenuItemType.STANDARD, propertyModel));
+        }
     }
 
     /** Returns true if a badge (i.e. a red-dot) should be shown on the menu item icon. */
     protected boolean shouldShowBadgeOnMenuItemIcon(MenuItem item) {
         if (item.getItemId() == R.id.preferences_id) {
-            if (!ChromeFeatureList.isEnabled(
-                    ChromeFeatureList.SYNC_SHOW_IDENTITY_ERRORS_FOR_SIGNED_IN_USERS)) {
-                return false;
-            }
             // Theoretically mTabModelSelector could return a stub model.
             Profile profile = mTabModelSelector.getCurrentModel().getProfile();
             if (profile == null) {
                 return false;
             }
-            SyncService syncService = SyncServiceFactory.getForProfile(profile);
-            if (syncService == null || syncService.isSyncDisabledByEnterprisePolicy()) {
-                return false;
-            }
             // Return true if there is any identity error(for signed-in users) or sync error(for
             // syncing users).
-            return SyncSettingsUtils.getIdentityError(syncService)
+            return SyncSettingsUtils.getIdentityError(profile)
                             != SyncSettingsUtils.SyncError.NO_ERROR
-                    || SyncSettingsUtils.getSyncError(syncService)
+                    || SyncSettingsUtils.getSyncError(profile)
                             != SyncSettingsUtils.SyncError.NO_ERROR;
         }
         return false;
@@ -978,22 +1069,13 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
      */
     protected String getContentDescription(MenuItem item) {
         if (item.getItemId() == R.id.preferences_id) {
-            if (!ChromeFeatureList.isEnabled(
-                    ChromeFeatureList.SYNC_SHOW_IDENTITY_ERRORS_FOR_SIGNED_IN_USERS)) {
-                return null;
-            }
             // Theoretically mTabModelSelector could return a stub model.
             Profile profile = mTabModelSelector.getCurrentModel().getProfile();
             if (profile == null) {
                 return null;
             }
-            SyncService syncService = SyncServiceFactory.getForProfile(profile);
-            if (syncService == null || syncService.isSyncDisabledByEnterprisePolicy()) {
-                return null;
-            }
-            if (SyncSettingsUtils.getIdentityError(syncService)
-                            != SyncSettingsUtils.SyncError.NO_ERROR
-                    || SyncSettingsUtils.getSyncError(syncService)
+            if (SyncSettingsUtils.getIdentityError(profile) != SyncSettingsUtils.SyncError.NO_ERROR
+                    || SyncSettingsUtils.getSyncError(profile)
                             != SyncSettingsUtils.SyncError.NO_ERROR) {
                 return mContext.getResources().getString(R.string.menu_settings_account_error);
             }
@@ -1174,18 +1256,35 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
     }
 
     /**
+     * Updates the find in page menu item's state.
+     *
+     * @param menu {@link Menu} for find in page.
+     * @param currentTab Current tab being displayed.
+     */
+    private void updateFindInPageMenuItem(Menu menu, @Nullable Tab currentTab) {
+        MenuItem findInPageMenuRow = menu.findItem(R.id.find_in_page_id);
+        // PDF native page should show find in page menu item.
+        boolean itemVisible =
+                currentTab != null
+                        && (shouldShowWebContentsDependentMenuItem(currentTab)
+                                || (currentTab.isNativePage()
+                                        && currentTab.getNativePage().isPdf()));
+        findInPageMenuRow.setVisible(itemVisible);
+    }
+
+    /**
      * Updates the request desktop site item's state.
      *
      * @param menu {@link Menu} for request desktop site.
      * @param currentTab Current tab being displayed.
      * @param canShowRequestDesktopSite If the request desktop site menu item should show or not.
-     * @param isChromeScheme Whether URL for the current tab starts with the chrome:// scheme.
+     * @param isNativePage Whether the current tab is a native page.
      */
     protected void updateRequestDesktopSiteMenuItem(
             Menu menu,
             @Nullable Tab currentTab,
             boolean canShowRequestDesktopSite,
-            boolean isChromeScheme) {
+            boolean isNativePage) {
         MenuItem requestMenuRow = menu.findItem(R.id.request_desktop_site_row_menu_id);
         MenuItem requestMenuLabel = menu.findItem(R.id.request_desktop_site_id);
         MenuItem requestMenuCheck = menu.findItem(R.id.request_desktop_site_check_id);
@@ -1194,7 +1293,7 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
         boolean itemVisible =
                 currentTab != null
                         && canShowRequestDesktopSite
-                        && !isChromeScheme
+                        && !isNativePage
                         && !shouldShowReaderModePrefs(currentTab)
                         && currentTab.getWebContents() != null;
 
@@ -1221,16 +1320,16 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
      *
      * @param menu {@link Menu} for auto dark.
      * @param currentTab Current tab being displayed.
-     * @param isChromeScheme Whether URL for the current tab starts with the chrome:// scheme.
+     * @param isNativePage Whether the current tab is a native page.
      */
     protected void updateAutoDarkMenuItem(
-            Menu menu, @Nullable Tab currentTab, boolean isChromeScheme) {
+            Menu menu, @Nullable Tab currentTab, boolean isNativePage) {
         MenuItem autoDarkMenuRow = menu.findItem(R.id.auto_dark_web_contents_row_menu_id);
         MenuItem autoDarkMenuCheck = menu.findItem(R.id.auto_dark_web_contents_check_id);
 
         // Hide app menu item if on non-NTP chrome:// page or auto dark not enabled.
         boolean isAutoDarkEnabled = isAutoDarkWebContentsEnabled();
-        boolean itemVisible = currentTab != null && !isChromeScheme && isAutoDarkEnabled;
+        boolean itemVisible = currentTab != null && !isNativePage && isAutoDarkEnabled;
         autoDarkMenuRow.setVisible(itemVisible);
         if (!itemVisible) return;
 

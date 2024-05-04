@@ -63,6 +63,8 @@
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "extensions/common/constants.h"
+#else
+#include "components/policy/core/common/cloud/profile_cloud_policy_manager.h"
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -162,8 +164,7 @@ std::unique_ptr<ClientMetadata> GetBasicClientMetadata() {
   if (base::FeatureList::IsEnabled(kEnterpriseConnectorsEnabledOnMGS)) {
     auto metadata = std::make_unique<ClientMetadata>();
 
-    metadata->mutable_profile()->set_is_chrome_os_managed_guest_session(
-        IsManagedGuestSession());
+    metadata->set_is_chrome_os_managed_guest_session(IsManagedGuestSession());
     return metadata;
   } else {
     return nullptr;
@@ -531,8 +532,8 @@ std::optional<ConnectorsService::DmToken> ConnectorsService::GetProfileDmToken()
     const {
   Profile* profile = Profile::FromBrowserContext(context_);
 
-  policy::UserCloudPolicyManager* policy_manager =
-      profile->GetUserCloudPolicyManager();
+  policy::CloudPolicyManager* policy_manager = profile->GetCloudPolicyManager();
+
   if (!policy_manager || !policy_manager->IsClientRegistered()) {
     return std::nullopt;
   }
@@ -605,8 +606,7 @@ std::unique_ptr<ClientMetadata> ConnectorsService::BuildClientMetadata(
   }
 
   if (base::FeatureList::IsEnabled(kEnterpriseConnectorsEnabledOnMGS)) {
-    metadata->mutable_profile()->set_is_chrome_os_managed_guest_session(
-        IsManagedGuestSession());
+    metadata->set_is_chrome_os_managed_guest_session(IsManagedGuestSession());
   }
 
   bool include_device_info =

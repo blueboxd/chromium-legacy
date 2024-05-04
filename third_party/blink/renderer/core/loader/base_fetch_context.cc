@@ -386,10 +386,10 @@ void BaseFetchContext::AddClientHintsIfNecessary(
 
     if (ShouldSendClientHint(
             policy, resource_origin, is_1p_origin,
-            network::mojom::blink::WebClientHintsType::kUAFormFactor,
+            network::mojom::blink::WebClientHintsType::kUAFormFactors,
             hints_preferences)) {
-      SetHttpHeader(WebClientHintsType::kUAFormFactor,
-                    AtomicString(ua->SerializeFormFactor().c_str()), request);
+      SetHttpHeader(WebClientHintsType::kUAFormFactors,
+                    AtomicString(ua->SerializeFormFactors().c_str()), request);
     }
   }
 
@@ -576,9 +576,9 @@ BaseFetchContext::CanRequestInternal(
     }
   }
 
-  // SVG Images have unique security rules that prevent all subresource requests
-  // except for data urls.
-  if (IsSVGImageChromeClient() && !url.ProtocolIsData())
+  // SVG images/resource documents have unique security rules that prevent all
+  // subresource requests except for data urls.
+  if (IsIsolatedSVGChromeClient() && !url.ProtocolIsData())
     return ResourceRequestBlockedReason::kOrigin;
 
   // data: URL is deprecated in SVGUseElement.
@@ -629,9 +629,9 @@ BaseFetchContext::CanRequestInternal(
   // Only warn if the resource URL's origin is different than its requestor
   // (we don't want to warn for <img src="faß.de/image.img"> on faß.de).
   // TODO(crbug.com/1396475): Remove once Non-Transitional mode is shipped.
-  if (!resource_request.RequestorOrigin()->IsSameOriginWith(
-          SecurityOrigin::Create(url).get()) &&
-      url.HasIDNA2008DeviationCharacter()) {
+  if (url.HasIDNA2008DeviationCharacter() &&
+      !resource_request.RequestorOrigin()->IsSameOriginWith(
+          SecurityOrigin::Create(url).get())) {
     String message = GetConsoleWarningForIDNADeviationCharacters(url);
     if (!message.empty()) {
       console_logger_->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(

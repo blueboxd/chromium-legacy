@@ -34,7 +34,7 @@ constexpr int64_t kUnifiedDisplayId = -10;
 constexpr int32_t kInvalidYearOfManufacture = -1;
 
 // Used to determine if the two scale factor values are considered the same.
-// TODO(crbug.com/1412420): Remove this when the scale factor precision issue
+// TODO(crbug.com/40255259): Remove this when the scale factor precision issue
 // in lacros is fixed.
 constexpr float kDeviceScaleFactorErrorTolerance = 0.01f;
 
@@ -169,22 +169,6 @@ enum VariableRefreshRateState {
   kVrrNotCapable = 2,
   kVrrLast = kVrrNotCapable,
 };
-
-// A sequence of RefreshRangeNode structs represents the refresh rates that
-// a display can support switching to without incurring a full modeset.
-struct RefreshRangeNode {
-  RefreshRangeNode() : refresh_rate(0.0f), contiguous(false) {}
-  explicit RefreshRangeNode(float refresh_rate)
-      : refresh_rate(refresh_rate), contiguous(false) {}
-  RefreshRangeNode(float refresh_rate, bool contiguous)
-      : refresh_rate(refresh_rate), contiguous(contiguous) {}
-  float refresh_rate;
-  // If true, then any refresh rate between this RefreshRangeNode and the next
-  // one in the sequence is supported.
-  bool contiguous;
-};
-
-using RefreshRange = std::vector<RefreshRangeNode>;
 
 // Defines the float values closest to repeating decimal scale factors.
 constexpr float kDsf_1_777 = 1.77777779102325439453125f;

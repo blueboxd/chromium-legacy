@@ -39,7 +39,6 @@ const redesignedPages: Route[] = [
   routes.SITE_SETTINGS_JAVASCRIPT,
   routes.SITE_SETTINGS_JAVASCRIPT_JIT,
   routes.SITE_SETTINGS_LOCAL_FONTS,
-  routes.SITE_SETTINGS_LOCATION,
   routes.SITE_SETTINGS_MICROPHONE,
   routes.SITE_SETTINGS_MIDI_DEVICES,
   routes.SITE_SETTINGS_NOTIFICATIONS,
@@ -59,7 +58,7 @@ const redesignedPages: Route[] = [
   routes.SITE_SETTINGS_WEB_PRINTING,
   // </if>
 
-  // TODO(crbug.com/1128902) After restructure add coverage for elements on
+  // TODO(crbug.com/40719916) After restructure add coverage for elements on
   // routes which depend on flags being enabled.
   // routes.SITE_SETTINGS_BLUETOOTH_SCANNING,
   // routes.SITE_SETTINGS_BLUETOOTH_DEVICES,
@@ -107,6 +106,34 @@ suite('PrivacyPage', function() {
     Router.getInstance().navigateTo(routes.BASIC);
   });
 
+  // <if expr="is_chromeos">
+  // Old certificate manager shown on ChromeOS.
+  test('certificate_manager_visibility', function() {
+    Router.getInstance().navigateTo(routes.CERTIFICATES);
+    const certManager = page.shadowRoot!.querySelector('certificate-manager');
+    assertTrue(
+        !!certManager, 'did not find expected <certificate-manager> tag');
+    const certManagerV2 =
+        page.shadowRoot!.querySelector('certificate-manager-v2')!;
+    assertFalse(
+        !!certManagerV2, 'found unexpected <certificate-manager-v2> tag');
+  });
+  // </if>
+
+  // <if expr="not is_chromeos">
+  // New certificate manager shown on other desktop platforms.
+  test('certificate_manager_visibility', function() {
+    Router.getInstance().navigateTo(routes.CERTIFICATES);
+    const certManager = page.shadowRoot!.querySelector('certificate-manager')!;
+    assertFalse(!!certManager, 'found unexpected <certificate-manager> tag');
+    const certManagerV2 =
+        page.shadowRoot!.querySelector('certificate-manager-v2')!;
+    assertTrue(
+        !!certManagerV2, 'did not find expected <certificate-manager-v2> tag');
+  });
+  // </if>
+
+
   test('showClearBrowsingDataDialog', function() {
     assertFalse(!!page.shadowRoot!.querySelector(
         'settings-clear-browsing-data-dialog'));
@@ -151,8 +178,8 @@ suite('PrivacyPage', function() {
     redesignedPages.forEach(route => Router.getInstance().navigateTo(route));
     await flushTasks();
 
-    // All redesigned pages, except notifications, protocol handlers, pdf
-    // documents and protected content (except chromeos and win), will use a
+    // All redesigned pages, except notifications, location, protocol handlers,
+    // pdf documents and protected content (except chromeos and win), will use a
     // settings-category-default-radio-group.
     // <if expr="is_chromeos or is_win">
     assertEquals(
@@ -180,6 +207,18 @@ suite('PrivacyPage', function() {
     assertTrue(isVisible(categorySettingExceptions));
     assertEquals(
         ContentSettingsTypes.NOTIFICATIONS, categorySettingExceptions.category);
+  });
+
+  test('LocationPage', async function() {
+    Router.getInstance().navigateTo(routes.SITE_SETTINGS_LOCATION);
+    await flushTasks();
+
+    assertTrue(isChildVisible(page, '#locationRadioGroup'));
+    const categorySettingExceptions =
+        page.shadowRoot!.querySelector('category-setting-exceptions')!;
+    assertTrue(isVisible(categorySettingExceptions));
+    assertEquals(
+        ContentSettingsTypes.GEOLOCATION, categorySettingExceptions.category);
   });
 
   test('privacySandboxRestricted', function() {
@@ -240,7 +279,6 @@ suite('PrivacyPage', function() {
     Router.getInstance().navigateTo(routes.SITE_SETTINGS_AUTOMATIC_FULLSCREEN);
     await flushTasks();
 
-    assertTrue(isChildVisible(page, '#automaticFullscreenBlock'));
     const categorySettingExceptions =
         page.shadowRoot!.querySelector('category-setting-exceptions');
     assertTrue(!!categorySettingExceptions);
@@ -311,6 +349,53 @@ suite(`PrivacySandbox`, function() {
     await flushTasks();
     assertEquals(
         routes.PRIVACY_SANDBOX, Router.getInstance().getCurrentRoute());
+  });
+});
+
+// Test with Certificate Management V2 flag off.
+suite(`CertificateManagementV2`, function() {
+  let page: SettingsPrivacyPageElement;
+  let settingsPrefs: SettingsPrefsElement;
+
+  suiteSetup(function() {
+    loadTimeData.overrideValues({
+      enableCertManagementUIV2: false,
+    });
+
+    settingsPrefs = document.createElement('settings-prefs');
+    return CrSettingsPrefs.initialized;
+  });
+
+
+  setup(function() {
+    document.body.innerHTML = window.trustedTypes!.emptyHTML;
+    page = document.createElement('settings-privacy-page');
+    page.prefs = settingsPrefs.prefs!;
+    document.body.appendChild(page);
+    return flushTasks();
+  });
+
+  teardown(function() {
+    page.remove();
+    Router.getInstance().navigateTo(routes.BASIC);
+  });
+
+  test('certificate_manager_visibility', function() {
+    Router.getInstance().navigateTo(routes.CERTIFICATES);
+    // Old certificate manager only shown on platforms using NSS.
+    const certManager = page.shadowRoot!.querySelector('certificate-manager');
+    // <if expr="use_nss_certs">
+    assertTrue(
+        !!certManager, 'did not find expected <certificate-manager> tag');
+    // </if>
+    // <if expr="not use_nss_certs">
+    assertFalse(!!certManager, 'found unexpected <certificate-manager> tag');
+    // </if>
+    // New certificate manager not shown anywhere with the load time flag off.
+    const certManagerV2 =
+        page.shadowRoot!.querySelector('certificate-manager-v2')!;
+    assertFalse(
+        !!certManagerV2, 'found unexpected <certificate-manager-v2> tag');
   });
 });
 
@@ -842,7 +927,7 @@ suite('NotificationPermissionReview', function() {
   });
 });
 
-// TODO(crbug.com/1443466): Remove the test once Safety Hub has been rolled out.
+// TODO(crbug.com/40267370): Remove the test once Safety Hub has been rolled out.
 suite('NotificationPermissionReviewSafetyHubDisabled', function() {
   let page: SettingsPrivacyPageElement;
   let siteSettingsBrowserProxy: TestSafetyHubBrowserProxy;

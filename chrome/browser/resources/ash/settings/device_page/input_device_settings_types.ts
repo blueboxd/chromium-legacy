@@ -134,6 +134,9 @@ export type ButtonRemapping = InputDeviceSettingsTypes.ButtonRemapping;
 
 export type RemappingAction = InputDeviceSettingsTypes.RemappingAction;
 
+export type ChargeState = InputDeviceSettingsTypes.ChargeState;
+export const ChargeState = InputDeviceSettingsTypes.ChargeState;
+
 export type KeyEvent =
     Required<InputDeviceSettingsTypes.KeyEvent>&Partial<FakeKeyEvent>;
 
@@ -181,6 +184,11 @@ export interface StylusObserverInterface {
 export interface GraphicsTabletObserverInterface {
   // Fired when the graphics tablet list is updated.
   onGraphicsTabletListUpdated(graphicsTablet: GraphicsTablet[]): void;
+}
+
+export interface KeyboardBrightnessObserverInterface {
+  // Fired when the keyboard brightness is changed.
+  onKeyboardBrightnessChanged(percent: number): void;
 }
 
 export type ButtonPressObserverInterface =

@@ -95,6 +95,7 @@ class ThemeProvider;
 
 namespace views {
 class Button;
+class WebView;
 }  // namespace views
 
 namespace web_modal {
@@ -342,7 +343,7 @@ class BrowserWindow : public ui::BaseWindow {
 
   // Called when a link is opened in the window from a user gesture.
   // Link will be opened with |disposition|.
-  // TODO(crbug.com/1129028): see if this can't be piped through TabStripModel
+  // TODO(crbug.com/40719979): see if this can't be piped through TabStripModel
   // events instead.
   virtual void LinkOpeningFromGesture(WindowOpenDisposition disposition) = 0;
 
@@ -686,6 +687,9 @@ class BrowserWindow : public ui::BaseWindow {
 
   // Shows the Chrome Labs bubble if enabled.
   virtual void ShowChromeLabs() = 0;
+
+  // Returns the WebView backing the tab-contents area of the BrowserWindow.
+  virtual views::WebView* GetContentsWebView() = 0;
 
  protected:
   friend class BrowserCloseManager;

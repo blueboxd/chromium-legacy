@@ -7,14 +7,12 @@ package org.chromium.chrome.browser.tab.state;
 import androidx.test.filters.LargeTest;
 
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
 
 import org.chromium.base.Token;
 import org.chromium.base.test.util.Batch;
@@ -27,8 +25,6 @@ import org.chromium.base.test.util.HistogramWatcher;
 import org.chromium.base.test.util.Matchers;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
-import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteController;
-import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteControllerProvider;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab.TabState;
@@ -73,17 +69,9 @@ public class TabStateFlatBufferTest {
     private static final String TEST_URL = "/chrome/test/data/browsing_data/e.html";
     private static final String TEST_URL_DISPLAY_TITLE = "My_title";
 
-    @Mock private static AutocompleteController sACController;
-
     @BeforeClass
     public static void beforeClass() {
-        AutocompleteControllerProvider.setControllerForTesting(sACController);
         sTestServer = sActivityTestRule.getTestServer();
-    }
-
-    @Before
-    public void before() {
-        TabStateFileManager.resetDeferredStartupCompleteForTesting();
     }
 
     @Test
@@ -170,89 +158,6 @@ public class TabStateFlatBufferTest {
     @Test
     @LargeTest
     @EnableFeatures(ChromeFeatureList.TAB_STATE_FLATBUFFER)
-    public void testFlatBufferMigration() throws IOException, ExecutionException {
-        List<File> expectedFlatBufferMigratedFiles = new ArrayList<>();
-        for (int tabId = 0; tabId < 4; tabId++) {
-            boolean isEncrypted = tabId % 2 == 0;
-            TabState state = getTestTabState(isEncrypted);
-            File legacyTabStateFile =
-                    temporaryFolder.newFile(
-                            TabStateFileManager.getTabStateFilename(
-                                    tabId, isEncrypted, /* isFlatBuffer= */ false));
-            TabStateFileManager.saveStateInternal(legacyTabStateFile, state, isEncrypted);
-            TabStateFileManager.restoreTabStateInternal(legacyTabStateFile, isEncrypted);
-            expectedFlatBufferMigratedFiles.add(
-                    TabStateFileManager.getTabStateFile(
-                            legacyTabStateFile.getParentFile(),
-                            tabId,
-                            isEncrypted,
-                            /* isFlatBuffer= */ true));
-        }
-        TabStateFileManager.onDeferredStartup();
-        CriteriaHelper.pollInstrumentationThread(
-                () -> {
-                    Criteria.checkThat(
-                            TabStateFileManager.isFinishedFlatBufferMigration(), Matchers.is(true));
-                });
-        CriteriaHelper.pollInstrumentationThread(
-                () -> {
-                    for (File expectedFlatBufferFile : expectedFlatBufferMigratedFiles) {
-                        Criteria.checkThat(expectedFlatBufferFile.exists(), Matchers.is(true));
-                    }
-                });
-    }
-
-    @Test
-    @LargeTest
-    @EnableFeatures(ChromeFeatureList.TAB_STATE_FLATBUFFER)
-    public void testCancelledMigration() throws IOException, ExecutionException {
-        List<File> expectedFlatBufferMigratedFiles = new ArrayList<>();
-        for (int tabId = 0; tabId < 4; tabId++) {
-            boolean isEncrypted = tabId % 2 == 0;
-            TabState state = getTestTabState(isEncrypted);
-            File legacyTabStateFile =
-                    temporaryFolder.newFile(
-                            TabStateFileManager.getTabStateFilename(
-                                    tabId, isEncrypted, /* isFlatBuffer= */ false));
-            TabStateFileManager.saveStateInternal(legacyTabStateFile, state, isEncrypted);
-            TabStateFileManager.restoreTabStateInternal(legacyTabStateFile, isEncrypted);
-            expectedFlatBufferMigratedFiles.add(
-                    TabStateFileManager.getTabStateFile(
-                            legacyTabStateFile.getParentFile(),
-                            tabId,
-                            isEncrypted,
-                            /* isFlatBuffer= */ true));
-        }
-        int cancelledTabId = 2;
-        TabStateFileManager.cancelMigrationIfExists(
-                cancelledTabId, /* isEncrypted= */ cancelledTabId % 2 == 0);
-        TabStateFileManager.onDeferredStartup();
-        CriteriaHelper.pollInstrumentationThread(
-                () -> {
-                    Criteria.checkThat(
-                            TabStateFileManager.isFinishedFlatBufferMigration(), Matchers.is(true));
-                });
-        CriteriaHelper.pollInstrumentationThread(
-                () -> {
-                    for (int tabId = 0; tabId < expectedFlatBufferMigratedFiles.size(); tabId++) {
-                        if (tabId == cancelledTabId) {
-                            Criteria.checkThat(
-                                    "Tab " + tabId + " should not have been migrated",
-                                    expectedFlatBufferMigratedFiles.get(tabId).exists(),
-                                    Matchers.is(false));
-                        } else {
-                            Criteria.checkThat(
-                                    "Tab " + tabId + " should have been migrated",
-                                    expectedFlatBufferMigratedFiles.get(tabId).exists(),
-                                    Matchers.is(true));
-                        }
-                    }
-                });
-    }
-
-    @Test
-    @LargeTest
-    @EnableFeatures(ChromeFeatureList.TAB_STATE_FLATBUFFER)
     public void testFlatBufferMetrics() throws ExecutionException, IOException {
         TabState state = getTestTabState(false);
         File file = getTestFile(1, false);
@@ -304,93 +209,6 @@ public class TabStateFlatBufferTest {
                 TabStateFileManager.restoreTabState(temporaryFolder.getRoot(), 1);
         Assert.assertNull(restoredTabState);
         histograms.assertExpected();
-    }
-
-    @Test
-    @LargeTest
-    @EnableFeatures(ChromeFeatureList.TAB_STATE_FLATBUFFER)
-    public void testNoFlatBufferFileUntilAfterDeferredStartup() throws ExecutionException {
-        TabState state = getTestTabState(false);
-        TabStateFileManager.saveState(
-                temporaryFolder.getRoot(), state, /* tabId= */ 1, /* encrypted= */ false);
-        CriteriaHelper.pollInstrumentationThread(
-                () -> {
-                    File legacyFile =
-                            TabStateFileManager.getTabStateFile(
-                                    temporaryFolder.getRoot(),
-                                    /* tabId= */ 1,
-                                    /* encrypted= */ false,
-                                    /* isFlatBuffer= */ false);
-                    Criteria.checkThat(
-                            "Legacy file " + legacyFile + " should exist.",
-                            legacyFile.exists(),
-                            Matchers.is(true));
-                });
-        CriteriaHelper.pollInstrumentationThread(
-                () -> {
-                    File flatBufferFile =
-                            TabStateFileManager.getTabStateFile(
-                                    temporaryFolder.getRoot(),
-                                    /* tabId= */ 1,
-                                    /* encrypted= */ false,
-                                    /* isFlatBuffer= */ true);
-                    Criteria.checkThat(
-                            "FlatBuffer file " + flatBufferFile + " should not exist.",
-                            flatBufferFile.exists(),
-                            Matchers.is(false));
-                });
-        TabStateFileManager.onDeferredStartup();
-        // Queue should be flushed and FlatBuffer file should exist after Deferred startup.
-        CriteriaHelper.pollInstrumentationThread(
-                () -> {
-                    File flatBufferFile =
-                            TabStateFileManager.getTabStateFile(
-                                    temporaryFolder.getRoot(),
-                                    /* tabId= */ 1,
-                                    /* encrypted= */ false,
-                                    /* isFlatBuffer= */ true);
-                    Criteria.checkThat(
-                            "FlatBuffer file " + flatBufferFile + " should now exist.",
-                            flatBufferFile.exists(),
-                            Matchers.is(true));
-                });
-    }
-
-    @Test
-    @LargeTest
-    @EnableFeatures(ChromeFeatureList.TAB_STATE_FLATBUFFER)
-    public void testFlatBufferFileAutomaticallySavedAfterDeferredStartup()
-            throws ExecutionException {
-        TabState state = getTestTabState(false);
-        TabStateFileManager.saveState(
-                temporaryFolder.getRoot(), state, /* tabId= */ 1, /* encrypted= */ false);
-        TabStateFileManager.onDeferredStartup();
-        CriteriaHelper.pollInstrumentationThread(
-                () -> {
-                    File legacyFile =
-                            TabStateFileManager.getTabStateFile(
-                                    temporaryFolder.getRoot(),
-                                    /* tabId= */ 1,
-                                    /* encrypted= */ false,
-                                    /* isFlatBuffer= */ false);
-                    Criteria.checkThat(
-                            "Legacy file  " + legacyFile + " should exist.",
-                            legacyFile.exists(),
-                            Matchers.is(true));
-                });
-        CriteriaHelper.pollInstrumentationThread(
-                () -> {
-                    File flatBufferFile =
-                            TabStateFileManager.getTabStateFile(
-                                    temporaryFolder.getRoot(),
-                                    /* tabId= */ 1,
-                                    /* encrypted= */ false,
-                                    /* isFlatBuffer= */ true);
-                    Criteria.checkThat(
-                            "FlatBuffer file  " + flatBufferFile + " should exist.",
-                            flatBufferFile.exists(),
-                            Matchers.is(true));
-                });
     }
 
     @Test

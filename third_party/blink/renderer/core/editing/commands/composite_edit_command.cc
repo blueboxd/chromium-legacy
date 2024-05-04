@@ -78,8 +78,10 @@
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/html/html_li_element.h"
 #include "third_party/blink/renderer/core/html/html_object_element.h"
+#include "third_party/blink/renderer/core/html/html_olist_element.h"
 #include "third_party/blink/renderer/core/html/html_quote_element.h"
 #include "third_party/blink/renderer/core/html/html_span_element.h"
+#include "third_party/blink/renderer/core/html/html_ulist_element.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/layout_text.h"
@@ -144,6 +146,7 @@ bool CompositeEditCommand::Apply() {
       case InputEvent::InputType::kInsertTranspose:
       case InputEvent::InputType::kInsertReplacementText:
       case InputEvent::InputType::kInsertCompositionText:
+      case InputEvent::InputType::kInsertLink:
       case InputEvent::InputType::kDeleteWordBackward:
       case InputEvent::InputType::kDeleteWordForward:
       case InputEvent::InputType::kDeleteSoftLineBackward:

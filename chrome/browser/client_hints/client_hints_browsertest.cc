@@ -7,6 +7,7 @@
 #include <cstddef>
 #include <memory>
 #include <optional>
+#include <string_view>
 
 #include "base/base_switches.h"
 #include "base/command_line.h"
@@ -117,7 +118,7 @@ constexpr unsigned expected_pre_merge_third_party_client_hints_number = 16u;
 
 constexpr char kDefaultFeatures[] =
     "CriticalClientHint,AcceptCHFrame,"
-    "ClientHintsFormFactor,ClientHintsPrefersReducedTransparency,"
+    "ClientHintsFormFactors,ClientHintsPrefersReducedTransparency,"
     "UseNewAlpsCodepointHttp2";
 
 // All of the status codes from HttpResponseHeaders::IsRedirectResponseCode.
@@ -362,8 +363,8 @@ class AlternatingCriticalCHRequestHandler {
 void ExpectUKMSeen(const ukm::TestAutoSetUkmRecorder& ukm_recorder,
                    const std::vector<network::mojom::WebClientHintsType>& hints,
                    size_t loads,
-                   const base::StringPiece metric_name,
-                   const base::StringPiece type_name) {
+                   const std::string_view metric_name,
+                   const std::string_view type_name) {
   auto ukm_entries = ukm_recorder.GetEntriesByName(metric_name);
   // We expect the same series of `hints` to appear `loads` times.
   ASSERT_EQ(ukm_entries.size(), hints.size() * loads);
@@ -432,7 +433,7 @@ const std::vector<network::mojom::WebClientHintsType> kStandardHTTPHeaderHints(
      network::mojom::WebClientHintsType::kViewportHeight,
      network::mojom::WebClientHintsType::kUAFullVersionList,
      network::mojom::WebClientHintsType::kUAWoW64,
-     network::mojom::WebClientHintsType::kUAFormFactor,
+     network::mojom::WebClientHintsType::kUAFormFactors,
      network::mojom::WebClientHintsType::kPrefersReducedTransparency});
 
 const std::vector<network::mojom::WebClientHintsType>
@@ -453,7 +454,7 @@ const std::vector<network::mojom::WebClientHintsType>
          network::mojom::WebClientHintsType::kUABitness,
          network::mojom::WebClientHintsType::kUAFullVersionList,
          network::mojom::WebClientHintsType::kUAWoW64,
-         network::mojom::WebClientHintsType::kUAFormFactor});
+         network::mojom::WebClientHintsType::kUAFormFactors});
 
 const std::vector<network::mojom::WebClientHintsType>
     kStandardDelegateCHMetaHints(
@@ -473,7 +474,7 @@ const std::vector<network::mojom::WebClientHintsType>
          network::mojom::WebClientHintsType::kViewportWidth,
          network::mojom::WebClientHintsType::kUAFullVersionList,
          network::mojom::WebClientHintsType::kUAWoW64,
-         network::mojom::WebClientHintsType::kUAFormFactor});
+         network::mojom::WebClientHintsType::kUAFormFactors});
 
 const std::vector<network::mojom::WebClientHintsType>
     kExtendedAcceptCHMetaHints(
@@ -497,7 +498,7 @@ const std::vector<network::mojom::WebClientHintsType>
          network::mojom::WebClientHintsType::kViewportHeight,
          network::mojom::WebClientHintsType::kUAFullVersionList,
          network::mojom::WebClientHintsType::kUAWoW64,
-         network::mojom::WebClientHintsType::kUAFormFactor,
+         network::mojom::WebClientHintsType::kUAFormFactors,
          network::mojom::WebClientHintsType::kPrefersReducedTransparency});
 
 const std::vector<network::mojom::WebClientHintsType>
@@ -522,7 +523,7 @@ const std::vector<network::mojom::WebClientHintsType>
          network::mojom::WebClientHintsType::kUAFullVersionList,
          network::mojom::WebClientHintsType::kUAWoW64,
          network::mojom::WebClientHintsType::kPrefersReducedMotion,
-         network::mojom::WebClientHintsType::kUAFormFactor,
+         network::mojom::WebClientHintsType::kUAFormFactors,
          network::mojom::WebClientHintsType::kPrefersReducedTransparency});
 }  // namespace
 
@@ -657,7 +658,7 @@ class ClientHintsBrowserTest : public policy::PolicyTest {
 
   virtual std::unique_ptr<base::FeatureList> EnabledFeatures() {
     std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
-    // Force-enable the ClientHintsFormFactor feature, so that the header is
+    // Force-enable the ClientHintsFormFactors feature, so that the header is
     // represented in the various header counts.
     feature_list->InitFromCommandLine(kDefaultFeatures, "");
     return feature_list;
@@ -921,8 +922,8 @@ class ClientHintsBrowserTest : public policy::PolicyTest {
     return main_frame_ua_mobile_observed_;
   }
 
-  const std::string& main_frame_ua_form_factor_observed() const {
-    return main_frame_ua_form_factor_observed_;
+  const std::string& main_frame_ua_form_factors_observed() const {
+    return main_frame_ua_form_factors_observed_;
   }
 
   const std::string& main_frame_ua_platform_observed() const {
@@ -1044,8 +1045,8 @@ class ClientHintsBrowserTest : public policy::PolicyTest {
           UpdateHeaderObservation(request, "sec-ch-ua-full-version-list");
       main_frame_ua_mobile_observed_ =
           UpdateHeaderObservation(request, "sec-ch-ua-mobile");
-      main_frame_ua_form_factor_observed_ =
-          UpdateHeaderObservation(request, "sec-ch-ua-form-factor");
+      main_frame_ua_form_factors_observed_ =
+          UpdateHeaderObservation(request, "sec-ch-ua-form-factors");
       main_frame_ua_platform_observed_ =
           UpdateHeaderObservation(request, "sec-ch-ua-platform");
       main_frame_save_data_observed_ =
@@ -1247,7 +1248,7 @@ class ClientHintsBrowserTest : public policy::PolicyTest {
         continue;
       }
 
-      // TODO(crbug.com/1286857): Skip over the `Sec-CH-UA-Full` client hint
+      // TODO(crbug.com/40211003): Skip over the `Sec-CH-UA-Full` client hint
       // because it is only added in the presence of a valid
       // "UserAgentDeprecation" Origin Trial token. Need to add `Sec-CH-UA-Full`
       // corresponding tests.
@@ -1369,7 +1370,7 @@ class ClientHintsBrowserTest : public policy::PolicyTest {
   std::string main_frame_ua_full_version_observed_;
   std::string main_frame_ua_full_version_list_observed_;
   std::string main_frame_ua_mobile_observed_;
-  std::string main_frame_ua_form_factor_observed_;
+  std::string main_frame_ua_form_factors_observed_;
   std::string main_frame_ua_platform_observed_;
   std::string main_frame_save_data_observed_;
 
@@ -1874,7 +1875,7 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, UAHintsTabletMode) {
   EXPECT_EQ(main_frame_ua_observed(), expected_ua);
   EXPECT_EQ(main_frame_ua_full_version_observed(), "");
   EXPECT_EQ(main_frame_ua_mobile_observed(), "?0");
-  EXPECT_EQ(main_frame_ua_form_factor_observed(), "");
+  EXPECT_EQ(main_frame_ua_form_factors_observed(), "");
   EXPECT_EQ(main_frame_ua_platform_observed(), "\"" + ua.platform + "\"");
   EXPECT_EQ(main_frame_save_data_observed(), "");
 
@@ -1889,7 +1890,7 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, UAHintsTabletMode) {
   EXPECT_EQ(main_frame_ua_full_version_list_observed(),
             expected_full_version_list);
   EXPECT_EQ(main_frame_ua_mobile_observed(), "?1");
-  EXPECT_EQ(main_frame_ua_form_factor_observed(), "\"Tablet\"");
+  EXPECT_EQ(main_frame_ua_form_factors_observed(), "\"Tablet\"");
   EXPECT_EQ(main_frame_ua_platform_observed(), "\"Android\"");
   EXPECT_EQ(main_frame_save_data_observed(), "");
 }
@@ -3338,7 +3339,7 @@ class ClientHintsWebHoldbackBrowserTest : public ClientHintsBrowserTest {
 
     std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
     feature_list->InitFromCommandLine(
-        "ClientHintsFormFactor,"
+        "ClientHintsFormFactors,"
         "ClientHintsPrefersReducedTransparency",
         "");
     feature_list->RegisterFieldTrialOverride(
@@ -4092,7 +4093,7 @@ class ClientHintsBrowserTestWithEmulatedMedia
     return prefers_reduced_transparency_observed_;
   }
 
-  void EmulateMedia(base::StringPiece string) {
+  void EmulateMedia(std::string_view string) {
     base::Value features = base::test::ParseJson(string);
     DCHECK(features.is_list());
     base::Value::Dict params;
@@ -4852,8 +4853,8 @@ class XRClientHintsTest : public ClientHintsBrowserTest {
   }
 };
 
-// Tests that form_factor client hints include "XR" when ClientHintsXRFormFactor
-// is enabled.
+// Tests that form_factors client hints include "XR" when
+// ClientHintsXRFormFactor is enabled.
 IN_PROC_BROWSER_TEST_F(XRClientHintsTest, UAHintsXRMode) {
   const GURL gurl = accept_ch_url();
 
@@ -4861,7 +4862,7 @@ IN_PROC_BROWSER_TEST_F(XRClientHintsTest, UAHintsXRMode) {
   // don't know server preferences.
   SetClientHintExpectationsOnMainFrame(false);
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), gurl));
-  EXPECT_TRUE(main_frame_ua_form_factor_observed().empty());
+  EXPECT_TRUE(main_frame_ua_form_factors_observed().empty());
 
   // Send request: we should expect the high-entropy client hints send in the
   // request header.
@@ -4869,10 +4870,10 @@ IN_PROC_BROWSER_TEST_F(XRClientHintsTest, UAHintsXRMode) {
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), gurl));
 
   auto form_factors =
-      base::SplitString(main_frame_ua_form_factor_observed(), ",",
+      base::SplitString(main_frame_ua_form_factors_observed(), ",",
                         base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
   EXPECT_TRUE(base::Contains(form_factors, "\"XR\""))
-      << main_frame_ua_form_factor_observed();
+      << main_frame_ua_form_factors_observed();
 }
 
 class GreaseEnterprisePolicyTest : public ClientHintsBrowserTest {

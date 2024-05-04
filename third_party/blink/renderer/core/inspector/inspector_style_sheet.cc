@@ -36,7 +36,6 @@
 #include "third_party/blink/renderer/core/css/css_keyframes_rule.h"
 #include "third_party/blink/renderer/core/css/css_layer_block_rule.h"
 #include "third_party/blink/renderer/core/css/css_media_rule.h"
-#include "third_party/blink/renderer/core/css/css_position_fallback_rule.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css/css_property_rule.h"
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
@@ -45,7 +44,6 @@
 #include "third_party/blink/renderer/core/css/css_style_rule.h"
 #include "third_party/blink/renderer/core/css/css_style_sheet.h"
 #include "third_party/blink/renderer/core/css/css_supports_rule.h"
-#include "third_party/blink/renderer/core/css/css_try_rule.h"
 #include "third_party/blink/renderer/core/css/parser/css_at_rule_id.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_local_context.h"
@@ -331,20 +329,43 @@ void StyleSheetHandler::AddNewRuleToSourceTree(CSSRuleSourceData* rule) {
   // existent implicit nested rule since it won't exist in the parsed
   // CSS rules from the parser itself.
   //
+  // We're also not adding the source data for the non-existent
+  // implicit nested rule when there aren't any non-disabled properties
+  // inside the rule. A `disabled` property means that
+  // it is a commented out property and parsing it happens
+  // inside the inspector[4] and it is not a feature of the Blink CSS parser.
+  // So, even if there is a disabled property in the rule; the rule is not added as a
+  // CSSOM rule in the blink parser, because of this, we're not adding
+  // it as a rule to the source data as well.
+  //
   // [1]: https://drafts.csswg.org/css-nesting-1/#nested-group-rules
   // [2]:
   // https://source.chromium.org/chromium/chromium/src/+/refs/heads/main:third_party/blink/renderer/core/css/parser/css_parser_impl.cc;l=2122;drc=255b4e7036f1326f2219bd547d3d6dcf76064870
   // [3]:
   // https://source.chromium.org/chromium/chromium/src/+/refs/heads/main:third_party/blink/renderer/core/css/parser/css_parser_impl.cc;l=2131;drc=255b4e7036f1326f2219bd547d3d6dcf76064870
+  // [4]: https://source.chromium.org/chromium/chromium/src/+/main:third_party/blink/renderer/core/inspector/inspector_style_sheet.cc;l=484?q=f:inspector_style_sheet
   if (rule->rule_header_range.length() == 0 &&
-      (rule->type == StyleRule::RuleType::kStyle &&
-       rule->property_data.empty())) {
-    // Add the source data for the child rules since they exist in the
-    // rule data coming from the parser.
-    for (auto& child_rule : rule->child_rules) {
-      AddNewRuleToSourceTree(child_rule);
+      (rule->type == StyleRule::RuleType::kStyle)) {
+    // Check if there is an active property inside the style rule.
+    bool contains_active_property = false;
+    for (auto property_data : rule->property_data) {
+      if (!property_data.disabled) {
+        contains_active_property = true;
+        break;
+      }
     }
-    return;
+
+    // If there isn't any active property declaration
+    // there won't be an implicit nested rule created for this rule.
+    // So, we skip adding it here too and only add its child rules.
+    if (!contains_active_property) {
+      // Add the source data for the child rules since they exist in the
+      // rule data coming from the parser.
+      for (auto& child_rule : rule->child_rules) {
+        AddNewRuleToSourceTree(child_rule);
+      }
+      return;
+    }
   }
 
   if (current_rule_data_stack_.empty()) {
@@ -902,7 +923,7 @@ void FlattenSourceData(const CSSRuleSourceDataList& data_list,
       case StyleRule::kFontFace:
       case StyleRule::kKeyframe:
       case StyleRule::kFontFeature:
-      case StyleRule::kTry:
+      case StyleRule::kPositionTry:
       case StyleRule::kViewTransition:
         result->push_back(data);
         break;
@@ -914,7 +935,6 @@ void FlattenSourceData(const CSSRuleSourceDataList& data_list,
       case StyleRule::kContainer:
       case StyleRule::kLayerBlock:
       case StyleRule::kFontFeatureValues:
-      case StyleRule::kPositionFallback:
       case StyleRule::kProperty:
       case StyleRule::kFontPaletteValues:
         result->push_back(data);
@@ -952,10 +972,6 @@ CSSRuleList* AsCSSRuleList(CSSRule* rule) {
   if (auto* layer_rule = DynamicTo<CSSLayerBlockRule>(rule))
     return layer_rule->cssRules();
 
-  if (auto* position_fallback_rule = DynamicTo<CSSPositionFallbackRule>(rule)) {
-    return position_fallback_rule->cssRules();
-  }
-
   if (auto* property_rule = DynamicTo<CSSPropertyRule>(rule))
     return property_rule->cssRules();
 
@@ -984,7 +1000,7 @@ void CollectFlatRules(RuleList rule_list, CSSRuleVector* result) {
       case CSSRule::kViewportRule:
       case CSSRule::kKeyframeRule:
       case CSSRule::kFontFeatureRule:
-      case CSSRule::kTryRule:
+      case CSSRule::kPositionTryRule:
       case CSSRule::kViewTransitionRule:
       case CSSRule::kFontPaletteValuesRule:
         result->push_back(rule);
@@ -997,7 +1013,6 @@ void CollectFlatRules(RuleList rule_list, CSSRuleVector* result) {
       case CSSRule::kContainerRule:
       case CSSRule::kLayerBlockRule:
       case CSSRule::kFontFeatureValuesRule:
-      case CSSRule::kPositionFallbackRule:
       case CSSRule::kPropertyRule:
         result->push_back(rule);
         CollectFlatRules(AsCSSRuleList(rule), result);
@@ -1638,7 +1653,7 @@ CSSRule* InspectorStyleSheet::SetStyleText(const SourceRange& range,
   if (!rule || !rule->parentStyleSheet() ||
       (!IsA<CSSStyleRule>(rule) && !IsA<CSSKeyframeRule>(rule) &&
        !IsA<CSSPropertyRule>(rule) && !IsA<CSSFontPaletteValuesRule>(rule) &&
-       !IsA<CSSTryRule>(rule))) {
+       !IsA<CSSPositionTryRule>(rule))) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kNotFoundError,
         "Source range didn't match existing style source range");
@@ -1648,13 +1663,13 @@ CSSRule* InspectorStyleSheet::SetStyleText(const SourceRange& range,
   CSSStyleDeclaration* style = nullptr;
   if (auto* style_rule = DynamicTo<CSSStyleRule>(rule)) {
     style = style_rule->style();
-  } else if (auto* try_rule = DynamicTo<CSSTryRule>(rule)) {
-    style = try_rule->style();
   } else if (auto* property_rule = DynamicTo<CSSPropertyRule>(rule)) {
     style = property_rule->Style();
   } else if (auto* font_palette_values_rule =
                  DynamicTo<CSSFontPaletteValuesRule>(rule)) {
     style = font_palette_values_rule->Style();
+  } else if (auto* position_try_rule = DynamicTo<CSSPositionTryRule>(rule)) {
+    style = position_try_rule->style();
   } else {
     style = To<CSSKeyframeRule>(rule)->style();
   }
@@ -2432,12 +2447,19 @@ InspectorStyleSheet::BuildObjectForRuleUsage(CSSRule* rule, bool was_used) {
   return result;
 }
 
-std::unique_ptr<protocol::CSS::CSSTryRule>
-InspectorStyleSheet::BuildObjectForTryRule(CSSTryRule* try_rule) {
-  std::unique_ptr<protocol::CSS::CSSTryRule> result =
-      protocol::CSS::CSSTryRule::create()
+std::unique_ptr<protocol::CSS::CSSPositionTryRule>
+InspectorStyleSheet::BuildObjectForPositionTryRule(
+    CSSPositionTryRule* position_try_rule) {
+  std::unique_ptr<protocol::CSS::Value> name =
+      protocol::CSS::Value::create().setText(position_try_rule->name()).build();
+  if (CSSRuleSourceData* source_data = SourceDataForRule(position_try_rule)) {
+    name->setRange(BuildSourceRangeObject(source_data->rule_header_range));
+  }
+  std::unique_ptr<protocol::CSS::CSSPositionTryRule> result =
+      protocol::CSS::CSSPositionTryRule::create()
+          .setName(std::move(name))
           .setOrigin(origin_)
-          .setStyle(BuildObjectForStyle(try_rule->style(), nullptr))
+          .setStyle(BuildObjectForStyle(position_try_rule->style(), nullptr))
           .build();
   if (CanBind(origin_) && !Id().empty()) {
     result->setStyleSheetId(Id());

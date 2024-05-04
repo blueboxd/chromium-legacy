@@ -21,6 +21,7 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
+#include "ash/wm/desks/desks_util.h"
 #include "ash/wm/float/float_controller.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/overview_controller.h"
@@ -64,6 +65,7 @@
 #include "ui/display/screen.h"
 #include "ui/events/event.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/rounded_corners_f.h"
 #include "ui/gfx/geometry/transform_util.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
@@ -157,7 +159,7 @@ aura::Window* FindTopMostChild(aura::Window* parent,
                                const aura::Window::Windows& windows) {
   for (aura::Window* child : base::Reversed(parent->children())) {
     for (aura::Window* window : windows) {
-      if (child == window) {
+      if (child == window && !window->is_destroying()) {
         return window;
       }
       if (child->Contains(window)) {
@@ -175,6 +177,59 @@ int GetMiniWindowRoundedCornerRadius() {
   return chromeos::features::IsRoundedWindowsEnabled()
              ? chromeos::features::RoundedWindowsRadius()
              : kWindowMiniViewCornerRadius;
+}
+
+gfx::RoundedCornersF GetMiniWindowRoundedCorners(const aura::Window* window,
+                                                 bool include_header_rounding,
+                                                 std::optional<float> scale) {
+  const int corner_radius = window_util::GetMiniWindowRoundedCornerRadius();
+  const float scaled_corner_radius = corner_radius / scale.value_or(1.0f);
+
+  if (SnapGroupController* snap_group_controller = SnapGroupController::Get()) {
+    if (SnapGroup* snap_group =
+            snap_group_controller->GetSnapGroupForGivenWindow(window)) {
+      const bool is_in_horizontal_snap_group =
+          snap_group->IsSnapGroupLayoutHorizontal();
+      if (window == snap_group->window1()) {
+        return is_in_horizontal_snap_group
+                   ? gfx::RoundedCornersF(
+                         /*upper_left=*/include_header_rounding
+                             ? scaled_corner_radius
+                             : 0,
+                         /*upper_right=*/0, /*lower_right=*/0,
+                         /*lower_left=*/scaled_corner_radius)
+                   : gfx::RoundedCornersF(
+                         /*upper_left=*/include_header_rounding
+                             ? scaled_corner_radius
+                             : 0,
+                         /*upper_right=*/
+                         include_header_rounding ? scaled_corner_radius : 0,
+                         /*lower_right=*/0,
+                         /*lower_left=*/0);
+      }
+
+      return is_in_horizontal_snap_group
+                 ? gfx::RoundedCornersF(
+                       /*upper_left=*/0,
+                       /*upper_right=*/
+                       include_header_rounding ? scaled_corner_radius : 0,
+                       /*lower_right=*/
+                       scaled_corner_radius,
+                       /*lower_left=*/0)
+                 : gfx::RoundedCornersF(
+                       /*upper_left=*/0,
+                       /*upper_right=*/0,
+                       /*lower_right=*/
+                       scaled_corner_radius,
+                       /*lower_left=*/scaled_corner_radius);
+    }
+  }
+
+  return gfx::RoundedCornersF(
+      /*upper_left=*/include_header_rounding ? scaled_corner_radius : 0,
+      /*upper_right=*/include_header_rounding ? scaled_corner_radius : 0,
+      /*lower_right=*/scaled_corner_radius,
+      /*lower_left=*/scaled_corner_radius);
 }
 
 aura::Window* GetActiveWindow() {
@@ -302,7 +357,8 @@ bool MoveWindowToDisplay(aura::Window* window, int64_t display_id) {
     gfx::Rect bounds = window->bounds();
     gfx::Rect work_area_in_display(display.size());
     work_area_in_display.Inset(display.GetWorkAreaInsets());
-    AdjustBoundsToEnsureMinimumWindowVisibility(work_area_in_display, &bounds);
+    AdjustBoundsToEnsureMinimumWindowVisibility(
+        work_area_in_display, /*client_controlled=*/false, &bounds);
     SetBoundsWMEvent event(bounds, display_id);
     window_state->OnWMEvent(&event);
     return true;
@@ -377,38 +433,49 @@ bool ShouldExcludeForCycleList(const aura::Window* window) {
 }
 
 bool ShouldExcludeForOverview(const aura::Window* window) {
-  // A window should be excluded from being shown in overview when:
-  // 1. In tablet split view mode on one window snapped;
-  // 2. In clamshell `SplitViewOverviewSession`,
-  // 3. If the window is not the mru window in snap group i.e. the corresponding
-  // overview item representation for the snap group has been created.
-  auto should_exclude_in_clamshell = [&]() -> bool {
-    if (auto* split_view_overview_session =
-            RootWindowController::ForWindow(window)
-                ->split_view_overview_session();
-        split_view_overview_session &&
-        split_view_overview_session->window() == window) {
-      return true;
-    }
-
-    if (auto* snap_group_controller = SnapGroupController::Get()) {
-      if (SnapGroup* snap_group =
-              snap_group_controller->GetSnapGroupForGivenWindow(window)) {
-        return window != snap_group->GetTopMostWindowInGroup();
-      }
-    }
-
-    return false;
-  };
-
   if (ShouldExcludeForCycleList(window)) {
     return true;
   }
 
-  return display::Screen::GetScreen()->InTabletMode()
-             ? (window == SplitViewController::Get(window->GetRootWindow())
-                              ->GetDefaultSnappedWindow())
-             : should_exclude_in_clamshell();
+  if (display::Screen::GetScreen()->InTabletMode()) {
+    return window == SplitViewController::Get(window->GetRootWindow())
+                         ->GetDefaultSnappedWindow();
+  }
+
+  // A window should be excluded from being shown in Overview in clamshell mode
+  // when:
+  // 1. In partial Overview:
+  //   - The window itself is the snapped window;
+  //   - The window belongs to a snap group.
+  SplitViewController* split_view_controller = SplitViewController::Get(window);
+  SplitViewController::State split_view_state = split_view_controller->state();
+  SnapGroupController* snap_group_controller = SnapGroupController::Get();
+  if (split_view_state == SplitViewController::State::kPrimarySnapped ||
+      split_view_state == SplitViewController::State::kSecondarySnapped) {
+    if (window == split_view_controller->GetDefaultSnappedWindow()) {
+      return true;
+    }
+
+    if (snap_group_controller &&
+        snap_group_controller->GetSnapGroupForGivenWindow(window)) {
+      return true;
+    }
+
+    return false;
+  }
+
+  // 2. In full Overview:
+  //   -  The window is not the most recently used (MRU) window within its snap
+  //   group. i.e. the corresponding overview item representation for the snap
+  //   group has been created.
+  if (snap_group_controller) {
+    if (SnapGroup* snap_group =
+            snap_group_controller->GetSnapGroupForGivenWindow(window)) {
+      return window != snap_group->GetTopMostWindowInGroup();
+    }
+  }
+
+  return false;
 }
 
 void EnsureTransientRoots(
@@ -512,6 +579,32 @@ bool IsAnyWindowDragged() {
       return true;
   }
   return false;
+}
+
+void FixWindowStackingAccordingToGlobalMru(aura::Window* window_to_fix) {
+  aura::Window* container = window_to_fix->parent();
+  DCHECK(desks_util::IsDeskContainer(container));
+  DCHECK_EQ(window_to_fix, wm::GetTransientRoot(window_to_fix));
+
+  const auto mru_windows =
+      Shell::Get()->mru_window_tracker()->BuildWindowListIgnoreModal(
+          DesksMruType::kAllDesks);
+  // Find the closest sibling that is not a transient descendant, which
+  // `window_to_fix` should be stacked below.
+  aura::Window* closest_sibling_above_window = nullptr;
+  for (aura::Window* window : mru_windows) {
+    if (window == window_to_fix) {
+      if (closest_sibling_above_window) {
+        container->StackChildBelow(window_to_fix, closest_sibling_above_window);
+      }
+      return;
+    }
+
+    if (window->parent() == container &&
+        !wm::HasTransientAncestor(window, window_to_fix)) {
+      closest_sibling_above_window = window;
+    }
+  }
 }
 
 aura::Window* GetTopWindow() {
@@ -762,6 +855,12 @@ bool IsInFasterSplitScreenSetupSession() {
     }
   }
   return false;
+}
+
+gfx::Rect GetTargetScreenBounds(aura::Window* window) {
+  gfx::Rect bounds_in_screen(window->GetTargetBounds());
+  wm::ConvertRectToScreen(window->parent(), &bounds_in_screen);
+  return bounds_in_screen;
 }
 
 }  // namespace ash::window_util

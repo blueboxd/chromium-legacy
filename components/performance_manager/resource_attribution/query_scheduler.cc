@@ -4,6 +4,7 @@
 
 #include "components/performance_manager/resource_attribution/query_scheduler.h"
 
+#include <optional>
 #include <set>
 #include <utility>
 #include <vector>
@@ -19,6 +20,7 @@
 #include "base/synchronization/lock.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/types/optional_util.h"
+#include "base/types/pass_key.h"
 #include "base/types/variant_util.h"
 #include "components/performance_manager/public/graph/node_data_describer_registry.h"
 #include "components/performance_manager/public/resource_attribution/resource_types.h"
@@ -140,9 +142,10 @@ void QueryScheduler::CallWithScheduler(
 void QueryScheduler::AddScopedQuery(QueryParams* query_params) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CHECK(query_params);
-  // TODO(crbug.com/1471683): Associate a notifier with the params so that when
+  // TODO(crbug.com/40926264): Associate a notifier with the params so that when
   // a scheduled measurement is done, the correct ScopedResourceUsageQuery can
-  // be notified.
+  // be notified. (Currently queries are only notified when they request it by
+  // calling RequestResults().)
   if (query_params->resource_types.Has(ResourceType::kCPUTime)) {
     AddCPUQuery();
   }
@@ -155,8 +158,13 @@ void QueryScheduler::RemoveScopedQuery(
     std::unique_ptr<QueryParams> query_params) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CHECK(query_params);
-  // TODO(crbug.com/1471683): Forget the notifier associated with the params.
+  // TODO(crbug.com/40926264): Forget the notifier associated with the params.
   if (query_params->resource_types.Has(ResourceType::kCPUTime)) {
+    const std::optional<QueryId>& query_id =
+        query_params->GetId(base::PassKey<QueryScheduler>());
+    if (query_id.has_value()) {
+      cpu_monitor_.RepeatingQueryStopped(query_id.value());
+    }
     RemoveCPUQuery();
   }
   if (query_params->resource_types.Has(ResourceType::kMemorySummary)) {
@@ -165,13 +173,30 @@ void QueryScheduler::RemoveScopedQuery(
   // `query_params` goes out of scope and is deleted here.
 }
 
+void QueryScheduler::StartRepeatingQuery(QueryParams* query_params) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  CHECK(query_params);
+  // Assign a QueryId to the query. This isn't done in AddScopedQuery() because
+  // the QueryId is used to identify queries that need to be notified of
+  // results, and a ScopedResourceUsageQuery that never calls Start() doesn't
+  // need to be notified.
+  static QueryId::Generator id_generator;
+  std::optional<QueryId>& query_id =
+      query_params->GetMutableId(base::PassKey<QueryScheduler>());
+  CHECK(!query_id.has_value());
+  query_id = id_generator.GenerateNextId();
+  if (query_params->resource_types.Has(ResourceType::kCPUTime)) {
+    cpu_monitor_.RepeatingQueryStarted(query_id.value());
+  }
+}
+
 void QueryScheduler::RequestResults(
     const QueryParams& query_params,
     base::OnceCallback<void(const QueryResultMap&)> callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Send out a measurement request for each resource type. The BarrierCallback
   // will invoke OnResultsReceived when all have responded.
-  const size_t num_requests = query_params.resource_types.Size();
+  const size_t num_requests = query_params.resource_types.size();
   auto barrier_callback = base::BarrierCallback<QueryResultMap>(
       num_requests, base::BindOnce(&QueryScheduler::OnResultsReceived,
                                    weak_factory_.GetWeakPtr(),
@@ -182,11 +207,13 @@ void QueryScheduler::RequestResults(
     switch (resource_type) {
       case ResourceType::kCPUTime:
         if (cpu_monitor_.IsMonitoring()) {
-          barrier_callback.Run(cpu_monitor_.UpdateAndGetCPUMeasurements());
+          // Pass the QueryId of a scoped query or nullopt for a one-shot.
+          barrier_callback.Run(cpu_monitor_.UpdateAndGetCPUMeasurements(
+              query_params.GetId(base::PassKey<QueryScheduler>())));
         } else {
           // If no scoped query is keeping the CPU monitor running, just return
           // empty results.
-          // TODO(crbug.com/1471683): Could run the CPU monitor for a few
+          // TODO(crbug.com/40926264): Could run the CPU monitor for a few
           // seconds instead.
           barrier_callback.Run({});
         }
@@ -249,6 +276,11 @@ uint32_t QueryScheduler::GetQueryCountForTesting(
       return memory_query_count_;
   }
   NOTREACHED_NORETURN();
+}
+
+void QueryScheduler::RecordMemoryMetrics() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  cpu_monitor_.RecordMemoryMetrics();
 }
 
 void QueryScheduler::AddCPUQuery() {

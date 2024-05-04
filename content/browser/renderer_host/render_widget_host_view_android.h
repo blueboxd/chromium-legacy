@@ -209,7 +209,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   viz::SurfaceId GetCurrentSurfaceId() const override;
   bool TransformPointToCoordSpaceForView(
       const gfx::PointF& point,
-      RenderWidgetHostViewBase* target_view,
+      RenderWidgetHostViewInput* target_view,
       gfx::PointF* transformed_point) override;
   TouchSelectionControllerClientManager*
   GetTouchSelectionControllerClientManager() override;
@@ -228,6 +228,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void TransferTouches(
       const std::vector<std::unique_ptr<ui::TouchEvent>>& touches) override;
   ui::mojom::VirtualKeyboardMode GetVirtualKeyboardMode() override;
+  viz::SurfaceId GetFallbackSurfaceIdForTesting() const override;
 
   // ui::EventHandlerAndroid implementation.
   bool OnTouchEvent(const ui::MotionEventAndroid& m) override;

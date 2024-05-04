@@ -217,7 +217,7 @@ DOMNodeId GraphicsContext::GetDOMNodeId() const {
   return dom_node_id_;
 }
 
-void GraphicsContext::SetDrawLooper(sk_sp<SkDrawLooper> draw_looper) {
+void GraphicsContext::SetDrawLooper(sk_sp<cc::DrawLooper> draw_looper) {
   MutableState()->SetDrawLooper(std::move(draw_looper));
 }
 
@@ -507,7 +507,7 @@ void GraphicsContext::DrawText(const Font& font,
                                DOMNodeId node_id,
                                const AutoDarkMode& auto_dark_mode) {
   DarkModeFlags dark_mode_flags(this, auto_dark_mode, flags);
-  if (sk_sp<SkTextBlob> text_blob = paint_controller_->CachedTextBlob()) {
+  if (sk_sp<SkTextBlob> text_blob = paint_controller_.CachedTextBlob()) {
     canvas_->drawTextBlob(text_blob, point.x(), point.y(), node_id,
                           dark_mode_flags);
     return;
@@ -594,7 +594,7 @@ void GraphicsContext::DrawBidiText(
                           DarkModeFlags(this, auto_dark_mode, flags),
                           printing_ ? Font::DrawType::kGlyphsAndClusters
                                     : Font::DrawType::kGlyphsOnly)) {
-      paint_controller_->SetTextPainted();
+      paint_controller_.SetTextPainted();
     }
   });
 }
@@ -691,7 +691,7 @@ void GraphicsContext::SetImagePainted(bool report_paint_timing) {
     return;
   }
 
-  paint_controller_->SetImagePainted();
+  paint_controller_.SetImagePainted();
 }
 
 cc::PaintFlags::FilterQuality GraphicsContext::ComputeFilterQuality(
@@ -963,11 +963,11 @@ void GraphicsContext::StrokeRect(const gfx::RectF& rect,
   } else if (valid_w || valid_h) {
     // we are expected to respect the lineJoin, so we can't just call
     // drawLine -- we have to create a path that doubles back on itself.
-    SkPathBuilder path;
+    SkPath path;
     path.moveTo(r.fLeft, r.fTop);
     path.lineTo(r.fRight, r.fBottom);
     path.close();
-    DrawPath(path.detach(), flags, auto_dark_mode);
+    DrawPath(path, flags, auto_dark_mode);
   }
 }
 

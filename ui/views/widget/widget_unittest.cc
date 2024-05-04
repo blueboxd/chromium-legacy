@@ -11,6 +11,7 @@
 #include "base/functional/callback.h"
 #include "base/functional/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/ranges/algorithm.h"
 #include "base/run_loop.h"
 #include "base/test/gtest_util.h"
@@ -305,6 +306,27 @@ TEST_F(WidgetWithCustomParamsTest, NamePropagatedFromDelegate) {
   EXPECT_EQ(delegate.internal_name(), widget->GetName());
 }
 
+// Test that Widget::InitParams::autosize allows widget to
+// automatically resize when content view size changes.
+TEST_F(WidgetWithCustomParamsTest, Autosize) {
+  SetInitFunction(base::BindLambdaForTesting(
+      [](Widget::InitParams* params) { params->autosize = true; }));
+
+  std::unique_ptr<Widget> widget = CreateTestWidget();
+  auto* view = widget->SetContentsView(std::make_unique<views::View>());
+  widget->Show();
+
+  constexpr gfx::Size kInitialSize(100, 100);
+  view->SetPreferredSize(kInitialSize);
+  const gfx::Size starting_size = widget->GetWindowBoundsInScreen().size();
+
+  constexpr gfx::Size kDelta(50, 50);
+  view->SetPreferredSize(kInitialSize + kDelta);
+  const gfx::Size ending_size = widget->GetWindowBoundsInScreen().size();
+
+  EXPECT_EQ(ending_size, starting_size + kDelta);
+}
+
 namespace {
 
 class ViewWithClassName : public View {
@@ -380,144 +402,6 @@ TEST_F(WidgetWithCustomParamsTest, InitWithNativeTheme) {
 
   EXPECT_EQ(view_raw_ptr->user_color(), test_color);
 }
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-namespace {
-struct SkottieColors {
-  bool operator==(const SkottieColors& other) const {
-    return color1 == other.color1 && color1_shade1 == other.color1_shade1 &&
-           color1_shade2 == other.color1_shade2 && color2 == other.color2 &&
-           color3 == other.color3 && color4 == other.color4 &&
-           color5 == other.color5 && color6 == other.color6 &&
-           base_color == other.base_color &&
-           secondary_color == other.secondary_color;
-  }
-  bool operator!=(const SkottieColors& other) const {
-    return !operator==(other);
-  }
-
-  SkColor color1, color1_shade1, color1_shade2, color2, color3, color4, color5,
-      color6, base_color, secondary_color;
-};
-
-class ViewObservingSkottieColors : public View {
-  METADATA_HEADER(ViewObservingSkottieColors, View)
-
- public:
-  void OnThemeChanged() override {
-    View::OnThemeChanged();
-    const ui::ColorProvider* provider = GetColorProvider();
-    history.push_back({provider->GetColor(ui::kColorNativeColor1),
-                       provider->GetColor(ui::kColorNativeColor1Shade1),
-                       provider->GetColor(ui::kColorNativeColor1Shade2),
-                       provider->GetColor(ui::kColorNativeColor2),
-                       provider->GetColor(ui::kColorNativeColor3),
-                       provider->GetColor(ui::kColorNativeColor4),
-                       provider->GetColor(ui::kColorNativeColor5),
-                       provider->GetColor(ui::kColorNativeColor6),
-                       provider->GetColor(ui::kColorNativeBaseColor),
-                       provider->GetColor(ui::kColorNativeSecondaryColor)});
-  }
-
-  std::vector<SkottieColors> history;
-};
-
-BEGIN_METADATA(ViewObservingSkottieColors)
-END_METADATA
-}  // namespace
-
-TEST_F(WidgetWithCustomParamsTest, SkottieColorsTest) {
-  // |widget1| has low background elevation and is created in light mode.
-  ui::NativeTheme* theme = ui::NativeTheme::GetInstanceForNativeUi();
-  theme->set_use_dark_colors(false);
-  WidgetDelegate delegate1;
-  ViewObservingSkottieColors* contents1 =
-      delegate1.SetContentsView(std::make_unique<ViewObservingSkottieColors>());
-  SetInitFunction(base::BindLambdaForTesting([&](Widget::InitParams* params) {
-    params->delegate = &delegate1;
-    params->background_elevation = ui::ColorProviderKey::ElevationMode::kLow;
-  }));
-  std::unique_ptr<Widget> widget1 = CreateTestWidget();
-  ASSERT_EQ(1u, contents1->history.size());
-
-  // |widget2| has high background elevation and is created in light mode.
-  WidgetDelegate delegate2;
-  ViewObservingSkottieColors* contents2 =
-      delegate2.SetContentsView(std::make_unique<ViewObservingSkottieColors>());
-  SetInitFunction(base::BindLambdaForTesting([&](Widget::InitParams* params) {
-    params->delegate = &delegate2;
-    params->background_elevation = ui::ColorProviderKey::ElevationMode::kHigh;
-  }));
-  std::unique_ptr<Widget> widget2 = CreateTestWidget();
-  ASSERT_EQ(1u, contents2->history.size());
-  // Check that |contents1| and |contents2| have the same Skottie colors.
-  // Background elevation should not affect Skottie colors in light mode.
-  EXPECT_EQ(contents1->history[0u], contents2->history[0u]);
-
-  // Switch to dark mode.
-  theme->set_use_dark_colors(true);
-  theme->NotifyOnNativeThemeUpdated();
-  // Check that |contents1| and |contents2| were notified of the theme update.
-  ASSERT_EQ(2u, contents1->history.size());
-  ASSERT_EQ(2u, contents2->history.size());
-  // Check that the Skottie colors were actually changed with the
-  // notification.
-  EXPECT_NE(contents1->history[0u], contents1->history[1u]);
-  EXPECT_NE(contents2->history[0u], contents2->history[1u]);
-  // Check that |contents1| and |contents2| have different Skottie colors.
-  // Background elevation should affect Skottie colors in dark mode.
-  EXPECT_NE(contents1->history[1u], contents2->history[1u]);
-
-  // |widget3| has low background elevation and is created in dark mode.
-  WidgetDelegate delegate3;
-  ViewObservingSkottieColors* contents3 =
-      delegate3.SetContentsView(std::make_unique<ViewObservingSkottieColors>());
-  SetInitFunction(base::BindLambdaForTesting([&](Widget::InitParams* params) {
-    params->delegate = &delegate3;
-    params->background_elevation = ui::ColorProviderKey::ElevationMode::kLow;
-  }));
-  std::unique_ptr<Widget> widget3 = CreateTestWidget();
-  ASSERT_EQ(1u, contents3->history.size());
-  // Check that |contents3| has the same Skottie colors as |contents1|. It
-  // should not matter whether a widget was created before or after dark mode
-  // was toggled.
-  EXPECT_EQ(contents1->history[1u], contents3->history[0u]);
-
-  // |widget4| has high background elevation and is created in dark mode.
-  WidgetDelegate delegate4;
-  ViewObservingSkottieColors* contents4 =
-      delegate4.SetContentsView(std::make_unique<ViewObservingSkottieColors>());
-  SetInitFunction(base::BindLambdaForTesting([&](Widget::InitParams* params) {
-    params->delegate = &delegate4;
-    params->background_elevation = ui::ColorProviderKey::ElevationMode::kHigh;
-  }));
-  std::unique_ptr<Widget> widget4 = CreateTestWidget();
-  ASSERT_EQ(1u, contents4->history.size());
-  // Check that |contents4| has the same Skottie colors as |contents2|. It
-  // should not matter whether a widget was created before or after dark mode
-  // was toggled.
-  EXPECT_EQ(contents2->history[1u], contents4->history[0u]);
-
-  // Switch to light mode.
-  theme->set_use_dark_colors(false);
-  theme->NotifyOnNativeThemeUpdated();
-  // Check that all four contents views were notified of the theme update.
-  ASSERT_EQ(3u, contents1->history.size());
-  ASSERT_EQ(3u, contents2->history.size());
-  ASSERT_EQ(2u, contents3->history.size());
-  ASSERT_EQ(2u, contents4->history.size());
-  // Check that |contents1| and |contents2| are back to the Skottie colors
-  // they started with. It should not matter if dark mode is toggled on and
-  // back off.
-  EXPECT_EQ(contents1->history[0u], contents1->history[2u]);
-  EXPECT_EQ(contents2->history[0u], contents2->history[2u]);
-  // Check that |contents3| and |contents4| still have the same Skottie colors
-  // as |contents1| and |contents2|, respectively. It should not matter when a
-  // widget was created.
-  EXPECT_EQ(contents1->history[2u], contents3->history[1u]);
-  EXPECT_EQ(contents2->history[2u], contents4->history[1u]);
-}
-#endif
 
 class WidgetColorModeTest : public WidgetTest {
  public:
@@ -1239,7 +1123,7 @@ TEST_F(WidgetOwnsNativeWidgetTest, IdempotentClose) {
   RunPendingMessages();
 }
 
-// Test for CLIENT_OWNS_WIDGET. The client holds a unique_ptr<Widget>.
+// Tests for CLIENT_OWNS_WIDGET. The client holds a unique_ptr<Widget>.
 // The NativeWidget will be destroyed when the platform window is closed.
 using ClientOwnsWidgetTest = WidgetOwnershipTest;
 
@@ -1255,6 +1139,54 @@ TEST_F(ClientOwnsWidgetTest, Ownership) {
 
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(state()->native_widget_deleted);
+}
+
+class WidgetDestroyCounter : public WidgetObserver {
+ public:
+  explicit WidgetDestroyCounter(Widget* widget)
+      : widget_(widget->GetWeakPtr()) {
+    widget_->AddObserver(this);
+  }
+  ~WidgetDestroyCounter() override {
+    if (widget_) {
+      widget_->RemoveObserver(this);
+    }
+  }
+
+  int widget_destroying_count() const { return widget_destroying_count_; }
+
+  int widget_destroyed_count() const { return widget_destroyed_count_; }
+
+ private:
+  // WidgetObserver:
+  void OnWidgetDestroying(Widget* widget) override {
+    ++widget_destroying_count_;
+  }
+
+  void OnWidgetDestroyed(Widget* widget) override { ++widget_destroyed_count_; }
+
+  base::WeakPtr<Widget> widget_;
+  int widget_destroying_count_ = 0;
+  int widget_destroyed_count_ = 0;
+};
+
+TEST_F(ClientOwnsWidgetTest, NotificationsTest) {
+  auto widget = std::make_unique<OwnershipTestWidget>(state());
+  Widget::InitParams params = CreateParamsForTestWidget();
+  params.native_widget = CreatePlatformNativeWidgetImpl(
+      widget.get(), kStubCapture, &state()->native_widget_deleted);
+  params.ownership = Widget::InitParams::CLIENT_OWNS_WIDGET;
+  widget->Init(std::move(params));
+  auto observer = std::make_unique<WidgetDestroyCounter>(widget.get());
+  widget->Close();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(observer->widget_destroying_count(), 1);
+  EXPECT_EQ(observer->widget_destroyed_count(), 1);
+  widget.reset();
+  EXPECT_TRUE(state()->widget_deleted);
+  // The destroying & destroyed notifications should only happen once.
+  EXPECT_EQ(observer->widget_destroying_count(), 1);
+  EXPECT_EQ(observer->widget_destroyed_count(), 1);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1317,7 +1249,7 @@ class WidgetWithDestroyedNativeViewOrNativeWidgetTest
         test_name += "WidgetOwnsNativeWidget";
         break;
       case Widget::InitParams::CLIENT_OWNS_WIDGET:
-        test_name += "ClientOwnsNativeWidget";
+        test_name += "ClientOwnsWidget";
         break;
       case Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET:
         // Note: We don't test for this case in
@@ -3976,7 +3908,7 @@ TEST_F(DesktopWidgetTest, ValidDuringOnNativeWidgetDestroyingFromClose) {
   EXPECT_EQ(gfx::Rect(), observer.bounds());
   base::RunLoop().RunUntilIdle();
 // Broken on Linux. See http://crbug.com/515379.
-// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
+// TODO(crbug.com/40118868): Revisit the macro expression once build flag switch
 // of lacros-chrome is complete.
 #if !(BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS))
   EXPECT_EQ(screen_rect, observer.bounds());

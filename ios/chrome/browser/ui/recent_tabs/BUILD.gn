@@ -17,12 +17,14 @@ source_set("recent_tabs") {
   deps = [
     ":recent_tabs_ui",
     "//base",
+    "//components/feature_engagement/public",
     "//components/sessions",
     "//components/signin/public/identity_manager",
     "//components/signin/public/identity_manager/objc",
     "//components/sync",
     "//ios/chrome/browser/default_browser/model:default_browser_interest_signals",
     "//ios/chrome/browser/favicon/model",
+    "//ios/chrome/browser/feature_engagement/model",
     "//ios/chrome/browser/net/model:crurl",
     "//ios/chrome/browser/policy/model:policy_util",
     "//ios/chrome/browser/sessions",
@@ -76,7 +78,6 @@ source_set("recent_tabs_ui") {
   ]
   deps = [
     ":recent_tabs_ui_constants",
-    "resources:recent_tabs_other_devices_empty",
     "//base",
     "//components/prefs",
     "//components/search_engines",
@@ -116,12 +117,14 @@ source_set("recent_tabs_ui") {
     "//ios/chrome/browser/ui/authentication/history_sync",
     "//ios/chrome/browser/ui/authentication/signin:signin_headers",
     "//ios/chrome/browser/ui/keyboard",
+    "//ios/chrome/browser/ui/recent_tabs/resources",
     "//ios/chrome/browser/ui/tab_switcher/tab_grid/suggested_actions/resources",
     "//ios/chrome/browser/url_loading/model",
     "//ios/chrome/common/ui/colors",
     "//ios/chrome/common/ui/favicon",
     "//ios/chrome/common/ui/table_view:cells_constants",
     "//ios/public/provider/chrome/browser/modals:modals_api",
+    "//ios/web/public",
     "//ui/base",
   ]
 }

@@ -605,7 +605,7 @@ void GCMClientImpl::AddInstanceIDData(const std::string& app_id,
                                       const std::string& extra_data) {
   DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
   instance_id_data_[app_id] = std::make_pair(instance_id, extra_data);
-  // TODO(crbug/1028761): If this call fails, we likely leak a registration
+  // TODO(crbug.com/40109289): If this call fails, we likely leak a registration
   // (the one stored in instance_id_data_ would be used for a registration but
   // not persisted).
   gcm_store_->AddInstanceIDData(
@@ -777,7 +777,7 @@ void GCMClientImpl::DefaultStoreCallback(bool success) {
 void GCMClientImpl::IgnoreWriteResultCallback(
     const std::string& operation_suffix_for_uma,
     bool success) {
-  // TODO(crbug.com/1081149): Implement proper error handling.
+  // TODO(crbug.com/40691191): Implement proper error handling.
   // TODO(fgorski): Ignoring the write result for now to make sure
   // sync_intergration_tests are not broken.
 }

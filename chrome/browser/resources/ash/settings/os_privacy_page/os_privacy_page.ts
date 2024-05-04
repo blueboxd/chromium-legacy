@@ -22,9 +22,9 @@ import './peripheral_data_access_protection_dialog.js';
 import '../os_people_page/lock_screen_password_prompt_dialog.js';
 import '../os_people_page/os_sync_browser_proxy.js';
 
-import {SyncBrowserProxy, SyncBrowserProxyImpl, SyncStatus} from '/shared/settings/people_page/sync_browser_proxy.js';
+import {SignedInState, SyncBrowserProxy, SyncBrowserProxyImpl, SyncStatus} from '/shared/settings/people_page/sync_browser_proxy.js';
+import {PrefsMixin} from '/shared/settings/prefs/prefs_mixin.js';
 import {AUTH_TOKEN_INVALID_EVENT_TYPE} from 'chrome://resources/ash/common/quick_unlock/utils.js';
-import {PrefsMixin} from 'chrome://resources/cr_components/settings_prefs/prefs_mixin.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {afterNextRender, flush, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
@@ -94,7 +94,6 @@ export class OsSettingsPrivacyPageElement extends
         type: Object,
         value: () => new Set<Setting>([
           Setting.kVerifiedAccess,
-          Setting.kUsageStatsAndCrashReports,
         ]),
       },
 
@@ -178,18 +177,6 @@ export class OsSettingsPrivacyPageElement extends
         type: Boolean,
         value: function() {
           return loadTimeData.getBoolean('showSecureDnsSetting');
-        },
-        readOnly: true,
-      },
-
-      /**
-       * Whether privacy hub should be displayed.
-       */
-      showPrivacyHubPage_: {
-        type: Boolean,
-        value: function() {
-          return loadTimeData.getBoolean('showPrivacyHubPage') &&
-              !loadTimeData.getBoolean('isGuest');
         },
         readOnly: true,
       },
@@ -289,7 +276,6 @@ export class OsSettingsPrivacyPageElement extends
   private section_: Section;
   private showDisableProtectionDialog_: boolean;
   private showPasswordPromptDialog_: boolean;
-  private showPrivacyHubPage_: boolean;
   private showSecureDnsSetting_: boolean;
   private showSyncSettingsRevamp_: boolean;
   private syncBrowserProxy_: SyncBrowserProxy;
@@ -509,7 +495,8 @@ export class OsSettingsPrivacyPageElement extends
 
     // When ChromeOSAccountManager is disabled, fall back to using the sync
     // username ("alice@gmail.com") as the profile label.
-    if (!this.isAccountManagerEnabled_ && syncStatus && syncStatus.signedIn &&
+    if (!this.isAccountManagerEnabled_ && syncStatus &&
+        this.syncStatus.signedInState === SignedInState.SYNCING &&
         syncStatus.signedInUsername) {
       this.profileLabel_ = syncStatus.signedInUsername;
     }

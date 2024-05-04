@@ -116,6 +116,8 @@ class TestingBrowserProcess : public BrowserProcess {
   safe_browsing::SafeBrowsingService* safe_browsing_service() override;
   subresource_filter::RulesetService* subresource_filter_ruleset_service()
       override;
+  subresource_filter::RulesetService*
+  fingerprinting_protection_ruleset_service() override;
   BrowserProcessPlatformPart* platform_part() override;
 
   extensions::EventRouterForwarder* extension_event_router_forwarder() override;
@@ -137,7 +139,7 @@ class TestingBrowserProcess : public BrowserProcess {
   DownloadRequestLimiter* download_request_limiter() override;
   StartupData* startup_data() override;
 
-// TODO(crbug.com/1052397): Revisit once build flag switch of lacros-chrome is
+// TODO(crbug.com/40118868): Revisit once build flag switch of lacros-chrome is
 // complete.
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
   void StartAutoupdateTimer() override {}
@@ -162,6 +164,10 @@ class TestingBrowserProcess : public BrowserProcess {
   UsbSystemTrayIcon* usb_system_tray_icon() override;
 #endif
   os_crypt_async::OSCryptAsync* os_crypt_async() override;
+  void set_additional_os_crypt_async_provider_for_test(
+      size_t precedence,
+      std::unique_ptr<os_crypt_async::KeyProvider> provider) override;
+
   BuildState* GetBuildState() override;
 
   // Set the local state for tests. Consumer is responsible for cleaning it up
@@ -172,6 +178,8 @@ class TestingBrowserProcess : public BrowserProcess {
   void SetSafeBrowsingService(safe_browsing::SafeBrowsingService* sb_service);
   void SetWebRtcLogUploader(std::unique_ptr<WebRtcLogUploader> uploader);
   void SetRulesetService(
+      std::unique_ptr<subresource_filter::RulesetService> ruleset_service);
+  void SetFingerprintingProtectionRulesetService(
       std::unique_ptr<subresource_filter::RulesetService> ruleset_service);
   void SetSharedURLLoaderFactory(
       scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory);
@@ -239,6 +247,8 @@ class TestingBrowserProcess : public BrowserProcess {
   scoped_refptr<safe_browsing::SafeBrowsingService> sb_service_;
   std::unique_ptr<subresource_filter::RulesetService>
       subresource_filter_ruleset_service_;
+  std::unique_ptr<subresource_filter::RulesetService>
+      fingerprinting_protection_ruleset_service_;
   std::unique_ptr<WebRtcLogUploader> webrtc_log_uploader_;
 
   std::unique_ptr<network_time::NetworkTimeTracker> network_time_tracker_;

@@ -772,8 +772,8 @@ void PlatformNotificationContextImpl::
 
   std::vector<NotificationDatabaseData> notification_datas;
 
-  // TODO(crbug.com/1202149): Pass in via an argument whether we want to include
-  // notifications shown by the browser or not.
+  // TODO(crbug.com/40179016): Pass in via an argument whether we want to
+  // include notifications shown by the browser or not.
   NotificationDatabase::Status status =
       database_->ReadAllNotificationDataForServiceWorkerRegistration(
           origin, service_worker_registration_id,
@@ -950,7 +950,7 @@ void PlatformNotificationContextImpl::DoWriteNotificationData(
 
   if (CanTrigger(write_database_data) &&
       !DoCheckNotificationTriggerQuota(origin)) {
-    // TODO(crbug.com/891339): Reply with a custom error so developers can
+    // TODO(crbug.com/40596304): Reply with a custom error so developers can
     // handle this.
     GetUIThreadTaskRunner({})->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), /* success= */ false,
@@ -1041,7 +1041,7 @@ void PlatformNotificationContextImpl::DoDeleteNotificationData(
     }
   }
 
-  // TODO(crbug.com/1202149): Should we verify that websites don't try to close
+  // TODO(crbug.com/40179016): Should we verify that websites don't try to close
   // notifications shown by the browser (is_shown_by_browser == true)?
 
   NotificationDatabase::Status status =

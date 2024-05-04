@@ -13,6 +13,7 @@
 #include "ash/app_list/app_list_model_provider.h"
 #include "ash/app_list/app_list_presenter_impl.h"
 #include "ash/app_list/app_list_view_delegate.h"
+#include "ash/app_list/apps_collections_controller.h"
 #include "ash/app_list/model/search/search_box_model.h"
 #include "ash/app_list/quick_app_access_model.h"
 #include "ash/app_list/views/app_list_item_view.h"
@@ -278,7 +279,9 @@ AppListControllerImpl::AppListControllerImpl()
     : model_provider_(std::make_unique<AppListModelProvider>()),
       fullscreen_presenter_(std::make_unique<AppListPresenterImpl>(this)),
       bubble_presenter_(std::make_unique<AppListBubblePresenter>(this)),
-      badge_controller_(std::make_unique<AppListBadgeController>()) {
+      badge_controller_(std::make_unique<AppListBadgeController>()),
+      apps_collections_controller_(
+          std::make_unique<AppsCollectionsController>()) {
   SessionControllerImpl* session_controller =
       Shell::Get()->session_controller();
   session_controller->AddObserver(this);
@@ -341,6 +344,7 @@ void AppListControllerImpl::RegisterProfilePrefs(PrefRegistrySimple* registry) {
 
 void AppListControllerImpl::SetClient(AppListClient* client) {
   client_ = client;
+  apps_collections_controller_->SetClient(client);
 }
 
 AppListClient* AppListControllerImpl::GetClient() {
@@ -561,6 +565,9 @@ void AppListControllerImpl::UpdateAppListWithNewTemporarySortOrder(
       new_order, is_tablet_mode && animate,
       is_tablet_mode ? std::move(update_position_closure)
                      : base::NullCallback());
+
+  // Notify the AppsCollectionsController that there was a reorder.
+  apps_collections_controller_->SetAppsReordered();
 }
 
 ShelfAction AppListControllerImpl::ToggleAppList(
@@ -674,7 +681,7 @@ bool AppListControllerImpl::GoHome(int64_t display_id) {
     // animation can interfere with WindowTransformToHomeScreenAnimation
     // visuals.
     //
-    // TODO(https://crbug.com/1019531): This can be removed once transitions
+    // TODO(crbug.com/40656009): This can be removed once transitions
     // between in-app state and home do not cause work area updates.
     std::vector<std::unique_ptr<wm::ScopedAnimationDisabler>>
         animation_disablers;
@@ -1232,6 +1239,8 @@ void AppListControllerImpl::OpenSearchResult(const std::string& result_id,
       case AppListLaunchedFrom::kLaunchedFromShelf:
       case AppListLaunchedFrom::kLaunchedFromContinueTask:
       case AppListLaunchedFrom::kLaunchedFromQuickAppAccess:
+      case AppListLaunchedFrom::kLaunchedFromAppsCollections:
+      case AppListLaunchedFrom::kLaunchedFromDiscoveryChip:
         break;
       case AppListLaunchedFrom::DEPRECATED_kLaunchedFromSuggestionChip:
         NOTREACHED();
@@ -1264,6 +1273,8 @@ void AppListControllerImpl::OpenSearchResult(const std::string& result_id,
     case AppListLaunchedFrom::kLaunchedFromShelf:
     case AppListLaunchedFrom::DEPRECATED_kLaunchedFromSuggestionChip:
     case AppListLaunchedFrom::kLaunchedFromQuickAppAccess:
+    case AppListLaunchedFrom::kLaunchedFromAppsCollections:
+    case AppListLaunchedFrom::kLaunchedFromDiscoveryChip:
       NOTREACHED();
       break;
   }
@@ -1326,7 +1337,12 @@ void AppListControllerImpl::ActivateItem(const std::string& id,
                                     is_tablet_mode, last_show_timestamp_);
       break;
     case AppListLaunchedFrom::kLaunchedFromQuickAppAccess:
-      // Metrics for quick app launch already recorded at RecordApplaunched().
+    // Metrics for quick app launch already recorded at RecordApplaunched().
+    case AppListLaunchedFrom::kLaunchedFromAppsCollections:
+    // Metrics for apps collections launch recorded by the
+    // AppListViewDelegate.
+    case AppListLaunchedFrom::kLaunchedFromDiscoveryChip:
+      // Metrics for discovery chip already recorded at RecordApplaunched().
       break;
     case AppListLaunchedFrom::kLaunchedFromContinueTask:
     case AppListLaunchedFrom::kLaunchedFromSearchBox:
@@ -1763,7 +1779,7 @@ void AppListControllerImpl::ResetHomeLauncherIfShown() {
   fullscreen_presenter_->GetView()->CloseOpenedPage();
 
   // Refresh the suggestion chips with empty query.
-  // TODO(crbug.com/1269115): Switch to client_->StartZeroStateSearch()?
+  // TODO(crbug.com/40204937): Switch to client_->StartZeroStateSearch()?
   StartSearch(std::u16string());
 }
 

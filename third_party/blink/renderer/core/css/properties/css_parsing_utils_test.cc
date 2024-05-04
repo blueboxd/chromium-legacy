@@ -221,23 +221,21 @@ TEST(CSSParsingUtilsTest, DashedIdent) {
   }
 }
 
-TEST(CSSParsingUtilsTest, NoSystemColor) {
-  auto ConsumeColorForTest =
-      [](String css_text,
-         css_parsing_utils::AllowedColorKeywords allowed_keywords) {
-        auto tokens = CSSTokenizer(css_text).TokenizeToEOF();
-        CSSParserTokenRange range(tokens);
-        return ConsumeColor(range, *MakeContext(), false, allowed_keywords);
-      };
-  using css_parsing_utils::AllowedColorKeywords;
+TEST(CSSParsingUtilsTest, ConsumeAbsoluteColor) {
+  auto ConsumeColorForTest = [](String css_text, auto func) {
+    auto tokens = CSSTokenizer(css_text).TokenizeToEOF();
+    CSSParserTokenRange range(tokens);
+    CSSParserContext* context = MakeContext();
+    return func(range, *context);
+  };
 
   struct {
     STACK_ALLOCATED();
 
    public:
     String css_text;
-    CSSIdentifierValue* allowed_expectation;
-    CSSIdentifierValue* not_allowed_expectation;
+    CSSIdentifierValue* consume_color_expectation;
+    CSSIdentifierValue* consume_absolute_color_expectation;
   } expectations[]{
       {"Canvas", CSSIdentifierValue::Create(CSSValueID::kCanvas), nullptr},
       {"HighlightText", CSSIdentifierValue::Create(CSSValueID::kHighlighttext),
@@ -250,14 +248,17 @@ TEST(CSSParsingUtilsTest, NoSystemColor) {
        nullptr},
       {"WindowText", CSSIdentifierValue::Create(CSSValueID::kWindowtext),
        nullptr},
+      {"currentcolor", CSSIdentifierValue::Create(CSSValueID::kCurrentcolor),
+       nullptr},
   };
   for (auto& expectation : expectations) {
+    EXPECT_EQ(ConsumeColorForTest(
+                  expectation.css_text,
+                  css_parsing_utils::ConsumeColor<CSSParserTokenRange>),
+              expectation.consume_color_expectation);
     EXPECT_EQ(ConsumeColorForTest(expectation.css_text,
-                                  AllowedColorKeywords::kAllowSystemColor),
-              expectation.allowed_expectation);
-    EXPECT_EQ(ConsumeColorForTest(expectation.css_text,
-                                  AllowedColorKeywords::kNoSystemColor),
-              expectation.not_allowed_expectation);
+                                  css_parsing_utils::ConsumeAbsoluteColor),
+              expectation.consume_absolute_color_expectation);
   }
 }
 

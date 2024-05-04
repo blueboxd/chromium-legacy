@@ -11,7 +11,6 @@
       <if expr="not is_android">
         <!-- Incognito and Guest mode, new tab page WebUI. -->
         <structure name="IDR_INCOGNITO_TAB_HTML" file="resources\new_tab_page_incognito_guest\incognito_tab.html" flattenhtml="true" type="chrome_html" />
-        <structure name="IDR_REVAMPED_INCOGNITO_TAB_HTML" file="resources\new_tab_page_incognito_guest\revamped_incognito_tab.html" flattenhtml="true" type="chrome_html" />
         <structure name="IDR_INCOGNITO_TAB_THEME_CSS" file="resources\new_tab_page_incognito_guest\incognito_tab_theme.css" flattenhtml="true" type="chrome_html" />
         <structure name="IDR_GUEST_TAB_HTML" file="resources\new_tab_page_incognito_guest\guest_tab.html" flattenhtml="true" type="chrome_html" />
         <structure name="IDR_NEW_TAB_4_THEME_CSS" file="resources\new_tab_page_incognito_guest\new_tab_theme.css" flattenhtml="true" type="chrome_html" />
@@ -19,8 +18,14 @@
         <!-- WebAuthn Lottie resources -->
         <structure type="lottie" name="IDR_WEBAUTHN_HYBRID_CONNECTING_LIGHT" file="resources/webauthn/hybrid_connecting_light.json" compress="brotli" />
         <structure type="lottie" name="IDR_WEBAUTHN_HYBRID_CONNECTING_DARK" file="resources/webauthn/hybrid_connecting_dark.json" compress="brotli" />
-        <structure type="lottie" name="IDR_WEBAUTHN_GPM_FINGERPRINT_LIGHT" file="resources/webauthn/gpm_fingerprint_light.json" compress="brotli" />
-        <structure type="lottie" name="IDR_WEBAUTHN_GPM_LAPTOP_LIGHT" file="resources/webauthn/gpm_laptop_light.json" compress="brotli" />
+        <structure type="lottie" name="IDR_WEBAUTHN_PASSKEY_LIGHT" file="resources/webauthn/passkey_light.json" compress="brotli" />
+        <structure type="lottie" name="IDR_WEBAUTHN_PASSKEY_DARK" file="resources/webauthn/passkey_dark.json" compress="brotli" />
+        <structure type="lottie" name="IDR_WEBAUTHN_GPM_PASSKEY_LIGHT" file="resources/webauthn/gpm_passkey_light.json" compress="brotli" />
+        <structure type="lottie" name="IDR_WEBAUTHN_GPM_PASSKEY_DARK" file="resources/webauthn/gpm_passkey_dark.json" compress="brotli" />
+        <structure type="lottie" name="IDR_WEBAUTHN_GPM_PIN_LIGHT" file="resources/webauthn/gpm_pin_light.json" compress="brotli" />
+        <structure type="lottie" name="IDR_WEBAUTHN_GPM_PIN_DARK" file="resources/webauthn/gpm_pin_dark.json" compress="brotli" />
+        <structure type="lottie" name="IDR_WEBAUTHN_LAPTOP_LIGHT" file="resources/webauthn/laptop_light.json" compress="brotli" />
+        <structure type="lottie" name="IDR_WEBAUTHN_LAPTOP_DARK" file="resources/webauthn/laptop_dark.json" compress="brotli" />
       </if>
     </structures>
     <includes>
@@ -204,7 +209,8 @@
 
       <if expr="enable_hangout_services_extension">
         <!-- Hangout Services extension, included in Google Chrome builds only. -->
-        <include name="IDR_HANGOUT_SERVICES_MANIFEST" file="resources\hangout_services\manifest.json" type="BINDATA" />
+        <include name="IDR_HANGOUT_SERVICES_MANIFEST_V2" file="resources\hangout_services\manifest_v2.json" type="BINDATA" />
+        <include name="IDR_HANGOUT_SERVICES_MANIFEST_V3" file="resources\hangout_services\manifest_v3.json" type="BINDATA" />
       </if>
 
       <!-- Desk API extension, enabled on managed ChromeOS devices -->
@@ -229,9 +235,6 @@
         <include name="IDR_CHROME_URLS_DISABLED_PAGE_HTML" file="resources\chromeos\chrome_urls_disabled_page\app.html" type="BINDATA" />
         <include name="IDR_ECHO_MANIFEST" file="resources\chromeos\echo\manifest.json" type="BINDATA" />
         <include name="IDR_INCOGNITO_NAVIGATION_BLOCKED_PAGE_HTML" file="resources\chromeos\enterprise\incognito_navigation_blocked_page\incognito_blocked.html" flattenhtml="true" type="BINDATA" />
-        <if expr="_google_chrome">
-          <include name="IDR_QUICKOFFICE_MANIFEST" file="resources\chromeos\quickoffice\manifest.json" type="BINDATA" />
-        </if>
       </if>
       <if expr="_google_chrome">
         <include name="IDR_PREF_HASH_SEED_BIN" file="resources\settings\internal\pref_hash_seed.bin" type="BINDATA" />
@@ -245,6 +248,8 @@
         <include name="IDR_IME_WINDOW_CLOSE_H" file="resources\input_ime\ime_window_close_hover.png" type="BINDATA" />
         <!-- Chrome Cart -->
         <part file="cart/resources/cart_resources.grdp" />
+        <!-- FedCM -->
+        <part file="ui/views/webid/resources/webid_resources.grdp" />
       </if>
     </includes>
   </release>

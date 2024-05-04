@@ -31,7 +31,11 @@ enum MenuScenarioHistogram {
   kMenuScenarioHistogramTabStripEntry = 18,
   kMenuScenarioHistogramInactiveTabsEntry = 19,
   kMenuScenarioHistogramTabGroupGridEntry = 20,
-  kMenuScenarioHistogramTabGroupViewEntry = 21,
+  kMenuScenarioHistogramTabGroupViewMenuEntry = 21,
+  kMenuScenarioHistogramTabGroupViewTabEntry = 22,
+  kMenuScenarioHistogramAutofillManualFallbackAllPasswordsEntry = 23,
+  kMenuScenarioHistogramAutofillManualFallbackPasswordEntry = 24,
+  kMenuScenarioHistogramAutofillManualFallbackPaymentEntry = 25,
   kMenuScenarioHistogramCount,
 };
 // LINT.ThenChange(/tools/metrics/histograms/metadata/mobile/enums.xml)

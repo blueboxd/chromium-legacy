@@ -67,6 +67,7 @@ import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.DoNotBatch;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.Features.DisableFeatures;
 import org.chromium.base.test.util.Features.EnableFeatures;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
@@ -111,8 +112,7 @@ import java.util.concurrent.Callable;
 
 /**
  * Tests for {@link NewTabPage}. Other tests can be found in {@link
- * org.chromium.chrome.browser.ntp.NewTabPageTest}. TODO(https://crbug.com/1069183): Combine test
- * suites.
+ * org.chromium.chrome.browser.ntp.NewTabPageTest}. TODO(crbug.com/40683883): Combine test suites.
  */
 @DoNotBatch(reason = "Complex tests, need to start fresh")
 @RunWith(ParameterizedRunner.class)
@@ -410,6 +410,7 @@ public class FeedV2NewTabPageTest {
     @MediumTest
     @Feature({"RenderTest"})
     @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE})
+    @DisableFeatures({ChromeFeatureList.LOGO_POLISH})
     public void testLoadFeedContent_Landscape() throws IOException {
         ChromeTabbedActivity chromeActivity = mActivityTestRule.getActivity();
         chromeActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);

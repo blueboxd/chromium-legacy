@@ -259,10 +259,11 @@ class CORE_EXPORT HTMLElement : public Element {
   // |exception_state| can be nullptr when exceptions can't be thrown, such as
   // when the browser hides a popover during light dismiss or shows a popover in
   // response to clicking a button with popovershowtarget.
-  void ShowPopoverInternal(Element* invoker, ExceptionState* exception_state);
-  void HidePopoverInternal(HidePopoverFocusBehavior focus_behavior,
-                           HidePopoverTransitionBehavior event_firing,
-                           ExceptionState* exception_state);
+  virtual void ShowPopoverInternal(Element* invoker,
+                                   ExceptionState* exception_state);
+  virtual void HidePopoverInternal(HidePopoverFocusBehavior focus_behavior,
+                                   HidePopoverTransitionBehavior event_firing,
+                                   ExceptionState* exception_state);
   void PopoverHideFinishIfNeeded(bool immediate);
   static const HTMLElement* FindTopmostPopoverAncestor(
       Element& new_popover_or_top_layer_element,
@@ -307,8 +308,8 @@ class CORE_EXPORT HTMLElement : public Element {
   // for example a `<dialog popover>` should run `popover` invocation steps
   // before `<dialog>` invocation steps.
   // See: crbug.com/1490919, https://open-ui.org/components/invokers.explainer/
-  bool HandleInvokeInternal(HTMLElement& invoker,
-                            AtomicString& action) override;
+  bool IsValidInvokeAction(HTMLElement& invoker, InvokeAction action) override;
+  bool HandleInvokeInternal(HTMLElement& invoker, InvokeAction action) override;
 
   // This allows developers to enable or disable browser-provided writing
   // suggestions. If the attribute is not explicitly set on an element, it
@@ -407,19 +408,12 @@ class CORE_EXPORT HTMLElement : public Element {
   int OffsetTopOrLeft(bool top);
 };
 
-template <typename T>
-bool IsElementOfType(const HTMLElement&);
-template <>
-inline bool IsElementOfType<const HTMLElement>(const HTMLElement&) {
-  return true;
-}
-template <>
-inline bool IsElementOfType<const HTMLElement>(const Node& node) {
-  return IsA<HTMLElement>(node);
-}
 template <>
 struct DowncastTraits<HTMLElement> {
   static bool AllowFrom(const Node& node) { return node.IsHTMLElement(); }
+  static bool AllowFrom(const Element& element) {
+    return element.IsHTMLElement();
+  }
 };
 
 inline HTMLElement::HTMLElement(const QualifiedName& tag_name,

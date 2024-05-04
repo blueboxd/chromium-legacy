@@ -8,6 +8,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -182,7 +183,9 @@
 
 #if BUILDFLAG(IS_WIN)
 #include <objbase.h>
+
 #include <windows.h>
+
 #include "content/renderer/media/win/dcomp_texture_factory.h"
 #include "content/renderer/media/win/overlay_state_service_provider.h"
 #include "media/base/win/mf_feature_checks.h"
@@ -260,8 +263,9 @@ static_assert(
 // Feature to migrate the Media thread to a SequencedTaskRunner backed from
 // the base::ThreadPool. Does not currently work on Fuchsia due to FIDL
 // requiring thread affinity.
-BASE_DECLARE_FEATURE(kUseThreadPoolForMediaTaskRunner){
-    "UseThreadPoolForMediaTaskRunner", base::FEATURE_DISABLED_BY_DEFAULT};
+BASE_FEATURE(kUseThreadPoolForMediaTaskRunner,
+             "UseThreadPoolForMediaTaskRunner",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Updates the crash key for whether this renderer is foregrounded.
 void UpdateForegroundCrashKey(bool foreground) {
@@ -411,7 +415,7 @@ bool RenderThreadImpl::HistogramCustomizer::IsAlexaTop10NonGoogleSite(
     return true;
 
   if (!sanitized_host.empty()) {
-    std::vector<base::StringPiece> host_tokens = base::SplitStringPiece(
+    std::vector<std::string_view> host_tokens = base::SplitStringPiece(
         sanitized_host, ".", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
 
     if (host_tokens.size() >= 2) {
@@ -1076,16 +1080,8 @@ RenderThreadImpl::GetVideoFrameCompositorContextProvider(
   gpu::SharedMemoryLimits limits = gpu::SharedMemoryLimits::ForMailboxContext();
 
   bool support_locking = false;
-#if BUILDFLAG(IS_ANDROID)
-  // Use RasterInterface if kRasterInterfaceInVideoResourceUpdater is enabled.
-  bool support_gles2_interface = true;
-  if (base::FeatureList::IsEnabled(
-          media::kRasterInterfaceInVideoResourceUpdater)) {
-    support_gles2_interface = false;
-  }
-#else
+  // Use RasterInterface always.
   bool support_gles2_interface = false;
-#endif
   bool support_raster_interface = true;
   bool support_oop_rasterization = false;
   bool support_grcontext = false;
@@ -1357,12 +1353,6 @@ void RenderThreadImpl::SetProcessState(
 }
 
 void RenderThreadImpl::SetBatterySaverMode(bool battery_saver_mode_enabled) {
-  if (battery_saver_mode_enabled) {
-    base::MessagePump::OverrideAlignWakeUpsState(true, base::Milliseconds(32));
-  } else {
-    base::MessagePump::ResetAlignWakeUpsState();
-  }
-
   blink::SetBatterySaverModeForAllIsolates(battery_saver_mode_enabled);
 }
 
@@ -1529,20 +1519,13 @@ void RenderThreadImpl::UpdateSystemColorInfo(
     mojom::UpdateSystemColorInfoParamsPtr params) {
   auto* native_theme = ui::NativeTheme::GetInstanceForWeb();
 
-  bool did_system_color_info_change = native_theme->UpdateSystemColorInfo(
-      params->is_dark_mode, params->forced_colors, params->colors);
-
-  did_system_color_info_change |=
+  bool did_accent_color_change =
       native_theme->user_color() != params->accent_color;
   native_theme->set_user_color(params->accent_color);
 
-  if (did_system_color_info_change) {
-    // Notify blink of system color info changes. These give blink the
-    // opportunity to update internal state to reflect the NativeTheme's color
-    // scheme. These will also prompt blink to invalidate and recalculate styles
-    // for elements that rely on system colors, such as those leveraging the
-    // forced colors media feature. These can affect CSS styles and thus require
-    // action beyond simply invalidating paint on local frames.
+  if (did_accent_color_change) {
+    // Notify blink of accent color changes. These can affect CSS styles and
+    // thus require action beyond simply invalidating paint on local frames.
     blink::SystemColorsChanged();
     blink::ColorSchemeChanged();
   }
@@ -1598,7 +1581,7 @@ RenderThreadImpl::GetMediaSequencedTaskRunner() {
 #if BUILDFLAG(IS_FUCHSIA)
     // Start IO thread on Fuchsia to make that thread usable for FIDL.
     base::Thread::Options options(base::MessagePumpType::IO, 0);
-    // TODO(crbug.com/1400772): Use kCompositing to address media latency on
+    // TODO(crbug.com/40250424): Use kCompositing to address media latency on
     // Fuchsia until alignment on new media thread types is achieved.
     options.thread_type = base::ThreadType::kCompositing;
 #else

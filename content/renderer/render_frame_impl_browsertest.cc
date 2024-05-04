@@ -940,7 +940,7 @@ TEST_F(RenderFrameRemoteInterfacesTest, ChildFrameAtFirstCommittedLoad) {
   ASSERT_NO_FATAL_FAILURE(
       child_frame_exerciser.ExpectNewFrameAndWaitForLoad(child_frame_url));
 
-  // TODO(https://crbug.com/792410): It is unfortunate how many internal
+  // TODO(crbug.com/40553427): It is unfortunate how many internal
   // details of frame/document creation this encodes. Need to decouple.
   const GURL initial_empty_url(kAboutBlankURL);
   ExpectPendingInterfaceReceiversFromSources(
@@ -948,7 +948,7 @@ TEST_F(RenderFrameRemoteInterfacesTest, ChildFrameAtFirstCommittedLoad) {
           .browser_interface_broker_receiver_for_initial_empty_document(),
       {{initial_empty_url, kFrameEventDidCreateNewFrame},
        {child_frame_url, kFrameEventReadyToCommitNavigation},
-       // TODO(https://crbug.com/555773): It seems strange that the new
+       // TODO(crbug.com/40444754): It seems strange that the new
        // document is created and DidCreateNewDocument is invoked *before* the
        // provisional load would have even committed.
        {child_frame_url, kFrameEventDidCreateNewDocument}});
@@ -985,7 +985,7 @@ TEST_F(RenderFrameRemoteInterfacesTest,
   // InitializeCoreFrame, and there is already a document when
   // RenderFrameCreated is invoked.
   //
-  // TODO(https://crbug.com/792410): It is unfortunate how many internal
+  // TODO(crbug.com/40553427): It is unfortunate how many internal
   // details of frame/document creation this encodes. Need to decouple.
   const GURL initial_empty_url;
   ExpectPendingInterfaceReceiversFromSources(
@@ -1023,7 +1023,7 @@ TEST_F(RenderFrameRemoteInterfacesTest,
 // go through the normal commit pipeline. If we were to give javascript: urls
 // their own DocumentLoader in blink and model them as a real navigation, we
 // should add a test case here.
-// TODO(crbug.com/718652): when all clients are converted to use
+// TODO(crbug.com/40519010): when all clients are converted to use
 // BrowserInterfaceBroker, PendingReceiver<InterfaceProvider>-related code will
 // be removed.
 TEST_F(RenderFrameRemoteInterfacesTest,
@@ -1201,13 +1201,22 @@ void NavigateAndWait(content::TestRenderFrame* frame,
 
 class FakeContentSettingsClient : public blink::WebContentSettingsClient {
  public:
-  FakeContentSettingsClient() = default;
+  explicit FakeContentSettingsClient(content::RenderFrame* render_frame)
+      : render_frame_(render_frame) {
+    render_frame_->GetWebFrame()->SetContentSettingsClient(this);
+  }
 
+  ~FakeContentSettingsClient() override {
+    render_frame_->GetWebFrame()->SetContentSettingsClient(nullptr);
+  }
+
+  // blink::WebContentSettingsClient implementation.
   void DidNotAllowImage() override { ++did_not_allow_image_count_; }
   void DidNotAllowScript() override { ++did_not_allow_script_count_; }
 
   int did_not_allow_image_count_ = 0;
   int did_not_allow_script_count_ = 0;
+  raw_ptr<content::RenderFrame> render_frame_;
 };
 
 }  // namespace
@@ -1216,9 +1225,7 @@ class FakeContentSettingsClient : public blink::WebContentSettingsClient {
 // callback.
 TEST_F(RenderFrameImplTest, ContentSettingsCallbackImageBlocked) {
   // Create a fake content settings client to track image blocked callbacks.
-  FakeContentSettingsClient fake_content_settings_client;
-  GetMainRenderFrame()->GetWebFrame()->SetContentSettingsClient(
-      &fake_content_settings_client);
+  FakeContentSettingsClient fake_content_settings_client(GetMainRenderFrame());
 
   // Navigate to a URL that consists of a red square.
   std::string data_url_contents =
@@ -1246,9 +1253,7 @@ TEST_F(RenderFrameImplTest, ContentSettingsCallbackImageBlocked) {
 // callback.
 TEST_F(RenderFrameImplTest, ContentSettingsCallbackScriptBlocked) {
   // Create a fake content settings client to track script blocked callbacks.
-  FakeContentSettingsClient fake_content_settings_client;
-  GetMainRenderFrame()->GetWebFrame()->SetContentSettingsClient(
-      &fake_content_settings_client);
+  FakeContentSettingsClient fake_content_settings_client(GetMainRenderFrame());
 
   // Navigate to a URL with script disabled.
   auto common_params = GetCommonParamsForContentSettingsTest();
@@ -1272,9 +1277,7 @@ TEST_F(RenderFrameImplTest, ContentSettingsCallbackScriptBlocked) {
 // a callback.
 TEST_F(RenderFrameImplTest, ContentSettingsCallbackScriptAllowed) {
   // Create a fake content settings client to track script blocked callbacks.
-  FakeContentSettingsClient fake_content_settings_client;
-  GetMainRenderFrame()->GetWebFrame()->SetContentSettingsClient(
-      &fake_content_settings_client);
+  FakeContentSettingsClient fake_content_settings_client(GetMainRenderFrame());
 
   // Navigate to a URL with script enabled.
   auto common_params = GetCommonParamsForContentSettingsTest();
@@ -1348,7 +1351,8 @@ TEST_F(RenderFrameImplTest, ContentSettingsSameDocumentNavigation) {
       blink::kWebStandardCommit,
       /*is_synchronously_committed=*/true,
       blink::mojom::SameDocumentNavigationType::kFragment,
-      /*is_client_redirect=*/false);
+      /*is_client_redirect=*/false,
+      /*screenshot_destination=*/std::nullopt);
 
   // Verify that the script was not blocked.
   EXPECT_FALSE(HasText(GetMainFrame(), "JS_DISABLED"));

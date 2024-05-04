@@ -18,6 +18,7 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import android.content.Context;
 import android.graphics.Rect;
 import android.view.ContextThemeWrapper;
+import android.view.View;
 import android.view.View.MeasureSpec;
 import android.view.ViewGroup;
 import android.view.ViewGroup.MarginLayoutParams;
@@ -46,12 +47,8 @@ import org.robolectric.shadows.ShadowLooper;
 import org.chromium.base.Callback;
 import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Features;
-import org.chromium.base.test.util.Features.DisableFeatures;
-import org.chromium.base.test.util.Features.EnableFeatures;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestionsDropdownEmbedder.OmniboxAlignment;
 import org.chromium.chrome.browser.omnibox.test.R;
 import org.chromium.components.browser_ui.styles.ChromeColors;
@@ -115,6 +112,11 @@ public class OmniboxSuggestionsDropdownUnitTest {
                 public OmniboxAlignment getCurrentAlignment() {
                     return mOmniboxAlignmentSupplier.get();
                 }
+
+                @Override
+                public float getVerticalTranslationForAnimation() {
+                    return 0.0f;
+                }
             };
 
     @Before
@@ -136,13 +138,7 @@ public class OmniboxSuggestionsDropdownUnitTest {
     @Test
     @SmallTest
     @Feature("Omnibox")
-    @EnableFeatures(ChromeFeatureList.OMNIBOX_MODERNIZE_VISUAL_UPDATE)
-    @CommandLineFlags.Add({
-        "enable-features=" + ChromeFeatureList.OMNIBOX_MODERNIZE_VISUAL_UPDATE + "<Study",
-        "force-fieldtrials=Study/Group",
-        "force-fieldtrial-params=Study.Group:enable_modernize_visual_update_on_tablet/true"
-    })
-    public void testBackgroundColor_withOmniboxModernizeVisualUpdateFlags() {
+    public void testBackgroundColor() {
         assertEquals(
                 mDropdown.getStandardBgColor(),
                 ChromeColors.getSurfaceColor(
@@ -150,17 +146,6 @@ public class OmniboxSuggestionsDropdownUnitTest {
         assertEquals(
                 mDropdown.getIncognitoBgColor(),
                 mContext.getColor(R.color.omnibox_dropdown_bg_incognito));
-    }
-
-    @Test
-    @SmallTest
-    @Feature("Omnibox")
-    @DisableFeatures(ChromeFeatureList.OMNIBOX_MODERNIZE_VISUAL_UPDATE)
-    public void testBackgroundColor_withoutOmniboxModernizeVisualUpdateFlags() {
-        assertEquals(
-                mDropdown.getStandardBgColor(), ChromeColors.getDefaultThemeColor(mContext, false));
-        assertEquals(
-                mDropdown.getIncognitoBgColor(), ChromeColors.getDefaultThemeColor(mContext, true));
     }
 
     @Test
@@ -328,29 +313,6 @@ public class OmniboxSuggestionsDropdownUnitTest {
 
     @Test
     @SmallTest
-    @DisableFeatures(ChromeFeatureList.OMNIBOX_MODERNIZE_VISUAL_UPDATE)
-    public void testAlignmentProvider_paddingChange() {
-        assertEquals(0, mDropdown.getMeasuredWidth());
-
-        mDropdown.setEmbedder(mEmbedder);
-        mDropdown.onAttachedToWindow();
-        mOmniboxAlignment = new OmniboxAlignment(0, 100, 600, 0, 10, 10);
-        mOmniboxAlignmentSupplier.set(mOmniboxAlignment);
-        layoutDropdown(600, 800);
-        assertEquals(600, mDropdown.getMeasuredWidth());
-        assertEquals(10, mDropdown.getPaddingLeft());
-        assertEquals(10, mDropdown.getPaddingRight());
-
-        mOmniboxAlignment = new OmniboxAlignment(0, 100, 600, 0, 50, 50);
-        mOmniboxAlignmentSupplier.set(mOmniboxAlignment);
-        ShadowLooper.runUiThreadTasks();
-
-        assertEquals(50, mDropdown.getPaddingLeft());
-        assertEquals(50, mDropdown.getPaddingRight());
-    }
-
-    @Test
-    @SmallTest
     public void testAlignmentProvider_widthChange() {
         mDropdown.setEmbedder(mEmbedder);
         mDropdown.onAttachedToWindow();
@@ -439,6 +401,23 @@ public class OmniboxSuggestionsDropdownUnitTest {
         Mockito.clearInvocations(mDropdown);
         ShadowLooper.runUiThreadTasks();
         verify(mDropdown).requestLayout();
+    }
+
+    @Test
+    @SmallTest
+    public void translateChildrenVertical() {
+        mDropdown.setAdapter(mAdapter);
+        mDropdown.setEmbedder(mEmbedder);
+        mDropdown.onAttachedToWindow();
+
+        View childView = Mockito.mock(View.class);
+
+        mDropdown.translateChildrenVertical(45.6f);
+        mDropdown.onChildAttachedToWindow(childView);
+        verify(childView).setTranslationY(45.6f);
+
+        mDropdown.onChildDetachedFromWindow(childView);
+        verify(childView).setTranslationY(0.0f);
     }
 
     private void layoutDropdown(int width, int height) {

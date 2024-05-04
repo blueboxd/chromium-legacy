@@ -304,10 +304,6 @@ export class PdfViewerPrintElement extends PdfViewerBaseElement {
       case 'printPreviewLoaded':
         this.handlePrintPreviewLoaded_();
         return;
-      case 'setIsSelecting':
-        this.viewportScroller!.setEnableScrolling(
-            (data as (MessageData & {isSelecting: boolean})).isSelecting);
-        return;
       case 'setSmoothScrolling':
         this.viewport.setSmoothScrolling((data as (MessageData & {
                                             smoothScrolling: boolean,
@@ -319,7 +315,7 @@ export class PdfViewerPrintElement extends PdfViewerBaseElement {
         });
         return;
       case 'documentFocusChanged':
-        // TODO(crbug.com/1069370): Draw a focus rect around plugin.
+        // TODO(crbug.com/40125884): Draw a focus rect around plugin.
         return;
       case 'sendKeyEvent':
         const keyEvent = deserializeKeyEvent((data as KeyEventData).keyEvent) as

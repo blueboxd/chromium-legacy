@@ -5,7 +5,6 @@
 #include "components/autofill/content/renderer/autofill_renderer_test.h"
 
 #include <memory>
-#include <optional>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -87,6 +86,11 @@ void AutofillRendererTest::SimulateElementFocusAndWait(
   ExecuteJavaScriptForTests(
       base::StrCat({"document.getElementById('", element_id, "').focus();"})
           .c_str());
+  task_environment_.RunUntilIdle();
+}
+
+void AutofillRendererTest::SimulateScrollingAndWait() {
+  ExecuteJavaScriptForTests("window.scrollTo(0, 1000);");
   task_environment_.RunUntilIdle();
 }
 

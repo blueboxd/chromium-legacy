@@ -4,6 +4,7 @@
 
 #include "base/files/file_path.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -221,7 +222,7 @@ IN_PROC_BROWSER_TEST_F(CrossOriginIsolationTest,
                                        image_url_without_host_permissions));
 
   // Disallowed due to COEP: require-corp.
-  // TODO(crbug.com/1246109): Should host permissions override behavior here?
+  // TODO(crbug.com/40789023): Should host permissions override behavior here?
   EXPECT_EQ("Load failed",
             test_image_load(coep_strict_background_render_frame_host,
                             image_url_with_host_permissions));
@@ -371,9 +372,10 @@ IN_PROC_BROWSER_TEST_F(CrossOriginIsolationTest, WebAccessibleFrame) {
   }
 
   // Finally make some extension API calls to ensure both cross-origin-isolated
-  // and non-cross-origin-isolated extension contexts are considered "blessed".
+  // and non-cross-origin-isolated extension contexts are considered
+  // "privileged".
   {
-    auto verify_is_blessed_context = [](content::RenderFrameHost* host) {
+    auto verify_is_privileged_context = [](content::RenderFrameHost* host) {
       const char* kScript = R"(
         new Promise(resolve => {
           chrome.browserAction.getTitle({}, title => {
@@ -385,12 +387,14 @@ IN_PROC_BROWSER_TEST_F(CrossOriginIsolationTest, WebAccessibleFrame) {
     };
 
     {
-      SCOPED_TRACE("Verifying coi extension background is a blessed context.");
-      verify_is_blessed_context(coi_background_render_frame_host);
+      SCOPED_TRACE(
+          "Verifying coi extension background is a privileged context.");
+      verify_is_privileged_context(coi_background_render_frame_host);
     }
     {
-      SCOPED_TRACE("Verifying non-coi extension iframe is a blessed context.");
-      verify_is_blessed_context(extension_iframe);
+      SCOPED_TRACE(
+          "Verifying non-coi extension iframe is a privileged context.");
+      verify_is_privileged_context(extension_iframe);
     }
   }
 }

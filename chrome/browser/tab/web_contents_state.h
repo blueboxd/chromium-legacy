@@ -30,7 +30,7 @@ class WebContents;
 //   0: Chrome <= 18
 //   1: Chrome 18 - 25
 //   2: Chrome 26+
-// TODO(https://crbug.com/1520963): Get rid of the old versions and possibly the
+// TODO(crbug.com/41493935): Get rid of the old versions and possibly the
 // version field altogether.
 struct WebContentsStateByteBuffer {
   WebContentsStateByteBuffer(base::android::ScopedJavaLocalRef<jobject>
@@ -111,6 +111,20 @@ class WebContentsState {
   static base::android::ScopedJavaLocalRef<jobject>
   CreateSingleNavigationStateAsByteBuffer(
       JNIEnv* env,
+      jstring title,
+      jstring url,
+      jstring referrer_url,
+      jint referrer_policy,
+      const base::android::JavaParamRef<jobject>& initiator_origin,
+      jboolean is_off_the_record);
+
+  // Appends a single-navigation state to a WebContentsState to be later loaded
+  // lazily.
+  static base::android::ScopedJavaLocalRef<jobject> AppendPendingNavigation(
+      JNIEnv* env,
+      base::span<const uint8_t> buffer,
+      int saved_state_version,
+      jstring title,
       jstring url,
       jstring referrer_url,
       jint referrer_policy,

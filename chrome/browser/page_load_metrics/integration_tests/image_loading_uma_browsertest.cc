@@ -69,9 +69,12 @@ class ImageLoadingUMATest : public InProcessBrowserTest {
       ASSERT_TRUE(base::ReadFileToString(file_name, &file_contents));
     }
 
-    content::WebContents* contents = browser()->OpenURL(content::OpenURLParams(
-        embedded_test_server()->GetURL("/mock_page.html"), content::Referrer(),
-        WindowOpenDisposition::CURRENT_TAB, ui::PAGE_TRANSITION_TYPED, false));
+    content::WebContents* contents = browser()->OpenURL(
+        content::OpenURLParams(
+            embedded_test_server()->GetURL("/mock_page.html"),
+            content::Referrer(), WindowOpenDisposition::CURRENT_TAB,
+            ui::PAGE_TRANSITION_TYPED, false),
+        /*navigation_handle_callback=*/{});
     auto waiter =
         std::make_unique<page_load_metrics::PageLoadMetricsTestWaiter>(
             contents, "waiter");
@@ -255,8 +258,16 @@ IN_PROC_BROWSER_TEST_F(ImageLoadingUMATest, ImageWithIncorrectSizesAttribute) {
                                         true, 1);
 }
 
+// TODO(crbug.com/40916617): Fix this test on Mac.
+#if BUILDFLAG(IS_MAC)
+#define MAYBE_PictureWithIncorrectSizesAttribute \
+  DISABLED_PictureWithIncorrectSizesAttribute
+#else
+#define MAYBE_PictureWithIncorrectSizesAttribute \
+  PictureWithIncorrectSizesAttribute
+#endif
 IN_PROC_BROWSER_TEST_F(ImageLoadingUMATest,
-                       PictureWithIncorrectSizesAttribute) {
+                       MAYBE_PictureWithIncorrectSizesAttribute) {
   run_test(R"HTML(
     <!doctype html>
     <html>

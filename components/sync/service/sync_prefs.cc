@@ -22,7 +22,6 @@
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/signin/public/base/gaia_id_hash.h"
 #include "components/signin/public/base/signin_pref_names.h"
-#include "components/signin/public/base/signin_switches.h"
 #include "components/sync/base/features.h"
 #include "components/sync/base/passphrase_enums.h"
 #include "components/sync/base/pref_names.h"
@@ -105,8 +104,9 @@ SyncPrefs::SyncPrefs(PrefService* pref_service)
       base::BindRepeating(&SyncPrefs::OnSelectedTypesPrefChanged,
                           base::Unretained(this)));
 #if BUILDFLAG(IS_IOS)
-  // On iOS, in some situations, there is a dedicated opt-in for bookmarks and
-  // reading list.
+  // On iOS, in some situations, there was a dedicated opt-in for bookmarks and
+  // reading list. It's not used anymore with kReplaceSyncPromosWithSigninPromos
+  // enabled, except for a migration.
   pref_change_registrar_.Add(
       prefs::internal::kBookmarksAndReadingListAccountStorageOptIn,
       base::BindRepeating(&SyncPrefs::OnSelectedTypesPrefChanged,
@@ -220,6 +220,10 @@ bool SyncPrefs::IsInitialSyncFeatureSetupComplete() const {
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
 
+bool SyncPrefs::IsExplicitBrowserSignin() const {
+  return pref_service_->GetBoolean(::prefs::kExplicitBrowserSignin);
+}
+
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
 void SyncPrefs::SetInitialSyncFeatureSetupComplete() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -273,19 +277,13 @@ UserSelectableTypeSet SyncPrefs::GetSelectedTypesForAccount(
         type_enabled = true;
 #else
         // kPasswords and kAutofill are only on by default if there was an
-        // explicit sign in recorded and
-        // `IsExplicitBrowserSigninUIOnDesktopEnabled()` is true.
+        // explicit sign in recorded.
         // Otherwise:
         // - kPasswords requires a dedicated opt-in.
         // - kAutofill cannot be enabled.
         // Note: If this changes, also update the migration logic in
         // MigrateGlobalDataTypePrefsToAccount().
-        switches::ExplicitBrowserSigninPhase phase =
-            type == UserSelectableType::kPasswords
-                ? switches::ExplicitBrowserSigninPhase::kExperimental
-                : switches::ExplicitBrowserSigninPhase::kFull;
         type_enabled =
-            switches::IsExplicitBrowserSigninUIOnDesktopEnabled(phase) &&
             pref_service_->GetBoolean(::prefs::kExplicitBrowserSignin);
 #endif
       } else if (type == UserSelectableType::kBookmarks ||
@@ -301,19 +299,6 @@ UserSelectableTypeSet SyncPrefs::GetSelectedTypesForAccount(
         // All other types are always enabled by default.
         type_enabled = true;
       }
-
-#if BUILDFLAG(IS_IOS)
-      // In transport-only mode, bookmarks and reading list require an
-      // additional opt-in.
-      // TODO(crbug.com/1440628): Cleanup the temporary behaviour of an
-      // additional opt in for Bookmarks and Reading Lists.
-      if ((type == UserSelectableType::kBookmarks ||
-           type == UserSelectableType::kReadingList) &&
-          !base::FeatureList::IsEnabled(kReplaceSyncPromosWithSignInPromos)) {
-        type_enabled &= pref_service_->GetBoolean(
-            prefs::internal::kBookmarksAndReadingListAccountStorageOptIn);
-      }
-#endif
     }
     if (type_enabled) {
       selected_types.Put(type);
@@ -365,6 +350,26 @@ bool SyncPrefs::IsTypeManagedByCustodian(UserSelectableType type) const {
   return pref_service_->IsPreferenceManagedByCustodian(pref_name);
 }
 
+bool SyncPrefs::IsTypeDisabledByUserForAccount(
+    const UserSelectableType type,
+    const signin::GaiaIdHash& gaia_id_hash) {
+  const char* pref_name = GetPrefNameForType(type);
+  DCHECK(pref_name);
+
+  const base::Value::Dict* account_settings =
+      pref_service_->GetDict(prefs::internal::kSelectedTypesPerAccount)
+          .FindDict(gaia_id_hash.ToBase64());
+  std::optional<bool> pref_value;
+  if (account_settings) {
+    pref_value = account_settings->FindBool(pref_name);
+  }
+
+  if (pref_value.has_value()) {
+    return !*pref_value;
+  }
+  return false;
+}
+
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 int SyncPrefs::GetNumberOfAccountsWithPasswordsSelected() const {
   int n_accounts = 0;
@@ -404,10 +409,8 @@ void SyncPrefs::SetSelectedTypesForSyncingUser(
     }
   }
 
-  // Payments integration might have changed, so report as true.
   for (SyncPrefObserver& observer : sync_pref_observers_) {
-    observer.OnSelectedTypesPrefChange(
-        /*payments_integration_enabled_changed=*/true);
+    observer.OnSelectedTypesPrefChange();
   }
 }
 
@@ -432,26 +435,6 @@ void SyncPrefs::KeepAccountSettingsPrefsOnlyForUsers(
       available_gaia_ids,
       prefs::internal::kSyncEncryptionBootstrapTokenPerAccount);
 }
-
-#if BUILDFLAG(IS_IOS)
-void SyncPrefs::SetBookmarksAndReadingListAccountStorageOptIn(bool value) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  pref_service_->SetBoolean(
-      prefs::internal::kBookmarksAndReadingListAccountStorageOptIn, value);
-}
-
-bool SyncPrefs::IsOptedInForBookmarksAndReadingListAccountStorageForTesting() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return pref_service_->GetBoolean(
-      prefs::internal::kBookmarksAndReadingListAccountStorageOptIn);
-}
-
-void SyncPrefs::ClearBookmarksAndReadingListAccountStorageOptIn() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  pref_service_->ClearPref(
-      prefs::internal::kBookmarksAndReadingListAccountStorageOptIn);
-}
-#endif  // BUILDFLAG(IS_IOS)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 bool SyncPrefs::IsSyncFeatureDisabledViaDashboard() const {
@@ -514,9 +497,7 @@ void SyncPrefs::SetSelectedOsTypes(bool sync_all_os_types,
     }
   }
   for (SyncPrefObserver& observer : sync_pref_observers_) {
-    // Payments is a browser type (not an OS type) so can't have changed here.
-    observer.OnSelectedTypesPrefChange(
-        /*payments_integration_enabled_changed=*/false);
+    observer.OnSelectedTypesPrefChange();
   }
 }
 
@@ -581,22 +562,6 @@ void SyncPrefs::ClearCachedPassphraseType() {
   pref_service_->ClearPref(prefs::internal::kSyncCachedPassphraseType);
 }
 
-std::string SyncPrefs::GetEncryptionBootstrapToken() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // This is only called when kSyncRememberCustomPassphraseAfterSignout is
-  // disabled.
-  return pref_service_->GetString(
-      prefs::internal::kSyncEncryptionBootstrapToken);
-}
-
-void SyncPrefs::SetEncryptionBootstrapToken(const std::string& token) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // This is only called when kSyncRememberCustomPassphraseAfterSignout is
-  // disabled.
-  pref_service_->SetString(prefs::internal::kSyncEncryptionBootstrapToken,
-                           token);
-}
-
 void SyncPrefs::ClearAllEncryptionBootstrapTokens() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   pref_service_->ClearPref(prefs::internal::kSyncEncryptionBootstrapToken);
@@ -613,8 +578,6 @@ void SyncPrefs::ClearAllEncryptionBootstrapTokens() {
 
 std::string SyncPrefs::GetEncryptionBootstrapTokenForAccount(
     const signin::GaiaIdHash& gaia_id_hash) const {
-  // This is only called when kSyncRememberCustomPassphraseAfterSignout is
-  // enabled.
   CHECK(gaia_id_hash.IsValid());
   const std::string* account_passphrase =
       pref_service_
@@ -626,8 +589,6 @@ std::string SyncPrefs::GetEncryptionBootstrapTokenForAccount(
 void SyncPrefs::SetEncryptionBootstrapTokenForAccount(
     const std::string& token,
     const signin::GaiaIdHash& gaia_id_hash) {
-  // This is only called when kSyncRememberCustomPassphraseAfterSignout is
-  // enabled.
   CHECK(gaia_id_hash.IsValid());
   {
     ScopedDictPrefUpdate update_account_passphrase_dict(
@@ -684,6 +645,10 @@ const char* SyncPrefs::GetPrefNameForType(UserSelectableType type) {
       return prefs::internal::kSyncSharedTabGroupData;
     case UserSelectableType::kPayments:
       return prefs::internal::kSyncPayments;
+    case UserSelectableType::kCompare:
+      return prefs::internal::kSyncCompare;
+    case UserSelectableType::kCookies:
+      return prefs::internal::kSyncCookies;
   }
   NOTREACHED();
   return nullptr;
@@ -735,11 +700,6 @@ bool SyncPrefs::IsTypeSupportedInTransportMode(UserSelectableType type) {
       return base::FeatureList::IsEnabled(
           kEnablePasswordsAccountStorageForNonSyncingUsers);
     case UserSelectableType::kAutofill:
-      // Note that this logic may lead to kPayments being treated as supported
-      // (or even selected) while kAutofill isn't. This goes against the general
-      // practice that kPayments depends on kAutofill (when it comes to user
-      // choice).
-      // TODO(crbug.com/1435431): Update comment once the decoupling is removed.
       return base::FeatureList::IsEnabled(
           kSyncEnableContactInfoDataTypeInTransportMode);
     case UserSelectableType::kPayments:
@@ -748,6 +708,8 @@ bool SyncPrefs::IsTypeSupportedInTransportMode(UserSelectableType type) {
       return true;
     case UserSelectableType::kHistory:
     case UserSelectableType::kTabs:
+      return base::FeatureList::IsEnabled(kReplaceSyncPromosWithSignInPromos);
+    case UserSelectableType::kCompare:
       return base::FeatureList::IsEnabled(kReplaceSyncPromosWithSignInPromos);
     case syncer::UserSelectableType::kSharedTabGroupData:
       return base::FeatureList::IsEnabled(
@@ -759,6 +721,7 @@ bool SyncPrefs::IsTypeSupportedInTransportMode(UserSelectableType type) {
     case UserSelectableType::kExtensions:
     case UserSelectableType::kThemes:
     case UserSelectableType::kSavedTabGroups:
+    case UserSelectableType::kCookies:
       // These types are not supported in transport mode yet.
       return false;
   }
@@ -780,13 +743,8 @@ void SyncPrefs::OnSelectedTypesPrefChanged(const std::string& pref_name) {
     return;
   }
 
-  // Note: If `kSelectedTypesPerAccount` gets changed, this potentially
-  // over-notifies that "payments integration enabled" may have changed.
-  bool payments_integration_enabled_changed =
-      pref_name == GetPrefNameForType(UserSelectableType::kPayments) ||
-      pref_name == prefs::internal::kSelectedTypesPerAccount;
   for (SyncPrefObserver& observer : sync_pref_observers_) {
-    observer.OnSelectedTypesPrefChange(payments_integration_enabled_changed);
+    observer.OnSelectedTypesPrefChange();
   }
 }
 
@@ -991,15 +949,6 @@ bool SyncPrefs::MaybeMigratePrefsForSyncToSigninPart2(
         update_selected_types_dict->EnsureDict(gaia_id_hash.ToBase64());
     account_settings->Set(GetPrefNameForType(UserSelectableType::kAutofill),
                           false);
-    if (!base::FeatureList::IsEnabled(
-            syncer::kSyncDecoupleAddressPaymentSettings)) {
-      // When the auto fill data type is updated, the payments should be updated
-      // too. Payments should not be enabled when auto fill data type disabled.
-      // TODO(crbug.com/1435431): This can be removed once kPayments is
-      // decoupled from kAutofill.
-      account_settings->Set(GetPrefNameForType(UserSelectableType::kPayments),
-                            false);
-    }
     return true;
   }
   return false;
@@ -1007,12 +956,6 @@ bool SyncPrefs::MaybeMigratePrefsForSyncToSigninPart2(
 
 void SyncPrefs::MaybeMigrateCustomPassphrasePref(
     const signin::GaiaIdHash& gaia_id_hash) {
-  if (!base::FeatureList::IsEnabled(
-          kSyncRememberCustomPassphraseAfterSignout)) {
-    pref_service_->ClearPref(
-        kSyncEncryptionBootstrapTokenPerAccountMigrationDone);
-    return;
-  }
 
   if (pref_service_->GetBoolean(
           kSyncEncryptionBootstrapTokenPerAccountMigrationDone)) {
@@ -1040,8 +983,6 @@ void SyncPrefs::MaybeMigrateCustomPassphrasePref(
     base::Value::Dict& all_accounts = update_account_passphrase_dict.Get();
     all_accounts.Set(gaia_id_hash.ToBase64(), token);
   }
-  CHECK(GetEncryptionBootstrapTokenForAccount(gaia_id_hash) ==
-        GetEncryptionBootstrapToken());
   return;
 }
 
@@ -1176,8 +1117,7 @@ void SyncPrefs::SetPasswordSyncAllowed(bool allowed) {
 
   password_sync_allowed_ = allowed;
   for (SyncPrefObserver& observer : sync_pref_observers_) {
-    observer.OnSelectedTypesPrefChange(
-        /*payments_integration_enabled_changed=*/false);
+    observer.OnSelectedTypesPrefChange();
   }
 }
 

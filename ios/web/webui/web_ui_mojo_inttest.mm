@@ -201,7 +201,7 @@ TEST_F(WebUIMojoTest, MessageExchange) {
     GURL url(tuple.Serialize());
     test::LoadUrl(web_state(), url);
     // LoadIfNecessary is needed because the view is not created (but needed)
-    // when loading the page. TODO(crbug.com/705819): Remove this call.
+    // when loading the page. TODO(crbug.com/41309809): Remove this call.
     web_state()->GetNavigationManager()->LoadIfNecessary();
 
     // Wait until `TestUIHandler` receives "fin" message from WebUI page.
@@ -211,7 +211,7 @@ TEST_F(WebUIMojoTest, MessageExchange) {
           // RunUntilIdle() is incompatible with mojo::SimpleWatcher's
           // automatic arming behavior, which Mojo JS still depends upon.
           //
-          // TODO(crbug.com/701875): Introduce the full watcher API to JS and
+          // TODO(crbug.com/41307566): Introduce the full watcher API to JS and
           // get rid of this hack.
           base::RunLoop loop;
           base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(

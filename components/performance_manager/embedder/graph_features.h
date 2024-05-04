@@ -42,7 +42,6 @@ class GraphFeatures {
       // (3) Add the feature to the implementation of ConfigureGraph().
       bool execution_context_registry : 1;
       bool frame_visibility_decorator : 1;
-      bool freezing_vote_decorator : 1;
       bool metrics_collector : 1;
       bool node_impl_describers : 1;
       bool page_load_tracker_decorator : 1;
@@ -52,7 +51,6 @@ class GraphFeatures {
       bool site_data_recorder : 1;
       bool tab_connectedness_decorator : 1;
       bool tab_page_decorator : 1;
-      bool tab_properties_decorator : 1;
       bool v8_context_tracker : 1;
     };
   };
@@ -68,11 +66,6 @@ class GraphFeatures {
 
   constexpr GraphFeatures& EnableFrameVisibilityDecorator() {
     flags_.frame_visibility_decorator = true;
-    return *this;
-  }
-
-  constexpr GraphFeatures& EnableFreezingVoteDecorator() {
-    flags_.freezing_vote_decorator = true;
     return *this;
   }
 
@@ -126,11 +119,6 @@ class GraphFeatures {
     return *this;
   }
 
-  constexpr GraphFeatures& EnableTabPropertiesDecorator() {
-    flags_.tab_properties_decorator = true;
-    return *this;
-  }
-
   constexpr GraphFeatures& EnableV8ContextTracker() {
     EnableExecutionContextRegistry();
     flags_.v8_context_tracker = true;
@@ -150,7 +138,6 @@ class GraphFeatures {
   constexpr GraphFeatures& EnableDefault() {
     EnableExecutionContextRegistry();
     EnableFrameVisibilityDecorator();
-    EnableFreezingVoteDecorator();
     EnableMetricsCollector();
     EnableNodeImplDescribers();
     EnablePageLoadTrackerDecorator();
@@ -160,7 +147,6 @@ class GraphFeatures {
     EnableSiteDataRecorder();
     EnableTabConnectednessDecorator();
     EnableTabPageDecorator();
-    EnableTabPropertiesDecorator();
     EnableV8ContextTracker();
     return *this;
   }

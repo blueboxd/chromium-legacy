@@ -11,6 +11,7 @@
 #include "components/autofill/core/browser/metrics/autofill_metrics.h"
 #include "components/autofill/core/browser/metrics/payments/iban_metrics.h"
 #include "components/autofill/core/browser/payments/legal_message_line.h"
+#include "components/autofill/core/browser/payments/payments_autofill_client.h"
 #include "components/autofill/core/browser/payments/payments_network_interface.h"
 #include "components/autofill/core/browser/payments/payments_util.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
@@ -136,7 +137,8 @@ IbanSaveManager::TypeOfOfferToSave IbanSaveManager::DetermineHowToSaveIban(
   if (base::FeatureList::IsEnabled(features::kAutofillEnableServerIban) &&
       IsIbanUploadEnabled(client_->GetSyncService(),
                           client_->GetPersonalDataManager()
-                              ->GetPaymentsSigninStateForMetrics())) {
+                              ->payments_data_manager()
+                              .GetPaymentsSigninStateForMetrics())) {
     return TypeOfOfferToSave::kOfferServerSave;
   } else if (import_candidate.record_type() != Iban::kLocalIban) {
     return TypeOfOfferToSave::kOfferLocalSave;
@@ -147,7 +149,8 @@ IbanSaveManager::TypeOfOfferToSave IbanSaveManager::DetermineHowToSaveIban(
 bool IbanSaveManager::MatchesExistingLocalIban(
     const Iban& import_candidate) const {
   return base::ranges::any_of(
-      personal_data_manager_->GetLocalIbans(), [&](const Iban* iban) {
+      personal_data_manager_->payments_data_manager().GetLocalIbans(),
+      [&](const Iban* iban) {
         return iban->value() == import_candidate.value();
       });
 }
@@ -155,7 +158,7 @@ bool IbanSaveManager::MatchesExistingLocalIban(
 bool IbanSaveManager::MatchesExistingServerIban(
     const Iban& import_candidate) const {
   return std::ranges::any_of(
-      personal_data_manager_->GetServerIbans(),
+      personal_data_manager_->payments_data_manager().GetServerIbans(),
       [&import_candidate](const auto& iban) {
         return iban->MatchesPrefixSuffixAndLength(import_candidate);
       });
@@ -188,13 +191,16 @@ bool IbanSaveManager::AttemptToOfferUploadSave(Iban& import_candidate) {
       autofill_metrics::UploadIbanActionMetric::kOffered);
   bool show_save_prompt = !GetIbanSaveStrikeDatabase()->ShouldBlockFeature(
       GetPartialIbanHashString(base::UTF16ToUTF8(import_candidate.value())));
-  client_->GetPaymentsNetworkInterface()->GetIbanUploadDetails(
-      personal_data_manager_->app_locale(),
-      payments::GetBillingCustomerId(personal_data_manager_),
-      payments::kUploadPaymentMethodBillableServiceNumber,
-      base::BindOnce(&IbanSaveManager::OnDidGetUploadDetails,
-                     weak_ptr_factory_.GetWeakPtr(), show_save_prompt,
-                     import_candidate));
+  client_->GetPaymentsAutofillClient()
+      ->GetPaymentsNetworkInterface()
+      ->GetIbanUploadDetails(
+          personal_data_manager_->app_locale(),
+          payments::GetBillingCustomerId(personal_data_manager_),
+          payments::kUploadPaymentMethodBillableServiceNumber,
+          import_candidate.GetCountryCode(),
+          base::BindOnce(&IbanSaveManager::OnDidGetUploadDetails,
+                         weak_ptr_factory_.GetWeakPtr(), show_save_prompt,
+                         import_candidate));
   return show_save_prompt;
 }
 
@@ -226,8 +232,9 @@ void IbanSaveManager::OnUserDidDecideOnLocalSave(
       // Clear all IbanSave strikes for this IBAN, so that if it's later removed
       // the strike count starts over with respect to re-saving it.
       GetIbanSaveStrikeDatabase()->ClearStrikes(partial_iban_hash);
-      client_->GetPersonalDataManager()->OnAcceptedLocalIbanSave(
-          std::move(import_candidate));
+      client_->GetPersonalDataManager()
+          ->payments_data_manager()
+          .OnAcceptedLocalIbanSave(std::move(import_candidate));
       if (observer_for_testing_) {
         observer_for_testing_->OnAcceptSaveIbanComplete();
       }
@@ -334,10 +341,11 @@ void IbanSaveManager::SendUploadRequest(const Iban& import_candidate,
   details.context_token = context_token_;
   details.value = import_candidate.value();
   details.nickname = import_candidate.nickname();
-  client_->GetPaymentsNetworkInterface()->UploadIban(
-      details, base::BindOnce(&IbanSaveManager::OnDidUploadIban,
-                              weak_ptr_factory_.GetWeakPtr(), import_candidate,
-                              show_save_prompt));
+  client_->GetPaymentsAutofillClient()
+      ->GetPaymentsNetworkInterface()
+      ->UploadIban(details, base::BindOnce(&IbanSaveManager::OnDidUploadIban,
+                                           weak_ptr_factory_.GetWeakPtr(),
+                                           import_candidate, show_save_prompt));
 }
 
 void IbanSaveManager::OnDidUploadIban(

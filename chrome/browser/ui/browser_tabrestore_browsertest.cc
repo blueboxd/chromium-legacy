@@ -12,8 +12,8 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_live_tab_context.h"
+#include "chrome/browser/ui/tabs/recent_tabs_sub_menu_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/toolbar/recent_tabs_sub_menu_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/sessions/core/tab_restore_service.h"
@@ -108,8 +108,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTabRestoreTest, RecentTabsMenuTabDisposition) {
     }
   }
 
-  // The middle tab only should have visible disposition.
-  CheckVisbility(restored_browser->tab_strip_model(), 1);
+  // Only the first tab should have visible disposition.
+  CheckVisbility(restored_browser->tab_strip_model(), 0);
 }
 
 // Expect a selected restored tab to start loading synchronously.
@@ -212,6 +212,6 @@ IN_PROC_BROWSER_TEST_F(BrowserTabRestoreTest, DelegateRestoreTabDisposition) {
     }
   }
 
-  // The middle tab only should have visible disposition.
-  CheckVisbility(browser->tab_strip_model(), 1);
+  // Only the first tab should have visible disposition.
+  CheckVisbility(browser->tab_strip_model(), 0);
 }

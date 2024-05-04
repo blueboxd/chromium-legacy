@@ -139,7 +139,7 @@ class MockHistoryServiceObserver : public history::HistoryServiceObserver {
 class SingleClientHistorySyncTest : public SyncTest {
  public:
   SingleClientHistorySyncTest() : SyncTest(SINGLE_CLIENT) {
-    // TODO(crbug.com/1394910): Use HTTPS URLs in tests to avoid having to
+    // TODO(crbug.com/40248833): Use HTTPS URLs in tests to avoid having to
     // disable this feature.
     features_.InitAndDisableFeature(features::kHttpsUpgrades);
   }
@@ -293,7 +293,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientHistorySyncTest,
   WaitForServerHistory(UnorderedElementsAre(UrlIs(synced_url)));
 }
 
-// TODO(crbug.com/1373448): EnterSyncPausedStateForPrimaryAccount is currently
+// TODO(crbug.com/40871747): EnterSyncPausedStateForPrimaryAccount is currently
 // not supported on Android. Enable this test once it is.
 #if !BUILDFLAG(IS_ANDROID)
 IN_PROC_BROWSER_TEST_F(SingleClientHistorySyncTest, DoesNotUploadWhilePaused) {
@@ -1002,7 +1002,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientHistoryNonGmailSyncTest,
   SignInAndSetAccountInfo(/*is_managed=*/true);
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
-  ASSERT_FALSE(GetSyncService(0)->GetActiveDataTypes().Empty());
+  ASSERT_FALSE(GetSyncService(0)->GetActiveDataTypes().empty());
   EXPECT_FALSE(GetSyncService(0)->GetActiveDataTypes().Has(syncer::HISTORY));
 }
 

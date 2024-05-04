@@ -6,7 +6,6 @@ package org.chromium.chrome.browser;
 
 import org.chromium.base.lifetime.Destroyable;
 import org.chromium.base.supplier.ObservableSupplierImpl;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.layouts.LayoutStateProvider;
 import org.chromium.chrome.browser.layouts.LayoutStateProvider.LayoutStateObserver;
 import org.chromium.chrome.browser.layouts.LayoutType;
@@ -122,7 +121,7 @@ public class ActivityTabProvider extends ObservableSupplierImpl<Tab> implements 
                     }
 
                     @Override
-                    public void willCloseTab(Tab tab, boolean animate, boolean didCloseAlone) {
+                    public void willCloseTab(Tab tab, boolean didCloseAlone) {
                         // If this is the last tab to close, make sure a signal is sent to the
                         // observers.
                         if (mTabModelSelector.getCurrentModel().getCount() <= 1) {
@@ -150,13 +149,6 @@ public class ActivityTabProvider extends ObservableSupplierImpl<Tab> implements 
         assert mLayoutStateProvider == null;
         mLayoutStateProvider = layoutStateProvider;
         mLayoutStateProvider.addObserver(mLayoutStateObserver);
-        // https://crbug.com/1385536 Start surface might be displayed before native is ready.
-        if (ChromeFeatureList.sInstantStart.isEnabled()) {
-            if (mTabModelSelector == null
-                    || !layoutStateProvider.isLayoutVisible(LayoutType.BROWSING)) {
-                triggerActivityTabChangeEvent(null);
-            }
-        }
     }
 
     /**

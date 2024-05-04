@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -135,7 +136,7 @@ Compositor::Compositor(const viz::FrameSinkId& frame_sink_id,
   if (command_line->HasSwitch(cc::switches::kUIShowCompositedLayerBorders)) {
     std::string layer_borders_string = command_line->GetSwitchValueASCII(
         cc::switches::kUIShowCompositedLayerBorders);
-    std::vector<base::StringPiece> entries = base::SplitStringPiece(
+    std::vector<std::string_view> entries = base::SplitStringPiece(
         layer_borders_string, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
     if (entries.empty()) {
       settings.initial_debug_state.show_debug_borders.set();
@@ -176,9 +177,6 @@ Compositor::Compositor(const viz::FrameSinkId& frame_sink_id,
       command_line->HasSwitch(cc::switches::kEnableGpuBenchmarking));
 
   settings.use_zero_copy = IsUIZeroCopyEnabled() && !features::IsUsingRawDraw();
-
-  settings.use_layer_lists =
-      command_line->HasSwitch(cc::switches::kUIEnableLayerLists);
 
   // UI compositor always uses partial raster if not using zero-copy. Zero copy
   // doesn't currently support partial raster.
@@ -291,6 +289,10 @@ Compositor::~Compositor() {
   for (auto& observer : animation_observer_list_)
     observer.OnCompositingShuttingDown(this);
 
+  for (auto& observer : simple_begin_frame_observers_) {
+    observer.OnBeginFrameSourceShuttingDown();
+  }
+
   if (root_layer_)
     root_layer_->ResetCompositor();
 
@@ -355,6 +357,8 @@ void Compositor::SetLayerTreeFrameSink(
       display_private_->SetMaxVrrInterval(max_vrr_interval_);
     }
   }
+
+  MaybeUpdateObserveBeginFrame();
 }
 
 void Compositor::SetExternalBeginFrameController(
@@ -438,7 +442,7 @@ void Compositor::DisableSwapUntilResize() {
     // Otherwise when we return from WM_WINDOWPOSCHANGING message handler and
     // receive a WM_WINDOWPOSCHANGED the resize is finalized and any swaps of
     // wrong size by Viz can cause the swapped content to get scaled.
-    // TODO(crbug.com/859168): Investigate nonblocking ways for solving.
+    // TODO(crbug.com/40583169): Investigate nonblocking ways for solving.
     TRACE_EVENT0("viz", "Blocked UI for DisableSwapUntilResize");
     mojo::SyncCallRestrictions::ScopedAllowSyncCall scoped_allow_sync_call;
     display_private_->DisableSwapUntilResize();
@@ -483,6 +487,10 @@ void Compositor::SetDisplayColorSpaces(
     const gfx::DisplayColorSpaces& display_color_spaces) {
   if (display_color_spaces_ == display_color_spaces)
     return;
+
+  bool only_hdr_headroom_changed =
+      gfx::DisplayColorSpaces::EqualExceptForHdrHeadroom(display_color_spaces_,
+                                                         display_color_spaces);
   display_color_spaces_ = display_color_spaces;
 
   host_->SetDisplayColorSpaces(display_color_spaces_);
@@ -491,7 +499,12 @@ void Compositor::SetDisplayColorSpaces(
   // tracking bugs result in black flashes.
   // https://crbug.com/804430
   // TODO(ccameron): Remove this when the above bug is fixed.
-  host_->SetNeedsDisplayOnAllLayers();
+  // b/329479347: This severely impacts performance when HDR capability is
+  // ramped in and out. Restrict this to changes that would result in backbuffer
+  // reallocation.
+  if (!only_hdr_headroom_changed) {
+    host_->SetNeedsDisplayOnAllLayers();
+  }
 
   // Color space is reset when the output surface is lost, so this must also be
   // updated then.
@@ -522,17 +535,31 @@ void Compositor::SetDisplayTransformHint(gfx::OverlayTransform hint) {
 }
 
 void Compositor::SetBackgroundColor(SkColor color) {
-  // TODO(crbug/1308932): Remove FromColor and make all SkColor4f.
+  // TODO(crbug.com/40219248): Remove FromColor and make all SkColor4f.
   host_->set_background_color(SkColor4f::FromColor(color));
   ScheduleDraw();
 }
 
 void Compositor::SetVisible(bool visible) {
+  const bool changed = visible != IsVisible();
+  if (changed) {
+    for (auto& observer : observer_list_) {
+      observer.OnCompositorVisibilityChanging(this, visible);
+    }
+  }
+
   host_->SetVisible(visible);
   // Visibility is reset when the output surface is lost, so this must also be
-  // updated then.
+  // updated then. We need to call this even if the visibility hasn't changed,
+  // for the same reason.
   if (display_private_)
     display_private_->SetDisplayVisible(visible);
+
+  if (changed) {
+    for (auto& observer : observer_list_) {
+      observer.OnCompositorVisibilityChanged(this, visible);
+    }
+  }
 }
 
 bool Compositor::IsVisible() {
@@ -568,7 +595,7 @@ void Compositor::SetDisplayVSyncParameters(base::TimeTicks timebase,
   }
   DCHECK_GT(interval.InMillisecondsF(), 0);
 
-  // This is called at high frequenty on macOS, so early-out of redundant
+  // This is called at high frequency on macOS, so early-out of redundant
   // updates here.
   if (vsync_timebase_ == timebase && vsync_interval_ == interval)
     return;
@@ -799,20 +826,21 @@ void Compositor::NotifyThroughputTrackerResults(
     ReportMetricsForTracker(pair.first, std::move(pair.second));
 }
 
-void Compositor::DidReceiveCompositorFrameAck() {
-  ++activated_frame_count_;
+void Compositor::DidReceiveCompositorFrameAckDeprecatedForCompositor() {
   for (auto& observer : observer_list_)
-    observer.OnCompositingEnded(this);
+    observer.OnCompositingAckDeprecated(this);
 }
 
 void Compositor::DidPresentCompositorFrame(
     uint32_t frame_token,
-    const gfx::PresentationFeedback& feedback) {
-  TRACE_EVENT_MARK_WITH_TIMESTAMP1("cc,benchmark", "FramePresented",
-                                   feedback.timestamp, "environment",
-                                   "browser");
+    const viz::FrameTimingDetails& frame_timing_details) {
+  TRACE_EVENT_MARK_WITH_TIMESTAMP1(
+      "cc,benchmark", "FramePresented",
+      frame_timing_details.presentation_feedback.timestamp, "environment",
+      "browser");
   for (auto& observer : observer_list_)
-    observer.OnDidPresentCompositorFrame(frame_token, feedback);
+    observer.OnDidPresentCompositorFrame(
+        frame_token, frame_timing_details.presentation_feedback);
 }
 
 void Compositor::DidSubmitCompositorFrame() {
@@ -860,7 +888,7 @@ void Compositor::StartThroughputTracker(
   animation_host_->StartThroughputTracking(tracker_id);
 }
 
-bool Compositor::StopThroughtputTracker(TrackerId tracker_id) {
+bool Compositor::StopThroughputTracker(TrackerId tracker_id) {
   auto it = throughput_tracker_map_.find(tracker_id);
   DCHECK(it != throughput_tracker_map_.end());
 
@@ -876,7 +904,7 @@ bool Compositor::StopThroughtputTracker(TrackerId tracker_id) {
   return true;
 }
 
-void Compositor::CancelThroughtputTracker(TrackerId tracker_id) {
+void Compositor::CancelThroughputTracker(TrackerId tracker_id) {
   auto it = throughput_tracker_map_.find(tracker_id);
   DCHECK(it != throughput_tracker_map_.end());
 
@@ -955,6 +983,36 @@ void Compositor::SetDelegatedInkPointRenderer(
 
 const cc::LayerTreeSettings& Compositor::GetLayerTreeSettings() const {
   return host_->GetSettings();
+}
+
+void Compositor::AddSimpleBeginFrameObserver(
+    ui::HostBeginFrameObserver::SimpleBeginFrameObserver* obs) {
+  DCHECK(obs);
+  simple_begin_frame_observers_.AddObserver(obs);
+  MaybeUpdateObserveBeginFrame();
+}
+
+void Compositor::RemoveSimpleBeginFrameObserver(
+    ui::HostBeginFrameObserver::SimpleBeginFrameObserver* obs) {
+  DCHECK(obs);
+  simple_begin_frame_observers_.RemoveObserver(obs);
+  MaybeUpdateObserveBeginFrame();
+}
+
+void Compositor::MaybeUpdateObserveBeginFrame() {
+  if (simple_begin_frame_observers_.empty() || !display_private_) {
+    host_begin_frame_observer_.reset();
+    return;
+  }
+
+  if (host_begin_frame_observer_) {
+    return;
+  }
+
+  host_begin_frame_observer_ = std::make_unique<ui::HostBeginFrameObserver>(
+      simple_begin_frame_observers_, task_runner_);
+  display_private_->SetStandaloneBeginFrameObserver(
+      host_begin_frame_observer_->GetBoundRemote());
 }
 
 }  // namespace ui

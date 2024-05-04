@@ -97,7 +97,7 @@ def launch_dbus(env): # pylint: disable=inconsistent-return-statements
     print('Exception while running dbus_launch: %s' % e)
 
 
-# TODO(crbug.com/949194): Encourage setting flags to False.
+# TODO(crbug.com/40621504): Encourage setting flags to False.
 def run_executable(
     cmd, env, stdoutfile=None, use_openbox=True, use_xcompmgr=True,
     xvfb_whd=None, cwd=None):
@@ -327,7 +327,7 @@ def _run_with_x11(cmd, env, stdoutfile, use_openbox,
       os.kill(dbus_pid, signal.SIGKILL)
 
 
-# TODO(https://crbug.com/1060466): Write tests.
+# TODO(crbug.com/40122046): Write tests.
 def _run_with_weston(cmd, env, stdoutfile, cwd):
   weston_proc = None
 

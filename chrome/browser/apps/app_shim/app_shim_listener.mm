@@ -100,7 +100,7 @@ void AppShimListener::InitOnBackgroundThread() {
 
 void AppShimListener::OnClientConnected(mojo::PlatformChannelEndpoint endpoint,
                                         base::ProcessId peer_pid) {
-  // TODO(https://crbug.com/1052131): Remove NSLog logging, and move to an
+  // TODO(crbug.com/40674145): Remove NSLog logging, and move to an
   // internal debugging URL.
   NSLog(@"AppShim: Connection received from pid %d", peer_pid);
   content::GetUIThreadTaskRunner({})->PostTask(
@@ -110,7 +110,7 @@ void AppShimListener::OnClientConnected(mojo::PlatformChannelEndpoint endpoint,
 }
 
 void AppShimListener::OnServerChannelCreateError() {
-  // TODO(https://crbug.com/272577): Set a timeout and attempt to reconstruct
+  // TODO(crbug.com/41035623): Set a timeout and attempt to reconstruct
   // the channel. Until cases where the error could occur are better known,
   // just reset the acceptor to allow failure to be communicated via the test
   // API.

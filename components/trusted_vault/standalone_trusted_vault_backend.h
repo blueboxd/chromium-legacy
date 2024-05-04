@@ -42,7 +42,7 @@ namespace trusted_vault {
 class StandaloneTrustedVaultBackend
     : public base::RefCountedThreadSafe<StandaloneTrustedVaultBackend>,
       public TrustedVaultDegradedRecoverabilityHandler::Delegate,
-      public RecoveryKeyStoreController::Observer {
+      public RecoveryKeyStoreController::Delegate {
  public:
   using FetchKeysCallback = base::OnceCallback<void(
       const std::vector<std::vector<uint8_t>>& vault_keys)>;
@@ -170,10 +170,12 @@ class StandaloneTrustedVaultBackend
 
   bool AreConnectionRequestsThrottledForTesting();
 
-  // RecoveryKeyStoreController::Observer:
-  void OnUpdateRecoveryKeyStore(
-      const std::vector<RecoveryKeyStoreController::ApplicationKey>&
-          application_keys) override;
+  // RecoveryKeyStoreController::Delegate:
+  void WriteRecoveryKeyStoreState(
+      const trusted_vault_pb::RecoveryKeyStoreState& state) override;
+  void AddRecoveryKeyToSecurityDomain(
+      const std::vector<uint8_t>& public_key,
+      RecoveryKeyRegistrationCallback callback) override;
 
   // Specifies how long requests shouldn't be retried after encountering
   // transient error. Note, that this doesn't affect requests related to
@@ -252,6 +254,11 @@ class StandaloneTrustedVaultBackend
 
   void WriteDataToDisk();
 
+  void OnRecoveryKeyAddedToSecurityDomain(
+      RecoveryKeyRegistrationCallback callback,
+      TrustedVaultRegistrationStatus status,
+      int key_version_unused);
+
   const base::FilePath file_path_;
 
   const std::unique_ptr<Delegate> delegate_;
@@ -259,7 +266,7 @@ class StandaloneTrustedVaultBackend
   // Used for communication with trusted vault server. Can be null, in this case
   // functionality that involves interaction with vault service (such as device
   // registration, keys downloading, etc.) will be disabled.
-  // TODO(crbug.com/1113598): |connection_| can be null if URL passed as
+  // TODO(crbug.com/40143544): |connection_| can be null if URL passed as
   // kTrustedVaultServiceURLSwitch is not valid, consider making it non-nullable
   // even in this case and clean up related logic.
   const std::unique_ptr<TrustedVaultConnection> connection_;
@@ -322,9 +329,13 @@ class StandaloneTrustedVaultBackend
       ongoing_device_registration_request_;
 
   // Same as above, but specifically used for recoverability-related requests.
-  // TODO(crbug.com/1201659): Move elsewhere.
+  // TODO(crbug.com/40178774): Move elsewhere.
   std::unique_ptr<TrustedVaultConnection::Request>
       ongoing_add_recovery_method_request_;
+
+  // Ongoing request to add a recovery key store key into the security domain.
+  std::unique_ptr<TrustedVaultConnection::Request>
+      ongoing_recovery_key_registration_request_;
 
   // Used to determine current time, set to base::DefaultClock in prod and can
   // be overridden in tests.

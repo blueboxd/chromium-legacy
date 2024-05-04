@@ -185,12 +185,12 @@ TEST_F(FastCheckoutTriggerValidatorTest, ShouldRun_UiWasShown_ReturnsFalse) {
 
 TEST_F(FastCheckoutTriggerValidatorTest,
        ShouldRun_FieldNotFocusable_ReturnsFalse) {
-  field_.is_focusable = false;
+  field_.set_is_focusable(false);
   EXPECT_EQ(ShouldRun(), FastCheckoutTriggerOutcome::kFailureFieldNotFocusable);
 }
 
 TEST_F(FastCheckoutTriggerValidatorTest, ShouldRun_FieldHasValue_ReturnsFalse) {
-  field_.value = u"value";
+  field_.set_value(u"value");
   EXPECT_EQ(ShouldRun(), FastCheckoutTriggerOutcome::kFailureFieldNotEmpty);
 }
 

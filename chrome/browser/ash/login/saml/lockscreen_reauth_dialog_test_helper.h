@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_ASH_LOGIN_SAML_LOCKSCREEN_REAUTH_DIALOG_TEST_HELPER_H_
 
 #include <optional>
+#include <string>
 
 #include "base/memory/raw_ptr.h"
 #include "chrome/browser/ash/login/test/js_checker.h"
@@ -17,7 +18,6 @@ class WebContents;
 namespace ash {
 
 class LockScreenStartReauthDialog;
-class LockScreenStartReauthUI;
 class LockScreenReauthHandler;
 class LockScreenNetworkDialog;
 class LockScreenNetworkUI;
@@ -33,11 +33,16 @@ class LockScreenReauthDialogTestHelper {
   // Returns an empty `std::optional` if the operation fails.
   static std::optional<LockScreenReauthDialogTestHelper> ShowDialogAndWait();
 
-  // Triggers the online re-authentication dialog, clicks through VerifyAccount
-  // screen and waits for IdP page to load. Returns an empty `std::optional` if
+  // Triggers the online re-authentication dialog and navigates through initial
+  // state until SAML IdP page is loaded. Returns an empty `std::optional` if
   // the operation fails.
   static std::optional<LockScreenReauthDialogTestHelper>
   StartSamlAndWaitForIdpPageLoad();
+
+  // Initialize and return (if successful) an instance of
+  // `LockScreenReauthDialogTestHelper` for an already shown online
+  // re-authentication dialog.
+  static std::optional<LockScreenReauthDialogTestHelper> InitForShownDialog();
 
   ~LockScreenReauthDialogTestHelper();
 
@@ -50,9 +55,6 @@ class LockScreenReauthDialogTestHelper {
   LockScreenReauthDialogTestHelper(LockScreenReauthDialogTestHelper&& other);
   LockScreenReauthDialogTestHelper& operator=(
       LockScreenReauthDialogTestHelper&& other);
-
-  // Forces SAML redirect regardless of email.
-  void ForceSamlRedirect();
 
   // Waits for the 'Verify Account' screen (the first screen the dialog shows)
   // to be visible.
@@ -75,9 +77,18 @@ class LockScreenReauthDialogTestHelper {
   // Clicks the 'Enter Google Account Info' button on the SAML screen.
   void ClickChangeIdPButtonOnSamlScreen();
 
+  // Primary Gaia button is the "Next" button on Gaia pages.
+  void ClickPrimaryGaiaButton();
+  void WaitForPrimaryGaiaButtonToBeEnabled();
+
   // Check visibility of native Gaia button on online re-authentication dialog.
   void ExpectGaiaButtonsVisible();
   void ExpectGaiaButtonsHidden();
+
+  // Check visibility of the button which allows to restart online flow from the
+  // Gaia page.
+  void ExpectChangeIdPButtonVisible();
+  void ExpectChangeIdPButtonHidden();
 
   // Waits for sign-in webview to be shown.
   void WaitForSigninWebview();
@@ -139,10 +150,8 @@ class LockScreenReauthDialogTestHelper {
   test::JSChecker SigninFrameJS();
 
  private:
-  // Instantiate using the static function `ShowDialogAndWait`.
+  // Instantiate using public static factory methods.
   LockScreenReauthDialogTestHelper();
-
-  bool ShowDialogAndWaitImpl();
 
   void WaitForAuthenticatorToLoad();
   void WaitForReauthDialogToLoad();
@@ -154,8 +163,6 @@ class LockScreenReauthDialogTestHelper {
   // Main Dialog
   raw_ptr<LockScreenStartReauthDialog, AcrossTasksDanglingUntriaged>
       reauth_dialog_ = nullptr;
-  raw_ptr<LockScreenStartReauthUI, AcrossTasksDanglingUntriaged>
-      reauth_webui_controller_ = nullptr;
   raw_ptr<LockScreenReauthHandler, AcrossTasksDanglingUntriaged> main_handler_ =
       nullptr;
 

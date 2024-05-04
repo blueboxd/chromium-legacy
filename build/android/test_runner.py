@@ -270,6 +270,9 @@ def AddCommonOptions(parser):
                       help='If present, store test results on this path.')
   parser.add_argument('--isolated-script-test-perf-output',
                       help='If present, store chartjson results on this path.')
+  parser.add_argument('--timeout-scale',
+                      type=float,
+                      help='Factor by which timeouts should be scaled.')
 
   AddTestLauncherOptions(parser)
 
@@ -329,12 +332,7 @@ def AddDeviceOptions(parser):
       '--recover-devices',
       action='store_true',
       help='Attempt to recover devices prior to the final retry. Warning: '
-           'this will cause all devices to reboot.')
-  parser.add_argument(
-      '--tool',
-      dest='tool',
-      help='Run the test under a tool '
-           '(use --tool help to list them)')
+      'this will cause all devices to reboot.')
 
   parser.add_argument(
       '--upload-logcats-file',
@@ -397,6 +395,12 @@ def AddGTestOptions(parser):
 
   parser = parser.add_argument_group('gtest arguments')
 
+  parser.add_argument(
+      '--additional-apk',
+      action='append', dest='additional_apks', default=[],
+      type=_RealPath,
+      help='Additional apk that must be installed on '
+           'the device when the tests are run.')
   parser.add_argument(
       '--app-data-file',
       action='append', dest='app_data_files',
@@ -644,10 +648,6 @@ def AddInstrumentationTestOptions(parser):
       help=('Not actually used for instrumentation tests, but can be used as '
             'a proxy for determining if the current run is a retry without '
             'patch.'))
-  parser.add_argument(
-      '--timeout-scale',
-      type=float,
-      help='Factor by which timeouts should be scaled.')
   parser.add_argument(
       '--is-unit-test',
       action='store_true',
@@ -1470,4 +1470,16 @@ def main():
 
 
 if __name__ == '__main__':
-  sys.exit(main())
+  exit_code = main()
+  if exit_code == constants.INFRA_EXIT_CODE:
+    # This exit code is returned in case of missing, unreachable,
+    # or otherwise not fit for purpose test devices.
+    # When this happens, the graceful cleanup triggered by sys.exit()
+    # hangs indefinitely (on swarming - until it hits 20min timeout).
+    # Skip cleanup (other than flushing output streams) and exit forcefully
+    # to avoid the hang.
+    sys.stdout.flush()
+    sys.stderr.flush()
+    os._exit(exit_code)  # pylint: disable=protected-access
+  else:
+    sys.exit(exit_code)

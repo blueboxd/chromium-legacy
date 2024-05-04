@@ -7,6 +7,7 @@
 
 #include <map>
 #include <memory>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -30,6 +31,7 @@
 #include "components/password_manager/core/browser/form_submission_observer.h"
 #include "components/password_manager/core/browser/leak_detection/leak_detection_check_factory.h"
 #include "components/password_manager/core/browser/leak_detection_delegate.h"
+#include "components/password_manager/core/browser/password_form_cache_impl.h"
 #include "components/password_manager/core/browser/password_manager_interface.h"
 #include "components/password_manager/core/browser/password_manager_metrics_recorder.h"
 #include "components/password_manager/core/browser/possible_username_data.h"
@@ -114,10 +116,12 @@ class PasswordManager : public PasswordManagerInterface {
                               autofill::FieldRendererId field_id,
                               const std::u16string& field_value) override;
   void OnPasswordNoLongerGenerated() override;
-  void OnPasswordFormRemoved(
+  void OnPasswordFormsRemoved(
       PasswordManagerDriver* driver,
       const autofill::FieldDataManager& field_data_manager,
-      autofill::FormRendererId form_id) override;
+      const std::set<autofill::FormRendererId>& removed_forms,
+      const std::set<autofill::FieldRendererId>& removed_unowned_fields)
+      override;
   void OnIframeDetach(
       const std::string& frame_id,
       PasswordManagerDriver* driver,
@@ -191,12 +195,11 @@ class PasswordManager : public PasswordManagerInterface {
   bool IsPasswordFieldDetectedOnPage() const;
 
 #if defined(UNIT_TEST)
-  const std::vector<std::unique_ptr<PasswordFormManager>>& form_managers()
-      const {
-    return form_managers_;
+  base::span<const std::unique_ptr<PasswordFormManager>> form_managers() const {
+    return password_form_cache_.GetFormManagers();
   }
 
-  PasswordFormManager* GetSubmittedManagerForTest() const {
+  PasswordFormManager* GetSubmittedManagerForTest() {
     return GetSubmittedManager();
   }
 
@@ -234,6 +237,16 @@ class PasswordManager : public PasswordManagerInterface {
 
   // Returns the submitted PasswordForm if there exists one.
   std::optional<PasswordForm> GetSubmittedCredentials();
+
+  // Returns form cache containing information about parsed password forms on
+  // the web page.
+  const PasswordFormCache* GetPasswordFormCache() const;
+
+  // Returns the observed parsed password form to which the field with the
+  // renderer id `field_id` belongs.
+  const PasswordForm* GetParsedObservedForm(
+      PasswordManagerDriver* driver,
+      autofill::FieldRendererId field_id) const;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(
@@ -294,9 +307,9 @@ class PasswordManager : public PasswordManagerInterface {
 
   // Returns the form manager that corresponds to the submitted form. It might
   // be nullptr if there is no submitted form.
-  // TODO(https://crbug.com/831123): Remove when the old PasswordFormManager is
+  // TODO(crbug.com/40570965): Remove when the old PasswordFormManager is
   // gone.
-  PasswordFormManager* GetSubmittedManager() const;
+  PasswordFormManager* GetSubmittedManager();
 
   // Resets the form manager that corresponds to the submitted form, if it's
   // available.
@@ -304,7 +317,7 @@ class PasswordManager : public PasswordManagerInterface {
 
   // Returns the form manager that corresponds to the submitted form. It also
   // sets |submitted_form_manager_| to nullptr.
-  // TODO(https://crbug.com/831123): Remove when the old PasswordFormManager is
+  // TODO(crbug.com/40570965): Remove when the old PasswordFormManager is
   // gone.
   std::unique_ptr<PasswordFormManagerForUI> MoveOwnedSubmittedManager();
 
@@ -352,6 +365,18 @@ class PasswordManager : public PasswordManagerInterface {
       PasswordFormManager* form_manager,
       const autofill::FieldDataManager& field_data_manager,
       PasswordManagerDriver* driver);
+
+  // Checks `form_manager` for submission after the corresponding form or
+  // formless fields were removed from the page.
+  // - removed_unowned_fields: Formless fields removed in the removal event.
+  // These are only analyzed for the formless form manager, which requires that
+  // all removed password fields have user input when deciding if the form was
+  // submitted.
+  bool DetectPotentialSubmissionAfterFormRemoval(
+      PasswordFormManager* form_manager,
+      const autofill::FieldDataManager& field_data_manager,
+      PasswordManagerDriver* driver,
+      const std::set<autofill::FieldRendererId>& removed_unowned_fields);
 #endif
 
   // PasswordFormManager transition schemes:
@@ -374,7 +399,7 @@ class PasswordManager : public PasswordManagerInterface {
   // Contains one PasswordFormManager per each form on the page.
   // When a form is "seen" on a page, a PasswordFormManager is created
   // and stored in this collection until user navigates away from page.
-  std::vector<std::unique_ptr<PasswordFormManager>> form_managers_;
+  PasswordFormCacheImpl password_form_cache_;
 
   // Corresponds to the submitted form, after navigion away before submission
   // success detection is finished.

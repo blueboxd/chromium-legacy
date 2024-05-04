@@ -17,13 +17,10 @@ var PERMISSION_TYPES = ['media',
                         'loadplugin',
                         'filesystem',
                         'fullscreen',
-                        // TODO(b/319100930): update the the documentation in
-                        // chrome/common/extensions/api/webview_tag.json once
-                        // the feature launches.
                         'hid'];
 
 // The browser will kill us if we send it a bad instance ID.
-// TODO(780728): Remove once the cause of the bad ID is known.
+// TODO(crbug.com/41353094): Remove once the cause of the bad ID is known.
 function CrashIfInvalidInstanceId(instanceId, culpritFunction) {
   logging.CHECK(
       instanceId > 0,

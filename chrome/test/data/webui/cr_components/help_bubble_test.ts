@@ -5,15 +5,13 @@
 import 'chrome://resources/cr_components/help_bubble/help_bubble.js';
 
 import type {CrButtonElement} from '//resources/cr_elements/cr_button/cr_button.js';
-import type {IronIconElement} from '//resources/polymer/v3_0/iron-icon/iron-icon.js';
 import type {HelpBubbleDismissedEvent, HelpBubbleTimedOutEvent} from 'chrome://resources/cr_components/help_bubble/help_bubble.js';
 import {HELP_BUBBLE_DISMISSED_EVENT, HELP_BUBBLE_TIMED_OUT_EVENT, HelpBubbleElement} from 'chrome://resources/cr_components/help_bubble/help_bubble.js';
 import type {HelpBubbleButtonParams} from 'chrome://resources/cr_components/help_bubble/help_bubble.mojom-webui.js';
 import {HelpBubbleArrowPosition} from 'chrome://resources/cr_components/help_bubble/help_bubble.mojom-webui.js';
 import {getTrustedHTML} from 'chrome://resources/js/static_types.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
-import {waitAfterNextRender} from 'chrome://webui-test/polymer_test_util.js';
-import {isVisible} from 'chrome://webui-test/test_util.js';
+import {isVisible, microtasksFinished} from 'chrome://webui-test/test_util.js';
 
 interface WaitForSuccessParams {
   retryIntervalMs: number;
@@ -22,8 +20,8 @@ interface WaitForSuccessParams {
 }
 
 let counter = 0;
-function getMockId() {
-  return ++counter;
+function getMockId(): string {
+  return (++counter).toString();
 }
 
 suite('CrComponentsHelpBubbleTest', () => {
@@ -170,11 +168,12 @@ suite('CrComponentsHelpBubbleTest', () => {
   const HELP_BUBBLE_BODY = 'help bubble body';
   const HELP_BUBBLE_TITLE = 'help bubble title';
 
-  test('help bubble shows and anchors correctly', () => {
+  test('help bubble shows and anchors correctly', async () => {
     const el = document.getElementById('p1')!;
     helpBubble.position = HelpBubbleArrowPosition.TOP_CENTER;
     helpBubble.bodyText = HELP_BUBBLE_BODY;
     helpBubble.show(el);
+    await microtasksFinished();
 
     assertEquals(
         document.querySelector<HTMLElement>('#p1'),
@@ -187,12 +186,13 @@ suite('CrComponentsHelpBubbleTest', () => {
     assertTrue(isVisible(helpBubble), 'help bubble should be visible');
   });
 
-  test('help bubble titles shows', () => {
+  test('help bubble titles shows', async () => {
     const el = document.getElementById('p1')!;
     helpBubble.position = HelpBubbleArrowPosition.TOP_CENTER;
     helpBubble.bodyText = HELP_BUBBLE_BODY;
     helpBubble.titleText = HELP_BUBBLE_TITLE;
     helpBubble.show(el);
+    await microtasksFinished();
 
     assertTrue(isVisible(helpBubble), 'help bubble should be visible');
     const titleElement = helpBubble.$.title;
@@ -204,11 +204,12 @@ suite('CrComponentsHelpBubbleTest', () => {
     assertTrue(isVisible(titleElement), 'title element should be visible');
   });
 
-  test('help bubble titles hides when no title set', () => {
+  test('help bubble titles hides when no title set', async () => {
     const el = document.getElementById('p1')!;
     helpBubble.position = HelpBubbleArrowPosition.TOP_CENTER;
     helpBubble.bodyText = HELP_BUBBLE_BODY;
     helpBubble.show(el);
+    await microtasksFinished();
 
     assertTrue(isVisible(helpBubble), 'help bubble should be visible');
     const titleElement = helpBubble.$.title;
@@ -216,13 +217,14 @@ suite('CrComponentsHelpBubbleTest', () => {
     assertTrue(titleElement.hidden, 'title element should be hidden');
   });
 
-  test('help bubble body icon shows when set', () => {
+  test('help bubble body icon shows when set', async () => {
     const el = document.getElementById('p1')!;
     helpBubble.position = HelpBubbleArrowPosition.TOP_CENTER;
     helpBubble.bodyText = HELP_BUBBLE_BODY;
     helpBubble.bodyIconName = 'icon_name';
     helpBubble.bodyIconAltText = '';
     helpBubble.show(el);
+    await microtasksFinished();
 
     assertTrue(isVisible(helpBubble), 'help bubble should be visible');
     const bodyIcon = helpBubble.$.bodyIcon;
@@ -230,9 +232,9 @@ suite('CrComponentsHelpBubbleTest', () => {
     assertFalse(bodyIcon.hidden, 'body icon element should not be hidden');
     assertTrue(isVisible(bodyIcon), 'body icon element should be visible');
     assertEquals(
-        bodyIcon.querySelector<IronIconElement>('iron-icon')!.icon,
+        bodyIcon.querySelector('cr-icon')!.icon,
         'iph:icon_name',
-        'bodyIcon passes icon name to iron-icon with iph namespace');
+        'bodyIcon passes icon name to cr-icon with iph namespace');
   });
 
   test('help bubble body icon is hidden when null', () => {
@@ -250,11 +252,12 @@ suite('CrComponentsHelpBubbleTest', () => {
     assertFalse(isVisible(bodyIcon), 'body icon element should not be visible');
   });
 
-  test('help bubble closes', () => {
+  test('help bubble closes', async () => {
     const el = document.getElementById('title')!;
     helpBubble.position = HelpBubbleArrowPosition.TOP_CENTER;
     helpBubble.bodyText = HELP_BUBBLE_BODY;
     helpBubble.show(el);
+    await microtasksFinished();
 
     assertEquals(
         document.querySelector<HTMLElement>('#title'),
@@ -262,19 +265,23 @@ suite('CrComponentsHelpBubbleTest', () => {
         'title element should be anchor element');
 
     helpBubble.hide();
+    await microtasksFinished();
     assertEquals(
         null, helpBubble.getAnchorElement(),
         'help bubble should not have anchor');
     assertFalse(isVisible(helpBubble), 'help bubble should not be visible');
   });
 
-  test('help bubble open close open', () => {
+  test('help bubble open close open', async () => {
     const el = document.getElementById('title')!;
     helpBubble.position = HelpBubbleArrowPosition.TOP_CENTER;
     helpBubble.bodyText = HELP_BUBBLE_BODY;
     helpBubble.show(el);
+    await microtasksFinished();
     helpBubble.hide();
+    await microtasksFinished();
     helpBubble.show(el);
+    await microtasksFinished();
     assertEquals(
         document.querySelector<HTMLElement>('#title'),
         helpBubble.getAnchorElement(),
@@ -286,13 +293,14 @@ suite('CrComponentsHelpBubbleTest', () => {
     assertTrue(isVisible(helpBubble), 'help bubble should be visible');
   });
 
-  test('help bubble close button has correct alt text', () => {
+  test('help bubble close button has correct alt text', async () => {
     const CLOSE_TEXT: string = 'Close button text.';
     const ICON_TEXT: string = 'Body icon text.';
     const el = document.getElementById('title')!;
     helpBubble.closeButtonAltText = CLOSE_TEXT;
     helpBubble.bodyIconAltText = ICON_TEXT;
     helpBubble.show(el);
+    await microtasksFinished();
 
     assertEquals(
         CLOSE_TEXT, helpBubble.$.close.getAttribute('aria-label'),
@@ -322,7 +330,7 @@ suite('CrComponentsHelpBubbleTest', () => {
     helpBubble.position = HelpBubbleArrowPosition.TOP_CENTER;
     helpBubble.bodyText = HELP_BUBBLE_BODY;
     helpBubble.show(el);
-    await waitAfterNextRender(helpBubble);
+    await microtasksFinished();
     const closeButton = helpBubble.$.close;
     assertEquals(0, clicked, 'close button should not be clicked');
     closeButton.click();
@@ -344,7 +352,7 @@ suite('CrComponentsHelpBubbleTest', () => {
     helpBubble.bodyText = HELP_BUBBLE_BODY;
     helpBubble.timeoutMs = 10 * 1000;  // 10s
     helpBubble.show(el);
-    await waitAfterNextRender(helpBubble);
+    await microtasksFinished();
     assertEquals(0, timedOut, 'timeout should not be triggered');
   });
 
@@ -364,7 +372,6 @@ suite('CrComponentsHelpBubbleTest', () => {
     helpBubble.bodyText = HELP_BUBBLE_BODY;
     helpBubble.timeoutMs = timeoutMs;  // 100ms
     helpBubble.show(el);
-    await waitAfterNextRender(helpBubble);
     await waitForSuccess({
       retryIntervalMs: 50,
       totalMs: 1500,
@@ -387,7 +394,6 @@ suite('CrComponentsHelpBubbleTest', () => {
     helpBubble.bodyText = HELP_BUBBLE_BODY;
     helpBubble.show(el);
     assertEquals(0, timedOut, 'timeout should not be triggered');
-    await waitAfterNextRender(helpBubble);
     await sleep(100);  // 100ms
     assertEquals(0, timedOut, 'timeout is never triggered');
   });
@@ -398,7 +404,7 @@ suite('CrComponentsHelpBubbleTest', () => {
     helpBubble.bodyText = HELP_BUBBLE_BODY;
     helpBubble.buttons = [{text: 'button1', isDefault: false}];
     helpBubble.show(el);
-    await waitAfterNextRender(helpBubble);
+    await microtasksFinished();
     assertEquals(1, getNumButtons(), 'there should be one button');
     const button = helpBubble.getButtonForTesting(0);
     assertTrue(!!button, 'button should exist');
@@ -420,7 +426,7 @@ suite('CrComponentsHelpBubbleTest', () => {
       {text: 'button3', isDefault: false},
     ];
     helpBubble.show(el);
-    await waitAfterNextRender(helpBubble);
+    await microtasksFinished();
     assertEquals(3, getNumButtons(), 'there should be three buttons');
     for (let i: number = 0; i < 3; ++i) {
       const button = helpBubble.getButtonForTesting(i);
@@ -440,7 +446,7 @@ suite('CrComponentsHelpBubbleTest', () => {
     helpBubble.bodyText = HELP_BUBBLE_BODY;
     helpBubble.buttons = [{text: 'button1', isDefault: true}];
     helpBubble.show(el);
-    await waitAfterNextRender(helpBubble);
+    await microtasksFinished();
     const button = helpBubble.getButtonForTesting(0);
     assertTrue(!!button, 'button should exist');
     assertTrue(
@@ -460,7 +466,7 @@ suite('CrComponentsHelpBubbleTest', () => {
     helpBubble.bodyText = HELP_BUBBLE_BODY;
     helpBubble.buttons = THREE_BUTTONS_MIDDLE_DEFAULT;
     helpBubble.show(el);
-    await waitAfterNextRender(helpBubble);
+    await microtasksFinished();
     assertEquals(3, getNumButtons(), 'there should be three buttons');
 
     // Make sure all buttons were created as expected, including the default
@@ -532,7 +538,7 @@ suite('CrComponentsHelpBubbleTest', () => {
       clicked = false;
       buttonIndex = -1;
       helpBubble.show(el);
-      await waitAfterNextRender(helpBubble);
+      await microtasksFinished();
       const button = helpBubble.getButtonForTesting(i);
       assertTrue(!!button, 'button should exist');
       button.click();
@@ -549,7 +555,7 @@ suite('CrComponentsHelpBubbleTest', () => {
     helpBubble.buttons = THREE_BUTTONS_MIDDLE_DEFAULT;
 
     helpBubble.show(el);
-    await waitAfterNextRender(helpBubble);
+    await microtasksFinished();
 
     assertEquals(
         0, getProgressIndicators().length,
@@ -567,7 +573,7 @@ suite('CrComponentsHelpBubbleTest', () => {
         helpBubble.buttons = THREE_BUTTONS_MIDDLE_DEFAULT;
 
         helpBubble.show(el);
-        await waitAfterNextRender(helpBubble);
+        await microtasksFinished();
 
         assertEquals(
             0, getProgressIndicators().length,
@@ -586,7 +592,7 @@ suite('CrComponentsHelpBubbleTest', () => {
     helpBubble.buttons = THREE_BUTTONS_MIDDLE_DEFAULT;
 
     helpBubble.show(el);
-    await waitAfterNextRender(helpBubble);
+    await microtasksFinished();
 
     const elements = getProgressIndicators();
     assertEquals(3, elements.length, 'there should be three elements');
@@ -621,7 +627,7 @@ suite('CrComponentsHelpBubbleTest', () => {
     helpBubble.buttons = THREE_BUTTONS_MIDDLE_DEFAULT;
 
     helpBubble.show(el);
-    await waitAfterNextRender(helpBubble);
+    await microtasksFinished();
 
     const elements = getProgressIndicators();
     assertEquals(2, elements.length, 'there should be two elements');
@@ -645,7 +651,7 @@ suite('CrComponentsHelpBubbleTest', () => {
     helpBubble.progress = {current: 2, total: 2};
 
     helpBubble.show(el);
-    await waitAfterNextRender(helpBubble);
+    await microtasksFinished();
 
     const elements = getProgressIndicators();
     assertEquals(2, elements.length, 'there should be two elements');
@@ -664,7 +670,7 @@ suite('CrComponentsHelpBubbleTest', () => {
     helpBubble.progress = {current: 0, total: 2};
 
     helpBubble.show(el);
-    await waitAfterNextRender(helpBubble);
+    await microtasksFinished();
 
     const elements = getProgressIndicators();
     assertEquals(2, elements.length, 'there should be two elements');
@@ -682,7 +688,7 @@ suite('CrComponentsHelpBubbleTest', () => {
     helpBubble.bodyText = HELP_BUBBLE_BODY;
 
     helpBubble.show(el);
-    await waitAfterNextRender(helpBubble);
+    await microtasksFinished();
 
     const anchorRect = helpBubble.getAnchorElement()!.getBoundingClientRect();
     const helpBubbleRect = helpBubble.getBoundingClientRect();
@@ -711,7 +717,7 @@ suite('CrComponentsHelpBubbleTest', () => {
     helpBubble.bodyText = HELP_BUBBLE_BODY;
 
     helpBubble.show(el);
-    await waitAfterNextRender(helpBubble);
+    await microtasksFinished();
 
     const anchorRect = helpBubble.getAnchorElement()!.getBoundingClientRect();
     const helpBubbleRect = helpBubble.getBoundingClientRect();
@@ -739,7 +745,7 @@ suite('CrComponentsHelpBubbleTest', () => {
     helpBubble.bodyText = HELP_BUBBLE_BODY;
 
     helpBubble.show(el);
-    await waitAfterNextRender(helpBubble);
+    await microtasksFinished();
 
     const anchorRect = helpBubble.getAnchorElement()!.getBoundingClientRect();
     const helpBubbleRect = helpBubble.getBoundingClientRect();
@@ -768,7 +774,7 @@ suite('CrComponentsHelpBubbleTest', () => {
     helpBubble.bodyText = HELP_BUBBLE_BODY;
 
     helpBubble.show(el);
-    await waitAfterNextRender(helpBubble);
+    await microtasksFinished();
 
     const anchorRect = helpBubble.getAnchorElement()!.getBoundingClientRect();
     const helpBubbleRect = helpBubble.getBoundingClientRect();

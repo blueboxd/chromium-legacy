@@ -19,6 +19,7 @@
 
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_container.h"
 
+#include "third_party/blink/renderer/core/layout/svg/svg_layout_info.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_resources.h"
 #include "third_party/blink/renderer/core/style/reference_clip_path_operation.h"
 #include "third_party/blink/renderer/core/style/style_mask_source_image.h"
@@ -70,13 +71,14 @@ LayoutSVGResourceContainer::LayoutSVGResourceContainer(SVGElement* node)
 
 LayoutSVGResourceContainer::~LayoutSVGResourceContainer() = default;
 
-void LayoutSVGResourceContainer::UpdateLayout() {
+SVGLayoutResult LayoutSVGResourceContainer::UpdateSVGLayout(
+    const SVGLayoutInfo& layout_info) {
   NOT_DESTROYED();
   // TODO(fs): This is only here to clear the invalidation mask, without that
-  // we wouldn't need to override LayoutSVGHiddenContainer::UpdateLayout().
+  // we wouldn't need to override LayoutSVGHiddenContainer::UpdateSVGLayout().
   DCHECK(NeedsLayout());
-  LayoutSVGHiddenContainer::UpdateLayout();
   ClearInvalidationMask();
+  return LayoutSVGHiddenContainer::UpdateSVGLayout(layout_info);
 }
 
 gfx::RectF LayoutSVGResourceContainer::ResolveRectangle(
@@ -110,8 +112,9 @@ gfx::RectF LayoutSVGResourceContainer::ResolveRectangle(
     DCHECK_EQ(type, SVGUnitTypes::kSvgUnitTypeUserspaceonuse);
     // Determine the viewport to use for resolving the Lengths to user units.
     gfx::SizeF viewport_size_for_resolve;
-    if (size.Width().IsPercentOrCalc() || size.Height().IsPercentOrCalc() ||
-        point.X().IsPercentOrCalc() || point.Y().IsPercentOrCalc()) {
+    if (size.Width().MayHavePercentDependence() ||
+        size.Height().MayHavePercentDependence() || point.X().HasPercent() ||
+        point.Y().HasPercent()) {
       viewport_size_for_resolve = viewport_resolver.ResolveViewport();
     }
     // Resolve the Lengths to user units.
@@ -204,8 +207,6 @@ static HeapVector<Member<SVGResource>> CollectResources(
             DynamicTo<ReferenceFilterOperation>(*operation))
       resources.push_back(reference_operation->Resource());
   }
-  if (auto* masker = style.MaskerResource())
-    resources.push_back(masker->Resource());
   if (auto* marker = style.MarkerStartResource())
     resources.push_back(marker->Resource());
   if (auto* marker = style.MarkerMidResource())
@@ -237,20 +238,18 @@ bool LayoutSVGResourceContainer::FindCycleInResources(
       }
     }
   }
-  if (RuntimeEnabledFeatures::CSSMaskingInteropEnabled()) {
-    for (const FillLayer* layer = &layout_object.StyleRef().MaskLayers(); layer;
-         layer = layer->Next()) {
-      const auto* mask_source =
-          DynamicTo<StyleMaskSourceImage>(layer->GetImage());
-      if (!mask_source) {
-        continue;
-      }
-      const SVGResource* svg_resource = mask_source->GetSVGResource();
-      SVGResourceClient* client =
-          mask_source->GetSVGResourceClient(layout_object);
-      if (svg_resource && svg_resource->FindCycle(*client)) {
-        return true;
-      }
+  for (const FillLayer* layer = &layout_object.StyleRef().MaskLayers(); layer;
+       layer = layer->Next()) {
+    const auto* mask_source =
+        DynamicTo<StyleMaskSourceImage>(layer->GetImage());
+    if (!mask_source) {
+      continue;
+    }
+    const SVGResource* svg_resource = mask_source->GetSVGResource();
+    SVGResourceClient* client =
+        mask_source->GetSVGResourceClient(layout_object);
+    if (svg_resource && svg_resource->FindCycle(*client)) {
+      return true;
     }
   }
   return false;
@@ -303,12 +302,18 @@ void LayoutSVGResourceContainer::MarkAllClientsForInvalidation(
     return;
   completed_invalidations_mask_ |= invalidation_mask;
 
-  is_invalidating_ = true;
+  auto& document = GetDocument();
+  if (document.InStyleRecalc() ||
+      document.GetStyleEngine().InDetachLayoutTree()) {
+    document.ScheduleSVGResourceInvalidation(*resource);
+  } else {
+    is_invalidating_ = true;
 
-  // Invalidate clients registered via an SVGResource.
-  resource->NotifyContentChanged();
+    // Invalidate clients registered via an SVGResource.
+    resource->NotifyContentChanged();
 
-  is_invalidating_ = false;
+    is_invalidating_ = false;
+  }
 }
 
 void LayoutSVGResourceContainer::InvalidateCache() {

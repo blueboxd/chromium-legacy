@@ -60,7 +60,7 @@ bool IsValidConnectionState(const std::string& connection_state) {
          connection_state == shill::kStatePortalSuspected ||
          connection_state == shill::kStateOnline ||
          connection_state == shill::kStateFailure ||
-         connection_state == shill::kStateDisconnect;
+         connection_state == shill::kStateDisconnecting;
 }
 
 }  // namespace
@@ -141,11 +141,12 @@ bool NetworkState::PropertyChanged(const std::string& key,
     // If payment portal uses post method, set up post data.
     const std::string* portal_method_value =
         value_dict->FindString(shill::kPaymentPortalMethod);
+    payment_method_ =
+        portal_method_value ? *portal_method_value : std::string();
+
     const std::string* portal_post_data_value =
         value_dict->FindString(shill::kPaymentPortalPostData);
-    if (portal_method_value &&
-        *portal_method_value == kPaymentPortalMethodPost &&
-        portal_post_data_value) {
+    if (payment_method_ == kPaymentPortalMethodPost && portal_post_data_value) {
       payment_post_data_ = *portal_post_data_value;
     }
     return true;
@@ -761,7 +762,6 @@ std::ostream& operator<<(std::ostream& out,
     PRINT(Online)
     PRINT(PortalSuspected)
     PRINT(Portal)
-    PRINT(ProxyAuthRequired)
     PRINT(NoInternet)
 #undef PRINT
   }

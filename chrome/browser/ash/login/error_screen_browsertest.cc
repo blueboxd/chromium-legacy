@@ -19,6 +19,7 @@
 #include "chrome/browser/ash/login/test/login_manager_mixin.h"
 #include "chrome/browser/ash/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/ash/login/test/oobe_screens_utils.h"
+#include "chrome/browser/ash/login/test/scoped_policy_update.h"
 #include "chrome/browser/ash/login/wizard_context.h"
 #include "chrome/browser/ash/login/wizard_controller.h"
 #include "chrome/browser/ui/webui/ash/login/app_launch_splash_screen_handler.h"
@@ -309,9 +310,6 @@ class KioskErrorScreenTest : public MixinBasedInProcessBrowserTest {
   void SetUpInProcessBrowserTestFixture() override {
     host_resolver()->AddRule("*", "127.0.0.1");
 
-    skip_splash_wait_override_ =
-        KioskLaunchController::SkipSplashScreenWaitForTesting();
-
     AddKioskAppToDevicePolicy();
 
     MixinBasedInProcessBrowserTest::SetUpInProcessBrowserTestFixture();
@@ -368,8 +366,9 @@ class KioskErrorScreenTest : public MixinBasedInProcessBrowserTest {
 
   std::unique_ptr<NetworkStateTestHelper> network_helper_;
 
-  std::unique_ptr<base::AutoReset<bool>> skip_splash_wait_override_;
-  std::unique_ptr<base::AutoReset<bool>> block_app_launch_override_;
+  base::AutoReset<bool> skip_splash_wait_override_ =
+      KioskLaunchController::SkipSplashScreenWaitForTesting();
+  std::optional<base::AutoReset<bool>> block_app_launch_override_;
 
   DeviceStateMixin device_state_{
       &mixin_host_, DeviceStateMixin::State::OOBE_COMPLETED_CLOUD_ENROLLED};

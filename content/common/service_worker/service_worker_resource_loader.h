@@ -8,7 +8,6 @@
 #include <optional>
 
 #include "base/check_op.h"
-#include "base/metrics/histogram_macros.h"
 #include "content/common/content_export.h"
 #include "services/network/public/mojom/service_worker_router_info.mojom-shared.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
@@ -57,7 +56,7 @@ class CONTENT_EXPORT ServiceWorkerResourceLoader {
   // kNone: No preload request is triggered. This is the default state.
   // kRaceNetworkRequest:
   //    RaceNetworkRequest is triggered.
-  //    TODO(crbug.com/1420517) This will be passed to the renderer and block
+  //    TODO(crbug.com/40258805) This will be passed to the renderer and block
   //    the corresponding request from the ServiceWorker.
   // kNavigationPreload:
   //    Enabled when Navigation Preload is triggered.
@@ -111,7 +110,7 @@ class CONTENT_EXPORT ServiceWorkerResourceLoader {
       const net::RedirectInfo& redirect_info,
       const network::mojom::URLResponseHeadPtr& response_head) = 0;
 
-  // TODO(crbug.com/1523917): remove the function after the spec has been
+  // TODO(crbug.com/41496865): remove the function after the spec has been
   // decided and the implementation is ready.
   //
   // Currently, timing info for the ServiceWorker static routing API

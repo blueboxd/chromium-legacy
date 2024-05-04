@@ -5,11 +5,17 @@
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/tab_groups/create_tab_group_mediator.h"
 
 #import "base/check.h"
+#import "base/metrics/user_metrics.h"
+#import "base/metrics/user_metrics_action.h"
+#import "base/strings/sys_string_conversions.h"
 #import "components/tab_groups/tab_group_color.h"
 #import "ios/chrome/browser/shared/model/web_state_list/tab_group.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/group_tab_info.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/tab_groups/tab_group_creation_consumer.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_group_item.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_group_utils.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher_item.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_utils.h"
 #import "ios/chrome/browser/ui/tab_switcher/web_state_tab_switcher_item.h"
@@ -22,19 +28,19 @@
   std::set<web::WebStateID> _identifiers;
   // Web state list where the tab group belong.
   WebStateList* _webStateList;
-  // List of snapshots.
-  NSMutableArray* _snapshots;
-  // List of favicons.
-  NSMutableArray* _favicons;
   // Tab group to edit.
   const TabGroup* _tabGroup;
+  // Array of all pictures of the group.
+  NSMutableArray<GroupTabInfo*>* _tabGroupInfos;
+  // Item to fetch pictures.
+  TabGroupItem* _groupItem;
 }
 
 - (instancetype)
     initTabGroupCreationWithConsumer:(id<TabGroupCreationConsumer>)consumer
                         selectedTabs:(std::set<web::WebStateID>&)identifiers
                         webStateList:(WebStateList*)webStateList {
-  CHECK(base::FeatureList::IsEnabled(kTabGroupsInGrid))
+  CHECK(IsTabGroupInGridEnabled())
       << "You should not be able to create a tab group outside the Tab Groups "
          "experiment.";
   self = [super init];
@@ -43,36 +49,32 @@
     CHECK(!identifiers.empty()) << "Cannot create an empty tab group.";
     CHECK(webStateList);
     _consumer = consumer;
-    // TODO(crbug.com/1501837): Get the default color from the component.
-    [_consumer setDefaultGroupColor:tab_groups::TabGroupColorId::kPink];
+    [_consumer setDefaultGroupColor:TabGroup::DefaultColorForNewTabGroup(
+                                        webStateList)];
 
     _identifiers = identifiers;
     _webStateList = webStateList;
 
-    _snapshots = [[NSMutableArray alloc] init];
-    _favicons = [[NSMutableArray alloc] init];
+    _tabGroupInfos = [[NSMutableArray alloc] init];
 
     NSUInteger numberOfRequestedImages = 0;
-
     for (web::WebStateID identifier : identifiers) {
       if (numberOfRequestedImages >= 7) {
         break;
       }
+      // TODO(crbug.com/333032676): Replace this with the appropriate helper
+      // once it exists.
       int index = GetWebStateIndex(
           webStateList, WebStateSearchCriteria{.identifier = identifier});
       CHECK_NE(index, WebStateList::kInvalidIndex);
-      TabSwitcherItem* item = [[WebStateTabSwitcherItem alloc]
-          initWithWebState:webStateList->GetWebStateAt(index)];
+
       __weak CreateTabGroupMediator* weakSelf = self;
-
-      [item fetchSnapshot:^(TabSwitcherItem* innerItem, UIImage* snapshot) {
-        [innerItem fetchFavicon:^(TabSwitcherItem* faviconItem, UIImage* icon) {
-          [weakSelf saveSnapshots:snapshot];
-          [weakSelf saveFavicons:icon];
-          [weakSelf updateConsumer];
-        }];
-      }];
-
+      [TabGroupUtils
+          fetchTabGroupInfoFromWebState:webStateList->GetWebStateAt(index)
+                             completion:^(GroupTabInfo* info) {
+                               [weakSelf addInfo:info];
+                               [weakSelf updateConsumer];
+                             }];
       numberOfRequestedImages++;
     }
   }
@@ -83,7 +85,7 @@
                     (id<TabGroupCreationConsumer>)consumer
                                        tabGroup:(const TabGroup*)tabGroup
                                    webStateList:(WebStateList*)webStateList {
-  CHECK(base::FeatureList::IsEnabled(kTabGroupsInGrid))
+  CHECK(IsTabGroupInGridEnabled())
       << "You should not be able to create a tab group outside the Tab Groups "
          "experiment.";
   self = [super init];
@@ -92,47 +94,81 @@
     CHECK(tabGroup);
     _consumer = consumer;
     _tabGroup = tabGroup;
-    // TODO(crbug.com/1501837): Get list of web states from the group, and fetch
-    // snapshots and favicons and send it to the consumer.
-    [_consumer setDefaultGroupColor:_tabGroup->visual_data().color()];
-    // TODO(crbug.com/1501837): Set title with current value.
+    _webStateList = webStateList;
+    _groupItem = [[TabGroupItem alloc] initWithTabGroup:_tabGroup
+                                           webStateList:_webStateList];
+    __weak CreateTabGroupMediator* weakSelf = self;
+    [_groupItem fetchGroupTabInfos:^(TabGroupItem* item,
+                                     NSArray<GroupTabInfo*>* groupTabInfos) {
+      [weakSelf setGroupTabInfos:groupTabInfos];
+      [weakSelf updateConsumer];
+    }];
+
+    // Do not use the helper to get the following values as the title helper do
+    // not return nil but the number of tabs. In this case, we want nil so it do
+    // not display anything.
+    tab_groups::TabGroupVisualData visualData = _tabGroup->visual_data();
+    [_consumer setDefaultGroupColor:visualData.color()];
+    [_consumer setGroupTitle:base::SysUTF16ToNSString(visualData.title())];
   }
   return self;
 }
 
 #pragma mark - TabGroupCreationMutator
 
+// TODO(crbug.com/40942154): Rename the function to better match what it does.
 - (void)createNewGroupWithTitle:(NSString*)title
                           color:(tab_groups::TabGroupColorId)colorID
                      completion:(void (^)())completion {
-  // TODO(crbug.com/1501837): Create the group in the webstate list.
+  tab_groups::TabGroupVisualData visualData =
+      tab_groups::TabGroupVisualData(base::SysNSStringToUTF16(title), colorID);
+  if (_tabGroup) {
+    base::RecordAction(
+        base::UserMetricsAction("MobileTabGroupUserUpdatedGroup"));
+    if (![_tabGroup->GetRawTitle() isEqualToString:title]) {
+      base::RecordAction(
+          base::UserMetricsAction("MobileTabGroupUserUpdatedGroupName"));
+    }
+    if (![_tabGroup->GetColor()
+            isEqual:TabGroup::ColorForTabGroupColorId(colorID)]) {
+      base::RecordAction(
+          base::UserMetricsAction("MobileTabGroupUserUpdatedGroupColor"));
+    }
+    _webStateList->UpdateGroupVisualData(_tabGroup, visualData);
+  } else {
+    base::RecordAction(
+        base::UserMetricsAction("MobileTabGroupUserCreatedNewGroup"));
+    std::set<int> tabIndexes;
+    for (web::WebStateID identifier : _identifiers) {
+      int index = GetWebStateIndex(_webStateList, WebStateSearchCriteria{
+                                                      .identifier = identifier,
+                                                  });
+      tabIndexes.insert(index);
+    }
+    _webStateList->CreateGroup(tabIndexes, visualData);
+  }
   completion();
 }
 
 #pragma mark - Private helpers
 
-// Saves the given snapshot in the snapshot list. If the image is nil, add a
-// null object so snapshot[i] and favicons[i] does not missmatch.
-- (void)saveSnapshots:(UIImage*)snapshot {
-  if (snapshot) {
-    [_snapshots addObject:snapshot];
-  } else {
-    [_snapshots addObject:[NSNull null]];
-  }
+// Adds the given info to the GroupTabInfo array.
+- (void)addInfo:(GroupTabInfo*)info {
+  [_tabGroupInfos addObject:info];
 }
 
-// Saves the given favicon in the favicon list. If the image is nil, add a null
-// object so snapshot[i] and favicons[i] does not missmatch.
-- (void)saveFavicons:(UIImage*)favicon {
-  if (favicon) {
-    [_favicons addObject:favicon];
-  } else {
-    [_favicons addObject:[NSNull null]];
-  }
+// Sets the GroupTabInfo array with `tabGroupInfos`.
+- (void)setGroupTabInfos:(NSArray<GroupTabInfo*>*)tabGroupInfos {
+  _tabGroupInfos = [[NSMutableArray alloc] initWithArray:tabGroupInfos];
 }
 
+// Sends to the consumer the needed pictures and the number of items to display
+// it properly.
 - (void)updateConsumer {
-  [_consumer setSnapshots:_snapshots favicons:_favicons];
+  NSInteger numberOfItem =
+      _tabGroup ? _tabGroup->range().count() : _identifiers.size();
+  [_consumer setTabGroupInfos:_tabGroupInfos
+        numberOfSelectedItems:numberOfItem];
 }
 
 @end

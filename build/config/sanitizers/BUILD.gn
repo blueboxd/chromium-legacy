@@ -43,7 +43,7 @@ group("deps") {
     }
     if (use_prebuilt_instrumented_libraries ||
         use_locally_built_instrumented_libraries) {
-      deps += [ "//third_party/instrumented_libraries:deps" ]
+      deps += [ "//third_party/instrumented_libs:deps" ]
     }
   }
   if (fail_on_san_warnings) {
@@ -218,7 +218,7 @@ config("default_sanitizer_ldflags") {
       if (use_libfuzzer) {
         ldflags += [ "-fsanitize=fuzzer-no-link" ]
         if (is_mac) {
-          # TODO(crbug.com/926588): on macOS, dead code stripping does not work
+          # TODO(crbug.com/40611636): on macOS, dead code stripping does not work
           # well with `pc-table` instrumentation enabled by `fuzzer-no-link`.
           ldflags += [ "-fno-sanitize-coverage=pc-table" ]
         }
@@ -345,7 +345,7 @@ config("cfi_flags") {
       # sanitize=cfi implies -fsplit-lto-unit, and Rust needs to match
       # behaviour.  Rust needs to know the linker will be doing LTO in this case
       # or it rejects the Zsplit-lto-unit flag.
-      # TODO(crbug.com/1442331): Add -Zsanitize=cfi instead.
+      # TODO(crbug.com/40266913): Add -Zsanitize=cfi instead.
       rustflags += [
         "-Zsplit-lto-unit",
         "-Clinker-plugin-lto=yes",
@@ -364,9 +364,9 @@ config("cfi_flags") {
 
     if (use_cfi_icall) {
       cflags += [ "-fsanitize=cfi-icall" ]
-      # TODO(crbug.com/1442331): Add cflags += [
+      # TODO(crbug.com/40266913): Add cflags += [
       # "-fsanitize-cfi-icall-experimental-normalize-integers" ]
-      # TODO(crbug.com/1442331): Add rustflags += [
+      # TODO(crbug.com/40266913): Add rustflags += [
       # "-Zsanitizer-cfi-normalize-integers" ].
     }
 
@@ -415,7 +415,7 @@ config("coverage_flags") {
     if (use_libfuzzer) {
       cflags += [ "-fsanitize=fuzzer-no-link" ]
       if (is_mac) {
-        # TODO(crbug.com/926588): on macOS, dead code stripping does not work
+        # TODO(crbug.com/40611636): on macOS, dead code stripping does not work
         # well with `pc-table` instrumentation enabled by `fuzzer-no-link`.
         cflags += [ "-fno-sanitize-coverage=pc-table" ]
       }
@@ -437,6 +437,11 @@ config("coverage_flags") {
       cflags += [ "-fsanitize-coverage-allowlist=" +
                   rebase_path(sanitizer_coverage_allowlist, root_build_dir) ]
     }
+  }
+  if (use_centipede) {
+    # Centipede intercepts calls such as memcmp and memcpy in order to improve
+    # its testcase generation.
+    cflags += [ "-fno-builtin" ]
   }
 }
 
@@ -466,12 +471,13 @@ config("msan_flags") {
       "-fsanitize-memory-track-origins=$msan_track_origins",
       "-fsanitize-ignorelist=$msan_ignorelist_path",
 
-      # TODO(https://crbug.com/1317909): evaluate and possibly enable
+      # TODO(crbug.com/40222690): evaluate and possibly enable
       "-fno-sanitize-memory-use-after-dtor",
-
-      # TODO(https://crbug.com/1369167): evaluate and possibly enable
-      "-fno-sanitize-memory-param-retval",
     ]
+
+    if (!msan_eager_checks) {
+      cflags += [ "-fno-sanitize-memory-param-retval" ]
+    }
   }
 }
 
@@ -497,7 +503,7 @@ config("ubsan_flags") {
           rebase_path("//tools/ubsan/ignorelist.txt", root_build_dir)
     }
 
-    # TODO(crbug.com/1502579): Enable all of -fsanitize=undefined. Note that
+    # TODO(crbug.com/40942951): Enable all of -fsanitize=undefined. Note that
     # both this list and Clang's defaults omit -fsanitize=float-divide-by-zero.
     # C and C++ leave it undefined to accommodate non-IEEE floating point, but
     # we assume the compiler implements IEEE floating point, which does define
@@ -519,23 +525,6 @@ config("ubsan_flags") {
       "-fsanitize=vla-bound",
       "-fsanitize-ignorelist=$ubsan_ignorelist_path",
     ]
-
-    # Chromecast ubsan builds fail to compile with these
-    # experimental flags, so only add them to non-chromecast ubsan builds.
-    if (!is_castos && !is_cast_android) {
-      cflags += [
-        # Employ the experimental PBQP register allocator to avoid slow
-        # compilation on files with too many basic blocks.
-        # See http://crbug.com/426271.
-        "-mllvm",
-        "-regalloc=pbqp",
-
-        # Speculatively use coalescing to slightly improve the code generated
-        # by PBQP regallocator. May increase compile time.
-        "-mllvm",
-        "-pbqp-coalescing",
-      ]
-    }
   }
 }
 

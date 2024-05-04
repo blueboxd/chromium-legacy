@@ -129,6 +129,10 @@ class MockNavigationHandle : public NavigationHandle {
     return render_frame_host_;
   }
   bool IsSameDocument() const override { return is_same_document_; }
+  bool IsHistory() const override {
+    NOTIMPLEMENTED();
+    return false;
+  }
   MOCK_METHOD0(WasServerRedirect, bool());
   const std::vector<GURL>& GetRedirectChain() override {
     return redirect_chain_;
@@ -210,6 +214,7 @@ class MockNavigationHandle : public NavigationHandle {
               (const std::vector<std::string>& trials));
   MOCK_METHOD(void, SetIsOverridingUserAgent, (bool));
   MOCK_METHOD(void, SetSilentlyIgnoreErrors, ());
+  MOCK_METHOD(void, SetVisitedLinkSalt, (uint64_t));
   MOCK_METHOD(network::mojom::WebSandboxFlags, SandboxFlagsInitiator, ());
   MOCK_METHOD(network::mojom::WebSandboxFlags, SandboxFlagsInherited, ());
   MOCK_METHOD(network::mojom::WebSandboxFlags, SandboxFlagsToCommit, ());
@@ -250,6 +255,7 @@ class MockNavigationHandle : public NavigationHandle {
       override {
     return runtime_feature_state_context_;
   }
+  MOCK_METHOD(std::optional<url::Origin>, GetOriginToCommit, ());
   // End of NavigationHandle implementation.
 
   void set_url(const GURL& url) { url_ = url; }

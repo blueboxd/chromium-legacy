@@ -356,6 +356,19 @@ IN_PROC_BROWSER_TEST_F(RequestStorageAccessForEnabledBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(RequestStorageAccessForEnabledBrowserTest,
+                       TopLevelUnrelatedOriginRejected) {
+  NavigateToPageWithFrame(kHostA);
+
+  EXPECT_FALSE(storage::test::RequestStorageAccessForOrigin(
+      GetPrimaryMainFrame(), GetURL(kHostB).spec()));
+
+  EXPECT_EQ(content::EvalJs(GetPrimaryMainFrame(),
+                            "navigator.userActivation.isActive",
+                            content::EXECUTE_SCRIPT_NO_USER_GESTURE),
+            false);
+}
+
+IN_PROC_BROWSER_TEST_F(RequestStorageAccessForEnabledBrowserTest,
                        TopLevelOpaqueOriginRejected) {
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(),
                                            GURL("data:,Hello%2C%20World%21")));
@@ -407,7 +420,7 @@ IN_PROC_BROWSER_TEST_F(RequestStorageAccessForWithFirstPartySetsBrowserTest,
                        PermissionQueryDefault) {
   NavigateToPageWithFrame(kHostA);
   EXPECT_EQ(QueryPermission(GetPrimaryMainFrame(), kHostB), "prompt");
-  // TODO(crbug.com/1414468): the `storage-access` permission seems to behave
+  // TODO(crbug.com/40256138): the `storage-access` permission seems to behave
   // similarly on self-queries. This is a counterintuitive result, however. It
   // does reflect the fact that the permission was never set, but it does not
   // reflect the fact that the `kHostA` top-level page's access to cookies on
@@ -449,7 +462,7 @@ IN_PROC_BROWSER_TEST_F(RequestStorageAccessForWithFirstPartySetsBrowserTest,
 // unblocked for just that top-level/third-party combination.
 IN_PROC_BROWSER_TEST_F(
     RequestStorageAccessForWithFirstPartySetsBrowserTest,
-    // TODO(crbug.com/1370096): Re-enable usage metric assertions.
+    // TODO(crbug.com/40869547): Re-enable usage metric assertions.
     Permission_AutograntedWithinFirstPartySet) {
   SetBlockThirdPartyCookies(true);
   base::HistogramTester histogram_tester;
@@ -567,6 +580,21 @@ IN_PROC_BROWSER_TEST_F(RequestStorageAccessForWithFirstPartySetsBrowserTest,
   EXPECT_EQ(CookiesFromFetchWithCredentials(GetFrame(), kHostB,
                                             /*cors_enabled=*/true),
             "");
+}
+
+IN_PROC_BROWSER_TEST_F(RequestStorageAccessForWithFirstPartySetsBrowserTest,
+                       AccessGranted_DoesNotConsumeUserGesture) {
+  SetBlockThirdPartyCookies(true);
+
+  NavigateToPageWithFrame(kHostA);
+  NavigateFrameTo(kHostB, "/");
+  ASSERT_TRUE(storage::test::RequestStorageAccessForOrigin(
+      GetPrimaryMainFrame(), GetURL(kHostB).spec()));
+
+  EXPECT_EQ(content::EvalJs(GetPrimaryMainFrame(),
+                            "navigator.userActivation.isActive",
+                            content::EXECUTE_SCRIPT_NO_USER_GESTURE),
+            true);
 }
 
 // Validate that the permission for rSAFor allows autogranting of rSA, including

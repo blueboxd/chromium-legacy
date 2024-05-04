@@ -5,11 +5,11 @@
 #include "base/task/thread_pool/thread_group_impl.h"
 
 #include <optional>
+#include <string_view>
 
 #include "base/auto_reset.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/sequence_token.h"
-#include "base/strings/string_piece.h"
 #include "base/task/common/checked_lock.h"
 #include "base/task/thread_pool/thread_group_worker_delegate.h"
 #include "base/task/thread_pool/worker_thread_waitable_event.h"
@@ -113,8 +113,8 @@ ThreadGroupImpl::GetExecutor() {
       std::make_unique<ScopedCommandsExecutor>(this));
 }
 
-ThreadGroupImpl::ThreadGroupImpl(StringPiece histogram_label,
-                                 StringPiece thread_group_label,
+ThreadGroupImpl::ThreadGroupImpl(std::string_view histogram_label,
+                                 std::string_view thread_group_label,
                                  ThreadType thread_type_hint,
                                  TrackedRef<TaskTracker> task_tracker,
                                  TrackedRef<Delegate> delegate)
@@ -379,7 +379,7 @@ void ThreadGroupImpl::WaitableEventWorkerDelegate::
   // Add the worker to the idle set.
   outer()->idle_workers_set_.Insert(worker);
   DCHECK_LE(outer()->idle_workers_set_.Size(), outer()->workers_.size());
-  outer()->idle_workers_set_cv_for_testing_->Broadcast();
+  outer()->idle_workers_set_cv_for_testing_.Broadcast();
 }
 
 void ThreadGroupImpl::WaitableEventWorkerDelegate::RecordUnnecessaryWakeup() {

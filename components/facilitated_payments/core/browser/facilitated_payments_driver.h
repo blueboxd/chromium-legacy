@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/functional/callback_forward.h"
-#include "components/facilitated_payments/core/browser/facilitated_payments_manager.h"
 #include "components/facilitated_payments/core/mojom/facilitated_payments_agent.mojom.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 
@@ -36,16 +35,18 @@ class FacilitatedPaymentsDriver {
   // implementation.
   void DidFinishNavigation() const;
 
-  // Informs `FacilitatedPaymentsManager` about the finished loading. It is
-  // invoked only for the primary main frame by the platform-specific
+  // Informs `FacilitatedPaymentsManager` that the content has finished loading
+  // in the primary main frame. It is invoked by the platform-specific
   // implementation.
-  void DidFinishLoad(const GURL& url, ukm::SourceId ukm_source_id) const;
+  virtual void OnContentLoadedInThePrimaryMainFrame(
+      const GURL& url,
+      ukm::SourceId ukm_source_id) const;
 
   // Trigger PIX code detection on the page. The `callback` is called after
-  // running PIX code detection and is passed a boolean informing whether or not
-  // a PIX code was found.
+  // running PIX code detection.
   virtual void TriggerPixCodeDetection(
-      base::OnceCallback<void(mojom::PixCodeDetectionResult)> callback) = 0;
+      base::OnceCallback<void(mojom::PixCodeDetectionResult,
+                              const std::string&)> callback) = 0;
 
  private:
   std::unique_ptr<FacilitatedPaymentsManager> manager_;

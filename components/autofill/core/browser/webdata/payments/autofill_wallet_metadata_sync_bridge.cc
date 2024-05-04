@@ -12,6 +12,7 @@
 
 #include "base/base64.h"
 #include "base/check_op.h"
+#include "base/containers/span.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
 #include "base/notreached.h"
@@ -47,7 +48,7 @@ std::string GetClientTagForSpecificsId(WalletMetadataSpecifics::Type type,
                                        const std::string& specifics_id) {
   switch (type) {
     case WalletMetadataSpecifics::ADDRESS:
-      // TODO(crbug.com/1457187): Even though the server-side drops
+      // TODO(crbug.com/40273491): Even though the server-side drops
       // writes for WalletMetadataSpecifics::ADDRESS, old data wasn't cleaned
       // up yet. As such, this code is still reachable.
       return "address-" + specifics_id;
@@ -93,7 +94,8 @@ struct TypeAndMetadataId {
 
 TypeAndMetadataId ParseWalletMetadataStorageKey(
     const std::string& storage_key) {
-  base::Pickle pickle(storage_key.data(), storage_key.size());
+  base::Pickle pickle =
+      base::Pickle::WithUnownedBuffer(base::as_byte_span(storage_key));
   base::PickleIterator iterator(pickle);
   int type_int;
   std::string specifics_id;
@@ -430,7 +432,7 @@ void AutofillWalletMetadataSyncBridge::ApplyDisableSyncChanges(
 
 void AutofillWalletMetadataSyncBridge::CreditCardChanged(
     const CreditCardChange& change) {
-  // TODO(crbug.com/1206306): Clean up old metadata for local cards, this early
+  // TODO(crbug.com/40765031): Clean up old metadata for local cards, this early
   // return was missing for quite a while in production.
   if (!IsSyncedWalletCard(change.data_model())) {
     return;
@@ -615,7 +617,7 @@ AutofillWalletMetadataSyncBridge::MergeRemoteChanges(
     TypeAndMetadataId parsed_storage_key =
         ParseWalletMetadataStorageKey(change->storage_key());
     if (parsed_storage_key.type == WalletMetadataSpecifics::ADDRESS) {
-      // TODO(crbug.com/1457187): Even though the server-side drops
+      // TODO(crbug.com/40273491): Even though the server-side drops
       // writes for WalletMetadataSpecifics::ADDRESS, old data wasn't cleaned
       // up yet. As such, this code is still reachable.
       continue;
@@ -688,7 +690,7 @@ void AutofillWalletMetadataSyncBridge::LocalMetadataChanged(
     AutofillDataModelChange<DataType, KeyType> change) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  // TODO(crbug.com/1475085): Conversion logic is necessary once credit cards
+  // TODO(crbug.com/40927747): Conversion logic is necessary once credit cards
   // have migrated to use instrument IDs, then the branching can be removed.
   std::string metadata_id;
   if constexpr (std::same_as<DataType, Iban>) {

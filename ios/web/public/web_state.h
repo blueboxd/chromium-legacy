@@ -12,13 +12,13 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 
 #include "base/functional/callback_forward.h"
 #import "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/strings/string_piece.h"
 #include "base/supports_user_data.h"
 #include "base/time/time.h"
 #include "build/blink_buildflags.h"
@@ -161,10 +161,10 @@ class WebState : public base::SupportsUserData {
     // GenericPendingReceiver.
     using Callback =
         base::RepeatingCallback<void(mojo::GenericPendingReceiver*)>;
-    void AddInterface(base::StringPiece interface_name, Callback callback);
+    void AddInterface(std::string_view interface_name, Callback callback);
 
     // Removes a callback added by AddInterface.
-    void RemoveInterface(base::StringPiece interface_name);
+    void RemoveInterface(std::string_view interface_name);
 
     // Attempts to bind `receiver` by matching its interface name against the
     // callbacks registered on this InterfaceBinder.
@@ -189,7 +189,7 @@ class WebState : public base::SupportsUserData {
 
   // Creates a new WebState from a serialized representation of the session.
   // `session_storage` must not be nil.
-  // TODO(crbug.com/1383087): remove when the optimised serialisation feature
+  // TODO(crbug.com/40245950): remove when the optimised serialisation feature
   // has been fully launched.
   static std::unique_ptr<WebState> CreateWithStorageSession(
       const CreateParams& params,
@@ -213,6 +213,11 @@ class WebState : public base::SupportsUserData {
   // Serializes the object to `storage`. It is an error to call this method
   // on a WebState that is not realized.
   virtual void SerializeToProto(proto::WebStateStorage& storage) const = 0;
+
+  // Serializes the object metadata to `storage`. It is valid to call this
+  // method on an unrealized WebState.
+  virtual void SerializeMetadataToProto(
+      proto::WebStateMetadataStorage& storage) const = 0;
 
   // Gets/Sets the delegate.
   virtual WebStateDelegate* GetDelegate() = 0;
@@ -392,7 +397,7 @@ class WebState : public base::SupportsUserData {
   // Returns true if the web process backing this WebState is believed to
   // currently be crashed or was evicted (by calling SetWebUsageEnabled
   // with false).
-  // TODO(crbug.com/619971): Remove once all code has been ported to use
+  // TODO(crbug.com/41258826): Remove once all code has been ported to use
   // IsCrashed() instead of IsEvicted().
   virtual bool IsEvicted() const = 0;
 
@@ -408,7 +413,7 @@ class WebState : public base::SupportsUserData {
 
   // Returns the number of items in the NavigationManager, excluding
   // pending entries.
-  // TODO(crbug.com/533848): Update to return size_t.
+  // TODO(crbug.com/40436539): Update to return size_t.
   virtual int GetNavigationItemCount() const = 0;
 
   // Gets the URL currently being displayed in the URL bar, if there is one.

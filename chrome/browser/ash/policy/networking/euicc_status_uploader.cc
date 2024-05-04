@@ -75,8 +75,6 @@ bool IsDeviceManaged() {
 }  // namespace
 
 // static
-const char EuiccStatusUploader::kLastUploadedEuiccStatusPrefLegacy[] =
-    "esim.last_upload_euicc_status";
 const char EuiccStatusUploader::kLastUploadedEuiccStatusPref[] =
     "esim.last_uploaded_euicc_status";
 const char EuiccStatusUploader::kShouldSendClearProfilesRequestPref[] =
@@ -123,8 +121,6 @@ EuiccStatusUploader::~EuiccStatusUploader() {
 // static
 void EuiccStatusUploader::RegisterLocalStatePrefs(
     PrefRegistrySimple* registry) {
-  registry->RegisterDictionaryPref(kLastUploadedEuiccStatusPrefLegacy,
-                                   PrefRegistry::NO_REGISTRATION_FLAGS);
   registry->RegisterDictionaryPref(kLastUploadedEuiccStatusPref,
                                    PrefRegistry::NO_REGISTRATION_FLAGS);
   registry->RegisterBooleanPref(kShouldSendClearProfilesRequestPref,
@@ -332,9 +328,7 @@ void EuiccStatusUploader::MaybeUploadStatus() {
   }
 
   const base::Value::Dict& last_uploaded_pref =
-      ash::features::IsSmdsSupportEnabled()
-          ? local_state_->GetDict(kLastUploadedEuiccStatusPref)
-          : local_state_->GetDict(kLastUploadedEuiccStatusPrefLegacy);
+      local_state_->GetDict(kLastUploadedEuiccStatusPref);
   auto current_state = GetCurrentEuiccStatus();
 
   // Force send the status if reset request was received.
@@ -370,16 +364,21 @@ void EuiccStatusUploader::UploadStatus(base::Value::Dict status) {
   currently_uploading_ = true;
   attempted_upload_status_ = std::move(status);
 
+  const bool should_send_clear_profiles_request =
+      local_state_->GetBoolean(kShouldSendClearProfilesRequestPref);
+
   auto upload_request = ConstructRequestFromStatus(
-      attempted_upload_status_,
-      local_state_->GetBoolean(kShouldSendClearProfilesRequestPref));
+      attempted_upload_status_, should_send_clear_profiles_request);
   client_->UploadEuiccInfo(
       std::move(upload_request),
       base::BindOnce(&EuiccStatusUploader::OnStatusUploaded,
-                     weak_ptr_factory_.GetWeakPtr()));
+                     weak_ptr_factory_.GetWeakPtr(),
+                     should_send_clear_profiles_request));
 }
 
-void EuiccStatusUploader::OnStatusUploaded(bool success) {
+void EuiccStatusUploader::OnStatusUploaded(
+    bool should_send_clear_profiles_request,
+    bool success) {
   currently_uploading_ = false;
   retry_entry_.InformOfRequest(/*succeeded=*/success);
   base::UmaHistogramBoolean(
@@ -393,23 +392,18 @@ void EuiccStatusUploader::OnStatusUploaded(bool success) {
 
   VLOG(1) << "EUICC status successfully uploaded.";
 
-  if (ash::features::IsSmdsSupportEnabled()) {
-    // Remember the last uploaded status to not upload it again.
-    local_state_->SetDict(kLastUploadedEuiccStatusPref,
-                          std::move(attempted_upload_status_));
-  } else {
-    // Remember the last uploaded status to not upload it again.
-    local_state_->SetDict(kLastUploadedEuiccStatusPrefLegacy,
-                          std::move(attempted_upload_status_));
-  }
+  // Remember the last uploaded status to not upload it again.
+  local_state_->SetDict(kLastUploadedEuiccStatusPref,
+                        std::move(attempted_upload_status_));
 
-  // Clean out the local state preference to not send |clear_profile_list| =
-  // true multiple times.
-  local_state_->ClearPref(kShouldSendClearProfilesRequestPref);
+  if (should_send_clear_profiles_request) {
+    // Clean out the local state preference to not send `clear_profile_list` =
+    // true multiple times.
+    local_state_->ClearPref(kShouldSendClearProfilesRequestPref);
+  }
   attempted_upload_status_.clear();
 
   MaybeUploadStatus();
-  return;
 }
 
 void EuiccStatusUploader::RetryUpload() {

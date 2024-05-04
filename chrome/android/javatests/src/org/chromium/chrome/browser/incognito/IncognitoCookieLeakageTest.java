@@ -24,7 +24,6 @@ import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.browser.customtabs.IncognitoCustomTabActivityTestRule;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.incognito.IncognitoDataTestUtils.ActivityType;
@@ -46,7 +45,7 @@ import java.util.concurrent.TimeoutException;
  */
 @RunWith(ParameterizedRunner.class)
 @UseRunnerDelegate(ChromeJUnit4RunnerDelegate.class)
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE, ChromeSwitches.DISABLE_ALL_IPH})
 public class IncognitoCookieLeakageTest {
     private static final String COOKIES_SETTING_PATH = "/chrome/test/data/android/cookie.html";
     private String mCookiesTestPage;
@@ -105,7 +104,7 @@ public class IncognitoCookieLeakageTest {
         }
     }
 
-    // TODO(crbug.com/1023759) : Currently, incognito CCTs are not isolated and hence they share
+    // TODO(crbug.com/40107157) : Currently, incognito CCTs are not isolated and hence they share
     // the session with other incognito sessions. Once, they are properly isolated we should change
     // the test to expect that cookies are not leaked from/to an incognito CCT session.
     @Test
@@ -135,7 +134,6 @@ public class IncognitoCookieLeakageTest {
     @Test
     @LargeTest
     @UseMethodParameter(IsolatedFlowsParams.class)
-    @DisabledTest(message = "crbug.com/1489541")
     public void testCookiesDoNotLeakBetweenRegularAndIncognito(
             String setterActivityType, String getterActivityType) throws TimeoutException {
         ActivityType setterActivity = ActivityType.valueOf(setterActivityType);

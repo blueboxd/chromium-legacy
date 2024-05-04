@@ -181,7 +181,7 @@ enum class AXEmbeddedObjectBehavior {
 // through it, otherwise the text field would be missed by the user.
 //
 // Tests should use ScopedAXEmbeddedObjectBehaviorSetter to change this.
-// TODO(crbug.com/1204592) Don't export this so tests can't change it.
+// TODO(crbug.com/40764129) Don't export this so tests can't change it.
 extern AX_EXPORT AXEmbeddedObjectBehavior g_ax_embedded_object_behavior;
 
 class AX_EXPORT ScopedAXEmbeddedObjectBehaviorSetter {
@@ -2584,7 +2584,7 @@ class AXPosition {
 
         const int max_text_offset = MaxTextOffset();
 
-        // TODO(crbug.com/1404289): temporary disabled until ax position
+        // TODO(crbug.com/40885940): temporary disabled until ax position
         // autocorrection issue is fixed.
         // DCHECK_LE(text_offset_, max_text_offset);
 
@@ -4576,12 +4576,10 @@ class AXPosition {
 
  protected:
   AXPosition()
-      : kind_(AXPositionKind::NULL_POSITION),
-        tree_id_(AXTreeIDUnknown()),
+      : tree_id_(AXTreeIDUnknown()),
         anchor_id_(kInvalidAXNodeID),
         child_index_(INVALID_INDEX),
-        text_offset_(INVALID_OFFSET),
-        affinity_(ax::mojom::TextAffinity::kDownstream) {}
+        text_offset_(INVALID_OFFSET) {}
 
   // We explicitly don't copy any cached members.
   AXPosition(const AXPosition& other)
@@ -4590,8 +4588,7 @@ class AXPosition {
         anchor_id_(other.anchor_id_),
         child_index_(other.child_index_),
         text_offset_(other.text_offset_),
-        affinity_(other.affinity_),
-        name_() {}
+        affinity_(other.affinity_) {}
 
   // Returns the character offset inside our anchor's parent at which our text
   // starts.
@@ -4663,6 +4660,12 @@ class AXPosition {
     text_offset_ = text_offset;
     affinity_ = affinity;
 
+    DCHECK(kind == AXPositionKind::NULL_POSITION || GetAnchor())
+        << "Attempting to create a non-null position that has a null anchor:"
+        << "\n* Anchor id: " << anchor_id << "\n* Manager: " << GetManager()
+        << "\n* Known tree id? "
+        << (tree_id == AXTreeIDUnknown() ? "false" : "true");
+
     if (!IsValid()) {
       // Reset to the null position.
       kind_ = AXPositionKind::NULL_POSITION;
@@ -4698,7 +4701,7 @@ class AXPosition {
         << "Creating a position without an anchor is disallowed:\n"
         << ToDebugString();
 
-    // TODO(crbug.com/1404289) Remove this line and let the below IsValid()
+    // TODO(crbug.com/40885940) Remove this line and let the below IsValid()
     // assertion get triggered instead. We shouldn't be creating test positions
     // with offsets that are too large. This seems to occur when the anchor node
     // is ignored, and leads to a number of failing tests.
@@ -4720,7 +4723,7 @@ class AXPosition {
     }
 #endif
 
-    // TODO(crbug.com/1404289) see TODO above.
+    // TODO(crbug.com/40885940) see TODO above.
     // Also look for the failures in
     // AXPositionTest.AsLeafTextPositionBeforeCharacterIncludingGeneratedNewlines,
     // AXPlatformNodeTextRangeProviderTest.TestNormalizeTextRangeForceSameAnchorOnDegenerateRange.
@@ -5825,8 +5828,8 @@ class AXPosition {
     return text_position;
   }
 
-  AXPositionKind kind_;
-  // TODO(crbug.com/1362839): use weak pointers for the AXTree, so that
+  AXPositionKind kind_ = AXPositionKind::NULL_POSITION;
+  // TODO(crbug.com/40864560): use weak pointers for the AXTree, so that
   // AXPosition can be used without AXTreeManager support (and also faster than
   // the slow AXTreeID).
   AXTreeID tree_id_;
@@ -5854,7 +5857,7 @@ class AXPosition {
   // leaf text position before the soft line break would be pointing to the
   // end of its anchor node, whilst a leaf text position after the soft line
   // break would be pointing to the start of the next node.
-  ax::mojom::TextAffinity affinity_;
+  ax::mojom::TextAffinity affinity_ = ax::mojom::TextAffinity::kDownstream;
 
   //
   // Cached members that should be lazily created on first use.

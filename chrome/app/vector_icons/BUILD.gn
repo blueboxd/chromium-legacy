@@ -10,8 +10,8 @@ import("//ui/webui/webui_features.gni")
 aggregate_vector_icons("chrome_vector_icons") {
   icon_directory = "."
 
-  # Keep sorted alphabetically.
   sources = [
+    # go/keep-sorted start
     "account_add_chrome_refresh.icon",
     "account_box.icon",
     "account_child.icon",
@@ -63,6 +63,7 @@ aggregate_vector_icons("chrome_vector_icons") {
     "copy.icon",
     "copy_menu.icon",
     "crashed_tab.icon",
+    "create_new_tab_group.icon",
     "credit_card.icon",
     "credit_card_chrome_refresh.icon",
     "cut_menu.icon",
@@ -107,6 +108,7 @@ aggregate_vector_icons("chrome_vector_icons") {
     "incognito_menu_art.icon",
     "incognito_profile.icon",
     "incognito_refresh_menu.icon",
+    "info.icon",
     "ink_highlighter.icon",
     "input.icon",
     "install_desktop_chrome_refresh.icon",
@@ -163,6 +165,7 @@ aggregate_vector_icons("chrome_vector_icons") {
     "payments/save_card_and_vcn_success_confirmation.icon",
     "payments/save_card_and_vcn_success_confirmation_dark.icon",
     "performance.icon",
+    "person.icon",
     "person_filled_padded_large.icon",
     "person_filled_padded_small.icon",
     "photo_camera.icon",
@@ -182,7 +185,6 @@ aggregate_vector_icons("chrome_vector_icons") {
     "read_anything_line_spacing_very_loose.icon",
     "read_anything_links_disabled.icon",
     "read_anything_links_enabled.icon",
-    "read_later.icon",
     "read_later_add.icon",
     "reading_list.icon",
     "release_alert.icon",
@@ -272,8 +274,6 @@ aggregate_vector_icons("chrome_vector_icons") {
     "webauthn/passkey_error_dark.icon",
     "webauthn/passkey_fingerprint.icon",
     "webauthn/passkey_fingerprint_dark.icon",
-    "webauthn/passkey_header.icon",
-    "webauthn/passkey_header_dark.icon",
     "webauthn/passkey_phone.icon",
     "webauthn/passkey_phone_dark.icon",
     "webauthn/passkey_usb.icon",
@@ -281,6 +281,8 @@ aggregate_vector_icons("chrome_vector_icons") {
     "webauthn/usb_security_key.icon",
     "webauthn/webauthn_error.icon",
     "webauthn/webauthn_error_dark.icon",
+    "webauthn/windows_hello.icon",
+    "webid_globe.icon",
     "zoom_in.icon",
     "zoom_minus.icon",
     "zoom_minus_chrome_refresh.icon",
@@ -288,6 +290,8 @@ aggregate_vector_icons("chrome_vector_icons") {
     "zoom_plus.icon",
     "zoom_plus_chrome_refresh.icon",
     "zoom_plus_menu_refresh.icon",
+
+    # go/keep-sorted end
   ]
 
   if (is_mac) {

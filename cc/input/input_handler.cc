@@ -10,6 +10,7 @@
 #include "base/notreached.h"
 #include "build/build_config.h"
 #include "cc/base/features.h"
+#include "cc/input/browser_controls_offset_manager.h"
 #include "cc/input/scroll_elasticity_helper.h"
 #include "cc/input/scroll_utils.h"
 #include "cc/input/scrollbar_controller.h"
@@ -236,7 +237,7 @@ InputHandler::ScrollStatus InputHandler::ScrollBegin(ScrollState* scroll_state,
     outer_viewport_consumed_delta_ = false;
     inner_viewport_consumed_delta_ = false;
     if (!GetViewport().CanScroll(*CurrentlyScrollingNode(), *scroll_state)) {
-      // TODO(crbug.com/1155758): This is a temporary workaround for GuestViews
+      // TODO(crbug.com/40735567): This is a temporary workaround for GuestViews
       // as they create viewport nodes and want to bubble scroll if the
       // viewport cannot scroll in the given delta directions. There should be
       // a parameter to ThreadInputHandler to specify whether unused delta is
@@ -381,7 +382,7 @@ InputHandlerScrollResult InputHandler::ScrollUpdate(
   float scale_factor = ActiveTree().page_scale_factor_for_scroll();
   scroll_result.current_visual_offset.Scale(scale_factor);
 
-  if (!GetScrollTree().CanRealizeScrollsOnCompositor(scroll_node)) {
+  if (GetScrollTree().ShouldRealizeScrollsOnMain(scroll_node)) {
     scroll_result.needs_main_thread_repaint = true;
   }
 
@@ -405,7 +406,7 @@ void InputHandler::AdjustScrollDeltaForScrollbarSnap(
   // Ideally, scrollbar track and arrow interactions would have
   // kScrollByPage and kScrollByLine, respectively. Currently, both have
   // kScrollByPixel granularity.
-  // TODO(crbug.com/959441): Update snap strategy once the granularity is
+  // TODO(crbug.com/41456637): Update snap strategy once the granularity is
   // properly set. Currently, track and arrow scrolls both use a direction
   // strategy; however, the track should be using an "end and direction"
   // strategy.
@@ -475,7 +476,7 @@ void InputHandler::RecordScrollBegin(
   //   (2) the scroll is driven by the compositor, but blocked on the main
   //       thread.
   // Otherwise, the compositor-thread is the 'scrolling thread'.
-  // TODO(crbug.com/1060712): We should also count 'main thread' as the
+  // TODO(crbug.com/40122138): We should also count 'main thread' as the
   // 'scrolling thread' if the layer being scrolled has scroll-event handlers.
   FrameInfo::SmoothEffectDrivingThread scrolling_thread;
   switch (scroll_start_state) {
@@ -1275,11 +1276,16 @@ InputHandler::ScrollHitTestResult InputHandler::HitTestScrollNode(
       ActiveTree().FindLayersUpToFirstScrollableOrOpaqueToHitTest(
           device_viewport_point);
 
-  const LayerImpl* first_scrollable_or_opaque_to_hit_test_layer =
-      !layers.empty() && (layers.back()->IsScrollerOrScrollbar() ||
-                          layers.back()->OpaqueToHitTest())
-          ? layers.back()
-          : nullptr;
+  const LayerImpl* first_scrollable_or_opaque_to_hit_test_layer = nullptr;
+  if (!layers.empty()) {
+    if (compositor_delegate_->GetSettings().enable_hit_test_opaqueness) {
+      if (layers.back()->OpaqueToHitTest()) {
+        first_scrollable_or_opaque_to_hit_test_layer = layers.back();
+      }
+    } else if (layers.back()->IsScrollerOrScrollbar()) {
+      first_scrollable_or_opaque_to_hit_test_layer = layers.back();
+    }
+  }
   ScrollNode* node_to_scroll = nullptr;
 
   // Go through each layer up to (and including) the scroller. Any may block
@@ -1325,6 +1331,12 @@ InputHandler::ScrollHitTestResult InputHandler::HitTestScrollNode(
 }
 
 ScrollNode* InputHandler::GetNodeToScroll(ScrollNode* node) const {
+  // The root and the secondary root are sentinel nodes and don't contribute to
+  // scrolling.
+  if (node->id <= kSecondaryRootPropertyNodeId) {
+    return nullptr;
+  }
+
   // Blink has a notion of a "root scroller", which is the scroller in a page
   // that is considered to host the main content. Typically this will be the
   // document/LayoutView contents; however, in some situations Blink may choose
@@ -1356,61 +1368,50 @@ ScrollNode* InputHandler::GetNodeToScroll(ScrollNode* node) const {
   return node;
 }
 
+ScrollNode* InputHandler::GetNodeToScrollForLayer(
+    const LayerImpl* layer) const {
+  if (layer->IsScrollbarLayer()) {
+    // If we hit a scrollbar layer, get the ScrollNode from its associated
+    // scrolling layer, rather than directly from the scrollbar layer. The
+    // latter would return the parent scroller's ScrollNode.
+    if (auto* scroll_node = GetScrollTree().FindNodeFromElementId(
+            ToScrollbarLayer(layer)->scroll_element_id())) {
+      return GetNodeToScroll(scroll_node);
+    }
+    return nullptr;
+  }
+  return GetNodeToScroll(GetScrollTree().Node(layer->scroll_tree_index()));
+}
+
 bool InputHandler::IsInitialScrollHitTestReliable(
     const LayerImpl* layer_impl,
     const LayerImpl* first_scrollable_or_opaque_to_hit_test_layer,
     ScrollNode*& out_node_to_scroll) const {
-  // Hit tests directly on a composited scrollbar are always reliable.
-  if (layer_impl->IsScrollbarLayer()) {
-    DCHECK(layer_impl == first_scrollable_or_opaque_to_hit_test_layer);
-    // If we hit a scrollbar layer, get the ScrollNode from its associated
-    // scrolling layer, rather than directly from the scrollbar layer. The
-    // latter would return the parent scroller's ScrollNode.
-    out_node_to_scroll = GetScrollTree().FindNodeFromElementId(
-        ToScrollbarLayer(layer_impl)->scroll_element_id());
-    if (out_node_to_scroll) {
-      out_node_to_scroll = GetNodeToScroll(out_node_to_scroll);
-    }
-    return true;
-  }
+  ScrollNode* scroll_node = GetNodeToScrollForLayer(layer_impl);
 
-  ScrollNode* closest_scroll_node = nullptr;
-  auto& scroll_tree = GetScrollTree();
-  ScrollNode* scroll_node = scroll_tree.Node(layer_impl->scroll_tree_index());
-  for (; scroll_tree.parent(scroll_node);
-       scroll_node = scroll_tree.parent(scroll_node)) {
-    // TODO(crbug.com/1413877): This is inconsistent with the condition in
-    // LayerTreeImpl::FindLayersUpToFirstScrollableOrOpaqueToHitTest(), and
-    // may be a reason for kFailedHitTest main thread scrolling. Can we change
-    // FindLayersUpToFirstScrollableOrOpaqueToHitTest() not to return
-    // a non-scrollable scroller, or not to check scrollable here? We may also
-    // need to consider overscroll behavior of a non-scrollable scroller.
-    if (scroll_node->scrollable) {
-      closest_scroll_node = GetNodeToScroll(scroll_node);
-      break;
-    }
+  if (layer_impl == first_scrollable_or_opaque_to_hit_test_layer) {
+    out_node_to_scroll = scroll_node;
+    return true;
   }
 
   // If there's a scrolling layer, we should also have a closest scroll node,
   // and vice versa. Otherwise, the hit test is not reliable.
-  if ((first_scrollable_or_opaque_to_hit_test_layer && !closest_scroll_node) ||
-      (closest_scroll_node && !first_scrollable_or_opaque_to_hit_test_layer)) {
+  if ((first_scrollable_or_opaque_to_hit_test_layer && !scroll_node) ||
+      (scroll_node && !first_scrollable_or_opaque_to_hit_test_layer)) {
     return false;
   }
-  if (!first_scrollable_or_opaque_to_hit_test_layer && !closest_scroll_node) {
+  if (!first_scrollable_or_opaque_to_hit_test_layer && !scroll_node) {
     // It's ok if we have neither.
     out_node_to_scroll = nullptr;
     return true;
   }
 
-  // If `first_scrollable_or_opaque_to_hit_test_layer` is not a scrollbar, and
-  // it and `layer_impl` will scroll the same scroll node, the hit test has not
-  // escaped to other areas of the scroll tree and is reliable so far.
-  if (!first_scrollable_or_opaque_to_hit_test_layer->IsScrollbarLayer() &&
-      closest_scroll_node == GetNodeToScroll(scroll_tree.Node(
-                                 first_scrollable_or_opaque_to_hit_test_layer
-                                     ->scroll_tree_index()))) {
-    out_node_to_scroll = closest_scroll_node;
+  // If `first_scrollable_or_opaque_to_hit_test_layer` and `layer_impl` will
+  // scroll the same scroll node, the hit test has not escaped to other areas
+  // of the scroll tree and is reliable so far.
+  if (scroll_node ==
+      GetNodeToScrollForLayer(first_scrollable_or_opaque_to_hit_test_layer)) {
+    out_node_to_scroll = scroll_node;
     return true;
   }
 
@@ -1765,8 +1766,10 @@ ScrollNode* InputHandler::FindNodeToLatch(ScrollState* scroll_state,
       break;
     }
 
-    if (!cur_node->scrollable)
+    if (!cur_node->user_scrollable_horizontal &&
+        !cur_node->user_scrollable_vertical) {
       continue;
+    }
 
     if (!first_scrollable_node) {
       first_scrollable_node = cur_node;
@@ -1909,6 +1912,15 @@ bool InputHandler::SnapAtScrollEnd(SnapReason reason) {
   SnapPositionData snap = data.FindSnapPositionWithViewportAdjustment(
       *snap_strategy_, snapport_height_adjustment);
   if (snap.type == SnapPositionData::Type::kNone) {
+    // Ensure we retain the ids of any element we were previously snapped to and
+    // are still snapped to in case of scrolls in an axis where no snapping
+    // happens.
+    if (reason == SnapReason::kScrollOffsetAnimationFinished) {
+      scroll_animating_snap_target_ids_ = snap.target_element_ids;
+    } else if (data.SetTargetSnapAreaElementIds(snap.target_element_ids)) {
+      updated_snapped_elements_[scroll_node->element_id] =
+          snap.target_element_ids;
+    }
     return false;
   }
 
@@ -2023,7 +2035,8 @@ void InputHandler::UpdateScrollSourceInfo(const ScrollState& scroll_state,
 // Return true if scrollable node for 'ancestor' is the same as 'child' or an
 // ancestor along the scroll tree.
 bool InputHandler::IsScrolledBy(LayerImpl* child, ScrollNode* ancestor) {
-  DCHECK(ancestor && ancestor->scrollable);
+  DCHECK(ancestor && (ancestor->user_scrollable_horizontal ||
+                      ancestor->user_scrollable_vertical));
   if (!child)
     return false;
   DCHECK_EQ(child->layer_tree_impl(), &ActiveTree());
@@ -2095,7 +2108,7 @@ std::unique_ptr<SnapSelectionStrategy> InputHandler::CreateSnapStrategy(
     // Note: gesture scroll end is delayed in anticipation of future wheel
     // scrolls so it is fired well after the scroll ends as opposed to precise
     // touch devices where we fire it as soon as the user lifts their finger.
-    // TODO(crbug.com/1201678): The directional scroll should probably be
+    // TODO(crbug.com/40762499): The directional scroll should probably be
     // triggered at gesture scroll begin to improve responsiveness.
     return SnapSelectionStrategy::CreateForDirection(current_offset,
                                                      scroll_delta, true);

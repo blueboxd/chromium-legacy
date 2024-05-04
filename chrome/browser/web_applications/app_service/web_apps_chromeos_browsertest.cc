@@ -18,7 +18,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
-#include "chrome/browser/ui/web_applications/web_app_controller_browsertest.h"
+#include "chrome/browser/ui/web_applications/web_app_browsertest_base.h"
 #include "chrome/browser/web_applications/policy/web_app_policy_constants.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/browser/web_applications/web_app_id_constants.h"
@@ -27,7 +27,6 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/prefs/pref_service.h"
 #include "components/webapps/common/web_app_id.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/test/browser_test.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -85,7 +84,7 @@ void CheckSeparator(const ui::SimpleMenuModel& model, size_t index) {
 
 }  // namespace
 
-using WebAppsChromeOsBrowserTest = web_app::WebAppControllerBrowserTest;
+using WebAppsChromeOsBrowserTest = web_app::WebAppBrowserTestBase;
 
 IN_PROC_BROWSER_TEST_F(WebAppsChromeOsBrowserTest, ShortcutIcons) {
   const GURL app_url =
@@ -137,8 +136,7 @@ IN_PROC_BROWSER_TEST_F(WebAppsChromeOsBrowserTest, ShortcutIcons) {
 
   const int command_id = ash::LAUNCH_APP_SHORTCUT_FIRST + 3;
   ui_test_utils::UrlLoadObserver url_observer(
-      https_server()->GetURL("/web_app_shortcuts/shortcuts.html#four"),
-      content::NotificationService::AllSources());
+      https_server()->GetURL("/web_app_shortcuts/shortcuts.html#four"));
   menu_model->ActivatedAt(menu_model->GetIndexOfCommandId(command_id).value(),
                           ui::EF_LEFT_MOUSE_BUTTON);
   url_observer.Wait();
@@ -161,7 +159,7 @@ constexpr char kCalculatorAppUrl[] = "https://calculator.apps.chrome/";
 }  // namespace
 
 class WebAppsPreventCloseChromeOsBrowserTest
-    : public web_app::WebAppControllerBrowserTest,
+    : public web_app::WebAppBrowserTestBase,
       public ::testing::WithParamInterface<bool> {
  public:
   WebAppsPreventCloseChromeOsBrowserTest() = default;

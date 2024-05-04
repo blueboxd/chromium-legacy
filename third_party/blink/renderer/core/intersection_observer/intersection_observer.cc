@@ -46,12 +46,10 @@ class IntersectionObserverDelegateImpl final
   IntersectionObserverDelegateImpl(
       ExecutionContext* context,
       IntersectionObserver::EventCallback callback,
-      LocalFrameUkmAggregator::MetricId ukm_metric_id,
       IntersectionObserver::DeliveryBehavior delivery_behavior,
       bool needs_initial_observation_with_detached_target)
       : context_(context),
         callback_(std::move(callback)),
-        ukm_metric_id_(ukm_metric_id),
         delivery_behavior_(delivery_behavior),
         needs_initial_observation_with_detached_target_(
             needs_initial_observation_with_detached_target) {}
@@ -59,10 +57,6 @@ class IntersectionObserverDelegateImpl final
       delete;
   IntersectionObserverDelegateImpl& operator=(
       const IntersectionObserverDelegateImpl&) = delete;
-
-  LocalFrameUkmAggregator::MetricId GetUkmMetricId() const override {
-    return ukm_metric_id_;
-  }
 
   IntersectionObserver::DeliveryBehavior GetDeliveryBehavior() const override {
     return delivery_behavior_;
@@ -89,7 +83,6 @@ class IntersectionObserverDelegateImpl final
  private:
   WeakMember<ExecutionContext> context_;
   IntersectionObserver::EventCallback callback_;
-  LocalFrameUkmAggregator::MetricId ukm_metric_id_;
   IntersectionObserver::DeliveryBehavior delivery_behavior_;
   bool needs_initial_observation_with_detached_target_;
 };
@@ -261,6 +254,7 @@ void IntersectionObserver::SetThrottleDelayEnabledForTesting(bool enabled) {
 IntersectionObserver* IntersectionObserver::Create(
     const IntersectionObserverInit* observer_init,
     IntersectionObserverDelegate& delegate,
+    std::optional<LocalFrameUkmAggregator::MetricId> ukm_metric_id,
     ExceptionState& exception_state) {
   Node* root = nullptr;
   if (observer_init->root()) {
@@ -275,6 +269,7 @@ IntersectionObserver* IntersectionObserver::Create(
   }
 
   Params params = {
+      .root = root,
       .delay = observer_init->delay(),
       .track_visibility = observer_init->trackVisibility(),
   };
@@ -310,7 +305,7 @@ IntersectionObserver* IntersectionObserver::Create(
     return nullptr;
   }
 
-  return MakeGarbageCollected<IntersectionObserver>(delegate, root,
+  return MakeGarbageCollected<IntersectionObserver>(delegate, ukm_metric_id,
                                                     std::move(params));
 }
 
@@ -326,49 +321,53 @@ IntersectionObserver* IntersectionObserver::Create(
     UseCounter::Count(delegate->GetExecutionContext(),
                       WebFeature::kIntersectionObserverV2);
   }
-  return Create(observer_init, *delegate, exception_state);
+  return Create(observer_init, *delegate,
+                LocalFrameUkmAggregator::kJavascriptIntersectionObserver,
+                exception_state);
 }
 
 IntersectionObserver* IntersectionObserver::Create(
     const Document& document,
     EventCallback callback,
-    LocalFrameUkmAggregator::MetricId ukm_metric_id,
+    std::optional<LocalFrameUkmAggregator::MetricId> ukm_metric_id,
     Params&& params) {
   IntersectionObserverDelegateImpl* intersection_observer_delegate =
       MakeGarbageCollected<IntersectionObserverDelegateImpl>(
-          document.GetExecutionContext(), std::move(callback), ukm_metric_id,
-          params.behavior,
+          document.GetExecutionContext(), std::move(callback), params.behavior,
           params.needs_initial_observation_with_detached_target);
   return MakeGarbageCollected<IntersectionObserver>(
-      *intersection_observer_delegate, /*root=*/nullptr, std::move(params));
+      *intersection_observer_delegate, ukm_metric_id, std::move(params));
 }
 
 IntersectionObserver::IntersectionObserver(
     IntersectionObserverDelegate& delegate,
-    Node* root,
+    std::optional<LocalFrameUkmAggregator::MetricId> ukm_metric_id,
     Params&& params)
     : ActiveScriptWrappable<IntersectionObserver>({}),
       ExecutionContextClient(delegate.GetExecutionContext()),
       delegate_(&delegate),
-      root_(root),
+      ukm_metric_id_(ukm_metric_id),
+      root_(params.root),
       thresholds_(std::move(params.thresholds)),
       delay_(params.delay),
       margin_(NormalizeMargins(params.margin)),
       scroll_margin_(NormalizeScrollMargins(params.scroll_margin)),
       margin_target_(params.margin_target),
-      root_is_implicit_(root ? 0 : 1),
+      root_is_implicit_(params.root ? 0 : 1),
       track_visibility_(params.track_visibility),
       track_fraction_of_root_(params.semantics == kFractionOfRoot),
       always_report_root_bounds_(params.always_report_root_bounds),
       use_overflow_clip_edge_(params.use_overflow_clip_edge) {
-  if (root) {
-    if (root->IsDocumentNode()) {
-      To<Document>(root)
+  if (params.root) {
+    if (params.root->IsDocumentNode()) {
+      To<Document>(params.root)
           ->EnsureDocumentExplicitRootIntersectionObserverData()
           .AddObserver(*this);
     } else {
-      DCHECK(root->IsElementNode());
-      To<Element>(root)->EnsureIntersectionObserverData().AddObserver(*this);
+      DCHECK(params.root->IsElementNode());
+      To<Element>(params.root)
+          ->EnsureIntersectionObserverData()
+          .AddObserver(*this);
     }
   }
 }
@@ -536,12 +535,9 @@ int64_t IntersectionObserver::ComputeIntersections(
 }
 
 bool IntersectionObserver::IsInternal() const {
-  return GetUkmMetricId() !=
-         LocalFrameUkmAggregator::kJavascriptIntersectionObserver;
-}
-
-LocalFrameUkmAggregator::MetricId IntersectionObserver::GetUkmMetricId() const {
-  return delegate_->GetUkmMetricId();
+  return !GetUkmMetricId() ||
+         GetUkmMetricId() !=
+             LocalFrameUkmAggregator::kJavascriptIntersectionObserver;
 }
 
 void IntersectionObserver::ReportUpdates(IntersectionObservation& observation) {

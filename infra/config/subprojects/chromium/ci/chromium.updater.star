@@ -23,6 +23,8 @@ ci.defaults.set(
     reclient_jobs = reclient.jobs.DEFAULT,
     service_account = ci.DEFAULT_SERVICE_ACCOUNT,
     shadow_service_account = ci.DEFAULT_SHADOW_SERVICE_ACCOUNT,
+    siso_enabled = True,
+    siso_remote_jobs = reclient.jobs.DEFAULT,
 )
 
 consoles.console_view(
@@ -588,6 +590,7 @@ ci.builder(
         short_name = "bld",
     ),
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CI,
+    siso_remote_jobs = reclient.jobs.LOW_JOBS_FOR_CI,
 )
 
 ci.builder(
@@ -624,6 +627,7 @@ ci.builder(
     ),
     execution_timeout = ci.DEFAULT_EXECUTION_TIMEOUT * 2,
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CI,
+    siso_remote_jobs = reclient.jobs.LOW_JOBS_FOR_CI,
 )
 
 ci.builder(
@@ -656,6 +660,7 @@ ci.builder(
         short_name = "bld",
     ),
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CI,
+    siso_remote_jobs = reclient.jobs.LOW_JOBS_FOR_CI,
 )
 
 ci.builder(
@@ -689,6 +694,7 @@ ci.builder(
         short_name = "bld",
     ),
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CI,
+    siso_remote_jobs = reclient.jobs.LOW_JOBS_FOR_CI,
 )
 
 ci.thin_tester(

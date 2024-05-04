@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ash/login/oobe_quick_start/connectivity/target_device_connection_broker.h"
 
+#include "base/containers/contains.h"
 #include "base/hash/sha1.h"
 #include "base/strings/string_number_conversions.h"
 #include "chromeos/ash/components/quick_start/logging.h"
@@ -20,8 +21,13 @@ void TargetDeviceConnectionBroker::GetFeatureSupportStatusAsync(
 }
 
 void TargetDeviceConnectionBroker::MaybeNotifyFeatureStatus() {
+  constexpr FeatureSupportStatus kShouldNotNotifyStatus[] = {
+      FeatureSupportStatus::kUndetermined,
+      FeatureSupportStatus::kWaitingForAdapterToBecomePresent,
+      FeatureSupportStatus::kWaitingForAdapterToBecomePowered};
   FeatureSupportStatus status = GetFeatureSupportStatus();
-  if (status == FeatureSupportStatus::kUndetermined) {
+
+  if (base::Contains(kShouldNotNotifyStatus, status)) {
     return;
   }
 
@@ -66,21 +72,12 @@ std::ostream& operator<<(
     const TargetDeviceConnectionBroker::ConnectionClosedReason&
         connection_closed_reason) {
   switch (connection_closed_reason) {
-    case TargetDeviceConnectionBroker::ConnectionClosedReason::kComplete:
-      stream << "[complete]";
-      break;
     case TargetDeviceConnectionBroker::ConnectionClosedReason::kUserAborted:
       stream << "[user aborted]";
       break;
     case TargetDeviceConnectionBroker::ConnectionClosedReason::
         kAuthenticationFailed:
       stream << "[authentication failed]";
-      break;
-    case TargetDeviceConnectionBroker::ConnectionClosedReason::kConnectionLost:
-      stream << "[connection lost]";
-      break;
-    case TargetDeviceConnectionBroker::ConnectionClosedReason::kRequestTimedOut:
-      stream << "[request timeout]";
       break;
     case TargetDeviceConnectionBroker::ConnectionClosedReason::
         kTargetDeviceUpdate:
@@ -98,6 +95,32 @@ std::ostream& operator<<(
       break;
   }
 
+  return stream;
+}
+
+std::ostream& operator<<(
+    std::ostream& stream,
+    const TargetDeviceConnectionBroker::FeatureSupportStatus&
+        feature_support_status) {
+  switch (feature_support_status) {
+    case TargetDeviceConnectionBroker::FeatureSupportStatus::kUndetermined:
+      stream << "[undetermined]";
+      break;
+    case TargetDeviceConnectionBroker::FeatureSupportStatus::kNotSupported:
+      stream << "[not supported]";
+      break;
+    case TargetDeviceConnectionBroker::FeatureSupportStatus::kSupported:
+      stream << "[supported]";
+      break;
+    case TargetDeviceConnectionBroker::FeatureSupportStatus::
+        kWaitingForAdapterToBecomePresent:
+      stream << "[waiting for adapter to become present]";
+      break;
+    case TargetDeviceConnectionBroker::FeatureSupportStatus::
+        kWaitingForAdapterToBecomePowered:
+      stream << "[waiting for adapter to become powered]";
+      break;
+  }
   return stream;
 }
 

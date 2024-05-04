@@ -355,10 +355,12 @@ void SetElementReadOnly(WebInputElement& element, bool read_only) {
 bool FormHasFieldWithValue(const autofill::FormData& form,
                            const std::u16string& value) {
   for (const auto& field : form.fields) {
-    if (field.value == value)
+    if (field.value() == value) {
       return true;
-    if (field.user_input == value)
+    }
+    if (field.user_input() == value) {
       return true;
+    }
   }
   return false;
 }
@@ -406,8 +408,8 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
         blink::WebString::FromASCII("Arial"), 12);
 #endif
 
-    // TODO(crbug/862989): Remove workaround preventing non-test classes to bind
-    // fake_driver_ or fake_pw_client_.
+    // TODO(crbug.com/41401202): Remove workaround preventing non-test classes
+    // to bind fake_driver_ or fake_pw_client_.
     password_autofill_agent_->GetPasswordManagerDriver();
     password_generation_->RequestPasswordManagerClientForTesting();
     base::RunLoop().RunUntilIdle();  // Executes binding the interfaces.
@@ -616,7 +618,7 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
   void SimulateUsernameTyping(const std::string& username) {
     SimulatePointClick(gfx::Point(1, 1));
 #if BUILDFLAG(IS_ANDROID)
-    // TODO(crbug.com/1293802): User typing doesn't send focus events properly.
+    // TODO(crbug.com/40820173): User typing doesn't send focus events properly.
     FocusElement(kUsernameName);
 #endif
     SimulateUserInputChangeForElement(&username_element_, username);
@@ -624,7 +626,7 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
 
   void SimulatePasswordTyping(const std::string& password) {
 #if BUILDFLAG(IS_ANDROID)
-    // TODO(crbug.com/1293802): User typing doesn't send focus events properly.
+    // TODO(crbug.com/40820173): User typing doesn't send focus events properly.
     FocusElement(kPasswordName);
 #endif
     SimulateUserInputChangeForElement(&password_element_, password);
@@ -640,19 +642,16 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
   void SimulateUsernameFormAutofill(const std::u16string& text) {
     FocusElement(kUsernameName);
     // Fill the form.
-    std::vector<autofill::FormFieldData::FillData> field_data;
+    std::vector<autofill::FormFieldData::FillData> fields;
     FormFieldData::FillData field;
     field.value = text;
     field.is_autofilled = true;
     field.renderer_id = form_util::GetFieldRendererId(username_element_);
-    field_data.push_back(field);
+    field.host_form_id = form_util::GetFormRendererId(username_element_.Form());
+    fields.push_back(field);
 
-    FormData::FillData form;
-    form.fields = field_data;
-    form.renderer_id = form_util::GetFormRendererId(username_element_.Form());
-
-    autofill_agent_->ApplyFormAction(mojom::FormActionType::kFill,
-                                     mojom::ActionPersistence::kFill, form);
+    autofill_agent_->ApplyFieldsAction(mojom::FormActionType::kFill,
+                                       mojom::ActionPersistence::kFill, fields);
   }
 
   void SimulateUsernameFieldChange(FieldChangeSource change_source) {
@@ -690,7 +689,7 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
 #endif  // BUILDFLAG(IS_ANDROID)
   }
 
-  // TODO(crbug.com/1472209): Only expect one of IsPreviewed()/IsAutofilled().
+  // TODO(crbug.com/40278548): Only expect one of IsPreviewed()/IsAutofilled().
   void CheckTextFieldsStateForElements(const WebInputElement& username_element,
                                        const std::string& username,
                                        bool username_autofilled,
@@ -804,11 +803,11 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
 
     size_t unchecked_masks = expected_properties_masks.size();
     for (const FormFieldData& field : form_data.fields) {
-      const auto& it = expected_properties_masks.find(field.name);
+      const auto& it = expected_properties_masks.find(field.name());
       if (it == expected_properties_masks.end())
         continue;
-      EXPECT_EQ(field.properties_mask, it->second)
-          << "Wrong mask for the field " << field.name;
+      EXPECT_EQ(field.properties_mask(), it->second)
+          << "Wrong mask for the field " << field.name();
       unchecked_masks--;
     }
     EXPECT_TRUE(unchecked_masks == 0)
@@ -936,6 +935,12 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
       return ::testing::AssertionFailure() << "Password element is null.";
     }
     return ::testing::AssertionSuccess();
+  }
+
+  // This triggers a layout update to apply JS changes like display = 'none'.
+  void ForceLayoutUpdate() {
+    GetWebFrameWidget()->UpdateAllLifecyclePhases(
+        blink::DocumentUpdateReason::kTest);
   }
 
   FakeMojoPasswordManagerDriver fake_driver_;
@@ -2570,7 +2575,7 @@ TEST_F(PasswordAutofillAgentTest,
   EXPECT_CALL(fake_driver_, ShowPasswordSuggestions);
   autofill_agent_->TriggerSuggestions(
       form_util::GetFieldRendererId(username_element_),
-      AutofillSuggestionTriggerSource::kTextFieldDidChange);
+      AutofillSuggestionTriggerSource::kManualFallbackPasswords);
 }
 
 TEST_F(PasswordAutofillAgentTest,
@@ -2964,6 +2969,7 @@ TEST_F(PasswordAutofillAgentTest,
       "var username = document.getElementById('username');"
       "username.style = 'display:none';";
   ExecuteJavaScriptForTests(hide_elements.c_str());
+  ForceLayoutUpdate();
 
   base::RunLoop().RunUntilIdle();
 
@@ -3313,7 +3319,7 @@ TEST_F(PasswordAutofillAgentTest, PasswordGenerationSupersedesAutofill) {
   // Simulate the field being clicked to start typing. This should trigger
   // generation but not password autofill.
   SimulateElementClick("new_password");
-  // TODO(crbug.com/1473553): Expect the call precisely once.
+  // TODO(crbug.com/40279043): Expect the call precisely once.
   EXPECT_CALL(fake_pw_client_, AutomaticGenerationAvailable(_))
       .Times(testing::AtLeast(1));
   base::RunLoop().RunUntilIdle();
@@ -3486,6 +3492,7 @@ TEST_F(PasswordAutofillAgentTest,
       "var username = document.getElementById('username');"
       "username.style = 'display:none';";
   ExecuteJavaScriptForTests(hide_elements.c_str());
+  ForceLayoutUpdate();
 
   base::RunLoop().RunUntilIdle();
 
@@ -3510,6 +3517,7 @@ TEST_F(PasswordAutofillAgentTest, PromptForAJAXSubmitAfterHidingParentElement) {
       "var outerDiv = document.getElementById('outer');"
       "outerDiv.style = 'display:none';";
   ExecuteJavaScriptForTests(hide_element.c_str());
+  ForceLayoutUpdate();
 
   base::RunLoop().RunUntilIdle();
 
@@ -3999,6 +4007,7 @@ TEST_F(PasswordAutofillAgentTest,
       "var username = document.getElementById('username');"
       "username.style = 'display:none';";
   ExecuteJavaScriptForTests(hide_elements.c_str());
+  ForceLayoutUpdate();
   base::RunLoop().RunUntilIdle();
 
   ExpectSameDocumentNavigationWithUsernameAndPasswords(
@@ -4048,7 +4057,7 @@ TEST_F(PasswordAutofillAgentTest, SuggestPasswordFieldSignInForm) {
   CheckSuggestions(u"", true);
 }
 
-// TODO(crbug.com/1292478): Amend the test to port it on Android if possible.
+// TODO(crbug.com/40819370): Amend the test to port it on Android if possible.
 // Otherwise, remove the TODO and add the reason why it is excluded.
 #if !BUILDFLAG(IS_ANDROID)
 // Tests that a suggestion dropdown is shown on each password field. But when a
@@ -4749,16 +4758,31 @@ TEST_F(PasswordAutofillAgentTest, ModifyNonPasswordFieldOTPName) {
 }
 
 // Tests that user modifying the text field value does not notify the browser if
-// the field has no name or id.
-TEST_F(PasswordAutofillAgentTest, ModifyNamelessNonPasswordField) {
+// the field has name shorter than kMinInputNameLengthForSingleUsername symbols.
+TEST_F(PasswordAutofillAgentTest, ModifyNonPasswordFieldShortName) {
   LoadHTML(kSingleUsernameFormHTML);
   UpdateOnlyUsernameElement();
-  username_element_.SetAttribute("name", "");
-  username_element_.SetAttribute("id", "");
-  ASSERT_TRUE(username_element_.NameForAutofill().IsEmpty());
+  username_element_.SetAttribute("name", "i");
+  username_element_.SetAttribute("id", "i");
+  ASSERT_TRUE(username_element_.NameForAutofill().length() == 1);
 
 #if BUILDFLAG(IS_ANDROID)
-  // TODO(crbug.com/1293802): User typing doesn't send focus events properly.
+  // TODO(crbug.com/40820173): User typing doesn't send focus events properly.
+  FocusFirstInputElement();
+#endif
+  EXPECT_CALL(fake_driver_, UserModifiedNonPasswordField).Times(0);
+  SimulateUserInputChangeForElement(&username_element_, kAliceUsername);
+}
+
+// Tests that user modifying the text field value does not notify the browser if
+// the field is labeled as a search field.
+TEST_F(PasswordAutofillAgentTest, ModifySearchField) {
+  LoadHTML(kSingleUsernameFormHTML);
+  UpdateOnlyUsernameElement();
+  username_element_.SetAttribute("name", "thesearchfield");
+
+#if BUILDFLAG(IS_ANDROID)
+  // TODO(crbug.com/40820173): User typing doesn't send focus events properly.
   FocusFirstInputElement();
 #endif
   EXPECT_CALL(fake_driver_, UserModifiedNonPasswordField).Times(0);
@@ -4863,6 +4887,42 @@ TEST_F(PasswordAutofillAgentTest, PasswordGenerationWhenFormTagHostsShadowDom) {
 
   // Check that the generated password is filled into form.
   EXPECT_EQ(password_element_.Value().Utf16(), kPassword);
+}
+
+// Test that password manager gets notified about JS inputs in password fields.
+TEST_F(PasswordAutofillAgentTest, JSFieldModificationPasswordForm) {
+  ASSERT_EQ(fake_driver_.called_inform_about_user_input_count(), 0);
+
+  fill_data_.wait_for_username = true;
+  SimulateOnFillPasswordForm(fill_data_);
+
+  const std::string kJsUsername = "js-set-username";
+  const std::string kJsPassword = "js-set-password";
+  ExecuteJavaScriptForTests(R"(document.getElementById('username').value = ')" +
+                            kJsUsername + R"(';
+        document.getElementById('password').value = ')" +
+                            kJsPassword + "';");
+  fake_driver_.Flush();
+
+  EXPECT_EQ(fake_driver_.called_inform_about_user_input_count(), 2);
+  ASSERT_TRUE(fake_driver_.form_data_maybe_submitted().has_value());
+  FormData form_data = fake_driver_.form_data_maybe_submitted().value();
+  ASSERT_EQ(form_data.fields.size(), 3u);
+  EXPECT_EQ(form_data.fields[1].value(), base::ASCIIToUTF16(kJsUsername));
+  EXPECT_EQ(form_data.fields[2].value(), base::ASCIIToUTF16(kJsPassword));
+}
+
+// Test that password manager is not notified about JS inputs in non
+// password related fields.
+TEST_F(PasswordAutofillAgentTest, JSFieldModificationUnrelatedField) {
+  ASSERT_EQ(fake_driver_.called_inform_about_user_input_count(), 0);
+
+  // First field in `kFormHTML` is unrelated to passwords.
+  ExecuteJavaScriptForTests(
+      R"(document.getElementById('random_field').value = 'js-set-whatever';)");
+  fake_driver_.Flush();
+
+  EXPECT_EQ(fake_driver_.called_inform_about_user_input_count(), 0);
 }
 
 #if BUILDFLAG(IS_ANDROID)

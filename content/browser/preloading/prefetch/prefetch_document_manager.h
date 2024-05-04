@@ -11,7 +11,6 @@
 
 #include "base/functional/callback.h"
 #include "base/memory/weak_ptr.h"
-#include "content/browser/preloading/prefetch/no_vary_search_helper.h"
 #include "content/browser/preloading/prefetch/prefetch_type.h"
 #include "content/browser/preloading/speculation_host_devtools_observer.h"
 #include "content/common/content_export.h"
@@ -25,15 +24,14 @@
 
 namespace content {
 
-class NavigationHandle;
 class PrefetchContainer;
 class PrefetchService;
+class PreloadingPredictor;
 
 // Manages the state of and tracks metrics about prefetches for a single page
 // load.
 class CONTENT_EXPORT PrefetchDocumentManager
-    : public DocumentUserData<PrefetchDocumentManager>,
-      public WebContentsObserver {
+    : public DocumentUserData<PrefetchDocumentManager> {
  public:
   using PrefetchDestructionCallback =
       base::RepeatingCallback<void(const GURL&)>;
@@ -50,9 +48,6 @@ class CONTENT_EXPORT PrefetchDocumentManager
       int process_id,
       const blink::DocumentToken& document_token);
 
-  // WebContentsObserver.
-  void DidStartNavigation(NavigationHandle* navigation_handle) override;
-
   // Processes the given speculation candidates to see if they can be
   // prefetched. Any candidates that can be prefetched are removed from
   // |candidates|, and a prefetch for the URL of the candidate is started.
@@ -64,12 +59,14 @@ class CONTENT_EXPORT PrefetchDocumentManager
   // for the candidate's URL is started.
   bool MaybePrefetch(
       blink::mojom::SpeculationCandidatePtr candidate,
+      const PreloadingPredictor& enacting_predictor,
       base::WeakPtr<SpeculationHostDevToolsObserver> devtools_observer);
 
   // Starts the process to prefetch |url| with the given |prefetch_type|.
   void PrefetchUrl(
       const GURL& url,
       const PrefetchType& prefetch_type,
+      const PreloadingPredictor& enacting_predictor,
       const blink::mojom::Referrer& referrer,
       const network::mojom::NoVarySearchPtr& no_vary_search_expected,
       base::WeakPtr<SpeculationHostDevToolsObserver> devtools_observer);

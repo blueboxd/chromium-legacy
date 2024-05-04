@@ -13,7 +13,9 @@
 
 #include "base/functional/callback.h"
 #include "base/time/time.h"
+#include "base/tuple.h"
 #include "components/commerce/core/proto/parcel.pb.h"
+#include "components/commerce/core/proto/product_category.pb.h"
 #include "url/gurl.h"
 
 namespace commerce {
@@ -118,6 +120,7 @@ struct ProductInfo {
   int64_t amount_micros{0};
   std::optional<int64_t> previous_amount_micros;
   std::string country_code;
+  CategoryData category_data;
 
  private:
   friend class ShoppingService;
@@ -127,6 +130,37 @@ struct ProductInfo {
   // image is available in the ProductInfo struct (as it is flag gated) and is
   // primarily used for recording metrics.
   bool server_image_available{false};
+};
+
+// Information provided by the product specifications backend.
+struct ProductSpecifications {
+ public:
+  typedef uint64_t ProductDimensionId;
+
+  ProductSpecifications();
+  ProductSpecifications(const ProductSpecifications&);
+  ~ProductSpecifications();
+
+  struct Product {
+   public:
+    Product();
+    Product(const Product&);
+    ~Product();
+
+    uint64_t product_cluster_id;
+    std::string mid;
+    std::string title;
+    GURL image_url;
+    std::map<ProductDimensionId, std::vector<std::string>>
+        product_dimension_values;
+    std::string summary;
+  };
+
+  // A map of each product dimension ID to its human readable name.
+  std::map<ProductDimensionId, std::string> product_dimension_map;
+
+  // The list of products in the specification group.
+  std::vector<Product> products;
 };
 
 // Information returned by Parcels API.
@@ -145,6 +179,36 @@ struct ParcelTrackingStatus {
   base::Time estimated_delivery_time;
 };
 
+// Details about a particular URL.
+struct UrlInfo {
+  UrlInfo();
+  UrlInfo(const UrlInfo&);
+  UrlInfo& operator=(const UrlInfo&);
+  bool operator==(const UrlInfo& other) const {
+    return url == other.url && title == other.title;
+  }
+  ~UrlInfo();
+
+  GURL url;
+  std::u16string title;
+};
+
+// Class representing the tap strip entry point.
+struct EntryPointInfo {
+  EntryPointInfo(const std::string& title,
+                 std::set<GURL> similar_candidate_products_urls);
+  ~EntryPointInfo();
+  EntryPointInfo(const EntryPointInfo&);
+  EntryPointInfo& operator=(const EntryPointInfo&);
+
+  // Title of the product group to be clustered.
+  std::string title;
+
+  // Set of URLs of candidate products that are similar and can
+  // be clustered into one product group.
+  std::set<GURL> similar_candidate_products_urls;
+};
+
 // Callbacks and typedefs for various accessors in the shopping service.
 using DiscountsMap = std::map<GURL, std::vector<DiscountInfo>>;
 using DiscountInfoCallback = base::OnceCallback<void(const DiscountsMap&)>;
@@ -156,6 +220,9 @@ using PriceInsightsInfoCallback =
 using ProductInfoCallback =
     base::OnceCallback<void(const GURL&,
                             const std::optional<const ProductInfo>&)>;
+using ProductSpecificationsCallback =
+    base::OnceCallback<void(std::vector<uint64_t>,
+                            std::optional<ProductSpecifications>)>;
 using IsShoppingPageCallback =
     base::OnceCallback<void(const GURL&, std::optional<bool>)>;
 using GetParcelStatusCallback = base::OnceCallback<

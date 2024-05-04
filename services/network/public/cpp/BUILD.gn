@@ -34,6 +34,8 @@ component("cpp") {
   sources = [
     "attribution_utils.cc",
     "attribution_utils.h",
+    "avail_language_header_parser.cc",
+    "avail_language_header_parser.h",
     "browsing_topics_parser.cc",
     "browsing_topics_parser.h",
     "client_hints.cc",
@@ -68,6 +70,8 @@ component("cpp") {
     "data_pipe_to_source_stream.h",
     "devtools_observer_util.cc",
     "devtools_observer_util.h",
+    "document_isolation_policy_parser.cc",
+    "document_isolation_policy_parser.h",
     "empty_url_loader_client.cc",
     "empty_url_loader_client.h",
     "features.cc",
@@ -97,14 +101,7 @@ component("cpp") {
     "no_vary_search_header_parser.h",
     "not_implemented_url_loader_factory.cc",
     "not_implemented_url_loader_factory.h",
-    "orb/orb_api.cc",
     "orb/orb_api.h",
-    "orb/orb_impl.cc",
-    "orb/orb_impl.h",
-    "orb/orb_mimetypes.cc",
-    "orb/orb_mimetypes.h",
-    "orb/orb_sniffers.cc",
-    "orb/orb_sniffers.h",
     "origin_agent_cluster_parser.cc",
     "origin_agent_cluster_parser.h",
     "parsed_headers.cc",
@@ -146,8 +143,6 @@ component("cpp") {
     "url_loader_factory_builder.h",
     "url_util.cc",
     "url_util.h",
-    "variants_header_parser.cc",
-    "variants_header_parser.h",
     "weak_wrapper_shared_url_loader_factory.cc",
     "weak_wrapper_shared_url_loader_factory.h",
     "web_sandbox_flags.cc",
@@ -330,6 +325,27 @@ component("cross_origin_embedder_policy") {
   defines = [ "IS_NETWORK_CPP_CROSS_ORIGIN_IMPL" ]
 }
 
+# This component is separate from cpp_base as it is a dependency of
+# //services/network/public/mojom:url_loader_base.
+component("document_isolation_policy") {
+  sources = [
+    "document_isolation_policy.cc",
+    "document_isolation_policy.h",
+    "document_isolation_policy_mojom_traits.cc",
+    "document_isolation_policy_mojom_traits.h",
+  ]
+
+  deps = [
+    "//base",
+    "//mojo/public/mojom/base",
+    "//services/network/public/mojom:url_loader_base_shared",
+  ]
+
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
+
+  defines = [ "IS_NETWORK_CPP_DOCUMENT_ISOLATION_IMPL" ]
+}
+
 # This component is separate from `:cpp_base` to avoid a circular dependency as
 # its needed by :attribution_traits.
 component("attribution") {
@@ -426,6 +442,8 @@ component("cpp_base") {
     "network_isolation_key_mojom_traits.h",
     "optional_trust_token_params.cc",
     "optional_trust_token_params.h",
+    "parsed_request_cookie_mojom_traits.cc",
+    "parsed_request_cookie_mojom_traits.h",
     "resource_request.cc",
     "resource_request.h",
     "resource_request_body.cc",
@@ -455,6 +473,7 @@ component("cpp_base") {
     ":cookies_mojom_support",
     ":crash_keys",
     ":cross_origin_embedder_policy",
+    ":document_isolation_policy",
     ":ip_address_mojom_support",
     ":network_param_mojom_support",
     ":proxy_config_mojom_support",
@@ -500,7 +519,7 @@ component("cpp_base") {
     ]
   }
 
-  # TODO(crbug.com/1450273): Remove the need to ignore this warning.
+  # TODO(crbug.com/40915226): Remove the need to ignore this warning.
   if (is_win && is_component_build) {
     ldflags = [ "/IGNORE:4217" ]
   }
@@ -536,6 +555,7 @@ source_set("tests") {
 
   sources = [
     "attribution_utils_unittest.cc",
+    "avail_language_header_parser_unittest.cc",
     "browsing_topics_parser_unittest.cc",
     "client_hints_unittest.cc",
     "content_language_parser_unittest.cc",
@@ -558,6 +578,7 @@ source_set("tests") {
     "default_credentials_mojom_traits_unittest.cc",
     "devtools_observer_unittest.cc",
     "digitally_signed_mojom_traits_unittest.cc",
+    "document_isolation_policy_parser_unittest.cc",
     "empty_url_loader_client_unittest.cc",
     "file_enumeration_entry_mojom_traits_unittest.cc",
     "first_party_sets_mojom_traits_unittest.cc",
@@ -580,11 +601,9 @@ source_set("tests") {
     "network_param_mojom_traits_unittest.cc",
     "network_quality_tracker_unittest.cc",
     "optional_trust_token_params_unittest.cc",
-    "orb/orb_impl_unittest.cc",
-    "orb/orb_mimetypes_unittest.cc",
-    "orb/orb_sniffers_unittest.cc",
     "origin_agent_cluster_parser_unittest.cc",
     "parsed_headers_unittest.cc",
+    "parsed_request_cookie_mojom_traits_unittest.cc",
     "proxy_config_mojom_traits_unittest.cc",
     "request_destination_unittest.cc",
     "schemeful_site_mojom_traits_unittest.cc",
@@ -603,7 +622,6 @@ source_set("tests") {
     "url_loader_completion_status_mojom_traits_unittest.cc",
     "url_loader_factory_builder_unittest.cc",
     "url_request_mojom_traits_unittest.cc",
-    "variants_header_parser_unittest.cc",
     "web_sandbox_flags_unittests.cc",
     "x_frame_options_parser_unittest.cc",
   ]
@@ -664,8 +682,8 @@ fuzzer_test("client_hints_fuzzer") {
   ]
 }
 
-fuzzer_test("variants_header_fuzzer") {
-  sources = [ "variants_header_fuzzer.cc" ]
+fuzzer_test("avail_language_header_fuzzer") {
+  sources = [ "avail_language_header_fuzzer.cc" ]
   deps = [
     ":cpp",
     "//services/network/public/mojom:url_loader_base",

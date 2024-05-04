@@ -25,6 +25,7 @@
 #include "components/sync/engine/loopback_server/persistent_tombstone_entity.h"
 #include "components/sync/engine/loopback_server/persistent_unique_client_entity.h"
 #include "components/sync/protocol/client_commands.pb.h"
+#include "components/sync/protocol/deletion_origin.pb.h"
 #include "components/sync/protocol/sync.pb.h"
 #include "net/http/http_status_code.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -246,13 +247,27 @@ class FakeServer : public syncer::LoopbackServer::ObserverForTests {
 
   void TriggerMigrationDoneError(syncer::ModelTypeSet types);
 
+  // Add the user to the collaboration for the shared data types.
+  void AddCollaboration(const std::string& collaboration_id);
+
+  // Removes the user from the collaboration. Does not clean up related entities
+  // from the server.
+  void RemoveCollaboration(const std::string& collaboration_id);
+
   // Implement LoopbackServer::ObserverForTests:
   void OnCommit(syncer::ModelTypeSet committed_model_types) override;
   void OnHistoryCommit(const std::string& url) override;
+  void OnCommittedDeletionOrigin(
+      syncer::ModelType type,
+      const sync_pb::DeletionOrigin& deletion_origin) override;
 
   // Returns all URLs that were committed to server-side history through the
   // HISTORY data type.
   const std::set<std::string>& GetCommittedHistoryURLs() const;
+
+  // Returns all DeletionOrigin protos committed to the server for `type`.
+  const std::vector<sync_pb::DeletionOrigin>& GetCommittedDeletionOrigins(
+      syncer::ModelType type) const;
 
   std::string GetStoreBirthday() const;
 
@@ -305,6 +320,10 @@ class FakeServer : public syncer::LoopbackServer::ObserverForTests {
   // All URLs received via HISTORY sync.
   std::set<std::string> committed_history_urls_;
 
+  // All committed deletion origins (optional part of committed tombstone).
+  std::map<syncer::ModelType, std::vector<sync_pb::DeletionOrigin>>
+      committed_deletion_origins_;
+
   // Used as the error_code field of ClientToServerResponse on all commit
   // requests.
   sync_pb::SyncEnums_ErrorType commit_error_type_ = sync_pb::SyncEnums::SUCCESS;
@@ -353,6 +372,9 @@ class FakeServer : public syncer::LoopbackServer::ObserverForTests {
   // The LoopbackServer does not know how to handle offer data properly, so
   // the FakeServer handles those itself.
   std::vector<sync_pb::SyncEntity> offer_entities_;
+
+  // List of collaborations the user is a member of, used for all shared types.
+  std::vector<std::string> collaborations_;
 
   // Creates WeakPtr versions of the current FakeServer. This must be the last
   // data member!

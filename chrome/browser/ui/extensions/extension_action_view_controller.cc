@@ -22,7 +22,7 @@
 #include "chrome/browser/extensions/extension_view.h"
 #include "chrome/browser/extensions/extension_view_host.h"
 #include "chrome/browser/extensions/extension_view_host_factory.h"
-#include "chrome/browser/extensions/site_permissions_helper.h"
+#include "chrome/browser/extensions/permissions/site_permissions_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/extensions/extension_action_platform_delegate.h"
@@ -346,17 +346,6 @@ bool ExtensionActionViewController::IsShowingPopup() const {
   return popup_host_ != nullptr;
 }
 
-bool ExtensionActionViewController::ShouldShowSiteAccessRequestInToolbar(
-    content::WebContents* web_contents) const {
-  bool requests_access =
-      GetSiteInteraction(web_contents) ==
-      extensions::SitePermissionsHelper::SiteInteraction::kWithheld;
-  bool can_show_access_requests_in_toolbar =
-      extensions::SitePermissionsHelper(browser_->profile())
-          .ShowAccessRequestsInToolbar(GetId());
-  return requests_access && can_show_access_requests_in_toolbar;
-}
-
 void ExtensionActionViewController::HidePopup() {
   if (IsShowingPopup()) {
     // Only call Close() on the popup if it's been shown; otherwise, the popup
@@ -564,8 +553,9 @@ bool ExtensionActionViewController::CanHandleAccelerators() const {
   // always checking IsEnabled(). It's weird to use a keyboard shortcut on a
   // disabled action (in most cases, this will result in opening the context
   // menu).
-  if (extension_action_->action_type() == extensions::ActionInfo::TYPE_PAGE)
+  if (extension_action_->action_type() == extensions::ActionInfo::Type::kPage) {
     return IsEnabled(view_delegate_->GetCurrentWebContents());
+  }
   return true;
 }
 

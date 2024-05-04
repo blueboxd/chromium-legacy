@@ -6,6 +6,7 @@
 
 #include <cmath>
 #include <memory>
+#include <string_view>
 #include <vector>
 
 #include "base/feature_list.h"
@@ -36,7 +37,7 @@
 #include "components/no_state_prefetch/browser/no_state_prefetch_manager.h"
 #include "components/no_state_prefetch/browser/no_state_prefetch_utils.h"
 #include "components/no_state_prefetch/common/no_state_prefetch_final_status.h"
-#include "components/no_state_prefetch/common/prerender_origin.h"
+#include "components/no_state_prefetch/common/no_state_prefetch_origin.h"
 #include "components/offline_pages/buildflags/buildflags.h"
 #include "components/page_load_metrics/browser/observers/core/largest_contentful_paint_handler.h"
 #include "components/page_load_metrics/browser/page_load_metrics_util.h"
@@ -91,7 +92,7 @@ uint64_t PackBytes(base::span<const uint8_t, N> bytes) {
   return result;
 }
 
-uint64_t StrToHash64Bit(base::StringPiece str) {
+uint64_t StrToHash64Bit(std::string_view str) {
   auto bytes = base::as_bytes(base::make_span(str));
   const base::SHA1Digest digest = base::SHA1HashSpan(bytes);
   return PackBytes(base::make_span(digest).subspan<0, 8>());
@@ -547,7 +548,7 @@ void UkmPageLoadMetricsObserver::RecordNavigationTimingMetrics() {
       timing.navigation_commit_sent_time.is_null()) {
     return;
   }
-  // TODO(https://crbug.com/1076710): Change these early-returns to DCHECKs
+  // TODO(crbug.com/40688345): Change these early-returns to DCHECKs
   // after the issue 1076710 is fixed.
   if (navigation_start_time > timing.first_request_start_time ||
       timing.first_request_start_time > timing.first_response_start_time ||
@@ -880,6 +881,11 @@ void UkmPageLoadMetricsObserver::RecordTimingMetrics(
       auto priority = cwv_lcp_timing_info.ImageRequestPriority();
       if (priority)
         builder.SetPaintTiming_LargestContentfulPaintRequestPriority(*priority);
+      bool is_cross_origin = cwv_lcp_timing_info.Type() ==
+                             (cwv_lcp_timing_info.Type() |
+                              blink::LargestContentfulPaintType::kCrossOrigin);
+      builder.SetPaintTiming_LargestContentfulPaintImageIsCrossOrigin(
+          is_cross_origin);
     }
     if (cwv_lcp_timing_info.ImageDiscoveryTime().has_value()) {
       builder.SetPaintTiming_LargestContentfulPaintImageDiscoveryTime(
@@ -1288,7 +1294,7 @@ void UkmPageLoadMetricsObserver::ReportLayoutStability() {
   }
   builder.Record(ukm::UkmRecorder::Get());
 
-  // TODO(crbug.com/1064483): We should move UMA recording to components/
+  // TODO(crbug.com/40681312): We should move UMA recording to components/
 
   const float layout_shift_score =
       GetDelegate().GetPageRenderData().layout_shift_score;

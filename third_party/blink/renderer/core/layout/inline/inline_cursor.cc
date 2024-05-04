@@ -109,6 +109,8 @@ bool ShouldIgnoreForPositionForPoint(const FragmentItem& item) {
       // All/LayoutViewHitTestTest.PseudoElementAfter* needs this.
       return item.IsGeneratedText();
     case FragmentItem::kLine:
+      DCHECK(RuntimeEnabledFeatures::RubyLineBreakableEnabled());
+      return true;
     case FragmentItem::kInvalid:
       NOTREACHED();
       break;
@@ -1429,6 +1431,7 @@ void InlineCursor::MoveTo(const LayoutObject& layout_object) {
     return;
   }
   // |FirstInlineFragmentItemIndex| is 1-based. Convert to 0-based index.
+  DCHECK_GT(item_index, 0UL);
   --item_index;
 
   // Find |FragmentItems| that contains |item_index|.
@@ -1440,6 +1443,7 @@ void InlineCursor::MoveTo(const LayoutObject& layout_object) {
       if (!Current())
         return;
     }
+    DCHECK_GE(item_index, fragment_items_->SizeOfEarlierFragments());
     item_index -= fragment_items_->SizeOfEarlierFragments();
 #if EXPENSIVE_DCHECKS_ARE_ON()
     InlineCursor check_cursor(*root_block_flow_);
@@ -1451,6 +1455,7 @@ void InlineCursor::MoveTo(const LayoutObject& layout_object) {
     // If |this| is not rooted at |LayoutBlockFlow|, iterate |FragmentItems|
     // from |LayoutBlockFlow|.
     if (fragment_items_->HasItemIndex(item_index)) {
+      DCHECK_GE(item_index, fragment_items_->SizeOfEarlierFragments());
       item_index -= fragment_items_->SizeOfEarlierFragments();
     } else {
       InlineCursor cursor;
@@ -1462,6 +1467,7 @@ void InlineCursor::MoveTo(const LayoutObject& layout_object) {
           return;
         }
         if (cursor.fragment_items_ == fragment_items_) {
+          DCHECK_GE(cursor.Current().Item(), fragment_items_->Items().data());
           item_index = base::checked_cast<wtf_size_t>(
               cursor.Current().Item() - fragment_items_->Items().data());
           break;
@@ -1494,6 +1500,7 @@ void InlineCursor::MoveTo(const LayoutObject& layout_object) {
         MakeNull();
         return;
       }
+      DCHECK_GE(item_index, span_begin_item_index);
       item_index -= span_begin_item_index;
     }
   }

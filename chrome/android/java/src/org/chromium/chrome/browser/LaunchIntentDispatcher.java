@@ -9,7 +9,6 @@ import android.app.Activity;
 import android.app.ActivityManager.RecentTaskInfo;
 import android.app.Notification;
 import android.app.SearchManager;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -18,7 +17,6 @@ import android.provider.MediaStore;
 import android.text.TextUtils;
 
 import androidx.annotation.IntDef;
-import androidx.annotation.OptIn;
 import androidx.browser.customtabs.CustomTabsIntent;
 import androidx.browser.customtabs.CustomTabsSessionToken;
 import androidx.browser.customtabs.TrustedWebUtils;
@@ -30,7 +28,6 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.IntentUtils;
 import org.chromium.base.Log;
 import org.chromium.base.PackageManagerUtils;
-import org.chromium.base.StrictModeContext;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.browserservices.SessionDataHolder;
 import org.chromium.chrome.browser.browserservices.ui.splashscreen.trustedwebactivity.TwaSplashController;
@@ -212,19 +209,17 @@ public class LaunchIntentDispatcher {
         Intent searchIntent = new Intent(Intent.ACTION_WEB_SEARCH);
         searchIntent.putExtra(SearchManager.QUERY, query);
 
-        try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
-            if (PackageManagerUtils.canResolveActivity(
-                    searchIntent, PackageManager.GET_RESOLVED_FILTER)) {
-                mActivity.startActivity(searchIntent);
-            } else {
-                // Phone doesn't have a WEB_SEARCH action handler, open Search Activity with
-                // the given query.
-                Intent searchActivityIntent = new Intent(Intent.ACTION_MAIN);
-                searchActivityIntent.setClass(
-                        ContextUtils.getApplicationContext(), SearchActivity.class);
-                searchActivityIntent.putExtra(SearchManager.QUERY, query);
-                mActivity.startActivity(searchActivityIntent);
-            }
+        if (PackageManagerUtils.canResolveActivity(
+                searchIntent, PackageManager.GET_RESOLVED_FILTER)) {
+            mActivity.startActivity(searchIntent);
+        } else {
+            // Phone doesn't have a WEB_SEARCH action handler, open Search Activity with
+            // the given query.
+            Intent searchActivityIntent = new Intent(Intent.ACTION_MAIN);
+            searchActivityIntent.setClass(
+                    ContextUtils.getApplicationContext(), SearchActivity.class);
+            searchActivityIntent.putExtra(SearchManager.QUERY, query);
+            mActivity.startActivity(searchActivityIntent);
         }
         return true;
     }
@@ -357,20 +352,24 @@ public class LaunchIntentDispatcher {
         }
         maybePrefetchDnsInBackground();
 
-        // Strip EXTRA_CALLING_ACTIVITY_PACKAGE if present on the original intent so that it
-        // cannot be spoofed by CCT client apps.
+        // Strip EXTRA_CALLING_ACTIVITY_PACKAGE/EXTRA_LAUNCHED_FROM_PACKAGE if present on
+        // the original intent so that it cannot be spoofed by CCT client apps.
         IntentUtils.safeRemoveExtra(mIntent, IntentHandler.EXTRA_CALLING_ACTIVITY_PACKAGE);
+        IntentUtils.safeRemoveExtra(mIntent, IntentHandler.EXTRA_LAUNCHED_FROM_PACKAGE);
 
         Intent intent = new Intent(mIntent);
-        ComponentName callingActivity = mActivity.getCallingActivity();
-        if (callingActivity != null) {
-            intent.putExtra(
-                    IntentHandler.EXTRA_CALLING_ACTIVITY_PACKAGE, callingActivity.getPackageName());
-        } else {
-            String packageName = getClientPackageNameFromIdentitySharing();
-            if (packageName != null) {
-                intent.putExtra(IntentHandler.EXTRA_CALLING_ACTIVITY_PACKAGE, packageName);
-            }
+        String packageName = mActivity.getCallingPackage(); // from startActivityForResult
+        String packageNameIdentitySharing = getCallingPackageIdentitySharing();
+        if (packageName == null) packageName = packageNameIdentitySharing;
+        if (packageName != null) {
+            intent.putExtra(IntentHandler.EXTRA_CALLING_ACTIVITY_PACKAGE, packageName);
+        }
+
+        // Pass the package name obtained via identity sharing API separately from the one
+        // obtained via startActivityForResult.
+        boolean identityShared = packageNameIdentitySharing != null;
+        if (identityShared) {
+            intent.putExtra(IntentHandler.EXTRA_LAUNCHED_FROM_PACKAGE, packageNameIdentitySharing);
         }
         // Create and fire a launch intent.
         Intent launchIntent = createCustomTabActivityIntent(mActivity, intent);
@@ -381,22 +380,20 @@ public class LaunchIntentDispatcher {
 
         // Allow disk writes during startActivity() to avoid strict mode violations on some
         // Samsung devices, see https://crbug.com/796548.
-        try (StrictModeContext ignored = StrictModeContext.allowDiskWrites()) {
-            if (TwaSplashController.handleIntent(mActivity, launchIntent)) {
-                return true;
-            }
-
-            mActivity.startActivity(launchIntent, null);
+        if (TwaSplashController.handleIntent(mActivity, launchIntent)) {
             return true;
         }
+
+        mActivity.startActivity(launchIntent, null);
+        RecordHistogram.recordBooleanHistogram("CustomTabs.IdentityShared", identityShared);
+        return true;
     }
 
     /**
-     * @return Client package name obtained from {@link Activity#getLaunchedFromPackage()}.
-     *         {@code null} if the underlying OS doesn't support the feature.
+     * Returns client package name obtained from {@link Activity#getLaunchedFromPackage()}. {@code
+     * null} if the underlying OS doesn't support the feature.
      */
-    @OptIn(markerClass = androidx.core.os.BuildCompat.PrereleaseSdkCheck.class)
-    private String getClientPackageNameFromIdentitySharing() {
+    private String getCallingPackageIdentitySharing() {
         return BuildCompat.isAtLeastU() ? mActivity.getLaunchedFromPackage() : null;
     }
 
@@ -421,6 +418,8 @@ public class LaunchIntentDispatcher {
             }
             RecordHistogram.recordBooleanHistogram(
                     "Android.Intent.HasNonSpoofablePackageName", hasNonSpoofablePackageName());
+            boolean identityShared = getCallingPackageIdentitySharing() != null;
+            RecordHistogram.recordBooleanHistogram("Android.Intent.IdentityShared", identityShared);
         }
 
         if (mActivity instanceof ChromeLauncherActivity) {
@@ -499,13 +498,8 @@ public class LaunchIntentDispatcher {
     }
 
     private boolean hasNonSpoofablePackageName() {
-        ComponentName callingActivity = mActivity.getCallingActivity();
-        String packageName = "";
-        if (callingActivity != null) {
-            packageName = callingActivity.getPackageName();
-        }
-        return !TextUtils.isEmpty(packageName)
-                || !TextUtils.isEmpty(getClientPackageNameFromIdentitySharing());
+        return !TextUtils.isEmpty(mActivity.getCallingPackage())
+                || !TextUtils.isEmpty(getCallingPackageIdentitySharing());
     }
 
     private static boolean clearTopIntentsForCustomTabsEnabled(Intent intent) {

@@ -83,12 +83,6 @@
         android:theme="@style/Theme.Chromium.Activity.Fullscreen"
         android:windowSoftInputMode="stateAlwaysHidden|adjustResize">
     </activity>  # DIFF-ANCHOR: dc170161
-    <activity  # DIFF-ANCHOR: d8508de6
-        android:name="org.chromium.chrome.browser.app.bookmarks.BookmarkAddEditFolderActivity"
-        android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
-        android:exported="false"
-        android:theme="@style/Theme.Chromium.DialogWhenLarge">
-    </activity>  # DIFF-ANCHOR: d8508de6
     <activity  # DIFF-ANCHOR: 766e66bd
         android:name="org.chromium.chrome.browser.app.bookmarks.BookmarkEditActivity"
         android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
@@ -105,14 +99,6 @@
         android:theme="@style/Theme.Chromium.DialogWhenLarge"
         android:windowSoftInputMode="stateAlwaysHidden">
     </activity>  # DIFF-ANCHOR: 002f9e99
-    <activity  # DIFF-ANCHOR: 8f8d0c81
-        android:name="org.chromium.chrome.browser.app.bookmarks.BookmarkFolderSelectActivity"
-        android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
-        android:exported="false"
-        android:label="@string/bookmark_choose_folder"
-        android:theme="@style/Theme.Chromium.DialogWhenLarge"
-        android:windowSoftInputMode="stateAlwaysHidden">
-    </activity>  # DIFF-ANCHOR: 8f8d0c81
     <activity  # DIFF-ANCHOR: 9bfe10ab
         android:name="org.chromium.chrome.browser.app.creator.CreatorActivity"
         android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
@@ -402,7 +388,7 @@
         android:name="org.chromium.chrome.browser.sync.ui.SyncTrustedVaultProxyActivity"
         android:excludeFromRecents="true"
         android:exported="false"
-        android:theme="@style/Theme.MaterialComponents">
+        android:theme="@style/Theme.Material3.DayNight">
     </activity>  # DIFF-ANCHOR: 45a98fa4
     <activity  # DIFF-ANCHOR: 43bfa5de
         android:name="org.chromium.chrome.browser.test_dummy.TestDummyActivity"
@@ -410,7 +396,7 @@
         android:excludeFromRecents="true"
         android:exported="true"
         android:noHistory="true"
-        android:theme="@style/Theme.MaterialComponents">
+        android:theme="@style/Theme.Material3.DayNight">
     </activity>  # DIFF-ANCHOR: 43bfa5de
     <activity  # DIFF-ANCHOR: 9bb1f409
         android:name="org.chromium.chrome.browser.webapps.ActivateWebApkActivity"
@@ -760,6 +746,10 @@
         android:name="org.chromium.chrome.browser.customtabs.CustomTabsShareBroadcastReceiver"
         android:exported="false">
     </receiver>  # DIFF-ANCHOR: fd245bee
+    <receiver  # DIFF-ANCHOR: 0448b6b4
+        android:name="org.chromium.chrome.browser.data_sharing.DataSharingNotificationManager$Receiver"
+        android:exported="false">
+    </receiver>  # DIFF-ANCHOR: 0448b6b4
     <receiver  # DIFF-ANCHOR: 2b9c19aa
         android:name="org.chromium.chrome.browser.notifications.NotificationIntentInterceptor$Receiver"
         android:exported="false">
@@ -851,14 +841,6 @@
         android:name="org.chromium.chrome.browser.sharing.click_to_call.ClickToCallMessageHandler$TapReceiver"
         android:exported="false">
     </receiver>  # DIFF-ANCHOR: 124ac9a1
-    <receiver  # DIFF-ANCHOR: 84094425
-        android:name="org.chromium.chrome.browser.sharing.shared_clipboard.SharedClipboardMessageHandler$TapReceiver"
-        android:exported="false">
-    </receiver>  # DIFF-ANCHOR: 84094425
-    <receiver  # DIFF-ANCHOR: 352611a4
-        android:name="org.chromium.chrome.browser.sharing.shared_clipboard.SharedClipboardMessageHandler$TryAgainReceiver"
-        android:exported="false">
-    </receiver>  # DIFF-ANCHOR: 352611a4
     <receiver  # DIFF-ANCHOR: 420d0678
         android:name="org.chromium.chrome.browser.sharing.sms_fetcher.SmsFetcherMessageHandler$NotificationReceiver"
         android:exported="false">

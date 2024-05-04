@@ -207,15 +207,9 @@ IN_PROC_BROWSER_TEST_F(OmniboxPopupViewViewsTest, ThemeIntegration) {
   }
 
   // Same in the non-incognito browser.
-  if (features::GetChromeRefresh2023Level() ==
-          features::ChromeRefresh2023Level::kLevel2 ||
-      base::FeatureList::IsEnabled(omnibox::kExpandedStateColors)) {
-    // TODO(khalidpeer): Delete this clause once CR23 colors are supported on
-    //   themed clients. Currently themed clients fall back to pre-CR23 colors.
-    EXPECT_NE(selection_color_light, GetSelectedColor(browser()));
-  } else {
-    EXPECT_EQ(selection_color_light, GetSelectedColor(browser()));
-  }
+  // TODO(khalidpeer): Delete this clause once CR23 colors are supported on
+  //   themed clients. Currently themed clients fall back to pre-CR23 colors.
+  EXPECT_NE(selection_color_light, GetSelectedColor(browser()));
 
   // Switch to the default theme without installing a custom theme. E.g. this is
   // what gets used on KDE or when switching to the "classic" theme in settings.
@@ -274,6 +268,12 @@ IN_PROC_BROWSER_TEST_F(OmniboxPopupViewViewsTest, ThemeIntegrationInIncognito) {
 #endif
 // Test that clicks over the omnibox do not hit the popup.
 IN_PROC_BROWSER_TEST_F(OmniboxPopupViewViewsTest, MAYBE_ClickOmnibox) {
+  // TODO(https://crbug.com/329235190): Should be an interactive_ui_test if
+  // omnibox popup is an accelerated widget.
+  if (views::test::IsOzoneBubblesUsingPlatformWidgets()) {
+    GTEST_SKIP();
+  }
+
   CreatePopupForTestQuery();
 
   gfx::NativeWindow event_window = browser()->window()->GetNativeWindow();

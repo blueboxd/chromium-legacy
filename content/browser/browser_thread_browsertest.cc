@@ -39,18 +39,20 @@ IN_PROC_BROWSER_TEST_F(BrowserThreadPostTaskBeforeInitBrowserTest,
 IN_PROC_BROWSER_TEST_F(ContentBrowserTest, ExpectedThreadPriorities) {
   base::ThreadPriorityForTest expected_priority =
       base::ThreadPriorityForTest::kNormal;
-#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_WIN)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_WIN) || \
+    BUILDFLAG(IS_APPLE)
   // In browser main loop the kCompositing thread type is set.
   // Only Windows, Android and ChromeOS will set kDisplay priority for
   // kCompositing thread type. We omit Windows here as it has a special
   // treatment for the UI thread.
 #if BUILDFLAG(IS_CHROMEOS)
-  // TODO(1340997): ChromeOS results a kNormal priority unexpectedly.
+  // TODO(crbug.com/40230522): ChromeOS results a kNormal priority unexpectedly.
   expected_priority = base::ThreadPriorityForTest::kNormal;
 #else
   expected_priority = base::ThreadPriorityForTest::kDisplay;
 #endif
 #endif  // BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_WIN)
+        // || BUILDFLAG(IS_APPLE)
 
   EXPECT_EQ(base::PlatformThread::GetCurrentThreadPriorityForTest(),
             expected_priority);

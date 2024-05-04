@@ -317,8 +317,7 @@ BrowserXRRuntimeImpl* XRRuntimeManagerImpl::GetImmersiveArRuntime() {
 #if BUILDFLAG(ENABLE_OPENXR)
   // If OpenXR is available and the runtime supports an AR blend mode, prefer
   // it over ARCore to unify VR/AR rendering paths.
-  if (base::FeatureList::IsEnabled(
-          device::features::kOpenXrExtendedFeatureSupport)) {
+  if (device::features::IsOpenXrArEnabled()) {
     auto* openxr = GetRuntime(device::mojom::XRDeviceId::OPENXR_DEVICE_ID);
     if (openxr && openxr->SupportsArBlendMode())
       return openxr;
@@ -563,7 +562,7 @@ void XRRuntimeManagerImpl::InitializeProviders(
 
   for (const auto& provider : providers_) {
     if (!provider) {
-      // TODO(crbug.com/1050470): Remove this logging after investigation.
+      // TODO(crbug.com/40673158): Remove this logging after investigation.
       LOG(ERROR) << __func__ << " got null XR provider";
       continue;
     }

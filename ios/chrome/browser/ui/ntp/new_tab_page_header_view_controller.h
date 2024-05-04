@@ -13,7 +13,6 @@
 
 @protocol ApplicationCommands;
 @protocol BrowserCoordinatorCommands;
-@protocol ContentSuggestionsCommands;
 @protocol FakeboxFocuser;
 @protocol NewTabPageControllerDelegate;
 @protocol NewTabPageHeaderCommands;
@@ -64,9 +63,13 @@
 @property(nonatomic, weak) NewTabPageMetricsRecorder* NTPMetricsRecorder;
 
 // Identity disc shown in this ViewController.
-// TODO(crbug.com/1170995): Remove once the Feed header properly supports
+// TODO(crbug.com/40165977): Remove once the Feed header properly supports
 // ContentSuggestions.
 @property(nonatomic, strong, readonly) UIButton* identityDiscButton;
+
+// Should be set to YES if an animation will run that requires animating the
+// font scale, for example, during a fakebox defocus animation.
+@property(nonatomic, assign) BOOL allowFontScaleAnimation;
 
 // Animation to expand this header in response to focusing the omnibox to match
 // the fake omnibox with the omnibox's.

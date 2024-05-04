@@ -586,19 +586,14 @@ void GpuServiceImpl::InitializeWithHost(
     // Raw draw needs to access shared image backing on the compositor thread.
     thread_safe_manager |= features::IsUsingRawDraw();
 #if BUILDFLAG(IS_OZONE)
-    thread_safe_manager |= features::ShouldUseRealBuffersForPageFlipTest();
+    constexpr bool kAlwaysUseRealBufferTestingOnOzone = true;
+    thread_safe_manager |= kAlwaysUseRealBufferTestingOnOzone;
 #endif
     thread_safe_manager |=
         base::FeatureList::IsEnabled(features::kSharedBitmapToSharedImage);
     owned_shared_image_manager_ = std::make_unique<gpu::SharedImageManager>(
         thread_safe_manager, display_context_on_another_thread);
     shared_image_manager = owned_shared_image_manager_.get();
-#if BUILDFLAG(IS_OZONE)
-  } else {
-    // With this feature enabled, we don't expect to receive an external
-    // SharedImageManager.
-    DCHECK(!features::ShouldUseRealBuffersForPageFlipTest());
-#endif
   }
 
   shutdown_event_ = shutdown_event;
@@ -851,7 +846,7 @@ void GpuServiceImpl::CreateVideoEncodeAcceleratorProvider(
   // processing of other mojo calls if executed on the current runner.
   scoped_refptr<base::SequencedTaskRunner> runner;
 #if BUILDFLAG(IS_FUCHSIA)
-  // TODO(crbug.com/1340041): Fuchsia does not support FIDL communication from
+  // TODO(crbug.com/40850116): Fuchsia does not support FIDL communication from
   // ThreadPool's worker threads.
   if (!vea_thread_) {
     base::Thread::Options thread_options(base::MessagePumpType::IO, /*size=*/0);
@@ -882,7 +877,6 @@ void GpuServiceImpl::CreateVideoEncodeAcceleratorProvider(
 void GpuServiceImpl::BindClientGmbInterface(
     mojo::PendingReceiver<gpu::mojom::ClientGmbInterface> pending_receiver,
     int client_id) {
-  CHECK(base::FeatureList::IsEnabled(features::kUseClientGmbInterface));
   // Bind the receiver to the IO tread. All IPC in this interface will be
   // then received on the IO thread.
   if (main_runner_->BelongsToCurrentThread()) {
@@ -901,10 +895,15 @@ void GpuServiceImpl::BindClientGmbInterface(
 void GpuServiceImpl::BindWebNNContextProvider(
     mojo::PendingReceiver<webnn::mojom::WebNNContextProvider> pending_receiver,
     int client_id) {
-  webnn::WebNNContextProviderImpl::Create(
-      std::move(pending_receiver),
-      gpu_feature_info_.status_values[gpu::GPU_FEATURE_TYPE_WEBNN] ==
-          gpu::kGpuFeatureStatusEnabled);
+  if (!main_runner_->BelongsToCurrentThread()) {
+    main_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&GpuServiceImpl::BindWebNNContextProvider, weak_ptr_,
+                       std::move(pending_receiver), client_id));
+    return;
+  }
+  webnn::WebNNContextProviderImpl::Create(std::move(pending_receiver),
+                                          GetContextState(), gpu_feature_info_);
 }
 #endif  // !BUILDFLAG(IS_CHROMEOS)
 
@@ -1491,7 +1490,6 @@ void GpuServiceImpl::OnOverlayCapsChanged() {
 
 bool GpuServiceImpl::IsNativeBufferSupported(gfx::BufferFormat format,
                                              gfx::BufferUsage usage) {
-  CHECK(base::FeatureList::IsEnabled(features::kUseClientGmbInterface));
   // Note that we are initializing the |supported_gmb_configurations_| here to
   // make sure gpu service have already initialized and required metadata like
   // supported buffer configurations have already been sent from browser

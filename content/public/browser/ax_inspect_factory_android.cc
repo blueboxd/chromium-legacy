@@ -13,22 +13,13 @@
 namespace content {
 
 // static
-std::unique_ptr<ui::AXTreeFormatter>
-AXInspectFactory::CreatePlatformFormatter() {
-  // The default platform tree formatter for Android uses the "external" tree,
-  // i.e. pulling from the AccessibilityNodeInfo objects in the Java-side code.
-  // If the internal tree is desired, then CreateFormatter() should be called
-  // with the appropriate tree type.
-  return AXInspectFactory::CreateFormatter(ui::AXApiType::kAndroidExternal);
+ui::AXApiType::Type AXInspectFactory::DefaultPlatformFormatterType() {
+  return ui::AXApiType::kAndroidExternal;
 }
 
 // static
-std::unique_ptr<ui::AXEventRecorder> AXInspectFactory::CreatePlatformRecorder(
-    BrowserAccessibilityManager* manager,
-    base::ProcessId pid,
-    const ui::AXTreeSelector& selector) {
-  return AXInspectFactory::CreateRecorder(ui::AXApiType::kAndroid, manager, pid,
-                                          selector);
+ui::AXApiType::Type AXInspectFactory::DefaultPlatformRecorderType() {
+  return ui::AXApiType::kAndroid;
 }
 
 // static
@@ -37,7 +28,7 @@ std::unique_ptr<ui::AXTreeFormatter> AXInspectFactory::CreateFormatter(
   // Developer mode: crash immediately on any accessibility fatal error.
   // This only runs during integration tests, or if a developer is
   // using an inspection tool, e.g. chrome://accessibility.
-  BrowserAccessibilityManager::AlwaysFailFast();
+  ui::AXTreeManager::AlwaysFailFast();
 
   switch (type) {
     case ui::AXApiType::kAndroid:
@@ -55,13 +46,13 @@ std::unique_ptr<ui::AXTreeFormatter> AXInspectFactory::CreateFormatter(
 // static
 std::unique_ptr<ui::AXEventRecorder> AXInspectFactory::CreateRecorder(
     ui::AXApiType::Type type,
-    BrowserAccessibilityManager* manager,
+    ui::AXPlatformTreeManager* manager,
     base::ProcessId pid,
     const ui::AXTreeSelector& selector) {
   // Developer mode: crash immediately on any accessibility fatal error.
   // This only runs during integration tests, or if a developer is
   // using an inspection tool, e.g. chrome://accessibility.
-  BrowserAccessibilityManager::AlwaysFailFast();
+  ui::AXTreeManager::AlwaysFailFast();
 
   NOTREACHED() << "Unsupported API type " << static_cast<std::string>(type);
   return nullptr;

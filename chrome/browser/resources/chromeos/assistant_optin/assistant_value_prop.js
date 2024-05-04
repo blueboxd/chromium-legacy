@@ -490,7 +490,9 @@ class AssistantValueProp extends AssistantValuePropBase {
     this.valuePropView_.focus();
     this.async(() => {
       this.buttonsDisabled = false;
-      this.$['next-button'].focus();
+      if (!this.isMinorMode_) {
+        this.$['next-button'].focus();
+      }
     }, 300);
 
     if (!this.hidden && !this.screenShown_) {
@@ -525,7 +527,9 @@ class AssistantValueProp extends AssistantValuePropBase {
     this.currentConsentStep_ += 1;
     this.showContentForStep_(this.currentConsentStep_);
     this.buttonsDisabled = false;
-    this.$['next-button'].focus();
+    if (!this.isMinorMode_) {
+      this.$['next-button'].focus();
+    }
   }
 
   /**
@@ -534,10 +538,10 @@ class AssistantValueProp extends AssistantValuePropBase {
    */
   showContentForStep_(step) {
     for (const subtitle of this.$['subtitle-container'].children) {
-      subtitle.hidden = subtitle.getAttribute('step') !== step;
+      subtitle.hidden = parseInt(subtitle.getAttribute('step')) !== step;
     }
     for (const zippy of this.$['consents-container'].children) {
-      zippy.hidden = zippy.getAttribute('step') !== step;
+      zippy.hidden = parseInt(zippy.getAttribute('step')) !== step;
     }
   }
 

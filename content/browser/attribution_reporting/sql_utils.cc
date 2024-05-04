@@ -17,6 +17,7 @@
 #include "base/containers/flat_map.h"
 #include "base/containers/span.h"
 #include "base/feature_list.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/time/time.h"
 #include "components/aggregation_service/features.h"
 #include "components/attribution_reporting/aggregatable_trigger_config.h"
@@ -198,7 +199,7 @@ std::string SerializeReadOnlySourceData(
       mutable_trigger_data->add_trigger_data(trigger_data);
     }
   } else {
-    // TODO(crbug.com/1499890): Support multiple specs.
+    // TODO(crbug.com/40287976): Support multiple specs.
     DCHECK(trigger_specs.empty());
 
     SetReadOnlySourceData(/*event_report_windows=*/nullptr,
@@ -348,10 +349,11 @@ std::string SerializeReportMetadata(
     proto::AttributionAggregatableMetadata_Contribution* contribution_msg =
         msg.add_contributions();
     contribution_msg->mutable_key()->set_high_bits(
-        absl::Uint128High64(contribution.key()));
+        absl::Uint128High64(contribution.bucket));
     contribution_msg->mutable_key()->set_low_bits(
-        absl::Uint128Low64(contribution.key()));
-    contribution_msg->set_value(contribution.value());
+        absl::Uint128Low64(contribution.bucket));
+    contribution_msg->set_value(
+        base::checked_cast<uint32_t>(contribution.value));
   }
 
   return msg.SerializeAsString();
@@ -378,7 +380,8 @@ bool DeserializeReportMetadata(
     data.contributions.emplace_back(
         absl::MakeUint128(contribution_msg.key().high_bits(),
                           contribution_msg.key().low_bits()),
-        contribution_msg.value());
+        base::checked_cast<int32_t>(contribution_msg.value()),
+        /*filtering_id=*/std::nullopt);
   }
 
   return true;

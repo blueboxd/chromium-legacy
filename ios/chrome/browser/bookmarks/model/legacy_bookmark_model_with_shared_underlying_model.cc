@@ -26,6 +26,7 @@ bool MoreRecentlyAdded(const bookmarks::BookmarkNode* n1,
 const bookmarks::BookmarkNode* GetAncestorPermanentFolder(
     const bookmarks::BookmarkNode* node) {
   CHECK(node);
+  CHECK(!node->is_root());
 
   const bookmarks::BookmarkNode* self_or_ancestor = node;
 
@@ -70,6 +71,12 @@ bool LegacyBookmarkModelWithSharedUnderlyingModel::
     NodeExcludedFromViewPredicate::operator()(
         const bookmarks::BookmarkNode* node) {
   CHECK(node);
+  if (node->is_root()) {
+    // Special-case the root and allow the exposure, as it is also exposed as
+    // parent of permanent folders.
+    return false;
+  }
+
   const bookmarks::BookmarkNode* ancestor_permanent_folder =
       GetAncestorPermanentFolder(node);
   CHECK(ancestor_permanent_folder);
@@ -192,14 +199,15 @@ bool LegacyBookmarkModelWithSharedUnderlyingModel::HasBookmarks() const {
   return false;
 }
 
-void LegacyBookmarkModelWithSharedUnderlyingModel::
-    GetBookmarksMatchingProperties(
-        const bookmarks::QueryFields& query,
-        size_t max_count,
-        std::vector<const bookmarks::BookmarkNode*>* nodes) {
-  bookmarks::GetBookmarksMatchingProperties(underlying_model(), query,
-                                            max_count, nodes);
-  std::erase_if(*nodes, GetNodeExcludedFromViewPredicate());
+std::vector<const bookmarks::BookmarkNode*>
+LegacyBookmarkModelWithSharedUnderlyingModel::GetBookmarksMatchingProperties(
+    const bookmarks::QueryFields& query,
+    size_t max_count) {
+  std::vector<const bookmarks::BookmarkNode*> nodes =
+      bookmarks::GetBookmarksMatchingProperties(underlying_model(), query,
+                                                max_count);
+  std::erase_if(nodes, GetNodeExcludedFromViewPredicate());
+  return nodes;
 }
 
 const bookmarks::BookmarkNode*
@@ -256,11 +264,11 @@ void LegacyBookmarkModelWithSharedUnderlyingModel::BookmarkNodeMoved(
     const bookmarks::BookmarkNode* node =
         new_parent->children()[new_index].get();
     for (bookmarks::BookmarkModelObserver& observer : observers_) {
-      observer.OnWillRemoveBookmarks(old_parent, old_index, node);
+      observer.OnWillRemoveBookmarks(old_parent, old_index, node, FROM_HERE);
     }
     for (bookmarks::BookmarkModelObserver& observer : observers_) {
       observer.BookmarkNodeRemoved(old_parent, old_index, node,
-                                   /*no_longer_bookmarked=*/{});
+                                   /*no_longer_bookmarked=*/{}, FROM_HERE);
     }
     return;
   }
@@ -275,12 +283,7 @@ void LegacyBookmarkModelWithSharedUnderlyingModel::BookmarkNodeAdded(
     const bookmarks::BookmarkNode* parent,
     size_t index,
     bool added_by_user) {
-  if (parent->is_root()) {
-    // Account permanent folders were just created.
-    // TODO(crbug.com/326185948): Figure out a way to notify observers.
-    return;
-  }
-  if (IsNodeExcludedFromView(parent)) {
+  if (!parent->is_root() && IsNodeExcludedFromView(parent)) {
     return;
   }
   for (bookmarks::BookmarkModelObserver& observer : observers_) {
@@ -291,12 +294,13 @@ void LegacyBookmarkModelWithSharedUnderlyingModel::BookmarkNodeAdded(
 void LegacyBookmarkModelWithSharedUnderlyingModel::OnWillRemoveBookmarks(
     const bookmarks::BookmarkNode* parent,
     size_t old_index,
-    const bookmarks::BookmarkNode* node) {
-  if (IsNodeExcludedFromView(node)) {
+    const bookmarks::BookmarkNode* node,
+    const base::Location& location) {
+  if (!parent->is_root() && IsNodeExcludedFromView(parent)) {
     return;
   }
   for (bookmarks::BookmarkModelObserver& observer : observers_) {
-    observer.OnWillRemoveBookmarks(parent, old_index, node);
+    observer.OnWillRemoveBookmarks(parent, old_index, node, location);
   }
 }
 
@@ -304,20 +308,16 @@ void LegacyBookmarkModelWithSharedUnderlyingModel::BookmarkNodeRemoved(
     const bookmarks::BookmarkNode* parent,
     size_t old_index,
     const bookmarks::BookmarkNode* node,
-    const std::set<GURL>& no_longer_bookmarked) {
-  if (parent->is_root()) {
-    // Account permanent folders were just removed.
-    // TODO(crbug.com/326185948): Figure out a way to notify observers.
-    return;
-  }
-  if (IsNodeExcludedFromView(parent)) {
+    const std::set<GURL>& no_longer_bookmarked,
+    const base::Location& location) {
+  if (!parent->is_root() && IsNodeExcludedFromView(parent)) {
     return;
   }
   // It isn't possible to compute `no_longer_bookmarked` so the workaround here
   // is to always pass an empty set, as it isn't actually consumed on ios.
   for (bookmarks::BookmarkModelObserver& observer : observers_) {
     observer.BookmarkNodeRemoved(parent, old_index, node,
-                                 /*no_longer_bookmarked=*/{});
+                                 /*no_longer_bookmarked=*/{}, location);
   }
 }
 
@@ -405,19 +405,20 @@ void LegacyBookmarkModelWithSharedUnderlyingModel::
   }
 }
 
-void LegacyBookmarkModelWithSharedUnderlyingModel::
-    OnWillRemoveAllUserBookmarks() {
+void LegacyBookmarkModelWithSharedUnderlyingModel::OnWillRemoveAllUserBookmarks(
+    const base::Location& location) {
   for (bookmarks::BookmarkModelObserver& observer : observers_) {
-    observer.OnWillRemoveAllUserBookmarks();
+    observer.OnWillRemoveAllUserBookmarks(location);
   }
 }
 
 void LegacyBookmarkModelWithSharedUnderlyingModel::BookmarkAllUserNodesRemoved(
-    const std::set<GURL>& removed_urls) {
+    const std::set<GURL>& removed_urls,
+    const base::Location& location) {
   // Computing `removed_urls` isn't possible so this simply uses an empty set,
   // as it isn't consumed anyway on ios/.
   for (bookmarks::BookmarkModelObserver& observer : observers_) {
-    observer.BookmarkAllUserNodesRemoved(/*removed_urls=*/{});
+    observer.BookmarkAllUserNodesRemoved(/*removed_urls=*/{}, location);
   }
 }
 
@@ -433,6 +434,20 @@ void LegacyBookmarkModelWithSharedUnderlyingModel::
   for (bookmarks::BookmarkModelObserver& observer : observers_) {
     observer.GroupedBookmarkChangesEnded();
   }
+}
+
+bool LegacyBookmarkModelWithSharedUnderlyingModel::IsNodePartOfModel(
+    const bookmarks::BookmarkNode* node) const {
+  return node && !IsNodeExcludedFromView(node);
+}
+
+const bookmarks::BookmarkNode* LegacyBookmarkModelWithSharedUnderlyingModel::
+    MoveToOtherModelPossiblyWithNewNodeIdsAndUuids(
+        const bookmarks::BookmarkNode* node,
+        LegacyBookmarkModel* dest_model,
+        const bookmarks::BookmarkNode* dest_parent) {
+  underlying_model()->Move(node, dest_parent, dest_parent->children().size());
+  return node;
 }
 
 base::WeakPtr<LegacyBookmarkModel>

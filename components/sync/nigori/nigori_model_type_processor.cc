@@ -131,14 +131,12 @@ void NigoriModelTypeProcessor::OnUpdateReceived(
     return;
   }
 
-  // TODO(crbug.com/1356900): validate incoming updates, e.g. |gc_directive|
+  // TODO(crbug.com/40860698): validate incoming updates, e.g. |gc_directive|
   // must be empty for Nigori.
   std::optional<ModelError> error;
 
   const bool is_initial_sync =
       !IsInitialSyncDone(model_type_state_.initial_sync_state());
-  LogUpdatesReceivedByProcessorHistogram(NIGORI, is_initial_sync,
-                                         updates.size());
 
   model_type_state_ = type_state;
 

@@ -186,14 +186,15 @@ void ResponsivenessMetrics::RecordUserInteractionUKM(
   base::TimeTicks max_event_end = longest_event.end_time;
   base::TimeTicks max_event_queued_main_thread =
       longest_event.main_thread_queued_time;
+  base::TimeTicks max_event_commit_finish = longest_event.commit_finish_time;
   base::TimeDelta max_event_duration = longest_event.duration();
   base::TimeDelta total_event_duration = TotalEventDuration(timestamps);
   // We found some negative values in the data. Before figuring out the root
   // cause, we need this check to avoid sending nonsensical data.
   if (max_event_duration.InMilliseconds() >= 0) {
     window->GetFrame()->Client()->DidObserveUserInteraction(
-        max_event_start, max_event_end, max_event_queued_main_thread,
-        interaction_type, interaction_offset);
+        max_event_start, max_event_queued_main_thread, max_event_commit_finish,
+        max_event_end, interaction_type, interaction_offset);
   }
   TRACE_EVENT2("devtools.timeline", "Responsiveness.Renderer.UserInteraction",
                "data",
@@ -311,20 +312,32 @@ bool ResponsivenessMetrics::SetPointerIdAndRecordLatency(
     if (contextmenu_flush_timer_.IsActive()) {
       contextmenu_flush_timer_.Stop();
     }
-    // Generate a new interaction id.
-    UpdateInteractionId();
-    entry->SetInteractionIdAndOffset(GetCurrentInteractionId(),
-                                     GetInteractionCount());
 
     // Any existing pointerup in the map cannot fire a click.
     FlushPointerup();
+
     // Platforms like Android would create ever-increasing pointer_id for
     // interactions, whereas platforms like linux could reuse the same id for
     // different interactions. So resetting pointer_info here if it's flushed.
     if (!pointer_id_entry_map_.Contains(pointer_id)) {
       // Reset if pointer_info got flushed.
       pointer_info = nullptr;
+
+      UseCounter::Count(window_performance_->GetExecutionContext(),
+                        WebFeature::kEventTimingOrphanPointerup);
+
+      if (base::FeatureList::IsEnabled(
+              features::kEventTimingHandleOrphanPointerup)) {
+        // Early exit if it's an orphan pointerup, not treating it as an
+        // interaction. crbug.com/40935137
+        return true;
+      }
     }
+
+    // Generate a new interaction id.
+    UpdateInteractionId();
+    entry->SetInteractionIdAndOffset(GetCurrentInteractionId(),
+                                     GetInteractionCount());
 
     if (pointer_info &&
         pointer_info->GetEntry()->name() == event_type_names::kPointerdown) {

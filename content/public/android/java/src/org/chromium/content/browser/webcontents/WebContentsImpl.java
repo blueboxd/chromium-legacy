@@ -28,6 +28,7 @@ import org.jni_zero.NativeMethods;
 import org.chromium.base.JavaExceptionReporter;
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
+import org.chromium.base.TerminationStatus;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.UserData;
 import org.chromium.base.UserDataHost;
@@ -99,10 +100,10 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
     }
 
     /**
-     * A {@link android.os.Parcelable.Creator} instance that is used to build
-     * {@link WebContentsImpl} objects from a {@link Parcel}.
+     * A {@link android.os.Parcelable.Creator} instance that is used to build {@link
+     * WebContentsImpl} objects from a {@link Parcel}.
      */
-    // TODO(crbug.com/635567): Fix this properly.
+    // TODO(crbug.com/40479664): Fix this properly.
     @SuppressLint("ParcelClassLoader")
     public static final Parcelable.Creator<WebContents> CREATOR =
             new Parcelable.Creator<WebContents>() {
@@ -232,7 +233,7 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
     }
 
     @Override
-    public void initialize(
+    public void setDelegates(
             String productVersion,
             ViewAndroidDelegate viewDelegate,
             InternalAccessDelegate accessDelegate,
@@ -543,6 +544,13 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
     }
 
     @Override
+    public boolean hasUncommittedNavigationInPrimaryMainFrame() {
+        checkNotDestroyed();
+        return WebContentsImplJni.get()
+                .hasUncommittedNavigationInPrimaryMainFrame(mNativeWebContentsAndroid);
+    }
+
+    @Override
     public void dispatchBeforeUnload(boolean autoCancel) {
         if (mNativeWebContentsAndroid == 0) return;
         WebContentsImplJni.get().dispatchBeforeUnload(mNativeWebContentsAndroid, autoCancel);
@@ -792,6 +800,12 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
     }
 
     @Override
+    public int getBackgroundColor() {
+        checkNotDestroyed();
+        return WebContentsImplJni.get().getBackgroundColor(mNativeWebContentsAndroid);
+    }
+
+    @Override
     public float getLoadProgress() {
         checkNotDestroyed();
         return WebContentsImplJni.get().getLoadProgress(mNativeWebContentsAndroid);
@@ -846,7 +860,7 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
 
     public void simulateRendererKilledForTesting() {
         if (mObserverProxy != null) {
-            mObserverProxy.renderProcessGone();
+            mObserverProxy.primaryMainFrameRenderProcessGone(TerminationStatus.PROCESS_WAS_KILLED);
         }
     }
 
@@ -1258,6 +1272,8 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
 
         boolean shouldShowLoadingUI(long nativeWebContentsAndroid);
 
+        boolean hasUncommittedNavigationInPrimaryMainFrame(long nativeWebContentsAndroid);
+
         void dispatchBeforeUnload(long nativeWebContentsAndroid, boolean autoCancel);
 
         void stop(long nativeWebContentsAndroid);
@@ -1335,6 +1351,8 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
         boolean hasAccessedInitialDocument(long nativeWebContentsAndroid);
 
         int getThemeColor(long nativeWebContentsAndroid);
+
+        int getBackgroundColor(long nativeWebContentsAndroid);
 
         float getLoadProgress(long nativeWebContentsAndroid);
 

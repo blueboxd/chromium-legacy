@@ -23,7 +23,7 @@
 #include "components/google/core/common/google_util.h"
 #include "components/search_engines/android/jni_headers/TemplateUrlService_jni.h"
 #include "components/search_engines/android/template_url_android.h"
-#include "components/search_engines/search_engine_choice_utils.h"
+#include "components/search_engines/search_engine_choice/search_engine_choice_utils.h"
 #include "components/search_engines/search_terms_data.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_prepopulate_data.h"
@@ -144,9 +144,9 @@ TemplateUrlServiceAndroid::IsSearchResultsPageFromDefaultSearchProvider(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj,
     const base::android::JavaParamRef<jobject>& jurl) {
-  std::unique_ptr<GURL> url = url::GURLAndroid::ToNativeGURL(env, jurl);
+  GURL url = url::GURLAndroid::ToNativeGURL(env, jurl);
   return template_url_service_->IsSearchResultsPageFromDefaultSearchProvider(
-      *url);
+      url);
 }
 
 bool TemplateUrlServiceAndroid::IsDefaultSearchEngineGoogle() {
@@ -212,7 +212,7 @@ TemplateUrlServiceAndroid::GetSearchQueryForUrl(
   const TemplateURL* default_provider =
       template_url_service_->GetDefaultSearchProvider();
 
-  std::unique_ptr<GURL> url = url::GURLAndroid::ToNativeGURL(env, jurl);
+  GURL url = url::GURLAndroid::ToNativeGURL(env, jurl);
 
   std::u16string query;
 
@@ -220,9 +220,9 @@ TemplateUrlServiceAndroid::GetSearchQueryForUrl(
       default_provider->url_ref().SupportsReplacement(
           template_url_service_->search_terms_data()) &&
       template_url_service_->IsSearchResultsPageFromDefaultSearchProvider(
-          *url)) {
+          url)) {
     default_provider->ExtractSearchTermsFromURL(
-        *url, template_url_service_->search_terms_data(), &query);
+        url, template_url_service_->search_terms_data(), &query);
   }
 
   return base::android::ConvertUTF16ToJavaString(env, query);

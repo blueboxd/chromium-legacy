@@ -5,6 +5,7 @@
 #include "ash/wm/desks/desk.h"
 
 #include <absl/cleanup/cleanup.h>
+
 #include <utility>
 #include <vector>
 
@@ -98,42 +99,6 @@ bool CanMoveWindowOutOfDeskContainer(aura::Window* window) {
   // Only allow app windows to move to other desks.
   return window->GetProperty(aura::client::kAppType) !=
          static_cast<int>(AppType::NON_APP);
-}
-
-// Adjusts the z-order stacking of |window_to_fix| in its parent to match its
-// order in the MRU window list. This is done after the window is moved from one
-// desk container to another by means of calling AddChild() which adds it as the
-// top-most window, which doesn't necessarily match the MRU order.
-// |window_to_fix| must be a child of a desk container, and the root of a
-// transient hierarchy (if it belongs to one).
-// This function must be called AddChild() was called to add the |window_to_fix|
-// (i.e. |window_to_fix| is the top-most window or the top-most window is a
-// transient child of |window_to_fix|).
-void FixWindowStackingAccordingToGlobalMru(aura::Window* window_to_fix) {
-  aura::Window* container = window_to_fix->parent();
-  DCHECK(desks_util::IsDeskContainer(container));
-  DCHECK_EQ(window_to_fix, wm::GetTransientRoot(window_to_fix));
-  DCHECK(window_to_fix == container->children().back() ||
-         window_to_fix == wm::GetTransientRoot(container->children().back()));
-
-  const auto mru_windows =
-      Shell::Get()->mru_window_tracker()->BuildWindowListIgnoreModal(
-          DesksMruType::kAllDesks);
-  // Find the closest sibling that is not a transient descendant, which
-  // |window_to_fix| should be stacked below.
-  aura::Window* closest_sibling_above_window = nullptr;
-  for (aura::Window* window : mru_windows) {
-    if (window == window_to_fix) {
-      if (closest_sibling_above_window)
-        container->StackChildBelow(window_to_fix, closest_sibling_above_window);
-      return;
-    }
-
-    if (window->parent() == container &&
-        !wm::HasTransientAncestor(window, window_to_fix)) {
-      closest_sibling_above_window = window;
-    }
-  }
 }
 
 // Used to temporarily turn off the automatic window positioning while windows
@@ -723,6 +688,13 @@ void Desk::MoveWindowsToDesk(Desk* target_desk) {
       continue;
     }
 
+    // It's possible the `window` was already moved to the `target_desk`
+    // indirectly, such as when one window in a Snap Group moves and the other
+    // will follow. If this is the case, skip the explicit window move.
+    if (base::Contains(target_desk->windows(), window)) {
+      continue;
+    }
+
     // Note that windows that belong to the same container in `windows_to_move`
     // are sorted from top-most to bottom-most, hence calling
     // `StackChildAtBottom()` on each in this order will maintain that same
@@ -761,7 +733,7 @@ void Desk::MoveWindowToDesk(aura::Window* window,
   MoveWindowToDeskInternal(transient_root, target_desk, target_root);
 
   if (!desks_util::IsWindowVisibleOnAllWorkspaces(window)) {
-    FixWindowStackingAccordingToGlobalMru(transient_root);
+    window_util::FixWindowStackingAccordingToGlobalMru(transient_root);
   }
 
   // Unminimize the window so that it shows up in the mini_view after it had

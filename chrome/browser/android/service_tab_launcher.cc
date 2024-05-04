@@ -53,10 +53,6 @@ void ServiceTabLauncher::LaunchTab(content::BrowserContext* browser_context,
   }
 
   JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jstring> referrer_url =
-      ConvertUTF8ToJavaString(env, params.referrer.url.spec());
-  ScopedJavaLocalRef<jstring> headers = ConvertUTF8ToJavaString(
-      env, params.extra_headers);
 
   ScopedJavaLocalRef<jobject> post_data;
 
@@ -68,14 +64,15 @@ void ServiceTabLauncher::LaunchTab(content::BrowserContext* browser_context,
   Java_ServiceTabLauncher_launchTab(
       env, request_id, browser_context->IsOffTheRecord(),
       url::GURLAndroid::FromNativeGURL(env, params.url),
-      static_cast<int>(disposition), referrer_url,
-      static_cast<int>(params.referrer.policy), headers, post_data);
+      static_cast<int>(disposition), params.referrer.url.spec(),
+      static_cast<int>(params.referrer.policy), params.extra_headers,
+      post_data);
 }
 
 void ServiceTabLauncher::OnTabLaunched(int request_id,
                                        content::WebContents* web_contents) {
   TabLaunchedCallback* callback = tab_launched_callbacks_.Lookup(request_id);
-  // TODO(crbug.com/962873): The Lookup() can fail though we don't expect that
+  // TODO(crbug.com/41458698): The Lookup() can fail though we don't expect that
   // it should be able to. It would be nice if this was a DCHECK() instead.
   if (callback)
     std::move(*callback).Run(web_contents);

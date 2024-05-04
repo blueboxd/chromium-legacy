@@ -211,6 +211,9 @@ void AddSoftwareSecureWidevine(std::vector<content::CdmInfo>* cdms) {
   bundled_widevine = GetBundledWidevine();
 #endif
 
+  // The hinted Widevine CDM is the CDM selected by Component Update. It may be
+  // the bundled CDM if it matches the version Component Update determines that
+  // should be used.
   std::unique_ptr<content::CdmInfo> hinted_widevine;
 #if BUILDFLAG(ENABLE_WIDEVINE_CDM_COMPONENT)
   hinted_widevine = GetHintedWidevine();
@@ -227,23 +230,35 @@ void AddSoftwareSecureWidevine(std::vector<content::CdmInfo>* cdms) {
   } else if (!bundled_widevine && !hinted_widevine) {
     VLOG(1) << "Widevine enabled but no library found";
   } else {
-    // Both a bundled CDM and a CDM selected by Component Update found, so
-    // choose between them. Generally we want to pick the Component Update
-    // selected version, except in the case the bundled CDM is newer than the
-    // selected CDM and is different than the previously bundled CDM.
+    // Both a bundled CDM and a hinted CDM found, so choose between them.
     base::Version bundled_version = bundled_widevine->version;
     base::Version hinted_version = hinted_widevine->version;
     DVLOG(1) << __func__ << " bundled: " << bundled_version;
     DVLOG(1) << __func__ << " hinted: " << hinted_version;
 
-    if (bundled_version > hinted_version &&
-        bundled_version != GetBundledVersionDuringLastComponentUpdate()) {
-      // Bundled CDM is a higher version than the Component Update selected CDM
-      // and does not match the version Component Update replaced, so use it.
-      VLOG(1) << "Choosing bundled Widevine " << bundled_version;
+    bool choose_bundled;
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+    // Dowgrading doesn't work on LaCros, so choose the highest version CDM,
+    // preferring the bundled CDM over the hinted CDM if the versions are the
+    // same. See bug for details.
+    // TODO(b/329869597): Get this working on LaCros.
+    choose_bundled = bundled_version >= hinted_version;
+#else
+    // On all other platforms (Linux and ChromeOS Ash) we want to pick the
+    // hinted version, except in the case the bundled CDM is newer than the
+    // hinted CDM and is different than the previously bundled CDM.
+    choose_bundled =
+        bundled_version > hinted_version &&
+        bundled_version != GetBundledVersionDuringLastComponentUpdate();
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+
+    if (choose_bundled) {
+      VLOG(1) << "Choosing bundled Widevine " << bundled_version << " from "
+              << bundled_widevine->path;
       cdms->push_back(*bundled_widevine);
     } else {
-      VLOG(1) << "Choosing hinted Widevine " << hinted_version;
+      VLOG(1) << "Choosing hinted Widevine " << hinted_version << " from "
+              << hinted_widevine->path;
       cdms->push_back(*hinted_widevine);
     }
   }

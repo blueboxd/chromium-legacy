@@ -2,10 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/accessibility/platform/ax_platform_node_win_unittest.h"
-
-#include <UIAutomationClient.h>
-#include <UIAutomationCoreApi.h>
+#include "ui/accessibility/platform/ax_platform_node_textrangeprovider_win.h"
 
 #include <memory>
 #include <utility>
@@ -16,8 +13,11 @@
 #include "base/win/scoped_variant.h"
 #include "ui/accessibility/ax_selection.h"
 #include "ui/accessibility/platform/ax_fragment_root_win.h"
-#include "ui/accessibility/platform/ax_platform_node_textrangeprovider_win.h"
+#include "ui/accessibility/platform/ax_platform_node_win_unittest.h"
 #include "ui/accessibility/platform/sequence_affine_com_object_root_win.h"
+
+#include <UIAutomationClient.h>
+#include <UIAutomationCoreApi.h>
 
 using Microsoft::WRL::ComPtr;
 
@@ -2663,7 +2663,7 @@ TEST_F(AXPlatformNodeTextRangeProviderTest, TestITextRangeProviderMove) {
   ComPtr<ITextRangeProvider> text_range_provider;
   GetTextRangeProviderFromTextNode(text_range_provider, root_node);
 
-  // TODO(https://crbug.com/928948): test intermixed unit types
+  // TODO(crbug.com/41439481): test intermixed unit types
 }
 
 TEST_F(AXPlatformNodeTextRangeProviderTest,
@@ -5346,7 +5346,7 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   EXPECT_EQ(50, text_field->data().relative_bounds.bounds.y());
 }
 
-// TODO(crbug.com/1124051): Remove this test once this crbug is fixed.
+// TODO(crbug.com/40717049): Remove this test once this crbug is fixed.
 TEST_F(AXPlatformNodeTextRangeProviderTest,
        TestITextRangeProviderSelectListMarker) {
   ui::AXNodeData root_data;

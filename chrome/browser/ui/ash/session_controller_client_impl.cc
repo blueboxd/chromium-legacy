@@ -28,6 +28,7 @@
 #include "chrome/browser/ash/login/ui/user_adding_screen.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/settings/device_settings_service.h"
+#include "chrome/browser/ash/system_web_apps/apps/personalization_app/personalization_app_utils.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/lifetime/termination_notification.h"
@@ -47,7 +48,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/supervised_user/core/browser/supervised_user_service.h"
-#include "components/user_manager/multi_user/multi_user_sign_in_policy_controller.h"
+#include "components/user_manager/multi_user/multi_user_sign_in_policy.h"
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_manager_pref_names.h"
 #include "components/user_manager/user_type.h"
@@ -345,6 +346,17 @@ base::FilePath SessionControllerClientImpl::GetProfilePath(
   return user_profile->GetPath();
 }
 
+bool SessionControllerClientImpl::IsEligibleForSeaPen(
+    const AccountId& account_id) {
+  Profile* const user_profile =
+      multi_user_util::GetProfileFromAccountId(account_id);
+  if (!user_profile) {
+    return false;
+  }
+
+  return ash::personalization_app::IsEligibleForSeaPen(user_profile);
+}
+
 bool SessionControllerClientImpl::IsEnterpriseManaged() const {
   const auto* user_manager = UserManager::Get();
   return user_manager && user_manager->IsEnterpriseManaged();
@@ -383,7 +395,7 @@ void SessionControllerClientImpl::ActiveUserChanged(User* active_user) {
 
   // Try to send user session before updating the order. Skip sending session
   // order if user session ends up to be pending (due to user profile loading).
-  // TODO(crbug.com/657149): Get rid of this after refactoring.
+  // TODO(crbug.com/40489520): Get rid of this after refactoring.
   SendUserSession(*active_user);
   if (pending_users_.find(active_user->GetAccountId()) != pending_users_.end())
     return;
@@ -442,8 +454,7 @@ SessionControllerClientImpl::GetAddUserSessionPolicy() {
   if (user_manager->GetUsersAllowedForMultiProfile().empty())
     return ash::AddUserSessionPolicy::ERROR_NO_ELIGIBLE_USERS;
 
-  if (user_manager->GetMultiUserSignInPolicyController()
-          ->GetPrimaryUserPolicy() ==
+  if (user_manager::GetMultiUserSignInPolicy(user_manager->GetPrimaryUser()) ==
       user_manager::MultiUserSignInPolicy::kNotAllowed) {
     return ash::AddUserSessionPolicy::ERROR_NOT_ALLOWED_PRIMARY_USER;
   }

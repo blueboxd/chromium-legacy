@@ -133,6 +133,13 @@ chromium-metrics-reviews@google.com.
   <int value="3" label="Both"/>
 </enum>
 
+<enum name="EmbeddingsUserActions">
+  <int value="0" label="Non-empty query History search"/>
+  <int value="1" label="Embeddings search"/>
+  <int value="2" label="Embeddings non-empty results shown"/>
+  <int value="3" label="Embeddings result clicked"/>
+</enum>
+
 <enum name="HistoryInitStep">
   <int value="0" label="Open"/>
   <int value="1" label="Transaction begin"/>
@@ -151,6 +158,14 @@ chromium-metrics-reviews@google.com.
   <int value="3" label="Synced Tabs"/>
   <int value="4" label="Signin Promo"/>
   <int value="5" label="Journeys"/>
+  <int value="6" label="ProductSpecificationsLists"/>
+</enum>
+
+<enum name="HistoryResultType">
+  <int value="0"
+      label="Traditional history search result (reverse chronological list)"/>
+  <int value="1" label="Grouped history search result"/>
+  <int value="2" label="Embeddings search result"/>
 </enum>
 
 <enum name="OtherSessionsActions">
@@ -189,6 +204,7 @@ chromium-metrics-reviews@google.com.
   <int value="11" label="kGpuCache"/>
   <int value="12" label="kPrivateAggregation"/>
   <int value="13" label="kInterestGroups"/>
+  <int value="14" label="kCdmStorage"/>
 </enum>
 
 </enums>

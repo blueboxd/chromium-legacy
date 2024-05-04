@@ -205,16 +205,21 @@ class ManagementUIHandler : public content::WebUIMessageHandler,
  private:
   void GetManagementStatus(Profile* profile, base::Value::Dict* status) const;
 
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS)
   void HandleGetDeviceReportingInfo(const base::Value::List& args);
   void HandleGetPluginVmDataCollectionStatus(const base::Value::List& args);
   void HandleGetLocalTrustRootsInfo(const base::Value::List& args);
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   void OnGotDeviceReportSources(base::Value::List report_sources,
                                 bool plugin_vm_data_collection_enabled);
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+
+#if BUILDFLAG(IS_CHROMEOS)
+  void CheckGetAllScreensMediaAllowedForAnyOriginResultReceived(
+      bool is_allowed);
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
   void HandleGetExtensions(const base::Value::List& args);
   void HandleGetContextualManagedData(const base::Value::List& args);
@@ -269,8 +274,12 @@ class ManagementUIHandler : public content::WebUIMessageHandler,
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   base::Value::List report_sources_;
   bool plugin_vm_data_collection_enabled_ = false;
-  base::WeakPtrFactory<ManagementUIHandler> weak_factory_{this};
 #endif
+
+#if BUILDFLAG(IS_CHROMEOS)
+  bool is_get_all_screens_media_allowed_for_any_origin_ = false;
+  base::WeakPtrFactory<ManagementUIHandler> weak_factory_{this};
+#endif  // BUILDFLAG(IS_CHROMEOS)
 };
 
 #endif  // CHROME_BROWSER_UI_WEBUI_MANAGEMENT_MANAGEMENT_UI_HANDLER_H_

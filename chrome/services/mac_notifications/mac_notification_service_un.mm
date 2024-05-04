@@ -34,6 +34,7 @@
 - (instancetype)initWithActionHandler:
     (base::RepeatingCallback<
         void(mac_notifications::mojom::NotificationActionInfoPtr)>)handler;
+- (bool)recentlyHandledClickAction;
 @end
 
 namespace {
@@ -241,6 +242,12 @@ void MacNotificationServiceUN::DoDisplayNotification(
     [content setValue:@YES
                forKey:@"shouldPreventNotificationDismissalAfterDefaultAction"];
   }
+  // This uses another private API to prevent the default action from forcing
+  // the app shim into the foreground. We only want the app shim to get focus
+  // when we explicitly ask it to, rather than on any notification click.
+  if ([content respondsToSelector:@selector(shouldBackgroundDefaultAction)]) {
+    [content setValue:@YES forKey:@"shouldBackgroundDefaultAction"];
+  }
 
   auto completion_handler = ^(NSError* _Nullable error) {
   };
@@ -397,6 +404,10 @@ void MacNotificationServiceUN::OkayToTerminateService(
       }).Then(std::move(callback)));
 }
 
+bool MacNotificationServiceUN::DidRecentlyHandleClickAction() const {
+  return [delegate_ recentlyHandledClickAction];
+}
+
 void MacNotificationServiceUN::RequestPermission(
     RequestPermissionCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -474,11 +485,11 @@ void MacNotificationServiceUN::DoRequestPermission() {
                                        UNAuthorizationOptionBadge;
 
   auto resultHandler = ^(BOOL granted, NSError* _Nullable error) {
-    auto result = mojom::RequestPermissionResult::kRequestFailed;
-    if (!error) {
-      result = granted ? mojom::RequestPermissionResult::kPermissionGranted
-                       : mojom::RequestPermissionResult::kPermissionDenied;
-    }
+    // The presence or absence of `error` doesn't say anything about whether the
+    // request itself failed. So assume the request always succeeds and only
+    // look at `granted` to determine the result.
+    auto result = granted ? mojom::RequestPermissionResult::kPermissionGranted
+                          : mojom::RequestPermissionResult::kPermissionDenied;
     std::move(block_callback).Run(result);
   };
 
@@ -669,6 +680,9 @@ void MacNotificationServiceUN::OnGotAuthorizationStatus(
   base::RepeatingCallback<void(
       mac_notifications::mojom::NotificationActionInfoPtr)>
       _handler;
+  std::atomic<bool> _recentlyHandledClickAction;
+  scoped_refptr<base::SequencedTaskRunner>
+      _resetRecentlyHandledClickActionRunner;
 }
 
 - (instancetype)initWithActionHandler:
@@ -678,8 +692,15 @@ void MacNotificationServiceUN::OnGotAuthorizationStatus(
     // We're binding to the current sequence here as we need to reply on the
     // same sequence and the methods below get called by macOS.
     _handler = base::BindPostTaskToCurrentDefault(std::move(handler));
+    _recentlyHandledClickAction = false;
+    _resetRecentlyHandledClickActionRunner =
+        base::SequencedTaskRunner::GetCurrentDefault();
   }
   return self;
+}
+
+- (bool)recentlyHandledClickAction {
+  return _recentlyHandledClickAction;
 }
 
 - (void)userNotificationCenter:(UNUserNotificationCenter*)center
@@ -703,6 +724,20 @@ void MacNotificationServiceUN::OnGotAuthorizationStatus(
 - (void)userNotificationCenter:(UNUserNotificationCenter*)center
     didReceiveNotificationResponse:(UNNotificationResponse*)response
              withCompletionHandler:(void (^)(void))completionHandler {
+  if ([response.actionIdentifier
+          isEqual:UNNotificationDefaultActionIdentifier]) {
+    _recentlyHandledClickAction = true;
+    _resetRecentlyHandledClickActionRunner->PostDelayedTask(
+        FROM_HERE,
+        base::BindOnce(
+            [](__weak AlertUNNotificationCenterDelegate* delegate) {
+              if (__strong AlertUNNotificationCenterDelegate* self = delegate) {
+                self->_recentlyHandledClickAction = false;
+              }
+            },
+            self),
+        base::Milliseconds(100));
+  }
   mac_notifications::mojom::NotificationMetadataPtr meta =
       mac_notifications::GetMacNotificationMetadata(
           response.notification.request.content.userInfo);

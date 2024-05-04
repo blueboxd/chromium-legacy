@@ -43,7 +43,7 @@
 #include "components/search_engines/enterprise_site_search_manager.h"
 #include "components/search_engines/keyword_web_data_service.h"
 #include "components/search_engines/search_engine_choice/search_engine_choice_service.h"
-#include "components/search_engines/search_engine_choice_utils.h"
+#include "components/search_engines/search_engine_choice/search_engine_choice_utils.h"
 #include "components/search_engines/search_engine_type.h"
 #include "components/search_engines/search_engines_pref_names.h"
 #include "components/search_engines/search_terms_data.h"
@@ -485,6 +485,13 @@ void TemplateURLService::RegisterProfilePrefs(
     registry->RegisterStringPref(
         prefs::kDefaultSearchProviderChoiceScreenCompletionVersion,
         std::string());
+    registry->RegisterDictionaryPref(
+        prefs::kDefaultSearchProviderPendingChoiceScreenDisplayState);
+
+#if BUILDFLAG(IS_IOS)
+    registry->RegisterIntegerPref(
+        prefs::kDefaultSearchProviderChoiceScreenSkippedCount, 0);
+#endif
   }
 }
 
@@ -795,9 +802,10 @@ TemplateURLService::TemplateURLVector TemplateURLService::GetTemplateURLs() {
   return result;
 }
 
-TemplateURLService::OwnedTemplateURLVector
-TemplateURLService::GetTemplateURLsForChoiceScreen() {
-  OwnedTemplateURLVector result;
+std::unique_ptr<search_engines::ChoiceScreenData>
+TemplateURLService::GetChoiceScreenData() {
+  OwnedTemplateURLVector owned_template_urls;
+  bool was_current_default_inserted = false;
 
   // We call `GetPrepopulatedEngines` instead of
   // `GetSearchProvidersUsingLoadedEngines` because the latter will return the
@@ -809,11 +817,17 @@ TemplateURLService::GetTemplateURLsForChoiceScreen() {
       TemplateURLPrepopulateData::GetPrepopulatedEngines(
           prefs_, search_engine_choice_service_,
           /*default_search_provider_index=*/nullptr,
-          /*include_current_default=*/true, /*template_url_service=*/this);
+          /*include_current_default=*/true, /*template_url_service=*/this,
+          /*was_current_default_inserted=*/&was_current_default_inserted);
   for (const auto& engine : engines) {
-    result.push_back(std::make_unique<TemplateURL>(*engine));
+    owned_template_urls.push_back(std::make_unique<TemplateURL>(*engine));
   }
-  return result;
+
+  return std::make_unique<search_engines::ChoiceScreenData>(
+      std::move(owned_template_urls),
+      search_engine_choice_service_->GetCountryId(),
+      /*list_is_modified_by_current_default=*/was_current_default_inserted,
+      search_terms_data());
 }
 
 #if BUILDFLAG(IS_ANDROID)
@@ -990,17 +1004,19 @@ void TemplateURLService::SetUserSelectedDefaultSearchProvider(
     } else {
       // When we are setting the search engine choice from choice screens,
       // the DSP source is expected to allow the search engine to be changed by
-      // the user. So we are guaranteed to not drop one of the choices coming
-      // from these screens here.
-      // TODO(crbug.com/323905627): Remove milestone if no hits by then.
+      // the user. But theoretically there is a possibility that a policy
+      // kicked in after a choice screen was shown, that could be a way to
+      // enter this state
+      // TODO(crbug.com/328041262): Investigate mitigation options.
       CHECK_NE(choice_made_location, search_engines::ChoiceMadeLocation::kOther,
-               base::NotFatalUntil::M124);
+               base::NotFatalUntil::M127);
     }
   } else {
     // We rely on the DefaultSearchManager to call ApplyDefaultSearchChange if,
     // in fact, the effective DSE changes.
     if (url) {
-      default_search_manager_.SetUserSelectedDefaultSearchEngine(url->data());
+      default_search_manager_.SetUserSelectedDefaultSearchEngine(
+          url->data(), choice_made_location);
       selection_added = true;
     } else {
       default_search_manager_.ClearUserSelectedDefaultSearchEngine();
@@ -1970,7 +1986,8 @@ void TemplateURLService::ApplyInitializersForTesting(
 
     // Set the first provided identifier to be the default.
     if (i == 0) {
-      default_search_manager_.SetUserSelectedDefaultSearchEngine(data);
+      default_search_manager_.SetUserSelectedDefaultSearchEngine(
+          data, search_engines::ChoiceMadeLocation::kOther);
     }
   }
 }
@@ -2157,7 +2174,7 @@ void TemplateURLService::MaybeUpdateDSEViaPrefs(TemplateURL* synced_turl) {
   if (prefs_ && (synced_turl->sync_guid() ==
                  GetDefaultSearchProviderPrefValue(*prefs_))) {
     default_search_manager_.SetUserSelectedDefaultSearchEngine(
-        synced_turl->data());
+        synced_turl->data(), search_engines::ChoiceMadeLocation::kOther);
   }
 }
 
@@ -2737,8 +2754,10 @@ void TemplateURLService::OnDefaultSearchProviderGUIDChanged() {
   }
 
   const TemplateURL* turl = GetTemplateURLForGUID(new_guid);
-  if (turl)
-    default_search_manager_.SetUserSelectedDefaultSearchEngine(turl->data());
+  if (turl) {
+    default_search_manager_.SetUserSelectedDefaultSearchEngine(
+        turl->data(), search_engines::ChoiceMadeLocation::kOther);
+  }
 }
 
 void TemplateURLService::MaybeSetIsActiveSearchEngines(

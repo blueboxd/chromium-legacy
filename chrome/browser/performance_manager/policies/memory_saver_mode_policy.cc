@@ -64,7 +64,7 @@ void MemorySaverModePolicy::OnTabAdded(
     // Some mechanisms (like "session restore" and "open all bookmarks") can
     // create pages that are non-visible. If that happens, start a discard timer
     // so that the pages are discarded if they don't ever become visible.
-    // TODO(crbug.com/1510539): Memory Saver Mode should make it so
+    // TODO(crbug.com/41483135): Memory Saver Mode should make it so
     // non-visible pages are simply not loaded until they become visible.
     StartDiscardTimerIfEnabled(tab_handle,
                                GetTimeBeforeDiscardForCurrentMode());
@@ -201,8 +201,8 @@ void MemorySaverModePolicy::DiscardPageTimerCallback(
     StartDiscardTimerIfEnabled(
         tab_handle, requested_time_before_discard - elapsed_not_suspended);
   } else {
-    PageDiscardingHelper::GetFromGraph(graph_)->ImmediatelyDiscardSpecificPage(
-        tab_handle->page_node(),
+    PageDiscardingHelper::GetFromGraph(graph_)->ImmediatelyDiscardMultiplePages(
+        {tab_handle->page_node()},
         PageDiscardingHelper::DiscardReason::PROACTIVE);
   }
 }

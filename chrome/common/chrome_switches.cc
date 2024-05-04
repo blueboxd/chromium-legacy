@@ -35,7 +35,7 @@ const char kAllowCrossOriginAuthPrompt[] = "allow-cross-origin-auth-prompt";
 const char kAllowHttpScreenCapture[] = "allow-http-screen-capture";
 
 // Allows profiles to be created outside of the user data dir.
-// TODO(https://crbug.com/1060366): Various places in Chrome assume that all
+// TODO(crbug.com/40122009): Various places in Chrome assume that all
 // profiles are within the user data dir. Some tests need to violate that
 // assumption. The switch should be removed after this workaround is no longer
 // needed.
@@ -264,6 +264,11 @@ const char kEnableExtensionActivityLogging[] =
 const char kEnableExtensionActivityLogTesting[] =
     "enable-extension-activity-log-testing";
 
+// Enables installing/uninstalling extensions at runtime via Chrome DevTools
+// Protocol if the protocol client is connected over --remote-debugging-pipe.
+const char kEnableUnsafeExtensionDebugging[] =
+    "enable-unsafe-extension-debugging";
+
 // Force enabling HangoutServicesExtension.
 const char kEnableHangoutServicesExtensionForTesting[] =
     "enable-hangout-services-extension-for-testing";
@@ -273,10 +278,6 @@ const char kEnableHangoutServicesExtensionForTesting[] =
 // screen.
 const char kEnableLacrosForkZygotesAtLoginScreen[] =
     "enable-lacros-fork-zygotes-at-login-screen";
-
-// Makes Lacros use a location shared across users for browser components.
-const char kEnableLacrosSharedComponentsDir[] =
-    "enable-lacros-shared-components-dir";
 #endif
 
 // Allows NaCl to run in all contexts (such as open web). Note that
@@ -487,6 +488,11 @@ const char kProductVersion[] = "product-version";
 // Selects directory of profile to associate with the first browser launched.
 const char kProfileDirectory[] = "profile-directory";
 
+// If provided with kProfileDirectory, does not create the profile if the
+// profile directory doesn't exist.
+const char kIgnoreProfileDirectoryIfNotExists[] =
+    "ignore-profile-directory-if-not-exists";
+
 // Like kProfileDirectory, but selects the profile by email address. If the
 // email is not found in any existing profile, this switch has no effect. If
 // both kProfileDirectory and kProfileUserName are specified, kProfileDirectory
@@ -625,6 +631,11 @@ const char kTrustedDownloadSources[] = "trusted-download-sources";
 // apps/origins.  This should be used only for testing purpose.
 const char kUnlimitedStorage[] = "unlimited-storage";
 
+// Disables warnings about self-XSS attacks when pasting into the DevTools
+// console.
+const char kUnsafelyDisableDevToolsSelfXssWarnings[] =
+    "unsafely-disable-devtools-self-xss-warnings";
+
 // Specifies the user data directory, which is where the browser will look for
 // all of its state.
 const char kUserDataDir[] = "user-data-dir";
@@ -632,7 +643,7 @@ const char kUserDataDir[] = "user-data-dir";
 // Uses WinHttp to resolve proxies instead of using Chromium's normal proxy
 // resolution logic. This is only supported in Windows.
 //
-// TODO(https://crbug.com/1032820): Only use WinHttp whenever Chrome is
+// TODO(crbug.com/40111093): Only use WinHttp whenever Chrome is
 // exclusively using system proxy configs.
 const char kUseSystemProxyResolver[] = "use-system-proxy-resolver";
 
@@ -746,19 +757,6 @@ const char kSchedulerConfigurationDefault[] = "scheduler-configuration-default";
 const char kHelp[] = "help";
 const char kHelpShort[] = "h";
 
-// Specifies which encryption storage backend to use. Possible values are
-// kwallet, kwallet5, kwallet6, gnome-libsecret, basic.
-// Any other value will lead to Chrome detecting the best backend automatically.
-// TODO(crbug.com/571003): Once PasswordStore no longer uses KWallet for storing
-// passwords, rename this flag to stop referencing passwords. Do not rename it
-// sooner, though; developers and testers might rely on it keeping large amounts
-// of testing passwords out of their KWallets.
-const char kPasswordStore[] = "password-store";
-
-// Enables the feature of allowing the user to disable the backend via a
-// setting.
-const char kEnableEncryptionSelection[] = "enable-encryption-selection";
-
 // The same as the --class argument in X applications.  Overrides the WM_CLASS
 // window property with the given value.
 const char kWmClass[] = "class";
@@ -812,11 +810,6 @@ extern const char kFromBrowserSwitcher[] = "from-browser-switcher";
 // it.
 const char kHideIcons[] = "hide-icons";
 
-// Don't try to clear downlevel OS appcompat layers out of Chrome's
-// AppCompatFlags\Layers value in the Windows registry on process startup; see
-// https://crbug.com/1482568.
-const char kNoAppCompatClear[] = "no-appcompat-clear";
-
 // Whether or not the browser should warn if the profile is on a network share.
 // This flag is only relevant for Windows currently.
 const char kNoNetworkProfileWarning[] = "no-network-profile-warning";
@@ -834,10 +827,6 @@ const char kNotificationInlineReply[] = "notification-inline-reply";
 // Used for launching Chrome when a toast displayed in the Windows Action Center
 // has been activated. Should contain the launch ID encoded by Chrome.
 const char kNotificationLaunchId[] = "notification-launch-id";
-
-// /prefetch:# arguments for the browser process launched in background mode and
-// as documented in prefetch_type_win.h.
-const char kPrefetchArgumentBrowserBackground[] = "/prefetch:5";
 
 // See kHideIcons.
 const char kShowIcons[] = "show-icons";
@@ -881,7 +870,7 @@ const char kAllowNaClSocketAPI[] = "allow-nacl-socket-api";
 #endif
 
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_MAC) || \
-    BUILDFLAG(IS_WIN) || BUILDFLAG(IS_FUCHSIA)
+    BUILDFLAG(IS_WIN)
 const char kEnableNewAppMenuIcon[] = "enable-new-app-menu-icon";
 
 // Causes the browser to launch directly in guest mode.

@@ -1,6 +1,7 @@
-<style include="cr-shared-style">
+<style include="cr-shared-style cr-icons">
   :host {
     --cr-focus-outline-color: var(--color-new-tab-page-focus-ring);
+    --cr-realbox-min-width: var(--ntp-search-box-width);
     --ntp-theme-text-shadow: none;
     --ntp-one-google-bar-height: 56px;
     --ntp-search-box-width: 337px;
@@ -34,7 +35,7 @@
     }
   }
 
-  :host-context([chrome-refresh-2023]) cr-most-visited {
+  cr-most-visited {
     --add-shortcut-background-color:
         var(--color-new-tab-page-add-shortcut-background);
     --add-shortcut-foreground-color:
@@ -154,20 +155,31 @@
     position: fixed;
   }
 
-  .customize-button-container {
-    border-radius: calc(.5 * var(--cr-button-height));
-  }
-
-  #wallpaperSearchButtonContainer {
-    background-color:
+  #wallpaperSearchButton {
+    --cr-hover-background-color:
+        var(--color-new-tab-page-wallpaper-search-button-background-hovered);
+    --cr-button-text-color:
+        var(--color-new-tab-page-wallpaper-search-button-foreground);
+    --cr-button-background-color:
         var(--color-new-tab-page-wallpaper-search-button-background);
   }
 
-  #customizeButtonContainer {
-    background-color: var(--color-new-tab-page-button-background);
+  #customizeButton {
+    --cr-hover-background-color:
+        var(--color-new-tab-page-button-background-hovered);
+    --cr-button-text-color: var(--color-new-tab-page-button-foreground);
+    --cr-button-background-color: var(--color-new-tab-page-button-background);
   }
 
-  #customizeButtonContainer:has(help-bubble) {
+  :host([show-background-image_]) #customizeButton,
+  :host([show-background-image_]) #wallpaperSearchButton {
+    --cr-hover-background-color:
+        var(--ntp-protected-icon-background-color-hovered);
+    --cr-button-text-color: white;
+    --cr-button-background-color: var(--ntp-protected-icon-background-color);
+  }
+
+  #customizeButton:has(help-bubble) {
     /* help-bubble parent needs z-index to overlay ntp-iframe */
     z-index: 1001;
   }
@@ -180,48 +192,22 @@
     left: 16px;
   }
 
-  :host([show-background-image_]) #customizeButtonContainer,
-  :host([show-background-image_]) #wallpaperSearchButtonContainer {
-    background-color: var(--ntp-protected-icon-background-color);
-  }
-
-  :host([show-background-image_]) #customizeButtonContainer,
-  :host([show-background-image_]) #wallpaperSearchButtonContainer{
-    background-color: var(--ntp-protected-icon-background-color-hovered);
-  }
-
-  /* TODO(b/325664489): Update wallpaper search button's hover color. */
   .customize-button {
-    --hover-bg-color: var(--color-new-tab-page-button-background-hovered);
+    --cr-button-height: 32px;
     border: none;
     border-radius: calc(.5 * var(--cr-button-height));
     box-shadow: 0 3px 6px rgba(0, 0, 0, .16), 0 1px 2px rgba(0, 0, 0, .23);
     font-weight: 400;
     min-width: 32px;
-    padding-inline-start: 16px;
     padding-inline-end: 16px;
-  }
-
-  #wallpaperSearchButton {
-    --text-color: var(--color-new-tab-page-wallpaper-search-button-foreground);
-  }
-
-  #customizeButton {
-    --text-color: var(--color-new-tab-page-button-foreground);
+    padding-inline-start: 16px;
   }
 
   :host([show-background-image_]) #customizeButton,
   :host([wallpaper-search-button-enabled_]) #customizeButton,
-  :host([show-wallpaper-search_]) .customize-button {
+  :host([show-wallpaper-search_]) #wallpaperSearchButton {
     box-shadow: none;
-    padding: 0;
-  }
-
-  :host-context([chrome-refresh-2023]):host([show-background-image_])
-      #customizeButton,
-  :host-context([chrome-refresh-2023]):host([wallpaper-search-button-enabled_])
-      #customizeButton,
-  :host([show-wallpaper-search_]) .customize-button {
+    padding-inline-end: 0;
     padding-inline-start: 8px;
   }
 
@@ -230,57 +216,25 @@
   }
 
   .customize-icon {
-    -webkit-mask-repeat: no-repeat;
-    -webkit-mask-size: 100%;
-    height: 16px;
-    width: 16px;
+    --cr-icon-button-margin-start: 0;
+    --cr-icon-color: var(--cr-button-text-color);
+    --cr-icon-ripple-margin: 0;
+    --cr-icon-ripple-size: 16px;
+    --cr-icon-size: 100%;
   }
 
   #wallpaperSearchIcon {
-    -webkit-mask-image: url(icons/sparkle.svg);
-    background-color: var(--text-color);
+    --cr-icon-image: url(icons/sparkle.svg);
   }
 
   #customizeIcon {
-    -webkit-mask-image: url(icons/icon_pencil.svg);
-    background-color: var(--text-color);
-  }
-
-  @media (forced-colors: active) {
-    .customize-icon {
-      background-color: ButtonText;
-    }
-  }
-
-  :host-context([chrome-refresh-2023]) .customize-button {
-    --cr-button-height: 32px;
-  }
-
-  @media (forced-colors: none) {
-    :host([show-background-image_]) #customizeIcon,
-    :host([show-background-image_]) #wallpaperSearchIcon {
-      background-color: white;
-    }
-
-    :host([show-background-image_]) #wallpaperSearchButton {
-      --text-color: white;
-    }
-  }
-
-  :host([show-background-image_]) #customizeIcon,
-  :host([wallpaper-search-button-enabled_]) #customizeIcon,
-  :host([show-wallpaper-search_]) .customize-icon {
-    margin: 0;
+    --cr-icon-image: url(icons/icon_pencil.svg);
   }
 
   @media (max-width: 550px) {
-    :host-context([chrome-refresh-2023]) .customize-button {
-      padding-inline-start: 8px;
-    }
-
     .customize-button {
-      padding-inline-start: 0;
       padding-inline-end: 0;
+      padding-inline-start: 8px;
     }
 
     .customize-text {
@@ -289,11 +243,6 @@
   }
 
   @media (max-width: 1110px) {
-    :host-context([chrome-refresh-2023]):host([modules-redesigned-enabled_][modules-shown-to-user])
-        .customize-button {
-      padding-inline-start: 8px;
-    }
-
     :host([modules-redesigned-enabled_][modules-shown-to-user])
         .customize-text {
       display: none;
@@ -301,20 +250,15 @@
 
     :host([modules-redesigned-enabled_][modules-shown-to-user])
         .customize-button {
-      padding-inline-start: 0;
       padding-inline-end: 0;
+      padding-inline-start: 8px;
     }
   }
 
   @media (max-width: 970px) {
-    :host-context([chrome-refresh-2023]):host([modules-shown-to-user])
-        .customize-button {
-      padding-inline-start: 8px;
-    }
-
     :host([modules-shown-to-user]) .customize-button {
-      padding-inline-start: 0;
       padding-inline-end: 0;
+      padding-inline-start: 8px;
     }
 
     :host([modules-shown-to-user]) .customize-text {
@@ -323,14 +267,9 @@
   }
 
   @media (max-width: 1020px) {
-    :host-context([chrome-refresh-2023]):host([modules-fre-shown])
-        .customize-button {
-      padding-inline-start: 8px;
-    }
-
     :host([modules-fre-shown]) .customize-button {
-      padding-inline-start: 0;
       padding-inline-end: 0;
+      padding-inline-start: 8px;
     }
 
     :host([modules-fre-shown]) .customize-text {
@@ -339,53 +278,39 @@
   }
 
   :host([wallpaper-search-button-animation-enabled_])
-      #wallpaperSearchButtonContainer {
-    animation: 750ms forwards grow;
+      #wallpaperSearchButton {
+    animation: 750ms forwards grow-container, 500ms forwards 300ms color-text;
+    color: rgba(0,0,0,0);
     opacity: 0;
-    right: 0px;
     transform-origin: right;
   }
 
-  @keyframes grow {
+  @keyframes grow-container {
     from {
       opacity: 0;
-      right: 0px;
       transform: scale(0.8);
     }
     to {
       opacity: 100%;
-      right: 40px;
       transform: scale(1);
     }
   }
 
+  /* The text inherits the color of the button,
+  while the icon has a color rule of it's own. */
+  @keyframes color-text {
+    from { color: rgba(0,0,0,0); }
+    to { color: var(--cr-button-text-color); }
+  }
+
   :host([wallpaper-search-button-animation-enabled_])
       #wallpaperSearchIcon {
-    animation: 2.5s 350ms spin;
+    animation: 2.5s 350ms spin-icon;
   }
 
-  @keyframes spin {
-    from {
-      transform:rotate(0deg);
-    }
-    to {
-      transform:rotate(720deg);
-    }
-  }
-
-  :host([wallpaper-search-button-animation-enabled_])
-      #wallpaperSearchText {
-    animation: 500ms forwards 300ms show;
-    opacity: 0;
-  }
-
-  @keyframes show {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 100%;
-    }
+  @keyframes spin-icon {
+    from { transform:rotate(0deg); }
+    to { transform:rotate(720deg); }
   }
 
   #themeAttribution {
@@ -489,7 +414,7 @@
       </ntp-iframe>
     </template>
   </template>
-  <!-- TODO(crbug.com/1168361): Instead of hidden$="[[!logoEnabled_]]" it would
+  <!-- TODO(crbug.com/40743294): Instead of hidden$="[[!logoEnabled_]]" it would
        be nicer to use a dom-if. However, that breaks
        StartupBrowserCreatorPickerNoParamsTest.ShowPickerWhenAlreadyLaunched on
        the msan builder. See crbug.com/1169070. -->
@@ -565,38 +490,29 @@
         </div>
       </a>
       <div id="customizeButtons">
-      <!-- cr-button has a transparent background. This leads to incorrect
-           results when a custom background is set. Therefore, wrap customize
-           button in container to enforce solid background color. -->
         <template is="dom-if" if="[[wallpaperSearchButtonEnabled_]]">
-          <div id="wallpaperSearchButtonContainer"
-              class="customize-button-container">
-            <cr-button id="wallpaperSearchButton"
-                class="customize-button" on-click="onWallpaperSearchClick_"
-                title="$i18n{customizeThisPageWallpaperSearch}"
-                aria-pressed="[[showWallpaperSearch_]]">
-              <div id="wallpaperSearchIcon"
-                  class="customize-icon" slot="prefix-icon"></div>
-              <div id="wallpaperSearchText" class="customize-text"
-                  hidden$="[[showWallpaperSearch_]]">
-                $i18n{wallpaperSearchButton}
-              </div>
-            </cr-button>
-          </div>
-        </template>
-        <div id="customizeButtonContainer"
-            class="customize-button-container">
-          <cr-button id="customizeButton" class="customize-button"
-              on-click="onCustomizeClick_" title="$i18n{customizeThisPage}"
-              aria-pressed="[[showCustomize_]]">
-            <div id="customizeIcon"
-                class="customize-icon" slot="prefix-icon"></div>
-            <div id="customizeText" class="customize-text"
-                hidden$="[[!showCustomizeChromeText_]]">
-              $i18n{customizeButton}
+          <cr-button id="wallpaperSearchButton"
+              class="customize-button" on-click="onWallpaperSearchClick_"
+              title="$i18n{customizeThisPageWallpaperSearch}"
+              aria-pressed="[[showWallpaperSearch_]]">
+            <div id="wallpaperSearchIcon"
+                class="customize-icon cr-icon" slot="prefix-icon"></div>
+            <div id="wallpaperSearchText" class="customize-text"
+                hidden$="[[showWallpaperSearch_]]">
+              $i18n{wallpaperSearchButton}
             </div>
           </cr-button>
-        </div>
+        </template>
+        <cr-button id="customizeButton" class="customize-button"
+            on-click="onCustomizeClick_" title="$i18n{customizeThisPage}"
+            aria-pressed="[[showCustomize_]]">
+          <div id="customizeIcon"
+              class="customize-icon cr-icon" slot="prefix-icon"></div>
+          <div id="customizeText" class="customize-text"
+              hidden$="[[!showCustomizeChromeText_]]">
+            $i18n{customizeButton}
+          </div>
+        </cr-button>
       </div>
       <div id="themeAttribution"
           hidden$="[[!theme_.backgroundImage.attributionUrl]]">
@@ -613,15 +529,6 @@
     </ntp-voice-search-overlay>
   </template>
 </dom-if>
-<template id="customizeDialogIf" is="dom-if" if="[[showCustomizeDialog_]]"
-    restamp>
-  <ntp-customize-dialog
-      on-close="onCustomizeDialogClose_"
-      theme="[[theme_]]"
-      background-selection="{{backgroundSelection_}}"
-      selected-page="[[selectedCustomizeDialogPage_]]">
-  </ntp-customize-dialog>
-</template>
 <svg>
   <defs>
     <clipPath id="oneGoogleBarClipPath">

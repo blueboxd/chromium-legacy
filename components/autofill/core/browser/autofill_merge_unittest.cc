@@ -19,6 +19,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
+#include "components/autofill/core/browser/address_data_manager.h"
+#include "components/autofill/core/browser/address_data_manager_test_api.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/form_data_importer.h"
@@ -154,7 +156,8 @@ AutofillMergeTest::~AutofillMergeTest() = default;
 
 void AutofillMergeTest::SetUp() {
   test::DisableSystemServices(nullptr);
-  personal_data_.set_auto_accept_address_imports_for_testing(true);
+  test_api(personal_data_.address_data_manager())
+      .set_auto_accept_address_imports(true);
   form_data_importer_ = std::make_unique<FormDataImporter>(
       &autofill_client_, &personal_data_, /*history_service=*/nullptr, "en");
 }
@@ -198,11 +201,11 @@ void AutofillMergeTest::MergeProfiles(const std::string& profiles,
       base::ReplaceFirstSubstringAfterOffset(&value, 0, u"\\n", u"\n");
 
       FormFieldData field;
-      field.label = field_type;
-      field.name = field_type;
-      field.value = value;
-      field.form_control_type = FormControlType::kInputText;
-      field.is_focusable = true;
+      field.set_label(field_type);
+      field.set_name(field_type);
+      field.set_value(value);
+      field.set_form_control_type(FormControlType::kInputText);
+      field.set_is_focusable(true);
       form.fields.push_back(field);
     }
 
@@ -216,7 +219,7 @@ void AutofillMergeTest::MergeProfiles(const std::string& profiles,
         // into the field's name.
         AutofillField* field =
             const_cast<AutofillField*>(form_structure.field(j));
-        FieldType type = TypeNameToFieldType(base::UTF16ToUTF8(field->name));
+        FieldType type = TypeNameToFieldType(base::UTF16ToUTF8(field->name()));
         field->set_heuristic_type(GetActiveHeuristicSource(), type);
       }
 
@@ -238,7 +241,7 @@ void AutofillMergeTest::MergeProfiles(const std::string& profiles,
   }
 
   std::vector<AutofillProfile*> imported_profiles =
-      personal_data_.GetProfiles();
+      personal_data_.address_data_manager().GetProfiles();
   // To ensure a consistent order with the output files, sort the profiles by
   // modification date. This corresponds to the order in which the profiles
   // were imported (or updated).

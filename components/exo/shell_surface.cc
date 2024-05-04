@@ -155,12 +155,6 @@ void ShellSurface::OcclusionObserver::OnWindowOcclusionChanged(
 void ShellSurface::OcclusionObserver::MaybeConfigure(aura::Window* window) {
   auto new_state = window->GetOcclusionState();
   if (state_ != new_state && shell_surface_->IsReady()) {
-    // If the state changes to visible, take the compositor lock so we never
-    // show missing content.
-    if (new_state == aura::Window::OcclusionState::VISIBLE) {
-      shell_surface_->MaybeSetCompositorLockForNextConfigure(
-          kSlowCompositorLockTimeoutMs);
-    }
     state_ = new_state;
     shell_surface_->Configure();
   }
@@ -192,7 +186,10 @@ ShellSurface::ShellSurface(Surface* surface)
     : ShellSurfaceBase(surface,
                        gfx::Point(),
                        /*can_minimize=*/true,
-                       ash::desks_util::GetActiveDeskContainerId()) {}
+                       ash::desks_util::GetActiveDeskContainerId()) {
+  CHECK(surface->window());
+  occlusion_observer_.emplace(this, surface->window());
+}
 
 ShellSurface::~ShellSurface() {
   DCHECK(!scoped_configure_);
@@ -536,6 +533,12 @@ const ui::Layer* ShellSurface::GetCommitTargetLayer() const {
 ////////////////////////////////////////////////////////////////////////////////
 // ShellSurfaceBase overrides:
 
+void ShellSurface::OnSurfaceCommit() {
+  // Send configure only after the effect of the commit is finalized.
+  ScopedConfigure scoped_configure(this, false);
+  ShellSurfaceBase::OnSurfaceCommit();
+}
+
 void ShellSurface::InitializeWindowState(ash::WindowState* window_state) {
   window_state->AddObserver(this);
   window_state->set_allow_set_bounds_direct(movement_disabled_);
@@ -669,8 +672,8 @@ void ShellSurface::OnWindowBoundsChanged(aura::Window* window,
       // dependency won't be fulfilled until corresponding configure
       // acknowledgement.
       // Synchronize bounds to it, s.t. the fallback surface looks reasonable.
-      // TODO(crbug.com/1251778): Take non-zero origin introduced by geometry or
-      // clipping into account.
+      // TODO(crbug.com/40057347): Take non-zero origin introduced by geometry
+      // or clipping into account.
       viz::ScopedSurfaceIdAllocator scoped_suppression =
           host_window()->GetSurfaceIdAllocator(base::NullCallback());
       host_window()->layer()->SetBounds(
@@ -689,7 +692,7 @@ void ShellSurface::OnWindowBoundsChanged(aura::Window* window,
       // prevent flashes.
       if (reason != ui::PropertyChangeReason::FROM_ANIMATION &&
           ash::WindowState::Get(window)->IsMaximizedOrFullscreenOrPinned()) {
-        // TODO(crbug.com/1399478): See if we can rid of the slow lock timeout
+        // TODO(crbug.com/40249858): See if we can rid of the slow lock timeout
         // by adjusting the order of resize of windows to top to bottom.
         MaybeSetCompositorLockForNextConfigure(kSlowCompositorLockTimeoutMs);
       }
@@ -745,16 +748,7 @@ void ShellSurface::OnWindowPropertyChanged(aura::Window* window,
         return;
       }
 
-      // We need to wait until raster scale changes are acked by the client. For
-      // example, upon entering overview mode, updating the raster scale of
-      // clients is meant to reduce buffer sizes and improve the smoothness of
-      // the overview enter animation. But, if we don't wait for these updated
-      // buffers, we will end up animating with unnecessarily large buffers,
-      // which negates the entire point of updating the raster scale. So, lock
-      // the compositor until we get an ack for updating the raster scale.
-      MaybeSetCompositorLockForNextConfigure(kDefaultCompositorLockTimeoutMs);
       pending_raster_scale_ = raster_scale;
-
       Configure();
     }
   }
@@ -860,6 +854,14 @@ gfx::Rect ShellSurface::ComputeAdjustedBounds(const gfx::Rect& bounds) const {
   if (!max_size.IsEmpty()) {
     size.SetToMin(max_size);
   }
+
+  // The size should never be bigger than work area, even if the min size is
+  // bigger than that.
+  auto work_area = display::Screen::GetScreen()
+                       ->GetDisplayNearestWindow(widget_->GetNativeWindow())
+                       .work_area();
+  size.SetToMin(work_area.size());
+
   // Keep the origin instead of center.
   return gfx::Rect(bounds.origin(), size);
 }
@@ -923,8 +925,12 @@ bool ShellSurface::OnPreWidgetCommit() {
 }
 
 void ShellSurface::ShowWidget(bool activate) {
-  ScopedConfigure scoped_configure(this, false);
   ShellSurfaceBase::ShowWidget(activate);
+
+  // Now that the shell surface is ready, make sure it has up to date occlusion
+  // state.
+  CHECK(IsReady());
+  occlusion_observer_->MaybeConfigure(root_surface()->window());
 }
 
 std::unique_ptr<views::NonClientFrameView>
@@ -1002,8 +1008,10 @@ void ShellSurface::MaybeMakeTransient() {
 }
 
 void ShellSurface::Configure(bool ends_drag) {
-  // Delay configure callback if |scoped_configure_| is set.
-  if (scoped_configure_) {
+  // Delay configure callback if |scoped_configure_| is set. But if
+  // |widget_| is not set yet then it ignores |scoped_configure_| so that an
+  // initial configure can be sent.
+  if (widget_ && scoped_configure_) {
     scoped_configure_->set_needs_configure();
     return;
   }

@@ -33,7 +33,7 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.signin.SigninCheckerProvider;
 import org.chromium.chrome.browser.signin.SigninFirstRunFragment;
-import org.chromium.chrome.browser.ui.signin.history_sync.HistorySyncUtils;
+import org.chromium.chrome.browser.ui.signin.history_sync.HistorySyncHelper;
 import org.chromium.components.browser_ui.modaldialog.AppModalPresenter;
 import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.components.metrics.LowEntropySource;
@@ -59,7 +59,8 @@ import java.util.function.BooleanSupplier;
 public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPageDelegate {
     /**
      * Alerted about various events when FirstRunActivity performs them.
-     * TODO(crbug.com/1114319): Rework and use a better testing setup.
+     * TODO(crbug.com/40710744): Rework and use a better testing setup.
+     * Rework and use a better testing setup.
      */
     public interface FirstRunActivityObserver {
         /** See {@link #createPostNativeAndPoliciesPageSequence}. */
@@ -144,7 +145,7 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
         // Initialize SigninChecker, to kick off sign-in for child accounts as early as possible.
         //
         // TODO(b/245912657): explicitly sign in supervised users in {@link
-        // SigninFirstRunMediator#handleContinueWithNative} rather than relying on SigninChecker.
+        // FullscreenSigninMediator#handleContinueWithNative} rather than relying on SigninChecker.
         SigninCheckerProvider.get(getProfileProviderSupplier().get().getOriginalProfile());
 
         mFirstRunFlowSequencer.updateFirstRunProperties(mFreProperties);
@@ -167,9 +168,10 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
             BooleanSupplier showHistorySync =
                     () -> mFreProperties.getBoolean(SHOW_HISTORY_SYNC_PAGE);
             if (!showHistorySync.getAsBoolean()) {
-                HistorySyncUtils.recordHistorySyncNotShown(
-                        getProfileProviderSupplier().get().getOriginalProfile(),
-                        SigninAccessPoint.START_PAGE);
+                HistorySyncHelper historySyncHelper =
+                        HistorySyncHelper.getForProfile(
+                                getProfileProviderSupplier().get().getOriginalProfile());
+                historySyncHelper.recordHistorySyncNotShown(SigninAccessPoint.START_PAGE);
             }
             mPages.add(new FirstRunPage<>(HistorySyncFirstRunFragment.class, showHistorySync));
         } else {

@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/functional/callback.h"
+#include "base/time/time.h"
 #include "base/types/strong_alias.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
 
@@ -70,6 +71,7 @@ enum class TrustedVaultDownloadKeysStatus {
 // should not be renumbered and numeric values should never be reused, only add
 // at the end and. Also remember to update in tools/metrics/histograms/enums.xml
 // TrustedVaultRecoverabilityStatus enum.
+// LINT.IfChange(TrustedVaultRecoverabilityStatus)
 enum class TrustedVaultRecoverabilityStatus {
   // Recoverability status not retrieved due to network, http or protocol error.
   kNotDegraded = 0,
@@ -77,35 +79,91 @@ enum class TrustedVaultRecoverabilityStatus {
   kError = 2,
   kMaxValue = kError,
 };
+// LINT.ThenChange(/tools/metrics/histograms/metadata/sync/enums.xml:TrustedVaultRecoverabilityStatus)
 
-// The possible results for `DownloadAuthenticationFactorsRegistrationState`.
-// These values are persisted in histograms. Entries should not be renumbered
-// and numeric values should never be reused.
-enum class DownloadAuthenticationFactorsRegistrationStateResult {
-  // The state of the security domain could not be determined.
-  kError = 0,
-  // The security domain is empty and thus doesn't have any secrets.
-  kEmpty = 1,
-  // The security domain is non-empty, but has virtual devices that are valid
-  // for recovery.
-  kRecoverable = 2,
-  // The security domain is non-empty, but has no virtual devices that can be
-  // used for recovery.
-  kIrrecoverable = 3,
-  kMaxValue = kIrrecoverable,
+// Contains information about a Google Password Manager PIN that is stored in
+// a trusted vault.
+struct GpmPinMetadata {
+  GpmPinMetadata(std::optional<std::string> public_key,
+                 std::string wrapped_pin,
+                 base::Time expiry);
+  GpmPinMetadata(const GpmPinMetadata&);
+  GpmPinMetadata& operator=(const GpmPinMetadata&);
+  GpmPinMetadata(GpmPinMetadata&&);
+  GpmPinMetadata& operator=(GpmPinMetadata&&);
+  ~GpmPinMetadata();
+
+  bool operator==(const GpmPinMetadata&) const;
+
+  // The securebox public key for the virtual member. This will always have a
+  // value when this metadata is downloaded with
+  // `DownloadAuthenticationFactorsRegistrationState`. When used with
+  // `RegisterAuthenticationFactor`, this can be empty to upload the first GPM
+  // PIN to an account, or non-empty to replace a GPM PIN.
+  std::optional<std::string> public_key;
+  // The encrypted PIN value, for validation.
+  std::string wrapped_pin;
+  // The time when the underlying recovery-key-store entry will expire. Ignored
+  // when uploading.
+  base::Time expiry;
+};
+
+// The result of calling
+// DownloadAuthenticationFactorsRegistrationState.
+struct DownloadAuthenticationFactorsRegistrationStateResult {
+  DownloadAuthenticationFactorsRegistrationStateResult();
+  DownloadAuthenticationFactorsRegistrationStateResult(
+      DownloadAuthenticationFactorsRegistrationStateResult&&);
+  DownloadAuthenticationFactorsRegistrationStateResult& operator=(
+      DownloadAuthenticationFactorsRegistrationStateResult&&);
+  ~DownloadAuthenticationFactorsRegistrationStateResult();
+
+  // These values are persisted in histograms. Entries should not be renumbered
+  // and numeric values should never be reused.
+  enum class State {
+    // The state of the security domain could not be determined.
+    kError = 0,
+    // The security domain is empty and thus doesn't have any secrets.
+    kEmpty = 1,
+    // The security domain is non-empty, but has virtual devices that are valid
+    // for recovery.
+    kRecoverable = 2,
+    // The security domain is non-empty, but has no virtual devices that can be
+    // used for recovery.
+    kIrrecoverable = 3,
+    kMaxValue = kIrrecoverable,
+  };
+  State state = State::kError;
+
+  // If there are members in the domain then this will contain the current key
+  // version.
+  std::optional<int> key_version;
+
+  // If a Google Password Manager PIN is a member of the domain, and is usable
+  // for retrieval, then this will contain its metadata.
+  std::optional<GpmPinMetadata> gpm_pin_metadata;
+
+  // The list of iCloud recovery key domain members as secure box public keys.
+  std::vector<std::unique_ptr<SecureBoxPublicKey>> icloud_keys;
 };
 
 // Authentication factor types:
 using PhysicalDevice =
     base::StrongAlias<class PhysicalDeviceTag, absl::monostate>;
+using LockScreenKnowledgeFactor =
+    base::StrongAlias<class VirtualDeviceTag, absl::monostate>;
+using ICloudKeychain =
+    base::StrongAlias<class ICloudKeychainTag, absl::monostate>;
 // UnspecifiedAuthenticationFactorType carries a type hint for the backend.
 using UnspecifiedAuthenticationFactorType =
     base::StrongAlias<class UnspecifiedAuthenticationFactorTypeTag, int>;
-// GPM PINs carry a bytestring of opaque metadata.
-using GpmPin = base::StrongAlias<class GpmPinTag, std::string>;
 
 using AuthenticationFactorType =
-    absl::variant<PhysicalDevice, UnspecifiedAuthenticationFactorType, GpmPin>;
+    absl::variant<PhysicalDevice,
+                  LockScreenKnowledgeFactor,
+                  UnspecifiedAuthenticationFactorType,
+                  GpmPinMetadata,
+                  ICloudKeychain>;
 
 struct TrustedVaultKeyAndVersion {
   TrustedVaultKeyAndVersion(const std::vector<uint8_t>& key, int version);
@@ -113,9 +171,38 @@ struct TrustedVaultKeyAndVersion {
   TrustedVaultKeyAndVersion& operator=(const TrustedVaultKeyAndVersion& other);
   ~TrustedVaultKeyAndVersion();
 
+  bool operator==(const TrustedVaultKeyAndVersion& other) const;
+
   std::vector<uint8_t> key;
   int version;
 };
+
+// Returns a vector of `TrustedVaultKeyAndVersion` given a vector of keys and
+// the version of the last key, assuming that the versions are sequential.
+std::vector<TrustedVaultKeyAndVersion> GetTrustedVaultKeysWithVersions(
+    const std::vector<std::vector<uint8_t>>& trusted_vault_keys,
+    int last_key_version);
+
+// A PrecomputedMemberKeys contains the cryptographic outputs needed to
+// add an authentication factor: the trusted vault key, encrypted to the
+// public key of the member, and an authenticator of that public key.
+struct PrecomputedMemberKeys {
+  PrecomputedMemberKeys(int version,
+                        std::vector<uint8_t> wrapped_key,
+                        std::vector<uint8_t> proof);
+  PrecomputedMemberKeys(PrecomputedMemberKeys&&);
+  PrecomputedMemberKeys& operator=(PrecomputedMemberKeys&&);
+  ~PrecomputedMemberKeys();
+
+  int version;
+  std::vector<uint8_t> wrapped_key;
+  std::vector<uint8_t> proof;
+};
+
+// A MemberKeysSource provides a method of calculating the values needed to
+// add an authenticator factor.
+using MemberKeysSource = absl::variant<std::vector<TrustedVaultKeyAndVersion>,
+                                       PrecomputedMemberKeys>;
 
 // Supports interaction with vault service, all methods must called on trusted
 // vault backend sequence.
@@ -161,8 +248,7 @@ class TrustedVaultConnection {
   // |trusted_vault_keys| must be ordered by version and must not be empty.
   [[nodiscard]] virtual std::unique_ptr<Request> RegisterAuthenticationFactor(
       const CoreAccountInfo& account_info,
-      const std::vector<std::vector<uint8_t>>& trusted_vault_keys,
-      int last_trusted_vault_key_version,
+      const MemberKeysSource& member_keys_source,
       const SecureBoxPublicKey& authentication_factor_public_key,
       AuthenticationFactorType authentication_factor_type,
       RegisterAuthenticationFactorCallback callback) = 0;

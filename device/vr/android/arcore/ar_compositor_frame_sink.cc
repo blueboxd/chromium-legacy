@@ -28,7 +28,7 @@ class ArCoreHostDisplayClient : public viz::HostDisplayClient {
   explicit ArCoreHostDisplayClient(ui::WindowAndroid* root_window)
       : HostDisplayClient(gfx::kNullAcceleratedWidget),
         root_window_(root_window) {
-    // TODO(https://crbug.com/1194775): Ideally, we'd DCHECK here, but the UTs
+    // TODO(crbug.com/40758616): Ideally, we'd DCHECK here, but the UTs
     // don't create a root_window.
   }
 
@@ -297,7 +297,7 @@ void ArCompositorFrameSink::OnBeginFrame(
     const viz::FrameTimingDetailsMap& timing_details,
     bool frame_ack,
     std::vector<viz::ReturnedResource> resources) {
-  // TODO(crbug.com/1401032): Determine why the timing of this Ack leads to
+  // TODO(crbug.com/40250552): Determine why the timing of this Ack leads to
   // frame production stopping in tests.
   if (features::IsOnBeginFrameAcksEnabled()) {
     if (frame_ack) {

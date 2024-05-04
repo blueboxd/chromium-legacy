@@ -12,6 +12,7 @@ import android.os.UserManager;
 
 import androidx.annotation.LayoutRes;
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
@@ -34,7 +35,8 @@ import org.chromium.chrome.browser.sync.SyncServiceFactory;
 import org.chromium.chrome.browser.sync.TrustedVaultClient;
 import org.chromium.chrome.browser.sync.settings.SyncSettingsUtils.SyncError;
 import org.chromium.chrome.browser.sync.ui.PassphraseDialogFragment;
-import org.chromium.chrome.browser.ui.signin.SignOutDialogCoordinator;
+import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
+import org.chromium.chrome.browser.ui.signin.SignOutCoordinator;
 import org.chromium.chrome.browser.ui.signin.SigninUtils;
 import org.chromium.components.browser_ui.settings.ChromeBasePreference;
 import org.chromium.components.browser_ui.settings.CustomDividerFragment;
@@ -75,12 +77,12 @@ public class AccountManagementFragment extends ChromeBaseSettingsFragment
     private static final int REQUEST_CODE_TRUSTED_VAULT_KEY_RETRIEVAL = 1;
     private static final int REQUEST_CODE_TRUSTED_VAULT_RECOVERABILITY_DEGRADED = 2;
 
-    private static final String FRAGMENT_ENTER_PASSPHRASE = "enter_passphrase";
+    @VisibleForTesting public static final String FRAGMENT_ENTER_PASSPHRASE = "enter_passphase";
 
     /**
-     * The key for an integer value in arguments bundle to
-     * specify the correct GAIA service that has triggered the dialog.
-     * If the argument is not set, GAIA_SERVICE_TYPE_NONE is used as the origin of the dialog.
+     * The key for an integer value in arguments bundle to specify the correct GAIA service that has
+     * triggered the dialog. If the argument is not set, GAIA_SERVICE_TYPE_NONE is used as the
+     * origin of the dialog.
      */
     private static final String SHOW_GAIA_SERVICE_TYPE_EXTRA = "ShowGAIAServiceType";
 
@@ -98,6 +100,7 @@ public class AccountManagementFragment extends ChromeBaseSettingsFragment
     private ProfileDataCache mProfileDataCache;
     private SyncService mSyncService;
     private @Nullable SyncService.SyncSetupInProgressHandle mSyncSetupInProgressHandle;
+    private SnackbarManager mSnackbarManager;
 
     @Override
     public void onCreatePreferences(Bundle savedState, String rootKey) {
@@ -188,10 +191,10 @@ public class AccountManagementFragment extends ChromeBaseSettingsFragment
                 .getCoreAccountInfos()
                 .then(this::updateAccountsList);
 
-        // TODO(crbug.com/1503649): Figure out the behaviour for child accounts.
+        // TODO(crbug.com/40944114): Figure out the behaviour for child accounts.
         mIdentityErrorCardPreference =
                 (IdentityErrorCardPreference) findPreference(PREF_IDENTITY_ERROR_CARD_PREFERENCE);
-        mIdentityErrorCardPreference.initialize(mSyncService, this);
+        mIdentityErrorCardPreference.initialize(getProfile(), this);
     }
 
     /**
@@ -206,6 +209,10 @@ public class AccountManagementFragment extends ChromeBaseSettingsFragment
         UserManager userManager =
                 (UserManager) getActivity().getSystemService(Context.USER_SERVICE);
         return !userManager.hasUserRestriction(UserManager.DISALLOW_MODIFY_ACCOUNTS);
+    }
+
+    public void setSnackbarManager(SnackbarManager snackbarManager) {
+        mSnackbarManager = snackbarManager;
     }
 
     private void configureSignOutSwitch() {
@@ -233,14 +240,15 @@ public class AccountManagementFragment extends ChromeBaseSettingsFragment
                                         .getPrimaryAccountInfo(ConsentLevel.SYNC)
                                 != null) {
                             // Only show the sign-out dialog if the user has given sync consent.
-                            SignOutDialogCoordinator.show(
+                            SignOutCoordinator.startSignOutFlow(
                                     requireContext(),
                                     getProfile(),
                                     getChildFragmentManager(),
                                     ((ModalDialogManagerHolder) getActivity())
                                             .getModalDialogManager(),
+                                    mSnackbarManager,
                                     SignoutReason.USER_CLICKED_SIGNOUT_SETTINGS,
-                                    /* onSignOut= */ null);
+                                    () -> {});
                         } else {
                             IdentityServicesProvider.get()
                                     .getSigninManager(getProfile())

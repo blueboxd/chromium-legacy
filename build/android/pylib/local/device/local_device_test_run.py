@@ -19,7 +19,6 @@ from devil.android import device_errors
 from devil.android.sdk import version_codes
 from devil.android.tools import device_recovery
 from devil.utils import signal_handler
-from pylib import valgrind_tools
 from pylib.base import base_test_result
 from pylib.base import test_collection
 from pylib.base import test_exception
@@ -48,7 +47,6 @@ class LocalDeviceTestRun(test_run.TestRun):
 
   def __init__(self, env, test_instance):
     super().__init__(env, test_instance)
-    self._tools = {}
     # This is intended to be filled by a child class.
     self._installed_packages = []
     env.SetPreferredAbis(test_instance.GetPreferredAbis())
@@ -263,7 +261,7 @@ class LocalDeviceTestRun(test_run.TestRun):
     sharded_tests = []
 
     # Sort tests by hash.
-    # TODO(crbug.com/1257820): Add sorting logic back to _PartitionTests.
+    # TODO(crbug.com/40200835): Add sorting logic back to _PartitionTests.
     tests = self._SortTests(tests)
 
     # Group tests by tests that should run in the same test invocation - either
@@ -321,8 +319,8 @@ class LocalDeviceTestRun(test_run.TestRun):
       # if the size of the test group is larger than the max partition size on
       # its own, just put the group in its own shard instead of splitting up the
       # group.
-      # TODO(crbug/1257820): Add logic to support PRE_ test recognition but it
-      # may hurt performance in most scenarios. Currently all PRE_ tests are
+      # TODO(crbug.com/40200835): Add logic to support PRE_ test recognition but
+      # it may hurt performance in most scenarios. Currently all PRE_ tests are
       # partitioned into the last shard. Unless the number of PRE_ tests are
       # larger than the partition size, the PRE_ test may get assigned into a
       # different shard and cause test failure.
@@ -359,12 +357,6 @@ class LocalDeviceTestRun(test_run.TestRun):
     # UnitTests Batches as single tests.
     return ('Batch' not in annotations
             or annotations['Batch']['value'] != 'UnitTests')
-
-  def GetTool(self, device):
-    if str(device) not in self._tools:
-      self._tools[str(device)] = valgrind_tools.CreateTool(
-          self._env.tool, device)
-    return self._tools[str(device)]
 
   def _CreateShardsForDevices(self, tests):
     raise NotImplementedError

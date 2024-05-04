@@ -155,6 +155,7 @@ class ContentAutofillDriver : public AutofillDriver,
   LocalFrameToken GetFrameToken() const override;
   std::optional<LocalFrameToken> Resolve(FrameToken query) override;
   ContentAutofillDriver* GetParent() override;
+  ContentAutofillClient& GetAutofillClient() override;
   AutofillManager& GetAutofillManager() override;
   bool IsInActiveFrame() const override;
   bool IsInAnyMainFrame() const override;
@@ -197,7 +198,6 @@ class ContentAutofillDriver : public AutofillDriver,
   void TriggerFormExtractionInAllFrames(
       base::OnceCallback<void(bool success)> form_extraction_finished_callback)
       override;
-  void RendererShouldClearFilledSection() override;
   void RendererShouldClearPreviewedForm() override;
 
   // Group (1b): browser -> renderer events, routed (see comment above).
@@ -229,7 +229,7 @@ class ContentAutofillDriver : public AutofillDriver,
 
   // Group (1c): browser -> renderer events, unrouted (see comment above).
   // autofill::AutofillDriver:
-  // TODO(crbug.com/1281695): This event is currently not routed, but it looks
+  // TODO(crbug.com/40209327): This event is currently not routed, but it looks
   // like it should be breadcast to all renderers.
   void GetFourDigitCombinationsFromDOM(
       base::OnceCallback<void(const std::vector<std::string>&)>
@@ -259,10 +259,10 @@ class ContentAutofillDriver : public AutofillDriver,
   void FormSubmitted(const FormData& form,
                      bool known_success,
                      mojom::SubmissionSource submission_source) override;
-  void JavaScriptChangedAutofilledValue(
-      const FormData& form,
-      const FormFieldData& field,
-      const std::u16string& old_value) override;
+  void JavaScriptChangedAutofilledValue(const FormData& form,
+                                        const FormFieldData& field,
+                                        const std::u16string& old_value,
+                                        bool formatting_only) override;
   void SelectControlDidChange(const FormData& form,
                               const FormFieldData& field,
                               const gfx::RectF& bounding_box) override;
@@ -293,8 +293,8 @@ class ContentAutofillDriver : public AutofillDriver,
   [[nodiscard]] gfx::RectF TransformBoundingBoxToViewportCoordinates(
       const gfx::RectF& bounding_box) const;
 
-  // Returns the AutofillRouter and confirms that it may be accessed (we should
-  // not be using the router if we're prerendering).
+  // Returns the `AutofillDriverRouter` and confirms that it may be accessed (we
+  // should not be using the router if we're prerendering).
   //
   // The router must only route among ContentAutofillDrivers because
   // ContentAutofillDriver casts AutofillDrivers to ContentAutofillDrivers.

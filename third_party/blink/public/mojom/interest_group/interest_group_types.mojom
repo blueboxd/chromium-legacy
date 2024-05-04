@@ -18,7 +18,7 @@ struct InterestGroupAd {
   // Must use https.
   // string is used instead of url.mojom.Url to improve performance, since the
   // browser process only needs to pass this value as-is to worklet processes.
-  // Vaildated by InterestGroup::IsValid(), which is called by typemapping.
+  // Validated by InterestGroup::IsValid(), which is called by typemapping.
   string render_url;
   // Optional size groups assigned to this Ad.
   string? size_group;
@@ -382,6 +382,13 @@ struct AuctionAdConfigNonSharedParams {
     kTotalSignalsFetchLatency,
   };
 
+  // For each realtime monitoring report, this enum specifies the type of the
+  // report.
+  enum RealTimeReportingType {
+    // The default local DP type.
+    kDefaultLocalReporting,
+  };
+
   // Owners of interest groups allowed to participate in the auction.
   // Must all be HTTPS.
   array<url.mojom.Origin>? interest_group_buyers;
@@ -403,6 +410,11 @@ struct AuctionAdConfigNonSharedParams {
 
   // Timeouts for individual interest group worklet Javascript execution.
   AuctionAdConfigMaybePromiseBuyerTimeouts buyer_timeouts;
+
+  // The value restricts the runtime of seller's reportResult() and buyer's
+  // reportWin() scripts. Must be non-negative. 0 is allowed, which will just
+  // terminate reportWin()/reportResult() in the beginning of their execution.
+  mojo_base.mojom.TimeDelta? reporting_timeout;
 
   // Expectations for currency provided by seller when modifying bids for
   // parent auctions or to help with mixed-currency reporting. If this is set,
@@ -489,10 +501,19 @@ struct AuctionAdConfigNonSharedParams {
   // this for their auctions.
   mojo_base.mojom.Uuid? auction_nonce;
 
+  // The seller's real time reports type.
+  RealTimeReportingType? seller_real_time_reporting_type;
+
+  // Per buyer's real time reports type.
+  map<url.mojom.Origin, RealTimeReportingType>? per_buyer_real_time_reporting_types;
+
   // Nested auctions whose results will also be fed to `seller`. Only the top
   // level auction config can have component auctions.
   array<AuctionAdConfig> component_auctions;
 
+  // The ad render url replacements for their respective ad URL. If promise is
+  // never given, this will resolve to an empty vector.
+  AuctionAdConfigMaybePromiseDeprecatedRenderURLReplacements deprecated_render_url_replacements;
   // The maximum length limit for the trusted scoring signal fetch URL. Can
   // only be set as either 0 or a positive number. A value of 0 indicates
   // that there is no limit.
@@ -535,9 +556,6 @@ struct AuctionAdConfig {
   // renderer process. See details in the DirectFromSellerSignals comment.
   AuctionAdConfigMaybePromiseDirectFromSellerSignals direct_from_seller_signals;
 
-  // The ad render url replacements for their respective ad URL. If promise is
-  // never given, this will resolve to an empty vector.
-  AuctionAdConfigMaybePromiseDeprecatedRenderURLReplacements deprecated_render_url_replacements;
 
   // Like `direct_from_seller_signals`, but passed from the page via a different
   // mechanism. `direct_from_seller_signals` searches for the contents of
@@ -568,4 +586,20 @@ struct AuctionAdConfig {
   // Origin for the Coordinator to be used for the seller's Private Aggregation
   // requests.
   url.mojom.Origin? aggregation_coordinator_origin;
+};
+
+// Per-buyer config for GetInterestGroupAdAuctionData().
+struct AuctionDataBuyerConfig {
+  // Target size (in bytes) to allocate to this buyer.
+  uint32? target_size;
+};
+
+// Configuration to pass to GetInterestGroupAdAuctionData().
+struct AuctionDataConfig {
+  // A specific list of buyers to include in the encrypted request and any
+  // specific options for them.
+  map<url.mojom.Origin, AuctionDataBuyerConfig> per_buyer_configs;
+
+  // Maximum size to make the returned encrypted request.
+  uint32? request_size;
 };

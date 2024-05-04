@@ -22,7 +22,6 @@
 #include "chrome/browser/apps/app_preload_service/app_preload_service_factory.h"
 #include "chrome/browser/apps/app_preload_service/preload_app_definition.h"
 #include "chrome/browser/apps/app_service/app_install/app_install_service.h"
-#include "chrome/browser/apps/app_service/app_install/web_app_installer.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -32,6 +31,7 @@
 #include "components/services/app_service/public/cpp/app_types.h"
 #include "components/services/app_service/public/cpp/types_util.h"
 #include "components/user_manager/user_manager.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace {
 
@@ -75,6 +75,10 @@ BASE_FEATURE(kAppPreloadServiceForceRun,
 
 BASE_FEATURE(kAppPreloadServiceEnableTestApps,
              "AppPreloadServiceEnableTestApps",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kAppPreloadServiceEnableArcApps,
+             "AppPreloadServiceEnableArcApps",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 AppPreloadService::AppPreloadService(Profile* profile)
@@ -158,12 +162,15 @@ void AppPreloadService::StartAppInstallationForFirstLogin(
 
 void AppPreloadService::OnGetAppsForFirstLoginCompleted(
     base::TimeTicks start_time,
-    std::optional<std::vector<PreloadAppDefinition>> apps) {
+    std::optional<std::vector<PreloadAppDefinition>> apps,
+    LauncherOrdering launcher_ordering,
+    ShelfPinOrdering shelf_pin_ordering) {
   if (!apps.has_value()) {
     OnFirstLoginFlowComplete(start_time, /*success=*/false);
     return;
   }
 
+  // TODO(crbug.com/327058999): Implement launcher ordering and shelf pinning.
   std::vector<const PreloadAppDefinition*> apps_to_install;
   for (const PreloadAppDefinition& app : apps.value()) {
     if (ShouldInstallApp(app)) {
@@ -208,8 +215,12 @@ void AppPreloadService::OnFirstLoginFlowComplete(base::TimeTicks start_time,
 }
 
 bool AppPreloadService::ShouldInstallApp(const PreloadAppDefinition& app) {
-  // We currently only preload web apps.
-  if (app.GetPlatform() != AppType::kWeb) {
+  // We preload android apps (when feature enabled) and web apps.
+  if (app.GetPlatform() == PackageType::kArc) {
+    if (!base::FeatureList::IsEnabled(apps::kAppPreloadServiceEnableArcApps)) {
+      return false;
+    }
+  } else if (app.GetPlatform() != PackageType::kWeb) {
     return false;
   }
 
@@ -230,14 +241,17 @@ bool AppPreloadService::ShouldInstallApp(const PreloadAppDefinition& app) {
   AppServiceProxy* proxy = AppServiceProxyFactory::GetForProfile(profile_);
   bool installed = false;
 
-  proxy->AppRegistryCache().ForOneApp(
-      app.GetWebAppId(), [&installed, expected_reason](const AppUpdate& app) {
+  proxy->AppRegistryCache().ForEachApp(
+      [&installed, expected_reason, app](const apps::AppUpdate& update) {
         // It's possible that if APS requests the same app to be installed for
         // multiple reasons, this check could incorrectly return false, as App
         // Service only reports the highest priority install reason. This is
         // acceptable since the check is just an optimization.
-        installed = apps_util::IsInstalled(app.Readiness()) &&
-                    app.InstallReason() == expected_reason;
+        if (update.InstallerPackageId() == app.GetPackageId() &&
+            apps_util::IsInstalled(update.Readiness()) &&
+            update.InstallReason() == expected_reason) {
+          installed = true;
+        }
       });
 
   return !installed;

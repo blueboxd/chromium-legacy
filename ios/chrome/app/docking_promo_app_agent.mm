@@ -4,7 +4,10 @@
 
 #import "ios/chrome/app/docking_promo_app_agent.h"
 
+#import <optional>
+
 #import "base/check.h"
+#import "base/feature_list.h"
 #import "base/memory/raw_ptr.h"
 #import "ios/chrome/app/application_delegate/app_state.h"
 #import "ios/chrome/app/application_delegate/app_state_observer.h"
@@ -67,16 +70,15 @@
     return;
   }
 
-  // If the app was never foregrounded, do not register the Docking Promo.
-  if (_appState.lastTimeInForeground.is_null()) {
-    return;
-  }
+  std::optional<base::TimeDelta> timeSinceLastForeground =
+      MinTimeSinceLastForeground(_appState.foregroundScenes);
 
-  base::TimeDelta timeSinceLastForeground =
-      _appState.lastTimeInForeground - base::TimeTicks::Now();
-
-  if (!CanShowDockingPromo(timeSinceLastForeground)) {
-    [self deregisterPromo];
+  if (!CanShowDockingPromo(
+          timeSinceLastForeground.value_or(base::TimeDelta::Min()))) {
+    if (!base::FeatureList::IsEnabled(
+            kIOSDockingPromoPreventDeregistrationKillswitch)) {
+      [self deregisterPromo];
+    }
     return;
   }
 

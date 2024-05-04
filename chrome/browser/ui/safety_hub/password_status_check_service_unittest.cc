@@ -5,8 +5,10 @@
 #include "chrome/browser/ui/safety_hub/password_status_check_service.h"
 
 #include <string>
+#include <string_view>
 
 #include "base/json/values_util.h"
+#include "base/location.h"
 #include "base/test/bind.h"
 #include "base/time/time.h"
 #include "chrome/browser/password_manager/password_manager_test_util.h"
@@ -91,8 +93,8 @@ class MockObserver : public BulkLeakCheckService::Observer {
   raw_ptr<BulkLeakCheckService> leak_check_service_;
 };
 
-PasswordForm MakeForm(base::StringPiece16 username,
-                      base::StringPiece16 password,
+PasswordForm MakeForm(std::u16string_view username,
+                      std::u16string_view password,
                       std::string origin = kOrigin1,
                       bool is_leaked = false) {
   PasswordForm form;
@@ -252,23 +254,14 @@ class PasswordStatusCheckServiceParameterizedCardTest
   }
 };
 
-class PasswordStatusCheckServiceWithoutPasswordStoreTest
-    : public testing::Test {
+class PasswordStatusCheckServiceParameterizedSchedulingTest
+    : public PasswordStatusCheckServiceBaseTest,
+      public testing::WithParamInterface<int> {
  public:
-  PasswordStatusCheckService* service() { return service_.get(); }
-
-  content::BrowserTaskEnvironment* task_environment() { return &task_env_; }
-
- private:
-  void SetUp() override {
-    service_ = std::make_unique<PasswordStatusCheckService>(&profile_);
-    task_env_.RunUntilIdle();
+  int GetCurrentWeekday() const { return GetParam(); }
+  std::string GetWeightForDay(int day) const {
+    return day == GetCurrentWeekday() ? "1" : "0";
   }
-
-  content::BrowserTaskEnvironment task_env_{
-      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
-  TestingProfile profile_;
-  std::unique_ptr<PasswordStatusCheckService> service_;
 };
 
 TEST_F(PasswordStatusCheckServiceBaseTest, NoIssuesInitially) {
@@ -353,10 +346,10 @@ TEST_P(PasswordStatusCheckServiceParameterizedIssueTest,
   EXPECT_EQ(service()->reused_credential_count(), include_reused() ? 2UL : 0UL);
 
   // Removing the credentials with the issues is also detected.
-  profile_store().RemoveLogin(weak_form);
-  profile_store().RemoveLogin(leaked_form);
-  profile_store().RemoveLogin(reused_form_1);
-  profile_store().RemoveLogin(reused_form_2);
+  profile_store().RemoveLogin(FROM_HERE, weak_form);
+  profile_store().RemoveLogin(FROM_HERE, leaked_form);
+  profile_store().RemoveLogin(FROM_HERE, reused_form_1);
+  profile_store().RemoveLogin(FROM_HERE, reused_form_2);
   RunUntilIdle();
 
   EXPECT_EQ(service()->weak_credential_count(), 0UL);
@@ -585,8 +578,10 @@ TEST_F(PasswordStatusCheckServiceBaseTest,
 
   service()->StartRepeatedUpdates();
 
-  // If the scheduled check time is in the past, it should run within an hour.
-  task_environment()->AdvanceClock(base::Hours(1));
+  // If the scheduled check time is in the past, it should run within the
+  // overdue interval.
+  task_environment()->AdvanceClock(
+      features::kPasswordCheckOverdueInterval.Get());
   RunUntilIdle();
 
   // After password check is completed, the next one should be scheduled.
@@ -609,8 +604,10 @@ TEST_F(PasswordStatusCheckServiceBaseTest,
 
   service()->StartRepeatedUpdates();
 
-  // If the scheduled check time is in the past, it should run within an hour.
-  task_environment()->AdvanceClock(base::Hours(1));
+  // If the scheduled check time is in the past, it should run within the
+  // overdue interval.
+  task_environment()->AdvanceClock(
+      features::kPasswordCheckOverdueInterval.Get());
   RunUntilIdle();
 
   // After password check is completed, the next one should be scheduled.
@@ -854,18 +851,37 @@ TEST_P(PasswordStatusCheckServiceParameterizedStoreTest,
               testing::ElementsAre(kOrigin1));
 }
 
-TEST_F(PasswordStatusCheckServiceWithoutPasswordStoreTest, NoPasswordStored) {
-  // Let the time pass until a check should have happened.
-  task_environment()->AdvanceClock(base::Days(30));
-  task_environment()->RunUntilIdle();
+TEST_P(PasswordStatusCheckServiceParameterizedSchedulingTest,
+       CheckWeightedRandomScheduling) {
+  base::test::ScopedFeatureList feature_list;
+  ::testing::StrictMock<MockObserver> observer(bulk_leak_check_service());
 
-  // Expect that nothing is initialized.
-  EXPECT_FALSE(service()->GetSavedPasswordsPresenterForTesting());
-  EXPECT_FALSE(service()->GetPasswordCheckDelegateForTesting());
-  EXPECT_FALSE(service()->IsObservingSavedPasswordsPresenterForTesting());
-  EXPECT_FALSE(service()->IsObservingBulkLeakCheckForTesting());
-  EXPECT_FALSE(service()->is_password_check_running());
-  EXPECT_FALSE(service()->is_update_credential_count_pending());
+  // Make the probabality of all other days 0, except the current week day.
+  // Current week day should be selected to run the checks.
+  feature_list.InitAndEnableFeatureWithParameters(
+      features::kSafetyHub,
+      {
+          {"password-check-sun-weight", GetWeightForDay(0)},
+          {"password-check-mon-weight", GetWeightForDay(1)},
+          {"password-check-tue-weight", GetWeightForDay(2)},
+          {"password-check-wed-weight", GetWeightForDay(3)},
+          {"password-check-thu-weight", GetWeightForDay(4)},
+          {"password-check-fri-weight", GetWeightForDay(5)},
+          {"password-check-sat-weight", GetWeightForDay(6)},
+      });
+
+  // The first run is scheduled as soon as the service created on set up.
+  // Call StartRepeatedUpdates to let the first run schedued. Any following
+  // checks should be scheduled for the current weekday.
+  service()->StartRepeatedUpdates();
+
+  // Check the next scheduled run is on GetCurrentWeekday.
+  base::Time next_check_time = service()->GetScheduledPasswordCheckTime();
+  base::Time::Exploded next_check_time_exploded;
+  next_check_time.LocalExplode(&next_check_time_exploded);
+  EXPECT_EQ(next_check_time_exploded.day_of_week,
+            /* day_of_week */ GetCurrentWeekday());
+  feature_list.Reset();
 }
 
 INSTANTIATE_TEST_SUITE_P(
@@ -889,3 +905,9 @@ INSTANTIATE_TEST_SUITE_P(
 INSTANTIATE_TEST_SUITE_P(AccountOrProfileStore,
                          PasswordStatusCheckServiceParameterizedStoreTest,
                          testing::Bool());
+
+// A range from 0 (inclusive) to 7 (exclusive) to test randomization for each
+// day of week.
+INSTANTIATE_TEST_SUITE_P(All,
+                         PasswordStatusCheckServiceParameterizedSchedulingTest,
+                         testing::Range(0, 7));

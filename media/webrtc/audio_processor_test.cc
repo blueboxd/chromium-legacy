@@ -9,6 +9,7 @@
 
 #include <optional>
 #include <string>
+#include <string_view>
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -51,7 +52,7 @@ using MockProcessedCaptureCallback =
 
 AudioProcessor::LogCallback LogCallbackForTesting() {
   return base::BindRepeating(
-      [](base::StringPiece message) { VLOG(1) << (message); });
+      [](std::string_view message) { VLOG(1) << (message); });
 }
 
 // The number of packets used for testing.
@@ -361,7 +362,7 @@ TEST_P(AudioProcessorTestMultichannelAndFormat, TestStereoAudio) {
   // Test without and with audio processing enabled.
   constexpr bool kUseApmValues[] =
 #if BUILDFLAG(IS_IOS)
-      // TODO(https://crbug.com/1417474): `false` fails on ios-blink platform
+      // TODO(crbug.com/40257333): `false` fails on ios-blink platform
       // due to a special case for iOS in settings.NeedWebrtcAudioProcessing()
       {true};
 #else

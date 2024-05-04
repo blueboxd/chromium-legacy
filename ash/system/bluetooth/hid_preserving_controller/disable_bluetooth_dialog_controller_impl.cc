@@ -4,35 +4,30 @@
 
 #include "ash/system/bluetooth/hid_preserving_controller/disable_bluetooth_dialog_controller_impl.h"
 
+#include <algorithm>
+
 #include "ash/accessibility/accessibility_controller.h"
 #include "ash/constants/ash_features.h"
+#include "ash/constants/devicetype.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/bluetooth/hid_preserving_controller/disable_bluetooth_dialog_controller.h"
 #include "chromeos/constants/devicetype.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/views/controls/bulleted_label_list/bulleted_label_list_view.h"
 #include "ui/views/controls/image_view.h"
+#include "ui/views/layout/layout_provider.h"
+#include "ui/views/style/typography.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
 
 namespace {
 
-std::string DeviceTypeToString(chromeos::DeviceType device_type) {
-  switch (device_type) {
-    case chromeos::DeviceType::kChromebase:
-      return "Chromebase";
-    case chromeos::DeviceType::kChromebit:
-      return "Chromebit";
-    case chromeos::DeviceType::kChromebook:
-      return "Chromebook";
-    case chromeos::DeviceType::kChromebox:
-      return "Chromebox";
-    case chromeos::DeviceType::kUnknown:
-    default:
-      return "ChromeOS device";
-  }
-}
+constexpr char kUnknownDeviceTypeName[] = "ChromeOS device";
+
+// The dialog that is shown should have a maximum of three devices listed.
+constexpr size_t kMaxDeviceListLength = 3;
 
 }  // namespace
 
@@ -55,24 +50,25 @@ void DisableBluetoothDialogControllerImpl::ShowDialog(
   DCHECK_EQ(dialog_widget_, nullptr);
   CHECK(!devices.empty());
 
-  const std::string device_type = DeviceTypeToString(chromeos::GetDeviceType());
+  std::string device_type = DeviceTypeToString(chromeos::GetDeviceType());
+  if (device_type.empty()) {
+    device_type = kUnknownDeviceTypeName;
+  }
+
   std::u16string dialog_description;
 
   if (devices.size() == 1) {
     dialog_description = l10n_util::GetStringFUTF16(
         IDS_ASH_DISCONNECT_BLUETOOTH_WARNING_DIALOG_DESCRIPTION_ONE_DEVICE,
-        base::UTF8ToUTF16(device_type), base::UTF8ToUTF16(devices[0]));
+        base::UTF8ToUTF16(device_type));
   } else if (devices.size() == 2) {
     dialog_description = l10n_util::GetStringFUTF16(
         IDS_ASH_DISCONNECT_BLUETOOTH_WARNING_DIALOG_DESCRIPTION_TWO_DEVICES,
-        base::UTF8ToUTF16(device_type), base::UTF8ToUTF16(devices[0]),
-        base::UTF8ToUTF16(devices[1]));
+        base::UTF8ToUTF16(device_type));
   } else {
     dialog_description = l10n_util::GetStringFUTF16(
         IDS_ASH_DISCONNECT_BLUETOOTH_WARNING_DIALOG_DESCRIPTION_MULTIPLE_DEVICES,
-        base::NumberToString16(devices.size()), base::UTF8ToUTF16(device_type),
-        base::UTF8ToUTF16(devices[0]), base::UTF8ToUTF16(devices[1]),
-        base::UTF8ToUTF16(devices[2]));
+        base::NumberToString16(devices.size()), base::UTF8ToUTF16(device_type));
   }
 
   auto dialog = views::Builder<SystemDialogDelegateView>()
@@ -91,8 +87,21 @@ void DisableBluetoothDialogControllerImpl::ShowDialog(
                         weak_ptr_factory_.GetWeakPtr()))
                     .Build();
 
+  std::vector<std::u16string> texts;
+  const size_t count = std::min(devices.size(), kMaxDeviceListLength);
+  for (size_t i = 0; i < count; i++) {
+    texts.push_back(base::UTF8ToUTF16(devices[i]));
+  }
+
+  // Create the BulletedLabelListView with the generated texts.
+  std::unique_ptr<views::BulletedLabelListView> list_view =
+      std::make_unique<views::BulletedLabelListView>(
+          std::move(texts), views::style::TextStyle::STYLE_SECONDARY);
+
   dialog->SetModalType(ui::MODAL_TYPE_SYSTEM);
   dialog->SetShowCloseButton(false);
+  dialog->SetMiddleContentView(std::move(list_view));
+  dialog->SetMiddleContentAlignment(views::LayoutAlignment::kStart);
 
   views::Widget::InitParams params;
   params.context = Shell::GetPrimaryRootWindow();

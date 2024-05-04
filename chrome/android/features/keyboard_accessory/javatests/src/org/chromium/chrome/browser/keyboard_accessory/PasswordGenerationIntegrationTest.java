@@ -6,9 +6,11 @@ package org.chromium.chrome.browser.keyboard_accessory;
 
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
+import static androidx.test.espresso.contrib.RecyclerViewActions.actionOnItemAtPosition;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 
 import static org.chromium.base.test.util.Matchers.is;
+import static org.chromium.chrome.browser.keyboard_accessory.ManualFillingTestHelper.whenDisplayed;
 import static org.chromium.chrome.browser.touch_to_fill.password_generation.TouchToFillPasswordGenerationTestHelper.acceptPasswordInGenerationBottomSheet;
 import static org.chromium.chrome.browser.touch_to_fill.password_generation.TouchToFillPasswordGenerationTestHelper.rejectPasswordInGenerationBottomSheet;
 import static org.chromium.content_public.browser.test.util.TestThreadUtils.runOnUiThreadBlocking;
@@ -39,18 +41,15 @@ import org.chromium.base.test.util.DoNotBatch;
 import org.chromium.base.test.util.Features;
 import org.chromium.base.test.util.IntegrationTest;
 import org.chromium.base.test.util.Matchers;
+import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.keyboard_accessory.button_group_component.KeyboardAccessoryButtonGroupView;
-import org.chromium.chrome.browser.password_manager.FakePasswordStoreAndroidBackend;
-import org.chromium.chrome.browser.password_manager.FakePasswordStoreAndroidBackendFactoryImpl;
-import org.chromium.chrome.browser.password_manager.FakePasswordSyncControllerDelegateFactoryImpl;
-import org.chromium.chrome.browser.password_manager.PasswordStoreAndroidBackendFactory;
+import org.chromium.chrome.browser.password_manager.PasswordManagerTestHelper;
 import org.chromium.chrome.browser.password_manager.PasswordStoreBridge;
 import org.chromium.chrome.browser.password_manager.PasswordStoreCredential;
-import org.chromium.chrome.browser.password_manager.PasswordSyncControllerDelegateFactory;
 import org.chromium.chrome.browser.sync.SyncTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ChromeTabUtils;
@@ -60,14 +59,13 @@ import org.chromium.components.browser_ui.bottomsheet.BottomSheetControllerProvi
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetTestSupport;
 import org.chromium.components.browser_ui.modaldialog.AppModalPresenter;
 import org.chromium.components.messages.MessagesTestHelper;
-import org.chromium.components.signin.AccountUtils;
 import org.chromium.content_public.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.net.test.ServerCertificate;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.modaldialog.ModalDialogManager;
-import org.chromium.ui.widget.ButtonCompat;
+import org.chromium.ui.test.util.GmsCoreVersionRestriction;
 import org.chromium.ui.widget.ChromeImageButton;
 
 import java.util.ArrayList;
@@ -78,7 +76,7 @@ import java.util.concurrent.atomic.AtomicReference;
 @RunWith(ChromeJUnit4ClassRunner.class)
 @DoNotBatch(
         reason =
-                "TODO(crbug.com/1346583): add resetting logic for"
+                "TODO(crbug.com/40232561): add resetting logic for"
                         + "FakePasswordStoreAndroidBackend to allow batching")
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE, "show-autofill-signatures"})
 @DisableIf.Build(
@@ -118,19 +116,7 @@ public class PasswordGenerationIntegrationTest {
 
     @Before
     public void setUp() throws InterruptedException {
-        PasswordStoreAndroidBackendFactory.setFactoryInstanceForTesting(
-                new FakePasswordStoreAndroidBackendFactoryImpl());
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> {
-                    ((FakePasswordStoreAndroidBackend)
-                                    PasswordStoreAndroidBackendFactory.getInstance()
-                                            .createBackend())
-                            .setSyncingAccount(
-                                    AccountUtils.createAccountFromName(
-                                            SigninTestRule.TEST_ACCOUNT_EMAIL));
-                });
-        PasswordSyncControllerDelegateFactory.setFactoryInstanceForTesting(
-                new FakePasswordSyncControllerDelegateFactoryImpl());
+        PasswordManagerTestHelper.setAccountForPasswordStore(SigninTestRule.TEST_ACCOUNT_EMAIL);
 
         mSyncTestRule.setUpAccountAndEnableSyncForTesting();
         ManualFillingTestHelper.disableServerPredictions();
@@ -169,13 +155,7 @@ public class PasswordGenerationIntegrationTest {
         // Focus again, because the sheet steals the focus from web contents.
         focusField(PASSWORD_NODE_ID);
         mHelper.waitForKeyboardAccessoryToBeShown(true);
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> {
-                    ButtonCompat suggestStrongPassword =
-                            (ButtonCompat) mHelper.getFirstAccessorySuggestion();
-                    Assert.assertNotNull(suggestStrongPassword);
-                    suggestStrongPassword.performClick();
-                });
+        whenDisplayed(withId(R.id.bar_items_view)).perform(actionOnItemAtPosition(0, click()));
         waitForGenerationDialog();
         rejectPasswordInGenerationDialog();
         assertPasswordTextEmpty(PASSWORD_NODE_ID);
@@ -221,13 +201,7 @@ public class PasswordGenerationIntegrationTest {
         // Focus again, because the sheet steals the focus from web contents.
         focusField(PASSWORD_NODE_ID);
         mHelper.waitForKeyboardAccessoryToBeShown(true);
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> {
-                    ButtonCompat suggestStrongPassword =
-                            (ButtonCompat) mHelper.getFirstAccessorySuggestion();
-                    Assert.assertNotNull(suggestStrongPassword);
-                    suggestStrongPassword.performClick();
-                });
+        whenDisplayed(withId(R.id.bar_items_view)).perform(actionOnItemAtPosition(0, click()));
         waitForGenerationDialog();
         String generatedPassword = acceptPasswordInGenerationDialog();
         CriteriaHelper.pollInstrumentationThread(
@@ -249,6 +223,7 @@ public class PasswordGenerationIntegrationTest {
 
     @Test
     @IntegrationTest
+    @Restriction(GmsCoreVersionRestriction.RESTRICTION_TYPE_VERSION_GE_22W30)
     public void testManualGenerationUsePassword() throws InterruptedException, TimeoutException {
         waitForGenerationLabel();
         focusField(PASSWORD_NODE_ID_MANUAL);
@@ -322,7 +297,7 @@ public class PasswordGenerationIntegrationTest {
 
     private void focusField(String node) throws TimeoutException, InterruptedException {
         DOMUtils.clickNode(mHelper.getWebContents(), node);
-        // TODO(crbug.com/1440955): Remove the code below. Manually calling focus and scroll is
+        // TODO(crbug.com/40266339): Remove the code below. Manually calling focus and scroll is
         // needed because this test uses a screen keyboard stub instead of the real screen keyboard.
         // Integration tests in general should use the real keyboard to reflect the production
         // behavior better.

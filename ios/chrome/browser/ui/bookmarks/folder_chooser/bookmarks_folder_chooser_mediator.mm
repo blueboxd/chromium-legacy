@@ -8,7 +8,6 @@
 #import "base/memory/raw_ptr.h"
 #import "components/bookmarks/browser/bookmark_node.h"
 #import "components/bookmarks/common/bookmark_features.h"
-#import "components/sync/base/features.h"
 #import "ios/chrome/browser/bookmarks/model/bookmark_model_bridge_observer.h"
 #import "ios/chrome/browser/bookmarks/model/legacy_bookmark_model.h"
 #import "ios/chrome/browser/signin/model/authentication_service_observer_bridge.h"
@@ -45,6 +44,8 @@ using bookmarks::BookmarkNode;
   raw_ptr<syncer::SyncService> _syncService;
   // Observer for sync service status changes.
   std::unique_ptr<SyncObserverBridge> _syncObserverBridge;
+  // The account bookmark model.
+  LegacyBookmarkModel* _accountBookmarkModel;
 }
 
 - (instancetype)
@@ -72,6 +73,7 @@ using bookmarks::BookmarkNode;
       _accountDataSource = [[BookmarksFolderChooserSubDataSourceImpl alloc]
           initWithBookmarkModel:accountBookmarkModel
                parentDataSource:self];
+      _accountBookmarkModel = accountBookmarkModel;
     }
     _editedNodes = std::move(editedNodes);
     _authServiceBridge = std::make_unique<AuthenticationServiceObserverBridge>(
@@ -119,7 +121,8 @@ using bookmarks::BookmarkNode;
 }
 
 - (BOOL)shouldShowAccountBookmarks {
-  return bookmark_utils_ios::IsAccountBookmarkStorageOptedIn(_syncService);
+  return bookmark_utils_ios::IsAccountBookmarkStorageAvailable(
+      _syncService, _accountBookmarkModel);
 }
 
 #pragma mark - BookmarksFolderChooserMutator
@@ -159,7 +162,7 @@ using bookmarks::BookmarkNode;
 - (void)bookmarkModelWillRemoveAllNodes:
     (const LegacyBookmarkModel*)bookmarkModel {
   auto nodeInModel = [bookmarkModel](const BookmarkNode* node) {
-    return node->HasAncestor(bookmarkModel->root_node());
+    return bookmarkModel->IsNodePartOfModel(node);
   };
   // Remove will-be removed nodes (in `model`) from `_editedNodes`.
   std::erase_if(_editedNodes, nodeInModel);
@@ -168,7 +171,7 @@ using bookmarks::BookmarkNode;
     // if `_editedNodes` becomes empty, nothing to move.  Exit the folder
     // chooser.
     [_delegate bookmarksFolderChooserMediatorWantsDismissal:self];
-  } else if (_selectedFolderNode->HasAncestor(bookmarkModel->root_node())) {
+  } else if (bookmarkModel->IsNodePartOfModel(_selectedFolderNode)) {
     // The selected folder will be deleted. Unset `_selectedFolderNode`.
     _selectedFolderNode = nil;
   }

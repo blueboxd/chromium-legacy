@@ -145,15 +145,14 @@ bool IsValidWebAppUrl(const GURL& app_url) {
     return false;
 
   bool allow_extension_apps = true;
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
-    BUILDFLAG(IS_FUCHSIA)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
   // Stop allowing apps to be extension urls when the shortcuts are separated -
   // they can be extension urls instead.
   allow_extension_apps =
       !base::FeatureList::IsEnabled(features::kShortcutsNotApps);
 #endif
 
-  // TODO(crbug.com/1253234): Remove chrome-extension scheme.
+  // TODO(crbug.com/40793595): Remove chrome-extension scheme.
   return app_url.SchemeIs(url::kHttpScheme) ||
          app_url.SchemeIs(url::kHttpsScheme) ||
          (allow_extension_apps && app_url.SchemeIs("chrome-extension")) ||

@@ -115,7 +115,9 @@ class ManagePasswordsUIController
   void ShowMovePasswordBubble(
       const password_manager::PasswordForm& form) override;
   void OnBiometricAuthBeforeFillingDeclined() override;
-  void OnAddUsernameSaveClicked(const std::u16string& username) override;
+  void OnAddUsernameSaveClicked(
+      const std::u16string& username,
+      const password_manager::PasswordForm& form_to_update) override;
   void OnKeychainError() override;
 
   virtual void NotifyUnsyncedCredentialsWillBeDeleted(
@@ -180,6 +182,9 @@ class ManagePasswordsUIController
       const password_manager::PasswordForm& form,
       password_manager::CredentialType credential_type) override;
   void NavigateToPasswordManagerSettingsPage(
+      password_manager::ManagePasswordsReferrer referrer) override;
+  void NavigateToPasswordDetailsPageInPasswordManager(
+      const std::string& password_domain_name,
       password_manager::ManagePasswordsReferrer referrer) override;
   void NavigateToPasswordManagerSettingsAccountStoreToggle(
       password_manager::ManagePasswordsReferrer referrer) override;
@@ -264,6 +269,9 @@ class ManagePasswordsUIController
     SHOWN,
     // Same as SHOWN but the icon is to be updated when the bubble is closed.
     SHOWN_PENDING_ICON_UPDATE,
+    // The bubble is to be popped up in the next call to
+    // UpdateBubbleAndIconVisibility() and will be focused automatically.
+    SHOULD_POP_UP_WITH_FOCUS,
   };
 
   bool IsShowingBubble() const {

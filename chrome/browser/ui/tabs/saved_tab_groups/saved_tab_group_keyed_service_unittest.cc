@@ -193,8 +193,8 @@ TEST_F(SavedTabGroupKeyedServiceUnitTest, PauseResumeTracking) {
                                                      ->group_model()
                                                      ->GetTabGroup(group_id)
                                                      ->visual_data());
-  std::unique_ptr<content::WebContents> tab =
-      browser_1->tab_strip_model()->DetachWebContentsAtForInsertion(1);
+  std::unique_ptr<tabs::TabModel> detached_tab =
+      browser_1->tab_strip_model()->DetachTabAtForInsertion(1);
   // This kills the group.
   ASSERT_FALSE(
       browser_1->tab_strip_model()->group_model()->ContainsTabGroup(group_id));
@@ -202,8 +202,8 @@ TEST_F(SavedTabGroupKeyedServiceUnitTest, PauseResumeTracking) {
   // Recreate the local group and add the tab to it (same browser is fine).
   browser_1->tab_strip_model()->group_model()->AddTabGroup(group_id,
                                                            visual_data);
-  browser_1->tab_strip_model()->InsertWebContentsAt(
-      1, std::move(tab), AddTabTypes::ADD_NONE, group_id);
+  browser_1->tab_strip_model()->InsertDetachedTabAt(
+      1, std::move(detached_tab), AddTabTypes::ADD_NONE, group_id);
 
   // Resume tracking.
   service()->ResumeTrackingLocalTabGroup(saved_group_id, group_id);
@@ -232,12 +232,14 @@ TEST_F(SavedTabGroupKeyedServiceUnitTest, ResumeTrackingValidatesConsistency) {
   service()->SaveGroup(group_id);
   base::Uuid saved_group_id = service()->model()->Get(group_id)->saved_guid();
 
-  // Pause tracking.
+  // Reordering during paused tracking is okay.
   service()->PauseTrackingLocalTabGroup(group_id);
-
-  // Swap the order of the tabs.
   browser_1->tab_strip_model()->MoveWebContentsAt(0, 1, false);
+  service()->ResumeTrackingLocalTabGroup(saved_group_id, group_id);
 
+  // Removing a tab from the group during paused tracking is not okay.
+  service()->PauseTrackingLocalTabGroup(group_id);
+  browser_1->tab_strip_model()->RemoveFromGroup({1});
   EXPECT_DEATH(service()->ResumeTrackingLocalTabGroup(saved_group_id, group_id),
                "");
 }
@@ -279,7 +281,10 @@ TEST_F(SavedTabGroupKeyedServiceUnitTest, AlreadyOpenedGroupIsFocused) {
   browser_1->tab_strip_model()->ActivateTabAt(1);
   EXPECT_EQ(1, browser_1->tab_strip_model()->active_index());
 
-  service()->OpenSavedTabGroupInBrowser(browser_1, guid_1);
+  std::optional<tab_groups::TabGroupId> opened_group_id =
+      service()->OpenSavedTabGroupInBrowser(browser_1, guid_1);
+  EXPECT_TRUE(opened_group_id.has_value());
+  EXPECT_EQ(tab_group_id_1, opened_group_id.value());
 
   // Ensure the first tab in the saved group is activated.
   EXPECT_EQ(0, browser_1->tab_strip_model()->active_index());
@@ -325,7 +330,10 @@ TEST_F(SavedTabGroupKeyedServiceUnitTest,
   browser_1->tab_strip_model()->ActivateTabAt(1);
   EXPECT_EQ(1, browser_1->tab_strip_model()->active_index());
 
-  service()->OpenSavedTabGroupInBrowser(browser_1, guid_1);
+  std::optional<tab_groups::TabGroupId> opened_group_id =
+      service()->OpenSavedTabGroupInBrowser(browser_1, guid_1);
+  EXPECT_TRUE(opened_group_id.has_value());
+  EXPECT_EQ(tab_group_id_1, opened_group_id.value());
 
   // Ensure the active tab in the saved group is not changed.
   EXPECT_EQ(1, browser_1->tab_strip_model()->active_index());
@@ -334,7 +342,9 @@ TEST_F(SavedTabGroupKeyedServiceUnitTest,
   browser_1->tab_strip_model()->ActivateTabAt(2);
   EXPECT_EQ(2, browser_1->tab_strip_model()->active_index());
 
-  service()->OpenSavedTabGroupInBrowser(browser_1, guid_1);
+  opened_group_id = service()->OpenSavedTabGroupInBrowser(browser_1, guid_1);
+  EXPECT_TRUE(opened_group_id.has_value());
+  EXPECT_EQ(tab_group_id_1, opened_group_id.value());
 
   // If there is no active tab in the saved tab group, the first tab of the
   // saved tab group is activated. Ensure the first tab in the saved group is
@@ -563,8 +573,8 @@ TEST_F(SavedTabGroupKeyedServiceUnitTest,
   ASSERT_EQ(modified_tab_range.length(),
             retrieved_saved_group->saved_tabs().size());
 
-  // TODO(crbug/1450319): Compare tabs and ensure they are in the same order and
-  // contain the same data.
+  // TODO(crbug.com/40915240): Compare tabs and ensure they are in the same
+  // order and contain the same data.
 }
 
 TEST_F(SavedTabGroupKeyedServiceUnitTest,
@@ -628,8 +638,8 @@ TEST_F(SavedTabGroupKeyedServiceUnitTest,
   ASSERT_EQ(modified_tab_range.length(),
             retrieved_saved_group->saved_tabs().size());
 
-  // TODO(crbug/1450319): Compare tabs and ensure they are in the same order and
-  // contain the same data.
+  // TODO(crbug.com/40915240): Compare tabs and ensure they are in the same
+  // order and contain the same data.
 }
 
 TEST_F(SavedTabGroupKeyedServiceUnitTest, NewTabFromSyncOpensInLocalGroup) {
@@ -920,7 +930,7 @@ TEST_F(SavedTabGroupKeyedServiceUnitTest,
 
   std::unique_ptr<content::WebContents> replacement_web_contents =
       content::WebContentsTester::CreateTestWebContents(profile(), nullptr);
-  browser->tab_strip_model()->ReplaceWebContentsAt(
+  browser->tab_strip_model()->DiscardWebContentsAt(
       0, std::move(replacement_web_contents));
 
   // Expect after moving the first tab to the right of the second, that the
@@ -1038,6 +1048,32 @@ TEST_F(SavedTabGroupKeyedServiceUnitTest,
 
   // The SavedTabGroupTab should still be at the good URL not the bad one.
   EXPECT_EQ(saved_group->saved_tabs().at(0).url(), good_gurl);
+}
+
+// Save group in front of others when `is_pinned` is true.
+TEST_F(SavedTabGroupKeyedServiceUnitTest, SaveGroupIsPinned) {
+  Browser* browser = AddBrowser();
+
+  AddTabToBrowser(browser, 0);
+  AddTabToBrowser(browser, 0);
+  AddTabToBrowser(browser, 0);
+  ASSERT_EQ(3, browser->tab_strip_model()->count());
+  const tab_groups::TabGroupId tab_group_id_1 =
+      browser->tab_strip_model()->AddToNewGroup({0});
+  const tab_groups::TabGroupId tab_group_id_2 =
+      browser->tab_strip_model()->AddToNewGroup({1});
+  const tab_groups::TabGroupId tab_group_id_3 =
+      browser->tab_strip_model()->AddToNewGroup({2});
+  service()->SaveGroup(tab_group_id_1);
+  service()->SaveGroup(tab_group_id_2);
+  service()->SaveGroup(tab_group_id_3, /*is_pinned=*/true);
+
+  auto saved_tab_groups = service()->model()->saved_tab_groups();
+
+  // Tab Group 3 is placed in front of the others.
+  ASSERT_EQ(tab_group_id_3, saved_tab_groups[0].local_group_id());
+  ASSERT_EQ(tab_group_id_1, saved_tab_groups[1].local_group_id());
+  ASSERT_EQ(tab_group_id_2, saved_tab_groups[2].local_group_id());
 }
 
 }  // namespace tab_groups

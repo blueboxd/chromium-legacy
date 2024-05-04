@@ -9,7 +9,7 @@ found in the LICENSE file.
 <histograms>
 
 <histogram name="StructuredMetrics.ExternalMetricsDropped" units="count"
-    expires_after="2024-07-14">
+    expires_after="2024-10-06">
   <owner>andrewbregger@google.com</owner>
   <owner>jongahn@google.com</owner>
   <owner>chromeos-data-eng@google.com</owner>
@@ -21,12 +21,11 @@ found in the LICENSE file.
   </summary>
 </histogram>
 
-<histogram name="StructuredMetrics.ExternalMetricsDropped.{Project}"
-    units="count" expires_after="2024-07-14">
+<histogram name="StructuredMetrics.ExternalMetricsDropped2.{Project}"
+    units="count" expires_after="2024-10-14">
   <owner>andrewbregger@google.com</owner>
   <owner>jongahn@google.com</owner>
   <owner>chromeos-data-eng@google.com</owner>
-  <owner>chrome-metrics-team@google.com</owner>
   <summary>
     The number of events that are dropped when processing External Metrics per
     project. Events are dropped once a threshold, 50 by default, is reached.
@@ -53,12 +52,11 @@ found in the LICENSE file.
   </token>
 </histogram>
 
-<histogram name="StructuredMetrics.ExternalMetricsProduced.{Project}"
-    units="count" expires_after="2024-07-14">
+<histogram name="StructuredMetrics.ExternalMetricsProduced2.{Project}"
+    units="count" expires_after="2024-10-14">
   <owner>andrewbregger@google.com</owner>
   <owner>jongahn@google.com</owner>
   <owner>chromeos-data-eng@google.com</owner>
-  <owner>chrome-metrics-team@google.com</owner>
   <summary>
     The number of events that are produced by Platform2 per-project. This field
     is only recorded when recording is enabled.
@@ -137,8 +135,21 @@ found in the LICENSE file.
   </summary>
 </histogram>
 
+<histogram name="StructuredMetrics.OnExternalMetricsCollectedDuration"
+    units="microseconds" expires_after="2025-03-20">
+  <owner>andrewbregger@google.com</owner>
+  <owner>jongahn@google.com</owner>
+  <owner>chromeos-data-eng@google.com</owner>
+  <summary>
+    Messures the duration of
+    AshStructuredMetricsRecorder::OnExternalMetricsCollected in microseconds.
+    Measuring to collect information about potential UI jankiness this function
+    is causing.
+  </summary>
+</histogram>
+
 <histogram name="StructuredMetrics.Reporting.ActualUploadInterval"
-    units="minutes" expires_after="2024-07-14">
+    units="minutes" expires_after="2024-09-15">
   <owner>andrewbregger@google.com</owner>
   <owner>jongahn@google.com</owner>
   <owner>chromeos-data-eng@google.com</owner>
@@ -175,7 +186,7 @@ found in the LICENSE file.
 </histogram>
 
 <histogram name="StructuredMetrics.Reporting.LogSize.OnSuccess" units="KB"
-    expires_after="2024-07-14">
+    expires_after="2024-09-15">
   <owner>andrewbregger@google.com</owner>
   <owner>jongahn@google.com</owner>
   <owner>chromeos-data-eng@google.com</owner>
@@ -198,7 +209,7 @@ found in the LICENSE file.
 </histogram>
 
 <histogram name="StructuredMetrics.UploadSize" units="bytes"
-    expires_after="2024-07-14">
+    expires_after="2024-09-15">
   <owner>andrewbregger@google.com</owner>
   <owner>jongahn@google.com</owner>
   <owner>chromeos-data-eng@google.com</owner>

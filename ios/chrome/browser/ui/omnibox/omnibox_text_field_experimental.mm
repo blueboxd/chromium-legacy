@@ -22,6 +22,7 @@
 #import "ios/chrome/browser/shared/ui/util/reversed_animation.h"
 #import "ios/chrome/browser/shared/ui/util/rtl_geometry.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
+#import "ios/chrome/browser/ui/omnibox/omnibox_ui_features.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_util.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
 #import "ios/chrome/common/material_timing.h"
@@ -61,16 +62,17 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
 // Font that should be used in current size class.
 - (UIFont*)currentFont;
 
-// Length of autocomplete text.
-@property(nonatomic) size_t autocompleteTextLength;
-
 // Tap gesture recognizer for this view.
 @property(nonatomic, strong) UITapGestureRecognizer* tapGestureRecognizer;
 
 @end
 
-@implementation OmniboxTextFieldExperimental
+@implementation OmniboxTextFieldExperimental {
+  /// Length of autocomplete text.
+  NSUInteger _autocompleteTextLength;
+}
 
+@synthesize additionalText = _additionalText;
 @dynamic delegate;
 
 #pragma mark - Public methods
@@ -127,8 +129,6 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
 
 - (void)setText:(NSAttributedString*)text
     userTextLength:(size_t)userTextLength {
-  self.autocompleteTextLength = text.length - userTextLength;
-
   DCHECK_LE(userTextLength, text.length);
   if (userTextLength > 0) {
     [self exitPreEditState];
@@ -154,40 +154,71 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
 }
 
 - (NSString*)autocompleteText {
-  if (self.autocompleteTextLength > 0) {
-    // In crbug.com/1237851, sometimes self.autocompleteTextLength is greater
+  if ([self hasAutocompleteText]) {
+    // In crbug.com/1237851, sometimes _autocompleteTextLength is greater
     // than self.text.length, causing the subtraction below to overflow,
     // breaking
     // `-substringToIndex:`. This shouldn't happen, so use the DCHECK to catch
     // it to help debug and default to the end of the string if an overflow
     // would occur.
-    DCHECK(self.text.length >= self.autocompleteTextLength);
-    NSUInteger userTextEndIndex =
-        self.text.length >= self.autocompleteTextLength
-            ? self.text.length - self.autocompleteTextLength
-            : self.text.length;
-    return [self.text substringFromIndex:userTextEndIndex];
+    DCHECK_LE(_autocompleteTextLength, self.text.length);
+    const NSUInteger totalLength = self.text.length;
+    const NSUInteger userTextEndIndex = totalLength - [self addedTextLength];
+    if (userTextEndIndex + _autocompleteTextLength > totalLength) {
+      return @"";
+    }
+    return [self.text substringWithRange:NSMakeRange(userTextEndIndex,
+                                                     _autocompleteTextLength)];
   }
   return @"";
 }
 
 - (NSString*)userText {
-  // In crbug.com/1237851, sometimes self.autocompleteTextLength is greater than
+  // In crbug.com/1237851, sometimes `_autocompleteTextLength` is greater than
   // self.text.length, causing the subtraction below to overflow, breaking
   // `-substringToIndex:`. This shouldn't happen, so use the DCHECK to catch it
   // to help debug and default to the end of the string if an overflow would
   // occur.
-  DCHECK(self.text.length >= self.autocompleteTextLength);
-  NSUInteger userTextEndIndex =
-      self.text.length >= self.autocompleteTextLength
-          ? self.text.length - self.autocompleteTextLength
-          : self.text.length;
+  const NSUInteger addedTextLength = [self addedTextLength];
+  DCHECK_LE(addedTextLength, self.text.length);
+  NSUInteger userTextEndIndex = self.text.length >= addedTextLength
+                                    ? self.text.length - addedTextLength
+                                    : self.text.length;
   return [self.text substringToIndex:userTextEndIndex];
 }
 
 - (NSString*)markedText {
   DCHECK([self conformsToProtocol:@protocol(UITextInput)]);
   return [self textInRange:[self markedTextRange]];
+}
+
+- (NSString*)displayedText {
+  return [self textWithoutAdditionalText].string;
+}
+
+- (BOOL)hasAutocompleteText {
+  return _autocompleteTextLength > 0;
+}
+
+- (void)clearAutocompleteText {
+  if ([self hasAutocompleteText]) {
+    self.text = self.userText;
+  }
+  if (IsRichAutocompletionEnabled() && [self hasAdditionalText]) {
+    [self removeAdditionalText];
+  }
+}
+
+- (void)setAdditionalText:(NSAttributedString*)additionalText {
+  CHECK(IsRichAutocompletionEnabled());
+  [self removeAdditionalText];
+
+  if (!additionalText.length) {
+    return;
+  }
+  NSAttributedString* currentText = self.attributedText;
+  _additionalText = additionalText;
+  [self setTextInternal:currentText autocompleteLength:_autocompleteTextLength];
 }
 
 - (NSRange)selectedNSRange {
@@ -203,7 +234,7 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
 
 - (NSTextAlignment)bestTextAlignment {
   if ([self isFirstResponder]) {
-    return [self bestAlignmentForText:self.text];
+    return DetermineBestAlignmentForText(self.text);
   }
   return NSTextAlignmentNatural;
 }
@@ -325,15 +356,14 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
 
 #pragma mark pre-edit
 
-// Creates a UILabel based on the current dimension of the text field and
-// displays the URL in the UILabel so it appears properly aligned to the URL.
+/// Enters pre-edit state.
 - (void)enterPreEditState {
   // Empty omnibox should show the insertion point immediately. There is
   // nothing to erase.
   if (!self.text.length || UIAccessibilityIsVoiceOverRunning())
     return;
 
-  self.preEditing = true;
+  self.preEditing = YES;
 
   NSMutableDictionary<NSAttributedStringKey, id>* attributes =
       self.defaultTextAttributes.mutableCopy;
@@ -342,13 +372,16 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
                 forKey:NSBackgroundColorAttributeName];
   self.defaultTextAttributes = attributes;
 
-  self.clearsOnInsertion = true;
+  self.clearsOnInsertion = YES;
 }
 
-// Finishes pre-edit state by removing the UILabel with the URL.
+/// Exits pre-edit state.
 - (void)exitPreEditState {
-  self.preEditing = false;
-  self.clearsOnInsertion = false;
+  if (!self.preEditing) {
+    return;
+  }
+  self.preEditing = NO;
+  self.clearsOnInsertion = NO;
 
   NSMutableDictionary<NSAttributedStringKey, id>* attributes =
       self.defaultTextAttributes.mutableCopy;
@@ -391,11 +424,17 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
                       value:self.currentFont
                       range:entireString];
 
-  // When editing, use the default text color for all text.
+  // When editing, use the default text color for all text, except the
+  // additionnal text.
   if (self.editing) {
+    NSRange foregroundColorRange = entireString;
+    if (IsRichAutocompletionEnabled() && [self hasAdditionalText]) {
+      foregroundColorRange =
+          NSMakeRange(0, mutableText.length - self.additionalText.length);
+    }
     [mutableText addAttribute:NSForegroundColorAttributeName
                         value:self.textColor
-                        range:entireString];
+                        range:foregroundColorRange];
   } else {
     NSMutableParagraphStyle* style = [[NSMutableParagraphStyle alloc] init];
     // URLs have their text direction set to to LTR (avoids RTL characters
@@ -449,14 +488,11 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
   return LayoutRectGetRect(textRectLayout);
 }
 
-- (CGRect)editingRectForBounds:(CGRect)bounds {
-  CGRect editRect = [super editingRectForBounds:bounds];
-  return editRect;
-}
-
 - (CGRect)caretRectForPosition:(UITextPosition*)position {
-  return ([self hasAutocompleteText]) ? CGRectZero
-                                      : [super caretRectForPosition:position];
+  // Hide the caret when the text field is showing added text (autocomplete
+  // and/or additional text).
+  return ([self hasAddedText]) ? CGRectZero
+                               : [super caretRectForPosition:position];
 }
 
 - (NSArray<UITextSelectionRect*>*)selectionRectsForRange:(UITextRange*)range {
@@ -513,7 +549,8 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
 
 - (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer*)gestureRecognizer {
   if (gestureRecognizer == self.tapGestureRecognizer) {
-    return [self isPreEditing] || [self hasAutocompleteText];
+    return [self isPreEditing] || [self hasAutocompleteText] ||
+           (IsRichAutocompletionEnabled() && [self hasAdditionalText]);
   }
   return YES;
 }
@@ -522,11 +559,14 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
 
 // Triggered on tap gesture recognizer.
 - (void)handleTap:(UITapGestureRecognizer*)sender {
-  if ([self isPreEditing]) {
+  if (self.isPreEditing) {
     [self exitPreEditState];
   }
-  if ([self hasAutocompleteText]) {
+  if (self.hasAutocompleteText) {
     [self acceptAutocompleteText];
+  }
+  if (IsRichAutocompletionEnabled() && self.hasAdditionalText) {
+    [self handleUserInitiatedRemovalOfAdditionalText];
   }
 }
 
@@ -544,11 +584,14 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
   if ([self hasAutocompleteText]) {
     [self acceptAutocompleteText];
   }
+  if ([self hasAdditionalText]) {
+    [self handleUserInitiatedRemovalOfAdditionalText];
+  }
   [super selectAll:sender];
 }
 
 - (BOOL)canPerformAction:(SEL)action withSender:(id)sender {
-  // TODO(crbug.com/1478261): Improve this short term fix.
+  // TODO(crbug.com/40280508): Improve this short term fix.
   if (@available(iOS 17.0, *)) {
     if (action == @selector(undoManager)) {
       return YES;
@@ -669,6 +712,10 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
     [self clearAutocompleteText];
     return;
   }
+  if (IsRichAutocompletionEnabled() && [self hasAdditionalText]) {
+    [self handleUserInitiatedRemovalOfAdditionalText];
+    return;
+  }
   // Must test for the onDeleteBackward method, since it's optional.
   if ([self.delegate respondsToSelector:@selector(onDeleteBackward)])
     [self.delegate onDeleteBackward];
@@ -725,6 +772,17 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
   return @[ commandUp, commandDown, commandLeft, commandRight ];
 }
 
+#pragma mark - UIAccessibilityElement
+
+- (NSString*)accessibilityValue {
+  if (NSClassFromString(@"XCTest")) {
+    return [NSString stringWithFormat:@"%@||||%@||||%@", self.userText ?: @"",
+                                      self.autocompleteText ?: @"",
+                                      self.additionalText ?: @""];
+  }
+  return self.text;
+}
+
 #pragma mark - OmniboxKeyboardDelegate
 
 - (BOOL)canPerformKeyboardAction:(OmniboxKeyboardAction)keyboardAction {
@@ -742,7 +800,8 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
       // suggested text.
     case OmniboxKeyboardActionLeftArrow:
     case OmniboxKeyboardActionRightArrow:
-      return ([self isPreEditing] || [self hasAutocompleteText]);
+      return ([self isPreEditing] || [self hasAutocompleteText] ||
+              (IsRichAutocompletionEnabled() && [self hasAdditionalText]));
   }
 }
 
@@ -766,7 +825,8 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
 #pragma mark preedit and inline autocomplete key commands
 
 - (void)keyCommandLeft {
-  DCHECK([self isPreEditing] || [self hasAutocompleteText]);
+  DCHECK([self isPreEditing] || [self hasAutocompleteText] ||
+         [self hasAdditionalText]);
 
   // Cursor offset.
   NSInteger offset = 0;
@@ -774,12 +834,19 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
     [self exitPreEditState];
   }
 
-  if ([self hasAutocompleteText]) {
+  const BOOL hasAutocompleteText = [self hasAutocompleteText];
+  if (hasAutocompleteText) {
     // The cursor should stay in the end of the user input.
     offset = self.userText.length;
 
     // Accept autocomplete suggestion.
     [self acceptAutocompleteText];
+  }
+  if (IsRichAutocompletionEnabled() && [self hasAdditionalText]) {
+    if (!hasAutocompleteText) {
+      offset = self.userText.length - 1;
+    }
+    [self handleUserInitiatedRemovalOfAdditionalText];
   }
 
   // Place the cursor at computed offset.
@@ -792,7 +859,8 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
 }
 
 - (void)keyCommandRight {
-  DCHECK([self isPreEditing] || [self hasAutocompleteText]);
+  DCHECK([self isPreEditing] || [self hasAutocompleteText] ||
+         [self hasAdditionalText]);
 
   if ([self isPreEditing]) {
     [self exitPreEditState];
@@ -800,6 +868,9 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
 
   if ([self hasAutocompleteText]) {
     [self acceptAutocompleteText];
+  }
+  if (IsRichAutocompletionEnabled() && [self hasAdditionalText]) {
+    [self handleUserInitiatedRemovalOfAdditionalText];
   }
 
   // Put the cursor to the end of the input.
@@ -809,44 +880,76 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
   self.selectedTextRange = textRange;
 }
 
-- (void)acceptAutocompleteText {
-  [self setText:self.text];
-  self.autocompleteTextLength = 0;
-}
-
-- (BOOL)hasAutocompleteText {
-  return self.autocompleteTextLength > 0;
-}
-
-- (void)clearAutocompleteText {
-  if ([self hasAutocompleteText]) {
-    self.text = self.userText;
-    self.autocompleteTextLength = 0;
-  }
-}
-
 #pragma mark - helpers
 
-- (NSTextAlignment)bestAlignmentForText:(NSString*)text {
-  if (text.length) {
-    NSString* lang = CFBridgingRelease(CFStringTokenizerCopyBestStringLanguage(
-        (CFStringRef)text, CFRangeMake(0, text.length)));
-
-    if ([NSLocale characterDirectionForLanguage:lang] ==
-        NSLocaleLanguageDirectionRightToLeft) {
-      return NSTextAlignmentRight;
-    }
+/// Length of added text in the omnibox (autocomplete and additional text).
+- (NSUInteger)addedTextLength {
+  if (IsRichAutocompletionEnabled()) {
+    return _autocompleteTextLength + self.additionalText.length;
   }
-  return NSTextAlignmentLeft;
+  return _autocompleteTextLength;
 }
 
-- (NSString*)displayedText {
-  return self.text;
+/// Returns whether there is added text in the omnibox (autocomplete or
+/// additional text).
+- (BOOL)hasAddedText {
+  return [self addedTextLength] > 0;
 }
 
-// Helper method used to set the text of this field.
+/// Returns whether there is additional text.
+- (BOOL)hasAdditionalText {
+  return self.additionalText.length;
+}
+
+/// Text in the omnibox without the additional text.
+- (NSAttributedString*)textWithoutAdditionalText {
+  if (!IsRichAutocompletionEnabled() || !self.additionalText.length) {
+    return self.attributedText;
+  }
+  CHECK_LE(self.additionalText.length, self.attributedText.length);
+  NSUInteger textLength =
+      self.attributedText.length - self.additionalText.length;
+  NSAttributedString* substring = [self.attributedText
+      attributedSubstringFromRange:NSMakeRange(0, textLength)];
+  return substring;
+}
+
+/// Removes the additional text.
+- (void)removeAdditionalText {
+  CHECK(IsRichAutocompletionEnabled());
+  if (!_additionalText) {
+    return;
+  }
+  NSAttributedString* substring = [self textWithoutAdditionalText];
+  _additionalText = nil;
+  [self setTextInternal:substring autocompleteLength:_autocompleteTextLength];
+}
+
+/// Removes the additional text and calls the delegate to update the
+/// suggestions.
+- (void)handleUserInitiatedRemovalOfAdditionalText {
+  [self removeAdditionalText];
+  if ([self.delegate
+          respondsToSelector:@selector(textFieldDidRemoveAdditionalText:)]) {
+    [self.delegate textFieldDidRemoveAdditionalText:self];
+  }
+}
+
+/// Accepts the autocomplete text.
+- (void)acceptAutocompleteText {
+  [self setText:[self textWithoutAdditionalText].string];
+  if ([self.delegate
+          respondsToSelector:@selector(textFieldDidAcceptAutocomplete:)]) {
+    [self.delegate textFieldDidAcceptAutocomplete:self];
+  }
+}
+
+/// Sets the `text` in the textfield. `text` includes autocomplete text but
+/// doesn't include the additional text. The additional text is taken from
+/// `self.additionalText`.
 - (void)setTextInternal:(NSAttributedString*)text
      autocompleteLength:(NSUInteger)autocompleteLength {
+  _autocompleteTextLength = autocompleteLength;
   // Extract substrings for the permanent text and the autocomplete text.  The
   // former needs to retain any text attributes from the original string.
   NSUInteger beginningOfAutocomplete = text.length - autocompleteLength;
@@ -868,6 +971,10 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
                              value:self.selectedTextBackgroundColor
                              range:NSMakeRange(0, autocompleteLength)];
     [fieldText appendAttributedString:autocompleteText];
+  }
+  // Append additional text.
+  if (IsRichAutocompletionEnabled() && self.additionalText) {
+    [fieldText appendAttributedString:self.additionalText];
   }
 
   // The following BOOL was introduced to workaround a UIKit bug
@@ -892,18 +999,28 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
   }
   if (updateText) {
     self.attributedText = fieldText;
-    UITextPosition* endOfUserText =
-        [self positionFromPosition:self.endOfDocument
-                            offset:-autocompleteLength];
-    // Move the cursor to the beginning of the field before setting the position
-    // to the end of the user input so if the text is very wide, the user sees
-    // the beginning of the text instead of the end.
-    self.selectedTextRange =
-        [self textRangeFromPosition:self.beginningOfDocument
-                         toPosition:self.beginningOfDocument];
-    // Preserve the cursor position at the end of the user input.
-    self.selectedTextRange = [self textRangeFromPosition:endOfUserText
-                                              toPosition:endOfUserText];
+
+    // TODO(crbug.com/330964534): Remove DUMP_WILL_BE_CHECK after investigating
+    // crash.
+    if (!self.endOfDocument || !self.beginningOfDocument) {
+      DUMP_WILL_BE_NOTREACHED_NORETURN()
+          << "autocomplete length: " << autocompleteLength
+          << " text length: " << text.length << " has text position: "
+          << (self.beginningOfDocument || self.endOfDocument);
+    } else {
+      UITextPosition* endOfUserText =
+          [self positionFromPosition:self.beginningOfDocument
+                              offset:beginningOfAutocomplete];
+      // Move the cursor to the beginning of the field before setting the
+      // position to the end of the user input so if the text is very wide, the
+      // user sees the beginning of the text instead of the end.
+      self.selectedTextRange =
+          [self textRangeFromPosition:self.beginningOfDocument
+                           toPosition:self.beginningOfDocument];
+      // Preserve the cursor position at the end of the user input.
+      self.selectedTextRange = [self textRangeFromPosition:endOfUserText
+                                                toPosition:endOfUserText];
+    }
   }
 
   // iOS changes the font to .LastResort when some unexpected unicode strings
@@ -923,16 +1040,6 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
   for (UIView* subview in self.subviews)
     [layers addObject:subview.layer];
   return layers;
-}
-
-- (BOOL)isTextFieldLTR {
-  return [[self class] userInterfaceLayoutDirectionForSemanticContentAttribute:
-                           self.semanticContentAttribute] ==
-         UIUserInterfaceLayoutDirectionLeftToRight;
-}
-
-- (CGRect)layoutLeftViewForBounds:(CGRect)bounds {
-  return CGRectZero;
 }
 
 @end

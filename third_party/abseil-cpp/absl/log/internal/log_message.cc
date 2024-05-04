@@ -240,8 +240,6 @@ LogMessage::LogMessage(const char* file, int line, WarningTag)
     : LogMessage(file, line, absl::LogSeverity::kWarning) {}
 LogMessage::LogMessage(const char* file, int line, ErrorTag)
     : LogMessage(file, line, absl::LogSeverity::kError) {}
-LogMessage::LogMessage(const char* file, int line, FatalTag)
-    : LogMessage(file, line, absl::LogSeverity::kFatal) {}
 
 LogMessage::~LogMessage() {
 #ifdef ABSL_MIN_LOG_LEVEL
@@ -580,6 +578,13 @@ template void LogMessage::CopyToEncodedBuffer<LogMessage::StringType::kLiteral>(
 template void LogMessage::CopyToEncodedBuffer<
     LogMessage::StringType::kNotLiteral>(char ch, size_t num);
 
+// We intentionally don't return from these destructors. Disable MSVC's warning
+// about the destructor never returning as we do so intentionally here.
+#if defined(_MSC_VER) && !defined(__clang__)
+#pragma warning(push)
+#pragma warning(disable : 4722)
+#endif
+
 LogMessageFatal::LogMessageFatal(const char* file, int line)
     : LogMessage(file, line, absl::LogSeverity::kFatal) {}
 
@@ -589,33 +594,38 @@ LogMessageFatal::LogMessageFatal(const char* file, int line,
   *this << "Check failed: " << failure_msg << " ";
 }
 
-// We intentionally don't return from these destructors. Disable MSVC's warning
-// about the destructor never returning as we do so intentionally here.
-#if defined(_MSC_VER) && !defined(__clang__)
-#pragma warning(push)
-#pragma warning(disable : 4722)
-#endif
 LogMessageFatal::~LogMessageFatal() {
   Flush();
   FailWithoutStackTrace();
 }
 
-LogMessageQuietly::LogMessageQuietly(const char* file, int line)
+LogMessageDebugFatal::LogMessageDebugFatal(const char* file, int line)
+    : LogMessage(file, line, absl::LogSeverity::kFatal) {}
+
+LogMessageDebugFatal::~LogMessageDebugFatal() {
+  Flush();
+  FailWithoutStackTrace();
+}
+
+LogMessageQuietlyDebugFatal::LogMessageQuietlyDebugFatal(const char* file,
+                                                         int line)
     : LogMessage(file, line, absl::LogSeverity::kFatal) {
   SetFailQuietly();
 }
 
-LogMessageQuietly::~LogMessageQuietly() {
+LogMessageQuietlyDebugFatal::~LogMessageQuietlyDebugFatal() {
   Flush();
   FailQuietly();
 }
 
 LogMessageQuietlyFatal::LogMessageQuietlyFatal(const char* file, int line)
-    : LogMessageQuietly(file, line) {}
+    : LogMessage(file, line, absl::LogSeverity::kFatal) {
+  SetFailQuietly();
+}
 
 LogMessageQuietlyFatal::LogMessageQuietlyFatal(const char* file, int line,
                                                absl::string_view failure_msg)
-    : LogMessageQuietly(file, line) {
+    : LogMessageQuietlyFatal(file, line) {
     *this << "Check failed: " << failure_msg << " ";
 }
 

@@ -6,6 +6,7 @@
 
 #include <optional>
 #include <string>
+#include <string_view>
 #include <utility>
 
 #include "base/auto_reset.h"
@@ -16,7 +17,6 @@
 #include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/scoped_observation.h"
-#include "base/strings/string_piece.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/branding_buildflags.h"
 #include "build/buildflag.h"
@@ -37,6 +37,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar/browser_app_menu_button.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
+#include "chrome/browser/upgrade_detector/upgrade_detector.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/signin/public/base/signin_pref_names.h"
@@ -94,7 +95,7 @@ void AppMenuBrowserTest::ShowUi(const std::string& name) {
     return;
   }
 
-  constexpr auto kSubmenus = base::MakeFixedFlatMap<base::StringPiece, int>({
+  constexpr auto kSubmenus = base::MakeFixedFlatMap<std::string_view, int>({
       // Submenus present in all versions.
       {"history", IDC_RECENT_TABS_MENU},
       {"bookmarks", IDC_BOOKMARKS_MENU},
@@ -209,8 +210,8 @@ IN_PROC_BROWSER_TEST_F(AppMenuBrowserTest, ShowWithRecentlyClosedWindow) {
   chrome::CloseWindow(second_browser);
   ui_test_utils::WaitForBrowserToClose(second_browser);
   EXPECT_TRUE(base::Contains(tab_restore_service->entries(),
-                             sessions::TabRestoreService::WINDOW,
-                             &sessions::TabRestoreService::Entry::type));
+                             sessions::tab_restore::Type::WINDOW,
+                             &sessions::tab_restore::Entry::type));
 
   // Show the AppMenu.
   menu_button()->ShowMenu(views::MenuRunner::NO_FLAGS);
@@ -226,6 +227,14 @@ IN_PROC_BROWSER_TEST_F(AppMenuBrowserTest, InvokeUi_main) {
 }
 
 IN_PROC_BROWSER_TEST_F(AppMenuBrowserTestRefreshOnly, InvokeUi_main) {
+  ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_F(AppMenuBrowserTestRefreshOnly,
+                       InvokeUi_main_upgrade_available) {
+  UpgradeDetector::GetInstance()->set_upgrade_notification_stage_for_testing(
+      UpgradeDetector::UPGRADE_ANNOYANCE_CRITICAL);
+  UpgradeDetector::GetInstance()->NotifyUpgradeForTesting();
   ShowAndVerifyUi();
 }
 
@@ -245,7 +254,7 @@ IN_PROC_BROWSER_TEST_F(AppMenuBrowserTestRefreshOnly,
 #endif
 
 IN_PROC_BROWSER_TEST_F(AppMenuBrowserTestRefreshOnly, InvokeUi_main_guest) {
-// TODO(crbug.com/1427667): ChromeOS specific profile logic still needs to be
+// TODO(crbug.com/40899974): ChromeOS specific profile logic still needs to be
 // updated, setup this test for a Guest user session with appropriate command
 // line switches afterwards.
 #if !BUILDFLAG(IS_CHROMEOS_ASH)

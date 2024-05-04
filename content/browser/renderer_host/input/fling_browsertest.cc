@@ -385,7 +385,7 @@ IN_PROC_BROWSER_TEST_F(BrowserSideFlingBrowserTest,
       0, EvalJs(root->current_frame_host(), "window.scrollY").ExtractDouble());
 }
 
-// TODO(crbug.com/1352412): Re-enable on Linux MSAN once not flaky.
+// TODO(crbug.com/40857753): Re-enable on Linux MSAN once not flaky.
 #if BUILDFLAG(IS_LINUX) && defined(MEMORY_SANITIZER)
 #define MAYBE_TouchscreenFlingInOOPIF DISABLED_TouchscreenFlingInOOPIF
 #else
@@ -397,14 +397,14 @@ IN_PROC_BROWSER_TEST_F(BrowserSideFlingBrowserTest,
   SimulateTouchscreenFling(child_view_->host());
   WaitForFrameScroll(GetChildNode());
 }
-// TODO(crbug.com/1340285): flaky.
+// TODO(crbug.com/40230295): flaky.
 IN_PROC_BROWSER_TEST_F(BrowserSideFlingBrowserTest,
                        DISABLED_TouchpadFlingInOOPIF) {
   LoadPageWithOOPIF();
   SimulateTouchpadFling(child_view_->host());
   WaitForFrameScroll(GetChildNode());
 }
-// TODO(crbug.com/1340285): flaky.
+// TODO(crbug.com/40230295): flaky.
 IN_PROC_BROWSER_TEST_F(BrowserSideFlingBrowserTest,
                        DISABLED_TouchscreenInertialGSUsBubbleFromOOPIF) {
   LoadPageWithOOPIF();
@@ -445,7 +445,7 @@ IN_PROC_BROWSER_TEST_F(BrowserSideFlingBrowserTest,
 }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
-// TODO(crbug.com/1340285): flaky.
+// TODO(crbug.com/40230295): flaky.
 IN_PROC_BROWSER_TEST_F(BrowserSideFlingBrowserTest,
                        DISABLED_InertialGSEGetsBubbledFromOOPIF) {
   LoadPageWithOOPIF();

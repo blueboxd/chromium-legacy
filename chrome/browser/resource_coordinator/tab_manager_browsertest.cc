@@ -199,13 +199,13 @@ class TabManagerTest : public InProcessBrowserTest {
     OpenURLParams open1(first_url, content::Referrer(),
                         WindowOpenDisposition::CURRENT_TAB,
                         ui::PAGE_TRANSITION_TYPED, false);
-    browser()->OpenURL(open1);
+    browser()->OpenURL(open1, /*navigation_handle_callback=*/{});
     load1.Wait();
 
     OpenURLParams open2(second_url, content::Referrer(),
                         WindowOpenDisposition::NEW_BACKGROUND_TAB,
                         ui::PAGE_TRANSITION_TYPED, false);
-    auto* tab2 = browser()->OpenURL(open2);
+    auto* tab2 = browser()->OpenURL(open2, /*navigation_handle_callback=*/{});
     content::WaitForLoadStop(tab2);
 
     ASSERT_EQ(2, tsm()->count());
@@ -543,7 +543,7 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, ProtectVideoTabs) {
 }
 
 // Makes sure that tabs using DevTools are protected from discarding.
-// TODO(crbug.com/1446876): Flaky on debug Linux.
+// TODO(crbug.com/40913262): Flaky on debug Linux.
 #if BUILDFLAG(IS_LINUX) && !defined(NDEBUG)
 #define MAYBE_ProtectDevToolsTabsFromDiscarding \
   DISABLED_ProtectDevToolsTabsFromDiscarding
@@ -588,7 +588,13 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest,
       tab_manager()->DiscardTabImpl(LifecycleUnitDiscardReason::EXTERNAL));
 }
 
-IN_PROC_BROWSER_TEST_F(TabManagerTest, AutoDiscardable) {
+// TODO(crbug.com/336450782): Flaky on Lacros ASAN.
+#if BUILDFLAG(IS_CHROMEOS_LACROS) && defined(ADDRESS_SANITIZER)
+#define MAYBE_AutoDiscardable DISABLED_AutoDiscardable
+#else
+#define MAYBE_AutoDiscardable AutoDiscardable
+#endif
+IN_PROC_BROWSER_TEST_F(TabManagerTest, MAYBE_AutoDiscardable) {
   // Get two tabs open.
   NavigateToURLWithDisposition(browser(), GURL(chrome::kChromeUIAboutURL),
                                WindowOpenDisposition::CURRENT_TAB,

@@ -10,8 +10,8 @@
 
 #include "components/sync/base/model_type.h"
 #include "components/sync/engine/sync_engine.h"
-#include "components/sync/service/data_type_controller.h"
 #include "components/sync/service/data_type_manager.h"
+#include "components/sync/service/model_type_controller.h"
 #include "components/sync/service/sync_api_component_factory.h"
 
 namespace syncer {
@@ -42,9 +42,8 @@ class FakeSyncApiComponentFactory : public SyncApiComponentFactory {
 
   // SyncApiComponentFactory overrides.
   std::unique_ptr<DataTypeManager> CreateDataTypeManager(
-      const DataTypeController::TypeMap* controllers,
+      const ModelTypeController::TypeMap* controllers,
       const DataTypeEncryptionHandler* encryption_handler,
-      ModelTypeConfigurer* configurer,
       DataTypeManagerObserver* observer) override;
   std::unique_ptr<SyncEngine> CreateSyncEngine(
       const std::string& name,

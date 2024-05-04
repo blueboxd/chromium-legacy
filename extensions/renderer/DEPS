@@ -1,10 +1,13 @@
 include_rules = [
+  "+components/pdf/common/pdf_util.h",
   "+components/translate/core/language_detection",
   "+content/public/renderer",
 
   "+gin",
   "+net/base/backoff_entry.h",
   "+net/base/net_errors.h",
+
+  "+pdf/buildflags.h",
 
   "+third_party/skia/include/core",
   "+third_party/cld_3",
@@ -60,10 +63,5 @@ specific_include_rules = {
   ],
   "localization_peer_unittest.cc": [
     "+net/url_request/redirect_info.h",
-  ],
-
-  # Temporarily allow crash_key; see https://crbug.com/1034755
-  "automation_ax_tree_wrapper.cc": [
-    "+components/crash/core/common/crash_key.h",
   ]
 }

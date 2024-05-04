@@ -61,7 +61,7 @@ namespace {
 
 using CursorSet = HeapHashSet<WeakMember<IDBCursor>>;
 
-CursorSet& GetInstanceForCurrentThread() {
+CursorSet& GetGlobalCursorSet() {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadSpecific<Persistent<CursorSet>>,
                                   thread_specific_instance, ());
   if (!*thread_specific_instance) {
@@ -71,7 +71,7 @@ CursorSet& GetInstanceForCurrentThread() {
 }
 
 void RegisterCursor(IDBCursor* cursor) {
-  CursorSet& cursor_set = GetInstanceForCurrentThread();
+  CursorSet& cursor_set = GetGlobalCursorSet();
   CHECK(!cursor_set.Contains(cursor));
   cursor_set.insert(cursor);
 }
@@ -182,8 +182,8 @@ void IDBCursor::Continue(ScriptState* script_state,
   std::unique_ptr<IDBKey> key =
       key_value.IsUndefined() || key_value.IsNull()
           ? nullptr
-          : ScriptValue::To<std::unique_ptr<IDBKey>>(
-                script_state->GetIsolate(), key_value, exception_state);
+          : CreateIDBKeyFromValue(script_state->GetIsolate(),
+                                  key_value.V8Value(), exception_state);
   if (exception_state.HadException())
     return;
   if (key && !key->IsValid()) {
@@ -236,8 +236,8 @@ void IDBCursor::continuePrimaryKey(ScriptState* script_state,
     return;
   }
 
-  std::unique_ptr<IDBKey> key = ScriptValue::To<std::unique_ptr<IDBKey>>(
-      script_state->GetIsolate(), key_value, exception_state);
+  std::unique_ptr<IDBKey> key = CreateIDBKeyFromValue(
+      script_state->GetIsolate(), key_value.V8Value(), exception_state);
   if (exception_state.HadException()) {
     return;
   }
@@ -247,9 +247,8 @@ void IDBCursor::continuePrimaryKey(ScriptState* script_state,
     return;
   }
 
-  std::unique_ptr<IDBKey> primary_key =
-      ScriptValue::To<std::unique_ptr<IDBKey>>(
-          script_state->GetIsolate(), primary_key_value, exception_state);
+  std::unique_ptr<IDBKey> primary_key = CreateIDBKeyFromValue(
+      script_state->GetIsolate(), primary_key_value.V8Value(), exception_state);
   if (exception_state.HadException())
     return;
   if (!primary_key->IsValid()) {
@@ -340,6 +339,7 @@ void IDBCursor::Close() {
   request_.Clear();
   remote_.reset();
   ResetPrefetchCache();
+  GetGlobalCursorSet().erase(this);
 }
 
 ScriptValue IDBCursor::key(ScriptState* script_state) {
@@ -479,7 +479,7 @@ mojom::IDBCursorDirection IDBCursor::StringToDirection(
 // static
 void IDBCursor::ResetCursorPrefetchCaches(int64_t transaction_id,
                                           IDBCursor* except_cursor) {
-  CursorSet& cursor_set = GetInstanceForCurrentThread();
+  CursorSet& cursor_set = GetGlobalCursorSet();
 
   for (IDBCursor* cursor : cursor_set) {
     if (cursor != except_cursor &&

@@ -11,6 +11,7 @@
 #include "build/chromeos_buildflags.h"
 #include "content/common/content_export.h"
 #include "media/media_buildflags.h"
+#include "tools/v8_context_snapshot/buildflags.h"
 
 namespace switches {
 
@@ -20,7 +21,6 @@ CONTENT_EXPORT extern const char kAllowFileAccessFromFiles[];
 CONTENT_EXPORT extern const char kAllowInsecureLocalhost[];
 CONTENT_EXPORT extern const char kAllowLoopbackInPeerConnection[];
 CONTENT_EXPORT extern const char kAllowCommandLinePlugins[];
-CONTENT_EXPORT extern const char kAllowSyncXHRInPageDismissal[];
 CONTENT_EXPORT extern const char kAttributionReportingDebugMode[];
 CONTENT_EXPORT extern const char kAutoAcceptCameraAndMicrophoneCapture[];
 CONTENT_EXPORT extern const char kBrowserCrashTest[];
@@ -82,7 +82,6 @@ CONTENT_EXPORT extern const char kDisablePushStateThrottle[];
 CONTENT_EXPORT extern const char kDisableReadingFromCanvas[];
 extern const char kDisableRemoteFonts[];
 CONTENT_EXPORT extern const char kDisableRemotePlaybackAPI[];
-extern const char kDisableRendererAccessibility[];
 CONTENT_EXPORT extern const char kDisableRendererBackgrounding[];
 CONTENT_EXPORT extern const char kDisableResourceScheduler[];
 CONTENT_EXPORT extern const char kDisableSharedWorkers[];
@@ -138,7 +137,6 @@ CONTENT_EXPORT extern const char kEnableWebVR[];
 CONTENT_EXPORT extern const char kFileUrlPathAlias[];
 CONTENT_EXPORT extern const char kForceDisplayList2dCanvas[];
 CONTENT_EXPORT extern const char kForcePresentationReceiverForTesting[];
-CONTENT_EXPORT extern const char kForceRendererAccessibility[];
 CONTENT_EXPORT extern const char kForceWebRtcIPHandlingPolicy[];
 extern const char kGpuLauncher[];
 CONTENT_EXPORT extern const char kGpuProcess[];
@@ -219,6 +217,9 @@ CONTENT_EXPORT extern const char kUseFakeUIForDigitalIdentity[];
 CONTENT_EXPORT extern const char kUseFakeUIForFedCM[];
 CONTENT_EXPORT extern const char kUseFakeUIForMediaStream[];
 CONTENT_EXPORT extern const char kVideoImageTextureTarget[];
+#if BUILDFLAG(IS_ANDROID) && BUILDFLAG(INCLUDE_BOTH_V8_SNAPSHOTS)
+CONTENT_EXPORT extern const char kUseContextSnapshotSwitch[];
+#endif
 CONTENT_EXPORT extern const char kUseMobileUserAgent[];
 CONTENT_EXPORT extern const char kUseMockCertVerifierForTesting[];
 extern const char kUtilityCmdPrefix[];
@@ -266,7 +267,7 @@ CONTENT_EXPORT extern const char kRendererWaitForJavaDebugger[];
 CONTENT_EXPORT extern const char kPreventResizingContentsForTesting[];
 #endif
 
-// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
+// TODO(crbug.com/40118868): Revisit the macro expression once build flag switch
 // of lacros-chrome is complete.
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
 CONTENT_EXPORT extern const char kEnableSpeechDispatcher[];

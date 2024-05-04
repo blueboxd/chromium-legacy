@@ -45,34 +45,37 @@ class FileSystemHandle : public ScriptWrappable, public ExecutionContextClient {
   }
   const String& name() const { return name_; }
 
-  ScriptPromiseTyped<V8PermissionState> queryPermission(
+  ScriptPromise<V8PermissionState> queryPermission(
       ScriptState*,
       const FileSystemHandlePermissionDescriptor*);
-  ScriptPromiseTyped<V8PermissionState> requestPermission(
+  ScriptPromise<V8PermissionState> requestPermission(
       ScriptState*,
       const FileSystemHandlePermissionDescriptor*,
       ExceptionState&);
 
-  ScriptPromise move(ScriptState*,
-                     const String& new_entry_name,
-                     ExceptionState&);
-  ScriptPromise move(ScriptState*,
-                     FileSystemDirectoryHandle* destination_directory,
-                     ExceptionState&);
-  ScriptPromise move(ScriptState*,
-                     FileSystemDirectoryHandle* destination_directory,
-                     const String& new_entry_name,
-                     ExceptionState&);
-  ScriptPromise remove(ScriptState*,
-                       const FileSystemRemoveOptions* options,
-                       ExceptionState&);
+  ScriptPromise<IDLUndefined> move(ScriptState*,
+                                   const String& new_entry_name,
+                                   ExceptionState&);
+  ScriptPromise<IDLUndefined> move(
+      ScriptState*,
+      FileSystemDirectoryHandle* destination_directory,
+      ExceptionState&);
+  ScriptPromise<IDLUndefined> move(
+      ScriptState*,
+      FileSystemDirectoryHandle* destination_directory,
+      const String& new_entry_name,
+      ExceptionState&);
+  ScriptPromise<IDLUndefined> remove(ScriptState*,
+                                     const FileSystemRemoveOptions* options,
+                                     ExceptionState&);
 
-  ScriptPromiseTyped<IDLBoolean> isSameEntry(ScriptState*,
-                                             FileSystemHandle* other,
-                                             ExceptionState&);
-  ScriptPromiseTyped<IDLUSVString> getUniqueId(ScriptState*, ExceptionState&);
-  ScriptPromiseTyped<IDLSequence<FileSystemCloudIdentifier>>
-  getCloudIdentifiers(ScriptState*, ExceptionState&);
+  ScriptPromise<IDLBoolean> isSameEntry(ScriptState*,
+                                        FileSystemHandle* other,
+                                        ExceptionState&);
+  ScriptPromise<IDLUSVString> getUniqueId(ScriptState*, ExceptionState&);
+  ScriptPromise<IDLSequence<FileSystemCloudIdentifier>> getCloudIdentifiers(
+      ScriptState*,
+      ExceptionState&);
 
   // Grab a handle to a transfer token. This may return an invalid PendingRemote
   // if the context is already destroyed.

@@ -24,7 +24,7 @@ class BluetoothLocalGattCharacteristicFloss;
 
 // The BluetoothLocalGattServiceFloss class implements BluetoothGattService
 // for local GATT services for platforms that use Floss.
-class BluetoothLocalGattServiceFloss
+class DEVICE_BLUETOOTH_EXPORT BluetoothLocalGattServiceFloss
     : public BluetoothGattServiceFloss,
       public device::BluetoothLocalGattService {
  public:
@@ -72,6 +72,7 @@ class BluetoothLocalGattServiceFloss
  private:
   friend class BluetoothLocalGattCharacteristicFloss;
   friend class BluetoothLocalGattDescriptorFloss;
+  friend class BluetoothLocalGattServiceFlossTest;
 
   BluetoothLocalGattServiceFloss(
       BluetoothAdapterFloss* adapter,
@@ -111,7 +112,7 @@ class BluetoothLocalGattServiceFloss
 
   // Client and Floss-assigned instance ids.
   int32_t client_instance_id_;
-  int32_t floss_instance_id_;
+  int32_t floss_instance_id_ = -1;
 
   // Manage callbacks.
   std::pair<base::OnceClosure, device::BluetoothGattService::ErrorCallback>

@@ -26,6 +26,7 @@
 #include "third_party/blink/renderer/modules/accessibility/ax_menu_list.h"
 
 #include "base/auto_reset.h"
+#include "third_party/blink/renderer/core/html/forms/html_option_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_select_element.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_menu_list_popup.h"
@@ -35,8 +36,13 @@ namespace blink {
 
 AXMenuList::AXMenuList(LayoutObject* layout_object,
                        AXObjectCacheImpl& ax_object_cache)
-    : AXLayoutObject(layout_object, ax_object_cache) {
+    : AXNodeObject(layout_object, ax_object_cache) {
   DCHECK(IsA<HTMLSelectElement>(layout_object->GetNode()));
+}
+
+AXMenuList::AXMenuList(Node* node, AXObjectCacheImpl& ax_object_cache)
+    : AXNodeObject(node, ax_object_cache) {
+  DCHECK(IsA<HTMLSelectElement>(node));
 }
 
 ax::mojom::blink::Role AXMenuList::NativeRoleIgnoringAria() const {
@@ -44,8 +50,9 @@ ax::mojom::blink::Role AXMenuList::NativeRoleIgnoringAria() const {
 }
 
 bool AXMenuList::OnNativeClickAction() {
-  if (!layout_object_)
+  if (!GetLayoutObject()) {
     return false;
+  }
 
   HTMLSelectElement* select = To<HTMLSelectElement>(GetNode());
   if (select->PopupIsVisible())
@@ -88,7 +95,7 @@ void AXMenuList::Detach() {
     popup_ = nullptr;
   }
 
-  AXLayoutObject::Detach();
+  AXNodeObject::Detach();
 }
 
 void AXMenuList::ChildrenChangedWithCleanLayout() {
@@ -99,12 +106,12 @@ void AXMenuList::ChildrenChangedWithCleanLayout() {
     popup_->ChildrenChangedWithCleanLayout();
   }
 
-  AXLayoutObject::ChildrenChangedWithCleanLayout();
+  AXNodeObject::ChildrenChangedWithCleanLayout();
 }
 
-void AXMenuList::SetNeedsToUpdateChildren(bool update) const {
+void AXMenuList::SetNeedsToUpdateChildren(bool update) {
   if (!update) {
-    AXLayoutObject::SetNeedsToUpdateChildren(false);
+    AXNodeObject::SetNeedsToUpdateChildren(false);
     return;
   }
 
@@ -115,14 +122,14 @@ void AXMenuList::SetNeedsToUpdateChildren(bool update) const {
     popup_->SetNeedsToUpdateChildren();
   }
 
-  AXLayoutObject::SetNeedsToUpdateChildren();
+  AXNodeObject::SetNeedsToUpdateChildren();
 }
 
-void AXMenuList::ClearChildren() const {
+void AXMenuList::ClearChildren() {
   if (popup_) {
     popup_->ClearChildren();
   }
-  AXLayoutObject::ClearChildren();
+  AXNodeObject::ClearChildren();
 }
 
 void AXMenuList::AddChildren() {
@@ -132,10 +139,8 @@ void AXMenuList::AddChildren() {
   base::AutoReset<bool> reentrancy_protector(&is_adding_children_, true);
   // ClearChildren() does not clear the menulist popup chld.
   CHECK(children_.empty()) << "Parent still has " << children_.size()
-                           << " children before adding:"
-                           << "\nParent is " << ToString(true, true)
-                           << "\nFirst child is "
-                           << children_[0]->ToString(true, true);
+                           << " children before adding:" << "\nParent is "
+                           << this << "\nFirst child is " << children_[0];
 #endif
 
   CHECK(NeedsToUpdateChildren());
@@ -171,7 +176,7 @@ AXObject* AXMenuList::GetOrCreateMockPopupChild() {
         ax::mojom::blink::Role::kMenuListPopup, this);
     CHECK(popup_);
     CHECK(!popup_->IsDetached());
-    CHECK_EQ(popup_->CachedParentObject(), this);
+    CHECK_EQ(popup_->ParentObject(), this);
     CHECK(popup_->IsMenuListPopup());
   }
 
@@ -179,11 +184,6 @@ AXObject* AXMenuList::GetOrCreateMockPopupChild() {
 }
 
 bool AXMenuList::IsCollapsed() const {
-  // Collapsed is the "default" state, so if the LayoutObject doesn't exist
-  // this makes slightly more sense than returning false.
-  if (!layout_object_)
-    return true;
-
   return !To<HTMLSelectElement>(GetNode())->PopupIsVisible();
 }
 
@@ -242,7 +242,7 @@ void AXMenuList::DidHidePopup() {
 
 void AXMenuList::Trace(Visitor* visitor) const {
   visitor->Trace(popup_);
-  AXLayoutObject::Trace(visitor);
+  AXNodeObject::Trace(visitor);
 }
 
 }  // namespace blink

@@ -22,16 +22,15 @@
 
 namespace viz {
 
-constexpr base::TimeDelta VideoDetector::kVideoTimeout;
+constexpr base::TimeDelta VideoDetector::kMaxVideoTimeout;
+constexpr base::TimeDelta VideoDetector::kMinVideoTimeout;
 constexpr base::TimeDelta VideoDetector::kMinVideoDuration;
 
 // Stores information about updates to a client and determines whether it's
 // likely that a video is playing in it.
 class VideoDetector::ClientInfo {
  public:
-  ClientInfo()
-      : should_ignore_non_video_frames_(
-            features::ShouldVideoDetectorIgnoreNonVideoFrames()) {}
+  ClientInfo() = default;
 
   ClientInfo(const ClientInfo&) = delete;
   ClientInfo& operator=(const ClientInfo&) = delete;
@@ -50,7 +49,7 @@ class VideoDetector::ClientInfo {
 
     const CompositorFrame& frame = surface->GetActiveFrame();
 
-    if (should_ignore_non_video_frames_ && !frame.metadata.may_contain_video) {
+    if (!frame.metadata.may_contain_video) {
       return false;
     }
 
@@ -97,10 +96,6 @@ class VideoDetector::ClientInfo {
   }
 
  private:
-  // If true, we'll only process frames that may contain videos, as determined
-  // by the frame's may_contain_video metadata.
-  bool should_ignore_non_video_frames_;
-
   // Circular buffer containing update times of the last (up to
   // |kMinFramesPerSecond|) video-sized updates to this client.
   base::TimeTicks update_times_[kMinFramesPerSecond];
@@ -192,8 +187,13 @@ void VideoDetector::OnSurfaceWillBeDrawn(Surface* surface) {
   base::TimeTicks now = tick_clock_->NowTicks();
 
   if (it->second->ReportDrawnAndCheckForVideo(surface, now)) {
-    video_inactive_timer_.Start(FROM_HERE, kVideoTimeout, this,
-                                &VideoDetector::OnVideoActivityEnded);
+    // Avoid (re)starting the timer every frame since it has considerable
+    // overhead.
+    if (!video_inactive_timer_.IsRunning() ||
+        (video_inactive_timer_.desired_run_time() - now) < kMinVideoTimeout) {
+      video_inactive_timer_.Start(FROM_HERE, kMaxVideoTimeout, this,
+                                  &VideoDetector::OnVideoActivityEnded);
+    }
     if (!video_is_playing_) {
       video_is_playing_ = true;
       for (auto& observer : observers_) {

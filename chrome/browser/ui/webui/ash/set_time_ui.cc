@@ -18,7 +18,6 @@
 #include "base/values.h"
 #include "chrome/browser/ash/child_accounts/parent_access_code/parent_access_service.h"
 #include "chrome/browser/ash/set_time_dialog.h"
-#include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/ash/system/timezone_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/webui_util.h"
@@ -27,8 +26,8 @@
 #include "chrome/grit/set_time_dialog_resources.h"
 #include "chrome/grit/set_time_dialog_resources_map.h"
 #include "chromeos/ash/components/dbus/system_clock/system_clock_client.h"
+#include "chromeos/ash/components/settings/cros_settings.h"
 #include "chromeos/ash/components/settings/timezone_settings.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/web_contents.h"
@@ -198,8 +197,6 @@ SetTimeUI::SetTimeUI(content::WebUI* web_ui) : MojoWebDialogUI(web_ui) {
       source,
       base::make_span(kSetTimeDialogResources, kSetTimeDialogResourcesSize),
       IDR_SET_TIME_DIALOG_SET_TIME_HTML);
-
-  source->AddBoolean("isJellyEnabled", chromeos::features::IsJellyEnabled());
 }
 
 SetTimeUI::~SetTimeUI() = default;

@@ -6,6 +6,7 @@
 
 #include <limits>
 #include <memory>
+#include <string_view>
 #include <utility>
 
 #include "base/check.h"
@@ -129,13 +130,6 @@ AuctionV8Helper::TimeLimitScope::TimeLimitScope(TimeLimit* script_timeout)
     : script_timeout_(script_timeout) {
   if (script_timeout) {
     resumed_ = script_timeout->Resume();
-    if (!resumed_) {
-      // If we are inside a nested context (e.g. CallFunction -> some binding
-      // -> type conversion), we need to explicitly tell v8 we are
-      // still OK with termination.
-      safe_for_termination_scope_.emplace(
-          script_timeout->v8_helper()->isolate());
-    }
   }
 }
 
@@ -148,8 +142,6 @@ AuctionV8Helper::TimeLimitScope::~TimeLimitScope() {
 // Utility class to timeout running a v8::Script or calling a v8::Function.
 // Instantiate a ScriptTimeoutHelper, and it will terminate script if
 // `script_timeout` passes before it is destroyed.
-//
-// Creates a v8::SafeForTerminationScope(), so the caller doesn't have to.
 class AuctionV8Helper::ScriptTimeoutHelper : public AuctionV8Helper::TimeLimit {
  public:
   ScriptTimeoutHelper(
@@ -157,7 +149,6 @@ class AuctionV8Helper::ScriptTimeoutHelper : public AuctionV8Helper::TimeLimit {
       scoped_refptr<base::SequencedTaskRunner> timer_task_runner,
       base::TimeDelta script_timeout)
       : TimeLimit(v8_helper),
-        termination_scope_(v8_helper->isolate()),
         remaining_delay_(script_timeout),
         running_(false),
         timer_task_runner_(std::move(timer_task_runner)) {
@@ -283,7 +274,6 @@ class AuctionV8Helper::ScriptTimeoutHelper : public AuctionV8Helper::TimeLimit {
     running_ = false;
   }
 
-  v8::Isolate::SafeForTerminationScope termination_scope_;
   base::TimeDelta remaining_delay_;
   base::TimeTicks last_start_;
   bool running_;
@@ -401,7 +391,7 @@ v8::Local<v8::String> AuctionV8Helper::CreateStringFromLiteral(
 }
 
 v8::MaybeLocal<v8::String> AuctionV8Helper::CreateUtf8String(
-    base::StringPiece utf8_string) {
+    std::string_view utf8_string) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!base::IsStringUTF8(utf8_string))
     return v8::MaybeLocal<v8::String>();
@@ -412,7 +402,7 @@ v8::MaybeLocal<v8::String> AuctionV8Helper::CreateUtf8String(
 
 v8::MaybeLocal<v8::Value> AuctionV8Helper::CreateValueFromJson(
     v8::Local<v8::Context> context,
-    base::StringPiece utf8_json) {
+    std::string_view utf8_json) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   v8::Local<v8::String> v8_string;
   if (!CreateUtf8String(utf8_json).ToLocal(&v8_string))
@@ -420,7 +410,7 @@ v8::MaybeLocal<v8::Value> AuctionV8Helper::CreateValueFromJson(
   return v8::JSON::Parse(context, v8_string);
 }
 
-bool AuctionV8Helper::AppendUtf8StringValue(base::StringPiece utf8_string,
+bool AuctionV8Helper::AppendUtf8StringValue(std::string_view utf8_string,
                                             v8::LocalVector<v8::Value>* args) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   v8::Local<v8::String> value;
@@ -431,7 +421,7 @@ bool AuctionV8Helper::AppendUtf8StringValue(base::StringPiece utf8_string,
 }
 
 bool AuctionV8Helper::AppendJsonValue(v8::Local<v8::Context> context,
-                                      base::StringPiece utf8_json,
+                                      std::string_view utf8_json,
                                       v8::LocalVector<v8::Value>* args) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   v8::Local<v8::Value> value;
@@ -441,7 +431,7 @@ bool AuctionV8Helper::AppendJsonValue(v8::Local<v8::Context> context,
   return true;
 }
 
-bool AuctionV8Helper::InsertValue(base::StringPiece key,
+bool AuctionV8Helper::InsertValue(std::string_view key,
                                   v8::Local<v8::Value> value,
                                   v8::Local<v8::Object> object) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -454,8 +444,8 @@ bool AuctionV8Helper::InsertValue(base::StringPiece key,
 }
 
 bool AuctionV8Helper::InsertJsonValue(v8::Local<v8::Context> context,
-                                      base::StringPiece key,
-                                      base::StringPiece utf8_json,
+                                      std::string_view key,
+                                      std::string_view utf8_json,
                                       v8::Local<v8::Object> object) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   v8::Local<v8::Value> v8_value;
@@ -540,7 +530,7 @@ v8::MaybeLocal<v8::UnboundScript> AuctionV8Helper::Compile(
   v8::TryCatch try_catch(isolate());
   v8::ScriptCompiler::Source script_source(
       src_string.ToLocalChecked(),
-      v8::ScriptOrigin(v8_isolate, origin_string.ToLocalChecked()));
+      v8::ScriptOrigin(origin_string.ToLocalChecked()));
   auto result = v8::ScriptCompiler::CompileUnboundScript(
       v8_isolate, &script_source, v8::ScriptCompiler::kNoCompileOptions,
       v8::ScriptCompiler::NoCacheReason::kNoCacheNoReason);
@@ -653,7 +643,7 @@ v8::MaybeLocal<v8::Value> AuctionV8Helper::CallFunction(
     v8::Local<v8::Context> context,
     const DebugId* debug_id,
     const std::string& script_name,
-    base::StringPiece function_name,
+    std::string_view function_name,
     base::span<v8::Local<v8::Value>> args,
     TimeLimit* script_timeout,
     std::vector<std::string>& error_out) {

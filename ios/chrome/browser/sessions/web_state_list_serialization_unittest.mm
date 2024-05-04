@@ -11,17 +11,24 @@
 #import "base/strings/utf_string_conversions.h"
 #import "base/test/metrics/histogram_tester.h"
 #import "base/test/scoped_feature_list.h"
+#import "components/tab_groups/tab_group_color.h"
+#import "components/tab_groups/tab_group_visual_data.h"
 #import "ios/chrome/browser/sessions/features.h"
 #import "ios/chrome/browser/sessions/proto/storage.pb.h"
 #import "ios/chrome/browser/sessions/session_constants.h"
+#import "ios/chrome/browser/sessions/session_tab_group.h"
 #import "ios/chrome/browser/sessions/session_window_ios.h"
 #import "ios/chrome/browser/shared/model/url/chrome_url_constants.h"
+#import "ios/chrome/browser/shared/model/web_state_list/tab_group.h"
+#import "ios/chrome/browser/shared/model/web_state_list/tab_group_range.h"
 #import "ios/chrome/browser/shared/model/web_state_list/test/fake_web_state_list_delegate.h"
+#import "ios/chrome/browser/shared/model/web_state_list/test/web_state_list_builder_from_description.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_opener.h"
 #import "ios/web/public/session/crw_session_storage.h"
 #import "ios/web/public/session/crw_session_user_data.h"
 #import "ios/web/public/session/proto/proto_util.h"
+#import "ios/web/public/session/proto/storage.pb.h"
 #import "ios/web/public/session/serializable_user_data_manager.h"
 #import "ios/web/public/test/fakes/fake_navigation_manager.h"
 #import "ios/web/public/test/fakes/fake_web_state.h"
@@ -119,28 +126,6 @@ std::unique_ptr<web::WebState> CreateWebStateFromProto(
   return CreateWebState();
 }
 
-// Creates a WebStateMetadataStorage for `web_state`.
-web::proto::WebStateMetadataStorage MetadataStorage(web::WebState* web_state) {
-  web::proto::WebStateMetadataStorage storage;
-  storage.set_navigation_item_count(web_state->GetNavigationItemCount());
-  web::SerializeTimeToProto(web_state->GetCreationTime(),
-                            *storage.mutable_creation_time());
-  web::SerializeTimeToProto(web_state->GetLastActiveTime(),
-                            *storage.mutable_last_active_time());
-
-  const std::u16string& title = web_state->GetTitle();
-  if (!title.empty()) {
-    storage.mutable_active_page()->set_page_title(base::UTF16ToUTF8(title));
-  }
-
-  const GURL& url = web_state->GetVisibleURL();
-  if (url.is_valid()) {
-    storage.mutable_active_page()->set_page_url(url.spec());
-  }
-
-  return storage;
-}
-
 // Helper wrapping SerializeWebStateList(...) with an auto-generated
 // WebStateMetadataMap.
 void SerializeWebStateList(const WebStateList& web_state_list,
@@ -150,11 +135,21 @@ void SerializeWebStateList(const WebStateList& web_state_list,
   for (int index = 0; index < web_state_list.count(); ++index) {
     web::WebState* const web_state = web_state_list.GetWebStateAt(index);
     const web::WebStateID web_state_id = web_state->GetUniqueIdentifier();
-    metadata_map.insert(
-        std::make_pair(web_state_id, MetadataStorage(web_state)));
+
+    web::proto::WebStateMetadataStorage metadata;
+    web_state->SerializeMetadataToProto(metadata);
+    metadata_map.insert(std::make_pair(web_state_id, std::move(metadata)));
   }
 
   SerializeWebStateList(web_state_list, metadata_map, storage);
+}
+
+// Checks that the given `tab_group_range` is present in the `web_state_list`.
+bool CheckWebStateListHasTabGroup(const WebStateList& web_state_list,
+                                  TabGroupRange tab_group_range) {
+  const TabGroup* group =
+      web_state_list.GetGroupOfWebStateAt(tab_group_range.range_begin());
+  return group && group->range() == tab_group_range;
 }
 
 }  // namespace
@@ -340,6 +335,85 @@ TEST_F(WebStateListSerializationTest, Serialize_ObjC_DropDuplicates) {
   // Expect a log of 4 duplicates.
   histogram_tester_.ExpectUniqueSample(
       "Tabs.DroppedDuplicatesCountOnSessionSave", 4, 1);
+}
+
+// Tests that serializing a WebStateList drops tabs with similar identifiers and
+// updates the appropriate groups.
+//
+// Objective-C (legacy) variant.
+TEST_F(WebStateListSerializationTest, Serialize_ObjC_DropDuplicatesWithGroups) {
+  FakeWebStateListDelegate delegate;
+  WebStateList web_state_list(&delegate);
+  WebStateListBuilderFromDescription builder(&web_state_list);
+  web_state_list.InsertWebState(
+      CreateWebStateWithWebStateID(web::WebStateID::FromSerializedValue(5555)),
+      WebStateList::InsertionParams::AtIndex(0).Pinned());
+  web_state_list.InsertWebState(
+      CreateWebStateWithWebStateID(web::WebStateID::FromSerializedValue(5555)),
+      WebStateList::InsertionParams::AtIndex(1).Pinned());
+  web_state_list.InsertWebState(
+      CreateWebStateWithWebStateID(web::WebStateID::FromSerializedValue(3333)),
+      WebStateList::InsertionParams::AtIndex(2));
+  web_state_list.InsertWebState(
+      CreateWebStateWithWebStateID(web::WebStateID::FromSerializedValue(5555)),
+      WebStateList::InsertionParams::AtIndex(3).Activate());
+  web_state_list.InsertWebState(
+      CreateWebStateWithWebStateID(web::WebStateID::FromSerializedValue(5555)),
+      WebStateList::InsertionParams::AtIndex(4));
+  web_state_list.InsertWebState(
+      CreateWebStateWithWebStateID(web::WebStateID::FromSerializedValue(3333)),
+      WebStateList::InsertionParams::AtIndex(5));
+  web_state_list.InsertWebState(
+      CreateWebStateWithWebStateID(web::WebStateID::FromSerializedValue(1111)),
+      WebStateList::InsertionParams::AtIndex(6));
+  web_state_list.InsertWebState(
+      CreateWebStateWithWebStateID(web::WebStateID::FromSerializedValue(1112)),
+      WebStateList::InsertionParams::AtIndex(7));
+  web_state_list.InsertWebState(
+      CreateWebStateWithWebStateID(web::WebStateID::FromSerializedValue(3333)),
+      WebStateList::InsertionParams::AtIndex(8));
+  web_state_list.InsertWebState(
+      CreateWebStateWithWebStateID(web::WebStateID::FromSerializedValue(5555)),
+      WebStateList::InsertionParams::AtIndex(9));
+  web_state_list.InsertWebState(
+      CreateWebStateWithWebStateID(web::WebStateID::FromSerializedValue(1113)),
+      WebStateList::InsertionParams::AtIndex(10));
+  web_state_list.CreateGroup({2, 3}, {});
+  web_state_list.CreateGroup({6, 7}, {});
+  web_state_list.CreateGroup({8}, {});
+  web_state_list.CreateGroup({9, 10}, {});
+  builder.GenerateIdentifiersForWebStateList();
+  EXPECT_EQ("a b | [ 0 c d* ] e f [ 1 g h ] [ 2 i ] [ 3 j k ]",
+            builder.GetWebStateListDescription());
+
+  // Serialize the session and check the serialized data is correct.
+  SessionWindowIOS* session_window = SerializeWebStateList(&web_state_list);
+
+  // Check that the duplicate items have been closed, including the active tab
+  // (its next kept sibling should be selected).
+  EXPECT_EQ(session_window.sessions.count, 5u);
+  EXPECT_EQ(session_window.selectedIndex, 2u);
+  EXPECT_EQ(session_window.tabGroups.count, 3u);
+  NSArray<SessionTabGroup*>* groups = [session_window.tabGroups
+      sortedArrayUsingComparator:^(SessionTabGroup* group_1,
+                                   SessionTabGroup* group_2) {
+        if (group_1.rangeStart > group_2.rangeStart) {
+          return NSOrderedDescending;
+        } else if (group_1.rangeStart < group_2.rangeStart) {
+          return NSOrderedAscending;
+        }
+        return NSOrderedSame;
+      }];
+  EXPECT_EQ(groups[0].rangeStart, 1);
+  EXPECT_EQ(groups[0].rangeCount, 1);
+  EXPECT_EQ(groups[1].rangeStart, 2);
+  EXPECT_EQ(groups[1].rangeCount, 2);
+  EXPECT_EQ(groups[2].rangeStart, 4);
+  EXPECT_EQ(groups[2].rangeCount, 1);
+
+  // Expect a log of 6 duplicates.
+  histogram_tester_.ExpectUniqueSample(
+      "Tabs.DroppedDuplicatesCountOnSessionSave", 6, 1);
 }
 
 // Tests that serializing a WebStateList drops the tab with no navigation when
@@ -535,6 +609,83 @@ TEST_F(WebStateListSerializationTest, Serialize_Proto_DropDuplicates) {
       "Tabs.DroppedDuplicatesCountOnSessionSave", 4, 1);
 }
 
+// Tests that serializing a WebStateList drops tabs with similar identifiers.
+//
+// Protobuf message variant.
+TEST_F(WebStateListSerializationTest,
+       Serialize_Proto_DropDuplicatesWithGroups) {
+  FakeWebStateListDelegate delegate;
+  WebStateList web_state_list(&delegate);
+  WebStateListBuilderFromDescription builder(&web_state_list);
+  web_state_list.InsertWebState(
+      CreateWebStateWithWebStateID(web::WebStateID::FromSerializedValue(5555)),
+      WebStateList::InsertionParams::AtIndex(0).Pinned());
+  web_state_list.InsertWebState(
+      CreateWebStateWithWebStateID(web::WebStateID::FromSerializedValue(5555)),
+      WebStateList::InsertionParams::AtIndex(1).Pinned());
+  web_state_list.InsertWebState(
+      CreateWebStateWithWebStateID(web::WebStateID::FromSerializedValue(3333)),
+      WebStateList::InsertionParams::AtIndex(2));
+  web_state_list.InsertWebState(
+      CreateWebStateWithWebStateID(web::WebStateID::FromSerializedValue(5555)),
+      WebStateList::InsertionParams::AtIndex(3).Activate());
+  web_state_list.InsertWebState(
+      CreateWebStateWithWebStateID(web::WebStateID::FromSerializedValue(5555)),
+      WebStateList::InsertionParams::AtIndex(4));
+  web_state_list.InsertWebState(
+      CreateWebStateWithWebStateID(web::WebStateID::FromSerializedValue(3333)),
+      WebStateList::InsertionParams::AtIndex(5));
+  web_state_list.InsertWebState(
+      CreateWebStateWithWebStateID(web::WebStateID::FromSerializedValue(1111)),
+      WebStateList::InsertionParams::AtIndex(6));
+  web_state_list.InsertWebState(
+      CreateWebStateWithWebStateID(web::WebStateID::FromSerializedValue(1112)),
+      WebStateList::InsertionParams::AtIndex(7));
+  web_state_list.InsertWebState(
+      CreateWebStateWithWebStateID(web::WebStateID::FromSerializedValue(3333)),
+      WebStateList::InsertionParams::AtIndex(8));
+  web_state_list.InsertWebState(
+      CreateWebStateWithWebStateID(web::WebStateID::FromSerializedValue(5555)),
+      WebStateList::InsertionParams::AtIndex(9));
+  web_state_list.InsertWebState(
+      CreateWebStateWithWebStateID(web::WebStateID::FromSerializedValue(1113)),
+      WebStateList::InsertionParams::AtIndex(10));
+  web_state_list.CreateGroup({2, 3}, {});
+  web_state_list.CreateGroup({6, 7}, {});
+  web_state_list.CreateGroup({8}, {});
+  web_state_list.CreateGroup({9, 10}, {});
+  builder.GenerateIdentifiersForWebStateList();
+  EXPECT_EQ("a b | [ 0 c d* ] e f [ 1 g h ] [ 2 i ] [ 3 j k ]",
+            builder.GetWebStateListDescription());
+
+  // Serialize the session and check the serialized data is correct.
+  ios::proto::WebStateListStorage storage;
+  SerializeWebStateList(web_state_list, storage);
+
+  // Check that the duplicate items have been closed, including the active tab
+  // (its next kept sibling should be selected).
+  EXPECT_EQ(storage.items_size(), 5);
+  EXPECT_EQ(storage.active_index(), 2);
+  EXPECT_EQ(storage.pinned_item_count(), 1);
+  EXPECT_EQ(storage.groups_size(), 3);
+  std::sort(storage.mutable_groups()->pointer_begin(),
+            storage.mutable_groups()->pointer_end(),
+            [](const ios::proto::TabGroupStorage* group_1,
+               const ios::proto::TabGroupStorage* group_2) {
+              return group_1->range().start() < group_2->range().start();
+            });
+  EXPECT_EQ(storage.groups(0).range().start(), 1);
+  EXPECT_EQ(storage.groups(0).range().count(), 1);
+  EXPECT_EQ(storage.groups(1).range().start(), 2);
+  EXPECT_EQ(storage.groups(1).range().count(), 2);
+  EXPECT_EQ(storage.groups(2).range().start(), 4);
+  EXPECT_EQ(storage.groups(2).range().count(), 1);
+
+  // Expect a log of 6 duplicates.
+  histogram_tester_.ExpectUniqueSample(
+      "Tabs.DroppedDuplicatesCountOnSessionSave", 6, 1);
+}
+
 // Tests that serializing a WebStateList drops the tab with no navigation when
 // also being a duplicate.
 //
@@ -599,7 +750,7 @@ TEST_F(WebStateListSerializationTest, Deserialize_ObjC_PinnedEnabled) {
   const std::vector<web::WebState*> restored_web_states =
       DeserializeWebStateList(
           &web_state_list, session_window,
-          /*enable_pinned_web_states*/ true,
+          /*enable_pinned_web_states*/ true, /*enable_tab_groups*/ true,
           base::BindRepeating(&CreateWebStateWithSessionStorage));
   EXPECT_EQ(restored_web_states.size(), 4u);
 
@@ -657,7 +808,7 @@ TEST_F(WebStateListSerializationTest, Deserialize_ObjC_PinnedDisabled) {
   const std::vector<web::WebState*> restored_web_states =
       DeserializeWebStateList(
           &web_state_list, session_window,
-          /*enable_pinned_web_states*/ false,
+          /*enable_pinned_web_states*/ false, /*enable_tab_groups*/ true,
           base::BindRepeating(&CreateWebStateWithSessionStorage));
   EXPECT_EQ(restored_web_states.size(), 4u);
 
@@ -716,6 +867,7 @@ TEST_F(WebStateListSerializationTest, Deserialize_Proto_PinnedEnabled) {
   const std::vector<web::WebState*> restored_web_states =
       DeserializeWebStateList(&web_state_list, std::move(storage),
                               /*enable_pinned_web_states*/ true,
+                              /*enable_tab_groups*/ true,
                               base::BindRepeating(&CreateWebStateFromProto));
   EXPECT_EQ(restored_web_states.size(), 4u);
 
@@ -774,6 +926,7 @@ TEST_F(WebStateListSerializationTest, Deserialize_Proto_PinnedDisabled) {
   const std::vector<web::WebState*> restored_web_states =
       DeserializeWebStateList(&web_state_list, std::move(storage),
                               /*enable_pinned_web_states*/ false,
+                              /*enable_tab_groups*/ true,
                               base::BindRepeating(&CreateWebStateFromProto));
   EXPECT_EQ(restored_web_states.size(), 4u);
 
@@ -839,6 +992,7 @@ TEST_F(WebStateListSerializationTest, Deserialize_Proto_SessionIDCheck) {
   const std::vector<web::WebState*> restored_web_states =
       DeserializeWebStateList(&web_state_list, std::move(storage),
                               /*enable_pinned_web_states*/ false,
+                              /*enable_tab_groups*/ true,
                               base::BindRepeating(&CreateWebStateFromProto));
   EXPECT_EQ(restored_web_states.size(), 4u);
 
@@ -858,4 +1012,350 @@ TEST_F(WebStateListSerializationTest, Deserialize_Proto_SessionIDCheck) {
   // Check that the pinned tab has been restored at the correct position
   // but is no longer pinned.
   EXPECT_FALSE(web_state_list.IsWebStatePinnedAt(0));
+}
+
+// Tests deserializing works when support for tab groups is enabled.
+// Tests with one tab group.
+//
+// Protobuf message variant.
+TEST_F(WebStateListSerializationTest, Deserialize_Proto_TabGroupsEnabled) {
+  FakeWebStateListDelegate delegate;
+  const TabGroupRange group_range = TabGroupRange(0, 1);
+
+  // Create a WebStateList, populate it and serialize to `storage`.
+  ios::proto::WebStateListStorage storage;
+  {
+    WebStateList web_state_list(&delegate);
+    WebStateListBuilderFromDescription builder(&web_state_list);
+    ASSERT_TRUE(builder.BuildWebStateListFromDescription("| [0 a] b* c d"));
+
+    SerializeWebStateList(web_state_list, storage);
+
+    EXPECT_EQ(storage.items_size(), 4);
+    EXPECT_EQ(storage.active_index(), 1);
+    EXPECT_EQ(storage.groups_size(), 1);
+  }
+
+  // Deserialize `storage` into a new empty WebStateList.
+  WebStateList web_state_list(&delegate);
+  const std::vector<web::WebState*> restored_web_states =
+      DeserializeWebStateList(&web_state_list, std::move(storage),
+                              /*enable_pinned_web_states*/ true,
+                              /*enable_tab_groups*/ true,
+                              base::BindRepeating(&CreateWebStateFromProto));
+  EXPECT_EQ(restored_web_states.size(), 4u);
+
+  ASSERT_EQ(web_state_list.count(), 4);
+  EXPECT_EQ(web_state_list.active_index(), 1);
+
+  // Check tab groups.
+  std::set<const TabGroup*> groups = web_state_list.GetGroups();
+  ASSERT_EQ(groups.size(), 1u);
+  EXPECT_TRUE(CheckWebStateListHasTabGroup(web_state_list, group_range));
+}
+
+// Tests deserializing works when support for tab groups is enabled.
+// Tests with one tab group.
+//
+// Objective-C (legacy) variant.
+TEST_F(WebStateListSerializationTest, Deserialize_ObjC_TabGroupsEnabled) {
+  FakeWebStateListDelegate delegate;
+  const TabGroupRange group_range = TabGroupRange(0, 1);
+
+  // Create a WebStateList, populate it, and save data to `session_window`.
+  SessionWindowIOS* session_window = nil;
+  {
+    WebStateList web_state_list(&delegate);
+    WebStateListBuilderFromDescription builder(&web_state_list);
+    ASSERT_TRUE(builder.BuildWebStateListFromDescription("| [0 a] b* c d"));
+
+    session_window = SerializeWebStateList(&web_state_list);
+
+    EXPECT_EQ(session_window.sessions.count, 4u);
+    EXPECT_EQ(session_window.selectedIndex, 1u);
+    EXPECT_EQ(session_window.tabGroups.count, 1u);
+  }
+
+  // Deserialize `session_window` into a new empty WebStateList.
+  WebStateList web_state_list(&delegate);
+  const std::vector<web::WebState*> restored_web_states =
+      DeserializeWebStateList(
+          &web_state_list, session_window,
+          /*enable_pinned_web_states*/ true, /*enable_tab_groups*/ true,
+          base::BindRepeating(&CreateWebStateWithSessionStorage));
+  EXPECT_EQ(restored_web_states.size(), 4u);
+
+  ASSERT_EQ(web_state_list.count(), 4);
+  EXPECT_EQ(web_state_list.active_index(), 1);
+  EXPECT_EQ(web_state_list.pinned_tabs_count(), 0);
+
+  // Check tab groups.
+  std::set<const TabGroup*> groups = web_state_list.GetGroups();
+  ASSERT_EQ(groups.size(), 1u);
+  EXPECT_TRUE(CheckWebStateListHasTabGroup(web_state_list, group_range));
+}
+
+// Tests deserializing works when support for tab groups is enabled.
+// Tests with multiple tab groups.
+//
+// Protobuf message variant.
+TEST_F(WebStateListSerializationTest,
+       Deserialize_Proto_TabGroupsEnabled_MultipleGroups) {
+  FakeWebStateListDelegate delegate;
+  const TabGroupRange group_range_first = TabGroupRange(0, 1);
+  const TabGroupRange group_range_second = TabGroupRange(2, 2);
+
+  // Create a WebStateList, populate it and serialize to `storage`.
+  ios::proto::WebStateListStorage storage;
+  {
+    WebStateList web_state_list(&delegate);
+    WebStateListBuilderFromDescription builder(&web_state_list);
+    ASSERT_TRUE(builder.BuildWebStateListFromDescription("| [0 a] b* [1 c d]"));
+
+    SerializeWebStateList(web_state_list, storage);
+
+    EXPECT_EQ(storage.items_size(), 4);
+    EXPECT_EQ(storage.active_index(), 1);
+    EXPECT_EQ(storage.groups_size(), 2);
+  }
+
+  // Deserialize `storage` into a new empty WebStateList.
+  WebStateList web_state_list(&delegate);
+  const std::vector<web::WebState*> restored_web_states =
+      DeserializeWebStateList(&web_state_list, std::move(storage),
+                              /*enable_pinned_web_states*/ true,
+                              /*enable_tab_groups*/ true,
+                              base::BindRepeating(&CreateWebStateFromProto));
+  EXPECT_EQ(restored_web_states.size(), 4u);
+
+  ASSERT_EQ(web_state_list.count(), 4);
+  EXPECT_EQ(web_state_list.active_index(), 1);
+
+  // Check tab groups.
+  std::set<const TabGroup*> groups = web_state_list.GetGroups();
+  ASSERT_EQ(groups.size(), 2u);
+  EXPECT_TRUE(CheckWebStateListHasTabGroup(web_state_list, group_range_first));
+  EXPECT_TRUE(CheckWebStateListHasTabGroup(web_state_list, group_range_second));
+}
+
+// Tests deserializing works when support for tab groups is enabled.
+// Tests with multiple tab groups.
+//
+// Objective-C (legacy) variant.
+TEST_F(WebStateListSerializationTest, Deserialize_ObjC_MultipleGroups) {
+  FakeWebStateListDelegate delegate;
+  const TabGroupRange group_range_first = TabGroupRange(0, 1);
+  const TabGroupRange group_range_second = TabGroupRange(2, 2);
+
+  // Create a WebStateList, populate it, and save data to `session_window`.
+  SessionWindowIOS* session_window = nil;
+  {
+    WebStateList web_state_list(&delegate);
+    WebStateListBuilderFromDescription builder(&web_state_list);
+    ASSERT_TRUE(builder.BuildWebStateListFromDescription("| [0 a] b* [1 c d]"));
+
+    session_window = SerializeWebStateList(&web_state_list);
+
+    EXPECT_EQ(session_window.sessions.count, 4u);
+    EXPECT_EQ(session_window.selectedIndex, 1u);
+    EXPECT_EQ(session_window.tabGroups.count, 2u);
+  }
+
+  // Deserialize `session_window` into a new empty WebStateList.
+  WebStateList web_state_list(&delegate);
+  const std::vector<web::WebState*> restored_web_states =
+      DeserializeWebStateList(
+          &web_state_list, session_window,
+          /*enable_pinned_web_states*/ true, /*enable_tab_groups*/ true,
+          base::BindRepeating(&CreateWebStateWithSessionStorage));
+  EXPECT_EQ(restored_web_states.size(), 4u);
+
+  ASSERT_EQ(web_state_list.count(), 4);
+  EXPECT_EQ(web_state_list.active_index(), 1);
+  EXPECT_EQ(web_state_list.pinned_tabs_count(), 0);
+
+  // Check tab groups.
+  std::set<const TabGroup*> groups = web_state_list.GetGroups();
+  ASSERT_EQ(groups.size(), 2u);
+  EXPECT_TRUE(CheckWebStateListHasTabGroup(web_state_list, group_range_first));
+  EXPECT_TRUE(CheckWebStateListHasTabGroup(web_state_list, group_range_second));
+}
+
+// Tests deserializing works when support for tab groups is disabled.
+// Tests with multiple tab groups.
+//
+// Protobuf message variant.
+TEST_F(WebStateListSerializationTest, Deserialize_Proto_TabGroupsDisabled) {
+  FakeWebStateListDelegate delegate;
+
+  // Create a WebStateList, populate it and serialize to `storage`.
+  ios::proto::WebStateListStorage storage;
+  {
+    WebStateList web_state_list(&delegate);
+    WebStateListBuilderFromDescription builder(&web_state_list);
+    ASSERT_TRUE(builder.BuildWebStateListFromDescription("| [0 a] b* [1 c d]"));
+
+    SerializeWebStateList(web_state_list, storage);
+
+    EXPECT_EQ(storage.items_size(), 4);
+    EXPECT_EQ(storage.active_index(), 1);
+    EXPECT_EQ(storage.groups_size(), 2);
+  }
+
+  // Deserialize `storage` into a new empty WebStateList.
+  WebStateList web_state_list(&delegate);
+  const std::vector<web::WebState*> restored_web_states =
+      DeserializeWebStateList(&web_state_list, std::move(storage),
+                              /*enable_pinned_web_states*/ true,
+                              /*enable_tab_groups*/ false,
+                              base::BindRepeating(&CreateWebStateFromProto));
+  EXPECT_EQ(restored_web_states.size(), 4u);
+
+  ASSERT_EQ(web_state_list.count(), 4);
+  EXPECT_EQ(web_state_list.active_index(), 1);
+
+  // Check tab groups.
+  std::set<const TabGroup*> groups = web_state_list.GetGroups();
+  ASSERT_EQ(groups.size(), 0u);
+}
+
+// Tests deserializing works when support for tab groups is disabled.
+// Tests with multiple tab groups.
+//
+// Objective-C (legacy) variant.
+TEST_F(WebStateListSerializationTest, Deserialize_ObjC_TabGroupsDisabled) {
+  FakeWebStateListDelegate delegate;
+
+  // Create a WebStateList, populate it, and save data to `session_window`.
+  SessionWindowIOS* session_window = nil;
+  {
+    WebStateList web_state_list(&delegate);
+    WebStateListBuilderFromDescription builder(&web_state_list);
+    ASSERT_TRUE(builder.BuildWebStateListFromDescription("| [0 a] b* [1 c d]"));
+
+    session_window = SerializeWebStateList(&web_state_list);
+
+    EXPECT_EQ(session_window.sessions.count, 4u);
+    EXPECT_EQ(session_window.selectedIndex, 1u);
+    EXPECT_EQ(session_window.tabGroups.count, 2u);
+  }
+
+  // Deserialize `session_window` into a new empty WebStateList.
+  WebStateList web_state_list(&delegate);
+  const std::vector<web::WebState*> restored_web_states =
+      DeserializeWebStateList(
+          &web_state_list, session_window,
+          /*enable_pinned_web_states*/ true, /*enable_tab_groups*/ false,
+          base::BindRepeating(&CreateWebStateWithSessionStorage));
+  EXPECT_EQ(restored_web_states.size(), 4u);
+
+  ASSERT_EQ(web_state_list.count(), 4);
+  EXPECT_EQ(web_state_list.active_index(), 1);
+  EXPECT_EQ(web_state_list.pinned_tabs_count(), 0);
+
+  // Check tab groups.
+  std::set<const TabGroup*> groups = web_state_list.GetGroups();
+  ASSERT_EQ(groups.size(), 0u);
+}
+
+// Tests deserializing works when support for tab groups is enabled.
+// Tests with invalid tab group.
+//
+// Protobuf message variant.
+TEST_F(WebStateListSerializationTest, Deserialize_Proto_TabGroupsInvalid) {
+  FakeWebStateListDelegate delegate;
+  const TabGroupRange valid_group_range = TabGroupRange(0, 1);
+
+  // Create a WebStateList, populate it and serialize to `storage`.
+  ios::proto::WebStateListStorage storage;
+  {
+    WebStateList web_state_list(&delegate);
+    WebStateListBuilderFromDescription builder(&web_state_list);
+    ASSERT_TRUE(builder.BuildWebStateListFromDescription("| [0 a] b* c d"));
+
+    SerializeWebStateList(web_state_list, storage);
+  }
+
+  // Add invalid tab group to `storage`.
+  ios::proto::TabGroupStorage& group_storage = *storage.add_groups();
+  ios::proto::RangeIndex& range = *group_storage.mutable_range();
+  range.set_start(2);
+  range.set_count(4);
+  group_storage.set_title("Invalid");
+  group_storage.set_color(ios::proto::TabGroupColorId::GREY);
+
+  EXPECT_EQ(storage.items_size(), 4);
+  EXPECT_EQ(storage.active_index(), 1);
+  EXPECT_EQ(storage.groups_size(), 2);
+
+  // Deserialize `storage` into a new empty WebStateList.
+  WebStateList web_state_list(&delegate);
+  const std::vector<web::WebState*> restored_web_states =
+      DeserializeWebStateList(&web_state_list, std::move(storage),
+                              /*enable_pinned_web_states*/ true,
+                              /*enable_tab_groups*/ true,
+                              base::BindRepeating(&CreateWebStateFromProto));
+  EXPECT_EQ(restored_web_states.size(), 4u);
+
+  ASSERT_EQ(web_state_list.count(), 4);
+  EXPECT_EQ(web_state_list.active_index(), 1);
+
+  // Check tab group.
+  std::set<const TabGroup*> groups = web_state_list.GetGroups();
+  ASSERT_EQ(groups.size(), 1u);
+  EXPECT_TRUE(CheckWebStateListHasTabGroup(web_state_list, valid_group_range));
+}
+
+// Tests deserializing works when support for tab groups is enabled.
+// Tests with invalid tab group.
+//
+// Objective-C (legacy) variant.
+TEST_F(WebStateListSerializationTest, Deserialize_ObjC_TabGroupsInvalid) {
+  FakeWebStateListDelegate delegate;
+  const TabGroupRange valid_group_range = TabGroupRange(0, 1);
+
+  // Create a WebStateList, populate it, and save data to `session_window`.
+  SessionWindowIOS* session_window = nil;
+  {
+    WebStateList web_state_list(&delegate);
+    WebStateListBuilderFromDescription builder(&web_state_list);
+    ASSERT_TRUE(builder.BuildWebStateListFromDescription("| [0 a] b* c d"));
+
+    session_window = SerializeWebStateList(&web_state_list);
+  }
+
+  // Add invalid tab group to `session_window`.
+  SessionTabGroup* invalid_tab_group =
+      [[SessionTabGroup alloc] initWithRangeStart:2
+                                       rangeCount:4
+                                            title:@"Invalid"
+                                          colorId:0];
+  NSArray<SessionTabGroup*>* session_groups = [session_window.tabGroups
+      arrayByAddingObjectsFromArray:@[ invalid_tab_group ]];
+  session_window =
+      [[SessionWindowIOS alloc] initWithSessions:session_window.sessions
+                                       tabGroups:session_groups
+                                   selectedIndex:session_window.selectedIndex];
+
+  EXPECT_EQ(session_window.sessions.count, 4u);
+  EXPECT_EQ(session_window.selectedIndex, 1u);
+  EXPECT_EQ(session_window.tabGroups.count, 2u);
+
+  // Deserialize `session_window` into a new empty WebStateList.
+  WebStateList web_state_list(&delegate);
+  const std::vector<web::WebState*> restored_web_states =
+      DeserializeWebStateList(
+          &web_state_list, session_window,
+          /*enable_pinned_web_states*/ true, /*enable_tab_groups*/ true,
+          base::BindRepeating(&CreateWebStateWithSessionStorage));
+  EXPECT_EQ(restored_web_states.size(), 4u);
+
+  ASSERT_EQ(web_state_list.count(), 4);
+  EXPECT_EQ(web_state_list.active_index(), 1);
+  EXPECT_EQ(web_state_list.pinned_tabs_count(), 0);
+
+  // Check tab group.
+  std::set<const TabGroup*> groups = web_state_list.GetGroups();
+  ASSERT_EQ(groups.size(), 1u);
+  EXPECT_TRUE(CheckWebStateListHasTabGroup(web_state_list, valid_group_range));
 }

@@ -385,8 +385,6 @@ TEST_F(FullRestoreServiceTest, AskEveryTime) {
   EXPECT_EQ(RestoreOption::kAskEveryTime, GetRestoreOption());
 }
 
-// TODO(http://b/326982900): Migrate this test suite to test with forest
-// enabled.
 class FullRestoreServiceTestHavingFullRestoreFile
     : public FullRestoreServiceTest {
  public:
@@ -1018,6 +1016,9 @@ class ForestFullRestoreServiceTest : public FullRestoreServiceTest {
   ForestFullRestoreServiceTest() {
     scoped_feature_list_.Reset();
     scoped_feature_list_.InitAndEnableFeature(features::kForestFeature);
+
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        ::switches::kNoFirstRun);
   }
   ForestFullRestoreServiceTest(const ForestFullRestoreServiceTest&) = delete;
   ForestFullRestoreServiceTest& operator=(const ForestFullRestoreServiceTest&) =
@@ -1293,6 +1294,9 @@ class ForestFullRestoreServiceMultipleUsersTest
   ForestFullRestoreServiceMultipleUsersTest() {
     scoped_feature_list_.Reset();
     scoped_feature_list_.InitAndEnableFeature(features::kForestFeature);
+
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        ::switches::kNoFirstRun);
   }
   ForestFullRestoreServiceMultipleUsersTest(
       const ForestFullRestoreServiceMultipleUsersTest&) = delete;

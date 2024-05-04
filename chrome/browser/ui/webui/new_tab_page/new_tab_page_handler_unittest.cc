@@ -117,7 +117,7 @@ class MockLogoService : public search_provider_logos::LogoService {
 
 class MockColorProviderSource : public ui::ColorProviderSource {
  public:
-  MockColorProviderSource() { color_provider_.GenerateColorMap(); }
+  MockColorProviderSource() = default;
   MockColorProviderSource(const MockColorProviderSource&) = delete;
   MockColorProviderSource& operator=(const MockColorProviderSource&) = delete;
   ~MockColorProviderSource() override = default;
@@ -126,7 +126,7 @@ class MockColorProviderSource : public ui::ColorProviderSource {
     return &color_provider_;
   }
 
-  const ui::RendererColorMap GetRendererColorMap(
+  ui::RendererColorMap GetRendererColorMap(
       ui::ColorProviderKey::ColorMode color_mode,
       ui::ColorProviderKey::ForcedColors forced_colors) const override {
     auto key = GetColorProviderKey();

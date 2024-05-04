@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 /** @fileoverview Definitions for chrome.autofillPrivate API */
-// TODO(crbug.com/1203307): Auto-generate this file.
+// TODO(crbug.com/40179454): Auto-generate this file.
 
 import {ChromeEvent} from './chrome_event.js';
 
@@ -114,6 +114,7 @@ declare global {
         SINGLE_USERNAME_FORGOT_PASSWORD,
         ADDRESS_HOME_APT,
         ADDRESS_HOME_APT_TYPE,
+        ADDRESS_HOME_HOUSE_NUMBER_AND_APT,
         SINGLE_USERNAME_WITH_INTERMEDIATE_VALUES,
       }
 
@@ -127,7 +128,6 @@ declare global {
         summarySublabel?: string;
         source?: AddressSource;
         isLocal?: boolean;
-        isCached?: boolean;
         isMigratable?: boolean;
         isVirtualCardEnrollmentEligible?: boolean;
         isVirtualCardEnrolled?: boolean;
@@ -211,7 +211,6 @@ declare global {
       export function getCreditCardList(): Promise<CreditCardEntry[]>;
       export function getIbanList(): Promise<IbanEntry[]>;
       export function isValidIban(ibanValue: string): Promise<boolean>;
-      export function maskCreditCard(guid: string): void;
       export function migrateCreditCards(): void;
       export function logServerCardLinkClicked(): void;
       export function logServerIbanLinkClicked(): void;

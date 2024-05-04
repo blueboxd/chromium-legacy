@@ -151,6 +151,17 @@ NSMenuItem* BuildFileMenu(NSApplication* nsapp,
           .Build();
   // clang-format on
 
+  // The default key bindings assign Cmd-W to Close Tab, and Shift-Cmd-W to
+  // Close Window. For PWAs, we skipped adding the Close Tab item, but Close
+  // Window still has the Shift-Cmd-W shortcut. Remove Shift from the shortcut.
+  if (is_pwa) {
+    NSMenuItem* closeWindowMenuItem =
+        [[item submenu] itemWithTag:IDC_CLOSE_WINDOW];
+    // @"W" corresponds to the "Shift-W" portion of Shift-Cmd-W. We remove the
+    // Shift by making the equivalent string lower case.
+    closeWindowMenuItem.keyEquivalent = @"w";
+  }
+
   return item;
 }
 
@@ -311,9 +322,6 @@ NSMenuItem* BuildViewMenu(NSApplication* nsapp,
               Item().is_separator(),
               Item(IDS_MEDIA_ROUTER_MENU_ITEM_TITLE)
                   .command_id(IDC_ROUTE_MEDIA),
-              Item(IDS_DISTILL_PAGE)
-                  .command_id(IDC_DISTILL_PAGE)
-                  .remove_if(!dom_distiller::IsDomDistillerEnabled()),
               Item().is_separator(),
               Item(IDS_DEVELOPER_MENU_MAC)
                   .tag(IDC_DEVELOPER_MENU)
@@ -577,6 +585,10 @@ void BuildMainMenu(NSApplication* nsapp,
   }
 
   nsapp.mainMenu = main_menu;
+}
+
+NSMenuItem* BuildFileMenuForTesting(bool is_pwa) {
+  return BuildFileMenu(nil, nil, u"", is_pwa);
 }
 
 namespace internal {

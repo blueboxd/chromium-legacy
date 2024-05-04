@@ -113,12 +113,6 @@ class CORE_EXPORT OutOfFlowLayoutPart {
     // The writing direction of the container.
     WritingDirectionMode writing_direction = {WritingMode::kHorizontalTb,
                                               TextDirection::kLtr};
-    // inset-area, aligned with an anchor edge, modified the rect
-    // which might require horizontal scroll adjustments.
-    bool needs_scroll_adjustment_in_x = false;
-    // inset-area, aligned with an anchor edge, modified the rect
-    // which might require vertical scroll adjustments.
-    bool needs_scroll_adjustment_in_y = false;
     // Size and offset of the container.
     LogicalRect rect;
     // The relative positioned offset to be applied after fragmentation is
@@ -151,30 +145,33 @@ class CORE_EXPORT OutOfFlowLayoutPart {
    public:
     BlockNode node;
     const LogicalStaticPosition static_position;
-    const ContainingBlockInfo container_info;
+    const ContainingBlockInfo base_container_info;
     const WritingDirectionMode default_writing_direction;
     const OofContainingBlock<LogicalOffset> containing_block;
     const OofContainingBlock<LogicalOffset> fixedpos_containing_block;
     const OofInlineContainer<LogicalOffset> fixedpos_inline_container;
     bool requires_content_before_breaking = false;
+    bool is_hidden_for_paint = false;
 
     NodeInfo(BlockNode node,
              const LogicalStaticPosition static_position,
-             const ContainingBlockInfo container_info,
+             const ContainingBlockInfo base_container_info,
              const WritingDirectionMode default_writing_direction,
              bool is_fragmentainer_descendant,
              const OofContainingBlock<LogicalOffset>& containing_block,
              const OofContainingBlock<LogicalOffset>& fixedpos_containing_block,
              const OofInlineContainer<LogicalOffset>& fixedpos_inline_container,
-             bool requires_content_before_breaking)
+             bool requires_content_before_breaking,
+             bool is_hidden_for_paint)
         : node(node),
           static_position(static_position),
-          container_info(container_info),
+          base_container_info(base_container_info),
           default_writing_direction(default_writing_direction),
           containing_block(containing_block),
           fixedpos_containing_block(fixedpos_containing_block),
           fixedpos_inline_container(fixedpos_inline_container),
-          requires_content_before_breaking(requires_content_before_breaking) {}
+          requires_content_before_breaking(requires_content_before_breaking),
+          is_hidden_for_paint(is_hidden_for_paint) {}
 
     void Trace(Visitor* visitor) const;
   };
@@ -208,18 +205,27 @@ class CORE_EXPORT OutOfFlowLayoutPart {
     LogicalOffset original_offset;
 
     // This field is set only if this |OffsetInfo| is calculated from a
-    // position-try-options style, either from a @position-try rule or a tactic.
-    Vector<NonOverflowingScrollRange> non_overflowing_ranges;
+    // position-try-options style, either from a @position-try rule or a tactic,
+    // or the anchored element has position-visibility: no-overflow.
+    Vector<NonOverflowingScrollRange> non_overflowing_scroll_ranges;
+
+    // This field is set when we're calculating |OffsetInfo| with
+    // try_fit_available_space=true, e.g. when we have a non-empty
+    // position-try-options. We have to retain the IMCB to implement
+    // position-try-order, which decides which of the various candidates styles
+    // we should select based on the biggest IMCB size (in some axis).
+    std::optional<InsetModifiedContainingBlock> imcb_for_position_order;
 
     bool inline_size_depends_on_min_max_sizes = false;
-
-    bool uses_fallback_style = false;
 
     // True if this element is anchor-positioned, and any anchor reference in
     // the axis is in the same scroll container as the default anchor, in which
     // case we need scroll adjustment in the axis after layout.
     bool needs_scroll_adjustment_in_x = false;
     bool needs_scroll_adjustment_in_y = false;
+
+    // True if the element overflows the inset-modified containing block.
+    bool overflows_containing_block = false;
 
     void Trace(Visitor* visitor) const;
   };
@@ -289,22 +295,16 @@ class CORE_EXPORT OutOfFlowLayoutPart {
       bool outer_context_has_fixedpos_container = false,
       HeapVector<MulticolChildInfo>* multicol_children = nullptr);
 
-  void CreateAnchorEvaluator(
-      std::optional<AnchorEvaluatorImpl>& anchor_evaluator_storage,
-      const ContainingBlockInfo& container_info,
-      WritingDirectionMode self_writing_direction,
-      const ScopedCSSName* default_anchor_specifier,
-      const LayoutBox& candidate_layout_box,
-      const LogicalAnchorQueryMap* anchor_queries);
-
-  const ContainingBlockInfo ApplyInsetArea(
-      const InsetArea& inset_area,
+  AnchorEvaluatorImpl CreateAnchorEvaluator(
       const ContainingBlockInfo& container_info,
       const BlockNode& candidate,
-      const LogicalAnchorQueryMap* anchor_queries);
+      const LogicalAnchorQueryMap* anchor_queries) const;
 
-  NodeInfo SetupNodeInfo(const LogicalOofPositionedNode& oof_node,
-                         const LogicalAnchorQueryMap* anchor_queries);
+  ContainingBlockInfo ApplyInsetAreaOffsets(
+      const InsetAreaOffsets& offsets,
+      const ContainingBlockInfo& container_info) const;
+
+  NodeInfo SetupNodeInfo(const LogicalOofPositionedNode& oof_node);
 
   const LayoutResult* LayoutOOFNode(
       NodeToLayout& oof_node_to_layout,
@@ -323,7 +323,6 @@ class CORE_EXPORT OutOfFlowLayoutPart {
       const NodeInfo& node_info,
       const ComputedStyle& style,
       AnchorEvaluatorImpl*,
-      const LogicalAnchorQueryMap* anchor_queries,
       bool try_fit_available_space,
       NonOverflowingScrollRange* out_scroll_range);
 
@@ -387,6 +386,32 @@ class CORE_EXPORT OutOfFlowLayoutPart {
     return column_balancing_info_ ? column_balancing_info_->columns
                                   : container_builder_->Children();
   }
+
+  // Get the child / descendant fragment at the specified index. These are
+  // normally fragmentainers, but for multicol, column spanners are also
+  // included. For paginated layout, a fragmentainer (page area fragment) is
+  // always returned, but note that these are not direct child fragments of the
+  // fragmentation context root (a page area is a child of a page border box,
+  // which is a child of a page container).
+  const PhysicalBoxFragment& GetChildFragment(wtf_size_t index) const;
+
+  wtf_size_t ChildCount() const {
+    return FragmentationContextChildren().size();
+  }
+
+  void AddFragmentainer(const PhysicalBoxFragment& fragmentainer,
+                        LogicalOffset fragmentainer_offset) {
+    if (column_balancing_info_) {
+      column_balancing_info_->columns.push_back(
+          LogicalFragmentLink{fragmentainer, fragmentainer_offset});
+    } else {
+      container_builder_->AddChild(fragmentainer, fragmentainer_offset);
+    }
+  }
+
+  // Return the break token of the previous fragmentainer to the child at
+  // `index`.
+  const BlockBreakToken* PreviousFragmentainerBreakToken(wtf_size_t) const;
 
   BoxFragmentBuilder* container_builder_;
   // The builder for the outer block fragmentation context when this is an inner

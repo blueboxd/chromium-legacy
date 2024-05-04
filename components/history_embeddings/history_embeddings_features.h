@@ -12,11 +12,32 @@ namespace history_embeddings {
 
 BASE_DECLARE_FEATURE(kHistoryEmbeddings);
 
+// Number of milliseconds to wait after `DidFinishLoad` before extracting
+// passages, computing and storing their embeddings, etc.
+extern const base::FeatureParam<int> kPassageExtractionDelay;
+
 // Specifies the `max_words_per_aggregate_passage` parameter for the
 // DocumentChunker passage extraction algorithm. A passage from a single
 // node can exceed this maximum, but aggregation keeps within the limit.
 extern const base::FeatureParam<int>
     kPassageExtractionMaxWordsPerAggregatePassage;
+
+// Specifies the number of best matching items to take from the search.
+extern const base::FeatureParam<int> kSearchResultItemCount;
+
+// Specifies whether to accelerate keyword mode entry when @ is entered
+// followed by the first letter of a starter pack keyword.
+extern const base::FeatureParam<bool> kAtKeywordAcceleration;
+
+// Specifies the content visibility threshold that can be shown to the user.
+extern const base::FeatureParam<double> kContentVisibilityThreshold;
+
+// Specifies whether to use the ML Embedder to embed passages and queries.
+extern const base::FeatureParam<bool> kUseMlEmbedder;
+
+// Whether history embedding results should be shown in the omnibox outside of
+// the '@history' scope.
+extern const base::FeatureParam<bool> kOmniboxUnscoped;
 
 }  // namespace history_embeddings
 

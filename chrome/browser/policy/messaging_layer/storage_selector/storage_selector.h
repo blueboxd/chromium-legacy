@@ -16,11 +16,13 @@
 #include <utility>
 
 #include "base/functional/callback.h"
-#include "chrome/browser/policy/messaging_layer/upload/upload_client.h"
-#include "chrome/browser/policy/messaging_layer/upload/upload_provider.h"
-#include "components/reporting/storage/storage_module.h"
-#include "components/reporting/storage/storage_uploader_interface.h"
+#include "chrome/browser/policy/messaging_layer/util/upload_declarations.h"
+#include "components/reporting/storage/storage_uploader_interface.h"  // nogncheck
 #endif  // !BUILDFLAG(IS_CHROMEOS)
+
+namespace base {
+class FilePath;
+}
 
 namespace reporting {
 
@@ -50,12 +52,10 @@ class COMPONENT_EXPORT(STORAGE_SELECTOR) StorageSelector {
       base::OnceCallback<void(StatusOr<scoped_refptr<StorageModuleInterface>>)>
           cb);
 
-  static UploadClient::ReportSuccessfulUploadCallback
-  GetLocalReportSuccessfulUploadCb(
+  static ReportSuccessfulUploadCallback GetLocalReportSuccessfulUploadCb(
       scoped_refptr<StorageModuleInterface> storage_module);
 
-  static UploadClient::EncryptionKeyAttachedCallback
-  GetLocalEncryptionKeyAttachedCb(
+  static EncryptionKeyAttachedCallback GetLocalEncryptionKeyAttachedCb(
       scoped_refptr<StorageModuleInterface> storage_module);
 
 #endif  // !BUILDFLAG(IS_CHROMEOS)

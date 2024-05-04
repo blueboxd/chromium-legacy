@@ -61,6 +61,7 @@ import "third_party/blink/public/mojom/messaging/task_attribution_id.mojom";
 import "third_party/blink/public/mojom/messaging/transferable_message.mojom";
 import "third_party/blink/public/mojom/navigation/navigation_api_history_entry_arrays.mojom";
 import "third_party/blink/public/mojom/opengraph/metadata.mojom";
+import "third_party/blink/public/mojom/page/draggable_region.mojom";
 import "third_party/blink/public/mojom/page/widget.mojom";
 import "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom";
 import "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom";
@@ -181,6 +182,16 @@ enum NavigationApiEntryRestoreReason {
   kBFCache,
   kPrerenderActivationPush,
   kPrerenderActivationReplace
+};
+
+enum StorageTypeAccessed {
+    kDatabase,
+    kCacheStorage,
+    kIndexedDB,
+    kFileSystem,
+    kWebLocks,
+    kLocalStorage,
+    kSessionStorage
 };
 
 // The maximum number of characters of the document's title that we're willing
@@ -635,10 +646,14 @@ interface LocalFrameHost {
   // For the list of available reporting destinations, see enum
   // ReportingDestination defined in:
   // third_party/blink/public/mojom/fenced_frame/fenced_frame_config.mojom
+  // `cross_origin_exposed` determines if this event can be used with reporting
+  // metadata that lives in a cross-origin frame. See the comment in
+  // "fence_event.idl" for more details.
   SendFencedFrameReportingBeacon(
       string event_data,
       string event_type,
-      array<ReportingDestination> destinations);
+      array<ReportingDestination> destinations,
+      bool cross_origin_exposed);
 
   // See:
   // https://github.com/WICG/turtledove/blob/main/Fenced_Frames_Ads_Reporting.md
@@ -650,9 +665,13 @@ interface LocalFrameHost {
   // browser to send a beacon to the https URL `destinationURL`, where macros
   // in `destinationURL` will be substituted using the values specified by
   // registerAdMacro in the Protected Audience auction's buyer worklet.
+  // `cross_origin_exposed` determines if this event can be used with reporting
+  // metadata that lives in a cross-origin frame. See the comment in
+  // "fence_event.idl" for more details.
   //
   SendFencedFrameReportingBeaconToCustomURL(
-      url.mojom.Url destination_url);
+      url.mojom.Url destination_url,
+      bool cross_origin_exposed);
 
   // See:
   // https://github.com/WICG/fenced-frame/blob/master/explainer/fenced_frames_with_local_unpartitioned_data_access.md
@@ -664,6 +683,12 @@ interface LocalFrameHost {
   // disable the frame tree's access to the network (except trusted servers in
   // the future) and gain access to unpartitioned storage.
   DisableUntrustedNetworkInFencedFrame() => ();
+
+  // A test-only IPC to exempt `exempted_url` from fenced frames network
+  // revocation immediately above (`DisableUntrustedNetworkInFencedFrame`).
+  // Used primarily to exempt the fenced frames remote context executor pattern
+  // in WPT from network revocation.
+  ExemptUrlFromNetworkRevocationForTesting(url.mojom.Url exempted_url) => ();
 
   // Notify the browser that there is a legacy technology used by the page.
   // The event contains the technology `type` and code location from the
@@ -733,7 +758,7 @@ interface LocalFrameHost {
 
   // Notifies when the ViewTransition opt-in state for the current Document
   // changes.
-  // See https://github.com/WICG/view-transitions/blob/main/explainer.md#declarative-opt-in-to-transitions.
+  // See https://drafts.csswg.org/css-view-transitions-2/#view-transition-rule
   OnViewTransitionOptInChanged(
     ViewTransitionSameOriginOptIn view_transition_opt_in);
 
@@ -752,6 +777,9 @@ interface LocalFrameHost {
   // browser-process navigation state associated with this LocalFrameHost.
   IssueKeepAliveHandle(
       pending_receiver<NavigationStateKeepAliveHandle> receiver);
+
+  // Used to tell the browser that storage access was requested and whether it was allowed.
+  NotifyStorageAccessed(StorageTypeAccessed storageType, bool blocked);
 };
 
 // Implemented in Browser, this interface defines frame-specific methods
@@ -1069,6 +1097,10 @@ interface LocalFrame {
       NavigationApiHistoryEntryArrays entry_arrays,
       NavigationApiEntryRestoreReason restore_reason);
 
+  // Updates the URL for a prerender ready to be activated via No-Vary-Search
+  // matching.
+  UpdatePrerenderURL(url.mojom.Url matched_url) => ();
+
   // Updates navigation.entries() when entries are disposed from the session
   // history.
   NotifyNavigationApiOfDisposedEntries(array<string> keys);
@@ -1092,9 +1124,19 @@ interface LocalFrame {
 
   // Requests a one-time snapshot of the document state for a ViewTransition.
   // See https://drafts.csswg.org/css-view-transitions-1/ for details.
+  //
+  // The transition_token is used to preserve the identity of the transition
+  // between old and new documents so they can share captured pixel state in
+  // viz.
   SnapshotDocumentForViewTransition(
+    blink.mojom.ViewTransitionToken transition_token,
     PageSwapEventParams page_swap_event_params) => (
       blink.mojom.ViewTransitionState view_transition_state);
+
+  // Notifies the old Document that the ViewTransition associated with a
+  // navigation was aborted, for example if the navigation was cancelled before
+  // the renderer responds.
+  NotifyViewTransitionAbortedToOldDocument();
 
   // Dispatches a `pageswap` event on the previous Document before the
   // navigation is committed. This API is used for navigations which don't have
@@ -1129,26 +1171,6 @@ interface LocalFrame {
   // The browser requests the renderer to fullscreen the document element.
   // See: https://chromestatus.com/feature/6002307972464640
   RequestFullscreenDocumentElement();
-};
-
-// Also implemented in Blink, this interface defines frame-specific methods
-// that will be invoked from the browser process but processed at a higher
-// priority than methods invoked on the LocalFrame interface.
-//
-// Note this interface does not use legacy IPC channels and as such there are
-// no ordering guarantees for messages sent on this interface. This interface is
-// for experimental purposes.
-interface HighPriorityLocalFrame {
-
-  // Instructs the frame to invoke the beforeunload event handler.
-  //
-  // The closure callback is invoked to acknowledge the browser that
-  // the beforeunload event is handled. |proceed| matches the return value
-  // of the frame's beforeunload handler: true if the user decided to proceed
-  // with leaving the page.
-  DispatchBeforeUnload(bool is_reload)
-      => (bool proceed, mojo_base.mojom.TimeTicks before_unload_start_time,
-          mojo_base.mojom.TimeTicks before_unload_end_time);
 };
 
 // Implemented in Blink, this interface defines main-frame-specific methods that
@@ -1209,6 +1231,9 @@ interface LocalMainFrame {
 
 // Implemented in Browser, this interface defines local-main-frame-specific
 // methods that will be invoked from the renderer process (e.g. WebViewImpl).
+//
+// TODO(https://crbug.com/334100817): Remove this attribute.
+[DispatchDebugAlias]
 interface LocalMainFrameHost {
   // Indicates the scale of the view has changed.
   ScaleFactorChanged(float scale);
@@ -1277,4 +1302,8 @@ interface LocalMainFrameHost {
   // Set the browser window to resizable or not. Link to I2P:
   // https://groups.google.com/a/chromium.org/g/blink-dev/c/oCxWg8q_OQY/m/LUTw0T5cCQAJ
   SetResizable(bool resizable);
+
+  // Notify the browser that the draggable regions defined by the app-region
+  // CSS property have been updated.
+  DraggableRegionsChanged(array<DraggableRegion> regions);
 };

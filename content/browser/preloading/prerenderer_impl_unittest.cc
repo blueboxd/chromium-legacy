@@ -5,6 +5,7 @@
 #include "content/browser/preloading/prerenderer_impl.h"
 
 #include "base/test/scoped_feature_list.h"
+#include "content/browser/preloading/preloading_confidence.h"
 #include "content/browser/preloading/prerender/prerender_features.h"
 #include "content/browser/preloading/prerender/prerender_host_registry.h"
 #include "content/public/browser/web_contents_delegate.h"
@@ -257,7 +258,9 @@ TEST_F(PrerendererNewLimitAndSchedulerTest,
     blink::mojom::SpeculationCandidatePtr candidate =
         CreatePrerenderCandidateWithEagerness(
             url, blink::mojom::SpeculationEagerness::kConservative);
-    prerenderer.MaybePrerender(std::move(candidate));
+    prerenderer.MaybePrerender(std::move(candidate),
+                               preloading_predictor::kUnspecified,
+                               PreloadingConfidence{100});
 
     EXPECT_TRUE(registry->FindHostByUrlForTesting(url));
   }
@@ -278,7 +281,9 @@ TEST_F(PrerendererNewLimitAndSchedulerTest,
   blink::mojom::SpeculationCandidatePtr candidate =
       CreatePrerenderCandidateWithEagerness(
           urls[0], blink::mojom::SpeculationEagerness::kConservative);
-  prerenderer.MaybePrerender(std::move(candidate));
+  prerenderer.MaybePrerender(std::move(candidate),
+                             preloading_predictor::kUnspecified,
+                             PreloadingConfidence{100});
   for (int i = 0; i < MaxNumOfRunningSpeculationRulesNonEagerPrerenders() + 1;
        i++) {
     if (i == 1) {
@@ -316,7 +321,9 @@ TEST_F(PrerendererTest, MaybePrerenderAndShouldWaitForPrerenderResult) {
   EXPECT_FALSE(prerenderer.ShouldWaitForPrerenderResult(kPrerenderingUrl));
   // MaybePrerender the candidate and check if ShouldWaitForPrerenderResult
   // returns true.
-  EXPECT_TRUE(prerenderer.MaybePrerender(candidate));
+  EXPECT_TRUE(prerenderer.MaybePrerender(candidate,
+                                         preloading_predictor::kUnspecified,
+                                         PreloadingConfidence{100}));
   EXPECT_TRUE(prerenderer.ShouldWaitForPrerenderResult(kPrerenderingUrl));
   EXPECT_TRUE(registry->FindHostByUrlForTesting(kPrerenderingUrl));
 }

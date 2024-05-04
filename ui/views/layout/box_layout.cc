@@ -208,7 +208,7 @@ ProposedLayout BoxLayout::CalculateProposedLayout(
   gfx::Insets insets = host_view()->GetInsets();
   data.interior_margin = Normalize(orientation_, inside_border_insets_);
 
-  // TODO(crbug.com/1346889): In a vertical layout, if the width is not
+  // TODO(crbug.com/40232718): In a vertical layout, if the width is not
   // specified, we need to first calculate the maximum width of the view, which
   // makes it convenient for us to call GetHeightForWidth later. If all views
   // are modified to GetPreferredSize(const SizeBounds&), we might consider
@@ -252,11 +252,6 @@ ProposedLayout BoxLayout::CalculateProposedLayout(
   host_size.Enlarge(data.host_insets.main_size(),
                     data.host_insets.cross_size());
 
-  // TODO(weidongliu): see crbugs.com/1514004#c5, we handle compatibility here.
-  // Maybe we can remove this in the future.
-  if (collapse_margins_spacing_) {
-    host_size.Enlarge(data.interior_margin.main_size(), 0);
-  }
   data.layout.host_size = Denormalize(orientation_, host_size);
 
   CalculateChildBounds(size_bounds, data);
@@ -287,7 +282,7 @@ int BoxLayout::GetMinimumSizeForView(const View* view) const {
 gfx::Size BoxLayout::GetPreferredSizeForView(
     const View* view,
     const NormalizedSizeBounds& size_bounds) const {
-  // TODO(crbug.com/1346889): If all views are migrated to
+  // TODO(crbug.com/40232718): If all views are migrated to
   // GetPreferredSize(const SizeBounds&), simplify the processing here.
   if (orientation_ == Orientation::kVertical &&
       cross_axis_alignment_ == CrossAxisAlignment::kStretch) {
@@ -524,7 +519,8 @@ void BoxLayout::UpdateFlexLayout(const NormalizedSizeBounds& bounds,
       data.child_data.cbegin(), data.child_data.cend(), 0,
       [](int total, const BoxChildData& data) { return total + data.flex; });
 
-  // Free space can be negative indicating that the views want to overflow.
+  // `main_free_space` can be negative. The free space is distributed to each
+  // view proportionally to their flex value.
   SizeBound main_free_space = bounds.main() - total_main_axis_size;
   int total_padding = 0;
   int current_flex = 0;
@@ -568,23 +564,16 @@ void BoxLayout::UpdateFlexLayout(const NormalizedSizeBounds& bounds,
       total_padding += current_padding;
     }
 
-    // Set main axis size.
-    box_child.preferred_size = Normalize(
-        orientation_,
-        GetPreferredSizeForView(
-            child_layout.child_view,
-            NormalizedSizeBounds(
-                std::max<SizeBound>(0, bounds.main() - data.total_size.main()),
-                cross_axis_size)));
-    int child_main_axis_size = box_child.preferred_size.main();
-
     int child_min_size = GetMinimumSizeForView(child_layout.child_view);
     if (child_min_size > 0 && !collapse_margins_spacing_) {
       child_min_size += box_child.margins.main_leading();
     }
 
     box_child.actual_bounds.set_size_main(
-        std::max(child_min_size, child_main_axis_size + current_padding));
+        std::max(child_min_size,
+                 GetActualMainSizeAndUpdateChildPreferredSizeIfNeeded(
+                     bounds, data, i, current_padding, cross_axis_size)));
+
     if (box_child.actual_bounds.size_main() > 0 || box_child.flex > 0) {
       data.total_size.set_main(box_child.actual_bounds.max_main());
       if (i < num_child - 1) {
@@ -600,12 +589,6 @@ void BoxLayout::UpdateFlexLayout(const NormalizedSizeBounds& bounds,
       if (!collapse_margins_spacing_) {
         data.total_size.Enlarge(child_margins.main_trailing(), 0);
       }
-    } else if (!collapse_margins_spacing_) {
-      // TODO(weidongliu): see crbugs.com/1514004#c4. If a view with a 0
-      // preferred size has a margin, it will be considered for main_leading but
-      // not for main_trailing.
-      data.total_size.set_main(data.total_size.main() +
-                               child_margins.main_leading());
     }
 
     int cross_size = box_child.preferred_size.cross();
@@ -674,6 +657,44 @@ void BoxLayout::UpdateFlexLayout(const NormalizedSizeBounds& bounds,
   // Flex views should have grown/shrunk to consume all free space.
   if (flex_sum && main_free_space.is_bounded()) {
     DCHECK_EQ(total_padding, main_free_space);
+  }
+}
+
+int BoxLayout::GetActualMainSizeAndUpdateChildPreferredSizeIfNeeded(
+    const NormalizedSizeBounds& bounds,
+    BoxLayoutData& data,
+    size_t index,
+    int current_padding,
+    SizeBound cross_axis_size) const {
+  BoxChildData& box_child = data.child_data[index];
+  ChildLayout& child_layout = data.layout.child_layouts[index];
+
+  SizeBound avaible_main_size =
+      std::max<SizeBound>(0, bounds.main() - data.total_size.main());
+
+  // Label is a special view that can be shrunk even when its flex value is 0.
+  // When the flex value is 0, current_padding must be 0, because
+  // current_padding is the extra available space distributed to
+  // subviews proportional to their flex values. But if there is
+  // insufficient space at this time. We should need shrink.
+  DCHECK(box_child.flex > 0 || current_padding == 0);
+  bool need_shrink = current_padding < 0 ||
+                     avaible_main_size < box_child.preferred_size.main();
+  if (need_shrink) {
+    avaible_main_size = std::max<SizeBound>(
+        0, avaible_main_size.min_of(box_child.preferred_size.main() +
+                                    current_padding));
+
+    // Calculate the preferred size given the current size.
+    box_child.preferred_size = Normalize(
+        orientation_,
+        GetPreferredSizeForView(
+            child_layout.child_view,
+            NormalizedSizeBounds(avaible_main_size, cross_axis_size)));
+    return box_child.flex > 0 ? avaible_main_size.value()
+                              : box_child.preferred_size.main();
+  } else {
+    return box_child.preferred_size.main() + current_padding;
   }
 }
 

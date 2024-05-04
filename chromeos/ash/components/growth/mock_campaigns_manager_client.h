@@ -6,6 +6,7 @@
 #define CHROMEOS_ASH_COMPONENTS_GROWTH_MOCK_CAMPAIGNS_MANAGER_CLIENT_H_
 
 #include "chromeos/ash/components/growth/campaigns_manager_client.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace growth {
@@ -32,10 +33,23 @@ class MockCampaignsManagerClient : public CampaignsManagerClient {
               GetDemoModeAppVersion,
               (),
               (const, override));
-  MOCK_METHOD(ActionMap, GetCampaignsActions, (), (const, override));
+  MOCK_METHOD(ActionMap, GetCampaignsActions, (), (override));
   MOCK_METHOD(void,
               RegisterSyntheticFieldTrial,
               (const std::optional<int> study_id, const int campaign_id),
+              (const, override));
+  MOCK_METHOD(void,
+              ClearConfig,
+              ((const std::map<std::string, std::string>& params)),
+              (override));
+  MOCK_METHOD(void, NotifyEvent, (const std::string& event), (override));
+  MOCK_METHOD(bool,
+              WouldTriggerHelpUI,
+              ((const std::map<std::string, std::string>& params)),
+              (override));
+  MOCK_METHOD(signin::IdentityManager*,
+              GetIdentityManager,
+              (),
               (const, override));
 };
 

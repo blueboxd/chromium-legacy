@@ -10,6 +10,7 @@ import {
 import {AsyncJobQueue} from '../async_job_queue.js';
 import * as error from '../error.js';
 import * as expert from '../expert.js';
+import * as loadTimeData from '../models/load_time_data.js';
 import {DeviceOperator} from '../mojo/device_operator.js';
 import * as state from '../state.js';
 import {
@@ -106,16 +107,20 @@ class Reconfigurer {
     } else {
       devices = cameraInfo.devicesInfo;
     }
+    const facingPreference = util.getFacingPreference();
+    if (this.initialFacing !== null) {
+      facingPreference.unshift(this.initialFacing);
+    }
+    function preferFacingRank(deviceId: string) {
+      if (facings === null) {
+        return facingPreference.length;
+      }
+      const index = facingPreference.indexOf(facings[deviceId]);
+      return index === -1 ? facingPreference.length : index;
+    }
 
-    const preferredFacing = this.initialFacing ?? util.getDefaultFacing();
     const sorted = devices.map((device) => device.deviceId).sort((a, b) => {
-      if (a === b) {
-        return 0;
-      }
-      if (facings?.[a] === preferredFacing) {
-        return -1;
-      }
-      return 1;
+      return preferFacingRank(a) - preferFacingRank(b);
     });
     return sorted;
   }
@@ -198,10 +203,16 @@ class Reconfigurer {
   /**
    * Checks if PTZ can be enabled.
    */
-  private async checkEnablePTZ(c: ConfigureCandidate): Promise<void> {
+  private async checkEnablePTZ(
+      c: ConfigureCandidate, builtinPTZSupport: boolean): Promise<void> {
     const enablePTZ = await (async () => {
       if (!this.preview.isSupportPTZ()) {
         return false;
+      }
+      // In case of digital zoom PTZ or fake camera, PTZ is supported in all
+      // capture and preview resolutions.
+      if (!builtinPTZSupport) {
+        return true;
       }
       const modeSupport = state.get(state.State.USE_FAKE_CAMERA) ||
           (c.captureCandidate.resolution !== null &&
@@ -271,6 +282,14 @@ class Reconfigurer {
           c.mode, c.constraints, c.captureCandidate.resolution,
           c.videoSnapshotResolution);
       try {
+        if (deviceOperator !== null) {
+          if (c.mode === Mode.PORTRAIT &&
+              await deviceOperator.isDeviceInUse(c.deviceId)) {
+            // TODO(b/326350233): Show a message to notify the user that the
+            // device is in use.
+            continue;
+          }
+        }
         await this.modes.prepareDevice();
         const factory = this.modes.getModeFactory(c.mode);
         await this.preview.open(c.constraints);
@@ -279,7 +298,8 @@ class Reconfigurer {
         facing = this.preview.getFacing();
         const deviceId = assertString(this.preview.getDeviceId());
 
-        await this.checkEnablePTZ(c);
+        const builtinPTZSupport = cameraInfo.hasBuiltinPTZSupport(c.deviceId);
+        await this.checkEnablePTZ(c, builtinPTZSupport);
         factory.setPreviewVideo(this.preview.getVideo());
         factory.setFacing(facing);
         await this.modes.updateMode(factory);
@@ -436,7 +456,9 @@ export class OperationScheduler {
   async initialize(cameraViewUI: CameraViewUI): Promise<void> {
     this.modes.initialize(cameraViewUI);
     await StreamManager.getInstance().deviceUpdate();
-    await this.firstInfoUpdate.wait();
+    if (!loadTimeData.isVideoCaptureDisallowed()) {
+      await this.firstInfoUpdate.wait();
+    }
   }
 
   private doUpdate(cameraInfo: CameraInfo) {

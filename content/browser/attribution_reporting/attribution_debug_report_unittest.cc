@@ -8,13 +8,18 @@
 
 #include <optional>
 
+#include "base/test/scoped_feature_list.h"
 #include "base/test/values_test_util.h"
 #include "base/time/time.h"
 #include "components/attribution_reporting/os_registration.h"
+#include "components/attribution_reporting/os_registration_error.mojom.h"
+#include "components/attribution_reporting/registrar.h"
 #include "components/attribution_reporting/registration_header_error.h"
-#include "components/attribution_reporting/registration_header_type.mojom.h"
+#include "components/attribution_reporting/source_registration_error.mojom.h"
 #include "components/attribution_reporting/suitable_origin.h"
+#include "components/attribution_reporting/trigger_registration_error.mojom.h"
 #include "content/browser/attribution_reporting/attribution_config.h"
+#include "content/browser/attribution_reporting/attribution_features.h"
 #include "content/browser/attribution_reporting/attribution_input_event.h"
 #include "content/browser/attribution_reporting/attribution_test_utils.h"
 #include "content/browser/attribution_reporting/attribution_trigger.h"
@@ -22,10 +27,10 @@
 #include "content/browser/attribution_reporting/os_registration.h"
 #include "content/browser/attribution_reporting/storable_source.h"
 #include "content/browser/attribution_reporting/store_source_result.h"
-#include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/global_routing_id.h"
 #include "net/base/schemeful_site.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/aggregation_service/aggregatable_report.mojom.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -38,7 +43,9 @@ using EventLevelResult = ::content::AttributionTrigger::EventLevelResult;
 using ::attribution_reporting::OsRegistrationItem;
 using ::attribution_reporting::RegistrationHeaderError;
 using ::attribution_reporting::SuitableOrigin;
-using ::attribution_reporting::mojom::RegistrationHeaderType;
+
+constexpr attribution_reporting::Registrar kRegistrar =
+    attribution_reporting::Registrar::kWeb;
 
 AttributionReport DefaultEventLevelReport(
     base::Time source_time = base::Time::Now()) {
@@ -52,20 +59,49 @@ AttributionReport DefaultAggregatableReport() {
   return ReportBuilder(AttributionInfoBuilder().Build(),
                        SourceBuilder().BuildStored())
       .SetAggregatableHistogramContributions(
-          {AggregatableHistogramContribution(1, 2)})
+          {blink::mojom::AggregatableReportHistogramContribution(
+              1, 2, /*filtering_id=*/std::nullopt)})
       .BuildAggregatableAttribution();
+}
+
+bool OperationAllowed() {
+  return true;
+}
+
+bool OperationProhibited() {
+  return false;
 }
 
 TEST(AttributionDebugReportTest, NoDebugReporting_NoReportReturned) {
   EXPECT_FALSE(AttributionDebugReport::Create(
-      SourceBuilder().Build(),
-      /*is_debug_cookie_set=*/false,
-      StoreSourceResult::InsufficientUniqueDestinationCapacity(3)));
+      &OperationAllowed,
+      StoreSourceResult(
+          SourceBuilder().Build(),
+          /*is_noised=*/false,
+          StoreSourceResult::InsufficientUniqueDestinationCapacity(3))));
 
   EXPECT_FALSE(AttributionDebugReport::Create(
-      TriggerBuilder().Build(),
+      &OperationAllowed,
       /*is_debug_cookie_set=*/true,
       CreateReportResult(/*trigger_time=*/base::Time::Now(),
+                         TriggerBuilder().Build(),
+                         EventLevelResult::kNoMatchingImpressions,
+                         AggregatableResult::kNoMatchingImpressions)));
+}
+
+TEST(AttributionDebugReportTest, OperationProhibited_NoReportReturned) {
+  EXPECT_FALSE(AttributionDebugReport::Create(
+      &OperationProhibited,
+      StoreSourceResult(
+          SourceBuilder().SetDebugReporting(true).Build(),
+          /*is_noised=*/false,
+          StoreSourceResult::InsufficientUniqueDestinationCapacity(3))));
+
+  EXPECT_FALSE(AttributionDebugReport::Create(
+      &OperationProhibited,
+      /*is_debug_cookie_set=*/true,
+      CreateReportResult(/*trigger_time=*/base::Time::Now(),
+                         TriggerBuilder().SetDebugReporting(true).Build(),
                          EventLevelResult::kNoMatchingImpressions,
                          AggregatableResult::kNoMatchingImpressions)));
 }
@@ -73,9 +109,14 @@ TEST(AttributionDebugReportTest, NoDebugReporting_NoReportReturned) {
 TEST(AttributionDebugReportTest,
      SourceDestinationLimitError_ValidReportReturned) {
   std::optional<AttributionDebugReport> report = AttributionDebugReport::Create(
-      SourceBuilder().SetDebugReporting(true).Build(),
-      /*is_debug_cookie_set=*/false,
-      StoreSourceResult::InsufficientUniqueDestinationCapacity(3));
+      &OperationAllowed,
+      StoreSourceResult(
+          SourceBuilder()
+              .SetDebugReporting(true)
+              .SetDebugCookieSet(true)
+              .Build(),
+          /*is_noised=*/false,
+          StoreSourceResult::InsufficientUniqueDestinationCapacity(3)));
   ASSERT_TRUE(report);
 
   static constexpr char kExpectedJsonString[] = R"([{
@@ -98,197 +139,243 @@ TEST(AttributionDebugReportTest, WithinFencedFrame_NoDebugReport) {
   config.max_destinations_per_source_site_reporting_site = 3;
 
   EXPECT_FALSE(AttributionDebugReport::Create(
-      SourceBuilder()
-          .SetDebugReporting(true)
-          .SetIsWithinFencedFrame(true)
-          .Build(),
-      /*is_debug_cookie_set=*/false,
-      StoreSourceResult::InsufficientUniqueDestinationCapacity(3)));
+      &OperationAllowed,
+      StoreSourceResult(
+          SourceBuilder()
+              .SetDebugReporting(true)
+              .SetIsWithinFencedFrame(true)
+              .Build(),
+          /*is_noised=*/false,
+          StoreSourceResult::InsufficientUniqueDestinationCapacity(3))));
 
   EXPECT_FALSE(AttributionDebugReport::Create(
-      TriggerBuilder()
-          .SetDebugReporting(true)
-          .SetIsWithinFencedFrame(true)
-          .Build(),
+      &OperationAllowed,
       /*is_debug_cookie_set=*/true,
       CreateReportResult(/*trigger_time=*/base::Time::Now(),
+                         TriggerBuilder()
+                             .SetDebugReporting(true)
+                             .SetIsWithinFencedFrame(true)
+                             .Build(),
                          EventLevelResult::kNoMatchingImpressions,
                          AggregatableResult::kNoMatchingImpressions)));
 }
 
 TEST(AttributionDebugReportTest, SourceDebugging) {
   const struct {
-    StoreSourceResult result;
+    StoreSourceResult::Result result;
     std::optional<uint64_t> debug_key;
-    const char* expected_report_body_without_cookie;
-    const char* expected_report_body_with_cookie;
+    bool is_noised = false;
+    const char* expected_report_body = nullptr;
   } kTestCases[] = {
-      {StoreSourceResult::Success(),
-       /*debug_key=*/std::nullopt,
-       /*expected_report_body_without_cookie=*/nullptr,
-       R"json([{
-         "body": {
-           "attribution_destination": "https://conversion.test",
-           "source_event_id": "123",
-           "source_site": "https://impression.test"
-         },
-         "type": "source-success"
-       }])json"},
-      {StoreSourceResult::InternalError(),
-       /*debug_key=*/456,
-       /*expected_report_body_without_cookie=*/nullptr,
-       /*expected_report_body_with_cookie=*/
-       R"json([{
-         "body": {
-           "attribution_destination": "https://conversion.test",
-           "source_debug_key": "456",
-           "source_event_id": "123",
-           "source_site": "https://impression.test"
-         },
-         "type": "source-unknown-error"
-       }])json"},
-      {StoreSourceResult::InsufficientSourceCapacity(10),
-       /*debug_key=*/std::nullopt,
-       /*expected_report_body_without_cookie=*/nullptr,
-       /*expected_report_body_with_cookie=*/
-       R"json([{
-         "body": {
-           "attribution_destination": "https://conversion.test",
-           "limit": "10",
-           "source_event_id": "123",
-           "source_site": "https://impression.test"
-         },
-         "type": "source-storage-limit"
-       }])json"},
-      {StoreSourceResult::ProhibitedByBrowserPolicy(),
-       /*debug_key=*/std::nullopt,
-       /*expected_report_body_without_cookie=*/nullptr,
-       /*expected_report_body_with_cookie=*/nullptr},
-      {StoreSourceResult::InsufficientUniqueDestinationCapacity(3),
-       /*debug_key=*/std::nullopt,
-       /*expected_report_body_without_cookie=*/
-       R"json([{
-         "body": {
-           "attribution_destination": "https://conversion.test",
-           "limit": "3",
-           "source_event_id": "123",
-           "source_site": "https://impression.test"
-         },
-         "type": "source-destination-limit"
-       }])json",
-       /*expected_report_body_with_cookie=*/
-       R"json([{
-         "body": {
-           "attribution_destination": "https://conversion.test",
-           "limit": "3",
-           "source_event_id": "123",
-           "source_site": "https://impression.test"
-         },
-         "type": "source-destination-limit"
-       }])json"},
-      {StoreSourceResult::SuccessNoised(/*min_fake_report_time=*/std::nullopt),
-       /*debug_key=*/std::nullopt,
-       /*expected_report_body_without_cookie=*/nullptr,
-       /*expected_report_body_with_cookie=*/
-       R"json([{
-         "body": {
-           "attribution_destination": "https://conversion.test",
-           "source_event_id": "123",
-           "source_site": "https://impression.test"
-         },
-         "type": "source-noised"
-       }])json"},
-      {StoreSourceResult::ExcessiveReportingOrigins(),
-       /*debug_key=*/789,
-       /*expected_report_body_without_cookie=*/nullptr,
-       /*expected_report_body_with_cookie=*/
-       R"json([{
-         "body": {
-           "attribution_destination": "https://conversion.test",
-           "source_debug_key": "789",
-           "source_event_id": "123",
-           "source_site": "https://impression.test"
-         },
-         "type": "source-success"
-       }])json"},
-      {StoreSourceResult::DestinationGlobalLimitReached(),
-       /*debug_key=*/789,
-       /*expected_report_body_without_cookie=*/nullptr,
-       /*expected_report_body_with_cookie=*/
-       R"json([{
-         "body": {
-           "attribution_destination": "https://conversion.test",
-           "source_debug_key": "789",
-           "source_event_id": "123",
-           "source_site": "https://impression.test"
-         },
-         "type": "source-success"
-       }])json"},
-      {StoreSourceResult::DestinationReportingLimitReached(50),
-       /*debug_key=*/std::nullopt,
-       /*expected_report_body_without_cookie=*/
-       R"json([{
-         "body": {
-           "attribution_destination": "https://conversion.test",
-           "limit": "50",
-           "source_event_id": "123",
-           "source_site": "https://impression.test"
-         },
-         "type": "source-destination-rate-limit"
-       }])json",
-       /*expected_report_body_with_cookie=*/
-       R"json([{
-         "body": {
-           "attribution_destination": "https://conversion.test",
-           "limit": "50",
-           "source_event_id": "123",
-           "source_site": "https://impression.test"
-         },
-         "type": "source-destination-rate-limit"
-       }])json"},
-      {StoreSourceResult::DestinationBothLimitsReached(50),
-       /*debug_key=*/std::nullopt,
-       /*expected_report_body_without_cookie=*/
-       R"json([{
-         "body": {
-           "attribution_destination": "https://conversion.test",
-           "limit": "50",
-           "source_event_id": "123",
-           "source_site": "https://impression.test"
-         },
-         "type": "source-destination-rate-limit"
-       }])json",
-       /*expected_report_body_with_cookie=*/
-       R"json([{
-         "body": {
-           "attribution_destination": "https://conversion.test",
-           "limit": "50",
-           "source_event_id": "123",
-           "source_site": "https://impression.test"
-         },
-         "type": "source-destination-rate-limit"
-       }])json"},
+      {
+          .result =
+              StoreSourceResult::Success(/*min_fake_report_time=*/std::nullopt),
+          .debug_key = std::nullopt,
+          .expected_report_body = R"json([{
+            "body": {
+              "attribution_destination": "https://conversion.test",
+              "source_event_id": "123",
+              "source_site": "https://impression.test"
+            },
+            "type": "source-success"
+          }])json",
+      },
+      {
+          .result = StoreSourceResult::InternalError(),
+          .debug_key = 456,
+          .expected_report_body = R"json([{
+            "body": {
+              "attribution_destination": "https://conversion.test",
+              "source_debug_key": "456",
+              "source_event_id": "123",
+              "source_site": "https://impression.test"
+            },
+            "type": "source-unknown-error"
+          }])json",
+      },
+      {
+          .result = StoreSourceResult::InsufficientSourceCapacity(10),
+          .debug_key = std::nullopt,
+          .expected_report_body = R"json([{
+            "body": {
+              "attribution_destination": "https://conversion.test",
+              "limit": "10",
+              "source_event_id": "123",
+              "source_site": "https://impression.test"
+            },
+            "type": "source-storage-limit"
+          }])json",
+      },
+      {
+          .result = StoreSourceResult::ProhibitedByBrowserPolicy(),
+      },
+      {
+          .result = StoreSourceResult::InsufficientUniqueDestinationCapacity(3),
+          .expected_report_body = R"json([{
+            "body": {
+              "attribution_destination": "https://conversion.test",
+              "limit": "3",
+              "source_event_id": "123",
+              "source_site": "https://impression.test"
+            },
+            "type": "source-destination-limit"
+          }])json",
+      },
+      {
+          .result = StoreSourceResult::Success(
+              /*min_fake_report_time=*/std::nullopt),
+          .is_noised = true,
+          .expected_report_body = R"json([{
+            "body": {
+              "attribution_destination": "https://conversion.test",
+              "source_event_id": "123",
+              "source_site": "https://impression.test"
+            },
+            "type": "source-noised"
+          }])json",
+      },
+      {
+          .result = StoreSourceResult::ExcessiveReportingOrigins(),
+          .debug_key = 789,
+          .expected_report_body = R"json([{
+            "body": {
+              "attribution_destination": "https://conversion.test",
+              "source_debug_key": "789",
+              "source_event_id": "123",
+              "source_site": "https://impression.test"
+            },
+            "type": "source-success"
+          }])json",
+      },
+      {
+          .result = StoreSourceResult::ExcessiveReportingOrigins(),
+          .debug_key = 789,
+          .is_noised = true,
+          .expected_report_body = R"json([{
+            "body": {
+              "attribution_destination": "https://conversion.test",
+              "source_debug_key": "789",
+              "source_event_id": "123",
+              "source_site": "https://impression.test"
+            },
+            "type": "source-noised"
+          }])json",
+      },
+      {
+          .result = StoreSourceResult::DestinationGlobalLimitReached(),
+          .debug_key = 789,
+          .expected_report_body = R"json([{
+            "body": {
+              "attribution_destination": "https://conversion.test",
+              "source_debug_key": "789",
+              "source_event_id": "123",
+              "source_site": "https://impression.test"
+            },
+            "type": "source-success"
+          }])json",
+      },
+      {
+          .result = StoreSourceResult::DestinationGlobalLimitReached(),
+          .debug_key = 789,
+          .is_noised = true,
+          .expected_report_body = R"json([{
+            "body": {
+              "attribution_destination": "https://conversion.test",
+              "source_debug_key": "789",
+              "source_event_id": "123",
+              "source_site": "https://impression.test"
+            },
+            "type": "source-noised"
+          }])json",
+      },
+      {
+          .result = StoreSourceResult::DestinationReportingLimitReached(50),
+          .debug_key = std::nullopt,
+          .expected_report_body = R"json([{
+            "body": {
+              "attribution_destination": "https://conversion.test",
+              "limit": "50",
+              "source_event_id": "123",
+              "source_site": "https://impression.test"
+            },
+            "type": "source-destination-rate-limit"
+          }])json",
+      },
+      {
+          .result = StoreSourceResult::DestinationBothLimitsReached(50),
+          .expected_report_body = R"json([{
+            "body": {
+              "attribution_destination": "https://conversion.test",
+              "limit": "50",
+              "source_event_id": "123",
+              "source_site": "https://impression.test"
+            },
+            "type": "source-destination-rate-limit"
+          }])json",
+      },
+      {
+          .result = StoreSourceResult::ReportingOriginsPerSiteLimitReached(2),
+          .expected_report_body = R"json([{
+            "body": {
+              "attribution_destination": "https://conversion.test",
+              "limit": "2",
+              "source_event_id": "123",
+              "source_site": "https://impression.test"
+            },
+            "type": "source-reporting-origin-per-site-limit"
+          }])json",
+      },
+      {
+          .result = StoreSourceResult::ExceedsMaxChannelCapacity(3.1),
+          .debug_key = std::nullopt,
+          .expected_report_body = R"json([{
+              "body": {
+                "attribution_destination": "https://conversion.test",
+                "limit": 3.1,
+                "source_event_id": "123",
+                "source_site": "https://impression.test"
+              },
+              "type": "source-channel-capacity-limit"
+            }])json",
+      },
+      {
+          .result = StoreSourceResult::ExceedsMaxTriggerStateCardinality(3),
+          .debug_key = std::nullopt,
+          .expected_report_body = R"json([{
+              "body": {
+                "attribution_destination": "https://conversion.test",
+                "limit": "3",
+                "source_event_id": "123",
+                "source_site": "https://impression.test"
+              },
+              "type": "source-trigger-state-cardinality-limit"
+            }])json",
+      },
   };
 
   for (bool is_debug_cookie_set : {false, true}) {
     for (const auto& test_case : kTestCases) {
+      StoreSourceResult result(SourceBuilder()
+                                   .SetDebugReporting(true)
+                                   .SetDebugKey(test_case.debug_key)
+                                   .SetDebugCookieSet(is_debug_cookie_set)
+                                   .Build(),
+                               test_case.is_noised, test_case.result);
+
       SCOPED_TRACE(Message() << "is_debug_cookie_set: " << is_debug_cookie_set
-                             << ", result: " << test_case.result.status());
+                             << ", result: " << result.status());
 
       std::optional<AttributionDebugReport> report =
-          AttributionDebugReport::Create(SourceBuilder()
-                                             .SetDebugReporting(true)
-                                             .SetDebugKey(test_case.debug_key)
-                                             .Build(),
-                                         is_debug_cookie_set, test_case.result);
-
-      const char* expected_report_body =
-          is_debug_cookie_set ? test_case.expected_report_body_with_cookie
-                              : test_case.expected_report_body_without_cookie;
-      EXPECT_EQ(report.has_value(), expected_report_body != nullptr);
-      if (expected_report_body) {
-        EXPECT_EQ(report->ReportBody(),
-                  base::test::ParseJson(expected_report_body));
+          AttributionDebugReport::Create(&OperationAllowed, std::move(result));
+      if (is_debug_cookie_set) {
+        EXPECT_EQ(report.has_value(),
+                  test_case.expected_report_body != nullptr);
+        if (report) {
+          EXPECT_EQ(report->ReportBody(),
+                    base::test::ParseJson(test_case.expected_report_body));
+        }
+      } else {
+        EXPECT_FALSE(report);
       }
     }
   }
@@ -297,16 +384,19 @@ TEST(AttributionDebugReportTest, SourceDebugging) {
   {
     std::optional<AttributionDebugReport> report =
         AttributionDebugReport::Create(
-            SourceBuilder()
-                .SetDebugReporting(true)
-                .SetDestinationSites({
-                    net::SchemefulSite::Deserialize("https://c.test"),
-                    net::SchemefulSite::Deserialize("https://d.test"),
-                })
-                .Build(),
-            /*is_debug_cookie_set=*/true,
-            StoreSourceResult::SuccessNoised(
-                /*min_fake_report_time=*/std::nullopt));
+            &OperationAllowed,
+            StoreSourceResult(
+                SourceBuilder()
+                    .SetDebugReporting(true)
+                    .SetDebugCookieSet(true)
+                    .SetDestinationSites({
+                        net::SchemefulSite::Deserialize("https://c.test"),
+                        net::SchemefulSite::Deserialize("https://d.test"),
+                    })
+                    .Build(),
+                /*is_noised=*/true,
+                StoreSourceResult::Success(
+                    /*min_fake_report_time=*/std::nullopt)));
 
     EXPECT_EQ(report->ReportBody(), base::test::ParseJson(R"json([{
          "body": {
@@ -363,7 +453,7 @@ TEST(AttributionDebugReportTest, TriggerDebugging) {
              "source_event_id": "123",
              "source_site": "https://impression.test"
            },
-           "type": "trigger-attributions-per-source-destination-limit"
+           "type": "trigger-aggregate-attributions-per-source-destination-limit"
          }
        ])json"},
       {EventLevelResult::kNoMatchingConfigurations,
@@ -402,10 +492,10 @@ TEST(AttributionDebugReportTest, TriggerDebugging) {
 
         std::optional<AttributionDebugReport> report =
             AttributionDebugReport::Create(
-                TriggerBuilder().SetDebugReporting(true).Build(),
-                is_trigger_debug_cookie_set,
+                &OperationAllowed, is_trigger_debug_cookie_set,
                 CreateReportResult(
                     /*trigger_time=*/base::Time::Now(),
+                    TriggerBuilder().SetDebugReporting(true).Build(),
                     test_case.event_level_result, test_case.aggregatable_result,
                     /*replaced_event_level_report=*/std::nullopt,
                     /*new_event_level_report=*/std::nullopt,
@@ -534,7 +624,7 @@ TEST(AttributionDebugReportTest, EventLevelAttributionDebugging) {
            "source_event_id": "123",
            "source_site": "https://impression.test"
          },
-         "type": "trigger-attributions-per-source-destination-limit"
+         "type": "trigger-event-attributions-per-source-destination-limit"
        }])json"},
       {EventLevelResult::kPriorityTooLow,
        /*replaced_event_level_report=*/std::nullopt,
@@ -706,14 +796,14 @@ TEST(AttributionDebugReportTest, EventLevelAttributionDebugging) {
 
         std::optional<AttributionDebugReport> report =
             AttributionDebugReport::Create(
-                TriggerBuilder()
-                    .SetDebugReporting(true)
-                    .SetDebugKey(test_case.trigger_debug_key)
-                    .Build(),
-                is_trigger_debug_cookie_set,
+                &OperationAllowed, is_trigger_debug_cookie_set,
                 CreateReportResult(
-                    /*trigger_time=*/base::Time::Now(), test_case.result,
-                    AggregatableResult::kNotRegistered,
+                    /*trigger_time=*/base::Time::Now(),
+                    TriggerBuilder()
+                        .SetDebugReporting(true)
+                        .SetDebugKey(test_case.trigger_debug_key)
+                        .Build(),
+                    test_case.result, AggregatableResult::kNotRegistered,
                     test_case.replaced_event_level_report,
                     test_case.new_event_level_report,
                     /*new_aggregatable_report=*/std::nullopt,
@@ -798,7 +888,7 @@ TEST(AttributionDebugReportTest, AggregatableAttributionDebugging) {
            "source_site": "https://impression.test",
            "trigger_debug_key": "456"
          },
-         "type": "trigger-attributions-per-source-destination-limit"
+         "type": "trigger-aggregate-attributions-per-source-destination-limit"
        }])json"},
       {AggregatableResult::kExcessiveReportingOrigins,
        /*new_aggregatable_report=*/std::nullopt,
@@ -912,13 +1002,13 @@ TEST(AttributionDebugReportTest, AggregatableAttributionDebugging) {
 
         std::optional<AttributionDebugReport> report =
             AttributionDebugReport::Create(
-                TriggerBuilder()
-                    .SetDebugReporting(true)
-                    .SetDebugKey(test_case.trigger_debug_key)
-                    .Build(),
-                is_trigger_debug_cookie_set,
+                &OperationAllowed, is_trigger_debug_cookie_set,
                 CreateReportResult(
                     /*trigger_time=*/base::Time::Now(),
+                    TriggerBuilder()
+                        .SetDebugReporting(true)
+                        .SetDebugKey(test_case.trigger_debug_key)
+                        .Build(),
                     EventLevelResult::kSuccess, test_case.result,
                     /*replaced_event_level_report=*/std::nullopt,
                     /*new_event_level_report=*/DefaultEventLevelReport(),
@@ -944,9 +1034,16 @@ TEST(AttributionDebugReportTest, AggregatableAttributionDebugging) {
 }
 
 TEST(AttributionDebugReportTest, OsRegistrationDebugging) {
+  const auto operation_allowed = [](const url::Origin&) { return true; };
+  const auto operation_allowed_if_not_registration_origin =
+      [](const url::Origin& origin) {
+        return origin != url::Origin::Create(GURL("https://c.test"));
+      };
+
   const struct {
     const char* description;
     OsRegistration registration;
+    base::FunctionRef<bool(const url::Origin&)> is_operation_allowed;
     const char* expected_body;
   } kTestCases[] = {
       {
@@ -957,9 +1054,8 @@ TEST(AttributionDebugReportTest, OsRegistrationDebugging) {
               /*top_level_origin=*/url::Origin::Create(GURL("https://b.test")),
               AttributionInputEvent(),
               /*is_within_fenced_frame=*/false,
-              /*render_frame_id=*/GlobalRenderFrameHostId(),
-              {ContentBrowserClient::AttributionReportingOsReportType::kWeb,
-               ContentBrowserClient::AttributionReportingOsReportType::kWeb}),
+              /*render_frame_id=*/GlobalRenderFrameHostId(), kRegistrar),
+          operation_allowed,
           R"json([{
             "body": {
               "context_site": "https://b.test",
@@ -975,9 +1071,8 @@ TEST(AttributionDebugReportTest, OsRegistrationDebugging) {
                                   /*debug_reporting=*/true)},
               /*top_level_origin=*/url::Origin::Create(GURL("https://b.test")),
               /*input_event=*/std::nullopt, /*is_within_fenced_frame=*/false,
-              /*render_frame_id=*/GlobalRenderFrameHostId(),
-              {ContentBrowserClient::AttributionReportingOsReportType::kWeb,
-               ContentBrowserClient::AttributionReportingOsReportType::kWeb}),
+              /*render_frame_id=*/GlobalRenderFrameHostId(), kRegistrar),
+          operation_allowed,
           R"json([{
             "body": {
               "context_site": "https://b.test",
@@ -993,9 +1088,8 @@ TEST(AttributionDebugReportTest, OsRegistrationDebugging) {
                                   /*debug_reporting=*/false)},
               /*top_level_origin=*/url::Origin::Create(GURL("https://b.test")),
               /*input_event=*/std::nullopt, /*is_within_fenced_frame=*/false,
-              /*render_frame_id=*/GlobalRenderFrameHostId(),
-              {ContentBrowserClient::AttributionReportingOsReportType::kWeb,
-               ContentBrowserClient::AttributionReportingOsReportType::kWeb}),
+              /*render_frame_id=*/GlobalRenderFrameHostId(), kRegistrar),
+          operation_allowed,
           nullptr,
       },
       {
@@ -1005,9 +1099,8 @@ TEST(AttributionDebugReportTest, OsRegistrationDebugging) {
                                   /*debug_reporting=*/true)},
               /*top_level_origin=*/url::Origin::Create(GURL("https://b.test")),
               /*input_event=*/std::nullopt, /*is_within_fenced_frame=*/true,
-              /*render_frame_id=*/GlobalRenderFrameHostId(),
-              {ContentBrowserClient::AttributionReportingOsReportType::kWeb,
-               ContentBrowserClient::AttributionReportingOsReportType::kWeb}),
+              /*render_frame_id=*/GlobalRenderFrameHostId(), kRegistrar),
+          operation_allowed,
           nullptr,
       },
       {
@@ -1017,9 +1110,19 @@ TEST(AttributionDebugReportTest, OsRegistrationDebugging) {
                                   /*debug_reporting=*/true)},
               /*top_level_origin=*/url::Origin::Create(GURL("https://b.test")),
               /*input_event=*/std::nullopt, /*is_within_fenced_frame=*/false,
-              /*render_frame_id=*/GlobalRenderFrameHostId(),
-              {ContentBrowserClient::AttributionReportingOsReportType::kWeb,
-               ContentBrowserClient::AttributionReportingOsReportType::kWeb}),
+              /*render_frame_id=*/GlobalRenderFrameHostId(), kRegistrar),
+          operation_allowed,
+          nullptr,
+      },
+      {
+          "operation_prohibited",
+          OsRegistration(
+              {OsRegistrationItem(GURL("https://c.test/x"),
+                                  /*debug_reporting=*/true)},
+              /*top_level_origin=*/url::Origin::Create(GURL("https://b.test")),
+              /*input_event=*/std::nullopt, /*is_within_fenced_frame=*/false,
+              /*render_frame_id=*/GlobalRenderFrameHostId(), kRegistrar),
+          operation_allowed_if_not_registration_origin,
           nullptr,
       },
   };
@@ -1027,7 +1130,8 @@ TEST(AttributionDebugReportTest, OsRegistrationDebugging) {
   for (const auto& test_case : kTestCases) {
     std::optional<AttributionDebugReport> report =
         AttributionDebugReport::Create(test_case.registration,
-                                       /*item_index=*/0);
+                                       /*item_index=*/0,
+                                       test_case.is_operation_allowed);
     EXPECT_EQ(report.has_value(), test_case.expected_body != nullptr)
         << test_case.description;
     if (test_case.expected_body) {
@@ -1039,17 +1143,28 @@ TEST(AttributionDebugReportTest, OsRegistrationDebugging) {
 }
 
 TEST(AttributionDebugReportTest, RegistrationHeaderErrorDebugReports) {
+  const auto reporting_origin = *SuitableOrigin::Deserialize("https://r.test");
+  const auto context_origin = *SuitableOrigin::Deserialize("https://c.test");
+
+  const auto operation_allowed = [](const url::Origin&) { return true; };
+
+  const auto operation_allowed_if_not_reporting_origin =
+      [&](const url::Origin& origin) { return origin != reporting_origin; };
+
   const struct {
-    const char* description;
-    RegistrationHeaderType type;
-    bool is_within_fenced_frame;
+    const char* name;
+    attribution_reporting::RegistrationHeaderErrorDetails details;
+    bool is_within_fenced_frame = false;
+    base::FunctionRef<bool(const url::Origin&)> is_operation_allowed =
+        operation_allowed;
     const char* expected_body;
+    const char* expected_body_with_details;
   } kTestCases[] = {
       {
-          "source",
-          RegistrationHeaderType::kSource,
-          false,
-          R"json([{
+          .name = "source",
+          .details = attribution_reporting::mojom::SourceRegistrationError::
+              kInvalidJson,
+          .expected_body = R"json([{
             "body": {
               "context_site": "https://c.test",
               "header": "Attribution-Reporting-Register-Source",
@@ -1057,12 +1172,23 @@ TEST(AttributionDebugReportTest, RegistrationHeaderErrorDebugReports) {
             },
             "type": "header-parsing-error"
           }])json",
+          .expected_body_with_details = R"json([{
+            "body": {
+              "context_site": "https://c.test",
+              "header": "Attribution-Reporting-Register-Source",
+              "value": "!!!",
+              "error": {
+                "msg": "invalid JSON"
+              }
+            },
+            "type": "header-parsing-error"
+          }])json",
       },
       {
-          "trigger",
-          RegistrationHeaderType::kTrigger,
-          false,
-          R"json([{
+          .name = "trigger",
+          .details = attribution_reporting::mojom::TriggerRegistrationError::
+              kInvalidJson,
+          .expected_body = R"json([{
             "body": {
               "context_site": "https://c.test",
               "header": "Attribution-Reporting-Register-Trigger",
@@ -1070,12 +1196,23 @@ TEST(AttributionDebugReportTest, RegistrationHeaderErrorDebugReports) {
             },
             "type": "header-parsing-error"
           }])json",
+          .expected_body_with_details = R"json([{
+            "body": {
+              "context_site": "https://c.test",
+              "header": "Attribution-Reporting-Register-Trigger",
+              "value": "!!!",
+              "error": {
+                "msg": "invalid JSON"
+              }
+            },
+            "type": "header-parsing-error"
+          }])json",
       },
       {
-          "os_source",
-          RegistrationHeaderType::kOsSource,
-          false,
-          R"json([{
+          .name = "os_source",
+          .details = attribution_reporting::OsSourceRegistrationError(
+              attribution_reporting::mojom::OsRegistrationError::kInvalidList),
+          .expected_body = R"json([{
             "body": {
               "context_site": "https://c.test",
               "header": "Attribution-Reporting-Register-OS-Source",
@@ -1083,12 +1220,23 @@ TEST(AttributionDebugReportTest, RegistrationHeaderErrorDebugReports) {
             },
             "type": "header-parsing-error"
           }])json",
+          .expected_body_with_details = R"json([{
+            "body": {
+              "context_site": "https://c.test",
+              "header": "Attribution-Reporting-Register-OS-Source",
+              "value": "!!!",
+              "error": {
+                "msg": "must be a list of URLs"
+              }
+            },
+            "type": "header-parsing-error"
+          }])json",
       },
       {
-          "os_trigger",
-          RegistrationHeaderType::kOsTrigger,
-          false,
-          R"json([{
+          .name = "os_trigger",
+          .details = attribution_reporting::OsTriggerRegistrationError(
+              attribution_reporting::mojom::OsRegistrationError::kInvalidList),
+          .expected_body = R"json([{
             "body": {
               "context_site": "https://c.test",
               "header": "Attribution-Reporting-Register-OS-Trigger",
@@ -1096,30 +1244,61 @@ TEST(AttributionDebugReportTest, RegistrationHeaderErrorDebugReports) {
             },
             "type": "header-parsing-error"
           }])json",
+          .expected_body_with_details = R"json([{
+            "body": {
+              "context_site": "https://c.test",
+              "header": "Attribution-Reporting-Register-OS-Trigger",
+              "value": "!!!",
+              "error": {
+                "msg": "must be a list of URLs"
+              }
+            },
+            "type": "header-parsing-error"
+          }])json",
       },
       {
-          "within_fenced_frame",
-          RegistrationHeaderType::kSource,
-          true,
-          nullptr,
+          .name = "within_fenced_frame",
+          .details = attribution_reporting::mojom::SourceRegistrationError::
+              kInvalidJson,
+          .is_within_fenced_frame = true,
+          .expected_body = nullptr,
+          .expected_body_with_details = nullptr,
+      },
+      {
+          .name = "operation_prohibited",
+          .details = attribution_reporting::mojom::SourceRegistrationError::
+              kInvalidJson,
+          .is_operation_allowed = operation_allowed_if_not_reporting_origin,
+          .expected_body = nullptr,
+          .expected_body_with_details = nullptr,
       },
   };
 
-  const auto reporting_origin = *SuitableOrigin::Deserialize("https://r.test");
-  const auto context_origin = *SuitableOrigin::Deserialize("https://c.test");
+  for (const bool feature_enabled : {false, true}) {
+    SCOPED_TRACE(feature_enabled);
+    base::test::ScopedFeatureList scoped_feature_list;
+    if (feature_enabled) {
+      scoped_feature_list.InitAndEnableFeature(kAttributionHeaderErrorDetails);
+    } else {
+      scoped_feature_list.InitAndDisableFeature(kAttributionHeaderErrorDetails);
+    }
 
-  for (const auto& test_case : kTestCases) {
-    SCOPED_TRACE(test_case.description);
-    std::optional<AttributionDebugReport> report =
-        AttributionDebugReport::Create(
-            reporting_origin,
-            RegistrationHeaderError(test_case.type,
-                                    /*header_value=*/"!!!"),
-            context_origin, test_case.is_within_fenced_frame);
-    EXPECT_EQ(report.has_value(), test_case.expected_body != nullptr);
-    if (test_case.expected_body) {
-      EXPECT_EQ(report->ReportBody(),
-                base::test::ParseJson(test_case.expected_body));
+    for (const auto& test_case : kTestCases) {
+      SCOPED_TRACE(test_case.name);
+      std::optional<AttributionDebugReport> report =
+          AttributionDebugReport::Create(
+              reporting_origin,
+              RegistrationHeaderError(/*header_value=*/"!!!",
+                                      test_case.details),
+              context_origin, test_case.is_within_fenced_frame,
+              test_case.is_operation_allowed);
+      const char* expected_body = feature_enabled
+                                      ? test_case.expected_body_with_details
+                                      : test_case.expected_body;
+      EXPECT_EQ(report.has_value(), expected_body != nullptr);
+      if (expected_body) {
+        EXPECT_EQ(report->ReportBody(), base::test::ParseJson(expected_body));
+      }
     }
   }
 }

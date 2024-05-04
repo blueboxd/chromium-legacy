@@ -60,6 +60,10 @@
 #include "components/enterprise/browser/controller/chrome_browser_cloud_management_controller.h"
 #endif
 
+#if BUILDFLAG(ENTERPRISE_DATA_CONTROLS)
+#include "base/containers/contains.h"
+#endif  // BUILDFLAG(ENTERPRISE_DATA_CONTROLS)
+
 namespace extensions {
 
 namespace {
@@ -76,6 +80,9 @@ safe_browsing::EventResult GetEventResultFromThreatType(
   }
   if (threat_type == "ENTERPRISE_BLOCKED_SEEN") {
     return safe_browsing::EventResult::BLOCKED;
+  }
+  if (threat_type.empty()) {
+    return safe_browsing::EventResult::ALLOWED;
   }
   NOTREACHED();
   return safe_browsing::EventResult::UNKNOWN;
@@ -106,13 +113,17 @@ void AddAnalysisConnectorVerdictToEvent(
 
 std::string ActionFromVerdictType(
     safe_browsing::RTLookupResponse::ThreatInfo::VerdictType verdict_type) {
-  if (verdict_type == safe_browsing::RTLookupResponse::ThreatInfo::DANGEROUS) {
-    return "BLOCK";
+  switch (verdict_type) {
+    case safe_browsing::RTLookupResponse::ThreatInfo::DANGEROUS:
+      return "BLOCK";
+    case safe_browsing::RTLookupResponse::ThreatInfo::WARN:
+      return "WARN";
+    case safe_browsing::RTLookupResponse::ThreatInfo::SAFE:
+      return "REPORT_ONLY";
+    case safe_browsing::RTLookupResponse::ThreatInfo::SUSPICIOUS:
+    case safe_browsing::RTLookupResponse::ThreatInfo::VERDICT_TYPE_UNSPECIFIED:
+      return "ACTION_UNKNOWN";
   }
-  if (verdict_type == safe_browsing::RTLookupResponse::ThreatInfo::WARN) {
-    return "WARN";
-  }
-  return "ACTION_UNKNOWN";
 }
 
 void AddTriggeredRuleInfoToUrlFilteringInterstitialEvent(
@@ -1007,7 +1018,9 @@ void SafeBrowsingPrivateEventRouter::OnUrlFilteringInterstitial(
       GetEventResultFromThreatType(threat_type);
   event.Set(kKeyClickedThrough,
             event_result == safe_browsing::EventResult::BYPASSED);
-  event.Set(kKeyThreatType, threat_type);
+  if (!threat_type.empty()) {
+    event.Set(kKeyThreatType, threat_type);
+  }
   AddTriggeredRuleInfoToUrlFilteringInterstitialEvent(response, event);
   event.Set(kKeyEventResult, safe_browsing::EventResultToString(event_result));
 
@@ -1015,5 +1028,58 @@ void SafeBrowsingPrivateEventRouter::OnUrlFilteringInterstitial(
                                          std::move(settings.value()),
                                          std::move(event));
 }
+
+#if BUILDFLAG(ENTERPRISE_DATA_CONTROLS)
+void SafeBrowsingPrivateEventRouter::OnDataControlsSensitiveDataEvent(
+    const GURL& url,
+    const GURL& tab_url,
+    const std::string& source,
+    const std::string& destination,
+    const std::string& mime_type,
+    const std::string& trigger,
+    const data_controls::Verdict::TriggeredRules& triggered_rules,
+    safe_browsing::EventResult event_result,
+    int64_t content_size) {
+  std::optional<enterprise_connectors::ReportingSettings> settings =
+      reporting_client_->GetReportingSettings();
+  if (!settings.has_value() ||
+      !base::Contains(settings->enabled_event_names, kKeySensitiveDataEvent)) {
+    return;
+  }
+
+  base::Value::Dict event;
+  event.Set(kKeyUrl, url.spec());
+  event.Set(kKeyTabUrl, tab_url.spec());
+  event.Set(kKeySource, source);
+  event.Set(kKeyDestination, destination);
+  event.Set(kKeyContentType, mime_type);
+  // |content_size| can be set to -1 to indicate an unknown size, in
+  // which case the field is not set.
+  if (content_size >= 0) {
+    event.Set(kKeyContentSize, base::Int64ToValue(content_size));
+  }
+  event.Set(kKeyTrigger, trigger);
+  event.Set(kKeyEventResult, safe_browsing::EventResultToString(event_result));
+
+  base::Value::List triggered_rule_info;
+  triggered_rule_info.reserve(triggered_rules.size());
+  for (const auto& [rule_id, name] : triggered_rules) {
+    base::Value::Dict triggered_rule;
+    triggered_rule.Set(
+        extensions::SafeBrowsingPrivateEventRouter::kKeyTriggeredRuleId,
+        rule_id);
+    triggered_rule.Set(
+        extensions::SafeBrowsingPrivateEventRouter::kKeyTriggeredRuleName,
+        name);
+
+    triggered_rule_info.Append(std::move(triggered_rule));
+  }
+  event.Set(extensions::SafeBrowsingPrivateEventRouter::kKeyTriggeredRuleInfo,
+            std::move(triggered_rule_info));
+
+  reporting_client_->ReportRealtimeEvent(
+      kKeySensitiveDataEvent, std::move(settings.value()), std::move(event));
+}
+#endif  // BUILDFLAG(ENTERPRISE_DATA_CONTROLS)
 
 }  // namespace extensions

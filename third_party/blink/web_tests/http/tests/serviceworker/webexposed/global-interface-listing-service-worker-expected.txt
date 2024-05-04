@@ -1101,7 +1101,10 @@ interface InstallEvent : ExtendableEvent
     attribute @@toStringTag
     method addRoutes
     method constructor
-    method registerRouter
+interface LanguageTranslator
+    attribute @@toStringTag
+    method constructor
+    method translate
 interface Lock
     attribute @@toStringTag
     getter mode
@@ -1270,13 +1273,22 @@ interface NotificationEvent : ExtendableEvent
     getter reply
     method constructor
 interface Observable
+    static method from
     attribute @@toStringTag
     method constructor
     method drop
+    method every
     method filter
+    method find
+    method first
+    method flatMap
     method forEach
+    method inspect
+    method last
     method map
+    method some
     method subscribe
+    method switchMap
     method take
     method takeUntil
     method toArray
@@ -1875,6 +1887,11 @@ interface TransformStreamDefaultController
     method enqueue
     method error
     method terminate
+interface Translation
+    attribute @@toStringTag
+    method canTranslate
+    method constructor
+    method createTranslator
 interface TrustedHTML
     static method fromLiteral
     attribute @@toStringTag
@@ -1917,6 +1934,7 @@ interface TrustedTypePolicyFactory : EventTarget
     setter onbeforecreatepolicy
 interface URL
     static method canParse
+    static method parse
     attribute @@toStringTag
     getter hash
     getter host
@@ -2793,23 +2811,26 @@ interface WebGLActiveInfo
     getter size
     getter type
     method constructor
-interface WebGLBuffer
+interface WebGLBuffer : WebGLObject
     attribute @@toStringTag
     method constructor
 interface WebGLContextEvent : Event
     attribute @@toStringTag
     getter statusMessage
     method constructor
-interface WebGLFramebuffer
+interface WebGLFramebuffer : WebGLObject
     attribute @@toStringTag
     method constructor
-interface WebGLProgram
+interface WebGLObject
     attribute @@toStringTag
     method constructor
-interface WebGLQuery
+interface WebGLProgram : WebGLObject
     attribute @@toStringTag
     method constructor
-interface WebGLRenderbuffer
+interface WebGLQuery : WebGLObject
+    attribute @@toStringTag
+    method constructor
+interface WebGLRenderbuffer : WebGLObject
     attribute @@toStringTag
     method constructor
 interface WebGLRenderingContext
@@ -3260,10 +3281,10 @@ interface WebGLRenderingContext
     method viewport
     setter drawingBufferColorSpace
     setter unpackColorSpace
-interface WebGLSampler
+interface WebGLSampler : WebGLObject
     attribute @@toStringTag
     method constructor
-interface WebGLShader
+interface WebGLShader : WebGLObject
     attribute @@toStringTag
     method constructor
 interface WebGLShaderPrecisionFormat
@@ -3272,19 +3293,19 @@ interface WebGLShaderPrecisionFormat
     getter rangeMax
     getter rangeMin
     method constructor
-interface WebGLSync
+interface WebGLSync : WebGLObject
     attribute @@toStringTag
     method constructor
-interface WebGLTexture
+interface WebGLTexture : WebGLObject
     attribute @@toStringTag
     method constructor
-interface WebGLTransformFeedback
+interface WebGLTransformFeedback : WebGLObject
     attribute @@toStringTag
     method constructor
 interface WebGLUniformLocation
     attribute @@toStringTag
     method constructor
-interface WebGLVertexArrayObject
+interface WebGLVertexArrayObject : WebGLObject
     attribute @@toStringTag
     method constructor
 interface WebSocket : EventTarget
@@ -3386,6 +3407,7 @@ interface WorkerGlobalScope : EventTarget
     getter performance
     getter scheduler
     getter self
+    getter translation
     getter trustedTypes
     method atob
     method btoa

@@ -42,11 +42,13 @@
 #include "cc/input/overscroll_behavior.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/paint_holding_reason.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/viz/public/mojom/hit_test/input_target_client.mojom-blink.h"
 #include "third_party/blink/public/common/input/web_coalesced_input_event.h"
 #include "third_party/blink/public/common/input/web_gesture_device.h"
 #include "third_party/blink/public/mojom/device_posture/device_posture_provider.mojom-blink.h"
 #include "third_party/blink/public/mojom/drag/drag.mojom-blink.h"
+#include "third_party/blink/public/mojom/input/ime_host.mojom-blink.h"
 #include "third_party/blink/public/mojom/input/input_handler.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/input/stylus_writing_gesture.mojom-blink.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom-blink.h"
@@ -70,6 +72,7 @@
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_associated_receiver.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_associated_remote.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_receiver.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_wrapper_mode.h"
 #include "third_party/blink/renderer/platform/text/text_direction.h"
 #include "third_party/blink/renderer/platform/widget/frame_widget.h"
@@ -114,7 +117,8 @@ class CORE_EXPORT WebFrameWidgetImpl
  public:
   struct PromiseCallbacks {
     base::OnceCallback<void(base::TimeTicks)> swap_time_callback;
-    base::OnceCallback<void(base::TimeTicks)> presentation_time_callback;
+    base::OnceCallback<void(const viz::FrameTimingDetails&)>
+        presentation_time_callback;
 #if BUILDFLAG(IS_APPLE)
     base::OnceCallback<void(gfx::CALayerResult)>
         core_animation_error_code_callback;
@@ -226,7 +230,8 @@ class CORE_EXPORT WebFrameWidgetImpl
   void RequestDecode(const cc::PaintImage&,
                      base::OnceCallback<void(bool)>) override;
   void NotifyPresentationTimeInBlink(
-      base::OnceCallback<void(base::TimeTicks)> presentation_callback) final;
+      base::OnceCallback<void(const viz::FrameTimingDetails&)>
+          presentation_callback) final;
   void RequestBeginMainFrameNotExpected(bool request) final;
   int GetLayerTreeId() final;
   const cc::LayerTreeSettings* GetLayerTreeSettings() final;
@@ -252,11 +257,16 @@ class CORE_EXPORT WebFrameWidgetImpl
                                     cc::ElementId scrollable_area_element_id,
                                     WebInputEvent::Type injected_type) override;
   void DidChangeCursor(const ui::Cursor&) override;
+#if BUILDFLAG(IS_ANDROID)
+  void PassImeRenderWidgetHost(
+      mojo::PendingRemote<mojom::blink::ImeRenderWidgetHost>) override;
+#endif
   void GetCompositionCharacterBoundsInWindow(
       Vector<gfx::Rect>* bounds_in_dips) override;
   // Return the last calculated line bounds.
   Vector<gfx::Rect>& GetVisibleLineBoundsOnScreen() override;
   void UpdateLineBounds() override;
+  void UpdateCursorAnchorInfo() override;
   gfx::Range CompositionRange() override;
   WebTextInputInfo TextInputInfo() override;
   ui::mojom::VirtualKeyboardVisibilityRequest
@@ -354,7 +364,8 @@ class CORE_EXPORT WebFrameWidgetImpl
   void ApplyViewportIntersectionForTesting(
       mojom::blink::ViewportIntersectionStatePtr intersection_state);
   void NotifyPresentationTime(
-      base::OnceCallback<void(base::TimeTicks)> callback) override;
+      base::OnceCallback<void(const viz::FrameTimingDetails&)>
+          presentation_callback) override;
 #if BUILDFLAG(IS_APPLE)
   void NotifyCoreAnimationErrorCode(
       base::OnceCallback<void(gfx::CALayerResult)> callback) override;
@@ -444,10 +455,13 @@ class CORE_EXPORT WebFrameWidgetImpl
   void BeginMainFrame(base::TimeTicks last_frame_time) override;
   void UpdateLifecycle(WebLifecycleUpdate requested_update,
                        DocumentUpdateReason reason) override;
-
-  // mojom::blink::FrameWidget overrides:
   void ShowContextMenu(ui::mojom::MenuSourceType source_type,
                        const gfx::Point& location) override;
+  void BindInputTargetClient(
+      mojo::PendingReceiver<viz::mojom::blink::InputTargetClient> receiver)
+      override;
+
+  // mojom::blink::FrameWidget overrides:
   void SetViewportIntersection(
       mojom::blink::ViewportIntersectionStatePtr intersection_state,
       const std::optional<VisualProperties>& visual_properties) override;
@@ -456,6 +470,7 @@ class CORE_EXPORT WebFrameWidgetImpl
                          ui::mojom::blink::DragOperation,
                          base::OnceClosure callback) override;
   void OnStartStylusWriting(OnStartStylusWritingCallback callback) override;
+  void NotifyClearedDisplayedGraphics() override;
 
   // mojom::blink::FrameWidgetInputHandler overrides:
   void HandleStylusWritingGestureAction(
@@ -475,10 +490,6 @@ class CORE_EXPORT WebFrameWidgetImpl
 
   void BindWidgetCompositor(
       mojo::PendingReceiver<mojom::blink::WidgetCompositor> receiver) override;
-
-  void BindInputTargetClient(
-      mojo::PendingReceiver<viz::mojom::blink::InputTargetClient> receiver)
-      override;
 
   // viz::mojom::blink::InputTargetClient:
   void FrameSinkIdAt(const gfx::PointF& point,
@@ -699,6 +710,12 @@ class CORE_EXPORT WebFrameWidgetImpl
 
   bool IsScrollGestureActive() const;
 
+  // Request the compositor thread to tell the GPU process to generate a
+  // screenshot of the current viewport. The screenshot is tagged with `token`.
+  // The caller must have requested a new `viz::LocalSurfaceID` before making
+  // this request.
+  void RequestViewportScreenshot(const base::UnguessableToken& token);
+
   // Request a new `viz::LocalSurfaceId` on the compositor thread.
   void RequestNewLocalSurfaceId();
 
@@ -890,7 +907,8 @@ class CORE_EXPORT WebFrameWidgetImpl
   WebInputEventResult HandleCapturedMouseEvent(const WebCoalescedInputEvent&);
   void MouseContextMenu(const WebMouseEvent&);
   void CancelDrag();
-  void PresentationCallbackForMeaningfulLayout(base::TimeTicks);
+  void PresentationCallbackForMeaningfulLayout(
+      const viz::FrameTimingDetails& first_paint_details);
 
   void ForEachRemoteFrameControlledByWidget(
       base::FunctionRef<void(RemoteFrame*)> callback);
@@ -1082,6 +1100,12 @@ class CORE_EXPORT WebFrameWidgetImpl
       receiver_{this, nullptr};
   HeapMojoReceiver<viz::mojom::blink::InputTargetClient, WebFrameWidgetImpl>
       input_target_receiver_{this, nullptr};
+
+#if BUILDFLAG(IS_ANDROID)
+  // WebFrameWidgetImpl is not tied to ExecutionContext
+  HeapMojoRemote<mojom::blink::ImeRenderWidgetHost> ime_render_widget_host_{
+      nullptr};
+#endif
 
   // Different consumers in the browser process makes different assumptions, so
   // must always send the first IPC regardless of value.

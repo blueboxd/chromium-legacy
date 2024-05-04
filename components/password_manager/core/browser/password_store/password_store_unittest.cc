@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/password_manager/core/browser/password_store/password_store.h"
+
 #include <stddef.h>
 
 #include <memory>
@@ -11,6 +13,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
+#include "base/location.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -34,7 +37,6 @@
 #include "components/password_manager/core/browser/password_store/login_database.h"
 #include "components/password_manager/core/browser/password_store/mock_password_store_backend.h"
 #include "components/password_manager/core/browser/password_store/mock_password_store_consumer.h"
-#include "components/password_manager/core/browser/password_store/password_store.h"
 #include "components/password_manager/core/browser/password_store/password_store_backend.h"
 #include "components/password_manager/core/browser/password_store/password_store_built_in_backend.h"
 #include "components/password_manager/core/browser/password_store/password_store_consumer.h"
@@ -422,7 +424,7 @@ TEST_F(PasswordStoreTest, RemoveLoginsCreatedBetweenCallbackIsCalled) {
   EXPECT_CALL(mock_observer, OnLoginsChanged(_, testing::SizeIs(1u)));
   base::RunLoop run_loop;
   store->RemoveLoginsCreatedBetween(
-      base::Time::FromSecondsSinceUnixEpoch(0),
+      FROM_HERE, base::Time::FromSecondsSinceUnixEpoch(0),
       base::Time::FromSecondsSinceUnixEpoch(2),
       base::BindLambdaForTesting([&run_loop](bool) { run_loop.Quit(); }));
   run_loop.Run();
@@ -1105,21 +1107,9 @@ INSTANTIATE_TEST_SUITE_P(Federation,
                          PasswordStoreFederationTest,
                          testing::Bool());
 
-// The 'bool' param corresponds to 'kFillingAcrossGroupedSites'.
-class PasswordStoreGroupsTest : public PasswordStoreTest,
-                                      public testing::WithParamInterface<bool> {
+class PasswordStoreGroupsTest : public PasswordStoreTest {
   void SetUp() override {
     PasswordStoreTest::SetUp();
-    feature_list_.Reset();
-    if (GetParam()) {
-      feature_list_.InitWithFeatures(
-          /*enabled_features=*/{features::kFillingAcrossGroupedSites},
-          /*disabled_features=*/{});
-    } else {
-      feature_list_.InitWithFeatures(
-          /*enabled_features=*/{},
-          /*disabled_features=*/{features::kFillingAcrossGroupedSites});
-    }
     store_ = CreatePasswordStore();
     auto owning_mock_match_helper =
         std::make_unique<MockAffiliatedMatchHelper>(&affiliation_service_);
@@ -1180,7 +1170,7 @@ class PasswordStoreGroupsTest : public PasswordStoreTest,
 
 // Retrieve matching passwords for affiliated groups credentials and make sure
 // the properties are set correctly.
-TEST_P(PasswordStoreGroupsTest, GetLoginsWithWebGroup) {
+TEST_F(PasswordStoreGroupsTest, GetLoginsWithWebGroup) {
   std::vector<std::unique_ptr<PasswordForm>> all_credentials =
       CreateCredentialsAndAddToStore();
 
@@ -1201,19 +1191,10 @@ TEST_P(PasswordStoreGroupsTest, GetLoginsWithWebGroup) {
   expected_results.back().match_type =
       PasswordForm::MatchType::kAffiliated | PasswordForm::MatchType::kPSL;
 
-  // Credential that is a group match of the observed form.
-  if (base::FeatureList::IsEnabled(features::kFillingAcrossGroupedSites)) {
-    expected_results.push_back(*all_credentials[3]);
-    expected_results.back().match_type = PasswordForm::MatchType::kGrouped;
-  }
-
   // In the production 'kTestWebRealm1' won't be in the list but the code should
   // protect against it.
   std::vector<std::string> affiliated_realms = {kTestWebRealm1, kTestWebRealm2};
   std::vector<std::string> grouped_realms;
-  if (base::FeatureList::IsEnabled(features::kFillingAcrossGroupedSites)) {
-    grouped_realms.emplace_back(kTestGroupRealm);
-  }
   mock_affiliated_match_helper_->ExpectCallToGetAffiliatedAndGrouped(
       observed_form, affiliated_realms, grouped_realms);
 
@@ -1226,10 +1207,6 @@ TEST_P(PasswordStoreGroupsTest, GetLoginsWithWebGroup) {
   store_->GetLogins(observed_form, mock_consumer.GetWeakPtr());
   WaitForPasswordStore();
 }
-
-INSTANTIATE_TEST_SUITE_P(Groups,
-                         PasswordStoreGroupsTest,
-                         testing::Bool());
 
 TEST_F(PasswordStoreTest, DelegatesGetAllLoginsToBackend) {
   auto [store, mock_backend] = CreateUnownedStoreWithOwnedMockBackend();
@@ -1265,16 +1242,16 @@ TEST_F(PasswordStoreTest, CallOnLoginsChangedIfRemovalProvidesChanges) {
 
   // Expect that observers receive the removal when the backend invokes the
   // reply with a `PasswordStoreChangeList`.
-  EXPECT_CALL(*mock_backend, RemoveLoginAsync(Eq(kTestForm), _))
+  EXPECT_CALL(*mock_backend, RemoveLoginAsync(_, Eq(kTestForm), _))
       .WillOnce(
-          WithArg<1>(Invoke([&](PasswordChangesOrErrorReply reply) -> void {
+          WithArg<2>(Invoke([&](PasswordChangesOrErrorReply reply) -> void {
             std::move(reply).Run(
                 CreateChangeList(PasswordStoreChange::REMOVE, kTestForm));
           })));
   EXPECT_CALL(mock_observer, OnLoginsRetained).Times(0);
   EXPECT_CALL(mock_observer,
               OnLoginsChanged(store.get(), ElementsAre(EqRemoval(kTestForm))));
-  store->RemoveLogin(kTestForm);
+  store->RemoveLogin(FROM_HERE, kTestForm);
   WaitForPasswordStore();
   histogram_tester.ExpectTotalCount(kOnLoginsChangedMetric, 1);
 
@@ -1789,8 +1766,8 @@ TEST_F(PasswordStoreOriginTest,
   EXPECT_CALL(observer,
               OnLoginsChanged(_, ElementsAre(PasswordStoreChange(
                                      PasswordStoreChange::REMOVE, *form))));
-  store()->RemoveLoginsByURLAndTime(filter, base::Time(), base::Time::Max(),
-                                    run_loop.QuitClosure());
+  store()->RemoveLoginsByURLAndTime(FROM_HERE, filter, base::Time(),
+                                    base::Time::Max(), run_loop.QuitClosure());
   run_loop.Run();
 
   store()->RemoveObserver(&observer);
@@ -1819,8 +1796,8 @@ TEST_F(PasswordStoreOriginTest,
   EXPECT_CALL(observer,
               OnLoginsChanged(_, ElementsAre(PasswordStoreChange(
                                      PasswordStoreChange::REMOVE, *form))));
-  store()->RemoveLoginsByURLAndTime(filter, base::Time(), base::Time::Max(),
-                                    run_loop.QuitClosure());
+  store()->RemoveLoginsByURLAndTime(FROM_HERE, filter, base::Time(),
+                                    base::Time::Max(), run_loop.QuitClosure());
   run_loop.Run();
 
   store()->RemoveObserver(&observer);
@@ -1842,8 +1819,8 @@ TEST_F(PasswordStoreOriginTest,
       base::BindRepeating(&MatchesOrigin, other_origin);
   base::RunLoop run_loop;
   EXPECT_CALL(observer, OnLoginsChanged).Times(0);
-  store()->RemoveLoginsByURLAndTime(filter, base::Time(), base::Time::Max(),
-                                    run_loop.QuitClosure());
+  store()->RemoveLoginsByURLAndTime(FROM_HERE, filter, base::Time(),
+                                    base::Time::Max(), run_loop.QuitClosure());
   run_loop.Run();
 
   store()->RemoveObserver(&observer);
@@ -1866,7 +1843,7 @@ TEST_F(PasswordStoreOriginTest,
   base::Time time_after_creation_date = form->date_created + base::Days(1);
   base::RunLoop run_loop;
   EXPECT_CALL(observer, OnLoginsChanged).Times(0);
-  store()->RemoveLoginsByURLAndTime(filter, time_after_creation_date,
+  store()->RemoveLoginsByURLAndTime(FROM_HERE, filter, time_after_creation_date,
                                     base::Time::Max(), run_loop.QuitClosure());
   run_loop.Run();
 

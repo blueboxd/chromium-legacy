@@ -37,11 +37,11 @@
 #include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/browser/web_applications/web_app_install_utils.h"
 #include "chrome/browser/web_applications/web_contents/web_app_data_retriever.h"
-#include "chrome/browser/web_applications/web_contents/web_app_url_loader.h"
 #include "chrome/browser/web_applications/web_contents/web_contents_manager.h"
 #include "components/services/app_service/public/cpp/icon_info.h"
 #include "components/webapps/browser/install_result_code.h"
 #include "components/webapps/browser/installable/installable_logging.h"
+#include "components/webapps/browser/web_contents/web_app_url_loader.h"
 #include "components/webapps/common/web_app_id.h"
 #include "net/http/http_status_code.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -56,7 +56,8 @@ namespace {
 
 struct PageStateOptions {
   bool empty_web_app_info = false;
-  WebAppUrlLoaderResult url_load_result = WebAppUrlLoaderResult::kUrlLoaded;
+  webapps::WebAppUrlLoaderResult url_load_result =
+      webapps::WebAppUrlLoaderResult::kUrlLoaded;
   std::optional<GURL> manifest_id;
 };
 
@@ -339,9 +340,9 @@ TEST_F(ExternalAppResolutionCommandTest, SuccessInstallPlaceholder) {
       ExternalInstallSource::kExternalPolicy);
   install_options.install_placeholder = true;
 
-  SetPageState(
-      install_options,
-      {.url_load_result = WebAppUrlLoaderResult::kRedirectedUrlLoaded});
+  SetPageState(install_options,
+               {.url_load_result =
+                    webapps::WebAppUrlLoaderResult::kRedirectedUrlLoaded});
 
   auto result = InstallAndWait(install_options);
 
@@ -374,8 +375,9 @@ TEST_F(ExternalAppResolutionCommandTest, InstallPlaceholderTwice) {
 
   // Install a placeholder app.
   {
-    SetPageState(options, {.url_load_result =
-                               WebAppUrlLoaderResult::kRedirectedUrlLoaded});
+    SetPageState(options,
+                 {.url_load_result =
+                      webapps::WebAppUrlLoaderResult::kRedirectedUrlLoaded});
 
     auto result = InstallAndWait(options);
 
@@ -390,8 +392,9 @@ TEST_F(ExternalAppResolutionCommandTest, InstallPlaceholderTwice) {
   }
 
   // Try to install it again.
-  SetPageState(options, {.url_load_result =
-                             WebAppUrlLoaderResult::kRedirectedUrlLoaded});
+  SetPageState(options,
+               {.url_load_result =
+                    webapps::WebAppUrlLoaderResult::kRedirectedUrlLoaded});
   auto data_retriever = std::make_unique<FakeDataRetriever>();
   data_retriever->BuildDefaultDataToRetrieve(kWebAppUrl, kWebAppScope);
 
@@ -417,8 +420,9 @@ TEST_F(ExternalAppResolutionCommandTest, ReinstallPlaceholderSucceeds) {
 
   // Install a placeholder app.
   {
-    SetPageState(options, {.url_load_result =
-                               WebAppUrlLoaderResult::kRedirectedUrlLoaded});
+    SetPageState(options,
+                 {.url_load_result =
+                      webapps::WebAppUrlLoaderResult::kRedirectedUrlLoaded});
 
     auto result = InstallAndWait(options);
 
@@ -468,8 +472,9 @@ TEST_F(ExternalAppResolutionCommandTest,
 
   // Install a placeholder app.
   {
-    SetPageState(options, {.url_load_result =
-                               WebAppUrlLoaderResult::kRedirectedUrlLoaded});
+    SetPageState(options,
+                 {.url_load_result =
+                      webapps::WebAppUrlLoaderResult::kRedirectedUrlLoaded});
 
     auto result = InstallAndWait(options);
 
@@ -538,8 +543,9 @@ TEST_F(ExternalAppResolutionCommandTest,
 
   // Install a placeholder app.
   {
-    SetPageState(options, {.url_load_result =
-                               WebAppUrlLoaderResult::kRedirectedUrlLoaded});
+    SetPageState(options,
+                 {.url_load_result =
+                      webapps::WebAppUrlLoaderResult::kRedirectedUrlLoaded});
 
     auto result = InstallAndWait(options);
 
@@ -600,8 +606,9 @@ TEST_F(ExternalAppResolutionCommandTest,
     webapps::AppId expected_app_id =
         GenerateAppId(/*manifest_id_path=*/std::nullopt, kWebAppUrl);
 
-    SetPageState(options, {.url_load_result =
-                               WebAppUrlLoaderResult::kRedirectedUrlLoaded});
+    SetPageState(options,
+                 {.url_load_result =
+                      webapps::WebAppUrlLoaderResult::kRedirectedUrlLoaded});
 
     auto result = InstallAndWait(options);
 
@@ -648,8 +655,9 @@ TEST_F(ExternalAppResolutionCommandTest, InstallPlaceholderCustomName) {
                                  ExternalInstallSource::kExternalPolicy);
   options.install_placeholder = true;
   options.override_name = kCustomName;
-  SetPageState(options, {.url_load_result =
-                             WebAppUrlLoaderResult::kRedirectedUrlLoaded});
+  SetPageState(options,
+               {.url_load_result =
+                    webapps::WebAppUrlLoaderResult::kRedirectedUrlLoaded});
 
   auto result = InstallAndWait(options);
 
@@ -696,13 +704,13 @@ TEST_F(ExternalAppResolutionCommandTest, UninstallAndReplace) {
 TEST_F(ExternalAppResolutionCommandTest, InstallURLLoadFailed) {
   const GURL kWebAppUrl("https://foo.example");
   struct ResultPair {
-    WebAppUrlLoader::Result loader_result;
+    webapps::WebAppUrlLoaderResult loader_result;
     webapps::InstallResultCode install_result;
-  } result_pairs[] = {{WebAppUrlLoader::Result::kRedirectedUrlLoaded,
+  } result_pairs[] = {{webapps::WebAppUrlLoaderResult::kRedirectedUrlLoaded,
                        webapps::InstallResultCode::kInstallURLRedirected},
-                      {WebAppUrlLoader::Result::kFailedUnknownReason,
+                      {webapps::WebAppUrlLoaderResult::kFailedUnknownReason,
                        webapps::InstallResultCode::kInstallURLLoadFailed},
-                      {WebAppUrlLoader::Result::kFailedPageTookTooLong,
+                      {webapps::WebAppUrlLoaderResult::kFailedPageTookTooLong,
                        webapps::InstallResultCode::kInstallURLLoadTimeOut}};
 
   for (const auto& result_pair : result_pairs) {
@@ -727,8 +735,7 @@ TEST_F(ExternalAppResolutionCommandTest, InstallWithWebAppInfoSucceeds) {
                                  ExternalInstallSource::kExternalDefault);
   options.only_use_app_info_factory = true;
   options.app_info_factory = base::BindLambdaForTesting([&kWebAppUrl]() {
-    auto info = std::make_unique<WebAppInstallInfo>();
-    info->start_url = kWebAppUrl;
+    auto info = WebAppInstallInfo::CreateWithStartUrlForTesting(kWebAppUrl);
     info->scope = kWebAppUrl.GetWithoutFilename();
     info->title = u"Foo Web App";
     return info;
@@ -767,8 +774,7 @@ TEST_F(ExternalAppResolutionCommandTest, InstallWithWebAppInfoFails) {
                                  ExternalInstallSource::kExternalDefault);
   options.only_use_app_info_factory = true;
   options.app_info_factory = base::BindLambdaForTesting([&kWebAppUrl]() {
-    auto info = std::make_unique<WebAppInstallInfo>();
-    info->start_url = kWebAppUrl;
+    auto info = WebAppInstallInfo::CreateWithStartUrlForTesting(kWebAppUrl);
     info->scope = kWebAppUrl.GetWithoutFilename();
     info->title = u"Foo Web App";
     return info;
@@ -1298,19 +1304,12 @@ TEST_F(ExternalAppResolutionCommandTest, SuccessWithUninstallAndReplace) {
   ASSERT_TRUE(result.app_id.has_value());
   EXPECT_TRUE(registrar().IsLocallyInstalled(*result.app_id));
 
-  EXPECT_TRUE(os_integration_manager()->did_add_to_desktop());
-  auto options = os_integration_manager()->get_last_install_options();
-  EXPECT_FALSE(options->add_to_desktop);
-  EXPECT_TRUE(options->add_to_quick_launch_bar);
-  EXPECT_TRUE(options->os_hooks[OsHookType::kRunOnOsLogin]);
-  if (AreSubManagersExecuteEnabled()) {
-    std::optional<proto::WebAppOsIntegrationState> os_state =
-        registrar().GetAppCurrentOsIntegrationState(*result.app_id);
-    ASSERT_TRUE(os_state.has_value());
-    EXPECT_TRUE(os_state->has_shortcut());
-    EXPECT_EQ(os_state->run_on_os_login().run_on_os_login_mode(),
-              proto::RunOnOsLoginMode::WINDOWED);
-  }
+  std::optional<proto::WebAppOsIntegrationState> os_state =
+      registrar().GetAppCurrentOsIntegrationState(*result.app_id);
+  ASSERT_TRUE(os_state.has_value());
+  EXPECT_TRUE(os_state->has_shortcut());
+  EXPECT_EQ(os_state->run_on_os_login().run_on_os_login_mode(),
+            proto::RunOnOsLoginMode::WINDOWED);
 }
 #endif  // !BUILDFLAG(IS_CHROMEOS_LACROS)
 

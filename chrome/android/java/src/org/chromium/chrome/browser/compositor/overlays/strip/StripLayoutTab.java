@@ -25,7 +25,6 @@ import org.chromium.chrome.browser.compositor.layouts.components.CompositorButto
 import org.chromium.chrome.browser.compositor.layouts.components.CompositorButton.CompositorOnClickHandler;
 import org.chromium.chrome.browser.compositor.layouts.components.TintedCompositorButton;
 import org.chromium.chrome.browser.compositor.overlays.strip.TabLoadTracker.TabLoadTrackerCallback;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.layouts.animation.CompositorAnimator;
 import org.chromium.chrome.browser.layouts.components.VirtualView;
 import org.chromium.chrome.browser.tab.Tab;
@@ -57,25 +56,12 @@ public class StripLayoutTab extends StripLayoutView {
 
         /**
          * Handles close button click actions.
-         * @param tab  The tab whose close button was clicked.
+         *
+         * @param tab The tab whose close button was clicked.
          * @param time The time the close button was clicked.
          */
         void handleCloseButtonClick(StripLayoutTab tab, long time);
     }
-
-    /** A property for animations to use for changing the X offset of the tab. */
-    public static final FloatProperty<StripLayoutTab> X_OFFSET =
-            new FloatProperty<>("offsetX") {
-                @Override
-                public void setValue(StripLayoutTab object, float value) {
-                    object.setOffsetX(value);
-                }
-
-                @Override
-                public Float get(StripLayoutTab object) {
-                    return object.getOffsetX();
-                }
-            };
 
     /** A property for animations to use for changing the Y offset of the tab. */
     public static final FloatProperty<StripLayoutTab> Y_OFFSET =
@@ -105,21 +91,7 @@ public class StripLayoutTab extends StripLayoutView {
                 }
             };
 
-    /** A property for animations to use for changing the drawX of the tab. */
-    public static final FloatProperty<StripLayoutTab> DRAW_X =
-            new FloatProperty<>("drawX") {
-                @Override
-                public void setValue(StripLayoutTab object, float value) {
-                    object.setDrawX(value);
-                }
-
-                @Override
-                public Float get(StripLayoutTab object) {
-                    return object.getDrawX();
-                }
-            };
-
-    /** A property for animations to use for changing the drawX of the tab. */
+    /** A property for animations to use for changing the bottom margin of the tab. */
     public static final FloatProperty<StripLayoutTab> BOTTOM_MARGIN =
             new FloatProperty<>("bottomMargin") {
                 @Override
@@ -175,6 +147,10 @@ public class StripLayoutTab extends StripLayoutView {
     private static final float FOLIO_CONTENT_OFFSET_Y = 8.f;
     protected static final float FOLIO_FOOT_LENGTH_DP = 16.f;
 
+    // Visibility Constants.
+    private static final float FAVICON_WIDTH = 16.f;
+    protected static final float MIN_WIDTH = FAVICON_WIDTH + (FOLIO_FOOT_LENGTH_DP * 2);
+
     // Divider Constants
     private static final int DIVIDER_OFFSET_X = 13;
 
@@ -206,8 +182,6 @@ public class StripLayoutTab extends StripLayoutView {
     private String mAccessibilityDescription = "";
 
     // Ideal intermediate parameters
-    private float mIdealX;
-    private float mTabOffsetX;
     private float mTabOffsetY;
     private float mTrailingMargin;
 
@@ -401,7 +375,7 @@ public class StripLayoutTab extends StripLayoutView {
         mFolioAttached = folioAttached;
     }
 
-    boolean getFolioAttachedForTesting() {
+    boolean getFolioAttached() {
         return mFolioAttached;
     }
 
@@ -439,6 +413,7 @@ public class StripLayoutTab extends StripLayoutView {
     /**
      * @return The Android resource that represents the tab outline.
      */
+    // TODO(crbug.com/329561631) Add tint for selected tab outline.
     public @DrawableRes int getOutlineResourceId() {
         return R.drawable.tab_group_outline;
     }
@@ -457,11 +432,7 @@ public class StripLayoutTab extends StripLayoutView {
      *     have the same tint irrespective of its hover state.
      */
     public @ColorInt int getTint(boolean foreground, boolean hovered) {
-        hovered =
-                ChromeFeatureList.isEnabled(
-                                ChromeFeatureList.ADVANCED_PERIPHERALS_SUPPORT_TAB_STRIP)
-                        && hovered;
-        // TODO(https://crbug.com/1408276): Avoid calculating every time. Instead, store the tab's
+        // TODO(crbug.com/40888366): Avoid calculating every time. Instead, store the tab's
         //  color and only re-determine when the color could have changed (i.e. on selection).
         return TabUiThemeUtil.getTabStripContainerColor(
                 mContext, mIncognito, foreground, mIsReordering, mIsPlaceholder, hovered);
@@ -519,6 +490,7 @@ public class StripLayoutTab extends StripLayoutView {
 
     @Override
     public void setVisible(boolean visible) {
+        if (isVisible() == visible) return;
         super.setVisible(visible);
         if (!visible) {
             mUpdateHost.releaseResourcesForTab(mId);
@@ -766,38 +738,7 @@ public class StripLayoutTab extends StripLayoutView {
 
     /**
      * This is used to help calculate the tab's position and is not used for rendering.
-     * @param offsetX The offset of the tab (used for drag and drop, slide animating, etc).
-     */
-    public void setOffsetX(float offsetX) {
-        mTabOffsetX = offsetX;
-    }
-
-    /**
-     * This is used to help calculate the tab's position and is not used for rendering.
-     * @return The offset of the tab (used for drag and drop, slide animating, etc).
-     */
-    public float getOffsetX() {
-        return mTabOffsetX;
-    }
-
-    /**
-     * This is used to help calculate the tab's position and is not used for rendering.
-     * @param x The ideal position, in an infinitely long strip, of this tab.
-     */
-    public void setIdealX(float x) {
-        mIdealX = x;
-    }
-
-    /**
-     * This is used to help calculate the tab's position and is not used for rendering.
-     * @return The ideal position, in an infinitely long strip, of this tab.
-     */
-    public float getIdealX() {
-        return mIdealX;
-    }
-
-    /**
-     * This is used to help calculate the tab's position and is not used for rendering.
+     *
      * @param offsetY The vertical offset of the tab.
      */
     public void setOffsetY(float offsetY) {

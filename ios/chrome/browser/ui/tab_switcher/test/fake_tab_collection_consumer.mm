@@ -23,8 +23,8 @@
 }
 
 - (void)populateItems:(NSArray<GridItemIdentifier*>*)items
-       selectedItemID:(web::WebStateID)selectedItemID {
-  self.selectedItemID = selectedItemID;
+    selectedItemIdentifier:(GridItemIdentifier*)selectedItemIdentifier {
+  _selectedItemID = selectedItemIdentifier.tabSwitcherItem.identifier;
   _items.clear();
   for (GridItemIdentifier* item in items) {
     CHECK(item.type == GridItemType::Tab);
@@ -33,34 +33,47 @@
 }
 
 - (void)insertItem:(GridItemIdentifier*)item
-           atIndex:(NSUInteger)index
-    selectedItemID:(web::WebStateID)selectedItemID {
-  _items.insert(_items.begin() + index, item.tabSwitcherItem.identifier);
-  _selectedItemID = selectedItemID;
+              beforeItemID:(GridItemIdentifier*)nextItemIdentifier
+    selectedItemIdentifier:(GridItemIdentifier*)selectedItemIdentifier {
+  _items.insert(std::find(std::begin(_items), std::end(_items),
+                          nextItemIdentifier.tabSwitcherItem.identifier),
+                item.tabSwitcherItem.identifier);
+  _selectedItemID = selectedItemIdentifier.tabSwitcherItem.identifier;
 }
 
-- (void)removeItemWithID:(web::WebStateID)removedItemID
-          selectedItemID:(web::WebStateID)selectedItemID {
-  auto it = std::remove(_items.begin(), _items.end(), removedItemID);
+- (void)removeItemWithIdentifier:(GridItemIdentifier*)removedItem
+          selectedItemIdentifier:(GridItemIdentifier*)selectedItemIdentifier {
+  auto it = std::remove(_items.begin(), _items.end(),
+                        removedItem.tabSwitcherItem.identifier);
   _items.erase(it, _items.end());
-  _selectedItemID = selectedItemID;
+  _selectedItemID = selectedItemIdentifier.tabSwitcherItem.identifier;
 }
 
-- (void)selectItemWithID:(web::WebStateID)selectedItemID {
-  _selectedItemID = selectedItemID;
+- (void)selectItemWithIdentifier:(GridItemIdentifier*)selectedItemIdentifier {
+  _selectedItemID = selectedItemIdentifier.tabSwitcherItem.identifier;
 }
 
 - (void)replaceItem:(GridItemIdentifier*)item
     withReplacementItem:(GridItemIdentifier*)replacementItem {
   auto it =
       std::find(_items.begin(), _items.end(), item.tabSwitcherItem.identifier);
-  *it = replacementItem.tabSwitcherItem.identifier;
+  if (it != _items.end()) {
+    *it = replacementItem.tabSwitcherItem.identifier;
+  }
 }
 
-- (void)moveItemWithID:(web::WebStateID)itemID toIndex:(NSUInteger)toIndex {
-  auto it = std::remove(_items.begin(), _items.end(), itemID);
+- (void)moveItem:(GridItemIdentifier*)item
+      beforeItem:(GridItemIdentifier*)nextItemIdentifier {
+  web::WebStateID moved_id = item.tabSwitcherItem.identifier;
+  auto it = std::remove(_items.begin(), _items.end(), moved_id);
   _items.erase(it, _items.end());
-  _items.insert(_items.begin() + toIndex, itemID);
+  if (nextItemIdentifier) {
+    _items.insert(std::find(std::begin(_items), std::end(_items),
+                            nextItemIdentifier.tabSwitcherItem.identifier),
+                  moved_id);
+  } else {
+    _items.push_back(moved_id);
+  }
 }
 
 - (void)dismissModals {

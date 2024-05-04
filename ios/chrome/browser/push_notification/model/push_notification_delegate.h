@@ -28,12 +28,8 @@
 // When the device successfully registers with APNS and receives its APNS device
 // token this function aggregates all the necessary information and registers
 // the device to the Push Notification server.
-- (void)applicationDidRegisterWithAPNS:(NSData*)deviceToken;
-
-// Registers the secondary actions for notifications (activated with a long
-// press). This call should be made after the application is registered with
-// APNS.
-- (void)registerNotificationCategories;
+- (void)applicationDidRegisterWithAPNS:(NSData*)deviceToken
+                          browserState:(ChromeBrowserState*)browserState;
 
 @end
 

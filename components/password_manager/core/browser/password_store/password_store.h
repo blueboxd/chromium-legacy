@@ -34,7 +34,7 @@
 class PrefService;
 
 namespace syncer {
-class ProxyModelTypeControllerDelegate;
+class ModelTypeControllerDelegate;
 }  // namespace syncer
 
 namespace password_manager {
@@ -67,7 +67,7 @@ class PasswordStore : public PasswordStoreInterface {
   PasswordStore& operator=(const PasswordStore&) = delete;
 
   // Always call this too on the UI thread.
-  // TODO(crbug.com/1218413): Move initialization into the core interface, too.
+  // TODO(crbug.com/40185648): Move initialization into the core interface, too.
   void Init(PrefService* prefs,
             std::unique_ptr<AffiliatedMatchHelper> affiliated_match_helper);
 
@@ -88,15 +88,18 @@ class PasswordStore : public PasswordStoreInterface {
       const PasswordForm& new_form,
       const PasswordForm& old_primary_key,
       base::OnceClosure completion = base::DoNothing()) override;
-  void RemoveLogin(const PasswordForm& form) override;
+  void RemoveLogin(const base::Location& location,
+                   const PasswordForm& form) override;
   void RemoveLoginsByURLAndTime(
+      const base::Location& location,
       const base::RepeatingCallback<bool(const GURL&)>& url_filter,
       base::Time delete_begin,
       base::Time delete_end,
       base::OnceClosure completion = base::NullCallback(),
       base::OnceCallback<void(bool)> sync_completion =
           base::NullCallback()) override;
-  void RemoveLoginsCreatedBetween(base::Time delete_begin,
+  void RemoveLoginsCreatedBetween(const base::Location& location,
+                                  base::Time delete_begin,
                                   base::Time delete_end,
                                   base::OnceCallback<void(bool)> completion =
                                       base::NullCallback()) override;
@@ -116,7 +119,7 @@ class PasswordStore : public PasswordStoreInterface {
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
   SmartBubbleStatsStore* GetSmartBubbleStatsStore() override;
-  std::unique_ptr<syncer::ProxyModelTypeControllerDelegate>
+  std::unique_ptr<syncer::ModelTypeControllerDelegate>
   CreateSyncControllerDelegate() override;
   void OnSyncServiceInitialized(syncer::SyncService* sync_service) override;
   base::CallbackListSubscription AddSyncEnabledOrDisabledCallback(
@@ -173,7 +176,7 @@ class PasswordStore : public PasswordStoreInterface {
   std::unique_ptr<PasswordStoreBackend> backend_;
 
   // TaskRunner for tasks that run on the main sequence (usually the UI thread).
-  // TODO(crbug.com/1217071): Move into backend_.
+  // TODO(crbug.com/40185050): Move into backend_.
   scoped_refptr<base::SequencedTaskRunner> main_task_runner_;
 
   // See PasswordStoreInterface::AddSyncEnabledOrDisabledCallback(). Wrapped in

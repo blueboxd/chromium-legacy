@@ -9,6 +9,7 @@
 #include "base/apple/foundation_util.h"
 #include "base/mac/mac_util.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/run_loop.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/global_keyboard_shortcuts_mac.h"
@@ -74,7 +75,7 @@ bool CanShare() {
                       target:(id*)target
                       action:(SEL*)action {
   // Load the menu if it hasn't loaded already.
-  if ([menu numberOfItems] == 0) {
+  if (!menu.numberOfItems) {
     [self menuNeedsUpdate:menu];
   }
   // Per tapted@'s comment in BookmarkMenuCocoaController, it's fine
@@ -112,6 +113,16 @@ bool CanShare() {
     moreItem.image = [self moreImage];
     [menu addItem:moreItem];
   }
+}
+
+// NSMenuItemValidation
+
+- (BOOL)validateMenuItem:(NSMenuItem*)menuItem {
+  if (menuItem.action == @selector(openSharingPrefs:)) {
+    return YES;
+  }
+
+  return CanShare();
 }
 
 // NSSharingServiceDelegate
@@ -259,7 +270,7 @@ bool CanShare() {
 
 // Creates a menu item that calls |service| when invoked.
 - (NSMenuItem*)menuItemForService:(NSSharingService*)service {
-  BOOL isMail = [[service name] isEqual:NSSharingServiceNameComposeEmail];
+  BOOL isMail = [service.name isEqual:NSSharingServiceNameComposeEmail];
   NSString* keyEquivalent = isMail ? [self keyEquivalentForMail] : @"";
   NSString* title = isMail ? l10n_util::GetNSString(IDS_EMAIL_LINK_MAC)
                     : @available(macOS 10.9, *) ? service.menuItemTitle
@@ -268,7 +279,7 @@ bool CanShare() {
                                                 action:@selector(performShare:)
                                          keyEquivalent:keyEquivalent];
   item.target = self;
-  item.image = [service image];
+  item.image = service.image;
   item.representedObject = service;
   return item;
 }

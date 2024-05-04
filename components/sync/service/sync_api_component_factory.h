@@ -9,14 +9,13 @@
 #include <string>
 
 #include "components/sync/base/model_type.h"
-#include "components/sync/service/data_type_controller.h"
+#include "components/sync/service/model_type_controller.h"
 
 namespace syncer {
 
 class DataTypeEncryptionHandler;
 class DataTypeManager;
 class DataTypeManagerObserver;
-class ModelTypeConfigurer;
 class SyncEngine;
 class SyncInvalidationsService;
 
@@ -27,9 +26,8 @@ class SyncApiComponentFactory {
   virtual ~SyncApiComponentFactory() = default;
 
   virtual std::unique_ptr<DataTypeManager> CreateDataTypeManager(
-      const DataTypeController::TypeMap* controllers,
+      const ModelTypeController::TypeMap* controllers,
       const DataTypeEncryptionHandler* encryption_handler,
-      ModelTypeConfigurer* configurer,
       DataTypeManagerObserver* observer) = 0;
 
   // Creating this in the factory helps us mock it out in testing.

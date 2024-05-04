@@ -28,6 +28,9 @@ export enum EntryType {
 
   // Root for the Recent.
   RECENT = 'RECENT',
+
+  // A folder-like that doesn't have an entry linked to it.
+  MATERIALIZED_VIEW = 'MATERIALIZED_VIEW',
 }
 
 /**
@@ -37,7 +40,7 @@ export interface FileData {
   /** `key` is the file URL. */
   key: FileKey;
   fullPath: string;
-  entry: Entry|FilesAppEntry;
+  entry?: Entry|FilesAppEntry;
 
   /**
    * `icon` can be either a string or a IconSet which is an object including
@@ -195,6 +198,7 @@ export interface Selection {
  * Represents the entries displayed in the file list/grid.
  */
 export interface DirectoryContent {
+  status: PropStatus;
   keys: FileKey[];
 }
 
@@ -388,6 +392,19 @@ export interface AndroidApp {
 }
 
 /**
+ * A view behaves like a folder, as in, it's a collection of FileData.
+ *
+ * Its content comes from the File Index.
+ */
+export interface MaterializedView {
+  id: string;
+  key: FileKey;
+  label: string;
+  icon: string;
+  isRoot: boolean;
+}
+
+/**
  * Files app's state.
  */
 export interface State {
@@ -404,4 +421,5 @@ export interface State {
   androidApps: Record<string, AndroidApp>;
   bulkPinning?: chrome.fileManagerPrivate.BulkPinProgress;
   preferences?: chrome.fileManagerPrivate.Preferences;
+  materializedViews: MaterializedView[];
 }

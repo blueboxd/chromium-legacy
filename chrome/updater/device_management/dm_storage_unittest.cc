@@ -13,9 +13,9 @@
 #include "build/build_config.h"
 #include "chrome/updater/device_management/dm_cached_policy_info.h"
 #include "chrome/updater/protos/omaha_settings.pb.h"
-#include "chrome/updater/test_scope.h"
+#include "chrome/updater/test/test_scope.h"
+#include "chrome/updater/test/unit_test_util.h"
 #include "chrome/updater/updater_scope.h"
-#include "chrome/updater/util/unit_test_util.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -288,6 +288,10 @@ TEST(DMStorage, PersistPolicies) {
 
   // Stale policies should be purged.
   EXPECT_FALSE(base::DirectoryExists(stale_poliy));
+
+  EXPECT_TRUE(storage->RemoveAllPolicies());
+  EXPECT_FALSE(base::PathExists(omaha_policy_file));
+  EXPECT_FALSE(base::PathExists(foobar_policy_file));
 }
 
 TEST(DMStorage, GetCachedPolicyInfo) {
@@ -325,6 +329,12 @@ TEST(DMStorage, GetCachedPolicyInfo) {
   EXPECT_TRUE(policy_info->has_key_version());
   EXPECT_EQ(policy_info->key_version(), 15);
   EXPECT_EQ(policy_info->timestamp(), 12340000);
+
+  EXPECT_TRUE(storage->RemoveAllPolicies());
+  policy_info = storage->GetCachedPolicyInfo();
+  EXPECT_TRUE(policy_info->public_key().empty());
+  EXPECT_FALSE(policy_info->has_key_version());
+  EXPECT_EQ(policy_info->timestamp(), 0);
 }
 
 TEST(DMStorage, ReadCachedOmahaPolicy) {

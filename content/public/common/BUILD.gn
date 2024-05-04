@@ -17,7 +17,8 @@ if (is_android) {
   import("//build/config/android/rules.gni")
 }
 
-# See //content/BUILD.gn for how this works.
+# See //content/BUILD.gn for how this works. Note that targets in `//content`
+# will want to include `:common_sources` directly.
 group("common") {
   if (is_component_build) {
     public_deps = [ "//content" ]
@@ -88,6 +89,7 @@ source_set("static_switches") {
   deps = [
     "//build:chromeos_buildflags",
     "//media:media_buildflags",
+    "//tools/v8_context_snapshot:buildflags",
   ]
 }
 
@@ -106,6 +108,7 @@ source_set("switches") {
   deps = [
     "//build:chromeos_buildflags",
     "//media:media_buildflags",
+    "//tools/v8_context_snapshot:buildflags",
   ]
 
   configs += [ "//content:content_implementation" ]
@@ -219,7 +222,6 @@ source_set("common_sources") {
   if (is_win) {
     sources += [
       "font_cache_dispatcher_win.h",
-      "prefetch_type_win.h",
       "sandbox_init_win.h",
     ]
   }
@@ -255,6 +257,7 @@ source_set("common_sources") {
     "//services/service_manager/public/mojom",
     "//third_party/blink/public:blink_headers",
     "//third_party/blink/public/mojom:mojom_platform_headers",
+    "//tools/v8_context_snapshot:buildflags",
     "//ui/accessibility",
     "//ui/base/cursor/mojom:cursor_type",
     "//ui/gfx/geometry",
@@ -265,6 +268,7 @@ source_set("common_sources") {
     ":content_descriptor_keys",
     "//build:branding_buildflags",
     "//build:chromeos_buildflags",
+    "//build/config/chromebox_for_meetings:buildflags",
 
     # This looks needless as we have //content/common in public_deps, but it's
     # needed because of allow_circular_includes_from.

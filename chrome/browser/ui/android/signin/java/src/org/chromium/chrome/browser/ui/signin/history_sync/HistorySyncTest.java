@@ -12,6 +12,8 @@ import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.hamcrest.Matchers.allOf;
+import static org.junit.Assert.assertNotNull;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -95,11 +97,32 @@ public class HistorySyncTest {
         histogramWatcher.assertExpected();
         onView(withId(R.id.sync_consent_title)).check(matches(isDisplayed()));
         onView(withId(R.id.sync_consent_subtitle)).check(matches(isDisplayed()));
-        onView(withId(R.id.account_image)).check(matches(isDisplayed()));
+        onView(withId(R.id.history_sync_account_image)).check(matches(isDisplayed()));
         onView(withId(R.id.history_sync_illustration)).check(matches(isDisplayed()));
         onView(withText(R.string.signin_accept_button)).check(matches(isDisplayed()));
         onView(withText(R.string.no_thanks)).check(matches(isDisplayed()));
-        onView(withId(R.id.sync_consent_details_description)).check(matches(isDisplayed()));
+        onView(
+                        allOf(
+                                withId(R.id.sync_consent_details_description),
+                                withText(R.string.history_sync_footer)))
+                .check(matches(isDisplayed()));
+    }
+
+    @Test
+    @MediumTest
+    public void testFooterStringWithEmail() {
+        String expectedFooter =
+                mActivityTestRule
+                        .getActivity()
+                        .getString(
+                                R.string.history_sync_signed_in_footer,
+                                mSigninTestRule.getPrimaryAccount(ConsentLevel.SIGNIN).getEmail());
+
+        buildHistorySyncCoordinator(
+                /* showEmailInFooter= */ true, /* shouldSignOutOnDecline= */ false);
+
+        onView(allOf(withId(R.id.sync_consent_details_description), withText(expectedFooter)))
+                .check(matches(isDisplayed()));
     }
 
     @Test
@@ -131,6 +154,25 @@ public class HistorySyncTest {
         histogramWatcher.assertExpected();
         verifyNoInteractions(mSyncServiceMock);
         verify(mHistorySyncDelegateMock).dismissHistorySync();
+        assertNotNull(mSigninTestRule.getPrimaryAccount(ConsentLevel.SIGNIN));
+    }
+
+    @Test
+    @MediumTest
+    public void testNegativeButton_shouldSignOutOnDecline() {
+        buildHistorySyncCoordinator(
+                /* showEmailInFooter= */ false, /* shouldSignOutOnDecline= */ true);
+        HistogramWatcher histogramWatcher =
+                HistogramWatcher.newSingleRecordWatcher(
+                        "Signin.HistorySyncOptIn.Declined", SIGNIN_ACCESS_POINT);
+
+        onView(withText(R.string.no_thanks)).perform(click());
+
+        histogramWatcher.assertExpected();
+        verifyNoInteractions(mSyncServiceMock);
+        verify(mHistorySyncDelegateMock, atLeastOnce()).dismissHistorySync();
+        CriteriaHelper.pollUiThread(
+                () -> mSigninTestRule.getPrimaryAccount(ConsentLevel.SIGNIN) == null);
     }
 
     @Test
@@ -150,6 +192,11 @@ public class HistorySyncTest {
     }
 
     private void buildHistorySyncCoordinator() {
+        buildHistorySyncCoordinator(false, false);
+    }
+
+    private void buildHistorySyncCoordinator(
+            boolean showEmailInFooter, boolean shouldSignOutOnDecline) {
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     mHistorySyncCoordinator =
@@ -157,7 +204,10 @@ public class HistorySyncTest {
                                     mActivityTestRule.getActivity(),
                                     mHistorySyncDelegateMock,
                                     ProfileManager.getLastUsedRegularProfile(),
-                                    SIGNIN_ACCESS_POINT);
+                                    SIGNIN_ACCESS_POINT,
+                                    showEmailInFooter,
+                                    shouldSignOutOnDecline,
+                                    null);
                     mActivityTestRule
                             .getActivity()
                             .setContentView(mHistorySyncCoordinator.getView());

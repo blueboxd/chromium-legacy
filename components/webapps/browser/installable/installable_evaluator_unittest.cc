@@ -9,6 +9,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
+#include "components/webapps/browser/features.h"
 #include "components/webapps/browser/installable/installable_logging.h"
 #include "components/webapps/browser/installable/installable_manager.h"
 #include "content/public/common/content_features.h"
@@ -89,6 +90,7 @@ class InstallableEvaluatorUnitTest : public content::RenderViewHostTestHarness {
     manifest->start_url = document_url;
     manifest->scope = document_url.GetWithoutFilename();
     manifest->id = document_url.GetWithoutRef();
+    page_data_->manifest_->fetched = false;
     page_data_->OnManifestFetched(std::move(manifest), /*manifest_url=*/GURL(),
                                   InstallableStatusCode::NO_ERROR_DETECTED);
   }
@@ -174,17 +176,17 @@ INSTANTIATE_TEST_SUITE_P(
 
 TEST_P(InstallableEvaluatorCriteriaUnitTest, UnsetManifest) {
   web_contents_tester()->NavigateAndCommit(GURL("https://www.example.com"));
+  SetManifestAsDefault(GURL("https://www.example.com"));
   TestCheckInstallability(
-      InstallableStatusCode::MANIFEST_PARSING_OR_NETWORK_ERROR,
-      InstallableStatusCode::MANIFEST_PARSING_OR_NETWORK_ERROR,
+      InstallableStatusCode::NO_MANIFEST, InstallableStatusCode::NO_MANIFEST,
       InstallableStatusCode::MANIFEST_MISSING_NAME_OR_SHORT_NAME);
 
   web_contents_tester()->NavigateAndCommit(
       GURL("https://www.example.com/path/page.html"));
-  TestCheckInstallability(
-      InstallableStatusCode::MANIFEST_PARSING_OR_NETWORK_ERROR,
-      InstallableStatusCode::MANIFEST_PARSING_OR_NETWORK_ERROR,
-      InstallableStatusCode::MANIFEST_PARSING_OR_NETWORK_ERROR);
+  SetManifestAsDefault(GURL("https://www.example.com/path/page.html"));
+  TestCheckInstallability(InstallableStatusCode::NO_MANIFEST,
+                          InstallableStatusCode::NO_MANIFEST,
+                          InstallableStatusCode::NO_MANIFEST);
 }
 
 TEST_P(InstallableEvaluatorCriteriaUnitTest, ManifestParsingOrNetworkError) {
@@ -213,11 +215,15 @@ TEST_P(InstallableEvaluatorCriteriaUnitTest, CheckStartUrl) {
                           InstallableStatusCode::NO_ERROR_DETECTED,
                           InstallableStatusCode::NO_ERROR_DETECTED);
 
-  // No manifest start_url or invalid
+  // No valid specified start_url, but has default manifest start_url.
   manifest()->start_url = GURL("https://www.example.com");
   manifest()->has_valid_specified_start_url = false;
+  InstallableStatusCode expected_url_result =
+      base::FeatureList::IsEnabled(features::kUniversalInstallDefaultUrl)
+          ? InstallableStatusCode::NO_ERROR_DETECTED
+          : InstallableStatusCode::START_URL_NOT_VALID;
   TestCheckInstallability(InstallableStatusCode::START_URL_NOT_VALID,
-                          InstallableStatusCode::START_URL_NOT_VALID,
+                          expected_url_result,
                           InstallableStatusCode::NO_ERROR_DETECTED);
 
   // Valid application_url
@@ -234,17 +240,17 @@ TEST_P(InstallableEvaluatorCriteriaUnitTest, CheckStartUrl) {
   metadata()->application_url = GURL();
   manifest()->has_valid_specified_start_url = false;
   TestCheckInstallability(InstallableStatusCode::START_URL_NOT_VALID,
-                          InstallableStatusCode::START_URL_NOT_VALID,
+                          expected_url_result,
                           InstallableStatusCode::NO_ERROR_DETECTED);
 
-  // No start_url, Not root scope page
+  // No valid specified start_url, but has default manifest start_url, Not root
+  // scope page
   web_contents_tester()->NavigateAndCommit(
       GURL("https://www.example.com/path/pageB"));
   manifest()->start_url = GURL("https://www.example.com/pageB");
   manifest()->has_valid_specified_start_url = false;
   TestCheckInstallability(InstallableStatusCode::START_URL_NOT_VALID,
-                          InstallableStatusCode::START_URL_NOT_VALID,
-                          InstallableStatusCode::START_URL_NOT_VALID);
+                          expected_url_result, expected_url_result);
 }
 
 TEST_P(InstallableEvaluatorCriteriaUnitTest, CheckNameOrShortName) {
@@ -658,6 +664,7 @@ TEST_F(InstallableEvaluatorUnitTest, ValidMetadataRootScopePage) {
   // Test that a root-scoped page, with no manifest and a valid metadata is
   // installable.
   web_contents_tester()->NavigateAndCommit(GURL("https://www.example.com"));
+  SetManifestAsDefault(GURL("https://www.example.com"));
   SetMetadata(GetWebPageMetadata());
   AddFavicon();
 

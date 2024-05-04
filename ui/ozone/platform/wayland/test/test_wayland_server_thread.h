@@ -11,6 +11,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/functional/callback_forward.h"
 #include "base/memory/raw_ptr.h"
 #include "base/message_loop/message_pump_libevent.h"
 #include "base/threading/thread.h"
@@ -32,7 +33,6 @@
 #include "ui/ozone/platform/wayland/test/test_surface_augmenter.h"
 #include "ui/ozone/platform/wayland/test/test_viewporter.h"
 #include "ui/ozone/platform/wayland/test/test_wp_pointer_gestures.h"
-#include "ui/ozone/platform/wayland/test/test_zaura_output_manager.h"
 #include "ui/ozone/platform/wayland/test/test_zaura_output_manager_v2.h"
 #include "ui/ozone/platform/wayland/test/test_zaura_shell.h"
 #include "ui/ozone/platform/wayland/test/test_zcr_stylus.h"
@@ -56,7 +56,6 @@ struct DisplayDeleter {
 enum class PrimarySelectionProtocol { kNone, kGtk, kZwp };
 enum class ShouldUseExplicitSynchronizationProtocol { kNone, kUse };
 enum class EnableAuraShellProtocol { kEnabled, kDisabled };
-enum class AuraOutputManagerProtocol { kDisabled, kEnabledV1, kEnabledV2 };
 
 struct ServerConfig {
   TestZcrTextInputExtensionV1::Version text_input_extension_version =
@@ -70,8 +69,6 @@ struct ServerConfig {
       EnableAuraShellProtocol::kDisabled;
   bool surface_submission_in_pixel_coordinates = true;
   bool supports_viewporter_surface_scaling = false;
-  AuraOutputManagerProtocol aura_output_manager_protocol =
-      AuraOutputManagerProtocol::kDisabled;
 };
 
 class TestWaylandServerThread;
@@ -113,6 +110,10 @@ class TestWaylandServerThread : public TestOutput::Delegate,
   void RunAndWait(base::OnceCallback<void(TestWaylandServerThread*)> callback);
   void RunAndWait(base::OnceClosure closure);
 
+  // Posts a 'callback' or 'closure' to the server thread.
+  void Post(base::OnceCallback<void(TestWaylandServerThread*)> callback);
+  void Post(base::OnceClosure closure);
+
   // Returns WpPresentation. If it hasn't been initialized yet, initializes that
   // first and then returns.
   MockWpPresentation* EnsureAndGetWpPresentation();
@@ -144,18 +145,9 @@ class TestWaylandServerThread : public TestOutput::Delegate,
                          const TestOutputMetrics& metrics) override;
   void OnTestOutputGlobalDestroy(TestOutput* test_output) override;
 
-  // Called when the Flush() is called for a `test_output`. When called sends
-  // the corresponding events for the `metrics` to clients of the
-  // aura output manager.
-  void OnTestOutputMetricsFlush(TestOutput* test_output,
-                                const TestOutputMetrics& metrics);
-
   TestDataDeviceManager* data_device_manager() { return &data_device_manager_; }
   TestSeat* seat() { return &seat_; }
   MockXdgShell* xdg_shell() { return &xdg_shell_; }
-  TestZAuraOutputManager* zaura_output_manager() {
-    return &zaura_output_manager_;
-  }
   TestZAuraOutputManagerV2* zaura_output_manager_v2() {
     return &zaura_output_manager_v2_;
   }
@@ -248,7 +240,6 @@ class TestWaylandServerThread : public TestOutput::Delegate,
   TestSeat seat_;
   TestZXdgOutputManager zxdg_output_manager_;
   MockXdgShell xdg_shell_;
-  TestZAuraOutputManager zaura_output_manager_;
   TestZAuraOutputManagerV2 zaura_output_manager_v2_;
   TestZAuraShell zaura_shell_;
   ::testing::NiceMock<MockZcrColorManagerV1> zcr_color_manager_v1_;
@@ -269,6 +260,8 @@ class TestWaylandServerThread : public TestOutput::Delegate,
   raw_ptr<OutputDelegate> output_delegate_ = nullptr;
 
   THREAD_CHECKER(thread_checker_);
+
+  base::WeakPtrFactory<TestWaylandServerThread> weak_ptr_factory_{this};
 };
 
 class TestWaylandServerThread::OutputDelegate {

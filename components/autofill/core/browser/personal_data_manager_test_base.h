@@ -6,7 +6,6 @@
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_PERSONAL_DATA_MANAGER_TEST_BASE_H_
 
 #include "base/test/task_environment.h"
-#include "components/autofill/core/browser/personal_data_manager_observer.h"
 #include "components/autofill/core/browser/personal_data_manager_test_utils.h"
 #include "components/autofill/core/browser/strike_databases/test_inmemory_strike_database.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
@@ -18,8 +17,6 @@
 #include "components/sync/test/test_sync_service.h"
 #include "components/webdata/common/web_data_service_base.h"
 #include "components/webdata/common/web_database_service.h"
-#include "services/network/test/test_url_loader_factory.h"
-#include "testing/gmock/include/gmock/gmock.h"
 
 namespace autofill {
 
@@ -34,16 +31,18 @@ class PersonalDataManagerTestBase {
   void SetUpTest();
   void TearDownTest();
 
-  void ResetPersonalDataManager(bool use_sync_transport_mode,
-                                PersonalDataManager* personal_data);
+  // Signs in through the `identity_test_env_` and makes the primary account
+  // info available to the `sync_service_`. Depending on
+  // `use_sync_transport_mode`, sync-the-feature is either activated or not.
+  void MakePrimaryAccountAvailable(bool use_sync_transport_mode);
 
-  [[nodiscard]] bool TurnOnSyncFeature(PersonalDataManager* personal_data);
-
-  void SetServerCards(std::vector<CreditCard> server_cards);
+  // Calls `MakePrimaryAccountAvailable()`, initializes a PersonalDataManager
+  // and waits for the `Refresh()` to complete.
+  std::unique_ptr<PersonalDataManager> InitPersonalDataManager(
+      bool use_sync_transport_mode);
 
   base::test::TaskEnvironment task_environment_;
   std::unique_ptr<PrefService> prefs_;
-  network::TestURLLoaderFactory test_url_loader_factory_;
   signin::IdentityTestEnvironment identity_test_env_;
   syncer::TestSyncService sync_service_;
   scoped_refptr<AutofillWebDataService> profile_database_service_;
@@ -53,7 +52,6 @@ class PersonalDataManagerTestBase {
   raw_ptr<PaymentsAutofillTable> profile_autofill_table_;  // weak ref
   raw_ptr<PaymentsAutofillTable> account_autofill_table_;  // weak ref
   std::unique_ptr<StrikeDatabaseBase> strike_database_;
-  testing::NiceMock<PersonalDataLoadedObserverMock> personal_data_observer_;
 };
 
 }  // namespace autofill

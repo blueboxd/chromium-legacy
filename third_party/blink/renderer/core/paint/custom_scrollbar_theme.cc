@@ -138,6 +138,7 @@ void CustomScrollbarTheme::PaintScrollCorner(
     const DisplayItemClient& display_item_client,
     const gfx::Rect& corner_rect,
     mojom::blink::ColorScheme color_scheme,
+    bool in_forced_colors,
     const ui::ColorProvider* color_provider) {
   if (DrawingRecorder::UseCachedDrawingIfPossible(context, display_item_client,
                                                   DisplayItem::kScrollCorner))
@@ -209,8 +210,10 @@ void CustomScrollbarTheme::PaintIntoRect(
     const LayoutCustomScrollbarPart& layout_custom_scrollbar_part,
     GraphicsContext& graphics_context,
     const PhysicalRect& rect) {
-  PaintInfo paint_info(graphics_context, CullRect(ToPixelSnappedRect(rect)),
-                       PaintPhase::kForeground);
+  PaintInfo paint_info(
+      graphics_context, CullRect(ToPixelSnappedRect(rect)),
+      PaintPhase::kForeground,
+      layout_custom_scrollbar_part.ChildPaintBlockedByDisplayLock());
   ObjectPainter(layout_custom_scrollbar_part)
       .PaintAllPhasesAtomically(paint_info);
 }

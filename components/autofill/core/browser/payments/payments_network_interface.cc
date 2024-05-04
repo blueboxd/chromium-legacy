@@ -225,6 +225,16 @@ PaymentsNetworkInterface::GetDetailsForEnrollmentResponseDetails::
 
 PaymentsNetworkInterface::UploadCardResponseDetails::UploadCardResponseDetails() =
     default;
+PaymentsNetworkInterface::UploadCardResponseDetails::UploadCardResponseDetails(
+    const UploadCardResponseDetails&) = default;
+PaymentsNetworkInterface::UploadCardResponseDetails::UploadCardResponseDetails(
+    UploadCardResponseDetails&&) = default;
+PaymentsNetworkInterface::UploadCardResponseDetails&
+PaymentsNetworkInterface::UploadCardResponseDetails::operator=(
+    const UploadCardResponseDetails&) = default;
+PaymentsNetworkInterface::UploadCardResponseDetails&
+PaymentsNetworkInterface::UploadCardResponseDetails::operator=(
+    UploadCardResponseDetails&&) = default;
 PaymentsNetworkInterface::UploadCardResponseDetails::~UploadCardResponseDetails() =
     default;
 
@@ -267,8 +277,9 @@ void PaymentsNetworkInterface::GetUnmaskDetails(
 
 void PaymentsNetworkInterface::UnmaskCard(
     const PaymentsNetworkInterface::UnmaskRequestDetails& request_details,
-    base::OnceCallback<void(AutofillClient::PaymentsRpcResult,
-                            PaymentsNetworkInterface::UnmaskResponseDetails&)> callback) {
+    base::OnceCallback<void(
+        AutofillClient::PaymentsRpcResult,
+        const PaymentsNetworkInterface::UnmaskResponseDetails&)> callback) {
   IssueRequest(std::make_unique<UnmaskCardRequest>(
       request_details,
       account_info_getter_->IsSyncFeatureEnabledForPaymentsServerMetrics(),
@@ -328,13 +339,14 @@ void PaymentsNetworkInterface::GetIbanUploadDetails(
     const std::string& app_locale,
     int64_t billing_customer_number,
     int billable_service_number,
+    const std::string& country_code,
     base::OnceCallback<void(AutofillClient::PaymentsRpcResult,
                             const std::u16string&,
                             std::unique_ptr<base::Value::Dict>)> callback) {
   IssueRequest(std::make_unique<GetIbanUploadDetailsRequest>(
       account_info_getter_->IsSyncFeatureEnabledForPaymentsServerMetrics(),
       app_locale, billing_customer_number, billable_service_number,
-      std::move(callback)));
+      country_code, std::move(callback)));
 }
 
 void PaymentsNetworkInterface::UploadIban(

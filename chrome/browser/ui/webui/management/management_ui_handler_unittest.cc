@@ -30,7 +30,6 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chromeos/ash/components/settings/cros_settings_names.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/enterprise/browser/reporting/common_pref_names.h"
 #include "components/enterprise/browser/reporting/real_time_report_type.h"
@@ -90,6 +89,7 @@
 #include "chromeos/ash/components/network/network_state_handler.h"
 #include "chromeos/ash/components/network/proxy/proxy_config_handler.h"
 #include "chromeos/ash/components/network/proxy/ui_proxy_config_service.h"
+#include "chromeos/ash/components/settings/cros_settings_names.h"
 #include "chromeos/ash/components/system/fake_statistics_provider.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "components/account_id/account_id.h"
@@ -827,8 +827,6 @@ TEST_F(ManagementUIHandlerTests,
                 IDS_MANAGEMENT_BROWSER_NOTICE, chrome::kManagedUiLearnMoreUrl,
                 base::EscapeForHTML(l10n_util::GetStringUTF16(
                     IDS_MANAGEMENT_LEARN_MORE_ACCCESSIBILITY_TEXT))));
-  EXPECT_EQ(GetPageSubtitle(),
-            l10n_util::GetStringUTF16(IDS_MANAGEMENT_SUBTITLE));
   EXPECT_TRUE(GetManaged());
 }
 
@@ -848,8 +846,6 @@ TEST_F(ManagementUIHandlerTests,
                 IDS_MANAGEMENT_BROWSER_NOTICE, chrome::kManagedUiLearnMoreUrl,
                 base::EscapeForHTML(l10n_util::GetStringUTF16(
                     IDS_MANAGEMENT_LEARN_MORE_ACCCESSIBILITY_TEXT))));
-  EXPECT_EQ(GetPageSubtitle(),
-            l10n_util::GetStringUTF16(IDS_MANAGEMENT_SUBTITLE));
   EXPECT_TRUE(GetManaged());
 }
 
@@ -875,8 +871,6 @@ TEST_F(ManagementUIHandlerTests,
           IDS_MANAGEMENT_NOT_MANAGED_NOTICE, chrome::kManagedUiLearnMoreUrl,
           base::EscapeForHTML(l10n_util::GetStringUTF16(
               IDS_MANAGEMENT_LEARN_MORE_ACCCESSIBILITY_TEXT))));
-  EXPECT_EQ(GetPageSubtitle(),
-            l10n_util::GetStringUTF16(IDS_MANAGEMENT_NOT_MANAGED_SUBTITLE));
   EXPECT_FALSE(GetManaged());
 }
 
@@ -922,9 +916,6 @@ TEST_F(ManagementUIHandlerTests,
                 IDS_MANAGEMENT_BROWSER_NOTICE, chrome::kManagedUiLearnMoreUrl,
                 base::EscapeForHTML(l10n_util::GetStringUTF16(
                     IDS_MANAGEMENT_LEARN_MORE_ACCCESSIBILITY_TEXT))));
-  EXPECT_EQ(GetPageSubtitle(),
-            l10n_util::GetStringFUTF16(IDS_MANAGEMENT_SUBTITLE_MANAGED_BY,
-                                       base::UTF8ToUTF16(domain)));
   EXPECT_TRUE(GetManaged());
 }
 

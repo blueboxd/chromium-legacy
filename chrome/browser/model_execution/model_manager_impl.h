@@ -34,13 +34,20 @@ class ModelManagerImpl : public content::DocumentUserData<ModelManagerImpl>,
 
   explicit ModelManagerImpl(content::RenderFrameHost* rfh);
 
+  // Checks if the model path configured via command line is valid.
+  bool IsModelPathValid(const std::string& model_path);
+
   // `blink::mojom::ModelManager` implementation.
   void CanCreateGenericSession(
       CanCreateGenericSessionCallback callback) override;
 
   void CreateGenericSession(
       mojo::PendingReceiver<::blink::mojom::ModelGenericSession> receiver,
+      blink::mojom::ModelGenericSessionSamplingParamsPtr sampling_params,
       CreateGenericSessionCallback callback) override;
+
+  void GetDefaultGenericSessionSamplingParams(
+      GetDefaultGenericSessionSamplingParamsCallback callback) override;
 
   base::WeakPtr<content::BrowserContext> browser_context_;
   mojo::Receiver<blink::mojom::ModelManager> receiver_{this};

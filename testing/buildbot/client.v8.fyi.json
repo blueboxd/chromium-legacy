@@ -13,7 +13,8 @@
           "--stable-jobs",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-cmd-decoder=validating",
           "--enforce-browser-version",
-          "--jobs=1"
+          "--jobs=1",
+          "--initial-find-device-attempts=3"
         ],
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
@@ -50,7 +51,9 @@
           "--dont-restore-color-profile-after-test",
           "--test-machine-name",
           "${buildername}",
-          "--git-revision=${got_cr_revision}"
+          "--git-revision=${got_cr_revision}",
+          "--jobs=1",
+          "--initial-find-device-attempts=3"
         ],
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
@@ -88,7 +91,9 @@
           "-v",
           "--stable-jobs",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
-          "--enforce-browser-version"
+          "--enforce-browser-version",
+          "--jobs=1",
+          "--initial-find-device-attempts=3"
         ],
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
@@ -121,7 +126,9 @@
           "-v",
           "--stable-jobs",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
-          "--enforce-browser-version"
+          "--enforce-browser-version",
+          "--jobs=1",
+          "--initial-find-device-attempts=3"
         ],
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
@@ -158,8 +165,9 @@
           "--dont-restore-color-profile-after-test",
           "--test-machine-name",
           "${buildername}",
+          "--git-revision=${got_cr_revision}",
           "--jobs=1",
-          "--git-revision=${got_cr_revision}"
+          "--initial-find-device-attempts=3"
         ],
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
@@ -198,7 +206,9 @@
           "--stable-jobs",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-cmd-decoder=validating --force-online-connection-state-for-indicator",
           "--enforce-browser-version",
-          "--dont-restore-color-profile-after-test"
+          "--dont-restore-color-profile-after-test",
+          "--jobs=1",
+          "--initial-find-device-attempts=3"
         ],
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
@@ -232,7 +242,8 @@
           "--stable-jobs",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--enforce-browser-version",
-          "--jobs=1"
+          "--jobs=1",
+          "--initial-find-device-attempts=3"
         ],
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
@@ -267,7 +278,8 @@
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=gles --use-cmd-decoder=passthrough --force_high_performance_gpu",
           "--enforce-browser-version",
           "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl1_conformance_android_runtimes.json",
-          "--jobs=1"
+          "--jobs=1",
+          "--initial-find-device-attempts=3"
         ],
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
@@ -303,7 +315,8 @@
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-cmd-decoder=validating --force_high_performance_gpu",
           "--enforce-browser-version",
           "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl1_conformance_android_runtimes.json",
-          "--jobs=1"
+          "--jobs=1",
+          "--initial-find-device-attempts=3"
         ],
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
@@ -384,7 +397,8 @@
           "--dont-restore-color-profile-after-test",
           "--test-machine-name",
           "${buildername}",
-          "--git-revision=${got_cr_revision}"
+          "--git-revision=${got_cr_revision}",
+          "--jobs=4"
         ],
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
@@ -420,7 +434,8 @@
           "-v",
           "--stable-jobs",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
-          "--enforce-browser-version"
+          "--enforce-browser-version",
+          "--jobs=4"
         ],
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
@@ -451,7 +466,8 @@
           "-v",
           "--stable-jobs",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
-          "--enforce-browser-version"
+          "--enforce-browser-version",
+          "--jobs=4"
         ],
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
@@ -486,8 +502,8 @@
           "--dont-restore-color-profile-after-test",
           "--test-machine-name",
           "${buildername}",
-          "--jobs=4",
-          "--git-revision=${got_cr_revision}"
+          "--git-revision=${got_cr_revision}",
+          "--jobs=4"
         ],
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
@@ -524,7 +540,8 @@
           "--stable-jobs",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-cmd-decoder=passthrough --use-gl=angle",
           "--enforce-browser-version",
-          "--dont-restore-color-profile-after-test"
+          "--dont-restore-color-profile-after-test",
+          "--jobs=4"
         ],
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
@@ -591,8 +608,8 @@
           "--dont-restore-color-profile-after-test",
           "--test-machine-name",
           "${buildername}",
-          "--jobs=4",
-          "--git-revision=${got_cr_revision}"
+          "--git-revision=${got_cr_revision}",
+          "--jobs=4"
         ],
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
@@ -615,6 +632,41 @@
           },
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "telemetry_gpu_integration_test",
+        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/"
+      },
+      {
+        "args": [
+          "webgl2_conformance",
+          "--show-stdout",
+          "--browser=release",
+          "--passthrough",
+          "-v",
+          "--stable-jobs",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=gl --use-cmd-decoder=passthrough --force_high_performance_gpu",
+          "--enforce-browser-version",
+          "--webgl-conformance-version=2.0.1",
+          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_linux_runtimes.json",
+          "--jobs=4"
+        ],
+        "merge": {
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "webgl2_conformance_gl_passthrough_tests",
+        "resultdb": {
+          "enable": true,
+          "has_native_resultdb_integration": true
+        },
+        "swarming": {
+          "dimensions": {
+            "gpu": "10de:2184-440.100",
+            "os": "Ubuntu-18.04.5|Ubuntu-18.04.6",
+            "pool": "chromium.tests.gpu"
+          },
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 5
         },
         "test": "telemetry_gpu_integration_test",
         "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/"
@@ -702,7 +754,8 @@
           "--dont-restore-color-profile-after-test",
           "--test-machine-name",
           "${buildername}",
-          "--git-revision=${got_cr_revision}"
+          "--git-revision=${got_cr_revision}",
+          "--jobs=4"
         ],
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
@@ -738,7 +791,8 @@
           "-v",
           "--stable-jobs",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
-          "--enforce-browser-version"
+          "--enforce-browser-version",
+          "--jobs=4"
         ],
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
@@ -769,7 +823,8 @@
           "-v",
           "--stable-jobs",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
-          "--enforce-browser-version"
+          "--enforce-browser-version",
+          "--jobs=4"
         ],
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
@@ -804,8 +859,8 @@
           "--dont-restore-color-profile-after-test",
           "--test-machine-name",
           "${buildername}",
-          "--jobs=4",
-          "--git-revision=${got_cr_revision}"
+          "--git-revision=${got_cr_revision}",
+          "--jobs=4"
         ],
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
@@ -842,7 +897,8 @@
           "--stable-jobs",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-cmd-decoder=passthrough --use-gl=angle",
           "--enforce-browser-version",
-          "--dont-restore-color-profile-after-test"
+          "--dont-restore-color-profile-after-test",
+          "--jobs=4"
         ],
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
@@ -909,8 +965,8 @@
           "--dont-restore-color-profile-after-test",
           "--test-machine-name",
           "${buildername}",
-          "--jobs=4",
-          "--git-revision=${got_cr_revision}"
+          "--git-revision=${got_cr_revision}",
+          "--jobs=4"
         ],
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
@@ -1000,7 +1056,7 @@
             "cpu": "x86-64",
             "display_attached": "1",
             "gpu": "8086:3e9b",
-            "os": "Mac-13.5"
+            "os": "Mac-14.4.1"
           },
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -1033,7 +1089,7 @@
             "cpu": "x86-64",
             "display_attached": "1",
             "gpu": "8086:3e9b",
-            "os": "Mac-13.5"
+            "os": "Mac-14.4.1"
           },
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -1066,7 +1122,7 @@
             "cpu": "x86-64",
             "display_attached": "1",
             "gpu": "8086:3e9b",
-            "os": "Mac-13.5"
+            "os": "Mac-14.4.1"
           },
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -1087,7 +1143,8 @@
           "--dont-restore-color-profile-after-test",
           "--test-machine-name",
           "${buildername}",
-          "--git-revision=${got_cr_revision}"
+          "--git-revision=${got_cr_revision}",
+          "--jobs=4"
         ],
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
@@ -1107,7 +1164,7 @@
             "cpu": "x86-64",
             "display_attached": "1",
             "gpu": "8086:3e9b",
-            "os": "Mac-13.5"
+            "os": "Mac-14.4.1"
           },
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -1128,7 +1185,8 @@
           "--dont-restore-color-profile-after-test",
           "--test-machine-name",
           "${buildername}",
-          "--git-revision=${got_cr_revision}"
+          "--git-revision=${got_cr_revision}",
+          "--jobs=4"
         ],
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
@@ -1148,7 +1206,7 @@
             "cpu": "x86-64",
             "display_attached": "1",
             "gpu": "8086:3e9b",
-            "os": "Mac-13.5"
+            "os": "Mac-14.4.1"
           },
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -1169,7 +1227,8 @@
           "--dont-restore-color-profile-after-test",
           "--test-machine-name",
           "${buildername}",
-          "--git-revision=${got_cr_revision}"
+          "--git-revision=${got_cr_revision}",
+          "--jobs=4"
         ],
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
@@ -1189,7 +1248,7 @@
             "cpu": "x86-64",
             "display_attached": "1",
             "gpu": "8086:3e9b",
-            "os": "Mac-13.5"
+            "os": "Mac-14.4.1"
           },
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -1206,7 +1265,8 @@
           "-v",
           "--stable-jobs",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
-          "--enforce-browser-version"
+          "--enforce-browser-version",
+          "--jobs=4"
         ],
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
@@ -1221,7 +1281,7 @@
             "cpu": "x86-64",
             "display_attached": "1",
             "gpu": "8086:3e9b",
-            "os": "Mac-13.5"
+            "os": "Mac-14.4.1"
           },
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -1238,7 +1298,8 @@
           "-v",
           "--stable-jobs",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
-          "--enforce-browser-version"
+          "--enforce-browser-version",
+          "--jobs=4"
         ],
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
@@ -1253,7 +1314,7 @@
             "cpu": "x86-64",
             "display_attached": "1",
             "gpu": "8086:3e9b",
-            "os": "Mac-13.5"
+            "os": "Mac-14.4.1"
           },
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -1274,8 +1335,8 @@
           "--dont-restore-color-profile-after-test",
           "--test-machine-name",
           "${buildername}",
-          "--jobs=4",
-          "--git-revision=${got_cr_revision}"
+          "--git-revision=${got_cr_revision}",
+          "--jobs=4"
         ],
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
@@ -1295,7 +1356,7 @@
             "cpu": "x86-64",
             "display_attached": "1",
             "gpu": "8086:3e9b",
-            "os": "Mac-13.5"
+            "os": "Mac-14.4.1"
           },
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -1316,8 +1377,8 @@
           "--dont-restore-color-profile-after-test",
           "--test-machine-name",
           "${buildername}",
-          "--jobs=4",
-          "--git-revision=${got_cr_revision}"
+          "--git-revision=${got_cr_revision}",
+          "--jobs=4"
         ],
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
@@ -1337,7 +1398,7 @@
             "cpu": "x86-64",
             "display_attached": "1",
             "gpu": "8086:3e9b",
-            "os": "Mac-13.5"
+            "os": "Mac-14.4.1"
           },
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -1358,8 +1419,8 @@
           "--dont-restore-color-profile-after-test",
           "--test-machine-name",
           "${buildername}",
-          "--jobs=4",
-          "--git-revision=${got_cr_revision}"
+          "--git-revision=${got_cr_revision}",
+          "--jobs=4"
         ],
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
@@ -1379,7 +1440,7 @@
             "cpu": "x86-64",
             "display_attached": "1",
             "gpu": "8086:3e9b",
-            "os": "Mac-13.5"
+            "os": "Mac-14.4.1"
           },
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -1397,7 +1458,8 @@
           "--stable-jobs",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-cmd-decoder=passthrough --use-gl=angle --use-angle=gl --disable-features=SkiaGraphite",
           "--enforce-browser-version",
-          "--dont-restore-color-profile-after-test"
+          "--dont-restore-color-profile-after-test",
+          "--jobs=4"
         ],
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
@@ -1412,7 +1474,7 @@
             "cpu": "x86-64",
             "display_attached": "1",
             "gpu": "8086:3e9b",
-            "os": "Mac-13.5"
+            "os": "Mac-14.4.1"
           },
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -1430,7 +1492,8 @@
           "--stable-jobs",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-cmd-decoder=passthrough --use-gl=angle --use-angle=metal --disable-features=SkiaGraphite",
           "--enforce-browser-version",
-          "--dont-restore-color-profile-after-test"
+          "--dont-restore-color-profile-after-test",
+          "--jobs=4"
         ],
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
@@ -1445,7 +1508,7 @@
             "cpu": "x86-64",
             "display_attached": "1",
             "gpu": "8086:3e9b",
-            "os": "Mac-13.5"
+            "os": "Mac-14.4.1"
           },
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -1463,7 +1526,8 @@
           "--stable-jobs",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-cmd-decoder=passthrough --use-gl=angle --use-angle=metal --enable-features=SkiaGraphite",
           "--enforce-browser-version",
-          "--dont-restore-color-profile-after-test"
+          "--dont-restore-color-profile-after-test",
+          "--jobs=4"
         ],
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
@@ -1478,7 +1542,7 @@
             "cpu": "x86-64",
             "display_attached": "1",
             "gpu": "8086:3e9b",
-            "os": "Mac-13.5"
+            "os": "Mac-14.4.1"
           },
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -1511,7 +1575,7 @@
             "cpu": "x86-64",
             "display_attached": "1",
             "gpu": "8086:3e9b",
-            "os": "Mac-13.5"
+            "os": "Mac-14.4.1"
           },
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -1544,7 +1608,7 @@
             "cpu": "x86-64",
             "display_attached": "1",
             "gpu": "8086:3e9b",
-            "os": "Mac-13.5"
+            "os": "Mac-14.4.1"
           },
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -1577,7 +1641,7 @@
             "cpu": "x86-64",
             "display_attached": "1",
             "gpu": "8086:3e9b",
-            "os": "Mac-13.5"
+            "os": "Mac-14.4.1"
           },
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -1610,7 +1674,7 @@
             "cpu": "x86-64",
             "display_attached": "1",
             "gpu": "8086:3e9b",
-            "os": "Mac-13.5"
+            "os": "Mac-14.4.1"
           },
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -1644,7 +1708,7 @@
             "cpu": "x86-64",
             "display_attached": "1",
             "gpu": "8086:3e9b",
-            "os": "Mac-13.5"
+            "os": "Mac-14.4.1"
           },
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
@@ -1664,8 +1728,8 @@
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=metal --use-cmd-decoder=passthrough --enable-features=EGLDualGPURendering,ForceHighPerformanceGPUForWebGL --disable-features=SkiaGraphite",
           "--enforce-browser-version",
           "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl1_conformance_mac_runtimes.json",
-          "--jobs=4",
-          "--enable-metal-debug-layers"
+          "--enable-metal-debug-layers",
+          "--jobs=4"
         ],
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
@@ -1680,7 +1744,7 @@
             "cpu": "x86-64",
             "display_attached": "1",
             "gpu": "8086:3e9b",
-            "os": "Mac-13.5"
+            "os": "Mac-14.4.1"
           },
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -1699,8 +1763,8 @@
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=metal --use-cmd-decoder=passthrough --enable-features=EGLDualGPURendering,ForceHighPerformanceGPUForWebGL,SkiaGraphite",
           "--enforce-browser-version",
           "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl1_conformance_mac_runtimes.json",
-          "--jobs=4",
-          "--enable-metal-debug-layers"
+          "--enable-metal-debug-layers",
+          "--jobs=4"
         ],
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
@@ -1715,7 +1779,7 @@
             "cpu": "x86-64",
             "display_attached": "1",
             "gpu": "8086:3e9b",
-            "os": "Mac-13.5"
+            "os": "Mac-14.4.1"
           },
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -1749,7 +1813,7 @@
             "cpu": "x86-64",
             "display_attached": "1",
             "gpu": "8086:3e9b",
-            "os": "Mac-13.5"
+            "os": "Mac-14.4.1"
           },
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -1868,10 +1932,7 @@
       {
         "args": [
           "--num-retries=3",
-          "--write-run-histories-to=${ISOLATED_OUTDIR}/run_histories.json",
-          "-t",
-          "Debug",
-          "--release"
+          "--write-run-histories-to=${ISOLATED_OUTDIR}/run_histories.json"
         ],
         "merge": {
           "args": [
@@ -1898,10 +1959,7 @@
       {
         "args": [
           "--num-retries=3",
-          "--write-run-histories-to=${ISOLATED_OUTDIR}/run_histories.json",
-          "-t",
-          "Debug",
-          "--release"
+          "--write-run-histories-to=${ISOLATED_OUTDIR}/run_histories.json"
         ],
         "merge": {
           "args": [
@@ -2019,7 +2077,7 @@
         "swarming": {
           "dimensions": {
             "cpu": "x86-64",
-            "os": "Mac-13"
+            "os": "Mac-14"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -2048,7 +2106,7 @@
         "swarming": {
           "dimensions": {
             "cpu": "x86-64",
-            "os": "Mac-13"
+            "os": "Mac-14"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 5
@@ -2076,7 +2134,7 @@
         "swarming": {
           "dimensions": {
             "cpu": "x86-64",
-            "os": "Mac-13"
+            "os": "Mac-14"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 7
@@ -2238,12 +2296,55 @@
           "--passthrough",
           "-v",
           "--stable-jobs",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-cmd-decoder=passthrough --use-gl=angle --enable-features=SkiaGraphite",
+          "--enforce-browser-version",
+          "--dont-restore-color-profile-after-test",
+          "--test-machine-name",
+          "${buildername}",
+          "--git-revision=${got_revision}",
+          "--jobs=4"
+        ],
+        "merge": {
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "expected_color_pixel_passthrough_graphite_test",
+        "precommit_args": [
+          "--gerrit-issue=${patch_issue}",
+          "--gerrit-patchset=${patch_set}",
+          "--buildbucket-id=${buildbucket_build_id}"
+        ],
+        "resultdb": {
+          "enable": true,
+          "has_native_resultdb_integration": true
+        },
+        "swarming": {
+          "dimensions": {
+            "display_attached": "1",
+            "gpu": "10de:2184-27.21.14.5638",
+            "os": "Windows-10-18363",
+            "pool": "chromium.tests.gpu"
+          },
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "telemetry_gpu_integration_test",
+        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/"
+      },
+      {
+        "args": [
+          "expected_color",
+          "--show-stdout",
+          "--browser=release",
+          "--passthrough",
+          "-v",
+          "--stable-jobs",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-cmd-decoder=passthrough --use-gl=angle",
           "--enforce-browser-version",
           "--dont-restore-color-profile-after-test",
           "--test-machine-name",
           "${buildername}",
-          "--git-revision=${got_cr_revision}"
+          "--git-revision=${got_cr_revision}",
+          "--jobs=4"
         ],
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
@@ -2280,7 +2381,8 @@
           "-v",
           "--stable-jobs",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
-          "--enforce-browser-version"
+          "--enforce-browser-version",
+          "--jobs=4"
         ],
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
@@ -2312,7 +2414,8 @@
           "-v",
           "--stable-jobs",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
-          "--enforce-browser-version"
+          "--enforce-browser-version",
+          "--jobs=4"
         ],
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
@@ -2343,13 +2446,55 @@
           "--passthrough",
           "-v",
           "--stable-jobs",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-cmd-decoder=passthrough --use-gl=angle --enable-features=SkiaGraphite",
+          "--enforce-browser-version",
+          "--dont-restore-color-profile-after-test",
+          "--test-machine-name",
+          "${buildername}",
+          "--git-revision=${got_revision}",
+          "--jobs=4"
+        ],
+        "merge": {
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "pixel_skia_gold_passthrough_graphite_test",
+        "precommit_args": [
+          "--gerrit-issue=${patch_issue}",
+          "--gerrit-patchset=${patch_set}",
+          "--buildbucket-id=${buildbucket_build_id}"
+        ],
+        "resultdb": {
+          "enable": true,
+          "has_native_resultdb_integration": true
+        },
+        "swarming": {
+          "dimensions": {
+            "display_attached": "1",
+            "gpu": "10de:2184-27.21.14.5638",
+            "os": "Windows-10-18363",
+            "pool": "chromium.tests.gpu"
+          },
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "telemetry_gpu_integration_test",
+        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/"
+      },
+      {
+        "args": [
+          "pixel",
+          "--show-stdout",
+          "--browser=release",
+          "--passthrough",
+          "-v",
+          "--stable-jobs",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-cmd-decoder=passthrough --use-gl=angle",
           "--enforce-browser-version",
           "--dont-restore-color-profile-after-test",
           "--test-machine-name",
           "${buildername}",
-          "--jobs=4",
-          "--git-revision=${got_cr_revision}"
+          "--git-revision=${got_cr_revision}",
+          "--jobs=4"
         ],
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
@@ -2385,9 +2530,44 @@
           "--passthrough",
           "-v",
           "--stable-jobs",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-cmd-decoder=passthrough --use-gl=angle --enable-features=SkiaGraphite",
+          "--enforce-browser-version",
+          "--dont-restore-color-profile-after-test",
+          "--jobs=4"
+        ],
+        "merge": {
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "screenshot_sync_passthrough_graphite_tests",
+        "resultdb": {
+          "enable": true,
+          "has_native_resultdb_integration": true
+        },
+        "swarming": {
+          "dimensions": {
+            "display_attached": "1",
+            "gpu": "10de:2184-27.21.14.5638",
+            "os": "Windows-10-18363",
+            "pool": "chromium.tests.gpu"
+          },
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "telemetry_gpu_integration_test",
+        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/"
+      },
+      {
+        "args": [
+          "screenshot_sync",
+          "--show-stdout",
+          "--browser=release",
+          "--passthrough",
+          "-v",
+          "--stable-jobs",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-cmd-decoder=passthrough --use-gl=angle",
           "--enforce-browser-version",
-          "--dont-restore-color-profile-after-test"
+          "--dont-restore-color-profile-after-test",
+          "--jobs=4"
         ],
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"

@@ -99,9 +99,6 @@ class FakeSkiaOutputSurface : public SkiaOutputSurface {
       std::vector<AggregatedRenderPassId> ids) override;
   void ScheduleOverlays(OverlayList overlays,
                         std::vector<gpu::SyncToken> sync_tokens) override {}
-#if BUILDFLAG(IS_WIN)
-  void SetEnableDCLayers(bool enable) override {}
-#endif
   void CopyOutput(const copy_output::RenderPassGeometry& geometry,
                   const gfx::ColorSpace& color_space,
                   std::unique_ptr<CopyOutputRequest> request,
@@ -178,6 +175,8 @@ class FakeSkiaOutputSurface : public SkiaOutputSurface {
                      const gfx::RectF& display_rect,
                      const gfx::RectF& crop_rect,
                      gfx::OverlayTransform transform) override {}
+
+  void CleanupImageProcessor() override {}
 #endif
 
  protected:

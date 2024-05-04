@@ -10,6 +10,7 @@ build_webui("build") {
 
   static_files = [
     "history.html",
+    "images/history_embeddings_promo.svg",
     "images/list.svg",
     "images/sign_in_promo_dark.svg",
     "images/sign_in_promo.svg",
@@ -18,9 +19,11 @@ build_webui("build") {
   # Files holding a Polymer element definition and have an equivalent .html file.
   web_component_files = [
     "app.ts",
+    "history_embeddings_promo.ts",
     "history_item.ts",
     "history_list.ts",
     "history_toolbar.ts",
+    "product_specifications_lists.ts",
     "router.ts",
     "side_bar.ts",
     "synced_device_card.ts",
@@ -53,6 +56,7 @@ build_webui("build") {
 
   ts_deps = [
     "//third_party/polymer/v3_0:library",
+    "//ui/webui/resources/cr_components/history:build_ts",
     "//ui/webui/resources/cr_components/history_clusters:build_ts",
     "//ui/webui/resources/cr_components/history_embeddings:build_ts",
     "//ui/webui/resources/cr_components/managed_footnote:build_ts",
@@ -61,6 +65,7 @@ build_webui("build") {
     "//ui/webui/resources/mojo:build_ts",
   ]
 
+  webui_context_type = "trusted"
   optimize = optimize_webui
   if (optimize) {
     optimize_webui_host = "history"

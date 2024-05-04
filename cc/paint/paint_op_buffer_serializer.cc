@@ -12,6 +12,7 @@
 #include "base/functional/bind.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/paint/clear_for_opaque_raster.h"
+#include "cc/paint/display_item_list.h"
 #include "cc/paint/paint_op_buffer_iterator.h"
 #include "cc/paint/paint_op_writer.h"
 #include "cc/paint/scoped_raster_flags.h"
@@ -190,10 +191,42 @@ void PaintOpBufferSerializer::SerializePreamble(SkCanvas* canvas,
   }
 }
 
-bool PaintOpBufferSerializer::WillSerializeNextOp(const PaintOp& op,
-                                                  SkCanvas* canvas,
-                                                  const PlaybackParams& params,
-                                                  float alpha) {
+template<>
+bool PaintOpBufferSerializer::SerializeOpWithFlags<float>(
+    SkCanvas* canvas,
+    const PaintOpWithFlags& flags_op,
+    const PlaybackParams& params,
+    float alpha) {
+  if (alpha == 1.0f && flags_op.flags.isAntiAlias()) {
+    // There's no need to spend CPU time on copying and restoring the flags
+    // struct below (verified by the DCHECK). Note that this if test depends
+    // on the internal logic of ScopedRasterFlags not calling MutableFlags().
+    DCHECK_EQ(
+        &flags_op.flags,
+        ScopedRasterFlags(&flags_op.flags, nullptr, canvas->getTotalMatrix(),
+                          options_.max_texture_size, alpha)
+            .flags());
+    return SerializeOp(canvas, flags_op, &flags_op.flags, params);
+  }
+  // We use a null |image_provider| here because images are decoded during
+  // serialization.
+  const ScopedRasterFlags scoped_flags(&flags_op.flags, nullptr,
+                                       canvas->getTotalMatrix(),
+                                       options_.max_texture_size, alpha);
+  const PaintFlags* flags_to_serialize = scoped_flags.flags();
+  if (!flags_to_serialize) {
+    return true;
+  }
+
+  return SerializeOp(canvas, flags_op, flags_to_serialize, params);
+}
+
+template <>
+bool PaintOpBufferSerializer::WillSerializeNextOp<float>(
+    const PaintOp& op,
+    SkCanvas* canvas,
+    const PlaybackParams& params,
+    float alpha) {
   // Skip ops outside the current clip if they have images. This saves
   // performing an unnecessary expensive decode.
   bool skip_op = PaintOp::OpHasDiscardableImages(op) &&
@@ -222,6 +255,25 @@ bool PaintOpBufferSerializer::WillSerializeNextOp(const PaintOp& op,
       // `buffer` should behave as if part of the parent record.
       SerializeBufferWithParams(canvas, params, buffer, nullptr);
     }
+    RestoreToCount(canvas, save_count, params);
+    return true;
+  }
+
+  if (op.GetType() == PaintOpType::kDrawScrollingContents) {
+    auto& scrolling_contents_op =
+        static_cast<const DrawScrollingContentsOp&>(op);
+    gfx::PointF scroll_offset = scrolling_contents_op.GetScrollOffset(params);
+    int save_count = canvas->getSaveCount();
+    if (!scroll_offset.IsOrigin()) {
+      Save(canvas, params);
+      TranslateOp translate_op(-scroll_offset.x(), -scroll_offset.y());
+      SerializeOp(canvas, translate_op, nullptr, params);
+    }
+    std::vector<size_t> offsets =
+        scrolling_contents_op.display_item_list->OffsetsOfOpsToRaster(canvas);
+    SerializeBuffer(canvas,
+                    scrolling_contents_op.display_item_list->paint_op_buffer_,
+                    &offsets);
     RestoreToCount(canvas, save_count, params);
     return true;
   }
@@ -256,7 +308,7 @@ bool PaintOpBufferSerializer::WillSerializeNextOp(const PaintOp& op,
     // flags_to_serialize or default (PaintFlags()) flags. At this point in the
     // serialization, flags_to_serialize is always null as well.
     SaveLayerOp save_layer_op(draw_op.src, PaintFlags());
-    success = SerializeOpWithFlags(canvas, save_layer_op, params, 255);
+    success = SerializeOpWithFlags(canvas, save_layer_op, params, 1.0f);
     if (!success)
       return false;
 
@@ -295,35 +347,6 @@ void PaintOpBufferSerializer::SerializeBufferWithParams(
       return;
     }
   }
-}
-
-bool PaintOpBufferSerializer::SerializeOpWithFlags(
-    SkCanvas* canvas,
-    const PaintOpWithFlags& flags_op,
-    const PlaybackParams& params,
-    float alpha) {
-  if (alpha == 1.0f && flags_op.flags.isAntiAlias()) {
-    // There's no need to spend CPU time on copying and restoring the flags
-    // struct below (verified by the DCHECK). Note that this if test depends
-    // on the internal logic of ScopedRasterFlags not calling MutableFlags().
-    DCHECK_EQ(
-        &flags_op.flags,
-        ScopedRasterFlags(&flags_op.flags, nullptr, canvas->getTotalMatrix(),
-                          options_.max_texture_size, alpha)
-            .flags());
-    return SerializeOp(canvas, flags_op, &flags_op.flags, params);
-  }
-  // We use a null |image_provider| here because images are decoded during
-  // serialization.
-  const ScopedRasterFlags scoped_flags(&flags_op.flags, nullptr,
-                                       canvas->getTotalMatrix(),
-                                       options_.max_texture_size, alpha);
-  const PaintFlags* flags_to_serialize = scoped_flags.flags();
-  if (!flags_to_serialize) {
-    return true;
-  }
-
-  return SerializeOp(canvas, flags_op, flags_to_serialize, params);
 }
 
 bool PaintOpBufferSerializer::SerializeOp(SkCanvas* canvas,

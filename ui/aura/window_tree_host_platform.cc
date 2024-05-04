@@ -22,6 +22,7 @@
 #include "ui/aura/window_tree_host_observer.h"
 #include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
 #include "ui/base/layout.h"
+#include "ui/base/view_prop.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
 #include "ui/display/display.h"
@@ -47,6 +48,9 @@ namespace aura {
 namespace {
 WindowTreeHostPlatform::PlatformWindowFactoryDelegateForTesting*
     g_platform_window_factory_delegate_for_testing = nullptr;
+
+const char kWindowTreeHostPlatformForAcceleratedWidget[] =
+    "__AURA_WINDOW_TREE_HOST_PLATFORM_ACCELERATED_WIDGET__";
 }
 
 // static
@@ -71,6 +75,14 @@ WindowTreeHostPlatform::WindowTreeHostPlatform(std::unique_ptr<Window> window)
     : WindowTreeHost(std::move(window)),
       widget_(gfx::kNullAcceleratedWidget),
       current_cursor_(ui::mojom::CursorType::kNull) {}
+
+// static
+WindowTreeHostPlatform* WindowTreeHostPlatform::GetHostForWindow(
+    aura::Window* window) {
+  return reinterpret_cast<WindowTreeHostPlatform*>(
+      ui::ViewProp::GetValue(window->GetHost()->GetAcceleratedWidget(),
+                             kWindowTreeHostPlatformForAcceleratedWidget));
+}
 
 void WindowTreeHostPlatform::CreateAndSetPlatformWindow(
     ui::PlatformWindowInitProperties properties) {
@@ -291,6 +303,8 @@ void WindowTreeHostPlatform::OnLostCapture() {
 
 void WindowTreeHostPlatform::OnAcceleratedWidgetAvailable(
     gfx::AcceleratedWidget widget) {
+  prop_ = std::make_unique<ui::ViewProp>(
+      widget, kWindowTreeHostPlatformForAcceleratedWidget, this);
   widget_ = widget;
   // This may be called before the Compositor has been created.
   if (compositor())
@@ -340,6 +354,18 @@ void WindowTreeHostPlatform::OnOcclusionStateChanged(
 int64_t WindowTreeHostPlatform::OnStateUpdate(
     const PlatformWindowDelegate::State& old,
     const PlatformWindowDelegate::State& latest) {
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  // Notify the fullscreen type change before the window state change to reflect
+  // the immersive status at OnWindowStateChanged.
+  if (old.fullscreen_type != latest.fullscreen_type) {
+    OnFullscreenTypeChanged(old.fullscreen_type, latest.fullscreen_type);
+  }
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+
+  if (old.window_state != latest.window_state) {
+    OnWindowStateChanged(old.window_state, latest.window_state);
+  }
+
   if (old.bounds_dip != latest.bounds_dip || old.size_px != latest.size_px ||
       old.window_scale != latest.window_scale) {
     bool origin_changed = old.bounds_dip.origin() != latest.bounds_dip.origin();
@@ -350,7 +376,7 @@ int64_t WindowTreeHostPlatform::OnStateUpdate(
     compositor()->SetExternalPageScaleFactor(latest.raster_scale);
   }
 
-  bool needs_frame = latest.ProducesFrameOnUpdateFrom(old);
+  bool needs_frame = latest.WillProduceFrameOnUpdateFrom(old);
   if (old.occlusion_state != latest.occlusion_state &&
       NativeWindowOcclusionTracker::
           IsNativeWindowOcclusionTrackingAlwaysEnabled(this)) {
@@ -388,9 +414,8 @@ void WindowTreeHostPlatform::SetFrameRateThrottleEnabled(bool enabled) {
     HostFrameRateThrottler::GetInstance().RemoveHost(this);
 }
 
-bool WindowTreeHostPlatform::IsNativeWindowOcclusionTrackingAlwaysEnabled() {
-  return NativeWindowOcclusionTracker::
-      IsNativeWindowOcclusionTrackingAlwaysEnabled(this);
+void WindowTreeHostPlatform::DisableNativeWindowOcclusion() {
+  SetNativeWindowOcclusionEnabled(false);
 }
 
 }  // namespace aura

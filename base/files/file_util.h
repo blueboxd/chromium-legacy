@@ -23,6 +23,8 @@
 #include "base/files/file_path.h"
 #include "base/files/scoped_file.h"
 #include "base/functional/callback.h"
+#include "base/strings/cstring_view.h"
+#include "base/types/pass_key.h"
 #include "build/build_config.h"
 
 #if BUILDFLAG(IS_WIN)
@@ -33,10 +35,27 @@
 #include "base/posix/eintr_wrapper.h"
 #endif
 
+namespace content::internal {
+class ChildProcessLauncherHelper;
+}  // namespace content::internal
+
 namespace base {
 
 class Environment;
 class Time;
+
+#if BUILDFLAG(IS_WIN)
+class PreventExecuteMappingClasses {
+ public:
+  using PassKey = base::PassKey<PreventExecuteMappingClasses>;
+
+ private:
+  static PassKey GetPassKey() { return PassKey(); }
+
+  // Allowed to open log files in arbitrary locations.
+  friend class content::internal::ChildProcessLauncherHelper;
+};
+#endif
 
 //-----------------------------------------------------------------------------
 // Functions that involve filesystem access or modification:
@@ -127,6 +146,13 @@ BASE_EXPORT bool DeleteFileAfterReboot(const FilePath& path);
 // on the filesystem. This allows the file handle to be safely passed to an
 // untrusted process. See also `File::FLAG_WIN_NO_EXECUTE`.
 BASE_EXPORT bool PreventExecuteMapping(const FilePath& path);
+
+// Same as PreventExecuteMapping but DCHECK for known allowed paths is omitted.
+// Only call this if you know the path you are providing is safe to mark as
+// non-executable, such as log files.
+BASE_EXPORT bool PreventExecuteMappingUnchecked(
+    const FilePath& path,
+    base::PassKey<PreventExecuteMappingClasses> passkey);
 
 // Set `path_key` to the second of two valid paths that support safely marking a
 // file as non-execute. The first allowed path is always PATH_TEMP. This is
@@ -268,7 +294,7 @@ BASE_EXPORT bool ReadStreamToStringWithMaxSize(FILE* stream,
 // into `buffer`. This function is protected against EINTR and partial reads.
 // Returns true iff `buffer` was successfully filled with bytes read from `fd`.
 BASE_EXPORT bool ReadFromFD(int fd, span<char> buffer);
-// TODO(https://crbug.com/1490484): Migrate callers to the span variant.
+// TODO(crbug.com/40284755): Migrate callers to the span variant.
 BASE_EXPORT bool ReadFromFD(int fd, char* buffer, size_t bytes);
 
 // Performs the same function as CreateAndOpenTemporaryStreamInDir(), but
@@ -431,8 +457,8 @@ BASE_EXPORT void SetDisableSecureSystemTempForTesting(bool disabled);
 #endif  // BUILDFLAG(IS_WIN)
 
 // Do NOT USE in new code. Use ScopedTempDir instead.
-// TODO(crbug.com/561597) Remove existing usage and make this an implementation
-// detail inside ScopedTempDir.
+// TODO(crbug.com/40446440) Remove existing usage and make this an
+// implementation detail inside ScopedTempDir.
 //
 // Create a new directory. If prefix is provided, the new directory name is in
 // the format of prefixyyyy.
@@ -532,20 +558,23 @@ BASE_EXPORT bool TruncateFile(FILE* file);
 // Reads from the file into `buffer`. This will read at most as many bytes as
 // `buffer` can hold, but may not always fill `buffer` entirely.
 // Returns the number of bytes read, or nullopt on error.
-// TODO(crbug.com/1333521): Despite the 64-bit return value, this only supports
+// TODO(crbug.com/40227936): Despite the 64-bit return value, this only supports
 // reading at most INT_MAX bytes. The program will crash if a buffer is passed
 // whose length exceeds INT_MAX.
 BASE_EXPORT std::optional<uint64_t> ReadFile(const FilePath& filename,
                                              span<char> buffer);
+BASE_EXPORT std::optional<uint64_t> ReadFile(const FilePath& filename,
+                                             span<uint8_t> buffer);
+
 // Same as above, but returns -1 on error.
-// TODO(https://crbug.com/1490484): Migrate callers to the span variant.
+// TODO(crbug.com/40284755): Migrate callers to the span variant.
 BASE_EXPORT int ReadFile(const FilePath& filename, char* data, int max_size);
 
 // Writes the given buffer into the file, overwriting any data that was
 // previously there.  Returns the number of bytes written, or -1 on error.
 // If file doesn't exist, it gets created with read/write permissions for all.
 // Note that the other variants of WriteFile() below may be easier to use.
-// TODO(https://crbug.com/1490484): Migrate callers to the span variant.
+// TODO(crbug.com/40284755): Migrate callers to the span variant.
 BASE_EXPORT int WriteFile(const FilePath& filename, const char* data,
                           int size);
 
@@ -591,20 +620,21 @@ BASE_EXPORT bool GetCurrentDirectory(FilePath* path);
 // Sets the current working directory for the process.
 BASE_EXPORT bool SetCurrentDirectory(const FilePath& path);
 
-// The largest value attempted by GetUniquePath{Number,}.
+// The largest value attempted by GetUniquePath.
 enum { kMaxUniqueFiles = 100 };
-
-// Returns the number N that makes |path| unique when formatted as " (N)" in a
-// suffix to its basename before any file extension, where N is a number between
-// 1 and 100 (inclusive). Returns 0 if |path| does not exist (meaning that it is
-// unique as-is), or -1 if no such number can be found.
-BASE_EXPORT int GetUniquePathNumber(const FilePath& path);
 
 // Returns |path| if it does not exist. Otherwise, returns |path| with the
 // suffix " (N)" appended to its basename before any file extension, where N is
 // a number between 1 and 100 (inclusive). Returns an empty path if no such
 // number can be found.
 BASE_EXPORT FilePath GetUniquePath(const FilePath& path);
+
+// Same as `GetUniquePath()`, except this method allows specifying a custom
+// suffix printf format string in cases where the default format doesn't work
+// (for example because you need a filename without spaces in it). Passing
+// " (%d)" as `suffix_format` makes this behave identical to `GetUniquePath()`.
+BASE_EXPORT FilePath GetUniquePathWithSuffixFormat(const FilePath& path,
+                                                   cstring_view suffix_format);
 
 // Sets the given |fd| to non-blocking mode.
 // Returns true if it was able to set it in the non-blocking mode, otherwise

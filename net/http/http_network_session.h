@@ -147,9 +147,6 @@ struct NET_EXPORT HttpNetworkSessionParams {
   // Enables QUIC support.
   bool enable_quic = true;
 
-  // If true, HTTPS URLs can be sent to QUIC proxies.
-  bool enable_quic_proxies_for_https_urls = false;
-
   // If non-empty, QUIC will only be spoken to hosts in this list.
   base::flat_set<std::string> quic_host_allowlist;
 
@@ -190,7 +187,7 @@ struct NET_EXPORT HttpNetworkSessionContext {
   raw_ptr<CertVerifier> cert_verifier;
   raw_ptr<TransportSecurityState> transport_security_state;
   raw_ptr<SCTAuditingDelegate> sct_auditing_delegate;
-  raw_ptr<ProxyResolutionService, DanglingUntriaged> proxy_resolution_service;
+  raw_ptr<ProxyResolutionService> proxy_resolution_service;
   raw_ptr<ProxyDelegate> proxy_delegate;
   raw_ptr<const HttpUserAgentSettings> http_user_agent_settings;
   raw_ptr<SSLConfigService> ssl_config_service;
@@ -329,8 +326,7 @@ class NET_EXPORT HttpNetworkSession {
   const raw_ptr<ReportingService> reporting_service_;
   const raw_ptr<NetworkErrorLoggingService> network_error_logging_service_;
 #endif
-  const raw_ptr<ProxyResolutionService, DanglingUntriaged>
-      proxy_resolution_service_;
+  const raw_ptr<ProxyResolutionService> proxy_resolution_service_;
   const raw_ptr<SSLConfigService> ssl_config_service_;
 
   HttpAuthCache http_auth_cache_;

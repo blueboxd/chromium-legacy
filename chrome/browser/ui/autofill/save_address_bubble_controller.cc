@@ -20,6 +20,7 @@
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/strings/grit/components_strings.h"
 #include "skia/ext/image_operations.h"
+#include "third_party/skia/include/core/SkPath.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/image_model.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -153,9 +154,10 @@ std::u16string SaveAddressBubbleController::GetBodyText() const {
         GetPrimaryAccountInfoFromBrowserContext(
             web_contents()->GetBrowserContext());
 
-    int string_id = pdm->IsSyncFeatureEnabledForAutofill()
-                        ? IDS_AUTOFILL_SYNCABLE_PROFILE_MIGRATION_PROMPT_NOTICE
-                        : IDS_AUTOFILL_LOCAL_PROFILE_MIGRATION_PROMPT_NOTICE;
+    int string_id =
+        pdm->address_data_manager().IsSyncFeatureEnabledForAutofill()
+            ? IDS_AUTOFILL_SYNCABLE_PROFILE_MIGRATION_PROMPT_NOTICE
+            : IDS_AUTOFILL_LOCAL_PROFILE_MIGRATION_PROMPT_NOTICE;
 
     return l10n_util::GetStringFUTF16(string_id,
                                       base::UTF8ToUTF16(account->email));
@@ -266,7 +268,9 @@ void SaveAddressBubbleController::OnUserDecision(
 
 void SaveAddressBubbleController::OnEditButtonClicked() {
   if (delegate_) {
-    delegate_->OnEditButtonClicked(GetEditorFooterMessage());
+    delegate_->ShowEditor(address_profile_, /*title_override=*/u"",
+                          GetEditorFooterMessage(),
+                          /*is_editing_existing_address=*/false);
   }
 }
 

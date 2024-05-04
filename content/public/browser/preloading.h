@@ -6,8 +6,8 @@
 #define CONTENT_PUBLIC_BROWSER_PRELOADING_H_
 
 #include <cstdint>
+#include <string_view>
 
-#include "base/strings/string_piece.h"
 #include "content/common/content_export.h"
 
 namespace content {
@@ -28,7 +28,7 @@ enum class PreloadingType {
   // which will be added later to PreloadingType as we expand.
   kUnspecified = 0,
 
-  // TODO(crbug.com/1309934): Add preloading type 1 as we integrate
+  // TODO(crbug.com/40219645): Add preloading type 1 as we integrate
   // Preloading logging with preresolve.
 
   // Establishes a connection (including potential TLS handshake) with an
@@ -66,20 +66,27 @@ enum class PreloadingType {
 // names. Embedders are allowed to define more predictors.
 class CONTENT_EXPORT PreloadingPredictor {
  public:
-  constexpr PreloadingPredictor(int64_t ukm_value, base::StringPiece name)
+  constexpr PreloadingPredictor(int64_t ukm_value, std::string_view name)
       : ukm_value_(ukm_value), name_(name) {}
   int64_t ukm_value() const { return ukm_value_; }
-  base::StringPiece name() const { return name_; }
+  std::string_view name() const { return name_; }
 
-  bool operator==(const PreloadingPredictor& other) const {
+  constexpr bool operator==(const PreloadingPredictor& other) const {
     // There's no need to compare name_ since every PreloadingPredictor has a
     // distinct ukm_value_.
     return other.ukm_value_ == ukm_value_;
   }
 
+  constexpr std::strong_ordering operator<=>(
+      const PreloadingPredictor& other) const {
+    // There's no need to compare name_ since every PreloadingPredictor has a
+    // distinct ukm_value_.
+    return other.ukm_value_ <=> ukm_value_;
+  }
+
  private:
   int64_t ukm_value_;
-  base::StringPiece name_;
+  std::string_view name_;
 };
 
 // These values are persisted to logs. Entries should not be renumbered and
@@ -127,7 +134,12 @@ static constexpr PreloadingPredictor kBackGestureNavigation(
     4,
     "BackGestureNavigation");
 
-// TODO(crbug.com/1309934): Add more predictors as we integrate Preloading
+// Preloading heuristics ML model.
+static constexpr PreloadingPredictor kPreloadingHeuristicsMLModel(
+    5,
+    "PreloadingHeuristicsMLModel");
+
+// TODO(crbug.com/40219645): Add more predictors as we integrate Preloading
 // logging.
 }  // namespace preloading_predictor
 
@@ -230,7 +242,8 @@ enum class PreloadingEligibility {
   kBrowserContextOffTheRecord = 89,
   kSameSiteCrossOriginPrefetchRequiredProxy = 96,
 
-  // TODO(crbug.com/1309934): Add more specific ineligibility reasons subject to
+  // TODO(crbug.com/40219645): Add more specific ineligibility reasons subject
+  // to
   // each preloading operation
   // This constant is used to define the value beyond which embedders can add
   // more enums.

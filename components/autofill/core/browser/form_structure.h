@@ -19,7 +19,6 @@
 #include "base/containers/flat_map.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
-#include "base/strings/string_piece.h"
 #include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/country_type.h"
@@ -220,19 +219,6 @@ class FormStructure {
       AutofillMetrics::FormInteractionsUkmLogger* form_interactions_ukm_logger,
       LogManager* log_manager);
 
-  // Classifies each field in `fields_` into a logical section.
-  // The function consists of 2 passes:
-  //   - 1st pass: Performed only when `ignore_autocomplete` is true or none of
-  //               the fields in `fields_` has a valid autocomplete section.
-  //               Sections are identified by the heuristic that a logical
-  //               section should not include multiple fields of the same
-  //               autofill type with some exceptions, as described in the
-  //               implementation.
-  //   - 2nd pass: Separate credit card fields from all other fields.
-  // Note: `ignore_autocomplete` is set to true only when identifying sections
-  // after server response.
-  void IdentifySections(bool ignore_autocomplete);
-
   // Returns the FieldGlobalIds of the |fields_| that are eligible for manual
   // filling on form interaction.
   static std::vector<FieldGlobalId> FindFieldsEligibleForManualFilling(
@@ -288,10 +274,6 @@ class FormStructure {
 
   bool has_author_specified_types() const {
     return has_author_specified_types_;
-  }
-
-  bool has_author_specified_upi_vpa_hint() const {
-    return has_author_specified_upi_vpa_hint_;
   }
 
   bool has_password_field() const { return has_password_field_; }
@@ -428,8 +410,6 @@ class FormStructure {
   [[nodiscard]] bool ShouldBeParsed(ShouldBeParsedParams params,
                                     LogManager* log_manager = nullptr) const;
 
-  void IdentifySectionsWithNewMethod();
-
   // Further processes the extracted |fields_|.
   void ProcessExtractedFields();
 
@@ -495,10 +475,6 @@ class FormStructure {
   // Whether the form includes any field types explicitly specified by the site
   // author, via the |autocompletetype| attribute.
   bool has_author_specified_types_ = false;
-
-  // Whether the form includes a field that explicitly sets it autocomplete
-  // type to "upi-vpa".
-  bool has_author_specified_upi_vpa_hint_ = false;
 
   // True if the form contains at least one password field.
   bool has_password_field_ = false;

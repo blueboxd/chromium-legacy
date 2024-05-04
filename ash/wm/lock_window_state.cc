@@ -70,7 +70,7 @@ void LockWindowState::OnWMEvent(WindowState* window_state,
         UpdateBounds(window_state);
       } else {
         window_state->SetBoundsConstrained(
-            event->AsSetBoundsWMEvent()->requested_bounds());
+            event->AsSetBoundsWMEvent()->requested_bounds_in_parent());
       }
       break;
     case WM_EVENT_ADDED_TO_WORKSPACE:
@@ -107,20 +107,10 @@ void LockWindowState::AttachState(WindowState* window_state,
 void LockWindowState::DetachState(WindowState* window_state) {}
 
 // static
-WindowState* LockWindowState::SetLockWindowState(aura::Window* window) {
+WindowState* LockWindowState::SetLockWindowState(aura::Window* window,
+                                                 bool shelf_excluded) {
   std::unique_ptr<WindowState::State> lock_state =
-      std::make_unique<LockWindowState>(window, false);
-  WindowState* window_state = WindowState::Get(window);
-  std::unique_ptr<WindowState::State> old_state(
-      window_state->SetStateObject(std::move(lock_state)));
-  return window_state;
-}
-
-// static
-WindowState* LockWindowState::SetLockWindowStateWithShelfExcluded(
-    aura::Window* window) {
-  std::unique_ptr<WindowState::State> lock_state =
-      std::make_unique<LockWindowState>(window, true);
+      std::make_unique<LockWindowState>(window, shelf_excluded);
   WindowState* window_state = WindowState::Get(window);
   std::unique_ptr<WindowState::State> old_state(
       window_state->SetStateObject(std::move(lock_state)));

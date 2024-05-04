@@ -9,6 +9,7 @@
 
 #include <memory>
 #include <string>
+#include <string_view>
 #include <vector>
 
 #include "base/containers/flat_set.h"
@@ -17,12 +18,12 @@
 #include "base/i18n/rtl.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/strings/string_piece.h"
 #include "base/values.h"
 #include "cc/paint/paint_image.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "pdf/accessibility_structs.h"
+#include "pdf/buildflags.h"
 #include "pdf/loader/url_loader.h"
 #include "pdf/mojom/pdf.mojom.h"
 #include "pdf/paint_manager.h"
@@ -230,7 +231,7 @@ class PdfViewWebPlugin final : public PDFEngine::Client,
   };
 
   PdfViewWebPlugin(std::unique_ptr<Client> client,
-                   mojo::AssociatedRemote<pdf::mojom::PdfService> pdf_service,
+                   mojo::AssociatedRemote<pdf::mojom::PdfHost> pdf_host,
                    const blink::WebPluginParams& params);
   PdfViewWebPlugin(const PdfViewWebPlugin& other) = delete;
   PdfViewWebPlugin& operator=(const PdfViewWebPlugin& other) = delete;
@@ -346,7 +347,6 @@ class PdfViewWebPlugin final : public PDFEngine::Client,
   void FormFieldFocusChange(PDFEngine::FocusFieldType type) override;
   bool IsPrintPreview() const override;
   SkColor GetBackgroundColor() const override;
-  void SetIsSelecting(bool is_selecting) override;
   void SelectionChanged(const gfx::Rect& left, const gfx::Rect& right) override;
   void CaretChanged(const gfx::Rect& caret_rect) override;
   void EnteredEditMode() override;
@@ -467,7 +467,7 @@ class PdfViewWebPlugin final : public PDFEngine::Client,
   void UpdateScroll(const gfx::PointF& scroll_position);
 
   // Loads `url`, invoking `callback` on receiving the initial response.
-  void LoadUrl(base::StringPiece url, LoadUrlCallback callback);
+  void LoadUrl(std::string_view url, LoadUrlCallback callback);
 
   // Handles `Open()` result for `form_loader_`.
   void DidFormOpen(int32_t result);
@@ -493,6 +493,9 @@ class PdfViewWebPlugin final : public PDFEngine::Client,
   void HandleSaveAttachmentMessage(const base::Value::Dict& message);
   void HandleSaveMessage(const base::Value::Dict& message);
   void HandleSelectAllMessage(const base::Value::Dict& /*message*/);
+#if BUILDFLAG(ENABLE_PDF_INK2)
+  void HandleSetAnnotationModeMessage(const base::Value::Dict& message);
+#endif  // BUILDFLAG(ENABLE_PDF_INK2)
   void HandleSetBackgroundColorMessage(const base::Value::Dict& message);
   void HandleSetPresentationModeMessage(const base::Value::Dict& message);
   void HandleSetTwoUpViewMessage(const base::Value::Dict& message);
@@ -557,13 +560,13 @@ class PdfViewWebPlugin final : public PDFEngine::Client,
   bool HandleWebInputEvent(const blink::WebInputEvent& event);
 
   // Helper method for converting IME text to input events.
-  // TODO(crbug.com/1253665): Consider handling composition events.
+  // TODO(crbug.com/40199248): Consider handling composition events.
   void HandleImeCommit(const blink::WebString& text);
 
   // Callback to print without re-entrancy issues. The callback prevents the
   // invocation of printing in the middle of an event handler, which is risky;
   // see crbug.com/66334.
-  // TODO(crbug.com/1217012): Re-evaluate the need for a callback when parts of
+  // TODO(crbug.com/40185029): Re-evaluate the need for a callback when parts of
   // the plugin are moved off the main thread.
   void OnInvokePrintDialog();
 
@@ -631,7 +634,7 @@ class PdfViewWebPlugin final : public PDFEngine::Client,
   std::unique_ptr<Client> const client_;
 
   // Used to access the services provided by the browser.
-  mojo::AssociatedRemote<pdf::mojom::PdfService> const pdf_service_;
+  mojo::AssociatedRemote<pdf::mojom::PdfHost> const pdf_host_;
 
   mojo::Receiver<pdf::mojom::PdfListener> listener_receiver_{this};
 

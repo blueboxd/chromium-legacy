@@ -145,55 +145,55 @@ class WebAppSyncBridge : public syncer::ModelTypeSyncBridge {
 
   void Init(base::OnceClosure callback);
 
-  // TODO(https://crbug.com/1517947): Remove this and use a command instead.
-  void SetAppUserDisplayMode(const webapps::AppId& app_id,
-                             mojom::UserDisplayMode user_display_mode,
-                             bool is_user_action);
+  // Non testing code should use SetUserDisplayModeCommand instead.
+  void SetAppUserDisplayModeForTesting(
+      const webapps::AppId& app_id,
+      mojom::UserDisplayMode user_display_mode);
 
-  // TODO(https://crbug.com/1517947): Remove this and use a command instead.
+  // TODO(crbug.com/41490924): Remove this and use a command instead.
   void SetAppIsDisabled(AppLock& lock,
                         const webapps::AppId& app_id,
                         bool is_disabled);
 
-  // TODO(https://crbug.com/1517947): Remove this and use a command instead.
+  // TODO(crbug.com/41490924): Remove this and use a command instead.
   void UpdateAppsDisableMode();
 
-  // TODO(https://crbug.com/1517947): Remove this and use a command instead.
+  // TODO(crbug.com/41490924): Remove this and use a command instead.
   void SetAppLastBadgingTime(const webapps::AppId& app_id,
                              const base::Time& time);
 
-  // TODO(https://crbug.com/1517947): Remove this and use a command instead.
+  // TODO(crbug.com/41490924): Remove this and use a command instead.
   void SetAppLastLaunchTime(const webapps::AppId& app_id,
                             const base::Time& time);
 
-  // TODO(https://crbug.com/1517947): Remove this and use a command instead.
+  // TODO(crbug.com/41490924): Remove this and use a command instead.
   void SetAppFirstInstallTime(const webapps::AppId& app_id,
                               const base::Time& time);
 
-  // TODO(https://crbug.com/1517947): Remove this and use a command instead.
+  // TODO(crbug.com/41490924): Remove this and use a command instead.
   void SetAppManifestUpdateTime(const webapps::AppId& app_id,
                                 const base::Time& time);
 
-  // TODO(https://crbug.com/1517947): Remove this and use a command instead.
+  // TODO(crbug.com/41490924): Remove this and use a command instead.
   void SetAppWindowControlsOverlayEnabled(const webapps::AppId& app_id,
                                           bool enabled);
 
   // These methods are used by extensions::AppSorting, which manages the sorting
   // of web apps on chrome://apps.
-  // TODO(https://crbug.com/1517947): Remove this and use a command instead.
+  // TODO(crbug.com/41490924): Remove this and use a command instead.
   void SetUserPageOrdinal(const webapps::AppId& app_id,
                           syncer::StringOrdinal user_page_ordinal);
-  // TODO(https://crbug.com/1517947): Remove this and use a command instead.
+  // TODO(crbug.com/41490924): Remove this and use a command instead.
   void SetUserLaunchOrdinal(const webapps::AppId& app_id,
                             syncer::StringOrdinal user_launch_ordinal);
 
   // Stores the user's preference for the app's use of the File Handling API.
-  // TODO(https://crbug.com/1517947): Remove this and use a command instead.
+  // TODO(crbug.com/41490924): Remove this and use a command instead.
   void SetAppFileHandlerApprovalState(const webapps::AppId& app_id,
                                       ApiApprovalState state);
 
 #if BUILDFLAG(IS_MAC)
-  // TODO(https://crbug.com/1517947): Remove this and use a command instead.
+  // TODO(crbug.com/41490924): Remove this and use a command instead.
   void SetAlwaysShowToolbarInFullscreen(const webapps::AppId& app_id,
                                         bool show);
 #endif
@@ -210,7 +210,8 @@ class WebAppSyncBridge : public syncer::ModelTypeSyncBridge {
   std::optional<syncer::ModelError> ApplyIncrementalSyncChanges(
       std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
       syncer::EntityChangeList entity_changes) override;
-  void GetData(StorageKeyList storage_keys, DataCallback callback) override;
+  void GetDataForCommit(StorageKeyList storage_keys,
+                        DataCallback callback) override;
   void GetAllDataForDebugging(DataCallback callback) override;
   std::string GetClientTag(const syncer::EntityData& entity_data) override;
   std::string GetStorageKey(const syncer::EntityData& entity_data) override;
@@ -244,7 +245,7 @@ class WebAppSyncBridge : public syncer::ModelTypeSyncBridge {
       UninstallFromSyncCallback callback);
   WebAppDatabase* GetDatabaseForTesting() const { return database_.get(); }
 
-  // TODO(https://crbug.com/1517947): Remove this and make it so tests can
+  // TODO(crbug.com/41490924): Remove this and make it so tests can
   // install via sync instead to reach this state.
   // Note: This doesn't synchronize the OS integration manager, so the os
   // integration state is not cleared.

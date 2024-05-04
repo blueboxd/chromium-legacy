@@ -10,6 +10,7 @@
 
 #include "components/autofill/core/browser/filling_product.h"
 #include "components/autofill/core/browser/ui/suggestion.h"
+#include "components/autofill/core/browser/ui/suggestion_type.h"
 #include "ui/gfx/vector_icon_types.h"
 #include "ui/views/style/typography.h"
 
@@ -26,22 +27,21 @@ class PopupRowContentView;
 
 namespace gfx {
 class Insets;
+struct VectorIcon;
 }
 
 namespace autofill::popup_cell_utils {
 
 // Returns the padding for a content cell.
 //
-// For content cells that make up the entire Autofill popup row (i.e. there is
-// no control element), the following reasoning applies:
-// * If `kAutofillShowAutocompleteDeleteButton` is on, then there is padding
-//   with distance `DISTANCE_CONTENT_LIST_VERTICAL_SINGLE` between the edge of
-//   the Autofill popup row and the start of the content cell.
+// The following reasoning applies:
+// * There is padding with distance `PopupRowView::GetHorizontalMargin()`
+//   between the edge of  the Autofill popup row and the start of the content
+//   cell.
 // * In addition, there is also padding inside the content cell. Together, these
-//   two paddings need to add up to `PopupBaseView::GetHorizontalMargin`, since
-//   to ensure that the content inside the content cell is aligned with the
-//   popup bubble's arrow.
-// * Similarly, the right padding of the content cell needs to be adjusted.
+//   two paddings need to add up to `PopupBaseView::ArrowHorizontalMargin`,
+//   since to ensure that the content inside the content cell is aligned with
+//   the popup bubble's arrow.
 //
 //           / \
 //          /   \
@@ -57,14 +57,10 @@ namespace autofill::popup_cell_utils {
 // ││ └┼─────────────────────────────────┘  │
 // └┼──┼────────────────────────────────────┘
 //  │  │
-//  │  PopupBaseView::GetHorizontalMargin()
+//  │  PopupBaseView::ArrowHorizontalMargin()
 //  │
-//  DISTANCE_CONTENT_LIST_VERTICAL_SINGLE
-//
-// If the popup row has a control element, then the adjustment does not need
-// to be made for the right padding, since the right side of the content cell
-// borders another cell and not the right padding area of the popup row.
-gfx::Insets GetMarginsForContentCell(bool has_control_element);
+//  PopupRowView::GetHorizontalMargin()
+gfx::Insets GetMarginsForContentCell();
 
 std::u16string GetVoiceOverStringFromSuggestion(const Suggestion& suggestion);
 
@@ -114,13 +110,12 @@ void FormatLabel(views::Label& label,
                  int maximum_width_single_line);
 
 // Creates a label for the suggestion's main text.
-std::unique_ptr<views::Label> CreateMainTextLabel(
-    const Suggestion::Text& main_text,
-    int text_style);
+std::unique_ptr<views::Label> CreateMainTextLabel(const Suggestion& suggestion,
+                                                  int text_style);
 
 // Creates a label for the suggestion's minor text.
 std::unique_ptr<views::Label> CreateMinorTextLabel(
-    const Suggestion::Text& minor_text);
+    const Suggestion& suggestion);
 
 // Creates sub-text views and pass their references to `PopupRowContentView` for
 // centralized style management. If `text_style` is not provided, the default
@@ -136,6 +131,13 @@ int GetMaxPopupAddressProfileWidth();
 std::unique_ptr<views::ImageView> ImageViewFromVectorIcon(
     const gfx::VectorIcon& vector_icon,
     int icon_size);
+
+// Appplies a grayed-out disabled style to views conveying that it is
+// deactivated and non-acceptable.
+void ApplyDeactivatedStyle(views::View& view);
+
+// Returns the expandable menu icon depending on `type`.
+const gfx::VectorIcon& GetExpandableMenuIcon(SuggestionType type);
 
 }  // namespace autofill::popup_cell_utils
 

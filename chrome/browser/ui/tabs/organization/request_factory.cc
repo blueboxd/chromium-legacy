@@ -19,12 +19,14 @@
 #include "chrome/browser/ui/tabs/organization/logging_util.h"
 #include "chrome/browser/ui/tabs/organization/tab_organization_request.h"
 #include "chrome/browser/ui/tabs/organization/tab_organization_session.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "components/optimization_guide/core/model_quality/feature_type_map.h"
 #include "components/optimization_guide/core/optimization_guide_features.h"
 #include "components/optimization_guide/core/optimization_guide_model_executor.h"
 #include "components/optimization_guide/core/optimization_guide_switches.h"
 #include "components/optimization_guide/core/optimization_guide_util.h"
 #include "components/optimization_guide/proto/features/tab_organization.pb.h"
+#include "components/tab_groups/tab_group_id.h"
 #include "content/public/browser/web_contents.h"
 
 namespace {
@@ -111,8 +113,15 @@ void OnTabOrganizationModelExecutionResult(
     for (const auto& tab : tab_organization.tabs()) {
       response_tab_ids.emplace_back(tab.tab_id());
     }
+    std::optional<tab_groups::TabGroupId> group_id;
+    const std::optional<base::Token> group_id_token =
+        base::Token::FromString(tab_organization.group_id());
+    if (group_id_token.has_value()) {
+      group_id = std::make_optional(
+          tab_groups::TabGroupId::FromRawToken(group_id_token.value()));
+    }
     organizations.emplace_back(base::UTF8ToUTF16(tab_organization.label()),
-                               std::move(response_tab_ids));
+                               std::move(response_tab_ids), group_id);
   }
 
   const std::string execution_id =
@@ -171,11 +180,13 @@ void PerformTabOrganizationExecution(
     tab_organization_request.set_active_tab_id(request->base_tab_id().value());
   }
 
+  tab_organization_request.set_allow_reorganizing_existing_groups(
+      base::FeatureList::IsEnabled(features::kTabReorganization));
+
   OptimizationGuideKeyedService* optimization_guide_keyed_service =
       OptimizationGuideKeyedServiceFactory::GetForProfile(profile);
   optimization_guide_keyed_service->ExecuteModel(
-      optimization_guide::proto::ModelExecutionFeature::
-          MODEL_EXECUTION_FEATURE_TAB_ORGANIZATION,
+      optimization_guide::ModelBasedCapabilityKey::kTabOrganization,
       tab_organization_request,
       base::BindOnce(OnTabOrganizationModelExecutionResult, profile,
                      std::move(on_completion), std::move(on_failure)));

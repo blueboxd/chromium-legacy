@@ -116,19 +116,12 @@ class TestSearchProvider : public app_list::SearchProvider {
 
 class AutotestPrivateApiTest : public ExtensionApiTest {
  public:
-  AutotestPrivateApiTest() {
-    // App pin syncing code makes an untitled Play Store icon appear in the
-    // shelf. Sync isn't relevant to this test, so skip pinned app sync.
-    // https://crbug.com/1085597
-    ChromeShelfPrefs::SetSkipPinnedAppsFromSyncForTest(true);
-  }
+  AutotestPrivateApiTest() = default;
 
   AutotestPrivateApiTest(const AutotestPrivateApiTest&) = delete;
   AutotestPrivateApiTest& operator=(const AutotestPrivateApiTest&) = delete;
 
-  ~AutotestPrivateApiTest() override {
-    ChromeShelfPrefs::SetSkipPinnedAppsFromSyncForTest(false);
-  }
+  ~AutotestPrivateApiTest() override = default;
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ExtensionApiTest::SetUpCommandLine(command_line);
@@ -169,9 +162,10 @@ class AutotestPrivateApiTest : public ExtensionApiTest {
   ash::ScopedTestingCrosSettings scoped_testing_cros_settings_;
 };
 
-// Flaky on linux.
-// TODO(b/327929010): re-enable the following test.
-#if defined(IS_LINUX)
+// TODO(crbug.com/41491890): Flaky on ASan/LSan, deflake and re-enable the test.
+#if defined(ADDRESS_SANITIZER) || defined(LEAK_SANITIZER)
+#define MAYBE_AutotestPrivate DISABLED_AutotestPrivate
+#elif BUILDFLAG(IS_CHROMEOS)
 #define MAYBE_AutotestPrivate DISABLED_AutotestPrivate
 #else
 #define MAYBE_AutotestPrivate AutotestPrivate
@@ -181,7 +175,7 @@ IN_PROC_BROWSER_TEST_F(AutotestPrivateApiTest, MAYBE_AutotestPrivate) {
 }
 
 // Set of tests where ARC is enabled and test apps and packages are registered.
-// TODO(https://crbug.com/1514431): re-enable the following test.
+// TODO(crbug.com/41486987): re-enable the following test.
 #if defined(ADDRESS_SANITIZER) || defined(LEAK_SANITIZER)
 #define MAYBE_AutotestPrivateArcEnabled DISABLED_AutotestPrivateArcEnabled
 #else
@@ -242,7 +236,14 @@ IN_PROC_BROWSER_TEST_F(AutotestPrivateApiTest,
   arc::SetArcPlayStoreEnabledForProfile(profile(), false);
 }
 
-IN_PROC_BROWSER_TEST_F(AutotestPrivateApiTest, AutotestPrivateArcProcess) {
+// TODO(crbug.com/331532893): Flaky on ASan/LSan.
+#if defined(ADDRESS_SANITIZER) || defined(LEAK_SANITIZER)
+#define MAYBE_AutotestPrivateArcProcess DISABLED_AutotestPrivateArcProcess
+#else
+#define MAYBE_AutotestPrivateArcProcess AutotestPrivateArcProcess
+#endif
+IN_PROC_BROWSER_TEST_F(AutotestPrivateApiTest,
+                       MAYBE_AutotestPrivateArcProcess) {
   arc::FakeProcessInstance fake_process_instance;
   arc::ArcServiceManager::Get()->arc_bridge_service()->process()->SetInstance(
       &fake_process_instance);

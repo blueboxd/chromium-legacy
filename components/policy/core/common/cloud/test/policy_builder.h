@@ -24,6 +24,10 @@
 #include "components/policy/proto/chrome_extension_policy.pb.h"
 #endif
 
+namespace enterprise_management {
+class CloudPolicySettings;
+}  // namespace enterprise_management
+
 namespace policy {
 
 // A helper class for testing that provides a straightforward interface for
@@ -110,6 +114,7 @@ class PolicyBuilder {
   // Verification signatures for the two hard-coded testing keys above. These
   // signatures are valid only for the kFakeDomain domain.
   static std::string GetTestSigningKeySignature();
+  static std::string GetTestSigningKeySignatureForChild();
   static std::string GetTestOtherSigningKeySignature();
 
   std::vector<uint8_t> raw_signing_key() const { return raw_signing_key_; }
@@ -142,6 +147,9 @@ class PolicyBuilder {
   // Created using dummy data used for filling the PolicyData protobuf.
   static AccountId GetFakeAccountIdForTesting();
 
+  void SetSignatureType(
+      enterprise_management::PolicyFetchRequest::SignatureType signature_type);
+
  private:
   enterprise_management::PolicyFetchResponse policy_;
   std::unique_ptr<enterprise_management::PolicyData> policy_data_;
@@ -155,6 +163,9 @@ class PolicyBuilder {
   std::vector<uint8_t> raw_signing_key_;
   std::vector<uint8_t> raw_new_signing_key_;
   std::string raw_new_signing_key_signature_;
+
+  enterprise_management::PolicyFetchRequest::SignatureType signature_type_ =
+      enterprise_management::PolicyFetchRequest::NONE;
 };
 
 // Type-parameterized PolicyBuilder extension that allows for building policy

@@ -13,13 +13,17 @@
 
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/test/in_process_data_decoder.h"
+#include "ash/public/cpp/wallpaper/sea_pen_image.h"
 #include "ash/wallpaper/sea_pen_wallpaper_manager.h"
+#include "ash/wallpaper/test_sea_pen_wallpaper_manager_session_delegate.h"
 #include "ash/wallpaper/wallpaper_file_manager.h"
+#include "ash/webui/common/mojom/sea_pen.mojom-forward.h"
 #include "ash/webui/common/mojom/sea_pen.mojom.h"
 #include "base/containers/flat_map.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/i18n/rtl.h"
+#include "base/i18n/time_formatting.h"
 #include "base/json/values_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -32,6 +36,7 @@
 #include "base/time/time_override.h"
 #include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/ash/system_web_apps/apps/personalization_app/personalization_app_utils.h"
+#include "chrome/browser/ash/wallpaper_handlers/mock_sea_pen_fetcher.h"
 #include "chrome/browser/ash/wallpaper_handlers/test_wallpaper_fetcher_delegate.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
@@ -40,6 +45,7 @@
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/account_id/account_id.h"
 #include "components/manta/manta_status.h"
+#include "components/manta/proto/manta.pb.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_names.h"
@@ -166,9 +172,7 @@ base::subtle::ScopedTimeClockOverrides CreateScopedTimeNowOverride() {
 class PersonalizationAppSeaPenProviderImplTest : public testing::Test {
  public:
   PersonalizationAppSeaPenProviderImplTest()
-      : sea_pen_wallpaper_manager_(
-            SeaPenWallpaperManager(&wallpaper_file_manager_)),
-        scoped_user_manager_(std::make_unique<ash::FakeChromeUserManager>()),
+      : scoped_user_manager_(std::make_unique<ash::FakeChromeUserManager>()),
         profile_manager_(TestingBrowserProcess::GetGlobal()) {
     scoped_feature_list_.InitWithFeatures(
         {features::kSeaPen, features::kFeatureManagementSeaPen}, {});
@@ -185,10 +189,9 @@ class PersonalizationAppSeaPenProviderImplTest : public testing::Test {
   // testing::Test:
   void SetUp() override {
     testing::Test::SetUp();
-
     ASSERT_TRUE(profile_manager_.SetUp());
-    ASSERT_TRUE(scoped_temp_dir_.CreateUniqueTempDir());
-    sea_pen_wallpaper_manager_.SetStorageDirectory(GetTempDirectory());
+    sea_pen_wallpaper_manager_.SetSessionDelegateForTesting(
+        std::make_unique<TestSeaPenWallpaperManagerSessionDelegate>());
   }
 
   // Set up the profile for an account. This can be used to set up the profile
@@ -212,7 +215,11 @@ class PersonalizationAppSeaPenProviderImplTest : public testing::Test {
         sea_pen_provider_remote_.BindNewPipeAndPassReceiver());
   }
 
-  base::FilePath GetTempDirectory() { return scoped_temp_dir_.GetPath(); }
+  TestSeaPenWallpaperManagerSessionDelegate*
+  sea_pen_wallpaper_manager_session_delegate() {
+    return static_cast<TestSeaPenWallpaperManagerSessionDelegate*>(
+        sea_pen_wallpaper_manager_.session_delegate_for_testing());
+  }
 
   mojo::Remote<ash::personalization_app::mojom::SeaPenProvider>&
   sea_pen_provider_remote() {
@@ -229,25 +236,48 @@ class PersonalizationAppSeaPenProviderImplTest : public testing::Test {
 
   TestingProfile* profile() { return profile_; }
 
-  const base::FilePath& GetTempFileDirectory() {
-    return scoped_temp_dir_.GetPath();
+  void CreateSeaPenFilesForTesting(const AccountId& account_id,
+                                   std::vector<uint32_t> sea_pen_ids) {
+    for (const uint32_t& sea_pen_id : sea_pen_ids) {
+      base::test::TestFuture<bool> save_sea_pen_image_future;
+      sea_pen_wallpaper_manager_.SaveSeaPenImage(
+          account_id, {CreateJpgBytes(), sea_pen_id},
+          personalization_app::mojom::SeaPenQuery::NewTextQuery(
+              "test query " + base::NumberToString(sea_pen_id)),
+          save_sea_pen_image_future.GetCallback());
+      ASSERT_TRUE(save_sea_pen_image_future.Get());
+    }
   }
 
-  void CreateSeaPenFilesForTesting(
-      const AccountId& account_id,
-      std::vector<uint32_t> sea_pen_ids,
-      const std::string& file_content = CreateJpgBytes()) {
-    base::FilePath sea_pen_dir =
-        sea_pen_wallpaper_manager_.GetFilePathForImageId(account_id, 0u)
-            .DirName();
-    ASSERT_TRUE(base::CreateDirectory(sea_pen_dir));
-
-    for (const uint32_t& sea_pen_id : sea_pen_ids) {
-      base::FilePath sea_pen_file_path =
-          sea_pen_wallpaper_manager_.GetFilePathForImageId(account_id,
-                                                           sea_pen_id);
-      ASSERT_TRUE(base::WriteFile(sea_pen_file_path, file_content));
+  void SetSeaPenFetcherResponse(
+      std::vector<uint32_t> image_ids,
+      manta::MantaStatusCode status_code,
+      const ash::personalization_app::mojom::SeaPenQueryPtr& expected_query) {
+    std::vector<SeaPenImage> images;
+    for (const auto image_id : image_ids) {
+      images.emplace_back(CreateJpgBytes(), image_id);
     }
+
+    auto* fetcher =
+        static_cast<testing::NiceMock<wallpaper_handlers::MockSeaPenFetcher>*>(
+            sea_pen_provider_->GetOrCreateSeaPenFetcher());
+    EXPECT_CALL(*fetcher, FetchThumbnails)
+        .WillOnce(
+            [inner_status_code = status_code,
+             &inner_expected_query = expected_query,
+             inner_images = std::move(images)](
+                manta::proto::FeatureName feature_name,
+                const ash::personalization_app::mojom::SeaPenQueryPtr& query,
+                wallpaper_handlers::SeaPenFetcher::OnFetchThumbnailsComplete
+                    callback) mutable {
+              EXPECT_EQ(manta::proto::FeatureName::CHROMEOS_WALLPAPER,
+                        feature_name);
+              EXPECT_EQ(inner_expected_query, query);
+              base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
+                  FROM_HERE,
+                  base::BindOnce(std::move(callback), std::move(inner_images),
+                                 inner_status_code));
+            });
   }
 
  private:
@@ -273,11 +303,9 @@ class PersonalizationAppSeaPenProviderImplTest : public testing::Test {
   }
 
   base::test::ScopedFeatureList scoped_feature_list_;
-  base::ScopedTempDir scoped_temp_dir_;
   content::BrowserTaskEnvironment task_environment_;
   TestWallpaperController test_wallpaper_controller_;
-  WallpaperFileManager wallpaper_file_manager_;
-  SeaPenWallpaperManager sea_pen_wallpaper_manager_;
+  SeaPenWallpaperManager sea_pen_wallpaper_manager_{};
   content::TestWebUI web_ui_;
   InProcessDataDecoder in_process_data_decoder_;
   user_manager::ScopedUserManager scoped_user_manager_;
@@ -393,16 +421,25 @@ TEST_F(PersonalizationAppSeaPenProviderImplTest, QueryLengthExceeded) {
 TEST_F(PersonalizationAppSeaPenProviderImplTest,
        SelectThumbnailSetsSeaPenWallpaper) {
   SetUpProfileForTesting(kFakeTestEmail, GetTestAccountId());
-  // Store some test images in the provider so that one can be selected.
+
+  auto query = mojom::SeaPenQuery::NewTextQuery("search_query");
+
+  // Send real images that will pass decoding.
+  SetSeaPenFetcherResponse({963, 246}, manta::MantaStatusCode::kOk, query);
+
+  // Store the above test images in the provider so that one can be selected.
   base::test::TestFuture<
       std::optional<
           std::vector<ash::personalization_app::mojom::SeaPenThumbnailPtr>>,
       manta::MantaStatusCode>
       search_wallpaper_future;
-  mojom::SeaPenQueryPtr search_query =
-      mojom::SeaPenQuery::NewTextQuery("search_query");
+
   sea_pen_provider_remote()->SearchWallpaper(
-      std::move(search_query), search_wallpaper_future.GetCallback());
+      query->Clone(), search_wallpaper_future.GetCallback());
+
+  ASSERT_EQ(963u, search_wallpaper_future.Get<0>().value().front()->id);
+  ASSERT_EQ(manta::MantaStatusCode::kOk,
+            search_wallpaper_future.Get<manta::MantaStatusCode>());
 
   ASSERT_EQ(0, test_wallpaper_controller()->get_sea_pen_wallpaper_count());
   ASSERT_FALSE(test_wallpaper_controller()->wallpaper_info().has_value());
@@ -457,7 +494,13 @@ TEST_F(PersonalizationAppSeaPenProviderImplTest,
   auto time_override = CreateScopedTimeNowOverride();
 
   SetUpProfileForTesting(kFakeTestEmail, GetTestAccountId());
-  std::string user_search_query = "user search query text";
+
+  mojom::SeaPenQueryPtr search_query =
+      mojom::SeaPenQuery::NewTextQuery("user search query text");
+
+  // Send real images that will pass decoding.
+  SetSeaPenFetcherResponse({111, 222}, manta::MantaStatusCode::kOk,
+                           search_query);
 
   // Store some test images in the provider so that one can be selected.
   base::test::TestFuture<
@@ -465,11 +508,8 @@ TEST_F(PersonalizationAppSeaPenProviderImplTest,
           std::vector<ash::personalization_app::mojom::SeaPenThumbnailPtr>>,
       manta::MantaStatusCode>
       search_wallpaper_future;
-  mojom::SeaPenQueryPtr search_query =
-      mojom::SeaPenQuery::NewTextQuery(user_search_query);
   sea_pen_provider_remote()->SearchWallpaper(
-      std::move(search_query), search_wallpaper_future.GetCallback());
-
+      search_query.Clone(), search_wallpaper_future.GetCallback());
   // Select the first returned thumbnail.
   base::test::TestFuture<bool> select_wallpaper_future;
   sea_pen_provider_remote()->SelectSeaPenThumbnail(
@@ -477,8 +517,17 @@ TEST_F(PersonalizationAppSeaPenProviderImplTest,
       select_wallpaper_future.GetCallback());
 
   ASSERT_TRUE(select_wallpaper_future.Take());
-  EXPECT_TRUE(test_wallpaper_controller()->sea_pen_query().Equals(
-      mojom::SeaPenQuery::NewTextQuery(user_search_query)));
+
+  // Verify the image was really saved with the correct metadata.
+  base::test::TestFuture<const gfx::ImageSkia&,
+                         personalization_app::mojom::RecentSeaPenImageInfoPtr>
+      get_image_and_metadata_future;
+  SeaPenWallpaperManager::GetInstance()->GetImageAndMetadata(
+      GetTestAccountId(), 111, get_image_and_metadata_future.GetCallback());
+  EXPECT_EQ(search_query->get_text_query(),
+            get_image_and_metadata_future
+                .Get<personalization_app::mojom::RecentSeaPenImageInfoPtr>()
+                ->query->get_text_query());
 }
 
 TEST_F(PersonalizationAppSeaPenProviderImplTest,
@@ -486,12 +535,6 @@ TEST_F(PersonalizationAppSeaPenProviderImplTest,
   auto time_override = CreateScopedTimeNowOverride();
 
   SetUpProfileForTesting(kFakeTestEmail, GetTestAccountId());
-  // Store some test images in the provider so that one can be selected.
-  base::test::TestFuture<
-      std::optional<
-          std::vector<ash::personalization_app::mojom::SeaPenThumbnailPtr>>,
-      manta::MantaStatusCode>
-      search_wallpaper_future;
 
   const base::flat_map<mojom::SeaPenTemplateChip, mojom::SeaPenTemplateOption>
       chosen_options = {
@@ -508,26 +551,42 @@ TEST_F(PersonalizationAppSeaPenProviderImplTest,
           mojom::SeaPenUserVisibleQuery::New("test template query",
                                              "test template title")));
 
+  // Send real images that will pass decoding.
+  SetSeaPenFetcherResponse({111, 222}, manta::MantaStatusCode::kOk,
+                           search_query);
+
+  // Store some test images in the provider so that one can be selected.
+  base::test::TestFuture<
+      std::optional<
+          std::vector<ash::personalization_app::mojom::SeaPenThumbnailPtr>>,
+      manta::MantaStatusCode>
+      search_wallpaper_future;
+
   sea_pen_provider_remote()->SearchWallpaper(
-      std::move(search_query), search_wallpaper_future.GetCallback());
+      search_query->Clone(), search_wallpaper_future.GetCallback());
 
   // Select the first returned thumbnail.
   base::test::TestFuture<bool> select_wallpaper_future;
   sea_pen_provider_remote()->SelectSeaPenThumbnail(
       search_wallpaper_future.Get<0>().value().front()->id,
       select_wallpaper_future.GetCallback());
-
   ASSERT_TRUE(select_wallpaper_future.Take());
 
-  EXPECT_TRUE(test_wallpaper_controller()->sea_pen_query().Equals(
-      mojom::SeaPenQuery::NewTemplateQuery(mojom::SeaPenTemplateQuery::New(
-          mojom::SeaPenTemplateId::kCharacters, chosen_options,
-          mojom::SeaPenUserVisibleQuery::New("test template query",
-                                             "test template title")))));
+  // Verify the image was really saved with the correct metadata.
+  base::test::TestFuture<const gfx::ImageSkia&,
+                         personalization_app::mojom::RecentSeaPenImageInfoPtr>
+      get_image_and_metadata_future;
+  SeaPenWallpaperManager::GetInstance()->GetImageAndMetadata(
+      GetTestAccountId(), 111, get_image_and_metadata_future.GetCallback());
+  EXPECT_TRUE(search_query->get_template_query().Equals(
+      get_image_and_metadata_future
+          .Get<personalization_app::mojom::RecentSeaPenImageInfoPtr>()
+          ->query->get_template_query()));
 }
 
 TEST_F(PersonalizationAppSeaPenProviderImplTest,
        GetRecentSeaPenImageThumbnailWithValidMetadata) {
+  const auto time_override = CreateScopedTimeNowOverride();
   SetUpProfileForTesting(kFakeTestEmail, GetTestAccountId());
   const base::test::ScopedRestoreICUDefaultLocale locale("en_US");
   const base::test::ScopedRestoreDefaultTimezone la_time("America/Los_Angeles");
@@ -542,12 +601,6 @@ TEST_F(PersonalizationAppSeaPenProviderImplTest,
   EXPECT_THAT(recent_images,
               testing::ContainerEq(std::vector<uint32_t>({kSeaPenId1})));
 
-  test_wallpaper_controller()->set_sea_pen_metadata(
-      /*metadata=*/R"({"creation_time":"13349580387513653",
-      "user_visible_query_text":"test template query",
-      "user_visible_query_template":"test template title",
-      "options":{"4":"55","5":"64"},"template_id":"2"})");
-
   base::test::TestFuture<mojom::RecentSeaPenThumbnailDataPtr>
       thumbnail_info_future;
   sea_pen_provider_remote()->GetRecentSeaPenImageThumbnail(
@@ -555,12 +608,10 @@ TEST_F(PersonalizationAppSeaPenProviderImplTest,
 
   GURL url(thumbnail_info_future.Get()->url);
   EXPECT_FALSE(url.is_empty());
-  EXPECT_EQ(u"Jan 12, 2024",
-            thumbnail_info_future.Get()->image_info->creation_time);
-  EXPECT_TRUE(
-      thumbnail_info_future.Get()->image_info->user_visible_query.Equals(
-          mojom::SeaPenUserVisibleQuery::New("test template query",
-                                             "test template title")));
+  EXPECT_EQ(base::TimeFormatShortDate(base::Time::Now()),
+            thumbnail_info_future.Get()->image_info->creation_time.value());
+  EXPECT_EQ("test query 111",
+            thumbnail_info_future.Get()->image_info->query->get_text_query());
 }
 
 TEST_F(PersonalizationAppSeaPenProviderImplTest,
@@ -591,31 +642,19 @@ TEST_F(PersonalizationAppSeaPenProviderImplTest,
        GetRecentSeaPenImageThumbnailWithDecodingFailure) {
   SetUpProfileForTesting(kFakeTestEmail, GetTestAccountId());
 
-  CreateSeaPenFilesForTesting(GetTestAccountId(), {kSeaPenId1},
-                              "invalid image data");
-
-  base::test::TestFuture<const std::vector<uint32_t>&> recent_images_future;
-  sea_pen_provider_remote()->GetRecentSeaPenImages(
-      recent_images_future.GetCallback());
-
-  std::vector<uint32_t> recent_images = recent_images_future.Take();
-  EXPECT_THAT(recent_images,
-              testing::ContainerEq(std::vector<uint32_t>({kSeaPenId1})));
-
-  base::test::TestFuture<mojom::RecentSeaPenThumbnailDataPtr>
-      thumbnail_info_future;
-  // Try to get thumbnail data for an invalid file path.
-  sea_pen_provider_remote()->GetRecentSeaPenImageThumbnail(
-      recent_images[0], thumbnail_info_future.GetCallback());
-
-  EXPECT_FALSE(thumbnail_info_future.Take());
-}
-
-TEST_F(PersonalizationAppSeaPenProviderImplTest,
-       GetRecentSeaPenImageThumbnailWithInvalidFormatMetadata) {
-  SetUpProfileForTesting(kFakeTestEmail, GetTestAccountId());
-
   CreateSeaPenFilesForTesting(GetTestAccountId(), {kSeaPenId1});
+  {
+    // Mess up the file so it fails decoding.
+    const auto file_path = sea_pen_wallpaper_manager_session_delegate()
+                               ->GetStorageDirectory(GetTestAccountId())
+                               .Append(base::NumberToString(kSeaPenId1))
+                               .AddExtension(".jpg");
+    std::string data;
+    ASSERT_TRUE(base::ReadFileToString(file_path, &data));
+    // Cut off the last half of the data.
+    data.erase(data.begin() + data.length() / 2);
+    ASSERT_TRUE(base::WriteFile(file_path, data));
+  }
 
   base::test::TestFuture<const std::vector<uint32_t>&> recent_images_future;
   sea_pen_provider_remote()->GetRecentSeaPenImages(
@@ -625,64 +664,76 @@ TEST_F(PersonalizationAppSeaPenProviderImplTest,
   EXPECT_THAT(recent_images,
               testing::ContainerEq(std::vector<uint32_t>({kSeaPenId1})));
 
-  test_wallpaper_controller()->set_sea_pen_metadata(
-      /*metadata=*/"invalid format metadata");
-
   base::test::TestFuture<mojom::RecentSeaPenThumbnailDataPtr>
       thumbnail_info_future;
   sea_pen_provider_remote()->GetRecentSeaPenImageThumbnail(
       recent_images[0], thumbnail_info_future.GetCallback());
-
-  GURL url(thumbnail_info_future.Get()->url);
-  EXPECT_FALSE(url.is_empty());
-  EXPECT_FALSE(thumbnail_info_future.Get()->image_info);
+  EXPECT_TRUE(thumbnail_info_future.Take().is_null());
 }
 
-TEST_F(PersonalizationAppSeaPenProviderImplTest,
-       GetRecentSeaPenImageThumbnailWithMissingFieldMetadata) {
+TEST_F(PersonalizationAppSeaPenProviderImplTest, DeleteRecentSeaPenImage) {
   SetUpProfileForTesting(kFakeTestEmail, GetTestAccountId());
-
-  CreateSeaPenFilesForTesting(GetTestAccountId(), {kSeaPenId1});
+  test_wallpaper_controller()->ClearCounts();
+  CreateSeaPenFilesForTesting(GetTestAccountId(), {kSeaPenId1, kSeaPenId2});
 
   base::test::TestFuture<const std::vector<uint32_t>&> recent_images_future;
   sea_pen_provider_remote()->GetRecentSeaPenImages(
       recent_images_future.GetCallback());
+  EXPECT_THAT(recent_images_future.Take(),
+              testing::UnorderedElementsAre(kSeaPenId1, kSeaPenId2));
 
-  std::vector<uint32_t> recent_images = recent_images_future.Take();
-  EXPECT_THAT(recent_images,
-              testing::ContainerEq(std::vector<uint32_t>({kSeaPenId1})));
+  // Select the recent image |kSeaPenId1| as the current wallpaper.
+  base::test::TestFuture<bool> select_wallpaper_future;
+  sea_pen_provider_remote()->SelectRecentSeaPenImage(
+      kSeaPenId1, select_wallpaper_future.GetCallback());
+  EXPECT_TRUE(select_wallpaper_future.Take());
 
-  test_wallpaper_controller()->set_sea_pen_metadata(
-      /*metadata=*/R"({"creation_time":"13349580387513653"})");
+  // Delete |kSeaPenId2| from recent SeaPen images. |kSeaPenId1| is still the
+  // current wallpaper.
+  base::test::TestFuture<bool> delete_future;
+  sea_pen_provider_remote()->DeleteRecentSeaPenImage(
+      kSeaPenId2, delete_future.GetCallback());
+  EXPECT_TRUE(delete_future.Take());
 
-  base::test::TestFuture<mojom::RecentSeaPenThumbnailDataPtr>
-      thumbnail_info_future;
-  sea_pen_provider_remote()->GetRecentSeaPenImageThumbnail(
-      recent_images[0], thumbnail_info_future.GetCallback());
+  sea_pen_provider_remote()->GetRecentSeaPenImages(
+      recent_images_future.GetCallback());
+  EXPECT_THAT(recent_images_future.Take(),
+              testing::UnorderedElementsAre(kSeaPenId1));
+  EXPECT_EQ(WallpaperType::kSeaPen,
+            test_wallpaper_controller()->wallpaper_info()->type);
+  EXPECT_EQ(0, test_wallpaper_controller()->set_default_wallpaper_count());
 
-  GURL url(thumbnail_info_future.Get()->url);
-  EXPECT_FALSE(url.is_empty());
-  EXPECT_FALSE(thumbnail_info_future.Get()->image_info);
+  // Delete |kSeaPenId2| from recent SeaPen images. Should reset to default
+  // wallpaper.
+  sea_pen_provider_remote()->DeleteRecentSeaPenImage(
+      kSeaPenId1, delete_future.GetCallback());
+  EXPECT_TRUE(delete_future.Take());
+
+  sea_pen_provider_remote()->GetRecentSeaPenImages(
+      recent_images_future.GetCallback());
+  EXPECT_THAT(recent_images_future.Take(),
+              testing::ContainerEq(std::vector<uint32_t>({})));
+  EXPECT_EQ(1, test_wallpaper_controller()->set_default_wallpaper_count());
 }
 
 TEST_F(PersonalizationAppSeaPenProviderImplTest,
-       ShouldShowSeaPenTermsOfServiceDialog) {
+       ShouldShowSeaPenIntroductionDialog) {
   SetUpProfileForTesting(kFakeTestEmail, GetTestAccountId());
   test_wallpaper_controller()->ClearCounts();
   base::test::ScopedFeatureList features;
   features.InitWithFeatures({features::kSeaPen}, {});
 
   base::test::TestFuture<bool> should_show_dialog_future;
-  sea_pen_provider_remote()->ShouldShowSeaPenTermsOfServiceDialog(
+  sea_pen_provider_remote()->ShouldShowSeaPenIntroductionDialog(
       should_show_dialog_future.GetCallback());
-  // Expects to return true before the terms are accepted.
+  // Expects to return true before the dialog is closed.
   EXPECT_TRUE(should_show_dialog_future.Take());
 
-  sea_pen_provider_remote()->HandleSeaPenTermsOfServiceAccepted();
+  sea_pen_provider_remote()->HandleSeaPenIntroductionDialogClosed();
 
-  sea_pen_provider_remote()->ShouldShowSeaPenTermsOfServiceDialog(
+  sea_pen_provider_remote()->ShouldShowSeaPenIntroductionDialog(
       should_show_dialog_future.GetCallback());
-  // Expects to return false after the terms are accepted.
+  // Expects to return false after the dialog is closed.
   EXPECT_FALSE(should_show_dialog_future.Take());
 }
 

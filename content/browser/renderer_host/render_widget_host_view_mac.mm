@@ -142,7 +142,7 @@ display::ScreenInfo RenderWidgetHostViewMac::GetCurrentScreenInfo() const {
 
 void RenderWidgetHostViewMac::SetCurrentDeviceScaleFactor(
     float device_scale_factor) {
-  // TODO(https://crbug.com/1337094): does this need to be upscaled by
+  // TODO(crbug.com/40229152): does this need to be upscaled by
   // scale_override_for_capture_ for HiDPI capture mode?
   screen_infos_.mutable_current().device_scale_factor = device_scale_factor;
 }
@@ -301,7 +301,7 @@ void RenderWidgetHostViewMac::MigrateNSViewBridge(
     // be an observer, and calling AddObserver here would cause a CHECK to fail.
     // To workaround that case, this code removes the observer first, which is a
     // safe no-op if the bridge is already not an observer.
-    // TODO(crbug.com/1204273): Maybe recreate `in_process_ns_view_bridge_`?
+    // TODO(crbug.com/40179941): Maybe recreate `in_process_ns_view_bridge_`?
     display::Screen::GetScreen()->RemoveObserver(
         in_process_ns_view_bridge_.get());
     display::Screen::GetScreen()->AddObserver(in_process_ns_view_bridge_.get());
@@ -335,7 +335,7 @@ void RenderWidgetHostViewMac::MigrateNSViewBridge(
 
   // End local display::Screen observation via `in_process_ns_view_bridge_`;
   // the remote NSWindow's display::Screen information will be sent by Mojo.
-  // TODO(crbug.com/1204273): Maybe just destroy `in_process_ns_view_bridge_`?
+  // TODO(crbug.com/40179941): Maybe just destroy `in_process_ns_view_bridge_`?
   display::Screen::GetScreen()->RemoveObserver(
       in_process_ns_view_bridge_.get());
 
@@ -789,7 +789,7 @@ void RenderWidgetHostViewMac::OnGestureEvent(
 
 void RenderWidgetHostViewMac::OnRenderFrameMetadataChangedAfterActivation(
     base::TimeTicks activation_time) {
-  // TODO(crbug/1308932): Remove toSkColor and make all SkColor4f.
+  // TODO(crbug.com/40219248): Remove toSkColor and make all SkColor4f.
   last_frame_root_background_color_ = host()
                                           ->render_frame_metadata_provider()
                                           ->LastRenderFrameMetadata()
@@ -909,7 +909,7 @@ void RenderWidgetHostViewMac::UpdateScreenInfo() {
         view_bounds_in_window_dip_.size());
   }
 
-  // TODO(crbug.com/1169312): Unify display info caching and change detection.
+  // TODO(crbug.com/40165361): Unify display info caching and change detection.
   // Notify the associated RenderWidgetHostImpl when screen info has changed.
   // That will synchronize visual properties needed for frame tree rendering
   // and for web platform APIs that expose screen and window info and events.
@@ -1041,8 +1041,8 @@ void RenderWidgetHostViewMac::CopyFromSurface(
                            ->GetDelegatedFrameHost()
                            ->GetWeakPtr();
   }
-  // TODO(crbug.com/1169321): Resolve potential differences between display info
-  // caches in RenderWidgetHostViewMac and BrowserCompositorMac.
+  // TODO(crbug.com/40743791): Resolve potential differences between display
+  // info caches in RenderWidgetHostViewMac and BrowserCompositorMac.
   RenderWidgetHostViewBase::CopyMainAndPopupFromSurface(
       host()->GetWeakPtr(),
       browser_compositor_->GetDelegatedFrameHost()->GetWeakPtr(), popup_host,
@@ -1553,7 +1553,7 @@ bool RenderWidgetHostViewMac::HasFallbackSurface() const {
 
 bool RenderWidgetHostViewMac::TransformPointToCoordSpaceForView(
     const gfx::PointF& point,
-    RenderWidgetHostViewBase* target_view,
+    RenderWidgetHostViewInput* target_view,
     gfx::PointF* transformed_point) {
   if (target_view == this) {
     *transformed_point = point;
@@ -1621,6 +1621,11 @@ std::optional<SkColor> RenderWidgetHostViewMac::GetBackgroundColor() {
   // https://crbug.com/735407
   std::optional<SkColor> color = RenderWidgetHostViewBase::GetBackgroundColor();
   return (color && *color == SK_ColorTRANSPARENT) ? SK_ColorWHITE : color;
+}
+
+viz::SurfaceId RenderWidgetHostViewMac::GetFallbackSurfaceIdForTesting() const {
+  return browser_compositor_->GetDelegatedFrameHost()
+      ->GetFallbackSurfaceIdForTesting();  // IN-TEST
 }
 
 void RenderWidgetHostViewMac::SetBackgroundLayerColor(SkColor color) {
@@ -1904,8 +1909,8 @@ void RenderWidgetHostViewMac::GestureBegin(blink::WebGestureEvent begin_event,
   // If the page is at the minimum zoom level, require a threshold be reached
   // before the pinch has an effect. Synthetic pinches are not subject to this
   // threshold.
-  // TODO(crbug.com/1038683): |page_at_minimum_scale_| is always true, should it
-  // be removed or correctly set based on RenderFrameMetadata?
+  // TODO(crbug.com/40666440): |page_at_minimum_scale_| is always true, should
+  // it be removed or correctly set based on RenderFrameMetadata?
   if (page_at_minimum_scale_) {
     pinch_has_reached_zoom_threshold_ = is_synthetically_injected;
     pinch_unused_amount_ = 1;
@@ -2024,9 +2029,17 @@ void RenderWidgetHostViewMac::LookUpDictionaryOverlayAtPoint(
   root_point.Scale(GetDeviceScaleFactor());
 
   gfx::PointF transformed_point;
-  RenderWidgetHostImpl* widget_host =
-      host()->delegate()->GetInputEventRouter()->GetRenderWidgetHostAtPoint(
-          this, root_point, &transformed_point);
+  auto* view = host()
+                   ->delegate()
+                   ->GetInputEventRouter()
+                   ->GetRenderWidgetHostViewInputAtPoint(this, root_point,
+                                                         &transformed_point);
+  if (!view) {
+    return;
+  }
+
+  RenderWidgetHostImpl* widget_host = RenderWidgetHostImpl::From(
+      static_cast<RenderWidgetHostViewBase*>(view)->GetRenderWidgetHost());
   if (!widget_host)
     return;
 
@@ -2053,9 +2066,17 @@ bool RenderWidgetHostViewMac::SyncGetCharacterIndexAtPoint(
     return true;
 
   gfx::PointF transformed_point;
-  RenderWidgetHostImpl* widget_host =
-      host()->delegate()->GetInputEventRouter()->GetRenderWidgetHostAtPoint(
-          this, root_point, &transformed_point);
+  auto* view = host()
+                   ->delegate()
+                   ->GetInputEventRouter()
+                   ->GetRenderWidgetHostViewInputAtPoint(this, root_point,
+                                                         &transformed_point);
+  if (!view) {
+    return true;
+  }
+
+  RenderWidgetHostImpl* widget_host = RenderWidgetHostImpl::From(
+      static_cast<RenderWidgetHostViewBase*>(view)->GetRenderWidgetHost());
   if (!widget_host)
     return true;
 

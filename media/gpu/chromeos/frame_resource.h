@@ -20,6 +20,9 @@ namespace media {
 // Forward declare for use in AsVideoFrameResource.
 class VideoFrameResource;
 
+// Forward declare for use in AsNativePixmapFrameResource
+class NativePixmapFrameResource;
+
 // Base class for holding an object like a VideoFrame. It provides accessors for
 // the metadata or data. This can be implemented using different backing types
 // e.g. VideoFrame or NativePixmap.
@@ -34,6 +37,10 @@ class FrameResource : public base::RefCountedThreadSafe<FrameResource> {
   // accessor that is needed by encoders. The returned pointer is only valid as
   // long as |this| is alive.
   virtual VideoFrameResource* AsVideoFrameResource();
+
+  // Allows safe downcasting to a NativePixmapFrameResource. The returned
+  // pointer is only valid as long as |this| is alive.
+  virtual const NativePixmapFrameResource* AsNativePixmapFrameResource() const;
 
   // Unique identifier for this video frame generated at construction time. The
   // first ID is 1. The identifier is unique within a process % overflows (which
@@ -75,11 +82,11 @@ class FrameResource : public base::RefCountedThreadSafe<FrameResource> {
   // such use cases, use dup() to obtain your own copy of the FDs.
   virtual int GetDmabufFd(size_t i) const = 0;
 
-  // Creates a NativePixmap that duplicates the DmaBuf FDs of |this|. Ownership
-  // of the constructed NativePixmap is returned to the caller. The returned
-  // pixmap is only a DmaBuf container and should not be used for compositing or
-  // scanout.
-  virtual scoped_refptr<gfx::NativePixmapDmaBuf> CreateNativePixmapDmaBuf()
+  // Creates or gets a NativePixmap. If the FrameResource is backed by a
+  // NativePixmap, then there is no duplication of file descriptors. The
+  // returned pixmap is only a DmaBuf container and should not be used for
+  // compositing or scanout.
+  virtual scoped_refptr<const gfx::NativePixmapDmaBuf> GetNativePixmapDmaBuf()
       const = 0;
 
   // Create a shared GPU memory handle to |this|'s data.
@@ -124,11 +131,6 @@ class FrameResource : public base::RefCountedThreadSafe<FrameResource> {
   // scaled to this size when being presented. This can be used to represent
   // anamorphic frames, or to "soft-apply" any custom scaling.
   virtual const gfx::Size& natural_size() const = 0;
-
-  // Provides the sampler conversion information for the frame.
-  virtual const std::optional<gpu::VulkanYCbCrInfo>& ycbcr_info() const = 0;
-  virtual void set_ycbcr_info(
-      const std::optional<gpu::VulkanYCbCrInfo>& ycbcr_info) = 0;
 
   // Returns a dictionary of optional metadata. This contains information
   // associated with the frame that downstream clients might use for frame-level

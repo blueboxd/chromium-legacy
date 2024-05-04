@@ -26,6 +26,7 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/flex_layout.h"
+#include "ui/views/widget/widget.h"
 
 BubbleSignInPromoView::BubbleSignInPromoView(
     Profile* profile,
@@ -98,7 +99,7 @@ BubbleSignInPromoView::BubbleSignInPromoView(
           profiles::GetPlaceholderAvatarIconResourceID());
     }
     signin_button_pointer = std::make_unique<BubbleSignInPromoSignInButtonView>(
-        account, account_icon, std::move(callback),
+        account, account_icon, std::move(callback), access_point,
         /*use_account_name_as_title=*/true);
   }
 
@@ -133,6 +134,7 @@ BubbleSignInPromoView::~BubbleSignInPromoView() = default;
 void BubbleSignInPromoView::SignIn() {
   std::optional<AccountInfo> account = signin_button_view_->account();
   delegate_->OnSignIn(account.value_or(AccountInfo()));
+  GetWidget()->Close();
 }
 
 BEGIN_METADATA(BubbleSignInPromoView)

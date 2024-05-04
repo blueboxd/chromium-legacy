@@ -7,7 +7,6 @@
  * screen.
  */
 
-import '//resources/polymer/v3_0/paper-styles/color.js';
 import '//resources/ash/common/bluetooth/bluetooth_pairing_enter_code_page.js';
 import '../../components/hd_iron_icon.js';
 import '../../components/oobe_icons.html.js';
@@ -17,8 +16,6 @@ import '../../components/dialogs/oobe_adaptive_dialog.js';
 import '../../components/dialogs/oobe_modal_dialog.js';
 import '../../components/buttons/oobe_text_button.js';
 
-import {assert} from '//resources/js/assert.js';
-import {loadTimeData} from '//resources/js/load_time_data.js';
 import {IronA11yAnnouncer} from '//resources/polymer/v3_0/iron-a11y-announcer/iron-a11y-announcer.js';
 import {PolymerElementProperties} from '//resources/polymer/v3_0/polymer/interfaces.js';
 import {afterNextRender, mixinBehaviors, PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -29,8 +26,6 @@ import {OobeI18nMixin, OobeI18nMixinInterface} from '../../components/mixins/oob
 import {OobeModalDialog} from '../../components/dialogs/oobe_modal_dialog.js';
 
 import {getTemplate} from './hid_detection.html.js';
-
-const PINCODE_LENGTH: number = 6;
 
 /**
  * Enumeration of possible connection states of a device.
@@ -125,7 +120,6 @@ export class HidDetectionScreen extends HidDetectionScreenBase {
       pinCode: {
         type: String,
         value: '000000',
-        observer: 'onPinParametersChanged',
       },
 
       /**
@@ -135,7 +129,6 @@ export class HidDetectionScreen extends HidDetectionScreenBase {
       numKeysEnteredPinCode: {
         type: Number,
         value: 0,
-        observer: 'onPinParametersChanged',
       },
 
       /**
@@ -154,14 +147,6 @@ export class HidDetectionScreen extends HidDetectionScreenBase {
         type: String,
         computed: 'getPinDialogTitle(locale, keyboardDeviceName)',
       },
-
-      /**
-       * True when kOobeHidDetectionRevamp is enabled.
-       */
-      isOobeHidDetectionRevampEnabled: {
-        type: Boolean,
-        value: loadTimeData.getBoolean('enableOobeHidDetectionRevamp'),
-      },
     };
   }
 
@@ -176,7 +161,6 @@ export class HidDetectionScreen extends HidDetectionScreenBase {
   numKeysEnteredPinCode: number;
   private pinDialogIsOpen: boolean;
   pinDialogTitle: string;
-  private isOobeHidDetectionRevampEnabled: boolean;
 
   override get EXTERNAL_API(): string[] {
     return [
@@ -285,7 +269,6 @@ export class HidDetectionScreen extends HidDetectionScreenBase {
       if (!this.pinDialogIsOpen) {
         dialog.showDialog();
         this.pinDialogIsOpen = true;
-        this.onPinParametersChanged();
       }
     } else {
       dialog.hideDialog();
@@ -298,27 +281,6 @@ export class HidDetectionScreen extends HidDetectionScreenBase {
    */
   private getPinDialogTitle(): string {
     return this.i18n('hidDetectionPinDialogTitle', this.keyboardDeviceName);
-  }
-
-  /**
-   *  Modifies the PIN that is seen on the PIN dialog.
-   *  Also marks the current number to be entered with the class 'key-next'.
-   */
-  private onPinParametersChanged(): void {
-    if (this.isOobeHidDetectionRevampEnabled || !this.pinDialogVisible) {
-      return;
-    }
-
-    const keysEntered = this.numKeysEnteredPinCode;
-    for (let i = 0; i < PINCODE_LENGTH; i++) {
-      const pincodeSymbol =
-          this.shadowRoot?.querySelector('#hid-pincode-sym-' + (i + 1));
-      assert(pincodeSymbol instanceof HTMLDivElement);
-      pincodeSymbol.classList.toggle('key-next', i === keysEntered);
-      if (i < PINCODE_LENGTH) {
-        pincodeSymbol.textContent = this.pinCode[i] ? this.pinCode[i] : '';
-      }
-    }
   }
 
   /**

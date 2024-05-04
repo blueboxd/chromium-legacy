@@ -280,7 +280,6 @@ public class CreatorCoordinator
                         mActivity,
                         mSnackbarManager,
                         mBottomSheetController,
-                        /* isPlaceholderShownInitially= */ false,
                         mWindowAndroid,
                         /* shareSupplier= */ shareDelegateSupplier,
                         StreamKind.SINGLE_WEB_FEED,
@@ -332,7 +331,7 @@ public class CreatorCoordinator
     }
 
     private RecyclerView setUpView() {
-        // TODO(crbug.com/1374744): Refactor NTP naming out of the general Feed code.
+        // TODO(crbug.com/40872531): Refactor NTP naming out of the general Feed code.
         mContentManager = new FeedListContentManager();
         ProcessScope processScope = FeedSurfaceTracker.getInstance().getXSurfaceProcessScope();
 
@@ -604,7 +603,7 @@ public class CreatorCoordinator
                 ContentView.createContentView(
                         mActivity, /* eventOffsetHandler= */ null, mWebContents);
 
-        mWebContents.initialize(
+        mWebContents.setDelegates(
                 VersionInfo.getProductVersion(),
                 ViewAndroidDelegate.createBasicDelegate(mContentView),
                 mContentView,

@@ -13,7 +13,6 @@
 #include "services/webnn/dml/test_base.h"
 #include "services/webnn/dml/utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/gl/gl_angle_util_win.h"
 
 namespace webnn::dml {
 
@@ -22,15 +21,16 @@ class WebNNGraphBuilderTest : public TestBase {
   void SetUp() override;
 
  protected:
-  ComPtr<IDMLDevice> dml_device_;
+  Microsoft::WRL::ComPtr<IDMLDevice> dml_device_;
 };
 
 void WebNNGraphBuilderTest::SetUp() {
   SKIP_TEST_IF(!UseGPUInTests());
-  ASSERT_TRUE(InitializeGLDisplay());
   Adapter::EnableDebugLayerForTesting();
   auto adapter_creation_result = Adapter::GetInstanceForTesting();
-  ASSERT_TRUE(adapter_creation_result.has_value());
+  // If the adapter creation result has no value, it's most likely because
+  // platform functions were not properly loaded.
+  SKIP_TEST_IF(!adapter_creation_result.has_value());
   auto adapter = adapter_creation_result.value();
   dml_device_ = adapter->dml_device();
   ASSERT_NE(dml_device_.Get(), nullptr);

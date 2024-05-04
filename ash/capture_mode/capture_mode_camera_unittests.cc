@@ -319,6 +319,28 @@ class CaptureModeCameraTest : public AshTestBase {
     DCHECK(window_state->IsPip());
   }
 
+  bool IsCameraIndicatorIconVisible() const {
+    auto* indicator_view = GetPrimaryDisplayPrivacyIndicatorsView();
+    return indicator_view && indicator_view->GetVisible() &&
+           PrivacyIndicatorsController::Get()->IsCameraUsed() &&
+           indicator_view->camera_icon()->GetVisible();
+  }
+
+  bool IsMicrophoneIndicatorIconVisible() const {
+    auto* indicator_view = GetPrimaryDisplayPrivacyIndicatorsView();
+    return indicator_view && indicator_view->GetVisible() &&
+           PrivacyIndicatorsController::Get()->IsMicrophoneUsed() &&
+           indicator_view->microphone_icon()->GetVisible();
+  }
+
+  PrivacyIndicatorsTrayItemView* GetPrimaryDisplayPrivacyIndicatorsView()
+      const {
+    return Shell::GetPrimaryRootWindowController()
+        ->GetStatusAreaWidget()
+        ->notification_center_tray()
+        ->privacy_indicators_view();
+  }
+
  private:
   std::unique_ptr<aura::Window> window_;
 };
@@ -2426,9 +2448,18 @@ TEST_F(CaptureModeCameraTest, RecordNumberOfConnectedCamerasHistogramTest) {
   histogram_tester.ExpectBucketCount(histogram_name, 2, 2);
 }
 
+// Flaky on LSAN / ASAN: https://crbug.com/331316079.
+#if defined(LEAK_SANITIZER) || defined(ADDRESS_SANITIZER)
+#define MAYBE_RecordCameraReconnectDurationHistogramTest \
+  DISABLED_RecordCameraReconnectDurationHistogramTest
+#else
+#define MAYBE_RecordCameraReconnectDurationHistogramTest \
+  RecordCameraReconnectDurationHistogramTest
+#endif
 // Tests that the duration for disconnected camera to become available again is
 // recorded correctly both in clamshell and tablet mode.
-TEST_F(CaptureModeCameraTest, RecordCameraReconnectDurationHistogramTest) {
+TEST_F(CaptureModeCameraTest,
+       MAYBE_RecordCameraReconnectDurationHistogramTest) {
   constexpr char kHistogramNameBase[] = "CameraReconnectDuration";
   base::HistogramTester histogram_tester;
 
@@ -4696,45 +4727,7 @@ TEST_F(NoSessionCaptureModeCameraTest, RequestCameraInfoAfterUserLogsIn) {
   EXPECT_EQ(camera_controller->available_cameras().size(), 1u);
 }
 
-class CaptureModePrivacyIndicatorsTest : public CaptureModeCameraTest {
- public:
-  CaptureModePrivacyIndicatorsTest() {
-    scoped_feature_list_.InitWithFeatureStates(
-        {{features::kPrivacyIndicators, true}});
-  }
-  CaptureModePrivacyIndicatorsTest(const CaptureModePrivacyIndicatorsTest&) =
-      delete;
-  CaptureModePrivacyIndicatorsTest& operator=(
-      const CaptureModePrivacyIndicatorsTest&) = delete;
-  ~CaptureModePrivacyIndicatorsTest() override = default;
-
-  bool IsCameraIndicatorIconVisible() const {
-    auto* indicator_view = GetPrimaryDisplayPrivacyIndicatorsView();
-    return indicator_view && indicator_view->GetVisible() &&
-           PrivacyIndicatorsController::Get()->IsCameraUsed() &&
-           indicator_view->camera_icon_->GetVisible();
-  }
-
-  bool IsMicrophoneIndicatorIconVisible() const {
-    auto* indicator_view = GetPrimaryDisplayPrivacyIndicatorsView();
-    return indicator_view && indicator_view->GetVisible() &&
-           PrivacyIndicatorsController::Get()->IsMicrophoneUsed() &&
-           indicator_view->microphone_icon_->GetVisible();
-  }
-
-  PrivacyIndicatorsTrayItemView* GetPrimaryDisplayPrivacyIndicatorsView()
-      const {
-    return Shell::GetPrimaryRootWindowController()
-        ->GetStatusAreaWidget()
-        ->notification_center_tray()
-        ->privacy_indicators_view();
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
-TEST_F(CaptureModePrivacyIndicatorsTest, CameraPrivacyIndicators) {
+TEST_F(CaptureModeCameraTest, CameraPrivacyIndicators) {
   ui::ScopedAnimationDurationScaleMode animation_scale(
       ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
 
@@ -4782,7 +4775,7 @@ TEST_F(CaptureModePrivacyIndicatorsTest, CameraPrivacyIndicators) {
       capture_mode_privacy_notification_id));
 }
 
-TEST_F(CaptureModePrivacyIndicatorsTest, DuringRecordingPrivacyIndicators) {
+TEST_F(CaptureModeCameraTest, DuringRecordingPrivacyIndicators) {
   ui::ScopedAnimationDurationScaleMode animation_scale(
       ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
 

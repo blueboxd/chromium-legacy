@@ -39,6 +39,7 @@
 #include "ui/accessibility/ax_event_intent.h"
 #include "ui/accessibility/ax_mode.h"
 #include "ui/accessibility/ax_node_id_forward.h"
+#include "ui/accessibility/ax_tree_data.h"
 #include "ui/accessibility/ax_tree_id.h"
 #include "ui/accessibility/ax_tree_source.h"
 
@@ -86,6 +87,8 @@ class BLINK_EXPORT WebAXObject {
   static WebAXObject FromWebNode(const WebNode&);
   static WebAXObject FromWebDocument(const WebDocument&);
   static WebAXObject FromWebDocumentByID(const WebDocument&, int);
+  static WebAXObject FromWebDocumentFirstWithRole(const WebDocument&,
+                                                  ax::mojom::Role role);
   static WebAXObject FromWebDocumentFocused(const WebDocument&);
   static bool IsDirty(const WebDocument&);
 
@@ -118,7 +121,6 @@ class BLINK_EXPORT WebAXObject {
   bool IsModal() const;
 
   bool IsOffScreen() const;
-  bool IsSelectedOptionActive() const;
   bool IsVisited() const;
 
   bool CanSetValueAttribute() const;
@@ -193,8 +195,8 @@ class BLINK_EXPORT WebAXObject {
 
   WebNode GetNode() const;
   WebDocument GetDocument() const;
-  bool AccessibilityIsIgnored() const;
-  bool AccessibilityIsIncludedInTree() const;
+  bool IsIgnored() const;
+  bool IsIncludedInTree() const;
 
   // Get the verb associated with performing the default action
   // on this object.
@@ -281,7 +283,7 @@ class BLINK_EXPORT WebAXObject {
 
   // Returns a brief description of the object, suitable for debugging. E.g. its
   // role and name.
-  WebString ToString(bool verbose = false) const;
+  WebString ToString(bool verbose = true) const;
 
   void HandleAutofillSuggestionAvailabilityChanged(
       WebAXAutofillSuggestionAvailability suggestion_availability) const;
@@ -292,7 +294,9 @@ class BLINK_EXPORT WebAXObject {
   // for when the client needs to insert additional nodes into the accessibility
   // tree.
   int GenerateAXID();
-  void SetPluginTreeSource(ui::AXTreeSource<const ui::AXNode*>* source);
+  void SetPluginTreeSource(
+      ui::AXTreeSource<const ui::AXNode*, ui::AXTreeData*, ui::AXNodeData>*
+          source);
   void MarkPluginDescendantDirty(ui::AXNodeID node_id);
 
   // For testing only, returns whether or not we have the permission to

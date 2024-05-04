@@ -37,6 +37,7 @@
 #include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/browser/notifications/profile_notification.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/common/chrome_features.h"
@@ -363,7 +364,7 @@ IN_PROC_BROWSER_TEST_F(AppNotificationsWebNotificationTest,
   ASSERT_FALSE(HasBadge(profile(), app_id2).value());
 }
 
-// TODO(crbug.com/1334960): Disabled AppNotificationsWebNotificationTest.
+// TODO(crbug.com/40846781): Disabled AppNotificationsWebNotificationTest.
 // PersistentNotificationWhenInstallAndUninstallApp on chromeos and linux,
 // because it is failing on linux-chromeos-dbg.
 #if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX)

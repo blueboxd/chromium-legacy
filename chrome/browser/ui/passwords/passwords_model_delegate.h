@@ -146,6 +146,12 @@ class PasswordsModelDelegate {
   virtual void NavigateToPasswordManagerSettingsPage(
       password_manager::ManagePasswordsReferrer referrer) = 0;
 
+  // Open a new tab, pointing to the password manager subpage with the
+  // credential details for the `password_domain_name`.
+  virtual void NavigateToPasswordDetailsPageInPasswordManager(
+      const std::string& password_domain_name,
+      password_manager::ManagePasswordsReferrer referrer) = 0;
+
   // Opens password manager settings page and focuses account store toggle.
   virtual void NavigateToPasswordManagerSettingsAccountStoreToggle(
       password_manager::ManagePasswordsReferrer referrer) = 0;
@@ -198,7 +204,9 @@ class PasswordsModelDelegate {
   virtual void OnBiometricAuthBeforeFillingDeclined() = 0;
 
   // Called when user clicked "Add username" button in AddUsername bubble.
-  virtual void OnAddUsernameSaveClicked(const std::u16string& username) = 0;
+  virtual void OnAddUsernameSaveClicked(
+      const std::u16string& username,
+      const password_manager::PasswordForm& password_to_change) = 0;
 
   // Called from the Save/Update bubble controller to decide whether or not we
   // should show the user the Chrome for iOS promo.

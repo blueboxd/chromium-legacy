@@ -44,7 +44,6 @@
 //ios/chrome/test/data/policy/pref_mapping/LensCameraAssistedSearchEnabled.json
 //ios/chrome/test/data/policy/pref_mapping/ManagedBookmarks.json
 //ios/chrome/test/data/policy/pref_mapping/MetricsReportingEnabled.json
-//ios/chrome/test/data/policy/pref_mapping/MixedContentAutoupgradeEnabled.json
 //ios/chrome/test/data/policy/pref_mapping/NTPContentSuggestionsEnabled.json
 //ios/chrome/test/data/policy/pref_mapping/NewTabPageLocation.json
 //ios/chrome/test/data/policy/pref_mapping/OptimizationGuideFetchingEnabled.json
@@ -59,7 +58,6 @@
 //ios/chrome/test/data/policy/pref_mapping/PopupsAllowedForUrls.json
 //ios/chrome/test/data/policy/pref_mapping/PopupsBlockedForUrls.json
 //ios/chrome/test/data/policy/pref_mapping/PrintingEnabled.json
-//ios/chrome/test/data/policy/pref_mapping/ProductSpecificationsEnabled.json
 //ios/chrome/test/data/policy/pref_mapping/RestrictAccountsToPatterns.json
 //ios/chrome/test/data/policy/pref_mapping/SafeBrowsingEnabled.json
 //ios/chrome/test/data/policy/pref_mapping/SafeBrowsingProtectionLevel.json

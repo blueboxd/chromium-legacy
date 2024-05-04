@@ -11,6 +11,7 @@
 #include "base/rand_util.h"
 #include "base/strings/strcat.h"
 #include "build/build_config.h"
+#include "components/optimization_guide/core/model_execution/feature_keys.h"
 #include "components/optimization_guide/core/optimization_guide_decision.h"
 #include "components/optimization_guide/core/optimization_guide_enums.h"
 #include "components/optimization_guide/core/optimization_guide_features.h"
@@ -78,6 +79,22 @@ std::string TimeToYYYYMMDDString(base::Time ts) {
 namespace optimization_guide {
 
 std::string_view GetStringNameForModelExecutionFeature(
+    std::optional<UserVisibleFeatureKey> feature) {
+  if (!feature) {
+    return GetStringNameForModelExecutionFeature(
+        proto::ModelExecutionFeature::MODEL_EXECUTION_FEATURE_UNSPECIFIED);
+  }
+  return GetStringNameForModelExecutionFeature(
+      ToModelExecutionFeatureProto(*feature));
+}
+
+std::string_view GetStringNameForModelExecutionFeature(
+    ModelBasedCapabilityKey feature) {
+  return GetStringNameForModelExecutionFeature(
+      ToModelExecutionFeatureProto(feature));
+}
+
+std::string_view GetStringNameForModelExecutionFeature(
     proto::ModelExecutionFeature feature) {
   switch (feature) {
     case proto::ModelExecutionFeature::MODEL_EXECUTION_FEATURE_WALLPAPER_SEARCH:
@@ -88,6 +105,8 @@ std::string_view GetStringNameForModelExecutionFeature(
       return "Compose";
     case proto::ModelExecutionFeature::MODEL_EXECUTION_FEATURE_TEST:
       return "Test";
+    case proto::ModelExecutionFeature::MODEL_EXECUTION_FEATURE_TEXT_SAFETY:
+      return "TextSafety";
     case proto::ModelExecutionFeature::MODEL_EXECUTION_FEATURE_UNSPECIFIED:
       return "Unknown";
       // Must be in sync with the ModelExecutionFeature variant in
@@ -180,15 +199,15 @@ void PopulateApiKeyRequestHeader(network::ResourceRequest* resource_request,
   resource_request->headers.SetHeader(kApiKeyHeader, api_key);
 }
 
-int64_t GetHashedModelQualityClientId(proto::ModelExecutionFeature feature,
+int64_t GetHashedModelQualityClientId(UserVisibleFeatureKey feature,
                                       base::Time day,
                                       int64_t client_id) {
   std::string date = TimeToYYYYMMDDString(day);
-  return base::FastHash(
-      base::NumberToString(client_id + static_cast<int>(feature)) + date);
+  int shift = static_cast<int>(ToModelExecutionFeatureProto(feature));
+  return base::FastHash(base::NumberToString(client_id + shift) + date);
 }
 
-int64_t GetOrCreateModelQualityClientId(proto::ModelExecutionFeature feature,
+int64_t GetOrCreateModelQualityClientId(UserVisibleFeatureKey feature,
                                         PrefService* pref_service) {
   if (!pref_service) {
     return 0;

@@ -9,6 +9,7 @@
 
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "chrome/services/bundz_translation/bundz_translation_service.h"
 #include "chrome/services/speech/buildflags/buildflags.h"
 #include "components/paint_preview/buildflags/buildflags.h"
 #include "components/password_manager/core/common/password_manager_features.h"
@@ -27,6 +28,7 @@
 #include "extensions/buildflags/buildflags.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/service_factory.h"
+#include "pdf/buildflags.h"
 #include "printing/buildflags/buildflags.h"
 #include "services/screen_ai/buildflags/buildflags.h"
 #include "ui/accessibility/accessibility_features.h"
@@ -35,6 +37,10 @@
 #include "services/screen_ai/public/mojom/screen_ai_factory.mojom.h"  // nogncheck
 #include "services/screen_ai/screen_ai_service_impl.h"  // nogncheck
 #endif
+
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
+#include "services/passage_embeddings/passage_embeddings_service.h"
+#endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(LINUX)
 
 #if BUILDFLAG(IS_WIN)
 #include "chrome/services/system_signals/win/win_system_signals_service.h"
@@ -72,11 +78,6 @@
 #include "media/mojo/mojom/speech_recognition_service.mojom.h"  // nogncheck
 #endif  // BUILDFLAG(ENABLE_BROWSER_SPEECH_SERVICE)
 
-#if BUILDFLAG(ENABLE_PRINTING) && BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chrome/services/ipp_parser/ipp_parser.h"  // nogncheck
-#include "chrome/services/ipp_parser/public/mojom/ipp_parser.mojom.h"  // nogncheck
-#endif
-
 #if BUILDFLAG(FULL_SAFE_BROWSING) || BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/services/file_util/file_util_service.h"  // nogncheck
 #endif
@@ -111,10 +112,18 @@
 #include "components/services/print_compositor/public/mojom/print_compositor.mojom.h"  // nogncheck
 #endif  // BUILDFLAG(ENABLE_PRINTING)
 
+#if BUILDFLAG(ENABLE_PAINT_PREVIEW)
 #include "components/services/paint_preview_compositor/paint_preview_compositor_collection_impl.h"
 #include "components/services/paint_preview_compositor/public/mojom/paint_preview_compositor.mojom.h"
+#endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+static_assert(BUILDFLAG(ENABLE_PDF), "ChromeOS Ash must enable PDF");
+static_assert(BUILDFLAG(ENABLE_PRINTING), "ChromeOS Ash must enable Printing");
+#include "chrome/services/ipp_parser/ipp_parser.h"  // nogncheck
+#include "chrome/services/ipp_parser/public/mojom/ipp_parser.mojom.h"  // nogncheck
+#include "chrome/services/pdf/pdf_service.h"
+#include "chrome/services/pdf/public/mojom/pdf_service.mojom.h"
 #include "chrome/services/sharing/sharing_impl.h"
 #include "chromeos/ash/components/assistant/buildflags.h"  // nogncheck
 #include "chromeos/ash/components/local_search_service/local_search_service.h"
@@ -127,6 +136,7 @@
 #include "chromeos/ash/services/orca/orca_library.h"
 #include "chromeos/ash/services/quick_pair/quick_pair_service.h"
 #include "chromeos/ash/services/recording/recording_service.h"
+#include "chromeos/constants/chromeos_features.h"  // nogncheck
 #include "chromeos/services/tts/public/mojom/tts_service.mojom.h"
 #include "chromeos/services/tts/tts_service.h"
 
@@ -141,7 +151,6 @@
 #include "chromeos/components/mahi/public/mojom/content_extraction.mojom.h"
 #include "chromeos/components/quick_answers/public/cpp/service/spell_check_service.h"
 #include "chromeos/components/quick_answers/public/mojom/spell_check.mojom.h"
-#include "chromeos/constants/chromeos_features.h"  // nogncheck
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
 namespace {
@@ -213,6 +222,13 @@ auto RunMacNotificationService(
 #endif  // BUILDFLAG(IS_MAC)
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
+auto RunPassageEmbeddingsService(
+    mojo::PendingReceiver<passage_embeddings::mojom::PassageEmbeddingsService>
+        receiver) {
+  return std::make_unique<passage_embeddings::PassageEmbeddingsService>(
+      std::move(receiver));
+}
+
 auto RunSystemSignalsService(
     mojo::PendingReceiver<device_signals::mojom::SystemSignalsService>
         receiver) {
@@ -265,7 +281,7 @@ auto RunScreenAIServiceFactory(
 }
 #endif
 
-#if BUILDFLAG(ENABLE_PRINTING) && BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 auto RunCupsIppParser(
     mojo::PendingReceiver<ipp_parser::mojom::IppParser> receiver) {
   return std::make_unique<ipp_parser::IppParser>(std::move(receiver));
@@ -299,6 +315,12 @@ auto RunMediaParserFactory(
   return std::make_unique<MediaParserFactory>(std::move(receiver));
 }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS) || BUILDFLAG(IS_ANDROID)
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+auto RunPdfService(mojo::PendingReceiver<pdf::mojom::PdfService> receiver) {
+  return std::make_unique<pdf::PdfService>(std::move(receiver));
+}
+#endif
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW) || \
     (BUILDFLAG(ENABLE_PRINTING) && BUILDFLAG(IS_WIN))
@@ -427,6 +449,13 @@ auto RunMahiContentExtractionServiceFactory(
 }
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
+auto RunBundzTranslationService(
+    mojo::PendingReceiver<bundz_translation::mojom::BundzTranslationService>
+        receiver) {
+  return std::make_unique<bundz_translation::BundzTranslationService>(
+      std::move(receiver));
+}
+
 }  // namespace
 
 void RegisterElevatedMainThreadServices(mojo::ServiceFactory& services) {
@@ -466,10 +495,11 @@ void RegisterMainThreadServices(mojo::ServiceFactory& services) {
 #endif  // BUILDFLAG(IS_WIN)
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
+  services.Add(RunPassageEmbeddingsService);
   services.Add(RunSystemSignalsService);
 #endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
 
-#if BUILDFLAG(ENABLE_PRINTING) && BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   services.Add(RunCupsIppParser);
 #endif
 
@@ -492,6 +522,10 @@ void RegisterMainThreadServices(mojo::ServiceFactory& services) {
 
 #if BUILDFLAG(ENABLE_EXTENSIONS) || BUILDFLAG(IS_ANDROID)
   services.Add(RunMediaParserFactory);
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  services.Add(RunPdfService);
 #endif
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW) || \
@@ -531,10 +565,10 @@ void RegisterMainThreadServices(mojo::ServiceFactory& services) {
 
 #if BUILDFLAG(IS_CHROMEOS)
   services.Add(RunQuickAnswersSpellCheckService);
-  if (chromeos::features::IsMahiEnabled()) {
-    services.Add(RunMahiContentExtractionServiceFactory);
-  }
+  services.Add(RunMahiContentExtractionServiceFactory);
 #endif  // BUILDFLAG(IS_CHROMEOS)
+
+  services.Add(RunBundzTranslationService);
 }
 
 void RegisterIOThreadServices(mojo::ServiceFactory& services) {

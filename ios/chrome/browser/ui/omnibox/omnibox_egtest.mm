@@ -19,6 +19,7 @@
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_app_interface.h"
+#import "ios/chrome/browser/ui/omnibox/omnibox_test_util.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_ui_features.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_accessibility_identifier_constants.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
@@ -90,7 +91,7 @@ void DefocusOmnibox() {
 
 // Taps the pre edit text in the omnibox.
 void TapOnPreEditTextInOmnibox() {
-  // TODO(crbug.com/1442458): Find a better way to tap on the selected url.
+  // TODO(crbug.com/40266963): Find a better way to tap on the selected url.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
       performAction:grey_tapAtPoint(CGPointMake(kOmniboxTextFieldOffsetX,
                                                 kOmniboxTextFieldMidY))];
@@ -213,7 +214,7 @@ id<GREYMatcher> PasteToSearchButton() {
 // Returns Copy button from the location bar context menu.
 id<GREYMatcher> CopyContextMenuButton() {
   int copyButtonId = IDS_IOS_SHARE_MENU_COPY;
-  if ([ChromeEarlGrey isBottomOmniboxSteadyStateEnabled]) {
+  if ([ChromeEarlGrey isBottomOmniboxAvailable]) {
     copyButtonId = IDS_IOS_COPY_LINK_ACTION_TITLE;
   }
   return grey_allOf(
@@ -335,14 +336,8 @@ void FocusFakebox() {
 
 // Tests that the XClientData header is sent when navigating to
 // https://google.com through the omnibox.
-// TODO(b/325112257): Test fails on device.
-#if !TARGET_IPHONE_SIMULATOR
-#define MAYBE_testXClientData DISABLED_testXClientData
-#else
-#define MAYBE_testXClientData testXClientData
-#endif
-- (void)MAYBE_testXClientData {
-  // TODO(crbug.com/1120723) This test is flakily because of a DCHECK in
+- (void)testXClientData {
+  // TODO(crbug.com/40145916) This test is flakily because of a DCHECK in
   // ios/web.  Clearing browser history first works around the problem, but
   // shouldn't be necessary otherwise.  Remove once the bug is fixed.
   [ChromeEarlGrey clearBrowsingHistory];
@@ -370,7 +365,7 @@ void FocusFakebox() {
 
   [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
       performAction:grey_replaceText(URL)];
-  // TODO(crbug.com/1454516): Use simulatePhysicalKeyboardEvent until
+  // TODO(crbug.com/40916974): Use simulatePhysicalKeyboardEvent until
   // replaceText can properly handle \n.
   [ChromeEarlGrey simulatePhysicalKeyboardEvent:@"\n" flags:0];
 
@@ -381,14 +376,7 @@ void FocusFakebox() {
 
 // Tests that Visit Copied Link, Search Copied Text, Search Copied Image and
 // Paste menu buttons are not shown with an empty Clipboard.
-// TODO(b/325112257): Test fails on device.
-#if !TARGET_IPHONE_SIMULATOR
-#define MAYBE_testOmniboxMenuEmptyPasteboard \
-  DISABLED_testOmniboxMenuEmptyPasteboard
-#else
-#define MAYBE_testOmniboxMenuEmptyPasteboard testOmniboxMenuEmptyPasteboard
-#endif
-- (void)MAYBE_testOmniboxMenuEmptyPasteboard {
+- (void)testOmniboxMenuEmptyPasteboard {
   FocusFakebox();
 
   [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
@@ -408,14 +396,7 @@ void FocusFakebox() {
 
 // Tests that Search Copied Text menu button is shown with text in the clipboard
 // and is starting a search.
-// TODO(b/325112257): Test fails on device.
-#if !TARGET_IPHONE_SIMULATOR
-#define MAYBE_testOmniboxMenuPasteTextToSearch \
-  DISABLED_testOmniboxMenuPasteTextToSearch
-#else
-#define MAYBE_testOmniboxMenuPasteTextToSearch testOmniboxMenuPasteTextToSearch
-#endif
-- (void)MAYBE_testOmniboxMenuPasteTextToSearch {
+- (void)testOmniboxMenuPasteTextToSearch {
   FocusFakebox();
   NSString* textToSearch = @"TextToCopy";
   // Copy text in clipboard.
@@ -448,14 +429,7 @@ void FocusFakebox() {
 
 // Tests that Visit Copied Link menu button is shown with a link in the
 // clipboard and is visiting the URL.
-// TODO(b/325112257): Test fails on device.
-#if !TARGET_IPHONE_SIMULATOR
-#define MAYBE_testOmniboxMenuPasteURLToSearch \
-  DISABLED_testOmniboxMenuPasteURLToSearch
-#else
-#define MAYBE_testOmniboxMenuPasteURLToSearch testOmniboxMenuPasteURLToSearch
-#endif
-- (void)MAYBE_testOmniboxMenuPasteURLToSearch {
+- (void)testOmniboxMenuPasteURLToSearch {
   FocusFakebox();
   // Copy URL into clipboard.
   [ChromeEarlGrey copyTextToPasteboard:base::SysUTF8ToNSString(_URL1.spec())];
@@ -484,7 +458,7 @@ void FocusFakebox() {
 
 // Tests that Search Copied Image menu button is shown with an image in the
 // clipboard and is starting an image search.
-// TODO(crbug.com/1476912): Fix flakiness and re-enable.
+// TODO(crbug.com/40928559): Fix flakiness and re-enable.
 - (void)DISABLED_testOmniboxMenuPasteImageToSearch {
   [self copyImageIntoClipboard];
 
@@ -524,7 +498,7 @@ void FocusFakebox() {
 
 // Tests that the keyboard accessory's paste to search button is shown with a
 // text in the clipboard and is starting a search.
-// TODO(crbug.com/1445718): Re-enable when fixed.
+// TODO(crbug.com/40912596): Re-enable when fixed.
 - (void)DISABLED_testOmniboxKeyboardAccessoryPasteTextToSearch {
   if (@available(iOS 16, *)) {
     [[AppLaunchManager sharedManager]
@@ -546,15 +520,7 @@ void FocusFakebox() {
 
 // Tests that the keyboard accessory's paste to search button is shown with a
 // link in the clipboard and is visiting the link.
-// TODO(b/325112257): Test fails on device.
-#if !TARGET_IPHONE_SIMULATOR
-#define MAYBE_testOmniboxKeyboardAccessoryPasteURLToSearch \
-  DISABLED_testOmniboxKeyboardAccessoryPasteURLToSearch
-#else
-#define MAYBE_testOmniboxKeyboardAccessoryPasteURLToSearch \
-  testOmniboxKeyboardAccessoryPasteURLToSearch
-#endif
-- (void)MAYBE_testOmniboxKeyboardAccessoryPasteURLToSearch {
+- (void)testOmniboxKeyboardAccessoryPasteURLToSearch {
   if (@available(iOS 16, *)) {
     [[AppLaunchManager sharedManager]
         ensureAppLaunchedWithFeaturesEnabled:{kOmniboxKeyboardPasteButton}
@@ -572,7 +538,7 @@ void FocusFakebox() {
 
 // Tests that the keyboard accessory's paste to search button is shown with an
 // image in the clipboard and is starting an image search.
-// TODO(crbug.com/1445718): Re-enable when fixed.
+// TODO(crbug.com/40912596): Re-enable when fixed.
 - (void)DISABLED_testOmniboxKeyboardAccessoryPasteImageToSearch {
   if (@available(iOS 16, *)) {
     [[AppLaunchManager sharedManager]
@@ -1246,7 +1212,7 @@ void FocusFakebox() {
 #define MAYBE_testEmptyOmnibox DISABLED_testEmptyOmnibox
 #endif
 - (void)MAYBE_testEmptyOmnibox {
-  // TODO(crbug.com/1209342): this test fails on iOS 15 devices.
+  // TODO(crbug.com/40766498): this test fails on iOS 15 devices.
   if (!base::ios::IsRunningOnIOS16OrLater()) {
     EARL_GREY_TEST_DISABLED(@"Test disabled on iOS 15.");
   }
@@ -1432,7 +1398,7 @@ void FocusFakebox() {
 #define MAYBE_testNoDefaultMatch DISABLED_testNoDefaultMatch
 #endif
 - (void)MAYBE_testNoDefaultMatch {
-  // TODO(crbug.com/1253345) This test fails on iOS 15 devices.
+  // TODO(crbug.com/40199144) This test fails on iOS 15 devices.
   if (!base::ios::IsRunningOnIOS16OrLater()) {
     EARL_GREY_TEST_DISABLED(@"Test disabled on iOS 15.");
   }
@@ -1651,21 +1617,16 @@ void FocusFakebox() {
   // only on legacy implementation.
   AppLaunchConfiguration config = [self appConfigurationForTestCase];
   config.features_disabled.push_back(kIOSNewOmniboxImplementation);
-  auto bundledConfig = std::string("OmniboxBundledExperimentV1");
-  config.additional_args.push_back("--enable-features=" + bundledConfig + "<" +
-                                   bundledConfig);
-  config.additional_args.push_back("--force-fieldtrials=" + bundledConfig +
-                                   "/Test");
+
   // Disable all autocomplete providers except the history url provider.
-  config.additional_args.push_back(
-      "--force-fieldtrial-params=" + bundledConfig +
-      ".Test:" + "DisableProviders" + "/" + "524279");
+  omnibox::DisableAutocompleteProviders(config, 524279);
+
   [[AppLaunchManager sharedManager] ensureAppLaunchedWithConfiguration:config];
 
   [self populateHistory];
 
   // Clears the url and replace it with local url prefix.
-  // TODO(crbug.com/1454516): This should use grey_typeText when fixed.
+  // TODO(crbug.com/40916974): This should use grey_typeText when fixed.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::DefocusedLocationView()]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
@@ -1676,7 +1637,7 @@ void FocusFakebox() {
                       chrome_test_util::OmniboxAutocompleteLabel()];
 
   // Pressing spacebar.
-  // TODO(crbug.com/1454516): This should use grey_typeText when fixed.
+  // TODO(crbug.com/40916974): This should use grey_typeText when fixed.
   [ChromeEarlGrey simulatePhysicalKeyboardEvent:@" " flags:0];
 
   // Autocomplete removed.

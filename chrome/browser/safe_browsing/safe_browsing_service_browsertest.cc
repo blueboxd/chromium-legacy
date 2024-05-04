@@ -300,7 +300,7 @@ class MockObserver : public SafeBrowsingUIManager::Observer {
 
 MATCHER_P(IsUnsafeResourceFor, url, "") {
   return (arg.url.spec() == url.spec() &&
-          arg.threat_type != SB_THREAT_TYPE_SAFE);
+          arg.threat_type != SBThreatType::SB_THREAT_TYPE_SAFE);
 }
 
 class ServiceEnabledHelper : public base::ThreadTestHelper {
@@ -387,6 +387,8 @@ class TestSBClient : public base::RefCountedThreadSafe<TestSBClient>,
   }
 
  private:
+  using enum SBThreatType;
+
   friend class base::RefCountedThreadSafe<TestSBClient>;
   ~TestSBClient() override = default;
 
@@ -435,8 +437,12 @@ class TestSBClient : public base::RefCountedThreadSafe<TestSBClient>,
 class V4SafeBrowsingServiceTest : public InProcessBrowserTest {
  public:
   V4SafeBrowsingServiceTest() {
-    scoped_feature_list_.InitAndEnableFeature(
-        safe_browsing::kCreateWarningShownClientSafeBrowsingReports);
+    // TODO(crbug.com/40941453): Remove kSafeBrowsingAsyncRealTimeCheck from
+    // disabled features list.
+    scoped_feature_list_.InitWithFeatures(
+        /*enabled_features=*/{safe_browsing::
+                                  kCreateWarningShownClientSafeBrowsingReports},
+        /*disabled_features=*/{safe_browsing::kSafeBrowsingAsyncRealTimeCheck});
   }
 
   V4SafeBrowsingServiceTest(const V4SafeBrowsingServiceTest&) = delete;
@@ -586,6 +592,8 @@ class V4SafeBrowsingServiceTest : public InProcessBrowserTest {
   }
 
  protected:
+  using enum SBThreatType;
+
   StrictMock<MockObserver> observer_;
 
  private:

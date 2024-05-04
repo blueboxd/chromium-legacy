@@ -76,6 +76,8 @@ const char* AutocompleteProvider::TypeToString(Type type) {
       return "Calculator";
     case TYPE_FEATURED_SEARCH:
       return "FeaturedSearch";
+    case TYPE_HISTORY_EMBEDDINGS:
+      return "HistoryEmbeddings";
     default:
       NOTREACHED() << "Unhandled AutocompleteProvider::Type " << type;
       return "Unknown";
@@ -158,7 +160,8 @@ AutocompleteProvider::AsOmniboxEventProviderType() const {
     case TYPE_FEATURED_SEARCH:
       return metrics::OmniboxEventProto::FEATURED_SEARCH;
     default:
-      // TODO(crbug.com/1499235) This was a NOTREACHED that we converted to help
+      // TODO(crbug.com/40940012) This was a NOTREACHED that we converted to
+      // help
       //   debug crbug.com/1499235 since NOTREACHED's don't log their message in
       //   crash reports. Should be reverted back to a NOTREACHED or
       //   NOTREACHED_NORETURN if their logs eventually begin being logged to

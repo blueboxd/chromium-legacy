@@ -10,6 +10,7 @@
 #import "base/scoped_observation.h"
 #import "base/test/scoped_feature_list.h"
 #import "components/bookmarks/test/bookmark_test_helpers.h"
+#import "ios/chrome/browser/bookmarks/model/bookmark_model_factory.h"
 #import "ios/chrome/browser/bookmarks/model/local_or_syncable_bookmark_model_factory.h"
 #import "ios/chrome/browser/favicon/model/favicon_service_factory.h"
 #import "ios/chrome/browser/favicon/model/ios_chrome_favicon_loader_factory.h"
@@ -40,30 +41,12 @@
 #import "testing/platform_test.h"
 #import "ui/base/device_form_factor.h"
 
-@interface SceneStateWithFakeScene : SceneState
-
-- (instancetype)initWithScene:(id)scene NS_DESIGNATED_INITIALIZER;
-
-- (instancetype)initWithAppState:(AppState*)appState NS_UNAVAILABLE;
-
-@end
-
-@implementation SceneStateWithFakeScene
-
-- (instancetype)initWithScene:(id)scene {
-  if ((self = [super initWithAppState:nil])) {
-    [self setScene:scene];
-  }
-  return self;
-}
-
-@end
-
 class BrowserViewWranglerTest : public PlatformTest {
  protected:
   BrowserViewWranglerTest() {
     fake_scene_ = FakeSceneWithIdentifier([[NSUUID UUID] UUIDString]);
-    scene_state_ = [[SceneStateWithFakeScene alloc] initWithScene:fake_scene_];
+    scene_state_ = [[SceneStateWithFakeScene alloc] initWithScene:fake_scene_
+                                                         appState:nil];
 
     TestChromeBrowserState::Builder test_cbs_builder;
     test_cbs_builder.AddTestingFactory(
@@ -87,6 +70,9 @@ class BrowserViewWranglerTest : public PlatformTest {
     test_cbs_builder.AddTestingFactory(
         PrerenderServiceFactory::GetInstance(),
         PrerenderServiceFactory::GetDefaultFactory());
+    test_cbs_builder.AddTestingFactory(
+        ios::BookmarkModelFactory::GetInstance(),
+        ios::BookmarkModelFactory::GetDefaultFactory());
     test_cbs_builder.AddTestingFactory(
         ios::LocalOrSyncableBookmarkModelFactory::GetInstance(),
         ios::LocalOrSyncableBookmarkModelFactory::GetDefaultFactory());

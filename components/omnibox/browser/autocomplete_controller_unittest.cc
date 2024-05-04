@@ -14,6 +14,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "components/omnibox/browser/autocomplete_controller.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/autocomplete_match_type.h"
@@ -82,6 +83,17 @@ class AutocompleteControllerTest : public testing::Test {
     return match;
   }
 
+  AutocompleteMatch CreateFeaturedEnterpriseSearch(std::u16string keyword) {
+    AutocompleteMatch match;
+    match.type = AutocompleteMatchType::Type::FEATURED_ENTERPRISE_SEARCH;
+    match.contents = keyword;
+    match.keyword = keyword;
+    match.associated_keyword = std::make_unique<AutocompleteMatch>(
+        nullptr, 1000, false, AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED);
+    match.associated_keyword->keyword = keyword;
+    return match;
+  }
+
   AutocompleteMatch CreateSearchMatch(std::string name,
                                       bool allowed_to_be_default_match,
                                       int traditional_relevance) {
@@ -115,9 +127,18 @@ class AutocompleteControllerTest : public testing::Test {
       bool allowed_to_be_default_match,
       int traditional_relevance,
       float ml_output) {
-    return CreateAutocompleteMatch(name, AutocompleteMatchType::HISTORY_URL,
-                                   allowed_to_be_default_match, false,
-                                   traditional_relevance, ml_output);
+    return CreateMlScoredMatch(name, AutocompleteMatchType::HISTORY_URL,
+                               allowed_to_be_default_match,
+                               traditional_relevance, ml_output);
+  }
+
+  AutocompleteMatch CreateMlScoredMatch(std::string name,
+                                        AutocompleteMatchType::Type type,
+                                        bool allowed_to_be_default_match,
+                                        int traditional_relevance,
+                                        float ml_output) {
+    return CreateAutocompleteMatch(name, type, allowed_to_be_default_match,
+                                   false, traditional_relevance, ml_output);
   }
 
   AutocompleteMatch CreateBoostedShortcutMatch(std::string name,
@@ -320,10 +341,9 @@ TEST_F(AutocompleteControllerTest, RemoveCompanyEntityImage_MostAggressive) {
               metrics::OmniboxEventProto_Feature_COMPANY_ENTITY_ADJUSTMENT));
 }
 
+// Desktop has some special handling for bare '@' inputs.
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 TEST_F(AutocompleteControllerTest, FilterMatchesForInstantKeywordWithBareAt) {
-  base::test::ScopedFeatureList feature_list(
-      omnibox::kOmniboxKeywordModeRefresh);
-
   SetAutocompleteMatches({
       CreateSearchMatch(u"@"),
       CreateCompanyEntityMatch("https://example.com"),
@@ -331,6 +351,7 @@ TEST_F(AutocompleteControllerTest, FilterMatchesForInstantKeywordWithBareAt) {
       CreateStarterPackMatch(u"@bookmarks"),
       CreateStarterPackMatch(u"@history"),
       CreateStarterPackMatch(u"@tabs"),
+      CreateFeaturedEnterpriseSearch(u"@work"),
   });
 
   AutocompleteInput input(u"@", 1u, metrics::OmniboxEventProto::OTHER,
@@ -338,14 +359,17 @@ TEST_F(AutocompleteControllerTest, FilterMatchesForInstantKeywordWithBareAt) {
   controller_.MaybeCleanSuggestionsForKeywordMode(
       input, &controller_.internal_result_);
 
-  EXPECT_EQ(controller_.internal_result_.size(), 4u);
-  EXPECT_TRUE(
-      std::all_of(controller_.internal_result_.begin(),
-                  controller_.internal_result_.end(), [](const auto& match) {
-                    return match.type == AutocompleteMatchType::STARTER_PACK ||
-                           match.contents == u"@";
-                  }));
+  EXPECT_EQ(controller_.internal_result_.size(), 5u);
+  EXPECT_TRUE(std::all_of(
+      controller_.internal_result_.begin(), controller_.internal_result_.end(),
+      [](const auto& match) {
+        return match.type == AutocompleteMatchType::STARTER_PACK ||
+               match.type ==
+                   AutocompleteMatchType::FEATURED_ENTERPRISE_SEARCH ||
+               match.contents == u"@";
+      }));
 }
+#endif
 
 TEST_F(AutocompleteControllerTest, UpdateResult_SyncAnd2Async) {
   auto sync_match = CreateSearchMatch("sync", true, 1300);
@@ -1292,6 +1316,26 @@ TEST_F(AutocompleteControllerTest, MlRanking_MappedSearchBlending) {
                   "history",
               }));
 
+  // If a (remote) document suggestion has a traditional score of zero, then the
+  // final relevance score should remain zero (instead of using the formula
+  // "final_score = min + ml_score * (max - min)" to overwrite the score). This
+  // will result in the document suggestion getting culled from the final list
+  // of suggestions.
+  const auto type = AutocompleteMatchType::DOCUMENT_SUGGESTION;
+  EXPECT_THAT(
+      controller_.SimulateCleanAutocompletePass({
+          // Final score: 1150 (== 600 + 0.25 * (2800 - 600))
+          CreateMlScoredMatch("document 1400 0.25", type, false, 1400, 0.25),
+          // Final score: 0 (!= 600 + 0.95 * (2800 - 600))
+          CreateMlScoredMatch("document 0 0.95", type, false, 0, 0.95),
+          // Final score: 2250 (== 600 + 0.75 * (2800 - 600))
+          CreateMlScoredMatch("document 1200 0.75", type, false, 1200, 0.75),
+      }),
+      testing::ElementsAreArray({
+          "document 1200 0.75",
+          "document 1400 0.25",
+      }));
+
   // Simple case of ranking with linear score mapping.
   EXPECT_THAT(
       controller_.SimulateCleanAutocompletePass({
@@ -1868,7 +1912,7 @@ TEST_F(AutocompleteControllerTest, ExtraHeaders) {
         std::make_unique<TemplateURLRef::SearchTermsArgs>(u"search term");
 
     controller_.SetMatchDestinationURL(&match);
-    EXPECT_EQ(match.extra_headers, "X-Omnibox-Gemini:search term");
+    EXPECT_EQ(match.extra_headers, "X-Omnibox-Gemini:search%20term");
     EXPECT_EQ(match.destination_url, "https://gemini.google.com/prompt");
   }
   {
@@ -1882,21 +1926,46 @@ TEST_F(AutocompleteControllerTest, ExtraHeaders) {
     auto match = CreateStarterPackMatch(u"@gemini");
     // search_terms_args need to have been set.
     match.search_terms_args =
-        std::make_unique<TemplateURLRef::SearchTermsArgs>(u"search term");
+        std::make_unique<TemplateURLRef::SearchTermsArgs>(u"search term?");
 
     controller_.SetMatchDestinationURL(&match);
-    EXPECT_EQ(match.extra_headers, "X-Omnibox-Gemini:search term");
+    EXPECT_EQ(match.extra_headers, "X-Omnibox-Gemini:search%20term%3F");
     EXPECT_EQ(match.destination_url, "https://example.com/");
   }
   {
-    SCOPED_TRACE("@gemini starter pack with invalid input");
+    SCOPED_TRACE("@gemini starter pack with invalid non-encoded input");
     auto match = CreateStarterPackMatch(u"@gemini");
     // search_terms_args need to have been set.
     match.search_terms_args =
         std::make_unique<TemplateURLRef::SearchTermsArgs>(u"search term\n");
 
     controller_.SetMatchDestinationURL(&match);
-    EXPECT_EQ(match.extra_headers, "");
+    EXPECT_EQ(match.extra_headers, "X-Omnibox-Gemini:search%20term%0A");
+    EXPECT_EQ(match.destination_url, "https://gemini.google.com/prompt");
+  }
+  {
+    SCOPED_TRACE("@gemini starter pack with url in the input");
+    auto match = CreateStarterPackMatch(u"@gemini");
+    // search_terms_args need to have been set.
+    match.search_terms_args = std::make_unique<TemplateURLRef::SearchTermsArgs>(
+        u"what is http://example.com for?");
+
+    controller_.SetMatchDestinationURL(&match);
+    EXPECT_EQ(match.extra_headers,
+              "X-Omnibox-Gemini:what%20is%20http%3A%2F%2Fexample.com%20for%3F");
+    EXPECT_EQ(match.destination_url, "https://gemini.google.com/prompt");
+  }
+  {
+    SCOPED_TRACE("@gemini starter pack with non-ascii input");
+    auto match = CreateStarterPackMatch(u"@gemini");
+    // search_terms_args need to have been set.
+    match.search_terms_args =
+        std::make_unique<TemplateURLRef::SearchTermsArgs>(u"こんにちは\n");
+
+    controller_.SetMatchDestinationURL(&match);
+    EXPECT_EQ(
+        match.extra_headers,
+        "X-Omnibox-Gemini:%E3%81%93%E3%82%93%E3%81%AB%E3%81%A1%E3%81%AF%0A");
     EXPECT_EQ(match.destination_url, "https://gemini.google.com/prompt");
   }
   {
@@ -2086,6 +2155,54 @@ TEST_F(AutocompleteControllerTest,
   for (auto& provider : controller_.providers()) {
     EXPECT_NE(controller_.ShouldRunProvider(provider.get()),
               excluded_provider_types.contains(provider->type()))
+        << "Provider Type: "
+        << AutocompleteProvider::TypeToString(provider->type());
+  }
+}
+
+TEST_F(AutocompleteControllerTest, ShouldRunProvider_LensSearchbox) {
+  // Run all providers except open tab provider.
+  std::set<AutocompleteProvider::Type> excluded_provider_types = {
+      AutocompleteProvider::TYPE_OPEN_TAB};
+  controller_.input_ = AutocompleteInput(
+      u"a", 1u, metrics::OmniboxEventProto::OTHER, TestSchemeClassifier());
+  for (auto& provider : controller_.providers()) {
+    EXPECT_NE(controller_.ShouldRunProvider(provider.get()),
+              excluded_provider_types.contains(provider->type()))
+        << "Provider Type: "
+        << AutocompleteProvider::TypeToString(provider->type());
+  }
+
+  // For Lens searchboxes, run search provider only.
+  std::set<AutocompleteProvider::Type> expected_provider_types = {
+      AutocompleteProvider::TYPE_SEARCH};
+
+  controller_.input_ = AutocompleteInput(
+      u"a", 1u, metrics::OmniboxEventProto::CONTEXTUAL_SEARCHBOX,
+      TestSchemeClassifier());
+  for (auto& provider : controller_.providers()) {
+    EXPECT_EQ(controller_.ShouldRunProvider(provider.get()),
+              expected_provider_types.contains(provider->type()))
+        << "Provider Type: "
+        << AutocompleteProvider::TypeToString(provider->type());
+  }
+
+  controller_.input_ = AutocompleteInput(
+      u"a", 1u, metrics::OmniboxEventProto::SEARCH_SIDE_PANEL_SEARCHBOX,
+      TestSchemeClassifier());
+  for (auto& provider : controller_.providers()) {
+    EXPECT_EQ(controller_.ShouldRunProvider(provider.get()),
+              expected_provider_types.contains(provider->type()))
+        << "Provider Type: "
+        << AutocompleteProvider::TypeToString(provider->type());
+  }
+
+  controller_.input_ = AutocompleteInput(
+      u"a", 1u, metrics::OmniboxEventProto::LENS_SIDE_PANEL_SEARCHBOX,
+      TestSchemeClassifier());
+  for (auto& provider : controller_.providers()) {
+    EXPECT_EQ(controller_.ShouldRunProvider(provider.get()),
+              expected_provider_types.contains(provider->type()))
         << "Provider Type: "
         << AutocompleteProvider::TypeToString(provider->type());
   }

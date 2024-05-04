@@ -37,12 +37,6 @@ class SideSearchWebView : public views::WebView {
  public:
   using WebView::WebView;
 
-  void DidStartNavigation(
-      content::NavigationHandle* navigation_handle) override {
-    views::ElementTrackerViews::GetInstance()->NotifyCustomEvent(
-        kSideSearchResultsClickedCustomEventId, this);
-  }
-
   ~SideSearchWebView() override {
     if (!web_contents())
       return;
@@ -95,9 +89,13 @@ bool UnifiedSideSearchController::HandleKeyboardEvent(
 
 content::WebContents* UnifiedSideSearchController::OpenURLFromTab(
     content::WebContents* source,
-    const content::OpenURLParams& params) {
+    const content::OpenURLParams& params,
+    base::OnceCallback<void(content::NavigationHandle&)>
+        navigation_handle_callback) {
   auto* browser_view = GetBrowserView();
-  return browser_view ? browser_view->browser()->OpenURL(params) : nullptr;
+  return browser_view ? browser_view->browser()->OpenURL(
+                            params, std::move(navigation_handle_callback))
+                      : nullptr;
 }
 
 void UnifiedSideSearchController::SidePanelAvailabilityChanged(

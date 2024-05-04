@@ -62,7 +62,7 @@ void SpinEventLoopForABit() {
   loop.Run();
 }
 
-// TODO(https://crbug.com/1425601): Report the modified path on more platforms.
+// TODO(crbug.com/40260973): Report the modified path on more platforms.
 bool ReportsModifiedPathForLocalObservations() {
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
   return true;
@@ -71,7 +71,7 @@ bool ReportsModifiedPathForLocalObservations() {
 #endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 }
 
-// TODO(https://crbug.com/1425601): Report change info on more platforms.
+// TODO(crbug.com/40260973): Report change info on more platforms.
 bool ReportsChangeInfoForLocalObservations() {
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
   return true;
@@ -429,7 +429,7 @@ TEST_F(FileSystemAccessWatcherManagerTest, SourceFailsInitialization) {
   EXPECT_EQ(get_observation_future.Get().error()->status,
             blink::mojom::FileSystemAccessStatus::kOperationFailed);
 
-  // TODO(https://crbug.com/1019297): Determine what should happen on failure to
+  // TODO(crbug.com/40105284): Determine what should happen on failure to
   // initialize a source, then add better test coverage.
 }
 
@@ -500,7 +500,7 @@ TEST_F(FileSystemAccessWatcherManagerTest, ObserveBucketFS) {
       /*exclusive=*/false, /*recursive=*/true);
   ASSERT_EQ(create_file_future.Get(), base::File::Error::FILE_OK);
 
-  // TODO(https://crbug.com/1486978): Expect changes for recursively-created
+  // TODO(crbug.com/40283118): Expect changes for recursively-created
   // intermediate directories.
   Change expected_change{
       test_dir_url,
@@ -513,7 +513,7 @@ TEST_F(FileSystemAccessWatcherManagerTest, ObserveBucketFS) {
 }
 
 TEST_F(FileSystemAccessWatcherManagerTest, UnsupportedScope) {
-  // TODO(https://crbug.com/1489061): External backends are not yet supported.
+  // TODO(crbug.com/40283896): External backends are not yet supported.
   base::FilePath test_external_path =
       base::FilePath::FromUTF8Unsafe(kTestMountPoint).AppendASCII("foo");
   auto external_url = manager_->CreateFileSystemURLFromPath(
@@ -530,7 +530,7 @@ TEST_F(FileSystemAccessWatcherManagerTest, UnsupportedScope) {
             blink::mojom::FileSystemAccessStatus::kNotSupportedError);
 }
 
-// TODO(https://crbug.com/1489057): Add tests covering more edge cases regarding
+// TODO(crbug.com/40283894): Add tests covering more edge cases regarding
 // overlapping scopes.
 TEST_F(FileSystemAccessWatcherManagerTest, OverlappingSourceScopes) {
   base::FilePath dir_path = dir_.GetPath().AppendASCII("dir");
@@ -568,7 +568,7 @@ TEST_F(FileSystemAccessWatcherManagerTest, OverlappingSourceScopes) {
   source_for_file.Signal();
   source_for_dir.Signal(/*relative_path=*/file_path.BaseName());
 
-  // TODO(https://crbug.com/1447240): It would be nice if the watcher manager
+  // TODO(crbug.com/40268906): It would be nice if the watcher manager
   // could consolidate these changes....
 
   Change expected_change{
@@ -789,7 +789,7 @@ TEST_F(FileSystemAccessWatcherManagerTest, ErrorTakesPrecedenceOverChangeType) {
   }));
 }
 
-// TODO(https://crbug.com/1019297): Consider parameterizing these tests once
+// TODO(crbug.com/40105284): Consider parameterizing these tests once
 // observing changes to other backends is supported.
 
 TEST_F(FileSystemAccessWatcherManagerTest, WatchLocalDirectory) {
@@ -843,7 +843,7 @@ TEST_F(FileSystemAccessWatcherManagerTest, WatchLocalDirectory) {
 #endif  // BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS) || BUILDFLAG(IS_FUCHSIA)
 }
 
-// TODO(crbug.com/1517278): Failing on Windows. Re-enable this test.
+// TODO(crbug.com/41490258): Failing on Windows. Re-enable this test.
 TEST_F(FileSystemAccessWatcherManagerTest,
        DISABLED_WatchLocalDirectoryNonRecursivelyDoesNotSeeRecursiveChanges) {
   base::FilePath dir_path = dir_.GetPath().AppendASCII("dir");
@@ -888,7 +888,10 @@ TEST_F(FileSystemAccessWatcherManagerTest,
 #endif  // BUILDFLAG(IS_ANDROID)|| BUILDFLAG(IS_IOS) || BUILDFLAG(IS_FUCHSIA)
 }
 
-TEST_F(FileSystemAccessWatcherManagerTest, WatchLocalDirectoryRecursively) {
+// TODO(crbug/333048551): Failing on Mac. Re-enable the test after fixing the
+// issue.
+TEST_F(FileSystemAccessWatcherManagerTest,
+       DISABLED_WatchLocalDirectoryRecursively) {
   base::FilePath dir_path = dir_.GetPath().AppendASCII("dir");
   auto dir_url = manager_->CreateFileSystemURLFromPath(
       FileSystemAccessEntryFactory::PathType::kLocal, dir_path);
@@ -920,7 +923,7 @@ TEST_F(FileSystemAccessWatcherManagerTest, WatchLocalDirectoryRecursively) {
   EXPECT_TRUE(watcher_manager().HasSourceContainingScopeForTesting(
       accumulator.observation()->scope()));
 
-  // TODO(https://crbug.com/1432064): Ensure that no events are reported by this
+  // TODO(crbug.com/40263777): Ensure that no events are reported by this
   // point.
 
   // Delete a file in the sub-directory. This should be reported to

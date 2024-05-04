@@ -46,6 +46,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/frame/navigator.h"
 #include "third_party/blink/renderer/core/frame/page_scale_constraints.h"
 #include "third_party/blink/renderer/core/frame/page_scale_constraints_set.h"
 #include "third_party/blink/renderer/core/frame/remote_frame.h"
@@ -79,12 +80,15 @@
 #include "third_party/blink/renderer/core/page/spatial_navigation_controller.h"
 #include "third_party/blink/renderer/core/page/validation_message_client_impl.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
+#include "third_party/blink/renderer/core/preferences/navigator_preferences.h"
+#include "third_party/blink/renderer/core/preferences/preference_manager.h"
 #include "third_party/blink/renderer/core/preferences/preference_overrides.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme_overlay_mobile.h"
 #include "third_party/blink/renderer/core/scroll/smooth_scroll_sequencer.h"
 #include "third_party/blink/renderer/core/svg/graphics/svg_image_chrome_client.h"
+#include "third_party/blink/renderer/core/svg/svg_resource_document_cache.h"
 #include "third_party/blink/renderer/platform/bindings/source_location.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
@@ -165,16 +169,7 @@ Page* Page::CreateOrdinary(
   Page* page = MakeGarbageCollected<Page>(
       base::PassKey<Page>(), chrome_client, agent_group_scheduler,
       browsing_context_group_info, color_provider_colors, /*is_ordinary=*/true);
-
-  if (opener) {
-    // Before: ... -> opener -> next -> ...
-    // After: ... -> opener -> page -> next -> ...
-    Page* next = opener->next_related_page_;
-    opener->next_related_page_ = page;
-    page->prev_related_page_ = opener;
-    page->next_related_page_ = next;
-    next->prev_related_page_ = page;
-  }
+  page->opener_ = opener;
 
   OrdinaryPages().insert(page);
 
@@ -393,6 +388,34 @@ void Page::SetMainFrame(Frame* main_frame) {
   main_frame_ = main_frame;
 
   page_scheduler_->SetIsMainFrameLocal(main_frame->IsLocalFrame());
+
+  // Now that the page has a main frame, connect it to related pages if needed.
+  // However, if the main frame is a fake RemoteFrame used for a new Page to
+  // host a provisional main LocalFrame, don't connect it just yet, as this Page
+  // should not be interacted with until the provisional main LocalFrame gets
+  // swapped in. After the LocalFrame gets swapped in, we will call this
+  // function again and connect this Page to the related pages at that time.
+  auto* remote_main_frame = DynamicTo<RemoteFrame>(main_frame);
+  if (!remote_main_frame || remote_main_frame->IsRemoteFrameHostRemoteBound()) {
+    LinkRelatedPagesIfNeeded();
+  }
+}
+
+void Page::LinkRelatedPagesIfNeeded() {
+  // Don't link if there's no opener, or if this page is already linked to other
+  // pages, or if the opener is being detached (its related pages has been set
+  // to null).
+  if (!opener_ || prev_related_page_ != this || next_related_page_ != this ||
+      !opener_->next_related_page_) {
+    return;
+  }
+  // Before: ... -> opener -> next -> ...
+  // After: ... -> opener -> page -> next -> ...
+  Page* next = opener_->next_related_page_;
+  opener_->next_related_page_ = this;
+  prev_related_page_ = opener_;
+  next_related_page_ = next;
+  next->prev_related_page_ = this;
 }
 
 void Page::TakeCloseTaskHandler(Page* old_page) {
@@ -435,6 +458,15 @@ SpatialNavigationController& Page::GetSpatialNavigationController() {
         MakeGarbageCollected<SpatialNavigationController>(*this);
   }
   return *spatial_navigation_controller_;
+}
+
+SVGResourceDocumentCache& Page::GetSVGResourceDocumentCache() {
+  if (!svg_resource_document_cache_) {
+    svg_resource_document_cache_ =
+        MakeGarbageCollected<SVGResourceDocumentCache>(
+            GetPageScheduler()->GetAgentGroupScheduler().DefaultTaskRunner());
+  }
+  return *svg_resource_document_cache_;
 }
 
 void Page::UsesOverlayScrollbarsChanged() {
@@ -490,7 +522,7 @@ void Page::DisableEmulatedForcedColors() {
   emulated_forced_colors_provider_.reset();
 }
 
-void Page::UpdateColorProviders(
+bool Page::UpdateColorProviders(
     const ColorProviderColorMaps& color_provider_colors) {
   // Color maps should not be empty as they are needed to create the color
   // providers.
@@ -525,9 +557,7 @@ void Page::UpdateColorProviders(
     did_color_provider_update = true;
   }
 
-  if (did_color_provider_update) {
-    InvalidatePaint();
-  }
+  return did_color_provider_update;
 }
 
 void Page::UpdateColorProvidersForTest() {
@@ -589,8 +619,9 @@ void Page::ResetPluginData() {
 static void RestoreSVGImageAnimations() {
   for (const Page* page : AllPages()) {
     if (auto* svg_image_chrome_client =
-            DynamicTo<SVGImageChromeClient>(page->GetChromeClient()))
+            DynamicTo<IsolatedSVGChromeClient>(page->GetChromeClient())) {
       svg_image_chrome_client->RestoreAnimationIfNeeded();
+    }
   }
 }
 
@@ -887,6 +918,13 @@ void Page::SettingsChanged(ChangeType change_type) {
         if (auto* local_frame = DynamicTo<LocalFrame>(frame)) {
           local_frame->GetDocument()->MediaQueryAffectingValueChanged(
               MediaValueChange::kOther);
+          if (RuntimeEnabledFeatures::WebPreferencesEnabled()) {
+            auto* navigator = local_frame->DomWindow()->navigator();
+            if (auto* preferences =
+                    NavigatorPreferences::preferences(*navigator)) {
+              preferences->PreferenceMaybeChanged();
+            }
+          }
         }
       }
       break;
@@ -1007,8 +1045,15 @@ void Page::SettingsChanged(ChangeType change_type) {
 void Page::InvalidateColorScheme() {
   for (Frame* frame = MainFrame(); frame;
        frame = frame->Tree().TraverseNext()) {
-    if (auto* local_frame = DynamicTo<LocalFrame>(frame))
+    if (auto* local_frame = DynamicTo<LocalFrame>(frame)) {
       local_frame->GetDocument()->ColorSchemeChanged();
+      if (RuntimeEnabledFeatures::WebPreferencesEnabled()) {
+        auto* navigator = local_frame->DomWindow()->navigator();
+        if (auto* preferences = NavigatorPreferences::preferences(*navigator)) {
+          preferences->PreferenceMaybeChanged();
+        }
+      }
+    }
   }
 }
 
@@ -1117,6 +1162,7 @@ void Page::Trace(Visitor* visitor) const {
   visitor->Trace(visual_viewport_);
   visitor->Trace(link_highlight_);
   visitor->Trace(spatial_navigation_controller_);
+  visitor->Trace(svg_resource_document_cache_);
   visitor->Trace(main_frame_);
   visitor->Trace(previous_main_frame_for_local_swap_);
   visitor->Trace(plugin_data_);
@@ -1128,6 +1174,7 @@ void Page::Trace(Visitor* visitor) const {
   visitor->Trace(v8_compile_hints_producer_);
   visitor->Trace(v8_compile_hints_consumer_);
   visitor->Trace(close_task_handler_);
+  visitor->Trace(opener_);
   Supplementable<Page>::Trace(visitor);
 }
 
@@ -1172,6 +1219,10 @@ void Page::WillBeDestroyed() {
     prev->next_related_page_ = next;
     prev_related_page_ = nullptr;
     next_related_page_ = nullptr;
+  }
+
+  if (svg_resource_document_cache_) {
+    svg_resource_document_cache_->WillBeDestroyed();
   }
 
   if (scrolling_coordinator_)
@@ -1267,7 +1318,13 @@ void Page::SetMediaFeatureOverride(const AtomicString& media_feature,
       return;
     media_feature_overrides_ = std::make_unique<MediaFeatureOverrides>();
   }
-  media_feature_overrides_->SetOverride(media_feature, value);
+
+  const Document* document = nullptr;
+  if (auto* local_frame = DynamicTo<LocalFrame>(MainFrame())) {
+    document = local_frame->GetDocument();
+  }
+
+  media_feature_overrides_->SetOverride(media_feature, value, document);
   if (media_feature == "prefers-color-scheme" ||
       media_feature == "forced-colors")
     SettingsChanged(ChangeType::kColorScheme);
@@ -1289,7 +1346,13 @@ void Page::SetPreferenceOverride(const AtomicString& media_feature,
     }
     preference_overrides_ = std::make_unique<PreferenceOverrides>();
   }
-  preference_overrides_->SetOverride(media_feature, value);
+
+  const Document* document = nullptr;
+  if (auto* local_frame = DynamicTo<LocalFrame>(MainFrame())) {
+    document = local_frame->GetDocument();
+  }
+
+  preference_overrides_->SetOverride(media_feature, value, document);
   if (media_feature == "prefers-color-scheme") {
     SettingsChanged(ChangeType::kColorScheme);
   } else {

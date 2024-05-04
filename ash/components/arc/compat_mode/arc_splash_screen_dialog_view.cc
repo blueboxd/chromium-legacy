@@ -20,6 +20,7 @@
 #include "base/scoped_multi_source_observation.h"
 #include "base/task/sequenced_task_runner.h"
 #include "chromeos/constants/chromeos_features.h"
+#include "chromeos/ui/frame/caption_buttons/frame_center_button.h"
 #include "chromeos/ui/frame/default_frame_header.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/vector_icons/vector_icons.h"
@@ -295,7 +296,8 @@ ArcSplashScreenDialogView::ArcSplashScreenDialogView(
 
 ArcSplashScreenDialogView::~ArcSplashScreenDialogView() = default;
 
-gfx::Size ArcSplashScreenDialogView::CalculatePreferredSize() const {
+gfx::Size ArcSplashScreenDialogView::CalculatePreferredSize(
+    const views::SizeBounds& available_size) const {
   auto width = views::LayoutProvider::Get()->GetDistanceMetric(
       views::DistanceMetric::DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH);
   const auto* widget = GetWidget();
@@ -306,7 +308,8 @@ gfx::Size ArcSplashScreenDialogView::CalculatePreferredSize() const {
                          kHorizontalMarginDp * 2,
                      width);
   }
-  return gfx::Size(width, GetHeightForWidth(width));
+  return gfx::Size(width,
+                   GetLayoutManager()->GetPreferredHeightForWidth(this, width));
 }
 
 gfx::Rect ArcSplashScreenDialogView::GetBubbleBounds() {

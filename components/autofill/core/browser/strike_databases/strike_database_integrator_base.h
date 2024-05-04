@@ -9,10 +9,12 @@
 
 #include <map>
 #include <optional>
+#include <set>
 #include <string>
 #include <vector>
 
 #include "base/check.h"
+#include "base/functional/bind_internal.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/time/time.h"
@@ -104,6 +106,19 @@ class StrikeDatabaseIntegratorBase {
   // GetExpiryTimeMicros() since |last_update_timestamp|.
   void RemoveExpiredStrikes();
 
+  // Removes all database entries for which `id_map(ID)` is in `ids_to_delete`.
+  void ClearStrikesByIdMatching(
+      const std::set<std::string>& ids_to_delete,
+      base::FunctionRef<std::string(const std::string&)> id_map);
+
+  // Removes all database entries from in-memory for which `id_map(ID)` is in
+  // `ids_to_delete` and were added between `delete_begin` and `delete_end`.
+  void ClearStrikesByIdMatchingAndTime(
+      const std::set<std::string>& ids_to_delete,
+      base::Time delete_begin,
+      base::Time delete_end,
+      base::FunctionRef<std::string(const std::string&)> id_map);
+
   // Removes all database entries from in-memory cache and underlying
   // ProtoDatabase for keys in `keys`.
   void ClearStrikesForKeys(const std::vector<std::string>& keys);
@@ -138,7 +153,7 @@ class StrikeDatabaseIntegratorBase {
                            RemoveExpiredStrikesTestLogsUMA);
   FRIEND_TEST_ALL_PREFIXES(StrikeDatabaseIntegratorTestStrikeDatabaseTest,
                            RemoveExpiredStrikesUniqueIdTest);
-  friend class SaveCardInfobarEGTestHelper;
+  friend class FakeCreditCardServer;
   friend class StrikeDatabaseTest;
   friend class StrikeDatabaseTester;
 

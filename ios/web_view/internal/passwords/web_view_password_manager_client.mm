@@ -148,7 +148,7 @@ void WebViewPasswordManagerClient::AutomaticPasswordSave(
 }
 
 void WebViewPasswordManagerClient::PromptUserToEnableAutosignin() {
-  // TODO(crbug.com/435048): Implement this method.
+  // TODO(crbug.com/40394758): Implement this method.
   NOTIMPLEMENTED();
 }
 
@@ -205,7 +205,7 @@ void WebViewPasswordManagerClient::NotifyUserAutoSignin(
     const url::Origin& origin) {
   DCHECK(!local_forms.empty());
   helper_.NotifyUserAutoSignin();
-  // TODO(crbug.com/865114): Implement remaining logic.
+  // TODO(crbug.com/40585559): Implement remaining logic.
 }
 
 void WebViewPasswordManagerClient::NotifyUserCouldBeAutoSignedIn(
@@ -299,7 +299,7 @@ bool WebViewPasswordManagerClient::IsNewTabPage() const {
 
 safe_browsing::PasswordProtectionService*
 WebViewPasswordManagerClient::GetPasswordProtectionService() const {
-  // TODO(crbug.com/1148229): Enable PhishGuard in web_view.
+  // TODO(crbug.com/40731177): Enable PhishGuard in web_view.
   return nullptr;
 }
 

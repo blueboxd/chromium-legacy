@@ -74,7 +74,7 @@ void LoginWebDialog::Show() {
 // LoginWebDialog, protected:
 
 void LoginWebDialog::GetDialogSize(gfx::Size* size) const {
-  // TODO(https://crbug.com/1022774): Fix for the lock screen.
+  // TODO(crbug.com/40657776): Fix for the lock screen.
   if (!parent_window_) {
     *size = kMaxSize;
     return;
@@ -108,9 +108,12 @@ void LoginWebDialog::OnCloseContents(WebContents* source,
     g_web_contents_stack.Pointer()->pop_front();
 }
 
-bool LoginWebDialog::HandleOpenURLFromTab(WebContents* source,
-                                          const content::OpenURLParams& params,
-                                          WebContents** out_new_contents) {
+bool LoginWebDialog::HandleOpenURLFromTab(
+    WebContents* source,
+    const content::OpenURLParams& params,
+    base::OnceCallback<void(content::NavigationHandle&)>
+        navigation_handle_callback,
+    WebContents** out_new_contents) {
   // On a login screen, if a missing extension is trying to show in a web
   // dialog, a NetErrorHelper is displayed instead (hence we have a `source`),
   // but there is no browser window associated with it. A helper screen will

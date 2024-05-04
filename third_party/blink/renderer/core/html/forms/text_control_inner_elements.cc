@@ -36,6 +36,7 @@
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/events/mouse_event.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
+#include "third_party/blink/renderer/core/html/forms/html_text_area_element.h"
 #include "third_party/blink/renderer/core/html/shadow/shadow_element_names.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/layout/forms/layout_text_control_inner_editor.h"
@@ -164,7 +165,7 @@ const ComputedStyle* TextControlInnerEditorElement::CustomStyleForLayoutObject(
   style_builder.SetShouldIgnoreOverflowPropertyForInlineBlockBaseline();
 
   if (!IsA<HTMLTextAreaElement>(host)) {
-    style_builder.SetScrollbarColor(std::nullopt);
+    style_builder.SetScrollbarColor(nullptr);
     style_builder.SetWhiteSpace(EWhiteSpace::kPre);
     style_builder.SetOverflowWrap(EOverflowWrap::kNormal);
     style_builder.SetTextOverflow(ToTextControl(host)->ValueForTextOverflow());
@@ -184,7 +185,7 @@ const ComputedStyle* TextControlInnerEditorElement::CustomStyleForLayoutObject(
     // in which we don't want to remove line-height with percent or calculated
     // length.
     // TODO(tkent): This should be done during layout.
-    if (logical_height.IsPercentOrCalc() ||
+    if (logical_height.HasPercent() ||
         (logical_height.IsFixed() &&
          logical_height.GetFloatValue() > computed_line_height)) {
       style_builder.SetLineHeight(

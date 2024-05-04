@@ -26,11 +26,14 @@ import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskTraits;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
-import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabUtils;
+import org.chromium.chrome.browser.tab_ui.TabContentManager;
+import org.chromium.chrome.browser.tab_ui.TabListFaviconProvider;
+import org.chromium.chrome.browser.tab_ui.TabUiThemeUtils;
+import org.chromium.chrome.browser.tab_ui.ThumbnailProvider;
 import org.chromium.chrome.browser.tabmodel.TabModelFilter;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.tasks.pseudotab.PseudoTab;
@@ -362,11 +365,11 @@ public class MultiThumbnailCardProvider implements ThumbnailProvider {
         mEmptyThumbnailPaint.setStyle(Paint.Style.FILL);
         mEmptyThumbnailPaint.setAntiAlias(true);
         mEmptyThumbnailPaint.setColor(
-                TabUiThemeProvider.getMiniThumbnailPlaceholderColor(context, false, false));
+                TabUiThemeUtils.getMiniThumbnailPlaceholderColor(context, false, false));
 
         mSelectedEmptyThumbnailPaint = new Paint(mEmptyThumbnailPaint);
         mSelectedEmptyThumbnailPaint.setColor(
-                TabUiThemeProvider.getMiniThumbnailPlaceholderColor(context, false, true));
+                TabUiThemeUtils.getMiniThumbnailPlaceholderColor(context, false, true));
 
         // Paint used to set base for thumbnails, in case mEmptyThumbnailPaint has transparency.
         mThumbnailBasePaint = new Paint(mEmptyThumbnailPaint);
@@ -380,7 +383,8 @@ public class MultiThumbnailCardProvider implements ThumbnailProvider {
         mThumbnailFramePaint.setColor(SemanticColorUtils.getDividerLineBgColor(context));
         mThumbnailFramePaint.setAntiAlias(true);
 
-        // TODO(996048): Use pre-defined styles to avoid style out of sync if any text/color styles
+        // TODO(crbug.com/41477335): Use pre-defined styles to avoid style out of sync if any
+        // text/color styles
         // changes.
         mTextPaint = new Paint();
         mTextPaint.setTextSize(resources.getDimension(R.dimen.compositor_tab_title_text_size));
@@ -410,7 +414,7 @@ public class MultiThumbnailCardProvider implements ThumbnailProvider {
     private void onTabModelFilterChanged(TabModelFilter filter) {
         boolean isIncognito = filter.isIncognito();
         mEmptyThumbnailPaint.setColor(
-                TabUiThemeProvider.getMiniThumbnailPlaceholderColor(mContext, isIncognito, false));
+                TabUiThemeUtils.getMiniThumbnailPlaceholderColor(mContext, isIncognito, false));
         mTextPaint.setColor(
                 TabUiThemeProvider.getTabGroupNumberTextColor(mContext, isIncognito, false));
         mThumbnailFramePaint.setColor(
@@ -419,7 +423,7 @@ public class MultiThumbnailCardProvider implements ThumbnailProvider {
                 TabUiThemeProvider.getFaviconBackgroundColor(mContext, isIncognito));
 
         mSelectedEmptyThumbnailPaint.setColor(
-                TabUiThemeProvider.getMiniThumbnailPlaceholderColor(mContext, isIncognito, true));
+                TabUiThemeUtils.getMiniThumbnailPlaceholderColor(mContext, isIncognito, true));
         mSelectedTextPaint.setColor(
                 TabUiThemeProvider.getTabGroupNumberTextColor(mContext, isIncognito, true));
     }

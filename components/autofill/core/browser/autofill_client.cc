@@ -10,10 +10,9 @@
 #include "components/autofill/core/browser/autofill_ablation_study.h"
 #include "components/autofill/core/browser/autofill_compose_delegate.h"
 #include "components/autofill/core/browser/autofill_plus_address_delegate.h"
+#include "components/autofill/core/browser/filling_product.h"
 #include "components/autofill/core/browser/payments/credit_card_access_manager.h"
 #include "components/autofill/core/browser/payments/mandatory_reauth_manager.h"
-#include "components/autofill/core/browser/payments/payments_window_manager.h"
-#include "components/autofill/core/browser/payments/virtual_card_enrollment_manager.h"
 #include "components/autofill/core/browser/ui/payments/bubble_show_options.h"
 #include "components/autofill/core/browser/ui/suggestion.h"
 #include "components/version_info/channel.h"
@@ -46,7 +45,7 @@ version_info::Channel AutofillClient::GetChannel() const {
   return version_info::Channel::UNKNOWN;
 }
 
-bool AutofillClient::IsOffTheRecord() {
+bool AutofillClient::IsOffTheRecord() const {
   return false;
 }
 
@@ -92,23 +91,11 @@ MerchantPromoCodeManager* AutofillClient::GetMerchantPromoCodeManager() {
   return nullptr;
 }
 
-CreditCardCvcAuthenticator* AutofillClient::GetCvcAuthenticator() {
-  return nullptr;
-}
-
-CreditCardOtpAuthenticator* AutofillClient::GetOtpAuthenticator() {
-  return nullptr;
-}
-
 CreditCardRiskBasedAuthenticator* AutofillClient::GetRiskBasedAuthenticator() {
   return nullptr;
 }
 
 payments::PaymentsAutofillClient* AutofillClient::GetPaymentsAutofillClient() {
-  return nullptr;
-}
-
-payments::PaymentsWindowManager* AutofillClient::GetPaymentsWindowManager() {
   return nullptr;
 }
 
@@ -139,11 +126,6 @@ void AutofillClient::ShowUnmaskAuthenticatorSelectionDialog(
 
 void AutofillClient::DismissUnmaskAuthenticatorSelectionDialog(
     bool server_success) {
-}
-
-VirtualCardEnrollmentManager*
-AutofillClient::GetVirtualCardEnrollmentManager() {
-  return nullptr;
 }
 
 void AutofillClient::ShowVirtualCardEnrollDialog(
@@ -205,15 +187,6 @@ AutofillClient::CreateCreditCardInternalAuthenticator(AutofillDriver* driver) {
 }
 #endif
 
-void AutofillClient::ShowCardUnmaskOtpInputDialog(
-    const CardUnmaskChallengeOption& challenge_option,
-    base::WeakPtr<OtpUnmaskDelegate> delegate) {
-}
-
-void AutofillClient::OnUnmaskOtpVerificationResult(
-    OtpUnmaskResult unmask_result) {
-}
-
 void AutofillClient::ConfirmSaveCreditCardLocally(
     const CreditCard& card,
     AutofillClient::SaveCreditCardOptions options,
@@ -237,15 +210,6 @@ void AutofillClient::ConfirmUploadIbanToCloud(
     bool should_show_prompt,
     SaveIbanPromptCallback callback) {}
 
-void AutofillClient::ShowUnmaskPrompt(
-    const CreditCard& card,
-    const CardUnmaskPromptOptions& card_unmask_prompt_options,
-    base::WeakPtr<CardUnmaskDelegate> delegate) {
-}
-
-void AutofillClient::OnUnmaskVerificationResult(PaymentsRpcResult result) {
-}
-
 void AutofillClient::UpdateOfferNotification(
     const AutofillOfferData* offer,
     const OfferNotificationOptions& options) {
@@ -257,9 +221,6 @@ void AutofillClient::DismissOfferNotification() {
 void AutofillClient::OnVirtualCardDataAvailable(
     const VirtualCardManualFallbackBubbleOptions& options) {
 }
-
-void AutofillClient::ShowAutofillErrorDialog(
-    AutofillErrorDialogContext context) {}
 
 LogManager* AutofillClient::GetLogManager() const {
   return nullptr;
@@ -280,6 +241,7 @@ bool AutofillClient::ShouldFormatForLargeKeyboardAccessory() const {
 }
 
 void AutofillClient::TriggerUserPerceptionOfAutofillSurvey(
+    FillingProduct filling_product,
     const std::map<std::string, std::string>& field_filling_stats_data) {
   NOTIMPLEMENTED();
 }
@@ -289,10 +251,29 @@ AutofillClient::GetDeviceAuthenticator() {
   return nullptr;
 }
 
+void AutofillClient::ShowAutofillFieldIphForManualFallbackFeature(
+    const FormFieldData&) {}
+
+void AutofillClient::HideAutofillFieldIphForManualFallbackFeature() {}
+
+void AutofillClient::NotifyAutofillManualFallbackUsed() {}
+
 std::optional<AutofillClient::PopupScreenLocation>
 AutofillClient::GetPopupScreenLocation() const {
   NOTIMPLEMENTED();
   return std::nullopt;
+}
+
+base::span<const Suggestion> AutofillClient::GetAutofillSuggestions() const {
+  NOTIMPLEMENTED();
+  return {};
+}
+
+void AutofillClient::set_test_addresses(
+    std::vector<AutofillProfile> test_addresses) {}
+
+base::span<const AutofillProfile> AutofillClient::GetTestAddresses() const {
+  return {};
 }
 
 }  // namespace autofill

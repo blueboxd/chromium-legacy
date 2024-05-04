@@ -23,6 +23,7 @@
 #include "chromeos/ash/components/dbus/shill/shill_manager_client.h"
 #include "chromeos/ash/components/dbus/shill/shill_service_client.h"
 #include "chromeos/ash/components/login/login_state/login_state.h"
+#include "chromeos/ash/components/network/auto_connect_handler.h"
 #include "chromeos/ash/components/network/cellular_connection_handler.h"
 #include "chromeos/ash/components/network/cellular_utils.h"
 #include "chromeos/ash/components/network/client_cert_resolver.h"
@@ -163,11 +164,16 @@ bool ShouldUseSharedProfileByDefault(const NetworkState* network) {
     // details.
     return false;
   }
-  if (network && network->type() == shill::kTypeWifi && !network->IsSecure()) {
-    // Insecure networks are persisted in the shared profile by default
-    return true;
+  // Cellular networks and insecure Wi-Fi networks are persisted in the shared
+  // profile by default.
+  if (network) {
+    if (network->type() == shill::kTypeCellular) {
+      return true;
+    }
+    if (network->type() == shill::kTypeWifi) {
+      return !network->IsSecure();
+    }
   }
-
   // Use the user profile if available.
   return false;
 }
@@ -284,6 +290,16 @@ void NetworkConnectionHandlerImpl::OnCertificatesLoaded() {
   NET_LOG(EVENT) << "Certificates Loaded";
   if (queued_connect_)
     ConnectToQueuedNetwork();
+}
+
+void NetworkConnectionHandlerImpl::OnAutoConnectedInitiated(
+    int auto_connect_reasons) {
+  const int kManagedNetworkReasonsBitmask =
+      AutoConnectHandler::AUTO_CONNECT_REASON_POLICY_APPLIED |
+      AutoConnectHandler::AUTO_CONNECT_REASON_CERTIFICATE_RESOLVED;
+  if (auto_connect_reasons & kManagedNetworkReasonsBitmask) {
+    has_policy_auto_connect_ = true;
+  }
 }
 
 void NetworkConnectionHandlerImpl::ConnectToNetwork(
@@ -1106,9 +1122,15 @@ void NetworkConnectionHandlerImpl::CheckPendingRequest(
 
   // Network is neither connecting or connected; an error occurred.
   std::string error_name;  // 'Canceled' or 'Failed'
-  if (connection_state == shill::kStateIdle && pending_requests_.size() > 1) {
-    // Another connect request canceled this one.
+  if (connection_state == shill::kStateIdle &&
+      (pending_requests_.size() > 1 || has_policy_auto_connect_)) {
+    // Another connect request or policy connection canceled this one.
     error_name = kErrorConnectCanceled;
+    if (has_policy_auto_connect_) {
+      NET_LOG(EVENT) << "Connection request of " << NetworkPathId(service_path)
+                     << " got cancelled by policy auto-connect";
+      has_policy_auto_connect_ = false;
+    }
   } else {
     error_name = kErrorConnectFailed;
     if (connection_state != shill::kStateFailure)

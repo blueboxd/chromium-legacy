@@ -6,9 +6,11 @@ package org.chromium.chrome.browser;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Rect;
 import android.net.Uri;
+import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.view.ContextThemeWrapper;
 import android.view.InflateException;
@@ -19,14 +21,17 @@ import android.view.ViewStub;
 import android.widget.FrameLayout;
 
 import androidx.annotation.IntDef;
+import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 import androidx.asynclayoutinflater.appcompat.AsyncAppCompatFactory;
 
+import org.jni_zero.JniType;
 import org.jni_zero.NativeMethods;
 
 import org.chromium.base.BuildInfo;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
+import org.chromium.base.TerminationStatus;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.library_loader.LibraryLoader;
@@ -38,7 +43,6 @@ import org.chromium.chrome.browser.content.WebContentsFactory;
 import org.chromium.chrome.browser.crash.ChromePureJavaExceptionReporter;
 import org.chromium.chrome.browser.customtabs.CustomTabDelegateFactory;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.profiles.ProfileManager;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabBuilder;
@@ -78,7 +82,7 @@ public class WarmupManager {
      */
     private class RenderProcessGoneObserver extends WebContentsObserver {
         @Override
-        public void renderProcessGone() {
+        public void primaryMainFrameRenderProcessGone(@TerminationStatus int terminationStatus) {
             destroySpareWebContentsInternal();
         }
     }
@@ -115,6 +119,23 @@ public class WarmupManager {
             mOwnedWindowAndroid.destroy();
             mOwnedWindowAndroid = null;
             tab.removeObserver(this);
+        }
+    }
+
+    /** Context wrapper that routes APIs via Activity context once it's available. */
+    private static class CctContextWrapper extends ContextThemeWrapper {
+        Context mActivityContext;
+
+        public CctContextWrapper(Context base, int themeResId) {
+            super(base, themeResId);
+        }
+
+        @Override
+        public void startActivity(Intent intent, @Nullable Bundle options) {
+            // Starting activities generally requires an Activity context.
+            // https://crbug.com/334755104
+            Context target = mActivityContext != null ? mActivityContext : getBaseContext();
+            target.startActivity(intent, options);
         }
     }
 
@@ -229,7 +250,7 @@ public class WarmupManager {
      * <p>Also performs general tab initialization as well as detached specifics.
      *
      * @return The newly created and initialized spare tab.
-     *     <p>TODO(crbug.com/1412572): Adapt this method to create other tabs.
+     *     <p>TODO(crbug.com/40255340): Adapt this method to create other tabs.
      */
     private Tab buildDetachedSpareTab(Profile profile) {
         Context context = ContextUtils.getApplicationContext();
@@ -238,7 +259,7 @@ public class WarmupManager {
         TabDelegateFactory delegateFactory = CustomTabDelegateFactory.createEmpty();
         WindowAndroid window = new WindowAndroid(context);
 
-        // TODO(crbug.com/1190971): Set isIncognito flag here if spare tabs are allowed for
+        // TODO(crbug.com/40174356): Set isIncognito flag here if spare tabs are allowed for
         // incognito mode.
         // Creates a tab with renderer initialized for spareTab. See https://crbug.com/1412572.
         Tab tab =
@@ -337,7 +358,9 @@ public class WarmupManager {
         ThreadUtils.assertOnUiThread();
         if (mMainView != null && mToolbarContainerId == toolbarContainerId) return;
 
-        Context context = applyContextOverrides(baseContext);
+        CctContextWrapper context =
+                new CctContextWrapper(
+                        applyContextOverrides(baseContext), ActivityUtils.getThemeId());
         mMainView = inflateViewHierarchy(context, toolbarContainerId, toolbarId);
         mToolbarContainerId = toolbarContainerId;
     }
@@ -354,17 +377,16 @@ public class WarmupManager {
     }
 
     /**
-     * Inflates and constructs the view hierarchy that the app will use.
-     * Calls to this are not restricted to the UI thread.
-     * @param baseContext The base context to use for creating the ContextWrapper.
+     * Inflates and constructs the view hierarchy that the app will use. Calls to this are not
+     * restricted to the UI thread.
+     *
+     * @param context The context to use for inflation.
      * @param toolbarContainerId Id of the toolbar container.
      * @param toolbarId The toolbar's layout ID.
      */
-    public static ViewGroup inflateViewHierarchy(
-            Context baseContext, int toolbarContainerId, int toolbarId) {
+    private static ViewGroup inflateViewHierarchy(
+            CctContextWrapper context, int toolbarContainerId, int toolbarId) {
         try (TraceEvent e = TraceEvent.scoped("WarmupManager.inflateViewHierarchy")) {
-            ContextThemeWrapper context =
-                    new ContextThemeWrapper(baseContext, ActivityUtils.getThemeId());
             FrameLayout contentHolder = new FrameLayout(context);
             var layoutInflater = LayoutInflater.from(context);
             layoutInflater.setFactory2(new AsyncAppCompatFactory());
@@ -404,26 +426,19 @@ public class WarmupManager {
     /**
      * Transfers all the children in the local view hierarchy {@link #mMainView} to the given
      * ViewGroup {@param contentView} as child.
+     *
      * @param contentView The parent ViewGroup to use for the transfer.
      */
     public void transferViewHierarchyTo(ViewGroup contentView) {
         ThreadUtils.assertOnUiThread();
-        ViewGroup viewHierarchy = mMainView;
+        ViewGroup from = mMainView;
         mMainView = null;
-        if (viewHierarchy == null) return;
-        transferViewHierarchy(viewHierarchy, contentView);
-    }
-
-    /**
-     * Transfers all the children in one view hierarchy {@param from} to another {@param to}.
-     * @param from The parent ViewGroup to transfer children from.
-     * @param to The parent ViewGroup to transfer children to.
-     */
-    public static void transferViewHierarchy(ViewGroup from, ViewGroup to) {
+        if (from == null) return;
+        ((CctContextWrapper) from.getContext()).mActivityContext = contentView.getContext();
         while (from.getChildCount() > 0) {
             View currentChild = from.getChildAt(0);
             from.removeView(currentChild);
-            to.addView(currentChild);
+            contentView.addView(currentChild);
         }
     }
 
@@ -553,10 +568,10 @@ public class WarmupManager {
     /**
      * Creates and initializes a spare WebContents, to be used in a subsequent navigation.
      *
-     * This creates a renderer that is suitable for any navigation. It can be picked up by any tab.
-     * Can be called multiple times, and must be called from the UI thread.
+     * <p>This creates a renderer that is suitable for any navigation. It can be picked up by any
+     * tab. Can be called multiple times, and must be called from the UI thread.
      */
-    public void createSpareWebContents() {
+    public void createSpareWebContents(Profile profile) {
         try (TraceEvent e = TraceEvent.scoped("WarmupManager.createSpareWebContents")) {
             ThreadUtils.assertOnUiThread();
             if (!LibraryLoader.getInstance().isInitialized() || mSpareWebContents != null) return;
@@ -564,8 +579,7 @@ public class WarmupManager {
             mSpareWebContents =
                     new WebContentsFactory()
                             .createWebContentsWithWarmRenderer(
-                                    ProfileManager.getLastUsedRegularProfile(),
-                                    /* initiallyHidden= */ true);
+                                    profile, /* initiallyHidden= */ true);
             mObserver = new RenderProcessGoneObserver();
             mSpareWebContents.addObserver(mObserver);
         }
@@ -618,8 +632,8 @@ public class WarmupManager {
 
     @NativeMethods
     interface Natives {
-        void startPreconnectPredictorInitialization(Profile profile);
+        void startPreconnectPredictorInitialization(@JniType("Profile*") Profile profile);
 
-        void preconnectUrlAndSubresources(Profile profile, String url);
+        void preconnectUrlAndSubresources(@JniType("Profile*") Profile profile, String url);
     }
 }

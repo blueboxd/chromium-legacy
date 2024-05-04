@@ -28,6 +28,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/synchronization/lock.h"
 #include "base/thread_annotations.h"
+#include "base/types/expected.h"
 #include "build/chromeos_buildflags.h"
 #include "media/gpu/chromeos/fourcc.h"
 #include "media/gpu/media_gpu_export.h"
@@ -53,6 +54,7 @@ constexpr unsigned int kInvalidVaRtFormat = 0u;
 
 class VADisplayStateSingleton;
 class VideoFrame;
+class FrameResource;
 
 // Enum, function and callback type to allow VaapiWrapper to log errors in VA
 // function calls executed on behalf of its owner. |histogram_name| is prebound
@@ -205,7 +207,9 @@ class MEDIA_GPU_EXPORT VaapiWrapper
   // Return an instance of VaapiWrapper initialized for |va_profile| and
   // |mode|. |report_error_to_uma_cb| will be called independently from
   // reporting errors to clients via method return values.
-  static scoped_refptr<VaapiWrapper> Create(
+  // TODO(mcasas): Add and use a VaapiWrapperStatus instead of reusing here
+  // DecoderStatus.
+  static base::expected<scoped_refptr<VaapiWrapper>, DecoderStatus> Create(
       CodecMode mode,
       VAProfile va_profile,
       EncryptionScheme encryption_scheme,
@@ -216,12 +220,14 @@ class MEDIA_GPU_EXPORT VaapiWrapper
   // |profile| to VAProfile.
   // |report_error_to_uma_cb| will be called independently from reporting
   // errors to clients via method return values.
-  static scoped_refptr<VaapiWrapper> CreateForVideoCodec(
-      CodecMode mode,
-      VideoCodecProfile profile,
-      EncryptionScheme encryption_scheme,
-      const ReportErrorToUMACB& report_error_to_uma_cb,
-      bool enforce_sequence_affinity = true);
+  // TODO(mcasas): Add and use a VaapiWrapperStatus instead of reusing here
+  // DecoderStatus.
+  static base::expected<scoped_refptr<VaapiWrapper>, DecoderStatus>
+  CreateForVideoCodec(CodecMode mode,
+                      VideoCodecProfile profile,
+                      EncryptionScheme encryption_scheme,
+                      const ReportErrorToUMACB& report_error_to_uma_cb,
+                      bool enforce_sequence_affinity = true);
 
   VaapiWrapper(const VaapiWrapper&) = delete;
   VaapiWrapper& operator=(const VaapiWrapper&) = delete;
@@ -399,6 +405,18 @@ class MEDIA_GPU_EXPORT VaapiWrapper
       const std::optional<gfx::Size>& visible_size,
       const std::optional<uint32_t>& va_fourcc);
 
+  // Creates a self-releasing VASurface from |frame|. The created VASurface
+  // shares the ownership of the underlying buffer represented by |frame|.
+  // |frame|->StorageType() must either be STORAGE_GPU_MEMORY_BUFFER or
+  // STORAGE_DMABUFS. The ownership of the surface is transferred to the caller.
+  // A caller can destroy |frame| after this method returns and the underlying
+  // buffer will be kept alive by the VASurface. |protected_content| should only
+  // be true if the format needs VA_RT_FORMAT_PROTECTED (currently only true for
+  // AMD).
+  scoped_refptr<VASurface> CreateVASurfaceForFrameResource(
+      const FrameResource& frame,
+      bool protected_content);
+
   // Creates a self-releasing VASurface from |pixmap|. The created VASurface
   // shares the ownership of the underlying buffer represented by |pixmap|. The
   // ownership of the surface is transferred to the caller. A caller can destroy
@@ -406,7 +424,7 @@ class MEDIA_GPU_EXPORT VaapiWrapper
   // alive by the VASurface. |protected_content| should only be true if the
   // format needs VA_RT_FORMAT_PROTECTED (currently only true for AMD).
   virtual scoped_refptr<VASurface> CreateVASurfaceForPixmap(
-      scoped_refptr<gfx::NativePixmap> pixmap,
+      scoped_refptr<const gfx::NativePixmap> pixmap,
       bool protected_content = false);
 
   // Creates a self-releasing VASurface from |buffers|. The ownership of the
@@ -488,7 +506,7 @@ class MEDIA_GPU_EXPORT VaapiWrapper
   // supported. |size| should be smaller than or equal to the surface. If |size|
   // is smaller, the image will be cropped.
   std::unique_ptr<ScopedVAImage> CreateVaImage(VASurfaceID va_surface_id,
-                                               VAImageFormat* format,
+                                               const VAImageFormat& format,
                                                const gfx::Size& size);
 
   // Uploads contents of |frame| into |va_surface_id| for encode.
@@ -603,8 +621,7 @@ class MEDIA_GPU_EXPORT VaapiWrapper
   [[nodiscard]] bool Initialize(VAProfile va_profile,
                                 EncryptionScheme encryption_scheme);
   void Deinitialize();
-  [[nodiscard]] bool VaInitialize(
-      const ReportErrorToUMACB& report_error_to_uma_cb);
+  void VaInitialize(const ReportErrorToUMACB& report_error_to_uma_cb);
 
   // Tries to allocate |num_surfaces| VASurfaceIDs of |size| and |va_format|.
   // Fills |va_surfaces| and returns true if successful, or returns false.

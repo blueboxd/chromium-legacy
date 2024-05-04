@@ -45,6 +45,7 @@ class API_AVAILABLE(macos(10.13.1)) SystemMediaControlsMac
   void ClearThumbnail() override {}
   void ClearMetadata() override;
   void UpdateDisplay() override {}
+  bool GetVisibilityForTesting() const override;
 
  private:
   // Gives media playback state and metadata to the MPNowPlayingInfoCenter.

@@ -24,7 +24,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/keyword_web_data_service.h"
 #include "components/search_engines/search_engine_choice/search_engine_choice_service.h"
-#include "components/search_engines/search_engine_choice_utils.h"
+#include "components/search_engines/search_engine_choice/search_engine_choice_utils.h"
 #include "components/search_engines/search_engines_pref_names.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_prepopulate_data.h"
@@ -72,8 +72,12 @@ MergeEngineRequirements ComputeMergeEnginesRequirements(
   const int milestone = version_info::GetMajorVersionNumberAsInt();
 
   bool update_builtin_keywords;
-  if (keywords_metadata.builtin_keyword_data_version >
-      prepopulate_resource_keyword_version) {
+  if (search_engines::HasSearchEngineCountryListOverride()) {
+    // The search engine list is being explicitly overridden, so also force
+    // recomputing it for the keywords database.
+    update_builtin_keywords = true;
+  } else if (keywords_metadata.builtin_keyword_data_version >
+             prepopulate_resource_keyword_version) {
     // The version in the database is more recent than the version in the Chrome
     // binary. Downgrades are not supported, so don't update it.
     update_builtin_keywords = false;
@@ -312,10 +316,10 @@ void MergeIntoEngineData(const TemplateURL* original_turl,
     url_to_update->SetShortName(original_turl->short_name());
     url_to_update->SetKeyword(original_turl->keyword());
     if (original_turl->created_from_play_api()) {
-      // TODO(crbug/1002271): Search url from Play API might contain attribution
-      // info and therefore should be preserved through prepopulated data
-      // update. In the future we might decide to take different approach to
-      // pass attribution info to search providers.
+      // TODO(crbug.com/40646573): Search url from Play API might contain
+      // attribution info and therefore should be preserved through prepopulated
+      // data update. In the future we might decide to take different approach
+      // to pass attribution info to search providers.
       url_to_update->SetURL(original_turl->url());
     }
   }

@@ -4,8 +4,8 @@
 
 #include "partition_alloc/partition_alloc_base/logging.h"
 
-// TODO(1151236): After finishing copying //base files to PA library, remove
-// defined(BASE_CHECK_H_) from here.
+// TODO(crbug.com/40158212): After finishing copying //base files to PA library,
+// remove defined(BASE_CHECK_H_) from here.
 #if defined(                                                                                 \
     BASE_ALLOCATOR_PARTITION_ALLOCATOR_SRC_PARTITION_ALLOC_PARTITION_ALLOC_BASE_CHECK_H_) || \
     defined(BASE_CHECK_H_) ||                                                                \
@@ -14,12 +14,12 @@
 #error "logging.h should not include check.h"
 #endif
 
-#include "build/build_config.h"
+#include <algorithm>
+
+#include "partition_alloc/build_config.h"
 #include "partition_alloc/partition_alloc_base/component_export.h"
 #include "partition_alloc/partition_alloc_base/debug/alias.h"
 #include "partition_alloc/partition_alloc_base/immediate_crash.h"
-
-#include <algorithm>
 
 #if BUILDFLAG(IS_WIN)
 #include <io.h>

@@ -11,7 +11,6 @@
 #include "base/android/jni_weak_ref.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
-#include "chrome/android/chrome_jni_headers/TabModelJniBridge_jni.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
@@ -25,6 +24,9 @@
 #include "ui/base/window_open_disposition.h"
 #include "url/android/gurl_android.h"
 
+// Must come after other includes, because FromJniType() uses Profile.
+#include "chrome/android/chrome_jni_headers/TabModelJniBridge_jni.h"
+
 using base::android::AttachCurrentThread;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::JavaParamRef;
@@ -35,10 +37,13 @@ using content::WebContents;
 TabModelJniBridge::TabModelJniBridge(JNIEnv* env,
                                      jobject jobj,
                                      Profile* profile,
-                                     ActivityType activity_type)
+                                     ActivityType activity_type,
+                                     bool track_in_native_model_list)
     : TabModel(profile, activity_type),
       java_object_(env, env->NewWeakGlobalRef(jobj)) {
-  TabModelList::AddTabModel(this);
+  if (track_in_native_model_list) {
+    TabModelList::AddTabModel(this);
+  }
 }
 
 void TabModelJniBridge::Destroy(JNIEnv* env, const JavaParamRef<jobject>& obj) {
@@ -105,16 +110,14 @@ void TabModelJniBridge::HandlePopupNavigation(TabAndroid* parent,
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> jobj = java_object_.get(env);
   ScopedJavaLocalRef<jobject> jurl = url::GURLAndroid::FromNativeGURL(env, url);
-  ScopedJavaLocalRef<jstring> jheaders(
-      ConvertUTF8ToJavaString(env, params->extra_headers));
   ScopedJavaLocalRef<jobject> jinitiator_origin =
       params->initiator_origin ? params->initiator_origin->ToJavaObject()
                                : nullptr;
   ScopedJavaLocalRef<jobject> jpost_data =
       content::ConvertResourceRequestBodyToJavaObject(env, params->post_data);
   Java_TabModelJniBridge_openNewTab(
-      env, jobj, parent->GetJavaObject(), jurl, jinitiator_origin, jheaders,
-      jpost_data, static_cast<int>(disposition),
+      env, jobj, parent->GetJavaObject(), jurl, jinitiator_origin,
+      params->extra_headers, jpost_data, static_cast<int>(disposition),
       params->opened_by_another_window, params->is_renderer_initiated);
 }
 
@@ -221,12 +224,14 @@ TabModelJniBridge::~TabModelJniBridge() {
   TabModelList::RemoveTabModel(this);
 }
 
-static jlong JNI_TabModelJniBridge_Init(JNIEnv* env,
-                                        const JavaParamRef<jobject>& obj,
-                                        const JavaParamRef<jobject>& j_profile,
-                                        jint j_activity_type) {
+static jlong JNI_TabModelJniBridge_Init(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    Profile* profile,
+    jint j_activity_type,
+    unsigned char track_in_native_model_list) {
   TabModel* tab_model = new TabModelJniBridge(
-      env, obj, ProfileAndroid::FromProfileAndroid(j_profile),
-      static_cast<ActivityType>(j_activity_type));
+      env, obj, profile, static_cast<ActivityType>(j_activity_type),
+      track_in_native_model_list);
   return reinterpret_cast<intptr_t>(tab_model);
 }

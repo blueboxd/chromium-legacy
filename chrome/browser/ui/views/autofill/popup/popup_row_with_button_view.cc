@@ -9,6 +9,9 @@
 
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
+#include "base/i18n/rtl.h"
+#include "chrome/browser/ui/autofill/autofill_popup_controller.h"
+#include "chrome/browser/ui/views/autofill/popup/popup_row_content_view.h"
 #include "chrome/browser/ui/views/autofill/popup/popup_row_view.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/common/input/native_web_keyboard_event.h"
@@ -138,7 +141,7 @@ int ButtonPlaceholder::GetHeightForWidth(int width) const {
   // children. This is not the case here because the button is at first no
   // visible. Therefore we override GetHeightForWidth to return the preferred
   // height regardless of children being visible or not.
-  return GetPreferredSize().height();
+  return GetPreferredSize(views::SizeBounds(width, {})).height();
 }
 
 BEGIN_METADATA(ButtonPlaceholder)

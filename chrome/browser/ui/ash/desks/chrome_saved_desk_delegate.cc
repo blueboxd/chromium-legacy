@@ -8,6 +8,7 @@
 #include "ash/public/cpp/desk_template.h"
 #include "ash/public/cpp/system/toast_data.h"
 #include "ash/public/cpp/system/toast_manager.h"
+#include "ash/public/cpp/window_properties.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/check.h"
 #include "base/functional/bind.h"
@@ -29,6 +30,7 @@
 #include "chrome/browser/ui/ash/desks/chrome_desks_util.h"
 #include "chrome/browser/ui/ash/desks/desks_client.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/web_applications/web_app_id_constants.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/app_constants/constants.h"
@@ -471,6 +473,12 @@ bool ChromeSavedDeskDelegate::IsWindowSupportedForSavedDesk(
     return false;
   }
 
+  const auto* app_id = window->GetProperty(ash::kAppIDKey);
+  // Feedback app is not saved, see http://b/301479278.
+  if (app_id && *app_id == web_app::kOsFeedbackAppId) {
+    return false;
+  }
+
   if (!ash::DeskTemplate::IsAppTypeSupported(window)) {
     return false;
   }
@@ -483,9 +491,14 @@ std::string ChromeSavedDeskDelegate::GetAppShortName(
     const std::string& app_id) {
   TRACE_EVENT0("ui", "ChromeSavedDeskDelegate::GetAppShortName");
   std::string name;
-  auto* app_service_proxy = apps::AppServiceProxyFactory::GetForProfile(
-      ProfileManager::GetActiveUserProfile());
-  DCHECK(app_service_proxy);
+  auto* profile = ProfileManager::GetActiveUserProfile();
+  auto* app_service_proxy =
+      apps::AppServiceProxyFactory::IsAppServiceAvailableForProfile(profile)
+          ? apps::AppServiceProxyFactory::GetForProfile(profile)
+          : nullptr;
+  if (!app_service_proxy) {
+    return name;
+  }
 
   app_service_proxy->AppRegistryCache().ForOneApp(
       app_id,

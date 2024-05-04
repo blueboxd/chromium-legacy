@@ -30,7 +30,6 @@ from devil.android.tools import webview_app
 from devil.utils import reraiser_thread
 from incremental_install import installer
 from pylib import constants
-from pylib import valgrind_tools
 from pylib.base import base_test_result
 from pylib.base import output_manager
 from pylib.constants import host_paths
@@ -70,7 +69,7 @@ _WPR_GO_LINUX_X86_64_PATH = os.path.join(host_paths.DIR_SOURCE_ROOT,
 _TAG = 'test_runner_py'
 
 TIMEOUT_ANNOTATIONS = [
-    ('Manual', 10 * 60 * 60),
+    ('Manual', 1000 * 60 * 60),
     ('IntegrationTest', 10 * 60),
     ('External', 10 * 60),
     ('EnormousTest', 5 * 60),
@@ -91,22 +90,22 @@ LOGCAT_FILTERS = ['*:e', 'chromium:v', 'cr_*:v', 'DEBUG:I',
                   'StrictMode:D', '%s:I' % _TAG]
 
 EXTRA_CLANG_COVERAGE_DEVICE_FILE = (
-    'org.chromium.base.test.BaseChromiumAndroidJUnitRunner.'
-    'ClangCoverageDeviceFile')
+    'BaseChromiumAndroidJUnitRunner.ClangCoverageDeviceFile')
 
 EXTRA_SCREENSHOT_FILE = (
     'org.chromium.base.test.ScreenshotOnFailureStatement.ScreenshotFile')
 
+EXTRA_TIMEOUT_SCALE = 'BaseChromiumAndroidJUnitRunner.TimeoutScale'
+
 EXTRA_UI_CAPTURE_DIR = (
     'org.chromium.base.test.util.Screenshooter.ScreenshotDir')
 
-EXTRA_TRACE_FILE = ('org.chromium.base.test.BaseJUnit4ClassRunner.TraceFile')
+EXTRA_TRACE_FILE = 'BaseChromiumAndroidJUnitRunner.TraceFile'
 
 _EXTRA_RUN_DISABLED_TEST = (
     'org.chromium.base.test.util.DisableIfSkipCheck.RunDisabledTest')
 
-_EXTRA_TEST_IS_UNIT = (
-    'org.chromium.base.test.BaseChromiumAndroidJUnitRunner.IsUnitTest')
+_EXTRA_TEST_IS_UNIT = 'BaseChromiumAndroidJUnitRunner.IsUnitTest'
 
 _EXTRA_PACKAGE_UNDER_TEST = ('org.chromium.chrome.test.pagecontroller.rules.'
                              'ChromeUiApplicationTestRule.PackageUnderTest')
@@ -248,6 +247,11 @@ def _ParseTestListOutputFromChromiumListener(output):
       continue
     else:
       logging.warning('Unexpected code=%s output: %r', code, bundle)
+
+  # GetResult() cannot be called before IterStatus().
+  code, result = parser.GetResult()
+  if code != instrumentation_parser.RESULT_CODE_OK:
+    raise Exception('Test listing failed: %s' % result.get('stream', result))
   return [{
       'class': class_name,
       'methods': methods,
@@ -282,6 +286,10 @@ def _ParseTestListOutputFromAndroidxListener(output):
       continue
     else:
       logging.warning('Unexpected code=%s output: %r', code, bundle)
+  # GetResult() cannot be called before IterStatus().
+  code, result = parser.GetResult()
+  if code != instrumentation_parser.RESULT_CODE_OK:
+    raise Exception('Test listing failed: %s' % result.get('stream', result))
   return [{
       'class': class_name,
       'methods': methods,
@@ -591,9 +599,6 @@ class LocalDeviceInstrumentationTestRun(
           logging.debug('Attempting to set WebView flags: %r', webview_flags)
           self._webview_flag_changers[str(dev)].AddFlags(webview_flags)
 
-        valgrind_tools.SetChromeTimeoutScale(
-            dev, self._test_instance.timeout_scale)
-
       install_steps += [push_test_data, create_flag_changer]
       post_install_steps += [
           set_debug_app, approve_app_links, set_vega_permissions,
@@ -681,8 +686,6 @@ class LocalDeviceInstrumentationTestRun(
       for cmd in self._test_instance.run_teardown_commands:
         logging.info('Running custom teardown shell command: %s', cmd)
         dev.RunShellCommand(cmd, shell=True, check_return=True)
-
-      valgrind_tools.SetChromeTimeoutScale(dev, None)
 
       # If we've force approved app links for a package, undo that now.
       self._ToggleAppLinks(dev, 'STATE_NO_RESPONSE')
@@ -880,7 +883,7 @@ class LocalDeviceInstrumentationTestRun(
       ])
     all_tests.extend(other_tests)
     # Sort all tests by hash.
-    # TODO(crbug.com/1257820): Add sorting logic back to _PartitionTests.
+    # TODO(crbug.com/40200835): Add sorting logic back to _PartitionTests.
     return self._SortTests(all_tests)
 
   #override
@@ -903,7 +906,6 @@ class LocalDeviceInstrumentationTestRun(
       extras[_EXTRA_PACKAGE_UNDER_TEST] = package_name
 
     flags_to_add = []
-    test_timeout_scale = None
     if self._test_instance.coverage_directory:
       coverage_basename = '%s' % ('%s_%s_group' %
                                   (test[0]['class'], test[0]['method'])
@@ -1012,11 +1014,10 @@ class LocalDeviceInstrumentationTestRun(
       timeout = FIXED_TEST_TIMEOUT_OVERHEAD + self._GetTimeoutFromAnnotations(
           test['annotations'], test_display_name)
 
-      test_timeout_scale = self._GetTimeoutScaleFromAnnotations(
-          test['annotations'])
-      if test_timeout_scale and test_timeout_scale != 1:
-        valgrind_tools.SetChromeTimeoutScale(
-            device, test_timeout_scale * self._test_instance.timeout_scale)
+      timeout_scale = self._test_instance.timeout_scale * (
+          self._GetTimeoutScaleFromAnnotations(test['annotations']))
+      if timeout_scale != 1:
+        extras[EXTRA_TIMEOUT_SCALE] = str(self._test_instance.timeout_scale)
 
     if self._test_instance.wait_for_java_debugger:
       timeout = None
@@ -1098,11 +1099,6 @@ class LocalDeviceInstrumentationTestRun(
       def restore_flags():
         if flags_to_add:
           self._flag_changers[str(device)].Restore()
-
-      def restore_timeout_scale():
-        if test_timeout_scale:
-          valgrind_tools.SetChromeTimeoutScale(
-              device, self._test_instance.timeout_scale)
 
       def handle_coverage_data():
         if self._test_instance.coverage_directory:
@@ -1218,9 +1214,9 @@ class LocalDeviceInstrumentationTestRun(
       # the results! Things such as whether the test CRASHED have not yet been
       # determined.
       post_test_steps = [
-          restore_flags, restore_timeout_scale, stop_chrome_proxy,
-          handle_coverage_data, handle_render_test_data,
-          pull_ui_screen_captures, pull_baseline_profile
+          restore_flags, stop_chrome_proxy, handle_coverage_data,
+          handle_render_test_data, pull_ui_screen_captures,
+          pull_baseline_profile
       ]
       if self._env.concurrent_adb:
         reraiser_thread.RunAsync(post_test_steps)
@@ -1384,6 +1380,9 @@ class LocalDeviceInstrumentationTestRun(
             # Workaround for https://github.com/mockito/mockito/issues/922
             'notPackage': 'net.bytebuddy',
         }
+        if self._test_instance.timeout_scale != 1:
+          extras[EXTRA_TIMEOUT_SCALE] = str(self._test_instance.timeout_scale)
+
         # BaseChromiumAndroidJUnitRunner ignores this bundle value (and always
         # adds the listener). This is needed to enable the the listener when
         # using AndroidJUnitRunner directly.
@@ -1731,8 +1730,12 @@ class LocalDeviceInstrumentationTestRun(
 
           processed_template_output = _GenerateRenderTestHtml(
               render_name, given_link, closest_link, diff_link)
+          # We include the timestamp in the HTML results filename so that
+          # multiple tries from the same run do not clobber each other.
+          timestamp = time.strftime('%Y%m%dT%H%M%S-UTC', time.gmtime())
+          html_results_name = f'{render_name}_{timestamp}.html'
           with self._env.output_manager.ArchivedTempfile(
-              '%s.html' % render_name, 'gold_local_diffs',
+              html_results_name, 'gold_local_diffs',
               output_manager.Datatype.HTML) as html_results:
             html_results.write(processed_template_output)
           _SetLinkOnResults(results, full_test_name, render_name,

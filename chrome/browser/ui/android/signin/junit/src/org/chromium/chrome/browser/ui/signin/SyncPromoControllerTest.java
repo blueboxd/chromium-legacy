@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.ui.signin;
 
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
@@ -24,14 +26,21 @@ import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Features;
 import org.chromium.base.test.util.Features.DisableFeatures;
 import org.chromium.base.test.util.Features.EnableFeatures;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.ChromeSharedPreferences;
+import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
+import org.chromium.chrome.browser.signin.services.SigninManager;
 import org.chromium.chrome.browser.sync.SyncServiceFactory;
+import org.chromium.chrome.browser.ui.signin.account_picker.AccountPickerBottomSheetStrings;
+import org.chromium.chrome.browser.ui.signin.history_sync.HistorySyncHelper;
 import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
 import org.chromium.chrome.test.util.browser.signin.AccountManagerTestRule;
+import org.chromium.components.prefs.PrefService;
+import org.chromium.components.signin.identitymanager.ConsentLevel;
 import org.chromium.components.signin.identitymanager.IdentityManager;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
 import org.chromium.components.signin.test.util.AccountCapabilitiesBuilder;
@@ -40,6 +49,7 @@ import org.chromium.components.sync.SyncFeatureMap;
 import org.chromium.components.sync.SyncService;
 import org.chromium.components.sync.UserSelectableType;
 
+import java.util.List;
 import java.util.Set;
 
 /** Tests for {@link SyncPromoController}. */
@@ -56,6 +66,9 @@ public class SyncPromoControllerTest {
     private static final int RESET_AFTER_HOURS = 10;
     private static final long RESET_AFTER_MS = RESET_AFTER_HOURS * DateUtils.HOUR_IN_MILLIS;
     private static final int MAX_SIGN_IN_PROMO_IMPRESSIONS = 10;
+
+    private static final AccountPickerBottomSheetStrings BOTTOM_SHEET_STRINGS =
+            new AccountPickerBottomSheetStrings.Builder(R.string.sign_in_to_chrome).build();
 
     @Rule
     public final MockitoRule mMockitoRule = MockitoJUnit.rule().strictness(Strictness.LENIENT);
@@ -75,7 +88,13 @@ public class SyncPromoControllerTest {
 
     @Mock private IdentityManager mIdentityManager;
 
+    @Mock private SigninManager mSigninManager;
+
     @Mock private SyncService mSyncService;
+
+    @Mock private PrefService mPrefService;
+
+    @Mock private HistorySyncHelper mHistorySyncHelper;
 
     @Mock private SyncConsentActivityLauncher mSyncConsentActivityLauncher;
 
@@ -95,17 +114,19 @@ public class SyncPromoControllerTest {
                 .thenReturn(mIdentityManager);
         mSharedPreferencesManager.writeInt(
                 SyncPromoController.getPromoShowCountPreferenceName(
-                        SigninAccessPoint.NTP_CONTENT_SUGGESTIONS),
+                        SigninAccessPoint.NTP_FEED_TOP_PROMO),
                 0);
         mSharedPreferencesManager.writeLong(
                 ChromePreferenceKeys.SIGNIN_PROMO_NTP_FIRST_SHOWN_TIME, 0L);
         mSharedPreferencesManager.writeLong(
                 ChromePreferenceKeys.SIGNIN_PROMO_NTP_LAST_SHOWN_TIME, 0L);
+        when(mPrefService.getString(Pref.GOOGLE_SERVICES_LAST_SYNCING_GAIA_ID)).thenReturn("");
 
         mSyncPromoController =
                 new SyncPromoController(
                         mProfile,
-                        SigninAccessPoint.NTP_CONTENT_SUGGESTIONS,
+                        BOTTOM_SHEET_STRINGS,
+                        SigninAccessPoint.NTP_FEED_TOP_PROMO,
                         mSyncConsentActivityLauncher,
                         mSigninAndHistoryOptInActivityLauncher);
     }
@@ -161,7 +182,7 @@ public class SyncPromoControllerTest {
                 MAX_SIGN_IN_PROMO_IMPRESSIONS);
         mSharedPreferencesManager.writeInt(
                 SyncPromoController.getPromoShowCountPreferenceName(
-                        SigninAccessPoint.NTP_CONTENT_SUGGESTIONS),
+                        SigninAccessPoint.NTP_FEED_TOP_PROMO),
                 MAX_SIGN_IN_PROMO_IMPRESSIONS - 1);
 
         Assert.assertTrue(mSyncPromoController.canShowSyncPromo());
@@ -173,7 +194,7 @@ public class SyncPromoControllerTest {
                 MAX_SIGN_IN_PROMO_IMPRESSIONS);
         mSharedPreferencesManager.writeInt(
                 SyncPromoController.getPromoShowCountPreferenceName(
-                        SigninAccessPoint.NTP_CONTENT_SUGGESTIONS),
+                        SigninAccessPoint.NTP_FEED_TOP_PROMO),
                 MAX_SIGN_IN_PROMO_IMPRESSIONS);
 
         Assert.assertFalse(mSyncPromoController.canShowSyncPromo());
@@ -239,7 +260,7 @@ public class SyncPromoControllerTest {
                 ChromeSharedPreferences.getInstance()
                         .readInt(
                                 SyncPromoController.getPromoShowCountPreferenceName(
-                                        SigninAccessPoint.NTP_CONTENT_SUGGESTIONS)));
+                                        SigninAccessPoint.NTP_FEED_TOP_PROMO)));
     }
 
     @Test
@@ -266,7 +287,7 @@ public class SyncPromoControllerTest {
                 ChromeSharedPreferences.getInstance()
                         .readInt(
                                 SyncPromoController.getPromoShowCountPreferenceName(
-                                        SigninAccessPoint.NTP_CONTENT_SUGGESTIONS)));
+                                        SigninAccessPoint.NTP_FEED_TOP_PROMO)));
     }
 
     @Test
@@ -293,7 +314,7 @@ public class SyncPromoControllerTest {
                 ChromeSharedPreferences.getInstance()
                         .readInt(
                                 SyncPromoController.getPromoShowCountPreferenceName(
-                                        SigninAccessPoint.NTP_CONTENT_SUGGESTIONS)));
+                                        SigninAccessPoint.NTP_FEED_TOP_PROMO)));
     }
 
     @Test
@@ -313,14 +334,14 @@ public class SyncPromoControllerTest {
     }
 
     @Test
-    public void shouldHideBookmarksSyncPromoIfBookmarksAndReadingListAreManagedByPolicy() {
+    public void shouldHideBookmarksSyncPromoIfBookmarksIsManagedByPolicy() {
         SyncServiceFactory.setInstanceForTesting(mSyncService);
         when(mSyncService.isTypeManagedByPolicy(UserSelectableType.BOOKMARKS)).thenReturn(true);
-        when(mSyncService.isTypeManagedByPolicy(UserSelectableType.READING_LIST)).thenReturn(true);
 
         SyncPromoController syncPromoController =
                 new SyncPromoController(
                         mProfile,
+                        BOTTOM_SHEET_STRINGS,
                         SigninAccessPoint.BOOKMARK_MANAGER,
                         mSyncConsentActivityLauncher,
                         mSigninAndHistoryOptInActivityLauncher);
@@ -328,29 +349,14 @@ public class SyncPromoControllerTest {
     }
 
     @Test
-    public void shouldShowBookmarksSyncPromoIfAtLeastReadingListIsNotManagedByPolicy() {
-        SyncServiceFactory.setInstanceForTesting(mSyncService);
-        when(mSyncService.isTypeManagedByPolicy(UserSelectableType.BOOKMARKS)).thenReturn(true);
-        when(mSyncService.isTypeManagedByPolicy(UserSelectableType.READING_LIST)).thenReturn(false);
-
-        SyncPromoController syncPromoController =
-                new SyncPromoController(
-                        mProfile,
-                        SigninAccessPoint.BOOKMARK_MANAGER,
-                        mSyncConsentActivityLauncher,
-                        mSigninAndHistoryOptInActivityLauncher);
-        Assert.assertTrue(syncPromoController.canShowSyncPromo());
-    }
-
-    @Test
-    public void shouldShowBookmarksSyncPromoIfAtLeastBookmarksIsNotManagedByPolicy() {
+    public void shouldShowBookmarksSyncPromoIfBookmarksIsNotManagedByPolicy() {
         SyncServiceFactory.setInstanceForTesting(mSyncService);
         when(mSyncService.isTypeManagedByPolicy(UserSelectableType.BOOKMARKS)).thenReturn(false);
-        when(mSyncService.isTypeManagedByPolicy(UserSelectableType.READING_LIST)).thenReturn(true);
 
         SyncPromoController syncPromoController =
                 new SyncPromoController(
                         mProfile,
+                        BOTTOM_SHEET_STRINGS,
                         SigninAccessPoint.BOOKMARK_MANAGER,
                         mSyncConsentActivityLauncher,
                         mSigninAndHistoryOptInActivityLauncher);
@@ -361,13 +367,13 @@ public class SyncPromoControllerTest {
     public void shouldHideBookmarksSyncPromoIfDataTypesSyncing() {
         SyncServiceFactory.setInstanceForTesting(mSyncService);
         when(mSyncService.isTypeManagedByPolicy(UserSelectableType.BOOKMARKS)).thenReturn(false);
-        when(mSyncService.isTypeManagedByPolicy(UserSelectableType.READING_LIST)).thenReturn(false);
         when(mSyncService.getSelectedTypes())
                 .thenReturn(Set.of(UserSelectableType.BOOKMARKS, UserSelectableType.READING_LIST));
 
         SyncPromoController syncPromoController =
                 new SyncPromoController(
                         mProfile,
+                        BOTTOM_SHEET_STRINGS,
                         SigninAccessPoint.BOOKMARK_MANAGER,
                         mSyncConsentActivityLauncher,
                         mSigninAndHistoryOptInActivityLauncher);
@@ -378,12 +384,12 @@ public class SyncPromoControllerTest {
     public void shouldShowBookmarksSyncPromoIfBookmarkNotSyncing() {
         SyncServiceFactory.setInstanceForTesting(mSyncService);
         when(mSyncService.isTypeManagedByPolicy(UserSelectableType.BOOKMARKS)).thenReturn(false);
-        when(mSyncService.isTypeManagedByPolicy(UserSelectableType.READING_LIST)).thenReturn(false);
         when(mSyncService.getSelectedTypes()).thenReturn(Set.of(UserSelectableType.READING_LIST));
 
         SyncPromoController syncPromoController =
                 new SyncPromoController(
                         mProfile,
+                        BOTTOM_SHEET_STRINGS,
                         SigninAccessPoint.BOOKMARK_MANAGER,
                         mSyncConsentActivityLauncher,
                         mSigninAndHistoryOptInActivityLauncher);
@@ -394,12 +400,12 @@ public class SyncPromoControllerTest {
     public void shouldShowBookmarksSyncPromoIfReadingListNotSyncing() {
         SyncServiceFactory.setInstanceForTesting(mSyncService);
         when(mSyncService.isTypeManagedByPolicy(UserSelectableType.BOOKMARKS)).thenReturn(false);
-        when(mSyncService.isTypeManagedByPolicy(UserSelectableType.READING_LIST)).thenReturn(false);
         when(mSyncService.getSelectedTypes()).thenReturn(Set.of(UserSelectableType.BOOKMARKS));
 
         SyncPromoController syncPromoController =
                 new SyncPromoController(
                         mProfile,
+                        BOTTOM_SHEET_STRINGS,
                         SigninAccessPoint.BOOKMARK_MANAGER,
                         mSyncConsentActivityLauncher,
                         mSigninAndHistoryOptInActivityLauncher);
@@ -407,6 +413,7 @@ public class SyncPromoControllerTest {
     }
 
     @Test
+    @DisableFeatures(ChromeFeatureList.REPLACE_SYNC_PROMOS_WITH_SIGN_IN_PROMOS)
     public void shouldHideRecentTabsSyncPromoIfTabsIsManagedByPolicy() {
         SyncServiceFactory.setInstanceForTesting(mSyncService);
         when(mSyncService.isTypeManagedByPolicy(UserSelectableType.TABS)).thenReturn(true);
@@ -414,6 +421,7 @@ public class SyncPromoControllerTest {
         SyncPromoController syncPromoController =
                 new SyncPromoController(
                         mProfile,
+                        BOTTOM_SHEET_STRINGS,
                         SigninAccessPoint.RECENT_TABS,
                         mSyncConsentActivityLauncher,
                         mSigninAndHistoryOptInActivityLauncher);
@@ -421,6 +429,24 @@ public class SyncPromoControllerTest {
     }
 
     @Test
+    @EnableFeatures(ChromeFeatureList.REPLACE_SYNC_PROMOS_WITH_SIGN_IN_PROMOS)
+    public void
+            shouldHideRecentTabsSyncPromoIfTabsIsManagedByPolicy_replaceSyncPromosWithSigninPromosEnabled() {
+        HistorySyncHelper.setInstanceForTesting(mHistorySyncHelper);
+        when(mHistorySyncHelper.isHistorySyncDisabledByPolicy()).thenReturn(true);
+
+        SyncPromoController syncPromoController =
+                new SyncPromoController(
+                        mProfile,
+                        BOTTOM_SHEET_STRINGS,
+                        SigninAccessPoint.RECENT_TABS,
+                        mSyncConsentActivityLauncher,
+                        mSigninAndHistoryOptInActivityLauncher);
+        Assert.assertFalse(syncPromoController.canShowSyncPromo());
+    }
+
+    @Test
+    @DisableFeatures(ChromeFeatureList.REPLACE_SYNC_PROMOS_WITH_SIGN_IN_PROMOS)
     public void shouldShowRecentTabsSyncPromoIfTabsIsNotManagedByPolicy() {
         SyncServiceFactory.setInstanceForTesting(mSyncService);
         when(mSyncService.isTypeManagedByPolicy(UserSelectableType.TABS)).thenReturn(false);
@@ -428,10 +454,179 @@ public class SyncPromoControllerTest {
         SyncPromoController syncPromoController =
                 new SyncPromoController(
                         mProfile,
+                        BOTTOM_SHEET_STRINGS,
                         SigninAccessPoint.RECENT_TABS,
                         mSyncConsentActivityLauncher,
                         mSigninAndHistoryOptInActivityLauncher);
         Assert.assertTrue(syncPromoController.canShowSyncPromo());
+    }
+
+    @Test
+    @EnableFeatures(ChromeFeatureList.REPLACE_SYNC_PROMOS_WITH_SIGN_IN_PROMOS)
+    public void
+            shouldHideRecentTabsIfUserAlreadyOptedIn_replaceSyncPromosWithSigninPromosEnabled() {
+        HistorySyncHelper.setInstanceForTesting(mHistorySyncHelper);
+        when(mHistorySyncHelper.didAlreadyOptIn()).thenReturn(true);
+
+        SyncPromoController syncPromoController =
+                new SyncPromoController(
+                        mProfile,
+                        BOTTOM_SHEET_STRINGS,
+                        SigninAccessPoint.RECENT_TABS,
+                        mSyncConsentActivityLauncher,
+                        mSigninAndHistoryOptInActivityLauncher);
+        Assert.assertFalse(syncPromoController.canShowSyncPromo());
+    }
+
+    @Test
+    @EnableFeatures(ChromeFeatureList.REPLACE_SYNC_PROMOS_WITH_SIGN_IN_PROMOS)
+    public void
+            shouldShowRecentTabsSyncPromoIfTabsIsNotManagedByPolicyAndUserDidNoOptIn_replaceSyncPromosWithSigninPromosEnabled() {
+        HistorySyncHelper.setInstanceForTesting(mHistorySyncHelper);
+
+        SyncPromoController syncPromoController =
+                new SyncPromoController(
+                        mProfile,
+                        BOTTOM_SHEET_STRINGS,
+                        SigninAccessPoint.RECENT_TABS,
+                        mSyncConsentActivityLauncher,
+                        mSigninAndHistoryOptInActivityLauncher);
+        Assert.assertTrue(syncPromoController.canShowSyncPromo());
+    }
+
+    @Test
+    @EnableFeatures(SyncFeatureMap.ENABLE_BOOKMARK_FOLDERS_FOR_ACCOUNT_STORAGE)
+    public void shouldLaunchBookmarksSigninFlowReturnsTrue() {
+        doReturn(false).when(mIdentityManager).hasPrimaryAccount(ConsentLevel.SIGNIN);
+        doReturn(SyncPromoController.GMAIL_DOMAIN)
+                .when(mSigninManager)
+                .extractDomainName(anyString());
+
+        Assert.assertTrue(
+                SyncPromoController.shouldLaunchBookmarksSigninFlow(
+                        SigninAccessPoint.BOOKMARK_MANAGER,
+                        mIdentityManager,
+                        mSigninManager,
+                        List.of(mAccountManagerTestRule.addAccount("test@gmail.com")),
+                        mPrefService));
+    }
+
+    @Test
+    @DisableFeatures(SyncFeatureMap.ENABLE_BOOKMARK_FOLDERS_FOR_ACCOUNT_STORAGE)
+    public void shouldLaunchBookmarksSigninFlowReturnsFalse_FeatureDisabled() {
+        doReturn(false).when(mIdentityManager).hasPrimaryAccount(ConsentLevel.SIGNIN);
+        doReturn(SyncPromoController.GMAIL_DOMAIN)
+                .when(mSigninManager)
+                .extractDomainName(anyString());
+
+        Assert.assertFalse(
+                SyncPromoController.shouldLaunchBookmarksSigninFlow(
+                        SigninAccessPoint.BOOKMARK_MANAGER,
+                        mIdentityManager,
+                        mSigninManager,
+                        List.of(mAccountManagerTestRule.addAccount("test@gmail.com")),
+                        mPrefService));
+    }
+
+    @Test
+    @EnableFeatures(SyncFeatureMap.ENABLE_BOOKMARK_FOLDERS_FOR_ACCOUNT_STORAGE)
+    public void shouldLaunchBookmarksSigninFlowReturnsFalse_NotBookmarkAccessPoint() {
+        doReturn(false).when(mIdentityManager).hasPrimaryAccount(ConsentLevel.SIGNIN);
+        doReturn(SyncPromoController.GMAIL_DOMAIN)
+                .when(mSigninManager)
+                .extractDomainName(anyString());
+
+        Assert.assertFalse(
+                SyncPromoController.shouldLaunchBookmarksSigninFlow(
+                        SigninAccessPoint.NTP_FEED_TOP_PROMO,
+                        mIdentityManager,
+                        mSigninManager,
+                        List.of(mAccountManagerTestRule.addAccount("test@gmail.com")),
+                        mPrefService));
+    }
+
+    @Test
+    @EnableFeatures(SyncFeatureMap.ENABLE_BOOKMARK_FOLDERS_FOR_ACCOUNT_STORAGE)
+    public void shouldLaunchBookmarksSigninFlowReturnsFalse_SignedIn() {
+        doReturn(true).when(mIdentityManager).hasPrimaryAccount(ConsentLevel.SIGNIN);
+        doReturn(SyncPromoController.GMAIL_DOMAIN)
+                .when(mSigninManager)
+                .extractDomainName(anyString());
+
+        Assert.assertFalse(
+                SyncPromoController.shouldLaunchBookmarksSigninFlow(
+                        SigninAccessPoint.BOOKMARK_MANAGER,
+                        mIdentityManager,
+                        mSigninManager,
+                        List.of(mAccountManagerTestRule.addAccount("test@gmail.com")),
+                        mPrefService));
+    }
+
+    @Test
+    @EnableFeatures(SyncFeatureMap.ENABLE_BOOKMARK_FOLDERS_FOR_ACCOUNT_STORAGE)
+    public void shouldLaunchBookmarksSigninFlowReturnsFalse_SyncDataLeft() {
+        when(mPrefService.getString(Pref.GOOGLE_SERVICES_LAST_SYNCING_GAIA_ID))
+                .thenReturn("gaia_id");
+        doReturn(SyncPromoController.GMAIL_DOMAIN)
+                .when(mSigninManager)
+                .extractDomainName(anyString());
+
+        Assert.assertFalse(
+                SyncPromoController.shouldLaunchBookmarksSigninFlow(
+                        SigninAccessPoint.BOOKMARK_MANAGER,
+                        mIdentityManager,
+                        mSigninManager,
+                        List.of(mAccountManagerTestRule.addAccount("test@gmail.com")),
+                        mPrefService));
+    }
+
+    @Test
+    @EnableFeatures(SyncFeatureMap.ENABLE_BOOKMARK_FOLDERS_FOR_ACCOUNT_STORAGE)
+    public void shouldLaunchBookmarksSigninFlowReturnsFalse_NonGmailDomain() {
+        doReturn(false).when(mIdentityManager).hasPrimaryAccount(ConsentLevel.SIGNIN);
+        doReturn("nongmail.com").when(mSigninManager).extractDomainName(anyString());
+
+        Assert.assertFalse(
+                SyncPromoController.shouldLaunchBookmarksSigninFlow(
+                        SigninAccessPoint.BOOKMARK_MANAGER,
+                        mIdentityManager,
+                        mSigninManager,
+                        List.of(mAccountManagerTestRule.addAccount("test@nongmail.com")),
+                        mPrefService));
+    }
+
+    @Test
+    @EnableFeatures(SyncFeatureMap.ENABLE_BOOKMARK_FOLDERS_FOR_ACCOUNT_STORAGE)
+    public void shouldLaunchBookmarksSigninFlowReturnsFalse_EmptyAccountList() {
+        doReturn(false).when(mIdentityManager).hasPrimaryAccount(ConsentLevel.SIGNIN);
+        doReturn(SyncPromoController.GMAIL_DOMAIN)
+                .when(mSigninManager)
+                .extractDomainName(anyString());
+
+        Assert.assertFalse(
+                SyncPromoController.shouldLaunchBookmarksSigninFlow(
+                        SigninAccessPoint.BOOKMARK_MANAGER,
+                        mIdentityManager,
+                        mSigninManager,
+                        List.of(),
+                        mPrefService));
+    }
+
+    @Test
+    @EnableFeatures(SyncFeatureMap.ENABLE_BOOKMARK_FOLDERS_FOR_ACCOUNT_STORAGE)
+    public void shouldLaunchBookmarksSigninFlowReturnsFalse_NullAccountList() {
+        doReturn(false).when(mIdentityManager).hasPrimaryAccount(ConsentLevel.SIGNIN);
+        doReturn(SyncPromoController.GMAIL_DOMAIN)
+                .when(mSigninManager)
+                .extractDomainName(anyString());
+
+        Assert.assertFalse(
+                SyncPromoController.shouldLaunchBookmarksSigninFlow(
+                        SigninAccessPoint.BOOKMARK_MANAGER,
+                        mIdentityManager,
+                        mSigninManager,
+                        null,
+                        mPrefService));
     }
 
     private void disableNTPSyncPromoBySettingLimits(
@@ -444,7 +639,7 @@ public class SyncPromoControllerTest {
         ChromeSharedPreferences.getInstance()
                 .writeInt(
                         SyncPromoController.getPromoShowCountPreferenceName(
-                                SigninAccessPoint.NTP_CONTENT_SUGGESTIONS),
+                                SigninAccessPoint.NTP_FEED_TOP_PROMO),
                         MAX_SIGN_IN_PROMO_IMPRESSIONS);
         ChromeSharedPreferences.getInstance()
                 .writeLong(ChromePreferenceKeys.SIGNIN_PROMO_NTP_FIRST_SHOWN_TIME, firstShownTime);

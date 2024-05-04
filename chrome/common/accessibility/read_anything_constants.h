@@ -5,9 +5,6 @@
 #ifndef CHROME_COMMON_ACCESSIBILITY_READ_ANYTHING_CONSTANTS_H_
 #define CHROME_COMMON_ACCESSIBILITY_READ_ANYTHING_CONSTANTS_H_
 
-#include <set>
-#include <string>
-
 #include "ui/accessibility/ax_mode.h"
 
 // Various constants used throughout the Read Anything feature.
@@ -26,8 +23,7 @@ extern const char kEmptyStateHistogramName[];
 extern const char kLanguageHistogramName[];
 extern const char kPDFPageStart[];
 extern const char kPDFPageEnd[];
-
-extern const std::set<std::string> GetNonSelectableUrls();
+extern const char kReadAnythingSpeechErrorHistogramName[];
 
 }  // namespace string_constants
 
@@ -100,7 +96,7 @@ const char* kLanguagesSupportedByAndika[] = {
 // Enum for logging when a text style setting is changed.
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
-// TODO(crbug.com/1465029): Remove this enum once the views toolbar is removed.
+// TODO(crbug.com/40275871): Remove this enum once the views toolbar is removed.
 enum class ReadAnythingSettingsChange {
   kFontChange = 0,
   kFontSizeChange = 1,
@@ -108,6 +104,22 @@ enum class ReadAnythingSettingsChange {
   kLineHeightChange = 3,
   kLetterSpacingChange = 4,
   kMaxValue = kLetterSpacingChange,
+};
+
+// Enum for logging when a speech error event occurs.
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class ReadAnythingSpeechError {
+  kTextTooLong = 0,
+  kLanguageUnavailable = 1,
+  kVoiceUnavailabe = 2,
+  kInvalidArgument = 3,
+  kSynthesisFailed = 4,
+  kSynthesisUnvailable = 5,
+  kAudioBusy = 6,
+  kAudioHardware = 7,
+  kNetwork = 8,
+  kMaxValue = kNetwork,
 };
 
 // Enum for logging the user-chosen font.

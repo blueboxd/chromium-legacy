@@ -29,10 +29,8 @@ using PageNodeImplTest = GraphTestHarness;
 
 const std::string kHtmlMimeType = "text/html";
 const std::string kPdfMimeType = "application/pdf";
-
-static const freezing::FreezingVote kFreezingVote(
-    freezing::FreezingVoteValue::kCannotFreeze,
-    "cannot freeze");
+const blink::mojom::PermissionStatus kAskNotificationPermission =
+    blink::mojom::PermissionStatus::ASK;
 
 const PageNode* ToPublic(PageNodeImpl* page_node) {
   return page_node;
@@ -142,7 +140,8 @@ TEST_F(PageNodeImplTest, GetTimeSinceLastNavigation) {
   // 1st navigation.
   GURL url("http://www.example.org");
   mock_graph.page->OnMainFrameNavigationCommitted(false, base::TimeTicks::Now(),
-                                                  10u, url, kHtmlMimeType);
+                                                  10u, url, kHtmlMimeType,
+                                                  kAskNotificationPermission);
   EXPECT_EQ(url, mock_graph.page->GetMainFrameUrl());
   EXPECT_EQ(10u, mock_graph.page->GetNavigationID());
   EXPECT_EQ(kHtmlMimeType, mock_graph.page->GetContentsMimeType());
@@ -152,7 +151,8 @@ TEST_F(PageNodeImplTest, GetTimeSinceLastNavigation) {
   // 2nd navigation.
   url = GURL("http://www.example.org/bobcat");
   mock_graph.page->OnMainFrameNavigationCommitted(false, base::TimeTicks::Now(),
-                                                  20u, url, kHtmlMimeType);
+                                                  20u, url, kHtmlMimeType,
+                                                  kAskNotificationPermission);
   EXPECT_EQ(url, mock_graph.page->GetMainFrameUrl());
   EXPECT_EQ(20u, mock_graph.page->GetNavigationID());
   EXPECT_EQ(kHtmlMimeType, mock_graph.page->GetContentsMimeType());
@@ -162,7 +162,8 @@ TEST_F(PageNodeImplTest, GetTimeSinceLastNavigation) {
   // Test a same-document navigation.
   url = GURL("http://www.example.org/bobcat#fun");
   mock_graph.page->OnMainFrameNavigationCommitted(true, base::TimeTicks::Now(),
-                                                  30u, url, kHtmlMimeType);
+                                                  30u, url, kHtmlMimeType,
+                                                  kAskNotificationPermission);
   EXPECT_EQ(url, mock_graph.page->GetMainFrameUrl());
   EXPECT_EQ(30u, mock_graph.page->GetNavigationID());
   EXPECT_EQ(kHtmlMimeType, mock_graph.page->GetContentsMimeType());
@@ -172,7 +173,8 @@ TEST_F(PageNodeImplTest, GetTimeSinceLastNavigation) {
   // Test a navigation to a page with a different MIME type.
   url = GURL("http://www.example.org/document.pdf");
   mock_graph.page->OnMainFrameNavigationCommitted(false, base::TimeTicks::Now(),
-                                                  40u, url, kPdfMimeType);
+                                                  40u, url, kPdfMimeType,
+                                                  kAskNotificationPermission);
   EXPECT_EQ(url, mock_graph.page->GetMainFrameUrl());
   EXPECT_EQ(40u, mock_graph.page->GetNavigationID());
   EXPECT_EQ(kPdfMimeType, mock_graph.page->GetContentsMimeType());
@@ -239,21 +241,6 @@ TEST_F(PageNodeImplTest, HadUserEdits) {
   EXPECT_FALSE(page_node->HadUserEdits());
 }
 
-TEST_F(PageNodeImplTest, GetFreezingVote) {
-  MockSinglePageInSingleProcessGraph mock_graph(graph());
-  auto* page_node = mock_graph.page.get();
-
-  // This should be initialized to std::nullopt.
-  EXPECT_FALSE(page_node->GetFreezingVote());
-
-  page_node->set_freezing_vote(kFreezingVote);
-  ASSERT_TRUE(page_node->GetFreezingVote().has_value());
-  EXPECT_EQ(kFreezingVote, page_node->GetFreezingVote().value());
-
-  page_node->set_freezing_vote(std::nullopt);
-  EXPECT_FALSE(page_node->GetFreezingVote());
-}
-
 namespace {
 
 class LenientMockObserver : public PageNodeImpl::Observer {
@@ -286,8 +273,6 @@ class LenientMockObserver : public PageNodeImpl::Observer {
   MOCK_METHOD1(OnFaviconUpdated, void(const PageNode*));
   MOCK_METHOD1(OnHadFormInteractionChanged, void(const PageNode*));
   MOCK_METHOD1(OnHadUserEditsChanged, void(const PageNode*));
-  MOCK_METHOD2(OnFreezingVoteChanged,
-               void(const PageNode*, std::optional<freezing::FreezingVote>));
   MOCK_METHOD2(OnPageStateChanged, void(const PageNode*, PageNode::PageState));
   MOCK_METHOD2(OnAboutToBeDiscarded, void(const PageNode*, const PageNode*));
 
@@ -309,14 +294,28 @@ using MockObserver = ::testing::StrictMock<LenientMockObserver>;
 
 using testing::_;
 using testing::Invoke;
+using testing::InvokeWithoutArgs;
 
 }  // namespace
 
 TEST_F(PageNodeImplTest, ObserverWorks) {
   auto process = CreateNode<ProcessNodeImpl>();
 
+  MockObserver head_obs;
   MockObserver obs;
+  MockObserver tail_obs;
+  graph()->AddPageNodeObserver(&head_obs);
   graph()->AddPageNodeObserver(&obs);
+  graph()->AddPageNodeObserver(&tail_obs);
+
+  // Remove observers at the head and tail of the list inside a callback, and
+  // expect that `obs` is still notified correctly.
+  EXPECT_CALL(head_obs, OnPageNodeAdded(_)).WillOnce(InvokeWithoutArgs([&] {
+    graph()->RemovePageNodeObserver(&head_obs);
+    graph()->RemovePageNodeObserver(&tail_obs);
+  }));
+  // `tail_obs` should not be notified as it was removed.
+  EXPECT_CALL(tail_obs, OnPageNodeAdded(_)).Times(0);
 
   // Create a page node and expect a matching call to "OnPageNodeAdded".
   EXPECT_CALL(obs, OnPageNodeAdded(_))
@@ -362,13 +361,15 @@ TEST_F(PageNodeImplTest, ObserverWorks) {
       .WillOnce(Invoke(&obs, &MockObserver::SetNotifiedPageNode));
   // Expect no OnMainFrameDocumentChanged for same-document navigation
   page_node->OnMainFrameNavigationCommitted(
-      true, base::TimeTicks::Now(), ++navigation_id, kTestUrl, kHtmlMimeType);
+      true, base::TimeTicks::Now(), ++navigation_id, kTestUrl, kHtmlMimeType,
+      kAskNotificationPermission);
   EXPECT_EQ(raw_page_node, obs.TakeNotifiedPageNode());
 
   EXPECT_CALL(obs, OnMainFrameDocumentChanged(_))
       .WillOnce(Invoke(&obs, &MockObserver::SetNotifiedPageNode));
   page_node->OnMainFrameNavigationCommitted(
-      false, base::TimeTicks::Now(), ++navigation_id, kTestUrl, kHtmlMimeType);
+      false, base::TimeTicks::Now(), ++navigation_id, kTestUrl, kHtmlMimeType,
+      kAskNotificationPermission);
   EXPECT_EQ(raw_page_node, obs.TakeNotifiedPageNode());
 
   EXPECT_CALL(obs, OnTitleUpdated(_))
@@ -381,11 +382,11 @@ TEST_F(PageNodeImplTest, ObserverWorks) {
   page_node->OnFaviconUpdated();
   EXPECT_EQ(raw_page_node, obs.TakeNotifiedPageNode());
 
-  EXPECT_CALL(obs, OnFreezingVoteChanged(_, testing::Eq(std::nullopt)))
-      .WillOnce(testing::WithArg<0>(
-          Invoke(&obs, &MockObserver::SetNotifiedPageNode)));
-  page_node->set_freezing_vote(kFreezingVote);
-  EXPECT_EQ(raw_page_node, obs.TakeNotifiedPageNode());
+  // Re-entrant iteration should work.
+  EXPECT_CALL(obs, OnIsFocusedChanged(raw_page_node))
+      .WillOnce(InvokeWithoutArgs([&] { page_node->SetIsVisible(false); }));
+  EXPECT_CALL(obs, OnIsVisibleChanged(raw_page_node));
+  page_node->SetIsFocused(false);
 
   // Release the page node and expect a call to "OnBeforePageNodeRemoved".
   EXPECT_CALL(obs, OnBeforePageNodeRemoved(_))

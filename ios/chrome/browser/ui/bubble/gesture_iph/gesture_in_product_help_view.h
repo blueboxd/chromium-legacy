@@ -7,13 +7,13 @@
 
 #import <UIKit/UIKit.h>
 
-#import "ios/chrome/browser/ui/bubble/bubble_dismissal_reason_type.h"
+#import "ios/chrome/browser/ui/bubble/bubble_constants.h"
 
 namespace base {
 class TimeDelta;
 }
 
-typedef NS_ENUM(NSInteger, BubbleArrowDirection);
+@protocol GestureInProductHelpViewDelegate;
 
 /// A view to instruct users about possible gestural actions. The view will
 /// contain a bubble view, a gesture indicator ellipsis indicating user's finger
@@ -28,15 +28,14 @@ typedef NS_ENUM(NSInteger, BubbleArrowDirection);
 /// `CGSizeZero` as it is used to compute the initial bubble size, and
 /// preferably, should NOT include safe area inset of the bubble arrow
 /// direction.
-/// - `direction` also indicates which side of the view the user could perform
-/// the swipe action on. Note that the swipe movement would be toward the
-/// opposite direction.
+/// - `direction` indicates which side of the view the user could perform
+/// the swipe action on.
 /// `voiceOverAnnouncement` provides a message specifically for voice-over
 /// users. This message is both shown visually in a bubble and read aloud. If
 /// value is `nil`, the `text` will be used for voice-over users.
 - (instancetype)initWithText:(NSString*)text
           bubbleBoundingSize:(CGSize)bubbleBoundingSize
-              arrowDirection:(BubbleArrowDirection)direction
+              swipeDirection:(UISwipeGestureRecognizerDirection)direction
        voiceOverAnnouncement:(NSString*)voiceOverAnnouncement
     NS_DESIGNATED_INITIALIZER;
 
@@ -44,16 +43,14 @@ typedef NS_ENUM(NSInteger, BubbleArrowDirection);
 /// message for voice-over users.
 - (instancetype)initWithText:(NSString*)text
           bubbleBoundingSize:(CGSize)bubbleBoundingSize
-              arrowDirection:(BubbleArrowDirection)direction;
+              swipeDirection:(UISwipeGestureRecognizerDirection)direction;
 
 - (instancetype)init NS_UNAVAILABLE;
 - (instancetype)initWithFrame:(CGRect)frame NS_UNAVAILABLE;
 - (instancetype)initWithCoder:(NSCoder*)coder NS_UNAVAILABLE;
 
-/// Optional callback to handle side swipe dismissal with an
-/// IPHDismissalReasonType; called after the view is removed from its parent
-/// view.
-@property(nonatomic, copy) CallbackWithIPHDismissalReasonType dismissCallback;
+/// Delegate object that handles view events.
+@property(nonatomic, weak) id<GestureInProductHelpViewDelegate> delegate;
 
 /// Number of animation repeats until the user intervenes; should be set before
 /// calling `startAnimation(WithDelay):`. Optional; Defaults to 3.
@@ -63,6 +60,11 @@ typedef NS_ENUM(NSInteger, BubbleArrowDirection);
 /// arrow direction and the direction opposite to it; should be set before
 /// calling `startAnimation(WithDelay):`. Optional; Defaults to `NO`.
 @property(nonatomic, assign) BOOL bidirectional;
+
+/// Optional, defaults to `NO`. If set to `YES`, the user has to swipe
+/// from within this distance of the edge of the view to perform the gesture.
+/// Should be set before calling `startAnimation(WithDelay):`.
+@property(nonatomic, assign, getter=isEdgeSwipe) BOOL edgeSwipe;
 
 /// Starts the view animation immediately in its original direction. The
 /// animation will be repeated 3 times, and the view will be dismissed when

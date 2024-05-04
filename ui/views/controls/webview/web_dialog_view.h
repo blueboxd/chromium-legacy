@@ -54,7 +54,7 @@ class ObservableWebView : public WebView {
   void ResetDelegate();
 
  private:
-  // TODO(https://crbug.com/1484794): Resolve the lifetime issues around this
+  // TODO(crbug.com/40282376): Resolve the lifetime issues around this
   // member, then mark this as triaged.
   raw_ptr<ui::WebDialogDelegate, DanglingUntriaged> delegate_;
 };
@@ -94,7 +94,8 @@ class WEBVIEW_EXPORT WebDialogView : public ClientView,
 
   // ClientView:
   void AddedToWidget() override;
-  gfx::Size CalculatePreferredSize() const override;
+  gfx::Size CalculatePreferredSize(
+      const SizeBounds& available_size) const override;
   gfx::Size GetMinimumSize() const override;
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
   void ViewHierarchyChanged(
@@ -146,7 +147,9 @@ class WEBVIEW_EXPORT WebDialogView : public ClientView,
   void CloseContents(content::WebContents* source) override;
   content::WebContents* OpenURLFromTab(
       content::WebContents* source,
-      const content::OpenURLParams& params) override;
+      const content::OpenURLParams& params,
+      base::OnceCallback<void(content::NavigationHandle&)>
+          navigation_handle_callback) override;
   void AddNewContents(content::WebContents* source,
                       std::unique_ptr<content::WebContents> new_contents,
                       const GURL& target_url,
@@ -172,6 +175,15 @@ class WEBVIEW_EXPORT WebDialogView : public ClientView,
   bool CheckMediaAccessPermission(content::RenderFrameHost* render_frame_host,
                                   const url::Origin& security_origin,
                                   blink::mojom::MediaStreamType type) override;
+  void EnterFullscreenModeForTab(
+      content::RenderFrameHost* requesting_frame,
+      const blink::mojom::FullscreenOptions& options) override;
+  void ExitFullscreenModeForTab(content::WebContents* web_contents) override;
+  content::KeyboardEventProcessingResult PreHandleKeyboardEvent(
+      content::WebContents* source,
+      const content::NativeWebKeyboardEvent& event) override;
+  bool IsFullscreenForTabOrPending(
+      const content::WebContents* web_contents) override;
 
   void SetWebViewCornersRadii(const gfx::RoundedCornersF& radii);
 

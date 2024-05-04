@@ -28,9 +28,6 @@ inline constexpr int kTotalDaysToStoreMLGuardrails = 60;
 
 #if BUILDFLAG(IS_ANDROID)
 BASE_DECLARE_FEATURE(kAddToHomescreenMessaging);
-BASE_DECLARE_FEATURE(kAmbientBadgeSuppressFirstVisit);
-extern const base::FeatureParam<base::TimeDelta>
-    kAmbientBadgeSuppressFirstVisit_Period;
 BASE_DECLARE_FEATURE(kInstallPromptGlobalGuardrails);
 extern const base::FeatureParam<int>
     kInstallPromptGlobalGuardrails_DismissCount;
@@ -39,12 +36,11 @@ extern const base::FeatureParam<base::TimeDelta>
 extern const base::FeatureParam<int> kInstallPromptGlobalGuardrails_IgnoreCount;
 extern const base::FeatureParam<base::TimeDelta>
     kInstallPromptGlobalGuardrails_IgnorePeriod;
+
+BASE_DECLARE_FEATURE(kPwaUniversalInstallUi);
+
 BASE_DECLARE_FEATURE(kWebApkInstallFailureNotification);
 #endif  // BUILDFLAG(IS_ANDROID)
-
-BASE_DECLARE_FEATURE(kCreateShortcutIgnoresManifest);
-
-BASE_DECLARE_FEATURE(kInstallPromptSegmentation);
 
 BASE_DECLARE_FEATURE(kAppBannerTriggering);
 extern const base::FeatureParam<double> kBannerParamsEngagementTotalKey;
@@ -61,6 +57,7 @@ BASE_DECLARE_FEATURE(kUniversalInstallManifest);
 BASE_DECLARE_FEATURE(kUniversalInstallIcon);
 BASE_DECLARE_FEATURE(kUniversalInstallRootScopeNoManifest);
 extern const base::FeatureParam<int> kMinimumFaviconSize;
+BASE_DECLARE_FEATURE(kUniversalInstallDefaultUrl);
 
 }  // namespace features
 }  // namespace webapps

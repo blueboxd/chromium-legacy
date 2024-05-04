@@ -48,11 +48,16 @@ typedef NS_ENUM(NSUInteger, InitStage) {
   // case the app will continue its transition to InitStageFinal and the UI is
   // initialized when the scene transitions to the foreground.
   InitStageNormalUI,
-  // TODO(crbug.com/1198246): Decouple FRE from Browser views to be able to go
+  // TODO(crbug.com/40760618): Decouple FRE from Browser views to be able to go
   // through this stage before InitStageNormalUI.
   // The app is considering presenting the FRE UI. Will remain in that state
   // when presenting the FRE.
   InitStageFirstRun,
+  // The app may present the Search Engine Choice Screen to the user if
+  // required by local regulation. Will transition to the following stage
+  // when the user has gone through the workflow (possibly in a previous
+  // run of the application).
+  InitStageChoiceScreen,
   // The final stage before being done with initialization. The label and
   // relative position (always last) of this enum item should not change.
   // The value may change when inserting enum items between Start and Final.

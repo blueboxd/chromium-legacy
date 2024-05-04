@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 """Definitions of builders in the chromium.fuchsia builder group."""
 
-load("//lib/args.star", "args")
 load("//lib/branches.star", "branches")
 load("//lib/builder_config.star", "builder_config")
 load("//lib/builder_health_indicators.star", "health_spec")
@@ -29,6 +28,8 @@ ci.defaults.set(
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
     service_account = ci.DEFAULT_SERVICE_ACCOUNT,
     shadow_service_account = ci.DEFAULT_SHADOW_SERVICE_ACCOUNT,
+    siso_enabled = True,
+    siso_remote_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
 )
 
 consoles.console_view(
@@ -145,10 +146,7 @@ ci.builder(
             "cast_receiver_size_optimized",
         ],
     ),
-    # TODO: crbug.com/1509109 - This bot has been red since added.
-    # Enable tree closure and sheriff rotation once it's green.
-    sheriff_rotations = args.ignore_default(None),
-    tree_closing = False,
+    free_space = free_space.high,
     console_view_entry = [
         consoles.console_view_entry(
             category = "cast-receiver",
@@ -203,51 +201,6 @@ ci.builder(
             console_view = "sheriff.fuchsia",
             category = "gardener|ci|x64",
             short_name = "cast",
-        ),
-    ],
-    contact_team_email = "chrome-fuchsia-engprod@google.com",
-)
-
-# TODO: crbug.com/1509109 - Remove and replace by fuchsia-x64-cast-receiver-dbg.
-ci.builder(
-    name = "fuchsia-x64-dbg",
-    builder_spec = builder_config.builder_spec(
-        gclient_config = builder_config.gclient_config(
-            config = "chromium",
-            apply_configs = [
-                "fuchsia_x64",
-            ],
-        ),
-        chromium_config = builder_config.chromium_config(
-            config = "chromium",
-            apply_configs = [
-                "mb",
-            ],
-            build_config = builder_config.build_config.DEBUG,
-            target_bits = 64,
-            target_platform = builder_config.target_platform.FUCHSIA,
-        ),
-        build_gs_bucket = "chromium-linux-archive",
-    ),
-    gn_args = gn_args.config(
-        configs = [
-            "debug_builder",
-            "reclient",
-            "fuchsia",
-            "compile_only",
-        ],
-    ),
-    tree_closing = False,
-    console_view_entry = [
-        consoles.console_view_entry(
-            category = "debug",
-            short_name = "x64",
-        ),
-        consoles.console_view_entry(
-            branch_selector = branches.selector.MAIN,
-            console_view = "sheriff.fuchsia",
-            category = "gardener|ci|x64",
-            short_name = "dbg",
         ),
     ],
     contact_team_email = "chrome-fuchsia-engprod@google.com",

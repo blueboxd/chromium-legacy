@@ -2,14 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/profiler/stack_sampling_profiler_test_util.h"
-#include "base/memory/raw_ptr.h"
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40284755): Remove this and spanify to fix the errors.
+#pragma allow_unsafe_buffers
+#endif
 
+#include "base/profiler/stack_sampling_profiler_test_util.h"
+
+#include <string_view>
 #include <utility>
 
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
 #include "base/location.h"
+#include "base/memory/raw_ptr.h"
 #include "base/path_service.h"
 #include "base/profiler/native_unwinder_android_map_delegate.h"
 #include "base/profiler/native_unwinder_android_memory_regions_map.h"
@@ -425,13 +431,13 @@ void ExpectStackDoesNotContain(
   }
 }
 
-NativeLibrary LoadTestLibrary(StringPiece library_name) {
+NativeLibrary LoadTestLibrary(std::string_view library_name) {
   // The lambda gymnastics works around the fact that we can't use ASSERT_*
   // macros in a function returning non-null.
   const auto load = [&](NativeLibrary* library) {
     FilePath library_path;
 #if BUILDFLAG(IS_FUCHSIA) || BUILDFLAG(IS_IOS)
-    // TODO(crbug.com/1262430): Find a solution that works across platforms.
+    // TODO(crbug.com/40799492): Find a solution that works across platforms.
     ASSERT_TRUE(PathService::Get(DIR_ASSETS, &library_path));
 #else
     // The module is next to the test module rather than with test data.

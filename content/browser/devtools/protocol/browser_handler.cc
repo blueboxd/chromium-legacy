@@ -113,7 +113,7 @@ namespace {
 // //content/browser/permissions:permission_service_impl
 // ::PermissionDescriptorToPermissionType, producing an error in
 // |error_message| as necessary.
-// TODO(crbug.com/989983): De-duplicate this logic.
+// TODO(crbug.com/40638575): De-duplicate this logic.
 Response PermissionDescriptorToPermissionType(
     std::unique_ptr<protocol::Browser::PermissionDescriptor> descriptor,
     PermissionType* permission_type) {
@@ -172,10 +172,6 @@ Response PermissionDescriptorToPermissionType(
   } else if (name == "nfc") {
     *permission_type = PermissionType::NFC;
   } else if (name == "window-management") {
-    *permission_type = PermissionType::WINDOW_MANAGEMENT;
-  } else if (name == "window-placement" &&
-             base::FeatureList::IsEnabled(
-                 blink::features::kWindowPlacementPermissionAlias)) {
     *permission_type = PermissionType::WINDOW_MANAGEMENT;
   } else if (name == "local-fonts") {
     *permission_type = PermissionType::LOCAL_FONTS;

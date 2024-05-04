@@ -41,7 +41,7 @@ using AccessStreamSet = base::EnumSet<SharedImageAccessStream,
 // A compound backing that combines a shared memory backing and real GPU
 // backing. The real GPU backing must implement `UploadFromMemory()` and not
 // have it's own shared memory segment.
-// TODO(crbug.com/1293509): Support multiple GPU backings.
+// TODO(crbug.com/40213543): Support multiple GPU backings.
 class GPU_GLES2_EXPORT CompoundImageBacking : public SharedImageBacking {
  public:
   using CreateBackingCallback =
@@ -88,7 +88,7 @@ class GPU_GLES2_EXPORT CompoundImageBacking : public SharedImageBacking {
   // provided by `gpu_backing_factory`. We additionally pass a |buffer_usage|
   // parameter here in order to create a CPU mappable by creating a shared
   // memory handle.
-  // TODO(crbug.com/1467670): Remove this method once we figure out the mapping
+  // TODO(crbug.com/40276878): Remove this method once we figure out the mapping
   // between SharedImageUsage and BufferUsage and no longer need to use
   // BufferUsage.
   static std::unique_ptr<SharedImageBacking> CreateSharedMemory(
@@ -116,6 +116,8 @@ class GPU_GLES2_EXPORT CompoundImageBacking : public SharedImageBacking {
   SharedImageBackingType GetType() const override;
   void Update(std::unique_ptr<gfx::GpuFence> in_fence) override;
   bool CopyToGpuMemoryBuffer() override;
+  void CopyToGpuMemoryBufferAsync(
+      base::OnceCallback<void(bool)> callback) override;
   gfx::Rect ClearedRect() const override;
   void SetClearedRect(const gfx::Rect& cleared_rect) override;
   void OnAddSecondaryReference() override;
@@ -216,6 +218,8 @@ class GPU_GLES2_EXPORT CompoundImageBacking : public SharedImageBacking {
                          std::string debug_label,
                          std::unique_ptr<SharedImageBacking>& backing);
 
+  void OnCopyToGpuMemoryBufferComplete(bool success);
+
   uint32_t latest_content_id_ = 1;
 
   // Holds all of the "element" backings that make up this compound backing. For
@@ -226,6 +230,8 @@ class GPU_GLES2_EXPORT CompoundImageBacking : public SharedImageBacking {
   // can't actually support that type of usage, in which case the backing will
   // be null or the ProduceX() call will just fail.
   std::array<ElementHolder, 2> elements_;
+
+  base::OnceCallback<void(bool)> pending_copy_to_gmb_callback_;
 };
 
 }  // namespace gpu

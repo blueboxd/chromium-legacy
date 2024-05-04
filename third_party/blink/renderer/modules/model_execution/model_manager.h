@@ -9,6 +9,7 @@
 #include "base/task/sequenced_task_runner.h"
 #include "third_party/blink/public/mojom/model_execution/model_manager.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_model_generic_session_options.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
@@ -16,6 +17,7 @@
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
 
 namespace blink {
+class ModelGenericSession;
 class V8GenericModelAvailability;
 
 // The class that manages the exposed model APIs that load model assets and
@@ -39,17 +41,22 @@ class ModelManager final : public ScriptWrappable,
   void Trace(Visitor* visitor) const override;
 
   // model_manager.idl implementation.
-  ScriptPromiseTyped<V8GenericModelAvailability> canCreateGenericSession(
+  ScriptPromise<V8GenericModelAvailability> canCreateGenericSession(
       ScriptState* script_state,
       ExceptionState& exception_state);
-  ScriptPromise createGenericSession(ScriptState* script_state,
-                                     ExceptionState& exception_state);
+  ScriptPromise<ModelGenericSession> createGenericSession(
+      ScriptState* script_state,
+      ModelGenericSessionOptions* options,
+      ExceptionState& exception_state);
+  ScriptPromise<ModelGenericSessionOptions> defaultGenericSessionOptions(
+      ScriptState* script_state,
+      ExceptionState& exception_state);
 
  private:
   HeapMojoRemote<mojom::blink::ModelManager>& GetModelManagerRemote();
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
-  HeapMojoRemote<mojom::blink::ModelManager> model_manager_remote_{nullptr};
+  HeapMojoRemote<mojom::blink::ModelManager> model_manager_remote_;
 };
 
 }  // namespace blink

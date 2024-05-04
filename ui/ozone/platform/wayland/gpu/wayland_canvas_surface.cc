@@ -268,7 +268,7 @@ void WaylandCanvasSurface::ResizeCanvas(const gfx::Size& viewport_size,
                                         float scale) {
   if (size_ == viewport_size)
     return;
-  // TODO(https://crbug.com/930667): We could implement more efficient resizes
+  // TODO(crbug.com/41440520): We could implement more efficient resizes
   // by allocating buffers rounded up to larger sizes, and then reusing them if
   // the new size still fits (but still reallocate if the new size is much
   // smaller than the old size).
@@ -363,10 +363,11 @@ void WaylandCanvasSurface::MaybeProcessUnsubmittedFrames() {
     }
   }
 
+  constexpr bool enable_blend_for_shadow = true;
   buffer_manager_->CommitBuffer(
       widget_, frame->frame_id, frame_buffer->buffer_id(),
-      std::move(frame->data), gfx::Rect(size_), gfx::RoundedCornersF(),
-      viewport_scale_, damage);
+      std::move(frame->data), gfx::Rect(size_), enable_blend_for_shadow,
+      gfx::RoundedCornersF(), viewport_scale_, damage);
 
   submitted_frame_ = std::move((frame));
 }

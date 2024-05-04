@@ -9,9 +9,11 @@
 #include "base/functional/bind.h"
 #include "base/i18n/rtl.h"
 #include "base/memory/raw_ptr.h"
+#include "base/time/time.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_element_identifiers.h"
 #include "chrome/browser/ui/color/chrome_color_id.h"
+#include "chrome/browser/ui/side_panel/side_panel_enums.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/top_container_background.h"
@@ -19,6 +21,7 @@
 #include "chrome/browser/ui/views/side_panel/side_panel_resize_area.h"
 #include "chrome/browser/ui/views/side_panel/side_panel_util.h"
 #include "chrome/common/pref_names.h"
+#include "components/lens/lens_features.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/ui_base_features.h"
@@ -45,21 +48,27 @@ namespace {
 
 // This thickness includes the solid-color background and the inner round-rect
 // border-color stroke. It does not include the outer-color separator.
-constexpr int kBorderThickness = 16 + views::Separator::kThickness;
+int GetBorderThickness() {
+  return (lens::features::IsLensOverlayEnabled() ? 8 : 16) +
+         views::Separator::kThickness;
+}
 
 // This is how many units of the toolbar are essentially expected to be
 // background.
 constexpr int kOverlapFromToolbar = 4;
 
-// We want the border to visually look like kBorderThickness units on all sides.
-// On the top side, background is drawn on top of the top-content separator and
-// some units of background inside the toolbar (or bookmarks bar) itself.
-// Subtract both of those to not get visually-excessive padding.
-constexpr auto kBorderInsets = gfx::Insets::TLBR(
-    kBorderThickness - views::Separator::kThickness - kOverlapFromToolbar,
-    kBorderThickness,
-    kBorderThickness,
-    kBorderThickness);
+// We want the border to visually look like GetBorderThickness() units on all
+// sides. On the top side, background is drawn on top of the top-content
+// separator and some units of background inside the toolbar (or bookmarks bar)
+// itself. Subtract both of those to not get visually-excessive padding.
+gfx::Insets GetBorderInsets() {
+  int border_thickness = GetBorderThickness();
+  return gfx::Insets::TLBR(
+      border_thickness - views::Separator::kThickness - kOverlapFromToolbar,
+      border_thickness, border_thickness, border_thickness);
+}
+
+constexpr int kAnimationDurationMs = 450;
 
 // This border paints the toolbar color around the side panel content and draws
 // a roundrect viewport around the side panel content. The border can have
@@ -154,9 +163,9 @@ class SidePanelBorder : public views::Border {
     // header to paint on top of the border area.
     int top_inset = views::Separator::kThickness + header_height_;
     if (features::IsSidePanelPinningEnabled()) {
-      top_inset -= kBorderThickness;
+      top_inset -= GetBorderThickness();
     }
-    return kBorderInsets + gfx::Insets::TLBR(top_inset, 0, 0, 0);
+    return GetBorderInsets() + gfx::Insets::TLBR(top_inset, 0, 0, 0);
   }
   gfx::Size GetMinimumSize() const override {
     return gfx::Size(GetInsets().width(), GetInsets().height());
@@ -217,11 +226,19 @@ END_METADATA
 
 SidePanel::SidePanel(BrowserView* browser_view,
                      HorizontalAlignment horizontal_alignment)
-    : border_view_(AddChildView(std::make_unique<BorderView>(browser_view))),
+    : views::AnimationDelegateViews(this),
       browser_view_(browser_view),
-      resize_area_(
-          AddChildView(std::make_unique<views::SidePanelResizeArea>(this))),
       horizontal_alignment_(horizontal_alignment) {
+  std::unique_ptr<BorderView> border_view =
+      std::make_unique<BorderView>(browser_view);
+  border_view_ = border_view.get();
+  AddChildView(std::move(border_view));
+
+  std::unique_ptr<views::SidePanelResizeArea> resize_area =
+      std::make_unique<views::SidePanelResizeArea>(this);
+  resize_area_ = resize_area.get();
+  AddChildView(std::move(resize_area));
+
   pref_change_registrar_.Init(browser_view->GetProfile()->GetPrefs());
 
   // base::Unretained is safe since the side panel must be attached to some
@@ -231,6 +248,10 @@ SidePanel::SidePanel(BrowserView* browser_view,
       base::BindRepeating(&BrowserView::UpdateSidePanelHorizontalAlignment,
                           base::Unretained(browser_view)));
 
+  animation_.SetTweenType(gfx::Tween::Type::EASE_IN_OUT_EMPHASIZED);
+
+  animation_.SetSlideDuration(base::Milliseconds(kAnimationDurationMs));
+
   SetVisible(false);
   SetLayoutManager(std::make_unique<views::FillLayout>());
 
@@ -238,16 +259,12 @@ SidePanel::SidePanel(BrowserView* browser_view,
   // accounting for the border into SetPanelWidth(), otherwise remove this TODO.
   SetPanelWidth(GetMinimumSize().width());
 
-  SetBorder(views::CreateEmptyBorder(kBorderInsets));
+  SetBorder(views::CreateEmptyBorder(GetBorderInsets()));
 
   SetProperty(views::kElementIdentifierKey, kSidePanelElementId);
-
-  AddObserver(this);
 }
 
-SidePanel::~SidePanel() {
-  RemoveObserver(this);
-}
+SidePanel::~SidePanel() = default;
 
 void SidePanel::SetPanelWidth(int width) {
   // Only the width is used by BrowserViewLayout.
@@ -280,8 +297,12 @@ bool SidePanel::IsRightAligned() {
 gfx::Size SidePanel::GetMinimumSize() const {
   const int min_side_panel_contents_width = 360;
   const int min_height = 0;
-  return gfx::Size(min_side_panel_contents_width + kBorderInsets.width(),
+  return gfx::Size(min_side_panel_contents_width + GetBorderInsets().width(),
                    min_height);
+}
+
+bool SidePanel::IsClosing() {
+  return animation_.IsClosing();
 }
 
 void SidePanel::AddHeaderView(std::unique_ptr<views::View> view) {
@@ -297,9 +318,9 @@ void SidePanel::AddHeaderView(std::unique_ptr<views::View> view) {
   // placed on top of the border.
   int top_inset = header_view_->height();
   if (features::IsSidePanelPinningEnabled()) {
-    top_inset -= kBorderThickness;
+    top_inset -= GetBorderThickness();
   }
-  SetBorder(views::CreateEmptyBorder(kBorderInsets +
+  SetBorder(views::CreateEmptyBorder(GetBorderInsets() +
                                      gfx::Insets::TLBR(top_inset, 0, 0, 0)));
 }
 
@@ -308,15 +329,30 @@ gfx::Size SidePanel::GetContentSizeUpperBound() const {
   const int side_panel_height =
       height() > 0 ? height() : browser_view_->height();
 
-  return gfx::Size(std::max(0, side_panel_width - kBorderInsets.width()),
-                   std::max(0, side_panel_height - kBorderInsets.height()));
+  return gfx::Size(std::max(0, side_panel_width - GetBorderInsets().width()),
+                   std::max(0, side_panel_height - GetBorderInsets().height()));
 }
 
 void SidePanel::ChildVisibilityChanged(View* child) {
   UpdateVisibility();
 }
 
+double SidePanel::GetAnimationValue() const {
+  if (ShouldShowAnimation()) {
+    return animation_.GetCurrentValue();
+  } else {
+    return 1;
+  }
+}
+
 void SidePanel::OnChildViewAdded(View* observed_view, View* child) {
+  if (observed_view != this || child == border_view_ || child == resize_area_) {
+    return;
+  }
+  if (child != header_view_) {
+    content_view_observations_.AddObservation(child);
+  }
+
   UpdateVisibility();
   // Reorder `border_view_` to be last so that it gets painted on top, even if
   // an added child also paints to a layer.
@@ -342,7 +378,46 @@ void SidePanel::OnChildViewAdded(View* observed_view, View* child) {
 }
 
 void SidePanel::OnChildViewRemoved(View* observed_view, View* child) {
+  if (observed_view != this) {
+    return;
+  }
+  if (content_view_observations_.IsObservingSource(child)) {
+    content_view_observations_.RemoveObservation(child);
+  }
   UpdateVisibility();
+}
+
+void SidePanel::OnViewPropertyChanged(View* observed_view,
+                                      const void* key,
+                                      int64_t old_value) {
+  if (key == kSidePanelContentStateKey &&
+      static_cast<SidePanelContentState>(
+          observed_view->GetProperty(kSidePanelContentStateKey)) !=
+          static_cast<SidePanelContentState>(old_value)) {
+    UpdateVisibility();
+  }
+}
+
+void SidePanel::AnimationProgressed(const gfx::Animation* animation) {
+  base::TimeDelta step_time =
+      base::TimeTicks::Now() - last_animation_step_timestamp_;
+  last_animation_step_timestamp_ = base::TimeTicks::Now();
+  if (!largest_animation_step_time_.has_value() ||
+      largest_animation_step_time_ < step_time) {
+    largest_animation_step_time_ = step_time;
+  }
+  InvalidateLayout();
+}
+
+void SidePanel::AnimationEnded(const gfx::Animation* animation) {
+  if (animation->GetCurrentValue() == 0) {
+    SetVisible(false);
+  }
+  if (largest_animation_step_time_.has_value()) {
+    SidePanelUtil::RecordSidePanelAnimationMetrics(
+        largest_animation_step_time_.value());
+  }
+  InvalidateLayout();
 }
 
 void SidePanel::OnResize(int resize_amount, bool done_resizing) {
@@ -373,7 +448,7 @@ void SidePanel::RecordMetricsIfResized() {
         SidePanelUI::GetSidePanelUIForBrowser(browser_view_->browser())
             ->GetCurrentEntryId();
     CHECK(id.has_value());
-    int side_panel_contents_width = width() - kBorderInsets.width();
+    int side_panel_contents_width = width() - GetBorderInsets().width();
     int browser_window_width = browser_view_->width();
     SidePanelUtil::RecordSidePanelResizeMetrics(
         id.value(), side_panel_contents_width, browser_window_width);
@@ -382,17 +457,26 @@ void SidePanel::RecordMetricsIfResized() {
 }
 
 void SidePanel::UpdateVisibility() {
-  bool any_child_visible = false;
+  bool should_be_open = false;
+  std::vector<views::View*> views_to_hide;
   // TODO(pbos): Iterate content instead. Requires moving the owned pointer out
   // of owned contents before resetting it.
-  for (const views::View* view : children()) {
+  for (views::View* view : children()) {
     if (view == border_view_ || view == resize_area_ || view == header_view_) {
       continue;
     }
 
-    if (view->GetVisible()) {
-      any_child_visible = true;
-      break;
+    if (view->GetVisible() &&
+        static_cast<SidePanelContentState>(
+            view->GetProperty(kSidePanelContentStateKey)) ==
+            SidePanelContentState::kReadyToHide) {
+      views_to_hide.push_back(view);
+    }
+    if (view->GetVisible() &&
+        static_cast<SidePanelContentState>(
+            view->GetProperty(kSidePanelContentStateKey)) ==
+            SidePanelContentState::kReadyToShow) {
+      should_be_open = true;
     }
   }
   // Make sure the border visibility matches the side panel. Also dynamically
@@ -401,25 +485,49 @@ void SidePanel::UpdateVisibility() {
   // https://crbug.com/1269090.
   // TODO(pbos): Should layer visibility/painting be automatically tied to
   // parent visibility? I.e. the difference between GetVisible() and IsDrawn().
-  if (any_child_visible != border_view_->GetVisible()) {
-    border_view_->SetVisible(any_child_visible);
-    if (any_child_visible) {
+  bool side_panel_open_or_closing = GetVisible() || should_be_open;
+  if (side_panel_open_or_closing != border_view_->GetVisible()) {
+    border_view_->SetVisible(side_panel_open_or_closing);
+    if (side_panel_open_or_closing) {
       border_view_->SetPaintToLayer();
       border_view_->layer()->SetFillsBoundsOpaquely(false);
       if (header_view_) {
         static_cast<BorderView*>(border_view_)->HeaderViewChanged(header_view_);
         int top_inset = header_view_->height();
         if (features::IsSidePanelPinningEnabled()) {
-          top_inset -= kBorderThickness;
+          top_inset -= GetBorderThickness();
         }
         SetBorder(views::CreateEmptyBorder(
-            kBorderInsets + gfx::Insets::TLBR(top_inset, 0, 0, 0)));
+            GetBorderInsets() + gfx::Insets::TLBR(top_inset, 0, 0, 0)));
       }
     } else {
       border_view_->DestroyLayer();
     }
   }
-  SetVisible(any_child_visible);
+  if (ShouldShowAnimation()) {
+    if (should_be_open) {
+      // If the side panel should remain open but there are views to hide, hide
+      // them immediately.
+      for (auto* view : views_to_hide) {
+        view->SetVisible(false);
+      }
+      SetVisible(should_be_open);
+      largest_animation_step_time_.reset();
+      last_animation_step_timestamp_ = base::TimeTicks::Now();
+      animation_.Show();
+    } else if (GetVisible() && !IsClosing()) {
+      largest_animation_step_time_.reset();
+      last_animation_step_timestamp_ = base::TimeTicks::Now();
+      animation_.Hide();
+    }
+  } else {
+    SetVisible(should_be_open);
+  }
+}
+
+bool SidePanel::ShouldShowAnimation() const {
+  return lens::features::IsLensOverlayEnabled() &&
+         gfx::Animation::ShouldRenderRichAnimation() && !animations_disabled_;
 }
 
 BEGIN_METADATA(SidePanel)

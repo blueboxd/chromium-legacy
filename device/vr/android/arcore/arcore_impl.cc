@@ -78,7 +78,7 @@ std::set<ArTrackableType> GetArCoreEntityTypes(
 // Helper, computes mojo_from_input_source transform based on mojo_from_viever
 // pose and input source state (containing input_from_pointer transform, which
 // in case of input sources is equivalent to viewer_from_pointer).
-// TODO(https://crbug.com/1043389): this currently assumes that the input source
+// TODO(crbug.com/40669002): this currently assumes that the input source
 // ray mode is "tapping", which is OK for input sources available for AR on
 // Android, but is not true in the general case. This method should duplicate
 // the logic found in XRTargetRaySpace::MojoFromNative().
@@ -544,7 +544,7 @@ std::optional<ArCore::InitializeResult> ArCoreImpl::Initialize(
   DCHECK(IsOnGlThread());
   DCHECK(!arcore_session_.is_valid());
 
-  // TODO(https://crbug.com/837944): Notify error earlier if this will fail.
+  // TODO(crbug.com/41386064): Notify error earlier if this will fail.
 
   JNIEnv* env = base::android::AttachCurrentThread();
   if (!env) {
@@ -1236,7 +1236,7 @@ std::optional<uint64_t> ArCoreImpl::SubscribeToHitTest(
       // Unsupported by ARCore:
       return std::nullopt;
     case mojom::XRNativeOriginInformation::Tag::kImageIndex:
-      // TODO(https://crbug.com/1143575): Add hit test support for tracked
+      // TODO(crbug.com/40728355): Add hit test support for tracked
       // images.
       return std::nullopt;
     case mojom::XRNativeOriginInformation::Tag::kAnchorId:
@@ -1480,7 +1480,7 @@ bool ArCoreImpl::NativeOriginExists(
     case mojom::XRNativeOriginInformation::Tag::kHandJointSpaceInfo:
       return false;
     case mojom::XRNativeOriginInformation::Tag::kImageIndex:
-      // TODO(https://crbug.com/1143575): Needed for anchor creation relaitve to
+      // TODO(crbug.com/40728355): Needed for anchor creation relaitve to
       // tracked images.
       return false;
   }
@@ -1530,7 +1530,7 @@ std::optional<gfx::Transform> ArCoreImpl::GetMojoFromNativeOrigin(
       return std::nullopt;
 
     case mojom::XRNativeOriginInformation::Tag::kImageIndex:
-      // TODO(https://crbug.com/1143575): Needed for hit test and anchors
+      // TODO(crbug.com/40728355): Needed for hit test and anchors
       // support for tracked images.
       return std::nullopt;
   }

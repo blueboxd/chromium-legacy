@@ -11,7 +11,7 @@ import type {AddSiteDialogElement, SettingsEditExceptionDialogElement, SiteExcep
 import {CookiesExceptionType, ContentSetting, ContentSettingsTypes, SITE_EXCEPTION_WILDCARD, SiteSettingSource, SiteSettingsPrefsBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
 import {CrSettingsPrefs, loadTimeData, Router} from 'chrome://settings/settings.js';
 import {assertEquals, assertFalse, assertNotEquals, assertTrue} from 'chrome://webui-test/chai_assert.js';
-import {eventToPromise} from 'chrome://webui-test/test_util.js';
+import {eventToPromise, microtasksFinished} from 'chrome://webui-test/test_util.js';
 import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
 
 import {TestSiteSettingsPrefsBrowserProxy} from './test_site_settings_prefs_browser_proxy.js';
@@ -1193,16 +1193,18 @@ suite('SiteList', function() {
           ['c', testElement, new Event('blur')],
           ['d', tooltip, new MouseEvent('mouseenter')],
         ];
-        testsParams.forEach(params => {
+        for (const params of testsParams) {
           const text = params[0] as string;
           const eventTarget = params[1] as HTMLElement;
           const event = params[2] as MouseEvent;
           entry.fire('show-tooltip', {target: testElement, text});
-          assertTrue(tooltip._showing);
+          await microtasksFinished();
+          assertFalse(tooltip.$.tooltip.hidden);
           assertEquals(text, tooltip.innerHTML.trim());
           eventTarget.dispatchEvent(event);
-          assertFalse(tooltip._showing);
-        });
+          await microtasksFinished();
+          assertTrue(tooltip.$.tooltip.hidden);
+        }
       });
 
   test(
@@ -1520,5 +1522,21 @@ suite('AddExceptionDialog', function() {
         await browserProxy.whenCalled('setCategoryPermissionForPattern');
     assertEquals(primaryPattern, expectedPattern);
     assertEquals(secondaryPattern, SITE_EXCEPTION_WILDCARD);
+  });
+
+  test('add tracking protection exception', async function() {
+    dialog.set('category', ContentSettingsTypes.TRACKING_PROTECTION);
+    flush();
+
+    // Enter a pattern and click the button.
+    const expectedPattern = 'foo-bar.com';
+    await inputText(expectedPattern);
+    dialog.$.add.click();
+
+    // The created exception has primary pattern wildcard.
+    const [primaryPattern, secondaryPattern] =
+        await browserProxy.whenCalled('setCategoryPermissionForPattern');
+    assertEquals(primaryPattern, SITE_EXCEPTION_WILDCARD);
+    assertEquals(secondaryPattern, expectedPattern);
   });
 });

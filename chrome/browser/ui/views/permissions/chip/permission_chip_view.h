@@ -28,7 +28,8 @@ class PermissionChipView : public views::MdTextButton {
   METADATA_HEADER(PermissionChipView, views::MdTextButton)
 
  public:
-  DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(kChipElementId);
+  DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(kRequestChipElementId);
+  DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(kIndicatorChipElementId);
   explicit PermissionChipView(PressedCallback callback);
   PermissionChipView(const PermissionChipView& button) = delete;
   PermissionChipView& operator=(const PermissionChipView& button) = delete;
@@ -56,7 +57,8 @@ class PermissionChipView : public views::MdTextButton {
   void AnimationProgressed(const gfx::Animation* animation) override;
 
   // views::MdTextButton:
-  gfx::Size CalculatePreferredSize() const override;
+  gfx::Size CalculatePreferredSize(
+      const views::SizeBounds& available_size) const override;
   void OnThemeChanged() override;
   void UpdateBackgroundColor() override;
 

@@ -27,6 +27,7 @@
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/sanitizers.h"
+#include "third_party/blink/renderer/platform/wtf/type_traits.h"
 #include "third_party/blink/renderer/platform/wtf/vector_backed_linked_list.h"
 
 namespace WTF {
@@ -84,6 +85,9 @@ class LinkedHashSet {
   template <typename T>
   class IteratorWrapper {
    public:
+    IteratorWrapper(const IteratorWrapper&) = default;
+    IteratorWrapper& operator=(const IteratorWrapper&) = default;
+
     const Value& operator*() const { return *(iterator_.Get()); }
     const Value* operator->() const { return iterator_.Get(); }
 
@@ -97,8 +101,17 @@ class LinkedHashSet {
       return *this;
     }
 
-    IteratorWrapper& operator++(int) = delete;
-    IteratorWrapper& operator--(int) = delete;
+    IteratorWrapper operator++(int) {
+      auto copy = *this;
+      operator++();
+      return copy;
+    }
+
+    IteratorWrapper operator--(int) {
+      auto copy = *this;
+      operator--();
+      return copy;
+    }
 
     bool operator==(const IteratorWrapper& other) const {
       // No need to compare map_iterator_ here because it is not related to
@@ -135,7 +148,7 @@ class LinkedHashSet {
 
   typedef typename TraitsArg::PeekInType ValuePeekInType;
 
-  LinkedHashSet();
+  LinkedHashSet() = default;
   LinkedHashSet(const LinkedHashSet&) = default;
   LinkedHashSet(LinkedHashSet&&) = default;
   LinkedHashSet& operator=(const LinkedHashSet&) = default;
@@ -248,16 +261,19 @@ class LinkedHashSet {
 
   Map value_to_index_;
   ListType list_;
-};
 
-template <typename T, typename TraitsArg, typename Allocator>
-inline LinkedHashSet<T, TraitsArg, Allocator>::LinkedHashSet() {
-  static_assert(Allocator::kIsGarbageCollected ||
-                    !IsPointerToGarbageCollectedType<T>::value,
-                "Cannot put raw pointers to garbage-collected classes into "
-                "an off-heap LinkedHashSet. Use "
-                "HeapLinkedHashSet<Member<T>> instead.");
-}
+  struct TypeConstraints {
+    constexpr TypeConstraints() {
+      static_assert(!IsStackAllocatedType<Value>);
+      static_assert(Allocator::kIsGarbageCollected ||
+                        !IsPointerToGarbageCollectedType<Value>::value,
+                    "Cannot put raw pointers to garbage-collected classes into "
+                    "an off-heap LinkedHashSet. Use "
+                    "HeapLinkedHashSet<Member<T>> instead.");
+    }
+  };
+  NO_UNIQUE_ADDRESS TypeConstraints type_constraints_;
+};
 
 template <typename T, typename TraitsArg, typename Allocator>
 inline void LinkedHashSet<T, TraitsArg, Allocator>::Swap(LinkedHashSet& other) {

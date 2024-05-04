@@ -112,8 +112,8 @@ enum Event {
 // Web: this attribute is only used in web content.
 //
 // Native: this attribute is only used in native UI.
-// Next version: 6
-// Next value: 211
+// Next version: 7
+// Next value: 212
 [Extensible, Stable, Uuid="d258eb73-e0cc-490c-b881-80ee11d3fec2"]
 enum Role {
   [Default]kUnknown = 181, // The role has not been set.
@@ -160,7 +160,7 @@ enum Role {
   kDesktop = 33,  // internal
   kDetails = 34,
   kDialog = 35,
-  kDirectory = 36,
+  kDirectoryDeprecated = 36,
   kDisclosureTriangle = 37,
   [MinVersion=5] kDisclosureTriangleGrouped = 210,
   // --------------------------------------------------------------
@@ -320,6 +320,7 @@ enum Role {
   kSearch = 152,
   kSearchBox = 153,
   kSection = 154,
+  [MinVersion=6] kSectionWithoutName = 211,
   kSlider = 155,
   kSpinButton = 156,
   kSplitter = 157,
@@ -585,8 +586,11 @@ enum StringAttribute {
   kAutoComplete = 4,
   [MinVersion=2] kAriaBrailleLabel = 33,
   [MinVersion=2] kAriaBrailleRoleDescription = 34,
-  [MinVersion=4] kAriaNotificationAnnouncement = 36,
-  [MinVersion=4] kAriaNotificationId = 37,
+  // Deprecated - Do not use.
+  // These attributes are replaced by its `StringListAttribute` equivalents to
+  // support multiple contiguous calls to `ariaNotify`.
+  [MinVersion=4] kAriaNotificationAnnouncementDeprecated = 36,
+  [MinVersion=4] kAriaNotificationIdDeprecated = 37,
   kCheckedStateDescription = 5,
   kChildTreeId = 6,
   kChildTreeNodeAppId = 7,
@@ -775,9 +779,11 @@ enum IntAttribute {
   [MinVersion=2] kNextWindowFocusId = 62,
   [MinVersion=2] kPreviousWindowFocusId = 63,
 
-  // ARIA notification options.
-  [MinVersion=3] kAriaNotificationInterrupt = 64,
-  [MinVersion=3] kAriaNotificationPriority = 65,
+  // Deprecated - Do not use.
+  // These attributes are replaced by its `IntListAttribute` equivalents to
+  // support multiple contiguous calls to `ariaNotify`.
+  [MinVersion=3] kAriaNotificationInterruptDeprecated = 64,
+  [MinVersion=3] kAriaNotificationPriorityDeprecated = 65,
 };
 
 // Next version: 2
@@ -899,8 +905,11 @@ enum BoolAttribute {
   [MinVersion=2] kHasHiddenOffscreenNodes,
 };
 
-// Next version: 6
-// Next value: 27
+// Next version: 7
+// Next value: 29
+// Note: if changing an IntListAttribute property that stores a relation where
+// the reverse should be computed, be sure to also update
+// kReverseRelationIntListAttributes in AXTree.
 [Extensible, Stable, Uuid="6d1f823f-28a9-4263-bc4a-69fb19a4ef46"]
 enum IntListAttribute {
   [Default]kNone = 0,
@@ -971,12 +980,20 @@ enum IntListAttribute {
   [MinVersion=4] kTextOperationEndAnchorIds = 23,
   [MinVersion=4] kTextOperationEndOffsets = 24,
   [MinVersion=4] kTextOperations = 25,
+
+  // List of `AriaNotificationInterrupt` and `AriaNotificationPriority`
+  // properties for their respective ARIA notifications.
+  [MinVersion=6] kAriaNotificationInterruptProperties = 27,
+  [MinVersion=6] kAriaNotificationPriorityProperties = 28,
 };
 
-// Next value: 2
+// Next version: 2
+// Next value: 4
 [Extensible, Stable, Uuid="b3b576a7-9335-4f79-bc8c-595fd9346d81"]
 enum StringListAttribute {
   [Default]kNone = 0,
+  [MinVersion=1] kAriaNotificationAnnouncements = 2,
+  [MinVersion=1] kAriaNotificationIds = 3,
   // Descriptions for custom actions. This must be aligned with
   // custom_action_ids.
   kCustomActionDescriptions = 1,
@@ -1051,7 +1068,8 @@ enum Command {
 // Please keep in sync with the following specification and file:
 // https://w3c.github.io/input-events/#h-interface-inputevent-attributes
 // //third_party/blink/renderer/core/events/input_event.h
-// Next value: 39
+// Next Version: 2
+// Next value: 40
 [Extensible, Stable, Uuid="f53115ff-b29d-4a07-a497-9c49dc5b5ebd"]
 enum InputEventType {
   [Default]kNone = 0,
@@ -1068,6 +1086,7 @@ enum InputEventType {
   kInsertTranspose = 10,
   kInsertReplacementText = 11,
   kInsertCompositionText = 12,
+  [MinVersion=1] kInsertLink = 39,
   // Deletion.
   kDeleteWordBackward = 13,
   kDeleteWordForward = 14,
@@ -1450,15 +1469,6 @@ enum ImageAnnotationStatus {
   // The annotation process failed, e.g. unable to contact the server,
   // request timed out, etc.
   kAnnotationProcessFailed,
-};
-
-enum Dropeffect {
-  kNone,
-  kCopy,
-  kExecute,
-  kLink,
-  kMove,
-  kPopup,
 };
 
 enum AriaNotificationInterrupt {

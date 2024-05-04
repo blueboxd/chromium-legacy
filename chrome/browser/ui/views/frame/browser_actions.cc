@@ -4,6 +4,9 @@
 
 #include "chrome/browser/ui/views/frame/browser_actions.h"
 
+#include <optional>
+#include <string>
+
 #include "base/check_op.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/devtools/devtools_window.h"
@@ -13,6 +16,7 @@
 #include "chrome/browser/ui/actions/chrome_actions.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/lens/lens_overlay_side_panel_coordinator.h"
 #include "chrome/browser/ui/side_panel/companion/companion_utils.h"
 #include "chrome/browser/ui/side_panel/side_panel_entry_id.h"
 #include "chrome/browser/ui/side_panel/side_panel_entry_key.h"
@@ -28,6 +32,7 @@
 #include "chrome/browser/ui/views/side_panel/side_panel_util.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/history_clusters/core/features.h"
+#include "components/lens/lens_features.h"
 #include "components/omnibox/browser/vector_icons.h"
 #include "components/performance_manager/public/features.h"
 #include "components/search_engines/template_url.h"
@@ -60,7 +65,7 @@ actions::ActionItem::ActionItemBuilder ChromeMenuAction(
 
 actions::ActionItem::ActionItemBuilder SidePanelAction(
     SidePanelEntryId id,
-    int title_id,
+    std::optional<int> title_id,
     int tooltip_id,
     const gfx::VectorIcon& icon,
     actions::ActionId action_id,
@@ -74,7 +79,9 @@ actions::ActionItem::ActionItemBuilder SidePanelAction(
              SidePanelUtil::CreateToggleSidePanelActionCallback(
                  SidePanelEntryKey(id), browser))
       .SetActionId(action_id)
-      .SetText(l10n_util::GetStringUTF16(title_id))
+      .SetText(title_id.has_value()
+                   ? l10n_util::GetStringUTF16(title_id.value())
+                   : std::u16string())
       .SetTooltipText(l10n_util::GetStringUTF16(tooltip_id))
       .SetImage(ui::ImageModel::FromVectorIcon(icon, ui::kColorIcon,
                                                side_panel_icon_size))
@@ -97,7 +104,7 @@ BrowserActions::~BrowserActions() {
 }
 
 // static
-BrowserActions* BrowserActions::FromBrowser(Browser* browser) {
+BrowserActions* BrowserActions::FromBrowser(const Browser* browser) {
   return static_cast<BrowserActions*>(
       browser->GetUserData(BrowserActions::UserDataKey()));
 }
@@ -177,7 +184,27 @@ void BrowserActions::InitializeBrowserActions() {
             .Build());
   }
 
-  if (companion::IsCompanionFeatureEnabled()) {
+  if (lens::features::IsLensOverlayEnabled()) {
+    actions::ActionItem::InvokeActionCallback callback =
+        lens::LensOverlaySidePanelCoordinator::CreateSidePanelActionCallback(
+            &(browser_.get()));
+    const gfx::VectorIcon& icon =
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+        vector_icons::kGoogleSearchCompanionMonochromeLogoChromeRefreshIcon;
+#else
+        vector_icons::kSearchIcon;
+#endif
+    root_action_item_->AddChild(
+        actions::ActionItem::Builder(callback)
+            .SetActionId(kActionSidePanelShowLensOverlayResults)
+            .SetText(std::u16string())
+            .SetTooltipText(l10n_util::GetStringUTF16(
+                IDS_SIDE_PANEL_LENS_OVERLAY_TOOLBAR_TOOLTIP))
+            .SetImage(ui::ImageModel::FromVectorIcon(
+                icon, ui::kColorIcon, ui::SimpleMenuModel::kDefaultIconSize))
+            .SetProperty(actions::kActionItemPinnableKey, true)
+            .Build());
+  } else if (companion::IsCompanionFeatureEnabled()) {
     if (SearchCompanionSidePanelCoordinator::IsSupported(
             profile,
             /*include_runtime_checks=*/false)) {

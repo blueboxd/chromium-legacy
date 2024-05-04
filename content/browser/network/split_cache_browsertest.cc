@@ -477,7 +477,7 @@ class SplitCacheContentBrowserTestDisabled
   base::test::ScopedFeatureList feature_list_;
 };
 
-// TODO(crbug.com/1486165): Times out on Mac.
+// TODO(crbug.com/40933594): Times out on Mac.
 #if BUILDFLAG(IS_MAC)
 #define MAYBE_SplitCache DISABLED_SplitCache
 #else
@@ -544,7 +544,7 @@ IN_PROC_BROWSER_TEST_P(SplitCacheContentBrowserTestEnabled, MAYBE_SplitCache) {
   EXPECT_FALSE(TestResourceLoad(blank_url, GURL()));
 
   // Load the same resource from about:blank url again, it shouldn't be cached
-  // because the origin is unique. TODO(crbug.com/888079) will change this
+  // because the origin is unique. TODO(crbug.com/40092527) will change this
   // behavior and about:blank main frame pages will inherit the origin of the
   // page that opened it.
   EXPECT_FALSE(TestResourceLoad(blank_url, GURL()));
@@ -875,7 +875,7 @@ class SplitCacheComputeHttpCacheSize {
 // is_subframe_document_resource by checking that the size of the http cache
 // resources accessed after the resource is loaded from the blink cache is the
 // same as before that.
-// TODO(crbug.com/1166650): Test is flaky on Win.
+// TODO(crbug.com/40164302): Test is flaky on Win.
 #if BUILDFLAG(IS_WIN)
 #define MAYBE_NotifyExternalCacheHitCheckSubframeBit \
   DISABLED_NotifyExternalCacheHitCheckSubframeBit
@@ -1081,7 +1081,7 @@ class ScopeBlinkMemoryCachePerContext : public SplitCacheContentBrowserTest {
   base::test::ScopedFeatureList feature_list;
 };
 
-// TODO(crbug.com/1415276): Flaky on multiple platforms.
+// TODO(crbug.com/40892607): Flaky on multiple platforms.
 IN_PROC_BROWSER_TEST_F(ScopeBlinkMemoryCachePerContext, DISABLED_CheckFeature) {
   base::HistogramTester histograms;
   EXPECT_TRUE(base::FeatureList::IsEnabled(

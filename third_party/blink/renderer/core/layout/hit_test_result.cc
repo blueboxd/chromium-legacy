@@ -37,8 +37,10 @@
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_text_area_element.h"
 #include "third_party/blink/renderer/core/html/html_area_element.h"
+#include "third_party/blink/renderer/core/html/html_embed_element.h"
 #include "third_party/blink/renderer/core/html/html_image_element.h"
 #include "third_party/blink/renderer/core/html/html_map_element.h"
+#include "third_party/blink/renderer/core/html/html_object_element.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
 #include "third_party/blink/renderer/core/html/media/media_source_handle.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
@@ -291,9 +293,9 @@ CompositorElementId HitTestResult::GetScrollableContainer() const {
   // browser control movement and overscroll glow.
   while (cur_box) {
     if (cur_box->IsGlobalRootScroller() ||
-        cur_box->NeedsScrollNode(CompositingReason::kNone)) {
-      return CompositorElementIdFromUniqueObjectId(
-          cur_box->UniqueId(), CompositorElementIdNamespace::kScroll);
+        (cur_box->IsScrollContainer() &&
+         cur_box->GetScrollableArea()->ScrollsOverflow())) {
+      return cur_box->GetScrollableArea()->GetScrollElementId();
     }
 
     if (IsA<LayoutView>(cur_box))

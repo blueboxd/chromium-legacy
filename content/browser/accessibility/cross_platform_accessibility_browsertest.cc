@@ -13,13 +13,16 @@
 #include "base/functional/callback_helpers.h"
 #include "base/strings/escape.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
 #include "build/build_config.h"
 #include "build/chromecast_buildflags.h"
 #include "build/chromeos_buildflags.h"
 #include "content/browser/accessibility/browser_accessibility.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
+#include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -119,7 +122,7 @@ class CrossPlatformAccessibilityBrowserTest : public ContentBrowserTest {
                                            ax::mojom::Event::kLoadComplete);
     ASSERT_TRUE(
         NavigateToURL(shell(), embedded_test_server()->GetURL(html_file_path)));
-    // TODO(https://crbug.com/1332468): Investigate why this does not return
+    // TODO(crbug.com/40844856): Investigate why this does not return
     // true.
     ASSERT_TRUE(waiter.WaitForNotification());
   }
@@ -235,8 +238,6 @@ void CrossPlatformAccessibilityBrowserTest::SetUp() {
 void CrossPlatformAccessibilityBrowserTest::ChooseFeatures(
     std::vector<base::test::FeatureRef>* enabled_features,
     std::vector<base::test::FeatureRef>* disabled_features) {
-  enabled_features->emplace_back(
-      features::kEnableAccessibilityExposeHTMLElement);
 }
 
 void CrossPlatformAccessibilityBrowserTest::SetUpOnMainThread() {
@@ -550,6 +551,76 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
   EXPECT_EQ(ax::mojom::Role::kButton, button3->data().role);
   EXPECT_STREQ("Button 3",
                GetAttr(button3, ax::mojom::StringAttribute::kName).c_str());
+}
+
+IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
+                       EnsureLocationChangesSendLocationUpdatesOnly) {
+  LoadInitialAccessibilityTreeFromHtml(R"HTML(
+      <!DOCTYPE html>
+      <html>
+      <body>
+        <button style="position:fixed; left:0; top:0;">Button</button>
+      </body>
+      </html>)HTML");
+
+  WaitForAccessibilityTreeToContainNodeWithName(shell()->web_contents(),
+                                                "Button");
+
+  const BrowserAccessibility* root =
+      GetManager()->GetBrowserAccessibilityRoot();
+  ASSERT_EQ(1U, root->PlatformChildCount());
+  const BrowserAccessibility* body = root->PlatformGetChild(0);
+  ASSERT_EQ(1U, body->PlatformChildCount());
+  const BrowserAccessibility* button = body->PlatformGetChild(0);
+  EXPECT_EQ(ax::mojom::Role::kButton, button->GetRole());
+  EXPECT_EQ(button->GetLocation().x(), 0);
+  EXPECT_EQ(button->GetLocation().y(), 0);
+
+  // Even though kLocationChanged looks like a Blink event, it is not actually
+  // fired by Blink. Passing this to AccessibilityNotificationWaiter will cause
+  // it to bind to OnLocationsChanged instead of HandleAXEvents.
+  AccessibilityNotificationWaiter waiter1(shell()->web_contents(),
+                                          ui::kAXModeComplete,
+                                          ax::mojom::Event::kLocationChanged);
+
+  // Ensure a normal serialization doesn't happen.
+  // When something like only locations change in a document. We want to avoid
+  // full-scale serialization as it's not required. A lightweight locations-only
+  // serialization already occurs. This check below ensures a full serialization
+  // doesn't occur. Marking objects as dirty is pretty expensive and in
+  // cases of location changes, we don't need it while we already know what
+  // changed.
+  bool received_event = false;
+  base::RunLoop run_loop;
+  RenderFrameHostImpl* rfh_impl = static_cast<RenderFrameHostImpl*>(
+      shell()->web_contents()->GetPrimaryMainFrame());
+  rfh_impl->SetAccessibilityCallbackForTesting(base::BindLambdaForTesting(
+      [&](RenderFrameHostImpl* rfhi, ax::mojom::Event event_type,
+          int event_target_id) {
+        received_event = true;
+        run_loop.Quit();
+      }));
+
+  // Move the button to a location and expect a location update with new
+  // coords.
+  ExecuteScript(
+      "document.querySelector('button').style.left = '100px'; "
+      "document.querySelector('button').style.top = '150px';");
+  ASSERT_TRUE(waiter1.WaitForNotification());
+  EXPECT_EQ(button->GetLocation().x(), 100);
+  EXPECT_EQ(button->GetLocation().y(), 150);
+
+  // Since we're expecting NO calls, we need a timer to avoid waiting too long.
+  // Five seconds should be enough to fail on some builds. It's ok if test
+  // passes incorrectly on slow ones. Waiting for (30 seconds) will
+  // cost a lot of wait-time.
+  base::OneShotTimer quit_timer;
+  quit_timer.Start(FROM_HERE, base::Milliseconds(5000),
+                   run_loop.QuitWhenIdleClosure());
+  run_loop.Run();
+
+  ASSERT_FALSE(received_event) << "Received accessibility event when location "
+                                  "changes shouldn't mark anything as dirty.";
 }
 
 IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
@@ -901,6 +972,11 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
       ui::AXCoordinateSystem::kScreenPhysicalPixels,
       ui::AXClippingBehavior::kUnclipped);
 
+  // Both options have the same height, width and left edge.
+  EXPECT_EQ(first_list_item_bounds.height(), second_list_item_bounds.height());
+  EXPECT_EQ(first_list_item_bounds.width(), second_list_item_bounds.width());
+  EXPECT_EQ(first_list_item_bounds.x(), second_list_item_bounds.x());
+
   // We are making sure that the difference between the select element and the
   // pop up menu options are (an arbitrary) amount of px away. This is
   // to account for differences between platforms. Because for the test the
@@ -912,6 +988,12 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
 
   EXPECT_LT(first_list_item_bounds.y() - select_bounds.y(), 70);
   EXPECT_LT(second_list_item_bounds.y() - select_bounds.y(), 70);
+
+  // The top of the option #2 is option #1's top + the height, within 2 pixels.
+  EXPECT_LT(
+      std::abs(first_list_item_bounds.y() + first_list_item_bounds.height() -
+               second_list_item_bounds.y()),
+      2);
 }
 #endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_MAC) && !(BUILDFLAG(IS_IOS)
         // && BUILDFLAG(USE_BLINK))
@@ -996,6 +1078,25 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
   EXPECT_LT(std::abs(first_list_item_bounds.y() - select_bounds.y()), 100);
   EXPECT_LT(std::abs(second_list_item_bounds.y() - select_bounds.y()), 100);
   EXPECT_LT(std::abs(third_list_item_bounds.y() - select_bounds.y()), 100);
+
+  // All three options have the same height, width and left edge.
+  EXPECT_EQ(first_list_item_bounds.height(), second_list_item_bounds.height());
+  EXPECT_EQ(second_list_item_bounds.height(), third_list_item_bounds.height());
+  EXPECT_EQ(first_list_item_bounds.width(), second_list_item_bounds.width());
+  EXPECT_EQ(second_list_item_bounds.width(), third_list_item_bounds.width());
+  EXPECT_EQ(first_list_item_bounds.x(), second_list_item_bounds.x());
+  EXPECT_EQ(second_list_item_bounds.x(), third_list_item_bounds.x());
+
+  // The top of options #2 and #3 are the previous option's top + the height,
+  // within 2 pixels.
+  EXPECT_LE(
+      std::abs(first_list_item_bounds.y() + first_list_item_bounds.height() -
+               second_list_item_bounds.y()),
+      2);
+  EXPECT_LE(
+      std::abs(second_list_item_bounds.y() + third_list_item_bounds.height() -
+               third_list_item_bounds.y()),
+      2);
 }
 #endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_MAC) && !(BUILDFLAG(IS_IOS)
         // && BUILDFLAG(USE_BLINK))
@@ -1415,7 +1516,7 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
   TestLocalizedLandmarkType(3, ax::mojom::Role::kForm, "form");
   TestLocalizedLandmarkType(4, ax::mojom::Role::kMain, "main");
   TestLocalizedLandmarkType(5, ax::mojom::Role::kNavigation, "nav");
-  TestLocalizedLandmarkType(6, ax::mojom::Role::kSection, "");
+  TestLocalizedLandmarkType(6, ax::mojom::Role::kSectionWithoutName, "");
   TestLocalizedLandmarkType(7, ax::mojom::Role::kRegion, "a label", u"region");
 
   TestLocalizedLandmarkType(8, ax::mojom::Role::kBanner, "banner", u"banner");
@@ -1427,12 +1528,12 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
   TestLocalizedLandmarkType(12, ax::mojom::Role::kMain, "role_main");
   TestLocalizedLandmarkType(13, ax::mojom::Role::kNavigation, "role_nav");
   TestLocalizedLandmarkType(14, ax::mojom::Role::kRegion, "region", u"region");
-  TestLocalizedLandmarkType(15, ax::mojom::Role::kSection, "", u"");
+  TestLocalizedLandmarkType(15, ax::mojom::Role::kSectionWithoutName, "", u"");
   TestLocalizedLandmarkType(16, ax::mojom::Role::kRegion, "a label", u"region");
   TestLocalizedLandmarkType(17, ax::mojom::Role::kSearch, "search");
 }
 
-// TODO(https://crbug.com/1020456) re-enable when crashing on linux is resolved.
+// TODO(crbug.com/40656480) re-enable when crashing on linux is resolved.
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 #define MAYBE_LocalizedRoleDescription DISABLED_LocalizedRoleDescription
 #else
@@ -1722,7 +1823,7 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
 }
 
 // Flaky on Lacros: https://crbug.com/1292527
-// TODO(https://crbug.com/1318197): Enable on Fuchsia when content_browsertests
+// TODO(crbug.com/40835208): Enable on Fuchsia when content_browsertests
 // runs in non-headless mode.
 #if BUILDFLAG(IS_CHROMEOS_LACROS) || BUILDFLAG(IS_FUCHSIA)
 #define MAYBE_ControlsIdsForDateTimePopup DISABLED_ControlsIdsForDateTimePopup
@@ -1989,7 +2090,7 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(
     CrossPlatformAccessibilityBrowserTest,
-    // TODO(crbug.com/1377745): Re-enable this test
+    // TODO(crbug.com/40874531): Re-enable this test
     DISABLED_IFrameContentHadFocus_ThenRootDocumentGainedFocus) {
   LoadInitialAccessibilityTreeFromHtmlFilePath(
       "/accessibility/html/iframe-padding.html");
@@ -2078,8 +2179,9 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
 
 #if defined(IS_FAST_BUILD)  // Avoid flakiness on slower debug/sanitizer builds.
 
-// TODO(crbug.com/1466360):  Enable once thread flakiness is resolved.
-#if BUILDFLAG(IS_LINUX)
+// TODO(crbug.com/40923912):  Enable once thread flakiness is resolved.
+// TODO(crbug.com/332652840): It is flaky with SkiaGraphite enabled on Windows.
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN)
 #define MAYBE_NonInteractiveChangesAreBatched \
   DISABLED_NonInteractiveChangesAreBatched
 #else
@@ -2119,8 +2221,10 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
   {
     AccessibilityNotificationWaiter waiter(shell()->web_contents(),
                                            ui::kAXModeComplete,
-                                           ax::mojom::Event::kLayoutComplete);
-    // Run test for 1 second, counting the number of layout completes.
+                                           ax::mojom::Event::kLocationChanged);
+    // Run test for 1 second, counting the number of location change events.
+    // Number of location change events is used as a measure to count number of
+    // serializations.
     while (timer.Elapsed().InMilliseconds() < 1000) {
       std::ignore = waiter.WaitForNotificationWithTimeout(
           base::Milliseconds(1000) - timer.Elapsed());
@@ -2136,8 +2240,9 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
 #endif
 
 #if defined(IS_FAST_BUILD)  // Avoid flakiness on slower debug/sanitizer builds.
-// TODO(crbug.com/1179057): Fix disabled flaky test.
-#if BUILDFLAG(IS_LINUX)
+// TODO(crbug.com/40749521): Fix disabled flaky test.
+// TODO(crbug.com/332652840): It is flaky with SkiaGraphite enabled on Windows.
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN)
 #define MAYBE_DocumentSelectionChangesAreNotBatched \
   DISABLED_DocumentSelectionChangesAreNotBatched
 #else
@@ -2192,8 +2297,9 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
 #endif  // IS_FAST_BUILD
 
 #if defined(IS_FAST_BUILD)  // Avoid flakiness on slower debug/sanitizer builds.
-// TODO(crbug.com/1179057): Fix disabled flaky test.
-#if BUILDFLAG(IS_LINUX)
+// TODO(crbug.com/40749521): Fix disabled flaky test.
+// TODO(crbug.com/332652840): It is flaky with SkiaGraphite enabled on Windows.
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN)
 #define MAYBE_ActiveDescendantChangesAreNotBatched \
   DISABLED_ActiveDescendantChangesAreNotBatched
 #else
@@ -2563,7 +2669,7 @@ IN_PROC_BROWSER_TEST_F(
 // We do not run this test on Android because only the Java code can change the
 // size of the web contents, instead see the associated test in
 // WebContentsAccessibilityTest#testBoundingBoxUpdatesOnWindowResize().
-// TODO(https://crbug.com/1458666): Timeout on iOS-Blink
+// TODO(crbug.com/40918989): Timeout on iOS-Blink
 #if BUILDFLAG(IS_ANDROID) || (BUILDFLAG(IS_IOS) && BUILDFLAG(USE_BLINK))
 #define MAYBE_FlexBoxBoundingBoxUpdatesOnWindowResize \
   DISABLED_FlexBoxBoundingBoxUpdatesOnWindowResize
@@ -2581,16 +2687,24 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
       <div style="display: flex; min-height: 90vh;">
         <div style="display: flex; flex-grow: 1; align-items: flex-end;">
           <div>
-            <button style="display: inline-flex; will-change: transform;">
+            <button aria-label='NextButton' style="display: inline-flex;
+                will-change: transform;">
               Next
             </button>
           </div>
         </div>
       </div>)HTML");
 
+  WaitForAccessibilityTreeToContainNodeWithName(shell()->web_contents(),
+                                                "NextButton");
+
   BrowserAccessibility* button =
       FindFirstNodeWithRole(ax::mojom::Role::kButton);
   gfx::Rect bounds0 = button->GetUnclippedRootFrameBoundsRect();
+
+  // Wait for any event.
+  AccessibilityNotificationWaiter waiter(shell()->web_contents(), ui::AXMode(),
+                                         ax::mojom::Event::kNone);
 
   // Resize the viewport, making it half the height.
   gfx::Rect view_bounds = shell()->web_contents()->GetViewBounds();
@@ -2599,9 +2713,6 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
 
   gfx::Rect bounds1;
   do {
-    // Wait for any event
-    AccessibilityNotificationWaiter waiter(
-        shell()->web_contents(), ui::AXMode(), ax::mojom::Event::kNone);
     ASSERT_TRUE(waiter.WaitForNotification());
     bounds1 = button->GetUnclippedRootFrameBoundsRect();
   } while (bounds1.y() == bounds0.y());
@@ -2668,6 +2779,233 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
       ax::mojom::IntListAttribute::kTextOperationEndAnchorIds));
   EXPECT_TRUE(
       input->HasIntListAttribute(ax::mojom::IntListAttribute::kTextOperations));
+}
+
+class AriaNotifyCrossPlatformAccessibilityBrowserTest
+    : public CrossPlatformAccessibilityBrowserTest {
+ public:
+  AriaNotifyCrossPlatformAccessibilityBrowserTest() = default;
+
+  AriaNotifyCrossPlatformAccessibilityBrowserTest(
+      const AriaNotifyCrossPlatformAccessibilityBrowserTest&) = delete;
+  AriaNotifyCrossPlatformAccessibilityBrowserTest& operator=(
+      const AriaNotifyCrossPlatformAccessibilityBrowserTest&) = delete;
+
+  ~AriaNotifyCrossPlatformAccessibilityBrowserTest() override = default;
+
+  void ChooseFeatures(
+      std::vector<base::test::FeatureRef>* enabled_features,
+      std::vector<base::test::FeatureRef>* disabled_features) override {
+    CrossPlatformAccessibilityBrowserTest::ChooseFeatures(enabled_features,
+                                                          disabled_features);
+    enabled_features->emplace_back(blink::features::kAriaNotify);
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(AriaNotifyCrossPlatformAccessibilityBrowserTest,
+                       TestSingleAriaNotification) {
+  const std::string url_str(R"HTML(
+      <!DOCTYPE html>
+      <div aria-label="Container">
+        <button aria-label="a" id="a" onclick="notify(this)"></button>
+        <button aria-label="b" id="b" onclick="otherNotify(this)"></button>
+      </div>
+      <script>
+      function notify(clickedElement) {
+        clickedElement.ariaNotify("hello");
+      }
+      function otherNotify(clickedElement) {
+        clickedElement.ariaNotify("world", {"interrupt": "pending",
+                                            "notificationId": "test",
+                                            "priority": "important"});
+      }
+      </script>)HTML");
+
+  LoadInitialAccessibilityTreeFromHtml(url_str);
+  WaitForAccessibilityTreeToContainNodeWithName(shell()->web_contents(),
+                                                "Container");
+
+  {
+    AccessibilityNotificationWaiter waiter(
+        shell()->web_contents(), ui::kAXModeComplete,
+        ui::AXEventGenerator::Event::ARIA_NOTIFICATIONS_POSTED);
+
+    ExecuteScript("document.getElementById('a').click();");
+    ASSERT_TRUE(waiter.WaitForNotification());
+
+    const auto* button = FindNode("a");
+    ASSERT_NE(button, nullptr);
+
+    EXPECT_EQ(
+        std::vector<std::string>{"hello"},
+        button->GetStringListAttribute(
+            ax::mojom::StringListAttribute::kAriaNotificationAnnouncements));
+
+    EXPECT_EQ(std::vector<std::string>{""},
+              button->GetStringListAttribute(
+                  ax::mojom::StringListAttribute::kAriaNotificationIds));
+
+    EXPECT_EQ(
+        std::vector<int32_t>{
+            static_cast<int32_t>(ax::mojom::AriaNotificationInterrupt::kNone)},
+        button->GetIntListAttribute(
+            ax::mojom::IntListAttribute::kAriaNotificationInterruptProperties));
+
+    EXPECT_EQ(
+        std::vector<int32_t>{
+            static_cast<int32_t>(ax::mojom::AriaNotificationPriority::kNone)},
+        button->GetIntListAttribute(
+            ax::mojom::IntListAttribute::kAriaNotificationPriorityProperties));
+  }
+
+  {
+    AccessibilityNotificationWaiter waiter(
+        shell()->web_contents(), ui::kAXModeComplete,
+        ui::AXEventGenerator::Event::ARIA_NOTIFICATIONS_POSTED);
+
+    ExecuteScript("document.getElementById('b').click();");
+    ASSERT_TRUE(waiter.WaitForNotification());
+
+    const auto* button = FindNode("b");
+    ASSERT_NE(button, nullptr);
+
+    EXPECT_EQ(
+        std::vector<std::string>{"world"},
+        button->GetStringListAttribute(
+            ax::mojom::StringListAttribute::kAriaNotificationAnnouncements));
+
+    EXPECT_EQ(std::vector<std::string>{"test"},
+              button->GetStringListAttribute(
+                  ax::mojom::StringListAttribute::kAriaNotificationIds));
+
+    EXPECT_EQ(
+        std::vector<int32_t>{static_cast<int32_t>(
+            ax::mojom::AriaNotificationInterrupt::kPending)},
+        button->GetIntListAttribute(
+            ax::mojom::IntListAttribute::kAriaNotificationInterruptProperties));
+
+    EXPECT_EQ(
+        std::vector<int32_t>{static_cast<int32_t>(
+            ax::mojom::AriaNotificationPriority::kImportant)},
+        button->GetIntListAttribute(
+            ax::mojom::IntListAttribute::kAriaNotificationPriorityProperties));
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(AriaNotifyCrossPlatformAccessibilityBrowserTest,
+                       TestConsecutiveCallsToAriaNotify) {
+  const std::string url_str(R"HTML(
+      <!DOCTYPE html>
+      <div aria-label="Container">
+        <button aria-label="a" id="a" onclick="notify(this)"></button>
+      </div>
+      <script>
+      function notify(clickedElement) {
+        clickedElement.ariaNotify("hello");
+      }
+      </script>)HTML");
+
+  LoadInitialAccessibilityTreeFromHtml(url_str);
+  WaitForAccessibilityTreeToContainNodeWithName(shell()->web_contents(),
+                                                "Container");
+
+  auto ExpectAriaNotification = [&]() {
+    AccessibilityNotificationWaiter waiter(
+        shell()->web_contents(), ui::kAXModeComplete,
+        ui::AXEventGenerator::Event::ARIA_NOTIFICATIONS_POSTED);
+
+    ExecuteScript("document.getElementById('a').click();");
+    ASSERT_TRUE(waiter.WaitForNotification());
+
+    const auto* button = FindNode("a");
+    ASSERT_NE(button, nullptr);
+
+    EXPECT_EQ(
+        std::vector<std::string>{"hello"},
+        button->GetStringListAttribute(
+            ax::mojom::StringListAttribute::kAriaNotificationAnnouncements));
+
+    EXPECT_EQ(std::vector<std::string>{""},
+              button->GetStringListAttribute(
+                  ax::mojom::StringListAttribute::kAriaNotificationIds));
+
+    EXPECT_EQ(
+        std::vector<int32_t>{
+            static_cast<int32_t>(ax::mojom::AriaNotificationInterrupt::kNone)},
+        button->GetIntListAttribute(
+            ax::mojom::IntListAttribute::kAriaNotificationInterruptProperties));
+
+    EXPECT_EQ(
+        std::vector<int32_t>{
+            static_cast<int32_t>(ax::mojom::AriaNotificationPriority::kNone)},
+        button->GetIntListAttribute(
+            ax::mojom::IntListAttribute::kAriaNotificationPriorityProperties));
+  };
+
+  for (int i = 0; i < 10; ++i) {
+    ExpectAriaNotification();
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(AriaNotifyCrossPlatformAccessibilityBrowserTest,
+                       TestConsecutiveAriaNotifications) {
+  const std::string url_str(R"HTML(
+      <!DOCTYPE html>
+      <div aria-label="Container">
+        <button aria-label="a" id="a" onclick="notify(this)"></button>
+      </div>
+      <script>
+      function notify(clickedElement) {
+        clickedElement.ariaNotify("one", {"notificationId": "kOne",
+                                          "interrupt": "all"});
+        clickedElement.ariaNotify("two", {"priority": "important"});
+        clickedElement.ariaNotify("three", {"notificationId": "kThree",
+                                            "interrupt": "pending"});
+      }
+      </script>)HTML");
+
+  LoadInitialAccessibilityTreeFromHtml(url_str);
+  WaitForAccessibilityTreeToContainNodeWithName(shell()->web_contents(),
+                                                "Container");
+
+  {
+    AccessibilityNotificationWaiter waiter(
+        shell()->web_contents(), ui::kAXModeComplete,
+        ui::AXEventGenerator::Event::ARIA_NOTIFICATIONS_POSTED);
+
+    ExecuteScript("document.getElementById('a').click();");
+    ASSERT_TRUE(waiter.WaitForNotification());
+
+    const auto* button = FindNode("a");
+    ASSERT_NE(button, nullptr);
+
+    EXPECT_EQ(
+        std::vector<std::string>({"one", "two", "three"}),
+        button->GetStringListAttribute(
+            ax::mojom::StringListAttribute::kAriaNotificationAnnouncements));
+
+    EXPECT_EQ(std::vector<std::string>({"kOne", "", "kThree"}),
+              button->GetStringListAttribute(
+                  ax::mojom::StringListAttribute::kAriaNotificationIds));
+
+    EXPECT_EQ(
+        std::vector<int32_t>(
+            {static_cast<int32_t>(ax::mojom::AriaNotificationInterrupt::kAll),
+             static_cast<int32_t>(ax::mojom::AriaNotificationInterrupt::kNone),
+             static_cast<int32_t>(
+                 ax::mojom::AriaNotificationInterrupt::kPending)}),
+        button->GetIntListAttribute(
+            ax::mojom::IntListAttribute::kAriaNotificationInterruptProperties));
+
+    EXPECT_EQ(
+        std::vector<int32_t>(
+            {static_cast<int32_t>(ax::mojom::AriaNotificationPriority::kNone),
+             static_cast<int32_t>(
+                 ax::mojom::AriaNotificationPriority::kImportant),
+             static_cast<int32_t>(ax::mojom::AriaNotificationPriority::kNone)}),
+        button->GetIntListAttribute(
+            ax::mojom::IntListAttribute::kAriaNotificationPriorityProperties));
+  }
 }
 
 }  // namespace content

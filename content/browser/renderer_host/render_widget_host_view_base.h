@@ -28,6 +28,7 @@
 #include "content/common/content_export.h"
 #include "content/common/input/event_with_latency_info.h"
 #include "content/common/input/input_router_impl.h"
+#include "content/common/input/render_widget_host_view_input.h"
 #include "content/public/browser/render_frame_metadata_provider.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/common/page_visibility_state.h"
@@ -71,16 +72,17 @@ class CursorManager;
 class DevicePosturePlatformProvider;
 class MouseWheelPhaseHandler;
 class RenderWidgetHostImpl;
-class RenderWidgetHostViewBaseObserver;
-class SyntheticGestureTarget;
+class RenderWidgetHostViewInputObserver;
+class ScopedViewTransitionResources;
 class TextInputManager;
 class TouchSelectionControllerClientManager;
 class WebContentsAccessibility;
 class DelegatedFrameHost;
 
 // Basic implementation shared by concrete RenderWidgetHostView subclasses.
-class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
-                                                public StylusInterface {
+class CONTENT_EXPORT RenderWidgetHostViewBase
+    : public RenderWidgetHostView,
+      public RenderWidgetHostViewInput {
  public:
   // The TooltipObserver is used in browser tests only.
   class CONTENT_EXPORT TooltipObserver {
@@ -103,7 +105,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   void WasUnOccluded() override {}
   void WasOccluded() override {}
   std::u16string GetSelectedText() override;
-  bool IsPointerLocked() override;
   bool GetIsPointerLockedUnadjustedMovementForTesting() override;
   bool CanBePointerLocked() override;
   bool AccessibilityHasFocus() override;
@@ -127,6 +128,72 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   display::ScreenInfo GetScreenInfo() const override;
   display::ScreenInfos GetScreenInfos() const override;
 
+  // RenderWidgetHostViewInput implementation
+  base::WeakPtr<RenderWidgetHostViewInput> GetInputWeakPtr() override;
+  RenderInputRouter* GetViewRenderInputRouter() override;
+  void ProcessMouseEvent(const blink::WebMouseEvent& event,
+                         const ui::LatencyInfo& latency) override;
+  void ProcessMouseWheelEvent(const blink::WebMouseWheelEvent& event,
+                              const ui::LatencyInfo& latency) override;
+  void ProcessTouchEvent(const blink::WebTouchEvent& event,
+                         const ui::LatencyInfo& latency) override;
+  void ProcessGestureEvent(const blink::WebGestureEvent& event,
+                           const ui::LatencyInfo& latency) override;
+  void ProcessAckedTouchEvent(
+      const TouchEventWithLatencyInfo& touch,
+      blink::mojom::InputEventResultState ack_result) override;
+  void DidOverscroll(const ui::DidOverscrollParams& params) override {}
+  void DidStopFlinging() override {}
+  viz::FrameSinkId GetRootFrameSinkId() override;
+  void NotifyHitTestRegionUpdated(
+      const viz::AggregatedHitTestRegion& region) override {}
+  bool ScreenRectIsUnstableFor(const blink::WebInputEvent& event) override;
+  bool ScreenRectIsUnstableForIOv2For(
+      const blink::WebInputEvent& event) override;
+  void PreProcessTouchEvent(const blink::WebTouchEvent& event) override {}
+  void PreProcessMouseEvent(const blink::WebMouseEvent& event) override {}
+  gfx::PointF TransformRootPointToViewCoordSpace(
+      const gfx::PointF& point) override;
+  bool TransformPointToLocalCoordSpace(const gfx::PointF& point,
+                                       const viz::SurfaceId& original_surface,
+                                       gfx::PointF* transformed_point) override;
+  bool TransformPointToCoordSpaceForView(
+      const gfx::PointF& point,
+      RenderWidgetHostViewInput* target_view,
+      gfx::PointF* transformed_point) override;
+  bool GetTransformToViewCoordSpace(RenderWidgetHostViewInput* target_view,
+                                    gfx::Transform* transform) override;
+  void TransformPointToRootSurface(gfx::PointF* point) override;
+  RenderWidgetHostViewInput* GetParentViewInput() override;
+  blink::mojom::InputEventResultState FilterInputEvent(
+      const blink::WebInputEvent& input_event) override;
+  void GestureEventAck(const blink::WebGestureEvent& event,
+                       blink::mojom::InputEventResultState ack_result) override;
+  void WheelEventAck(const blink::WebMouseWheelEvent& event,
+                     blink::mojom::InputEventResultState ack_result) override;
+  void ChildDidAckGestureEvent(
+      const blink::WebGestureEvent& event,
+      blink::mojom::InputEventResultState ack_result) override;
+  std::vector<std::unique_ptr<ui::TouchEvent>> ExtractAndCancelActiveTouches()
+      override;
+  void TransferTouches(
+      const std::vector<std::unique_ptr<ui::TouchEvent>>& touches) override {}
+  void SetLastPointerType(ui::EventPointerType last_pointer_type) override {}
+  void DisplayCursor(const ui::Cursor& cursor) override;
+  CursorManager* GetCursorManager() override;
+  void UpdateTooltipUnderCursor(const std::u16string& tooltip_text) override {}
+  void UpdateTooltip(const std::u16string& tooltip_text) override {}
+  int GetMouseWheelMinimumGranularity() const override;
+  void OnEditElementFocusedForStylusWriting(
+      const gfx::Rect& focused_edit_bounds,
+      const gfx::Rect& caret_bounds) override {}
+  void OnAutoscrollStart() override;
+  void AddObserver(RenderWidgetHostViewInputObserver* observer) override;
+  void RemoveObserver(RenderWidgetHostViewInputObserver* observer) override;
+
+  float GetDeviceScaleFactor() const final;
+  bool IsPointerLocked() override;
+
   // Identical to `CopyFromSurface()`, except that this method issues the
   // `viz::CopyOutputRequest` against the exact `viz::Surface` currently
   // embedded by this View, while `CopyFromSurface()` may return a copy of any
@@ -135,7 +202,7 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   // and available for copy when this API is called. This Surface can be removed
   // from the UI after this call.
   //
-  // TODO(https://crbug.com/1467314): merge this API into `CopyFromSurface()`,
+  // TODO(crbug.com/40276723): merge this API into `CopyFromSurface()`,
   // and enable it fully on Android.
   virtual void CopyFromExactSurface(
       const gfx::Rect& src_rect,
@@ -151,7 +218,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   void EnableAutoResize(const gfx::Size& min_size,
                         const gfx::Size& max_size) override;
   void DisableAutoResize(const gfx::Size& new_size) override;
-  float GetDeviceScaleFactor() const final;
   TouchSelectionControllerClientManager*
   GetTouchSelectionControllerClientManager() override;
   ui::mojom::VirtualKeyboardMode GetVirtualKeyboardMode() override;
@@ -162,8 +228,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   // This only needs to be overridden by RenderWidgetHostViewBase subclasses
   // that handle content embedded within other RenderWidgetHostViews.
   gfx::PointF TransformPointToRootCoordSpaceF(
-      const gfx::PointF& point) override;
-  gfx::PointF TransformRootPointToViewCoordSpace(
       const gfx::PointF& point) override;
 
   // Returns the value for whether the auto-resize has been enabled or not.
@@ -226,33 +290,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   // The size of the view's backing surface in non-DPI-adjusted pixels.
   virtual gfx::Size GetCompositorViewportPixelSize();
 
-  // If mouse wheels can only specify the number of ticks of some static
-  // multiplier constant, this method returns that constant (in DIPs). If mouse
-  // wheels can specify an arbitrary delta this returns 0.
-  virtual int GetMouseWheelMinimumGranularity() const;
-
-  // Called prior to forwarding input event messages to the renderer, giving
-  // the view a chance to perform in-process event filtering or processing.
-  // Return values of |NOT_CONSUMED| or |UNKNOWN| will result in |input_event|
-  // being forwarded.
-  virtual blink::mojom::InputEventResultState FilterInputEvent(
-      const blink::WebInputEvent& input_event);
-
-  virtual void WheelEventAck(const blink::WebMouseWheelEvent& event,
-                             blink::mojom::InputEventResultState ack_result);
-
-  virtual void GestureEventAck(const blink::WebGestureEvent& event,
-                               blink::mojom::InputEventResultState ack_result);
-
-  virtual void ChildDidAckGestureEvent(
-      const blink::WebGestureEvent& event,
-      blink::mojom::InputEventResultState ack_result);
-
-  // Create a platform specific SyntheticGestureTarget implementation that will
-  // be used to inject synthetic input events.
-  virtual std::unique_ptr<SyntheticGestureTarget>
-  CreateSyntheticGestureTarget() = 0;
-
   virtual gfx::AcceleratedWidget AccessibilityGetAcceleratedWidget();
   virtual gfx::NativeViewAccessible AccessibilityGetNativeViewAccessible();
   virtual gfx::NativeViewAccessible
@@ -267,14 +304,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   bool ShouldInitiateStylusWriting() override;
   // Notify whether the hovered element action is stylus writable or not.
   void NotifyHoverActionStylusWritable(bool stylus_writable) override {}
-
-  // This message is received when the stylus writable element is focused.
-  // It receives the focused edit element bounds and the current caret bounds
-  // needed for stylus writing service. These bounds would be empty when the
-  // stylus writable element could not be focused.
-  virtual void OnEditElementFocusedForStylusWriting(
-      const gfx::Rect& focused_edit_bounds,
-      const gfx::Rect& caret_bounds) {}
 
   // Invalidates the `viz::SurfaceAllocationGroup` of this View. Also
   // invalidates `viz::SurfaceId` of it. This should be used when no previous
@@ -291,101 +320,12 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   // allocating a new viz::LocalSurfaceId which forces a commit and draw.
   virtual bool RequestRepaintForTesting();
 
-  // Because the associated remote WebKit instance can asynchronously
-  // prevent-default on a dispatched touch event, the touch events are queued in
-  // the GestureRecognizer until invocation of ProcessAckedTouchEvent releases
-  // it to be consumed (when |ack_result| is NOT_CONSUMED OR NO_CONSUMER_EXISTS)
-  // or ignored (when |ack_result| is CONSUMED).
-  // |touch|'s coordinates are in the coordinate space of the view to which it
-  // was targeted.
-  virtual void ProcessAckedTouchEvent(
-      const TouchEventWithLatencyInfo& touch,
-      blink::mojom::InputEventResultState ack_result);
-
-  virtual void DidOverscroll(const ui::DidOverscrollParams& params) {}
-
-  virtual void DidStopFlinging() {}
-
-  // Returns the ID associated with the CompositorFrameSink of this view.
-  virtual const viz::FrameSinkId& GetFrameSinkId() const = 0;
-
-  // Returns the LocalSurfaceId allocated by the parent client for this view.
-  virtual const viz::LocalSurfaceId& GetLocalSurfaceId() const = 0;
-
-  // Called whenever the browser receives updated hit test data from viz.
-  virtual void NotifyHitTestRegionUpdated(
-      const viz::AggregatedHitTestRegion& region) {}
-
-  // Indicates whether the widget has resized or moved within its embedding
-  // page during a feature-parameter-determined time interval.
-  virtual bool ScreenRectIsUnstableFor(const blink::WebInputEvent& event);
-
-  // See kTargetFrameMovedRecentlyForIOv2 in web_input_event.h.
-  virtual bool ScreenRectIsUnstableForIOv2For(
-      const blink::WebInputEvent& event);
-
-  virtual void PreProcessMouseEvent(const blink::WebMouseEvent& event) {}
-  virtual void PreProcessTouchEvent(const blink::WebTouchEvent& event) {}
-
-  void ProcessMouseEvent(const blink::WebMouseEvent& event,
-                         const ui::LatencyInfo& latency);
-  void ProcessMouseWheelEvent(const blink::WebMouseWheelEvent& event,
-                              const ui::LatencyInfo& latency);
-  void ProcessTouchEvent(const blink::WebTouchEvent& event,
-                         const ui::LatencyInfo& latency);
-  virtual void ProcessGestureEvent(const blink::WebGestureEvent& event,
-                                   const ui::LatencyInfo& latency);
-
-  // Transform a point that is in the coordinate space of a Surface that is
-  // embedded within the RenderWidgetHostViewBase's Surface to the
-  // coordinate space of an embedding, or embedded, Surface. Typically this
-  // means that a point was received from an out-of-process iframe's
-  // RenderWidget and needs to be translated to viewport coordinates for the
-  // root RWHV, in which case this method is called on the root RWHV with the
-  // out-of-process iframe's SurfaceId.
-  // Returns false when this attempts to transform a point between coordinate
-  // spaces of surfaces where one does not contain the other. To transform
-  // between sibling surfaces, the point must be transformed to the root's
-  // coordinate space as an intermediate step.
-  bool TransformPointToLocalCoordSpace(const gfx::PointF& point,
-                                       const viz::SurfaceId& original_surface,
-                                       gfx::PointF* transformed_point);
-
-  // Given a RenderWidgetHostViewBase that renders to a Surface that is
-  // contained within this class' Surface, find the relative transform between
-  // the Surfaces and apply it to a point. Returns false if a Surface has not
-  // yet been created or if |target_view| is not a descendant RWHV from our
-  // client.
-  virtual bool TransformPointToCoordSpaceForView(
-      const gfx::PointF& point,
-      RenderWidgetHostViewBase* target_view,
-      gfx::PointF* transformed_point);
-
-  // On success, returns true and modifies |*transform| to represent the
-  // transformation mapping a point in the coordinate space of this view
-  // into the coordinate space of the target view.
-  // On Failure, returns false, and leaves |*transform| unchanged.
-  // This function will fail if viz hit testing is not enabled, or if either
-  // this view or the target view has no current FrameSinkId. The latter may
-  // happen if either view is not currently visible in the viewport.
-  // This function is useful if there are multiple points to transform between
-  // the same two views. |target_view| must be non-null.
-  bool GetTransformToViewCoordSpace(RenderWidgetHostViewBase* target_view,
-                                    gfx::Transform* transform);
-
   // Subclass identifier for RenderWidgetHostViewChildFrames. This is useful
   // to be able to know if this RWHV is embedded within another RWHV. If
   // other kinds of embeddable RWHVs are created, this should be renamed to
   // a more generic term -- in which case, static casts to RWHVChildFrame will
   // need to also be resolved.
   virtual bool IsRenderWidgetHostViewChildFrame();
-
-  // Obtains the root window FrameSinkId.
-  virtual viz::FrameSinkId GetRootFrameSinkId();
-
-  // Returns the SurfaceId currently in use by the renderer to submit compositor
-  // frames.
-  virtual viz::SurfaceId GetCurrentSurfaceId() const = 0;
 
   // Returns true if this view's size have been initialized.
   virtual bool HasSize() const;
@@ -395,17 +335,8 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   // synchronization, the default implementation returns true.
   virtual bool CanSynchronizeVisualProperties();
 
-  // Extracts information about any active pointers and cancels any existing
-  // active pointers by dispatching synthetic cancel events.
-  virtual std::vector<std::unique_ptr<ui::TouchEvent>>
-  ExtractAndCancelActiveTouches();
-
-  // Used to transfer pointer state from one view to another. It recreates the
-  // pointer state by dispatching touch down events.
-  virtual void TransferTouches(
-      const std::vector<std::unique_ptr<ui::TouchEvent>>& touches) {}
-
-  virtual void SetLastPointerType(ui::EventPointerType last_pointer_type) {}
+  // Returns the zoom level used for this RenderWidgetHostView.
+  virtual double GetZoomLevel() const;
 
   //----------------------------------------------------------------------------
   // The following methods are related to IME.
@@ -452,17 +383,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
                            const gfx::Rect& bounds,
                            const gfx::Rect& anchor_rect) = 0;
 
-  // Sets the cursor for this view to the one specified.
-  virtual void UpdateCursor(const ui::Cursor& cursor) = 0;
-
-  // Changes the cursor that is displayed on screen. This may or may not match
-  // the current cursor's view which was set by UpdateCursor.
-  virtual void DisplayCursor(const ui::Cursor& cursor);
-
-  // Views that manage cursors for window return a CursorManager. Other views
-  // return nullptr.
-  virtual CursorManager* GetCursorManager();
-
   // Indicates whether the page has finished loading.
   virtual void SetIsLoading(bool is_loading) = 0;
 
@@ -477,13 +397,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   // Tells the View to destroy itself.
   virtual void Destroy();
 
-  // Calls UpdateTooltip if the view is under the cursor.
-  virtual void UpdateTooltipUnderCursor(const std::u16string& tooltip_text) {}
-
-  // Updates the tooltip text and displays the requested tooltip on the screen.
-  // An empty string will clear a visible tooltip.
-  virtual void UpdateTooltip(const std::u16string& tooltip_text) {}
-
   // Updates the tooltip text and its position and displays the requested
   // tooltip on the screen. The |bounds| parameter corresponds to the bounds of
   // the renderer-side element (in widget-relative DIPS) on which the tooltip
@@ -494,10 +407,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   // Hides tooltips that are still visible and were triggered from a keypress.
   // Doesn't impact tooltips that were triggered from the cursor.
   virtual void ClearKeyboardTriggeredTooltip() {}
-
-  // Transforms |point| to be in the coordinate space of browser compositor's
-  // surface. This is in DIP.
-  virtual void TransformPointToRootSurface(gfx::PointF* point);
 
   // Gets the bounds of the top-level window, in screen coordinates.
   virtual gfx::Rect GetBoundsInRootWindow() = 0;
@@ -541,8 +450,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   // changes.
   virtual void SetShowingContextMenu(bool showing) {}
 
-  virtual void OnAutoscrollStart();
-
   // Gets the DisplayFeature whose offset and mask_length are expressed in DIPs
   // relative to the view. See display_feature.h for more details.
   virtual std::optional<DisplayFeature> GetDisplayFeature() = 0;
@@ -558,12 +465,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   // Process swap messages sent before |frame_token| in RenderWidgetHostImpl.
   void OnFrameTokenChangedForView(uint32_t frame_token,
                                   base::TimeTicks activation_time);
-
-  // Add and remove observers for lifetime event notifications. The order in
-  // which notifications are sent to observers is undefined. Clients must be
-  // sure to remove the observer before they go away.
-  void AddObserver(RenderWidgetHostViewBaseObserver* observer);
-  void RemoveObserver(RenderWidgetHostViewBaseObserver* observer);
 
   // Returns a reference to the current instance of TextInputManager. The
   // reference is obtained from RenderWidgetHostDelegate. The first time a non-
@@ -623,35 +524,38 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
 
   void SetIsFrameSinkIdOwner(bool is_owner);
 
+  void SetViewTransitionResources(
+      std::unique_ptr<ScopedViewTransitionResources> resources);
+  bool HasViewTransitionResourcesForTesting() const {
+    return !!view_transition_resources_;
+  }
+
+  virtual viz::SurfaceId GetFallbackSurfaceIdForTesting() const;
+
  protected:
   explicit RenderWidgetHostViewBase(RenderWidgetHost* host);
   ~RenderWidgetHostViewBase() override;
 
   void NotifyObserversAboutShutdown();
 
-  virtual void UpdateFrameSinkIdRegistration();
   bool is_frame_sink_id_owner() const { return is_frame_sink_id_owner_; }
 
   virtual MouseWheelPhaseHandler* GetMouseWheelPhaseHandler();
+
+  // RenderWidgetHostViewInput implementations.
+  void UpdateFrameSinkIdRegistration() override;
+  void StopFlingingIfNecessary(
+      const blink::WebGestureEvent& event,
+      blink::mojom::InputEventResultState ack_result) override;
+  void ForwardTouchpadZoomEventIfNecessary(
+      const blink::WebGestureEvent& event,
+      blink::mojom::InputEventResultState ack_result) override;
 
   // Applies background color without notifying the RenderWidget about
   // opaqueness changes. This allows us to, when navigating to a new page,
   // transfer this color to that page. This allows us to pass this background
   // color to new views on navigation.
   virtual void UpdateBackgroundColor() = 0;
-
-  // Stops flinging if a GSU event with momentum phase is sent to the renderer
-  // but not consumed.
-  virtual void StopFlingingIfNecessary(
-      const blink::WebGestureEvent& event,
-      blink::mojom::InputEventResultState ack_result);
-
-  // If |event| is a touchpad pinch or double tap event for which we've sent a
-  // synthetic wheel event, forward the |event| to the renderer, subject to
-  // |ack_result| which is the ACK result of the synthetic wheel.
-  virtual void ForwardTouchpadZoomEventIfNecessary(
-      const blink::WebGestureEvent& event,
-      blink::mojom::InputEventResultState ack_result);
 
   virtual bool HasFallbackSurface() const;
 
@@ -671,6 +575,10 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
 
   // Updates the active state by replicating it to the renderer.
   void UpdateActiveState(bool active);
+
+  // Each platform should override this to make sure its UI compositor is
+  // visible.
+  virtual void EnsurePlatformVisibility(PageVisibilityState page_visibility) {}
 
   // Each platform should override this to call RenderWidgetHostImpl::WasShown
   // and DelegatedFrameHost::WasShown, and do any platform-specific bookkeeping
@@ -771,10 +679,11 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   // Transforms |point| from |original_view| coord space to |target_view| coord
   // space. Result is stored in |transformed_point|. Returns true if the
   // transform is successful, false otherwise.
-  bool TransformPointToTargetCoordSpace(RenderWidgetHostViewBase* original_view,
-                                        RenderWidgetHostViewBase* target_view,
-                                        const gfx::PointF& point,
-                                        gfx::PointF* transformed_point) const;
+  bool TransformPointToTargetCoordSpace(
+      RenderWidgetHostViewInput* original_view,
+      RenderWidgetHostViewInput* target_view,
+      const gfx::PointF& point,
+      gfx::PointF* transformed_point) const;
 
   // Helper function to return whether the current background color is fully
   // opaque.
@@ -784,7 +693,7 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
     return view_stopped_flinging_for_test_;
   }
 
-  base::ObserverList<RenderWidgetHostViewBaseObserver>::Unchecked observers_;
+  base::ObserverList<RenderWidgetHostViewInputObserver>::Unchecked observers_;
 
   std::optional<blink::WebGestureEvent> pending_touchpad_pinch_begin_;
 
@@ -794,6 +703,8 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   bool is_evicted_ = false;
 
   bool is_frame_sink_id_owner_ = false;
+
+  std::unique_ptr<ScopedViewTransitionResources> view_transition_resources_;
 
   base::WeakPtrFactory<RenderWidgetHostViewBase> weak_factory_{this};
 };

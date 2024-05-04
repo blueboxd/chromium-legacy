@@ -121,6 +121,10 @@ export class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy
       this.categoryList_.push(ContentSettingsTypes.AUTOMATIC_FULLSCREEN);
     }
 
+    if (loadTimeData.getBoolean('capturedSurfaceControlEnabled')) {
+      this.categoryList_.push(ContentSettingsTypes.CAPTURED_SURFACE_CONTROL);
+    }
+
     this.prefs_ = createSiteSettingsPrefs([], [], []);
   }
 
@@ -297,7 +301,7 @@ export class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy
 
       const mockUsage = index * 100;
 
-      // TODO(https://crbug.com/1021606): Add test where existing evaluates to
+      // TODO(crbug.com/40106241): Add test where existing evaluates to
       // true.
       if (existing) {
         const originInfo = createOriginInfo(origin, {usage: mockUsage});
@@ -601,10 +605,10 @@ export class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy
   }
 
   /** @override */
-  getDefaultCaptureDevices() {}
+  initializeCaptureDevices() {}
 
   /** @override */
-  setDefaultCaptureDevice() {}
+  setPreferredCaptureDevice() {}
 
   /** @override */
   setProtocolHandlerDefault(value: boolean) {

@@ -7,6 +7,7 @@
 #include <list>
 #include <map>
 #include <memory>
+#include <string_view>
 
 #include "ash/webui/camera_app_ui/url_constants.h"
 #include "base/command_line.h"
@@ -55,7 +56,6 @@
 #include "components/privacy_sandbox/privacy_sandbox_features.h"
 #include "components/privacy_sandbox/tracking_protection_prefs.h"
 #include "components/search_engines/template_url_service.h"
-#include "components/services/storage/public/cpp/storage_prefs.h"
 #include "components/variations/variations_associated_data.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browsing_data_filter_builder.h"
@@ -77,6 +77,8 @@
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
 #include "services/network/test/test_network_context.h"
+#include "services/video_effects/public/mojom/video_effects_processor.mojom.h"
+#include "services/video_effects/public/mojom/video_effects_service.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/switches.h"
@@ -90,7 +92,12 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/search_test_utils.h"
+// `gn check` is failing on Android for this particular include even though
+// the (conditional) dependency path exists, adding `nogncheck`:
+#include "components/media_effects/media_effects_service.h"  // nogncheck
 #include "components/password_manager/core/common/password_manager_features.h"
+// Ditto:
+#include "services/video_effects/test/fake_video_effects_service.h"  // nogncheck
 #include "ui/base/page_transition_types.h"
 #else
 #include "base/system/sys_info.h"
@@ -227,7 +234,8 @@ TEST_F(ChromeContentBrowserClientWindowTest, OpenURL) {
   EXPECT_EQ(previous_count + 2, browser()->tab_strip_model()->count());
 }
 
-// TODO(crbug.com/566091): Remove the need for ShouldStayInParentProcessForNTP()
+// TODO(crbug.com/40447789): Remove the need for
+// ShouldStayInParentProcessForNTP()
 //    and associated test.
 TEST_F(ChromeContentBrowserClientWindowTest, ShouldStayInParentProcessForNTP) {
   ChromeContentBrowserClient client;
@@ -629,6 +637,26 @@ TEST_F(ChromeContentBrowserClientTest, BindVideoEffectsManager) {
   // The actual value isn't that important here. What matters is that getting a
   // result means that the plumbing worked.
   EXPECT_FALSE(configuration_future.Get().is_null());
+}
+
+TEST_F(ChromeContentBrowserClientTest, BindVideoEffectsProcessor) {
+  mojo::Remote<video_effects::mojom::VideoEffectsService> service;
+  video_effects::FakeVideoEffectsService fake_effects_service(
+      service.BindNewPipeAndPassReceiver());
+  auto service_reset = SetVideoEffectsServiceRemoteForTesting(&service);
+
+  std::unique_ptr<base::test::TestFuture<void>> effects_processor_future =
+      fake_effects_service.GetEffectsProcessorCreationFuture();
+
+  TestChromeContentBrowserClient test_content_browser_client;
+  mojo::Remote<video_effects::mojom::VideoEffectsProcessor>
+      video_effects_processor;
+  test_content_browser_client.BindVideoEffectsProcessor(
+      "test_device_id", &profile_,
+      video_effects_processor.BindNewPipeAndPassReceiver());
+
+  EXPECT_TRUE(effects_processor_future->Wait());
+  EXPECT_TRUE(video_effects_processor.is_connected());
 }
 #endif  // !BUILDFLAG(IS_ANDROID)
 
@@ -1129,6 +1157,9 @@ TEST_F(ChromeContentBrowserClientStoragePartitionTest,
 
 TEST_F(ChromeContentBrowserClientStoragePartitionTest,
        DefaultPartitionIsUsedWhenIsolationDisabled) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(features::kIsolatedWebApps);
+
   TestChromeContentBrowserClient test_content_browser_client;
   content::StoragePartitionConfig config =
       test_content_browser_client.GetStoragePartitionConfigForSite(
@@ -1164,19 +1195,13 @@ TEST_F(ChromeContentBrowserClientStoragePartitionTest,
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 TEST_F(ChromeContentBrowserClientTest, IsolatedWebAppsDisabledOnSignInScreen) {
-  auto set_install_force_list = [](Profile* profile) {
-    base::Value::List list;
-    list.Append("some_value");
-    profile->GetPrefs()->SetList(prefs::kIsolatedWebAppInstallForceList,
-                                 std::move(list));
-  };
-  set_install_force_list(&profile_);
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kIsolatedWebApps);
 
   std::unique_ptr<TestingProfile> sign_in_screen_profile =
       TestingProfile::Builder()
           .SetPath(base::FilePath(ash::kSigninBrowserContextBaseName))
           .Build();
-  set_install_force_list(sign_in_screen_profile.get());
 
   ChromeContentBrowserClient client;
   EXPECT_TRUE(client.AreIsolatedWebAppsEnabled(&profile_));
@@ -1221,7 +1246,7 @@ class ChromeContentBrowserClientSwitchTest
       : testing_local_state_(TestingBrowserProcess::GetGlobal()) {}
 
  protected:
-  void AppendSwitchInCurrentProcess(const base::StringPiece& switch_string) {
+  void AppendSwitchInCurrentProcess(std::string_view switch_string) {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(switch_string);
   }
 
@@ -1238,23 +1263,6 @@ class ChromeContentBrowserClientSwitchTest
   ScopedTestingLocalState testing_local_state_;
   ChromeContentBrowserClient client_;
 };
-
-TEST_F(ChromeContentBrowserClientSwitchTest, WebSQLAccessDefault) {
-  base::CommandLine result = FetchCommandLineSwitchesForRendererProcess();
-  EXPECT_FALSE(result.HasSwitch(blink::switches::kWebSQLAccess));
-}
-
-TEST_F(ChromeContentBrowserClientSwitchTest, WebSQLAccessDisabled) {
-  profile()->GetPrefs()->SetBoolean(storage::kWebSQLAccess, false);
-  base::CommandLine result = FetchCommandLineSwitchesForRendererProcess();
-  EXPECT_FALSE(result.HasSwitch(blink::switches::kWebSQLAccess));
-}
-
-TEST_F(ChromeContentBrowserClientSwitchTest, WebSQLAccessEnabled) {
-  profile()->GetPrefs()->SetBoolean(storage::kWebSQLAccess, true);
-  base::CommandLine result = FetchCommandLineSwitchesForRendererProcess();
-  EXPECT_TRUE(result.HasSwitch(blink::switches::kWebSQLAccess));
-}
 
 TEST_F(ChromeContentBrowserClientSwitchTest, DataUrlInSvgDefault) {
   base::CommandLine result = FetchCommandLineSwitchesForRendererProcess();

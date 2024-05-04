@@ -314,6 +314,11 @@ struct BLINK_COMMON_EXPORT
     return params.buyer_timeouts;
   }
 
+  static std::optional<base::TimeDelta> reporting_timeout(
+      const blink::AuctionConfig::NonSharedParams& params) {
+    return params.reporting_timeout;
+  }
+
   static const std::optional<blink::AdCurrency>& seller_currency(
       const blink::AuctionConfig::NonSharedParams& params) {
     return params.seller_currency;
@@ -389,6 +394,13 @@ struct BLINK_COMMON_EXPORT
     return params.all_slots_requested_sizes;
   }
 
+  static const blink::AuctionConfig::
+      MaybePromiseDeprecatedRenderURLReplacements&
+      deprecated_render_url_replacements(
+          const blink::AuctionConfig::NonSharedParams& params) {
+    return params.deprecated_render_url_replacements;
+  }
+
   static const base::flat_map<url::Origin, uint16_t>&
   per_buyer_multi_bid_limits(
       const blink::AuctionConfig::NonSharedParams& params) {
@@ -403,6 +415,21 @@ struct BLINK_COMMON_EXPORT
   static const std::optional<base::Uuid>& auction_nonce(
       const blink::AuctionConfig::NonSharedParams& params) {
     return params.auction_nonce;
+  }
+
+  static const std::optional<
+      blink::AuctionConfig::NonSharedParams::RealTimeReportingType>&
+  seller_real_time_reporting_type(
+      const blink::AuctionConfig::NonSharedParams& params) {
+    return params.seller_real_time_reporting_type;
+  }
+
+  static const std::optional<base::flat_map<
+      url::Origin,
+      blink::AuctionConfig::NonSharedParams::RealTimeReportingType>>&
+  per_buyer_real_time_reporting_types(
+      const blink::AuctionConfig::NonSharedParams& params) {
+    return params.per_buyer_real_time_reporting_types;
   }
 
   static const std::vector<blink::AuctionConfig>& component_auctions(
@@ -471,11 +498,6 @@ struct BLINK_COMMON_EXPORT
     return config.per_buyer_experiment_group_ids;
   }
 
-  static const blink::AuctionConfig::
-      MaybePromiseDeprecatedRenderURLReplacements&
-      deprecated_render_url_replacements(const blink::AuctionConfig& config) {
-    return config.deprecated_render_url_replacements;
-  }
 
   static bool expects_additional_bids(const blink::AuctionConfig& config) {
     return config.expects_additional_bids;

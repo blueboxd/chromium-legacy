@@ -86,8 +86,8 @@ void SetDragImage(const GURL& url,
           title.empty() ? base::UTF8ToUTF16(url.spec()) : title));
   button->SetTextSubpixelRenderingEnabled(false);
   const ui::ColorProvider* color_provider = drag_widget->GetColorProvider();
-  button->SetTextColor(views::Button::STATE_NORMAL,
-                       color_provider->GetColor(ui::kColorTextfieldForeground));
+  button->SetTextColorId(views::Button::STATE_NORMAL,
+                         ui::kColorTextfieldForeground);
 
   SkColor bg_color = color_provider->GetColor(ui::kColorTextfieldBackground);
   if (views::Widget::IsWindowCompositingSupported()) {
@@ -106,7 +106,7 @@ void SetDragImage(const GURL& url,
                           ui::ImageModel::FromImageSkia(icon));
   }
 
-  gfx::Size size(button->GetPreferredSize());
+  gfx::Size size(button->GetPreferredSize({}));
   // drag_widget's size must be set to show the drag image in RTL.
   // However, on Windows, calling Widget::SetSize() resets
   // the LabelButton's bounds via OnNativeWidgetSizeChanged().

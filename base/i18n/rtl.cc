@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40284755): Remove this and spanify to fix the errors.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "base/i18n/rtl.h"
 
 #include <stddef.h>
@@ -202,6 +207,8 @@ TextDirection GetTextDirectionForLocaleInStartUp(const char* locale_name) {
   TextDirection forced_direction = GetForcedTextDirection();
   if (forced_direction != UNKNOWN_DIRECTION)
     return forced_direction;
+
+  CHECK(locale_name && locale_name[0]);
 
   // This list needs to be updated in alphabetical order if we add more RTL
   // locales.

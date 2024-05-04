@@ -41,21 +41,30 @@ DisplayResourceProviderSoftware::~DisplayResourceProviderSoftware() {
   }
 }
 
+std::unique_ptr<gpu::MemoryImageRepresentation>
+DisplayResourceProviderSoftware::GetSharedImageRepresentation(
+    const gpu::Mailbox& mailbox,
+    const gpu::SyncToken& sync_token) {
+  WaitSyncToken(sync_token);
+  return shared_image_manager_->ProduceMemory(mailbox, memory_tracker_.get());
+}
+
 const DisplayResourceProvider::ChildResource*
 DisplayResourceProviderSoftware::LockForRead(ResourceId id) {
   ChildResource* resource = GetResource(id);
   DCHECK(!resource->is_gpu_resource_type());
 
-  if (resource->transferable.mailbox_holder.mailbox.IsSharedImage()) {
+  // Determine whether this resource is using a software SharedImage or a legacy
+  // shared bitmap.
+  if (resource->transferable.IsSoftwareSharedImage()) {
     DCHECK(shared_image_manager_ && sync_point_manager_);
     auto it = resource_shared_images_.find(id);
     if (it == resource_shared_images_.end()) {
       const gpu::Mailbox& mailbox =
           resource->transferable.mailbox_holder.mailbox;
       auto access = std::make_unique<SharedImageAccess>();
-      WaitSyncToken(resource->transferable.mailbox_holder.sync_token);
-      access->representation =
-          shared_image_manager_->ProduceMemory(mailbox, memory_tracker_.get());
+      access->representation = GetSharedImageRepresentation(
+          mailbox, resource->transferable.mailbox_holder.sync_token);
       if (!access->representation) {
         return nullptr;
       }

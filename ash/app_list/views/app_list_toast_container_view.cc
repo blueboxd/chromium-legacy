@@ -58,6 +58,11 @@ constexpr auto kReorderUndoInteriorMargin = gfx::Insets::TLBR(8, 16, 8, 8);
 
 }  // namespace
 
+AppsGridContextMenu::GridType
+AppListToastContainerView::Delegate::GetGridTypeForContextMenu() {
+  return AppsGridContextMenu::GridType::kAppsGrid;
+}
+
 AppListToastContainerView::AppListToastContainerView(
     AppListNudgeController* nudge_controller,
     AppListKeyboardController* keyboard_controller,
@@ -85,7 +90,8 @@ AppListToastContainerView::AppListToastContainerView(
   if (!tablet_mode_) {
     // `context_menu_` is only set in clamshell mode. The sort options in tablet
     // mode are handled in RootWindowController with ShelfContextMenuModel.
-    context_menu_ = std::make_unique<AppsGridContextMenu>();
+    context_menu_ = std::make_unique<AppsGridContextMenu>(
+        delegate->GetGridTypeForContextMenu());
     set_context_menu_controller(context_menu_.get());
   }
 }
@@ -196,18 +202,24 @@ void AppListToastContainerView::CreateTutorialNudgeView() {
     return;
   }
 
-  AppListToastView::Builder toast_view_builder(u"Tutorial view is on");
+  AppListToastView::Builder toast_view_builder(
+      l10n_util::GetStringUTF16(IDS_ASH_LAUNCHER_APPS_COLLECTIONS_NUDGE_TITLE));
 
   toast_view_builder
       .SetButton(
-          u"Dismiss view",
+          l10n_util::GetStringUTF16(
+              IDS_ASH_LAUNCHER_APPS_COLLECTIONS_NUDGE_DISMISS_BUTTON),
           base::BindRepeating(&AppListToastContainerView::FadeOutToastView,
                               base::Unretained(this)))
       .SetStyleForTabletMode(tablet_mode_)
-      .SetSubtitle(u"Apps are grouped by category")
+      .SetSubtitle(l10n_util::GetStringUTF16(
+          IDS_ASH_LAUNCHER_APPS_COLLECTIONS_NUDGE_SUBTITLE))
       .SetIconBackground(true);
 
   toast_view_ = AddChildView(toast_view_builder.Build());
+  toast_view_->SetAccessibleRole(ax::mojom::Role::kRegion);
+  toast_view_->toast_button()->SetAccessibleName(l10n_util::GetStringUTF16(
+      IDS_ASH_LAUNCHER_APPS_COLLECTIONS_NUDGE_DISMISS_BUTTON_SPOKEN_TEXT));
   if (available_width_) {
     toast_view_->SetAvailableWidth(*available_width_);
   }

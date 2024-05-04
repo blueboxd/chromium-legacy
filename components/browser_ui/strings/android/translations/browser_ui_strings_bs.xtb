@@ -31,7 +31,6 @@
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1633720957382884102">Srodne web lokacije</translation>
 <translation id="1644574205037202324">Historija</translation>
-<translation id="1647582022260550163">Jeste li sigurni da želite poništiti odobrenja i obrisati kolačiće i podatke web lokacije?</translation>
 <translation id="1652197001188145583">Kada je postavka uključena, web lokacije mogu zatražiti da koriste NFC uređaje. Kada je postavka isključena, web lokacije ne mogu koristiti NFC uređaje.</translation>
 <translation id="1660204651932907780">Dozvolite web lokacijama da reproduciraju zvuk (preporučeno)</translation>
 <translation id="1677097821151855053">Kolačići i drugi podaci web lokacije se koriste da vas web lokacija zapamti, naprimjer radi vaše prijave ili personaliziranja oglasa. Da upravljate kolačićima za sve web lokacije, pogledajte <ph name="BEGIN_LINK" />Postavke<ph name="END_LINK" />.</translation>
@@ -94,12 +93,12 @@
 <translation id="2501278716633472235">Nazad</translation>
 <translation id="2546283357679194313">Kolačići i podaci web lokacije</translation>
 <translation id="2550801787432930915">Kartica pada cijene</translation>
-<translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{Blokiran je 1 kolačić}one{Blokiran je # kolačić}few{Blokirana su # kolačića}other{Blokirano je # kolačića}}</translation>
 <translation id="2570922361219980984">Pristup lokaciji je također isključen za ovaj uređaj. Uključite ga u <ph name="BEGIN_LINK" />Postavkama Androida<ph name="END_LINK" />.</translation>
 <translation id="257931822824936280">Prošireno – kliknite da suzite.</translation>
 <translation id="2586657967955657006">Međumemorija</translation>
 <translation id="2597457036804169544">Tamna tema se neće primjenjivati na web lokacije</translation>
 <translation id="2606760465469169465">Automatska potvrda</translation>
+<translation id="2613007545732217283"><ph name="HOST_NAME" /> <ph name="SEPARATOR" /> <ph name="RECENCY" /></translation>
 <translation id="2621115761605608342">Dozvolite JavaScript za posebnu web lokaciju.</translation>
 <translation id="2653659639078652383">Pošalji</translation>
 <translation id="2677748264148917807">Napusti</translation>
@@ -122,9 +121,7 @@
 <translation id="2979365474350987274">Kolačići trećih strana su ograničeni</translation>
 <translation id="3008272652534848354">Poništi odobrenja</translation>
 <translation id="301521992641321250">Automatski blokirano</translation>
-<translation id="3025010840409371499"><ph name="RECENCY" /> <ph name="SEPARATOR" /> <ph name="HOST_NAME" /></translation>
 <translation id="3069226013421428034">Dozvolite prijavu trećih stana za određenu web lokaciju.</translation>
-<translation id="3082992102194421695">{COUNT,plural, =1{Ističe sutra}one{Ističe za # dan}few{Ističe za # dana}other{Ističe za # dana}}</translation>
 <translation id="310297983047869047">Prethodni slajd</translation>
 <translation id="3109724472072898302">Skupljeno</translation>
 <translation id="3114012059975132928">Video plejer</translation>
@@ -136,6 +133,7 @@
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> pohranjenih podataka</translation>
 <translation id="321187648315454507">Da dozvolite da vam aplikacija <ph name="APP_NAME" /> šalje obavještenja, također uključite obavještenja u <ph name="BEGIN_LINK" />Postavkama Androida<ph name="END_LINK" />.</translation>
 <translation id="3227137524299004712">Mikrofon</translation>
+<translation id="3232293466644486101">Brisanje podataka o pregledavanju…</translation>
 <translation id="3242646949159196181">Kada je postavka uključena, web lokacije mogu reproducirati zvuk. Kada je postavka isključena, web lokacije ne mogu reproducirati zvuk.</translation>
 <translation id="3277252321222022663">Dozvolite web lokacijama pristup senzorima (preporučeno)</translation>
 <translation id="3285500645985761267">Dozvolite srodnim web lokacijama da vide vašu aktivnost u grupi</translation>
@@ -177,6 +175,7 @@
 <translation id="3895926599014793903">Prisilno omogući zumiranje</translation>
 <translation id="3908288065506437185">Blokirajte kolačiće treće strane u anonimnom načinu rada</translation>
 <translation id="3918378745482005425">Moguće je da neke funkcije neće raditi. Povezane web lokacije i dalje mogu koristiti kolačiće treće strane.</translation>
+<translation id="3933121352599513978">Suzi neželjene zahtjeve (preporučeno)</translation>
 <translation id="3955193568934677022">Dozvoljava web lokacijama da reproduciraju zaštićeni sadržaj (preporučeno)</translation>
 <translation id="3967822245660637423">Preuzimanje je završeno</translation>
 <translation id="3974105241379491420">Web lokacije mogu tražiti da koriste informacije koje su sačuvale o vama</translation>
@@ -198,7 +197,9 @@
 <translation id="4278390842282768270">Dozvoljeno</translation>
 <translation id="429312253194641664">Web lokacija reproducira medij</translation>
 <translation id="42981349822642051">Proširi</translation>
+<translation id="4336219115486912529">{COUNT,plural, =1{Ističe sutra}one{Ističe za # dan}few{Ističe za # dana}other{Ističe za # dana}}</translation>
 <translation id="4336566011000459927">Chrome će ponovo ograničiti kolačiće danas</translation>
+<translation id="4336836404251800362"><ph name="RECENCY" /> <ph name="SEPARATOR" /> Posljednja kartica</translation>
 <translation id="4338831206024587507">Sve web lokacije pod domenom <ph name="DOMAIN" /></translation>
 <translation id="4402755511846832236">Blokirajte web lokacijama informacije o vašem aktivnom korištenju ovog uređaja</translation>
 <translation id="4412992751769744546">Dopusti kolačiće trećih strana</translation>
@@ -289,6 +290,7 @@
 <translation id="5853982612236235577">Kada je postavka uključena, web lokacije mogu zatražiti da šalju obavještenja. Kada je postavka isključena, web lokacije ne mogu slati obavještenja.</translation>
 <translation id="5860033963881614850">Isklj.</translation>
 <translation id="5876056640971328065">Pauziranje videozapisa</translation>
+<translation id="5877248419911025165">Suzi sve zahtjeve</translation>
 <translation id="5884085660368669834">Postavka web lokacije</translation>
 <translation id="5887687176710214216">Posljednji put je posjećeno jučer</translation>
 <translation id="5916664084637901428">Uključeno</translation>
@@ -306,6 +308,7 @@
 <translation id="6064125863973209585">Završena preuzimanja</translation>
 <translation id="6071501408666570960">Moguće je da ste odjavljenu s web lokacije</translation>
 <translation id="6120483543004435978">Kada je postavka uključena, web lokacije mogu zatražiti informacije o tome kada aktivno koristite uređaj. Kada je postavka isključena, web lokacije ne mogu znati kada aktivno koristite uređaj.</translation>
+<translation id="6140839633433422817">Jeste li sigurni da želite poništiti dopuštenja i izbrisati kolačiće i podatke web-lokacije?</translation>
 <translation id="6165508094623778733">Saznajte više</translation>
 <translation id="6171020522141473435">Kada je postavka uključena, web lokacije mogu zatražiti da koriste Bluetooth uređaje. Kada je postavka isključena, web lokacije ne mogu koristiti Bluetooth uređaje.</translation>
 <translation id="6177111841848151710">Blokirano za trenutni pretraživač</translation>
@@ -345,6 +348,7 @@
 <translation id="6612358246767739896">Zaštićeni sadržaj</translation>
 <translation id="662080504995468778">Ostani</translation>
 <translation id="6653342741369270081">Pritisnite dugme za nazad da izađete iz prikaza preko cijelog ekrana.</translation>
+<translation id="6670377348676659110">{TILE_COUNT,plural, =1{Sakrij opciju Nastavi s ovom karticom}one{Sakrij opciju Nastavi s ovim karticama}few{Sakrij opciju Nastavi s ovim karticama}other{Sakrij opciju Nastavi s ovim karticama}}</translation>
 <translation id="6689172468748959065">Fotografije profila</translation>
 <translation id="6697925417670533197">Aktivna preuzimanja</translation>
 <translation id="6722828510648505498">Blokiraj upite za prijavu koji potiču od usluga identiteta.</translation>
@@ -398,7 +402,6 @@
 <translation id="7561196759112975576">Uvijek</translation>
 <translation id="757524316907819857">Blokirajte reproduciranje zaštićenog sadržaja na web lokacijama</translation>
 <translation id="7594634374516752650">Povezano s Bluetooth uređajem</translation>
-<translation id="7641339528570811325">Obriši podatke pregledanja…</translation>
 <translation id="7649070708921625228">Pomoć</translation>
 <translation id="7658239707568436148">Otkaži</translation>
 <translation id="7667547420449112975">Čarobnjak iz Oza</translation>
@@ -456,7 +459,6 @@
 <translation id="8441146129660941386">Pomicanje unazad</translation>
 <translation id="8444433999583714703">Da dozvolite da <ph name="APP_NAME" /> pristupa vašoj lokaciji, također uključite lokaciju u <ph name="BEGIN_LINK" />Postavkama Androida<ph name="END_LINK" />.</translation>
 <translation id="8447861592752582886">Opozivanje dozvole za uređaj</translation>
-<translation id="8451050538944905715">{NUM_SELECTED,plural, =1{Koristi se 1 kolačić}one{Koristi se # kolačić}few{Koriste se # kolačića}other{Koristi se # kolačića}}</translation>
 <translation id="8487700953926739672">Dostupno van mreže</translation>
 <translation id="848952951823693243">Uvijek zatraži verziju web lokacije za mobilni uređaj</translation>
 <translation id="8499083585497694743">Uključi mikrofon</translation>
@@ -484,7 +486,6 @@
 <translation id="8803526663383843427">Kada je uključeno</translation>
 <translation id="8805385115381080995">Pregledanje je brže jer je malo vjerovatno da će web lokacija tražiti da potvrdite da ste stvarna osoba</translation>
 <translation id="8816026460808729765">Blokiranje web lokacijama pristup senzorima</translation>
-<translation id="8843699287283948910">Sakrij kartice s drugih uređaja</translation>
 <translation id="8847988622838149491">USB</translation>
 <translation id="8874790741333031443">Pokušajte privremeno dozvoliti kolačiće treće strane, što podrazumijeva manju zaštitu prilikom pregledanja, ali i veću vjerovatnost da će funkcije web lokacije funkcionirati prema očekivanjima.</translation>
 <translation id="8889294078294184559">Kako nastavljate pregledati, web lokacije mogu provjeravati u Chromeu i s prethodnom web lokacijom koju ste posjetili potvrditi da ste stvarna osoba</translation>
@@ -497,6 +498,7 @@
 <translation id="8959122750345127698">Navigacija je nedostupna: <ph name="URL" /></translation>
 <translation id="8986362086234534611">Zaboravi</translation>
 <translation id="8990043154272859344">Odjavit ćete se sa svih web lokacija</translation>
+<translation id="8993853206419610596">Proširi sve zahtjeve</translation>
 <translation id="9002538116239926534">Kada je postavka uključena, web lokacije mogu pohranjivati podatke na vaš uređaj. Kada je postavka isključena, web lokacije ne mogu pohranjivati podatke na vaš uređaj.</translation>
 <translation id="9011903857143958461">Web lokacija <ph name="SITE_NAME" /> je dozvoljena</translation>
 <translation id="9019902583201351841">Upravljaju tvoji roditelji</translation>

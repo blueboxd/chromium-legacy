@@ -8,6 +8,18 @@
 #import <Foundation/Foundation.h>
 #import <string>
 
+// Enum for the NAU implementation for Content notifications.
+typedef NS_ENUM(NSInteger, NAUActionType) {
+  // When a content notification is displayed on the device.
+  NAUActionTypeDisplayed = 0,
+  // When a content notification is opened.
+  NAUActionTypeOpened = 1,
+  // When a content notification is dismissed.
+  NAUActionTypeDismissed = 2,
+  // When the feedback secondary action is triggered.
+  NAUActionTypeFeedbackClicked = 3,
+};
+
 // Key of commerce notification used in pref
 // kFeaturePushNotificationPermissions.
 extern const char kCommerceNotificationKey[];

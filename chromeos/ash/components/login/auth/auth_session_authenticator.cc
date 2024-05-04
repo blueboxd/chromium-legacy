@@ -97,7 +97,7 @@ void AuthSessionAuthenticator::CompleteLoginImpl(
     bool has_knowledge_factor = !context->GetKey()->GetSecret().empty();
     bool challenge_response_auth = !context->GetChallengeResponseKeys().empty();
     if (!has_knowledge_factor && !challenge_response_auth) {
-      // TODO(crbug.com/1325411): Restore non-empty password check.
+      // TODO(crbug.com/40225479): Restore non-empty password check.
       LOGIN_LOG(ERROR) << "Empty password used in AuthenticateToLogin";
     }
   }
@@ -406,7 +406,7 @@ void AuthSessionAuthenticator::AuthenticateToLogin(
   // For now we don't support empty passwords:
   if (context->GetKey()->GetKeyType() == Key::KEY_TYPE_PASSWORD_PLAIN) {
     if (context->GetKey()->GetSecret().empty() && !challenge_response_auth) {
-      // TODO(crbug.com/1325411): Restore non-empty password check.
+      // TODO(crbug.com/40225479): Restore non-empty password check.
       LOGIN_LOG(ERROR) << "Empty password used in AuthenticateToLogin";
     }
   }
@@ -432,7 +432,7 @@ void AuthSessionAuthenticator::AuthenticateToUnlock(
   if (user_context->GetKey()->GetKeyType() == Key::KEY_TYPE_PASSWORD_PLAIN) {
     if (user_context->GetKey()->GetSecret().empty() &&
         !challenge_response_auth) {
-      // TODO(crbug.com/1325411): Restore non-empty password check.
+      // TODO(crbug.com/40225479): Restore non-empty password check.
       LOGIN_LOG(ERROR) << "Empty password used in AuthenticateToLogin";
     }
   }
@@ -443,9 +443,9 @@ void AuthSessionAuthenticator::AuthenticateToUnlock(
   // non-ephemeral user sessions.
   if (switches::ShouldRestoreKeyOnLockScreen() && !ephemeral) {
     LOGIN_LOG(EVENT)
-        << "AuthenticateToUnlock starts AuthSession for decrypt to "
-           "restore keyset.";
-    intent = AuthSessionIntent::kDecrypt;
+        << "AuthenticateToUnlock starts AuthSession for restore_key to "
+           "restore filesystem keyset.";
+    intent = AuthSessionIntent::kRestoreKey;
   }
 
   StartAuthSessionForLoggedIn(
@@ -1197,13 +1197,6 @@ void AuthSessionAuthenticator::HandleMigrationRequired(
 void AuthSessionAuthenticator::NotifyAuthSuccess(
     std::unique_ptr<UserContext> context) {
   LOGIN_LOG(EVENT) << "Logged in successfully";
-
-  if (HibernateManager::IsHibernateSupported()) {
-    // Pass the AccountID and AuthSessionID to HibernateManager so once the
-    // user's profile is created we can notify hiberman.
-    HibernateManager::Get()->SetAuthInfo(context->GetAccountId().GetUserEmail(),
-                                         context->GetAuthSessionId());
-  }
 
   if (consumer_) {
     consumer_->OnAuthSuccess(*context);

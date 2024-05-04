@@ -64,6 +64,7 @@
 #include "ui/views/window/client_view.h"
 
 #if BUILDFLAG(ENTERPRISE_WATERMARK)
+#include "chrome/browser/enterprise/data_protection/data_protection_navigation_observer.h"
 #include "chrome/browser/enterprise/watermark/watermark_view.h"
 #endif
 
@@ -446,12 +447,6 @@ class BrowserView : public BrowserWindow,
 
   void UpdateWebAppStatusIconsVisiblity();
 
-#if BUILDFLAG(ENTERPRISE_WATERMARK)
-  // Sets the watermark string to the value specified in text if the view is
-  // not null.
-  void SetWatermarkString(const std::string& text);
-#endif
-
   // Getter for the `window.setResizable(bool)` state.
   std::optional<bool> GetCanResizeFromWebAPI() const;
 
@@ -512,12 +507,9 @@ class BrowserView : public BrowserWindow,
                        ExclusiveAccessBubbleType bubble_type,
                        int64_t display_id) override;
   void ExitFullscreen() override;
-  void UpdateExclusiveAccessExitBubbleContent(
-      const GURL& url,
-      ExclusiveAccessBubbleType bubble_type,
-      ExclusiveAccessBubbleHideCallback bubble_first_hide_callback,
-      bool notify_download,
-      bool force_update) override;
+  void UpdateExclusiveAccessBubble(
+      const ExclusiveAccessBubbleParams& params,
+      ExclusiveAccessBubbleHideCallback first_hide_callback) override;
   bool IsExclusiveAccessBubbleDisplayed() const override;
   void OnExclusiveAccessUserInput() override;
   bool ShouldHideUIForFullscreen() const override;
@@ -553,6 +545,7 @@ class BrowserView : public BrowserWindow,
   bool IsLocationBarVisible() const override;
   bool IsBorderlessModeEnabled() const override;
   void ShowChromeLabs() override;
+  views::WebView* GetContentsWebView() override;
   SharingDialog* ShowSharingDialog(content::WebContents* contents,
                                    SharingDialogData data) override;
   void ShowUpdateChromeDialog() override;
@@ -729,6 +722,11 @@ class BrowserView : public BrowserWindow,
 #if BUILDFLAG(ENTERPRISE_WATERMARK)
   void DidStartNavigation(
       content::NavigationHandle* navigation_handle) override;
+
+  // TODO: b/330960313 - DocumentOnLoad is not the best signal to use for
+  // determining when a data protections should be enabled, FCP is a better
+  // signal.
+  void DocumentOnLoadCompletedInPrimaryMainFrame() override;
 #endif
 
   // views::ClientView:
@@ -765,10 +763,8 @@ class BrowserView : public BrowserWindow,
 
   // ExclusiveAccessBubbleViewsContext:
   ExclusiveAccessManager* GetExclusiveAccessManager() override;
-  views::Widget* GetBubbleAssociatedWidget() override;
   ui::AcceleratorProvider* GetAcceleratorProvider() override;
   gfx::NativeView GetBubbleParentView() const override;
-  gfx::Point GetCursorPointInParent() const override;
   gfx::Rect GetClientAreaBoundsInScreen() const override;
   bool IsImmersiveModeEnabled() const override;
   gfx::Rect GetTopContainerBoundsInScreen() override;
@@ -803,7 +799,7 @@ class BrowserView : public BrowserWindow,
   FullscreenControlHost* fullscreen_control_host_for_test() {
     return fullscreen_control_host_.get();
   }
-  views::View* GetSidePanelRoundedCorner() {
+  views::View* GetSidePanelRoundedCornerForTesting() {
     return side_panel_rounded_corner_;
   }
 
@@ -832,6 +828,16 @@ class BrowserView : public BrowserWindow,
 
   WebAppFrameToolbarView* web_app_frame_toolbar_for_testing() {
     return web_app_frame_toolbar();
+  }
+
+  enterprise_watermark::WatermarkView* get_watermark_view_for_testing() {
+    return watermark_view_;
+  }
+
+  void set_on_delay_apply_data_protection_settings_if_empty_called_for_testing(
+      base::OnceClosure closure) {
+    on_delay_apply_data_protection_settings_if_empty_called_for_testing_ =
+        std::move(closure);
   }
 
   // This value is used in a common calculation in NonClientFrameView
@@ -940,15 +946,15 @@ class BrowserView : public BrowserWindow,
   // notification that it succeeded this method is invoked.
   // If |url| is not empty, it is the URL of the page that requested fullscreen
   // (via the fullscreen JS API).
-  // |bubble_type| determines what should be shown in the fullscreen exit
-  // bubble.
   // If the Window Placement experiment is enabled, fullscreen may be requested
   // on a particular display. In that case, |display_id| is the display's id;
   // otherwise, display::kInvalidDisplayId indicates no display is specified.
   void ProcessFullscreen(bool fullscreen,
                          const GURL& url,
-                         ExclusiveAccessBubbleType bubble_type,
                          int64_t display_id);
+
+  // Request the underlying platform to make the window fullscreen.
+  void RequestFullscreen(bool fullscreen, int64_t display_id);
 
   void SynchronizeRenderWidgetHostVisualPropertiesForMainFrame();
   void NotifyWidgetSizeConstraintsChanged();
@@ -1064,9 +1070,26 @@ class BrowserView : public BrowserWindow,
   // when it should not be able to.
   void UpdateFullscreenAllowedFromPolicy(bool allowed_without_policy);
 
-  // Apply data protection settings based on the verdict received by
-  // safe-browsing's realtime lookup service.
-  void ApplyDataProtectionSettings(const std::string& watermark_text);
+  // Applies data protection settings based on the verdict received by
+  // safe-browsing's realtime to `watermark_view_`.
+  void ApplyDataProtectionSettings(
+      base::WeakPtr<content::WebContents> expected_web_contents,
+      const enterprise_data_protection::UrlSettings& settings);
+  void ApplyWatermarkSettings(const std::string& watermark_text);
+
+  // Applies data protection settings if there are any to apply, otherwise
+  // delay clearing the data protection settings until the page loads.
+  //
+  // This is called from a finish navigation event to handle the case where the
+  // browser view is switching from a tab with data protections enabled to one
+  // without.  At the end of the navigation, the existing page is still visible
+  // to the user since the UI has not yet refreshed.  In this case the
+  // protections should remain in place.  Once the document finishes loading,
+  // `ApplyDataProtectionSettings()` will be called.  See
+  // `DocumentOnLoadCompletedInPrimaryMainFrame()`.
+  void DelayApplyDataProtectionSettingsIfEmpty(
+      base::WeakPtr<content::WebContents> expected_web_contents,
+      const enterprise_data_protection::UrlSettings& settings);
 
   // The BrowserFrame that hosts this view.
   raw_ptr<BrowserFrame, DanglingUntriaged> frame_ = nullptr;
@@ -1190,6 +1213,9 @@ class BrowserView : public BrowserWindow,
   // The view that contains devtools window for the selected WebContents.
   raw_ptr<views::WebView, AcrossTasksDanglingUntriaged> devtools_web_view_ =
       nullptr;
+
+  // Clear watermark text once the page loads.
+  bool clear_watermark_text_on_page_load_ = false;
 
   // The view that overlays a watermark on the contents container.
   raw_ptr<enterprise_watermark::WatermarkView> watermark_view_ = nullptr;
@@ -1345,6 +1371,9 @@ class BrowserView : public BrowserWindow,
   PrefChangeRegistrar registrar_;
 
   ui::OmniboxPopupCloser omnibox_popup_closer_{this};
+
+  base::OnceClosure
+      on_delay_apply_data_protection_settings_if_empty_called_for_testing_;
 
   mutable base::WeakPtrFactory<BrowserView> weak_ptr_factory_{this};
 };

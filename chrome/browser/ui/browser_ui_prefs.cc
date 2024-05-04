@@ -29,7 +29,7 @@
 
 namespace {
 
-uint32_t GetHomeButtonAndHomePageIsNewTabPageFlags() {
+uint32_t GetHomeAndForwardButtonAndHomePageIsNewTabPageFlags() {
 #if BUILDFLAG(IS_ANDROID)
   return PrefRegistry::NO_REGISTRATION_FLAGS;
 #else
@@ -69,15 +69,22 @@ void RegisterBrowserPrefs(PrefRegistrySimple* registry) {
 
   registry->RegisterTimePref(prefs::kDefaultBrowserLastDeclinedTime,
                              base::Time());
-
   registry->RegisterIntegerPref(prefs::kDefaultBrowserDeclinedCount, 0);
+  registry->RegisterTimePref(prefs::kDefaultBrowserFirstShownTime,
+                             base::Time());
 }
 
 void RegisterBrowserUserPrefs(user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterBooleanPref(prefs::kHomePageIsNewTabPage, true,
-                                GetHomeButtonAndHomePageIsNewTabPageFlags());
-  registry->RegisterBooleanPref(prefs::kShowHomeButton, false,
-                                GetHomeButtonAndHomePageIsNewTabPageFlags());
+  registry->RegisterBooleanPref(
+      prefs::kHomePageIsNewTabPage, true,
+      GetHomeAndForwardButtonAndHomePageIsNewTabPageFlags());
+  registry->RegisterBooleanPref(
+      prefs::kShowHomeButton, false,
+      GetHomeAndForwardButtonAndHomePageIsNewTabPageFlags());
+
+  registry->RegisterBooleanPref(
+      prefs::kShowForwardButton, true,
+      GetHomeAndForwardButtonAndHomePageIsNewTabPageFlags());
 
   registry->RegisterInt64Pref(prefs::kDefaultBrowserLastDeclined, 0);
   registry->RegisterBooleanPref(prefs::kWebAppCreateOnDesktop, true);
@@ -168,4 +175,7 @@ void RegisterBrowserUserPrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterDictionaryPref(prefs::kHttpsUpgradeFallbacks);
   registry->RegisterDictionaryPref(prefs::kHttpsUpgradeNavigations);
   registry->RegisterBooleanPref(prefs::kHttpsOnlyModeAutoEnabled, false);
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
+  registry->RegisterStringPref(prefs::kEnterpriseLogoUrl, std::string());
+#endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
 }

@@ -574,7 +574,7 @@ struct NetworkContextParams {
   pending_receiver<FirstPartySetsAccessDelegate>?
       first_party_sets_access_delegate_receiver;
 
-  // TODO(crbug.com/1228178): This flag is intended to be temporary and to be
+  // TODO(crbug.com/40777535): This flag is intended to be temporary and to be
   // removed (always enabled) in the future.
   bool acam_preflight_spec_conformant = true;
 
@@ -592,20 +592,24 @@ struct NetworkContextParams {
   // label value defined by the experiment is empty.
   string? cookie_deprecation_label;
 
-  // Whether the experimental AFP block list is enabled for this NetworkContext.
-  // Default is false and will only be true if a feature corresponding to the
-  // type of NetworkContext is enabled.
-  // TODO(crbug.com/1478868): This is an interim field only for AFP block list
-  // experiment. This field should not be used for other use cases. This will
-  // be removed when AFP block list logic is migrated to subresource filter.
-  bool afp_block_list_experiment_enabled = false;
-
   // Sets the cookie encryption provider to be used by this network context if
   // `enable_encrypted_cookies` is also enabled.
   // If both are set then the `GetEncryptor` method on the supplied
   // `cookie_encryption_provider` is called to obtain a valid set of keys for
   // cookie encryption.
   pending_remote<CookieEncryptionProvider>? cookie_encryption_provider;
+
+  // Enables Device Bound Session Credential for this network context.
+  bool device_bound_sessions_enabled = false;
+
+  // Represents a net::handles::NetworkHandle.
+  // If != net::handles::kInvalidNetworkHandle (== -1), then the NetworkContext
+  // built out of this will own a URLRequestContext bound to that network (refer
+  // to net::UrlRequestContextBuilder::bindToNetwork documentation). This
+  // effectively means that URLLoaderFactories, returned by the NetworkContext
+  // created out of this, will perform all network request using only
+  // |bound_network|.
+  int64 bound_network = -1;
 };
 
 struct NetworkConditions {
@@ -623,6 +627,17 @@ struct NetworkConditions {
   // Maximal aggregated upload throughput (bytes/sec). <=0 disables upload
   // throttling.
   double upload_throughput;
+
+  // Packet loss for WebRTC connections (percent, 0 to 100).<= 0 disables
+  // packet loss.
+  double packet_loss;
+
+  // Packet queue length for WebRTC connections (packet count). <=0 allows for
+  // an infinite queue.
+  int32 packet_queue_length;
+
+  // Allow packet reordering for WebRTC connections.
+  bool packet_reordering;
 };
 
 // Represents a shared dictionary.
@@ -636,6 +651,8 @@ struct SharedDictionaryInfo {
   string id;
   // The URL of the dictionary.
   url.mojom.Url dictionary_url;
+  // The time when Chrome fetched the dictionary.
+  mojo_base.mojom.Time last_fetch_time;
   // The time when Chrome received the dictionary.
   mojo_base.mojom.Time response_time;
   // The time when this dictionary will be unusable.
@@ -762,7 +779,7 @@ struct URLLoaderFactoryParams {
   // ignored.  Set |ignore_isolated_world_origin| to |false| to allow isolated
   // worlds to bypass CORS security checks via OriginAccessList.
   //
-  // TODO(https://crbug.com/1098410): Remove the `ignore_isolated_world_origin`
+  // TODO(crbug.com/40137011): Remove the `ignore_isolated_world_origin`
   // field once Chrome Platform Apps are gone.
   bool ignore_isolated_world_origin = true;
 
@@ -843,7 +860,7 @@ struct URLLoaderFactoryParams {
   // allow Trust Tokens (https://github.com/wicg/trust-token-api) issuance
   // operation.
   //
-  // TODO(crbug.com/1071848): Once Permissions Policy headers are available from
+  // TODO(crbug.com/40126948): Once Permissions Policy headers are available from
   // a trusted source, it would be good to set this depending on the headers'
   // values, too.
   TrustTokenOperationPolicyVerdict
@@ -853,7 +870,7 @@ struct URLLoaderFactoryParams {
   // allow any Trust Tokens (https://github.com/wicg/trust-token-api)
   // redemption or signing operations.
   //
-  // TODO(crbug.com/1071848): Once Permissions Policy headers are available from
+  // TODO(crbug.com/40126948): Once Permissions Policy headers are available from
   // a trusted source, it would be good to set this depending on the headers'
   // values, too.
   TrustTokenOperationPolicyVerdict
@@ -1493,7 +1510,7 @@ interface NetworkContext {
   // HostResolvers will be cancelled. Such requests will receive ERR_FAILED via
   // |response_client|.
   //
-  // TODO(crbug.com/821021): If necessary as usage and functionality is added to
+  // TODO(crbug.com/41375980): If necessary as usage and functionality is added to
   // the contained ResolveHost method, consider adding the ability for this to
   // be a restricted resolver with some functionality disabled (eg maybe MDNS).
   CreateHostResolver(DnsConfigOverrides? config_overrides,
@@ -1528,7 +1545,7 @@ interface NetworkContext {
   // |source_origin|. The passed |patterns| will be set instead. If an empty
   // array is given for |allow_patterns| and/or |block_patterns|, the
   // |source_origin|'s origin list for each is set to empty respectively.
-  // TODO(crbug.com/936310): Eventually, we want to stop using per-context
+  // TODO(crbug.com/40094155): Eventually, we want to stop using per-context
   // access lists, and use only per-factory access lists, or stop managing the
   // list in the NetworkService completely.
   SetCorsOriginAccessListsForOrigin(
@@ -1553,8 +1570,8 @@ interface NetworkContext {
   // its destruction. If there is no corresponding LoadHttpAuthCache call, the
   // saved HttpAuthCache data will leak.
   //
-  // TODO(crbug.com/914082): Return a scoped handle that can automatically free
-  // the cache when it goes out of scope.
+  // TODO(crbug.com/40606065): Return a scoped handle that can automatically
+  // free the cache when it goes out of scope.
   SaveHttpAuthCacheProxyEntries()
       => (mojo_base.mojom.UnguessableToken cache_key);
 
@@ -1652,6 +1669,33 @@ interface NetworkContext {
   // doesn't match the corresponding cached certificate.
   FlushCachedClientCertIfNeeded(HostPortPair host, X509Certificate certificate);
 
+  // Flushes a cached client certificate preference if `certificate` matches
+  // the cached certificate.
+  FlushMatchingCachedClientCert(X509Certificate certificate);
+
   // Sets cookie deprecation label.
   SetCookieDeprecationLabel(string? label);
+
+  // Clients should revoke network access for nonces using
+  // `StoragePartitionImpl::RevokeNetworkForNoncesInNetworkContext` instead of
+  // this function. This is because `RevokeNetworkForNoncesInNetworkContext`
+  // replicates the nonces so that they can be restored in case of a
+  // `NetworkService` crash.
+  // Register that all network requests with nonces in `nonces` as their
+  // partition nonce should be blocked. Used for fenced frames network
+  // revocation:
+  // https://github.com/WICG/fenced-frame/blob/master/explainer/fenced_frames_with_local_unpartitioned_data_access.md#revoking-network-access
+  // Each fenced frame tree primarily uses one "fenced frame nonce" for
+  // requests that originate from it, but requests from credentialless iframes
+  // within the fenced frame tree use a different "credentialless iframes
+  // nonce". Currently these are the two nonces passed in `nonces`.
+  RevokeNetworkForNonces(array<mojo_base.mojom.UnguessableToken> nonces) => ();
+
+  // Register that network requests operating under the nonce `nonce` whose url
+  // without filename is `exempted_url` should be exempt from network
+  // revocation. This can be called before network is revoked for `nonce` with
+  // `RevokeNetworkForNonce`, and it will store the exemption so that it can
+  // take effect afterwards.
+  ExemptUrlFromNetworkRevocationForNonce(
+      url.mojom.Url exempted_url, mojo_base.mojom.UnguessableToken nonce) => ();
 };

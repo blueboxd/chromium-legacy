@@ -22,7 +22,7 @@
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/menu_manager.h"
-#include "chrome/browser/extensions/site_permissions_helper.h"
+#include "chrome/browser/extensions/permissions/site_permissions_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -77,15 +77,15 @@ bool MenuItemMatchesAction(const std::optional<ActionInfo::Type> action_type,
   if (contexts.Contains(MenuItem::ALL))
     return true;
   if (contexts.Contains(MenuItem::PAGE_ACTION) &&
-      (*action_type == ActionInfo::TYPE_PAGE)) {
+      (*action_type == ActionInfo::Type::kPage)) {
     return true;
   }
   if (contexts.Contains(MenuItem::BROWSER_ACTION) &&
-      (*action_type == ActionInfo::TYPE_BROWSER)) {
+      (*action_type == ActionInfo::Type::kBrowser)) {
     return true;
   }
   if (contexts.Contains(MenuItem::ACTION) &&
-      (*action_type == ActionInfo::TYPE_ACTION)) {
+      (*action_type == ActionInfo::Type::kAction)) {
     return true;
   }
 
@@ -155,7 +155,7 @@ ExtensionContextMenuModel::ContextMenuAction CommandIdToContextMenuAction(
     case ExtensionContextMenuModel::PAGE_ACCESS_SUBMENU:
     case ExtensionContextMenuModel::PAGE_ACCESS_ALL_EXTENSIONS_GRANTED:
     case ExtensionContextMenuModel::PAGE_ACCESS_ALL_EXTENSIONS_BLOCKED:
-      NOTREACHED();
+      DUMP_WILL_BE_NOTREACHED_NORETURN();
       break;
     case ExtensionContextMenuModel::VIEW_WEB_PERMISSIONS:
       return ContextMenuAction::kViewWebPermissions;
@@ -226,7 +226,7 @@ void OpenUrl(Browser& browser, const GURL& url) {
   content::OpenURLParams params(
       url, content::Referrer(), WindowOpenDisposition::NEW_FOREGROUND_TAB,
       ui::PAGE_TRANSITION_LINK, /*is_renderer_initiated=*/false);
-  browser.OpenURL(params);
+  browser.OpenURL(params, /*navigation_handle_callback=*/{});
 }
 
 // A stub for the uninstall dialog.
@@ -661,7 +661,7 @@ void ExtensionContextMenuModel::InitMenuWithFeature(
 
   // Controls section.
   bool has_options_page = OptionsPageInfo::HasOptionsPage(extension);
-  bool can_uninstall_extension = !is_component_ && is_required_by_policy;
+  bool can_uninstall_extension = !is_component_ && !is_required_by_policy;
   if (can_show_icon_in_toolbar || has_options_page || can_uninstall_extension) {
     AddSeparator(ui::NORMAL_SEPARATOR);
   }

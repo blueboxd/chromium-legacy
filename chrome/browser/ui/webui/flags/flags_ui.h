@@ -8,7 +8,10 @@
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "chrome/common/webui_url_constants.h"
 #include "content/public/browser/web_ui_controller.h"
+#include "content/public/browser/webui_config.h"
+#include "content/public/common/url_constants.h"
 #include "ui/base/resource/resource_scale_factor.h"
 
 namespace base {
@@ -18,6 +21,15 @@ class RefCountedMemory;
 namespace content {
 class WebUIDataSource;
 }
+
+class FlagsUI;
+
+class FlagsUIConfig : public content::DefaultWebUIConfig<FlagsUI> {
+ public:
+  FlagsUIConfig()
+      : DefaultWebUIConfig(content::kChromeUIScheme,
+                           chrome::kChromeUIFlagsHost) {}
+};
 
 class FlagsUI : public content::WebUIController {
  public:

@@ -27,13 +27,9 @@ namespace network {
 class SharedURLLoaderFactory;
 }
 
-namespace base {
-class SingleThreadTaskRunner;
-}
-
 namespace device {
 
-class GeolocationManager;
+class GeolocationSystemPermissionManager;
 
 // This class is responsible for handling updates from multiple underlying
 // providers and resolving them to a single 'best' location fix at any given
@@ -49,8 +45,7 @@ class LocationArbitrator : public LocationProvider {
   // LocationArbitrator uses the default system location provider.
   LocationArbitrator(
       CustomLocationProviderCallback custom_location_provider_getter,
-      GeolocationManager* geolocation_manager,
-      const scoped_refptr<base::SingleThreadTaskRunner>& main_task_runner,
+      GeolocationSystemPermissionManager* geolocation_system_permission_manager,
       const scoped_refptr<network::SharedURLLoaderFactory>& url_loader_factory,
       const std::string& api_key,
       std::unique_ptr<PositionCache> position_cache,
@@ -109,8 +104,8 @@ class LocationArbitrator : public LocationProvider {
                            bool from_same_provider) const;
 
   const CustomLocationProviderCallback custom_location_provider_getter_;
-  const raw_ptr<GeolocationManager, DanglingUntriaged> geolocation_manager_;
-  scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
+  const raw_ptr<GeolocationSystemPermissionManager, DanglingUntriaged>
+      geolocation_system_permission_manager_;
   const scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   const std::string api_key_;
 
@@ -135,9 +130,12 @@ class LocationArbitrator : public LocationProvider {
 
 // Factory functions for the various types of location provider to abstract
 // over the platform-dependent implementations.
+#if BUILDFLAG(IS_APPLE)
 std::unique_ptr<LocationProvider> NewSystemLocationProvider(
-    scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
-    GeolocationManager* geolocation_manager = nullptr);
+    SystemGeolocationSource& system_geolocation_source);
+#else
+std::unique_ptr<LocationProvider> NewSystemLocationProvider();
+#endif
 
 }  // namespace device
 

@@ -4,6 +4,8 @@
 
 #include "chrome/common/net/x509_certificate_model.h"
 
+#include <string_view>
+
 #include "net/cert/x509_util.h"
 #include "net/test/cert_builder.h"
 #include "net/test/cert_test_util.h"
@@ -21,7 +23,7 @@ namespace {
 
 std::optional<std::string> FindExtension(
     const std::vector<x509_certificate_model::Extension>& extensions,
-    base::StringPiece name) {
+    std::string_view name) {
   for (const auto& extension : extensions) {
     if (extension.name == name) {
       return extension.value;
@@ -730,7 +732,7 @@ INSTANTIATE_TEST_SUITE_P(All,
                          testing::Values(std::string(),
                                          std::string("nickname")));
 
-// TODO(https://crbug.com/953425): This test suite has "2" at the end of the
+// TODO(crbug.com/41453265): This test suite has "2" at the end of the
 // name to avoid conflicting with x509_certificate_model_nss_unittest. Should
 // rename the test suite in that file to X509CertificateModelNSSTest and remove
 // the 2 from here.

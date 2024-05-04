@@ -78,7 +78,7 @@ packager_builder(
 packager_builder(
     name = "3pp-mac-amd64-packager",
     executable = "recipe:chromium_3pp",
-    # TODO(crbug.com/1267449): Trigger builds routinely once works fine.
+    # TODO(crbug.com/40204454): Trigger builds routinely once works fine.
     schedule = "triggered",
     triggered_by = [],
     builderless = True,
@@ -157,6 +157,7 @@ packager_builder(
                 "tools/android/avd/proto/creation/android_32_google_apis_x64_foldable.textpb",
                 "tools/android/avd/proto/creation/android_33_google_apis_x64.textpb",
                 "tools/android/avd/proto/creation/android_34_google_apis_x64.textpb",
+                "tools/android/avd/proto/creation/android_v_google_apis_x64.textpb",
 
                 # google_atd system images
                 "tools/android/avd/proto/creation/android_30_google_atd_x86.textpb",
@@ -302,6 +303,11 @@ packager_builder(
                 "sdk_package_name": "system-images;android-34;google_apis;x86_64",
                 "cipd_yaml": "third_party/android_sdk/cipd/system_images/android-34/google_apis/x86_64.yaml",
             },
+            # TODO(crbug.com/337112189): Replace Android-V system images with the finalized API level once available
+            {
+                "sdk_package_name": "system-images;android-VanillaIceCream;google_apis;x86_64",
+                "cipd_yaml": "third_party/android_sdk/cipd/system_images/android-VanillaIceCream/google_apis/x86_64.yaml",
+            },
         ],
     },
 )
@@ -330,7 +336,7 @@ packager_builder(
 ci.builder(
     name = "android-device-flasher",
     executable = "recipe:android/device_flasher",
-    # TODO(crbug.com/1260195): Find the sweet spot for the frequency.
+    # TODO(crbug.com/40201767): Find the sweet spot for the frequency.
     schedule = "0 9 * * 1",  # at 9am UTC every Monday.
     triggered_by = [],
     console_view_entry = consoles.console_view_entry(

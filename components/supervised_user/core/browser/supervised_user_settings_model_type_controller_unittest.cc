@@ -11,11 +11,11 @@
 #include "components/supervised_user/core/common/pref_names.h"
 #include "components/supervised_user/core/common/supervised_user_constants.h"
 #include "components/sync/base/sync_mode.h"
-#include "components/sync/service/data_type_controller.h"
+#include "components/sync/service/model_type_controller.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using syncer::DataTypeController;
+using syncer::ModelTypeController;
 using ::testing::Return;
 
 class SupervisedUserSettingsModelTypeControllerTest : public testing::Test {
@@ -37,7 +37,7 @@ TEST_F(SupervisedUserSettingsModelTypeControllerTest,
       /*dump_stack=*/base::DoNothing(),
       /*store_factory=*/base::DoNothing(),
       /*syncable_service=*/nullptr, &pref_service_);
-  EXPECT_EQ(DataTypeController::PreconditionState::kPreconditionsMet,
+  EXPECT_EQ(ModelTypeController::PreconditionState::kPreconditionsMet,
             controller.GetPreconditionState());
 }
 
@@ -47,7 +47,7 @@ TEST_F(SupervisedUserSettingsModelTypeControllerTest,
       /*dump_stack=*/base::DoNothing(),
       /*store_factory=*/base::DoNothing(),
       /*syncable_service=*/nullptr, &pref_service_);
-  EXPECT_EQ(DataTypeController::PreconditionState::kMustStopAndClearData,
+  EXPECT_EQ(ModelTypeController::PreconditionState::kMustStopAndClearData,
             controller.GetPreconditionState());
 }
 

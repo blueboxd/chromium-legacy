@@ -7,6 +7,7 @@
 #include <cmath>
 #include <initializer_list>
 #include <memory>
+#include <string_view>
 
 #include "base/check.h"
 #include "base/strings/strcat.h"
@@ -100,7 +101,7 @@ class WebIDLCompatTest : public testing::Test {
   }
 
   bool GetSequence(DictConverter* converter,
-                   base::StringPiece field,
+                   std::string_view field,
                    v8::LocalVector<v8::Value>& out) {
     out.clear();  // For tests that re-use `out`.
     bool got_it = false;
@@ -583,6 +584,103 @@ TEST_F(WebIDLCompatTest, StandaloneLong) {
         "undefined:0 Uncaught TypeError: Cannot convert a BigInt value to a "
         "number.",
         res.ConvertToErrorString(v8_helper_->isolate()));
+  }
+}
+
+TEST_F(WebIDLCompatTest, StandaloneUnsignedLong) {
+  v8::Local<v8::Context> context = v8_helper_->CreateContext();
+  v8::Context::Scope ctx(context);
+
+  {
+    auto in_value = MakeValueFromScript(context, "make = () => -1");
+    uint32_t out;
+    auto res =
+        IdlConvert::Convert(v8_helper_->isolate(), "test1", {}, in_value, out);
+    EXPECT_EQ(res.type(), IdlConvert::Status::Type::kSuccess);
+    EXPECT_EQ(0xFFFFFFFFu, out);
+  }
+
+  {
+    // Rules for handling signs.
+    auto in_value = MakeValueFromScript(context, "make = () => 3e9");
+    uint32_t out;
+    auto res =
+        IdlConvert::Convert(v8_helper_->isolate(), "test2", {}, in_value, out);
+    EXPECT_EQ(res.type(), IdlConvert::Status::Type::kSuccess);
+    EXPECT_EQ(3000000000u, out);
+  }
+
+  {
+    // Rules for taking modulo.
+    auto in_value = MakeValueFromScript(context, "make = () => 5e9");
+    uint32_t out;
+    auto res =
+        IdlConvert::Convert(v8_helper_->isolate(), "test3", {}, in_value, out);
+    EXPECT_EQ(res.type(), IdlConvert::Status::Type::kSuccess);
+    EXPECT_EQ(705032704u, out);
+  }
+
+  {
+    // Can round.
+    auto in_value = MakeValueFromScript(context, "make = () => 3.14");
+    uint32_t out;
+    auto res =
+        IdlConvert::Convert(v8_helper_->isolate(), "test4", {}, in_value, out);
+    EXPECT_EQ(res.type(), IdlConvert::Status::Type::kSuccess);
+    EXPECT_EQ(3u, out);
+  }
+
+  {
+    // Rounding is towards zero.
+    auto in_value = MakeValueFromScript(context, "make = () => -1.14");
+    uint32_t out;
+    auto res =
+        IdlConvert::Convert(v8_helper_->isolate(), "test5", {}, in_value, out);
+    EXPECT_EQ(res.type(), IdlConvert::Status::Type::kSuccess);
+    EXPECT_EQ(0xFFFFFFFFu, out);
+  }
+
+  {
+    // This can fail.
+    auto in_value = MakeValueFromScript(context, "make = () => BigInt(123)");
+    uint32_t out;
+    auto res =
+        IdlConvert::Convert(v8_helper_->isolate(), "test6", {}, in_value, out);
+    EXPECT_FALSE(res.is_success());
+    EXPECT_EQ(
+        "undefined:0 Uncaught TypeError: Cannot convert a BigInt value to a "
+        "number.",
+        res.ConvertToErrorString(v8_helper_->isolate()));
+  }
+
+  {
+    // NaN gets converted to 0.
+    auto in_value = MakeValueFromScript(context, "make = () => 0/0");
+    uint32_t out;
+    auto res =
+        IdlConvert::Convert(v8_helper_->isolate(), "test7", {}, in_value, out);
+    EXPECT_EQ(res.type(), IdlConvert::Status::Type::kSuccess);
+    EXPECT_EQ(0u, out);
+  }
+
+  {
+    // +inf gets converted to 0.
+    auto in_value = MakeValueFromScript(context, "make = () => 1/0");
+    uint32_t out;
+    auto res =
+        IdlConvert::Convert(v8_helper_->isolate(), "test8", {}, in_value, out);
+    EXPECT_EQ(res.type(), IdlConvert::Status::Type::kSuccess);
+    EXPECT_EQ(0u, out);
+  }
+
+  {
+    // -inf gets converted to 0.
+    auto in_value = MakeValueFromScript(context, "make = () => -1/0");
+    uint32_t out;
+    auto res =
+        IdlConvert::Convert(v8_helper_->isolate(), "test9", {}, in_value, out);
+    EXPECT_EQ(res.type(), IdlConvert::Status::Type::kSuccess);
+    EXPECT_EQ(0u, out);
   }
 }
 

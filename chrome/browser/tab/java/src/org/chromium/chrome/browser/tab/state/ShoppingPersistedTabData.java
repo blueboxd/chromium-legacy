@@ -118,13 +118,13 @@ public class ShoppingPersistedTabData extends PersistedTabData {
     }
 
     // Lazy initialization of OptimizationGuideBridgeFactory
-    private static class OptimizationGuideBridgeFactoryHolder {
-        private static final OptimizationGuideBridgeFactory sOptimizationGuideBridgeFactory;
+    private static class OptimizationGuideBridgeHolder {
+        private static final OptimizationGuideBridge sOptimizationGuideBridge;
 
         static {
             List<HintsProto.OptimizationType> optimizationTypes;
-            if (isPriceTrackingWithOptimizationGuideEnabled(
-                    ProfileManager.getLastUsedRegularProfile())) {
+            Profile profile = ProfileManager.getLastUsedRegularProfile();
+            if (isPriceTrackingWithOptimizationGuideEnabled(profile)) {
                 optimizationTypes =
                         Arrays.asList(
                                 HintsProto.OptimizationType.SHOPPING_PAGE_PREDICTOR,
@@ -133,7 +133,10 @@ public class ShoppingPersistedTabData extends PersistedTabData {
                 optimizationTypes =
                         Arrays.asList(HintsProto.OptimizationType.SHOPPING_PAGE_PREDICTOR);
             }
-            sOptimizationGuideBridgeFactory = new OptimizationGuideBridgeFactory(optimizationTypes);
+            sOptimizationGuideBridge = OptimizationGuideBridgeFactory.getForProfile(profile);
+            if (sOptimizationGuideBridge != null) {
+                sOptimizationGuideBridge.registerOptimizationTypes(optimizationTypes);
+            }
         }
     }
 
@@ -268,6 +271,7 @@ public class ShoppingPersistedTabData extends PersistedTabData {
         if (!navigationHandle.isInPrimaryMainFrame()) {
             return;
         }
+        if (OptimizationGuideBridgeHolder.sOptimizationGuideBridge == null) return;
         ShoppingPersistedTabDataService service =
                 ShoppingPersistedTabDataService.getForProfile(tab.getProfile());
         OptimizationGuideBridge.OptimizationGuideCallback optimizationCallback =
@@ -310,18 +314,16 @@ public class ShoppingPersistedTabData extends PersistedTabData {
                         onCompleteForTesting.run();
                     }
                 };
-        OptimizationGuideBridgeFactoryHolder.sOptimizationGuideBridgeFactory
-                .create()
-                .canApplyOptimization(
-                        navigationHandle.getUrl(),
-                        HintsProto.OptimizationType.PRICE_TRACKING,
-                        optimizationCallback);
+        OptimizationGuideBridgeHolder.sOptimizationGuideBridge.canApplyOptimization(
+                navigationHandle.getUrl(),
+                HintsProto.OptimizationType.PRICE_TRACKING,
+                optimizationCallback);
     }
 
     /**
      * Log price drop metrics, if we have price drop data
-     * @param locationIdentifier where in the user experience the metrics were
-     * called from.
+     *
+     * @param locationIdentifier where in the user experience the metrics were called from.
      */
     public void logPriceDropMetrics(String locationIdentifier) {
         if (mPriceDropMetricsLogger != null) {
@@ -547,6 +549,7 @@ public class ShoppingPersistedTabData extends PersistedTabData {
                 },
                 (supplierCallback) -> {
                     if (tab.isDestroyed()
+                            || OptimizationGuideBridgeHolder.sOptimizationGuideBridge == null
                             || getTimeSinceTabLastOpenedMs(tab)
                                     > TimeUnit.SECONDS.toMillis(getStaleTabThresholdSeconds())) {
                         supplierCallback.onResult(null);
@@ -584,12 +587,10 @@ public class ShoppingPersistedTabData extends PersistedTabData {
                                     supplierCallback.onResult(null);
                                 }
                             };
-                    OptimizationGuideBridgeFactoryHolder.sOptimizationGuideBridgeFactory
-                            .create()
-                            .canApplyOptimization(
-                                    tab.getUrl(),
-                                    HintsProto.OptimizationType.PRICE_TRACKING,
-                                    optimizationCallback);
+                    OptimizationGuideBridgeHolder.sOptimizationGuideBridge.canApplyOptimization(
+                            tab.getUrl(),
+                            HintsProto.OptimizationType.PRICE_TRACKING,
+                            optimizationCallback);
                 },
                 ShoppingPersistedTabData.class,
                 callback);
@@ -851,10 +852,10 @@ public class ShoppingPersistedTabData extends PersistedTabData {
 
     /**
      * @return {@link PriceDrop} relating to the offer for the {@link ShoppingPersistedTabData}
-     * TODO(crbug.com/1145770) Implement getPriceDrop to only return a result if there is
-     * actually a price drop. Ensure priceString and previousPriceString are integers.
-     * Deprecate getPrice and getPriceString(). Change price and previousPriceString
-     * representations to be numeric to make drop comparison easier.
+     *     TODO(crbug.com/40156017) Implement getPriceDrop to only return a result if there is
+     *     actually a price drop. Ensure priceString and previousPriceString are integers. Deprecate
+     *     getPrice and getPriceString(). Change price and previousPriceString representations to be
+     *     numeric to make drop comparison easier.
      */
     public PriceDrop getPriceDropLegacy() {
         assert mPriceDropMethod == PriceDropMethod.LEGACY;
@@ -938,7 +939,7 @@ public class ShoppingPersistedTabData extends PersistedTabData {
         return false;
     }
 
-    // TODO(crbug.com/1151156) Make parameters finch configurable
+    // TODO(crbug.com/40158181) Make parameters finch configurable
     private static int getMinimumDroppedThresholdPercentage() {
         return MINIMUM_DROP_PERCENTAGE;
     }
@@ -947,7 +948,7 @@ public class ShoppingPersistedTabData extends PersistedTabData {
         return TWO_UNITS;
     }
 
-    // TODO(crbug.com/1130068) support all currencies
+    // TODO(crbug.com/40720561) support all currencies
     private String formatPrice(long priceMicros) {
         if (mPriceDropData.currencyCode == null) {
             return "";
@@ -1001,7 +1002,7 @@ public class ShoppingPersistedTabData extends PersistedTabData {
 
     @Override
     public boolean deserialize(@Nullable ByteBuffer bytes) {
-        // TODO(crbug.com/1135573) add in metrics for serialize and deserialize
+        // TODO(crbug.com/40151939) add in metrics for serialize and deserialize
         // Do not attempt to deserialize if the bytes are null
         if (bytes == null || !bytes.hasRemaining()) {
             return false;
@@ -1180,6 +1181,10 @@ public class ShoppingPersistedTabData extends PersistedTabData {
     }
 
     private static void processNextItemOnQueue() {
+        if (sDelayedInitFinished) {
+            assert sShoppingDataRequests.isEmpty();
+            return;
+        }
         if (sShoppingDataRequests.isEmpty()) {
             sDelayedInitFinished = true;
             return;

@@ -358,13 +358,10 @@ void AutocompleteResult::SortAndCull(
       page_classification);
 
   const bool is_zero_suggest = input.IsZeroSuggest();
-  const bool use_grouping_for_zps =
-      base::FeatureList::IsEnabled(omnibox::kGroupingFrameworkForZPS) &&
-      is_zero_suggest;
   const bool use_grouping_for_non_zps =
       base::FeatureList::IsEnabled(omnibox::kGroupingFrameworkForNonZPS) &&
       !is_zero_suggest;
-  const bool use_grouping = use_grouping_for_zps || use_grouping_for_non_zps;
+  const bool use_grouping = is_zero_suggest || use_grouping_for_non_zps;
 
   // Grouping requires all matches have a group ID. To keep providers 'dumb',
   // they only assign IDs when their ID isn't obvious from the match type.
@@ -385,9 +382,10 @@ void AutocompleteResult::SortAndCull(
                   [&](const auto& match) { return match.relevance == 0; });
   }
 
-  // If `kGroupingFrameworkForZPS` or `kGroupingFrameworkForNonZPS` are enabled
-  // and the current input & platform are supported, delegate to the framework.
-  if (use_grouping_for_zps) {
+  // If at zero suggest or `kGroupingFrameworkForNonZPS` is enabled
+  // and the current input & platform are supported, delegate to the
+  // framework.
+  if (is_zero_suggest) {
     PSections sections;
     if constexpr (is_android) {
       if (omnibox::IsNTPPage(page_classification)) {
@@ -401,12 +399,28 @@ void AutocompleteResult::SortAndCull(
             std::make_unique<AndroidWebZpsSection>(suggestion_groups_map_));
       }
     } else if constexpr (is_desktop) {
-      if (omnibox::IsNTPPage(page_classification)) {
+      if (omnibox::IsLensSearchbox(page_classification)) {
+        switch (page_classification) {
+          case OmniboxEventProto::CONTEXTUAL_SEARCHBOX:
+          case OmniboxEventProto::SEARCH_SIDE_PANEL_SEARCHBOX:
+            sections.push_back(
+                std::make_unique<DesktopLensContextualZpsSection>(
+                    suggestion_groups_map_));
+            break;
+          case OmniboxEventProto::LENS_SIDE_PANEL_SEARCHBOX:
+            sections.push_back(
+                std::make_unique<DesktopLensMultimodalZpsSection>(
+                    suggestion_groups_map_));
+            break;
+          default:
+            NOTREACHED();
+        }
+      } else if (omnibox::IsNTPPage(page_classification)) {
         sections.push_back(
             std::make_unique<DesktopNTPZpsSection>(suggestion_groups_map_));
         // Allow secondary zero-prefix suggestions in the NTP realbox or the
         // WebUI omnibox popup.
-        // TODO(crbug/1396174): Disallow secondary zps in the WebUI omnibox
+        // TODO(crbug.com/40062053): Disallow secondary zps in the WebUI omnibox
         // before experimentation.
         if ((page_classification == OmniboxEventProto::NTP_REALBOX ||
              base::FeatureList::IsEnabled(omnibox::kWebUIOmniboxPopup))) {
@@ -444,14 +458,8 @@ void AutocompleteResult::SortAndCull(
         }
       } else {
         if (omnibox::IsNTPPage(page_classification)) {
-          size_t num_trending_queries =
-              OmniboxFieldTrial::kInspireMeAdditionalTrendingQueries.Get();
-          size_t num_psuggest_queries =
-              OmniboxFieldTrial::kInspireMePsuggestQueries.Get();
-
-          sections.push_back(std::make_unique<IOSNTPZpsSection>(
-              num_trending_queries, num_psuggest_queries,
-              suggestion_groups_map_));
+          sections.push_back(
+              std::make_unique<IOSNTPZpsSection>(suggestion_groups_map_));
         } else if (omnibox::IsSearchResultsPage(page_classification)) {
           sections.push_back(
               std::make_unique<IOSSRPZpsSection>(suggestion_groups_map_));
@@ -465,8 +473,10 @@ void AutocompleteResult::SortAndCull(
   } else if (use_grouping_for_non_zps) {
     PSections sections;
     if constexpr (is_android) {
-      sections.push_back(
-          std::make_unique<AndroidNonZPSSection>(suggestion_groups_map_));
+      bool show_only_search_suggestions =
+          omnibox::IsCustomTab(page_classification);
+      sections.push_back(std::make_unique<AndroidNonZPSSection>(
+          show_only_search_suggestions, suggestion_groups_map_));
     } else {
       sections.push_back(
           std::make_unique<DesktopNonZpsSection>(suggestion_groups_map_));
@@ -479,11 +489,13 @@ void AutocompleteResult::SortAndCull(
     bool history_cluster_included = false;
     std::erase_if(matches_, [&](const auto& match) {
       // If not a history cluster match, don't erase it.
-      if (match.type != AutocompleteMatch::Type::HISTORY_CLUSTER)
+      if (match.type != AutocompleteMatch::Type::HISTORY_CLUSTER) {
         return false;
+      }
       // If not the 1st history cluster match, do erase it.
-      if (history_cluster_included)
+      if (history_cluster_included) {
         return true;
+      }
       // If the 1st history cluster match, don't erase it.
       history_cluster_included = true;
       return false;
@@ -492,9 +504,10 @@ void AutocompleteResult::SortAndCull(
     // Limit URL matches per OmniboxMaxURLMatches.
     size_t max_url_count = 0;
     if (OmniboxFieldTrial::IsMaxURLMatchesFeatureEnabled() &&
-        (max_url_count = OmniboxFieldTrial::GetMaxURLMatches()) != 0)
+        (max_url_count = OmniboxFieldTrial::GetMaxURLMatches()) != 0) {
       LimitNumberOfURLsShown(GetMaxMatches(is_zero_suggest), max_url_count,
                              comparing_object);
+    }
 
     // Limit total matches accounting for suggestions score <= 0, sub matches,
     // and feature configs such as OmniboxUIExperimentMaxAutocompleteMatches,
@@ -508,8 +521,7 @@ void AutocompleteResult::SortAndCull(
       matches_.resize(num_matches);
 
       // Group search suggestions above URL suggestions.
-      if (matches_.size() > 2 &&
-          !base::FeatureList::IsEnabled(omnibox::kAdaptiveSuggestionsCount)) {
+      if (matches_.size() > 2 && !(is_android || is_ios)) {
         GroupSuggestionsBySearchVsURL(std::next(matches_.begin()),
                                       matches_.end());
       }
@@ -554,32 +566,26 @@ void AutocompleteResult::SortAndCull(
 
 void AutocompleteResult::TrimOmniboxActions(bool is_zero_suggest) {
   // Platform rules:
-  // Android:
-  // - First two positions allow all types of OmniboxActionId
-  // - Third slot permits only PEDALs and HISTORY_CLUSTERS.
-  // - Slots 4 and beyond permit only HISTORY_CLUSTERS.
-  // - In every case, ACTION_IN_SUGGEST is preferred over HISTORY_CLUSTERS
-  // - In every case, HISTORY_CLUSTERS is preferred over PEDALs.
+  // Mobile:
+  // - First position allow all types of OmniboxActionId (ACTION_IN_SUGGEST is
+  // preferred over PEDAL)
+  // - Third slot permits only PEDALs.
+  // - Slots 4 and beyond permit no action.
   // - TAB_SWITCH actions are not considered because they're never attached.
-  if constexpr (is_android) {
-    const size_t ACTIONS_IN_SUGGEST_CUTOFF_THRESHOLD =
-        OmniboxFieldTrial::kActionsInSuggestPromoteEntitySuggestion.Get() ? 1
-                                                                          : 2;
+  if constexpr (is_android || is_ios) {
+    static constexpr size_t ACTIONS_IN_SUGGEST_CUTOFF_THRESHOLD = 1;
     static constexpr size_t PEDALS_CUTOFF_THRESHOLD = 3;
     std::vector<OmniboxActionId> include_all{OmniboxActionId::ACTION_IN_SUGGEST,
-                                             OmniboxActionId::HISTORY_CLUSTERS,
                                              OmniboxActionId::PEDAL};
-    std::vector<OmniboxActionId> include_at_most_pedals{
-        OmniboxActionId::HISTORY_CLUSTERS, OmniboxActionId::PEDAL};
-    std::vector<OmniboxActionId> include_at_most_history_clusters{
-        OmniboxActionId::HISTORY_CLUSTERS};
+    std::vector<OmniboxActionId> include_at_most_pedals{OmniboxActionId::PEDAL};
+    std::vector<OmniboxActionId> include_no_action{};
 
     for (size_t index = 0u; index < matches_.size(); ++index) {
       matches_[index].FilterOmniboxActions(
           (!is_zero_suggest && index < ACTIONS_IN_SUGGEST_CUTOFF_THRESHOLD)
               ? include_all
           : index < PEDALS_CUTOFF_THRESHOLD ? include_at_most_pedals
-                                            : include_at_most_history_clusters);
+                                            : include_no_action);
       if (index < ACTIONS_IN_SUGGEST_CUTOFF_THRESHOLD) {
         matches_[index].FilterAndSortActionsInSuggest();
       }
@@ -1469,21 +1475,6 @@ void AutocompleteResult::GroupSuggestionsBySearchVsURL(iterator begin,
   if (begin == end)
     return;
 
-  base::ranges::stable_sort(begin, end, {}, [](const auto& m) {
-    if (AutocompleteMatch::IsStarterPackType(m.type))
-      return 0;
-#if !BUILDFLAG(IS_IOS)
-    // Group history cluster suggestions with searches.
-    if (m.type == AutocompleteMatchType::HISTORY_CLUSTER)
-      return 2;
-#endif  // !BUILDFLAG(IS_IOS)
-    if (AutocompleteMatch::IsSearchType(m.type))
-      return 2;
-    // Group boosted shortcuts above searches.
-    if (omnibox_feature_configs::ShortcutBoosting::Get().group_with_searches &&
-        m.shortcut_boosted) {
-      return 1;
-    }
-    return 3;
-  });
+  base::ranges::stable_sort(begin, end, {},
+                            [](const auto& m) { return m.GetSortingOrder(); });
 }

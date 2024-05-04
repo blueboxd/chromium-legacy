@@ -28,6 +28,7 @@
 #include "base/ranges/algorithm.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/task/single_thread_task_runner.h"
+#import "components/remote_cocoa/app_shim/NSToolbar+Private.h"
 #import "components/remote_cocoa/app_shim/bridged_content_view.h"
 #import "components/remote_cocoa/app_shim/browser_native_widget_window_mac.h"
 #import "components/remote_cocoa/app_shim/context_menu_runner.h"
@@ -441,7 +442,13 @@ void NativeWidgetNSWindowBridge::ShowCertificateViewer(
 void NativeWidgetNSWindowBridge::StackAbove(uint64_t sibling_id) {
   NativeWidgetNSWindowBridge* sibling_bridge =
       NativeWidgetNSWindowBridge::GetFromId(sibling_id);
-  DCHECK(sibling_bridge);
+  if (!sibling_bridge) {
+    // When the OS tells us a window is closing it is removed from the id map.
+    // Since nothing is stopping the browser process from still trying to use
+    // that id until the browser process has been informed that the window is
+    // gone, it is totally possible to be passed no longer valid ids here.
+    return;
+  }
 
   NSInteger sibling = sibling_bridge->ns_window().windowNumber;
   [window_ orderWindowByShuffling:NSWindowAbove relativeTo:sibling];

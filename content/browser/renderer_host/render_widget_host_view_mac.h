@@ -162,6 +162,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   gfx::NativeViewAccessible AccessibilityGetNativeViewAccessibleForWindow()
       override;
   std::optional<SkColor> GetBackgroundColor() override;
+  viz::SurfaceId GetFallbackSurfaceIdForTesting() const override;
 
   void TransformPointToRootSurface(gfx::PointF* point) override;
   gfx::Rect GetBoundsInRootWindow() override;
@@ -217,7 +218,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
 
   bool TransformPointToCoordSpaceForView(
       const gfx::PointF& point,
-      RenderWidgetHostViewBase* target_view,
+      RenderWidgetHostViewInput* target_view,
       gfx::PointF* transformed_point) override;
   viz::FrameSinkId GetRootFrameSinkId() override;
   viz::SurfaceId GetCurrentSurfaceId() const override;

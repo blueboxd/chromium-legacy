@@ -728,6 +728,8 @@ void H264Decoder::FinishPicture(H264SliceMetadata picture, const int sps_id) {
     CreateCAPTUREQueue(kNumberOfBuffersInCaptureQueue);
   }
 
+  v4l2_ioctl_->WaitForRequestCompletion(OUTPUT_queue_);
+
   uint32_t CAPTURE_id;
   v4l2_ioctl_->DQBuf(CAPTURE_queue_, &CAPTURE_id);
 
@@ -949,7 +951,8 @@ VideoDecoder::Result H264Decoder::DecodeNextFrame(const int frame_number,
                                                   std::vector<uint8_t>& y_plane,
                                                   std::vector<uint8_t>& u_plane,
                                                   std::vector<uint8_t>& v_plane,
-                                                  gfx::Size& size) {
+                                                  gfx::Size& size,
+                                                  BitDepth& bit_depth) {
   // If this is the start of the Decoder, initialize Decoder state.
   if (!parser_) {
     InitializeDecoderLogic();
@@ -980,8 +983,9 @@ VideoDecoder::Result H264Decoder::DecodeNextFrame(const int frame_number,
     LOG(INFO) << "Non-zero visible rect origin.";
   }
 
-  ConvertToYUV(y_plane, u_plane, v_plane, size, buffer->mmapped_planes(),
-               CAPTURE_queue_->resolution(), CAPTURE_queue_->fourcc());
+  bit_depth =
+      ConvertToYUV(y_plane, u_plane, v_plane, size, buffer->mmapped_planes(),
+                   CAPTURE_queue_->resolution(), CAPTURE_queue_->fourcc());
 
   slice_ready_queue_.pop();
   return VideoDecoder::kOk;

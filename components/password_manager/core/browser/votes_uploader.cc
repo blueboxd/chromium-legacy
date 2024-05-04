@@ -62,7 +62,7 @@ constexpr uint32_t kNumberOfLowEntropyHashValues = 64;
 
 // Helper function that assigns |field_types[field_name]=type| and also sets
 // |field_name_collision| if |field_types[field_name]| is already set.
-// TODO(crbug/1260336): The function is needed to only detect a
+// TODO(crbug.com/40201826): The function is needed to only detect a
 // field name collision and report that in a metric. Once the bug is fixed, the
 // metric becomes obsolete and the function can be inlined.
 void SetFieldType(const FieldRendererId& field_renderer_id,
@@ -142,13 +142,13 @@ void LabelFields(const FieldTypeMap& field_types,
     AutofillField* field = form_structure->field(i);
 
     FieldType type = autofill::UNKNOWN_TYPE;
-    if (auto iter = field_types.find(field->renderer_id);
+    if (auto iter = field_types.find(field->renderer_id());
         iter != field_types.end()) {
       type = iter->second;
       available_field_types->insert(type);
     }
 
-    if (auto vote_type_iter = vote_types.find(field->renderer_id);
+    if (auto vote_type_iter = vote_types.find(field->renderer_id());
         vote_type_iter != vote_types.end()) {
       field->set_vote_type(vote_type_iter->second);
     }
@@ -173,6 +173,8 @@ bool IsAddingUsernameToExistingMatch(
     return false;
   }
 
+  // TODO(b/331409076): investigate if affiliated and grouped matches should be
+  // skipped as well.
   if (password_manager_util::GetMatchType(*match) ==
       password_manager_util::GetLoginMatchType::kPSL) {
     return false;
@@ -219,7 +221,7 @@ AutofillUploadContents::ValueType GetValueType(
     return AutofillUploadContents::NO_VALUE_TYPE;
 
   // Check if |username_value| is an already stored username.
-  // TODO(crbug.com/959776) Implement checking against usenames stored for all
+  // TODO(crbug.com/40626063) Implement checking against usenames stored for all
   // domains and return STORED_FOR_ANOTHER_DOMAIN in that case.
   if (base::Contains(stored_credentials, username_value,
                      &PasswordForm::username_value)) {
@@ -265,20 +267,20 @@ void FillRendererIdIfNotSet(
 // Generates fake renderer ids for the `matched_form` deserialized from
 // `LoginDatabase`. Field renderer id is used later in `UploadPasswordVote` to
 // identify fields and generate votes for this form.
-// TODO(crbug/1260336): The function is needed to only provide a way to identify
-// fields using field renderer ids for forms from LoginDatabase as it doesn't
-// store renderer ids for fields. It should be removed after migrating to a
-// stable unique field identifier (e.g. FieldSignature).
+// TODO(crbug.com/40201826): The function is needed to only provide a way to
+// identify fields using field renderer ids for forms from LoginDatabase as it
+// doesn't store renderer ids for fields. It should be removed after migrating
+// to a stable unique field identifier (e.g. FieldSignature).
 void GenerateSyntheticRenderIdsAndAssignThem(PasswordForm& matched_form) {
   uint32_t renderer_id_counter_ = 1;
 
   std::map<std::u16string, autofill::FieldRendererId> field_name_to_renderer_id;
   for (autofill::FormFieldData& field : matched_form.form_data.fields) {
-    CHECK(field.renderer_id.is_null())
+    CHECK(field.renderer_id().is_null())
         << "Unexpected non-null renderer_id in a from deserialized form "
            "LoginDatabase.";
-    field.renderer_id = autofill::FieldRendererId(renderer_id_counter_++);
-    field_name_to_renderer_id.insert({field.name, field.renderer_id});
+    field.set_renderer_id(autofill::FieldRendererId(renderer_id_counter_++));
+    field_name_to_renderer_id.insert({field.name(), field.renderer_id()});
   }
 
   FillRendererIdIfNotSet(matched_form.username_element,
@@ -527,8 +529,8 @@ bool VotesUploader::UploadPasswordVote(
                 features::kUsernameFirstFlowFallbackCrowdsourcing)) {
           // Send single username vote only on the most recent user modified
           // field outside of the password form.
-          // TODO(crbug/1470586): Send votes for fallback crowdsourcing on all
-          // single username field candidates.
+          // TODO(crbug.com/40925827): Send votes for fallback crowdsourcing on
+          // all single username field candidates.
           SetSingleUsernameVoteOnPasswordForm(single_username_votes_data_[0],
                                               form_structure);
         }
@@ -597,7 +599,7 @@ bool VotesUploader::UploadPasswordVote(
       form_structure.active_field_count(), /* prefs=*/nullptr);
 }
 
-// TODO(crbug.com/840384): Share common code with UploadPasswordVote.
+// TODO(crbug.com/40575167): Share common code with UploadPasswordVote.
 void VotesUploader::UploadFirstLoginVotes(
     const base::span<const PasswordForm>& best_matches,
     const PasswordForm& pending_credentials,
@@ -658,7 +660,7 @@ void VotesUploader::SetInitialHashValueOfUsernameField(
     return;
 
   for (const auto& field : *form_structure) {
-    if (field && field->renderer_id == username_element_renderer_id) {
+    if (field && field->renderer_id() == username_element_renderer_id) {
       const std::u16string form_signature =
           base::UTF8ToUTF16(form_structure->FormSignatureAsStr());
       const std::u16string seeded_input = it->second.append(form_signature);
@@ -672,8 +674,8 @@ void VotesUploader::MaybeSendSingleUsernameVotes() {
 // UFF votes are not sent on Android, since it wasn't possible to edit the
 // username in prompt before UFF was launched. Later, password edit dialog
 // was added, but Android votes were never evaluated.
-// TODO(crbug/1475295): Verify if the votes are produced as expected on Android
-// and enable UFF voting.
+// TODO(crbug.com/40279590): Verify if the votes are produced as expected on
+// Android and enable UFF voting.
 #if !BUILDFLAG(IS_ANDROID)
   bool should_send_votes =
       (should_send_username_first_flow_votes_ ||
@@ -699,8 +701,8 @@ void VotesUploader::MaybeSendSingleUsernameVotes() {
         base::UmaHistogramBoolean(
             "PasswordManager.SingleUsername.PasswordFormHadUsernameField",
             vote_data.password_form_had_matching_username.value());
-        // TODO(crbug/1470586): Implement UMA metric logging the index in LRU
-        // cache if `IN_FORM_OVERRULE` is sent.
+        // TODO(crbug.com/40925827): Implement UMA metric logging the index in
+        // LRU cache if `IN_FORM_OVERRULE` is sent.
       }
     }
   }
@@ -760,7 +762,7 @@ void VotesUploader::CalculateUsernamePromptEditState(
 
 void VotesUploader::AddForgotPasswordVoteData(
     const SingleUsernameVoteData& vote_data) {
-  // TODO(crbug/1468297): Implement votes uploading based on this.
+  // TODO(crbug.com/40277063): Implement votes uploading based on this.
   forgot_password_vote_data_[vote_data.renderer_id] = vote_data;
 }
 
@@ -794,7 +796,7 @@ void VotesUploader::AddGeneratedVote(FormStructure* form_structure) {
 
   for (size_t i = 0; i < form_structure->field_count(); ++i) {
     AutofillField* field = form_structure->field(i);
-    if (field->renderer_id == generation_element_) {
+    if (field->renderer_id() == generation_element_) {
       field->set_generation_type(type);
       if (has_generated_password_) {
         field->set_generated_password_changed(generated_password_changed_);
@@ -829,10 +831,12 @@ void VotesUploader::SetKnownValueFlag(
   // If we are updating a password, the known value is the old password, not
   // the new one.
   for (auto& field : *form) {
-    if (field->value.empty())
+    if (field->value().empty()) {
       continue;
-    if (known_username == field->value || known_password == field->value) {
-      field->properties_mask |= autofill::FieldPropertiesFlags::kKnownValue;
+    }
+    if (known_username == field->value() || known_password == field->value()) {
+      field->set_properties_mask(field->properties_mask() |
+                                 autofill::FieldPropertiesFlags::kKnownValue);
     }
   }
 }
@@ -927,8 +931,9 @@ VotesUploader::GeneratePasswordAttributesMetadata(
 void VotesUploader::StoreInitialFieldValues(
     const autofill::FormData& observed_form) {
   for (const auto& field : observed_form.fields) {
-    if (!field.value.empty()) {
-      initial_values_.insert(std::make_pair(field.renderer_id, field.value));
+    if (!field.value().empty()) {
+      initial_values_.insert(
+          std::make_pair(field.renderer_id(), field.value()));
     }
   }
 }

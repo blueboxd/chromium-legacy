@@ -2699,8 +2699,6 @@ AtkRole AXPlatformNodeAuraLinux::GetAtkRole() const {
       return ATK_ROLE_PANEL;
     case ax::mojom::Role::kDialog:
       return ATK_ROLE_DIALOG;
-    case ax::mojom::Role::kDirectory:
-      return ATK_ROLE_LIST;
     case ax::mojom::Role::kDisclosureTriangle:
     case ax::mojom::Role::kDisclosureTriangleGrouped:
       return ATK_ROLE_TOGGLE_BUTTON;
@@ -2772,6 +2770,7 @@ AtkRole AXPlatformNodeAuraLinux::GetAtkRole() const {
     case ax::mojom::Role::kFooterAsNonLandmark:
     case ax::mojom::Role::kHeaderAsNonLandmark:
     case ax::mojom::Role::kRuby:
+    case ax::mojom::Role::kSectionWithoutName:
       return ATK_ROLE_SECTION;
     case ax::mojom::Role::kGraphicsDocument:
       return ATK_ROLE_DOCUMENT_FRAME;
@@ -3039,6 +3038,7 @@ AtkRole AXPlatformNodeAuraLinux::GetAtkRole() const {
     case ax::mojom::Role::kDescriptionListTermDeprecated:
     case ax::mojom::Role::kPreDeprecated:
     case ax::mojom::Role::kDescriptionListDetailDeprecated:
+    case ax::mojom::Role::kDirectoryDeprecated:
       NOTREACHED_NORETURN();
   }
 }

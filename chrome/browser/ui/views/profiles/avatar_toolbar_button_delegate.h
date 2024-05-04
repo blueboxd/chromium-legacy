@@ -14,6 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "chrome/browser/ui/color/chrome_color_id.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "ui/base/models/image_model.h"
 
 class Browser;
@@ -43,7 +44,7 @@ enum class ButtonState;
 // - Explicit modifications override: such as displaying specific text when
 //   intercept bubbles are displayed.
 // - Sync paused/error state.
-class AvatarToolbarButtonDelegate {
+class AvatarToolbarButtonDelegate : public signin::IdentityManager::Observer {
  public:
   AvatarToolbarButtonDelegate(AvatarToolbarButton* button, Browser* browser);
 
@@ -51,7 +52,13 @@ class AvatarToolbarButtonDelegate {
   AvatarToolbarButtonDelegate& operator=(const AvatarToolbarButtonDelegate&) =
       delete;
 
-  ~AvatarToolbarButtonDelegate();
+  ~AvatarToolbarButtonDelegate() override;
+
+  // Expected to be called once the avatar button view is properly added to the
+  // widget. Expected to be called once to initialize the StateManager. Using
+  // `state_manager_` can only be done after calling this method.
+  void InitializeStateManager();
+  bool IsStateManagerInitialized() const;
 
   // These info are based on the `ButtonState`.
   std::pair<std::u16string, std::optional<SkColor>> GetTextAndColor(
@@ -74,8 +81,6 @@ class AvatarToolbarButtonDelegate {
   static void SetTextDurationForTesting(base::TimeDelta duration);
 
  private:
-  internal::ButtonState ComputeState() const;
-
   std::u16string GetProfileName() const;
   std::u16string GetShortProfileName() const;
   // Must only be called in states which have an avatar image (i.e. not
@@ -85,17 +90,24 @@ class AvatarToolbarButtonDelegate {
   int GetWindowCount() const;
   gfx::Image GetGaiaAccountImage() const;
 
+  // signin::IdentityManager::Observer:
+  void OnErrorStateOfRefreshTokenUpdatedForAccount(
+      const CoreAccountInfo& account_info,
+      const GoogleServiceAuthError& error,
+      signin_metrics::SourceForRefreshTokenOperation token_operation_source)
+      override;
+
   const raw_ptr<AvatarToolbarButton> avatar_toolbar_button_;
   const raw_ptr<Browser> browser_;
   const raw_ptr<Profile> profile_;
+  const raw_ptr<signin::IdentityManager> identity_manager_;
 
-  // Text to be displayed while the state is
-  // `ButtonState::kExplicitTextShowing`.
-  // TODO(b/324018028): Move this info into it's own implementation of
-  // StateProvider.
-  std::u16string explicit_text_;
-
+  // Initialized in `InitializeStates()`.
   std::unique_ptr<internal::StateManager> state_manager_;
+
+  base::ScopedObservation<signin::IdentityManager,
+                          signin::IdentityManager::Observer>
+      identity_manager_observation_{this};
 
   base::WeakPtrFactory<AvatarToolbarButtonDelegate> weak_ptr_factory_{this};
 };

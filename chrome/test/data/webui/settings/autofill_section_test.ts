@@ -195,7 +195,7 @@ suite('AutofillSectionUiTest', function() {
 });
 
 suite('AutofillSectionFocusTest', function() {
-  // TODO(crbug.com/1473847): Fix the flakiness.
+  // TODO(crbug.com/40279141): Fix the flakiness.
   test.skip('verifyFocusLocationAfterRemoving', async () => {
     const section = await createAutofillSection(
         [
@@ -374,7 +374,6 @@ suite('AutofillSectionAddressTests', function() {
     flush();
 
     assertTrue(!!section.shadowRoot!.querySelector('#menuEditAddress'));
-    assertTrue(!!section.$.menuRemoveAddress);
   });
 
   test('verifyAddAddressDialog', function() {
@@ -539,7 +538,7 @@ suite('AutofillSectionAddressTests', function() {
         emailAddress, getAddressFieldValue(address, FieldType.EMAIL_ADDRESS));
   });
 
-  // TODO(crbug.com/1473847): Fix the flakiness.
+  // TODO(crbug.com/40279141): Fix the flakiness.
   test.skip('verifyPhoneAndEmailAreRemoved', function() {
     const address = createEmptyAddressEntry();
 
@@ -667,25 +666,50 @@ suite('AutofillSectionAddressTests', function() {
     });
   });
 
-  test('verifyCancelDoesNotSaveAddress', function(done) {
+  test(
+      'verifyNoSaveAddressEventWhenEditDialogCancelButtonIsClicked',
+      function(done) {
+        createAddressDialog(createAddressEntry()).then(function(dialog) {
+          eventToPromise('save-address', dialog).then(function() {
+            // Fail the test because the save event should not be fired when
+            // the cancel is clicked.
+            assertTrue(true);
+          });
+
+          eventToPromise('cancel', dialog).then(function() {
+            // Test is |done| in a timeout in order to ensure that
+            // 'save-address' is NOT fired after this test.
+            assertEquals(
+                1,
+                metricsTracker.count('Autofill.Settings.EditAddress', false));
+            window.setTimeout(done, 100);
+          });
+
+          dialog.$.cancelButton.click();
+        });
+      });
+
+  test('verifyNoCancelEventWhenEditDialogSaveButtonIsClicked', function(done) {
     createAddressDialog(createAddressEntry()).then(function(dialog) {
-      eventToPromise('save-address', dialog).then(function() {
-        // Fail the test because the save event should not be called when
-        // cancel is clicked.
+      eventToPromise('cancel', dialog).then(function() {
+        // Fail the test because the cancel event should not be fired when
+        // the save is clicked.
         assertTrue(false);
       });
 
-      eventToPromise('close', dialog).then(function() {
+      eventToPromise('save-address', dialog).then(function() {
         // Test is |done| in a timeout in order to ensure that
         // 'save-address' is NOT fired after this test.
+        assertEquals(
+            1, metricsTracker.count('Autofill.Settings.EditAddress', true));
         window.setTimeout(done, 100);
       });
 
-      dialog.$.cancelButton.click();
+      dialog.$.saveButton.click();
     });
   });
 
-  // TODO(crbug.com/1473847): Fix the flakiness.
+  // TODO(crbug.com/40279141): Fix the flakiness.
   test.skip('verifySyncSourceNoticeForNewAddress', async () => {
     const section = await createAutofillSection([], {}, {
       ...STUB_USER_ACCOUNT_INFO,
@@ -725,7 +749,7 @@ suite('AutofillSectionAddressTests', function() {
     document.body.removeChild(section);
   });
 
-  // TODO(crbug.com/1502843): Remove when toggle becomes available on the Sync
+  // TODO(crbug.com/40943238): Remove when toggle becomes available on the Sync
   // page for non-syncing users.
   test('verifyAutofillSyncToggleAvailability', async () => {
     const autofillManager = new TestAutofillManager();
@@ -785,7 +809,7 @@ suite('AutofillSectionAddressTests', function() {
             'accountInfo.isAutofillSyncToggleEnabled == true');
   });
 
-  // TODO(crbug.com/1502843): Remove as part of the cleanup work for the ticket.
+  // TODO(crbug.com/40943238): Remove as part of the cleanup work for the ticket.
   test('verifyAutofillSyncToggleChanges', async () => {
     const autofillManager = new TestAutofillManager();
     autofillManager.data.accountInfo = {

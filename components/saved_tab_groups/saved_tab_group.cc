@@ -13,6 +13,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/uuid.h"
+#include "components/saved_tab_groups/features.h"
 #include "components/saved_tab_groups/saved_tab_group_tab.h"
 #include "components/sync/protocol/saved_tab_group_specifics.pb.h"
 #include "components/tab_groups/tab_group_color.h"
@@ -28,7 +29,7 @@ SavedTabGroup::SavedTabGroup(
     const std::vector<SavedTabGroupTab>& urls,
     std::optional<size_t> position,
     std::optional<base::Uuid> saved_guid,
-    std::optional<tab_groups::TabGroupId> local_group_id,
+    std::optional<LocalTabGroupID> local_group_id,
     std::optional<base::Time> creation_time_windows_epoch_micros,
     std::optional<base::Time> update_time_windows_epoch_micros)
     : saved_guid_(saved_guid.value_or(base::Uuid::GenerateRandomV4())),
@@ -55,7 +56,7 @@ const SavedTabGroupTab* SavedTabGroup::GetTab(
 }
 
 const SavedTabGroupTab* SavedTabGroup::GetTab(
-    const base::Token& local_tab_id) const {
+    const LocalTabID& local_tab_id) const {
   std::optional<int> index = GetIndexOfTab(local_tab_id);
   if (!index.has_value())
     return nullptr;
@@ -70,7 +71,7 @@ SavedTabGroupTab* SavedTabGroup::GetTab(const base::Uuid& saved_tab_guid) {
   return &saved_tabs()[index.value()];
 }
 
-SavedTabGroupTab* SavedTabGroup::GetTab(const base::Token& local_tab_id) {
+SavedTabGroupTab* SavedTabGroup::GetTab(const LocalTabID& local_tab_id) {
   std::optional<int> index = GetIndexOfTab(local_tab_id);
   if (!index.has_value()) {
     return nullptr;
@@ -83,7 +84,7 @@ bool SavedTabGroup::ContainsTab(const base::Uuid& saved_tab_guid) const {
   return index.has_value();
 }
 
-bool SavedTabGroup::ContainsTab(const base::Token& local_tab_id) const {
+bool SavedTabGroup::ContainsTab(const LocalTabID& local_tab_id) const {
   std::optional<int> index = GetIndexOfTab(local_tab_id);
   return index.has_value();
 }
@@ -100,7 +101,7 @@ std::optional<int> SavedTabGroup::GetIndexOfTab(
 }
 
 std::optional<int> SavedTabGroup::GetIndexOfTab(
-    const base::Token& local_tab_id) const {
+    const LocalTabID& local_tab_id) const {
   auto it = base::ranges::find_if(saved_tabs(),
                                   [local_tab_id](const SavedTabGroupTab& tab) {
                                     return tab.local_tab_id() == local_tab_id;
@@ -123,7 +124,7 @@ SavedTabGroup& SavedTabGroup::SetColor(tab_groups::TabGroupColorId color) {
 }
 
 SavedTabGroup& SavedTabGroup::SetLocalGroupId(
-    std::optional<tab_groups::TabGroupId> tab_group_id) {
+    std::optional<LocalTabGroupID> tab_group_id) {
   local_group_id_ = tab_group_id;
   SetUpdateTimeWindowsEpochMicros(base::Time::Now());
   return *this;
@@ -138,6 +139,17 @@ SavedTabGroup& SavedTabGroup::SetUpdateTimeWindowsEpochMicros(
 SavedTabGroup& SavedTabGroup::SetPosition(size_t position) {
   position_ = position;
   SetUpdateTimeWindowsEpochMicros(base::Time::Now());
+  return *this;
+}
+
+SavedTabGroup& SavedTabGroup::SetPinned(bool pinned) {
+  if (pinned && position_ != 0) {
+    position_ = 0;
+    SetUpdateTimeWindowsEpochMicros(base::Time::Now());
+  } else if (!pinned && position_ != std::nullopt) {
+    position_ = std::nullopt;
+    SetUpdateTimeWindowsEpochMicros(base::Time::Now());
+  }
   return *this;
 }
 
@@ -294,7 +306,15 @@ std::unique_ptr<sync_pb::SavedTabGroupSpecifics> SavedTabGroup::MergeGroup(
   if (ShouldMergeGroup(sync_specific)) {
     SetTitle(base::UTF8ToUTF16(sync_specific.group().title()));
     SetColor(SyncColorToTabGroupColor(sync_specific.group().color()));
-    SetPosition(sync_specific.group().position());
+    if (IsTabGroupsSaveUIUpdateEnabled()) {
+      if (sync_specific.group().has_pinned_position()) {
+        SetPosition(sync_specific.group().pinned_position());
+      } else {
+        SetPinned(false);
+      }
+    } else {
+      SetPosition(sync_specific.group().position());
+    }
     SetUpdateTimeWindowsEpochMicros(base::Time::FromDeltaSinceWindowsEpoch(
         base::Microseconds(sync_specific.update_time_windows_epoch_micros())));
   }
@@ -308,7 +328,17 @@ SavedTabGroup SavedTabGroup::FromSpecifics(
   const tab_groups::TabGroupColorId color =
       SyncColorToTabGroupColor(specific.group().color());
   const std::u16string& title = base::UTF8ToUTF16(specific.group().title());
-  const size_t position = specific.group().position();
+  // In v1 we always set tab group position even if the proto is not set, which
+  // gives a default position of 0. In v2 we leave the position unset if the
+  // proto is not set for unpinned tab groups.
+  std::optional<size_t> position;
+  if (IsTabGroupsSaveUIUpdateEnabled()) {
+    position = specific.group().has_pinned_position()
+                   ? std::optional<size_t>(specific.group().pinned_position())
+                   : std::nullopt;
+  } else {
+    position = std::optional<size_t>(specific.group().position());
+  }
 
   const base::Uuid guid = base::Uuid::ParseLowercase(specific.guid());
   const base::Time creation_time = base::Time::FromDeltaSinceWindowsEpoch(
@@ -339,7 +369,14 @@ std::unique_ptr<sync_pb::SavedTabGroupSpecifics> SavedTabGroup::ToSpecifics()
   sync_pb::SavedTabGroup* pb_group = pb_specific->mutable_group();
   pb_group->set_color(TabGroupColorToSyncColor(color()));
   pb_group->set_title(base::UTF16ToUTF8(title()));
-  pb_group->set_position(position().value());
+
+  if (position().has_value()) {
+    if (IsTabGroupsSaveUIUpdateEnabled()) {
+      pb_group->set_pinned_position(position().value());
+    } else {
+      pb_group->set_position(position().value());
+    }
+  }
   // Note: When adding a new syncable field, also update IsSyncEquivalent().
 
   return pb_specific;

@@ -286,6 +286,25 @@ struct GruAttributes {
   uint32_t activation_count;
 };
 
+// Contains the attributes of gruCell operator.
+struct GruCellAttributes {
+  GruCellAttributes();
+  ~GruCellAttributes();
+
+  GruCellAttributes(GruCellAttributes&& other);
+  GruCellAttributes& operator=(GruCellAttributes&& other);
+
+  GruCellAttributes(const GruCellAttributes&) = delete;
+  GruCellAttributes& operator=(const GruCellAttributes&) = delete;
+
+  // The bias operand.
+  std::optional<Operand> bias;
+  // The recurrent bias operand.
+  std::optional<Operand> recurrent_bias;
+  // The number of activations.
+  uint32_t activation_count;
+};
+
 // Contains the attributes of instanceNormalization operator.
 struct InstanceNormalizationAttributes {
   InstanceNormalizationAttributes();
@@ -352,6 +371,26 @@ struct LstmAttributes {
   bool return_sequence;
   // The processing direction of the input sequence.
   RecurrentNetworkDirection direction;
+};
+
+struct LstmCellAttributes {
+  LstmCellAttributes();
+  ~LstmCellAttributes();
+
+  LstmCellAttributes(LstmCellAttributes&& other);
+  LstmCellAttributes& operator=(LstmCellAttributes&& other);
+
+  LstmCellAttributes(const LstmCellAttributes&) = delete;
+  LstmCellAttributes& operator=(const LstmCellAttributes&) = delete;
+
+  // The bias operand.
+  std::optional<Operand> bias;
+  // The recurrent bias operand.
+  std::optional<Operand> recurrent_bias;
+  // The peephole weight operand.
+  std::optional<Operand> peephole_weight;
+  // The number of activations.
+  size_t activation_count;
 };
 
 struct SliceAttributes {
@@ -478,6 +517,16 @@ base::expected<std::vector<Operand>, std::string> ValidateGruAndInferOutput(
     uint32_t hidden_size,
     const GruAttributes& attributes);
 
+// Validate and infer output information of gruCell operator defined in WebIDL
+// here https://www.w3.org/TR/webnn/#api-mlgraphbuilder-grucell.
+base::expected<Operand, std::string> ValidateGruCellAndInferOutput(
+    const Operand& input,
+    const Operand& weight,
+    const Operand& recurrent_weight,
+    const Operand& hidden_state,
+    uint32_t hidden_size,
+    const GruCellAttributes& attributes);
+
 // Validate and infer output information of instanceNormalization operator
 // defined in WebIDL here
 // https://www.w3.org/TR/webnn/#api-mlgraphbuilder-instancenorm.
@@ -502,6 +551,17 @@ base::expected<std::vector<Operand>, std::string> ValidateLstmAndInferOutput(
     const uint32_t steps,
     const uint32_t hidden_size,
     const LstmAttributes& attributes);
+
+// Validate and infer output information of lstmCell operator defined
+// in WebIDL here https://www.w3.org/TR/webnn/#api-mlgraphbuilder-lstmcell.
+base::expected<std::vector<Operand>, std::string>
+ValidateLstmCellAndInferOutput(const Operand& input,
+                               const Operand& weight,
+                               const Operand& recurrent_weight,
+                               const Operand& hidden_state,
+                               const Operand& cell_state,
+                               const uint32_t hidden_size,
+                               const LstmCellAttributes& attributes);
 
 // Validate concat operator defined in WebIDL here
 // https://www.w3.org/TR/webnn/#api-mlgraphbuilder-concat
@@ -540,7 +600,7 @@ base::expected<Operand, std::string> ValidateReduceAndInferOutput(
 base::expected<Operand, std::string> ValidateTriangularAndInferOutput(
     Operand input);
 
-// TODO(crbug.com/1273291): Add the link of the where operator definition in
+// TODO(crbug.com/40206287): Add the link of the where operator definition in
 // WebIDL.
 // Validate where operator.
 base::expected<Operand, std::string> ValidateWhereAndInferOutput(
@@ -582,6 +642,13 @@ base::expected<uint32_t, std::string> CalculateConvTranspose2dOutputSize(
     const uint32_t output_padding);
 
 bool IsFloatingPointType(Operand::DataType data_type);
+
+// A depthwise conv2d operation is a variant of grouped convolution where the
+// options.groups == input_channels == output_channels according to WebNN conv2d
+// spec: https://www.w3.org/TR/webnn/#api-mlgraphbuilder-conv2d.
+bool IsDepthwiseConv2d(uint32_t input_channels,
+                       uint32_t output_channels,
+                       uint32_t groups);
 
 }  // namespace webnn
 

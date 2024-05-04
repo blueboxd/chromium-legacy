@@ -1917,7 +1917,8 @@ TEST_F(AXPlatformNodeWinTest, IAccessible2GetNRelations) {
   root.id = 1;
   root.role = ax::mojom::Role::kRootWebArea;
 
-  std::vector<AXNodeID> describedby_ids = {1, 2, 3};
+  // Add 999 as a target relation id to test that invalid relations are dropped.
+  std::vector<AXNodeID> describedby_ids = {1, 2, 3, 999};
   root.AddIntListAttribute(ax::mojom::IntListAttribute::kDescribedbyIds,
                            describedby_ids);
 
@@ -4288,6 +4289,28 @@ TEST_F(AXPlatformNodeWinTest, IsUIAControlForNonFocusableNodesInViews) {
   ComPtr<IRawElementProviderSimple> button_2_provider =
       QueryInterfaceFromNode<IRawElementProviderSimple>(button_2_node);
   EXPECT_UIA_BOOL_EQ(button_2_provider, UIA_IsControlElementPropertyId, true);
+}
+
+TEST_F(AXPlatformNodeWinTest, IsUIAControlForLiveRegionNodesInViews) {
+  TestAXTreeUpdate update(std::string(R"HTML(
+    ++1 kUnknown
+    ++++2 kStatus
+  )HTML"));
+  Init(update);
+
+  // Set web content mode to false for the AXTree since we're testing for Views.
+  TestAXNodeWrapper::SetGlobalIsWebContent(false);
+
+  AXNode* root_1_node = GetRoot();
+  AXNode* status_2_node = root_1_node->children()[0];
+
+  ComPtr<IRawElementProviderSimple> root_1_provider =
+      QueryInterfaceFromNode<IRawElementProviderSimple>(root_1_node);
+  EXPECT_UIA_BOOL_EQ(root_1_provider, UIA_IsControlElementPropertyId, true);
+
+  ComPtr<IRawElementProviderSimple> status_2_provider =
+      QueryInterfaceFromNode<IRawElementProviderSimple>(status_2_node);
+  EXPECT_UIA_BOOL_EQ(status_2_provider, UIA_IsControlElementPropertyId, true);
 }
 
 TEST_F(AXPlatformNodeWinTest, UIAGetPropertyValueClickablePoint) {

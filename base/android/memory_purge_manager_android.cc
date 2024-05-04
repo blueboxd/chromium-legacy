@@ -14,16 +14,17 @@ static void JNI_MemoryPurgeManager_PostDelayedPurgeTaskOnUiThread(JNIEnv* env,
                                                                   jlong delay) {
   auto task_runner = base::SequencedTaskRunner::GetCurrentDefault();
   base::android::PreFreezeBackgroundMemoryTrimmer::PostDelayedBackgroundTask(
-      task_runner, FROM_HERE, base::BindOnce([]() {
+      task_runner, FROM_HERE,
+      base::BindOnce([](base::MemoryReductionTaskContext task_type) {
+        const bool called_from_pre_freeze =
+            task_type == base::MemoryReductionTaskContext::kProactive;
         Java_MemoryPurgeManager_doDelayedPurge(jni_zero::AttachCurrentThread(),
-                                               true);
+                                               called_from_pre_freeze);
       }),
       base::Milliseconds(static_cast<long>(delay)));
 }
 
 static jboolean JNI_MemoryPurgeManager_IsOnPreFreezeMemoryTrimEnabled(
     JNIEnv* env) {
-  return base::android::PreFreezeBackgroundMemoryTrimmer::
-             IsRespectingModernTrim() &&
-         base::FeatureList::IsEnabled(base::android::kOnPreFreezeMemoryTrim);
+  return base::android::PreFreezeBackgroundMemoryTrimmer::ShouldUseModernTrim();
 }

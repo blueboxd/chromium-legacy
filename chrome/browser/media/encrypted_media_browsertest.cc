@@ -341,7 +341,7 @@ class EncryptedMediaTestBase : public MediaBrowserTest {
       command_line->AppendSwitch(switches::kDisableWebSecurity);
     }
 
-    // TODO(crbug.com/1243903): WhatsNewUI might be causing timeouts.
+    // TODO(crbug.com/40787541): WhatsNewUI might be causing timeouts.
     command_line->AppendSwitch(switches::kNoFirstRun);
 
     std::vector<base::test::FeatureRefAndParams> enabled_features;
@@ -372,7 +372,7 @@ class EncryptedMediaTestBase : public MediaBrowserTest {
       // other than use a software OpenGL implementation. This can be configured
       // via `switches::kUseGpuInTests` or `--use-gpu-in-tests`.
       if (command_line->HasSwitch(switches::kUseGpuInTests)) {
-        // TODO(crbug.com/1421444): Investigate why the video playback doesn't
+        // TODO(crbug.com/40896253): Investigate why the video playback doesn't
         // work with `switches::kDisableGpu` and remove this line if possible.
         // For now, `switches::kDisableGpu` should not be set. Otherwise,
         // the video playback will not work with software rendering. Note that
@@ -467,7 +467,7 @@ class ECKEncryptedMediaFileIOTest
     // sure that end to end functionalities do not break with changes made, so
     // that the MediaLicenseDatabase, the CdmStorageDatabaseMigration, and the
     // final CdmStorageDatabase all work as expected.
-    // TODO(crbug.com/1454512): Remove logic here when fully transitioned to
+    // TODO(crbug.com/40272342): Remove logic here when fully transitioned to
     // CdmStorageDatabase.
     std::vector<base::test::FeatureRefAndParams> storage_feature_list;
 
@@ -575,7 +575,7 @@ class ECKIncognitoEncryptedMediaFileIOTest
     // sure that end to end functionalities do not break with changes made, so
     // that the MediaLicenseDatabase, the CdmStorageDatabaseMigration, and the
     // final CdmStorageDatabase all work as expected.
-    // TODO(crbug.com/1454512): Remove logic here when fully transitioned to
+    // TODO(crbug.com/40272342): Remove logic here when fully transitioned to
     // CdmStorageDatabase.
     std::vector<base::test::FeatureRefAndParams> storage_feature_list;
 
@@ -601,7 +601,7 @@ class ECKIncognitoEncryptedMediaFileIOTest
 // proper renderer selection occurs when Media Foundation Renderer
 // is set as the default but the playback requires another (e.g.
 // default) renderer.
-// TODO(crbug.com/1442997): We should create a browser test suite
+// TODO(crbug.com/40267198): We should create a browser test suite
 // intended explicitly for Media Foundation scenarios and move
 // the MFClearEncryptedMediaTest tests there.
 class MFClearEncryptedMediaTest : public EncryptedMediaTestBase {
@@ -823,15 +823,14 @@ IN_PROC_BROWSER_TEST_P(MseEncryptedMediaTest, Playback_AudioOnly_MP4_OPUS) {
   TestSimplePlayback("bear-opus-cenc.mp4");
 }
 
-// TODO(crbug.com/1045393): Flaky on multiple platforms.
+// TODO(crbug.com/40116010): Flaky on multiple platforms.
 IN_PROC_BROWSER_TEST_P(MseEncryptedMediaTest,
                        DISABLED_Playback_VideoOnly_MP4_VP9) {
   TestSimplePlayback("bear-320x240-v_frag-vp9-cenc.mp4");
 }
 
-#if BUILDFLAG(IS_MAC) || (BUILDFLAG(IS_FUCHSIA) && defined(ARCH_CPU_ARM_FAMILY))
-// TODO(https://crbug.com/1250305): Fails on dcheck-enabled builds on 11.0.
-// TODO(https://crbug.com/1280308): Fails on Fuchsia-arm64
+#if BUILDFLAG(IS_MAC)
+// TODO(crbug.com/40197943): Fails on dcheck-enabled builds on 11.0.
 #define MAYBE_Playback_VideoOnly_WebM_VP9Profile2 \
   DISABLED_Playback_VideoOnly_WebM_VP9Profile2
 #else
@@ -843,9 +842,8 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest,
   TestSimplePlayback("bear-320x240-v-vp9_profile2_subsample_cenc-v.webm");
 }
 
-#if BUILDFLAG(IS_MAC) || (BUILDFLAG(IS_FUCHSIA) && defined(ARCH_CPU_ARM_FAMILY))
-// TODO(https://crbug.com/1250305): Fails on dcheck-enabled builds on 11.0.
-// TODO(https://crbug.com/1280308): Fails on Fuchsia-arm64
+#if BUILDFLAG(IS_MAC)
+// TODO(crbug.com/40197943): Fails on dcheck-enabled builds on 11.0.
 #define MAYBE_Playback_VideoOnly_MP4_VP9Profile2 \
   DISABLED_Playback_VideoOnly_MP4_VP9Profile2
 #else
@@ -1027,7 +1025,7 @@ IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, InitializeCDMFail) {
                        kEmeNotSupportedError);
 }
 
-// TODO(https://crbug.com/1019187): Failing on Windows.
+// TODO(crbug.com/40105240): Failing on Windows.
 #if BUILDFLAG(IS_WIN)
 #define MAYBE_CDMCrashDuringDecode DISABLED_CDMCrashDuringDecode
 #else
@@ -1164,8 +1162,8 @@ IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, MAYBE_StorageIdTest) {
                        kUnitTestSuccess);
 }
 
-// TODO(crbug.com/902310): Times out in debug builds.
-// TODO(crbug.com/1452030): Sometimes crashes on win and chromeos.
+// TODO(crbug.com/40601162): Times out in debug builds.
+// TODO(crbug.com/40916095): Sometimes crashes on win and chromeos.
 #if !defined(NDEBUG) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_WIN)
 #define MAYBE_MultipleCdmTypes DISABLED_MultipeCdmTypes
 #else
@@ -1192,7 +1190,7 @@ INSTANTIATE_TEST_SUITE_P(Capture_Browser,
                          ECKEncryptedMediaOutputProtectionTest,
                          Values("browser"));
 
-// TODO(https://crbug.com/1047944): Failing on Win.
+// TODO(crbug.com/40671674): Failing on Win.
 #if BUILDFLAG(IS_WIN)
 #define MAYBE_BeforeMediaKeys DISABLED_BeforeMediaKeys
 #else
@@ -1203,7 +1201,7 @@ IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaOutputProtectionTest,
   TestOutputProtection(/*create_recorder_before_media_keys=*/true);
 }
 
-// TODO(https://crbug.com/1047944): Failing on Win.
+// TODO(crbug.com/40671674): Failing on Win.
 #if BUILDFLAG(IS_WIN)
 #define MAYBE_AfterMediaKeys DISABLED_AfterMediaKeys
 #else
@@ -1405,10 +1403,11 @@ IN_PROC_BROWSER_TEST_F(MediaFoundationEncryptedMediaTest,
 
   std::string expected_title = media::kEndedTitle;
 
-  // TODO(crbug.com/1452165): "Activate failed to create mediasink (0xC00D36FA)"
-  // kPlaybackError is expected when playing encrypted audio only content if no
-  // audio device. Remove this temporary fix for test machines once the
-  // permenent solution is implemented (i.e., a null sink for no audio device).
+  // TODO(crbug.com/40270855): "Activate failed to create mediasink
+  // (0xC00D36FA)" kPlaybackError is expected when playing encrypted audio only
+  // content if no audio device. Remove this temporary fix for test machines
+  // once the permenent solution is implemented (i.e., a null sink for no audio
+  // device).
   if (!IsDefaultAudioOutputDeviceAvailable()) {
     LOG(INFO)
         << "Test method "

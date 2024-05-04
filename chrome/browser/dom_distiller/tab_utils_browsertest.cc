@@ -77,7 +77,7 @@ std::unique_ptr<content::WebContents> NewContentsWithSameParamsAs(
 }
 
 // FaviconUpdateWaiter waits for favicons to be changed after navigation.
-// TODO(1064318): Combine with FaviconUpdateWaiter in
+// TODO(crbug.com/40123662): Combine with FaviconUpdateWaiter in
 // chrome/browser/chrome_service_worker_browsertest.cc.
 class FaviconUpdateWaiter : public favicon::FaviconDriverObserver {
  public:
@@ -260,33 +260,6 @@ IN_PROC_BROWSER_TEST_F(DomDistillerTabUtilsBrowserTest,
   destroyed_watcher.Wait();
 }
 
-IN_PROC_BROWSER_TEST_F(DomDistillerTabUtilsBrowserTest, ToggleOriginalPage) {
-  content::WebContents* source_web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-
-  // This blocks until the navigation has completely finished.
-  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), article_url()));
-
-  // Create and navigate to the distilled page.
-  browser()->tab_strip_model()->AppendWebContents(
-      NewContentsWithSameParamsAs(source_web_contents),
-      /* foreground = */ true);
-  content::WebContents* destination_web_contents =
-      browser()->tab_strip_model()->GetWebContentsAt(1);
-
-  DistillAndView(source_web_contents, destination_web_contents);
-  DistilledPageObserver(destination_web_contents).WaitUntilFinishedLoading();
-  ASSERT_TRUE(url_utils::IsDistilledPage(
-      destination_web_contents->GetLastCommittedURL()));
-
-  // Now return to the original page.
-  ReturnToOriginalPage(destination_web_contents);
-  OriginalPageNavigationObserver(destination_web_contents)
-      .WaitUntilFinishedLoading();
-  EXPECT_EQ(source_web_contents->GetLastCommittedURL(),
-            destination_web_contents->GetLastCommittedURL());
-}
-
 IN_PROC_BROWSER_TEST_F(DomDistillerTabUtilsBrowserTest,
                        DomDistillDisableForBackForwardCache) {
   content::BackForwardCacheDisabledTester tester;
@@ -350,7 +323,7 @@ IN_PROC_BROWSER_TEST_F(DomDistillerTabUtilsBrowserTest, SecurityStateIsNone) {
   ASSERT_EQ(security_state::NONE, helper->GetSecurityLevel());
 }
 
-// TODO(crbug.com/1227141): Flaky on Mac.
+// TODO(crbug.com/40776875): Flaky on Mac.
 IN_PROC_BROWSER_TEST_F(DomDistillerTabUtilsBrowserTest,
                        FaviconFromOriginalPage) {
   content::WebContents* initial_web_contents =

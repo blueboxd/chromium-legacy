@@ -29,7 +29,7 @@ for building and shipping bindgen.
 Ideally our build would begin with our own trusted stage0 rustc. As it is
 simpler, for now we use an official build.
 
-TODO(https://crbug.com/1245714): Do a proper 3-stage build
+TODO(crbug.com/40196262): Do a proper 3-stage build
 
 '''
 
@@ -71,9 +71,9 @@ EXCLUDED_TESTS = [
     os.path.join('tests', 'codegen', 'issue-45222.rs'),
     # https://github.com/rust-lang/rust/issues/96497
     os.path.join('tests', 'codegen', 'issue-96497-slice-size-nowrap.rs'),
-    # TODO(https://crbug.com/1515111): remove after rolling rust with fix
+    # TODO(crbug.com/41487664): remove after rolling rust with fix
     os.path.join('tests', 'codegen', 'abi-main-signature-32bit-c-int.rs'),
-    # TODO(https://crbug.com/1513478): remove after rolling rust with fix
+    # TODO(crbug.com/41486049): remove after rolling rust with fix
     os.path.join('tests', 'ui', 'asm', 'inline-syntax.rs'),
     # TODO(https://crbug.com/324853415): benign failure; remove when fixed.
     os.path.join('tests', 'codegen', 'iter-repeat-n-trivial-drop.rs'),
@@ -147,7 +147,7 @@ OPENSSL_CIPD_MAC_AMD_PATH = 'infra/3pp/static_libs/openssl/mac-amd64'
 OPENSSL_CIPD_MAC_AMD_VERSION = '1.1.1j.chromium.2'
 OPENSSL_CIPD_MAC_ARM_PATH = 'infra/3pp/static_libs/openssl/mac-arm64'
 OPENSSL_CIPD_MAC_ARM_VERSION = '1.1.1j.chromium.2'
-# TODO(crbug.com/1271215): Pull Windows OpenSSL from 3pp when it exists.
+# TODO(crbug.com/40205621): Pull Windows OpenSSL from 3pp when it exists.
 
 if sys.platform == 'win32':
     LD_PATH_FLAG = '/LIBPATH:'
@@ -291,6 +291,7 @@ class XPy:
     runs. '''
 
     def __init__(self, zlib_path, libxml2_dirs, debian_sysroot, verbose):
+        self._debian_sysroot = debian_sysroot
         self._env = collections.defaultdict(str, os.environ)
         self._verbose = verbose
         self._llvm_bins_path = os.path.join(RUST_HOST_LLVM_INSTALL_DIR, 'bin')
@@ -373,7 +374,9 @@ class XPy:
             self._env['CXXFLAGS'] += f' {sysroot_cflag}'
             self._env['LDFLAGS'] += f' {sysroot_cflag}'
 
-            self._env['RUSTFLAGS'] += f' -Clink-arg={sysroot_cflag}'
+            self._env['RUSTFLAGS_BOOTSTRAP'] += f' -Clink-arg={sysroot_cflag}'
+            self._env[
+                'RUSTFLAGS_NOT_BOOTSTRAP'] += f' -Clink-arg={sysroot_cflag}'
 
             # pkg-config will by default look for system-wide libs. This tells
             # it to look exclusively in the sysroot instead.
@@ -430,9 +433,31 @@ class XPy:
         subs['LLVM_BIN'] = quote_string(str(self._llvm_bins_path))
         subs['PACKAGE_VERSION'] = GetRustClangRevision()
 
+        # FIXME: Remove after next rust roll.
+        if RUST_REVISION == 'ab71ee7a9214c2793108a41efb065aa77aeb7326':
+            subs['CHANGELOG_SEEN'] = '''\
+# Suppress x.py warning about configuration changes
+changelog-seen = 2'''
+        else:
+            subs['CHANGELOG_SEEN'] = ''
+
         # ...and apply substitutions, writing to config.toml in Rust tree.
         with open(os.path.join(RUST_SRC_DIR, 'config.toml'), 'w') as output:
             output.write(template.substitute(subs))
+
+        if self._debian_sysroot:
+            # Similarly, generate a Cargo config.toml in CARGO_HOME_DIR.
+            with open(RUST_CARGO_CONFIG_TEMPLATE_PATH, 'r') as input:
+                template = string.Template(input.read())
+
+            subs = {}
+            subs['DEBIAN_SYSROOT'] = quote_string(str(self._debian_sysroot))
+
+            if not os.path.exists(CARGO_HOME_DIR):
+                os.makedirs(CARGO_HOME_DIR)
+            with open(os.path.join(CARGO_HOME_DIR, 'config.toml'),
+                      'w') as output:
+                output.write(template.substitute(subs))
 
     def run(self, sub, args):
         ''' Run x.py subcommand with specified args. '''
@@ -682,7 +707,7 @@ def main():
     else:
         libxml2_dirs = None
 
-    # TODO(crbug.com/1271215): OpenSSL is somehow already present on the Windows
+    # TODO(crbug.com/40205621): OpenSSL is somehow already present on the Windows
     # builder, but we should change to using a package from 3pp when it is
     # available.
     if (sys.platform != 'win32' and not args.sync_for_gnrt):

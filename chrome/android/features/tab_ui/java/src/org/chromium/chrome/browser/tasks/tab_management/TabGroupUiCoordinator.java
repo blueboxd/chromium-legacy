@@ -20,11 +20,11 @@ import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.OneshotSupplier;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
-import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.layouts.LayoutStateProvider;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.PauseResumeWithNativeObserver;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab_ui.TabContentManager;
 import org.chromium.chrome.browser.tabmodel.IncognitoStateProvider;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabModelFilterProvider;
@@ -137,6 +137,7 @@ public class TabGroupUiCoordinator
                 new TabGridDialogCoordinator(
                         mActivity,
                         mBrowserControlsStateProvider,
+                        mBottomSheetController,
                         currentTabModelFilterSupplier,
                         () -> mTabModelSelector.getModel(false),
                         mTabContentManager,
@@ -191,7 +192,7 @@ public class TabGroupUiCoordinator
                                     mToolbarView, mTabStripCoordinator.getContainerView()),
                             TabGroupUiViewBinder::bind);
 
-            // TODO(crbug.com/972217): find a way to enable interactions between grid tab switcher
+            // TODO(crbug.com/40631286): find a way to enable interactions between grid tab switcher
             //  and the dialog here.
             if (mScrimCoordinator != null) {
                 mTabGridDialogControllerSupplier =
@@ -256,6 +257,7 @@ public class TabGroupUiCoordinator
                 && mBottomSheetController.getSheetState()
                         == BottomSheetController.SheetState.HIDDEN) {
             TabGroupUtils.maybeShowIPH(
+                    mTabModelSelector.getModel(false).getProfile(),
                     FeatureConstants.TAB_GROUPS_TAP_TO_SEE_ANOTHER_TAB_FEATURE,
                     mTabStripCoordinator.getContainerView(),
                     mBottomSheetController);
@@ -295,7 +297,7 @@ public class TabGroupUiCoordinator
     /** Destroy any members that needs clean up. */
     @Override
     public void destroy() {
-        // TODO(crbug.com/1208462): Add tests for destroy conditions.
+        // TODO(crbug.com/40766050): Add tests for destroy conditions.
         // Early return if the component hasn't initialized yet.
         if (mActivity == null) return;
 

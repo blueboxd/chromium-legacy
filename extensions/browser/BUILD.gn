@@ -84,7 +84,7 @@ source_set("browser_sources") {
     "activity.h",
     "allowlist_state.h",
 
-    # TODO(https://crbug.com/883570): Anything under api/ should be moved out of
+    # TODO(crbug.com/40593486): Anything under api/ should be moved out of
     # this target.
     "api/api_resource.cc",
     "api/api_resource.h",
@@ -423,8 +423,6 @@ source_set("browser_sources") {
     "guest_view/extensions_guest_view_manager_delegate.h",
     "guest_view/guest_view_events.cc",
     "guest_view/guest_view_events.h",
-    "guest_view/guest_view_feature_util.cc",
-    "guest_view/guest_view_feature_util.h",
     "guest_view/mime_handler_view/mime_handler_stream_manager.cc",
     "guest_view/mime_handler_view/mime_handler_stream_manager.h",
     "guest_view/mime_handler_view/mime_handler_view_attach_helper.cc",
@@ -438,7 +436,7 @@ source_set("browser_sources") {
     "guest_view/mime_handler_view/mime_handler_view_guest_delegate.cc",
     "guest_view/mime_handler_view/mime_handler_view_guest_delegate.h",
 
-    # TODO(crbug.com/730220): Ideally web_view should be a separate target on
+    # TODO(crbug.com/41323543): Ideally web_view should be a separate target on
     # which the extension system depends.
     "guest_view/web_view/controlled_frame_embedder_url_fetcher.cc",
     "guest_view/web_view/controlled_frame_embedder_url_fetcher.h",
@@ -548,6 +546,8 @@ source_set("browser_sources") {
     "service_worker/worker_id_set.h",
     "service_worker_manager.cc",
     "service_worker_manager.h",
+    "site_access_requests_helper.cc",
+    "site_access_requests_helper.h",
     "state_store.cc",
     "state_store.h",
     "state_store_test_observer.cc",
@@ -571,6 +571,8 @@ source_set("browser_sources") {
     "user_script_loader.h",
     "user_script_manager.cc",
     "user_script_manager.h",
+    "user_script_world_configuration_manager.cc",
+    "user_script_world_configuration_manager.h",
     "verified_contents.cc",
     "verified_contents.h",
     "view_type_utils.cc",
@@ -603,7 +605,6 @@ source_set("browser_sources") {
     "//components/permissions",
     "//components/pref_registry",
     "//components/prefs",
-    "//components/safe_browsing/core/browser/hashprefix_realtime:hash_realtime_utils",
     "//components/safe_browsing/core/common",
     "//components/services/unzip/content",
     "//components/services/unzip/public/cpp",
@@ -651,6 +652,7 @@ source_set("browser_sources") {
     "//third_party/re2",
     "//third_party/zlib/google:zip",
     "//tools/json_schema_compiler:generated_api_util",
+    "//ui/color",
     "//ui/display",
     "//url",
   ]
@@ -828,6 +830,8 @@ source_set("test_support") {
     "service_worker/service_worker_test_utils.h",
     "test_event_router_observer.cc",
     "test_event_router_observer.h",
+    "test_extension_console_observer.cc",
+    "test_extension_console_observer.h",
     "updater/extension_cache_fake.cc",
     "updater/extension_cache_fake.h",
     "updater/extension_downloader_test_helper.cc",
@@ -978,8 +982,8 @@ source_set("unit_tests") {
     "//components/permissions:permissions_common",
     "//components/pref_registry:pref_registry",
     "//components/prefs:test_support",
-    "//components/safe_browsing/core/browser/hashprefix_realtime:hash_realtime_utils",
     "//components/safe_browsing/core/common",
+    "//components/safe_browsing/core/common/hashprefix_realtime:hash_realtime_utils",
     "//components/services/unzip:in_process",
     "//components/services/unzip/content",
     "//components/storage_monitor:test_support",
@@ -1047,6 +1051,7 @@ source_set("unit_tests") {
       "//chromeos:test_support",
       "//chromeos/ash/components/dbus:test_support",
       "//chromeos/ash/components/dbus/audio",
+      "//chromeos/ash/components/dbus/debug_daemon",
       "//chromeos/ash/components/dbus/media_analytics",
       "//chromeos/ash/components/dbus/media_analytics:media_perception_proto",
       "//chromeos/ash/components/dbus/shill",

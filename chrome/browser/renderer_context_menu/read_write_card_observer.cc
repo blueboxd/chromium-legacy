@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/check_is_test.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/components/editor_menu/public/cpp/read_write_card_controller.h"
 #include "chromeos/components/editor_menu/public/cpp/read_write_cards_manager.h"
@@ -20,6 +21,19 @@ namespace {
 
 constexpr int kMaxSurroundingTextLength = 300;
 
+void SetUiControllerContextMenuBounds(const gfx::Rect& bounds_in_screen) {
+  chromeos::ReadWriteCardsManager* cards_manager =
+      chromeos::ReadWriteCardsManager::Get();
+  if (cards_manager) {
+    cards_manager->SetContextMenuBounds(
+        /*context_menu_bounds=*/bounds_in_screen);
+  } else {
+    // `cards_manager` should only be null in a test environment (since in some
+    // tests the global `ReadWriteCardsManager` is not constructed).
+    CHECK_IS_TEST();
+  }
+}
+
 }  // namespace
 
 ReadWriteCardObserver::ReadWriteCardObserver(RenderViewContextMenuProxy* proxy,
@@ -31,6 +45,8 @@ ReadWriteCardObserver::~ReadWriteCardObserver() = default;
 void ReadWriteCardObserver::OnContextMenuShown(
     const content::ContextMenuParams& params,
     const gfx::Rect& bounds_in_screen) {
+  bounds_in_screen_ = bounds_in_screen;
+
   chromeos::ReadWriteCardsManager* cards_manager =
       chromeos::ReadWriteCardsManager::Get();
   CHECK(cards_manager);
@@ -38,19 +54,19 @@ void ReadWriteCardObserver::OnContextMenuShown(
   cards_manager->FetchController(
       params, proxy_->GetBrowserContext(),
       base::BindOnce(&ReadWriteCardObserver::OnFetchControllers,
-                     weak_factory_.GetWeakPtr(), params, bounds_in_screen));
+                     weak_factory_.GetWeakPtr(), params));
 }
 
 void ReadWriteCardObserver::OnContextMenuViewBoundsChanged(
     const gfx::Rect& bounds_in_screen) {
+  bounds_in_screen_ = bounds_in_screen;
+
   for (auto controller : read_write_card_controllers_) {
     if (!controller) {
       continue;
     }
-
-    bounds_in_screen_ = bounds_in_screen;
-
-    controller->OnAnchorBoundsChanged(bounds_in_screen);
+    SetUiControllerContextMenuBounds(bounds_in_screen_);
+    controller->OnAnchorBoundsChanged(bounds_in_screen_);
   }
 }
 
@@ -89,14 +105,13 @@ void ReadWriteCardObserver::OnTextSurroundingSelectionAvailable(
 
 void ReadWriteCardObserver::OnFetchControllers(
     const content::ContextMenuParams& params,
-    const gfx::Rect& bounds_in_screen,
     std::vector<base::WeakPtr<chromeos::ReadWriteCardController>> controllers) {
   if (controllers.empty()) {
     read_write_card_controllers_.clear();
     return;
   }
 
-  bounds_in_screen_ = bounds_in_screen;
+  SetUiControllerContextMenuBounds(bounds_in_screen_);
 
   content::RenderFrameHost* focused_frame =
       proxy_->GetWebContents()->GetFocusedFrame();

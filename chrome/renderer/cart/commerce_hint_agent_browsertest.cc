@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <string_view>
+
 #include "base/memory/raw_ptr.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
@@ -204,7 +206,7 @@ class CommerceHintAgentTest : public PlatformBrowserTest {
     // HTTPS server only serves a valid cert for localhost, so this is needed
     // to load pages from other hosts without an error.
     command_line->AppendSwitch(switches::kIgnoreCertificateErrors);
-    // TODO(crbug.com/1491942): This fails with the field trial testing config.
+    // TODO(crbug.com/40285326): This fails with the field trial testing config.
     command_line->AppendSwitch("disable-field-trial-config");
   }
 
@@ -392,7 +394,7 @@ class CommerceHintAgentTest : public PlatformBrowserTest {
   }
 #endif
 
-  void ExpectUKMCount(base::StringPiece entry_name,
+  void ExpectUKMCount(std::string_view entry_name,
                       const std::string& metric_name,
                       int expected_count) {
     auto entries = ukm_recorder()->GetEntriesByName(entry_name);
@@ -407,7 +409,7 @@ class CommerceHintAgentTest : public PlatformBrowserTest {
 
   ukm::TestAutoSetUkmRecorder* ukm_recorder() { return ukm_recorder_.get(); }
 
-  void WaitForUmaCount(base::StringPiece name,
+  void WaitForUmaCount(std::string_view name,
                        base::HistogramBase::Count expected_count) {
     while (true) {
       base::RunLoop().RunUntilIdle();
@@ -425,7 +427,7 @@ class CommerceHintAgentTest : public PlatformBrowserTest {
     }
   }
 
-  void WaitForUmaBucketCount(base::StringPiece name,
+  void WaitForUmaBucketCount(std::string_view name,
                              base::HistogramBase::Sample sample,
                              base::HistogramBase::Count expected_count) {
     while (true) {
@@ -756,7 +758,7 @@ class CommerceHintNoRateControlTest : public CommerceHintAgentTest {
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
-// TODO(crbug.com/1241582): Add the rate control back for this test after
+// TODO(crbug.com/40194728): Add the rate control back for this test after
 // figuring out why rate control makes this test flaky.
 // Disabled due to failing tests. https://crbug.com/1254802
 IN_PROC_BROWSER_TEST_F(CommerceHintNoRateControlTest, DISABLED_CartPriority) {
@@ -825,14 +827,14 @@ IN_PROC_BROWSER_TEST_F(CommerceHintAgentTest, PurchaseByForm) {
   ExpectUKMCount(FormSubmittedEntry::kEntryName, "IsTransaction", 1);
 }
 
-// TODO(crbug.com/1180268): CrOS multi-profiles implementation is different from
-// the rest and below tests don't work on CrOS yet. Re-enable them on CrOS after
-// figuring out the reason for failure.
-// Signing out on Lacros is not possible.
-// TODO(crbug.com/1332878): Intentionally skip below two tests for Android for
+// TODO(crbug.com/40169871): CrOS multi-profiles implementation is different
+// from the rest and below tests don't work on CrOS yet. Re-enable them on CrOS
+// after figuring out the reason for failure. Signing out on Lacros is not
+// possible.
+// TODO(crbug.com/40227790): Intentionally skip below two tests for Android for
 // now.
 #if !BUILDFLAG(IS_CHROMEOS) && !BUILDFLAG(IS_ANDROID)
-// TODO(crbug/1258803): Skip work on non-eligible profiles.
+// TODO(crbug.com/40201179): Skip work on non-eligible profiles.
 IN_PROC_BROWSER_TEST_F(CommerceHintAgentTest, NonSignInUser) {
   Profile* profile =
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
@@ -856,7 +858,7 @@ IN_PROC_BROWSER_TEST_F(CommerceHintAgentTest, NonSignInUser) {
   WaitForCartCount(kExpectedExampleFallbackCart);
 }
 
-// TODO(crbug/1258803): Skip work on non-eligible profiles.
+// TODO(crbug.com/40201179): Skip work on non-eligible profiles.
 // Flaky on Linux Asan and Mac: https://crbug.com/1306908.
 #if (BUILDFLAG(IS_LINUX) && defined(ADDRESS_SANITIZER)) || BUILDFLAG(IS_MAC)
 #define MAYBE_MultipleProfiles DISABLED_MultipleProfiles
@@ -1300,11 +1302,11 @@ class CommerceHintCartPatternTest : public CommerceHintAgentTest {
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
-// TODO(https://crbug.com/1362442): Deflake this test.
+// TODO(crbug.com/40238349): Deflake this test.
 IN_PROC_BROWSER_TEST_F(CommerceHintCartPatternTest, DISABLED_VisitCart) {
   // The test is flaky with same-site back/forward cache, presumably because it
   // doesn't expect a RenderView change on same-site navigations.
-  // TODO(https://crbug.com/1302902): Investigate and fix this.
+  // TODO(crbug.com/40217176): Investigate and fix this.
   content::DisableBackForwardCacheForTesting(
       web_contents(),
       content::BackForwardCache::TEST_ASSUMES_NO_RENDER_FRAME_CHANGE);
@@ -1531,7 +1533,7 @@ IN_PROC_BROWSER_TEST_F(CommerceHintOptimizeRendererTest,
 }
 
 #if !BUILDFLAG(IS_CHROMEOS)
-// TODO(crbug/1310497): This test is flaky on ChromeOS.
+// TODO(crbug.com/40830409): This test is flaky on ChromeOS.
 class CommerceHintAgentFencedFrameTest : public CommerceHintAgentTest {
  public:
   CommerceHintAgentFencedFrameTest() {

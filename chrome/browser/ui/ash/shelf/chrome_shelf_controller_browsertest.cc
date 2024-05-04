@@ -80,6 +80,7 @@
 #include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/ui/tabs/tab_enums.h"
+#include "chrome/browser/ui/tabs/tab_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/test/test_app_window_icon_observer.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -319,7 +320,7 @@ class ShelfPlatformAppBrowserTest : public extensions::PlatformAppBrowserTest {
 class ShelfAppBrowserTest : public extensions::ExtensionBrowserTest {
  protected:
   ShelfAppBrowserTest() {
-    // TODO(crbug.com/1258445): Update expectations to support Lacros.
+    // TODO(crbug.com/40201067): Update expectations to support Lacros.
     scoped_feature_list_.InitWithFeatures(
         /*enabled_features=*/{},
         /*disabled_features=*/ash::standalone_browser::GetFeatureRefs());
@@ -349,8 +350,9 @@ class ShelfAppBrowserTest : public extensions::ExtensionBrowserTest {
                                           int32_t event_flags) {
     EXPECT_TRUE(LoadExtension(test_data_dir_.AppendASCII(name)));
 
-    const Extension* extension = extension_registry()->GetExtensionById(
-        last_loaded_extension_id(), extensions::ExtensionRegistry::ENABLED);
+    const Extension* extension =
+        extension_registry()->enabled_extensions().GetByID(
+            last_loaded_extension_id());
     EXPECT_TRUE(extension);
 
     auto* proxy = apps::AppServiceProxyFactory::GetForProfile(profile());
@@ -364,8 +366,9 @@ class ShelfAppBrowserTest : public extensions::ExtensionBrowserTest {
     LoadExtension(test_data_dir_.AppendASCII(name));
 
     // First get app_id.
-    const Extension* extension = extension_registry()->GetExtensionById(
-        last_loaded_extension_id(), extensions::ExtensionRegistry::ENABLED);
+    const Extension* extension =
+        extension_registry()->enabled_extensions().GetByID(
+            last_loaded_extension_id());
     const std::string app_id = extension->id();
 
     // Then create a shortcut.
@@ -762,7 +765,8 @@ IN_PROC_BROWSER_TEST_F(ShelfPlatformAppBrowserTest, MultipleApps) {
 
 // Confirm that app windows can be reactivated by clicking their icons and that
 // the correct activation order is maintained.
-IN_PROC_BROWSER_TEST_F(ShelfPlatformAppBrowserTest, WindowActivation) {
+// TODO(crbug.com/331536126): This test is flaky.
+IN_PROC_BROWSER_TEST_F(ShelfPlatformAppBrowserTest, DISABLED_WindowActivation) {
   int item_count = shelf_model()->item_count();
 
   // First run app.
@@ -1649,8 +1653,9 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTestNoDefaultBrowser,
   size_t tabs = BrowserShortcutMenuItemCount(true);
 
   // Create a second browser.
-  const Extension* extension = extension_registry()->GetExtensionById(
-      last_loaded_extension_id(), extensions::ExtensionRegistry::ENABLED);
+  const Extension* extension =
+      extension_registry()->enabled_extensions().GetByID(
+          last_loaded_extension_id());
   EXPECT_TRUE(extension);
   apps::AppServiceProxyFactory::GetForProfile(profile())->LaunchAppWithParams(
       apps::AppLaunchParams(
@@ -1717,7 +1722,9 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, AltNumberTabsTabbing) {
 
 // Check that the keyboard activation of a shelf item tabs properly through
 // the items at hand.
-IN_PROC_BROWSER_TEST_F(ShelfPlatformAppBrowserTest, AltNumberAppsTabbing) {
+// TODO(crbug.com/331536126): This test is flaky.
+IN_PROC_BROWSER_TEST_F(ShelfPlatformAppBrowserTest,
+                       DISABLED_AltNumberAppsTabbing) {
   // First run app.
   const Extension* extension1 = LoadAndLaunchPlatformApp("launch", "Launched");
   ui::BaseWindow* window1 =
@@ -2335,13 +2342,17 @@ IN_PROC_BROWSER_TEST_F(ShelfWebAppBrowserTest, SettingsAndTaskManagerWindows) {
   ASSERT_GE(item_count, 0);
   size_t browser_count = BrowserShortcutMenuItemCount(false);
 
+  base::RunLoop run_loop;
   // Open a settings window. Number of browser items should remain unchanged,
   // number of shelf items should increase.
   settings_manager->ShowChromePageForProfile(
       browser()->profile(), chrome::GetOSSettingsUrl(std::string()),
-      display::kInvalidDisplayId);
+      display::kInvalidDisplayId,
+      base::BindOnce([](apps::LaunchResult&& result) {
+        EXPECT_EQ(apps::State::kSuccess, result.state);
+      }).Then(run_loop.QuitClosure()));
   // Spin a run loop to sync Ash's ShelfModel change for the settings window.
-  base::RunLoop().RunUntilIdle();
+  run_loop.Run();
   Browser* settings_browser =
       settings_manager->FindBrowserForProfile(browser()->profile());
   ASSERT_TRUE(settings_browser);
@@ -2428,9 +2439,8 @@ IN_PROC_BROWSER_TEST_F(ShelfWebAppBrowserTest, WindowedHostedAndWebApps) {
                             extensions::LAUNCH_TYPE_WINDOW);
   WebAppProvider* provider = WebAppProvider::GetForTest(browser()->profile());
   DCHECK(provider);
-  provider->sync_bridge_unsafe().SetAppUserDisplayMode(
-      web_app_id, web_app::mojom::UserDisplayMode::kStandalone,
-      /*is_user_action=*/false);
+  provider->sync_bridge_unsafe().SetAppUserDisplayModeForTesting(
+      web_app_id, web_app::mojom::UserDisplayMode::kStandalone);
 
   // The apps should be closed.
   EXPECT_EQ(ash::STATUS_CLOSED,

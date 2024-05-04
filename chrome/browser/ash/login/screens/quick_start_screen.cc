@@ -32,6 +32,7 @@ base::Value::List ConvertQrCode(quick_start::QRCode::PixelData qr_code) {
 
 // static
 std::string QuickStartScreen::GetResultString(Result result) {
+  // LINT.IfChange(UsageMetrics)
   switch (result) {
     case Result::CANCEL_AND_RETURN_TO_WELCOME:
       return "CancelAndReturnToWelcome";
@@ -45,7 +46,10 @@ std::string QuickStartScreen::GetResultString(Result result) {
       return "SetupCompleteNextButton";
     case Result::WIFI_CREDENTIALS_RECEIVED:
       return "WifiCredentialsReceived";
+    case Result::FALLBACK_URL_ON_GAIA:
+      return "FallbackUrlOnGaia";
   }
+  // LINT.ThenChange(//tools/metrics/histograms/metadata/oobe/histograms.xml)
 }
 
 QuickStartScreen::QuickStartScreen(
@@ -115,9 +119,11 @@ void QuickStartScreen::OnUiUpdateRequested(
 
   switch (state) {
     case ash::quick_start::QuickStartController::UiState::SHOWING_QR:
+      view_->SetWillRequestWiFi(controller_->WillRequestWiFi());
       view_->SetQRCode(ConvertQrCode(controller_->GetQrCode()));
       break;
     case quick_start::QuickStartController::UiState::SHOWING_PIN:
+      view_->SetWillRequestWiFi(controller_->WillRequestWiFi());
       view_->SetPIN(controller_->GetPin());
       break;
     case quick_start::QuickStartController::UiState::CONNECTING_TO_WIFI:
@@ -138,14 +144,19 @@ void QuickStartScreen::OnUiUpdateRequested(
     case ash::quick_start::QuickStartController::UiState::CREATING_ACCOUNT:
       view_->ShowCreatingAccountStep();
       break;
+    case ash::quick_start::QuickStartController::UiState::FALLBACK_URL_FLOW:
+      // WizardController will handle this edge case and populate the URL.
+      exit_callback_.Run(Result::FALLBACK_URL_ON_GAIA);
+      break;
     case ash::quick_start::QuickStartController::UiState::SETUP_COMPLETE:
-      view_->ShowSetupCompleteStep();
+      view_->ShowSetupCompleteStep(controller_->did_transfer_wifi());
       break;
     case ash::quick_start::QuickStartController::UiState::CONNECTING_TO_PHONE:
       view_->ShowConnectingToPhoneStep();
       break;
     case ash::quick_start::QuickStartController::UiState::
         SHOWING_BLUETOOTH_DIALOG:
+      view_->SetWillRequestWiFi(controller_->WillRequestWiFi());
       view_->ShowBluetoothDialog();
       break;
     case ash::quick_start::QuickStartController::UiState::EXIT_SCREEN:

@@ -415,7 +415,7 @@ class CONTENT_EXPORT BackForwardCacheImpl
 
   // Returns true if one of the BFCache entries has a matching
   // BrowsingInstanceId/SiteInstanceId/RenderFrameProxyHost.
-  // TODO(https://crbug.com/1243541): Remove these once the bug is fixed.
+  // TODO(crbug.com/40195481): Remove these once the bug is fixed.
   bool IsBrowsingInstanceInBackForwardCacheForDebugging(
       BrowsingInstanceId browsing_instance_id);
   bool IsSiteInstanceInBackForwardCacheForDebugging(
@@ -761,7 +761,7 @@ class CONTENT_EXPORT BackForwardCacheCanStoreTreeResult {
   // from all the reachable cross-origin iframes. We decrement this count
   // every time we call this function, and report only when |index| is 0 so
   // that reporting happens only for randomly picked one of such iframes.
-  // TODO(crbug.com/1518408): Add "masked" when UA internal reasons such as
+  // TODO(crbug.com/41491384): Add "masked" when UA internal reasons such as
   // memory pressure and browsing instance not swapped are blocking as well.
   blink::mojom::BackForwardCacheNotRestoredReasonsPtr
   GetWebExposedNotRestoredReasonsInternal(int& index);

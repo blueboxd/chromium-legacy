@@ -29,6 +29,13 @@ class WebContents;
 //
 // TabStripModelChange / TabStripSelectionChange
 //
+// This observer is not appropriate for most use cases. It's primarily used for
+// features that must directly interface with the tab strip, for example: tab
+// groups, tab search, etc.
+// Most features in Chrome need to hold state on a per-tab basis. In that case,
+// add a controller to TabFeatures and use TabInterface to observe for the tab
+// events.
+//
 // The following class and structures are used to inform TabStripModelObservers
 // of changes to:
 // 1) selection model
@@ -46,11 +53,6 @@ class TabStripModelChange {
   enum class RemoveReason {
     // WebContents will be deleted.
     kDeleted,
-
-    // WebContents will be stored in ClosedTabCache. After some amount of time,
-    // the WebContents will either be deleted, or inserted back into another
-    // TabStripModel.
-    kCached,
 
     // WebContents got detached from a TabStrip and inserted into another
     // TabStrip.
@@ -349,8 +351,8 @@ class TabStripModelObserver {
   // TabStripModel, which allows an observer to react to an impending change to
   // the TabStripModel. The only use case of this signal that is currently
   // supported is the drag controller completing a drag before a tab is removed.
-  // TODO(1322943): Unify and generalize this and OnTabWillBeAdded, e.g. via
-  // OnTabStripModelWillChange().
+  // TODO(crbug.com/40838330): Unify and generalize this and OnTabWillBeAdded,
+  // e.g. via OnTabStripModelWillChange().
   virtual void OnTabWillBeRemoved(content::WebContents* contents, int index);
 
   // |change| is a change in the Tab Group model or metadata. These
@@ -400,7 +402,7 @@ class TabStripModelObserver {
   // CloseAllTabsStopped() is sent with reason 'CANCELED'. On the other hand if
   // the close does finish then CloseAllTabsStopped() is sent with reason
   // 'COMPLETED'. Also note that if the last tab is detached
-  // (DetachAndDeleteWebContentsAt()/DetachWebContentsAtForInsertion()) then
+  // (DetachAndDeleteWebContentsAt()) then
   // this is not sent.
   virtual void WillCloseAllTabs(TabStripModel* tab_strip_model);
   virtual void CloseAllTabsStopped(TabStripModel* tab_strip_model,

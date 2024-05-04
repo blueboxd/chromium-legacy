@@ -510,6 +510,14 @@
     return internals.getNamedCookie(name);
   }
 
+  window.test_driver_internal.get_computed_label = function(element) {
+    return internals.getComputedLabel(element);
+  }
+
+  window.test_driver_internal.get_computed_role = function(element) {
+    return internals.getComputedRole(element);
+  }
+
   window.test_driver_internal.minimize_window = async () => {
     window.testRunner.setFrameWindowHidden(true);
     // Wait until the new state is reflected in the document
@@ -541,7 +549,8 @@
   }
 
   window.test_driver_internal.get_fedcm_dialog_title = async function() {
-    return internals.getFedCmTitle();
+    // TODO(crbug.com/331237005): Return a subtitle, if we have one.
+    return {title: await internals.getFedCmTitle()};
   }
 
   window.test_driver_internal.select_fedcm_account = async function(account_index) {
@@ -573,6 +582,14 @@
   window.test_driver_internal.get_virtual_sensor_information = function(
       sensor_type) {
     return internals.getVirtualSensorInformation(sensor_type);
+  }
+
+  window.test_driver_internal.set_device_posture = function(posture) {
+    return internals.setDevicePostureOverride(posture);
+  }
+
+  window.test_driver_internal.clear_device_posture = function() {
+    return internals.clearDevicePostureOverride();
   }
 
   // Enable automation so we don't wait for user input on unimplemented APIs

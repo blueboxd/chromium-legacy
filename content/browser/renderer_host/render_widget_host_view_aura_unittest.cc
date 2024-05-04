@@ -450,7 +450,7 @@ class MockRenderWidgetHostImpl : public RenderWidgetHostImpl {
   void SetupMockRenderInputRouter() {
     mock_render_input_router_.reset();
     mock_render_input_router_ = std::make_unique<MockRenderInputRouter>(
-        this, this, MakeFlingScheduler(),
+        this, this, MakeFlingScheduler(), this,
         base::SingleThreadTaskRunner::GetCurrentDefault());
     SetupInputRouter();
   }
@@ -3038,7 +3038,7 @@ TEST_F(RenderWidgetHostViewAuraTest, CursorVisibilityChange) {
   base::RunLoop().RunUntilIdle();
   auto events = GetAndResetDispatchedMessages();
 #if BUILDFLAG(IS_CHROMEOS)
-  // TODO(crbug.com/1164453): Investigate occasional extra mousemoves in CrOS.
+  // TODO(crbug.com/40163541): Investigate occasional extra mousemoves in CrOS.
   EXPECT_GE(1u, events.size());
 #else
   EXPECT_EQ(1u, events.size());
@@ -4230,7 +4230,7 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest,
 
 // Tests that the gesture debounce timer plays nice with the overscroll
 // controller.
-// TODO(crbug.com/776424): Disabled due to flakiness on Linux tsan.
+// TODO(crbug.com/40545668): Disabled due to flakiness on Linux tsan.
 #if BUILDFLAG(USING_SANITIZER)
 #define MAYBE_GestureScrollDebounceTimerOverscroll \
   DISABLED_GestureScrollDebounceTimerOverscroll
@@ -5479,29 +5479,9 @@ TEST_F(RenderWidgetHostViewAuraTest, LegacyRenderWidgetHostHWNDAuraLookup) {
 }
 #endif
 
-class TouchpadRenderWidgetHostViewAuraTest
-    : public base::test::WithFeatureOverride,
-      public RenderWidgetHostViewAuraTest {
- public:
-  TouchpadRenderWidgetHostViewAuraTest()
-      : WithFeatureOverride(features::kTouchpadAsyncPinchEvents) {}
-
-  TouchpadRenderWidgetHostViewAuraTest(
-      const TouchpadRenderWidgetHostViewAuraTest&) = delete;
-  TouchpadRenderWidgetHostViewAuraTest& operator=(
-      const TouchpadRenderWidgetHostViewAuraTest&) = delete;
-
-  ~TouchpadRenderWidgetHostViewAuraTest() override = default;
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
-INSTANTIATE_FEATURE_OVERRIDE_TEST_SUITE(TouchpadRenderWidgetHostViewAuraTest);
-
 // Test that we elide touchpad pinch gesture steams consisting of only begin
 // and end events.
-TEST_P(TouchpadRenderWidgetHostViewAuraTest, ElideEmptyTouchpadPinchSequence) {
+TEST_F(RenderWidgetHostViewAuraTest, ElideEmptyTouchpadPinchSequence) {
   ui::GestureEventDetails begin_details(ui::ET_GESTURE_PINCH_BEGIN);
   begin_details.set_device_type(ui::GestureDeviceType::DEVICE_TOUCHPAD);
   ui::GestureEvent begin_event(0, 0, 0, ui::EventTimeForNow(), begin_details);
@@ -5657,7 +5637,7 @@ TEST_F(RenderWidgetHostViewAuraTest, GestureTapFromStylusHasPointerType) {
 
 // Test that the rendering timeout for newly loaded content fires when enough
 // time passes without receiving a new compositor frame.
-// TODO(https://crbug.com/1225139): This test is flaky on "Linux ASan LSan Tests
+// TODO(crbug.com/40775652): This test is flaky on "Linux ASan LSan Tests
 // (1)"
 #if BUILDFLAG(IS_LINUX)
 #define MAYBE_NewContentRenderingTimeout DISABLED_NewContentRenderingTimeout
@@ -6648,7 +6628,7 @@ class RenderWidgetHostViewAuraInputMethodTest
 
   ~RenderWidgetHostViewAuraInputMethodTest() override {}
   void SetUp() override {
-    // TODO(https://crbug.com/1463412) Pass as unique_ptr<>.
+    // TODO(crbug.com/40275284) Pass as unique_ptr<>.
     ui::SetUpInputMethodForTesting(new ui::MockInputMethod(nullptr));
     SetUpEnvironment();
     text_input_client_ = nullptr;
@@ -6796,7 +6776,7 @@ class RenderWidgetHostViewAuraKeyboardTest
 
   ~RenderWidgetHostViewAuraKeyboardTest() override {}
   void SetUp() override {
-    // TODO(https://crbug.com/1463412) Pass as unique_ptr<>.
+    // TODO(crbug.com/40275284) Pass as unique_ptr<>.
     ui::SetUpInputMethodForTesting(
         new RenderWidgetHostViewAuraKeyboardMockInputMethod());
     SetUpEnvironment();

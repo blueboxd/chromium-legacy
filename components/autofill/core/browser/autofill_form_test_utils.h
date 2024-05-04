@@ -8,7 +8,6 @@
 #include <optional>
 #include <vector>
 
-#include "base/strings/string_piece.h"
 #include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/common/autocomplete_parsing_util.h"
@@ -90,7 +89,6 @@ struct TestFormFlags {
   bool should_be_queried = false;
   bool should_be_uploaded = false;
   bool has_author_specified_types = false;
-  bool has_author_specified_upi_vpa_hint = false;
   // The implicit default value `std::nullopt` means no checking.
   std::optional<bool> is_complete_credit_card_form;
   std::optional<int> field_count;

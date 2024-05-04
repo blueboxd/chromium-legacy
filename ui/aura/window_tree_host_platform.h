@@ -37,6 +37,8 @@ class AURA_EXPORT WindowTreeHostPlatform : public WindowTreeHost,
 
   ~WindowTreeHostPlatform() override;
 
+  static WindowTreeHostPlatform* GetHostForWindow(aura::Window* window);
+
   // WindowTreeHost:
   ui::EventSource* GetEventSource() override;
   gfx::AcceleratedWidget GetAcceleratedWidget() override;
@@ -105,7 +107,7 @@ class AURA_EXPORT WindowTreeHostPlatform : public WindowTreeHost,
   int64_t OnStateUpdate(const PlatformWindowDelegate::State& old,
                         const PlatformWindowDelegate::State& latest) override;
   void SetFrameRateThrottleEnabled(bool enabled) override;
-  bool IsNativeWindowOcclusionTrackingAlwaysEnabled() override;
+  void DisableNativeWindowOcclusion() override;
 
   // Overridden from aura::WindowTreeHost:
   gfx::Point GetLocationOnScreenInPixels() const override;
@@ -123,6 +125,10 @@ class AURA_EXPORT WindowTreeHostPlatform : public WindowTreeHost,
   gfx::Size size_in_pixels_;
 
   std::unique_ptr<ui::KeyboardHook> keyboard_hook_;
+
+  // Prop to hold mapping to and `WindowTreeHostPlatform`. Used by
+  // `GetHostForWindow`.
+  std::unique_ptr<ui::ViewProp> prop_;
 
   // Tracks how nested OnBoundsChanged() is. That is, on entering
   // OnBoundsChanged() this is incremented and on leaving OnBoundsChanged() this

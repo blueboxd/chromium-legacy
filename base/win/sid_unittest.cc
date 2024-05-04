@@ -2,13 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40284755): Remove this and spanify to fix the errors.
+#pragma allow_unsafe_buffers
+#endif
+
 // This file contains unit tests for the sid class.
 
 #include "base/win/sid.h"
 
-// clang-format off
-#include <windows.h>  // Must be in front of other Windows header files.
-// clang-format on
+#include <windows.h>
 
 #include <sddl.h>
 

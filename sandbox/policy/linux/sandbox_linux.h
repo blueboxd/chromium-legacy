@@ -242,6 +242,9 @@ class SANDBOX_POLICY_EXPORT SandboxLinux {
   // Only usable if StartBrokerProcess() was already called.
   bpf_dsl::ResultExpr HandleViaBroker(int sysno) const;
 
+  // Reports Landlock status through UMA metrics.
+  static void ReportLandlockStatus();
+
  private:
   friend struct base::DefaultSingletonTraits<SandboxLinux>;
 

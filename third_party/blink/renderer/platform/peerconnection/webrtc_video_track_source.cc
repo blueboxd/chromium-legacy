@@ -10,9 +10,11 @@
 #include "base/functional/callback_helpers.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "base/types/optional_util.h"
+#include "components/crash/core/common/crash_key.h"
 #include "media/base/media_switches.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/platform/webrtc/convert_to_webrtc_video_frame_buffer.h"
@@ -164,6 +166,23 @@ void WebRtcVideoTrackSource::OnFrameCaptured(
     // just ignore formats that we can not handle.
     LOG(ERROR) << "We cannot send frame with storage type: "
                << frame->AsHumanReadableString();
+
+    // Crash keys to provide details why NOTREACHED() code is executed.
+    // See https://issuetracker.google.com/335852784.
+    static crash_reporter::CrashKeyString<16> crash_key_format(
+        "video_frame_format");
+    static crash_reporter::CrashKeyString<16> crash_key_storage_type(
+        "video_frame_storage_type");
+    static crash_reporter::CrashKeyString<4> crash_key_is_mappable(
+        "video_frame_is_mappable");
+    static crash_reporter::CrashKeyString<4> crash_key_has_textures(
+        "video_frame_has_textures");
+
+    crash_key_format.Set(base::StringPrintf("%d", frame->format()));
+    crash_key_storage_type.Set(base::StringPrintf("%d", frame->storage_type()));
+    crash_key_is_mappable.Set(frame->IsMappable() ? "1" : "0");
+    crash_key_has_textures.Set(frame->HasTextures() ? "1" : "0");
+
     NOTREACHED();
     return;
   }
@@ -225,16 +244,16 @@ void WebRtcVideoTrackSource::OnFrameCaptured(
     auto timestamp_aligner_timestamp =
         base::TimeTicks() + base::Microseconds(timestamp_us);
     base::UmaHistogramCustomTimes(
-        "WebRTC.Video.CaptureTimeToTimestampAligner.Ms",
-        timestamp_aligner_timestamp -
+        "WebRTC.Video.CaptureTimeToTimestampAlignerPlus250.Ms",
+        base::Milliseconds(250) + timestamp_aligner_timestamp -
             frame->metadata().capture_begin_time.value(),
-        base::TimeDelta(), base::Milliseconds(250), 50);
+        base::TimeDelta(), base::Milliseconds(500), 50);
     if (frame->metadata().reference_time.has_value()) {
       base::UmaHistogramCustomTimes(
-          "WebRTC.Video.CaptureTimeToReferenceTime.Ms",
-          frame->metadata().reference_time.value() -
+          "WebRTC.Video.CaptureTimeToReferenceTimePlus250.Ms",
+          base::Milliseconds(250) + frame->metadata().reference_time.value() -
               frame->metadata().capture_begin_time.value(),
-          base::TimeDelta(), base::Milliseconds(250), 50);
+          base::TimeDelta(), base::Milliseconds(500), 50);
     }
     if (base::FeatureList::IsEnabled(
             features::kWebRtcUseCaptureBeginTimestamp)) {
@@ -243,9 +262,15 @@ void WebRtcVideoTrackSource::OnFrameCaptured(
   }
 
   std::optional<webrtc::Timestamp> capture_time_identifier;
-  // Set |capture_time_identifier| only when frame->timestamp() is a valid
-  // value (infinite values are invalid).
-  if (!frame->timestamp().is_inf()) {
+  // Set |capture_time_identifier| to capture_begin_time if available, else use
+  // frame->timestamp().
+  if (base::FeatureList::IsEnabled(features::kWebRtcUseCaptureBeginTimestamp) &&
+      frame->metadata().capture_begin_time) {
+    capture_time_identifier = webrtc::Timestamp::Micros(
+        frame->metadata().capture_begin_time->ToInternalValue());
+  } else if (!frame->timestamp().is_inf()) {
+    // Use only when frame->timestamp() is a valid value (infinite values are
+    // invalid).
     capture_time_identifier =
         webrtc::Timestamp::Micros(frame->timestamp().InMicroseconds());
   }

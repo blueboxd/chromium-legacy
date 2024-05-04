@@ -13,7 +13,7 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
-#include "chrome/browser/ui/web_applications/web_app_controller_browsertest.h"
+#include "chrome/browser/ui/web_applications/web_app_browsertest_base.h"
 #include "chrome/browser/ui/web_applications/web_app_launch_utils.h"
 #include "chrome/browser/web_applications/manifest_update_manager.h"
 #include "chrome/browser/web_applications/os_integration/os_integration_manager.h"
@@ -28,7 +28,6 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/embedder_support/switches.h"
 #include "components/page_load_metrics/browser/page_load_metrics_test_waiter.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
@@ -47,14 +46,14 @@ constexpr char kLaunchHandlerHistogram[] =
 
 using ClientMode = LaunchHandler::ClientMode;
 
-class WebAppLaunchHandlerBrowserTest : public WebAppControllerBrowserTest {
+class WebAppLaunchHandlerBrowserTest : public WebAppBrowserTestBase {
  public:
   WebAppLaunchHandlerBrowserTest() = default;
   ~WebAppLaunchHandlerBrowserTest() override = default;
 
-  // WebAppControllerBrowserTest:
+  // WebAppBrowserTestBase:
   void SetUpOnMainThread() override {
-    WebAppControllerBrowserTest::SetUpOnMainThread();
+    WebAppBrowserTestBase::SetUpOnMainThread();
     ASSERT_TRUE(embedded_test_server()->Start());
     web_app::test::WaitUntilReady(
         web_app::WebAppProvider::GetForTest(profile()));
@@ -234,7 +233,7 @@ IN_PROC_BROWSER_TEST_F(WebAppLaunchHandlerBrowserTest,
                                       ClientMode::kNavigateExisting, 3);
 }
 
-// TODO(crbug.com/1308334): Fix flakiness.
+// TODO(crbug.com/40219080): Fix flakiness.
 IN_PROC_BROWSER_TEST_F(WebAppLaunchHandlerBrowserTest,
                        DISABLED_ClientModeExistingClientRetain) {
   webapps::AppId app_id = InstallTestWebApp(
@@ -322,8 +321,7 @@ IN_PROC_BROWSER_TEST_F(WebAppLaunchHandlerBrowserTest,
 
   ui_test_utils::UrlLoadObserver url_observer(
       WebAppProvider::GetForTest(profile())->registrar_unsafe().GetAppLaunchUrl(
-          app_id),
-      content::NotificationService::AllSources());
+          app_id));
 
   // Launch the app three times in quick succession.
   Browser* browser_1 = LaunchWebAppBrowser(app_id);
@@ -457,7 +455,7 @@ IN_PROC_BROWSER_TEST_F(WebAppLaunchHandlerBrowserTest, GlobalLaunchQueue) {
 }
 
 // https://crbug.com/1444959
-// TODO(crbug.com/1459410): Re-enable this test
+// TODO(crbug.com/40919435): Re-enable this test
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
 #define MAYBE_SelectActiveBrowser DISABLED_SelectActiveBrowser
 #else
@@ -486,8 +484,7 @@ IN_PROC_BROWSER_TEST_F(WebAppLaunchHandlerBrowserTest,
   EXPECT_EQ(browser_3, browser_2);
 }
 
-class WebAppLaunchHandlerDisabledBrowserTest
-    : public WebAppControllerBrowserTest {
+class WebAppLaunchHandlerDisabledBrowserTest : public WebAppBrowserTestBase {
  public:
   WebAppLaunchHandlerDisabledBrowserTest() {
     feature_list_.InitWithFeatures(
@@ -497,9 +494,9 @@ class WebAppLaunchHandlerDisabledBrowserTest
 
   Profile* profile() { return browser()->profile(); }
 
-  // WebAppControllerBrowserTest:
+  // WebAppBrowserTestBase:
   void SetUpOnMainThread() override {
-    WebAppControllerBrowserTest::SetUpOnMainThread();
+    WebAppBrowserTestBase::SetUpOnMainThread();
     ASSERT_TRUE(embedded_test_server()->Start());
     web_app::test::WaitUntilReady(
         web_app::WebAppProvider::GetForTest(profile()));
@@ -526,8 +523,7 @@ IN_PROC_BROWSER_TEST_F(WebAppLaunchHandlerDisabledBrowserTest,
   histogram_tester.ExpectTotalCount(kLaunchHandlerHistogram, 0);
 }
 
-class WebAppLaunchHandlerOriginTrialBrowserTest
-    : public WebAppControllerBrowserTest {
+class WebAppLaunchHandlerOriginTrialBrowserTest : public WebAppBrowserTestBase {
  public:
   WebAppLaunchHandlerOriginTrialBrowserTest() {
     feature_list_.InitAndDisableFeature(
@@ -535,7 +531,7 @@ class WebAppLaunchHandlerOriginTrialBrowserTest
   }
   ~WebAppLaunchHandlerOriginTrialBrowserTest() override = default;
 
-  // WebAppControllerBrowserTest:
+  // WebAppBrowserTestBase:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     // Using the test public key from docs/origin_trials_integration.md#Testing.
     command_line->AppendSwitchASCII(
@@ -543,7 +539,7 @@ class WebAppLaunchHandlerOriginTrialBrowserTest
         "dRCs+TocuKkocNKa0AtZ4awrt9XKH2SQCI6o4FY6BNA=");
   }
   void SetUpOnMainThread() override {
-    WebAppControllerBrowserTest::SetUpOnMainThread();
+    WebAppBrowserTestBase::SetUpOnMainThread();
     web_app::test::WaitUntilReady(
         web_app::WebAppProvider::GetForTest(browser()->profile()));
   }

@@ -36,7 +36,7 @@ void RunWithStack(base::RunLoop* run_loop) {
 }
 
 // Helper class for WaitForPromise{Fulfillment,Rejection}(). It provides a
-// function that invokes |callback| when a ScriptPromise is resolved.
+// function that invokes |callback| when a ScriptPromiseUntyped is resolved.
 class ClosureRunnerCallable final : public ScriptFunction::Callable {
  public:
   explicit ClosureRunnerCallable(base::OnceClosure callback)
@@ -304,7 +304,8 @@ MockPermissionService& WakeLockTestingContext::GetPermissionService() {
   return permission_service_;
 }
 
-void WakeLockTestingContext::WaitForPromiseFulfillment(ScriptPromise promise) {
+void WakeLockTestingContext::WaitForPromiseFulfillment(
+    ScriptPromiseUntyped promise) {
   base::RunLoop run_loop;
   promise.Then(MakeGarbageCollected<ScriptFunction>(
       GetScriptState(),
@@ -317,7 +318,8 @@ void WakeLockTestingContext::WaitForPromiseFulfillment(ScriptPromise promise) {
 }
 
 // Synchronously waits for |promise| to be rejected.
-void WakeLockTestingContext::WaitForPromiseRejection(ScriptPromise promise) {
+void WakeLockTestingContext::WaitForPromiseRejection(
+    ScriptPromiseUntyped promise) {
   base::RunLoop run_loop;
   promise.Then(
       nullptr,
@@ -335,21 +337,22 @@ void WakeLockTestingContext::WaitForPromiseRejection(ScriptPromise promise) {
 
 // static
 v8::Promise::PromiseState ScriptPromiseUtils::GetPromiseState(
-    const ScriptPromise& promise) {
+    const ScriptPromise<WakeLockSentinel>& promise) {
   return promise.V8Promise()->State();
 }
 
 // static
 DOMException* ScriptPromiseUtils::GetPromiseResolutionAsDOMException(
-    const ScriptPromise& promise) {
-  return V8DOMException::ToWrappable(promise.GetIsolate(),
-                                     promise.V8Promise()->Result());
+    v8::Isolate* isolate,
+    const ScriptPromise<WakeLockSentinel>& promise) {
+  return V8DOMException::ToWrappable(isolate, promise.V8Promise()->Result());
 }
 
 // static
 WakeLockSentinel* ScriptPromiseUtils::GetPromiseResolutionAsWakeLockSentinel(
-    const ScriptPromise& promise) {
-  return V8WakeLockSentinel::ToWrappable(promise.GetIsolate(),
+    v8::Isolate* isolate,
+    const ScriptPromise<WakeLockSentinel>& promise) {
+  return V8WakeLockSentinel::ToWrappable(isolate,
                                          promise.V8Promise()->Result());
 }
 

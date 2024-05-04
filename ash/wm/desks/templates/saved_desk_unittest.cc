@@ -2303,11 +2303,11 @@ TEST_F(SavedDeskTest, ShowTemplatesInAlphabeticalOrder) {
   ASSERT_EQ(5ul, grid_items.size());
 
   // Tests that templates are sorted in alphabetical order.
-  EXPECT_EQ(u"1_template", grid_items[0]->GetAccessibleName());
-  EXPECT_EQ(u"a_template", grid_items[1]->GetAccessibleName());
-  EXPECT_EQ(u"A_template", grid_items[2]->GetAccessibleName());
-  EXPECT_EQ(u"b_template", grid_items[3]->GetAccessibleName());
-  EXPECT_EQ(u"B_template", grid_items[4]->GetAccessibleName());
+  EXPECT_EQ(u"Template, 1_template", grid_items[0]->GetAccessibleName());
+  EXPECT_EQ(u"Template, a_template", grid_items[1]->GetAccessibleName());
+  EXPECT_EQ(u"Template, A_template", grid_items[2]->GetAccessibleName());
+  EXPECT_EQ(u"Template, b_template", grid_items[3]->GetAccessibleName());
+  EXPECT_EQ(u"Template, B_template", grid_items[4]->GetAccessibleName());
 }
 
 // Tests that the color of the library button focus ring is as expected.
@@ -4773,4 +4773,13 @@ TEST_F(SavedDeskTest, SaveDeskFilterByProfileID) {
       QueryRestoreData(*GetAllEntries()[0], {}, win_2_id);
   EXPECT_FALSE(app_restore_data);
 }
+
+// Tests that we can enter tablet mode while in overview during a guest session
+// without crashing. Regression test for http://b/328708800.
+TEST_F(SavedDeskTest, NoCrashDuringGuest) {
+  SimulateGuestLogin();
+  ToggleOverview();
+  EnterTabletMode();
+}
+
 }  // namespace ash

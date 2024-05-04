@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/memory/raw_ptr.h"
+#include "base/memory/raw_ref.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "components/autofill/core/browser/autofill_client.h"
@@ -17,7 +18,7 @@
 
 namespace autofill {
 
-// TODO(crbug.com/1220990): Extract common functions to a parent class after
+// TODO(crbug.com/40186650): Extract common functions to a parent class after
 // full card request is removed from the flow.
 // Authenticates credit card unmasking through OTP (One-Time Password)
 // verification.
@@ -58,7 +59,7 @@ class CreditCardOtpAuthenticator : public OtpUnmaskDelegate {
     }
     Result result = kUnknown;
     raw_ptr<const CreditCard> card;
-    // TODO(crbug.com/1475052): Remove CVC.
+    // TODO(crbug.com/40927733): Remove CVC.
     std::u16string cvc;
   };
 
@@ -115,7 +116,7 @@ class CreditCardOtpAuthenticator : public OtpUnmaskDelegate {
   // the correct error message and end the session.
   void OnDidGetRealPan(
       AutofillClient::PaymentsRpcResult result,
-      payments::PaymentsNetworkInterface::UnmaskResponseDetails&
+      const payments::PaymentsNetworkInterface::UnmaskResponseDetails&
           response_details);
 
   // Reset the authenticator to initial states.
@@ -157,11 +158,11 @@ class CreditCardOtpAuthenticator : public OtpUnmaskDelegate {
   // Whether there is a SelectChallengeOption request ongoing.
   bool selected_challenge_option_request_ongoing_ = false;
 
-  // The associated autofill client.
-  raw_ptr<AutofillClient> autofill_client_;
+  // Whether user clicked the link to request a new OTP code.
+  bool new_otp_requested_ = false;
 
-  // The associated PaymentsNetworkInterface.
-  raw_ptr<payments::PaymentsNetworkInterface> payments_network_interface_;
+  // AutofillClient that owns `this`.
+  const raw_ref<AutofillClient> autofill_client_;
 
   // Weak pointer to object that is requesting authentication.
   base::WeakPtr<Requester> requester_;

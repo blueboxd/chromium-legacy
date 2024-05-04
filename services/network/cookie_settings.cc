@@ -10,6 +10,7 @@
 #include <optional>
 
 #include "base/containers/contains.h"
+#include "base/containers/fixed_flat_map.h"
 #include "base/feature_list.h"
 #include "base/functional/bind.h"
 #include "base/metrics/histogram_macros.h"
@@ -32,6 +33,7 @@
 #include "net/cookies/cookie_setting_override.h"
 #include "net/cookies/cookie_util.h"
 #include "net/cookies/static_cookie_policy.h"
+#include "services/network/tpcd/metadata/manager.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -47,8 +49,9 @@ bool AffectedByThirdPartyCookiePhaseout(
 }
 
 bool IsValidType(ContentSettingsType type) {
-  // Metadata exceptions are updated separately by
-  // tpcd::metadata::UpdaterService.
+  // ContentSettingsType::TPCD_METADATA_GRANTS settings are managed by the
+  // `network::tpcd::metadata::Manager` and are considered valid ContentSettings
+  // for CookieSettings.
   if (type == ContentSettingsType::TPCD_METADATA_GRANTS) {
     return true;
   }
@@ -112,6 +115,26 @@ bool IsOriginOpaqueHttpOrHttps(const url::Origin* top_frame_origin) {
   return url.SchemeIsHTTPOrHTTPS();
 }
 
+// This map should stay in sync with the `kProviderNamesSourceMap` in
+// components/content_settings/core/browser/host_content_settings_map.cc.
+// TODO(https://crbug.com/40538766): remove this mapping once we use enum
+// instead of string for storing setting source.
+constexpr auto kProviderNamesSourceMap =
+    base::MakeFixedFlatMap<base::StringPiece, content_settings::SettingSource>({
+        {"webui_allowlist", content_settings::SettingSource::kAllowList},
+        {"policy", content_settings::SettingSource::kPolicy},
+        {"supervised_user", content_settings::SettingSource::kSupervised},
+        {"extension", content_settings::SettingSource::kExtension},
+        {"installed_webapp_provider",
+         content_settings::SettingSource::kInstalledWebApp},
+        {"notification_android", content_settings::SettingSource::kUser},
+        {"one_time", content_settings::SettingSource::kUser},
+        {"preference", content_settings::SettingSource::kUser},
+        {"default", content_settings::SettingSource::kUser},
+        {"tests", content_settings::SettingSource::kUser},
+        {"tests_other", content_settings::SettingSource::kUser},
+    });
+
 }  // namespace
 
 // static
@@ -146,9 +169,6 @@ CookieSettings::CookieSettings() {
   for (auto type : GetContentSettingsTypes()) {
     set_content_settings(type, {});
   }
-  // Metadata grants are relevant for CookieSettings but not synced
-  // automatically. Initialize them as well.
-  set_content_settings(ContentSettingsType::TPCD_METADATA_GRANTS, {});
 }
 
 CookieSettings::~CookieSettings() = default;
@@ -156,7 +176,11 @@ CookieSettings::~CookieSettings() = default;
 void CookieSettings::set_content_settings(
     ContentSettingsType type,
     const ContentSettingsForOneType& settings) {
+  CHECK_NE(type, ContentSettingsType::TPCD_METADATA_GRANTS)
+      << "TPCD Metadata exceptions are managed by the "
+         "`network::tpcd::metadata::Manager`.";
   CHECK(IsValidType(type)) << static_cast<int>(type);
+
   // EntryIndex is only used if kHostIndexedMetadataGrants is enabled. Check
   // holds_alternative<>, not the flag, because b/328475709 is changing the flag
   // value during execution and leading to "bad variant access".
@@ -188,7 +212,7 @@ void CookieSettings::set_content_settings(
             ContentSettingsPattern::Wildcard(),
             ContentSettingsPattern::Wildcard(),
             base::Value(CONTENT_SETTING_ALLOW),
-            /*source=*/std::string(),
+            /*source=*/"default",
             /*incognito=*/false);
       }
     }
@@ -393,22 +417,8 @@ bool CookieSettings::AnnotateAndMoveUserBlockedCookies(
   }
   for (net::CookieWithAccessResult& cookie : excluded_cookies) {
     if (!IsCookieAllowed(cookie.cookie, setting_with_metadata)) {
-      // Use a different exclusion reason when the 3pc is blocked by browser.
-      if (IsThirdPartyPhaseoutEnabled() &&
-          AffectedByThirdPartyCookiePhaseout(cookie.cookie.SameSite(),
-                                             is_third_party_request,
-                                             cookie.cookie.IsPartitioned()) &&
-          !setting_with_metadata.is_explicit_setting()) {
-        cookie.access_result.status.AddExclusionReason(
-            net::CookieInclusionStatus::EXCLUDE_THIRD_PARTY_PHASEOUT);
-
-        if (first_party_set_metadata.AreSitesInSameFirstPartySet()) {
-          cookie.access_result.status.AddExclusionReason(
-              net::CookieInclusionStatus::
-                  EXCLUDE_THIRD_PARTY_BLOCKED_WITHIN_FIRST_PARTY_SET);
-        }
-      } else {
-        // User has a explicit setting to block 3pc.
+      if (!IsThirdPartyPhaseoutEnabled() ||
+          setting_with_metadata.is_explicit_setting()) {
         cookie.access_result.status.AddExclusionReason(
             net::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES);
       }
@@ -478,35 +488,46 @@ ContentSetting CookieSettings::GetContentSetting(
     content_settings::SettingInfo* info) const {
   SCOPED_UMA_HISTOGRAM_TIMER_MICROS(
       "ContentSettings.GetContentSetting.Network.Duration");
-  // EntryIndex is only used if kHostIndexedMetadataGrants is enabled. Check
-  // holds_alternative<>, not the flag, because b/328475709 is changing the flag
-  // value during execution and leading to "bad variant access".
-  if (absl::holds_alternative<EntryIndex>(content_settings_)) {
-    for (const auto& index : GetHostIndexedContentSettings(content_type)) {
-      const content_settings::RuleEntry* result =
-          index.Find(primary_url, secondary_url);
-      if (result) {
-        if (info) {
-          info->primary_pattern = result->first.primary_pattern;
-          info->secondary_pattern = result->first.secondary_pattern;
-          info->metadata = result->second.metadata;
-        }
-        return content_settings::ValueToContentSetting(result->second.value);
-      }
+
+  if (content_type == ContentSettingsType::TPCD_METADATA_GRANTS) {
+    if (tpcd_metadata_manager_) {
+      return tpcd_metadata_manager_->GetContentSetting(primary_url,
+                                                       secondary_url, info);
     }
   } else {
-    const ContentSettingPatternSource* result =
-        content_settings::FindContentSetting(primary_url, secondary_url,
-                                             GetContentSettings(content_type));
-    if (result) {
-      if (info) {
-        info->primary_pattern = result->primary_pattern;
-        info->secondary_pattern = result->secondary_pattern;
-        info->metadata = result->metadata;
+    // EntryIndex is only used if kHostIndexedMetadataGrants is enabled. Check
+    // holds_alternative<>, not the flag, because b/328475709 is changing the
+    // flag value during execution and leading to "bad variant access".
+    if (absl::holds_alternative<EntryIndex>(content_settings_)) {
+      for (const auto& index : GetHostIndexedContentSettings(content_type)) {
+        const content_settings::RuleEntry* result =
+            index.Find(primary_url, secondary_url);
+        if (result) {
+          if (info) {
+            info->SetAttributes(*result);
+            if (index.source().has_value() && !index.source()->empty()) {
+              info->source = kProviderNamesSourceMap.at(index.source().value());
+            }
+          }
+          return content_settings::ValueToContentSetting(result->second.value);
+        }
       }
-      return result->GetContentSetting();
+    } else {
+      const ContentSettingPatternSource* result =
+          content_settings::FindContentSetting(
+              primary_url, secondary_url, GetContentSettings(content_type));
+      if (result) {
+        if (info) {
+          info->SetAttributes(*result);
+          if (!result->source.empty()) {
+            info->source = kProviderNamesSourceMap.at(result->source);
+          }
+        }
+        return result->GetContentSetting();
+      }
     }
   }
+
   if (info) {
     info->primary_pattern = ContentSettingsPattern::Wildcard();
     info->secondary_pattern = ContentSettingsPattern::Wildcard();
@@ -532,12 +553,6 @@ bool CookieSettings::IsThirdPartyPhaseoutEnabled() const {
 bool CookieSettings::MitigationsEnabledFor3pcd() const {
   return net::cookie_util::IsForceThirdPartyCookieBlockingEnabled() ||
          mitigations_enabled_for_3pcd_;
-}
-
-bool CookieSettings::IsStorageAccessApiEnabled() const {
-  // The network service relies on the browser process passing
-  // storage_access_grants_ correctly.
-  return true;
 }
 
 }  // namespace network

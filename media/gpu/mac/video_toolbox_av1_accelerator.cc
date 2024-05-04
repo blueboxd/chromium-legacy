@@ -6,6 +6,7 @@
 
 #include "base/numerics/safe_conversions.h"
 #include "media/base/media_log.h"
+#include "media/base/video_types.h"
 #include "media/gpu/mac/vt_config_util.h"
 #include "third_party/libgav1/src/src/obu_parser.h"
 
@@ -148,7 +149,7 @@ bool VideoToolboxAV1Accelerator::OutputPicture(const AV1Picture& pic) {
   }
 
   // Submit for decoding.
-  // TODO(crbug.com/1331597): Replace all const ref AV1Picture with
+  // TODO(crbug.com/40227557): Replace all const ref AV1Picture with
   // scoped_refptr.
   decode_cb_.Run(std::move(sample), session_metadata_,
                  base::WrapRefCounted(const_cast<AV1Picture*>(&pic)));
@@ -168,9 +169,9 @@ bool VideoToolboxAV1Accelerator::ProcessFormat(
   DVLOG(4) << __func__;
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  // TODO(crbug.com/1331597): Consider merging with CreateFormatExtensions() to
+  // TODO(crbug.com/40227557): Consider merging with CreateFormatExtensions() to
   // avoid converting back and forth.
-  // TODO(crbug.com/1331597): Extract from sequence header instead?
+  // TODO(crbug.com/40227557): Extract from sequence header instead?
   VideoColorSpace color_space = pic.get_colorspace();
 
   VideoCodecProfile profile;
@@ -194,7 +195,7 @@ bool VideoToolboxAV1Accelerator::ProcessFormat(
     hdr_metadata = hdr_metadata_;
   }
 
-  // TODO(crbug.com/1493614): Should this be the current frame size, or the
+  // TODO(crbug.com/40936765): Should this be the current frame size, or the
   // sequence max frame size?
   gfx::Size coded_size(base::strict_cast<int>(pic.frame_header.width),
                        base::strict_cast<int>(pic.frame_header.height));
@@ -247,7 +248,9 @@ bool VideoToolboxAV1Accelerator::ProcessFormat(
     // Update session configuration.
     session_metadata_ = VideoToolboxDecompressionSessionMetadata{
         /*allow_software_decoding=*/false,
-        /*is_hbd=*/sequence_header.color_config.bitdepth > 8,
+        /*bit_depth=*/
+        base::checked_cast<uint8_t>(sequence_header.color_config.bitdepth),
+        /*chroma_sampling=*/VideoChromaSampling::k420,
         /*has_alpha=*/false,
         /*visible_rect=*/pic.visible_rect()};
   }

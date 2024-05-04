@@ -193,6 +193,19 @@ gfx::Rect BrowserNonClientFrameViewMac::GetBoundsForTabStripRegion(
     }
   }
 
+  // If we do not inset, the leftmost tab doesn't blend well with the bottom of
+  // the tab strip. Normally, we would naturally have an inset from either the
+  // caption buttons or the tab search button.
+  if (frame()->IsFullscreen()) {
+    if (features::IsChromeRefresh2023() &&
+        !browser_view()->UsesImmersiveFullscreenMode()) {
+      bounds.Inset(
+          gfx::Insets::TLBR(0, GetLayoutConstant(TOOLBAR_CORNER_RADIUS), 0, 0));
+    }
+  } else {
+    bounds.Inset(GetCaptionButtonInsets());
+  }
+
   return bounds;
 }
 
@@ -222,7 +235,9 @@ void BrowserNonClientFrameViewMac::LayoutWebAppWindowTitle(
   title_bounds.Inset(gfx::Insets::VH(0, title_padding));
   window_title_label.SetBoundsRect(GetCenteredTitleBounds(
       toolbar_bounds, title_bounds,
-      window_title_label.CalculatePreferredSize().width()));
+      window_title_label
+          .GetPreferredSize(views::SizeBounds(window_title_label.width(), {}))
+          .width()));
   // The background of the title area is always opaquely drawn, but when in
   // immersive fullscreen, it is drawn in a way that isn't detected by the
   // DCHECK in Label. As such, disable the DCHECK.
@@ -301,7 +316,7 @@ void BrowserNonClientFrameViewMac::UpdateFullscreenTopUI() {
               remote_cocoa::mojom::ToolbarVisibilityStyle::kAutohide},
              {FullscreenToolbarStyle::TOOLBAR_NONE,
               remote_cocoa::mojom::ToolbarVisibilityStyle::kNone}});
-    const auto* it = kStyleMap.find(new_style);
+    const auto it = kStyleMap.find(new_style);
     remote_cocoa::mojom::ToolbarVisibilityStyle mapped_style =
         it != kStyleMap.end()
             ? it->second

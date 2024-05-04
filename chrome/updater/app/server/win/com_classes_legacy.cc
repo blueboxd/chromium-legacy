@@ -4,18 +4,21 @@
 
 #include "chrome/updater/app/server/win/com_classes_legacy.h"
 
+#include <windows.h>
+
 #include <oleauto.h>
 #include <shellapi.h>
-#include <windows.h>
 #include <wrl/client.h>
 
 #include <optional>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/check.h"
 #include "base/check_op.h"
 #include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/functional/callback_helpers.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
@@ -33,6 +36,7 @@
 #include "base/types/expected_macros.h"
 #include "base/win/scoped_bstr.h"
 #include "base/win/scoped_handle.h"
+#include "base/win/scoped_variant.h"
 #include "chrome/updater/activity.h"
 #include "chrome/updater/app/app_server_win.h"
 #include "chrome/updater/constants.h"
@@ -785,7 +789,7 @@ class AppWebImpl : public IDispatchImpl<IAppWeb> {
               GetAppServerWinInstance()->config()->GetUpdaterPersistedData();
           const base::Version version =
               persisted_data->GetProductVersion(app_id);
-          if (!version.IsValid() || version != base::Version(kNullVersion)) {
+          if (version.IsValid() && version != base::Version(kNullVersion)) {
             return;
           }
           persisted_data->RemoveApp(app_id);
@@ -992,10 +996,6 @@ STDMETHODIMP LegacyProcessLauncherImpl::LaunchCmdElevated(
     const WCHAR* command_id,
     DWORD caller_proc_id,
     ULONG_PTR* proc_handle) {
-  ASSIGN_OR_RETURN(auto app_command_runner,
-                   AppCommandRunner::LoadAppCommand(UpdaterScope::kSystem,
-                                                    app_id, command_id));
-
   base::win::ScopedHandle caller_proc_handle;
   if (HRESULT hr = OpenCallerProcessHandle(caller_proc_id, caller_proc_handle);
       FAILED(hr)) {
@@ -1003,14 +1003,31 @@ STDMETHODIMP LegacyProcessLauncherImpl::LaunchCmdElevated(
     return hr;
   }
 
-  base::Process process;
-  if (HRESULT hr = app_command_runner.Run({}, process); FAILED(hr)) {
+  Microsoft::WRL::ComPtr<LegacyAppCommandWebImpl> app_command_web;
+  if (HRESULT hr = MakeAndInitializeComObject<LegacyAppCommandWebImpl>(
+          app_command_web, UpdaterScope::kSystem, app_id, command_id);
+      FAILED(hr)) {
+    return hr;
+  }
+
+  if (HRESULT hr =
+          app_command_web->execute(base::win::ScopedVariant::kEmptyVariant,
+                                   base::win::ScopedVariant::kEmptyVariant,
+                                   base::win::ScopedVariant::kEmptyVariant,
+                                   base::win::ScopedVariant::kEmptyVariant,
+                                   base::win::ScopedVariant::kEmptyVariant,
+                                   base::win::ScopedVariant::kEmptyVariant,
+                                   base::win::ScopedVariant::kEmptyVariant,
+                                   base::win::ScopedVariant::kEmptyVariant,
+                                   base::win::ScopedVariant::kEmptyVariant);
+      FAILED(hr)) {
     return hr;
   }
 
   ScopedKernelHANDLE duplicate_proc_handle;
   if (!::DuplicateHandle(
-          ::GetCurrentProcess(), process.Handle(), caller_proc_handle.Get(),
+          ::GetCurrentProcess(), app_command_web->process().Handle(),
+          caller_proc_handle.Get(),
           ScopedKernelHANDLE::Receiver(duplicate_proc_handle).get(),
           PROCESS_QUERY_LIMITED_INFORMATION | SYNCHRONIZE, FALSE, 0)) {
     HRESULT hr = HRESULTFromLastError();
@@ -1042,12 +1059,13 @@ HRESULT LegacyAppCommandWebImpl::RuntimeClassInitialize(
     UpdaterScope scope,
     const std::wstring& app_id,
     const std::wstring& command_id,
-    bool send_pings) {
+    PingSender ping_sender) {
   app_command_runner_ =
       AppCommandRunner::LoadAppCommand(scope, app_id, command_id);
   scope_ = scope;
   app_id_ = base::WideToUTF8(app_id);
-  send_pings_ = send_pings;
+  command_id_ = base::WideToUTF8(command_id);
+  ping_sender_ = std::move(ping_sender);
   return app_command_runner_.error_or(S_OK);
 }
 
@@ -1085,44 +1103,6 @@ STDMETHODIMP LegacyAppCommandWebImpl::get_output(BSTR* output) {
 
 namespace {
 
-struct ErrorParams {
-  int error_code = 0;
-  int extra_code1 = 0;
-};
-
-void SendPing(UpdaterScope scope,
-              const std::string& app_id,
-              ErrorParams error_params) {
-  AppServerWin::PostRpcTask(base::BindOnce(
-      [](UpdaterScope scope, const std::string& app_id,
-         ErrorParams error_params) {
-        scoped_refptr<Configurator> config =
-            GetAppServerWinInstance()->config();
-        scoped_refptr<PersistedData> persisted_data =
-            config->GetUpdaterPersistedData();
-        if (!persisted_data->GetUsageStatsEnabled() &&
-            !AreRawUsageStatsEnabled(scope)) {
-          return;
-        }
-
-        update_client::CrxComponent app_command_data;
-        app_command_data.ap = persisted_data->GetAP(app_id);
-        app_command_data.app_id = app_id;
-        app_command_data.brand = persisted_data->GetBrandCode(app_id);
-        app_command_data.requires_network_encryption = false;
-        app_command_data.version = persisted_data->GetProductVersion(app_id);
-
-        update_client::UpdateClientFactory(config)->SendPing(
-            app_command_data,
-            {.event_type =
-                 update_client::protocol_request::kEventAppCommandComplete,
-             .result = SUCCEEDED(error_params.error_code),
-             .error_code = error_params.error_code,
-             .extra_code1 = error_params.extra_code1},
-            base::DoNothing());
-      },
-      scope, app_id, error_params));
-}
 
 }  // namespace
 
@@ -1157,18 +1137,16 @@ STDMETHODIMP LegacyAppCommandWebImpl::execute(VARIANT substitution1,
   }
 
   const HRESULT hr = app_command_runner_->Run(substitutions, process_);
-  if (!send_pings_) {
-    return hr;
-  }
   if (FAILED(hr)) {
     VLOG(2) << __func__ << ": AppCommand failed to launch: " << hr;
-    SendPing(scope_, app_id_,
-             {
-                 .error_code = hr,
-                 .extra_code1 = kErrorAppCommandLaunchFailed,
-             });
+    ping_sender_.Run(scope_, app_id_, command_id_,
+                     {
+                         .error_code = hr,
+                         .extra_code1 = kErrorAppCommandLaunchFailed,
+                     });
     return hr;
   }
+
   base::ThreadPool::CreateSequencedTaskRunner(
       {base::MayBlock(), base::WithBaseSyncPrimitives()})
       ->PostTask(FROM_HERE,
@@ -1190,8 +1168,49 @@ STDMETHODIMP LegacyAppCommandWebImpl::execute(VARIANT substitution1,
                        };
                      },
                      process_.Duplicate())
-                     .Then(base::BindOnce(&SendPing, scope_, app_id_)));
+                     .Then(base::BindOnce(ping_sender_, scope_, app_id_,
+                                          command_id_)));
   return hr;
+}
+
+void LegacyAppCommandWebImpl::SendPing(UpdaterScope scope,
+                                       const std::string& app_id,
+                                       const std::string& command_id,
+                                       ErrorParams error_params) {
+  AppServerWin::PostRpcTask(base::BindOnce(
+      [](UpdaterScope scope, const std::string& app_id,
+         const std::string& command_id, ErrorParams error_params) {
+        scoped_refptr<Configurator> config =
+            GetAppServerWinInstance()->config();
+        scoped_refptr<PersistedData> persisted_data =
+            config->GetUpdaterPersistedData();
+        if (!persisted_data->GetUsageStatsEnabled() &&
+            !AreRawUsageStatsEnabled(scope)) {
+          return;
+        }
+
+        update_client::CrxComponent app_command_data;
+        app_command_data.ap = persisted_data->GetAP(app_id);
+        app_command_data.app_id = app_id;
+        app_command_data.brand = persisted_data->GetBrandCode(app_id);
+        app_command_data.requires_network_encryption = false;
+        app_command_data.version = persisted_data->GetProductVersion(app_id);
+
+        update_client::UpdateClientFactory(config)->SendPing(
+            app_command_data,
+            {
+                .event_type =
+                    update_client::protocol_request::kEventAppCommandComplete,
+                .result = SUCCEEDED(error_params.error_code),
+                .error_code = error_params.error_code,
+                .extra_code1 = error_params.extra_code1,
+                .app_command_id = command_id,
+            },
+            base::BindOnce([](update_client::Error error) {
+              VLOG(1) << "App command ping completed: " << error;
+            }));
+      },
+      scope, app_id, command_id, error_params));
 }
 
 PolicyStatusImpl::PolicyStatusImpl()

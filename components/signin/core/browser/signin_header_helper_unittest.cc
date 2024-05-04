@@ -77,7 +77,7 @@ class SigninHeaderHelperTest : public testing::Test {
     privacy_sandbox::RegisterProfilePrefs(prefs_.registry());
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
-    // TODO(crbug.com/1198528): remove this after the rollout.
+    // TODO(crbug.com/40760763): remove this after the rollout.
     if (!chromeos::LacrosService::Get()) {
       scoped_lacros_test_helper_ =
           std::make_unique<chromeos::ScopedLacrosServiceTestHelper>();
@@ -89,7 +89,9 @@ class SigninHeaderHelperTest : public testing::Test {
         false /* restore_session */, false /* should_record_metrics */);
     cookie_settings_ = new content_settings::CookieSettings(
         settings_map_.get(), &prefs_, /*tracking_protection_settings_=*/nullptr,
-        false, "");
+        false,
+        content_settings::CookieSettings::NoFedCmSharingPermissionsCallback(),
+        /*tpcd_metadata_manager=*/nullptr, "");
   }
 
   void TearDown() override { settings_map_->ShutdownOnUIThread(); }

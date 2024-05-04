@@ -150,15 +150,6 @@ class CONTENT_EXPORT WebContentsAccessibilityAndroid
       JNIEnv* env,
       jint unique_id);
 
-  // This block of methods is experimental.
-  jboolean UpdateCachedAccessibilityNodeInfo_exp(JNIEnv* env, jint id);
-  jboolean PopulateAccessibilityNodeInfo_exp(JNIEnv* env, jint id);
-  void UpdateAccessibilityNodeInfoBoundsRect_exp(
-      JNIEnv* env,
-      const base::android::ScopedJavaLocalRef<jobject>& obj,
-      jint id,
-      BrowserAccessibilityAndroid* node);
-
   // Populate Java accessibility data structures with info about a node.
   jboolean UpdateCachedAccessibilityNodeInfo(
       JNIEnv* env,
@@ -334,6 +325,8 @@ class CONTENT_EXPORT WebContentsAccessibilityAndroid
   void RequestAccessibilityTreeSnapshot(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& view_structure_root,
+      const base::android::JavaParamRef<jobject>& accessibility_coordinates,
+      const base::android::JavaParamRef<jobject>& view,
       const base::android::JavaParamRef<jobject>& on_done_callback);
 
   void ProcessCompletedAccessibilityTreeSnapshot(
@@ -414,6 +407,8 @@ class CONTENT_EXPORT WebContentsAccessibilityAndroid
 
   // Used by the accessibility tree snapshotter when snapshot is completed.
   base::android::ScopedJavaGlobalRef<jobject> on_done_callback_;
+  base::android::ScopedJavaGlobalRef<jobject> accessibility_coordinates_;
+  base::android::ScopedJavaGlobalRef<jobject> view_;
 
   bool frame_info_initialized_;
 

@@ -282,7 +282,6 @@ gfx::Rect TranslateWindowBoundsToParentDIP(ui::WaylandWindow* window,
   DCHECK(parent_window);
   DCHECK_EQ(window->applied_state().window_scale,
             parent_window->applied_state().window_scale);
-  DCHECK_EQ(window->ui_scale(), parent_window->ui_scale());
   return wl::TranslateBoundsToParentCoordinates(
       window->GetBoundsInDIP(), parent_window->GetBoundsInDIP());
 }
@@ -338,7 +337,7 @@ void TransformToWlArray(
 
 base::TimeTicks EventMillisecondsToTimeTicks(uint32_t milliseconds) {
 #if BUILDFLAG(IS_LINUX)
-  // TODO(crbug.com/1499638): `milliseconds` comes from Weston that
+  // TODO(crbug.com/40287874): `milliseconds` comes from Weston that
   // uses timestamp from libinput, which is different from TimeTicks.
   // Use EventTimeForNow(), for now.
   return ui::EventTimeForNow();

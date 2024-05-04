@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/chromeos/extensions/telemetry/api/events/events_api.h"
+
 #include <cstddef>
 #include <memory>
 #include <utility>
@@ -14,9 +16,10 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_future.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "chrome/browser/chromeos/extensions/telemetry/api/common/base_telemetry_extension_browser_test.h"
-#include "chrome/browser/chromeos/extensions/telemetry/api/events/events_api.h"
 #include "chrome/browser/chromeos/extensions/telemetry/api/events/fake_events_service.h"
+#include "chrome/browser/ui/browser.h"
 #include "chromeos/crosapi/mojom/probe_service.mojom.h"
 #include "chromeos/crosapi/mojom/telemetry_event_service.mojom.h"
 #include "chromeos/crosapi/mojom/telemetry_extension_exception.mojom.h"
@@ -677,8 +680,15 @@ IN_PROC_BROWSER_TEST_F(TelemetryExtensionEventsApiBrowserTest,
 #endif
 }
 
+#if BUILDFLAG(IS_CHROMEOS)
+#define MAYBE_KeyboardDiagnosticEventOpensDiagnosticApp \
+  DISABLED_KeyboardDiagnosticEventOpensDiagnosticApp
+#else
+#define MAYBE_KeyboardDiagnosticEventOpensDiagnosticApp \
+  KeyboardDiagnosticEventOpensDiagnosticApp
+#endif
 IN_PROC_BROWSER_TEST_F(TelemetryExtensionEventsApiBrowserTest,
-                       KeyboardDiagnosticEventOpensDiagnosticApp) {
+                       MAYBE_KeyboardDiagnosticEventOpensDiagnosticApp) {
   OpenAppUiAndMakeItSecure();
 
   GetFakeService()->SetOnSubscriptionChange(

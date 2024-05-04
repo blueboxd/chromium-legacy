@@ -6,6 +6,7 @@
 
 #include "third_party/blink/public/mojom/webid/federated_auth_request.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_identity_resolve_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_identity_user_info.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
@@ -27,7 +28,7 @@ namespace {
 using mojom::blink::RequestUserInfoStatus;
 
 void OnRequestUserInfo(
-    ScriptPromiseResolverTyped<IDLSequence<IdentityUserInfo>>* resolver,
+    ScriptPromiseResolver<IDLSequence<IdentityUserInfo>>* resolver,
     RequestUserInfoStatus status,
     std::optional<Vector<mojom::blink::IdentityUserInfoPtr>>
         all_user_info_ptr) {
@@ -60,24 +61,29 @@ void OnRequestUserInfo(
 
 }  // namespace
 
-ScriptPromiseTyped<IDLSequence<IdentityUserInfo>> IdentityProvider::getUserInfo(
+ScriptPromise<IDLSequence<IdentityUserInfo>> IdentityProvider::getUserInfo(
     ScriptState* script_state,
     const blink::IdentityProviderConfig* provider,
     ExceptionState& exception_state) {
   auto* resolver = MakeGarbageCollected<
-      ScriptPromiseResolverTyped<IDLSequence<IdentityUserInfo>>>(
+      ScriptPromiseResolver<IDLSequence<IdentityUserInfo>>>(
       script_state, exception_state.GetContext());
   auto promise = resolver->Promise();
   if (!resolver->GetExecutionContext()->IsFeatureEnabled(
           mojom::blink::PermissionsPolicyFeature::kIdentityCredentialsGet)) {
     resolver->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kNotAllowedError,
-        "The 'identity-credentials-get` feature is not enabled in this "
+        "The 'identity-credentials-get' feature is not enabled in this "
         "document."));
     return promise;
   }
 
   DCHECK(provider);
+
+  if (!provider->hasConfigURL()) {
+    resolver->RejectWithTypeError("Missing the provider's configURL.");
+    return promise;
+  }
 
   KURL provider_url(provider->configURL());
   String client_id = provider->clientId();
@@ -128,21 +134,22 @@ void IdentityProvider::close(ScriptState* script_state) {
   request->CloseModalDialogView();
 }
 
-void OnRegisterIdP(ScriptPromiseResolver* resolver, bool accepted) {
+void OnRegisterIdP(ScriptPromiseResolver<IDLBoolean>* resolver, bool accepted) {
   if (!accepted) {
     resolver->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kNotAllowedError,
         "User declined the permission to register the Identity Provider."));
     return;
   }
-  resolver->Resolve();
+  resolver->Resolve(true);
 }
 
-ScriptPromise IdentityProvider::registerIdentityProvider(
+ScriptPromise<IDLBoolean> IdentityProvider::registerIdentityProvider(
     ScriptState* script_state,
     const String& configURL) {
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
-  ScriptPromise promise = resolver->Promise();
+  auto* resolver =
+      MakeGarbageCollected<ScriptPromiseResolver<IDLBoolean>>(script_state);
+  auto promise = resolver->Promise();
 
   auto* request =
       CredentialManagerProxy::From(script_state)->FederatedAuthRequest();
@@ -152,21 +159,23 @@ ScriptPromise IdentityProvider::registerIdentityProvider(
   return promise;
 }
 
-void OnUnregisterIdP(ScriptPromiseResolver* resolver, bool accepted) {
+void OnUnregisterIdP(ScriptPromiseResolver<IDLUndefined>* resolver,
+                     bool accepted) {
   if (!accepted) {
-    resolver->Reject(MakeGarbageCollected<DOMException>(
+    resolver->RejectWithDOMException(
         DOMExceptionCode::kNotAllowedError,
-        "Not allowed to unregister the Identity Provider."));
+        "Not allowed to unregister the Identity Provider.");
     return;
   }
   resolver->Resolve();
 }
 
-ScriptPromise IdentityProvider::unregisterIdentityProvider(
+ScriptPromise<IDLUndefined> IdentityProvider::unregisterIdentityProvider(
     ScriptState* script_state,
     const String& configURL) {
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
-  ScriptPromise promise = resolver->Promise();
+  auto* resolver =
+      MakeGarbageCollected<ScriptPromiseResolver<IDLUndefined>>(script_state);
+  auto promise = resolver->Promise();
 
   auto* request =
       CredentialManagerProxy::From(script_state)->FederatedAuthRequest();
@@ -177,24 +186,35 @@ ScriptPromise IdentityProvider::unregisterIdentityProvider(
   return promise;
 }
 
-void OnResolveTokenRequest(ScriptPromiseResolver* resolver, bool accepted) {
+void OnResolveTokenRequest(ScriptPromiseResolver<IDLUndefined>* resolver,
+                           bool accepted) {
   if (!accepted) {
-    resolver->Reject(MakeGarbageCollected<DOMException>(
-        DOMExceptionCode::kNotAllowedError, "Not allowed to provide a token."));
+    resolver->RejectWithDOMException(DOMExceptionCode::kNotAllowedError,
+                                     "Not allowed to provide a token.");
     return;
   }
   resolver->Resolve();
 }
 
-ScriptPromise IdentityProvider::resolve(ScriptState* script_state,
-                                        const String& token) {
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
-  ScriptPromise promise = resolver->Promise();
+ScriptPromise<IDLUndefined> IdentityProvider::resolve(
+    ScriptState* script_state,
+    const String& token,
+    const IdentityResolveOptions* options) {
+  DCHECK(options);
+  String account_id;
+  if (options->hasAccountId() && !options->accountId().empty()) {
+    account_id = options->accountId();
+  }
+
+  auto* resolver =
+      MakeGarbageCollected<ScriptPromiseResolver<IDLUndefined>>(script_state);
+  auto promise = resolver->Promise();
 
   auto* request =
       CredentialManagerProxy::From(script_state)->FederatedAuthRequest();
   request->ResolveTokenRequest(
-      token, WTF::BindOnce(&OnResolveTokenRequest, WrapPersistent(resolver)));
+      account_id, token,
+      WTF::BindOnce(&OnResolveTokenRequest, WrapPersistent(resolver)));
 
   return promise;
 }

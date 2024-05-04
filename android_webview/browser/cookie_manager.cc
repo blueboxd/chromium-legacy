@@ -238,10 +238,11 @@ void CookieManager::MigrateCookieStorePath() {
 //
 // To execute a CookieTask synchronously you must arrange for Signal to be
 // called on the waitable event at some point. You can call the bool or int
-// versions of ExecCookieTaskSync, these will supply the caller with a dummy
-// callback which takes an int/bool, throws it away and calls Signal.
-// Alternatively you can call the version which supplies a Closure in which
-// case you must call Run on it when you want the unblock the calling code.
+// versions of ExecCookieTaskSync, these will supply the caller with a
+// placeholder callback which takes an int/bool, throws it away and calls
+// Signal. Alternatively you can call the version which supplies a Closure in
+// which case you must call Run on it when you want the unblock the calling
+// code.
 //
 // Ignore a bool callback.
 void CookieManager::ExecCookieTaskSync(
@@ -490,7 +491,11 @@ void CookieManager::SetCookieHelper(const GURL& host,
 
   std::unique_ptr<net::CanonicalCookie> cc(net::CanonicalCookie::Create(
       new_host, value, base::Time::Now(), std::nullopt /* server_time */,
-      net::CookiePartitionKey::FromWire(net::SchemefulSite(new_host))));
+      net::CookiePartitionKey::FromWire(
+          net::SchemefulSite(new_host),
+          net::CookiePartitionKey::AncestorChainBit::kSameSite),
+      /*block_truncated=*/true, net::CookieSourceType::kOther,
+      /*status=*/nullptr));
 
   if (!cc || !should_allow_cookie) {
     MaybeRunCookieCallback(std::move(callback), false);
@@ -555,21 +560,23 @@ void CookieManager::GetCookieListAsyncHelper(const GURL& host,
                                              base::OnceClosure complete) {
   net::CookieOptions options = net::CookieOptions::MakeAllInclusive();
 
-  // TODO(crbug.com/1225444): Complete partitioned cookies implementation for
+  // TODO(crbug.com/40188414): Complete partitioned cookies implementation for
   // WebView. The current implementation is a temporary fix for
   // crbug.com/1442333 to let the app access its 1p partitioned cookie.
   if (GetMojoCookieManager()) {
     GetMojoCookieManager()->GetCookieList(
         host, options,
-        net::CookiePartitionKeyCollection(
-            net::CookiePartitionKey::FromWire(net::SchemefulSite(host))),
+        net::CookiePartitionKeyCollection(net::CookiePartitionKey::FromWire(
+            net::SchemefulSite(host),
+            net::CookiePartitionKey::AncestorChainBit::kSameSite)),
         base::BindOnce(&CookieManager::GetCookieListCompleted,
                        base::Unretained(this), std::move(complete), result));
   } else {
     GetCookieStore()->GetCookieListWithOptionsAsync(
         host, options,
-        net::CookiePartitionKeyCollection(
-            net::CookiePartitionKey::FromWire(net::SchemefulSite(host))),
+        net::CookiePartitionKeyCollection(net::CookiePartitionKey::FromWire(
+            net::SchemefulSite(host),
+            net::CookiePartitionKey::AncestorChainBit::kSameSite)),
         base::BindOnce(&CookieManager::GetCookieListCompleted,
                        base::Unretained(this), std::move(complete), result));
   }
@@ -663,7 +670,7 @@ void CookieManager::RemoveAllCookiesHelper(
         base::BindOnce(&CookieManager::RemoveCookiesCompleted,
                        base::Unretained(this), std::move(callback)));
   } else {
-    // TODO(crbug.com/921655): Support clearing client hints here as well.
+    // TODO(crbug.com/40609350): Support clearing client hints here as well.
     GetCookieStore()->DeleteAllAsync(
         base::BindOnce(&CookieManager::RemoveCookiesCompleted,
                        base::Unretained(this), std::move(callback)));

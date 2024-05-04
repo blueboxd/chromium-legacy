@@ -7,6 +7,7 @@
 #include <map>
 #include <optional>
 #include <set>
+#include <string_view>
 #include <utility>
 
 #include "base/containers/span.h"
@@ -65,7 +66,7 @@ class NewTabPageTest : public InProcessBrowserTest,
   void DispatchProtocolMessage(content::DevToolsAgentHost* agent_host,
                                base::span<const uint8_t> message) override {
     std::optional<base::Value> maybe_parsed_message =
-        base::JSONReader::Read(base::StringPiece(
+        base::JSONReader::Read(std::string_view(
             reinterpret_cast<const char*>(message.data()), message.size()));
     CHECK(maybe_parsed_message.has_value());
     base::Value::Dict parsed_message =
@@ -213,26 +214,21 @@ class NewTabPageTest : public InProcessBrowserTest,
   base::OnceClosure lazy_load_quit_closure_;
 };
 
-// TODO(crbug.com/1250156): NewTabPageTest.LandingPagePixelTest is flaky on
+// TODO(crbug.com/40197892): NewTabPageTest.LandingPagePixelTest is flaky on
 // ubsan.
-// TODO(crbug.com/1377330): NewTabPageTest.LandingPagePixelTest is failing on
+// TODO(crbug.com/40874245): NewTabPageTest.LandingPagePixelTest is failing on
 // Win11 Tests x64.
-// TODO(crbug.com/1416880): It's also found flaky on Linux Tests, Linux Tests
+// TODO(crbug.com/40893756): It's also found flaky on Linux Tests, Linux Tests
 // (Wayland), linux-lacros-tester-rel, Mac12 Tests.
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-#define MAYBE_LandingPagePixelTest DISABLED_LandingPagePixelTest
-#else
-#define MAYBE_LandingPagePixelTest LandingPagePixelTest
-#endif
-IN_PROC_BROWSER_TEST_F(NewTabPageTest, MAYBE_LandingPagePixelTest) {
+IN_PROC_BROWSER_TEST_F(NewTabPageTest, DISABLED_LandingPagePixelTest) {
   WaitForLazyLoad();
   // By default WaitForNetworkLoad waits for all resources that have started
   // loading at this point. However, sometimes not all required resources have
   // started loading yet. Specifically, images set via -webkit-mask-image cause
   // grief. To work around this we specify resources we explicitly wait for even
   // if they haven't yet started loading.
-  // TODO(crbug.com/1250156): This is brittle and will rot easily. Find a better
-  // way to capture those resources.
+  // TODO(crbug.com/40197892): This is brittle and will rot easily. Find a
+  // better way to capture those resources.
   WaitForNetworkLoad({GURL("chrome://new-tab-page/icons/icon_pencil.svg")});
   WaitForAnimationFrame();
 

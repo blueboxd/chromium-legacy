@@ -30,6 +30,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
@@ -43,6 +44,7 @@ import org.chromium.base.supplier.LazyOneshotSupplier;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.base.test.util.Features;
 import org.chromium.base.test.util.Features.DisableFeatures;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -66,6 +68,7 @@ import java.util.List;
 /** Unit tests for {@link TabSwitcherPaneMediator}. */
 @RunWith(BaseRobolectricTestRunner.class)
 public class TabSwitcherPaneMediatorUnitTest {
+    @Rule public TestRule mProcessor = new Features.JUnitProcessor();
     private static final int UNGROUPED_TAB_ID = 1;
     private static final int GROUPED_TAB_1_ID = 2;
     private static final int GROUPED_TAB_2_ID = 3;
@@ -120,6 +123,9 @@ public class TabSwitcherPaneMediatorUnitTest {
         mUngroupedTab = mTabModel.getTabAt(0);
         mGroupedTab1 = mTabModel.getTabAt(1);
         mGroupedTab2 = mTabModel.getTabAt(2);
+        mUngroupedTab.setRootId(UNGROUPED_TAB_ID);
+        mGroupedTab1.setRootId(GROUPED_TAB_1_ID);
+        mGroupedTab2.setRootId(GROUPED_TAB_1_ID);
         when(mTabModelFilter.getRelatedTabList(UNGROUPED_TAB_ID))
                 .thenReturn(List.of(mUngroupedTab));
         when(mTabModelFilter.getRelatedTabList(GROUPED_TAB_1_ID))
@@ -128,6 +134,9 @@ public class TabSwitcherPaneMediatorUnitTest {
         when(mTabModelFilter.isTabInTabGroup(mGroupedTab1)).thenReturn(true);
         when(mTabModelFilter.isTabInTabGroup(mGroupedTab2)).thenReturn(true);
         when(mTabModelFilter.getTabModel()).thenReturn(mTabModel);
+        when(mTabModelFilter.indexOf(mUngroupedTab)).thenReturn(0);
+        when(mTabModelFilter.indexOf(mGroupedTab1)).thenReturn(1);
+        when(mTabModelFilter.indexOf(mGroupedTab2)).thenReturn(2);
 
         when(mTabGridDialogController.getHandleBackPressChangedSupplier())
                 .thenReturn(mDialogBackPressChangedSupplier);
@@ -361,6 +370,9 @@ public class TabSwitcherPaneMediatorUnitTest {
         index = 3;
         mMediator.scrollToTab(index);
         assertEquals(index, mModel.get(INITIAL_SCROLL_INDEX).intValue());
+
+        mMediator.scrollToTabById(GROUPED_TAB_2_ID);
+        assertEquals(1, mModel.get(INITIAL_SCROLL_INDEX).intValue());
     }
 
     @Test

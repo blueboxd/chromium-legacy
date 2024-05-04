@@ -168,7 +168,7 @@ scoped_refptr<SiteInstanceImpl> SiteInstanceImpl::CreateForServiceWorker(
   DCHECK(url_info.storage_partition_config.has_value());
 
   // This will create a new SiteInstance and BrowsingInstance.
-  // TODO(https://crbug.com/1221127): Verify that having different common COOP
+  // TODO(crbug.com/40186710): Verify that having different common COOP
   // origins does not hinder the ability of a ServiceWorker to share its page's
   // process.
   scoped_refptr<BrowsingInstance> instance(new BrowsingInstance(
@@ -277,7 +277,7 @@ scoped_refptr<SiteInstanceImpl> SiteInstanceImpl::CreateForFencedFrame(
     // we reuse the embedder's SiteInfo above. When the embedder is
     // a default SiteInstance, we explicitly create a SiteInfo through
     // CreateForGuest.
-    // TODO(crbug.com/1340662): When we support fenced frame process isolation
+    // TODO(crbug.com/40230422): When we support fenced frame process isolation
     // with partial or no site isolation modes, we will be able to reach this
     // code path and will need to also set is_fenced for the SiteInfo created
     // below.
@@ -462,7 +462,7 @@ void SiteInstanceImpl::ReuseExistingProcessIfPossible(
     return;
   }
 
-  // TODO(crbug.com/1055779): Don't try to reuse process if either of the
+  // TODO(crbug.com/40676483): Don't try to reuse process if either of the
   // SiteInstances are cross-origin isolated (uses COOP/COEP).
   SetProcessInternal(existing_process);
 }
@@ -1191,8 +1191,13 @@ bool SiteInstanceImpl::IsSameSite(const IsolationContext& isolation_context,
 
   // If the destination url is just a blank page, we treat them as part of the
   // same site.
-  if (dest_url.IsAboutBlank())
+  if (dest_url.IsAboutBlank()) {
+    // TODO(crbug.com/40266169): It's actually possible for the
+    // about:blank page to inherit an origin that doesn't match `src_origin`. In
+    // that case we shouldn't treat it as same-site. Consider changing this
+    // behavior if all tests can pass.
     return true;
+  }
 
   // If the source and destination URLs are equal excluding the hash, they have
   // the same site.  This matters for file URLs, where SameDomainOrHost() would

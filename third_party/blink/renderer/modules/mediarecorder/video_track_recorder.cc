@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/modules/mediarecorder/video_track_recorder.h"
+
 #include <memory>
 
 #include "base/functional/bind.h"
@@ -20,6 +21,7 @@
 #include "cc/paint/skia_paint_canvas.h"
 #include "media/base/async_destroy_video_encoder.h"
 #include "media/base/media_util.h"
+#include "media/base/video_codecs.h"
 #include "media/base/video_encoder_metrics_provider.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_util.h"
@@ -238,19 +240,11 @@ void UmaHistogramForCodec(bool uses_acceleration, CodecId codec_id) {
   UMA_HISTOGRAM_ENUMERATION("Media.MediaRecorder.Codec", histogram);
 }
 
-bool MustUseVEA(CodecId codec_id) {
-#if BUILDFLAG(USE_PROPRIETARY_CODECS) && !BUILDFLAG(ENABLE_OPENH264)
-  return codec_id == CodecId::kH264;
-#else
-  return false;
-#endif
-}
-
 // Returns the default codec profile for |codec_id|.
-media::VideoCodecProfile DefaultCodecProfile(
+std::optional<media::VideoCodecProfile> GetMediaVideoCodecProfileForSwEncoder(
     VideoTrackRecorder::CodecId codec_id) {
   switch (codec_id) {
-#if BUILDFLAG(ENABLE_OPENH264)
+#if BUILDFLAG(USE_PROPRIETARY_CODECS) && BUILDFLAG(ENABLE_OPENH264)
     case CodecId::kH264:
       return media::H264PROFILE_BASELINE;
 #endif  // BUILDFLAG(ENABLE_OPENH264)
@@ -263,9 +257,36 @@ media::VideoCodecProfile DefaultCodecProfile(
       return media::AV1PROFILE_MIN;
 #endif  // BUILDFLAG(ENABLE_LIBAOM)
     default:
-      NOTREACHED_NORETURN()
-          << "Unsupported codec: " << static_cast<int>(codec_id);
+      return std::nullopt;
   }
+}
+
+bool IsSoftwareEncoderAvailable(CodecId codec_id) {
+  return GetMediaVideoCodecProfileForSwEncoder(codec_id).has_value();
+}
+
+std::optional<media::VideoCodecProfile> GetMediaVideoCodecProfile(
+    VideoTrackRecorder::CodecProfile codec_profile,
+    const gfx::Size& input_size,
+    bool allow_vea_encoder) {
+  const bool can_use_vea = VideoTrackRecorderImpl::CanUseAcceleratedEncoder(
+      codec_profile, input_size.width(), input_size.height());
+  if (can_use_vea && allow_vea_encoder) {
+    // Hardware encoder will be used.
+    // If |codec_profile.profile| is specified by a client, then the returned
+    // profile is the same as it.
+    // Otherwise, CanUseAcceleratedEncoder() fills the codec profile available
+    // with a hardware encoder.
+    CHECK(codec_profile.profile.has_value());
+    return codec_profile.profile;
+  } else if (!IsSoftwareEncoderAvailable(codec_profile.codec_id)) {
+    LOG(ERROR) << "Can't use VEA, but must be able to use VEA, codec_id="
+               << static_cast<int>(codec_profile.codec_id);
+    return std::nullopt;
+  }
+  // Software encoder will be used.
+  return codec_profile.profile.value_or(
+      GetMediaVideoCodecProfileForSwEncoder(codec_profile.codec_id).value());
 }
 
 MediaRecorderEncoderWrapper::CreateEncoderCB
@@ -399,14 +420,10 @@ VideoTrackRecorderImpl::CodecId
 VideoTrackRecorderImpl::CodecEnumerator::GetPreferredCodecId(
     MediaTrackContainerType type) const {
   if (preferred_codec_id_ == CodecId::kLast) {
-#if BUILDFLAG(USE_PROPRIETARY_CODECS)
-    // TODO(crbug.com/1481264): Not all platforms support `h264` codecs so make
-    // `vp9` as a default after supporting it in the mp4.
     if (type == MediaTrackContainerType::kVideoMp4 ||
         type == MediaTrackContainerType::kAudioMp4) {
-      return CodecId::kH264;
+      return CodecId::kVp9;
     }
-#endif
     return CodecId::kVp8;
   }
 
@@ -501,6 +518,8 @@ void VideoTrackRecorderImpl::Encoder::StartFrameEncode(
   awaiting_first_frame_ = false;
 
   if (num_frames_in_encode_->count() > kMaxNumberOfFramesInEncode) {
+    LOCAL_HISTOGRAM_BOOLEAN("Media.MediaRecorder.DroppingFrameTooManyInEncode",
+                            true);
     DLOG(WARNING) << "Too many frames are queued up. Dropping this one.";
     return;
   }
@@ -686,8 +705,9 @@ VideoTrackRecorderImpl::Encoder::ConvertToI420ForSoftwareEncoder(
     scoped_refptr<media::VideoFrame> frame) {
   DCHECK_EQ(frame->format(), media::VideoPixelFormat::PIXEL_FORMAT_NV12);
 
-  if (frame->GetGpuMemoryBuffer())
+  if (frame->HasGpuMemoryBuffer()) {
     frame = media::ConvertToMemoryMappedFrame(frame);
+  }
   if (!frame)
     return nullptr;
 
@@ -720,7 +740,7 @@ bool VideoTrackRecorderImpl::CanUseAcceleratedEncoder(
     size_t width,
     size_t height,
     double framerate) {
-  if (!MustUseVEA(codec_profile.codec_id)) {
+  if (IsSoftwareEncoderAvailable(codec_profile.codec_id)) {
     if (width < kVEAEncoderMinResolutionWidth) {
       return false;
     }
@@ -827,13 +847,17 @@ void VideoTrackRecorderImpl::OnVideoFrameForTesting(
     bool allow_vea_encoder) {
   DVLOG(3) << __func__;
   if (!encoder_) {
-    DCHECK(!initialize_encoder_cb_.is_null());
+    CHECK(!initialize_encoder_cb_.is_null());
     initialize_encoder_cb_.Run(allow_vea_encoder, frame, timestamp);
   }
-  encoder_.AsyncCall(&Encoder::StartFrameEncode)
-      .WithArgs(WTF::CrossThreadBindRepeating(
-                    [](base::TimeTicks now) { return now; }, timestamp),
-                std::move(frame), timestamp);
+
+  // The encoder can be null in the case of the initialization failure.
+  if (encoder_) {
+    encoder_.AsyncCall(&Encoder::StartFrameEncode)
+        .WithArgs(WTF::CrossThreadBindRepeating(
+                      [](base::TimeTicks now) { return now; }, timestamp),
+                  std::move(frame), timestamp);
+  }
 }
 
 void VideoTrackRecorderImpl::ForceKeyFrameForNextFrameForTesting() {
@@ -999,30 +1023,22 @@ void VideoTrackRecorderImpl::InitializeEncoderOnEncoderSupportKnown(
   const gfx::Size& input_size = frame->visible_rect().size();
   const bool can_use_vea = CanUseAcceleratedEncoder(
       codec_profile, input_size.width(), input_size.height());
-  // If |can_use_vea| is true, codec_profile.profile must be filled after
-  // CanUseAcceleratedEncoder().
-  if (!codec_profile.profile.has_value()) {
-    CHECK(!can_use_vea);
-    codec_profile.profile = DefaultCodecProfile(codec_profile.codec_id);
-  }
+  CHECK(callback_interface());
 
-#if BUILDFLAG(USE_PROPRIETARY_CODECS) && !BUILDFLAG(ENABLE_OPENH264)
-  if (MustUseVEA(codec_profile.codec_id) &&
-      (!allow_vea_encoder || !can_use_vea)) {
-    // This should only happen if the H264 isn't supported by the VEA or an
-    // an error was thrown while using the VEA for encoding.
-    DLOG(ERROR) << "Can't use VEA, but must be able to use VEA...";
-    if (callback_interface()) {
-      callback_interface()->OnVideoEncodingError();
-    }
+  std::optional<media::VideoCodecProfile> profile =
+      GetMediaVideoCodecProfile(codec_profile, input_size, allow_vea_encoder);
+  if (!profile) {
+    callback_interface()->OnVideoEncodingError();
     return;
   }
-#endif
+
+  codec_profile.profile = *profile;
 
   // Avoid reinitializing |encoder_| when there are multiple frames sent to the
   // sink to initialize, https://crbug.com/698441.
-  if (encoder_)
+  if (encoder_) {
     return;
+  }
 
   DisconnectFromTrack();
 
@@ -1057,12 +1073,10 @@ void VideoTrackRecorderImpl::InitializeEncoderOnEncoderSupportKnown(
     }
   }
 
-  UMA_HISTOGRAM_BOOLEAN("Media.MediaRecorder.VEAUsed", create_vea_encoder);
   UmaHistogramForCodec(create_vea_encoder, codec_profile.codec_id);
   CHECK(encoder);
   base::WeakPtr<Encoder> weak_encoder = encoder->GetWeakPtr();
 
-  CHECK(callback_interface());
   auto metrics_provider =
       callback_interface()->CreateVideoEncoderMetricsProvider();
   CHECK(metrics_provider);

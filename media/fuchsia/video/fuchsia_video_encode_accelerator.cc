@@ -49,7 +49,7 @@ namespace media {
 namespace {
 
 // Hardcoded constants defined in the Amlogic driver.
-// TODO(crbug.com/1373287): Get this values from platform API rather than
+// TODO(crbug.com/42050532): Get this values from platform API rather than
 // hardcoding them.
 constexpr int kMaxResolutionWidth = 1920;
 constexpr int kMaxResolutionHeight = 1088;
@@ -71,7 +71,7 @@ constexpr size_t kOutputFrameConfigSize = 128 * 1024;
 
 const VideoCodecProfile kSupportedProfiles[] = {
     H264PROFILE_BASELINE,
-    // TODO(crbug.com/1373293): Support HEVC codec.
+    // TODO(crbug.com/40241992): Support HEVC codec.
 };
 
 fuchsia::sysmem::PixelFormatType GetPixelFormatType(
@@ -434,11 +434,11 @@ bool FuchsiaVideoEncodeAccelerator::Initialize(
     return false;
   }
 
-  // TODO(crbug.com/1373291): Support NV12 pixel format.
+  // TODO(crbug.com/40241991): Support NV12 pixel format.
   if (config.input_format != PIXEL_FORMAT_I420) {
     return false;
   }
-  // TODO(crbug.com/1373293): Support HEVC codec.
+  // TODO(crbug.com/40241992): Support HEVC codec.
   if (config.output_profile != H264PROFILE_BASELINE) {
     return false;
   }
@@ -498,7 +498,7 @@ void FuchsiaVideoEncodeAccelerator::Encode(scoped_refptr<VideoFrame> frame,
   // the frame's alignment, as `input_visible_size.width()` must be aligned to
   // `kWidthAlignment`.
   //
-  // TODO(crbug.com/1381293): Encode only the `visible_rect` of a frame.
+  // TODO(crbug.com/40245141): Encode only the `visible_rect` of a frame.
   if (frame->coded_size().width() > config_->input_visible_size.width() ||
       frame->coded_size().height() > config_->input_visible_size.height()) {
     OnError({EncoderStatus::Codes::kInvalidInputFrame,
@@ -516,7 +516,7 @@ void FuchsiaVideoEncodeAccelerator::RequestEncodingParametersChange(
     const Bitrate& bitrate,
     uint32_t framerate,
     const std::optional<gfx::Size>& size) {
-  // TODO(crbug.com/1373298): Implement RequestEncodingParameterChange.
+  // TODO(crbug.com/40241995): Implement RequestEncodingParameterChange.
   NOTIMPLEMENTED();
 }
 
@@ -528,7 +528,7 @@ void FuchsiaVideoEncodeAccelerator::Destroy() {
 }
 
 bool FuchsiaVideoEncodeAccelerator::IsFlushSupported() {
-  // TODO(crbug.com/1375924): Implement Flush.
+  // TODO(crbug.com/40242985): Implement Flush.
   return false;
 }
 
@@ -704,7 +704,7 @@ FuchsiaVideoEncodeAccelerator::CreateFormatDetails(
   format_details.set_domain(std::move(domain));
 
   // For now, hardcode mime type for H264.
-  // TODO(crbug.com/1373293): Support HEVC codec.
+  // TODO(crbug.com/40241992): Support HEVC codec.
   DCHECK(config.output_profile == H264PROFILE_BASELINE);
   format_details.set_mime_type("video/h264");
   fuchsia::media::H264EncoderSettings h264_settings;

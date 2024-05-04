@@ -30,9 +30,7 @@
 using testing::_;
 using testing::StrictMock;
 
-namespace ash {
-
-namespace tether {
+namespace ash::tether {
 
 namespace {
 
@@ -50,15 +48,11 @@ class MockOperationObserver : public ConnectTetheringOperation::Observer {
 
   ~MockOperationObserver() = default;
 
-  MOCK_METHOD1(OnConnectTetheringRequestSent,
-               void(multidevice::RemoteDeviceRef));
-  MOCK_METHOD3(OnSuccessfulConnectTetheringResponse,
-               void(multidevice::RemoteDeviceRef,
-                    const std::string&,
-                    const std::string&));
-  MOCK_METHOD2(OnConnectTetheringFailure,
-               void(multidevice::RemoteDeviceRef,
-                    ConnectTetheringOperation::HostResponseErrorCode));
+  MOCK_METHOD0(OnConnectTetheringRequestSent, void());
+  MOCK_METHOD2(OnSuccessfulConnectTetheringResponse,
+               void(const std::string&, const std::string&));
+  MOCK_METHOD1(OnConnectTetheringFailure,
+               void(ConnectTetheringOperation::HostResponseErrorCode));
 };
 
 }  // namespace
@@ -94,7 +88,7 @@ class ConnectTetheringOperationTest : public testing::Test {
         remote_device_, test_local_device_, std::move(fake_connection_attempt));
 
     operation = base::WrapUnique(new ConnectTetheringOperation(
-        remote_device_, fake_device_sync_client_.get(),
+        TetherHost(remote_device_), fake_device_sync_client_.get(),
         fake_secure_channel_client_.get(), false /* setup_required */));
     operation->SetTimerFactoryForTest(
         std::make_unique<cross_device::FakeTimerFactory>());
@@ -140,8 +134,8 @@ TEST_F(ConnectTetheringOperationTest, SuccessWithValidResponse) {
   static const std::string kTestPassword = "testPassword";
 
   // Verify that the Observer is called with success and the correct parameters.
-  EXPECT_CALL(mock_observer_, OnSuccessfulConnectTetheringResponse(
-                                  remote_device_, kTestSsid, kTestPassword));
+  EXPECT_CALL(mock_observer_,
+              OnSuccessfulConnectTetheringResponse(kTestSsid, kTestPassword));
 
   // Advance the clock in order to verify a non-zero response duration is
   // recorded and verified (below).
@@ -156,7 +150,7 @@ TEST_F(ConnectTetheringOperationTest, SuccessWithValidResponse) {
   response.set_password(kTestPassword);
   std::unique_ptr<MessageWrapper> message(new MessageWrapper(response));
 
-  operation_->OnMessageReceived(std::move(message), remote_device_);
+  operation_->OnMessageReceived(std::move(message));
 
   // Verify the response duration metric is recorded.
   histogram_tester_.ExpectTimeBucketCount(
@@ -170,11 +164,10 @@ TEST_F(ConnectTetheringOperationTest, SuccessWithValidResponse) {
 TEST_F(ConnectTetheringOperationTest, SuccessButInvalidResponse) {
   // Verify that the observer is called with failure and the appropriate error
   // code.
-  EXPECT_CALL(
-      mock_observer_,
-      OnConnectTetheringFailure(
-          remote_device_, ConnectTetheringOperation::HostResponseErrorCode::
-                              INVALID_HOTSPOT_CREDENTIALS));
+  EXPECT_CALL(mock_observer_,
+              OnConnectTetheringFailure(
+                  ConnectTetheringOperation::HostResponseErrorCode::
+                      INVALID_HOTSPOT_CREDENTIALS));
 
   // The ConnectTetheringResponse message does not contain the required SSID and
   // password fields.
@@ -183,7 +176,7 @@ TEST_F(ConnectTetheringOperationTest, SuccessButInvalidResponse) {
                                  ConnectTetheringResponse_ResponseCode_SUCCESS);
   std::unique_ptr<MessageWrapper> message(new MessageWrapper(response));
 
-  operation_->OnMessageReceived(std::move(message), remote_device_);
+  operation_->OnMessageReceived(std::move(message));
 }
 
 TEST_F(ConnectTetheringOperationTest, UnknownError) {
@@ -192,7 +185,6 @@ TEST_F(ConnectTetheringOperationTest, UnknownError) {
   EXPECT_CALL(
       mock_observer_,
       OnConnectTetheringFailure(
-          remote_device_,
           ConnectTetheringOperation::HostResponseErrorCode::UNKNOWN_ERROR));
 
   ConnectTetheringResponse response;
@@ -201,17 +193,16 @@ TEST_F(ConnectTetheringOperationTest, UnknownError) {
           ConnectTetheringResponse_ResponseCode_UNKNOWN_ERROR);
   std::unique_ptr<MessageWrapper> message(new MessageWrapper(response));
 
-  operation_->OnMessageReceived(std::move(message), remote_device_);
+  operation_->OnMessageReceived(std::move(message));
 }
 
 TEST_F(ConnectTetheringOperationTest, ProvisioningFailed) {
   // Verify that the observer is called with failure and the appropriate error
   // code.
-  EXPECT_CALL(
-      mock_observer_,
-      OnConnectTetheringFailure(
-          remote_device_, ConnectTetheringOperation::HostResponseErrorCode::
-                              PROVISIONING_FAILED));
+  EXPECT_CALL(mock_observer_,
+              OnConnectTetheringFailure(
+                  ConnectTetheringOperation::HostResponseErrorCode::
+                      PROVISIONING_FAILED));
 
   ConnectTetheringResponse response;
   response.set_response_code(
@@ -219,17 +210,16 @@ TEST_F(ConnectTetheringOperationTest, ProvisioningFailed) {
           ConnectTetheringResponse_ResponseCode_PROVISIONING_FAILED);
   std::unique_ptr<MessageWrapper> message(new MessageWrapper(response));
 
-  operation_->OnMessageReceived(std::move(message), remote_device_);
+  operation_->OnMessageReceived(std::move(message));
 }
 
 TEST_F(ConnectTetheringOperationTest, InvalidWifiApConfig) {
   // Verify that the observer is called with failure and the appropriate error
   // code.
-  EXPECT_CALL(
-      mock_observer_,
-      OnConnectTetheringFailure(
-          remote_device_, ConnectTetheringOperation::HostResponseErrorCode::
-                              INVALID_WIFI_AP_CONFIG));
+  EXPECT_CALL(mock_observer_,
+              OnConnectTetheringFailure(
+                  ConnectTetheringOperation::HostResponseErrorCode::
+                      INVALID_WIFI_AP_CONFIG));
 
   ConnectTetheringResponse response;
   response.set_response_code(
@@ -237,17 +227,16 @@ TEST_F(ConnectTetheringOperationTest, InvalidWifiApConfig) {
           ConnectTetheringResponse_ResponseCode_INVALID_WIFI_AP_CONFIG);
   std::unique_ptr<MessageWrapper> message(new MessageWrapper(response));
 
-  operation_->OnMessageReceived(std::move(message), remote_device_);
+  operation_->OnMessageReceived(std::move(message));
 }
 
 TEST_F(ConnectTetheringOperationTest, InvalidActiveExistingSoftApConfig) {
   // Verify that the observer is called with failure and the appropriate error
   // code.
-  EXPECT_CALL(
-      mock_observer_,
-      OnConnectTetheringFailure(
-          remote_device_, ConnectTetheringOperation::HostResponseErrorCode::
-                              INVALID_ACTIVE_EXISTING_SOFT_AP_CONFIG));
+  EXPECT_CALL(mock_observer_,
+              OnConnectTetheringFailure(
+                  ConnectTetheringOperation::HostResponseErrorCode::
+                      INVALID_ACTIVE_EXISTING_SOFT_AP_CONFIG));
 
   ConnectTetheringResponse response;
   response.set_response_code(
@@ -255,17 +244,16 @@ TEST_F(ConnectTetheringOperationTest, InvalidActiveExistingSoftApConfig) {
           ConnectTetheringResponse_ResponseCode_INVALID_ACTIVE_EXISTING_SOFT_AP_CONFIG);
   std::unique_ptr<MessageWrapper> message(new MessageWrapper(response));
 
-  operation_->OnMessageReceived(std::move(message), remote_device_);
+  operation_->OnMessageReceived(std::move(message));
 }
 
 TEST_F(ConnectTetheringOperationTest, InvalidNewSoftApConfig) {
   // Verify that the observer is called with failure and the appropriate error
   // code.
-  EXPECT_CALL(
-      mock_observer_,
-      OnConnectTetheringFailure(
-          remote_device_, ConnectTetheringOperation::HostResponseErrorCode::
-                              INVALID_NEW_SOFT_AP_CONFIG));
+  EXPECT_CALL(mock_observer_,
+              OnConnectTetheringFailure(
+                  ConnectTetheringOperation::HostResponseErrorCode::
+                      INVALID_NEW_SOFT_AP_CONFIG));
 
   ConnectTetheringResponse response;
   response.set_response_code(
@@ -273,12 +261,12 @@ TEST_F(ConnectTetheringOperationTest, InvalidNewSoftApConfig) {
           ConnectTetheringResponse_ResponseCode_INVALID_NEW_SOFT_AP_CONFIG);
   std::unique_ptr<MessageWrapper> message(new MessageWrapper(response));
 
-  operation_->OnMessageReceived(std::move(message), remote_device_);
+  operation_->OnMessageReceived(std::move(message));
 }
 
 // Tests that observers are notified when the connection request is sent.
 TEST_F(ConnectTetheringOperationTest, NotifyConnectTetheringRequest) {
-  EXPECT_CALL(mock_observer_, OnConnectTetheringRequestSent(remote_device_));
+  EXPECT_CALL(mock_observer_, OnConnectTetheringRequestSent());
 
   operation_->OnMessageSent(0 /* sequence_number */);
 }
@@ -288,17 +276,16 @@ TEST_F(ConnectTetheringOperationTest, NotifyConnectTetheringRequest) {
 TEST_F(ConnectTetheringOperationTest, GetMessageTimeoutSeconds) {
   // Setup required case.
   std::unique_ptr<ConnectTetheringOperation> operation(
-      new ConnectTetheringOperation(remote_device_,
-                                    fake_device_sync_client_.get(),
-                                    fake_secure_channel_client_.get(),
-                                    true /* setup_required */));
+      new ConnectTetheringOperation(
+          TetherHost(remote_device_), fake_device_sync_client_.get(),
+          fake_secure_channel_client_.get(), true /* setup_required */));
 
   EXPECT_EQ(ConnectTetheringOperation::kSetupRequiredResponseTimeoutSeconds,
             operation->GetMessageTimeoutSeconds());
 
   // Setup not required case.
   operation.reset(new ConnectTetheringOperation(
-      remote_device_, fake_device_sync_client_.get(),
+      TetherHost(remote_device_), fake_device_sync_client_.get(),
       fake_secure_channel_client_.get(), false /* setup_required */));
 
   EXPECT_EQ(ConnectTetheringOperation::kSetupNotRequiredResponseTimeoutSeconds,
@@ -333,6 +320,4 @@ TEST_F(ConnectTetheringOperationTest, ConnectRequestSentOnceAuthenticated) {
   EXPECT_EQ(expected_payload, sent_messages[0].first);
 }
 
-}  // namespace tether
-
-}  // namespace ash
+}  // namespace ash::tether

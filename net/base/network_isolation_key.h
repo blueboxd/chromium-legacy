@@ -28,8 +28,13 @@ class NetworkAnonymizationKey;
 
 namespace net {
 
-// Key used to isolate shared network stack resources used by requests based on
-// the context on which they were made.
+// NetworkIsolationKey (NIK) is used to partition shared netork state based on
+// the context in which the requests were made. It is used to divide the HTTP
+// cache, while the NetworkAnonymizationKey is used for most other network
+// state.
+//
+// The precise form of the NIK is still subject to experimentation. See
+// `network_anonymization_key.h` for details on keying terminology.
 class NET_EXPORT NetworkIsolationKey {
  public:
   // Full constructor.  When a request is initiated by the top frame, it must
@@ -46,7 +51,7 @@ class NET_EXPORT NetworkIsolationKey {
       std::optional<base::UnguessableToken>&& nonce = std::nullopt);
 
   // Legacy constructor.
-  // TODO(https://crbug.com/1145294):  Remove this in favor of above
+  // TODO(crbug.com/40729378):  Remove this in favor of above
   // constructor.
   NetworkIsolationKey(const url::Origin& top_frame_origin,
                       const url::Origin& frame_origin);

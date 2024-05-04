@@ -15,7 +15,6 @@
 #include "base/observer_list.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
-#include "chromeos/ash/components/multidevice/remote_device_ref.h"
 #include "chromeos/ash/components/tether/message_transfer_operation.h"
 
 namespace ash::device_sync {
@@ -57,7 +56,7 @@ class ConnectTetheringOperation : public MessageTransferOperation {
   class Factory {
    public:
     static std::unique_ptr<ConnectTetheringOperation> Create(
-        multidevice::RemoteDeviceRef device_to_connect,
+        const TetherHost& tether_host,
         device_sync::DeviceSyncClient* device_sync_client,
         secure_channel::SecureChannelClient* secure_channel_client,
         bool setup_required);
@@ -67,7 +66,7 @@ class ConnectTetheringOperation : public MessageTransferOperation {
    protected:
     virtual ~Factory();
     virtual std::unique_ptr<ConnectTetheringOperation> CreateInstance(
-        multidevice::RemoteDeviceRef devices_to_connect,
+        const TetherHost& tether_host,
         device_sync::DeviceSyncClient* device_sync_client,
         secure_channel::SecureChannelClient* secure_channel_client,
         bool setup_required) = 0;
@@ -78,14 +77,11 @@ class ConnectTetheringOperation : public MessageTransferOperation {
 
   class Observer {
    public:
-    virtual void OnConnectTetheringRequestSent(
-        multidevice::RemoteDeviceRef remote_device) = 0;
+    virtual void OnConnectTetheringRequestSent() = 0;
     virtual void OnSuccessfulConnectTetheringResponse(
-        multidevice::RemoteDeviceRef remote_device,
         const std::string& ssid,
         const std::string& password) = 0;
     virtual void OnConnectTetheringFailure(
-        multidevice::RemoteDeviceRef remote_device,
         HostResponseErrorCode error_code) = 0;
   };
 
@@ -100,16 +96,15 @@ class ConnectTetheringOperation : public MessageTransferOperation {
 
  protected:
   ConnectTetheringOperation(
-      multidevice::RemoteDeviceRef device_to_connect,
+      const TetherHost& tether_host,
       device_sync::DeviceSyncClient* device_sync_client,
       secure_channel::SecureChannelClient* secure_channel_client,
       bool setup_required);
 
   // MessageTransferOperation:
-  void OnDeviceAuthenticated(
-      multidevice::RemoteDeviceRef remote_device) override;
-  void OnMessageReceived(std::unique_ptr<MessageWrapper> message_wrapper,
-                         multidevice::RemoteDeviceRef remote_device) override;
+  void OnDeviceAuthenticated() override;
+  void OnMessageReceived(
+      std::unique_ptr<MessageWrapper> message_wrapper) override;
   void OnOperationFinished() override;
   MessageType GetMessageTypeForConnection() override;
   void OnMessageSent(int sequence_number) override;
@@ -150,7 +145,6 @@ class ConnectTetheringOperation : public MessageTransferOperation {
   static const uint32_t kSetupNotRequiredResponseTimeoutSeconds;
   static const uint32_t kSetupRequiredResponseTimeoutSeconds;
 
-  multidevice::RemoteDeviceRef remote_device_;
   raw_ptr<base::Clock> clock_;
   int connect_message_sequence_number_ = -1;
   bool setup_required_;

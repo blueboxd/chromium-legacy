@@ -17,21 +17,30 @@
 #include "base/android/build_info.h"
 #endif
 
+#include "third_party/dawn/include/dawn/webgpu_cpp.h"
+
 namespace gpu {
 
-bool IsWebGPUAdapterBlocklisted(const WGPUAdapterProperties& properties,
-                                const std::string& blocklist) {
+namespace detail {
+
+bool IsWebGPUAdapterBlocklisted(const wgpu::AdapterProperties& properties,
+                                const std::string& blocklist_string) {
 #if BUILDFLAG(IS_MAC)
   constexpr uint32_t kAMDVendorID = 0x1002;
   // Blocklisted due to https://crbug.com/tint/1094
   if (base::mac::MacOSMajorVersion() < 13 &&
       properties.vendorID == kAMDVendorID &&
-      properties.backendType == WGPUBackendType_Metal) {
+      properties.backendType == wgpu::BackendType::Metal) {
     return true;
   }
 #endif
 
 #if BUILDFLAG(IS_ANDROID)
+  // Blocklist the OpenGLES backend on Android for now.
+  if (properties.backendType == wgpu::BackendType::OpenGLES) {
+    return true;
+  }
+
   constexpr uint32_t kARMVendorID = 0x13B5;
   constexpr uint32_t kQualcommVendorID = 0x5143;
 
@@ -46,14 +55,22 @@ bool IsWebGPUAdapterBlocklisted(const WGPUAdapterProperties& properties,
   }
 #endif  // BUILDFLAG(IS_ANDROID)
 
-  // TODO(crbug.com/1266550): SwiftShader and CPU adapters are blocked until
+#if BUILDFLAG(IS_CHROMEOS)
+  // Blocklist WebGPU on this GPU. See b/331922614.
+  constexpr uint32_t kAMDVendorID = 0x1002;
+  if (properties.vendorID == kAMDVendorID && properties.deviceID == 0x98e4) {
+    return true;
+  }
+#endif
+
+  // TODO(crbug.com/40057808): SwiftShader and CPU adapters are blocked until
   // fully tested.
-  if (properties.adapterType == WGPUAdapterType_CPU) {
+  if (properties.adapterType == wgpu::AdapterType::CPU) {
     return true;
   }
 
   // TODO(dawn:1705): d3d11 is not full implemented yet.
-  if (properties.backendType == WGPUBackendType_D3D11) {
+  if (properties.backendType == wgpu::BackendType::D3D11) {
     return true;
   }
 
@@ -64,7 +81,7 @@ bool IsWebGPUAdapterBlocklisted(const WGPUAdapterProperties& properties,
   };
 
   auto blocked_patterns = base::SplitString(
-      blocklist, "|", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+      blocklist_string, "|", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
 
   for (const auto& blocked_pattern : blocked_patterns) {
     std::vector<std::string> segments = base::SplitString(
@@ -98,6 +115,15 @@ bool IsWebGPUAdapterBlocklisted(const WGPUAdapterProperties& properties,
     return true;
   }
   return false;
+}
+
+}  // namespace detail
+
+bool IsWebGPUAdapterBlocklisted(const wgpu::Adapter& adapter,
+                                const std::string& blocklist_string) {
+  wgpu::AdapterProperties properties;
+  adapter.GetProperties(&properties);
+  return detail::IsWebGPUAdapterBlocklisted(properties, blocklist_string);
 }
 
 }  // namespace gpu

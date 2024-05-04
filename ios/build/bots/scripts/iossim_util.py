@@ -23,7 +23,7 @@ MAX_WAIT_TIME_TO_DELETE_RUNTIME = 45  # 45 seconds
 SIMULATOR_DEFAULT_PATH = os.path.expanduser(
     '~/Library/Developer/CoreSimulator/Devices')
 
-# TODO(crbug.com/1441931): remove Legacy Download once iOS 15.5 is deprecated
+# TODO(crbug.com/40910268): remove Legacy Download once iOS 15.5 is deprecated
 IOS_SIM_RUNTIME_BUILTIN_STATE = ['Legacy Download', 'Bundled with Xcode']
 
 
@@ -277,7 +277,7 @@ def copy_trusted_certificate(cert_path, udid):
     cert_path: (str) A path for the cert
     udid: (str) UDID of a simulator.
   """
-  # TODO(crbug.com/1351820): Update wpr runner to use this function.
+  # TODO(crbug.com/40234635): Update wpr runner to use this function.
   if not os.path.exists(cert_path):
     LOGGER.error('Failed to find the cert path %s', cert_path)
     return

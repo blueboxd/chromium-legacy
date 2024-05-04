@@ -13,7 +13,7 @@
 #include "build/build_config.h"
 #include "components/signin/public/base/consent_level.h"
 
-// TODO(crbug.com/1165828): Clean up feedv1 features.
+// TODO(crbug.com/40741748): Clean up feedv1 features.
 
 namespace feed {
 
@@ -27,9 +27,6 @@ BASE_DECLARE_FEATURE(kInterestFeedV2Scrolling);
 BASE_DECLARE_FEATURE(kInterestFeedNoticeCardAutoDismiss);
 #endif
 
-// Feature that allows users to keep up with and consume web content.
-BASE_DECLARE_FEATURE(kWebFeed);
-
 // Use the new DiscoFeed endpoint.
 BASE_DECLARE_FEATURE(kDiscoFeedEndpoint);
 
@@ -40,11 +37,6 @@ BASE_DECLARE_FEATURE(kXsurfaceMetricsReporting);
 // Feature that shows placeholder cards instead of a loading spinner at first
 // load.
 BASE_DECLARE_FEATURE(kFeedLoadingPlaceholder);
-
-// Param allowing animations to be disabled when showing the placeholder on
-// instant start.
-extern const base::FeatureParam<bool>
-    kEnableFeedLoadingPlaceholderAnimationOnInstantStart;
 
 // Feature that allows tuning the size of the image memory cache. Value is a
 // percentage of the maximum size calculated for the device.
@@ -127,6 +119,11 @@ BASE_DECLARE_FEATURE(kFeedSportsCard);
 
 // Feature that enables refreshing feed when Chrome restarts.
 BASE_DECLARE_FEATURE(kRefreshFeedOnRestart);
+
+// Feature that enables feed containment.
+BASE_DECLARE_FEATURE(kFeedContainment);
+
+bool IsWebFeedEnabledForLocale(const std::string& country);
 
 }  // namespace feed
 

@@ -309,7 +309,7 @@ TEST_F(FormCacheBrowserTest, ExtractFramesTwice) {
   EXPECT_TRUE(forms.removed_forms.empty());
 }
 
-// TODO(crbug.com/1117028) Adjust expectations when we omit invisible iframes.
+// TODO(crbug.com/40144964) Adjust expectations when we omit invisible iframes.
 TEST_F(FormCacheBrowserTest, ExtractFramesAfterVisibilityChange) {
   LoadHTML(R"(
     <form id="form1">
@@ -434,16 +434,16 @@ void FillAndCheckState(
     FormFieldData* value_to_fill = FindFieldByName(
         values_to_fill, field_to_fill.element->NameForAutofill());
     ASSERT_TRUE(value_to_fill != nullptr);
-    value_to_fill->value = field_to_fill.value;
-    value_to_fill->is_autofilled = true;
+    value_to_fill->set_value(field_to_fill.value);
+    value_to_fill->set_is_autofilled(true);
   }
 
   if (checkbox_element) {
     FormFieldData* value_to_fill =
         FindFieldByName(values_to_fill, checkbox_element->NameForAutofill());
     ASSERT_TRUE(value_to_fill != nullptr);
-    value_to_fill->check_status = fill_checkbox_check_status;
-    value_to_fill->is_autofilled = true;
+    value_to_fill->set_check_status(fill_checkbox_check_status);
+    value_to_fill->set_is_autofilled(true);
   }
 
   std::vector<FormFieldData::FillData> fields_to_fill;
@@ -451,7 +451,7 @@ void FillAndCheckState(
   for (const FormFieldData& field : values_to_fill.fields) {
     fields_to_fill.emplace_back(field);
   }
-  form_util::ApplyFormAction(
+  form_util::ApplyFieldsAction(
       document, fields_to_fill, mojom::FormActionType::kFill,
       mojom::ActionPersistence::kFill, field_data_manager);
 
@@ -463,46 +463,6 @@ void FillAndCheckState(
     bool expect_checked = (fill_checkbox_check_status == CheckStatus::kChecked);
     EXPECT_EQ(expect_checked, checkbox_element->IsChecked());
   }
-}
-
-TEST_F(FormCacheBrowserTest, FillAndClear) {
-  // TODO(crbug.com/1422114): Make test work without explicit <selectlist>
-  // tabindex.
-  LoadHTML(R"(
-    <input type="text" name="text" id="text">
-    <select name="select" id="select">
-      <option value="first">first</option>
-      <option value="second" selected>second</option>
-    </select>
-    <selectlist name="selectlist" id="selectlist" tabindex=0>
-      <option value="uno">uno</option>
-      <option value="dos" selected>dos</option>
-    </selectlist>
-  )");
-
-  FormCache form_cache(GetMainFrame());
-  FormCache::UpdateFormCacheResult forms = UpdateFormCache(form_cache);
-
-  EXPECT_THAT(forms.updated_forms, ElementsAre(HasId(FormRendererId())));
-  EXPECT_TRUE(forms.removed_forms.empty());
-
-  WebDocument doc = GetMainFrame()->GetDocument();
-  auto text = GetFormControlElementById(doc, "text");
-  auto select_element = GetFormControlElementById(doc, "select");
-  auto selectlist_element = GetFormControlElementById(doc, "selectlist");
-
-  FillAndCheckState(doc, forms.updated_forms[0], GetFieldDataManager(),
-                    {{raw_ref(text), u"test"},
-                     {raw_ref(select_element), u"first"},
-                     {raw_ref(selectlist_element), u"uno"}});
-
-  // Validate that clearing works, in particular that the previous values
-  // were saved correctly.
-  form_cache.ClearSectionWithElement(text, GetFieldDataManager());
-
-  EXPECT_EQ("", text.Value().Ascii());
-  EXPECT_EQ("second", select_element.Value().Ascii());
-  EXPECT_EQ("dos", selectlist_element.Value().Ascii());
 }
 
 // Tests that correct focus, change and blur events are emitted during the
@@ -540,13 +500,10 @@ TEST_F(FormCacheBrowserTest,
       GetFormControlElementById(GetMainFrame()->GetDocument(), "fname");
 
   // Simulate filling the form using Autofill.
-  form_util::ApplyFormAction(GetMainFrame()->GetDocument(), values_to_fill,
-                             mojom::FormActionType::kFill,
-                             mojom::ActionPersistence::kFill,
-                             GetFieldDataManager());
-
-  // Simulate clearing the form.
-  form_cache.ClearSectionWithElement(fname, GetFieldDataManager());
+  form_util::ApplyFieldsAction(GetMainFrame()->GetDocument(), values_to_fill,
+                               mojom::FormActionType::kFill,
+                               mojom::ActionPersistence::kFill,
+                               GetFieldDataManager());
 
   // Expected Result in order:
   // - from filling
@@ -556,55 +513,7 @@ TEST_F(FormCacheBrowserTest,
   //  * Change lname
   //  * Blur lname
   //  * Focus fname
-  // - from clearing
-  //  * Change fname
-  //  * Blur fname
-  //  * Focus lname
-  //  * Change lname
-  //  * Blur lname
-  //  * Focus fname
-  EXPECT_EQ(GetFocusLog(), "c0b0f1c1b1f0c0b0f1c1b1f0");
-}
-
-TEST_F(FormCacheBrowserTest, FreeDataOnElementRemoval) {
-  LoadHTML(R"(
-    <div id="container">
-      <input type="text" name="text" id="text">
-      <input type="checkbox" checked name="checkbox" id="checkbox">
-      <select name="select" id="select">
-        <option value="first">first</option>
-        <option value="second" selected>second</option>
-      </select>
-      <selectlist name="selectlist" id="selectlist">
-        <option value="first">first</option>
-        <option value="second" selected>second</option>
-      </selectlist>
-    </div>
-  )");
-
-  FormCache form_cache(GetMainFrame());
-  FormCache::UpdateFormCacheResult forms = UpdateFormCache(form_cache);
-
-  EXPECT_THAT(forms.updated_forms, ElementsAre(HasId(FormRendererId())));
-  EXPECT_TRUE(forms.removed_forms.empty());
-
-  EXPECT_EQ(1u, test_api(form_cache).initial_select_values_size());
-  EXPECT_EQ(1u, test_api(form_cache).initial_selectlist_values_size());
-  EXPECT_EQ(1u, test_api(form_cache).initial_checked_state_size());
-
-  ExecuteJavaScriptForTests(R"(
-    const container = document.getElementById('container');
-    while (container.childElementCount > 0) {
-      container.removeChild(container.children.item(0));
-    }
-  )");
-
-  forms = UpdateFormCache(form_cache);
-  EXPECT_TRUE(forms.updated_forms.empty());
-  EXPECT_THAT(forms.removed_forms, ElementsAre(FormRendererId()));
-  EXPECT_EQ(0u, test_api(form_cache).initial_select_values_size());
-  EXPECT_EQ(0u, test_api(form_cache).initial_selectlist_values_size());
-  EXPECT_EQ(0u, test_api(form_cache).initial_checked_state_size());
+  EXPECT_EQ(GetFocusLog(), "c0b0f1c1b1f0");
 }
 
 // Test that the FormCache does not contain empty forms.
@@ -687,7 +596,7 @@ TEST_F(FormCacheBrowserTest, FrameLimit) {
 // - the forms [kMaxExtractableChildFrames, kMaxExtractableFields) should have
 //   empty FormData::child_frames,
 // - the forms [kMaxExtractableFields, end) should be skipped.
-// TODO(https://crbug.com/1287782): Flaky on android.
+// TODO(crbug.com/40816477): Flaky on android.
 #if BUILDFLAG(IS_ANDROID)
 #define MAYBE_FieldAndFrameLimit DISABLED_FieldAndFrameLimit
 #else

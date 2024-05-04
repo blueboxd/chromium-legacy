@@ -7,6 +7,7 @@
 #include <string>
 #include <utility>
 
+#include "base/feature_list.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
@@ -27,6 +28,7 @@
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/scope_set.h"
 #include "components/supervised_user/core/browser/supervised_user_service.h"
+#include "components/supervised_user/core/common/features.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_util.h"
@@ -38,8 +40,10 @@
 #include "extensions/common/permissions/permission_set.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "ui/accessibility/ax_enums.mojom-shared.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/base/interaction/element_identifier.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
@@ -59,6 +63,7 @@
 #include "ui/views/layout/box_layout_view.h"
 #include "ui/views/layout/table_layout_view.h"
 #include "ui/views/metadata/view_factory.h"
+#include "ui/views/view.h"
 #include "ui/views/view_class_properties.h"
 
 namespace {
@@ -83,10 +88,15 @@ class MaybeEmptyLabel : public views::Label {
   // views::Label:
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
     views::Label::GetAccessibleNodeData(node_data);
-    if (!GetText().empty())
+    if (!GetText().empty()) {
       node_data->SetNameChecked(GetText());
-    else
+    } else {
       node_data->SetNameExplicitlyEmpty();
+    }
+
+    // Set the role to kAlert as this is required for
+    // sending accessibility notification alerts.
+    node_data->role = ax::mojom::Role::kAlert;
   }
 };
 
@@ -99,6 +109,13 @@ TestParentPermissionDialogViewObserver* test_view_observer = nullptr;
 
 DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(ParentPermissionDialog,
                                       kDialogViewIdForTesting);
+DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(
+    ParentPermissionDialog,
+    kExtensionsParentApprovalVerificationTextIdForTesting);
+DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(ParentPermissionDialog,
+                                      kParentAccountTextIdForTesting);
+DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(ParentPermissionDialog,
+                                      kIncorrectParentPasswordIdForTesting);
 
 // Create the parent permission input section of the dialog and
 // listens for updates to its controls.
@@ -107,7 +124,9 @@ class ParentPermissionInputSection : public views::TextfieldController {
   ParentPermissionInputSection(
       ParentPermissionDialogView* main_view,
       const std::vector<std::u16string>& parent_permission_email_addresses,
-      int available_width)
+      int available_width,
+      const std::string& child_name,
+      bool is_extension_permission_dialog)
       : main_view_(main_view) {
     DCHECK_GT(parent_permission_email_addresses.size(), 0u);
 
@@ -118,16 +137,21 @@ class ParentPermissionInputSection : public views::TextfieldController {
                             views::DISTANCE_RELATED_CONTROL_VERTICAL))
                     .Build();
 
-    if (parent_permission_email_addresses.size() > 1) {
-      // If there is more than one parent listed, show radio buttons.
-      auto select_parent_label = std::make_unique<views::Label>(
-          l10n_util::GetStringUTF16(
-              IDS_PARENT_PERMISSION_PROMPT_SELECT_PARENT_LABEL),
-          views::style::CONTEXT_DIALOG_BODY_TEXT, views::style::STYLE_PRIMARY);
-      select_parent_label->SetHorizontalAlignment(
-          gfx::HorizontalAlignment::ALIGN_LEFT);
-      view->AddChildView(std::move(select_parent_label));
+    bool has_more_than_one_parent =
+        parent_permission_email_addresses.size() > 1;
+    if (is_extension_permission_dialog &&
+        supervised_user::
+            IsSupervisedUserSkipParentApprovalToInstallExtensionsEnabled() &&
+        base::FeatureList::IsEnabled(
+            supervised_user::kUpdatedSupervisedUserExtensionApprovalStrings)) {
+      AddExtensionParentPermissionLabels(
+          view.get(), is_extension_permission_dialog, child_name);
+    } else {
+      AddParentAccountLabel(view.get(), has_more_than_one_parent);
+    }
 
+    if (has_more_than_one_parent) {
+      // If there is more than one parent listed, show radio buttons.
       // Add first parent radio button
       auto parent_0_radio_button = std::make_unique<views::RadioButton>(
           std::u16string(parent_permission_email_addresses[0]), 1 /* group */);
@@ -163,15 +187,6 @@ class ParentPermissionInputSection : public views::TextfieldController {
       main_view_->SetSelectedParentPermissionEmail(
           parent_permission_email_addresses[0]);
     } else {
-      // If there is just one parent, show a label with that parent's email.
-      auto parent_account_label = std::make_unique<views::Label>(
-          l10n_util::GetStringUTF16(
-              IDS_PARENT_PERMISSION_PROMPT_PARENT_ACCOUNT_LABEL),
-          views::style::CONTEXT_DIALOG_BODY_TEXT, views::style::STYLE_PRIMARY);
-      parent_account_label->SetHorizontalAlignment(
-          gfx::HorizontalAlignment::ALIGN_LEFT);
-      view->AddChildView(std::move(parent_account_label));
-
       auto parent_email_label =
           std::make_unique<views::Label>(parent_permission_email_addresses[0],
                                          views::style::CONTEXT_DIALOG_BODY_TEXT,
@@ -217,6 +232,10 @@ class ParentPermissionInputSection : public views::TextfieldController {
   ParentPermissionInputSection& operator=(const ParentPermissionInputSection&) =
       delete;
 
+  ~ParentPermissionInputSection() override {
+    credential_input_field_->set_controller(nullptr);
+  }
+
   // views::TextfieldController
   void ContentsChanged(views::Textfield* sender,
                        const std::u16string& new_contents) override {
@@ -232,6 +251,67 @@ class ParentPermissionInputSection : public views::TextfieldController {
   void OnParentRadioButtonSelected(ParentPermissionDialogView* main_view,
                                    const std::u16string& parent_email) {
     main_view->SetSelectedParentPermissionEmail(parent_email);
+  }
+
+  // Inserts in the given `view` a general purpose parent-selection label.
+  void AddParentAccountLabel(views::View* view, bool has_more_than_one_parent) {
+    auto label_text = l10n_util::GetStringUTF16(
+        has_more_than_one_parent
+            ? IDS_PARENT_PERMISSION_PROMPT_SELECT_PARENT_LABEL
+            : IDS_PARENT_PERMISSION_PROMPT_PARENT_ACCOUNT_LABEL);
+
+    auto parent_account_label = std::make_unique<views::Label>(
+        label_text, views::style::CONTEXT_DIALOG_BODY_TEXT,
+        views::style::STYLE_PRIMARY);
+    parent_account_label->SetHorizontalAlignment(
+        gfx::HorizontalAlignment::ALIGN_LEFT);
+    parent_account_label->SetProperty(
+        views::kElementIdentifierKey,
+        ParentPermissionDialog::kParentAccountTextIdForTesting);
+    view->AddChildView(std::move(parent_account_label));
+  }
+
+  // Inserts in the given `view` extension-specific labels, if the parent
+  // permission dialog is used for an extension approval.
+  void AddExtensionParentPermissionLabels(views::View* view,
+                                          bool is_extension_permission_dialog,
+                                          const std::string& child_name) {
+    CHECK(is_extension_permission_dialog &&
+          supervised_user::
+              IsSupervisedUserSkipParentApprovalToInstallExtensionsEnabled() &&
+          base::FeatureList::IsEnabled(
+              supervised_user::kUpdatedSupervisedUserExtensionApprovalStrings));
+
+    auto parent_account_label = std::make_unique<views::Label>(
+        l10n_util::GetStringUTF16(
+            IDS_PARENT_PERMISSION_PROMPT_PARENT_ACCOUNT_VERIFY_LABEL),
+        views::style::CONTEXT_DIALOG_BODY_TEXT, views::style::STYLE_PRIMARY);
+    parent_account_label->SetHorizontalAlignment(
+        gfx::HorizontalAlignment::ALIGN_LEFT);
+    view->AddChildView(std::move(parent_account_label));
+
+    auto parent_account_enter_password_label = std::make_unique<views::Label>(
+        l10n_util::GetStringUTF16(
+            IDS_PARENT_PROMPT_ENTER_PASSWORD_TO_ALLOW_EXTENSION_LABEL),
+        views::style::CONTEXT_DIALOG_BODY_TEXT, views::style::STYLE_SECONDARY);
+    parent_account_enter_password_label->SetMultiLine(true);
+    parent_account_enter_password_label->SetHorizontalAlignment(
+        gfx::HorizontalAlignment::ALIGN_LEFT);
+    parent_account_enter_password_label->SetProperty(
+        views::kElementIdentifierKey,
+        ParentPermissionDialog::
+            kExtensionsParentApprovalVerificationTextIdForTesting);
+    view->AddChildView(std::move(parent_account_enter_password_label));
+
+    auto skip_parental_approval_info_label = std::make_unique<views::Label>(
+        l10n_util::GetStringFUTF16(
+            IDS_SKIP_PARENT_PERMISSION_EXTENSION_INFORMATION,
+            base::UTF8ToUTF16(child_name)),
+        views::style::CONTEXT_DIALOG_BODY_TEXT, views::style::STYLE_SECONDARY);
+    skip_parental_approval_info_label->SetMultiLine(true);
+    skip_parental_approval_info_label->SetHorizontalAlignment(
+        gfx::HorizontalAlignment::ALIGN_LEFT);
+    view->AddChildView(std::move(skip_parental_approval_info_label));
   }
 
   base::CallbackListSubscription parent_0_subscription_;
@@ -482,7 +562,9 @@ void ParentPermissionDialogView::CreateContents() {
   // for parent selection and password entry.
   parent_permission_input_section_ =
       std::make_unique<ParentPermissionInputSection>(
-          this, parent_permission_email_addresses_, content_width);
+          this, parent_permission_email_addresses_, content_width,
+          supervised_user::GetAccountGivenName(*params_->profile),
+          /*is_extension_permission_dialog=*/params_->extension != nullptr);
 
   // Add the invalid credential label, which is initially empty,
   // and hence invisible.  It will be updated if the user enters
@@ -718,6 +800,9 @@ void ParentPermissionDialogView::OnReAuthProofTokenFailure(
       parent_permission_input_section_->FocusCredentialInputField();
       invalid_credential_label_->SetText(l10n_util::GetStringUTF16(
           IDS_PARENT_PERMISSION_PROMPT_PASSWORD_INCORRECT_LABEL));
+      invalid_credential_label_->SetProperty(
+          views::kElementIdentifierKey,
+          ParentPermissionDialog::kIncorrectParentPasswordIdForTesting);
       invalid_credential_label_->NotifyAccessibilityEvent(
           ax::mojom::Event::kAlert, true);
       return;

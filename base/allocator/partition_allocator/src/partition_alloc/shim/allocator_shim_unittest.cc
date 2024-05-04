@@ -15,7 +15,7 @@
 
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/platform_thread.h"
-#include "build/build_config.h"
+#include "partition_alloc/build_config.h"
 #include "partition_alloc/partition_alloc.h"
 #include "partition_alloc/partition_alloc_base/memory/page_size.h"
 #include "partition_alloc/partition_alloc_buildflags.h"
@@ -23,8 +23,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if BUILDFLAG(IS_WIN)
-#include <malloc.h>
 #include <windows.h>
+
+#include <malloc.h>
 #elif BUILDFLAG(IS_APPLE)
 #include <malloc/malloc.h>
 
@@ -291,7 +292,7 @@ class AllocatorShimTest : public testing::Test {
 
   static size_t MaxSizeTracked() {
 #if BUILDFLAG(IS_IOS)
-    // TODO(crbug.com/1077271): 64-bit iOS uses a page size that is larger than
+    // TODO(crbug.com/40129080): 64-bit iOS uses a page size that is larger than
     // SystemPageSize(), causing this test to make larger allocations, relative
     // to SystemPageSize().
     return 6 * partition_alloc::internal::SystemPageSize();
@@ -798,6 +799,34 @@ TEST_F(AllocatorShimTest, MallocGoodSize) {
 }
 
 #endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && BUILDFLAG(IS_APPLE)
+
+TEST_F(AllocatorShimTest, OptimizeAllocatorDispatchTable) {
+  const AllocatorDispatch* prev = GetAllocatorDispatchChainHeadForTesting();
+
+  // The nullptr entries are replaced with the functions in the head.
+  AllocatorDispatch empty_dispatch{nullptr};
+  InsertAllocatorDispatch(&empty_dispatch);
+  const AllocatorDispatch* head = GetAllocatorDispatchChainHeadForTesting();
+  EXPECT_EQ(head->alloc_function, prev->alloc_function);
+  EXPECT_EQ(head->realloc_function, prev->realloc_function);
+  EXPECT_EQ(head->free_function, prev->free_function);
+  EXPECT_EQ(head->get_size_estimate_function, prev->get_size_estimate_function);
+  RemoveAllocatorDispatchForTesting(&empty_dispatch);
+
+  // Partially nullptr and partially non-nullptr.
+  AllocatorDispatch non_empty_dispatch{nullptr};
+  non_empty_dispatch.get_size_estimate_function =
+      AllocatorShimTest::MockGetSizeEstimate;
+  InsertAllocatorDispatch(&non_empty_dispatch);
+  head = GetAllocatorDispatchChainHeadForTesting();
+  EXPECT_EQ(head->alloc_function, prev->alloc_function);
+  EXPECT_EQ(head->realloc_function, prev->realloc_function);
+  EXPECT_EQ(head->free_function, prev->free_function);
+  EXPECT_NE(head->get_size_estimate_function, prev->get_size_estimate_function);
+  EXPECT_EQ(head->get_size_estimate_function,
+            AllocatorShimTest::MockGetSizeEstimate);
+  RemoveAllocatorDispatchForTesting(&non_empty_dispatch);
+}
 
 }  // namespace
 }  // namespace allocator_shim

@@ -171,9 +171,6 @@ static ui::NativeTheme::ExtraParams GetNativeThemeExtraParams(
       ui::NativeTheme::ScrollbarThumbExtraParams native_scrollbar_thumb;
       const auto& scrollbar_thumb =
           absl::get<WebThemeEngine::ScrollbarThumbExtraParams>(*extra_params);
-      native_scrollbar_thumb.scrollbar_theme =
-          NativeThemeScrollbarOverlayColorTheme(
-              scrollbar_thumb.scrollbar_theme);
       native_scrollbar_thumb.thumb_color = scrollbar_thumb.thumb_color;
       native_scrollbar_thumb.is_thumb_minimal_mode =
           scrollbar_thumb.is_thumb_minimal_mode;
@@ -241,15 +238,15 @@ void WebThemeEngineDefault::Paint(
     const gfx::Rect& rect,
     const WebThemeEngine::ExtraParams* extra_params,
     mojom::ColorScheme color_scheme,
+    bool in_forced_colors,
     const ui::ColorProvider* color_provider,
     const std::optional<SkColor>& accent_color) {
   ui::NativeTheme::ExtraParams native_theme_extra_params =
       GetNativeThemeExtraParams(part, state, extra_params);
-
   ui::NativeTheme::GetInstanceForWeb()->Paint(
       canvas, color_provider, NativeThemePart(part), NativeThemeState(state),
       rect, native_theme_extra_params, NativeColorScheme(color_scheme),
-      accent_color);
+      in_forced_colors, accent_color);
 }
 
 void WebThemeEngineDefault::GetOverlayScrollbarStyle(ScrollbarStyle* style) {
@@ -289,12 +286,6 @@ int WebThemeEngineDefault::GetPaintedScrollbarTrackInset() const {
   return ui::NativeTheme::GetInstanceForWeb()->GetPaintedScrollbarTrackInset();
 }
 
-std::optional<SkColor> WebThemeEngineDefault::GetSystemColor(
-    WebThemeEngine::SystemThemeColor system_theme_color) const {
-  return ui::NativeTheme::GetInstanceForWeb()->GetSystemThemeColor(
-      NativeSystemThemeColor(system_theme_color));
-}
-
 std::optional<SkColor> WebThemeEngineDefault::GetAccentColor() const {
   return ui::NativeTheme::GetInstanceForWeb()->user_color();
 }
@@ -312,82 +303,5 @@ void WebThemeEngineDefault::cacheScrollBarMetrics(
   g_horizontal_arrow_bitmap_width = horizontal_arrow_bitmap_width;
 }
 #endif
-
-ForcedColors WebThemeEngineDefault::GetForcedColors() const {
-  return ui::NativeTheme::GetInstanceForWeb()->InForcedColorsMode()
-             ? ForcedColors::kActive
-             : ForcedColors::kNone;
-}
-
-// TODO(samomekarajr): Remove this when fully migrated to the color pipeline.
-void WebThemeEngineDefault::OverrideForcedColorsTheme(bool is_dark_theme) {
-  // Colors were chosen based on Windows 10 default light and dark high contrast
-  // themes.
-  const base::flat_map<ui::NativeTheme::SystemThemeColor, uint32_t> dark_theme{
-      {ui::NativeTheme::SystemThemeColor::kButtonFace, 0xFF000000},
-      {ui::NativeTheme::SystemThemeColor::kButtonText, 0xFFFFFFFF},
-      {ui::NativeTheme::SystemThemeColor::kGrayText, 0xFF3FF23F},
-      {ui::NativeTheme::SystemThemeColor::kHighlight, 0xFF1AEBFF},
-      {ui::NativeTheme::SystemThemeColor::kHighlightText, 0xFF000000},
-      {ui::NativeTheme::SystemThemeColor::kHotlight, 0xFFFFFF00},
-      {ui::NativeTheme::SystemThemeColor::kMenuHighlight, 0xFF800080},
-      {ui::NativeTheme::SystemThemeColor::kScrollbar, 0xFF000000},
-      {ui::NativeTheme::SystemThemeColor::kWindow, 0xFF000000},
-      {ui::NativeTheme::SystemThemeColor::kWindowText, 0xFFFFFFFF},
-  };
-  const base::flat_map<ui::NativeTheme::SystemThemeColor, uint32_t> light_theme{
-      {ui::NativeTheme::SystemThemeColor::kButtonFace, 0xFFFFFFFF},
-      {ui::NativeTheme::SystemThemeColor::kButtonText, 0xFF000000},
-      {ui::NativeTheme::SystemThemeColor::kGrayText, 0xFF600000},
-      {ui::NativeTheme::SystemThemeColor::kHighlight, 0xFF37006E},
-      {ui::NativeTheme::SystemThemeColor::kHighlightText, 0xFFFFFFFF},
-      {ui::NativeTheme::SystemThemeColor::kHotlight, 0xFF00009F},
-      {ui::NativeTheme::SystemThemeColor::kMenuHighlight, 0xFF000000},
-      {ui::NativeTheme::SystemThemeColor::kScrollbar, 0xFFFFFFFF},
-      {ui::NativeTheme::SystemThemeColor::kWindow, 0xFFFFFFFF},
-      {ui::NativeTheme::SystemThemeColor::kWindowText, 0xFF000000},
-  };
-  ui::NativeTheme::GetInstanceForWeb()->UpdateSystemColorInfo(
-      false, true, is_dark_theme ? dark_theme : light_theme);
-}
-
-
-void WebThemeEngineDefault::SetForcedColors(const ForcedColors forced_colors) {
-  ui::NativeTheme::GetInstanceForWeb()->set_forced_colors(
-      forced_colors == ForcedColors::kActive);
-}
-
-void WebThemeEngineDefault::ResetToSystemColors(
-    SystemColorInfoState system_color_info_state) {
-  base::flat_map<ui::NativeTheme::SystemThemeColor, uint32_t> colors;
-
-  for (const auto& color : system_color_info_state.colors) {
-    colors.insert({NativeSystemThemeColor(color.first), color.second});
-  }
-
-  ui::NativeTheme::GetInstanceForWeb()->UpdateSystemColorInfo(
-      system_color_info_state.is_dark_mode,
-      system_color_info_state.forced_colors, colors);
-
-}
-
-WebThemeEngine::SystemColorInfoState
-WebThemeEngineDefault::GetSystemColorInfo() {
-  WebThemeEngine::SystemColorInfoState state;
-  state.is_dark_mode =
-      ui::NativeTheme::GetInstanceForWeb()->ShouldUseDarkColors();
-  state.forced_colors =
-      ui::NativeTheme::GetInstanceForWeb()->InForcedColorsMode();
-
-  std::map<SystemThemeColor, uint32_t> colors;
-  auto native_theme_colors =
-      ui::NativeTheme::GetInstanceForWeb()->GetSystemColors();
-  for (const auto& color : native_theme_colors) {
-    colors.insert({WebThemeSystemThemeColor(color.first), color.second});
-  }
-  state.colors = colors;
-
-  return state;
-}
 
 }  // namespace blink

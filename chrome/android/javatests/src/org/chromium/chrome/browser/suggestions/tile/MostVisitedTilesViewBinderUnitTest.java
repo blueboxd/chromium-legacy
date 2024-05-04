@@ -12,7 +12,6 @@ import static org.chromium.chrome.browser.suggestions.tile.MostVisitedTilesPrope
 import static org.chromium.chrome.browser.suggestions.tile.MostVisitedTilesProperties.HORIZONTAL_INTERVAL_PADDINGS;
 import static org.chromium.chrome.browser.suggestions.tile.MostVisitedTilesProperties.IS_CONTAINER_VISIBLE;
 import static org.chromium.chrome.browser.suggestions.tile.MostVisitedTilesProperties.IS_MVT_LAYOUT_VISIBLE;
-import static org.chromium.chrome.browser.suggestions.tile.MostVisitedTilesProperties.IS_NTP_AS_HOME_SURFACE_ON_TABLET;
 import static org.chromium.chrome.browser.suggestions.tile.MostVisitedTilesProperties.PLACEHOLDER_VIEW;
 import static org.chromium.chrome.browser.suggestions.tile.MostVisitedTilesProperties.UPDATE_INTERVAL_PADDINGS_TABLET;
 
@@ -21,6 +20,7 @@ import android.view.ViewGroup.MarginLayoutParams;
 import android.view.ViewStub;
 import android.widget.LinearLayout;
 
+import androidx.test.annotation.UiThreadTest;
 import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
@@ -28,7 +28,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 
-import org.chromium.base.test.UiThreadTest;
 import org.chromium.chrome.browser.suggestions.tile.MostVisitedTilesViewBinder.ViewHolder;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.R;
@@ -134,17 +133,6 @@ public final class MostVisitedTilesViewBinderUnitTest extends BlankUiTestActivit
         Assert.assertEquals(11, params.leftMargin);
         params = (MarginLayoutParams) mThirdChildView.getLayoutParams();
         Assert.assertEquals(11, params.rightMargin);
-    }
-
-    @Test
-    @UiThreadTest
-    @SmallTest
-    public void testIsNtpAsHomeSurfaceEnabledSet() {
-        mModel.set(IS_NTP_AS_HOME_SURFACE_ON_TABLET, true);
-        Assert.assertEquals(true, mMvTilesLayout.getIsNtpAsHomeSurfaceOnTabletForTesting());
-
-        mModel.set(IS_NTP_AS_HOME_SURFACE_ON_TABLET, false);
-        Assert.assertEquals(false, mMvTilesLayout.getIsNtpAsHomeSurfaceOnTabletForTesting());
     }
 
     @Test

@@ -146,6 +146,10 @@ InputEvent::InputType InputTypeFromCommandType(EditingCommandType command_type,
       return InputType::kInsertOrderedList;
     case CommandType::kInsertUnorderedList:
       return InputType::kInsertUnorderedList;
+    case CommandType::kCreateLink:
+      return RuntimeEnabledFeatures::InputTypeSupportInsertLinkEnabled()
+                 ? InputType::kInsertLink
+                 : InputType::kNone;
 
     // Deletion.
     case CommandType::kDelete:
@@ -832,7 +836,10 @@ static bool ExecuteSelectAll(LocalFrame& frame,
       source == EditorCommandSource::kMenuOrKeyBinding
           ? SetSelectionBy::kUser
           : SetSelectionBy::kSystem;
-  frame.Selection().SelectAll(set_selection_by);
+  frame.Selection().SelectAll(
+      set_selection_by,
+      /* canonicalize_selection */ RuntimeEnabledFeatures::
+          RemoveVisibleSelectionInDOMSelectionEnabled());
   return true;
 }
 

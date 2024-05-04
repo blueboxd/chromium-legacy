@@ -87,6 +87,11 @@ public class PrivacySettings extends ChromeBaseSettingsFragment
 
         Preference ipProtectionPreference = findPreference(PREF_IP_PROTECTION);
         ipProtectionPreference.setVisible(shouldShowIpProtectionUI());
+        ipProtectionPreference.setOnPreferenceClickListener(
+                preference -> {
+                    RecordUserAction.record("Settings.IpProtection.OpenedFromPrivacyPage");
+                    return false;
+                });
 
         Preference sandboxPreference = findPreference(PREF_PRIVACY_SANDBOX);
         // Overwrite the click listener to pass a correct referrer to the fragment.
@@ -99,8 +104,9 @@ public class PrivacySettings extends ChromeBaseSettingsFragment
                     return true;
                 });
 
-        if (PrivacySandboxBridge.isPrivacySandboxRestricted()) {
-            if (PrivacySandboxBridge.isRestrictedNoticeEnabled()) {
+        PrivacySandboxBridge privacySandboxBridge = new PrivacySandboxBridge(getProfile());
+        if (privacySandboxBridge.isPrivacySandboxRestricted()) {
+            if (privacySandboxBridge.isRestrictedNoticeEnabled()) {
                 // Update the summary to one that describes only ad measurement if ad-measurement
                 // is available to restricted users.
                 sandboxPreference.setSummary(
@@ -138,7 +144,8 @@ public class PrivacySettings extends ChromeBaseSettingsFragment
 
         Preference safeBrowsingPreference = findPreference(PREF_SAFE_BROWSING);
         safeBrowsingPreference.setSummary(
-                SafeBrowsingSettingsFragment.getSafeBrowsingSummaryString(getContext()));
+                SafeBrowsingSettingsFragment.getSafeBrowsingSummaryString(
+                        getContext(), getProfile()));
         safeBrowsingPreference.setOnPreferenceClickListener(
                 (preference) -> {
                     preference
@@ -174,12 +181,12 @@ public class PrivacySettings extends ChromeBaseSettingsFragment
                         // Advanced Protection automatically enables HTTPS-Only Mode so
                         // lock the setting.
                         return isPreferenceControlledByPolicy(preference)
-                                || SafeBrowsingBridge.isUnderAdvancedProtection();
+                                || new SafeBrowsingBridge(getProfile()).isUnderAdvancedProtection();
                     }
                 });
         httpsFirstModePref.setChecked(
                 UserPrefs.get(getProfile()).getBoolean(Pref.HTTPS_ONLY_MODE_ENABLED));
-        if (SafeBrowsingBridge.isUnderAdvancedProtection()) {
+        if (new SafeBrowsingBridge(getProfile()).isUnderAdvancedProtection()) {
             httpsFirstModePref.setSummary(
                     getContext()
                             .getResources()
@@ -305,7 +312,8 @@ public class PrivacySettings extends ChromeBaseSettingsFragment
         Preference preloadPagesPreference = findPreference(PREF_PRELOAD_PAGES);
         if (preloadPagesPreference != null) {
             preloadPagesPreference.setSummary(
-                    PreloadPagesSettingsFragment.getPreloadPagesSummaryString(getContext()));
+                    PreloadPagesSettingsFragment.getPreloadPagesSummaryString(
+                            getContext(), getProfile()));
         }
 
         Preference secureDnsPref = findPreference(PREF_SECURE_DNS);
@@ -316,7 +324,8 @@ public class PrivacySettings extends ChromeBaseSettingsFragment
         Preference safeBrowsingPreference = findPreference(PREF_SAFE_BROWSING);
         if (safeBrowsingPreference != null && safeBrowsingPreference.isVisible()) {
             safeBrowsingPreference.setSummary(
-                    SafeBrowsingSettingsFragment.getSafeBrowsingSummaryString(getContext()));
+                    SafeBrowsingSettingsFragment.getSafeBrowsingSummaryString(
+                            getContext(), getProfile()));
         }
 
         Preference usageStatsPref = findPreference(PREF_USAGE_STATS);
@@ -327,6 +336,7 @@ public class PrivacySettings extends ChromeBaseSettingsFragment
                         preference -> {
                             UsageStatsConsentDialog.create(
                                             getActivity(),
+                                            getProfile(),
                                             true,
                                             (didConfirm) -> {
                                                 if (didConfirm) {
@@ -353,7 +363,7 @@ public class PrivacySettings extends ChromeBaseSettingsFragment
         updatePrivacyGuidePreferenceTitle();
     }
 
-    // TODO(crbug.com/1431101): This will be removed when the Privacy Guide is rolled out and no
+    // TODO(crbug.com/40263380): This will be removed when the Privacy Guide is rolled out and no
     //  longer a new feature.
     private void updatePrivacyGuidePreferenceTitle() {
         Preference privacyGuide = findPreference(PREF_PRIVACY_GUIDE);

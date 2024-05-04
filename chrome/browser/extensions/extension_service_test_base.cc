@@ -44,7 +44,6 @@
 #include "components/crx_file/crx_verifier.h"
 #include "components/policy/core/common/policy_service_impl.h"
 #include "components/pref_registry/pref_registry_syncable.h"
-#include "components/supervised_user/core/common/buildflags.h"
 #include "components/sync_preferences/pref_service_mock_factory.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "content/public/browser/browser_context.h"
@@ -154,9 +153,7 @@ std::unique_ptr<TestingProfile> BuildTestingProfile(
   }
 
   if (params.profile_is_supervised) {
-#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
     profile_builder.SetIsSupervisedProfile();
-#endif
   }
 
   if (params.profile_is_guest) {
@@ -178,7 +175,7 @@ std::unique_ptr<TestingProfile> BuildTestingProfile(
   profile_builder.AddTestingFactories(
       IdentityTestEnvironmentProfileAdaptor::
           GetIdentityTestEnvironmentFactories());
-  // TODO(crbug.com/1222596): SyncService (and thus TrustedVaultService)
+  // TODO(crbug.com/40774163): SyncService (and thus TrustedVaultService)
   // instantiation can be scoped down to a few derived fixtures.
   profile_builder.AddTestingFactory(
       TrustedVaultServiceFactory::GetInstance(),
@@ -252,8 +249,8 @@ ExtensionServiceTestBase::ExtensionServiceTestBase(
 ExtensionServiceTestBase::~ExtensionServiceTestBase() {
   // Why? Because |profile_| has to be destroyed before |at_exit_manager_|, but
   // is declared above it in the class definition since it's protected.
-  // TODO(1269752): Since we're getting rid of at_exit_manager_, perhaps
-  // we don't need this call?
+  // TODO(crbug.com/40205142): Since we're getting rid of at_exit_manager_,
+  // perhaps we don't need this call?
   profile_.reset();
 }
 
@@ -417,7 +414,7 @@ content::BrowserContext* ExtensionServiceTestBase::browser_context() {
 }
 
 Profile* ExtensionServiceTestBase::profile() {
-// TODO(crbug.com/1414225): Refactor this convenience upstream to test callers.
+// TODO(crbug.com/40891982): Refactor this convenience upstream to test callers.
 // Possibly just BuiltInAppTest.BuildGuestMode.
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   if (profile_->IsGuestSession()) {

@@ -90,6 +90,9 @@ class ExtensionsMenuMainPageView : public views::View {
   void UpdateMessageSection(MessageSectionState state,
                             bool has_enterprise_extensions);
 
+  // Returns the `message_section_` current state.
+  MessageSectionState GetMessageSectionState();
+
   // Adds or updates the extension entry in the `requests_access_section_` with
   // the given information.
   void AddOrUpdateExtensionRequestingAccess(const extensions::ExtensionId& id,
@@ -100,6 +103,9 @@ class ExtensionsMenuMainPageView : public views::View {
   // Remove the entry in the `requests_access_section_` corresponding to `id`,
   // if existent.
   void RemoveExtensionRequestingAccess(const extensions::ExtensionId& id);
+
+  // Clears the entries in the `request_access_section_`, if existent.
+  void ClearExtensionsRequestingAccess();
 
   // Accessors used by tests:
   // Returns the currently-showing menu items.

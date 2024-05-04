@@ -24,10 +24,9 @@ import androidx.test.espresso.NoMatchingViewException;
 
 import org.chromium.base.test.transit.Condition;
 import org.chromium.base.test.transit.Elements;
-import org.chromium.base.test.transit.TransitStation;
+import org.chromium.base.test.transit.Station;
 import org.chromium.base.test.transit.TravelException;
 import org.chromium.base.test.transit.Trip;
-import org.chromium.base.test.transit.UiThreadCondition;
 import org.chromium.base.test.transit.ViewElement;
 import org.chromium.chrome.browser.hub.HubFieldTrial;
 import org.chromium.chrome.browser.hub.PaneId;
@@ -37,7 +36,7 @@ import org.chromium.chrome.browser.layouts.LayoutType;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 
 /** The base station for Hub, with several panes and a toolbar. */
-public abstract class HubBaseStation extends TransitStation {
+public abstract class HubBaseStation extends Station {
     public static final ViewElement HUB_TOOLBAR = sharedViewElement(withId(R.id.hub_toolbar));
     public static final ViewElement HUB_PANE_HOST = sharedViewElement(withId(R.id.hub_pane_host));
     public static final ViewElement HUB_MENU_BUTTON =
@@ -81,18 +80,7 @@ public abstract class HubBaseStation extends TransitStation {
         elements.declareView(HUB_MENU_BUTTON);
 
         Condition incognitoTabsExist =
-                new UiThreadCondition() {
-                    @Override
-                    public boolean check() {
-                        return mChromeTabbedActivityTestRule.tabsCount(/* incognito= */ true) > 0;
-                    }
-
-                    @Override
-                    public String buildDescription() {
-                        return "Incognito tabs exist";
-                    }
-                };
-
+                TabModelConditions.anyIncognitoTabsExist(mChromeTabbedActivityTestRule);
         elements.declareViewIf(REGULAR_TOGGLE_TAB_BUTTON, incognitoTabsExist);
         elements.declareViewIf(INCOGNITO_TOGGLE_TAB_BUTTON, incognitoTabsExist);
 
@@ -114,15 +102,16 @@ public abstract class HubBaseStation extends TransitStation {
      * @return the {@link PageStation} that Hub returned to.
      */
     public PageStation leaveHubToPreviousTabViaBack() {
-        // TODO(crbug/1498446): This logic gets exponentially more complicated if there is
+        // TODO(crbug.com/40287437): This logic gets exponentially more complicated if there is
         // additional back state e.g. in-pane navigations, between pane navigations, etc. Figure out
         // a solution that better handles the complexity.
         PageStation destination =
-                new PageStation(
-                        mChromeTabbedActivityTestRule,
-                        /* incognito= */ false,
-                        /* isOpeningTab= */ false);
-        return Trip.travelSync(this, destination, (t) -> Espresso.pressBack());
+                PageStation.newPageStationBuilder()
+                        .withActivityTestRule(mChromeTabbedActivityTestRule)
+                        .withIsOpeningTab(false)
+                        .withIsSelectingTab(true)
+                        .build();
+        return Trip.travelSync(this, destination, () -> Espresso.pressBack());
     }
 
     /**
@@ -130,8 +119,8 @@ public abstract class HubBaseStation extends TransitStation {
      *
      * @return the corresponding subclass of {@link HubBaseStation}.
      */
-    public <T extends HubBaseStation> T selectPane(@PaneId int paneId,
-        Class<T> expectedDestination) {
+    public <T extends HubBaseStation> T selectPane(
+            @PaneId int paneId, Class<T> expectedDestination) {
         recheckActiveConditions();
 
         if (getPaneId() == paneId) {
@@ -144,15 +133,16 @@ public abstract class HubBaseStation extends TransitStation {
         try {
             HUB_PANE_SWITCHER.onView().check(matches(isDisplayed()));
         } catch (NoMatchingViewException e) {
-            var throwable = new Throwable(
-                "Hub pane switcher is not visible to switch to " + paneId);
-            throw TravelException.newTripException(this, destinationStation, throwable);
+            throw TravelException.newTravelException(
+                    "Hub pane switcher is not visible to switch to " + paneId);
         }
 
-        @StringRes int contentDescriptionId =
-            HubStationUtils.getContentDescriptionForIdPaneSelection(paneId);
-        return Trip.travelSync(this, destinationStation,
-                (t) -> {
+        @StringRes
+        int contentDescriptionId = HubStationUtils.getContentDescriptionForIdPaneSelection(paneId);
+        return Trip.travelSync(
+                this,
+                destinationStation,
+                () -> {
                     clickPaneSwitcherForPaneWithContentDescription(contentDescriptionId);
                 });
     }
@@ -182,7 +172,8 @@ public abstract class HubBaseStation extends TransitStation {
 
     private void clickPaneSwitcherForPaneWithContentDescription(
             @StringRes int contentDescriptionRes) {
-        // TODO(crbug/1498446): Content description seems reasonable for now, this might get harder
+        // TODO(crbug.com/40287437): Content description seems reasonable for now, this might get
+        // harder
         // once we use a recycler view with text based buttons.
         String contentDescription =
                 mChromeTabbedActivityTestRule.getActivity().getString(contentDescriptionRes);

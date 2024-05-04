@@ -17,8 +17,10 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "components/country_codes/country_codes.h"
 #include "components/search_engines/prepopulated_engines.h"
-#include "components/search_engines/search_engine_choice_utils.h"
+#include "components/search_engines/search_engine_choice/search_engine_choice_utils.h"
+#include "components/search_engines/search_engines_pref_names.h"
 #include "components/search_engines/search_engines_switches.h"
+#include "components/search_engines/template_url_prepopulate_data.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/signin/public/base/signin_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -51,6 +53,28 @@ void SetUserSelectedDefaultSearchProvider(
       template_url_service->Add(std::make_unique<TemplateURL>(data));
   template_url_service->SetUserSelectedDefaultSearchProvider(template_url);
 }
+
+struct TestParam {
+  std::string test_suffix;
+  std::optional<search_engines::SearchEngineCountryListOverride> list_override;
+};
+
+// To be passed as 4th argument to `INSTANTIATE_TEST_SUITE_P()`, allows the test
+// to be named like `<TestClassName>.InvokeUi_default/<TestSuffix>` instead
+// of using the index of the param in `TestParam` as suffix.
+std::string ParamToTestSuffix(const ::testing::TestParamInfo<TestParam>& info) {
+  return info.param.test_suffix;
+}
+
+// Permutations of supported parameters.
+const TestParam kTestParams[] = {
+    {.test_suffix = "BelgiumSearchEngineList"},
+    {.test_suffix = "DefaultSearchEngineList",
+     .list_override =
+         search_engines::SearchEngineCountryListOverride::kEeaDefault},
+    {.test_suffix = "AllEeaSearchEngineList",
+     .list_override = search_engines::SearchEngineCountryListOverride::kEeaAll},
+};
 #endif
 
 }  // namespace
@@ -88,6 +112,21 @@ class SearchEngineChoiceDialogServiceTest : public BrowserWithTestWindowTest {
     return std::make_unique<DialogTestBrowserWindow>();
   }
 
+  SearchEngineChoiceDialogService* GetSearchEngineChoiceDialogService(
+      bool force_fetch_search_engines = false) {
+    SearchEngineChoiceDialogService* search_engine_choice_dialog_service =
+        SearchEngineChoiceDialogServiceFactory::GetForProfile(profile());
+
+    if (force_fetch_search_engines) {
+      CHECK(search_engine_choice_dialog_service);
+
+      // Fetch the search engines to load the choice screen data in the service.
+      search_engine_choice_dialog_service->GetSearchEngines();
+    }
+
+    return search_engine_choice_dialog_service;
+  }
+
   const base::HistogramTester& histogram_tester() const {
     return histogram_tester_;
   }
@@ -106,9 +145,38 @@ class SearchEngineChoiceDialogServiceTest : public BrowserWithTestWindowTest {
 };
 
 #if !BUILDFLAG(CHROME_FOR_TESTING)
+class SearchEngineListCountryOverrideParametrizedTest
+    : public SearchEngineChoiceDialogServiceTest,
+      public testing::WithParamInterface<TestParam> {
+ public:
+  void SetUp() override {
+    SearchEngineChoiceDialogServiceTest::SetUp();
+    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+    auto search_engine_list_override = GetParam().list_override;
+
+    if (search_engine_list_override.has_value() &&
+        search_engine_list_override.value() ==
+            search_engines::SearchEngineCountryListOverride::kEeaAll) {
+      command_line->AppendSwitchASCII(switches::kSearchEngineChoiceCountry,
+                                      switches::kEeaListCountryOverride);
+    }
+    if (search_engine_list_override.has_value() &&
+        search_engine_list_override.value() ==
+            search_engines::SearchEngineCountryListOverride::kEeaDefault) {
+      command_line->AppendSwitchASCII(switches::kSearchEngineChoiceCountry,
+                                      switches::kDefaultListCountryOverride);
+    }
+  }
+};
+
+INSTANTIATE_TEST_SUITE_P(,
+                         SearchEngineListCountryOverrideParametrizedTest,
+                         testing::ValuesIn(kTestParams),
+                         &ParamToTestSuffix);
+
 TEST_F(SearchEngineChoiceDialogServiceTest, HandleLearnMoreLinkClicked) {
   SearchEngineChoiceDialogService* search_engine_choice_dialog_service =
-      SearchEngineChoiceDialogServiceFactory::GetForProfile(profile());
+      GetSearchEngineChoiceDialogService();
 
   search_engine_choice_dialog_service->NotifyLearnMoreLinkClicked(
       SearchEngineChoiceDialogService::EntryPoint::kDialog);
@@ -135,7 +203,7 @@ TEST_F(SearchEngineChoiceDialogServiceTest, HandleLearnMoreLinkClicked) {
 
 TEST_F(SearchEngineChoiceDialogServiceTest, CanShowDialog) {
   SearchEngineChoiceDialogService* search_engine_choice_dialog_service =
-      SearchEngineChoiceDialogServiceFactory::GetForProfile(profile());
+      GetSearchEngineChoiceDialogService();
   ASSERT_TRUE(search_engine_choice_dialog_service);
 
   // The `DialogTestBrowserWindow` reports a {0,0} size window.
@@ -149,7 +217,7 @@ TEST_F(SearchEngineChoiceDialogServiceTest, CanShowDialog) {
 
 TEST_F(SearchEngineChoiceDialogServiceTest, NotifyDialogOpened) {
   SearchEngineChoiceDialogService* search_engine_choice_dialog_service =
-      SearchEngineChoiceDialogServiceFactory::GetForProfile(profile());
+      GetSearchEngineChoiceDialogService();
   ASSERT_TRUE(search_engine_choice_dialog_service);
 
   search_engine_choice_dialog_service->NotifyDialogOpened(browser(),
@@ -165,8 +233,7 @@ TEST_F(SearchEngineChoiceDialogServiceTest, NotifyDialogOpened) {
 
 TEST_F(SearchEngineChoiceDialogServiceTest, NotifyChoiceMade) {
   SearchEngineChoiceDialogService* search_engine_choice_dialog_service =
-      SearchEngineChoiceDialogServiceFactory::GetForProfile(profile());
-  ASSERT_TRUE(search_engine_choice_dialog_service);
+      GetSearchEngineChoiceDialogService(/*force_fetch_search_engines=*/true);
 
   search_engine_choice_dialog_service->NotifyChoiceMade(
       TemplateURLPrepopulateData::google.id,
@@ -179,12 +246,20 @@ TEST_F(SearchEngineChoiceDialogServiceTest, NotifyChoiceMade) {
       search_engines::kSearchEngineChoiceScreenDefaultSearchEngineTypeHistogram,
       SearchEngineType::SEARCH_ENGINE_GOOGLE, 1);
 
+  // Need to cleanup trailing prefs to avoid crashes.
+  // TODO(b/337114717): Improve APIs so that we don't need to do this.
+  profile()->GetPrefs()->ClearPref(
+      prefs::kDefaultSearchProviderPendingChoiceScreenDisplayState);
+
   search_engine_choice_dialog_service->NotifyChoiceMade(
       TemplateURLPrepopulateData::google.id,
       SearchEngineChoiceDialogService::EntryPoint::kFirstRunExperience);
   histogram_tester().ExpectBucketCount(
       search_engines::kSearchEngineChoiceScreenEventsHistogram,
       search_engines::SearchEngineChoiceScreenEvents::kFreDefaultWasSet, 1);
+
+  profile()->GetPrefs()->ClearPref(
+      prefs::kDefaultSearchProviderPendingChoiceScreenDisplayState);
 
   search_engine_choice_dialog_service->NotifyChoiceMade(
       TemplateURLPrepopulateData::google.id,
@@ -196,39 +271,10 @@ TEST_F(SearchEngineChoiceDialogServiceTest, NotifyChoiceMade) {
       1);
 }
 
-TEST_F(SearchEngineChoiceDialogServiceTest, NotifyChoiceMade_Unknown) {
-  TemplateURLData template_url_data;
-  template_url_data.prepopulate_id =
-      TemplateURLPrepopulateData::kMaxPrepopulatedEngineID + 1;
-  template_url_data.SetURL("https://www.example.com/?q={searchTerms}");
-  auto* template_url_service =
-      TemplateURLServiceFactory::GetForProfile(profile());
-  template_url_service->SetUserSelectedDefaultSearchProvider(
-      template_url_service->Add(
-          std::make_unique<TemplateURL>(template_url_data)));
-
-  SearchEngineChoiceDialogService* search_engine_choice_dialog_service =
-      SearchEngineChoiceDialogServiceFactory::GetForProfile(profile());
-  ASSERT_TRUE(search_engine_choice_dialog_service);
-
-  search_engine_choice_dialog_service->NotifyChoiceMade(
-      TemplateURLPrepopulateData::kMaxPrepopulatedEngineID + 1,
-      SearchEngineChoiceDialogService::EntryPoint::kDialog);
-  histogram_tester().ExpectBucketCount(
-      search_engines::kSearchEngineChoiceScreenEventsHistogram,
-      search_engines::SearchEngineChoiceScreenEvents::kDefaultWasSet, 1);
-
-  // We don't end up calling `SetUserSelectedDefaultSearchProvider()` so this
-  // doesn't get recorded.
-  histogram_tester().ExpectTotalCount(
-      search_engines::kSearchEngineChoiceScreenDefaultSearchEngineTypeHistogram,
-      0);
-}
-
 TEST_F(SearchEngineChoiceDialogServiceTest,
        DoNotDisplayDialogIfPolicyIsSetDynamically) {
   SearchEngineChoiceDialogService* search_engine_choice_dialog_service =
-      SearchEngineChoiceDialogServiceFactory::GetForProfile(profile());
+      GetSearchEngineChoiceDialogService();
   ASSERT_TRUE(search_engine_choice_dialog_service);
 
   SetUserSelectedDefaultSearchProvider(
@@ -243,7 +289,7 @@ TEST_F(SearchEngineChoiceDialogServiceTest, DoNotCreateServiceIfPolicyIsSet) {
       /*created_by_policy=*/true);
 
   SearchEngineChoiceDialogService* search_engine_choice_dialog_service =
-      SearchEngineChoiceDialogServiceFactory::GetForProfile(profile());
+      GetSearchEngineChoiceDialogService();
   EXPECT_FALSE(search_engine_choice_dialog_service);
 }
 
@@ -310,11 +356,41 @@ TEST_F(SearchEngineChoiceDialogServiceTest, IsUrlSuitableForDialog) {
       GURL(url::kAboutBlankURL)));
 }
 
+TEST_P(SearchEngineListCountryOverrideParametrizedTest,
+       CheckNumberOfSearchEngines) {
+  SearchEngineChoiceDialogService* search_engine_choice_service =
+      SearchEngineChoiceDialogServiceFactory::GetForProfile(profile());
+  const int kBelgiumCountryId =
+      country_codes::CountryCharsToCountryID('B', 'E');
+  size_t expected_search_engine_list_size =
+      TemplateURLPrepopulateData::GetPrepopulationSetFromCountryIDForTesting(
+          kBelgiumCountryId)
+          .size();
+  auto search_engine_list_override = GetParam().list_override;
+
+  if (search_engine_list_override.has_value() &&
+      search_engine_list_override.value() ==
+          search_engines::SearchEngineCountryListOverride::kEeaDefault) {
+    expected_search_engine_list_size =
+        TemplateURLPrepopulateData::GetDefaultPrepopulatedEngines().size();
+  }
+
+  if (search_engine_list_override.has_value() &&
+      search_engine_list_override.value() ==
+          search_engines::SearchEngineCountryListOverride::kEeaAll) {
+    expected_search_engine_list_size =
+        TemplateURLPrepopulateData::GetAllEeaRegionPrepopulatedEngines().size();
+  }
+
+  EXPECT_EQ(search_engine_choice_service->GetSearchEngines().size(),
+            expected_search_engine_list_size);
+}
+
 #else
 TEST_F(SearchEngineChoiceDialogServiceTest,
        ServiceNotInitializedInChromeForTesting) {
   SearchEngineChoiceDialogService* search_engine_choice_dialog_service =
-      SearchEngineChoiceDialogServiceFactory::GetForProfile(profile());
+      GetSearchEngineChoiceDialogService();
   ASSERT_EQ(search_engine_choice_dialog_service, nullptr);
 }
 #endif

@@ -4,6 +4,7 @@
 
 #include "content/browser/file_system_access/file_system_access_manager_impl.h"
 
+#include <iterator>
 #include <memory>
 #include <optional>
 #include <string>
@@ -730,7 +731,7 @@ void FileSystemAccessManagerImpl::ResolveDataTransferTokenWithFileType(
       url.type() == storage::FileSystemType::kFileSystemTypeLocal
           ? PathType::kLocal
           : PathType::kExternal;
-  // TODO(https://crbug.com/1370433): Add a prompt specific to D&D. For now, run
+  // TODO(crbug.com/40061211): Add a prompt specific to D&D. For now, run
   // the same security checks and show the same prompt for D&D as for the file
   // picker.
   permission_context_->ConfirmSensitiveEntryAccess(
@@ -761,8 +762,9 @@ void FileSystemAccessManagerImpl::
   }
 
   SharedHandleState shared_handle_state =
-      GetSharedHandleStateForPath(file_path, binding_context.storage_key,
-                                  file_type, UserAction::kDragAndDrop);
+      GetSharedHandleStateForNonSandboxedPath(
+          file_path, binding_context.storage_key, file_type,
+          UserAction::kDragAndDrop);
 
   blink::mojom::FileSystemAccessEntryPtr entry;
   if (file_type == HandleType::kDirectory) {
@@ -938,12 +940,8 @@ void FileSystemAccessManagerImpl::DidGetSandboxedBucketForDeserializeHandle(
     const FileSystemAccessHandleData& data,
     mojo::PendingReceiver<blink::mojom::FileSystemAccessTransferToken> token,
     const storage::FileSystemURL& url) {
-  auto permission_grant =
-      base::MakeRefCounted<FixedFileSystemAccessPermissionGrant>(
-          PermissionStatus::GRANTED, base::FilePath());
   CreateTransferTokenImpl(
-      url, url.storage_key(),
-      SharedHandleState(permission_grant, permission_grant),
+      url, url.storage_key(), GetSharedHandleStateForSandboxedPath(),
       data.handle_type() == FileSystemAccessHandleData::kDirectory
           ? HandleType::kDirectory
           : HandleType::kFile,
@@ -1026,7 +1024,7 @@ void FileSystemAccessManagerImpl::DeserializeHandle(
       // handle. So if `relative_path` is not empty, this creates a
       // SharedHandleState for a directory even if the handle represents a
       // file.
-      SharedHandleState handle_state = GetSharedHandleStateForPath(
+      SharedHandleState handle_state = GetSharedHandleStateForNonSandboxedPath(
           root_path, storage_key,
           (is_directory || !relative_path.empty()) ? HandleType::kDirectory
                                                    : HandleType::kFile,
@@ -1057,8 +1055,10 @@ FileSystemAccessManagerImpl::CreateFileEntryFromPath(
   storage::FileSystemURL url =
       CreateFileSystemURLFromPath(path_type, file_path);
 
-  SharedHandleState shared_handle_state = GetSharedHandleStateForPath(
-      file_path, binding_context.storage_key, HandleType::kFile, user_action);
+  SharedHandleState shared_handle_state =
+      GetSharedHandleStateForNonSandboxedPath(file_path,
+                                              binding_context.storage_key,
+                                              HandleType::kFile, user_action);
 
   return blink::mojom::FileSystemAccessEntry::New(
       blink::mojom::FileSystemAccessHandle::NewFile(
@@ -1077,8 +1077,9 @@ FileSystemAccessManagerImpl::CreateDirectoryEntryFromPath(
       CreateFileSystemURLFromPath(path_type, file_path);
 
   SharedHandleState shared_handle_state =
-      GetSharedHandleStateForPath(file_path, binding_context.storage_key,
-                                  HandleType::kDirectory, user_action);
+      GetSharedHandleStateForNonSandboxedPath(
+          file_path, binding_context.storage_key, HandleType::kDirectory,
+          user_action);
 
   return blink::mojom::FileSystemAccessEntry::New(
       blink::mojom::FileSystemAccessHandle::NewDirectory(
@@ -1343,15 +1344,10 @@ void FileSystemAccessManagerImpl::DidOpenSandboxedFileSystem(
     return;
   }
 
-  auto permission_grant =
-      base::MakeRefCounted<FixedFileSystemAccessPermissionGrant>(
-          PermissionStatus::GRANTED, base::FilePath());
-
   std::move(callback).Run(
       file_system_access_error::Ok(),
-      CreateDirectoryHandle(
-          binding_context, root,
-          SharedHandleState(permission_grant, permission_grant)));
+      CreateDirectoryHandle(binding_context, root,
+                            GetSharedHandleStateForSandboxedPath()));
 }
 
 void FileSystemAccessManagerImpl::DidChooseEntries(
@@ -1425,7 +1421,59 @@ void FileSystemAccessManagerImpl::DidVerifySensitiveDirectoryAccess(
     return;
   }
 
-  if (permission_context_ && !entries.empty()) {
+  // Move `entries` to `pathinfos_to_check` to minimize memory copies.
+  // `ResultEntry` and `PathInfo` are actually equivalent structures with a 1:1
+  // mapping of fields.
+  // TODO: crbug.com/326462071 - ResultEntry and PathInfo may become aliases,
+  // in which case this transform is not required.
+  std::vector<FileSystemAccessPermissionContext::PathInfo> pathinfos_to_check;
+  pathinfos_to_check.reserve(entries.size());
+  std::transform(std::make_move_iterator(entries.begin()),
+                 std::make_move_iterator(entries.end()),
+                 std::back_inserter(pathinfos_to_check),
+                 [](FileSystemChooser::ResultEntry&& entry) {
+                   return PathInfo{.type = entry.type,
+                                   .path = std::move(entry.path)};
+                 });
+
+  if (permission_context_) {
+    permission_context_->CheckPathsAgainstEnterprisePolicy(
+        std::move(pathinfos_to_check), binding_context.frame_id,
+        base::BindOnce(
+            &FileSystemAccessManagerImpl::OnCheckPathsAgainstEnterprisePolicy,
+            weak_factory_.GetWeakPtr(), binding_context, options,
+            starting_directory_id, request_directory_write_access,
+            std::move(callback)));
+    return;
+  }
+
+  OnCheckPathsAgainstEnterprisePolicy(
+      binding_context, options, starting_directory_id,
+      request_directory_write_access, std::move(callback),
+      std::move(pathinfos_to_check));
+}
+
+void FileSystemAccessManagerImpl::OnCheckPathsAgainstEnterprisePolicy(
+    const BindingContext& binding_context,
+    const FileSystemChooser::Options& options,
+    const std::string& starting_directory_id,
+    bool request_directory_write_access,
+    ChooseEntriesCallback callback,
+    std::vector<FileSystemAccessPermissionContext::PathInfo> entries) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // It is possible for `entries` to be empty if enterprise policy blocked all
+  // files or folders selected by the user.  If there are no entries, simulate
+  // a user abort.
+  if (entries.empty()) {
+    std::move(callback).Run(
+        file_system_access_error::FromStatus(
+            blink::mojom::FileSystemAccessStatus::kOperationAborted),
+        std::vector<blink::mojom::FileSystemAccessEntryPtr>());
+    return;
+  }
+
+  if (permission_context_) {
     auto picked_directory =
         options.type() == ui::SelectFileDialog::SELECT_FOLDER
             ? entries.front().path
@@ -1437,10 +1485,11 @@ void FileSystemAccessManagerImpl::DidVerifySensitiveDirectoryAccess(
 
   if (options.type() == ui::SelectFileDialog::SELECT_FOLDER) {
     DCHECK_EQ(entries.size(), 1u);
-    SharedHandleState shared_handle_state = GetSharedHandleStateForPath(
-        entries.front().path, binding_context.storage_key,
-        HandleType::kDirectory,
-        FileSystemAccessPermissionContext::UserAction::kOpen);
+    SharedHandleState shared_handle_state =
+        GetSharedHandleStateForNonSandboxedPath(
+            entries.front().path, binding_context.storage_key,
+            HandleType::kDirectory,
+            FileSystemAccessPermissionContext::UserAction::kOpen);
     // Ask for both read and write permission at the same time. The permission
     // context should coalesce these into one prompt.
     if (request_directory_write_access) {
@@ -1479,20 +1528,21 @@ void FileSystemAccessManagerImpl::DidVerifySensitiveDirectoryAccess(
     result_entries.push_back(CreateFileEntryFromPath(
         binding_context, entry.type, entry.path, UserAction::kOpen));
   }
+
   std::move(callback).Run(file_system_access_error::Ok(),
                           std::move(result_entries));
 }
 
 void FileSystemAccessManagerImpl::DidCreateAndTruncateSaveFile(
     const BindingContext& binding_context,
-    const FileSystemChooser::ResultEntry& entry,
+    const FileSystemAccessPermissionContext::PathInfo& entry,
     const storage::FileSystemURL& url,
     ChooseEntriesCallback callback,
     bool success) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   std::vector<blink::mojom::FileSystemAccessEntryPtr> result_entries;
   if (!success) {
-    // TODO(https://crbug.com/1124871): Failure to create or truncate the file
+    // TODO(crbug.com/40717501): Failure to create or truncate the file
     // should probably not just result in a generic error, but instead inform
     // the user of the problem?
     std::move(callback).Run(
@@ -1509,8 +1559,9 @@ void FileSystemAccessManagerImpl::DidCreateAndTruncateSaveFile(
   }
 
   SharedHandleState shared_handle_state =
-      GetSharedHandleStateForPath(entry.path, binding_context.storage_key,
-                                  HandleType::kFile, UserAction::kSave);
+      GetSharedHandleStateForNonSandboxedPath(
+          entry.path, binding_context.storage_key, HandleType::kFile,
+          UserAction::kSave);
 
   result_entries.push_back(blink::mojom::FileSystemAccessEntry::New(
       blink::mojom::FileSystemAccessHandle::NewFile(
@@ -1523,7 +1574,7 @@ void FileSystemAccessManagerImpl::DidCreateAndTruncateSaveFile(
 
 void FileSystemAccessManagerImpl::DidChooseDirectory(
     const BindingContext& binding_context,
-    const FileSystemChooser::ResultEntry& entry,
+    const FileSystemAccessPermissionContext::PathInfo& entry,
     ChooseEntriesCallback callback,
     const SharedHandleState& shared_handle_state,
     FileSystemAccessPermissionGrant::PermissionRequestOutcome outcome) {
@@ -1634,7 +1685,7 @@ storage::FileSystemURL FileSystemAccessManagerImpl::CreateFileSystemURLFromPath(
 }
 
 FileSystemAccessManagerImpl::SharedHandleState
-FileSystemAccessManagerImpl::GetSharedHandleStateForPath(
+FileSystemAccessManagerImpl::GetSharedHandleStateForNonSandboxedPath(
     const base::FilePath& path,
     const blink::StorageKey& storage_key,
     HandleType handle_type,
@@ -1675,10 +1726,31 @@ FileSystemAccessManagerImpl::GetSharedHandleStateForPath(
   return SharedHandleState(std::move(read_grant), std::move(write_grant));
 }
 
+FileSystemAccessHandleBase::SharedHandleState
+FileSystemAccessManagerImpl::GetSharedHandleStateForSandboxedPath() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // TODO(crbug.com/40198034): This is a hack which is only viable since
+  // permission grants always return GRANTED in sandboxed file systems.
+  //  - Ideally we would not need to special-case the permission logic for files
+  //    in the sandboxed file system. It should be the same as for local and
+  //    external file systems.
+  //  - At minimum, should not be creating new grants every time a
+  //    SharedHandleState is needed for a handle in a sandboxed file system.
+  //    Once a permission grant for the root of a bucket file system is created,
+  //    that permission grant should be used for all handles in the file system.
+  //    That this is not the case currently breaks any logic relying on a
+  //    FileSystemAccessPermissionGrant::Observer.
+  auto permission_grant =
+      base::MakeRefCounted<FixedFileSystemAccessPermissionGrant>(
+          PermissionStatus::GRANTED, base::FilePath());
+  return SharedHandleState(permission_grant, permission_grant);
+}
+
 base::Uuid FileSystemAccessManagerImpl::GetUniqueId(
     const FileSystemAccessFileHandleImpl& file) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // TODO(https://crbug.com/1342961): This is a temporary hack to put something
+  // TODO(crbug.com/40852050): This is a temporary hack to put something
   // that works behind a flag. Persist handle IDs such that they're stable
   // across browsing sessions.
 
@@ -1696,7 +1768,7 @@ base::Uuid FileSystemAccessManagerImpl::GetUniqueId(
 base::Uuid FileSystemAccessManagerImpl::GetUniqueId(
     const FileSystemAccessDirectoryHandleImpl& directory) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // TODO(https://crbug.com/1342961): This is a temporary hack to put something
+  // TODO(crbug.com/40852050): This is a temporary hack to put something
   // that works behind a flag. Persist handle IDs such that they're stable
   // across browsing sessions.
 

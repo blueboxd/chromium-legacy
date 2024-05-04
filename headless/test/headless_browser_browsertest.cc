@@ -235,8 +235,8 @@ class HeadlessBrowserTestWithProxy : public HeadlessBrowserTest {
 };
 
 #if (BUILDFLAG(IS_MAC) && defined(ADDRESS_SANITIZER)) || BUILDFLAG(IS_FUCHSIA)
-// TODO(crbug.com/1086872): Disabled due to flakiness on Mac ASAN.
-// TODO(crbug.com/1090933): Fix this test on Fuchsia and re-enable.
+// TODO(crbug.com/40694526): Disabled due to flakiness on Mac ASAN.
+// TODO(crbug.com/40697469): Fix this test on Fuchsia and re-enable.
 #define MAYBE_SetProxyConfig DISABLED_SetProxyConfig
 #else
 #define MAYBE_SetProxyConfig SetProxyConfig
@@ -628,7 +628,7 @@ IN_PROC_BROWSER_TEST_F(HeadlessBrowserAllowInsecureLocalhostTest,
 }
 
 #if BUILDFLAG(IS_FUCHSIA)
-// TODO(crbug.com/1090933): Fix this test on Fuchsia and re-enable.
+// TODO(crbug.com/40697469): Fix this test on Fuchsia and re-enable.
 #define MAYBE_ServerWantsClientCertificate DISABLED_ServerWantsClientCertificate
 #else
 #define MAYBE_ServerWantsClientCertificate ServerWantsClientCertificate
@@ -845,7 +845,7 @@ IN_PROC_BROWSER_TEST_P(SelectFileDialogHeadlessBrowserTest, SelectFileDialog) {
   EXPECT_EQ(select_file_dialog_type_, expected_type());
 }
 
-// TODO(crbug.com/1493208): Flaky on all builders.
+// TODO(crbug.com/40285755): Flaky on all builders.
 IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, DISABLED_NetworkServiceCrash) {
   ASSERT_TRUE(embedded_test_server()->Start());
 

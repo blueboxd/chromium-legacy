@@ -29,11 +29,16 @@ class CORE_EXPORT SimplifiedOofLayoutAlgorithm
   SimplifiedOofLayoutAlgorithm(const LayoutAlgorithmParams&,
                                const PhysicalBoxFragment& last_fragmentainer);
 
-  const LayoutResult* Layout() override;
-  MinMaxSizesResult ComputeMinMaxSizes(const MinMaxSizesFloatInput&) override {
+  const LayoutResult* Layout();
+  MinMaxSizesResult ComputeMinMaxSizes(const MinMaxSizesFloatInput&) {
     NOTREACHED();
     return MinMaxSizesResult();
   }
+
+  // To be called when creating a new column based on an existing one. The break
+  // token passed is the outgoing break token from the last column created so
+  // far.
+  void ResumeColumnLayout(const BlockBreakToken* old_fragment_break_token);
 
   void SetHasSubsequentChildren() {
     // There will be more fragmentainers after this one. Make sure that an

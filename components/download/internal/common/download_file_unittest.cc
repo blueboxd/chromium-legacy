@@ -6,6 +6,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -248,7 +249,7 @@ class DownloadFileTest : public testing::Test {
       while (len > 0) {
         int bytes_to_write = len > data_len ? data_len : len;
         base::AppendToFile(save_info->file_path,
-                           base::StringPiece(kTestData1, bytes_to_write));
+                           std::string_view(kTestData1, bytes_to_write));
         len -= bytes_to_write;
       }
     }
@@ -736,7 +737,7 @@ TEST_F(DownloadFileTest, RenameRemovesHiddenFlag) {
   EXPECT_TRUE(base::PathExists(initial_path));
   // Set the file hidden.
   base::stat_wrapper_t stat;
-  base::File::Stat(initial_path.value().c_str(), &stat);
+  base::File::Stat(initial_path, &stat);
   // Update the file's hidden flags.
   chflags(initial_path.value().c_str(), stat.st_flags | UF_HIDDEN);
 
@@ -746,7 +747,7 @@ TEST_F(DownloadFileTest, RenameRemovesHiddenFlag) {
   EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_NONE,
             RenameAndUniquify(target_path, &new_path));
   EXPECT_TRUE(base::PathExists(target_path));
-  base::File::Stat(initial_path.value().c_str(), &stat);
+  base::File::Stat(initial_path, &stat);
   EXPECT_FALSE(stat.st_flags & UF_HIDDEN);
 
   FinishStream(DOWNLOAD_INTERRUPT_REASON_NONE, true, kEmptyHash);
@@ -758,7 +759,7 @@ TEST_F(DownloadFileTest, RenameRemovesHiddenFlag) {
 #endif
 
 #if BUILDFLAG(IS_FUCHSIA)
-// TODO(crbug.com/1314071): Re-enable when RenameError works on Fuchsia.
+// TODO(crbug.com/40221273): Re-enable when RenameError works on Fuchsia.
 #define MAYBE_RenameError DISABLED_RenameError
 #else
 #define MAYBE_RenameError RenameError
@@ -811,7 +812,7 @@ void TestRenameCompletionCallback(base::OnceClosure closure,
 }  // namespace
 
 #if BUILDFLAG(IS_FUCHSIA)
-// TODO(crbug.com/1314072): Re-enable when RenameWithErrorRetry works on
+// TODO(crbug.com/40221274): Re-enable when RenameWithErrorRetry works on
 // Fuchsia.
 #define MAYBE_RenameWithErrorRetry DISABLED_RenameWithErrorRetry
 #else

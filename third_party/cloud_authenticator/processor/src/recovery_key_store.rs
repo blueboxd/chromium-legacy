@@ -15,8 +15,12 @@
 //! recovery_key_store contains functions for working with Google's
 //! recovery key store, also called Vault internally.
 
-use crate::{debug, RequestError};
+use crate::{
+    debug, get_secret_from_request, pin, AuthLevel, Authentication, DirtyFlag, ParsedState, Reauth,
+    RequestError, COUNTER_ID_KEY, VAULT_HANDLE_WITHOUT_TYPE_KEY, WRAPPED_PIN_DATA_KEY,
+};
 use alloc::collections::BTreeMap;
+use alloc::string::String;
 use alloc::vec::Vec;
 use bytes::Bytes;
 use cbor::{cbor, MapKey, MapKeyRef, MapLookupKey, Value};
@@ -723,9 +727,18 @@ mod key_distribution {
     use alloc::vec;
     use alloc::vec::Vec;
 
-    /// Return an ECDH public key, and certificate path, from an arbitrary
-    /// recovery key store cohort, given the published XML files. These XML
-    /// files are found at
+    #[cfg(feature = "chromium_integration_test")]
+    use super::TEST_ROOT_CERTIFICATE;
+
+    /// A Cohort represents a specific recovery key store cohort. It includes:
+    ///   * The public key of the cohort.
+    ///   * It's certificate chain.
+    ///   * The serial number of the public key update.
+    type Cohort = ([u8; crypto::P256_X962_LENGTH], Vec<Vec<u8>>, i64);
+
+    /// Return an ECDH public key, a certificate path, and the serial
+    /// number, from an arbitrary recovery key store cohort, given the published
+    /// XML files. These XML files are found at
     ///   * https://www.gstatic.com/cryptauthvault/v0/cert.xml
     ///   * https://www.gstatic.com/cryptauthvault/v0/cert.sig.xml
     ///
@@ -735,9 +748,9 @@ mod key_distribution {
     pub fn get_cohort_key(
         cert_xml: &[u8],
         sig_xml: &[u8],
-        current_time_epoch_secs: i64,
+        current_time_epoch_millis: i64,
         cohort_selector: u32,
-    ) -> Result<([u8; crypto::P256_X962_LENGTH], Vec<Vec<u8>>), &'static str> {
+    ) -> Result<Cohort, &'static str> {
         // The cert.sig.xml contains:
         //   a) a leaf X.509 certificate.
         //   b) a signature of the `cert.xml` file by that certificate.
@@ -749,6 +762,15 @@ mod key_distribution {
         }
         let xml::Value::Object(sig_value) = sig_value else {
             return Err("no child elements in sig XML");
+        };
+
+        #[cfg(not(feature = "chromium_integration_test"))]
+        let root_cert = ROOT_CERTIFICATE;
+        #[cfg(feature = "chromium_integration_test")]
+        let root_cert = if sig_value.contains_key("chromium-test") {
+            TEST_ROOT_CERTIFICATE
+        } else {
+            ROOT_CERTIFICATE
         };
 
         let Some(xml::Element::Single(xml::Value::String(leaf_cert_der_b64))) =
@@ -772,7 +794,7 @@ mod key_distribution {
 
         // The public key from <certificate> should only be trusted if it chains
         // up to `ROOT_CERTIFICATE`.
-        build_path(&leaf_cert, sig_value, ROOT_CERTIFICATE, current_time_epoch_secs)?;
+        build_path(&leaf_cert, sig_value, root_cert, current_time_epoch_millis)?;
 
         // The <value> is an RSA signature of the cert.xml file.
         if !crypto::rsa_verify(leaf_key, cert_xml, &sig) {
@@ -781,20 +803,21 @@ mod key_distribution {
 
         // Now that the `cert.xml` file has been validated, the cohort public keys
         // can be extracted from it.
-        get_public_keys_from_certs(cert_xml, current_time_epoch_secs, cohort_selector)
+        get_public_keys_from_certs(cert_xml, current_time_epoch_millis, root_cert, cohort_selector)
     }
 
-    /// Return an ECDH public key, and certificate path, from an arbitrary
-    /// recovery key store cohort, given the `cert.xml` file, which must
-    /// already have been validated.
+    /// Return an ECDH public key, a certificate path, and the serial number
+    /// from an arbitrary recovery key store cohort, given the `cert.xml` file,
+    /// which must already have been validated.
     ///
     /// The `current_time` is used for certificate validation and also to
     /// "randomly" pick a cohort.
     fn get_public_keys_from_certs(
         cert_xml: &[u8],
-        current_time_epoch_secs: i64,
+        current_time_epoch_millis: i64,
+        root_cert: &[u8],
         cohort_selector: u32,
-    ) -> Result<([u8; crypto::P256_X962_LENGTH], Vec<Vec<u8>>), &'static str> {
+    ) -> Result<Cohort, &'static str> {
         let (certs_toplevel, certs_value) =
             xml::parse(cert_xml).ok_or("failed to parse certs XML")?;
         if certs_toplevel != "certificate" {
@@ -803,6 +826,16 @@ mod key_distribution {
         let xml::Value::Object(certs_value) = certs_value else {
             return Err("no child elements in certs XML");
         };
+
+        let Some(xml::Element::Single(xml::Value::Object(metadata))) = certs_value.get("metadata")
+        else {
+            return Err("missing or incorrectly structured <metadata>");
+        };
+
+        let Some(xml::Element::Single(xml::Value::String(serial))) = metadata.get("serial") else {
+            return Err("missing or incorrectly structured <serial>");
+        };
+        let serial = serial.parse::<i64>().map_err(|_| "cannot parse serial number")?;
         let Some(xml::Element::Single(xml::Value::Object(endpoints))) =
             certs_value.get("endpoints")
         else {
@@ -844,7 +877,8 @@ mod key_distribution {
             // the certificate path is required in futher parts of the protocol.
             // Thus it might seem that checking `cert.sig.xml` is superfluous
             // but the Android implementation does it and so this code does too.
-            build_path(&endpoint_cert, certs_value, ROOT_CERTIFICATE, current_time_epoch_secs)?,
+            build_path(&endpoint_cert, certs_value, root_cert, current_time_epoch_millis)?,
+            serial,
         ))
     }
 
@@ -855,7 +889,7 @@ mod key_distribution {
         leaf: &x509::Certificate,
         xml: BTreeMap<String, xml::Element>,
         root_der: &[u8],
-        current_time_epoch_secs: i64,
+        current_time_epoch_millis: i64,
     ) -> Result<Vec<Vec<u8>>, &'static str> {
         let root = x509::parse(root_der).ok_or("failed to parse root")?;
 
@@ -866,7 +900,7 @@ mod key_distribution {
         };
         let mut intermediates_der = intermediates_value
             .get("cert")
-            .ok_or("no <cert>s in <intermediates>")?
+            .unwrap_or(&xml::Element::List(Vec::new()))
             .iter()
             .map(|cert_value| {
                 let xml::Value::String(cert_der_b64) = cert_value else {
@@ -935,7 +969,7 @@ mod key_distribution {
             leaf: &x509::Certificate,
             intermediates: &[x509::Certificate],
             root: &x509::Certificate,
-            current_time_epoch_secs: i64,
+            current_time_epoch_millis: i64,
             // The number of steps performed so far.
             steps: &mut usize,
             // The indexes of the intermediates in the current path.
@@ -962,7 +996,11 @@ mod key_distribution {
                 }
                 certs.push(root);
 
-                return if check_path(&certs, current_time_epoch_secs) { Some(path) } else { None };
+                return if check_path(&certs, current_time_epoch_millis / 1000) {
+                    Some(path)
+                } else {
+                    None
+                };
             }
 
             for (i, intermediate) in intermediates.iter().enumerate() {
@@ -976,8 +1014,14 @@ mod key_distribution {
                     let mut path = path.clone();
                     path.push(i);
                     *steps += 1;
-                    let path =
-                        path_step(leaf, intermediates, root, current_time_epoch_secs, steps, path);
+                    let path = path_step(
+                        leaf,
+                        intermediates,
+                        root,
+                        current_time_epoch_millis,
+                        steps,
+                        path,
+                    );
                     if path.is_some() {
                         return path;
                     }
@@ -989,9 +1033,15 @@ mod key_distribution {
         }
 
         let mut steps = 0;
-        let intermediate_indexes =
-            path_step(leaf, &intermediates, &root, current_time_epoch_secs, &mut steps, Vec::new())
-                .ok_or("no path found")?;
+        let intermediate_indexes = path_step(
+            leaf,
+            &intermediates,
+            &root,
+            current_time_epoch_millis,
+            &mut steps,
+            Vec::new(),
+        )
+        .ok_or("no path found")?;
 
         // Build a vector of the certificates in the valid path by pulling
         // the values from `intermediates_der`.
@@ -1005,21 +1055,22 @@ mod key_distribution {
 
     #[cfg(test)]
     mod tests {
-        use super::super::{SAMPLE_CERTS_XML, SAMPLE_SIG_XML, SAMPLE_VALIDATION_EPOCH_SECONDS};
+        use super::super::{SAMPLE_CERTS_XML, SAMPLE_SIG_XML, SAMPLE_VALIDATION_EPOCH_MILLIS};
         use super::*;
 
         const SAMPLE_COHORT_SELECTOR: u32 = 0;
 
         #[test]
         fn test_get_public_keys() {
-            let (_key, path) = get_cohort_key(
+            let (_key, path, serial) = get_cohort_key(
                 SAMPLE_CERTS_XML,
                 SAMPLE_SIG_XML,
-                SAMPLE_VALIDATION_EPOCH_SECONDS,
+                SAMPLE_VALIDATION_EPOCH_MILLIS,
                 SAMPLE_COHORT_SELECTOR,
             )
             .unwrap();
             assert_eq!(path.len(), 2);
+            assert_eq!(serial, 10016);
         }
 
         #[test]
@@ -1218,51 +1269,123 @@ fn cohort_selector_from_handle(handle: &[u8; VAULT_HANDLE_LEN]) -> u32 {
 const MAX_ATTEMPTS: u32 = 10;
 
 /// The length, in bytes, of a Vault handle.
-const VAULT_HANDLE_LEN: usize = 17;
+pub const VAULT_HANDLE_LEN: usize = 17;
+
+/// This identifies a GPM PIN vault.
+pub const VAULT_HANDLE_FIRST_BYTE: u8 = 3;
+
+/// The length, in bytes, of a Vault handle.
+pub const COUNTER_ID_LEN: usize = 8;
 
 /// This structure holds the many values that result from wrapping a knowledge
 /// factor. All these values need to be placed into a `Vault` protobuf for
 /// submission to the service.
 struct Wrapped {
     encrypted_recovery_key: Vec<u8>,
-    vault_handle: [u8; 17],
-    counter_id: [u8; 8],
+    vault_handle: [u8; VAULT_HANDLE_LEN],
+    counter_id: [u8; COUNTER_ID_LEN],
     cohort_public_key: [u8; crypto::P256_X962_LENGTH],
     max_attempts: u32,
     certs_in_path: Vec<Vec<u8>>,
     app_public_key: [u8; crypto::P256_X962_LENGTH],
     wrapped_app_private_key: Vec<u8>,
     wrapped_wrapping_key: Vec<u8>,
+    serial: i64,
+}
+
+impl From<Wrapped> for cbor::Value {
+    fn from(value: Wrapped) -> Self {
+        cbor!({
+            "cohort_public_key": (&value.cohort_public_key),
+            "encrypted_recovery_key": (value.encrypted_recovery_key),
+            "vault_handle": (&value.vault_handle),
+            "counter_id": (&value.counter_id),
+            "max_attempts": (value.max_attempts as i64),
+            "certs_in_path": (value.certs_in_path.into_iter().map(|cert| Value::Bytestring(Bytes::from(cert))).collect::<Vec<Value>>()),
+            "app_public_key": (&value.app_public_key),
+            "wrapped_app_private_key": (value.wrapped_app_private_key),
+            "wrapped_wrapping_key": (value.wrapped_wrapping_key),
+        })
+    }
+}
+
+/// The Vault parameters. These must be constant when renewing a Vault so that
+/// renewal doesn't reset the attempt counters.
+struct Parameters {
+    vault_handle: [u8; VAULT_HANDLE_LEN],
+    counter_id: [u8; COUNTER_ID_LEN],
+}
+
+impl Parameters {
+    /// Generate a random set of Parameters.
+    fn random() -> Self {
+        let mut params = Parameters { vault_handle: [0u8; VAULT_HANDLE_LEN], counter_id: [0u8; 8] };
+        params.vault_handle[0] = VAULT_HANDLE_FIRST_BYTE;
+        crypto::rand_bytes(&mut params.vault_handle[1..]);
+        crypto::rand_bytes(&mut params.counter_id);
+        params
+    }
+
+    fn from_pin_data(pin_data: &pin::Data) -> Self {
+        let mut params =
+            Parameters { counter_id: pin_data.counter_id, vault_handle: [0u8; VAULT_HANDLE_LEN] };
+        params.vault_handle[0] = VAULT_HANDLE_FIRST_BYTE;
+        params.vault_handle[1..].copy_from_slice(&pin_data.vault_handle_without_type);
+        params
+    }
+
+    fn from_request(request: &BTreeMap<cbor::MapKey, cbor::Value>) -> Result<Self, RequestError> {
+        let Some(Value::Bytestring(counter_id)) = request.get(COUNTER_ID_KEY) else {
+            return debug("counter ID required");
+        };
+        if counter_id.len() != COUNTER_ID_LEN {
+            return debug("bad counter ID length");
+        }
+
+        let Some(Value::Bytestring(vault_handle_without_type)) =
+            request.get(VAULT_HANDLE_WITHOUT_TYPE_KEY)
+        else {
+            return debug("vault handle required");
+        };
+        if vault_handle_without_type.len() != VAULT_HANDLE_LEN - 1 {
+            return debug("bad vault handle length");
+        }
+
+        let mut params = Parameters {
+            counter_id: counter_id
+                .as_ref()
+                .try_into()
+                .map_err(|_| RequestError::Debug("incorrect length counter ID"))?,
+            vault_handle: [0u8; VAULT_HANDLE_LEN],
+        };
+        params.vault_handle[0] = VAULT_HANDLE_FIRST_BYTE;
+        params.vault_handle[1..].copy_from_slice(vault_handle_without_type);
+        Ok(params)
+    }
 }
 
 fn wrap(
     pin_hash: &[u8],
     cert_xml: &[u8],
     sig_xml: &[u8],
-    current_time_epoch_secs: i64,
+    params: Parameters,
+    current_time_epoch_millis: i64,
 ) -> Result<Wrapped, &'static str> {
-    let mut vault_handle = [0u8; VAULT_HANDLE_LEN];
-    vault_handle[0] = 3; // a type byte that indicates a GPM PIN.
-    crypto::rand_bytes(&mut vault_handle[1..]);
-
-    let (cohort_public_key, certs_in_path) = key_distribution::get_cohort_key(
+    let (cohort_public_key, certs_in_path, serial) = key_distribution::get_cohort_key(
         cert_xml,
         sig_xml,
-        current_time_epoch_secs,
-        cohort_selector_from_handle(&vault_handle),
+        current_time_epoch_millis,
+        cohort_selector_from_handle(&params.vault_handle),
     )?;
-
-    let mut counter_id = [0u8; 8];
-    crypto::rand_bytes(&mut counter_id);
 
     let max_attempts = MAX_ATTEMPTS.to_le_bytes();
 
     let vault_params = [
         b"V1 THM_encrypted_recovery_key".as_ref(),
         cohort_public_key.as_ref(),
-        counter_id.as_ref(),
+        &params.counter_id,
         max_attempts.as_ref(),
-        vault_handle.as_ref(),
+        &params.vault_handle,
     ]
     .concat();
 
@@ -1287,10 +1410,9 @@ fn wrap(
     .ok_or("failed to encrypt encrypted PIN hash")?;
 
     let app_private_key = crypto::P256Scalar::generate();
-    let app_private_key_bytes = crypto::P256Scalar::generate().bytes();
     let app_public_key = app_private_key.compute_public_key();
     let mut app_private_key_to_be_wrapped =
-        [app_private_key_bytes.as_ref(), app_public_key.as_ref()].concat();
+        [app_private_key.bytes().as_ref(), app_public_key.as_ref()].concat();
 
     let mut wrapping_key = [0u8; 32];
     crypto::rand_bytes(&mut wrapping_key);
@@ -1317,24 +1439,85 @@ fn wrap(
     Ok(Wrapped {
         cohort_public_key,
         encrypted_recovery_key,
-        vault_handle,
-        counter_id,
+        vault_handle: params.vault_handle,
+        counter_id: params.counter_id,
         max_attempts: MAX_ATTEMPTS,
         certs_in_path,
         app_public_key,
         wrapped_app_private_key,
         wrapped_wrapping_key,
+        serial,
     })
+}
+
+/// Return a CBOR response for `wrapped` which includes the fields needed to
+/// insert the virtual member into a security domain.
+fn include_security_domain_member_fields(
+    wrapped: Wrapped,
+    security_domain_secret: &[u8; 32],
+) -> Result<cbor::Value, RequestError> {
+    let header = b"V1 shared_key";
+    let Some(wrapped_sds) =
+        securebox::encrypt(Some(&wrapped.app_public_key), &[], header, security_domain_secret)
+    else {
+        return debug("generated public key was invalid");
+    };
+    let member_proof = crypto::hmac_sha256(security_domain_secret, &wrapped.app_public_key);
+    let wrapped_cbor: cbor::Value = wrapped.into();
+
+    Ok(cbor!({
+        "wrapped_sds": wrapped_sds,
+        "member_proof": (&member_proof),
+        "wrapped": wrapped_cbor,
+    }))
+}
+
+/// Check that the given serial number is at least equal to the greatest serial
+/// number used by the given device before. This is done so that devices cannot
+/// request rewrapping of PIN hashes under older recovery key store cohorts,
+/// which may allow an attacker additional guesses against a PIN.
+fn enforce_cert_highwater(
+    state: &mut DirtyFlag<ParsedState>,
+    device_id: &[u8],
+    serial: i64,
+) -> Result<(), RequestError> {
+    let device = state.get_device(device_id).ok_or(RequestError::Debug("missing device"))?;
+    let current_value: Option<i64> =
+        device.get(RECOVERY_KEY_STORE_SERIAL_HIGHWATER_KEY).and_then(|v| match v {
+            Value::Int(current) => Some(*current),
+            _ => None,
+        });
+
+    // If the serial matches the current highwater exactly, we're done.
+    match current_value {
+        Some(current) if current == serial => return Ok(()),
+        Some(current) if current > serial => return Err(RequestError::RecoveryKeyStoreDowngrade),
+        _ => (),
+    }
+
+    // Need to update the highwater.
+    let device =
+        state.get_mut().get_mut_device(device_id).ok_or(RequestError::Debug("missing device"))?;
+    device.insert(
+        MapKey::String(String::from(RECOVERY_KEY_STORE_SERIAL_HIGHWATER)),
+        Value::Int(serial),
+    );
+    Ok(())
 }
 
 map_keys! {
     PIN_HASH, PIN_HASH_KEY = "pin_hash",
     CERT_XML, CERT_XML_KEY = "cert_xml",
     SIG_XML, SIG_XML_KEY = "sig_xml",
+    RECOVERY_KEY_STORE_SERIAL_HIGHWATER, RECOVERY_KEY_STORE_SERIAL_HIGHWATER_KEY = "recovery_key_store_serial_highwater",
 }
 
+/// Encrypts a PIN hash to a Vault public key. This is a purely public operation
+/// that could be done by the client. It's exposed from the enclave to save
+/// having to reimplement this logic in Chromium since it has to live in the
+/// enclave in order to support `do_wrap_as_member`, below.
 pub(crate) fn do_wrap(
-    current_time: i64,
+    current_time_epoch_millis: i64,
     request: BTreeMap<MapKey, Value>,
 ) -> Result<cbor::Value, RequestError> {
     let Some(Value::Bytestring(pin_hash)) = request.get(PIN_HASH_KEY) else {
@@ -1346,18 +1529,81 @@ pub(crate) fn do_wrap(
     let Some(Value::Bytestring(sig_xml)) = request.get(SIG_XML_KEY) else {
         return debug("cert.sig.xml required");
     };
-    let wrapped = wrap(pin_hash, cert_xml, sig_xml, current_time).map_err(RequestError::Debug)?;
-    Ok(cbor!({
-        "cohort_public_key": (&wrapped.cohort_public_key),
-        "encrypted_recovery_key": (wrapped.encrypted_recovery_key),
-        "vault_handle": (&wrapped.vault_handle),
-        "counter_id": (&wrapped.counter_id),
-        "max_attempts": (wrapped.max_attempts as i64),
-        "certs_in_path": (wrapped.certs_in_path.into_iter().map(|cert| Value::Bytestring(Bytes::from(cert))).collect::<Vec<Value>>()),
-        "app_public_key": (&wrapped.app_public_key),
-        "wrapped_app_private_key": (wrapped.wrapped_app_private_key),
-        "wrapped_wrapping_key": (wrapped.wrapped_wrapping_key),
-    }))
+    let wrapped =
+        wrap(pin_hash, cert_xml, sig_xml, Parameters::random(), current_time_epoch_millis)
+            .map_err(RequestError::Debug)?;
+    Ok(wrapped.into())
+}
+
+/// Encrypts a PIN hash to a Vault public key and then constructs a security
+/// domain member for that PIN hash. This is a sensitive operation because it
+/// allows a new PIN to be a member of the domain, thus the client must have
+/// done user verification or else reauthenticated very recently.
+pub(crate) fn do_wrap_as_member(
+    auth: &Authentication,
+    state: &DirtyFlag<ParsedState>,
+    current_time_epoch_millis: i64,
+    request: BTreeMap<MapKey, Value>,
+) -> Result<cbor::Value, RequestError> {
+    // Either UV or else reauth is required to perform this command. The one-time
+    // UV is not enough.
+    let device_id = match auth {
+        Authentication::Device(device_id, AuthLevel::UserVerification, _, _) => device_id,
+        Authentication::Device(device_id, _, _, Reauth::Done) => device_id,
+        _ => return debug("not authenticated"),
+    };
+    let Some(Value::Bytestring(pin_hash)) = request.get(PIN_HASH_KEY) else {
+        return debug("PIN hash required");
+    };
+    let Some(Value::Bytestring(cert_xml)) = request.get(CERT_XML_KEY) else {
+        return debug("cert.xml required");
+    };
+    let Some(Value::Bytestring(sig_xml)) = request.get(SIG_XML_KEY) else {
+        return debug("cert.sig.xml required");
+    };
+    let (security_domain_secret, _) = get_secret_from_request(state, &request, device_id)?;
+    let wrapped = wrap(
+        pin_hash,
+        cert_xml,
+        sig_xml,
+        Parameters::from_request(&request)?,
+        current_time_epoch_millis,
+    )
+    .map_err(RequestError::Debug)?;
+    include_security_domain_member_fields(wrapped, &security_domain_secret)
+}
+
+pub(crate) fn do_rewrap(
+    auth: &Authentication,
+    state: &mut DirtyFlag<ParsedState>,
+    current_time_epoch_millis: i64,
+    request: BTreeMap<MapKey, Value>,
+) -> Result<cbor::Value, RequestError> {
+    let device_id = match auth {
+        Authentication::Device(device_id, _, _, _) => device_id,
+        _ => return debug("not authenticated"),
+    };
+    let Some(Value::Bytestring(cert_xml)) = request.get(CERT_XML_KEY) else {
+        return debug("cert.xml required");
+    };
+    let Some(Value::Bytestring(sig_xml)) = request.get(SIG_XML_KEY) else {
+        return debug("cert.sig.xml required");
+    };
+    let Some(Value::Bytestring(wrapped_pin_data)) = request.get(WRAPPED_PIN_DATA_KEY) else {
+        return debug("wrapped PIN required");
+    };
+    let (security_domain_secret, _) = get_secret_from_request(state, &request, device_id)?;
+    let pin_data = pin::Data::from_wrapped(wrapped_pin_data, &security_domain_secret)?;
+    let wrapped = wrap(
+        &pin_data.pin_hash,
+        cert_xml,
+        sig_xml,
+        Parameters::from_pin_data(&pin_data),
+        current_time_epoch_millis,
+    )
+    .map_err(RequestError::Debug)?;
+    enforce_cert_highwater(state, device_id, wrapped.serial)?;
+    include_security_domain_member_fields(wrapped, &security_domain_secret)
 }
 
 #[cfg(test)]
@@ -1368,8 +1614,14 @@ mod tests {
     fn test_wrap() {
         let pin_hash = [1u8; 32];
         assert!(
-            wrap(&pin_hash, SAMPLE_CERTS_XML, SAMPLE_SIG_XML, SAMPLE_VALIDATION_EPOCH_SECONDS)
-                .is_ok()
+            wrap(
+                &pin_hash,
+                SAMPLE_CERTS_XML,
+                SAMPLE_SIG_XML,
+                Parameters::random(),
+                SAMPLE_VALIDATION_EPOCH_MILLIS
+            )
+            .is_ok()
         );
     }
 }
@@ -1416,7 +1668,14 @@ pub mod fuzzing {
 // smaller.
 const ROOT_CERTIFICATE : &[u8] = b"\x30\x82\x03\x0d\x30\x82\x02\xf7\xa0\x03\x02\x01\x02\x02\x10\x6c\xd7\x6e\x79\x4d\xa8\xd2\xf3\x3d\x80\x6a\xb8\x37\xa6\xe1\x8f\x30\x0d\x06\x09\x2a\x86\x48\x86\xf7\x0d\x01\x01\x0b\x05\x00\x30\x31\x31\x2f\x30\x2d\x06\x03\x55\x04\x03\x13\x26\x47\x6f\x6f\x67\x6c\x65\x20\x43\x6c\x6f\x75\x64\x20\x4b\x65\x79\x20\x56\x61\x75\x6c\x74\x20\x53\x65\x72\x76\x69\x63\x65\x20\x52\x6f\x6f\x74\x20\x43\x41\x30\x1e\x17\x0d\x31\x38\x30\x35\x30\x37\x31\x38\x32\x34\x30\x32\x5a\x17\x0d\x33\x38\x30\x35\x30\x38\x31\x39\x32\x34\x30\x32\x5a\x30\x31\x31\x2f\x30\x2d\x06\x03\x55\x04\x03\x13\x26\x47\x6f\x6f\x67\x6c\x65\x20\x43\x6c\x6f\x75\x64\x20\x4b\x65\x79\x20\x56\x61\x75\x6c\x74\x20\x53\x65\x72\x76\x69\x63\x65\x20\x52\x6f\x6f\x74\x20\x43\x41\x30\x82\x02\x22\x30\x0d\x06\x09\x2a\x86\x48\x86\xf7\x0d\x01\x01\x01\x05\x00\x03\x82\x02\x0f\x00\x30\x82\x02\x0a\x02\x82\x02\x01\x00\xad\x48\x33\xbb\xee\x28\xf7\x29\x76\xd9\xea\xa5\xd4\x18\x86\x06\xad\xe0\x59\x7a\x28\x87\x6a\xa5\xdc\x9f\xaf\x56\xec\xdf\xfd\x38\x63\xcd\xd2\x20\xd3\x19\x24\x93\x0f\xcd\x00\x5c\x58\x16\x2e\x3d\x12\x8d\x5f\x6b\xf8\x5f\xf3\x00\x88\xa0\x0a\x82\x12\xcd\x65\x0f\xab\x44\xdd\xc0\x83\xdd\x3d\xfe\x11\x03\xea\xba\x1e\x82\x07\x62\xa6\x64\x32\x7a\x98\xf9\xd7\xbd\x55\x25\x52\xe1\x6b\xd0\xed\x8c\xc1\x99\x30\xca\x5a\x81\x11\x3c\xca\xd3\x1e\x4d\x08\x78\x0b\xfe\x9e\x3b\xbe\x48\xe1\x1f\x1e\x8b\xa9\x56\xa8\x6e\x28\x0a\x94\x7c\x6c\xce\xf5\x62\xe1\xf9\x2d\xfe\xaa\xbb\x29\x6d\xd8\x4d\x5c\x61\xc1\xd2\xc6\x11\xa6\xfe\x3a\xa4\x9f\xc0\xcc\x5d\x04\xb8\x4c\x7c\x4d\x0a\xd1\xdb\xc5\xb7\xc6\xec\xf3\x22\x40\x17\x4e\x03\x26\xc3\x1b\x44\x28\x45\x14\x1a\x53\xd7\xb6\x74\xbb\x9d\xe2\x20\x00\x2e\xe6\xa5\x50\x84\xaa\xd0\x5e\x22\x00\xc2\x06\xe8\x66\xa7\x7e\x26\x41\xcb\x5d\x4d\x5f\x25\xe5\x53\xe5\x62\x4e\x26\x0a\x09\x15\x61\xe4\x75\x69\x07\xb5\xae\x26\x49\x89\x52\xef\x62\x75\x43\xdd\xbb\x24\x3d\x49\x74\x44\xf5\x90\x5b\x47\xf8\x40\xed\x60\x0b\x71\xef\x1e\xc5\xf7\x10\x00\x6d\xbd\xad\x30\x84\xf0\xb3\xfc\x30\x77\x6a\xc0\xcd\x94\xd7\xfe\x4c\x51\x6c\x39\x57\x54\xb4\xe8\x53\x4e\x4b\x15\x83\xeb\xf9\xd1\x55\xd7\x0b\xd7\x9a\x2d\x23\x96\x42\x31\x9e\x17\x5a\x54\x1a\x96\x0b\xdd\xe9\xe7\x6f\x14\x89\x47\x0b\xa6\x26\xfe\x1d\x5c\xcc\x58\x67\x58\x23\x71\xb5\x34\xe6\xbf\x95\x3a\x74\x73\xc2\xdc\x6c\x98\xda\xa6\x28\x95\x9d\xe4\x50\x27\x77\x08\xa8\x33\xce\x48\x49\xc4\xab\x8d\x21\xc9\x97\x75\x8f\x1d\xc9\x9c\xec\x49\x33\x01\xec\xf2\xfe\x2c\xf4\x62\x25\x6f\x70\x5c\x3a\x60\xef\x03\xf3\x2e\xd3\xdc\x44\x30\xac\x29\x1c\x19\xb8\x4c\x50\xca\x5d\xe1\x87\x39\x68\x5a\xed\xc7\x16\x10\x40\x9b\xc8\xee\x67\x72\xee\x97\xb8\xdd\xa2\xcb\x3f\x52\xf9\x3b\x8c\xca\x36\x41\x13\x9e\x76\xa7\xa3\xee\xe6\x01\x02\xdb\x19\x3e\xa9\xa6\xf4\x34\x60\xd3\x1d\xd2\xca\x2d\xbc\x96\x9f\x72\x31\x76\x60\x47\xc9\x3a\xfb\x88\xf0\xaa\x9a\x9c\x87\x9e\x09\x02\xfe\x96\xc6\x7e\xf1\xae\xb1\xce\x41\xa4\x1b\xa0\xb0\x1b\x65\xcf\xae\xe6\xe1\x15\x8b\x27\xbd\xb2\x01\xe5\x4f\x3b\xf9\x72\xff\xcc\x38\xa2\xb3\x6c\x19\x68\xe7\xde\xcd\x02\x03\x01\x00\x01\xa3\x23\x30\x21\x30\x0e\x06\x03\x55\x1d\x0f\x01\x01\xff\x04\x04\x03\x02\x01\x86\x30\x0f\x06\x03\x55\x1d\x13\x01\x01\xff\x04\x05\x30\x03\x01\x01\xff\x30\x0d\x06\x09\x2a\x86\x48\x86\xf7\x0d\x01\x01\x0b\x05\x00\x03\x01\x00";
 
+// When building this code for integration testing in Chromium, a test root is
+// used. The private key for this root, and code for generating it, is in
+// `fake_recovery_key_store.cc` in Chromium.
+#[cfg(feature = "chromium_integration_test")]
+const TEST_ROOT_CERTIFICATE : &[u8] = b"\x30\x82\x02\xac\x30\x82\x01\x94\xa0\x03\x02\x01\x02\x02\x01\x01\x30\x0d\x06\x09\x2a\x86\x48\x86\xf7\x0d\x01\x01\x0b\x05\x00\x30\x0f\x31\x0d\x30\x0b\x06\x03\x55\x04\x03\x0c\x04\x52\x6f\x6f\x74\x30\x1e\x17\x0d\x32\x34\x30\x31\x33\x31\x32\x32\x32\x30\x30\x32\x5a\x17\x0d\x32\x34\x30\x32\x31\x34\x32\x32\x32\x30\x30\x32\x5a\x30\x0f\x31\x0d\x30\x0b\x06\x03\x55\x04\x03\x0c\x04\x52\x6f\x6f\x74\x30\x82\x01\x22\x30\x0d\x06\x09\x2a\x86\x48\x86\xf7\x0d\x01\x01\x01\x05\x00\x03\x82\x01\x0f\x00\x30\x82\x01\x0a\x02\x82\x01\x01\x00\xc7\x95\x62\x74\xaf\x3f\x50\xb9\xa8\x4f\x55\x12\x0e\x5d\x1f\x89\x67\xdf\x55\x8c\x16\x75\x06\x1c\x33\x01\xa0\xdb\xa4\x88\x39\xdc\xca\x57\xf2\x6b\xd3\x0b\x22\x0d\x79\x2c\xc2\x4c\x1d\xf6\x0c\x32\xf6\x66\xca\x07\x89\x12\x17\x1e\x43\xbb\x16\xda\xe8\x2a\xec\x89\x25\x84\x88\xa5\x5d\xc1\x80\xb1\x9c\xab\xed\x00\x7d\xec\x9d\x4a\x49\xa4\x61\x48\x9e\xab\xb3\x78\x35\xce\x72\x80\x40\x20\x58\xca\x90\xbc\x24\x41\x01\x48\xaf\xc7\x69\x9d\x04\xa0\xa5\x20\xe8\xca\x16\xe5\x96\x6a\x36\x82\x2f\xc6\xe5\x0b\x53\x72\x3d\x89\x78\xc8\x27\xf7\xda\xe1\x6e\x07\xd6\xc1\xad\xaf\xa7\x27\xbb\x4b\x1f\x09\xdc\x41\x2d\x68\x21\xda\x85\x0b\xe1\x6f\x7b\x34\xa3\x45\x80\x43\x4e\x2a\xe7\x17\xd1\xde\xd7\xc0\xde\xf6\x0c\xa2\x50\x41\xd2\xf7\x7b\xb6\x81\x29\xb3\x80\xcc\xbf\x1e\x5a\xeb\xf3\x3c\xd2\xe6\x8d\xfc\x9a\x41\x23\xdc\xcb\x68\xff\x9e\x34\xe9\x25\xd7\xa7\x27\xc4\x68\x72\x38\x0e\xcc\x5b\x48\x40\xbb\x90\xa0\xfd\xd4\xc4\xea\xe9\x11\xd5\x6e\xda\x34\xea\x40\x2b\xcd\x21\x9b\x77\xdc\x05\xc2\xcf\x00\x05\xbc\x28\x5c\x59\xcf\xd9\x67\xcb\x30\x12\x77\x5e\xb6\xe9\x02\x03\x01\x00\x01\xa3\x13\x30\x11\x30\x0f\x06\x03\x55\x1d\x13\x01\x01\xff\x04\x05\x30\x03\x01\x01\xff\x30\x0d\x06\x09\x2a\x86\x48\x86\xf7\x0d\x01\x01\x0b\x05\x00\x03\x82\x01\x01\x00\xb1\xaa\xae\x2a\x28\x83\xdb\x56\x02\xdb\x0f\x15\x32\xce\xa6\x9f\xac\xe4\x98\xa7\x08\x99\x24\xae\xe4\x7c\x8d\x2a\x98\x03\x02\xdc\x9d\xca\x58\x8b\xda\x75\xce\xcc\xef\x51\x26\xab\xd7\x14\xcc\x15\x4d\xa4\x66\x46\x03\x81\xf9\x2b\x09\x0b\x01\xf9\x9a\x1a\x39\x79\xec\x99\xee\x59\xbd\x82\x0a\x44\xe0\xc2\x9f\xe4\x0e\x82\x8e\x10\x0e\x5a\xc3\xd5\x7c\x3c\xe7\x21\x78\xd0\xfa\xea\x72\x7a\xf9\x55\x46\x3b\x89\x94\xec\x8e\xb1\x75\xe2\x14\xf8\xf4\x7d\x63\x71\xea\x60\xad\x03\xdc\x7f\xf4\xe6\x98\x0f\xd0\x9f\x1e\x97\x95\xb4\x7d\xea\x89\xb0\xae\x8a\x52\xb7\xe8\x94\x96\x04\x4a\xce\x82\x8f\x9b\xb9\x1b\x5f\xf2\xe3\xc0\x05\x02\x4b\x7b\xfc\x94\x47\x21\x2b\x24\x61\xd1\x81\xea\x93\xf4\x04\x1e\x6c\x2c\xca\xfe\x7b\x05\xf1\x50\x25\x4f\x4c\x61\xf2\x7c\x0d\xef\xaa\x3c\xe9\x0f\xa6\xdc\x78\x78\x72\x78\x7c\x5b\x7c\x63\xc7\x95\x09\x62\xfc\x05\xc6\xde\xdd\x1f\x16\x61\xa8\xb1\x37\x40\xce\xf8\xfd\xae\x9f\x35\xc0\x1d\xb0\x1f\x45\xec\x4f\xb5\x95\x00\xe2\xb0\x24\x75\xe6\x2b\xb8\xe1\xbc\x84\x3f\xf9\xd1\x0a\x18\x72\xa5\xb8\xa1\x28\x73\x69\x4f\x78\x5d\x83";
+
 #[cfg(test)]
+pub(crate)
 const SAMPLE_CERTS_XML : &[u8] = br#"<?xml version="1.0" encoding="UTF-8"?>
 <certificate>
   <metadata>
@@ -1441,6 +1700,7 @@ const SAMPLE_CERTS_XML : &[u8] = br#"<?xml version="1.0" encoding="UTF-8"?>
 "#;
 
 #[cfg(test)]
+pub(crate)
 const SAMPLE_SIG_XML : &[u8] = br#"<?xml version="1.0" encoding="UTF-8"?>
 <signature>
   <intermediates>
@@ -1454,4 +1714,4 @@ const SAMPLE_SIG_XML : &[u8] = br#"<?xml version="1.0" encoding="UTF-8"?>
 
 /// This is a timestamp at which the sample XML files are valid.
 #[cfg(test)]
-const SAMPLE_VALIDATION_EPOCH_SECONDS: i64 = 1707344402;
+pub(crate) const SAMPLE_VALIDATION_EPOCH_MILLIS: i64 = 1707344402000;

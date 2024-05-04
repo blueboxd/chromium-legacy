@@ -30,7 +30,6 @@
 #include "chrome/browser/web_applications/test/web_app_test_observers.h"
 #include "chrome/browser/web_applications/test/web_app_test_utils.h"
 #include "chrome/browser/web_applications/web_app.h"
-#include "chrome/browser/web_applications/web_app_command_manager.h"
 #include "chrome/browser/web_applications/web_app_command_scheduler.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
@@ -229,6 +228,21 @@ void RunCallbacksOnInstall(
     callback.Run(app->app_id(), code);
 }
 
+syncer::EntityChangeList ToEntityChageList(
+    const webapps::AppId& app_id,
+    const sync_pb::WebAppSpecifics& sync_proto,
+    WebAppSyncBridge& sync_bridge) {
+  syncer::EntityChangeList entity_change_list;
+  syncer::EntityData entity_data;
+  *entity_data.specifics.mutable_web_app() = sync_proto;
+  CHECK(sync_bridge.IsEntityDataValid(entity_data));
+  std::string storage_key = sync_bridge.GetClientTag(entity_data);
+  DCHECK_EQ(storage_key, app_id);
+  entity_change_list.push_back(
+      syncer::EntityChange::CreateUpdate(storage_key, std::move(entity_data)));
+  return entity_change_list;
+}
+
 }  // namespace
 
 // TODO(dmurph): Replace these tests with tests in SingleClientWebAppsSyncTest,
@@ -236,15 +250,6 @@ void RunCallbacksOnInstall(
 // in full w/o mocks.
 class WebAppSyncBridgeTest : public WebAppTest {
  public:
-  void SetUp() override {
-    WebAppTest::SetUp();
-  }
-
-  void TearDown() override {
-    fake_provider().Shutdown();
-    WebAppTest::TearDown();
-  }
-
   void StartWebAppProvider() {
     test::AwaitStartWebAppProviderAndSubsystems(profile());
   }
@@ -319,10 +324,10 @@ TEST_F(WebAppSyncBridgeTest, GetData) {
   std::unique_ptr<WebApp> synced_app1 =
       CreateWebAppWithSyncOnlyFields("https://example.com/app1/");
   {
-    WebApp::SyncFallbackData sync_fallback_data;
-    sync_fallback_data.name = "Sync Name";
-    sync_fallback_data.theme_color = SK_ColorCYAN;
-    synced_app1->SetSyncFallbackData(std::move(sync_fallback_data));
+    sync_pb::WebAppSpecifics sync_data;
+    sync_data.set_name("Sync Name");
+    sync_data.set_theme_color(SK_ColorCYAN);
+    synced_app1->SetSyncProto(std::move(sync_data));
   }
   InsertAppIntoRegistry(&registry, std::move(synced_app1));
 
@@ -348,7 +353,7 @@ TEST_F(WebAppSyncBridgeTest, GetData) {
       storage_keys.push_back(id_and_web_app.first);
 
     base::RunLoop run_loop;
-    sync_bridge().GetData(
+    sync_bridge().GetDataForCommit(
         std::move(storage_keys),
         base::BindLambdaForTesting(
             [&](std::unique_ptr<syncer::DataBatch> data_batch) {
@@ -387,7 +392,7 @@ TEST_F(WebAppSyncBridgeTest, MergeFullSyncData_LocalSetAndServerSetAreEmpty) {
 
   syncer::EntityChangeList sync_data_list;
 
-  EXPECT_CALL(processor(), Put(_, _, _)).Times(0);
+  EXPECT_CALL(processor(), Put).Times(0);
 
   sync_bridge().MergeFullSyncData(sync_bridge().CreateMetadataChangeList(),
                                   std::move(sync_data_list));
@@ -407,7 +412,7 @@ TEST_F(WebAppSyncBridgeTest, MergeFullSyncData_LocalSetEqualsServerSet) {
 
   // The local app state is the same as the server state, so no changes should
   // be sent.
-  EXPECT_CALL(processor(), Put(_, _, _)).Times(0);
+  EXPECT_CALL(processor(), Put).Times(0);
 
   sync_bridge().MergeFullSyncData(sync_bridge().CreateMetadataChangeList(),
                                   std::move(sync_data_list));
@@ -438,7 +443,7 @@ TEST_F(WebAppSyncBridgeTest, MergeFullSyncData_LocalSetGreaterThanServerSet) {
   // MergeFullSyncData below should send |expected_local_apps_to_upload| to the
   // processor() to upload to USS.
   base::RunLoop run_loop;
-  ON_CALL(processor(), Put(_, _, _))
+  ON_CALL(processor(), Put)
       .WillByDefault([&](const std::string& storage_key,
                          std::unique_ptr<syncer::EntityData> entity_data,
                          syncer::MetadataChangeList* metadata) {
@@ -480,7 +485,7 @@ TEST_F(WebAppSyncBridgeTest, MergeFullSyncData_LocalSetLessThanServerSet) {
   ConvertAppsListToEntityChangeList(expected_apps_to_install, &sync_data_list);
   ConvertAppsListToEntityChangeList(local_and_server_apps, &sync_data_list);
 
-  EXPECT_CALL(processor(), Put(_, _, _)).Times(0);
+  EXPECT_CALL(processor(), Put).Times(0);
 
   base::RunLoop run_loop;
   // This is called after apps are installed from sync in MergeFullSyncData()
@@ -541,8 +546,8 @@ TEST_F(WebAppSyncBridgeTest, ApplyIncrementalSyncChanges_EmptyEntityChanges) {
   MergeFullSyncData(merged_apps);
 
   syncer::EntityChangeList entity_changes;
-  EXPECT_CALL(processor(), Put(_, _, _)).Times(0);
-  EXPECT_CALL(processor(), Delete(_, _)).Times(0);
+  EXPECT_CALL(processor(), Put).Times(0);
+  EXPECT_CALL(processor(), Delete).Times(0);
   SetSyncInstallCallbackFailureIfCalled();
 
   sync_bridge().ApplyIncrementalSyncChanges(
@@ -595,8 +600,8 @@ TEST_F(WebAppSyncBridgeTest, ApplyIncrementalSyncChanges_AddUpdateDelete) {
 
   // There should be no changes sent to USS in the next
   // ApplyIncrementalSyncChanges() operation.
-  EXPECT_CALL(processor(), Put(_, _, _)).Times(0);
-  EXPECT_CALL(processor(), Delete(_, _)).Times(0);
+  EXPECT_CALL(processor(), Put).Times(0);
+  EXPECT_CALL(processor(), Delete).Times(0);
 
   base::RunLoop run_loop;
   base::RepeatingClosure barrier_closure =
@@ -631,7 +636,7 @@ TEST_F(WebAppSyncBridgeTest, ApplyIncrementalSyncChanges_AddUpdateDelete) {
               // Sync expects that the apps are deleted by the delegate.
               EXPECT_TRUE(app);
               EXPECT_TRUE(app->is_uninstalling());
-              EXPECT_TRUE(app->GetSources().Empty());
+              EXPECT_TRUE(app->GetSources().empty());
               registry.erase(app_to_uninstall);
               {
                 ScopedRegistryUpdate update = sync_bridge().BeginUpdate();
@@ -676,8 +681,8 @@ TEST_F(WebAppSyncBridgeTest,
 
   // There should be no changes sent to USS in the next
   // ApplyIncrementalSyncChanges() operation.
-  EXPECT_CALL(processor(), Put(_, _, _)).Times(0);
-  EXPECT_CALL(processor(), Delete(_, _)).Times(0);
+  EXPECT_CALL(processor(), Put).Times(0);
+  EXPECT_CALL(processor(), Delete).Times(0);
 
   base::RunLoop run_loop;
   std::vector<webapps::AppId> to_uninstall;
@@ -704,7 +709,7 @@ TEST_F(WebAppSyncBridgeTest,
     const WebApp* app = registrar().GetAppById(app_to_uninstall);
     EXPECT_TRUE(app);
     EXPECT_TRUE(app->is_uninstalling());
-    EXPECT_TRUE(app->GetSources().Empty());
+    EXPECT_TRUE(app->GetSources().empty());
   }
 }
 
@@ -724,10 +729,10 @@ TEST_F(WebAppSyncBridgeTest, ApplyIncrementalSyncChanges_UpdateOnly) {
     auto app_to_update = std::make_unique<WebApp>(*merged_apps[i]);
     app_to_update->SetUserDisplayMode(UserDisplayMode::kStandalone);
 
-    WebApp::SyncFallbackData sync_fallback_data;
-    sync_fallback_data.name = "Sync Name";
-    sync_fallback_data.theme_color = SK_ColorYELLOW;
-    app_to_update->SetSyncFallbackData(std::move(sync_fallback_data));
+    sync_pb::WebAppSpecifics sync_data = app_to_update->sync_proto();
+    sync_data.set_name("Sync Name");
+    sync_data.set_theme_color(SK_ColorYELLOW);
+    app_to_update->SetSyncProto(std::move(sync_data));
 
     ConvertAppToEntityChange(
         *app_to_update, syncer::EntityChange::ACTION_UPDATE, &entity_changes);
@@ -735,8 +740,8 @@ TEST_F(WebAppSyncBridgeTest, ApplyIncrementalSyncChanges_UpdateOnly) {
     registry[app_to_update->app_id()] = std::move(app_to_update);
   }
 
-  EXPECT_CALL(processor(), Put(_, _, _)).Times(0);
-  EXPECT_CALL(processor(), Delete(_, _)).Times(0);
+  EXPECT_CALL(processor(), Put).Times(0);
+  EXPECT_CALL(processor(), Delete).Times(0);
 
   // No installs or uninstalls are made here, only app updates.
   SetSyncInstallCallbackFailureIfCalled();
@@ -774,8 +779,8 @@ TEST_F(WebAppSyncBridgeTest,
                              &entity_changes);
   }
 
-  EXPECT_CALL(processor(), Put(_, _, _)).Times(0);
-  EXPECT_CALL(processor(), Delete(_, _)).Times(0);
+  EXPECT_CALL(processor(), Put).Times(0);
+  EXPECT_CALL(processor(), Delete).Times(0);
   SetSyncInstallCallbackFailureIfCalled();
 
   sync_bridge().ApplyIncrementalSyncChanges(
@@ -820,18 +825,18 @@ TEST_F(WebAppSyncBridgeTest,
     auto app_to_update = std::make_unique<WebApp>(*policy_and_sync_apps[i]);
     app_to_update->SetUserDisplayMode(UserDisplayMode::kBrowser);
 
-    WebApp::SyncFallbackData sync_fallback_data;
-    sync_fallback_data.name = "Updated Sync Name";
-    sync_fallback_data.theme_color = SK_ColorWHITE;
-    app_to_update->SetSyncFallbackData(std::move(sync_fallback_data));
+    sync_pb::WebAppSpecifics sync_data = app_to_update->sync_proto();
+    sync_data.set_name("Updated Sync Name");
+    sync_data.set_theme_color(SK_ColorWHITE);
+    app_to_update->SetSyncProto(std::move(sync_data));
 
     ConvertAppToEntityChange(
         *app_to_update, syncer::EntityChange::ACTION_UPDATE, &entity_changes);
     apps_to_update.push_back(std::move(app_to_update));
   }
 
-  EXPECT_CALL(processor(), Put(_, _, _)).Times(0);
-  EXPECT_CALL(processor(), Delete(_, _)).Times(0);
+  EXPECT_CALL(processor(), Put).Times(0);
+  EXPECT_CALL(processor(), Delete).Times(0);
   SetSyncInstallCallbackFailureIfCalled();
 
   sync_bridge().ApplyIncrementalSyncChanges(
@@ -877,8 +882,8 @@ TEST_F(WebAppSyncBridgeTest,
         app_to_uninstall, syncer::EntityChange::ACTION_DELETE, &entity_changes);
   }
 
-  EXPECT_CALL(processor(), Put(_, _, _)).Times(0);
-  EXPECT_CALL(processor(), Delete(_, _)).Times(0);
+  EXPECT_CALL(processor(), Put).Times(0);
+  EXPECT_CALL(processor(), Delete).Times(0);
   SetSyncInstallCallbackFailureIfCalled();
 
   sync_bridge().ApplyIncrementalSyncChanges(
@@ -908,8 +913,8 @@ TEST_F(WebAppSyncBridgeTest, CommitUpdate_CommitWhileNotTrackingMetadata) {
   Registry expected_registry;
   InsertAppsListIntoRegistry(&expected_registry, sync_apps);
 
-  EXPECT_CALL(processor(), Put(_, _, _)).Times(0);
-  EXPECT_CALL(processor(), Delete(_, _)).Times(0);
+  EXPECT_CALL(processor(), Put).Times(0);
+  EXPECT_CALL(processor(), Delete).Times(0);
   EXPECT_CALL(processor(), IsTrackingMetadata())
       .WillOnce(testing::Return(false));
 
@@ -927,7 +932,7 @@ TEST_F(WebAppSyncBridgeTest, CommitUpdate_CommitWhileNotTrackingMetadata) {
 
   // Do MergeFullSyncData next.
   base::RunLoop run_loop;
-  ON_CALL(processor(), Put(_, _, _))
+  ON_CALL(processor(), Put)
       .WillByDefault([&](const std::string& storage_key,
                          std::unique_ptr<syncer::EntityData> entity_data,
                          syncer::MetadataChangeList* metadata) {
@@ -937,7 +942,7 @@ TEST_F(WebAppSyncBridgeTest, CommitUpdate_CommitWhileNotTrackingMetadata) {
           run_loop.Quit();
       });
 
-  EXPECT_CALL(processor(), Delete(_, _)).Times(0);
+  EXPECT_CALL(processor(), Delete).Times(0);
   EXPECT_CALL(processor(), IsTrackingMetadata())
       .WillOnce(testing::Return(true));
 
@@ -958,7 +963,7 @@ TEST_F(WebAppSyncBridgeTest, CommitUpdate_CreateSyncApp) {
   Registry expected_registry;
   InsertAppsListIntoRegistry(&expected_registry, sync_apps);
 
-  ON_CALL(processor(), Put(_, _, _))
+  ON_CALL(processor(), Put)
       .WillByDefault([&](const std::string& storage_key,
                          std::unique_ptr<syncer::EntityData> entity_data,
                          syncer::MetadataChangeList* metadata) {
@@ -968,7 +973,7 @@ TEST_F(WebAppSyncBridgeTest, CommitUpdate_CreateSyncApp) {
         EXPECT_TRUE(IsSyncDataEqual(*expected_app, *entity_data));
         RemoveWebAppFromAppsList(&sync_apps, storage_key);
       });
-  EXPECT_CALL(processor(), Delete(_, _)).Times(0);
+  EXPECT_CALL(processor(), Delete).Times(0);
   EXPECT_CALL(processor(), IsTrackingMetadata())
       .WillOnce(testing::Return(true));
 
@@ -997,7 +1002,7 @@ TEST_F(WebAppSyncBridgeTest, CommitUpdate_UpdateSyncApp) {
   database_factory().WriteRegistry(registry);
   StartWebAppProvider();
 
-  ON_CALL(processor(), Put(_, _, _))
+  ON_CALL(processor(), Put)
       .WillByDefault([&](const std::string& storage_key,
                          std::unique_ptr<syncer::EntityData> entity_data,
                          syncer::MetadataChangeList* metadata) {
@@ -1006,7 +1011,7 @@ TEST_F(WebAppSyncBridgeTest, CommitUpdate_UpdateSyncApp) {
         EXPECT_TRUE(IsSyncDataEqual(*expected_app, *entity_data));
         RemoveWebAppFromAppsList(&sync_apps, storage_key);
       });
-  EXPECT_CALL(processor(), Delete(_, _)).Times(0);
+  EXPECT_CALL(processor(), Delete).Times(0);
 
   base::test::TestFuture<bool> future;
   {
@@ -1017,10 +1022,10 @@ TEST_F(WebAppSyncBridgeTest, CommitUpdate_UpdateSyncApp) {
       // Obtain a writeable handle.
       WebApp* sync_app = update->UpdateApp(app->app_id());
 
-      WebApp::SyncFallbackData sync_fallback_data;
-      sync_fallback_data.name = "Updated Sync Name";
-      sync_fallback_data.theme_color = SK_ColorBLACK;
-      sync_app->SetSyncFallbackData(std::move(sync_fallback_data));
+      sync_pb::WebAppSpecifics sync_data;
+      sync_data.set_name("Updated Sync Name");
+      sync_data.set_theme_color(SK_ColorBLACK);
+      sync_app->SetSyncProto(std::move(sync_data));
       sync_app->SetUserDisplayMode(UserDisplayMode::kBrowser);
 
       // Override the app in the expected registry.
@@ -1046,9 +1051,10 @@ TEST_F(WebAppSyncBridgeTest, CommitUpdate_DeleteSyncApp) {
 
   // Put() is called kNumApps times, since UninstallWebApp() calls Put() to
   // update the `is_uninstalling` field.
-  EXPECT_CALL(processor(), Put(_, _, _)).Times(kNumApps);
-  ON_CALL(processor(), Delete(_, _))
+  EXPECT_CALL(processor(), Put).Times(kNumApps);
+  ON_CALL(processor(), Delete)
       .WillByDefault([&](const std::string& storage_key,
+                         const syncer::DeletionOrigin& origin,
                          syncer::MetadataChangeList* metadata) {
         EXPECT_TRUE(base::Contains(registry, storage_key));
         RemoveWebAppFromAppsList(&sync_apps, storage_key);
@@ -1083,7 +1089,7 @@ TEST_F(WebAppSyncBridgeTest,
   database_factory().WriteRegistry(registry);
   StartWebAppProvider();
 
-  ON_CALL(processor(), Put(_, _, _))
+  ON_CALL(processor(), Put)
       .WillByDefault([&](const std::string& storage_key,
                          std::unique_ptr<syncer::EntityData> entity_data,
                          syncer::MetadataChangeList* metadata) {
@@ -1103,7 +1109,7 @@ TEST_F(WebAppSyncBridgeTest,
 
         RemoveWebAppFromAppsList(&policy_apps, storage_key);
       });
-  EXPECT_CALL(processor(), Delete(_, _)).Times(0);
+  EXPECT_CALL(processor(), Delete).Times(0);
 
   base::test::TestFuture<bool> future;
   {
@@ -1150,7 +1156,7 @@ TEST_F(WebAppSyncBridgeTest,
   database_factory().WriteRegistry(registry);
   StartWebAppProvider();
 
-  ON_CALL(processor(), Put(_, _, _))
+  ON_CALL(processor(), Put)
       .WillByDefault([&](const std::string& storage_key,
                          std::unique_ptr<syncer::EntityData> entity_data,
                          syncer::MetadataChangeList* metadata) {
@@ -1158,8 +1164,9 @@ TEST_F(WebAppSyncBridgeTest,
         // See TODO in WebAppSyncBridge::UpdateSync.
         RemoveWebAppFromAppsList(&policy_and_sync_apps, storage_key);
       });
-  ON_CALL(processor(), Delete(_, _))
+  ON_CALL(processor(), Delete)
       .WillByDefault([&](const std::string& storage_key,
+                         const syncer::DeletionOrigin& origin,
                          syncer::MetadataChangeList* metadata) {
         ASSERT_TRUE(base::Contains(registry, storage_key));
         RemoveWebAppFromAppsList(&policy_and_sync_apps, storage_key);
@@ -1231,6 +1238,45 @@ TEST_F(WebAppSyncBridgeTest, InstallAppsFromSyncAndPendingInstallation) {
   StartWebAppProvider();
 
   run_loop.Run();
+}
+
+// Tests that non user installable apps can also be removed by the
+// WebAppSyncBridge during system startup, if `is_uninstalling` is set to true.
+// Test for crbug.com/335253048, by using kSystem to mock that behavior. Since
+// System Web Apps are only on Ash chrome, kPolicy is used instead on Lacro
+TEST_F(WebAppSyncBridgeTest, CanDeleteNonUserInstallableApps) {
+  AppsList system_apps;
+
+  // This app should be uninstalled, since the `is_uninstalling` field is set.
+  std::unique_ptr<WebApp> app1 =
+      test::CreateWebApp(GURL("https://example.com/app1"));
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  app1->AddSource(WebAppManagement::kPolicy);
+#else
+  app1->AddSource(WebAppManagement::kSystem);
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+  app1->SetIsUninstalling(/*is_uninstalling=*/true);
+  const webapps::AppId app_id1 = app1->app_id();
+  system_apps.push_back(std::move(app1));
+
+  // This app will not be uninstalled.
+  std::unique_ptr<WebApp> app2 =
+      test::CreateWebApp(GURL("https://example.com/app2"));
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  app2->AddSource(WebAppManagement::kPolicy);
+#else
+  app2->AddSource(WebAppManagement::kSystem);
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+  const webapps::AppId app_id2 = app2->app_id();
+  system_apps.push_back(std::move(app2));
+
+  Registry registry;
+  InsertAppsListIntoRegistry(&registry, system_apps);
+  database_factory().WriteRegistry(registry);
+  StartWebAppProvider();
+
+  EXPECT_FALSE(registrar().IsInstalled(app_id1));
+  EXPECT_TRUE(registrar().IsInstalled(app_id2));
 }
 
 // Tests that OnWebAppsWillBeUpdatedFromSync observer notification is called
@@ -1361,13 +1407,74 @@ TEST_F(WebAppSyncBridgeTest, InvalidSyncData) {
                   base::Bucket(StorageKeyParseResult::kInvalidManifestId, 1)));
 }
 
+// Test that a serialized proto with an unrecognized new field can successfully
+// sync install in the current version and preserves the field value.
+TEST_F(WebAppSyncBridgeTest, SpecificsProtoWithNewFieldPreserved) {
+  // Serialized in M125 by modifying web_app_specifics.proto:
+  // +optional string test_new_field = 5372767;
+  // Then:
+  // const char kAppName[] = "Test name";
+  // sync_pb::WebAppSpecifics sync_proto;
+  // sync_proto.set_start_url(kStartUrl);
+  // sync_proto.set_name(kAppName);
+  // sync_proto.set_user_display_mode_default(
+  //     sync_pb::WebAppSpecifics::BROWSER);
+  // sync_proto.set_test_new_field("hello");
+  // sync_proto.SerializeAsString();
+  const char kStartUrl[] = "https://example.com/launchurl";
+  const std::string serialized_proto = {
+      10,  29,  104, 116, 116, 112, 115, 58,  47,  47,  101, 120, 97,  109,
+      112, 108, 101, 46,  99,  111, 109, 47,  108, 97,  117, 110, 99,  104,
+      117, 114, 108, 18,  9,   84,  101, 115, 116, 32,  110, 97,  109, 101,
+      24,  1,   -6,  -75, -65, 20,  5,   104, 101, 108, 108, 111};
+  const GURL start_url = GURL(kStartUrl);
+  const webapps::AppId app_id =
+      GenerateAppId(/*manifest_id_path=*/std::nullopt, start_url);
+
+  // Parse the proto.
+  sync_pb::WebAppSpecifics sync_proto;
+  bool parsed = sync_proto.ParseFromString(serialized_proto);
+
+  // Sanity check the proto was parsed.
+  ASSERT_TRUE(parsed);
+  EXPECT_EQ(kStartUrl, sync_proto.start_url());
+
+  StartWebAppProvider();
+
+  // Listen for sync installs.
+  WebAppTestInstallObserver install_observer(profile());
+  install_observer.BeginListening();
+
+  EXPECT_FALSE(sync_bridge().ApplyIncrementalSyncChanges(
+      sync_bridge().CreateMetadataChangeList(),
+      ToEntityChageList(app_id, sync_proto, sync_bridge())));
+
+  // Await sync install.
+  EXPECT_EQ(install_observer.Wait(), app_id);
+
+  const WebApp* app = fake_provider().registrar_unsafe().GetAppById(app_id);
+  ASSERT_TRUE(app);
+
+  // Clear the fields added due to normalizing the proto in `SetSyncProto` and
+  // `ApplySyncDataToApp`.
+  sync_pb::WebAppSpecifics result_proto = app->sync_proto();
+  result_proto.clear_relative_manifest_id();
+#if BUILDFLAG(IS_CHROMEOS)
+  result_proto.clear_user_display_mode_cros();
+#endif
+
+  // Check that the sync proto retained its value, including the unknown field.
+  EXPECT_EQ(result_proto.SerializeAsString(), serialized_proto);
+}
+
 namespace {
 using UserDisplayModeSplitParam = std::tuple<
     bool /*flag_enabled*/,
     std::optional<WebAppSpecifics_UserDisplayMode> /*sync_cros_udm*/,
     std::optional<WebAppSpecifics_UserDisplayMode> /*sync_non_cros_udm*/,
     std::optional<UserDisplayMode> /*installed_udm*/,
-    std::optional<UserDisplayMode> /*local_other_platform_udm*/>;
+    std::optional<
+        WebAppSpecifics_UserDisplayMode> /*local_other_platform_udm*/>;
 
 constexpr std::optional<WebAppSpecifics_UserDisplayMode>
     kSyncUserDisplayModes[]{std::nullopt,
@@ -1455,7 +1562,8 @@ class WebAppSyncBridgeTest_UserDisplayModeSplit
     return std::get<3>(GetParam());
   }
   // UDM stored locally for the other platform.
-  std::optional<UserDisplayMode> local_other_platform_udm() const {
+  std::optional<WebAppSpecifics_UserDisplayMode> local_other_platform_udm()
+      const {
     return std::get<4>(GetParam());
   }
 
@@ -1481,40 +1589,12 @@ class WebAppSyncBridgeTest_UserDisplayModeSplit
   WebAppProvider& provider() { return *WebAppProvider::GetForTest(profile()); }
   WebAppSyncBridge& sync_bridge() { return provider().sync_bridge_unsafe(); }
 
-  syncer::EntityData ToEntityData(const sync_pb::WebAppSpecifics& sync_proto) {
-    syncer::EntityData data;
-    *data.specifics.mutable_web_app() = sync_proto;
-    DCHECK(sync_bridge().IsEntityDataValid(data));
-    return data;
-  }
-
-  syncer::EntityChangeList ToEntityChageList(
-      const webapps::AppId& app_id,
-      const sync_pb::WebAppSpecifics& sync_proto) {
-    syncer::EntityChangeList entity_change_list;
-    syncer::EntityData entity_data = ToEntityData(sync_proto);
-    std::string storage_key = sync_bridge().GetClientTag(entity_data);
-    DCHECK_EQ(storage_key, app_id);
-    entity_change_list.push_back(syncer::EntityChange::CreateUpdate(
-        storage_key, std::move(entity_data)));
-    return entity_change_list;
-  }
-
   UserDisplayMode ToMojomUdmFallbackToStandalone(
       std::optional<WebAppSpecifics_UserDisplayMode> sync_udm) {
     if (!sync_udm.has_value()) {
       return mojom::UserDisplayMode::kStandalone;
     }
-    switch (sync_udm.value()) {
-      case sync_pb::WebAppSpecifics_UserDisplayMode_UNSPECIFIED:
-      case sync_pb::WebAppSpecifics_UserDisplayMode_STANDALONE:
-        return mojom::UserDisplayMode::kStandalone;
-      case sync_pb::WebAppSpecifics_UserDisplayMode_BROWSER:
-        return mojom::UserDisplayMode::kBrowser;
-      case sync_pb::WebAppSpecifics_UserDisplayMode_TABBED:
-        // Not used in this test.
-        NOTREACHED_NORETURN();
-    }
+    return ToMojomUserDisplayMode(sync_udm.value());
   }
 
  protected:
@@ -1523,13 +1603,7 @@ class WebAppSyncBridgeTest_UserDisplayModeSplit
     test::AwaitStartWebAppProviderAndSubsystems(profile());
   }
 
-  void TearDown() override {
-    fake_provider().Shutdown();
-    WebAppTest::TearDown();
-  }
-
  private:
-  OsIntegrationManager::ScopedSuppressForTesting os_hooks_suppress_;
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
@@ -1540,8 +1614,7 @@ TEST_P(WebAppSyncBridgeTest_UserDisplayModeSplit, SyncUpdateToUserDisplayMode) {
 
   // Install an app.
   if (installed_before_sync()) {
-    auto info = std::make_unique<WebAppInstallInfo>();
-    info->start_url = start_url;
+    auto info = WebAppInstallInfo::CreateWithStartUrlForTesting(start_url);
     info->scope = start_url;
     info->title = u"Basic web app";
     info->description = u"Test description";
@@ -1556,11 +1629,16 @@ TEST_P(WebAppSyncBridgeTest_UserDisplayModeSplit, SyncUpdateToUserDisplayMode) {
       ScopedRegistryUpdate update = sync_bridge().BeginUpdate();
       WebApp* web_app = update->UpdateApp(app_id);
       DCHECK(web_app);
+      sync_pb::WebAppSpecifics sync_proto = web_app->sync_proto();
+
       if (IsChromeOs()) {
-        web_app->SetUserDisplayModeDefault(local_other_platform_udm().value());
+        sync_proto.set_user_display_mode_default(
+            local_other_platform_udm().value());
       } else {
-        web_app->SetUserDisplayModeCrOS(local_other_platform_udm().value());
+        sync_proto.set_user_display_mode_cros(
+            local_other_platform_udm().value());
       }
+      web_app->SetSyncProto(std::move(sync_proto));
     }
   }
 
@@ -1583,7 +1661,7 @@ TEST_P(WebAppSyncBridgeTest_UserDisplayModeSplit, SyncUpdateToUserDisplayMode) {
 
   EXPECT_FALSE(sync_bridge().ApplyIncrementalSyncChanges(
       sync_bridge().CreateMetadataChangeList(),
-      ToEntityChageList(app_id, sync_proto)));
+      ToEntityChageList(app_id, sync_proto, sync_bridge())));
 
   // Await sync install.
   if (!installed_before_sync()) {
@@ -1596,7 +1674,9 @@ TEST_P(WebAppSyncBridgeTest_UserDisplayModeSplit, SyncUpdateToUserDisplayMode) {
   //// kSeparateUserDisplayModeForCrOS Disabled ////
 
   if (!flag_enabled()) {
-    EXPECT_EQ(app->user_display_mode(), app->user_display_mode_default());
+    EXPECT_EQ(app->user_display_mode(),
+              ToMojomUdmFallbackToStandalone(
+                  app->sync_proto().user_display_mode_default()));
 
     // Expect to always overwrite local UDM state with non-CrOS sync data,
     // including treating absent/unspecified as standalone.
@@ -1606,21 +1686,23 @@ TEST_P(WebAppSyncBridgeTest_UserDisplayModeSplit, SyncUpdateToUserDisplayMode) {
     // CrOS UDM should still be stored from sync/DB, just not used.
     if (sync_cros_udm()) {
       // Sync overwrites DB values.
-      EXPECT_EQ(app->user_display_mode_cros(),
-                ToMojomUdmFallbackToStandalone(sync_cros_udm()));
+      EXPECT_EQ(app->sync_proto().user_display_mode_cros(),
+                sync_cros_udm().value());
     } else {
       if (IsChromeOs()) {
         // Due to tests setting a local value (which sets UDM-non-CrOS because
         // the flag is off) and an other platform value (which also sets
         // UDM-non-CrOS), there is never a CrOS value set locally in this test
         // case.
-        EXPECT_EQ(app->user_display_mode_cros(), std::nullopt);
+        EXPECT_FALSE(app->sync_proto().has_user_display_mode_cros());
       } else {
         // We should still have preserved a CrOS value in the DB.
         if (installed_before_sync()) {
-          EXPECT_EQ(app->user_display_mode_cros(), local_other_platform_udm());
+          EXPECT_EQ(app->sync_proto().user_display_mode_cros(),
+                    local_other_platform_udm().value_or(
+                        WebAppSpecifics_UserDisplayMode_UNSPECIFIED));
         } else {
-          EXPECT_EQ(app->user_display_mode_cros(), std::nullopt);
+          EXPECT_FALSE(app->sync_proto().has_user_display_mode_cros());
         }
       }
     }
@@ -1649,22 +1731,32 @@ TEST_P(WebAppSyncBridgeTest_UserDisplayModeSplit, SyncUpdateToUserDisplayMode) {
     }
   }
 
-  std::optional<UserDisplayMode> app_this_platform_udm;
-  std::optional<UserDisplayMode> app_other_platform_udm;
+  std::optional<sync_pb::WebAppSpecifics::UserDisplayMode>
+      app_this_platform_udm;
+  std::optional<sync_pb::WebAppSpecifics::UserDisplayMode>
+      app_other_platform_udm;
   if (IsChromeOs()) {
-    app_this_platform_udm = app->user_display_mode_cros();
-    app_other_platform_udm = app->user_display_mode_default();
+    if (app->sync_proto().has_user_display_mode_cros()) {
+      app_this_platform_udm = app->sync_proto().user_display_mode_cros();
+    }
+    if (app->sync_proto().has_user_display_mode_default()) {
+      app_other_platform_udm = app->sync_proto().user_display_mode_default();
+    }
   } else {
-    app_this_platform_udm = app->user_display_mode_default();
-    app_other_platform_udm = app->user_display_mode_cros();
+    if (app->sync_proto().has_user_display_mode_default()) {
+      app_this_platform_udm = app->sync_proto().user_display_mode_default();
+    }
+    if (app->sync_proto().has_user_display_mode_cros()) {
+      app_other_platform_udm = app->sync_proto().user_display_mode_cros();
+    }
   }
-  EXPECT_EQ(app->user_display_mode(), app_this_platform_udm);
+  EXPECT_EQ(app->user_display_mode(),
+            ToMojomUdmFallbackToStandalone(app_this_platform_udm));
 
   if (sync_other_platform_udm()) {
     // If UDM is set for the other platform in sync, it should be preserved
     // (though Unspecified values currently become standalone).
-    EXPECT_EQ(app_other_platform_udm,
-              ToMojomUdmFallbackToStandalone(sync_other_platform_udm()));
+    EXPECT_EQ(app_other_platform_udm, sync_other_platform_udm());
   } else if (installed_before_sync()) {
     // Otherwise, if installed, we should preserve a local UDM value (or unset).
     EXPECT_EQ(app_other_platform_udm, local_other_platform_udm());
@@ -1683,7 +1775,7 @@ INSTANTIATE_TEST_SUITE_P(
         /*sync_non_cros_udm=*/testing::ValuesIn(kSyncUserDisplayModes),
         /*installed_udm=*/testing::ValuesIn(kInstalledUserDisplayModes),
         /*local_other_platform_udm=*/
-        testing::ValuesIn(kInstalledUserDisplayModes)),
+        testing::ValuesIn(kSyncUserDisplayModes)),
     WebAppSyncBridgeTest_UserDisplayModeSplit::ParamToString);
 
 }  // namespace web_app

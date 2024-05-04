@@ -30,17 +30,13 @@
 #include "components/profile_metrics/state.h"
 #include "components/signin/public/base/signin_pref_names.h"
 #include "components/signin/public/identity_manager/account_info.h"
-#include "components/supervised_user/core/common/buildflags.h"
+#include "components/supervised_user/core/common/supervised_user_constants.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/image/canvas_image_source.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/native_theme/native_theme.h"
-
-#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-#include "components/supervised_user/core/common/supervised_user_constants.h"
-#endif
 
 #if !BUILDFLAG(IS_ANDROID)
 #include "chrome/browser/themes/theme_properties.h"  // nogncheck crbug.com/1125897
@@ -335,7 +331,7 @@ gfx::Image ProfileAttributesEntry::GetAvatarIcon(
   }
 
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
-  // TODO(crbug.com/1100835): After launch, remove the treatment of placeholder
+  // TODO(crbug.com/40138086): After launch, remove the treatment of placeholder
   // avatars from GetHighResAvatar() and from any other places.
   if (GetAvatarIconIndex() == profiles::GetPlaceholderAvatarIndex()) {
     return GetPlaceholderAvatarIcon(size_for_placeholder_avatar);
@@ -420,11 +416,7 @@ bool ProfileAttributesEntry::IsSupervised() const {
 }
 
 bool ProfileAttributesEntry::IsChild() const {
-#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   return GetSupervisedUserId() == supervised_user::kChildAccountSUID;
-#else
-  return false;
-#endif
 }
 
 bool ProfileAttributesEntry::IsOmitted() const {
@@ -865,6 +857,10 @@ void ProfileAttributesEntry::RecordAccountNamesMetric() const {
 }
 
 const base::Value::Dict* ProfileAttributesEntry::GetEntryData() const {
+  if (!prefs_) {
+    return nullptr;
+  }
+
   const base::Value::Dict& attributes =
       prefs_->GetDict(prefs::kProfileAttributes);
   return attributes.FindDict(storage_key_);

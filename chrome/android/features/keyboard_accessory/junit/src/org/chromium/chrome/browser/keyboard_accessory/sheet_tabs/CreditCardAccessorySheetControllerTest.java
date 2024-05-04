@@ -33,10 +33,11 @@ import org.mockito.MockitoAnnotations;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
-import org.chromium.base.metrics.UmaRecorderHolder;
 import org.chromium.base.task.test.CustomShadowAsyncTask;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Features;
+import org.chromium.chrome.browser.autofill.PersonalDataManager;
+import org.chromium.chrome.browser.autofill.PersonalDataManagerFactory;
 import org.chromium.chrome.browser.keyboard_accessory.AccessoryTabType;
 import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData;
 import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData.AccessorySheetData;
@@ -44,6 +45,7 @@ import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData
 import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData.UserInfo;
 import org.chromium.chrome.browser.keyboard_accessory.data.PropertyProvider;
 import org.chromium.chrome.browser.keyboard_accessory.data.UserInfoField;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
 import org.chromium.ui.modelutil.ListObservable;
 
@@ -56,17 +58,20 @@ public class CreditCardAccessorySheetControllerTest {
     @Rule public TestRule mFeaturesProcessorRule = new Features.JUnitProcessor();
     @Mock private AccessorySheetTabView mMockView;
     @Mock private ListObservable.ListObserver<Void> mMockItemListObserver;
+    @Mock private Profile mMockProfile;
+    @Mock private PersonalDataManager mMockPersonalDataManager;
 
     private CreditCardAccessorySheetCoordinator mCoordinator;
     private AccessorySheetTabItemsModel mSheetDataPieces;
 
     @Before
     public void setUp() {
-        UmaRecorderHolder.resetForTesting();
         MockitoAnnotations.initMocks(this);
         AccessorySheetTabCoordinator.IconProvider.setIconForTesting(mock(Drawable.class));
+        PersonalDataManagerFactory.setInstanceForTesting(mMockPersonalDataManager);
         mCoordinator =
-                new CreditCardAccessorySheetCoordinator(RuntimeEnvironment.application, null);
+                new CreditCardAccessorySheetCoordinator(
+                        RuntimeEnvironment.application, mMockProfile, null);
         assertNotNull(mCoordinator);
         mSheetDataPieces = mCoordinator.getSheetDataPiecesForTesting();
     }

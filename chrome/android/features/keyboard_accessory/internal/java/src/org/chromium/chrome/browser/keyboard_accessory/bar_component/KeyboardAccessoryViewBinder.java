@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.keyboard_accessory.bar_component;
 
-import static org.chromium.chrome.browser.autofill.AutofillUiUtils.getCardIcon;
 import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryIPHUtils.hasShownAnyAutofillIphBefore;
 import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryIPHUtils.showHelpBubble;
 import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.ANIMATION_LISTENER;
@@ -13,11 +12,13 @@ import static org.chromium.chrome.browser.keyboard_accessory.bar_component.Keybo
 import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.DISABLE_ANIMATIONS_FOR_TESTING;
 import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.HAS_SUGGESTIONS;
 import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.OBFUSCATED_CHILD_AT_CALLBACK;
+import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.ON_TOUCH_EVENT_CALLBACK;
 import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.SHEET_OPENER_ITEM;
 import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.SHOW_SWIPING_IPH;
 import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.SKIP_CLOSING_ANIMATION;
 import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.VISIBLE;
 
+import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,7 +28,6 @@ import androidx.annotation.LayoutRes;
 import androidx.recyclerview.widget.RecyclerView;
 
 import org.chromium.base.TraceEvent;
-import org.chromium.chrome.browser.autofill.AutofillUiUtils;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.keyboard_accessory.R;
 import org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.AutofillBarItem;
@@ -36,22 +36,29 @@ import org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAcce
 import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData;
 import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData.Action;
 import org.chromium.components.autofill.AutofillSuggestion;
-import org.chromium.components.autofill.PopupItemId;
+import org.chromium.components.autofill.SuggestionType;
 import org.chromium.components.browser_ui.widget.chips.ChipView;
 import org.chromium.components.feature_engagement.FeatureConstants;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.widget.RectProvider;
 
+import java.util.function.Function;
+
 /**
  * Observes {@link KeyboardAccessoryProperties} changes (like a newly available tab) and modifies
  * the view accordingly.
  */
 class KeyboardAccessoryViewBinder {
-    static BarItemViewHolder create(ViewGroup parent, @BarItem.Type int viewType) {
+    static BarItemViewHolder create(
+            KeyboardAccessoryView keyboarAccessory,
+            UiConfiguration uiConfiguration,
+            ViewGroup parent,
+            @BarItem.Type int viewType) {
         switch (viewType) {
             case BarItem.Type.SUGGESTION:
-                return new BarItemChipViewHolder(parent);
+                return new BarItemChipViewHolder(
+                        parent, keyboarAccessory, uiConfiguration.suggestionDrawableFunction);
             case BarItem.Type.TAB_LAYOUT:
                 return new SheetOpenerViewHolder(parent);
             case BarItem.Type.ACTION_BUTTON:
@@ -61,6 +68,12 @@ class KeyboardAccessoryViewBinder {
         }
         assert false : "Action type " + viewType + " was not handled!";
         return null;
+    }
+
+    /** Generic UI Configurations that help to transform specific model data. */
+    static class UiConfiguration {
+        /** Converts an {@link AutofillSuggestion} to the appropriate drawable. */
+        public Function<AutofillSuggestion, Drawable> suggestionDrawableFunction;
     }
 
     abstract static class BarItemViewHolder<T extends BarItem, V extends View>
@@ -90,37 +103,56 @@ class KeyboardAccessoryViewBinder {
 
     static class BarItemChipViewHolder extends BarItemViewHolder<AutofillBarItem, ChipView> {
         private final View mRootViewForIPH;
+        private final KeyboardAccessoryView mKeyboardAccessory;
+        private final Function<AutofillSuggestion, Drawable> mSuggestionDrawableFunction;
 
-        BarItemChipViewHolder(ViewGroup parent) {
+        BarItemChipViewHolder(
+                ViewGroup parent,
+                KeyboardAccessoryView keyboardAccessory,
+                Function<AutofillSuggestion, Drawable> suggestionDrawableFunction) {
             super(parent, R.layout.keyboard_accessory_suggestion);
             mRootViewForIPH = parent.getRootView();
+            mKeyboardAccessory = keyboardAccessory;
+            mSuggestionDrawableFunction = suggestionDrawableFunction;
         }
 
         @Override
         protected void bind(AutofillBarItem item, ChipView chipView) {
             TraceEvent.begin("BarItemChipViewHolder#bind");
             int iconId = item.getSuggestion().getIconId();
+            boolean isIPHShown = false;
             if (item.getFeatureForIPH() != null) {
                 if (item.getFeatureForIPH()
                         .equals(FeatureConstants.KEYBOARD_ACCESSORY_PAYMENT_OFFER_FEATURE)) {
                     if (iconId != 0) {
-                        showHelpBubble(
-                                item.getFeatureForIPH(),
-                                chipView.getStartIconViewRect(),
-                                chipView.getContext(),
-                                mRootViewForIPH,
-                                item.getSuggestion().getItemTag());
+                        isIPHShown =
+                                showHelpBubble(
+                                        mKeyboardAccessory.getFeatureEngagementTracker(),
+                                        item.getFeatureForIPH(),
+                                        chipView.getStartIconViewRect(),
+                                        chipView.getContext(),
+                                        mRootViewForIPH,
+                                        item.getSuggestion().getItemTag());
                     } else {
-                        showHelpBubble(
-                                item.getFeatureForIPH(),
-                                chipView,
-                                mRootViewForIPH,
-                                item.getSuggestion().getItemTag());
+                        isIPHShown =
+                                showHelpBubble(
+                                        mKeyboardAccessory.getFeatureEngagementTracker(),
+                                        item.getFeatureForIPH(),
+                                        chipView,
+                                        mRootViewForIPH,
+                                        item.getSuggestion().getItemTag());
                     }
                 } else {
-                    showHelpBubble(item.getFeatureForIPH(), chipView, mRootViewForIPH, null);
+                    isIPHShown =
+                            showHelpBubble(
+                                    mKeyboardAccessory.getFeatureEngagementTracker(),
+                                    item.getFeatureForIPH(),
+                                    chipView,
+                                    mRootViewForIPH,
+                                    null);
                 }
             }
+            mKeyboardAccessory.setAllowClicksWhileObscured(isIPHShown);
 
             // Credit card chips never occupy the entire width of the window to allow for other
             // cards (if they exist) to be seen. Their max width is set to 85% of the window width.
@@ -167,7 +199,7 @@ class KeyboardAccessoryViewBinder {
             assert action != null : "Tried to bind item without action. Chose a wrong ViewHolder?";
             chipView.setOnClickListener(
                     view -> {
-                        item.maybeEmitEventForIPH();
+                        item.maybeEmitEventForIPH(mKeyboardAccessory.getFeatureEngagementTracker());
                         action.getCallback().onResult(action);
                     });
             if (action.getLongPressCallback() != null) {
@@ -178,12 +210,7 @@ class KeyboardAccessoryViewBinder {
                         });
             }
             chipView.setIcon(
-                    getCardIcon(
-                            chipView.getContext(),
-                            item.getSuggestion().getCustomIconUrl(),
-                            iconId,
-                            AutofillUiUtils.CardIconSize.SMALL,
-                            /* showCustomIcon= */ true),
+                    mSuggestionDrawableFunction.apply(item.getSuggestion()),
                     /* tintWithTextColor= */ false);
             TraceEvent.end("BarItemChipViewHolder#bind");
         }
@@ -246,8 +273,7 @@ class KeyboardAccessoryViewBinder {
      */
     static void bind(PropertyModel model, KeyboardAccessoryView view, PropertyKey propertyKey) {
         if (propertyKey == BAR_ITEMS) {
-            view.setBarItemsAdapter(
-                    KeyboardAccessoryCoordinator.createBarItemsAdapter(model.get(BAR_ITEMS)));
+            // Intentionally empty. The adapter will observe changes to BAR_ITEMS.
         } else if (propertyKey == DISABLE_ANIMATIONS_FOR_TESTING) {
             if (model.get(DISABLE_ANIMATIONS_FOR_TESTING)) view.disableAnimationsForTesting();
         } else if (propertyKey == VISIBLE) {
@@ -263,16 +289,21 @@ class KeyboardAccessoryViewBinder {
             view.setAnimationListener(model.get(ANIMATION_LISTENER));
         } else if (propertyKey == OBFUSCATED_CHILD_AT_CALLBACK) {
             view.setObfuscatedLastChildAt(model.get(OBFUSCATED_CHILD_AT_CALLBACK));
+        } else if (propertyKey == ON_TOUCH_EVENT_CALLBACK) {
+            view.setOnTouchEventCallback(model.get(ON_TOUCH_EVENT_CALLBACK));
         } else if (propertyKey == SHOW_SWIPING_IPH) {
             RectProvider swipingIphRectProvider = view.getSwipingIphRect();
             if (model.get(SHOW_SWIPING_IPH)
                     && swipingIphRectProvider != null
-                    && hasShownAnyAutofillIphBefore()) {
-                showHelpBubble(
-                        FeatureConstants.KEYBOARD_ACCESSORY_BAR_SWIPING_FEATURE,
-                        swipingIphRectProvider,
-                        view.getContext(),
-                        view.mBarItemsView);
+                    && hasShownAnyAutofillIphBefore(view.getFeatureEngagementTracker())) {
+                boolean isIPHShown =
+                        showHelpBubble(
+                                view.getFeatureEngagementTracker(),
+                                FeatureConstants.KEYBOARD_ACCESSORY_BAR_SWIPING_FEATURE,
+                                swipingIphRectProvider,
+                                view.getContext(),
+                                view.mBarItemsView);
+                view.setAllowClicksWhileObscured(isIPHShown);
             }
         } else if (propertyKey == HAS_SUGGESTIONS) {
             view.setAccessibilityMessage(model.get(HAS_SUGGESTIONS));
@@ -284,7 +315,7 @@ class KeyboardAccessoryViewBinder {
     }
 
     private static boolean containsCreditCardInfo(AutofillSuggestion suggestion) {
-        return suggestion.getPopupItemId() == PopupItemId.CREDIT_CARD_ENTRY
-                || suggestion.getPopupItemId() == PopupItemId.VIRTUAL_CREDIT_CARD_ENTRY;
+        return suggestion.getSuggestionType() == SuggestionType.CREDIT_CARD_ENTRY
+                || suggestion.getSuggestionType() == SuggestionType.VIRTUAL_CREDIT_CARD_ENTRY;
     }
 }

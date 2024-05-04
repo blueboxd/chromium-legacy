@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/check.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -136,11 +137,16 @@ Cookie CreateCookie(const net::CanonicalCookie& canonical_cookie,
   cookie.store_id = store_id;
 
   if (canonical_cookie.PartitionKey()) {
-    std::string top_level_site;
-    CHECK(net::CookiePartitionKey::Serialize(canonical_cookie.PartitionKey(),
-                                             top_level_site));
+    base::expected<net::CookiePartitionKey::SerializedCookiePartitionKey,
+                   std::string>
+        serialized_partition_key =
+            net::CookiePartitionKey::Serialize(canonical_cookie.PartitionKey());
+    CHECK(serialized_partition_key.has_value());
     cookie.partition_key = extensions::api::cookies::CookiePartitionKey();
-    cookie.partition_key->top_level_site = top_level_site;
+    // TODO (crbug.com/326605834) Once ancestor chain bit changes are
+    // implemented update this method utilize the ancestor bit.
+    cookie.partition_key->top_level_site =
+        serialized_partition_key->TopLevelSite();
   }
   return cookie;
 }
@@ -223,11 +229,25 @@ bool ValidateCookieApiPartitionKey(
         partition_key,
     std::optional<net::CookiePartitionKey>& net_partition_key,
     std::string& error_message) {
-  if (partition_key && partition_key->top_level_site &&
-      !net::CookiePartitionKey::Deserialize(
-          partition_key->top_level_site.value(), net_partition_key)) {
-    error_message = "Invalid format for partitionKey.topLevelSite.";
-    return false;
+  // TODO (crbug.com/326605834) Once ancestor chain bit changes are
+  // implemented update this method utilize the ancestor bit.
+  if (partition_key.has_value() && partition_key->top_level_site.has_value() &&
+      !partition_key->top_level_site->empty()) {
+    base::expected<net::CookiePartitionKey, std::string> key =
+        net::CookiePartitionKey::FromUntrustedInput(
+            partition_key->top_level_site.value(),
+            /*has_cross_site_ancestor=*/true);
+    if (!key.has_value()) {
+      error_message = key.error();
+      return false;
+    }
+    net_partition_key = key.value();
+    // Record 'well formatted' uma here so that we count only coercible
+    // partition keys.
+    base::UmaHistogramBoolean(
+        "Extensions.CookieAPIPartitionKeyWellFormatted",
+        net::SchemefulSite::Deserialize(partition_key->top_level_site.value())
+                .Serialize() == partition_key->top_level_site.value());
   }
   return true;
 }
@@ -259,12 +279,19 @@ bool CanonicalCookiePartitionKeyMatchesApiCookiePartitionKey(
       !api_partition_key->top_level_site.has_value()) {
     return false;
   }
+  // TODO (crbug.com/326605834) Once ancestor chain bit changes are
+  // implemented update this method utilize the ancestor bit.
+  base::expected<net::CookiePartitionKey::SerializedCookiePartitionKey,
+                 std::string>
+      net_serialized_result =
+          net::CookiePartitionKey::Serialize(net_partition_key);
 
-  std::string serialized_net_partition_key;
-  return net::CookiePartitionKey::Serialize(net_partition_key,
-                                            serialized_net_partition_key) &&
-         serialized_net_partition_key ==
-             api_partition_key->top_level_site.value();
+  if (!net_serialized_result.has_value()) {
+    return false;
+  }
+
+  return net_serialized_result->TopLevelSite() ==
+         api_partition_key->top_level_site.value();
 }
 
 net::CookiePartitionKeyCollection
@@ -279,13 +306,21 @@ CookiePartitionKeyCollectionFromApiPartitionKey(
     return net::CookiePartitionKeyCollection::ContainsAll();
   }
 
-  std::optional<net::CookiePartitionKey> net_partition_key;
-  if (!net::CookiePartitionKey::Deserialize(
-          partition_key->top_level_site.value(), net_partition_key)) {
+  if (partition_key->top_level_site.value().empty()) {
+    return net::CookiePartitionKeyCollection();
+  }
+  // TODO (crbug.com/326605834) Once ancestor chain bit changes are implemented
+  // update this method utilize the ancestor bit.
+  base::expected<net::CookiePartitionKey, std::string> net_partition_key =
+      net::CookiePartitionKey::FromUntrustedInput(
+          partition_key->top_level_site.value(),
+          /*has_cross_site_ancestor=*/true);
+  if (!net_partition_key.has_value()) {
     return net::CookiePartitionKeyCollection();
   }
 
-  return net::CookiePartitionKeyCollection::FromOptional(net_partition_key);
+  return net::CookiePartitionKeyCollection::FromOptional(
+      net_partition_key.value());
 }
 
 MatchFilter::MatchFilter(GetAll::Params::Details* details) : details_(details) {

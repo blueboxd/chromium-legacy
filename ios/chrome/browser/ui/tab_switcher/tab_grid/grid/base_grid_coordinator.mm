@@ -2,16 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/base_grid_coordinator+subclassing.h"
-
 #import "base/check.h"
+#import "ios/chrome/browser/iph_for_new_chrome_user/model/tab_based_iph_browser_agent.h"
 #import "ios/chrome/browser/shared/model/browser/browser.h"
 #import "ios/chrome/browser/shared/model/web_state_list/tab_group.h"
 #import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/base_grid_coordinator+subclassing.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/base_grid_mediator.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/base_grid_view_controller.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_container_view_controller.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/tab_groups/create_tab_group_coordinator.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/tab_groups/tab_group_coordinator.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/tab_groups/tab_group_grid_view_controller.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/tab_groups/tab_group_view_controller.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_grid/transitions/legacy_grid_transition_layout.h"
 #import "ios/web/public/web_state.h"
 
 @implementation BaseGridCoordinator {
@@ -44,6 +49,50 @@
   return self;
 }
 
+- (BaseGridMediator*)mediator {
+  NOTREACHED_NORETURN() << "This should be implemented in subclasses.";
+}
+
+- (BaseGridViewController*)gridViewController {
+  NOTREACHED_NORETURN() << "This should be implemented in subclasses.";
+}
+
+- (void)showTabGroupForTabGridOpening:(const TabGroup*)tabGroup {
+  [self showTabGroup:tabGroup forTabGridOpening:YES];
+}
+
+- (LegacyGridTransitionLayout*)transitionLayout {
+  NOTREACHED_NORETURN() << "This should be implemented in subclasses.";
+}
+
+- (BOOL)isSelectedCellVisible {
+  if (IsTabGroupInGridEnabled()) {
+    if (_tabGroupCoordinator) {
+      return _tabGroupCoordinator.viewController.gridViewController
+          .selectedCellVisible;
+    }
+  }
+  return self.gridViewController.selectedCellVisible;
+}
+
+- (UIView*)gridView {
+  if (IsTabGroupInGridEnabled()) {
+    if (_tabGroupCoordinator) {
+      return _tabGroupCoordinator.viewController.gridViewController.view;
+    }
+  }
+  return self.gridContainerViewController.view;
+}
+
+- (UIView*)gridContainerForAnimation {
+  if (IsTabGroupInGridEnabled()) {
+    if (_tabGroupCoordinator) {
+      return _tabGroupCoordinator.viewController.gridViewController.view;
+    }
+  }
+  return nil;
+}
+
 #pragma mark - Subclassing properties
 
 - (id<GridToolbarsMutator>)toolbarsMutator {
@@ -54,12 +103,56 @@
   return _gridMediatorDelegate;
 }
 
+- (TabGroupCoordinator*)tabGroupCoordinator {
+  return _tabGroupCoordinator;
+}
+
+- (LegacyGridTransitionLayout*)
+    combineTransitionLayout:(LegacyGridTransitionLayout*)primaryLayout
+       withTransitionLayout:(LegacyGridTransitionLayout*)secondaryLayout {
+  NSArray<LegacyGridTransitionItem*>* primaryInactiveItems =
+      primaryLayout.inactiveItems;
+  NSArray<LegacyGridTransitionItem*>* secondaryInactiveItems =
+      secondaryLayout.inactiveItems;
+
+  NSArray<LegacyGridTransitionItem*>* inactiveItems =
+      [self combineInactiveItems:primaryInactiveItems
+               withInactiveItems:secondaryInactiveItems];
+
+  LegacyGridTransitionActiveItem* primaryActiveItem = primaryLayout.activeItem;
+  LegacyGridTransitionActiveItem* secondaryActiveItem =
+      secondaryLayout.activeItem;
+
+  // Prefer primary active item.
+  LegacyGridTransitionActiveItem* activeItem =
+      primaryActiveItem ? primaryActiveItem : secondaryActiveItem;
+
+  LegacyGridTransitionItem* primarySelectionItem = primaryLayout.selectionItem;
+  LegacyGridTransitionItem* secondarySelectionItem =
+      secondaryLayout.selectionItem;
+
+  // Prefer primary selection item.
+  LegacyGridTransitionItem* selectionItem =
+      primarySelectionItem ? primarySelectionItem : secondarySelectionItem;
+
+  return [LegacyGridTransitionLayout layoutWithInactiveItems:inactiveItems
+                                                  activeItem:activeItem
+                                               selectionItem:selectionItem];
+}
+
 #pragma mark - ChromeCoordinator
 
 - (void)start {
   [self.browser->GetCommandDispatcher()
       startDispatchingToTarget:self
                    forProtocol:@protocol(TabGroupsCommands)];
+
+  self.mediator.dispatcher = self;
+  self.mediator.browser = self.browser;
+  self.mediator.delegate = self.gridMediatorDelegate;
+  self.mediator.toolbarsMutator = self.toolbarsMutator;
+  self.mediator.tabBasedIPHBrowserAgent =
+      TabBasedIPHBrowserAgent::FromBrowser(self.browser);
 }
 
 - (void)stop {
@@ -67,24 +160,14 @@
   if (_tabGroupCoordinator) {
     [self hideTabGroup];
   }
+
+  [self.mediator disconnect];
 }
 
 #pragma mark - TabGroupsCommands
 
 - (void)showTabGroup:(const TabGroup*)tabGroup {
-  CHECK(base::FeatureList::IsEnabled(kTabGroupsInGrid))
-      << "You should not be able to show a tab group UI outside the "
-         "Tab Groups experiment.";
-  CHECK(!_tabGroupCoordinator) << "There is an atemps to display a tab group "
-                                  "when one is already presented.";
-  // TODO(crbug.com/1501837): Replace base view controller by view controller
-  // when the base grid coordinator will have access to the grid view
-  // controller.
-  _tabGroupCoordinator = [[TabGroupCoordinator alloc]
-      initWithBaseViewController:self.baseViewController
-                         browser:self.browser
-                        tabGroup:tabGroup];
-  [_tabGroupCoordinator start];
+  [self showTabGroup:tabGroup forTabGridOpening:NO];
 }
 
 - (void)hideTabGroup {
@@ -94,38 +177,35 @@
 
 - (void)showTabGroupCreationForTabs:
     (const std::set<web::WebStateID>&)identifiers {
-  CHECK(base::FeatureList::IsEnabled(kTabGroupsInGrid))
+  CHECK(IsTabGroupInGridEnabled())
       << "You should not be able to create a tab group outside the Tab Groups "
          "experiment.";
   CHECK(!_tabGroupCreator) << "There is an atemps to create a tab group when a "
                               "creation process is still running.";
 
-  // TODO(crbug.com/1501837): Replace base view controller by view controller
-  // when the base grid coordinator will have access to the grid view
-  // controller.
   _tabGroupCreator = [[CreateTabGroupCoordinator alloc]
       initTabGroupCreationWithBaseViewController:self.baseViewController
                                          browser:self.browser
                                     selectedTabs:identifiers];
+  _tabGroupCreator.delegate = self;
   [_tabGroupCreator start];
 }
 
-- (void)hideTabGroupCreation {
+- (void)hideTabGroupCreationAnimated:(BOOL)animated {
+  _tabGroupCreator.animatedDismissal = animated;
+  _tabGroupCreator.delegate = nil;
   [_tabGroupCreator stop];
   _tabGroupCreator = nil;
 }
 
 - (void)showTabGroupEditionForGroup:(const TabGroup*)tabGroup {
-  CHECK(base::FeatureList::IsEnabled(kTabGroupsInGrid))
+  CHECK(IsTabGroupInGridEnabled())
       << "You should not be able to edit a tab group outside the Tab Groups "
          "experiment.";
   CHECK(!_tabGroupCreator) << "There is an atemps to edit a tab group when a "
                               "creation process is still running.";
   CHECK(tabGroup) << "To edit a tab group you should pass a group.";
 
-  // TODO(crbug.com/1501837): Replace base view controller by view controller
-  // when the base grid coordinator will have access to the grid view
-  // controller.
   UIViewController* backgroundView = _tabGroupCoordinator
                                          ? _tabGroupCoordinator.viewController
                                          : self.baseViewController;
@@ -133,7 +213,62 @@
       initTabGroupEditionWithBaseViewController:backgroundView
                                         browser:self.browser
                                        tabGroup:tabGroup];
+  _tabGroupCreator.delegate = self;
   [_tabGroupCreator start];
+}
+
+- (void)showActiveTab {
+  [self.mediator displayActiveTab];
+}
+
+#pragma mark - CreateOrEditTabGroupCoordinatorDelegate
+
+- (void)createOrEditTabGroupCoordinatorDidDismiss:
+            (CreateTabGroupCoordinator*)coordinator
+                                         animated:(BOOL)animated {
+  CHECK(coordinator == _tabGroupCreator);
+  [self hideTabGroupCreationAnimated:animated];
+}
+
+#pragma mark - Private
+
+// Shows the `tabGroup` with animations for `tabGridOpening` or not.
+- (void)showTabGroup:(const TabGroup*)tabGroup
+    forTabGridOpening:(BOOL)tabGridOpening {
+  CHECK(IsTabGroupInGridEnabled())
+      << "You should not be able to show a tab group UI outside the "
+         "Tab Groups experiment.";
+  CHECK(!_tabGroupCoordinator) << "There is an atemps to display a tab group "
+                                  "when one is already presented.";
+  // TODO(crbug.com/40942154): Replace base view controller by view controller
+  // when the base grid coordinator will have access to the grid view
+  // controller.
+  _tabGroupCoordinator = [[TabGroupCoordinator alloc]
+      initWithBaseViewController:self.baseViewController
+                         browser:self.browser
+                        tabGroup:tabGroup];
+  _tabGroupCoordinator.tabContextMenuDelegate = self.tabContextMenuDelegate;
+  _tabGroupCoordinator.animatedPresentation = !tabGridOpening;
+  _tabGroupCoordinator.tabGroupPositioner = self.tabGroupPositioner;
+  _tabGroupCoordinator.tabGridIdleStatusHandler =
+      self.mediator.tabGridIdleStatusHandler;
+  [_tabGroupCoordinator start];
+}
+
+// Combines two arrays of inactive items into one. The `primaryInactiveItems`
+// (if any) would be placed in the front of the resulting array, whether the
+// `secondaryInactiveItems` would be placed in the back.
+- (NSArray<LegacyGridTransitionItem*>*)
+    combineInactiveItems:
+        (NSArray<LegacyGridTransitionItem*>*)primaryInactiveItems
+       withInactiveItems:
+           (NSArray<LegacyGridTransitionItem*>*)secondaryInactiveItems {
+  if (primaryInactiveItems == nil) {
+    primaryInactiveItems = @[];
+  }
+
+  return [primaryInactiveItems
+      arrayByAddingObjectsFromArray:secondaryInactiveItems];
 }
 
 @end

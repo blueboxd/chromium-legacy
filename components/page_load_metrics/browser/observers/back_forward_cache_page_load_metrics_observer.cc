@@ -80,7 +80,7 @@ BackForwardCachePageLoadMetricsObserver::
 
 BackForwardCachePageLoadMetricsObserver::
     ~BackForwardCachePageLoadMetricsObserver() {
-  // TODO(crbug.com/1265307): Revert to the default destructor when we've
+  // TODO(crbug.com/40203717): Revert to the default destructor when we've
   // figured out why sometimes page end metrics are not logged.
   if (back_forward_cache_navigation_ids_.size() > 0) {
     DCHECK(logged_page_end_metrics_);
@@ -100,7 +100,7 @@ page_load_metrics::PageLoadMetricsObserver::ObservePolicy
 BackForwardCachePageLoadMetricsObserver::OnFencedFramesStart(
     content::NavigationHandle* navigation_handle,
     const GURL& currently_committed_url) {
-  // TODO(https://crbug.com/1251387): This must be updated when FencedFrames
+  // TODO(crbug.com/40198346): This must be updated when FencedFrames
   // supports back/forward cache.
   return STOP_OBSERVING;
 }

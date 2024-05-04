@@ -14,8 +14,8 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <string_view>
 
-#include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/net_export.h"
@@ -85,8 +85,6 @@ class NET_EXPORT_PRIVATE HttpBasicStream : public HttpStream {
 
   void GetSSLInfo(SSLInfo* ssl_info) override;
 
-  void GetSSLCertRequestInfo(SSLCertRequestInfo* cert_request_info) override;
-
   int GetRemoteEndpoint(IPEndPoint* endpoint) override;
 
   void Drain(HttpNetworkSession* session) override;
@@ -99,7 +97,7 @@ class NET_EXPORT_PRIVATE HttpBasicStream : public HttpStream {
 
   const std::set<std::string>& GetDnsAliases() const override;
 
-  base::StringPiece GetAcceptChViaAlps() const override;
+  std::string_view GetAcceptChViaAlps() const override;
 
  private:
   HttpStreamParser* parser() const { return state_.parser(); }

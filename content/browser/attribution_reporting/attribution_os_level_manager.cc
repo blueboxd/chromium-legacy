@@ -14,6 +14,7 @@
 #include "base/no_destructor.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
+#include "components/attribution_reporting/os_registration.h"
 #include "content/browser/attribution_reporting/os_registration.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/content_browser_client.h"
@@ -78,10 +79,10 @@ void AttributionOsLevelManager::SetApiState(std::optional<ApiState> state) {
 }
 
 // static
-ContentBrowserClient::AttributionReportingOsReportTypes
-AttributionOsLevelManager::GetAttributionReportingOsReportTypes(
+ContentBrowserClient::AttributionReportingOsRegistrars
+AttributionOsLevelManager::GetAttributionReportingOsRegistrars(
     WebContents* web_contents) {
-  return GetContentClient()->browser()->GetAttributionReportingOsReportTypes(
+  return GetContentClient()->browser()->GetAttributionReportingOsRegistrars(
       web_contents);
 }
 
@@ -101,7 +102,8 @@ void NoOpAttributionOsLevelManager::Register(
     OsRegistration registration,
     const std::vector<bool>& is_debug_key_allowed,
     RegisterCallback callback) {
-  std::move(callback).Run(registration, false);
+  std::move(callback).Run(
+      registration, std::vector<bool>(registration.registration_items.size()));
 }
 
 void NoOpAttributionOsLevelManager::ClearData(

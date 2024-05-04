@@ -33,6 +33,7 @@ import org.mockito.junit.MockitoRule;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Token;
+import org.chromium.base.supplier.LazyOneshotSupplier;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Features;
 import org.chromium.base.test.util.Features.DisableFeatures;
@@ -43,23 +44,32 @@ import org.chromium.chrome.browser.tab.MockTab;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
+import org.chromium.components.tab_groups.TabGroupColorId;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /** Unit tests for {@link HistoricalTabModelObserver}. */
 @RunWith(BaseRobolectricTestRunner.class)
-@EnableFeatures(ChromeFeatureList.ANDROID_TAB_GROUP_STABLE_IDS)
+@EnableFeatures({
+    ChromeFeatureList.ANDROID_TAB_GROUP_STABLE_IDS,
+    ChromeFeatureList.TAB_GROUP_PARITY_ANDROID
+})
 public class HistoricalTabModelObserverUnitTest {
     private static final String TAB_GROUP_TITLES_FILE_NAME = "tab_group_titles";
+    private static final String TAB_GROUP_COLORS_FILE_NAME = "tab_group_colors";
+    private static final int INVALID_COLOR_ID = -1;
 
     @Rule public MockitoRule mMockitoRule = MockitoJUnit.rule();
     @Rule public TestRule mFeatureProcessor = new Features.JUnitProcessor();
 
     private Context mContext;
-    @Mock private SharedPreferences mSharedPreferences;
+    @Mock private SharedPreferences mSharedPreferencesTitle;
+    @Mock private SharedPreferences mSharedPreferencesColor;
     @Mock private TabGroupModelFilter mTabGroupModelFilter;
     @Mock private TabModel mTabModel;
     @Mock private Profile mProfile;
@@ -69,24 +79,27 @@ public class HistoricalTabModelObserverUnitTest {
 
     @Before
     public void setUp() {
+        when(mTabGroupModelFilter.isTabGroupHiding(any())).thenReturn(false);
         when(mTabGroupModelFilter.isTabInTabGroup(any())).thenReturn(false);
         when(mTabGroupModelFilter.getRelatedTabCountForRootId(anyInt())).thenReturn(-1);
         when(mTabGroupModelFilter.getTabModel()).thenReturn(mTabModel);
         when(mTabModel.getComprehensiveModel()).thenReturn(mTabModel);
 
         mObserver = new HistoricalTabModelObserver(mTabGroupModelFilter, mHistoricalTabSaver);
-        verify(mTabModel).addObserver(mObserver);
+        verify(mTabGroupModelFilter).addObserver(mObserver);
 
         mContext = spy(ContextUtils.getApplicationContext());
         when(mContext.getSharedPreferences(TAB_GROUP_TITLES_FILE_NAME, Context.MODE_PRIVATE))
-                .thenReturn(mSharedPreferences);
+                .thenReturn(mSharedPreferencesTitle);
+        when(mContext.getSharedPreferences(TAB_GROUP_COLORS_FILE_NAME, Context.MODE_PRIVATE))
+                .thenReturn(mSharedPreferencesColor);
         ContextUtils.initApplicationContextForTests(mContext);
     }
 
     @After
     public void tearDown() {
         mObserver.destroy();
-        verify(mTabModel).removeObserver(mObserver);
+        verify(mTabGroupModelFilter).removeObserver(mObserver);
     }
 
     @Test
@@ -111,7 +124,8 @@ public class HistoricalTabModelObserverUnitTest {
         MockTab mockTab = createMockTab(rootId);
         Token tabGroupId = new Token(1L, 2L);
         String title = "bar";
-        createGroup(tabGroupId, title, new MockTab[] {mockTab});
+        @TabGroupColorId int color = TabGroupColorId.GREY;
+        createGroup(tabGroupId, title, color, new MockTab[] {mockTab});
 
         mObserver.onFinishingMultipleTabClosure(Collections.singletonList(mockTab));
 
@@ -126,6 +140,7 @@ public class HistoricalTabModelObserverUnitTest {
         assertEquals(rootId, group.getRootId());
         assertEquals(tabGroupId, group.getTabGroupId());
         assertEquals(title, group.getGroupTitle());
+        assertEquals(color, group.getGroupColor());
         assertEquals(mockTab, group.getTabs().get(0));
     }
 
@@ -135,7 +150,8 @@ public class HistoricalTabModelObserverUnitTest {
         int rootId = 123;
         MockTab mockTab = createMockTab(rootId);
         String title = "bar";
-        createGroup(null, title, new MockTab[] {mockTab});
+        @TabGroupColorId int color = TabGroupColorId.GREY;
+        createGroup(null, title, color, new MockTab[] {mockTab});
         when(mTabGroupModelFilter.isTabInTabGroup(mockTab)).thenReturn(false);
 
         mObserver.onFinishingMultipleTabClosure(Collections.singletonList(mockTab));
@@ -149,7 +165,8 @@ public class HistoricalTabModelObserverUnitTest {
         MockTab mockTab = createMockTab(rootId);
         Token tabGroupId = new Token(1L, 2L);
         String title = "bar";
-        createGroup(tabGroupId, title, new MockTab[] {mockTab});
+        @TabGroupColorId int color = TabGroupColorId.GREY;
+        createGroup(tabGroupId, title, color, new MockTab[] {mockTab});
         when(mTabGroupModelFilter.getRelatedTabCountForRootId(rootId)).thenReturn(1);
         when(mTabGroupModelFilter.tabGroupExistsForRootId(rootId)).thenReturn(false);
         when(mTabGroupModelFilter.isTabInTabGroup(mockTab)).thenReturn(false);
@@ -167,6 +184,7 @@ public class HistoricalTabModelObserverUnitTest {
         assertEquals(rootId, group.getRootId());
         assertEquals(tabGroupId, group.getTabGroupId());
         assertEquals(title, group.getGroupTitle());
+        assertEquals(color, group.getGroupColor());
         assertEquals(mockTab, group.getTabs().get(0));
     }
 
@@ -176,7 +194,8 @@ public class HistoricalTabModelObserverUnitTest {
         int rootId = 123;
         MockTab mockTab = createMockTab(rootId);
         String title = "bar";
-        createGroup(null, title, new MockTab[] {mockTab});
+        @TabGroupColorId int color = TabGroupColorId.GREY;
+        createGroup(null, title, color, new MockTab[] {mockTab});
         when(mTabGroupModelFilter.getRelatedTabCountForRootId(rootId)).thenReturn(1);
         when(mTabGroupModelFilter.tabGroupExistsForRootId(rootId)).thenReturn(false);
         when(mTabGroupModelFilter.isTabInTabGroup(mockTab)).thenReturn(false);
@@ -213,9 +232,10 @@ public class HistoricalTabModelObserverUnitTest {
         MockTab mockTab2 = createMockTab(2);
 
         final String title = "foo";
+        @TabGroupColorId int color = TabGroupColorId.GREY;
         MockTab[] tabList = new MockTab[] {mockTab0, mockTab1, mockTab2};
         Token tabGroupId = new Token(1L, 243L);
-        createGroup(tabGroupId, title, tabList);
+        createGroup(tabGroupId, title, color, tabList);
 
         List<Tab> closingTabList = List.of(mockTab1, mockTab2);
         mObserver.onFinishingMultipleTabClosure(closingTabList);
@@ -240,9 +260,10 @@ public class HistoricalTabModelObserverUnitTest {
         MockTab mockTab2 = createMockTab(2);
 
         final String title = "foo";
+        @TabGroupColorId int color = TabGroupColorId.GREY;
         MockTab[] tabList = new MockTab[] {mockTab0, mockTab1, mockTab2};
         Token tabGroupId = new Token(1L, 243L);
-        final int rootId = createGroup(tabGroupId, title, tabList);
+        final int rootId = createGroup(tabGroupId, title, color, tabList);
 
         mObserver.onFinishingMultipleTabClosure(Arrays.asList(tabList));
 
@@ -259,6 +280,7 @@ public class HistoricalTabModelObserverUnitTest {
         assertEquals(rootId, group.getRootId());
         assertEquals(tabGroupId, group.getTabGroupId());
         assertEquals(title, group.getGroupTitle());
+        assertEquals(color, group.getGroupColor());
         for (int i = 0; i < tabList.length; i++) {
             assertEquals(tabList[i], group.getTabs().get(i));
         }
@@ -270,10 +292,9 @@ public class HistoricalTabModelObserverUnitTest {
         MockTab mockTab1 = createMockTab(1);
 
         final String title = "foo";
+        @TabGroupColorId int color = TabGroupColorId.GREY;
         Token tabGroupId = new Token(3L, 4L);
-        final int rootId = createGroup(tabGroupId, title, new MockTab[] {mockTab1});
-
-        when(mSharedPreferences.getString(String.valueOf(rootId), null)).thenReturn(title);
+        createGroup(tabGroupId, title, color, new MockTab[] {mockTab1});
 
         MockTab[] tabList = new MockTab[] {mockTab0, mockTab1};
         mObserver.onFinishingMultipleTabClosure(Arrays.asList(tabList));
@@ -296,6 +317,98 @@ public class HistoricalTabModelObserverUnitTest {
     }
 
     @Test
+    public void testTabGroupHiding() {
+        MockTab mockTab0 = createMockTab(0);
+
+        final String title = "foo";
+        @TabGroupColorId int color = TabGroupColorId.GREY;
+        Token tabGroupId = new Token(3L, 4L);
+        createGroup(tabGroupId, title, color, new MockTab[] {mockTab0});
+        when(mTabGroupModelFilter.isTabGroupHiding(tabGroupId)).thenReturn(true);
+        when(mTabGroupModelFilter.getLazyAllTabGroupIdsInComprehensiveModel(any()))
+                .thenReturn(LazyOneshotSupplier.fromValue(new HashSet<Token>()));
+
+        MockTab[] tabList = new MockTab[] {mockTab0};
+        mObserver.onFinishingMultipleTabClosure(Arrays.asList(tabList));
+
+        // HistoricalTabModelObserver relies on HistoricalTabSaver to simplify to a single tab
+        // entry.
+        ArgumentCaptor<List<HistoricalEntry>> arg = ArgumentCaptor.forClass((Class) List.class);
+        verify(mHistoricalTabSaver).createHistoricalBulkClosure(arg.capture());
+        List<HistoricalEntry> entries = arg.getValue();
+        assertEquals(0, entries.size());
+    }
+
+    @Test
+    public void testTabGroupHidingTwoPhases_SingleTabs() {
+        MockTab mockTab0 = createMockTab(0);
+        MockTab mockTab1 = createMockTab(1);
+
+        final String title = "foo";
+        @TabGroupColorId int color = TabGroupColorId.GREY;
+        Token tabGroupId = new Token(3L, 4L);
+        createGroup(tabGroupId, title, color, new MockTab[] {mockTab0, mockTab1});
+        when(mTabGroupModelFilter.isTabGroupHiding(tabGroupId)).thenReturn(true);
+        when(mTabGroupModelFilter.getLazyAllTabGroupIdsInComprehensiveModel(any()))
+                .thenReturn(LazyOneshotSupplier.fromValue(Set.of(tabGroupId)));
+
+        MockTab[] tabList = new MockTab[] {mockTab0};
+        mObserver.onFinishingMultipleTabClosure(Arrays.asList(tabList));
+
+        // Close tab 0 first, even though the group is hiding there are still other tabs in the
+        // comprehensive model for the group so treat as a separate closure.
+        verify(mHistoricalTabSaver).createHistoricalTab(eq(mockTab0));
+
+        // Close tab 1, since it is part of the last event "closing" the tab group and it is hiding
+        // the group so no entry should be created.
+        tabList = new MockTab[] {mockTab1};
+        createGroup(tabGroupId, title, color, tabList);
+        when(mTabGroupModelFilter.getLazyAllTabGroupIdsInComprehensiveModel(any()))
+                .thenReturn(LazyOneshotSupplier.fromValue(new HashSet<Token>()));
+        mObserver.onFinishingMultipleTabClosure(Arrays.asList(tabList));
+
+        ArgumentCaptor<List<HistoricalEntry>> arg = ArgumentCaptor.forClass((Class) List.class);
+        verify(mHistoricalTabSaver).createHistoricalBulkClosure(arg.capture());
+        List<HistoricalEntry> entries = arg.getValue();
+        assertEquals(0, entries.size());
+    }
+
+    @Test
+    public void testTabGroupHidingTwoPhases_SingleTabThenTwo() {
+        MockTab mockTab0 = createMockTab(0);
+        MockTab mockTab1 = createMockTab(1);
+        MockTab mockTab2 = createMockTab(2);
+
+        final String title = "foo";
+        @TabGroupColorId int color = TabGroupColorId.GREY;
+        Token tabGroupId = new Token(3L, 4L);
+        createGroup(tabGroupId, title, color, new MockTab[] {mockTab0, mockTab1, mockTab2});
+        when(mTabGroupModelFilter.isTabGroupHiding(tabGroupId)).thenReturn(true);
+        when(mTabGroupModelFilter.getLazyAllTabGroupIdsInComprehensiveModel(any()))
+                .thenReturn(LazyOneshotSupplier.fromValue(Set.of(tabGroupId)));
+
+        MockTab[] tabList = new MockTab[] {mockTab0};
+        mObserver.onFinishingMultipleTabClosure(Arrays.asList(tabList));
+
+        // Close tab 0 first, even though the group is hiding there are still other tabs in the
+        // comprehensive model for the group so treat as a separate closure.
+        verify(mHistoricalTabSaver).createHistoricalTab(eq(mockTab0));
+
+        // Close tab 1, and tab 2, since it is part of the last event "closing" the tab group and it
+        // is hiding the group so no entry should be created.
+        tabList = new MockTab[] {mockTab1, mockTab2};
+        createGroup(tabGroupId, title, color, new MockTab[] {mockTab1, mockTab2});
+        when(mTabGroupModelFilter.getLazyAllTabGroupIdsInComprehensiveModel(any()))
+                .thenReturn(LazyOneshotSupplier.fromValue(new HashSet<Token>()));
+        mObserver.onFinishingMultipleTabClosure(Arrays.asList(tabList));
+
+        ArgumentCaptor<List<HistoricalEntry>> arg = ArgumentCaptor.forClass((Class) List.class);
+        verify(mHistoricalTabSaver).createHistoricalBulkClosure(arg.capture());
+        List<HistoricalEntry> entries = arg.getValue();
+        assertEquals(0, entries.size());
+    }
+
+    @Test
     public void testMultipleTabsAndGroups() {
         MockTab mockTab0 = createMockTab(0);
         MockTab mockTab1 = createMockTab(1);
@@ -305,14 +418,16 @@ public class HistoricalTabModelObserverUnitTest {
         MockTab mockTab5 = createMockTab(5);
 
         final String groupTitle1 = "foo";
+        @TabGroupColorId int groupColor1 = TabGroupColorId.GREY;
         MockTab[] groupTabs1 = new MockTab[] {mockTab3, mockTab5};
         Token tabGroupId1 = new Token(3L, 4L);
-        final int rootId1 = createGroup(tabGroupId1, groupTitle1, groupTabs1);
+        final int rootId1 = createGroup(tabGroupId1, groupTitle1, groupColor1, groupTabs1);
 
         final String groupTitle2 = "Bar";
+        @TabGroupColorId int groupColor2 = TabGroupColorId.BLUE;
         MockTab[] groupTabs2 = new MockTab[] {mockTab1, mockTab2};
         Token tabGroupId2 = new Token(3L, 4L);
-        final int rootId2 = createGroup(tabGroupId2, groupTitle2, groupTabs2);
+        final int rootId2 = createGroup(tabGroupId2, groupTitle2, groupColor2, groupTabs2);
 
         Tab[] tabList = new Tab[] {mockTab0, mockTab2, mockTab3, mockTab4, mockTab1, mockTab5};
         mObserver.onFinishingMultipleTabClosure(Arrays.asList(tabList));
@@ -336,6 +451,7 @@ public class HistoricalTabModelObserverUnitTest {
         assertEquals(rootId2, historicalGroup2.getRootId());
         assertEquals(tabGroupId2, historicalGroup2.getTabGroupId());
         assertEquals(groupTitle2, historicalGroup2.getGroupTitle());
+        assertEquals(groupColor2, historicalGroup2.getGroupColor());
         assertEquals(mockTab2, historicalGroup2.getTabs().get(0));
         assertEquals(mockTab1, historicalGroup2.getTabs().get(1));
 
@@ -346,6 +462,7 @@ public class HistoricalTabModelObserverUnitTest {
         assertEquals(rootId1, historicalGroup1.getRootId());
         assertEquals(tabGroupId1, historicalGroup1.getTabGroupId());
         assertEquals(groupTitle1, historicalGroup1.getGroupTitle());
+        assertEquals(groupColor1, historicalGroup1.getGroupColor());
         assertEquals(mockTab3, historicalGroup1.getTabs().get(0));
         assertEquals(mockTab5, historicalGroup1.getTabs().get(1));
 
@@ -366,14 +483,21 @@ public class HistoricalTabModelObserverUnitTest {
      *
      * @param tabGroupId The tab group id.
      * @param title Group title.
+     * @param color Group color.
      * @param tabList List of tabs in group.
      * @return ID of the group.
      */
-    private int createGroup(@Nullable Token tabGroupId, @Nullable String title, MockTab[] tabList) {
+    private int createGroup(
+            @Nullable Token tabGroupId,
+            @Nullable String title,
+            @TabGroupColorId int color,
+            MockTab[] tabList) {
         assert tabList.length != 0;
 
         final int rootId = tabList[0].getId();
-        when(mSharedPreferences.getString(String.valueOf(rootId), null)).thenReturn(title);
+        when(mSharedPreferencesTitle.getString(String.valueOf(rootId), null)).thenReturn(title);
+        when(mSharedPreferencesColor.getInt(String.valueOf(rootId), INVALID_COLOR_ID))
+                .thenReturn(color);
         when(mTabGroupModelFilter.getRelatedTabCountForRootId(rootId)).thenReturn(tabList.length);
         when(mTabGroupModelFilter.tabGroupExistsForRootId(rootId)).thenReturn(true);
         for (MockTab tab : tabList) {

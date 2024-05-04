@@ -51,7 +51,7 @@ class TabInteractionRecorderAndroidBrowserTest : public AndroidBrowserTest {
     scoped_feature_list_.InitWithFeaturesAndParameters(
         content::GetDefaultEnabledBackForwardCacheFeaturesForTesting(),
         content::GetDefaultDisabledBackForwardCacheFeaturesForTesting());
-    // TODO(crbug.com/1491942): This fails with the field trial testing config.
+    // TODO(crbug.com/40285326): This fails with the field trial testing config.
     command_line->AppendSwitch("disable-field-trial-config");
   }
 
@@ -82,9 +82,8 @@ class TabInteractionRecorderAndroidBrowserTest : public AndroidBrowserTest {
  protected:
   class TestAutofillManager : public autofill::BrowserAutofillManager {
    public:
-    TestAutofillManager(autofill::ContentAutofillDriver* driver,
-                        autofill::AutofillClient* client)
-        : autofill::BrowserAutofillManager(driver, client, "en-US") {}
+    explicit TestAutofillManager(autofill::ContentAutofillDriver* driver)
+        : autofill::BrowserAutofillManager(driver, "en-US") {}
 
     [[nodiscard]] testing::AssertionResult WaitForFormsSeen(
         int min_num_awaited_calls) {

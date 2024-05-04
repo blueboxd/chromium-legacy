@@ -59,6 +59,8 @@ source_set("filters") {
     "source_buffer_stream.h",
     "stream_parser_factory.cc",
     "stream_parser_factory.h",
+    "temporal_scalability_id_extractor.cc",
+    "temporal_scalability_id_extractor.h",
     "video_cadence_estimator.cc",
     "video_cadence_estimator.h",
     "video_renderer_algorithm.cc",
@@ -233,10 +235,10 @@ source_set("filters") {
     }
   }
 
-  if (use_vaapi) {
+  if (is_win || use_vaapi) {
     sources += [
-      "h264_bitstream_buffer.cc",
-      "h264_bitstream_buffer.h",
+      "h26x_annex_b_bitstream_builder.cc",
+      "h26x_annex_b_bitstream_builder.h",
     ]
   }
 
@@ -253,6 +255,8 @@ source_set("filters") {
       "hls_rendition.h",
       "hls_rendition_impl.cc",
       "hls_rendition_impl.h",
+      "hls_stats_reporter.cc",
+      "hls_stats_reporter.h",
       "manifest_demuxer.cc",
       "manifest_demuxer.h",
     ]
@@ -317,6 +321,7 @@ source_set("unit_tests") {
     "pipeline_controller_unittest.cc",
     "source_buffer_state_unittest.cc",
     "source_buffer_stream_unittest.cc",
+    "temporal_scalability_id_extractor_unittest.cc",
     "video_cadence_estimator_unittest.cc",
     "video_decoder_stream_unittest.cc",
     "video_renderer_algorithm_unittest.cc",
@@ -387,8 +392,8 @@ source_set("unit_tests") {
     sources += [ "dav1d_video_decoder_unittest.cc" ]
   }
 
-  if (use_vaapi) {
-    sources += [ "h264_bitstream_buffer_unittest.cc" ]
+  if (is_win || use_vaapi) {
+    sources += [ "h26x_annex_b_bitstream_builder_unittest.cc" ]
   }
 
   if (proprietary_codecs) {

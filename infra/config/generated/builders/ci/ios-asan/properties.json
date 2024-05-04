@@ -59,6 +59,16 @@
     "metrics_project": "chromium-reclient-metrics",
     "scandeps_server": true
   },
+  "$build/siso": {
+    "configs": [
+      "builder"
+    ],
+    "enable_cloud_profiler": true,
+    "enable_cloud_trace": true,
+    "experiments": [],
+    "project": "rbe-chromium-trusted",
+    "remote_jobs": 500
+  },
   "$recipe_engine/resultdb/test_presentation": {
     "column_keys": [],
     "grouping_keys": [
@@ -71,5 +81,5 @@
   "sheriff_rotations": [
     "ios"
   ],
-  "xcode_build_version": "15c500b"
+  "xcode_build_version": "15e204a"
 }

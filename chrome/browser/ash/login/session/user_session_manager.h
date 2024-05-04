@@ -107,8 +107,7 @@ class UserSessionManager
     : public OAuth2LoginManager::Observer,
       public network::NetworkConnectionTracker::NetworkConnectionObserver,
       public UserSessionManagerDelegate,
-      public user_manager::UserManager::UserSessionStateObserver,
-      public user_manager::UserManager::Observer {
+      public user_manager::UserManager::UserSessionStateObserver {
  public:
   // Context of StartSession calls.
   enum class StartSessionType {
@@ -163,9 +162,6 @@ class UserSessionManager
   UserSessionManager(const UserSessionManager&) = delete;
   UserSessionManager& operator=(const UserSessionManager&) = delete;
 
-  // Called when user is logged in to override base::DIR_HOME path.
-  static void OverrideHomedir();
-
   // Registers session related preferences.
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
@@ -194,10 +190,6 @@ class UserSessionManager
                     bool has_auth_cookies,
                     bool has_active_session,
                     base::WeakPtr<UserSessionManagerDelegate> delegate);
-
-  // Perform additional actions once system wide notification
-  // "UserLoggedIn" has been sent.
-  void PerformPostUserLoggedInActions();
 
   // Restores authentication session after crash.
   void RestoreAuthenticationSession(Profile* profile);
@@ -375,9 +367,6 @@ class UserSessionManager
   void OnProfilePrepared(Profile* profile, bool browser_launched) override;
   base::WeakPtr<UserSessionManagerDelegate> AsWeakPtr() override;
 
-  // user_manager::UserManager::Observer overrides:
-  void OnUsersSignInConstraintsChanged() override;
-
   void ChildAccountStatusReceivedCallback(Profile* profile);
 
   void StopChildStatusObserving(Profile* profile);
@@ -453,14 +442,6 @@ class UserSessionManager
 
   // Restores GAIA auth cookies for the created user profile from OAuth2 token.
   void RestoreAuthSessionImpl(Profile* profile, bool restore_from_auth_cookies);
-
-  // If `user` is not a kiosk app, sets session type as seen by extensions
-  // feature system according to `user`'s type.
-  // The value should eventually be set for kiosk users, too - that's done as
-  // part of special, kiosk user session bring-up.
-  // NOTE: This has to be called before profile is initialized - so it is set up
-  // when extension are loaded during profile initialization.
-  void InitNonKioskExtensionFeaturesSessionType(const user_manager::User* user);
 
   // Callback to process RetrieveActiveSessions() request results.
   void OnRestoreActiveSessions(

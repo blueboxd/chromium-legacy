@@ -45,7 +45,8 @@ class VIEWS_EXPORT BubbleDialogDelegate : public DialogDelegate {
   BubbleDialogDelegate(
       View* anchor_view,
       BubbleBorder::Arrow arrow,
-      BubbleBorder::Shadow shadow = BubbleBorder::DIALOG_SHADOW);
+      BubbleBorder::Shadow shadow = BubbleBorder::DIALOG_SHADOW,
+      bool autosize = false);
   BubbleDialogDelegate(const BubbleDialogDelegate& other) = delete;
   BubbleDialogDelegate& operator=(const BubbleDialogDelegate& other) = delete;
   ~BubbleDialogDelegate() override;
@@ -56,6 +57,9 @@ class VIEWS_EXPORT BubbleDialogDelegate : public DialogDelegate {
       Widget* widget) override;
   ClientView* CreateClientView(Widget* widget) override;
   ax::mojom::Role GetAccessibleWindowRole() final;
+
+  // WidgetDelegate:
+  gfx::Rect GetDesiredWidgetBounds() final;
 
   // Create and initialize the bubble Widget with proper bounds.
   static Widget* CreateBubble(
@@ -124,7 +128,7 @@ class VIEWS_EXPORT BubbleDialogDelegate : public DialogDelegate {
   // before another function call which also sets bounds, so that bounds are
   // not set multiple times in a row. When animating bounds changes, setting
   // bounds twice in a row can make the widget position jump.
-  // TODO(crbug.com/982880) It would be good to be able to re-target the
+  // TODO(crbug.com/41470150) It would be good to be able to re-target the
   // animation rather than expect callers to use SetArrowWithoutResizing if they
   // are also changing the anchor rect, or similar.
   void SetArrowWithoutResizing(BubbleBorder::Arrow arrow);
@@ -166,6 +170,9 @@ class VIEWS_EXPORT BubbleDialogDelegate : public DialogDelegate {
 
   bool GetSubtitleAllowCharacterBreak() const;
   void SetSubtitleAllowCharacterBreak(bool allow);
+
+  // No setter: autosize_ should not be changed after construction.
+  bool is_autosized() const { return autosize_; }
 
   //////////////////////////////////////////////////////////////////////////////
   // Miscellaneous bubble behaviors:
@@ -319,6 +326,8 @@ class VIEWS_EXPORT BubbleDialogDelegate : public DialogDelegate {
   // should be called only if you need to force update the bounds of the widget
   // and/or position of the bubble, for example if the size of the bubble's
   // content view changed.
+  // TODO(crbug.com/41493925) Not recommended; Use autosize in the constructor
+  // instead.
   void SizeToContents();
 
  protected:
@@ -464,6 +473,10 @@ class VIEWS_EXPORT BubbleDialogDelegate : public DialogDelegate {
   std::u16string subtitle_;
   bool subtitle_allow_character_break_ = false;
 
+  // Whether the bubble should automatically resize to match its contents'
+  // preferred size.
+  bool autosize_ = false;
+
   // A flag controlling bubble closure on deactivation.
   bool close_on_deactivate_ = true;
   std::unique_ptr<CloseOnDeactivatePin::Pins> close_on_deactivate_pins_;
@@ -550,7 +563,8 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public BubbleDialogDelegate,
   BubbleDialogDelegateView(
       View* anchor_view,
       BubbleBorder::Arrow arrow,
-      BubbleBorder::Shadow shadow = BubbleBorder::DIALOG_SHADOW);
+      BubbleBorder::Shadow shadow = BubbleBorder::DIALOG_SHADOW,
+      bool autosize = false);
   BubbleDialogDelegateView(const BubbleDialogDelegateView&) = delete;
   BubbleDialogDelegateView& operator=(const BubbleDialogDelegateView&) = delete;
   ~BubbleDialogDelegateView() override;

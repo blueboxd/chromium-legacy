@@ -274,7 +274,7 @@ void AutofillDriverRouter::HidePopup(AutofillDriver* source,
   // We don't know which AutofillManager is currently displaying the popup.
   // Since the the general approach of popup hiding in Autofill seems to be
   // "better safe than sorry", broadcasting this event is fine.
-  // TODO(crbug.com/1490905): This event should go away when the popup-hiding
+  // TODO(crbug.com/40284890): This event should go away when the popup-hiding
   // mechanism has been cleaned up.
   ForEachFrame(form_forest_, callback);
 }
@@ -387,10 +387,12 @@ void AutofillDriverRouter::JavaScriptChangedAutofilledValue(
     FormData form,
     const FormFieldData& field,
     const std::u16string& old_value,
+    bool formatting_only,
     void (*callback)(AutofillDriver* target,
                      const FormData& form,
                      const FormFieldData& field,
-                     const std::u16string& old_value)) {
+                     const std::u16string& old_value,
+                     bool formatting_only)) {
   FormGlobalId form_id = form.global_id();
   form_forest_.UpdateTreeOfRendererForm(std::move(form), source);
 
@@ -399,7 +401,7 @@ void AutofillDriverRouter::JavaScriptChangedAutofilledValue(
   const FormData& browser_form = form_forest_.GetBrowserForm(form_id);
   auto* target = DriverOfFrame(browser_form.host_frame);
   CHECK(target);
-  callback(target, browser_form, field, old_value);
+  callback(target, browser_form, field, old_value, formatting_only);
 }
 
 // Routing of events triggered by the browser.
@@ -419,7 +421,7 @@ base::flat_set<FieldGlobalId> AutofillDriverRouter::ApplyFormAction(
     void (*callback)(AutofillDriver* target,
                      mojom::FormActionType action_type,
                      mojom::ActionPersistence action_persistence,
-                     const FormData::FillData& form)) {
+                     const std::vector<FormFieldData::FillData>& fields)) {
   // Since Undo only affects fields that were already filled, and only sets
   // values to fields to something that already existed in it prior to the
   // filling, it is okay to bypass the filling security checks and hence passing
@@ -430,16 +432,24 @@ base::flat_set<FieldGlobalId> AutofillDriverRouter::ApplyFormAction(
                     ? internal::FormForest::SecurityOptions::TrustAllOrigins()
                     : internal::FormForest::SecurityOptions(&triggered_origin,
                                                             &field_type_map));
+  // Collect the fields per frame and emit a single fill operation per frame,
+  // even if multiple renderer forms belong to the same iframe due to
+  // flattening.
+  base::flat_map<AutofillDriver*, std::vector<FormFieldData::FillData>>
+      fields_of_driver;
   for (FormData& renderer_form : renderer_forms.renderer_forms) {
     if (auto* target = DriverOfFrame(renderer_form.host_frame)) {
-      // Remove unsafe fields from the list to be sent to the renderer.
-      std::erase_if(
-          renderer_form.fields, [&renderer_forms](const FormFieldData& field) {
-            return !renderer_forms.safe_fields.contains(field.global_id());
-          });
-      callback(target, action_type, action_persistence,
-               FormData::FillData(renderer_form));
+      for (const FormFieldData& field : renderer_form.fields) {
+        // Skip unsafe fields so that they do not get filled in the renderer.
+        if (renderer_forms.safe_fields.contains(field.global_id())) {
+          fields_of_driver[target].emplace_back(field);
+        }
+      }
     }
+  }
+  for (const auto& [target, fields] : fields_of_driver) {
+    CHECK(!fields.empty());
+    callback(target, action_type, action_persistence, fields);
   }
   return renderer_forms.safe_fields;
 }
@@ -555,12 +565,6 @@ void AutofillDriverRouter::RendererShouldAcceptDataListSuggestion(
   if (auto* target = DriverOfFrame(field.frame_token)) {
     callback(target, field.renderer_id, value);
   }
-}
-
-void AutofillDriverRouter::RendererShouldClearFilledSection(
-    AutofillDriver* source,
-    void (*callback)(AutofillDriver* target)) {
-  ForEachFrame(form_forest_, callback);
 }
 
 void AutofillDriverRouter::RendererShouldClearPreviewedForm(

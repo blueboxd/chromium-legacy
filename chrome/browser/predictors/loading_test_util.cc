@@ -163,12 +163,14 @@ PageRequestSummary CreatePageRequestSummary(
     const std::string& main_frame_url,
     const std::string& initial_url,
     const std::vector<blink::mojom::ResourceLoadInfoPtr>& resource_load_infos,
-    base::TimeTicks navigation_started) {
+    base::TimeTicks navigation_started,
+    bool main_frame_load_complete) {
   PageRequestSummary summary(ukm::SourceId(), GURL(initial_url),
                              navigation_started);
   summary.main_frame_url = GURL(main_frame_url);
   for (const auto& resource_load_info : resource_load_infos)
     summary.UpdateOrAddResource(*resource_load_info);
+  summary.main_frame_load_complete = main_frame_load_complete;
   return summary;
 }
 
@@ -299,23 +301,27 @@ std::ostream& operator<<(std::ostream& os,
 
 std::ostream& operator<<(std::ostream& os, const LcppData& data) {
   os << "[" << data.host() << "," << data.last_visit_time() << "]" << std::endl;
+  os << data.lcpp_stat();
+  return os;
+}
 
+std::ostream& operator<<(std::ostream& os, const LcppStat& stat) {
   // Output lcp_element_locator_stat.
   os << "\t\t" << "lcp_element_locator_stat:" << std::endl;
-  os << data.lcpp_stat().lcp_element_locator_stat();
+  os << stat.lcp_element_locator_stat();
 
   // Output lcp_script_url_stat.
   os << "\t\t"
      << "lcp_script_url_stat:" << std::endl;
-  os << data.lcpp_stat().lcp_script_url_stat();
+  os << stat.lcp_script_url_stat();
 
   // Output fetched_font_url_stat.
   os << "\t\t" << "fetched_font_url_stat:" << std::endl;
-  os << data.lcpp_stat().fetched_font_url_stat();
+  os << stat.fetched_font_url_stat();
 
   // Output fetched_subresource_url_stat.
   os << "\t\t" << "fetched_subresource_url_stat:" << std::endl;
-  os << data.lcpp_stat().fetched_subresource_url_stat();
+  os << stat.fetched_subresource_url_stat();
 
   return os;
 }
@@ -375,8 +381,12 @@ bool operator==(const RedirectStat& lhs, const RedirectStat& rhs) {
 
 bool operator==(const PageRequestSummary& lhs, const PageRequestSummary& rhs) {
   return lhs.main_frame_url == rhs.main_frame_url &&
-         lhs.initial_url == rhs.initial_url && lhs.origins == rhs.origins &&
-         lhs.subresource_urls == rhs.subresource_urls;
+         lhs.initial_url == rhs.initial_url &&
+         lhs.main_frame_load_complete == rhs.main_frame_load_complete &&
+         lhs.origins == rhs.origins &&
+         lhs.subresource_urls == rhs.subresource_urls &&
+         lhs.low_priority_origins == rhs.low_priority_origins &&
+         lhs.low_priority_subresource_urls == rhs.low_priority_subresource_urls;
 }
 
 bool operator==(const OriginRequestSummary& lhs,

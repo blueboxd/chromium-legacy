@@ -4,7 +4,7 @@
 # found in the LICENSE file.
 
 """Runs checks on the files defining tests.
-d
+
 This performs the following checks:
 * Checks that any entry in gn_isolate_map.pyl is referenced by some
   builder (modulo targets known to be used by builders in other projects
@@ -29,6 +29,9 @@ SKIP_GN_ISOLATE_MAP_TARGETS = {
     'all',
     'remoting/client:client',
     'remoting/host:host',
+
+    # These targets are used by builders setting their tests in starlark
+    'android_lint',
 
     # These targets are listed only in build-side recipes.
     'captured_sites_interactive_tests',

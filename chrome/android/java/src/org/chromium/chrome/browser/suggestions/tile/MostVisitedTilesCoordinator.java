@@ -19,12 +19,10 @@ import org.chromium.chrome.browser.lifecycle.ConfigurationChangedObserver;
 import org.chromium.chrome.browser.native_page.ContextMenuManager;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.profiles.ProfileManager;
 import org.chromium.chrome.browser.suggestions.SuggestionsConfig;
 import org.chromium.chrome.browser.suggestions.SuggestionsDependencyFactory;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
 import org.chromium.chrome.browser.ui.native_page.TouchEnabledDelegate;
-import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
 import org.chromium.components.browser_ui.widget.displaystyle.UiConfig;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.WindowAndroid;
@@ -55,19 +53,17 @@ public class MostVisitedTilesCoordinator implements ConfigurationChangedObserver
     /**
      * @param activity The app activity.
      * @param activityLifecycleDispatcher Dispatcher for activity lifecycle events,
-     *                                    e.g.configuration changes. We need this to adjust the
-     *                                    paddings and margins of the tile views.
+     *     e.g.configuration changes. We need this to adjust the paddings and margins of the tile
+     *     views.
      * @param mvTilesContainerLayout The container view of most visited tiles layout.
      * @param windowAndroid The current {@link WindowAndroid}
-     * @param shouldShowSkeletonUIPreNative Whether to show the background icon for pre-native
-     *                                      surface.
-     * @param isScrollableMVTEnabled Whether scrollable MVT is enabled. If true  {@link
-     *                               MostVisitedTilesCarouselLayout} is used; if false {@link
-     *                               MostVisitedTilesGridLayout} is used.
+     * @param isScrollableMVTEnabled Whether scrollable MVT is enabled. If true {@link
+     *     MostVisitedTilesCarouselLayout} is used; if false {@link MostVisitedTilesGridLayout} is
+     *     used.
      * @param maxRows The maximum number of rows to display. This will only be used for {@link
-     *                MostVisitedTilesGridLayout}.
+     *     MostVisitedTilesGridLayout}.
      * @param snapshotTileGridChangedRunnable The runnable called when the snapshot tile grid is
-     *                                        changed.
+     *     changed.
      * @param tileCountChangedRunnable The runnable called when the tile count is changed.
      */
     public MostVisitedTilesCoordinator(
@@ -75,7 +71,6 @@ public class MostVisitedTilesCoordinator implements ConfigurationChangedObserver
             ActivityLifecycleDispatcher activityLifecycleDispatcher,
             View mvTilesContainerLayout,
             WindowAndroid windowAndroid,
-            boolean shouldShowSkeletonUIPreNative,
             boolean isScrollableMVTEnabled,
             int maxRows,
             @Nullable Runnable snapshotTileGridChangedRunnable,
@@ -119,29 +114,28 @@ public class MostVisitedTilesCoordinator implements ConfigurationChangedObserver
                         mvTilesContainerLayout.findViewById(R.id.tile_grid_placeholder_stub),
                         mRenderer,
                         propertyModel,
-                        shouldShowSkeletonUIPreNative,
                         isScrollableMVTEnabled,
                         isTablet,
                         snapshotTileGridChangedRunnable,
-                        tileCountChangedRunnable,
-                        StartSurfaceConfiguration.isNtpAsHomeSurfaceEnabled(isTablet));
+                        tileCountChangedRunnable);
     }
 
     /**
-     * Called before the TasksSurface is showing to initialize MV tiles.
-     * {@link MostVisitedTilesCoordinator#destroyMvtiles()} is called after the TasksSurface hides.
+     * Called before the TasksSurface is showing to initialize MV tiles. {@link
+     * MostVisitedTilesCoordinator#destroyMvtiles()} is called after the TasksSurface hides.
      *
+     * @param profile The Profile associated with the MV Tiles being displayed.
      * @param suggestionsUiDelegate The UI delegate of suggestion surface.
      * @param tileGroupDelegate The delegate of tile group.
      * @param touchEnabledDelegate The {@link TouchEnabledDelegate} for handling whether touch
-     *                             events are allowed.
+     *     events are allowed.
      */
     public void initWithNative(
+            Profile profile,
             SuggestionsUiDelegate suggestionsUiDelegate,
             TileGroup.Delegate tileGroupDelegate,
             TouchEnabledDelegate touchEnabledDelegate) {
         mActivityLifecycleDispatcher.register(this);
-        Profile profile = ProfileManager.getLastUsedRegularProfile();
         if (mRenderer == null) {
             mRenderer =
                     new TileRenderer(
@@ -152,7 +146,7 @@ public class MostVisitedTilesCoordinator implements ConfigurationChangedObserver
         } else {
             mRenderer.setImageFetcher(suggestionsUiDelegate.getImageFetcher());
         }
-        mRenderer.onNativeInitializationReady();
+        mRenderer.onNativeInitializationReady(profile);
 
         mContextMenuManager =
                 new ContextMenuManager(
@@ -164,6 +158,7 @@ public class MostVisitedTilesCoordinator implements ConfigurationChangedObserver
         mOfflinePageBridge =
                 SuggestionsDependencyFactory.getInstance().getOfflinePageBridge(profile);
         mMediator.initWithNative(
+                profile,
                 suggestionsUiDelegate,
                 mContextMenuManager,
                 tileGroupDelegate,

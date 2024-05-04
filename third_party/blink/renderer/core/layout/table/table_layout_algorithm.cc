@@ -200,9 +200,10 @@ LayoutUnit ComputeEmptyTableInlineSize(
     const BoxStrut& table_border_padding,
     const bool has_collapsed_borders) {
   // If table has a css inline size, use that.
-  if (space.IsFixedInlineSize() ||
-      (space.IsInlineAutoBehaviorStretch() &&
-       table_style.LogicalWidth().IsAuto()) ||
+  // TODO(https://crbug.com/313072): Should these IsAuto calls handle
+  // intrinsic sizing keywords or calc-size() differently, e.g., by using
+  // HasAutoOrContentOrIntrinsic rather than just HasAuto?
+  if (space.IsFixedInlineSize() || space.IsInlineAutoBehaviorStretch() ||
       !table_style.LogicalWidth().IsAuto() ||
       !table_style.LogicalMinWidth().IsAuto()) {
     return assignable_table_inline_size + undistributable_space;
@@ -307,7 +308,9 @@ scoped_refptr<const TableConstraintSpaceData> CreateConstraintSpaceData(
     const TableTypes::Rows& rows,
     const TableTypes::CellBlockConstraints& cell_block_constraints,
     const LogicalSize& border_spacing) {
-  bool is_table_block_size_specified = !style.LogicalHeight().IsAuto();
+  // TODO(https://crbug.com/313072): These should probably use
+  // HasAutoOrContentOrIntrinsic rather than just HasAuto.
+  bool is_table_block_size_specified = !style.LogicalHeight().HasAuto();
   scoped_refptr<TableConstraintSpaceData> data =
       base::MakeRefCounted<TableConstraintSpaceData>();
   data->table_writing_direction = style.GetWritingDirection();
@@ -707,7 +710,7 @@ MinMaxSizesResult TableLayoutAlgorithm::ComputeMinMaxSizes(
       std::max(grid_min_max.min_size, caption_constraint.min_size),
       std::max(grid_min_max.max_size, caption_constraint.min_size)};
 
-  if (is_fixed_layout && Style().LogicalWidth().IsPercentOrCalc()) {
+  if (is_fixed_layout && Style().LogicalWidth().HasPercent()) {
     min_max.max_size = TableTypes::kTableMaxInlineSize;
   }
   DCHECK_LE(min_max.min_size, min_max.max_size);
@@ -774,9 +777,10 @@ void TableLayoutAlgorithm::ComputeRows(
     }
   }
 
+  const ConstraintSpace& space = GetConstraintSpace();
+
   LayoutUnit css_table_block_size;
-  if (GetConstraintSpace().IsInitialBlockSizeIndefinite() &&
-      !GetConstraintSpace().IsFixedBlockSize()) {
+  if (space.IsInitialBlockSizeIndefinite() && !space.IsFixedBlockSize()) {
     // We get here when a flexbox wants to use the table's intrinsic height as
     // an input to the flex algorithm.
     css_table_block_size = kIndefiniteSize;
@@ -784,24 +788,28 @@ void TableLayoutAlgorithm::ComputeRows(
     // If we can correctly resolve our min-block-size we want to distribute
     // sections/rows into this space. Pass a definite intrinsic block-size into
     // |ComputeBlockSizeForFragment| to force it to resolve.
-    LayoutUnit intrinsic_block_size =
-        BlockLengthUnresolvable(GetConstraintSpace(),
-                                Style().LogicalMinHeight())
+    //
+    // NOTE: We use `ResolveMainBlockLength` for resolving `min_length` so that
+    // it will resolve to `kIndefiniteSize` if unresolvable.
+    const Length& min_length = Style().LogicalMinHeight();
+    const LayoutUnit intrinsic_block_size =
+        min_length.HasAuto() ||
+                ResolveMainBlockLength(space, Style(), table_border_padding,
+                                       min_length, /* auto_length */ nullptr,
+                                       kIndefiniteSize) == kIndefiniteSize
             ? kIndefiniteSize
             : table_border_padding.BlockSum();
 
     LayoutUnit override_available_block_size = kIndefiniteSize;
-    if (GetConstraintSpace().AvailableSize().block_size != kIndefiniteSize) {
+    if (space.AvailableSize().block_size != kIndefiniteSize) {
       override_available_block_size =
-          (GetConstraintSpace().AvailableSize().block_size -
-           captions_block_size)
+          (space.AvailableSize().block_size - captions_block_size)
               .ClampNegativeToZero();
     }
 
     css_table_block_size = ComputeBlockSizeForFragment(
-        GetConstraintSpace(), Style(), table_border_padding,
-        intrinsic_block_size, table_grid_inline_size,
-        override_available_block_size);
+        space, Style(), table_border_padding, intrinsic_block_size,
+        table_grid_inline_size, override_available_block_size);
   }
   // In quirks mode, empty tables ignore any specified block-size.
   const bool is_empty_quirks_mode_table =

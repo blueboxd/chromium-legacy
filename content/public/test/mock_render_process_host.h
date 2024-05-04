@@ -157,10 +157,7 @@ class MockRenderProcessHost : public RenderProcessHost {
       override;
   const base::TimeTicks& GetLastInitTime() override;
   bool IsProcessBackgrounded() override;
-  size_t GetKeepAliveRefCount() const;
   size_t GetWorkerRefCount() const;
-  void IncrementKeepAliveRefCount(uint64_t handle_id) override;
-  void DecrementKeepAliveRefCount(uint64_t handle_id) override;
   std::string GetKeepAliveDurations() const override;
   size_t GetShutdownDelayRefCount() const override;
   int GetRenderFrameHostCount() const override;
@@ -329,13 +326,14 @@ class MockRenderProcessHost : public RenderProcessHost {
   base::IDMap<IPC::Listener*> listeners_;
   bool shutdown_requested_;
   bool fast_shutdown_started_;
+  bool within_process_died_observer_ = false;
+  bool delayed_cleanup_ = false;
   bool deletion_callback_called_;
   bool is_for_guests_only_;
   bool is_process_backgrounded_;
   bool is_unused_;
   bool is_ready_ = false;
   base::Process process;
-  int keep_alive_ref_count_;
   int worker_ref_count_;
   int pending_reuse_ref_count_;
   int foreground_service_worker_count_;

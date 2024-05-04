@@ -30,9 +30,7 @@ constexpr CGFloat kIPHDotSize = 6;
 NSImage* NewTagImage(const remote_cocoa::mojom::MenuControllerParams& params) {
   // 1. Make the attributed string.
 
-  NSString* badge_text = l10n_util::GetNSString(features::IsChromeRefresh2023()
-                                                    ? IDS_NEW_BADGE_UPPERCASE
-                                                    : IDS_NEW_BADGE);
+  NSString* badge_text = l10n_util::GetNSString(IDS_NEW_BADGE);
 
   NSColor* badge_text_color =
       skia::SkColorToSRGBNSColor(params.badge_text_color);

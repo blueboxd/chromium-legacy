@@ -32,8 +32,7 @@ class UpdateFileHandlerCommandTest : public WebAppTest {
     WebAppTest::SetUp();
     {
       base::ScopedAllowBlockingForTesting allow_blocking;
-      test_override_ =
-          OsIntegrationTestOverrideImpl::OverrideForTesting(base::GetHomeDir());
+      test_override_ = OsIntegrationTestOverrideImpl::OverrideForTesting();
     }
     provider_ = FakeWebAppProvider::Get(profile());
 
@@ -45,10 +44,9 @@ class UpdateFileHandlerCommandTest : public WebAppTest {
         profile(), file_handler_manager.get(), protocol_handler_manager.get());
     auto os_integration_manager = std::make_unique<OsIntegrationManager>(
         profile(), std::move(shortcut_manager), std::move(file_handler_manager),
-        std::move(protocol_handler_manager), /*url_handler_manager=*/nullptr);
+        std::move(protocol_handler_manager));
 
     provider_->SetOsIntegrationManager(std::move(os_integration_manager));
-
     test::AwaitStartWebAppProviderAndSubsystems(profile());
   }
 

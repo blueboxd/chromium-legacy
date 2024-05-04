@@ -4,8 +4,9 @@
 
 #include "mojo/core/channel.h"
 
-#include <stdint.h>
 #include <windows.h>
+
+#include <stdint.h>
 
 #include <algorithm>
 #include <limits>
@@ -202,7 +203,7 @@ class ChannelWin : public Channel,
       reject_writes_ = true;
     }
 
-    // TODO(https://crbug.com/583525): This function is expected to be called
+    // TODO(crbug.com/40455076): This function is expected to be called
     // once, and |handle_| should be valid at this point.
     CHECK(handle_.is_valid());
     CancelIo(handle_.get());

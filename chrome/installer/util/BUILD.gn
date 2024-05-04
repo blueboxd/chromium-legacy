@@ -172,10 +172,10 @@ static_library("with_no_strings") {
 
     deps += [
       "//base:i18n",
-      "//base/third_party/dynamic_annotations",
       "//base/win:pe_image",
       "//build:branding_buildflags",
       "//chrome/install_static:install_static_util",
+      "//components/app_launch_prefetch",
       "//components/base32",
       "//components/metrics:client_info",
       "//components/version_info:channel",
@@ -316,6 +316,7 @@ if (is_win) {
       "helper_unittest.cc",
       "initial_preferences_unittest.cc",
       "install_util_unittest.cc",
+      "installation_state_unittest.cc",
       "l10n_string_util_unittest.cc",
       "logging_installer_unittest.cc",
       "lzma_util_unittest.cc",

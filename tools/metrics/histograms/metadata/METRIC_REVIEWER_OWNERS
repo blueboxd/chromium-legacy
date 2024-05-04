@@ -1,5 +1,6 @@
 # accessibility
 evliu@google.com
+mschillaci@google.com
 # account_manager
 sinhak@chromium.org
 # android
@@ -21,7 +22,6 @@ batoon@google.com
 youkichihosoi@chromium.org
 lingyufeng@chromium.org
 # ash_clipboard
-ckincaid@chromium.org
 dmblack@google.com
 # ash_user_education
 angusmclean@google.com
@@ -35,6 +35,7 @@ michelefan@chromium.org
 # assistant
 xiaohuic@chromium.org
 # autofill
+fleimgruber@google.com
 jihadghanna@google.com
 jkeitel@google.com
 jsaul@google.com
@@ -91,6 +92,7 @@ jorgelo@chromium.org
 julietlevesque@google.com
 khorimoto@chromium.org
 nikhilcn@google.com
+tjohnsonkanu@google.com
 tsergeant@chromium.org
 zentaro@chromium.org
 # chromeos_settings
@@ -192,7 +194,6 @@ mcrouse@chromium.org
 tbansal@chromium.org
 sophiechang@chromium.org
 # holding_space
-ckincaid@chromium.org
 dmblack@google.com
 # image
 schenney@chromium.org
@@ -217,6 +218,8 @@ tby@chromium.org
 # login
 jorgelo@chromium.org
 alemate@chromium.org
+# mac
+bur@google.com
 # media
 evliu@google.com
 kron@chromium.org
@@ -256,6 +259,7 @@ khorimoto@chromium.org
 matthewmwang@chromium.org
 nidhijaju@chromium.org
 nikhilcn@google.com
+tjohnsonkanu@google.com
 toyoshim@chromium.org
 # new_tab_page
 dewittj@chromium.org
@@ -319,7 +323,6 @@ hansberry@chromium.org
 julietlevesque@google.com
 # platform
 iby@chromium.org
-mutexlox@chromium.org
 xuhong@chromium.org
 hcyang@google.com
 # plugin_vm
@@ -433,6 +436,8 @@ tbansal@chromium.org
 toyoshim@chromium.org
 # update_engine
 poromov@chromium.org
+# user_education
+dfried@chromium.org
 # v8
 mlippautz@chromium.org
 # web_apk

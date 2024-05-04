@@ -367,13 +367,6 @@
         <ph name="TYPE_1">%1$s<ex>2 compromised passwords</ex></ph>. <ph name="TYPE_2">%2$s<ex>7 weak passwords</ex></ph>.
       </message>
 
-      <!-- Cookie controls UI -->
-      <message name="IDS_COOKIE_CONTROLS_BLOCKED_COOKIES" desc="Text showing the number of blocked cookies on a site.">
-        {COOKIE_COUNT, plural,
-            =1 {1 cookie blocked}
-            other {# cookies blocked}}
-      </message>
-
       <!-- Certificate viewer -->
       <message name="IDS_CERTTITLE" desc="Dialog box title for viewing security certificates. [CHAR_LIMIT=32]">
         Certificate viewer
@@ -464,8 +457,8 @@
       <message name="IDS_PAGE_INFO_FORGET_SITE_TITLE" desc="Label used at top of dialog which clears stored information displayed in page info (ie permissions, cookies, eventually history).">
         Forget this site?
       </message>
-      <message name="IDS_PAGE_INFO_FORGET_SITE_MESSAGE" desc="Message used in dialogwhich clears stored information displayed in page info.">
-        Are you sure you want to reset permissions, and clear cookies and site data?
+      <message name="IDS_PAGE_INFO_FORGET_SITE_MESSAGE" desc="Message used in dialog which deletes stored information displayed in page info.">
+        Are you sure you want to reset permissions, and delete cookies and site data?
       </message>
       <message name="IDS_PAGE_INFO_FORGET_SITE_CONFIRMATION_BUTTON" desc="Confirmation button in dialog which clears stored information displayed in page info.">
         Forget
@@ -600,11 +593,6 @@
       </message>
       <message name="IDS_PAGE_INFO_COOKIES_SITE_NOT_WORKING_DESCRIPTION_TRACKING_PROTECTION" desc="Descriptive text in the Page Info UI explaining the trade-off of temporarily allowing third-party cookies for this site, a change that will automatically expire in the future.">
         Try temporarily allowing third-party cookies, which means less browsing protection but site features are more likely to work as expected.
-      </message>
-      <message name="IDS_PAGE_INFO_COOKIES_IN_USE" desc="Label showing the amount of cookies being used by a site.">
-        {NUM_SELECTED, plural,
-          =1 {1 cookie in use}
-          other {# cookies in use}}
       </message>
       <message name="IDS_PAGE_INFO_SITES_ALLOWED" desc="Label showing the number of sites where cookies are allowed.">
         {NUM_SELECTED, plural,
@@ -1025,7 +1013,7 @@
       </message>
 
       <!-- Text Size Contrast -->
-      <!-- TODO(crbug.com/1446230): Add descriptions and make the strings translateable. -->
+      <!-- TODO(crbug.com/40064612): Add descriptions and make the strings translateable. -->
       <message name="IDS_TEXT_SIZE_CONTRAST_TITLE" translateable="false" desc="Title of the preference that allows the user to update the accessibility smart zoom feature that applies to the web contents.">
         Text size contrast
       </message>
@@ -1109,6 +1097,9 @@
       </message>
       <message name="IDS_TAB_RESUMPTION_MODULE_MULTI_INFO" desc="Info text template for each item of the tab resumption module, showing recency and foreign session name.">
         <ph name="RECENCY">%1$s<ex>2 hrs ago</ex></ph> <ph name="SEPARATOR">•</ph> From <ph name="FROM_DEVICE">%2$s<ex>My Pixel 7</ex></ph>
+      </message>
+      <message name="IDS_TAB_RESUMPTION_MODULE_MULTI_INFO_LOCAL" desc="Info text template for local tab tile of the tab resumption module, showing recency and indicating the tile comes from a local tab.">
+        <ph name="RECENCY">%1$s<ex>2 hrs ago</ex></ph> <ph name="SEPARATOR">•</ph> Your last tab
       </message>
       <message name="IDS_TAB_RESUMPTION_MODULE_OTHER_DEVICES_NAME" desc="The name of feature to show suggested tabs from other devices in the tab resumption module, to appear, e.g., on the Settings page to toggle the feature.">
         Tabs from other devices

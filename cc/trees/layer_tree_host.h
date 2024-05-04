@@ -19,7 +19,6 @@
 
 #include "base/cancelable_callback.h"
 #include "base/containers/flat_map.h"
-#include "base/containers/flat_set.h"
 #include "base/functional/callback_forward.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/read_only_shared_memory_region.h"
@@ -67,10 +66,6 @@
 #include "ui/gfx/delegated_ink_metadata.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/overlay_transform.h"
-
-namespace gfx {
-struct PresentationFeedback;
-}
 
 namespace cc {
 
@@ -420,7 +415,7 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   // to the screen (it's entirely possible some frames may be dropped between
   // the time this is called and the callback is run).
   void RequestSuccessfulPresentationTimeForNextFrame(
-      PresentationTimeCallbackBuffer::SuccessfulCallback callback);
+      PresentationTimeCallbackBuffer::SuccessfulCallbackWithDetails callback);
 
   // Registers a callback that is run when any ongoing scroll-animation ends. If
   // there are no ongoing animations, then the callback is run immediately.
@@ -582,6 +577,12 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   // Requests the allocation of a new LocalSurfaceId on the compositor thread.
   void RequestNewLocalSurfaceId();
 
+  // Request to screenshot the current viewport. The screenshot will be tagged
+  // with `destination_token`. The screenshot is tagged with `token`. The caller
+  // must have requested a new `viz::LocalSurfaceID` before making this request.
+  void RequestViewportScreenshot(
+      const base::UnguessableToken& destination_token);
+
   // Returns the current state of the new LocalSurfaceId request and resets
   // the state.
   bool new_local_surface_id_request_for_testing() const {
@@ -739,18 +740,18 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
     DCHECK(IsMainThread());
     client_->DidCommitAndDrawFrame(source_frame_number);
   }
-  void DidReceiveCompositorFrameAck() {
+  void DidReceiveCompositorFrameAckDeprecatedForCompositor() {
     DCHECK(IsMainThread());
-    client_->DidReceiveCompositorFrameAck();
+    client_->DidReceiveCompositorFrameAckDeprecatedForCompositor();
   }
   bool UpdateLayers();
   void DidPresentCompositorFrame(
       uint32_t frame_token,
       std::vector<PresentationTimeCallbackBuffer::Callback>
           presentation_callbacks,
-      std::vector<PresentationTimeCallbackBuffer::SuccessfulCallback>
+      std::vector<PresentationTimeCallbackBuffer::SuccessfulCallbackWithDetails>
           successful_presentation_callbacks,
-      const gfx::PresentationFeedback& feedback);
+      const viz::FrameTimingDetails& frame_timing_details);
   // Called when the compositor completed page scale animation.
   void DidCompletePageScaleAnimation();
   // Virtual for testing
@@ -902,6 +903,9 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   bool WaitedForCommitForTesting() const {
     return waited_for_protected_sequence_;
   }
+
+  // See CommitState::scrollers_clobbering_active_value_.
+  void DropActiveScrollDeltaNextCommit(ElementId scroll_element);
 
  protected:
   LayerTreeHost(InitParams params, CompositorMode mode);

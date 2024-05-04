@@ -93,7 +93,7 @@ rootWebArea
 ++++++++++++++++++++++genericContainer
 ++++++++++++++++++++++++staticText name='Sa'
 ++++++++++++++++++++++++++inlineTextBox name='Sa'
-++++++++++++++++++++genericContainer
+++++++++++++++++++++genericContainer ignored
 ++++++++++++++++++++++genericContainer
 ++++++++++++++++++++++++row name='Sunday, August 31, 2008 Monday, September 1, 2008 Tuesday, September 2, 2008 Wednesday, September 3, 2008 Thursday, September 4, 2008 Friday, September 5, 2008 Saturday, September 6, 2008'
 ++++++++++++++++++++++++++cell name='Sunday, August 31, 2008' selected=false

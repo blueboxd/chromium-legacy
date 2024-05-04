@@ -11,6 +11,7 @@
 #include <unistd.h>
 
 #include <algorithm>
+#include <string_view>
 
 #include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_buildflags.h"
 #include "base/allocator/partition_allocator/src/partition_alloc/tagging.h"
@@ -33,7 +34,7 @@
 #include "base/synchronization/lock.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
-#include "components/crash/android/jni_headers/PackagePaths_jni.h"
+#include "components/crash/android/package_paths_jni/PackagePaths_jni.h"
 #include "components/crash/core/app/crash_reporter_client.h"
 #include "content/public/common/content_descriptors.h"
 #include "sandbox/linux/services/syscall_wrappers.h"
@@ -357,7 +358,7 @@ void MakePackagePaths(std::string* classpath, std::string* libpath) {
 
   base::android::ScopedJavaLocalRef<jstring> arch =
       base::android::ConvertUTF8ToJavaString(env,
-                                             base::StringPiece(CURRENT_ABI));
+                                             std::string_view(CURRENT_ABI));
   base::android::ScopedJavaLocalRef<jobjectArray> paths =
       Java_PackagePaths_makePackagePaths(env, arch);
 
@@ -710,12 +711,12 @@ bool PlatformCrashpadInitialization(
   if (browser_process) {
     HandlerStarter* starter = HandlerStarter::Get();
     *database_path = starter->Initialize(dump_at_crash);
-#if BUILDFLAG(HAS_MEMORY_TAGGING)
+#if PA_BUILDFLAG(HAS_MEMORY_TAGGING)
     // Handler gets called in SignalHandler::HandleOrReraiseSignal() after
     // reporting the crash.
     crashpad::CrashpadClient::SetLastChanceExceptionHandler(
         partition_alloc::PermissiveMte::HandleCrash);
-#endif  // BUILDFLAG(HAS_MEMORY_TAGGING)
+#endif  // PA_BUILDFLAG(HAS_MEMORY_TAGGING)
     return true;
   }
 
@@ -723,10 +724,10 @@ bool PlatformCrashpadInitialization(
   bool result = handler->Initialize(dump_at_crash);
   DCHECK(result);
 
-#if BUILDFLAG(HAS_MEMORY_TAGGING)
+#if PA_BUILDFLAG(HAS_MEMORY_TAGGING)
   handler->SetLastChanceExceptionHandler(
       partition_alloc::PermissiveMte::HandleCrash);
-#endif  // BUILDFLAG(HAS_MEMORY_TAGGING)
+#endif  // PA_BUILDFLAG(HAS_MEMORY_TAGGING)
 
   *database_path = base::FilePath();
   return true;

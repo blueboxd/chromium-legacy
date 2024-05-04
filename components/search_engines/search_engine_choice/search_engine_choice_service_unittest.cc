@@ -5,6 +5,7 @@
 #include "components/search_engines/search_engine_choice/search_engine_choice_service.h"
 
 #include <memory>
+#include <string_view>
 #include <vector>
 
 #include "base/check_deref.h"
@@ -12,6 +13,7 @@
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/version.h"
@@ -26,6 +28,7 @@
 #include "components/prefs/testing_pref_service.h"
 #include "components/search_engines/eea_countries_ids.h"
 #include "components/search_engines/prepopulated_engines.h"
+#include "components/search_engines/search_engine_choice/search_engine_choice_utils.h"
 #include "components/search_engines/search_engine_type.h"
 #include "components/search_engines/search_engines_pref_names.h"
 #include "components/search_engines/search_engines_switches.h"
@@ -102,6 +105,17 @@ class SearchEngineChoiceServiceTest : public ::testing::Test {
 
   ~SearchEngineChoiceServiceTest() override = default;
 
+  void InitService(int variation_country_id = country_codes::kCountryIDUnknown,
+                   bool force_reset = false) {
+    if (!force_reset) {
+      // If something refers to the existing instance, expect to run into
+      // issues!
+      CHECK(!search_engine_choice_service_);
+    }
+    search_engine_choice_service_ = std::make_unique<SearchEngineChoiceService>(
+        pref_service_, variation_country_id);
+  }
+
   policy::MockPolicyService& policy_service() { return policy_service_; }
   policy::PolicyMap& policy_map() { return policy_map_; }
   sync_preferences::TestingPrefServiceSyncable* pref_service() {
@@ -118,8 +132,7 @@ class SearchEngineChoiceServiceTest : public ::testing::Test {
   }
   search_engines::SearchEngineChoiceService& search_engine_choice_service() {
     if (!search_engine_choice_service_) {
-      search_engine_choice_service_ =
-          std::make_unique<SearchEngineChoiceService>(pref_service_);
+      InitService();
     }
 
     return CHECK_DEREF(search_engine_choice_service_.get());
@@ -1025,6 +1038,334 @@ TEST_F(SearchEngineChoiceServiceTest, RecordChoiceMade_RemovedPrepopulated) {
             version_info::GetVersionNumber());
 }
 
+TemplateURL::OwnedTemplateURLVector
+OwnedTemplateURLVectorFromPrepopulatedEngines(
+    const std::vector<const TemplateURLPrepopulateData::PrepopulatedEngine*>&
+        engines) {
+  TemplateURL::OwnedTemplateURLVector result;
+  for (const TemplateURLPrepopulateData::PrepopulatedEngine* engine : engines) {
+    result.push_back(std::make_unique<TemplateURL>(
+        *TemplateURLDataFromPrepopulatedEngine(*engine)));
+  }
+  return result;
+}
+
+TEST_F(SearchEngineChoiceServiceTest, MaybeRecordChoiceScreenDisplayState) {
+  InitService(kBelgiumCountryId, true);
+  ChoiceScreenData choice_screen_data(
+      OwnedTemplateURLVectorFromPrepopulatedEngines(
+          {&TemplateURLPrepopulateData::google,
+           &TemplateURLPrepopulateData::bing,
+           &TemplateURLPrepopulateData::yahoo}),
+      kBelgiumCountryId,
+      /*list_is_modified_by_current_default=*/false, SearchTermsData());
+  ChoiceScreenDisplayState display_state = choice_screen_data.display_state();
+  display_state.selected_engine_index = 2;
+
+  base::HistogramTester histogram_tester;
+  search_engine_choice_service().MaybeRecordChoiceScreenDisplayState(
+      display_state);
+
+  histogram_tester.ExpectUniqueSample(
+      kSearchEngineChoiceScreenSelectedEngineIndexHistogram, 2, 1);
+  histogram_tester.ExpectBucketCount(
+      kSearchEngineChoiceScreenShowedEngineAtCountryMismatchHistogram, false,
+      1);
+  histogram_tester.ExpectUniqueSample(
+      base::StringPrintf(
+          kSearchEngineChoiceScreenShowedEngineAtHistogramPattern, 0),
+      SEARCH_ENGINE_GOOGLE, 1);
+  histogram_tester.ExpectUniqueSample(
+      base::StringPrintf(
+          kSearchEngineChoiceScreenShowedEngineAtHistogramPattern, 1),
+      SEARCH_ENGINE_BING, 1);
+  histogram_tester.ExpectUniqueSample(
+      base::StringPrintf(
+          kSearchEngineChoiceScreenShowedEngineAtHistogramPattern, 2),
+      SEARCH_ENGINE_YAHOO, 1);
+
+  // There is no search engine shown at index 3, since we have only 3 options.
+  histogram_tester.ExpectTotalCount(
+      base::StringPrintf(
+          kSearchEngineChoiceScreenShowedEngineAtHistogramPattern, 3),
+      0);
+
+  // We logged the display state, so we don't need to cache it.
+  EXPECT_FALSE(pref_service()->HasPrefPath(
+      prefs::kDefaultSearchProviderPendingChoiceScreenDisplayState));
+}
+
+TEST_F(SearchEngineChoiceServiceTest,
+       MaybeRecordChoiceScreenDisplayState_NoopWithCurrentDefault) {
+  ChoiceScreenData choice_screen_data(
+      OwnedTemplateURLVectorFromPrepopulatedEngines(
+          {&TemplateURLPrepopulateData::google,
+           &TemplateURLPrepopulateData::bing,
+           &TemplateURLPrepopulateData::yahoo}),
+      kBelgiumCountryId,
+      /*list_is_modified_by_current_default=*/true, SearchTermsData());
+  ChoiceScreenDisplayState display_state = choice_screen_data.display_state();
+  display_state.selected_engine_index = 0;
+
+  base::HistogramTester histogram_tester;
+  search_engine_choice_service().MaybeRecordChoiceScreenDisplayState(
+      display_state);
+
+  histogram_tester.ExpectTotalCount(
+      base::StringPrintf(
+          kSearchEngineChoiceScreenShowedEngineAtHistogramPattern, 0),
+      0);
+  histogram_tester.ExpectTotalCount(
+      base::StringPrintf(
+          kSearchEngineChoiceScreenShowedEngineAtHistogramPattern, 1),
+      0);
+  histogram_tester.ExpectTotalCount(
+      base::StringPrintf(
+          kSearchEngineChoiceScreenShowedEngineAtHistogramPattern, 2),
+      0);
+  histogram_tester.ExpectTotalCount(
+      base::StringPrintf(
+          kSearchEngineChoiceScreenShowedEngineAtHistogramPattern, 3),
+      0);
+  histogram_tester.ExpectTotalCount(
+      kSearchEngineChoiceScreenSelectedEngineIndexHistogram, 0);
+  histogram_tester.ExpectTotalCount(
+      kSearchEngineChoiceScreenShowedEngineAtCountryMismatchHistogram, 0);
+
+  // Adding the current default messes up the metrics, so no need to cache it
+  // since we'll never log it.
+  EXPECT_FALSE(pref_service()->HasPrefPath(
+      prefs::kDefaultSearchProviderPendingChoiceScreenDisplayState));
+}
+
+TEST_F(SearchEngineChoiceServiceTest,
+       MaybeRecordChoiceScreenDisplayState_NoopUnsupportedCountry) {
+  auto engines = {&TemplateURLPrepopulateData::google,
+                  &TemplateURLPrepopulateData::bing,
+                  &TemplateURLPrepopulateData::yahoo};
+  base::HistogramTester histogram_tester;
+
+  {
+    // Unknown country.
+    InitService(country_codes::kCountryIDUnknown, /*force_reset=*/true);
+    ChoiceScreenData choice_screen_data(
+        OwnedTemplateURLVectorFromPrepopulatedEngines(engines),
+        country_codes::kCountryIDUnknown,
+        /*list_is_modified_by_current_default=*/false, SearchTermsData());
+    ChoiceScreenDisplayState display_state = choice_screen_data.display_state();
+    display_state.selected_engine_index = 0;
+
+    search_engine_choice_service().MaybeRecordChoiceScreenDisplayState(
+        display_state);
+  }
+
+  histogram_tester.ExpectTotalCount(
+      kSearchEngineChoiceScreenSelectedEngineIndexHistogram, 0);
+  histogram_tester.ExpectTotalCount(
+      kSearchEngineChoiceScreenShowedEngineAtCountryMismatchHistogram, 0);
+
+  // The choice is coming from a non-eea country and won't be logged, don't
+  // cache it.
+  EXPECT_FALSE(pref_service()->HasPrefPath(
+      prefs::kDefaultSearchProviderPendingChoiceScreenDisplayState));
+
+  {
+    // Non-EEA country.
+    const int kUsaCountryId = country_codes::CountryStringToCountryID("US");
+    InitService(kUsaCountryId, /*force_reset=*/true);
+    ChoiceScreenData choice_screen_data(
+        OwnedTemplateURLVectorFromPrepopulatedEngines(engines), kUsaCountryId,
+        /*list_is_modified_by_current_default=*/false, SearchTermsData());
+    ChoiceScreenDisplayState display_state = choice_screen_data.display_state();
+    display_state.selected_engine_index = 0;
+    search_engine_choice_service().MaybeRecordChoiceScreenDisplayState(
+        display_state);
+  }
+
+  histogram_tester.ExpectTotalCount(
+      kSearchEngineChoiceScreenSelectedEngineIndexHistogram, 0);
+  histogram_tester.ExpectTotalCount(
+      kSearchEngineChoiceScreenShowedEngineAtCountryMismatchHistogram, 0);
+
+  // The choice is coming from a non-eea country and won't be logged, don't
+  // cache it.
+  EXPECT_FALSE(pref_service()->HasPrefPath(
+      prefs::kDefaultSearchProviderPendingChoiceScreenDisplayState));
+}
+
+TEST_F(SearchEngineChoiceServiceTest,
+       MaybeRecordChoiceScreenDisplayState_MismatchingCountry) {
+  auto engines = {&TemplateURLPrepopulateData::google,
+                  &TemplateURLPrepopulateData::bing,
+                  &TemplateURLPrepopulateData::yahoo};
+  base::HistogramTester histogram_tester;
+
+  // Mismatch between the variations and choice screen data country.
+  InitService(country_codes::CountryStringToCountryID("DE"),
+              /*force_reset=*/true);
+  ChoiceScreenData choice_screen_data(
+      OwnedTemplateURLVectorFromPrepopulatedEngines(engines), kBelgiumCountryId,
+      /*list_is_modified_by_current_default=*/false, SearchTermsData());
+  ChoiceScreenDisplayState display_state = choice_screen_data.display_state();
+  display_state.selected_engine_index = 0;
+  search_engine_choice_service().MaybeRecordChoiceScreenDisplayState(
+      display_state);
+
+  histogram_tester.ExpectBucketCount(
+      kSearchEngineChoiceScreenSelectedEngineIndexHistogram, 0, 1);
+  histogram_tester.ExpectBucketCount(
+      kSearchEngineChoiceScreenShowedEngineAtCountryMismatchHistogram, true, 1);
+
+  // None of the above should have logged the full list of indices.
+  histogram_tester.ExpectTotalCount(
+      base::StringPrintf(
+          kSearchEngineChoiceScreenShowedEngineAtHistogramPattern, 0),
+      0);
+  histogram_tester.ExpectTotalCount(
+      base::StringPrintf(
+          kSearchEngineChoiceScreenShowedEngineAtHistogramPattern, 1),
+      0);
+  histogram_tester.ExpectTotalCount(
+      base::StringPrintf(
+          kSearchEngineChoiceScreenShowedEngineAtHistogramPattern, 2),
+      0);
+  histogram_tester.ExpectTotalCount(
+      base::StringPrintf(
+          kSearchEngineChoiceScreenShowedEngineAtHistogramPattern, 3),
+      0);
+
+  // The choice screen state should be cached for a next chance later.
+  EXPECT_TRUE(pref_service()->HasPrefPath(
+      prefs::kDefaultSearchProviderPendingChoiceScreenDisplayState));
+
+  auto stored_display_state =
+      ChoiceScreenDisplayState::FromDict(pref_service()->GetDict(
+          prefs::kDefaultSearchProviderPendingChoiceScreenDisplayState));
+  EXPECT_EQ(stored_display_state->search_engines, display_state.search_engines);
+  EXPECT_EQ(stored_display_state->country_id, display_state.country_id);
+  EXPECT_EQ(stored_display_state->list_is_modified_by_current_default,
+            display_state.list_is_modified_by_current_default);
+  EXPECT_EQ(stored_display_state->selected_engine_index,
+            display_state.selected_engine_index);
+}
+
+TEST_F(SearchEngineChoiceServiceTest,
+       MaybeRecordChoiceScreenDisplayState_OnServiceStartup) {
+  ChoiceScreenDisplayState display_state(
+      /*search_engines=*/{SEARCH_ENGINE_GOOGLE, SEARCH_ENGINE_BING,
+                          SEARCH_ENGINE_YAHOO},
+      /*country_id=*/kBelgiumCountryId,
+      /*list_is_modified_by_current_default=*/false,
+      /*selected_engine_index=*/0);
+  pref_service()->SetDict(
+      prefs::kDefaultSearchProviderPendingChoiceScreenDisplayState,
+      display_state.ToDict());
+  search_engines::MarkSearchEngineChoiceCompletedForTesting(*pref_service());
+
+  base::HistogramTester histogram_tester;
+  InitService(kBelgiumCountryId, /*force_reset=*/true);
+
+  histogram_tester.ExpectUniqueSample(
+      base::StringPrintf(
+          kSearchEngineChoiceScreenShowedEngineAtHistogramPattern, 0),
+      SEARCH_ENGINE_GOOGLE, 1);
+  histogram_tester.ExpectUniqueSample(
+      base::StringPrintf(
+          kSearchEngineChoiceScreenShowedEngineAtHistogramPattern, 1),
+      SEARCH_ENGINE_BING, 1);
+  histogram_tester.ExpectUniqueSample(
+      base::StringPrintf(
+          kSearchEngineChoiceScreenShowedEngineAtHistogramPattern, 2),
+      SEARCH_ENGINE_YAHOO, 1);
+
+  // These metrics are expected to have been already logged at the time we
+  // cached the screen state.
+  histogram_tester.ExpectTotalCount(
+      kSearchEngineChoiceScreenSelectedEngineIndexHistogram, 0);
+  histogram_tester.ExpectTotalCount(
+      kSearchEngineChoiceScreenShowedEngineAtCountryMismatchHistogram, 0);
+
+  // The choice screen state should now be cleared.
+  EXPECT_FALSE(pref_service()->HasPrefPath(
+      prefs::kDefaultSearchProviderPendingChoiceScreenDisplayState));
+}
+
+TEST_F(SearchEngineChoiceServiceTest,
+       MaybeRecordChoiceScreenDisplayState_OnServiceStartup_CountryMismatch) {
+  ChoiceScreenDisplayState display_state(
+      /*search_engines=*/{SEARCH_ENGINE_GOOGLE, SEARCH_ENGINE_BING,
+                          SEARCH_ENGINE_YAHOO},
+      /*country_id=*/kBelgiumCountryId,
+      /*list_is_modified_by_current_default=*/false,
+      /*selected_engine_index=*/0);
+  pref_service()->SetDict(
+      prefs::kDefaultSearchProviderPendingChoiceScreenDisplayState,
+      display_state.ToDict());
+  search_engines::MarkSearchEngineChoiceCompletedForTesting(*pref_service());
+
+  base::HistogramTester histogram_tester;
+  InitService(country_codes::kCountryIDUnknown, /*force_reset=*/true);
+
+  histogram_tester.ExpectTotalCount(
+      base::StringPrintf(
+          kSearchEngineChoiceScreenShowedEngineAtHistogramPattern, 0),
+      0);
+  histogram_tester.ExpectTotalCount(
+      base::StringPrintf(
+          kSearchEngineChoiceScreenShowedEngineAtHistogramPattern, 1),
+      0);
+  histogram_tester.ExpectTotalCount(
+      base::StringPrintf(
+          kSearchEngineChoiceScreenShowedEngineAtHistogramPattern, 2),
+      0);
+
+  // These metrics are expected to have been already logged at the time we
+  // cached the screen state.
+  histogram_tester.ExpectTotalCount(
+      kSearchEngineChoiceScreenSelectedEngineIndexHistogram, 0);
+  histogram_tester.ExpectTotalCount(
+      kSearchEngineChoiceScreenShowedEngineAtCountryMismatchHistogram, 0);
+
+  // The choice screen state should stay around.
+  EXPECT_TRUE(pref_service()->HasPrefPath(
+      prefs::kDefaultSearchProviderPendingChoiceScreenDisplayState));
+}
+
+TEST_F(SearchEngineChoiceServiceTest,
+       MaybeRecordChoiceScreenDisplayState_OnServiceStartup_ChoicePrefCleared) {
+  ChoiceScreenDisplayState display_state(
+      /*search_engines=*/{SEARCH_ENGINE_GOOGLE, SEARCH_ENGINE_BING,
+                          SEARCH_ENGINE_YAHOO},
+      /*country_id=*/kBelgiumCountryId,
+      /*list_is_modified_by_current_default=*/false,
+      /*selected_engine_index=*/0);
+  pref_service()->SetDict(
+      prefs::kDefaultSearchProviderPendingChoiceScreenDisplayState,
+      display_state.ToDict());
+
+  base::HistogramTester histogram_tester;
+  InitService(country_codes::kCountryIDUnknown, /*force_reset=*/true);
+
+  histogram_tester.ExpectTotalCount(
+      kSearchEngineChoiceScreenShowedEngineAtCountryMismatchHistogram, 0);
+  histogram_tester.ExpectTotalCount(
+      base::StringPrintf(
+          kSearchEngineChoiceScreenShowedEngineAtHistogramPattern, 0),
+      0);
+  histogram_tester.ExpectTotalCount(
+      base::StringPrintf(
+          kSearchEngineChoiceScreenShowedEngineAtHistogramPattern, 1),
+      0);
+  histogram_tester.ExpectTotalCount(
+      base::StringPrintf(
+          kSearchEngineChoiceScreenShowedEngineAtHistogramPattern, 2),
+      0);
+
+  // Choice not marked done, so the service also clear the pending state.
+  EXPECT_FALSE(pref_service()->HasPrefPath(
+      prefs::kDefaultSearchProviderPendingChoiceScreenDisplayState));
+}
+
 // Test that the user is not reprompted is the reprompt parameter is not a valid
 // JSON string.
 TEST_F(SearchEngineChoiceServiceTest, NoRepromptForSyntaxError) {
@@ -1040,10 +1381,6 @@ TEST_F(SearchEngineChoiceServiceTest, NoRepromptForSyntaxError) {
   pref_service()->SetInt64(
       prefs::kDefaultSearchProviderChoiceScreenCompletionTimestamp,
       kPreviousTimestamp);
-  base::Version choice_version({1, 2, 3, 4});
-  pref_service()->SetString(
-      prefs::kDefaultSearchProviderChoiceScreenCompletionVersion,
-      choice_version.GetString());
 
   // Trigger the creation of the service, which should check for the reprompt.
   search_engine_choice_service();
@@ -1052,9 +1389,6 @@ TEST_F(SearchEngineChoiceServiceTest, NoRepromptForSyntaxError) {
   EXPECT_EQ(kPreviousTimestamp,
             pref_service()->GetInt64(
                 prefs::kDefaultSearchProviderChoiceScreenCompletionTimestamp));
-  EXPECT_EQ(choice_version.GetString(),
-            pref_service()->GetString(
-                prefs::kDefaultSearchProviderChoiceScreenCompletionVersion));
   histogram_tester_.ExpectTotalCount(
       search_engines::kSearchEngineChoiceWipeReasonHistogram, 0);
   histogram_tester_.ExpectTotalCount(
@@ -1103,7 +1437,7 @@ struct RepromptTestParam {
   std::optional<RepromptResult> wildcard_result;
   std::optional<RepromptResult> country_result;
   // Version of the choice.
-  const base::StringPiece choice_version;
+  const std::string_view choice_version;
   // The reprompt params, as sent by the server.  Use `CURRENT_VERSION` for the
   // current Chrome version, and `FUTURE_VERSION` for a future version.
   const char* param_dict;

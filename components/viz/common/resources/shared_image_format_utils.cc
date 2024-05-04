@@ -19,7 +19,7 @@ SkColorType ToClosestSkColorType(bool gpu_compositing,
   CHECK(format.is_single_plane());
 
   if (!gpu_compositing) {
-    // TODO(crbug.com/986405): Remove this assumption and have clients tag
+    // TODO(crbug.com/41472025): Remove this assumption and have clients tag
     // resources with the correct format.
     // In software compositing we lazily use RGBA_8888 throughout the system,
     // but actual pixel encodings are the native skia bit ordering, which can be
@@ -90,7 +90,7 @@ SkColorType ToClosestSkColorType(bool gpu_compositing,
                                  int plane_index) {
   CHECK(format.IsValidPlaneIndex(plane_index));
   if (!gpu_compositing) {
-    // TODO(crbug.com/986405): Remove this assumption and have clients tag
+    // TODO(crbug.com/41472025): Remove this assumption and have clients tag
     // resources with the correct format.
     // In software compositing we lazily use RGBA_8888 throughout the system,
     // but actual pixel encodings are the native skia bit ordering, which can be
@@ -133,7 +133,7 @@ SharedImageFormat SkColorTypeToSinglePlaneSharedImageFormat(
     case kAlpha_8_SkColorType:
       return SinglePlaneFormat::kALPHA_8;
     case kRGB_565_SkColorType:
-      return SinglePlaneFormat::kRGB_565;
+      return SinglePlaneFormat::kBGR_565;
     case kGray_8_SkColorType:
       return SinglePlaneFormat::kLUMINANCE_8;
     case kRGB_888x_SkColorType:
@@ -168,7 +168,7 @@ bool CanCreateGpuMemoryBufferForSinglePlaneSharedImageFormat(
   CHECK(format.is_single_plane());
   return (format == SinglePlaneFormat::kBGRA_8888 ||
 #if !BUILDFLAG(IS_CHROMEOS_LACROS)
-          // TODO(crbug.com/1307837): On ARM devices LaCrOS can't create RED_8
+          // TODO(crbug.com/40828687): On ARM devices LaCrOS can't create RED_8
           // GpuMemoryBuffer Objects with GBM device. This capability should be
           // plumbed and known by clients requesting shared images as overlay
           // candidate.
@@ -347,7 +347,7 @@ unsigned int SharedImageFormatRestrictedSinglePlaneUtils::ToGLDataType(
     return GL_UNSIGNED_BYTE;
   } else if (format == SinglePlaneFormat::kRGBA_4444) {
     return GL_UNSIGNED_SHORT_4_4_4_4;
-  } else if (format == SinglePlaneFormat::kRGB_565 ||
+  } else if (format == SinglePlaneFormat::kBGR_565 ||
              format == SinglePlaneFormat::kRGB_565) {
     return GL_UNSIGNED_SHORT_5_6_5;
   } else if (format == SinglePlaneFormat::kLUMINANCE_F16 ||
@@ -425,6 +425,27 @@ SharedImageFormatRestrictedSinglePlaneUtils::ToGLTextureStorageFormat(
   }
   NOTREACHED();
   return GL_RGBA8_OES;
+}
+
+// static
+gfx::BufferFormat
+SharedImageFormatToBufferFormatRestrictedUtils::ToBufferFormat(
+    SharedImageFormat format) {
+  if (format.is_single_plane()) {
+    return SinglePlaneSharedImageFormatToBufferFormat(format);
+  }
+
+  if (format == MultiPlaneFormat::kYV12) {
+    return gfx::BufferFormat::YVU_420;
+  } else if (format == MultiPlaneFormat::kNV12) {
+    return gfx::BufferFormat::YUV_420_BIPLANAR;
+  } else if (format == MultiPlaneFormat::kNV12A) {
+    return gfx::BufferFormat::YUVA_420_TRIPLANAR;
+  } else if (format == MultiPlaneFormat::kP010) {
+    return gfx::BufferFormat::P010;
+  }
+  NOTREACHED() << "format=" << format.ToString();
+  return gfx::BufferFormat::RGBA_8888;
 }
 
 }  // namespace viz

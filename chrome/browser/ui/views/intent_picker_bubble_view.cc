@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/intent_picker_bubble_view.h"
 
+#include <string_view>
 #include <utility>
 
 #include "base/auto_reset.h"
@@ -13,7 +14,6 @@
 #include "base/functional/bind.h"
 #include "base/i18n/rtl.h"
 #include "base/ranges/algorithm.h"
-#include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -339,7 +339,7 @@ class IntentPickerLabelButton : public views::LabelButton {
                           const ui::ImageModel& icon_model,
                           const std::string& display_name)
       : LabelButton(std::move(callback),
-                    base::UTF8ToUTF16(base::StringPiece(display_name))) {
+                    base::UTF8ToUTF16(std::string_view(display_name))) {
     SetHorizontalAlignment(gfx::ALIGN_LEFT);
     if (!icon_model.IsEmpty())
       SetImageModel(views::ImageButton::STATE_NORMAL, icon_model);
@@ -610,7 +610,7 @@ std::u16string IntentPickerBubbleView::GetWindowTitle() const {
   }
 
   return l10n_util::GetStringUTF16(
-      use_grid_view_ ? IDS_INTENT_CHIP_OPEN_IN_APP
+      use_grid_view_ ? IDS_INTENT_PICKER_BUBBLE_VIEW_OPEN_IN_APP
                      : IDS_INTENT_PICKER_BUBBLE_VIEW_OPEN_WITH);
 }
 
@@ -710,24 +710,6 @@ void IntentPickerBubbleView::Initialize() {
 
   const int kMaxDialogWidth =
       provider->GetDistanceMetric(views::DISTANCE_BUBBLE_PREFERRED_WIDTH);
-
-  if (use_grid_view_) {
-#if BUILDFLAG(IS_CHROMEOS)
-    auto subtitle_string = ui::SubstituteChromeOSDeviceType(
-        IDS_INTENT_PICKER_SELECT_AN_APP_SUBTITLE);
-#else
-    auto subtitle_string = l10n_util::GetStringUTF16(
-        IDS_INTENT_PICKER_SELECT_AN_APP_GENERIC_SUBTITLE);
-#endif
-    auto* subtitle = AddChildView(std::make_unique<views::Label>(
-        subtitle_string, views::style::TextContext::CONTEXT_DIALOG_BODY_TEXT,
-        views::style::STYLE_PRIMARY));
-    subtitle->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    subtitle->SetAllowCharacterBreak(true);
-    subtitle->SetMultiLine(true);
-    subtitle->SetProperty(views::kMarginsKey, insets);
-    subtitle->SetMaximumWidth(kMaxDialogWidth - insets.width());
-  }
 
   // Create a container for all of the individual app views.
   if (use_grid_view_) {

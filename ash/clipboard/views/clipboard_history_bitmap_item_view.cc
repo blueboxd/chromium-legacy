@@ -13,7 +13,6 @@
 #include "base/time/time.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "third_party/skia/include/core/SkPath.h"
-#include "third_party/skia/include/core/SkPathBuilder.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/models/image_model.h"
@@ -167,11 +166,8 @@ class ClipboardHistoryBitmapItemView::BitmapContentsView
       : container_(container) {
     views::Builder<views::View>(this)
         .SetLayoutManager(std::make_unique<views::FillLayout>())
-        .AddChild(
-            views::Builder<views::ImageView>(BuildImageView())
-                .CopyAddressTo(&image_view_)
-                .SetPreferredSize(gfx::Size(
-                    INT_MAX, ClipboardHistoryViews::kImageViewPreferredHeight)))
+        .AddChild(views::Builder<views::ImageView>(BuildImageView())
+                      .CopyAddressTo(&image_view_))
         .BuildChildren();
 
     if (chromeos::features::IsClipboardHistoryRefreshEnabled()) {
@@ -223,7 +219,7 @@ class ClipboardHistoryBitmapItemView::BitmapContentsView
     const auto horizontal_offset = SkPoint::Make(radius, 0.f);
     const auto vertical_offset = SkPoint::Make(0.f, radius);
 
-    return SkPathBuilder()
+    return SkPath()
         // Start just before the curve of the top-left corner.
         .moveTo(radius, 0.f)
         // Draw the top-left rounded corner.
@@ -244,8 +240,11 @@ class ClipboardHistoryBitmapItemView::BitmapContentsView
         .rCubicTo(0.f, -3.3f, -2.f, -10.f, -10.f, -10.f)
         // Draw a horizontal line back to the starting point.
         .lineTo(radius, 0.f)
-        .close()
-        .detach();
+        .close();
+  }
+
+  int GetHeightForWidth(int width) const override {
+    return ClipboardHistoryViews::kImageViewPreferredHeight;
   }
 
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override {
@@ -327,6 +326,7 @@ ClipboardHistoryBitmapItemView::ClipboardHistoryBitmapItemView(
     views::MenuItemView* container)
     : ClipboardHistoryItemView(item_id, clipboard_history, container),
       data_format_(GetClipboardHistoryItem()->main_format()) {
+  SetID(clipboard_history_util::kBitmapItemView);
   switch (data_format_) {
     case ui::ClipboardInternalFormat::kHtml:
       SetAccessibleName(

@@ -44,6 +44,7 @@ class FrameScheduler : public FrameOrWorkerScheduler {
     virtual void OnTaskCompleted(base::TimeTicks start_time,
                                  base::TimeTicks end_time) = 0;
     virtual void MainFrameInteractive() {}
+    virtual void MainFrameFirstMeaningfulPaint() {}
   };
 
   ~FrameScheduler() override = default;
@@ -192,6 +193,10 @@ class FrameScheduler : public FrameOrWorkerScheduler {
   // Notifies the delegate the list of active features for this frame if they
   // have changed since the last notification.
   virtual void ReportActiveSchedulerTrackedFeatures() = 0;
+
+  // Returns the cumulative wall time spent in tasks for this frame not yet
+  // reported to the browser process via `Delegate::UpdateTaskTime()`.
+  virtual base::TimeDelta UnreportedTaskTime() const = 0;
 };
 
 }  // namespace blink

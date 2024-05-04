@@ -626,8 +626,9 @@ class ScrollViewWithMaxHeight : public views::ScrollView {
   ~ScrollViewWithMaxHeight() override = default;
 
   // views::View:
-  gfx::Size CalculatePreferredSize() const override {
-    gfx::Size size = views::ScrollView::CalculatePreferredSize();
+  gfx::Size CalculatePreferredSize(
+      const views::SizeBounds& available_size) const override {
+    gfx::Size size = views::ScrollView::CalculatePreferredSize(available_size);
     const int tile_height =
         folder_view_->items_grid_view()->GetTotalTileSize(/*page=*/0).height();
     // Show a maximum of 4 full rows, plus a little bit of the next row to make
@@ -702,7 +703,9 @@ AppListFolderView::AppListFolderView(AppListFolderController* folder_controller,
 
   // Create a shadow under `background_view_`.
   shadow_ = SystemShadow::CreateShadowOnNinePatchLayer(
-      SystemShadow::Type::kElevation12);
+      SystemShadow::Type::kElevation12,
+      base::BindRepeating(&AppListFolderView::OnShadowLayerRecreated,
+                          base::Unretained(this)));
   background_view_->AddLayerToRegion(shadow_->GetLayer(),
                                      views::LayerRegion::kBelow);
 
@@ -1041,6 +1044,12 @@ void AppListFolderView::UpdatePreferredBounds() {
 
 void AppListFolderView::UpdateShadowBounds() {
   shadow_->SetContentBounds(background_view_->layer()->bounds());
+}
+
+void AppListFolderView::OnShadowLayerRecreated(ui::Layer* old_layer,
+                                               ui::Layer* new_layer) {
+  background_view_->RemoveLayerFromRegions(old_layer);
+  background_view_->AddLayerToRegion(new_layer, views::LayerRegion::kBelow);
 }
 
 int AppListFolderView::GetYOffsetForFolder() {

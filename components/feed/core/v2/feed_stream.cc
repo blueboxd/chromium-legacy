@@ -108,11 +108,6 @@ ContentOrder GetValidWebFeedContentOrder(const PrefService& pref_service) {
   ContentOrder pref_order = prefs::GetWebFeedContentOrder(pref_service);
   if (pref_order != ContentOrder::kUnspecified)
     return pref_order;
-  // Fallback to Finch determined order.
-  std::string finch_order = base::GetFieldTrialParamValueByFeature(
-      kWebFeed, "following_feed_content_order");
-  if (finch_order == "reverse_chron")
-    return ContentOrder::kReverseChron;
   // Defaults to grouped, encompassing finch_order == "grouped".
   return ContentOrder::kGrouped;
 }
@@ -390,8 +385,7 @@ void FeedStream::StreamLoadComplete(LoadStreamTask::Result result) {
 
   // When done loading the for-you feed, try to refresh the web-feed if there's
   // no unread content.
-  if (base::FeatureList::IsEnabled(kWebFeed) &&
-      result.load_type != LoadType::kManualRefresh &&
+  if (IsWebFeedEnabled() && result.load_type != LoadType::kManualRefresh &&
       result.stream_type.IsForYou() && chained_web_feed_refresh_enabled_) {
     // Checking for users without follows.
     // TODO(b/229143375) - We should rate limit fetches if the server side is
@@ -635,6 +629,11 @@ bool FeedStream::IsFeedEnabledByDse() {
   return true;
 }
 
+bool FeedStream::IsWebFeedEnabled() {
+  return feed::IsWebFeedEnabledForLocale(delegate_->GetCountry()) &&
+         !delegate_->IsSupervisedAccount();
+}
+
 void FeedStream::EnabledPreferencesChanged() {
   // Assume there might be stored data if the Feed is ever enabled.
   if (IsEnabledAndVisible())
@@ -780,7 +779,7 @@ void FeedStream::ExecuteOperations(
     DLOG(ERROR) << "Calling ExecuteOperations before the model is loaded";
     return;
   }
-  // TODO(crbug.com/1227897): Convert this to a task.
+  // TODO(crbug.com/40777338): Convert this to a task.
   return model->ExecuteOperations(std::move(operations));
 }
 
@@ -1190,7 +1189,7 @@ RequestMetadata FeedStream::GetSignedInRequestMetadata() const {
 RequestMetadata FeedStream::GetRequestMetadata(const StreamType& stream_type,
                                                bool is_for_next_page) const {
   const Stream* stream = FindStream(stream_type);
-  // TODO(crbug.com/1370127) handle null single web feed streams
+  // TODO(crbug.com/40869569) handle null single web feed streams
   DCHECK(stream);
   RequestMetadata result;
   if (is_for_next_page) {

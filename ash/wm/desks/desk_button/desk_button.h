@@ -46,7 +46,8 @@ class ASH_EXPORT DeskButton : public views::Button {
   void set_zero_state(bool zero_state) { zero_state_ = zero_state; }
 
   // views::Button:
-  gfx::Size CalculatePreferredSize() const override;
+  gfx::Size CalculatePreferredSize(
+      const views::SizeBounds& available_size) const override;
   void Layout(PassKey) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   void OnMouseEvent(ui::MouseEvent* event) override;
@@ -61,8 +62,14 @@ class ASH_EXPORT DeskButton : public views::Button {
 
   std::u16string GetTitle() const;
 
+  // Returns the button insets given current button state.
+  gfx::Insets GetButtonInsets() const;
+
   // Updates UI status without re-layout.
   void UpdateUi(const Desk* active_desk);
+
+  // Returns true if it is currently showing the desk profile avatar.
+  bool IsShowingAvatar() const;
 
   void UpdateAvatar(const Desk* active_desk);
 

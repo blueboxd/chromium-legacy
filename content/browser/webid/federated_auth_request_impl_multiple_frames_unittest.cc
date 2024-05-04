@@ -76,7 +76,8 @@ static const std::vector<IdentityRequestAccount> kAccounts{{
     "Ken",                       // given_name
     GURL(),                      // picture
     std::vector<std::string>(),  // login_hints
-    std::vector<std::string>()   // domain_hints
+    std::vector<std::string>(),  // domain_hints
+    std::vector<std::string>()   // labels
 }};
 
 // IdpNetworkRequestManager which returns valid data from IdP.
@@ -104,6 +105,7 @@ class TestIdpNetworkRequestManager : public MockIdpNetworkRequestManager {
 
     IdentityProviderMetadata idp_metadata;
     idp_metadata.idp_login_url = GURL(kLoginUrl);
+    idp_metadata.config_url = provider;
 
     base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), kFetchStatusSuccess,

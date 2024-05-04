@@ -29,6 +29,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
+#include "ui/base/accelerators/ash/right_alt_event_property.h"
 #include "ui/events/ash/mojom/modifier_key.mojom-shared.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event.h"
@@ -56,6 +57,7 @@ namespace {
 constexpr int kMouseDeviceId = 1;
 constexpr int kGraphicsTabletDeviceId = 2;
 constexpr int kRandomKeyboardDeviceId = 3;
+constexpr int kComboDeviceId = 4;
 
 class TestEventSink : public ui::EventSink {
  public:
@@ -267,6 +269,9 @@ using KeyBrowserBack = TestKey<ui::DomCode::BROWSER_BACK,
 using KeyBrowserForward = TestKey<ui::DomCode::BROWSER_FORWARD,
                                   ui::DomKey::BROWSER_FORWARD,
                                   ui::VKEY_BROWSER_FORWARD>;
+using KeyRightAlt = TestKey<ui::DomCode::LAUNCH_ASSISTANT,
+                            ui::DomKey::LAUNCH_ASSISTANT,
+                            ui::VKEY_RIGHT_ALT>;
 
 // Modifier keys.
 using KeyLShift = TestKey<ui::DomCode::SHIFT_LEFT,
@@ -540,9 +545,13 @@ class PeripheralCustomizationEventRewriterTest : public AshTestBase {
         .WillByDefault(testing::Return(keyboard_->settings.get()));
     ON_CALL(*controller_, GetKeyboard(kRandomKeyboardDeviceId))
         .WillByDefault(testing::Return(keyboard_.get()));
+    ON_CALL(*controller_, GetKeyboard(kComboDeviceId))
+        .WillByDefault(testing::Return(keyboard_.get()));
     ON_CALL(*controller_, GetGraphicsTablet(kGraphicsTabletDeviceId))
         .WillByDefault(testing::Return(graphics_tablet_.get()));
     ON_CALL(*controller_, GetMouse(kMouseDeviceId))
+        .WillByDefault(testing::Return(mouse_.get()));
+    ON_CALL(*controller_, GetMouse(kComboDeviceId))
         .WillByDefault(testing::Return(mouse_.get()));
     rewriter_ = std::make_unique<PeripheralCustomizationEventRewriter>(
         controller_.get());
@@ -699,10 +708,14 @@ class PeripheralCustomizationEventRewriterTest : public AshTestBase {
     for (const auto& rewritten_event : rewritten_events) {
       if (rewritten_event->IsKeyEvent()) {
         auto* rewritten_key_event = rewritten_event->AsKeyEvent();
-        result.push_back(TestKeyEvent{
-            rewritten_key_event->type(), rewritten_key_event->code(),
-            rewritten_key_event->GetDomKey(), rewritten_key_event->key_code(),
-            rewritten_key_event->flags()});
+        ui::KeyboardCode key_code =
+            ui::HasRightAltProperty(*rewritten_key_event)
+                ? ui::VKEY_RIGHT_ALT
+                : rewritten_key_event->key_code();
+        result.push_back(TestKeyEvent{rewritten_key_event->type(),
+                                      rewritten_key_event->code(),
+                                      rewritten_key_event->GetDomKey(),
+                                      key_code, rewritten_key_event->flags()});
 
         // MouseWheelEvent must be checked before MouseEvent as its a subset of
         // mouse events.
@@ -911,6 +924,10 @@ TEST_F(PeripheralCustomizationEventRewriterTest,
 
 TEST_F(PeripheralCustomizationEventRewriterTest,
        RemappedModifierReleasedDuringSequence) {
+  // This test is only relevant when the keyboard rewriter fix is disabled.
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(features::kEnableKeyboardRewriterFix);
+
   keyboard_->settings->modifier_remappings[ui::mojom::ModifierKey::kAlt] =
       ui::mojom::ModifierKey::kControl;
 
@@ -954,20 +971,20 @@ TEST_F(PeripheralCustomizationEventRewriterTest,
   ui::KeyboardLayoutEngineManager::SetKeyboardLayoutEngine(layout_engine.get());
 
   const std::vector<ui::StubKeyboardLayoutEngine::CustomLookupEntry> us_table =
-      {{ui::DomCode::MINUS, /*character=*/u'-', /*character_shifted=*/u'_',
-        ui::KeyboardCode::VKEY_OEM_MINUS},
-       {ui::DomCode::BRACKET_LEFT, /*character=*/u'[',
-        /*character_shifted=*/u'{', ui::KeyboardCode::VKEY_OEM_4}};
+      {{ui::DomCode::MINUS, ui::DomKey::FromCharacter(u'-'),
+        ui::DomKey::FromCharacter(u'_'), ui::KeyboardCode::VKEY_OEM_MINUS},
+       {ui::DomCode::BRACKET_LEFT, ui::DomKey::FromCharacter(u'['),
+        ui::DomKey::FromCharacter(u'{'), ui::KeyboardCode::VKEY_OEM_4}};
 
   // Provide a custom layout that mimics behavior of a de-DE keyboard.
   // In the German keyboard, VKEY_OEM_4 is located at DomCode position MINUS
   // with DomKey `ß`. With positional remapping, VKEY_OEM_4 is remapped to
   // search for DomCode BRACKET_LEFT, resulting in DomKey `ü`.
   const std::vector<ui::StubKeyboardLayoutEngine::CustomLookupEntry> de_table =
-      {{ui::DomCode::MINUS, /*character=*/u'ß', /*character_shifted=*/u'?',
-        ui::KeyboardCode::VKEY_OEM_4},
-       {ui::DomCode::BRACKET_LEFT, /*character=*/u'ü',
-        /*character_shifted=*/u'Ü', ui::KeyboardCode::VKEY_OEM_1}};
+      {{ui::DomCode::MINUS, ui::DomKey::FromCharacter(u'ß'),
+        ui::DomKey::FromCharacter(u'?'), ui::KeyboardCode::VKEY_OEM_4},
+       {ui::DomCode::BRACKET_LEFT, ui::DomKey::FromCharacter(u'ü'),
+        ui::DomKey::FromCharacter(u'Ü'), ui::KeyboardCode::VKEY_OEM_1}};
 
   layout_engine->SetCustomLookupTableForTesting(us_table);
 
@@ -1056,6 +1073,52 @@ TEST_F(PeripheralCustomizationEventRewriterTest, InvalidRegistrationMetric) {
   EXPECT_EQ(KeyB::Typed(), RunRewriter(KeyB::Typed()));
   histogram_tester.ExpectBucketCount(
       "ChromeOS.Inputs.Mouse.InvalidRegistration", KeyB::Pressed().keycode, 1);
+}
+
+TEST_F(PeripheralCustomizationEventRewriterTest,
+       ComboMouseInvalidRegistrationMetric) {
+  base::HistogramTester histogram_tester;
+
+  rewriter_->StartObservingMouse(
+      kComboDeviceId,
+      mojom::CustomizationRestriction::kDisableKeyEventRewrites);
+
+  EXPECT_EQ(KeyA::Typed(),
+            RunRewriter(KeyA::Typed(), ui::EF_NONE, kComboDeviceId));
+  histogram_tester.ExpectBucketCount(
+      "ChromeOS.Inputs.Mouse.InvalidRegistration.Combo",
+      KeyA::Pressed().keycode, 1);
+
+  EXPECT_EQ(KeyB::Typed(),
+            RunRewriter(KeyB::Typed(), ui::EF_NONE, kComboDeviceId));
+  histogram_tester.ExpectBucketCount(
+      "ChromeOS.Inputs.Mouse.InvalidRegistration.Combo",
+      KeyB::Pressed().keycode, 1);
+
+  rewriter_->StartObservingMouse(
+      kMouseDeviceId,
+      mojom::CustomizationRestriction::kDisableKeyEventRewrites);
+
+  EXPECT_EQ(KeyA::Typed(), RunRewriter(KeyA::Typed()));
+  histogram_tester.ExpectBucketCount(
+      "ChromeOS.Inputs.Mouse.InvalidRegistration.NonCombo",
+      KeyA::Pressed().keycode, 1);
+
+  EXPECT_EQ(KeyB::Typed(), RunRewriter(KeyB::Typed()));
+  histogram_tester.ExpectBucketCount(
+      "ChromeOS.Inputs.Mouse.InvalidRegistration.NonCombo",
+      KeyB::Pressed().keycode, 1);
+}
+
+TEST_F(PeripheralCustomizationEventRewriterTest, RightAltRewrite) {
+  mouse_->settings->button_remappings.push_back(mojom::ButtonRemapping::New(
+      /*name=*/"", mojom::Button::NewVkey(ui::VKEY_0),
+      mojom::RemappingAction::NewKeyEvent(mojom::KeyEvent::New(
+          ui::VKEY_RIGHT_ALT, static_cast<int>(ui::DomCode::LAUNCH_ASSISTANT),
+          static_cast<int>(ui::DomKey::LAUNCH_ASSISTANT), ui::EF_NONE,
+          /*key_display=*/""))));
+  EXPECT_EQ(KeyRightAlt::Typed(ui::EF_IS_CUSTOMIZED_FROM_BUTTON),
+            RunRewriter(KeyDigit0::Typed()));
 }
 
 class MouseButtonObserverTest

@@ -9,13 +9,16 @@ import android.text.TextUtils;
 
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.signin.services.DisplayableProfileData;
 import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.services.ProfileDataCache;
 import org.chromium.chrome.browser.signin.services.SigninManager;
 import org.chromium.chrome.browser.sync.SyncServiceFactory;
+import org.chromium.chrome.browser.ui.signin.R;
 import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.signin.identitymanager.ConsentLevel;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
+import org.chromium.components.signin.metrics.SignoutReason;
 import org.chromium.components.sync.SyncService;
 import org.chromium.components.sync.UserSelectableType;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -26,16 +29,20 @@ class HistorySyncMediator implements ProfileDataCache.Observer, SigninManager.Si
     private final HistorySyncCoordinator.HistorySyncDelegate mDelegate;
     private final SigninManager mSigninManager;
     private final SyncService mSyncService;
-    private ProfileDataCache mProfileDataCache;
+    private final ProfileDataCache mProfileDataCache;
     private final @SigninAccessPoint int mAccessPoint;
+    private final boolean mShouldSignOutOnDecline;
 
     HistorySyncMediator(
             Context context,
             HistorySyncCoordinator.HistorySyncDelegate delegate,
             Profile profile,
-            @SigninAccessPoint int accessPoint) {
+            @SigninAccessPoint int accessPoint,
+            boolean showEmailInFooter,
+            boolean shouldSignOutOnDecline) {
         mAccessPoint = accessPoint;
         mDelegate = delegate;
+        mShouldSignOutOnDecline = shouldSignOutOnDecline;
         mProfileDataCache = ProfileDataCache.createWithDefaultImageSizeAndNoBadge(context);
         mSigninManager = IdentityServicesProvider.get().getSigninManager(profile);
         mSyncService = SyncServiceFactory.getForProfile(profile);
@@ -48,11 +55,16 @@ class HistorySyncMediator implements ProfileDataCache.Observer, SigninManager.Si
                                 .getPrimaryAccountInfo(ConsentLevel.SIGNIN));
         // The history sync screen should never be created when the user is signed out.
         assert mAccountEmail != null;
+        DisplayableProfileData profileData =
+                mProfileDataCache.getProfileDataOrDefault(mAccountEmail);
+        // When the email address is not displayable, fall back on the other string.
+        String footerString =
+                showEmailInFooter && profileData.hasDisplayableEmailAddress()
+                        ? context.getString(R.string.history_sync_signed_in_footer, mAccountEmail)
+                        : context.getString(R.string.history_sync_footer);
         mModel =
                 HistorySyncProperties.createModel(
-                        mProfileDataCache.getProfileDataOrDefault(mAccountEmail),
-                        this::onAcceptClicked,
-                        this::onDeclineClicked);
+                        profileData, this::onAcceptClicked, this::onDeclineClicked, footerString);
     }
 
     /** Implements {@link ProfileDataCache.Observer}. */
@@ -94,6 +106,10 @@ class HistorySyncMediator implements ProfileDataCache.Observer, SigninManager.Si
     private void onDeclineClicked() {
         RecordHistogram.recordEnumeratedHistogram(
                 "Signin.HistorySyncOptIn.Declined", mAccessPoint, SigninAccessPoint.MAX);
+        if (mShouldSignOutOnDecline) {
+            mSigninManager.signOut(
+                    SignoutReason.USER_DECLINED_HISTORY_SYNC_AFTER_DEDICATED_SIGN_IN);
+        }
         mDelegate.dismissHistorySync();
     }
 }

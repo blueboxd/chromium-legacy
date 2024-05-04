@@ -47,6 +47,8 @@ source_set("backend") {
   ]
 
   sources = [
+    "android_backend_with_double_deletion.cc",
+    "android_backend_with_double_deletion.h",
     "built_in_backend_to_android_backend_migrator.cc",
     "built_in_backend_to_android_backend_migrator.h",
     "legacy_password_store_backend_migration_decorator.cc",
@@ -55,7 +57,6 @@ source_set("backend") {
     "password_manager_lifecycle_helper.h",
     "password_manager_lifecycle_helper_impl.cc",
     "password_manager_lifecycle_helper_impl.h",
-    "password_manager_util_bridge.cc",
     "password_settings_updater_android_bridge_helper.h",
     "password_settings_updater_android_bridge_helper_impl.cc",
     "password_settings_updater_android_bridge_helper_impl.h",
@@ -100,6 +101,7 @@ source_set("backend") {
     ":unified_password_manager_proto",
     ":utils",
     "//components/autofill/core/browser:browser",
+    "//components/browser_sync",
     "//components/browser_ui/device_lock/android:android",
     "//components/password_manager/core/browser:browser",
     "//components/password_manager/core/browser:password_form",
@@ -395,6 +397,7 @@ android_library("test_support_java") {
     "test_support/java/src/org/chromium/chrome/browser/password_manager/FakePasswordStoreAndroidBackendFactoryImpl.java",
     "test_support/java/src/org/chromium/chrome/browser/password_manager/FakePasswordSyncControllerDelegate.java",
     "test_support/java/src/org/chromium/chrome/browser/password_manager/FakePasswordSyncControllerDelegateFactoryImpl.java",
+    "test_support/java/src/org/chromium/chrome/browser/password_manager/PasswordManagerTestHelper.java",
     "test_support/java/src/org/chromium/chrome/browser/password_manager/PasswordManagerTestUtilsBridge.java",
   ]
 
@@ -406,8 +409,10 @@ android_library("test_support_java") {
     "//build/android:build_java",
     "//chrome/browser/password_manager/android:settings_interface_java",
     "//components/password_manager/core/browser:password_manager_java_enums",
+    "//components/signin/public/android:java",
     "//components/sync/protocol:protocol_java",
     "//content/public/android:content_main_dex_java",
+    "//content/public/test/android:content_java_test_support",
     "//third_party/android_deps:protobuf_lite_runtime_java",
     "//third_party/androidx:androidx_annotation_annotation_java",
     "//third_party/jni_zero:jni_zero_java",
@@ -466,14 +471,18 @@ source_set("utils") {
     "password_manager_android_util.h",
     "password_manager_eviction_util.cc",
     "password_manager_eviction_util.h",
+    "password_manager_util_bridge.cc",
+    "password_manager_util_bridge.h",
     "password_store_android_backend_api_error_codes.h",
   ]
 
   deps = [
+    ":jni_headers",
     "//chrome/common:non_code_constants",
     "//components/autofill/core/common",
     "//components/browser_sync",
     "//components/password_manager/core/browser",
+    "//components/password_manager/core/browser:password_manager_buildflags",
     "//components/password_manager/core/browser/features:password_features",
     "//components/password_manager/core/common:common",
     "//components/prefs:prefs",
@@ -487,6 +496,7 @@ source_set("unit_tests") {
     "account_chooser_dialog_android_unittest.cc",
     "all_passwords_bottom_sheet_controller_unittest.cc",
     "all_passwords_bottom_sheet_helper_unittest.cc",
+    "android_backend_with_double_deletion_unittest.cc",
     "auto_signin_first_run_dialog_android_unittest.cc",
     "built_in_backend_to_android_backend_migrator_unittest.cc",
     "cred_man_controller_unittest.cc",

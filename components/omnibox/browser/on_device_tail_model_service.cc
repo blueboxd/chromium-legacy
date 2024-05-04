@@ -7,18 +7,19 @@
 #include <optional>
 #include <utility>
 
+#include "base/command_line.h"
 #include "base/containers/flat_set.h"
 #include "base/files/file_path.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
 #include "base/logging.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/time/time.h"
 #include "components/omnibox/browser/on_device_tail_model_executor.h"
 #include "components/omnibox/common/omnibox_features.h"
-#include "components/optimization_guide/core/model_util.h"
 #include "components/optimization_guide/core/optimization_guide_model_provider.h"
 #include "components/optimization_guide/core/optimization_guide_util.h"
 #include "components/optimization_guide/proto/models.pb.h"
@@ -28,6 +29,10 @@ namespace {
 
 // The maximum idle time before the model executor is unloaded from memory.
 constexpr base::TimeDelta kMaxExecutorIdleSeconds = base::Seconds(60);
+// Constants for TFlite model validation.
+constexpr std::string kTestPrefix = "face";
+constexpr std::string_view kModelValidationSwitchName =
+    "omnibox-on-device-tail-model-validation";
 
 void InitializeTailModelExecutor(
     OnDeviceTailModelExecutor* executor,
@@ -41,25 +46,22 @@ void InitializeTailModelExecutor(
   if (model_file.empty() || additional_files.empty()) {
     return;
   }
+  bool init_success = executor->Init(model_file, additional_files, metadata);
 
-  base::FilePath vocab_filepath, badword_hash_filepath;
-  for (const base::FilePath& file_path : additional_files) {
-    if (!file_path.empty()) {
-      std::string file_path_str =
-          optimization_guide::FilePathToString(file_path);
-      if (file_path_str.find("vocab") != std::string::npos) {
-        vocab_filepath = file_path;
-      } else if (file_path_str.find("badword") != std::string::npos) {
-        badword_hash_filepath = file_path;
-      }
-    }
-  }
-
-  if (vocab_filepath.empty()) {
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          kModelValidationSwitchName)) {
     return;
   }
-
-  executor->Init(model_file, vocab_filepath, badword_hash_filepath, metadata);
+  // Histograms only for model validation.
+  LOCAL_HISTOGRAM_BOOLEAN("Omnibox.OnDeviceTailModel.InitExecutor",
+                          init_success);
+  if (init_success) {
+    OnDeviceTailModelExecutor::ModelInput input(kTestPrefix, "", 5, 20, 0.05);
+    std::vector<OnDeviceTailModelExecutor::Prediction> predictions =
+        executor->GenerateSuggestionsForPrefix(input);
+    LOCAL_HISTOGRAM_BOOLEAN("Omnibox.OnDeviceTailModel.HasResultForTestPrefix",
+                            !predictions.empty());
+  }
 }
 
 std::vector<OnDeviceTailModelExecutor::Prediction> RunTailModelExecutor(

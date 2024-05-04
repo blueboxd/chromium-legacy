@@ -42,7 +42,6 @@
 #include "components/prefs/testing_pref_service.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/signin/public/base/signin_pref_names.h"
-#include "components/supervised_user/core/common/buildflags.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "net/http/http_status_code.h"
 #include "services/network/test/test_url_loader_factory.h"
@@ -258,14 +257,6 @@ class TestFeedNetwork : public FeedNetwork {
       const AccountInfo& account_info,
       base::OnceCallback<void(QueryRequestResult)> callback) override;
 
-#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-  void SendKidFriendlyApiRequest(
-      const supervised_user::GetDiscoverFeedRequest& request,
-      const AccountInfo& account_info,
-      base::OnceCallback<void(KidFriendlyQueryRequestResult)> callback)
-      override;
-#endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
-
   void SendDiscoverApiRequest(
       NetworkRequestType request_type,
       base::StringPiece api_path,
@@ -442,11 +433,6 @@ class TestWireResponseTranslator : public WireResponseTranslator {
       StreamModelUpdateRequest::Source source,
       const AccountInfo& account_info,
       base::Time current_time) const override;
-  RefreshResponseData TranslateWireResponse(
-      supervised_user::GetDiscoverFeedResponse response,
-      StreamModelUpdateRequest::Source source,
-      const AccountInfo& account_info,
-      base::Time current_time) const override;
   void InjectResponse(std::unique_ptr<StreamModelUpdateRequest> response,
                       std::optional<std::string> session_id = std::nullopt);
   void InjectResponse(RefreshResponseData response_data);
@@ -526,7 +512,8 @@ class TestMetricsReporter : public MetricsReporter {
 };
 
 // Base text fixture for feed API tests.
-// Note: The web-feeds feature (kWebFeed) is enabled by default for these tests.
+// Note: The web-feeds feature is enabled by default for these tests because
+// GetCountry() is overridden to return one of the launch counties.
 class FeedApiTest : public testing::Test, public FeedStream::Delegate {
  public:
   FeedApiTest();
@@ -542,6 +529,7 @@ class FeedApiTest : public testing::Test, public FeedStream::Delegate {
   TabGroupEnabledState GetTabGroupEnabledState() override;
   void ClearAll() override;
   AccountInfo GetAccountInfo() override;
+  bool IsSupervisedAccount() override;
   bool IsSigninAllowed() override;
   void PrefetchImage(const GURL& url) override;
   void RegisterExperiments(const Experiments& experiments) override {}
@@ -550,6 +538,8 @@ class FeedApiTest : public testing::Test, public FeedStream::Delegate {
   std::string GetCountry() override;
 
   // For tests.
+
+  void SetCountry(const std::string& country);
 
   // Replace stream_.
   void CreateStream(bool wait_for_initialization = true,
@@ -605,14 +595,13 @@ class FeedApiTest : public testing::Test, public FeedStream::Delegate {
   bool is_offline_ = false;
   AccountInfo account_info_ = TestAccountInfo();
   bool is_signin_allowed_ = true;
+  bool is_supervised_account_ = false;
   int prefetch_image_call_count_ = 0;
   std::vector<GURL> prefetched_images_;
   base::RepeatingClosure on_clear_all_;
   std::vector<size_t> register_following_feed_follow_count_field_trial_calls_;
   std::vector<std::string> register_feed_user_settings_field_trial_calls_;
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
+  std::string country_ = "US";
 };
 
 class FeedStreamTestForAllStreamTypes
@@ -628,9 +617,6 @@ class FeedStreamTestForAllStreamTypes
   };
   void SetUp() override;
   RefreshTaskId GetRefreshTaskId() const;
-
- private:
-  base::test::ScopedFeatureList feature_list_;
 };
 
 class FeedNetworkEndpointTest

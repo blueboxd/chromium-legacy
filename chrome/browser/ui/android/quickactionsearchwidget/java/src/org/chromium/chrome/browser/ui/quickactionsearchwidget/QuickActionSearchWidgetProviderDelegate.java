@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.ui.quickactionsearchwidget;
 
 import android.app.PendingIntent;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
@@ -19,8 +18,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.IntentUtils;
-import org.chromium.base.Log;
-import org.chromium.chrome.browser.ui.searchactivityutils.SearchActivityConstants;
+import org.chromium.chrome.browser.ui.searchactivityutils.SearchActivityClient;
+import org.chromium.chrome.browser.ui.searchactivityutils.SearchActivityClient.IntentOrigin;
+import org.chromium.chrome.browser.ui.searchactivityutils.SearchActivityClient.SearchType;
 import org.chromium.chrome.browser.ui.searchactivityutils.SearchActivityPreferencesManager.SearchActivityPreferences;
 
 /**
@@ -28,8 +28,6 @@ import org.chromium.chrome.browser.ui.searchactivityutils.SearchActivityPreferen
  * contains as much of the widget logic for the Quick Action Search Widget as possible.
  */
 public class QuickActionSearchWidgetProviderDelegate {
-    public static final String TAG = "b/300599867";
-
     /** Class describing widget variant characteristics. */
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     static class WidgetVariant {
@@ -175,9 +173,6 @@ public class QuickActionSearchWidgetProviderDelegate {
         }
     }
 
-    /** The target component to receive search actions. */
-    private final @NonNull ComponentName mSearchActivityComponent;
-
     /** The intent to create a new incognito tab. */
     private final @NonNull Intent mStartIncognitoTabIntent;
 
@@ -205,10 +200,8 @@ public class QuickActionSearchWidgetProviderDelegate {
      */
     public QuickActionSearchWidgetProviderDelegate(
             @NonNull Context context,
-            @NonNull ComponentName searchActivityComponent,
             @NonNull Intent startIncognitoTabIntent,
             @NonNull Intent startDinoGameIntent) {
-        mSearchActivityComponent = searchActivityComponent;
         mStartIncognitoTabIntent = startIncognitoTabIntent;
         mStartDinoGameIntent = startDinoGameIntent;
 
@@ -309,8 +302,6 @@ public class QuickActionSearchWidgetProviderDelegate {
     Size computeWidgetAreaPaddingForDinoWidgetPx(
             int cellAreaWidthDp, int cellAreaHeightDp, float density) {
         int edgeLengthDp = Math.min(cellAreaWidthDp, cellAreaHeightDp);
-        Log.w(TAG, "Short edge length: " + edgeLengthDp);
-        Log.w(TAG, "Density: " + density);
         int width = (int) (((cellAreaWidthDp - edgeLengthDp) / 2.f) * density);
         int height = (int) (((cellAreaHeightDp - edgeLengthDp) / 2.f) * density);
         return new Size((int) width, (int) height);
@@ -357,26 +348,6 @@ public class QuickActionSearchWidgetProviderDelegate {
         // The left/right and top/bottom dimensions are the same, since we want to center the view
         // in the area where we have some non-zero padding.
         Size paddings = computeWidgetAreaPaddingForDinoWidgetPx(areaWidthDp, areaHeightDp, density);
-
-        Log.w(
-                TAG,
-                "Widget area size (pixels): (W, H): "
-                        + (int) (areaWidthDp * density)
-                        + ", "
-                        + (int) (areaHeightDp * density));
-        Log.w(
-                TAG,
-                "Widget paddings to apply to make widget square: (H, V): "
-                        + paddings.getWidth()
-                        + ", "
-                        + paddings.getHeight());
-        Log.w(
-                TAG,
-                "(Rounded) resulting area size: (W, H): "
-                        + (int) (areaWidthDp * density - 2 * paddings.getWidth())
-                        + ", "
-                        + (int) (areaHeightDp * density - 2 * paddings.getHeight()));
-
         views.setViewPadding(
                 R.id.dino_quick_action_area,
                 paddings.getWidth(),
@@ -426,6 +397,7 @@ public class QuickActionSearchWidgetProviderDelegate {
      * Create {@link RemoteViews} for the Dino widget.
      *
      * @param context Current context.
+     * @param client SearchActivity client to use to talk to Search Activity.
      * @param prefs Structure describing current preferences and feature availability.
      * @param areaWidthDp Width of the widget area.
      * @param areaHeightDp Height of the widget area.
@@ -433,12 +405,13 @@ public class QuickActionSearchWidgetProviderDelegate {
      */
     public @NonNull RemoteViews createDinoWidgetRemoteViews(
             @NonNull Context context,
+            @NonNull SearchActivityClient client,
             @NonNull SearchActivityPreferences prefs,
             int areaWidthDp,
             int areaHeightDp) {
-        Log.w(TAG, "Requesting Dino widget for area (WxH): " + areaWidthDp + "x" + areaHeightDp);
         RemoteViews views =
-                createWidgetRemoteViews(context, R.layout.quick_action_search_widget_dino_layout);
+                createWidgetRemoteViews(
+                        context, client, R.layout.quick_action_search_widget_dino_layout);
 
         // Dino widget is specific; we want to scale up a lot of dimensions based on the actual size
         // of the widget area. This makes layout a lot more responsive but also a lot more
@@ -455,6 +428,7 @@ public class QuickActionSearchWidgetProviderDelegate {
      * orientation changes.
      *
      * @param context Current context.
+     * @param client SearchActivity client to use to talk to Search Activity.
      * @param prefs Structure describing current preferences and feature availability.
      * @param areaWidthDp Width of the widget area.
      * @param areaHeightDp Height of the widget area.
@@ -462,11 +436,12 @@ public class QuickActionSearchWidgetProviderDelegate {
      */
     public @NonNull RemoteViews createSearchWidgetRemoteViews(
             @NonNull Context context,
+            @NonNull SearchActivityClient client,
             @NonNull SearchActivityPreferences prefs,
             int areaWidthDp,
             int areaHeightDp) {
         WidgetVariant variant = getSearchWidgetVariantForHeight(areaHeightDp);
-        RemoteViews views = createWidgetRemoteViews(context, variant.layout);
+        RemoteViews views = createWidgetRemoteViews(context, client, variant.layout);
         applyRemoteViewsButtonVisibilityToFitWidth(views, prefs, variant, areaWidthDp);
         return views;
     }
@@ -493,23 +468,25 @@ public class QuickActionSearchWidgetProviderDelegate {
      * {@link PendingIntent} is assigned to each tap target on the widget.
      *
      * @param context The {@link Context} from which the widget is being updated.
+     * @param client SearchActivity client to use to talk to Search Activity.
      * @param layoutRes The Layout to inflate.
      * @return Widget RemoteViews structure describing layout and content of the widget.
      */
-    public RemoteViews createWidgetRemoteViews(@NonNull Context context, @LayoutRes int layoutRes) {
+    public RemoteViews createWidgetRemoteViews(
+            @NonNull Context context,
+            @NonNull SearchActivityClient client,
+            @LayoutRes int layoutRes) {
         RemoteViews remoteViews = new RemoteViews(context.getPackageName(), layoutRes);
 
         // Search Bar Intent
         PendingIntent textSearchPendingIntent =
-                createPendingIntentForAction(
-                        context, SearchActivityConstants.ACTION_START_EXTENDED_TEXT_SEARCH);
+                createPendingIntentForAction(context, client, SearchType.TEXT);
         remoteViews.setOnClickPendingIntent(
                 R.id.quick_action_search_widget_search_bar_container, textSearchPendingIntent);
 
         // Voice Search Intent
         PendingIntent voiceSearchPendingIntent =
-                createPendingIntentForAction(
-                        context, SearchActivityConstants.ACTION_START_EXTENDED_VOICE_SEARCH);
+                createPendingIntentForAction(context, client, SearchType.VOICE);
         remoteViews.setOnClickPendingIntent(
                 R.id.voice_search_quick_action_button, voiceSearchPendingIntent);
 
@@ -521,8 +498,7 @@ public class QuickActionSearchWidgetProviderDelegate {
 
         // Lens Search Intent
         PendingIntent lensSearchPendingIntent =
-                createPendingIntentForAction(
-                        context, SearchActivityConstants.ACTION_START_LENS_SEARCH);
+                createPendingIntentForAction(context, client, SearchType.LENS);
         remoteViews.setOnClickPendingIntent(R.id.lens_quick_action_button, lensSearchPendingIntent);
 
         // Dino Game intent
@@ -536,16 +512,19 @@ public class QuickActionSearchWidgetProviderDelegate {
      * Creates a {@link PendingIntent} that will send a trusted intent with a specified action.
      *
      * @param context The Context from which the PendingIntent will perform the broadcast.
+     * @param client SearchActivity client to use to talk to Search Activity.
      * @param action A String specifying the action for the intent.
      * @return A {@link PendingIntent} that will broadcast a trusted intent for the specified
      *     action.
      */
     private PendingIntent createPendingIntentForAction(
-            @NonNull Context context, @NonNull String action) {
-        Intent intent = new Intent(action);
-        intent.setComponent(mSearchActivityComponent);
+            @NonNull Context context,
+            @NonNull SearchActivityClient client,
+            @SearchType int searchType) {
+        Intent intent =
+                client.createIntent(
+                        context, IntentOrigin.QUICK_ACTION_SEARCH_WIDGET, null, searchType);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        IntentUtils.addTrustedIntentExtras(intent);
         return createPendingIntent(context, intent);
     }
 
@@ -558,8 +537,6 @@ public class QuickActionSearchWidgetProviderDelegate {
      *     action.
      */
     private PendingIntent createPendingIntent(@NonNull Context context, @NonNull Intent intent) {
-        intent.putExtra(
-                SearchActivityConstants.EXTRA_BOOLEAN_FROM_QUICK_ACTION_SEARCH_WIDGET, true);
         return PendingIntent.getActivity(
                 context,
                 /* requestCode= */ 0,

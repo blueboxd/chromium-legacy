@@ -10,6 +10,7 @@
 #include "base/feature_list.h"
 #include "base/files/file_util.h"
 #include "base/functional/bind.h"
+#include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_samples.h"
@@ -75,7 +76,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_handle.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -196,7 +196,7 @@ class PasswordManagerBackForwardCacheBrowserTest
     : public PasswordManagerBrowserTest {
  public:
   void SetUpOnMainThread() override {
-    // TODO(https://crbug.com/1158630): Remove this and below after confirming
+    // TODO(crbug.com/40737060): Remove this and below after confirming
     // whether setup is completing.
     LOG(INFO) << "SetUpOnMainThread started.";
     host_resolver()->AddRule("*", "127.0.0.1");
@@ -876,12 +876,14 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
       "document.getElementById('password_field').value = 'random';"
       "document.getElementById('submit_button').click();";
   ASSERT_TRUE(content::ExecJs(WebContents(), fill_and_submit));
+  // This forces layout update.
+  RunUntilInputProcessed(RenderFrameHost()->GetRenderWidgetHost());
+
   std::string message;
   while (message_queue.WaitForMessage(&message)) {
     if (message == "\"FETCH_FINISHED\"")
       break;
   }
-
   EXPECT_TRUE(prompt_observer.IsSavePromptShownAutomatically());
 }
 
@@ -906,12 +908,14 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
       "document.getElementById('confirmation_password_field').value = 'random';"
       "document.getElementById('signup_submit_button').click();";
   ASSERT_TRUE(content::ExecJs(WebContents(), fill_and_submit));
+  // This forces layout update.
+  RunUntilInputProcessed(RenderFrameHost()->GetRenderWidgetHost());
   std::string message;
+
   while (message_queue.WaitForMessage(&message)) {
     if (message == "\"FETCH_FINISHED\"")
       break;
   }
-
   EXPECT_TRUE(prompt_observer.IsSavePromptShownAutomatically());
 }
 
@@ -932,12 +936,14 @@ IN_PROC_BROWSER_TEST_F(
       "document.getElementById('username_field').value = 'temp';"
       "document.getElementById('submit_button').click();";
   ASSERT_TRUE(content::ExecJs(WebContents(), fill_and_submit));
+  // This forces layout update.
+  RunUntilInputProcessed(RenderFrameHost()->GetRenderWidgetHost());
+
   std::string message;
   while (message_queue.WaitForMessage(&message)) {
     if (message == "\"FETCH_FINISHED\"")
       break;
   }
-
   EXPECT_FALSE(prompt_observer.IsSavePromptShownAutomatically());
 }
 
@@ -958,12 +964,14 @@ IN_PROC_BROWSER_TEST_F(
       "document.getElementById('signup_username_field').value = 'temp';"
       "document.getElementById('signup_submit_button').click();";
   ASSERT_TRUE(content::ExecJs(WebContents(), fill_and_submit));
+  // This forces layout update.
+  RunUntilInputProcessed(RenderFrameHost()->GetRenderWidgetHost());
+
   std::string message;
   while (message_queue.WaitForMessage(&message)) {
     if (message == "\"FETCH_FINISHED\"")
       break;
   }
-
   EXPECT_FALSE(prompt_observer.IsSavePromptShownAutomatically());
 }
 
@@ -1914,7 +1922,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   WaitForElementValue("username_field", "admin");
 
   // Now the credential is removed via the settings or the bubble.
-  password_store->RemoveLogin(signin_form);
+  password_store->RemoveLogin(FROM_HERE, signin_form);
   WaitForPasswordStore();
 
   // Submit the form. It shouldn't revive the credential in the store.
@@ -3000,7 +3008,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
                        DISABLED_InternalsPage_Renderer) {
   // The test is flaky with same-site back/forward cache (which is enabled by
   // default).
-  // TODO(https://crbug.com/1276313): Investigate and fix this.
+  // TODO(crbug.com/40808799): Investigate and fix this.
   content::DisableBackForwardCacheForTesting(
       WebContents(), content::BackForwardCache::TEST_REQUIRES_NO_CACHING);
 

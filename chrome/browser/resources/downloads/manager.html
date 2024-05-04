@@ -16,6 +16,10 @@
 
   #toolbar {
     z-index: 1;
+    --cr-toolbar-center-basis: 680px;
+    --cr-toolbar-field-max-width: var(--cr-toolbar-center-basis);
+    --cr-toolbar-field-width: 100%;
+    --cr-toolbar-header-white-space: nowrap;
   }
 
   :host([has-shadow_]) #drop-shadow {
@@ -111,7 +115,9 @@
     <template>
       <downloads-item data="[[item]]" tabindex$="[[tabIndex]]"
           iron-list-tab-index="[[tabIndex]]" last-focused="{{lastFocused_}}"
-          list-blurred="{{listBlurred_}}" focus-row-index="[[index]]">
+          list-blurred="{{listBlurred_}}" focus-row-index="[[index]]"
+          show-esb-promotion="[[shouldShowEsbPromotion_(item, item.isDangerous,
+                    this.firstDangerousItemId_)]]">
       </downloads-item>
     </template>
   </iron-list>

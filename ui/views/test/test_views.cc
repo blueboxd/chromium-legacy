@@ -19,7 +19,8 @@ StaticSizedView::StaticSizedView(const gfx::Size& preferred_size)
 
 StaticSizedView::~StaticSizedView() = default;
 
-gfx::Size StaticSizedView::CalculatePreferredSize() const {
+gfx::Size StaticSizedView::CalculatePreferredSize(
+    const SizeBounds& /*available_size*/) const {
   return preferred_size_;
 }
 
@@ -44,14 +45,16 @@ void ProportionallySizedView::SetPreferredWidth(int width) {
   PreferredSizeChanged();
 }
 
-int ProportionallySizedView::GetHeightForWidth(int w) const {
-  return w * factor_;
-}
-
-gfx::Size ProportionallySizedView::CalculatePreferredSize() const {
-  if (preferred_width_ >= 0)
-    return gfx::Size(preferred_width_, GetHeightForWidth(preferred_width_));
-  return View::CalculatePreferredSize();
+gfx::Size ProportionallySizedView::CalculatePreferredSize(
+    const SizeBounds& available_size) const {
+  if (preferred_width_ >= 0) {
+    return gfx::Size(preferred_width_, preferred_width_ * factor_);
+  } else if (available_size.width().is_bounded()) {
+    int w = available_size.width().value();
+    return gfx::Size(w, w * factor_);
+  } else {
+    return View::CalculatePreferredSize(available_size);
+  }
 }
 
 BEGIN_METADATA(ProportionallySizedView)

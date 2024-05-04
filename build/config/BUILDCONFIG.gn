@@ -177,6 +177,12 @@ assert(!(is_debug && is_official_build), "Can't do official debug builds")
 assert(!(current_os == "ios" && is_component_build),
        "Can't use component build on iOS")
 
+declare_args() {
+  # Unsafe buffers. Location of file used by plugins to track portions of
+  # the codebase which have been made manifestly safe.
+  clang_unsafe_buffers_paths = ""
+}
+
 # ==============================================================================
 # TOOLCHAIN SETUP
 # ==============================================================================
@@ -547,8 +553,8 @@ foreach(_target_type,
           }
         }
       }
-      if (_uses_cflags) {
-        inputs += [ "//build/config/unsafe_buffers_paths.txt" ]
+      if (_uses_cflags && clang_unsafe_buffers_paths != "") {
+        inputs += [ clang_unsafe_buffers_paths ]
       }
     }
   }
@@ -594,8 +600,8 @@ foreach(_target_type,
           }
         }
       }
-      if (_uses_cflags) {
-        inputs += [ "//build/config/unsafe_buffers_paths.txt" ]
+      if (_uses_cflags && clang_unsafe_buffers_paths != "") {
+        inputs += [ clang_unsafe_buffers_paths ]
       }
 
       if (!defined(deps)) {
@@ -707,6 +713,11 @@ if (is_component_build) {
     default_component_configs -=
         [ "//build/config/android:hide_all_but_jni_onload" ]
   }
+  if (is_win) {
+    # We don't want component dlls to statically load OS dlls that aren't
+    # loaded normally.
+    default_component_configs += [ "//build/config/win:delayloads" ]
+  }
 } else {
   default_component_configs = default_compiler_configs
 }
@@ -803,6 +814,14 @@ foreach(_target_type, [ "action" ]) {
         re_outputs_file = "$target_gen_dir/${target_name}__remote_outputs.rsp"
         write_file(re_outputs_file, re_outputs)
 
+        rewrapper_cfg = "$rbe_py_cfg_file"
+        if (defined(invoker.remote_worker)) {
+          remote_worker = invoker.remote_worker
+          assert(remote_worker == "large",
+                 "remote_worker = " + remote_worker + " is not supported")
+          rewrapper_cfg = "$rbe_py_large_cfg_file"
+        }
+
         args = []
         args += [ "$rbe_bin_dir/rewrapper" ]
         if (defined(invoker.custom_processor)) {
@@ -810,7 +829,7 @@ foreach(_target_type, [ "action" ]) {
         }
 
         args += [
-          "--cfg=$rbe_py_cfg_file",
+          "--cfg=" + rewrapper_cfg,
           "--exec_root=$rbe_exec_root",
           "--input_list_paths=" + rebase_path(re_inputs_file, root_build_dir),
           "--output_list_paths=" + rebase_path(re_outputs_file, root_build_dir),
@@ -823,7 +842,11 @@ foreach(_target_type, [ "action" ]) {
         }
       } else {
         forward_variables_from(invoker, [ "inputs" ])
-        not_needed(invoker, [ "custom_processor" ])
+        not_needed(invoker,
+                   [
+                     "custom_processor",
+                     "remote_worker",
+                   ])
       }
     }
   }

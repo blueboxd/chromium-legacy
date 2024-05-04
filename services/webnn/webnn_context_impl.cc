@@ -45,17 +45,20 @@ void WebNNContextImpl::CreateGraph(
 }
 
 void WebNNContextImpl::CreateBuffer(
-    mojo::PendingReceiver<mojom::WebNNBuffer> receiver,
+    mojo::PendingAssociatedReceiver<mojom::WebNNBuffer> receiver,
     mojom::BufferInfoPtr buffer_info,
     const base::UnguessableToken& buffer_handle) {
+  // The token is validated in mojo traits to be non-empty.
+  CHECK(!buffer_handle.is_empty());
+
   // It is illegal to create the same buffer twice, a buffer is uniquely
   // identified by its UnguessableToken.
-  if (IsWebNNBufferValid(buffer_handle)) {
+  if (buffer_impls_.contains(buffer_handle)) {
     receiver_.ReportBadMessage(kBadMessageInvalidBuffer);
     return;
   }
 
-  // TODO(crbug.com/1472888): handle error using MLContext.
+  // TODO(crbug.com/40278771): handle error using MLContext.
   std::unique_ptr<WebNNBufferImpl> buffer_impl = CreateBufferImpl(
       std::move(receiver), std::move(buffer_info), buffer_handle);
   if (!buffer_impl) {
@@ -68,14 +71,6 @@ void WebNNContextImpl::CreateBuffer(
   buffer_impls_.emplace(std::move(buffer_impl));
 }
 
-bool WebNNContextImpl::IsWebNNBufferValid(
-    const base::UnguessableToken& handle) const {
-  if (handle.is_empty()) {
-    return false;
-  }
-  return buffer_impls_.contains(handle);
-}
-
 void WebNNContextImpl::DisconnectAndDestroyWebNNBufferImpl(
     const base::UnguessableToken& handle) {
   const auto it = buffer_impls_.find(handle);
@@ -83,6 +78,12 @@ void WebNNContextImpl::DisconnectAndDestroyWebNNBufferImpl(
   // Upon calling erase, the handle will no longer refer to a valid
   // `WebNNBufferImpl`.
   buffer_impls_.erase(it);
+}
+
+void WebNNContextImpl::OnWebNNGraphImplCreated(
+    mojo::PendingAssociatedReceiver<mojom::WebNNGraph> receiver,
+    std::unique_ptr<WebNNGraphImpl> graph_impl) {
+  graph_impls_.Add(std::move(graph_impl), std::move(receiver));
 }
 
 }  // namespace webnn

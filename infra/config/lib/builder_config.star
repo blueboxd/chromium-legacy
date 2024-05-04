@@ -6,33 +6,17 @@
 
 load("@stdlib//internal/graph.star", "graph")
 load("@stdlib//internal/luci/common.star", "keys", "kinds", "triggerer")
+load("//project.star", "settings")
 load("./args.star", "args")
 load("./builder_url.star", "linkify_builder")
-load("./sheriff_rotations.star", "get_sheriff_rotations")
 load("./chrome_settings.star", "per_builder_outputs_config")
+load("./enums.star", "enums")
 load("./nodes.star", "nodes")
+load("./sheriff_rotations.star", "get_sheriff_rotations")
 load("./structs.star", "structs")
 load("./targets.star", "get_targets_spec_generator", "register_targets")
-load("//project.star", "settings")
 
-def _enum(**kwargs):
-    """Create an enum struct.
-
-    Args:
-        **kwargs - The enum values to create. A field will be added the struct
-            with the key for the name of the field and the value for the value
-            of the field.
-
-    Returns:
-        A struct with fields for each item in `kwargs`. The struct will
-        also have a `_values` field that contains a list of the values in
-        `kwargs`.
-    """
-    if "_values" in kwargs:
-        fail("cannot create an enum value named '_values'")
-    return struct(_values = kwargs.values(), **kwargs)
-
-_execution_mode = _enum(
+_execution_mode = enums.enum(
     # The builder will perform compilation of any targets configured in the
     # testing spec as well as any tests that will be run by the builder or any
     # triggered builders.
@@ -63,19 +47,19 @@ def _gclient_config(*, config, apply_configs = None):
         apply_configs = args.listify(apply_configs),
     )
 
-_build_config = _enum(
+_build_config = enums.enum(
     RELEASE = "Release",
     DEBUG = "Debug",
 )
 
-_target_arch = _enum(
+_target_arch = enums.enum(
     INTEL = "intel",
     ARM = "arm",
     MIPS = "mips",
     MIPSEL = "mipsel",
 )
 
-_target_platform = _enum(
+_target_platform = enums.enum(
     LINUX = "linux",
     WIN = "win",
     MAC = "mac",
@@ -120,13 +104,13 @@ def _chromium_config(
     """
     if not config:
         fail("config must be provided")
-    if build_config != None and build_config not in _build_config._values:
+    if build_config != None and build_config not in _build_config.values:
         fail("unknown build_config: {}".format(build_config))
-    if target_arch != None and target_arch not in _target_arch._values:
+    if target_arch != None and target_arch not in _target_arch.values:
         fail("unknown target_arch: {}".format(target_arch))
     if target_bits != None and target_bits not in (32, 64):
         fail("unknown target_bits: {}".format(target_bits))
-    if target_platform not in _target_platform._values:
+    if target_platform not in _target_platform.values:
         fail("unknown target_platform: {}".format(target_platform))
     if ((target_cros_boards or cros_boards_with_qemu_images) and
         target_platform != _target_platform.CHROMEOS):
@@ -186,19 +170,19 @@ def _skylab_upload_location(*, gs_bucket, gs_extra = None):
 def _clusterfuzz_archive(
         *,
         gs_bucket,
-        gs_acl = None,
         archive_name_prefix,
+        gs_acl = None,
         archive_subdir = None):
     """The details for configuring clusterfuzz archiving.
 
     Args:
         gs_bucket: (str) The name of the Google Cloud Storage bucket to upload
             the archive to.
-        gs_acl: (str) The name of a Google Cloud Storage canned ACL to apply to
-            the uploaded archive.
         archive_name_prefix: (str) The prefix of the archive's name. The name of
             the archive will contain additional details such as platform and
             target among others.
+        gs_acl: (str) The name of a Google Cloud Storage canned ACL to apply to
+            the uploaded archive.
         archive_subdir: (str) An optional additional subdirectory within the
             platform/target directory to upload the archive to.
     """
@@ -234,9 +218,9 @@ def _bisect_archive(
 
 def _builder_spec(
         *,
-        execution_mode = _execution_mode.COMPILE_AND_TEST,
         gclient_config,
         chromium_config,
+        execution_mode = _execution_mode.COMPILE_AND_TEST,
         android_config = None,
         android_version_file = None,
         clobber = None,
@@ -250,9 +234,9 @@ def _builder_spec(
     """Details for configuring execution for a single builder.
 
     Args:
-        execution_mode: (execution_mode) The execution mode of the builder.
         gclient_config: (gclient_config) The gclient config for the builder.
         chromium_config: (chromium_config) The chromium config for the builder.
+        execution_mode: (execution_mode) The execution mode of the builder.
         android_config: (android_config) The android config for the builder.
         android_version_file: (str) A path relative to the checkout to a file
             containing the Chrome version information for Android.
@@ -292,7 +276,7 @@ def _builder_spec(
         A builder spec struct that can be passed to builder to set the builder
         spec to be used for the builder.
     """
-    if execution_mode not in _execution_mode._values:
+    if execution_mode not in _execution_mode.values:
         fail("unknown execution_mode: {}".format(execution_mode))
     if not gclient_config:
         fail("gclient_config must be provided")
@@ -456,6 +440,7 @@ def register_builder_config(
         mirrors,
         settings,
         targets,
+        targets_settings,
         additional_exclusions):
     """Registers the builder config so the properties can be computed.
 
@@ -471,6 +456,8 @@ def register_builder_config(
         settings: The object determining the additional settings applied to
             builder_config.
         targets: The targets to be built/run by the builder.
+        targets_settings: The settings to use when expanding the targets for the
+            builder.
         additional_exclusions: A list of paths that are excluded when analyzing
             the change to determine affected targets. The paths should be
             relative to the per-builder output root dir.
@@ -526,7 +513,10 @@ def register_builder_config(
         register_targets(
             name = "{}/{}".format(bucket, name),
             targets = targets,
+            settings = targets_settings,
             parent_key = builder_config_key,
+            builder_group = builder_group,
+            builder_name = name,
         )
 
     graph.add_edge(builder_config_key, keys.builder(bucket, name))
@@ -632,7 +622,7 @@ def _check_specs_for_consistency(bucket_name, builder_name, entries):
                 bucket_name,
                 builder_name,
                 "".join(
-                    ["\n  {}".format(l) for l in failure_output],
+                    ["\n  {}".format(o) for o in failure_output],
                 ),
             ))
 
@@ -830,7 +820,7 @@ def _set_builder_config_property(ctx):
                 "cft",
             ]
             excluded_builders = [
-                # TODO(crbug.com/1484233): Remove the following as trybots are
+                # TODO(crbug.com/40282196): Remove the following as trybots are
                 # created for them.
                 "android-arm64-archive-rel",
                 "lacros-arm-archive-rel",
@@ -897,7 +887,7 @@ def _set_builder_config_property(ctx):
             if b.name not in needs_mega_cq_mode:
                 continue
 
-            # TODO(crbug.com/1483511): Uncomment the following when CV actually
+            # TODO(crbug.com/40282038): Uncomment the following when CV actually
             # supports custom run modes.
             #if "CQ_MODE_MEGA_DRY_RUN" not in b.mode_allowlist:
             #    b.mode_allowlist.append("CQ_MODE_MEGA_DRY_RUN")
@@ -905,7 +895,7 @@ def _set_builder_config_property(ctx):
             #    b.mode_allowlist.append("CQ_MODE_MEGA_FULL_RUN")
 
     # Print the mega CQ bots to a txt file for debugging / parsing purposes.
-    # TODO(crbug.com/1483511): Can delete this when CV full supports custom
+    # TODO(crbug.com/40282038): Can delete this when CV full supports custom
     # run modes with all features needed by chrome.
     mega_cq_bots_file = "cq-usage/mega_cq_bots.txt"
     ctx.output[mega_cq_bots_file] = "".join(["{}\n".format(b) for b in sorted(needs_mega_cq_mode)])

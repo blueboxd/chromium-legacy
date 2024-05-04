@@ -24,7 +24,10 @@
 #include "chrome/browser/password_manager/account_password_store_factory.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/password_manager/profile_password_store_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
+#include "chrome/browser/signin/signin_promo_util.h"
 #include "chrome/browser/signin/signin_ui_util.h"
+#include "chrome/browser/ui/autofill/autofill_signin_promo_tab_helper.h"
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -71,6 +74,7 @@
 #include "components/signin/public/base/signin_metrics.h"
 #include "components/signin/public/base/signin_switches.h"
 #include "components/signin/public/identity_manager/account_info.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -161,9 +165,9 @@ void ManagePasswordsUIController::OnPasswordSubmitted(
   DestroyPopups();
   save_fallback_timer_.Stop();
 
-  // TODO(crbug/1503146): This is used to align the default password store pref
-  // with account storage pref. Once all users have those aligned this should be
-  // removed.
+  // TODO(crbug.com/40943570): This is used to align the default password store
+  // pref with account storage pref. Once all users have those aligned this
+  // should be removed.
   if (GetPasswordFeatureManager()->ShouldChangeDefaultPasswordStore()) {
     passwords_data_.OnDefaultStoreChanged(std::move(form_manager));
   } else {
@@ -279,19 +283,13 @@ void ManagePasswordsUIController::OnAutomaticPasswordSave(
     bool is_update_confirmation) {
   DestroyPopups();
   save_fallback_timer_.Stop();
-  if (base::FeatureList::IsEnabled(
-          password_manager::features::
-              kNewConfirmationBubbleForGeneratedPasswords)) {
-    auto ui_state =
-        is_update_confirmation ? password_manager::ui::UPDATE_CONFIRMATION_STATE
-        : form_manager->GetPendingCredentials().username_value.empty()
-            ? password_manager::ui::GENERATED_PASSWORD_CONFIRMATION_STATE
-            : password_manager::ui::SAVE_CONFIRMATION_STATE;
-    passwords_data_.OnSubmittedGeneratedPassword(ui_state,
-                                                 std::move(form_manager));
-  } else {
-    passwords_data_.OnAutomaticPasswordSave(std::move(form_manager));
-  }
+  auto ui_state =
+      is_update_confirmation ? password_manager::ui::UPDATE_CONFIRMATION_STATE
+      : form_manager->GetPendingCredentials().username_value.empty()
+          ? password_manager::ui::GENERATED_PASSWORD_CONFIRMATION_STATE
+          : password_manager::ui::SAVE_CONFIRMATION_STATE;
+  passwords_data_.OnSubmittedGeneratedPassword(ui_state,
+                                               std::move(form_manager));
 
   bubble_status_ = BubbleStatus::SHOULD_POP_UP;
   UpdateBubbleAndIconVisibility();
@@ -403,7 +401,7 @@ void ManagePasswordsUIController::OnShowMoveToAccountBubble(
       password_manager::metrics_util::MoveToAccountStoreTrigger::
           kSuccessfulLoginWithProfileStorePassword);
   passwords_data_.OnPasswordMovable(std::move(form_to_move));
-  // TODO(crbug.com/1100814): Add smartness like OnPasswordSubmitted?
+  // TODO(crbug.com/40138077): Add smartness like OnPasswordSubmitted?
   bubble_status_ = BubbleStatus::SHOULD_POP_UP;
   UpdateBubbleAndIconVisibility();
 }
@@ -466,7 +464,7 @@ void ManagePasswordsUIController::ShowMovePasswordBubble(
       std::make_unique<password_manager::PasswordForm>(form));
   passwords_data_.TransitionToState(
       password_manager::ui::MOVE_CREDENTIAL_FROM_MANAGE_BUBBLE_STATE);
-  bubble_status_ = BubbleStatus::SHOULD_POP_UP;
+  bubble_status_ = BubbleStatus::SHOULD_POP_UP_WITH_FOCUS;
   UpdateBubbleAndIconVisibility();
 }
 
@@ -495,14 +493,16 @@ void ManagePasswordsUIController::OnKeychainError() {
 }
 
 void ManagePasswordsUIController::OnAddUsernameSaveClicked(
-    const std::u16string& username) {
+    const std::u16string& username,
+    const password_manager::PasswordForm& form_to_update) {
   CHECK(!dialog_controller_);
+
   passwords_data_.form_manager()->OnUpdateUsernameFromPrompt(username);
   save_fallback_timer_.Stop();
 
   passwords_data_.form_manager()->Save();
   passwords_data_.OnSubmittedGeneratedPassword(
-      password_manager::ui::SAVE_CONFIRMATION_STATE, nullptr);
+      password_manager::ui::SAVE_CONFIRMATION_STATE, nullptr, form_to_update);
   // After adding a new username, confirmation helium bubble should appear.
   bubble_status_ = BubbleStatus::SHOULD_POP_UP;
   UpdateBubbleAndIconVisibility();
@@ -536,7 +536,8 @@ void ManagePasswordsUIController::OnLoginsRetained(
 
 void ManagePasswordsUIController::UpdateIconAndBubbleState(
     ManagePasswordsIconView* icon) {
-  if (IsAutomaticallyOpeningBubble()) {
+  if (IsAutomaticallyOpeningBubble() ||
+      bubble_status_ == BubbleStatus::SHOULD_POP_UP_WITH_FOCUS) {
     DCHECK(!dialog_controller_);
     // This will detach any existing bubble so OnBubbleHidden() isn't called.
     weak_ptr_factory_.InvalidateWeakPtrs();
@@ -680,6 +681,11 @@ void ManagePasswordsUIController::OnBubbleHidden() {
     passwords_data_.TransitionToState(
         password_manager::ui::PENDING_PASSWORD_STATE);
     update_icon = true;
+  } else if (GetState() ==
+             password_manager::ui::MOVE_CREDENTIAL_FROM_MANAGE_BUBBLE_STATE) {
+    passwords_data_.TransitionToState(password_manager::ui::MANAGE_STATE);
+    passwords_data_.clear_selected_password();
+    update_icon = true;
   }
   if (update_icon)
     UpdateBubbleAndIconVisibility();
@@ -755,6 +761,8 @@ void ManagePasswordsUIController::SavePassword(const std::u16string& username,
         ->NotifyEvent("passwords_account_storage_used");
   }
 
+  // TODO(crbug/333709971): Decide whether the post save compromised bubble or
+  // the sign in promo bubble should be shown.
   post_save_compromised_helper_ =
       std::make_unique<password_manager::PostSaveCompromisedHelper>(
           passwords_data_.form_manager()->GetInsecureCredentials(), username);
@@ -771,7 +779,11 @@ void ManagePasswordsUIController::SavePassword(const std::u16string& username,
   // The icon is to be updated after the bubble (either "Save password" or "Sign
   // in to Chrome") is closed.
   bubble_status_ = BubbleStatus::SHOWN_PENDING_ICON_UPDATE;
-  if (Browser* browser = chrome::FindBrowserWithTab(web_contents())) {
+  Browser* browser = chrome::FindBrowserWithTab(web_contents());
+  // Do not trigger the IPH if the sign in promo will be shown.
+  if (browser && !signin::ShouldShowSignInPromo(
+                     *browser->profile(),
+                     signin::SignInAutofillBubblePromoType::Passwords)) {
     if (browser->window()->MaybeShowFeaturePromo(
             feature_engagement::
                 kIPHPasswordsManagementBubbleAfterSaveFeature)) {
@@ -821,8 +833,8 @@ void ManagePasswordsUIController::MovePasswordToAccountStore() {
         GetState() ==
             password_manager::ui::MOVE_CREDENTIAL_FROM_MANAGE_BUBBLE_STATE);
 
-  // TODO(1503146): After this feature lands, clean this up and use only
-  // MovePendingPasswordToAccountStoreUsingHelper() to move passwords.
+  // TODO(crbug.com/40943570): After this feature lands, clean this up and use
+  // only MovePendingPasswordToAccountStoreUsingHelper() to move passwords.
   if (base::FeatureList::IsEnabled(
           password_manager::features::kButterOnDesktopFollowup)) {
     MovePendingPasswordToAccountStoreUsingHelper(
@@ -859,7 +871,7 @@ void ManagePasswordsUIController::PromptSaveBubbleAfterDefaultStoreChanged() {
       << GetState();
   passwords_data_.TransitionToState(
       password_manager::ui::PENDING_PASSWORD_STATE);
-  bubble_status_ = BubbleStatus::SHOULD_POP_UP;
+  bubble_status_ = BubbleStatus::SHOULD_POP_UP_WITH_FOCUS;
   UpdateBubbleAndIconVisibility();
 }
 
@@ -886,6 +898,14 @@ void ManagePasswordsUIController::NavigateToPasswordManagerSettingsPage(
 }
 
 void ManagePasswordsUIController::
+    NavigateToPasswordDetailsPageInPasswordManager(
+        const std::string& password_domain_name,
+        password_manager::ManagePasswordsReferrer referrer) {
+  NavigateToPasswordDetailsPage(chrome::FindBrowserWithTab(web_contents()),
+                                password_domain_name, referrer);
+}
+
+void ManagePasswordsUIController::
     NavigateToPasswordManagerSettingsAccountStoreToggle(
         password_manager::ManagePasswordsReferrer referrer) {
   NavigateToManagePasswordsSettingsAccountStoreToggle(
@@ -902,11 +922,50 @@ void ManagePasswordsUIController::NavigateToPasswordCheckup(
 }
 
 void ManagePasswordsUIController::SignIn(const AccountInfo& account) {
-  CHECK(IsExplicitBrowserSigninUIOnDesktopEnabled(
-      switches::ExplicitBrowserSigninPhase::kFull));
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+  CHECK(switches::IsExplicitBrowserSigninUIOnDesktopEnabled());
+
+  const password_manager::PasswordForm pending_password =
+      passwords_data_.form_manager()->GetPendingCredentials();
+
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
   signin_ui_util::SignInFromSingleAccountPromo(
-      Profile::FromBrowserContext(web_contents()->GetBrowserContext()), account,
+      profile, account,
       signin_metrics::AccessPoint::ACCESS_POINT_PASSWORD_BUBBLE);
+
+  // Do nothing if the password is already using account store, it will be
+  // uploaded automatically after successful reauthentication.
+  if (pending_password.IsUsingAccountStore()) {
+    return;
+  }
+
+  // If the sign in was already successful, move the password directly.
+  // Otherwise, wait for a sign in event and move the password upon success.
+  if (IdentityManagerFactory::GetForProfile(profile)->HasPrimaryAccount(
+          signin::ConsentLevel::kSignin)) {
+    MoveJustSavedPasswordAfterAccountStoreOptIn(
+        pending_password,
+        password_manager::PasswordManagerClient::ReauthSucceeded(true));
+  } else {
+    content::WebContents* sign_in_tab_contents =
+        signin_ui_util::GetSignInTabWithAccessPoint(
+            *chrome::FindBrowserWithTab(web_contents()),
+            signin_metrics::AccessPoint::ACCESS_POINT_PASSWORD_BUBBLE);
+
+    // SignInFromSingleAccountPromo may fail to open a tab. Do not wait for a
+    // sign in event in that case.
+    if (!sign_in_tab_contents) {
+      return;
+    }
+
+    autofill::AutofillSigninPromoTabHelper::GetForWebContents(
+        *sign_in_tab_contents)
+        ->InitializeDataMoveAfterSignIn(
+            pending_password,
+            signin_metrics::AccessPoint::ACCESS_POINT_PASSWORD_BUBBLE);
+  }
+#endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
 }
 
 void ManagePasswordsUIController::OnDialogHidden() {
@@ -1111,7 +1170,8 @@ base::TimeDelta ManagePasswordsUIController::GetTimeoutForSaveFallback() {
 }
 
 void ManagePasswordsUIController::ShowBubbleWithoutUserInteraction() {
-  DCHECK(IsAutomaticallyOpeningBubble());
+  CHECK(IsAutomaticallyOpeningBubble() ||
+         bubble_status_ == BubbleStatus::SHOULD_POP_UP_WITH_FOCUS);
   Browser* browser = chrome::FindBrowserWithTab(web_contents());
   // Can be zero in the tests.
   if (!browser)
@@ -1121,7 +1181,8 @@ void ManagePasswordsUIController::ShowBubbleWithoutUserInteraction() {
 }
 
 void ManagePasswordsUIController::ClearPopUpFlagForBubble() {
-  if (IsAutomaticallyOpeningBubble()) {
+  if (IsAutomaticallyOpeningBubble() ||
+      bubble_status_ == BubbleStatus::SHOULD_POP_UP_WITH_FOCUS) {
     bubble_status_ = BubbleStatus::NOT_SHOWN;
   }
 }

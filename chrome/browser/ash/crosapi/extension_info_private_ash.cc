@@ -20,7 +20,6 @@
 #include "chrome/browser/ash/login/startup_utils.h"
 #include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
-#include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/ash/system/timezone_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
@@ -30,6 +29,7 @@
 #include "chromeos/ash/components/network/device_state.h"
 #include "chromeos/ash/components/network/network_handler.h"
 #include "chromeos/ash/components/network/network_state_handler.h"
+#include "chromeos/ash/components/settings/cros_settings.h"
 #include "chromeos/ash/components/settings/cros_settings_names.h"
 #include "chromeos/ash/components/system/statistics_provider.h"
 #include "chromeos/constants/devicetype.h"
@@ -385,7 +385,7 @@ std::unique_ptr<base::Value> GetValue(const std::string& property_name) {
               prefs::kUserTimezone);
       return std::make_unique<base::Value>(timezone->GetValue()->Clone());
     }
-    // TODO(crbug.com/697817): Convert CrosSettings::Get to take a unique_ptr.
+    // TODO(crbug.com/40508978): Convert CrosSettings::Get to take a unique_ptr.
     return base::Value::ToUniquePtrValue(
         ash::CrosSettings::Get()->GetPref(ash::kSystemTimezone)->Clone());
   }

@@ -5,14 +5,14 @@
 #ifndef COMPONENTS_WINHTTP_NET_UTIL_H_
 #define COMPONENTS_WINHTTP_NET_UTIL_H_
 
-#include <stdint.h>
 #include <windows.h>
+
+#include <stdint.h>
 #include <winhttp.h>
 
 #include <ostream>
 #include <string>
 
-#include "base/check.h"
 #include "base/check_op.h"
 
 namespace winhttp {
@@ -46,8 +46,7 @@ HRESULT QueryOption(HINTERNET handle, uint32_t option, T* value) {
   if (!::WinHttpQueryOption(handle, option, value, &num_bytes)) {
     return HRESULTFromLastError();
   }
-  // TODO(crbug.com/325343942): replace with CHECK.
-  DUMP_WILL_BE_CHECK(sizeof(*value) == num_bytes);
+  CHECK_EQ(sizeof(*value), num_bytes);
   return S_OK;
 }
 

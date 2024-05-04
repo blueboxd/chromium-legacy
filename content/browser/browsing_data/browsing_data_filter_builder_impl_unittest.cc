@@ -23,6 +23,7 @@
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -71,9 +72,9 @@ void RunTestCase(TestCase test_case,
   std::string cookie_line = "A=2";
   GURL test_url(test_case.url);
   EXPECT_TRUE(test_url.is_valid()) << test_case.url;
-  std::unique_ptr<net::CanonicalCookie> cookie = net::CanonicalCookie::Create(
-      test_url, cookie_line, base::Time::Now(), std::nullopt /* server_time */,
-      std::nullopt /* cookie_partition_key */);
+  std::unique_ptr<net::CanonicalCookie> cookie =
+      net::CanonicalCookie::CreateForTesting(test_url, cookie_line,
+                                             base::Time::Now());
   EXPECT_TRUE(cookie) << cookie_line << " from " << test_case.url
                       << " is not a valid cookie";
   if (cookie) {
@@ -86,9 +87,8 @@ void RunTestCase(TestCase test_case,
   }
 
   cookie_line = std::string("A=2;domain=") + test_url.host();
-  cookie = net::CanonicalCookie::Create(
-      test_url, cookie_line, base::Time::Now(), std::nullopt /* server_time */,
-      std::nullopt /* cookie_partition_key */);
+  cookie = net::CanonicalCookie::CreateForTesting(test_url, cookie_line,
+                                                  base::Time::Now());
   if (cookie) {
     EXPECT_EQ(
         test_case.should_match,
@@ -99,9 +99,8 @@ void RunTestCase(TestCase test_case,
   }
 
   cookie_line = std::string("A=2; HttpOnly;") + test_url.host();
-  cookie = net::CanonicalCookie::Create(
-      test_url, cookie_line, base::Time::Now(), std::nullopt /* server_time */,
-      std::nullopt /* cookie_partition_key */);
+  cookie = net::CanonicalCookie::CreateForTesting(test_url, cookie_line,
+                                                  base::Time::Now());
   if (cookie) {
     EXPECT_EQ(
         test_case.should_match,
@@ -112,9 +111,8 @@ void RunTestCase(TestCase test_case,
   }
 
   cookie_line = std::string("A=2; HttpOnly; Secure;") + test_url.host();
-  cookie = net::CanonicalCookie::Create(
-      test_url, cookie_line, base::Time::Now(), std::nullopt /* server_time */,
-      std::nullopt /* cookie_partition_key */);
+  cookie = net::CanonicalCookie::CreateForTesting(test_url, cookie_line,
+                                                  base::Time::Now());
   if (cookie) {
     EXPECT_EQ(
         test_case.should_match,
@@ -458,10 +456,11 @@ TEST(BrowsingDataFilterBuilderImplTest, PartitionedCookies) {
 
     CookieDeletionInfo delete_info =
         network::DeletionFilterToInfo(builder.BuildCookieDeletionFilter());
-    std::unique_ptr<net::CanonicalCookie> cookie = net::CanonicalCookie::Create(
-        GURL("https://www.cookie.com/"),
-        "__Host-A=B; Secure; SameSite=None; Path=/; Partitioned;",
-        base::Time::Now(), std::nullopt, test_case.cookie_partition_key);
+    std::unique_ptr<net::CanonicalCookie> cookie =
+        net::CanonicalCookie::CreateForTesting(
+            GURL("https://www.cookie.com/"),
+            "__Host-A=B; Secure; SameSite=None; Path=/; Partitioned;",
+            base::Time::Now(), std::nullopt, test_case.cookie_partition_key);
     EXPECT_TRUE(cookie);
     EXPECT_EQ(test_case.should_match,
               delete_info.Matches(
@@ -470,61 +469,41 @@ TEST(BrowsingDataFilterBuilderImplTest, PartitionedCookies) {
   }
 }
 
-TEST(BrowsingDataFilterBuilderImplTest, IsCrossSiteClearSiteDataForCookies) {
-  struct TestCase {
-    const std::string desc;
-    const net::CookiePartitionKeyCollection cookie_partition_key_collection;
-    bool expected;
-  } test_cases[] = {
-      {"Empty keychain", net::CookiePartitionKeyCollection(), false},
-      {"Keychain contains all keys",
-       net::CookiePartitionKeyCollection::ContainsAll(), false},
-      {"Contains secure cookie domain",
-       net::CookiePartitionKeyCollection(
-           net::CookiePartitionKey::FromURLForTesting(
-               GURL("http://cookie.com"))),
-       false},
-      {"Contains insecure cookie domain",
-       net::CookiePartitionKeyCollection(
-           net::CookiePartitionKey::FromURLForTesting(
-               GURL("https://cookie.com"))),
-       false},
-      {"Does not include cookie domain (secure)",
-       net::CookiePartitionKeyCollection(
-           net::CookiePartitionKey::FromURLForTesting(
-               GURL("https://notcookie.com"))),
-       true},
-      {"Does not include cookie domain (insecure)",
-       net::CookiePartitionKeyCollection(
-           net::CookiePartitionKey::FromURLForTesting(
-               GURL("http://notcookie.com"))),
-       true},
-      {"Multiple keys, contains cookie domain",
-       net::CookiePartitionKeyCollection({
-           net::CookiePartitionKey::FromURLForTesting(
-               GURL("https://cookie.com")),
-           net::CookiePartitionKey::FromURLForTesting(
-               GURL("https://notcookie.com")),
-       }),
-       false},
-      {"Multiple keys, does not contain cookie domain",
-       net::CookiePartitionKeyCollection({
-           net::CookiePartitionKey::FromURLForTesting(
-               GURL("https://notcookie.com")),
-           net::CookiePartitionKey::FromURLForTesting(
-               GURL("https://alsonotcookie.com")),
-       }),
-       true},
+TEST(BrowsingDataFilterBuilderImplTest, StorageKey_PreserveNoOrigins) {
+  base::test::ScopedFeatureList scope_feature_list;
+  scope_feature_list.InitAndEnableFeature(
+      net::features::kThirdPartyStoragePartitioning);
+
+  auto origin1 = url::Origin::Create(GURL("https://foo.com"));
+  auto origin2 = url::Origin::Create(GURL("https://bar.com"));
+
+  auto filter_storage_key =
+      blink::StorageKey::Create(origin1, net::SchemefulSite(origin2),
+                                blink::mojom::AncestorChainBit::kCrossSite);
+  BrowsingDataFilterBuilderImpl builder(
+      BrowsingDataFilterBuilderImpl::Mode::kPreserve);
+  builder.SetStorageKey(filter_storage_key);
+  auto matcher_function = builder.BuildStorageKeyFilter();
+
+  blink::StorageKey keys[] = {
+      // Top-level (Foo).
+      blink::StorageKey::CreateFirstParty(origin1),
+      // Foo embedded on Bar.
+      blink::StorageKey::Create(origin1, net::SchemefulSite(origin2),
+                                blink::mojom::AncestorChainBit::kCrossSite),
+      // Foo embedded on Bar embedded on Foo.
+      blink::StorageKey::Create(origin1, net::SchemefulSite(origin1),
+                                blink::mojom::AncestorChainBit::kCrossSite),
+      // Bar
+      blink::StorageKey::CreateFirstParty(origin2),
+      // Bar embedded on Foo
+      blink::StorageKey::Create(origin2, net::SchemefulSite(origin1),
+                                blink::mojom::AncestorChainBit::kCrossSite),
   };
 
-  for (const auto& test_case : test_cases) {
-    SCOPED_TRACE(test_case.desc);
-    BrowsingDataFilterBuilderImpl builder(
-        BrowsingDataFilterBuilderImpl::Mode::kDelete);
-    builder.AddRegisterableDomain("cookie.com");
-    builder.SetCookiePartitionKeyCollection(
-        test_case.cookie_partition_key_collection);
-    EXPECT_EQ(test_case.expected, builder.IsCrossSiteClearSiteDataForCookies());
+  for (const blink::StorageKey& key : keys) {
+    SCOPED_TRACE(key);
+    EXPECT_EQ(matcher_function.Run(key), key == filter_storage_key);
   }
 }
 
@@ -606,6 +585,182 @@ TEST(BrowsingDataFilterBuilderImplTest, StorageKey) {
       EXPECT_EQ(expected,
                 std::move(matcher_function).Run(key_to_compare.value()));
     }
+  }
+}
+
+TEST(BrowsingDataFilterBuilderImplTest,
+     StorageKey_Domain_kThirdPartiesIncluded) {
+  base::test::ScopedFeatureList scope_feature_list;
+  scope_feature_list.InitAndEnableFeature(
+      net::features::kThirdPartyStoragePartitioning);
+
+  BrowsingDataFilterBuilderImpl builder(
+      BrowsingDataFilterBuilderImpl::Mode::kDelete,
+      BrowsingDataFilterBuilderImpl::OriginMatchingMode::kThirdPartiesIncluded);
+  builder.AddRegisterableDomain("foo.com");
+  auto matcher_function = builder.BuildStorageKeyFilter();
+
+  auto origin1 = url::Origin::Create(GURL("https://www.foo.com"));
+  auto origin2 = url::Origin::Create(GURL("https://www.bar.com"));
+  std::pair<blink::StorageKey, bool> keys[] = {
+      // Top-level (Foo).
+      std::make_pair(blink::StorageKey::CreateFirstParty(origin1), true),
+      // Foo embedded on Bar.
+      std::make_pair(
+          blink::StorageKey::Create(origin1, net::SchemefulSite(origin2),
+                                    blink::mojom::AncestorChainBit::kCrossSite),
+          false),
+      // Foo embedded on Bar embedded on Foo.
+      std::make_pair(
+          blink::StorageKey::Create(origin1, net::SchemefulSite(origin1),
+                                    blink::mojom::AncestorChainBit::kCrossSite),
+          true),
+      // Bar
+      std::make_pair(blink::StorageKey::CreateFirstParty(origin2), false),
+      // Bar embedded on Foo
+      std::make_pair(
+          blink::StorageKey::Create(origin2, net::SchemefulSite(origin1),
+                                    blink::mojom::AncestorChainBit::kCrossSite),
+          true),
+  };
+
+  for (const auto& [storage_key, should_match] : keys) {
+    SCOPED_TRACE(storage_key);
+    EXPECT_EQ(should_match, matcher_function.Run(storage_key));
+  }
+}
+
+TEST(BrowsingDataFilterBuilderImplTest,
+     StorageKey_Domain_kThirdPartiesIncluded_Domainless) {
+  base::test::ScopedFeatureList scope_feature_list;
+  scope_feature_list.InitAndEnableFeature(
+      net::features::kThirdPartyStoragePartitioning);
+
+  BrowsingDataFilterBuilderImpl foo_builder(
+      BrowsingDataFilterBuilderImpl::Mode::kDelete,
+      BrowsingDataFilterBuilderImpl::OriginMatchingMode::kThirdPartiesIncluded);
+  foo_builder.AddRegisterableDomain("foo");
+  auto foo_matcher = foo_builder.BuildStorageKeyFilter();
+
+  BrowsingDataFilterBuilderImpl localhost_builder(
+      BrowsingDataFilterBuilderImpl::Mode::kDelete,
+      BrowsingDataFilterBuilderImpl::OriginMatchingMode::kThirdPartiesIncluded);
+  localhost_builder.AddRegisterableDomain("localhost");
+  auto localhost_matcher = localhost_builder.BuildStorageKeyFilter();
+
+  auto foo = url::Origin::Create(GURL("http://foo"));
+  auto localhost = url::Origin::Create(GURL("http://localhost"));
+  struct {
+    blink::StorageKey storage_key;
+    bool foo_should_match;
+    bool localhost_should_match;
+  } keys[] = {
+      // Top-level (Foo).
+      {blink::StorageKey::CreateFirstParty(foo), true, false},
+      // Foo embedded on localhost.
+      {blink::StorageKey::Create(foo, net::SchemefulSite(localhost),
+                                 blink::mojom::AncestorChainBit::kCrossSite),
+       false, true},
+      // localhost
+      {blink::StorageKey::CreateFirstParty(localhost), false, true},
+      // localhost embedded on Foo
+      {blink::StorageKey::Create(localhost, net::SchemefulSite(foo),
+                                 blink::mojom::AncestorChainBit::kCrossSite),
+       true, false},
+  };
+
+  for (const auto& c : keys) {
+    SCOPED_TRACE(c.storage_key);
+    EXPECT_EQ(c.foo_should_match, foo_matcher.Run(c.storage_key));
+    EXPECT_EQ(c.localhost_should_match, localhost_matcher.Run(c.storage_key));
+  }
+}
+
+TEST(BrowsingDataFilterBuilderImplTest,
+     StorageKey_Domain_kOriginInAllContexts) {
+  base::test::ScopedFeatureList scope_feature_list;
+  scope_feature_list.InitAndEnableFeature(
+      net::features::kThirdPartyStoragePartitioning);
+
+  BrowsingDataFilterBuilderImpl builder(
+      BrowsingDataFilterBuilderImpl::Mode::kDelete,
+      BrowsingDataFilterBuilderImpl::OriginMatchingMode::kOriginInAllContexts);
+  builder.AddRegisterableDomain("foo.com");
+  auto matcher_function = builder.BuildStorageKeyFilter();
+
+  auto origin1 = url::Origin::Create(GURL("https://www.foo.com"));
+  auto origin2 = url::Origin::Create(GURL("https://www.bar.com"));
+  std::pair<blink::StorageKey, bool> keys[] = {
+      // Top-level (Foo).
+      std::make_pair(blink::StorageKey::CreateFirstParty(origin1), true),
+      // Foo -> Bar.
+      std::make_pair(
+          blink::StorageKey::Create(origin1, net::SchemefulSite(origin2),
+                                    blink::mojom::AncestorChainBit::kCrossSite),
+          true),
+      // Foo -> Bar -> Foo.
+      std::make_pair(
+          blink::StorageKey::Create(origin1, net::SchemefulSite(origin1),
+                                    blink::mojom::AncestorChainBit::kCrossSite),
+          true),
+      // Bar
+      std::make_pair(blink::StorageKey::CreateFirstParty(origin2), false),
+      // Bar -> Foo
+      std::make_pair(
+          blink::StorageKey::Create(origin2, net::SchemefulSite(origin1),
+                                    blink::mojom::AncestorChainBit::kCrossSite),
+          false),
+  };
+
+  for (const auto& [storage_key, should_match] : keys) {
+    SCOPED_TRACE(storage_key);
+    EXPECT_EQ(should_match, matcher_function.Run(storage_key));
+  }
+}
+
+TEST(BrowsingDataFilterBuilderImplTest,
+     StorageKey_Domain_kOriginInAllContexts_Domainless) {
+  base::test::ScopedFeatureList scope_feature_list;
+  scope_feature_list.InitAndEnableFeature(
+      net::features::kThirdPartyStoragePartitioning);
+
+  BrowsingDataFilterBuilderImpl foo_builder(
+      BrowsingDataFilterBuilderImpl::Mode::kDelete,
+      BrowsingDataFilterBuilderImpl::OriginMatchingMode::kOriginInAllContexts);
+  foo_builder.AddRegisterableDomain("foo");
+  auto foo_matcher = foo_builder.BuildStorageKeyFilter();
+
+  BrowsingDataFilterBuilderImpl localhost_builder(
+      BrowsingDataFilterBuilderImpl::Mode::kDelete,
+      BrowsingDataFilterBuilderImpl::OriginMatchingMode::kOriginInAllContexts);
+  localhost_builder.AddRegisterableDomain("localhost");
+  auto localhost_matcher = localhost_builder.BuildStorageKeyFilter();
+
+  auto foo = url::Origin::Create(GURL("https://foo"));
+  auto localhost = url::Origin::Create(GURL("http://localhost"));
+  struct {
+    blink::StorageKey storage_key;
+    bool foo_should_match;
+    bool localhost_should_match;
+  } keys[] = {
+      // Top-level (Foo).
+      {blink::StorageKey::CreateFirstParty(foo), true, false},
+      // Foo embedded on localhost.
+      {blink::StorageKey::Create(foo, net::SchemefulSite(localhost),
+                                 blink::mojom::AncestorChainBit::kCrossSite),
+       true, false},
+      // localhost
+      {blink::StorageKey::CreateFirstParty(localhost), false, true},
+      // localhost embedded on Foo
+      {blink::StorageKey::Create(localhost, net::SchemefulSite(foo),
+                                 blink::mojom::AncestorChainBit::kCrossSite),
+       false, true},
+  };
+
+  for (const auto& c : keys) {
+    SCOPED_TRACE(c.storage_key);
+    EXPECT_EQ(c.foo_should_match, foo_matcher.Run(c.storage_key));
+    EXPECT_EQ(c.localhost_should_match, localhost_matcher.Run(c.storage_key));
   }
 }
 
@@ -938,23 +1093,23 @@ TEST(BrowsingDataFilterBuilderImplTest, ExcludeUnpartitionedCookies) {
   BrowsingDataFilterBuilderImpl builder(
       BrowsingDataFilterBuilderImpl::Mode::kPreserve);
 
-  builder.SetPartitionedStateAllowedOnly(true);
+  builder.SetPartitionedCookiesOnly(true);
 
   CookieDeletionInfo delete_info =
       network::DeletionFilterToInfo(builder.BuildCookieDeletionFilter());
 
   // Unpartitioned cookie should NOT match.
-  std::unique_ptr<net::CanonicalCookie> cookie = net::CanonicalCookie::Create(
-      GURL("https://www.cookie.com/"),
-      "__Host-A=B; Secure; SameSite=None; Path=/;", base::Time::Now(),
-      std::nullopt, std::nullopt);
+  std::unique_ptr<net::CanonicalCookie> cookie =
+      net::CanonicalCookie::CreateForTesting(
+          GURL("https://www.cookie.com/"),
+          "__Host-A=B; Secure; SameSite=None; Path=/;", base::Time::Now());
   EXPECT_TRUE(cookie);
   EXPECT_FALSE(delete_info.Matches(
       *cookie,
       net::CookieAccessParams{net::CookieAccessSemantics::NONLEGACY, false}));
 
   // Partitioned cookie should match.
-  cookie = net::CanonicalCookie::Create(
+  cookie = net::CanonicalCookie::CreateForTesting(
       GURL("https://www.cookie.com/"),
       "__Host-A=B; Secure; SameSite=None; Path=/; Partitioned;",
       base::Time::Now(), std::nullopt,
@@ -966,12 +1121,14 @@ TEST(BrowsingDataFilterBuilderImplTest, ExcludeUnpartitionedCookies) {
       net::CookieAccessParams{net::CookieAccessSemantics::NONLEGACY, false}));
 
   // Nonced partitioned cookie should match.
-  cookie = net::CanonicalCookie::Create(
+  cookie = net::CanonicalCookie::CreateForTesting(
       GURL("https://www.cookie.com/"),
       "__Host-A=B; Secure; SameSite=None; Path=/;", base::Time::Now(),
       std::nullopt,
       net::CookiePartitionKey::FromURLForTesting(
-          GURL("https://toplevelsite.com"), base::UnguessableToken::Create()));
+          GURL("https://toplevelsite.com"),
+          net::CookiePartitionKey::AncestorChainBit::kCrossSite,
+          base::UnguessableToken::Create()));
   EXPECT_TRUE(cookie);
   EXPECT_TRUE(delete_info.Matches(
       *cookie,
@@ -983,13 +1140,15 @@ TEST(BrowsingDataFilterBuilderImplTest, CopyAndEquality) {
   TestBrowserContext browser_context;
 
   BrowsingDataFilterBuilderImpl builder(
-      BrowsingDataFilterBuilderImpl::Mode::kPreserve);
+      BrowsingDataFilterBuilderImpl::Mode::kPreserve,
+      BrowsingDataFilterBuilderImpl::OriginMatchingMode::kOriginInAllContexts);
   builder.AddOrigin(url::Origin::Create(GURL("https://example.com")));
   builder.AddRegisterableDomain(kGoogleDomain);
   builder.SetStorageKey(
       blink::StorageKey::CreateFromStringForTesting("https://foo.com"));
   builder.SetCookiePartitionKeyCollection(net::CookiePartitionKeyCollection(
       net::CookiePartitionKey::FromURLForTesting(GURL("https://www.foo.com"))));
+  builder.SetPartitionedCookiesOnly(true);
   builder.SetStoragePartitionConfig(StoragePartitionConfig::Create(
       &browser_context, "domain", "name", /*in_memory=*/false));
 

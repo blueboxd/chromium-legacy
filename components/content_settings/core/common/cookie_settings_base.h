@@ -89,9 +89,10 @@ class CookieSettingsBase {
     // Allow by global 3p cookie setting setting (e.g. Enterprise Policy:
     // BlockThirdPartyCookies, UX).
     kAllowByGlobalSetting = 2,
-    // (DEPRECATED) Allow by 3PCD metadata grants content settings.
+    // (DEPRECATED) Allow by 3PCD metadata grants content settings. This was
+    // replaced by the `kAllowBy3PCDMetadata.+` enums below.
     // kAllowBy3PCDMetadata = 3,
-    // Allow by third-party deprecation trial.
+    // Allow by third-party cookies deprecation trial.
     kAllowBy3PCD = 4,
     kAllowBy3PCDHeuristics = 5,
     kAllowByStorageAccess = 6,
@@ -100,7 +101,8 @@ class CookieSettingsBase {
     // Allow by 1P (AKA First Party, Top-level) DT (Deprecation Trial) token
     // being deployed.
     kAllowByTopLevel3PCD = 9,
-    // Allow by Enterprise Policy: CookiesAllowedForUrls.
+    // Allow by Enterprise Policy (SettingSource::kPolicy):
+    // CookiesAllowedForUrls.
     kAllowByEnterprisePolicyCookieAllowedForUrls = 10,
     // Same as kAllowBy3PCDMetadata but for
     // mojom::TpcdMetadataRuleSource::SOURCE_UNSPECIFIED rules.
@@ -185,7 +187,7 @@ class CookieSettingsBase {
   };
 
   // Set of types relevant for CookieSettings.
-  using CookieSettingsTypeSet = base::fixed_flat_set<ContentSettingsType, 7>;
+  using CookieSettingsTypeSet = base::fixed_flat_set<ContentSettingsType, 8>;
 
   // ContentSettings listed in this set will be automatically synced to the
   // CookieSettings instance in the network service.
@@ -337,8 +339,8 @@ class CookieSettingsBase {
   // Returns a content setting for the requested parameters and populates |info|
   // if not null. Implementations might only implement a subset of all
   // ContentSettingsTypes. Currently only COOKIES, TPCD_TRIAL, STORAGE_ACCESS,
-  // TPCD_METADATA_GRANTS, TPCD_HEURISTICS_GRANTS, TOP_LEVEL_TPCD_TRIAL, and
-  // TOP_LEVEL_STORAGE_ACCESS are required.
+  // TPCD_METADATA_GRANTS, TPCD_HEURISTICS_GRANTS, TOP_LEVEL_TPCD_TRIAL,
+  // TOP_LEVEL_STORAGE_ACCESS, and FEDERATED_IDENTITY_SHARING are required.
   virtual ContentSetting GetContentSetting(const GURL& primary_url,
                                            const GURL& secondary_url,
                                            ContentSettingsType content_type,
@@ -413,9 +415,6 @@ class CookieSettingsBase {
   // Returns whether |scheme| is always allowed to access 3p cookies.
   virtual bool IsThirdPartyCookiesAllowedScheme(
       const std::string& scheme) const = 0;
-
-  // Returns whether the StorageAccessAPI feature is enabled.
-  virtual bool IsStorageAccessApiEnabled() const = 0;
 
   static bool storage_access_api_grants_unpartitioned_storage_;
   const bool is_storage_partitioned_;

@@ -30,6 +30,16 @@ views::View* AccountSelectionViewTestBase::GetHoverButtonIconView(
   return account->icon_view();
 }
 
+views::Label* AccountSelectionViewTestBase::GetHoverButtonFooter(
+    HoverButton* account) {
+  return account->footer();
+}
+
+views::View* AccountSelectionViewTestBase::GetHoverButtonSecondaryView(
+    HoverButton* account) {
+  return account->secondary_view();
+}
+
 content::IdentityRequestAccount
 AccountSelectionViewTestBase::CreateTestIdentityRequestAccount(
     const std::string& account_suffix,
@@ -40,7 +50,8 @@ AccountSelectionViewTestBase::CreateTestIdentityRequestAccount(
       std::string(kNameBase) + account_suffix,
       std::string(kGivenNameBase) + account_suffix, GURL(),
       /*login_hints=*/std::vector<std::string>(),
-      /*domain_hints=*/std::vector<std::string>(), login_state);
+      /*domain_hints=*/std::vector<std::string>(),
+      /*labels=*/std::vector<std::string>(), login_state);
 }
 
 std::vector<content::IdentityRequestAccount>
@@ -57,8 +68,9 @@ AccountSelectionViewTestBase::CreateTestIdentityRequestAccounts(
 
 content::ClientMetadata AccountSelectionViewTestBase::CreateTestClientMetadata(
     const std::string& terms_of_service_url) {
-  return content::ClientMetadata((GURL(terms_of_service_url)),
-                                 (GURL(kPrivacyPolicyUrl)));
+  return content::ClientMetadata(GURL(terms_of_service_url),
+                                 GURL(kPrivacyPolicyUrl),
+                                 GURL(kRpBrandIconUrl));
 }
 
 std::vector<std::string> AccountSelectionViewTestBase::GetChildClassNames(
@@ -119,28 +131,75 @@ void AccountSelectionViewTestBase::CheckNonHoverableAccountRow(
 void AccountSelectionViewTestBase::CheckHoverableAccountRows(
     const std::vector<raw_ptr<views::View, VectorExperimental>>& accounts,
     const std::vector<std::string>& account_suffixes,
-    size_t& accounts_index) {
-  EXPECT_GE(accounts.size(), account_suffixes.size());
+    size_t& accounts_index,
+    bool expect_idp,
+    bool is_modal_dialog) {
+  ASSERT_GE(accounts.size(), account_suffixes.size() + accounts_index);
   // Checks the account rows starting at `accounts[accounts_index]`. Updates
   // `accounts_index` to the first unused index in `accounts`, or to
   // `accounts.size()` if done.
   for (const auto& account_suffix : account_suffixes) {
+    if (std::string(accounts[accounts_index]->GetClassName()) == "Separator") {
+      ++accounts_index;
+    }
     ASSERT_STREQ("HoverButton", accounts[accounts_index]->GetClassName());
     HoverButton* account_row =
         static_cast<HoverButton*>(accounts[accounts_index++]);
     ASSERT_TRUE(account_row);
+
+    // Check for account name in title.
     EXPECT_EQ(GetHoverButtonTitle(account_row),
               base::UTF8ToUTF16(kNameBase + account_suffix));
+
+    // Check for account email in subtitle.
     EXPECT_EQ(GetHoverButtonSubtitle(account_row)->GetText(),
               base::UTF8ToUTF16(std::string(kEmailBase) + account_suffix));
-    // The subtitle has changed style, so AutoColorReadabilityEnabled should
-    // be set.
+    // The subtitle has changed style, so AutoColorReadabilityEnabled should be
+    // set.
     EXPECT_TRUE(
         GetHoverButtonSubtitle(account_row)->GetAutoColorReadabilityEnabled());
+
+    // Check for account icon.
     views::View* icon_view = GetHoverButtonIconView(account_row);
     EXPECT_TRUE(icon_view);
+
+    // Check for the IDP eTLD+1 in footer. This is not passed to the method but
+    // in our tests they all start with 'idp'.
+    if (expect_idp) {
+      EXPECT_TRUE(
+          GetHoverButtonFooter(account_row)->GetText().starts_with(u"idp"));
+    } else {
+      EXPECT_FALSE(GetHoverButtonFooter(account_row));
+    }
     EXPECT_EQ(icon_view->size(),
-              gfx::Size(kDesiredAvatarSize, kDesiredAvatarSize));
+              is_modal_dialog ? gfx::Size(kModalAvatarSize, kModalAvatarSize)
+              : expect_idp    ? gfx::Size(kDesiredAvatarSize + kIdpBadgeOffset,
+                                          kDesiredAvatarSize + kIdpBadgeOffset)
+                           : gfx::Size(kDesiredAvatarSize, kDesiredAvatarSize));
+
+    // Check for arrow icon in secondary view.
+    if (is_modal_dialog) {
+      views::ImageView* arrow_icon_view = static_cast<views::ImageView*>(
+          GetHoverButtonSecondaryView(account_row));
+      EXPECT_TRUE(arrow_icon_view);
+    } else {
+      EXPECT_FALSE(GetHoverButtonSecondaryView(account_row));
+    }
+    if (expect_idp) {
+      std::vector<raw_ptr<views::View, VectorExperimental>> icon_children =
+          icon_view->children();
+      ASSERT_EQ(icon_children.size(), 2u);
+      EXPECT_STREQ(icon_children[0]->GetClassName(), "AccountImageView");
+      EXPECT_EQ(icon_children[0]->size(),
+                gfx::Size(kDesiredAvatarSize + kIdpBadgeOffset,
+                          kDesiredAvatarSize + kIdpBadgeOffset));
+      EXPECT_STREQ(icon_children[1]->GetClassName(), "BoxLayoutView");
+      ASSERT_EQ(icon_children[1]->children().size(), 1u);
+      views::View* brand_icon_image_view = icon_children[1]->children()[0];
+      EXPECT_STREQ(brand_icon_image_view->GetClassName(), "BrandIconImageView");
+    } else {
+      EXPECT_STREQ(icon_view->GetClassName(), "AccountImageView");
+    }
   }
 }
 

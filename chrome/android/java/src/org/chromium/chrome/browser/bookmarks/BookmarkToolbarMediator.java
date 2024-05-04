@@ -17,8 +17,6 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.supplier.OneshotSupplier;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.app.bookmarks.BookmarkAddEditFolderActivity;
-import org.chromium.chrome.browser.app.bookmarks.BookmarkFolderSelectActivity;
 import org.chromium.chrome.browser.bookmarks.BookmarkUiPrefs.BookmarkRowDisplayPref;
 import org.chromium.chrome.browser.bookmarks.BookmarkUiPrefs.BookmarkRowSortOrder;
 import org.chromium.chrome.browser.bookmarks.BookmarkUiPrefs.Observer;
@@ -79,7 +77,7 @@ class BookmarkToolbarMediator
     private final Runnable mEndSearchRunnable;
     private final BookmarkMoveSnackbarManager mBookmarkMoveSnackbarManager;
 
-    // TODO(crbug.com/1413463): Remove reference to BookmarkDelegate if possible.
+    // TODO(crbug.com/40255666): Remove reference to BookmarkDelegate if possible.
     private @Nullable BookmarkDelegate mBookmarkDelegate;
 
     private BookmarkId mCurrentFolder;
@@ -113,19 +111,18 @@ class BookmarkToolbarMediator
         mEndSearchRunnable = endSearchRunnable;
         mBookmarkMoveSnackbarManager = bookmarkMoveSnackbarManager;
 
-        if (BookmarkFeatures.isAndroidImprovedBookmarksEnabled()) {
-            mModel.set(BookmarkToolbarProperties.SORT_MENU_IDS, SORT_MENU_IDS);
-            mModel.set(
-                    BookmarkToolbarProperties.CHECKED_SORT_MENU_ID,
-                    getMenuIdFromSortOrder(mBookmarkUiPrefs.getBookmarkRowSortOrder()));
-            final @BookmarkRowDisplayPref int displayPref =
-                    mBookmarkUiPrefs.getBookmarkRowDisplayPref();
-            mModel.set(
-                    BookmarkToolbarProperties.CHECKED_VIEW_MENU_ID,
-                    displayPref == BookmarkRowDisplayPref.COMPACT
-                            ? R.id.compact_view
-                            : R.id.visual_view);
-        }
+        mModel.set(BookmarkToolbarProperties.SORT_MENU_IDS, SORT_MENU_IDS);
+        mModel.set(
+                BookmarkToolbarProperties.CHECKED_SORT_MENU_ID,
+                getMenuIdFromSortOrder(mBookmarkUiPrefs.getBookmarkRowSortOrder()));
+        final @BookmarkRowDisplayPref int displayPref =
+                mBookmarkUiPrefs.getBookmarkRowDisplayPref();
+        mModel.set(
+                BookmarkToolbarProperties.CHECKED_VIEW_MENU_ID,
+                displayPref == BookmarkRowDisplayPref.COMPACT
+                        ? R.id.compact_view
+                        : R.id.visual_view);
+
         bookmarkDelegateSupplier.onAvailable(
                 (bookmarkDelegate) -> {
                     mBookmarkDelegate = bookmarkDelegate;
@@ -182,40 +179,22 @@ class BookmarkToolbarMediator
             mModel.set(BookmarkToolbarProperties.CHECKED_VIEW_MENU_ID, id);
             return true;
         } else if (id == R.id.edit_menu_id) {
-            if (BookmarkFeatures.isAndroidImprovedBookmarksEnabled()) {
-                BookmarkUtils.startEditActivity(mContext, mCurrentFolder);
-            } else {
-                BookmarkAddEditFolderActivity.startEditFolderActivity(mContext, mCurrentFolder);
-            }
+            BookmarkUtils.startEditActivity(mContext, mCurrentFolder);
             return true;
         } else if (id == R.id.close_menu_id) {
             BookmarkUtils.finishActivityOnPhone(mContext);
-            return true;
-        } else if (id == R.id.search_menu_id) {
-            assert mBookmarkDelegate != null;
-            mBookmarkDelegate.openSearchUi();
-            mModel.set(BookmarkToolbarProperties.NAVIGATION_BUTTON_STATE, NavigationButton.BACK);
             return true;
         } else if (id == R.id.selection_mode_edit_menu_id) {
             List<BookmarkId> list = mSelectionDelegate.getSelectedItemsAsList();
             assert list.size() == 1;
             BookmarkItem item = mBookmarkModel.getBookmarkById(list.get(0));
-            if (item.isFolder() && !BookmarkFeatures.isAndroidImprovedBookmarksEnabled()) {
-                BookmarkAddEditFolderActivity.startEditFolderActivity(mContext, item.getId());
-            } else {
-                BookmarkUtils.startEditActivity(mContext, item.getId());
-            }
+            BookmarkUtils.startEditActivity(mContext, item.getId());
             return true;
         } else if (id == R.id.selection_mode_move_menu_id) {
             List<BookmarkId> list = mSelectionDelegate.getSelectedItemsAsList();
             if (list.size() >= 1) {
-                if (BookmarkFeatures.isAndroidImprovedBookmarksEnabled()) {
-                    mBookmarkMoveSnackbarManager.startFolderPickerAndObserveResult(
-                            list.toArray(new BookmarkId[0]));
-                } else {
-                    BookmarkFolderSelectActivity.startFolderSelectActivity(
-                            mContext, list.toArray(new BookmarkId[0]));
-                }
+                mBookmarkMoveSnackbarManager.startFolderPickerAndObserveResult(
+                        list.toArray(new BookmarkId[0]));
                 RecordUserAction.record("MobileBookmarkManagerMoveToFolderBulk");
             }
             return true;
@@ -278,23 +257,17 @@ class BookmarkToolbarMediator
     @Override
     public void onUiModeChanged(@BookmarkUiMode int mode) {
         mCurrentUiMode = mode;
-        if (BookmarkFeatures.isAndroidImprovedBookmarksEnabled()) {
-            // TODO(https://crbug.com/1439583): Update buttons.
-        } else {
-            mModel.set(
-                    BookmarkToolbarProperties.SOFT_KEYBOARD_VISIBLE,
-                    mode == BookmarkUiMode.SEARCHING);
-        }
 
+        // TODO(https://crbug.com/1439583): Update buttons.
         mModel.set(BookmarkToolbarProperties.BOOKMARK_UI_MODE, mode);
         if (mode == BookmarkUiMode.LOADING) {
             mModel.set(BookmarkToolbarProperties.NAVIGATION_BUTTON_STATE, NavigationButton.NONE);
             mModel.set(BookmarkToolbarProperties.TITLE, null);
-            mModel.set(BookmarkToolbarProperties.SEARCH_BUTTON_VISIBLE, false);
             mModel.set(BookmarkToolbarProperties.EDIT_BUTTON_VISIBLE, false);
-        } else if (BookmarkFeatures.isAndroidImprovedBookmarksEnabled()
-                && mode == BookmarkUiMode.SEARCHING) {
-            mModel.set(BookmarkToolbarProperties.NAVIGATION_BUTTON_STATE, NavigationButton.BACK);
+        } else if (mode == BookmarkUiMode.SEARCHING) {
+            mModel.set(
+                    BookmarkToolbarProperties.NAVIGATION_BUTTON_STATE,
+                    NavigationButton.NORMAL_VIEW_BACK);
             if (!mSelectionDelegate.isSelectionEnabled()) {
                 mModel.set(
                         BookmarkToolbarProperties.TITLE,
@@ -317,7 +290,6 @@ class BookmarkToolbarMediator
 
         BookmarkItem folderItem =
                 mCurrentFolder == null ? null : mBookmarkModel.getBookmarkById(mCurrentFolder);
-        mModel.set(BookmarkToolbarProperties.SEARCH_BUTTON_VISIBLE, folderItem != null);
         mModel.set(
                 BookmarkToolbarProperties.EDIT_BUTTON_VISIBLE,
                 folderItem != null && folderItem.isEditable());
@@ -330,16 +302,13 @@ class BookmarkToolbarMediator
         if (folder.equals(mBookmarkModel.getRootFolderId())) {
             title = res.getString(R.string.bookmarks);
             navigationButton = NavigationButton.NONE;
-        } else if (folder.equals(BookmarkId.SHOPPING_FOLDER)) {
-            title = res.getString(R.string.price_tracking_bookmarks_filter_title);
-            navigationButton = NavigationButton.BACK;
         } else if (mBookmarkModel.getTopLevelFolderIds().contains(folderItem.getParentId())
                 && TextUtils.isEmpty(folderItem.getTitle())) {
             title = res.getString(R.string.bookmarks);
-            navigationButton = NavigationButton.BACK;
+            navigationButton = NavigationButton.NORMAL_VIEW_BACK;
         } else {
             title = folderItem.getTitle();
-            navigationButton = NavigationButton.BACK;
+            navigationButton = NavigationButton.NORMAL_VIEW_BACK;
         }
         // This doesn't handle selection state correctly, must be before we fake a selection change.
         mModel.set(BookmarkToolbarProperties.TITLE, title);
@@ -354,29 +323,26 @@ class BookmarkToolbarMediator
         // an incorrect button state, and we need to override that.
         mModel.set(BookmarkToolbarProperties.NAVIGATION_BUTTON_STATE, navigationButton);
 
-        if (BookmarkFeatures.isAndroidImprovedBookmarksEnabled()) {
-            // New folder button.
-            mModel.set(BookmarkToolbarProperties.NEW_FOLDER_BUTTON_VISIBLE, true);
-            mModel.set(
-                    BookmarkToolbarProperties.NEW_FOLDER_BUTTON_ENABLED,
-                    BookmarkUtils.canAddFolderToParent(mBookmarkModel, mCurrentFolder));
+        // New folder button.
+        mModel.set(BookmarkToolbarProperties.NEW_FOLDER_BUTTON_VISIBLE, true);
+        mModel.set(
+                BookmarkToolbarProperties.NEW_FOLDER_BUTTON_ENABLED,
+                BookmarkUtils.canAddFolderToParent(mBookmarkModel, mCurrentFolder));
 
-            // Special behavior in reading list:
-            // - Select CHRONOLOGICAL as sort order.
-            // - Disable sort menu items.
-            boolean inReadingList =
-                    BookmarkUtils.isReadingListFolder(mBookmarkModel, mCurrentFolder);
-            mModel.set(BookmarkToolbarProperties.SORT_MENU_IDS_ENABLED, !inReadingList);
-            if (inReadingList) {
-                // Reading list items are always sorted by date added.
-                mModel.set(
-                        BookmarkToolbarProperties.CHECKED_SORT_MENU_ID,
-                        getMenuIdFromSortOrder(BookmarkRowSortOrder.REVERSE_CHRONOLOGICAL));
-            } else {
-                mModel.set(
-                        BookmarkToolbarProperties.CHECKED_SORT_MENU_ID,
-                        getMenuIdFromSortOrder(mBookmarkUiPrefs.getBookmarkRowSortOrder()));
-            }
+        // Special behavior in reading list:
+        // - Select CHRONOLOGICAL as sort order.
+        // - Disable sort menu items.
+        boolean inReadingList = BookmarkUtils.isReadingListFolder(mBookmarkModel, mCurrentFolder);
+        mModel.set(BookmarkToolbarProperties.SORT_MENU_IDS_ENABLED, !inReadingList);
+        if (inReadingList) {
+            // Reading list items are always sorted by date added.
+            mModel.set(
+                    BookmarkToolbarProperties.CHECKED_SORT_MENU_ID,
+                    getMenuIdFromSortOrder(BookmarkRowSortOrder.REVERSE_CHRONOLOGICAL));
+        } else {
+            mModel.set(
+                    BookmarkToolbarProperties.CHECKED_SORT_MENU_ID,
+                    getMenuIdFromSortOrder(mBookmarkUiPrefs.getBookmarkRowSortOrder()));
         }
     }
 
@@ -392,11 +358,7 @@ class BookmarkToolbarMediator
     @Override
     public void onSelectionStateChange(List<BookmarkItem> selectedItems) {
         if (!mSelectionDelegate.isSelectionEnabled()) {
-            if (BookmarkFeatures.isAndroidImprovedBookmarksEnabled()) {
-                onUiModeChanged(mCurrentUiMode);
-            } else {
-                onFolderStateSet(mCurrentFolder);
-            }
+            onUiModeChanged(mCurrentUiMode);
         }
 
         mModel.set(BookmarkToolbarProperties.SOFT_KEYBOARD_VISIBLE, false);
@@ -433,8 +395,7 @@ class BookmarkToolbarMediator
     // Private methods.
 
     private void onNavigateBack() {
-        if (BookmarkFeatures.isAndroidImprovedBookmarksEnabled()
-                && mCurrentUiMode == BookmarkUiMode.SEARCHING) {
+        if (mCurrentUiMode == BookmarkUiMode.SEARCHING) {
             mEndSearchRunnable.run();
             return;
         }

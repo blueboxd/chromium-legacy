@@ -1082,7 +1082,7 @@ TEST_P(IndexedHostContentSettingsMapTest, IncognitoInheritCookies) {
   EXPECT_EQ(CONTENT_SETTING_BLOCK, result);
 }
 
-TEST_P(IndexedHostContentSettingsMapTest, IncognitoDontInheritSetting) {
+TEST_P(IndexedHostContentSettingsMapTest, IncognitoDontInheritWebsiteSetting) {
   // Website settings marked DONT_INHERIT_IN_INCOGNITO in
   // WebsiteSettingsRegistry (e.g. usb chooser data) don't inherit any values
   // from from regular to incognito.
@@ -1110,7 +1110,7 @@ TEST_P(IndexedHostContentSettingsMapTest, IncognitoDontInheritSetting) {
       host, host, ContentSettingsType::USB_CHOOSER_DATA,
       base::Value(test_dict.Clone()));
 
-  // The setting is not inherted by |otr_map|.
+  // The setting is not inherited by |otr_map|.
   base::Value stored_value = host_content_settings_map->GetWebsiteSetting(
       host, host, ContentSettingsType::USB_CHOOSER_DATA);
   EXPECT_EQ(stored_value, test_dict);
@@ -1125,9 +1125,44 @@ TEST_P(IndexedHostContentSettingsMapTest, IncognitoDontInheritSetting) {
   }
 }
 
+TEST_P(IndexedHostContentSettingsMapTest, IncognitoDontInheritContentSetting) {
+  // Content settings marked DONT_INHERIT_IN_INCOGNITO in
+  // ContentSettingsRegistry (e.g. top-level scoped 3pcd, which is a special
+  // case) don't inherit any values from from regular to incognito.
+  TestingProfile profile;
+  Profile* otr_profile =
+      profile.GetPrimaryOTRProfile(/*create_if_needed=*/true);
+  HostContentSettingsMap* map =
+      HostContentSettingsMapFactory::GetForProfile(&profile);
+  HostContentSettingsMap* otr_map =
+      HostContentSettingsMapFactory::GetForProfile(otr_profile);
+
+  GURL host("https://example.com/");
+
+  // top-level scoped 3pcd defaults to ALLOW.
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            map->GetContentSetting(
+                host, host, ContentSettingsType::TOP_LEVEL_TPCD_ORIGIN_TRIAL));
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            otr_map->GetContentSetting(
+                host, host, ContentSettingsType::TOP_LEVEL_TPCD_ORIGIN_TRIAL));
+
+  map->SetContentSettingCustomScope(
+      ContentSettingsPattern::FromURLNoWildcard(host),
+      ContentSettingsPattern::FromURLNoWildcard(host),
+      ContentSettingsType::TOP_LEVEL_TPCD_ORIGIN_TRIAL, CONTENT_SETTING_BLOCK);
+
+  // The setting is not inherited by |otr_map|.
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            map->GetContentSetting(
+                host, host, ContentSettingsType::TOP_LEVEL_TPCD_ORIGIN_TRIAL));
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            otr_map->GetContentSetting(
+                host, host, ContentSettingsType::TOP_LEVEL_TPCD_ORIGIN_TRIAL));
+}
+
 TEST_P(IndexedHostContentSettingsMapTest, PrefExceptionsOperation) {
-  using content_settings::SETTING_SOURCE_POLICY;
-  using content_settings::SETTING_SOURCE_USER;
+  using content_settings::SettingSource;
 
   const char kUrl1[] = "http://user_exception_allow.com";
   const char kUrl2[] = "http://user_exception_block.com";
@@ -1144,20 +1179,20 @@ TEST_P(IndexedHostContentSettingsMapTest, PrefExceptionsOperation) {
   // No policy setting: follow users settings.
   tester.ClearPolicyDefault();
   // User exceptions.
-  EXPECT_EQ(SETTING_SOURCE_USER, tester.GetSettingSourceForURL(kUrl1));
-  EXPECT_EQ(SETTING_SOURCE_USER, tester.GetSettingSourceForURL(kUrl2));
+  EXPECT_EQ(SettingSource::kUser, tester.GetSettingSourceForURL(kUrl1));
+  EXPECT_EQ(SettingSource::kUser, tester.GetSettingSourceForURL(kUrl2));
   // User default.
-  EXPECT_EQ(SETTING_SOURCE_USER, tester.GetSettingSourceForURL(kUrl3));
+  EXPECT_EQ(SettingSource::kUser, tester.GetSettingSourceForURL(kUrl3));
 
   // Policy overrides users always.
   tester.SetPolicyDefault(CONTENT_SETTING_ALLOW);
-  EXPECT_EQ(SETTING_SOURCE_POLICY, tester.GetSettingSourceForURL(kUrl1));
-  EXPECT_EQ(SETTING_SOURCE_POLICY, tester.GetSettingSourceForURL(kUrl2));
-  EXPECT_EQ(SETTING_SOURCE_POLICY, tester.GetSettingSourceForURL(kUrl3));
+  EXPECT_EQ(SettingSource::kPolicy, tester.GetSettingSourceForURL(kUrl1));
+  EXPECT_EQ(SettingSource::kPolicy, tester.GetSettingSourceForURL(kUrl2));
+  EXPECT_EQ(SettingSource::kPolicy, tester.GetSettingSourceForURL(kUrl3));
   tester.SetPolicyDefault(CONTENT_SETTING_BLOCK);
-  EXPECT_EQ(SETTING_SOURCE_POLICY, tester.GetSettingSourceForURL(kUrl1));
-  EXPECT_EQ(SETTING_SOURCE_POLICY, tester.GetSettingSourceForURL(kUrl2));
-  EXPECT_EQ(SETTING_SOURCE_POLICY, tester.GetSettingSourceForURL(kUrl3));
+  EXPECT_EQ(SettingSource::kPolicy, tester.GetSettingSourceForURL(kUrl1));
+  EXPECT_EQ(SettingSource::kPolicy, tester.GetSettingSourceForURL(kUrl2));
+  EXPECT_EQ(SettingSource::kPolicy, tester.GetSettingSourceForURL(kUrl3));
 }
 
 TEST_P(IndexedHostContentSettingsMapTest, GetUserModifiableContentSetting) {
@@ -1841,7 +1876,7 @@ void ReloadProviders(PrefService* pref_service,
       pref_service, false, true, false);
   content_settings::TestUtils::OverrideProvider(
       host_content_settings_map, std::move(pref_provider),
-      HostContentSettingsMap::PREF_PROVIDER);
+      content_settings::ProviderType::kPrefProvider);
 }
 
 TEST_P(IndexedHostContentSettingsMapTest, GetPatternsFromScopingType) {

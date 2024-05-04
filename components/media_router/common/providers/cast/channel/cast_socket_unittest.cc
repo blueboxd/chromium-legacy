@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -20,7 +21,6 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/sys_byteorder.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/test/bind.h"
 #include "base/timer/mock_timer.h"
@@ -248,7 +248,7 @@ class MockTestCastSocket : public TestCastSocketBase {
       nullptr;
 };
 
-// TODO(https://crbug.com/928467):  Remove this class.
+// TODO(crbug.com/41439190):  Remove this class.
 class TestSocketFactory : public net::ClientSocketFactory {
  public:
   explicit TestSocketFactory(net::IPEndPoint ip) : ip_(ip) {}
@@ -537,7 +537,7 @@ class SslCastSocketTest : public CastSocketTestBase {
   void TcpConnectCallback(int result) { connect_result_ = result; }
 
   std::unique_ptr<crypto::RSAPrivateKey> ReadTestKeyFromPEM(
-      const base::StringPiece& name) {
+      std::string_view name) {
     base::FilePath key_path = GetTestCertsDirectory().AppendASCII(name);
     std::string pem_data;
     if (!base::ReadFileToString(key_path, &pem_data)) {

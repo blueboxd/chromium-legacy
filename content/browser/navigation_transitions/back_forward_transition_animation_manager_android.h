@@ -28,7 +28,7 @@ class RenderFrameHostImpl;
 // If for some reason the history navigation couldn't be animated, this class
 // won't create an `animator_`, and will start the history navigation via the
 // `NavigationController`.
-// TODO(https://crbug.com/1424477): We should always animate a gesture history
+// TODO(crbug.com/40260440): We should always animate a gesture history
 // navigation.
 class CONTENT_EXPORT BackForwardTransitionAnimationManagerAndroid
     : public BackForwardTransitionAnimationManager {
@@ -45,7 +45,7 @@ class CONTENT_EXPORT BackForwardTransitionAnimationManagerAndroid
   // `NavigationTransitionAnimationManager`:
   void OnGestureStarted(const ui::BackGestureEvent& gesture,
                         ui::BackGestureEventSwipeEdge edge,
-                        NavigationType navigation_type) override;
+                        NavigationDirection navigation_direction) override;
   void OnGestureProgressed(const ui::BackGestureEvent& gesture) override;
   void OnGestureCancelled() override;
   void OnGestureInvoked() override;
@@ -62,17 +62,20 @@ class CONTENT_EXPORT BackForwardTransitionAnimationManagerAndroid
   //    navigating away from a crashed frame (early-swap), or for same-RFH
   //    navigations.
   //
-  // TODO(https://crbug.com/1515412): This also won't work for the initial
+  // TODO(crbug.com/41487964): This also won't work for the initial
   // navigation away from "about:blank". We might be able to treat this
   // navigation as a same-doc one.
   //
-  // TODO(https://crbug.com/936696): Check the status of RD when it is close to
+  // TODO(crbug.com/40615943): Check the status of RD when it is close to
   // launch. Without RD we need to make sure no frames from the old document is
   // associated with the updated LocalSurfaceId (https://crbug.com/1445976).
   void OnDidNavigatePrimaryMainFramePreCommit(
       const NavigationRequest& navigation_request,
       RenderFrameHostImpl* old_host,
       RenderFrameHostImpl* new_host);
+
+  // Notified when a unstarted navigation request is destroyed.
+  void OnNavigationCancelledBeforeStart(NavigationHandle* navigation_handle);
 
   // `animator_` invokes this callback to destroy itself, when all the animation
   // has finished in the browser UI. Also use this to abort processing the

@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/containers/flat_map.h"
+#include "base/memory/raw_ptr.h"
 #include "content/browser/devtools/protocol/devtools_domain_handler.h"
 #include "content/browser/devtools/protocol/emulation.h"
 #include "content/browser/devtools/protocol/protocol.h"
@@ -137,6 +138,10 @@ class EmulationHandler : public DevToolsDomainHandler,
   void UpdateDeviceEmulationStateForHost(
       RenderWidgetHostImpl* render_widget_host);
 
+  Response SetDevicePostureOverride(
+      std::unique_ptr<protocol::Emulation::DevicePosture> posture) override;
+  Response ClearDevicePostureOverride() override;
+
   bool touch_emulation_enabled_;
   std::string touch_emulation_configuration_;
   bool device_emulation_enabled_;
@@ -163,7 +168,10 @@ class EmulationHandler : public DevToolsDomainHandler,
                  std::unique_ptr<ScopedVirtualSensorForDevTools>>
       sensor_overrides_;
 
-  RenderFrameHostImpl* host_;
+  // True when SetDevicePostureOverride() has been called.
+  bool device_posture_emulation_enabled_ = false;
+
+  raw_ptr<RenderFrameHostImpl> host_;
 
   base::ScopedClosureRunner capture_handle_;
 };

@@ -7,6 +7,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "gin/wrappable.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
@@ -2323,83 +2324,6 @@ TEST(V8ScriptValueSerializerTest, CanDeserializeIn_OldValues) {
   EXPECT_TRUE(input->CanDeserializeIn(scope.GetExecutionContext()));
 }
 
-// TODO(crbug.com/1341844): Remove this along with the rest of the plumbing for
-// `features::kSSVTrailerWriteNewVersion.
-TEST(V8ScriptValueSerializerTest, SSVTrailerWriteNewVersionDisabled) {
-  test::TaskEnvironment task_environment;
-  base::test::ScopedFeatureList scoped_features;
-  scoped_features.InitAndDisableFeature(features::kSSVTrailerWriteNewVersion);
-  V8TestingScope scope;
-  v8::Isolate* isolate = scope.GetIsolate();
-
-  // Should still be able to write and read the old version.
-  EXPECT_TRUE(RoundTrip(v8::True(isolate), scope)->IsTrue());
-
-  // Should actually be the old version (decimal 20).
-  V8ScriptValueSerializer serializer(scope.GetScriptState());
-  auto value = serializer.Serialize(v8::True(isolate), ASSERT_NO_EXCEPTION);
-  EXPECT_THAT(value->GetWireData().first(2u), ::testing::ElementsAre(0xff, 20));
-}
-
-// TODO(crbug.com/1341844): Remove this along with the rest of the plumbing for
-// `features::kSSVTrailerWriteExposureAssertion`.
-TEST(V8ScriptValueSerializerTest, SSVTrailerWriteExposureAssertionDisabled) {
-  test::TaskEnvironment task_environment;
-  base::test::ScopedFeatureList scoped_features;
-  scoped_features.InitAndDisableFeature(
-      features::kSSVTrailerWriteExposureAssertion);
-  V8TestingScope scope;
-
-  // Even though this has an exposure restriction, it should not be reflected
-  // while the feature to write the assertion is disabled.
-  DOMPoint* point = DOMPoint::Create(0, 0);
-  v8::Local<v8::Value> wrapper =
-      ToV8Traits<DOMPoint>::ToV8(scope.GetScriptState(), point);
-  V8ScriptValueSerializer serializer(scope.GetScriptState());
-  auto value = serializer.Serialize(wrapper, ASSERT_NO_EXCEPTION);
-  TrailerReader trailer_reader(value->GetWireData());
-  ASSERT_TRUE(trailer_reader.SkipToTrailer().has_value());
-  ASSERT_TRUE(trailer_reader.Read().has_value());
-  EXPECT_THAT(trailer_reader.required_exposed_interfaces(),
-              ::testing::IsEmpty());
-}
-
-// TODO(crbug.com/1341844): Remove this along with the rest of the plumbing for
-// `features::kSSVTrailerWriteExposureAssertion`.
-TEST(V8ScriptValueSerializerTest, SSVTrailerEnforceExposureAssertionDisabled) {
-  test::TaskEnvironment task_environment;
-  base::test::ScopedFeatureList scoped_features;
-  scoped_features.InitAndDisableFeature(
-      features::kSSVTrailerEnforceExposureAssertion);
-  scoped_refptr<SerializedScriptValue> ssv;
-  mojo::MessagePipe pipe;
-
-  {
-    V8TestingScope scope;
-    ContextFeatureSettings::From(
-        scope.GetExecutionContext(),
-        ContextFeatureSettings::CreationMode::kCreateIfNotExists)
-        ->EnableMojoJS(true);
-    auto* handle = MakeGarbageCollected<MojoHandle>(
-        mojo::ScopedHandle::From(std::move(pipe.handle0)));
-    Transferables transferables;
-    transferables.mojo_handles.push_back(handle);
-
-    V8ScriptValueSerializer::Options options;
-    options.transferables = &transferables;
-    V8ScriptValueSerializer serializer(scope.GetScriptState(), options);
-    ssv = serializer.Serialize(
-        ToV8Traits<MojoHandle>::ToV8(scope.GetScriptState(), handle),
-        ASSERT_NO_EXCEPTION);
-  }
-
-  {
-    ScopedMojoJSForTest disable_mojo_js(false);
-    V8TestingScope scope;
-    EXPECT_TRUE(ssv->CanDeserializeIn(scope.GetExecutionContext()));
-  }
-}
-
 TEST(V8ScriptValueSerializerTest, RoundTripFencedFrameConfig) {
   test::TaskEnvironment task_environment;
   ScopedFencedFramesForTest fenced_frames(true);
@@ -2455,6 +2379,42 @@ TEST(V8ScriptValueSerializerTest, RoundTripFencedFrameConfigNullValues) {
   EXPECT_FALSE(new_config->container_size_.has_value());
   EXPECT_EQ(config->content_size_, new_config->content_size_);
   EXPECT_FALSE(new_config->content_size_.has_value());
+}
+
+namespace {
+
+class GinWrappable : public gin::Wrappable<GinWrappable> {
+ public:
+  static v8::Local<v8::Object> Create(v8::Isolate* isolate) {
+    auto* instance = new GinWrappable();
+    return instance->GetWrapper(isolate).ToLocalChecked();
+  }
+  ~GinWrappable() override = default;
+
+  static gin::WrapperInfo kWrapperInfo;
+
+ private:
+  GinWrappable() = default;
+};
+
+gin::WrapperInfo GinWrappable::kWrapperInfo = {gin::kEmbedderNativeGin};
+
+}  // namespace
+
+TEST(V8ScriptValueSerializerTest, CoexistWithGin) {
+  test::TaskEnvironment task_environment;
+  V8TestingScope scope;
+  v8::Isolate* const isolate = scope.GetIsolate();
+  v8::Local<v8::Object> wrapper = GinWrappable::Create(isolate);
+  ExceptionState exception_state(
+      isolate, ExceptionContextType::kOperationInvoke, "Window", "postMessage");
+  scoped_refptr<SerializedScriptValue> serialized_script_value =
+      V8ScriptValueSerializer(scope.GetScriptState())
+          .Serialize(wrapper, exception_state);
+  // Serializing a gin value will throw an exception, which is fine.
+  // We just want to make sure it does not crash.
+  EXPECT_TRUE(exception_state.HadException());
+  EXPECT_FALSE(serialized_script_value);
 }
 
 }  // namespace blink

@@ -46,19 +46,19 @@ SchemeMatchingResult SchemeMatches(
 }
 
 bool HostMatches(const network::mojom::blink::CSPSource& source,
-                 const String& host) {
+                 const StringView& host) {
   if (source.is_host_wildcard) {
     if (source.host.empty()) {
       // host-part = "*"
       return true;
     }
-    if (host.EndsWithIgnoringCase(String("." + source.host))) {
+    if (host.ToString().EndsWith(String("." + source.host))) {
       // host-part = "*." 1*host-char *( "." 1*host-char )
       return true;
     }
     return false;
   }
-  return EqualIgnoringASCIICase(source.host, host);
+  return source.host == host;
 }
 
 bool PathMatches(const network::mojom::blink::CSPSource& source,
@@ -90,8 +90,8 @@ PortMatchingResult PortMatches(const network::mojom::blink::CSPSource& source,
 
   bool is_scheme_http;  // needed for detecting an upgrade when the port is 0
   is_scheme_http = source.scheme.empty()
-                       ? EqualIgnoringASCIICase("http", self_protocol)
-                       : EqualIgnoringASCIICase("http", source.scheme);
+                       ? "http" == self_protocol
+                       : "http" == source.scheme;
 
   if ((source.port == 80 ||
        ((source.port == url::PORT_UNSPECIFIED || source.port == 443) &&
@@ -161,7 +161,7 @@ bool CSPSourceMatches(const network::mojom::blink::CSPSource& source,
     return false;
   }
 
-  return HostMatches(source, url.Host()) &&
+  return HostMatches(source, url.HostView()) &&
          ports_match != PortMatchingResult::kNotMatching && paths_match;
 }
 
@@ -181,7 +181,7 @@ bool CSPSourceMatchesAsSelf(const network::mojom::blink::CSPSource& source,
     return true;
   }
 
-  bool hosts_match = HostMatches(source, url.Host());
+  bool hosts_match = HostMatches(source, url.HostView());
   PortMatchingResult ports_match = PortMatches(
       source, source.scheme, url.HasPort() ? url.Port() : url::PORT_UNSPECIFIED,
       url.Protocol());

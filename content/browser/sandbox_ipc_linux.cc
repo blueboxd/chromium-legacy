@@ -88,7 +88,7 @@ void SandboxIPCHandler::HandleRequestFromChild(int fd) {
   // kMaxSandboxIPCMessagePayloadSize set to 64 should be plenty.
   // 128 bytes padding are necessary so recvmsg() does not return MSG_TRUNC
   // error for a maximum length message.
-  char buf[kMaxSandboxIPCMessagePayloadSize + 128];
+  uint8_t buf[kMaxSandboxIPCMessagePayloadSize + 128];
 
   const ssize_t len =
       base::UnixDomainSocket::RecvMsg(fd, buf, sizeof(buf), &fds);
@@ -106,7 +106,8 @@ void SandboxIPCHandler::HandleRequestFromChild(int fd) {
   if (fds.empty())
     return;
 
-  base::Pickle pickle(buf, len);
+  base::Pickle pickle = base::Pickle::WithUnownedBuffer(
+      base::span(buf, base::checked_cast<size_t>(len)));
   base::PickleIterator iter(pickle);
 
   int kind;
@@ -133,7 +134,7 @@ void SandboxIPCHandler::HandleMakeSharedMemorySegment(
   uint32_t size;
   if (!iter.ReadUInt32(&size))
     return;
-  // TODO(crbug.com/982879): executable shared memory should be removed when
+  // TODO(crbug.com/41470149): executable shared memory should be removed when
   // NaCl is unshipped.
   bool executable;
   if (!iter.ReadBool(&executable))

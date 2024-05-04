@@ -50,11 +50,11 @@
 // 'views' and with our Chrome UI code where the elements are also called
 // 'views'.
 //
-// TODO(https://crbug.com/1443009): Both gfx::NativeEvent and ui::PlatformEvent
+// TODO(crbug.com/40267204): Both gfx::NativeEvent and ui::PlatformEvent
 // are typedefs for native event types on different platforms, but they're
 // slightly different and used in different places. They should be merged.
 //
-// TODO(https://crbug.com/1149906): gfx::NativeCursor is ui::Cursor in Aura;
+// TODO(crbug.com/40157665): gfx::NativeCursor is ui::Cursor in Aura;
 // perhaps remove gfx::NativeCursor and use ui::Cursor everywhere?
 
 #if defined(USE_AURA)
@@ -102,7 +102,7 @@ class ViewAndroid;
 #endif
 class SkBitmap;
 
-// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
+// TODO(crbug.com/40118868): Revisit the macro expression once build flag switch
 // of lacros-chrome is complete.
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
 extern "C" {
@@ -218,7 +218,7 @@ using NativeViewAccessible = id;
 #else
 using NativeViewAccessible = struct objc_object*;
 #endif
-// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
+// TODO(crbug.com/40118868): Revisit the macro expression once build flag switch
 // of lacros-chrome is complete.
 #elif BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
 // Linux doesn't have a native font type.

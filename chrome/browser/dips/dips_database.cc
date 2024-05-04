@@ -8,6 +8,7 @@
 #include <limits>
 #include <optional>
 #include <string>
+#include <string_view>
 #include <vector>
 
 #include "base/files/file_path.h"
@@ -33,7 +34,13 @@ BASE_FEATURE(kSqlWALModeOnDipsDatabase,
              "SqlWALModeOnDipsDatabase",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// NOTE: This is flag is intended for local testing and debugging only.
+BASE_FEATURE(kDisableExclusiveLockingOnDipsDatabase,
+             "DisableExclusiveLockingOnDipsDatabase",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 constexpr char kPrepopulatedKey[] = "prepopulated";
+constexpr char kTimerLastFiredKey[] = "timer_last_fired";
 
 std::optional<base::Time> ColumnOptionalTime(sql::Statement* statement,
                                              int column_index) {
@@ -87,11 +94,11 @@ void BindTimesOrNull(sql::Statement& statement,
 // Version number of the database.
 // NOTE: When changing the version, add a new golden file for the new version
 // and a test to verify that Init() works with it.
-const int kCurrentVersionNumber = 5;
+const int kCurrentVersionNumber = 6;
 
 // This number represents the min database version number with which this chrome
 // code will be compatible with.
-const int kCompatibleVersionNumber = 5;
+const int kCompatibleVersionNumber = 6;
 }  // namespace
 
 // See comments at declaration of these variables in dips_database.h
@@ -100,12 +107,18 @@ const base::TimeDelta DIPSDatabase::kMetricsInterval = base::Hours(24);
 const base::TimeDelta DIPSDatabase::kPopupTtl = base::Days(60);
 
 DIPSDatabase::DIPSDatabase(const std::optional<base::FilePath>& db_path)
-    : db_path_(db_path.value_or(base::FilePath())),
-      db_(std::make_unique<sql::Database>(sql::DatabaseOptions{
-          .wal_mode = base::FeatureList::IsEnabled(kSqlWALModeOnDipsDatabase),
-          .page_size = 4096,
-          .cache_size = 32})) {
+    : db_path_(db_path.value_or(base::FilePath())) {
   DCHECK(base::FeatureList::IsEnabled(features::kDIPS));
+
+  sql::DatabaseOptions db_options{
+      .wal_mode = base::FeatureList::IsEnabled(kSqlWALModeOnDipsDatabase),
+      .page_size = 4096,
+      .cache_size = 32};
+  if (base::FeatureList::IsEnabled(kDisableExclusiveLockingOnDipsDatabase)) {
+    db_options.exclusive_locking = false;
+  }
+  db_ = (std::make_unique<sql::Database>(db_options));
+
   base::AssertLongCPUWorkAllowed();
   if (db_path.has_value()) {
     DCHECK(!db_path->empty())
@@ -197,6 +210,19 @@ bool DIPSDatabase::InitTables() {
     ")";
   // clang-format on
   DCHECK(db_->IsSQLValid(kPopupsSql));
+
+  static constexpr char kConfigSql[] =  // clang-format off
+    "CREATE TABLE config("
+      "key TEXT NOT NULL,"
+      "int_value INTEGER,"
+      "PRIMARY KEY (`key`)"
+    ")";
+  // clang-format on
+  DCHECK(db_->IsSQLValid(kConfigSql));
+
+  if (!db_->Execute(kConfigSql)) {
+    return false;
+  }
 
   return db_->Execute(kBouncesSql) && db_->Execute(kPopupsSql);
 }
@@ -360,6 +386,43 @@ bool DIPSDatabase::MigrateToVersion5() {
          meta_table_.SetVersionNumber(5);
 }
 
+bool DIPSDatabase::MigrateToVersion6() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(db_->HasActiveTransactions());
+
+  static constexpr char kCreateConfigTableSql[] =  // clang-format off
+    "CREATE TABLE config("
+      "key TEXT NOT NULL,"
+      "int_value INTEGER,"
+      "PRIMARY KEY (`key`)"
+    ")";
+  // clang-format on
+  DCHECK(db_->IsSQLValid(kCreateConfigTableSql));
+
+  if (!db_->Execute(kCreateConfigTableSql)) {
+    return false;
+  }
+
+  if (int result; meta_table_.GetValue(kPrepopulatedKey, &result)) {
+    static constexpr char kInsertValueSql[] =
+        "INSERT OR REPLACE INTO config(key,int_value) VALUES(?,?)";
+    DCHECK(db_->IsSQLValid(kInsertValueSql));
+    sql::Statement statement(db_->GetUniqueStatement(kInsertValueSql));
+    statement.BindString(0, kPrepopulatedKey);
+    statement.BindInt64(1, result);
+
+    if (!statement.Run()) {
+      return false;
+    }
+
+    if (!meta_table_.DeleteKey(kPrepopulatedKey)) {
+      return false;
+    }
+  }
+
+  return meta_table_.SetVersionNumber(6);
+}
+
 bool DIPSDatabase::MigrateAsNeeded() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -395,6 +458,15 @@ bool DIPSDatabase::MigrateAsNeeded() {
         break;
       case 5:
         if (!MigrateToVersion5()) {
+          return false;
+        }
+        if (!meta_table_.SetCompatibleVersionNumber(
+                std::min(next_version, kCompatibleVersionNumber))) {
+          return false;
+        }
+        break;
+      case 6:
+        if (!MigrateToVersion6()) {
           return false;
         }
         if (!meta_table_.SetCompatibleVersionNumber(
@@ -908,7 +980,7 @@ std::vector<std::string> DIPSDatabase::GetSitesThatUsedStorage(
   return sites;
 }
 
-std::set<std::string> DIPSDatabase::FilterSitesWithInteractionOrWaa(
+std::set<std::string> DIPSDatabase::FilterSitesWithProtectiveEvent(
     const std::set<std::string>& sites) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!CheckDBInit()) {
@@ -916,7 +988,7 @@ std::set<std::string> DIPSDatabase::FilterSitesWithInteractionOrWaa(
   }
 
   SCOPED_UMA_HISTOGRAM_TIMER(
-      "Privacy.DIPS.Database.Operation.FilterSitesWithInteractionOrWaaTime");
+      "Privacy.DIPS.Database.Operation.FilterSitesWithProtectiveEventTime");
 
   ClearExpiredRows();
 
@@ -925,7 +997,7 @@ std::set<std::string> DIPSDatabase::FilterSitesWithInteractionOrWaa(
                     "last_web_authn_assertion_time FROM bounces "
                     "WHERE site IN(",
                     base::JoinString(
-                        std::vector<base::StringPiece>(sites.size(), "?"), ","),
+                        std::vector<std::string_view>(sites.size(), "?"), ","),
                     ")"})
           .c_str()));
 
@@ -935,7 +1007,7 @@ std::set<std::string> DIPSDatabase::FilterSitesWithInteractionOrWaa(
     i++;
   }
 
-  std::set<std::string> interacted_sites;
+  std::set<std::string> sites_with_protective_event;
   while (statement.Step()) {
     std::optional<base::Time> last_user_interaction =
         ColumnOptionalTime(&statement, 1);
@@ -944,10 +1016,10 @@ std::set<std::string> DIPSDatabase::FilterSitesWithInteractionOrWaa(
 
     if (last_user_interaction.has_value() ||
         last_web_authn_assertion_time.has_value()) {
-      interacted_sites.insert(statement.ColumnString(0));
+      sites_with_protective_event.insert(statement.ColumnString(0));
     }
   }
-  return interacted_sites;
+  return sites_with_protective_event;
 }
 
 size_t DIPSDatabase::ClearExpiredRows() {
@@ -1041,7 +1113,7 @@ bool DIPSDatabase::RemoveRows(const DIPSDatabaseTable table,
   SCOPED_UMA_HISTOGRAM_TIMER("Privacy.DIPS.Database.Operation.RemoveRowsTime");
 
   const std::string site_list =
-      base::JoinString(std::vector<base::StringPiece>(sites.size(), "?"), ",");
+      base::JoinString(std::vector<std::string_view>(sites.size(), "?"), ",");
 
   if (table == DIPSDatabaseTable::kBounces) {
     sql::Statement statement(db_->GetUniqueStatement(
@@ -1464,7 +1536,7 @@ bool DIPSDatabase::ClearTimestampsBySite(bool preserve,
   }
 
   std::string placeholders =
-      base::JoinString(std::vector<base::StringPiece>(sites.size(), "?"), ",");
+      base::JoinString(std::vector<std::string_view>(sites.size(), "?"), ",");
 
   if ((type & DIPSEventRemovalType::kStorage) ==
       DIPSEventRemovalType::kStorage) {
@@ -1695,7 +1767,7 @@ bool DIPSDatabase::MarkAsPrepopulated() {
   if (!CheckDBInit()) {
     return false;
   }
-  return meta_table_.SetValue(kPrepopulatedKey, 1);
+  return SetConfigValue(kPrepopulatedKey, 1);
 }
 
 bool DIPSDatabase::IsPrepopulated() {
@@ -1703,11 +1775,59 @@ bool DIPSDatabase::IsPrepopulated() {
   if (!CheckDBInit()) {
     return false;
   }
-  int result;
-  bool has_key = meta_table_.GetValue(kPrepopulatedKey, &result);
-  if (!has_key) {
-    meta_table_.SetValue(kPrepopulatedKey, 0);
+  std::optional<int64_t> value = GetConfigValue(kPrepopulatedKey);
+  DCHECK(!value.has_value() || *value == 0 || *value == 1)
+      << "key '" << kPrepopulatedKey << "' has illegal value " << *value;
+  return value.value_or(0);
+}
+
+bool DIPSDatabase::SetConfigValue(std::string_view key, int64_t value) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!CheckDBInit()) {
     return false;
   }
-  return result;
+
+  static constexpr char kInsertValueSql[] =
+      "INSERT OR REPLACE INTO config(key,int_value) VALUES(?,?)";
+  DCHECK(db_->IsSQLValid(kInsertValueSql));
+  sql::Statement statement(
+      db_->GetCachedStatement(SQL_FROM_HERE, kInsertValueSql));
+  statement.BindString(0, key);
+  statement.BindInt64(1, value);
+
+  return statement.Run();
+}
+
+std::optional<int64_t> DIPSDatabase::GetConfigValue(std::string_view key) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!CheckDBInit()) {
+    return std::nullopt;
+  }
+
+  static constexpr char kSelectValueSql[] =
+      "SELECT int_value FROM config WHERE key = ?";
+  DCHECK(db_->IsSQLValid(kSelectValueSql));
+  sql::Statement statement(
+      db_->GetCachedStatement(SQL_FROM_HERE, kSelectValueSql));
+  statement.BindString(0, key);
+
+  if (!statement.Step()) {
+    return std::nullopt;
+  }
+
+  return statement.ColumnInt64(0);
+}
+
+std::optional<base::Time> DIPSDatabase::GetTimerLastFired() {
+  std::optional<int64_t> raw_value = GetConfigValue(kTimerLastFiredKey);
+  if (!raw_value.has_value()) {
+    return std::nullopt;
+  }
+
+  return base::Time::FromDeltaSinceWindowsEpoch(base::Microseconds(*raw_value));
+}
+
+bool DIPSDatabase::SetTimerLastFired(base::Time time) {
+  return SetConfigValue(kTimerLastFiredKey,
+                        time.ToDeltaSinceWindowsEpoch().InMicroseconds());
 }

@@ -28,11 +28,14 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_renderer_host.h"
+#include "content/public/test/test_utils.h"
 #include "ui/base/page_transition_types.h"
 
 #if defined(TOOLKIT_VIEWS)
 #include "chrome/browser/ui/views/chrome_constrained_window_views_client.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
 #include "components/constrained_window/constrained_window_views.h"
+#include "ui/views/test/views_test_utils.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "content/public/browser/context_factory.h"
@@ -66,9 +69,9 @@ void BrowserWithTestWindowTest::SetUp() {
 
   base::CommandLine::ForCurrentProcess()->AppendSwitch(switches::kNoFirstRun);
 
-  profile_manager_ = std::make_unique<TestingProfileManager>(
-      TestingBrowserProcess::GetGlobal());
-  ASSERT_TRUE(profile_manager_->SetUp());
+  if (!profile_manager_) {
+    SetUpProfileManager();
+  }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   if (!user_manager::UserManager::IsInitialized()) {
@@ -172,6 +175,16 @@ void BrowserWithTestWindowTest::TearDown() {
   task_environment_->RunUntilIdle();
 }
 
+void BrowserWithTestWindowTest::SetUpProfileManager(
+    const base::FilePath& profiles_path,
+    std::unique_ptr<ProfileManager> profile_manager) {
+  profile_manager_ = std::make_unique<TestingProfileManager>(
+      TestingBrowserProcess::GetGlobal());
+
+  ASSERT_TRUE(
+      profile_manager_->SetUp(profiles_path, std::move(profile_manager)));
+}
+
 gfx::NativeWindow BrowserWithTestWindowTest::GetContext() {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   return ash_test_helper_.GetContext();
@@ -188,6 +201,12 @@ void BrowserWithTestWindowTest::AddTab(Browser* browser, const GURL& url) {
   params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
   Navigate(&params);
   CommitPendingLoad(&params.navigated_or_inserted_contents->GetController());
+#if defined(TOOLKIT_VIEWS)
+  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
+  if (browser_view) {
+    views::test::RunScheduledLayout(browser_view);
+  }
+#endif
 }
 
 void BrowserWithTestWindowTest::CommitPendingLoad(
@@ -217,6 +236,11 @@ void BrowserWithTestWindowTest::NavigateAndCommitActiveTabWithTitle(
   NavigateAndCommit(contents, url);
   contents->UpdateTitleForEntry(contents->GetController().GetActiveEntry(),
                                 title);
+}
+
+void BrowserWithTestWindowTest::FocusMainFrameOfActiveWebContents() {
+  WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
+  content::FocusWebContentsOnFrame(contents, contents->GetPrimaryMainFrame());
 }
 
 std::string BrowserWithTestWindowTest::GetDefaultProfileName() {
@@ -292,8 +316,11 @@ void BrowserWithTestWindowTest::LogIn(const std::string& email) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 void BrowserWithTestWindowTest::OnUserProfileCreated(const std::string& email,
                                                      Profile* profile) {
+  // TODO(b/40225390): Unset for_test explicit param after subclasses are
+  // migrated.
   AccountId account_id = AccountId::FromUserEmail(email);
-  ash::AnnotatedAccountId::Set(profile, account_id);
+  ash::AnnotatedAccountId::Set(profile, account_id,
+                               /*for_test=*/false);
   // Do not use the member directly, because another UserManager instance
   // may be injected.
   auto* user_manager = user_manager::UserManager::Get();

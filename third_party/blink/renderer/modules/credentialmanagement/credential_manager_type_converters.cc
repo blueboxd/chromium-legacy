@@ -26,9 +26,6 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_authentication_extensions_supplemental_pub_keys_outputs.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_authenticator_selection_criteria.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_cable_authentication_data.h"
-#include "third_party/blink/renderer/bindings/modules/v8/v8_digital_credential_field_requirement.h"
-#include "third_party/blink/renderer/bindings/modules/v8/v8_digital_credential_provider.h"
-#include "third_party/blink/renderer/bindings/modules/v8/v8_digital_credential_selector.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_identity_credential_disconnect_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_identity_credential_request_options_context.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_identity_credential_request_options_mode.h"
@@ -42,7 +39,6 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_public_key_credential_rp_entity.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_public_key_credential_user_entity.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_remote_desktop_client_override.h"
-#include "third_party/blink/renderer/bindings/modules/v8/v8_union_digitalcredentialfieldrequirement_string.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_piece.h"
 #include "third_party/blink/renderer/modules/credentialmanagement/credential.h"
 #include "third_party/blink/renderer/modules/credentialmanagement/federated_credential.h"
@@ -68,12 +64,6 @@ using blink::mojom::blink::CableAuthenticationPtr;
 using blink::mojom::blink::CredentialInfo;
 using blink::mojom::blink::CredentialInfoPtr;
 using blink::mojom::blink::CredentialType;
-using blink::mojom::blink::DigitalCredentialFieldRequirement;
-using blink::mojom::blink::DigitalCredentialFieldRequirementPtr;
-using blink::mojom::blink::DigitalCredentialProvider;
-using blink::mojom::blink::DigitalCredentialProviderPtr;
-using blink::mojom::blink::DigitalCredentialSelector;
-using blink::mojom::blink::DigitalCredentialSelectorPtr;
 using blink::mojom::blink::Hint;
 using blink::mojom::blink::IdentityCredentialDisconnectOptions;
 using blink::mojom::blink::IdentityCredentialDisconnectOptionsPtr;
@@ -877,75 +867,23 @@ TypeConverter<IdentityProviderRequestOptionsPtr,
           ? options.getDomainHintOr("")
           : "";
 
-  if (blink::RuntimeEnabledFeatures::FedCmAuthzEnabled()) {
-    if (options.hasScope()) {
-      mojo_options->scope = options.scope();
+  // We do not need to check whether authz is enabled because the bindings
+  // code will check that for us due to the RuntimeEnabled= flag in the IDL.
+  if (options.hasScope()) {
+    mojo_options->scope = options.scope();
+  }
+  if (options.hasResponseType()) {
+    mojo_options->responseType = options.responseType();
+  }
+  if (options.hasParams()) {
+    HashMap<String, String> params;
+    for (const auto& pair : options.params()) {
+      params.Set(pair.first, pair.second);
     }
-    if (options.hasResponseType()) {
-      mojo_options->responseType = options.responseType();
-    }
-    if (options.hasParams()) {
-      HashMap<String, String> params;
-      for (const auto& pair : options.params()) {
-        params.Set(pair.first, pair.second);
-      }
-      mojo_options->params = std::move(params);
-    }
+    mojo_options->params = std::move(params);
   }
 
   return mojo_options;
-}
-
-// static
-DigitalCredentialProviderPtr
-TypeConverter<DigitalCredentialProviderPtr, blink::DigitalCredentialProvider>::
-    Convert(const blink::DigitalCredentialProvider& provider) {
-  auto mojo_provider = DigitalCredentialProvider::New();
-  if (provider.hasParams()) {
-    HashMap<String, String> params;
-    for (const auto& pair : provider.params()) {
-      params.Set(pair.first, pair.second);
-    }
-    mojo_provider->params = std::move(params);
-  }
-  if (provider.hasSelector()) {
-    mojo_provider->selector = DigitalCredentialSelector::New();
-    if (provider.selector()->hasFormat()) {
-      mojo_provider->selector->format = provider.selector()->format();
-    }
-    if (provider.selector()->hasDoctype()) {
-      mojo_provider->selector->doctype = provider.selector()->doctype();
-    }
-    if (provider.selector()->hasFields()) {
-      WTF::Vector<DigitalCredentialFieldRequirementPtr> fields;
-      for (auto element : provider.selector()->fields()) {
-        auto requested_element = DigitalCredentialFieldRequirement::New();
-        if (element->IsString()) {
-          requested_element->name = element->GetAsString();
-        } else {
-          requested_element->name =
-              element->GetAsDigitalCredentialFieldRequirement()->name();
-          if (element->GetAsDigitalCredentialFieldRequirement()->hasEquals()) {
-            requested_element->equals =
-                element->GetAsDigitalCredentialFieldRequirement()->equals();
-          }
-        }
-
-        fields.push_back(std::move(requested_element));
-      }
-      mojo_provider->selector->fields = std::move(fields);
-    }
-  }
-  if (provider.hasProtocol()) {
-    mojo_provider->protocol = provider.protocol();
-  }
-  if (provider.hasRequest()) {
-    mojo_provider->request = provider.request();
-  }
-  if (provider.hasPublicKey()) {
-    mojo_provider->publicKey = provider.publicKey();
-  }
-  return mojo_provider;
 }
 
 // static

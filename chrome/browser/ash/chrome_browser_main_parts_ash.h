@@ -80,7 +80,6 @@ class MultiCaptureNotifications;
 class NetworkChangeManagerClient;
 class NetworkPrefStateObserver;
 class NetworkThrottlingObserver;
-class MemoryMetrics;
 class MisconfiguredUserCleaner;
 class PowerMetricsReporter;
 class RendererFreezer;
@@ -99,6 +98,10 @@ class CarrierLockManager;
 
 namespace cros_healthd::internal {
 class DataCollector;
+}
+
+namespace file_manager {
+class FileIndexServiceRegistry;
 }
 
 namespace internal {
@@ -181,6 +184,9 @@ class ChromeBrowserMainPartsAsh : public ChromeBrowserMainPartsLinux {
   std::unique_ptr<HatsBluetoothRevampTriggerImpl>
       hats_bluetooth_revamp_trigger_;
 
+  std::unique_ptr<::ash::file_manager::FileIndexServiceRegistry>
+      file_index_service_registry_;
+
   std::unique_ptr<internal::DBusServices> dbus_services_;
 
   base::ScopedClosureRunner mojo_service_manager_closer_;
@@ -199,8 +205,6 @@ class ChromeBrowserMainPartsAsh : public ChromeBrowserMainPartsLinux {
       accessibility_event_rewriter_delegate_;
 
   scoped_refptr<ExternalMetrics> external_metrics_;
-
-  scoped_refptr<MemoryMetrics> memory_pressure_detail_;
 
   std::unique_ptr<arc::ArcServiceLauncher> arc_service_launcher_;
 

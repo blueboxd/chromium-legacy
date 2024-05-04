@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/modules/ml/webnn/ml_buffer.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_associated_remote.h"
 
 namespace blink {
 
@@ -42,12 +43,22 @@ class MODULES_EXPORT MLBufferMojo final : public MLBuffer {
   void DestroyImpl() override;
 
  private:
+  void ReadBufferImpl(ScriptPromiseResolver<DOMArrayBuffer>* resolver) override;
+
+  void WriteBufferImpl(base::span<const uint8_t> src_data,
+                       ExceptionState& exception_state) override;
+
+  // The callback of reading from `WebNNBuffer` by calling hardware accelerated
+  // OS machine learning APIs.
+  void OnDidReadBuffer(ScriptPromiseResolver<DOMArrayBuffer>* resolver,
+                       webnn::mojom::blink::ReadBufferResultPtr result);
+
   // Identifies this `WebNNBuffer` mojo instance in the service process.
   const base::UnguessableToken webnn_handle_;
 
   // The `WebNNBuffer` is a buffer that can be used by the hardware
   // accelerated OS machine learning API.
-  HeapMojoRemote<webnn::mojom::blink::WebNNBuffer> remote_buffer_;
+  HeapMojoAssociatedRemote<webnn::mojom::blink::WebNNBuffer> remote_buffer_;
 };
 
 }  // namespace blink

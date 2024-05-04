@@ -388,7 +388,14 @@ void OnWaitingForAndroidUnsupportedPathFallbackChoiceReceived(
   } else if (!choice.value().empty()) {
     LOG(ERROR) << "Unhandled response: " << choice.value();
   } else {
+    // Always map an empty user response to a Cancel user response.
+    // This can occur when the user logs out of the session. However,
+    // since there could be other unknown causes, leave a log.
     LOG(ERROR) << "Empty user response";
+    fm_tasks::LogOneDriveMetricsAfterFallback(
+        fallback_reason,
+        ash::cloud_upload::OfficeTaskResult::kCancelledAtFallbackAfterOpen,
+        std::move(cloud_open_metrics));
   }
 }
 
@@ -766,7 +773,7 @@ void CloudOpenTask::OpenAndroidOneDriveUrl(
         << "Android OneDrive documents provider path is not as expected.";
     LogOneDriveOpenResultUMA(
         OfficeTaskResult::kOpened,
-        OfficeOneDriveOpenErrors::kConversionToODFSUrlError);
+        OfficeOneDriveOpenErrors::kAndroidOneDriveInvalidUrl);
     return;
   }
   if (components[0] != "Files") {
@@ -819,19 +826,21 @@ void CloudOpenTask::StartUpload() {
 
 void CloudOpenTask::StartNextGoogleDriveUpload() {
   DCHECK_LT(file_urls_idx_, file_urls_.size());
-  DriveUploadHandler::Upload(
+  drive_upload_handler_ = std::make_unique<DriveUploadHandler>(
       profile_, file_urls_[file_urls_idx_],
       base::BindOnce(&CloudOpenTask::FinishedDriveUpload, this),
       cloud_open_metrics_->GetSafeRef());
+  drive_upload_handler_->Run();
 }
 
 void CloudOpenTask::StartNextOneDriveUpload() {
   DCHECK_LT(file_urls_idx_, file_urls_.size());
-  OneDriveUploadHandler::Upload(
+  one_drive_upload_handler_ = std::make_unique<OneDriveUploadHandler>(
       profile_, file_urls_[file_urls_idx_],
       base::BindOnce(&CloudOpenTask::FinishedOneDriveUpload, this,
                      profile_->GetWeakPtr()),
       cloud_open_metrics_->GetSafeRef());
+  one_drive_upload_handler_->Run();
 }
 
 void CloudOpenTask::FinishedDriveUpload(OfficeTaskResult task_result,
@@ -1213,12 +1222,15 @@ void CloudOpenTask::OnSetupDialogComplete(const std::string& user_response) {
   } else if (!user_response.empty()) {
     cloud_open_metrics_->LogTaskResult(OfficeTaskResult::kLocalFileTask);
     LaunchLocalFileTask(user_response);
-  } else if (files_app_closed_) {
-    // Empty user response occurs when the Files app the dialog was modal to is
-    // closed. This is equivalent to the user cancelling.
-    cloud_open_metrics_->LogTaskResult(OfficeTaskResult::kCancelledAtSetup);
   } else {
-    LOG(ERROR) << "Unexpected empty user response";
+    // Always map an empty user response to a Cancel user response. This can
+    // occur when the Files app the dialog was modal to is closed.
+    if (!files_app_closed_) {
+      // This can also occur when the user logs out of the session. However,
+      // since there could be other unknown causes, leave a log.
+      LOG(ERROR) << "Empty user response not due to the files app closing";
+    }
+    cloud_open_metrics_->LogTaskResult(OfficeTaskResult::kCancelledAtSetup);
   }
 }
 
@@ -1268,13 +1280,16 @@ void CloudOpenTask::OnMoveConfirmationComplete(
         OfficeTaskResult::kCancelledAtConfirmation);
   } else if (!user_response.empty()) {
     LOG(ERROR) << "Unhandled response: " << user_response;
-  } else if (files_app_closed_) {
-    // Empty user response when occurs when the Files app the dialog was modal
-    // to is closed. This is equivalent to the user cancelling.
+  } else {
+    // Always map an empty user response to a Cancel user response. This can
+    // occur when the Files app the dialog was modal to is closed.
+    if (!files_app_closed_) {
+      // This can also occur when the user logs out of the session. However,
+      // since there could be other unknown causes, leave a log.
+      LOG(ERROR) << "Empty user response not due to the files app closing";
+    }
     cloud_open_metrics_->LogTaskResult(
         OfficeTaskResult::kCancelledAtConfirmation);
-  } else {
-    LOG(ERROR) << "Unexpected empty user response";
   }
 }
 

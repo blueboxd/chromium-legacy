@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 load("//lib/branches.star", "branches")
-load("//lib/builders.star", "builders", "cpu", "reclient", "siso")
+load("//lib/builders.star", "builders", "cpu", "reclient")
 load("//lib/ci.star", "ci")
 load("//lib/consoles.star", "consoles")
 load("//project.star", "settings")
@@ -19,7 +19,6 @@ ci.defaults.set(
     shadow_free_space = None,
     shadow_pool = "luci.chromium.try",
     shadow_reclient_instance = reclient.instance.DEFAULT_UNTRUSTED,
-    shadow_siso_project = siso.project.DEFAULT_UNTRUSTED,
 )
 
 luci.bucket(
@@ -83,7 +82,7 @@ luci.bucket(
                 ci.gpu.SHADOW_SERVICE_ACCOUNT,
             ],
         ),
-        # TODO(crbug.com/1501383): Remove this binding after shadow bucket
+        # TODO(crbug.com/40941662): Remove this binding after shadow bucket
         # could inherit the view permission from the actual bucket.
         luci.binding(
             roles = "role/buildbucket.reader",

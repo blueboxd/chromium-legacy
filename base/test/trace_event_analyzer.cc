@@ -28,7 +28,7 @@ void OnTraceDataCollected(base::OnceClosure quit_closure,
                           base::trace_event::TraceResultBuffer* buffer,
                           const scoped_refptr<base::RefCountedString>& json,
                           bool has_more_events) {
-  buffer->AddFragment(json->data());
+  buffer->AddFragment(json->as_string());
   if (!has_more_events)
     std::move(quit_closure).Run();
 }
@@ -173,7 +173,7 @@ bool TraceEvent::SetFromJSON(const base::Value* event_value) {
   }
 
   // For each argument, copy the type and create a trace_analyzer::TraceValue.
-  // TODO(crbug.com/1303874): Add BINARY and LIST arg types if needed.
+  // TODO(crbug.com/40826205): Add BINARY and LIST arg types if needed.
   if (maybe_args) {
     for (auto pair : *maybe_args) {
       switch (pair.second.type()) {

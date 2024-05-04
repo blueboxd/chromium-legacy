@@ -705,214 +705,6 @@ static size_t ActualUnignoredChildCount(const ui::AXNode* node) {
   return count;
 }
 
-// -----------------------------------------------
-// [EXPERIMENTAL] These methods should only be called when the JNI experiment is
-// running. We unfortunately need to keep these separate since the JNI method
-// signatures do not align.
-
-void WebContentsAccessibilityAndroid::UpdateAccessibilityNodeInfoBoundsRect_exp(
-    JNIEnv* env,
-    const ScopedJavaLocalRef<jobject>& obj,
-    jint unique_id,
-    BrowserAccessibilityAndroid* node) {
-  BrowserAccessibilityManagerAndroid* root_manager =
-      GetRootBrowserAccessibilityManager();
-  if (!root_manager) {
-    return;
-  }
-
-  ui::AXOffscreenResult offscreen_result = ui::AXOffscreenResult::kOnscreen;
-  float dip_scale = 1 / root_manager->device_scale_factor();
-  gfx::Rect absolute_rect = gfx::ScaleToEnclosingRect(
-      node->GetUnclippedRootFrameBoundsRect(&offscreen_result), dip_scale,
-      dip_scale);
-  gfx::Rect parent_relative_rect = absolute_rect;
-  if (node->PlatformGetParent()) {
-    gfx::Rect parent_rect = gfx::ScaleToEnclosingRect(
-        node->PlatformGetParent()->GetUnclippedRootFrameBoundsRect(), dip_scale,
-        dip_scale);
-    parent_relative_rect.Offset(-parent_rect.OffsetFromOrigin());
-  }
-  bool is_offscreen = offscreen_result == ui::AXOffscreenResult::kOffscreen;
-
-  Java_AccessibilityNodeInfoBuilder_setAccessibilityNodeInfoLocation_exp(
-      env, obj, unique_id, absolute_rect.x(), absolute_rect.y(),
-      parent_relative_rect.x(), parent_relative_rect.y(), absolute_rect.width(),
-      absolute_rect.height(), is_offscreen);
-}
-
-jboolean WebContentsAccessibilityAndroid::UpdateCachedAccessibilityNodeInfo_exp(
-    JNIEnv* env,
-    jint unique_id) {
-  BrowserAccessibilityManagerAndroid* root_manager =
-      GetRootBrowserAccessibilityManager();
-  if (!root_manager) {
-    return false;
-  }
-
-  BrowserAccessibilityAndroid* node = GetAXFromUniqueID(unique_id);
-  if (!node) {
-    return false;
-  }
-
-  ScopedJavaLocalRef<jobject> obj = java_anib_ref_.get(env);
-  if (obj.is_null()) {
-    return false;
-  }
-
-  // Update cached nodes by providing new enclosing Rects
-  UpdateAccessibilityNodeInfoBoundsRect_exp(env, obj, unique_id, node);
-
-  return true;
-}
-
-jboolean WebContentsAccessibilityAndroid::PopulateAccessibilityNodeInfo_exp(
-    JNIEnv* env,
-    jint unique_id) {
-  if (!GetRootBrowserAccessibilityManager()) {
-    return false;
-  }
-
-  BrowserAccessibilityAndroid* node = GetAXFromUniqueID(unique_id);
-  if (!node) {
-    return false;
-  }
-
-  ScopedJavaLocalRef<jobject> obj = java_anib_ref_.get(env);
-  if (obj.is_null()) {
-    return false;
-  }
-
-  int parent_id = ui::kAXAndroidInvalidViewId;
-  auto* parent_node =
-      static_cast<BrowserAccessibilityAndroid*>(node->PlatformGetParent());
-  if (parent_node) {
-    parent_id = parent_node->unique_id();
-  }
-
-  // Build a vector of child ids
-  std::vector<int> child_ids;
-  for (const auto& child : node->PlatformChildren()) {
-    const auto& android_node =
-        static_cast<const BrowserAccessibilityAndroid&>(child);
-    child_ids.push_back(android_node.unique_id());
-  }
-  if (child_ids.size()) {
-    Java_AccessibilityNodeInfoBuilder_addAccessibilityNodeInfoChildren_exp(
-        env, obj, unique_id, base::android::ToJavaIntArray(env, child_ids));
-  }
-
-  Java_AccessibilityNodeInfoBuilder_setAccessibilityNodeInfoBooleanAttributes_exp(
-      env, obj, unique_id, node->IsReportingCheckable(), node->IsChecked(),
-      node->IsClickable(), node->IsContentInvalid(), node->IsEnabled(),
-      node->IsFocusable(), node->IsFocused(), node->HasImage(),
-      node->IsPasswordField(), node->IsScrollable(), node->IsSelected(),
-      node->IsVisibleToUser(), node->HasCharacterLocations());
-
-  Java_AccessibilityNodeInfoBuilder_addAccessibilityNodeInfoActions_exp(
-      env, obj, unique_id, node->CanScrollForward(), node->CanScrollBackward(),
-      node->CanScrollUp(), node->CanScrollDown(), node->CanScrollLeft(),
-      node->CanScrollRight(), node->IsClickable(), node->IsTextField(),
-      node->IsEnabled(), node->IsFocusable(), node->IsFocused(),
-      node->IsCollapsed(), node->IsExpanded(), node->HasNonEmptyValue(),
-      !node->GetTextContentUTF16().empty(), node->IsSeekControl(),
-      node->IsFormDescendant());
-
-  Java_AccessibilityNodeInfoBuilder_setAccessibilityNodeInfoBaseAttributes_exp(
-      env, obj, unique_id, parent_id,
-      GetCanonicalJNIString(env, node->GetClassName()),
-      GetCanonicalJNIString(env, node->GetRoleString()),
-      GetCanonicalJNIString(env, node->GetRoleDescription()),
-      base::android::ConvertUTF16ToJavaString(env, node->GetHint()),
-      base::android::ConvertUTF16ToJavaString(env, node->GetTargetUrl()),
-      node->CanOpenPopup(), node->IsMultiLine(), node->AndroidInputType(),
-      node->AndroidLiveRegionType(),
-      GetCanonicalJNIString(env, node->GetContentInvalidErrorMessage()),
-      node->ClickableScore(), GetCanonicalJNIString(env, node->GetCSSDisplay()),
-      base::android::ConvertUTF16ToJavaString(env, node->GetBrailleLabel()),
-      GetCanonicalJNIString(env, node->GetBrailleRoleDescription()));
-
-  ScopedJavaLocalRef<jintArray> suggestion_starts_java;
-  ScopedJavaLocalRef<jintArray> suggestion_ends_java;
-  ScopedJavaLocalRef<jobjectArray> suggestion_text_java;
-  std::vector<int> suggestion_starts;
-  std::vector<int> suggestion_ends;
-  node->GetSuggestions(&suggestion_starts, &suggestion_ends);
-  if (suggestion_starts.size() && suggestion_ends.size()) {
-    suggestion_starts_java = base::android::ToJavaIntArray(
-        env, suggestion_starts.data(), suggestion_starts.size());
-    suggestion_ends_java = base::android::ToJavaIntArray(
-        env, suggestion_ends.data(), suggestion_ends.size());
-
-    // Currently we don't retrieve the text of each suggestion, so
-    // store a blank string for now.
-    std::vector<std::string> suggestion_text(suggestion_starts.size());
-    suggestion_text_java =
-        base::android::ToJavaArrayOfStrings(env, suggestion_text);
-  }
-
-  bool is_link = ui::IsLink(node->GetRole());
-  Java_AccessibilityNodeInfoBuilder_setAccessibilityNodeInfoText_exp(
-      env, obj, unique_id,
-      base::android::ConvertUTF16ToJavaString(env, node->GetTextContentUTF16()),
-      is_link
-          ? base::android::ConvertUTF16ToJavaString(env, node->GetTargetUrl())
-          : base::android::ConvertUTF16ToJavaString(env, std::u16string()),
-      is_link, node->IsTextField(),
-      GetCanonicalJNIString(env, node->GetInheritedString16Attribute(
-                                     ax::mojom::StringAttribute::kLanguage)),
-      suggestion_starts_java, suggestion_ends_java, suggestion_text_java,
-      base::android::ConvertUTF16ToJavaString(env,
-                                              node->GetStateDescription()));
-
-  std::u16string element_id;
-  if (node->GetHtmlAttribute("id", &element_id)) {
-    Java_AccessibilityNodeInfoBuilder_setAccessibilityNodeInfoViewIdResourceName_exp(
-        env, obj, unique_id,
-        base::android::ConvertUTF16ToJavaString(env, element_id));
-  }
-
-  UpdateAccessibilityNodeInfoBoundsRect_exp(env, obj, unique_id, node);
-
-  if (node->IsCollection()) {
-    Java_AccessibilityNodeInfoBuilder_setAccessibilityNodeInfoCollectionInfo_exp(
-        env, obj, unique_id, node->RowCount(), node->ColumnCount(),
-        node->IsHierarchical());
-  }
-  if (node->IsCollectionItem() || node->IsTableHeader()) {
-    Java_AccessibilityNodeInfoBuilder_setAccessibilityNodeInfoCollectionItemInfo_exp(
-        env, obj, unique_id, node->RowIndex(), node->RowSpan(),
-        node->ColumnIndex(), node->ColumnSpan(), node->IsTableHeader());
-  }
-
-  // For sliders that are numeric, use the AccessibilityNodeInfo.RangeInfo
-  // object as expected. But for non-numeric ranges (e.g. "small", "medium",
-  // "large"), do not set the RangeInfo object and instead rely on announcing
-  // the aria-valuetext value, which will be included in the node's text value.
-  if (node->IsRangeControlWithoutAriaValueText()) {
-    Java_AccessibilityNodeInfoBuilder_setAccessibilityNodeInfoRangeInfo_exp(
-        env, obj, unique_id, node->AndroidRangeType(), node->RangeMin(),
-        node->RangeMax(), node->RangeCurrentValue());
-  }
-
-  if (ui::IsDialog(node->GetRole())) {
-    Java_AccessibilityNodeInfoBuilder_setAccessibilityNodeInfoPaneTitle_exp(
-        env, obj, unique_id,
-        base::android::ConvertUTF16ToJavaString(
-            env, node->GetDialogModalMessageText()));
-  }
-
-  if (node->IsTextField()) {
-    Java_AccessibilityNodeInfoBuilder_setAccessibilityNodeInfoSelectionAttrs_exp(
-        env, obj, unique_id, node->GetSelectionStart(),
-        node->GetSelectionEnd());
-  }
-
-  return true;
-}
-
-// -----------------------------------------------
-
 void WebContentsAccessibilityAndroid::UpdateAccessibilityNodeInfoBoundsRect(
     JNIEnv* env,
     const ScopedJavaLocalRef<jobject>& obj,
@@ -1699,6 +1491,8 @@ void WebContentsAccessibilityAndroid::UpdateFrameInfo(float page_scale) {
 void WebContentsAccessibilityAndroid::RequestAccessibilityTreeSnapshot(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& view_structure_root,
+    const base::android::JavaParamRef<jobject>& accessibility_coordinates,
+    const base::android::JavaParamRef<jobject>& view,
     const base::android::JavaParamRef<jobject>& on_done_callback) {
   // This method should only be called by the unified snapshots feature.
   CHECK(base::FeatureList::IsEnabled(features::kAccessibilityUnifiedSnapshots));
@@ -1708,6 +1502,8 @@ void WebContentsAccessibilityAndroid::RequestAccessibilityTreeSnapshot(
   // be confused with the ProcessCompletedAccessibilityTreeSnapshot callback
   // below, which is called once the renderer has returned all AXTreeUpdates.
   on_done_callback_ = std::move(on_done_callback);
+  accessibility_coordinates_ = accessibility_coordinates;
+  view_ = view;
 
   base::android::ScopedJavaGlobalRef<jobject> movable_view_structure_root;
   movable_view_structure_root.Reset(env, view_structure_root);
@@ -1740,17 +1536,12 @@ void WebContentsAccessibilityAndroid::ProcessCompletedAccessibilityTreeSnapshot(
   ScopedJavaLocalRef<jobject> obj = java_adb_ref_.get(env);
   CHECK(obj);
 
-  // Construct a root manager without a delegate if one does not already exist.
-  // In some situations (e.g. unit tests) the full accessibility engine may
-  // already be running and we do not need to create a new manager.
-  if (!GetRootBrowserAccessibilityManager()) {
-    snapshot_root_manager_ =
-        std::make_unique<BrowserAccessibilityManagerAndroid>(
-            result, GetWeakPtr(), /* delegate= */ nullptr);
-  }
+  // Construct a root manager without a delegate using the snapshot result.
+  snapshot_root_manager_ = std::make_unique<BrowserAccessibilityManagerAndroid>(
+      result, GetWeakPtr(), /* delegate= */ nullptr);
 
   auto* root = static_cast<BrowserAccessibilityAndroid*>(
-      GetRootBrowserAccessibilityManager()->GetBrowserAccessibilityRoot());
+      snapshot_root_manager_->GetBrowserAccessibilityRoot());
   CHECK(root);
 
   // Construct the Java-side tree, use the JNI builder `java_adb_ref_` to
@@ -1760,8 +1551,13 @@ void WebContentsAccessibilityAndroid::ProcessCompletedAccessibilityTreeSnapshot(
                                        /* is_root= */ true);
 
   // Add tree-level (root only) data to Java-side tree (e.g. HTML metadata).
-  Java_AssistDataBuilder_populateHTMLMetadataProperties(env, obj,
-                                                        view_structure_root);
+  const auto& metadata_strings =
+      GetRootBrowserAccessibilityManager()->GetMetadataForTree();
+  if (!metadata_strings.empty()) {
+    Java_AssistDataBuilder_populateHTMLMetadataProperties(
+        env, obj, view_structure_root,
+        base::android::ToJavaArrayOfStrings(env, metadata_strings));
+  }
 
   // We have fulfilled the request for an accessibility tree snapshot, so we can
   // now call the provided Java-side callback to inform original client that the
@@ -1776,12 +1572,13 @@ void WebContentsAccessibilityAndroid::RecursivelyPopulateViewStructureTree(
     const base::android::JavaRef<jobject>& java_side_assist_data_object,
     bool is_root) {
   PopulateViewStructureNode(env, obj, node, java_side_assist_data_object);
-  for (const auto& child : node->PlatformChildren()) {
+  for (size_t child_index = 0; const auto& child : node->PlatformChildren()) {
     const auto& child_node =
         static_cast<const BrowserAccessibilityAndroid&>(child);
     base::android::ScopedJavaLocalRef<jobject> java_side_child_object =
-        Java_AssistDataBuilder_addChildNode(env, obj,
-                                            java_side_assist_data_object);
+        Java_AssistDataBuilder_addChildNode(
+            env, obj, java_side_assist_data_object, child_index);
+    child_index++;
     RecursivelyPopulateViewStructureTree(env, obj, &child_node,
                                          java_side_child_object,
                                          /* is_root= */ false);
@@ -1796,17 +1593,51 @@ void WebContentsAccessibilityAndroid::PopulateViewStructureNode(
     ScopedJavaLocalRef<jobject> obj,
     const BrowserAccessibilityAndroid* node,
     const base::android::JavaRef<jobject>& java_side_assist_data_object) {
-  Java_AssistDataBuilder_populateBaseProperties(env, obj,
-                                                java_side_assist_data_object);
+  Java_AssistDataBuilder_populateBaseProperties(
+      env, obj, java_side_assist_data_object,
+      GetCanonicalJNIString(env, node->GetClassName()), node->GetChildCount());
 
-  Java_AssistDataBuilder_populateTextProperties(env, obj,
-                                                java_side_assist_data_object);
+  int bgcolor = 0;
+  int color = 0;
+  int text_size = -1.0;
+  if (node->HasFloatAttribute(ax::mojom::FloatAttribute::kFontSize)) {
+    color = node->GetIntAttribute(ax::mojom::IntAttribute::kColor);
+    bgcolor = node->GetIntAttribute(ax::mojom::IntAttribute::kBackgroundColor);
+    text_size = node->GetFloatAttribute(ax::mojom::FloatAttribute::kFontSize);
+  }
+  Java_AssistDataBuilder_populateTextProperties(
+      env, obj, java_side_assist_data_object,
+      base::android::ConvertUTF16ToJavaString(env, node->GetTextContentUTF16()),
+      node->GetSelectedItemCount() > 0, node->GetSelectionStart(),
+      node->GetSelectionEnd(), color, bgcolor, text_size,
+      node->HasTextStyle(ax::mojom::TextStyle::kBold),
+      node->HasTextStyle(ax::mojom::TextStyle::kItalic),
+      node->HasTextStyle(ax::mojom::TextStyle::kUnderline),
+      node->HasTextStyle(ax::mojom::TextStyle::kLineThrough));
 
-  Java_AssistDataBuilder_populateBoundsProperties(env, obj,
-                                                  java_side_assist_data_object);
+  float dip_scale =
+      1 /
+      web_contents_->GetPrimaryMainFrame()->AccessibilityGetDeviceScaleFactor();
+  gfx::Rect absolute_rect = gfx::ScaleToEnclosingRect(
+      node->GetUnclippedRootFrameBoundsRect(), dip_scale, dip_scale);
 
-  Java_AssistDataBuilder_populateHTMLProperties(env, obj,
-                                                java_side_assist_data_object);
+  Java_AssistDataBuilder_populateBoundsProperties(
+      env, obj, java_side_assist_data_object, absolute_rect.x(),
+      absolute_rect.y(), absolute_rect.width(), absolute_rect.height(),
+      accessibility_coordinates_, view_);
+
+  std::vector<std::vector<std::u16string>> html_attrs;
+  for (const auto& attr : node->GetHtmlAttributes()) {
+    html_attrs.push_back(
+        {base::UTF8ToUTF16(attr.first), base::UTF8ToUTF16(attr.second)});
+  }
+  Java_AssistDataBuilder_populateHTMLProperties(
+      env, obj, java_side_assist_data_object,
+      GetCanonicalJNIString(
+          env, node->GetStringAttribute(ax::mojom::StringAttribute::kHtmlTag)),
+      GetCanonicalJNIString(
+          env, node->GetStringAttribute(ax::mojom::StringAttribute::kDisplay)),
+      base::android::ToJavaArrayOfStringArray(env, html_attrs));
 }
 
 base::WeakPtr<WebContentsAccessibilityAndroid>

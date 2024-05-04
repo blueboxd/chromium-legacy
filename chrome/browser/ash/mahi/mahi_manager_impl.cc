@@ -7,11 +7,18 @@
 #include <stdint.h>
 
 #include <algorithm>
+#include <string>
 #include <vector>
 
+#include "ash/constants/ash_pref_names.h"
+#include "ash/shell.h"
 #include "ash/system/mahi/mahi_panel_widget.h"
+#include "ash/webui/settings/public/constants/routes.mojom.h"
+#include "ash/webui/settings/public/constants/setting.mojom.h"
 #include "base/functional/callback.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/ash/crosapi/crosapi_ash.h"
 #include "chrome/browser/ash/crosapi/crosapi_manager.h"
@@ -20,8 +27,10 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chromeos/components/mahi/public/cpp/mahi_manager.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
+#include "components/feedback/feedback_constants.h"
 #include "components/manta/features.h"
 #include "components/manta/manta_service.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -51,17 +60,37 @@ std::unique_ptr<manta::MahiProvider> CreateProvider() {
   return nullptr;
 }
 
+ash::MahiBrowserDelegateAsh* GetMahiBrowserDelgateAsh() {
+  auto* mahi_browser_delegate_ash = crosapi::CrosapiManager::Get()
+                                        ->crosapi_ash()
+                                        ->mahi_browser_delegate_ash();
+  CHECK(mahi_browser_delegate_ash);
+  return mahi_browser_delegate_ash;
+}
+
 }  // namespace
 
 namespace ash {
 
-MahiManagerImpl::MahiManagerImpl() = default;
+MahiManagerImpl::MahiManagerImpl() {
+  session_observation_.Observe(Shell::Get()->session_controller());
+  PrefService* last_active_user_pref_service =
+      Shell::Get()->session_controller()->GetLastActiveUserPrefService();
+  if (last_active_user_pref_service) {
+    OnActiveUserPrefServiceChanged(last_active_user_pref_service);
+  }
+}
 
 MahiManagerImpl::~MahiManagerImpl() {
   mahi_panel_widget_.reset();
+  mahi_provider_.reset();
 }
 
 void MahiManagerImpl::OpenMahiPanel(int64_t display_id) {
+  if (!IsEnabled()) {
+    return;
+  }
+
   mahi_panel_widget_ = MahiPanelWidget::CreatePanelWidget(display_id);
   mahi_panel_widget_->Show();
 }
@@ -74,19 +103,17 @@ gfx::ImageSkia MahiManagerImpl::GetContentIcon() {
   return current_page_info_->favicon_image;
 }
 
+GURL MahiManagerImpl::GetContentUrl() {
+  return current_page_info_->url;
+}
+
 void MahiManagerImpl::GetSummary(MahiSummaryCallback callback) {
-  auto* mahi_browser_delegate_ash = crosapi::CrosapiManager::Get()
-                                        ->crosapi_ash()
-                                        ->mahi_browser_delegate_ash();
-  CHECK(mahi_browser_delegate_ash);
+  MaybeInitialize();
 
-  if (!mahi_provider_) {
-    mahi_provider_ = CreateProvider();
-  }
-
-  mahi_browser_delegate_ash->GetContentFromClient(
+  current_panel_url_ = current_page_info_->url;
+  GetMahiBrowserDelgateAsh()->GetContentFromClient(
       current_page_info_->client_id, current_page_info_->page_id,
-      base::BindOnce(&MahiManagerImpl::OnGetPageContent,
+      base::BindOnce(&MahiManagerImpl::OnGetPageContentForSummary,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
@@ -101,9 +128,27 @@ void MahiManagerImpl::GetOutlines(MahiOutlinesCallback callback) {
 
 void MahiManagerImpl::GoToOutlineContent(int outline_id) {}
 
-void MahiManagerImpl::AnswerQuestion(const std::string& question,
+void MahiManagerImpl::AnswerQuestion(const std::u16string& question,
+                                     bool current_panel_content,
                                      MahiAnswerQuestionCallback callback) {
-  std::move(callback).Run(u"test answer", MahiResponseStatus::kSuccess);
+  MaybeInitialize();
+
+  if (current_panel_content) {
+    mahi_provider_->QuestionAndAnswer(
+        base::UTF16ToUTF8(current_panel_content_->page_content),
+        current_panel_qa_, base::UTF16ToUTF8(question),
+        base::BindOnce(&MahiManagerImpl::OnMahiProviderQAResponse,
+                       weak_ptr_factory_.GetWeakPtr(), question,
+                       std::move(callback)));
+    return;
+  }
+
+  current_panel_url_ = current_page_info_->url;
+  GetMahiBrowserDelgateAsh()->GetContentFromClient(
+      current_page_info_->client_id, current_page_info_->page_id,
+      base::BindOnce(&MahiManagerImpl::OnGetPageContentForQA,
+                     weak_ptr_factory_.GetWeakPtr(), question,
+                     std::move(callback)));
 }
 
 void MahiManagerImpl::GetSuggestedQuestion(
@@ -117,6 +162,11 @@ void MahiManagerImpl::SetCurrentFocusedPageInfo(
   // TODO(b/318565610): consider adding default icon when there is no icon
   // available.
   current_page_info_ = std::move(info);
+
+  const bool availability =
+      current_page_info_->IsDistillable.value_or(false) &&
+      !current_panel_url_.EqualsIgnoringRef(current_page_info_->url);
+  NotifyRefreshAvailability(/*available=*/availability);
 }
 
 void MahiManagerImpl::OnContextMenuClicked(
@@ -124,26 +174,115 @@ void MahiManagerImpl::OnContextMenuClicked(
   switch (context_menu_request->action_type) {
     case MahiContextMenuActionType::kSummary:
     case MahiContextMenuActionType::kOutline:
-    case MahiContextMenuActionType::kQA:
-      // TODO(b/318565610): Update the behaviour of kOutline and kQA
+      // TODO(b/318565610): Update the behaviour of kOutline.
       OpenMahiPanel(context_menu_request->display_id);
       return;
+    case MahiContextMenuActionType::kQA:
+      OpenMahiPanel(context_menu_request->display_id);
+
+      // Ask question.
+      // TODO(b/331837721): `MahiManagerImpl` should own an instance of
+      // `MahiUiController` and use it to answer question here. This
+      // functionality shouldn't need to be routed through the widget. We also
+      // need to add unit test logic for this after the refactor.
+      if (!context_menu_request->question) {
+        return;
+      }
+
+      if (!mahi_panel_widget_) {
+        return;
+      }
+
+      // When the user sends a question from the context menu, we treat it as
+      // the start of a new journey, so we set `current_panel_content` false.
+      static_cast<MahiPanelWidget*>(mahi_panel_widget_.get())
+          ->SendQuestion(context_menu_request->question.value(),
+                         /*current_panel_content=*/false);
+      return;
     case MahiContextMenuActionType::kSettings:
-      // TODO(b/318565610): Update the behaviour of kSettings
+      chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
+          ProfileManager::GetActiveUserProfile(),
+          chromeos::settings::mojom::kSystemPreferencesSectionPath,
+          chromeos::settings::mojom::Setting::kMahiOnOff);
       return;
     case MahiContextMenuActionType::kNone:
       return;
   }
 }
 
+void MahiManagerImpl::OpenFeedbackDialog() {
+  std::string description_template = base::StringPrintf(
+      "#Mahi user feedback:\n\n-----------\nlatest status code: %d\nlatest "
+      "summary: %s",
+      static_cast<int>(latest_response_status_),
+      base::UTF16ToUTF8(latest_summary_).c_str());
+
+  if (!current_panel_qa_.empty()) {
+    base::StringAppendF(&description_template, "\nQA history:");
+    for (const auto& [question, answer] : current_panel_qa_) {
+      base::StringAppendF(&description_template, "\nQ:%s\nA:%s\n",
+                          question.c_str(), answer.c_str());
+    }
+  }
+
+  base::Value::Dict ai_metadata;
+  ai_metadata.Set(feedback::kMahiMetadataKey, "true");
+
+  chrome::ShowFeedbackPage(
+      /*browser=*/chrome::FindBrowserWithProfile(
+          ProfileManager::GetActiveUserProfile()),
+      /*source=*/chrome::kFeedbackSourceAI, description_template,
+      /*description_placeholder_text=*/
+      base::UTF16ToUTF8(
+          l10n_util::GetStringUTF16(IDS_MAHI_FEEDBACK_PLACEHOLDER)),
+      /*category_tag=*/"mahi",
+      /*extra_diagnostics=*/std::string(),
+      /*autofill_metadata=*/base::Value::Dict(), std::move(ai_metadata));
+}
+
+bool MahiManagerImpl::IsEnabled() {
+  return IsSupportedWithCorrectFeatureKey() &&
+         Shell::Get()->session_controller()->GetActivePrefService()->GetBoolean(
+             ash::prefs::kMahiEnabled);
+}
+
 void MahiManagerImpl::NotifyRefreshAvailability(bool available) {
   auto* mahi_widget = static_cast<MahiPanelWidget*>(mahi_panel_widget_.get());
   if (mahi_widget) {
-    mahi_widget->SetRefreshViewVisible(/*visible=*/available);
+    mahi_widget->NotifyRefreshAvailabilityChanged(available);
   }
 }
 
-void MahiManagerImpl::OnGetPageContent(
+void MahiManagerImpl::OnActiveUserPrefServiceChanged(
+    PrefService* pref_service) {
+  CHECK(pref_service);
+  // Subscribes again to pref changes.
+  pref_change_registrar_ = std::make_unique<PrefChangeRegistrar>();
+  pref_change_registrar_->Init(pref_service);
+  pref_change_registrar_->Add(
+      ash::prefs::kMahiEnabled,
+      base::BindRepeating(&MahiManagerImpl::OnMahiPrefChanged,
+                          weak_ptr_factory_.GetWeakPtr()));
+
+  OnMahiPrefChanged();
+}
+
+void MahiManagerImpl::OnMahiPrefChanged() {
+  CHECK(pref_change_registrar_);
+  CHECK(pref_change_registrar_->prefs());
+  if (!pref_change_registrar_->prefs()->GetBoolean(ash::prefs::kMahiEnabled)) {
+    mahi_panel_widget_.reset();
+  }
+}
+
+void MahiManagerImpl::MaybeInitialize() {
+  if (!mahi_provider_) {
+    mahi_provider_ = CreateProvider();
+  }
+  CHECK(mahi_provider_);
+}
+
+void MahiManagerImpl::OnGetPageContentForSummary(
     MahiSummaryCallback callback,
     crosapi::mojom::MahiPageContentPtr mahi_content_ptr) {
   if (!mahi_content_ptr) {
@@ -151,45 +290,83 @@ void MahiManagerImpl::OnGetPageContent(
                             MahiResponseStatus::kContentExtractionError);
     return;
   }
-  mahi_provider_->Summarize(
-      base::UTF16ToUTF8(mahi_content_ptr->page_content),
-      base::BindOnce(
-          [](MahiSummaryCallback summary_callback, base::Value::Dict dict,
-             manta::MantaStatus status) {
-            if (status.status_code != manta::MantaStatusCode::kOk) {
-              std::move(summary_callback)
-                  .Run(u"Couldn't get summary",
-                       MahiResponseStatus::kUnknownError);
-              return;
-            }
 
-            if (auto* text = dict.FindString("outputData")) {
-              std::move(summary_callback)
-                  .Run(base::UTF8ToUTF16(*text), MahiResponseStatus::kSuccess);
-            } else {
-              std::move(summary_callback)
-                  .Run(u"Cannot find outputdata",
-                       MahiResponseStatus::kCantFindOutputData);
-            }
-          },
-          std::move(callback)));
+  // Assign current panel content and clear the current panel QA
+  current_panel_content_ = std::move(mahi_content_ptr);
+  current_panel_qa_.clear();
+
+  CHECK(mahi_provider_);
+  mahi_provider_->Summarize(
+      base::UTF16ToUTF8(current_panel_content_->page_content),
+      base::BindOnce(&MahiManagerImpl::OnMahiProviderSummaryResponse,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-void MahiManagerImpl::OpenFeedbackDialog() {
-  const std::string description_template = "#Mahi: ";
+void MahiManagerImpl::OnGetPageContentForQA(
+    const std::u16string& question,
+    MahiAnswerQuestionCallback callback,
+    crosapi::mojom::MahiPageContentPtr mahi_content_ptr) {
+  if (!mahi_content_ptr) {
+    std::move(callback).Run(std::nullopt,
+                            MahiResponseStatus::kContentExtractionError);
+    return;
+  }
 
-  base::Value::Dict ai_metadata;
-  ai_metadata.Set("from_chromeos", "true");
+  // Assign current panel content and clear the current panel QA
+  current_panel_content_ = std::move(mahi_content_ptr);
+  current_panel_qa_.clear();
 
-  chrome::ShowFeedbackPage(
-      /*browser=*/chrome::FindBrowserWithActiveWindow(),
-      /*source=*/chrome::kFeedbackSourceAI, description_template,
-      /*description_placeholder_text=*/
-      base::UTF16ToUTF8(
-          l10n_util::GetStringUTF16(IDS_SEA_PEN_FEEDBACK_PLACEHOLDER)),
-      /*category_tag=*/std::string(),
-      /*extra_diagnostics=*/std::string(),
-      /*autofill_metadata=*/base::Value::Dict(), std::move(ai_metadata));
+  mahi_provider_->QuestionAndAnswer(
+      base::UTF16ToUTF8(current_panel_content_->page_content),
+      current_panel_qa_, base::UTF16ToUTF8(question),
+      base::BindOnce(&MahiManagerImpl::OnMahiProviderQAResponse,
+                     weak_ptr_factory_.GetWeakPtr(), question,
+                     std::move(callback)));
+}
+
+void MahiManagerImpl::OnMahiProviderSummaryResponse(
+    MahiSummaryCallback summary_callback,
+    base::Value::Dict dict,
+    manta::MantaStatus status) {
+  latest_summary_ = u"...";
+  if (status.status_code != manta::MantaStatusCode::kOk) {
+    latest_response_status_ = MahiResponseStatus::kUnknownError;
+    std::move(summary_callback)
+        .Run(u"Couldn't get summary", latest_response_status_);
+    return;
+  }
+
+  if (auto* text = dict.FindString("outputData")) {
+    latest_response_status_ = MahiResponseStatus::kSuccess;
+    latest_summary_ = base::UTF8ToUTF16(*text);
+    std::move(summary_callback).Run(latest_summary_, latest_response_status_);
+  } else {
+    latest_response_status_ = MahiResponseStatus::kCantFindOutputData;
+    std::move(summary_callback)
+        .Run(u"Cannot find outputdata", latest_response_status_);
+  }
+}
+
+void MahiManagerImpl::OnMahiProviderQAResponse(
+    const std::u16string& question,
+    MahiAnswerQuestionCallback callback,
+    base::Value::Dict dict,
+    manta::MantaStatus status) {
+  if (status.status_code != manta::MantaStatusCode::kOk) {
+    latest_response_status_ = MahiResponseStatus::kUnknownError;
+    current_panel_qa_.emplace_back(base::UTF16ToUTF8(question), "");
+    std::move(callback).Run(std::nullopt, latest_response_status_);
+    return;
+  }
+
+  if (auto* text = dict.FindString("outputData")) {
+    latest_response_status_ = MahiResponseStatus::kSuccess;
+    current_panel_qa_.emplace_back(base::UTF16ToUTF8(question), *text);
+    std::move(callback).Run(base::UTF8ToUTF16(*text), latest_response_status_);
+  } else {
+    latest_response_status_ = MahiResponseStatus::kCantFindOutputData;
+    std::move(callback).Run(std::nullopt, latest_response_status_);
+  }
 }
 
 }  // namespace ash

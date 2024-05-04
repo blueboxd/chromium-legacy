@@ -17,7 +17,6 @@ import org.chromium.base.Log;
 import org.chromium.base.Promise;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.notifications.NotificationConstants;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 import org.chromium.chrome.browser.notifications.NotificationWrapperBuilderFactory;
@@ -77,15 +76,14 @@ public class SyncErrorNotifier implements SyncService.SyncStateChangedListener {
         ThreadUtils.assertOnUiThread();
         SyncService syncService = SyncServiceFactory.getForProfile(profile);
         if (syncService == null) return null;
-        return sProfileMap.getForProfile(
-                profile,
-                () -> {
-                    return new SyncErrorNotifier(
-                            BaseNotificationManagerProxyFactory.create(
-                                    ContextUtils.getApplicationContext()),
-                            syncService,
-                            TrustedVaultClient.get());
-                });
+        return sProfileMap.getForProfile(profile, SyncErrorNotifier::buildForProfile);
+    }
+
+    private static SyncErrorNotifier buildForProfile(Profile profile) {
+        return new SyncErrorNotifier(
+                BaseNotificationManagerProxyFactory.create(ContextUtils.getApplicationContext()),
+                SyncServiceFactory.getForProfile(profile),
+                TrustedVaultClient.get());
     }
 
     @VisibleForTesting
@@ -172,16 +170,6 @@ public class SyncErrorNotifier implements SyncService.SyncStateChangedListener {
         if (!mSyncService.isEngineInitialized()) {
             // The notifications expose encryption errors and those can only be detected once the
             // engine is up. In the meantime, don't show anything.
-            return NotificationState.HIDDEN;
-        }
-
-        if (!mSyncService.isSyncFeatureEnabled()
-                && !ChromeFeatureList.isEnabled(
-                        ChromeFeatureList.SYNC_SHOW_IDENTITY_ERRORS_FOR_SIGNED_IN_USERS)) {
-            // Error notifications are only currently shown to syncing users, even though passphrase
-            // and trusted vault key errors still apply to signed-in users.
-            // They are shown to signed-in users as well if SyncShowIdentityErrorsForSignedInUsers
-            // feature flag is enabled.
             return NotificationState.HIDDEN;
         }
 

@@ -7,7 +7,7 @@
 #include "base/test/test_future.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
-#include "chrome/browser/ui/web_applications/web_app_controller_browsertest.h"
+#include "chrome/browser/ui/web_applications/web_app_browsertest_base.h"
 #include "chrome/browser/web_applications/test/os_integration_test_override_impl.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/browser/web_applications/test/web_app_test_utils.h"
@@ -35,43 +35,22 @@ const char16_t kAppName[] = u"Test App";
 // OS where protocols are registered on the OS differently compared to
 // other OSes where protocols are bundled into the shortcut
 // registration/update/unregistration flow.
-class UpdateProtocolHandlerApprovalCommandTest
-    : public WebAppControllerBrowserTest {
+class UpdateProtocolHandlerApprovalCommandTest : public WebAppBrowserTestBase {
  public:
   const GURL kTestAppUrl = GURL("https://example.com");
 
   UpdateProtocolHandlerApprovalCommandTest() = default;
   ~UpdateProtocolHandlerApprovalCommandTest() override = default;
 
-  void SetUpOnMainThread() override {
-    // Suppress the OS hooks to allow OS integration to proceed.
-    os_hooks_suppress_.reset();
-    {
-      base::ScopedAllowBlockingForTesting allow_blocking;
-      test_override_ =
-          OsIntegrationTestOverrideImpl::OverrideForTesting(base::GetHomeDir());
-    }
-    WebAppControllerBrowserTest::SetUpOnMainThread();
-  }
-
   void TearDownOnMainThread() override {
-    // Uninstallation of all apps is required for the shortcut override
-    // destruction.
     EXPECT_TRUE(test::UninstallAllWebApps(profile()));
-    {
-      // Blocking required due to file operations in the shortcut override
-      // destructor.
-      base::ScopedAllowBlockingForTesting allow_blocking;
-      test_override_.reset();
-    }
-    WebAppControllerBrowserTest::TearDownOnMainThread();
+    WebAppBrowserTestBase::TearDownOnMainThread();
   }
 
   webapps::AppId InstallWebAppWithProtocolHandlers(
       const std::vector<apps::ProtocolHandlerInfo>& protocol_handlers) {
     std::unique_ptr<WebAppInstallInfo> info =
-        std::make_unique<WebAppInstallInfo>();
-    info->start_url = GURL(kTestAppUrl);
+        WebAppInstallInfo::CreateWithStartUrlForTesting(GURL(kTestAppUrl));
     info->title = kAppName;
     info->user_display_mode = web_app::mojom::UserDisplayMode::kStandalone;
     info->protocol_handlers = protocol_handlers;
@@ -113,10 +92,6 @@ class UpdateProtocolHandlerApprovalCommandTest
     return true;
 #endif
   }
-
- private:
-  std::unique_ptr<OsIntegrationTestOverrideImpl::BlockingRegistration>
-      test_override_;
 };
 
 IN_PROC_BROWSER_TEST_F(UpdateProtocolHandlerApprovalCommandTest, Install) {
@@ -403,38 +378,16 @@ IN_PROC_BROWSER_TEST_F(UpdateProtocolHandlerApprovalCommandTest,
 #endif
 
   if (AreProtocolsRegisteredWithOs()) {
-#if BUILDFLAG(IS_WIN)
-    if (AreSubManagersExecuteEnabled()) {
-      // The sub managers first add a protocol, then remove it on being
-      // disallowed and then adds it again.
-      EXPECT_THAT(
-          OsIntegrationTestOverrideImpl::Get()->protocol_scheme_registrations(),
-          testing::ElementsAre(
-              std::make_tuple(app_id, std::vector({protocol_handler.protocol})),
-              std::make_tuple(app_id, std::vector<std::string>()),
-              std::make_tuple(app_id,
-                              std::vector({protocol_handler.protocol}))));
-    } else {
-      // The old OS integration code first adds a protocol, and then does an
-      // update with no approved protocols (hence an unregistration but no
-      // registration). The last update call performs an unregistration and a
-      // re-addition of the protocol, so there are four entries.
-      EXPECT_THAT(
-          OsIntegrationTestOverrideImpl::Get()->protocol_scheme_registrations(),
-          testing::ElementsAre(
-              std::make_tuple(app_id, std::vector({protocol_handler.protocol})),
-              std::make_tuple(app_id, std::vector<std::string>()),
-              std::make_tuple(app_id, std::vector<std::string>()),
-              std::make_tuple(app_id,
-                              std::vector({protocol_handler.protocol}))));
-    }
-#else
+    // The sub managers first add a protocol, then remove it on being
+    // disallowed and then adds it again.
     EXPECT_THAT(
         OsIntegrationTestOverrideImpl::Get()->protocol_scheme_registrations(),
         testing::ElementsAre(
             std::make_tuple(app_id, std::vector({protocol_handler.protocol})),
-            std::make_tuple(app_id, std::vector({protocol_handler.protocol}))));
+#if BUILDFLAG(IS_WIN)
+            std::make_tuple(app_id, std::vector<std::string>()),
 #endif  // BUILDFLAG(IS_WIN)
+            std::make_tuple(app_id, std::vector({protocol_handler.protocol}))));
   }
 }
 
@@ -476,38 +429,14 @@ IN_PROC_BROWSER_TEST_F(UpdateProtocolHandlerApprovalCommandTest,
 #endif
 
   if (AreProtocolsRegisteredWithOs()) {
-#if BUILDFLAG(IS_WIN)
-    if (AreSubManagersExecuteEnabled()) {
-      // The sub managers first add a protocol, then remove it on being
-      // disallowed and then adds it again.
-      EXPECT_THAT(
-          OsIntegrationTestOverrideImpl::Get()->protocol_scheme_registrations(),
-          testing::ElementsAre(
-              std::make_tuple(app_id, std::vector({protocol_handler.protocol})),
-              std::make_tuple(app_id, std::vector<std::string>()),
-              std::make_tuple(app_id,
-                              std::vector({protocol_handler.protocol}))));
-    } else {
-      // The old OS integration code first adds a protocol, and then does an
-      // update with no approved protocols (hence an unregistration but no
-      // registration). The last update call performs an unregistration and a
-      // re-addition of the protocol, so there are four entries.
-      EXPECT_THAT(
-          OsIntegrationTestOverrideImpl::Get()->protocol_scheme_registrations(),
-          testing::ElementsAre(
-              std::make_tuple(app_id, std::vector({protocol_handler.protocol})),
-              std::make_tuple(app_id, std::vector<std::string>()),
-              std::make_tuple(app_id, std::vector<std::string>()),
-              std::make_tuple(app_id,
-                              std::vector({protocol_handler.protocol}))));
-    }
-#else
     EXPECT_THAT(
         OsIntegrationTestOverrideImpl::Get()->protocol_scheme_registrations(),
         testing::ElementsAre(
             std::make_tuple(app_id, std::vector({protocol_handler.protocol})),
-            std::make_tuple(app_id, std::vector({protocol_handler.protocol}))));
+#if BUILDFLAG(IS_WIN)
+            std::make_tuple(app_id, std::vector<std::string>()),
 #endif  // BUILDFLAG(IS_WIN)
+            std::make_tuple(app_id, std::vector({protocol_handler.protocol}))));
   }
 }
 

@@ -177,17 +177,30 @@ void AudioManagerBase::GetAudioDeviceDescriptions(
   }
 
   for (auto& name : device_names) {
-    bool is_system_default = name.unique_id == real_default_device_id;
+    // Checks whether `name.unique_id` is the id of the real device that is
+    // mapped to the virtual default and/or communications devices.
+    bool is_real_system_default = name.unique_id == real_default_device_id;
+    bool is_real_communications_device =
+        name.unique_id == real_communications_device_id;
+
+    bool is_virtual_system_default = false;
+    bool is_virtual_communications_device = false;
     if (AudioDeviceDescription::IsDefaultDevice(name.unique_id)) {
+      // Virtual default device.
       name.device_name = real_default_name;
-      is_system_default = true;
+      is_virtual_system_default = true;
     } else if (AudioDeviceDescription::IsCommunicationsDevice(name.unique_id)) {
+      // Virtual communications device.
       name.device_name = real_communications_name;
+      is_virtual_communications_device = true;
     }
+
     std::string group_id = (this->*get_group_id)(name.unique_id);
-    device_descriptions->emplace_back(std::move(name.device_name),
-                                      std::move(name.unique_id),
-                                      std::move(group_id), is_system_default);
+    device_descriptions->emplace_back(
+        std::move(name.device_name), std::move(name.unique_id),
+        std::move(group_id),
+        is_virtual_system_default || is_real_system_default,
+        is_virtual_communications_device || is_real_communications_device);
   }
 }
 
@@ -452,9 +465,12 @@ AudioOutputStream* AudioManagerBase::MakeAudioOutputStreamProxy(
         //    existing dispatcher are the same as the requested dispatcher.
         // 2) Unified IO is used, input_params and output_params of the existing
         //    dispatcher are the same as the request dispatcher.
+        bool same_offload_mode = output_params.RequireOffload() ==
+                                 dispatcher->output_params.RequireOffload();
         return params.Equals(dispatcher->input_params) &&
                output_params.Equals(dispatcher->output_params) &&
-               output_device_id == dispatcher->output_device_id;
+               output_device_id == dispatcher->output_device_id &&
+               same_offload_mode;
       });
   if (it != output_dispatchers_.end())
     return (*it)->dispatcher->CreateStreamProxy();

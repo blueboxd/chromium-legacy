@@ -7,7 +7,7 @@
  * #import=../cr_input/cr_input_style_lit.css.js
  * #import=../cr_shared_style_lit.css.js
  * #import=../cr_shared_vars.css.js
- * #import=../icons.html.js
+ * #import=../icons_lit.html.js
  * #scheme=relative
  * #include=cr-shared-style-lit cr-input-style-lit
  * #css_wrapper_metadata_end */
@@ -70,9 +70,6 @@
   margin-inline-start: 4px;
   position: absolute;
   right: 0;
-}
-
-:host-context([chrome-refresh-2023]) #clearSearch {
   /* Necessary to be above the '#hover-layer' in cr-input. */
   z-index: 1;
 }

@@ -148,10 +148,13 @@ ResourceRequest::TrustedParams::TrustedParams(const TrustedParams& other) {
 
 ResourceRequest::TrustedParams& ResourceRequest::TrustedParams::operator=(
     const TrustedParams& other) {
+  TRACE_EVENT("loading", "ResourceRequest::TrustedParams.copy");
   isolation_info = other.isolation_info;
   disable_secure_dns = other.disable_secure_dns;
   has_user_activation = other.has_user_activation;
   allow_cookies_from_browser = other.allow_cookies_from_browser;
+  include_request_cookies_with_response =
+      other.include_request_cookies_with_response;
   cookie_observer =
       Clone(&const_cast<mojo::PendingRemote<mojom::CookieAccessObserver>&>(
           other.cookie_observer));
@@ -174,12 +177,18 @@ ResourceRequest::TrustedParams& ResourceRequest::TrustedParams::operator=(
   return *this;
 }
 
+ResourceRequest::TrustedParams::TrustedParams(TrustedParams&& other) = default;
+ResourceRequest::TrustedParams& ResourceRequest::TrustedParams::operator=(
+    TrustedParams&& other) = default;
+
 bool ResourceRequest::TrustedParams::EqualsForTesting(
     const TrustedParams& other) const {
   return isolation_info.IsEqualForTesting(other.isolation_info) &&
          disable_secure_dns == other.disable_secure_dns &&
          has_user_activation == other.has_user_activation &&
          allow_cookies_from_browser == other.allow_cookies_from_browser &&
+         include_request_cookies_with_response ==
+             other.include_request_cookies_with_response &&
          client_security_state == other.client_security_state;
 }
 
@@ -246,6 +255,10 @@ ResourceRequest::ResourceRequest(const ResourceRequest& request) {
   TRACE_EVENT("loading", "ResourceRequest::ResourceRequest.copy_constructor");
   *this = request;
 }
+ResourceRequest& ResourceRequest::operator=(const ResourceRequest& other) =
+    default;
+ResourceRequest::ResourceRequest(ResourceRequest&& other) = default;
+ResourceRequest& ResourceRequest::operator=(ResourceRequest&& other) = default;
 ResourceRequest::~ResourceRequest() = default;
 
 bool ResourceRequest::EqualsForTesting(const ResourceRequest& request) const {

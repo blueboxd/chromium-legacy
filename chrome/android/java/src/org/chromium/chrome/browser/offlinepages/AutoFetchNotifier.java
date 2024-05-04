@@ -17,6 +17,7 @@ import androidx.core.app.NotificationCompat;
 
 import org.jni_zero.CalledByNative;
 import org.jni_zero.JNINamespace;
+import org.jni_zero.JniType;
 import org.jni_zero.NativeMethods;
 
 import org.chromium.base.ContextUtils;
@@ -272,19 +273,23 @@ public class AutoFetchNotifier {
     }
 
     /**
-     * Creates a system notification that informs the user when an auto-fetched page is ready.
-     * If the notification is tapped, it opens the offline page in Chrome.
+     * Creates a system notification that informs the user when an auto-fetched page is ready. If
+     * the notification is tapped, it opens the offline page in Chrome.
      *
-     * @param pageTitle     The title of the page. This is displayed on the notification.
-     * @param originalUrl   The requested URL before any redirection.
-     * @param finalUrl      The requested URL after any redirection.
-     * @param tabId         ID of the tab where the auto-fetch occurred. This tab is used, if
-     *                      available, to open the offline page when the notification is tapped.
-     * @param offlineId     The offlineID for the offline page that was just saved.
+     * @param pageTitle The title of the page. This is displayed on the notification.
+     * @param originalUrl The requested URL before any redirection.
+     * @param finalUrl The requested URL after any redirection.
+     * @param tabId ID of the tab where the auto-fetch occurred. This tab is used, if available, to
+     *     open the offline page when the notification is tapped.
+     * @param offlineId The offlineID for the offline page that was just saved.
      */
     @CalledByNative
     private static void showCompleteNotification(
-            String pageTitle, String originalUrl, String finalUrl, int tabId, long offlineId) {
+            @JniType("std::u16string") String pageTitle,
+            @JniType("std::string") String originalUrl,
+            @JniType("std::string") String finalUrl,
+            int tabId,
+            long offlineId) {
         // Since offline pages are only available in regular mode, any downloaded content should be
         // triggered by regular mode. Hence, it is correct to pass always regular profile.
         OfflinePageUtils.getLoadUrlParamsForOpeningOfflineVersion(
@@ -308,7 +313,7 @@ public class AutoFetchNotifier {
         Context context = ContextUtils.getApplicationContext();
         // Create an intent to handle tapping the notification.
         Intent clickIntent = new Intent(context, CompleteNotificationReceiver.class);
-        // TODO(crbug.com/937581): We're using the final URL here so that redirects can't break
+        // TODO(crbug.com/41444557): We're using the final URL here so that redirects can't break
         // the page load. This will result in opening a new tab if there was a redirect (because
         // the URL doesn't match the old dino page), which is not ideal.
         clickIntent.putExtra(EXTRA_URL, finalUrl);
@@ -390,6 +395,6 @@ public class AutoFetchNotifier {
 
     @NativeMethods
     interface Natives {
-        void cancelInProgress(Profile profile);
+        void cancelInProgress(@JniType("Profile*") Profile profile);
     }
 }

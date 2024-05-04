@@ -31,7 +31,6 @@
 <translation id="1620510694547887537">કૅમેરા</translation>
 <translation id="1633720957382884102">સંબંધિત સાઇટ</translation>
 <translation id="1644574205037202324">ઇતિહાસ</translation>
-<translation id="1647582022260550163">શું તમે ખરેખર પરવાનગીઓ રીસેટ કરવા અને કુકી તેમજ સાઇટનો ડેટા સાફ કરવા માગો છો?</translation>
 <translation id="1652197001188145583">ચાલુ હોય ત્યારે, સાઇટ NFC ડિવાઇસનો ઉપયોગ કરવાનું પૂછી શકે છે. બંધ હોય ત્યારે, સાઇટ NFC ડિવાઇસનો ઉપયોગ કરી શકતી નથી.</translation>
 <translation id="1660204651932907780">સાઇટને સાઉન્ડ ચલાવવાની મંજૂરી આપો (સુઝાવ આપેલો છે)</translation>
 <translation id="1677097821151855053">કુકી અને અન્ય સાઇટ ડેટાનો ઉપયોગ તમને યાદ રાખવા માટે કરવામાં આવે છે, ઉદાહરણ તરીકે, તમને સાઇન ઇન કરવા માટે અથવા જાહેરાતો મનગમતી બનાવવા માટે. બધી સાઇટ માટે કુકી મેનેજ કરવા, <ph name="BEGIN_LINK" />સેટિંગ<ph name="END_LINK" /> જુઓ.</translation>
@@ -94,12 +93,12 @@
 <translation id="2501278716633472235">પાછા જાઓ</translation>
 <translation id="2546283357679194313">કૂકીઝ અને સાઇટ ડેટા</translation>
 <translation id="2550801787432930915">કિંમતમાં ઘટાડાનું કાર્ડ</translation>
-<translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{1 કુકીને બ્લૉક કરેલી છે}one{# કુકીને બ્લૉક કરેલી છે}other{# કુકીને બ્લૉક કરેલી છે}}</translation>
 <translation id="2570922361219980984">આ ઉપકરણ માટે સ્થાન ઍક્સેસ પણ બંધ છે. તેને <ph name="BEGIN_LINK" />Android સેટિંગ<ph name="END_LINK" />માં ચાલુ કરો.</translation>
 <translation id="257931822824936280">વિસ્તૃત - સંકુચિત કરવા માટે ક્લિક કરો.</translation>
 <translation id="2586657967955657006">ક્લિપબોર્ડ</translation>
 <translation id="2597457036804169544">સાઇટ પર ઘેરી થીમ લાગુ કરશો નહીં</translation>
 <translation id="2606760465469169465">ઑટોમૅટિક ચકાસણી</translation>
+<translation id="2613007545732217283"><ph name="HOST_NAME" /> <ph name="SEPARATOR" /> <ph name="RECENCY" /></translation>
 <translation id="2621115761605608342">ચોક્કસ સાઇટ માટે JavaScript ની મંજૂરી આપો.</translation>
 <translation id="2653659639078652383">સબમિટ કરો</translation>
 <translation id="2677748264148917807">છોડો</translation>
@@ -122,9 +121,7 @@
 <translation id="2979365474350987274">ત્રીજા પક્ષની કુકી મર્યાદિત છે</translation>
 <translation id="3008272652534848354">પરવાનગીઓ રીસેટ કરો</translation>
 <translation id="301521992641321250">ઑટોમૅટિક રીતે બ્લૉક થયું</translation>
-<translation id="3025010840409371499"><ph name="RECENCY" /> <ph name="SEPARATOR" /> <ph name="HOST_NAME" /></translation>
 <translation id="3069226013421428034">ચોક્કસ સાઇટ માટે ત્રીજા પક્ષ દ્વારા સાઇન-ઇનને મંજૂરી આપો.</translation>
-<translation id="3082992102194421695">{COUNT,plural, =1{આવતીકાલે સમયસીમા સમાપ્ત થાય છે}one{# દિવસમાં સમયસીમા સમાપ્ત થાય છે}other{# દિવસમાં સમયસીમા સમાપ્ત થાય છે}}</translation>
 <translation id="310297983047869047">પાછલી સ્લાઇડ</translation>
 <translation id="3109724472072898302">સંકુચિત</translation>
 <translation id="3114012059975132928">વીડિયો પ્લેયર</translation>
@@ -136,6 +133,7 @@
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> સંગ્રહિત ડેટા</translation>
 <translation id="321187648315454507"><ph name="APP_NAME" /> તમને નોટિફિકેશન મોકલી શકે તે માટે <ph name="BEGIN_LINK" />Android સેટિંગ<ph name="END_LINK" />માં પણ નોટિફિકેશન ચાલુ કરો.</translation>
 <translation id="3227137524299004712">માઇક્રોફોન</translation>
+<translation id="3232293466644486101">બ્રાઉઝિંગ ડેટા ડિલીટ કરો…</translation>
 <translation id="3242646949159196181">ચાલુ હોય ત્યારે, સાઇટ સાઉન્ડ વગાડી શકે છે. બંધ હોય ત્યારે, સાઇટ સાઉન્ડ વગાડી શકતી નથી.</translation>
 <translation id="3277252321222022663">સાઇટને સેન્સરના ઍક્સેસની મંજૂરી આપો (સુઝાવ આપેલો છે)</translation>
 <translation id="3285500645985761267">ગ્રૂપમાંની તમારી પ્રવૃત્તિ જોવા માટે સંબંધિત સાઇટને મંજૂરી આપો</translation>
@@ -177,6 +175,7 @@
 <translation id="3895926599014793903">ફરજિયાતપૂર્વક ઝૂમ ચાલુ કરો</translation>
 <translation id="3908288065506437185">છૂપા મોડમાં ત્રીજા પક્ષની કુકીને બ્લૉક કરો</translation>
 <translation id="3918378745482005425">અમુક સુવિધાઓ કામ કરી શકશે નહીં. સંબંધિત સાઇટ હજી પણ ત્રીજા પક્ષની કુકીનો ઉપયોગ કરી શકે છે.</translation>
+<translation id="3933121352599513978">અનિચ્છિત વિનંતીઓને નાની કરો (સુઝાવ આપેલું)</translation>
 <translation id="3955193568934677022">સાઇટને સંરક્ષિત કન્ટેન્ટ ચલાવવાની મંજૂરી આપો (સુઝાવ આપીએ છીએ)</translation>
 <translation id="3967822245660637423">ડાઉનલોડ પૂર્ણ</translation>
 <translation id="3974105241379491420">આ સાઇટ, તેમના દ્વારા તમારા વિશે સાચવેલી માહિતીનો ઉપયોગ કરવાનું પૂછી શકે છે</translation>
@@ -198,7 +197,9 @@
 <translation id="4278390842282768270">મંજૂર</translation>
 <translation id="429312253194641664">સાઇટ મીડિયા ચલાવી રહી છે</translation>
 <translation id="42981349822642051">વિસ્તૃત કરો</translation>
+<translation id="4336219115486912529">{COUNT,plural, =1{આવતીકાલે સમયસીમા સમાપ્ત થાય છે}one{# દિવસમાં સમયસીમા સમાપ્ત થાય છે}other{# દિવસમાં સમયસીમા સમાપ્ત થાય છે}}</translation>
 <translation id="4336566011000459927">ફરીથી આજે Chrome કુકીને મર્યાદિત કરશે</translation>
+<translation id="4336836404251800362"><ph name="RECENCY" /> <ph name="SEPARATOR" /> તમારું છેલ્લું ટૅબ</translation>
 <translation id="4338831206024587507"><ph name="DOMAIN" /> હેઠળની બધી સાઇટ</translation>
 <translation id="4402755511846832236">તમે સક્રિય રીતે આ ડિવાઇસનો ઉપયોગ ક્યારે કરો છો, તેની જાણ ન થાય એ માટે સાઇટ બ્લૉક કરો</translation>
 <translation id="4412992751769744546">તૃતીય-પક્ષ કૂકીઝને મંજૂરી આપો</translation>
@@ -289,6 +290,7 @@
 <translation id="5853982612236235577">ચાલુ હોય ત્યારે, સાઇટ નોટિફિકેશન મોકલવાનું પૂછી શકે છે. બંધ હોય ત્યારે, સાઇટ નોટિફિકેશન મોકલી શકતી નથી.</translation>
 <translation id="5860033963881614850">બંધ</translation>
 <translation id="5876056640971328065">વીડિયો થોભાવો</translation>
+<translation id="5877248419911025165">બધી વિનંતીઓ નાની કરો</translation>
 <translation id="5884085660368669834">સાઇટની પસંદગી</translation>
 <translation id="5887687176710214216">છેલ્લે કાલે મુલાકાત લીધી</translation>
 <translation id="5916664084637901428">ચાલુ</translation>
@@ -345,6 +347,7 @@
 <translation id="6612358246767739896">સુરક્ષિત કન્ટેન્ટ</translation>
 <translation id="662080504995468778">પૃષ્ઠ પર રહો</translation>
 <translation id="6653342741369270081">પૂર્ણ સ્ક્રીનથી બહાર નીકળવા માટે 'પાછળ' બટનને દબાવો</translation>
+<translation id="6670377348676659110">{TILE_COUNT,plural, =1{આ ટૅબ વડે ચાલુ રાખો મૉડ્યૂલને છુપાવો}one{આ ટૅબ વડે ચાલુ રાખો મૉડ્યૂલને છુપાવો}other{આ ટૅબ વડે ચાલુ રાખો મૉડ્યૂલને છુપાવો}}</translation>
 <translation id="6689172468748959065">પ્રોફાઇલ ફોટો</translation>
 <translation id="6697925417670533197">ડાઉનલોડ કરવાનું સક્રિય કરો</translation>
 <translation id="6722828510648505498">ઓળખ સેવાઓના સાઇન ઇન કરવાના સંકેતો બ્લૉક કરો.</translation>
@@ -398,7 +401,6 @@
 <translation id="7561196759112975576">હંમેશાં</translation>
 <translation id="757524316907819857">સાઇટને સંરક્ષિત કન્ટેન્ટ ચલાવવાથી બ્લૉક કરો</translation>
 <translation id="7594634374516752650">બ્લૂટૂથ ડિવાઇસ સાથે કનેક્ટ કરી</translation>
-<translation id="7641339528570811325">બ્રાઉઝિંગ ડેટા સાફ કરો…</translation>
 <translation id="7649070708921625228">સહાય</translation>
 <translation id="7658239707568436148">રદ કરો</translation>
 <translation id="7667547420449112975">ધ વન્ડરફુલ વિઝાર્ડ ઑફ ઓઝ</translation>
@@ -456,7 +458,6 @@
 <translation id="8441146129660941386">પાછળ કરો</translation>
 <translation id="8444433999583714703"><ph name="APP_NAME" /> તમારું સ્થાન ઍક્સેસ કરી શકે તે માટે, <ph name="BEGIN_LINK" />Android સેટિંગ<ph name="END_LINK" />માં પણ સ્થાન ચાલુ કરો.</translation>
 <translation id="8447861592752582886">ઉપકરણની પરવાનગી રદબાતલ કરો</translation>
-<translation id="8451050538944905715">{NUM_SELECTED,plural, =1{વપરાશમાંની 1 કુકી}one{વપરાશમાંની # કુકી}other{વપરાશમાંની # કુકી}}</translation>
 <translation id="8487700953926739672">ઑફલાઇન ઉપલબ્ધ</translation>
 <translation id="848952951823693243">હંમેશાં મોબાઇલ સાઇટની વિનંતી કરો</translation>
 <translation id="8499083585497694743">માઇક્રોફોન અનમ્યૂટ કરો</translation>
@@ -484,7 +485,6 @@
 <translation id="8803526663383843427">જ્યારે ચાલુ હોય</translation>
 <translation id="8805385115381080995">બ્રાઉઝિંગની સ્પીડ વધી જાય છે, કારણ કે અલગ-અલગ સાઇટ દ્વારા ચકાસણી માટે તમને એ પૂછવાની શક્યતા ઘટી જાય છે કે તમે જ અસલી વપરાશકર્તા છો</translation>
 <translation id="8816026460808729765">સાઇટને સેન્સરને ઍક્સેસ કરવાથી બ્લૉક કરો</translation>
-<translation id="8843699287283948910">અન્ય ડિવાઇસમાંથી ટૅબ છુપાવો</translation>
 <translation id="8847988622838149491">USB</translation>
 <translation id="8874790741333031443">ત્રીજા પક્ષની કુકીને હંગામી રીતે મંજૂરી આપવાનો પ્રયાસ કરવાનો અર્થ છે બ્રાઉઝિંગ સંરક્ષણ સાઇટ સુવિધાઓની અપેક્ષા મુજબ કાર્ય કરવાની સંભાવના વધુ છે.</translation>
 <translation id="8889294078294184559">જેમ જેમ તમે બ્રાઉઝ કરવાનું ચાલુ રાખો છો, તેમ તેમ વિવિધ વેબસાઇટ Chrome વડે એ ચેક કરી શકે છે કે તમે અસલી વપરાશકર્તા છો કે નહીં અને સાથે જ તમે મુલાકાત લીધી હોય એવી અગાઉની સાઇટ વડે આ બાબતની ચકાસણી પણ તે કરી શકે છે</translation>
@@ -497,6 +497,7 @@
 <translation id="8959122750345127698">નૅવિગેશન સુધી પહોંચી શકાય તેમ નથી: <ph name="URL" /></translation>
 <translation id="8986362086234534611">ભૂલી જાઓ</translation>
 <translation id="8990043154272859344">બધી સાઇટમાંથી તમને સાઇન આઉટ કરવામાં આવશે</translation>
+<translation id="8993853206419610596">બધી વિનંતીઓ મોટી કરો</translation>
 <translation id="9002538116239926534">ચાલુ હોય ત્યારે, સાઇટ તમારા ડિવાઇસ પર ડેટા સાચવી શકે છે. બંધ હોય ત્યારે, સાઇટ તમારા ડિવાઇસ પર ડેટા સાચવી શકતી નથી.</translation>
 <translation id="9011903857143958461"><ph name="SITE_NAME" />ની મંજૂરી આપી</translation>
 <translation id="9019902583201351841">તમારા માતાપિતા દ્વારા મેનેજ થયેલ</translation>

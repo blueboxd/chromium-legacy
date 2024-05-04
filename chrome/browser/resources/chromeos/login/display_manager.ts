@@ -7,7 +7,7 @@
  */
 
 import {$, ensureTransitionEndEvent} from '//resources/ash/common/util.js';
-import {assert} from '//resources/js/assert.js';
+import {assert, assertInstanceof} from '//resources/js/assert.js';
 import {afterNextRender} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {DisplayType, OobeUiState, SCREEN_DEVICE_DISABLED, SCREEN_WELCOME} from './components/display_manager_types.js';
@@ -79,7 +79,7 @@ export function invokePolymerMethod(
  */
 export class DisplayManager {
   private screens: string[];
-  private currentStep: number;
+  private currentStepId: null|string;
   private keyboardFlowOn: boolean;
   private virtualKeyboardShown: boolean;
   private displayType: DisplayType;
@@ -93,9 +93,9 @@ export class DisplayManager {
     this.screens = [];
 
     /**
-     * Current OOBE step, index in the screens array.
+     * Current OOBE step id.
      */
-    this.currentStep = 0;
+    this.currentStepId = null;
 
     /**
      * Whether keyboard navigation flow is enforced.
@@ -136,8 +136,11 @@ export class DisplayManager {
   /**
    * Gets current screen element.
    */
-  get currentScreen(): Element {
-    return $(this.screens[this.currentStep]);
+  get currentScreen(): HTMLElement|null {
+    if (this.currentStepId === null) {
+      return null;
+    }
+    return $(this.currentStepId);
   }
 
   /**
@@ -210,21 +213,22 @@ export class DisplayManager {
    * Switches to the next OOBE step.
    * @param nextStepIndex Index of the next step.
    */
-  toggleStep(nextStepIndex: number, screenData: any): void {
-    const currentStepId = this.screens[this.currentStep];
-    const nextStepId = this.screens[nextStepIndex];
-    const oldStep = $(currentStepId);
+  private toggleStep(nextStepId: string, screenData: any): void {
+    const oldStep = this.currentScreen;
     const newStep = $(nextStepId);
+    assertInstanceof(
+        newStep, HTMLElement, 'No screen with such id: ' + nextStepId);
     const innerContainer = $('inner-container');
     const oobeContainer = $('oobe');
     const isBootAnimationEnabled =
         loadTimeData.getBoolean('isBootAnimationEnabled');
 
-    invokePolymerMethod(oldStep, 'onBeforeHide');
-
-    if ('defaultControl' in oldStep &&
-        oldStep.defaultControl instanceof HTMLElement) {
-      invokePolymerMethod(oldStep.defaultControl, 'onBeforeHide');
+    if (oldStep) {
+      invokePolymerMethod(oldStep, 'onBeforeHide');
+      if ('defaultControl' in oldStep &&
+          oldStep.defaultControl instanceof HTMLElement) {
+        invokePolymerMethod(oldStep.defaultControl, 'onBeforeHide');
+      }
     }
 
     $('oobe').className = nextStepId;
@@ -251,7 +255,7 @@ export class DisplayManager {
     newStep.classList.remove('hidden');
 
     // Start fading animation for login display or reset screen.
-    oldStep.classList.add('faded');
+    oldStep?.classList.add('faded');
     newStep.classList.remove('faded');
 
     let defaultControl: HTMLElement|null = null;
@@ -259,7 +263,7 @@ export class DisplayManager {
         newStep.defaultControl instanceof HTMLElement) {
       defaultControl = newStep.defaultControl;
     }
-    if (this.currentStep !== nextStepIndex &&
+    if (this.currentStepId !== nextStepId && oldStep &&
         !oldStep.classList.contains('hidden')) {
       oldStep.classList.add('hidden');
       oldStep.hidden = true;
@@ -281,15 +285,13 @@ export class DisplayManager {
         }
       }
     }
-    this.currentStep = nextStepIndex;
+    this.currentStepId = nextStepId;
 
-    // Call onAfterShow after currentStep so that the step can have a
-    // post-set hook.
-    invokePolymerMethod(newStep, 'onAfterShow', screenData);
-
+    const currentScreen = this.currentScreen;
+    assert(currentScreen, 'currentScreen must exist at this point');
     $('oobe').dispatchEvent(
-        new CustomEvent('screenchanged', {detail: this.currentScreen.id}));
-    chrome.send('updateCurrentScreen', [this.currentScreen.id]);
+        new CustomEvent('screenchanged', {detail: currentScreen.id}));
+    chrome.send('updateCurrentScreen', [currentScreen.id]);
 
     // Post a task to finish initial animation once a frame is rendered.
     // Posting the task makes sure it will be executed after all other
@@ -311,30 +313,12 @@ export class DisplayManager {
    */
   showScreen(screen: {id: string, data: any}): void {
     // Do not allow any other screen to clobber the device disabled screen.
-    if (this.currentScreen.id === SCREEN_DEVICE_DISABLED) {
+    const currentScreen = this.currentScreen;
+    if (currentScreen && currentScreen.id === SCREEN_DEVICE_DISABLED) {
       return;
     }
 
-    const screenId = screen.id;
-
-    const data = screen.data;
-    const index = this.getScreenIndex(screenId);
-    if (index >= 0) {
-      this.toggleStep(index, data);
-    }
-  }
-
-  /**
-   * Gets index of given screen id in screens.
-   * @param screenId Id of the screen to look up.
-   */
-  private getScreenIndex(screenId: string): number {
-    for (let i = 0; i < this.screens.length; ++i) {
-      if (this.screens[i] === screenId) {
-        return i;
-      }
-    }
-    return -1;
+    this.toggleStep(screen.id, screen.data);
   }
 
   /**
@@ -378,8 +362,6 @@ export class DisplayManager {
         child.i18nUpdateLocale();
       }
     }
-    const isInTabletMode = loadTimeData.getBoolean('isInTabletMode');
-    this.setTabletModeState(isInTabletMode);
   }
 
   /**
@@ -399,22 +381,6 @@ export class DisplayManager {
   }
 
   /**
-   * Updates "device in tablet mode" state when tablet mode is changed.
-   * @param isInTabletMode True when in tablet mode.
-   */
-  setTabletModeState(isInTabletMode: boolean): void {
-    document.documentElement.toggleAttribute('tablet', isInTabletMode);
-    for (let i = 0; i < this.screens.length; ++i) {
-      const screenId = this.screens[i];
-      const screen = $(screenId);
-      if ('setTabletModeState' in screen &&
-          typeof screen.setTabletModeState === 'function') {
-        screen.setTabletModeState(isInTabletMode);
-      }
-    }
-  }
-
-  /**
    * Trigger of play down animation for current screen step.
    */
   triggerDown(): void {
@@ -426,10 +392,9 @@ export class DisplayManager {
     innerContainer.classList.remove('down');
     innerContainer.addEventListener('transitionend', () => {
       // Refresh defaultControl. It could have changed.
-      const stepId = this.screens[this.currentStep];
-      const step = $(stepId);
+      const step = this.currentScreen;
       innerContainer.classList.add('down-finished');
-      if ('defaultControl' in step &&
+      if (step && 'defaultControl' in step &&
           step.defaultControl instanceof HTMLElement) {
         step.defaultControl.focus();
       }
@@ -445,7 +410,7 @@ export class DisplayManager {
       this.demoModeStartListener =
           new MultiTapDetector($('outer-container'), 10, () => {
             const currentScreen = this.currentScreen;
-            if (currentScreen.id === SCREEN_WELCOME) {
+            if (currentScreen && currentScreen.id === SCREEN_WELCOME) {
               assert(
                   'onSetupDemoModeGesture' in currentScreen &&
                   typeof currentScreen.onSetupDemoModeGesture === 'function');

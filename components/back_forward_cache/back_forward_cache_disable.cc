@@ -29,16 +29,14 @@ std::string ReasonIdToString(DisabledReasonId reason_id) {
       return "PermissionRequestManager";
     case DisabledReasonId::kModalDialog:
       return "ModalDialog";
-    case DisabledReasonId::kExtensions:
-      return "Extensions";
     case DisabledReasonId::kExtensionMessaging:
       return "ExtensionMessaging";
-    case DisabledReasonId::kExtensionMessagingForOpenPort:
-      return "ExtensionMessagingForOpenPort";
     case DisabledReasonId::kExtensionSentMessageToCachedFrame:
       return "ExtensionSentMessageToCachedFrame";
     case DisabledReasonId::kOomInterventionTabHelper:
       return "OomInterventionTabHelper";
+    case DisabledReasonId::kRequestedByWebViewClient:
+      return "RequestedByWebViewClient";
   }
 }
 
@@ -46,16 +44,13 @@ std::string ReasonIdToString(DisabledReasonId reason_id) {
 // mask all the non-actionable reasons.
 std::string ReasonIdToReportString(DisabledReasonId reason_id) {
   switch (reason_id) {
-    case DisabledReasonId::kExtensions:
-      return "extension";
     case DisabledReasonId::kExtensionMessaging:
-    case DisabledReasonId::kExtensionMessagingForOpenPort:
     case DisabledReasonId::kExtensionSentMessageToCachedFrame:
       return "extension-messaging";
     case DisabledReasonId::kModalDialog:
-      return "modal-dialog";
+      return "modals";
     case DisabledReasonId::kPermissionRequestManager:
-      return "permission-request-manager";
+      return "pending-permission-request";
     default:
       return "masked";
   }

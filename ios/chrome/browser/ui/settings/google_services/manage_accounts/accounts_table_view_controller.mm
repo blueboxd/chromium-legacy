@@ -13,7 +13,6 @@
 #import "components/signin/public/base/signin_metrics.h"
 #import "components/signin/public/identity_manager/identity_manager.h"
 #import "components/strings/grit/components_strings.h"
-#import "components/sync/base/features.h"
 #import "components/sync/service/sync_service.h"
 #import "components/sync/service/sync_service_utils.h"
 #import "ios/chrome/browser/net/model/crurl.h"
@@ -233,20 +232,8 @@ constexpr CGFloat kErrorSymbolSize = 22.;
   id<SystemIdentity> authenticatedIdentity =
       authService->GetPrimaryIdentity(signin::ConsentLevel::kSignin);
 
-  NSString* title = nil;
-  if (authenticatedIdentity) {
-    title = authenticatedIdentity.userFullName;
-    if (!title) {
-      title = authenticatedIdentity.userEmail;
-    }
-  }
-  if ([self.modelIdentityDataSource isAccountSignedInNotSyncing] ||
-      base::FeatureList::IsEnabled(
-          syncer::kReplaceSyncPromosWithSignInPromos)) {
-    title = l10n_util::GetNSString(
-        IDS_IOS_GOOGLE_ACCOUNTS_MANAGEMENT_FROM_ACCOUNT_SETTINGS_TITLE);
-  }
-  self.title = title;
+  self.title = l10n_util::GetNSString(
+      IDS_IOS_GOOGLE_ACCOUNTS_MANAGEMENT_FROM_ACCOUNT_SETTINGS_TITLE);
 
   [super loadModel];
 
@@ -274,7 +261,7 @@ constexpr CGFloat kErrorSymbolSize = 22.;
       // ProfileOAuth2TokenService.
       continue;
     }
-    // TODO(crbug.com/1081274): This re-ordering will be redundant once we
+    // TODO(crbug.com/40691260): This re-ordering will be redundant once we
     // apply ordering changes to the account reconciler.
     TableViewItem* item = [self accountItem:identity];
     if ([identity.userEmail isEqualToString:authenticatedEmail]) {
@@ -473,6 +460,8 @@ constexpr CGFloat kErrorSymbolSize = 22.;
       [self.tableViewModel itemTypeForIndexPath:indexPath]);
   switch (itemType) {
     case ItemTypeAccount: {
+      base::RecordAction(
+          base::UserMetricsAction("Signin_AccountsTableView_AccountDetail"));
       TableViewAccountItem* item =
           base::apple::ObjCCastStrict<TableViewAccountItem>(
               [self.tableViewModel itemAtIndexPath:indexPath]);
@@ -484,16 +473,22 @@ constexpr CGFloat kErrorSymbolSize = 22.;
       break;
     }
     case ItemTypeAddAccount: {
+      base::RecordAction(
+          base::UserMetricsAction("Signin_AccountsTableView_AddAccount"));
       [self showAddAccount];
       break;
     }
     case ItemTypeSignOut: {
+      base::RecordAction(
+          base::UserMetricsAction("Signin_AccountsTableView_SignOut"));
       UIView* itemView =
           [[tableView cellForRowAtIndexPath:indexPath] contentView];
       [self showSignOutWithItemView:itemView];
       break;
     }
     case ItemTypeAccountErrorButton: {
+      base::RecordAction(
+          base::UserMetricsAction("Signin_AccountsTableView_ErrorButton"));
       [self handleAccountErrorUserActionable];
       break;
     }
@@ -518,7 +513,7 @@ constexpr CGFloat kErrorSymbolSize = 22.;
   DCHECK(!self.removeOrMyGoogleChooserAlertCoordinator);
   _authenticationOperationInProgress = YES;
 
-  // TODO(crbug.com/1338990): Remove the following line when todo bug will be
+  // TODO(crbug.com/40229802): Remove the following line when todo bug will be
   // fixed.
   [self preventUserInteraction];
   __weak __typeof(self) weakSelf = self;
@@ -536,7 +531,7 @@ constexpr CGFloat kErrorSymbolSize = 22.;
 }
 
 - (void)handleDidAddAccount:(BOOL)success {
-  // TODO(crbug.com/1338990): Remove the following line when todo bug will be
+  // TODO(crbug.com/40229802): Remove the following line when todo bug will be
   // fixed.
   [self allowUserInteraction];
   [self handleAuthenticationOperationDidFinish];
@@ -565,6 +560,8 @@ constexpr CGFloat kErrorSymbolSize = 22.;
       addItemWithTitle:l10n_util::GetNSString(
                            IDS_IOS_MANAGE_YOUR_GOOGLE_ACCOUNT_TITLE)
                 action:^{
+                  base::RecordAction(base::UserMetricsAction(
+                      "Signin_AccountsTableView_AccountDetail_OpenMyGoogleUI"));
                   [weakSelf handleManageGoogleAccountWithIdentity:identity];
                   [weakSelf dismissRemoveOrMyGoogleChooserAlert];
                 }
@@ -573,13 +570,17 @@ constexpr CGFloat kErrorSymbolSize = 22.;
       addItemWithTitle:l10n_util::GetNSString(
                            IDS_IOS_REMOVE_GOOGLE_ACCOUNT_TITLE)
                 action:^{
-                  [weakSelf handleRemoveSecondaryAccountWithIdentity:identity];
+                  base::RecordAction(base::UserMetricsAction(
+                      "Signin_AccountsTableView_AccountDetail_RemoveAccount"));
+                  [weakSelf handleRemoveAccountWithIdentity:identity];
                   [weakSelf dismissRemoveOrMyGoogleChooserAlert];
                 }
                  style:UIAlertActionStyleDestructive];
   [self.removeOrMyGoogleChooserAlertCoordinator
       addItemWithTitle:l10n_util::GetNSString(IDS_CANCEL)
                 action:^() {
+                  base::RecordAction(base::UserMetricsAction(
+                      "Signin_AccountsTableView_AccountDetail_Cancel"));
                   [weakSelf handleAlertCoordinatorCancel];
                   [weakSelf dismissRemoveOrMyGoogleChooserAlert];
                 }
@@ -602,10 +603,10 @@ constexpr CGFloat kErrorSymbolSize = 22.;
                                             /*animated=*/YES);
 }
 
-// Handles the secondary account remove action from
+// Handles the account remove action from
 // `self.removeOrMyGoogleChooserAlertCoordinator`. Action sheet created in
 // `showAccountDetails:itemView:`
-- (void)handleRemoveSecondaryAccountWithIdentity:(id<SystemIdentity>)identity {
+- (void)handleRemoveAccountWithIdentity:(id<SystemIdentity>)identity {
   DCHECK(self.removeOrMyGoogleChooserAlertCoordinator);
   // `self.removeOrMyGoogleChooserAlertCoordinator` should not be stopped, since
   // the coordinator has been confirmed.
@@ -625,6 +626,9 @@ constexpr CGFloat kErrorSymbolSize = 22.;
   [self.removeAccountCoordinator
       addItemWithTitle:l10n_util::GetNSString(IDS_CANCEL)
                 action:^{
+                  base::RecordAction(base::UserMetricsAction(
+                      "Signin_AccountsTableView_AccountDetail_RemoveAccount_"
+                      "ConfirmationCancelled"));
                   weakSelf.removeAccountCoordinator = nil;
                   [weakSelf dismissRemoveAccountCoordinator];
                 }
@@ -632,6 +636,9 @@ constexpr CGFloat kErrorSymbolSize = 22.;
   [self.removeAccountCoordinator
       addItemWithTitle:l10n_util::GetNSString(IDS_IOS_REMOVE_ACCOUNT_LABEL)
                 action:^{
+                  base::RecordAction(base::UserMetricsAction(
+                      "Signin_AccountsTableView_AccountDetail_RemoveAccount_"
+                      "Confirmed"));
                   [weakSelf removeIdentity:identity];
                   [weakSelf dismissRemoveAccountCoordinator];
                 }
@@ -721,7 +728,7 @@ constexpr CGFloat kErrorSymbolSize = 22.;
     DCHECK(!self.removeOrMyGoogleChooserAlertCoordinator);
     DCHECK(!self.removeAccountCoordinator);
     DCHECK(!self.signoutCoordinator);
-    // TODO(crbug.com/1221066): Need to add a completion block in
+    // TODO(crbug.com/40056250): Need to add a completion block in
     // `dismissAccountDetailsViewControllerBlock` callback, to trigger
     // `popAccountsTableViewController()`.
     // Once we have a completion block, we can set `animated` to YES.

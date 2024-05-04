@@ -4,6 +4,8 @@
 
 #include "chrome/renderer/extensions/api/extension_hooks_delegate.h"
 
+#include <string_view>
+
 #include "base/memory/raw_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/bind.h"
@@ -296,12 +298,13 @@ TEST_F(ExtensionHooksDelegateMV3Test, AliasesArentAvailableInMV3) {
   v8::HandleScope handle_scope(isolate());
   v8::Local<v8::Context> context = MainContext();
 
-  auto script_to_value = [context](base::StringPiece source) {
+  auto script_to_value = [context](std::string_view source) {
     return V8ToString(V8ValueFromScriptSource(context, source), context);
   };
 
   EXPECT_EQ("undefined", script_to_value("chrome.extension.connect"));
   EXPECT_EQ("undefined", script_to_value("chrome.extension.connectNative"));
+  EXPECT_EQ("undefined", script_to_value("chrome.extension.getURL"));
   EXPECT_EQ("undefined", script_to_value("chrome.extension.onConnect"));
   EXPECT_EQ("undefined", script_to_value("chrome.extension.onConnectExternal"));
   EXPECT_EQ("undefined", script_to_value("chrome.extension.onMessage"));

@@ -97,7 +97,8 @@ class IntentPickerBubbleViewTest : public TestWithBrowserView {
     GURL url("http://www.google.com");
     WebContents* web_contents = browser()->OpenURL(
         OpenURLParams(url, Referrer(), WindowOpenDisposition::CURRENT_TAB,
-                      ui::PAGE_TRANSITION_TYPED, false));
+                      ui::PAGE_TRANSITION_TYPED, false),
+        /*navigation_handle_callback=*/{});
     CommitPendingLoad(&web_contents->GetController());
 
     auto* widget = IntentPickerBubbleView::ShowBubble(
@@ -453,7 +454,7 @@ TEST_P(IntentPickerBubbleViewLayoutTest, CloseDialog) {
             apps::IntentPickerCloseReason::DIALOG_DEACTIVATED);
 }
 
-// TODO(crbug.com/1330440): Fix flakiness on Windows.
+// TODO(crbug.com/40843230): Fix flakiness on Windows.
 #if BUILDFLAG(IS_WIN)
 #define MAYBE_KeyboardNavigation DISABLED_KeyboardNavigation
 #else
@@ -537,7 +538,7 @@ TEST_F(IntentPickerBubbleViewGridLayoutTest, DefaultSelectionTwoApps) {
   ASSERT_FALSE(bubble_->GetSelectedIndex().has_value());
 }
 
-// TODO(crbug.com/1330440): Fix flakiness on Windows.
+// TODO(crbug.com/40843230): Fix flakiness on Windows.
 #if BUILDFLAG(IS_WIN)
 #define MAYBE_OpenWithReturnKey DISABLED_OpenWithReturnKey
 #else

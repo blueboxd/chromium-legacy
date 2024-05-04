@@ -51,7 +51,7 @@ NSAppearance* AppearanceForKey(const ColorProviderKey& key)
     API_AVAILABLE(macos(10.14)) {
   AppearanceProperties properties = AppearancePropertiesForKey(key);
 
-  // TODO(crbug.com/1420707): How does this work? The documentation says that
+  // TODO(crbug.com/40258902): How does this work? The documentation says that
   // the high contrast appearance names are not valid to pass to `-[NSAppearance
   // appearanceNamed:]` and yet this code does so. This yields the same
   // `NSAppearance` objects that result from passing the non-high contrast names
@@ -143,7 +143,7 @@ void AddNativeUiColorMixer(ColorProvider* provider,
           skia::NSSystemColorToSkColor(NSColor.selectedTextBackgroundColor);
       mixer[kColorTextSelectionBackground] = {system_highlight_color};
 
-      // TODO(crbug.com/1491308): Address accessibility for mac highlight
+      // TODO(crbug.com/40074489): Address accessibility for mac highlight
       // colors.
       mixer[kColorSysStateTextHighlight] = {system_highlight_color};
       mixer[kColorSysStateOnTextHighlight] = {kColorSysOnSurface};

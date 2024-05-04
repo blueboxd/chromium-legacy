@@ -300,7 +300,8 @@ void LayerImpl::UpdateScrollable() {
 
   const auto* scroll_node = GetScrollTree().FindNodeFromElementId(element_id());
   bool was_scrollable = scrollable_;
-  scrollable_ = scroll_node && scroll_node->scrollable;
+  scrollable_ = scroll_node && (scroll_node->user_scrollable_horizontal ||
+                                scroll_node->user_scrollable_vertical);
   if (was_scrollable == scrollable_) {
     if (!scrollable_)
       return;
@@ -526,6 +527,7 @@ bool LayerImpl::IsScrollbarLayer() const {
 }
 
 bool LayerImpl::IsScrollerOrScrollbar() const {
+  DCHECK(!layer_tree_impl()->settings().enable_hit_test_opaqueness);
   return IsScrollbarLayer() ||
          GetScrollTree().FindNodeFromElementId(element_id());
 }
@@ -563,7 +565,10 @@ bool LayerImpl::HitTestable() const {
 }
 
 bool LayerImpl::OpaqueToHitTest() const {
-  return HitTestable() && hit_test_opaqueness_ == HitTestOpaqueness::kOpaque;
+  return HitTestable() && hit_test_opaqueness_ == HitTestOpaqueness::kOpaque &&
+         !GetEffectTree()
+              .Node(effect_tree_index())
+              ->node_or_ancestor_has_fast_rounded_corner;
 }
 
 void LayerImpl::SetBackgroundColor(SkColor4f background_color) {
@@ -827,7 +832,7 @@ gfx::Vector2dF LayerImpl::GetIdealContentsScale() const {
   std::optional<gfx::Vector2dF> transform_scales =
       gfx::TryComputeTransform2dScaleComponents(transform);
   if (transform_scales) {
-    // TODO(crbug.com/1196414): Remove this scale cap.
+    // TODO(crbug.com/40176440): Remove this scale cap.
     float scale_cap = GetPreferredRasterScale(*transform_scales);
     transform_scales->SetToMin(gfx::Vector2dF(scale_cap, scale_cap));
     return *transform_scales;
@@ -843,7 +848,7 @@ gfx::Vector2dF LayerImpl::GetIdealContentsScale() const {
 
   float default_scale = page_scale * device_scale;
 
-  // TODO(crbug.com/1196414): This function should return a 2D scale.
+  // TODO(crbug.com/40176440): This function should return a 2D scale.
   float scale = gfx::ComputeApproximateMaxScale(transform);
 
   const int kMaxTilesToCoverLayerDimension = 5;

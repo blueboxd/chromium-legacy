@@ -103,7 +103,7 @@ class GaiaView {
   virtual void ShowSigninScreenForTest(const std::string& username,
                                        const std::string& password,
                                        const std::string& services) = 0;
-  virtual void SetQuickStartEnabled() = 0;
+  virtual void SetQuickStartEntryPointVisibility(bool visible) = 0;
   // Sets if Gaia password is required during login. If the password is
   // required, Gaia passwordless login will be disallowed.
   virtual void SetIsGaiaPasswordRequired(bool is_required) = 0;
@@ -165,7 +165,7 @@ class GaiaScreenHandler final
                                const std::string& password,
                                const std::string& services) override;
 
-  void SetQuickStartEnabled() override;
+  void SetQuickStartEntryPointVisibility(bool visible) override;
   void SetIsGaiaPasswordRequired(bool is_required) override;
 
   void Reset() override;
@@ -272,10 +272,6 @@ class GaiaScreenHandler final
   void RecordCompleteAuthenticationMetrics(
       const ash::login::OnlineSigninArtifacts& artifacts);
 
-  void HandleCompleteLogin(const std::string& gaia_id,
-                           const std::string& typed_email,
-                           const std::string& password,
-                           bool using_saml);
   void HandleLaunchSAMLPublicSession(const std::string& email);
 
   // Handles SAML/GAIA login flow metrics
@@ -313,12 +309,6 @@ class GaiaScreenHandler final
 
   // Called when Gaia sends us a "getDeviceId" message.
   void HandleGetDeviceId(const std::string& callback_id);
-
-  // Really handles the complete login message.
-  void DoCompleteLogin(const std::string& gaia_id,
-                       const std::string& typed_email,
-                       const std::string& password,
-                       bool using_saml);
 
   // Kick off cookie / local storage cleanup.
   void StartClearingCookies(base::OnceClosure on_clear_callback);

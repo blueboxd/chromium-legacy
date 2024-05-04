@@ -59,7 +59,7 @@ OfferNotificationBubbleControllerImpl::OfferNotificationBubbleControllerImpl(
           *web_contents),
       coupon_service_(CouponServiceFactory::GetForProfile(
           Profile::FromBrowserContext(web_contents->GetBrowserContext()))) {
-  // TODO(crbug.com/1187190): Explore if there is a way to move CouponService
+  // TODO(crbug.com/40172797): Explore if there is a way to move CouponService
   // out of this file.
   if (coupon_service_)
     coupon_service_observation_.Observe(coupon_service_);
@@ -163,7 +163,8 @@ void OfferNotificationBubbleControllerImpl::OnPromoCodeButtonClicked() {
   promo_code_button_clicked_ = true;
 
   autofill_metrics::LogOfferNotificationBubblePromoCodeButtonClicked(
-      offer_.GetOfferType(), web_contents()->GetLastCommittedURL());
+      offer_.GetOfferType(), web_contents()->GetLastCommittedURL(),
+      web_contents()->GetPrimaryMainFrame()->GetPageUkmSourceId());
 }
 
 void OfferNotificationBubbleControllerImpl::ShowOfferNotificationIfApplicable(
@@ -286,7 +287,8 @@ void OfferNotificationBubbleControllerImpl::DoShowBubble() {
 
   autofill_metrics::LogOfferNotificationBubbleOfferMetric(
       offer_.GetOfferType(), is_user_gesture_,
-      web_contents()->GetLastCommittedURL());
+      web_contents()->GetLastCommittedURL(),
+      web_contents()->GetPrimaryMainFrame()->GetPageUkmSourceId());
 }
 
 bool OfferNotificationBubbleControllerImpl::IsWebContentsActive() {

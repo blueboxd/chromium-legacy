@@ -50,7 +50,7 @@ constexpr size_t kMaxFrameRateNumerator = 120;
 constexpr size_t kMaxFrameRateDenominator = 1;
 constexpr size_t kNumInputBuffers = 3;
 constexpr gfx::Size kDefaultSupportedResolution = gfx::Size(640, 480);
-// TODO(crbug.com/1380682): We should add a function like a
+// TODO(crbug.com/40876392): We should add a function like a
 // `GetVideoEncodeAcceleratorProfileIsSupported`, to test the
 // real support status with a give resolution, framerate etc,
 // instead of query a "supportedProfile" list.
@@ -673,9 +673,9 @@ void VTVideoEncodeAccelerator::ReturnBitstreamBuffer(
 
   if (encode_output->info & kVTEncodeInfo_FrameDropped) {
     DVLOG(2) << " frame dropped";
-    client_->BitstreamBufferReady(
-        buffer_ref->id,
-        BitstreamBufferMetadata(0, false, encode_output->capture_timestamp));
+    client_->BitstreamBufferReady(buffer_ref->id,
+                                  BitstreamBufferMetadata::CreateForDropFrame(
+                                      encode_output->capture_timestamp));
     MaybeRunFlushCallback();
     return;
   }

@@ -26,14 +26,13 @@ class WebThemeEngineDefault : public WebThemeEngine {
              const gfx::Rect& rect,
              const WebThemeEngine::ExtraParams* extra_params,
              mojom::ColorScheme color_scheme,
+             bool in_forced_colors,
              const ui::ColorProvider* color_provider,
              const std::optional<SkColor>& accent_color) override;
   void GetOverlayScrollbarStyle(WebThemeEngine::ScrollbarStyle*) override;
   bool SupportsNinePatch(Part part) const override;
   gfx::Size NinePatchCanvasSize(Part part) const override;
   gfx::Rect NinePatchAperture(Part part) const override;
-  std::optional<SkColor> GetSystemColor(
-      WebThemeEngine::SystemThemeColor system_theme_color) const override;
   std::optional<SkColor> GetAccentColor() const override;
 #if BUILDFLAG(IS_WIN)
   // Caches the scrollbar metrics. These are retrieved in the browser and passed
@@ -44,12 +43,6 @@ class WebThemeEngineDefault : public WebThemeEngine {
                                     int32_t vertical_arrow_bitmap_height,
                                     int32_t horizontal_arrow_bitmap_width);
 #endif
-  ForcedColors GetForcedColors() const override;
-  void OverrideForcedColorsTheme(bool is_dark_theme) override;
-  void SetForcedColors(const ForcedColors forced_colors) override;
-  void ResetToSystemColors(
-      WebThemeEngine::SystemColorInfoState system_color_info_state) override;
-  WebThemeEngine::SystemColorInfoState GetSystemColorInfo() override;
   bool IsFluentOverlayScrollbarEnabled() const override;
   int GetPaintedScrollbarTrackInset() const override;
 

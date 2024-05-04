@@ -5,10 +5,18 @@
 #ifndef ASH_IN_SESSION_AUTH_IN_SESSION_AUTH_DIALOG_CONTROLLER_IMPL_H_
 #define ASH_IN_SESSION_AUTH_IN_SESSION_AUTH_DIALOG_CONTROLLER_IMPL_H_
 
+#include <memory>
+#include <optional>
+#include <string>
+
 #include "ash/public/cpp/in_session_auth_dialog_controller.h"
 #include "ash/public/cpp/in_session_auth_token_provider.h"
+#include "base/memory/raw_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "chromeos/ash/components/auth_panel/public/shared_types.h"
 #include "chromeos/ash/components/osauth/public/auth_attempt_consumer.h"
+#include "chromeos/ash/components/osauth/public/common_types.h"
+#include "components/account_id/account_id.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
@@ -18,6 +26,12 @@ class AuthHubConnector;
 class InSessionAuthDialogControllerImpl : public InSessionAuthDialogController,
                                           public AuthAttemptConsumer {
  public:
+  enum class State {
+    kNotShown,
+    kShowing,
+    kShown,
+  };
+
   InSessionAuthDialogControllerImpl();
   InSessionAuthDialogControllerImpl(const InSessionAuthDialogControllerImpl&) =
       delete;
@@ -28,6 +42,7 @@ class InSessionAuthDialogControllerImpl : public InSessionAuthDialogController,
   // InSessionAuthDialogController overrides
   void ShowAuthDialog(
       Reason reason,
+      const std::optional<std::string>& prompt,
       auth_panel::AuthCompletionCallback on_auth_complete) override;
 
   void SetTokenProvider(
@@ -46,9 +61,15 @@ class InSessionAuthDialogControllerImpl : public InSessionAuthDialogController,
 
  private:
   void CreateAndShowAuthPanel(
+      const std::optional<std::string>& prompt,
       auth_panel::AuthCompletionCallback on_auth_complete,
       Reason reason,
       const AccountId& account_id);
+
+  void OnAuthPanelPreferredSizeChanged();
+
+  // Destroys the authentication dialog.
+  void OnEndAuthentication();
 
   // Non owning pointer, initialized and owned by
   // `ChromeBrowserMainExtraPartsAsh`.
@@ -57,11 +78,15 @@ class InSessionAuthDialogControllerImpl : public InSessionAuthDialogController,
   // before `auth_token_provider`.
   raw_ptr<InSessionAuthTokenProvider> auth_token_provider_;
 
-  // Stored temporarily and passed to auth panel's constructor when
-  // we know that the auth attempt has been confirmed.
   auth_panel::AuthCompletionCallback on_auth_complete_;
 
+  State state_ = State::kNotShown;
+
   std::unique_ptr<views::Widget> dialog_;
+
+  std::optional<std::string> prompt_;
+
+  base::WeakPtrFactory<InSessionAuthDialogControllerImpl> weak_factory_{this};
 };
 
 }  // namespace ash

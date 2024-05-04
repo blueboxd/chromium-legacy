@@ -6,8 +6,10 @@
 #define ANDROID_WEBVIEW_BROWSER_AW_CONTENT_BROWSER_CLIENT_H_
 
 #include <stddef.h>
+
 #include <memory>
 #include <string>
+#include <string_view>
 #include <vector>
 
 #include "base/memory/raw_ptr.h"
@@ -128,7 +130,7 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
       const content::SocketPermissionRequest* params) override;
   bool IsPepperVpnProviderAPIAllowed(content::BrowserContext* browser_context,
                                      const GURL& url) override;
-  content::TracingDelegate* GetTracingDelegate() override;
+  std::unique_ptr<content::TracingDelegate> CreateTracingDelegate() override;
   void GetAdditionalMappedFilesForChildProcess(
       const base::CommandLine& command_line,
       int child_process_id,
@@ -175,9 +177,10 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
                                 bool has_user_gesture,
                                 bool is_redirect,
                                 bool is_outermost_main_frame,
+                                bool is_prerendering,
                                 ui::PageTransition transition,
                                 bool* ignore_navigation) override;
-  bool CreateThreadPool(base::StringPiece name) override;
+  bool CreateThreadPool(std::string_view name) override;
   std::unique_ptr<content::LoginDelegate> CreateLoginDelegate(
       const net::AuthChallengeInfo& auth_info,
       content::WebContents* web_contents,
@@ -222,6 +225,7 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
       int render_process_id,
       URLLoaderFactoryType type,
       const url::Origin& request_initiator,
+      const net::IsolationInfo& isolation_info,
       std::optional<int64_t> navigation_id,
       ukm::SourceIdObj ukm_source_id,
       network::URLLoaderFactoryBuilder& factory_builder,
@@ -280,7 +284,7 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
       const url::Origin* destination_origin,
       const url::Origin* reporting_origin,
       bool* can_bypass) override;
-  AttributionReportingOsReportTypes GetAttributionReportingOsReportTypes(
+  AttributionReportingOsRegistrars GetAttributionReportingOsRegistrars(
       content::WebContents* web_contents) override;
   blink::mojom::OriginTrialsSettingsPtr GetOriginTrialsSettings() override;
   network::mojom::IpProtectionProxyBypassPolicy

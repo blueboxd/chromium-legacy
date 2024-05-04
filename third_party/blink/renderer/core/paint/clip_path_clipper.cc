@@ -191,12 +191,7 @@ bool HasCompositeClipPathAnimation(const LayoutObject& layout_object) {
 
   ClipPathPaintImageGenerator* generator =
       layout_object.GetFrame()->GetClipPathPaintImageGenerator();
-  // TODO(crbug.com/686074): The generator may be null in tests.
-  // Fix and remove this test-only branch.
-  if (!generator) {
-    SetCompositeClipPathStatus(layout_object.GetNode(), false);
-    return false;
-  }
+  CHECK(generator);
 
   const Element* element = To<Element>(layout_object.GetNode());
   const Animation* animation = generator->GetAnimationIfCompositable(element);
@@ -322,7 +317,7 @@ std::optional<gfx::RectF> ClipPathClipper::LocalClipPathBoundingBox(
     return bounding_box;
   }
 
-  if (const auto* box = DynamicTo<GeometryBoxClipPathOperation>(clip_path)) {
+  if (IsA<GeometryBoxClipPathOperation>(clip_path)) {
     reference_box.Intersect(gfx::RectF(InfiniteIntRect()));
     return reference_box;
   }
@@ -560,11 +555,6 @@ void ClipPathClipper::PaintClipPathAsMaskImage(
 std::optional<Path> ClipPathClipper::PathBasedClip(
     const LayoutObject& clip_path_owner,
     const bool is_in_block_fragmentation) {
-  // TODO(crbug.com/1248622): Currently HasCompositeClipPathAnimation is called
-  // multiple times, which is not efficient. Cache
-  // HasCompositeClipPathAnimation value as part of fragment_data, similarly to
-  // FragmentData::ClipPathPath().
-
   // If not all the fragments of this layout object have been populated yet, it
   // will be impossible to tell if a composited clip path animation is possible
   // or not based only on the layout object. Exclude the possibility if we're

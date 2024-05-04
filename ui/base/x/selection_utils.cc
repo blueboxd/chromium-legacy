@@ -66,12 +66,7 @@ std::string RefCountedMemoryToString(
     return std::string();
   }
 
-  size_t size = memory->size();
-  if (!size)
-    return std::string();
-
-  const unsigned char* front = memory->front();
-  return std::string(reinterpret_cast<const char*>(front), size);
+  return std::string(base::as_string_view(*memory));
 }
 
 std::u16string RefCountedMemoryToString16(
@@ -81,12 +76,11 @@ std::u16string RefCountedMemoryToString16(
     return std::u16string();
   }
 
-  size_t size = memory->size();
-  if (!size)
-    return std::u16string();
-
-  const unsigned char* front = memory->front();
-  return std::u16string(reinterpret_cast<const char16_t*>(front), size / 2);
+  auto in_bytes = base::span(*memory);
+  std::u16string out;
+  out.resize(memory->size() / 2u);
+  base::as_writable_byte_span(out).copy_from(in_bytes);
+  return out;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -112,6 +106,15 @@ ui::SelectionData SelectionFormatMap::GetFirstOf(
     if (data_it != data_.end()) {
       return SelectionData(data_it->first, data_it->second);
     }
+  }
+
+  return SelectionData();
+}
+
+ui::SelectionData SelectionFormatMap::Get(x11::Atom requested_type) const {
+  auto data_it = data_.find(requested_type);
+  if (data_it != data_.end()) {
+    return SelectionData(data_it->first, data_it->second);
   }
 
   return SelectionData();
@@ -155,7 +158,7 @@ x11::Atom SelectionData::GetType() const {
 }
 
 const unsigned char* SelectionData::GetData() const {
-  return memory_.get() ? memory_->front() : nullptr;
+  return memory_.get() ? memory_->data() : nullptr;
 }
 
 size_t SelectionData::GetSize() const {

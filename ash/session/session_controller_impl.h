@@ -55,6 +55,11 @@ class ASH_EXPORT SessionControllerImpl : public SessionController {
   base::TimeDelta session_length_limit() const { return session_length_limit_; }
   base::Time session_start_time() const { return session_start_time_; }
 
+  // Returns the ash notion of login status.
+  // NOTE: Prefer GetSessionState() in new code because the concept of
+  // SessionState more closes matches the state in chrome.
+  LoginStatus login_status() const { return login_status_; }
+
   // Returns the number of signed in users. If 0 is returned, there is either
   // no session in progress or no active user.
   int NumberOfLoggedInUsers() const;
@@ -182,6 +187,9 @@ class ASH_EXPORT SessionControllerImpl : public SessionController {
   // Returns the profile path for `account_id` or empty if one does not exist.
   base::FilePath GetProfilePath(const AccountId& account_id) const;
 
+  // Returns whether `account_id` is eligible for SeaPen features.
+  bool IsEligibleForSeaPen(const AccountId& account_id) const;
+
   // Returns the PrefService for the primary user or null if no user is signed
   // in or the PrefService connection hasn't been established.
   PrefService* GetPrimaryUserPrefService() const;
@@ -194,16 +202,11 @@ class ASH_EXPORT SessionControllerImpl : public SessionController {
   // the active user profile prefs. Returns null early during startup.
   PrefService* GetActivePrefService() const;
 
-  // Returns the ash notion of login status.
-  // NOTE: Prefer GetSessionState() in new code because the concept of
-  // SessionState more closes matches the state in chrome.
-  LoginStatus login_status() const { return login_status_; }
-
   // Returns an object of `ScopedScreenLockBlocker`.
   // `CanLockScreen()` returns false while there is one or more living object.
   std::unique_ptr<ScopedScreenLockBlocker> GetScopedScreenLockBlocker();
 
-  // SessionController
+  // SessionController:
   void SetClient(SessionControllerClient* client) override;
   void SetSessionInfo(const SessionInfo& info) override;
   void UpdateUserSession(const UserSession& user_session) override;

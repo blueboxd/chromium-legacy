@@ -297,7 +297,6 @@ void ExecuteTaskAfterMimeTypesCollected(
 
 void PostProcessFoundTasks(Profile* profile,
                            const std::vector<extensions::EntryInfo>& entries,
-                           const std::vector<std::string>& dlp_source_urls,
                            FindTasksCallback callback,
                            std::unique_ptr<ResultingTasks> resulting_tasks) {
   AdjustTasksForMediaApp(entries, &resulting_tasks->tasks);
@@ -313,41 +312,9 @@ void PostProcessFoundTasks(Profile* profile,
   disabled_actions.emplace("view-pdf");
 #endif  // !BUILDFLAG(ENABLE_PDF)
 
-  if (!chromeos::IsEligibleAndEnabledUploadOfficeToCloud(profile)) {
-    disabled_actions.emplace(kActionIdWebDriveOfficeWord);
-    disabled_actions.emplace(kActionIdWebDriveOfficeExcel);
-    disabled_actions.emplace(kActionIdWebDriveOfficePowerPoint);
-  } else {
-    // Hide the office PWA File Handler.
+  if (chromeos::IsEligibleAndEnabledUploadOfficeToCloud(profile)) {
+    // Hide the MS365 PWA File Handler.
     RemoveActionsForApp(web_app::kMicrosoft365AppId, &resulting_tasks->tasks);
-
-    // Hack around the fact that App Service will only return one task for each
-    // app. We want both tasks to be available, so add the office task if the
-    // WebDrive task is available.
-    // TODO(petermarshall): Find a better way to enable both tasks.
-    auto it =
-        base::ranges::find_if(resulting_tasks->tasks, &IsWebDriveOfficeTask,
-                              &FullTaskDescriptor::task_descriptor);
-    if (it != resulting_tasks->tasks.end()) {
-      FullTaskDescriptor office_task(*it);
-      if (!chromeos::cloud_upload::IsGoogleWorkspaceCloudUploadAllowed(
-              profile)) {
-        resulting_tasks->tasks.erase(it);
-      }
-      if (chromeos::cloud_upload::IsMicrosoftOfficeCloudUploadAllowed(
-              profile) &&
-          (!profile->GetProfilePolicyConnector()->IsManaged() ||
-           ash::cloud_upload::IsODFSInstalled(profile))) {
-        office_task.task_descriptor.action_id =
-            ToSwaActionId(kActionIdOpenInOffice);
-        // A transfer to OneDrive is required for the Office PWA to open
-        // files, if transferring files to OneDrive is restricted, we gray out
-        // the corresponding task.
-        office_task.is_dlp_blocked = policy::dlp::IsFilesTransferBlocked(
-            dlp_source_urls, data_controls::Component::kOneDrive);
-        resulting_tasks->tasks.push_back(office_task);
-      }
-    }
   }
 
   if (!disabled_actions.empty()) {
@@ -513,7 +480,7 @@ TaskType StringToTaskType(const std::string& str) {
           {kPluginVmAppTaskType,        TASK_TYPE_PLUGIN_VM_APP},
           // clang-format on
       });
-  auto* itr = kStringToTaskTypeMapping.find(str);
+  auto itr = kStringToTaskTypeMapping.find(str);
   if (itr != kStringToTaskTypeMapping.end()) {
     return itr->second;
   }
@@ -792,8 +759,8 @@ bool ExecuteFileTask(Profile* profile,
                               task.task_type, NUM_TASK_TYPE);
   }
 
-  // TODO(crbug.com/1005640): Move recording this metric to the App Service when
-  // file handling is supported there.
+  // TODO(crbug.com/40099553): Move recording this metric to the App Service
+  // when file handling is supported there.
   apps::RecordAppLaunch(task.app_id, apps::LaunchSource::kFromFileManager);
   RecordDriveOfflineUMAs(profile, file_urls);
 
@@ -804,57 +771,13 @@ bool ExecuteFileTask(Profile* profile,
   const std::string parsed_action_id(ParseFilesAppActionId(task.action_id));
 
   if (IsWebDriveOfficeTask(task)) {
-    base::UmaHistogramSparse(
-        ash::cloud_upload::kNumberOfFilesToOpenWithGoogleDriveMetric,
-        file_urls.size());
     UMA_HISTOGRAM_ENUMERATION(
         ash::cloud_upload::kOpenInitialCloudProviderMetric,
         ash::cloud_upload::CloudProvider::kGoogleDrive);
-    // Only attempt to open the first selected file, as a temporary way to
-    // avoid conflicts and error inconsistencies.
-    // TODO(b/242685536) add support for multiple files.
-    FileSystemURL file_url = file_urls[0];
-    RecordOfficeOpenExtensionDriveMetric(file_url);
-    const bool started = ExecuteWebDriveOfficeTask(
-        profile, task, {file_url},
-        std::make_unique<ash::cloud_upload::CloudOpenMetrics>(
-            ash::cloud_upload::CloudProvider::kGoogleDrive, 1));
-    if (done) {
-      if (started) {
-        std::move(done).Run(
-            extensions::api::file_manager_private::TaskResult::kOpened, "");
-      } else {
-        std::move(done).Run(
-            extensions::api::file_manager_private::TaskResult::kFailed, "");
-      }
-    }
-    return true;
   } else if (IsOpenInOfficeTask(task)) {
-    base::UmaHistogramSparse(
-        ash::cloud_upload::kNumberOfFilesToOpenWithOneDriveMetric,
-        file_urls.size());
     UMA_HISTOGRAM_ENUMERATION(
         ash::cloud_upload::kOpenInitialCloudProviderMetric,
         ash::cloud_upload::CloudProvider::kOneDrive);
-    // Only attempt to open the first selected file, as a temporary way to
-    // avoid conflicts and error inconsistencies.
-    // TODO(b/242685536) add support for multiple files.
-    FileSystemURL file_url = file_urls[0];
-    RecordOfficeOpenExtensionOneDriveMetric(file_url);
-    const bool started = ExecuteOpenInOfficeTask(
-        profile, task, {file_url},
-        std::make_unique<ash::cloud_upload::CloudOpenMetrics>(
-            ash::cloud_upload::CloudProvider::kOneDrive, 1));
-    if (done) {
-      if (started) {
-        std::move(done).Run(
-            extensions::api::file_manager_private::TaskResult::kOpened, "");
-      } else {
-        std::move(done).Run(
-            extensions::api::file_manager_private::TaskResult::kFailed, "");
-      }
-    }
-    return true;
   } else {
     UMA_HISTOGRAM_ENUMERATION(
         ash::cloud_upload::kOpenInitialCloudProviderMetric,
@@ -989,7 +912,7 @@ void FindExtensionAndAppTasks(Profile* profile,
   FindAppServiceTasks(profile, entries, file_urls, dlp_source_urls, tasks);
 
   // Done. Apply post-filtering and callback.
-  PostProcessFoundTasks(profile, entries, dlp_source_urls, std::move(callback),
+  PostProcessFoundTasks(profile, entries, std::move(callback),
                         std::move(resulting_tasks));
 }
 
@@ -1014,8 +937,8 @@ void FindAllTypesOfTasks(Profile* profile,
   }
 
   // TODO(b/284800493): Add a test that VirtualTasks are found.
-  FindVirtualTasks(profile, entries, file_urls, dlp_source_urls,
-                   &resulting_tasks->tasks);
+  MatchVirtualTasks(profile, entries, file_urls, dlp_source_urls,
+                    &resulting_tasks->tasks);
 
   FindExtensionAndAppTasks(profile, entries, file_urls, dlp_source_urls,
                            std::move(callback), std::move(resulting_tasks));

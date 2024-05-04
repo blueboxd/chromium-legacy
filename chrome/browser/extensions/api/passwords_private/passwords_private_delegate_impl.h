@@ -111,7 +111,7 @@ class PasswordsPrivateDelegateImpl
   api::passwords_private::ExportProgressStatus GetExportProgressStatus()
       override;
   bool IsOptedInForAccountStorage() override;
-  // TODO(crbug.com/1102294): Mimic the signature in PasswordFeatureManager.
+  // TODO(crbug.com/40138722): Mimic the signature in PasswordFeatureManager.
   void SetAccountStorageOptIn(bool opt_in,
                               content::WebContents* web_contents) override;
   std::vector<api::passwords_private::PasswordUiEntry> GetInsecureCredentials()
@@ -132,6 +132,11 @@ class PasswordsPrivateDelegateImpl
   void ShowAddShortcutDialog(content::WebContents* web_contents) override;
   void ShowExportedFileInShell(content::WebContents* web_contents,
                                std::string file_path) override;
+  void ChangePasswordManagerPin(
+      content::WebContents* web_contents,
+      base::OnceCallback<void(bool)> success_callback) override;
+  bool IsPasswordManagerPinAvailable(
+      content::WebContents* web_contents) override;
 
   base::WeakPtr<PasswordsPrivateDelegate> AsWeakPtr() override;
 

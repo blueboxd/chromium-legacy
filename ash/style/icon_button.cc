@@ -22,6 +22,7 @@
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/vector_icon_types.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/highlight_path_generator.h"
@@ -33,6 +34,7 @@ constexpr int kXSmallButtonSize = 20;
 constexpr int kSmallButtonSize = 24;
 constexpr int kMediumButtonSize = 32;
 constexpr int kLargeButtonSize = 36;
+constexpr int kXLargeButtonSize = 48;
 
 // Icon size of the small, medium and large size buttons.
 constexpr int kIconSize = 20;
@@ -70,6 +72,11 @@ int GetButtonSizeOnType(IconButton::Type type) {
     case IconButton::Type::kLargeFloating:
     case IconButton::Type::kLargeProminentFloating:
       return kLargeButtonSize;
+    case IconButton::Type::kXLarge:
+    case IconButton::Type::kXLargeProminent:
+    case IconButton::Type::kXLargeFloating:
+    case IconButton::Type::kXLargeProminentFloating:
+      return kXLargeButtonSize;
   }
 }
 
@@ -79,11 +86,13 @@ std::optional<ui::ColorId> GetDefaultBackgroundColorId(IconButton::Type type) {
     case IconButton::Type::kSmall:
     case IconButton::Type::kMedium:
     case IconButton::Type::kLarge:
+    case IconButton::Type::kXLarge:
       return cros_tokens::kCrosSysSystemOnBase;
     case IconButton::Type::kXSmallProminent:
     case IconButton::Type::kSmallProminent:
     case IconButton::Type::kMediumProminent:
     case IconButton::Type::kLargeProminent:
+    case IconButton::Type::kXLargeProminent:
       return cros_tokens::kCrosSysSystemPrimaryContainer;
     default:
       NOTREACHED() << "Floating type button does not have a background";
@@ -101,16 +110,20 @@ ui::ColorId GetDefaultIconColorId(IconButton::Type type, bool focused) {
     case IconButton::Type::kMediumFloating:
     case IconButton::Type::kLarge:
     case IconButton::Type::kLargeFloating:
+    case IconButton::Type::kXLarge:
+    case IconButton::Type::kXLargeFloating:
       return cros_tokens::kCrosSysOnSurface;
     case IconButton::Type::kXSmallProminent:
     case IconButton::Type::kSmallProminent:
     case IconButton::Type::kMediumProminent:
     case IconButton::Type::kLargeProminent:
+    case IconButton::Type::kXLargeProminent:
       return cros_tokens::kCrosSysSystemOnPrimaryContainer;
     case IconButton::Type::kXSmallProminentFloating:
     case IconButton::Type::kSmallProminentFloating:
     case IconButton::Type::kMediumProminentFloating:
     case IconButton::Type::kLargeProminentFloating:
+    case IconButton::Type::kXLargeProminentFloating:
       return focused ? cros_tokens::kCrosSysPrimary
                      : cros_tokens::kCrosSysSecondary;
   }
@@ -136,6 +149,8 @@ bool IsFloatingIconButton(IconButton::Type type) {
     case IconButton::Type::kMediumProminentFloating:
     case IconButton::Type::kLargeFloating:
     case IconButton::Type::kLargeProminentFloating:
+    case IconButton::Type::kXLargeFloating:
+    case IconButton::Type::kXLargeProminentFloating:
       return true;
     default:
       break;
@@ -150,6 +165,7 @@ bool IsProminentFloatingType(IconButton::Type type) {
     case IconButton::Type::kSmallProminentFloating:
     case IconButton::Type::kMediumProminentFloating:
     case IconButton::Type::kLargeProminentFloating:
+    case IconButton::Type::kXLargeProminentFloating:
       return true;
     default:
       break;
@@ -314,6 +330,7 @@ IconButton::IconButton(PressedCallback callback,
 
   UpdateBackground();
   UpdateVectorIcon();
+  UpdateAccessibilityProperties();
 
   auto* focus_ring = views::FocusRing::Get(this);
   focus_ring->SetOutsetFocusRingDisabled(true);
@@ -449,6 +466,8 @@ void IconButton::SetToggled(bool toggled) {
   }
 
   toggled_ = toggled;
+
+  UpdateAccessibilityProperties();
 
   if (GetEnabled()) {
     UpdateBackground();
@@ -665,6 +684,18 @@ bool IconButton::IsToggledOn() const {
          (GetEnabled() ||
           button_behavior_ ==
               DisabledButtonBehavior::kCanDisplayDisabledToggleValue);
+}
+
+void IconButton::UpdateAccessibilityProperties() {
+  if (is_togglable_) {
+    GetViewAccessibility().SetRole(ax::mojom::Role::kToggleButton);
+    GetViewAccessibility().SetCheckedState(
+        toggled_ ? ax::mojom::CheckedState::kTrue
+                 : ax::mojom::CheckedState::kFalse);
+  } else {
+    GetViewAccessibility().SetRole(ax::mojom::Role::kButton);
+    GetViewAccessibility().RemoveCheckedState();
+  }
 }
 
 BEGIN_METADATA(IconButton)

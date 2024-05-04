@@ -53,8 +53,8 @@ uint8_t QindexToQuantizer(uint8_t q_index) {
   return std::size(kQuantizerToQindex) - 1;
 }
 
-// TODO(crbug.com/752720): remove this in favor of std::gcd if c++17 is enabled
-// to use.
+// TODO(crbug.com/40533712): remove this in favor of std::gcd if c++17 is
+// enabled to use.
 int GCD(int a, int b) {
   return a == 0 ? b : GCD(b % a, a);
 }
@@ -414,6 +414,10 @@ VP9VaapiVideoEncoderDelegate::PrepareEncodeJob(EncodeJob& encode_job) {
       dropped_superframe_timestamp_.reset();
     }
 
+    // For non dropped frame, the spatial layer index filled by |svc_layers|
+    // is the same as one in |encode_job|.
+    CHECK_EQ(svc_layers_->spatial_idx(), encode_job.spatial_index());
+
     // If keyframe is requested, then reset |svc_layers_|.
     // Note that a frame must not be dropped on key frame.
     if (encode_job.IsKeyframeRequested() ||
@@ -469,21 +473,15 @@ BitstreamBufferMetadata VP9VaapiVideoEncoderDelegate::GetMetadata(
     const EncodeJob& encode_job,
     size_t payload_size) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  auto metadata =
-      VaapiVideoEncoderDelegate::GetMetadata(encode_job, payload_size);
-  if (metadata.dropped_frame()) {
-    // BitstreamBufferMetadata should not have a codec specific metadata,
-    // when a frame is dropped.
-    return metadata;
-  }
-
+  CHECK(!encode_job.IsFrameDropped());
+  CHECK_NE(payload_size, 0u);
+  BitstreamBufferMetadata metadata(
+      payload_size, encode_job.IsKeyframeRequested(), encode_job.timestamp());
   auto picture = GetVP9Picture(encode_job);
   DCHECK(picture);
   metadata.vp9 = picture->metadata_for_encoding;
   CHECK_EQ(metadata.key_frame, picture->frame_hdr->IsKeyframe());
-  DCHECK_EQ(GetSVCLayerResolutions().size() - 1 ==
-                (metadata.vp9 ? metadata.vp9->spatial_idx : 0),
-            metadata.end_of_picture);
+  CHECK_EQ(metadata.end_of_picture(), encode_job.end_of_picture());
   metadata.qp =
       base::strict_cast<int32_t>(picture->frame_hdr->quant_params.base_q_idx);
   return metadata;
@@ -520,6 +518,7 @@ void VP9VaapiVideoEncoderDelegate::BitrateControlUpdate(
             << ", temporal_idx="
             << (metadata.vp9 ? metadata.vp9->temporal_idx : 0)
             << ", encoded chunk size=" << metadata.payload_size_bytes;
+  CHECK_NE(metadata.payload_size_bytes, 0u);
   rate_ctrl_->PostEncodeUpdate(metadata.payload_size_bytes, frame_params);
 }
 
@@ -770,7 +769,7 @@ bool VP9VaapiVideoEncoderDelegate::SubmitFrameParameters(
   VAEncSequenceParameterBufferVP9 seq_param = {};
 
   const auto& frame_header = pic->frame_hdr;
-  // TODO(crbug.com/811912): Double check whether the
+  // TODO(crbug.com/41370458): Double check whether the
   // max_frame_width or max_frame_height affects any of the memory
   // allocation and tighten these values based on that.
   constexpr gfx::Size kMaxFrameSize(4096, 4096);

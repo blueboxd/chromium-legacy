@@ -91,7 +91,8 @@ class Tab : public gfx::AnimationDelegate,
   void OnGestureEvent(ui::GestureEvent* event) override;
   std::u16string GetTooltipText(const gfx::Point& p) const override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
-  gfx::Size CalculatePreferredSize() const override;
+  gfx::Size CalculatePreferredSize(
+      const views::SizeBounds& available_size) const override;
   void PaintChildren(const views::PaintInfo& info) override;
   void OnPaint(gfx::Canvas* canvas) override;
   void AddedToWidget() override;
@@ -150,10 +151,9 @@ class Tab : public gfx::AnimationDelegate,
   // to the user that it needs their attention.
   void SetTabNeedsAttention(bool attention);
 
-  void SetFreezingVoteToken(
-      std::unique_ptr<performance_manager::freezing::FreezingVoteToken> token);
-  void ReleaseFreezingVoteToken();
-  bool HasFreezingVoteToken() const { return freezing_token_ ? true : false; }
+  void CreateFreezingVote(content::WebContents* contents);
+  void ReleaseFreezingVote();
+  bool HasFreezingVote() const { return freezing_vote_.has_value(); }
 
   // Returns the width of the largest part of the tab that is available for the
   // user to click to select/activate the tab.
@@ -289,9 +289,8 @@ class Tab : public gfx::AnimationDelegate,
 
   std::unique_ptr<TabCloseButtonObserver> tab_close_button_observer_;
 
-  // Freezing token held while the tab is collapsed.
-  std::unique_ptr<performance_manager::freezing::FreezingVoteToken>
-      freezing_token_;
+  // Freezing vote held while the tab is collapsed.
+  std::optional<performance_manager::freezing::FreezingVote> freezing_vote_;
 
   base::CallbackListSubscription paint_as_active_subscription_;
 };

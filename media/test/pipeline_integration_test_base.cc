@@ -129,14 +129,7 @@ const char kNullVideoHash[] = "d41d8cd98f00b204e9800998ecf8427e";
 const char kNullAudioHash[] = "0.00,0.00,0.00,0.00,0.00,0.00,";
 
 PipelineIntegrationTestBase::PipelineIntegrationTestBase()
-    :
-// Use a UI type message loop on macOS, because it doesn't seem to schedule
-// callbacks with enough precision to drive our fake audio output. See
-// https://crbug.com/1014646 for more details.
-#if BUILDFLAG(IS_MAC)
-      task_environment_(base::test::TaskEnvironment::MainThreadType::UI),
-#endif
-      hashing_enabled_(false),
+    : hashing_enabled_(false),
       clockless_playback_(false),
       webaudio_attached_(false),
       mono_output_(false),
@@ -284,7 +277,7 @@ PipelineStatus PipelineIntegrationTestBase::StartPipelineWithHlsManifest(
 
   auto engine = std::make_unique<HlsManifestDemuxerEngine>(
       std::move(hls_dsp), task_environment_.GetMainThreadTaskRunner(),
-      manifest_root, &media_log_);
+      /*name=*/false, manifest_root, &media_log_);
   demuxer_ = std::make_unique<ManifestDemuxer>(
       task_environment_.GetMainThreadTaskRunner(), base::DoNothing(),
       std::move(engine), &media_log_);

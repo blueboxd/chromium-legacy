@@ -145,7 +145,7 @@ void MojoDecoderBufferReader::ReadDecoderBuffer(
               "media,gpu", "MojoDecoderBufferReader::Read",
               buffer->timestamp().InMicroseconds(), "timestamp",
               buffer->timestamp().InMicroseconds(), "read_bytes",
-              buffer->data_size());
+              buffer->size());
           std::move(read_cb).Run(std::move(buffer));
         },
         std::move(read_cb));
@@ -206,7 +206,7 @@ void MojoDecoderBufferReader::CompleteCurrentRead() {
   scoped_refptr<DecoderBuffer> buffer = std::move(pending_buffers_.front());
   pending_buffers_.pop_front();
 
-  DCHECK(buffer->end_of_stream() || buffer->data_size() == bytes_read_);
+  DCHECK(buffer->end_of_stream() || buffer->size() == bytes_read_);
   bytes_read_ = 0;
 
   std::move(read_cb).Run(std::move(buffer));
@@ -253,9 +253,10 @@ void MojoDecoderBufferReader::ProcessPendingReads() {
   while (!pending_buffers_.empty()) {
     DecoderBuffer* buffer = pending_buffers_.front().get();
 
-    uint32_t buffer_size = 0u;
-    if (!pending_buffers_.front()->end_of_stream())
-      buffer_size = base::checked_cast<uint32_t>(buffer->data_size());
+    size_t buffer_size = 0u;
+    if (!pending_buffers_.front()->end_of_stream()) {
+      buffer_size = buffer->size();
+    }
 
     // Immediately complete empty reads.
     // A non-EOS buffer can have zero size. See http://crbug.com/663438
@@ -269,7 +270,7 @@ void MojoDecoderBufferReader::ProcessPendingReads() {
     // We may be starting to read a new buffer (|bytes_read_| == 0), or
     // recovering from a previous partial read (|bytes_read_| > 0).
     DCHECK_GT(buffer_size, bytes_read_);
-    uint32_t num_bytes = buffer_size - bytes_read_;
+    size_t num_bytes = buffer_size - bytes_read_;
 
     MojoResult result =
         consumer_handle_->ReadData(buffer->writable_data() + bytes_read_,
@@ -308,7 +309,7 @@ void MojoDecoderBufferReader::OnPipeError(MojoResult result) {
 
   if (!pending_buffers_.empty()) {
     DVLOG(1) << __func__ << ": reading from data pipe failed. result=" << result
-             << ", buffer size=" << pending_buffers_.front()->data_size()
+             << ", buffer size=" << pending_buffers_.front()->size()
              << ", num_bytes(read)=" << bytes_read_;
     bytes_read_ = 0;
     pending_buffers_.clear();
@@ -389,8 +390,9 @@ mojom::DecoderBufferPtr MojoDecoderBufferWriter::WriteDecoderBuffer(
       mojom::DecoderBuffer::From(*media_buffer);
 
   // A non-EOS buffer can have zero size. See http://crbug.com/663438
-  if (media_buffer->end_of_stream() || media_buffer->data_size() == 0)
+  if (media_buffer->end_of_stream() || media_buffer->empty()) {
     return mojo_buffer;
+  }
 
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("media,gpu",
                                     "MojoDecoderBufferWriter::Write",
@@ -434,12 +436,12 @@ void MojoDecoderBufferWriter::ProcessPendingWrites() {
   while (!pending_buffers_.empty()) {
     DecoderBuffer* buffer = pending_buffers_.front().get();
 
-    uint32_t buffer_size = base::checked_cast<uint32_t>(buffer->data_size());
+    size_t buffer_size = buffer->size();
     DCHECK_GT(buffer_size, 0u) << "Unexpected EOS or empty buffer";
 
     // We may be starting to write a new buffer (|bytes_written_| == 0), or
     // recovering from a previous partial write (|bytes_written_| > 0).
-    uint32_t num_bytes = buffer_size - bytes_written_;
+    size_t num_bytes = buffer_size - bytes_written_;
     DCHECK_GT(num_bytes, 0u);
 
     MojoResult result = producer_handle_->WriteData(
@@ -480,7 +482,7 @@ void MojoDecoderBufferWriter::OnPipeError(MojoResult result) {
 
   if (!pending_buffers_.empty()) {
     DVLOG(1) << __func__ << ": writing to data pipe failed. result=" << result
-             << ", buffer size=" << pending_buffers_.front()->data_size()
+             << ", buffer size=" << pending_buffers_.front()->size()
              << ", num_bytes(written)=" << bytes_written_;
     if (MediaTraceIsEnabled()) {
       for (const auto& buffer : pending_buffers_) {

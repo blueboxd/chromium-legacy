@@ -215,7 +215,8 @@ class ASH_EXPORT LoginAuthUserView : public NonAccessibleView {
   views::Button* pin_password_toggle() { return pin_password_toggle_; }
 
   // views::View:
-  gfx::Size CalculatePreferredSize() const override;
+  gfx::Size CalculatePreferredSize(
+      const views::SizeBounds& available_size) const override;
   void RequestFocus() override;
   void OnGestureEvent(ui::GestureEvent* event) override;
 
@@ -270,8 +271,8 @@ class ASH_EXPORT LoginAuthUserView : public NonAccessibleView {
   // Whether the authentication attempt should use the user's PIN.
   bool ShouldAuthenticateWithPin() const;
 
-  // TODO(crbug/899812): remove this and pass a handler in via the Callbacks
-  // struct instead.
+  // TODO(crbug.com/41423180): remove this and pass a handler in via the
+  // Callbacks struct instead.
   void AttemptAuthenticateWithExternalBinary();
 
   // Called when the user triggered the challenge-response authentication. It

@@ -51,7 +51,7 @@ void ApplyGM3OmniboxTextColor(ui::ColorMixer& mixer,
   mixer[kColorOmniboxResultsUrlSelected] = {kColorOmniboxResultsUrl};
 
   // These affect finance answers; e.g. 'goog stock'.
-  // TODO(crbug.com/1465985): These don't seem to apply anymore, at least on
+  // TODO(crbug.com/40923750): These don't seem to apply anymore, at least on
   //   desktop. Check with UX if we still care to color finance answers, and
   //   what those colors should in CR23.
   mixer[kColorOmniboxResultsTextNegativeSelected] = {
@@ -243,6 +243,7 @@ void AddOmniboxColorMixer(ui::ColorProvider* provider,
   // Results background, button, and focus colors.
   mixer[kColorOmniboxResultsBackground] =
       ui::GetColorWithMaxContrast(kColorOmniboxText);
+  mixer[kColorOmniboxResultsBackgroundIPH] = {ui::kColorSysSurface2};
   mixer[kColorOmniboxResultsBackgroundHovered] = ui::BlendTowardMaxContrast(
       kColorOmniboxResultsBackground, gfx::kGoogleGreyAlpha200);
   mixer[kColorOmniboxResultsBackgroundSelected] = ui::BlendTowardMaxContrast(

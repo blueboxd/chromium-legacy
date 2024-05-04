@@ -95,6 +95,11 @@ bool PepperPlayerDelegate::IsPictureInPictureAvailable(int player_id) const {
   return false;
 }
 
+bool PepperPlayerDelegate::HasSufficientlyVisibleVideo(int player_id) const {
+  DCHECK_EQ(player_id, kPlayerId);
+  return false;
+}
+
 RenderFrameHost* PepperPlayerDelegate::render_frame_host() const {
   return render_frame_host_;
 }
@@ -113,6 +118,10 @@ bool PepperPlayerDelegate::HasAudio(int player_id) const {
 bool PepperPlayerDelegate::HasVideo(int player_id) const {
   // We don't actually know whether a pepper player has both audio/video.
   return true;
+}
+
+bool PepperPlayerDelegate::IsPaused(int player_id) const {
+  return false;
 }
 
 std::string PepperPlayerDelegate::GetAudioOutputSinkId(int player_id) const {

@@ -160,6 +160,18 @@ void WebStateDelegateBrowserAgent::WebStateListDidChange(
       SetWebStateDelegate(insert_change.inserted_web_state());
       break;
     }
+    case WebStateListChange::Type::kGroupCreate:
+      // Do nothing when a group is created.
+      break;
+    case WebStateListChange::Type::kGroupVisualDataUpdate:
+      // Do nothing when a tab group's visual data are updated.
+      break;
+    case WebStateListChange::Type::kGroupMove:
+      // Do nothing when a tab group is moved.
+      break;
+    case WebStateListChange::Type::kGroupDelete:
+      // Do nothing when a group is deleted.
+      break;
   }
 }
 
@@ -214,7 +226,7 @@ web::WebState* WebStateDelegateBrowserAgent::CreateNewWebState(
       // window.open before its initial load is committed.  Rather than relying
       // on the last committed or pending NavigationItem's referrer policy, just
       // use ReferrerPolicyDefault.
-      // TODO(crbug.com/719993): Update this to a more appropriate referrer
+      // TODO(crbug.com/41317904): Update this to a more appropriate referrer
       // policy once referrer policies are correctly recorded in
       // NavigationItems.
       web::Referrer referrer(opener_url, web::ReferrerPolicyDefault);
@@ -283,7 +295,7 @@ void WebStateDelegateBrowserAgent::ShowRepostFormWarningDialog(
 
   switch (warning_type) {
     case web::FormWarningType::kRepost:
-      // TODO(crbug.com/1266052) : Clean up this API.
+      // TODO(crbug.com/40203973) : Clean up this API.
       RepostFormTabHelper::FromWebState(source)->PresentDialog(
           [container_view_provider_ dialogLocation], std::move(callback));
       return;

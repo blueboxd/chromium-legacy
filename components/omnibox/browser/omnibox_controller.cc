@@ -11,7 +11,6 @@
 #include "components/omnibox/browser/autocomplete_controller_emitter.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/autocomplete_match_type.h"
-#include "components/omnibox/browser/location_bar_model.h"
 #include "components/omnibox/browser/omnibox_client.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
@@ -74,9 +73,8 @@ void OmniboxController::StopAutocomplete(bool clear_result) const {
 void OmniboxController::StartZeroSuggestPrefetch() {
   TRACE_EVENT0("omnibox", "OmniboxController::StartZeroSuggestPrefetch");
   auto page_classification =
-      client_->GetLocationBarModel()->GetPageClassification(
-          OmniboxFocusSource::OMNIBOX,
-          /*is_prefetch=*/true);
+      client_->GetPageClassification(OmniboxFocusSource::OMNIBOX,
+                                     /*is_prefetch=*/true);
   if (!OmniboxFieldTrial::IsZeroSuggestPrefetchingEnabledInContext(
           page_classification)) {
     return;
@@ -111,7 +109,7 @@ void OmniboxController::OnResultChanged(AutocompleteController* controller,
   if (default_match_changed) {
     // The default match has changed, we need to let the OmniboxEditModel know
     // about new inline autocomplete text (blue highlight).
-    if (auto* match = autocomplete_controller_->result().default_match()) {
+    if (autocomplete_controller_->result().default_match()) {
       edit_model_->OnCurrentMatchChanged();
     } else {
       edit_model_->OnPopupResultChanged();

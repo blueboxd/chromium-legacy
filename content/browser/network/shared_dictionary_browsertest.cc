@@ -539,8 +539,9 @@ class DummyClientCertStoreContentBrowserClient
     ~DummyClientCertStore() override = default;
 
     // net::ClientCertStore:
-    void GetClientCerts(const net::SSLCertRequestInfo& cert_request_info,
-                        ClientCertListCallback callback) override {
+    void GetClientCerts(
+        scoped_refptr<const net::SSLCertRequestInfo> cert_request_info,
+        ClientCertListCallback callback) override {
       std::move(callback).Run(std::move(list_));
     }
 
@@ -774,7 +775,7 @@ class SharedDictionaryBrowserTestBase : public ContentBrowserTest {
 
 // Tests end to end functionality of "compression dictionary transport" feature
 // with FeatureState of params.
-// TODO(crbug.com/1413922): Remove this when we fully launch this feature.
+// TODO(crbug.com/40255884): Remove this when we fully launch this feature.
 class SharedDictionaryFeatureStateBrowserTest
     : public SharedDictionaryBrowserTestBase,
       public ::testing::WithParamInterface<FeatureState> {
@@ -2197,7 +2198,7 @@ IN_PROC_BROWSER_TEST_P(SharedDictionaryBrowserTest,
   EXPECT_EQ(1u, GetSharedDictionaryUsageInfo(GetTargetShell()).size());
 }
 
-// TODO(crbug.com/898503): When we support wildcard directive
+// TODO(crbug.com/40599527): When we support wildcard directive
 // `Clear-Site-Data: "*"", add test for it.
 
 IN_PROC_BROWSER_TEST_P(SharedDictionaryBrowserTest,

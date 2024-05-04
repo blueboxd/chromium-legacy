@@ -5,9 +5,10 @@
 #import "ios/chrome/browser/metrics/model/ios_chrome_metrics_service_client.h"
 
 #import <UIKit/UIKit.h>
-
 #import <stdint.h>
+
 #import <string>
+#import <string_view>
 #import <utility>
 #import <vector>
 
@@ -16,7 +17,6 @@
 #import "base/command_line.h"
 #import "base/debug/dump_without_crashing.h"
 #import "base/files/file_path.h"
-#import "base/files/file_util.h"
 #import "base/functional/bind.h"
 #import "base/functional/callback.h"
 #import "base/metrics/histogram_functions.h"
@@ -64,7 +64,7 @@
 #import "components/version_info/version_info.h"
 #import "google_apis/google_api_keys.h"
 #import "ios/chrome/browser/history/model/history_service_factory.h"
-#import "ios/chrome/browser/metrics/model/chrome_browser_state_client.h"
+#import "ios/chrome/browser/metrics/model/demographics_client.h"
 #import "ios/chrome/browser/metrics/model/ios_chrome_default_browser_metrics_provider.h"
 #import "ios/chrome/browser/metrics/model/ios_chrome_signin_and_sync_status_metrics_provider.h"
 #import "ios/chrome/browser/metrics/model/ios_chrome_stability_metrics_provider.h"
@@ -113,28 +113,16 @@ std::unique_ptr<metrics::FileMetricsProvider> CreateFileMetricsProvider(
 
   base::FilePath user_data_dir;
   if (base::PathService::Get(ios::DIR_USER_DATA, &user_data_dir)) {
-    base::FilePath browser_metrics_upload_dir =
-        user_data_dir.AppendASCII(kBrowserMetricsName);
-    if (metrics_reporting_enabled) {
-      metrics::FileMetricsProvider::Params browser_metrics_params(
-          browser_metrics_upload_dir,
-          metrics::FileMetricsProvider::SOURCE_HISTOGRAMS_ATOMIC_DIR,
-          metrics::FileMetricsProvider::ASSOCIATE_INTERNAL_PROFILE,
-          kBrowserMetricsName);
-      browser_metrics_params.max_dir_kib = kMaxHistogramStorageKiB;
-      browser_metrics_params.filter = base::BindRepeating(
-          &IOSChromeMetricsServiceClient::FilterBrowserMetricsFiles);
-      file_metrics_provider->RegisterSource(browser_metrics_params);
-    } else {
-      // When metrics reporting is not enabled, any existing files should be
-      // deleted in order to preserve user privacy.
-      base::ThreadPool::PostTask(
-          FROM_HERE,
-          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
-           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
-          base::GetDeletePathRecursivelyCallback(
-              std::move(browser_metrics_upload_dir)));
-    }
+    metrics::FileMetricsProvider::Params browser_metrics_params(
+        user_data_dir.AppendASCII(kBrowserMetricsName),
+        metrics::FileMetricsProvider::SOURCE_HISTOGRAMS_ATOMIC_DIR,
+        metrics::FileMetricsProvider::ASSOCIATE_INTERNAL_PROFILE,
+        kBrowserMetricsName);
+    browser_metrics_params.max_dir_kib = kMaxHistogramStorageKiB;
+    browser_metrics_params.filter = base::BindRepeating(
+        &IOSChromeMetricsServiceClient::FilterBrowserMetricsFiles);
+    file_metrics_provider->RegisterSource(browser_metrics_params,
+                                          metrics_reporting_enabled);
   }
   return file_metrics_provider;
 }
@@ -149,8 +137,7 @@ IOSChromeMetricsServiceClient::IOSChromeMetricsServiceClient(
     variations::SyntheticTrialRegistry* synthetic_trial_registry)
     : metrics_state_manager_(state_manager),
       synthetic_trial_registry_(synthetic_trial_registry),
-      stability_metrics_provider_(nullptr),
-      weak_ptr_factory_(this) {
+      stability_metrics_provider_(nullptr) {
   DCHECK(thread_checker_.CalledOnValidThread());
   notification_listeners_active_ = RegisterForNotifications();
 }
@@ -246,7 +233,7 @@ std::unique_ptr<metrics::MetricsLogUploader>
 IOSChromeMetricsServiceClient::CreateUploader(
     const GURL& server_url,
     const GURL& insecure_server_url,
-    base::StringPiece mime_type,
+    std::string_view mime_type,
     metrics::MetricsLogUploader::MetricServiceType service_type,
     const metrics::MetricsLogUploader::UploadCallback& on_upload_complete) {
   return std::make_unique<metrics::NetMetricsLogUploader>(
@@ -282,7 +269,7 @@ void IOSChromeMetricsServiceClient::Initialize() {
     ukm_service_ = std::make_unique<ukm::UkmService>(
         local_state, this,
         std::make_unique<metrics::DemographicMetricsProvider>(
-            std::make_unique<metrics::ChromeBrowserStateClient>(),
+            std::make_unique<metrics::DemographicsClient>(),
             metrics::MetricsLogUploader::MetricServiceType::UKM));
     // As this is startup, there the UKM previous state is the same as the
     // present state.
@@ -349,11 +336,9 @@ void IOSChromeMetricsServiceClient::RegisterMetricsServiceProviders() {
   metrics_service_->RegisterMetricsProvider(
       std::make_unique<translate::TranslateRankerMetricsProvider>());
 
-  // TODO(crbug.com/325255648):The demographics metrics provider should be
-  // registered for each browser state.
   metrics_service_->RegisterMetricsProvider(
       std::make_unique<metrics::DemographicMetricsProvider>(
-          std::make_unique<metrics::ChromeBrowserStateClient>(),
+          std::make_unique<metrics::DemographicsClient>(),
           metrics::MetricsLogUploader::MetricServiceType::UMA));
 
   std::vector<ChromeBrowserState*> loaded_browser_states =
@@ -439,7 +424,7 @@ void IOSChromeMetricsServiceClient::CollectFinalHistograms() {
   } else {
     // Max kern_return_t is 0x100 = 256, plus trailing null.
     // (https://opensource.apple.com/source/xnu/xnu-792.25.20/osfmk/mach/kern_return.h)
-    // TODO(crbug.com/1365392): Remove this when done debugging the uncaught
+    // TODO(crbug.com/40866217): Remove this when done debugging the uncaught
     // memory regression.
     static crash_reporter::CrashKeyString<4> task_info_kern_return(
         "task-info-kern-return");

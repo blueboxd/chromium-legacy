@@ -32,7 +32,6 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/events/simulated_click_options.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_control_element_with_state.h"
-#include "third_party/blink/renderer/core/html/forms/html_options_collection.h"
 #include "third_party/blink/renderer/core/html/forms/option_list.h"
 #include "third_party/blink/renderer/core/html/forms/type_ahead.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -45,11 +44,13 @@ class ExceptionState;
 class HTMLHRElement;
 class HTMLOptGroupElement;
 class HTMLOptionElement;
+class HTMLOptionsCollection;
 class LayoutUnit;
 class PopupMenu;
 class SelectType;
 class V8UnionHTMLElementOrLong;
 class V8UnionHTMLOptGroupElementOrHTMLOptionElement;
+class HTMLSelectedOptionElement;
 
 class CORE_EXPORT HTMLSelectElement final
     : public HTMLFormControlElementWithState,
@@ -116,6 +117,9 @@ class CORE_EXPORT HTMLSelectElement final
   // is inconsistent in these functions.
   HTMLOptionsCollection* options();
   HTMLCollection* selectedOptions();
+
+  // Returns the first selected OPTION, or nullptr.
+  HTMLOptionElement* SelectedOption() const;
 
   // This is similar to |options| HTMLCollection.  But this is safe in
   // HTMLOptionElement::removedFrom() and insertedInto().
@@ -195,39 +199,49 @@ class CORE_EXPORT HTMLSelectElement final
                                        NodeCloningData&) override;
 
   // These should be called only if UsesMenuList().
-  Element& InnerElement() const;
+  // TODO(crbug.com/1511354): Audit usage of InnerElementForAppearanceAuto to
+  // make sure it correctly handles the appearance:base-select case.
+  Element& InnerElementForAppearanceAuto() const;
   AXObject* PopupRootAXObject() const;
 
   bool IsRichlyEditableForAccessibility() const override { return false; }
 
-  bool HandleInvokeInternal(HTMLElement& invoker,
-                            AtomicString& action) override;
+  bool IsValidInvokeAction(HTMLElement& invoker, InvokeAction action) override;
+  bool HandleInvokeInternal(HTMLElement& invoker, InvokeAction action) override;
 
-  // SlottedButton and SlottedDatalist return the first child <button> or
-  // <datalist> in the light dom tree. If this select is in a state where the
-  // <button> or <datalist> can't be rendered, such as a <select multiple>, then
-  // nullptr will be returned. Since these methods are called during style
-  // calculation to compute internal pseudo-classes, the value of the appearance
-  // property is not checked.
+  // SlottedButton returns the first child <button> in the light dom tree. If
+  // this select is in a state where the <button> can't be rendered, such as a
+  // <select multiple>, then nullptr will be returned. Since this method is
+  // called during style calculation to compute internal pseudo-classes, the
+  // value of the appearance property is not checked.
   HTMLButtonElement* SlottedButton() const;
-  HTMLDataListElement* SlottedDatalist() const;
 
-  // FirstChildDatalist returns the first child <datalist> of this <select>.
-  // Unlike SlottedDatalist(), it will return the first child <datalist>
-  // regardless of slotting or any other state in the element, which is useful
-  // in cases where we aren't allowed to recalc slot assignment.
+  // DisplayedDatalist returns whatever <datalist> is included in the flat tree
+  // based on the result of slot assignment. If a child <datalist> is present,
+  // then the return value will be the same as FirstChildDatalist. Otherwise,
+  // the fallback <datalist> in the UA shadowroot will be returned.
+  // This <datalist> is the one which will get rendered as a popover.
+  HTMLDataListElement* DisplayedDatalist() const;
+
+  // FirstChildDatalist returns the first child <datalist> of this <select>,
+  // which will get slotted into the UA shadowroot. It is kept up to date with a
+  // mutation observer, which calls RecalcFirstChildDatalist. This doesn't just
+  // look at the slot's assigned nodes because we can't run slot assignment in
+  // some cases when we need to find the datalist.
   HTMLDataListElement* FirstChildDatalist() const;
   void RecalcFirstChildDatalist();
 
-  // This method returns true if the computed style is appearance:bikeshed and
-  // the SelectType supports alternate rendering based on appearance:bikeshed.
-  bool IsAppearanceBikeshed() const;
+  // This method returns true if the computed style is appearance:base-select and
+  // the SelectType supports alternate rendering based on appearance:base-select.
+  bool IsAppearanceBaseSelect() const;
+
+  void SelectedOptionElementInserted(HTMLSelectedOptionElement* selectedoption);
+  void SelectedOptionElementRemoved(HTMLSelectedOptionElement* selectedoption);
 
   void DefaultEventHandler(Event&) override;
+  bool SupportsFocus(UpdateBehavior update_behavior) const override;
 
  private:
-  class SelectMutationObserver;
-
   mojom::blink::FormControlType FormControlType() const override;
   const AtomicString& FormControlTypeAsString() const override;
 
@@ -270,8 +284,6 @@ class CORE_EXPORT HTMLSelectElement final
   enum ResetReason { kResetReasonSelectedOptionRemoved, kResetReasonOthers };
   void ResetToDefaultSelection(ResetReason = kResetReasonOthers);
   void TypeAheadFind(const KeyboardEvent&);
-  // Returns the first selected OPTION, or nullptr.
-  HTMLOptionElement* SelectedOption() const;
 
   bool IsOptionalFormControl() const override {
     return !IsRequiredFormControl();
@@ -329,8 +341,8 @@ class CORE_EXPORT HTMLSelectElement final
   Member<HTMLSlotElement> option_slot_;
   Member<HTMLOptionElement> last_on_change_option_;
   Member<HTMLOptionElement> suggested_option_;
-  Member<SelectMutationObserver> mutation_observer_;
   Member<HTMLDataListElement> first_child_datalist_;
+  HeapHashSet<Member<HTMLSelectedOptionElement>> descendant_selectedoptions_;
   bool uses_menu_list_ = true;
   bool is_multiple_;
   mutable bool should_recalc_list_items_;

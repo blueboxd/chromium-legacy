@@ -225,7 +225,7 @@ void PasswordProtectionRequest::FillRequestProto(bool is_sampled_ping) {
 
   password_protection_service_->FillUserPopulation(main_frame_url_,
                                                    request_proto_.get());
-  // TODO(crbug.com/1457312): [Also TODO(thefrog)] Remove the
+  // TODO(crbug.com/40918301): [Also TODO(thefrog)] Remove the
   // finch_active_groups modification below once kHashPrefixRealTimeLookups is
   // launched.
   const std::vector<const base::Feature*> kHashRealTimeLookupsFeature = {
@@ -357,7 +357,7 @@ void PasswordProtectionRequest::SendRequestWithToken(
   MaybeAddPingToWebUI(access_token);
 
   std::string serialized_request;
-  // TODO(crbug.com/1158582): Return early if request serialization fails.
+  // TODO(crbug.com/40054172): Return early if request serialization fails.
   request_proto_->SerializeToString(&serialized_request);
 
   net::NetworkTrafficAnnotationTag traffic_annotation =

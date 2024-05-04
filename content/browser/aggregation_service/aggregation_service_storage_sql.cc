@@ -10,6 +10,8 @@
 #include <optional>
 #include <set>
 #include <string>
+#include <string_view>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -21,8 +23,8 @@
 #include "base/functional/bind.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/not_fatal_until.h"
 #include "base/sequence_checker.h"
-#include "base/strings/string_piece.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
@@ -33,6 +35,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "sql/database.h"
+#include "sql/error_delegate_util.h"
 #include "sql/meta_table.h"
 #include "sql/sqlite_result_code.h"
 #include "sql/statement.h"
@@ -156,7 +159,7 @@ AggregationServiceStorageSql::AggregationServiceStorageSql(
           max_stored_requests_per_reporting_origin),
       db_(sql::DatabaseOptions{.page_size = 4096, .cache_size = 32}) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
-  DCHECK(clock);
+  CHECK(clock, base::NotFatalUntil::M128);
 
   db_.set_histogram_tag("AggregationService");
 
@@ -174,7 +177,7 @@ AggregationServiceStorageSql::~AggregationServiceStorageSql() {
 std::vector<PublicKey> AggregationServiceStorageSql::GetPublicKeys(
     const GURL& url) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(network::IsUrlPotentiallyTrustworthy(url));
+  CHECK(network::IsUrlPotentiallyTrustworthy(url), base::NotFatalUntil::M128);
 
   if (!EnsureDatabaseOpen(DbCreationPolicy::kFailIfAbsent))
     return {};
@@ -225,10 +228,11 @@ std::vector<PublicKey> AggregationServiceStorageSql::GetPublicKeys(
 void AggregationServiceStorageSql::SetPublicKeys(const GURL& url,
                                                  const PublicKeyset& keyset) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(network::IsUrlPotentiallyTrustworthy(url));
-  DCHECK_LE(keyset.keys.size(), PublicKeyset::kMaxNumberKeys);
+  CHECK(network::IsUrlPotentiallyTrustworthy(url), base::NotFatalUntil::M128);
+  CHECK_LE(keyset.keys.size(), PublicKeyset::kMaxNumberKeys,
+           base::NotFatalUntil::M128);
 
-  // TODO(crbug.com/1231703): Add an allowlist for helper server urls and
+  // TODO(crbug.com/40190806): Add an allowlist for helper server urls and
   // validate the url.
 
   // Force the creation of the database if it doesn't exist, as we need to
@@ -253,7 +257,7 @@ void AggregationServiceStorageSql::SetPublicKeys(const GURL& url,
 
 void AggregationServiceStorageSql::ClearPublicKeys(const GURL& url) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(network::IsUrlPotentiallyTrustworthy(url));
+  CHECK(network::IsUrlPotentiallyTrustworthy(url), base::NotFatalUntil::M128);
 
   if (!EnsureDatabaseOpen(DbCreationPolicy::kFailIfAbsent))
     return;
@@ -270,9 +274,10 @@ void AggregationServiceStorageSql::ClearPublicKeys(const GURL& url) {
 void AggregationServiceStorageSql::ClearPublicKeysFetchedBetween(
     base::Time delete_begin,
     base::Time delete_end) {
-  DCHECK(!delete_begin.is_null());
-  DCHECK(!delete_end.is_null());
-  DCHECK(!delete_begin.is_min() || !delete_end.is_max());
+  CHECK(!delete_begin.is_null(), base::NotFatalUntil::M128);
+  CHECK(!delete_end.is_null(), base::NotFatalUntil::M128);
+  CHECK(!delete_begin.is_min() || !delete_end.is_max(),
+        base::NotFatalUntil::M128);
 
   sql::Transaction transaction(&db_);
   if (!transaction.Begin())
@@ -301,7 +306,7 @@ void AggregationServiceStorageSql::ClearPublicKeysFetchedBetween(
 void AggregationServiceStorageSql::ClearPublicKeysExpiredBy(
     base::Time delete_end) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(!delete_end.is_null());
+  CHECK(!delete_end.is_null(), base::NotFatalUntil::M128);
 
   if (!EnsureDatabaseOpen(DbCreationPolicy::kFailIfAbsent))
     return;
@@ -333,9 +338,9 @@ void AggregationServiceStorageSql::ClearPublicKeysExpiredBy(
 bool AggregationServiceStorageSql::InsertPublicKeysImpl(
     const GURL& url,
     const PublicKeyset& keyset) {
-  DCHECK(!keyset.fetch_time.is_null());
-  DCHECK(!keyset.expiry_time.is_null());
-  DCHECK(db_.HasActiveTransactions());
+  CHECK(!keyset.fetch_time.is_null(), base::NotFatalUntil::M128);
+  CHECK(!keyset.expiry_time.is_null(), base::NotFatalUntil::M128);
+  CHECK(db_.HasActiveTransactions(), base::NotFatalUntil::M128);
 
   static constexpr char kInsertUrlSql[] =
       "INSERT INTO urls(url, fetch_time, expiry_time) VALUES (?,?,?)";
@@ -357,8 +362,9 @@ bool AggregationServiceStorageSql::InsertPublicKeysImpl(
       db_.GetCachedStatement(SQL_FROM_HERE, kInsertKeySql));
 
   for (const PublicKey& key : keyset.keys) {
-    DCHECK_LE(key.id.size(), PublicKey::kMaxIdSize);
-    DCHECK_EQ(key.key.size(), PublicKey::kKeyByteLength);
+    CHECK_LE(key.id.size(), PublicKey::kMaxIdSize, base::NotFatalUntil::M128);
+    CHECK_EQ(key.key.size(), PublicKey::kKeyByteLength,
+             base::NotFatalUntil::M128);
 
     insert_key_statement.Reset(/*clear_bound_vars=*/true);
     insert_key_statement.BindInt64(0, url_id);
@@ -373,7 +379,7 @@ bool AggregationServiceStorageSql::InsertPublicKeysImpl(
 }
 
 bool AggregationServiceStorageSql::ClearPublicKeysImpl(const GURL& url) {
-  DCHECK(db_.HasActiveTransactions());
+  CHECK(db_.HasActiveTransactions(), base::NotFatalUntil::M128);
 
   static constexpr char kDeleteUrlSql[] =
       "DELETE FROM urls WHERE url = ? "
@@ -395,7 +401,7 @@ bool AggregationServiceStorageSql::ClearPublicKeysImpl(const GURL& url) {
 }
 
 bool AggregationServiceStorageSql::ClearPublicKeysByUrlId(int64_t url_id) {
-  DCHECK(db_.HasActiveTransactions());
+  CHECK(db_.HasActiveTransactions(), base::NotFatalUntil::M128);
 
   static constexpr char kDeleteKeysSql[] = "DELETE FROM keys WHERE url_id = ?";
   sql::Statement delete_keys_statement(
@@ -425,7 +431,7 @@ void AggregationServiceStorageSql::ClearAllPublicKeys() {
 }
 
 bool AggregationServiceStorageSql::ReportingOriginHasCapacity(
-    base::StringPiece serialized_reporting_origin) {
+    std::string_view serialized_reporting_origin) {
   static constexpr char kCountRequestSql[] =
       "SELECT COUNT(*)FROM report_requests WHERE reporting_origin = ?";
   sql::Statement count_request_statement(
@@ -541,7 +547,7 @@ void AggregationServiceStorageSql::StoreRequest(
 
   // While an empty vector can be a valid proto serialization, report requests
   // should always be non-empty.
-  DCHECK(!serialized_request.empty());
+  CHECK(!serialized_request.empty(), base::NotFatalUntil::M128);
   store_request_statement.BindBlob(3, serialized_request);
 
   if (!store_request_statement.Run())
@@ -604,7 +610,7 @@ AggregationServiceStorageSql::GetRequestsReportingOnOrBefore(
     base::Time not_after_time,
     std::optional<int> limit) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(!limit.has_value() || limit.value() > 0);
+  CHECK(!limit.has_value() || limit.value() > 0, base::NotFatalUntil::M128);
 
   if (!EnsureDatabaseOpen(DbCreationPolicy::kFailIfAbsent))
     return {};
@@ -625,7 +631,7 @@ AggregationServiceStorageSql::GetRequestsReportingOnOrBefore(
   // See https://www.sqlite.org/lang_select.html.
   get_requests_statement.BindInt(1, limit.value_or(-1));
 
-  // TODO(crbug.com/1340046): Limit the total number of results that can be
+  // TODO(crbug.com/40230192): Limit the total number of results that can be
   // returned in one query.
   std::vector<AggregationServiceStorage::RequestAndId> result;
   std::vector<AggregationServiceStorage::RequestId> failures;
@@ -713,9 +719,9 @@ AggregationServiceStorageSql::AdjustOfflineReportTimes(
     base::TimeDelta max_delay) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  DCHECK_GE(min_delay, base::TimeDelta());
-  DCHECK_GE(max_delay, base::TimeDelta());
-  DCHECK_LE(min_delay, max_delay);
+  CHECK_GE(min_delay, base::TimeDelta(), base::NotFatalUntil::M128);
+  CHECK_GE(max_delay, base::TimeDelta(), base::NotFatalUntil::M128);
+  CHECK_LE(min_delay, max_delay, base::NotFatalUntil::M128);
 
   if (!EnsureDatabaseOpen(DbCreationPolicy::kFailIfAbsent))
     return std::nullopt;
@@ -803,9 +809,10 @@ void AggregationServiceStorageSql::ClearRequestsStoredBetween(
     base::Time delete_begin,
     base::Time delete_end,
     StoragePartition::StorageKeyMatcherFunction filter) {
-  DCHECK(!delete_begin.is_null());
-  DCHECK(!delete_end.is_null());
-  DCHECK(!delete_begin.is_min() || !delete_end.is_max() || !filter.is_null());
+  CHECK(!delete_begin.is_null(), base::NotFatalUntil::M128);
+  CHECK(!delete_end.is_null(), base::NotFatalUntil::M128);
+  CHECK(!delete_begin.is_min() || !delete_end.is_max() || !filter.is_null(),
+        base::NotFatalUntil::M128);
 
   sql::Transaction transaction(&db_);
   if (!transaction.Begin())
@@ -848,6 +855,22 @@ void AggregationServiceStorageSql::ClearAllRequests() {
 void AggregationServiceStorageSql::HandleInitializationFailure(
     const InitStatus status) {
   RecordInitializationStatus(status);
+
+  meta_table_.Reset();
+  db_.Close();
+
+  // It's possible that `db_status_` was set by `DatabaseErrorCallback()` during
+  // a call to `sql::Database::Open()`. Some databases attempt recovery at this
+  // point, but we opt to delete the database from disk. Recovery can always
+  // result in partial data loss, even when it appears to succeed. SQLite's
+  // documentation discusses how some use cases can tolerate partial data loss,
+  // while others cannot: <https://www.sqlite.org/recovery.html>.
+  if (db_status_ == DbStatus::kClosedDueToCatastrophicError) {
+    const bool delete_ok = sql::Database::Delete(path_to_database_);
+    LOG_IF(WARNING, !delete_ok)
+        << "Failed to delete database after catastrophic SQLite error";
+  }
+
   db_status_ = DbStatus::kClosed;
 }
 
@@ -873,10 +896,11 @@ bool AggregationServiceStorageSql::EnsureDatabaseOpen(
       break;
     case DbStatus::kDeferringOpen:
       break;
-    case DbStatus::kClosed:
-      return false;
     case DbStatus::kOpen:
       return true;
+    case DbStatus::kClosed:
+    case DbStatus::kClosedDueToCatastrophicError:
+      return false;
   }
 
   if (run_in_memory_) {
@@ -1021,19 +1045,50 @@ bool AggregationServiceStorageSql::CreateSchema() {
   return transaction.Commit();
 }
 
+// The interaction between this error callback and `sql::Database` is complex.
+// Here are just a few of the sharp edges:
+//
+// 1. This callback would become reentrant if it called a `sql::Database` method
+//    that could encounter an error.
+//
+// 2. This callback may be invoked multiple times by a single call to a
+//    `sql::Database` method.
+//
+// 3. This callback may see phantom errors that do not otherwise bubble up via
+//    return values. This can happen because `sql::Database` runs the error
+//    callback eagerly despite the fact that some of its methods ignore certain
+//    errors.
+//
+//    A concrete example: opening the database may run the error callback *and*
+//    return true if `sql::Database::Open()` encounters a transient error, but
+//    opens the database successfully on the second try.
+//
+// Reducing this complexity will likely require a redesign of `sql::Database`'s
+// error handling interface. See <https://crbug.com/40199997>.
 void AggregationServiceStorageSql::DatabaseErrorCallback(int extended_error,
                                                          sql::Statement* stmt) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  // The default handling is to assert on debug and to ignore on release.
-  if (!sql::Database::IsExpectedSqliteError(extended_error) &&
-      !ignore_errors_for_testing_)
-    DLOG(FATAL) << db_.GetErrorMessage();
+  // Inform the test framework that we encountered this error.
+  std::ignore = sql::Database::IsExpectedSqliteError(extended_error);
 
-  // Consider the database closed to avoid further errors.
-  db_status_ = DbStatus::kClosed;
+  if (ignore_errors_for_testing_) {
+    return;
+  }
 
-  // Note that this histogram will not be recorded when errors are fatal.
+  // Consider the database closed to avoid further errors. Note that the value
+  // we write to `db_status_` may be subsequently overwritten elsewhere if
+  // `sql::Database` ignores the error (see sharp edge #3 above).
+  if (sql::IsErrorCatastrophic(extended_error)) {
+    db_status_ = DbStatus::kClosedDueToCatastrophicError;
+  } else {
+    db_status_ = DbStatus::kClosed;
+  }
+
+  // Prevent future uses of `db_` from having any effect until we unpoison it
+  // with `db_.Close()`.
+  db_.Poison();
+
   base::UmaHistogramEnumeration(
       "PrivacySandbox.AggregationService.Storage.Sql.Error",
       sql::ToSqliteLoggedResultCode(extended_error));

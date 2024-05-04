@@ -24,6 +24,7 @@
 #include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "content/services/auction_worklet/auction_v8_helper.h"
+#include "content/services/auction_worklet/context_recycler.h"
 #include "content/services/auction_worklet/direct_from_seller_signals_requester.h"
 #include "content/services/auction_worklet/public/mojom/auction_shared_storage_host.mojom.h"
 #include "content/services/auction_worklet/public/mojom/auction_worklet_service.mojom-forward.h"
@@ -37,6 +38,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
+#include "third_party/blink/public/common/interest_group/ad_display_size.h"
 #include "third_party/blink/public/common/interest_group/auction_config.h"
 #include "third_party/blink/public/mojom/interest_group/interest_group_types.mojom-forward.h"
 #include "url/gurl.h"
@@ -61,6 +63,19 @@ class CONTENT_EXPORT SellerWorklet : public mojom::SellerWorklet {
 
   using PrivateAggregationRequests =
       std::vector<auction_worklet::mojom::PrivateAggregationRequestPtr>;
+
+  // Classification of how trusted signals related to this worklet.
+  enum class SignalsOriginRelation {
+    kNoTrustedSignals,
+    kSameOriginSignals,
+
+    // If trusted signals are cross-origin, their classification starts at
+    // kUnknownPermissionCrossOriginSignals and gets changed to permitted or
+    // forbidden once the permission header is received (or is found missing).
+    kUnknownPermissionCrossOriginSignals,
+    kPermittedCrossOriginSignals,
+    kForbiddenCrossOriginSignals
+  };
 
   // Starts loading the worklet script on construction.
   SellerWorklet(
@@ -113,6 +128,7 @@ class CONTENT_EXPORT SellerWorklet : public mojom::SellerWorklet {
       const GURL& browser_signal_render_url,
       const std::vector<GURL>& browser_signal_ad_components,
       uint32_t browser_signal_bidding_duration_msecs,
+      const std::optional<blink::AdSize>& browser_signal_render_size,
       bool browser_signal_for_debugging_only_in_cooldown_or_lockout,
       const std::optional<base::TimeDelta> seller_timeout,
       uint64_t trace_id,
@@ -174,6 +190,7 @@ class CONTENT_EXPORT SellerWorklet : public mojom::SellerWorklet {
     // ScoringSignals code with BidderWorklets.
     std::vector<std::string> browser_signal_ad_components;
     uint32_t browser_signal_bidding_duration_msecs;
+    std::optional<blink::AdSize> browser_signal_render_size;
     bool browser_signal_for_debugging_only_in_cooldown_or_lockout;
     std::optional<base::TimeDelta> seller_timeout;
     uint64_t trace_id;
@@ -305,12 +322,14 @@ class CONTENT_EXPORT SellerWorklet : public mojom::SellerWorklet {
             shared_storage_host_remote,
         const GURL& decision_logic_url,
         const std::optional<GURL>& trusted_scoring_signals_url,
+        const std::optional<url::Origin>& trusted_scoring_signals_origin,
         const url::Origin& top_window_origin,
         mojom::AuctionWorkletPermissionsPolicyStatePtr permissions_policy_state,
         std::optional<uint16_t> experiment_group_id,
         base::WeakPtr<SellerWorklet> parent);
 
-    void SetWorkletScript(WorkletLoader::Result worklet_script);
+    void SetWorkletScript(WorkletLoader::Result worklet_script,
+                          SignalsOriginRelation trusted_signals_relation);
 
     void ScoreAd(
         const std::string& ad_metadata_json,
@@ -333,10 +352,12 @@ class CONTENT_EXPORT SellerWorklet : public mojom::SellerWorklet {
         const GURL& browser_signal_render_url,
         const std::vector<std::string>& browser_signal_ad_components,
         uint32_t browser_signal_bidding_duration_msecs,
+        const std::optional<blink::AdSize>& browser_signal_render_size,
         bool browser_signal_for_debugging_only_in_cooldown_or_lockout,
         const std::optional<base::TimeDelta> seller_timeout,
         uint64_t trace_id,
         base::ScopedClosureRunner cleanup_score_ad_task,
+        base::TimeTicks task_enqueued_time,
         ScoreAdCallbackInternal callback);
 
     void ReportResult(
@@ -424,11 +445,21 @@ class CONTENT_EXPORT SellerWorklet : public mojom::SellerWorklet {
 
     const GURL decision_logic_url_;
     const std::optional<GURL> trusted_scoring_signals_url_;
+    const std::optional<url::Origin> trusted_scoring_signals_origin_;
+    SignalsOriginRelation trusted_signals_relation_ =
+        SignalsOriginRelation::kNoTrustedSignals;
     const url::Origin top_window_origin_;
     mojom::AuctionWorkletPermissionsPolicyStatePtr permissions_policy_state_;
     const std::optional<uint16_t> experiment_group_id_;
 
     mojo::Remote<mojom::AuctionSharedStorageHost> shared_storage_host_remote_;
+
+    // If `kFledgeAlwaysReuseSellerContext` is enabled, use this pointer to
+    // store our `ContextRecycler`. This `ContextRecycler` will be used on all
+    // calls to `ScoreAd`, but not for `ReportResult`. If
+    // `kFledgeAlwaysReuseSellerContext` is disabled, a fresh `ContextRecycler`
+    // will be created as needed.
+    std::unique_ptr<ContextRecycler> context_recycler_for_context_reuse_;
 
     SEQUENCE_CHECKER(v8_sequence_checker_);
   };
@@ -436,9 +467,12 @@ class CONTENT_EXPORT SellerWorklet : public mojom::SellerWorklet {
   void ResumeIfPaused();
   void Start();
 
-  void OnDownloadComplete(WorkletLoader::Result worklet_script,
+  void OnDownloadComplete(std::vector<WorkletLoader::Result> worklet_scripts,
                           std::optional<std::string> error_msg);
   void MaybeRecordCodeWait();
+
+  void OnGotCrossOriginTrustedSignalsPermissions(
+      std::vector<url::Origin> permit_origins);
 
   // Called when trusted scoring signals have finished downloading, or when
   // there are no scoring signals to download. Starts running scoreAd() on the
@@ -528,6 +562,10 @@ class CONTENT_EXPORT SellerWorklet : public mojom::SellerWorklet {
   // `trusted_scoring_signals_url`.
   std::unique_ptr<TrustedSignalsRequestManager>
       trusted_signals_request_manager_;
+
+  const std::optional<url::Origin> trusted_scoring_signals_origin_;
+  SignalsOriginRelation trusted_signals_relation_ =
+      SignalsOriginRelation::kNoTrustedSignals;
 
   // Used for fetching DirectFromSellerSignals from subresource bundles (and
   // caching responses).

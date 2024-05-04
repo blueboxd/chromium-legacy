@@ -58,11 +58,9 @@
 #include "chrome/browser/ash/policy/core/device_local_account.h"
 #include "chrome/browser/ash/policy/core/reporting_user_tracker.h"
 #include "chrome/browser/ash/policy/status_collector/enterprise_activity_storage.h"
-#include "chrome/browser/ash/policy/status_collector/interval_map.h"
 #include "chrome/browser/ash/policy/status_collector/status_collector_state.h"
 #include "chrome/browser/ash/policy/status_collector/tpm_status_combiner.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
-#include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/crash_upload_list/crash_upload_list.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
@@ -83,6 +81,7 @@
 #include "chromeos/ash/components/network/network_handler.h"
 #include "chromeos/ash/components/network/network_state.h"
 #include "chromeos/ash/components/network/network_state_handler.h"
+#include "chromeos/ash/components/settings/cros_settings.h"
 #include "chromeos/ash/components/settings/cros_settings_names.h"
 #include "chromeos/ash/components/settings/timezone_settings.h"
 #include "chromeos/ash/components/system/statistics_provider.h"
@@ -2455,7 +2454,7 @@ bool DeviceStatusCollector::GetNetworkStatus(
       {shill::kStateRedirectFound, em::NetworkState::PORTAL},
       {shill::kStatePortalSuspected, em::NetworkState::PORTAL},
       {shill::kStateOnline, em::NetworkState::ONLINE},
-      {shill::kStateDisconnect, em::NetworkState::DISCONNECT},
+      {shill::kStateDisconnecting, em::NetworkState::DISCONNECT},
       {shill::kStateFailure, em::NetworkState::FAILURE},
   };
 
@@ -3058,7 +3057,7 @@ std::string DeviceStatusCollector::GetAppVersion(
   return extension->VersionString();
 }
 
-// TODO(crbug.com/827386): move public API methods above private ones after
+// TODO(crbug.com/40569404): move public API methods above private ones after
 // common methods are extracted.
 void DeviceStatusCollector::OnSubmittedSuccessfully() {
   activity_storage_->TrimActivityPeriods(last_reported_end_timestamp_,
@@ -3103,7 +3102,7 @@ bool DeviceStatusCollector::IsReportingAppInfoAndActivity() const {
   return report_app_info_;
 }
 
-// TODO(https://crbug.com/1364428)
+// TODO(crbug.com/40239083)
 // Make this function fallible when the optional received is empty
 void DeviceStatusCollector::OnOSVersion(
     const std::optional<std::string>& version) {

@@ -11,19 +11,15 @@
 #include "base/feature_list.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_forward.h"
-#include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/no_destructor.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/first_run/first_run.h"
-#include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/profiles/profile_selections.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/signin/signin_features.h"
 #include "chrome/browser/signin/signin_util.h"
 #include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/browser/ui/profiles/profile_customization_util.h"
@@ -34,6 +30,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/base/consent_level.h"
 #include "components/signin/public/base/signin_pref_names.h"
+#include "components/signin/public/base/signin_switches.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "content/public/browser/browser_context.h"
@@ -88,7 +85,7 @@ bool IsFirstRunEligibleProcess() {
   }
 #endif
 
-  // TODO(crbug.com/1347504): `IsChromeFirstRun()` should be a sufficient check
+  // TODO(crbug.com/40232971): `IsChromeFirstRun()` should be a sufficient check
   // for Dice platforms. We currently keep this because some tests add
   // `--force-first-run` while keeping `--no-first-run`. We should updated the
   // affected tests to handle correctly the FRE opening instead of a tab.
@@ -311,7 +308,7 @@ void FirstRunService::OnFirstRunHasExited(
       break;
     case ProfilePicker::FirstRunExitStatus::kQuitAtEnd:
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
-      proceed = kForYouFreCloseShouldProceed.Get();
+      proceed = true;
 #endif
       should_mark_fre_finished = true;
       break;
@@ -370,7 +367,7 @@ void FirstRunService::FinishFirstRun(FinishedReason reason) {
     profile_name_resolver_->RunWithProfileName(base::BindOnce(
         &FirstRunService::FinishProfileSetUp, weak_ptr_factory_.GetWeakPtr()));
   } else if (reason == FinishedReason::kSkippedByPolicies) {
-    // TODO(crbug.com/1416511): Try to get a domain name if available.
+    // TODO(crbug.com/40256886): Try to get a domain name if available.
     FinishProfileSetUp(
         profiles::GetDefaultNameForNewEnterpriseProfile(kNoHostedDomainFound));
   }
@@ -483,13 +480,6 @@ FirstRunServiceFactory::BuildServiceInstanceForBrowserContext(
     // would be related to handling some corner cases, and should not impact our
     // metrics too much.
     FirstRunService::JoinFirstRunCohort();
-  }
-
-  if (!base::FeatureList::IsEnabled(kForYouFre)) {
-    base::UmaHistogramBoolean("ProfilePicker.FirstRun.ServiceCreated", false);
-    SetFirstRunFinished(
-        FirstRunService::FinishedReason::kExperimentCounterfactual);
-    return nullptr;
   }
 #endif
 

@@ -4,6 +4,8 @@
 
 #include "components/performance_manager/graph/graph_impl.h"
 
+#include <string_view>
+
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/process/process.h"
@@ -247,13 +249,28 @@ TEST_F(GraphImplTest, ObserverWorks) {
   MockObserver obs;
   graph->AddGraphObserver(&obs);
   graph->RemoveGraphObserver(&obs);
+
+  MockObserver head_obs;
+  MockObserver tail_obs;
+  graph->AddGraphObserver(&head_obs);
   graph->AddGraphObserver(&obs);
+  graph->AddGraphObserver(&tail_obs);
+
+  // Remove observers at the head and tail of the list inside a callback, and
+  // expect that `obs` is still notified correctly.
+  EXPECT_CALL(head_obs, OnBeforeGraphDestroyed(raw_graph))
+      .WillOnce(Invoke([&](Graph* graph) {
+        graph->RemoveGraphObserver(&head_obs);
+        graph->RemoveGraphObserver(&tail_obs);
+      }));
+  // `tail_obs` should not be notified as it was removed.
+  EXPECT_CALL(tail_obs, OnBeforeGraphDestroyed(_)).Times(0);
 
   // Expect the graph teardown callback to be invoked. We have to unregister our
   // observer in order to maintain graph invariants.
   EXPECT_CALL(obs, OnBeforeGraphDestroyed(raw_graph))
-      .WillOnce(testing::Invoke(
-          [&obs](Graph* graph) { graph->RemoveGraphObserver(&obs); }));
+      .WillOnce(
+          Invoke([&obs](Graph* graph) { graph->RemoveGraphObserver(&obs); }));
   graph->TearDown();
   graph.reset();
 }
@@ -324,7 +341,7 @@ namespace {
 
 class TestNodeDataDescriber : public NodeDataDescriber {
  public:
-  explicit TestNodeDataDescriber(base::StringPiece name) : name_(name) {}
+  explicit TestNodeDataDescriber(std::string_view name) : name_(name) {}
 
   base::Value::Dict DescribeFrameNodeData(
       const FrameNode* node) const override {

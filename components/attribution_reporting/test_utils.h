@@ -7,6 +7,7 @@
 
 #include <iosfwd>
 #include <optional>
+#include <vector>
 
 #include "components/attribution_reporting/filters.h"
 #include "components/attribution_reporting/source_type.mojom-forward.h"
@@ -24,11 +25,13 @@ class AggregatableValues;
 class AggregationKeys;
 class DestinationSet;
 class EventReportWindows;
+class RandomizedResponseData;
 class SuitableOrigin;
 class SummaryBuckets;
 
 struct AggregatableDedupKey;
 struct EventTriggerData;
+struct FakeEventLevelReport;
 struct OsRegistrationItem;
 struct ParseError;
 struct SourceRegistration;
@@ -37,6 +40,13 @@ struct TriggerRegistration;
 FiltersDisjunction FiltersForSourceType(
     mojom::SourceType,
     std::optional<base::TimeDelta> lookback_window = std::nullopt);
+
+// Creates test data where each spec has daily windows (starting from 1 day).
+// `collapse_into_single_spec` will collapse the vector into a single spec,
+// assuming it is possible (i.e. `windows_per_type` contains a single distinct
+// value).
+TriggerSpecs SpecsFromWindowList(const std::vector<int>& windows_per_type,
+                                 bool collapse_into_single_spec);
 
 std::ostream& operator<<(std::ostream&, const AggregationKeys&);
 
@@ -75,6 +85,10 @@ std::ostream& operator<<(std::ostream&, const TriggerSpecs::const_iterator&);
 std::ostream& operator<<(std::ostream&, const AggregatableTriggerConfig&);
 
 std::ostream& operator<<(std::ostream&, const ParseError&);
+
+std::ostream& operator<<(std::ostream& out, const FakeEventLevelReport&);
+
+std::ostream& operator<<(std::ostream& out, const RandomizedResponseData&);
 
 }  // namespace attribution_reporting
 

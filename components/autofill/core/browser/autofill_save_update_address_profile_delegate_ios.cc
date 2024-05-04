@@ -7,10 +7,12 @@
 #include <utility>
 
 #include "base/containers/contains.h"
+#include "base/feature_list.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/types/optional_util.h"
 #include "components/autofill/core/browser/autofill_address_util.h"
 #include "components/autofill/core/common/autofill_constants.h"
+#include "components/autofill/ios/common/features.h"
 #include "components/grit/components_scaled_resources.h"
 #include "components/infobars/core/infobar.h"
 #include "components/infobars/core/infobar_manager.h"
@@ -171,25 +173,6 @@ bool AutofillSaveUpdateAddressProfileDelegateIOS::Never() {
   return true;
 }
 
-void AutofillSaveUpdateAddressProfileDelegateIOS::SetProfileInfo(
-    const FieldType& type,
-    const std::u16string& value) {
-  // Since the countries combobox contains the country names, not the country
-  // codes, and hence we should use `SetInfo()` to make sure they get converted
-  // to country codes. Also use `SetInfo()` for `NAME_FULL` so that its
-  // dependent nodes (NAME_FIRST, NAME_LAST, etc) are also updated. This does
-  // not need to be done for addresses because it is handled internally inside
-  // `SetRawInfo()`.
-  if (type == ADDRESS_HOME_COUNTRY || type == NAME_FULL) {
-    profile_.SetInfoWithVerificationStatus(type, value, locale_,
-                                           VerificationStatus::kUserVerified);
-    return;
-  }
-
-  profile_.SetRawInfoWithVerificationStatus(type, value,
-                                            VerificationStatus::kUserVerified);
-}
-
 void AutofillSaveUpdateAddressProfileDelegateIOS::SetProfile(
     AutofillProfile* profile) {
   profile_ = *profile;
@@ -234,11 +217,15 @@ AutofillSaveUpdateAddressProfileDelegateIOS::GetIdentifier() const {
 
 bool AutofillSaveUpdateAddressProfileDelegateIOS::ShouldExpire(
     const NavigationDetails& details) const {
+  const bool from_user_gesture =
+      !base::FeatureList::IsEnabled(kAutofillStickyInfobarIos) ||
+      details.has_user_gesture;
+
   // Expire the Infobar unless the navigation was triggered by the form that
   // presented the Infobar, or the navigation is a redirect.
   // Also, expire the infobar if the navigation is to a different page.
   return !details.is_form_submission && !details.is_redirect &&
-         ConfirmInfoBarDelegate::ShouldExpire(details);
+         from_user_gesture && ConfirmInfoBarDelegate::ShouldExpire(details);
 }
 
 void AutofillSaveUpdateAddressProfileDelegateIOS::

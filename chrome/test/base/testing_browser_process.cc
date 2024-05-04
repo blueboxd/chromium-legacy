@@ -37,20 +37,21 @@
 #include "components/permissions/permissions_client.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/prefs/pref_service.h"
-#include "components/subresource_filter/content/browser/ruleset_service.h"
+#include "components/subresource_filter/content/shared/browser/ruleset_service.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/notification_service.h"
 #include "extensions/buildflags/buildflags.h"
 #include "media/media_buildflags.h"
 #include "printing/buildflags/buildflags.h"
-#include "services/device/public/cpp/geolocation/geolocation_manager.h"
+#include "services/device/public/cpp/geolocation/buildflags.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/test/test_network_connection_tracker.h"
 #include "services/network/test/test_network_quality_tracker.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_CHROMEOS)
-#include "services/device/public/cpp/test/fake_geolocation_manager.h"
+#if BUILDFLAG(OS_LEVEL_GEOLOCATION_PERMISSION_SUPPORTED)
+#include "services/device/public/cpp/geolocation/geolocation_system_permission_manager.h"
+#include "services/device/public/cpp/test/fake_geolocation_system_permission_manager.h"
 #endif
 
 #if BUILDFLAG(ENABLE_BACKGROUND_MODE)
@@ -109,13 +110,14 @@ void TestingBrowserProcess::CreateInstance() {
   g_browser_process = process;
   process->Init();
 
-#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_CHROMEOS)
-  auto fake_geolocation_manager =
-      std::make_unique<device::FakeGeolocationManager>();
-  fake_geolocation_manager->SetSystemPermission(
+#if BUILDFLAG(OS_LEVEL_GEOLOCATION_PERMISSION_SUPPORTED)
+  auto fake_geolocation_system_permission_manager =
+      std::make_unique<device::FakeGeolocationSystemPermissionManager>();
+  fake_geolocation_system_permission_manager->SetSystemPermission(
       device::LocationSystemPermissionStatus::kAllowed);
-  device::GeolocationManager::SetInstance(std::move(fake_geolocation_manager));
-#endif
+  device::GeolocationSystemPermissionManager::SetInstance(
+      std::move(fake_geolocation_system_permission_manager));
+#endif  // BUILDFLAG(OS_LEVEL_GEOLOCATION_PERMISSION_SUPPORTED)
 }
 
 // static
@@ -356,6 +358,11 @@ TestingBrowserProcess::subresource_filter_ruleset_service() {
   return subresource_filter_ruleset_service_.get();
 }
 
+subresource_filter::RulesetService*
+TestingBrowserProcess::fingerprinting_protection_ruleset_service() {
+  return fingerprinting_protection_ruleset_service_.get();
+}
+
 BrowserProcessPlatformPart* TestingBrowserProcess::platform_part() {
   return platform_part_.get();
 }
@@ -524,6 +531,13 @@ os_crypt_async::OSCryptAsync* TestingBrowserProcess::os_crypt_async() {
   return os_crypt_async_.get();
 }
 
+void TestingBrowserProcess::set_additional_os_crypt_async_provider_for_test(
+    size_t precedence,
+    std::unique_ptr<os_crypt_async::KeyProvider> provider) {
+  // Not implemented.
+  CHECK(false);
+}
+
 BuildState* TestingBrowserProcess::GetBuildState() {
 #if !BUILDFLAG(IS_ANDROID)
   return &build_state_;
@@ -613,6 +627,11 @@ void TestingBrowserProcess::SetWebRtcLogUploader(
 void TestingBrowserProcess::SetRulesetService(
     std::unique_ptr<subresource_filter::RulesetService> ruleset_service) {
   subresource_filter_ruleset_service_.swap(ruleset_service);
+}
+
+void TestingBrowserProcess::SetFingerprintingProtectionRulesetService(
+    std::unique_ptr<subresource_filter::RulesetService> ruleset_service) {
+  fingerprinting_protection_ruleset_service_.swap(ruleset_service);
 }
 
 void TestingBrowserProcess::SetShuttingDown(bool is_shutting_down) {

@@ -11,6 +11,7 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.content.res.AppCompatResources;
 
@@ -22,12 +23,14 @@ import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskTraits;
+import org.chromium.chrome.browser.data_sharing.DataSharingNotificationManager;
 import org.chromium.chrome.browser.data_sharing.SharedImageTilesCoordinator;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabCreationState;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab.TabSelectionType;
+import org.chromium.chrome.browser.tab_ui.RecyclerViewPosition;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelFilter;
@@ -39,12 +42,17 @@ import org.chromium.chrome.browser.tasks.tab_management.TabListEditorAction.Butt
 import org.chromium.chrome.browser.tasks.tab_management.TabListEditorAction.IconPosition;
 import org.chromium.chrome.browser.tasks.tab_management.TabListEditorAction.ShowMode;
 import org.chromium.chrome.browser.tasks.tab_management.TabListEditorCoordinator.TabListEditorController;
+import org.chromium.chrome.browser.tasks.tab_management.TabUiMetricsHelper.TabGroupColorChangeActionType;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiMetricsHelper.TabListEditorOpenMetricGroups;
 import org.chromium.chrome.browser.ui.messages.snackbar.Snackbar;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.tab_ui.R;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetController.StateChangeReason;
+import org.chromium.components.browser_ui.bottomsheet.EmptyBottomSheetObserver;
 import org.chromium.components.browser_ui.widget.gesture.BackPressHandler;
 import org.chromium.components.embedder_support.util.UrlConstants;
+import org.chromium.components.tab_groups.TabGroupColorId;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.KeyboardVisibilityDelegate;
 import org.chromium.ui.base.DeviceFormFactor;
@@ -124,9 +132,13 @@ public class TabGridDialogMediator
     private final AnimationSourceViewProvider mAnimationSourceViewProvider;
     private final DialogHandler mTabGridDialogHandler;
     private final Runnable mScrimClickRunnable;
+    private final Runnable mShowShareBottomSheetRunnable;
     private final @Nullable SnackbarManager mSnackbarManager;
     private @Nullable SharedImageTilesCoordinator mSharedImageTilesCoordinator;
     private final String mComponentName;
+    private final @NonNull BottomSheetController mBottomSheetController;
+    private final Runnable mShowColorPickerPopupRunnable;
+    private final Runnable mShowInviteFlowUIRunnable;
 
     private TabGroupTitleEditor mTabGroupTitleEditor;
     private Supplier<TabListEditorController> mTabListEditorControllerSupplier;
@@ -149,7 +161,11 @@ public class TabGridDialogMediator
             AnimationSourceViewProvider animationSourceViewProvider,
             SnackbarManager snackbarManager,
             @Nullable SharedImageTilesCoordinator sharedImageTilesCoordinator,
-            String componentName) {
+            @NonNull BottomSheetController bottomSheetController,
+            Runnable showShareBottomSheetRunnable,
+            String componentName,
+            Runnable showColorPickerPopupRunnable,
+            Runnable showInviteFlowUIRunnable) {
         mContext = activity;
         mModel = model;
         mCurrentTabModelFilterSupplier = currentTabModelFilterSupplier;
@@ -163,6 +179,10 @@ public class TabGridDialogMediator
         mComponentName = componentName;
         mActivity = activity;
         mSharedImageTilesCoordinator = sharedImageTilesCoordinator;
+        mBottomSheetController = bottomSheetController;
+        mShowShareBottomSheetRunnable = showShareBottomSheetRunnable;
+        mShowColorPickerPopupRunnable = showColorPickerPopupRunnable;
+        mShowInviteFlowUIRunnable = showInviteFlowUIRunnable;
 
         // Register for tab model.
         mTabModelObserver =
@@ -173,8 +193,17 @@ public class TabGridDialogMediator
                             @TabLaunchType int type,
                             @TabCreationState int creationState,
                             boolean markedForSelection) {
+                        if (!isVisible()) return;
+
                         TabModelFilter filter = mCurrentTabModelFilterSupplier.get();
                         if (filter == null || !filter.isTabModelRestored()) {
+                            return;
+                        }
+
+                        // For tab group sync a tab can be added without needing to close the tab
+                        // grid dialog. The UI updates are driven from TabListMediator's
+                        // TabGroupModelFilterObserver's didMergeTabToGroup implementation.
+                        if (type == TabLaunchType.FROM_SYNC_BACKGROUND) {
                             return;
                         }
                         hideDialog(false);
@@ -182,6 +211,7 @@ public class TabGridDialogMediator
 
                     @Override
                     public void tabClosureUndone(Tab tab) {
+                        // Allow this to update when invisible so the undo bar is handled correctly.
                         updateDialog();
                         updateGridTabSwitcher();
                         dismissSingleTabSnackbar(tab.getId());
@@ -189,6 +219,8 @@ public class TabGridDialogMediator
 
                     @Override
                     public void didSelectTab(Tab tab, int type, int lastId) {
+                        if (!isVisible()) return;
+
                         if (type == TabSelectionType.FROM_USER) {
                             // Cancel the zooming into tab grid card animation.
                             hideDialog(false);
@@ -198,7 +230,19 @@ public class TabGridDialogMediator
                     }
 
                     @Override
-                    public void willCloseTab(Tab tab, boolean animate, boolean didCloseAlone) {
+                    public void willCloseTab(Tab tab, boolean didCloseAlone) {
+                        if (!isVisible()) return;
+
+                        // Ignore updates to tabs in other tab groups.
+                        boolean closingTabIsCurrentTab = tab.getId() == mCurrentTabId;
+                        if (!closingTabIsCurrentTab) {
+                            Tab currentTab =
+                                    TabModelUtils.getTabById(
+                                            mCurrentTabModelFilterSupplier.get().getTabModel(),
+                                            mCurrentTabId);
+                            if (tab.getRootId() != currentTab.getRootId()) return;
+                        }
+
                         List<Tab> relatedTabs = getRelatedTabs(tab.getId());
                         // If the group is empty, update the animation and hide the dialog.
                         if (relatedTabs.size() == 0) {
@@ -207,7 +251,7 @@ public class TabGridDialogMediator
                         }
                         // If current tab is closed and tab group is not empty, hand over ID of the
                         // next tab in the group to mCurrentTabId.
-                        if (tab.getId() == mCurrentTabId) {
+                        if (closingTabIsCurrentTab) {
                             mCurrentTabId = relatedTabs.get(0).getId();
                         }
                         updateDialog();
@@ -216,16 +260,22 @@ public class TabGridDialogMediator
 
                     @Override
                     public void tabPendingClosure(Tab tab) {
-                        if (!mModel.get(TabGridDialogProperties.IS_DIALOG_VISIBLE)) return;
+                        if (!isVisible()) return;
 
+                        // TODO(b/338447134): This shouldn't show a snackbar if the tab isn't in
+                        // this group. However, background closures are currently not-undoable so
+                        // this is fine for now...
                         showSingleTabClosureSnackbar(tab);
                     }
 
                     @Override
                     public void multipleTabsPendingClosure(
                             List<Tab> closedTabs, boolean isAllTabs) {
-                        if (!mModel.get(TabGridDialogProperties.IS_DIALOG_VISIBLE)) return;
+                        if (!isVisible()) return;
 
+                        // TODO(b/338447134): This shouldn't show a snackbar if the tabs aren't in
+                        // this group. However, background closures are currently not-undoable so
+                        // this is fine for now...
                         if (closedTabs.size() == 1) {
                             showSingleTabClosureSnackbar(closedTabs.get(0));
                             return;
@@ -248,11 +298,13 @@ public class TabGridDialogMediator
 
                     @Override
                     public void tabClosureCommitted(Tab tab) {
+                        // Allow this to update while invisible so the snackbar updates correctly.
                         dismissSingleTabSnackbar(tab.getId());
                     }
 
                     @Override
                     public void onFinishingMultipleTabClosure(List<Tab> tabs) {
+                        // Allow this to update while invisible so the snackbar updates correctly.
                         if (tabs.size() == 1) {
                             dismissSingleTabSnackbar(tabs.get(0).getId());
                             return;
@@ -262,6 +314,7 @@ public class TabGridDialogMediator
 
                     @Override
                     public void allTabsClosureCommitted(boolean isIncognito) {
+                        // Allow this to update while invisible so the snackbar updates correctly.
                         dismissAllSnackbars();
                     }
 
@@ -341,6 +394,12 @@ public class TabGridDialogMediator
                     if (result == R.id.edit_group_name) {
                         mModel.set(TabGridDialogProperties.IS_TITLE_TEXT_FOCUSED, true);
                     }
+
+                    if (result == R.id.edit_group_color) {
+                        mShowColorPickerPopupRunnable.run();
+                        TabUiMetricsHelper.recordTabGroupColorChangeActionMetrics(
+                                TabGroupColorChangeActionType.VIA_OVERFLOW_MENU);
+                    }
                 };
 
         setupToolbarClickHandlers();
@@ -360,7 +419,14 @@ public class TabGridDialogMediator
     }
 
     void hideDialog(boolean showAnimation) {
-        if (!mModel.get(TabGridDialogProperties.IS_DIALOG_VISIBLE)) return;
+        if (!mModel.get(TabGridDialogProperties.IS_DIALOG_VISIBLE)) {
+            return;
+        }
+
+        if (mModel.get(TabGridDialogProperties.IS_SHARE_SHEET_VISIBLE)) {
+            // TODO(b/333776074): Close the ShareSheet without causing a crash at accessibility
+            // important restoration.
+        }
 
         if (mSnackbarManager != null) {
             mSnackbarManager.dismissSnackbars(TabGridDialogMediator.this);
@@ -438,7 +504,7 @@ public class TabGridDialogMediator
 
             mDialogController.prepareDialog();
             mModel.set(TabGridDialogProperties.IS_DIALOG_VISIBLE, true);
-        } else if (mModel.get(TabGridDialogProperties.IS_DIALOG_VISIBLE)) {
+        } else if (isVisible()) {
             mModel.set(TabGridDialogProperties.IS_DIALOG_VISIBLE, false);
         }
     }
@@ -458,11 +524,11 @@ public class TabGridDialogMediator
     void setSelectedTabGroupColor(int selectedColor) {
         mModel.set(TabGridDialogProperties.TAB_GROUP_COLOR_ID, selectedColor);
 
-        TabModelFilter filter = mCurrentTabModelFilterSupplier.get();
+        TabGroupModelFilter filter = (TabGroupModelFilter) mCurrentTabModelFilterSupplier.get();
         Tab currentTab = TabModelUtils.getTabById(filter.getTabModel(), mCurrentTabId);
 
         if (currentTab != null) {
-            TabGroupColorUtils.storeTabGroupColor(currentTab.getRootId(), selectedColor);
+            filter.setTabGroupColor(currentTab.getRootId(), selectedColor);
         }
     }
 
@@ -480,6 +546,11 @@ public class TabGridDialogMediator
 
         TabGroupModelFilter filter = (TabGroupModelFilter) mCurrentTabModelFilterSupplier.get();
         Tab currentTab = TabModelUtils.getTabById(filter.getTabModel(), mCurrentTabId);
+        if (ChromeFeatureList.sTabGroupParityAndroid.isEnabled()) {
+            final @TabGroupColorId int color =
+                    TabGroupColorUtils.getOrCreateTabGroupColor(currentTab.getRootId(), filter);
+            mModel.set(TabGridDialogProperties.TAB_GROUP_COLOR_ID, color);
+        }
         if (mTabGroupTitleEditor != null) {
             String storedTitle = mTabGroupTitleEditor.getTabGroupTitle(currentTab.getRootId());
             if (storedTitle != null && filter.isTabInTabGroup(currentTab)) {
@@ -503,11 +574,6 @@ public class TabGridDialogMediator
         mModel.set(
                 TabGridDialogProperties.HEADER_TITLE,
                 TabGroupTitleEditor.getDefaultTitle(mContext, tabsCount));
-
-        if (ChromeFeatureList.sTabGroupParityAndroid.isEnabled()) {
-            int color = TabGroupColorUtils.getOrCreateTabGroupColor(currentTab.getRootId(), filter);
-            mModel.set(TabGridDialogProperties.TAB_GROUP_COLOR_ID, color);
-        }
     }
 
     private void updateColorProperties(Context context, boolean isIncognito) {
@@ -683,17 +749,42 @@ public class TabGridDialogMediator
     private View.OnClickListener getMenuButtonClickListener() {
         assert mTabListEditorControllerSupplier != null;
         return TabGridDialogMenuCoordinator.getTabGridDialogMenuOnClickListener(
-                mToolbarMenuCallback);
+                mToolbarMenuCallback, mModel.get(TabGridDialogProperties.IS_INCOGNITO));
     }
 
     private View.OnClickListener getShareBarClickListener() {
         return view -> {
             // TODO(b/325082444): Ask data sharing service about if the tab group is shared.
             mModel.set(TabGridDialogProperties.IS_TAB_GROUP_SHARED, true);
-            if (mSharedImageTilesCoordinator != null) {
-                mSharedImageTilesCoordinator.updateTilesCount(0);
-            }
+            showShareBottomSheet();
+
+            // TODO(b/325082444): This is used for prototyping purposes for now, should be removed
+            // and called from Data Sharing service.
+            new DataSharingNotificationManager(mContext)
+                    .showNotification(
+                            mContext.getResources()
+                                    .getString(R.string.data_sharing_origin_fallback));
         };
+    }
+
+    private void showShareBottomSheet() {
+        mShowShareBottomSheetRunnable.run();
+        mModel.set(TabGridDialogProperties.IS_SHARE_SHEET_VISIBLE, true);
+
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.DATA_SHARING_ANDROID)) {
+            mShowInviteFlowUIRunnable.run();
+        }
+
+        mBottomSheetController.addObserver(
+                new EmptyBottomSheetObserver() {
+                    @Override
+                    public void onSheetClosed(@StateChangeReason int reason) {
+                        // TODO(haileywang): Refresh data sharing service data after sheet
+                        // submission.
+                        mModel.set(TabGridDialogProperties.IS_SHARE_SHEET_VISIBLE, false);
+                        mBottomSheetController.removeObserver(this);
+                    }
+                });
     }
 
     private List<Tab> getRelatedTabs(int tabId) {

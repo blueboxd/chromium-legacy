@@ -5,14 +5,14 @@
 // This file contains utility functions for dealing with the local
 // filesystem.
 
-#ifndef BASE_ALLOCATOR_PARTITION_ALLOCATOR_SRC_PARTITION_ALLOC_PARTITION_ALLOC_BASE_FILES_FILE_UTIL_H_
-#define BASE_ALLOCATOR_PARTITION_ALLOCATOR_SRC_PARTITION_ALLOC_PARTITION_ALLOC_BASE_FILES_FILE_UTIL_H_
+#ifndef PARTITION_ALLOC_PARTITION_ALLOC_BASE_FILES_FILE_UTIL_H_
+#define PARTITION_ALLOC_PARTITION_ALLOC_BASE_FILES_FILE_UTIL_H_
 
 #include <cstddef>
 #include <cstdint>
 #include <cstdio>
 
-#include "build/build_config.h"
+#include "partition_alloc/build_config.h"
 #include "partition_alloc/partition_alloc_base/component_export.h"
 
 #if BUILDFLAG(IS_POSIX) || BUILDFLAG(IS_FUCHSIA)
@@ -34,4 +34,4 @@ bool ReadFromFD(int fd, char* buffer, size_t bytes);
 
 }  // namespace partition_alloc::internal::base
 
-#endif  // BASE_ALLOCATOR_PARTITION_ALLOCATOR_SRC_PARTITION_ALLOC_PARTITION_ALLOC_BASE_FILES_FILE_UTIL_H_
+#endif  // PARTITION_ALLOC_PARTITION_ALLOC_BASE_FILES_FILE_UTIL_H_

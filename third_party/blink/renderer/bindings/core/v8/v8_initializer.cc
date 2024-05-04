@@ -266,10 +266,10 @@ static void PromiseRejectHandler(v8::PromiseRejectMessage data,
   ExecutionContext* context = ExecutionContext::From(script_state);
 
   v8::Local<v8::Value> exception = data.GetValue();
-  if (V8DOMWrapper::IsWrapper(isolate, exception)) {
-    // Try to get the stack & location from a wrapped exception object (e.g.
-    // DOMException).
-    DCHECK(exception->IsObject());
+  if (V8PerIsolateData::From(isolate)->HasInstance(
+          DOMException::GetStaticWrapperTypeInfo(), exception)) {
+    // Try to get the stack & location from a wrapped DOMException object.
+    CHECK(exception->IsObject());
     auto private_error = V8PrivateProperty::GetSymbol(
         isolate, kPrivatePropertyDOMExceptionError);
     v8::Local<v8::Value> error;
@@ -632,7 +632,7 @@ v8::MaybeLocal<v8::Promise> HostImportModuleDynamically(
     v8::Local<v8::Data> v8_host_defined_options,
     v8::Local<v8::Value> v8_referrer_resource_url,
     v8::Local<v8::String> v8_specifier,
-    v8::Local<v8::FixedArray> v8_import_assertions) {
+    v8::Local<v8::FixedArray> v8_import_attributes) {
   ScriptState* script_state = ScriptState::From(context);
 
   Modulator* modulator = Modulator::From(script_state);
@@ -648,7 +648,7 @@ v8::MaybeLocal<v8::Promise> HostImportModuleDynamically(
     // See crbug.com/972960 .
     //
     // We use the v8 promise API directly here.
-    // We can't use ScriptPromiseResolver here since it assumes a valid
+    // We can't use ScriptPromiseResolverBase here since it assumes a valid
     // ScriptState.
     v8::Local<v8::Promise::Resolver> resolver;
     if (!v8::Promise::Resolver::New(script_state->GetContext())
@@ -679,14 +679,13 @@ v8::MaybeLocal<v8::Promise> HostImportModuleDynamically(
 
   ModuleRequest module_request(
       specifier, TextPosition::MinimumPosition(),
-      ModuleRecord::ToBlinkImportAssertions(
+      ModuleRecord::ToBlinkImportAttributes(
           script_state->GetContext(), v8::Local<v8::Module>(),
-          v8_import_assertions, /*v8_import_assertions_has_positions=*/false));
+          v8_import_attributes, /*v8_import_attributes_has_positions=*/false));
 
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver<IDLAny>>(
       script_state,
       ExceptionContext(ExceptionContextType::kUnknown, "", "import"));
-  ScriptPromise promise = resolver->Promise();
 
   String invalid_attribute_key;
   if (module_request.HasInvalidImportAttributeKey(&invalid_attribute_key)) {
@@ -701,7 +700,7 @@ v8::MaybeLocal<v8::Promise> HostImportModuleDynamically(
     modulator->ResolveDynamically(module_request, referrer_info, resolver);
   }
 
-  return v8::Local<v8::Promise>::Cast(promise.V8Value());
+  return resolver->Promise().V8Promise();
 }
 
 // https://html.spec.whatwg.org/C/#hostgetimportmetaproperties

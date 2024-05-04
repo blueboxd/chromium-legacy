@@ -5,35 +5,90 @@
 #include "chrome/browser/enterprise/watermark/watermark_view.h"
 
 #include <math.h>
-#include <algorithm>
 
+#include <algorithm>
+#include <string>
+
+#include "base/no_destructor.h"
 #include "cc/paint/paint_canvas.h"
-#include "skia/ext/font_utils.h"
-#include "third_party/skia/include/core/SkFont.h"
-#include "third_party/skia/include/core/SkFontMgr.h"
-#include "third_party/skia/include/core/SkTypeface.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/font.h"
+#include "ui/gfx/render_text.h"
+#include "ui/views/accessibility/view_accessibility.h"
 
 namespace enterprise_watermark {
 
 namespace {
 
-constexpr float kTextSize = 30.0f;
+// UX Requirements:
+constexpr float kTextSize = 24.0f;
+constexpr int kWatermarkBlockWidth = 350;
 constexpr int kWatermarkBlockSpacing = 80;
 constexpr double kRotationAngle = 45;
+constexpr SkColor kFillColor = SkColorSetARGB(0x12, 0x00, 0x00, 0x00);
+constexpr SkColor kOutlineColor = SkColorSetARGB(0x27, 0xff, 0xff, 0xff);
 
-const SkFont& WatermarkFont() {
-  static SkFont font = []() {
-    sk_sp<SkFontMgr> font_mgr = skia::DefaultFontMgr();
-    sk_sp<SkTypeface> typeface = font_mgr->legacyMakeTypeface(
-        "Arial",
-        SkFontStyle(SkFontStyle::kExtraBold_Weight, SkFontStyle::kNormal_Width,
-                    SkFontStyle::kUpright_Slant));
-    return SkFont(typeface, kTextSize, 1.0f, 0.0f);
-  }();
-  return font;
+gfx::Font WatermarkFont() {
+  return gfx::Font(
+#if BUILDFLAG(IS_WIN)
+      "Segoe UI",
+#elif BUILDFLAG(IS_MAC)
+      "SF Pro Text",
+#elif BUILDFLAG(IS_LINUX)
+      "Ubuntu",
+#elif BUILDFLAG(IS_CHROMEOS)
+      "Google Sans",
+#else
+      "sans-serif",
+#endif
+      kTextSize);
+}
+
+gfx::Font::Weight WatermarkFontWeight() {
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX)
+  return gfx::Font::Weight::SEMIBOLD;
+#else
+  return gfx::Font::Weight::MEDIUM;
+#endif
+}
+
+const gfx::FontList& WatermarkFontList() {
+  static base::NoDestructor<gfx::FontList> font_list(WatermarkFont());
+  return *font_list;
+}
+
+std::unique_ptr<gfx::RenderText> CreateRenderText(const gfx::Rect& display_rect,
+                                                  const std::u16string& text) {
+  auto render_text = gfx::RenderText::CreateRenderText();
+  render_text->set_clip_to_display_rect(false);
+  render_text->SetFontList(WatermarkFontList());
+  render_text->SetWeight(WatermarkFontWeight());
+  render_text->SetDisplayOffset(gfx::Vector2d(0, 0));
+  render_text->SetDisplayRect(display_rect);
+  render_text->SetText(text);
+  render_text->SetMultiline(true);
+  render_text->SetWordWrapBehavior(gfx::WRAP_LONG_WORDS);
+  return render_text;
+}
+
+std::unique_ptr<gfx::RenderText> CreateFillRenderText(
+    const gfx::Rect& display_rect,
+    const std::u16string& text) {
+  auto render_text = CreateRenderText(display_rect, text);
+  render_text->SetFillStyle(cc::PaintFlags::kFill_Style);
+  render_text->SetColor(kFillColor);
+  return render_text;
+}
+
+std::unique_ptr<gfx::RenderText> CreateOutlineRenderText(
+    const gfx::Rect& display_rect,
+    const std::u16string& text) {
+  auto render_text = CreateRenderText(display_rect, text);
+  render_text->SetFillStyle(cc::PaintFlags::kStroke_Style);
+  render_text->SetColor(kOutlineColor);
+  return render_text;
 }
 
 }  // namespace
@@ -51,21 +106,29 @@ WatermarkView::WatermarkView(std::string text)
 WatermarkView::~WatermarkView() = default;
 
 void WatermarkView::SetString(const std::string& text) {
-  text_blocks_.clear();
-  std::vector<std::string> text_lines = base::SplitString(
-      text, "\n", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  DCHECK(base::IsStringUTF8(text));
 
-  // Block size calculation is only required when text is changed.
-  block_width_ = 0;
-  for (const auto& line : text_lines) {
-    block_width_ =
-        std::max(SkScalar(block_width_),
-                 WatermarkFont().measureText(line.c_str(), line.size(),
-                                             SkTextEncoding::kUTF8));
-    text_blocks_.push_back(
-        SkTextBlob::MakeFromString(line.c_str(), WatermarkFont()));
+  if (text.empty()) {
+    text_fill_.reset();
+    text_outline_.reset();
+    block_height_ = 0;
+  } else {
+    std::u16string utf16_text = base::UTF8ToUTF16(text);
+
+    // The coordinates here do not matter as the display rect will change for
+    // each drawn block.
+    gfx::Rect display_rect(0, 0, kWatermarkBlockWidth, 0);
+    text_fill_ = CreateFillRenderText(display_rect, utf16_text);
+    text_outline_ = CreateOutlineRenderText(display_rect, utf16_text);
+
+    // `block_height_` is going to be the max required height for a single line
+    // times the number of line.
+    int w = kWatermarkBlockWidth;
+    gfx::Canvas::SizeStringInt(utf16_text, WatermarkFontList(), &w,
+                               &block_height_, kTextSize,
+                               gfx::Canvas::NO_ELLIPSIS);
+    block_height_ *= text_fill_->GetNumLines();
   }
-  block_height_ = kTextSize * text_lines.size();
 
   // Invalidate the state of the view.
   SchedulePaint();
@@ -74,13 +137,12 @@ void WatermarkView::SetString(const std::string& text) {
 void WatermarkView::OnPaint(gfx::Canvas* canvas) {
   // Trying to render an empty string in Skia will fail. A string is required
   // to create the command buffer for the renderer.
-  if (text_blocks_.empty()) {
+  if (!text_fill_) {
+    DCHECK(!text_outline_);
     return;
   }
 
-  // Get ptr to Skia canvas.
-  cc::PaintCanvas* sk_canvas = canvas->sk_canvas();
-  sk_canvas->rotate(360 - kRotationAngle);
+  canvas->sk_canvas()->rotate(360 - kRotationAngle);
 
   // Get contents are in order to center the text inside it.
   gfx::Rect bounds = GetContentsBounds();
@@ -97,7 +159,7 @@ void WatermarkView::OnPaint(gfx::Canvas* canvas) {
       int stagger = apply_stagger ? block_width_offset() / 2 : 0;
       apply_stagger = !apply_stagger;
 
-      DrawTextBlock(sk_canvas, x - stagger, y);
+      DrawTextBlock(canvas, x - stagger, y);
     }
   }
 
@@ -113,31 +175,18 @@ void WatermarkView::SetBackgroundColor(SkColor background_color) {
   SchedulePaint();
 }
 
-void WatermarkView::DrawTextBlock(cc::PaintCanvas* canvas, int x, int y) {
-  static SkColor kOutlineColor = SkColorSetARGB(0x25, 0xff, 0xff, 0xff);
-  static float kOutlineThickness = 1.0f;
-  static SkColor kFillColor = SkColorSetARGB(0x20, 0x00, 0x00, 0x00);
+void WatermarkView::DrawTextBlock(gfx::Canvas* canvas, int x, int y) {
+  gfx::Rect display_rect(x, y, kWatermarkBlockWidth, block_height_);
 
-  for (const sk_sp<SkTextBlob>& text_block : text_blocks_) {
-    // Draw a stroke for the light-colored outline of the text.
-    cc::PaintFlags flags;
-    flags.setStyle(cc::PaintFlags::kStroke_Style);
-    flags.setColor(kOutlineColor);
-    flags.setStrokeWidth(kOutlineThickness);
-    canvas->drawTextBlob(text_block, x, y, flags);
+  text_fill_->SetDisplayRect(display_rect);
+  text_fill_->Draw(canvas);
 
-    // Draw the dark-colored fill of the text.
-    flags.setStyle(cc::PaintFlags::kFill_Style);
-    flags.setColor(kFillColor);
-    canvas->drawTextBlob(text_block, x, y, flags);
-
-    // Re-calculate `y` every loop so the next line is below the previous one.
-    y += kTextSize;
-  }
+  text_outline_->SetDisplayRect(display_rect);
+  text_outline_->Draw(canvas);
 }
 
 int WatermarkView::block_width_offset() const {
-  return block_width_ + kWatermarkBlockSpacing;
+  return kWatermarkBlockWidth + kWatermarkBlockSpacing;
 }
 
 int WatermarkView::block_height_offset() const {
@@ -237,6 +286,10 @@ int WatermarkView::max_y(double angle, const gfx::Rect& bounds) const {
   //                           │╱
   //
   return sin(angle) * bounds.width() + cos(angle) * bounds.height();
+}
+
+void WatermarkView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  node_data->AddState(ax::mojom::State::kInvisible);
 }
 
 BEGIN_METADATA(WatermarkView)

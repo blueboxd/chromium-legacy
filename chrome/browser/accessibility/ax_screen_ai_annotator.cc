@@ -33,7 +33,7 @@ namespace screen_ai {
 AXScreenAIAnnotator::AXScreenAIAnnotator(
     content::BrowserContext* browser_context)
     : browser_context_(browser_context), screen_ai_service_client_(this) {
-  // TODO(crbug.com/1443349): Add a separate initializer for Layout Extraction.
+  // TODO(crbug.com/40911117): Add a separate initializer for Layout Extraction.
   ScreenAIServiceRouterFactory::GetForBrowserContext(browser_context)
       ->GetServiceStateAsync(
           ScreenAIServiceRouter::Service::kOCR,
@@ -102,7 +102,7 @@ void AXScreenAIAnnotator::OnScreenshotReceived(
 
   // If screenshot is ready before service is initialized, the service call is
   // delayed for 3 seconds.
-  // TODO(crbug.com/1443349): This solution is only for prototyping and should
+  // TODO(crbug.com/40911117): This solution is only for prototyping and should
   // be updated so that the requests are queued before initialization
   // completes.
   if (!screen_ai_annotator_.is_bound() ||
@@ -138,7 +138,7 @@ void AXScreenAIAnnotator::OnSemanticLayoutExtractionPerformed(
   VLOG(2) << base::StrCat({"AXScreenAIAnnotator received tree ids: parent: ",
                            parent_tree_id.ToString().c_str(), ", ScreenAI: ",
                            screen_ai_tree_id.ToString().c_str()});
-  // TODO(https://crbug.com/1443349): Use!
+  // TODO(crbug.com/40911117): Use!
   NOTIMPLEMENTED();
 }
 
@@ -154,10 +154,8 @@ void AXScreenAIAnnotator::HandleAXTreeUpdate(const ui::AXTreeUpdate& update) {
   DCHECK(event_router);
   const gfx::Point& mouse_location =
       aura::Env::GetInstance()->last_mouse_location();
-  event_router->DispatchAccessibilityEvents(
-      update.tree_data.tree_id, {update}, mouse_location,
-      {ui::AXEvent(update.root_id, ax::mojom::Event::kLayoutComplete,
-                   ax::mojom::EventFrom::kNone)});
+  event_router->DispatchAccessibilityEvents(update.tree_data.tree_id, {update},
+                                            mouse_location, {});
 #endif  // defined(USE_AURA)
 }
 

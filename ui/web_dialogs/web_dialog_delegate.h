@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "content/public/browser/keyboard_event_processing_result.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/ui_base_types.h"
@@ -214,9 +215,17 @@ class WEB_DIALOGS_EXPORT WebDialogDelegate {
   // A callback to allow the delegate to open a new URL inside |source|.
   // On return |out_new_contents| should contain the WebContents the URL
   // is opened in. Return false to use the default handler.
-  virtual bool HandleOpenURLFromTab(content::WebContents* source,
-                                    const content::OpenURLParams& params,
-                                    content::WebContents** out_new_contents);
+  // If a `navigation_handle_callback` function is provided, it should be called
+  // with the pending navigation (if any) when the navigation handle become
+  // available. This allows callers to observe or attach their specific data.
+  // `navigation_handle_callback` may not be called if the navigation fails for
+  // any reason.
+  virtual bool HandleOpenURLFromTab(
+      content::WebContents* source,
+      const content::OpenURLParams& params,
+      base::OnceCallback<void(content::NavigationHandle&)>
+          navigation_handle_callback,
+      content::WebContents** out_new_contents);
 
   // A callback to control whether a WebContents will be created. Returns
   // true to disallow the creation. Return false to use the default handler.
@@ -252,6 +261,22 @@ class WEB_DIALOGS_EXPORT WebDialogDelegate {
       content::RenderFrameHost* render_frame_host,
       const url::Origin& security_origin,
       blink::mojom::MediaStreamType type);
+
+  // Called when the renderer puts a tab into fullscreen mode.
+  // |requesting_frame| is the specific content frame requesting fullscreen.
+  virtual void EnterFullscreenModeForTab(
+      content::RenderFrameHost* requesting_frame,
+      const blink::mojom::FullscreenOptions& options) {}
+  // Called when the renderer puts a tab out of fullscreen mode.
+  virtual void ExitFullscreenModeForTab(content::WebContents* web_contents) {}
+  // Returns true if `web_contents` is, or is transitioning to, tab-fullscreen.
+  virtual bool IsFullscreenForTabOrPending(
+      const content::WebContents* web_contents);
+  // Allows delegates to handle keyboard events before sending to the renderer.
+  // See enum for description of return values.
+  virtual content::KeyboardEventProcessingResult PreHandleKeyboardEvent(
+      content::WebContents* source,
+      const content::NativeWebKeyboardEvent& event);
 
   // Whether to use dialog frame view for non client frame view.
   virtual FrameKind GetWebDialogFrameKind() const;

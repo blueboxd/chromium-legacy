@@ -4,7 +4,12 @@
 
 #import "ios/chrome/browser/ui/main/default_browser_promo_scene_agent.h"
 
+#import "components/feature_engagement/public/event_constants.h"
+#import "components/feature_engagement/public/tracker.h"
+#import "ios/chrome/app/application_delegate/app_state.h"
+#import "ios/chrome/app/application_delegate/app_state_observer.h"
 #import "ios/chrome/browser/default_browser/model/utils.h"
+#import "ios/chrome/browser/feature_engagement/model/tracker_factory.h"
 #import "ios/chrome/browser/promos_manager/model/constants.h"
 #import "ios/chrome/browser/shared/model/browser/browser.h"
 #import "ios/chrome/browser/shared/model/browser/browser_provider.h"
@@ -12,7 +17,6 @@
 #import "ios/chrome/browser/signin/model/authentication_service.h"
 #import "ios/chrome/browser/signin/model/authentication_service_factory.h"
 #import "ios/chrome/browser/ui/default_promo/post_default_abandonment/features.h"
-#import "ios/chrome/browser/ui/default_promo/post_restore/features.h"
 
 @interface DefaultBrowserPromoSceneAgent ()
 
@@ -35,13 +39,9 @@
 - (void)updatePostRestorePromoRegistration {
   if (!_postRestorePromoSeenInCurrentSession &&
       IsPostRestoreDefaultBrowserEligibleUser()) {
-    // TODO(crbug.com/1453786): register other variations.
-    if (GetPostRestoreDefaultBrowserPromoType() ==
-        PostRestoreDefaultBrowserPromoType::kAlert) {
       self.promosManager->RegisterPromoForSingleDisplay(
           promos_manager::Promo::PostRestoreDefaultBrowserAlert);
       _postRestorePromoSeenInCurrentSession = YES;
-    }
   } else {
     self.promosManager->DeregisterPromo(
         promos_manager::Promo::PostRestoreDefaultBrowserAlert);
@@ -92,6 +92,16 @@
   }
 }
 
+// Register Generic Default Browser promo and otherwise, deregister.
+- (void)updateGenericPromoRegistration {
+  if (!IsChromeLikelyDefaultBrowser()) {
+    self.promosManager->RegisterPromoForSingleDisplay(
+        promos_manager::Promo::DefaultBrowser);
+  } else {
+    self.promosManager->DeregisterPromo(promos_manager::Promo::DefaultBrowser);
+  }
+}
+
 - (BOOL)isSignedIn {
   ChromeBrowserState* browserState =
       self.sceneState.browserProviderInterface.mainBrowserProvider.browser
@@ -105,11 +115,35 @@
       signin::ConsentLevel::kSignin);
 }
 
+// Signed in users are eligible for generic default browser promo. Notify FET if
+// user is currently signed in.
+- (void)notifyFETSigninStatus {
+  if (!self.isSignedIn) {
+    return;
+  }
+
+  Browser* browser =
+      self.sceneState.browserProviderInterface.mainBrowserProvider.browser;
+  if (!browser || !browser->GetBrowserState()) {
+    return;
+  }
+
+  feature_engagement::Tracker* tracker =
+      feature_engagement::TrackerFactory::GetForBrowserState(
+          browser->GetBrowserState());
+  tracker->NotifyEvent(
+      feature_engagement::events::kGenericDefaultBrowserPromoConditionsMet);
+}
+
 #pragma mark - SceneStateObserver
 
 - (void)sceneState:(SceneState*)sceneState
     transitionedToActivationLevel:(SceneActivationLevel)level {
   DCHECK(self.promosManager);
+
+  if (self.sceneState.appState.initStage < InitStageFinal) {
+    return;
+  }
 
   if (level == SceneActivationLevelForegroundActive) {
     [self updatePostRestorePromoRegistration];
@@ -117,14 +151,9 @@
     [self updateAllTabsPromoRegistration];
     [self updateMadeForIOSPromoRegistration];
     [self updateStaySafePromoRegistration];
+    [self updateGenericPromoRegistration];
 
-    if (ShouldRegisterPromoWithPromoManager(self.signedIn)) {
-      self.promosManager->RegisterPromoForSingleDisplay(
-          promos_manager::Promo::DefaultBrowser);
-    } else {
-      self.promosManager->DeregisterPromo(
-          promos_manager::Promo::DefaultBrowser);
-    }
+    [self notifyFETSigninStatus];
   }
 }
 

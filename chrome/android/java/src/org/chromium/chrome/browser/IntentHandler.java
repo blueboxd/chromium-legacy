@@ -40,7 +40,7 @@ import org.chromium.chrome.browser.externalnav.IntentWithRequestMetadataHandler;
 import org.chromium.chrome.browser.externalnav.IntentWithRequestMetadataHandler.RequestMetadata;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.gsa.GSAState;
-import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteControllerProvider;
+import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteCoordinator;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.profiles.ProfileManager;
 import org.chromium.chrome.browser.renderer_host.ChromeNavigationUIData;
@@ -133,6 +133,10 @@ public class IntentHandler {
     /** Intent extra used to deliver the package name of original #getCallingActivity if present. */
     public static final String EXTRA_CALLING_ACTIVITY_PACKAGE =
             "org.chromium.chrome.browser.calling_activity_package";
+
+    /** Intent extra used to deliver the package name provided via #getLaunchedFromPackage. */
+    public static final String EXTRA_LAUNCHED_FROM_PACKAGE =
+            "org.chromium.chrome.browser.launched_from_package";
 
     /** A referrer id used for Chrome to Chrome referrer passing. */
     public static final String EXTRA_REFERRER_ID = "org.chromium.chrome.browser.referrer_id";
@@ -236,6 +240,9 @@ public class IntentHandler {
     /** An enum to indicate whether the intent is created by link or tab. */
     public static final String EXTRA_URL_DRAG_SOURCE =
             "org.chromium.chrome.browser.url_drag_source";
+
+    /** The id of a dragged tab that attempts to launch the intent. */
+    public static final String EXTRA_DRAGGED_TAB_ID = "org.chromium.chrome.browser.dragdrop.tab_id";
 
     /** A boolean to indicate whether the intent should launch the history page in Chrome. */
     public static final String EXTRA_OPEN_HISTORY = "org.chromium.chrome.browser.open_history";
@@ -607,9 +614,10 @@ public class IntentHandler {
 
     /**
      * Extracts the URL from voice search result intent.
+     *
      * @return URL if it was found, null otherwise.
      */
-    // TODO(https://crbug.com/783819): Investigate whether this function can return a GURL instead,
+    // TODO(crbug.com/40549331): Investigate whether this function can return a GURL instead,
     // or split into formatted/unformatted getUrl.
     static String getUrlFromVoiceSearchResult(Intent intent) {
         if (!RecognizerResultsIntent.ACTION_VOICE_SEARCH_RESULTS.equals(intent.getAction())) {
@@ -640,10 +648,7 @@ public class IntentHandler {
         String query = results.get(0);
 
         Profile profile = ProfileManager.getLastUsedRegularProfile();
-        AutocompleteMatch match;
-        try (var controller = AutocompleteControllerProvider.createCloseableController(profile)) {
-            match = controller.get().classify(query);
-        }
+        AutocompleteMatch match = AutocompleteCoordinator.classify(profile, query);
 
         if (!match.isSearchSuggestion()) return match.getUrl().getSpec();
 

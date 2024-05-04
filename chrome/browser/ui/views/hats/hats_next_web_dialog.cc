@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/hats/hats_next_web_dialog.h"
 
 #include "base/base64url.h"
+#include "base/feature_list.h"
 #include "base/json/json_writer.h"
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_functions.h"
@@ -49,6 +50,8 @@
 
 constexpr gfx::Size HatsNextWebDialog::kMinSize;
 constexpr gfx::Size HatsNextWebDialog::kMaxSize;
+constexpr char kHatsSurveyCompletedHistogram[] =
+    "Feedback.HappinessTrackingSurvey.SurveyCompleted";
 
 // WebView which contains the WebContents displaying the HaTS Next survey.
 class HatsNextWebDialog::HatsWebView : public views::WebView {
@@ -107,12 +110,12 @@ class HatsNextWebDialog::HatsWebView : public views::WebView {
       DCHECK(devtools_window);
       devtools_window->OpenURLFromInspectedTab(params);
     } else {
-      browser_->OpenURL(params);
+      browser_->OpenURL(params, /*navigation_handle_callback=*/{});
     }
     return nullptr;
   }
 
-  // TODO(crbug.com/1493711): Remove this whole function after HaTSWebUI is
+  // TODO(crbug.com/40285934): Remove this whole function after HaTSWebUI is
   // launched.
   // content::WebContentsObserver:
   void DidStartNavigation(
@@ -138,20 +141,22 @@ HatsNextWebDialog::HatsNextWebDialog(
     base::OnceClosure failure_callback,
     const SurveyBitsData& product_specific_bits_data,
     const SurveyStringData& product_specific_string_data)
-    : HatsNextWebDialog(browser,
-                        trigger_id,
-                        base::FeatureList::IsEnabled(features::kHaTSWebUI)
-                            ? GURL(chrome::kChromeUIUntrustedHatsURL)
-                            : GURL("https://storage.googleapis.com/"
-                                   "chrome_hats_staging/index.html"),
-                        base::Seconds(10),
-                        std::move(success_callback),
-                        std::move(failure_callback),
-                        product_specific_bits_data,
-                        product_specific_string_data) {}
+    : HatsNextWebDialog(
+          browser,
+          trigger_id,
+          base::FeatureList::IsEnabled(features::kHaTSWebUI)
+              ? GURL(chrome::kChromeUIUntrustedHatsURL)
+              : GURL(features::kHappinessTrackingSurveysHostedUrl.Get()),
+          base::Seconds(10),
+          std::move(success_callback),
+          std::move(failure_callback),
+          product_specific_bits_data,
+          product_specific_string_data) {}
 
-gfx::Size HatsNextWebDialog::CalculatePreferredSize() const {
-  gfx::Size preferred_size = views::View::CalculatePreferredSize();
+gfx::Size HatsNextWebDialog::CalculatePreferredSize(
+    const views::SizeBounds& available_size) const {
+  gfx::Size preferred_size =
+      views::View::CalculatePreferredSize(available_size);
   preferred_size.SetToMax(kMinSize);
   preferred_size.SetToMin(kMaxSize);
   return preferred_size;
@@ -205,6 +210,10 @@ void HatsNextWebDialog::OnSurveyLoaded() {
   received_survey_loaded_ = true;
   ShowWidget();
   std::move(success_callback_).Run();
+}
+
+void HatsNextWebDialog::OnSurveyCompleted() {
+  base::UmaHistogramBoolean(kHatsSurveyCompletedHistogram, true);
 }
 
 void HatsNextWebDialog::OnSurveyClosed() {
@@ -305,7 +314,7 @@ HatsNextWebDialog::~HatsNextWebDialog() {
   web_view_->web_contents()->SetDelegate(nullptr);
 }
 
-// TODO(crbug.com/1493711): Remove this whole function after HaTSWebUI is
+// TODO(crbug.com/40285934): Remove this whole function after HaTSWebUI is
 // launched.
 GURL HatsNextWebDialog::GetParameterizedHatsURL() const {
   GURL param_url =
@@ -352,7 +361,7 @@ void HatsNextWebDialog::LoadTimedOut() {
   std::move(failure_callback_).Run();
 }
 
-// TODO(crbug.com/1493711): Remove this whole function after HaTSWebUI is
+// TODO(crbug.com/40285934): Remove this whole function after HaTSWebUI is
 // launched.
 void HatsNextWebDialog::OnSurveyStateUpdateReceived(std::string state) {
   loading_timer_.AbandonAndStop();
@@ -361,6 +370,8 @@ void HatsNextWebDialog::OnSurveyStateUpdateReceived(std::string state) {
     OnSurveyLoaded();
   } else if (state == "close") {
     OnSurveyClosed();
+  } else if (state == "completed") {
+    OnSurveyCompleted();
   } else {
     LOG(ERROR) << "Unknown state provided in URL fragment by HaTS survey:"
                << state;

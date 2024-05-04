@@ -67,6 +67,7 @@
 #include "third_party/blink/public/mojom/use_counter/metrics/web_feature.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_background_resource_fetch_assets.h"
+#include "third_party/blink/public/platform/web_content_settings_client.h"
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/public/web/web_print_params.h"
 #include "third_party/blink/public/web/web_script_execution_callback.h"
@@ -141,6 +142,7 @@ class InspectorTaskRunner;
 class InspectorTraceEvents;
 class InterfaceRegistry;
 class LCPCriticalPathPredictor;
+class LCPScriptObserver;
 class LayoutView;
 class LocalDOMWindow;
 class LocalFrameClient;
@@ -149,6 +151,7 @@ class LocalWindowProxy;
 class Node;
 class NodeTraversal;
 class PerformanceMonitor;
+class WebLinkPreviewTriggerer;
 class PluginData;
 class PolicyContainer;
 class ScrollSnapshotClient;
@@ -289,6 +292,7 @@ class CORE_EXPORT LocalFrame final
   void SetDOMWindow(LocalDOMWindow*);
   LocalFrameView* View() const override;
   Document* GetDocument() const;
+  void DocumentDetached();
   void SetPagePopupOwner(Element&);
   Element* PagePopupOwner() const { return page_popup_owner_.Get(); }
   bool HasPagePopupOwner() const { return page_popup_owner_ != nullptr; }
@@ -526,6 +530,7 @@ class CORE_EXPORT LocalFrame final
   IdlenessDetector* GetIdlenessDetector() { return idleness_detector_.Get(); }
   AdTracker* GetAdTracker() { return ad_tracker_.Get(); }
   void SetAdTrackerForTesting(AdTracker* ad_tracker);
+  LCPScriptObserver* GetScriptObserver() { return script_observer_.Get(); }
   AttributionSrcLoader* GetAttributionSrcLoader() {
     return attribution_src_loader_.Get();
   }
@@ -902,6 +907,11 @@ class CORE_EXPORT LocalFrame final
 
   void ScheduleNextServiceForScrollSnapshotClients();
 
+  void CheckPositionAnchorsForCssVisibilityChanges();
+  // This is called after all other position-visibility conditions have been
+  // checked.
+  void CheckPositionAnchorsForChainedVisibilityChanges();
+
   using BlockingDetailsList = Vector<mojom::blink::BlockingDetailsPtr>;
   static BlockingDetailsList ConvertFeatureAndLocationToMojomStruct(
       const BFCacheBlockingFeatureAndLocations&,
@@ -938,6 +948,17 @@ class CORE_EXPORT LocalFrame final
   // beyond the lifetime of the RenderFrameHost that created it.
   mojo::PendingRemote<mojom::blink::NavigationStateKeepAliveHandle>
   IssueKeepAliveHandle();
+
+  WebLinkPreviewTriggerer* GetOrCreateLinkPreviewTriggerer();
+  void SetLinkPreviewTriggererForTesting(
+      std::unique_ptr<WebLinkPreviewTriggerer> trigger);
+
+  void AllowStorageAccessAndNotify(
+      blink::WebContentSettingsClient::StorageType storage_type,
+      base::OnceCallback<void(bool)> callback);
+
+  bool AllowStorageAccessSyncAndNotify(
+      blink::WebContentSettingsClient::StorageType storage_type);
 
  private:
   friend class FrameNavigationDisabler;
@@ -982,6 +1003,7 @@ class CORE_EXPORT LocalFrame final
   void OnTaskCompleted(base::TimeTicks start_time,
                        base::TimeTicks end_time) override;
   void MainFrameInteractive() override;
+  void MainFrameFirstMeaningfulPaint() override;
 
   // Activates the user activation states of this frame and all its ancestors.
   //
@@ -1021,6 +1043,8 @@ class CORE_EXPORT LocalFrame final
   void SetTitlebarAreaDocumentStyleEnvironmentVariables() const;
   void MaybeUpdateWindowControlsOverlayWithNewZoomLevel();
 #endif
+
+  void EnsureLinkPreviewTriggererInitialized();
 
   std::unique_ptr<FrameScheduler> frame_scheduler_;
 
@@ -1085,6 +1109,7 @@ class CORE_EXPORT LocalFrame final
   // Access content_capture_manager_ through GetOrResetContentCaptureManager()
   // because WebContentCaptureClient might already stop the capture.
   Member<ContentCaptureManager> content_capture_manager_;
+  Member<LCPScriptObserver> script_observer_;
 
   HistoryUserActivationState history_user_activation_state_;
 
@@ -1204,6 +1229,16 @@ class CORE_EXPORT LocalFrame final
       feature_handle_for_scheduler_;
 
   WebPrintParams print_params_;
+
+  // Holds WebLinkPreviewTriggerer instance if content renderer client wants to
+  // inject it. Note that `link_preview_triggerer_` may be nullptr after
+  // initialization.
+  bool is_link_preivew_triggerer_initialized_ = false;
+  std::unique_ptr<WebLinkPreviewTriggerer> link_preview_triggerer_;
+
+  void OnStorageAccessCallback(base::OnceCallback<void(bool)> callback,
+                               mojom::blink::StorageTypeAccessed storage_type,
+                               bool isAllowed);
 };
 
 inline FrameLoader& LocalFrame::Loader() const {

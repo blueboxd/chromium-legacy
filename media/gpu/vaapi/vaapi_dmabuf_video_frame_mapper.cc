@@ -35,7 +35,7 @@ void DeallocateBuffers(std::unique_ptr<ScopedVAImage> va_image,
   // The |video_frame| will be released here and it will be returned to pool if
   // client uses video frame pool.
   // Destructing ScopedVAImage releases its owned memory.
-  DCHECK(va_image->IsValid());
+  DCHECK(va_image);
 }
 
 scoped_refptr<VideoFrame> CreateMappedVideoFrame(
@@ -111,25 +111,34 @@ std::unique_ptr<VideoFrameMapper> VaapiDmaBufVideoFrameMapper::Create(
 
   auto video_frame_mapper =
       base::WrapUnique(new VaapiDmaBufVideoFrameMapper(format));
-  if (!video_frame_mapper->vaapi_wrapper_)
-    return nullptr;
 
   return video_frame_mapper;
 }
 
 VaapiDmaBufVideoFrameMapper::VaapiDmaBufVideoFrameMapper(
     VideoPixelFormat format)
-    : VideoFrameMapper(format),
-      vaapi_wrapper_(VaapiWrapper::Create(VaapiWrapper::kVideoProcess,
-                                          VAProfileNone,
-                                          EncryptionScheme::kUnencrypted,
-                                          base::DoNothing())) {}
+    : VideoFrameMapper(format) {
+  DETACH_FROM_SEQUENCE(sequence_checker_);
+}
 
-VaapiDmaBufVideoFrameMapper::~VaapiDmaBufVideoFrameMapper() {}
+VaapiDmaBufVideoFrameMapper::~VaapiDmaBufVideoFrameMapper() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+}
 
 scoped_refptr<VideoFrame> VaapiDmaBufVideoFrameMapper::MapFrame(
     scoped_refptr<const FrameResource> video_frame,
-    int permissions) const {
+    int permissions) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!vaapi_wrapper_) {
+    vaapi_wrapper_ =
+        VaapiWrapper::Create(VaapiWrapper::kVideoProcess, VAProfileNone,
+                             EncryptionScheme::kUnencrypted, base::DoNothing())
+            .value_or(nullptr);
+    if (!vaapi_wrapper_) {
+      VLOGF(1) << "Failed to create VaapiWrapper";
+      return nullptr;
+    }
+  }
   DCHECK(vaapi_wrapper_);
   if (!video_frame) {
     LOG(ERROR) << "Video frame is nullptr";
@@ -167,8 +176,8 @@ scoped_refptr<VideoFrame> VaapiDmaBufVideoFrameMapper::MapFrame(
     return nullptr;
   }
 
-  scoped_refptr<gfx::NativePixmap> pixmap =
-      video_frame->CreateNativePixmapDmaBuf();
+  scoped_refptr<const gfx::NativePixmap> pixmap =
+      video_frame->GetNativePixmapDmaBuf();
   if (!pixmap) {
     VLOGF(1) << "Failed to create NativePixmap from VideoFrame";
     return nullptr;
@@ -184,12 +193,12 @@ scoped_refptr<VideoFrame> VaapiDmaBufVideoFrameMapper::MapFrame(
 
   // Map tiled NV12 or P010 buffer by CreateVaImage so that mapped buffers can
   // be accessed as non-tiled NV12 or P016LE buffer.
-  VAImageFormat va_image_format = video_frame->format() == PIXEL_FORMAT_NV12
-                                      ? kImageFormatNV12
-                                      : kImageFormatP010;
+  const VAImageFormat va_image_format =
+      video_frame->format() == PIXEL_FORMAT_NV12 ? kImageFormatNV12
+                                                 : kImageFormatP010;
   auto va_image = vaapi_wrapper_->CreateVaImage(
-      va_surface->id(), &va_image_format, va_surface->size());
-  if (!va_image || !va_image->IsValid()) {
+      va_surface->id(), va_image_format, va_surface->size());
+  if (!va_image) {
     VLOGF(1) << "Failed in CreateVaImage.";
     return nullptr;
   }

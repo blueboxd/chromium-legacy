@@ -96,7 +96,10 @@ ReadAnythingCoordinator::ReadAnythingCoordinator(Browser* browser)
     BrowserList::GetInstance()->AddObserver(this);
   }
 
-  extension_loader_ = EmbeddedA11yExtensionLoader::GetInstance();
+  if (features::IsReadAnythingDocsIntegrationEnabled()) {
+    extension_loader_ = EmbeddedA11yExtensionLoader::GetInstance();
+    extension_loader_->Init();
+  }
 }
 
 void ReadAnythingCoordinator::InitModelWithUserPrefs() {
@@ -151,9 +154,11 @@ void ReadAnythingCoordinator::InitModelWithUserPrefs() {
 }
 
 ReadAnythingCoordinator::~ReadAnythingCoordinator() {
-  if (extension_loader_) {
-    extension_loader_->RemoveA11yHelperExtensionForReadingMode();
-    extension_loader_ = nullptr;
+  if (features::IsReadAnythingDocsIntegrationEnabled()) {
+    if (extension_loader_) {
+      extension_loader_->RemoveA11yHelperExtensionForReadingMode();
+      extension_loader_ = nullptr;
+    }
   }
 
   // Inform observers when |this| is destroyed so they can do their own cleanup.
@@ -261,7 +266,8 @@ void ReadAnythingCoordinator::OnReadAnythingSidePanelEntryShown() {
 
   // TODO(crbug.com/324143642): Handle the installation of a11y helper extension
   // for local side panels.
-  if (!features::IsReadAnythingLocalSidePanelEnabled()) {
+  if (features::IsReadAnythingDocsIntegrationEnabled() &&
+      !features::IsReadAnythingLocalSidePanelEnabled()) {
     extension_loader_->InstallA11yHelperExtensionForReadingMode();
   }
 }
@@ -273,7 +279,8 @@ void ReadAnythingCoordinator::OnReadAnythingSidePanelEntryHidden() {
 
   // TODO(crbug.com/324143642): Handle the uninstallation of a11y helper
   // extension for local side panels.
-  if (!features::IsReadAnythingLocalSidePanelEnabled()) {
+  if (features::IsReadAnythingDocsIntegrationEnabled() &&
+      !features::IsReadAnythingLocalSidePanelEnabled()) {
     extension_loader_->RemoveA11yHelperExtensionForReadingMode();
   }
 }

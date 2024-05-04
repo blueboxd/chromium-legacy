@@ -143,6 +143,8 @@ class CORE_EXPORT BlockNode : public LayoutInputNode {
       const PhysicalBoxFragment& child_fragment,
       PhysicalSize size) const;
 
+  bool MayHaveAnchorQuery() const { return box_->MayHaveAnchorQuery(); }
+
   bool HasLeftOverflow() const { return box_->HasLeftOverflow(); }
   bool HasTopOverflow() const { return box_->HasTopOverflow(); }
   bool HasNonVisibleOverflow() const { return box_->HasNonVisibleOverflow(); }
@@ -224,6 +226,12 @@ class CORE_EXPORT BlockNode : public LayoutInputNode {
   // legacy, for example for an OOF positioned element, we need to update the
   // legacy flow thread to encompass those extra columns.
   void MakeRoomForExtraColumns(LayoutUnit block_size) const;
+
+  // Page containers and page border boxes are laid out directly by special
+  // algorithms, rather than going via BlockNode::Layout(), so whatever
+  // side-effects Layout() causes needs to be triggered manually from these
+  // algorithms.
+  void FinishPageContainerLayout(const LayoutResult*) const;
 
   bool operator==(const BlockNode& other) const { return box_ == other.box_; }
   bool operator==(const LayoutInputNode& other) const {

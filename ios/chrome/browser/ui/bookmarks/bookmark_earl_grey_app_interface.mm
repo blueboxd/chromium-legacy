@@ -31,6 +31,31 @@
 #import "ui/base/models/tree_node_iterator.h"
 #import "url/gurl.h"
 
+namespace {
+
+std::vector<const bookmarks::BookmarkNode*> GetBookmarksWithTitle(
+    NSString* title,
+    LegacyBookmarkModel* bookmark_model) {
+  int const kMaxCountOfBookmarks = 50;
+
+  bookmarks::QueryFields query;
+  query.title =
+      std::make_unique<std::u16string>(base::SysNSStringToUTF16(title));
+
+  return bookmark_model->GetBookmarksMatchingProperties(query,
+                                                        kMaxCountOfBookmarks);
+}
+
+const bookmarks::BookmarkNode* GetFirstBookmarkWithTitle(
+    NSString* title,
+    LegacyBookmarkModel* bookmark_model) {
+  std::vector<const bookmarks::BookmarkNode*> nodes =
+      GetBookmarksWithTitle(title, bookmark_model);
+  return nodes.empty() ? nullptr : nodes[0];
+}
+
+}  // namespace
+
 @implementation BookmarkEarlGreyAppInterface
 
 #pragma mark - Public Interface
@@ -44,7 +69,7 @@
       chrome_test_util::GetOriginalBrowserState();
   [BookmarkPathCache
       clearBookmarkTopMostRowCacheWithPrefService:browserState->GetPrefs()];
-  BOOL removeSucceeded = RemoveAllUserBookmarksIOS(browserState);
+  BOOL removeSucceeded = RemoveAllUserBookmarksIOS(browserState, FROM_HERE);
   if (!removeSucceeded) {
     return testing::NSErrorWithLocalizedDescription(
         @"Failed to remove some user boomkark");
@@ -232,15 +257,10 @@
   LegacyBookmarkModel* bookmarkModel =
       [BookmarkEarlGreyAppInterface bookmarkModelOfStorage:storageType];
 
-  int const kMaxCountOfBookmarks = 50;
-  bookmarks::QueryFields query;
-  query.title =
-      std::make_unique<std::u16string>(base::SysNSStringToUTF16(title));
-
   // Verify the correct number of bookmarks exist.
-  std::vector<const bookmarks::BookmarkNode*> nodes;
-  bookmarkModel->GetBookmarksMatchingProperties(query, kMaxCountOfBookmarks,
-                                                &nodes);
+  std::vector<const bookmarks::BookmarkNode*> nodes =
+      GetBookmarksWithTitle(title, bookmarkModel);
+
   if (nodes.size() != expectedCount) {
     return testing::NSErrorWithLocalizedDescription(
         @"Unexpected number of bookmarks");
@@ -269,54 +289,48 @@
 
 + (NSError*)removeBookmarkWithTitle:(NSString*)title
                           inStorage:(BookmarkModelType)storageType {
-  std::u16string name16(base::SysNSStringToUTF16(title));
   LegacyBookmarkModel* bookmarkModel =
       [BookmarkEarlGreyAppInterface bookmarkModelOfStorage:storageType];
-  ui::TreeNodeIterator<const bookmarks::BookmarkNode> iterator(
-      bookmarkModel->root_node());
-  while (iterator.has_next()) {
-    const bookmarks::BookmarkNode* bookmark = iterator.Next();
-    if (bookmark->GetTitle() == name16) {
-      bookmarkModel->Remove(bookmark,
-                            bookmarks::metrics::BookmarkEditSource::kUser);
-      return nil;
-    }
+  const bookmarks::BookmarkNode* bookmark =
+      GetFirstBookmarkWithTitle(title, bookmarkModel);
+  if (!bookmark) {
+    return testing::NSErrorWithLocalizedDescription([NSString
+        stringWithFormat:@"Could not remove bookmark with name %@", title]);
   }
-  return testing::NSErrorWithLocalizedDescription([NSString
-      stringWithFormat:@"Could not remove bookmark with name %@", title]);
+
+  bookmarkModel->Remove(bookmark, bookmarks::metrics::BookmarkEditSource::kUser,
+                        FROM_HERE);
+  return nil;
 }
 
 + (NSError*)moveBookmarkWithTitle:(NSString*)bookmarkTitle
-                toFolderWithTitle:(NSString*)newFolder
+                toFolderWithTitle:(NSString*)newFolderTitle
                         inStorage:(BookmarkModelType)storageType {
-  std::u16string name16(base::SysNSStringToUTF16(bookmarkTitle));
   LegacyBookmarkModel* bookmarkModel =
       [BookmarkEarlGreyAppInterface bookmarkModelOfStorage:storageType];
-  ui::TreeNodeIterator<const bookmarks::BookmarkNode> iterator(
-      bookmarkModel->root_node());
-  const bookmarks::BookmarkNode* bookmark = iterator.Next();
-  while (iterator.has_next()) {
-    if (bookmark->GetTitle() == name16) {
-      break;
-    }
-    bookmark = iterator.Next();
+
+  const bookmarks::BookmarkNode* bookmark =
+      GetFirstBookmarkWithTitle(bookmarkTitle, bookmarkModel);
+  if (!bookmark) {
+    return testing::NSErrorWithLocalizedDescription([NSString
+        stringWithFormat:@"Could not move inexistent bookmark with title %@",
+                         bookmarkTitle]);
   }
 
-  std::u16string folderName16(base::SysNSStringToUTF16(newFolder));
-  ui::TreeNodeIterator<const bookmarks::BookmarkNode> iteratorFolder(
-      bookmarkModel->root_node());
-  const bookmarks::BookmarkNode* folder = iteratorFolder.Next();
-  while (iteratorFolder.has_next()) {
-    if (folder->GetTitle() == folderName16) {
-      break;
-    }
-    folder = iteratorFolder.Next();
+  const bookmarks::BookmarkNode* newFolder =
+      GetFirstBookmarkWithTitle(newFolderTitle, bookmarkModel);
+  if (!newFolder || !newFolder->is_folder()) {
+    return testing::NSErrorWithLocalizedDescription([NSString
+        stringWithFormat:
+            @"Could not move bookmark to inexistent folder with title %@",
+            newFolderTitle]);
   }
+
   std::vector<const bookmarks::BookmarkNode*> toMove{bookmark};
   LegacyBookmarkModel* accountBookmarkModel =
       [BookmarkEarlGreyAppInterface accountBookmarkModel];
   if (!bookmark_utils_ios::MoveBookmarks(toMove, bookmarkModel,
-                                         accountBookmarkModel, folder)) {
+                                         accountBookmarkModel, newFolder)) {
     return testing::NSErrorWithLocalizedDescription(
         [NSString stringWithFormat:@"Could not move bookmark with name %@",
                                    bookmarkTitle]);
@@ -328,22 +342,12 @@
 + (NSError*)verifyChildCount:(size_t)count
             inFolderWithName:(NSString*)name
                    inStorage:(BookmarkModelType)storageType {
-  std::u16string name16(base::SysNSStringToUTF16(name));
   LegacyBookmarkModel* bookmarkModel =
       [BookmarkEarlGreyAppInterface bookmarkModelOfStorage:storageType];
 
-  ui::TreeNodeIterator<const bookmarks::BookmarkNode> iterator(
-      bookmarkModel->root_node());
-
-  const bookmarks::BookmarkNode* folder = nullptr;
-  while (iterator.has_next()) {
-    const bookmarks::BookmarkNode* bookmark = iterator.Next();
-    if (bookmark->is_folder() && bookmark->GetTitle() == name16) {
-      folder = bookmark;
-      break;
-    }
-  }
-  if (!folder) {
+  const bookmarks::BookmarkNode* folder =
+      GetFirstBookmarkWithTitle(name, bookmarkModel);
+  if (!folder || !folder->is_folder()) {
     return testing::NSErrorWithLocalizedDescription(
         [NSString stringWithFormat:@"No folder named %@", name]);
   }
@@ -392,25 +396,11 @@
 
 + (NSError*)verifyExistenceOfFolderWithTitle:(NSString*)title
                                    inStorage:(BookmarkModelType)storageType {
-  std::u16string folderTitle16(base::SysNSStringToUTF16(title));
-
-  ui::TreeNodeIterator<const bookmarks::BookmarkNode> iterator(
-      [self bookmarkModelOfStorage:storageType]->root_node());
-  BOOL folderExists = NO;
-
-  while (iterator.has_next()) {
-    const bookmarks::BookmarkNode* bookmark = iterator.Next();
-    if (bookmark->is_url()) {
-      continue;
-    }
-    // This is a folder.
-    if (bookmark->GetTitle() == folderTitle16) {
-      // Folder exists, return.
-      return nil;
-    }
-  }
-
-  if (!folderExists) {
+  LegacyBookmarkModel* bookmarkModel =
+      [BookmarkEarlGreyAppInterface bookmarkModelOfStorage:storageType];
+  const bookmarks::BookmarkNode* folder =
+      GetFirstBookmarkWithTitle(title, bookmarkModel);
+  if (!folder || !folder->is_folder()) {
     return testing::NSErrorWithLocalizedDescription(
         [NSString stringWithFormat:@"Folder %@ doesn't exist", title]);
   }

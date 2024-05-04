@@ -5,14 +5,17 @@
 #include "chrome/browser/new_tab_page/modules/v2/tab_resumption/tab_resumption_page_handler.h"
 
 #include <stddef.h>
-
+#include <memory>
 #include <set>
+#include <string>
 
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/new_tab_page/modules/modules_util.h"
 #include "chrome/browser/new_tab_page/modules/v2/tab_resumption/tab_resumption.mojom.h"
 #include "chrome/browser/new_tab_page/modules/v2/tab_resumption/tab_resumption_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -36,14 +39,6 @@
 
 using history::BrowsingHistoryService;
 using history::HistoryService;
-
-const size_t kCategoryBlockListCount = 18;
-constexpr std::array<std::string_view, kCategoryBlockListCount>
-    kCategoryBlockList{"/g/11b76fyj2r", "/m/09lkz",  "/m/012mj",  "/m/01rbb",
-                       "/m/02px0wr",    "/m/028hh",  "/m/034qg",  "/m/034dj",
-                       "/m/0jxxt",      "/m/015fwp", "/m/04shl0", "/m/01h6rj",
-                       "/m/05qt0",      "/m/06gqm",  "/m/09l0j_", "/m/01pxgq",
-                       "/m/0chbx",      "/m/02c66t"};
 
 namespace {
 // Name of preference to track list of dismissed tabs.
@@ -148,7 +143,8 @@ TabResumptionPageHandler::TabResumptionPageHandler(
               /*Default value for visibility threshold*/ 0.5))),
       categories_blocklist_(GetTabResumptionCategories(
           ntp_features::kNtpTabResumptionModuleCategoriesBlocklistParam,
-          {kCategoryBlockList.begin(), kCategoryBlockListCount})),
+          {ntp_modules::kCategoryBlockList.begin(),
+           ntp_modules::kCategoryBlockListCount})),
       time_limit_(base::GetFieldTrialParamByFeatureAsInt(
           ntp_features::kNtpTabResumptionModuleTimeLimit,
           ntp_features::kNtpTabResumptionModuleTimeLimitParam,
@@ -159,15 +155,13 @@ TabResumptionPageHandler::TabResumptionPageHandler(
 
 TabResumptionPageHandler::~TabResumptionPageHandler() = default;
 
-void TabResumptionPageHandler::OnQueryURLsComplete(
+void TabResumptionPageHandler::OnGetMostRecentVisitForEachURLComplete(
     std::vector<history::mojom::TabPtr> tabs,
     GetTabsCallback callback,
-    std::vector<history::QueryURLResult> results) {
+    std::map<GURL, history::VisitRow> visit_pairs) {
   history::VisitVector visit_rows;
-  for (auto result : results) {
-    for (auto visit : result.visits) {
-      visit_rows.push_back(visit);
-    }
+  for (const auto& visit : visit_pairs) {
+    visit_rows.push_back(visit.second);
   }
   auto* history_service = HistoryServiceFactory::GetForProfile(
       profile_, ServiceAccessType::EXPLICIT_ACCESS);
@@ -221,8 +215,6 @@ void TabResumptionPageHandler::OnAnnotatedVisits(
     return;
   }
 
-  std::sort(scored_tabs.begin(), scored_tabs.end(), CompareTabsByTime);
-
   std::move(callback).Run(std::move(scored_tabs));
 }
 
@@ -246,6 +238,9 @@ void TabResumptionPageHandler::GetTabs(GetTabsCallback callback) {
   }
 
   auto tabs_mojom = GetForeignTabs();
+  // Sort tabs now so when we check for matching urls later the most recent
+  // is already first.
+  std::sort(tabs_mojom.begin(), tabs_mojom.end(), CompareTabsByTime);
   std::vector<GURL> urls;
   for (const auto& tab : tabs_mojom) {
     urls.push_back(tab->url);
@@ -258,11 +253,12 @@ void TabResumptionPageHandler::GetTabs(GetTabsCallback callback) {
 
   auto* history_service = HistoryServiceFactory::GetForProfile(
       profile_, ServiceAccessType::EXPLICIT_ACCESS);
-  history_service->QueryURLs(
-      urls, /*want_visits=*/true,
-      base::BindOnce(&TabResumptionPageHandler::OnQueryURLsComplete,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(tabs_mojom),
-                     std::move(callback)),
+  history_service->GetMostRecentVisitForEachURL(
+      urls,
+      base::BindOnce(
+          &TabResumptionPageHandler::OnGetMostRecentVisitForEachURLComplete,
+          weak_ptr_factory_.GetWeakPtr(), std::move(tabs_mojom),
+          std::move(callback)),
       &task_tracker_);
 }
 

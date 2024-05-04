@@ -53,6 +53,7 @@
 #include "ui/accessibility/ax_selection.h"
 #include "ui/accessibility/ax_tree_data.h"
 #include "ui/accessibility/platform/ax_fragment_root_win.h"
+#include "ui/accessibility/platform/ax_platform.h"
 #include "ui/accessibility/platform/ax_platform_node_delegate.h"
 #include "ui/accessibility/platform/ax_platform_node_delegate_utils_win.h"
 #include "ui/accessibility/platform/ax_platform_node_textchildprovider_win.h"
@@ -415,19 +416,6 @@ void AXPlatformNodeWin::StateToUIAAriaProperty(
                        (value ? L"true" : L"false"));
 }
 
-void AXPlatformNodeWin::HtmlAttributeToUIAAriaProperty(
-    std::vector<std::wstring>& properties,
-    const char* html_attribute_name,
-    const char* uia_aria_property) {
-  std::u16string html_attribute_value;
-  if (GetHtmlAttribute(html_attribute_name, &html_attribute_value)) {
-    std::wstring wide_value = base::UTF16ToWide(html_attribute_value);
-    SanitizeStringAttributeForUIAAriaProperty(wide_value, &wide_value);
-    properties.push_back(base::ASCIIToWide(uia_aria_property) + L"=" +
-                         wide_value);
-  }
-}
-
 std::vector<AXPlatformNodeWin*>
 AXPlatformNodeWin::CreatePlatformNodeVectorFromRelationIdVector(
     const std::vector<int32_t>& relation_id_list) {
@@ -660,6 +648,13 @@ void AXPlatformNodeWin::NotifyAccessibilityEvent(ax::mojom::Event event_type) {
     }
   }
 
+  // TODO(benjamin.beaudry): Uncomment DCHECK once https://crbug.com/331840469
+  // is fixed.
+  // DCHECK(event_type != ax::mojom::Event::kLiveRegionChanged ||
+  //        GetDelegate()->IsWebContent() || IsUIAControl())
+  //     << "For views, the LiveRegionChanged event should only be fired on
+  //     nodes that are UIA controls.";
+
   if (event_type == ax::mojom::Event::kValueChanged ||
       event_type == ax::mojom::Event::kLiveRegionCreated ||
       event_type == ax::mojom::Event::kLiveRegionChanged) {
@@ -728,7 +723,7 @@ void AXPlatformNodeWin::FireUiaTextEditTextChangedEvent(
     const gfx::Range& range,
     const std::wstring& active_composition_text,
     bool is_composition_committed) {
-  if (!::features::IsUiaProviderEnabled()) {
+  if (!AXPlatform::GetInstance().IsUiaProviderEnabled()) {
     return;
   }
 
@@ -927,10 +922,6 @@ AXPlatformNodeWin::UIARoleProperties AXPlatformNodeWin::GetUIARoleProperties() {
       return {UIALocalizationStrategy::kSupply, UIA_ButtonControlTypeId,
               L"button"};
 
-    case ax::mojom::Role::kDirectory:
-      return {UIALocalizationStrategy::kDeferToAriaRole, UIA_ListControlTypeId,
-              L"directory"};
-
     case ax::mojom::Role::kDocCover:
       return {UIALocalizationStrategy::kSupply, UIA_ImageControlTypeId, L"img"};
 
@@ -1008,7 +999,7 @@ AXPlatformNodeWin::UIARoleProperties AXPlatformNodeWin::GetUIARoleProperties() {
 
     case ax::mojom::Role::kFeed:
       return {UIALocalizationStrategy::kSupply, UIA_GroupControlTypeId,
-              L"group"};
+              L"feed"};
 
     case ax::mojom::Role::kFigcaption:
       return {UIALocalizationStrategy::kSupply, UIA_GroupControlTypeId,
@@ -1300,6 +1291,7 @@ AXPlatformNodeWin::UIARoleProperties AXPlatformNodeWin::GetUIARoleProperties() {
               L"description"};
 
     case ax::mojom::Role::kSection:
+    case ax::mojom::Role::kSectionWithoutName:
       return {UIALocalizationStrategy::kSupply, UIA_GroupControlTypeId,
               L"group"};
 
@@ -1452,6 +1444,7 @@ AXPlatformNodeWin::UIARoleProperties AXPlatformNodeWin::GetUIARoleProperties() {
 
     case ax::mojom::Role::kDescriptionListTermDeprecated:
     case ax::mojom::Role::kDescriptionListDetailDeprecated:
+    case ax::mojom::Role::kDirectoryDeprecated:
     case ax::mojom::Role::kPreDeprecated:
       NOTREACHED_NORETURN();
   }
@@ -4953,6 +4946,7 @@ IFACEMETHODIMP AXPlatformNodeWin::Navigate(
   WIN_ACCESSIBILITY_API_TRACE_EVENT("Navigate");
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_NAVIGATE);
   WIN_ACCESSIBILITY_API_PERF_HISTOGRAM(UMA_API_NAVIGATE);
+  WIN_ACCESSIBILITY_SOURCE_API_PERF_HISTOGRAM(UMA_API_NAVIGATE);
   UIA_VALIDATE_CALL_1_ARG(element_provider);
 
   *element_provider = nullptr;
@@ -5117,6 +5111,7 @@ IFACEMETHODIMP AXPlatformNodeWin::get_BoundingRectangle(
   WIN_ACCESSIBILITY_API_TRACE_EVENT("get_BoundingRectangle");
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_BOUNDINGRECTANGLE);
   WIN_ACCESSIBILITY_API_PERF_HISTOGRAM(UMA_API_GET_BOUNDINGRECTANGLE);
+  WIN_ACCESSIBILITY_SOURCE_API_PERF_HISTOGRAM(UMA_API_GET_BOUNDINGRECTANGLE);
 
   UIA_VALIDATE_CALL_1_ARG(screen_physical_pixel_bounds);
 
@@ -5183,6 +5178,7 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPatternProvider(PATTERNID pattern_id,
   WIN_ACCESSIBILITY_API_TRACE_EVENT("GetPatternProvider");
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_PATTERN_PROVIDER);
   WIN_ACCESSIBILITY_API_PERF_HISTOGRAM(UMA_API_GET_PATTERN_PROVIDER);
+  WIN_ACCESSIBILITY_SOURCE_API_PERF_HISTOGRAM(UMA_API_GET_PATTERN_PROVIDER);
   NotifyAPIObserverForPatternRequest(pattern_id);
   return GetPatternProviderImpl(pattern_id, result);
 }
@@ -5206,6 +5202,7 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
   WIN_ACCESSIBILITY_API_TRACE_EVENT("GetPropertyValue");
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_PROPERTY_VALUE);
   WIN_ACCESSIBILITY_API_PERF_HISTOGRAM(UMA_API_GET_PROPERTY_VALUE);
+  WIN_ACCESSIBILITY_SOURCE_API_PERF_HISTOGRAM(UMA_API_GET_PROPERTY_VALUE);
 
   constexpr LONG kFirstKnownUiaPropertyId = UIA_RuntimeIdPropertyId;
   constexpr LONG kLastKnownUiaPropertyId = UIA_IsDialogPropertyId;
@@ -5247,12 +5244,17 @@ HRESULT AXPlatformNodeWin::GetPropertyValueImpl(PROPERTYID property_id,
       result->bstrVal = SysAllocString(GetUIARoleProperties().aria_role);
       break;
 
-    case UIA_AutomationIdPropertyId:
+    case UIA_AutomationIdPropertyId: {
+      // The kRootWebArea is the only element in a web page that cannot have
+      // an author provided id. In this case, we return a constant string
+      // that needs to be the same for all locales.
+      std::u16string automation_id = GetRole() == ax::mojom::Role::kRootWebArea
+                                         ? u"RootWebArea"
+                                         : GetDelegate()->GetAuthorUniqueId();
       V_VT(result) = VT_BSTR;
-      V_BSTR(result) =
-          SysAllocString(base::as_wcstr(GetDelegate()->GetAuthorUniqueId()));
+      V_BSTR(result) = SysAllocString(base::as_wcstr(automation_id));
       break;
-
+    }
     case UIA_ClassNamePropertyId:
       result->vt = VT_BSTR;
       GetStringAttributeAsBstr(ax::mojom::StringAttribute::kClassName,
@@ -5739,7 +5741,7 @@ IFACEMETHODIMP AXPlatformNodeWin::get_bulkFetch(
   if (!delegate)
     return E_INVALIDARG;
 
-  // TODO(crbug.com/1083834): if parsing |input_json|, use
+  // TODO(crbug.com/40692720): if parsing |input_json|, use
   // DataDecoder because the json is untrusted. For now, this is just
   // a stub that calls PostTask so that it's async, but it doesn't
   // actually parse the input.
@@ -5775,7 +5777,7 @@ IFACEMETHODIMP AXPlatformNodeWin::get_hitTest(
   if (!delegate)
     return E_INVALIDARG;
 
-  // TODO(crbug.com/1083834): Plumb through an actual async hit test.
+  // TODO(crbug.com/40692720): Plumb through an actual async hit test.
   AXPlatformNodeWin* hit_child = static_cast<AXPlatformNodeWin*>(
       FromNativeViewAccessible(GetDelegate()->HitTestSync(
           screen_physical_pixel_x, screen_physical_pixel_y)));
@@ -6463,9 +6465,6 @@ int AXPlatformNodeWin::MSAARole() {
     case ax::mojom::Role::kDisclosureTriangleGrouped:
       return ROLE_SYSTEM_PUSHBUTTON;
 
-    case ax::mojom::Role::kDirectory:
-      return ROLE_SYSTEM_LIST;
-
     case ax::mojom::Role::kDocCover:
       return ROLE_SYSTEM_GRAPHIC;
 
@@ -6753,6 +6752,7 @@ int AXPlatformNodeWin::MSAARole() {
       return ROLE_SYSTEM_STATICTEXT;
 
     case ax::mojom::Role::kSection:
+    case ax::mojom::Role::kSectionWithoutName:
       return ROLE_SYSTEM_GROUPING;
 
     case ax::mojom::Role::kScrollBar:
@@ -6871,6 +6871,7 @@ int AXPlatformNodeWin::MSAARole() {
       return ROLE_SYSTEM_PANE;
     case ax::mojom::Role::kDescriptionListTermDeprecated:
     case ax::mojom::Role::kDescriptionListDetailDeprecated:
+    case ax::mojom::Role::kDirectoryDeprecated:
     case ax::mojom::Role::kPreDeprecated:
       NOTREACHED_NORETURN();
   }
@@ -7146,6 +7147,7 @@ int32_t AXPlatformNodeWin::ComputeIA2Role() {
       ia2_role = IA2_ROLE_LANDMARK;
       break;
     case ax::mojom::Role::kSection:
+    case ax::mojom::Role::kSectionWithoutName:
       ia2_role = IA2_ROLE_SECTION;
       break;
     case ax::mojom::Role::kSwitch:
@@ -7557,12 +7559,14 @@ bool AXPlatformNodeWin::IsUIAControl() const {
 
   // TODO(accessibility): This condition is very wide - it returns true for most
   // elements, except the ones that are explicitly invisible/ignored and not
-  // focusable. We might want to revisit this implementation to match the specs:
+  // focusable, and the ones that are expected to fire live region events. We
+  // might want to revisit this implementation to match the specs:
   // https://learn.microsoft.com/en-us/windows/win32/winauto/uiauto-treeoverview#control-view.
   //
   // Also, should we really have a different implementation for Views than for
   // web content?
-  return !(IsInvisibleOrIgnored() && !IsFocusable());
+  return !(IsInvisibleOrIgnored() && !IsFocusable()) ||
+         GetRole() == ax::mojom::Role::kStatus;
 }
 
 std::optional<LONG> AXPlatformNodeWin::ComputeUIALandmarkType() const {
@@ -7657,12 +7661,12 @@ bool AXPlatformNodeWin::ShouldHideChildrenForUIA() const {
 
 ULONG AXPlatformNodeWin::InternalAddRef() {
   // Instances of AXPlatformNodeWin hold a reference to themselves (acquired in
-  // `Create`; released in `Dispose`). When the refcount rises from 1 to 2,
-  // infer that the instance is being used for some COM-ish purpose; for
-  // example, being handed to an accessibility tool via a WM_GETOBJECT message
-  // handler.
+  // `Create`; released in `Dispose`). When the refcount rises from 1 to 2
+  // before the node has been disposed, infer that the instance is being used
+  // for some COM-ish purpose; for example, being handed to an accessibility
+  // tool via a WM_GETOBJECT message handler.
   const auto ref_count = SequenceAffineComObjectRoot::InternalAddRef();
-  if (ref_count == 2) {
+  if (delegate_ && ref_count == 2) {
     OnReferenced();
   }
   return ref_count;
@@ -7670,9 +7674,10 @@ ULONG AXPlatformNodeWin::InternalAddRef() {
 
 ULONG AXPlatformNodeWin::InternalRelease() {
   // As above, infer that the instance is no longer being used for some COM-ish
-  // purpose when the refcount drops back down from 2 to 1.
+  // purpose when the refcount drops back down to 1 (if it has yet to be
+  // disposed) or 0 (if it has been).
   const auto ref_count = SequenceAffineComObjectRoot::InternalRelease();
-  if (ref_count == 1) {
+  if (ref_count == (delegate_ ? 1 : 0)) {
     OnDereferenced();
   }
   return ref_count;
@@ -7920,7 +7925,7 @@ std::optional<DWORD> AXPlatformNodeWin::MojoEventToMSAAEvent(
 // static
 std::optional<EVENTID> AXPlatformNodeWin::MojoEventToUIAEvent(
     ax::mojom::Event event) {
-  if (!::features::IsUiaProviderEnabled()) {
+  if (!AXPlatform::GetInstance().IsUiaProviderEnabled()) {
     return std::nullopt;
   }
 
@@ -7953,7 +7958,7 @@ std::optional<EVENTID> AXPlatformNodeWin::MojoEventToUIAEvent(
 // static
 std::optional<PROPERTYID> AXPlatformNodeWin::MojoEventToUIAProperty(
     ax::mojom::Event event) {
-  if (!::features::IsUiaProviderEnabled()) {
+  if (!AXPlatform::GetInstance().IsUiaProviderEnabled()) {
     return std::nullopt;
   }
 

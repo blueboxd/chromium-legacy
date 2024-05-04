@@ -22,6 +22,7 @@
 #include "base/functional/callback_helpers.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
 #include "base/path_service.h"
@@ -35,6 +36,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/time/default_clock.h"
 #include "base/time/default_tick_clock.h"
+#include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -49,6 +51,7 @@
 #include "chrome/browser/devtools/remote_debugging_server.h"
 #include "chrome/browser/download/download_request_limiter.h"
 #include "chrome/browser/download/download_status_updater.h"
+#include "chrome/browser/global_features.h"
 #include "chrome/browser/google/google_brand.h"
 #include "chrome/browser/gpu/gpu_mode_manager.h"
 #include "chrome/browser/icon_manager.h"
@@ -99,6 +102,8 @@
 #include "components/component_updater/timer_update_scheduler.h"
 #include "components/crash/core/common/crash_key.h"
 #include "components/embedder_support/origin_trials/origin_trials_settings_storage.h"
+#include "components/fingerprinting_protection_filter/browser/fingerprinting_protection_filter_constants.h"
+#include "components/fingerprinting_protection_filter/browser/fingerprinting_protection_filter_features.h"
 #include "components/gcm_driver/gcm_driver.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/metrics/metrics_pref_names.h"
@@ -114,7 +119,9 @@
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/content/browser/safe_browsing_service_interface.h"
 #include "components/sessions/core/session_id_generator.h"
-#include "components/subresource_filter/content/browser/ruleset_service.h"
+#include "components/subresource_filter/content/shared/browser/ruleset_service.h"
+#include "components/subresource_filter/core/browser/subresource_filter_constants.h"
+#include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/ukm/ukm_service.h"
 #include "components/update_client/update_query_params.h"
@@ -147,6 +154,8 @@
 #if BUILDFLAG(IS_WIN)
 #include "base/win/windows_version.h"
 #include "chrome/browser/browser_features.h"
+#include "chrome/browser/os_crypt/app_bound_encryption_provider_win.h"
+#include "components/app_launch_prefetch/app_launch_prefetch.h"
 #include "components/os_crypt/async/browser/dpapi_key_provider.h"
 #elif BUILDFLAG(IS_MAC)
 #include "chrome/browser/chrome_browser_main_mac.h"
@@ -402,6 +411,9 @@ void BrowserProcessImpl::Init() {
   usb_system_tray_icon_ = std::make_unique<UsbStatusIcon>();
 #endif  // BUILDFLAG(IS_CHROMEOS)
 #endif  // !BUILDFLAG(IS_ANDROID)
+
+  features_ = GlobalFeatures::CreateGlobalFeatures();
+  features_->Init();
 }
 
 #if !BUILDFLAG(IS_ANDROID)
@@ -436,7 +448,7 @@ BrowserProcessImpl::~BrowserProcessImpl() {
 #if !BUILDFLAG(IS_ANDROID)
 void BrowserProcessImpl::StartTearDown() {
   TRACE_EVENT0("shutdown", "BrowserProcessImpl::StartTearDown");
-  // TODO(crbug.com/560486): Fix the tests that make the check of
+  // TODO(crbug.com/41222012): Fix the tests that make the check of
   // |tearing_down_| necessary in IsShuttingDown().
   tearing_down_ = true;
   DCHECK(IsShuttingDown());
@@ -832,8 +844,9 @@ BrowserProcessImpl::extension_event_router_forwarder() {
 NotificationUIManager* BrowserProcessImpl::notification_ui_manager() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 #if BUILDFLAG(ENABLE_CHROME_NOTIFICATIONS)
-  if (!created_notification_ui_manager_)
+  if (!created_notification_ui_manager_ && !shutting_down_) {
     CreateNotificationUIManager();
+  }
   return notification_ui_manager_.get();
 #else
   return nullptr;
@@ -959,7 +972,7 @@ IntranetRedirectDetector* BrowserProcessImpl::intranet_redirect_detector() {
 
 const std::string& BrowserProcessImpl::GetApplicationLocale() {
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
-  // TODO(crbug.com/1033644): Remove #if.
+  // TODO(crbug.com/40663419): Remove #if.
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 #endif
   DCHECK(!locale_.empty());
@@ -968,8 +981,6 @@ const std::string& BrowserProcessImpl::GetApplicationLocale() {
 
 void BrowserProcessImpl::SetApplicationLocale(
     const std::string& actual_locale) {
-  // NOTE: this is called before any threads have been created in non-test
-  // environments.
   locale_ = actual_locale;
   ChromeContentBrowserClient::SetApplicationLocale(actual_locale);
   translate::TranslateDownloadManager::GetInstance()->set_application_locale(
@@ -1049,6 +1060,15 @@ UsbSystemTrayIcon* BrowserProcessImpl::usb_system_tray_icon() {
 os_crypt_async::OSCryptAsync* BrowserProcessImpl::os_crypt_async() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return os_crypt_async_.get();
+}
+
+void BrowserProcessImpl::set_additional_os_crypt_async_provider_for_test(
+    size_t precedence,
+    std::unique_ptr<os_crypt_async::KeyProvider> provider) {
+  CHECK(!additional_provider_for_test_);
+  CHECK(!os_crypt_async_);
+  additional_provider_for_test_.emplace(
+      std::make_pair(precedence, std::move(provider)));
 }
 
 BuildState* BrowserProcessImpl::GetBuildState() {
@@ -1134,11 +1154,22 @@ BrowserProcessImpl::subresource_filter_ruleset_service() {
   return subresource_filter_ruleset_service_.get();
 }
 
+subresource_filter::RulesetService*
+BrowserProcessImpl::fingerprinting_protection_ruleset_service() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!created_fingerprinting_protection_ruleset_service_ &&
+      base::FeatureList::IsEnabled(fingerprinting_protection_filter::features::
+                                       kEnableFingerprintingProtectionFilter)) {
+    CreateFingerprintingProtectionRulesetService();
+  }
+  return fingerprinting_protection_ruleset_service_.get();
+}
+
 StartupData* BrowserProcessImpl::startup_data() {
   return startup_data_;
 }
 
-// TODO(crbug.com/1052397): Revisit once build flag switch of lacros-chrome is
+// TODO(crbug.com/40118868): Revisit once build flag switch of lacros-chrome is
 // complete.
 #if BUILDFLAG(IS_WIN) || (BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS))
 void BrowserProcessImpl::StartAutoupdateTimer() {
@@ -1315,8 +1346,16 @@ void BrowserProcessImpl::PreMainMessageLoopRun() {
   std::vector<std::pair<size_t, std::unique_ptr<os_crypt_async::KeyProvider>>>
       providers;
 
+  if (additional_provider_for_test_) {
+    // Explicitly move the KeyProvider but leave the std::optional holding the
+    // pair, this ensures it can only be set once in testing.
+    providers.push_back(
+        std::make_pair(std::get<0>(*additional_provider_for_test_),
+                       std::move(std::get<1>(*additional_provider_for_test_))));
+  }
+
 #if BUILDFLAG(IS_WIN)
-  // TODO(crbug.com/1373092): For Windows, continue to add providers behind
+  // TODO(crbug.com/40241934): For Windows, continue to add providers behind
   // features, as support for them is added.
   if (base::FeatureList::IsEnabled(features::kEnableDPAPIEncryptionProvider)) {
     // The DPAPI key provider requires OSCrypt::Init to have already been called
@@ -1326,13 +1365,36 @@ void BrowserProcessImpl::PreMainMessageLoopRun() {
         /*precedence=*/10u,
         std::make_unique<os_crypt_async::DPAPIKeyProvider>(local_state())));
   }
+
+  if (base::FeatureList::IsEnabled(
+          features::kRegisterAppBoundEncryptionProvider)) {
+    // Support level is logged separately to metrics from
+    // app_bound_encryption_metrics_win.cc.
+    providers.emplace_back(std::make_pair(
+        // Note: 15 is chosen to be higher than the 10 precedence above for
+        // DPAPI. This ensures that when the the provider is enabled for
+        // encryption, the App-Bound encryption key is used and not the DPAPI
+        // one.
+        /*precedence=*/15u,
+        std::make_unique<os_crypt_async::AppBoundEncryptionProviderWin>(
+            local_state())));
+  }
 #endif  // BUILDFLAG(IS_WIN)
 
   os_crypt_async_ =
       std::make_unique<os_crypt_async::OSCryptAsync>(std::move(providers));
 
   // Trigger async initialization of OSCrypt key providers.
-  std::ignore = os_crypt_async_->GetInstance(base::DoNothing());
+  os_crypt_async_init_subscription_.emplace(
+      os_crypt_async_->GetInstance(base::BindOnce(
+          [](base::TimeTicks start_time, os_crypt_async::Encryptor encryptor,
+             bool success) {
+            base::UmaHistogramTimes("OSCrypt.AsyncInitialization.Time",
+                                    base::TimeTicks::Now() - start_time);
+            base::UmaHistogramBoolean("OSCrypt.AsyncInitialization.Result",
+                                      success);
+          },
+          base::TimeTicks::Now())));
 }
 
 void BrowserProcessImpl::CreateIconManager() {
@@ -1403,8 +1465,8 @@ void BrowserProcessImpl::CreateSafeBrowsingService() {
         safe_browsing::GetSafeBrowsingServiceFactory());
   }
 
-  // TODO(crbug/925153): Port consumers of the |safe_browsing_service_| to use
-  // the interface in components/safe_browsing, and remove this cast.
+  // TODO(crbug.com/41437292): Port consumers of the |safe_browsing_service_| to
+  // use the interface in components/safe_browsing, and remove this cast.
   safe_browsing_service_ = static_cast<safe_browsing::SafeBrowsingService*>(
       safe_browsing::SafeBrowsingServiceInterface::CreateSafeBrowsingService());
   if (safe_browsing_service_)
@@ -1415,10 +1477,32 @@ void BrowserProcessImpl::CreateSubresourceFilterRulesetService() {
   DCHECK(!subresource_filter_ruleset_service_);
   created_subresource_filter_ruleset_service_ = true;
 
+  if (!base::FeatureList::IsEnabled(
+          subresource_filter::kSafeBrowsingSubresourceFilter)) {
+    return;
+  }
+
   base::FilePath user_data_dir;
   base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
   subresource_filter_ruleset_service_ =
-      subresource_filter::RulesetService::Create(local_state(), user_data_dir);
+      subresource_filter::RulesetService::Create(
+          subresource_filter::kSafeBrowsingRulesetConfig, local_state(),
+          user_data_dir);
+}
+
+void BrowserProcessImpl::CreateFingerprintingProtectionRulesetService() {
+  CHECK(!fingerprinting_protection_ruleset_service_);
+  // Set this to true so that we don't retry indefinitely to
+  // create the service if there was an error.
+  created_fingerprinting_protection_ruleset_service_ = true;
+
+  base::FilePath user_data_dir;
+  base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
+  fingerprinting_protection_ruleset_service_ =
+      subresource_filter::RulesetService::Create(
+          fingerprinting_protection_filter::
+              kFingerprintingProtectionRulesetConfig,
+          local_state(), user_data_dir);
 }
 
 #if !BUILDFLAG(IS_ANDROID)
@@ -1525,13 +1609,13 @@ void BrowserProcessImpl::Unpin() {
 
   chrome::ShutdownIfNeeded();
 
-  // TODO(crbug.com/967603): remove when root cause is found.
+  // TODO(crbug.com/40629374): remove when root cause is found.
   CHECK_EQ(BrowserList::GetInstance()->size(), 0u);
 #endif  // !BUILDFLAG(IS_ANDROID)
 }
 
 // Mac is currently not supported.
-// TODO(crbug.com/1052397): Revisit once build flag switch of lacros-chrome is
+// TODO(crbug.com/40118868): Revisit once build flag switch of lacros-chrome is
 // complete.
 #if BUILDFLAG(IS_WIN) || (BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS))
 
@@ -1570,7 +1654,8 @@ void BrowserProcessImpl::RestartBackgroundInstance() {
   }
 
 #if BUILDFLAG(IS_WIN)
-  new_cl->AppendArg(switches::kPrefetchArgumentBrowserBackground);
+  new_cl->AppendArgNative(app_launch_prefetch::GetPrefetchSwitch(
+      app_launch_prefetch::SubprocessType::kBrowserBackground));
 #endif  // BUILDFLAG(IS_WIN)
 
   DLOG(WARNING) << "Shutting down current instance of the browser.";

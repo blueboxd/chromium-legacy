@@ -33,7 +33,6 @@ import org.robolectric.annotation.Config;
 import org.chromium.base.ActivityState;
 import org.chromium.base.FeatureList;
 import org.chromium.base.FeatureList.TestValues;
-import org.chromium.base.metrics.UmaRecorderHolder;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.HistogramWatcher;
 import org.chromium.components.messages.MessageQueueManager.MessageState;
@@ -172,7 +171,6 @@ public class MessageQueueManagerTest {
                 .runAfterInitialMessageLayout(any(Runnable.class));
         doReturn(false).when(container).isIsInitializingLayout();
         mAnimationCoordinator = new MessageAnimationCoordinator(container, Animator::start);
-        UmaRecorderHolder.resetForTesting();
     }
 
     /**
@@ -256,7 +254,7 @@ public class MessageQueueManagerTest {
         testEnqueueMultipleMessagesInternal(true);
     }
 
-    // TODO(crbug.com/1517771): replace with ParameterizedRunner or remove non-stacking animation
+    // TODO(crbug.com/41490749): replace with ParameterizedRunner or remove non-stacking animation
     // test case
     private void testEnqueueMultipleMessagesInternal(boolean isStackingEnabled) {
         var testValues = new TestValues();
@@ -585,7 +583,7 @@ public class MessageQueueManagerTest {
     @Test
     @SmallTest
     public void testMessageShowOnScopeChange() {
-        // TODO(crbug.com/1163290): cover more various scenarios, such as re-activating scopes
+        // TODO(crbug.com/40740060): cover more various scenarios, such as re-activating scopes
         //                          which have been destroyed.
         MessageQueueDelegate delegate = Mockito.spy(mEmptyDelegate);
         MessageQueueManager queueManager = new MessageQueueManager(mAnimationCoordinator);

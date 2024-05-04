@@ -26,10 +26,10 @@ _LINUX_SI_ALLOWLIST = {
         'InstrProfilingRuntime\\.cpp : ' +
         '_GLOBAL__sub_I_InstrProfilingRuntime\\.cpp',
 
-        # TODO(crbug.com/973554): Remove.
+        # TODO(crbug.com/41464604): Remove.
         'iostream\\.cpp : _GLOBAL__I_000100',
 
-        # TODO(crbug.com/1445935): Rust stdlib argv handling.
+        # TODO(crbug.com/40268361): Rust stdlib argv handling.
         # https://github.com/rust-lang/rust/blob/b08148f6a76010ea3d4e91d61245aa7aac59e4b4/library/std/src/sys/unix/args.rs#L107-L127
         # https://github.com/rust-lang/rust/issues/111921
         '.* : std::sys::pal::unix::args::imp::ARGV_INIT_ARRAY::init_wrapper',
@@ -190,7 +190,7 @@ def main_run(args):
         allow_coverage_initializer = '--allow-coverage-initializer' in \
           args.args)
   elif sys.platform.startswith('linux'):
-    # TODO(crbug.com/1492865): Delete this assert if it's not seen to fail
+    # TODO(crbug.com/40285648): Delete this assert if it's not seen to fail
     # anywhere.
     assert not check_if_chromeos(args), (
         "This script is no longer supported for CrOS")

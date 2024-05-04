@@ -76,8 +76,7 @@ void RenderFrameHostDelegate::GetNFC(
 #endif
 
 bool RenderFrameHostDelegate::CanEnterFullscreenMode(
-    RenderFrameHostImpl* requesting_frame,
-    const blink::mojom::FullscreenOptions& options) {
+    RenderFrameHostImpl* requesting_frame) {
   return true;
 }
 
@@ -160,12 +159,6 @@ RenderWidgetHostImpl* RenderFrameHostDelegate::CreateNewPopupWidget(
     mojo::PendingAssociatedReceiver<blink::mojom::WidgetHost> blink_widget_host,
     mojo::PendingAssociatedRemote<blink::mojom::Widget> blink_widget) {
   return nullptr;
-}
-
-bool RenderFrameHostDelegate::ShowPopupMenu(
-    RenderFrameHostImpl* render_frame_host,
-    const gfx::Rect& bounds) {
-  return false;
 }
 
 std::vector<RenderFrameHostImpl*>

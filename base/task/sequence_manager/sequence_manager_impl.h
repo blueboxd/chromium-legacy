@@ -21,6 +21,7 @@
 #include "base/feature_list.h"
 #include "base/functional/callback_forward.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/raw_ptr_exclusion.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_pump_type.h"
@@ -102,8 +103,7 @@ class BASE_EXPORT SequenceManagerImpl
   SequenceManagerImpl& operator=(const SequenceManagerImpl&) = delete;
   ~SequenceManagerImpl() override;
 
-  // Initializes the state of all the sequence manager features. Must be invoked
-  // after FeatureList initialization.
+  // Initializes features for this class. See `base::features::Init()`.
   static void InitializeFeatures();
 
   // SequenceManager implementation:
@@ -165,13 +165,15 @@ class BASE_EXPORT SequenceManagerImpl
   MessagePump* GetMessagePump() const;
   bool IsType(MessagePumpType type) const;
   void SetAddQueueTimeToTasks(bool enable);
-  void SetTaskExecutionAllowed(bool allowed);
-  bool IsTaskExecutionAllowed() const;
+  void SetTaskExecutionAllowedInNativeNestedLoop(bool allowed);
+  bool IsTaskExecutionAllowedInNativeNestedLoop() const;
 #if BUILDFLAG(IS_IOS)
   void AttachToMessagePump();
 #endif
   bool IsIdleForTesting() override;
-  void EnableMessagePumpTimeKeeperMetrics(const char* thread_name);
+  void EnableMessagePumpTimeKeeperMetrics(
+      const char* thread_name,
+      bool wall_time_based_metrics_enabled_for_testing = false);
 
   // Requests that a task to process work is scheduled.
   void ScheduleWork();
@@ -329,7 +331,9 @@ class BASE_EXPORT SequenceManagerImpl
     //   internal scheduling code does not expect queues to be pulled
     //   from underneath.
 
-    std::set<raw_ptr<internal::TaskQueueImpl, SetExperimental>> active_queues;
+    // RAW_PTR_EXCLUSION: Performance reasons (based on analysis of
+    // speedometer3).
+    RAW_PTR_EXCLUSION std::set<internal::TaskQueueImpl*> active_queues;
 
     std::map<internal::TaskQueueImpl*, std::unique_ptr<internal::TaskQueueImpl>>
         queues_to_delete;

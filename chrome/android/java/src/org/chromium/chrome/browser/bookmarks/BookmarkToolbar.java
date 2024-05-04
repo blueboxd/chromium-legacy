@@ -34,7 +34,7 @@ import java.util.function.Function;
  */
 public class BookmarkToolbar extends SelectableListToolbar<BookmarkId>
         implements OnMenuItemClickListener, OnClickListener {
-    // TODO(crbug.com/1425201): Remove BookmarkModel reference.
+    // TODO(crbug.com/40898590): Remove BookmarkModel reference.
     private BookmarkModel mBookmarkModel;
     private BookmarkOpener mBookmarkOpener;
     private SelectionDelegate<BookmarkId> mSelectionDelegate;
@@ -61,13 +61,9 @@ public class BookmarkToolbar extends SelectableListToolbar<BookmarkId>
         super(context, attrs);
         setNavigationOnClickListener(this);
 
-        if (BookmarkFeatures.isAndroidImprovedBookmarksEnabled()) {
-            inflateMenu(R.menu.bookmark_toolbar_menu_improved);
-            MenuCompat.setGroupDividerEnabled(
-                    getMenu().findItem(R.id.normal_options_submenu).getSubMenu(), true);
-        } else {
-            inflateMenu(R.menu.bookmark_toolbar_menu);
-        }
+        inflateMenu(R.menu.bookmark_toolbar_menu_improved);
+        MenuCompat.setGroupDividerEnabled(
+                getMenu().findItem(R.id.normal_options_submenu).getSubMenu(), true);
 
         setOnMenuItemClickListener(this);
     }
@@ -91,14 +87,6 @@ public class BookmarkToolbar extends SelectableListToolbar<BookmarkId>
         if (mBookmarkUiMode != BookmarkUiMode.LOADING) {
             showNormalView();
         }
-
-        if (!BookmarkFeatures.isAndroidImprovedBookmarksEnabled()) {
-            if (mBookmarkUiMode == BookmarkUiMode.SEARCHING) {
-                showSearchView(mSoftKeyboardVisible);
-            } else {
-                hideSearchView(/* notify= */ false);
-            }
-        }
     }
 
     void setSoftKeyboardVisible(boolean visible) {
@@ -120,28 +108,17 @@ public class BookmarkToolbar extends SelectableListToolbar<BookmarkId>
         setOnMenuItemClickListener(dragEnabled ? null : this);
     }
 
-    void setSearchButtonVisible(boolean visible) {
-        // The improved bookmarks experience embeds search in the list.
-        if (BookmarkFeatures.isAndroidImprovedBookmarksEnabled()) return;
-        mSearchButtonVisible = visible;
-        getMenu().findItem(R.id.search_menu_id).setVisible(visible);
-    }
-
     void setEditButtonVisible(boolean visible) {
         mEditButtonVisible = visible;
         getMenu().findItem(R.id.edit_menu_id).setVisible(visible);
     }
 
     void setNewFolderButtonVisible(boolean visible) {
-        // The new folder button is only visible when improved bookmarks is enabled.
-        if (!BookmarkFeatures.isAndroidImprovedBookmarksEnabled()) return;
         mNewFolderButtonVisible = visible;
         getMenu().findItem(R.id.create_new_folder_menu_id).setVisible(visible);
     }
 
     void setNewFolderButtonEnabled(boolean enabled) {
-        // The new folder button is only visible when improved bookmarks is enabled.
-        if (!BookmarkFeatures.isAndroidImprovedBookmarksEnabled()) return;
         mNewFolderButtonEnabled = enabled;
         getMenu().findItem(R.id.create_new_folder_menu_id).setEnabled(enabled);
     }
@@ -155,12 +132,10 @@ public class BookmarkToolbar extends SelectableListToolbar<BookmarkId>
     }
 
     void setSortMenuIds(List<Integer> sortMenuIds) {
-        if (!BookmarkFeatures.isAndroidImprovedBookmarksEnabled()) return;
         mSortMenuIds = sortMenuIds;
     }
 
     void setSortMenuIdsEnabled(boolean enabled) {
-        if (!BookmarkFeatures.isAndroidImprovedBookmarksEnabled()) return;
         mSortMenuIdsEnabled = enabled;
         for (Integer id : mSortMenuIds) {
             getMenu().findItem(id).setEnabled(enabled);
@@ -199,11 +174,6 @@ public class BookmarkToolbar extends SelectableListToolbar<BookmarkId>
 
     @Override
     public void onNavigationBack() {
-        if (isSearching()) {
-            super.onNavigationBack();
-            return;
-        }
-
         // The navigation button shouldn't be visible unless the current folder is non-null.
         mNavigateBackRunnable.run();
     }
@@ -213,7 +183,6 @@ public class BookmarkToolbar extends SelectableListToolbar<BookmarkId>
         super.showNormalView();
 
         // SelectableListToolbar will show/hide the entire group.
-        setSearchButtonVisible(mSearchButtonVisible);
         setEditButtonVisible(mEditButtonVisible);
         setNewFolderButtonVisible(mNewFolderButtonVisible);
         setNewFolderButtonEnabled(mNewFolderButtonEnabled);

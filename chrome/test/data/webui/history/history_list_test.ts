@@ -71,6 +71,23 @@ suite('HistoryListTest', function() {
     return element.$['infinite-list'].items! as HistoryEntry[];
   }
 
+  test('IsEmpty', async () => {
+    await finishSetup([]);
+    await flushTasks();
+    assertTrue(element.isEmpty);
+
+    // Load some results.
+    testService.resetResolver('queryHistory');
+    testService.setQueryResult(
+        {info: createHistoryInfo(), value: ADDITIONAL_RESULTS});
+    element.dispatchEvent(new CustomEvent(
+        'query-history', {detail: true, bubbles: true, composed: true}));
+    await testService.whenCalled('queryHistoryContinuation');
+    await flushTasks();
+
+    assertFalse(element.isEmpty);
+  });
+
   test('DeletingSingleItem', async function() {
     await finishSetup([createHistoryEntry('2015-01-01', 'http://example.com')]);
     await flushTasks();
@@ -655,6 +672,13 @@ suite('HistoryListTest', function() {
     webUIListenerCallback('history-deleted');
     await flushTasks();
     assertEquals(0, testService.getCallCount('queryHistory'));
+  });
+
+  test('SetsScrollTarget', async () => {
+    await finishSetup(TEST_HISTORY_RESULTS);
+    await flushTasks();
+    assertEquals(app.scrollTarget, element.$['infinite-list'].scrollTarget);
+    assertEquals(app.scrollTarget, element.$['scroll-threshold'].scrollTarget);
   });
 
   teardown(function() {

@@ -20,6 +20,7 @@
 #include "base/run_loop.h"
 #include "base/strings/safe_sprintf.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "build/build_config.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/ash/app_list/app_list_client_impl.h"
@@ -30,6 +31,7 @@
 #include "chrome/browser/ash/login/test/login_manager_mixin.h"
 #include "chrome/browser/ash/login/ui/user_adding_screen.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/services/app_service/public/cpp/icon_loader.h"
@@ -982,7 +984,7 @@ IN_PROC_BROWSER_TEST_F(AppListSortBrowserTest,
 
 // Verify that switching to clamshell mode when the fade out animation in tablet
 // mode is running works as expected.
-// TODO(crbug.com/1302924): Flaky.
+// TODO(crbug.com/40217187): Flaky.
 IN_PROC_BROWSER_TEST_F(
     AppListSortBrowserTest,
     DISABLED_TransitionToClamshellModeDuringFadeOutAnimation) {
@@ -1556,7 +1558,15 @@ IN_PROC_BROWSER_TEST_P(AppListSortLoginTest,
 
 // Verifies that the app list sort discovery duration after the education nudge
 // shows is recorded as expected.
-IN_PROC_BROWSER_TEST_P(AppListSortLoginTest, VerifySortAfterNudgeShowMetric) {
+// TODO(crbug.com/328928228): Re-enable this test
+#if BUILDFLAG(IS_CHROMEOS) && defined(MEMORY_SANITIZER)
+#define MAYBE_VerifySortAfterNudgeShowMetric \
+  DISABLED_VerifySortAfterNudgeShowMetric
+#else
+#define MAYBE_VerifySortAfterNudgeShowMetric VerifySortAfterNudgeShowMetric
+#endif
+IN_PROC_BROWSER_TEST_P(AppListSortLoginTest,
+                       MAYBE_VerifySortAfterNudgeShowMetric) {
   LoginUser(account_id1_);
 
   ash::AcceleratorController::Get()->PerformActionIfEnabled(
@@ -1612,7 +1622,7 @@ class AppListSortLoginTalbetTest : public ash::LoginManagerTest {
   ash::LoginManagerMixin login_mixin_{&mixin_host_};
 };
 
-// TODO(https://crbug.com/1411204): Flaky test.
+// TODO(crbug.com/40890115): Flaky test.
 IN_PROC_BROWSER_TEST_F(AppListSortLoginTalbetTest,
                        DISABLED_PRE_SwitchUnderTemporarySort) {
   LoginUser(account_id1_);
@@ -1637,7 +1647,7 @@ IN_PROC_BROWSER_TEST_F(AppListSortLoginTalbetTest,
 // Verifies that the active account switch works as expected when the app list
 // is under temporary sort.
 //
-// TODO(https://crbug.com/1411204): Flaky test.
+// TODO(crbug.com/40890115): Flaky test.
 IN_PROC_BROWSER_TEST_F(AppListSortLoginTalbetTest,
                        DISABLED_SwitchUnderTemporarySort) {
   LoginUser(account_id1_);

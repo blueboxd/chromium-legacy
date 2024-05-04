@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <memory>
 #include <string>
+#include <string_view>
 
 #include "base/containers/contains.h"
 #include "base/files/file_path.h"
@@ -299,7 +300,7 @@ class MetricsServiceTest : public testing::Test {
   // Returns the number of samples logged to the specified histogram or 0 if
   // the histogram was not found.
   int GetHistogramSampleCount(const ChromeUserMetricsExtension& uma_log,
-                              base::StringPiece histogram_name) {
+                              std::string_view histogram_name) {
     const auto histogram_name_hash = base::HashMetricName(histogram_name);
     int samples = 0;
     for (int i = 0; i < uma_log.histogram_event_size(); ++i) {
@@ -436,11 +437,11 @@ class ExperimentTestMetricsProvider : public TestMetricsProvider {
   raw_ptr<base::FieldTrial> session_data_trial_;
 };
 
-bool HistogramExists(base::StringPiece name) {
+bool HistogramExists(std::string_view name) {
   return base::StatisticsRecorder::FindHistogram(name) != nullptr;
 }
 
-base::HistogramBase::Count GetHistogramDeltaTotalCount(base::StringPiece name) {
+base::HistogramBase::Count GetHistogramDeltaTotalCount(std::string_view name) {
   return base::StatisticsRecorder::FindHistogram(name)
       ->SnapshotDelta()
       ->TotalCount();
@@ -519,6 +520,13 @@ TEST_P(MetricsServiceTestWithFeatures, InitialStabilityLogAtProviderRequest) {
   // saved from a previous session.
   TestMetricsServiceClient client;
   TestMetricsLog log("0a94430b-18e5-43c8-a657-580f7e855ce1", 1, &client);
+  // Manually override the log's session hash to something else to verify that
+  // stability logs created later on using this environment will contain that
+  // session hash.
+  uint64_t modified_session_hash =
+      log.uma_proto()->system_profile().session_hash() + 1;
+  log.uma_proto()->mutable_system_profile()->set_session_hash(
+      modified_session_hash);
   DelegatingProvider delegating_provider;
   TestMetricsService::RecordCurrentEnvironmentHelper(&log, GetLocalState(),
                                                      &delegating_provider);
@@ -571,6 +579,8 @@ TEST_P(MetricsServiceTestWithFeatures, InitialStabilityLogAtProviderRequest) {
   EXPECT_TRUE(uma_log.has_client_id());
   EXPECT_TRUE(uma_log.has_session_id());
   EXPECT_TRUE(uma_log.has_system_profile());
+  EXPECT_TRUE(uma_log.system_profile().has_session_hash());
+  EXPECT_EQ(modified_session_hash, uma_log.system_profile().session_hash());
   EXPECT_EQ(0, uma_log.user_action_event_size());
   EXPECT_EQ(0, uma_log.omnibox_event_size());
   CheckForNonStabilityHistograms(uma_log);

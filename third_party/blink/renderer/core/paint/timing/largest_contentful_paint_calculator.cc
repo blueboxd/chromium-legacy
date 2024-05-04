@@ -268,11 +268,24 @@ bool LargestContentfulPaintCalculator::NotifyMetricsIfLargestImagePaintChanged(
             blink::LargestContentfulPaintType::kDataURI;
       }
 
-      latest_lcp_details_.largest_image_discovery_time =
+      // Set cross-origin flag of the image.
+      if (auto* window = window_performance_->DomWindow()) {
+        auto image_url = image_record->media_timing->Url();
+        if (!image_url.IsEmpty() && image_url.ProtocolIsInHTTPFamily() &&
+            window->GetFrame()->IsOutermostMainFrame()) {
+          auto image_origin = SecurityOrigin::Create(image_url);
+          if (!image_origin->IsSameOriginWith(window->GetSecurityOrigin())) {
+            latest_lcp_details_.largest_contentful_paint_type |=
+                blink::LargestContentfulPaintType::kCrossOrigin;
+          }
+        }
+      }
+
+      latest_lcp_details_.resource_load_timings.discovery_time =
           image_record->media_timing->DiscoveryTime();
-      latest_lcp_details_.largest_image_load_start =
+      latest_lcp_details_.resource_load_timings.load_start =
           image_record->media_timing->LoadStart();
-      latest_lcp_details_.largest_image_load_end =
+      latest_lcp_details_.resource_load_timings.load_end =
           image_record->media_timing->LoadEnd();
       latest_lcp_details_.is_loaded_from_memory_cache =
           image_record->media_timing->IsLoadedFromMemoryCache();

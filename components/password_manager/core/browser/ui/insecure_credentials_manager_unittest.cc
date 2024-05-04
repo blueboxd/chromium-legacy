@@ -4,8 +4,10 @@
 
 #include "components/password_manager/core/browser/ui/insecure_credentials_manager.h"
 
+#include <string_view>
+
+#include "base/location.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -60,10 +62,10 @@ using StrictMockInsecureCredentialsManagerObserver =
     ::testing::StrictMock<MockInsecureCredentialsManagerObserver>;
 
 PasswordForm MakeSavedPassword(
-    base::StringPiece signon_realm,
-    base::StringPiece16 username,
-    base::StringPiece16 password,
-    base::StringPiece16 username_element = u"",
+    std::string_view signon_realm,
+    std::u16string_view username,
+    std::u16string_view password,
+    std::u16string_view username_element = u"",
     PasswordForm::Store store = PasswordForm::Store::kProfileStore) {
   PasswordForm form;
   form.signon_realm = std::string(signon_realm);
@@ -75,8 +77,8 @@ PasswordForm MakeSavedPassword(
   return form;
 }
 
-LeakCheckCredential MakeLeakCredential(base::StringPiece16 username,
-                                       base::StringPiece16 password) {
+LeakCheckCredential MakeLeakCredential(std::u16string_view username,
+                                       std::u16string_view password) {
   return LeakCheckCredential(std::u16string(username),
                              std::u16string(password));
 }
@@ -199,7 +201,7 @@ TEST_F(InsecureCredentialsManagerTest,
 
   // Removing a saved password should notify observers.
   EXPECT_CALL(observer, OnInsecureCredentialsChanged);
-  store().RemoveLogin(saved_password);
+  store().RemoveLogin(FROM_HERE, saved_password);
   RunUntilIdle();
 
   // After an observer is removed it should no longer receive notifications.
@@ -274,12 +276,12 @@ TEST_F(InsecureCredentialsManagerTest, ReactToChangesInBothTables) {
               testing::UnorderedElementsAre(CredentialUIEntry(password1),
                                             CredentialUIEntry(password2)));
 
-  store().RemoveLogin(password1);
+  store().RemoveLogin(FROM_HERE, password1);
   RunUntilIdle();
   EXPECT_THAT(provider().GetInsecureCredentialEntries(),
               ElementsAre(CredentialUIEntry(password2)));
 
-  store().RemoveLogin(password2);
+  store().RemoveLogin(FROM_HERE, password2);
   RunUntilIdle();
   EXPECT_THAT(provider().GetInsecureCredentialEntries(), IsEmpty());
 }

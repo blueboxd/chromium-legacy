@@ -12,6 +12,7 @@
 #include "base/containers/flat_set.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
+#include "base/run_loop.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -102,7 +103,7 @@ void ExclusiveAccessTest::TearDownOnMainThread() {
 // static
 bool ExclusiveAccessTest::IsBubbleDownloadNotification(
     ExclusiveAccessBubble* bubble) {
-  return bubble->notify_download_;
+  return bubble->params_.has_download;
 }
 
 bool ExclusiveAccessTest::RequestKeyboardLock(bool esc_key_locked) {
@@ -120,7 +121,25 @@ bool ExclusiveAccessTest::RequestKeyboardLock(bool esc_key_locked) {
   else
     codes = base::flat_set<ui::DomCode>({ui::DomCode::US_A});
 
-  return content::RequestKeyboardLock(tab, std::move(codes));
+  bool success = false;
+  bool callback_called = false;
+  base::OnceCallback<void(blink::mojom::KeyboardLockRequestResult)> callback =
+      base::BindOnce(
+          [](bool* success, bool* callback_called,
+             blink::mojom::KeyboardLockRequestResult result) {
+            *success =
+                result == blink::mojom::KeyboardLockRequestResult::kSuccess;
+            *callback_called = true;
+          },
+          &success, &callback_called);
+  content::RequestKeyboardLock(tab, std::move(codes), std::move(callback));
+  // We currently assume that content::RequestKeyboardLock() calls the callback
+  // synchronously. We'd need to change the test code here if the assumption no
+  // longer holds. However, we cannot use base::RunLoop as-is, since this code
+  // may be used with base::TestMockTimeTaskRunner::ScopedContext, which cannot
+  // be used together with base::RunLoop.
+  CHECK(callback_called);
+  return success;
 }
 
 void ExclusiveAccessTest::RequestToLockPointer(bool user_gesture,
@@ -157,9 +176,10 @@ void ExclusiveAccessTest::LostPointerLock() {
   browser()->LostPointerLock();
 }
 
-bool ExclusiveAccessTest::SendEscapeToExclusiveAccessManager() {
+bool ExclusiveAccessTest::SendEscapeToExclusiveAccessManager(bool is_key_down) {
   content::NativeWebKeyboardEvent event(
-      blink::WebInputEvent::Type::kRawKeyDown,
+      is_key_down ? blink::WebInputEvent::Type::kRawKeyDown
+                  : blink::WebInputEvent::Type::kKeyUp,
       blink::WebInputEvent::kNoModifiers,
       blink::WebInputEvent::GetStaticTimeStampForTests());
   event.windows_key_code = ui::VKEY_ESCAPE;
@@ -210,6 +230,14 @@ void ExclusiveAccessTest::WaitForTabFullscreenExit() {
   waiter.Wait();
 }
 
+void ExclusiveAccessTest::WaitAndVerifyFullscreenState(bool browser_fullscreen,
+                                                       bool tab_fullscreen) {
+  ui_test_utils::FullscreenWaiter waiter(
+      browser(), {.browser_fullscreen = browser_fullscreen,
+                  .tab_fullscreen = tab_fullscreen});
+  waiter.Wait();
+}
+
 void ExclusiveAccessTest::EnterExtensionInitiatedFullscreen() {
   ui_test_utils::FullscreenWaiter waiter(browser(),
                                          {.browser_fullscreen = true});
@@ -217,6 +245,10 @@ void ExclusiveAccessTest::EnterExtensionInitiatedFullscreen() {
   browser()->ToggleFullscreenModeWithExtension(
       extensions::Extension::GetBaseURLFromExtensionId(kExtensionId));
   waiter.Wait();
+}
+
+bool ExclusiveAccessTest::IsEscKeyHoldTimerRunning() {
+  return GetExclusiveAccessManager()->esc_key_hold_timer_for_test().IsRunning();
 }
 
 void ExclusiveAccessTest::SetEscRepeatWindowLength(
@@ -250,10 +282,6 @@ void ExclusiveAccessTest::SetUserEscapeTimestampForTest(
   GetExclusiveAccessManager()
       ->pointer_lock_controller()
       ->last_user_escape_time_ = timestamp;
-}
-
-int ExclusiveAccessTest::InitialBubbleDelayMs() const {
-  return ExclusiveAccessBubble::kInitialDelayMs;
 }
 
 void ExclusiveAccessTest::ExpectMockControllerReceivedEscape(int count) {

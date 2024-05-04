@@ -126,7 +126,7 @@ FidoCableDiscovery::FidoCableDiscovery(
       discovery_data_(std::move(discovery_data)) {
 // Windows currently does not support multiple EIDs, thus we ignore any extra
 // discovery data.
-// TODO(https://crbug.com/837088): Add support for multiple EIDs on Windows.
+// TODO(crbug.com/40573698): Add support for multiple EIDs on Windows.
 #if BUILDFLAG(IS_WIN)
   if (discovery_data_.size() > 1u) {
     FIDO_LOG(ERROR) << "discovery_data_.size()=" << discovery_data_.size()
@@ -227,7 +227,7 @@ void FidoCableDiscovery::OnGetAdapter(scoped_refptr<BluetoothAdapter> adapter) {
   }
 
 #if BUILDFLAG(IS_MAC)
-  // TODO(crbug.com/1314404): turn this into a user-visible UI if we believe
+  // TODO(crbug.com/40221398): turn this into a user-visible UI if we believe
   // that it's a good signal.
 
   switch (fido::mac::ProcessIsSigned()) {
@@ -315,8 +315,8 @@ void FidoCableDiscovery::AdapterPoweredChanged(BluetoothAdapter* adapter,
   // the adapter, such that one of the WinRT API calls inside
   // BluetoothAdapter::StartDiscoverySessionWithFilter() can fail with "Device
   // not ready for use". So wait for things to actually be ready.
-  // TODO(crbug/1046140): Remove this delay once the Bluetooth layer handles
-  // the spurious failure.
+  // TODO(crbug.com/40670639): Remove this delay once the Bluetooth layer
+  // handles the spurious failure.
   base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&FidoCableDiscovery::StartCableDiscovery,

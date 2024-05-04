@@ -16,34 +16,32 @@
 namespace ash {
 
 class ClipboardHistoryItem;
-class PickerListItemView;
 class PickerSearchResult;
 
 // A provider to fetch clipboard history.
 class ASH_EXPORT PickerClipboardProvider {
  public:
-  // Indicates the user has selected a result.
-  using SelectSearchResultCallback =
-      base::RepeatingCallback<void(const PickerSearchResult& result)>;
-
-  using OnFetchResultCallback =
-      base::RepeatingCallback<void(std::unique_ptr<PickerListItemView>)>;
+  using OnFetchResultsCallback =
+      base::OnceCallback<void(std::vector<PickerSearchResult>)>;
 
   explicit PickerClipboardProvider(
-      SelectSearchResultCallback select_result_callback,
       base::Clock* clock = base::DefaultClock::GetInstance());
 
   PickerClipboardProvider(const PickerClipboardProvider&) = delete;
   PickerClipboardProvider& operator=(const PickerClipboardProvider&) = delete;
   ~PickerClipboardProvider();
 
-  void FetchResult(OnFetchResultCallback callback);
+  // Fetches clipboard items which were copied within `recency` time duration.
+  void FetchResults(OnFetchResultsCallback callback,
+                    const std::u16string& query = u"",
+                    base::TimeDelta recency = base::TimeDelta::Max());
 
  private:
-  void OnFetchHistory(OnFetchResultCallback callback,
+  void OnFetchHistory(OnFetchResultsCallback callback,
+                      const std::u16string& query,
+                      base::TimeDelta recency,
                       std::vector<ClipboardHistoryItem> items);
 
-  SelectSearchResultCallback select_result_callback_;
   raw_ptr<base::Clock> clock_;
   base::WeakPtrFactory<PickerClipboardProvider> weak_ptr_factory_{this};
 };

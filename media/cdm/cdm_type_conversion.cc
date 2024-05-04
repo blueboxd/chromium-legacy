@@ -119,8 +119,8 @@ CdmSessionType ToMediaSessionType(cdm::SessionType session_type) {
       return CdmSessionType::kTemporary;
     case cdm::kPersistentLicense:
       return CdmSessionType::kPersistentLicense;
-    // TODO(crbug.com/1181029): Remove after `kPersistentUsageRecord` is removed
-    // from the CDM interface.
+    // TODO(crbug.com/40170205): Remove after `kPersistentUsageRecord` is
+    // removed from the CDM interface.
     case cdm::kPersistentUsageRecord:
       break;
   }
@@ -583,7 +583,7 @@ void ToCdmInputBuffer(const DecoderBuffer& encrypted_buffer,
     return;
 
   input_buffer->data = encrypted_buffer.data();
-  input_buffer->data_size = encrypted_buffer.data_size();
+  input_buffer->data_size = encrypted_buffer.size();
   input_buffer->timestamp = encrypted_buffer.timestamp().InMicroseconds();
 
   const DecryptConfig* decrypt_config = encrypted_buffer.decrypt_config();

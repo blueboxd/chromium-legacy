@@ -8,13 +8,13 @@ import("//components/nacl/features.gni")
 import("//components/signin/features.gni")
 import("//extensions/buildflags/buildflags.gni")
 
+assert(!is_fuchsia, "Fuchsia shouldn't use anything in //chrome")
+
 source_set("path_parser") {
   sources = [ "policy_path_parser.h" ]
 
   if (is_chromeos || is_linux) {
     sources += [ "policy_path_parser_linux.cc" ]
-  } else if (is_fuchsia) {
-    sources += [ "policy_path_parser_fuchsia.cc" ]
   } else if (is_mac) {
     sources += [ "policy_path_parser_mac.mm" ]
   } else if (is_win) {
@@ -302,6 +302,7 @@ source_set("browser_tests") {
     "cloud/cloud_policy_browsertest.cc",
     "cloud/cloud_policy_manager_browsertest.cc",
     "cloud/device_management_service_browsertest.cc",
+    "test/accessibility_policy_browsertest.cc",
   ]
 
   deps = [
@@ -360,11 +361,11 @@ source_set("browser_tests") {
 
   if (is_chromeos_ash) {
     sources += [
-      "test/accessibility_policy_browsertest.cc",
       "test/arc_policy_browsertest.cc",
       "test/assistant_policy_browsertest.cc",
       "test/audio_output_allowed_browsertest.cc",
       "test/note_taking_on_lock_screen_policy_browsertest.cc",
+      "test/orca_policy_browsertest.cc",
       "test/power_sounds_policy_browsertest.cc",
       "test/privacy_hub_policy_browsertest.cc",
       "test/screenshot_policy_browsertest.cc",
@@ -380,7 +381,7 @@ source_set("browser_tests") {
       "//ash/components/arc:arc_test_support",
       "//ash/components/arc:prefs",
       "//ash/components/arc/session:session",
-      "//chrome/browser/apps/app_service",
+      "//chrome/browser/apps/app_service/app_icon",
       "//chrome/browser/ash",
       "//chrome/browser/ash:test_support",
       "//chrome/browser/ash/system_web_apps/test_support",

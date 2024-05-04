@@ -9,19 +9,19 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <string_view>
 #include <type_traits>
 
 #include "base/functional/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
-#include "base/strings/string_piece.h"
 #include "base/types/expected.h"
 #include "base/types/optional_ref.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/keep_alive/scoped_profile_keep_alive.h"
 #include "chrome/browser/web_applications/commands/web_app_command.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_install_command_helper.h"
-#include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_location.h"
+#include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_install_source.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_storage_location.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_url_info.h"
 #include "chrome/browser/web_applications/locks/app_lock.h"
@@ -37,11 +37,12 @@ namespace content {
 class WebContents;
 }  // namespace content
 
-namespace web_app {
-
+namespace webapps {
 class WebAppUrlLoader;
-
 enum class WebAppUrlLoaderResult;
+}  // namespace webapps
+
+namespace web_app {
 
 struct IsolatedWebAppUpdatePrepareAndStoreCommandSuccess {
   IsolatedWebAppUpdatePrepareAndStoreCommandSuccess(
@@ -80,7 +81,7 @@ class IsolatedWebAppUpdatePrepareAndStoreCommand
  public:
   class UpdateInfo {
    public:
-    UpdateInfo(IsolatedWebAppLocation location,
+    UpdateInfo(IwaSourceWithModeAndFileOp source,
                std::optional<base::Version> expected_version);
     ~UpdateInfo();
 
@@ -89,13 +90,13 @@ class IsolatedWebAppUpdatePrepareAndStoreCommand
 
     base::Value AsDebugValue() const;
 
-    const IsolatedWebAppLocation& location() const { return location_; }
+    const IwaSourceWithModeAndFileOp& source() const { return source_; }
     const std::optional<base::Version>& expected_version() const {
       return expected_version_;
     }
 
    private:
-    IsolatedWebAppLocation location_;
+    IwaSourceWithModeAndFileOp source_;
     std::optional<base::Version> expected_version_;
   };
 
@@ -131,7 +132,7 @@ class IsolatedWebAppUpdatePrepareAndStoreCommand
   void StartWithLock(std::unique_ptr<AppLock> lock) override;
 
  private:
-  void ReportFailure(base::StringPiece message);
+  void ReportFailure(std::string_view message);
   void ReportSuccess(const base::Version& update_version);
 
   template <typename T, std::enable_if_t<std::is_void_v<T>, bool> = true>
@@ -192,15 +193,15 @@ class IsolatedWebAppUpdatePrepareAndStoreCommand
   SEQUENCE_CHECKER(sequence_checker_);
 
   std::unique_ptr<AppLock> lock_;
-  std::unique_ptr<WebAppUrlLoader> url_loader_;
+  std::unique_ptr<webapps::WebAppUrlLoader> url_loader_;
 
   const std::unique_ptr<IsolatedWebAppInstallCommandHelper> command_helper_;
 
   const IsolatedWebAppUrlInfo url_info_;
   const std::optional<base::Version> expected_version_;
 
-  std::optional<IsolatedWebAppLocation> source_location_;
-  std::optional<IsolatedWebAppLocation> destination_location_;
+  std::optional<IwaSourceWithModeAndFileOp> update_source_;
+  std::optional<IwaSourceWithMode> destination_location_;
   std::optional<IsolatedWebAppStorageLocation> destination_storage_location_;
   std::optional<base::Version> installed_version_;
 

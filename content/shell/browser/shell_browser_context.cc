@@ -76,12 +76,6 @@ void ShellBrowserContext::InitWhileIOAllowed() {
   if (cmd_line->HasSwitch(switches::kIgnoreCertificateErrors))
     ignore_certificate_errors_ = true;
 
-  // TODO(b/1295373): We are migrating from '--data-path' to '--user-data-dir'.
-  // Scripts use '--data-path' should be updated to use '--user-data-dir'.
-  if (cmd_line->HasSwitch(switches::kContentShellDataPath)) {
-    CHECK(cmd_line->HasSwitch(switches::kContentShellUserDataDir));
-  }
-
   if (cmd_line->HasSwitch(switches::kContentShellUserDataDir)) {
     path_ = cmd_line->GetSwitchValuePath(switches::kContentShellUserDataDir);
     if (base::DirectoryExists(path_) || base::CreateDirectory(path_))  {
@@ -215,6 +209,10 @@ ShellBrowserContext::GetShellFederatedPermissionContext() {
     federated_permission_context_ =
         std::make_unique<ShellFederatedPermissionContext>();
   return federated_permission_context_.get();
+}
+
+void ShellBrowserContext::ResetFederatedPermissionContext() {
+  federated_permission_context_.reset();
 }
 
 ReduceAcceptLanguageControllerDelegate*

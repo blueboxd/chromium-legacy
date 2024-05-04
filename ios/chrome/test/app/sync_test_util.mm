@@ -17,6 +17,7 @@
 #import "base/test/ios/wait_util.h"
 #import "base/time/time.h"
 #import "base/uuid.h"
+#import "components/autofill/core/browser/address_data_manager.h"
 #import "components/autofill/core/browser/personal_data_manager.h"
 #import "components/history/core/browser/history_service.h"
 #import "components/keyed_service/core/service_access_type.h"
@@ -247,7 +248,7 @@ bool VerifySyncInvalidationFieldsPopulated() {
     if (entity.specifics().device_info().cache_guid() == cache_guid) {
       const sync_pb::InvalidationSpecificFields& invalidation_fields =
           entity.specifics().device_info().invalidation_fields();
-      // TODO(crbug.com/1187481): check if `instance_id_token` is present once
+      // TODO(crbug.com/40754340): check if `instance_id_token` is present once
       // fixed.
       return !invalidation_fields.interested_data_type_ids().empty();
     }
@@ -309,7 +310,7 @@ bool IsAutofillProfilePresent(std::string guid, std::string full_name) {
   autofill::PersonalDataManager* personal_data_manager =
       autofill::PersonalDataManagerFactory::GetForBrowserState(browser_state);
   autofill::AutofillProfile* autofill_profile =
-      personal_data_manager->GetProfileByGUID(guid);
+      personal_data_manager->address_data_manager().GetProfileByGUID(guid);
 
   if (autofill_profile) {
     std::string actual_full_name =

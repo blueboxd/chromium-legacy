@@ -28,7 +28,6 @@ extension-event based interface in M119. The interface is described in
 | disk_read |
 | dns_resolution |
 | memory |
-| nvme_wear_level |
 | smartctl_check |
 | lan_connectivity |
 | signal_strength |
@@ -134,11 +133,6 @@ extension-event based interface in M119. The interface is described in
 ------------ | ------- | ----------- |
 | timeout_seconds | number | A timeout for the routine |
 
-### RunNvmeWearLevelRequest
-| Property Name | Type | Description |
------------- | ------- | ----------- |
-| wear_level_threshold | number | Threshold number in percentage which routine examines wear level status against |
-
 ### RunNvmeSelfTestRequest
 | Property Name | Type | Description |
 ------------ | ------- | ----------- |
@@ -206,7 +200,6 @@ extension-event based interface in M119. The interface is described in
 | runLanConnectivityRoutine | () => Promise<RunRoutineResponse\> | `os.diagnostics` | M102 |
 | runMemoryRoutine | () => Promise<RunRoutineResponse\> | `os.diagnostics` | M96 |
 | runNvmeSelfTestRoutine | (params: RunNvmeSelfTestRequest) => Promise<RunRoutineResponse\> | `os.diagnostics` | M110 |
-| runNvmeWearLevelRoutine | (params: RunNvmeWearLevelRequest) => Promise<RunRoutineResponse\> | `os.diagnostics` | M102 |
 | runPowerButtonRoutine | (params: RunPowerButtonRequest) => Promise<RunRoutineResponse\> | `os.diagnostics` | M117 |
 | runSensitiveSensorRoutine | () => Promise<RunRoutineResponse\> | `os.diagnostics` | M110 |
 | runSignalStrengthRoutine | () => Promise<RunRoutineResponse\> | `os.diagnostics` | M108 |
@@ -221,7 +214,7 @@ extension-event based interface in M119. The interface is described in
 | Property Name |
 ------------ |
 | waiting_to_be_scheduled |
-| waiting_user_input |
+| waiting_for_interaction |
 
 ### Enum ExceptionReason
 | Property Name |
@@ -271,6 +264,28 @@ extension-event based interface in M119. The interface is described in
 | uuid | string | UUID of the routine that entered this state  |
 | percentage | number | Current percentage of the routine status (0-100) |
 
+### CheckLedLitUpStateInquiry
+Details regarding the inquiry to check the LED lit up state. Clients should
+inspect the target LED and report its state using `CheckLedLitUpStateReply`
+as the argument of `replyToRoutineInquiry`.
+
+| Property Name | Type | Description |
+------------ | ------- | ----------- |
+
+### RoutineInquiryUnion
+This is a union type. Exactly one field is set.
+
+| Property Name | Type | Description |
+------------ | ------- | ----------- |
+| checkLedLitUpState | CheckLedLitUpStateInquiry | See `CheckLedLitUpStateInquiry`. |
+
+### RoutineInteractionUnion
+This is a union type. Exactly one field is set.
+
+| Property Name | Type | Description |
+------------ | ------- | ----------- |
+| inquiry | RoutineInquiryUnion | Routine inquiries need to be replied to with the `replyToRoutineInquiry` method |
+
 ### RoutineWaitingInfo
 | Property Name | Type | Description |
 ------------ | ------- | ----------- |
@@ -278,6 +293,14 @@ extension-event based interface in M119. The interface is described in
 | percentage | number | Current percentage of the routine status (0-100) |
 | reason | RoutineWaitingReason | Reason why the routine waits |
 | message | string | Additional information, may be used to pass instruction or explanation |
+| interaction | RoutineInteractionUnion | The requested interaction. When set, clients must respond to the interaction for the routine to proceed. See `RoutineInteractionUnion` to learn about how to respond to each interaction. |
+
+### RoutineFinishedInfo
+| Property Name | Type | Description |
+------------ | ------- | ----------- |
+| uuid | string | UUID of the routine that entered this state  |
+| hasPassed | boolean | Whether the routine finished successfully |
+| detail | RoutineFinishedDetailUnion | Extra details about a finished routine |
 
 ### ExceptionInfo
 | Property Name | Type | Description |
@@ -286,21 +309,39 @@ extension-event based interface in M119. The interface is described in
 | reason | ExceptionReason | Reason why the routine threw an exception |
 | debugMessage | string | A human readable message for debugging. Don't rely on the content because it could change anytime |
 
+### RoutineFinishedDetailUnion
+| Property Name | Type | Description |
+------------ | ------- | ----------- |
+| memory | MemoryRoutineFinishedDetail | Extra detail for a finished memory routine  |
+| fan | FanRoutineFinishedDetail | Extra detail for a finished fan routine |
+
 ### MemtesterResult
+| Property Name | Type | Description |
+------------ | ------- | ----------- |
+| passedItems | Array<MemtesterTestItemEnum\> | Passed test items |
+| failedItems | Array<MemtesterTestItemEnum\> | Failed test items |
+
+### LegacyMemtesterResult
 | Property Name | Type | Description |
 ------------ | ------- | ----------- |
 | passed_items | Array<MemtesterTestItemEnum\> | Passed test items |
 | failed_items | Array<MemtesterTestItemEnum\> | Failed test items |
 
-### MemoryRoutineFinishedInfo
+### MemoryRoutineFinishedDetail
+| Property Name | Type | Description |
+------------ | ------- | ----------- |
+| bytesTested | number | Number of bytes tested in the memory routine |
+| result | MemtesterResult | Contains the memtester test results |
+
+### LegacyMemoryRoutineFinishedInfo
 | Property Name | Type | Description |
 ------------ | ------- | ----------- |
 | uuid | string | UUID of the routine that entered this state  |
 | has_passed | boolean | Whether the routine finished successfully |
 | bytesTested | number | Number of bytes tested in the memory routine |
-| result | MemtesterResult | Contains the memtester test results |
+| result | LegacyMemtesterResult | Contains the memtester test results |
 
-### RunMemoryRoutineArguments
+### CreateMemoryRoutineArguments
 | Property Name | Type | Description |
 ------------ | ------- | ----------- |
 | maxTestingMemKib | number | An optional field to indicate how much memory should be tested. If the value is null, memory test will run with as much memory as possible |
@@ -312,7 +353,14 @@ extension-event based interface in M119. The interface is described in
 | not_matched |
 | not_configured |
 
-### FanRoutineFinishedInfo
+### FanRoutineFinishedDetail
+| Property Name | Type | Description |
+------------ | ------- | ----------- |
+| passedFanIds | Array<number\> | The ids of fans that can be controlled |
+| failedFanIds | Array<number\> | The ids of fans that cannot be controlled |
+| fanCountStatus | HardwarePresenceStatus | Whether the number of fan probed is matched |
+
+### LegacyFanRoutineFinishedInfo
 | Property Name | Type | Description |
 ------------ | ------- | ----------- |
 | uuid | string | UUID of the routine that entered this state  |
@@ -321,7 +369,7 @@ extension-event based interface in M119. The interface is described in
 | failed_fan_ids | Array<number\> | The ids of fans that cannot be controlled |
 | fan_count_status | HardwarePresenceStatus | Whether the number of fan probed is matched |
 
-### RunFanRoutineArguments
+### CreateFanRoutineArguments
 | Property Name | Type | Description |
 ------------ | ------- | ----------- |
 
@@ -331,17 +379,88 @@ extension-event based interface in M119. The interface is described in
 | volume_up |
 | volume_down |
 
-### VolumeButtonRoutineFinishedInfo
+### LegacyVolumeButtonRoutineFinishedInfo
 | Property Name | Type | Description |
 ------------ | ------- | ----------- |
 | uuid | string | UUID of the routine that entered this state  |
 | has_passed | boolean | Whether the routine finished successfully |
 
-### RunVolumeButtonRoutineArguments
+### LegacyCreateVolumeButtonRoutineArguments
 | Property Name | Type | Description |
 ------------ | ------- | ----------- |
 | button_type | VolumeButtonType | The volume button to be tested |
 | timeout_seconds | number | Length of time to listen to the volume button events. The value should be positive and less or equal to 600 seconds |
+
+### CreateVolumeButtonRoutineArguments
+| Property Name | Type | Description |
+------------ | ------- | ----------- |
+| buttonType | VolumeButtonType | The volume button to be tested |
+| timeoutSeconds | number | Length of time to listen to the volume button events. The value should be positive and less or equal to 600 seconds |
+
+### CreateNetworkBandwidthRoutineArguments
+
+Checks the network bandwidth and reports the speed info.
+
+This routine is supported when `oem-name` in cros-config is set and not empty
+string. The external service for the routine is not available for the
+unrecognized devices.
+
+| Property Name | Type | Description |
+------------ | ------- | ----------- |
+
+### Enum LedName
+| Property Name |
+------------ |
+| battery |
+| power |
+| adapter |
+| left |
+| right |
+
+### Enum LedColor
+| Property Name |
+------------ |
+| red |
+| green |
+| blue |
+| yellow |
+| white |
+| amber |
+
+### CreateLedLitUpRoutineArguments
+The routine lights up the target LED in the specified color and requests
+the caller to verify the change.
+
+This routine is supported if and only if the device has a ChromeOS EC.
+
+When an LED name or LED color is not supported by the EC, it will cause a
+routine exception (by emitting an `onRoutineException` event) at runtime.
+
+The routine proceeds with the following steps:
+1. Set the specified LED with the specified color and enter the waiting
+   state with the `CheckLedLitUpStateInquiry` interaction request.W
+2. After receiving `CheckLedLitUpStateReply` with the observed LED state,
+   the color of the LED will be reset (back to auto control). Notice that
+   there is no timeout so the routine will be in the waiting state
+   indefinitely.
+3. The routine passes if the LED is lit up in the correct color. Otherwise,
+   the routine fails.
+
+| Property Name | Type | Description |
+------------ | ------- | ----------- |
+| name | LedName | The LED to be lit up |
+| color | LedColor | The color to be lit up |
+
+### CreateRoutineArgumentsUnion
+This is a union type. Exactly one field is set.
+
+| Property Name | Type | Released in Chrome version | Description | Additional permission needed to access |
+------------ | ------- | ----------- | ----------- | ----------- |
+| memory | CreateMemoryRoutineArguments | M125 | Arguments to create a memory routine | None |
+| volumeButton | CreateVolumeButtonRoutineArguments | M125 | Arguments to create a volume button routine | None |
+| fan | CreateFanRoutineArguments | M125 | Arguments to create a fan routine | None |
+| networkBandwidth | CreateNetworkBandwidthRoutineArguments | M125 | Arguments to create a network bandwidth routine | `os.diagnostics.network_info_mlab` |
+| ledLitUp | CreateLedLitUpRoutineArguments | M125 | Arguments to create a LED lit up routine | None |
 
 ### CreateRoutineResponse
 | Property Name | Type | Description |
@@ -358,6 +477,31 @@ extension-event based interface in M119. The interface is described in
 ------------ | ------- | ----------- |
 | uuid | string | UUID of the routine that shall be created |
 
+### Enum LedLitUpState
+| Property Name |
+------------ |
+| correct_color |
+| not_lit_up |
+
+### CheckLedLitUpStateReply
+| Property Name | Type | Description |
+------------ | ------- | ----------- |
+| state | LedLitUpState | State of the target LED |
+
+### RoutineInquiryReplyUnion
+This is a union type. Exactly one field is set.
+
+| Property Name | Type | Description |
+------------ | ------- | ----------- |
+| uuid | string | UUID of the routine that shall be replied |
+| checkLedLitUpState | CheckLedLitUpStateReply | Reply to a `CheckLedLitUpStateInquiry` |
+
+### ReplyToRoutineInquiryRequest
+| Property Name | Type | Description |
+------------ | ------- | ----------- |
+| uuid | string | UUID of the routine that shall be replied |
+| reply | RoutineInquiryReplyUnion | Reply to an inquiry in the routine waiting info |
+
 ### CancelRoutineRequest
 | Property Name | Type | Description |
 ------------ | ------- | ----------- |
@@ -365,16 +509,19 @@ extension-event based interface in M119. The interface is described in
 
 ## Functions
 
-| Function Name | Definition | Permission needed to access | Released in Chrome version |
------------- | ------------- | ------------- | ------------- |
-| startRoutine | (params: StartRoutineRequest) => Promise<void\> | `os.diagnostics` | M119 |
-| cancelRoutine | (params: CancelRoutineRequest) => Promise<void\> | `os.diagnostics` | M119 |
-| createMemoryRoutine | (args: RunMemoryRoutineArguments) => Promise<CreateRoutineResponse\> | `os.diagnostics` | M119 |
-| createFanRoutine | (args: RunFanRoutineArguments) => Promise<CreateRoutineResponse\> | `os.diagnostics` | M121 |
-| createVolumeButtonRoutine | (args: RunVolumeButtonRoutineArguments) => Promise<CreateRoutineResponse\> | `os.diagnostics` | M121 |
-| isMemoryRoutineArgumentSupported | (args: RunMemoryRoutineArguments) => Promise<RoutineSupportStatusInfo\> | `os.diagnostics` | M119 |
-| isFanRoutineArgumentSupported | (args: RunFanRoutineArguments) => Promise<RoutineSupportStatusInfo\> | `os.diagnostics` | M121 |
-| isVolumeButtonRoutineArgumentSupported | (args: RunVolumeButtonRoutineArguments) => Promise<RoutineSupportStatusInfo\> | `os.diagnostics` | M121 |
+| Function Name | Definition | Permission needed to access | Released in Chrome version | Description |
+------------ | ------------- | ------------- | ------------- | ------------- |
+| createRoutine | (args: CreateRoutineArgumentsUnion) => Promise<CreateRoutineResponse\> | `os.diagnostics` | M125 | Create a routine with `CreateRoutineArgumentsUnion`. Exactly one routine should be set in `CreateRoutineArgumentsUnion`. |
+| isRoutineArgumentSupported | (args: CreateRoutineArgumentsUnion) => Promise<RoutineSupportStatusInfo\> | `os.diagnostics` | M125 | Checks whether a certain `CreateRoutineArgumentsUnion` is supported on the platform. Exactly one routine should be set in `CreateRoutineArgumentsUnion`. |
+| startRoutine | (params: StartRoutineRequest) => Promise<void\> | `os.diagnostics` | M119 | Starts execution of a routine. This can only be expected to work after `onRoutineInitialized` was emitted for the routine with `UUID`. |
+| replyToRoutineInquiry | (params: ReplyToRoutineInquiryRequest) => Promise<void\> | `os.diagnostics` | M125 | Replies to a routine inquiry. This can only work when the routine with `UUID` is in the waiting state and has set an inquiry in the waiting info |
+| cancelRoutine | (params: CancelRoutineRequest) => Promise<void\> | `os.diagnostics` | M119 | Stops executing the routine identified by `UUID` and removes all related resources from the system. |
+| createMemoryRoutine | (args: CreateMemoryRoutineArguments) => Promise<CreateRoutineResponse\> | `os.diagnostics` | M119 | (Deprecated in M125, use `createRoutine` with `memory` arg) Create a memory routine. |
+| createFanRoutine | (args: CreateFanRoutineArguments) => Promise<CreateRoutineResponse\> | `os.diagnostics` | M121 | (Deprecated in M125, use `createRoutine` with `fan` arg) Create a fan routine. |
+| createVolumeButtonRoutine | (args: LegacyCreateVolumeButtonRoutineArguments) => Promise<CreateRoutineResponse\> | `os.diagnostics` | M121 | (Deprecated in M125, use `createRoutine` with `volumeButton` arg) Create a volume button routine. |
+| isMemoryRoutineArgumentSupported | (args: CreateMemoryRoutineArguments) => Promise<RoutineSupportStatusInfo\> | `os.diagnostics` | M119 | (Deprecated in M125, use `isRoutineArgumentSupported` with `memory` arg) Checks whether a certain `CreateMemoryRoutineArguments` is supported on the platform. |
+| isFanRoutineArgumentSupported | (args: CreateFanRoutineArguments) => Promise<RoutineSupportStatusInfo\> | `os.diagnostics` | M121 | (Deprecated in M125, use `isRoutineArgumentSupported` with `fan` arg) Checks whether a certain `CreateFanRoutineArguments` is supported on the platform. |
+| isVolumeButtonRoutineArgumentSupported | (args: LegacyCreateVolumeButtonRoutineArguments) => Promise<RoutineSupportStatusInfo\> | `os.diagnostics` | M121 | (Deprecated in M125, use `isRoutineArgumentSupported` with `volumeButton` arg) Checks whether a certain `LegacyCreateVolumeButtonRoutineArguments` is supported on the platform. |
 
 ## Events
 
@@ -384,9 +531,10 @@ extension-event based interface in M119. The interface is described in
 | onRoutineRunning | function(RoutineRunningInfo) | `os.diagnostics` | M119 | Informs the extension that a routine started running. This can happen in two situations: 1. `startRoutine` was called and the routine successfully started execution. 2. The routine exited the "waiting" state and returned to running |
 | onRoutineWaiting | function(RoutineWaitingInfo) | `os.diagnostics` | M119 | Informs the extension that a routine stopped execution and waits for an event, e.g. user interaction. `RoutineWaitingInfo` contains information about what the routine is waiting for |
 | onRoutineException | function(ExceptionInfo) | `os.diagnostics` | M119 | Informs the extension that an exception occurred. The error passed in `ExceptionInfo` is non-recoverable |
-| onMemoryRoutineFinished | function(MemoryRoutineFinishedInfo) | `os.diagnostics` | M119 | Informs the extension that a memory routine finished |
-| onFanRoutineFinished | function(FanRoutineFinishedInfo) | `os.diagnostics` | M121 | Informs the extension that a fan routine finished |
-| onVolumeButtonRoutineFinished | function(VolumeButtonRoutineFinishedInfo) | `os.diagnostics` | M121 | Informs the extension that a volume button routine finished |
+| onRoutineFinished | function(RoutineFinishedInfo) | `os.diagnostics` | M125 | Informs the extension that a routine finished |
+| onMemoryRoutineFinished | function(LegacyMemoryRoutineFinishedInfo) | `os.diagnostics` | M119 | (Deprecated, use `onRoutineFinished`) Informs the extension that a memory routine finished |
+| onFanRoutineFinished | function(LegacyFanRoutineFinishedInfo) | `os.diagnostics` | M121 | (Deprecated, use `onRoutineFinished`) Informs the extension that a fan routine finished |
+| onVolumeButtonRoutineFinished | function(LegacyVolumeButtonRoutineFinishedInfo) | `os.diagnostics` | M121 | (Deprecated, use `onRoutineFinished`) Informs the extension that a volume button routine finished |
 
 # Events
 
@@ -616,7 +764,7 @@ extension-event based interface in M119. The interface is described in
 | Property Name | Type | Description |
 ------------ | ------- | ----------- |
 | button | InputTouchButton | The input button that was interacted with |
-| button | InputTouchButtonState | The new state of the button |
+| state | InputTouchButtonState | The new state of the button |
 
 ### TouchPointInfo
 | Property Name | Type | Description |

@@ -9,21 +9,48 @@
 #include <string_view>
 
 #include "base/component_export.h"
-#include "components/attribution_reporting/registration_header_type.mojom-forward.h"
+#include "base/types/strong_alias.h"
+#include "components/attribution_reporting/os_registration_error.mojom-forward.h"
+#include "components/attribution_reporting/source_registration_error.mojom-forward.h"
+#include "components/attribution_reporting/trigger_registration_error.mojom-forward.h"
+#include "third_party/abseil-cpp/absl/types/variant.h"
+
+namespace base {
+class Value;
+}  // namespace base
 
 namespace attribution_reporting {
 
-struct RegistrationHeaderError {
-  mojom::RegistrationHeaderType header_type;
-  std::string header_value;
+using OsSourceRegistrationError =
+    base::StrongAlias<struct OsSourceRegistrationErrorTag,
+                      mojom::OsRegistrationError>;
 
-  // TODO(linnan): Consider including error details.
+using OsTriggerRegistrationError =
+    base::StrongAlias<struct OsTriggerRegistrationErrorTag,
+                      mojom::OsRegistrationError>;
+
+using RegistrationHeaderErrorDetails =
+    absl::variant<mojom::SourceRegistrationError,
+                  mojom::TriggerRegistrationError,
+                  OsSourceRegistrationError,
+                  OsTriggerRegistrationError>;
+
+struct COMPONENT_EXPORT(ATTRIBUTION_REPORTING) RegistrationHeaderError {
+  std::string header_value;
+  RegistrationHeaderErrorDetails error_details;
 
   RegistrationHeaderError() = default;
 
-  RegistrationHeaderError(mojom::RegistrationHeaderType header_type,
-                          std::string_view header_value)
-      : header_type(header_type), header_value(header_value) {}
+  RegistrationHeaderError(std::string_view header_value,
+                          RegistrationHeaderErrorDetails error_details)
+      : header_value(header_value), error_details(error_details) {}
+
+  std::string_view HeaderName() const;
+
+  base::Value ErrorDetails() const;
+
+  friend bool operator==(const RegistrationHeaderError&,
+                         const RegistrationHeaderError&) = default;
 };
 
 }  // namespace attribution_reporting

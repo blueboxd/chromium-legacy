@@ -43,7 +43,6 @@ class MockAffiliationService : public AffiliationService {
               (const FacetURI&, const base::Time&),
               (override));
   MOCK_METHOD(void, KeepPrefetchForFacets, (std::vector<FacetURI>), (override));
-  MOCK_METHOD(void, TrimCacheForFacetURI, (const FacetURI&), (override));
   MOCK_METHOD(void, TrimUnusedCache, (std::vector<FacetURI>), (override));
   MOCK_METHOD(void,
               GetGroupingInfo,
@@ -56,6 +55,10 @@ class MockAffiliationService : public AffiliationService {
   MOCK_METHOD(void,
               UpdateAffiliationsAndBranding,
               (const std::vector<FacetURI>&, base::OnceClosure),
+              (override));
+  MOCK_METHOD(void,
+              RegisterSource,
+              (std::unique_ptr<AffiliationSource>),
               (override));
 };
 

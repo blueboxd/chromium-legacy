@@ -160,8 +160,8 @@
       },
       {
         "args": [
-          "--test-launcher-print-test-stdio=always",
-          "--git-revision=${got_revision}"
+          "--git-revision=${got_revision}",
+          "--test-launcher-print-test-stdio=always"
         ],
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -786,7 +786,7 @@
             "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 28
+          "shards": 31
         },
         "test": "interactive_ui_tests",
         "test_id_prefix": "ninja://chrome/test:interactive_ui_tests/"
@@ -2942,8 +2942,8 @@
       },
       {
         "args": [
-          "--test-launcher-print-test-stdio=always",
-          "--git-revision=${got_revision}"
+          "--git-revision=${got_revision}",
+          "--test-launcher-print-test-stdio=always"
         ],
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -4624,8 +4624,8 @@
       },
       {
         "args": [
-          "--test-launcher-print-test-stdio=always",
-          "--git-revision=${got_revision}"
+          "--git-revision=${got_revision}",
+          "--test-launcher-print-test-stdio=always"
         ],
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -6254,8 +6254,8 @@
       },
       {
         "args": [
-          "--test-launcher-print-test-stdio=always",
-          "--git-revision=${got_revision}"
+          "--git-revision=${got_revision}",
+          "--test-launcher-print-test-stdio=always"
         ],
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -7758,8 +7758,8 @@
       },
       {
         "args": [
-          "--test-launcher-print-test-stdio=always",
-          "--git-revision=${got_revision}"
+          "--git-revision=${got_revision}",
+          "--test-launcher-print-test-stdio=always"
         ],
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -8901,7 +8901,7 @@
             "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 4
+          "shards": 3
         },
         "test": "unit_tests",
         "test_id_prefix": "ninja://chrome/test:unit_tests/"
@@ -9238,8 +9238,8 @@
       },
       {
         "args": [
-          "--test-launcher-print-test-stdio=always",
-          "--git-revision=${got_revision}"
+          "--git-revision=${got_revision}",
+          "--test-launcher-print-test-stdio=always"
         ],
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -10757,16 +10757,6 @@
             "device_type": "bullhead",
             "os": "Android"
           },
-          "output_links": [
-            {
-              "link": [
-                "https://luci-logdog.appspot.com/v/?s",
-                "=android%2Fswarming%2Flogcats%2F",
-                "${TASK_ID}%2F%2B%2Funified_logcats"
-              ],
-              "name": "shard #${SHARD_INDEX} logcats"
-            }
-          ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "absl_hardening_tests",
@@ -10798,16 +10788,6 @@
             "device_type": "bullhead",
             "os": "Android"
           },
-          "output_links": [
-            {
-              "link": [
-                "https://luci-logdog.appspot.com/v/?s",
-                "=android%2Fswarming%2Flogcats%2F",
-                "${TASK_ID}%2F%2B%2Funified_logcats"
-              ],
-              "name": "shard #${SHARD_INDEX} logcats"
-            }
-          ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
         },
@@ -10841,16 +10821,6 @@
             "device_type": "bullhead",
             "os": "Android"
           },
-          "output_links": [
-            {
-              "link": [
-                "https://luci-logdog.appspot.com/v/?s",
-                "=android%2Fswarming%2Flogcats%2F",
-                "${TASK_ID}%2F%2B%2Funified_logcats"
-              ],
-              "name": "shard #${SHARD_INDEX} logcats"
-            }
-          ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "android_sync_integration_tests",
@@ -10882,16 +10852,6 @@
             "device_type": "bullhead",
             "os": "Android"
           },
-          "output_links": [
-            {
-              "link": [
-                "https://luci-logdog.appspot.com/v/?s",
-                "=android%2Fswarming%2Flogcats%2F",
-                "${TASK_ID}%2F%2B%2Funified_logcats"
-              ],
-              "name": "shard #${SHARD_INDEX} logcats"
-            }
-          ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "android_webview_unittests",
@@ -10923,16 +10883,6 @@
             "device_type": "bullhead",
             "os": "Android"
           },
-          "output_links": [
-            {
-              "link": [
-                "https://luci-logdog.appspot.com/v/?s",
-                "=android%2Fswarming%2Flogcats%2F",
-                "${TASK_ID}%2F%2B%2Funified_logcats"
-              ],
-              "name": "shard #${SHARD_INDEX} logcats"
-            }
-          ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "base_unittests",
@@ -10964,16 +10914,6 @@
             "device_type": "bullhead",
             "os": "Android"
           },
-          "output_links": [
-            {
-              "link": [
-                "https://luci-logdog.appspot.com/v/?s",
-                "=android%2Fswarming%2Flogcats%2F",
-                "${TASK_ID}%2F%2B%2Funified_logcats"
-              ],
-              "name": "shard #${SHARD_INDEX} logcats"
-            }
-          ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "blink_common_unittests",
@@ -11005,16 +10945,6 @@
             "device_type": "bullhead",
             "os": "Android"
           },
-          "output_links": [
-            {
-              "link": [
-                "https://luci-logdog.appspot.com/v/?s",
-                "=android%2Fswarming%2Flogcats%2F",
-                "${TASK_ID}%2F%2B%2Funified_logcats"
-              ],
-              "name": "shard #${SHARD_INDEX} logcats"
-            }
-          ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "blink_heap_unittests",
@@ -11022,9 +10952,9 @@
       },
       {
         "args": [
+          "--git-revision=${got_revision}",
           "--gs-results-bucket=chromium-result-details",
-          "--recover-devices",
-          "--git-revision=${got_revision}"
+          "--recover-devices"
         ],
         "merge": {
           "args": [
@@ -11052,16 +10982,6 @@
             "device_type": "bullhead",
             "os": "Android"
           },
-          "output_links": [
-            {
-              "link": [
-                "https://luci-logdog.appspot.com/v/?s",
-                "=android%2Fswarming%2Flogcats%2F",
-                "${TASK_ID}%2F%2B%2Funified_logcats"
-              ],
-              "name": "shard #${SHARD_INDEX} logcats"
-            }
-          ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "blink_platform_unittests",
@@ -11093,16 +11013,6 @@
             "device_type": "bullhead",
             "os": "Android"
           },
-          "output_links": [
-            {
-              "link": [
-                "https://luci-logdog.appspot.com/v/?s",
-                "=android%2Fswarming%2Flogcats%2F",
-                "${TASK_ID}%2F%2B%2Funified_logcats"
-              ],
-              "name": "shard #${SHARD_INDEX} logcats"
-            }
-          ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "boringssl_crypto_tests",
@@ -11134,16 +11044,6 @@
             "device_type": "bullhead",
             "os": "Android"
           },
-          "output_links": [
-            {
-              "link": [
-                "https://luci-logdog.appspot.com/v/?s",
-                "=android%2Fswarming%2Flogcats%2F",
-                "${TASK_ID}%2F%2B%2Funified_logcats"
-              ],
-              "name": "shard #${SHARD_INDEX} logcats"
-            }
-          ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "boringssl_ssl_tests",
@@ -11176,16 +11076,6 @@
             "device_type": "bullhead",
             "os": "Android"
           },
-          "output_links": [
-            {
-              "link": [
-                "https://luci-logdog.appspot.com/v/?s",
-                "=android%2Fswarming%2Flogcats%2F",
-                "${TASK_ID}%2F%2B%2Funified_logcats"
-              ],
-              "name": "shard #${SHARD_INDEX} logcats"
-            }
-          ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "capture_unittests",
@@ -11217,16 +11107,6 @@
             "device_type": "bullhead",
             "os": "Android"
           },
-          "output_links": [
-            {
-              "link": [
-                "https://luci-logdog.appspot.com/v/?s",
-                "=android%2Fswarming%2Flogcats%2F",
-                "${TASK_ID}%2F%2B%2Funified_logcats"
-              ],
-              "name": "shard #${SHARD_INDEX} logcats"
-            }
-          ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "cast_unittests",
@@ -11258,16 +11138,6 @@
             "device_type": "bullhead",
             "os": "Android"
           },
-          "output_links": [
-            {
-              "link": [
-                "https://luci-logdog.appspot.com/v/?s",
-                "=android%2Fswarming%2Flogcats%2F",
-                "${TASK_ID}%2F%2B%2Funified_logcats"
-              ],
-              "name": "shard #${SHARD_INDEX} logcats"
-            }
-          ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "cc_unittests",
@@ -11299,16 +11169,6 @@
             "device_type": "bullhead",
             "os": "Android"
           },
-          "output_links": [
-            {
-              "link": [
-                "https://luci-logdog.appspot.com/v/?s",
-                "=android%2Fswarming%2Flogcats%2F",
-                "${TASK_ID}%2F%2B%2Funified_logcats"
-              ],
-              "name": "shard #${SHARD_INDEX} logcats"
-            }
-          ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "chrome_public_smoke_test",
@@ -11340,16 +11200,6 @@
             "device_type": "bullhead",
             "os": "Android"
           },
-          "output_links": [
-            {
-              "link": [
-                "https://luci-logdog.appspot.com/v/?s",
-                "=android%2Fswarming%2Flogcats%2F",
-                "${TASK_ID}%2F%2B%2Funified_logcats"
-              ],
-              "name": "shard #${SHARD_INDEX} logcats"
-            }
-          ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 3
         },
@@ -11382,16 +11232,6 @@
             "device_type": "bullhead",
             "os": "Android"
           },
-          "output_links": [
-            {
-              "link": [
-                "https://luci-logdog.appspot.com/v/?s",
-                "=android%2Fswarming%2Flogcats%2F",
-                "${TASK_ID}%2F%2B%2Funified_logcats"
-              ],
-              "name": "shard #${SHARD_INDEX} logcats"
-            }
-          ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 6
         },
@@ -11400,9 +11240,9 @@
       },
       {
         "args": [
+          "--test-launcher-filter-file=../../testing/buildbot/filters/android.asan.content_browsertests.filter",
           "--gs-results-bucket=chromium-result-details",
-          "--recover-devices",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/android.asan.content_browsertests.filter"
+          "--recover-devices"
         ],
         "merge": {
           "args": [
@@ -11425,16 +11265,6 @@
             "device_type": "bullhead",
             "os": "Android"
           },
-          "output_links": [
-            {
-              "link": [
-                "https://luci-logdog.appspot.com/v/?s",
-                "=android%2Fswarming%2Flogcats%2F",
-                "${TASK_ID}%2F%2B%2Funified_logcats"
-              ],
-              "name": "shard #${SHARD_INDEX} logcats"
-            }
-          ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 25
         },
@@ -11467,16 +11297,6 @@
             "device_type": "bullhead",
             "os": "Android"
           },
-          "output_links": [
-            {
-              "link": [
-                "https://luci-logdog.appspot.com/v/?s",
-                "=android%2Fswarming%2Flogcats%2F",
-                "${TASK_ID}%2F%2B%2Funified_logcats"
-              ],
-              "name": "shard #${SHARD_INDEX} logcats"
-            }
-          ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 3
         },
@@ -11509,16 +11329,6 @@
             "device_type": "bullhead",
             "os": "Android"
           },
-          "output_links": [
-            {
-              "link": [
-                "https://luci-logdog.appspot.com/v/?s",
-                "=android%2Fswarming%2Flogcats%2F",
-                "${TASK_ID}%2F%2B%2Funified_logcats"
-              ],
-              "name": "shard #${SHARD_INDEX} logcats"
-            }
-          ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "crashpad_tests",
@@ -11550,16 +11360,6 @@
             "device_type": "bullhead",
             "os": "Android"
           },
-          "output_links": [
-            {
-              "link": [
-                "https://luci-logdog.appspot.com/v/?s",
-                "=android%2Fswarming%2Flogcats%2F",
-                "${TASK_ID}%2F%2B%2Funified_logcats"
-              ],
-              "name": "shard #${SHARD_INDEX} logcats"
-            }
-          ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "crypto_unittests",
@@ -11591,16 +11391,6 @@
             "device_type": "bullhead",
             "os": "Android"
           },
-          "output_links": [
-            {
-              "link": [
-                "https://luci-logdog.appspot.com/v/?s",
-                "=android%2Fswarming%2Flogcats%2F",
-                "${TASK_ID}%2F%2B%2Funified_logcats"
-              ],
-              "name": "shard #${SHARD_INDEX} logcats"
-            }
-          ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "device_unittests",
@@ -11632,16 +11422,6 @@
             "device_type": "bullhead",
             "os": "Android"
           },
-          "output_links": [
-            {
-              "link": [
-                "https://luci-logdog.appspot.com/v/?s",
-                "=android%2Fswarming%2Flogcats%2F",
-                "${TASK_ID}%2F%2B%2Funified_logcats"
-              ],
-              "name": "shard #${SHARD_INDEX} logcats"
-            }
-          ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "display_unittests",
@@ -11674,16 +11454,6 @@
             "device_type": "bullhead",
             "os": "Android"
           },
-          "output_links": [
-            {
-              "link": [
-                "https://luci-logdog.appspot.com/v/?s",
-                "=android%2Fswarming%2Flogcats%2F",
-                "${TASK_ID}%2F%2B%2Funified_logcats"
-              ],
-              "name": "shard #${SHARD_INDEX} logcats"
-            }
-          ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "env_chromium_unittests",
@@ -11715,16 +11485,6 @@
             "device_type": "bullhead",
             "os": "Android"
           },
-          "output_links": [
-            {
-              "link": [
-                "https://luci-logdog.appspot.com/v/?s",
-                "=android%2Fswarming%2Flogcats%2F",
-                "${TASK_ID}%2F%2B%2Funified_logcats"
-              ],
-              "name": "shard #${SHARD_INDEX} logcats"
-            }
-          ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "events_unittests",
@@ -11756,16 +11516,6 @@
             "device_type": "bullhead",
             "os": "Android"
           },
-          "output_links": [
-            {
-              "link": [
-                "https://luci-logdog.appspot.com/v/?s",
-                "=android%2Fswarming%2Flogcats%2F",
-                "${TASK_ID}%2F%2B%2Funified_logcats"
-              ],
-              "name": "shard #${SHARD_INDEX} logcats"
-            }
-          ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gcm_unit_tests",
@@ -11797,16 +11547,6 @@
             "device_type": "bullhead",
             "os": "Android"
           },
-          "output_links": [
-            {
-              "link": [
-                "https://luci-logdog.appspot.com/v/?s",
-                "=android%2Fswarming%2Flogcats%2F",
-                "${TASK_ID}%2F%2B%2Funified_logcats"
-              ],
-              "name": "shard #${SHARD_INDEX} logcats"
-            }
-          ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gfx_unittests",
@@ -11838,16 +11578,6 @@
             "device_type": "bullhead",
             "os": "Android"
           },
-          "output_links": [
-            {
-              "link": [
-                "https://luci-logdog.appspot.com/v/?s",
-                "=android%2Fswarming%2Flogcats%2F",
-                "${TASK_ID}%2F%2B%2Funified_logcats"
-              ],
-              "name": "shard #${SHARD_INDEX} logcats"
-            }
-          ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gin_unittests",
@@ -11880,16 +11610,6 @@
             "device_type": "bullhead",
             "os": "Android"
           },
-          "output_links": [
-            {
-              "link": [
-                "https://luci-logdog.appspot.com/v/?s",
-                "=android%2Fswarming%2Flogcats%2F",
-                "${TASK_ID}%2F%2B%2Funified_logcats"
-              ],
-              "name": "shard #${SHARD_INDEX} logcats"
-            }
-          ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gl_tests",
@@ -11921,16 +11641,6 @@
             "device_type": "bullhead",
             "os": "Android"
           },
-          "output_links": [
-            {
-              "link": [
-                "https://luci-logdog.appspot.com/v/?s",
-                "=android%2Fswarming%2Flogcats%2F",
-                "${TASK_ID}%2F%2B%2Funified_logcats"
-              ],
-              "name": "shard #${SHARD_INDEX} logcats"
-            }
-          ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gl_unittests",
@@ -11962,16 +11672,6 @@
             "device_type": "bullhead",
             "os": "Android"
           },
-          "output_links": [
-            {
-              "link": [
-                "https://luci-logdog.appspot.com/v/?s",
-                "=android%2Fswarming%2Flogcats%2F",
-                "${TASK_ID}%2F%2B%2Funified_logcats"
-              ],
-              "name": "shard #${SHARD_INDEX} logcats"
-            }
-          ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "google_apis_unittests",
@@ -12003,16 +11703,6 @@
             "device_type": "bullhead",
             "os": "Android"
           },
-          "output_links": [
-            {
-              "link": [
-                "https://luci-logdog.appspot.com/v/?s",
-                "=android%2Fswarming%2Flogcats%2F",
-                "${TASK_ID}%2F%2B%2Funified_logcats"
-              ],
-              "name": "shard #${SHARD_INDEX} logcats"
-            }
-          ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gpu_unittests",
@@ -12044,16 +11734,6 @@
             "device_type": "bullhead",
             "os": "Android"
           },
-          "output_links": [
-            {
-              "link": [
-                "https://luci-logdog.appspot.com/v/?s",
-                "=android%2Fswarming%2Flogcats%2F",
-                "${TASK_ID}%2F%2B%2Funified_logcats"
-              ],
-              "name": "shard #${SHARD_INDEX} logcats"
-            }
-          ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gwp_asan_unittests",
@@ -12085,16 +11765,6 @@
             "device_type": "bullhead",
             "os": "Android"
           },
-          "output_links": [
-            {
-              "link": [
-                "https://luci-logdog.appspot.com/v/?s",
-                "=android%2Fswarming%2Flogcats%2F",
-                "${TASK_ID}%2F%2B%2Funified_logcats"
-              ],
-              "name": "shard #${SHARD_INDEX} logcats"
-            }
-          ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
         },
@@ -12127,16 +11797,6 @@
             "device_type": "bullhead",
             "os": "Android"
           },
-          "output_links": [
-            {
-              "link": [
-                "https://luci-logdog.appspot.com/v/?s",
-                "=android%2Fswarming%2Flogcats%2F",
-                "${TASK_ID}%2F%2B%2Funified_logcats"
-              ],
-              "name": "shard #${SHARD_INDEX} logcats"
-            }
-          ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "latency_unittests",
@@ -12169,16 +11829,6 @@
             "device_type": "bullhead",
             "os": "Android"
           },
-          "output_links": [
-            {
-              "link": [
-                "https://luci-logdog.appspot.com/v/?s",
-                "=android%2Fswarming%2Flogcats%2F",
-                "${TASK_ID}%2F%2B%2Funified_logcats"
-              ],
-              "name": "shard #${SHARD_INDEX} logcats"
-            }
-          ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "leveldb_unittests",
@@ -12210,16 +11860,6 @@
             "device_type": "bullhead",
             "os": "Android"
           },
-          "output_links": [
-            {
-              "link": [
-                "https://luci-logdog.appspot.com/v/?s",
-                "=android%2Fswarming%2Flogcats%2F",
-                "${TASK_ID}%2F%2B%2Funified_logcats"
-              ],
-              "name": "shard #${SHARD_INDEX} logcats"
-            }
-          ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "libjingle_xmpp_unittests",
@@ -12251,16 +11891,6 @@
             "device_type": "bullhead",
             "os": "Android"
           },
-          "output_links": [
-            {
-              "link": [
-                "https://luci-logdog.appspot.com/v/?s",
-                "=android%2Fswarming%2Flogcats%2F",
-                "${TASK_ID}%2F%2B%2Funified_logcats"
-              ],
-              "name": "shard #${SHARD_INDEX} logcats"
-            }
-          ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "liburlpattern_unittests",
@@ -12292,16 +11922,6 @@
             "device_type": "bullhead",
             "os": "Android"
           },
-          "output_links": [
-            {
-              "link": [
-                "https://luci-logdog.appspot.com/v/?s",
-                "=android%2Fswarming%2Flogcats%2F",
-                "${TASK_ID}%2F%2B%2Funified_logcats"
-              ],
-              "name": "shard #${SHARD_INDEX} logcats"
-            }
-          ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "media_unittests",
@@ -12333,16 +11953,6 @@
             "device_type": "bullhead",
             "os": "Android"
           },
-          "output_links": [
-            {
-              "link": [
-                "https://luci-logdog.appspot.com/v/?s",
-                "=android%2Fswarming%2Flogcats%2F",
-                "${TASK_ID}%2F%2B%2Funified_logcats"
-              ],
-              "name": "shard #${SHARD_INDEX} logcats"
-            }
-          ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "midi_unittests",
@@ -12374,16 +11984,6 @@
             "device_type": "bullhead",
             "os": "Android"
           },
-          "output_links": [
-            {
-              "link": [
-                "https://luci-logdog.appspot.com/v/?s",
-                "=android%2Fswarming%2Flogcats%2F",
-                "${TASK_ID}%2F%2B%2Funified_logcats"
-              ],
-              "name": "shard #${SHARD_INDEX} logcats"
-            }
-          ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "mojo_test_apk",
@@ -12415,16 +12015,6 @@
             "device_type": "bullhead",
             "os": "Android"
           },
-          "output_links": [
-            {
-              "link": [
-                "https://luci-logdog.appspot.com/v/?s",
-                "=android%2Fswarming%2Flogcats%2F",
-                "${TASK_ID}%2F%2B%2Funified_logcats"
-              ],
-              "name": "shard #${SHARD_INDEX} logcats"
-            }
-          ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 5
         },
@@ -12457,16 +12047,6 @@
             "device_type": "bullhead",
             "os": "Android"
           },
-          "output_links": [
-            {
-              "link": [
-                "https://luci-logdog.appspot.com/v/?s",
-                "=android%2Fswarming%2Flogcats%2F",
-                "${TASK_ID}%2F%2B%2Funified_logcats"
-              ],
-              "name": "shard #${SHARD_INDEX} logcats"
-            }
-          ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 3
         },
@@ -12499,16 +12079,6 @@
             "device_type": "bullhead",
             "os": "Android"
           },
-          "output_links": [
-            {
-              "link": [
-                "https://luci-logdog.appspot.com/v/?s",
-                "=android%2Fswarming%2Flogcats%2F",
-                "${TASK_ID}%2F%2B%2Funified_logcats"
-              ],
-              "name": "shard #${SHARD_INDEX} logcats"
-            }
-          ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "services_unittests",
@@ -12540,16 +12110,6 @@
             "device_type": "bullhead",
             "os": "Android"
           },
-          "output_links": [
-            {
-              "link": [
-                "https://luci-logdog.appspot.com/v/?s",
-                "=android%2Fswarming%2Flogcats%2F",
-                "${TASK_ID}%2F%2B%2Funified_logcats"
-              ],
-              "name": "shard #${SHARD_INDEX} logcats"
-            }
-          ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "shell_dialogs_unittests",
@@ -12581,16 +12141,6 @@
             "device_type": "bullhead",
             "os": "Android"
           },
-          "output_links": [
-            {
-              "link": [
-                "https://luci-logdog.appspot.com/v/?s",
-                "=android%2Fswarming%2Flogcats%2F",
-                "${TASK_ID}%2F%2B%2Funified_logcats"
-              ],
-              "name": "shard #${SHARD_INDEX} logcats"
-            }
-          ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "skia_unittests",
@@ -12622,16 +12172,6 @@
             "device_type": "bullhead",
             "os": "Android"
           },
-          "output_links": [
-            {
-              "link": [
-                "https://luci-logdog.appspot.com/v/?s",
-                "=android%2Fswarming%2Flogcats%2F",
-                "${TASK_ID}%2F%2B%2Funified_logcats"
-              ],
-              "name": "shard #${SHARD_INDEX} logcats"
-            }
-          ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "sql_unittests",
@@ -12663,16 +12203,6 @@
             "device_type": "bullhead",
             "os": "Android"
           },
-          "output_links": [
-            {
-              "link": [
-                "https://luci-logdog.appspot.com/v/?s",
-                "=android%2Fswarming%2Flogcats%2F",
-                "${TASK_ID}%2F%2B%2Funified_logcats"
-              ],
-              "name": "shard #${SHARD_INDEX} logcats"
-            }
-          ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "storage_unittests",
@@ -12704,16 +12234,6 @@
             "device_type": "bullhead",
             "os": "Android"
           },
-          "output_links": [
-            {
-              "link": [
-                "https://luci-logdog.appspot.com/v/?s",
-                "=android%2Fswarming%2Flogcats%2F",
-                "${TASK_ID}%2F%2B%2Funified_logcats"
-              ],
-              "name": "shard #${SHARD_INDEX} logcats"
-            }
-          ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "ui_android_unittests",
@@ -12745,16 +12265,6 @@
             "device_type": "bullhead",
             "os": "Android"
           },
-          "output_links": [
-            {
-              "link": [
-                "https://luci-logdog.appspot.com/v/?s",
-                "=android%2Fswarming%2Flogcats%2F",
-                "${TASK_ID}%2F%2B%2Funified_logcats"
-              ],
-              "name": "shard #${SHARD_INDEX} logcats"
-            }
-          ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "ui_base_unittests",
@@ -12786,16 +12296,6 @@
             "device_type": "bullhead",
             "os": "Android"
           },
-          "output_links": [
-            {
-              "link": [
-                "https://luci-logdog.appspot.com/v/?s",
-                "=android%2Fswarming%2Flogcats%2F",
-                "${TASK_ID}%2F%2B%2Funified_logcats"
-              ],
-              "name": "shard #${SHARD_INDEX} logcats"
-            }
-          ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "ui_touch_selection_unittests",
@@ -12803,9 +12303,9 @@
       },
       {
         "args": [
+          "--test-launcher-filter-file=../../testing/buildbot/filters/android.asan.unit_tests.filter",
           "--gs-results-bucket=chromium-result-details",
-          "--recover-devices",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/android.asan.unit_tests.filter"
+          "--recover-devices"
         ],
         "merge": {
           "args": [
@@ -12828,16 +12328,6 @@
             "device_type": "bullhead",
             "os": "Android"
           },
-          "output_links": [
-            {
-              "link": [
-                "https://luci-logdog.appspot.com/v/?s",
-                "=android%2Fswarming%2Flogcats%2F",
-                "${TASK_ID}%2F%2B%2Funified_logcats"
-              ],
-              "name": "shard #${SHARD_INDEX} logcats"
-            }
-          ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
         },
@@ -12870,16 +12360,6 @@
             "device_type": "bullhead",
             "os": "Android"
           },
-          "output_links": [
-            {
-              "link": [
-                "https://luci-logdog.appspot.com/v/?s",
-                "=android%2Fswarming%2Flogcats%2F",
-                "${TASK_ID}%2F%2B%2Funified_logcats"
-              ],
-              "name": "shard #${SHARD_INDEX} logcats"
-            }
-          ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "url_unittests",
@@ -12911,16 +12391,6 @@
             "device_type": "bullhead",
             "os": "Android"
           },
-          "output_links": [
-            {
-              "link": [
-                "https://luci-logdog.appspot.com/v/?s",
-                "=android%2Fswarming%2Flogcats%2F",
-                "${TASK_ID}%2F%2B%2Funified_logcats"
-              ],
-              "name": "shard #${SHARD_INDEX} logcats"
-            }
-          ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "viz_unittests",
@@ -12952,16 +12422,6 @@
             "device_type": "bullhead",
             "os": "Android"
           },
-          "output_links": [
-            {
-              "link": [
-                "https://luci-logdog.appspot.com/v/?s",
-                "=android%2Fswarming%2Flogcats%2F",
-                "${TASK_ID}%2F%2B%2Funified_logcats"
-              ],
-              "name": "shard #${SHARD_INDEX} logcats"
-            }
-          ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "vr_android_unittests",
@@ -12993,16 +12453,6 @@
             "device_type": "bullhead",
             "os": "Android"
           },
-          "output_links": [
-            {
-              "link": [
-                "https://luci-logdog.appspot.com/v/?s",
-                "=android%2Fswarming%2Flogcats%2F",
-                "${TASK_ID}%2F%2B%2Funified_logcats"
-              ],
-              "name": "shard #${SHARD_INDEX} logcats"
-            }
-          ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "vr_common_unittests",
@@ -13034,16 +12484,6 @@
             "device_type": "bullhead",
             "os": "Android"
           },
-          "output_links": [
-            {
-              "link": [
-                "https://luci-logdog.appspot.com/v/?s",
-                "=android%2Fswarming%2Flogcats%2F",
-                "${TASK_ID}%2F%2B%2Funified_logcats"
-              ],
-              "name": "shard #${SHARD_INDEX} logcats"
-            }
-          ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 6
         },
@@ -13076,16 +12516,6 @@
             "device_type": "bullhead",
             "os": "Android"
           },
-          "output_links": [
-            {
-              "link": [
-                "https://luci-logdog.appspot.com/v/?s",
-                "=android%2Fswarming%2Flogcats%2F",
-                "${TASK_ID}%2F%2B%2Funified_logcats"
-              ],
-              "name": "shard #${SHARD_INDEX} logcats"
-            }
-          ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "wtf_unittests",
@@ -13117,16 +12547,6 @@
             "device_type": "bullhead",
             "os": "Android"
           },
-          "output_links": [
-            {
-              "link": [
-                "https://luci-logdog.appspot.com/v/?s",
-                "=android%2Fswarming%2Flogcats%2F",
-                "${TASK_ID}%2F%2B%2Funified_logcats"
-              ],
-              "name": "shard #${SHARD_INDEX} logcats"
-            }
-          ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "zlib_unittests",
@@ -13142,9 +12562,9 @@
       {
         "args": [
           "--platform",
-          "iPad Air 2",
+          "iPad Air (5th generation)",
           "--version",
-          "15.5",
+          "16.4",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
@@ -13154,7 +12574,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "absl_hardening_tests iPad Air 2 15.5",
+        "name": "absl_hardening_tests iPad Air (5th generation) 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -13169,30 +12589,30 @@
           ],
           "dimensions": {
             "cpu": "x86-64",
-            "os": "Mac-13"
+            "os": "Mac-13|Mac-14"
           },
           "named_caches": [
             {
-              "name": "xcode_ios_15c500b",
-              "path": "Xcode.app"
+              "name": "runtime_ios_16_4",
+              "path": "Runtime-ios-16.4"
             },
             {
-              "name": "runtime_ios_15_5",
-              "path": "Runtime-ios-15.5"
+              "name": "xcode_ios_15c500b",
+              "path": "Xcode.app"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "absl_hardening_tests",
         "test_id_prefix": "ninja://third_party/abseil-cpp:absl_hardening_tests/",
-        "variant_id": "iPad Air 2 15.5"
+        "variant_id": "iPad Air (5th generation) 16.4"
       },
       {
         "args": [
           "--platform",
           "iPhone X",
           "--version",
-          "15.5",
+          "16.4",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
@@ -13202,7 +12622,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "absl_hardening_tests iPhone X 15.5",
+        "name": "absl_hardening_tests iPhone X 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -13217,30 +12637,30 @@
           ],
           "dimensions": {
             "cpu": "x86-64",
-            "os": "Mac-13"
+            "os": "Mac-13|Mac-14"
           },
           "named_caches": [
             {
-              "name": "xcode_ios_15c500b",
-              "path": "Xcode.app"
+              "name": "runtime_ios_16_4",
+              "path": "Runtime-ios-16.4"
             },
             {
-              "name": "runtime_ios_15_5",
-              "path": "Runtime-ios-15.5"
+              "name": "xcode_ios_15c500b",
+              "path": "Xcode.app"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "absl_hardening_tests",
         "test_id_prefix": "ninja://third_party/abseil-cpp:absl_hardening_tests/",
-        "variant_id": "iPhone X 15.5"
+        "variant_id": "iPhone X 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPad Air 2",
+          "iPad Air (5th generation)",
           "--version",
-          "15.5",
+          "16.4",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
@@ -13250,7 +12670,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "base_unittests iPad Air 2 15.5",
+        "name": "base_unittests iPad Air (5th generation) 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -13265,30 +12685,30 @@
           ],
           "dimensions": {
             "cpu": "x86-64",
-            "os": "Mac-13"
+            "os": "Mac-13|Mac-14"
           },
           "named_caches": [
             {
-              "name": "xcode_ios_15c500b",
-              "path": "Xcode.app"
+              "name": "runtime_ios_16_4",
+              "path": "Runtime-ios-16.4"
             },
             {
-              "name": "runtime_ios_15_5",
-              "path": "Runtime-ios-15.5"
+              "name": "xcode_ios_15c500b",
+              "path": "Xcode.app"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "base_unittests",
         "test_id_prefix": "ninja://base:base_unittests/",
-        "variant_id": "iPad Air 2 15.5"
+        "variant_id": "iPad Air (5th generation) 16.4"
       },
       {
         "args": [
           "--platform",
           "iPhone X",
           "--version",
-          "15.5",
+          "16.4",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
@@ -13298,7 +12718,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "base_unittests iPhone X 15.5",
+        "name": "base_unittests iPhone X 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -13313,30 +12733,30 @@
           ],
           "dimensions": {
             "cpu": "x86-64",
-            "os": "Mac-13"
+            "os": "Mac-13|Mac-14"
           },
           "named_caches": [
             {
-              "name": "xcode_ios_15c500b",
-              "path": "Xcode.app"
+              "name": "runtime_ios_16_4",
+              "path": "Runtime-ios-16.4"
             },
             {
-              "name": "runtime_ios_15_5",
-              "path": "Runtime-ios-15.5"
+              "name": "xcode_ios_15c500b",
+              "path": "Xcode.app"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "base_unittests",
         "test_id_prefix": "ninja://base:base_unittests/",
-        "variant_id": "iPhone X 15.5"
+        "variant_id": "iPhone X 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPad Air 2",
+          "iPad Air (5th generation)",
           "--version",
-          "15.5",
+          "16.4",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
@@ -13346,7 +12766,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "boringssl_crypto_tests iPad Air 2 15.5",
+        "name": "boringssl_crypto_tests iPad Air (5th generation) 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -13361,30 +12781,30 @@
           ],
           "dimensions": {
             "cpu": "x86-64",
-            "os": "Mac-13"
+            "os": "Mac-13|Mac-14"
           },
           "named_caches": [
             {
-              "name": "xcode_ios_15c500b",
-              "path": "Xcode.app"
+              "name": "runtime_ios_16_4",
+              "path": "Runtime-ios-16.4"
             },
             {
-              "name": "runtime_ios_15_5",
-              "path": "Runtime-ios-15.5"
+              "name": "xcode_ios_15c500b",
+              "path": "Xcode.app"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "boringssl_crypto_tests",
         "test_id_prefix": "ninja://third_party/boringssl:boringssl_crypto_tests/",
-        "variant_id": "iPad Air 2 15.5"
+        "variant_id": "iPad Air (5th generation) 16.4"
       },
       {
         "args": [
           "--platform",
           "iPhone X",
           "--version",
-          "15.5",
+          "16.4",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
@@ -13394,7 +12814,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "boringssl_crypto_tests iPhone X 15.5",
+        "name": "boringssl_crypto_tests iPhone X 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -13409,30 +12829,30 @@
           ],
           "dimensions": {
             "cpu": "x86-64",
-            "os": "Mac-13"
+            "os": "Mac-13|Mac-14"
           },
           "named_caches": [
             {
-              "name": "xcode_ios_15c500b",
-              "path": "Xcode.app"
+              "name": "runtime_ios_16_4",
+              "path": "Runtime-ios-16.4"
             },
             {
-              "name": "runtime_ios_15_5",
-              "path": "Runtime-ios-15.5"
+              "name": "xcode_ios_15c500b",
+              "path": "Xcode.app"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "boringssl_crypto_tests",
         "test_id_prefix": "ninja://third_party/boringssl:boringssl_crypto_tests/",
-        "variant_id": "iPhone X 15.5"
+        "variant_id": "iPhone X 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPad Air 2",
+          "iPad Air (5th generation)",
           "--version",
-          "15.5",
+          "16.4",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
@@ -13442,7 +12862,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "boringssl_ssl_tests iPad Air 2 15.5",
+        "name": "boringssl_ssl_tests iPad Air (5th generation) 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -13457,30 +12877,30 @@
           ],
           "dimensions": {
             "cpu": "x86-64",
-            "os": "Mac-13"
+            "os": "Mac-13|Mac-14"
           },
           "named_caches": [
             {
-              "name": "xcode_ios_15c500b",
-              "path": "Xcode.app"
+              "name": "runtime_ios_16_4",
+              "path": "Runtime-ios-16.4"
             },
             {
-              "name": "runtime_ios_15_5",
-              "path": "Runtime-ios-15.5"
+              "name": "xcode_ios_15c500b",
+              "path": "Xcode.app"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "boringssl_ssl_tests",
         "test_id_prefix": "ninja://third_party/boringssl:boringssl_ssl_tests/",
-        "variant_id": "iPad Air 2 15.5"
+        "variant_id": "iPad Air (5th generation) 16.4"
       },
       {
         "args": [
           "--platform",
           "iPhone X",
           "--version",
-          "15.5",
+          "16.4",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
@@ -13490,7 +12910,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "boringssl_ssl_tests iPhone X 15.5",
+        "name": "boringssl_ssl_tests iPhone X 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -13505,30 +12925,30 @@
           ],
           "dimensions": {
             "cpu": "x86-64",
-            "os": "Mac-13"
+            "os": "Mac-13|Mac-14"
           },
           "named_caches": [
             {
-              "name": "xcode_ios_15c500b",
-              "path": "Xcode.app"
+              "name": "runtime_ios_16_4",
+              "path": "Runtime-ios-16.4"
             },
             {
-              "name": "runtime_ios_15_5",
-              "path": "Runtime-ios-15.5"
+              "name": "xcode_ios_15c500b",
+              "path": "Xcode.app"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "boringssl_ssl_tests",
         "test_id_prefix": "ninja://third_party/boringssl:boringssl_ssl_tests/",
-        "variant_id": "iPhone X 15.5"
+        "variant_id": "iPhone X 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPad Air 2",
+          "iPad Air (5th generation)",
           "--version",
-          "15.5",
+          "16.4",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
@@ -13538,7 +12958,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "components_unittests iPad Air 2 15.5",
+        "name": "components_unittests iPad Air (5th generation) 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -13553,30 +12973,30 @@
           ],
           "dimensions": {
             "cpu": "x86-64",
-            "os": "Mac-13"
+            "os": "Mac-13|Mac-14"
           },
           "named_caches": [
             {
-              "name": "xcode_ios_15c500b",
-              "path": "Xcode.app"
+              "name": "runtime_ios_16_4",
+              "path": "Runtime-ios-16.4"
             },
             {
-              "name": "runtime_ios_15_5",
-              "path": "Runtime-ios-15.5"
+              "name": "xcode_ios_15c500b",
+              "path": "Xcode.app"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "components_unittests",
         "test_id_prefix": "ninja://components:components_unittests/",
-        "variant_id": "iPad Air 2 15.5"
+        "variant_id": "iPad Air (5th generation) 16.4"
       },
       {
         "args": [
           "--platform",
           "iPhone X",
           "--version",
-          "15.5",
+          "16.4",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
@@ -13586,7 +13006,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "components_unittests iPhone X 15.5",
+        "name": "components_unittests iPhone X 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -13601,30 +13021,30 @@
           ],
           "dimensions": {
             "cpu": "x86-64",
-            "os": "Mac-13"
+            "os": "Mac-13|Mac-14"
           },
           "named_caches": [
             {
-              "name": "xcode_ios_15c500b",
-              "path": "Xcode.app"
+              "name": "runtime_ios_16_4",
+              "path": "Runtime-ios-16.4"
             },
             {
-              "name": "runtime_ios_15_5",
-              "path": "Runtime-ios-15.5"
+              "name": "xcode_ios_15c500b",
+              "path": "Xcode.app"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "components_unittests",
         "test_id_prefix": "ninja://components:components_unittests/",
-        "variant_id": "iPhone X 15.5"
+        "variant_id": "iPhone X 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPad Air 2",
+          "iPad Air (5th generation)",
           "--version",
-          "15.5",
+          "16.4",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
@@ -13634,7 +13054,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "crashpad_tests iPad Air 2 15.5",
+        "name": "crashpad_tests iPad Air (5th generation) 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -13649,30 +13069,30 @@
           ],
           "dimensions": {
             "cpu": "x86-64",
-            "os": "Mac-13"
+            "os": "Mac-13|Mac-14"
           },
           "named_caches": [
             {
-              "name": "xcode_ios_15c500b",
-              "path": "Xcode.app"
+              "name": "runtime_ios_16_4",
+              "path": "Runtime-ios-16.4"
             },
             {
-              "name": "runtime_ios_15_5",
-              "path": "Runtime-ios-15.5"
+              "name": "xcode_ios_15c500b",
+              "path": "Xcode.app"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "crashpad_tests",
         "test_id_prefix": "ninja://third_party/crashpad/crashpad:crashpad_tests/",
-        "variant_id": "iPad Air 2 15.5"
+        "variant_id": "iPad Air (5th generation) 16.4"
       },
       {
         "args": [
           "--platform",
           "iPhone X",
           "--version",
-          "15.5",
+          "16.4",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
@@ -13682,7 +13102,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "crashpad_tests iPhone X 15.5",
+        "name": "crashpad_tests iPhone X 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -13697,30 +13117,30 @@
           ],
           "dimensions": {
             "cpu": "x86-64",
-            "os": "Mac-13"
+            "os": "Mac-13|Mac-14"
           },
           "named_caches": [
             {
-              "name": "xcode_ios_15c500b",
-              "path": "Xcode.app"
+              "name": "runtime_ios_16_4",
+              "path": "Runtime-ios-16.4"
             },
             {
-              "name": "runtime_ios_15_5",
-              "path": "Runtime-ios-15.5"
+              "name": "xcode_ios_15c500b",
+              "path": "Xcode.app"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "crashpad_tests",
         "test_id_prefix": "ninja://third_party/crashpad/crashpad:crashpad_tests/",
-        "variant_id": "iPhone X 15.5"
+        "variant_id": "iPhone X 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPad Air 2",
+          "iPad Air (5th generation)",
           "--version",
-          "15.5",
+          "16.4",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
@@ -13730,7 +13150,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "crypto_unittests iPad Air 2 15.5",
+        "name": "crypto_unittests iPad Air (5th generation) 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -13745,30 +13165,30 @@
           ],
           "dimensions": {
             "cpu": "x86-64",
-            "os": "Mac-13"
+            "os": "Mac-13|Mac-14"
           },
           "named_caches": [
             {
-              "name": "xcode_ios_15c500b",
-              "path": "Xcode.app"
+              "name": "runtime_ios_16_4",
+              "path": "Runtime-ios-16.4"
             },
             {
-              "name": "runtime_ios_15_5",
-              "path": "Runtime-ios-15.5"
+              "name": "xcode_ios_15c500b",
+              "path": "Xcode.app"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "crypto_unittests",
         "test_id_prefix": "ninja://crypto:crypto_unittests/",
-        "variant_id": "iPad Air 2 15.5"
+        "variant_id": "iPad Air (5th generation) 16.4"
       },
       {
         "args": [
           "--platform",
           "iPhone X",
           "--version",
-          "15.5",
+          "16.4",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
@@ -13778,7 +13198,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "crypto_unittests iPhone X 15.5",
+        "name": "crypto_unittests iPhone X 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -13793,30 +13213,30 @@
           ],
           "dimensions": {
             "cpu": "x86-64",
-            "os": "Mac-13"
+            "os": "Mac-13|Mac-14"
           },
           "named_caches": [
             {
-              "name": "xcode_ios_15c500b",
-              "path": "Xcode.app"
+              "name": "runtime_ios_16_4",
+              "path": "Runtime-ios-16.4"
             },
             {
-              "name": "runtime_ios_15_5",
-              "path": "Runtime-ios-15.5"
+              "name": "xcode_ios_15c500b",
+              "path": "Xcode.app"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "crypto_unittests",
         "test_id_prefix": "ninja://crypto:crypto_unittests/",
-        "variant_id": "iPhone X 15.5"
+        "variant_id": "iPhone X 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPad Air 2",
+          "iPad Air (5th generation)",
           "--version",
-          "15.5",
+          "16.4",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
@@ -13826,7 +13246,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "gfx_unittests iPad Air 2 15.5",
+        "name": "gfx_unittests iPad Air (5th generation) 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -13841,30 +13261,30 @@
           ],
           "dimensions": {
             "cpu": "x86-64",
-            "os": "Mac-13"
+            "os": "Mac-13|Mac-14"
           },
           "named_caches": [
             {
-              "name": "xcode_ios_15c500b",
-              "path": "Xcode.app"
+              "name": "runtime_ios_16_4",
+              "path": "Runtime-ios-16.4"
             },
             {
-              "name": "runtime_ios_15_5",
-              "path": "Runtime-ios-15.5"
+              "name": "xcode_ios_15c500b",
+              "path": "Xcode.app"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gfx_unittests",
         "test_id_prefix": "ninja://ui/gfx:gfx_unittests/",
-        "variant_id": "iPad Air 2 15.5"
+        "variant_id": "iPad Air (5th generation) 16.4"
       },
       {
         "args": [
           "--platform",
           "iPhone X",
           "--version",
-          "15.5",
+          "16.4",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
@@ -13874,7 +13294,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "gfx_unittests iPhone X 15.5",
+        "name": "gfx_unittests iPhone X 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -13889,30 +13309,30 @@
           ],
           "dimensions": {
             "cpu": "x86-64",
-            "os": "Mac-13"
+            "os": "Mac-13|Mac-14"
           },
           "named_caches": [
             {
-              "name": "xcode_ios_15c500b",
-              "path": "Xcode.app"
+              "name": "runtime_ios_16_4",
+              "path": "Runtime-ios-16.4"
             },
             {
-              "name": "runtime_ios_15_5",
-              "path": "Runtime-ios-15.5"
+              "name": "xcode_ios_15c500b",
+              "path": "Xcode.app"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gfx_unittests",
         "test_id_prefix": "ninja://ui/gfx:gfx_unittests/",
-        "variant_id": "iPhone X 15.5"
+        "variant_id": "iPhone X 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPad Air 2",
+          "iPad Air (5th generation)",
           "--version",
-          "15.5",
+          "16.4",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
@@ -13922,7 +13342,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "google_apis_unittests iPad Air 2 15.5",
+        "name": "google_apis_unittests iPad Air (5th generation) 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -13937,30 +13357,30 @@
           ],
           "dimensions": {
             "cpu": "x86-64",
-            "os": "Mac-13"
+            "os": "Mac-13|Mac-14"
           },
           "named_caches": [
             {
-              "name": "xcode_ios_15c500b",
-              "path": "Xcode.app"
+              "name": "runtime_ios_16_4",
+              "path": "Runtime-ios-16.4"
             },
             {
-              "name": "runtime_ios_15_5",
-              "path": "Runtime-ios-15.5"
+              "name": "xcode_ios_15c500b",
+              "path": "Xcode.app"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "google_apis_unittests",
         "test_id_prefix": "ninja://google_apis:google_apis_unittests/",
-        "variant_id": "iPad Air 2 15.5"
+        "variant_id": "iPad Air (5th generation) 16.4"
       },
       {
         "args": [
           "--platform",
           "iPhone X",
           "--version",
-          "15.5",
+          "16.4",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
@@ -13970,7 +13390,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "google_apis_unittests iPhone X 15.5",
+        "name": "google_apis_unittests iPhone X 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -13985,30 +13405,30 @@
           ],
           "dimensions": {
             "cpu": "x86-64",
-            "os": "Mac-13"
+            "os": "Mac-13|Mac-14"
           },
           "named_caches": [
             {
-              "name": "xcode_ios_15c500b",
-              "path": "Xcode.app"
+              "name": "runtime_ios_16_4",
+              "path": "Runtime-ios-16.4"
             },
             {
-              "name": "runtime_ios_15_5",
-              "path": "Runtime-ios-15.5"
+              "name": "xcode_ios_15c500b",
+              "path": "Xcode.app"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "google_apis_unittests",
         "test_id_prefix": "ninja://google_apis:google_apis_unittests/",
-        "variant_id": "iPhone X 15.5"
+        "variant_id": "iPhone X 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPad Air 2",
+          "iPad Air (5th generation)",
           "--version",
-          "15.5",
+          "16.4",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
@@ -14018,7 +13438,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_unittests iPad Air 2 15.5",
+        "name": "ios_chrome_unittests iPad Air (5th generation) 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -14033,30 +13453,30 @@
           ],
           "dimensions": {
             "cpu": "x86-64",
-            "os": "Mac-13"
+            "os": "Mac-13|Mac-14"
           },
           "named_caches": [
             {
-              "name": "xcode_ios_15c500b",
-              "path": "Xcode.app"
+              "name": "runtime_ios_16_4",
+              "path": "Runtime-ios-16.4"
             },
             {
-              "name": "runtime_ios_15_5",
-              "path": "Runtime-ios-15.5"
+              "name": "xcode_ios_15c500b",
+              "path": "Xcode.app"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "ios_chrome_unittests",
         "test_id_prefix": "ninja://ios/chrome/test:ios_chrome_unittests/",
-        "variant_id": "iPad Air 2 15.5"
+        "variant_id": "iPad Air (5th generation) 16.4"
       },
       {
         "args": [
           "--platform",
           "iPhone X",
           "--version",
-          "15.5",
+          "16.4",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
@@ -14066,7 +13486,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_unittests iPhone X 15.5",
+        "name": "ios_chrome_unittests iPhone X 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -14081,30 +13501,30 @@
           ],
           "dimensions": {
             "cpu": "x86-64",
-            "os": "Mac-13"
+            "os": "Mac-13|Mac-14"
           },
           "named_caches": [
             {
-              "name": "xcode_ios_15c500b",
-              "path": "Xcode.app"
+              "name": "runtime_ios_16_4",
+              "path": "Runtime-ios-16.4"
             },
             {
-              "name": "runtime_ios_15_5",
-              "path": "Runtime-ios-15.5"
+              "name": "xcode_ios_15c500b",
+              "path": "Xcode.app"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "ios_chrome_unittests",
         "test_id_prefix": "ninja://ios/chrome/test:ios_chrome_unittests/",
-        "variant_id": "iPhone X 15.5"
+        "variant_id": "iPhone X 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPad Air 2",
+          "iPad Air (5th generation)",
           "--version",
-          "15.5",
+          "16.4",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
@@ -14114,7 +13534,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_components_unittests iPad Air 2 15.5",
+        "name": "ios_components_unittests iPad Air (5th generation) 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -14129,30 +13549,30 @@
           ],
           "dimensions": {
             "cpu": "x86-64",
-            "os": "Mac-13"
+            "os": "Mac-13|Mac-14"
           },
           "named_caches": [
             {
-              "name": "xcode_ios_15c500b",
-              "path": "Xcode.app"
+              "name": "runtime_ios_16_4",
+              "path": "Runtime-ios-16.4"
             },
             {
-              "name": "runtime_ios_15_5",
-              "path": "Runtime-ios-15.5"
+              "name": "xcode_ios_15c500b",
+              "path": "Xcode.app"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "ios_components_unittests",
         "test_id_prefix": "ninja://ios/components:ios_components_unittests/",
-        "variant_id": "iPad Air 2 15.5"
+        "variant_id": "iPad Air (5th generation) 16.4"
       },
       {
         "args": [
           "--platform",
           "iPhone X",
           "--version",
-          "15.5",
+          "16.4",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
@@ -14162,7 +13582,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_components_unittests iPhone X 15.5",
+        "name": "ios_components_unittests iPhone X 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -14177,30 +13597,30 @@
           ],
           "dimensions": {
             "cpu": "x86-64",
-            "os": "Mac-13"
+            "os": "Mac-13|Mac-14"
           },
           "named_caches": [
             {
-              "name": "xcode_ios_15c500b",
-              "path": "Xcode.app"
+              "name": "runtime_ios_16_4",
+              "path": "Runtime-ios-16.4"
             },
             {
-              "name": "runtime_ios_15_5",
-              "path": "Runtime-ios-15.5"
+              "name": "xcode_ios_15c500b",
+              "path": "Xcode.app"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "ios_components_unittests",
         "test_id_prefix": "ninja://ios/components:ios_components_unittests/",
-        "variant_id": "iPhone X 15.5"
+        "variant_id": "iPhone X 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPad Air 2",
+          "iPad Air (5th generation)",
           "--version",
-          "15.5",
+          "16.4",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
@@ -14210,7 +13630,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_net_unittests iPad Air 2 15.5",
+        "name": "ios_net_unittests iPad Air (5th generation) 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -14225,16 +13645,16 @@
           ],
           "dimensions": {
             "cpu": "x86-64",
-            "os": "Mac-13"
+            "os": "Mac-13|Mac-14"
           },
           "named_caches": [
             {
-              "name": "xcode_ios_15c500b",
-              "path": "Xcode.app"
+              "name": "runtime_ios_16_4",
+              "path": "Runtime-ios-16.4"
             },
             {
-              "name": "runtime_ios_15_5",
-              "path": "Runtime-ios-15.5"
+              "name": "xcode_ios_15c500b",
+              "path": "Xcode.app"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
@@ -14242,14 +13662,14 @@
         },
         "test": "ios_net_unittests",
         "test_id_prefix": "ninja://ios/net:ios_net_unittests/",
-        "variant_id": "iPad Air 2 15.5"
+        "variant_id": "iPad Air (5th generation) 16.4"
       },
       {
         "args": [
           "--platform",
           "iPhone X",
           "--version",
-          "15.5",
+          "16.4",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
@@ -14259,7 +13679,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_net_unittests iPhone X 15.5",
+        "name": "ios_net_unittests iPhone X 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -14274,16 +13694,16 @@
           ],
           "dimensions": {
             "cpu": "x86-64",
-            "os": "Mac-13"
+            "os": "Mac-13|Mac-14"
           },
           "named_caches": [
             {
-              "name": "xcode_ios_15c500b",
-              "path": "Xcode.app"
+              "name": "runtime_ios_16_4",
+              "path": "Runtime-ios-16.4"
             },
             {
-              "name": "runtime_ios_15_5",
-              "path": "Runtime-ios-15.5"
+              "name": "xcode_ios_15c500b",
+              "path": "Xcode.app"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
@@ -14291,14 +13711,14 @@
         },
         "test": "ios_net_unittests",
         "test_id_prefix": "ninja://ios/net:ios_net_unittests/",
-        "variant_id": "iPhone X 15.5"
+        "variant_id": "iPhone X 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPad Air 2",
+          "iPad Air (5th generation)",
           "--version",
-          "15.5",
+          "16.4",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
@@ -14308,7 +13728,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_remoting_unittests iPad Air 2 15.5",
+        "name": "ios_remoting_unittests iPad Air (5th generation) 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -14323,30 +13743,30 @@
           ],
           "dimensions": {
             "cpu": "x86-64",
-            "os": "Mac-13"
+            "os": "Mac-13|Mac-14"
           },
           "named_caches": [
             {
-              "name": "xcode_ios_15c500b",
-              "path": "Xcode.app"
+              "name": "runtime_ios_16_4",
+              "path": "Runtime-ios-16.4"
             },
             {
-              "name": "runtime_ios_15_5",
-              "path": "Runtime-ios-15.5"
+              "name": "xcode_ios_15c500b",
+              "path": "Xcode.app"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "ios_remoting_unittests",
         "test_id_prefix": "ninja://remoting/ios:ios_remoting_unittests/",
-        "variant_id": "iPad Air 2 15.5"
+        "variant_id": "iPad Air (5th generation) 16.4"
       },
       {
         "args": [
           "--platform",
           "iPhone X",
           "--version",
-          "15.5",
+          "16.4",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
@@ -14356,7 +13776,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_remoting_unittests iPhone X 15.5",
+        "name": "ios_remoting_unittests iPhone X 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -14371,30 +13791,30 @@
           ],
           "dimensions": {
             "cpu": "x86-64",
-            "os": "Mac-13"
+            "os": "Mac-13|Mac-14"
           },
           "named_caches": [
             {
-              "name": "xcode_ios_15c500b",
-              "path": "Xcode.app"
+              "name": "runtime_ios_16_4",
+              "path": "Runtime-ios-16.4"
             },
             {
-              "name": "runtime_ios_15_5",
-              "path": "Runtime-ios-15.5"
+              "name": "xcode_ios_15c500b",
+              "path": "Xcode.app"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "ios_remoting_unittests",
         "test_id_prefix": "ninja://remoting/ios:ios_remoting_unittests/",
-        "variant_id": "iPhone X 15.5"
+        "variant_id": "iPhone X 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPad Air 2",
+          "iPad Air (5th generation)",
           "--version",
-          "15.5",
+          "16.4",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
@@ -14404,7 +13824,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_testing_unittests iPad Air 2 15.5",
+        "name": "ios_testing_unittests iPad Air (5th generation) 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -14419,30 +13839,30 @@
           ],
           "dimensions": {
             "cpu": "x86-64",
-            "os": "Mac-13"
+            "os": "Mac-13|Mac-14"
           },
           "named_caches": [
             {
-              "name": "xcode_ios_15c500b",
-              "path": "Xcode.app"
+              "name": "runtime_ios_16_4",
+              "path": "Runtime-ios-16.4"
             },
             {
-              "name": "runtime_ios_15_5",
-              "path": "Runtime-ios-15.5"
+              "name": "xcode_ios_15c500b",
+              "path": "Xcode.app"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "ios_testing_unittests",
         "test_id_prefix": "ninja://ios/testing:ios_testing_unittests/",
-        "variant_id": "iPad Air 2 15.5"
+        "variant_id": "iPad Air (5th generation) 16.4"
       },
       {
         "args": [
           "--platform",
           "iPhone X",
           "--version",
-          "15.5",
+          "16.4",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
@@ -14452,7 +13872,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_testing_unittests iPhone X 15.5",
+        "name": "ios_testing_unittests iPhone X 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -14467,30 +13887,30 @@
           ],
           "dimensions": {
             "cpu": "x86-64",
-            "os": "Mac-13"
+            "os": "Mac-13|Mac-14"
           },
           "named_caches": [
             {
-              "name": "xcode_ios_15c500b",
-              "path": "Xcode.app"
+              "name": "runtime_ios_16_4",
+              "path": "Runtime-ios-16.4"
             },
             {
-              "name": "runtime_ios_15_5",
-              "path": "Runtime-ios-15.5"
+              "name": "xcode_ios_15c500b",
+              "path": "Xcode.app"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "ios_testing_unittests",
         "test_id_prefix": "ninja://ios/testing:ios_testing_unittests/",
-        "variant_id": "iPhone X 15.5"
+        "variant_id": "iPhone X 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPad Air 2",
+          "iPad Air (5th generation)",
           "--version",
-          "15.5",
+          "16.4",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
@@ -14500,7 +13920,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_inttests iPad Air 2 15.5",
+        "name": "ios_web_inttests iPad Air (5th generation) 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -14515,30 +13935,30 @@
           ],
           "dimensions": {
             "cpu": "x86-64",
-            "os": "Mac-13"
+            "os": "Mac-13|Mac-14"
           },
           "named_caches": [
             {
-              "name": "xcode_ios_15c500b",
-              "path": "Xcode.app"
+              "name": "runtime_ios_16_4",
+              "path": "Runtime-ios-16.4"
             },
             {
-              "name": "runtime_ios_15_5",
-              "path": "Runtime-ios-15.5"
+              "name": "xcode_ios_15c500b",
+              "path": "Xcode.app"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "ios_web_inttests",
         "test_id_prefix": "ninja://ios/web:ios_web_inttests/",
-        "variant_id": "iPad Air 2 15.5"
+        "variant_id": "iPad Air (5th generation) 16.4"
       },
       {
         "args": [
           "--platform",
           "iPhone X",
           "--version",
-          "15.5",
+          "16.4",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
@@ -14548,7 +13968,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_inttests iPhone X 15.5",
+        "name": "ios_web_inttests iPhone X 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -14563,30 +13983,30 @@
           ],
           "dimensions": {
             "cpu": "x86-64",
-            "os": "Mac-13"
+            "os": "Mac-13|Mac-14"
           },
           "named_caches": [
             {
-              "name": "xcode_ios_15c500b",
-              "path": "Xcode.app"
+              "name": "runtime_ios_16_4",
+              "path": "Runtime-ios-16.4"
             },
             {
-              "name": "runtime_ios_15_5",
-              "path": "Runtime-ios-15.5"
+              "name": "xcode_ios_15c500b",
+              "path": "Xcode.app"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "ios_web_inttests",
         "test_id_prefix": "ninja://ios/web:ios_web_inttests/",
-        "variant_id": "iPhone X 15.5"
+        "variant_id": "iPhone X 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPad Air 2",
+          "iPad Air (5th generation)",
           "--version",
-          "15.5",
+          "16.4",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
@@ -14596,7 +14016,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_unittests iPad Air 2 15.5",
+        "name": "ios_web_unittests iPad Air (5th generation) 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -14611,30 +14031,30 @@
           ],
           "dimensions": {
             "cpu": "x86-64",
-            "os": "Mac-13"
+            "os": "Mac-13|Mac-14"
           },
           "named_caches": [
             {
-              "name": "xcode_ios_15c500b",
-              "path": "Xcode.app"
+              "name": "runtime_ios_16_4",
+              "path": "Runtime-ios-16.4"
             },
             {
-              "name": "runtime_ios_15_5",
-              "path": "Runtime-ios-15.5"
+              "name": "xcode_ios_15c500b",
+              "path": "Xcode.app"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "ios_web_unittests",
         "test_id_prefix": "ninja://ios/web:ios_web_unittests/",
-        "variant_id": "iPad Air 2 15.5"
+        "variant_id": "iPad Air (5th generation) 16.4"
       },
       {
         "args": [
           "--platform",
           "iPhone X",
           "--version",
-          "15.5",
+          "16.4",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
@@ -14644,7 +14064,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_unittests iPhone X 15.5",
+        "name": "ios_web_unittests iPhone X 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -14659,30 +14079,30 @@
           ],
           "dimensions": {
             "cpu": "x86-64",
-            "os": "Mac-13"
+            "os": "Mac-13|Mac-14"
           },
           "named_caches": [
             {
-              "name": "xcode_ios_15c500b",
-              "path": "Xcode.app"
+              "name": "runtime_ios_16_4",
+              "path": "Runtime-ios-16.4"
             },
             {
-              "name": "runtime_ios_15_5",
-              "path": "Runtime-ios-15.5"
+              "name": "xcode_ios_15c500b",
+              "path": "Xcode.app"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "ios_web_unittests",
         "test_id_prefix": "ninja://ios/web:ios_web_unittests/",
-        "variant_id": "iPhone X 15.5"
+        "variant_id": "iPhone X 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPad Air 2",
+          "iPad Air (5th generation)",
           "--version",
-          "15.5",
+          "16.4",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
@@ -14692,7 +14112,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_view_inttests iPad Air 2 15.5",
+        "name": "ios_web_view_inttests iPad Air (5th generation) 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -14707,30 +14127,30 @@
           ],
           "dimensions": {
             "cpu": "x86-64",
-            "os": "Mac-13"
+            "os": "Mac-13|Mac-14"
           },
           "named_caches": [
             {
-              "name": "xcode_ios_15c500b",
-              "path": "Xcode.app"
+              "name": "runtime_ios_16_4",
+              "path": "Runtime-ios-16.4"
             },
             {
-              "name": "runtime_ios_15_5",
-              "path": "Runtime-ios-15.5"
+              "name": "xcode_ios_15c500b",
+              "path": "Xcode.app"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "ios_web_view_inttests",
         "test_id_prefix": "ninja://ios/web_view:ios_web_view_inttests/",
-        "variant_id": "iPad Air 2 15.5"
+        "variant_id": "iPad Air (5th generation) 16.4"
       },
       {
         "args": [
           "--platform",
           "iPhone X",
           "--version",
-          "15.5",
+          "16.4",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
@@ -14740,7 +14160,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_view_inttests iPhone X 15.5",
+        "name": "ios_web_view_inttests iPhone X 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -14755,30 +14175,30 @@
           ],
           "dimensions": {
             "cpu": "x86-64",
-            "os": "Mac-13"
+            "os": "Mac-13|Mac-14"
           },
           "named_caches": [
             {
-              "name": "xcode_ios_15c500b",
-              "path": "Xcode.app"
+              "name": "runtime_ios_16_4",
+              "path": "Runtime-ios-16.4"
             },
             {
-              "name": "runtime_ios_15_5",
-              "path": "Runtime-ios-15.5"
+              "name": "xcode_ios_15c500b",
+              "path": "Xcode.app"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "ios_web_view_inttests",
         "test_id_prefix": "ninja://ios/web_view:ios_web_view_inttests/",
-        "variant_id": "iPhone X 15.5"
+        "variant_id": "iPhone X 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPad Air 2",
+          "iPad Air (5th generation)",
           "--version",
-          "15.5",
+          "16.4",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
@@ -14788,7 +14208,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_view_unittests iPad Air 2 15.5",
+        "name": "ios_web_view_unittests iPad Air (5th generation) 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -14803,30 +14223,30 @@
           ],
           "dimensions": {
             "cpu": "x86-64",
-            "os": "Mac-13"
+            "os": "Mac-13|Mac-14"
           },
           "named_caches": [
             {
-              "name": "xcode_ios_15c500b",
-              "path": "Xcode.app"
+              "name": "runtime_ios_16_4",
+              "path": "Runtime-ios-16.4"
             },
             {
-              "name": "runtime_ios_15_5",
-              "path": "Runtime-ios-15.5"
+              "name": "xcode_ios_15c500b",
+              "path": "Xcode.app"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "ios_web_view_unittests",
         "test_id_prefix": "ninja://ios/web_view:ios_web_view_unittests/",
-        "variant_id": "iPad Air 2 15.5"
+        "variant_id": "iPad Air (5th generation) 16.4"
       },
       {
         "args": [
           "--platform",
           "iPhone X",
           "--version",
-          "15.5",
+          "16.4",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
@@ -14836,7 +14256,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_view_unittests iPhone X 15.5",
+        "name": "ios_web_view_unittests iPhone X 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -14851,30 +14271,30 @@
           ],
           "dimensions": {
             "cpu": "x86-64",
-            "os": "Mac-13"
+            "os": "Mac-13|Mac-14"
           },
           "named_caches": [
             {
-              "name": "xcode_ios_15c500b",
-              "path": "Xcode.app"
+              "name": "runtime_ios_16_4",
+              "path": "Runtime-ios-16.4"
             },
             {
-              "name": "runtime_ios_15_5",
-              "path": "Runtime-ios-15.5"
+              "name": "xcode_ios_15c500b",
+              "path": "Xcode.app"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "ios_web_view_unittests",
         "test_id_prefix": "ninja://ios/web_view:ios_web_view_unittests/",
-        "variant_id": "iPhone X 15.5"
+        "variant_id": "iPhone X 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPad Air 2",
+          "iPad Air (5th generation)",
           "--version",
-          "15.5",
+          "16.4",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
@@ -14884,7 +14304,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "net_unittests iPad Air 2 15.5",
+        "name": "net_unittests iPad Air (5th generation) 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -14899,30 +14319,30 @@
           ],
           "dimensions": {
             "cpu": "x86-64",
-            "os": "Mac-13"
+            "os": "Mac-13|Mac-14"
           },
           "named_caches": [
             {
-              "name": "xcode_ios_15c500b",
-              "path": "Xcode.app"
+              "name": "runtime_ios_16_4",
+              "path": "Runtime-ios-16.4"
             },
             {
-              "name": "runtime_ios_15_5",
-              "path": "Runtime-ios-15.5"
+              "name": "xcode_ios_15c500b",
+              "path": "Xcode.app"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "net_unittests",
         "test_id_prefix": "ninja://net:net_unittests/",
-        "variant_id": "iPad Air 2 15.5"
+        "variant_id": "iPad Air (5th generation) 16.4"
       },
       {
         "args": [
           "--platform",
           "iPhone X",
           "--version",
-          "15.5",
+          "16.4",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
@@ -14932,7 +14352,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "net_unittests iPhone X 15.5",
+        "name": "net_unittests iPhone X 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -14947,30 +14367,30 @@
           ],
           "dimensions": {
             "cpu": "x86-64",
-            "os": "Mac-13"
+            "os": "Mac-13|Mac-14"
           },
           "named_caches": [
             {
-              "name": "xcode_ios_15c500b",
-              "path": "Xcode.app"
+              "name": "runtime_ios_16_4",
+              "path": "Runtime-ios-16.4"
             },
             {
-              "name": "runtime_ios_15_5",
-              "path": "Runtime-ios-15.5"
+              "name": "xcode_ios_15c500b",
+              "path": "Xcode.app"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "net_unittests",
         "test_id_prefix": "ninja://net:net_unittests/",
-        "variant_id": "iPhone X 15.5"
+        "variant_id": "iPhone X 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPad Air 2",
+          "iPad Air (5th generation)",
           "--version",
-          "15.5",
+          "16.4",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
@@ -14980,7 +14400,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "services_unittests iPad Air 2 15.5",
+        "name": "services_unittests iPad Air (5th generation) 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -14995,30 +14415,30 @@
           ],
           "dimensions": {
             "cpu": "x86-64",
-            "os": "Mac-13"
+            "os": "Mac-13|Mac-14"
           },
           "named_caches": [
             {
-              "name": "xcode_ios_15c500b",
-              "path": "Xcode.app"
+              "name": "runtime_ios_16_4",
+              "path": "Runtime-ios-16.4"
             },
             {
-              "name": "runtime_ios_15_5",
-              "path": "Runtime-ios-15.5"
+              "name": "xcode_ios_15c500b",
+              "path": "Xcode.app"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "services_unittests",
         "test_id_prefix": "ninja://services:services_unittests/",
-        "variant_id": "iPad Air 2 15.5"
+        "variant_id": "iPad Air (5th generation) 16.4"
       },
       {
         "args": [
           "--platform",
           "iPhone X",
           "--version",
-          "15.5",
+          "16.4",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
@@ -15028,7 +14448,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "services_unittests iPhone X 15.5",
+        "name": "services_unittests iPhone X 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -15043,30 +14463,30 @@
           ],
           "dimensions": {
             "cpu": "x86-64",
-            "os": "Mac-13"
+            "os": "Mac-13|Mac-14"
           },
           "named_caches": [
             {
-              "name": "xcode_ios_15c500b",
-              "path": "Xcode.app"
+              "name": "runtime_ios_16_4",
+              "path": "Runtime-ios-16.4"
             },
             {
-              "name": "runtime_ios_15_5",
-              "path": "Runtime-ios-15.5"
+              "name": "xcode_ios_15c500b",
+              "path": "Xcode.app"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "services_unittests",
         "test_id_prefix": "ninja://services:services_unittests/",
-        "variant_id": "iPhone X 15.5"
+        "variant_id": "iPhone X 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPad Air 2",
+          "iPad Air (5th generation)",
           "--version",
-          "15.5",
+          "16.4",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
@@ -15076,7 +14496,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "skia_unittests iPad Air 2 15.5",
+        "name": "skia_unittests iPad Air (5th generation) 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -15091,30 +14511,30 @@
           ],
           "dimensions": {
             "cpu": "x86-64",
-            "os": "Mac-13"
+            "os": "Mac-13|Mac-14"
           },
           "named_caches": [
             {
-              "name": "xcode_ios_15c500b",
-              "path": "Xcode.app"
+              "name": "runtime_ios_16_4",
+              "path": "Runtime-ios-16.4"
             },
             {
-              "name": "runtime_ios_15_5",
-              "path": "Runtime-ios-15.5"
+              "name": "xcode_ios_15c500b",
+              "path": "Xcode.app"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "skia_unittests",
         "test_id_prefix": "ninja://skia:skia_unittests/",
-        "variant_id": "iPad Air 2 15.5"
+        "variant_id": "iPad Air (5th generation) 16.4"
       },
       {
         "args": [
           "--platform",
           "iPhone X",
           "--version",
-          "15.5",
+          "16.4",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
@@ -15124,7 +14544,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "skia_unittests iPhone X 15.5",
+        "name": "skia_unittests iPhone X 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -15139,30 +14559,30 @@
           ],
           "dimensions": {
             "cpu": "x86-64",
-            "os": "Mac-13"
+            "os": "Mac-13|Mac-14"
           },
           "named_caches": [
             {
-              "name": "xcode_ios_15c500b",
-              "path": "Xcode.app"
+              "name": "runtime_ios_16_4",
+              "path": "Runtime-ios-16.4"
             },
             {
-              "name": "runtime_ios_15_5",
-              "path": "Runtime-ios-15.5"
+              "name": "xcode_ios_15c500b",
+              "path": "Xcode.app"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "skia_unittests",
         "test_id_prefix": "ninja://skia:skia_unittests/",
-        "variant_id": "iPhone X 15.5"
+        "variant_id": "iPhone X 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPad Air 2",
+          "iPad Air (5th generation)",
           "--version",
-          "15.5",
+          "16.4",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
@@ -15172,7 +14592,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "sql_unittests iPad Air 2 15.5",
+        "name": "sql_unittests iPad Air (5th generation) 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -15187,30 +14607,30 @@
           ],
           "dimensions": {
             "cpu": "x86-64",
-            "os": "Mac-13"
+            "os": "Mac-13|Mac-14"
           },
           "named_caches": [
             {
-              "name": "xcode_ios_15c500b",
-              "path": "Xcode.app"
+              "name": "runtime_ios_16_4",
+              "path": "Runtime-ios-16.4"
             },
             {
-              "name": "runtime_ios_15_5",
-              "path": "Runtime-ios-15.5"
+              "name": "xcode_ios_15c500b",
+              "path": "Xcode.app"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "sql_unittests",
         "test_id_prefix": "ninja://sql:sql_unittests/",
-        "variant_id": "iPad Air 2 15.5"
+        "variant_id": "iPad Air (5th generation) 16.4"
       },
       {
         "args": [
           "--platform",
           "iPhone X",
           "--version",
-          "15.5",
+          "16.4",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
@@ -15220,7 +14640,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "sql_unittests iPhone X 15.5",
+        "name": "sql_unittests iPhone X 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -15235,30 +14655,30 @@
           ],
           "dimensions": {
             "cpu": "x86-64",
-            "os": "Mac-13"
+            "os": "Mac-13|Mac-14"
           },
           "named_caches": [
             {
-              "name": "xcode_ios_15c500b",
-              "path": "Xcode.app"
+              "name": "runtime_ios_16_4",
+              "path": "Runtime-ios-16.4"
             },
             {
-              "name": "runtime_ios_15_5",
-              "path": "Runtime-ios-15.5"
+              "name": "xcode_ios_15c500b",
+              "path": "Xcode.app"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "sql_unittests",
         "test_id_prefix": "ninja://sql:sql_unittests/",
-        "variant_id": "iPhone X 15.5"
+        "variant_id": "iPhone X 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPad Air 2",
+          "iPad Air (5th generation)",
           "--version",
-          "15.5",
+          "16.4",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
@@ -15268,7 +14688,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ui_base_unittests iPad Air 2 15.5",
+        "name": "ui_base_unittests iPad Air (5th generation) 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -15283,30 +14703,30 @@
           ],
           "dimensions": {
             "cpu": "x86-64",
-            "os": "Mac-13"
+            "os": "Mac-13|Mac-14"
           },
           "named_caches": [
             {
-              "name": "xcode_ios_15c500b",
-              "path": "Xcode.app"
+              "name": "runtime_ios_16_4",
+              "path": "Runtime-ios-16.4"
             },
             {
-              "name": "runtime_ios_15_5",
-              "path": "Runtime-ios-15.5"
+              "name": "xcode_ios_15c500b",
+              "path": "Xcode.app"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "ui_base_unittests",
         "test_id_prefix": "ninja://ui/base:ui_base_unittests/",
-        "variant_id": "iPad Air 2 15.5"
+        "variant_id": "iPad Air (5th generation) 16.4"
       },
       {
         "args": [
           "--platform",
           "iPhone X",
           "--version",
-          "15.5",
+          "16.4",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
@@ -15316,7 +14736,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ui_base_unittests iPhone X 15.5",
+        "name": "ui_base_unittests iPhone X 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -15331,30 +14751,30 @@
           ],
           "dimensions": {
             "cpu": "x86-64",
-            "os": "Mac-13"
+            "os": "Mac-13|Mac-14"
           },
           "named_caches": [
             {
-              "name": "xcode_ios_15c500b",
-              "path": "Xcode.app"
+              "name": "runtime_ios_16_4",
+              "path": "Runtime-ios-16.4"
             },
             {
-              "name": "runtime_ios_15_5",
-              "path": "Runtime-ios-15.5"
+              "name": "xcode_ios_15c500b",
+              "path": "Xcode.app"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "ui_base_unittests",
         "test_id_prefix": "ninja://ui/base:ui_base_unittests/",
-        "variant_id": "iPhone X 15.5"
+        "variant_id": "iPhone X 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPad Air 2",
+          "iPad Air (5th generation)",
           "--version",
-          "15.5",
+          "16.4",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
@@ -15364,7 +14784,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "url_unittests iPad Air 2 15.5",
+        "name": "url_unittests iPad Air (5th generation) 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -15379,30 +14799,30 @@
           ],
           "dimensions": {
             "cpu": "x86-64",
-            "os": "Mac-13"
+            "os": "Mac-13|Mac-14"
           },
           "named_caches": [
             {
-              "name": "xcode_ios_15c500b",
-              "path": "Xcode.app"
+              "name": "runtime_ios_16_4",
+              "path": "Runtime-ios-16.4"
             },
             {
-              "name": "runtime_ios_15_5",
-              "path": "Runtime-ios-15.5"
+              "name": "xcode_ios_15c500b",
+              "path": "Xcode.app"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "url_unittests",
         "test_id_prefix": "ninja://url:url_unittests/",
-        "variant_id": "iPad Air 2 15.5"
+        "variant_id": "iPad Air (5th generation) 16.4"
       },
       {
         "args": [
           "--platform",
           "iPhone X",
           "--version",
-          "15.5",
+          "16.4",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
@@ -15412,7 +14832,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "url_unittests iPhone X 15.5",
+        "name": "url_unittests iPhone X 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -15427,23 +14847,23 @@
           ],
           "dimensions": {
             "cpu": "x86-64",
-            "os": "Mac-13"
+            "os": "Mac-13|Mac-14"
           },
           "named_caches": [
             {
-              "name": "xcode_ios_15c500b",
-              "path": "Xcode.app"
+              "name": "runtime_ios_16_4",
+              "path": "Runtime-ios-16.4"
             },
             {
-              "name": "runtime_ios_15_5",
-              "path": "Runtime-ios-15.5"
+              "name": "xcode_ios_15c500b",
+              "path": "Xcode.app"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "url_unittests",
         "test_id_prefix": "ninja://url:url_unittests/",
-        "variant_id": "iPhone X 15.5"
+        "variant_id": "iPhone X 16.4"
       }
     ]
   },
@@ -15623,10 +15043,10 @@
       },
       {
         "args": [
+          "--git-revision=${got_revision}",
           "--test-launcher-print-test-stdio=always",
           "--combine-ash-logs-on-bots",
-          "--asan-symbolize-output",
-          "--git-revision=${got_revision}"
+          "--asan-symbolize-output"
         ],
         "isolate_profile_data": true,
         "merge": {
@@ -16302,7 +15722,7 @@
             "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 5
+          "shards": 10
         },
         "test": "interactive_ui_tests",
         "test_id_prefix": "ninja://chrome/test:interactive_ui_tests/"
@@ -16310,12 +15730,12 @@
       {
         "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.interactive_ui_tests.filter;../../testing/buildbot/filters/linux-lacros.interactive_ui_tests.skew.filter",
-          "--ash-chrome-path-override=../../lacros_version_skew_tests_v123.0.6312.31/test_ash_chrome",
+          "--ash-chrome-path-override=../../lacros_version_skew_tests_v125.0.6422.19/test_ash_chrome",
           "--test-launcher-print-test-stdio=always",
           "--combine-ash-logs-on-bots",
           "--asan-symbolize-output"
         ],
-        "description": "Run with ash-chrome version 123.0.6312.31",
+        "description": "Run with ash-chrome version 125.0.6422.19",
         "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -16325,8 +15745,8 @@
           "cipd_packages": [
             {
               "cipd_package": "chromium/testing/linux-ash-chromium/x86_64/ash.zip",
-              "location": "lacros_version_skew_tests_v123.0.6312.31",
-              "revision": "version:123.0.6312.31"
+              "location": "lacros_version_skew_tests_v125.0.6422.19",
+              "revision": "version:125.0.6422.19"
             }
           ],
           "dimensions": {
@@ -16334,7 +15754,7 @@
             "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 5
+          "shards": 10
         },
         "test": "interactive_ui_tests",
         "test_id_prefix": "ninja://chrome/test:interactive_ui_tests/",
@@ -16343,12 +15763,12 @@
       {
         "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.interactive_ui_tests.filter;../../testing/buildbot/filters/linux-lacros.interactive_ui_tests.skew.filter",
-          "--ash-chrome-path-override=../../lacros_version_skew_tests_v124.0.6347.0/test_ash_chrome",
+          "--ash-chrome-path-override=../../lacros_version_skew_tests_v126.0.6458.0/test_ash_chrome",
           "--test-launcher-print-test-stdio=always",
           "--combine-ash-logs-on-bots",
           "--asan-symbolize-output"
         ],
-        "description": "Run with ash-chrome version 124.0.6347.0",
+        "description": "Run with ash-chrome version 126.0.6458.0",
         "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -16358,8 +15778,8 @@
           "cipd_packages": [
             {
               "cipd_package": "chromium/testing/linux-ash-chromium/x86_64/ash.zip",
-              "location": "lacros_version_skew_tests_v124.0.6347.0",
-              "revision": "version:124.0.6347.0"
+              "location": "lacros_version_skew_tests_v126.0.6458.0",
+              "revision": "version:126.0.6458.0"
             }
           ],
           "dimensions": {
@@ -16367,7 +15787,7 @@
             "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 5
+          "shards": 10
         },
         "test": "interactive_ui_tests",
         "test_id_prefix": "ninja://chrome/test:interactive_ui_tests/",
@@ -16376,12 +15796,12 @@
       {
         "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.interactive_ui_tests.filter;../../testing/buildbot/filters/linux-lacros.interactive_ui_tests.skew.filter",
-          "--ash-chrome-path-override=../../lacros_version_skew_tests_v124.0.6340.0/test_ash_chrome",
+          "--ash-chrome-path-override=../../lacros_version_skew_tests_v125.0.6422.10/test_ash_chrome",
           "--test-launcher-print-test-stdio=always",
           "--combine-ash-logs-on-bots",
           "--asan-symbolize-output"
         ],
-        "description": "Run with ash-chrome version 124.0.6340.0",
+        "description": "Run with ash-chrome version 125.0.6422.10",
         "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -16391,8 +15811,8 @@
           "cipd_packages": [
             {
               "cipd_package": "chromium/testing/linux-ash-chromium/x86_64/ash.zip",
-              "location": "lacros_version_skew_tests_v124.0.6340.0",
-              "revision": "version:124.0.6340.0"
+              "location": "lacros_version_skew_tests_v125.0.6422.10",
+              "revision": "version:125.0.6422.10"
             }
           ],
           "dimensions": {
@@ -16400,7 +15820,7 @@
             "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 5
+          "shards": 10
         },
         "test": "interactive_ui_tests",
         "test_id_prefix": "ninja://chrome/test:interactive_ui_tests/",
@@ -16409,12 +15829,12 @@
       {
         "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.interactive_ui_tests.filter;../../testing/buildbot/filters/linux-lacros.interactive_ui_tests.skew.filter",
-          "--ash-chrome-path-override=../../lacros_version_skew_tests_v122.0.6261.100/test_ash_chrome",
+          "--ash-chrome-path-override=../../lacros_version_skew_tests_v124.0.6367.95/test_ash_chrome",
           "--test-launcher-print-test-stdio=always",
           "--combine-ash-logs-on-bots",
           "--asan-symbolize-output"
         ],
-        "description": "Run with ash-chrome version 122.0.6261.100",
+        "description": "Run with ash-chrome version 124.0.6367.95",
         "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -16424,8 +15844,8 @@
           "cipd_packages": [
             {
               "cipd_package": "chromium/testing/linux-ash-chromium/x86_64/ash.zip",
-              "location": "lacros_version_skew_tests_v122.0.6261.100",
-              "revision": "version:122.0.6261.100"
+              "location": "lacros_version_skew_tests_v124.0.6367.95",
+              "revision": "version:124.0.6367.95"
             }
           ],
           "dimensions": {
@@ -16433,7 +15853,7 @@
             "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 5
+          "shards": 10
         },
         "test": "interactive_ui_tests",
         "test_id_prefix": "ninja://chrome/test:interactive_ui_tests/",
@@ -16478,7 +15898,7 @@
             "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 5
+          "shards": 10
         },
         "test": "lacros_chrome_browsertests",
         "test_id_prefix": "ninja://chrome/test:lacros_chrome_browsertests/"
@@ -16486,12 +15906,12 @@
       {
         "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.lacros_chrome_browsertests.filter;../../testing/buildbot/filters/linux-lacros.lacros_chrome_browsertests.skew.filter",
-          "--ash-chrome-path-override=../../lacros_version_skew_tests_v123.0.6312.31/test_ash_chrome",
+          "--ash-chrome-path-override=../../lacros_version_skew_tests_v125.0.6422.19/test_ash_chrome",
           "--test-launcher-print-test-stdio=always",
           "--combine-ash-logs-on-bots",
           "--asan-symbolize-output"
         ],
-        "description": "Run with ash-chrome version 123.0.6312.31",
+        "description": "Run with ash-chrome version 125.0.6422.19",
         "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -16501,8 +15921,8 @@
           "cipd_packages": [
             {
               "cipd_package": "chromium/testing/linux-ash-chromium/x86_64/ash.zip",
-              "location": "lacros_version_skew_tests_v123.0.6312.31",
-              "revision": "version:123.0.6312.31"
+              "location": "lacros_version_skew_tests_v125.0.6422.19",
+              "revision": "version:125.0.6422.19"
             }
           ],
           "dimensions": {
@@ -16510,7 +15930,7 @@
             "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 5
+          "shards": 10
         },
         "test": "lacros_chrome_browsertests",
         "test_id_prefix": "ninja://chrome/test:lacros_chrome_browsertests/",
@@ -16519,12 +15939,12 @@
       {
         "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.lacros_chrome_browsertests.filter;../../testing/buildbot/filters/linux-lacros.lacros_chrome_browsertests.skew.filter",
-          "--ash-chrome-path-override=../../lacros_version_skew_tests_v124.0.6347.0/test_ash_chrome",
+          "--ash-chrome-path-override=../../lacros_version_skew_tests_v126.0.6458.0/test_ash_chrome",
           "--test-launcher-print-test-stdio=always",
           "--combine-ash-logs-on-bots",
           "--asan-symbolize-output"
         ],
-        "description": "Run with ash-chrome version 124.0.6347.0",
+        "description": "Run with ash-chrome version 126.0.6458.0",
         "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -16534,8 +15954,8 @@
           "cipd_packages": [
             {
               "cipd_package": "chromium/testing/linux-ash-chromium/x86_64/ash.zip",
-              "location": "lacros_version_skew_tests_v124.0.6347.0",
-              "revision": "version:124.0.6347.0"
+              "location": "lacros_version_skew_tests_v126.0.6458.0",
+              "revision": "version:126.0.6458.0"
             }
           ],
           "dimensions": {
@@ -16543,7 +15963,7 @@
             "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 5
+          "shards": 10
         },
         "test": "lacros_chrome_browsertests",
         "test_id_prefix": "ninja://chrome/test:lacros_chrome_browsertests/",
@@ -16552,12 +15972,12 @@
       {
         "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.lacros_chrome_browsertests.filter;../../testing/buildbot/filters/linux-lacros.lacros_chrome_browsertests.skew.filter",
-          "--ash-chrome-path-override=../../lacros_version_skew_tests_v124.0.6340.0/test_ash_chrome",
+          "--ash-chrome-path-override=../../lacros_version_skew_tests_v125.0.6422.10/test_ash_chrome",
           "--test-launcher-print-test-stdio=always",
           "--combine-ash-logs-on-bots",
           "--asan-symbolize-output"
         ],
-        "description": "Run with ash-chrome version 124.0.6340.0",
+        "description": "Run with ash-chrome version 125.0.6422.10",
         "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -16567,8 +15987,8 @@
           "cipd_packages": [
             {
               "cipd_package": "chromium/testing/linux-ash-chromium/x86_64/ash.zip",
-              "location": "lacros_version_skew_tests_v124.0.6340.0",
-              "revision": "version:124.0.6340.0"
+              "location": "lacros_version_skew_tests_v125.0.6422.10",
+              "revision": "version:125.0.6422.10"
             }
           ],
           "dimensions": {
@@ -16576,7 +15996,7 @@
             "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 5
+          "shards": 10
         },
         "test": "lacros_chrome_browsertests",
         "test_id_prefix": "ninja://chrome/test:lacros_chrome_browsertests/",
@@ -16585,12 +16005,12 @@
       {
         "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.lacros_chrome_browsertests.filter;../../testing/buildbot/filters/linux-lacros.lacros_chrome_browsertests.skew.filter",
-          "--ash-chrome-path-override=../../lacros_version_skew_tests_v122.0.6261.100/test_ash_chrome",
+          "--ash-chrome-path-override=../../lacros_version_skew_tests_v124.0.6367.95/test_ash_chrome",
           "--test-launcher-print-test-stdio=always",
           "--combine-ash-logs-on-bots",
           "--asan-symbolize-output"
         ],
-        "description": "Run with ash-chrome version 122.0.6261.100",
+        "description": "Run with ash-chrome version 124.0.6367.95",
         "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -16600,8 +16020,8 @@
           "cipd_packages": [
             {
               "cipd_package": "chromium/testing/linux-ash-chromium/x86_64/ash.zip",
-              "location": "lacros_version_skew_tests_v122.0.6261.100",
-              "revision": "version:122.0.6261.100"
+              "location": "lacros_version_skew_tests_v124.0.6367.95",
+              "revision": "version:124.0.6367.95"
             }
           ],
           "dimensions": {
@@ -16609,7 +16029,7 @@
             "os": "Ubuntu-22.04"
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 5
+          "shards": 10
         },
         "test": "lacros_chrome_browsertests",
         "test_id_prefix": "ninja://chrome/test:lacros_chrome_browsertests/",

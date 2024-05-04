@@ -5,12 +5,12 @@
 #include "chrome/common/crash_keys.h"
 
 #include <deque>
+#include <string_view>
 
 #include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/format_macros.h"
 #include "base/no_destructor.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -48,7 +48,7 @@ class CrashKeyWithName {
   ~CrashKeyWithName() = delete;
 
   void Clear() { crash_key_.Clear(); }
-  void Set(base::StringPiece value) { crash_key_.Set(value); }
+  void Set(std::string_view value) { crash_key_.Set(value); }
 
  private:
   std::string name_;
@@ -56,7 +56,7 @@ class CrashKeyWithName {
 };
 
 void SplitAndPopulateCrashKeys(std::deque<CrashKeyWithName>& crash_keys,
-                               base::StringPiece comma_separated_feature_list,
+                               std::string_view comma_separated_feature_list,
                                std::string crash_key_name_prefix) {
   // Crash keys are indestructable so we can not simply empty the deque.
   // Instead we must keep the previous crash keys alive and clear their values.
@@ -165,35 +165,6 @@ bool IsBoringSwitch(const std::string& flag) {
 void SetCrashKeysFromCommandLine(const base::CommandLine& command_line) {
   HandleEnableDisableFeatures(command_line);
   SetSwitchesFromCommandLine(command_line, &IsBoringSwitch);
-}
-
-void SetActiveExtensions(const std::set<std::string>& extensions) {
-  static crash_reporter::CrashKeyString<4> num_extensions("num-extensions");
-  num_extensions.Set(base::NumberToString(extensions.size()));
-
-  using ExtensionIDKey = crash_reporter::CrashKeyString<64>;
-  static ExtensionIDKey extension_ids[] = {
-      {"extension-1", ExtensionIDKey::Tag::kArray},
-      {"extension-2", ExtensionIDKey::Tag::kArray},
-      {"extension-3", ExtensionIDKey::Tag::kArray},
-      {"extension-4", ExtensionIDKey::Tag::kArray},
-      {"extension-5", ExtensionIDKey::Tag::kArray},
-      {"extension-6", ExtensionIDKey::Tag::kArray},
-      {"extension-7", ExtensionIDKey::Tag::kArray},
-      {"extension-8", ExtensionIDKey::Tag::kArray},
-      {"extension-9", ExtensionIDKey::Tag::kArray},
-      {"extension-10", ExtensionIDKey::Tag::kArray},
-  };
-
-  auto it = extensions.begin();
-  for (size_t i = 0; i < std::size(extension_ids); ++i) {
-    if (it == extensions.end()) {
-      extension_ids[i].Clear();
-    } else {
-      extension_ids[i].Set(*it);
-      ++it;
-    }
-  }
 }
 
 }  // namespace crash_keys

@@ -58,8 +58,6 @@ ServiceWorkerRaceNetworkRequestURLLoaderClient::
     TransitionState(State::kAborted);
     return;
   }
-
-  SCOPED_CRASH_KEY_STRING256("SWRace", "request_url", request.url.spec());
 }
 
 ServiceWorkerRaceNetworkRequestURLLoaderClient::
@@ -145,7 +143,7 @@ void ServiceWorkerRaceNetworkRequestURLLoaderClient::OnReceiveRedirect(
   data_consume_policy_ = DataConsumePolicy::kForwardingOnly;
   response_received_time_ = base::TimeTicks::Now();
 
-  // TODO(crbug.com/1420517): Return a redirect response to |owner| as a
+  // TODO(crbug.com/40258805): Return a redirect response to |owner| as a
   // RaceNetworkRequest result without breaking the cache storage compatibility.
   // We need a mechanism to wait for the fetch handler completion.
   //
@@ -260,7 +258,7 @@ void ServiceWorkerRaceNetworkRequestURLLoaderClient::MaybeCommitResponse() {
       // RaceNetworkRequest response. If the result is not a fallback and the
       // response is not ok status, use the other response from the fetch
       // handler instead because it may have a response from the cache.
-      // TODO(crbug.com/1420517): More comprehensive error handling may be
+      // TODO(crbug.com/40258805): More comprehensive error handling may be
       // needed, especially the case when HTTP cache hit or redirect happened.
       //
       // When the AutoPreload is enabled, RaceNetworkRequest works just for the
@@ -418,13 +416,14 @@ void ServiceWorkerRaceNetworkRequestURLLoaderClient::Read(
     return;
   }
 
+  SCOPED_CRASH_KEY_STRING256("SWRace", "request_url", request_.url.spec());
   auto [read_result, read_buffer] = read_buffer_manager_->ReadData();
   TRACE_EVENT_WITH_FLOW2("ServiceWorker",
                          "ServiceWorkerRaceNetworkRequestURLLoaderClient::Read",
                          TRACE_ID_LOCAL(this),
                          TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
-                         "url", request_.url, "read_data_result", result);
-  RecordMojoResultForDataTransfer(result, "Read");
+                         "url", request_.url, "read_data_result", read_result);
+  RecordMojoResultForDataTransfer(read_result, "Read");
   switch (read_result) {
     case MOJO_RESULT_OK:
       write_buffer_manager_for_race_network_request_.ArmOrNotify();
@@ -437,7 +436,8 @@ void ServiceWorkerRaceNetworkRequestURLLoaderClient::Read(
     case MOJO_RESULT_SHOULD_WAIT:
       return;
     default:
-      NOTREACHED() << "ReadData result:" << result;
+      SCOPED_CRASH_KEY_NUMBER("SWRace", "read_result", read_result);
+      NOTREACHED() << "ReadData result:" << read_result;
       return;
   }
 }
@@ -874,8 +874,9 @@ ServiceWorkerRaceNetworkRequestURLLoaderClient::NetworkTrafficAnnotationTag() {
         "This request is issued by a navigation to fetch the content of the "
         "page that is being navigated to, or by a renderer to fetch "
         "subresources in the case where a service worker has been registered "
-        "for the page and the ServiceWorkerBypassFetchHandler feature and the "
-        "RaceNetworkRequest param are enabled."
+        "for the page and the ServiceWorkerAutoPreload feature is enabled, or "
+        "`race-network-and-fetch-handler` source in the Service Worker Static "
+        "Routing API is specified."
       trigger:
         "Navigating Chrome (by clicking on a link, bookmark, history item, "
         "using session restore, etc) and subsequent resource loading."

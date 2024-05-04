@@ -9,7 +9,7 @@ import type {SettingsSecurityPageElement} from 'chrome://settings/lazy_load.js';
 import {HttpsFirstModeSetting, SafeBrowsingSetting} from 'chrome://settings/lazy_load.js';
 import type {SettingsPrefsElement, SettingsToggleButtonElement} from 'chrome://settings/settings.js';
 import {HatsBrowserProxyImpl, CrSettingsPrefs, MetricsBrowserProxyImpl, OpenWindowProxyImpl, PrivacyElementInteractions, PrivacyPageBrowserProxyImpl, Router, routes, SafeBrowsingInteractions, SecureDnsMode, SecurityPageInteraction} from 'chrome://settings/settings.js';
-import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
+import {assertEquals, assertFalse, assertTrue, assertNotEquals} from 'chrome://webui-test/chai_assert.js';
 import {isChildVisible, eventToPromise, microtasksFinished} from 'chrome://webui-test/test_util.js';
 import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
 
@@ -83,30 +83,29 @@ suite('Main', function() {
     Router.getInstance().navigateTo(routes.BASIC);
   });
 
-  // <if expr="is_macosx or is_win">
-  test('NativeCertificateManager', function() {
-    page.shadowRoot!.querySelector<HTMLElement>('#manageCertificates')!.click();
-    return testPrivacyBrowserProxy.whenCalled('showManageSslCertificates');
-  });
-  // </if>
-
   test('ChromeRootStorePage', async function() {
     const row =
         page.shadowRoot!.querySelector<HTMLElement>('#chromeCertificates');
-    assertTrue(!!row);
+    // <if expr="is_chromeos">
+    assertTrue(!!row, 'Chrome Root Store Help Center link not found');
     row.click();
     const url = await openWindowProxy.whenCalled('openUrl');
     assertEquals(url, loadTimeData.getString('chromeRootStoreHelpCenterURL'));
+    // </if>
+    // <if expr="not is_chromeos">
+    assertFalse(!!row, 'Chrome Root Store Help Center link unexpectedly found');
+    // </if>
   });
 
   // <if expr="not chromeos_lacros">
-  // TODO(crbug.com/1148302): This class directly calls
+  // TODO(crbug.com/40156980): This class directly calls
   // `CreateNSSCertDatabaseGetterForIOThread()` that causes crash at the
   // moment and is never called from Lacros-Chrome. This should be revisited
   // when there is a solution for the client certificates settings page on
   // Lacros-Chrome.
-  test('LogManageCerfificatesClick', async function() {
-    page.shadowRoot!.querySelector<HTMLElement>('#manageCertificates')!.click();
+  test('LogManageCertificatesClick', async function() {
+    page.shadowRoot!.querySelector<HTMLElement>(
+                        '#manageCertificatesLinkRow')!.click();
     const result =
         await testMetricsBrowserProxy.whenCalled('recordSettingsPageHistogram');
     assertEquals(PrivacyElementInteractions.MANAGE_CERTIFICATES, result);
@@ -165,7 +164,7 @@ suite('Main', function() {
         Router.getInstance().getCurrentRoute());
   });
 
-  // TODO(crbug.com/1494186): Add test for alternate sub-label when Advanced
+  // TODO(crbug.com/40937027): Add test for alternate sub-label when Advanced
   // Protection is enabled.
 });
 
@@ -258,6 +257,9 @@ suite('SecurityPageHappinessTrackingSurveys', function() {
 
 suite('FlagsDisabled', function() {
   let page: SettingsSecurityPageElement;
+  let testMetricsBrowserProxy: TestMetricsBrowserProxy;
+  let testPrivacyBrowserProxy: TestPrivacyPageBrowserProxy;
+  let openWindowProxy: TestOpenWindowProxy;
 
   suiteSetup(function() {
     loadTimeData.overrideValues({
@@ -265,10 +267,17 @@ suite('FlagsDisabled', function() {
       enableFriendlierSafeBrowsingSettings: false,
       enableHashPrefixRealTimeLookups: false,
       enableHttpsFirstModeNewSettings: false,
+      enableCertManagementUIV2: false,
     });
   });
 
   setup(function() {
+    testMetricsBrowserProxy = new TestMetricsBrowserProxy();
+    MetricsBrowserProxyImpl.setInstance(testMetricsBrowserProxy);
+    testPrivacyBrowserProxy = new TestPrivacyPageBrowserProxy();
+    PrivacyPageBrowserProxyImpl.setInstance(testPrivacyBrowserProxy);
+    openWindowProxy = new TestOpenWindowProxy();
+    OpenWindowProxyImpl.setInstance(openWindowProxy);
     document.body.innerHTML = window.trustedTypes!.emptyHTML;
     page = document.createElement('settings-security-page');
     page.prefs = pagePrefs();
@@ -279,6 +288,38 @@ suite('FlagsDisabled', function() {
   teardown(function() {
     page.remove();
   });
+
+  // <if expr="is_macosx or is_win">
+  test('NativeCertificateManager', function() {
+    page.shadowRoot!.querySelector<HTMLElement>(
+                        '#manageCertificatesLinkRow')!.click();
+    return testPrivacyBrowserProxy.whenCalled('showManageSslCertificates');
+  });
+  // </if>
+
+  test('ChromeRootStorePage', async function() {
+    const row =
+        page.shadowRoot!.querySelector<HTMLElement>('#chromeCertificates');
+    assertTrue(!!row);
+    row.click();
+    const url = await openWindowProxy.whenCalled('openUrl');
+    assertEquals(url, loadTimeData.getString('chromeRootStoreHelpCenterURL'));
+  });
+
+  // <if expr="not chromeos_lacros">
+  // TODO(crbug.com/40156980): This class directly calls
+  // `CreateNSSCertDatabaseGetterForIOThread()` that causes crash at the
+  // moment and is never called from Lacros-Chrome. This should be revisited
+  // when there is a solution for the client certificates settings page on
+  // Lacros-Chrome.
+  test('LogManageCertificatesClick', async function() {
+    page.shadowRoot!.querySelector<HTMLElement>(
+                        '#manageCertificatesLinkRow')!.click();
+    const result =
+        await testMetricsBrowserProxy.whenCalled('recordSettingsPageHistogram');
+    assertEquals(PrivacyElementInteractions.MANAGE_CERTIFICATES, result);
+  });
+  // </if>
 
   test('ManageSecurityKeysSubpageHidden', function() {
     assertFalse(isChildVisible(page, '#security-keys-subpage-trigger'));
@@ -299,7 +340,7 @@ suite('FlagsDisabled', function() {
   });
   // </if>
 
-  // TODO(crbug.com/1466292): Remove once friendlier safe browsing settings
+  // TODO(crbug.com/40923883): Remove once friendlier safe browsing settings
   // standard protection is launched.
   test('NotUpdatedStandardProtectionDropdown', function() {
     const standardProtection = page.$.safeBrowsingStandard;
@@ -323,7 +364,7 @@ suite('FlagsDisabled', function() {
     assertEquals(passwordLeakSubLabel, passwordsLeakToggle.subLabel);
   });
 
-  // TODO(crbug.com/1470385): Remove once friendlier safe browsing settings
+  // TODO(crbug.com/40068815): Remove once friendlier safe browsing settings
   // enhanced protection is launched.
   test('NotUpdatedEnhancedProtectionDropdown', function() {
     // Enhanced protection sublabel should not be the updated one.
@@ -340,7 +381,7 @@ suite('FlagsDisabled', function() {
     assertEquals(npSubLabel, noProtection.subLabel);
   });
 
-  // TODO(crbug.com/1466292): Remove once friendlier safe browsing settings
+  // TODO(crbug.com/40923883): Remove once friendlier safe browsing settings
   // standard protection is launched.
   test('NotUpdatedPasswordsLeakDetectionSubLabel', function() {
     const toggle = page.$.passwordsLeakToggle;
@@ -497,6 +538,7 @@ suite('SafeBrowsing', function() {
 
   test('safeBrowsingReportingToggle', async () => {
     page.$.safeBrowsingStandard.click();
+    await microtasksFinished();
     assertEquals(
         SafeBrowsingSetting.STANDARD, page.prefs.generated.safe_browsing.value);
 
@@ -506,7 +548,7 @@ suite('SafeBrowsing', function() {
 
     // This could also be set to disabled, anything other than standard.
     page.$.safeBrowsingEnhanced.click();
-    await eventToPromise('selected-changed', page.$.safeBrowsingRadioGroup);
+    await microtasksFinished();
     assertEquals(
         SafeBrowsingSetting.ENHANCED, page.prefs.generated.safe_browsing.value);
     flush();
@@ -515,7 +557,7 @@ suite('SafeBrowsing', function() {
     assertTrue(page.prefs.safebrowsing.scout_reporting_enabled.value);
 
     page.$.safeBrowsingStandard.click();
-    await eventToPromise('selected-changed', page.$.safeBrowsingRadioGroup);
+    await microtasksFinished();
     assertEquals(
         SafeBrowsingSetting.STANDARD, page.prefs.generated.safe_browsing.value);
     flush();
@@ -527,6 +569,7 @@ suite('SafeBrowsing', function() {
       'SafeBrowsingRadio_ManuallyExpandedRemainExpandedOnRepeatSelection',
       async function() {
         page.$.safeBrowsingStandard.click();
+        await microtasksFinished();
         assertEquals(
             SafeBrowsingSetting.STANDARD,
             page.prefs.generated.safe_browsing.value);
@@ -536,7 +579,7 @@ suite('SafeBrowsing', function() {
         // Expanding another radio button should not collapse already expanded
         // option.
         page.$.safeBrowsingEnhanced.$.expandButton.click();
-        await page.$.safeBrowsingEnhanced.$.expandButton.updateComplete;
+        await microtasksFinished();
         assertTrue(page.$.safeBrowsingStandard.expanded);
         assertTrue(page.$.safeBrowsingEnhanced.expanded);
 
@@ -553,28 +596,23 @@ suite('SafeBrowsing', function() {
       'SafeBrowsingRadio_ManuallyExpandedRemainExpandedOnSelectedChanged',
       async function() {
         page.$.safeBrowsingStandard.click();
+        await microtasksFinished();
         assertEquals(
             SafeBrowsingSetting.STANDARD,
             page.prefs.generated.safe_browsing.value);
 
         page.$.safeBrowsingEnhanced.$.expandButton.click();
-        await page.$.safeBrowsingEnhanced.$.expandButton.updateComplete;
+        await microtasksFinished();
         assertTrue(page.$.safeBrowsingStandard.expanded);
         assertTrue(page.$.safeBrowsingEnhanced.expanded);
 
         page.$.safeBrowsingDisabled.click();
-        await eventToPromise('selected-changed', page.$.safeBrowsingRadioGroup);
+        await microtasksFinished();
 
         // Previously selected option must remain opened.
         assertTrue(page.$.safeBrowsingStandard.expanded);
         assertTrue(page.$.safeBrowsingEnhanced.expanded);
-
-        page.shadowRoot!.querySelector('settings-simple-confirmation-dialog')!.$
-            .confirm.click();
-        flush();
-
-        // Wait for onDisableSafebrowsingDialogClose_ to finish.
-        await flushTasks();
+        await clickConfirmOnDisableSafebrowsingDialog(page);
 
         // The deselected option should become collapsed.
         assertFalse(page.$.safeBrowsingStandard.expanded);
@@ -583,23 +621,17 @@ suite('SafeBrowsing', function() {
 
   test('DisableSafebrowsingDialog_Confirm', async function() {
     page.$.safeBrowsingStandard.click();
+    await microtasksFinished();
     assertEquals(
         SafeBrowsingSetting.STANDARD, page.prefs.generated.safe_browsing.value);
 
     page.$.safeBrowsingDisabled.click();
-    await eventToPromise('selected-changed', page.$.safeBrowsingRadioGroup);
+    await microtasksFinished();
 
     // Previously selected option must remain opened.
     assertTrue(page.$.safeBrowsingStandard.expanded);
 
-    page.shadowRoot!.querySelector('settings-simple-confirmation-dialog')!.$
-        .confirm.click();
-    flush();
-
-    // Wait for onDisableSafebrowsingDialogClose_ to finish.
-    await flushTasks();
-
-    assertFalse(isChildVisible(page, 'settings-simple-confirmation-dialog'));
+    await clickConfirmOnDisableSafebrowsingDialog(page);
 
     assertFalse(page.$.safeBrowsingEnhanced.checked);
     assertFalse(page.$.safeBrowsingStandard.checked);
@@ -610,24 +642,16 @@ suite('SafeBrowsing', function() {
 
   test('DisableSafebrowsingDialog_CancelFromEnhanced', async function() {
     page.$.safeBrowsingEnhanced.click();
-    await eventToPromise('selected-changed', page.$.safeBrowsingRadioGroup);
+    await microtasksFinished();
     assertEquals(
         SafeBrowsingSetting.ENHANCED, page.prefs.generated.safe_browsing.value);
 
     page.$.safeBrowsingDisabled.click();
-    await eventToPromise('selected-changed', page.$.safeBrowsingRadioGroup);
+    await microtasksFinished();
 
     // Previously selected option must remain opened.
     assertTrue(page.$.safeBrowsingEnhanced.expanded);
-
-    page.shadowRoot!.querySelector('settings-simple-confirmation-dialog')!.$
-        .cancel.click();
-    flush();
-
-    // Wait for onDisableSafebrowsingDialogClose_ to finish.
-    await flushTasks();
-
-    assertFalse(isChildVisible(page, 'settings-simple-confirmation-dialog'));
+    await clickCancelOnDisableSafebrowsingDialog(page);
 
     assertTrue(page.$.safeBrowsingEnhanced.checked);
     assertFalse(page.$.safeBrowsingStandard.checked);
@@ -638,23 +662,16 @@ suite('SafeBrowsing', function() {
 
   test('DisableSafebrowsingDialog_CancelFromStandard', async function() {
     page.$.safeBrowsingStandard.click();
+    await microtasksFinished();
     assertEquals(
         SafeBrowsingSetting.STANDARD, page.prefs.generated.safe_browsing.value);
 
     page.$.safeBrowsingDisabled.click();
-    await eventToPromise('selected-changed', page.$.safeBrowsingRadioGroup);
+    await microtasksFinished();
 
     // Previously selected option must remain opened.
     assertTrue(page.$.safeBrowsingStandard.expanded);
-
-    page.shadowRoot!.querySelector('settings-simple-confirmation-dialog')!.$
-        .cancel.click();
-    flush();
-
-    // Wait for onDisableSafebrowsingDialogClose_ to finish.
-    await flushTasks();
-
-    assertFalse(isChildVisible(page, 'settings-simple-confirmation-dialog'));
+    await clickCancelOnDisableSafebrowsingDialog(page);
 
     assertFalse(page.$.safeBrowsingEnhanced.checked);
     assertTrue(page.$.safeBrowsingStandard.checked);
@@ -685,20 +702,16 @@ suite('SafeBrowsing', function() {
 
   test('noControlSafeBrowsingReportingInDisabled', async function() {
     page.$.safeBrowsingStandard.click();
+    await microtasksFinished();
 
     assertFalse(page.$.safeBrowsingReportingToggle.disabled);
     page.$.safeBrowsingDisabled.click();
-    await eventToPromise('selected-changed', page.$.safeBrowsingRadioGroup);
+    await microtasksFinished();
 
     // Previously selected option must remain opened.
     assertTrue(page.$.safeBrowsingStandard.expanded);
 
-    page.shadowRoot!.querySelector('settings-simple-confirmation-dialog')!.$
-        .confirm.click();
-    flush();
-
-    // Wait for onDisableSafebrowsingDialogClose_ to finish.
-    await flushTasks();
+    await clickConfirmOnDisableSafebrowsingDialog(page);
 
     assertTrue(page.$.safeBrowsingReportingToggle.disabled);
   });
@@ -713,12 +726,7 @@ suite('SafeBrowsing', function() {
     // Previously selected option must remain opened.
     assertTrue(page.$.safeBrowsingStandard.expanded);
 
-    page.shadowRoot!.querySelector('settings-simple-confirmation-dialog')!.$
-        .confirm.click();
-    flush();
-
-    // Wait for onDisableSafebrowsingDialogClose_ to finish.
-    await flushTasks();
+    await clickConfirmOnDisableSafebrowsingDialog(page);
 
     assertTrue(
         page.prefs.safebrowsing.scout_reporting_enabled.value === previous);
@@ -726,6 +734,7 @@ suite('SafeBrowsing', function() {
 
   test('noValueChangePasswordLeakSwitchToEnhanced', async () => {
     page.$.safeBrowsingStandard.click();
+    await microtasksFinished();
     const previous = page.prefs.profile.password_manager_leak_detection.value;
 
     page.$.safeBrowsingEnhanced.click();
@@ -737,20 +746,16 @@ suite('SafeBrowsing', function() {
 
   test('noValuePasswordLeakSwitchToDisabled', async function() {
     page.$.safeBrowsingStandard.click();
+    await microtasksFinished();
     const previous = page.prefs.profile.password_manager_leak_detection.value;
 
     page.$.safeBrowsingDisabled.click();
-    await eventToPromise('selected-changed', page.$.safeBrowsingRadioGroup);
+    await microtasksFinished();
 
     // Previously selected option must remain opened.
     assertTrue(page.$.safeBrowsingStandard.expanded);
 
-    page.shadowRoot!.querySelector('settings-simple-confirmation-dialog')!.$
-        .confirm.click();
-    flush();
-
-    // Wait for onDisableSafebrowsingDialogClose_ to finish.
-    await flushTasks();
+    await clickConfirmOnDisableSafebrowsingDialog(page);
 
     assertTrue(
         page.prefs.profile.password_manager_leak_detection.value === previous);
@@ -953,6 +958,36 @@ suite('SafeBrowsing', function() {
     assertTrue(isChildVisible(page, '#learnMoreLabelContainer'));
   });
 
+  test('LearnMoreLinkClickableWhenControlledByPolicy', async () => {
+    page.$.safeBrowsingEnhanced.$.expandButton.click();
+
+    // Set the page to be enterprise policy enforced.
+    page.set(
+        'prefs.generated.safe_browsing.enforcement',
+        chrome.settingsPrivate.Enforcement.ENFORCED);
+    flush();
+
+    const learnMoreLink = page.shadowRoot!.querySelector<HTMLElement>(
+        '#enhancedProtectionLearnMoreLink');
+
+    // Confirm that the learnMoreLink element exists.
+    assertNotEquals(learnMoreLink, null);
+
+    // Confirm that the pointer-events value is auto when enterprise policy is
+    // enforced.
+    assertEquals(
+        'auto',
+        (learnMoreLink!.computedStyleMap()!.get('pointer-events') as
+         CSSKeywordValue)
+            .value);
+
+    // Confirm that the correct link was clicked.
+    learnMoreLink!.click();
+    const url = await openWindowProxy.whenCalled('openUrl');
+    assertEquals(
+        url, loadTimeData.getString('enhancedProtectionHelpCenterURL'));
+  });
+
   // <if expr="_google_chrome">
   test('StandardProtectionDropdownWithProxyString', async () => {
     loadTimeData.overrideValues({
@@ -965,7 +1000,7 @@ suite('SafeBrowsing', function() {
     assertEquals(subLabel, standardProtection.subLabel);
   });
 
-  // TODO(crbug.com/1466292): Remove once friendlier safe browsing settings
+  // TODO(crbug.com/40923883): Remove once friendlier safe browsing settings
   // standard protection is launched.
   test(
       'FriendlierSettingsDisabledStandardProtectionDropdownWithProxyString',
@@ -1028,3 +1063,27 @@ suite('SafeBrowsing', function() {
         page.getPref('safebrowsing.esb_opt_in_with_friendlier_settings').value);
   });
 });
+
+async function clickCancelOnDisableSafebrowsingDialog(
+    page: SettingsSecurityPageElement) {
+  const confirmationDialog =
+      page.shadowRoot!.querySelector('settings-simple-confirmation-dialog');
+  assertTrue(!!confirmationDialog);
+  const closePromise = eventToPromise('close', confirmationDialog);
+  confirmationDialog.$.cancel.click();
+  flush();
+  await closePromise;
+  await microtasksFinished();
+}
+
+async function clickConfirmOnDisableSafebrowsingDialog(
+    page: SettingsSecurityPageElement) {
+  const confirmationDialog =
+      page.shadowRoot!.querySelector('settings-simple-confirmation-dialog');
+  assertTrue(!!confirmationDialog);
+  const closePromise = eventToPromise('close', confirmationDialog);
+  confirmationDialog.$.confirm.click();
+  flush();
+  await closePromise;
+  await microtasksFinished();
+}

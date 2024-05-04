@@ -15,6 +15,7 @@
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/memory/raw_ptr.h"
+#include "base/rand_util.h"
 #include "base/time/time.h"
 #include "components/viz/common/quads/compositor_render_pass.h"
 #include "components/viz/common/quads/draw_quad.h"
@@ -67,7 +68,8 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator : public SurfaceObserver {
                     bool aggregate_only_damaged,
                     bool needs_surface_damage_rect_list,
                     ExtraPassForReadbackOption extra_pass_option =
-                        ExtraPassForReadbackOption::kNone);
+                        ExtraPassForReadbackOption::kNone,
+                    bool prevent_merging_surfaces_to_root_pass = false);
 
   SurfaceAggregator(const SurfaceAggregator&) = delete;
   SurfaceAggregator& operator=(const SurfaceAggregator&) = delete;
@@ -111,7 +113,16 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator : public SurfaceObserver {
 
   void SetMaxRenderTargetSize(int max_size);
 
-  bool NotifySurfaceDamageAndCheckForDisplayDamage(const SurfaceId& surface_id);
+  // Checks if damage to `surface_id` potentially contributes to the display
+  // damage.
+  bool CheckForDisplayDamage(const SurfaceId& surface_id);
+
+  // When a client submits a CompositorFrame without resources it's typically
+  // done to force return of existing resources to the client. This function
+  // forces the release in this cases. Returns true if some resources were
+  // released and draw needs to happen for DisplayResourceProvider to unlock
+  // them.
+  bool ForceReleaseResourcesIfNeeded(const SurfaceId& surface_id);
 
   bool HasFrameAnnotator() const;
   void SetFrameAnnotator(std::unique_ptr<FrameAnnotator> frame_annotator);
@@ -353,6 +364,13 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator : public SurfaceObserver {
 
   const ExtraPassForReadbackOption extra_pass_for_readback_option_;
 
+  // If true, don't merge surfaces in the root render pass. This means renderer
+  // frames get put into their own RPDQ overlay. Note that if delegated
+  // compositing on the UI quads fails, we will end up with an unnecessary
+  // render pass backing since we can't re-merge these surfaces after overlay
+  // processing.
+  const bool prevent_merging_surfaces_to_root_pass_ = false;
+
   // Will be true for duration of Aggregate() function.
   bool is_inside_aggregate_ = false;
 
@@ -438,6 +456,9 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator : public SurfaceObserver {
 
   // Used to annotate the aggregated frame for debugging.
   std::unique_ptr<FrameAnnotator> frame_annotator_;
+
+  // Used to avoid excessive UMA logging per frame.
+  base::MetricsSubSampler metrics_subsampler_;
 
   // Whether the last drawn frame had a color conversion pass applied. Used in
   // production on Windows only (does not interact with jelly).

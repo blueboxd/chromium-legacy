@@ -8,10 +8,8 @@
 #include <optional>
 
 #include "base/android/callback_android.h"
-#include "chrome/android/chrome_jni_headers/AutofillPaymentMethodsDelegate_jni.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_android.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/android/autofill/virtual_card_utils.h"
 #include "chrome/browser/ui/autofill/risk_util.h"
@@ -24,6 +22,9 @@
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "url/android/gurl_android.h"
 #include "url/gurl.h"
+
+// Must come after other includes, because FromJniType() uses Profile.
+#include "chrome/android/chrome_jni_headers/AutofillPaymentMethodsDelegate_jni.h"
 
 using base::android::JavaRef;
 using base::android::ScopedJavaGlobalRef;
@@ -46,7 +47,7 @@ AutofillPaymentMethodsDelegate::AutofillPaymentMethodsDelegate(Profile* profile)
       std::make_unique<payments::PaymentsNetworkInterface>(
           profile->GetURLLoaderFactory(),
           IdentityManagerFactory::GetForProfile(profile),
-          personal_data_manager_);
+          &personal_data_manager_->payments_data_manager());
   virtual_card_enrollment_manager_ =
       std::make_unique<VirtualCardEnrollmentManager>(
           personal_data_manager_, payments_network_interface_.get());
@@ -56,11 +57,10 @@ AutofillPaymentMethodsDelegate::~AutofillPaymentMethodsDelegate() = default;
 
 // Initializes an instance of AutofillPaymentMethodsDelegate from the
 // Java side.
-static jlong JNI_AutofillPaymentMethodsDelegate_Init(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& j_profile) {
-  AutofillPaymentMethodsDelegate* instance = new AutofillPaymentMethodsDelegate(
-      ProfileAndroid::FromProfileAndroid(j_profile));
+static jlong JNI_AutofillPaymentMethodsDelegate_Init(JNIEnv* env,
+                                                     Profile* profile) {
+  AutofillPaymentMethodsDelegate* instance =
+      new AutofillPaymentMethodsDelegate(profile);
   return reinterpret_cast<intptr_t>(instance);
 }
 
@@ -99,7 +99,7 @@ void AutofillPaymentMethodsDelegate::UnenrollVirtualCard(
 }
 
 void AutofillPaymentMethodsDelegate::DeleteSavedCvcs(JNIEnv* env) {
-  personal_data_manager_->ClearLocalCvcs();
-  personal_data_manager_->ClearServerCvcs();
+  personal_data_manager_->payments_data_manager().ClearLocalCvcs();
+  personal_data_manager_->payments_data_manager().ClearServerCvcs();
 }
 }  // namespace autofill

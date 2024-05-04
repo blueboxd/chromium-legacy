@@ -28,6 +28,8 @@ source_set("internal") {
     "download_db_cache.h",
     "download_file_factory.cc",
     "download_file_impl.cc",
+    "download_file_with_copy.cc",
+    "download_file_with_copy.h",
     "download_interrupt_reasons_impl.cc",
     "download_interrupt_reasons_utils.cc",
     "download_item_impl.cc",
@@ -87,7 +89,7 @@ source_set("internal") {
 
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
 
-  # TODO(crbug/1056278): Enable this on Fuchsia
+  # TODO(crbug.com/40120259): Enable this on Fuchsia
   if (safe_browsing_mode > 0 && !is_fuchsia) {
     deps += [ "//components/safe_browsing/content/common:file_type_policies" ]
   }

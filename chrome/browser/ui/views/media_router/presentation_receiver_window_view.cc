@@ -40,8 +40,6 @@
 #include "content/public/common/content_constants.h"
 #include "ui/base/accelerators/accelerator_manager.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
-#include "ui/display/screen.h"
-#include "ui/gfx/geometry/point.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/layout/box_layout.h"
@@ -299,10 +297,8 @@ void PresentationReceiverWindowView::EnterFullscreen(
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
   OnFullscreenChanged();
 #endif
-  UpdateExclusiveAccessExitBubbleContent(url, bubble_type,
-                                         ExclusiveAccessBubbleHideCallback(),
-                                         /*notify_download=*/false,
-                                         /*force_update=*/false);
+  UpdateExclusiveAccessBubble({.url = url, .type = bubble_type},
+                              base::NullCallback());
 }
 
 void PresentationReceiverWindowView::ExitFullscreen() {
@@ -312,42 +308,38 @@ void PresentationReceiverWindowView::ExitFullscreen() {
 #endif
 }
 
-void PresentationReceiverWindowView::UpdateExclusiveAccessExitBubbleContent(
-    const GURL& url,
-    ExclusiveAccessBubbleType bubble_type,
-    ExclusiveAccessBubbleHideCallback bubble_first_hide_callback,
-    bool notify_download,
-    bool force_update) {
+void PresentationReceiverWindowView::UpdateExclusiveAccessBubble(
+    const ExclusiveAccessBubbleParams& params,
+    ExclusiveAccessBubbleHideCallback first_hide_callback) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // On Chrome OS, we will not show the toast for the normal browser fullscreen
   // mode.  The 'F11' text is confusing since how to access F11 on a Chromebook
   // is not common knowledge and there is also a dedicated fullscreen toggle
   // button available.
-  if ((!notify_download && bubble_type == EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE) ||
-      url.is_empty()) {
+  if ((!params.has_download &&
+       params.type == EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE) ||
+      params.url.is_empty()) {
 #else
-  if (!notify_download && bubble_type == EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE) {
+  if (!params.has_download &&
+      params.type == EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE) {
 #endif
     // |exclusive_access_bubble_.reset()| will trigger callback for current
     // bubble with |ExclusiveAccessBubbleHideReason::kInterrupted| if available.
     exclusive_access_bubble_.reset();
-    if (bubble_first_hide_callback) {
-      std::move(bubble_first_hide_callback)
+    if (first_hide_callback) {
+      std::move(first_hide_callback)
           .Run(ExclusiveAccessBubbleHideReason::kNotShown);
     }
     return;
   }
 
   if (exclusive_access_bubble_) {
-    exclusive_access_bubble_->UpdateContent(
-        url, bubble_type, std::move(bubble_first_hide_callback),
-        notify_download, force_update);
+    exclusive_access_bubble_->Update(params, std::move(first_hide_callback));
     return;
   }
 
   exclusive_access_bubble_ = std::make_unique<ExclusiveAccessBubbleViews>(
-      this, url, bubble_type, notify_download,
-      std::move(bubble_first_hide_callback));
+      this, params, std::move(first_hide_callback));
 }
 
 bool PresentationReceiverWindowView::IsExclusiveAccessBubbleDisplayed() const {
@@ -369,10 +361,6 @@ PresentationReceiverWindowView::GetExclusiveAccessManager() {
   return &exclusive_access_manager_;
 }
 
-views::Widget* PresentationReceiverWindowView::GetBubbleAssociatedWidget() {
-  return frame_;
-}
-
 ui::AcceleratorProvider*
 PresentationReceiverWindowView::GetAcceleratorProvider() {
   return this;
@@ -380,12 +368,6 @@ PresentationReceiverWindowView::GetAcceleratorProvider() {
 
 gfx::NativeView PresentationReceiverWindowView::GetBubbleParentView() const {
   return frame_->GetNativeView();
-}
-
-gfx::Point PresentationReceiverWindowView::GetCursorPointInParent() const {
-  gfx::Point cursor_pos = display::Screen::GetScreen()->GetCursorScreenPoint();
-  views::View::ConvertPointFromScreen(GetWidget()->GetRootView(), &cursor_pos);
-  return cursor_pos;
 }
 
 gfx::Rect PresentationReceiverWindowView::GetClientAreaBoundsInScreen() const {

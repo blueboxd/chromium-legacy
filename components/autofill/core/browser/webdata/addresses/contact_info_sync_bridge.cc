@@ -9,6 +9,7 @@
 #include "base/uuid.h"
 #include "components/autofill/core/browser/webdata/addresses/contact_info_sync_util.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
+#include "components/sync/base/deletion_origin.h"
 #include "components/sync/base/features.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/model/client_tag_based_model_type_processor.h"
@@ -109,8 +110,8 @@ ContactInfoSyncBridge::ApplyIncrementalSyncChanges(
         DCHECK(remote);
         // Since the distinction between adds and updates is not always clear,
         // we check the existence of the profile manually and act accordingly.
-        // TODO(crbug.com/1007974): Consider adding an AddOrUpdate() function to
-        // AutofillTable's API.
+        // TODO(crbug.com/40100455): Consider adding an AddOrUpdate() function
+        // to AutofillTable's API.
         if (GetAutofillTable()->GetAutofillProfile(
                 remote->guid(), AutofillProfile::Source::kAccount)) {
           if (!GetAutofillTable()->UpdateAutofillProfile(*remote)) {
@@ -199,7 +200,9 @@ void ContactInfoSyncBridge::AutofillProfileChanged(
           metadata_change_list.get());
       break;
     case AutofillProfileChange::REMOVE:
-      change_processor()->Delete(change.key(), metadata_change_list.get());
+      change_processor()->Delete(change.key(),
+                                 syncer::DeletionOrigin::Unspecified(),
+                                 metadata_change_list.get());
       break;
   }
 
@@ -248,7 +251,7 @@ ContactInfoSyncBridge::GetPossiblyTrimmedContactInfoSpecificsDataFromProcessor(
       .contact_info();
 }
 
-// TODO(crbug.com/1407925): Consider moving this logic to processor.
+// TODO(crbug.com/40253286): Consider moving this logic to processor.
 bool ContactInfoSyncBridge::SyncMetadataCacheContainsSupportedFields(
     const syncer::EntityMetadataMap& metadata_map) const {
   for (const auto& metadata_entry : metadata_map) {

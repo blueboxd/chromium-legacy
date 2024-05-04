@@ -8,15 +8,19 @@ import collections
 import contextlib
 import functools
 import json
+import io
 import logging
 import math
 import os
 import posixpath
 import queue
+import re
+import shlex
 import signal
 import textwrap
 import threading
 import time
+from dataclasses import dataclass, field
 from typing import (
     Any,
     ClassVar,
@@ -37,18 +41,20 @@ import mozinfo
 
 from blinkpy.common import path_finder
 from blinkpy.common.html_diff import html_diff
+from blinkpy.common.lru import LRUMapping
 from blinkpy.common.memoized import memoized
 from blinkpy.common.system.filesystem import FileSystem
 from blinkpy.common.unified_diff import unified_diff
 from blinkpy.web_tests.port.base import Port
+from blinkpy.web_tests.port.driver import TestURIMapper
 from blinkpy.web_tests.models import test_failures
 from blinkpy.web_tests.models.testharness_results import (
-    ABBREVIATED_ALL_PASS,
+    format_testharness_baseline,
     LineType,
+    make_all_pass_baseline,
+    parse_testharness_baseline,
     Status,
     TestharnessLine,
-    format_testharness_baseline,
-    parse_testharness_baseline,
 )
 from blinkpy.web_tests.models.test_expectations import TestExpectations
 from blinkpy.web_tests.models.test_run_results import convert_to_hierarchical_view
@@ -155,14 +161,16 @@ class WPTResult(Result):
         kwargs.setdefault('expected', exp_line.results)
         super().__init__(*args, **kwargs)
         self.testharness_results = []
-        self.messages = []
         self.test_type = test_type
         self._exp_line = exp_line or Expectation()
         self._baseline = baseline or []
-        self.has_stderr = False
         self.image_diff_stats = None
         # TODO(crbug.com/1521922): Populate `self.failure_reason` like
         # `run_web_tests.py` does to help LUCI cluster failures.
+
+    @property
+    def has_stderr(self) -> bool:
+        return 'stderr' in self.artifacts
 
     @functools.cached_property
     def can_have_subtests(self) -> bool:
@@ -192,17 +200,9 @@ class WPTResult(Result):
                             subtest: str,
                             status: str,
                             message: Optional[str] = None):
-        if message:
-            self.messages.append('%s: %s\n' % (subtest, message))
-            self.has_stderr = True
         self._maybe_add_testharness_result(status, message, subtest)
 
-    def update_from_test(self,
-                         status: str,
-                         message: Optional[str] = None):
-        if message:
-            self.messages.insert(0, 'Harness: %s\n' % message)
-            self.has_stderr = True
+    def update_from_test(self, status: str, message: Optional[str] = None):
         self._maybe_add_testharness_result(status, message)
         self.actual = wptrunner_to_chromium_status(status)
         if self.can_have_subtests and self.actual not in {
@@ -275,11 +275,11 @@ class WPTResult(Result):
         return harness_error, subtests_by_name
 
     def format_baseline(self) -> str:
-        if all(result.statuses <= {Status.PASS}
-               for result in self.testharness_results):
-            return ABBREVIATED_ALL_PASS
         header = (LineType.TESTHARNESS_HEADER if self.test_type
                   == 'testharness' else LineType.WDSPEC_HEADER)
+        if all(result.statuses <= {Status.PASS}
+               for result in self.testharness_results):
+            return make_all_pass_baseline(header)
         return format_testharness_baseline([
             TestharnessLine(header),
             *self.testharness_results,
@@ -305,7 +305,7 @@ class WPTResult(Result):
         url = wpt_fyi_url(self.name)
         if url:
             summary += f'<p><a href="{url}">Latest wpt.fyi results</a></p>'
-        for name in ['stderr', 'crash_log']:
+        for name in ['command', 'stderr', 'crash_log']:
             if name in self.artifacts:
                 summary += f'<h3>{name}</h3>'
                 summary += f'<p><text-artifact artifact-id="{name}"/></p>'
@@ -342,6 +342,21 @@ class ReftestScreenshot(TypedDict):
     screenshot: str
 
 
+@dataclass
+class BrowserOutput:
+    """Output from a live browser process.
+
+    Attributes:
+        command: The base command to start the browser (i.e., does not contain
+            test URI).
+        log: A running buffer of output (usually stderr) from that browser.
+    """
+    # TODO(crbug.com/41494889): Consider sharing a base class with
+    # `DriverOutput` in `web_tests`.
+    command: List[str] = field(default_factory=list)
+    log: io.StringIO = field(default_factory=io.StringIO)
+
+
 class WPTResultsProcessor:
     # Executables that wptrunner can start and whose output should go into the
     # crash log.
@@ -350,6 +365,8 @@ class WPTResultsProcessor:
         'logcat',
         'content_shell',
     ]
+    _cmd_log_pattern: re.Pattern = re.compile(
+        'Launching \w+: (?P<command>.*?)(\s+data:\S+)?$')
 
     def __init__(self,
                  fs: FileSystem,
@@ -359,7 +376,8 @@ class WPTResultsProcessor:
                  test_name_prefix: str = '',
                  failure_threshold: Optional[int] = None,
                  crash_timeout_threshold: Optional[int] = None,
-                 reset_results: bool = False):
+                 reset_results: bool = False,
+                 processes: Optional[int] = None):
         self.fs = fs
         self.port = port
         self.artifacts_dir = artifacts_dir
@@ -372,13 +390,23 @@ class WPTResultsProcessor:
         self.wpt_manifest = self.port.wpt_manifest('external/wpt')
         self.internal_manifest = self.port.wpt_manifest('wpt_internal')
         self.path_finder = path_finder.PathFinder(self.fs)
+        self._test_uri_mapper = TestURIMapper(self.port)
         # Provide placeholder properties until the `suite_start` events are
         # processed.
         self.run_info = dict(mozinfo.info)
 
         self._iteration: int = 0
         self._results: Dict[str, WPTResult] = {}
-        self._crash_log: List[str] = []
+        # Map PIDs of running browsers to their output. The mapping's capacity
+        # should be limited to `wpt run --processes`.
+        #
+        # Since wptrunner doesn't communicate browser lifecycles, use
+        # `LRUMapping` to avoid accumulating too many logs that will never be
+        # retrieved by a `test_end` event. Dead browser processes stop
+        # producing logs, which will eventually be purged by output produced by
+        # restarted browsers.
+        self.browser_outputs: Dict[int, BrowserOutput] = LRUMapping(
+            processes or port.default_child_processes())
         self._event_handlers = {
             'suite_start': self.suite_start,
             'test_start': self.test_start,
@@ -570,8 +598,7 @@ class WPTResultsProcessor:
             file_path=self._file_path_for_test(test),
             test_type=self.get_test_type(test),
             exp_line=self._expectations.get_expectations(test),
-            baseline=baseline,
-            pid=event.pid)
+            baseline=baseline)
 
     def get_path_from_test_root(self, test: str) -> str:
         if self.path_finder.is_wpt_internal_path(test):
@@ -630,8 +657,10 @@ class WPTResultsProcessor:
         if not result:
             raise EventProcessingError('Test not started: %s' % test)
         result.took = max(0, event.time - result.started) / 1000
+        result.pid = (extra or {}).get('browser_pid', 0)
         result.update_from_test(status, message)
-        artifacts, image_diff_stats = self._extract_artifacts(result, extra)
+        artifacts, image_diff_stats = self._extract_artifacts(
+            result, message, extra)
         result.artifacts = artifacts.artifacts
         result.image_diff_stats = image_diff_stats
         if result.unexpected:
@@ -742,12 +771,57 @@ class WPTResultsProcessor:
         }
         return final_results
 
-    def process_output(self, event: Event, command: str, data: Any, **_):
+    def process_output(self, event: Event, command: str, data: Any,
+                       process: str, **_):
         if not any(executable in command for executable in self._executables):
             return
         if not isinstance(data, str):
             data = json.dumps(data, sort_keys=True)
-        self._crash_log.append(data + '\n')
+        # TODO(crbug.com/333782826): Remove after addressing non-integer values
+        # by wptrunner's Android drivers:
+        # https://github.com/web-platform-tests/wpt/blob/073f56c2/tools/wptrunner/wptrunner/browsers/chrome_android.py#L126
+        #
+        # which does not adhere to:
+        # https://firefox-source-docs.mozilla.org/mozbase/mozlog.html
+        #
+        # which says that `process` is a PID.
+        try:
+            pid = int(process)
+        except ValueError:
+            return
+        output = self.browser_outputs.get(pid)
+        if not output:
+            output = self.browser_outputs[pid] = BrowserOutput()
+        output.log.write(f'{data}\n')
+
+        if output.command:
+            # In wptrunner, there's a 1-1 correspondence between `chromedriver`
+            # PID and session [0], so there's no need to set the command more than
+            # once.
+            #
+            # [0]: https://github.com/web-platform-tests/wpt/blob/f95204fd/tools/wptrunner/wptrunner/executors/executorwebdriver.py#L478-L498
+            return
+        cmd_match = self._cmd_log_pattern.search(data)
+        if cmd_match:
+            output.command = self._parse_command(cmd_match['command'])
+
+    def _parse_command(self, raw_command: str) -> List[str]:
+        tokens = []
+        for raw_token in shlex.split(raw_command):
+            # Unfortunately, whitespace in switch values is not preserved in
+            # the logged output. To produce a `command` artifact that's
+            # copy-paste runnable in a shell, try to reconstruct the value with
+            # this special hardcoded rule. It relies on the assumption that
+            # all arguments after the initial binary are switches prefixed with
+            # `--`.
+            if (tokens and tokens[-1].startswith('--host-resolver-rules=')
+                    and not raw_token.startswith('--')):
+                tokens[-1] += f' {raw_token}'
+            # Don't keep any headless option, since it will hide the browser
+            # locally.
+            elif not raw_token.startswith('--headless'):
+                tokens.append(raw_token)
+        return tokens
 
     def _write_text_results(self, result: WPTResult, artifacts: Artifacts):
         """Write actual, expected, and diff text outputs to disk, if possible.
@@ -858,14 +932,12 @@ class WPTResultsProcessor:
         return stats
 
     def _write_log(self, test_name: str, artifacts: Artifacts,
-                   artifact_id: str, suffix: str, lines: List[str]):
+                   artifact_id: str, suffix: str, contents: str):
         log_subpath = self.port.output_filename(test_name, suffix, '.txt')
-        # Each line should already end in a newline.
-        artifacts.CreateArtifact(artifact_id, log_subpath,
-                                 ''.join(lines).encode())
-        lines.clear()
+        artifacts.CreateArtifact(artifact_id, log_subpath, contents.encode())
 
-    def _extract_artifacts(self, result: WPTResult, extra) -> (Artifacts, str):
+    def _extract_artifacts(self, result: WPTResult, message: Optional[str],
+                           extra) -> Tuple[Artifacts, str]:
         # Ensure `artifacts_base_dir` (i.e., `layout-test-results`) is prepended
         # to `full_results_jsonp.js` paths so that `results.html` can correctly
         # fetch artifacts.
@@ -885,14 +957,25 @@ class WPTResultsProcessor:
                 image_diff_stats = self._write_screenshots(
                     result.name, artifacts, screenshots)
 
-        if result.messages:
+        if message:
+            self._write_log(result.name, artifacts, 'crash_log',
+                            test_failures.FILENAME_SUFFIX_CRASH_LOG, message)
+
+        # If the browser process isn't restarted, it's possible for that process
+        # to continue producing stdio that will be dumped into the log for the
+        # next test that browser runs.
+        output = self.browser_outputs.get(result.pid)
+        if output:
             self._write_log(result.name, artifacts, 'stderr',
                             test_failures.FILENAME_SUFFIX_STDERR,
-                            result.messages)
-        if self._crash_log:
-            self._write_log(result.name, artifacts, 'crash_log',
-                            test_failures.FILENAME_SUFFIX_CRASH_LOG,
-                            self._crash_log)
+                            output.log.getvalue())
+            output.log = io.StringIO()
+
+        if output and output.command:
+            uri = self._test_uri_mapper.test_to_uri(result.name)
+            command = shlex.join([*output.command, uri])
+            self._write_log(result.name, artifacts, 'command',
+                            test_failures.FILENAME_SUFFIX_CMD, command)
 
         return artifacts, image_diff_stats
 

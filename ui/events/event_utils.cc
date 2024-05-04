@@ -6,6 +6,7 @@
 
 #include <limits>
 #include <map>
+#include <string_view>
 #include <vector>
 
 #include "base/check.h"
@@ -237,7 +238,7 @@ void ConvertEventLocationToTargetWindowLocation(
   located_event->set_location_f(location_in_pixel_in_host);
 }
 
-base::StringPiece EventTypeName(EventType type) {
+std::string_view EventTypeName(EventType type) {
   if (type >= ET_LAST)
     return "";
 
@@ -297,8 +298,8 @@ base::StringPiece EventTypeName(EventType type) {
   return "";
 }
 
-std::vector<base::StringPiece> EventFlagsNames(int event_flags) {
-  std::vector<base::StringPiece> names;
+std::vector<std::string_view> EventFlagsNames(int event_flags) {
+  std::vector<std::string_view> names;
   names.reserve(5);  // Seems like a good starting point.
   if (!event_flags) {
     names.push_back("NONE");
@@ -319,6 +320,8 @@ std::vector<base::StringPiece> EventFlagsNames(int event_flags) {
     names.push_back("ALTGR_DOWN");
   if (event_flags & EF_MOD3_DOWN)
     names.push_back("MOD3_DOWN");
+  if (event_flags & EF_FUNCTION_DOWN)
+    names.push_back("FUNCTION_DOWN");
   if (event_flags & EF_NUM_LOCK_ON)
     names.push_back("NUM_LOCK_ON");
   if (event_flags & EF_CAPS_LOCK_ON)
@@ -339,8 +342,8 @@ std::vector<base::StringPiece> EventFlagsNames(int event_flags) {
   return names;
 }
 
-std::vector<base::StringPiece> KeyEventFlagsNames(int event_flags) {
-  std::vector<base::StringPiece> names = EventFlagsNames(event_flags);
+std::vector<std::string_view> KeyEventFlagsNames(int event_flags) {
+  std::vector<std::string_view> names = EventFlagsNames(event_flags);
   if (!event_flags)
     return names;
 
@@ -363,8 +366,8 @@ std::vector<base::StringPiece> KeyEventFlagsNames(int event_flags) {
   return names;
 }
 
-std::vector<base::StringPiece> MouseEventFlagsNames(int event_flags) {
-  std::vector<base::StringPiece> names = EventFlagsNames(event_flags);
+std::vector<std::string_view> MouseEventFlagsNames(int event_flags) {
+  std::vector<std::string_view> names = EventFlagsNames(event_flags);
   if (!event_flags)
     return names;
 

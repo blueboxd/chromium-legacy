@@ -75,6 +75,10 @@ EventRewriterDelegateImpl::GetKeyboardRemappedModifierValue(
     const std::string& pref_name) const {
   // `modifier_key` and `device_id` are unused when the flag is disabled.
   if (!ash::features::IsInputDeviceSettingsSplitEnabled()) {
+    if (pref_name.empty()) {
+      return std::nullopt;
+    }
+
     // If we're at the login screen, try to get the pref from the global prefs
     // dictionary.
     int value;
@@ -241,7 +245,7 @@ void EventRewriterDelegateImpl::RecordSixPackEventRewrite(
           {ui::KeyboardCode::VKEY_NEXT,
            prefs::kKeyEventRemappedToSixPackPageUp},
       });
-  auto* it = kSixPackKeyToPrefMap.find(key_code);
+  auto it = kSixPackKeyToPrefMap.find(key_code);
   CHECK(it != kSixPackKeyToPrefMap.end());
   int count = pref_service->GetInteger(it->second);
   // `alt_based` tells us whether this "six pack" event was produced by an

@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/base_switches.h"
+#include "base/check_deref.h"
 #include "base/command_line.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
@@ -134,7 +135,7 @@ void HeadlessContentBrowserClient::
     RegisterAssociatedInterfaceBindersForRenderFrameHost(
         content::RenderFrameHost& render_frame_host,
         blink::AssociatedInterfaceRegistry& associated_registry) {
-  // TODO(https://crbug.com/1265864): Move the registry logic below to a
+  // TODO(crbug.com/40203902): Move the registry logic below to a
   // dedicated file to ensure security review coverage.
 #if BUILDFLAG(ENABLE_PRINTING)
   associated_registry.AddInterface<printing::mojom::PrintManagerHost>(
@@ -193,14 +194,6 @@ void HeadlessContentBrowserClient::AppendExtraCommandLineSwitches(
   }
 #endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 
-  const base::CommandLine& old_command_line(
-      *base::CommandLine::ForCurrentProcess());
-  if (old_command_line.HasSwitch(switches::kDisablePDFTagging))
-    command_line->AppendSwitch(switches::kDisablePDFTagging);
-  if (old_command_line.HasSwitch(switches::kGeneratePDFDocumentOutline)) {
-    command_line->AppendSwitch(switches::kGeneratePDFDocumentOutline);
-  }
-
   // If we're spawning a renderer, then override the language switch.
   std::string process_type =
       command_line->GetSwitchValueASCII(::switches::kProcessType);
@@ -223,11 +216,16 @@ void HeadlessContentBrowserClient::AppendExtraCommandLineSwitches(
     }
 
     // Please keep this in alphabetical order.
-    static const char* const kSwitchNames[] = {
+    static const char* const kForwardSwitches[] = {
         embedder_support::kOriginTrialDisabledFeatures,
         embedder_support::kOriginTrialPublicKey,
+        switches::kAllowVideoCodecs,
+        switches::kDisablePDFTagging,
     };
-    command_line->CopySwitchesFrom(old_command_line, kSwitchNames);
+    const base::CommandLine& old_command_line =
+        CHECK_DEREF(base::CommandLine::ForCurrentProcess());
+
+    command_line->CopySwitchesFrom(old_command_line, kForwardSwitches);
   }
 }
 
@@ -339,10 +337,10 @@ bool HeadlessContentBrowserClient::CanAcceptUntrustedExchangesIfNeeded() {
       switches::kUserDataDir);
 }
 
-device::GeolocationManager*
-HeadlessContentBrowserClient::GetGeolocationManager() {
+device::GeolocationSystemPermissionManager*
+HeadlessContentBrowserClient::GetGeolocationSystemPermissionManager() {
 #if BUILDFLAG(IS_MAC)
-  return browser_->GetGeolocationManager();
+  return browser_->GetGeolocationSystemPermissionManager();
 #else
   return nullptr;
 #endif

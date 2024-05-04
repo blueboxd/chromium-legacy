@@ -418,7 +418,8 @@ class ASH_EXPORT AppListItemView : public views::Button,
 
   // views::View overrides:
   void Layout(PassKey) override;
-  gfx::Size CalculatePreferredSize() const override;
+  gfx::Size CalculatePreferredSize(
+      const views::SizeBounds& available_size) const override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
   void OnMouseReleased(const ui::MouseEvent& event) override;
@@ -430,6 +431,7 @@ class ASH_EXPORT AppListItemView : public views::Button,
   int GetDragOperations(const gfx::Point& press_pt) override;
   void WriteDragData(const gfx::Point& press_pt, OSExchangeData* data) override;
   void OnDragDone() override;
+  void ScrollRectToVisible(const gfx::Rect& rect) override;
 
   // Called when the drag registered for this view starts moving.
   // `drag_start_callback` passed to `GridDelegate::InitiateDrag()`.

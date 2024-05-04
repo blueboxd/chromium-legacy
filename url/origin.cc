@@ -27,6 +27,7 @@
 #include "url/gurl.h"
 #include "url/scheme_host_port.h"
 #include "url/url_constants.h"
+#include "url/url_features.h"
 #include "url/url_util.h"
 
 namespace url {
@@ -203,8 +204,8 @@ bool Origin::CanBeDerivedFrom(const GURL& url) const {
   // origin can always create an opaque tuple origin.
   if (url.IsStandard()) {
     // Note: if extra copies of the scheme and host are undesirable, this check
-    // can be implemented using StringPiece comparisons, but it has to account
-    // explicitly checks on port numbers.
+    // can be implemented using std::string_view comparisons, but it has to
+    // account explicitly checks on port numbers.
     if (url.SchemeIsFileSystem()) {
       url_tuple = SchemeHostPort(*url.inner_url());
     } else {
@@ -245,8 +246,14 @@ bool Origin::CanBeDerivedFrom(const GURL& url) const {
   if (!tuple_.IsValid())
     return true;
 
-  // However, when there is precursor present, the schemes must match.
-  return url.scheme() == tuple_.scheme();
+  // However, when there is precursor present, that must match.
+  if (IsUsingStandardCompliantNonSpecialSchemeURLParsing()) {
+    return SchemeHostPort(url) == tuple_;
+  } else {
+    // Match only the scheme because host and port are unavailable for
+    // non-special URLs when the flag is disabled.
+    return url.scheme() == tuple_.scheme();
+  }
 }
 
 bool Origin::DomainIs(std::string_view canonical_domain) const {
@@ -347,7 +354,9 @@ std::optional<Origin> Origin::Deserialize(const std::string& value) {
   std::string data;
   if (!base::Base64Decode(value, &data))
     return std::nullopt;
-  base::Pickle pickle(reinterpret_cast<char*>(&data[0]), data.size());
+
+  base::Pickle pickle =
+      base::Pickle::WithUnownedBuffer(base::as_byte_span(data));
   base::PickleIterator reader(pickle);
 
   std::string pickled_url;

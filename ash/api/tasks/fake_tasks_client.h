@@ -34,6 +34,7 @@ class ASH_EXPORT FakeTasksClient : public TasksClient {
   int completed_task_count() { return completed_tasks_; }
 
   // TasksClient:
+  bool IsDisabledByAdmin() const override;
   const ui::ListModel<api::TaskList>* GetCachedTaskLists() override;
   void GetTaskLists(bool force_fetch, GetTaskListsCallback callback) override;
   const ui::ListModel<api::Task>* GetCachedTasksInTaskList(
@@ -55,8 +56,7 @@ class ASH_EXPORT FakeTasksClient : public TasksClient {
   void InvalidateCache() override {}
   std::optional<base::Time> GetTasksLastUpdateTime(
       const std::string& task_list_id) const override;
-  void OnGlanceablesBubbleClosed(OnAllPendingCompletedTasksSavedCallback
-                                     callback = base::DoNothing()) override;
+  void OnGlanceablesBubbleClosed(base::OnceClosure callback) override;
 
   // Helper function for loading in pre-built `TaskList` objects.
   void AddTaskList(std::unique_ptr<TaskList> task_list_data);
@@ -85,11 +85,14 @@ class ASH_EXPORT FakeTasksClient : public TasksClient {
   // Runs `pending_update_task_callbacks_` and returns their number.
   size_t RunPendingUpdateTaskCallbacks();
 
+  void set_is_disabled_by_admin(bool is_disabled_by_admin) {
+    is_disabled_by_admin_ = is_disabled_by_admin;
+  }
   void set_paused(bool paused) { paused_ = paused; }
   void set_paused_on_fetch(bool paused) { paused_on_fetch_ = paused; }
-  void set_run_with_errors(bool run_with_errors) {
-    run_with_errors_ = run_with_errors;
-  }
+  void set_update_errors(bool update_errors) { update_errors_ = update_errors; }
+  void set_get_task_lists_error(bool error) { get_task_lists_error_ = error; }
+  void set_get_tasks_error(bool error) { get_tasks_error_ = error; }
 
   ui::ListModel<TaskList>* task_lists() { return task_lists_.get(); }
 
@@ -136,12 +139,22 @@ class ASH_EXPORT FakeTasksClient : public TasksClient {
   int completed_tasks_ = 0;
 
   // If `false` - callbacks are executed normally; if `true` - executed with
-  // simulated error (currently works for `AddTask` and `UpdateTask` only).
-  bool run_with_errors_ = false;
+  // simulated error. This only works for `AddTask` and `UpdateTask` functions.
+  bool update_errors_ = false;
+
+  // If `true`, GetTaskListsCallback run with failure after data fetching in
+  // `GetTaskLists()` is done. This should be set before `GetTaskLists()` is
+  // called.
+  bool get_task_lists_error_ = false;
+  // If `true`, GetTasksCallback run with failure after data fetching in
+  // `GetTasks()` is done. This should be set before `GetTasks()` is called.
+  bool get_tasks_error_ = false;
 
   // The last time when the tasks were updated. This is manually set by
   // `SetTasksLastUpdateTime`.
   base::Time last_updated_time_;
+
+  bool is_disabled_by_admin_ = false;
 
   // If `false` - callbacks are executed immediately; if `true` - callbacks get
   // saved to the corresponding list and executed once

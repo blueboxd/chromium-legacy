@@ -2,63 +2,122 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/apps/app_service/app_install/app_install_navigation_throttle.h"
+
+#include "base/functional/callback.h"
 #include "base/strings/strcat.h"
+#include "base/strings/stringprintf.h"
+#include "base/test/repeating_test_future.h"
+#include "base/test/scoped_feature_list.h"
+#include "base/test/test_future.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/apps/app_service/app_install/app_install.pb.h"
-#include "chrome/browser/apps/app_service/app_install/app_install_navigation_throttle.h"
+#include "chrome/browser/apps/app_service/app_launch_params.h"
+#include "chrome/browser/apps/app_service/app_registry_cache_waiter.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/apps/browser_instance/browser_app_instance_tracker.h"
+#include "chrome/browser/chromeos/crosapi/test_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/web_applications/web_app_dialogs.h"
+#include "chrome/browser/ui/web_applications/web_app_launch_process.h"
 #include "chrome/browser/web_applications/test/web_app_test_observers.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_install_utils.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "chromeos/constants/chromeos_features.h"
+#include "chromeos/crosapi/mojom/test_controller.mojom-test-utils.h"
 #include "components/services/app_service/public/cpp/package_id.h"
 #include "components/webapps/common/web_app_id.h"
 #include "content/public/test/browser_test.h"
+#include "content/public/test/browser_test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chrome/browser/apps/almanac_api_client/almanac_api_util.h"
-#else
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
 #include "chromeos/crosapi/mojom/test_controller.mojom.h"
 #include "chromeos/lacros/lacros_service.h"
-#include "chromeos/startup/browser_params_proxy.h"
 #endif
 
 namespace apps {
 
-class AppInstallNavigationThottleBrowserTest : public InProcessBrowserTest {
+class AppInstallNavigationThrottleBrowserTest
+    : public InProcessBrowserTest,
+      public testing::WithParamInterface<bool> {
  public:
-  AppInstallNavigationThottleBrowserTest() = default;
+  class AutoAcceptInstallDialogScope {
+   public:
+    explicit AutoAcceptInstallDialogScope(bool is_ash_dialog_enabled)
+        : is_ash_dialog_enabled_(is_ash_dialog_enabled) {
+      if (is_ash_dialog_enabled_) {
+        crosapi::mojom::TestControllerAsyncWaiter(crosapi::GetTestController())
+            .SetAppInstallDialogAutoAccept(true);
+      } else {
+        web_app::SetAutoAcceptPWAInstallConfirmationForTesting(true);
+      }
+    }
+
+    ~AutoAcceptInstallDialogScope() {
+      if (is_ash_dialog_enabled_) {
+        crosapi::mojom::TestControllerAsyncWaiter(crosapi::GetTestController())
+            .SetAppInstallDialogAutoAccept(false);
+      } else {
+        web_app::SetAutoAcceptPWAInstallConfirmationForTesting(false);
+      }
+    }
+
+   private:
+    const bool is_ash_dialog_enabled_;
+  };
+
+  static std::string ParamToString(testing::TestParamInfo<bool> param) {
+    return param.param ? "AshDialogEnabled" : "AshDialogDisabled";
+  }
+
+  AppInstallNavigationThrottleBrowserTest() {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    feature_list_.InitWithFeatureState(
+        chromeos::features::kCrosWebAppInstallDialog, is_ash_dialog_enabled());
+#endif
+  }
+
+  bool is_ash_dialog_enabled() const { return GetParam(); }
 
   void SetUpOnMainThread() override {
+    if (!crosapi::AshSupportsCapabilities({"b/304680258"})) {
+      GTEST_SKIP() << "Unsupported Ash version.";
+    }
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+    // Lacros has no way to disable the dialog, so we only run tests with the
+    // dialog enabled.
+    ASSERT_TRUE(is_ash_dialog_enabled());
+
+    if (!crosapi::AshSupportsCapabilities({"b/331715712"})) {
+      GTEST_SKIP() << "Unsupported Ash version.";
+    }
+
+    if (crosapi::GetInterfaceVersion<crosapi::mojom::TestController>() <
+        int{crosapi::mojom::TestController::MethodMinVersions::
+                kSetAppInstallDialogAutoAcceptMinVersion}) {
+      GTEST_SKIP() << "Unsupported Ash version.";
+    }
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+
     embedded_test_server()->RegisterRequestHandler(base::BindRepeating(
-        &AppInstallNavigationThottleBrowserTest::HandleRequest,
+        &AppInstallNavigationThrottleBrowserTest::HandleRequest,
         base::Unretained(this)));
     ASSERT_TRUE(embedded_test_server()->Start());
 
-    // Override Almanac server URL.
-    std::string test_endpoint = embedded_test_server()->GetURL("/").spec();
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-    apps::SetAlmanacEndpointUrlForTesting(std::move(test_endpoint));
-#else
-    const std::optional<std::vector<std::string>>& capabilities =
-        chromeos::BrowserParamsProxy::Get()->AshCapabilities();
-    if (!capabilities || !base::Contains(*capabilities, "b/304680258")) {
-      GTEST_SKIP() << "Unsupported Ash version.";
-    }
-    base::RunLoop run_loop;
-    chromeos::LacrosService::Get()
-        ->GetRemote<crosapi::mojom::TestController>()
-        ->SetAlmanacEndpointUrlForTesting(test_endpoint,
-                                          run_loop.QuitClosure());
-    run_loop.Run();
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+    crosapi::mojom::TestControllerAsyncWaiter(crosapi::GetTestController())
+        .SetAlmanacEndpointUrlForTesting(
+            embedded_test_server()->GetURL("/").spec());
+
+    apps::AppTypeInitializationWaiter(browser()->profile(), apps::AppType::kWeb)
+        .Await();
   }
 
   std::unique_ptr<net::test_server::HttpResponse> HandleRequest(
@@ -74,42 +133,103 @@ class AppInstallNavigationThottleBrowserTest : public InProcessBrowserTest {
     return std::move(http_response);
   }
 
+  base::test::ScopedFeatureList feature_list_;
   std::map<GURL, std::string> response_map_;
   base::AutoReset<bool> feature_scope_ =
       chromeos::features::SetAppInstallServiceUriEnabledForTesting();
+
+  struct SetupIds {
+    webapps::AppId app_id;
+    PackageId package_id;
+  };
+  SetupIds SetupDefaultServerResponse() {
+    GURL start_url = embedded_test_server()->GetURL("/web_apps/basic.html");
+    GURL manifest_url = embedded_test_server()->GetURL("/web_apps/basic.json");
+    webapps::ManifestId manifest_id = start_url;
+    webapps::AppId app_id = web_app::GenerateAppIdFromManifestId(manifest_id);
+    PackageId package_id(apps::PackageType::kWeb, manifest_id.spec());
+
+    // Set Almanac server payload.
+    response_map_[embedded_test_server()->GetURL("/v1/app-install")] = [&] {
+      proto::AppInstallResponse response;
+      proto::AppInstallResponse_AppInstance& instance =
+          *response.mutable_app_instance();
+      instance.set_package_id(package_id.ToString());
+      instance.set_name("Test");
+      proto::AppInstallResponse_WebExtras& web_extras =
+          *instance.mutable_web_extras();
+      web_extras.set_document_url(start_url.spec());
+      web_extras.set_original_manifest_url(manifest_url.spec());
+      web_extras.set_scs_url(manifest_url.spec());
+      return response.SerializeAsString();
+    }();
+
+    return {app_id, package_id};
+  }
 };
 
-IN_PROC_BROWSER_TEST_F(AppInstallNavigationThottleBrowserTest,
+IN_PROC_BROWSER_TEST_P(AppInstallNavigationThrottleBrowserTest,
                        UrlTriggeredInstallation) {
-  GURL start_url = embedded_test_server()->GetURL("/web_apps/basic.html");
-  webapps::ManifestId manifest_id = start_url;
-  webapps::AppId app_id = web_app::GenerateAppIdFromManifestId(manifest_id);
-  PackageId package_id(apps::AppType::kWeb, manifest_id.spec());
+  base::HistogramTester histograms;
 
-  // Set Almanac server payload.
-  response_map_[embedded_test_server()->GetURL("/v1/app-install")] = [&] {
-    proto::AppInstallResponse response;
-    proto::AppInstallResponse_AppInstance& instance =
-        *response.mutable_app_instance();
-    instance.set_package_id(package_id.ToString());
-    instance.set_name("Test");
-    proto::AppInstallResponse_WebExtras& web_extras =
-        *instance.mutable_web_extras();
-    web_extras.set_document_url(start_url.spec());
-    web_extras.set_original_manifest_url(start_url.spec());
-    web_extras.set_scs_url(start_url.spec());
-    return response.SerializeAsString();
-  }();
+  auto [app_id, package_id] = SetupDefaultServerResponse();
+
+  auto* proxy = AppServiceProxyFactory::GetForProfile(browser()->profile());
+  ASSERT_TRUE(proxy->AppRegistryCache().IsAppTypeInitialized(AppType::kWeb));
+
+  // Make install prompts auto accept for this block.
+  {
+    AutoAcceptInstallDialogScope auto_accept_scope(is_ash_dialog_enabled());
+
+    // Open install-app URI.
+    EXPECT_EQ(browser()->tab_strip_model()->count(), 1);
+    EXPECT_TRUE(content::ExecJs(
+        browser()->tab_strip_model()->GetActiveWebContents(),
+        base::StringPrintf(
+            "window.open('cros-apps://install-app?package_id=%s');",
+            package_id.ToString().c_str())));
+
+    // This should trigger the sequence:
+    // - AppInstallNavigationThrottle
+    // - AppInstallServiceAsh
+    // - NavigateAndTriggerInstallDialogCommand
+
+    // Await install to complete.
+    web_app::WebAppTestInstallObserver(browser()->profile())
+        .BeginListeningAndWait({app_id});
+
+    if (!is_ash_dialog_enabled()) {
+      // Check that window.open() didn't leave an extra about:blank tab lying
+      // around, there should only be the original about:blank tab and the
+      // install page tab.
+      EXPECT_EQ(browser()->tab_strip_model()->count(), 2);
+    }
+  }
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  // These metrics are emitted on lacros only.
+  histograms.ExpectBucketCount("Apps.AppInstallParentWindowFound", true, 1);
+  histograms.ExpectBucketCount("Apps.AppInstallParentWindowFound", false, 0);
+#endif
+}
+
+IN_PROC_BROWSER_TEST_P(AppInstallNavigationThrottleBrowserTest, LegacyScheme) {
+  base::HistogramTester histograms;
+
+  auto [app_id, package_id] = SetupDefaultServerResponse();
+
+  auto* proxy = AppServiceProxyFactory::GetForProfile(browser()->profile());
+  ASSERT_TRUE(proxy->AppRegistryCache().IsAppTypeInitialized(AppType::kWeb));
 
   // Make install prompts auto accept.
-  web_app::SetAutoAcceptPWAInstallConfirmationForTesting(/*auto_accept=*/true);
+  AutoAcceptInstallDialogScope auto_accept_scope(is_ash_dialog_enabled());
 
-  // Open GIOC URI.
-  NavigateParams params(browser(),
-                        GURL(base::StrCat({"almanac://install-app?package_id=",
-                                           package_id.ToString()})),
-                        ui::PAGE_TRANSITION_LINK);
-  ui_test_utils::NavigateToURL(&params);
+  // Open install-app URI.
+  EXPECT_EQ(browser()->tab_strip_model()->count(), 1);
+  EXPECT_TRUE(content::ExecJs(
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      base::StringPrintf("window.open('almanac://install-app?package_id=%s');",
+                         package_id.ToString().c_str())));
 
   // This should trigger the sequence:
   // - AppInstallNavigationThrottle
@@ -119,6 +239,89 @@ IN_PROC_BROWSER_TEST_F(AppInstallNavigationThottleBrowserTest,
   // Await install to complete.
   web_app::WebAppTestInstallObserver(browser()->profile())
       .BeginListeningAndWait({app_id});
+}
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+// On lacros, window tracking is async so a parent window for anchoring the
+// dialog might not be found. This test verifies that the dialog opening and app
+// installation still works in that situation.
+IN_PROC_BROWSER_TEST_P(AppInstallNavigationThrottleBrowserTest,
+                       InstallationWithoutParentWindow) {
+  base::HistogramTester histograms;
+
+  auto [app_id, package_id] = SetupDefaultServerResponse();
+
+  // Force BrowserAppInstanceTracker to forget about the current window. This
+  // will cause the dialog to have no parent, and is more reliable than trying
+  // to get the browser to close with the right timing.
+  auto* proxy = AppServiceProxyFactory::GetForProfile(browser()->profile());
+  ASSERT_TRUE(proxy);
+  ASSERT_TRUE(proxy->BrowserAppInstanceTracker());
+  proxy->BrowserAppInstanceTracker()->RemoveBrowserForTesting(browser());
+
+  // Sanity check app registry is started and app isn't already installed.
+  ASSERT_TRUE(proxy->AppRegistryCache().IsAppTypeInitialized(AppType::kWeb));
+  ASSERT_FALSE(proxy->AppRegistryCache().ForOneApp(
+      app_id, [](const apps::AppUpdate& update) {}));
+
+  // Make install prompts auto accept.
+  AutoAcceptInstallDialogScope auto_accept_scope(is_ash_dialog_enabled());
+
+  // Open install-app URI.
+  EXPECT_TRUE(content::ExecJs(
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      base::StringPrintf(
+          "window.location.href='cros-apps://install-app?package_id=%s'",
+          package_id.ToString().c_str())));
+
+  // This should trigger the sequence:
+  // - AppInstallNavigationThrottle
+  // - AppInstallServiceAsh
+  // - NavigateAndTriggerInstallDialogCommand
+
+  // Await install to complete.
+  web_app::WebAppTestInstallObserver(browser()->profile())
+      .BeginListeningAndWait({app_id});
+
+  // These metrics are emitted on lacros only.
+  histograms.ExpectBucketCount("Apps.AppInstallParentWindowFound", true, 0);
+  histograms.ExpectBucketCount("Apps.AppInstallParentWindowFound", false, 1);
+}
+#endif
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    AppInstallNavigationThrottleBrowserTest,
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    testing::Bool(),
+#else
+    // Lacros has no way to disable the dialog, so we only
+    // run tests with the dialog enabled.
+    testing::Values(true),
+#endif
+    AppInstallNavigationThrottleBrowserTest::ParamToString);
+
+class AppInstallNavigationThrottleUserGestureBrowserTest
+    : public InProcessBrowserTest {
+ public:
+  base::AutoReset<bool> feature_scope_ =
+      chromeos::features::SetAppInstallServiceUriEnabledForTesting();
+};
+
+IN_PROC_BROWSER_TEST_F(AppInstallNavigationThrottleUserGestureBrowserTest,
+                       IgnoresNonUserGesture) {
+  base::test::TestFuture<bool> future;
+  AppInstallNavigationThrottle::MaybeCreateCallbackForTesting() =
+      future.GetCallback();
+
+  content::ExecuteScriptAsyncWithoutUserGesture(
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      "location.href = 'cros-apps://install-app?package_id=web:test';");
+
+  EXPECT_FALSE(future.Get());
+
+  // window.open() is another method of opening the cros-apps:// URI however it
+  // is already blocked if there is no user gesture.
 }
 
 }  // namespace apps

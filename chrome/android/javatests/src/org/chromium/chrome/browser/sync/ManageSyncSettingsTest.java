@@ -7,16 +7,29 @@ package org.chromium.chrome.browser.sync;
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
+import static androidx.test.espresso.intent.Intents.intended;
+import static androidx.test.espresso.intent.Intents.intending;
 import static androidx.test.espresso.matcher.RootMatchers.isDialog;
 import static androidx.test.espresso.matcher.ViewMatchers.hasSibling;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
+import static org.hamcrest.CoreMatchers.allOf;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.Matchers.not;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import static org.chromium.ui.test.util.ViewUtils.onViewWaiting;
+
+import static java.util.Map.entry;
+
+import android.app.Activity;
 import android.app.Dialog;
+import android.app.Instrumentation.ActivityResult;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Button;
@@ -29,6 +42,8 @@ import androidx.fragment.app.FragmentTransaction;
 import androidx.preference.CheckBoxPreference;
 import androidx.preference.Preference;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.test.espresso.intent.Intents;
+import androidx.test.espresso.intent.matcher.IntentMatchers;
 import androidx.test.filters.LargeTest;
 import androidx.test.filters.MediumTest;
 import androidx.test.filters.SmallTest;
@@ -46,6 +61,8 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.CriteriaHelper;
+import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Features.DisableFeatures;
@@ -55,6 +72,8 @@ import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.AppHooksImpl;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
+import org.chromium.chrome.browser.password_manager.PasswordManagerUtilBridge;
+import org.chromium.chrome.browser.password_manager.PasswordManagerUtilBridgeJni;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.profiles.ProfileManager;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
@@ -62,8 +81,11 @@ import org.chromium.chrome.browser.settings.SettingsActivity;
 import org.chromium.chrome.browser.settings.SettingsActivityTestRule;
 import org.chromium.chrome.browser.signin.services.UnifiedConsentServiceBridge;
 import org.chromium.chrome.browser.signin.services.UnifiedConsentServiceBridgeJni;
+import org.chromium.chrome.browser.sync.settings.IdentityErrorCardPreference;
 import org.chromium.chrome.browser.sync.settings.ManageSyncSettings;
+import org.chromium.chrome.browser.sync.settings.SyncErrorCardPreference;
 import org.chromium.chrome.browser.sync.ui.PassphraseCreationDialogFragment;
+import org.chromium.chrome.browser.sync.ui.PassphraseDialogFragment;
 import org.chromium.chrome.browser.sync.ui.PassphraseTypeDialogFragment;
 import org.chromium.chrome.browser.ui.signin.GoogleActivityController;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -74,6 +96,8 @@ import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
 import org.chromium.components.browser_ui.settings.ChromeSwitchPreference;
 import org.chromium.components.policy.test.annotations.Policies;
 import org.chromium.components.search_engines.TemplateUrlService;
+import org.chromium.components.sync.SyncFeatureMap;
+import org.chromium.components.sync.SyncService;
 import org.chromium.components.sync.UserSelectableType;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
@@ -88,25 +112,30 @@ import java.util.Set;
 /** Tests for ManageSyncSettings. */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
-@EnableFeatures({ChromeFeatureList.SYNC_DECOUPLE_ADDRESS_PAYMENT_SETTINGS})
 public class ManageSyncSettingsTest {
     private static final int RENDER_TEST_REVISION = 5;
 
     /** Maps selected types to their UI element IDs. */
-    private static final Map<Integer, String> UI_DATATYPES = new HashMap<>();
+    private Map<Integer, String> mUiDataTypes;
 
-    static {
-        UI_DATATYPES.put(UserSelectableType.AUTOFILL, ManageSyncSettings.PREF_SYNC_AUTOFILL);
-        UI_DATATYPES.put(UserSelectableType.BOOKMARKS, ManageSyncSettings.PREF_SYNC_BOOKMARKS);
-        UI_DATATYPES.put(
-                UserSelectableType.PAYMENTS, ManageSyncSettings.PREF_SYNC_PAYMENTS_INTEGRATION);
-        UI_DATATYPES.put(UserSelectableType.HISTORY, ManageSyncSettings.PREF_SYNC_HISTORY);
-        UI_DATATYPES.put(UserSelectableType.PASSWORDS, ManageSyncSettings.PREF_SYNC_PASSWORDS);
-        UI_DATATYPES.put(
-                UserSelectableType.READING_LIST, ManageSyncSettings.PREF_SYNC_READING_LIST);
-        UI_DATATYPES.put(UserSelectableType.TABS, ManageSyncSettings.PREF_SYNC_RECENT_TABS);
-        UI_DATATYPES.put(UserSelectableType.PREFERENCES, ManageSyncSettings.PREF_SYNC_SETTINGS);
-    }
+    /** Maps selected types to their Account UI element IDs. */
+    private static final Map<Integer, String> ACCOUNT_UI_DATATYPES =
+            Map.ofEntries(
+                    entry(UserSelectableType.AUTOFILL, ManageSyncSettings.PREF_SYNC_AUTOFILL),
+                    entry(UserSelectableType.BOOKMARKS, ManageSyncSettings.PREF_SYNC_BOOKMARKS),
+                    entry(
+                            UserSelectableType.PAYMENTS,
+                            ManageSyncSettings.PREF_SYNC_PAYMENTS_INTEGRATION),
+                    // HISTORY and TABS are bundled in the same switch in the new settings panel.
+                    entry(
+                            UserSelectableType.HISTORY,
+                            ManageSyncSettings.PREF_SYNC_HISTORY_AND_TABS),
+                    entry(UserSelectableType.TABS, ManageSyncSettings.PREF_SYNC_HISTORY_AND_TABS),
+                    entry(UserSelectableType.PASSWORDS, ManageSyncSettings.PREF_SYNC_PASSWORDS),
+                    entry(
+                            UserSelectableType.READING_LIST,
+                            ManageSyncSettings.PREF_SYNC_READING_LIST),
+                    entry(UserSelectableType.PREFERENCES, ManageSyncSettings.PREF_SYNC_SETTINGS));
 
     private SettingsActivity mSettingsActivity;
 
@@ -133,6 +162,7 @@ public class ManageSyncSettingsTest {
     @Mock private UnifiedConsentServiceBridge.Natives mUnifiedConsentServiceBridgeMock;
     @Mock private TemplateUrlService mTemplateUrlService;
     @Mock private GoogleActivityController mGoogleActivityController;
+    @Mock private PasswordManagerUtilBridge.Natives mPasswordManagerUtilBridgeJniMock;
 
     @Before
     public void setUp() {
@@ -157,6 +187,23 @@ public class ManageSyncSettingsTest {
 
         TemplateUrlServiceFactory.setInstanceForTesting(mTemplateUrlService);
         when(mTemplateUrlService.isEeaChoiceCountry()).thenReturn(false);
+
+        mUiDataTypes = new HashMap<>();
+        mUiDataTypes.put(UserSelectableType.AUTOFILL, ManageSyncSettings.PREF_SYNC_AUTOFILL);
+        mUiDataTypes.put(UserSelectableType.BOOKMARKS, ManageSyncSettings.PREF_SYNC_BOOKMARKS);
+        mUiDataTypes.put(
+                UserSelectableType.PAYMENTS, ManageSyncSettings.PREF_SYNC_PAYMENTS_INTEGRATION);
+        mUiDataTypes.put(UserSelectableType.HISTORY, ManageSyncSettings.PREF_SYNC_HISTORY);
+        mUiDataTypes.put(UserSelectableType.PASSWORDS, ManageSyncSettings.PREF_SYNC_PASSWORDS);
+        mUiDataTypes.put(
+                UserSelectableType.READING_LIST, ManageSyncSettings.PREF_SYNC_READING_LIST);
+        mUiDataTypes.put(UserSelectableType.TABS, ManageSyncSettings.PREF_SYNC_RECENT_TABS);
+        mUiDataTypes.put(UserSelectableType.PREFERENCES, ManageSyncSettings.PREF_SYNC_SETTINGS);
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.WEB_APK_BACKUP_AND_RESTORE_BACKEND)) {
+            mUiDataTypes.put(UserSelectableType.APPS, ManageSyncSettings.PREF_SYNC_APPS);
+        }
+
+        mJniMocker.mock(PasswordManagerUtilBridgeJni.TEST_HOOKS, mPasswordManagerUtilBridgeJniMock);
     }
 
     @After
@@ -180,6 +227,30 @@ public class ManageSyncSettingsTest {
         // User needs to manually uncheck to toggle sync off for data types.
         for (CheckBoxPreference dataType : dataTypes) {
             Assert.assertTrue(dataType.isChecked());
+            Assert.assertTrue(dataType.isEnabled());
+        }
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Sync"})
+    @EnableFeatures({ChromeFeatureList.REPLACE_SYNC_PROMOS_WITH_SIGN_IN_PROMOS})
+    // Disabling explicitly since it's included in fieldtrial_testing_config.json
+    @DisableFeatures({SyncFeatureMap.ENABLE_BOOKMARK_FOLDERS_FOR_ACCOUNT_STORAGE})
+    public void testSyncAccountDataTypes() {
+        mSyncTestRule.setUpAccountAndSignInForTesting();
+        ManageSyncSettings fragment = startManageSyncPreferences();
+        Collection<ChromeSwitchPreference> dataTypes = getAccountDataTypes(fragment).values();
+
+        for (ChromeSwitchPreference dataType : dataTypes) {
+            // Only settings and payments are available upon sign in without toggling more flags.
+            if (dataType.getKey().equals(ManageSyncSettings.PREF_SYNC_SETTINGS)
+                    || dataType.getKey()
+                            .equals(ManageSyncSettings.PREF_SYNC_PAYMENTS_INTEGRATION)) {
+                Assert.assertTrue(dataType.isChecked());
+            } else {
+                Assert.assertFalse(dataType.isChecked());
+            }
             Assert.assertTrue(dataType.isEnabled());
         }
     }
@@ -247,7 +318,6 @@ public class ManageSyncSettingsTest {
     @Test
     @SmallTest
     @Feature({"Sync"})
-    @DisableFeatures({ChromeFeatureList.SYNC_DECOUPLE_ADDRESS_PAYMENT_SETTINGS})
     public void testSettingDataTypes() {
         mSyncTestRule.setUpAccountAndEnableSyncForTesting();
         ManageSyncSettings fragment = startManageSyncPreferences();
@@ -270,7 +340,6 @@ public class ManageSyncSettingsTest {
         mSyncTestRule.togglePreference(dataTypes.get(UserSelectableType.AUTOFILL));
         mSyncTestRule.togglePreference(dataTypes.get(UserSelectableType.PASSWORDS));
         expectedTypes.remove(UserSelectableType.AUTOFILL);
-        expectedTypes.remove(UserSelectableType.PAYMENTS);
         expectedTypes.remove(UserSelectableType.PASSWORDS);
 
         closeFragment(fragment);
@@ -380,7 +449,7 @@ public class ManageSyncSettingsTest {
     public void testPaymentsIntegrationUnchecked() {
         mSyncTestRule.setUpAccountAndEnableSyncForTesting();
 
-        Set<Integer> allDataTypesExceptPayments = new HashSet<>(UI_DATATYPES.keySet());
+        Set<Integer> allDataTypesExceptPayments = new HashSet<>(mUiDataTypes.keySet());
         allDataTypesExceptPayments.remove(UserSelectableType.PAYMENTS);
 
         mSyncTestRule.setSelectedTypes(false, allDataTypesExceptPayments);
@@ -422,7 +491,7 @@ public class ManageSyncSettingsTest {
         mSyncTestRule.setUpAccountAndEnableSyncForTesting();
         mSyncTestRule.disableDataType(UserSelectableType.PAYMENTS);
 
-        mSyncTestRule.setSelectedTypes(false, UI_DATATYPES.keySet());
+        mSyncTestRule.setSelectedTypes(false, mUiDataTypes.keySet());
         ManageSyncSettings fragment = startManageSyncPreferences();
 
         CheckBoxPreference paymentsIntegration =
@@ -465,40 +534,8 @@ public class ManageSyncSettingsTest {
                 mSyncTestRule.hasServerAutofillCreditCards());
     }
 
-    @Test
-    @SmallTest
-    @Feature({"Sync"})
-    @DisableFeatures({ChromeFeatureList.SYNC_DECOUPLE_ADDRESS_PAYMENT_SETTINGS})
-    public void testPaymentsIntegrationDisabledByAutofillSyncCheckbox() {
-        mSyncTestRule.setUpAccountAndEnableSyncForTesting();
-
-        // Get the UI elements.
-        ManageSyncSettings fragment = startManageSyncPreferences();
-        ChromeSwitchPreference syncEverything = getSyncEverything(fragment);
-        CheckBoxPreference syncAutofill =
-                (CheckBoxPreference) fragment.findPreference(ManageSyncSettings.PREF_SYNC_AUTOFILL);
-        CheckBoxPreference paymentsIntegration =
-                (CheckBoxPreference)
-                        fragment.findPreference(ManageSyncSettings.PREF_SYNC_PAYMENTS_INTEGRATION);
-
-        assertSyncOnState(fragment);
-        Assert.assertFalse(paymentsIntegration.isEnabled());
-        Assert.assertTrue(paymentsIntegration.isChecked());
-
-        mSyncTestRule.togglePreference(syncEverything);
-
-        Assert.assertTrue(paymentsIntegration.isEnabled());
-        Assert.assertTrue(paymentsIntegration.isChecked());
-
-        mSyncTestRule.togglePreference(syncAutofill);
-
-        Assert.assertFalse(paymentsIntegration.isEnabled());
-        Assert.assertFalse(paymentsIntegration.isChecked());
-
-        closeFragment(fragment);
-        assertPaymentsIntegrationEnabled(false);
-    }
-
+    // Before crbug.com/40265120, the autofill and payments toggles used to be coupled. This test
+    // verifies they no longer are.
     @Test
     @SmallTest
     @Feature({"Sync"})
@@ -528,44 +565,6 @@ public class ManageSyncSettingsTest {
         Assert.assertTrue(paymentsIntegration.isEnabled());
         Assert.assertTrue(paymentsIntegration.isChecked());
 
-        closeFragment(fragment);
-        assertPaymentsIntegrationEnabled(true);
-    }
-
-    @Test
-    @SmallTest
-    @Feature({"Sync"})
-    @DisableFeatures({ChromeFeatureList.SYNC_DECOUPLE_ADDRESS_PAYMENT_SETTINGS})
-    public void testPaymentsIntegrationEnabledBySyncEverything() {
-        mSyncTestRule.setUpAccountAndEnableSyncForTesting();
-        mSyncTestRule.disableDataType(UserSelectableType.PAYMENTS);
-        mSyncTestRule.disableDataType(UserSelectableType.AUTOFILL);
-
-        // Get the UI elements.
-        ManageSyncSettings fragment = startManageSyncPreferences();
-        ChromeSwitchPreference syncEverything = getSyncEverything(fragment);
-        CheckBoxPreference syncAutofill =
-                (CheckBoxPreference) fragment.findPreference(ManageSyncSettings.PREF_SYNC_AUTOFILL);
-        CheckBoxPreference paymentsIntegration =
-                (CheckBoxPreference)
-                        fragment.findPreference(ManageSyncSettings.PREF_SYNC_PAYMENTS_INTEGRATION);
-
-        // All three are unchecked and payments is disabled.
-        Assert.assertFalse(syncEverything.isChecked());
-        Assert.assertFalse(syncAutofill.isChecked());
-        Assert.assertTrue(syncAutofill.isEnabled());
-        Assert.assertFalse(paymentsIntegration.isChecked());
-        Assert.assertFalse(paymentsIntegration.isEnabled());
-
-        // All three are checked after toggling sync everything.
-        mSyncTestRule.togglePreference(syncEverything);
-        Assert.assertTrue(syncEverything.isChecked());
-        Assert.assertTrue(syncAutofill.isChecked());
-        Assert.assertFalse(syncAutofill.isEnabled());
-        Assert.assertTrue(paymentsIntegration.isChecked());
-        Assert.assertFalse(paymentsIntegration.isEnabled());
-
-        // Closing the fragment enabled payments integration.
         closeFragment(fragment);
         assertPaymentsIntegrationEnabled(true);
     }
@@ -818,6 +817,25 @@ public class ManageSyncSettingsTest {
     @Test
     @LargeTest
     @Feature({"Sync", "RenderTest"})
+    @EnableFeatures({ChromeFeatureList.WEB_APK_BACKUP_AND_RESTORE_BACKEND})
+    public void testAdvancedSyncFlowBottomViewWithWebApks() throws Exception {
+        mSyncTestRule.setUpAccountAndEnableSyncForTesting();
+        final ManageSyncSettings fragment = startManageSyncPreferences();
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> {
+                    RecyclerView recyclerView = fragment.getView().findViewById(R.id.recycler_view);
+                    // Sometimes the rendered image may not contain the scrollbar and cause
+                    // flakiness.
+                    // Hide the scrollbar altogether to reduce flakiness.
+                    recyclerView.setVerticalScrollBarEnabled(false);
+                    recyclerView.scrollToPosition(recyclerView.getAdapter().getItemCount() - 1);
+                });
+        render(fragment, "advanced_sync_flow_bottom_view_with_webapks");
+    }
+
+    @Test
+    @LargeTest
+    @Feature({"Sync", "RenderTest"})
     public void testAdvancedSyncFlowFromSyncConsentTopView() throws Exception {
         mSyncTestRule.setUpTestAccountAndSignInWithSyncSetupAsIncomplete();
         final ManageSyncSettings fragment = startManageSyncPreferencesFromSyncConsentFlow();
@@ -922,6 +940,9 @@ public class ManageSyncSettingsTest {
                         "[\"bookmarks\", \"readingList\", \"preferences\", \"passwords\","
                                 + " \"autofill\", \"typedUrls\", \"tabs\"]")
     })
+    @DisableIf.Build(
+            message = "Flaky on emulators. See crbug.com/332882352.",
+            supported_abis_includes = "x86")
     public void testSyncSettingsBottomViewWithSyncTypesManagedByPolicy() throws Exception {
         mSyncTestRule.setUpAccountAndEnableSyncForTesting();
         final ManageSyncSettings fragment = startManageSyncPreferences();
@@ -964,9 +985,42 @@ public class ManageSyncSettingsTest {
 
     @Test
     @LargeTest
+    @Feature({"PersonalizedGoogleServices", "RenderTest"})
+    @EnableFeatures({ChromeFeatureList.LINKED_SERVICES_SETTING})
+    public void testLinkedServicesSettingEea() throws Exception {
+        when(mTemplateUrlService.isEeaChoiceCountry()).thenReturn(true);
+        mSyncTestRule.setUpAccountAndEnableSyncForTesting();
+        final ManageSyncSettings fragment = startManageSyncPreferences();
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> {
+                    RecyclerView recyclerView = fragment.getView().findViewById(R.id.recycler_view);
+                    recyclerView.scrollToPosition(recyclerView.getAdapter().getItemCount() - 1);
+                });
+        render(fragment, "sync_settings_linked_services_setting_eea");
+    }
+
+    @Test
+    @LargeTest
     @Feature({"PersonalizedGoogleServices"})
     public void testClickGoogleActivityControls() {
         mSyncTestRule.setUpAccountAndEnableSyncForTesting();
+        final ManageSyncSettings fragment = startManageSyncPreferences();
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> {
+                    RecyclerView recyclerView = fragment.getView().findViewById(R.id.recycler_view);
+                    recyclerView.scrollToPosition(recyclerView.getAdapter().getItemCount() - 1);
+                });
+        // Click the Google ActivityControls pref
+        onView(withText(R.string.sign_in_google_activity_controls_title)).perform(click());
+        verify(mGoogleActivityController).openWebAndAppActivitySettings(any(), any());
+    }
+
+    @Test
+    @LargeTest
+    @Feature({"PersonalizedGoogleServices"})
+    @EnableFeatures({ChromeFeatureList.REPLACE_SYNC_PROMOS_WITH_SIGN_IN_PROMOS})
+    public void testClickGoogleActivityControlsWhenSyncPromosShouldBeReplacedWithSigninPromos() {
+        mSyncTestRule.setUpAccountAndSignInForTesting();
         final ManageSyncSettings fragment = startManageSyncPreferences();
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> {
@@ -1009,7 +1063,7 @@ public class ManageSyncSettingsTest {
                     recyclerView.scrollToPosition(recyclerView.getAdapter().getItemCount() - 1);
                 });
         // Click the Personalize Google services
-        onView(withText(R.string.sign_in_personalize_google_services_title)).perform(click());
+        onView(withText(R.string.sign_in_personalize_google_services_title_eea)).perform(click());
         onView(withText(R.string.personalized_google_services_summary))
                 .check(matches(isDisplayed()));
     }
@@ -1153,6 +1207,115 @@ public class ManageSyncSettingsTest {
         verifyUrlKeyedAnonymizedDataCollectionNotSet();
     }
 
+    @Test
+    @LargeTest
+    @Feature({"Sync"})
+    public void testSyncErrorCardActionForUpmBackendOutdatedError() {
+        when(mPasswordManagerUtilBridgeJniMock.isGmsCoreUpdateRequired(any(), anyBoolean()))
+                .thenReturn(true);
+
+        mSyncTestRule.setUpAccountAndEnableSyncForTesting();
+
+        ManageSyncSettings fragment = startManageSyncPreferences();
+        onViewWaiting(allOf(is(fragment.getView()), isDisplayed()));
+
+        // The error card exists.
+        onView(withId(R.id.signin_promo_view_wrapper)).check(matches(isDisplayed()));
+
+        Intents.init();
+        // Stub all external intents.
+        intending(not(IntentMatchers.isInternal()))
+                .respondWith(new ActivityResult(Activity.RESULT_OK, null));
+
+        onView(withId(R.id.sync_promo_signin_button)).perform(click());
+        // Expect intent to open the play store.
+        // TODO(crbug.com/327623232): Have this as a constant in PasswordManagerHelper.
+        intended(IntentMatchers.hasPackage("com.android.vending"));
+
+        Intents.release();
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Sync"})
+    public void testSyncErrorCardForUpmBackendOutdatedUpdatedDynamically() {
+        when(mPasswordManagerUtilBridgeJniMock.isGmsCoreUpdateRequired(any(), anyBoolean()))
+                .thenReturn(true);
+
+        mSyncTestRule.setUpAccountAndEnableSyncForTesting();
+
+        ManageSyncSettings fragment = startManageSyncPreferences();
+        onViewWaiting(allOf(is(fragment.getView()), isDisplayed()));
+        SyncErrorCardPreference preference =
+                (SyncErrorCardPreference)
+                        fragment.findPreference(ManageSyncSettings.PREF_SYNC_ERROR_CARD_PREFERENCE);
+
+        // The error card exists.
+        Assert.assertTrue(preference.isShown());
+
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> {
+                    when(mPasswordManagerUtilBridgeJniMock.isGmsCoreUpdateRequired(
+                                    any(), anyBoolean()))
+                            .thenReturn(false);
+                    // TODO(crbug.com/327623232): Observe such changes instead.
+                    preference.syncStateChanged();
+                });
+        // The error card is now hidden.
+        Assert.assertFalse(preference.isShown());
+    }
+
+    @Test
+    @LargeTest
+    @EnableFeatures({ChromeFeatureList.REPLACE_SYNC_PROMOS_WITH_SIGN_IN_PROMOS})
+    public void testIdentityErrorCardActionForPassphraseRequired() throws Exception {
+        mSyncTestRule.getFakeServerHelper().setCustomPassphraseNigori("passphrase");
+
+        mSyncTestRule.setUpAccountAndSignInForTesting();
+        SyncTestUtil.waitForSyncTransportActive();
+
+        SyncService syncService = mSyncTestRule.getSyncService();
+        CriteriaHelper.pollUiThread(() -> syncService.isPassphraseRequiredForPreferredDataTypes());
+
+        ManageSyncSettings fragment = startManageSyncPreferences();
+        onViewWaiting(allOf(is(fragment.getView()), isDisplayed()));
+        IdentityErrorCardPreference preference =
+                (IdentityErrorCardPreference)
+                        fragment.findPreference(
+                                ManageSyncSettings.PREF_IDENTITY_ERROR_CARD_PREFERENCE);
+
+        // The error card exists.
+        Assert.assertTrue(preference.isShown());
+
+        // Mimic the user tapping on the error card's button.
+        onView(withId(R.id.identity_error_card_button)).perform(click());
+
+        // Passphrase dialog should open.
+        final PassphraseDialogFragment passphraseFragment =
+                ActivityTestUtils.waitForFragment(
+                        mSettingsActivity, ManageSyncSettings.FRAGMENT_ENTER_PASSPHRASE);
+        Assert.assertTrue(passphraseFragment.isAdded());
+
+        // Simulate OnPassphraseAccepted from external event by setting the passphrase
+        // and triggering syncStateChanged().
+        // PassphraseDialogFragment should be dismissed.
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> syncService.setDecryptionPassphrase("passphrase"));
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> {
+                    fragment.getFragmentManager().executePendingTransactions();
+                    Assert.assertNull(
+                            "PassphraseDialogFragment should be dismissed.",
+                            mSettingsActivity
+                                    .getFragmentManager()
+                                    .findFragmentByTag(
+                                            ManageSyncSettings.FRAGMENT_ENTER_PASSPHRASE));
+                });
+
+        // The error card is now hidden.
+        Assert.assertFalse(preference.isShown());
+    }
+
     private ManageSyncSettings startManageSyncPreferences() {
         mSettingsActivity = mSettingsActivityTestRule.startSettingsActivity();
         return mSettingsActivityTestRule.getFragment();
@@ -1185,10 +1348,23 @@ public class ManageSyncSettingsTest {
 
     private Map<Integer, CheckBoxPreference> getDataTypes(ManageSyncSettings fragment) {
         Map<Integer, CheckBoxPreference> dataTypes = new HashMap<>();
-        for (Map.Entry<Integer, String> uiDataType : UI_DATATYPES.entrySet()) {
+        for (Map.Entry<Integer, String> uiDataType : mUiDataTypes.entrySet()) {
             Integer selectedType = uiDataType.getKey();
             String prefId = uiDataType.getValue();
             dataTypes.put(selectedType, (CheckBoxPreference) fragment.findPreference(prefId));
+        }
+        return dataTypes;
+    }
+
+    private Map<Integer, ChromeSwitchPreference> getAccountDataTypes(ManageSyncSettings fragment) {
+        Map<Integer, ChromeSwitchPreference> dataTypes = new HashMap<>();
+        for (Map.Entry<Integer, String> accountUiDataType : ACCOUNT_UI_DATATYPES.entrySet()) {
+            if (accountUiDataType.getKey() == UserSelectableType.TABS) {
+                continue;
+            }
+            Integer selectedType = accountUiDataType.getKey();
+            String prefId = accountUiDataType.getValue();
+            dataTypes.put(selectedType, (ChromeSwitchPreference) fragment.findPreference(prefId));
         }
         return dataTypes;
     }
@@ -1248,7 +1424,7 @@ public class ManageSyncSettingsTest {
     }
 
     private void assertSelectedTypesAre(final Set<Integer> enabledDataTypes) {
-        final Set<Integer> disabledDataTypes = new HashSet<>(UI_DATATYPES.keySet());
+        final Set<Integer> disabledDataTypes = new HashSet<>(mUiDataTypes.keySet());
         disabledDataTypes.removeAll(enabledDataTypes);
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> {

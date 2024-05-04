@@ -6,6 +6,7 @@
 
 #import "base/apple/foundation_util.h"
 #import "base/check.h"
+#import "ios/chrome/browser/feature_engagement/model/tracker_factory.h"
 #import "ios/chrome/browser/infobars/model/infobar_ios.h"
 #import "ios/chrome/browser/infobars/model/infobar_type.h"
 #import "ios/chrome/browser/overlays/model/public/common/infobars/infobar_overlay_request_config.h"
@@ -14,6 +15,7 @@
 #import "ios/chrome/browser/overlays/model/public/overlay_request_support.h"
 #import "ios/chrome/browser/overlays/model/public/overlay_response.h"
 #import "ios/chrome/browser/shared/coordinator/layout_guide/layout_guide_util.h"
+#import "ios/chrome/browser/shared/model/browser/browser.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/shared/ui/util/layout_guide_names.h"
 #import "ios/chrome/browser/shared/ui/util/util_swift.h"
@@ -29,6 +31,7 @@
 #import "ios/chrome/browser/ui/overlays/infobar_banner/parcel_tracking/parcel_tracking_infobar_banner_overlay_mediator.h"
 #import "ios/chrome/browser/ui/overlays/infobar_banner/passwords/password_infobar_banner_overlay_mediator.h"
 #import "ios/chrome/browser/ui/overlays/infobar_banner/permissions/permissions_infobar_banner_overlay_mediator.h"
+#import "ios/chrome/browser/ui/overlays/infobar_banner/safe_browsing/enhanced_safe_browsing_infobar_overlay_mediator.h"
 #import "ios/chrome/browser/ui/overlays/infobar_banner/save_card/save_card_infobar_banner_overlay_mediator.h"
 #import "ios/chrome/browser/ui/overlays/infobar_banner/sync_error/sync_error_infobar_banner_overlay_mediator.h"
 #import "ios/chrome/browser/ui/overlays/infobar_banner/tab_pickup/tab_pickup_infobar_banner_overlay_mediator.h"
@@ -64,6 +67,7 @@
     [SyncErrorInfobarBannerOverlayMediator class],
     [TabPickupBannerOverlayMediator class],
     [ParcelTrackingBannerOverlayMediator class],
+    [EnhancedSafeBrowsingBannerOverlayMediator class],
   ];
 }
 
@@ -88,7 +92,7 @@
   CGFloat omniboxMaxY = CGRectGetMaxY(omniboxFrame);
 
   // Use the top toolbar's layout guide when the omnibox is at the bottom.
-  if (IsBottomOmniboxSteadyStateEnabled() && topOmnibox.hidden) {
+  if (topOmnibox.hidden) {
     UIView* topToolbar =
         [layoutGuideCenter referencedViewUnderName:kPrimaryToolbarGuide];
     CGRect topToolbarFrame = [topToolbar convertRect:topToolbar.bounds
@@ -118,6 +122,10 @@
          presentsModal:config->has_badge()
                   type:config->infobar_type()];
   mediator.consumer = self.bannerViewController;
+  mediator.engagementTracker =
+      feature_engagement::TrackerFactory::GetForBrowserState(
+          self.browser->GetBrowserState());
+
   self.mediator = mediator;
   // Present the banner.
   self.bannerViewController.modalPresentationStyle = UIModalPresentationCustom;
@@ -240,6 +248,9 @@
       break;
     case InfobarType::kInfobarTypeParcelTracking:
       mediatorClass = [ParcelTrackingBannerOverlayMediator class];
+      break;
+    case InfobarType::kInfobarTypeEnhancedSafeBrowsing:
+      mediatorClass = [EnhancedSafeBrowsingBannerOverlayMediator class];
       break;
     default:
       NOTREACHED_NORETURN() << "Received unsupported infobarType.";

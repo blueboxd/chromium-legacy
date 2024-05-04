@@ -5,6 +5,7 @@
 import("//build/config/chromeos/ui_mode.gni")
 import("//build/config/chromeos/ui_mode.gni")
 import("//build/config/features.gni")
+import("//services/device/public/cpp/geolocation/buildflags.gni")
 import("//testing/test.gni")
 
 if (is_android) {
@@ -170,7 +171,6 @@ source_set("tests") {
     ":test_support",
     "//base",
     "//base/test:test_support",
-    "//base/third_party/dynamic_annotations",
     "//build:chromeos_buildflags",
     "//components/system_cpu:test_support",
     "//components/variations",
@@ -205,9 +205,8 @@ source_set("tests") {
     ]
   }
 
-  if (is_chromeos || is_mac) {
-    sources +=
-        [ "public/cpp/geolocation/geolocation_system_permissions_unittest.cc" ]
+  if (os_level_geolocation_permission_supported) {
+    sources += [ "public/cpp/geolocation/geolocation_system_permission_manager_unittest.cc" ]
   }
 
   if (is_chromeos) {
@@ -260,8 +259,6 @@ source_set("tests") {
     ]
     deps += [
       ":device_service_jni_headers",
-      "//services/device/public/java:geolocation_java_test_support",
-      "//services/device/usb:java",
       "//services/device/vibration/android:vibration_jni_headers",
     ]
   } else {
@@ -367,7 +364,7 @@ source_set("tests") {
   }
 
   # UsbContext is a libusb-specific object.
-  # TODO(https://crbug.com/1096743) Remove these tests.
+  # TODO(crbug.com/40136337) Remove these tests.
   if (is_mac) {
     sources += [ "usb/usb_context_unittest.cc" ]
     deps += [ "//third_party/libusb" ]

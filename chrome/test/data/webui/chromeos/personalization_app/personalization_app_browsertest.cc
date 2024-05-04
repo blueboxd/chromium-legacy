@@ -157,6 +157,11 @@ IN_PROC_BROWSER_TEST_F(PersonalizationAppComponentTest, SeaPenTemplates) {
           "mocha.run()");
 }
 
+IN_PROC_BROWSER_TEST_F(PersonalizationAppComponentTest, SeaPenToast) {
+  RunTest("chromeos/personalization_app/sea_pen_toast_element_test.js",
+          "mocha.run()");
+}
+
 IN_PROC_BROWSER_TEST_F(PersonalizationAppComponentTest, UserPreview) {
   RunTest("chromeos/personalization_app/user_preview_element_test.js",
           "mocha.run()");
@@ -182,7 +187,9 @@ IN_PROC_BROWSER_TEST_F(PersonalizationAppComponentTest, WallpaperGridItem) {
           "mocha.run()");
 }
 
-IN_PROC_BROWSER_TEST_F(PersonalizationAppComponentTest, WallpaperImages) {
+// TODO(crbug.com/336418721): Re-enable this test flakily failing.
+IN_PROC_BROWSER_TEST_F(PersonalizationAppComponentTest,
+                       DISABLED_WallpaperImages) {
   RunTest("chromeos/personalization_app/wallpaper_images_element_test.js",
           "mocha.run()");
 }
@@ -226,7 +233,7 @@ IN_PROC_BROWSER_TEST_F(PersonalizationAppControllerTest, All) {
 // implementations but with mocked out network handler helper classes.
 using PersonalizationAppBrowserTest = PersonalizationAppMochaTestBase;
 
-// TODO(crbug.com/1517028): Re-enable this test flakily failing on dbg builds.
+// TODO(crbug.com/41490011): Re-enable this test flakily failing on dbg builds.
 #if !defined(NDEBUG)
 #define MAYBE_Main DISABLED_Main
 #else

@@ -141,7 +141,13 @@ bool WaylandSurface::Initialize() {
       .enter = &OnEnter,
       .leave = &OnLeave,
   };
-  wl_surface_add_listener(surface_.get(), &kSurfaceListener, this);
+  // If this surface is not the surface for its root_window, it don't need to
+  // listen to output enter/leave events.
+  // Not having a root_window() means this is an icon_surface from
+  // WaylandDataDragController.
+  if (!root_window() || root_window()->root_surface() == this) {
+    wl_surface_add_listener(surface_.get(), &kSurfaceListener, this);
+  }
 
   if (connection_->fractional_scale_manager_v1()) {
     static constexpr wp_fractional_scale_v1_listener kFractionalScaleListener =
@@ -199,7 +205,9 @@ bool WaylandSurface::Initialize() {
     }
   }
 
-  if (auto* surface_augmenter = connection_->surface_augmenter()) {
+  auto* surface_augmenter = connection_->surface_augmenter();
+  if (surface_augmenter && root_window() &&
+      root_window()->root_surface() != this) {
     augmented_surface_ = surface_augmenter->CreateAugmentedSurface(surface());
     if (!augmented_surface_) {
       LOG(ERROR) << "Failed to create augmented_surface.";
@@ -782,7 +790,7 @@ bool WaylandSurface::ApplyPendingState() {
         wl_fixed_from_double(viewport_src_dip.y()) < 0) {
       LOG(ERROR) << "Sending viewport src with width/height zero or negative "
                     "origin will result in wayland disconnection";
-      // TODO(crbug.com/1325344): Resolve why this viewport size ends up being
+      // TODO(crbug.com/40839779): Resolve why this viewport size ends up being
       // zero and remove the fix below.
       LOG(ERROR) << "viewport_src_dip=" << viewport_src_dip.ToString()
                  << " crop=" << crop.ToString()

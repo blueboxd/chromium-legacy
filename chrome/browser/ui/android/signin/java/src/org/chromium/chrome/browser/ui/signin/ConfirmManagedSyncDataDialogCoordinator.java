@@ -8,6 +8,8 @@ import android.content.Context;
 
 import androidx.annotation.MainThread;
 
+import org.chromium.components.signin.SigninFeatureMap;
+import org.chromium.components.signin.SigninFeatures;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modaldialog.ModalDialogManager.ModalDialogType;
@@ -54,6 +56,8 @@ public class ConfirmManagedSyncDataDialogCoordinator {
             Listener listener,
             String managedDomain) {
         mListener = listener;
+        boolean updatedString =
+                SigninFeatureMap.isEnabled(SigninFeatures.ENTERPRISE_POLICY_ON_SIGNIN);
         mModel =
                 new PropertyModel.Builder(ModalDialogProperties.ALL_KEYS)
                         .with(
@@ -62,12 +66,17 @@ public class ConfirmManagedSyncDataDialogCoordinator {
                         .with(
                                 ModalDialogProperties.MESSAGE_PARAGRAPH_1,
                                 context.getString(
-                                        R.string.sign_in_managed_account_description,
+                                        updatedString
+                                                ? R.string.managed_signin_with_user_policy_subtitle
+                                                : R.string.sign_in_managed_account_description,
                                         managedDomain))
                         .with(ModalDialogProperties.CANCEL_ON_TOUCH_OUTSIDE, true)
                         .with(
+                                ModalDialogProperties.BUTTON_STYLES,
+                                ModalDialogProperties.ButtonStyles.PRIMARY_FILLED_NEGATIVE_OUTLINE)
+                        .with(
                                 ModalDialogProperties.POSITIVE_BUTTON_TEXT,
-                                context.getString(R.string.policy_dialog_proceed))
+                                context.getString(R.string.continue_button))
                         .with(
                                 ModalDialogProperties.NEGATIVE_BUTTON_TEXT,
                                 context.getString(R.string.cancel))

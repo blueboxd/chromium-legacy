@@ -22,10 +22,6 @@ source_set("model") {
     "sync_observer_bridge.mm",
     "sync_service_factory.h",
     "sync_service_factory.mm",
-    "sync_setup_service.cc",
-    "sync_setup_service.h",
-    "sync_setup_service_factory.cc",
-    "sync_setup_service_factory.h",
   ]
   deps = [
     ":model_type_store_service_factory",
@@ -42,6 +38,7 @@ source_set("model") {
     "//components/network_time",
     "//components/password_manager/core/browser",
     "//components/password_manager/core/browser/sharing",
+    "//components/plus_addresses/webdata",
     "//components/pref_registry",
     "//components/prefs",
     "//components/reading_list/core",
@@ -60,10 +57,12 @@ source_set("model") {
     "//components/trusted_vault",
     "//components/variations/service",
     "//components/version_info",
+    "//components/webauthn/core/browser:passkey_model",
     "//google_apis",
     "//ios/chrome/browser/bookmarks/model",
     "//ios/chrome/browser/complex_tasks/model",
     "//ios/chrome/browser/consent_auditor/model",
+    "//ios/chrome/browser/data_sharing/model",
     "//ios/chrome/browser/dom_distiller/model",
     "//ios/chrome/browser/favicon/model",
     "//ios/chrome/browser/gcm/model",
@@ -88,6 +87,7 @@ source_set("model") {
     "//ios/chrome/browser/tabs/model",
     "//ios/chrome/browser/tabs/model:synced_tabs",
     "//ios/chrome/browser/trusted_vault/model",
+    "//ios/chrome/browser/webauthn/model",
     "//ios/chrome/browser/webdata_services/model",
     "//ios/chrome/common",
     "//ios/components/webui:url_constants",
@@ -124,15 +124,18 @@ source_set("sync_error_browser_agent") {
     "sync_error_browser_agent.mm",
   ]
   deps = [
+    "//ios/chrome/browser/infobars/model",
     "//ios/chrome/browser/settings/model/sync/utils",
     "//ios/chrome/browser/shared/model/browser",
     "//ios/chrome/browser/shared/model/browser_state",
     "//ios/chrome/browser/shared/model/web_state_list",
     "//ios/chrome/browser/shared/ui/util",
+    "//ios/chrome/browser/signin/model",
     "//ios/chrome/browser/ui/authentication",
     "//ios/chrome/browser/ui/authentication:signin_presenter",
     "//ui/base",
   ]
+  public_deps = [ "//ios/web/public" ]
   frameworks = [ "UIKit.framework" ]
 }
 
@@ -141,8 +144,6 @@ source_set("test_support") {
   sources = [
     "mock_sync_service_utils.cc",
     "mock_sync_service_utils.h",
-    "sync_setup_service_mock.cc",
-    "sync_setup_service_mock.h",
   ]
   deps = [
     ":model",
@@ -155,10 +156,12 @@ source_set("test_support") {
     "//ios/chrome/browser/shared/model/browser_state",
     "//ios/chrome/browser/signin/model",
     "//ios/chrome/common",
-    "//ios/web",
     "//ui/base",
   ]
-  public_deps = [ "//testing/gmock" ]
+  public_deps = [
+    "//ios/web/public",
+    "//testing/gmock",
+  ]
 }
 
 source_set("unit_tests") {
@@ -172,6 +175,7 @@ source_set("unit_tests") {
     "//base",
     "//components/autofill/core/common/",
     "//components/browser_sync",
+    "//components/commerce/core:feature_list",
     "//components/data_sharing/public",
     "//components/password_manager/core/browser/features:password_features",
     "//components/supervised_user/core/common:buildflags",

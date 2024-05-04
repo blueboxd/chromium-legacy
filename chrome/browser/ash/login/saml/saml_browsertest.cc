@@ -2,18 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <array>
 #include <cstring>
 #include <memory>
+#include <optional>
 #include <string>
+#include <tuple>
 #include <utility>
 #include <vector>
 
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/login_screen_test_api.h"
+#include "base/callback_list.h"
+#include "base/check.h"
 #include "base/command_line.h"
-#include "base/containers/flat_set.h"
 #include "base/functional/bind.h"
 #include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
@@ -25,37 +27,39 @@
 #include "base/test/run_until.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_future.h"
+#include "base/time/time.h"
 #include "base/values.h"
+#include "build/buildflag.h"
 #include "chrome/browser/ash/attestation/mock_machine_certificate_uploader.h"
 #include "chrome/browser/ash/attestation/tpm_challenge_key.h"
 #include "chrome/browser/ash/http_auth_dialog.h"
+#include "chrome/browser/ash/login/enrollment/enrollment_screen_view.h"
 #include "chrome/browser/ash/login/lock/screen_locker_tester.h"
 #include "chrome/browser/ash/login/saml/fake_saml_idp_mixin.h"
 #include "chrome/browser/ash/login/saml/lockscreen_reauth_dialog_test_helper.h"
 #include "chrome/browser/ash/login/startup_utils.h"
 #include "chrome/browser/ash/login/test/device_state_mixin.h"
 #include "chrome/browser/ash/login/test/enrollment_ui_mixin.h"
-#include "chrome/browser/ash/login/test/feature_parameter_interface.h"
 #include "chrome/browser/ash/login/test/js_checker.h"
 #include "chrome/browser/ash/login/test/login_manager_mixin.h"
 #include "chrome/browser/ash/login/test/oobe_base_test.h"
 #include "chrome/browser/ash/login/test/oobe_screen_waiter.h"
+#include "chrome/browser/ash/login/test/scoped_policy_update.h"
 #include "chrome/browser/ash/login/test/session_manager_state_waiter.h"
 #include "chrome/browser/ash/login/test/test_predicate_waiter.h"
 #include "chrome/browser/ash/login/ui/login_display_host.h"
 #include "chrome/browser/ash/login/users/test_users.h"
 #include "chrome/browser/ash/login/wizard_context.h"
+#include "chrome/browser/ash/net/delay_network_call.h"
 #include "chrome/browser/ash/policy/affiliation/affiliation_test_helper.h"
 #include "chrome/browser/ash/policy/core/device_policy_cros_test_helper.h"
 #include "chrome/browser/ash/policy/test_support/embedded_policy_test_server_mixin.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
-#include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/ash/settings/scoped_testing_cros_settings.h"
 #include "chrome/browser/ash/settings/stub_cros_settings_provider.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/enterprise/connectors/device_trust/common/metrics_utils.h"
-#include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_key.h"
 #include "chrome/browser/ui/browser.h"
@@ -67,11 +71,14 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/fake_gaia_mixin.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chromeos/ash/components/attestation/attestation_flow.h"
 #include "chromeos/ash/components/attestation/mock_attestation_flow.h"
 #include "chromeos/ash/components/browser_context_helper/browser_context_helper.h"
 #include "chromeos/ash/components/cryptohome/system_salt_getter.h"
 #include "chromeos/ash/components/dbus/attestation/interface.pb.h"
 #include "chromeos/ash/components/dbus/constants/attestation_constants.h"
+#include "chromeos/ash/components/dbus/cryptohome/UserDataAuth.pb.h"
+#include "chromeos/ash/components/dbus/cryptohome/auth_factor.pb.h"
 #include "chromeos/ash/components/dbus/session_manager/session_manager_client.h"
 #include "chromeos/ash/components/dbus/shill/shill_manager_client.h"
 #include "chromeos/ash/components/dbus/userdataauth/fake_cryptohome_misc_client.h"
@@ -79,9 +86,11 @@
 #include "chromeos/ash/components/install_attributes/stub_install_attributes.h"
 #include "chromeos/ash/components/login/auth/public/key.h"
 #include "chromeos/ash/components/login/auth/public/saml_password_attributes.h"
+#include "chromeos/ash/components/settings/cros_settings.h"
 #include "chromeos/ash/components/settings/cros_settings_names.h"
 #include "components/account_id/account_id.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/network_session_configurator/common/network_switches.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
@@ -109,7 +118,9 @@
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
@@ -267,6 +278,9 @@ class SamlTestBase : public OobeBaseTest {
   }
 
   void SetUpOnMainThread() override {
+    // Without this tests are flaky. TODO(b/333450354): Determine why and fix.
+    SetDelayNetworkCallsForTesting(true);
+
     // Allowlist the default EMK to sign enterprise challenge.
     ::attestation::SignEnterpriseChallengeRequest
         sign_enterprise_challenge_request;
@@ -777,7 +791,7 @@ IN_PROC_BROWSER_TEST_F(SamlTestWithoutImprovedScraping, ScrapedMultiple) {
 }
 
 // Tests the multiple password scraped flow.
-// TODO(crbug.com/1295294): This feature was deprioritized in mid-2022.
+// TODO(crbug.com/40214270): This feature was deprioritized in mid-2022.
 // Restore test once work resumes, or feel free to clean it up if you
 // step on it past mid-2024.
 IN_PROC_BROWSER_TEST_F(SamlTestWithImprovedScraping, DISABLED_ScrapedMultiple) {
@@ -1281,24 +1295,23 @@ void SAMLPolicyTest::SetUpOnMainThread() {
       user_manager::User::OAUTH2_TOKEN_STATUS_VALID);
 
   // Give affiliated users appropriate affiliation IDs.
-  const base::flat_set<std::string> user_affiliation_ids = {kAffiliationID};
   auto* user_manager = user_manager::UserManager::Get();
-  user_manager->SetUserAffiliation(
+  user_manager->SetUserAffiliated(
       AccountId::FromUserEmailGaiaId(
           saml_test_users::kFirstUserCorpExampleComEmail, kFirstSAMLUserGaiaId),
-      user_affiliation_ids);
-  user_manager->SetUserAffiliation(
+      /*is_affiliated=*/true);
+  user_manager->SetUserAffiliated(
       AccountId::FromUserEmailGaiaId(
           saml_test_users::kSecondUserCorpExampleComEmail,
           kSecondSAMLUserGaiaId),
-      user_affiliation_ids);
-  user_manager->SetUserAffiliation(
+      /*is_affiliated=*/true);
+  user_manager->SetUserAffiliated(
       AccountId::FromUserEmailGaiaId(
           saml_test_users::kThirdUserCorpExampleComEmail, kThirdSAMLUserGaiaId),
-      user_affiliation_ids);
-  user_manager->SetUserAffiliation(
+      /*is_affiliated=*/true);
+  user_manager->SetUserAffiliated(
       AccountId::FromUserEmailGaiaId(kNonSAMLUserEmail, kNonSAMLUserGaiaId),
-      user_affiliation_ids);
+      /*is_affiliated=*/true);
 
   // Set up fake networks.
   ShillManagerClient::Get()->GetTestInterface()->SetupDefaultEnvironment();

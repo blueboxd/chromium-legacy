@@ -159,10 +159,6 @@ gfx::ColorSpace GetColorSpaceFromEdid(const display::EdidParser& edid_parser) {
       base::Contains(edid_parser.supported_color_primary_matrix_ids(),
                      EdidParser::PrimaryMatrixPair(
                          gfx::ColorSpace::PrimaryID::BT2020,
-                         gfx::ColorSpace::MatrixID::BT2020_CL)) ||
-      base::Contains(edid_parser.supported_color_primary_matrix_ids(),
-                     EdidParser::PrimaryMatrixPair(
-                         gfx::ColorSpace::PrimaryID::BT2020,
                          gfx::ColorSpace::MatrixID::BT2020_NCL))) {
     if (base::Contains(edid_parser.supported_color_transfer_ids(),
                        gfx::ColorSpace::TransferID::PQ)) {
@@ -170,6 +166,7 @@ gfx::ColorSpace GetColorSpaceFromEdid(const display::EdidParser& edid_parser) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
       if (base::FeatureList::IsEnabled(
               display::features::kEnableExternalDisplayHDR10Mode) &&
+          edid_parser.is_external_display() &&
           base::Contains(
               edid_parser.supported_color_primary_matrix_ids(),
               EdidParser::PrimaryMatrixPair(gfx::ColorSpace::PrimaryID::BT2020,
@@ -301,9 +298,8 @@ gfx::DisplayColorSpaces CreateDisplayColorSpaces(
                                    DisplaySnapshot::PrimaryFormat());
   }
 
-  // Make all displays report that they have sRGB primaries. Hardware color
-  // management will convert to the device's color primaries.
-  skcms_Matrix3x3 primary_matrix = SkNamedGamut::kSRGB;
+  skcms_Matrix3x3 primary_matrix{};
+  snapshot_color_space.GetPrimaryMatrix(&primary_matrix);
 
   // Reconstruct the native colorspace with an IEC61966 2.1 transfer function
   // for SDR content (matching that of sRGB).

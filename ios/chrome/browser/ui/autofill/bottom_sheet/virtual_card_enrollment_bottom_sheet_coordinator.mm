@@ -3,8 +3,14 @@
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/autofill/bottom_sheet/virtual_card_enrollment_bottom_sheet_coordinator.h"
+
 #import "components/autofill/core/browser/metrics/payments/virtual_card_enrollment_metrics.h"
 #import "components/autofill/core/browser/payments/virtual_card_enroll_metrics_logger.h"
+#import "ios/chrome/browser/net/model/crurl.h"
+#import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/shared/public/commands/application_commands.h"
+#import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
+#import "ios/chrome/browser/shared/public/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/autofill/bottom_sheet/virtual_card_enrollment_bottom_sheet_delegate.h"
 #import "ios/chrome/browser/ui/autofill/bottom_sheet/virtual_card_enrollment_bottom_sheet_mediator.h"
 #import "ios/chrome/browser/ui/autofill/bottom_sheet/virtual_card_enrollment_bottom_sheet_view_controller.h"
@@ -27,6 +33,12 @@
 @implementation VirtualCardEnrollmentBottomSheetCoordinator {
   autofill::VirtualCardEnrollUiModel model_;
   std::optional<autofill::VirtualCardEnrollmentCallbacks> callbacks_;
+  Browser* browser_;
+  ChromeBrowserState* browser_state_;
+
+  // Opening links on the enrollment bottom sheet is delegated to this
+  // dispatcher.
+  __weak id<ApplicationCommands> dispatcher_;
 }
 
 @synthesize mediator;
@@ -43,6 +55,10 @@
     self->callbacks_ =
         AutofillBottomSheetTabHelper::FromWebState(activeWebState)
             ->GetVirtualCardEnrollmentCallbacks();
+    self->browser_ = browser;
+    self->browser_state_ = self.browser->GetBrowserState();
+    self->dispatcher_ = HandlerForProtocol(self.browser->GetCommandDispatcher(),
+                                           ApplicationCommands);
   }
   return self;
 }
@@ -99,9 +115,13 @@
   [self stop];
 }
 
-- (void)didTapLinkURL:(CrURL*)url {
-  // TODO(crbug.com/1485376): Implement opening links from the virtual
-  // card enrollment bottom sheet.
+- (void)didTapLinkURL:(CrURL*)url text:(NSString*)text {
+  [dispatcher_
+      openURLInNewTab:[OpenNewTabCommand
+                          commandWithURLFromChrome:url.gurl
+                                       inIncognito:self.browser
+                                                       ->GetBrowserState()
+                                                       ->IsOffTheRecord()]];
 }
 
 - (void)viewDidDisappear:(BOOL)animated {

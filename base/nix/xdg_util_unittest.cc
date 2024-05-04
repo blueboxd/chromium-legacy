@@ -4,11 +4,16 @@
 
 #include "base/nix/xdg_util.h"
 
+#include <string_view>
+
 #include "base/base_paths.h"
 #include "base/command_line.h"
 #include "base/environment.h"
 #include "base/files/file_path.h"
+#include "base/functional/callback_helpers.h"
 #include "base/nix/scoped_xdg_activation_token_injector.h"
+#include "base/process/launch.h"
+#include "base/test/bind.h"
 #include "base/test/scoped_path_override.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -26,9 +31,9 @@ namespace {
 
 class MockEnvironment : public Environment {
  public:
-  MOCK_METHOD2(GetVar, bool(StringPiece, std::string* result));
-  MOCK_METHOD2(SetVar, bool(StringPiece, const std::string& new_value));
-  MOCK_METHOD1(UnSetVar, bool(StringPiece));
+  MOCK_METHOD2(GetVar, bool(std::string_view, std::string* result));
+  MOCK_METHOD2(SetVar, bool(std::string_view, const std::string& new_value));
+  MOCK_METHOD1(UnSetVar, bool(std::string_view));
 };
 
 // Needs to be const char* to make gmock happy.
@@ -482,6 +487,32 @@ TEST(XDGUtilTest, ScopedXdgActivationTokenInjector) {
     EXPECT_TRUE(cmd_line.HasSwitch(pair.first));
   }
   EXPECT_FALSE(cmd_line.HasSwitch(nix::kXdgActivationTokenSwitch));
+}
+
+TEST(XDGUtilTest, LaunchOptionsWithXdgActivation) {
+  bool received_empty_launch_options = false;
+  CreateLaunchOptionsWithXdgActivation(base::BindLambdaForTesting(
+      [&received_empty_launch_options](LaunchOptions options) {
+        EXPECT_TRUE(options.environment.empty());
+        received_empty_launch_options = true;
+      }));
+  EXPECT_TRUE(received_empty_launch_options);
+
+  ScopedClosureRunner reset_token_creator(base::BindOnce(
+      &SetXdgActivationTokenCreator, XdgActivationTokenCreator()));
+  SetXdgActivationTokenCreator(
+      base::BindRepeating([](XdgActivationTokenCallback callback) {
+        std::move(callback).Run(kXdgActivationTokenFromEnv);
+      }));
+
+  bool received_launch_options_with_test_token = false;
+  CreateLaunchOptionsWithXdgActivation(base::BindLambdaForTesting(
+      [&received_launch_options_with_test_token](LaunchOptions options) {
+        EXPECT_EQ(options.environment["XDG_ACTIVATION_TOKEN"],
+                  kXdgActivationTokenFromEnv);
+        received_launch_options_with_test_token = true;
+      }));
+  EXPECT_TRUE(received_launch_options_with_test_token);
 }
 
 }  // namespace nix

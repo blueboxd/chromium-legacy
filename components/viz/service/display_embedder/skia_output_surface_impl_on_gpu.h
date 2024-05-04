@@ -35,7 +35,6 @@
 #include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/command_buffer/service/shared_image/shared_image_representation.h"
-#include "gpu/ipc/service/image_transport_surface_delegate.h"
 #include "media/gpu/buildflags.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "third_party/skia/include/core/SkSurface.h"
@@ -95,8 +94,7 @@ struct RenderPassGeometry;
 // The SkiaOutputSurface implementation running on the GPU thread. This class
 // should be created, used and destroyed on the GPU thread.
 class SkiaOutputSurfaceImplOnGpu
-    : public gpu::ImageTransportSurfaceDelegate,
-      public gpu::SharedContextState::ContextLostObserver {
+    : public gpu::SharedContextState::ContextLostObserver {
  public:
   using DidSwapBufferCompleteCallback =
       base::RepeatingCallback<void(gpu::SwapBuffersCompleteParams,
@@ -169,8 +167,7 @@ class SkiaOutputSurfaceImplOnGpu
       std::vector<raw_ptr<ImageContextImpl, VectorExperimental>> image_contexts,
       std::vector<gpu::SyncToken> sync_tokens,
       base::OnceClosure on_finished,
-      base::OnceCallback<void(gfx::GpuFenceHandle)> return_release_fence_cb,
-      std::optional<gfx::Rect> draw_rectangle);
+      base::OnceCallback<void(gfx::GpuFenceHandle)> return_release_fence_cb);
   void ScheduleOutputSurfaceAsOverlay(
       const OverlayProcessorInterface::OutputSurfaceOverlayPlane&
           output_surface_plane);
@@ -225,10 +222,6 @@ class SkiaOutputSurfaceImplOnGpu
           image_contexts);
   void ScheduleOverlays(SkiaOutputSurface::OverlayList overlays);
 
-  void SetEnableDCLayers(bool enable);
-
-  void SetGpuVSyncEnabled(bool enabled);
-
   void SetVSyncDisplayID(int64_t display_id);
 
   void SetFrameRate(float frame_rate);
@@ -243,12 +236,10 @@ class SkiaOutputSurfaceImplOnGpu
   // gpu::SharedContextState::ContextLostObserver implementation:
   void OnContextLost() override;
 
-  // gpu::ImageTransportSurfaceDelegate implementation:
 #if BUILDFLAG(IS_WIN)
-  void AddChildWindowToBrowser(gpu::SurfaceHandle child_window) override;
+  void AddChildWindowToBrowser(gpu::SurfaceHandle child_window);
 #endif
-  const gpu::gles2::FeatureInfo* GetFeatureInfo() const override;
-  const gpu::GpuPreferences& GetGpuPreferences() const override;
+  const gpu::gles2::FeatureInfo* GetFeatureInfo() const;
 
   void PostTaskToClientThread(base::OnceClosure closure) {
     dependency_->PostTaskToClientThread(std::move(closure));
@@ -310,6 +301,8 @@ class SkiaOutputSurfaceImplOnGpu
                      const gfx::RectF& display_rect,
                      const gfx::RectF& crop_rect,
                      gfx::OverlayTransform transform);
+
+  void CleanupImageProcessor();
 #endif
 
  private:
@@ -660,7 +653,7 @@ class SkiaOutputSurfaceImplOnGpu
 #if BUILDFLAG(ENABLE_VULKAN) && BUILDFLAG(IS_CHROMEOS) && \
     BUILDFLAG(USE_V4L2_CODEC)
   std::unique_ptr<media::VulkanImageProcessor> vulkan_image_processor_ =
-      media::VulkanImageProcessor::Create();
+      nullptr;
 #endif
 
   base::WeakPtr<SkiaOutputSurfaceImplOnGpu> weak_ptr_;

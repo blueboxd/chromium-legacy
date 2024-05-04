@@ -549,8 +549,7 @@ int32_t RTCVideoDecoderStreamAdapter::Decode(
   // Convert to media::DecoderBuffer.
   // TODO(sandersd): What is |render_time_ms|?
   auto pending_buffer = std::make_unique<PendingBuffer>();
-  pending_buffer->buffer =
-      media::DecoderBuffer::CopyFrom(input_image.data(), input_image.size());
+  pending_buffer->buffer = media::DecoderBuffer::CopyFrom(input_image);
   if (spatial_layer_frame_size.size() > 1) {
     pending_buffer->buffer->WritableSideData().spatial_layers =
         spatial_layer_frame_size;
@@ -854,7 +853,7 @@ void RTCVideoDecoderStreamAdapter::OnFrameReady(
           .set_video_frame_buffer(rtc::scoped_refptr<webrtc::VideoFrameBuffer>(
               new rtc::RefCountedObject<WebRtcVideoFrameAdapter>(
                   std::move(frame))))
-          .set_timestamp_rtp(static_cast<uint32_t>(timestamp.InMicroseconds()))
+          .set_rtp_timestamp(static_cast<uint32_t>(timestamp.InMicroseconds()))
           .set_timestamp_us(0)
           .set_rotation(webrtc::kVideoRotation_0)
           .build();

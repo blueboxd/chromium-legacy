@@ -298,7 +298,7 @@ IN_PROC_BROWSER_TEST_P(WebNavigationApiTestWithContextType, Api) {
   ASSERT_TRUE(RunExtensionTest("webnavigation/api")) << message_;
 }
 
-// TODO(crbug.com/1352957): Flakily timing out.
+// TODO(crbug.com/40858121): Flakily timing out.
 IN_PROC_BROWSER_TEST_P(WebNavigationApiTestWithContextType, DISABLED_GetFrame) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionTest("webnavigation/getFrame")) << message_;
@@ -355,7 +355,9 @@ class WebNavigationApiPrerenderTestWithServiceWorker
       public testing::WithParamInterface<bool> {
  public:
   WebNavigationApiPrerenderTestWithServiceWorker()
-      : WebNavigationApiTest(ContextType::kServiceWorker) {
+      // This test uses chrome.tabs.executeScript, which is not available in
+      // MV3 or later. See crbug.com/332328868.
+      : WebNavigationApiTest(ContextType::kServiceWorkerMV2) {
     feature_list_.InitWithFeatureState(
         extensions_features::kExtensionsServiceWorkerOptimizedEventDispatch,
         GetParam());
@@ -374,7 +376,7 @@ class WebNavigationApiPrerenderTestWithServiceWorker
 // depending on service worker start optimization feature state.
 IN_PROC_BROWSER_TEST_P(WebNavigationApiPrerenderTestWithServiceWorker,
                        Prerendering) {
-  // TODO(crbug.com/1394910): Use https in the test and remove this allowlist
+  // TODO(crbug.com/40248833): Use https in the test and remove this allowlist
   // entry.
   ScopedAllowHttpForHostnamesForTesting scoped_allow_http(
       {"a.test"}, browser()->profile()->GetPrefs());
@@ -397,7 +399,7 @@ INSTANTIATE_TEST_SUITE_P(
     /* features::kExtensionsServiceWorkerOptimizedEventDispatch status */
     testing::Bool());
 
-// TODO(https://crbug.com/1250311):
+// TODO(crbug.com/40791797):
 // WebNavigationApiTestWithContextType.Download test is flaky.
 #if BUILDFLAG(IS_WIN)
 #define MAYBE_Download DISABLED_Download
@@ -418,7 +420,7 @@ IN_PROC_BROWSER_TEST_P(WebNavigationApiTestWithContextType, MAYBE_Download) {
 
 IN_PROC_BROWSER_TEST_P(WebNavigationApiTestWithContextType,
                        ServerRedirectSingleProcess) {
-  // TODO(crbug.com/1394910): Use https in the test and remove these allowlist
+  // TODO(crbug.com/40248833): Use https in the test and remove these allowlist
   // entries.
   ScopedAllowHttpForHostnamesForTesting scoped_allow_http(
       {"www.a.com", "www.b.com"}, browser()->profile()->GetPrefs());
@@ -456,7 +458,7 @@ IN_PROC_BROWSER_TEST_P(WebNavigationApiTestWithContextType, ForwardBack) {
   ASSERT_TRUE(RunTest("webnavigation/forwardBack")) << message_;
 }
 
-// TODO(crbug.com/1313923): Flaky on several platforms.
+// TODO(crbug.com/40221198): Flaky on several platforms.
 IN_PROC_BROWSER_TEST_F(WebNavigationApiBackForwardCacheTest,
                        DISABLED_ForwardBack) {
   ASSERT_TRUE(StartEmbeddedTestServer());
@@ -730,7 +732,7 @@ IN_PROC_BROWSER_TEST_P(WebNavigationApiTestWithContextType, PendingDeletion) {
 }
 
 IN_PROC_BROWSER_TEST_P(WebNavigationApiTestWithContextType, Crash) {
-  // TODO(crbug.com/1394910): Use https in the test and remove this allowlist
+  // TODO(crbug.com/40248833): Use https in the test and remove this allowlist
   // entry.
   ScopedAllowHttpForHostnamesForTesting scoped_allow_http(
       {"www.a.com"}, browser()->profile()->GetPrefs());
@@ -764,7 +766,7 @@ IN_PROC_BROWSER_TEST_P(WebNavigationApiTestWithContextType, Crash) {
 }
 
 #if BUILDFLAG(IS_MAC)
-// TODO(https://crbug.com/1223055): Re-enable this test.
+// TODO(crbug.com/40187463): Re-enable this test.
 #define MAYBE_Xslt DISABLED_Xslt
 #else
 #define MAYBE_Xslt Xslt

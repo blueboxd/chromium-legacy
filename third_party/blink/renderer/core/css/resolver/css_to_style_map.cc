@@ -42,6 +42,7 @@
 #include "third_party/blink/renderer/core/css/css_repeat_style_value.h"
 #include "third_party/blink/renderer/core/css/css_scroll_value.h"
 #include "third_party/blink/renderer/core/css/css_timing_function_value.h"
+#include "third_party/blink/renderer/core/css/css_to_length_conversion_data.h"
 #include "third_party/blink/renderer/core/css/css_value_pair.h"
 #include "third_party/blink/renderer/core/css/css_view_value.h"
 #include "third_party/blink/renderer/core/css/resolver/style_builder_converter.h"
@@ -148,17 +149,6 @@ void CSSToStyleMap::MapFillOrigin(StyleResolverState&,
   layer->SetOrigin(identifier_value->ConvertTo<EFillBox>());
 }
 
-namespace {
-
-CSSPropertyID MaskImageProperty() {
-  if (!RuntimeEnabledFeatures::CSSMaskingInteropEnabled()) {
-    return CSSPropertyID::kWebkitMaskImage;
-  }
-  return CSSPropertyID::kMaskImage;
-}
-
-}  // namespace
-
 void CSSToStyleMap::MapFillImage(StyleResolverState& state,
                                  FillLayer* layer,
                                  const CSSValue& value) {
@@ -169,7 +159,7 @@ void CSSToStyleMap::MapFillImage(StyleResolverState& state,
 
   CSSPropertyID property = layer->GetType() == EFillLayerType::kBackground
                                ? CSSPropertyID::kBackgroundImage
-                               : MaskImageProperty();
+                               : CSSPropertyID::kMaskImage;
   layer->SetImage(
       state.GetStyleImage(property, state.ResolveLightDarkPair(value)));
 }
@@ -320,9 +310,11 @@ void CSSToStyleMap::MapFillPositionY(StyleResolverState& state,
 
 namespace {
 
-Timing::Delay MapAnimationTimingDelay(const CSSValue& value) {
+Timing::Delay MapAnimationTimingDelay(const CSSLengthResolver& length_resolver,
+                                      const CSSValue& value) {
   if (const auto* primitive = DynamicTo<CSSPrimitiveValue>(value)) {
-    return Timing::Delay(AnimationTimeDelta(primitive->ComputeSeconds()));
+    return Timing::Delay(
+        AnimationTimeDelta(primitive->ComputeSeconds(length_resolver)));
   }
 
   return Timing::Delay();
@@ -332,16 +324,18 @@ Timing::Delay MapAnimationTimingDelay(const CSSValue& value) {
 
 Timing::Delay CSSToStyleMap::MapAnimationDelayStart(StyleResolverState& state,
                                                     const CSSValue& value) {
-  return MapAnimationTimingDelay(value);
+  return MapAnimationTimingDelay(state.CssToLengthConversionData(), value);
 }
 
 Timing::Delay CSSToStyleMap::MapAnimationDelayEnd(const CSSValue& value) {
-  return MapAnimationTimingDelay(value);
+  // Note: using default length resolver here, as this function is only
+  // called from the serialization code.
+  return MapAnimationTimingDelay(CSSToLengthConversionData(), value);
 }
 
 Timing::Delay CSSToStyleMap::MapAnimationDelayEnd(StyleResolverState& state,
                                                   const CSSValue& value) {
-  return MapAnimationDelayEnd(value);
+  return MapAnimationTimingDelay(state.CssToLengthConversionData(), value);
 }
 
 Timing::PlaybackDirection CSSToStyleMap::MapAnimationDirection(
@@ -666,23 +660,21 @@ void CSSToStyleMap::MapNinePieceImage(StyleResolverState& state,
     // about percentages, since we don't even support those on real borders yet.
     if (image.BorderSlices().Top().IsLength() &&
         image.BorderSlices().Top().length().IsFixed()) {
-      builder.SetBorderTopWidth(
-          LayoutUnit(image.BorderSlices().Top().length().Pixels()));
+      builder.SetBorderTopWidth(image.BorderSlices().Top().length().Pixels());
     }
     if (image.BorderSlices().Right().IsLength() &&
         image.BorderSlices().Right().length().IsFixed()) {
       builder.SetBorderRightWidth(
-          LayoutUnit(image.BorderSlices().Right().length().Pixels()));
+          image.BorderSlices().Right().length().Pixels());
     }
     if (image.BorderSlices().Bottom().IsLength() &&
         image.BorderSlices().Bottom().length().IsFixed()) {
       builder.SetBorderBottomWidth(
-          LayoutUnit(image.BorderSlices().Bottom().length().Pixels()));
+          image.BorderSlices().Bottom().length().Pixels());
     }
     if (image.BorderSlices().Left().IsLength() &&
         image.BorderSlices().Left().length().IsFixed()) {
-      builder.SetBorderLeftWidth(
-          LayoutUnit(image.BorderSlices().Left().length().Pixels()));
+      builder.SetBorderLeftWidth(image.BorderSlices().Left().length().Pixels());
     }
   }
 }

@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/side_panel/side_panel_coordinator.h"
 #include "chrome/browser/ui/views/side_panel/side_panel_entry.h"
+#include "chrome/browser/ui/views/side_panel/side_panel_test_utils.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/page_info/core/about_this_site_service.h"
@@ -296,6 +297,7 @@ IN_PROC_BROWSER_TEST_F(AboutThisSiteSidePanelCoordinatorBrowserTest,
 
   // Close side panel.
   side_panel_coordinator()->Close();
+  SidePanelWaiter(side_panel_coordinator()).WaitForSidePanelClose();
   EXPECT_FALSE(side_panel_coordinator()->IsSidePanelShowing());
   ASSERT_EQ(side_panel_coordinator()->GetCurrentEntryId(), std::nullopt);
 
@@ -331,4 +333,4 @@ IN_PROC_BROWSER_TEST_F(AboutThisSiteSidePanelCoordinatorBrowserTest,
                        1);
 }
 
-// TODO(crbug.com/1318000): Cover additional AboutThisSite side panel behavior.
+// TODO(crbug.com/40222735): Cover additional AboutThisSite side panel behavior.

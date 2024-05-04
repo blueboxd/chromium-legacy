@@ -34,6 +34,7 @@ source_set("model") {
     ":tab_helper_delegates",
     "//base",
     "//components/content_settings/core/browser",
+    "//components/content_settings/core/browser:cookie_settings",
     "//components/error_page/common",
     "//components/feature_engagement/public",
     "//components/pref_registry",
@@ -65,7 +66,6 @@ source_set("model") {
     "//ios/components/ui_util",
     "//ios/components/webui:url_constants",
     "//ios/net",
-    "//ios/web",
     "//ios/web/common",
     "//ios/web/common:user_agent",
     "//ios/web/public/js_messaging",
@@ -75,7 +75,10 @@ source_set("model") {
     "//ui/base",
     "//url",
   ]
-  public_deps = [ "//components/infobars/core" ]
+  public_deps = [
+    "//components/infobars/core",
+    "//ios/web/public",
+  ]
 }
 
 source_set("delegate") {
@@ -90,6 +93,7 @@ source_set("delegate") {
     ":tab_helper_delegates",
     "//base",
     "//components/content_settings/core/browser",
+    "//components/content_settings/core/browser:cookie_settings",
     "//components/supervised_user/core/browser",
     "//ios/chrome/browser/content_settings/model",
     "//ios/chrome/browser/overlays/model",
@@ -135,8 +139,8 @@ source_set("page_placeholder") {
     "//ios/chrome/browser/snapshots/model",
     "//ios/chrome/common/ui/util",
     "//ios/net",
-    "//ios/web",
   ]
+  public_deps = [ "//ios/web/public" ]
 }
 
 source_set("tab_helper_delegates") {
@@ -231,6 +235,7 @@ source_set("web_internal") {
     "//components/autofill/ios/browser",
     "//components/autofill/ios/form_util:form_handler_feature",
     "//components/content_settings/core/browser",
+    "//components/content_settings/core/browser:cookie_settings",
     "//components/crash/core/common:crash_key",
     "//components/crash/core/common:reporter_running_ios",
     "//components/dom_distiller/core",
@@ -357,6 +362,7 @@ source_set("unit_tests_internal") {
     "//base/test:test_support",
     "//components/captive_portal/core",
     "//components/content_settings/core/browser",
+    "//components/content_settings/core/browser:cookie_settings",
     "//components/infobars/core",
     "//components/lookalikes/core",
     "//components/payments/core",
@@ -435,6 +441,7 @@ source_set("eg_app_support+eg2") {
     ":constants",
     "//base",
     "//components/content_settings/core/browser",
+    "//components/content_settings/core/browser:cookie_settings",
     "//components/lookalikes/core",
     "//ios/chrome/browser/shared/model/browser_state",
     "//ios/chrome/test/app:test_support",

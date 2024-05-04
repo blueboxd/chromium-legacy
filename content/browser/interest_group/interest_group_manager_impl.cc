@@ -19,6 +19,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/observer_list.h"
+#include "base/rand_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/to_string.h"
 #include "base/task/sequenced_task_runner.h"
@@ -345,6 +346,12 @@ void InterestGroupManagerImpl::UpdateInterestGroupsOfOwnersWithDelay(
       delay);
 }
 
+void InterestGroupManagerImpl::AllowUpdateIfOlderThan(
+    const blink::InterestGroupKey& group_key,
+    base::TimeDelta update_if_older_than) {
+  caching_storage_.AllowUpdateIfOlderThan(group_key, update_if_older_than);
+}
+
 void InterestGroupManagerImpl::RecordInterestGroupBids(
     const blink::InterestGroupSet& group_keys) {
   if (group_keys.empty()) {
@@ -373,8 +380,8 @@ void InterestGroupManagerImpl::RecordDebugReportCooldown(
 }
 
 void InterestGroupManagerImpl::RegisterAdKeysAsJoined(
-    base::flat_set<std::string> keys) {
-  k_anonymity_manager_->RegisterAdKeysAsJoined(std::move(keys));
+    base::flat_set<std::string> hashed_keys) {
+  k_anonymity_manager_->RegisterAdKeysAsJoined(std::move(hashed_keys));
 }
 
 void InterestGroupManagerImpl::GetInterestGroup(
@@ -522,27 +529,71 @@ void InterestGroupManagerImpl::UpdateKAnonymity(
 }
 
 void InterestGroupManagerImpl::GetLastKAnonymityReported(
-    const std::string& key,
+    const std::string& hashed_key,
     base::OnceCallback<void(std::optional<base::Time>)> callback) {
-  caching_storage_.GetLastKAnonymityReported(key, std::move(callback));
+  caching_storage_.GetLastKAnonymityReported(hashed_key, std::move(callback));
 }
 
 void InterestGroupManagerImpl::UpdateLastKAnonymityReported(
-    const std::string& key) {
-  caching_storage_.UpdateLastKAnonymityReported(key);
+    const std::string& hashed_key) {
+  caching_storage_.UpdateLastKAnonymityReported(hashed_key);
 }
 
 void InterestGroupManagerImpl::GetInterestGroupAdAuctionData(
     url::Origin top_level_origin,
     base::Uuid generation_id,
+    blink::mojom::AuctionDataConfigPtr config,
     base::OnceCallback<void(BiddingAndAuctionData)> callback) {
   AdAuctionDataLoaderState state;
   state.serializer.SetPublisher(top_level_origin.host());
   state.serializer.SetGenerationId(std::move(generation_id));
   state.callback = std::move(callback);
-  GetAllInterestGroupOwners(base::BindOnce(
-      &InterestGroupManagerImpl::LoadNextInterestGroupAdAuctionData,
-      weak_factory_.GetWeakPtr(), std::move(state)));
+  if (config->per_buyer_configs.size() == 0) {
+    state.serializer.SetConfig(std::move(config));
+    GetAllInterestGroupOwners(
+        base::BindOnce(&InterestGroupManagerImpl::
+                           ShuffleOwnersThenLoadInterestGroupAdAuctionData,
+                       weak_factory_.GetWeakPtr(), std::move(state)));
+  } else {
+    std::vector<url::Origin> owners;
+    owners.reserve(config->per_buyer_configs.size());
+    std::vector<url::Origin> sized_owners;
+    for (const auto& buyer_config : config->per_buyer_configs) {
+      if (buyer_config.second->target_size) {
+        sized_owners.push_back(buyer_config.first);
+      } else {
+        owners.push_back(buyer_config.first);
+      }
+    }
+    // Shuffle the owners. The algorithm for serializing interest groups is
+    // slightly unfair in that owners that are serialize first can't take
+    // advantage of space left over from when subsequent owners don't use all
+    // their assigned space. Randomizing the order avoids always penalizing the
+    // same owner.
+    base::RandomShuffle(owners.begin(), owners.end());
+    base::RandomShuffle(sized_owners.begin(), sized_owners.end());
+
+    // Move sized owners to the end. We load groups in reverse order and then
+    // serialize them in order, so this means we process the sized owners first.
+    // Unsized owners share the remaining space so we want to process them last.
+    std::move(sized_owners.begin(), sized_owners.end(),
+              std::back_inserter(owners));
+
+    state.serializer.SetConfig(std::move(config));
+    LoadNextInterestGroupAdAuctionData(std::move(state), std::move(owners));
+  }
+}
+
+void InterestGroupManagerImpl::ShuffleOwnersThenLoadInterestGroupAdAuctionData(
+    AdAuctionDataLoaderState state,
+    std::vector<url::Origin> owners) {
+  // Shuffle the owners. The algorithm for serializing interest groups is
+  // slightly unfair in that owners that are serialize first can't take
+  // advantage of space left over from when subsequent owners don't use all
+  // their assigned space. Randomizing the order avoids always penalizing the
+  // same owner.
+  base::RandomShuffle(owners.begin(), owners.end());
+  LoadNextInterestGroupAdAuctionData(std::move(state), std::move(owners));
 }
 
 void InterestGroupManagerImpl::LoadNextInterestGroupAdAuctionData(

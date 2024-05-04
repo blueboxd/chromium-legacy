@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <limits>
 #include <string>
+#include <string_view>
 #include <utility>
 
 #include "base/check_op.h"
@@ -15,7 +16,6 @@
 #include "base/notreached.h"
 #include "base/rand_util.h"
 #include "base/strings/strcat.h"
-#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
@@ -105,7 +105,7 @@ std::string GetHeavyAdReportMessage(const FrameTreeData& frame_data,
       "A future version of Chrome may remove this ad";
   const char kInterventionMessage[] = "Ad was removed";
 
-  base::StringPiece intervention_mode =
+  std::string_view intervention_mode =
       will_unload_adframe ? kInterventionMessage : kReportingOnlyMessage;
 
   switch (frame_data.heavy_ad_status_with_noise()) {
@@ -209,7 +209,7 @@ bool AdsPageLoadMetricsObserver::IsFrameSameOriginToOutermostMainFrame(
   DCHECK(host);
   // In navigation for prerendering, `AdsPageLoadMetricsObserver` is removed
   // from PageLoadTracker.
-  // TODO(https://crbug.com/1317494): Enable it if possible.
+  // TODO(crbug.com/40222513): Enable it if possible.
   DCHECK_NE(content::RenderFrameHost::LifecycleState::kPrerendering,
             host->GetLifecycleState());
   content::RenderFrameHost* outermost_main_host = host->GetOutermostMainFrame();
@@ -306,7 +306,7 @@ PageLoadMetricsObserver::ObservePolicy
 AdsPageLoadMetricsObserver::OnPrerenderStart(
     content::NavigationHandle* navigation_handle,
     const GURL& currently_committed_url) {
-  // TODO(https://crbug.com/1317494): Handle Prerendering cases.
+  // TODO(crbug.com/40222513): Handle Prerendering cases.
   return STOP_OBSERVING;
 }
 
@@ -426,7 +426,7 @@ void AdsPageLoadMetricsObserver::UpdateAdFrameData(
   if (previous_data) {
     // Frames that are no longer ad frames or are ignored as ad frames due to
     // restricted navigation ad tagging should have their tracked data reset.
-    // TODO(crbug.com/1101584): Simplify the condition when restricted
+    // TODO(crbug.com/40138413): Simplify the condition when restricted
     // navigation ad tagging is moved to subresource_filter/.
     if (!is_adframe || (should_ignore_detected_ad &&
                         (ad_id == previous_data->root_frame_tree_node_id()))) {
@@ -520,7 +520,7 @@ void AdsPageLoadMetricsObserver::ReadyToCommitNextNavigation(
     return;
   // Prerendering navigation doesn't get here since this observer in
   // prerendering is removed from PageLoadTracker.
-  // TODO(https://crbug.com/1317494): Consider enabling this observer for
+  // TODO(crbug.com/40222513): Consider enabling this observer for
   // prerendering.
   DCHECK(!navigation_handle->IsInPrerenderedMainFrame());
   process_display_state_updates_ = false;
@@ -544,7 +544,7 @@ void AdsPageLoadMetricsObserver::OnDidFinishSubFrameNavigation(
   const bool is_adframe = throttle_manager->IsFrameTaggedAsAd(
       navigation_handle->GetFrameTreeNodeId());
 
-  // TODO(https://crbug.com/1030325): The following block is a hack to ignore
+  // TODO(crbug.com/40109934): The following block is a hack to ignore
   // certain frames that are detected by AdTagging. These frames are ignored
   // specifically for ad metrics and for the heavy ad intervention. The frames
   // ignored here are still considered ads by the heavy ad intervention. This
@@ -717,7 +717,7 @@ void AdsPageLoadMetricsObserver::OnMainFrameImageAdRectsChanged(
       main_frame_image_ad_rects);
 }
 
-// TODO(https://crbug.com/1142669): Evaluate imposing width requirements
+// TODO(crbug.com/40727873): Evaluate imposing width requirements
 // for ad density violations.
 void AdsPageLoadMetricsObserver::CheckForAdDensityViolation() {
 #if BUILDFLAG(IS_ANDROID)
@@ -817,7 +817,7 @@ void AdsPageLoadMetricsObserver::OnPageActivationComputed(
       activation_state.activation_level ==
           subresource_filter::mojom::ActivationLevel::kEnabled) {
     // Prerendering navigation is filtered out by checking `navigation_id_`.
-    // TODO(https://crbug.com/1317494): Consider enabling this observer for
+    // TODO(crbug.com/40222513): Consider enabling this observer for
     // prerendering.
     DCHECK(!navigation_handle->IsInPrerenderedMainFrame());
     DCHECK(!subresource_filter_is_enabled_);
@@ -1002,7 +1002,7 @@ void AdsPageLoadMetricsObserver::RecordAggregateHistogramsForCpuUsage() {
   FrameVisibility visibility = FrameVisibility::kAnyVisibility;
 
   // Record the aggregate data, which is never considered activated.
-  // TODO(crbug/1109754): Does it make sense to include an aggregate peak
+  // TODO(crbug.com/40141881): Does it make sense to include an aggregate peak
   // windowed percent?  Obviously this would be a max of maxes, but might be
   // useful to have that for comparisons as well.
   ADS_HISTOGRAM("Cpu.AdFrames.Aggregate.TotalUsage2", PAGE_LOAD_HISTOGRAM,

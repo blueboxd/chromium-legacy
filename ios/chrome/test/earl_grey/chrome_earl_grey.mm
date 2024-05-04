@@ -135,6 +135,13 @@ id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration) {
   return idiom == UIUserInterfaceIdiomPad;
 }
 
+- (BOOL)isIPhoneIdiom {
+  UIUserInterfaceIdiom idiom =
+      [[GREY_REMOTE_CLASS_IN_APP(UIDevice) currentDevice] userInterfaceIdiom];
+
+  return idiom == UIUserInterfaceIdiomPhone;
+}
+
 - (BOOL)isRTL {
   return [ChromeEarlGreyAppInterface isRTL];
 }
@@ -169,6 +176,10 @@ id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration) {
 
 - (void)primesTakeMemorySnapshot:(NSString*)eventName {
   [ChromeEarlGreyAppInterface primesTakeMemorySnapshot:eventName];
+}
+
+- (BOOL)isBottomOmniboxAvailable {
+  return self.isIPhoneIdiom;
 }
 
 #pragma mark - History Utilities (EG2)
@@ -530,7 +541,7 @@ id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration) {
       [NSString stringWithFormat:@"Waiting to tap on button %@", button];
   // Perform a tap with a timeout. Occasionally EG doesn't sync up properly to
   // the animations of tab switcher, so it is necessary to poll here.
-  // TODO(crbug.com/1050052): Fix the underlying issue in EarlGrey and remove
+  // TODO(crbug.com/40672916): Fix the underlying issue in EarlGrey and remove
   // this workaround.
   GREYCondition* tapButton =
       [GREYCondition conditionWithName:errorDescription
@@ -1370,10 +1381,6 @@ id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration) {
   return [ChromeEarlGreyAppInterface isDemographicMetricsReportingEnabled];
 }
 
-- (BOOL)isReplaceSyncWithSigninEnabled {
-  return [ChromeEarlGreyAppInterface isReplaceSyncWithSigninEnabled];
-}
-
 - (BOOL)appHasLaunchSwitch:(const std::string&)launchSwitch {
   return [ChromeEarlGreyAppInterface
       appHasLaunchSwitch:base::SysUTF8ToNSString(launchSwitch)];
@@ -1381,10 +1388,6 @@ id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration) {
 
 - (BOOL)isCustomWebKitLoadedIfRequested {
   return [ChromeEarlGreyAppInterface isCustomWebKitLoadedIfRequested];
-}
-
-- (BOOL)isLoadSimulatedRequestAPIEnabled {
-  return [ChromeEarlGreyAppInterface isLoadSimulatedRequestAPIEnabled];
 }
 
 - (BOOL)isMobileModeByDefault {
@@ -1408,13 +1411,12 @@ id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration) {
   return [ChromeEarlGreyAppInterface isWebChannelsEnabled];
 }
 
-- (BOOL)isBottomOmniboxSteadyStateEnabled {
-  return [ChromeEarlGreyAppInterface isBottomOmniboxSteadyStateEnabled];
+- (BOOL)isTabGroupSyncEnabled {
+  return [ChromeEarlGreyAppInterface isTabGroupSyncEnabled];
 }
 
 - (BOOL)isUnfocusedOmniboxAtBottom {
-  return self.isBottomOmniboxSteadyStateEnabled && !self.isIPadIdiom &&
-         self.isSplitToolbarMode &&
+  return !self.isIPadIdiom && self.isSplitToolbarMode &&
          [self userBooleanPref:prefs::kBottomOmnibox];
 }
 

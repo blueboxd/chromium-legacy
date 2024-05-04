@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'chrome://resources/cr_components/settings_prefs/prefs.js';
+import '/shared/settings/prefs/prefs.js';
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.js';
 import 'chrome://resources/cr_elements/cr_link_row/cr_link_row.js';
 import 'chrome://resources/cr_elements/cr_shared_style.css.js';
@@ -14,11 +14,11 @@ import '../icons.html.js';
 import '../settings_shared.css.js';
 import '../simple_confirmation_dialog.js';
 
+import {PrefsMixin} from '/shared/settings/prefs/prefs_mixin.js';
+import {CrSettingsPrefs} from '/shared/settings/prefs/prefs_types.js';
 import type {PrivacyPageBrowserProxy} from '/shared/settings/privacy_page/privacy_page_browser_proxy.js';
 import {PrivacyPageBrowserProxyImpl} from '/shared/settings/privacy_page/privacy_page_browser_proxy.js';
 import {HelpBubbleMixin} from 'chrome://resources/cr_components/help_bubble/help_bubble_mixin.js';
-import {PrefsMixin} from 'chrome://resources/cr_components/settings_prefs/prefs_mixin.js';
-import {CrSettingsPrefs} from 'chrome://resources/cr_components/settings_prefs/prefs_types.js';
 import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
 import {assert} from 'chrome://resources/js/assert.js';
 import {EventTracker} from 'chrome://resources/js/event_tracker.js';
@@ -95,6 +95,19 @@ export class SettingsSecurityPageElement extends
         type: Object,
         notify: true,
       },
+
+      // <if expr="chrome_root_store_cert_management_ui">
+      /**
+       * Whether we should show the new cert management UI.
+       */
+      enableCertManagementUIV2_: {
+        type: Boolean,
+        readOnly: true,
+        value: function() {
+          return loadTimeData.getBoolean('enableCertManagementUIV2');
+        },
+      },
+      // </if>
 
       /**
        * Whether the secure DNS setting should be displayed.
@@ -215,6 +228,9 @@ export class SettingsSecurityPageElement extends
       },
     };
   }
+  // <if expr="chrome_root_store_cert_management_ui">
+  private enableCertManagementUIV2_: boolean;
+  // </if>
   private showSecureDnsSetting_: boolean;
 
   // <if expr="is_chromeos">
@@ -241,11 +257,12 @@ export class SettingsSecurityPageElement extends
 
   private focusConfigChanged_(_newConfig: FocusConfig, oldConfig: FocusConfig) {
     assert(!oldConfig);
+    // TODO(crbug.com/40928765): fix this for new cert management UI.
     // <if expr="use_nss_certs">
     if (routes.CERTIFICATES) {
       this.focusConfig.set(routes.CERTIFICATES.path, () => {
-        const toFocus =
-            this.shadowRoot!.querySelector<HTMLElement>('#manageCertificates');
+        const toFocus = this.shadowRoot!.querySelector<HTMLElement>(
+            '#manageCertificatesLinkRow');
         assert(toFocus);
         focusWithoutInk(toFocus);
       });
@@ -514,6 +531,14 @@ export class SettingsSecurityPageElement extends
         PrivacyElementInteractions.MANAGE_CERTIFICATES);
   }
 
+  private onNewManageCertificatesClick_() {
+    // Use the same route and histogram as the old NSS-only cert management
+    // page.
+    Router.getInstance().navigateTo(routes.CERTIFICATES);
+    this.metricsBrowserProxy_.recordSettingsPageHistogram(
+        PrivacyElementInteractions.MANAGE_CERTIFICATES);
+  }
+
   private onChromeCertificatesClick_() {
     OpenWindowProxyImpl.getInstance().openUrl(
         loadTimeData.getString('chromeRootStoreHelpCenterURL'));
@@ -536,6 +561,12 @@ export class SettingsSecurityPageElement extends
     Router.getInstance().navigateTo(routes.SECURITY_KEYS_PHONES);
   }
   // </if>
+
+  private onEnhancedProtectionLearnMoreClick_(e: Event) {
+    OpenWindowProxyImpl.getInstance().openUrl(
+        loadTimeData.getString('enhancedProtectionHelpCenterURL'));
+    e.preventDefault();
+  }
 
   private onSafeBrowsingExtendedReportingChange_() {
     this.metricsBrowserProxy_.recordSettingsPageHistogram(

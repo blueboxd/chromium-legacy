@@ -223,7 +223,7 @@ void ScrollableShelfContainerView::Layout(PassKey) {
   // CalculateIdealSize. Because ShelfView::CalculatePreferredSize relies on the
   // bounds of app icon. Meanwhile, the icon's bounds may be updated by
   // animation.
-  const gfx::Rect ideal_bounds = gfx::Rect(CalculatePreferredSize());
+  const gfx::Rect ideal_bounds = gfx::Rect(CalculatePreferredSize({}));
 
   const gfx::Rect local_bounds = GetLocalBounds();
   gfx::Rect shelf_view_bounds =
@@ -447,7 +447,7 @@ gfx::Rect ScrollableShelfView::GetTargetScreenBoundsOfItemIcon(
 
   // Return a dummy value if the item specified by `id` does not exist in the
   // shelf model.
-  // TODO(https://crbug.com/1270498): it is a quick fixing. We should
+  // TODO(crbug.com/40057927): it is a quick fixing. We should
   // investigate the root cause.
   if (item_index_in_model < 0)
     return gfx::Rect();
@@ -562,7 +562,7 @@ gfx::Insets ScrollableShelfView::CalculateMirroredEdgePadding(
       available_local_bounds.width(), available_local_bounds.height());
 
   int gap = CanFitAllAppsWithoutScrolling(available_local_bounds.size(),
-                                          CalculatePreferredSize())
+                                          CalculatePreferredSize({}))
                 ? available_size_for_app_icons - icons_size
                 : 0;  // overflow
 
@@ -712,8 +712,9 @@ const Shelf* ScrollableShelfView::GetShelf() const {
   return shelf_view_->shelf();
 }
 
-gfx::Size ScrollableShelfView::CalculatePreferredSize() const {
-  return shelf_container_view_->GetPreferredSize();
+gfx::Size ScrollableShelfView::CalculatePreferredSize(
+    const views::SizeBounds& available_size) const {
+  return shelf_container_view_->GetPreferredSize(available_size);
 }
 
 void ScrollableShelfView::Layout(PassKey) {
@@ -1690,6 +1691,13 @@ void ScrollableShelfView::CalculateVerticalGradient(
   auto get_clamped = [](int position, int total) -> float {
     return std::clamp(static_cast<float>(position) / total, 0.f, 1.f);
   };
+
+  // Do not add gradient if visible height is too small.
+  if (visible_space_.bottom() <
+      visible_space_.y() +
+          2 * scrollable_shelf_constants::kGradientZoneLength) {
+    return;
+  }
 
   float gradient_start, gradient_end;
 

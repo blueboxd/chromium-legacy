@@ -11,8 +11,6 @@
 #include <optional>
 #include <utility>
 
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_buildflags.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_config.h"
 #include "base/check_op.h"
 #include "base/compiler_specific.h"
 #include "base/debug/alias.h"
@@ -27,6 +25,8 @@
 #include "base/time/time_override.h"
 #include "base/trace_event/base_tracing.h"
 #include "build/build_config.h"
+#include "partition_alloc/partition_alloc_buildflags.h"
+#include "partition_alloc/partition_alloc_config.h"
 
 #if (BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_NACL)) || BUILDFLAG(IS_FUCHSIA)
 #include "base/files/file_descriptor_watcher_posix.h"
@@ -36,9 +36,9 @@
 #include "base/apple/scoped_nsautorelease_pool.h"
 #endif
 
-#if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && \
+#if PA_BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && \
     PA_CONFIG(THREAD_CACHE_SUPPORTED)
-#include "base/allocator/partition_allocator/src/partition_alloc/thread_cache.h"
+#include "partition_alloc/thread_cache.h"
 #endif
 
 namespace base::internal {
@@ -66,7 +66,7 @@ void WorkerThread::Delegate::WaitForWork() {
   // that point, and go to sleep for the remaining of the time. This ensures
   // that we do no work for short sleeps, and that threads do not get awaken
   // many times.
-#if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && \
+#if PA_BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && \
     PA_CONFIG(THREAD_CACHE_SUPPORTED)
   const TimeDelta sleep_duration_before_purge =
       GetSleepDurationBeforePurge(base::TimeTicks::Now());
@@ -88,7 +88,7 @@ void WorkerThread::Delegate::WaitForWork() {
   }
 #else
   TimedWait(sleep_duration_before_worker_reclaim);
-#endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) &&
+#endif  // PA_BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) &&
         // PA_CONFIG(THREAD_CACHE_SUPPORTED)
 }
 
@@ -97,7 +97,7 @@ bool WorkerThread::Delegate::IsDelayFirstWorkerSleepEnabled() {
   return state;
 }
 
-#if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && \
+#if PA_BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && \
     PA_CONFIG(THREAD_CACHE_SUPPORTED)
 TimeDelta WorkerThread::Delegate::GetSleepDurationBeforePurge(TimeTicks now) {
   base::TimeDelta sleep_duration_before_purge = kPurgeThreadCacheIdleDelay;
@@ -136,7 +136,7 @@ TimeDelta WorkerThread::Delegate::GetSleepDurationBeforePurge(TimeTicks now) {
   return snapped_purge_time - now;
 }
 
-#endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) &&
+#endif  // PA_BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) &&
         // PA_CONFIG(THREAD_CACHE_SUPPORTED)
 
 WorkerThread::WorkerThread(ThreadType thread_type_hint,
@@ -401,7 +401,7 @@ void WorkerThread::RunWorker() {
     std::optional<WatchHangsInScope> hang_watch_scope;
 
     TRACE_EVENT_END0("base", "WorkerThread active");
-    // TODO(crbug.com/1021571): Remove this once fixed.
+    // TODO(crbug.com/40657156): Remove this once fixed.
     PERFETTO_INTERNAL_ADD_EMPTY_EVENT();
     hang_watch_scope.reset();
     delegate()->WaitForWork();
@@ -475,7 +475,7 @@ void WorkerThread::RunWorker() {
 
   TRACE_EVENT_END0("base", "WorkerThread active");
   TRACE_EVENT_INSTANT0("base", "WorkerThread dead", TRACE_EVENT_SCOPE_THREAD);
-  // TODO(crbug.com/1021571): Remove this once fixed.
+  // TODO(crbug.com/40657156): Remove this once fixed.
   PERFETTO_INTERNAL_ADD_EMPTY_EVENT();
 }
 

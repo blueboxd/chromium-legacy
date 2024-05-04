@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# TODO(crbug.com/1226159): Complete crash reporting integration on Fuchsia.
+# TODO(crbug.com/40188745): Complete crash reporting integration on Fuchsia.
 assert(!is_fuchsia)
 
 import("//base/debug/debug.gni")
@@ -108,7 +108,7 @@ static_library("app") {
     sources += [ "crashpad_android.cc" ]
     deps += [
       ":crashpad_handler_main",
-      "//components/crash/android:jni_headers",
+      "//components/crash/android:package_paths_jni",
       "//third_party/crashpad/crashpad/handler",
       "//third_party/crashpad/crashpad/snapshot",
     ]
@@ -137,6 +137,7 @@ static_library("app") {
     ]
 
     deps += [
+      "//components/app_launch_prefetch",
       "//third_party/crashpad/crashpad/client",
       "//third_party/crashpad/crashpad/handler",
       "//third_party/crashpad/crashpad/minidump",
@@ -178,6 +179,7 @@ if (is_win) {
     deps = [
       "//base",
       "//build:chromeos_buildflags",
+      "//components/app_launch_prefetch",
       "//components/gwp_asan/buildflags",
       "//components/stability_report",
       "//third_party/crashpad/crashpad/client",

@@ -81,6 +81,7 @@
 #include "sandbox/policy/mojom/sandbox.mojom.h"
 #include "sandbox/policy/sandbox_type.h"
 #include "sandbox/policy/switches.h"
+#include "services/webnn/webnn_switches.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches.h"
@@ -101,8 +102,7 @@
 #include "base/win/access_token.h"
 #include "base/win/security_descriptor.h"
 #include "base/win/win_util.h"
-#include "content/browser/child_process_launcher_helper.h"
-#include "content/public/common/prefetch_type_win.h"
+#include "components/app_launch_prefetch/app_launch_prefetch.h"
 #include "sandbox/policy/win/sandbox_win.h"
 #include "sandbox/win/src/sandbox_policy.h"
 #include "sandbox/win/src/window.h"
@@ -239,6 +239,9 @@ static const char* const kSwitchNames[] = {
     sandbox::policy::switches::kGpuSandboxFailuresFatal,
     sandbox::policy::switches::kDisableGpuSandbox,
     sandbox::policy::switches::kNoSandbox,
+#if BUILDFLAG(IS_WIN)
+    sandbox::policy::switches::kAllowThirdPartyModules,
+#endif
 #if BUILDFLAG(IS_LINUX) && !BUILDFLAG(IS_CHROMEOS)
     switches::kDisableDevShmUsage,
 #endif
@@ -257,6 +260,7 @@ static const char* const kSwitchNames[] = {
     switches::kDisableSkiaRuntimeOpts,
     switches::kDRMVirtualConnectorIsExternal,
     switches::kEnableBackgroundThreadPool,
+    switches::kEnableGpuMainTimeKeeperMetrics,
     switches::kEnableGpuRasterization,
     switches::kEnableSkiaGraphite,
     switches::kDoubleBufferCompositing,
@@ -283,12 +287,13 @@ static const char* const kSwitchNames[] = {
     sandbox::policy::switches::kEnableSandboxLogging,
     sandbox::policy::switches::kDisableMetalShaderCache,
     switches::kShowMacOverlayBorders,
-    switches::kUseHighGPUThreadPriorityForPerfTests,
+    switches::kWebNNCoreMlDumpModel,
 #endif
 #if BUILDFLAG(IS_OZONE)
     switches::kOzonePlatform,
     switches::kDisableExplicitDmaFences,
     switches::kOzoneDumpFile,
+    switches::kEnableNativeGpuMemoryBuffers,
 #endif
 #if BUILDFLAG(IS_LINUX)
     switches::kX11Display,
@@ -1200,8 +1205,8 @@ void GpuProcessHost::DisableGpuCompositing() {
 #if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS_ASH)
   DLOG(ERROR) << "Can't disable GPU compositing";
 #else
-  // TODO(crbug.com/819474): The switch from GPU to software compositing should
-  // be handled here instead of by ImageTransportFactory.
+  // TODO(crbug.com/40565996): The switch from GPU to software compositing
+  // should be handled here instead of by ImageTransportFactory.
   GetUIThreadTaskRunner({})->PostTask(
       FROM_HERE, base::BindOnce([]() {
         if (auto* factory = ImageTransportFactory::GetInstance())
@@ -1291,11 +1296,11 @@ bool GpuProcessHost::LaunchGpuProcess() {
   if (kind_ == GPU_PROCESS_KIND_INFO_COLLECTION &&
       base::FeatureList::IsEnabled(
           features::kGpuInfoCollectionSeparatePrefetch)) {
-    cmd_line->AppendArg(internal::ChildProcessLauncherHelper::GetPrefetchSwitch(
-        AppLaunchPrefetchType::kGPUInfo));
+    cmd_line->AppendArgNative(app_launch_prefetch::GetPrefetchSwitch(
+        app_launch_prefetch::SubprocessType::kGPUInfo));
   } else {
-    cmd_line->AppendArg(internal::ChildProcessLauncherHelper::GetPrefetchSwitch(
-        AppLaunchPrefetchType::kGPU));
+    cmd_line->AppendArgNative(app_launch_prefetch::GetPrefetchSwitch(
+        app_launch_prefetch::SubprocessType::kGPU));
   }
 #endif  // BUILDFLAG(IS_WIN)
 

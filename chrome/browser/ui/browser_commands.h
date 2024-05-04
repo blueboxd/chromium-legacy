@@ -145,6 +145,7 @@ void MoveTabsToExistingWindow(Browser* source,
 void MuteSite(Browser* browser);
 void PinTab(Browser* browser);
 void GroupTab(Browser* browser);
+void CreateNewTabGroup(Browser* browser);
 void MuteSiteForKeyboardFocusedTab(Browser* browser);
 bool HasKeyboardFocusedTab(const Browser* browser);
 void PinKeyboardFocusedTab(Browser* browser);
@@ -180,11 +181,11 @@ void StartTabOrganizationRequest(Browser* browser);
 void ShowTranslateBubble(Browser* browser);
 void ManagePasswordsForPage(Browser* browser);
 bool CanSendTabToSelf(const Browser* browser);
-void SendTabToSelfFromPageAction(Browser* browser);
+void SendTabToSelf(Browser* browser);
 bool CanGenerateQrCode(const Browser* browser);
-void GenerateQRCodeFromPageAction(Browser* browser);
-void SharingHubFromPageAction(Browser* browser);
-void ScreenshotCaptureFromPageAction(Browser* browser);
+void GenerateQRCode(Browser* browser);
+void SharingHub(Browser* browser);
+void ScreenshotCapture(Browser* browser);
 void SavePage(Browser* browser);
 bool CanSavePage(const Browser* browser);
 void Print(Browser* browser);
@@ -232,7 +233,6 @@ void ToggleShowFullURLs(Browser* browser);
 void ShowAppMenu(Browser* browser);
 void ShowAvatarMenu(Browser* browser);
 void OpenUpdateChromeDialog(Browser* browser);
-void ToggleDistilledView(Browser* browser);
 bool CanRequestTabletSite(content::WebContents* current_tab);
 bool IsRequestingTabletSite(Browser* browser);
 void ToggleRequestTabletSite(Browser* browser);
@@ -265,17 +265,18 @@ bool ShouldInterceptChromeURLNavigationInIncognito(Browser* browser,
 void ProcessInterceptedChromeURLNavigationInIncognito(Browser* browser,
                                                       const GURL& url);
 
-// Follows/unfollows a web feed associated with the main frame of specified web
-// contents.
-void FollowSite(content::WebContents* web_contents);
-void UnfollowSite(content::WebContents* web_contents);
-
 #if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
 // Triggers the Screen AI layout extraction to be run once on the |browser|.
 void RunScreenAILayoutExtraction(Browser* browser);
 #endif  // BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
 
+void ExecLensOverlay(Browser* browser);
 void ExecLensRegionSearch(Browser* browser);
+
+// Commerce
+void OpenCommerceProductSpecificationsTab(Browser* browser,
+                                          const std::vector<GURL>& urls,
+                                          const int position);
 
 }  // namespace chrome
 

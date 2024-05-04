@@ -9,6 +9,7 @@
 #include <locale>
 #include <memory>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -48,7 +49,7 @@
 
 namespace {
 
-// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
+// TODO(crbug.com/40118868): Revisit the macro expression once build flag switch
 // of lacros-chrome is complete.
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
 // Ensure that there is a writable shared memory directory. We use
@@ -333,7 +334,7 @@ int main(int argc, char *argv[]) {
       "show logs from the browser (overrides other logging options)",
       "bidi-mapper-path",
       "custom bidi mapper path",
-    // TODO(crbug.com/1052397): Revisit the macro expression once build flag
+    // TODO(crbug.com/40118868): Revisit the macro expression once build flag
     // switch of lacros-chrome is complete.
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
       "disable-dev-shm-usage",
@@ -405,7 +406,7 @@ int main(int argc, char *argv[]) {
     if (!allowlist_ip_strs.empty()) {
       // Convert IP address strings into net::IPAddress objects.
       for (const auto& ip_str : allowlist_ip_strs) {
-        base::StringPiece ip_str_piece(ip_str);
+        std::string_view ip_str_piece(ip_str);
         if (ip_str_piece.size() >= 2 && ip_str_piece.front() == '[' &&
             ip_str_piece.back() == ']') {
           ip_str_piece.remove_prefix(1);
@@ -457,7 +458,7 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
-// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
+// TODO(crbug.com/40118868): Revisit the macro expression once build flag switch
 // of lacros-chrome is complete.
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
   EnsureSharedMemory(cmd_line);

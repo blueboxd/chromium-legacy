@@ -63,15 +63,13 @@ source_set("signin_impl") {
     "//ios/chrome/browser/sync/model",
     "//ios/chrome/browser/ui/authentication/history_sync",
     "//ios/chrome/browser/ui/authentication/signin/add_account_signin",
-    "//ios/chrome/browser/ui/authentication/signin/advanced_settings_signin",
     "//ios/chrome/browser/ui/authentication/signin/consistency_promo_signin",
     "//ios/chrome/browser/ui/authentication/signin/forced_signin",
     "//ios/chrome/browser/ui/authentication/signin/instant_signin",
+    "//ios/chrome/browser/ui/authentication/signin/logging",
     "//ios/chrome/browser/ui/authentication/signin/signin_history_sync",
     "//ios/chrome/browser/ui/authentication/signin/trusted_vault_reauthentication",
     "//ios/chrome/browser/ui/authentication/signin/two_screens_signin",
-    "//ios/chrome/browser/ui/authentication/signin/user_signin",
-    "//ios/chrome/browser/ui/authentication/signin/user_signin/logging",
     "//ios/chrome/browser/ui/first_run:interruptible_chrome_coordinator",
   ]
 }
@@ -80,8 +78,6 @@ source_set("signin_screen_provider") {
   sources = [
     "signin_screen_provider.h",
     "signin_screen_provider.mm",
-    "signin_sync_screen_provider.h",
-    "signin_sync_screen_provider.mm",
     "uno_signin_screen_provider.h",
     "uno_signin_screen_provider.mm",
   ]
@@ -119,7 +115,6 @@ source_set("unit_tests") {
     "//ios/chrome/browser/signin/model:test_support",
     "//ios/chrome/browser/sync/model",
     "//ios/chrome/browser/ui/authentication/signin:signin_headers",
-    "//ios/chrome/browser/ui/authentication/signin/user_signin",
     "//ios/chrome/test:test_support",
     "//ios/web/public/test",
     "//net",
@@ -165,7 +160,6 @@ source_set("eg2_tests") {
     "//ios/chrome/browser/signin/model:system_identity_manager",
     "//ios/chrome/browser/signin/model:test_constants",
     "//ios/chrome/browser/ui/authentication:eg_test_support+eg2",
-    "//ios/chrome/browser/ui/authentication/unified_consent:constants",
     "//ios/chrome/browser/ui/authentication/views:views_constants",
     "//ios/chrome/browser/ui/bookmarks:eg_test_support+eg2",
     "//ios/chrome/browser/ui/ntp:constants",

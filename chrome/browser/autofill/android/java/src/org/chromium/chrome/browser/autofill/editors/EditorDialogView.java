@@ -58,10 +58,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * The editor dialog. Can be used for editing contact information, shipping address,
- * billing address.
+ * The editor dialog. Can be used for editing contact information, shipping address, billing
+ * address.
  *
- * TODO(https://crbug.com/799905): Move payment specific functionality to separate class.
+ * <p>TODO(crbug.com/41363594): Move payment specific functionality to separate class.
  */
 public class EditorDialogView extends AlwaysDismissedDialog
         implements OnClickListener,
@@ -83,7 +83,7 @@ public class EditorDialogView extends AlwaysDismissedDialog
     private final Handler mHandler;
     private final int mHalfRowMargin;
     private final List<FieldView> mFieldViews;
-    // TODO(crbug.com/1435314): substitute this with SimpleRecyclerViewMCP.
+    // TODO(crbug.com/40265078): substitute this with SimpleRecyclerViewMCP.
     private final List<PropertyModelChangeProcessor<PropertyModel, TextFieldView, PropertyKey>>
             mTextFieldMCPs;
     private final List<PropertyModelChangeProcessor<PropertyModel, DropdownFieldView, PropertyKey>>

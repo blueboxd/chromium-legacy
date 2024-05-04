@@ -47,22 +47,14 @@ IN_PROC_BROWSER_TEST_F(NewTabPageTest, VoiceSearchOverlay) {
   RunTest("new_tab_page/voice_search_overlay_test.js", "mocha.run()");
 }
 
-// TODO(crbug.com/1485755):  Re-enable once no longer fails.
+// TODO(crbug.com/40933410):  Re-enable once no longer fails.
 IN_PROC_BROWSER_TEST_F(NewTabPageTest, DISABLED_LensForm) {
   RunTest("new_tab_page/lens_form_test.js", "mocha.run()");
 }
 
-// TODO(crbug.com/1431290): Test is flaky across platforms.
+// TODO(crbug.com/40902230): Test is flaky across platforms.
 IN_PROC_BROWSER_TEST_F(NewTabPageTest, DISABLED_LensUploadDialog) {
   RunTest("new_tab_page/lens_upload_dialog_test.js", "mocha.run()");
-}
-
-IN_PROC_BROWSER_TEST_F(NewTabPageTest, Realbox) {
-  RunTest("new_tab_page/realbox/realbox_test.js", "mocha.run()");
-}
-
-IN_PROC_BROWSER_TEST_F(NewTabPageTest, RealboxLens) {
-  RunTest("new_tab_page/realbox/lens_test.js", "mocha.run()");
 }
 
 IN_PROC_BROWSER_TEST_F(NewTabPageTest, Logo) {
@@ -134,19 +126,20 @@ IN_PROC_BROWSER_TEST_F(NewTabPageModulesTest, PhotosModule) {
 }
 #endif  // !defined(OFFICIAL_BUILD)
 
+IN_PROC_BROWSER_TEST_F(NewTabPageModulesTest, CalendarModule) {
+  RunTest("new_tab_page/modules/v2/calendar/module_test.js", "mocha.run()");
+}
+
 IN_PROC_BROWSER_TEST_F(NewTabPageModulesTest, DriveModule) {
   RunTest("new_tab_page/modules/drive/module_test.js", "mocha.run()");
 }
 
-IN_PROC_BROWSER_TEST_F(NewTabPageModulesTest, DriveV2Module) {
-  RunTest("new_tab_page/modules/v2/drive/module_test.js", "mocha.run()");
+IN_PROC_BROWSER_TEST_F(NewTabPageModulesTest, FileSuggestionModule) {
+  RunTest("new_tab_page/modules/v2/file_suggestion/module_test.js",
+          "mocha.run()");
 }
 
-IN_PROC_BROWSER_TEST_F(NewTabPageModulesTest, RecipesModule) {
-  RunTest("new_tab_page/modules/recipes/module_test.js", "mocha.run()");
-}
-
-// TODO(crbug.com/1485080): Fails on Linux Debug bots.
+// TODO(crbug.com/40933067): Fails on Linux Debug bots.
 #if BUILDFLAG(IS_LINUX) && !defined(NDEBUG)
 #define MAYBE_ChromeCartModule DISABLED_ChromeCartModule
 #else
@@ -215,11 +208,6 @@ IN_PROC_BROWSER_TEST_F(NewTabPageAppTest, V2Modules) {
 IN_PROC_BROWSER_TEST_F(NewTabPageAppTest, CounterfactualModules) {
   RunTest("new_tab_page/app_test.js",
           "runMochaSuite('NewTabPageAppTest CounterfactualModules')");
-}
-
-IN_PROC_BROWSER_TEST_F(NewTabPageAppTest, CustomizeDialog) {
-  RunTest("new_tab_page/app_test.js",
-          "runMochaSuite('NewTabPageAppTest CustomizeDialog')");
 }
 
 IN_PROC_BROWSER_TEST_F(NewTabPageAppTest, CustomizeChromeSidePanel) {

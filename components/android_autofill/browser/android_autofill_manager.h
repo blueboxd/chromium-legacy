@@ -26,7 +26,7 @@ class FormEventLoggerWeblayerAndroid;
 class AndroidAutofillManager : public AutofillManager,
                                public AutofillManager::Observer {
  public:
-  AndroidAutofillManager(AutofillDriver* driver, AutofillClient* client);
+  explicit AndroidAutofillManager(AutofillDriver* driver);
 
   AndroidAutofillManager(const AndroidAutofillManager&) = delete;
   AndroidAutofillManager& operator=(const AndroidAutofillManager&) = delete;
@@ -68,7 +68,7 @@ class AndroidAutofillManager : public AutofillManager,
   // triggered; this affects the security policy for cross-frame fills. See
   // AutofillDriver::FillOrPreviewForm() for further details.
   void FillOrPreviewForm(mojom::ActionPersistence action_persistence,
-                         const FormData& form,
+                         FormData form,
                          const FieldTypeGroup field_type_group,
                          const url::Origin& triggered_origin);
 
@@ -100,10 +100,10 @@ class AndroidAutofillManager : public AutofillManager,
                                     const FormFieldData& field,
                                     const gfx::RectF& bounding_box) override;
 
-  void OnJavaScriptChangedAutofilledValueImpl(
-      const FormData& form,
-      const FormFieldData& field,
-      const std::u16string& old_value) override {}
+  void OnJavaScriptChangedAutofilledValueImpl(const FormData& form,
+                                              const FormFieldData& field,
+                                              const std::u16string& old_value,
+                                              bool formatting_only) override {}
 
   bool ShouldParseForms() override;
 
@@ -111,9 +111,6 @@ class AndroidAutofillManager : public AutofillManager,
 
   void OnFormProcessed(const FormData& form,
                        const FormStructure& form_structure) override;
-
-  void OnAfterProcessParsedForms(
-      const DenseSet<FormType>& form_types) override {}
 
  private:
   // AutofillManager::Observer:

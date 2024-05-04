@@ -10,6 +10,7 @@
 #include "base/component_export.h"
 #include "base/memory/raw_ptr.h"
 #include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/base/metadata/metadata_types.h"
 #include "ui/gfx/render_text.h"
 #include "ui/views/window/frame_caption_button.h"
 
@@ -42,7 +43,8 @@ class COMPONENT_EXPORT(CHROMEOS_UI_FRAME) FrameCenterButton
   // views::View override:
   // Unlike other caption buttons, the size should be calculated dynamically as
   // this class may have an optional text and sub image.
-  gfx::Size CalculatePreferredSize() const override;
+  gfx::Size CalculatePreferredSize(
+      const views::SizeBounds& available_size) const override;
 
   // views::FrameCaptionButton override:
   void DrawHighlight(gfx::Canvas* canvas, cc::PaintFlags flags) override;

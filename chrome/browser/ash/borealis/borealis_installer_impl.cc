@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <sstream>
+#include <string_view>
 
 #include "base/functional/bind.h"
 #include "base/memory/raw_ptr.h"
@@ -308,7 +309,7 @@ class BorealisInstallerImpl::Uninstallation
                                          weak_factory_.GetWeakPtr()));
   }
 
-  void OnDlcUninstalled(const std::string& dlc_err) {
+  void OnDlcUninstalled(std::string_view dlc_err) {
     if (dlc_err.empty()) {
       LOG(ERROR) << "Failed to remove DLC: no response.";
       Fail(BorealisUninstallResult::kRemoveDlcFailed);
@@ -340,7 +341,7 @@ BorealisInstallerImpl::BorealisInstallerImpl(Profile* profile)
 BorealisInstallerImpl::~BorealisInstallerImpl() = default;
 
 bool BorealisInstallerImpl::IsProcessing() {
-  return in_progress_installation_ ? true : false;
+  return !!in_progress_installation_;
 }
 
 void BorealisInstallerImpl::Start() {

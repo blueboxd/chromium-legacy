@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/modules/scheduler/dom_scheduler.h"
 
 #include "third_party/abseil-cpp/absl/types/variant.h"
+#include "third_party/blink/public/common/scheduler/task_attribution_id.h"
 #include "third_party/blink/renderer/bindings/core/v8/idl_types.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
@@ -18,6 +19,7 @@
 #include "third_party/blink/renderer/modules/scheduler/dom_task_continuation.h"
 #include "third_party/blink/renderer/modules/scheduler/dom_task_signal.h"
 #include "third_party/blink/renderer/modules/scheduler/script_wrappable_task_state.h"
+#include "third_party/blink/renderer/modules/scheduler/task_attribution_info_impl.h"
 #include "third_party/blink/renderer/platform/bindings/enumeration_base.h"
 #include "third_party/blink/renderer/platform/bindings/exception_code.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -70,7 +72,7 @@ void DOMScheduler::Trace(Visitor* visitor) const {
   Supplement<ExecutionContext>::Trace(visitor);
 }
 
-ScriptPromise DOMScheduler::postTask(
+ScriptPromise<IDLAny> DOMScheduler::postTask(
     ScriptState* script_state,
     V8SchedulerPostTaskCallback* callback_function,
     SchedulerPostTaskOptions* options,
@@ -80,7 +82,7 @@ ScriptPromise DOMScheduler::postTask(
     // promise-returning functions to promise rejections.
     exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
                                       "Current window is detached");
-    return ScriptPromise();
+    return ScriptPromise<IDLAny>();
   }
 
   SchedulingState state = GetSchedulingStateFromOptions(
@@ -91,12 +93,12 @@ ScriptPromise DOMScheduler::postTask(
   if (state.abort_source && state.abort_source->aborted()) {
     exception_state.RethrowV8Exception(
         state.abort_source->reason(script_state).V8ValueFor(script_state));
-    return ScriptPromise();
+    return ScriptPromise<IDLAny>();
   }
 
   auto* task_queue =
       GetTaskQueue(state.priority_source, WebSchedulingQueueType::kTaskQueue);
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver<IDLAny>>(
       script_state, exception_state.GetContext());
   MakeGarbageCollected<DOMTask>(resolver, callback_function, state.abort_source,
                                 state.priority_source, task_queue,
@@ -104,13 +106,14 @@ ScriptPromise DOMScheduler::postTask(
   return resolver->Promise();
 }
 
-ScriptPromise DOMScheduler::yield(ScriptState* script_state,
-                                  SchedulerYieldOptions* options,
-                                  ExceptionState& exception_state) {
+ScriptPromise<IDLUndefined> DOMScheduler::yield(
+    ScriptState* script_state,
+    SchedulerYieldOptions* options,
+    ExceptionState& exception_state) {
   if (!GetExecutionContext() || GetExecutionContext()->IsContextDestroyed()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
                                       "Current window is detached");
-    return ScriptPromise();
+    return ScriptPromise<IDLUndefined>();
   }
 
   if (fixed_priority_continuation_queues_.empty()) {
@@ -119,32 +122,39 @@ ScriptPromise DOMScheduler::yield(ScriptState* script_state,
                                   fixed_priority_continuation_queues_);
   }
 
-  // Abort and priority can be inherited together or separately. Abort
-  // inheritance only depends on the signal option. Signal inheritance implies
-  // priority inheritance, but can be overridden by specifying a fixed
-  // priority.
   absl::variant<AbortSignal*, InheritOption> signal_option(nullptr);
-  if (options->hasSignal()) {
-    if (options->signal()->IsSchedulerSignalInherit()) {
-      // {signal: "inherit"}
-      signal_option = InheritOption::kInherit;
-    } else {
-      // {signal: signalObject}
-      signal_option = options->signal()->GetAsAbortSignal();
-    }
-  }
-
   absl::variant<AtomicString, InheritOption> priority_option(g_null_atom);
-  if ((options->hasPriority() && options->priority() == "inherit")) {
-    // {priority: "inherit"}
+  // If neither the signal option nor priority option was given, inherit by
+  // default.
+  if (!options->hasSignal() && !options->hasPriority()) {
+    signal_option = InheritOption::kInherit;
     priority_option = InheritOption::kInherit;
-  } else if (!options->hasPriority() &&
-             absl::holds_alternative<InheritOption>(signal_option)) {
-    // {signal: "inherit"} with no priority override.
-    priority_option = InheritOption::kInherit;
-  } else if (options->hasPriority()) {
-    // Priority override.
-    priority_option = AtomicString(IDLEnumAsString(options->priority()));
+  } else {
+    // Abort and priority can be inherited together or separately. Abort
+    // inheritance only depends on the signal option. Signal inheritance implies
+    // priority inheritance, but can be overridden by specifying a fixed
+    // priority.
+    if (options->hasSignal()) {
+      if (options->signal()->IsSchedulerSignalInherit()) {
+        // {signal: "inherit"}
+        signal_option = InheritOption::kInherit;
+      } else {
+        // {signal: signalObject}
+        signal_option = options->signal()->GetAsAbortSignal();
+      }
+    }
+
+    if ((options->hasPriority() && options->priority() == "inherit")) {
+      // {priority: "inherit"}
+      priority_option = InheritOption::kInherit;
+    } else if (!options->hasPriority() &&
+               absl::holds_alternative<InheritOption>(signal_option)) {
+      // {signal: "inherit"} with no priority override.
+      priority_option = InheritOption::kInherit;
+    } else if (options->hasPriority()) {
+      // Priority override.
+      priority_option = AtomicString(IDLEnumAsString(options->priority()));
+    }
   }
 
   SchedulingState state = GetSchedulingStateFromOptions(
@@ -152,13 +162,13 @@ ScriptPromise DOMScheduler::yield(ScriptState* script_state,
   if (state.abort_source && state.abort_source->aborted()) {
     exception_state.RethrowV8Exception(
         state.abort_source->reason(script_state).V8ValueFor(script_state));
-    return ScriptPromise();
+    return ScriptPromise<IDLUndefined>();
   }
 
   CHECK(state.priority_source);
   auto* task_queue = GetTaskQueue(state.priority_source,
                                   WebSchedulingQueueType::kContinuationQueue);
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver<IDLUndefined>>(
       script_state, exception_state.GetContext());
   MakeGarbageCollected<DOMTaskContinuation>(resolver, state.abort_source,
                                             task_queue);
@@ -180,21 +190,16 @@ scheduler::TaskAttributionIdType DOMScheduler::taskId(
   return task->Id().value();
 }
 
-AtomicString DOMScheduler::isAncestor(
-    ScriptState* script_state,
-    scheduler::TaskAttributionIdType parent_id) {
-  auto* tracker =
-      scheduler::TaskAttributionTracker::From(script_state->GetIsolate());
-  if (!tracker) {
+void DOMScheduler::setTaskId(ScriptState* script_state,
+                             scheduler::TaskAttributionIdType task_id) {
+  if (!scheduler::TaskAttributionTracker::From(script_state->GetIsolate())) {
     // Can happen when a feature flag disables TaskAttribution.
-    return AtomicString("unknown");
+    return;
   }
-  const scheduler::TaskAttributionInfo* current_task = tracker->RunningTask();
-  return current_task &&
-                 tracker->IsAncestor(*current_task,
-                                     scheduler::TaskAttributionId(parent_id))
-             ? AtomicString("ancestor")
-             : AtomicString("not ancestor");
+  auto* task_info = MakeGarbageCollected<TaskAttributionInfoImpl>(
+      scheduler::TaskAttributionId(task_id),
+      /*soft_navigation_context=*/nullptr);
+  ScriptWrappableTaskState::SetCurrent(script_state, task_info);
 }
 
 void DOMScheduler::CreateFixedPriorityTaskQueues(
@@ -247,8 +252,8 @@ DOMScheduler::SchedulingState DOMScheduler::GetSchedulingStateFromOptions(
         ExecutionContext::From(script_state)));
     if (auto* inherited_state =
             ScriptWrappableTaskState::GetCurrent(script_state->GetIsolate())) {
-      inherited_abort_source = inherited_state->GetAbortSource();
-      inherited_priority_source = inherited_state->GetPrioritySource();
+      inherited_abort_source = inherited_state->AbortSource();
+      inherited_priority_source = inherited_state->PrioritySource();
     }
   }
 

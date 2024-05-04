@@ -58,7 +58,6 @@ class DummyWidgetScheduler final : public WidgetScheduler {
   void DidAnimateForInputOnCompositorThread() override {}
   void DidRunBeginMainFrame() override {}
   void SetHidden(bool hidden) override {}
-  void SetHasTouchHandler(bool has_touch_handler) override {}
 };
 
 class DummyFrameScheduler : public FrameScheduler {
@@ -148,6 +147,9 @@ class DummyFrameScheduler : public FrameScheduler {
   void ReportActiveSchedulerTrackedFeatures() override {}
   scoped_refptr<base::SingleThreadTaskRunner> CompositorTaskRunner() override {
     return base::SingleThreadTaskRunner::GetCurrentDefault();
+  }
+  base::TimeDelta UnreportedTaskTime() const override {
+    return base::TimeDelta();
   }
 
  private:
@@ -348,6 +350,8 @@ class DummyWebMainThreadScheduler : public WebThreadScheduler,
       callback.Run(isolate_.get());
     }
   }
+
+  void SetRendererBackgroundedForTesting(bool) override {}
 
  private:
   raw_ptr<v8::Isolate> isolate_ = nullptr;

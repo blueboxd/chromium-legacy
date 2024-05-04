@@ -86,6 +86,8 @@ aggregate_vector_icons("omnibox_vector_icons") {
     "price_tracking_enabled_refresh.icon",
     "product.icon",
     "product_chrome_refresh.icon",
+    "product_specifications_add.icon",
+    "product_specifications_added.icon",
     "secure_page_info_chrome_refresh.icon",
     "share.icon",
     "share_chrome_refresh.icon",
@@ -318,6 +320,7 @@ static_library("browser") {
     "//base",
     "//base:i18n",
     "//components/history/core/browser",
+    "//components/lens/proto/server:proto",
     "//components/omnibox/common",
     "//components/omnibox/resources:omnibox_pedal_synonyms",
     "//components/security_state/core",
@@ -394,7 +397,14 @@ static_library("browser") {
   }
 
   if (!is_ios) {
-    deps += [ "//ui/base/clipboard" ]
+    sources += [
+      "history_embeddings_provider.cc",
+      "history_embeddings_provider.h",
+    ]
+    deps += [
+      "//components/history_embeddings",
+      "//ui/base/clipboard",
+    ]
   }
 
   if (use_blink) {
@@ -406,6 +416,7 @@ static_library("browser") {
     ]
     deps += [
       "//components/history_clusters/core",
+      "//components/history_embeddings",
       "//components/keyed_service/content",
       "//content/public/browser",
     ]
@@ -478,6 +489,7 @@ static_library("location_bar") {
     ":buildflags",
     "//build:chromeos_buildflags",
     "//components/dom_distiller/core:core",
+    "//components/lens/proto/server:proto",
     "//components/safe_browsing/core/common:common",
     "//components/search_engines",
     "//components/strings",
@@ -751,11 +763,13 @@ bundle_data("unit_tests_bundle_data") {
     "//components/test/data/omnibox/Shortcuts.v1.sql",
     "//components/test/data/omnibox/adder.tflite",
     "//components/test/data/omnibox/badword_hashes_test.txt",
+    "//components/test/data/omnibox/denylist_test.txt",
     "//components/test/data/omnibox/in_memory_url_index_test.sql",
     "//components/test/data/omnibox/in_memory_url_index_test_limited.sql",
     "//components/test/data/omnibox/on_device_head_test_deep_model.bin",
     "//components/test/data/omnibox/on_device_head_test_model_index.bin",
     "//components/test/data/omnibox/test_tail_model.tflite",
+    "//components/test/data/omnibox/vocab_i18n_test.txt",
     "//components/test/data/omnibox/vocab_test.txt",
   ]
   outputs = [ "{{bundle_resources_dir}}/" +
@@ -906,8 +920,12 @@ source_set("unit_tests") {
     sources += [
       "actions/history_clusters_action_unittest.cc",
       "history_cluster_provider_unittest.cc",
+      "history_embeddings_provider_unittest.cc",
     ]
-    deps += [ "//ui/base/clipboard:clipboard_test_support" ]
+    deps += [
+      "//components/history_embeddings",
+      "//ui/base/clipboard:clipboard_test_support",
+    ]
   }
 
   if (use_blink) {
@@ -951,9 +969,5 @@ mojom("mojo_bindings") {
   sources = [ "omnibox.mojom" ]
   webui_module_path = "/"
 
-  public_deps = [
-    "//mojo/public/mojom/base",
-    "//ui/gfx/mojom",
-    "//url/mojom:url_mojom_gurl",
-  ]
+  public_deps = [ "//mojo/public/mojom/base" ]
 }

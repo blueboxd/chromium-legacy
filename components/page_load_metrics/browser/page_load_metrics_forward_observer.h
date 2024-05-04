@@ -67,6 +67,7 @@ class PageLoadMetricsForwardObserver final
       content::NavigationHandle* navigation_handle) override;
   ObservePolicy ShouldObserveMimeType(
       const std::string& mime_type) const override;
+  ObservePolicy ShouldObserveScheme(const GURL& url) const override;
   void OnTimingUpdate(content::RenderFrameHost* subframe_rfh,
                       const mojom::PageLoadTiming& timing) override;
   void OnSoftNavigationUpdated(const mojom::SoftNavigationMetrics&) override;
@@ -169,6 +170,7 @@ class PageLoadMetricsForwardObserver final
   void OnV8MemoryChanged(
       const std::vector<MemoryUpdate>& memory_updates) override;
   void OnSharedStorageWorkletHostCreated() override;
+  void OnSharedStorageSelectURLCalled() override;
 
   // Holds the forward target observer running in the parent PageLoadTracker.
   base::WeakPtr<PageLoadMetricsObserverInterface> parent_observer_;

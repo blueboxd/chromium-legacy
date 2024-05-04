@@ -12,12 +12,11 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/web_applications/test/isolated_web_app_test_utils.h"
-#include "chrome/browser/ui/web_applications/web_app_controller_browsertest.h"
+#include "chrome/browser/ui/web_applications/web_app_browsertest_base.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_url_info.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/webapps/common/web_app_id.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -30,12 +29,11 @@ using testing::Property;
 
 namespace task_manager {
 
-class WebAppTagWebAppTest : public web_app::WebAppControllerBrowserTest {
+class WebAppTagWebAppTest : public web_app::WebAppBrowserTestBase {
  protected:
   Browser* LaunchBrowserForWebAppInTabAndWait(const webapps::AppId& app_id,
                                               const GURL& observe_url) {
-    ui_test_utils::UrlLoadObserver url_observer(
-        observe_url, content::NotificationService::AllSources());
+    ui_test_utils::UrlLoadObserver url_observer(observe_url);
     Browser* browser = LaunchBrowserForWebAppInTab(app_id);
     url_observer.Wait();
     return browser;

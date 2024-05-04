@@ -4,7 +4,6 @@
 
 #import "ios/chrome/browser/ui/settings/tabs/tab_pickup/tab_pickup_settings_coordinator.h"
 
-#import "components/sync/base/features.h"
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
 #import "ios/chrome/browser/shared/model/browser/browser.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
@@ -106,12 +105,8 @@
         [weakSelf handleSigninCompletionWithResult:result];
       };
 
-  AuthenticationOperation operation =
-      base::FeatureList::IsEnabled(syncer::kReplaceSyncPromosWithSignInPromos)
-          ? AuthenticationOperation::kSheetSigninAndHistorySync
-          : AuthenticationOperation::kSigninAndSync;
   ShowSigninCommand* const showSigninCommand = [[ShowSigninCommand alloc]
-      initWithOperation:operation
+      initWithOperation:AuthenticationOperation::kSheetSigninAndHistorySync
                identity:nil
             accessPoint:signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS
             promoAction:signin_metrics::PromoAction::
@@ -160,14 +155,10 @@
 
 // Returns YES if the History Sync Opt-In should be shown.
 - (BOOL)shouldShowHistorySync {
-  if (!base::FeatureList::IsEnabled(
-          syncer::kReplaceSyncPromosWithSignInPromos)) {
-    return NO;
-  }
   ChromeBrowserState* browserState = self.browser->GetBrowserState();
   AuthenticationService* authenticationService =
       AuthenticationServiceFactory::GetForBrowserState(browserState);
-  // TODO(crbug.com/1466884): Delete the usage of ConsentLevel::kSync after
+  // TODO(crbug.com/40276546): Delete the usage of ConsentLevel::kSync after
   // Phase 2 on iOS is launched. See ConsentLevel::kSync documentation for
   // details.
   if (authenticationService->HasPrimaryIdentity(signin::ConsentLevel::kSync)) {

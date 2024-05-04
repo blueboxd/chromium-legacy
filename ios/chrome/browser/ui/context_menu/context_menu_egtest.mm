@@ -10,6 +10,7 @@
 #import "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #import "components/strings/grit/components_strings.h"
+#import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/tabs/model/inactive_tabs/features.h"
 #import "ios/chrome/browser/ui/fullscreen/test/fullscreen_app_interface.h"
 #import "ios/chrome/grit/ios_strings.h"
@@ -30,9 +31,11 @@
 #import "net/test/embedded_test_server/embedded_test_server.h"
 #import "net/test/embedded_test_server/http_request.h"
 #import "net/test/embedded_test_server/http_response.h"
+#import "ui/base/l10n/l10n_util_mac.h"
 #import "url/gurl.h"
 
 using chrome_test_util::ContextMenuCopyButton;
+using chrome_test_util::ContextMenuItemWithAccessibilityLabel;
 using chrome_test_util::ContextMenuItemWithAccessibilityLabelId;
 using chrome_test_util::OmniboxText;
 using chrome_test_util::OpenLinkInNewTabButton;
@@ -165,6 +168,25 @@ id<GREYMatcher> OpenImageInNewTabButton() {
       IDS_IOS_CONTENT_CONTEXT_OPENIMAGENEWTAB);
 }
 
+// Matcher for the open link in new tab group button in the context menu.
+id<GREYMatcher> OpenLinkInNewGroupButton() {
+  return ContextMenuItemWithAccessibilityLabelId(
+      IDS_IOS_CONTENT_CONTEXT_OPENLINKINNEWTABGROUP);
+}
+
+// Matcher for the open link in group button in the context menu.
+id<GREYMatcher> OpenLinkInGroupButton() {
+  return ContextMenuItemWithAccessibilityLabelId(
+      IDS_IOS_CONTENT_CONTEXT_OPENLINKINTABGROUP);
+}
+
+// Matcher for the open link in an existing tab group (a group containing one
+// tab) button in the context menu.
+id<GREYMatcher> OpenLinkInOneTabGroupButton() {
+  return ContextMenuItemWithAccessibilityLabel(
+      l10n_util::GetPluralNSStringF(IDS_IOS_TAB_GROUP_TABS_NUMBER, 1));
+}
+
 // Provides responses for initial page and destination URLs.
 std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
     const net::test_server::HttpRequest& request) {
@@ -252,7 +274,9 @@ void RelaunchAppWithInactiveTabs2WeeksEnabled() {
 
 - (AppLaunchConfiguration)appConfigurationForTestCase {
   AppLaunchConfiguration config;
-
+  config.features_enabled.push_back(kTabGroupsInGrid);
+  config.features_enabled.push_back(kTabGroupsIPad);
+  config.features_enabled.push_back(kModernTabStrip);
   config.features_disabled.push_back(web::features::kSmoothScrollingDefault);
   return config;
 }
@@ -305,7 +329,7 @@ void RelaunchAppWithInactiveTabs2WeeksEnabled() {
 
 // Tests "Open in New Tab" on context menu.
 - (void)testContextMenuOpenInNewTab {
-  // TODO(crbug.com/1107513): Test fails in some iPads.
+  // TODO(crbug.com/40706946): Test fails in some iPads.
   if ([ChromeEarlGrey isIPadIdiom]) {
     EARL_GREY_TEST_SKIPPED(@"Test disabled on iPad.");
   }
@@ -429,7 +453,7 @@ void RelaunchAppWithInactiveTabs2WeeksEnabled() {
   [ChromeEarlGrey waitForWebStateZoomScale:1.0];
 
   LongPressElement(kDestinationPageTextId);
-  // TODO(crbug.com/1233056): Xcode 13 gesture recognizers seem to get stuck
+  // TODO(crbug.com/40191349): Xcode 13 gesture recognizers seem to get stuck
   // when the user longs presses on plain text.  For this test, disable EG
   // synchronization.
   ScopedSynchronizationDisabler disabler;
@@ -443,7 +467,7 @@ void RelaunchAppWithInactiveTabs2WeeksEnabled() {
                                           grey_sufficientlyVisible(), nil)]
       assertWithMatcher:grey_notNil()];
 
-  // TODO(crbug.com/1233056): Tap to dismiss the system selection callout
+  // TODO(crbug.com/40191349): Tap to dismiss the system selection callout
   // buttons so tearDown doesn't hang when `disabler` goes out of scope.
   [[EarlGrey selectElementWithMatcher:WebViewMatcher()]
       performAction:grey_tap()];
@@ -509,6 +533,10 @@ void RelaunchAppWithInactiveTabs2WeeksEnabled() {
   [[EarlGrey
       selectElementWithMatcher:ContextMenuItemWithAccessibilityLabelId(
                                    IDS_IOS_CONTENT_CONTEXT_OPENLINKNEWTAB)]
+      assertWithMatcher:grey_sufficientlyVisible()];
+  [[EarlGrey selectElementWithMatcher:
+                 ContextMenuItemWithAccessibilityLabelId(
+                     IDS_IOS_CONTENT_CONTEXT_OPENLINKINNEWTABGROUP)]
       assertWithMatcher:grey_sufficientlyVisible()];
   [[EarlGrey
       selectElementWithMatcher:ContextMenuItemWithAccessibilityLabelId(
@@ -656,4 +684,52 @@ void RelaunchAppWithInactiveTabs2WeeksEnabled() {
                  @"Inactive tab count should be 0");
 }
 
+// Tests "Open in Tab Group" on context menu, when no group exists in the tab
+// grid, the context menu should only show `Open in group` option, if a group
+// exists in the tab grid, the option `Open in group` will become a submenu,
+// tapping it will result in listing all the existing tab groups.
+- (void)testContextMenuOpenInGroup {
+  const GURL initialURL = self.testServer->GetURL(kInitialPageUrl);
+  [ChromeEarlGrey loadURL:initialURL];
+  [ChromeEarlGrey
+      waitForWebStateContainingText:kInitialPageDestinationLinkText];
+  [ChromeEarlGrey waitForWebStateZoomScale:1.0];
+
+  LongPressElement(kInitialPageDestinationLinkId);
+  TapOnContextMenuButton(OpenLinkInNewGroupButton());
+
+  [ChromeEarlGrey waitForMainTabCount:2];
+  [ChromeEarlGreyUI openTabGrid];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::TabGridGroupCellAtIndex(
+                                          1)] performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::TabGridCellAtIndex(0)]
+      performAction:grey_tap()];
+
+  [ChromeEarlGrey waitForWebStateContainingText:kDestinationPageText];
+
+  // Verify url.
+  const GURL destinationURL = self.testServer->GetURL(kDestinationPageUrl);
+  [[EarlGrey selectElementWithMatcher:OmniboxText(destinationURL.GetContent())]
+      assertWithMatcher:grey_notNil()];
+
+  // Open link in an existing tab group.
+  [ChromeEarlGrey loadURL:initialURL];
+  [ChromeEarlGrey
+      waitForWebStateContainingText:kInitialPageDestinationLinkText];
+  [ChromeEarlGrey waitForWebStateZoomScale:1.0];
+  LongPressElement(kInitialPageDestinationLinkId);
+  TapOnContextMenuButton(OpenLinkInGroupButton());
+  TapOnContextMenuButton(OpenLinkInOneTabGroupButton());
+
+  [ChromeEarlGrey waitForMainTabCount:3];
+  [ChromeEarlGreyUI openTabGrid];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::TabGridCellAtIndex(1)]
+      performAction:grey_tap()];
+
+  [ChromeEarlGrey waitForWebStateContainingText:kDestinationPageText];
+
+  // Verify url.
+  [[EarlGrey selectElementWithMatcher:OmniboxText(destinationURL.GetContent())]
+      assertWithMatcher:grey_notNil()];
+}
 @end

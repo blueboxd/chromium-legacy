@@ -65,9 +65,11 @@ class PageNodeSortProxy {
         last_visible_(last_visible) {}
 
   const PageNode* page_node() const { return page_node_; }
+  bool is_marked() const { return is_marked_; }
   bool is_protected() const { return is_protected_; }
   bool is_visible() const { return is_visible_; }
   bool is_focused() const { return is_focused_; }
+  base::TimeDelta last_visible() const { return last_visible_; }
 
   // Returns true if the rhs is more important.
   bool operator<(const PageNodeSortProxy& rhs) const {
@@ -143,8 +145,8 @@ class PageDiscardingHelper : public GraphOwned,
       base::TimeDelta minimum_time_in_background =
           kNonVisiblePagesUrgentProtectionTime);
 
-  void ImmediatelyDiscardSpecificPage(
-      const PageNode* page_node,
+  void ImmediatelyDiscardMultiplePages(
+      const std::vector<const PageNode*>& page_nodes,
       DiscardReason discard_reason,
       base::OnceCallback<void(bool)> post_discard_cb = base::DoNothing());
 

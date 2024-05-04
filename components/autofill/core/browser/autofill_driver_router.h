@@ -237,10 +237,12 @@ class AutofillDriverRouter {
       FormData form,
       const FormFieldData& field,
       const std::u16string& old_value,
+      bool formatting_only,
       void (*callback)(AutofillDriver* target,
                        const FormData& form,
                        const FormFieldData& field,
-                       const std::u16string& old_value));
+                       const std::u16string& old_value,
+                       bool formatting_only));
   void SelectOrSelectListFieldOptionsDidChange(
       AutofillDriver* source,
       FormData form,
@@ -264,7 +266,7 @@ class AutofillDriverRouter {
       void (*callback)(AutofillDriver* target,
                        mojom::FormActionType action_type,
                        mojom::ActionPersistence action_persistence,
-                       const FormData::FillData& form));
+                       const std::vector<FormFieldData::FillData>& fields));
   void ApplyFieldAction(
       AutofillDriver* source,
       mojom::FieldActionType action_type,
@@ -314,9 +316,6 @@ class AutofillDriverRouter {
       void (*callback)(AutofillDriver* target,
                        const FieldRendererId& field,
                        const std::u16string& value));
-  void RendererShouldClearFilledSection(
-      AutofillDriver* source,
-      void (*callback)(AutofillDriver* target));
   void RendererShouldClearPreviewedForm(
       AutofillDriver* source,
       void (*callback)(AutofillDriver* target));

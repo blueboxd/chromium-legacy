@@ -404,7 +404,7 @@ void NavigationManagerImpl::CommitPendingItem() {
     // WKWebView.
     if (proxy.backForwardList && !proxy.backForwardList.currentItem) {
       // WKWebView's URL should be about:blank for empty window open item.
-      // TODO(crbug.com/885249): Use GURL::IsAboutBlank() instead.
+      // TODO(crbug.com/41414501): Use GURL::IsAboutBlank() instead.
       DCHECK(base::StartsWith(net::GURLWithNSURL(proxy.URL).spec(),
                               url::kAboutBlankURL,
                               base::CompareCase::SENSITIVE));
@@ -1250,9 +1250,9 @@ void NavigationManagerImpl::RestoreItemsState(
 void NavigationManagerImpl::UnsafeRestore(
     int last_committed_item_index,
     std::vector<std::unique_ptr<NavigationItem>> items) {
-  // TODO(crbug.com/771200): Retain these original NavigationItems restored from
-  // storage and associate them with new WKBackForwardListItems created after
-  // history restore so information such as scroll position is restored.
+  // TODO(crbug.com/40542962): Retain these original NavigationItems restored
+  // from storage and associate them with new WKBackForwardListItems created
+  // after history restore so information such as scroll position is restored.
   GURL url;
   int first_index = -1;
   wk_navigation_util::CreateRestoreSessionUrl(last_committed_item_index, items,

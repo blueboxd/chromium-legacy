@@ -6,9 +6,11 @@
 
 #include <utility>
 
+#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/holding_space/holding_space_client.h"
 #include "ash/public/cpp/new_window_delegate.h"
 #include "ash/public/cpp/window_properties.h"
+#include "base/feature_list.h"
 #include "base/functional/callback_helpers.h"
 #include "base/notreached.h"
 #include "base/strings/string_number_conversions.h"
@@ -204,9 +206,11 @@ CameraAppHelperImpl::CameraAppHelperImpl(
   DCHECK(window);
   window->SetProperty(kCanConsumeSystemKeysKey, true);
   ScreenBacklight::Get()->AddObserver(this);
+  ash::SessionManagerClient::Get()->AddObserver(this);
 }
 
 CameraAppHelperImpl::~CameraAppHelperImpl() {
+  ash::SessionManagerClient::Get()->RemoveObserver(this);
   ScreenBacklight::Get()->RemoveObserver(this);
 
   if (pending_intent_id_.has_value()) {
@@ -492,7 +496,12 @@ void CameraAppHelperImpl::ConvertToPdf(
     std::move(callback).Run({});
     return;
   }
-  std::move(callback).Run(std::move(pdf_data));
+  if (!base::FeatureList::IsEnabled(ash::features::kCameraAppPdfOcr)) {
+    std::move(callback).Run(std::move(pdf_data));
+    return;
+  }
+  camera_app_ui_->delegate()->Searchify(std::move(pdf_data),
+                                        std::move(callback));
 }
 
 void CameraAppHelperImpl::MaybeTriggerSurvey() {
@@ -608,6 +617,27 @@ void CameraAppHelperImpl::GetEventsSender(GetEventsSenderCallback callback) {
     events_sender_ = std::make_unique<CameraAppEventsSender>(system_language);
   }
   std::move(callback).Run(events_sender_->CreateConnection());
+}
+
+void CameraAppHelperImpl::SetScreenLockedMonitor(
+    mojo::PendingRemote<ScreenLockedMonitor> monitor,
+    SetScreenLockedMonitorCallback callback) {
+  screen_locked_monitor_ =
+      mojo::Remote<ScreenLockedMonitor>(std::move(monitor));
+  std::move(callback).Run(ash::SessionManagerClient::Get()->IsScreenLocked());
+}
+
+void CameraAppHelperImpl::ScreenLockedStateUpdated() {
+  if (!screen_locked_monitor_.is_bound()) {
+    return;
+  }
+  screen_locked_monitor_->Update(
+      ash::SessionManagerClient::Get()->IsScreenLocked());
+}
+
+void CameraAppHelperImpl::RenderPdfAsJpeg(const std::vector<uint8_t>& pdf_data,
+                                          RenderPdfAsJpegCallback callback) {
+  camera_app_ui_->delegate()->RenderPdfAsJpeg(pdf_data, std::move(callback));
 }
 
 }  // namespace ash

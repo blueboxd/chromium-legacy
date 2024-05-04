@@ -17,6 +17,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/task_environment.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/form_forest.h"
 #include "components/autofill/core/browser/form_forest_test_api.h"
@@ -73,15 +74,16 @@ auto UnorderedArrayEquals(const std::vector<T>& exp) {
 auto Equals(const FormFieldData& exp) {
   return AllOf(
       Property("global_id", &FormFieldData::global_id, exp.global_id()),
-      Field("name", &FormFieldData::name, exp.name),
-      Field("host_form_id", &FormFieldData::host_form_id, exp.host_form_id),
-      Field("origin", &FormFieldData::origin, exp.origin),
-      Field("form_control_type", &FormFieldData::form_control_type,
-            exp.form_control_type),
-      Field("value", &FormFieldData::value, exp.value),
-      Field("label", &FormFieldData::label, exp.label),
-      Field("host_form_signature", &FormFieldData::host_form_signature,
-            exp.host_form_signature));
+      Property("name", &FormFieldData::name, exp.name()),
+      Property("host_form_id", &FormFieldData::host_form_id,
+               exp.host_form_id()),
+      Property("origin", &FormFieldData::origin, exp.origin()),
+      Property("form_control_type", &FormFieldData::form_control_type,
+               exp.form_control_type()),
+      Property("value", &FormFieldData::value, exp.value()),
+      Property("label", &FormFieldData::label, exp.label()),
+      Property("host_form_signature", &FormFieldData::host_form_signature,
+               exp.host_form_signature()));
 }
 
 // The relevant attributes are FormData::global_id(), FormData::fields.
@@ -160,13 +162,13 @@ FormData WithValues(FormData& form, Profile profile = Profile(0)) {
   CHECK_GT(form.fields.size() / 6, 0u);
   for (size_t i = 0; i < form.fields.size() / 6; ++i) {
     std::bitset<6> bitset(profile.value() + i);
-    form.fields[6 * i + 0].value = bitset.test(0) ? u"Jane" : u"John";
-    form.fields[6 * i + 1].value = bitset.test(1) ? u"Doe" : u"Average";
-    form.fields[6 * i + 2].value =
-        bitset.test(2) ? u"4444333322221111" : u"4444444444444444";
-    form.fields[6 * i + 3].value = bitset.test(3) ? u"01" : u"12";
-    form.fields[6 * i + 4].value = bitset.test(4) ? u"2083" : u"2087";
-    form.fields[6 * i + 5].value = bitset.test(5) ? u"123" : u"456";
+    form.fields[6 * i + 0].set_value(bitset.test(0) ? u"Jane" : u"John");
+    form.fields[6 * i + 1].set_value(bitset.test(1) ? u"Doe" : u"Average");
+    form.fields[6 * i + 2].set_value(bitset.test(2) ? u"4444333322221111"
+                                                    : u"4444444444444444");
+    form.fields[6 * i + 3].set_value(bitset.test(3) ? u"01" : u"12");
+    form.fields[6 * i + 4].set_value(bitset.test(4) ? u"2083" : u"2087");
+    form.fields[6 * i + 5].set_value(bitset.test(5) ? u"123" : u"456");
   }
   return form;
 }
@@ -256,10 +258,11 @@ class FakeAutofillDriver : public TestAutofillDriver {
   enum class SharedAutofillPolicy { kDefault, kEnabled, kDisabled };
 
   static std::unique_ptr<FakeAutofillDriver> CreateChildFrame(
+      AutofillClient* client,
       const url::Origin& origin,
       FakeAutofillDriver* parent,
       SharedAutofillPolicy shared_autofill) {
-    auto driver = base::WrapUnique(new FakeAutofillDriver(origin));
+    auto driver = base::WrapUnique(new FakeAutofillDriver(client, origin));
     driver->SetParent(parent);
     driver->SetLocalFrameToken(test::MakeLocalFrameToken());
     if (parent && driver->origin() != parent->origin()) {
@@ -313,9 +316,9 @@ class FakeAutofillDriver : public TestAutofillDriver {
     form.host_frame = GetFrameToken();
     form.main_frame_origin = origin_;
     for (FormFieldData& field : form.fields) {
-      field.host_frame = form.host_frame;
-      field.host_form_id = form.renderer_id;
-      field.origin = origin_;
+      field.set_host_frame(form.host_frame);
+      field.set_host_form_id(form.renderer_id);
+      field.set_origin(origin_);
     }
   }
 
@@ -329,7 +332,8 @@ class FakeAutofillDriver : public TestAutofillDriver {
   bool is_sub_root() const { return is_sub_root_; }
 
  private:
-  explicit FakeAutofillDriver(const url::Origin& origin) : origin_(origin) {}
+  explicit FakeAutofillDriver(AutofillClient* client, const url::Origin& origin)
+      : TestAutofillDriver(client), origin_(origin) {}
 
   const url::Origin origin_;
   bool is_sub_root_ = false;
@@ -346,6 +350,7 @@ class FakeAutofillDriver : public TestAutofillDriver {
 // RemoteFrameTokens.)
 class FormForestTest : public testing::Test {
  private:
+  base::test::TaskEnvironment task_environment_;
   test::AutofillUnitTestEnvironment autofill_test_environment_;
 };
 
@@ -400,7 +405,7 @@ class FormForestTestWithMockedTree : public FormForestTest {
              : !parent_driver        ? kMainUrl
                                      : kIframeUrl);
     drivers_.push_back(FakeAutofillDriver::CreateChildFrame(
-        Origin(url), /*parent=*/parent_driver,
+        &client_, Origin(url), /*parent=*/parent_driver,
         /*shared_autofill=*/frame_info.policy));
     FakeAutofillDriver* driver = drivers_.back().get();
 
@@ -410,7 +415,7 @@ class FormForestTestWithMockedTree : public FormForestTest {
       data.name = base::ASCIIToUTF16(form_info.name);
       data.url = url;
       for (FormFieldData& field : data.fields) {
-        field.name = base::StrCat({data.name, u".", field.name});
+        field.set_name(base::StrCat({data.name, u".", field.name()}));
       }
       driver->SetMetaData(data);
 
@@ -554,6 +559,7 @@ class FormForestTestWithMockedTree : public FormForestTest {
   FormForest flattened_forms_;
 
  private:
+  TestAutofillClient client_;
   std::vector<std::unique_ptr<FakeAutofillDriver>> drivers_;
   std::map<std::string, FormGlobalId, std::less<>> forms_;
 };
@@ -1137,8 +1143,8 @@ class FormForestTestUpdateFieldAdd
     FormData& target_form = GetMockedForm(GetParam().form_name);
     size_t target_index = GetParam().field_index;
     FormFieldData field = target_form.fields.front();
-    field.name = base::StrCat({field.name, u"_copy"});
-    field.renderer_id = test::MakeFieldRendererId();
+    field.set_name(base::StrCat({field.name(), u"_copy"}));
+    field.set_renderer_id(test::MakeFieldRendererId());
     target_form.fields.insert(target_form.fields.begin() + target_index, field);
   }
 };
@@ -1185,7 +1191,7 @@ class FormForestTestUpdateFieldMove
     size_t target_index = p.target.field_index;
 
     FormFieldData field = source_form.fields[source_index];
-    field.host_form_id = target_form.renderer_id;
+    field.set_host_form_id(target_form.renderer_id);
 
     if (source_index > target_index) {
       source_form.fields.erase(source_form.fields.begin() + source_index);
@@ -1539,10 +1545,10 @@ TEST_F(FormForestTestUnflatten, MainOriginPolicy) {
       WithValues(GetMockedForm("child2"), Profile(2))};
   // Clear sensitive fields: the credit card number (field index 2) and CVC
   // (field index 5) in the two main-origin forms.
-  expectation[0].fields[2].value.clear();
-  expectation[0].fields[5].value.clear();
-  expectation[1].fields[2].value.clear();
-  expectation[1].fields[5].value.clear();
+  expectation[0].fields[2].set_value({});
+  expectation[0].fields[5].set_value({});
+  expectation[1].fields[2].set_value({});
+  expectation[1].fields[5].set_value({});
   EXPECT_THAT(GetRendererFormsOfBrowserForm("main", Origin(kIframeUrl),
                                             FieldTypeMap("main")),
               UnorderedArrayEquals(expectation));

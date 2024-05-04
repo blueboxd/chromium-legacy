@@ -102,9 +102,12 @@ RegexRulesMatcher::RegexRulesMatcher(
                                 this,
                                 RulesetMatchingStage::kOnHeadersReceived),
       metadata_list_(metadata_list),
+      // See comments for this field in extension_url_pattern_index_matcher.cc
+      // for why different checks are used for `before_request_regex_list` and
+      // `headers_received_regex_list`.
       is_extra_headers_matcher_(
           IsExtraHeadersMatcherInternal(before_request_regex_list) ||
-          IsExtraHeadersMatcherInternal(headers_received_regex_list)) {}
+          headers_received_regex_list->size() > 0) {}
 
 RegexRulesMatcher::~RegexRulesMatcher() = default;
 
@@ -148,9 +151,10 @@ std::vector<RequestAction> RegexRulesMatcher::GetModifyHeadersActions(
 }
 
 std::optional<RequestAction> RegexRulesMatcher::GetAllowAllRequestsAction(
-    const RequestParams& params) const {
+    const RequestParams& params,
+    RulesetMatchingStage stage) const {
   const std::vector<RegexRuleInfo>& potential_matches =
-      before_request_matcher_.GetPotentialMatches(params);
+      GetMatcherForStage(stage).GetPotentialMatches(params);
   auto info = base::ranges::find_if(
       potential_matches, [&params](const RegexRuleInfo& info) {
         return info.regex_rule->action_type() ==
@@ -285,7 +289,7 @@ void RegexRulesMatcher::MatchHelper::InitializeMatcher() {
     // regular expression while indexing the ruleset. That said, there are cases
     // possible where this may happen, for example, the library's implementation
     // may change etc.
-    // TODO(crbug.com/1050780): Notify the extension about the same.
+    // TODO(crbug.com/40118204): Notify the extension about the same.
     if (error_code != re2::RE2::NoError)
       continue;
 
@@ -381,7 +385,7 @@ RegexRulesMatcher::CreateRegexSubstitutionRedirectAction(
   GURL redirect_url(redirect_str);
 
   // Redirects to JavaScript urls are not allowed.
-  // TODO(crbug.com/1033780): this results in counterintuitive behavior.
+  // TODO(crbug.com/40111509): this results in counterintuitive behavior.
   if (redirect_url.SchemeIs(url::kJavaScriptScheme))
     return std::nullopt;
 

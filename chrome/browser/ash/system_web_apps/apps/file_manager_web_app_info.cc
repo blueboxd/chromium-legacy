@@ -83,9 +83,6 @@ std::unique_ptr<web_app::WebAppInstallInfo> CreateWebAppInfoForFileManager() {
   info->display_mode = blink::mojom::DisplayMode::kStandalone;
   info->user_display_mode = web_app::mojom::UserDisplayMode::kStandalone;
 
-  // NOTE: when adding new formats to the extension list below, don't
-  // forget to also update file_manager/manifest.json.
-
   // Add File Handlers. NOTE: Order of handlers matters.
   // Archives:
   AppendFileHandler(*info, "mount-archive",
@@ -125,24 +122,6 @@ std::unique_ptr<web_app::WebAppInstallInfo> CreateWebAppInfoForFileManager() {
   AppendFileHandler(*info, "open-hosted-gsheet", {"gsheet"});
   AppendFileHandler(*info, "open-hosted-gslides", {"gslides"});
 
-  // Office Docs - Web Drive:
-  AppendFileHandler(*info,
-                    ::file_manager::file_tasks::kActionIdWebDriveOfficeWord,
-                    {"doc", "docx"});
-  AppendFileHandler(*info,
-                    ::file_manager::file_tasks::kActionIdWebDriveOfficeExcel,
-                    {"xls", "xlsm", "xlsx"});
-  AppendFileHandler(
-      *info, ::file_manager::file_tasks::kActionIdWebDriveOfficePowerPoint,
-      {"ppt", "pptx"});
-
-  // Office Docs - Microsoft 365: Alongside Web Drive, Files app has Microsoft
-  // 365 as a second file handler for Office files, (action ID:
-  // `::file_manager::file_tasks::kActionIdOpenInOffice`). However, the app
-  // service doesn't handle registering the same app twice to handle the same
-  // files in two different ways. Hence, file_tasks is responsible for adding
-  // this "open-in-office" file handler manually, when relevant.
-
   // View in the browser (with mime-type):
   AppendFileHandler(*info, "view-pdf", {"pdf"}, "application/pdf");
   AppendFileHandler(
@@ -154,9 +133,6 @@ std::unique_ptr<web_app::WebAppInstallInfo> CreateWebAppInfoForFileManager() {
   AppendFileHandler(*info, "install-linux-package", {"deb"});
   AppendFileHandler(*info, "import-crostini-image", {"tini"});
 
-  // For File Picker and Save As dialogs:
-  AppendFileHandler(*info, "select", {"*"});
-  AppendFileHandler(*info, "open", {"*"});
   return info;
 }
 

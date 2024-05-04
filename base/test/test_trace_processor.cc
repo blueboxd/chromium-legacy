@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 #include "base/test/test_trace_processor.h"
+
+#include <string_view>
+
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/test/chrome_track_event.descriptor.h"
@@ -12,7 +15,6 @@
 
 namespace base::test {
 
-#if BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
 
 namespace {
 // Emitting the chrome_track_event.descriptor into the trace allows the trace
@@ -59,7 +61,7 @@ TestTraceProcessorImpl::PerfettoSQLModule GetChromeStdlib() {
 }
 }  // namespace
 
-TraceConfig DefaultTraceConfig(const StringPiece& category_filter_string,
+TraceConfig DefaultTraceConfig(std::string_view category_filter_string,
                                bool privacy_filtering) {
   TraceConfig trace_config;
   auto* buffer_config = trace_config.add_buffers();
@@ -76,7 +78,9 @@ TraceConfig DefaultTraceConfig(const StringPiece& category_filter_string,
 
   // If no categories are explicitly enabled, enable the default ones.
   // Otherwise only matching categories are enabled.
-  if (!category_filter.included_categories().empty()) {
+  if (category_filter.included_categories().empty()) {
+    track_event_config.add_enabled_categories("*");
+  } else {
     track_event_config.add_disabled_categories("*");
   }
   for (const auto& included_category : category_filter.included_categories()) {
@@ -113,7 +117,7 @@ TestTraceProcessor::TestTraceProcessor() {
 
 TestTraceProcessor::~TestTraceProcessor() = default;
 
-void TestTraceProcessor::StartTrace(const StringPiece& category_filter_string,
+void TestTraceProcessor::StartTrace(std::string_view category_filter_string,
                                     bool privacy_filtering) {
   StartTrace(DefaultTraceConfig(category_filter_string, privacy_filtering));
 }
@@ -167,6 +171,5 @@ TestTraceProcessor::RunQuery(const std::string& query) {
   return base::ok(result_or_error.result());
 }
 
-#endif  // BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
 
 }  // namespace base::test

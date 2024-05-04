@@ -81,9 +81,9 @@ enum CouponType {
   RBD_WITH_CODE
 };
 
-// TODO(crbug.com/1207197): Consolidate to one util method to get string.
+// TODO(crbug.com/40181210): Consolidate to one util method to get string.
 std::string GetMerchantUrl(const base::Value::Dict* merchant_identifier) {
-  // TODO(crbug.com/1207197): Use a static constant for "cartUrl" instead.
+  // TODO(crbug.com/40181210): Use a static constant for "cartUrl" instead.
   const std::string* value = merchant_identifier->FindString("cartUrl");
   if (!value) {
     NOTREACHED() << "Missing cart_url or it is not a string";
@@ -278,7 +278,7 @@ CouponDiscountInfo ConvertToCouponDiscountInfo(
       continue;
 
     // Parse description
-    // TODO(crbug.com/1266076): Need to parse languageCode and save it in
+    // TODO(crbug.com/40801865): Need to parse languageCode and save it in
     // coupon_info_proto.
     coupon_info_proto.set_coupon_description(GetStringFromDict(
         coupon_discount_dict.Find("description"), "title", true));

@@ -70,20 +70,20 @@ void TaskRunnerAndroid::PostDelayedTask(
     JNIEnv* env,
     const base::android::JavaRef<jobject>& task,
     jlong delay,
-    jstring runnable_class_name) {
+    std::string& runnable_class_name) {
   // This could be run on any java thread, so we can't cache |env| in the
   // BindOnce because JNIEnv is thread specific.
   task_runner_->PostDelayedTask(
       FROM_HERE,
-      base::BindOnce(
-          &RunJavaTask, base::android::ScopedJavaGlobalRef<jobject>(task),
-          android::ConvertJavaStringToUTF8(env, runnable_class_name)),
+      base::BindOnce(&RunJavaTask,
+                     base::android::ScopedJavaGlobalRef<jobject>(task),
+                     runnable_class_name),
       Milliseconds(delay));
 }
 
 bool TaskRunnerAndroid::BelongsToCurrentThread(JNIEnv* env) {
-  // TODO(crbug.com/1026641): Move BelongsToCurrentThread from TaskRunnerImpl to
-  // SequencedTaskRunnerImpl on the Java side too.
+  // TODO(crbug.com/40108370): Move BelongsToCurrentThread from TaskRunnerImpl
+  // to SequencedTaskRunnerImpl on the Java side too.
   if (type_ == TaskRunnerType::BASE)
     return false;
   return static_cast<SequencedTaskRunner*>(task_runner_.get())

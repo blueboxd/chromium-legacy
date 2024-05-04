@@ -177,17 +177,6 @@ void ProcessGroupedLoginsAndReply(const PasswordFormDigest& form_digest,
     }
   }
 
-  password_manager::metrics_util::LogGroupedPasswordsResults(
-      absl::get<LoginsResult>(logins_or_error));
-  // Remove grouped only matches if filling across groups is disabled.
-  if (!base::FeatureList::IsEnabled(
-          password_manager::features::kFillingAcrossGroupedSites)) {
-    std::erase_if(absl::get<LoginsResult>(logins_or_error),
-                  [](const auto& form) {
-                    return form.match_type == PasswordForm::MatchType::kGrouped;
-                  });
-  }
-
   std::move(callback).Run(std::move(logins_or_error));
 }
 
@@ -332,17 +321,14 @@ bool ShouldRetryOperationOnError(PasswordStoreOperation operation,
 }
 
 PasswordStoreBackendErrorType APIErrorCodeToErrorType(
-    AndroidBackendAPIErrorCode api_error_code,
-    bool can_remove_unenrollment) {
+    AndroidBackendAPIErrorCode api_error_code) {
   switch (api_error_code) {
     case AndroidBackendAPIErrorCode::kAuthErrorResolvable:
       return PasswordStoreBackendErrorType::kAuthErrorResolvable;
     case AndroidBackendAPIErrorCode::kAuthErrorUnresolvable:
       return PasswordStoreBackendErrorType::kAuthErrorUnresolvable;
     case AndroidBackendAPIErrorCode::kKeyRetrievalRequired:
-      return can_remove_unenrollment
-                 ? PasswordStoreBackendErrorType::kKeyRetrievalRequired
-                 : PasswordStoreBackendErrorType::kUncategorized;
+      return PasswordStoreBackendErrorType::kKeyRetrievalRequired;
     case AndroidBackendAPIErrorCode::kNetworkError:
     case AndroidBackendAPIErrorCode::kInternalError:
     case AndroidBackendAPIErrorCode::kDeveloperError:
@@ -395,13 +381,13 @@ void PasswordStoreAndroidBackend::Init(
   lifecycle_helper_->RegisterObserver(base::BindRepeating(
       &PasswordStoreAndroidBackend::OnForegroundSessionStart,
       base::Unretained(this)));
-  // TODO(https://crbug.com/1229650): Create subscription before completion.
+  // TODO(crbug.com/40778507): Create subscription before completion.
 }
 
 void PasswordStoreAndroidBackend::Shutdown(
     base::OnceClosure shutdown_completed) {
   lifecycle_helper_->UnregisterObserver();
-  // TODO(https://crbug.com/1229654): Implement (e.g. unsubscribe from GMS).
+  // TODO(crbug.com/40190023): Implement (e.g. unsubscribe from GMS).
   std::move(shutdown_completed).Run();
 }
 
@@ -444,7 +430,7 @@ void PasswordStoreAndroidBackend::GetLoginsInternal(
     LoginsOrErrorReply callback) {
   JobId job_id = bridge_helper_->GetLoginsForSignonRealm(
       FormToSignonRealmQuery(form, include_psl), std::move(account));
-  // TODO(crbug.com/1491084): Re-design metrics to be less reliant on exact
+  // TODO(crbug.com/40284943): Re-design metrics to be less reliant on exact
   // method name and separate external methods from internal ones.
   QueueNewJob(job_id,
               base::BindOnce(&ValidateSignonRealm, std::move(form), include_psl,
@@ -590,14 +576,14 @@ void PasswordStoreAndroidBackend::DisableAutoSignInForOriginsInternal(
     std::string account,
     const base::RepeatingCallback<bool(const GURL&)>& origin_filter,
     base::OnceClosure completion) {
-  // TODO(https://crbug.com/1229655) Switch to using base::PassThrough to
+  // TODO(crbug.com/40778511) Switch to using base::PassThrough to
   // handle this callback more gracefully when it's implemented.
   PasswordChangesOrErrorReply record_metrics_and_run_completion =
       base::BindOnce(
           [](PasswordStoreBackendMetricsRecorder metrics_recorder,
              base::OnceClosure completion, PasswordChangesOrError changes) {
             // Errors are not recorded at the moment.
-            // TODO(https://crbug.com/1278807): Implement error handling,
+            // TODO(crbug.com/40208332): Implement error handling,
             // when actual store changes will be received from the store.
             metrics_recorder.RecordMetrics(SuccessStatus::kSuccess,
                                            /*error=*/std::nullopt);
@@ -842,7 +828,7 @@ void PasswordStoreAndroidBackend::OnError(JobId job_id,
       PasswordStoreBackendErrorRecoveryType::kUnrecoverable);
 
   if (error.api_error_code.has_value()) {
-    // TODO(crbug.com/1324588): DCHECK_EQ(api_error_code,
+    // TODO(crbug.com/40839365): DCHECK_EQ(api_error_code,
     // AndroidBackendAPIErrorCode::kDeveloperError) to catch dev errors.
     DCHECK_EQ(AndroidBackendErrorType::kExternalError, error.type);
 
@@ -867,8 +853,7 @@ void PasswordStoreAndroidBackend::OnError(JobId job_id,
       // on error.
       reported_error.recovery_type =
           RecoverOnErrorAndReturnResult(api_error_code);
-      reported_error.type = APIErrorCodeToErrorType(
-          api_error_code, bridge_helper_->CanRemoveUnenrollment());
+      reported_error.type = APIErrorCodeToErrorType(api_error_code);
     }
   }
 
@@ -998,7 +983,7 @@ PasswordStoreAndroidBackend::ReportMetricsAndInvokeCallbackForLoginsRetrieval(
     LoginsOrErrorReply callback,
     PasswordStoreBackendMetricsRecorder::PasswordStoreAndroidBackendType
         store_type) {
-  // TODO(https://crbug.com/1229655) Switch to using base::PassThrough to handle
+  // TODO(crbug.com/40778511) Switch to using base::PassThrough to handle
   // this callback more gracefully when it's implemented.
   return base::BindOnce(
       [](PasswordStoreBackendMetricsRecorder metrics_recorder,
@@ -1022,13 +1007,13 @@ PasswordChangesOrErrorReply PasswordStoreAndroidBackend::
         PasswordChangesOrErrorReply callback,
         PasswordStoreBackendMetricsRecorder::PasswordStoreAndroidBackendType
             store_type) {
-  // TODO(https://crbug.com/1229655) Switch to using base::PassThrough to handle
+  // TODO(crbug.com/40778511) Switch to using base::PassThrough to handle
   // this callback more gracefully when it's implemented.
   return base::BindOnce(
       [](PasswordStoreBackendMetricsRecorder metrics_recorder,
          PasswordChangesOrErrorReply callback, PasswordChangesOrError results) {
         // Errors are not recorded at the moment.
-        // TODO(https://crbug.com/1278807): Implement error handling, when
+        // TODO(crbug.com/40208332): Implement error handling, when
         // actual store changes will be received from the store.
         metrics_recorder.RecordMetrics(SuccessStatus::kSuccess,
                                        /*error=*/std::nullopt);

@@ -31,7 +31,10 @@
 
 #if BUILDFLAG(FULL_SAFE_BROWSING)
 #include "chrome/browser/safe_browsing/download_protection/download_protection_service.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "components/safe_browsing/core/common/proto/csd.pb.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
+#include "components/signin/public/identity_manager/identity_test_utils.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #endif  // BUILDFLAG(FULL_SAFE_BROWSING)
 
@@ -42,6 +45,7 @@ using DownloadVector = std::vector<raw_ptr<DownloadItem, VectorExperimental>>;
 using testing::_;
 using testing::Return;
 using testing::ReturnRefOfCopy;
+using TailoredVerdict = safe_browsing::ClientDownloadResponse::TailoredVerdict;
 
 namespace {
 
@@ -331,6 +335,40 @@ TEST_F(DownloadsListTrackerTest, IgnoreTransientDownloads) {
   EXPECT_CALL(page_, InsertItems(0, MatchIds(expected)));
 }
 
+TEST_F(DownloadsListTrackerTest, NumDangerousItemsSent) {
+  MockDownloadItem* dangerous_item0 = CreateNextItem();
+  ON_CALL(*dangerous_item0, IsDangerous()).WillByDefault(Return(true));
+  CreateNextItem();
+  CreateNextItem();
+  CreateNextItem();
+  CreateNextItem();
+  MockDownloadItem* dangerous_item5 = CreateNextItem();
+  ON_CALL(*dangerous_item5, IsDangerous()).WillByDefault(Return(true));
+  CreateNextItem();
+
+  CreateTracker();
+  tracker()->SetChunkSizeForTesting(3);
+  EXPECT_EQ(tracker()->NumDangerousItemsSent(), 0);
+  {
+    tracker()->StartAndSendChunk();
+    std::vector<uint64_t> expected = {6, 5, 4};
+    EXPECT_CALL(page_, InsertItems(0, MatchIds(expected)));
+    EXPECT_EQ(tracker()->NumDangerousItemsSent(), 1);
+  }
+  {
+    tracker()->StartAndSendChunk();
+    std::vector<uint64_t> expected = {3, 2, 1};
+    EXPECT_CALL(page_, InsertItems(3, MatchIds(expected)));
+    EXPECT_EQ(tracker()->NumDangerousItemsSent(), 1);
+  }
+  {
+    tracker()->StartAndSendChunk();
+    std::vector<uint64_t> expected = {0};
+    EXPECT_CALL(page_, InsertItems(6, MatchIds(expected)));
+    EXPECT_EQ(tracker()->NumDangerousItemsSent(), 2);
+  }
+}
+
 TEST_F(DownloadsListTrackerTest,
        CreateDownloadData_UrlFormatting_OmitUserPass) {
   MockDownloadItem* item = CreateNextItem();
@@ -462,6 +500,31 @@ TEST_F(DownloadsListTrackerTest, CreateDownloadData_SafeBrowsing) {
     downloads::mojom::DataPtr data = tracker->CreateDownloadData(item);
     EXPECT_EQ(data->safe_browsing_state, SafeBrowsingState::kNoSafeBrowsing);
     EXPECT_FALSE(data->has_safe_browsing_verdict);
+  }
+
+  // Tailored warning fields.
+  {
+    MockDownloadItem* item = CreateNextItem();
+    ON_CALL(*item, GetDangerType())
+        .WillByDefault(Return(
+            download::DOWNLOAD_DANGER_TYPE_DANGEROUS_ACCOUNT_COMPROMISE));
+    TailoredVerdict tailored_verdict;
+    tailored_verdict.set_tailored_verdict_type(TailoredVerdict::COOKIE_THEFT);
+    tailored_verdict.add_adjustments(TailoredVerdict::ACCOUNT_INFO_STRING);
+    safe_browsing::DownloadProtectionService::SetDownloadProtectionData(
+        item, "token",
+        safe_browsing::ClientDownloadResponse::SAFE,  // placeholder
+        tailored_verdict);
+    signin::IdentityManager* identity_manager =
+        IdentityManagerFactory::GetForProfile(profile());
+    signin::SetPrimaryAccount(identity_manager, "test@example.com",
+                              signin::ConsentLevel::kSignin);
+
+    downloads::mojom::DataPtr data = tracker->CreateDownloadData(item);
+    EXPECT_EQ(
+        data->tailored_warning_type,
+        downloads::mojom::TailoredWarningType::kCookieTheftWithAccountInfo);
+    EXPECT_EQ(data->account_email, "test@example.com");
   }
 }
 #endif  // BUILDFLAG(FULL_SAFE_BROWSING)

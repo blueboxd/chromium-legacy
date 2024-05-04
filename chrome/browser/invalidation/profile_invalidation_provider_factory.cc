@@ -58,8 +58,7 @@ std::unique_ptr<InvalidationService> CreateInvalidationServiceForSenderId(
               ->driver()),
       base::BindRepeating(&invalidation::FCMInvalidationListener::Create),
       base::BindRepeating(
-          &PerUserTopicSubscriptionManager::Create, identity_provider,
-          profile->GetPrefs(),
+          &PerUserTopicSubscriptionManager::Create,
           base::RetainedRef(profile->GetDefaultStoragePartition()
                                 ->GetURLLoaderFactoryForBrowserProcess())),
       instance_id::InstanceIDProfileServiceFactory::GetForProfile(profile)
@@ -99,7 +98,7 @@ ProfileInvalidationProviderFactory::ProfileInvalidationProviderFactory()
           "InvalidationService",
           ProfileSelections::Builder()
               .WithRegular(ProfileSelection::kOriginalOnly)
-              // TODO(crbug.com/1418376): Check if this service is needed in
+              // TODO(crbug.com/40257657): Check if this service is needed in
               // Guest mode.
               .WithGuest(ProfileSelection::kOriginalOnly)
               .Build()) {

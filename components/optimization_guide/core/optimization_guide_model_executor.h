@@ -7,6 +7,7 @@
 
 #include "base/functional/callback_forward.h"
 #include "base/types/expected.h"
+#include "components/optimization_guide/core/model_execution/feature_keys.h"
 #include "components/optimization_guide/core/model_execution/optimization_guide_model_execution_error.h"
 #include "components/optimization_guide/core/model_quality/model_quality_log_entry.h"
 #include "components/optimization_guide/proto/model_execution.pb.h"
@@ -71,6 +72,12 @@ struct SamplingParams {
 // Params to control model config per-session.
 struct SessionConfigParams {
   std::optional<SamplingParams> sampling_params;
+
+  // Whether to disable server fallback if on-device model is unavailable.
+  //
+  // This API will change but is done here quickly for simplicity while the
+  // capabilities API gets designed. Please ask owners before using this API.
+  bool disable_server_fallback = false;
 };
 
 // Interface for model execution.
@@ -102,17 +109,21 @@ class OptimizationGuideModelExecutor {
         OptimizationGuideModelExecutionResultStreamingCallback callback) = 0;
   };
 
+  // Whether an on-device session can be created for `feature`.
+  virtual bool CanCreateOnDeviceSession(
+      optimization_guide::ModelBasedCapabilityKey feature) = 0;
+
   // Starts a session which allows streaming input and output from the model.
   // May return nullptr if model execution is not supported. This session should
   // not outlive OptimizationGuideModelExecutor.
   virtual std::unique_ptr<Session> StartSession(
-      proto::ModelExecutionFeature feature,
+      optimization_guide::ModelBasedCapabilityKey feature,
       const std::optional<SessionConfigParams>& config_params) = 0;
 
   // Executes the model for `feature` with `request_metadata` and invokes the
   // `callback` with the result.
   virtual void ExecuteModel(
-      proto::ModelExecutionFeature feature,
+      optimization_guide::ModelBasedCapabilityKey feature,
       const google::protobuf::MessageLite& request_metadata,
       OptimizationGuideModelExecutionResultCallback callback) = 0;
 };

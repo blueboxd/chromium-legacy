@@ -186,13 +186,12 @@ void AddHintForTesting(Browser* browser,
 class PageInfoBubbleViewBrowserTest : public InProcessBrowserTest {
  public:
   PageInfoBubbleViewBrowserTest() {
-    // TODO(crbug.com/1344787): Clean up when PageSpecificSiteDataDialog is
+    // TODO(crbug.com/40231917): Clean up when PageSpecificSiteDataDialog is
     // launched. Disable features for the new version of "Cookies in use"
     // dialog. The new UI is covered by
     // PageInfoBubbleViewBrowserTestCookiesSubpage.
     feature_list_.InitWithFeatures(
-        {safe_browsing::kRedInterstitialFacelift,
-         features::kFileSystemAccessPersistentPermissions,
+        {features::kFileSystemAccessPersistentPermissions,
          features::kFileSystemAccessPersistentPermissionsUpdatedPageInfo,
          permissions::features::kOneTimePermission},
         {});
@@ -632,6 +631,7 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
                        InteractedWithFileSystemSubpage) {
+  base::HistogramTester histograms;
   const GURL url = embedded_test_server()->GetURL("/title1.html");
   const url::Origin origin = url::Origin::Create(url);
 
@@ -688,11 +688,15 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
   PerformMouseClickOnView(toggle_extended_permissions_button);
   EXPECT_TRUE(permission_context->OriginHasExtendedPermission(origin));
   EXPECT_TRUE(toggle_extended_permissions_button->GetChecked());
+  histograms.ExpectBucketCount(
+      "Storage.FileSystemAccess.ToggleExtendedPermissionOutcome", true, 1);
   // Clicking the extended permissions checkbox again disables extended
   // permissions for the given origin.
   PerformMouseClickOnView(toggle_extended_permissions_button);
   EXPECT_FALSE(permission_context->OriginHasExtendedPermission(origin));
   EXPECT_FALSE(toggle_extended_permissions_button->GetChecked());
+  histograms.ExpectBucketCount(
+      "Storage.FileSystemAccess.ToggleExtendedPermissionOutcome", false, 1);
 
   // The `FileSystemAccessScrollPanel` element is visible and is populated as
   // expected.
@@ -714,7 +718,7 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
   EXPECT_TRUE(content_settings_button->GetVisible());
   PerformMouseClickOnView(content_settings_button);
   constexpr char kParamRequest[] = "site";
-  // TODO(crbug.com/1505843): Update `origin_string` to remove the encoded
+  // TODO(crbug.com/40946480): Update `origin_string` to remove the encoded
   // trailing slash, once it's no longer required to correctly navigate to
   // file system site settings page for the given origin.
   const std::string origin_string =
@@ -843,7 +847,7 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest, MalwareAndEvCert) {
 // Tests that the "reset warning decisions" button is shown if the user has
 // clicked through an SSL warning or the HTTP interstitial, but not for silent
 // fallback to HTTP under HTTPS-Upgrades.
-// TODO(crbug.com/1394910): Convert these tests to be normal
+// TODO(crbug.com/40248833): Convert these tests to be normal
 // PageInfoBubbleViewBrowserTest when HTTPS-Upgrades is enabled-by-default.
 class PageInfoBubbleViewHttpsUpgradesBrowserTest
     : public PageInfoBubbleViewBrowserTest {
@@ -1515,7 +1519,6 @@ class PageInfoBubbleViewBrowserTestWithRedInterstitialFaceliftEnabled
  public:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     PageInfoBubbleViewBrowserTest::SetUpCommandLine(command_line);
-    feature_list.InitAndEnableFeature(safe_browsing::kRedInterstitialFacelift);
   }
 
  private:

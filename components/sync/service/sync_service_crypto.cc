@@ -22,12 +22,17 @@ namespace syncer {
 
 namespace {
 
-// Used for UMA.
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused. Keep in sync with
+// TrustedVaultFetchKeysAttempt in
+// tools/metrics/histograms/metadata/sync/enums.xml.
+// LINT.IfChange(TrustedVaultFetchKeysAttempt)
 enum class TrustedVaultFetchKeysAttemptForUMA {
-  kFirstAttempt,
-  kSecondAttempt,
+  kFirstAttempt = 0,
+  kSecondAttempt = 1,
   kMaxValue = kSecondAttempt
 };
+// LINT.ThenChange(/tools/metrics/histograms/metadata/sync/enums.xml:TrustedVaultFetchKeysAttempt)
 
 // A SyncEncryptionHandler::Observer implementation that simply posts all calls
 // to another task runner.
@@ -250,7 +255,7 @@ void SyncServiceCrypto::SetEncryptionPassphrase(const std::string& passphrase) {
     case RequiredUserAction::kTrustedVaultKeyRequired:
     case RequiredUserAction::kTrustedVaultKeyRequiredButFetching:
       // Cryptographer has pending keys.
-      // TODO(crbug.com/1434786): this is currently reachable on iOS due to
+      // TODO(crbug.com/40904402): this is currently reachable on iOS due to
       // discrepancy in UI code. Fix iOS implementation and avoid using more
       // strict checks here until this is done.
       NOTREACHED()
@@ -402,7 +407,7 @@ SyncServiceCrypto::GetEncryptionObserverProxy() {
       base::SequencedTaskRunner::GetCurrentDefault());
 }
 
-ModelTypeSet SyncServiceCrypto::GetEncryptedDataTypes() const {
+ModelTypeSet SyncServiceCrypto::GetAllEncryptedDataTypes() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(state_.encrypted_types.HasAll(AlwaysEncryptedUserTypes()));
   // We may be called during the setup process before we're
@@ -551,7 +556,7 @@ void SyncServiceCrypto::OnPassphraseTypeChanged(PassphraseType type,
 
   state_.cached_explicit_passphrase_time = passphrase_time;
 
-  // TODO(crbug.com/1466401): Also pass along the passphrase time?
+  // TODO(crbug.com/40923935): Also pass along the passphrase time?
   delegate_->PassphraseTypeChanged(type);
 
   // Clear recoverability degraded state in case a custom passphrase was set.

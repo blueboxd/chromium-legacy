@@ -23,7 +23,6 @@ import static org.mockito.Mockito.when;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.Build;
 import android.text.Spanned;
 import android.text.style.ClickableSpan;
 import android.view.View;
@@ -50,8 +49,8 @@ import org.mockito.junit.MockitoRule;
 import org.chromium.base.BuildInfo;
 import org.chromium.base.test.util.ApplicationTestUtils;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
-import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.DoNotBatch;
 import org.chromium.base.test.util.Features;
@@ -95,12 +94,13 @@ public class FirstRunActivitySigninAndSyncTest {
 
     @Rule public final MockitoRule mMockitoRule = MockitoJUnit.rule();
 
-    // TODO(https://crbug.com/1352119): Use IdentityIntegrationTestRule instead.
+    // TODO(crbug.com/40234741): Use IdentityIntegrationTestRule instead.
     @Rule
     public final AccountManagerTestRule mAccountManagerTestRule =
             new AccountManagerTestRule(new FakeAccountManagerFacade(), null);
 
-    // TODO(crbug.com/1311260): Consider using a test rule to ensure this gets terminated correctly.
+    // TODO(crbug.com/40830950): Consider using a test rule to ensure this gets terminated
+    // correctly.
     public FirstRunActivity mFirstRunActivity;
 
     @Mock private ExternalAuthUtils mExternalAuthUtilsMock;
@@ -134,9 +134,6 @@ public class FirstRunActivitySigninAndSyncTest {
 
     @Test
     @MediumTest
-    @DisableIf.Build(
-            sdk_is_less_than = Build.VERSION_CODES.O,
-            message = "This test is disabled on Android N because of https://crbug.com/1459076")
     @Restriction({DeviceRestriction.RESTRICTION_TYPE_NON_AUTO})
     public void dismissButtonClickSkipsSyncConsentPageWhenNoAccountsAreOnDevice() {
         launchFirstRunActivityAndWaitForNativeInitialization();
@@ -149,9 +146,6 @@ public class FirstRunActivitySigninAndSyncTest {
 
     @Test
     @MediumTest
-    @DisableIf.Build(
-            sdk_is_less_than = Build.VERSION_CODES.O,
-            message = "This test is disabled on Android N because of https://crbug.com/1459076")
     @Restriction({DeviceRestriction.RESTRICTION_TYPE_NON_AUTO})
     public void dismissButtonClickSkipsSyncConsentPageWhenOneAccountIsOnDevice() {
         mAccountManagerTestRule.addAccount(TEST_EMAIL);
@@ -191,19 +185,6 @@ public class FirstRunActivitySigninAndSyncTest {
         clickButton(R.id.signin_fre_continue_button);
 
         waitUntilCurrentPageIs(HistorySyncFirstRunFragment.class);
-    }
-
-    @Test
-    @MediumTest
-    @Restriction({DeviceRestriction.RESTRICTION_TYPE_AUTO})
-    public void continueButtonClickShowsDeviceLockPageOnAutomotive() {
-        mAccountManagerTestRule.addAccount(TEST_EMAIL);
-        launchFirstRunActivityAndWaitForNativeInitialization();
-        waitUntilCurrentPageIs(SigninFirstRunFragment.class);
-
-        clickButton(R.id.signin_fre_continue_button);
-
-        onView(withId(R.id.device_lock_view)).check(matches(isDisplayed()));
     }
 
     @Test
@@ -608,11 +589,10 @@ public class FirstRunActivitySigninAndSyncTest {
 
     private <T extends FirstRunFragment> void waitUntilCurrentPageIs(Class<T> fragmentClass) {
         CriteriaHelper.pollUiThread(
-                () -> {
-                    return fragmentClass.isInstance(
-                            mFirstRunActivity.getCurrentFragmentForTesting());
-                },
-                fragmentClass.getName() + " should be the current page");
+                () ->
+                        Criteria.checkThat(
+                                mFirstRunActivity.getCurrentFragmentForTesting(),
+                                Matchers.instanceOf(fragmentClass)));
     }
 
     private void launchFirstRunActivityAndWaitForNativeInitialization() {

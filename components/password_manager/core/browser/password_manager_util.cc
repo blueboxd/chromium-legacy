@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <string>
+#include <string_view>
 #include <tuple>
 #include <utility>
 
@@ -24,7 +25,7 @@
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/logging/log_manager.h"
-#include "components/autofill/core/browser/ui/popup_item_ids.h"
+#include "components/autofill/core/browser/ui/suggestion_type.h"
 #include "components/autofill/core/common/password_generation_util.h"
 #include "components/password_manager/core/browser/features/password_features.h"
 #include "components/password_manager/core/browser/features/password_manager_features_util.h"
@@ -126,8 +127,10 @@ void UserTriggeredManualGenerationFromContextMenu(
     password_manager::PasswordManagerClient* password_manager_client,
     autofill::AutofillClient* autofill_client) {
   if (autofill_client) {
-    autofill_client->HideAutofillPopup(
-        autofill::PopupHidingReason::kOverlappingWithPasswordGenerationPopup);
+    autofill_client->HideAutofillSuggestions(
+        autofill::SuggestionHidingReason::
+            kOverlappingWithPasswordGenerationPopup);
+    autofill_client->HideAutofillFieldIphForManualFallbackFeature();
   }
   if (!password_manager_client->GetPasswordFeatureManager()
            ->ShouldShowAccountStorageOptIn()) {
@@ -170,8 +173,8 @@ bool IsAbleToSavePasswords(password_manager::PasswordManagerClient* client) {
          client->GetProfilePasswordStore()->IsAbleToSavePasswords();
 }
 
-base::StringPiece GetSignonRealmWithProtocolExcluded(const PasswordForm& form) {
-  base::StringPiece signon_realm = form.signon_realm;
+std::string_view GetSignonRealmWithProtocolExcluded(const PasswordForm& form) {
+  std::string_view signon_realm = form.signon_realm;
 
   // Find the web origin (with protocol excluded) in the signon_realm.
   const size_t after_protocol = signon_realm.find(form.url.host_piece());
@@ -197,12 +200,8 @@ GetLoginMatchType GetMatchType(const password_manager::PasswordForm& form) {
   }
 
   if (static_cast<int>(form.match_type.value() &
-                       PasswordForm::MatchType::kGrouped) &&
-      base::FeatureList::IsEnabled(
-          password_manager::features::kFillingAcrossGroupedSites)) {
-    // TODO(crbug.com/1432264): Update after proper handling of grouped matches
-    // is implemented.
-    return GetLoginMatchType::kAffiliated;
+                       PasswordForm::MatchType::kGrouped)) {
+    return GetLoginMatchType::kGrouped;
   }
 
   NOTREACHED_NORETURN();
@@ -296,7 +295,7 @@ const PasswordForm* GetMatchForUpdating(
     bool username_updated_in_bubble) {
   // This is the case for the credential management API. It should not depend on
   // form managers. Once that's the case, this should be turned into a DCHECK.
-  // TODO(crbug/947030): turn it into a DCHECK.
+  // TODO(crbug.com/40620575): turn it into a DCHECK.
   if (!submitted_form.federation_origin.opaque())
     return nullptr;
 

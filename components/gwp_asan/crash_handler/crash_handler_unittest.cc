@@ -22,6 +22,7 @@
 #include "base/test/test_timeouts.h"
 #include "build/build_config.h"
 #include "components/gwp_asan/client/guarded_page_allocator.h"
+#include "components/gwp_asan/client/gwp_asan.h"
 #include "components/gwp_asan/client/lightweight_detector/poison_metadata_recorder.h"
 #include "components/gwp_asan/common/crash_key_name.h"
 #include "components/gwp_asan/common/lightweight_detector_state.h"
@@ -111,8 +112,14 @@ MULTIPROCESS_TEST_MAIN(CrashingProcess) {
   }
 
   base::NoDestructor<GuardedPageAllocator> gpa;
-  gpa->Init(AllocatorState::kMaxMetadata, AllocatorState::kMaxMetadata,
-            kTotalPages, base::DoNothing(), allocator == "partitionalloc");
+  gpa->Init(
+      AllocatorSettings{
+          .max_allocated_pages = AllocatorState::kMaxMetadata,
+          .num_metadata = AllocatorState::kMaxMetadata,
+          .total_pages = kTotalPages,
+          .sampling_frequency = 0u,
+      },
+      base::DoNothing(), allocator == "partitionalloc");
 
   static crashpad::StringAnnotation<24> gpa_annotation(annotation_name);
   gpa_annotation.Set(gpa->GetCrashKey());
@@ -340,7 +347,7 @@ class BaseCrashHandlerTest : public base::MultiProcessTest,
     EXPECT_NE(exit_code, kSuccess);
     return (exit_code != kSuccess);
 #else
-    // TODO(https://crbug.com/976063): Android's implementation of
+    // TODO(crbug.com/40632533): Android's implementation of
     // WaitForMultiprocessTestChildExit can't detect child process crashes, this
     // can be fixed after minSdkVersion >= Q.
     for (int i = 0; i < TestTimeouts::action_max_timeout().InSeconds(); i++) {

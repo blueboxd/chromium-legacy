@@ -206,7 +206,7 @@ void WaylandEventWatcher::RoundTripQueue() {
     // as its internal implementation also reads events, which may block if
     // there are more than one preparation for reading within the same thread.
     //
-    // TODO(crbug.com/1288181): this won't be needed once libevent is updated.
+    // TODO(crbug.com/40816750): this won't be needed once libevent is updated.
     // See WaylandEventWatcherFdWatch::OnFileCanReadWithoutBlocking for more
     // details.
     WlDisplayCancelRead();
@@ -241,6 +241,11 @@ void WaylandEventWatcher::StopProcessingEventsInternal() {
   watching_ = false;
 }
 
+void WaylandEventWatcher::Flush() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  wl_display_flush(display_);
+}
+
 bool WaylandEventWatcher::WlDisplayPrepareToRead() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (prepared_) {
@@ -256,7 +261,7 @@ bool WaylandEventWatcher::WlDisplayPrepareToRead() {
   prepared_ = true;
 
   // Automatic flush.
-  wl_display_flush(display_);
+  Flush();
 
   return true;
 }

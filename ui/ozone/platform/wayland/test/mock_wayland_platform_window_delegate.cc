@@ -9,6 +9,11 @@
 
 namespace ui {
 
+MockWaylandPlatformWindowDelegate::MockWaylandPlatformWindowDelegate() =
+    default;
+MockWaylandPlatformWindowDelegate::~MockWaylandPlatformWindowDelegate() =
+    default;
+
 gfx::Rect MockWaylandPlatformWindowDelegate::ConvertRectToPixels(
     const gfx::Rect& rect_in_dp) const {
   float scale =
@@ -35,6 +40,16 @@ MockWaylandPlatformWindowDelegate::CreateWaylandWindow(
 int64_t MockWaylandPlatformWindowDelegate::OnStateUpdate(
     const PlatformWindowDelegate::State& old,
     const PlatformWindowDelegate::State& latest) {
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  if (old.fullscreen_type != latest.fullscreen_type) {
+    OnFullscreenTypeChanged(old.fullscreen_type, latest.fullscreen_type);
+  }
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+
+  if (old.window_state != latest.window_state) {
+    OnWindowStateChanged(old.window_state, latest.window_state);
+  }
+
   if (old.bounds_dip != latest.bounds_dip || old.size_px != latest.size_px ||
       old.window_scale != latest.window_scale) {
     bool origin_changed = old.bounds_dip.origin() != latest.bounds_dip.origin();
@@ -45,7 +60,11 @@ int64_t MockWaylandPlatformWindowDelegate::OnStateUpdate(
     OnOcclusionStateChanged(latest.occlusion_state);
   }
 
-  if (!latest.ProducesFrameOnUpdateFrom(old)) {
+  if (!on_state_update_callback_.is_null()) {
+    on_state_update_callback_.Run();
+  }
+
+  if (!latest.WillProduceFrameOnUpdateFrom(old)) {
     return -1;
   }
 

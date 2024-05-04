@@ -12,6 +12,7 @@
 #include <memory>
 #include <optional>
 #include <set>
+#include <string_view>
 #include <utility>
 
 #include "base/command_line.h"
@@ -35,7 +36,6 @@
 #include "chrome/browser/lifetime/termination_notification.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/security_interstitials/content/security_interstitial_tab_helper.h"
@@ -87,6 +87,23 @@ void CopyDebuggee(Debuggee* dst, const Debuggee& src) {
   dst->tab_id = src.tab_id;
   dst->extension_id = src.extension_id;
   dst->target_id = src.target_id;
+}
+
+void DebuggerSessionFromDebugee(DebuggerSession& dst,
+                                const Debuggee& src,
+                                std::string* maybe_session_id) {
+  dst.tab_id = src.tab_id;
+  dst.extension_id = src.extension_id;
+  dst.target_id = src.target_id;
+  if (maybe_session_id) {
+    dst.session_id = *maybe_session_id;
+  }
+}
+
+void DebuggeeFromDebuggerSession(Debuggee& dst, const DebuggerSession& src) {
+  dst.tab_id = src.tab_id;
+  dst.extension_id = src.extension_id;
+  dst.target_id = src.target_id;
 }
 
 bool ExtensionMayAttachToTargetProfile(Profile* extension_profile,
@@ -290,7 +307,8 @@ class ExtensionDevToolsClientHost : public content::DevToolsAgentHostClient,
   void Close();
   void SendMessageToBackend(DebuggerSendCommandFunction* function,
                             const std::string& method,
-                            SendCommand::Params::CommandParams* command_params);
+                            SendCommand::Params::CommandParams* command_params,
+                            std::optional<std::string> session_id);
 
   // Closes connection as terminated by the user.
   void InfoBarDestroyed();
@@ -441,7 +459,8 @@ void ExtensionDevToolsClientHost::Close() {
 void ExtensionDevToolsClientHost::SendMessageToBackend(
     DebuggerSendCommandFunction* function,
     const std::string& method,
-    SendCommand::Params::CommandParams* command_params) {
+    SendCommand::Params::CommandParams* command_params,
+    std::optional<std::string> session_id) {
   base::Value::Dict protocol_request;
   int request_id = ++last_request_id_;
   pending_requests_[request_id] = function;
@@ -450,6 +469,9 @@ void ExtensionDevToolsClientHost::SendMessageToBackend(
   if (command_params) {
     protocol_request.Set("params",
                          command_params->additional_properties.Clone());
+  }
+  if (session_id.has_value()) {
+    protocol_request.Set("sessionId", session_id.value());
   }
 
   std::string json;
@@ -503,8 +525,7 @@ void ExtensionDevToolsClientHost::DispatchProtocolMessage(
   if (!EventRouter::Get(profile_))
     return;
 
-  base::StringPiece message_str(reinterpret_cast<const char*>(message.data()),
-                                message.size());
+  std::string_view message_str = base::as_string_view(message);
   std::optional<base::Value> result = base::JSONReader::Read(
       message_str, base::JSON_REPLACE_INVALID_CHARACTERS);
   if (!result || !result->is_dict()) {
@@ -524,7 +545,11 @@ void ExtensionDevToolsClientHost::DispatchProtocolMessage(
       params.additional_properties = std::move(*params_value);
     }
 
-    auto args(OnEvent::Create(debuggee_, *method_name, params));
+    DebuggerSession session;
+    DebuggerSessionFromDebugee(session, debuggee_,
+                               dictionary.FindString("sessionId"));
+
+    auto args(OnEvent::Create(session, *method_name, params));
     auto event =
         std::make_unique<Event>(events::DEBUGGER_ON_EVENT, OnEvent::kEventName,
                                 std::move(args), profile_);
@@ -777,13 +802,14 @@ ExtensionFunction::ResponseAction DebuggerSendCommandFunction::Run() {
       SendCommand::Params::Create(args());
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  CopyDebuggee(&debuggee_, params->target);
+  DebuggeeFromDebuggerSession(debuggee_, params->target);
   std::string error;
   if (!InitClientHost(&error))
     return RespondNow(Error(std::move(error)));
 
   client_host_->SendMessageToBackend(
-      this, params->method, base::OptionalToPtr(params->command_params));
+      this, params->method, base::OptionalToPtr(params->command_params),
+      params->target.session_id);
   if (did_respond())
     return AlreadyResponded();
   return RespondLater();
@@ -872,7 +898,7 @@ ExtensionFunction::ResponseAction DebuggerGetTargetsFunction::Run() {
   base::Value::List result;
   Profile* profile = Profile::FromBrowserContext(browser_context());
   for (auto& host : list) {
-    // TODO(crbug.com/1348385): hide all Tab targets for now to avoid
+    // TODO(crbug.com/40233332): hide all Tab targets for now to avoid
     // compatibility problems. Consider exposing them later when they're fully
     // supported, and compatibility considerations are better understood.
     if (host->GetType() == DevToolsAgentHost::kTypeTab)

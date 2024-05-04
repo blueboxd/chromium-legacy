@@ -134,7 +134,7 @@ class TargetHandler : public DevToolsDomainHandler,
 
   // Adds a ServiceWorker or DedicatedWorker throttle for an auto attaching
   // session. If none is known for this `agent_host`, is a no-op.
-  // TODO(crbug.com/1143100): support SharedWorker.
+  // TODO(crbug.com/40154954): support SharedWorker.
   void AddWorkerThrottle(DevToolsAgentHost* agent_host,
                          scoped_refptr<DevToolsThrottleHandle> throttle_handle);
 
@@ -188,8 +188,8 @@ class TargetHandler : public DevToolsDomainHandler,
   const AccessMode access_mode_;
   const std::string owner_target_id_;
   const DevToolsSession::Mode session_mode_;
-  DevToolsSession* const root_session_;
-  TargetAutoAttacher* const auto_attacher_;
+  const raw_ptr<DevToolsSession> root_session_;
+  const raw_ptr<TargetAutoAttacher> auto_attacher_;
   std::unique_ptr<Target::Frontend> frontend_;
 
   bool flatten_auto_attach_ = false;

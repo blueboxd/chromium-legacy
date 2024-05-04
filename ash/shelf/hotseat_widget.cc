@@ -22,6 +22,7 @@
 #include "ash/shell.h"
 #include "ash/style/system_shadow.h"
 #include "ash/system/status_area_widget.h"
+#include "ash/utility/forest_util.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_observer.h"
 #include "base/functional/bind.h"
@@ -32,6 +33,7 @@
 #include "chromeos/constants/chromeos_features.h"
 #include "ui/aura/scoped_window_targeter.h"
 #include "ui/aura/window_targeter.h"
+#include "ui/chromeos/styles/cros_tokens_color_mappings.h"
 #include "ui/compositor/animation_throughput_reporter.h"
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
@@ -440,6 +442,9 @@ class HotseatWidget::DelegateView : public HotseatTransitionAnimator::Observer,
   // the visibility of shadow.
   void UpdateHighlightBorder(bool update_corner_radius);
 
+  // Returns the target background color for the hotseat.
+  SkColor GetBackgroundColor();
+
   void SetTranslucentBackground(const gfx::Rect& translucent_background_bounds);
 
   // Sets whether the background should be blurred as requested by the argument,
@@ -494,6 +499,12 @@ class HotseatWidget::DelegateView : public HotseatTransitionAnimator::Observer,
 
   // The type of highlight border.
   views::HighlightBorder::Type border_type_;
+
+  // Tracks whether the forest flag was enabled when entering overview.
+  // TODO(sammiequon): This is temporary while the secret key exists. After the
+  // secret key is removed, entering/exiting overview should never need to
+  // remove/readd blur.
+  bool was_forest_on_overview_enter_ = false;
 };
 
 HotseatWidget::DelegateView::~DelegateView() {
@@ -511,8 +522,9 @@ void HotseatWidget::DelegateView::Init(
   OverviewController* overview_controller = Shell::Get()->overview_controller();
   if (overview_controller) {
     overview_controller->AddObserver(this);
-    if (overview_controller->InOverviewSession())
+    if (overview_controller->InOverviewSession() && !IsForestFeatureEnabled()) {
       ++blur_lock_;
+    }
   }
   DCHECK(scrollable_shelf_view);
   scrollable_shelf_view_ = scrollable_shelf_view;
@@ -592,6 +604,20 @@ void HotseatWidget::DelegateView::UpdateHighlightBorder(
   translucent_background_->SetBorder(std::move(border));
 }
 
+SkColor HotseatWidget::DelegateView::GetBackgroundColor() {
+  auto* widget = GetWidget();
+  CHECK(widget);
+  aura::Window* window = widget->GetNativeWindow();
+  // A forest session uses system-on-base.
+  if (IsForestFeatureEnabled() &&
+      OverviewController::Get()->InOverviewSession() &&
+      !SplitViewController::Get(window)->InSplitViewMode()) {
+    return widget->GetColorProvider()->GetColor(
+        cros_tokens::kCrosSysSystemOnBase);
+  }
+  return ShelfConfig::Get()->GetDefaultShelfColor(widget);
+}
+
 void HotseatWidget::DelegateView::SetTranslucentBackground(
     const gfx::Rect& background_bounds) {
   DCHECK(HotseatWidget::ShouldShowHotseatBackground());
@@ -607,12 +633,11 @@ void HotseatWidget::DelegateView::SetTranslucentBackground(
                      hotseat_widget_->GetTranslucentBackgroundReportCallback());
   }
 
-  const auto* widget = GetWidget();
-  DCHECK(widget);
-  if (ShelfConfig::Get()->GetDefaultShelfColor(widget) != target_color_) {
+  SkColor background_color = GetBackgroundColor();
+  if (background_color != target_color_) {
     ui::ScopedLayerAnimationSettings color_animation_setter(animator);
     DoScopedAnimationSetting(&color_animation_setter);
-    target_color_ = ShelfConfig::Get()->GetDefaultShelfColor(widget);
+    target_color_ = background_color;
     translucent_background_->SetBackground(
         views::CreateSolidBackground(target_color_));
   }
@@ -696,6 +721,11 @@ bool HotseatWidget::DelegateView::CanActivate() const {
 }
 
 void HotseatWidget::DelegateView::OnOverviewModeWillStart() {
+  // Forest uses background blur in overview.
+  was_forest_on_overview_enter_ = IsForestFeatureEnabled();
+  if (was_forest_on_overview_enter_) {
+    return;
+  }
   DCHECK_LE(blur_lock_, 2);
 
   SetBackgroundBlur(false);
@@ -704,6 +734,11 @@ void HotseatWidget::DelegateView::OnOverviewModeWillStart() {
 
 void HotseatWidget::DelegateView::OnOverviewModeEndingAnimationComplete(
     bool canceled) {
+  // Forest uses background blur in overview.
+  if (was_forest_on_overview_enter_) {
+    was_forest_on_overview_enter_ = false;
+    return;
+  }
   DCHECK_GT(blur_lock_, 0);
 
   --blur_lock_;

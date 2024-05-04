@@ -13,6 +13,10 @@
 #include "content/public/browser/global_routing_id.h"
 #include "ui/base/models/image_model.h"
 
+namespace content {
+class WebContents;
+}
+
 namespace infobars {
 class ContentInfoBarManager;
 class InfoBar;
@@ -44,13 +48,12 @@ class TabSharingInfoBarDelegate : public infobars::InfoBarDelegate {
     ui::ImageModel icon;
   };
 
-  // TODO(crbug.com/327501794): Rename these buttons to reflect what they are
-  // used for in the TabSharingInfoBar.
-  enum InfoBarButton {
-    BUTTON_NONE = 0,
-    BUTTON_OK = 1 << 0,
-    BUTTON_CANCEL = 1 << 1,
-    BUTTON_EXTRA = 1 << 2,
+  enum TabSharingInfoBarButton {
+    kNone = 0,
+    kStop = 1 << 0,
+    kShareThisTabInstead = 1 << 1,
+    kQuickNav = 1 << 2,
+    kCapturedSurfaceControlIndicator = 1 << 3,
   };
 
   enum class ButtonState {
@@ -68,11 +71,28 @@ class TabSharingInfoBarDelegate : public infobars::InfoBarDelegate {
     CAST,
   };
 
+  enum class TabRole {
+    kCapturingTab,
+    kCapturedTab,
+    kSelfCapturingTab,  // kCapturingTab && kCapturedTab
+    kOtherTab,
+  };
+
   class TabSharingInfoBarDelegateButton;
+  class StopButton;
+  class ShareTabInsteadButton;
+  class SwitchToTabButton;
+  class CscIndicatorButton;
 
   // Creates a tab sharing infobar, which has 1-2 buttons.
   //
   // The primary button is for stopping the capture. It is always present.
+  //
+  // The infobar replaces any non-null `old_infobar`, or will be added if that
+  // is null.
+  //
+  // |role| denotes whether the infobar is associated with the capturing
+  // and/or captured tab.
   //
   // If |focus_target| has a value, the secondary button switches focus.
   // The image on the secondary button is derived from |focus_target|.
@@ -81,28 +101,33 @@ class TabSharingInfoBarDelegate : public infobars::InfoBarDelegate {
   // Otherwise, there is no secondary button.
   static infobars::InfoBar* Create(
       infobars::ContentInfoBarManager* infobar_manager,
+      infobars::InfoBar* old_infobar,
       const std::u16string& shared_tab_name,
       const std::u16string& capturer_name,
-      bool shared_tab,
+      content::WebContents* web_contents,
+      TabRole role,
       ButtonState share_this_tab_instead_button_state,
       std::optional<FocusTarget> focus_target,
+      bool captured_surface_control_active,
       TabSharingUI* ui,
       TabShareType capture_type,
       bool favicons_used_for_switch_to_tab_button = false);
 
   ~TabSharingInfoBarDelegate() override;
 
-  // TODO(crbug.com/1224363): Inline these methods into TabSharingInfoBar where
+  // TODO(crbug.com/40188004): Inline these methods into TabSharingInfoBar where
   // feasible or add comments to document their function better.
   std::u16string GetMessageText() const;
-  std::u16string GetButtonLabel(InfoBarButton button) const;
-  ui::ImageModel GetButtonImage(InfoBarButton button) const;
-  bool GetButtonEnabled(InfoBarButton button) const;
-  std::u16string GetButtonTooltip(InfoBarButton button) const;
+  std::u16string GetButtonLabel(TabSharingInfoBarButton button) const;
+  ui::ImageModel GetButtonImage(TabSharingInfoBarButton button) const;
+  bool IsButtonEnabled(TabSharingInfoBarButton button) const;
+  std::u16string GetButtonTooltip(TabSharingInfoBarButton button) const;
   int GetButtons() const;
-  bool Accept();
-  bool Cancel();
-  bool ExtraButtonPressed();
+
+  void Stop();
+  void ShareThisTabInstead();
+  void QuickNav();
+  void OnCapturedSurfaceControlActivityIndicatorPressed();
 
   // InfoBarDelegate:
   infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
@@ -114,15 +139,21 @@ class TabSharingInfoBarDelegate : public infobars::InfoBarDelegate {
  private:
   TabSharingInfoBarDelegate(std::u16string shared_tab_name,
                             std::u16string capturer_name,
-                            bool shared_tab,
+                            content::WebContents* web_contents,
+                            TabRole role,
                             ButtonState share_this_tab_instead_button_state,
                             std::optional<FocusTarget> focus_target,
+                            bool captured_surface_control_active,
                             TabSharingUI* ui,
                             TabShareType capture_type,
                             bool favicons_used_for_switch_to_tab_button);
 
+  const TabSharingInfoBarDelegateButton& GetButton(
+      TabSharingInfoBarButton button) const;
+  TabSharingInfoBarDelegateButton& GetButton(TabSharingInfoBarButton button);
+
   const std::u16string shared_tab_name_;
-  const bool shared_tab_;
+  const TabRole role_;
 
   // Represents the app name that's doing the capture in `getDisplayMedia` when
   // `TabShareType::CAPTURE`, and the sink name (which could be empty) when
@@ -132,14 +163,16 @@ class TabSharingInfoBarDelegate : public infobars::InfoBarDelegate {
   // Creates and removes delegate's infobar; outlives delegate.
   const raw_ptr<TabSharingUI, AcrossTasksDanglingUntriaged> ui_;
 
-  // TODO(crbug.com/1224363): Re-enable favicons by default or drop the code.
+  // TODO(crbug.com/40188004): Re-enable favicons by default or drop the code.
   const bool favicons_used_for_switch_to_tab_button_;
 
   // Indicates whether this instance is used for casting or capturing.
   const TabShareType capture_type_;
 
-  std::unique_ptr<TabSharingInfoBarDelegateButton> secondary_button_;
-  std::unique_ptr<TabSharingInfoBarDelegateButton> tertiary_button_;
+  std::unique_ptr<StopButton> stop_button_;
+  std::unique_ptr<ShareTabInsteadButton> share_this_tab_instead_button_;
+  std::unique_ptr<SwitchToTabButton> quick_nav_button_;
+  std::unique_ptr<CscIndicatorButton> csc_indicator_button_;
 };
 
 std::unique_ptr<infobars::InfoBar> CreateTabSharingInfoBar(

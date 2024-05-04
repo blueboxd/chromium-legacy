@@ -5,9 +5,9 @@
 #ifndef CONTENT_PUBLIC_TEST_MOCK_WEB_CONTENTS_OBSERVER_H_
 #define CONTENT_PUBLIC_TEST_MOCK_WEB_CONTENTS_OBSERVER_H_
 
-#include "content/public/browser/ax_event_notification_details.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "ui/accessibility/ax_updates_and_events.h"
 
 namespace content {
 
@@ -257,11 +257,11 @@ class MockWebContentsObserver : public WebContentsObserver {
   MOCK_METHOD(void, AXTreeIDForMainFrameHasChanged, (), (override));
   MOCK_METHOD(void,
               AccessibilityEventReceived,
-              (const AXEventNotificationDetails& details),
+              (const ui::AXUpdatesAndEvents& details),
               (override));
   MOCK_METHOD(void,
               AccessibilityLocationChangesReceived,
-              (const std::vector<AXLocationChangeNotificationDetails>& details),
+              (const std::vector<ui::AXLocationChanges>& details),
               (override));
   MOCK_METHOD(void, DidChangeThemeColor, (), (override));
   MOCK_METHOD(void, OnBackgroundColorChanged, (), (override));

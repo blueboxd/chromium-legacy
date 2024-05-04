@@ -14,10 +14,6 @@ BASE_FEATURE(kAddToHomescreenMessaging,
              "AddToHomescreenMessaging",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kAmbientBadgeSuppressFirstVisit,
-             "AmbientBadgeSuppressFirstVisit",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Enables or disables the installable ambient badge message.
 BASE_FEATURE(kInstallPromptGlobalGuardrails,
              "InstallPromptGlobalGuardrails",
@@ -34,28 +30,16 @@ extern const base::FeatureParam<base::TimeDelta>
     kInstallPromptGlobalGuardrails_IgnorePeriod{&kInstallPromptGlobalGuardrails,
                                                 "ignore_period", base::Days(3)};
 
+BASE_FEATURE(kPwaUniversalInstallUi,
+             "PwaUniversalInstallUi",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enables WebAPK Install Failure Notification.
 BASE_FEATURE(kWebApkInstallFailureNotification,
              "WebApkInstallFailureNotification",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 #endif  // BUILDFLAG(IS_ANDROID)
-
-// When the user clicks "Create Shortcut" in the dot menu, the current page is
-// used as start-url, instead of the manifest-supplied value.
-// This allows subpages of web apps to be bookmarked via shortcuts
-// separately from their parent app.
-// For installing the parent app, the existing "Install Site" should be used
-// instead. With this feature, "Install Site" now also shows up for websites
-// without service worker, as long as they have a manifest.
-BASE_FEATURE(kCreateShortcutIgnoresManifest,
-             "CreateShortcutIgnoresManifest",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Use segmentation to decide whether install prompt should be shown.
-BASE_FEATURE(kInstallPromptSegmentation,
-             "InstallPromptSegmentation",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Keys to use when querying the variations params.
 BASE_FEATURE(kAppBannerTriggering,
@@ -112,5 +96,11 @@ BASE_FEATURE(kUniversalInstallIcon,
 
 extern const base::FeatureParam<int> kMinimumFaviconSize{&kUniversalInstallIcon,
                                                          "size", 48};
+
+// Allow using default manifest URL.
+BASE_FEATURE(kUniversalInstallDefaultUrl,
+             "UniversalInstallDefaultUrl",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 }  // namespace features
 }  // namespace webapps

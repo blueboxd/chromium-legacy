@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40284755): Remove this and spanify to fix the errors.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "base/files/file_path.h"
 
 #include <string.h>
@@ -28,6 +33,7 @@
 
 #if BUILDFLAG(IS_WIN)
 #include <windows.h>
+
 #include "base/win/win_util.h"
 #elif BUILDFLAG(IS_APPLE)
 #include <CoreFoundation/CoreFoundation.h>

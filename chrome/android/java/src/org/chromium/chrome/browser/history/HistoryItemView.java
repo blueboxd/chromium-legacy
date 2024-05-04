@@ -18,6 +18,8 @@ import androidx.core.widget.ImageViewCompat;
 import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.history.AppFilterCoordinator.AppInfo;
+import org.chromium.chrome.browser.history.HistoryContentManager.AppInfoCache;
 import org.chromium.chrome.browser.ui.favicon.FaviconHelper.DefaultFaviconHelper;
 import org.chromium.chrome.browser.ui.favicon.FaviconUtils;
 import org.chromium.components.browser_ui.util.TraceEventVectorDrawableCompat;
@@ -25,10 +27,13 @@ import org.chromium.components.browser_ui.widget.RoundedIconGenerator;
 import org.chromium.components.browser_ui.widget.selectable_list.SelectableItemView;
 import org.chromium.components.browser_ui.widget.selectable_list.SelectableListUtils;
 
+import java.util.function.BooleanSupplier;
+
 /** The SelectableItemView for items displayed in the browsing history UI. */
 public class HistoryItemView extends SelectableItemView<HistoryItem> {
     private ImageButton mRemoveButton;
     private VectorDrawableCompat mBlockedVisitDrawable;
+    private AppInfoCache mAppInfoCache;
 
     private final RoundedIconGenerator mIconGenerator;
     private DefaultFaviconHelper mFaviconHelper;
@@ -38,6 +43,7 @@ public class HistoryItemView extends SelectableItemView<HistoryItem> {
     private final int mEndPadding;
 
     private boolean mIsItemRemoved;
+    private BooleanSupplier mShowSourceApp;
 
     public HistoryItemView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -79,7 +85,7 @@ public class HistoryItemView extends SelectableItemView<HistoryItem> {
         super.setItem(item);
 
         mTitleView.setText(item.getTitle());
-        mDescriptionView.setText(item.getDomain());
+        mDescriptionView.setText(getDescription(item));
         SelectableListUtils.setContentDescriptionContext(
                 getContext(),
                 mRemoveButton,
@@ -106,6 +112,31 @@ public class HistoryItemView extends SelectableItemView<HistoryItem> {
                     AppCompatResources.getColorStateList(
                             getContext(), R.color.default_text_color_list));
         }
+    }
+
+    void initialize(AppInfoCache appInfoCache, BooleanSupplier showSourceApp) {
+        mAppInfoCache = appInfoCache;
+        // ItemView can be reused every time a new query is made. Use a supplier to
+        // check the condition that changes dynamically.
+        mShowSourceApp = showSourceApp;
+    }
+
+    protected String getDescription(HistoryItem item) {
+        String domain = item.getDomain();
+        if (!mShowSourceApp.getAsBoolean()) return domain;
+
+        String appId = item.getAppId();
+        if (appId == null) return domain;
+
+        AppInfo appInfo = mAppInfoCache.get(appId);
+        if (!appInfo.isValid()) return domain;
+        CharSequence label = appInfo.label;
+
+        StringBuilder sb = new StringBuilder();
+        sb.append(domain);
+        sb.append(" - ");
+        sb.append(getContext().getResources().getString(R.string.history_app_attribution, label));
+        return sb.toString();
     }
 
     /**

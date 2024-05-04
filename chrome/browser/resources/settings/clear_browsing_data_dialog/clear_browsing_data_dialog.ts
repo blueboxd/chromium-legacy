@@ -20,14 +20,14 @@ import '../icons.html.js';
 import '../settings_shared.css.js';
 
 import type {SyncBrowserProxy, SyncStatus} from '/shared/settings/people_page/sync_browser_proxy.js';
-import {StatusAction, SyncBrowserProxyImpl} from '/shared/settings/people_page/sync_browser_proxy.js';
-import {PrefsMixin} from 'chrome://resources/cr_components/settings_prefs/prefs_mixin.js';
+import {SignedInState, StatusAction, SyncBrowserProxyImpl} from '/shared/settings/people_page/sync_browser_proxy.js';
+import {PrefsMixin} from '/shared/settings/prefs/prefs_mixin.js';
 import {getInstance as getAnnouncerInstance} from 'chrome://resources/cr_elements/cr_a11y_announcer/cr_a11y_announcer.js';
 import type {CrDialogElement} from 'chrome://resources/cr_elements/cr_dialog/cr_dialog.js';
 import type {CrTabsElement} from 'chrome://resources/cr_elements/cr_tabs/cr_tabs.js';
 import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
 import {WebUiListenerMixin} from 'chrome://resources/cr_elements/web_ui_listener_mixin.js';
-import {assert} from 'chrome://resources/js/assert.js';
+import {assert, assertNotReached} from 'chrome://resources/js/assert.js';
 import {FocusOutlineManager} from 'chrome://resources/js/focus_outline_manager.js';
 import {sanitizeInnerHtml} from 'chrome://resources/js/parse_html_subset.js';
 import type {IronPagesElement} from 'chrome://resources/polymer/v3_0/iron-pages/iron-pages.js';
@@ -76,10 +76,12 @@ export enum TimePeriod {
   LAST_WEEK = 2,
   FOUR_WEEKS = 3,
   ALL_TIME = 4,
+  // OLDER_THAN_30_DAYS = 5 is not used on Desktop.
+  // LAST_15_MINUTES = 6 is not used on Desktop.
   TIME_PERIOD_LAST = ALL_TIME
 }
 
-// TODO(crbug.com/1487530): Remove this after CbdTimeframeRequired finishes.
+// TODO(crbug.com/40283307): Remove this after CbdTimeframeRequired finishes.
 export enum TimePeriodExperiment {
   NOT_SELECTED = -1,
   LAST_HOUR = 0,
@@ -87,7 +89,7 @@ export enum TimePeriodExperiment {
   LAST_WEEK = 2,
   FOUR_WEEKS = 3,
   ALL_TIME = 4,
-  OLDER_THAN_30_DAYS = 5,
+  // OLDER_THAN_30_DAYS = 5 is not used on Desktop.
   LAST_15_MINUTES = 6,
   TIME_PERIOD_LAST = LAST_15_MINUTES
 }
@@ -535,8 +537,92 @@ export class SettingsClearBrowsingDataDialogElement extends
     return dataTypes;
   }
 
+  private getTimeRangeDropdownForCurrentPage_() {
+    const page = this.$.pages.selectedItem as HTMLElement;
+    const dropdownMenu =
+        page.querySelector<SettingsDropdownMenuElement>('.time-range-select');
+    assert(dropdownMenu);
+    return dropdownMenu;
+  }
+
+  private isBasicTabSelected_() {
+    const page = this.$.pages.selectedItem as HTMLElement;
+    assert(page);
+    switch (page.id) {
+      case 'basic-tab':
+        return true;
+      case 'advanced-tab':
+        return false;
+      default:
+        assertNotReached();
+    }
+  }
+
+  // TODO(crbug.com/40283307): Remove this after CbdTimeframeRequired finishes.
+  /** Highlight the time period dropdown in case no selection was made. */
+  private validateSelectedTimeRange_(): boolean {
+    const dropdownMenu = this.getTimeRangeDropdownForCurrentPage_();
+    const timePeriod = Number(dropdownMenu.getSelectedValue());
+    if (timePeriod !== TimePeriodExperiment.NOT_SELECTED) {
+      return true;
+    }
+    // No time period is selected: the time period dropdown gets highlighted,
+    // and no clearing should happen.
+    dropdownMenu.classList.add('dropdown-error');
+    // Move the focus to the dropdown to indicate the change to a11y users.
+    dropdownMenu.focus();
+    return false;
+  }
+
+  // TODO(crbug.com/40283307): Remove once crbug.com/1487530 completed.
+  private cbdExperimentDualWritePrefs_() {
+    // To avoid in- and out-of-experiment prefs of the CBD time range experiment
+    // (crbug.com/1487530) from diverging, the in-experiment prefs should also
+    // be written to the out-of-experiment prefs. A 15min in-experiment
+    // selection should be a 1h out-of-experiment selection. Out-of-experiment
+    // prefs should also be written to the in-experiment prefs iff the in-
+    // experiment prefs value is not TimePeriodExperiment.NOT_SELECTED.
+    const dropdownMenuBasic =
+        this.shadowRoot!.querySelector<SettingsCheckboxElement>(
+            '#clearFromBasic');
+    assert(dropdownMenuBasic);
+    const timeRangeBasic =
+        dropdownMenuBasic.pref!.value === TimePeriodExperiment.LAST_15_MINUTES ?
+        TimePeriod.LAST_HOUR :
+        dropdownMenuBasic.pref!.value;
+
+    const dropdownMenuAdvanced =
+        this.shadowRoot!.querySelector<SettingsCheckboxElement>('#clearFrom');
+    assert(dropdownMenuAdvanced);
+    const timeRangeAdvanced = dropdownMenuAdvanced.pref!.value ===
+            TimePeriodExperiment.LAST_15_MINUTES ?
+        TimePeriod.LAST_HOUR :
+        dropdownMenuAdvanced.pref!.value;
+
+    if (this.enableCbdTimeframeRequired_) {
+      this.setPrefValue('browser.clear_data.time_period_basic', timeRangeBasic);
+      this.setPrefValue('browser.clear_data.time_period', timeRangeAdvanced);
+    } else {
+      // Out-of-experiment.
+      if (this.getPref('browser.clear_data.time_period_v2_basic').value !==
+          TimePeriodExperiment.NOT_SELECTED) {
+        this.setPrefValue(
+            'browser.clear_data.time_period_v2_basic', timeRangeBasic);
+      }
+      if (this.getPref('browser.clear_data.time_period_v2').value !==
+          TimePeriodExperiment.NOT_SELECTED) {
+        this.setPrefValue(
+            'browser.clear_data.time_period_v2', timeRangeAdvanced);
+      }
+    }
+  }
+
   /** Clears browsing data and maybe shows a history notice. */
   private async clearBrowsingData_() {
+    if (!this.validateSelectedTimeRange_()) {
+      return;
+    }
+
     this.clearingInProgress_ = true;
     this.clearingDataAlertString_ = loadTimeData.getString('clearingData');
 
@@ -553,21 +639,22 @@ export class SettingsClearBrowsingDataDialogElement extends
             'settings-dropdown-menu[no-set-pref]')
         .forEach(dropdown => dropdown.sendPrefChange());
 
+    // Dual write prefs only after the regular prefs have been written above.
+    this.cbdExperimentDualWritePrefs_();
+
     const page = this.$.pages.selectedItem as HTMLElement;
     const dataTypes = this.getSelectedDataTypes_(page);
-    const dropdownMenu =
-        page.querySelector<SettingsDropdownMenuElement>('.time-range-select');
-    assert(dropdownMenu);
-    const timePeriod = dropdownMenu.pref!.value;
+    const dropdownMenu = this.getTimeRangeDropdownForCurrentPage_();
 
-    if (page.id === 'basic-tab') {
+    if (this.isBasicTabSelected_()) {
       chrome.metricsPrivate.recordUserAction('ClearBrowsingData_BasicTab');
     } else {
       chrome.metricsPrivate.recordUserAction('ClearBrowsingData_AdvancedTab');
     }
 
     const {showHistoryNotice, showPasswordsNotice} =
-        await this.browserProxy_.clearBrowsingData(dataTypes, timePeriod);
+        await this.browserProxy_.clearBrowsingData(
+            dataTypes, dropdownMenu.pref!.value);
     this.clearingInProgress_ = false;
     getAnnouncerInstance().announce(loadTimeData.getString('clearedData'));
     this.showHistoryDeletionDialog_ = showHistoryNotice;
@@ -686,7 +773,8 @@ export class SettingsClearBrowsingDataDialogElement extends
     if (this.unoDesktopEnabled_) {
       showFooter = this.isSignedIn_;
     } else {
-      showFooter = !!this.syncStatus && !!this.syncStatus!.signedIn;
+      showFooter = !!this.syncStatus &&
+          this.syncStatus.signedInState === SignedInState.SYNCING;
     }
     // </if>
     return showFooter;
@@ -697,7 +785,8 @@ export class SettingsClearBrowsingDataDialogElement extends
    */
   private showSigninInfo_(): boolean {
     return this.unoDesktopEnabled_ && this.isSignedIn_ &&
-        (!this.syncStatus || !this.syncStatus.signedIn);
+        (!this.syncStatus ||
+         this.syncStatus.signedInState !== SignedInState.SYNCING);
   }
 
   /**
@@ -706,6 +795,24 @@ export class SettingsClearBrowsingDataDialogElement extends
   private showSyncInfo_(): boolean {
     return !this.showSigninInfo_() && !!this.syncStatus &&
         !this.syncStatus.hasError;
+  }
+
+  private onTimePeriodChanged_() {
+    const dropdownMenu = this.getTimeRangeDropdownForCurrentPage_();
+
+    // Needed in the |enableCbdTimeframeRequired_| experiment, no-op otherwise.
+    // TODO(crbug.com/40283307): Remove when crbug.com/1487530 finished.
+    dropdownMenu.classList.remove('dropdown-error');
+
+    let timePeriod = parseInt(dropdownMenu.getSelectedValue(), 10);
+    assert(!Number.isNaN(timePeriod));
+
+    // If the time period is not selected, count all the data.
+    if (timePeriod === TimePeriodExperiment.NOT_SELECTED) {
+      timePeriod = TimePeriodExperiment.ALL_TIME;
+    }
+
+    this.browserProxy_.restartCounters(this.isBasicTabSelected_(), timePeriod);
   }
 
   private onTimePeriodAdvancedPrefUpdated_() {
@@ -717,9 +824,9 @@ export class SettingsClearBrowsingDataDialogElement extends
   }
 
 
-  private onTimePeriodPrefUpdated_(basic: boolean) {
-    const timePeriodPref = basic ? 'browser.clear_data.time_period_basic' :
-                                   'browser.clear_data.time_period';
+  private onTimePeriodPrefUpdated_(isBasic: boolean) {
+    const timePeriodPref = isBasic ? 'browser.clear_data.time_period_basic' :
+                                     'browser.clear_data.time_period';
 
     const timePeriodValue = this.getPref(timePeriodPref).value;
 

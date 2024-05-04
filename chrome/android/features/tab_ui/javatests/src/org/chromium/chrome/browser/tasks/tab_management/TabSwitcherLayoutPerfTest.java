@@ -46,7 +46,6 @@ import org.chromium.base.test.util.Features.EnableFeatures;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
-import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.layouts.LayoutTestUtils;
@@ -54,6 +53,7 @@ import org.chromium.chrome.browser.layouts.LayoutType;
 import org.chromium.chrome.browser.layouts.animation.CompositorAnimator;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabSelectionType;
+import org.chromium.chrome.browser.tab_ui.TabContentManager;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.R;
@@ -73,9 +73,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
 
-/**
- * Tests for the {@link TabSwitcherLayout}, mainly for animation performance.
- */
+/** Tests for the {@link TabSwitcherLayout}, mainly for animation performance. */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({
     ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
@@ -86,7 +84,6 @@ import java.util.concurrent.TimeoutException;
     UiRestriction.RESTRICTION_TYPE_PHONE,
     Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE
 })
-@EnableFeatures({ChromeFeatureList.DEFER_TAB_SWITCHER_LAYOUT_CREATION})
 @DisableFeatures({ChromeFeatureList.ANDROID_HUB})
 public class TabSwitcherLayoutPerfTest {
     private static final String TAG = "SSLayoutPerfTest";

@@ -8,6 +8,7 @@
 
 #include <utility>
 
+#include "base/compiler_specific.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_function.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_throw_dom_exception.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_web_transport_error.h"
@@ -44,19 +45,19 @@ class IncomingStream::UnderlyingByteSource final
                                 IncomingStream* stream)
       : script_state_(script_state), incoming_stream_(stream) {}
 
-  ScriptPromise Pull(ReadableByteStreamController* controller,
-                     ExceptionState& exception_state) override {
+  ScriptPromiseUntyped Pull(ReadableByteStreamController* controller,
+                            ExceptionState& exception_state) override {
     DCHECK_EQ(controller, incoming_stream_->controller_);
     incoming_stream_->ReadFromPipeAndEnqueue(exception_state);
-    return ScriptPromise::CastUndefined(script_state_.Get());
+    return ScriptPromiseUntyped::CastUndefined(script_state_.Get());
   }
 
-  ScriptPromise Cancel(ExceptionState& exception_state) override {
+  ScriptPromiseUntyped Cancel(ExceptionState& exception_state) override {
     return Cancel(v8::Undefined(script_state_->GetIsolate()), exception_state);
   }
 
-  ScriptPromise Cancel(v8::Local<v8::Value> reason,
-                       ExceptionState& exception_state) override {
+  ScriptPromiseUntyped Cancel(v8::Local<v8::Value> reason,
+                              ExceptionState& exception_state) override {
     uint8_t code = 0;
     WebTransportError* exception =
         V8WebTransportError::ToWrappable(script_state_->GetIsolate(), reason);
@@ -64,7 +65,7 @@ class IncomingStream::UnderlyingByteSource final
       code = exception->streamErrorCode().value_or(0);
     }
     incoming_stream_->AbortAndReset(code);
-    return ScriptPromise::CastUndefined(script_state_.Get());
+    return ScriptPromiseUntyped::CastUndefined(script_state_.Get());
   }
 
   ScriptState* GetScriptState() override { return script_state_.Get(); }
@@ -239,18 +240,26 @@ void IncomingStream::ReadFromPipeAndEnqueue(ExceptionState& exception_state) {
   DCHECK(!read_pending_);
 
   const void* buffer = nullptr;
-  uint32_t buffer_num_bytes = 0;
+  size_t buffer_num_bytes = 0;
   auto result = data_pipe_->BeginReadData(&buffer, &buffer_num_bytes,
                                           MOJO_BEGIN_READ_DATA_FLAG_NONE);
   switch (result) {
     case MOJO_RESULT_OK: {
       in_two_phase_read_ = true;
+
+      // SAFETY: `BeginReadData` guarantees that `buffer_num_bytes` is set to
+      // the amount of available space in `buffer`.
+      auto buffer_span = UNSAFE_BUFFERS(
+          base::span(static_cast<const uint8_t*>(buffer), buffer_num_bytes));
+
       // RespondBYOBRequestOrEnqueueBytes() may re-enter this method via pull().
-      uint32_t read_bytes = RespondBYOBRequestOrEnqueueBytes(
-          buffer, buffer_num_bytes, exception_state);
+      size_t read_bytes =
+          RespondBYOBRequestOrEnqueueBytes(buffer_span, exception_state);
       if (exception_state.HadException()) {
         return;
       }
+      // Casting back to `uint32_t` is safe because `read_bytes` cannot be
+      // greater than `buffer_num_bytes`.
       data_pipe_->EndReadData(read_bytes);
       in_two_phase_read_ = false;
       if (read_pending_) {
@@ -279,9 +288,8 @@ void IncomingStream::ReadFromPipeAndEnqueue(ExceptionState& exception_state) {
   }
 }
 
-uint32_t IncomingStream::RespondBYOBRequestOrEnqueueBytes(
-    const void* source,
-    uint32_t byte_length,
+size_t IncomingStream::RespondBYOBRequestOrEnqueueBytes(
+    base::span<const uint8_t> source,
     ExceptionState& exception_state) {
   DVLOG(1) << "IncomingStream::RespondBYOBRequestOrEnqueueBytes() this="
            << this;
@@ -290,18 +298,17 @@ uint32_t IncomingStream::RespondBYOBRequestOrEnqueueBytes(
 
   if (ReadableStreamBYOBRequest* request = controller_->byobRequest()) {
     DOMArrayPiece view(request->view().Get());
-    size_t byob_response_length = 0;
-    byob_response_length =
-        std::min(view.ByteLength(), static_cast<size_t>(byte_length));
-    memcpy(view.Data(), source, byob_response_length);
+    size_t byob_response_length = std::min(view.ByteLength(), source.size());
+    view.ByteSpan()
+        .first(byob_response_length)
+        .copy_from(source.first(byob_response_length));
     request->respond(script_state_, byob_response_length, exception_state);
-    return static_cast<uint32_t>(byob_response_length);
+    return byob_response_length;
   }
 
-  auto* buffer =
-      DOMUint8Array::Create(static_cast<const uint8_t*>(source), byte_length);
+  auto* buffer = DOMUint8Array::Create(source);
   controller_->enqueue(script_state_, NotShared(buffer), exception_state);
-  return byte_length;
+  return source.size();
 }
 
 void IncomingStream::CloseAbortAndReset(ExceptionState& exception_state) {

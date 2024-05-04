@@ -11,6 +11,7 @@ load("//lib/branches.star", "branches")
 load("//lib/ci.star", "ci")
 load("//lib/consoles.star", "consoles")
 load("//lib/gn_args.star", "gn_args")
+load("//lib/targets.star", "targets")
 
 ci.defaults.set(
     executable = ci.DEFAULT_EXECUTABLE,
@@ -25,6 +26,12 @@ ci.defaults.set(
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
     service_account = ci.DEFAULT_SERVICE_ACCOUNT,
     shadow_service_account = ci.DEFAULT_SHADOW_SERVICE_ACCOUNT,
+    siso_enabled = True,
+    siso_remote_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
+)
+
+targets.builder_defaults.set(
+    mixins = ["chromium-tester-service-account"],
 )
 
 consoles.console_view(
@@ -71,7 +78,7 @@ ci.builder(
             "asan",
             "debug_builder",
             "reclient",
-            # TODO(1486663): Remove no_symbols when unit_tests binary size
+            # TODO(crbug.com/40282985): Remove no_symbols when unit_tests binary size
             # issue is resolved.
             "no_symbols",
             "strip_debug_info",
@@ -79,7 +86,7 @@ ci.builder(
     ),
     builderless = False,
     cores = None,
-    # TODO(crbug.com/1486663): Restore tree-closing and sheriff rotation if/when
+    # TODO(crbug.com/40282985): Restore tree-closing and sheriff rotation if/when
     # bot is fixed.
     # tree_closing = True,
     sheriff_rotations = args.ignore_default(None),
@@ -90,7 +97,7 @@ ci.builder(
     contact_team_email = "clank-engprod@google.com",
     # Higher build timeout since dbg ASAN builds can take a while on a clobber
     # build.
-    # TODO(crbug.com/1395760): Check why the compile takes longer time.
+    # TODO(crbug.com/40882299): Check why the compile takes longer time.
     execution_timeout = 8 * time.hour,
 )
 
@@ -122,6 +129,22 @@ ci.thin_tester(
             ],
         ),
         build_gs_bucket = "chromium-android-archive",
+    ),
+    targets = targets.bundle(
+        targets = "webview_bot_all_gtests",
+        mixins = [
+            "has_native_resultdb_integration",
+            "oreo_mr1_fleet",
+            "walleye",
+            targets.mixin(
+                swarming = targets.swarming(
+                    expiration_sec = 10800,
+                ),
+            ),
+        ],
+    ),
+    targets_settings = targets.settings(
+        os_type = targets.os_type.ANDROID,
     ),
     console_view_entry = consoles.console_view_entry(
         category = "tester|webview",
@@ -160,6 +183,17 @@ ci.thin_tester(
         ),
         build_gs_bucket = "chromium-android-archive",
     ),
+    targets = targets.bundle(
+        targets = "webview_bot_all_gtests",
+        mixins = [
+            "has_native_resultdb_integration",
+            "pie_fleet",
+            "walleye",
+        ],
+    ),
+    targets_settings = targets.settings(
+        os_type = targets.os_type.ANDROID,
+    ),
     console_view_entry = consoles.console_view_entry(
         category = "tester|webview",
         short_name = "P",
@@ -197,6 +231,14 @@ ci.builder(
             "android_builder_without_codecs",
             "debug_builder",
             "reclient",
+        ],
+    ),
+    targets = targets.bundle(
+        targets = [
+            "chromium_junit_tests_scripts",
+        ],
+        additional_compile_targets = [
+            "all",
         ],
     ),
     free_space = builders.free_space.high,
@@ -243,6 +285,9 @@ ci.builder(
             "arm64",
             "webview_google",
         ],
+    ),
+    targets = targets.bundle(
+        additional_compile_targets = "android_lint",
     ),
     # The 'All' version of this builder below provides the same build coverage
     # but cycles much faster due to beefier machine resources. So any regression
@@ -612,6 +657,30 @@ ci.thin_tester(
             config = "main_builder_mb",
         ),
         build_gs_bucket = "chromium-android-archive",
+    ),
+    targets = targets.bundle(
+        targets = "android_oreo_gtests",
+        mixins = [
+            "has_native_resultdb_integration",
+            "oreo_mr1_fleet",
+            "walleye",
+        ],
+        per_test_modifications = {
+            "chrome_public_test_apk": targets.mixin(
+                # TODO(crbug.com/41414027): Re-enable this once the test
+                # are either passing or there is more capacity.
+                experiment_percentage = 0,
+            ),
+            "webview_instrumentation_test_apk": targets.mixin(
+                # TODO(crbug.com/40641956): Enable this once it's passing.
+                # TODO(crbug.com/41414027): Re-enable this once the tests
+                # are either passing or there is more capacity.
+                experiment_percentage = 0,
+            ),
+        },
+    ),
+    targets_settings = targets.settings(
+        os_type = targets.os_type.ANDROID,
     ),
     sheriff_rotations = args.ignore_default(None),
     console_view_entry = consoles.console_view_entry(
@@ -1104,9 +1173,94 @@ ci.builder(
     notifies = ["cronet"],
 )
 
-# TODO: crbug.com/41484811 - Bring back builder definitions
-# "android-cronet-mainline-clang-riscv64-dbg" and
-# "android-cronet-mainline-clang-riscv64-rel" in this location.
+# Compiles with Android Mainline Clang
+# TODO: crbug.com/41484811 - remove "triggered_by" and "schedule".
+ci.builder(
+    name = "android-cronet-mainline-clang-riscv64-dbg",
+    schedule = "triggered",
+    triggered_by = [],
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+            apply_configs = ["android"],
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "android",
+            apply_configs = [
+                "cronet_builder",
+                "mb",
+            ],
+            build_config = builder_config.build_config.DEBUG,
+            target_bits = 64,
+            target_platform = builder_config.target_platform.ANDROID,
+        ),
+        android_config = builder_config.android_config(config = "main_builder"),
+        build_gs_bucket = "chromium-android-archive",
+    ),
+    gn_args = gn_args.config(
+        configs = [
+            "android_builder_without_codecs",
+            "cronet_android",
+            "debug_static_builder",
+            "reclient",
+            "riscv64",
+            "cronet_android_mainline_clang",
+        ],
+    ),
+    sheriff_rotations = args.ignore_default(None),
+    console_view_entry = consoles.console_view_entry(
+        category = "cronet|mainline_clang|riscv64",
+        short_name = "dbg",
+    ),
+    contact_team_email = "cronet-team@google.com",
+    notifies = ["cronet"],
+)
+
+# Compiles with Android Mainline Clang
+# TODO: crbug.com/41484811 - remove "triggered_by" and "schedule".
+ci.builder(
+    name = "android-cronet-mainline-clang-riscv64-rel",
+    schedule = "triggered",
+    triggered_by = [],
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+            apply_configs = ["android"],
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "android",
+            apply_configs = [
+                "cronet_builder",
+                "mb",
+            ],
+            build_config = builder_config.build_config.RELEASE,
+            target_bits = 64,
+            target_platform = builder_config.target_platform.ANDROID,
+        ),
+        android_config = builder_config.android_config(config = "main_builder"),
+        build_gs_bucket = "chromium-android-archive",
+    ),
+    gn_args = gn_args.config(
+        configs = [
+            "android_builder_without_codecs",
+            "cronet_android",
+            "official_optimize",
+            "release_builder",
+            "reclient",
+            "minimal_symbols",
+            "riscv64",
+            "strip_debug_info",
+            "cronet_android_mainline_clang",
+        ],
+    ),
+    sheriff_rotations = args.ignore_default(None),
+    console_view_entry = consoles.console_view_entry(
+        category = "cronet|mainline_clang|riscv64",
+        short_name = "rel",
+    ),
+    contact_team_email = "cronet-team@google.com",
+    notifies = ["cronet"],
+)
 
 # Compiles with Android Mainline Clang
 ci.builder(
@@ -1891,6 +2045,17 @@ ci.thin_tester(
         ),
         build_gs_bucket = "chromium-android-archive",
     ),
+    targets = targets.bundle(
+        targets = "android_pie_gtests",
+        mixins = [
+            "has_native_resultdb_integration",
+            "pie_fleet",
+            "walleye",
+        ],
+    ),
+    targets_settings = targets.settings(
+        os_type = targets.os_type.ANDROID,
+    ),
     console_view_entry = consoles.console_view_entry(
         category = "tester|phone",
         short_name = "P",
@@ -1990,7 +2155,7 @@ ci.builder(
     contact_team_email = "clank-engprod@google.com",
 )
 
-# TODO(crbug.com/1137474): Update the console view config once on CQ
+# TODO(crbug.com/40152686): Update the console view config once on CQ
 ci.builder(
     name = "android-11-x86-rel",
     builder_spec = builder_config.builder_spec(
@@ -2027,7 +2192,7 @@ ci.builder(
             "webview_shell",
         ],
     ),
-    # TODO(crbug.com/1137474): Add it back to sheriff once the builder is more
+    # TODO(crbug.com/40152686): Add it back to sheriff once the builder is more
     # stable.
     sheriff_rotations = args.ignore_default(None),
     tree_closing = True,
@@ -2087,7 +2252,7 @@ ci.builder(
 
 ci.builder(
     name = "android-13-x64-rel",
-    # TODO(crbug.com/1405331): Enable on branches once stable
+    # TODO(crbug.com/40886566): Enable on branches once stable
     #branch_selector = branches.selector.ANDROID_BRANCHES,
     builder_spec = builder_config.builder_spec(
         gclient_config = builder_config.gclient_config(
@@ -2124,9 +2289,9 @@ ci.builder(
             "webview_shell",
         ],
     ),
-    # TODO(crbug.com/1405331): Enable sheriff once tests are stable
+    # TODO(crbug.com/40886566): Enable sheriff once tests are stable
     sheriff_rotations = args.ignore_default(None),
-    # TODO(crbug.com/1405331): Enable tree_closing once compile are stable
+    # TODO(crbug.com/40886566): Enable tree_closing once compile are stable
     #tree_closing = True,
     console_view_entry = consoles.console_view_entry(
         category = "builder_tester|x64",
@@ -2138,7 +2303,7 @@ ci.builder(
 ci.builder(
     name = "android-14-x64-rel",
     description_html = "Run chromium tests on Android 14 emulators.",
-    # TODO(crbug.com/1494194): Enable on branches once stable
+    # TODO(crbug.com/40286106): Enable on branches once stable
     #branch_selector = branches.selector.ANDROID_BRANCHES,
     builder_spec = builder_config.builder_spec(
         gclient_config = builder_config.gclient_config(
@@ -2175,9 +2340,9 @@ ci.builder(
             "webview_shell",
         ],
     ),
-    # TODO(crbug.com/1494194): Enable sheriff once tests are stable
+    # TODO(crbug.com/40286106): Enable sheriff once tests are stable
     sheriff_rotations = args.ignore_default(None),
-    # TODO(crbug.com/1494194): Enable tree_closing once compile are stable
+    # TODO(crbug.com/40286106): Enable tree_closing once compile are stable
     #tree_closing = True,
     console_view_entry = consoles.console_view_entry(
         category = "builder_tester|x64",
@@ -2185,4 +2350,53 @@ ci.builder(
     ),
     contact_team_email = "clank-engprod@google.com",
     execution_timeout = 4 * time.hour,
+)
+
+ci.builder(
+    name = "android-webview-13-x64-hostside-rel",
+    branch_selector = branches.selector.ANDROID_BRANCHES,
+    description_html = (
+        "Runs WebView host-driven CTS on Android 13 emulator."
+    ),
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+            apply_configs = [
+                "android",
+            ],
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "android",
+            apply_configs = [
+                "mb",
+            ],
+            build_config = builder_config.build_config.RELEASE,
+            target_bits = 64,
+            target_platform = builder_config.target_platform.ANDROID,
+        ),
+        android_config = builder_config.android_config(
+            config = "x64_builder",
+        ),
+        build_gs_bucket = "chromium-android-archive",
+    ),
+    gn_args = gn_args.config(
+        configs = [
+            "android_builder",
+            "release_builder",
+            "reclient",
+            "minimal_symbols",
+            "x64",
+            "strip_debug_info",
+            "android_fastbuild",
+            "webview_trichrome",
+            "no_secondary_abi",
+            "webview_shell",
+        ],
+    ),
+    tree_closing = True,
+    console_view_entry = consoles.console_view_entry(
+        category = "on_cq|x64",
+        short_name = "13-hs",
+    ),
+    contact_team_email = "woa-engprod@google.com",
 )

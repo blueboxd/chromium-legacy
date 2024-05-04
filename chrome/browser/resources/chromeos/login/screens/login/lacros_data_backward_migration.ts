@@ -8,7 +8,6 @@
 
 import '//resources/polymer/v3_0/iron-icon/iron-icon.js';
 import '//resources/polymer/v3_0/paper-progress/paper-progress.js';
-import '//resources/polymer/v3_0/paper-styles/color.js';
 import '../../components/common_styles/oobe_dialog_host_styles.css.js';
 import '../../components/dialogs/oobe_loading_dialog.js';
 import '../../components/oobe_icons.html.js';
@@ -21,6 +20,8 @@ import {LoginScreenBehavior, LoginScreenBehaviorInterface} from '../../component
 import {MultiStepBehavior, MultiStepBehaviorInterface} from '../../components/behaviors/multi_step_behavior.js';
 import {OobeDialogHostBehavior, OobeDialogHostBehaviorInterface} from '../../components/behaviors/oobe_dialog_host_behavior.js';
 import {OobeI18nMixin, OobeI18nMixinInterface} from '../../components/mixins/oobe_i18n_mixin.js';
+import {LacrosDataBackwardMigrationPageCallbackRouter, LacrosDataBackwardMigrationPageHandlerRemote} from '../../mojom-webui/screens_login.mojom-webui.js';
+import {OobeScreensFactoryBrowserProxy} from '../../oobe_screens_factory_proxy.js';
 
 import {getTemplate} from './lacros_data_backward_migration.html.js';
 
@@ -62,6 +63,22 @@ export class LacrosDataBackwardMigrationScreen extends
   }
 
   private progressValue: number;
+  private callbackRouter: LacrosDataBackwardMigrationPageCallbackRouter;
+  private handler: LacrosDataBackwardMigrationPageHandlerRemote;
+
+  constructor() {
+    super();
+    this.callbackRouter = new LacrosDataBackwardMigrationPageCallbackRouter();
+    this.handler = new LacrosDataBackwardMigrationPageHandlerRemote();
+    OobeScreensFactoryBrowserProxy.getInstance()
+        .screenFactory.createLacrosDataBackwardMigrationScreenHandler(
+            this.callbackRouter.$.bindNewPipeAndPassRemote(),
+            this.handler.$.bindNewPipeAndPassReceiver());
+    this.callbackRouter.setProgressValue.addListener(
+        this.setProgressValue.bind(this));
+    this.callbackRouter.setFailureStatus.addListener(
+        this.setFailureStatus.bind(this));
+  }
 
   // eslint-disable-next-line @typescript-eslint/naming-convention
   override defaultUIStep(): string {
@@ -72,12 +89,6 @@ export class LacrosDataBackwardMigrationScreen extends
     return LacrosDataBackwardMigrationStep;
   }
 
-  override get EXTERNAL_API(): string[] {
-    return [
-      'setProgressValue',
-      'setFailureStatus',
-    ];
-  }
 
   /**
    * Called when the migration failed.
@@ -100,7 +111,7 @@ export class LacrosDataBackwardMigrationScreen extends
   }
 
   private onCancelButtonClicked() {
-    this.userActed('cancel');
+    this.handler.onCancelButtonClicked();
   }
 }
 

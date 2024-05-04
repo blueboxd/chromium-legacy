@@ -8,31 +8,40 @@ import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
+import static androidx.test.espresso.intent.Intents.intended;
+import static androidx.test.espresso.intent.Intents.intending;
 import static androidx.test.espresso.matcher.RootMatchers.isDialog;
+import static androidx.test.espresso.matcher.ViewMatchers.isDescendantOfA;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
-import static androidx.test.espresso.matcher.ViewMatchers.thatMatchesFirst;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.core.StringStartsWith.startsWith;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.spy;
 
 import static org.chromium.ui.test.util.ViewUtils.onViewWaiting;
 
+import android.app.Activity;
+import android.app.Instrumentation.ActivityResult;
 import android.view.View;
 
+import androidx.test.espresso.intent.Intents;
+import androidx.test.espresso.intent.matcher.IntentMatchers;
+import androidx.test.filters.LargeTest;
 import androidx.test.filters.MediumTest;
 import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.RuleChain;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.FeatureList;
-import org.chromium.base.metrics.UmaRecorderHolder;
 import org.chromium.base.test.params.ParameterAnnotations;
 import org.chromium.base.test.params.ParameterProvider;
 import org.chromium.base.test.params.ParameterSet;
@@ -41,25 +50,31 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.DoNotBatch;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.Features.DisableFeatures;
-import org.chromium.base.test.util.Features.EnableFeatures;
 import org.chromium.base.test.util.HistogramWatcher;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.profiles.ProfileManager;
+import org.chromium.chrome.browser.settings.SettingsActivity;
 import org.chromium.chrome.browser.settings.SettingsActivityTestRule;
 import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
 import org.chromium.chrome.browser.sync.settings.AccountManagementFragment;
 import org.chromium.chrome.browser.sync.settings.SyncSettingsUtils;
+import org.chromium.chrome.browser.sync.ui.PassphraseDialogFragment;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.chrome.test.R;
+import org.chromium.chrome.test.util.ActivityTestUtils;
 import org.chromium.chrome.test.util.ChromeRenderTestRule;
 import org.chromium.chrome.test.util.browser.signin.AccountManagerTestRule;
 import org.chromium.chrome.test.util.browser.signin.SigninTestRule;
+import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
+import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.base.AccountInfo;
 import org.chromium.components.signin.base.CoreAccountInfo;
+import org.chromium.components.signin.base.GoogleServiceAuthError;
 import org.chromium.components.signin.identitymanager.ConsentLevel;
 import org.chromium.components.signin.test.util.AccountCapabilitiesBuilder;
+import org.chromium.components.signin.test.util.FakeAccountManagerFacade;
+import org.chromium.components.sync.SyncService;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.Arrays;
@@ -68,7 +83,7 @@ import java.util.List;
 /** Tests {@link AccountManagementFragment}. */
 @RunWith(ParameterizedRunner.class)
 @ParameterAnnotations.UseRunnerDelegate(ChromeJUnit4RunnerDelegate.class)
-@DoNotBatch(reason = "TODO(crbug.com/1168590): SyncTestRule doesn't support batching.")
+@DoNotBatch(reason = "TODO(crbug.com/40743432): SyncTestRule doesn't support batching.")
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class AccountManagementFragmentTest {
     private static final String CHILD_ACCOUNT_NAME =
@@ -116,11 +131,6 @@ public class AccountManagementFragmentTest {
         testValuesOverride.addFeatureFlagOverride(
                 ChromeFeatureList.MIGRATE_ACCOUNT_MANAGEMENT_SETTINGS_TO_CAPABILITIES,
                 isMigrateAccountManagementSettingsToCapabilitiesFlagEnabled);
-    }
-
-    @Before
-    public void setUp() {
-        UmaRecorderHolder.resetForTesting();
     }
 
     @Test
@@ -173,7 +183,11 @@ public class AccountManagementFragmentTest {
         TestThreadUtils.runOnUiThreadBlocking(mSettingsActivityTestRule.getFragment()::update);
         View view = mSettingsActivityTestRule.getFragment().getView();
         onViewWaiting(allOf(is(view), isDisplayed()));
-        onView(thatMatchesFirst(withText(accountInfo.getFullName()))).check(matches(isDisplayed()));
+        onView(
+                        allOf(
+                                isDescendantOfA(withId(android.R.id.list_container)),
+                                withText(accountInfo.getFullName())))
+                .check(matches(isDisplayed()));
         onView(withText(accountInfo.getEmail())).check(doesNotExist());
     }
 
@@ -205,7 +219,10 @@ public class AccountManagementFragmentTest {
         View view = mSettingsActivityTestRule.getFragment().getView();
         onViewWaiting(allOf(is(view), isDisplayed()));
         onView(withText(accountInfo.getEmail())).check(doesNotExist());
-        onView(thatMatchesFirst(withText(R.string.default_google_account_username)))
+        onView(
+                        allOf(
+                                isDescendantOfA(withId(android.R.id.list_container)),
+                                withText(R.string.default_google_account_username)))
                 .check(matches(isDisplayed()));
     }
 
@@ -305,7 +322,6 @@ public class AccountManagementFragmentTest {
 
     @Test
     @SmallTest
-    @EnableFeatures(ChromeFeatureList.SYNC_SHOW_IDENTITY_ERRORS_FOR_SIGNED_IN_USERS)
     public void testIdentityErrorCardShownForSignedInUsers() {
         // Fake an identity error.
         overrideSyncService().setRequiresClientUpgrade(true);
@@ -326,29 +342,6 @@ public class AccountManagementFragmentTest {
 
     @Test
     @SmallTest
-    @DisableFeatures(ChromeFeatureList.SYNC_SHOW_IDENTITY_ERRORS_FOR_SIGNED_IN_USERS)
-    public void testIdentityErrorCardNotShownIfFeatureDisabled() {
-        // Fake an identity error.
-        overrideSyncService().setRequiresClientUpgrade(true);
-
-        // Expect no records.
-        HistogramWatcher watchIdentityErrorCardShownHistogram =
-                HistogramWatcher.newBuilder()
-                        .expectNoRecords("Sync.IdentityErrorCard.ClientOutOfDate")
-                        .build();
-
-        // Sign in and open settings.
-        mSyncTestRule.setUpAccountAndSignInForTesting();
-        mSettingsActivityTestRule.startSettingsActivity();
-
-        onViewWaiting(allOf(is(mSettingsActivityTestRule.getFragment().getView()), isDisplayed()));
-        onView(withId(R.id.identity_error_card)).check(doesNotExist());
-        watchIdentityErrorCardShownHistogram.assertExpected();
-    }
-
-    @Test
-    @SmallTest
-    @EnableFeatures(ChromeFeatureList.SYNC_SHOW_IDENTITY_ERRORS_FOR_SIGNED_IN_USERS)
     public void testIdentityErrorCardNotShownIfNoError() {
         // Sign in and open settings.
         mSyncTestRule.setUpAccountAndSignInForTesting();
@@ -360,7 +353,6 @@ public class AccountManagementFragmentTest {
 
     @Test
     @SmallTest
-    @EnableFeatures(ChromeFeatureList.SYNC_SHOW_IDENTITY_ERRORS_FOR_SIGNED_IN_USERS)
     public void testIdentityErrorCardNotShownForSyncingUsers() {
         // Fake an identity error.
         overrideSyncService().setRequiresClientUpgrade(true);
@@ -382,7 +374,6 @@ public class AccountManagementFragmentTest {
 
     @Test
     @SmallTest
-    @EnableFeatures(ChromeFeatureList.SYNC_SHOW_IDENTITY_ERRORS_FOR_SIGNED_IN_USERS)
     public void testIdentityErrorCardDynamicallyShownOnError() {
         FakeSyncServiceImpl fakeSyncService = overrideSyncService();
 
@@ -416,7 +407,6 @@ public class AccountManagementFragmentTest {
 
     @Test
     @SmallTest
-    @EnableFeatures(ChromeFeatureList.SYNC_SHOW_IDENTITY_ERRORS_FOR_SIGNED_IN_USERS)
     public void testIdentityErrorCardDynamicallyHidden() {
         FakeSyncServiceImpl fakeSyncService = overrideSyncService();
         // Fake an identity error.
@@ -448,6 +438,111 @@ public class AccountManagementFragmentTest {
         // No error card exists anymore.
         onView(withId(R.id.identity_error_card)).check(doesNotExist());
         watchIdentityErrorCardShownHistogram.assertExpected();
+    }
+
+    @Test
+    @LargeTest
+    public void testActionForAuthError() throws Exception {
+        FakeSyncServiceImpl fakeSyncService = overrideSyncService();
+        fakeSyncService.setAuthError(GoogleServiceAuthError.State.INVALID_GAIA_CREDENTIALS);
+
+        // Sign in and open settings.
+        mSyncTestRule.setUpAccountAndSignInForTesting();
+
+        mSettingsActivityTestRule.startSettingsActivity();
+        onViewWaiting(allOf(is(mSettingsActivityTestRule.getFragment().getView()), isDisplayed()));
+        // The error card exists.
+        onView(withId(R.id.identity_error_card)).check(matches(isDisplayed()));
+
+        FakeAccountManagerFacade fakeAccountManagerFacade =
+                spy((FakeAccountManagerFacade) AccountManagerFacadeProvider.getInstance());
+        AccountManagerFacadeProvider.setInstanceForTests(fakeAccountManagerFacade);
+
+        doAnswer(
+                        invocation -> {
+                            // Simulate re-auth by clearing the auth error.
+                            fakeSyncService.setAuthError(GoogleServiceAuthError.State.NONE);
+                            return null;
+                        })
+                .when(fakeAccountManagerFacade)
+                .updateCredentials(any(), any(), any());
+
+        // Mimic the user tapping on the error card's button.
+        onView(withId(R.id.identity_error_card_button)).perform(click());
+
+        // No error card exists anymore.
+        onView(withId(R.id.identity_error_card)).check(doesNotExist());
+    }
+
+    @Test
+    @LargeTest
+    public void testActionForPassphraseRequired() throws Exception {
+        mSyncTestRule.getFakeServerHelper().setCustomPassphraseNigori("passphrase");
+
+        mSyncTestRule.setUpAccountAndSignInForTesting();
+        SyncTestUtil.waitForSyncTransportActive();
+
+        SyncService syncService = mSyncTestRule.getSyncService();
+        CriteriaHelper.pollUiThread(() -> syncService.isPassphraseRequiredForPreferredDataTypes());
+
+        SettingsActivity settingsActivity = mSettingsActivityTestRule.startSettingsActivity();
+        onViewWaiting(allOf(is(mSettingsActivityTestRule.getFragment().getView()), isDisplayed()));
+        // The error card exists.
+        onView(withId(R.id.identity_error_card)).check(matches(isDisplayed()));
+
+        // Mimic the user tapping on the error card's button.
+        onView(withId(R.id.identity_error_card_button)).perform(click());
+
+        final AccountManagementFragment fragment = mSettingsActivityTestRule.getFragment();
+        // Passphrase dialog should open.
+        final PassphraseDialogFragment passphraseFragment =
+                ActivityTestUtils.waitForFragment(
+                        settingsActivity, AccountManagementFragment.FRAGMENT_ENTER_PASSPHRASE);
+        Assert.assertTrue(passphraseFragment.isAdded());
+
+        // Simulate OnPassphraseAccepted from external event by setting the passphrase
+        // and triggering syncStateChanged().
+        // PassphraseDialogFragment should be dismissed.
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> syncService.setDecryptionPassphrase("passphrase"));
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> {
+                    fragment.getFragmentManager().executePendingTransactions();
+                    Assert.assertNull(
+                            "PassphraseDialogFragment should be dismissed.",
+                            settingsActivity
+                                    .getFragmentManager()
+                                    .findFragmentByTag(
+                                            AccountManagementFragment.FRAGMENT_ENTER_PASSPHRASE));
+                });
+
+        // No error card exists anymore.
+        onView(withId(R.id.identity_error_card)).check(doesNotExist());
+    }
+
+    @Test
+    @LargeTest
+    public void testActionForClientOutdatedError() throws Exception {
+        overrideSyncService().setRequiresClientUpgrade(true);
+
+        // Sign in and open settings.
+        mSyncTestRule.setUpAccountAndSignInForTesting();
+
+        mSettingsActivityTestRule.startSettingsActivity();
+        onViewWaiting(allOf(is(mSettingsActivityTestRule.getFragment().getView()), isDisplayed()));
+        // The error card exists.
+        onView(withId(R.id.identity_error_card)).check(matches(isDisplayed()));
+
+        Intents.init();
+        // Stub all external intents.
+        intending(IntentMatchers.anyIntent())
+                .respondWith(new ActivityResult(Activity.RESULT_OK, null));
+
+        // Mimic the user tapping on the error card's button.
+        onView(withId(R.id.identity_error_card_button)).perform(click());
+
+        intended(IntentMatchers.hasDataString(startsWith("market")));
+        Intents.release();
     }
 
     private FakeSyncServiceImpl overrideSyncService() {

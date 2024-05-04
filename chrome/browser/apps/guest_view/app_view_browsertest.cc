@@ -8,6 +8,8 @@
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "chrome/browser/apps/platform_apps/app_browsertest_util.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser.h"
 #include "components/guest_view/browser/guest_view_manager.h"
 #include "components/guest_view/browser/guest_view_manager_factory.h"
 #include "components/guest_view/browser/test_guest_view_manager.h"
@@ -221,7 +223,7 @@ IN_PROC_BROWSER_TEST_F(AppViewTest, KillGuestWithInvalidInstanceID) {
   EXPECT_FALSE(exit_observer.did_exit_normally());
 }
 
-// TODO(https://crbug.com/1179298): this is flaky on wayland-ozone.
+// TODO(crbug.com/40169473): this is flaky on wayland-ozone.
 #if BUILDFLAG(IS_OZONE)
 #define MAYBE_KillGuestCommunicatingWithWrongAppView \
   DISABLED_KillGuestCommunicatingWithWrongAppView

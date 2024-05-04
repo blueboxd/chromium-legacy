@@ -4,13 +4,14 @@
 
 #include "chrome/browser/signin/signin_ui_delegate_impl_lacros.h"
 
+#include <string_view>
+
 #include "base/containers/fixed_flat_map.h"
 #include "base/functional/bind.h"
 #include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/scoped_observation.h"
 #include "base/strings/strcat.h"
-#include "base/strings/string_piece.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/metrics/user_action_tester.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
@@ -39,14 +40,14 @@ namespace {
 
 constexpr auto kPromoSuffixes = base::MakeFixedFlatMap<
     signin_metrics::PromoAction,
-    base::StringPiece>(
+    std::string_view>(
     {{signin_metrics::PromoAction::PROMO_ACTION_WITH_DEFAULT, ".WithDefault"},
      {signin_metrics::PromoAction::PROMO_ACTION_NOT_DEFAULT, ".NotDefault"},
      {signin_metrics::PromoAction::PROMO_ACTION_NEW_ACCOUNT_NO_EXISTING_ACCOUNT,
       ".NewAccountNoExistingAccount"},
      {signin_metrics::PromoAction::PROMO_ACTION_NEW_ACCOUNT_EXISTING_ACCOUNT,
       ".NewAccountExistingAccount"}});
-constexpr base::StringPiece kSigninStartedHistogramBaseName =
+constexpr std::string_view kSigninStartedHistogramBaseName =
     "Signin.SigninStartedAccessPoint";
 
 constexpr signin_metrics::AccessPoint kAccessPoint =
@@ -169,7 +170,7 @@ TEST_P(SigninUiDelegateImplLacrosTest, ShowSigninUI) {
   }
   EXPECT_EQ(enable_sync ? 1 : 0, user_action_tester.GetActionCount(
                                      "Signin_Signin_FromAvatarBubbleSignin"));
-  // TODO(https://crbug.com/1316608): test that the sync is shown after an
+  // TODO(crbug.com/40834209): test that the sync is shown after an
   // account is added.
 }
 
@@ -194,7 +195,7 @@ TEST_P(SigninUiDelegateImplLacrosTest, ShowReauthUI) {
   }
   EXPECT_EQ(enable_sync ? 1 : 0, user_action_tester.GetActionCount(
                                      "Signin_Signin_FromAvatarBubbleSignin"));
-  // TODO(https://crbug.com/1316608): test that the sync is shown after an
+  // TODO(crbug.com/40834209): test that the sync is shown after an
   // account is added.
 }
 

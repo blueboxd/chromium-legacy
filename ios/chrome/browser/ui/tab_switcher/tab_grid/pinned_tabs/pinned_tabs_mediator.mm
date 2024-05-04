@@ -13,15 +13,15 @@
 #import "base/scoped_multi_source_observation.h"
 #import "ios/chrome/browser/default_browser/model/utils.h"
 #import "ios/chrome/browser/drag_and_drop/model/drag_item_util.h"
-#import "ios/chrome/browser/main/model/browser_util.h"
 #import "ios/chrome/browser/shared/model/browser/browser.h"
 #import "ios/chrome/browser/shared/model/browser/browser_list.h"
 #import "ios/chrome/browser/shared/model/browser/browser_list_factory.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/shared/model/web_state_list/browser_util.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list_observer_bridge.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_opener.h"
-#import "ios/chrome/browser/tabs/model/features.h"
+#import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/ui/tab_switcher/pinned_tab_collection_consumer.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_collection_drag_drop_metrics.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/pinned_tabs/pinned_item.h"
@@ -52,7 +52,12 @@ NSArray<TabSwitcherItem*>* CreatePinnedTabConsumerItems(
 
 // Returns the identifier of the currently active pinned tab.
 web::WebStateID GetActivePinnedTabID(WebStateList* web_state_list) {
-  return GetActiveWebStateIdentifier(web_state_list, PinnedState::kPinned);
+  web::WebState* active_web_state =
+      GetActiveWebState(web_state_list, PinnedState::kPinned);
+  if (!active_web_state) {
+    return web::WebStateID();
+  }
+  return active_web_state->GetUniqueIdentifier();
 }
 
 }  // namespace
@@ -175,18 +180,18 @@ web::WebStateID GetActivePinnedTabID(WebStateList* web_state_list) {
     case WebStateListChange::Type::kMove: {
       const WebStateListChangeMove& moveChange =
           change.As<WebStateListChangeMove>();
-      if (webStateList->IsWebStatePinnedAt(moveChange.moved_to_index())) {
+
+      if (moveChange.pinned_state_changed()) {
+        // The pinned state can be updated when a tab is moved.
+        [self changePinnedStateForWebState:moveChange.moved_web_state()
+                                   atIndex:moveChange.moved_to_index()];
+      } else if (webStateList->IsWebStatePinnedAt(
+                     moveChange.moved_to_index())) {
         // PinnedTabsMediator handles only pinned tabs because non pinned tabs
         // are handled in BaseGridMediator.
         [self.consumer
             moveItemWithID:moveChange.moved_web_state()->GetUniqueIdentifier()
                    toIndex:moveChange.moved_to_index()];
-      }
-
-      // The pinned state can be updated when a tab is moved.
-      if (moveChange.pinned_state_changed()) {
-        [self changePinnedStateForWebState:moveChange.moved_web_state()
-                                   atIndex:moveChange.moved_to_index()];
       }
       break;
     }
@@ -224,6 +229,19 @@ web::WebStateID GetActivePinnedTabID(WebStateList* web_state_list) {
       _scopedWebStateObservation->AddObservation(insertedWebState);
       break;
     }
+    case WebStateListChange::Type::kGroupCreate:
+      // Do nothing when a group is created. Grouped tabs can never be pinned.
+      break;
+    case WebStateListChange::Type::kGroupVisualDataUpdate:
+      // Do nothing when a tab group's visual data are updated. Grouped can
+      // never be pinned.
+      break;
+    case WebStateListChange::Type::kGroupMove:
+      // Do nothing when a tab group is moved. Grouped tabs can never be pinned.
+      break;
+    case WebStateListChange::Type::kGroupDelete:
+      // Do nothing when a group is deleted. Grouped tabs can never be pinned.
+      break;
   }
 
   if (status.active_web_state_change()) {
@@ -295,15 +313,24 @@ web::WebStateID GetActivePinnedTabID(WebStateList* web_state_list) {
   return CreateTabDragItem(webState);
 }
 
-- (void)dragWillBeginForItem:(TabSwitcherItem*)item {
+- (UIDragItem*)dragItemForTabGroupItem:(TabGroupItem*)tabGroupItem {
+  NOTREACHED_NORETURN() << "There is no tab groups in the pinned tabs section";
+}
+
+- (void)dragWillBeginForTabSwitcherItem:(TabSwitcherItem*)item {
   _dragItemID = item.identifier;
+}
+
+- (void)dragWillBeginForTabGroupItem:(TabGroupItem*)item {
+  NOTREACHED_NORETURN() << "There is no tab groups in the pinned tabs section";
 }
 
 - (void)dragSessionDidEnd {
   _dragItemID = web::WebStateID();
 }
 
-- (UIDropOperation)dropOperationForDropSession:(id<UIDropSession>)session {
+- (UIDropOperation)dropOperationForDropSession:(id<UIDropSession>)session
+                                       toIndex:(NSUInteger)destinationIndex {
   UIDragItem* dragItem = session.localDragSession.items.firstObject;
 
   // Tab move operations only originate from Chrome so a local object is used.

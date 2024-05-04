@@ -6,6 +6,7 @@
 #define SERVICES_ON_DEVICE_MODEL_PUBLIC_CPP_ON_DEVICE_MODEL_H_
 
 #include "base/component_export.h"
+#include "base/functional/callback.h"
 #include "base/types/expected.h"
 #include "services/on_device_model/public/mojom/on_device_model.mojom.h"
 
@@ -23,16 +24,23 @@ class COMPONENT_EXPORT(ON_DEVICE_MODEL_CPP) OnDeviceModel {
    public:
     virtual ~Session() = default;
 
-    virtual void AddContext(
-        mojom::InputOptionsPtr input,
-        mojo::PendingRemote<mojom::ContextClient> client) = 0;
+    virtual void AddContext(mojom::InputOptionsPtr input,
+                            mojo::PendingRemote<mojom::ContextClient> client,
+                            base::OnceClosure on_complete) = 0;
     virtual void Execute(
         mojom::InputOptionsPtr input,
-        mojo::PendingRemote<mojom::StreamingResponder> response) = 0;
+        mojo::PendingRemote<mojom::StreamingResponder> response,
+        base::OnceClosure on_complete) = 0;
+    virtual void ClearContext() = 0;
+    virtual void SizeInTokens(const std::string& text,
+                              base::OnceCallback<void(uint32_t)> callback) = 0;
   };
 
   virtual std::unique_ptr<Session> CreateSession(
       std::optional<uint32_t> adaptation_id) = 0;
+  virtual mojom::SafetyInfoPtr ClassifyTextSafety(const std::string& text) = 0;
+  virtual mojom::LanguageDetectionResultPtr DetectLanguage(
+      const std::string& text) = 0;
   virtual base::expected<uint32_t, mojom::LoadModelResult> LoadAdaptation(
       mojom::LoadAdaptationParamsPtr params) = 0;
 };

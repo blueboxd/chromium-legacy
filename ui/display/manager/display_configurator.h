@@ -51,7 +51,7 @@ class DISPLAY_MANAGER_EXPORT DisplayConfigurator
   using ConfigurationCallback = base::OnceCallback<void(bool /* success */)>;
   using DisplayControlCallback = base::OnceCallback<void(bool success)>;
   using GetSeamlessRefreshRatesCallback =
-      base::OnceCallback<void(const std::optional<RefreshRange>&)>;
+      base::OnceCallback<void(const std::optional<std::vector<float>>&)>;
 
   using DisplayStateList =
       std::vector<raw_ptr<DisplaySnapshot, VectorExperimental>>;
@@ -431,8 +431,20 @@ class DISPLAY_MANAGER_EXPORT DisplayConfigurator
   // request.
   bool ShouldConfigureVrr() const;
 
-  raw_ptr<StateController> state_controller_;
-  raw_ptr<SoftwareMirroringController> mirroring_controller_;
+  // Returns the throttle state that should be used for a configuration attempt.
+  // If no new state has been requested, this will default to the current state
+  // unless a full configuration is pending, in which case the requested state
+  // will be disabled.
+  RefreshRateThrottleState GetRequestedThrottleState() const;
+
+  // Returns the current throttle state for |display|.
+  static RefreshRateThrottleState GetRefreshRateThrottleStateForDisplay(
+      const DisplaySnapshot& display);
+
+  // Dangling in DemoIntegrationTest.NewTab on chromeos-amd64-generic-rel-gtest.
+  raw_ptr<StateController, DanglingUntriaged> state_controller_;
+  // Dangling in DemoIntegrationTest.NewTab on chromeos-amd64-generic-rel-gtest.
+  raw_ptr<SoftwareMirroringController, DanglingUntriaged> mirroring_controller_;
   std::unique_ptr<NativeDisplayDelegate> native_display_delegate_;
 
   // Used to enable modes which rely on panel fitting.

@@ -7,6 +7,7 @@
 
 #include <linux/videodev2.h>
 
+#include "base/atomic_ref_count.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/queue.h"
 #include "base/memory/scoped_refptr.h"
@@ -68,6 +69,10 @@ class MEDIA_GPU_EXPORT V4L2StatefulVideoDecoder : public VideoDecoderMixin {
   size_t GetMaxOutputFramePoolSize() const override;
   void SetDmaIncoherentV4L2(bool incoherent) override;
 
+  static int GetMaxNumDecoderInstancesForTesting() {
+    return GetMaxNumDecoderInstances();
+  }
+
  private:
   V4L2StatefulVideoDecoder(std::unique_ptr<MediaLog> media_log,
                            scoped_refptr<base::SequencedTaskRunner> task_runner,
@@ -128,15 +133,24 @@ class MEDIA_GPU_EXPORT V4L2StatefulVideoDecoder : public VideoDecoderMixin {
   // Returns true if this class has successfully Initialize()d.
   bool IsInitialized() const;
 
+  // Pages with multiple decoder instances might run out of memory (e.g.
+  // b/170870476) or crash (e.g. crbug.com/1109312). this class method provides
+  // that number to prevent that erroneous behaviour during Initialize().
+  static int GetMaxNumDecoderInstances();
+  // Tracks the number of decoder instances globally in the process.
+  static base::AtomicRefCount num_decoder_instances_;
+
   base::ScopedFD device_fd_ GUARDED_BY_CONTEXT(sequence_checker_);
   // This |wake_event_| is used to interrupt a blocking poll() call, such as the
   // one started by e.g. RearmCAPTUREQueueMonitoring().
   base::ScopedFD wake_event_ GUARDED_BY_CONTEXT(sequence_checker_);
 
+  // VideoDecoderConfigs supported by the driver. Cached on first Initialize().
+  SupportedVideoDecoderConfigs supported_configs_
+      GUARDED_BY_CONTEXT(sequence_checker_);
+
   // Bitstream information and other stuff collected during Initialize().
-  VideoCodecProfile profile_ GUARDED_BY_CONTEXT(sequence_checker_) =
-      VIDEO_CODEC_PROFILE_UNKNOWN;
-  VideoAspectRatio aspect_ratio_ GUARDED_BY_CONTEXT(sequence_checker_);
+  VideoDecoderConfig config_ GUARDED_BY_CONTEXT(sequence_checker_);
   PipelineOutputCB output_cb_ GUARDED_BY_CONTEXT(sequence_checker_);
   DecodeCB flush_cb_ GUARDED_BY_CONTEXT(sequence_checker_);
   // Set to true when the driver identifies itself as a Mediatek 8173.

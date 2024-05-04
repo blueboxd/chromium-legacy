@@ -347,7 +347,7 @@ CookieAccessResult CookieBase::IncludeForRequestURL(
                 : CookieInclusionStatus::EXCLUDE_SAMESITE_LAX);
       }
       break;
-    // TODO(crbug.com/990439): Add a browsertest for this behavior.
+    // TODO(crbug.com/40638805): Add a browsertest for this behavior.
     case CookieEffectiveSameSite::LAX_MODE_ALLOW_UNSAFE:
       DCHECK(SameSite() == CookieSameSite::UNSPECIFIED);
       if (cookie_inclusion_context <
@@ -605,13 +605,7 @@ CookieBase::CookieBase(std::string name,
 CookieEffectiveSameSite CookieBase::GetEffectiveSameSite(
     CookieAccessSemantics access_semantics) const {
   base::TimeDelta lax_allow_unsafe_threshold_age =
-      base::FeatureList::IsEnabled(
-          features::kSameSiteDefaultChecksMethodRigorously)
-          ? base::TimeDelta::Min()
-          : (base::FeatureList::IsEnabled(
-                 features::kShortLaxAllowUnsafeThreshold)
-                 ? kShortLaxAllowUnsafeMaxAge
-                 : kLaxAllowUnsafeMaxAge);
+      GetLaxAllowUnsafeThresholdAge();
 
   switch (SameSite()) {
     // If a cookie does not have a SameSite attribute, the effective SameSite
@@ -630,6 +624,10 @@ CookieEffectiveSameSite CookieBase::GetEffectiveSameSite(
     case CookieSameSite::STRICT_MODE:
       return CookieEffectiveSameSite::STRICT_MODE;
   }
+}
+
+base::TimeDelta CookieBase::GetLaxAllowUnsafeThresholdAge() const {
+  return base::TimeDelta::Min();
 }
 
 bool CookieBase::IsRecentlyCreated(base::TimeDelta age_threshold) const {

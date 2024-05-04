@@ -45,6 +45,7 @@
 #include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_state_observer.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/html/media/media_controls.h"
+#include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer.h"
 #include "third_party/blink/renderer/core/speech/speech_synthesis_base.h"
 #include "third_party/blink/renderer/platform/audio/audio_source_provider.h"
@@ -90,7 +91,7 @@ class MediaSourceAttachment;
 class MediaSourceHandle;
 class MediaSourceTracer;
 class MediaStreamDescriptor;
-class ScriptPromiseResolver;
+class ScriptPromiseResolverBase;
 class ScriptState;
 class TextTrack;
 class TextTrackContainer;
@@ -239,7 +240,7 @@ class CORE_EXPORT HTMLMediaElement
   bool Autoplay() const;
   bool Loop() const;
   void SetLoop(bool);
-  ScriptPromise playForBindings(ScriptState*);
+  ScriptPromise<IDLUndefined> playForBindings(ScriptState*);
   std::optional<DOMExceptionCode> Play();
 
   // Called when the video should pause to let audio descriptions finish.
@@ -413,8 +414,8 @@ class CORE_EXPORT HTMLMediaElement
   // reason while in picture in picture mode.
   LocalFrame* LocalFrameForPlayer();
 
-  bool HandleInvokeInternal(HTMLElement& invoker,
-                            AtomicString& action) override;
+  bool IsValidInvokeAction(HTMLElement& invoker, InvokeAction action) override;
+  bool HandleInvokeInternal(HTMLElement& invoker, InvokeAction action) override;
 
  protected:
   // Assert the correct order of the children in shadow dom when DCHECK is on.
@@ -516,6 +517,10 @@ class CORE_EXPORT HTMLMediaElement
   virtual void OnPlay() {}
   virtual void OnLoadStarted() {}
   virtual void OnLoadFinished() {}
+
+  // Updates the `MediaVideoVisibilityTracker` state whenever the media play
+  // state is updated. This is typically handled during `UpdatePlayState`.
+  virtual void UpdateVideoVisibilityTracker() {}
 
   // Handles playing of media element when audio descriptions are finished
   // speaking.
@@ -875,11 +880,11 @@ class CORE_EXPORT HTMLMediaElement
 
   Member<CueTimeline> cue_timeline_;
 
-  HeapVector<Member<ScriptPromiseResolver>> play_promise_resolvers_;
+  HeapVector<Member<ScriptPromiseResolverBase>> play_promise_resolvers_;
   TaskHandle play_promise_resolve_task_handle_;
   TaskHandle play_promise_reject_task_handle_;
-  HeapVector<Member<ScriptPromiseResolver>> play_promise_resolve_list_;
-  HeapVector<Member<ScriptPromiseResolver>> play_promise_reject_list_;
+  HeapVector<Member<ScriptPromiseResolverBase>> play_promise_resolve_list_;
+  HeapVector<Member<ScriptPromiseResolverBase>> play_promise_reject_list_;
   PlayPromiseError play_promise_error_code_;
 
   // HTMLMediaElement and its MediaElementAudioSourceNode in case it is provided
@@ -1006,18 +1011,14 @@ class CORE_EXPORT HTMLMediaElement
 };
 
 template <>
-inline bool IsElementOfType<const HTMLMediaElement>(const Node& node) {
-  return IsA<HTMLMediaElement>(node);
-}
-template <>
 struct DowncastTraits<HTMLMediaElement> {
   static bool AllowFrom(const Node& node) {
     auto* html_element = DynamicTo<HTMLElement>(node);
     return html_element && AllowFrom(*html_element);
   }
   static bool AllowFrom(const HTMLElement& html_element) {
-    return IsA<HTMLAudioElement>(html_element) ||
-           IsA<HTMLVideoElement>(html_element);
+    return html_element.HasTagName(html_names::kAudioTag) ||
+           html_element.HasTagName(html_names::kVideoTag);
   }
 };
 

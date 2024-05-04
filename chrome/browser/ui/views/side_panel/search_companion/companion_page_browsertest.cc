@@ -1126,7 +1126,7 @@ IN_PROC_BROWSER_TEST_F(CompanionPageBrowserTest, LinkClickOnCompanionPage) {
                    static_cast<int>(SidePanelOpenTrigger::kComboboxSelected));
 }
 
-// TODO(crbug.com/1495434): Test is flaking on Linux MSAN bot
+// TODO(crbug.com/40937688): Test is flaking on Linux MSAN bot
 #if BUILDFLAG(IS_LINUX) && defined(MEMORY_SANITIZER)
 #define MAYBE_LinkClickOnCompanionPageNotifiesNewTabSidePanelViaPostMessage \
   DISABLED_LinkClickOnCompanionPageNotifiesNewTabSidePanelViaPostMessage
@@ -1322,7 +1322,7 @@ IN_PROC_BROWSER_TEST_F(CompanionPageBrowserTest,
   EXPECT_FALSE(proto.has_value());
 }
 
-// TODO(crbug.com/1479808): Flaky on linux-chromeos-chrome.
+// TODO(crbug.com/40930057): Flaky on linux-chromeos-chrome.
 #if BUILDFLAG(IS_CHROMEOS)
 #define MAYBE_ReloadWillRefreshCompanion DISABLED_ReloadWillRefreshCompanion
 #else
@@ -2151,8 +2151,10 @@ IN_PROC_BROWSER_TEST_F(CompanionPageDisabledBrowserTest,
 // Verifies the behavior when companion feature is disabled but a navigation to
 // exps registration URL is observed. Restart the browser and verify that
 // companion is active and pinned.
+//
+// TODO(crbug.com/334977785): Flaky.
 IN_PROC_BROWSER_TEST_F(CompanionPageDisabledBrowserTest,
-                       ObservesExpsRegistrationSuccessURL) {
+                       DISABLED_ObservesExpsRegistrationSuccessURL) {
   EXPECT_TRUE(companion::IsCompanionFeatureEnabled());
   EXPECT_TRUE(base::FeatureList::IsEnabled(
       companion::features::internal::
@@ -2339,7 +2341,7 @@ IN_PROC_BROWSER_TEST_F(SidePanelCompanion2BrowserDisabledTest,
   EXPECT_EQ(0u, requests_received_on_server());
 }
 
-// TODO(crbug.com/1491942): This fails with the field trial testing config.
+// TODO(crbug.com/40285326): This fails with the field trial testing config.
 class SidePanelCompanion2BrowserEnabledTestNoTestingConfig
     : public SidePanelCompanion2BrowserEnabledTest {
  public:

@@ -26,8 +26,13 @@ class CodePointIterator;
 class String;
 
 enum UTF8ConversionMode {
+  // Unpaired surrogates are encoded using the standard UTF-8 encoding scheme,
+  // even though surrogate characters should not be present in a valid UTF-8
+  // string.
   kLenientUTF8Conversion,
+  // Conversion terminates at the first unpaired surrogate, if any.
   kStrictUTF8Conversion,
+  // Unpaired surrogates are replaced with U+FFFD (REPLACEMENT CHARACTER).
   kStrictUTF8ConversionReplacingUnpairedSurrogatesWithFFFD
 };
 
@@ -238,6 +243,10 @@ class WTF_EXPORT StringView {
   // appends double-quotes, and escapes characters other than ASCII printables.
   [[nodiscard]] String EncodeForDebugging() const;
 
+  // Find characters. Returns the index of the match, or `kNotFound`.
+  wtf_size_t Find(CharacterMatchFunctionPtr match_function,
+                  wtf_size_t start = 0) const;
+
   template <bool isSpecialCharacter(UChar)>
   bool IsAllSpecialCharacters() const;
 
@@ -362,6 +371,12 @@ inline bool operator==(const StringView& a, const StringView& b) {
 
 inline bool operator!=(const StringView& a, const StringView& b) {
   return !(a == b);
+}
+
+inline wtf_size_t StringView::Find(CharacterMatchFunctionPtr match_function,
+                                   wtf_size_t start) const {
+  return Is8Bit() ? WTF::Find(Characters8(), length_, match_function, start)
+                  : WTF::Find(Characters16(), length_, match_function, start);
 }
 
 template <bool isSpecialCharacter(UChar), typename CharacterType>

@@ -141,6 +141,11 @@ export class SiteDetailsElement extends SiteDetailsElementBase {
             loadTimeData.getBoolean('enableAutomaticFullscreenContentSetting'),
       },
 
+      capturedSurfaceControlEnabled_: {
+        type: Boolean,
+        value: () => loadTimeData.getBoolean('capturedSurfaceControlEnabled'),
+      },
+
       contentSettingsTypesEnum_: {
         type: Object,
         value: ContentSettingsTypes,
@@ -149,6 +154,12 @@ export class SiteDetailsElement extends SiteDetailsElementBase {
       chooserTypeEnum_: {
         type: Object,
         value: ChooserType,
+      },
+
+      enableKeyboardAndPointerLockPrompt_: {
+        type: Boolean,
+        value: () =>
+            loadTimeData.getBoolean('enableKeyboardAndPointerLockPrompt'),
       },
     };
   }
@@ -164,8 +175,10 @@ export class SiteDetailsElement extends SiteDetailsElementBase {
   private enableWebBluetoothNewPermissionsBackend_: boolean;
   private autoPictureInPictureEnabled_: boolean;
   private enableAutomaticFullscreenContentSetting_: boolean;
+  private capturedSurfaceControlEnabled_: boolean;
   private websiteUsageProxy_: WebsiteUsageBrowserProxy =
       WebsiteUsageBrowserProxyImpl.getInstance();
+  private enableKeyboardAndPointerLockPrompt_: boolean;
 
   override connectedCallback() {
     super.connectedCallback();
@@ -193,10 +206,8 @@ export class SiteDetailsElement extends SiteDetailsElementBase {
     if (route !== routes.SITE_SETTINGS_SITE_DETAILS) {
       return;
     }
-    const site = Router.getInstance().getQueryParameters().get('site');
-    if (!site) {
-      return;
-    }
+
+    const site = Router.getInstance().getQueryParameters().get('site') ?? '';
     this.origin_ = site;
     this.browserProxy.isOriginValid(this.origin_).then((valid) => {
       if (!valid) {

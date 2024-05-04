@@ -41,11 +41,10 @@ class PointerLockController : public ExclusiveAccessControllerBase {
 
   // Override from ExclusiveAccessControllerBase
   bool HandleUserPressedEscape() override;
-
+  void HandleUserHeldEscape() override;
+  void HandleUserReleasedEscapeEarly() override;
+  bool RequiresPressAndHoldEscToExit() const override;
   void ExitExclusiveAccessToPreviousState() override;
-
-  // Called by Browser::LostPointerLock.
-  void LostPointerLock();
 
   void UnlockPointer();
 
@@ -63,6 +62,11 @@ class PointerLockController : public ExclusiveAccessControllerBase {
     // Pointer has been locked silently, with no notification to user.
     POINTERLOCK_LOCKED_SILENTLY
   };
+
+  void LockPointer(base::WeakPtr<content::WebContents> web_contents,
+                   bool last_unlocked_by_target);
+  void RejectRequestToLockPointer(
+      base::WeakPtr<content::WebContents> web_contents);
 
   void ExitExclusiveAccessIfNecessary() override;
   void NotifyTabExclusiveAccessLost() override;

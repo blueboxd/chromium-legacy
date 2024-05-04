@@ -7,6 +7,7 @@
 #include <limits>
 #include <memory>
 #include <string>
+#include <string_view>
 #include <utility>
 
 #include "android_webview/browser/aw_browser_context.h"
@@ -36,6 +37,7 @@
 #include "android_webview/browser/state_serializer.h"
 #include "android_webview/browser_jni_headers/AwContents_jni.h"
 #include "android_webview/browser_jni_headers/StartupJavascriptInfo_jni.h"
+#include "android_webview/common/aw_features.h"
 #include "android_webview/common/aw_switches.h"
 #include "android_webview/common/devtools_instrumentation.h"
 #include "android_webview/common/mojom/frame.mojom.h"
@@ -65,7 +67,7 @@
 #include "base/trace_event/typed_macros.h"
 #include "components/android_autofill/browser/android_autofill_client.h"
 #include "components/android_autofill/browser/android_autofill_manager.h"
-#include "components/android_autofill/browser/autofill_provider_android.h"
+#include "components/android_autofill/browser/android_autofill_provider.h"
 #include "components/autofill/content/browser/content_autofill_client.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
@@ -100,6 +102,8 @@
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/cert/x509_certificate.h"
 #include "net/cert/x509_util.h"
+#include "third_party/blink/public/common/navigation/navigation_params.h"
+#include "third_party/blink/public/common/web_preferences/web_preferences.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -231,7 +235,9 @@ AwRenderProcessGoneDelegate* AwRenderProcessGoneDelegate::FromWebContents(
 
 AwContents::AwContents(std::unique_ptr<WebContents> web_contents)
     : content::WebContentsObserver(web_contents.get()),
-      browser_view_renderer_(this, content::GetUIThreadTaskRunner({})),
+      browser_view_renderer_(this,
+                             content::GetUIThreadTaskRunner({}),
+                             content::GetIOThreadTaskRunner({})),
       web_contents_(std::move(web_contents)) {
   TRACE_EVENT_BEGIN("android_webview.timeline", "WebView Instance",
                     perfetto::Track::FromPointer(this));
@@ -305,23 +311,12 @@ void AwContents::InitializeAndroidAutofill(JNIEnv* env) {
     return;
   }
   android_autofill::AndroidAutofillClient::CreateForWebContents(
-      web_contents_.get(), [&](const JavaRef<jobject>& client) {
-        SetAndroidAutofillClient(client);
-      });
+      web_contents_.get());
 
   // We need to initialize the keyboard suppressor before creating any
   // AutofillManagers and after the autofill client is available.
   autofill::AutofillProvider::FromWebContents(web_contents_.get())
       ->MaybeInitKeyboardSuppressor();
-}
-
-void AwContents::SetAndroidAutofillClient(const JavaRef<jobject>& client) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
-  if (!obj)
-    return;
-  Java_AwContents_setAndroidAutofillClient(env, obj, client);
 }
 
 AwContents::~AwContents() {
@@ -351,7 +346,7 @@ AwContents::~AwContents() {
   // Corresponds to "WebView Instance" in AwContents's constructor.
   TRACE_EVENT_END("android_webview.timeline",
                   perfetto::Track::FromPointer(this));
-  // TODO(crbug.com/1021571): Remove this once fixed.
+  // TODO(crbug.com/40657156): Remove this once fixed.
   PERFETTO_INTERNAL_ADD_EMPTY_EVENT();
 }
 
@@ -389,6 +384,11 @@ ScopedJavaLocalRef<jobject> AwContents::GetRenderProcess(JNIEnv* env) {
   AwRenderProcess* render_process =
       AwRenderProcess::GetInstanceForRenderProcessHost(host);
   return render_process->GetJavaObject();
+}
+
+base::android::ScopedJavaLocalRef<jobject> AwContents::GetJavaObject() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  return java_ref_.get(env);
 }
 
 void AwContents::Destroy(JNIEnv* env) {
@@ -460,6 +460,21 @@ ScopedJavaLocalRef<jstring> JNI_AwContents_GetSafeBrowsingLocaleForTesting(
   ScopedJavaLocalRef<jstring> locale =
       ConvertUTF8ToJavaString(env, base::i18n::GetConfiguredLocale());
   return locale;
+}
+
+static ScopedJavaLocalRef<jobject> JNI_AwContents_FromWebContents(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jweb_contents) {
+  base::android::ScopedJavaLocalRef<jobject> jaw_contents;
+
+  content::WebContents* web_contents =
+      content::WebContents::FromJavaWebContents(jweb_contents);
+  AwContents* aw_contents =
+      web_contents ? AwContents::FromWebContents(web_contents) : nullptr;
+  if (aw_contents) {
+    jaw_contents = aw_contents->GetJavaObject();
+  }
+  return jaw_contents;
 }
 
 namespace {
@@ -871,7 +886,7 @@ base::android::ScopedJavaLocalRef<jbyteArray> AwContents::GetCertificate(
   }
 
   // Convert the certificate and return it
-  base::StringPiece der_string = net::x509_util::CryptoBufferAsStringPiece(
+  std::string_view der_string = net::x509_util::CryptoBufferAsStringPiece(
       entry->GetSSL().certificate->cert_buffer());
   return base::android::ToJavaByteArray(env, base::as_byte_span(der_string));
 }
@@ -1017,7 +1032,7 @@ jboolean AwContents::RestoreFromOpaqueState(
   std::vector<uint8_t> state_vector;
   base::android::JavaByteArrayToByteVector(env, state, &state_vector);
 
-  base::Pickle pickle(state_vector);
+  base::Pickle pickle = base::Pickle::WithUnownedBuffer(state_vector);
   base::PickleIterator iterator(pickle);
 
   return RestoreFromPickle(&iterator, web_contents_.get());
@@ -1342,23 +1357,19 @@ void AwContents::RemoveWebMessageListener(
       ConvertJavaStringToUTF16(env, js_object_name));
 }
 
-base::android::ScopedJavaLocalRef<jobjectArray>
-AwContents::GetWebMessageListenerInfos(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jclass>& clazz) {
+std::vector<ScopedJavaLocalRef<jobject>> AwContents::GetWebMessageListenerInfos(
+    JNIEnv* env) {
   if (js_communication_host_.get()) {
     return AwWebMessageHostFactory::GetWebMessageListenerInfo(
-        GetJsCommunicationHost(), env, clazz);
+        GetJsCommunicationHost(), env);
   }
-  return nullptr;
+  return {};
 }
 
-base::android::ScopedJavaLocalRef<jobjectArray>
-AwContents::GetDocumentStartupJavascripts(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jclass>& clazz) {
+std::vector<ScopedJavaLocalRef<jobject>>
+AwContents::GetDocumentStartupJavascripts(JNIEnv* env) {
   if (!js_communication_host_.get()) {
-    return nullptr;
+    return {};
   }
 
   const std::vector<js_injection::DocumentStartJavaScript>& scripts =
@@ -1373,9 +1384,11 @@ AwContents::GetDocumentStartupJavascripts(
         base::android::ToJavaArrayOfStrings(env, rules)));
   }
 
-  ScopedJavaLocalRef<jclass> clazz_ref(clazz);
-  return base::android::ToTypedJavaArrayOfObjects(env, script_objects,
-                                                  clazz_ref);
+  return script_objects;
+}
+
+void AwContents::FlushBackForwardCache(JNIEnv* env) {
+  web_contents()->GetController().GetBackForwardCache().Flush();
 }
 
 void AwContents::ClearView(JNIEnv* env) {
@@ -1515,6 +1528,19 @@ void AwContents::DidFinishNavigation(
                                net::HttpRequestHeaders());
   request.is_renderer_initiated = navigation_handle->IsRendererInitiated();
   client->OnReceivedError(request, error_code, false, false);
+}
+
+void AwContents::ReadyToCommitNavigation(
+    content::NavigationHandle* navigation_handle) {
+  // In Android WebView, mixed content auto-upgrade is determined by an
+  // AwSetting. The result is computed and stored on WebPreferences. However on
+  // other platforms this setting is determined on a per-navigation basis. Thus,
+  // we need to propagate this information to the navigation.
+  auto content_settings = blink::CreateDefaultRendererContentSettings();
+  content_settings->allow_mixed_content = navigation_handle->GetWebContents()
+                                              ->GetOrCreateWebPreferences()
+                                              .allow_mixed_content_upgrades;
+  navigation_handle->SetContentSettings(std::move(content_settings));
 }
 
 bool AwContents::CanShowInterstitial() {

@@ -30,7 +30,6 @@ public class GroupedWebsitesSettings extends BaseSiteSettingsFragment
     // Preference keys, see grouped_websites_preferences.xml.
     public static final String PREF_SITE_TITLE = "site_title";
     public static final String PREF_CLEAR_DATA = "clear_data";
-    public static final String PREF_RELATED_SITES_HEADER = "related_sites_header";
     public static final String PREF_RELATED_SITES = "related_sites";
     public static final String PREF_SITES_IN_GROUP = "sites_in_group";
     public static final String PREF_RESET_GROUP = "reset_group_button";
@@ -143,9 +142,7 @@ public class GroupedWebsitesSettings extends BaseSiteSettingsFragment
                                     DeleteBrowsingDataAction.MAX_VALUE);
 
                             SiteDataCleaner.clearData(
-                                    getSiteSettingsDelegate().getBrowserContextHandle(),
-                                    mSiteGroup,
-                                    mDataClearedCallback);
+                                    getSiteSettingsDelegate(), mSiteGroup, mDataClearedCallback);
                         }
                     };
             ClearWebsiteStorageDialog dialogFragment =
@@ -164,7 +161,7 @@ public class GroupedWebsitesSettings extends BaseSiteSettingsFragment
                 if (activity == null || activity.isFinishing()) {
                     return;
                 }
-                // TODO(crbug.com/1342991): This always navigates the user back to the "All sites"
+                // TODO(crbug.com/40231223): This always navigates the user back to the "All sites"
                 // page regardless of whether there are any non-resettable permissions left in the
                 // sites within the group. Consider calculating those and refreshing the screen in
                 // place for a slightly smoother user experience. However, due to the complexity
@@ -184,10 +181,7 @@ public class GroupedWebsitesSettings extends BaseSiteSettingsFragment
                 DeleteBrowsingDataAction.SITES_SETTINGS_PAGE,
                 DeleteBrowsingDataAction.MAX_VALUE);
 
-        SiteDataCleaner.clearData(
-                getSiteSettingsDelegate().getBrowserContextHandle(),
-                mSiteGroup,
-                mDataClearedCallback);
+        SiteDataCleaner.clearData(getSiteSettingsDelegate(), mSiteGroup, mDataClearedCallback);
     }
 
     private void setUpClearDataPreference() {
@@ -222,24 +216,25 @@ public class GroupedWebsitesSettings extends BaseSiteSettingsFragment
     }
 
     private void setUpRelatedSitesPreferences() {
-        var relatedSitesHeader = findPreference(PREF_RELATED_SITES_HEADER);
-        TextMessagePreference relatedSitesText = findPreference(PREF_RELATED_SITES);
+        PreferenceCategory relatedSitesHeader = findPreference(PREF_RELATED_SITES);
+        TextMessagePreference relatedSitesText = new TextMessagePreference(getContext(), null);
         boolean shouldRelatedSitesPrefBeVisible =
                 getSiteSettingsDelegate().isPrivacySandboxFirstPartySetsUIFeatureEnabled()
                         && getSiteSettingsDelegate().isFirstPartySetsDataAccessEnabled()
                         && mSiteGroup.getFPSInfo() != null;
-        relatedSitesHeader.setVisible(shouldRelatedSitesPrefBeVisible);
         relatedSitesText.setVisible(shouldRelatedSitesPrefBeVisible);
+        relatedSitesHeader.setVisible(shouldRelatedSitesPrefBeVisible);
 
         if (shouldRelatedSitesPrefBeVisible) {
             var fpsInfo = mSiteGroup.getFPSInfo();
+
             relatedSitesText.setTitle(
                     getContext()
                             .getResources()
                             .getQuantityString(
                                     R.plurals.allsites_fps_summary,
-                                    fpsInfo.getMembersCount(),
-                                    Integer.toString(fpsInfo.getMembersCount()),
+                                    mSiteGroup.getFPSInfo().getMembersCount(),
+                                    Integer.toString(mSiteGroup.getFPSInfo().getMembersCount()),
                                     fpsInfo.getOwner()));
             relatedSitesText.setManagedPreferenceDelegate(
                     new ForwardingManagedPreferenceDelegate(
@@ -256,6 +251,21 @@ public class GroupedWebsitesSettings extends BaseSiteSettingsFragment
                             return false;
                         }
                     });
+            relatedSitesHeader.addPreference(relatedSitesText);
+
+            if (getSiteSettingsDelegate().shouldShowPrivacySandboxRwsUi()) {
+                relatedSitesHeader.removeAll();
+                relatedSitesHeader.addPreference(relatedSitesText);
+                for (Website site : mSiteGroup.getFPSInfo().getMembers()) {
+                    WebsiteRowPreference preference =
+                            new RwsRowPreference(
+                                    relatedSitesHeader.getContext(),
+                                    getSiteSettingsDelegate(),
+                                    site,
+                                    getActivity().getLayoutInflater());
+                    relatedSitesHeader.addPreference(preference);
+                }
+            }
         }
     }
 

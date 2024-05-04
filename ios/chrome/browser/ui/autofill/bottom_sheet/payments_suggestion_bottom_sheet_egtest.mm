@@ -282,12 +282,12 @@ NSString* ExpirationDateNSString() {
       @"Unexpected histogram error for touch to fill credit card selected "
       @"index");
 
-  // TODO(crbug.com/845472): Figure out a way to enter CVC and get the unlocked
-  // card result.
+  // TODO(crbug.com/40577448): Figure out a way to enter CVC and get the
+  // unlocked card result.
 }
 
 // Tests that accessing a long press menu does not disable the bottom sheet.
-// TODO(crbug.com/1479580): Test fails on iPhone simulator only.
+// TODO(crbug.com/40071541): Test fails on iPhone simulator only.
 #if TARGET_IPHONE_SIMULATOR
 #define MAYBE_testOpenPaymentsBottomSheetAfterLongPress \
   DISABLED_testOpenPaymentsBottomSheetAfterLongPress
@@ -519,11 +519,6 @@ NSString* ExpirationDateNSString() {
 // Tests that both the virtual card and the original card are shown
 // in the Payments Bottom Sheet.
 - (void)testPaymentsBottomSheetShowsVirtualCard {
-  // TODO(b/324870929): This test is flaky on iPad.
-  if ([ChromeEarlGrey isIPadIdiom]) {
-    EARL_GREY_TEST_DISABLED(@"Fails flakily on iPad.");
-  }
-
   // Add a credit card enrolled in VCN to the Personal Data Manager.
   NSString* enrolledCardNameAndLastFour =
       [AutofillAppInterface saveMaskedCreditCardEnrolledInVirtualCard];

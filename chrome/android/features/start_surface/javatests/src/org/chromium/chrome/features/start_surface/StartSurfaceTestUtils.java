@@ -49,7 +49,6 @@ import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
-import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.gesturenav.GestureNavigationUtils;
@@ -64,6 +63,7 @@ import org.chromium.chrome.browser.suggestions.tile.TileTitleSource;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabState;
 import org.chromium.chrome.browser.tab.TabUtils;
+import org.chromium.chrome.browser.tab_ui.TabContentManager;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.tabmodel.TabPersistentStore;
 import org.chromium.chrome.browser.tabmodel.TabbedModeTabPersistencePolicy;
@@ -98,10 +98,6 @@ import java.util.concurrent.atomic.AtomicReference;
 
 /** Utility methods and classes for testing Start Surface. */
 public class StartSurfaceTestUtils {
-    public static final String INSTANT_START_TEST_BASE_PARAMS =
-            "force-fieldtrial-params=Study.Group:"
-                    + StartSurfaceConfiguration.START_SURFACE_RETURN_TIME_SECONDS_PARAM
-                    + "/0";
     public static final String START_SURFACE_TEST_SINGLE_ENABLED_PARAMS =
             "force-fieldtrial-params=Study.Group:"
                     + "open_ntp_instead_of_start/false/open_start_as_homepage/true";
@@ -114,10 +110,8 @@ public class StartSurfaceTestUtils {
                     + "/0";
     public static List<ParameterSet> sClassParamsForStartSurfaceTest =
             Arrays.asList(
-                    new ParameterSet().value(false, false).name("NoInstant_NoReturn"),
-                    new ParameterSet().value(true, false).name("Instant_NoReturn"),
-                    new ParameterSet().value(false, true).name("NoInstant_Return"),
-                    new ParameterSet().value(true, true).name("Instant_Return"));
+                    new ParameterSet().value(false).name("NoReturn"),
+                    new ParameterSet().value(true).name("Return"));
 
     private static final long MAX_TIMEOUT_MS = 30000L;
 
@@ -499,20 +493,18 @@ public class StartSurfaceTestUtils {
                 .check(matches(withEffectiveVisibility(ViewMatchers.Visibility.GONE)));
 
         // Drag the Feed header title to scroll the toolbar to the top.
+        Resources resources = cta.getResources();
         int logoInSurfaceHeight = 0;
-        if (isSurfacePolishEnabled
+        if (StartSurfaceConfiguration.isLogoPolishEnabled()) {
+            logoInSurfaceHeight =
+                    LogoUtils.getLogoTotalHeightForLogoPolish(
+                            resources, StartSurfaceConfiguration.getLogoSizeForLogoPolish());
+        } else if (isSurfacePolishEnabled
                 && StartSurfaceConfiguration.SURFACE_POLISH_MOVE_DOWN_LOGO.getValue()) {
-            Resources resources = cta.getResources();
             if (StartSurfaceConfiguration.SURFACE_POLISH_LESS_BRAND_SPACE.getValue()) {
-                logoInSurfaceHeight =
-                        LogoUtils.getLogoHeightPolishedShort(resources)
-                                + LogoUtils.getTopMarginPolishedSmall(resources)
-                                + LogoUtils.getBottomMarginPolishedSmall(resources);
+                logoInSurfaceHeight = LogoUtils.getLogoTotalHeightPolishedShort(resources);
             } else {
-                logoInSurfaceHeight =
-                        LogoUtils.getLogoHeightPolished(resources)
-                                + LogoUtils.getTopMarginPolished(resources)
-                                + LogoUtils.getBottomMarginPolished(resources);
+                logoInSurfaceHeight = LogoUtils.getLogoTotalHeightPolished(resources);
             }
         }
         float toY =

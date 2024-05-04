@@ -585,7 +585,7 @@ public class ExternalNavigationHandler {
         }
         targetIntent.removeExtra(EXTRA_BROWSER_FALLBACK_URL);
 
-        // TODO(https://crbug.com/1096099): Refactor shouldOverrideUrlLoadingInternal, splitting it
+        // TODO(crbug.com/40136041): Refactor shouldOverrideUrlLoadingInternal, splitting it
         // up to separate out the notions wanting to fire an external intent vs being able to.
         MutableBoolean canLaunchExternalFallbackResult = new MutableBoolean();
 
@@ -618,10 +618,7 @@ public class ExternalNavigationHandler {
             Intent targetIntent,
             GURL browserFallbackUrl,
             boolean canLaunchExternalFallback) {
-        if (browserFallbackUrl.isEmpty()
-                || (params.getRedirectHandler().isOnNavigation()
-                        // For instance, if this is a chained fallback URL, we ignore it.
-                        && params.getRedirectHandler().shouldNotOverrideUrlLoading())) {
+        if (browserFallbackUrl.isEmpty()) {
             return OverrideUrlLoadingResult.forNoOverride();
         }
 
@@ -663,16 +660,6 @@ public class ExternalNavigationHandler {
                 }
                 return result;
             }
-        }
-
-        // NOTE: any further redirection from fall-back URL should not override URL loading.
-        // Otherwise, it can be used in chain for fingerprinting multiple app installation
-        // status in one shot. In order to prevent this scenario, we notify redirection
-        // handler that redirection from the current navigation should stay in this app.
-        if (params.getRedirectHandler().isOnNavigation()
-                && !params.getRedirectHandler()
-                        .getAndClearShouldNotBlockOverrideUrlLoadingOnCurrentRedirectionChain()) {
-            params.getRedirectHandler().setShouldNotOverrideUrlLoadingOnCurrentRedirectChain();
         }
 
         if (debug()) Log.i(TAG, "redirecting to fallback URL");
@@ -1020,7 +1007,7 @@ public class ExternalNavigationHandler {
             return NavigationChainResult.REQUIRES_PROMPT;
         }
 
-        // TODO(https://crbug.com/1346731): We only need to check isFromTyping because WebLayer's
+        // TODO(crbug.com/40232652): We only need to check isFromTyping because WebLayer's
         // implementation of disabling intent processing is broken and doesn't actually disable
         // intent processing, but to align with current weblayer behavior the first navigation has
         // to be blocked even if the weblayer delegate tells us not to block embedder initiated
@@ -1119,7 +1106,14 @@ public class ExternalNavigationHandler {
             ExternalNavigationParams params,
             Intent targetIntent,
             GURL browserFallbackUrl,
-            @NavigationChainResult int navigationChainResult) {
+            @NavigationChainResult int navigationChainResult,
+            boolean isExternalProtocol) {
+        if (isExternalProtocol) {
+            // https://crbug.com/330555390. In order to avoid a fingerprinting vector, if an
+            // external protocol fails to launch an app due to the app not being installed, future
+            // navigations on the same redirect chain should also stay in Chrome.
+            params.getRedirectHandler().setShouldNotOverrideUrlLoadingOnCurrentRedirectChain();
+        }
         if (navigationChainResult != NavigationChainResult.ALLOWED) {
             return OverrideUrlLoadingResult.forNoOverride();
         }
@@ -1447,7 +1441,7 @@ public class ExternalNavigationHandler {
             final GURL fallbackUrl) {
         if (shouldLaunch) {
             try {
-                startActivity(intent);
+                startActivity(intent, params);
                 if (params.getRequiredAsyncActionTakenCallback() != null) {
                     params.getRequiredAsyncActionTakenCallback()
                             .onResult(
@@ -1665,7 +1659,11 @@ public class ExternalNavigationHandler {
 
         if (resolvingInfos.get().isEmpty()) {
             return handleUnresolvableIntent(
-                    params, targetIntent, browserFallbackUrl, navigationChainResult);
+                    params,
+                    targetIntent,
+                    browserFallbackUrl,
+                    navigationChainResult,
+                    isExternalProtocol);
         }
 
         if (resolvesToNonExportedActivity(resolvingInfos.get())) {
@@ -1741,12 +1739,12 @@ public class ExternalNavigationHandler {
 
         return startActivity(
                 targetIntent,
+                params,
                 requiresIntentChooser,
                 resolvingInfos,
                 resolveActivity,
                 browserFallbackUrl,
-                intentTargetUrl,
-                params);
+                intentTargetUrl);
     }
 
     // https://crbug.com/1249964
@@ -1875,7 +1873,7 @@ public class ExternalNavigationHandler {
             return OverrideUrlLoadingResult.forAsyncAction(
                     OverrideUrlLoadingAsyncActionType.UI_GATING_INTENT_LAUNCH);
         } else {
-            startActivity(intent);
+            startActivity(intent, params);
             if (debug()) Log.i(TAG, "Intent to Play Store.");
             return OverrideUrlLoadingResult.forExternalIntent();
         }
@@ -1945,7 +1943,7 @@ public class ExternalNavigationHandler {
         Intent webApkIntent = new Intent(targetIntent);
         webApkIntent.setPackage(packageName);
         try {
-            startActivity(webApkIntent);
+            startActivity(webApkIntent, params);
             if (debug()) Log.i(TAG, "Launched WebAPK");
             return true;
         } catch (ActivityNotFoundException e) {
@@ -2080,36 +2078,42 @@ public class ExternalNavigationHandler {
 
     /**
      * Start an activity for the intent. Used for intents that must be handled externally.
+     *
      * @param intent The intent we want to send.
      */
-    private void startActivity(Intent intent) {
-        startActivity(intent, false, null, null, null, null, null);
+    private void startActivity(Intent intent, ExternalNavigationParams params) {
+        startActivity(intent, params, false, null, null, null, null);
     }
 
     /**
      * Start an activity for the intent. Used for intents that may be handled internally or
      * externally.
+     *
      * @param intent The intent we want to send.
+     * @param params The ExternalNavigationParams for the navigation.
      * @param requiresIntentChooser Whether, for security reasons, the Intent Chooser is required to
-     *                              be shown.
-     *
-     * Below parameters are only used if |requiresIntentChooser| is true.
-     *
+     *     be shown.
+     *     <p>Below parameters are only used if |requiresIntentChooser| is true.
      * @param resolvingInfos The queryIntentActivities |intent| matches against.
      * @param resolveActivity The resolving Activity |intent| matches against.
      * @param browserFallbackUrl The fallback URL if the user chooses not to leave this app.
      * @param intentTargetUrl The URL |intent| is targeting.
-     * @param params The ExternalNavigationParams for the navigation.
      * @returns The OverrideUrlLoadingResult for starting (or not starting) the Activity.
      */
     protected OverrideUrlLoadingResult startActivity(
             Intent intent,
+            ExternalNavigationParams params,
             boolean requiresIntentChooser,
             QueryIntentActivitiesSupplier resolvingInfos,
             ResolveActivitySupplier resolveActivity,
             GURL browserFallbackUrl,
-            GURL intentTargetUrl,
-            ExternalNavigationParams params) {
+            GURL intentTargetUrl) {
+        // https://crbug.com/330555390. If we've launched an app on the current redirect chain, we
+        // should never launch a second one.
+        if (params.getRedirectHandler().isOnNavigation()) {
+            params.getRedirectHandler().setShouldNotOverrideUrlLoadingOnCurrentRedirectChain();
+        }
+
         // Only touches disk on Kitkat. See http://crbug.com/617725 for more context.
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();
         try {
@@ -2278,7 +2282,7 @@ public class ExternalNavigationHandler {
                                 // as a package.
                                 intent.setSelector(null);
                                 intent.setPackage(data.getComponent().getPackageName());
-                                startActivity(intent);
+                                startActivity(intent, params);
                                 callback.onResult(
                                         AsyncActionTakenParams.forExternalIntentLaunched(
                                                 true, params));
@@ -2366,7 +2370,7 @@ public class ExternalNavigationHandler {
                         .with(
                                 MessageBannerProperties.ON_PRIMARY_ACTION,
                                 () -> {
-                                    startActivity(targetIntent);
+                                    startActivity(targetIntent, params);
                                     var callback = params.getRequiredAsyncActionTakenCallback();
                                     if (callback != null) {
                                         callback.onResult(

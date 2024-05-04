@@ -68,6 +68,7 @@ class NATIVE_THEME_EXPORT NativeThemeWin : public NativeTheme,
              const gfx::Rect& rect,
              const ExtraParams& extra,
              ColorScheme color_scheme,
+             bool in_forced_colors,
              const std::optional<SkColor>& accent_color) const override;
   bool SupportsNinePatch(Part part) const override;
   gfx::Size GetNinePatchCanvasSize(Part part) const override;
@@ -91,6 +92,7 @@ class NATIVE_THEME_EXPORT NativeThemeWin : public NativeTheme,
 
   // NativeTheme:
   void ConfigureWebInstance() override;
+  std::optional<base::TimeDelta> GetPlatformCaretBlinkInterval() const override;
 
   NativeThemeWin(bool configure_web_instance, bool should_only_use_dark_colors);
   ~NativeThemeWin() override;

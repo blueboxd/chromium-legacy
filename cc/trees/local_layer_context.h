@@ -59,11 +59,10 @@ class CC_EXPORT LocalLayerContext : public LayerContext,
                  base::TimeTicks commit_start_time,
                  base::TimeTicks commit_finish_time) override;
   void DidCommitAndDrawFrame(int source_frame_number) override;
-  void DidReceiveCompositorFrameAck() override;
   void DidCompletePageScaleAnimation(int source_frame_number) override;
   void DidPresentCompositorFrame(
       uint32_t frame_token,
-      const gfx::PresentationFeedback& feedback) override;
+      const viz::FrameTimingDetails& frame_timing_details) override;
   void RecordStartOfFrameMetrics() override;
   void RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time,
                                ActiveFrameSequenceTrackers trackers) override;
@@ -89,7 +88,7 @@ class CC_EXPORT LocalLayerContext : public LayerContext,
   const raw_ptr<MutatorHost> mutator_host_;
 
   // The concrete LayerTreeHost which the client is controlling.
-  // TODO(https://crbug.com/1431762): Own and manage a LayerTreeHostImpl
+  // TODO(crbug.com/40902503): Own and manage a LayerTreeHostImpl
   // directly instead of proxying through a single-threaded LayerTreeHost.
   const LayerListSettings layer_list_settings_;
   std::unique_ptr<LayerTreeHost> host_;

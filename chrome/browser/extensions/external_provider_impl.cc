@@ -8,6 +8,7 @@
 
 #include <memory>
 #include <set>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -458,7 +459,7 @@ void ExternalProviderImpl::RetrieveExtensionsFromPrefs(
 
       base::FilePath path = base::FilePath::FromUTF8Unsafe(*external_crx);
       if (path.value().find(base::FilePath::kParentDirectory) !=
-          base::StringPiece::npos) {
+          std::string_view::npos) {
         install_stage_tracker->ReportFailure(
             extension_id, InstallStageTracker::FailureReason::
                               MALFORMED_EXTENSION_DICT_FILE_PATH);
@@ -828,7 +829,7 @@ void ExternalProviderImpl::CreateExternalProviders(
   }
 #endif
   if (!profile->GetPrefs()->GetBoolean(pref_names::kBlockExternalExtensions)) {
-// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
+// TODO(crbug.com/40118868): Revisit the macro expression once build flag switch
 // of lacros-chrome is complete.
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
     provider_list->push_back(std::make_unique<ExternalProviderImpl>(

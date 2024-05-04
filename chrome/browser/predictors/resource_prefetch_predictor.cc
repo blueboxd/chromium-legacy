@@ -29,6 +29,7 @@
 #include "content/public/browser/web_contents.h"
 #include "net/base/url_util.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
+#include "third_party/blink/public/common/features.h"
 #include "url/origin.h"
 
 using content::BrowserThread;
@@ -58,7 +59,7 @@ void InitializeOriginStatFromOriginRequestSummary(
 void InitializeOnDBSequence(
     ResourcePrefetchPredictor::RedirectDataMap* host_redirect_data,
     ResourcePrefetchPredictor::OriginDataMap* origin_data,
-    ResourcePrefetchPredictor::LcppDataMap* lcpp_data) {
+    LcppDataMap* lcpp_data) {
   host_redirect_data->InitializeOnDBSequence();
   origin_data->InitializeOnDBSequence();
   lcpp_data->InitializeOnDBSequence();
@@ -325,18 +326,18 @@ bool ResourcePrefetchPredictor::TryEnsureRecordingPrecondition() {
 }
 
 void ResourcePrefetchPredictor::RecordPageRequestSummary(
-    std::unique_ptr<PageRequestSummary> summary) {
+    const PageRequestSummary& summary) {
   if (!TryEnsureRecordingPrecondition()) {
     return;
   }
 
-  LearnRedirect(summary->initial_url.host(), summary->main_frame_url);
-  LearnOrigins(summary->main_frame_url.host(),
-               summary->main_frame_url.DeprecatedGetOriginAsURL(),
-               summary->origins);
+  LearnRedirect(summary.initial_url.host(), summary.main_frame_url);
+  LearnOrigins(summary.main_frame_url.host(),
+               summary.main_frame_url.DeprecatedGetOriginAsURL(),
+               summary.origins);
 
   if (observer_)
-    observer_->OnNavigationLearned(*summary);
+    observer_->OnNavigationLearned(summary);
 }
 
 bool ResourcePrefetchPredictor::PredictPreconnectOrigins(
@@ -393,27 +394,6 @@ bool ResourcePrefetchPredictor::PredictPreconnectOrigins(
   }
 
   return has_any_prediction;
-}
-
-std::optional<LcppData> ResourcePrefetchPredictor::GetLcppData(
-    const GURL& url) const {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  // The `initialization_state_` can be not `INITIALIZED` in the very first
-  // navigation on browser startup. Because this object is initialized on the
-  // first navigation.
-  if (initialization_state_ != INITIALIZED) {
-    return std::nullopt;
-  }
-
-  if (!url.is_valid() || url.host().empty() || net::IsLocalhost(url) ||
-      !url.SchemeIsHTTPOrHTTPS()) {
-    return std::nullopt;
-  }
-  LcppData data;
-  if (!lcpp_data_->TryGetData(url.host(), &data)) {
-    return std::nullopt;
-  }
-  return data;
 }
 
 void ResourcePrefetchPredictor::CreateCaches(
@@ -643,41 +623,33 @@ void ResourcePrefetchPredictor::LearnOrigins(
     origin_data_->UpdateData(host, data);
 }
 
-void ResourcePrefetchPredictor::LearnLcpp(const std::string& host,
+void ResourcePrefetchPredictor::LearnLcpp(const GURL& url,
                                           const LcppDataInputs& inputs) {
   if (!TryEnsureRecordingPrecondition()) {
     return;
   }
-
-  if (host.size() > ResourcePrefetchPredictorTables::kMaxStringLength) {
-    return;
-  }
-
-  LcppData data;
-  bool exists = lcpp_data_->TryGetData(host, &data);
-  data.set_last_visit_time(
-      base::Time::Now().ToDeltaSinceWindowsEpoch().InMicroseconds());
-
-  if (!exists) {
-    data.set_host(host);
-  }
-
-  if (!IsValidLcppStat(data.lcpp_stat())) {
-    data.clear_lcpp_stat();
-    base::UmaHistogramBoolean("LoadingPredictor.LcppStatCorruptedAtLearnTime",
-                              true);
-  }
-  bool data_updated = UpdateLcppDataWithLcppDataInputs(config_, inputs, data);
-  DCHECK(IsValidLcppStat(data.lcpp_stat()));
-  if (data_updated) {
-    lcpp_data_->UpdateData(host, data);
-    if (observer_) {
-      observer_->OnLcppLearned();
-    }
+  CHECK(lcpp_data_);
+  const bool data_updated =
+      predictors::LearnLcpp(config_, url, inputs, *lcpp_data_);
+  if (data_updated && observer_) {
+    observer_->OnLcppLearned();
   }
 }
 
-void ResourcePrefetchPredictor::OnURLsDeleted(
+std::optional<LcppStat> ResourcePrefetchPredictor::GetLcppStat(
+    const GURL& url) const {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  // The `initialization_state_` can be not `INITIALIZED` in the very first
+  // navigation on browser startup. Because this object is initialized on the
+  // first navigation.
+  if (initialization_state_ != INITIALIZED) {
+    return std::nullopt;
+  }
+  CHECK(lcpp_data_);
+  return predictors::GetLcppStat(*lcpp_data_, url);
+}
+
+void ResourcePrefetchPredictor::OnHistoryDeletions(
     history::HistoryService* history_service,
     const history::DeletionInfo& deletion_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);

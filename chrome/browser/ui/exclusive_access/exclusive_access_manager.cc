@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/exclusive_access/exclusive_access_context.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
 #include "chrome/browser/ui/exclusive_access/pointer_lock_controller.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/common/input/native_web_keyboard_event.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
@@ -25,6 +26,13 @@
 using content::WebContents;
 
 namespace {
+
+// Amount of time the user must press on Esc to make it a press-and-hold event.
+constexpr base::TimeDelta kHoldEscapeTime = base::Milliseconds(1500);
+
+// Amount of time the user must press on Esc to see the Exclusive Access Bubble
+// showing up.
+constexpr base::TimeDelta kShowExitBubbleTime = base::Milliseconds(500);
 
 constexpr char kHistogramFullscreenLockStateAtEntryViaApi[] =
     "WebCore.Fullscreen.LockStateAtEntryViaApi";
@@ -51,7 +59,8 @@ ExclusiveAccessManager::ExclusiveAccessManager(
       pointer_lock_controller_(this),
       exclusive_access_controllers_({&fullscreen_controller_,
                                      &keyboard_lock_controller_,
-                                     &pointer_lock_controller_}) {}
+                                     &pointer_lock_controller_}),
+      permission_manager_(exclusive_access_context) {}
 
 ExclusiveAccessManager::~ExclusiveAccessManager() = default;
 
@@ -99,14 +108,14 @@ ExclusiveAccessManager::GetExclusiveAccessExitBubbleType() const {
   return EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE;
 }
 
-void ExclusiveAccessManager::UpdateExclusiveAccessExitBubbleContent(
-    ExclusiveAccessBubbleHideCallback bubble_first_hide_callback,
+void ExclusiveAccessManager::UpdateBubble(
+    ExclusiveAccessBubbleHideCallback first_hide_callback,
     bool force_update) {
-  GURL url = GetExclusiveAccessBubbleURL();
-  ExclusiveAccessBubbleType bubble_type = GetExclusiveAccessExitBubbleType();
-  exclusive_access_context_->UpdateExclusiveAccessExitBubbleContent(
-      url, bubble_type, std::move(bubble_first_hide_callback),
-      /*notify_download=*/false, force_update);
+  exclusive_access_context_->UpdateExclusiveAccessBubble(
+      {.url = GetExclusiveAccessBubbleURL(),
+       .type = GetExclusiveAccessExitBubbleType(),
+       .force_update = force_update},
+      std::move(first_hide_callback));
 }
 
 GURL ExclusiveAccessManager::GetExclusiveAccessBubbleURL() const {
@@ -128,22 +137,19 @@ void ExclusiveAccessManager::RecordLockStateOnEnteringBrowserFullscreen()
 }
 
 void ExclusiveAccessManager::OnTabDeactivated(WebContents* web_contents) {
-  for (raw_ptr<ExclusiveAccessControllerBase> controller :
-       exclusive_access_controllers_) {
+  for (auto controller : exclusive_access_controllers_) {
     controller->OnTabDeactivated(web_contents);
   }
 }
 
 void ExclusiveAccessManager::OnTabDetachedFromView(WebContents* web_contents) {
-  for (raw_ptr<ExclusiveAccessControllerBase> controller :
-       exclusive_access_controllers_) {
+  for (auto controller : exclusive_access_controllers_) {
     controller->OnTabDetachedFromView(web_contents);
   }
 }
 
 void ExclusiveAccessManager::OnTabClosing(WebContents* web_contents) {
-  for (raw_ptr<ExclusiveAccessControllerBase> controller :
-       exclusive_access_controllers_) {
+  for (auto controller : exclusive_access_controllers_) {
     controller->OnTabClosing(web_contents);
   }
 }
@@ -155,16 +161,46 @@ bool ExclusiveAccessManager::HandleUserKeyEvent(
     return false;
   }
 
-  // Give the |keyboard_lock_controller_| first chance at handling the ESC event
-  // as there are specific UX behaviors that occur when that mode is active
-  // which are coordinated by that class.  Return false as we don't want to
-  // prevent the event from propagating to the webpage.
-  if (keyboard_lock_controller_.HandleKeyEvent(event))
-    return false;
+  if (base::FeatureList::IsEnabled(
+          features::kPressAndHoldEscToExitBrowserFullscreen)) {
+    if (event.GetType() == content::NativeWebKeyboardEvent::Type::kKeyUp &&
+        esc_key_hold_timer_.IsRunning()) {
+      esc_key_hold_timer_.Stop();
+      show_exit_bubble_timer_.Stop();
+      for (auto controller : exclusive_access_controllers_) {
+        controller->HandleUserReleasedEscapeEarly();
+      }
+    } else if (event.GetType() ==
+                   content::NativeWebKeyboardEvent::Type::kRawKeyDown &&
+               !esc_key_hold_timer_.IsRunning()) {
+      esc_key_hold_timer_.Start(
+          FROM_HERE, kHoldEscapeTime,
+          base::BindOnce(&ExclusiveAccessManager::HandleUserHeldEscape,
+                         base::Unretained(this)));
+      show_exit_bubble_timer_.Start(
+          FROM_HERE, kShowExitBubbleTime,
+          base::BindOnce(&ExclusiveAccessManager::UpdateBubble,
+                         base::Unretained(this), base::NullCallback(),
+                         /*force_update=*/true));
+    }
+    // If the keyboard lock is enabled and requires press-and-hold Esc to exit,
+    // do not pass the event to other controllers. Returns false as we don't
+    // want to prevent the event from propagating to the webpage.
+    if (keyboard_lock_controller_.RequiresPressAndHoldEscToExit()) {
+      return false;
+    }
+  } else {
+    // Give the `keyboard_lock_controller_` first chance at handling the Esc
+    // event as there are specific UX behaviors that occur when that mode is
+    // active which are coordinated by that class.  Return false as we don't
+    // want to prevent the event from propagating to the webpage.
+    if (keyboard_lock_controller_.HandleKeyEvent(event)) {
+      return false;
+    }
+  }
 
   bool handled = false;
-  for (raw_ptr<ExclusiveAccessControllerBase> controller :
-       exclusive_access_controllers_) {
+  for (auto controller : exclusive_access_controllers_) {
     if (controller->HandleUserPressedEscape()) {
       handled = true;
     }
@@ -177,9 +213,15 @@ void ExclusiveAccessManager::OnUserInput() {
 }
 
 void ExclusiveAccessManager::ExitExclusiveAccess() {
-  fullscreen_controller_.ExitExclusiveAccessToPreviousState();
-  keyboard_lock_controller_.LostKeyboardLock();
-  pointer_lock_controller_.LostPointerLock();
+  for (auto controller : exclusive_access_controllers_) {
+    controller->ExitExclusiveAccessToPreviousState();
+  }
+}
+
+void ExclusiveAccessManager::HandleUserHeldEscape() {
+  for (auto controller : exclusive_access_controllers_) {
+    controller->HandleUserHeldEscape();
+  }
 }
 
 void ExclusiveAccessManager::RecordLockStateOnEnteringFullscreen(

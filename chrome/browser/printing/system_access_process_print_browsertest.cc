@@ -14,7 +14,6 @@
 #include "base/memory/raw_ptr.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
-#include "chrome/browser/enterprise/connectors/analysis/content_analysis_dialog.h"
 #include "chrome/browser/printing/print_browsertest.h"
 #include "chrome/browser/printing/print_job.h"
 #include "chrome/browser/printing/print_test_utils.h"
@@ -27,11 +26,12 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/enterprise/common/proto/connectors.pb.h"
+#include "components/enterprise/buildflags/buildflags.h"
 #include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/no_renderer_crashes_assertion.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "printing/buildflags/buildflags.h"
@@ -50,26 +50,35 @@
 #include "chrome/browser/printing/print_job_worker_oop.h"
 #include "chrome/browser/printing/print_preview_dialog_controller.h"
 #include "chrome/browser/printing/printer_query_oop.h"
+#include "chrome/browser/task_manager/task_manager_browsertest_util.h"
+#include "chrome/browser/task_manager/task_manager_interface.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/services/printing/public/mojom/print_backend_service.mojom.h"
 #endif
 
-#if BUILDFLAG(ENABLE_PRINT_CONTENT_ANALYSIS)
+#if BUILDFLAG(ENTERPRISE_CONTENT_ANALYSIS)
+#include "chrome/browser/enterprise/connectors/analysis/content_analysis_dialog.h"
 #include "chrome/browser/enterprise/connectors/common.h"
 #include "chrome/browser/enterprise/connectors/test/deep_scanning_test_utils.h"  // nogncheck
 #include "chrome/browser/enterprise/connectors/test/fake_content_analysis_delegate.h"  // nogncheck
 #include "chrome/browser/policy/dm_token_utils.h"
-#include "components/enterprise/buildflags/buildflags.h"
+#include "components/enterprise/common/proto/connectors.pb.h"
 
 #if BUILDFLAG(ENTERPRISE_LOCAL_CONTENT_ANALYSIS)
 #include "chrome/browser/enterprise/connectors/test/fake_content_analysis_sdk_manager.h"  // nogncheck
 #endif  // BUILDFLAG(ENTERPRISE_LOCAL_CONTENT_ANALYSIS)
-#endif  // BUILDFLAG(ENABLE_PRINT_CONTENT_ANALYSIS)
+#endif  // BUILDFLAG(ENTERPRISE_CONTENT_ANALYSIS)
 
 #if BUILDFLAG(IS_CHROMEOS)
-// TODO(crbug.com/822505)  ChromeOS uses different testing setup that isn't
+// TODO(crbug.com/40567307)  ChromeOS uses different testing setup that isn't
 // hooked up to make use of `TestPrintingContext` yet.
 #error "ChromeOS not supported here yet"
 #endif
+
+using task_manager::TaskManagerInterface;
+using task_manager::browsertest_util::MatchAnyTab;
+using task_manager::browsertest_util::MatchUtility;
+using task_manager::browsertest_util::WaitForTaskManagerRows;
 
 namespace printing {
 
@@ -88,7 +97,7 @@ constexpr gfx::SizeF kLetterExpectedContentSize = gfx::SizeF(556, 736);
 constexpr gfx::SizeF kLegalExpectedContentSize = gfx::SizeF(556, 952);
 #endif  // BUILDFLAG(ENABLE_OOP_PRINTING) && !BUILDFLAG(IS_CHROMEOS)
 
-#if BUILDFLAG(ENABLE_PRINT_CONTENT_ANALYSIS)
+#if BUILDFLAG(ENTERPRISE_CONTENT_ANALYSIS)
 constexpr char kFakeDmToken[] = "fake-dm-token";
 
 // The policy values below correspond to the schema described in
@@ -118,7 +127,7 @@ constexpr char kLocalAnalysisPolicy[] = R"({
 
 using OnDidCompositeForContentAnalysis =
     base::RepeatingCallback<void(bool allowed)>;
-#endif  // BUILDFLAG(ENABLE_PRINT_CONTENT_ANALYSIS)
+#endif  // BUILDFLAG(ENTERPRISE_CONTENT_ANALYSIS)
 
 #if BUILDFLAG(ENABLE_OOP_PRINTING)
 void CancelPrintPreview(content::WebContents* preview_dialog) {
@@ -200,46 +209,37 @@ const char* GetPlatformPrintApiString(PlatformPrintApiVariation variation) {
   }
 }
 
-const char* GetPlatformPrintApiTestSuffix(
-    const testing::TestParamInfo<PlatformPrintApiVariation>& info) {
-  return GetPlatformPrintApiString(info.param);
-}
-
-// Tests using these variations are not concerned with the different language
-// types, where one Windows GDI type is sufficient.
-constexpr PlatformPrintApiVariation
-    kSandboxedServicePlatformPrintApiVariations[] = {
-#if BUILDFLAG(IS_WIN)
-        // TODO(crbug.com/1008222):  Include XPS variation.
-        PlatformPrintApiVariation::kGdiEmf,
-#else
-        PlatformPrintApiVariation::kCups,
-#endif
-};
-
-// Tests using these variations are concerned with all the different language
-// types on Windows.
-constexpr PlatformPrintApiVariation
-    kSandboxedServicePlatformPrintLanguageApiVariations[] = {
-#if BUILDFLAG(IS_WIN)
-        // TODO(crbug.com/1008222):  Include XPS variation.
-        PlatformPrintApiVariation::kGdiEmf,
-        PlatformPrintApiVariation::kGdiPostScriptLevel2,
-        PlatformPrintApiVariation::kGdiPostScriptLevel3,
-        PlatformPrintApiVariation::kGdiTextOnly,
-#else
-        PlatformPrintApiVariation::kCups,
-#endif
-};
-
 // Caution must be taken with platform API variations, as `kXps` should not
 // be generated with `kInBrowserProcess`.  Use of `testing::Combine()` between
 // `PrintBackendFeatureVariation` and `PlatformPrintApiVariation` could
 // inadvertently cause this illegal combination.  This can be avoided by using
 // a local helper method to generate the allowed combinations.
+//
+// `SystemAccessProcessPrintBrowserTestBase` will check this constraint at
+// runtime.
 struct PrintBackendAndPlatformPrintApiVariation {
   PrintBackendFeatureVariation print_backend;
   PlatformPrintApiVariation platform_api;
+};
+
+// Tests using these variations are concerned with all the different language
+// types on Windows.
+constexpr PrintBackendAndPlatformPrintApiVariation
+    kSandboxedServicePlatformPrintLanguageApiVariations[] = {
+#if BUILDFLAG(IS_WIN)
+        // TODO(crbug.com/40100562):  Include XPS variation.
+        {PrintBackendFeatureVariation::kOopSandboxedService,
+         PlatformPrintApiVariation::kGdiEmf},
+        {PrintBackendFeatureVariation::kOopSandboxedService,
+         PlatformPrintApiVariation::kGdiPostScriptLevel2},
+        {PrintBackendFeatureVariation::kOopSandboxedService,
+         PlatformPrintApiVariation::kGdiPostScriptLevel3},
+        {PrintBackendFeatureVariation::kOopSandboxedService,
+         PlatformPrintApiVariation::kGdiTextOnly},
+#else
+        {PrintBackendFeatureVariation::kOopSandboxedService,
+         PlatformPrintApiVariation::kCups},
+#endif
 };
 
 std::string GetPrintBackendAndPlatformPrintApiString(
@@ -264,7 +264,7 @@ GeneratePrintBackendAndPlatformPrintApiVariations(
        print_backend_variations) {
 #if BUILDFLAG(IS_WIN)
     // Only need one GDI variation, not interested in different language types.
-    // TODO(crbug.com/1008222):  Include XPS variation, only when the
+    // TODO(crbug.com/40100562):  Include XPS variation, only when the
     // `print_backend_variation` is not `kInBrowserProcess`.
     variations.emplace_back(print_backend_variation,
                             PlatformPrintApiVariation::kGdiEmf);
@@ -277,6 +277,10 @@ GeneratePrintBackendAndPlatformPrintApiVariations(
   return variations;
 }
 
+std::string GetServiceLaunchTimingTestSuffix(
+    const testing::TestParamInfo<bool>& info) {
+  return info.param ? "EarlyStart" : "OnDemand";
+}
 #endif  // BUILDFLAG(ENABLE_OOP_PRINTING)
 
 }  // namespace
@@ -598,6 +602,9 @@ class SystemAccessProcessPrintBrowserTestBase
   // Only of interest when `UseService()` returns true.
   virtual bool SandboxService() = 0;
 
+  // Only applicable when `UseService()` returns true.
+  virtual bool EarlyStartService() { return false; }
+
 #if BUILDFLAG(IS_WIN)
   // Only applicable when `UseService()` returns true.
   virtual bool UseXps() = 0;
@@ -610,7 +617,9 @@ class SystemAccessProcessPrintBrowserTestBase
     if (UseService()) {
       enabled_features.push_back(
           {features::kEnableOopPrintDrivers,
-           {{features::kEnableOopPrintDriversJobPrint.name, "true"},
+           {{features::kEnableOopPrintDriversEarlyStart.name,
+             EarlyStartService() ? "true" : "false"},
+            {features::kEnableOopPrintDriversJobPrint.name, "true"},
             {features::kEnableOopPrintDriversSandbox.name,
              SandboxService() ? "true" : "false"}}});
 #if BUILDFLAG(IS_WIN)
@@ -619,20 +628,21 @@ class SystemAccessProcessPrintBrowserTestBase
       } else {
         disabled_features.push_back(features::kUseXpsForPrinting);
       }
-      // TODO(crbug.com/1034053):  Support `kUseXpsForPrintingFromPdf`.
+      // TODO(crbug.com/40111626):  Support `kUseXpsForPrintingFromPdf`.
       disabled_features.push_back(features::kUseXpsForPrintingFromPdf);
-      // TODO(crbug.com/1291257):  Support `kReadPrinterCapabilitiesWithXps`.
+      // TODO(crbug.com/40212677):  Support `kReadPrinterCapabilitiesWithXps`.
       disabled_features.push_back(features::kReadPrinterCapabilitiesWithXps);
-#endif
+#endif  // BUILDFLAG(IS_WIN)
     } else {
       disabled_features.push_back(features::kEnableOopPrintDrivers);
 #if BUILDFLAG(IS_WIN)
+      CHECK(!UseXps());
       disabled_features.push_back(features::kUseXpsForPrinting);
       disabled_features.push_back(features::kUseXpsForPrintingFromPdf);
       disabled_features.push_back(features::kReadPrinterCapabilitiesWithXps);
-#endif
+#endif  // BUILDFLAG(IS_WIN)
     }
-#endif
+#endif  // BUILDFLAG(ENABLE_OOP_PRINTING)
     feature_list_.InitWithFeaturesAndParameters(enabled_features,
                                                 disabled_features);
   }
@@ -728,7 +738,7 @@ class SystemAccessProcessPrintBrowserTestBase
 
   void SetUpOnMainThread() override {
 #if BUILDFLAG(ENABLE_OOP_PRINTING)
-    if (UseService()) {
+    if (UseService() && !EarlyStartService()) {
       print_backend_service_ = PrintBackendServiceTestImpl::LaunchForTesting(
           test_remote_, test_print_backend(), /*sandboxed=*/true);
     }
@@ -784,6 +794,12 @@ class SystemAccessProcessPrintBrowserTestBase
     CheckForQuit();
   }
 
+  void OnRenderFrameDeleted() override {
+    if (check_for_render_frame_deleted_) {
+      CheckForQuit();
+    }
+  }
+
   // PrintJob::Observer:
   void OnDestruction() override {
     ++print_job_destruction_count_;
@@ -795,7 +811,7 @@ class SystemAccessProcessPrintBrowserTestBase
     print_job->AddObserver(*this);
   }
 
-#if BUILDFLAG(ENABLE_PRINT_CONTENT_ANALYSIS)
+#if BUILDFLAG(ENTERPRISE_CONTENT_ANALYSIS)
   void OnCompositedForContentAnalysis(bool allowed) {
     ++composited_for_content_analysis_count_;
     CheckForQuit();
@@ -861,7 +877,7 @@ class SystemAccessProcessPrintBrowserTestBase
                        .shadowRoot.querySelector('.action-button');
       button.click();)";
     auto result = content::ExecJs(preview_dialog, kScript);
-    // TODO(crbug.com/1472464):  Update once it is known if the assertion
+    // TODO(crbug.com/40926610):  Update once it is known if the assertion
     // should not happen if the failure is just because the renderer
     // terminated.
     // If the renderer terminates, it will return a failing result.  It has
@@ -1046,6 +1062,10 @@ class SystemAccessProcessPrintBrowserTestBase
   }
 #endif
 
+  void SetCheckForRenderFrameDeleted(bool check) {
+    check_for_render_frame_deleted_ = check;
+  }
+
   const std::optional<bool> system_print_registration_succeeded() const {
     return system_print_registration_succeeded_;
   }
@@ -1108,7 +1128,7 @@ class SystemAccessProcessPrintBrowserTestBase
     return print_job_destruction_count_;
   }
   int did_print_document_count() const { return did_print_document_count_; }
-#if BUILDFLAG(ENABLE_PRINT_CONTENT_ANALYSIS)
+#if BUILDFLAG(ENTERPRISE_CONTENT_ANALYSIS)
   int composited_for_content_analysis_count() const {
     return composited_for_content_analysis_count_;
   }
@@ -1246,6 +1266,7 @@ class SystemAccessProcessPrintBrowserTestBase
 #endif
 #if BUILDFLAG(ENABLE_OOP_PRINTING)
   bool check_for_print_preview_done_ = false;
+  bool check_for_render_frame_deleted_ = false;
   TestPrintJobWorker::PrintCallbacks test_print_job_worker_callbacks_;
   TestPrintJobWorkerOop::PrintCallbacks test_print_job_worker_oop_callbacks_;
   CreatePrinterQueryCallback test_create_printer_query_callback_;
@@ -1256,7 +1277,7 @@ class SystemAccessProcessPrintBrowserTestBase
   bool simulate_spooling_memory_errors_ = false;
 #if BUILDFLAG(IS_WIN)
   std::optional<uint32_t> simulate_pdf_conversion_error_on_page_index_;
-#endif
+#endif  // BUILDFLAG(IS_WIN)
   mojo::Remote<mojom::PrintBackendService> test_remote_;
   std::unique_ptr<PrintBackendServiceTestImpl> print_backend_service_;
 #endif  // BUILDFLAG(ENABLE_OOP_PRINTING)
@@ -1280,93 +1301,45 @@ class SystemAccessProcessPrintBrowserTestBase
   int cancel_count_ = 0;
   int print_job_construction_count_ = 0;
   int print_job_destruction_count_ = 0;
-#if BUILDFLAG(ENABLE_PRINT_CONTENT_ANALYSIS)
+#if BUILDFLAG(ENTERPRISE_CONTENT_ANALYSIS)
   int composited_for_content_analysis_count_ = 0;
 #endif
 };
 
 #if BUILDFLAG(ENABLE_OOP_PRINTING)
 
-class SystemAccessProcessSandboxedServicePrintBrowserTest
+class SystemAccessProcessUnsandboxedEarlyStartServicePrintBrowserTest
     : public SystemAccessProcessPrintBrowserTestBase,
-      public testing::WithParamInterface<PlatformPrintApiVariation> {
+      public testing::WithParamInterface<bool> {
  public:
-  SystemAccessProcessSandboxedServicePrintBrowserTest() = default;
-  ~SystemAccessProcessSandboxedServicePrintBrowserTest() override = default;
-
-  bool UseService() override { return true; }
-  bool SandboxService() override { return true; }
-#if BUILDFLAG(IS_WIN)
-  bool UseXps() override {
-    return GetParam() == PlatformPrintApiVariation::kXps;
-  }
-#endif
-};
-
-INSTANTIATE_TEST_SUITE_P(
-    All,
-    SystemAccessProcessSandboxedServicePrintBrowserTest,
-    testing::ValuesIn(kSandboxedServicePlatformPrintApiVariations),
-    GetPlatformPrintApiTestSuffix);
-
-class SystemAccessProcessSandboxedServiceLanguagePrintBrowserTest
-    : public SystemAccessProcessSandboxedServicePrintBrowserTest {
- public:
-  SystemAccessProcessSandboxedServiceLanguagePrintBrowserTest() = default;
-  ~SystemAccessProcessSandboxedServiceLanguagePrintBrowserTest() override =
+  SystemAccessProcessUnsandboxedEarlyStartServicePrintBrowserTest() = default;
+  ~SystemAccessProcessUnsandboxedEarlyStartServicePrintBrowserTest() override =
       default;
 
-#if BUILDFLAG(IS_WIN)
-  mojom::PrinterLanguageType UseLanguageType() {
-    switch (GetParam()) {
-      case PlatformPrintApiVariation::kGdiEmf:
-        return mojom::PrinterLanguageType::kNone;
-      case PlatformPrintApiVariation::kGdiPostScriptLevel2:
-        return mojom::PrinterLanguageType::kPostscriptLevel2;
-      case PlatformPrintApiVariation::kGdiPostScriptLevel3:
-        return mojom::PrinterLanguageType::kPostscriptLevel3;
-      case PlatformPrintApiVariation::kGdiTextOnly:
-        return mojom::PrinterLanguageType::kTextOnly;
-      case PlatformPrintApiVariation::kXps:
-        return mojom::PrinterLanguageType::kXps;
-    }
-  }
-#endif
-};
-
-INSTANTIATE_TEST_SUITE_P(
-    All,
-    SystemAccessProcessSandboxedServiceLanguagePrintBrowserTest,
-    testing::ValuesIn(kSandboxedServicePlatformPrintLanguageApiVariations),
-    GetPlatformPrintApiTestSuffix);
-
-class SystemAccessProcessServicePrintBrowserTest
-    : public SystemAccessProcessPrintBrowserTestBase,
-      public testing::WithParamInterface<
-          PrintBackendAndPlatformPrintApiVariation> {
- public:
-  SystemAccessProcessServicePrintBrowserTest() = default;
-  ~SystemAccessProcessServicePrintBrowserTest() override = default;
-
   bool UseService() override { return true; }
-  bool SandboxService() override {
-    return GetParam().print_backend ==
-           PrintBackendFeatureVariation::kOopSandboxedService;
-  }
+  bool SandboxService() override { return false; }
+  bool EarlyStartService() override { return GetParam(); }
 #if BUILDFLAG(IS_WIN)
-  bool UseXps() override {
-    return GetParam().platform_api == PlatformPrintApiVariation::kXps;
-  }
+  bool UseXps() override { return false; }
 #endif
+
+  bool DoesPrintBackendServiceTaskExist() {
+    TaskManagerInterface* task_mgr = TaskManagerInterface::GetTaskManager();
+    std::u16string title = MatchUtility(u"Print Backend Service");
+    for (auto task_id : task_mgr->GetTaskIdsList()) {
+      if (title == task_mgr->GetTitle(task_id)) {
+        return true;
+      }
+    }
+    return false;
+  }
 };
 
 INSTANTIATE_TEST_SUITE_P(
     All,
-    SystemAccessProcessServicePrintBrowserTest,
-    testing::ValuesIn(GeneratePrintBackendAndPlatformPrintApiVariations(
-        {PrintBackendFeatureVariation::kOopSandboxedService,
-         PrintBackendFeatureVariation::kOopUnsandboxedService})),
-    GetPrintBackendAndPlatformPrintApiTestSuffix);
+    SystemAccessProcessUnsandboxedEarlyStartServicePrintBrowserTest,
+    /*EarlyStartService=*/testing::Bool(),
+    GetServiceLaunchTimingTestSuffix);
 
 class SystemAccessProcessPrintBrowserTest
     : public SystemAccessProcessPrintBrowserTestBase,
@@ -1389,6 +1362,23 @@ class SystemAccessProcessPrintBrowserTest
     return GetParam().platform_api == PlatformPrintApiVariation::kXps;
   }
 #endif
+
+#if BUILDFLAG(IS_WIN)
+  mojom::PrinterLanguageType UseLanguageType() {
+    switch (GetParam().platform_api) {
+      case PlatformPrintApiVariation::kGdiEmf:
+        return mojom::PrinterLanguageType::kNone;
+      case PlatformPrintApiVariation::kGdiPostScriptLevel2:
+        return mojom::PrinterLanguageType::kPostscriptLevel2;
+      case PlatformPrintApiVariation::kGdiPostScriptLevel3:
+        return mojom::PrinterLanguageType::kPostscriptLevel3;
+      case PlatformPrintApiVariation::kGdiTextOnly:
+        return mojom::PrinterLanguageType::kTextOnly;
+      case PlatformPrintApiVariation::kXps:
+        return mojom::PrinterLanguageType::kXps;
+    }
+  }
+#endif
 };
 
 INSTANTIATE_TEST_SUITE_P(
@@ -1399,6 +1389,50 @@ INSTANTIATE_TEST_SUITE_P(
          PrintBackendFeatureVariation::kOopSandboxedService,
          PrintBackendFeatureVariation::kOopUnsandboxedService})),
     GetPrintBackendAndPlatformPrintApiTestSuffix);
+
+using SystemAccessProcessServicePrintBrowserTest =
+    SystemAccessProcessPrintBrowserTest;
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    SystemAccessProcessServicePrintBrowserTest,
+    testing::ValuesIn(GeneratePrintBackendAndPlatformPrintApiVariations(
+        {PrintBackendFeatureVariation::kOopSandboxedService,
+         PrintBackendFeatureVariation::kOopUnsandboxedService})),
+    GetPrintBackendAndPlatformPrintApiTestSuffix);
+
+using SystemAccessProcessSandboxedServicePrintBrowserTest =
+    SystemAccessProcessServicePrintBrowserTest;
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    SystemAccessProcessSandboxedServicePrintBrowserTest,
+    testing::ValuesIn(GeneratePrintBackendAndPlatformPrintApiVariations(
+        {PrintBackendFeatureVariation::kOopSandboxedService})),
+    GetPrintBackendAndPlatformPrintApiTestSuffix);
+
+using SystemAccessProcessSandboxedServiceLanguagePrintBrowserTest =
+    SystemAccessProcessServicePrintBrowserTest;
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    SystemAccessProcessSandboxedServiceLanguagePrintBrowserTest,
+    testing::ValuesIn(kSandboxedServicePlatformPrintLanguageApiVariations),
+    GetPrintBackendAndPlatformPrintApiTestSuffix);
+
+IN_PROC_BROWSER_TEST_P(
+    SystemAccessProcessUnsandboxedEarlyStartServicePrintBrowserTest,
+    ServiceLaunched) {
+  chrome::ShowTaskManager(browser());
+
+  // Wait for browser to open with a tab.
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAnyTab()));
+
+  // Now that startup is complete, look through the list of processes in the
+  // Task Manager to see if a Print Backend service has bee started (even
+  // though there has not been any request for printing).
+  CHECK_EQ(DoesPrintBackendServiceTaskExist(), EarlyStartService());
+}
 
 IN_PROC_BROWSER_TEST_P(SystemAccessProcessPrintBrowserTest,
                        UpdatePrintSettings) {
@@ -1520,7 +1554,7 @@ IN_PROC_BROWSER_TEST_P(SystemAccessProcessPrintBrowserTest,
 
   // The expected events for this are:
   // 1.  Update print settings, which fails.  No print job is created.
-  // TODO(crbug.com/1495120):  Update expectations once an error dialog is
+  // TODO(crbug.com/40286396):  Update expectations once an error dialog is
   // shown to the user after this failure.
   SetNumExpectedMessages(/*num=*/1);
   PrintAfterPreviewIsReadyAndMaybeLoaded(PrintParams(),
@@ -1538,7 +1572,7 @@ IN_PROC_BROWSER_TEST_P(SystemAccessProcessPrintBrowserTest,
 
   // Initiating printing before the document is ready hides the Print Preview
   // dialog.  No error is shown to the user when this happens.
-  // TODO(crbug.com/1495120):  Update once an error message is shown.
+  // TODO(crbug.com/40286396):  Update once an error message is shown.
   EXPECT_EQ(error_dialog_shown_count(), 0u);
 }
 
@@ -1574,7 +1608,7 @@ IN_PROC_BROWSER_TEST_P(
 
   EXPECT_EQ(start_printing_result(), mojom::ResultCode::kSuccess);
 #if BUILDFLAG(IS_WIN)
-  // TODO(crbug.com/1008222)  Include Windows coverage of
+  // TODO(crbug.com/40100562)  Include Windows coverage of
   // RenderPrintedDocument() once XPS print pipeline is added.
   EXPECT_EQ(render_printed_page_result(), mojom::ResultCode::kSuccess);
   EXPECT_EQ(render_printed_page_count(), 1);
@@ -1632,7 +1666,7 @@ IN_PROC_BROWSER_TEST_P(SystemAccessProcessSandboxedServicePrintBrowserTest,
   // 6.  Completes with document done.
   // 7.  Wait for the one print job to be destroyed, to ensure printing
   //     finished cleanly before completing the test.
-  // TODO(crbug.com/1008222)  Include Windows coverage of
+  // TODO(crbug.com/40100562)  Include Windows coverage of
   // RenderPrintedDocument() once XPS print pipeline is added.
   SetNumExpectedMessages(/*num=*/7);
 #else
@@ -1649,7 +1683,7 @@ IN_PROC_BROWSER_TEST_P(SystemAccessProcessSandboxedServicePrintBrowserTest,
 
   EXPECT_EQ(start_printing_result(), mojom::ResultCode::kSuccess);
 #if BUILDFLAG(IS_WIN)
-  // TODO(crbug.com/1008222)  Include Windows coverage of
+  // TODO(crbug.com/40100562)  Include Windows coverage of
   // RenderPrintedDocument() once XPS print pipeline is added.
   EXPECT_EQ(render_printed_page_result(), mojom::ResultCode::kSuccess);
   EXPECT_EQ(render_printed_page_count(), 3);
@@ -1741,7 +1775,7 @@ IN_PROC_BROWSER_TEST_P(SystemAccessProcessPrintBrowserTest,
     EXPECT_THAT(in_process_last_error_result_code(),
                 testing::Optional(mojom::ResultCode::kCanceled));
   }
-  // TODO(crbug.com/1500445):  Update expectation once an error is shown for
+  // TODO(crbug.com/40288222):  Update expectation once an error is shown for
   // this failure.
   EXPECT_EQ(error_dialog_shown_count(), 0u);
   EXPECT_EQ(print_job_destruction_count(), 1);
@@ -1872,7 +1906,7 @@ IN_PROC_BROWSER_TEST_P(SystemAccessProcessSandboxedServicePrintBrowserTest,
 
   EXPECT_EQ(start_printing_result(), mojom::ResultCode::kSuccess);
 #if BUILDFLAG(IS_WIN)
-  // TODO(crbug.com/1008222)  Include Windows coverage of
+  // TODO(crbug.com/40100562)  Include Windows coverage of
   // RenderPrintedDocument() once XPS print pipeline is added.
   EXPECT_EQ(render_printed_page_result(), mojom::ResultCode::kSuccess);
   EXPECT_EQ(render_printed_page_count(), 1);
@@ -2008,7 +2042,7 @@ IN_PROC_BROWSER_TEST_P(SystemAccessProcessSandboxedServicePrintBrowserTest,
 }
 #endif  // BUILDFLAG(IS_WIN)
 
-// TODO(crbug.com/1008222)  Include Windows once XPS print pipeline is added.
+// TODO(crbug.com/40100562)  Include Windows once XPS print pipeline is added.
 #if !BUILDFLAG(IS_WIN)
 IN_PROC_BROWSER_TEST_P(SystemAccessProcessSandboxedServicePrintBrowserTest,
                        StartPrintingRenderDocumentAccessDenied) {
@@ -2079,7 +2113,7 @@ IN_PROC_BROWSER_TEST_P(SystemAccessProcessSandboxedServicePrintBrowserTest,
 
   EXPECT_EQ(start_printing_result(), mojom::ResultCode::kSuccess);
 #if BUILDFLAG(IS_WIN)
-  // TODO(crbug.com/1008222)  Include Windows coverage of
+  // TODO(crbug.com/40100562)  Include Windows coverage of
   // RenderPrintedDocument() once XPS print pipeline is added.
   EXPECT_EQ(render_printed_page_result(), mojom::ResultCode::kSuccess);
   EXPECT_EQ(render_printed_page_count(), 1);
@@ -2164,7 +2198,7 @@ IN_PROC_BROWSER_TEST_P(SystemAccessProcessPrintBrowserTest,
   if (UseService()) {
     EXPECT_EQ(start_printing_result(), mojom::ResultCode::kSuccess);
 #if BUILDFLAG(IS_WIN)
-    // TODO(crbug.com/1008222)  Include Windows coverage of
+    // TODO(crbug.com/40100562)  Include Windows coverage of
     // RenderPrintedDocument() once XPS print pipeline is added.
     EXPECT_EQ(render_printed_page_result(), mojom::ResultCode::kSuccess);
     EXPECT_EQ(render_printed_page_count(), 1);
@@ -2219,7 +2253,7 @@ IN_PROC_BROWSER_TEST_P(SystemAccessProcessPrintBrowserTest,
   SystemPrintFromPreviewOnceReadyAndLoaded(/*wait_for_callback=*/true);
 
   EXPECT_EQ(update_print_settings_result(), mojom::ResultCode::kFailed);
-  // TODO(crbug.com/1495120):  Update once an error dialog is shown for this
+  // TODO(crbug.com/40286396):  Update once an error dialog is shown for this
   // failure to print.
   EXPECT_EQ(error_dialog_shown_count(), 0u);
 }
@@ -2261,7 +2295,7 @@ IN_PROC_BROWSER_TEST_P(
   SystemPrintFromPreviewOnceReadyAndLoaded(/*wait_for_callback=*/true);
 
   EXPECT_EQ(update_print_settings_result(), mojom::ResultCode::kFailed);
-  // TODO(crbug.com/1495120):  Update once an error dialog is shown for this
+  // TODO(crbug.com/40286396):  Update once an error dialog is shown for this
   // failure to print.
   EXPECT_EQ(error_dialog_shown_count(), 0u);
 
@@ -2282,7 +2316,7 @@ IN_PROC_BROWSER_TEST_P(
   PrintAfterPreviewIsReadyAndLoaded();
 
   EXPECT_EQ(update_print_settings_result(), mojom::ResultCode::kFailed);
-  // TODO(crbug.com/1495120):  Update once an error dialog is shown for this
+  // TODO(crbug.com/40286396):  Update once an error dialog is shown for this
   // failure to print.
   EXPECT_EQ(error_dialog_shown_count(), 0u);
 }
@@ -2290,7 +2324,7 @@ IN_PROC_BROWSER_TEST_P(
 // This test is Windows-only, since it is the only platform which can invoke
 // the system print dialog from within `PrintingContext::UpdatePrintSettings()`.
 // From that system dialog we can cause a cancel to occur.
-// TODO(crbug.com/809738):  Expand this to also cover in-browser, once an
+// TODO(crbug.com/40561724):  Expand this to also cover in-browser, once an
 // appropriate signal is available to use for tracking expected events.
 IN_PROC_BROWSER_TEST_P(SystemAccessProcessSandboxedServicePrintBrowserTest,
                        SystemPrintFromPrintPreviewCancelRetry) {
@@ -2338,7 +2372,7 @@ IN_PROC_BROWSER_TEST_P(SystemAccessProcessSandboxedServicePrintBrowserTest,
   EXPECT_EQ(print_job_destruction_count(), 0);
 }
 
-// TODO(crbug.com/1501950):  Enable test for Linux and macOS once renderer
+// TODO(crbug.com/40942272):  Enable test for Linux and macOS once renderer
 // RunLoop behavior can be made to work with test expectations.
 IN_PROC_BROWSER_TEST_P(SystemAccessProcessPrintBrowserTest,
                        SystemPrintAfterSystemPrintFromPrintPreview) {
@@ -2417,6 +2451,78 @@ IN_PROC_BROWSER_TEST_P(SystemAccessProcessPrintBrowserTest,
 #endif  // BUILDFLAG(IS_WIN)
 
 IN_PROC_BROWSER_TEST_P(SystemAccessProcessSandboxedServicePrintBrowserTest,
+                       PrintPreviewPrintAfterSystemPrintRendererCrash) {
+  AddPrinter("printer1");
+  SetPrinterNameForSubsequentContexts("printer1");
+
+  ASSERT_TRUE(embedded_test_server()->Started());
+  GURL url(embedded_test_server()->GetURL("/printing/test3.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
+
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(web_contents);
+  SetUpPrintViewManager(web_contents);
+
+  content::RenderFrameHost* frame = web_contents->GetPrimaryMainFrame();
+  content::RenderProcessHost* frame_rph = frame->GetProcess();
+
+  KillPrintRenderFrame frame_content(frame_rph,
+                                     GetPrintRenderFrame(frame).get());
+  frame_content.OverrideBinderForTesting(frame);
+
+  // With the renderer being prepared to fake a crash, the test needs to watch
+  // for it being deleted.
+  SetCheckForRenderFrameDeleted(/*check=*/true);
+  content::ScopedAllowRendererCrashes allow_renderer_crash;
+
+  // First invoke system print directly.
+
+  // The expected events for this are:
+  // 1.  Printing is attempted, but quickly get notified that the render frame
+  //     has been deleted because the renderer "crashed".
+  SetNumExpectedMessages(/*num=*/1);
+
+  StartBasicPrint(web_contents);
+
+  WaitUntilCallbackReceived();
+
+  // After renderer crash, reload the page again in the same tab.
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
+
+  // Now try to initiate print from a Print Preview.
+  PrepareRunloop();
+  ResetNumReceivedMessages();
+
+  // No longer interested in when the renderer is deleted.
+  SetCheckForRenderFrameDeleted(/*check=*/false);
+
+  // The expected events for this are:
+  // 1.  Update print settings.
+  // 2.  A print job is started.
+  // 3.  Rendering for 1 page of document of content.
+  // 4.  Completes with document done.
+  // 5.  Wait for the one print job to be destroyed, to ensure printing
+  //     finished cleanly before completing the test.
+  SetNumExpectedMessages(/*num=*/5);
+
+  PrintAfterPreviewIsReadyAndLoaded();
+
+  EXPECT_EQ(start_printing_result(), mojom::ResultCode::kSuccess);
+#if BUILDFLAG(IS_WIN)
+  // TODO(crbug.com/40100562)  Include Windows coverage of
+  // RenderPrintedDocument() once XPS print pipeline is added.
+  EXPECT_EQ(render_printed_page_result(), mojom::ResultCode::kSuccess);
+  EXPECT_EQ(render_printed_page_count(), 1);
+#else
+  EXPECT_EQ(render_printed_document_result(), mojom::ResultCode::kSuccess);
+#endif
+  EXPECT_EQ(document_done_result(), mojom::ResultCode::kSuccess);
+  EXPECT_EQ(error_dialog_shown_count(), 0u);
+  EXPECT_EQ(print_job_destruction_count(), 1);
+}
+
+IN_PROC_BROWSER_TEST_P(SystemAccessProcessSandboxedServicePrintBrowserTest,
                        StartBasicPrint) {
   AddPrinter("printer1");
   SetPrinterNameForSubsequentContexts("printer1");
@@ -2461,7 +2567,7 @@ IN_PROC_BROWSER_TEST_P(SystemAccessProcessSandboxedServicePrintBrowserTest,
             *document_print_settings());
   EXPECT_EQ(start_printing_result(), mojom::ResultCode::kSuccess);
 #if BUILDFLAG(IS_WIN)
-  // TODO(crbug.com/1008222)  Include Windows coverage of
+  // TODO(crbug.com/40100562)  Include Windows coverage of
   // RenderPrintedDocument() once XPS print pipeline is added.
   EXPECT_EQ(render_printed_page_result(), mojom::ResultCode::kSuccess);
   EXPECT_EQ(render_printed_page_count(), 1);
@@ -2635,7 +2741,7 @@ IN_PROC_BROWSER_TEST_P(SystemAccessProcessPrintBrowserTest,
     EXPECT_THAT(in_process_last_error_result_code(),
                 testing::Optional(mojom::ResultCode::kCanceled));
   }
-  // TODO(crbug.com/1500445):  Update expectation once an error is shown for
+  // TODO(crbug.com/40288222):  Update expectation once an error is shown for
   // this failure.
   EXPECT_EQ(error_dialog_shown_count(), 0u);
   EXPECT_EQ(print_job_destruction_count(), 1);
@@ -2704,7 +2810,7 @@ IN_PROC_BROWSER_TEST_P(SystemAccessProcessSandboxedServicePrintBrowserTest,
   SetUpPrintViewManager(web_contents);
 
   // Pretend that another tab has started a system print.
-  // TODO(crbug.com/809738)  Improve on this test by using a persistent fake
+  // TODO(crbug.com/40561724)  Improve on this test by using a persistent fake
   // system print dialog.
   std::optional<PrintBackendServiceManager::ClientId> client_id =
       PrintBackendServiceManager::GetInstance().RegisterQueryWithUiClient();
@@ -2781,7 +2887,7 @@ IN_PROC_BROWSER_TEST_P(SystemAccessProcessSandboxedServicePrintBrowserTest,
   SetUpPrintViewManager(web_contents);
 
   // Pretend that another tab has started a system print.
-  // TODO(crbug.com/809738)  Improve on this test by using a persistent fake
+  // TODO(crbug.com/40561724)  Improve on this test by using a persistent fake
   // system print dialog.
   std::optional<PrintBackendServiceManager::ClientId> client_id =
       PrintBackendServiceManager::GetInstance().RegisterQueryWithUiClient();
@@ -2888,7 +2994,7 @@ IN_PROC_BROWSER_TEST_P(SystemAccessProcessPrintBrowserTest, OpenPdfInPreview) {
 
 #endif  // BUILDFLAG(ENABLE_OOP_PRINTING)
 
-#if BUILDFLAG(ENABLE_PRINT_CONTENT_ANALYSIS)
+#if BUILDFLAG(ENTERPRISE_CONTENT_ANALYSIS)
 class TestPrintViewManagerForContentAnalysis : public TestPrintViewManager {
  public:
   class Observer : public PrintViewManagerBase::TestObserver {
@@ -2988,8 +3094,7 @@ class TestPrintViewManagerForContentAnalysis : public TestPrintViewManager {
 
     // The data of the document should be a valid PDF as this code should be
     // called as the print job is about to start printing.
-    EXPECT_TRUE(LooksLikePdf(base::span<const char>(
-        print_data->front_as<const char>(), print_data->size())));
+    EXPECT_TRUE(LooksLikePdf(*print_data));
 
     TestPrintViewManager::ContentAnalysisBeforePrintingDocument(
         std::move(scanning_data), print_data, page_size, content_area, offsets);
@@ -3688,6 +3793,6 @@ INSTANTIATE_TEST_SUITE_P(
 
 #endif  // BUILDFLAG(ENABLE_BASIC_PRINT_DIALOG)
 
-#endif  // BUILDFLAG(ENABLE_PRINT_CONTENT_ANALYSIS)
+#endif  // BUILDFLAG(ENTERPRISE_CONTENT_ANALYSIS)
 
 }  // namespace printing

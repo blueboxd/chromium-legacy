@@ -1800,7 +1800,7 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(NoSpuriousEventsHost, DataPipeTest, parent) {
 
     for (size_t i = 0; i < 9; ++i) {
       WaitForSignals(producer.get().value(), MOJO_HANDLE_SIGNAL_WRITABLE);
-      uint32_t size = 512;
+      size_t size = 512;
       producer->WriteData(kData, &size, MOJO_WRITE_DATA_FLAG_NONE);
     }
   }
@@ -1838,7 +1838,7 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(NoSpuriousEventsClient,
 
                           // Drain everything.
                           const void* buffer;
-                          uint32_t num_bytes;
+                          size_t num_bytes;
                           consumer->BeginReadData(&buffer, &num_bytes, 0);
                           consumer->EndReadData(num_bytes);
                           watcher.ArmOrNotify();
@@ -2375,7 +2375,10 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(StressTestRacyTrapsClient, DataPipeTest, h) {
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(h));
 }
 
-TEST_F(DataPipeTest, StressTestRacyTraps) {
+// Temporarily disabled during experimentation with suppression of this fix for
+// metrics collection only. Re-enable once the experiment is done.
+// See https://crbug.com/41494387.
+TEST_F(DataPipeTest, DISABLED_StressTestRacyTraps) {
   // Regression test for https://crbug.com/1468933. This bug was caused by a
   // race between trap arming and internal data pipe flushes which could result
   // in a data pipe trap appearing to be armed (and thus never re-arming) while

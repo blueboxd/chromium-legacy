@@ -5,11 +5,11 @@
 #include "chrome/browser/web_applications/isolated_web_apps/test/test_signed_web_bundle_builder.h"
 
 #include <memory>
+#include <string_view>
 #include <vector>
 
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
-#include "base/strings/string_piece.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/version.h"
 #include "chrome/browser/web_applications/test/web_app_icon_test_utils.h"
@@ -24,7 +24,7 @@
 namespace web_app {
 
 namespace {
-constexpr base::StringPiece kTestManifest = R"({
+constexpr std::string_view kTestManifest = R"({
       "name": "$1",
       "version": "$2",
       "id": "/",
@@ -65,16 +65,17 @@ TestSignedWebBundle::TestSignedWebBundle(TestSignedWebBundle&&) = default;
 TestSignedWebBundle::~TestSignedWebBundle() = default;
 
 TestSignedWebBundleBuilder::TestSignedWebBundleBuilder(
-    web_package::WebBundleSigner::KeyPair key_pair,
+    web_package::WebBundleSigner::Ed25519KeyPair key_pair,
     web_package::WebBundleSigner::ErrorsForTesting errors_for_testing)
     : key_pair_(key_pair), errors_for_testing_(errors_for_testing) {}
 
 TestSignedWebBundleBuilder::BuildOptions::BuildOptions()
-    : key_pair_(web_package::WebBundleSigner::KeyPair(kTestPublicKey,
-                                                      kTestPrivateKey)),
+    : key_pair_(web_package::WebBundleSigner::Ed25519KeyPair(kTestPublicKey,
+                                                             kTestPrivateKey)),
       version_(base::Version("1.0.0")),
       app_name_("Simple Isolated App"),
-      errors_for_testing_({}) {}
+      errors_for_testing_(
+          {/*integrity_block_errors=*/{}, /*signatures_errors=*/{}}) {}
 
 TestSignedWebBundleBuilder::BuildOptions::BuildOptions(const BuildOptions&) =
     default;
@@ -82,29 +83,28 @@ TestSignedWebBundleBuilder::BuildOptions::BuildOptions(BuildOptions&&) =
     default;
 TestSignedWebBundleBuilder::BuildOptions::~BuildOptions() = default;
 
-void TestSignedWebBundleBuilder::AddManifest(
-    base::StringPiece manifest_string) {
+void TestSignedWebBundleBuilder::AddManifest(std::string_view manifest_string) {
   builder_.AddExchange(
       kTestManifestUrl,
       {{":status", "200"}, {"content-type", "application/manifest+json"}},
       manifest_string);
 }
 
-void TestSignedWebBundleBuilder::AddPngImage(base::StringPiece url,
-                                             base::StringPiece image_string) {
+void TestSignedWebBundleBuilder::AddPngImage(std::string_view url,
+                                             std::string_view image_string) {
   builder_.AddExchange(url, {{":status", "200"}, {"content-type", "image/png"}},
                        image_string);
 }
 
-void TestSignedWebBundleBuilder::AddHtml(base::StringPiece url,
-                                         base::StringPiece html_content) {
+void TestSignedWebBundleBuilder::AddHtml(std::string_view url,
+                                         std::string_view html_content) {
   builder_.AddExchange(url, {{":status", "200"}, {"content-type", "text/html"}},
                        html_content);
 }
 
 void TestSignedWebBundleBuilder::AddJavaScript(
-    base::StringPiece url,
-    base::StringPiece script_content) {
+    std::string_view url,
+    std::string_view script_content) {
   builder_.AddExchange(
       url, {{":status", "200"}, {"content-type", "application/javascript"}},
       script_content);

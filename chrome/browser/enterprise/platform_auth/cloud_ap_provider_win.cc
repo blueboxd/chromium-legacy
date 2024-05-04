@@ -4,17 +4,19 @@
 
 #include "chrome/browser/enterprise/platform_auth/cloud_ap_provider_win.h"
 
-#include <stdint.h>
-#include <windows.h>  // Must precede lmjoin.h.
+#include <objbase.h>
+
+#include <windows.h>
 
 #include <lmcons.h>
 #include <lmjoin.h>
-#include <objbase.h>
 #include <proofofpossessioncookieinfo.h>
+#include <stdint.h>
 #include <windows.security.authentication.web.core.h>
 #include <wrl/client.h>
 
 #include <memory>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -187,7 +189,7 @@ void ParseCookieInfo(const ProofOfPossessionCookieInfo* cookie_info,
 
   // If the auth cookie name begins with 'x-ms-', attach the cookie as a
   // new header. Otherwise, append it to the existing list of cookies.
-  static constexpr base::StringPiece kHeaderPrefix("x-ms-");
+  static constexpr std::string_view kHeaderPrefix("x-ms-");
   for (DWORD i = 0; i < cookie_info_count; ++i) {
     const ProofOfPossessionCookieInfo& cookie = cookie_info[i];
     auto ascii_cookie_name = base::WideToASCII(cookie.name);

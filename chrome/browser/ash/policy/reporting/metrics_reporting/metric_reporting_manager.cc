@@ -36,6 +36,7 @@
 #include "chrome/browser/ash/policy/reporting/metrics_reporting/cros_healthd_sampler_handlers/cros_healthd_psr_sampler_handler.h"
 #include "chrome/browser/ash/policy/reporting/metrics_reporting/cros_healthd_sampler_handlers/cros_healthd_sampler_handler.h"
 #include "chrome/browser/ash/policy/reporting/metrics_reporting/device_activity/device_activity_sampler.h"
+#include "chrome/browser/ash/policy/reporting/metrics_reporting/fatal_crash/chrome_fatal_crash_events_observer.h"
 #include "chrome/browser/ash/policy/reporting/metrics_reporting/fatal_crash/fatal_crash_events_observer.h"
 #include "chrome/browser/ash/policy/reporting/metrics_reporting/kiosk_heartbeat/kiosk_heartbeat_telemetry_sampler.h"
 #include "chrome/browser/ash/policy/reporting/metrics_reporting/metric_reporting_prefs.h"
@@ -98,6 +99,9 @@ BASE_FEATURE(kEnableAppEventsObserver,
              base::FEATURE_ENABLED_BY_DEFAULT);
 BASE_FEATURE(kEnableFatalCrashEventsObserver,
              "EnableFatalCrashEventsObserver",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kEnableChromeFatalCrashEventsObserver,
+             "EnableChromeFatalCrashEventsObserver",
              base::FEATURE_DISABLED_BY_DEFAULT);
 BASE_FEATURE(kEnableRuntimeCountersTelemetry,
              "EnableRuntimeCountersTelemetry",
@@ -194,7 +198,7 @@ void MetricReportingManager::OnLogin(Profile* profile) {
             Priority::IMMEDIATE, &reporting_settings_,
             ::ash::kHeartbeatFrequency,
             metrics::GetDefaultKioskHeartbeatUploadFrequency(),
-            /*rate_limit_to_ms=*/1, source_info);
+            /*rate_unit_to_ms=*/1, source_info);
   }
   user_peripheral_events_and_telemetry_report_queue_ =
       delegate_->CreateMetricReportQueue(
@@ -258,7 +262,11 @@ MetricReportingManager::MetricReportingManager(
       EventType::kDevice, Destination::EVENT_METRIC, Priority::SLOW_BATCH,
       /*rate_limiter=*/nullptr, source_info);
   crash_event_report_queue_ = delegate_->CreateMetricReportQueue(
-      EventType::kDevice, Destination::CRASH_EVENTS, Priority::IMMEDIATE,
+      EventType::kDevice, Destination::CRASH_EVENTS, Priority::FAST_BATCH,
+      /*rate_limiter=*/nullptr, std::move(source_info));
+  chrome_crash_event_report_queue_ = delegate_->CreateMetricReportQueue(
+      EventType::kDevice, Destination::CHROME_CRASH_EVENTS,
+      Priority::FAST_BATCH,
       /*rate_limiter=*/nullptr, std::move(source_info));
   DelayedInit();
 
@@ -286,6 +294,7 @@ void MetricReportingManager::Shutdown() {
   user_telemetry_report_queue_.reset();
   event_report_queue_.reset();
   crash_event_report_queue_.reset();
+  chrome_crash_event_report_queue_.reset();
   user_event_report_queue_.reset();
   app_event_report_queue_.reset();
   website_event_report_queue_.reset();
@@ -703,6 +712,14 @@ void MetricReportingManager::InitFatalCrashCollectors() {
         metrics::kReportDeviceCrashReportInfoDefaultValue,
         /*collector_pool=*/this));
   }
+  if (base::FeatureList::IsEnabled(kEnableChromeFatalCrashEventsObserver)) {
+    event_observer_managers_.emplace_back(delegate_->CreateEventObserverManager(
+        FatalCrashEventsObserver::Create(),
+        chrome_crash_event_report_queue_.get(), &reporting_settings_,
+        ash::kReportDeviceCrashReportInfo,
+        metrics::kReportDeviceCrashReportInfoDefaultValue,
+        /*collector_pool=*/this));
+  }
 }
 
 void MetricReportingManager::InitPeripheralsCollectors() {
@@ -797,9 +814,9 @@ void MetricReportingManager::InitKioskHeartbeatTelemetryCollector() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   auto heartbeat_sampler = std::make_unique<KioskHeartbeatTelemetrySampler>();
   InitPeriodicTelemetryCollector(
-      /*name=*/kKioskHeartbeatTelemetry,
+      /*collector_name=*/kKioskHeartbeatTelemetry,
       /*sampler=*/heartbeat_sampler.get(),
-      /*queue=*/kiosk_heartbeat_telemetry_report_queue_.get(),
+      /*metric_report_queue=*/kiosk_heartbeat_telemetry_report_queue_.get(),
       /*enable_setting_path=*/::ash::kHeartbeatEnabled,
       /*enable_default_value=*/metrics::kHeartbeatTelemetryDefaultValue,
       /*rate_setting_path=*/::ash::kHeartbeatFrequency,
@@ -807,7 +824,7 @@ void MetricReportingManager::InitKioskHeartbeatTelemetryCollector() {
       metrics::GetDefaultCollectionRate(
           metrics::kDefaultHeartbeatTelemetryCollectionRate),
       /*rate_unit_to_ms=*/1,
-      /*init_delay=*/metrics::kDefaultHeartbeatTelemetryCollectionRate);
+      /*init_delay=*/base::TimeDelta());
   samplers_.push_back(std::move(heartbeat_sampler));
 }
 

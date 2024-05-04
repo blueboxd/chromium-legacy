@@ -60,10 +60,11 @@ CrossProcessFrameConnector::~CrossProcessFrameConnector() {
   }
 
   // Notify the view of this object being destroyed, if the view still exists.
-  SetView(nullptr);
+  SetView(nullptr, /*allow_paint_holding=*/false);
 }
 
-void CrossProcessFrameConnector::SetView(RenderWidgetHostViewChildFrame* view) {
+void CrossProcessFrameConnector::SetView(RenderWidgetHostViewChildFrame* view,
+                                         bool allow_paint_holding) {
   // Detach ourselves from the previous |view_|.
   if (view_) {
     RenderWidgetHostViewBase* root_view = GetRootRenderWidgetHostView();
@@ -110,7 +111,7 @@ void CrossProcessFrameConnector::SetView(RenderWidgetHostViewChildFrame* view) {
     if (frame_proxy_in_parent_renderer_ &&
         frame_proxy_in_parent_renderer_->is_render_frame_proxy_live()) {
       frame_proxy_in_parent_renderer_->GetAssociatedRemoteFrame()
-          ->SetFrameSinkId(view_->GetFrameSinkId());
+          ->SetFrameSinkId(view_->GetFrameSinkId(), allow_paint_holding);
     }
   }
 }
@@ -238,7 +239,7 @@ gfx::PointF CrossProcessFrameConnector::TransformPointToRootCoordSpace(
 
 bool CrossProcessFrameConnector::TransformPointToCoordSpaceForView(
     const gfx::PointF& point,
-    RenderWidgetHostViewBase* target_view,
+    RenderWidgetHostViewInput* target_view,
     const viz::SurfaceId& local_surface_id,
     gfx::PointF* transformed_point) {
   RenderWidgetHostViewBase* root_view = GetRootRenderWidgetHostView();
@@ -425,7 +426,7 @@ void CrossProcessFrameConnector::OnVisibilityChanged(
   if (!view_)
     return;
 
-  // TODO(https://crbug.com/1014212) Remove this CHECK when the bug is fixed.
+  // TODO(crbug.com/40103184) Remove this CHECK when the bug is fixed.
   CHECK(current_child_frame_host());
   current_child_frame_host()->VisibilityChanged(visibility_);
 

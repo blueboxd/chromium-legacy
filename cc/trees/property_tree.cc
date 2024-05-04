@@ -166,7 +166,7 @@ void TransformTree::set_needs_update(bool needs_update) {
 bool TransformTree::OnTransformAnimated(ElementId element_id,
                                         const gfx::Transform& transform) {
   TransformNode* node = FindNodeFromElementId(element_id);
-  // TODO(crbug.com/1307498): Remove this when we no longer animate
+  // TODO(crbug.com/40828469): Remove this when we no longer animate
   // non-existent nodes.
   if (!node) {
     AnimationUpdateOnMissingPropertyNodeUMALog(true);
@@ -415,7 +415,7 @@ gfx::Vector2dF TransformTree::StickyPositionOffset(TransformNode* node) {
 
   gfx::Vector2dF ancestor_sticky_box_offset;
   if (sticky_data->nearest_node_shifting_sticky_box != kInvalidPropertyNodeId) {
-    // TODO(crbug.com/1128479): Investigate why there would be an invalid index
+    // TODO(crbug.com/40053373): Investigate why there would be an invalid index
     // passed in. Early return for now.
     if (sticky_data->nearest_node_shifting_sticky_box >=
         static_cast<int>(property_trees()->transform_tree().size()))
@@ -430,7 +430,7 @@ gfx::Vector2dF TransformTree::StickyPositionOffset(TransformNode* node) {
   gfx::Vector2dF ancestor_containing_block_offset;
   if (sticky_data->nearest_node_shifting_containing_block !=
       kInvalidPropertyNodeId) {
-    // TODO(crbug.com/1128479): Investigate why there would be an invalid index
+    // TODO(crbug.com/40053373): Investigate why there would be an invalid index
     // passed in. Early return for now.
     if (sticky_data->nearest_node_shifting_containing_block >=
         static_cast<int>(property_trees()->transform_tree().size()))
@@ -961,6 +961,15 @@ void EffectTree::UpdateHasFilters(EffectNode* node, EffectNode* parent_node) {
   }
 }
 
+void EffectTree::UpdateHasFastRoundedCorner(EffectNode* node,
+                                            EffectNode* parent_node) {
+  node->node_or_ancestor_has_fast_rounded_corner = node->is_fast_rounded_corner;
+  if (parent_node) {
+    node->node_or_ancestor_has_fast_rounded_corner |=
+        parent_node->node_or_ancestor_has_fast_rounded_corner;
+  }
+}
+
 void EffectTree::UpdateBackfaceVisibility(EffectNode* node,
                                           EffectNode* parent_node) {
   if (parent_node && parent_node->hidden_by_backface_visibility) {
@@ -1028,7 +1037,7 @@ void EffectTree::UpdateSurfaceContentsScale(EffectNode* effect_node) {
 
 bool EffectTree::OnOpacityAnimated(ElementId id, float opacity) {
   EffectNode* node = FindNodeFromElementId(id);
-  // TODO(crbug.com/1307498): Remove this when we no longer animate
+  // TODO(crbug.com/40828469): Remove this when we no longer animate
   // non-existent nodes.
   if (!node) {
     AnimationUpdateOnMissingPropertyNodeUMALog(true);
@@ -1047,7 +1056,7 @@ bool EffectTree::OnOpacityAnimated(ElementId id, float opacity) {
 bool EffectTree::OnFilterAnimated(ElementId id,
                                   const FilterOperations& filters) {
   EffectNode* node = FindNodeFromElementId(id);
-  // TODO(crbug.com/1307498): Remove this when we no longer animate
+  // TODO(crbug.com/40828469): Remove this when we no longer animate
   // non-existent nodes.
   if (!node) {
     AnimationUpdateOnMissingPropertyNodeUMALog(true);
@@ -1067,7 +1076,7 @@ bool EffectTree::OnBackdropFilterAnimated(
     ElementId id,
     const FilterOperations& backdrop_filters) {
   EffectNode* node = FindNodeFromElementId(id);
-  // TODO(crbug.com/1307498): Remove this when we no longer animate
+  // TODO(crbug.com/40828469): Remove this when we no longer animate
   // non-existent nodes.
   if (!node) {
     AnimationUpdateOnMissingPropertyNodeUMALog(true);
@@ -1092,6 +1101,7 @@ void EffectTree::UpdateEffects(int id) {
   UpdateIsDrawn(node, parent_node);
   UpdateEffectChanged(node, parent_node);
   UpdateHasFilters(node, parent_node);
+  UpdateHasFastRoundedCorner(node, parent_node);
   UpdateBackfaceVisibility(node, parent_node);
   UpdateHasMaskingChild(node, parent_node);
   UpdateOnlyDrawsVisibleContent(node, parent_node);
@@ -1493,19 +1503,22 @@ void ScrollTree::CopyCompleteTreeState(const ScrollTree& other) {
 #endif  // DCHECK_IS_ON()
 
 bool ScrollTree::CanRealizeScrollsOnCompositor(const ScrollNode& node) const {
-  return GetMainThreadRepaintReasons(node) ==
-         MainThreadScrollingReason::kNotScrollingOnMain;
+  return node.transform_id != kInvalidPropertyNodeId && node.is_composited &&
+         GetMainThreadRepaintReasons(node) ==
+             MainThreadScrollingReason::kNotScrollingOnMain;
+}
+
+bool ScrollTree::ShouldRealizeScrollsOnMain(const ScrollNode& node) const {
+  return node.transform_id != kInvalidPropertyNodeId &&
+         GetMainThreadRepaintReasons(node) !=
+             MainThreadScrollingReason::kNotScrollingOnMain;
 }
 
 uint32_t ScrollTree::GetMainThreadRepaintReasons(const ScrollNode& node) const {
-  uint32_t reasons = node.main_thread_scrolling_reasons;
-  if (!reasons && !node.is_composited) {
-    // `reasons` can contain kPopupNoThreadedInput which is not a repaint
-    // reason, but the flag should be set only when there is no threaded input
-    // handler and this function should not be called.
-    CHECK(MainThreadScrollingReason::AreRepaintReasons(reasons));
-    return MainThreadScrollingReason::kNoScrollingLayer;
-  }
+  // kPopupNoThreadedInput is not a repaint reason so should be excluded.
+  uint32_t reasons = node.main_thread_scrolling_reasons &
+                     ~MainThreadScrollingReason::kPopupNoThreadedInput;
+  CHECK(MainThreadScrollingReason::AreRepaintReasons(reasons));
   return reasons;
 }
 
@@ -1534,8 +1547,9 @@ gfx::PointF ScrollTree::MaxScrollOffset(int scroll_node_id) const {
   const ScrollNode* scroll_node = Node(scroll_node_id);
   gfx::SizeF scroll_bounds = this->scroll_bounds(scroll_node_id);
 
-  if (!scroll_node->scrollable || scroll_bounds.IsEmpty())
+  if (scroll_bounds.IsEmpty()) {
     return gfx::PointF();
+  }
 
   const TransformTree& transform_tree = property_trees()->transform_tree();
   float scale_factor = 1.f;
@@ -1625,18 +1639,8 @@ void ScrollTree::set_currently_scrolling_node(int scroll_node_id) {
 }
 
 gfx::Transform ScrollTree::ScreenSpaceTransform(int scroll_node_id) const {
-  const ScrollNode* scroll_node = Node(scroll_node_id);
-  const TransformTree& transform_tree = property_trees()->transform_tree();
-  const TransformNode* transform_node =
-      transform_tree.Node(scroll_node->transform_id);
-  gfx::Transform screen_space_transform = gfx::Transform::MakeTranslation(
-      scroll_node->offset_to_transform_parent.x(),
-      scroll_node->offset_to_transform_parent.y());
-  screen_space_transform.PostConcat(
-      transform_tree.ToScreen(transform_node->id));
-  if (scroll_node->should_flatten)
-    screen_space_transform.Flatten();
-  return screen_space_transform;
+  return property_trees()->transform_tree().ToScreen(
+      Node(scroll_node_id)->transform_id);
 }
 
 SyncedScrollOffset* ScrollTree::GetSyncedScrollOffset(ElementId id) {
@@ -1676,8 +1680,8 @@ gfx::PointF ScrollTree::GetScrollOffsetForScrollTimeline(
   gfx::PointF offset = current_scroll_offset(scroll_node.element_id);
   if (!property_trees()->is_main_thread() &&
       !CanRealizeScrollsOnCompositor(scroll_node)) {
-    // Ignore impl-thread scroll delta if the scroll can't be realized on
-    // compositor because the main thread is the source of truth in the case.
+    // Ignore compositor scroll delta if the scroll can't be realized on
+    // compositor because the delta has not been realized yet.
     if (const SyncedScrollOffset* synced_offset =
             GetSyncedScrollOffset(scroll_node.element_id)) {
       offset = property_trees()->is_active() ? synced_offset->ActiveBase()
@@ -1688,7 +1692,7 @@ gfx::PointF ScrollTree::GetScrollOffsetForScrollTimeline(
   const TransformNode* transform_node =
       property_trees()->transform_tree().Node(scroll_node.transform_id);
 
-  // TODO(crbug.com/1418689): current_scroll_offset can disagree with
+  // TODO(crbug.com/40894892): current_scroll_offset can disagree with
   // transform_node->scroll_offset if the delta on a main frame update is
   // simply rounding of the scroll position and not using fractional scroll
   // deltas (see needs_scroll_update in PushScrollUpdatesFromMainThread).
@@ -1706,8 +1710,8 @@ gfx::PointF ScrollTree::GetScrollOffsetForScrollTimeline(
     // snapping needed, due to floating point precision errors. In general this
     // is fine, but we never want to report a negative scroll offset so avoid
     // that case here.
-    // TODO(crbug.com/1076878): Remove the clamping when scroll timeline effects
-    // always match the snapping.
+    // TODO(crbug.com/40688441): Remove the clamping when scroll timeline
+    // effects always match the snapping.
     offset = ClampScrollOffsetToLimits(offset - transform_node->snap_amount,
                                        scroll_node);
   }
@@ -1907,7 +1911,7 @@ void ScrollTree::SetBaseScrollOffset(ElementId id,
 
 bool ScrollTree::SetScrollOffset(ElementId id,
                                  const gfx::PointF& scroll_offset) {
-  // TODO(crbug.com/1087088): Remove TRACE_EVENT call when the bug is fixed
+  // TODO(crbug.com/40132829): Remove TRACE_EVENT call when the bug is fixed
   TRACE_EVENT2("cc", "ScrollTree::SetScrollOffset", "x", scroll_offset.x(), "y",
                scroll_offset.y());
   if (property_trees()->is_main_thread()) {
@@ -1986,7 +1990,6 @@ gfx::Vector2dF ScrollTree::ScrollBy(const ScrollNode& scroll_node,
     adjusted_scroll.set_x(0);
   if (!scroll_node.user_scrollable_vertical)
     adjusted_scroll.set_y(0);
-  DCHECK(scroll_node.scrollable);
   gfx::PointF old_offset = current_scroll_offset(scroll_node.element_id);
   gfx::PointF new_offset =
       ClampScrollOffsetToLimits(old_offset + adjusted_scroll, scroll_node);

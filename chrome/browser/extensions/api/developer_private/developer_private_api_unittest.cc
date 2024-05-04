@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/api/developer_private/developer_private_api.h"
 
 #include <memory>
+#include <string_view>
 #include <utility>
 
 #include "base/base_paths.h"
@@ -32,10 +33,10 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_service_test_with_install.h"
 #include "chrome/browser/extensions/extension_util.h"
-#include "chrome/browser/extensions/permissions_test_util.h"
-#include "chrome/browser/extensions/permissions_updater.h"
-#include "chrome/browser/extensions/scripting_permissions_modifier.h"
-#include "chrome/browser/extensions/site_permissions_helper.h"
+#include "chrome/browser/extensions/permissions/permissions_test_util.h"
+#include "chrome/browser/extensions/permissions/permissions_updater.h"
+#include "chrome/browser/extensions/permissions/scripting_permissions_modifier.h"
+#include "chrome/browser/extensions/permissions/site_permissions_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
 #include "chrome/common/extensions/api/developer_private.h"
@@ -45,7 +46,7 @@
 #include "components/crx_file/id_util.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/supervised_user/core/browser/supervised_user_preferences.h"
-#include "components/supervised_user/core/common/buildflags.h"
+#include "components/supervised_user/core/common/features.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/web_contents_tester.h"
@@ -76,11 +77,6 @@
 #include "extensions/test/test_extension_dir.h"
 #include "services/data_decoder/data_decoder_service.h"
 #include "services/service_manager/public/cpp/test/test_connector_factory.h"
-
-#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-#include "components/supervised_user/core/browser/supervised_user_preferences.h"
-#include "components/supervised_user/core/common/features.h"
-#endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
 
 namespace extensions {
 
@@ -189,7 +185,7 @@ void AddExtensionAndGrantPermissions(Profile* profile,
 
 void RunAddHostPermission(Profile* profile,
                           const Extension& extension,
-                          base::StringPiece host,
+                          std::string_view host,
                           bool should_succeed,
                           const char* expected_error) {
   SCOPED_TRACE(host);
@@ -334,7 +330,7 @@ class DeveloperPrivateApiUnitTest : public ExtensionServiceTestWithInstall {
   // Runs the API function to update host access for the given |extension| to
   // |new_access|.
   void RunUpdateHostAccess(const Extension& extension,
-                           base::StringPiece new_access);
+                           std::string_view new_access);
 
   virtual bool ProfileIsSupervised() const { return false; }
 
@@ -522,7 +518,7 @@ void DeveloperPrivateApiUnitTest::GetProfileConfiguration(
 
 void DeveloperPrivateApiUnitTest::RunUpdateHostAccess(
     const Extension& extension,
-    base::StringPiece new_access) {
+    std::string_view new_access) {
   SCOPED_TRACE(new_access);
   ExtensionFunction::ScopedUserGestureForTests scoped_user_gesture;
   auto function = base::MakeRefCounted<
@@ -1626,7 +1622,7 @@ TEST_F(DeveloperPrivateApiUnitTest, RemoveHostPermission) {
   modifier.SetWithholdHostPermissions(true);
 
   auto run_remove_host_permission = [this, extension](
-                                        base::StringPiece host,
+                                        std::string_view host,
                                         bool should_succeed,
                                         const char* expected_error) {
     SCOPED_TRACE(host);
@@ -3070,7 +3066,6 @@ TEST_F(DeveloperPrivateApiAllowlistUnitTest,
       api::developer_private::EventType::kPrefsChanged));
 }
 
-#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
 class DeveloperPrivateApiSupervisedUserUnitTest
     : public DeveloperPrivateApiUnitTest,
       public testing::WithParamInterface<bool> {
@@ -3145,6 +3140,4 @@ INSTANTIATE_TEST_SUITE_P(
     ExtensionsPermissionsForSupervisedUsersOnDesktopFeature,
     DeveloperPrivateApiSupervisedUserUnitTest,
     testing::Bool());
-#endif
-
 }  // namespace extensions

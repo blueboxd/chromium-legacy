@@ -33,7 +33,7 @@
 #include "third_party/boringssl/src/pki/trust_store.h"
 
 #if BUILDFLAG(IS_CHROMEOS) && BUILDFLAG(IS_CHROMEOS_DEVICE)
-// TODO(crbug.com/1482000): We can remove these weak attributes in M123 or
+// TODO(crbug.com/40281745): We can remove these weak attributes in M123 or
 // later. Until then, these need to be declared with the weak attribute
 // since older platforms may not provide these symbols.
 extern "C" CERTCertList* CERT_CreateSubjectCertListForChromium(
@@ -196,7 +196,7 @@ void TrustStoreNSS::SyncGetIssuersOf(const bssl::ParsedCertificate* cert,
             {}, &parse_errors);
 
     if (!cur_cert) {
-      // TODO(crbug.com/634443): return errors better.
+      // TODO(crbug.com/41267838): return errors better.
       LOG(ERROR) << "Error parsing issuer certificate:\n"
                  << parse_errors.ToDebugString();
       continue;
@@ -246,10 +246,10 @@ TrustStoreNSS::ListCertsIgnoringNSSRoots() {
   return results;
 }
 
-// TODO(https://crbug.com/1340420): add histograms? (how often hits fast vs
+// TODO(crbug.com/40850344): add histograms? (how often hits fast vs
 // medium vs slow path, timing of fast/medium/slow path/all, etc?)
 
-// TODO(https://crbug.com/1340420): NSS also seemingly has some magical
+// TODO(crbug.com/40850344): NSS also seemingly has some magical
 // trusting of any self-signed cert with CKA_ID=0, if it doesn't have a
 // matching trust object. Do we need to do that too? (this pk11_isID0 thing:
 // https://searchfox.org/nss/source/lib/pk11wrap/pk11cert.c#357)
@@ -267,7 +267,7 @@ bssl::CertificateTrust TrustStoreNSS::GetTrust(
   // internal slots" part of IsCertAllowedForTrust, I don't think that actually
   // matters though.)
   //
-  // TODO(https://crbug.com/1412591): once the non-CRS paths have been removed,
+  // TODO(crbug.com/40890963): once the non-CRS paths have been removed,
   // perhaps remove this entirely and just have the caller not create a
   // TrustStoreNSS at all in this case (or does it still need the
   // SyncGetIssuersOf to find NSS temp certs in that case?)
@@ -384,7 +384,7 @@ bssl::CertificateTrust TrustStoreNSS::GetTrustIgnoringSystemTrust(
   // using only the slots we care about. (Some example code:
   // https://searchfox.org/nss/source/gtests/pk11_gtest/pk11_import_unittest.cc#131)
   //
-  // TODO(https://crbug.com/1340420): consider adding caching here if metrics
+  // TODO(crbug.com/40850344): consider adding caching here if metrics
   // show a need. If caching is added, note that NSS has no change notification
   // APIs so we'd at least want to listen for CertDatabase notifications to
   // clear the cache. (There are multiple approaches possible, could cache the
@@ -463,14 +463,8 @@ bssl::CertificateTrust TrustStoreNSS::GetTrustIgnoringSystemTrust(
       // CKT_NSS_TRUSTED_DELEGATOR, which is fine.
       switch (trust) {
         case CKT_NSS_TRUSTED:
-          if (base::FeatureList::IsEnabled(
-                  features::kTrustStoreTrustedLeafSupport)) {
-            DVLOG(1) << "CKT_NSS_TRUSTED -> trusted leaf";
-            return bssl::CertificateTrust::ForTrustedLeaf();
-          } else {
-            DVLOG(1) << "CKT_NSS_TRUSTED -> unspecified";
-            return bssl::CertificateTrust::ForUnspecified();
-          }
+          DVLOG(1) << "CKT_NSS_TRUSTED -> trusted leaf";
+          return bssl::CertificateTrust::ForTrustedLeaf();
         case CKT_NSS_TRUSTED_DELEGATOR: {
           DVLOG(1) << "CKT_NSS_TRUSTED_DELEGATOR -> trust anchor";
           const bool enforce_anchor_constraints =
@@ -521,12 +515,10 @@ bssl::CertificateTrust TrustStoreNSS::GetTrustForNSSTrust(
     is_trusted_ca = true;
   }
 
-  if (base::FeatureList::IsEnabled(features::kTrustStoreTrustedLeafSupport)) {
-    constexpr unsigned int kTrustedPeerBits =
-        CERTDB_TERMINAL_RECORD | CERTDB_TRUSTED;
-    if ((trust_flags & kTrustedPeerBits) == kTrustedPeerBits) {
-      is_trusted_leaf = true;
-    }
+  constexpr unsigned int kTrustedPeerBits =
+      CERTDB_TERMINAL_RECORD | CERTDB_TRUSTED;
+  if ((trust_flags & kTrustedPeerBits) == kTrustedPeerBits) {
+    is_trusted_leaf = true;
   }
 
   if (is_trusted_ca && is_trusted_leaf) {

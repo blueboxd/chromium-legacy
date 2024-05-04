@@ -80,6 +80,10 @@ namespace ui {
 class Cursor;
 }
 
+namespace viz {
+struct FrameTimingDetails;
+}
+
 namespace blink {
 
 class ColorChooser;
@@ -179,7 +183,11 @@ class CORE_EXPORT ChromeClient : public GarbageCollected<ChromeClient> {
 
   // Returns true if the page should support drag regions via the app-region
   // CSS property.
-  virtual bool SupportsAppRegion() = 0;
+  virtual bool SupportsDraggableRegions() = 0;
+
+  // Sends the draggable regions defined by the app-region CSS property to the
+  // browser.
+  virtual void DraggableRegionsChanged() = 0;
 
   // Allow document lifecycle updates to be run in order to produce composited
   // outputs. Updates are blocked from occurring during loading navigation in
@@ -494,7 +502,7 @@ class CORE_EXPORT ChromeClient : public GarbageCollected<ChromeClient> {
     return false;
   }
 
-  virtual bool IsSVGImageChromeClient() const { return false; }
+  virtual bool IsIsolatedSVGChromeClient() const { return false; }
 
   virtual gfx::Size MinimumWindowSize() const { return gfx::Size(100, 100); }
 
@@ -561,7 +569,7 @@ class CORE_EXPORT ChromeClient : public GarbageCollected<ChromeClient> {
   // the frame to be presented, the `callback` will run with the time of the
   // failure.
   using ReportTimeCallback =
-      WTF::CrossThreadOnceFunction<void(base::TimeTicks)>;
+      WTF::CrossThreadOnceFunction<void(const viz::FrameTimingDetails&)>;
   virtual void NotifyPresentationTime(LocalFrame& frame,
                                       ReportTimeCallback callback) {}
 

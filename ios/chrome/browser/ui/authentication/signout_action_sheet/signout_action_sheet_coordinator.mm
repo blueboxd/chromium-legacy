@@ -15,7 +15,6 @@
 #import "components/browser_sync/sync_to_signin_migration.h"
 #import "components/signin/public/base/signin_metrics.h"
 #import "components/strings/grit/components_strings.h"
-#import "components/sync/base/features.h"
 #import "components/sync/service/sync_service.h"
 #import "components/sync/service/sync_user_settings.h"
 #import "ios/chrome/browser/shared/model/browser/browser.h"
@@ -161,9 +160,7 @@ typedef NS_ENUM(NSUInteger, SignedInUserState) {
   // TODO(crbug.com/40066949): Simplify once ConsentLevel::kSync and
   // SyncService::IsSyncFeatureEnabled() are deleted from the codebase.
   if (!self.authenticationService->HasPrimaryIdentity(
-          signin::ConsentLevel::kSync) &&
-      base::FeatureList::IsEnabled(
-          syncer::kReplaceSyncPromosWithSignInPromos)) {
+          signin::ConsentLevel::kSync)) {
     const bool is_migrated_from_syncing =
         browser_sync::WasPrimaryAccountMigratedFromSyncingToSignedIn(
             IdentityManagerFactory::GetForBrowserState(
@@ -288,9 +285,8 @@ typedef NS_ENUM(NSUInteger, SignedInUserState) {
 - (void)checkForUnsyncedDataAndSignOut {
   [self preventUserInteraction];
 
-  constexpr syncer::ModelTypeSet kDataTypesToQuery = {
-      syncer::BOOKMARKS, syncer::READING_LIST, syncer::PASSWORDS,
-      syncer::CONTACT_INFO};
+  constexpr syncer::ModelTypeSet kDataTypesToQuery =
+      syncer::TypesRequiringUnsyncedDataCheckOnSignout();
   syncer::SyncService* syncService =
       SyncServiceFactory::GetForBrowserState(self.browser->GetBrowserState());
   __weak __typeof(self) weakSelf = self;
@@ -307,7 +303,7 @@ typedef NS_ENUM(NSUInteger, SignedInUserState) {
 // data type, otherwise the sign-out is triggered without dialog.
 - (void)continueSignOutWithUnsyncedDataModelTypeSet:(syncer::ModelTypeSet)set {
   [self allowUserInteraction];
-  if (!set.Empty()) {
+  if (!set.empty()) {
     for (syncer::ModelType type : set) {
       base::UmaHistogramEnumeration("Sync.UnsyncedDataOnSignout2",
                                     syncer::ModelTypeHistogramValue(type));

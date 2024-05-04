@@ -30,7 +30,6 @@
 #import "ios/chrome/browser/signin/model/fake_system_identity.h"
 #import "ios/chrome/browser/signin/model/fake_system_identity_manager.h"
 #import "ios/chrome/browser/ui/default_promo/post_default_abandonment/features.h"
-#import "ios/chrome/browser/ui/default_promo/post_restore/features.h"
 #import "ios/chrome/test/testing_application_context.h"
 #import "ios/web/public/test/web_task_environment.h"
 #import "testing/gmock/include/gmock/gmock.h"
@@ -61,10 +60,10 @@ class DefaultBrowserPromoSceneAgentTest : public PlatformTest {
     AuthenticationServiceFactory::CreateAndInitializeForBrowserState(
         browser_state_.get(),
         std::make_unique<FakeAuthenticationServiceDelegate>());
-    FakeStartupInformation* startup_information =
-        [[FakeStartupInformation alloc] init];
+    startup_information_ = [[FakeStartupInformation alloc] init];
+    [startup_information_ setIsColdStart:YES];
     app_state_ =
-        [[AppState alloc] initWithStartupInformation:startup_information];
+        [[AppState alloc] initWithStartupInformation:startup_information_];
     scene_state_ =
         [[FakeSceneState alloc] initWithAppState:app_state_
                                     browserState:browser_state_.get()];
@@ -74,6 +73,12 @@ class DefaultBrowserPromoSceneAgentTest : public PlatformTest {
     agent_ = [[DefaultBrowserPromoSceneAgent alloc] init];
     agent_.sceneState = scene_state_;
     agent_.promosManager = promos_manager_.get();
+
+    // Set app state initialization stage to final.
+    // App state stage can be moved only one stage at a time.
+    while (app_state_.initStage < InitStageFinal) {
+      [app_state_ queueTransitionToNextInitStage];
+    }
   }
 
   void TearDown() override {
@@ -173,28 +178,13 @@ class DefaultBrowserPromoSceneAgentTest : public PlatformTest {
   std::unique_ptr<MockPromosManager> promos_manager_;
   base::test::ScopedFeatureList scoped_feature_list_;
   id dispatcher_;
+  FakeStartupInformation* startup_information_;
 };
 
-// Tests that DefaultBrowser was registered with the promo manager when a
-// condition is met for a tailored promo.
-TEST_F(DefaultBrowserPromoSceneAgentTest,
-       TestPromoRegistrationLikelyInterestedTailored) {
-  LogLikelyInterestedDefaultBrowserUserActivity(DefaultPromoTypeAllTabs);
-  SignIn();
-
-  // Verify registration for default browser promo.
-  VerifyPromoRegistration({promos_manager::Promo::DefaultBrowser});
-
-  scene_state_.activationLevel = SceneActivationLevelForegroundActive;
-}
-
-// Tests that DefaultBrowser was registered with the promo manager when the
-// condition is met for a default promo.
+// Tests that DefaultBrowser was registered with the promo manager when user is
+// likely not a default browser user.
 TEST_F(DefaultBrowserPromoSceneAgentTest,
        TestPromoRegistrationLikelyInterestedDefault) {
-  LogLikelyInterestedDefaultBrowserUserActivity(DefaultPromoTypeGeneral);
-  SignIn();
-
   // Verify registration for default browser promo.
   VerifyPromoRegistration({promos_manager::Promo::DefaultBrowser});
 
@@ -213,37 +203,10 @@ TEST_F(DefaultBrowserPromoSceneAgentTest,
   scene_state_.activationLevel = SceneActivationLevelForegroundActive;
 }
 
-// Tests that DefaultBrowser was not registered to the promo manager because the
-// user previously interacted with a default browser tailored fullscreen promo.
-TEST_F(DefaultBrowserPromoSceneAgentTest,
-       TestInteractedTailoredPromoNoPromoRegistration) {
-  SignIn();
-  LogUserInteractionWithTailoredFullscreenPromo();
-
-  // Default Browser promo shouldn't be registered.
-  VerifyPromoDeregistration({promos_manager::Promo::DefaultBrowser});
-
-  scene_state_.activationLevel = SceneActivationLevelForegroundActive;
-}
-
-// Tests that DefaultBrowser was not registered to the promo manager because the
-// user previously interacted with a default browser fullscreen promo.
-TEST_F(DefaultBrowserPromoSceneAgentTest,
-       TestInteractedDefaultPromoNoPromoRegistration) {
-  SignIn();
-  LogUserInteractionWithFullscreenPromo();
-
-  // Default Browser promo shouldn't be registered.
-  VerifyPromoDeregistration({promos_manager::Promo::DefaultBrowser});
-
-  scene_state_.activationLevel = SceneActivationLevelForegroundActive;
-}
-
 // Tests that the Post Restore Default Browser Promo is not registered when the
 // user is not in a post restore state.
 TEST_F(DefaultBrowserPromoSceneAgentTest,
        TestPromoRegistrationPostRestore_UserNotInPostRestoreState) {
-  scoped_feature_list_.InitAndEnableFeature(kPostRestoreDefaultBrowserPromo);
   LogOpenHTTPURLFromExternalURL();
 
   TestingApplicationContext::GetGlobal()->SetLastShutdownClean(true);
@@ -258,7 +221,6 @@ TEST_F(DefaultBrowserPromoSceneAgentTest,
 // Chrome was not set as the user's default browser before the iOS restore.
 TEST_F(DefaultBrowserPromoSceneAgentTest,
        TestPromoRegistrationPostRestore_ChromeNotSetDefaultBrowser) {
-  scoped_feature_list_.InitAndEnableFeature(kPostRestoreDefaultBrowserPromo);
   SimulatePostDeviceRestore();
   TestingApplicationContext::GetGlobal()->SetLastShutdownClean(true);
 
@@ -271,7 +233,6 @@ TEST_F(DefaultBrowserPromoSceneAgentTest,
 // Tests that the Post Restore Default Browser Promo is registered when the
 // conditions are met.
 TEST_F(DefaultBrowserPromoSceneAgentTest, TestPromoRegistrationPostRestore) {
-  scoped_feature_list_.InitAndEnableFeature(kPostRestoreDefaultBrowserPromo);
   SimulatePostDeviceRestore();
   TestingApplicationContext::GetGlobal()->SetLastShutdownClean(true);
   LogOpenHTTPURLFromExternalURL();

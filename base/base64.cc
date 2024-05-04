@@ -2,9 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40284755): Remove this and spanify to fix the errors.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "base/base64.h"
 
 #include <stddef.h>
+
+#include <string_view>
 
 #include "base/check.h"
 #include "base/numerics/checked_math.h"
@@ -46,11 +53,11 @@ void Base64EncodeAppend(span<const uint8_t> input, std::string* output) {
   CHECK_EQ(output->size(), prefix_len + output_size);
 }
 
-std::string Base64Encode(StringPiece input) {
+std::string Base64Encode(std::string_view input) {
   return Base64Encode(base::as_byte_span(input));
 }
 
-bool Base64Decode(StringPiece input,
+bool Base64Decode(std::string_view input,
                   std::string* output,
                   Base64DecodePolicy policy) {
   std::string temp;
@@ -87,7 +94,7 @@ bool Base64Decode(StringPiece input,
   return true;
 }
 
-std::optional<std::vector<uint8_t>> Base64Decode(StringPiece input) {
+std::optional<std::vector<uint8_t>> Base64Decode(std::string_view input) {
   std::vector<uint8_t> ret(modp_b64_decode_len(input.size()));
 
   size_t input_size = input.size();

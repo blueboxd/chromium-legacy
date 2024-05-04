@@ -759,8 +759,73 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
         'For user-visible strings, use base::FormatNumber() and',
         'the related functions in base/i18n/number_formatting.h.',
       ),
-      False,  # Only a warning since it is already used.
-      [_THIRD_PARTY_EXCEPT_BLINK],  # Don't warn in third_party folders.
+      True,
+      [
+          # TODO(crbug.com/335672557): Please do not add to this list. Existing
+          # uses should removed.
+          "base/linux_util.cc",
+          "chrome/services/file_util/public/cpp/zip_file_creator_browsertest.cc",
+          "chrome/test/chromedriver/chrome/web_view_impl.cc",
+          "chrome/test/chromedriver/log_replay/log_replay_socket.cc",
+          "chromecast/crash/linux/dump_info.cc",
+          "chromeos/ash/components/dbus/biod/fake_biod_client.cc",
+          "chromeos/ash/components/dbus/biod/fake_biod_client_unittest.cc",
+          "chromeos/ash/components/report/utils/time_utils.cc",
+          "chromeos/ash/services/device_sync/cryptauth_device_manager_impl.cc",
+          "chromeos/ash/services/device_sync/cryptauth_device_manager_impl_unittest.cc",
+          "chromeos/ash/services/secure_channel/ble_weave_packet_receiver.cc",
+          "chromeos/ash/services/secure_channel/bluetooth_helper_impl_unittest.cc",
+          "chromeos/process_proxy/process_proxy.cc",
+          "components/chromeos_camera/jpeg_encode_accelerator_unittest.cc",
+          "components/cronet/native/perftest/perf_test.cc",
+          "components/download/internal/common/download_item_impl_unittest.cc",
+          "components/gcm_driver/gcm_client_impl_unittest.cc",
+          "components/history/core/test/fake_web_history_service.cc",
+          "components/history_clusters/core/clustering_test_utils.cc",
+          "components/language/content/browser/ulp_language_code_locator/s2langquadtree_datatest.cc",
+          "components/live_caption/views/caption_bubble_controller_views.cc",
+          "components/offline_pages/core/offline_event_logger_unittest.cc",
+          "components/offline_pages/core/offline_page_model_event_logger.cc",
+          "components/omnibox/browser/history_quick_provider_performance_unittest.cc",
+          "components/omnibox/browser/in_memory_url_index_unittest.cc",
+          "components/payments/content/payment_method_manifest_table_unittest.cc",
+          "components/policy/core/common/cloud/device_management_service_unittest.cc",
+          "components/policy/core/common/schema.cc",
+          "components/sync_bookmarks/bookmark_model_observer_impl_unittest.cc",
+          "components/tracing/test/trace_event_perftest.cc",
+          "components/ui_devtools/views/overlay_agent_views.cc",
+          "components/url_pattern_index/closed_hash_map_unittest.cc",
+          "components/url_pattern_index/url_pattern_index_unittest.cc",
+          "content/browser/accessibility/accessibility_tree_formatter_blink.cc",
+          "content/browser/background_fetch/mock_background_fetch_delegate.cc",
+          "content/browser/background_fetch/storage/database_helpers.cc",
+          "content/browser/background_sync/background_sync_launcher_unittest.cc",
+          "content/browser/browser_child_process_host_impl.cc",
+          "content/browser/devtools/protocol/security_handler.cc",
+          "content/browser/notifications/platform_notification_context_trigger_unittest.cc",
+          "content/browser/renderer_host/input/touch_action_browsertest.cc",
+          "content/browser/renderer_host/render_process_host_impl.cc",
+          "content/browser/renderer_host/text_input_manager.cc",
+          "content/browser/sandbox_parameters_mac.mm",
+          "device/fido/mock_fido_device.cc",
+          "extensions/browser/api/declarative_net_request/file_backed_ruleset_source.cc",
+          "extensions/browser/api/declarative_net_request/ruleset_matcher_unittest.cc",
+          "gpu/command_buffer/tests/gl_webgl_multi_draw_test.cc",
+          "gpu/config/gpu_control_list.cc",
+          "media/audio/win/core_audio_util_win.cc",
+          "media/gpu/android/media_codec_video_decoder.cc",
+          "media/gpu/vaapi/vaapi_wrapper.cc",
+          "remoting/host/linux/certificate_watcher_unittest.cc",
+          "testing/libfuzzer/fuzzers/url_parse_proto_fuzzer.cc",
+          "testing/libfuzzer/proto/url_proto_converter.cc",
+          "third_party/blink/renderer/core/css/parser/css_proto_converter.cc",
+          "third_party/blink/renderer/core/editing/ime/edit_context.cc",
+          "third_party/blink/renderer/platform/graphics/bitmap_image_test.cc",
+          "tools/binary_size/libsupersize/viewer/caspian/diff_test.cc",
+          "tools/binary_size/libsupersize/viewer/caspian/tree_builder_test.cc",
+          "ui/base/ime/win/tsf_text_store.cc",
+          "ui/ozone/platform/drm/gpu/hardware_display_plane.cc",
+          _THIRD_PARTY_EXCEPT_BLINK],
     ),
     BanRule(
       r'/#include <(cctype|ctype\.h|cwctype|wctype.h)>',
@@ -986,8 +1051,10 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
         # Test base::span<> compatibility against std::span<>.
         r'base/containers/span_unittest.cc',
         # Needed to use QUICHE API.
+        r'net/third_party/quiche/overrides/quiche_platform_impl/quiche_stack_trace_impl\.*',
         r'services/network/web_transport\.cc',
         r'chrome/browser/ip_protection/.*',
+        r'components/ip_protection/.*',
         # Not an error in third_party folders.
         _THIRD_PARTY_EXCEPT_BLINK,
         # //base/numerics can't use base or absl.
@@ -1008,6 +1075,7 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
         r'third_party/blink/renderer/modules/manifest/manifest_parser\.cc',
         # Needed to use QUICHE API.
         r'chrome/browser/ip_protection/.*',
+        r'components/ip_protection/.*',
         # Needed to use MediaPipe API.
         r'components/media_effects/.*\.cc',
         # Not an error in third_party folders.
@@ -1049,7 +1117,10 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
       [
         # Needed to use QUICHE API.
         r'chrome/browser/ip_protection/.*',
+        r'components/ip_protection/.*',
         r'services/network/web_transport.*',
+        # Needed to integrate with //third_party/nearby
+        r'components/cross_device/nearby/system_clock.cc',
         _THIRD_PARTY_EXCEPT_BLINK  # Not an error in third_party folders.
       ],
     ),
@@ -1065,6 +1136,8 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
           # PartitionAlloc's starscan, doesn't depend on base/. It can't use
           # base::ConditionalVariable::TimedWait(..).
           "base/allocator/partition_allocator/src/partition_alloc/starscan/pcscan_internal.cc",
+          # This uses openscreen API depending on std::chrono.
+          "components/openscreen_platform/task_runner.cc",
       ]
     ),
     BanRule(
@@ -1255,15 +1328,6 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
       r'/^\s*(export\s|import\s+["<:\w]|module(;|\s+[:\w]))',
       (
         'Modules are disallowed for now due to lack of toolchain support.',
-      ),
-      True,
-      [_THIRD_PARTY_EXCEPT_BLINK],  # Don't warn in third_party folders.
-    ),
-    BanRule(
-      r'/\[\[(un)?likely\]\]',
-      (
-        '[[likely]] and [[unlikely]] are not yet allowed ',
-        '(https://crbug.com/1414620). Use [UN]LIKELY instead.',
       ),
       True,
       [_THIRD_PARTY_EXCEPT_BLINK],  # Don't warn in third_party folders.
@@ -1791,6 +1855,21 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
       ),
     ),
     BanRule(
+      pattern = r'ContentSettingsType::TRACKING_PROTECTION',
+      explanation = (
+        'Do not directly use ContentSettingsType::TRACKING_PROTECTION to check '
+        'for tracking protection exceptions. Instead rely on the '
+        'privacy_sandbox::TrackingProtectionSettings API.'
+      ),
+      treat_as_error = False,
+      excluded_paths = (
+        '^chrome/browser/ui/content_settings/',
+        '^components/content_settings/',
+        '^components/privacy_sandbox/tracking_protection_settings.cc',
+        '.*test.cc',
+      ),
+    ),
+    BanRule(
       pattern = r'/\bg_signal_connect',
       explanation = (
         'Use ScopedGSignal instead of g_signal_connect*()',
@@ -1818,15 +1897,69 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
       )
     ),
     BanRule(
+      pattern = r'features::kIsolatedWebAppDevMode',
+      explanation = (
+        'Do not use `features::kIsolatedWebAppDevMode` directly to guard code ',
+        'related to Isolated Web App Developer Mode. ',
+        'Use `web_app::IsIwaDevModeEnabled()` instead.',
+      ),
+      treat_as_error = True,
+      excluded_paths = _TEST_CODE_EXCLUDED_PATHS + (
+        '^chrome/browser/about_flags.cc',
+        '^chrome/browser/web_applications/isolated_web_apps/isolated_web_app_features.cc',
+        '^chrome/browser/ui/startup/bad_flags_prompt.cc',
+      )
+    ),
+    BanRule(
+      pattern = r'features::kIsolatedWebAppUnmanagedInstall',
+      explanation = (
+        'Do not use `features::kIsolatedWebAppUnmanagedInstall` directly to ',
+        'guard code related to unmanaged install flow for Isolated Web Apps. ',
+        'Use `web_app::IsIwaUnmanagedInstallEnabled()` instead.',
+      ),
+      treat_as_error = True,
+      excluded_paths = _TEST_CODE_EXCLUDED_PATHS + (
+        '^chrome/browser/about_flags.cc',
+        '^chrome/browser/web_applications/isolated_web_apps/isolated_web_app_features.cc',
+      )
+    ),
+    BanRule(
       pattern = r'/\babsl::(optional|nullopt|make_optional|in_place|in_place_t)\b',
       explanation = (
-         'Don\'t use `absl::optional`. Use `std::optional`.',
+       'Don\'t use `absl::optional`. Use `std::optional`.',
       ),
       # TODO(b/40288126): Enforce after completing the rewrite.
       treat_as_error = False,
       excluded_paths = [
         _THIRD_PARTY_EXCEPT_BLINK,
       ]
+    ),
+    BanRule(
+      pattern = r'(base::)?\bStringPiece\b',
+      explanation = (
+          'Don\'t use `base::StringPiece`. Use `std::string_view`.',
+      ),
+      treat_as_error = False,
+    ),
+    BanRule(
+      pattern = r'(base::)?\bStringPiece16\b',
+      explanation = (
+          'Don\'t use `base::StringPiece16`. Use `std::u16string_view`.',
+      ),
+      treat_as_error = False,
+    ),
+    BanRule(
+      pattern =  '/(CUIAutomation|AccessibleObjectFromWindow)',
+      explanation = (
+          'Direct usage of UIAutomation or IAccessible2 in client code is '
+          'discouraged in Chromium, as it is not an assistive technology and '
+          'should not rely on accessibility APIs directly. These APIs can '
+          'introduce significant performance overhead. However, if you believe '
+          'your use case warrants an exception, please discuss it with an '
+          'accessibility owner before proceeding. For more information on the '
+          'performance implications, see https://docs.google.com/document/d/1jN4itpCe_bDXF0BhFaYwv4xVLsCWkL9eULdzjmLzkuk/edit#heading=h.pwth3nbwdub0.',
+      ),
+      treat_as_error = False,
     ),
 )
 
@@ -1895,7 +2028,6 @@ _GENERIC_PYDEPS_FILES = [
     'build/android/devil_chromium.pydeps',
     'build/android/gyp/aar.pydeps',
     'build/android/gyp/aidl.pydeps',
-    'build/android/gyp/allot_native_libraries.pydeps',
     'build/android/gyp/apkbuilder.pydeps',
     'build/android/gyp/assert_static_initializers.pydeps',
     'build/android/gyp/binary_baseline_profile.pydeps',
@@ -1987,7 +2119,7 @@ _ALL_PYDEPS_FILES = _ANDROID_SPECIFIC_PYDEPS_FILES + _GENERIC_PYDEPS_FILES
 
 # Bypass the AUTHORS check for these accounts.
 _KNOWN_ROBOTS = set(
-  ) | set('%s@appspot.gserviceaccount.com' % s for s in ('findit-for-me',)
+  ) | set('%s@appspot.gserviceaccount.com' % s for s in ('findit-for-me', 'luci-bisection')
   ) | set('%s@developer.gserviceaccount.com' % s for s in ('3su6n15k.default',)
   ) | set('%s@chops-service-accounts.iam.gserviceaccount.com' % s
           for s in ('bling-autoroll-builder', 'v8-ci-autoroll-builder',
@@ -2001,6 +2133,8 @@ _KNOWN_ROBOTS = set(
           for s in ('chromium-autoroll', 'chromium-release-autoroll')
   ) | set('%s@skia-corp.google.com.iam.gserviceaccount.com' % s
           for s in ('chromium-internal-autoroll',)
+  ) | set('%s@system.gserviceaccount.com' % s
+          for s in ('chrome-screen-ai-releaser',)
   ) | set('%s@owners-cleanup-prod.google.com.iam.gserviceaccount.com' % s
           for s in ('swarming-tasks',)
   ) | set('%s@fuchsia-infra.iam.gserviceaccount.com' % s
@@ -2292,11 +2426,11 @@ def CheckNoDISABLETypoInTests(input_api, output_api):
         r'^\s*TEST[^(]*\([a-zA-Z0-9_]+,\s*DISABLE_[a-zA-Z0-9_]+\)',
         input_api.re.MULTILINE)
 
-    for f in input_api.AffectedFiles(False):
+    for f in input_api.AffectedFiles(include_deletes=False):
         if not 'test' in f.LocalPath() or not f.LocalPath().endswith('.cc'):
             continue
 
-        # Search for MABYE_, DISABLE_ pairs.
+        # Search for MAYBE_, DISABLE_ pairs.
         disable_lines = {}  # Maps of test name to line number.
         maybe_lines = {}
         for line_num, line in f.ChangedContents():
@@ -2351,7 +2485,7 @@ def CheckForgettingMAYBEInTests(input_api, output_api):
 
     # Read the entire files. We can't just read the affected lines, forgetting to
     # add MAYBE_ on a change would not show up otherwise.
-    for f in input_api.AffectedFiles(False):
+    for f in input_api.AffectedFiles(include_deletes=False):
         if not 'test' in f.LocalPath() or not f.LocalPath().endswith('.cc'):
             continue
         contents = input_api.ReadFile(f)
@@ -3122,6 +3256,37 @@ def _CalculateAddedDeps(os_path, old_contents, new_contents):
             results.add(os_path.join(added_dep, 'DEPS'))
     return results
 
+def CheckForNewDEPSDownloadFromGoogleStorageHooks(input_api, output_api):
+    """Checks that there are no new download_from_google_storage hooks"""
+    for f in input_api.AffectedFiles(include_deletes=False):
+        if f.LocalPath() == 'DEPS':
+            old_hooks = _ParseDeps('\n'.join(f.OldContents()))['hooks']
+            new_hooks = _ParseDeps('\n'.join(f.NewContents()))['hooks']
+            old_name_to_hook = {hook['name']: hook for hook in old_hooks}
+            new_name_to_hook = {hook['name']: hook for hook in new_hooks}
+            added_hook_names = set(new_name_to_hook.keys()) - set(
+                old_name_to_hook.keys())
+            if not added_hook_names:
+                return []
+            new_download_from_google_storage_hooks = []
+            for new_hook in added_hook_names:
+                hook = new_name_to_hook[new_hook]
+                action_cmd = hook['action']
+                if any('download_from_google_storage' in arg
+                        for arg in action_cmd):
+                    new_download_from_google_storage_hooks.append(new_hook)
+            if new_download_from_google_storage_hooks:
+                return [
+                    output_api.PresubmitError(
+                        'Please do not add new download_from_google_storage '
+                        'hooks. Instead, add a `gcs` dep_type entry to `deps`. '
+                        'See https://chromium.googlesource.com/chromium/src.git'
+                        '/+/refs/heads/main/docs/gcs_dependencies.md for more '
+                        'info. Added hooks:',
+                        items=new_download_from_google_storage_hooks)
+                ]
+    return []
+
 
 def CheckAddedDepsHaveTargetApprovals(input_api, output_api):
     """When a dependency prefixed with + is added to a DEPS file, we
@@ -3278,6 +3443,8 @@ def CheckSpamLogging(input_api, output_api):
             r"^remoting/base/logging\.h$",
             r"^remoting/host/.*",
             r"^sandbox/linux/.*",
+            r"^services/webnn/tflite/graph_impl\.cc$",
+            r"^services/webnn/coreml/graph_impl\.mm$",
             r"^storage/browser/file_system/dump_file_system\.cc$",
             r"^tools/",
             r"^ui/base/resource/data_pack\.cc$",
@@ -3650,6 +3817,7 @@ def CheckPythonDevilInit(input_api, output_api):
         affected_file,
         files_to_skip=(_EXCLUDED_PATHS + input_api.DEFAULT_FILES_TO_SKIP + (
             r'^build/android/devil_chromium\.py',
+            r'^tools/bisect/.*',
             r'^third_party/.*',
         )),
         files_to_check=[r'.*\.py$'])
@@ -4773,7 +4941,10 @@ def CheckNoDeprecatedCss(input_api, output_api):
     files_to_skip = (_EXCLUDED_PATHS + _TEST_CODE_EXCLUDED_PATHS +
                      input_api.DEFAULT_FILES_TO_SKIP +
                      (r"^chrome/common/extensions/docs", r"^chrome/docs",
-                      r"^native_client_sdk"))
+                      r"^native_client_sdk",
+                      # The NTP team prefers reserving -webkit-line-clamp for
+                      # ellipsis effect which can only be used with -webkit-box.
+                      r"ui/webui/resources/cr_components/most_visited/.*\.css$"))
     file_filter = lambda f: input_api.FilterSourceFile(
         f, files_to_check=file_inclusion_pattern, files_to_skip=files_to_skip)
     for fpath in input_api.AffectedFiles(file_filter=file_filter):
@@ -5618,6 +5789,14 @@ def CheckBuildConfigMacrosWithoutInclude(input_api, output_api):
         if not f.LocalPath().endswith(
             ('.h', '.c', '.cc', '.cpp', '.m', '.mm')):
             continue
+
+        # See https://crbug.com/1508847. Temporary exclusion for PartitionAlloc,
+        # the time for its dependency on //build to be removed.
+        # PartitionAlloc has its own version of this script. See
+        # base/allocator/partition_alloc/PRESUBMIT.py
+        if "base/allocator/partition_allocator/" in f.LocalPath():
+            continue
+
         found_line_number = None
         found_macro = None
         all_lines = input_api.ReadFile(f, 'r').splitlines()
@@ -5843,14 +6022,19 @@ def CheckForIncludeGuards(input_api, output_api):
 
     def is_chromium_header_file(f):
         # We only check header files under the control of the Chromium
-        # project. That is, those outside third_party apart from
-        # third_party/blink.
-        # We also exclude *_message_generator.h headers as they use
-        # include guards in a special, non-typical way.
+        # project. This excludes:
+        # - third_party/*, except blink.
+        # - base/allocator/partition_allocator/: PartitionAlloc is a standalone
+        #   library used outside of Chrome. Includes are referenced from its
+        #   own base directory. It has its own `CheckForIncludeGuards`
+        #   PRESUBMIT.py check.
+        # - *_message_generator.h: They use include guards in a special,
+        #   non-typical way.
         file_with_path = input_api.os_path.normpath(f.LocalPath())
         return (file_with_path.endswith('.h')
                 and not file_with_path.endswith('_message_generator.h')
                 and not file_with_path.endswith('com_imported_mstscax.h')
+                and not file_with_path.startswith('base/allocator/partition_allocator')
                 and (not file_with_path.startswith('third_party')
                      or file_with_path.startswith(
                          input_api.os_path.join('third_party', 'blink'))))
@@ -6766,7 +6950,7 @@ def CheckAssertAshOnlyCode(input_api, output_api):
                 output_api.PresubmitError(
                     'Please add assert(is_chromeos_ash) to %s. If that\'s not '
                     'possible, please create and issue and add a comment such '
-                    'as:\n  # TODO(https://crbug.com/XXX): add '
+                    'as:\n  # TODO(crbug.com/XXX): add '
                     'assert(is_chromeos_ash) when ...' % f.LocalPath()))
     return errors
 
@@ -6792,7 +6976,7 @@ def _IsMiraclePtrDisallowed(input_api, affected_file):
     # We assume that everything else may be used outside of Renderer processes.
     return False
 
-# TODO(https://crbug.com/1273182): Remove these checks, once they are replaced
+# TODO(crbug.com/40206238): Remove these checks, once they are replaced
 # by the Chromium Clang Plugin (which will be preferable because it will
 # 1) report errors earlier - at compile-time and 2) cover more rules).
 def CheckRawPtrUsage(input_api, output_api):
@@ -7065,7 +7249,7 @@ def CheckNoJsInIos(input_api, output_api):
     deleted_files = []
 
     # Collect filenames of all removed JS files.
-    for f in input_api.AffectedSourceFiles(_FilterFile):
+    for f in input_api.AffectedFiles(file_filter=_FilterFile):
         local_path = f.LocalPath()
 
         if input_api.os_path.splitext(local_path)[1] == '.js' and f.Action() == 'D':
@@ -7163,7 +7347,7 @@ def CheckDanglingUntriaged(input_api, output_api):
         )
 
     count = 0
-    for f in input_api.AffectedSourceFiles(FilterFile):
+    for f in input_api.AffectedFiles(file_filter=FilterFile):
         count -= sum([l.count("DanglingUntriaged") for l in f.OldContents()])
         count += sum([l.count("DanglingUntriaged") for l in f.NewContents()])
 
@@ -7231,6 +7415,38 @@ def CheckInlineConstexprDefinitionsInHeaders(input_api, output_api):
                 'Consider inlining constexpr variable definitions in headers '
                 'outside of classes to avoid unnecessary copies of the '
                 'constant. See https://abseil.io/tips/168 for more details.',
+                problems)
+        ]
+    else:
+        return []
+
+def CheckTodoBugReferences(input_api, output_api):
+    """Checks that bugs in TODOs use updated issue tracker IDs."""
+
+    files_to_skip = ['PRESUBMIT_test.py']
+
+    def _FilterFile(affected_file):
+        return input_api.FilterSourceFile(
+            affected_file,
+            files_to_skip=files_to_skip)
+
+    # Monorail bug IDs are all less than or equal to 1524553 so check that all
+    # bugs in TODOs are greater than that value.
+    pattern = input_api.re.compile(r'.*TODO\([^\)0-9]*([0-9]+)\).*')
+    problems = []
+    for f in input_api.AffectedSourceFiles(_FilterFile):
+        for line_number, line in f.ChangedContents():
+            match = pattern.match(line)
+            if match and int(match.group(1)) <= 1524553:
+                problems.append(
+                    f"{f.LocalPath()}: {line_number}\n    {line}")
+
+    if problems:
+        return [
+            output_api.PresubmitPromptWarning(
+                'TODOs should use the new Chromium Issue Tracker IDs which can '
+                'be found by navigating to the bug. See '
+                'https://crbug.com/336778624 for more details.',
                 problems)
         ]
     else:

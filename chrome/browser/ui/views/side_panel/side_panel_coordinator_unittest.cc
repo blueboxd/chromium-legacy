@@ -66,7 +66,7 @@ namespace {
 std::unique_ptr<SidePanelEntry> CreateEntry(const SidePanelEntry::Key& key) {
   return std::make_unique<SidePanelEntry>(
       key, u"basic entry",
-      ui::ImageModel::FromVectorIcon(kReadLaterIcon, ui::kColorIcon),
+      ui::ImageModel::FromVectorIcon(kReadingListIcon, ui::kColorIcon),
       base::BindRepeating([]() { return std::make_unique<views::View>(); }));
 }
 
@@ -96,7 +96,7 @@ class SidePanelCoordinatorTest : public TestWithBrowserView {
     auto* registry = SidePanelRegistry::Get(active_contents);
     registry->Register(std::make_unique<SidePanelEntry>(
         SidePanelEntry::Id::kCustomizeChrome, u"testing1",
-        ui::ImageModel::FromVectorIcon(kReadLaterIcon, ui::kColorIcon),
+        ui::ImageModel::FromVectorIcon(kReadingListIcon, ui::kColorIcon),
         base::BindRepeating([]() { return std::make_unique<views::View>(); })));
     contextual_registries_.push_back(registry);
 
@@ -106,7 +106,7 @@ class SidePanelCoordinatorTest : public TestWithBrowserView {
     registry = SidePanelRegistry::Get(active_contents);
     registry->Register(std::make_unique<SidePanelEntry>(
         SidePanelEntry::Id::kLens, u"testing1",
-        ui::ImageModel::FromVectorIcon(kReadLaterIcon, ui::kColorIcon),
+        ui::ImageModel::FromVectorIcon(kReadingListIcon, ui::kColorIcon),
         base::BindRepeating([]() { return std::make_unique<views::View>(); })));
     contextual_registries_.push_back(SidePanelRegistry::Get(active_contents));
 
@@ -114,7 +114,7 @@ class SidePanelCoordinatorTest : public TestWithBrowserView {
     // tab.
     registry->Register(std::make_unique<SidePanelEntry>(
         SidePanelEntry::Id::kCustomizeChrome, u"testing1",
-        ui::ImageModel::FromVectorIcon(kReadLaterIcon, ui::kColorIcon),
+        ui::ImageModel::FromVectorIcon(kReadingListIcon, ui::kColorIcon),
         base::BindRepeating([]() { return std::make_unique<views::View>(); })));
 
     coordinator_ = SidePanelUtil::GetSidePanelCoordinatorForBrowser(browser());
@@ -212,8 +212,8 @@ class SidePanelCoordinatorTest : public TestWithBrowserView {
  protected:
   void WaitForExtensionsContainerAnimation() {
 #if BUILDFLAG(IS_MAC)
-    // TODO(crbug.com/1045212): we avoid using animations on Mac due to the lack
-    // of support in unit tests. Therefore this is a no-op.
+    // TODO(crbug.com/40670141): we avoid using animations on Mac due to the
+    // lack of support in unit tests. Therefore this is a no-op.
 #else
     views::test::WaitForAnimatingLayoutManager(GetExtensionsToolbarContainer());
 #endif
@@ -461,22 +461,10 @@ TEST_F(SidePanelCoordinatorTest, ChangeSidePanelAlignmentRTL) {
             SidePanel::kAlignLeft);
 }
 
-TEST_F(SidePanelCoordinatorTest,
-       ClosingSidePanelCallsOnSidePanelClosedObserver) {
-  MockSidePanelViewStateObserver view_state_observer;
-  EXPECT_CALL(view_state_observer, OnSidePanelDidClose()).Times(1);
-  coordinator_->AddSidePanelViewStateObserver(&view_state_observer);
-  coordinator_->Show();
-  EXPECT_TRUE(browser_view()->unified_side_panel()->GetVisible());
-
-  coordinator_->Close();
-
-  EXPECT_FALSE(browser_view()->unified_side_panel()->GetVisible());
-}
-
-TEST_F(SidePanelCoordinatorTest, OpeningSidePanelCallsOnSidePanelObserver) {
+TEST_F(SidePanelCoordinatorTest, DontNotifySidePanelObserverOfChangingContent) {
   MockSidePanelViewStateObserver view_state_observer;
   EXPECT_CALL(view_state_observer, OnSidePanelDidOpen()).Times(1);
+  EXPECT_CALL(view_state_observer, OnSidePanelDidClose()).Times(0);
 
   coordinator_->AddSidePanelViewStateObserver(&view_state_observer);
 
@@ -493,6 +481,29 @@ TEST_F(SidePanelCoordinatorTest, OpeningSidePanelCallsOnSidePanelObserver) {
   EXPECT_TRUE(GetLastActiveEntryKey().has_value());
   EXPECT_EQ(GetLastActiveEntryKey().value().id(),
             SidePanelEntry::Id::kBookmarks);
+
+  coordinator_->RemoveSidePanelViewStateObserver(&view_state_observer);
+}
+
+TEST_F(SidePanelCoordinatorTest, NotifyingSidePanelObservers) {
+  MockSidePanelViewStateObserver view_state_observer;
+  EXPECT_CALL(view_state_observer, OnSidePanelDidOpen()).Times(3);
+  EXPECT_CALL(view_state_observer, OnSidePanelDidClose()).Times(2);
+
+  coordinator_->AddSidePanelViewStateObserver(&view_state_observer);
+
+  coordinator_->Show();
+  EXPECT_TRUE(browser_view()->unified_side_panel()->GetVisible());
+  coordinator_->Close();
+  EXPECT_FALSE(browser_view()->unified_side_panel()->GetVisible());
+
+  coordinator_->Show();
+  EXPECT_TRUE(browser_view()->unified_side_panel()->GetVisible());
+  coordinator_->Close();
+  EXPECT_FALSE(browser_view()->unified_side_panel()->GetVisible());
+
+  coordinator_->Show();
+  EXPECT_TRUE(browser_view()->unified_side_panel()->GetVisible());
 
   coordinator_->RemoveSidePanelViewStateObserver(&view_state_observer);
 }
@@ -1356,7 +1367,7 @@ TEST_F(SidePanelCoordinatorTest,
       std::make_unique<TestSidePanelObserver>(contextual_registries_[0]);
   auto entry = std::make_unique<SidePanelEntry>(
       SidePanelEntry::Id::kAboutThisSite, u"About this site",
-      ui::ImageModel::FromVectorIcon(kReadLaterIcon, ui::kColorIcon),
+      ui::ImageModel::FromVectorIcon(kReadingListIcon, ui::kColorIcon),
       base::BindRepeating([]() { return std::make_unique<views::View>(); }));
   entry->AddObserver(observer.get());
   contextual_registries_[0]->Register(std::move(entry));
@@ -1379,7 +1390,7 @@ TEST_F(SidePanelCoordinatorTest,
       std::make_unique<TestSidePanelObserver>(contextual_registries_[0]);
   auto entry = std::make_unique<SidePanelEntry>(
       SidePanelEntry::Id::kAboutThisSite, u"About this site",
-      ui::ImageModel::FromVectorIcon(kReadLaterIcon, ui::kColorIcon),
+      ui::ImageModel::FromVectorIcon(kReadingListIcon, ui::kColorIcon),
       base::BindRepeating([]() { return std::make_unique<views::View>(); }));
   entry->AddObserver(observer.get());
   contextual_registries_[0]->Register(std::move(entry));
@@ -1401,7 +1412,7 @@ TEST_F(SidePanelCoordinatorTest, ShouldNotRecreateTheSameEntry) {
   int count = 0;
   global_registry_->Register(std::make_unique<SidePanelEntry>(
       SidePanelEntry::Id::kLens, u"lens",
-      ui::ImageModel::FromVectorIcon(kReadLaterIcon, ui::kColorIcon),
+      ui::ImageModel::FromVectorIcon(kReadingListIcon, ui::kColorIcon),
       base::BindRepeating(
           [](int* count) {
             (*count)++;
@@ -1711,7 +1722,7 @@ TEST_F(SidePanelCoordinatorTest, DeregisterAndReturnView) {
                                       int counter) {
     return std::make_unique<SidePanelEntry>(
         key, u"basic entry",
-        ui::ImageModel::FromVectorIcon(kReadLaterIcon, ui::kColorIcon),
+        ui::ImageModel::FromVectorIcon(kReadingListIcon, ui::kColorIcon),
         base::BindRepeating(
             [](int counter) -> std::unique_ptr<views::View> {
               return std::make_unique<ViewWithCounter>(counter);
@@ -1842,7 +1853,7 @@ class SidePanelCoordinatorLoadingContentTest : public SidePanelCoordinatorTest {
     std::unique_ptr<SidePanelEntry> entry1 = std::make_unique<SidePanelEntry>(
         SidePanelEntry::Id::kCustomizeChrome,
         l10n_util::GetStringUTF16(IDS_SIDE_PANEL_CUSTOMIZE_CHROME_TITLE),
-        ui::ImageModel::FromVectorIcon(kReadLaterIcon, ui::kColorIcon),
+        ui::ImageModel::FromVectorIcon(kReadingListIcon, ui::kColorIcon),
         base::BindRepeating([]() {
           auto view = std::make_unique<views::View>();
           SidePanelUtil::GetSidePanelContentProxy(view.get())
@@ -1857,7 +1868,7 @@ class SidePanelCoordinatorLoadingContentTest : public SidePanelCoordinatorTest {
     std::unique_ptr<SidePanelEntry> entry2 = std::make_unique<SidePanelEntry>(
         SidePanelEntry::Id::kLens,
         l10n_util::GetStringUTF16(IDS_LENS_DEFAULT_TITLE),
-        ui::ImageModel::FromVectorIcon(kReadLaterIcon, ui::kColorIcon),
+        ui::ImageModel::FromVectorIcon(kReadingListIcon, ui::kColorIcon),
         base::BindRepeating([]() {
           auto view = std::make_unique<views::View>();
           SidePanelUtil::GetSidePanelContentProxy(view.get())
@@ -1871,7 +1882,7 @@ class SidePanelCoordinatorLoadingContentTest : public SidePanelCoordinatorTest {
     std::unique_ptr<SidePanelEntry> entry3 = std::make_unique<SidePanelEntry>(
         SidePanelEntry::Id::kAboutThisSite,
         l10n_util::GetStringUTF16(IDS_PAGE_INFO_ABOUT_THIS_PAGE_TITLE),
-        ui::ImageModel::FromVectorIcon(kReadLaterIcon, ui::kColorIcon),
+        ui::ImageModel::FromVectorIcon(kReadingListIcon, ui::kColorIcon),
         base::BindRepeating([]() {
           auto view = std::make_unique<views::View>();
           SidePanelUtil::GetSidePanelContentProxy(view.get())

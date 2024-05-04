@@ -55,7 +55,6 @@ constexpr char kSessionRestoreExitResultPrefix[] =
 constexpr char kSessionRestoreWindowCountPrefix[] =
     "Apps.SessionRestoreWindowCount";
 constexpr char kFullRestoreTabCountPrefix[] = "Apps.FullRestoreTabCount";
-constexpr char kFullRestoreWindowCountPrefix[] = "Apps.FullRestoreWindowCount";
 
 }  // namespace
 
@@ -256,10 +255,6 @@ void FullRestoreAppLaunchHandler::MaybeRestore() {
   ::full_restore::FullRestoreReadHandler::GetInstance()->SetCheckRestoreData(
       profile()->GetPath());
 
-  auto [window_count, tab_count, total_count] =
-      ::app_restore::GetWindowAndTabCount(*restore_data());
-  base::UmaHistogramCounts100(kFullRestoreWindowCountPrefix, window_count);
-
   if (should_launch_browser_ && CanLaunchBrowser()) {
     LaunchBrowser();
     should_launch_browser_ = false;
@@ -368,7 +363,7 @@ void FullRestoreAppLaunchHandler::MaybeRestoreLacros() {
     return;
   }
 
-  // TODO(https://crbug.com/1239984):
+  // TODO(crbug.com/40194081):
   // 1. Modify the restore conditions, e.g. check web apps ready, etc.
   // 2. Handle the migration scenario, e.g. from flag disable to enable.
   // 3. Add metrics to check whether the Lacros is restored successfully.

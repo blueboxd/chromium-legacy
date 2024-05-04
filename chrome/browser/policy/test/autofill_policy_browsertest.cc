@@ -5,7 +5,9 @@
 #include <string>
 #include <unordered_map>
 
+#include "base/run_loop.h"
 #include "base/test/bind.h"
+#include "base/test/run_until.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/autofill/autofill_uitest_util.h"
@@ -16,6 +18,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/autofill/content/browser/test_autofill_client_injector.h"
 #include "components/autofill/content/browser/test_autofill_manager_injector.h"
+#include "components/autofill/core/browser/address_data_manager.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/browser_autofill_manager.h"
@@ -64,19 +67,22 @@ class AutofillPolicyTest : public PolicyTest {
   }
 
   [[nodiscard]] testing::AssertionResult ImportAddress() {
-    if (personal_data_manager()->GetProfiles().size() != 0u) {
+    if (personal_data_manager()->address_data_manager().GetProfiles().size() !=
+        0u) {
       return testing::AssertionFailure() << "Should be empty profile.";
     }
-    autofill::PdmChangeWaiter observer(browser()->profile());
-    personal_data_manager()->AddProfile(autofill::test::GetFullProfile());
-    observer.Wait();
+    autofill::AddTestProfile(browser()->profile(),
+                             autofill::test::GetFullProfile());
     expected_suggestions_["name"] = u"John H. Doe";
     expected_suggestions_["street-address"] = u"666 Erebus St., Apt 8";
     expected_suggestions_["postal-code"] = u"91111";
     expected_suggestions_["city"] = u"Elysium";
     expected_suggestions_["phone"] = u"+1 650-211-1111";
     expected_suggestions_["email"] = u"johndoe@hades.com";
-    return personal_data_manager()->GetProfiles().size() == 1u
+    return personal_data_manager()
+                       ->address_data_manager()
+                       .GetProfiles()
+                       .size() == 1u
                ? testing::AssertionSuccess()
                : testing::AssertionFailure() << "Should be one profile.";
   }
@@ -100,9 +106,8 @@ class AutofillPolicyTest : public PolicyTest {
  protected:
   class TestAutofillManager : public autofill::BrowserAutofillManager {
    public:
-    TestAutofillManager(autofill::ContentAutofillDriver* driver,
-                        autofill::AutofillClient* client)
-        : autofill::BrowserAutofillManager(driver, client, "en-US") {}
+    explicit TestAutofillManager(autofill::ContentAutofillDriver* driver)
+        : autofill::BrowserAutofillManager(driver, "en-US") {}
 
     void WaitForAskForValuesToFill() {
       base::RunLoop run_loop;
@@ -149,10 +154,11 @@ class AutofillPolicyTest : public PolicyTest {
     explicit TestAutofillClient(content::WebContents* web_contents)
         : autofill::ChromeAutofillClient(web_contents) {}
 
-    void ShowAutofillPopup(
+    void ShowAutofillSuggestions(
         const autofill::AutofillClient::PopupOpenArgs& open_args,
         base::WeakPtr<autofill::AutofillPopupDelegate> delegate) override {
-      autofill::ChromeAutofillClient::ShowAutofillPopup(open_args, delegate);
+      autofill::ChromeAutofillClient::ShowAutofillSuggestions(open_args,
+                                                              delegate);
       popup_shown_ = true;
     }
 
@@ -192,13 +198,18 @@ IN_PROC_BROWSER_TEST_F(AutofillPolicyTest, AutofillEnabledByPolicy) {
   for (const auto& [element, expectation] : GetExpectedSuggestions()) {
     content::SimulateMouseClickOrTapElementWithId(GetWebContents(), element);
     autofill_manager()->WaitForAskForValuesToFill();
-    EXPECT_TRUE(autofill_client()->HasShownAutofillPopup());
+    // Showing the Autofill Popup is an asynchronous task.
+    EXPECT_TRUE(base::test::RunUntil([&]() {
+      return autofill_client()->HasShownAutofillPopup();
+    })) << "Showing the Autofill Popup timed out.";
     // There may be more suggestions, but the first one in the vector
     // should be the expected and shown in the popup.
-    std::vector<autofill::Suggestion> suggestions =
-        autofill_client()->GetPopupSuggestions();
-    ASSERT_GE(suggestions.size(), 1u);
-    EXPECT_EQ(expectation, suggestions[0].main_text.value);
+    {
+      base::span<const autofill::Suggestion> suggestions =
+          autofill_client()->GetAutofillSuggestions();
+      ASSERT_GE(suggestions.size(), 1u);
+      EXPECT_EQ(expectation, suggestions[0].main_text.value);
+    }
     autofill_client()->ResetPopupShown();
   }
 }
@@ -213,8 +224,10 @@ IN_PROC_BROWSER_TEST_F(AutofillPolicyTest, AutofillDisabledByPolicy) {
   for (const auto& [element, _] : GetExpectedSuggestions()) {
     content::SimulateMouseClickOrTapElementWithId(GetWebContents(), element);
     autofill_manager()->WaitForAskForValuesToFill();
+    // Showing the Autofill Popup is an asynchronous task.
+    base::RunLoop().RunUntilIdle();
     EXPECT_FALSE(autofill_client()->HasShownAutofillPopup());
-    EXPECT_EQ(autofill_client()->GetPopupSuggestions().size(), 0u);
+    EXPECT_TRUE(autofill_client()->GetAutofillSuggestions().empty());
   }
 }
 

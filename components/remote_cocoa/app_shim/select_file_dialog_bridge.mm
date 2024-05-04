@@ -4,13 +4,14 @@
 
 #include "components/remote_cocoa/app_shim/select_file_dialog_bridge.h"
 
-#include <AppKit/AppKit.h>
-#include <CoreServices/CoreServices.h>
-#include <Foundation/Foundation.h>
+#import <AppKit/AppKit.h>
+#include <CoreServices/CoreServices.h>  // pre-macOS 11
+#import <Foundation/Foundation.h>
+#import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>  // macOS 11
 #include <stddef.h>
 
 #include "base/apple/bridging.h"
-#include "base/apple/foundation_util.h"
+#import "base/apple/foundation_util.h"
 #include "base/apple/scoped_cftyperef.h"
 #include "base/files/file_util.h"
 #include "base/i18n/case_conversion.h"
@@ -21,7 +22,7 @@
 #include "base/threading/thread_restrictions.h"
 #import "ui/base/cocoa/controls/textfield_utils.h"
 #import "components/remote_cocoa/app_shim/native_widget_mac_nswindow.h"
-#include "ui/base/l10n/l10n_util_mac.h"
+#import "ui/base/l10n/l10n_util_mac.h"
 #include "ui/strings/grit/ui_strings.h"
 
 namespace {
@@ -42,7 +43,12 @@ NSString* GetDescriptionFromExtension(const base::FilePath::StringType& ext) {
   if (description.length) {
     return description;
   } else {
-    base::apple::ScopedCFTypeRef<CFStringRef> uti(CreateUTIFromExtension(ext));
+    base::apple::ScopedCFTypeRef<CFStringRef> ext_cf =
+        base::SysUTF8ToCFStringRef(ext);
+    base::apple::ScopedCFTypeRef<CFStringRef> uti(
+        UTTypeCreatePreferredIdentifierForTag(kUTTagClassFilenameExtension,
+                                              ext_cf.get(),
+                                              /*inConformingToUTI=*/nullptr));
     NSString* description =
         base::apple::CFToNSOwnershipCast(UTTypeCopyDescription(uti.get()));
 
@@ -159,6 +165,7 @@ NSSavePanel* __unsafe_unretained g_last_created_panel_for_testing = nil;
     // The user selected "All files" option.
     [_dialog setAllowedFileTypes:nil];
   }
+#pragma clang diagnostic pop
 }
 
 @end
@@ -174,11 +181,12 @@ SelectFileDialogBridge::SelectFileDialogBridge(NSWindow* owning_window)
 SelectFileDialogBridge::~SelectFileDialogBridge() {
   // If we never executed our callback, then the panel never closed. Cancel it
   // now.
-  if (show_callback_)
+  if (show_callback_) {
     [panel_ cancel:panel_];
+  }
 
   // Balance the setDelegate called during Show.
-  [panel_ setDelegate:nil];
+  panel_.delegate = nil;
 }
 
 void SelectFileDialogBridge::Show(
@@ -200,15 +208,17 @@ void SelectFileDialogBridge::Show(
   show_callback_ = std::move(callback);
   type_ = type;
   // Note: we need to retain the dialog as |owning_window_| can be null.
-  // (See https://crbug.com/29213 .)
-  if (type_ == SelectFileDialogType::kSaveAsFile)
+  // (See https://crbug.com/41052845.)
+  if (type_ == SelectFileDialogType::kSaveAsFile) {
     panel_ = [NSSavePanel savePanel];
-  else
+  } else {
     panel_ = [NSOpenPanel openPanel];
+  }
   g_last_created_panel_for_testing = panel_;
 
-  if (!title.empty())
+  if (!title.empty()) {
     panel_.message = base::SysUTF16ToNSString(title);
+  }
 
   NSString* default_dir = nil;
   NSString* default_filename = nil;
@@ -266,13 +276,14 @@ void SelectFileDialogBridge::Show(
     }
   } else {
     // This does not use ObjCCast because the underlying object could be a
-    // non-exported AppKit type (https://crbug.com/995476).
+    // non-exported AppKit type (https://crbug.com/41477018).
     NSOpenPanel* open_dialog = static_cast<NSOpenPanel*>(panel_);
 
-    if (type_ == SelectFileDialogType::kOpenMultiFile)
+    if (type_ == SelectFileDialogType::kOpenMultiFile) {
       open_dialog.allowsMultipleSelection = YES;
-    else
+    } else {
       open_dialog.allowsMultipleSelection = NO;
+    }
 
     if (type_ == SelectFileDialogType::kFolder ||
         type_ == SelectFileDialogType::kUploadFolder ||
@@ -280,10 +291,11 @@ void SelectFileDialogBridge::Show(
       open_dialog.canChooseFiles = NO;
       open_dialog.canChooseDirectories = YES;
 
-      if (type_ == SelectFileDialogType::kFolder)
+      if (type_ == SelectFileDialogType::kFolder) {
         open_dialog.canCreateDirectories = YES;
-      else
+      } else {
         open_dialog.canCreateDirectories = NO;
+      }
 
       NSString* prompt =
           (type_ == SelectFileDialogType::kUploadFolder)
@@ -298,10 +310,12 @@ void SelectFileDialogBridge::Show(
     delegate_ = [[SelectFileDialogDelegate alloc] init];
     open_dialog.delegate = delegate_;
   }
-  if (default_dir)
+  if (default_dir) {
     panel_.directoryURL = [NSURL fileURLWithPath:default_dir];
-  if (default_filename)
+  }
+  if (default_filename) {
     panel_.nameFieldStringValue = default_filename;
+  }
 
   // Ensure that |callback| (rather than |this|) be retained by the block.
   auto ended_callback = base::BindRepeating(
@@ -424,8 +438,9 @@ void SelectFileDialogBridge::SetAccessoryView(
 }
 
 void SelectFileDialogBridge::OnPanelEnded(bool did_cancel) {
-  if (!show_callback_)
+  if (!show_callback_) {
     return;
+  }
 
   int index = 0;
   std::vector<base::FilePath> paths;
@@ -457,27 +472,29 @@ void SelectFileDialogBridge::OnPanelEnded(bool did_cancel) {
       }
     } else {
       // This does not use ObjCCast because the underlying object could be a
-      // non-exported AppKit type (https://crbug.com/995476).
+      // non-exported AppKit type (https://crbug.com/41477018).
       NSOpenPanel* open_panel = static_cast<NSOpenPanel*>(panel_);
 
       for (NSURL* url in open_panel.URLs) {
-        if (!url.isFileURL)
+        if (!url.isFileURL) {
           continue;
+        }
         NSString* path = url.path;
 
         // There is a bug in macOS where, despite a request to disallow file
         // selection, files/packages are able to be selected. If indeed file
         // selection was disallowed, drop any files selected.
-        // https://crbug.com/1357523, FB11405008
+        // https://crbug.com/40861123, FB11405008
         if (!open_panel.canChooseFiles) {
           BOOL is_directory;
           BOOL exists =
-              [[NSFileManager defaultManager] fileExistsAtPath:path
-                                                   isDirectory:&is_directory];
+              [NSFileManager.defaultManager fileExistsAtPath:path
+                                                 isDirectory:&is_directory];
           BOOL is_package =
-              [[NSWorkspace sharedWorkspace] isFilePackageAtPath:path];
-          if (!exists || !is_directory || is_package)
+              [NSWorkspace.sharedWorkspace isFilePackageAtPath:path];
+          if (!exists || !is_directory || is_package) {
             continue;
+          }
         }
 
         paths.push_back(base::apple::NSStringToFilePath(path));

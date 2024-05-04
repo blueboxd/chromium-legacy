@@ -929,22 +929,21 @@ specific:
      (DPAPI)](https://msdn.microsoft.com/en-us/library/ms995355.aspx) to bind
      your passwords to your user account and store them on disk encrypted with
      a key only accessible to processes running as the same logged on user.
-*    On macOS, Chrome previously stored credentials directly in the user's
+*    On macOS and iOS, Chrome previously stored credentials directly in the user's
      Keychain, but for technical reasons, it has switched to storing the
      credentials in "Login Data" in the Chrome users profile directory, but
      encrypted on disk with a key that is then stored in the user's Keychain.
-     See [Issue 466638](https://crbug.com/466638) for further explanation.
+     See [Issue 466638](https://crbug.com/466638) and [Issue 520437](https://crbug.com/520437) for further explanation.
 *    On Linux, Chrome previously stored credentials directly in the user's
      Gnome Secret Service or KWallet, but for technical reasons, it has switched to
      storing the credentials in "Login Data" in the Chrome user's profile directory,
      but encrypted on disk with a key that is then stored in the user's Gnome
      Secret Service or KWallet. If there is no available Secret Service or KWallet,
      the data is not encrypted when stored.
-*    On iOS, passwords are currently stored directly in the iOS Keychain and
-     referenced from the rest of the metadata stored in a separate DB. The plan
-     there is to just store them in plain text in the DB, because iOS gives
-     strong guarantees about only Chrome being able to access its storage. See
-     [Issue 520437](https://crbug.com/520437) to follow this migration.
+*    On Android, Chrome doesn't store in the profile anymore, instead it uses Google
+     Play Services to access passwords stored on a device.
+*    On ChromeOS passwords are only obfuscated since all profile data is encrypted
+     by the OS.
 
 <a name="TOC-If-theres-a-way-to-see-stored-passwords-without-entering-a-password--is-this-a-security-bug-"></a>
 ### If there's a way to see stored passwords without entering a password, is this a security bug?
@@ -977,6 +976,53 @@ See our dedicated [Extensions Security FAQ](https://chromium.googlesource.com/ch
 ### What's the security model for Chrome Custom Tabs?
 
 See our [Chrome Custom Tabs security FAQ](custom-tabs-faq.md).
+
+<a name="TOC-How-is-security-different-in-Chrome-for-iOS--"></a>
+### How is security different in Chrome for iOS?
+
+Chrome for iOS does not use Chrome's standard rendering engine. Due to Apple's
+iOS platform restrictions, it instead uses Apple's WebKit engine and a more
+restricted process isolation model. This means its security properties are
+different from Chrome on all other platforms.
+
+The differences in security are far too extensive to list exhaustively, but some
+notable points are:
+
+* Chromium's [site
+  isolation](https://www.chromium.org/Home/chromium-security/site-isolation/)
+  isn't used; WebKit has its own alternative implementation with different costs
+  and benefits.
+* WebKit has [historically been slower at shipping security
+  fixes](https://googleprojectzero.blogspot.com/2022/02/a-walk-through-project-zero-metrics.html).
+* Chrome's network stack, [root
+  store](https://www.chromium.org/Home/chromium-security/root-ca-policy/) and
+  associated technology are not used, so
+  the platform will make different decisions about what web servers to trust.
+* Sandboxing APIs are not available for native code.
+
+Given that the fundamentals of the browser are so different, and given these
+limitations, Chrome for iOS has historically not consistently implemented some
+of Chrome's [standard security guidelines](rules.md). This includes the
+important [Rule of Two](rule-of-2.md). Future Chrome for iOS features should
+meet all guidelines except in cases where the lack of platform APIs make it
+unrealistic. (The use of WebAssembly-based sandboxing is currently considered
+unrealistic though this could change in future.)
+
+If the Rule of Two cannot be followed, features for Chrome for iOS should
+nevertheless follow it as closely as possible, and adopt additional mitigations
+where they cannot:
+
+* First consider adding a validation layer between unsafe code and web contents,
+  or adopting memory-safe parsers at the boundary between the renderer and the
+  browser process. Consider changing the design of the feature so the riskiest
+  parsing can happen in javascript injected in the renderer process.
+* Any unsafe unsandboxed code that is exposed to web contents or other
+  untrustworthy data sources must be extensively tested and fuzzed.
+
+The Chrome team is enthusiastic about the future possibility of making a version
+of Chrome for iOS that meets our usual security standards if richer platform
+facilities become widely available: this will require revisiting existing
+features to see if adjustment is required.
 
 <a name="TOC-Are-all-Chrome-updates-important--"></a>
 ### Are all Chrome updates important?

@@ -6,9 +6,11 @@ package org.chromium.chrome.browser.data_sharing;
 
 import androidx.annotation.Nullable;
 
+import org.jni_zero.JniType;
 import org.jni_zero.NativeMethods;
 
 import org.chromium.base.ResettersForTesting;
+import org.chromium.base.UserDataHost;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.data_sharing.DataSharingService;
 
@@ -45,8 +47,25 @@ public final class DataSharingServiceFactory {
         ResettersForTesting.register(() -> sDataSharingServiceForTesting = null);
     }
 
+    /**
+     * A factory method to create or retrieve a {@link DataSharingUIDelegate} object for a given
+     * profile.
+     *
+     * @return The {@link DataSharingUIDelegate} for the given profile.
+     */
+    public static DataSharingUIDelegate getUIDelegate(Profile profile) {
+        UserDataHost host = getForProfile(profile).getUserDataHost();
+        DataSharingUIDelegateImpl uiDelegateImpl =
+                host.getUserData(DataSharingUIDelegateImpl.class);
+        if (uiDelegateImpl == null) {
+            return host.setUserData(
+                    DataSharingUIDelegateImpl.class, new DataSharingUIDelegateImpl(profile));
+        }
+        return uiDelegateImpl;
+    }
+
     @NativeMethods
     interface Natives {
-        DataSharingService getForProfile(Profile profile);
+        DataSharingService getForProfile(@JniType("Profile*") Profile profile);
     }
 }

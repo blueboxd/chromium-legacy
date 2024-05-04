@@ -11,23 +11,23 @@
 #include "base/allocator/dispatcher/memory_tagging.h"
 #include "base/allocator/dispatcher/notification_data.h"
 #include "base/allocator/dispatcher/subsystem.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_buildflags.h"
 #include "base/check.h"
 #include "base/compiler_specific.h"
+#include "partition_alloc/partition_alloc_buildflags.h"
 
-#if BUILDFLAG(USE_PARTITION_ALLOC)
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_allocation_data.h"
+#if PA_BUILDFLAG(USE_PARTITION_ALLOC)
+#include "partition_alloc/partition_alloc_allocation_data.h"
 #endif
 
-#if BUILDFLAG(USE_ALLOCATOR_SHIM)
-#include "base/allocator/partition_allocator/src/partition_alloc/shim/allocator_shim.h"
+#if PA_BUILDFLAG(USE_ALLOCATOR_SHIM)
+#include "partition_alloc/shim/allocator_shim.h"
 #endif
 
 #include <tuple>
 
 namespace base::allocator::dispatcher::internal {
 
-#if BUILDFLAG(USE_ALLOCATOR_SHIM)
+#if PA_BUILDFLAG(USE_ALLOCATOR_SHIM)
 using allocator_shim::AllocatorDispatch;
 #endif
 
@@ -83,17 +83,17 @@ struct DispatcherImpl {
  private:
   static DispatchData CreateDispatchData() {
     return DispatchData()
-#if BUILDFLAG(USE_PARTITION_ALLOC)
+#if PA_BUILDFLAG(USE_PARTITION_ALLOC)
         .SetAllocationObserverHooks(&PartitionAllocatorAllocationHook,
                                     &PartitionAllocatorFreeHook)
 #endif
-#if BUILDFLAG(USE_ALLOCATOR_SHIM)
+#if PA_BUILDFLAG(USE_ALLOCATOR_SHIM)
         .SetAllocatorDispatch(&allocator_dispatch_)
 #endif
         ;
   }
 
-#if BUILDFLAG(USE_PARTITION_ALLOC)
+#if PA_BUILDFLAG(USE_PARTITION_ALLOC)
   static void PartitionAllocatorAllocationHook(
       const partition_alloc::AllocationNotificationData& pa_notification_data) {
     AllocationNotificationData dispatcher_notification_data(
@@ -101,7 +101,7 @@ struct DispatcherImpl {
         pa_notification_data.type_name(),
         AllocationSubsystem::kPartitionAllocator);
 
-#if BUILDFLAG(HAS_MEMORY_TAGGING)
+#if PA_BUILDFLAG(HAS_MEMORY_TAGGING)
     dispatcher_notification_data.SetMteReportingMode(
         ConvertToMTEMode(pa_notification_data.mte_reporting_mode()));
 #endif
@@ -115,16 +115,16 @@ struct DispatcherImpl {
         pa_notification_data.address(),
         AllocationSubsystem::kPartitionAllocator);
 
-#if BUILDFLAG(HAS_MEMORY_TAGGING)
+#if PA_BUILDFLAG(HAS_MEMORY_TAGGING)
     dispatcher_notification_data.SetMteReportingMode(
         ConvertToMTEMode(pa_notification_data.mte_reporting_mode()));
 #endif
 
     DoNotifyFree(dispatcher_notification_data);
   }
-#endif  // BUILDFLAG(USE_PARTITION_ALLOC)
+#endif  // PA_BUILDFLAG(USE_PARTITION_ALLOC)
 
-#if BUILDFLAG(USE_ALLOCATOR_SHIM)
+#if PA_BUILDFLAG(USE_ALLOCATOR_SHIM)
   static void* AllocFn(const AllocatorDispatch* self,
                        size_t size,
                        void* context) {
@@ -194,24 +194,6 @@ struct DispatcherImpl {
     // That would be racy otherwise.
     DoNotifyFreeForShim(address);
     self->next->free_function(self->next, address, context);
-  }
-
-  static size_t GetSizeEstimateFn(const AllocatorDispatch* self,
-                                  void* address,
-                                  void* context) {
-    return self->next->get_size_estimate_function(self->next, address, context);
-  }
-
-  static size_t GoodSizeFn(const AllocatorDispatch* self,
-                           size_t size,
-                           void* context) {
-    return self->next->good_size_function(self->next, size, context);
-  }
-
-  static bool ClaimedAddressFn(const AllocatorDispatch* self,
-                               void* address,
-                               void* context) {
-    return self->next->claimed_address_function(self->next, address, context);
   }
 
   static unsigned BatchMallocFn(const AllocatorDispatch* self,
@@ -304,7 +286,7 @@ struct DispatcherImpl {
   }
 
   static AllocatorDispatch allocator_dispatch_;
-#endif  // BUILDFLAG(USE_ALLOCATOR_SHIM)
+#endif  // PA_BUILDFLAG(USE_ALLOCATOR_SHIM)
 
   ALWAYS_INLINE static void DoNotifyAllocation(
       const AllocationNotificationData& notification_data) {
@@ -323,27 +305,28 @@ struct DispatcherImpl {
 template <typename... ObserverTypes>
 std::tuple<ObserverTypes*...> DispatcherImpl<ObserverTypes...>::s_observers;
 
-#if BUILDFLAG(USE_ALLOCATOR_SHIM)
+#if PA_BUILDFLAG(USE_ALLOCATOR_SHIM)
 template <typename... ObserverTypes>
 AllocatorDispatch DispatcherImpl<ObserverTypes...>::allocator_dispatch_ = {
-    &AllocFn,
-    &AllocUncheckedFn,
-    &AllocZeroInitializedFn,
-    &AllocAlignedFn,
-    &ReallocFn,
-    &FreeFn,
-    &GetSizeEstimateFn,
-    &GoodSizeFn,
-    &ClaimedAddressFn,
-    &BatchMallocFn,
-    &BatchFreeFn,
-    &FreeDefiniteSizeFn,
-    &TryFreeDefaultFn,
-    &AlignedMallocFn,
-    &AlignedReallocFn,
-    &AlignedFreeFn,
-    nullptr};
-#endif  // BUILDFLAG(USE_ALLOCATOR_SHIM)
+    AllocFn,                 // alloc_function
+    AllocUncheckedFn,        // alloc_unchecked_function
+    AllocZeroInitializedFn,  // alloc_zero_initialized_function
+    AllocAlignedFn,          // alloc_aligned_function
+    ReallocFn,               // realloc_function
+    FreeFn,                  // free_function
+    nullptr,                 // get_size_estimate_function
+    nullptr,                 // good_size_function
+    nullptr,                 // claimed_address_function
+    BatchMallocFn,           // batch_malloc_function
+    BatchFreeFn,             // batch_free_function
+    FreeDefiniteSizeFn,      // free_definite_size_function
+    TryFreeDefaultFn,        // try_free_default_function
+    AlignedMallocFn,         // aligned_malloc_function
+    AlignedReallocFn,        // aligned_realloc_function
+    AlignedFreeFn,           // aligned_free_function
+    nullptr                  // next
+};
+#endif  // PA_BUILDFLAG(USE_ALLOCATOR_SHIM)
 
 // Specialization of DispatcherImpl in case we have no observers to notify. In
 // this special case we return a set of null pointers as the Dispatcher must not
@@ -352,10 +335,10 @@ template <>
 struct DispatcherImpl<> {
   static DispatchData GetNotificationHooks(std::tuple<> /*observers*/) {
     return DispatchData()
-#if BUILDFLAG(USE_PARTITION_ALLOC)
+#if PA_BUILDFLAG(USE_PARTITION_ALLOC)
         .SetAllocationObserverHooks(nullptr, nullptr)
 #endif
-#if BUILDFLAG(USE_ALLOCATOR_SHIM)
+#if PA_BUILDFLAG(USE_ALLOCATOR_SHIM)
         .SetAllocatorDispatch(nullptr)
 #endif
         ;

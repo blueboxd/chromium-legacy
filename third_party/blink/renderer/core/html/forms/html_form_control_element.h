@@ -118,11 +118,12 @@ class CORE_EXPORT HTMLFormControlElement : public HTMLElement,
 
   Element* invokeTargetElement();
 
-  Element* interestTargetElement();
-
   AtomicString invokeAction() const;
+  InvokeAction GetInvokeAction() const;
 
-  AtomicString interestAction() const;
+  Element* interestTargetElement() override;
+
+  AtomicString interestAction() const override;
 
   void DefaultEventHandler(Event&) override;
 
@@ -152,11 +153,6 @@ class CORE_EXPORT HTMLFormControlElement : public HTMLElement,
     return autofill_state_ == WebAutofillState::kPreviewed;
   }
   void SetAutofillState(WebAutofillState = WebAutofillState::kAutofilled);
-
-  // The autofill section to which this element belongs (e.g. billing address,
-  // shipping address, .. .)
-  WebString AutofillSection() const { return autofill_section_; }
-  void SetAutofillSection(const WebString&);
 
   bool IsAutocompleteEmailUrlOrPassword() const;
 
@@ -209,7 +205,6 @@ class CORE_EXPORT HTMLFormControlElement : public HTMLElement,
   void HandlePopoverTriggering(HTMLElement* popover,
                                PopoverTriggerAction action);
 
-  WebString autofill_section_;
   enum WebAutofillState autofill_state_;
 
   bool blocks_form_submission_ : 1;

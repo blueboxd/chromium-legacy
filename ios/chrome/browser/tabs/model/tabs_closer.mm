@@ -15,6 +15,8 @@
 #import "ios/chrome/browser/shared/model/web_state_list/order_controller.h"
 #import "ios/chrome/browser/shared/model/web_state_list/order_controller_source_from_web_state_list.h"
 #import "ios/chrome/browser/shared/model/web_state_list/removing_indexes.h"
+#import "ios/chrome/browser/shared/model/web_state_list/tab_group.h"
+#import "ios/chrome/browser/shared/model/web_state_list/tab_group_range.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list_delegate.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_opener.h"
@@ -22,7 +24,7 @@
 
 namespace {
 
-// Moves WebStates in range [start; start+count( from `source` to `target`.
+// Moves WebStates in range [start; start+count) from `source` to `target`.
 void MoveWebStatesInRangeBetweenLists(WebStateList* source,
                                       WebStateList* target,
                                       int start,
@@ -30,15 +32,35 @@ void MoveWebStatesInRangeBetweenLists(WebStateList* source,
   DCHECK_GE(start, 0);
   DCHECK_LT(start, source->count());
   DCHECK_LE(start + count, source->count());
+  // Only one of the WebStateList can contain pinned tabs.
+  CHECK(target->pinned_tabs_count() == 0 || source->pinned_tabs_count() == 0);
 
   const int old_active_index = source->active_index();
   const int old_pinned_count = source->pinned_tabs_count();
   const int offset = target->count();
+  const int end = start + count;
 
   const OrderControllerSourceFromWebStateList order_controller_source(*source);
   const OrderController order_controller(order_controller_source);
   source->ActivateWebStateAt(order_controller.DetermineNewActiveIndex(
       old_active_index, RemovingIndexes({.start = start, .count = count})));
+
+  // Store the groups info.
+  std::vector<std::pair<TabGroupRange, tab_groups::TabGroupVisualData>> groups;
+  for (const TabGroup* group : source->GetGroups()) {
+    TabGroupRange range = group->range();
+    // The group is not in the range of moving items, ignore it.
+    if (range.range_end() <= start || end <= range.range_begin()) {
+      continue;
+    }
+
+    // The current implementation does not support partially closing
+    // a group. So assert that the group is fully contained in the
+    // range of closed items.
+    CHECK(start <= range.range_begin() && range.range_end() <= end);
+    range.Move(offset - start);
+    groups.push_back({range, group->visual_data()});
+  }
 
   for (int n = 0; n < count; ++n) {
     const bool is_pinned = start + n < old_pinned_count;
@@ -52,6 +74,11 @@ void MoveWebStatesInRangeBetweenLists(WebStateList* source,
     const int insertion_index =
         target->InsertWebState(std::move(web_state), params);
     DCHECK_EQ(n + offset, insertion_index);
+  }
+
+  // Restore the groups info.
+  for (const auto& [range, visual_data] : groups) {
+    target->CreateGroup(range.AsSet(), visual_data);
   }
 }
 
@@ -69,16 +96,16 @@ class TabsCloser::UndoStorage {
   // Returns the number of tabs that have been closed.
   int count() const { return temporary_browser_->GetWebStateList()->count(); }
 
-  // Closes tabs in range [start; start+count( from `original_browser_` and
+  // Closes tabs in range [start; start+count) from `original_browser_` and
   // stores state to allow undoing the operation if needed.
   void CloseTabs(int start, int count);
 
-  // Undo the close operation performed in the constructor.
+  // Undoes the close operation performed in `CloseTabs`.
   void Undo();
 
-  // Confirm the close operation performed in the constructor, deleting
-  // the state. This is irreversible and no data can be recovered after
-  // this method has been called.
+  // Confirms the close operation performed in `CloseTabs`, deleting the state.
+  // This is irreversible and no data can be recovered after this method has
+  // been called.
   void Drop();
 
  private:
@@ -168,12 +195,13 @@ void TabsCloser::UndoStorage::Undo() {
                                 opener->opener_navigation_index));
     }
   }
+  openers_.clear();
 }
 
 void TabsCloser::UndoStorage::Drop() {
   // Pretend that the original Browser's WebStateList is going through a
   // batched operation. This is a fix for https://crbug.com/1521867 where
-  // RecentTabsMediator observe the TabRestoreService for modification
+  // RecentTabsMediator observes the TabRestoreService for modifications
   // and updates its state each time it is notified by the service.
   //
   // Using a ScopedBatchOperation causes RecentTabsMediator to consider
@@ -185,6 +213,8 @@ void TabsCloser::UndoStorage::Drop() {
 
   CloseAllWebStates(*temporary_browser_->GetWebStateList(),
                     WebStateList::CLOSE_USER_ACTION);
+
+  openers_.clear();
 }
 
 TabsCloser::TabsCloser(Browser* browser, ClosePolicy policy)
@@ -194,6 +224,17 @@ TabsCloser::TabsCloser(Browser* browser, ClosePolicy policy)
 }
 
 TabsCloser::~TabsCloser() = default;
+
+bool TabsCloser::CanCloseTabs() const {
+  WebStateList* web_state_list = browser_->GetWebStateList();
+  switch (close_policy_) {
+    case ClosePolicy::kAllTabs:
+      return web_state_list->count() != 0;
+
+    case ClosePolicy::kRegularTabs:
+      return web_state_list->regular_tabs_count() != 0;
+  }
+}
 
 int TabsCloser::CloseTabs() {
   DCHECK(CanCloseTabs());
@@ -226,6 +267,10 @@ int TabsCloser::CloseTabs() {
   return state_->count();
 }
 
+bool TabsCloser::CanUndoCloseTabs() const {
+  return state_ != nullptr;
+}
+
 int TabsCloser::UndoCloseTabs() {
   DCHECK(CanUndoCloseTabs());
   const int result = state_->count();
@@ -240,19 +285,4 @@ int TabsCloser::ConfirmDeletion() {
   state_->Drop();
   state_.reset();
   return result;
-}
-
-bool TabsCloser::CanCloseTabs() const {
-  WebStateList* web_state_list = browser_->GetWebStateList();
-  switch (close_policy_) {
-    case ClosePolicy::kAllTabs:
-      return web_state_list->count() != 0;
-
-    case ClosePolicy::kRegularTabs:
-      return web_state_list->regular_tabs_count() != 0;
-  }
-}
-
-bool TabsCloser::CanUndoCloseTabs() const {
-  return state_ != nullptr;
 }

@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40284755): Remove this and spanify to fix the errors.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "base/pickle.h"
 
 #include <algorithm>
@@ -252,26 +257,41 @@ Pickle::Pickle(size_t header_size)
   header_->payload_size = 0;
 }
 
-Pickle::Pickle(span<const uint8_t> data)
-    : Pickle(reinterpret_cast<const char*>(data.data()), data.size()) {}
+Pickle Pickle::WithData(span<const uint8_t> data) {
+  // Create a pickle with unowned data, then do a copy to internalize the data.
+  Pickle pickle(kUnownedData, data);
+  Pickle internalized_data_pickle = pickle;
+  CHECK_NE(internalized_data_pickle.capacity_after_header_, kCapacityReadOnly);
+  return internalized_data_pickle;
+}
 
-Pickle::Pickle(const char* data, size_t data_len)
-    : header_(reinterpret_cast<Header*>(const_cast<char*>(data))),
+Pickle Pickle::WithUnownedBuffer(span<const uint8_t> data) {
+  // This uses return value optimization to return a Pickle without copying
+  // which will preserve the unowned-ness of the data.
+  return Pickle(kUnownedData, data);
+}
+
+Pickle::Pickle(UnownedData, span<const uint8_t> data)
+    : header_(reinterpret_cast<Header*>(const_cast<uint8_t*>(data.data()))),
       header_size_(0),
       capacity_after_header_(kCapacityReadOnly),
       write_offset_(0) {
-  if (data_len >= sizeof(Header))
-    header_size_ = data_len - header_->payload_size;
+  if (data.size() >= sizeof(Header)) {
+    header_size_ = data.size() - header_->payload_size;
+  }
 
-  if (header_size_ > data_len)
+  if (header_size_ > data.size()) {
     header_size_ = 0;
+  }
 
-  if (header_size_ != bits::AlignUp(header_size_, sizeof(uint32_t)))
+  if (header_size_ != bits::AlignUp(header_size_, sizeof(uint32_t))) {
     header_size_ = 0;
+  }
 
   // If there is anything wrong with the data, we're not going to use it.
-  if (!header_size_)
+  if (!header_size_) {
     header_ = nullptr;
+  }
 }
 
 Pickle::Pickle(const Pickle& other)

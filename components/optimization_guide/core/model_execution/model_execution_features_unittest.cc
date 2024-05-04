@@ -5,6 +5,7 @@
 #include "components/optimization_guide/core/model_execution/model_execution_features.h"
 
 #include "base/test/scoped_feature_list.h"
+#include "components/optimization_guide/core/model_execution/feature_keys.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -12,7 +13,6 @@ namespace optimization_guide {
 namespace {
 
 using features::internal::GetAllowedFeaturesForUnsignedUser;
-using proto::ModelExecutionFeature;
 using testing::UnorderedElementsAre;
 
 TEST(ModelExecutionFeature, GetAllowedFeaturesForUnsignedUser) {
@@ -25,11 +25,9 @@ TEST(ModelExecutionFeature, GetAllowedFeaturesForUnsignedUser) {
          {features::internal::kTabOrganizationSettingsVisibility,
           {{"allow_unsigned_user", "true"}}}},
         {});
-    EXPECT_THAT(
-        GetAllowedFeaturesForUnsignedUser(),
-        UnorderedElementsAre(
-            ModelExecutionFeature::MODEL_EXECUTION_FEATURE_COMPOSE,
-            ModelExecutionFeature::MODEL_EXECUTION_FEATURE_TAB_ORGANIZATION));
+    EXPECT_THAT(GetAllowedFeaturesForUnsignedUser(),
+                UnorderedElementsAre(UserVisibleFeatureKey::kCompose,
+                                     UserVisibleFeatureKey::kTabOrganization));
   }
   {
     base::test::ScopedFeatureList scoped_feature_list;
@@ -39,10 +37,8 @@ TEST(ModelExecutionFeature, GetAllowedFeaturesForUnsignedUser) {
          {features::internal::kTabOrganizationSettingsVisibility,
           {{"allow_unsigned_user", "true"}}}},
         {});
-    EXPECT_THAT(
-        GetAllowedFeaturesForUnsignedUser(),
-        UnorderedElementsAre(
-            ModelExecutionFeature::MODEL_EXECUTION_FEATURE_TAB_ORGANIZATION));
+    EXPECT_THAT(GetAllowedFeaturesForUnsignedUser(),
+                UnorderedElementsAre(UserVisibleFeatureKey::kTabOrganization));
   }
 }
 

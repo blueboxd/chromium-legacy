@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'chrome://resources/cr_elements/cr_hidden_style.css.js';
 import './strings.m.js';
 
 import type {ClickInfo} from 'chrome://resources/js/browser_command.mojom-webui.js';
@@ -10,9 +9,10 @@ import {Command} from 'chrome://resources/js/browser_command.mojom-webui.js';
 import {BrowserCommandProxy} from 'chrome://resources/js/browser_command/browser_command_proxy.js';
 import {EventTracker} from 'chrome://resources/js/event_tracker.js';
 import {isChromeOS} from 'chrome://resources/js/platform.js';
-import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {CrLitElement} from 'chrome://resources/lit/v3_0/lit.rollup.js';
 
-import {getTemplate} from './whats_new_app.html.js';
+import {getCss} from './whats_new_app.css.js';
+import {getHtml} from './whats_new_app.html.js';
 import {WhatsNewProxyImpl} from './whats_new_proxy.js';
 
 interface CommandData {
@@ -26,28 +26,28 @@ interface BrowserCommandMessageData {
   data: CommandData;
 }
 
-export class WhatsNewAppElement extends PolymerElement {
+export class WhatsNewAppElement extends CrLitElement {
   static get is() {
     return 'whats-new-app';
   }
 
-  static get template() {
-    return getTemplate();
+  static override get styles() {
+    return getCss();
   }
 
-  static get properties() {
+  override render() {
+    return getHtml.bind(this)();
+  }
+
+  static override get properties() {
     return {
-      url_: {
-        type: String,
-        value: '',
-      },
+      url_: {type: String},
     };
   }
 
-  private url_: string;
+  protected url_: string = '';
 
   private isAutoOpen_: boolean = false;
-  private isRefresh_: boolean = false;
   private eventTracker_: EventTracker = new EventTracker();
 
   constructor() {
@@ -55,7 +55,6 @@ export class WhatsNewAppElement extends PolymerElement {
 
     const queryParams = new URLSearchParams(window.location.search);
     this.isAutoOpen_ = queryParams.has('auto');
-    this.isRefresh_ = queryParams.has('refresh');
 
     // There are no subpages in What's New. Also remove the query param here
     // since its value is recorded.
@@ -65,9 +64,8 @@ export class WhatsNewAppElement extends PolymerElement {
   override connectedCallback() {
     super.connectedCallback();
 
-    WhatsNewProxyImpl.getInstance()
-        .initialize(this.isRefresh_)
-        .then(url => this.handleUrlResult_(url));
+    WhatsNewProxyImpl.getInstance().initialize().then(
+        url => this.handleUrlResult_(url));
   }
 
   override disconnectedCallback() {

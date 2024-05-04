@@ -19,8 +19,9 @@ class Window;
 namespace apps {
 
 // This is used for logging, so do not remove or reorder existing entries.
-// This should be kept in sync with GetAppTypeNameSet in
-// c/b/apps/app_service/app_platform_metrics_service.cc.
+// This should be kept in sync with:
+// * c/b/apps/app_service/metrics/app_platform_metrics_utils.cc:kAppTypeNameMap
+// * tools/metrics/histograms/metadata/apps/histograms.xml:AppType
 enum class AppTypeName {
   kUnknown = 0,
   kArc = 1,
@@ -171,6 +172,9 @@ std::string GetAppTypeHistogramName(apps::AppTypeName app_type_name);
 
 // Returns AppTypeName for the given `app_type_name` string.
 AppTypeName GetAppTypeNameFromString(const std::string& app_type_name);
+
+// Returns InstallReason string to use in UMA names.
+std::string GetInstallReason(InstallReason install_reason);
 
 // Returns true if we are allowed to record UKM for `profile`. Otherwise,
 // returns false.

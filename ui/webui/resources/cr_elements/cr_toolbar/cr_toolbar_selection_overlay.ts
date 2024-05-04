@@ -14,11 +14,13 @@
  */
 
 import '../cr_icon_button/cr_icon_button.js';
-import '../icons.html.js';
+import '../icons_lit.html.js';
 
 import {CrLitElement} from '//resources/lit/v3_0/lit.rollup.js';
 import type {PropertyValues} from '//resources/lit/v3_0/lit.rollup.js';
-import {IronA11yAnnouncer} from '//resources/polymer/v3_0/iron-a11y-announcer/iron-a11y-announcer.js';
+
+import type {CrA11yAnnouncerElement} from '../cr_a11y_announcer/cr_a11y_announcer.js';
+import {getInstance as getAnnouncerInstance} from '../cr_a11y_announcer/cr_a11y_announcer.js';
 
 import {getCss} from './cr_toolbar_selection_overlay.css.js';
 import {getHtml} from './cr_toolbar_selection_overlay.html.js';
@@ -63,8 +65,8 @@ export class CrToolbarSelectionOverlayElement extends CrLitElement {
     // changes.
     if (changedProperties.has('selectionLabel')) {
       this.setAttribute('aria-label', this.selectionLabel);
-      IronA11yAnnouncer.requestAvailability();
-      this.fire('iron-announce', {text: this.selectionLabel});
+      const announcer = getAnnouncerInstance() as CrA11yAnnouncerElement;
+      announcer.announce(this.selectionLabel);
     }
   }
 

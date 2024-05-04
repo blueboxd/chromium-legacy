@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 """Definitions of builders in the tryserver.chromium.fuzz builder group."""
 
-load("//lib/builders.star", "os", "reclient", "siso")
+load("//lib/builders.star", "os", "reclient")
 load("//lib/consoles.star", "consoles")
 load("//lib/try.star", "try_")
 
@@ -16,11 +16,9 @@ try_.defaults.set(
     os = os.LINUX_DEFAULT,
     execution_timeout = try_.DEFAULT_EXECUTION_TIMEOUT,
     reclient_instance = reclient.instance.DEFAULT_UNTRUSTED,
-    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
     service_account = try_.DEFAULT_SERVICE_ACCOUNT,
-    siso_enable_cloud_profiler = True,
-    siso_enable_cloud_trace = True,
-    siso_project = siso.project.DEFAULT_UNTRUSTED,
+    siso_enabled = True,
+    siso_remote_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
 )
 
 consoles.list_view(

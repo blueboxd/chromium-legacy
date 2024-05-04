@@ -21,7 +21,7 @@
 #include "chrome/updater/persisted_data.h"
 #include "chrome/updater/policy/service.h"
 #include "chrome/updater/prefs.h"
-#include "chrome/updater/test_scope.h"
+#include "chrome/updater/test/test_scope.h"
 #include "chrome/updater/update_service.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
@@ -70,8 +70,8 @@ TEST(UpdateServiceImplTest, TestGetComponentsInOrder) {
   auto pref = std::make_unique<TestingPrefServiceSimple>();
   update_client::RegisterPrefs(pref->registry());
   RegisterPersistedDataPrefs(pref->registry());
-  auto metadata =
-      base::MakeRefCounted<PersistedData>(GetTestScope(), pref.get(), nullptr);
+  auto metadata = base::MakeRefCounted<PersistedData>(
+      GetUpdaterScopeForTesting(), pref.get(), nullptr);
   metadata->SetProductVersion("id1", base::Version("1.2.3.4"));
   metadata->SetProductVersionKey("id1", "pv_key");
   metadata->SetAP("id1", "ap");

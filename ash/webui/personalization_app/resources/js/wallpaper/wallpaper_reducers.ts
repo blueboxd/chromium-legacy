@@ -4,7 +4,7 @@
 
 import {SeaPenActionName, SeaPenActions} from 'chrome://resources/ash/common/sea_pen/sea_pen_actions.js';
 import {seaPenReducer} from 'chrome://resources/ash/common/sea_pen/sea_pen_reducer.js';
-import {SeaPenState} from 'chrome://resources/ash/common/sea_pen/sea_pen_state';
+import {SeaPenState} from 'chrome://resources/ash/common/sea_pen/sea_pen_state.js';
 import {isImageDataUrl, isNonEmptyArray, isNonEmptyFilePath} from 'chrome://resources/ash/common/sea_pen/sea_pen_utils.js';
 import {assert} from 'chrome://resources/js/assert.js';
 import {FilePath} from 'chrome://resources/mojo/mojo/public/mojom/base/file_path.mojom-webui.js';
@@ -155,6 +155,15 @@ function loadingReducer(
       return {...state, selected: {...state.selected, image: false}};
     case WallpaperActionName.SET_ATTRIBUTION:
       return {...state, selected: {...state.selected, attribution: false}};
+    case SeaPenActionName.END_SELECT_SEA_PEN_THUMBNAIL:
+    case SeaPenActionName.END_SELECT_RECENT_SEA_PEN_IMAGE:
+      // End loading state if selecting a SeaPen image failed. There are no
+      // incoming events from wallpaper_observer.ts to reset the loading state
+      // from wallpaper side, as the SeaPen image was not saved and applied.
+      if (!action.success) {
+        return {...state, selected: {image: false, attribution: false}};
+      }
+      return state;
     case WallpaperActionName.BEGIN_UPDATE_DAILY_REFRESH_IMAGE:
       return {...state, refreshWallpaper: true};
     case WallpaperActionName.SET_UPDATED_DAILY_REFRESH_IMAGE:

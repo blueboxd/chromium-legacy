@@ -20,7 +20,6 @@
 #include "components/viz/common/resources/release_callback.h"
 #include "components/viz/common/resources/resource_id.h"
 #include "components/viz/common/resources/transferable_resource.h"
-#include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/client/raster_interface.h"
 #include "media/base/media_export.h"
 #include "media/base/video_frame.h"
@@ -69,10 +68,6 @@ class MEDIA_EXPORT VideoFrameExternalResources {
   std::vector<viz::TransferableResource> resources;
   std::vector<viz::ReleaseCallback> release_callbacks;
 
-  // Used by hardware textures which do not return values in the 0-1 range.
-  // After a lookup, subtract offset and multiply by multiplier.
-  float offset = 0.f;
-  float multiplier = 1.f;
   uint32_t bits_per_channel = 8;
 
   VideoFrameExternalResources();
@@ -237,9 +232,7 @@ class MEDIA_EXPORT VideoResourceUpdater
   VideoFrameExternalResources CreateForSoftwarePlanes(
       scoped_refptr<VideoFrame> video_frame);
 
-  gpu::gles2::GLES2Interface* ContextGL();
   gpu::raster::RasterInterface* RasterInterface();
-  gpu::InterfaceBase* InterfaceBase();
 
   void RecycleResource(uint32_t plane_resource_id,
                        const gpu::SyncToken& sync_token,
@@ -272,8 +265,6 @@ class MEDIA_EXPORT VideoResourceUpdater
 
   VideoFrameResourceType frame_resource_type_;
 
-  float frame_resource_offset_;
-  float frame_resource_multiplier_;
   uint32_t frame_bits_per_channel_;
 
   // Resources that will be placed into quads by the next call to

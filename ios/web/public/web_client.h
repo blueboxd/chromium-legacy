@@ -9,10 +9,10 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <string_view>
 #include <vector>
 
 #include "base/functional/callback.h"
-#include "base/strings/string_piece.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "ios/web/common/user_agent.h"
 #include "mojo/public/cpp/bindings/generic_pending_receiver.h"
@@ -92,8 +92,9 @@ class WebClient {
   // Returns a string resource given its id.
   virtual std::u16string GetLocalizedString(int message_id) const;
 
-  // Returns the contents of a resource in a StringPiece given the resource id.
-  virtual base::StringPiece GetDataResource(
+  // Returns the contents of a resource in a std::string_view given the resource
+  // id.
+  virtual std::string_view GetDataResource(
       int resource_id,
       ui::ResourceScaleFactor scale_factor) const;
 
@@ -179,11 +180,6 @@ class WebClient {
   // Returns whether `url1` and `url2` are actually pointing to the same page.
   virtual bool IsPointingToSameDocument(const GURL& url1,
                                         const GURL& url2) const;
-
-  // Returns true if mixed content on HTTPS documents should be upgraded if
-  // possible.
-  virtual bool IsMixedContentAutoupgradeEnabled(
-      web::BrowserState* browser_state) const;
 
   // Returns true if browser lockdown mode is enabled. Default return value is
   // false.

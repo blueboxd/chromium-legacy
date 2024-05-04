@@ -176,7 +176,8 @@ class VIEWS_EXPORT TabbedPaneTab : public View {
   void OnMouseEntered(const ui::MouseEvent& event) override;
   void OnMouseExited(const ui::MouseEvent& event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
-  gfx::Size CalculatePreferredSize() const override;
+  gfx::Size CalculatePreferredSize(
+      const SizeBounds& available_size) const override;
   int GetHeightForWidth(int w) const override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   bool HandleAccessibleAction(const ui::AXActionData& action_data) override;
@@ -249,7 +250,8 @@ class TabbedPaneTabStrip : public View, public gfx::AnimationDelegate {
 
  protected:
   // View:
-  gfx::Size CalculatePreferredSize() const override;
+  gfx::Size CalculatePreferredSize(
+      const SizeBounds& available_size) const override;
   void OnPaintBorder(gfx::Canvas* canvas) override;
 
  private:

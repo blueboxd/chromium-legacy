@@ -16,6 +16,8 @@
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/types/expected.h"
+#include "base/types/expected_macros.h"
 
 namespace webnn {
 
@@ -159,6 +161,10 @@ base::expected<Conv2dInputOutputInfo, std::string>
 ValidateAndGetConv2dInputInfo(const Operand& input,
                               const Conv2dAttributesBase& attributes) {
   // Validate input operand.
+  if (!IsFloatingPointType(input.data_type)) {
+    return base::unexpected(
+        "The input data type must be a floating point type.");
+  }
   const auto& input_shape = input.dimensions;
   if (input_shape.size() != 4) {
     return base::unexpected("The input should be a 4-D tensor.");
@@ -234,6 +240,10 @@ ValidateReduceAxesAndInferOutput(base::span<const uint32_t> input_dimensions,
                                  base::span<const uint32_t> axes,
                                  bool keep_dimensions) {
   auto input_rank = input_dimensions.size();
+  if (input_rank == 0) {
+    return base::unexpected(
+        "The rank of input must be larger than or equal to 1.");
+  }
   auto validation_result = ValidateAxes(axes, input_rank);
   if (!validation_result.has_value()) {
     return base::unexpected(validation_result.error());
@@ -330,11 +340,11 @@ std::string DataTypeToString(Operand::DataType data_type) {
 std::string DataTypeConstraintToString(
     const DataTypeConstraintSet& constraint_set) {
   std::vector<std::string> data_types;
-  data_types.reserve(constraint_set.Size());
+  data_types.reserve(constraint_set.size());
   for (auto data_type : constraint_set) {
     data_types.push_back(DataTypeToString(data_type));
   }
-  return base::JoinString(data_types, /* saperator */ ",");
+  return base::JoinString(data_types, /*separator=*/",");
 }
 
 base::expected<Operand, std::string> ValidateSoftmaxAndInferOutput(
@@ -792,6 +802,11 @@ base::expected<Operand, std::string> ValidatePadAndInferOutput(
 base::expected<Operand, std::string> ValidateMatmulAndInferOutput(
     const Operand& a,
     const Operand& b) {
+  if (!IsFloatingPointType(a.data_type)) {
+    return base::unexpected(
+        "The data type of inputs must be one of the floating point types.");
+  }
+
   if (a.data_type != b.data_type) {
     return base::unexpected("The data types of first two inputs don't match.");
   }
@@ -1020,7 +1035,7 @@ base::expected<Operand, std::string> ValidateResample2dAndInferOutput(
     if (scales.size() != 2) {
       return base::unexpected("The length of scales should be 2.");
     }
-    if (scales[0] < 0 || scales[1] < 0) {
+    if (scales[0] <= 0 || scales[1] <= 0) {
       return base::unexpected("All scales should be greater than 0.");
     }
 
@@ -1113,6 +1128,11 @@ base::expected<Operand, std::string> ValidateGemmAndInferOutput(
     const Operand& a,
     const Operand& b,
     const GemmAttributes& attributes) {
+  if (!IsFloatingPointType(a.data_type)) {
+    return base::unexpected(
+        "The data type of inputs must be one of the floating point types.");
+  }
+
   if (a.data_type != b.data_type) {
     return base::unexpected("The data types of first two inputs don't match.");
   }
@@ -1285,6 +1305,107 @@ base::expected<std::vector<Operand>, std::string> ValidateGruAndInferOutput(
   }
 
   return outputs;
+}
+
+GruCellAttributes::GruCellAttributes() = default;
+GruCellAttributes::~GruCellAttributes() = default;
+
+GruCellAttributes::GruCellAttributes(GruCellAttributes&& other) = default;
+GruCellAttributes& GruCellAttributes::operator=(GruCellAttributes&& other) =
+    default;
+
+base::expected<Operand, std::string> ValidateGruCellAndInferOutput(
+    const Operand& input,
+    const Operand& weight,
+    const Operand& recurrent_weight,
+    const Operand& hidden_state,
+    uint32_t hidden_size,
+    const GruCellAttributes& attributes) {
+  if (hidden_size <= 0) {
+    return base::unexpected("The hidden size must be greater than 0.");
+  }
+
+  // Validate the weight operand.
+  // TODO(crbug.com/331055053): Specify the operand data type constraints of
+  // operation.
+  if (!IsFloatingPointType(input.data_type)) {
+    return base::unexpected(
+        "The data type of input must be one of the floating point types.");
+  }
+  const std::vector<uint32_t>& input_dimensions = input.dimensions;
+  if (input_dimensions.size() != 2) {
+    return base::unexpected("The input must be a 2-D tensor.");
+  }
+  const uint32_t batch_size = input_dimensions[0];
+  const uint32_t input_size = input_dimensions[1];
+  auto checked_three_times_hidden_size = base::MakeCheckedNum(hidden_size) * 3;
+  uint32_t three_times_hidden_size;
+  if (!checked_three_times_hidden_size.AssignIfValid(
+          &three_times_hidden_size)) {
+    return base::unexpected("The hidden size is too large.");
+  }
+
+  // Validate the weight operand.
+  std::array<uint32_t, 2> expected_weight_shape = {three_times_hidden_size,
+                                                   input_size};
+  base::expected<void, std::string> weight_validation_result =
+      ValidateRecurrentNetworkOperand(weight, "weight", expected_weight_shape,
+                                      input.data_type);
+  if (!weight_validation_result.has_value()) {
+    return base::unexpected(weight_validation_result.error());
+  }
+
+  // Validate the recurrent weight operand.
+  std::array<uint32_t, 2> expected_recurrent_weight_shape = {
+      three_times_hidden_size, hidden_size};
+  base::expected<void, std::string> recurrent_weight_validation_result =
+      ValidateRecurrentNetworkOperand(recurrent_weight, "recurrent weight",
+                                      expected_recurrent_weight_shape,
+                                      input.data_type);
+  if (!recurrent_weight_validation_result.has_value()) {
+    return base::unexpected(recurrent_weight_validation_result.error());
+  }
+
+  // Validate the hidden state operand.
+  std::array<uint32_t, 2> expected_hidden_state_shape = {batch_size,
+                                                         hidden_size};
+  auto hidden_state_validation_result = ValidateRecurrentNetworkOperand(
+      hidden_state, "hidden state", expected_hidden_state_shape,
+      input.data_type);
+  if (!hidden_state_validation_result.has_value()) {
+    return base::unexpected(hidden_state_validation_result.error());
+  }
+
+  // Validate the bias operand.
+  std::array<uint32_t, 1> expected_bias_shape = {three_times_hidden_size};
+  if (attributes.bias) {
+    const Operand& bias = attributes.bias.value();
+    auto bias_validation_result = ValidateRecurrentNetworkOperand(
+        bias, "bias", expected_bias_shape, input.data_type);
+    if (!bias_validation_result.has_value()) {
+      return base::unexpected(bias_validation_result.error());
+    }
+  }
+
+  // Validate the recurrent bias operand.
+  std::array<uint32_t, 1> expected_recurrent_bias_shape = {
+      three_times_hidden_size};
+  if (attributes.recurrent_bias) {
+    const Operand& recurrent_bias = attributes.recurrent_bias.value();
+    auto recurrent_bias_validation_result = ValidateRecurrentNetworkOperand(
+        recurrent_bias, "recurrent bias", expected_recurrent_bias_shape,
+        input.data_type);
+    if (!recurrent_bias_validation_result.has_value()) {
+      return base::unexpected(recurrent_bias_validation_result.error());
+    }
+  }
+
+  if (attributes.activation_count != 2) {
+    return base::unexpected("The number of activations must be 2.");
+  }
+
+  std::vector<uint32_t> output_shape{batch_size, hidden_size};
+  return Operand(input.data_type, std::move(output_shape));
 }
 
 InstanceNormalizationAttributes::InstanceNormalizationAttributes() = default;
@@ -1552,6 +1673,110 @@ base::expected<std::vector<Operand>, std::string> ValidateLstmAndInferOutput(
     outputs.emplace_back(input.data_type, std::vector{steps, direction_count,
                                                       batch_size, hidden_size});
   }
+
+  return outputs;
+}
+
+LstmCellAttributes::LstmCellAttributes() = default;
+LstmCellAttributes::~LstmCellAttributes() = default;
+
+LstmCellAttributes::LstmCellAttributes(LstmCellAttributes&& other) = default;
+LstmCellAttributes& LstmCellAttributes::operator=(LstmCellAttributes&& other) =
+    default;
+
+base::expected<std::vector<Operand>, std::string>
+ValidateLstmCellAndInferOutput(const Operand& input,
+                               const Operand& weight,
+                               const Operand& recurrent_weight,
+                               const Operand& hidden_state,
+                               const Operand& cell_state,
+                               const uint32_t hidden_size,
+                               const LstmCellAttributes& attributes) {
+  if (hidden_size <= 0) {
+    return base::unexpected("The hidden size must be greater than 0.");
+  }
+
+  uint32_t four_times_hidden_size;
+  auto checked_four_times_hidden_size = base::MakeCheckedNum(hidden_size) * 4;
+  if (!checked_four_times_hidden_size.AssignIfValid(&four_times_hidden_size)) {
+    return base::unexpected("The hidden size is too large.");
+  }
+
+  const std::vector<uint32_t>& input_dimensions = input.dimensions;
+  if (input_dimensions.size() != 2) {
+    return base::unexpected("The input should be a 2-D tensor.");
+  }
+
+  // TODO(crbug.com/331055053): The current spec doesn't specify the operand
+  // data type constraints of lstm.
+  if (!IsFloatingPointType(input.data_type)) {
+    return base::unexpected(
+        "The data type of input must be one of the floating point types.");
+  }
+
+  const uint32_t batch_size = input_dimensions[0];
+  const uint32_t input_size = input_dimensions[1];
+
+  // Validate the weight operand.
+  std::array<uint32_t, 2> expected_weight_shape = {four_times_hidden_size,
+                                                   input_size};
+  RETURN_IF_ERROR(ValidateRecurrentNetworkOperand(
+      weight, "weight", expected_weight_shape, input.data_type));
+
+  // Validate the hidden state operand.
+  std::array<uint32_t, 2> expected_hidden_state_shape = {batch_size,
+                                                         hidden_size};
+  RETURN_IF_ERROR(ValidateRecurrentNetworkOperand(hidden_state, "hidden state",
+                                                  expected_hidden_state_shape,
+                                                  input.data_type));
+
+  // Validate the cell state operand.
+  std::array<uint32_t, 2> expected_cell_state_shape = {batch_size, hidden_size};
+  RETURN_IF_ERROR(ValidateRecurrentNetworkOperand(
+      cell_state, "cell state", expected_cell_state_shape, input.data_type));
+
+  // Validate the recurrent weight operand.
+  std::array<uint32_t, 2> expected_recurrent_weight_shape = {
+      four_times_hidden_size, hidden_size};
+  RETURN_IF_ERROR(ValidateRecurrentNetworkOperand(
+      recurrent_weight, "recurrent weight", expected_recurrent_weight_shape,
+      input.data_type));
+
+  // Validate the bias operand.
+  if (attributes.bias) {
+    std::array<uint32_t, 1> expected_bias_shape = {four_times_hidden_size};
+    RETURN_IF_ERROR(ValidateRecurrentNetworkOperand(
+        attributes.bias.value(), "bias", expected_bias_shape, input.data_type));
+  }
+
+  // Validate the recurrent bias operand.
+  if (attributes.recurrent_bias) {
+    std::array<uint32_t, 1> expected_recurrent_bias_shape = {
+        four_times_hidden_size};
+    RETURN_IF_ERROR(ValidateRecurrentNetworkOperand(
+        attributes.recurrent_bias.value(), "recurrent bias",
+        expected_recurrent_bias_shape, input.data_type));
+  }
+
+  // Validate the peephole weight operand.
+  if (attributes.peephole_weight) {
+    // Here `3 * hidden_size` will not overflow because `4 * hidden_size` has
+    // already been checked.
+    std::array<uint32_t, 1> expected_peephole_weight_shape = {3 * hidden_size};
+    RETURN_IF_ERROR(ValidateRecurrentNetworkOperand(
+        attributes.peephole_weight.value(), "peephole weight",
+        expected_peephole_weight_shape, input.data_type));
+  }
+
+  if (attributes.activation_count != 3) {
+    return base::unexpected(
+        "The activations should be a sequence of length 3.");
+  }
+
+  std::vector<Operand> outputs;
+  outputs.reserve(2);
+  outputs.emplace_back(input.data_type, std::vector{batch_size, hidden_size});
+  outputs.emplace_back(input.data_type, std::vector{batch_size, hidden_size});
 
   return outputs;
 }
@@ -1901,6 +2126,12 @@ base::expected<uint32_t, std::string> CalculateConvTranspose2dOutputSize(
 
 bool IsFloatingPointType(Operand::DataType data_type) {
   return DataTypeConstraint::kFloat.Has(data_type);
+}
+
+bool IsDepthwiseConv2d(uint32_t input_channels,
+                       uint32_t output_channels,
+                       uint32_t groups) {
+  return groups == input_channels && groups == output_channels && groups != 1;
 }
 
 }  // namespace webnn

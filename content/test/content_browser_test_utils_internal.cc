@@ -582,8 +582,7 @@ ShowPopupWidgetWaiter::ShowPopupWidgetWaiter(WebContentsImpl* web_contents,
                                              RenderFrameHostImpl* frame_host)
     : frame_host_(frame_host) {
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_ANDROID)
-  web_contents_ = web_contents;
-  web_contents_->set_show_popup_menu_callback_for_testing(base::BindOnce(
+  frame_host->set_show_popup_menu_callback_for_testing(base::BindOnce(
       &ShowPopupWidgetWaiter::ShowPopupMenu, base::Unretained(this)));
 #endif
   frame_host_->SetCreateNewPopupCallbackForTesting(base::BindRepeating(
@@ -605,7 +604,7 @@ void ShowPopupWidgetWaiter::Wait() {
 
 void ShowPopupWidgetWaiter::Stop() {
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_ANDROID)
-  web_contents_->set_show_popup_menu_callback_for_testing(base::NullCallback());
+  frame_host_->set_show_popup_menu_callback_for_testing(base::NullCallback());
 #endif
   frame_host_->SetCreateNewPopupCallbackForTesting(base::NullCallback());
   frame_host_ = nullptr;
@@ -1007,12 +1006,16 @@ bool CommitNavigationPauser::WillProcessDidCommitNavigation(
   return false;
 }
 
-// TODO(https://crbug.com/1473319): Use
+// TODO(crbug.com/40278950): Use
 // `WebFrameWidgetImpl::NotifySwapAndPresentationTime` instead.
 void WaitForCopyableViewInWebContents(WebContents* web_contents) {
+  WaitForCopyableViewInFrame(web_contents->GetPrimaryMainFrame());
+}
+
+void WaitForCopyableViewInFrame(RenderFrameHost* render_frame_host) {
+  auto* rwhv = render_frame_host->GetView();
   {
-    MainThreadFrameObserver obs(
-        web_contents->GetRenderWidgetHostView()->GetRenderWidgetHost());
+    MainThreadFrameObserver obs(rwhv->GetRenderWidgetHost());
     obs.Wait();
   }
   // The above `Wait()` blocks until a `CompositorFrame` is submitted from the
@@ -1022,8 +1025,12 @@ void WaitForCopyableViewInWebContents(WebContents* web_contents) {
   // guarantees this, since the second frame cannot be sent until the first
   // frame was ACKed by Viz.
   {
-    MainThreadFrameObserver obs(
-        web_contents->GetRenderWidgetHostView()->GetRenderWidgetHost());
+    // Force a redraw to ensure the wait below goes through the complete
+    // compositing pipeline.
+    static_cast<RenderWidgetHostImpl*>(rwhv->GetRenderWidgetHost())
+        ->ForceRedrawForTesting();
+
+    MainThreadFrameObserver obs(rwhv->GetRenderWidgetHost());
     obs.Wait();
   }
 
@@ -1031,14 +1038,14 @@ void WaitForCopyableViewInWebContents(WebContents* web_contents) {
   // embeds a surface or not (as opposed to sending a IPC to the GPU). However
   // if the browser does not embed any surface, we won't be able to issue any
   // copy requests.
-  ASSERT_TRUE(
-      web_contents->GetRenderWidgetHostView()->IsSurfaceAvailableForCopy());
+  ASSERT_TRUE(rwhv->IsSurfaceAvailableForCopy());
 }
 
 void WaitForBrowserCompositorFramePresented(WebContents* web_contents) {
   base::RunLoop run_loop;
   auto callback = base::BindOnce(
-      [](base::RepeatingClosure cb, base::TimeTicks presentation_time) {
+      [](base::RepeatingClosure cb,
+         const viz::FrameTimingDetails& frame_timing_details) {
         std::move(cb).Run();
       },
       run_loop.QuitClosure());

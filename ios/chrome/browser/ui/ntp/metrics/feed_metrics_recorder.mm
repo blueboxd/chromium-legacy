@@ -64,7 +64,7 @@ using feed::FeedUserActionType;
     BOOL engagedWithLatestRefreshedContent;
 
 // Tracking property to record a scroll for Good Visits.
-// TODO(crbug.com/1373650) separate the property below in two, one for each
+// TODO(crbug.com/40871863) separate the property below in two, one for each
 // feed.
 @property(nonatomic, assign) BOOL goodVisitScroll;
 // The timestamp when the first metric is being recorded for this session.
@@ -204,7 +204,7 @@ using feed::FeedUserActionType;
     self.followingPreviousTimeInFeedGV =
         self.prefService->GetDouble(kLongFollowingFeedVisitTimeAggregateKey);
 
-    // TODO(crbug.com/1497419) This scenario can happen (this is very rare)
+    // TODO(crbug.com/40075889) This scenario can happen (this is very rare)
     // because key kLongFeedVisitTimeAggregateKey was moved out of
     // NSUserDefaults later than kLongDiscoverFeedVisitTimeAggregateKey and
     // kLongFollowingFeedVisitTimeAggregateKey. Clean this code in the future.
@@ -250,7 +250,15 @@ using feed::FeedUserActionType;
     // PrefService.
 
     // Also calculate total aggregate for the time in feed aggregate metric.
-    self.timeSpentInFeed = base::Time::Now() - self.feedBecameVisibleTime;
+
+    // When the user opens the browser directly to a website while they
+    // originally were on the NTP. Set `feedBecameVisibleTime` to now if it has
+    // never been set before.
+    base::Time now = base::Time::Now();
+    if (self.feedBecameVisibleTime.is_null()) {
+      self.feedBecameVisibleTime = now;
+    }
+    self.timeSpentInFeed = now - self.feedBecameVisibleTime;
 
     [self checkEngagementGoodVisitWithInteraction:NO];
     self.prefService->SetDouble(kTimeSpentInFeedAggregateKey,
@@ -454,7 +462,7 @@ using feed::FeedUserActionType;
 }
 
 - (void)recordCardTappedAtIndex:(NSUInteger)index {
-  // TODO(crbug.com/1174088): No-op since this function gets called multiple
+  // TODO(crbug.com/40746586): No-op since this function gets called multiple
   // times for a tap. Log index when this is fixed.
 }
 
@@ -567,7 +575,7 @@ using feed::FeedUserActionType;
 - (void)recordFeedWillRefresh {
   base::RecordAction(base::UserMetricsAction(kFeedWillRefresh));
   // The feed will have new content so reset the engagement tracking variable.
-  // TODO(crbug.com/1423467): We need to know whether the feed was actually
+  // TODO(crbug.com/40260057): We need to know whether the feed was actually
   // refreshed, and not just when it was triggered.
   self.engagedWithLatestRefreshedContent = NO;
 }
@@ -798,20 +806,6 @@ using feed::FeedUserActionType;
                                 asInteraction:NO];
 }
 
-- (void)recordSignInPromoUIContinueTapped {
-  [self recordDiscoverFeedUserActionHistogram:
-            FeedUserActionType::kTappedFeedSignInPromoUIContinue
-                                asInteraction:NO];
-  base::RecordAction(base::UserMetricsAction(kFeedSignInPromoUIContinueTapped));
-}
-
-- (void)recordSignInPromoUICancelTapped {
-  [self recordDiscoverFeedUserActionHistogram:FeedUserActionType::
-                                                  kTappedFeedSignInPromoUICancel
-                                asInteraction:NO];
-  base::RecordAction(base::UserMetricsAction(kFeedSignInPromoUICancelTapped));
-}
-
 - (void)recordShowSignInOnlyUIWithUserId:(BOOL)hasUserId {
   base::RecordAction(
       hasUserId ? base::UserMetricsAction(kShowFeedSignInOnlyUIWithUserId)
@@ -821,9 +815,6 @@ using feed::FeedUserActionType;
 - (void)recordShowSignInRelatedUIWithType:(feed::FeedSignInUI)type {
   base::UmaHistogramEnumeration(kFeedSignInUI, type);
   switch (type) {
-    case feed::FeedSignInUI::kShowSyncHalfSheet:
-      return base::RecordAction(
-          base::UserMetricsAction(kShowSyncHalfSheetFromFeed));
     case feed::FeedSignInUI::kShowSignInOnlyFlow:
       return base::RecordAction(
           base::UserMetricsAction(kShowSignInOnlyFlowFromFeed));
@@ -1188,12 +1179,12 @@ using feed::FeedUserActionType;
     self.engagedReportedFollowing = YES;
 
     // Log follow count when engaging with Following feed.
-    // TODO(crbug.com/1322640): `followDelegate` is nil when navigating to an
+    // TODO(crbug.com/40838123): `followDelegate` is nil when navigating to an
     // article, since NTPCoordinator is stopped first. When this is fixed,
     // `recordFollowCount` should be called here.
   }
 
-  // TODO(crbug.com/1322640): Separate user action for Following feed.
+  // TODO(crbug.com/40838123): Separate user action for Following feed.
   base::RecordAction(base::UserMetricsAction(kDiscoverFeedUserActionEngaged));
 }
 
@@ -1246,8 +1237,11 @@ using feed::FeedUserActionType;
   if (additionalTimeInFeed.is_negative()) {
     base::debug::DumpWithoutCrashing();
   }
+  // Temporary fix to resolve negative values in prefs.
+  // TODO(crbug.com/329274886): Remove fix once crashes are down to zero.
   if (self.previousTimeInFeedForGoodVisitSession < 0) {
     base::debug::DumpWithoutCrashing();
+    self.previousTimeInFeedForGoodVisitSession = 0;
   }
   self.previousTimeInFeedForGoodVisitSession =
       self.previousTimeInFeedForGoodVisitSession +

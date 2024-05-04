@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.compositor.overlays.strip;
 
+import android.util.FloatProperty;
+
 import org.chromium.chrome.browser.layouts.components.VirtualView;
 
 import java.util.List;
@@ -14,7 +16,57 @@ import java.util.List;
  * the GL canvas.
  */
 public abstract class StripLayoutView implements VirtualView {
-    boolean mVisible = true;
+
+    /** A property for animations to use for changing the drawX of the view. */
+    public static final FloatProperty<StripLayoutView> DRAW_X =
+            new FloatProperty<>("drawX") {
+                @Override
+                public void setValue(StripLayoutView object, float value) {
+                    object.setDrawX(value);
+                }
+
+                @Override
+                public Float get(StripLayoutView object) {
+                    return object.getDrawX();
+                }
+            };
+
+    /** A property for animations to use for changing the X offset of the view. */
+    public static final FloatProperty<StripLayoutView> X_OFFSET =
+            new FloatProperty<>("offsetX") {
+                @Override
+                public void setValue(StripLayoutView object, float value) {
+                    object.setOffsetX(value);
+                }
+
+                @Override
+                public Float get(StripLayoutView object) {
+                    return object.getOffsetX();
+                }
+            };
+
+    private float mIdealX;
+    private float mOffsetX;
+    private boolean mVisible = true;
+    private boolean mCollapsed;
+
+    /**
+     * This is used to help calculate the view's position and is not used for rendering.
+     *
+     * @param x The ideal position, in an infinitely long strip, of this view.
+     */
+    public void setIdealX(float x) {
+        mIdealX = x;
+    }
+
+    /**
+     * This is used to help calculate the view's position and is not used for rendering.
+     *
+     * @return The ideal position, in an infinitely long strip, of this view.
+     */
+    public float getIdealX() {
+        return mIdealX;
+    }
 
     /**
      * @return The horizontal position of the view.
@@ -57,6 +109,24 @@ public abstract class StripLayoutView implements VirtualView {
     public abstract void setHeight(float height);
 
     /**
+     * This is used to help calculate the view's position and is not used for rendering.
+     *
+     * @param offsetX The offset of the view (used for drag and drop, slide animating, etc).
+     */
+    public void setOffsetX(float offsetX) {
+        mOffsetX = offsetX;
+    }
+
+    /**
+     * This is used to help calculate the tab's position and is not used for rendering.
+     *
+     * @return The offset of the view (used for drag and drop, slide animating, etc).
+     */
+    public float getOffsetX() {
+        return mOffsetX;
+    }
+
+    /**
      * @return Whether or not this {@link StripLayoutView} should be drawn.
      */
     public boolean isVisible() {
@@ -68,6 +138,20 @@ public abstract class StripLayoutView implements VirtualView {
      */
     public void setVisible(boolean visible) {
         mVisible = visible;
+    }
+
+    /**
+     * @return Whether or not this {@link StripLayoutView} is collapsed.
+     */
+    public boolean isCollapsed() {
+        return mCollapsed;
+    }
+
+    /**
+     * @param collapsed Whether or not this {@link StripLayoutView} is collapsed.
+     */
+    public void setCollapsed(boolean collapsed) {
+        mCollapsed = collapsed;
     }
 
     /**

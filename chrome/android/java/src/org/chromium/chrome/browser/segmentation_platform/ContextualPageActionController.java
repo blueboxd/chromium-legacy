@@ -9,6 +9,7 @@ import android.os.Looper;
 
 import androidx.annotation.VisibleForTesting;
 
+import org.jni_zero.JniType;
 import org.jni_zero.NativeMethods;
 
 import org.chromium.base.Callback;
@@ -190,7 +191,7 @@ public class ContextualPageActionController {
             actionProvider.onActionShown(mTabSupplier.get(), action);
         }
 
-        // TODO(crbug/1373891): Add logic to inform reader mode backend.
+        // TODO(crbug.com/40242242): Add logic to inform reader mode backend.
         mAdaptiveToolbarButtonController.showDynamicAction(action);
     }
 
@@ -205,6 +206,8 @@ public class ContextualPageActionController {
     @NativeMethods
     interface Natives {
         void computeContextualPageAction(
-                Profile profile, InputContext inputContext, Callback<Integer> callback);
+                @JniType("Profile*") Profile profile,
+                InputContext inputContext,
+                Callback<Integer> callback);
     }
 }

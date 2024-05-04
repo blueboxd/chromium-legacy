@@ -18,10 +18,9 @@
 #include "base/process/process.h"
 #include "base/time/time.h"
 #include "base/types/expected.h"
-#include "chrome/browser/ash/crosapi/browser_util.h"
 #include "chrome/browser/ash/crosapi/crosapi_id.h"
-#include "chrome/browser/ash/crosapi/environment_provider.h"
 #include "chrome/common/channel_info.h"
+#include "chromeos/ash/components/standalone_browser/lacros_selection.h"
 #include "components/nacl/common/buildflags.h"
 #include "components/policy/core/common/values_util.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
@@ -30,12 +29,15 @@ namespace base {
 struct LaunchOptions;
 }  // namespace base
 
-namespace crosapi {
+namespace user_manager {
 class DeviceOwnershipWaiter;
+}  // namespace user_manager
+
+namespace crosapi {
 class PrimaryProfileCreationWaiter;
 
 // Manages launching and terminating Lacros process.
-// TODO(crbug.com/1495590): Extract launching logic from BrowserManager to
+// TODO(crbug.com/40286595): Extract launching logic from BrowserManager to
 // BrowserLauncher.
 class BrowserLauncher {
  public:
@@ -67,9 +69,6 @@ class BrowserLauncher {
 
     // Sets true if Lacros uses resource file sharing.
     bool enable_resource_file_sharing = false;
-
-    // Sets true if Lacros uses a shared components directory.
-    bool enable_shared_components_dir = false;
 
     // Sets true if Lacros forks Zygotes at login screen.
     bool enable_fork_zygotes_at_login_screen = false;
@@ -145,7 +144,7 @@ class BrowserLauncher {
   // completion.
   void Launch(const base::FilePath& chrome_path,
               bool launching_at_login_screen,
-              browser_util::LacrosSelection lacros_selection,
+              ash::standalone_browser::LacrosSelection lacros_selection,
               base::OnceClosure mojo_disconnection_cb,
               bool is_keep_alive_enabled,
               LaunchCompletionCallback callback);
@@ -155,10 +154,6 @@ class BrowserLauncher {
   void ResumeLaunch(
       base::OnceCallback<
           void(base::expected<base::TimeTicks, LaunchFailureReason>)> callback);
-
-  void SetLastPolicyFetchAttemptTimestamp(base::Time last_refresh);
-
-  EnvironmentProvider& environment_provider() { return environment_provider_; }
 
   // Returns true if process is valid.
   bool IsProcessValid() const;
@@ -187,6 +182,16 @@ class BrowserLauncher {
   // Provides public API to call LaunchProcessWithParameters for testing.
   bool LaunchProcessForTesting(const LaunchParams& parameters);
 
+  // Provides public API to call CreateLaunchParamsForTesting for testing.
+  LaunchParams CreateLaunchParamsForTesting(
+      const base::FilePath& chrome_path,
+      const LaunchParamsFromBackground& params,
+      bool launching_at_login_screen,
+      std::optional<int> startup_fd,
+      std::optional<int> read_pipe_fd,
+      mojo::PlatformChannel& channel,
+      ash::standalone_browser::LacrosSelection lacros_selection);
+
   // Creates postlogin pipe fd and returns the read fd. This is used to test
   // ResumeLaunch. Note that the reader is on the same process and does not
   // launch testing process.
@@ -205,15 +210,16 @@ class BrowserLauncher {
       base::OnceClosure callback,
       LaunchParamsFromBackground& params);
 
-  // TODO(crbug.com/1463883): Remove this once we refactored to use the
+  // TODO(crbug.com/40275396): Remove this once we refactored to use the
   // constructor.
   void set_device_ownership_waiter_for_testing(
-      std::unique_ptr<DeviceOwnershipWaiter> device_ownership_waiter);
+      std::unique_ptr<user_manager::DeviceOwnershipWaiter>
+          device_ownership_waiter);
 
   // Skips device ownership fetch. Use set_device_ownership_waiter_for_testing()
   // above if possible. Use this method only if your test must set up the
   // behavior before BrowserManager is initialized.
-  // TODO(crbug.com/1463883): Remove this and set it from constructor.
+  // TODO(crbug.com/40275396): Remove this and set it from constructor.
   static void SkipDeviceOwnershipWaitForTesting(bool skip);
 
  private:
@@ -238,7 +244,7 @@ class BrowserLauncher {
   void LaunchProcess(const base::FilePath& chrome_path,
                      std::unique_ptr<LaunchParamsFromBackground> params,
                      bool launching_at_login_screen,
-                     browser_util::LacrosSelection lacros_selection,
+                     ash::standalone_browser::LacrosSelection lacros_selection,
                      base::OnceClosure mojo_disconnection_cb,
                      bool is_keep_alive_enabled,
                      LaunchCompletionCallback callback);
@@ -250,7 +256,7 @@ class BrowserLauncher {
       std::optional<int> startup_fd,
       std::optional<int> read_pipe_fd,
       mojo::PlatformChannel& channel,
-      browser_util::LacrosSelection lacros_selection);
+      ash::standalone_browser::LacrosSelection lacros_selection);
 
   // Launches a process , which is executed in `LaunchProcess`.
   // This is also used for unittest.
@@ -269,14 +275,11 @@ class BrowserLauncher {
   base::ScopedFD postlogin_pipe_fd_;
 
   // Used to delay an action until the definitive device owner is fetched.
-  std::unique_ptr<DeviceOwnershipWaiter> device_ownership_waiter_;
+  std::unique_ptr<user_manager::DeviceOwnershipWaiter> device_ownership_waiter_;
 
   // Used to wait for the primary user profile to be fully created.
   std::unique_ptr<PrimaryProfileCreationWaiter>
       primary_profile_creation_waiter_;
-
-  // Used to pass ash-chrome specific flags/configurations to lacros-chrome.
-  EnvironmentProvider environment_provider_;
 
   // Tracks whether Shutdown() has been signalled by ash. This flag ensures any
   // new or existing lacros startup tasks are not executed during shutdown.

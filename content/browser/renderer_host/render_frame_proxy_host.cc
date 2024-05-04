@@ -193,10 +193,10 @@ RenderFrameProxyHost::~RenderFrameProxyHost() {
   TRACE_EVENT_END("navigation", perfetto::Track::FromPointer(this));
 }
 
-void RenderFrameProxyHost::SetChildRWHView(
-    RenderWidgetHostViewChildFrame* view,
-    const gfx::Size* initial_frame_size) {
-  cross_process_frame_connector_->SetView(view);
+void RenderFrameProxyHost::SetChildRWHView(RenderWidgetHostViewChildFrame* view,
+                                           const gfx::Size* initial_frame_size,
+                                           bool allow_paint_holding) {
+  cross_process_frame_connector_->SetView(view, allow_paint_holding);
   if (initial_frame_size)
     cross_process_frame_connector_->SetLocalFrameSize(*initial_frame_size);
 }
@@ -284,7 +284,7 @@ bool RenderFrameProxyHost::InitRenderFrameProxy(
       return false;
     }
 
-    // TODO(https://crbug.com/1393697): Support main frame proxy batch creation
+    // TODO(crbug.com/40248300): Support main frame proxy batch creation
     // with batched_proxy_ipc_sender.
     if (batched_proxy_ipc_sender) {
       batched_proxy_ipc_sender->AddNewChildProxyCreationTask(
@@ -547,8 +547,8 @@ void RenderFrameProxyHost::RouteMessageEvent(
   // TODO(lukasza): Move opaque-ness check into ChildProcessSecurityPolicyImpl.
   auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
   if (source_origin != u"null" &&
-      !policy->CanAccessDataForOrigin(
-          GetProcess()->GetID(), url::Origin::Create(GURL(source_origin)))) {
+      !policy->HostsOrigin(GetProcess()->GetID(),
+                           url::Origin::Create(GURL(source_origin)))) {
     bad_message::ReceivedBadMessage(
         GetProcess(), bad_message::RFPH_POST_MESSAGE_INVALID_SOURCE_ORIGIN);
     return;
@@ -606,7 +606,7 @@ void RenderFrameProxyHost::RouteMessageEvent(
         // in the target SiteInstance. If it doesn't exist, create it on demand
         // and also create its opener chain, since that will also be accessible
         // to the target page.
-        // TODO(https://crbug.com/1427387): Using WebContents here disregards
+        // TODO(crbug.com/40261772): Using WebContents here disregards
         // the possibility of postMessaging an iframe. This is broken, and
         // sometimes leads to null event.source.
         target_rfh->delegate()->EnsureOpenerProxiesExist(source_rfh);
@@ -772,22 +772,24 @@ void RenderFrameProxyHost::OpenURL(blink::mojom::OpenURLParamsPtr params) {
   // the navigation start will be updated when the BeforeUnload ack is received.
   const auto navigation_start_time = base::TimeTicks::Now();
 
+  blink::LocalFrameToken* initiator_frame_token =
+      base::OptionalToPtr(params->initiator_frame_token);
+
   // TODO(lfg, lukasza): Remove |extra_headers| parameter from
   // RequestTransferURL method once both RenderFrameProxyHost and
   // RenderFrameHostImpl call RequestOpenURL from their OnOpenURL handlers.
   // See also https://crbug.com/647772.
   // TODO(clamy): The transition should probably be changed for POST navigations
   // to PAGE_TRANSITION_FORM_SUBMIT. See https://crbug.com/829827.
-  // TODO(https://crbug.com/1261963): Determine which source_site_instance from
-  // site_instance_group_ to use for navigations to about:blank, once
-  // RenderFrameProxyHost no longer has a site_instance_deprecated_.
   frame_tree_node_->navigator().NavigateFromFrameProxy(
-      current_rfh, validated_url,
-      base::OptionalToPtr(params->initiator_frame_token), GetProcess()->GetID(),
+      current_rfh, validated_url, initiator_frame_token, GetProcess()->GetID(),
       params->initiator_origin, params->initiator_base_url,
-      GetSiteInstanceDeprecated(), params->referrer.To<content::Referrer>(),
-      ui::PAGE_TRANSITION_LINK, params->should_replace_current_entry,
-      download_policy, params->post_body ? "POST" : "GET", params->post_body,
+      RenderFrameHostImpl::GetSourceSiteInstanceFromFrameToken(
+          initiator_frame_token, GetProcess()->GetID(),
+          current_rfh->GetStoragePartition()),
+      params->referrer.To<content::Referrer>(), ui::PAGE_TRANSITION_LINK,
+      params->should_replace_current_entry, download_policy,
+      params->post_body ? "POST" : "GET", params->post_body,
       params->extra_headers, std::move(blob_url_loader_factory),
       std::move(params->source_location), params->user_gesture,
       params->is_form_submission, params->impression,

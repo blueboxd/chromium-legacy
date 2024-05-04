@@ -60,10 +60,10 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.UserDataHost;
-import org.chromium.base.metrics.UmaRecorderHolder;
 import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Features;
+import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ChromeWindow;
 import org.chromium.chrome.browser.app.ChromeActivity;
@@ -83,6 +83,8 @@ import org.chromium.chrome.browser.keyboard_accessory.data.UserInfoField;
 import org.chromium.chrome.browser.keyboard_accessory.sheet_component.AccessorySheetCoordinator;
 import org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.AccessorySheetTabCoordinator;
 import org.chromium.chrome.browser.password_manager.ConfirmationDialogHelper;
+import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.profiles.ProfileJni;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabCreationState;
 import org.chromium.chrome.browser.tab.TabHidingType;
@@ -114,6 +116,8 @@ public class ManualFillingControllerTest {
     @Mock private ChromeWindow mMockWindow;
     @Mock private ChromeActivity mMockActivity;
     private WebContents mLastMockWebContents;
+    @Mock private Profile mMockProfile;
+    @Mock private Profile.Natives mProfileJniMock;
     @Mock private ContentView mMockContentView;
     @Mock private TabModelSelector mMockTabModelSelector;
     @Mock private android.content.res.Resources mMockResources;
@@ -128,6 +132,7 @@ public class ManualFillingControllerTest {
     @Mock private BackPressManager mMockBackPressManager;
     @Mock private EdgeToEdgeController mMockEdgeToEdgeController;
 
+    @Rule public JniMocker mJniMocker = new JniMocker();
     @Rule public Features.JUnitProcessor mFeaturesProcessor = new Features.JUnitProcessor();
 
     @Captor ArgumentCaptor<FullscreenManager.Observer> mFullscreenObserverCaptor;
@@ -297,7 +302,6 @@ public class ManualFillingControllerTest {
 
     @Before
     public void setUp() {
-        UmaRecorderHolder.resetForTesting();
         MockitoAnnotations.initMocks(this);
         when(mMockWindow.getActivity()).thenReturn(new WeakReference<>(mMockActivity));
         mInsetSupplier.setKeyboardInsetSupplier(mKeyboardInsetSupplier);
@@ -323,6 +327,10 @@ public class ManualFillingControllerTest {
         when(mMockContentView.getRootView()).thenReturn(mock(View.class));
         mLastMockWebContents = mock(WebContents.class);
         when(mMockActivity.getCurrentWebContents()).then(i -> mLastMockWebContents);
+
+        mJniMocker.mock(ProfileJni.TEST_HOOKS, mProfileJniMock);
+        when(mProfileJniMock.fromWebContents(any())).thenReturn(mMockProfile);
+
         InsetObserverSupplier.setInstanceForTesting(mInsetObserver);
         simulateLayoutSizeChange(
                 2.f, 80, 128, /* keyboardShown= */ false, VirtualKeyboardMode.RESIZES_VISUAL);
@@ -543,7 +551,7 @@ public class ManualFillingControllerTest {
                 mLastMockWebContents, AccessoryTabType.PASSWORDS, new PropertyProvider<>());
 
         // Simulate closing the tab (uncommitted):
-        mMediator.getTabModelObserverForTesting().willCloseTab(tab, false, true);
+        mMediator.getTabModelObserverForTesting().willCloseTab(tab, true);
         mMediator.getTabObserverForTesting().onHidden(tab, TabHidingType.CHANGED_TABS);
         getStateForBrowserTab().getWebContentsObserverForTesting().wasHidden();
         // The state should be kept if the closure wasn't committed.
@@ -1464,7 +1472,7 @@ public class ManualFillingControllerTest {
      * @param tabToBeClosed The mocked {@link Tab} to be closed. Needs |getId()|.
      */
     private void closeBrowserTab(ManualFillingMediator mediator, Tab tabToBeClosed) {
-        mediator.getTabModelObserverForTesting().willCloseTab(tabToBeClosed, false, true);
+        mediator.getTabModelObserverForTesting().willCloseTab(tabToBeClosed, true);
         mediator.getTabObserverForTesting().onHidden(tabToBeClosed, TabHidingType.CHANGED_TABS);
         mCache.getStateFor(mLastMockWebContents).getWebContentsObserverForTesting().wasHidden();
         mLastMockWebContents = null;

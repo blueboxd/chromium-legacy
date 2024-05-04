@@ -5,16 +5,59 @@
 #ifndef CHROME_BROWSER_ASH_FILE_SYSTEM_PROVIDER_CONTENT_CACHE_CACHE_FILE_CONTEXT_H_
 #define CHROME_BROWSER_ASH_FILE_SYSTEM_PROVIDER_CONTENT_CACHE_CACHE_FILE_CONTEXT_H_
 
+#include <functional>
+#include <utility>
+
 #include "base/files/file_path.h"
 #include "base/time/time.h"
 
 namespace ash::file_system_provider {
 
+// Helper to explain the "-1" that is used to denote an unknown ID.
+inline constexpr int kUnknownId = -1;
+
 // Context relating to a file that is cached on disk. Used to make decisions
-// around evicting files from the cache (e.g. until N bytes have been evicted).
+// around evicting files from the cache (e.g. until N bytes have been evicted)
+// and guard against multiple writers to a single file.
 struct CacheFileContext {
-  int64_t bytes_on_disk;
-  base::Time accessed_time;
+  // Used to create the context initially when the file hasn't fully been cached
+  // to disk.
+  explicit CacheFileContext(const std::string& version_tag);
+
+  // Used to repopulate the context on session startup with the file information
+  // that is already cached on disk.
+  CacheFileContext(int64_t bytes_on_disk, int64_t id);
+
+  CacheFileContext(CacheFileContext&&);
+  CacheFileContext& operator=(CacheFileContext&&);
+  CacheFileContext(const CacheFileContext&) = delete;
+  CacheFileContext& operator=(const CacheFileContext&) = delete;
+
+  ~CacheFileContext();
+
+  // The number of contiguous bytes that are written to this file currently. If
+  // a file write is in progress, this might not represent the entire size of
+  // the file on disk.
+  int64_t bytes_on_disk = 0;
+
+  // The latest access time, cryptohome is mounted with MS_NOATIME so we need to
+  // keep track of this separately.
+  base::Time accessed_time = base::Time::Now();
+
+  // The version tag for this specific file.
+  std::string version_tag;
+
+  // A unique ID associated with this file that is used to write the file on
+  // disk.
+  int64_t id = kUnknownId;
+
+  // True if there is an open writer to this file, multiple writers at
+  // disjoint offset ranges is currently not supported.
+  bool in_progress_writer = false;
+
+  // Evicted items are scheduled to be removed from disk and the database, so
+  // any further use should be disallowed.
+  bool evicted = false;
 };
 
 using PathContextPair = std::pair<base::FilePath, CacheFileContext>;

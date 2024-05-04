@@ -52,6 +52,7 @@ constexpr gfx::Insets kButtonsContainerInteriorMargin =
 
 constexpr int kIconSize = 20;
 constexpr int kTitleMaxLines = 2;
+constexpr int kSubtitleMaxLines = 2;
 constexpr int kSubtitleLineHeight = 18;
 
 views::Label* GetTitleLabel(views::View* notification_view) {
@@ -153,6 +154,8 @@ PinnedNotificationView::PinnedNotificationView(
       views::Builder<views::Label>()
           .SetID(VIEW_ID_PINNED_NOTIFICATION_SUBTITLE_LABEL)
           .SetVisible(!notification.message().empty())
+          .SetMultiLine(true)
+          .SetMaxLines(kSubtitleMaxLines)
           .SetText(notification.message())
           .SetTooltipText(notification.message())
           .SetHorizontalAlignment(gfx::ALIGN_LEFT)
@@ -177,35 +180,6 @@ PinnedNotificationView::PinnedNotificationView(
                          !notification.buttons()[0].title.empty();
   bool has_icon_button = !has_pill_button && !notification.buttons().empty() &&
                          !notification.buttons()[0].vector_icon->is_empty();
-
-  if (!notification.shortcut_text().empty()) {
-    buttons_container->AddChildView(
-        views::Builder<views::Label>()
-            .SetID(VIEW_ID_PINNED_NOTIFICATION_SHORTCUT_LABEL)
-            .SetText(notification.shortcut_text())
-            .SetTooltipText(notification.shortcut_text())
-            .SetEnabledColorId(cros_tokens::kCrosSysOnSurfaceVariant)
-            .SetAutoColorReadabilityEnabled(false)
-            .SetSubpixelRenderingEnabled(false)
-            .SetFontList(TypographyProvider::Get()->ResolveTypographyToken(
-                TypographyToken::kCrosAnnotation1))
-            .Build());
-
-    // A divider dot will only be added if there are still elements to the right
-    // of the shortcut text.
-    if (has_pill_button || has_icon_button) {
-      buttons_container->AddChildView(
-          views::Builder<views::Label>()
-              .SetID(VIEW_ID_PINNED_NOTIFICATION_SHORTCUT_DIVIDER_LABEL)
-              .SetText(kNotificationTitleRowDivider)
-              .SetEnabledColorId(cros_tokens::kCrosSysOnSurfaceVariant)
-              .SetAutoColorReadabilityEnabled(false)
-              .SetSubpixelRenderingEnabled(false)
-              .SetFontList(TypographyProvider::Get()->ResolveTypographyToken(
-                  TypographyToken::kCrosAnnotation1))
-              .Build());
-    }
-  }
 
   if (has_pill_button) {
     const std::u16string& pill_button_title = notification.buttons()[0].title;
@@ -292,7 +266,7 @@ void PinnedNotificationView::UpdateWithNotification(
   MessageView::UpdateWithNotification(notification);
 
   // Only the `title` and `subtitle` labels can be updated. Any other changes
-  // made to the buttons, icon or shortcut text will be ignored.
+  // made to the buttons or icon will be ignored.
   auto* title_label = GetTitleLabel(this);
   if (title_label && title_label->GetText() != notification.title()) {
     auto catalog_name = GetCatalogName(notification);

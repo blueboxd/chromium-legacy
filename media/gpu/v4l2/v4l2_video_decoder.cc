@@ -273,8 +273,8 @@ void V4L2VideoDecoder::Initialize(const VideoDecoderConfig& config,
       LogAndRecordUMA(FROM_HERE,
                       V4l2VideoDecoderFunctions::kStopStreamV4L2Queue);
 
-      // TODO(crbug/1103510): Make StopStreamV4L2Queue return a StatusOr, and
-      // pipe that back instead.
+      // TODO(crbug.com/40139291): Make StopStreamV4L2Queue return a StatusOr,
+      // and pipe that back instead.
       std::move(init_cb).Run(
           DecoderStatus(DecoderStatus::Codes::kNotInitialized)
               .AddCause(
@@ -772,27 +772,63 @@ CroStatus V4L2VideoDecoder::SetupOutputFormat(const gfx::Size& size,
 }
 
 CroStatus V4L2VideoDecoder::SetExtCtrls10Bit(const gfx::Size& size) {
-  struct v4l2_ext_control ctrl;
   std::vector<struct v4l2_ext_control> ctrls;
+  struct v4l2_ctrl_hevc_sps v4l2_sps;
+  struct v4l2_ctrl_vp9_frame v4l2_vp9_frame;
+#if BUILDFLAG(IS_CHROMEOS)
+  struct v4l2_ctrl_av1_sequence v4l2_av1_sequence;
+#endif
 
+  struct v4l2_ext_control ctrl;
+  memset(&ctrl, 0, sizeof(ctrl));
+
+  // 10-bit formats require codec specific parameters be passed before the
+  // CAPTURE queue will report the proper decoded formats.
   if (input_format_fourcc_ == V4L2_PIX_FMT_HEVC_SLICE) {
+    // For HEVC the SPS data is sent in to indicate 10-bit content. We also set
+    // the size and chroma format since that should be all the information
+    // needed in order to know the format.
     VLOGF(1) << "Setting EXT_CTRLS for 10-bit HEVC";
-    // For 10-bit formats the CAPTURE queue will not report the proper formats
-    // until the SPS data is sent in to indicate 10-bit content. We also set the
-    // size and chroma format since that should be all the information needed in
-    // order to know the format.
-    struct v4l2_ctrl_hevc_sps v4l2_sps;
     memset(&v4l2_sps, 0, sizeof(v4l2_sps));
     v4l2_sps.pic_width_in_luma_samples = size.width();
     v4l2_sps.pic_height_in_luma_samples = size.height();
     v4l2_sps.bit_depth_luma_minus8 = 2;
     v4l2_sps.bit_depth_chroma_minus8 = 2;
     v4l2_sps.chroma_format_idc = 1;  // 4:2:0
-    memset(&ctrl, 0, sizeof(ctrl));
+
     ctrl.id = V4L2_CID_STATELESS_HEVC_SPS;
     ctrl.size = sizeof(v4l2_sps);
     ctrl.ptr = &v4l2_sps;
+
     ctrls.push_back(ctrl);
+  } else if (input_format_fourcc_ == V4L2_PIX_FMT_VP9_FRAME) {
+    // VP9 requires the profile (only profile 2), bit depth , and flags
+    VLOGF(1) << "Setting EXT_CTRLS for 10-bit VP9.2";
+    memset(&v4l2_vp9_frame, 0, sizeof(v4l2_vp9_frame));
+    v4l2_vp9_frame.bit_depth = 10;
+    v4l2_vp9_frame.profile = 2;
+    v4l2_vp9_frame.flags =
+        V4L2_VP9_FRAME_FLAG_X_SUBSAMPLING | V4L2_VP9_FRAME_FLAG_Y_SUBSAMPLING;
+
+    ctrl.id = V4L2_CID_STATELESS_VP9_FRAME;
+    ctrl.size = sizeof(v4l2_vp9_frame);
+    ctrl.ptr = &v4l2_vp9_frame;
+
+    ctrls.push_back(ctrl);
+#if BUILDFLAG(IS_CHROMEOS)
+  } else if (input_format_fourcc_ == V4L2_PIX_FMT_AV1_FRAME) {
+    // AV1 only requires that the |bit_depth| parameter be set to enable
+    // 10 bit formats on the CAPTURE queue.
+    VLOGF(1) << "Setting EXT_CTRLS for 10-bit AV1";
+    memset(&v4l2_av1_sequence, 0, sizeof(v4l2_av1_sequence));
+    v4l2_av1_sequence.bit_depth = 10;
+
+    ctrl.id = V4L2_CID_STATELESS_AV1_SEQUENCE;
+    ctrl.size = sizeof(v4l2_av1_sequence);
+    ctrl.ptr = &v4l2_av1_sequence;
+
+    ctrls.push_back(ctrl);
+#endif
   } else {
     // TODO(b/): Add other 10-bit codecs
     return CroStatus::Codes::kNoDecoderOutputFormatCandidates;

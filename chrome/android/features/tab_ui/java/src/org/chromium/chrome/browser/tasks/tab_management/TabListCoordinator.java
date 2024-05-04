@@ -39,15 +39,20 @@ import org.chromium.chrome.browser.lifecycle.DestroyObserver;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabUtils;
+import org.chromium.chrome.browser.tab_ui.RecyclerViewPosition;
+import org.chromium.chrome.browser.tab_ui.TabListFaviconProvider;
+import org.chromium.chrome.browser.tab_ui.ThumbnailProvider;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelFilter;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.tasks.ReturnToChromeUtil;
 import org.chromium.chrome.browser.tasks.pseudotab.PseudoTab;
+import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
 import org.chromium.chrome.browser.tasks.tab_management.TabListModel.CardProperties.ModelType;
 import org.chromium.chrome.browser.tasks.tab_management.TabProperties.UiType;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.ui.base.ViewUtils;
+import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modelutil.MVCListAdapter;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -169,6 +174,7 @@ public class TabListCoordinator
                 mode,
                 context,
                 browserControlsStateProvider,
+                /* modalDialogManager= */ null,
                 tabModelFilterSupplier,
                 regularTabModelSupplier,
                 thumbnailProvider,
@@ -187,13 +193,15 @@ public class TabListCoordinator
                 false,
                 0,
                 0,
-                0);
+                0,
+                /* refreshTabListRunnable= */ null);
     }
 
     TabListCoordinator(
             @TabListMode int mode,
             Context context,
             @NonNull BrowserControlsStateProvider browserControlsStateProvider,
+            @Nullable ModalDialogManager modalDialogManager,
             @NonNull ObservableSupplier<TabModelFilter> tabModelFilterSupplier,
             @NonNull Supplier<TabModel> regularTabModelSupplier,
             @Nullable ThumbnailProvider thumbnailProvider,
@@ -213,7 +221,8 @@ public class TabListCoordinator
             boolean hasEmptyView,
             int emptyImageResId,
             int emptyHeadingStringResId,
-            int emptySubheadingStringResId) {
+            int emptySubheadingStringResId,
+            @Nullable Runnable refreshTabListRunnable) {
         mMode = mode;
         mItemType = itemType;
         mContext = context;
@@ -260,7 +269,7 @@ public class TabListCoordinator
                     (holder) -> {
                         int holderItemViewType = holder.getItemViewType();
 
-                        // TODO(crbug.com/1508423): Convert this logic block to a callback.
+                        // TODO(crbug.com/40949143): Convert this logic block to a callback.
                         // If a custom message card item type is present, ensure that all attached
                         // child views are removed when the card is recycled.
                         if (holderItemViewType == UiType.CUSTOM_MESSAGE) {
@@ -346,23 +355,34 @@ public class TabListCoordinator
                         mMode == TabListMode.STRIP,
                         R.dimen.default_favicon_corner_radius);
 
+        ActionConfirmationManager actionConfirmationManager =
+                new ActionConfirmationManager(
+                        regularTabModelSupplier.get().getProfile(),
+                        mContext,
+                        (TabGroupModelFilter) mCurrentTabModelFilterSupplier.get(),
+                        modalDialogManager);
+
         mMediator =
                 new TabListMediator(
                         context,
                         mModel,
                         mMode,
+                        modalDialogManager,
                         tabModelFilterSupplier,
                         regularTabModelSupplier,
                         thumbnailProvider,
                         titleProvider,
                         tabListFaviconProvider,
+                        new TabGroupColorFaviconProvider(mContext),
                         actionOnRelatedTabs,
                         selectionDelegateProvider,
                         gridCardOnClickListenerProvider,
                         dialogHandler,
                         priceWelcomeMessageControllerSupplier,
                         componentName,
-                        itemType);
+                        itemType,
+                        refreshTabListRunnable,
+                        actionConfirmationManager);
 
         try (TraceEvent e = TraceEvent.scoped("TabListCoordinator.setupRecyclerView")) {
             // Ignore attachToParent initially. In some contexts multiple TabListCoordinators are
@@ -456,7 +476,7 @@ public class TabListCoordinator
 
     @NonNull
     Rect getThumbnailLocationOfCurrentTab() {
-        // TODO(crbug.com/964406): calculate the location before the real one is ready.
+        // TODO(crbug.com/40627995): calculate the location before the real one is ready.
         Rect rect =
                 mRecyclerView.getRectOfCurrentThumbnail(
                         mModel.indexFromId(mMediator.selectedTabId()), mMediator.selectedTabId());
@@ -705,7 +725,8 @@ public class TabListCoordinator
 
     private void registerLayoutChangeListener() {
         if (mListLayoutListener != null) {
-            // TODO(crbug/1500016): There might be a timing or race condition that LayoutListener
+            // TODO(crbug.com/40288028): There might be a timing or race condition that
+            // LayoutListener
             // has been registered while it shouldn't be with Start surface refactor is enabled.
             if (mLayoutListenerRegistered) return;
 

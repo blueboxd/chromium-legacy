@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/web_applications/web_app_launch_process.h"
 
+#include "base/debug/crash_logging.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/files/file_path.h"
 #include "base/functional/callback_forward.h"
 #include "base/memory/values_equivalent.h"
@@ -122,7 +124,7 @@ content::WebContents* WebAppLaunchProcess::Run() {
               *ash::GetSystemWebAppTypeForAppId(&*profile_, params_->app_id))
           ->IsUrlInSystemAppScope(launch_url);
 
-  // TODO(crbug.com/1477991): Figure out why this is getting hit.
+  // TODO(crbug.com/40071115): Figure out why this is getting hit.
   if (!registrar_->IsUrlInAppExtendedScope(launch_url, params_->app_id) &&
       !is_url_in_system_web_app_scope) {
     SCOPED_CRASH_KEY_STRING256("crbug1477991", "launch_url", launch_url.spec());
@@ -133,9 +135,17 @@ content::WebContents* WebAppLaunchProcess::Run() {
                   << params_->app_id;
   }
 #else
-  // TODO(dmurph): Figure out why this is failing. https://crbug.com/2546057
-  DCHECK(registrar_->IsUrlInAppExtendedScope(launch_url, params_->app_id))
-      << launch_url.spec();
+  // TODO(crbug.com/338406726): Figure out why this is failing. If no longer
+  // failing, then we can reject the launch by returning a nullptr.
+  if (!registrar_->IsUrlInAppExtendedScope(launch_url, params_->app_id)) {
+    SCOPED_CRASH_KEY_STRING256("crbug338406726", "launch_url",
+                               launch_url.spec());
+    SCOPED_CRASH_KEY_STRING256("crbug338406726", "app_scope",
+                               web_app_->scope().spec());
+    base::debug::DumpWithoutCrashing();
+    DCHECK(false) << "Url " << launch_url.spec() << " not in scope for app "
+                  << params_->app_id;
+  }
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -231,7 +241,7 @@ WindowOpenDisposition WebAppLaunchProcess::GetNavigationDisposition(
     // By opening a new window we've already performed part of a "disposition",
     // the only remaining thing for Navigate() to do is navigate the new window.
     return WindowOpenDisposition::CURRENT_TAB;
-    // TODO(crbug.com/1200944): Use NEW_FOREGROUND_TAB instead of CURRENT_TAB.
+    // TODO(crbug.com/40762104): Use NEW_FOREGROUND_TAB instead of CURRENT_TAB.
     // The window has no tabs so it doesn't make sense to open the "current"
     // tab. We use it anyway because it happens to work.
     // If NEW_FOREGROUND_TAB is used the the WindowCanOpenTabs() check fails
@@ -295,7 +305,8 @@ Browser* WebAppLaunchProcess::MaybeFindBrowserForLaunch() const {
     }
 #endif
     return chrome::FindTabbedBrowser(
-        &profile_.get(), /*match_original_profiles=*/false, display_id);
+        &profile_.get(), /*match_original_profiles=*/false, display_id,
+        /*ignore_closing_browsers=*/true);
   }
 
   if (params_->disposition == WindowOpenDisposition::NEW_WINDOW) {
@@ -333,7 +344,7 @@ WebAppLaunchProcess::NavigateResult WebAppLaunchProcess::MaybeNavigateBrowser(
       GetNavigationDisposition(is_new_browser);
 
   if (share_target) {
-    // TODO(crbug.com/1213776): Expose share target in the LaunchParams and
+    // TODO(crbug.com/40768956): Expose share target in the LaunchParams and
     // don't navigate if navigate_existing_client: never is in effect.
     NavigateParams nav_params = NavigateParamsForShareTarget(
         browser, *share_target, *params_->intent, params_->launch_files);
@@ -379,14 +390,16 @@ WebAppLaunchProcess::NavigateResult WebAppLaunchProcess::MaybeNavigateBrowser(
 
   const int tab_index = tab_strip->GetIndexOfWebContents(existing_tab);
 
-  existing_tab->OpenURL(content::OpenURLParams(
-      launch_url,
-      content::Referrer::SanitizeForRequest(
+  existing_tab->OpenURL(
+      content::OpenURLParams(
           launch_url,
-          content::Referrer(existing_tab->GetURL(),
-                            network::mojom::ReferrerPolicy::kDefault)),
-      navigation_disposition, ui::PAGE_TRANSITION_AUTO_BOOKMARK,
-      /*is_renderer_initiated=*/false));
+          content::Referrer::SanitizeForRequest(
+              launch_url,
+              content::Referrer(existing_tab->GetURL(),
+                                network::mojom::ReferrerPolicy::kDefault)),
+          navigation_disposition, ui::PAGE_TRANSITION_AUTO_BOOKMARK,
+          /*is_renderer_initiated=*/false),
+      /*navigation_handle_callback=*/{});
 
   content::WebContents* web_contents = tab_strip->GetActiveWebContents();
   tab_strip->ActivateTabAt(

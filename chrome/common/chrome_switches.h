@@ -96,10 +96,10 @@ extern const char kEnableDomainReliability[];
 extern const char kEnableDownloadWarningImprovements[];
 extern const char kEnableExtensionActivityLogging[];
 extern const char kEnableExtensionActivityLogTesting[];
+extern const char kEnableUnsafeExtensionDebugging[];
 extern const char kEnableHangoutServicesExtensionForTesting[];
 #if BUILDFLAG(IS_CHROMEOS)
 extern const char kEnableLacrosForkZygotesAtLoginScreen[];
-extern const char kEnableLacrosSharedComponentsDir[];
 #endif
 extern const char kEnableNaCl[];
 extern const char kEnableNetBenchmarking[];
@@ -156,6 +156,7 @@ extern const char kPreinstalledWebAppsDir[];
 extern const char kPrivetIPv6Only[];
 extern const char kProductVersion[];
 extern const char kProfileDirectory[];
+extern const char kIgnoreProfileDirectoryIfNotExists[];
 extern const char kProfileEmail[];
 extern const char kProxyAutoDetect[];
 extern const char kProxyBypassList[];
@@ -191,6 +192,7 @@ extern const char kTestMemoryLogDelayInMinutes[];
 extern const char kTestName[];
 extern const char kTrustedDownloadSources[];
 extern const char kUnlimitedStorage[];
+extern const char kUnsafelyDisableDevToolsSelfXssWarnings[];
 extern const char kUserDataDir[];
 extern const char kUseSystemProxyResolver[];
 extern const char kValidateCrx[];
@@ -234,8 +236,6 @@ extern const char kSchedulerConfigurationDefault[];
 #if BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_MAC) && !BUILDFLAG(IS_CHROMEOS_ASH)
 extern const char kHelp[];
 extern const char kHelpShort[];
-extern const char kPasswordStore[];
-extern const char kEnableEncryptionSelection[];
 extern const char kWmClass[];
 #endif
 
@@ -253,7 +253,6 @@ extern const char kEnableProfileShortcutManager[];
 extern const char kFromBrowserSwitcher[];
 extern const char kFromInstaller[];
 extern const char kHideIcons[];
-extern const char kNoAppCompatClear[];
 extern const char kNoNetworkProfileWarning[];
 extern const char kNoPreReadMainDll[];
 extern const char kNotificationInlineReply[];
@@ -277,7 +276,7 @@ extern const char kAllowNaClSocketAPI[];
 #endif
 
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_MAC) || \
-    BUILDFLAG(IS_WIN) || BUILDFLAG(IS_FUCHSIA)
+    BUILDFLAG(IS_WIN)
 extern const char kEnableNewAppMenuIcon[];
 extern const char kGuest[];
 #endif

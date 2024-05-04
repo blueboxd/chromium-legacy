@@ -67,7 +67,7 @@ AuthenticatorMultiSourcePickerView::AuthenticatorMultiSourcePickerView(
     std::pair<std::unique_ptr<views::View>, HoverListView*> primary_list =
         CreatePasskeyList(model->primary_passkeys_label(),
                           model->primary_passkey_indices(),
-                          model->dialog_model()->mechanisms());
+                          model->dialog_model()->mechanisms);
     AddChildView(std::move(primary_list.first));
     primary_passkeys_control_ = primary_list.second;
   }
@@ -76,7 +76,7 @@ AuthenticatorMultiSourcePickerView::AuthenticatorMultiSourcePickerView(
     std::pair<std::unique_ptr<views::View>, HoverListView*> secondary_list =
         CreatePasskeyList(secondary_passkeys_label,
                           model->secondary_passkey_indices(),
-                          model->dialog_model()->mechanisms());
+                          model->dialog_model()->mechanisms);
     AddChildView(std::move(secondary_list.first));
     secondary_passkeys_control_ = secondary_list.second;
   }

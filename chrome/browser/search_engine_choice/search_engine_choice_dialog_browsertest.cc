@@ -28,6 +28,7 @@
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
+#include "chrome/browser/web_applications/test/os_integration_test_override_impl.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/common/chrome_constants.h"
@@ -40,7 +41,7 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/search_engines/default_search_manager.h"
 #include "components/search_engines/prepopulated_engines.h"
-#include "components/search_engines/search_engine_choice_utils.h"
+#include "components/search_engines/search_engine_choice/search_engine_choice_utils.h"
 #include "components/search_engines/search_engines_pref_names.h"
 #include "components/search_engines/search_engines_switches.h"
 #include "components/search_engines/search_engines_test_util.h"
@@ -176,7 +177,7 @@ class SearchEngineChoiceDialogBrowserTest : public InProcessBrowserTest {
         /*dialog_disabled=*/false);
   }
 
-  // TODO(crbug.com/1468496): Make this function handle multiple browsers.
+  // TODO(crbug.com/40277150): Make this function handle multiple browsers.
   void QuitAndRestoreBrowser(Browser* browser) {
     Profile* profile = browser->profile();
     // Enable SessionRestore to last used pages.
@@ -270,6 +271,7 @@ class SearchEngineChoiceDialogBrowserTest : public InProcessBrowserTest {
   }
 
  private:
+  web_app::OsIntegrationTestOverrideBlockingRegistration faked_os_integration_;
   base::AutoReset<bool> scoped_chrome_build_override_ =
       SearchEngineChoiceDialogServiceFactory::
           ScopedChromeBuildOverrideForTesting(
@@ -496,8 +498,7 @@ IN_PROC_BROWSER_TEST_F(SearchEngineChoiceDialogBrowserTest,
       search_engines::SearchEngineChoiceScreenConditions::kEligible, 1);
 
   // Choose the first search engine to close the dialog.
-  std::unique_ptr<TemplateURL> first_search_engine =
-      std::move(service->GetSearchEngines().at(0));
+  TemplateURL* first_search_engine = service->GetSearchEngines().at(0);
   service->NotifyChoiceMade(first_search_engine->prepopulate_id(),
                             EntryPoint::kDialog);
 }

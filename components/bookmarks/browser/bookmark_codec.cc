@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <string_view>
 #include <utility>
 
 #include "base/base64.h"
@@ -150,7 +151,7 @@ base::Value::Dict BookmarkCodec::EncodeNode(const BookmarkNode* node) {
   value.Set(kNameKey, title);
   const std::string& uuid = node->uuid().AsLowercaseString();
   value.Set(kGuidKey, uuid);
-  // TODO(crbug.com/634507): Avoid ToInternalValue().
+  // TODO(crbug.com/40479288): Avoid ToInternalValue().
   value.Set(kDateAddedKey,
             base::NumberToString(node->date_added().ToInternalValue()));
   value.Set(kDateLastUsed,
@@ -267,7 +268,8 @@ bool BookmarkCodec::DecodeNode(const base::Value::Dict& value,
 
   std::string id_string;
   int64_t id = 0;
-  if (ids_valid_) {
+
+  {
     const std::string* string = value.FindString(kIdKey);
     if (!string || !base::StringToInt64(*string, &id) || id <= 0 ||
         ids_.count(id) != 0) {
@@ -461,6 +463,7 @@ void BookmarkCodec::ReassignIDs(BookmarkNode* bb_node,
                                 BookmarkNode* other_node,
                                 BookmarkNode* mobile_node) {
   ids_.clear();
+  reassigned_ids_per_old_id_.clear();
   ReassignIDsHelper(bb_node);
   ReassignIDsHelper(other_node);
   ReassignIDsHelper(mobile_node);
@@ -469,7 +472,9 @@ void BookmarkCodec::ReassignIDs(BookmarkNode* bb_node,
 
 void BookmarkCodec::ReassignIDsHelper(BookmarkNode* node) {
   DCHECK(node);
+  const int64_t old_id = node->id();
   node->set_id(++maximum_id_);
+  reassigned_ids_per_old_id_.emplace(old_id, node->id());
   ids_.insert(node->id());
   for (const auto& child : node->children())
     ReassignIDsHelper(child.get());
@@ -481,9 +486,8 @@ void BookmarkCodec::UpdateChecksum(const std::string& str) {
 
 void BookmarkCodec::UpdateChecksum(const std::u16string& str) {
   base::MD5Update(&md5_context_,
-                  base::StringPiece(
-                      reinterpret_cast<const char*>(str.data()),
-                      str.length() * sizeof(str[0])));
+                  std::string_view(reinterpret_cast<const char*>(str.data()),
+                                   str.length() * sizeof(str[0])));
 }
 
 void BookmarkCodec::UpdateChecksumWithUrlNode(const std::string& id,

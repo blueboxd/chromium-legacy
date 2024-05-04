@@ -9,6 +9,7 @@
 
 import 'chrome://resources/ash/common/cr_elements/cr_checkbox/cr_checkbox.js';
 import 'chrome://resources/ash/common/cr_elements/cr_link_row/cr_link_row.js';
+import 'chrome://resources/ash/common/cr_elements/cr_slider/cr_slider.js';
 import 'chrome://resources/ash/common/cr_elements/cr_tabs/cr_tabs.js';
 import 'chrome://resources/ash/common/cr_elements/cr_toggle/cr_toggle.js';
 import 'chrome://resources/ash/common/cr_elements/policy/cr_policy_pref_indicator.js';
@@ -23,10 +24,12 @@ import '../settings_vars.css.js';
 import 'chrome://resources/ash/common/cr_elements/cr_slider/cr_slider.js';
 import 'chrome://resources/ash/common/cr_elements/cr_shared_style.css.js';
 
+import {PrefsMixin} from '/shared/settings/prefs/prefs_mixin.js';
 import {CrCheckboxElement} from 'chrome://resources/ash/common/cr_elements/cr_checkbox/cr_checkbox.js';
 import {CrSliderElement, SliderTick} from 'chrome://resources/ash/common/cr_elements/cr_slider/cr_slider.js';
+import {CrToggleElement} from 'chrome://resources/ash/common/cr_elements/cr_toggle/cr_toggle.js';
 import {I18nMixin} from 'chrome://resources/ash/common/cr_elements/i18n_mixin.js';
-import {PrefsMixin} from 'chrome://resources/cr_components/settings_prefs/prefs_mixin.js';
+import {strictQuery} from 'chrome://resources/ash/common/typescript_utils/strict_query.js';
 import {assert} from 'chrome://resources/js/assert.js';
 import {focusWithoutInk} from 'chrome://resources/js/focus_without_ink.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
@@ -34,11 +37,11 @@ import {flush, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/pol
 
 import {assertExists, cast, castExists} from '../assert_extras.js';
 import {DeepLinkingMixin} from '../common/deep_linking_mixin.js';
-import {isRevampWayfindingEnabled} from '../common/load_time_booleans.js';
+import {isDisplayBrightnessControlInSettingsEnabled, isRevampWayfindingEnabled} from '../common/load_time_booleans.js';
 import {RouteObserverMixin} from '../common/route_observer_mixin.js';
 import {DropdownMenuOptionList} from '../controls/settings_dropdown_menu.js';
 import {SettingsSliderElement} from '../controls/settings_slider.js';
-import {DisplayConfigurationObserverReceiver, DisplaySettingsOrientationOption, DisplaySettingsProviderInterface, DisplaySettingsType, DisplaySettingsValue, TabletModeObserverReceiver} from '../mojom-webui/display_settings_provider.mojom-webui.js';
+import {AmbientLightSensorObserverReceiver, DisplayBrightnessSettingsObserverReceiver, DisplayConfigurationObserverReceiver, DisplaySettingsOrientationOption, DisplaySettingsProviderInterface, DisplaySettingsType, DisplaySettingsValue, TabletModeObserverReceiver} from '../mojom-webui/display_settings_provider.mojom-webui.js';
 import {Setting} from '../mojom-webui/setting.mojom-webui.js';
 import {Route, routes} from '../router.js';
 
@@ -211,6 +214,28 @@ export class SettingsDisplayElement extends SettingsDisplayElementBase {
         value: false,
       },
 
+      currentInternalScreenBrightness_: {type: Number, value: 0},
+
+      isAmbientLightSensorEnabled_: {
+        type: Boolean,
+        value: true,
+      },
+
+      hasAmbientLightSensor_: {
+        type: Boolean,
+        value: false,
+      },
+
+      brightnessSliderMin_: {
+        type: Number,
+        value: 5,
+      },
+
+      brightnessSliderMax_: {
+        type: Number,
+        value: 100,
+      },
+
       isDisplayPerformanceEnabled_: {
         type: Boolean,
         value: false,
@@ -281,6 +306,9 @@ export class SettingsDisplayElement extends SettingsDisplayElementBase {
   primaryDisplayId: string;
   selectedDisplay?: DisplayUnitInfo;
   private browserProxy_: DevicePageBrowserProxy;
+  private brightnessSliderMax_: number;
+  private brightnessSliderMin_: number;
+  private currentInternalScreenBrightness_: number;
   private currentRoute_: Route|null;
   private currentSelectedModeIndex_: number;
   private currentSelectedParentModeIndex_: number;
@@ -288,7 +316,9 @@ export class SettingsDisplayElement extends SettingsDisplayElementBase {
   private displayModeList_: DropdownMenuOptionList;
   private displaySettingsProvider: DisplaySettingsProviderInterface;
   private displayTabNames_: string[];
+  private hasAmbientLightSensor_: boolean;
   private invalidDisplayId_: string;
+  private isAmbientLightSensorEnabled_: boolean;
   private isDisplayPerformanceEnabled_: boolean;
   private readonly isRevampWayfindingEnabled_: boolean;
   private isTabletMode_: boolean;
@@ -366,6 +396,22 @@ export class SettingsDisplayElement extends SettingsDisplayElementBase {
         new TabletModeObserverReceiver(this).$.bindNewPipeAndPassRemote());
     this.isTabletMode_ = isTabletMode;
 
+    const {brightnessPercent} =
+        await this.displaySettingsProvider.observeDisplayBrightnessSettings(
+            new DisplayBrightnessSettingsObserverReceiver(this)
+                .$.bindNewPipeAndPassRemote());
+    this.currentInternalScreenBrightness_ = brightnessPercent;
+
+    const {isAmbientLightSensorEnabled} =
+        await this.displaySettingsProvider.observeAmbientLightSensor(
+            new AmbientLightSensorObserverReceiver(this)
+                .$.bindNewPipeAndPassRemote());
+    this.isAmbientLightSensorEnabled_ = isAmbientLightSensorEnabled;
+
+    const {hasAmbientLightSensor} =
+        await this.displaySettingsProvider.hasAmbientLightSensor();
+    this.hasAmbientLightSensor_ = hasAmbientLightSensor;
+
     this.displaySettingsProvider.observeDisplayConfiguration(
         new DisplayConfigurationObserverReceiver(this)
             .$.bindNewPipeAndPassRemote());
@@ -398,6 +444,21 @@ export class SettingsDisplayElement extends SettingsDisplayElementBase {
   onDisplayConfigurationChanged(): void {
     // Sync active display settings to avoid UI inconsistency.
     this.getDisplayInfo_();
+  }
+
+  /**
+   * Implements DisplayBrightnessSettingsObserver.OnDisplayBrightnessChanged.
+   */
+  onDisplayBrightnessChanged(brightnessPercent: number): void {
+    this.currentInternalScreenBrightness_ = brightnessPercent;
+  }
+
+  /**
+   * Implements AmbientLightSensorObserver.OnAmbientLightSensorEnabledChanged.
+   */
+  onAmbientLightSensorEnabledChanged(isAmbientLightSensorEnabled: boolean):
+      void {
+    this.isAmbientLightSensorEnabled_ = isAmbientLightSensorEnabled;
   }
 
   override beforeDeepLinkAttempt(_settingId: Setting): boolean {
@@ -888,6 +949,21 @@ export class SettingsDisplayElement extends SettingsDisplayElementBase {
   }
 
   /**
+   * Returns true if display brightness controls should be shown for |display|.
+   */
+  private showBrightnessControls_(display: DisplayUnitInfo): boolean {
+    return isDisplayBrightnessControlInSettingsEnabled() && display.isInternal;
+  }
+
+  /**
+   * Returns true if the auto-brightness toggle should be shown.
+   */
+  private showAutoBrightnessToggle_(): boolean {
+    return isDisplayBrightnessControlInSettingsEnabled() &&
+        this.hasAmbientLightSensor_;
+  }
+
+  /**
    * Returns true if the ambient color setting should be shown for |display|.
    */
   showAmbientColorSetting(
@@ -1140,6 +1216,47 @@ export class SettingsDisplayElement extends SettingsDisplayElementBase {
         .then(() => this.setPropertiesCallback_());
     this.displaySettingsProvider.recordChangingDisplaySettings(
         DisplaySettingsType.kPrimaryDisplay, createDisplayValue({}));
+  }
+
+  /**
+   * Handles the event when the display brightness slider changes value.
+   */
+  private onDisplayBrightnessSliderChanged_(): void {
+    if (!isDisplayBrightnessControlInSettingsEnabled()) {
+      return;
+    }
+
+    const brightnessSliderValue =
+        strictQuery('#brightnessSlider', this.shadowRoot, CrSliderElement)
+            .value;
+    // Clamp the brightness value between 5 and 100 inclusive.
+    const newBrightness = Math.max(
+        this.brightnessSliderMin_,
+        Math.min(brightnessSliderValue, this.brightnessSliderMax_));
+    this.displaySettingsProvider.setInternalDisplayScreenBrightness(
+        newBrightness);
+  }
+
+  /**
+   * Handles the event when the auto-brightness toggle changes value.
+   */
+  private onAutoBrightnessToggleChange_(): void {
+    if (!isDisplayBrightnessControlInSettingsEnabled()) {
+      return;
+    }
+
+    const isAutoBrightnessToggleChecked: boolean =
+        strictQuery('#autoBrightnessToggle', this.shadowRoot, CrToggleElement)
+            .checked;
+    this.displaySettingsProvider.setInternalDisplayAmbientLightSensorEnabled(
+        isAutoBrightnessToggleChecked);
+  }
+
+  private onAutoBrightnessToggleRowClicked_(): void {
+    const autoBrightnessToggle =
+        strictQuery('#autoBrightnessToggle', this.shadowRoot, CrToggleElement);
+    autoBrightnessToggle.checked = !autoBrightnessToggle.checked;
+    this.onAutoBrightnessToggleChange_();
   }
 
   /**

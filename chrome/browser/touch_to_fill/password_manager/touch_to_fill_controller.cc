@@ -60,8 +60,13 @@ bool TouchToFillController::Show(
     webauthn::WebAuthnCredManDelegate* cred_man_delegate,
     base::WeakPtr<password_manager::ContentPasswordManagerDriver>
         frame_driver) {
+  if (!ttf_delegate->ShouldShowTouchToFill()) {
+    return false;
+  }
+
   DCHECK(!ttf_delegate_);
   ttf_delegate_ = std::move(ttf_delegate);
+
   cred_man_delegate_ = cred_man_delegate;
   visibility_controller_->SetVisible(std::move(frame_driver));
 
@@ -182,7 +187,7 @@ void TouchToFillController::OnDismiss() {
   view_.reset();
   no_passkeys_bridge_.reset();
   if (!ttf_delegate_) {
-    // TODO(crbug/1462532): Remove this check when
+    // TODO(crbug.com/40274966): Remove this check when
     // PasswordSuggestionBottomSheetV2 is launched
     return;
   }
@@ -200,7 +205,7 @@ gfx::NativeView TouchToFillController::GetNativeView() {
 }
 
 void TouchToFillController::Close() {
-  // TODO(crbug/1468487). This is a duplicate of `OnDismiss`. Merge the two
+  // TODO(crbug.com/40277147). This is a duplicate of `OnDismiss`. Merge the two
   // functions.
   OnDismiss();
 }

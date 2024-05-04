@@ -227,15 +227,15 @@ void ExtensionActionAPI::DispatchExtensionActionClicked(
   events::HistogramValue histogram_value = events::UNKNOWN;
   const char* event_name = nullptr;
   switch (extension_action.action_type()) {
-    case ActionInfo::TYPE_ACTION:
+    case ActionInfo::Type::kAction:
       histogram_value = events::ACTION_ON_CLICKED;
       event_name = "action.onClicked";
       break;
-    case ActionInfo::TYPE_BROWSER:
+    case ActionInfo::Type::kBrowser:
       histogram_value = events::BROWSER_ACTION_ON_CLICKED;
       event_name = "browserAction.onClicked";
       break;
-    case ActionInfo::TYPE_PAGE:
+    case ActionInfo::Type::kPage:
       histogram_value = events::PAGE_ACTION_ON_CLICKED;
       event_name = "pageAction.onClicked";
       break;
@@ -244,8 +244,8 @@ void ExtensionActionAPI::DispatchExtensionActionClicked(
   if (event_name) {
     base::Value::List args;
     // The action APIs (browserAction, pageAction, action) are only available
-    // to blessed extension contexts. As such, we deterministically know that
-    // the right context type here is blessed.
+    // to privileged extension contexts. As such, we deterministically know that
+    // the right context type here is privileged.
     constexpr mojom::ContextType context_type =
         mojom::ContextType::kPrivilegedExtension;
     ExtensionTabUtil::ScrubTabBehavior scrub_tab_behavior =
@@ -352,7 +352,7 @@ ExtensionFunction::ResponseAction ExtensionActionFunction::Run() {
   } else {
     // Page actions do not have a default tabId.
     EXTENSION_FUNCTION_VALIDATE(extension_action_->action_type() !=
-                                ActionInfo::TYPE_PAGE);
+                                ActionInfo::Type::kPage);
   }
   return RunExtensionAction();
 }
@@ -623,7 +623,7 @@ ExtensionFunction::ResponseAction ActionGetUserSettingsFunction::Run() {
   // This API is only available to extensions with the "action" key in the
   // manifest, so they should always have an action.
   DCHECK(action);
-  DCHECK_EQ(ActionInfo::TYPE_ACTION, action->action_type());
+  DCHECK_EQ(ActionInfo::Type::kAction, action->action_type());
 
   const bool is_pinned =
       ToolbarActionsModel::Get(Profile::FromBrowserContext(browser_context()))
@@ -648,7 +648,7 @@ ExtensionFunction::ResponseAction ActionOpenPopupFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(extension());
   const base::Value& options = args()[0];
 
-  // TODO(https://crbug.com/1245093): Support specifying the tab ID? This is
+  // TODO(crbug.com/40057101): Support specifying the tab ID? This is
   // kind of racy (because really what the extension probably cares about is
   // the document ID; tab ID persists across pages, whereas document ID would
   // detect things like navigations).
@@ -699,7 +699,7 @@ void ActionOpenPopupFunction::OnShowPopupComplete(ExtensionHost* popup_host) {
   DCHECK(!did_respond());
 
   if (popup_host) {
-    // TODO(https://crbug.com/1245093): Return the tab for which the extension
+    // TODO(crbug.com/40057101): Return the tab for which the extension
     // popup was shown?
     DCHECK(popup_host->document_element_available());
     Respond(NoArguments());

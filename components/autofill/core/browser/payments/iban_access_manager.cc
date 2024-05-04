@@ -21,7 +21,7 @@ IbanAccessManager::IbanAccessManager(AutofillClient* client)
 
 IbanAccessManager::~IbanAccessManager() = default;
 
-void IbanAccessManager::FetchValue(const Suggestion& suggestion,
+void IbanAccessManager::FetchValue(const Suggestion::BackendId& backend_id,
                                    OnIbanFetchedCallback on_iban_fetched) {
   if (auto* form_data_importer = client_->GetFormDataImporter()) {
     // Reset the variable in FormDataImporter that denotes if non-interactive
@@ -35,17 +35,19 @@ void IbanAccessManager::FetchValue(const Suggestion& suggestion,
   // If `Guid` has a value then that means that it's a local IBAN suggestion.
   // In this case, retrieving the complete IBAN value requires accessing the
   // saved IBAN from the PersonalDataManager.
-  Suggestion::BackendId backend_id =
-      suggestion.GetPayload<Suggestion::BackendId>();
-  if (Suggestion::Guid* guid = absl::get_if<Suggestion::Guid>(&backend_id)) {
+  if (const Suggestion::Guid* guid =
+          absl::get_if<Suggestion::Guid>(&backend_id)) {
     const Iban* iban = client_->GetPersonalDataManager()
                            ->payments_data_manager()
                            .GetIbanByGUID(guid->value());
     if (iban) {
       Iban iban_copy = *iban;
-      client_->GetPersonalDataManager()->RecordUseOfIban(iban_copy);
+      client_->GetPersonalDataManager()
+          ->payments_data_manager()
+          .RecordUseOfIban(iban_copy);
       if (client_->GetPersonalDataManager()
-              ->IsPaymentMethodsMandatoryReauthEnabled()) {
+              ->payments_data_manager()
+              .IsPaymentMethodsMandatoryReauthEnabled()) {
         StartDeviceAuthenticationForFilling(
             std::move(on_iban_fetched), iban_copy.value(),
             NonInteractivePaymentMethodType::kLocalIban);
@@ -89,7 +91,8 @@ void IbanAccessManager::FetchValue(const Suggestion& suggestion,
     return;
   }
   Iban iban_copy = *iban;
-  client_->GetPersonalDataManager()->RecordUseOfIban(iban_copy);
+  client_->GetPersonalDataManager()->payments_data_manager().RecordUseOfIban(
+      iban_copy);
   payments::PaymentsNetworkInterface::UnmaskIbanRequestDetails request_details;
   request_details.billable_service_number =
       payments::kUnmaskPaymentMethodBillableServiceNumber;
@@ -97,11 +100,13 @@ void IbanAccessManager::FetchValue(const Suggestion& suggestion,
       payments::GetBillingCustomerId(client_->GetPersonalDataManager());
   request_details.instrument_id = instrument_id;
   base::TimeTicks unmask_request_timestamp = base::TimeTicks::Now();
-  client_->GetPaymentsNetworkInterface()->UnmaskIban(
-      request_details,
-      base::BindOnce(&IbanAccessManager::OnUnmaskResponseReceived,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(on_iban_fetched),
-                     unmask_request_timestamp));
+  client_->GetPaymentsAutofillClient()
+      ->GetPaymentsNetworkInterface()
+      ->UnmaskIban(
+          request_details,
+          base::BindOnce(&IbanAccessManager::OnUnmaskResponseReceived,
+                         weak_ptr_factory_.GetWeakPtr(),
+                         std::move(on_iban_fetched), unmask_request_timestamp));
 }
 
 void IbanAccessManager::OnUnmaskResponseReceived(
@@ -115,7 +120,8 @@ void IbanAccessManager::OnUnmaskResponseReceived(
   autofill_metrics::LogServerIbanUnmaskStatus(is_successful);
   if (is_successful) {
     if (client_->GetPersonalDataManager()
-            ->IsPaymentMethodsMandatoryReauthEnabled()) {
+            ->payments_data_manager()
+            .IsPaymentMethodsMandatoryReauthEnabled()) {
       // On some operating systems (for example, macOS and Windows), the
       // device authentication prompt freezes Chrome. Thus we can only trigger
       // the prompt after the progress dialog has been closed, which we can do
@@ -149,7 +155,7 @@ void IbanAccessManager::OnUnmaskResponseReceived(
   AutofillErrorDialogContext error_context;
   error_context.type =
       AutofillErrorDialogType::kMaskedServerIbanUnmaskingTemporaryError;
-  client_->ShowAutofillErrorDialog(error_context);
+  client_->GetPaymentsAutofillClient()->ShowAutofillErrorDialog(error_context);
 }
 
 void IbanAccessManager::OnServerIbanUnmaskCancelled() {

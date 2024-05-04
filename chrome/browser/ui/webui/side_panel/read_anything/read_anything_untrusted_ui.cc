@@ -47,7 +47,7 @@ bool ReadAnythingUIUntrustedConfig::IsWebUIEnabled(
 }
 
 ReadAnythingUntrustedUI::ReadAnythingUntrustedUI(content::WebUI* web_ui)
-    : ui::UntrustedBubbleWebUIController(web_ui) {
+    : UntrustedTopChromeWebUIController(web_ui) {
   content::WebUIDataSource* source = content::WebUIDataSource::CreateAndAdd(
       web_ui->GetWebContents()->GetBrowserContext(),
       chrome::kChromeUIUntrustedReadAnythingSidePanelURL);
@@ -82,6 +82,10 @@ ReadAnythingUntrustedUI::ReadAnythingUntrustedUI(content::WebUI* web_ui)
       {"playDescription", IDS_READING_MODE_PLAY_DESCRIPTION},
       {"playLabel", IDS_READING_MODE_PLAY_SPEECH},
       {"pauseLabel", IDS_READING_MODE_PAUSE_SPEECH},
+      {"stopLabel", IDS_READING_MODE_STOP_SPEECH},
+      {"playTooltip", IDS_READING_MODE_PLAY_TOOLTIP},
+      {"previewTooltip", IDS_READING_MODE_PREVIEW_TOOLTIP},
+      {"pauseTooltip", IDS_READING_MODE_PAUSE_TOOLTIP},
       {"previousSentenceLabel", IDS_READING_MODE_NAVIGATE_PREVIOUS_SENTENCE},
       {"nextSentenceLabel", IDS_READING_MODE_NAVIGATE_NEXT_SENTENCE},
       {"moreOptionsLabel", IDS_READING_MODE_MORE_OPTIONS},
@@ -94,7 +98,36 @@ ReadAnythingUntrustedUI::ReadAnythingUntrustedUI(content::WebUI* web_ui)
       {"disableLinksLabel", IDS_READING_MODE_DISABLE_LINKS_BUTTON_LABEL},
       {"enableLinksLabel", IDS_READING_MODE_ENABLE_LINKS_BUTTON_LABEL},
       {"readingModeToolbarLabel", IDS_READING_MODE_TOOLBAR_LABEL},
+      {"readingModeReadAloudToolbarLabel",
+       IDS_READING_MODE_READ_ALOUD_TOOLBAR_LABEL},
       {"readingModeVoicePreviewText", IDS_READING_MODE_VOICE_PREVIEW_STRING},
+      {"readingModeVoiceMenuDownloading",
+       IDS_READING_MODE_VOICE_MENU_DOWNLOADING},
+      {"readingModeFontLoadingText", IDS_READING_MODE_FONT_LOADING_STRING},
+      {"readingModeLanguageMenu", IDS_READING_MODE_LANGUAGE_MENU},
+      {"readingModeLanguageMenuTitle", IDS_READING_MODE_LANGUAGE_MENU_TITLE},
+      {"readingModeLanguageMenuClose", IDS_READING_MODE_LANGUAGE_MENU_CLOSE},
+      {"readingModeLanguageMenuSearchLabel",
+       IDS_READING_MODE_LANGUAGE_MENU_SEARCH_LABEL},
+      {"readingModeLanguageMenuSearchClear",
+       IDS_READING_MODE_LANGUAGE_MENU_SEARCH_CLEAR},
+      {"readingModeLanguageMenuDownloading",
+       IDS_READING_MODE_LANGUAGE_MENU_DOWNLOADING},
+      {"readingModeLanguageMenuVoicesUnavailable",
+       IDS_READING_MODE_LANGUAGE_MENU_VOICES_UNAVAILABLE},
+      {"readingModeLanguageMenuNoInternet",
+       IDS_READING_MODE_LANGUAGE_MENU_NO_INTERNET},
+      {"readingModeLanguageMenuNoSpace",
+       IDS_READING_MODE_LANGUAGE_MENU_NO_SPACE},
+      {"readingModeLanguageMenuNoSpaceButVoicesExist",
+       IDS_READING_MODE_LANGUAGE_MENU_NO_SPACE_BUT_VOICES_EXIST},
+      {"previewVoiceAccessibilityLabel",
+       IDS_READING_MODE_VOICE_MENU_PREVIEW_LANGUAGE},
+      {"languageMenuNoResults", IDS_READING_MODE_LANGUAGE_MENU_NO_RESULTS},
+      {"readingModeVoiceDownloadedTitle",
+       IDS_READING_MODE_VOICE_DOWNLOADED_TITLE},
+      {"readingModeVoiceDownloadedMessage",
+       IDS_READING_MODE_VOICE_DOWNLOADED_MESSAGE},
   };
   for (const auto& str : kLocalizedStrings) {
     webui::AddLocalizedString(source, str.name, str.id);

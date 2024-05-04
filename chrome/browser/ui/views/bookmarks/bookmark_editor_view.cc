@@ -111,9 +111,10 @@ bool BookmarkEditorView::IsDialogButtonEnabled(ui::DialogButton button) const {
   return true;
 }
 
-gfx::Size BookmarkEditorView::CalculatePreferredSize() const {
+gfx::Size BookmarkEditorView::CalculatePreferredSize(
+    const views::SizeBounds& available_size) const {
   if (!show_tree_)
-    return views::View::CalculatePreferredSize();
+    return views::View::CalculatePreferredSize(available_size);
 
   return gfx::Size(views::Widget::GetLocalizedContentsSize(
       IDS_EDITBOOKMARK_DIALOG_WIDTH_CHARS,
@@ -144,7 +145,7 @@ bool BookmarkEditorView::HandleKeyEvent(views::Textfield* sender,
 void BookmarkEditorView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   views::DialogDelegateView::GetAccessibleNodeData(node_data);
 
-  // TODO(crbug.com/1361263): Currently DialogDelegateView does not override
+  // TODO(crbug.com/40863584): Currently DialogDelegateView does not override
   // GetAccessibleNodeData, thus the call above accomplishes nothing. We need
   // this View to have a role before setting its name, but if we set it to
   // dialog, we'll wind up with a dialog (this view) inside of a dialog
@@ -236,11 +237,11 @@ void BookmarkEditorView::BookmarkNodeAdded(const BookmarkNode* parent,
   Reset();
 }
 
-void BookmarkEditorView::BookmarkNodeRemoved(
-    const BookmarkNode* parent,
-    size_t index,
-    const BookmarkNode* node,
-    const std::set<GURL>& removed_urls) {
+void BookmarkEditorView::BookmarkNodeRemoved(const BookmarkNode* parent,
+                                             size_t index,
+                                             const BookmarkNode* node,
+                                             const std::set<GURL>& removed_urls,
+                                             const base::Location& location) {
   if ((details_.type == EditDetails::EXISTING_NODE &&
        details_.existing_node->HasAncestor(node)) ||
       (parent_ && parent_->HasAncestor(node))) {
@@ -252,7 +253,8 @@ void BookmarkEditorView::BookmarkNodeRemoved(
 }
 
 void BookmarkEditorView::BookmarkAllUserNodesRemoved(
-    const std::set<GURL>& removed_urls) {
+    const std::set<GURL>& removed_urls,
+    const base::Location& location) {
   Reset();
 }
 
@@ -500,7 +502,7 @@ void BookmarkEditorView::ApplyEdits(EditorNode* parent) {
 
     // Remove the folders that were removed. This has to be done after all the
     // other changes have been committed.
-    bookmarks::DeleteBookmarkFolders(bb_model_, deletes_);
+    bookmarks::DeleteBookmarkFolders(bb_model_, deletes_, FROM_HERE);
   }
 
   // Once all required bookmarks updates have been called, call the configured

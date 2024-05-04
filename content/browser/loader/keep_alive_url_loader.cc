@@ -13,6 +13,7 @@
 #include "base/functional/bind.h"
 #include "base/functional/callback_forward.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/strings/strcat.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/typed_macros.h"
 #include "base/unguessable_token.h"
@@ -60,24 +61,6 @@ base::TimeDelta GetDisconnectedKeepAliveURLLoaderTimeout() {
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
 //
-// Must remain in sync with FetchKeepAliveBrowserMetricType in
-// tools/metrics/histograms/enums.xml.
-enum class FetchKeepAliveBrowserMetricType {
-  kLoadingSuceeded = 0,
-  kLoadingFailed = 1,
-  kForwardingCompleted = 2,
-  kCancelledAfterTimeLimit = 3,
-  kAbortedByInitiator = 4,
-  kMaxValue = kAbortedByInitiator,
-};
-
-void LogFetchKeepAliveMetric(const FetchKeepAliveBrowserMetricType& type) {
-  base::UmaHistogramEnumeration("FetchKeepAlive.Browser.Metrics", type);
-}
-
-// These values are persisted to logs. Entries should not be renumbered and
-// numeric values should never be reused.
-//
 // Must remain in sync with FetchLaterBrowserMetricType in
 // tools/metrics/histograms/enums.xml.
 enum class FetchLaterBrowserMetricType {
@@ -99,20 +82,20 @@ class KeepAliveURLLoaderCSPContext final : public network::CSPContext {
   // network::CSPContext override:
   void ReportContentSecurityPolicyViolation(
       network::mojom::CSPViolationPtr violation_params) final {
-    // TODO(crbug.com/1356128): Support reporting violation w/o renderer.
+    // TODO(crbug.com/40236167): Support reporting violation w/o renderer.
   }
   void SanitizeDataForUseInCspViolation(
       network::mojom::CSPDirectiveName directive,
       GURL* blocked_url,
       network::mojom::SourceLocation* source_location) const final {
-    // TODO(crbug.com/1356128): Support reporting violation w/o renderer.
+    // TODO(crbug.com/40236167): Support reporting violation w/o renderer.
   }
 };
 
 // Checks if `url` is allowed by the set of Content-Security-Policy `policies`.
 // Violation will not be reported back to renderer, as this function must be
 // called after renderer is gone.
-// TODO(crbug.com/1431165): Isolated world's CSP is not handled.
+// TODO(crbug.com/40263403): Isolated world's CSP is not handled.
 bool IsRedirectAllowedByCSP(
     const std::vector<network::mojom::ContentSecurityPolicyPtr>& policies,
     const GURL& url,
@@ -337,10 +320,10 @@ KeepAliveURLLoader::KeepAliveURLLoader(
               request_id_, "url", last_url_);
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN1("loading", "KeepAliveURLLoader",
                                     request_id_, "url", last_url_);
+  LogFetchKeepAliveRequestMetric("Total");
   if (IsFetchLater()) {
     base::UmaHistogramBoolean("FetchLater.Browser.Total", true);
   }
-  base::UmaHistogramBoolean("FetchKeepAlive.Browser.Total", true);
 }
 
 void KeepAliveURLLoader::Start() {
@@ -349,6 +332,7 @@ void KeepAliveURLLoader::Start() {
               request_id_);
   is_started_ = true;
 
+  LogFetchKeepAliveRequestMetric("Started");
   if (IsFetchLater()) {
     base::UmaHistogramBoolean("FetchLater.Browser.Total.Started", true);
     // Logs to DevTools only if the initiator is still alive.
@@ -357,7 +341,6 @@ void KeepAliveURLLoader::Start() {
           rfh->frame_tree_node(), devtools_request_id_, resource_request_);
     }
   }
-  base::UmaHistogramBoolean("FetchKeepAlive.Browser.Total.Started", true);
 
   GetContentClient()->browser()->OnKeepaliveRequestStarted(browser_context_);
 
@@ -466,7 +449,7 @@ void KeepAliveURLLoader::PauseReadingBodyFromNet() {
   }
 }
 
-// TODO(crbug.com/1356128): Add test coverage.
+// TODO(crbug.com/40236167): Add test coverage.
 void KeepAliveURLLoader::ResumeReadingBodyFromNet() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   TRACE_EVENT("loading", "KeepAliveURLLoader::ResumeReadingBodyFromNet",
@@ -492,7 +475,6 @@ void KeepAliveURLLoader::EndReceiveRedirect(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   TRACE_EVENT("loading", "KeepAliveURLLoader::EndReceiveRedirect", "request_id",
               request_id_);
-  base::UmaHistogramBoolean("FetchKeepAlive.Browser.Total.Redirected", true);
 
   // Throttles from content-embedder has already been run for this redirect.
   // See also the call sequence from renderer:
@@ -527,8 +509,8 @@ void KeepAliveURLLoader::EndReceiveRedirect(
     return;
   }
 
-  // TODO(crbug.com/1356128): Figure out how to deal with lost ResourceFetcher's
-  // counter & dev console logging (renderer is dead).
+  // TODO(crbug.com/40236167): Figure out how to deal with lost
+  // ResourceFetcher's counter & dev console logging (renderer is dead).
 
   resource_request_.url = redirect_info.new_url;
   resource_request_.site_for_cookies = redirect_info.new_site_for_cookies;
@@ -536,7 +518,7 @@ void KeepAliveURLLoader::EndReceiveRedirect(
   resource_request_.referrer_policy = redirect_info.new_referrer_policy;
   // Ask the network service to follow the redirect.
   last_url_ = GURL(redirect_info.new_url);
-  // TODO(crbug.com/1393520): Remove Authorization header upon cross-origin
+  // TODO(crbug.com/40880984): Remove Authorization header upon cross-origin
   // redirect.
   if (observer_for_testing_) {
     CHECK_IS_TEST();
@@ -561,8 +543,8 @@ void KeepAliveURLLoader::OnReceiveResponse(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   TRACE_EVENT("loading", "KeepAliveURLLoader::OnReceiveResponse", "request_id",
               request_id_, "url", last_url_);
-  base::UmaHistogramBoolean("FetchKeepAlive.Browser.Total.ReceivedResponse",
-                            true);
+
+  LogFetchKeepAliveRequestMetric("Succeeded");
 
   if (observer_for_testing_) {
     CHECK_IS_TEST();
@@ -635,6 +617,11 @@ void KeepAliveURLLoader::OnComplete(
   TRACE_EVENT("loading", "KeepAliveURLLoader::OnComplete", "request_id",
               request_id_);
 
+  if (completion_status.error_code != net::OK) {
+    // If the request succeeds, it should've been logged in `OnReceiveResponse`.
+    LogFetchKeepAliveRequestMetric("Failed");
+  }
+
   if (observer_for_testing_) {
     CHECK_IS_TEST();
     observer_for_testing_->OnComplete(this, completion_status);
@@ -647,11 +634,6 @@ void KeepAliveURLLoader::OnComplete(
           rfh->frame_tree_node(), devtools_request_id_, completion_status);
     }
   }
-
-  LogFetchKeepAliveMetric(
-      completion_status.error_code == net::OK
-          ? FetchKeepAliveBrowserMetricType::kLoadingSuceeded
-          : FetchKeepAliveBrowserMetricType::kLoadingFailed);
 
   // In case the renderer is alive, the stored status will be forwarded
   // at the end of `ForwardURLLoad()`.
@@ -672,7 +654,7 @@ void KeepAliveURLLoader::OnComplete(
     return;
   }
 
-  // TODO(crbug.com/1356128): Handle in the browser process.
+  // TODO(crbug.com/40236167): Handle in the browser process.
   if (observer_for_testing_) {
     CHECK_IS_TEST();
     observer_for_testing_->OnCompleteProcessed(this, completion_status);
@@ -745,8 +727,6 @@ void KeepAliveURLLoader::ForwardURLLoad() {
           this, *(stored_url_load_->completion_status));
     }
     stored_url_load_ = nullptr;
-    LogFetchKeepAliveMetric(
-        FetchKeepAliveBrowserMetricType::kForwardingCompleted);
 
     DeleteSelf();
     // DO NOT touch any members after this line. `this` is already deleted.
@@ -766,8 +746,8 @@ net::Error KeepAliveURLLoader::WillFollowRedirect(
     const net::RedirectInfo& redirect_info) const {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  // TODO(crbug.com/1356128): Add logic to handle redirecting to extensions from
-  // `ChromeContentRendererClient::IsSafeRedirectTarget()`.
+  // TODO(crbug.com/40236167): Add logic to handle redirecting to extensions
+  // from `ChromeContentRendererClient::IsSafeRedirectTarget()`.
   if (!IsSafeRedirectTarget(last_url_, redirect_info.new_url)) {
     return net::ERR_UNSAFE_REDIRECT;
   }
@@ -788,7 +768,7 @@ net::Error KeepAliveURLLoader::WillFollowRedirect(
 
     // Checks if redirecting to `redirect_info.new_url` is allowed by
     // MixedContent checker.
-    // TODO(crbug.com/1500989): Figure out how to check without a frame.
+    // TODO(crbug.com/40941240): Figure out how to check without a frame.
     if (auto* rfh = GetInitiator();
         rfh && MixedContentChecker::ShouldBlockFetchKeepAlive(
                    rfh, redirect_info.new_url,
@@ -805,6 +785,10 @@ void KeepAliveURLLoader::CancelWithStatus(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   TRACE_EVENT("loading", "KeepAliveURLLoader::CancelWithStatus", "request_id",
               request_id_);
+  if (!stored_url_load_->completion_status.has_value()) {
+    // Only logs if there is no error logged by `OnComplete()` yet.
+    LogFetchKeepAliveRequestMetric("Failed");
+  }
 
   // This method can be triggered when one of the followings happen:
   // 1. Network -> `url_loader_` gets disconnected.
@@ -842,7 +826,7 @@ void KeepAliveURLLoader::ForwardingClient::OnDisconnected() {
     // The renderer disconnects before this loader forwards anything to it.
     // But the in-browser request processing may not complete yet.
 
-    // TODO(crbug.com/1422645): Ensure that attributionsrc response handling is
+    // TODO(crbug.com/40259706): Ensure that attributionsrc response handling is
     // taken over by browser.
     return;
   }
@@ -881,8 +865,6 @@ void KeepAliveURLLoader::OnDisconnectedLoaderTimerFired() {
   if (IsFetchLater()) {
     LogFetchLaterMetric(FetchLaterBrowserMetricType::kCancelledAfterTimeLimit);
   }
-  LogFetchKeepAliveMetric(
-      FetchKeepAliveBrowserMetricType::kCancelledAfterTimeLimit);
   DeleteSelf();
 }
 
@@ -924,13 +906,64 @@ void KeepAliveURLLoader::Cancel() {
 
 void KeepAliveURLLoader::DeleteSelf() {
   CHECK(on_delete_callback_);
-  base::UmaHistogramBoolean("FetchKeepAlive.Browser.Total.Finished", true);
   std::move(on_delete_callback_).Run();
 }
 
 void KeepAliveURLLoader::SetObserverForTesting(
     scoped_refptr<TestObserver> observer) {
   observer_for_testing_ = observer;
+}
+
+void KeepAliveURLLoader::LogFetchKeepAliveRequestMetric(
+    std::string_view request_state_name) {
+  if (IsFetchLater()) {
+    return;
+  }
+
+  auto resource_type =
+      static_cast<blink::mojom::ResourceType>(resource_request_.resource_type);
+  FetchKeepAliveRequestMetricType sample_type;
+  // See also blink::PopulateResourceRequest().
+  switch (resource_type) {
+    case blink::mojom::ResourceType::kXhr:
+      sample_type = FetchKeepAliveRequestMetricType::kFetch;
+      break;
+    // Includes BEACON/PING/ATTRIBUTION_SRC types
+    case blink::mojom::ResourceType::kPing:
+      sample_type = FetchKeepAliveRequestMetricType::kPing;
+      break;
+    case blink::mojom::ResourceType::kCspReport:
+      sample_type = FetchKeepAliveRequestMetricType::kReporting;
+      break;
+    case blink::mojom::ResourceType::kImage:
+      sample_type = FetchKeepAliveRequestMetricType::kBackgroundFetchIcon;
+      break;
+    case blink::mojom::ResourceType::kMainFrame:
+    case blink::mojom::ResourceType::kSubFrame:
+    case blink::mojom::ResourceType::kStylesheet:
+    case blink::mojom::ResourceType::kScript:
+    case blink::mojom::ResourceType::kFontResource:
+    case blink::mojom::ResourceType::kSubResource:
+    case blink::mojom::ResourceType::kObject:
+    case blink::mojom::ResourceType::kMedia:
+    case blink::mojom::ResourceType::kWorker:
+    case blink::mojom::ResourceType::kSharedWorker:
+    case blink::mojom::ResourceType::kPrefetch:
+    case blink::mojom::ResourceType::kFavicon:
+    case blink::mojom::ResourceType::kServiceWorker:
+    case blink::mojom::ResourceType::kPluginResource:
+    case blink::mojom::ResourceType::kNavigationPreloadMainFrame:
+    case blink::mojom::ResourceType::kNavigationPreloadSubFrame:
+    case blink::mojom::ResourceType::kJson:
+      NOTREACHED_NORETURN();
+  }
+
+  CHECK(request_state_name == "Total" || request_state_name == "Started" ||
+        request_state_name == "Succeeded" || request_state_name == "Failed");
+
+  base::UmaHistogramEnumeration(base::StrCat({"FetchKeepAlive.Requests2.",
+                                              request_state_name, ".Browser"}),
+                                sample_type);
 }
 
 }  // namespace content

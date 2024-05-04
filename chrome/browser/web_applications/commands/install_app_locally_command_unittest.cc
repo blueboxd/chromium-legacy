@@ -44,8 +44,7 @@ class InstallAppLocallyCommandTest : public WebAppTest {
     WebAppTest::SetUp();
     {
       base::ScopedAllowBlockingForTesting allow_blocking;
-      test_override_ =
-          OsIntegrationTestOverrideImpl::OverrideForTesting(base::GetHomeDir());
+      test_override_ = OsIntegrationTestOverrideImpl::OverrideForTesting();
     }
     provider_ = FakeWebAppProvider::Get(profile());
 
@@ -57,7 +56,7 @@ class InstallAppLocallyCommandTest : public WebAppTest {
         profile(), file_handler_manager.get(), protocol_handler_manager.get());
     auto os_integration_manager = std::make_unique<OsIntegrationManager>(
         profile(), std::move(shortcut_manager), std::move(file_handler_manager),
-        std::move(protocol_handler_manager), /*url_handler_manager=*/nullptr);
+        std::move(protocol_handler_manager));
 
     provider_->SetOsIntegrationManager(std::move(os_integration_manager));
     test::AwaitStartWebAppProviderAndSubsystems(profile());
@@ -77,8 +76,7 @@ class InstallAppLocallyCommandTest : public WebAppTest {
   webapps::AppId InstallNonLocallyInstalledAppWithIcons(
       std::map<SquareSizePx, SkBitmap> icon_map) {
     std::unique_ptr<WebAppInstallInfo> info =
-        std::make_unique<WebAppInstallInfo>();
-    info->start_url = kWebAppUrl;
+        WebAppInstallInfo::CreateWithStartUrlForTesting(kWebAppUrl);
     info->title = u"Test App";
     info->user_display_mode = mojom::UserDisplayMode::kStandalone;
     info->icon_bitmaps.any = std::move(icon_map);
@@ -198,10 +196,10 @@ TEST_F(InstallAppLocallyCommandTest, BasicBehavior) {
   ASSERT_TRUE(updated_state.has_value());
   const proto::WebAppOsIntegrationState& updated_os_states =
       updated_state.value();
+  ASSERT_TRUE(updated_os_states.has_shortcut());
 
   // OS integration should be triggered now.
   if (HasShortcutsOsIntegration()) {
-    ASSERT_EQ(AreSubManagersExecuteEnabled(), updated_os_states.has_shortcut());
     ASSERT_TRUE(OsIntegrationTestOverrideImpl::Get()->IsShortcutCreated(
         profile(), app_id,
         provider().registrar_unsafe().GetAppShortName(app_id)));

@@ -41,12 +41,12 @@ class TestHelperFunction : public ScriptFunction::Callable {
   String* value_;
 };
 
-class ScriptPromiseResolverTest : public testing::Test {
+class ScriptPromiseResolverBaseTest : public testing::Test {
  public:
-  ScriptPromiseResolverTest()
+  ScriptPromiseResolverBaseTest()
       : page_holder_(std::make_unique<DummyPageHolder>()) {}
 
-  ~ScriptPromiseResolverTest() override {
+  ~ScriptPromiseResolverBaseTest() override {
     // Execute all pending microtasks
     PerformMicrotaskCheckpoint();
   }
@@ -68,18 +68,18 @@ class ScriptPromiseResolverTest : public testing::Test {
   }
 };
 
-TEST_F(ScriptPromiseResolverTest, construct) {
+TEST_F(ScriptPromiseResolverBaseTest, construct) {
   ASSERT_FALSE(GetExecutionContext()->IsContextDestroyed());
   ScriptState::Scope scope(GetScriptState());
-  MakeGarbageCollected<ScriptPromiseResolver>(GetScriptState());
+  MakeGarbageCollected<ScriptPromiseResolver<IDLUndefined>>(GetScriptState());
 }
 
-TEST_F(ScriptPromiseResolverTest, resolve) {
-  ScriptPromiseResolverTyped<IDLString>* resolver = nullptr;
-  ScriptPromiseTyped<IDLString> promise;
+TEST_F(ScriptPromiseResolverBaseTest, resolve) {
+  ScriptPromiseResolver<IDLString>* resolver = nullptr;
+  ScriptPromise<IDLString> promise;
   {
     ScriptState::Scope scope(GetScriptState());
-    resolver = MakeGarbageCollected<ScriptPromiseResolverTyped<IDLString>>(
+    resolver = MakeGarbageCollected<ScriptPromiseResolver<IDLString>>(
         GetScriptState());
     promise = resolver->Promise();
   }
@@ -108,7 +108,7 @@ TEST_F(ScriptPromiseResolverTest, resolve) {
 
   {
     ScriptState::Scope scope(GetScriptState());
-    EXPECT_TRUE(resolver->Promise().IsEmpty());
+    EXPECT_FALSE(resolver->Promise().IsEmpty());
   }
 
   EXPECT_EQ(String(), on_fulfilled);
@@ -127,12 +127,12 @@ TEST_F(ScriptPromiseResolverTest, resolve) {
   EXPECT_EQ(String(), on_rejected);
 }
 
-TEST_F(ScriptPromiseResolverTest, reject) {
-  ScriptPromiseResolverTyped<IDLString>* resolver = nullptr;
-  ScriptPromiseTyped<IDLString> promise;
+TEST_F(ScriptPromiseResolverBaseTest, reject) {
+  ScriptPromiseResolver<IDLString>* resolver = nullptr;
+  ScriptPromise<IDLString> promise;
   {
     ScriptState::Scope scope(GetScriptState());
-    resolver = MakeGarbageCollected<ScriptPromiseResolverTyped<IDLString>>(
+    resolver = MakeGarbageCollected<ScriptPromiseResolver<IDLString>>(
         GetScriptState());
     promise = resolver->Promise();
   }
@@ -161,7 +161,7 @@ TEST_F(ScriptPromiseResolverTest, reject) {
 
   {
     ScriptState::Scope scope(GetScriptState());
-    EXPECT_TRUE(resolver->Promise().IsEmpty());
+    EXPECT_FALSE(resolver->Promise().IsEmpty());
   }
 
   EXPECT_EQ(String(), on_fulfilled);
@@ -180,12 +180,12 @@ TEST_F(ScriptPromiseResolverTest, reject) {
   EXPECT_EQ("hello", on_rejected);
 }
 
-TEST_F(ScriptPromiseResolverTest, stop) {
-  ScriptPromiseResolverTyped<IDLString>* resolver = nullptr;
-  ScriptPromiseTyped<IDLString> promise;
+TEST_F(ScriptPromiseResolverBaseTest, stop) {
+  ScriptPromiseResolver<IDLString>* resolver = nullptr;
+  ScriptPromise<IDLString> promise;
   {
     ScriptState::Scope scope(GetScriptState());
-    resolver = MakeGarbageCollected<ScriptPromiseResolverTyped<IDLString>>(
+    resolver = MakeGarbageCollected<ScriptPromiseResolver<IDLString>>(
         GetScriptState());
     promise = resolver->Promise();
   }
@@ -203,10 +203,6 @@ TEST_F(ScriptPromiseResolverTest, stop) {
   }
 
   GetExecutionContext()->NotifyContextDestroyed();
-  {
-    ScriptState::Scope scope(GetScriptState());
-    EXPECT_TRUE(resolver->Promise().IsEmpty());
-  }
 
   resolver->Resolve("hello");
   PerformMicrotaskCheckpoint();
@@ -215,12 +211,13 @@ TEST_F(ScriptPromiseResolverTest, stop) {
   EXPECT_EQ(String(), on_rejected);
 }
 
-TEST_F(ScriptPromiseResolverTest, resolveVoid) {
-  ScriptPromiseResolver* resolver = nullptr;
-  ScriptPromise promise;
+TEST_F(ScriptPromiseResolverBaseTest, resolveUndefined) {
+  ScriptPromiseResolver<IDLUndefined>* resolver = nullptr;
+  ScriptPromise<IDLUndefined> promise;
   {
     ScriptState::Scope scope(GetScriptState());
-    resolver = MakeGarbageCollected<ScriptPromiseResolver>(GetScriptState());
+    resolver = MakeGarbageCollected<ScriptPromiseResolver<IDLUndefined>>(
+        GetScriptState());
     promise = resolver->Promise();
   }
 
@@ -243,12 +240,13 @@ TEST_F(ScriptPromiseResolverTest, resolveVoid) {
   EXPECT_EQ(String(), on_rejected);
 }
 
-TEST_F(ScriptPromiseResolverTest, rejectVoid) {
-  ScriptPromiseResolver* resolver = nullptr;
-  ScriptPromise promise;
+TEST_F(ScriptPromiseResolverBaseTest, rejectUndefined) {
+  ScriptPromiseResolver<IDLUndefined>* resolver = nullptr;
+  ScriptPromise<IDLUndefined> promise;
   {
     ScriptState::Scope scope(GetScriptState());
-    resolver = MakeGarbageCollected<ScriptPromiseResolver>(GetScriptState());
+    resolver = MakeGarbageCollected<ScriptPromiseResolver<IDLUndefined>>(
+        GetScriptState());
     promise = resolver->Promise();
   }
 

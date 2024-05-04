@@ -58,8 +58,7 @@ enum class OverviewTransition {
 enum class OverviewEnterExitType {
   // The default way, window(s) animate from their initial bounds to the grid
   // bounds. Window(s) that are not visible to the user do not get animated.
-  // This should always be the type when in clamshell mode, with the exception
-  // of the `kPine` case.
+  // This should always be the type when in clamshell mode.
   kNormal,
   // Used only when it's desired to enter overview mode immediately without
   // animations. It's used when entering overview by dragging a window from
@@ -93,10 +92,9 @@ enum class OverviewEnterExitType {
   // on the trackpad, each window will be put in an "in-between" state, between
   // their current and final state, according to the scroll offset.
   kContinuousAnimationEnterOnScrollUpdate,
-  // Used when the user starts a session, and has chosen the "ask me every time"
-  // option for full restore. This will bring up an overview session that has
-  // the pine contents view. The transitions will be the same as `kNormal`
-  // otherwise.
+  // Like `kNormal` but this is triggered from the pine service when the login
+  // work is still being completed. Birch uses this to determine what timeout to
+  // use.
   kPine,
 };
 

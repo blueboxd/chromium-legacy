@@ -7,16 +7,17 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "ash/ash_export.h"
 #include "ash/picker/metrics/picker_feature_usage_metrics.h"
+#include "ash/picker/metrics/picker_session_metrics.h"
 #include "ash/picker/views/picker_view_delegate.h"
 #include "base/functional/callback_forward.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
 #include "base/time/time.h"
-#include "ui/base/ime/ash/ime_keyboard.h"
 #include "ui/views/widget/unique_widget_ptr.h"
 #include "ui/views/widget/widget_observer.h"
 
@@ -28,14 +29,16 @@ namespace ash {
 
 class PickerAssetFetcher;
 class PickerClient;
+class PickerClipboardProvider;
 class PickerInsertMediaRequest;
+class PickerModel;
+class PickerPasteRequest;
 class PickerSearchController;
 class PickerSearchResult;
 
 // Controls a Picker widget.
 class ASH_EXPORT PickerController
     : public PickerViewDelegate,
-      public ash::input_method::ImeKeyboard::Observer,
       public views::WidgetObserver {
  public:
   PickerController();
@@ -51,8 +54,11 @@ class ASH_EXPORT PickerController
 
   // Sets the `client` used by this class and the widget to communicate with the
   // browser. `client` may be set to null, which will close the Widget if it's
-  // open. If `client` is not null, then it must remain valid for the lifetime
-  // of this class, or until `SetClient` is called with a different client.
+  // open, and may call "stop search" methods on the PREVIOUS client.
+  // If `client` is not null, then it must remain valid for the lifetime of this
+  // class, or until AFTER `SetClient` is called with a different client.
+  // Caution: If `client` outlives this class, the client should avoid calling
+  // this method on a destructed class instance to avoid a use after free.
   void SetClient(PickerClient* client);
 
   // Toggles the visibility of the Picker widget.
@@ -68,19 +74,22 @@ class ASH_EXPORT PickerController
   views::Widget* widget_for_testing() { return widget_.get(); }
 
   // PickerViewDelegate:
-  std::unique_ptr<AshWebView> CreateWebView(
-      const AshWebView::InitParams& params) override;
+  std::vector<PickerCategory> GetAvailableCategories() override;
+  bool ShouldShowSuggestedResults() override;
   void GetResultsForCategory(PickerCategory category,
                              SearchResultsCallback callback) override;
+  void TransformSelectedText(PickerCategory category) override;
   void StartSearch(const std::u16string& query,
                    std::optional<PickerCategory> category,
                    SearchResultsCallback callback) override;
   void InsertResultOnNextFocus(const PickerSearchResult& result) override;
+  void ShowEmojiPicker(ui::EmojiPickerCategory category) override;
+  void ShowEditor(std::optional<std::string> preset_query_id,
+                  std::optional<std::string> freeform_text) override;
+  void SetCapsLockEnabled(bool enabled) override;
+  void GetSuggestedEditorResults(
+      SuggestedEditorResultsCallback callback) override;
   PickerAssetFetcher* GetAssetFetcher() override;
-
-  // ash::input_method::ImeKeyboard::Observer:
-  void OnCapsLockChanged(bool enabled) override;
-  void OnLayoutChanging(const std::string& layout_name) override {}
 
   // views:WidgetObserver:
   void OnWidgetDestroying(views::Widget* widget) override;
@@ -93,18 +102,24 @@ class ASH_EXPORT PickerController
   scoped_refptr<network::SharedURLLoaderFactory> GetSharedURLLoaderFactory();
 
   raw_ptr<PickerClient> client_ = nullptr;
+  std::unique_ptr<PickerModel> model_;
   views::UniqueWidgetPtr widget_;
   std::unique_ptr<PickerAssetFetcher> asset_fetcher_;
   std::unique_ptr<PickerInsertMediaRequest> insert_media_request_;
+  std::unique_ptr<PickerPasteRequest> paste_request_;
   std::unique_ptr<PickerSearchController> search_controller_;
+  std::unique_ptr<PickerClipboardProvider> clipboard_provider_;
+
+  base::OnceCallback<void(std::optional<std::string> preset_query_id,
+                          std::optional<std::string> freeform_text)>
+      show_editor_callback_;
 
   // Periodically records usage metrics based on the Standard Feature Usage
   // Logging (SFUL) framework.
   PickerFeatureUsageMetrics feature_usage_metrics_;
 
-  base::ScopedObservation<ash::input_method::ImeKeyboard,
-                          ash::input_method::ImeKeyboard::Observer>
-      keyboard_observation_{this};
+  // Records metrics related to a session.
+  std::unique_ptr<PickerSessionMetrics> session_metrics_;
 
   base::ScopedObservation<views::Widget, views::WidgetObserver>
       widget_observation_{this};

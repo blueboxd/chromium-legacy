@@ -14,13 +14,31 @@
 
 namespace ash {
 
+namespace {
+
+PickerInsertMediaRequest::Result ConvertInsertMediaResult(
+    InsertMediaResult result) {
+  switch (result) {
+    case InsertMediaResult::kSuccess:
+      return PickerInsertMediaRequest::Result::kSuccess;
+    case InsertMediaResult::kUnsupported:
+      return PickerInsertMediaRequest::Result::kUnsupported;
+    case InsertMediaResult::kNotFound:
+      return PickerInsertMediaRequest::Result::kNotFound;
+  }
+}
+
+}  // namespace
+
 PickerInsertMediaRequest::PickerInsertMediaRequest(
     ui::InputMethod* input_method,
     const PickerRichMedia& media_to_insert,
     const base::TimeDelta insert_timeout,
-    InsertFailedCallback insert_failed_callback)
+    OnCompleteCallback on_complete_callback)
     : media_to_insert_(media_to_insert),
-      insert_failed_callback_(std::move(insert_failed_callback)) {
+      on_complete_callback_(on_complete_callback.is_null()
+                                ? base::DoNothing()
+                                : std::move(on_complete_callback)) {
   observation_.Observe(input_method);
   insert_timeout_timer_.Start(FROM_HERE, insert_timeout, this,
                               &PickerInsertMediaRequest::CancelPendingInsert);
@@ -44,12 +62,17 @@ void PickerInsertMediaRequest::OnTextInputStateChanged(
     return;
   }
 
-  if (!InsertMediaToInputField(*media_to_insert_, mutable_client)) {
+  if (!InputFieldSupportsInsertingMedia(*media_to_insert_, *mutable_client)) {
     return;
   }
 
-  media_to_insert_ = std::nullopt;
+  insert_timeout_timer_.Reset();
   observation_.Reset();
+
+  InsertMediaToInputField(*std::exchange(media_to_insert_, std::nullopt),
+                          *mutable_client,
+                          base::BindOnce(&ConvertInsertMediaResult)
+                              .Then(std::move(on_complete_callback_)));
 }
 
 void PickerInsertMediaRequest::OnInputMethodDestroyed(
@@ -64,9 +87,7 @@ void PickerInsertMediaRequest::CancelPendingInsert() {
 
   if (media_to_insert_.has_value()) {
     media_to_insert_ = std::nullopt;
-    if (!insert_failed_callback_.is_null()) {
-      std::move(insert_failed_callback_).Run();
-    }
+    std::move(on_complete_callback_).Run(Result::kTimeout);
   }
 }
 

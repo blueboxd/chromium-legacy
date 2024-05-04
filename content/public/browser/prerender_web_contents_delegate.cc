@@ -12,7 +12,8 @@ namespace content {
 
 WebContents* PrerenderWebContentsDelegate::OpenURLFromTab(
     WebContents* source,
-    const OpenURLParams& params) {
+    const OpenURLParams& params,
+    base::OnceCallback<void(NavigationHandle&)> navigation_handle_callback) {
   NOTREACHED_NORETURN();
 }
 
@@ -77,8 +78,7 @@ void PrerenderWebContentsDelegate::WebContentsCreated(
 }
 
 bool PrerenderWebContentsDelegate::CanEnterFullscreenModeForTab(
-    RenderFrameHost* requesting_frame,
-    const blink::mojom::FullscreenOptions& options) {
+    RenderFrameHost* requesting_frame) {
   // This should not be called for a prerendered page.
   NOTREACHED_NORETURN();
 }

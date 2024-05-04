@@ -31,7 +31,6 @@
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 #include "chrome/browser/ui/web_applications/test/web_app_navigation_browsertest.h"
 #include "chrome/browser/web_applications/mojom/user_display_mode.mojom.h"
-#include "chrome/browser/web_applications/os_integration/os_integration_manager.h"
 #include "chrome/browser/web_applications/test/web_app_test_observers.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
@@ -231,7 +230,6 @@ class WebAppLinkCapturingBrowserTest
 
   PrerenderTestHelper prerender_helper_;
   base::test::ScopedFeatureList feature_list_;
-  OsIntegrationManager::ScopedSuppressForTesting os_hooks_supress_;
 };
 
 // Link capturing with navigate_existing_client: always should navigate existing
@@ -292,8 +290,8 @@ IN_PROC_BROWSER_TEST_P(WebAppLinkCapturingBrowserTest,
 
 // JavaScript initiated link captures from about:blank cleans up the about:blank
 // page.
-// TODO(https://crbug.com/1497363): Flaky on Linux and Mac.
-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC)
+// TODO(crbug.com/40938945): Flaky on Linux and Mac.
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
 #define MAYBE_JavascriptAboutBlankNavigationCleanUp \
   DISABLED_JavascriptAboutBlankNavigationCleanUp
 #else
@@ -325,10 +323,10 @@ IN_PROC_BROWSER_TEST_P(WebAppLinkCapturingBrowserTest,
 
   // Must wait for link capturing launch to complete so that its keep alives go
   // out of scope.
-  base::test::TestFuture<void> future;
+  base::test::TestFuture<bool /*closed_web_contents*/> future;
   apps::LinkCapturingNavigationThrottle::
       GetLinkCaptureLaunchCallbackForTesting() = future.GetCallback();
-  ASSERT_TRUE(future.Wait());
+  EXPECT_TRUE(future.Get<bool /*closed_web_contents*/>());
 }
 
 IN_PROC_BROWSER_TEST_P(WebAppLinkCapturingBrowserTest,
@@ -507,8 +505,14 @@ IN_PROC_BROWSER_TEST_P(WebAppLinkCapturingBrowserTest,
 #endif  // !BUILDFLAG(IS_CHROMEOS)
 
 // Tests that link capturing works while inside a web app window.
+// TODO(crbug.com/330148482): Flaky on Linux Debug bots.
+#if BUILDFLAG(IS_LINUX) && !defined(NDEBUG)
+#define MAYBE_LinkCaptureInWebAppWindow DISABLED_LinkCaptureInWebAppWindow
+#else
+#define MAYBE_LinkCaptureInWebAppWindow LinkCaptureInWebAppWindow
+#endif
 IN_PROC_BROWSER_TEST_P(WebAppLinkCapturingBrowserTest,
-                       LinkCaptureInWebAppWindow) {
+                       MAYBE_LinkCaptureInWebAppWindow) {
   // Note: The order matters so the nested app navigation for installation
   // doesn't get captured by the parent app.
   webapps::AppId nested_app_id = InstallNestedApp();

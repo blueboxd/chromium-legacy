@@ -28,13 +28,6 @@
 #import "ios/chrome/browser/ui/content_suggestions/safety_check/safety_check_state.h"
 #import "ios/chrome/browser/ui/content_suggestions/safety_check/utils.h"
 
-namespace {
-
-// The Safety Check (Magic Stack) module runs (at minimum) once every 24 hours.
-constexpr base::TimeDelta kSafetyCheckRunThreshold = base::Hours(24);
-
-}  // namespace
-
 @interface SafetyCheckMagicStackMediator () <AppStateObserver,
                                              PrefObserverDelegate,
                                              SafetyCheckAudience,
@@ -78,7 +71,7 @@ constexpr base::TimeDelta kSafetyCheckRunThreshold = base::Hours(24);
 
       _prefChangeRegistrar.Init(localState);
 
-      // TODO(crbug.com/1481230): Stop observing
+      // TODO(crbug.com/40930653): Stop observing
       // `kIosSettingsSafetyCheckLastRunTime` changes once the Settings Safety
       // Check is refactored to use the new Safety Check Manager.
       _prefObserverBridge->ObserveChangesForPreference(
@@ -121,7 +114,6 @@ constexpr base::TimeDelta kSafetyCheckRunThreshold = base::Hours(24);
 
 - (void)disableModule {
   safety_check_prefs::DisableSafetyCheckInMagicStack(_localState);
-  [self.delegate removeSafetyCheckModule];
 }
 
 #pragma mark - SafetyCheckConsumerSource
@@ -135,11 +127,6 @@ constexpr base::TimeDelta kSafetyCheckRunThreshold = base::Hours(24);
 // Called when a Safety Check item is selected by the user.
 - (void)didSelectSafetyCheckItem:(SafetyCheckItemType)type {
   [self.presentationAudience didSelectSafetyCheckItem:type];
-}
-
-// Indicates that the user has tapped the given `view`.
-- (void)didTapSetUpListItemView:(SetUpListItemView*)view {
-  [self.presentationAudience didTapSetUpListItemView:view];
 }
 
 #pragma mark - SafetyCheckManagerObserver
@@ -330,9 +317,11 @@ constexpr base::TimeDelta kSafetyCheckRunThreshold = base::Hours(24);
   base::TimeDelta lastRunAge = base::Time::Now() - lastRunTime;
 
   // Only return the Last Run Time if the run happened within the last 24hr.
-  return lastRunAge <= kSafetyCheckRunThreshold
-             ? std::optional<base::Time>(lastRunTime)
-             : std::nullopt;
+  if (lastRunAge <= TimeDelayForSafetyCheckAutorun()) {
+    return lastRunTime;
+  }
+
+  return std::nullopt;
 }
 
 @end

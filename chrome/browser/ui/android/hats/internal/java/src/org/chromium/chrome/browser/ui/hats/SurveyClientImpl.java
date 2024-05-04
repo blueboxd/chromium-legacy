@@ -28,7 +28,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /** Impl for SurveyClient interface. */
-// TODO(crbug/1400731): Add metrics and refine the logging in this class.
+// TODO(crbug.com/40250401): Add metrics and refine the logging in this class.
 class SurveyClientImpl implements SurveyClient {
     private static final String TAG = "SurveyClient";
 
@@ -171,7 +171,7 @@ class SurveyClientImpl implements SurveyClient {
         mOnCrashUploadPermissionChangeCallback =
                 permitted -> {
                     if (!permitted) {
-                        // TODO(crbug/1482447): Dismiss the on going survey if possible.
+                        // TODO(crbug.com/40281825): Dismiss the on going survey if possible.
                         mUiDelegate.dismiss();
                     }
                 };
@@ -200,7 +200,7 @@ class SurveyClientImpl implements SurveyClient {
         mController.showSurveyIfAvailable(
                 mActivityRef.get(),
                 mConfig.mTriggerId,
-                R.drawable.fre_product_logo,
+                R.drawable.chrome_sync_logo,
                 mLifecycleDispatcher,
                 mAggregatedSurveyPsd);
         if (mLifecycleDispatcher != null && mLifecycleObserver != null) {

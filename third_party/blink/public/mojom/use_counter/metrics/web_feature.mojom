@@ -3600,16 +3600,16 @@ enum WebFeature {
   kViewTimelineConstructor = 4271,
   kH1UserAgentFontSizeInSectionApplied = 4272,
   kOBSOLETE_kV8PendingBeacon_Constructor = 4273,
-  kV8PendingBeacon_Url_AttributeGetter = 4274,
+  kOBSOLETE_kV8PendingBeacon_Url_AttributeGetter = 4274,
   kOBSOLETE_kV8PendingBeacon_Url_AttributeSetter = 4275,
-  kV8PendingBeacon_Method_AttributeGetter = 4276,
+  kOBSOLETE_kV8PendingBeacon_Method_AttributeGetter = 4276,
   kOBSOLETE_kV8PendingBeacon_Method_AttributeSetter = 4277,
   kOBSOLETE_kV8PendingBeacon_PageHideTimeout_AttributeGetter = 4278,
   kOBSOLETE_kV8PendingBeacon_PageHideTimeout_AttributeSetter = 4279,
   kOBSOLETE_kV8PendingBeacon_State_AttributeGetter = 4280,
-  kV8PendingBeacon_Deactivate_Method = 4281,
+  kOBSOLETE_kV8PendingBeacon_Deactivate_Method = 4281,
   kOBSOLETE_kV8PendingBeacon_SetData_Method = 4282,
-  kV8PendingBeacon_SendNow_Method = 4283,
+  kOBSOLETE_kV8PendingBeacon_SendNow_Method = 4283,
   // The items above roughly this point are available in the M104 branch.
 
   kTabSharingBarSwitchToCapturer = 4284,
@@ -3647,15 +3647,15 @@ enum WebFeature {
   kCrossOriginScrollIntoView = 4316,
   kLinkRelCanonical = 4317,
   kCredentialManagerIsConditionalMediationAvailable = 4318,
-  kV8PendingBeacon_Pending_AttributeGetter = 4319,
-  kV8PendingBeacon_BackgroundTimeout_AttributeGetter = 4320,
-  kV8PendingBeacon_BackgroundTimeout_AttributeSetter = 4321,
-  kV8PendingBeacon_Timeout_AttributeGetter = 4322,
-  kV8PendingBeacon_Timeout_AttributeSetter = 4323,
-  kV8PendingGetBeacon_Constructor = 4324,
-  kV8PendingGetBeacon_SetURL_Method = 4325,
-  kV8PendingPostBeacon_Constructor = 4326,
-  kV8PendingPostBeacon_SetData_Method = 4327,
+  kOBSOLETE_kV8PendingBeacon_Pending_AttributeGetter = 4319,
+  kOBSOLETE_kV8PendingBeacon_BackgroundTimeout_AttributeGetter = 4320,
+  kOBSOLETE_kV8PendingBeacon_BackgroundTimeout_AttributeSetter = 4321,
+  kOBSOLETE_kV8PendingBeacon_Timeout_AttributeGetter = 4322,
+  kOBSOLETE_kV8PendingBeacon_Timeout_AttributeSetter = 4323,
+  kOBSOLETE_kV8PendingGetBeacon_Constructor = 4324,
+  kOBSOLETE_kV8PendingGetBeacon_SetURL_Method = 4325,
+  kOBSOLETE_kV8PendingPostBeacon_Constructor = 4326,
+  kOBSOLETE_kV8PendingPostBeacon_SetData_Method = 4327,
   kContentVisibilityAutoStateChangeHandlerRegistered = 4328,
   kReplacedElementPaintedWithLargeOverflow = 4329,
   // The items above roughly this point are available in the M105 branch.
@@ -3748,7 +3748,7 @@ enum WebFeature {
   kCSSAtRuleSwash = 4407 ,
   kCSSAtRuleOrnaments = 4408,
   kCSSAtRuleAnnotation = 4409,
-  kServiceWorkerBypassFetchHandlerForMainResource = 4410,
+  kOBSOLETE_ServiceWorkerBypassFetchHandlerForMainResource = 4410,
   kV8Document_HasPrivateToken_Method = 4411,
   kServiceWorkerSkippedForEmptyFetchHandler = 4412,
   kImageSet = 4413,
@@ -3787,10 +3787,10 @@ enum WebFeature {
   kDisableThirdPartyStoragePartitioning = 4444,
   kServiceWorkerFetchHandlerAddedAfterInitialization = 4445,
   kObsoleteCreateImageBitmapImageOrientationNone = 4446,
-  kWindowManagementPermissionDescriptorUsed = 4447,
-  kWindowPlacementPermissionDescriptorUsed = 4448,
-  kWindowManagementPermissionPolicyParsed = 4449,
-  kWindowPlacementPermissionPolicyParsed = 4450,
+  kOBSOLETE_kWindowManagementPermissionDescriptorUsed = 4447,
+  kOBSOLETE_kWindowPlacementPermissionDescriptorUsed = 4448,
+  kOBSOLETE_kWindowManagementPermissionPolicyParsed = 4449,
+  kOBSOLETE_kWindowPlacementPermissionPolicyParsed = 4450,
   kContentDispositionInSvgUse = 4451,
   kSameDocumentCrossOriginInitiator = 4452,
   kServiceWorkerFetchHandlerModifiedAfterInitialization = 4453,
@@ -3799,7 +3799,7 @@ enum WebFeature {
   kOptionLabelInQuirksMode = 4454,
   kParseFromStringIncludeShadows = 4455,
   kWebAppManifestScopeExtensions = 4456,
-  kServiceWorkerBypassFetchHandlerForMainResourceByOriginTrial = 4457,
+  kOBSOLETE_ServiceWorkerBypassFetchHandlerForMainResourceByOriginTrial = 4457,
   kOBSOLETE_V8RegExpUnicodeSetIncompatibilitiesWithUnicodeMode = 4458,
   kFedCmAutoReauthn = 4459,
   kTopicsAPIFetch = 4460,
@@ -3814,14 +3814,13 @@ enum WebFeature {
   kServiceWorkerEventHandlerModifiedAfterInitialization = 4469,
   kAuthorizationCrossOrigin = 4470,
   kCSSColorMixFunction = 4471,
-  kCSSColorColorSpecifiedSpace = 4472,
-  kCSSColorLabOklab = 4473,
-  kCSSColorLchOklch = 4474,
+  kOBSOLETE_CSSColorColorSpecifiedSpace = 4472,
+  kOBSOLETE_CSSColorLabOklab = 4473,
+  kOBSOLETE_CSSColorLchOklch = 4474,
   kOBSOLETE_CreateNSResolverWithNonElements2 = 4475,
   kGetDisplayMediaWithPreferCurrentTabTrue = 4476,
   kFencedFrameConfigAttribute = 4477,
   kURLSearchParams_Has_Delete_MultipleArguments = 4478,
-  kPaymentHandlerMinimalHeaderUX = 4479,
   // The items above roughly this point are available in the M112 branch.
 
   kPopoverTypeHint = 4480,
@@ -3829,7 +3828,7 @@ enum WebFeature {
   kRTCPeerConnectionLegacyGetStatsTrial = 4482,
   kExecutedEmptyJavaScriptURLFromFrame = 4483,
   kExecutedJavaScriptURLFromFrame = 4484,
-  kServiceWorkerBypassFetchHandlerForSubResource = 4485,
+  kOBSOLETE_ServiceWorkerBypassFetchHandlerForSubResource = 4485,
   kCSSAtRuleStartingStyle = 4486,
   kPrivateAggregationApiFledgeExtensions = 4487,
   kDeprecatedInterestGroupDailyUpdateUrl = 4488,
@@ -3874,7 +3873,7 @@ enum WebFeature {
   // The items above roughly this point are available in the M113 branch.
 
   kAttributeValueContainsLtOrGt = 4527,
-  kV8ImportAssertionDeprecatedSyntax = 4528,
+  kOBSOLETE_V8ImportAssertionDeprecatedSyntax = 4528,
   kImageCaptureBackgroundBlur = 4529,
   kPrivateNetworkAccessPreflightError = 4530,
   kPrivateNetworkAccessPreflightSuccess = 4531,
@@ -3894,7 +3893,7 @@ enum WebFeature {
   kOBSOLETE_TextWrapBalanceFail = 4545,
   kAttributionReportingCrossAppWeb = 4546,
   kSecurePaymentConfirmationActivationlessShow = 4547,
-  kServiceWorkerBypassFetchHandlerForAllWithRaceNetworkRequest = 4548,
+  kOBSOLETE_ServiceWorkerBypassFetchHandlerForAllWithRaceNetworkRequest = 4548,
   // The items above roughly this point are available in the M114 branch.
 
   kFlexIntrinsicSizesCacheMiss = 4549,
@@ -3907,7 +3906,7 @@ enum WebFeature {
   kCSSValueAppearanceSliderVertical = 4556,
   kCSSValueAppearanceSliderthumbHorizontal = 4557,
   kCSSValueAppearanceSliderthumbVertical = 4558,
-  kServiceWorkerBypassFetchHandlerForAllWithRaceNetworkRequestByOriginTrial = 4559,
+  kOBSOLETE_ServiceWorkerBypassFetchHandlerForAllWithRaceNetworkRequestByOriginTrial = 4559,
   kOBSOLETE_EventTimingPaintedPresentationPromiseResolvedWithEarlierPromiseUnresolved = 4560,
   kLinkRelPreloadAsFont = 4561,
   kCrossWindowAccessToBrowserGeneratedDocument = 4562,
@@ -3939,9 +3938,9 @@ enum WebFeature {
   kWebGPUQueueSubmit = 4586,
   kWebGPUCanvasContextGetCurrentTexture = 4587,
   kEditContext = 4588,
-  kServiceWorkerStaticRouter_RegisterRouter = 4589,
+  kOBSOLETE_kServiceWorkerStaticRouter_RegisterRouter = 4589,
   kServiceWorkerStaticRouter_Evaluate = 4590,
-  kClientHintsUAFormFactor = 4591,
+  kClientHintsUAFormFactors = 4591,
   kURLSearchParamsHasFnBehaviourDiverged = 4592,
   kURLSearchParamsDeleteFnBehaviourDiverged = 4593,
   kOBSOLETE_TextWrapPretty = 4594,
@@ -4032,7 +4031,7 @@ enum WebFeature {
   kTextWrapPretty = 4674,
   // The items above roughly this point are available in the M119 branch.
 
-  kV8PointerEvent_DeviceId_AttributeGetter = 4675,
+  kOBSOLETE_V8PointerEvent_DeviceId_AttributeGetter  = 4675,
   kSourceMappingUrlMagicCommentAtSign = 4676,
   kHTMLDetailsElementNameAttribute = 4677,
   kHTMLDetailsElementNameAttributeClosesSelf = 4678,
@@ -4221,6 +4220,7 @@ enum WebFeature {
   kStorageAccessAPI_requestStorageAccess_BeyondCookies_SharedWorker = 4857,
   kStorageAccessAPI_requestStorageAccess_BeyondCookies_SharedWorker_Use = 4858,
   kV8PointerEvent_GetCoalescedEvents_Method = 4859,
+  kV8RTCEncodedVideoFrame_Constructor = 4860,
   kCSSFunctions = 4861,
   kCSSPageRule = 4862,
   // The items above roughly this point are available in the M123 branch.
@@ -4255,6 +4255,110 @@ enum WebFeature {
   kDOMCharacterDataModifiedEventFired = 4890,
   kAnyMutationEventFired = 4891,
   kAnyMutationEventListenerAdded = 4892,
+  kBadgeSetWithoutNotificationPermissionInBrowserWindow = 4893,
+  kBadgeSetWithoutNotificationPermissionInAppWindow = 4894,
+  kBadgeSetWithoutNotificationPermissionInWorker = 4895,
+  kQuirksModeCursorHand = 4896,
+  kTrustedTypesCreatePolicyWithEmptyName = 4897,
+  kV8RTCEncodedAudioFrame_Constructor = 4898,
+
+  // Direct Sockets API:
+  kTCPSocketConstructor = 4899,
+  kTCPSocketOpenedAttribute = 4900,
+  kTCPSocketClosedAttribute = 4901,
+  kTCPSocketCloseFunction = 4902,
+  kUDPSocketConstructor = 4903,
+  kUDPSocketOpenedAttribute = 4904,
+  kUDPSocketClosedAttribute = 4905,
+  kUDPSocketCloseFunction = 4906,
+  kTCPServerSocketConstructor = 4907,
+  kTCPServerSocketOpenedAttribute = 4908,
+  kTCPServerSocketClosedAttribute = 4909,
+  kTCPServerSocketCloseFunction = 4910,
+
+  // Web Printing API:
+  kWebPrintingGetPrintersFunction = 4911,
+  kWebPrinterCachedAttributesFunction = 4912,
+  kWebPrinterFetchAttributesFunction = 4913,
+  kWebPrinterPrintJobFunction = 4914,
+  kWebPrintJobAttributesFunction = 4915,
+  kWebPrintJobCancelFunction = 4916,
+  kWebPrintJobOnJobStateChangeEvent = 4917,
+  kFledgeAuctionReportBuyers = 4918,
+  kFledgeAuctionReportBuyerDebugModeConfig = 4919,
+
+  kFedCmButtonMode = 4920,
+  kHTMLPermissionElement = 4921,
+
+  // Model Execution API:
+  kV8ModelGenericSession_Execute_Method = 4922,
+  kV8ModelGenericSession_ExecuteStreaming_Method = 4923,
+  kV8ModelManager_CanCreateGenericSession_Method = 4924,
+  kV8ModelManager_CreateGenericSession_Method = 4925,
+
+  kV8Animation_Progress_AttributeGetter = 4926,
+
+  kV8ModelManager_DefaultGenericSessionOptions_Method = 4927,
+
+  kQuirksModeCursorHandApplied = 4928,
+  kSkippedPreloadScanning = 4929,
+  kCSSColor_SpaceRGB = 4930,
+  kCSSColor_SpaceRGB_outOfRec2020= 4931,
+  kCSSColor_SpaceOkLxx = 4932,
+  kCSSColor_SpaceOkLxx_outOfRec2020 = 4933,
+
+  // Uses of base URL in sandboxed srcdoc frames:
+  kSandboxedSrcdocFrameResolvesRelativeURL = 4934,
+
+  kV8Ink_RequestPresenter_Method = 4935,
+  kEventTimingOrphanPointerup = 4936,
+  kNavigatorCookieEnabledThirdParty = 4937,
+
+  kFoldableAPIs = 4938,
+
+  // https://drafts.csswg.org/css-scroll-snap-2/#snap-events
+  kSnapEvent = 4939,
+
+  kStaticPropertyInAnimation = 4940,
+
+  kSimplifyLoadingTransparentPlaceholderImage = 4941,
+
+  kIdentityDigitalCredentialsSuccess = 4942,
+  kV8DeviceProperties_UniqueId_AttributeGetter = 4943,
+
+  kSharedStorageAPI_SelectURLOverallPageloadBudgetInsufficient = 4944,
+
+  kV8LanguageTranslator_Translate_Method = 4945,
+  kV8Translation_CanTranslate_Method = 4946,
+  kV8Translation_CreateTranslator_Method = 4947,
+
+  kIdentityDigitalCredentialsDeepLink = 4948,
+
+  kV8WebView_GetExperimentalMediaIntegrityTokenProvider_Method = 4949,
+  kV8MediaIntegrityTokenProvider_RequestToken_Method = 4950,
+  kCanvas2DLayersFilters = 4951,
+  kCanvas2DLayersCSSFilters = 4952,
+  kCanvas2DLayersFilterObjects = 4953,
+
+  // https://drafts.csswg.org/css-scroll-snap-2/#scroll-start-target
+  kCSSScrollStartTarget = 4954,
+
+  kFedCmContinueOnResponse = 4955,
+  kFedCmMultipleIdentityProviders = 4956,
+
+  kFedCmWithStorageAccessAPI = 4957,
+  kCSSSelectorUserValid = 4958,
+  kCSSSelectorUserInvalid = 4959,
+
+  kCrossShadowAtomicMove = 4960,
+
+  kPrefersReducedMotionMediaFeature = 4961,
+  kPrefersReducedTransparencyMediaFeature = 4962,
+  kPrefersReducedDataMediaFeature = 4963,
+  kScriptingMediaFeature = 4964,
+  kInvertedColorsMediaFeature = 4965,
+
+  kCSSLightDark = 4966,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

@@ -16,36 +16,31 @@ interface ComposeSessionUntrustedPageHandlerFactory {
       pending_remote<ComposeUntrustedDialog> dialog);
 };
 
-// Configuration parameter used in compose requests.
-enum Tone {
+enum StyleModifier {
   kUnset,
   kFormal,
   kCasual,
-};
-
-// Configuration parameter used in compose requests.
-enum Length {
-  kUnset,
-  kShorter,
   kLonger,
+  kShorter,
+  kRetry,
 };
 
-// Configuration parameters used in rewrite requests, specifying how the
-// response should be changed.
-union StyleModifiers {
-  Tone tone;
-  Length length;
-};
-
-// The response to compose requests. `response_text` is only valid if `status`
+// The response to compose requests. `result` is only valid if `status`
 // is kOk.
 struct ComposeResponse {
   ComposeStatus status;
   string result;
   // Whether undo is possible to a prior state before this response.
   bool undo_available;
+  // Whether redo is possible to a later state before this response.
+  bool redo_available;
+  // True if the result stored in this response came from a user edit and false
+  // if it came from the server.
+  bool provided_by_user;
   // Whether the response was generated on-device.
   bool on_device_evaluation_used;
+  // Whether the request producing this response came from a modifier action.
+  bool triggered_from_modifier;
 };
 
 // An intermediate compose response, which is available before the final
@@ -57,7 +52,7 @@ struct PartialComposeResponse {
 // Snapshot of state that can describe current state or be used to
 // fully restore a previous state.
 struct ComposeState {
-  // TODO(crbug.com/1493364): Change this field to a type that's opaque and
+  // TODO(crbug.com/40285814): Change this field to a type that's opaque and
   // non-trivial to use from untrustworthy processes.
   // State for the WebUI session. This should be considered opaque and is
   // unsafe to parse in the browser process.
@@ -130,16 +125,16 @@ interface ComposeSessionUntrustedPageHandler {
   Compose(string input, bool edited);
 
   // Asks the Browser to rewrite the last response. `style` specifies how the
-  // response should be changed. A null `style` requests a rewrite without
+  // response should be changed.
   // changes to the tone or length.
-  Rewrite(StyleModifiers? style);
+  Rewrite(StyleModifier style);
 
   // Asks the browser to track an edit input action for logging purposes.
   LogEditInput();
 
   // Asks the native handler to store `webui_state` for the last field the user
   // selected compose on.
-  // TODO(crbug.com/1493364): Change this field to a type that's opaque and
+  // TODO(crbug.com/40285814): Change this field to a type that's opaque and
   // non-trivial to use from untrustworthy processes.
   // State for the WebUI session. This should be considered opaque and is
   // unsafe to parse in the browser process.
@@ -163,6 +158,17 @@ interface ComposeSessionUntrustedPageHandler {
   // an undoable state may exist, but the call failed due to the broken pipe.
   Undo() => (ComposeState? last_state);
 
+  // Asks the native handler to revert to and return the saved state directly
+  // preceding a filtered error state. A null return means that there is no such
+  // valid state. No-op on rejected promise.
+  RecoverFromErrorState() => (ComposeState? state_before_error);
+
+  // Asks the native handler to move to and return the `next_state` in the saved
+  // state history. This represents the state that the user saw previous to the
+  // last Undo action. A null return means there is no redoable state available.
+  // No-op on rejected promise.
+  Redo() => (ComposeState? next_state);
+
   // Asks the Browser to open a new tab navigated to the Compose bug report
   // Buganizer.
   OpenBugReportingLink();
@@ -180,6 +186,11 @@ interface ComposeSessionUntrustedPageHandler {
 
   // Asks the native handler to store the user feedback supplied by the user.
   SetUserFeedback(UserFeedback feedback);
+
+  // Tells the native handler that the user has updated the compose results
+  // to `new_result`. `is_edited` indicates whether the result text was
+  // changed by the edit.
+  EditResult(string new_result) => (bool is_edited);
 };
 
 // Interface for calls from the untrusted Compose dialog JS into the Browser

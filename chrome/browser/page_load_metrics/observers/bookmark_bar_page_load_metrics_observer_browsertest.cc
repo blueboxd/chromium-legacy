@@ -69,7 +69,9 @@ IN_PROC_BROWSER_TEST_F(BookmarkBarPageLoadMetricsBrowserTest,
           prerender_utils::kDirectUrlInputMetricSuffix,
           ui::PageTransitionFromInt(ui::PAGE_TRANSITION_TYPED |
                                     ui::PAGE_TRANSITION_FROM_ADDRESS_BAR),
-          content::PreloadingHoldbackStatus::kUnspecified, nullptr);
+          content::PreloadingHoldbackStatus::kUnspecified,
+          /*preloading_attempt=*/nullptr, /*url_match_predicate=*/{},
+          /*prerender_navigation_handle_callback=*/{});
   EXPECT_TRUE(prerender_handle);
   content::test::PrerenderTestHelper::WaitForPrerenderLoadCompletion(
       *GetActiveWebContents(), prerender_url);
@@ -78,11 +80,14 @@ IN_PROC_BROWSER_TEST_F(BookmarkBarPageLoadMetricsBrowserTest,
   content::TestActivationManager activation_manager(GetActiveWebContents(),
                                                     prerender_url);
   // Simulate an Omnibox triggered navigation.
-  GetActiveWebContents()->OpenURL(content::OpenURLParams(
-      prerender_url, content::Referrer(), WindowOpenDisposition::CURRENT_TAB,
-      ui::PageTransitionFromInt(ui::PAGE_TRANSITION_TYPED |
-                                ui::PAGE_TRANSITION_FROM_ADDRESS_BAR),
-      /*is_renderer_initiated=*/false));
+  GetActiveWebContents()->OpenURL(
+      content::OpenURLParams(
+          prerender_url, content::Referrer(),
+          WindowOpenDisposition::CURRENT_TAB,
+          ui::PageTransitionFromInt(ui::PAGE_TRANSITION_TYPED |
+                                    ui::PAGE_TRANSITION_FROM_ADDRESS_BAR),
+          /*is_renderer_initiated=*/false),
+      /*navigation_handle_callback=*/{});
   activation_manager.WaitForNavigationFinished();
   EXPECT_TRUE(activation_manager.was_activated());
   histogram_tester.ExpectUniqueSample(

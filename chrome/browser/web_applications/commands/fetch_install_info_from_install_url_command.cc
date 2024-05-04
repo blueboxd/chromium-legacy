@@ -16,9 +16,9 @@
 #include "chrome/browser/web_applications/web_app_icon_operations.h"
 #include "chrome/browser/web_applications/web_app_install_utils.h"
 #include "chrome/browser/web_applications/web_contents/web_app_data_retriever.h"
-#include "chrome/browser/web_applications/web_contents/web_app_url_loader.h"
 #include "chrome/browser/web_applications/web_contents/web_contents_manager.h"
 #include "chrome/common/chrome_features.h"
+#include "components/webapps/browser/web_contents/web_app_url_loader.h"
 #include "content/public/browser/web_contents.h"
 #include "url/origin.h"
 
@@ -30,12 +30,6 @@ std::ostream& operator<<(std::ostream& os, FetchInstallInfoResult result) {
       return os << "kAppInfoObtained";
     case FetchInstallInfoResult::kWebContentsDestroyed:
       return os << "kWebContentsDestroyed";
-    case FetchInstallInfoResult::kInstallUrlInvalid:
-      return os << "kInstallUrlInvalid";
-    case FetchInstallInfoResult::kManifestIdInvalid:
-      return os << "kManifestIdInvalid";
-    case FetchInstallInfoResult::kParentManifestIdInvalid:
-      return os << "kParentManifestIdInvalid";
     case FetchInstallInfoResult::kUrlLoadingFailure:
       return os << "kUrlLoadingFailure";
     case FetchInstallInfoResult::kNoValidManifest:
@@ -101,31 +95,21 @@ void FetchInstallInfoFromInstallUrlCommand::StartWithLock(
     return;
   }
 
-  if (!install_url_.is_valid()) {
-    CompleteCommandAndSelfDestruct(FetchInstallInfoResult::kInstallUrlInvalid,
-                                   /*install_info=*/nullptr);
-    return;
-  }
-
-  if (!manifest_id_.is_valid()) {
-    CompleteCommandAndSelfDestruct(FetchInstallInfoResult::kManifestIdInvalid,
-                                   /*install_info=*/nullptr);
-    return;
-  }
-
-  url_loader_->LoadUrl(install_url_, &lock_->shared_web_contents(),
-                       WebAppUrlLoader::UrlComparison::kIgnoreQueryParamsAndRef,
-                       base::BindOnce(&FetchInstallInfoFromInstallUrlCommand::
-                                          OnWebAppUrlLoadedGetWebAppInstallInfo,
-                                      weak_ptr_factory_.GetWeakPtr()));
+  url_loader_->LoadUrl(
+      install_url_, &lock_->shared_web_contents(),
+      webapps::WebAppUrlLoader::UrlComparison::kIgnoreQueryParamsAndRef,
+      base::BindOnce(&FetchInstallInfoFromInstallUrlCommand::
+                         OnWebAppUrlLoadedGetWebAppInstallInfo,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void FetchInstallInfoFromInstallUrlCommand::
-    OnWebAppUrlLoadedGetWebAppInstallInfo(WebAppUrlLoader::Result result) {
+    OnWebAppUrlLoadedGetWebAppInstallInfo(
+        webapps::WebAppUrlLoaderResult result) {
   GetMutableDebugValue().Set("url_loading_result",
                              ConvertUrlLoaderResultToString(result));
 
-  if (result != WebAppUrlLoader::Result::kUrlLoaded) {
+  if (result != webapps::WebAppUrlLoaderResult::kUrlLoaded) {
     install_error_log_entry_.LogUrlLoaderError(
         "OnWebAppUrlLoadedGetWebAppInstallInfo", install_url_.spec(), result);
     CompleteCommandAndSelfDestruct(FetchInstallInfoResult::kUrlLoadingFailure,

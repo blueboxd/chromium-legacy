@@ -6,6 +6,7 @@
 
 #include <optional>
 #include <string>
+#include <string_view>
 #include <utility>
 
 #include "base/base64.h"
@@ -15,7 +16,6 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/task_traits.h"
@@ -44,10 +44,8 @@ std::string FormatTemplate(int resource_id,
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
   scoped_refptr<base::RefCountedMemory> bytes =
       bundle.LoadDataResourceBytes(resource_id);
-  base::StringPiece string_piece(reinterpret_cast<const char*>(bytes->front()),
-                                 bytes->size());
   return ui::ReplaceTemplateExpressions(
-      string_piece, replacements,
+      base::as_string_view(*bytes), replacements,
       /* skip_unexpected_placeholder_check= */ true);
 }
 
@@ -86,7 +84,7 @@ std::string UntrustedSource::GetContentSecurityPolicy(
     case network::mojom::CSPDirectiveName::ChildSrc:
       return "child-src https:;";
     case network::mojom::CSPDirectiveName::DefaultSrc:
-      // TODO(https://crbug.com/1085325): Audit and tighten CSP.
+      // TODO(crbug.com/40693567): Audit and tighten CSP.
       return std::string();
     case network::mojom::CSPDirectiveName::FrameAncestors:
       return base::StringPrintf("frame-ancestors %s",
@@ -194,7 +192,7 @@ void UntrustedSource::StartDataRequest(
 }
 
 std::string UntrustedSource::GetMimeType(const GURL& url) {
-  const base::StringPiece stripped_path = url.path_piece();
+  const std::string_view stripped_path = url.path_piece();
   if (base::EndsWith(stripped_path, ".js",
                      base::CompareCase::INSENSITIVE_ASCII)) {
     return "application/javascript";

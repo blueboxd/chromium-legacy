@@ -10,6 +10,7 @@
 #include "base/containers/flat_set.h"
 #include "base/functional/callback_forward.h"
 #include "base/functional/function_ref.h"
+#include "base/observer_list_types.h"
 #include "base/types/strong_alias.h"
 #include "components/performance_manager/public/execution_context_priority/execution_context_priority.h"
 #include "components/performance_manager/public/graph/node.h"
@@ -19,6 +20,7 @@
 #include "content/public/browser/browsing_instance_id.h"
 #include "content/public/browser/site_instance.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
+#include "url/origin.h"
 
 class GURL;
 
@@ -37,7 +39,7 @@ using execution_context_priority::PriorityAndReason;
 // content::RenderFrameHost (RFH) in the browser, and a
 // content::RenderFrameImpl / blink::LocalFrame in a renderer.
 //
-// TODO(crbug.com/1211368): The naming is misleading. In the browser,
+// TODO(crbug.com/40182881): The naming is misleading. In the browser,
 // FrameTreeNode tracks state about a frame and RenderFrameHost tracks state
 // about a document loaded into that frame, which can change over time.
 // (Although RFH doesn't exactly track documents 1:1 either - see
@@ -172,9 +174,13 @@ class FrameNode : public Node {
   // meaningful while the object is frozen.
   virtual bool HasNonemptyBeforeUnload() const = 0;
 
-  // Returns the URL associated with this frame.
+  // Returns the last committed URL for this frame.
   // See FrameNodeObserver::OnURLChanged.
   virtual const GURL& GetURL() const = 0;
+
+  // Returns the last committed origin for this frame. nullopt if no navigation
+  // was committed. See FrameNodeObserver::OnOriginChanged.
+  virtual const std::optional<url::Origin>& GetOrigin() const = 0;
 
   // Returns true if this frame is current (is part of a content::FrameTree).
   // See FrameNodeObserver::OnIsCurrentChanged.
@@ -265,14 +271,14 @@ class FrameNode : public Node {
 
 // Pure virtual observer interface. Derive from this if you want to be forced to
 // implement the entire interface.
-class FrameNodeObserver {
+class FrameNodeObserver : public base::CheckedObserver {
  public:
   FrameNodeObserver();
 
   FrameNodeObserver(const FrameNodeObserver&) = delete;
   FrameNodeObserver& operator=(const FrameNodeObserver&) = delete;
 
-  virtual ~FrameNodeObserver();
+  ~FrameNodeObserver() override;
 
   // Node lifetime notifications.
 
@@ -300,6 +306,11 @@ class FrameNodeObserver {
   // Invoked when the URL property changes.
   virtual void OnURLChanged(const FrameNode* frame_node,
                             const GURL& previous_value) = 0;
+
+  // Invoked when the origin property changes.
+  virtual void OnOriginChanged(
+      const FrameNode* frame_node,
+      const std::optional<url::Origin>& previous_value) = 0;
 
   // Invoked when the IsAdFrame property changes.
   virtual void OnIsAdFrameChanged(const FrameNode* frame_node) = 0;
@@ -375,6 +386,9 @@ class FrameNode::ObserverDefaultImpl : public FrameNodeObserver {
   void OnFrameLifecycleStateChanged(const FrameNode* frame_node) override {}
   void OnURLChanged(const FrameNode* frame_node,
                     const GURL& previous_value) override {}
+  void OnOriginChanged(
+      const FrameNode* frame_node,
+      const std::optional<url::Origin>& previous_value) override {}
   void OnIsAdFrameChanged(const FrameNode* frame_node) override {}
   void OnFrameIsHoldingWebLockChanged(const FrameNode* frame_node) override {}
   void OnFrameIsHoldingIndexedDBLockChanged(

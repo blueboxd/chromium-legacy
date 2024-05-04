@@ -31,7 +31,7 @@ class Graph;
 // Tests that the PerformanceManager node states are updated correctly during
 // prerendering.
 //
-// TODO(crbug.com/1211368): These tests assume prerendering frames are added as
+// TODO(crbug.com/40182881): These tests assume prerendering frames are added as
 // extra FrameNodes on the existing PageNode. Update this logic once
 // prerendering frame trees have their own PageNode.
 class PerformanceManagerPrerenderingBrowserTest
@@ -53,7 +53,7 @@ class PerformanceManagerPrerenderingBrowserTest
         net::test_server::EmbeddedTestServer::CERT_TEST_NAMES);
     ASSERT_TRUE(ssl_server_.Start());
 
-    // TODO(https://crbug.com/1186893): PrerenderHost is not deleted when the
+    // TODO(crbug.com/40172688): PrerenderHost is not deleted when the
     // page enters BackForwardCache, though it should be. While this
     // functionality is not implemented, disable BackForwardCache for testing
     // and wait for the old RenderFrameHost to be deleted after we navigate away

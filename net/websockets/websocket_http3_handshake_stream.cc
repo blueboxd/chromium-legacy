@@ -4,6 +4,7 @@
 
 #include "net/websockets/websocket_http3_handshake_stream.h"
 
+#include <string_view>
 #include <utility>
 
 #include "base/check.h"
@@ -211,10 +212,6 @@ bool WebSocketHttp3HandshakeStream::GetLoadTimingInfo(
 void WebSocketHttp3HandshakeStream::GetSSLInfo(SSLInfo* ssl_info) {}
 
 // TODO(momoka): Implement this.
-void WebSocketHttp3HandshakeStream::GetSSLCertRequestInfo(
-    SSLCertRequestInfo* cert_request_info) {}
-
-// TODO(momoka): Implement this.
 int WebSocketHttp3HandshakeStream::GetRemoteEndpoint(IPEndPoint* endpoint) {
   return 0;
 }
@@ -242,7 +239,7 @@ const std::set<std::string>& WebSocketHttp3HandshakeStream::GetDnsAliases()
 }
 
 // TODO(momoka): Implement this.
-base::StringPiece WebSocketHttp3HandshakeStream::GetAcceptChViaAlps() const {
+std::string_view WebSocketHttp3HandshakeStream::GetAcceptChViaAlps() const {
   return {};
 }
 

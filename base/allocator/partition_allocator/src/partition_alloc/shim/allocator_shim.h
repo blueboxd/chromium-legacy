@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_ALLOCATOR_PARTITION_ALLOCATOR_SRC_PARTITION_ALLOC_SHIM_ALLOCATOR_SHIM_H_
-#define BASE_ALLOCATOR_PARTITION_ALLOCATOR_SRC_PARTITION_ALLOC_SHIM_ALLOCATOR_SHIM_H_
+#ifndef PARTITION_ALLOC_SHIM_ALLOCATOR_SHIM_H_
+#define PARTITION_ALLOC_SHIM_ALLOCATOR_SHIM_H_
 
 #include <cstddef>
 #include <cstdint>
@@ -11,7 +11,7 @@
 #include "partition_alloc/partition_alloc_buildflags.h"
 
 #if BUILDFLAG(USE_ALLOCATOR_SHIM)
-#include "build/build_config.h"
+#include "partition_alloc/build_config.h"
 #include "partition_alloc/partition_alloc_base/component_export.h"
 #include "partition_alloc/partition_alloc_base/types/strong_alias.h"
 #include "partition_alloc/shim/allocator_dispatch.h"
@@ -80,6 +80,9 @@ void InsertAllocatorDispatch(AllocatorDispatch* dispatch);
 PA_COMPONENT_EXPORT(ALLOCATOR_SHIM)
 void RemoveAllocatorDispatchForTesting(AllocatorDispatch* dispatch);
 
+PA_COMPONENT_EXPORT(ALLOCATOR_SHIM)
+const AllocatorDispatch* GetAllocatorDispatchChainHeadForTesting();
+
 #if BUILDFLAG(IS_APPLE)
 // The fallback function to be called when try_free_default_function receives a
 // pointer which doesn't belong to the allocator.
@@ -112,6 +115,9 @@ using ZappingByFreeFlags =
     partition_alloc::internal::base::StrongAlias<class ZappingByFreeFlagsTag,
                                                  bool>;
 
+using UsePoolOffsetFreelists = partition_alloc::internal::base::
+    StrongAlias<class UsePoolOffsetFreelistsTag, bool>;
+
 // If |thread_cache_on_non_quarantinable_partition| is specified, the
 // thread-cache will be enabled on the non-quarantinable partition. The
 // thread-cache on the main (malloc) partition will be disabled.
@@ -122,8 +128,9 @@ void ConfigurePartitions(
     partition_alloc::TagViolationReportingMode memory_tagging_reporting_mode,
     BucketDistribution distribution,
     SchedulerLoopQuarantine scheduler_loop_quarantine,
-    size_t scheduler_loop_quarantine_capacity_in_bytes,
-    ZappingByFreeFlags zapping_by_free_flags);
+    size_t scheduler_loop_quarantine_branch_capacity_in_bytes,
+    ZappingByFreeFlags zapping_by_free_flags,
+    UsePoolOffsetFreelists use_pool_offset_freelists);
 
 PA_COMPONENT_EXPORT(ALLOCATOR_SHIM) uint32_t GetMainPartitionRootExtrasSize();
 
@@ -140,4 +147,4 @@ void EnablePCScan(partition_alloc::internal::PCScan::InitConfig);
 
 #endif  // BUILDFLAG(USE_ALLOCATOR_SHIM)
 
-#endif  // BASE_ALLOCATOR_PARTITION_ALLOCATOR_SRC_PARTITION_ALLOC_SHIM_ALLOCATOR_SHIM_H_
+#endif  // PARTITION_ALLOC_SHIM_ALLOCATOR_SHIM_H_

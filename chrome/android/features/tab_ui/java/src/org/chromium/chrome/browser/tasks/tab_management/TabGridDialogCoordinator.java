@@ -10,6 +10,7 @@ import android.util.Size;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewStub;
 import android.widget.PopupWindow;
 
 import androidx.annotation.DrawableRes;
@@ -17,23 +18,31 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.content.res.AppCompatResources;
 
+import org.chromium.base.Callback;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
-import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
+import org.chromium.chrome.browser.data_sharing.DataSharingServiceFactory;
+import org.chromium.chrome.browser.data_sharing.DataSharingUIDelegate;
+import org.chromium.chrome.browser.data_sharing.MemberPickerListenerImpl;
 import org.chromium.chrome.browser.data_sharing.SharedImageTilesCoordinator;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab_ui.RecyclerViewPosition;
+import org.chromium.chrome.browser.tab_ui.TabContentManager;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelFilter;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
 import org.chromium.chrome.browser.tasks.tab_management.ColorPickerCoordinator.ColorPickerLayoutType;
 import org.chromium.chrome.browser.tasks.tab_management.TabListEditorCoordinator.TabListEditorController;
+import org.chromium.chrome.browser.tasks.tab_management.TabUiMetricsHelper.TabGroupColorChangeActionType;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.tab_ui.R;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
@@ -64,13 +73,17 @@ public class TabGridDialogCoordinator implements TabGridDialogMediator.DialogCon
     private TabListEditorCoordinator mTabListEditorCoordinator;
     private TabGridDialogView mDialogView;
     private ColorPickerCoordinator mColorPickerCoordinator;
+    private TabGridDialogShareBottomSheetContent mShareBottomSheetContent;
     private @Nullable SnackbarManager mSnackbarManager;
     private @Nullable SharedImageTilesCoordinator mSharedImageTilesCoordinator;
     private @Nullable AnchoredPopupWindow mColorIconPopupWindow;
+    private @Nullable TabSwitcherResetHandler mTabSwitcherResetHandler;
+    private @Nullable ViewGroup mDataSharingBottomSheetGroup;
 
     TabGridDialogCoordinator(
             Activity activity,
             BrowserControlsStateProvider browserControlsStateProvider,
+            @NonNull BottomSheetController bottomSheetController,
             @NonNull ObservableSupplier<TabModelFilter> currentTabModelFilterSupplier,
             @NonNull Supplier<TabModel> regularTabModelSupplier,
             TabContentManager tabContentManager,
@@ -92,6 +105,7 @@ public class TabGridDialogCoordinator implements TabGridDialogMediator.DialogCon
             mCurrentTabModelFilterSupplier = currentTabModelFilterSupplier;
             mRegularTabModelSupplier = regularTabModelSupplier;
             mTabContentManager = tabContentManager;
+            mTabSwitcherResetHandler = resetHandler;
 
             mModel =
                     new PropertyModel.Builder(TabGridDialogProperties.ALL_KEYS)
@@ -100,16 +114,39 @@ public class TabGridDialogCoordinator implements TabGridDialogMediator.DialogCon
                                     mBrowserControlsStateProvider)
                             .with(
                                     TabGridDialogProperties.COLOR_ICON_CLICK_LISTENER,
-                                    getColorIconClickListener(resetHandler))
+                                    getColorIconClickListener())
                             .build();
             mRootView = rootView;
 
             mDialogView = containerView.findViewById(R.id.dialog_parent_view);
             if (mDialogView == null) {
-                LayoutInflater.from(activity)
-                        .inflate(R.layout.tab_grid_dialog_layout, containerView, true);
+                ViewStub dialogStub = containerView.findViewById(R.id.tab_grid_dialog_stub);
+                assert dialogStub != null;
+
+                dialogStub.setLayoutResource(R.layout.tab_grid_dialog_layout);
+                dialogStub.inflate();
+
                 mDialogView = containerView.findViewById(R.id.dialog_parent_view);
                 mDialogView.setupScrimCoordinator(scrimCoordinator);
+
+                if (ChromeFeatureList.isEnabled(ChromeFeatureList.DATA_SHARING_ANDROID)) {
+                    LayoutInflater.from(activity)
+                            .inflate(
+                                    R.layout.data_sharing_group_bar,
+                                    mDialogView.findViewById(R.id.dialog_container_view),
+                                    /* attachToRoot= */ true);
+                    ViewGroup manageBar = mDialogView.findViewById(R.id.dialog_data_sharing_manage);
+                    mSharedImageTilesCoordinator =
+                            new SharedImageTilesCoordinator(mDialogView.getContext());
+                    manageBar.addView(mSharedImageTilesCoordinator.getView(), 0);
+
+                    mDataSharingBottomSheetGroup =
+                            (ViewGroup)
+                                    LayoutInflater.from(activity)
+                                            .inflate(R.layout.data_sharing_bottom_sheet, null);
+                    mShareBottomSheetContent =
+                            new TabGridDialogShareBottomSheetContent(mDataSharingBottomSheetGroup);
+                }
             }
 
             if (!activity.isDestroyed() && !activity.isFinishing()) {
@@ -119,19 +156,15 @@ public class TabGridDialogCoordinator implements TabGridDialogMediator.DialogCon
                 mSnackbarManager = null;
             }
 
-            View shareBar = null;
-            if (ChromeFeatureList.isEnabled(ChromeFeatureList.DATA_SHARING_ANDROID)) {
-                shareBar =
-                        LayoutInflater.from(activity)
-                                .inflate(
-                                        R.layout.data_sharing_group_bar,
-                                        mDialogView.findViewById(R.id.dialog_container_view),
-                                        false);
-                ViewGroup manageBar = shareBar.findViewById(R.id.dialog_data_sharing_manage);
-                mSharedImageTilesCoordinator =
-                        new SharedImageTilesCoordinator(mDialogView.getContext());
-                manageBar.addView(mSharedImageTilesCoordinator.getView(), 0);
-            }
+            Runnable showShareBottomSheetRunnable =
+                    () -> {
+                        bottomSheetController.requestShowContent(mShareBottomSheetContent, true);
+                    };
+
+            Runnable showColorPickerPopupRunnable =
+                    () -> {
+                        showColorPickerPopup(mDialogView.findViewById(R.id.tab_group_color_icon));
+                    };
 
             mMediator =
                     new TabGridDialogMediator(
@@ -145,9 +178,13 @@ public class TabGridDialogCoordinator implements TabGridDialogMediator.DialogCon
                             animationSourceViewProvider,
                             mSnackbarManager,
                             mSharedImageTilesCoordinator,
-                            mComponentName);
+                            bottomSheetController,
+                            showShareBottomSheetRunnable,
+                            mComponentName,
+                            showColorPickerPopupRunnable,
+                            getInviteFlowUIRunnable(bottomSheetController));
 
-            // TODO(crbug.com/1031349) : Remove the inline mode logic here, make the constructor to
+            // TODO(crbug.com/40662311) : Remove the inline mode logic here, make the constructor to
             // take in a mode parameter instead.
             mTabListCoordinator =
                     new TabListCoordinator(
@@ -187,6 +224,8 @@ public class TabGridDialogCoordinator implements TabGridDialogMediator.DialogCon
                             LayoutInflater.from(activity)
                                     .inflate(R.layout.tab_group_ui_toolbar, recyclerView, false);
             toolbarView.setupDialogToolbarLayout();
+
+            View shareBar = mDialogView.findViewById(R.id.dialog_data_sharing_group_bar);
             mModelChangeProcessor =
                     PropertyModelChangeProcessor.create(
                             mModel,
@@ -197,7 +236,7 @@ public class TabGridDialogCoordinator implements TabGridDialogMediator.DialogCon
             mModel.addObserver((source, key) -> mBackPressChangedSupplier.set(isVisible()));
 
             // This is always created post-native so calling these immediately is safe.
-            // TODO(crbug/1418690): Consider inlining these behaviors in their respective
+            // TODO(crbug.com/40894893): Consider inlining these behaviors in their respective
             // constructors if possible.
             mMediator.initWithNative(this::getTabListEditorController, tabGroupTitleEditor);
             mTabListCoordinator.initWithNative(mRegularTabModelSupplier.get().getProfile(), null);
@@ -207,6 +246,42 @@ public class TabGridDialogCoordinator implements TabGridDialogMediator.DialogCon
     @NonNull
     RecyclerViewPosition getRecyclerViewPosition() {
         return mTabListCoordinator.getRecyclerViewPosition();
+    }
+
+    private Runnable getInviteFlowUIRunnable(@NonNull BottomSheetController bottomSheetController) {
+        Runnable showInviteFlowUIRunnable =
+                () -> {
+                    Profile profile =
+                            mCurrentTabModelFilterSupplier.get().getTabModel().getProfile();
+                    DataSharingUIDelegate uiDelegate =
+                            DataSharingServiceFactory.getUIDelegate(profile);
+                    Callback<List<String>> callback =
+                            (emails) -> {
+                                if (emails.size() > 0) {
+                                    bottomSheetController.hideContent(
+                                            mShareBottomSheetContent, false);
+                                    showAvatars(emails);
+                                }
+                            };
+                    uiDelegate.showMemberPicker(
+                            mActivity,
+                            mDataSharingBottomSheetGroup,
+                            new MemberPickerListenerImpl(callback),
+                            /* config= */ null);
+                };
+        return showInviteFlowUIRunnable;
+    }
+
+    private void showAvatars(List<String> emails) {
+        mSharedImageTilesCoordinator.updateTilesCount(emails.size());
+        Profile profile = mCurrentTabModelFilterSupplier.get().getTabModel().getProfile();
+        DataSharingUIDelegate uiDelegate = DataSharingServiceFactory.getUIDelegate(profile);
+        uiDelegate.showAvatars(
+                mSharedImageTilesCoordinator.getContext(),
+                mSharedImageTilesCoordinator.getAllViews(),
+                emails,
+                /* success= */ null,
+                /* config= */ null);
     }
 
     private @Nullable TabListEditorController getTabListEditorController() {
@@ -239,80 +314,84 @@ public class TabGridDialogCoordinator implements TabGridDialogMediator.DialogCon
         return mTabListEditorCoordinator.getController();
     }
 
-    private View.OnClickListener getColorIconClickListener(
-            @Nullable TabSwitcherResetHandler resetHandler) {
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_GROUP_PARITY_ANDROID)) {
+    private View.OnClickListener getColorIconClickListener() {
+        if (ChromeFeatureList.sTabGroupParityAndroid.isEnabled()) {
             return (view) -> {
-                PopupWindow.OnDismissListener onDismissListener =
-                        new PopupWindow.OnDismissListener() {
-                            @Override
-                            public void onDismiss() {
-                                mColorIconPopupWindow.dismiss();
-                                mColorIconPopupWindow = null;
-
-                                mMediator.setSelectedTabGroupColor(
-                                        mColorPickerCoordinator.getSelectedColorSupplier().get());
-
-                                // Only require a refresh of the tab list if accessed from the GTS,
-                                // skip if this is reached from the tab strip as the color will
-                                // refresh upon re-entering the tab switcher.
-                                if (resetHandler != null) {
-                                    // Refresh the TabSwitcher's tab list to reflect the last
-                                    // selected color in the color picker when it is dismissed.
-                                    resetHandler.resetWithTabList(
-                                            (TabGroupModelFilter)
-                                                    mCurrentTabModelFilterSupplier.get(),
-                                            false);
-                                }
-                            }
-                        };
-
-                List<Integer> colors = ColorPickerUtils.getTabGroupColorIdList();
-                mColorPickerCoordinator =
-                        new ColorPickerCoordinator(
-                                mActivity,
-                                colors,
-                                R.layout.tab_group_color_picker_container,
-                                ColorPickerType.TAB_GROUP,
-                                mCurrentTabModelFilterSupplier.get().isIncognito(),
-                                ColorPickerLayoutType.DOUBLE_ROW,
-                                () -> onDismissListener.onDismiss());
-                mColorPickerCoordinator.setSelectedColorItem(
-                        mModel.get(TabGridDialogProperties.TAB_GROUP_COLOR_ID));
-
-                int popupMargin =
-                        mActivity
-                                .getResources()
-                                .getDimensionPixelSize(
-                                        R.dimen.tab_group_color_picker_popup_padding);
-
-                View contentView = mColorPickerCoordinator.getContainerView();
-                contentView.setPadding(popupMargin, popupMargin, popupMargin, popupMargin);
-                View decorView = ((Activity) contentView.getContext()).getWindow().getDecorView();
-
-                // If the filter is in incognito mode, apply the incognito background drawable.
-                @DrawableRes
-                int bgDrawableId =
-                        mModel.get(TabGridDialogProperties.IS_INCOGNITO)
-                                ? R.drawable.menu_bg_tinted_on_dark_bg
-                                : R.drawable.menu_bg_tinted;
-
-                mColorIconPopupWindow =
-                        new AnchoredPopupWindow(
-                                mActivity,
-                                decorView,
-                                AppCompatResources.getDrawable(mActivity, bgDrawableId),
-                                contentView,
-                                new ViewRectProvider(view));
-                mColorIconPopupWindow.addOnDismissListener(onDismissListener);
-                mColorIconPopupWindow.setFocusable(true);
-                mColorIconPopupWindow.setHorizontalOverlapAnchor(true);
-                mColorIconPopupWindow.setVerticalOverlapAnchor(true);
-                mColorIconPopupWindow.show();
+                showColorPickerPopup(view);
+                TabUiMetricsHelper.recordTabGroupColorChangeActionMetrics(
+                        TabGroupColorChangeActionType.VIA_COLOR_ICON);
             };
         }
-
         return null;
+    }
+
+    private void showColorPickerPopup(View anchorView) {
+        PopupWindow.OnDismissListener onDismissListener =
+                new PopupWindow.OnDismissListener() {
+                    @Override
+                    public void onDismiss() {
+                        mMediator.setSelectedTabGroupColor(
+                                mColorPickerCoordinator.getSelectedColorSupplier().get());
+
+                        // Only require a refresh of the tab list if accessed from the GTS,
+                        // skip if this is reached from the tab strip as the color will
+                        // refresh upon re-entering the tab switcher.
+                        if (mTabSwitcherResetHandler != null) {
+                            // Refresh the TabSwitcher's tab list to reflect the last
+                            // selected color in the color picker when it is dismissed. This
+                            // call will be invoked for both Grid and List modes on the GTS.
+                            mTabSwitcherResetHandler.resetWithTabList(
+                                    (TabGroupModelFilter) mCurrentTabModelFilterSupplier.get(),
+                                    false);
+                        }
+                    }
+                };
+
+        List<Integer> colors = ColorPickerUtils.getTabGroupColorIdList();
+        mColorPickerCoordinator =
+                new ColorPickerCoordinator(
+                        mActivity,
+                        colors,
+                        R.layout.tab_group_color_picker_container,
+                        ColorPickerType.TAB_GROUP,
+                        mModel.get(TabGridDialogProperties.IS_INCOGNITO),
+                        ColorPickerLayoutType.DOUBLE_ROW,
+                        () -> {
+                            mColorIconPopupWindow.dismiss();
+                            mColorIconPopupWindow = null;
+                            onDismissListener.onDismiss();
+                        });
+        mColorPickerCoordinator.setSelectedColorItem(
+                mModel.get(TabGridDialogProperties.TAB_GROUP_COLOR_ID));
+
+        int popupMargin =
+                mActivity
+                        .getResources()
+                        .getDimensionPixelSize(R.dimen.tab_group_color_picker_popup_padding);
+
+        View contentView = mColorPickerCoordinator.getContainerView();
+        contentView.setPadding(popupMargin, popupMargin, popupMargin, popupMargin);
+        View decorView = ((Activity) contentView.getContext()).getWindow().getDecorView();
+
+        // If the filter is in incognito mode, apply the incognito background drawable.
+        @DrawableRes
+        int bgDrawableId =
+                mModel.get(TabGridDialogProperties.IS_INCOGNITO)
+                        ? R.drawable.menu_bg_tinted_on_dark_bg
+                        : R.drawable.menu_bg_tinted;
+
+        mColorIconPopupWindow =
+                new AnchoredPopupWindow(
+                        mActivity,
+                        decorView,
+                        AppCompatResources.getDrawable(mActivity, bgDrawableId),
+                        contentView,
+                        new ViewRectProvider(anchorView));
+        mColorIconPopupWindow.addOnDismissListener(onDismissListener);
+        mColorIconPopupWindow.setFocusable(true);
+        mColorIconPopupWindow.setHorizontalOverlapAnchor(true);
+        mColorIconPopupWindow.setVerticalOverlapAnchor(true);
+        mColorIconPopupWindow.show();
     }
 
     /** Destroy any members that needs clean up. */
@@ -385,7 +464,8 @@ public class TabGridDialogCoordinator implements TabGridDialogMediator.DialogCon
     @Override
     public void postHiding() {
         mTabListCoordinator.postHiding();
-        // TODO(crbug/1366128): This shouldn't be required if resetWithListOfTabs(null) is called.
+        // TODO(crbug.com/40239632): This shouldn't be required if resetWithListOfTabs(null) is
+        // called.
         // Find out why this helps and fix upstream if possible.
         mTabListCoordinator.softCleanup();
     }

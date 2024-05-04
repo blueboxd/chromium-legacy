@@ -17,8 +17,6 @@ namespace ui {
 
 namespace {
 
-UserActivityDetector* g_instance = nullptr;
-
 // Returns a string describing |event|.
 std::string GetEventDebugString(const ui::Event* event) {
   std::string details = base::StringPrintf(
@@ -48,27 +46,10 @@ const int UserActivityDetector::kNotifyIntervalMs = 200;
 // and we'll ignore legitimate activity.
 const int UserActivityDetector::kDisplayPowerChangeIgnoreMouseMs = 1000;
 
-UserActivityDetector::UserActivityDetector() {
-  CHECK(!g_instance);
-  g_instance = this;
-
-  PlatformEventSource* platform_event_source =
-      PlatformEventSource::GetInstance();
-  if (platform_event_source)
-    platform_event_source->AddPlatformEventObserver(this);
-}
-
-UserActivityDetector::~UserActivityDetector() {
-  PlatformEventSource* platform_event_source =
-      PlatformEventSource::GetInstance();
-  if (platform_event_source)
-    platform_event_source->RemovePlatformEventObserver(this);
-  g_instance = nullptr;
-}
-
 // static
 UserActivityDetector* UserActivityDetector::Get() {
-  return g_instance;
+  static base::NoDestructor<UserActivityDetector> user_activity_detector;
+  return user_activity_detector.get();
 }
 
 bool UserActivityDetector::HasObserver(
@@ -97,6 +78,38 @@ void UserActivityDetector::DidProcessEvent(
     const PlatformEvent& platform_event) {
   std::unique_ptr<ui::Event> event(ui::EventFromNative(platform_event));
   ProcessReceivedEvent(event.get());
+}
+
+void UserActivityDetector::PlatformEventSourceDestroying() {
+  PlatformEventSource* platform_event_source =
+      PlatformEventSource::GetInstance();
+  CHECK(platform_event_source);
+  platform_event_source->RemovePlatformEventObserver(this);
+}
+
+void UserActivityDetector::ResetStateForTesting() {
+  last_activity_name_.clear();
+  last_activity_time_ = base::TimeTicks();
+  last_observer_notification_time_ = base::TimeTicks();
+  now_for_test_ = base::TimeTicks();
+  honor_mouse_events_time_ = base::TimeTicks();
+}
+
+void UserActivityDetector::InitPlatformEventSourceObservationForTesting() {
+  InitPlatformEventSourceObservation();
+}
+
+UserActivityDetector::UserActivityDetector() {
+  InitPlatformEventSourceObservation();
+}
+
+UserActivityDetector::~UserActivityDetector() = default;
+
+void UserActivityDetector::InitPlatformEventSourceObservation() {
+  PlatformEventSource* platform_event_source =
+      PlatformEventSource::GetInstance();
+  CHECK(platform_event_source);
+  platform_event_source->AddPlatformEventObserver(this);
 }
 
 base::TimeTicks UserActivityDetector::GetCurrentTime() const {

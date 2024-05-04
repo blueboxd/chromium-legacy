@@ -8,7 +8,7 @@
  * allow users to customize the remapped key.
  */
 
-import 'chrome://resources/cr_components/settings_prefs/prefs.js';
+import '/shared/settings/prefs/prefs.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 import '../settings_shared.css.js';
 import '../controls/settings_dropdown_menu.js';
@@ -16,6 +16,7 @@ import '../os_settings_icons.html.js';
 
 import {I18nMixin} from 'chrome://resources/ash/common/cr_elements/i18n_mixin.js';
 import {assertNotReached} from 'chrome://resources/js/assert.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {PolymerElementProperties} from 'chrome://resources/polymer/v3_0/polymer/interfaces.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
@@ -59,7 +60,7 @@ export class KeyboardRemapModifierKeyRowElement extends
         type: String,
         value: KeyState.DEFAULT_REMAPPING,
         reflectToAttribute: true,
-        computed: 'computeKeyState(pref.value)',
+        computed: 'computeKeyState(pref.value, defaultRemappings.*)',
       },
 
       pref: {
@@ -92,6 +93,11 @@ export class KeyboardRemapModifierKeyRowElement extends
         type: Boolean,
         reflectToAttribute: true,
       },
+
+      hasFunctionKey: {
+        type: Boolean,
+        value: false,
+      },
     };
   }
 
@@ -99,6 +105,7 @@ export class KeyboardRemapModifierKeyRowElement extends
   private metaKeyLabel: string;
   private keyMapTargets: DropdownMenuOptionList;
   private keyIcon: KeyIcon;
+  private hasFunctionKey: boolean;
   keyState: KeyState;
   pref: chrome.settingsPrivate.PrefObject;
   metaKey: MetaKey;
@@ -169,6 +176,12 @@ export class KeyboardRemapModifierKeyRowElement extends
       case ModifierKey.kMeta: {
         return this.getMetaKeyLabel();
       }
+      case ModifierKey.kRightAlt: {
+        return this.i18n('perDeviceKeyboardKeyRightAlt');
+      }
+      case ModifierKey.kFunction: {
+        return this.i18n('perDeviceKeyboardKeyFunction');
+      }
       default:
         assertNotReached('Invalid modifier key: ' + this.key);
     }
@@ -176,40 +189,60 @@ export class KeyboardRemapModifierKeyRowElement extends
 
   private setUpKeyMapTargets(): void {
     // Ordering is according to UX, but values match ModifierKey.
-    this.keyMapTargets = [
-      {
-        value: ModifierKey.kMeta,
-        name: this.i18n('perDeviceKeyboardKeySearch'),
-      },
-      {
-        value: ModifierKey.kControl,
-        name: this.i18n('perDeviceKeyboardKeyCtrl'),
-      },
-      {
-        value: ModifierKey.kAlt,
-        name: this.i18n('perDeviceKeyboardKeyAlt'),
-      },
-      {
-        value: ModifierKey.kCapsLock,
-        name: this.i18n('perDeviceKeyboardKeyCapsLock'),
-      },
-      {
-        value: ModifierKey.kEscape,
-        name: this.i18n('perDeviceKeyboardKeyEscape'),
-      },
-      {
-        value: ModifierKey.kBackspace,
-        name: this.i18n('perDeviceKeyboardKeyBackspace'),
-      },
-      {
-        value: ModifierKey.kAssistant,
-        name: this.i18n('perDeviceKeyboardKeyAssistant'),
-      },
-      {
+    this.keyMapTargets = (() => {
+      const keyMapTargets = [
+        {
+          value: ModifierKey.kMeta,
+          name: this.i18n('perDeviceKeyboardKeySearch'),
+        },
+        {
+          value: ModifierKey.kControl,
+          name: this.i18n('perDeviceKeyboardKeyCtrl'),
+        },
+        {
+          value: ModifierKey.kAlt,
+          name: this.i18n('perDeviceKeyboardKeyAlt'),
+        },
+        {
+          value: ModifierKey.kCapsLock,
+          name: this.i18n('perDeviceKeyboardKeyCapsLock'),
+        },
+        {
+          value: ModifierKey.kEscape,
+          name: this.i18n('perDeviceKeyboardKeyEscape'),
+        },
+        {
+          value: ModifierKey.kBackspace,
+          name: this.i18n('perDeviceKeyboardKeyBackspace'),
+        },
+        {
+          value: ModifierKey.kAssistant,
+          name: this.i18n('perDeviceKeyboardKeyAssistant'),
+        },
+      ];
+
+      if (loadTimeData.getBoolean('enableModifierSplit')) {
+        keyMapTargets.push({
+          value: ModifierKey.kRightAlt,
+          name: this.i18n('perDeviceKeyboardKeyRightAlt'),
+        });
+      }
+
+      if (this.hasFunctionKey) {
+        keyMapTargets.push({
+          value: ModifierKey.kFunction,
+          name: this.i18n('perDeviceKeyboardKeyFunction'),
+        });
+      }
+
+      // Push void last so that right alt is added before it.
+      keyMapTargets.push({
         value: ModifierKey.kVoid,
         name: this.i18n('perDeviceKeyboardKeyDisabled'),
-      },
-    ];
+      });
+
+      return keyMapTargets;
+    })();
   }
 
   private getKeyIcon(): KeyIcon {

@@ -20,6 +20,7 @@
 #include "base/functional/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
 #include "base/one_shot_event.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -70,6 +71,10 @@
 #include "extensions/browser/uninstall_reason.h"
 #include "extensions/common/constants.h"
 #include "ui/base/l10n/l10n_util.h"
+
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#include "chrome/browser/resources/preinstalled_web_apps/internal/container.h"
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
 using syncer::SyncChange;
 
@@ -462,6 +467,7 @@ void AppListSyncableService::InitFromLocalStorage() {
   // Restore initial state from local storage.
   const base::Value::Dict& local_items =
       profile_->GetPrefs()->GetDict(prefs::kAppListLocalState);
+  local_state_initially_empty_ = local_items.empty();
 
   for (auto [item_id, item] : local_items) {
     auto* item_dict = item.GetIfDict();
@@ -716,10 +722,27 @@ void AppListSyncableService::HandleUpdateFinished(
 
 void AppListSyncableService::AddItem(
     std::unique_ptr<ChromeAppListItem> app_item) {
+  bool using_default_position = false;
+  const bool use_default_positions_for_new_users_only =
+      IsAppDefaultPositionedForNewUsersOnly(app_item->id());
+
   // Sets `app_item`'s position before adding the sync item so that the created
   // sync item has the valid position.
-  if (!app_item->position().IsValid())
-    InitNewItemPosition(app_item.get());
+  if (!app_item->position().IsValid()) {
+    const bool consider_default_position =
+        !use_default_positions_for_new_users_only ||
+        ((!initial_sync_data_processed_ || first_app_list_sync_) &&
+         local_state_initially_empty_);
+
+    syncer::StringOrdinal default_position =
+        app_item->CalculateDefaultPositionIfApplicable();
+    if (consider_default_position && default_position.IsValid()) {
+      app_item->SetChromePosition(default_position);
+      using_default_position = true;
+    } else {
+      InitNewItemPosition(app_item.get());
+    }
+  }
 
   // When `app_item` is installed from the local device, `app_item`'s sync data
   // does not exist until `FindOrAddSyncItem()` is called.
@@ -728,6 +751,11 @@ void AppListSyncableService::AddItem(
   SyncItem* sync_item = FindOrAddSyncItem(app_item.get());
   if (!sync_item)
     return;  // Item is not valid.
+
+  if (use_default_positions_for_new_users_only && using_default_position &&
+      !initial_sync_data_processed_) {
+    sync_item->ordinal_to_undo_on_non_empty_initial_sync = app_item->position();
+  }
 
   if (app_item->is_folder()) {
     model_updater_->AddItem(std::move(app_item));
@@ -1315,6 +1343,15 @@ AppListSyncableService::MergeDataAndStartSyncing(
 
     VLOG(2) << this << " -> SYNC ADD: " << sync_item->ToString();
 
+    if (!first_app_list_sync_ &&
+        GetPermanentSortingOrder() == ash::AppListSortOrder::kCustom &&
+        sync_item->ordinal_to_undo_on_non_empty_initial_sync ==
+            sync_item->item_ordinal) {
+      sync_item->item_ordinal = CalculateGlobalFrontPosition();
+      model_updater_->UpdateAppItemFromSyncItem(sync_item, false, false);
+    }
+    sync_item->ordinal_to_undo_on_non_empty_initial_sync.reset();
+
     if (sync_item->item_id == ash::kOemFolderId &&
         oem_folder_using_provisional_default_position_) {
       sync_item->item_ordinal = GetDefaultOemFolderPosition();
@@ -1331,6 +1368,7 @@ AppListSyncableService::MergeDataAndStartSyncing(
   // Fix items that do not contain valid app list position, required for
   // builds prior to M53 (crbug.com/677647).
   for (const auto& [item_id, sync_item] : sync_items_) {
+    sync_item->ordinal_to_undo_on_non_empty_initial_sync.reset();
     if (sync_item->item_type != sync_pb::AppListSpecifics::TYPE_APP ||
         sync_item->item_ordinal.IsValid() ||
         !sync_item->empty_item_ordinal_fixable) {
@@ -1757,7 +1795,7 @@ std::string AppListSyncableService::SyncItem::ToString() const {
     res += " (" +
            sync_pb::AppListSpecifics::ColorGroup_Name(
                item_color.background_color()) +
-           " ," + std::to_string(item_color.hue()) + " )";
+           " ," + base::NumberToString(item_color.hue()) + " )";
   } else {
     res += "(INVALID COLOR)";
   }
@@ -2068,6 +2106,20 @@ bool AppListSyncableService::MaybeCreateFolderBeforeAddingItem(
     new_folder_item->SetIsSystemFolder(true);
   model_updater_->AddItem(std::move(new_folder_item));
   return true;
+}
+
+bool AppListSyncableService::IsAppDefaultPositionedForNewUsersOnly(
+    const std::string& app_id) const {
+  if (app_default_positioned_for_new_users_only_ == app_id) {
+    return true;
+  }
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  if (chromeos::features::IsContainerAppPreinstallEnabled() &&
+      app_id == web_app::kContainerAppId) {
+    return true;
+  }
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  return false;
 }
 
 }  // namespace app_list

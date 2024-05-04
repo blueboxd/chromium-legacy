@@ -36,12 +36,14 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/time/time.h"
 #include "base/types/optional_util.h"
+#include "components/viz/common/frame_timing_details.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/type_converter.h"
 #include "third_party/blink/public/common/blob/blob_utils.h"
 #include "third_party/blink/public/common/permissions_policy/permissions_policy.h"
 #include "third_party/blink/public/common/scheduler/task_attribution_id.h"
+#include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "third_party/blink/public/mojom/frame/user_activation_update_types.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/loader/fetch_later.mojom-blink.h"
@@ -414,9 +416,9 @@ void LocalFrameClientImpl::DidFinishSameDocumentNavigation(
   // TODO(dglazkov): Does this need to be called for subframes?
   web_frame_->ViewImpl()->DidCommitLoad(should_create_history_entry, true);
   if (web_frame_->Client()) {
-    web_frame_->Client()->DidFinishSameDocumentNavigation(
-        commit_type, is_synchronously_committed, same_document_navigation_type,
-        is_client_redirect);
+    // This unique token is used to associate the session history entry, and its
+    // viewport screenshot before the navigation finishes in the renderer.
+    base::UnguessableToken screenshot_destination;
 
     // Exclude `kWebHistoryInertCommit` because these types of navigations does
     // not originate from nor add entries to the session history (i.e., they are
@@ -428,14 +430,20 @@ void LocalFrameClientImpl::DidFinishSameDocumentNavigation(
       WebFrameWidgetImpl* frame_widget = web_frame_->FrameWidgetImpl();
       // The outermost mainframe must have a frame widget.
       CHECK(frame_widget);
-      if (base::FeatureList::IsEnabled(
-              features::
-                  kIncrementLocalSurfaceIdForMainframeSameDocNavigation)) {
+      if (RuntimeEnabledFeatures::
+              IncrementLocalSurfaceIdForMainframeSameDocNavigationEnabled()) {
         frame_widget->RequestNewLocalSurfaceId();
+        if (RuntimeEnabledFeatures::BackForwardTransitionsEnabled()) {
+          screenshot_destination = base::UnguessableToken::Create();
+          frame_widget->RequestViewportScreenshot(screenshot_destination);
+        }
       }
+
       frame_widget->NotifyPresentationTime(WTF::BindOnce(
-          [](base::TimeTicks start, base::TimeTicks finish) {
-            base::TimeDelta duration = finish - start;
+          [](base::TimeTicks start,
+             const viz::FrameTimingDetails& frame_timing_details) {
+            base::TimeDelta duration =
+                frame_timing_details.presentation_feedback.timestamp - start;
             base::UmaHistogramTimes(
                 "Navigation."
                 "MainframeSameDocumentNavigationCommitToPresentFirstFrame",
@@ -443,6 +451,15 @@ void LocalFrameClientImpl::DidFinishSameDocumentNavigation(
           },
           base::TimeTicks::Now()));
     }
+    std::optional<blink::SameDocNavigationScreenshotDestinationToken> token =
+        std::nullopt;
+    if (!screenshot_destination.is_empty()) {
+      token = blink::SameDocNavigationScreenshotDestinationToken(
+          screenshot_destination);
+    }
+    web_frame_->Client()->DidFinishSameDocumentNavigation(
+        commit_type, is_synchronously_committed, same_document_navigation_type,
+        is_client_redirect, token);
   }
 
   // Set the layout shift exclusion window for the browser initiated same
@@ -782,13 +799,14 @@ void LocalFrameClientImpl::DidChangePerformanceTiming() {
 
 void LocalFrameClientImpl::DidObserveUserInteraction(
     base::TimeTicks max_event_start,
-    base::TimeTicks max_event_end,
     base::TimeTicks max_event_queued_main_thread,
+    base::TimeTicks max_event_commit_finish,
+    base::TimeTicks max_event_end,
     UserInteractionType interaction_type,
     uint64_t interaction_offset) {
   web_frame_->Client()->DidObserveUserInteraction(
-      max_event_start, max_event_end, max_event_queued_main_thread,
-      interaction_type, interaction_offset);
+      max_event_start, max_event_queued_main_thread, max_event_commit_finish,
+      max_event_end, interaction_type, interaction_offset);
 }
 
 void LocalFrameClientImpl::DidChangeCpuTiming(base::TimeDelta time) {
@@ -1050,10 +1068,6 @@ LocalFrameClientImpl::GetBrowserInterfaceBroker() {
 AssociatedInterfaceProvider*
 LocalFrameClientImpl::GetRemoteNavigationAssociatedInterfaces() {
   return web_frame_->Client()->GetRemoteNavigationAssociatedInterfaces();
-}
-
-void LocalFrameClientImpl::AnnotatedRegionsChanged() {
-  web_frame_->Client()->DraggableRegionsChanged();
 }
 
 base::UnguessableToken LocalFrameClientImpl::GetDevToolsFrameToken() const {

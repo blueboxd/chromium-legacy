@@ -63,14 +63,14 @@ class CreditCardFormEventLogger : public FormEventLoggerBase {
   // are fetched for a virtual card standalone CVC field.
   // `metadata_logging_context` contains information about whether any card has
   // a non-empty product description or art image, and whether they are shown.
-  void OnDidFetchSuggestion(const std::vector<Suggestion>& suggestions,
-                            bool with_offer,
-                            bool with_cvc,
-                            bool is_virtual_card_standalone_cvc_field,
-                            const autofill_metrics::CardMetadataLoggingContext&
-                                metadata_logging_context);
+  void OnDidFetchSuggestion(
+      const std::vector<Suggestion>& suggestions,
+      bool with_offer,
+      bool with_cvc,
+      bool is_virtual_card_standalone_cvc_field,
+      autofill_metrics::CardMetadataLoggingContext metadata_logging_context);
 
-  // TODO(crbug.com/1495879): Remove redundant parameters.
+  // TODO(crbug.com/40937936): Remove redundant parameters.
   // form_parsed_timestamp and off_the_record value can be removed, as their
   // values can be retrieved from 'form' or 'client_'.
   void OnDidShowSuggestions(
@@ -172,6 +172,7 @@ class CreditCardFormEventLogger : public FormEventLoggerBase {
   bool has_logged_suggestion_with_metadata_selected_ = false;
   bool has_logged_legacy_masked_server_card_suggestion_selected_ = false;
   bool has_logged_masked_server_card_suggestion_selected_ = false;
+  bool has_logged_masked_server_card_suggestion_filled_ = false;
   bool has_logged_virtual_card_suggestion_selected_ = false;
   bool has_logged_suggestion_for_virtual_card_standalone_cvc_shown_ = false;
   bool has_logged_suggestion_for_virtual_card_standalone_cvc_selected_ = false;
@@ -179,11 +180,19 @@ class CreditCardFormEventLogger : public FormEventLoggerBase {
   bool has_logged_suggestion_for_card_with_cvc_shown_ = false;
   bool has_logged_suggestion_for_card_with_cvc_selected_ = false;
   bool has_logged_suggestion_for_card_with_cvc_filled_ = false;
+  bool has_logged_suggestion_shown_for_benefits_ = false;
   bool logged_suggestion_filled_was_masked_server_card_ = false;
   bool logged_suggestion_filled_was_virtual_card_ = false;
   // If true, the most recent card to be selected as an Autofill suggestion was
   // a virtual card. False for all other card types.
   bool latest_selected_card_was_virtual_card_ = false;
+  // If true, the most recent card that was filled as an Autofill suggestion
+  // was a masked server card. False for all other card types.
+  bool latest_filled_card_was_masked_server_card_ = false;
+  // If true, the most recent card that was filled as an Autofill suggestion
+  // was a masked server card with a benefit available. False for all other
+  // cards.
+  bool latest_filled_card_was_card_with_benefit_available_ = false;
   std::vector<Suggestion> suggestions_;
   bool has_eligible_offer_ = false;
   bool card_selected_has_offer_ = false;

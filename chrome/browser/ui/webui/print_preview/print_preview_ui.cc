@@ -30,6 +30,7 @@
 #include "chrome/browser/pdf/pdf_extension_util.h"
 #include "chrome/browser/printing/background_printing_manager.h"
 #include "chrome/browser/printing/pdf_nup_converter_client.h"
+#include "chrome/browser/printing/print_compositor_util.h"
 #include "chrome/browser/printing/print_job_manager.h"
 #include "chrome/browser/printing/print_preview_data_service.h"
 #include "chrome/browser/printing/print_preview_dialog_controller.h"
@@ -53,6 +54,7 @@
 #include "chrome/grit/pdf_resources_map.h"
 #include "chrome/grit/print_preview_resources.h"
 #include "chrome/grit/print_preview_resources_map.h"
+#include "components/device_event_log/device_event_log.h"
 #include "components/policy/core/common/management/management_service.h"
 #include "components/prefs/pref_service.h"
 #include "components/printing/browser/print_composite_client.h"
@@ -91,9 +93,8 @@
 #endif
 
 #if BUILDFLAG(ENABLE_OOP_PRINTING)
-#include "chrome/browser/printing/prefs_util.h"
+#include "chrome/browser/printing/oop_features.h"
 #include "chrome/browser/printing/print_backend_service_manager.h"
-#include "printing/printing_features.h"
 #endif
 
 using content::WebContents;
@@ -556,11 +557,13 @@ void PrintPreviewUI::NotifyUIPreviewDocumentReady(
     initial_preview_start_time_ = base::TimeTicks();
   }
 
+  if (g_test_delegate) {
+    g_test_delegate->PreviewDocumentReady(web_ui()->GetWebContents(),
+                                          *data_bytes);
+  }
+
   SetPrintPreviewDataForIndex(COMPLETE_PREVIEW_DOCUMENT_INDEX,
                               std::move(data_bytes));
-  if (g_test_delegate) {
-    g_test_delegate->PreviewDocumentReady(web_ui()->GetWebContents());
-  }
   handler_->OnPrintPreviewReady(*id_, request_id);
 }
 
@@ -972,9 +975,10 @@ void PrintPreviewUI::DidPrepareDocumentForPreview(int32_t document_cookie,
   if (!render_frame_host)
     return;
 
+  PRINTER_LOG(EVENT) << "Compositing for document type "
+                     << GetCompositorDocumentType();
   client->PrepareToCompositeDocument(
-      document_cookie, render_frame_host,
-      PrintCompositeClient::GetDocumentType(),
+      document_cookie, render_frame_host, GetCompositorDocumentType(),
       mojo::WrapCallbackWithDefaultInvokeIfNotRun(
           base::BindOnce(&PrintPreviewUI::OnPrepareForDocumentToPdfDone,
                          weak_ptr_factory_.GetWeakPtr(), request_id),

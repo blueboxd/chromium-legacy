@@ -18,7 +18,6 @@
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/ui/autofill/autofill_context_menu_manager.h"
-#include "chrome/browser/ui/user_education/scoped_new_badge_tracker.h"
 #include "components/compose/buildflags.h"
 #include "components/custom_handlers/protocol_handler_registry.h"
 #include "components/lens/buildflags.h"
@@ -27,7 +26,8 @@
 #include "components/renderer_context_menu/render_view_context_menu_observer.h"
 #include "components/renderer_context_menu/render_view_context_menu_proxy.h"
 #include "components/search_engines/template_url.h"
-#include "components/supervised_user/core/common/buildflags.h"
+#include "components/supervised_user/core/browser/supervised_user_url_filter.h"
+#include "components/supervised_user/core/browser/supervised_user_utils.h"
 #include "content/public/browser/context_menu_params.h"
 #include "extensions/buildflags/buildflags.h"
 #include "ppapi/buildflags/buildflags.h"
@@ -50,11 +50,6 @@
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/context_menu_matcher.h"
 #include "chrome/browser/extensions/menu_manager.h"
-#endif
-
-#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-#include "components/supervised_user/core/browser/supervised_user_url_filter.h"
-#include "components/supervised_user/core/browser/supervised_user_utils.h"
 #endif
 
 class AccessibilityLabelsMenuObserver;
@@ -116,6 +111,7 @@ class RenderViewContextMenu
  public:
   DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(kExitFullscreenMenuItem);
   DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(kComposeMenuItem);
+  DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(kRegionSearchItem);
 
   using ExecutePluginActionCallback =
       base::OnceCallback<void(content::RenderFrameHost*,
@@ -320,14 +316,13 @@ class RenderViewContextMenu
   void AppendSearchLensForImageItems();
   void AppendSearchWebForImageItems();
   void AppendProtocolHandlerSubMenu();
+  // TODO(b/316143236): Remove this method (along with the methods called by it)
+  // once `kPasswordManualFallbackAvailable` is rolled out.
   void AppendPasswordItems();
   void AppendSharingItems();
-#if !BUILDFLAG(IS_FUCHSIA)
   void AppendClickToCallItem();
-#endif
   void AppendRegionSearchItem();
   void AppendLiveCaptionItem();
-  bool AppendFollowUnfollowItem();
   void AppendSendTabToSelfItem(bool add_separator);
   void AppendUserNotesItems();
   bool AppendQRCodeGeneratorItem(bool for_image,
@@ -430,14 +425,12 @@ class RenderViewContextMenu
   // warms up a renderer process.
   void MaybePrepareForLensQuery();
 
-#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   // Does not execute "Save link as" if the URL is blocked by the URL filter.
   void CheckSupervisedUserURLFilterAndSaveLinkAs();
   void OnSupervisedUserURLFilterChecked(
       supervised_user::FilteringBehavior filtering_behavior,
       supervised_user::FilteringBehaviorReason reason,
       bool uncertain);
-#endif
 
 #if BUILDFLAG(IS_CHROMEOS)
   // Shows the standalone clipboard history menu. `event_flags` describes the
@@ -546,8 +539,6 @@ class RenderViewContextMenu
 
   // Responsible for handling autofill related context menu items.
   autofill::AutofillContextMenuManager autofill_context_menu_manager_;
-
-  ScopedNewBadgeTracker new_badge_tracker_;
 
   base::WeakPtrFactory<RenderViewContextMenu> weak_pointer_factory_{this};
 };

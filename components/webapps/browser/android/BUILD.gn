@@ -45,6 +45,8 @@ android_library("java") {
   ]
   deps = [
     ":java_resources",
+    ":pwa_restore_bottom_sheet_mediator_jni_headers_java",
+    ":webapps_jni_headers_java",
     "//base:base_java",
     "//build/android:build_java",
     "//chrome/browser/android/webapk/proto:proto_java",
@@ -62,7 +64,6 @@ android_library("java") {
   ]
   srcjar_deps = [
     ":webapps_java_enums_srcjar",
-    ":webapps_jni_headers",
     "//components/webapps/browser/android/webapk:enums_srcjar",
   ]
 }
@@ -79,6 +80,10 @@ generate_jni("webapps_jni_headers") {
     "java/src/org/chromium/components/webapps/bottomsheet/PwaBottomSheetControllerProvider.java",
     "java/src/org/chromium/components/webapps/pwa_universal_install/PwaUniversalInstallBottomSheetCoordinator.java",
   ]
+}
+
+generate_jni("pwa_restore_bottom_sheet_mediator_jni_headers") {
+  sources = [ "java/src/org/chromium/components/webapps/pwa_restore_ui/PwaRestoreBottomSheetMediator.java" ]
 }
 
 java_cpp_enum("webapps_java_enums_srcjar") {
@@ -111,6 +116,7 @@ android_resources("java_resources") {
     "java/res/drawable-xxxhdpi/star_green.png",
     "java/res/drawable/pwa_restore_app_item_background_bottom.xml",
     "java/res/drawable/pwa_restore_app_item_background_middle.xml",
+    "java/res/drawable/pwa_restore_app_item_background_single.xml",
     "java/res/drawable/pwa_restore_app_item_background_top.xml",
     "java/res/drawable/pwa_restore_icon.xml",
     "java/res/drawable/rating_bar.xml",
@@ -218,6 +224,7 @@ robolectric_library("junit") {
     "//ui/android:ui_java_test_support",
     "//ui/android:ui_junit_test_support",
     "//ui/android:ui_no_recycler_view_java",
+    "//url:url_java",
   ]
 }
 
@@ -235,7 +242,9 @@ android_library("unit_device_javatests") {
     "//components/browser_ui/widget/android:unit_device_javatests",
     "//content/public/test/android:content_java_test_support",
     "//third_party/androidx:androidx_test_runner_java",
+    "//third_party/jni_zero:jni_zero_java",
     "//third_party/junit:junit",
+    "//third_party/mockito:mockito_java",
     "//ui/android:ui_java",
     "//ui/android:ui_java_test_support",
   ]

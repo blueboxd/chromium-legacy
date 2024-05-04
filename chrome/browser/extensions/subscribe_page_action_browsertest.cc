@@ -103,6 +103,15 @@ class NamedFrameCreatedObserver : public content::WebContentsObserver {
     run_loop_.Quit();
   }
 
+  void RenderFrameDeleted(
+      content::RenderFrameHost* render_frame_host) override {
+    if (render_frame_host->GetFrameName() != frame_name_) {
+      return;
+    }
+
+    frame_ = nullptr;
+  }
+
   base::RunLoop run_loop_;
   raw_ptr<content::RenderFrameHost> frame_ = nullptr;
   std::string frame_name_;
@@ -245,7 +254,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, RSSParseFeedValidFeed0) {
                             "Desc VIDEO", "No error", "PreviewReady");
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, RSSParseFeedValidFeed5) {
+// TODO(crbug.com/331144174): Re-enable this test
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, DISABLED_RSSParseFeedValidFeed5) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   const Extension* extension = LoadExtension(
@@ -294,7 +304,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, RSSParseFeedInvalidFeed1) {
       "element 'desc_0' not found", "This feed contains no entries.", "Error");
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, RSSParseFeedInvalidFeed2) {
+// TODO(https://crbug.com/331144174): Test is flaky across multiple builders.
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest,
+                       DISABLED_RSSParseFeedInvalidFeed2) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   const Extension* extension = LoadExtension(
@@ -309,7 +321,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, RSSParseFeedInvalidFeed2) {
       "element 'desc_0' not found", "This feed contains no entries.", "Error");
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, RSSParseFeedInvalidFeed3) {
+// TODO(https://crbug.com/331144174): Flaky on ASan LSan.
+#if defined(ADDRESS_SANITIZER) && defined(LEAK_SANITIZER)
+#define MAYBE_RSSParseFeedInvalidFeed3 DISABLED_RSSParseFeedInvalidFeed3
+#else
+#define MAYBE_RSSParseFeedInvalidFeed3 RSSParseFeedInvalidFeed3
+#endif
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MAYBE_RSSParseFeedInvalidFeed3) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   const Extension* extension = LoadExtension(

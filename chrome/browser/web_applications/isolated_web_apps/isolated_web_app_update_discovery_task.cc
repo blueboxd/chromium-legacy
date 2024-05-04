@@ -101,7 +101,7 @@ void IsolatedWebAppUpdateDiscoveryTask::Start(CompletionCallback callback) {
 
   debug_log_.Set("start_time", base::TimeToValue(base::Time::Now()));
 
-  // TODO(crbug.com/1459160): Once we support updating IWAs not installed via
+  // TODO(crbug.com/40274186): Once we support updating IWAs not installed via
   // policy, we need to update this annotation.
   net::PartialNetworkTrafficAnnotationTag update_manifest_traffic_annotation =
       net::DefinePartialNetworkTrafficAnnotation(
@@ -157,7 +157,7 @@ void IsolatedWebAppUpdateDiscoveryTask::OnUpdateManifestFetched(
           // TODO(b/294481776): In the future, we will support channel selection
           // via policy and by the end user for unmanaged users. For now, we
           // always use the "default" channel.
-          UpdateManifest::kDefaultUpdateChannelId);
+          UpdateChannelId::default_id());
   if (!latest_version_entry.has_value()) {
     FailWith(Error::kUpdateManifestNoApplicableVersion);
     return;
@@ -236,7 +236,7 @@ void IsolatedWebAppUpdateDiscoveryTask::OnGetDownloadPath(
     return;
   }
 
-  // TODO(crbug.com/1459160): Once we support updating IWAs not installed via
+  // TODO(crbug.com/40274186): Once we support updating IWAs not installed via
   // policy, we need to update this annotation.
   net::PartialNetworkTrafficAnnotationTag web_bundle_traffic_annotation =
       net::DefinePartialNetworkTrafficAnnotation(
@@ -284,7 +284,9 @@ void IsolatedWebAppUpdateDiscoveryTask::OnWebBundleDownloaded(
 
   command_scheduler_->PrepareAndStoreIsolatedWebAppUpdate(
       IsolatedWebAppUpdatePrepareAndStoreCommand::UpdateInfo(
-          InstalledBundle({.path = download_path}), expected_version),
+          IwaSourceBundleProdModeWithFileOp(download_path,
+                                            IwaSourceBundleProdFileOp::kMove),
+          expected_version),
       url_info_,
       /*optional_keep_alive=*/nullptr,
       /*optional_profile_keep_alive=*/nullptr,

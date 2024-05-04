@@ -394,13 +394,13 @@ TEST_F(ComputedStyleTest, HasOutlineWithCurrentColor) {
 
   builder = CreateComputedStyleBuilder();
   builder.SetOutlineColor(StyleColor::CurrentColor());
-  builder.SetOutlineWidth(LayoutUnit(5));
+  builder.SetOutlineWidth(5);
   style = builder.TakeStyle();
   EXPECT_FALSE(style->HasOutlineWithCurrentColor());
 
   builder = CreateComputedStyleBuilder();
   builder.SetOutlineColor(StyleColor::CurrentColor());
-  builder.SetOutlineWidth(LayoutUnit(5));
+  builder.SetOutlineWidth(5);
   builder.SetOutlineStyle(EBorderStyle::kSolid);
   style = builder.TakeStyle();
   EXPECT_TRUE(style->HasOutlineWithCurrentColor());
@@ -408,7 +408,7 @@ TEST_F(ComputedStyleTest, HasOutlineWithCurrentColor) {
 
 TEST_F(ComputedStyleTest, BorderWidth) {
   ComputedStyleBuilder builder = CreateComputedStyleBuilder();
-  builder.SetBorderBottomWidth(LayoutUnit(5));
+  builder.SetBorderBottomWidth(5);
   const ComputedStyle* style = builder.TakeStyle();
   EXPECT_EQ(style->BorderBottomWidth(), 0);
 
@@ -456,24 +456,24 @@ TEST_F(ComputedStyleTest, BorderStyle) {
   const ComputedStyle* other = builder.TakeStyle();
   EXPECT_TRUE(style->BorderSizeEquals(*other));
 
-  UPDATE_STYLE(style, SetBorderLeftWidth, LayoutUnit(1));
+  UPDATE_STYLE(style, SetBorderLeftWidth, 1);
   EXPECT_FALSE(style->BorderSizeEquals(*other));
-  UPDATE_STYLE(other, SetBorderLeftWidth, LayoutUnit(1));
+  UPDATE_STYLE(other, SetBorderLeftWidth, 1);
   EXPECT_TRUE(style->BorderSizeEquals(*other));
 
-  UPDATE_STYLE(style, SetBorderTopWidth, LayoutUnit(1));
+  UPDATE_STYLE(style, SetBorderTopWidth, 1);
   EXPECT_FALSE(style->BorderSizeEquals(*other));
-  UPDATE_STYLE(other, SetBorderTopWidth, LayoutUnit(1));
+  UPDATE_STYLE(other, SetBorderTopWidth, 1);
   EXPECT_TRUE(style->BorderSizeEquals(*other));
 
-  UPDATE_STYLE(style, SetBorderRightWidth, LayoutUnit(1));
+  UPDATE_STYLE(style, SetBorderRightWidth, 1);
   EXPECT_FALSE(style->BorderSizeEquals(*other));
-  UPDATE_STYLE(other, SetBorderRightWidth, LayoutUnit(1));
+  UPDATE_STYLE(other, SetBorderRightWidth, 1);
   EXPECT_TRUE(style->BorderSizeEquals(*other));
 
-  UPDATE_STYLE(style, SetBorderBottomWidth, LayoutUnit(1));
+  UPDATE_STYLE(style, SetBorderBottomWidth, 1);
   EXPECT_FALSE(style->BorderSizeEquals(*other));
-  UPDATE_STYLE(other, SetBorderBottomWidth, LayoutUnit(1));
+  UPDATE_STYLE(other, SetBorderBottomWidth, 1);
   EXPECT_TRUE(style->BorderSizeEquals(*other));
 
   UPDATE_STYLE(style, SetBorderLeftStyle, EBorderStyle::kHidden);
@@ -962,14 +962,13 @@ TEST_F(ComputedStyleTest, StrokeWidthZoomAndCalc) {
       CSSMathExpressionNumericLiteral::Create(CSSNumericLiteralValue::Create(
           10, CSSPrimitiveValue::UnitType::kNumber)));
 
-  To<Longhand>(GetCSSPropertyStrokeWidth())
-      .ApplyValue(state, *calc_value, CSSProperty::ValueMode::kNormal);
+  GetCSSPropertyStrokeWidth().ApplyValue(state, *calc_value,
+                                         CSSProperty::ValueMode::kNormal);
   const ComputedStyle* style = state.TakeStyle();
   auto* computed_value =
-      To<Longhand>(GetCSSPropertyStrokeWidth())
-          .CSSValueFromComputedStyleInternal(
-              *style, nullptr /* layout_object */,
-              false /* allow_visited_style */, CSSValuePhase::kComputedValue);
+      GetCSSPropertyStrokeWidth().CSSValueFromComputedStyleInternal(
+          *style, nullptr /* layout_object */, false /* allow_visited_style */,
+          CSSValuePhase::kComputedValue);
   ASSERT_TRUE(computed_value);
   ASSERT_EQ("calc(10px)", computed_value->CssText());
 }
@@ -1231,8 +1230,6 @@ TEST_F(ComputedStyleTest, BorderWidthZoom) {
 TEST_F(ComputedStyleTest, BorderWidthConversion) {
   // Tests that Border, Outline and Column Rule Widths
   // are converted as expected.
-  ScopedSnapBorderWidthsBeforeLayoutForTest
-      enable_snap_border_widths_before_layout_for_test(true);
 
   std::unique_ptr<DummyPageHolder> dummy_page_holder =
       std::make_unique<DummyPageHolder>(gfx::Size(0, 0), nullptr);
@@ -1308,8 +1305,6 @@ TEST_F(ComputedStyleTest, BorderWidthConversion) {
 TEST_F(ComputedStyleTest, BorderWidthConversionWithZoom) {
   // Tests that Border Widths
   // are converted as expected when Zoom is applied.
-  ScopedSnapBorderWidthsBeforeLayoutForTest
-      enable_snap_border_widths_before_layout_for_test(true);
 
   std::unique_ptr<DummyPageHolder> dummy_page_holder =
       std::make_unique<DummyPageHolder>(gfx::Size(0, 0), nullptr);
@@ -1353,27 +1348,27 @@ TEST_F(ComputedStyleTest, BorderWidthConversionWithZoom) {
 
   const struct {
     const ComputedStyle* style;
-    double expected_px;
+    int expected_px;
     STACK_ALLOCATED();
   } tests[] = {
-      {document.getElementById(AtomicString("t1"))->GetComputedStyle(), 2.0},
-      {document.getElementById(AtomicString("t2"))->GetComputedStyle(), 6.0},
-      {document.getElementById(AtomicString("t3"))->GetComputedStyle(), 10.0},
-      {document.getElementById(AtomicString("t4"))->GetComputedStyle(), 0.0},
-      {document.getElementById(AtomicString("t5"))->GetComputedStyle(), 1.0},
-      {document.getElementById(AtomicString("t6"))->GetComputedStyle(), 1.0},
-      {document.getElementById(AtomicString("t7"))->GetComputedStyle(), 1.0},
-      {document.getElementById(AtomicString("t8"))->GetComputedStyle(), 2.0},
-      {document.getElementById(AtomicString("t9"))->GetComputedStyle(), 3.0},
-      {document.getElementById(AtomicString("t10"))->GetComputedStyle(), 6.0},
-      {document.getElementById(AtomicString("t11"))->GetComputedStyle(), 6.0},
-      {document.getElementById(AtomicString("t12"))->GetComputedStyle(), 7.0},
-      {document.getElementById(AtomicString("t13"))->GetComputedStyle(), 7.0},
+      {document.getElementById(AtomicString("t1"))->GetComputedStyle(), 2},
+      {document.getElementById(AtomicString("t2"))->GetComputedStyle(), 6},
+      {document.getElementById(AtomicString("t3"))->GetComputedStyle(), 10},
+      {document.getElementById(AtomicString("t4"))->GetComputedStyle(), 0},
+      {document.getElementById(AtomicString("t5"))->GetComputedStyle(), 1},
+      {document.getElementById(AtomicString("t6"))->GetComputedStyle(), 1},
+      {document.getElementById(AtomicString("t7"))->GetComputedStyle(), 1},
+      {document.getElementById(AtomicString("t8"))->GetComputedStyle(), 2},
+      {document.getElementById(AtomicString("t9"))->GetComputedStyle(), 3},
+      {document.getElementById(AtomicString("t10"))->GetComputedStyle(), 6},
+      {document.getElementById(AtomicString("t11"))->GetComputedStyle(), 6},
+      {document.getElementById(AtomicString("t12"))->GetComputedStyle(), 7},
+      {document.getElementById(AtomicString("t13"))->GetComputedStyle(), 7},
   };
 
   for (const auto& test : tests) {
     auto width = test.style->BorderTopWidth();
-    EXPECT_DOUBLE_EQ(test.expected_px, width.ToDouble());
+    EXPECT_EQ(test.expected_px, width);
   }
 }
 
@@ -1539,8 +1534,8 @@ TEST_F(ComputedStyleTest, ApplyInitialAnimationNameAndTransitionProperty) {
   EXPECT_FALSE(state.StyleBuilder().Animations());
   EXPECT_FALSE(state.StyleBuilder().Transitions());
 
-  To<Longhand>(GetCSSPropertyAnimationName()).ApplyInitial(state);
-  To<Longhand>(GetCSSPropertyTransitionProperty()).ApplyInitial(state);
+  GetCSSPropertyAnimationName().ApplyInitial(state);
+  GetCSSPropertyTransitionProperty().ApplyInitial(state);
   EXPECT_FALSE(state.StyleBuilder().Animations());
   EXPECT_FALSE(state.StyleBuilder().Transitions());
 }
@@ -1982,14 +1977,13 @@ TEST_F(ComputedStyleTest, BackgroundRepeat) {
   auto* repeat_style_value = MakeGarbageCollected<CSSRepeatStyleValue>(
       CSSIdentifierValue::Create(CSSValueID::kRepeatX));
 
-  To<Longhand>(GetCSSPropertyBackgroundRepeat())
-      .ApplyValue(state, *repeat_style_value, CSSProperty::ValueMode::kNormal);
+  GetCSSPropertyBackgroundRepeat().ApplyValue(state, *repeat_style_value,
+                                              CSSProperty::ValueMode::kNormal);
   const ComputedStyle* style = state.TakeStyle();
   auto* computed_value =
-      To<Longhand>(GetCSSPropertyBackgroundRepeat())
-          .CSSValueFromComputedStyleInternal(
-              *style, nullptr /* layout_object */,
-              false /* allow_visited_style */, CSSValuePhase::kComputedValue);
+      GetCSSPropertyBackgroundRepeat().CSSValueFromComputedStyleInternal(
+          *style, nullptr /* layout_object */, false /* allow_visited_style */,
+          CSSValuePhase::kComputedValue);
   ASSERT_TRUE(computed_value);
   ASSERT_EQ("repeat-x", computed_value->CssText());
 }
@@ -2010,14 +2004,13 @@ TEST_F(ComputedStyleTest, MaskRepeat) {
   auto* repeat_style_value = MakeGarbageCollected<CSSRepeatStyleValue>(
       CSSIdentifierValue::Create(CSSValueID::kRepeatY));
 
-  To<Longhand>(GetCSSPropertyMaskRepeat())
-      .ApplyValue(state, *repeat_style_value, CSSProperty::ValueMode::kNormal);
+  GetCSSPropertyMaskRepeat().ApplyValue(state, *repeat_style_value,
+                                        CSSProperty::ValueMode::kNormal);
   const ComputedStyle* style = state.TakeStyle();
   auto* computed_value =
-      To<Longhand>(GetCSSPropertyMaskRepeat())
-          .CSSValueFromComputedStyleInternal(
-              *style, nullptr /* layout_object */,
-              false /* allow_visited_style */, CSSValuePhase::kComputedValue);
+      GetCSSPropertyMaskRepeat().CSSValueFromComputedStyleInternal(
+          *style, nullptr /* layout_object */, false /* allow_visited_style */,
+          CSSValuePhase::kComputedValue);
   ASSERT_TRUE(computed_value);
   ASSERT_EQ("repeat-y", computed_value->CssText());
 }
@@ -2037,14 +2030,13 @@ TEST_F(ComputedStyleTest, MaskMode) {
 
   auto* mode_style_value = CSSIdentifierValue::Create(CSSValueID::kAlpha);
 
-  To<Longhand>(GetCSSPropertyMaskMode())
-      .ApplyValue(state, *mode_style_value, CSSProperty::ValueMode::kNormal);
+  GetCSSPropertyMaskMode().ApplyValue(state, *mode_style_value,
+                                      CSSProperty::ValueMode::kNormal);
   const ComputedStyle* style = state.TakeStyle();
   auto* computed_value =
-      To<Longhand>(GetCSSPropertyMaskMode())
-          .CSSValueFromComputedStyleInternal(
-              *style, nullptr /* layout_object */,
-              false /* allow_visited_style */, CSSValuePhase::kComputedValue);
+      GetCSSPropertyMaskMode().CSSValueFromComputedStyleInternal(
+          *style, nullptr /* layout_object */, false /* allow_visited_style */,
+          CSSValuePhase::kComputedValue);
   ASSERT_TRUE(computed_value);
   ASSERT_EQ("alpha", computed_value->CssText());
 }
@@ -2055,10 +2047,9 @@ TEST_F(ComputedStyleTest, DynamicRangeLimitMixStandardToConstrainedHigh) {
   ComputedStyleBuilder builder = CreateComputedStyleBuilder();
   builder.SetDynamicRangeLimit(limit);
   auto* dynamic_range_limit_mix_value =
-      To<Longhand>(GetCSSPropertyDynamicRangeLimit())
-          .CSSValueFromComputedStyleInternal(
-              *builder.TakeStyle(), nullptr /* layout_object */,
-              false /* allow_visited_style */, CSSValuePhase::kComputedValue);
+      GetCSSPropertyDynamicRangeLimit().CSSValueFromComputedStyleInternal(
+          *builder.TakeStyle(), nullptr /* layout_object */,
+          false /* allow_visited_style */, CSSValuePhase::kComputedValue);
   ASSERT_NE(dynamic_range_limit_mix_value, nullptr);
 
   EXPECT_EQ(dynamic_range_limit_mix_value->CssText(),
@@ -2076,9 +2067,8 @@ TEST_F(ComputedStyleTest, DynamicRangeLimitMixStandardToConstrainedHigh) {
 
   state.SetStyle(*initial);
 
-  To<Longhand>(GetCSSPropertyDynamicRangeLimit())
-      .ApplyValue(state, *dynamic_range_limit_mix_value,
-                  CSSProperty::ValueMode::kNormal);
+  GetCSSPropertyDynamicRangeLimit().ApplyValue(
+      state, *dynamic_range_limit_mix_value, CSSProperty::ValueMode::kNormal);
 
   const DynamicRangeLimit converted_limit =
       state.TakeStyle()->GetDynamicRangeLimit();
@@ -2093,10 +2083,9 @@ TEST_F(ComputedStyleTest, DynamicRangeLimitMixStandardToHigh) {
   ComputedStyleBuilder builder = CreateComputedStyleBuilder();
   builder.SetDynamicRangeLimit(limit);
   auto* dynamic_range_limit_mix_value =
-      To<Longhand>(GetCSSPropertyDynamicRangeLimit())
-          .CSSValueFromComputedStyleInternal(
-              *builder.TakeStyle(), nullptr /* layout_object */,
-              false /* allow_visited_style */, CSSValuePhase::kComputedValue);
+      GetCSSPropertyDynamicRangeLimit().CSSValueFromComputedStyleInternal(
+          *builder.TakeStyle(), nullptr /* layout_object */,
+          false /* allow_visited_style */, CSSValuePhase::kComputedValue);
   ASSERT_NE(dynamic_range_limit_mix_value, nullptr);
 
   EXPECT_EQ(dynamic_range_limit_mix_value->CssText(),
@@ -2114,9 +2103,8 @@ TEST_F(ComputedStyleTest, DynamicRangeLimitMixStandardToHigh) {
 
   state.SetStyle(*initial);
 
-  To<Longhand>(GetCSSPropertyDynamicRangeLimit())
-      .ApplyValue(state, *dynamic_range_limit_mix_value,
-                  CSSProperty::ValueMode::kNormal);
+  GetCSSPropertyDynamicRangeLimit().ApplyValue(
+      state, *dynamic_range_limit_mix_value, CSSProperty::ValueMode::kNormal);
 
   const DynamicRangeLimit converted_limit =
       state.TakeStyle()->GetDynamicRangeLimit();
@@ -2131,10 +2119,9 @@ TEST_F(ComputedStyleTest, DynamicRangeLimitMixConstrainedHighToHigh) {
   ComputedStyleBuilder builder = CreateComputedStyleBuilder();
   builder.SetDynamicRangeLimit(limit);
   auto* dynamic_range_limit_mix_value =
-      To<Longhand>(GetCSSPropertyDynamicRangeLimit())
-          .CSSValueFromComputedStyleInternal(
-              *builder.TakeStyle(), nullptr /* layout_object */,
-              false /* allow_visited_style */, CSSValuePhase::kComputedValue);
+      GetCSSPropertyDynamicRangeLimit().CSSValueFromComputedStyleInternal(
+          *builder.TakeStyle(), nullptr /* layout_object */,
+          false /* allow_visited_style */, CSSValuePhase::kComputedValue);
   ASSERT_NE(dynamic_range_limit_mix_value, nullptr);
 
   EXPECT_EQ(dynamic_range_limit_mix_value->CssText(),
@@ -2152,9 +2139,8 @@ TEST_F(ComputedStyleTest, DynamicRangeLimitMixConstrainedHighToHigh) {
 
   state.SetStyle(*initial);
 
-  To<Longhand>(GetCSSPropertyDynamicRangeLimit())
-      .ApplyValue(state, *dynamic_range_limit_mix_value,
-                  CSSProperty::ValueMode::kNormal);
+  GetCSSPropertyDynamicRangeLimit().ApplyValue(
+      state, *dynamic_range_limit_mix_value, CSSProperty::ValueMode::kNormal);
 
   const DynamicRangeLimit converted_limit =
       state.TakeStyle()->GetDynamicRangeLimit();
@@ -2169,10 +2155,9 @@ TEST_F(ComputedStyleTest, DynamicRangeLimitMixAllThree) {
   ComputedStyleBuilder builder = CreateComputedStyleBuilder();
   builder.SetDynamicRangeLimit(limit);
   auto* dynamic_range_limit_mix_value =
-      To<Longhand>(GetCSSPropertyDynamicRangeLimit())
-          .CSSValueFromComputedStyleInternal(
-              *builder.TakeStyle(), nullptr /* layout_object */,
-              false /* allow_visited_style */, CSSValuePhase::kComputedValue);
+      GetCSSPropertyDynamicRangeLimit().CSSValueFromComputedStyleInternal(
+          *builder.TakeStyle(), nullptr /* layout_object */,
+          false /* allow_visited_style */, CSSValuePhase::kComputedValue);
   ASSERT_NE(dynamic_range_limit_mix_value, nullptr);
 
   EXPECT_EQ(dynamic_range_limit_mix_value->CssText(),
@@ -2191,9 +2176,8 @@ TEST_F(ComputedStyleTest, DynamicRangeLimitMixAllThree) {
 
   state.SetStyle(*initial);
 
-  To<Longhand>(GetCSSPropertyDynamicRangeLimit())
-      .ApplyValue(state, *dynamic_range_limit_mix_value,
-                  CSSProperty::ValueMode::kNormal);
+  GetCSSPropertyDynamicRangeLimit().ApplyValue(
+      state, *dynamic_range_limit_mix_value, CSSProperty::ValueMode::kNormal);
 
   const DynamicRangeLimit converted_limit =
       state.TakeStyle()->GetDynamicRangeLimit();

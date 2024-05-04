@@ -7,7 +7,6 @@
 #include <memory>
 #include <string>
 
-#include "base/sys_byteorder.h"
 #include "base/test/task_environment.h"
 #include "chromeos/ash/components/network/device_state.h"
 #include "chromeos/ash/components/network/network_state_test_helper.h"
@@ -352,7 +351,7 @@ TEST_F(ArcNetUtilsTest, TranslateConnectionState) {
   EXPECT_EQ(arc::mojom::ConnectionStateType::NOT_CONNECTED,
             net_utils::TranslateConnectionState(shill::kStateFailure));
   EXPECT_EQ(arc::mojom::ConnectionStateType::NOT_CONNECTED,
-            net_utils::TranslateConnectionState(shill::kStateDisconnect));
+            net_utils::TranslateConnectionState(shill::kStateDisconnecting));
   EXPECT_EQ(arc::mojom::ConnectionStateType::NOT_CONNECTED,
             net_utils::TranslateConnectionState(""));
   EXPECT_EQ(arc::mojom::ConnectionStateType::ONLINE,

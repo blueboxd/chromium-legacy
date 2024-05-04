@@ -2,10 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import './destination_dropdown.js';
+import '../css/print_preview_cros_shared.css.js';
+
+import {EventTracker} from 'chrome://resources/js/event_tracker.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {getTemplate} from './destination_select.html.js';
-import {DestinationSelectController} from './destination_select_controller.js';
+import {DESTINATION_SELECT_SHOW_LOADING_CHANGED, DestinationSelectController} from './destination_select_controller.js';
 
 /**
  * @fileoverview
@@ -28,18 +32,35 @@ export class DestinationSelectElement extends PolymerElement {
     };
   }
 
-  private controller = new DestinationSelectController();
+  private controller: DestinationSelectController;
+  private eventTracker = new EventTracker();
   private showLoading: boolean;
 
   override connectedCallback(): void {
     super.connectedCallback();
 
+    this.controller = new DestinationSelectController(this.eventTracker);
+
+    this.eventTracker.add(
+        this.controller, DESTINATION_SELECT_SHOW_LOADING_CHANGED,
+        (e: Event): void => this.onDestinationSelectShowDropdownChanged(e));
+
     // Initialize properties using the controller.
     this.showLoading = this.controller.shouldShowLoading();
   }
 
+  override disconnectedCallback(): void {
+    super.disconnectedCallback();
+    this.eventTracker.removeAll();
+  }
+
   getControllerForTesting(): DestinationSelectController {
     return this.controller;
+  }
+
+  // Updates UI on controller DESTINATION_SELECT_SHOW_LOADING_CHANGED event.
+  private onDestinationSelectShowDropdownChanged(_event: Event): void {
+    this.showLoading = this.controller.shouldShowLoading();
   }
 }
 

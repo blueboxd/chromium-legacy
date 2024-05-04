@@ -319,6 +319,19 @@ void AXEventGenerator::OnNodeDataChanged(AXTree* tree,
   if (!node)
     return;
 
+  // We can't rely on `AttributeChanged` methods since ARIA notifications may be
+  // posted more than once with the same announcement and properties.
+  // Each `AriaNotification` is discarded once it's serialized, so we can simply
+  // check if there's notification data; it won't persist across updates.
+  //
+  // TODO(crbug.com/330589205): Remove all of this when we develop a better way
+  // to send single-use data attached to events. DO NOT replicate this pattern,
+  // as this method is not intended to check for attribute changes.
+  if (new_node_data.HasStringListAttribute(
+          ax::mojom::StringListAttribute::kAriaNotificationAnnouncements)) {
+    AddEvent(node, Event::ARIA_NOTIFICATIONS_POSTED);
+  }
+
   // Internally we store inline text box nodes as children of a static text
   // node or a line break node, which enables us to determine character bounds
   // and line layout. We don't expose those to platform APIs, though, so
@@ -488,13 +501,14 @@ void AXEventGenerator::OnStringAttributeChanged(AXTree* tree,
       AddEvent(node, Event::CHECKED_STATE_DESCRIPTION_CHANGED);
       break;
     case ax::mojom::StringAttribute::kClassName:
-      AddEvent(node, Event::CLASS_NAME_CHANGED);
       break;
     case ax::mojom::StringAttribute::kDescription:
       AddEvent(node, Event::DESCRIPTION_CHANGED);
       break;
     case ax::mojom::StringAttribute::kFontFamily:
-      AddEvent(node, Event::TEXT_ATTRIBUTE_CHANGED);
+      if (node->HasState(ax::mojom::State::kRichlyEditable)) {
+        AddEvent(node, Event::TEXT_ATTRIBUTE_CHANGED);
+      }
       break;
     case ax::mojom::StringAttribute::kImageAnnotation:
       // The image annotation is reported as part of the accessible name.
@@ -556,7 +570,6 @@ void AXEventGenerator::OnStringAttributeChanged(AXTree* tree,
       }
       break;
     default:
-      AddEvent(node, Event::OTHER_ATTRIBUTE_CHANGED);
       break;
   }
 }
@@ -583,9 +596,6 @@ void AXEventGenerator::OnIntAttributeChanged(AXTree* tree,
       break;
     case ax::mojom::IntAttribute::kAriaCurrentState:
       AddEvent(node, Event::ARIA_CURRENT_CHANGED);
-      break;
-    case ax::mojom::IntAttribute::kDropeffectDeprecated:
-      AddEvent(node, Event::DROPEFFECT_CHANGED);
       break;
     case ax::mojom::IntAttribute::kHasPopup:
       AddEvent(node, Event::HASPOPUP_CHANGED);
@@ -647,18 +657,21 @@ void AXEventGenerator::OnIntAttributeChanged(AXTree* tree,
     case ax::mojom::IntAttribute::kTextOverlineStyle:
     case ax::mojom::IntAttribute::kTextStrikethroughStyle:
     case ax::mojom::IntAttribute::kTextUnderlineStyle:
-      AddEvent(node, Event::TEXT_ATTRIBUTE_CHANGED);
+      if (node->HasState(ax::mojom::State::kRichlyEditable)) {
+        AddEvent(node, Event::TEXT_ATTRIBUTE_CHANGED);
+      }
       break;
     case ax::mojom::IntAttribute::kTextAlign:
       // Alignment is exposed as an object attribute because it cannot apply to
       // a substring. However, for some platforms (e.g. ATK), alignment is a
       // text attribute. Therefore fire both events to ensure platforms get the
       // expected notifications.
-      AddEvent(node, Event::ATK_TEXT_OBJECT_ATTRIBUTE_CHANGED);
-      AddEvent(node, Event::OBJECT_ATTRIBUTE_CHANGED);
+      if (node->HasState(ax::mojom::State::kRichlyEditable)) {
+        AddEvent(node, Event::ATK_TEXT_OBJECT_ATTRIBUTE_CHANGED);
+        AddEvent(node, Event::OBJECT_ATTRIBUTE_CHANGED);
+      }
       break;
     default:
-      AddEvent(node, Event::OTHER_ATTRIBUTE_CHANGED);
       break;
   }
 }
@@ -685,18 +698,21 @@ void AXEventGenerator::OnFloatAttributeChanged(AXTree* tree,
       break;
     case ax::mojom::FloatAttribute::kFontSize:
     case ax::mojom::FloatAttribute::kFontWeight:
-      AddEvent(node, Event::TEXT_ATTRIBUTE_CHANGED);
+      if (node->HasState(ax::mojom::State::kRichlyEditable)) {
+        AddEvent(node, Event::TEXT_ATTRIBUTE_CHANGED);
+      }
       break;
     case ax::mojom::FloatAttribute::kTextIndent:
       // Indentation is exposed as an object attribute because it cannot apply
       // to a substring. However, for some platforms (e.g. ATK), alignment is a
       // text attribute. Therefore fire both events to ensure platforms get the
       // expected notifications.
-      AddEvent(node, Event::ATK_TEXT_OBJECT_ATTRIBUTE_CHANGED);
-      AddEvent(node, Event::OBJECT_ATTRIBUTE_CHANGED);
+      if (node->HasState(ax::mojom::State::kRichlyEditable)) {
+        AddEvent(node, Event::ATK_TEXT_OBJECT_ATTRIBUTE_CHANGED);
+        AddEvent(node, Event::OBJECT_ATTRIBUTE_CHANGED);
+      }
       break;
     default:
-      AddEvent(node, Event::OTHER_ATTRIBUTE_CHANGED);
       break;
   }
 }
@@ -715,9 +731,6 @@ void AXEventGenerator::OnBoolAttributeChanged(AXTree* tree,
       if (!new_value)
         AddEvent(node, Event::LAYOUT_INVALIDATED);
       break;
-    case ax::mojom::BoolAttribute::kGrabbedDeprecated:
-      AddEvent(node, Event::GRABBED_CHANGED);
-      break;
     case ax::mojom::BoolAttribute::kLiveAtomic:
       AddEvent(node, Event::ATOMIC_CHANGED);
       break;
@@ -733,7 +746,6 @@ void AXEventGenerator::OnBoolAttributeChanged(AXTree* tree,
       break;
     }
     default:
-      AddEvent(node, Event::OTHER_ATTRIBUTE_CHANGED);
       break;
   }
 }
@@ -778,7 +790,7 @@ void AXEventGenerator::OnIntListAttributeChanged(
       // adjust the node we fire that event on here.
       if (AXNode* text_field = node->GetTextFieldAncestor()) {
         AddEvent(text_field, Event::TEXT_ATTRIBUTE_CHANGED);
-      } else {
+      } else if (node->HasState(ax::mojom::State::kRichlyEditable)) {
         AddEvent(node, Event::TEXT_ATTRIBUTE_CHANGED);
       }
       break;
@@ -786,7 +798,6 @@ void AXEventGenerator::OnIntListAttributeChanged(
       AddEvent(node, Event::CARET_BOUNDS_CHANGED);
       break;
     default:
-      AddEvent(node, Event::OTHER_ATTRIBUTE_CHANGED);
       break;
   }
 }
@@ -968,17 +979,21 @@ void AXEventGenerator::FireActiveDescendantEvents() {
 }
 
 bool CanContributeToValueOfTextfield(AXNode* target_node) {
-  // TODO(accessibility) Changes to inline text boxes should be redundant with
-  // changes in their parent static text containers. We should probably return
-  // false for those in order to save on performance.
+  // Inline textboxes contribute the same text as their static text ancestors,
+  // and their redundant contributions can be ignored to improve performance.
+  if (target_node->GetRole() == ax::mojom::Role::kInlineTextBox) {
+    return false;
+  }
 
   // Text and line breaks contribute.
-  if (ui::IsText(target_node->GetRole()))
+  if (ui::IsText(target_node->GetRole())) {
     return true;
+  }
 
   // Non-text leaf nodes contribute, e.g. images.
-  if (target_node->GetChildCount() == 0)
+  if (target_node->GetChildCount() == 0) {
     return true;
+  }
 
   return false;
 }
@@ -1174,15 +1189,6 @@ void AXEventGenerator::PostprocessEvents() {
       RemoveEventsDueToIgnoredChanged(&node_events);
     }
 
-    // When the selected option in an expanded select element changes, the
-    // foreground and background colors change. But we don't want to treat
-    // those as text attribute changes. This can also happen when a widget
-    // such as a button becomes enabled/disabled.
-    if (HasEvent(node_events, Event::SELECTED_CHANGED) ||
-        HasEvent(node_events, Event::ENABLED_CHANGED)) {
-      RemoveEvent(&node_events, Event::TEXT_ATTRIBUTE_CHANGED);
-    }
-
     AXNode* parent = node->GetUnignoredParent();
 
     // Don't fire text attribute changed on this node if its immediate parent
@@ -1300,6 +1306,8 @@ const char* ToString(AXEventGenerator::Event event) {
       return "alert";
     case AXEventGenerator::Event::ARIA_CURRENT_CHANGED:
       return "ariaCurrentChanged";
+    case AXEventGenerator::Event::ARIA_NOTIFICATIONS_POSTED:
+      return "ariaNotificationsPosted";
     case AXEventGenerator::Event::ATK_TEXT_OBJECT_ATTRIBUTE_CHANGED:
       return "atkTextObjectAttributeChanged";
     case AXEventGenerator::Event::ATOMIC_CHANGED:
@@ -1318,8 +1326,6 @@ const char* ToString(AXEventGenerator::Event event) {
       return "checkedStateDescriptionChanged";
     case AXEventGenerator::Event::CHILDREN_CHANGED:
       return "childrenChanged";
-    case AXEventGenerator::Event::CLASS_NAME_CHANGED:
-      return "classNameChanged";
     case AXEventGenerator::Event::COLLAPSED:
       return "collapsed";
     case AXEventGenerator::Event::CONTROLS_CHANGED:
@@ -1334,8 +1340,6 @@ const char* ToString(AXEventGenerator::Event event) {
       return "documentSelectionChanged";
     case AXEventGenerator::Event::DOCUMENT_TITLE_CHANGED:
       return "documentTitleChanged";
-    case AXEventGenerator::Event::DROPEFFECT_CHANGED:
-      return "dropeffectChanged";
     case ui::AXEventGenerator::Event::EDITABLE_TEXT_CHANGED:
       return "editableTextChanged";
     case AXEventGenerator::Event::ENABLED_CHANGED:
@@ -1348,8 +1352,6 @@ const char* ToString(AXEventGenerator::Event event) {
       return "flowFromChanged";
     case AXEventGenerator::Event::FLOW_TO_CHANGED:
       return "flowToChanged";
-    case AXEventGenerator::Event::GRABBED_CHANGED:
-      return "grabbedChanged";
     case AXEventGenerator::Event::HASPOPUP_CHANGED:
       return "haspopupChanged";
     case AXEventGenerator::Event::HIERARCHICAL_LEVEL_CHANGED:
@@ -1394,8 +1396,6 @@ const char* ToString(AXEventGenerator::Event event) {
       return "objectAttributeChanged";
     case AXEventGenerator::Event::ORIENTATION_CHANGED:
       return "orientationChanged";
-    case AXEventGenerator::Event::OTHER_ATTRIBUTE_CHANGED:
-      return "otherAttributeChanged";
     case AXEventGenerator::Event::PARENT_CHANGED:
       return "parentChanged";
     case AXEventGenerator::Event::PLACEHOLDER_CHANGED:

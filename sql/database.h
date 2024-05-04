@@ -12,6 +12,7 @@
 #include <optional>
 #include <set>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -26,7 +27,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
-#include "base/strings/string_piece.h"
 #include "base/thread_annotations.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/types/pass_key.h"
@@ -53,7 +53,6 @@ class ChromeSqlDiagnostics;
 namespace sql {
 
 class DatabaseMemoryDumpProvider;
-class Recovery;
 class Statement;
 
 namespace test {
@@ -104,14 +103,13 @@ struct COMPONENT_EXPORT(SQL) DatabaseOptions {
   //
   // This option is experimental and will be merged into the `exclusive_locking`
   // option above if proven to cause no OS compatibility issues.
-  // TODO(crbug.com/1429117): Merge into above option, if possible.
+  // TODO(crbug.com/40262539): Merge into above option, if possible.
   bool exclusive_database_file_lock = false;
 
   // If true, enables SQLite's Write-Ahead Logging (WAL).
   //
   // WAL integration is under development, and should not be used in shipping
-  // Chrome features yet. In particular, our custom database recovery code does
-  // not support the WAL log file.
+  // Chrome features yet.
   //
   // WAL mode is currently not fully supported on FuchsiaOS. It will only be
   // turned on if the database is also using exclusive locking mode.
@@ -287,7 +285,7 @@ class COMPONENT_EXPORT(SQL) Database {
   // DatabaseOptions::explicit_locking to true. For historical reasons, this
   // constructor results in DatabaseOptions::explicit_locking set to false.
   //
-  // TODO(crbug.com/1126968): Remove this constructor after migrating all
+  // TODO(crbug.com/40148370): Remove this constructor after migrating all
   //                          uses to the explicit constructor below.
   Database();
 
@@ -300,7 +298,7 @@ class COMPONENT_EXPORT(SQL) Database {
   // Allows mmapping to be disabled globally by default in the calling process.
   // Must be called before any threads attempt to create a Database.
   //
-  // TODO(crbug.com/1117049): Remove this global configuration.
+  // TODO(crbug.com/40144971): Remove this global configuration.
   static void DisableMmapByDefault();
 
   // Pre-init configuration ----------------------------------------------------
@@ -392,14 +390,6 @@ class COMPONENT_EXPORT(SQL) Database {
   // The memory associated with the database will be released when the database
   // is closed.
   [[nodiscard]] bool OpenInMemory();
-
-  // Alternative to Open() that creates a temporary on-disk database.
-  //
-  // Returns true in case of success, false in case of failure.
-  //
-  // The files associated with the temporary database will be deleted when the
-  // database is closed.
-  [[nodiscard]] bool OpenTemporary(base::PassKey<Recovery>);
 
   // Returns true if the database has been successfully opened.
   bool is_open() const;
@@ -529,7 +519,7 @@ class COMPONENT_EXPORT(SQL) Database {
   // be attached while a transaction is opened. However, these databases cannot
   // be detached until the transaction is committed or aborted.
   bool AttachDatabase(const base::FilePath& other_db_path,
-                      base::StringPiece attachment_point);
+                      std::string_view attachment_point);
 
   // Detaches a database that was previously attached with AttachDatabase().
   //
@@ -538,7 +528,7 @@ class COMPONENT_EXPORT(SQL) Database {
   //
   // Attachment APIs are only exposed for use in recovery. General use is
   // discouraged in Chrome. The README has more details.
-  bool DetachDatabase(base::StringPiece attachment_point);
+  bool DetachDatabase(std::string_view attachment_point);
 
   // Statements ----------------------------------------------------------------
 
@@ -623,9 +613,9 @@ class COMPONENT_EXPORT(SQL) Database {
   // Returns true if the given structure exists.  Instead of test-then-create,
   // callers should almost always prefer the "IF NOT EXISTS" version of the
   // CREATE statement.
-  bool DoesIndexExist(base::StringPiece index_name);
-  bool DoesTableExist(base::StringPiece table_name);
-  bool DoesViewExist(base::StringPiece table_name);
+  bool DoesIndexExist(std::string_view index_name);
+  bool DoesTableExist(std::string_view table_name);
+  bool DoesViewExist(std::string_view table_name);
 
   // Returns true if a column with the given name exists in the given table.
   //
@@ -659,8 +649,7 @@ class COMPONENT_EXPORT(SQL) Database {
   // Returns the error code associated with the last sqlite operation.
   int GetErrorCode() const;
 
-  // Returns the errno associated with GetErrorCode().  See
-  // SQLITE_LAST_ERRNO in SQLite documentation.
+  // Returns the errno associated with GetErrorCode(). See <errno.h>.
   int GetLastErrno() const;
 
   // Returns a pointer to a statically allocated string associated with the
@@ -739,24 +728,12 @@ class COMPONENT_EXPORT(SQL) Database {
   FRIEND_TEST_ALL_PREFIXES(SQLiteFeaturesTest, WALNoClose);
   FRIEND_TEST_ALL_PREFIXES(SQLEmptyPathDatabaseTest, EmptyPathTest);
 
-  // Enables a special behavior for OpenInternal().
-  enum class OpenMode {
-    // No special behavior.
-    kNone,
-
-    // Open an in-memory database. Used by OpenInMemory().
-    kInMemory,
-
-    // Open a temporary database. Used by OpenTemporary().
-    kTemporary,
-  };
-
-  // Implements Open(), OpenInMemory(), and OpenTemporary().
+  // Implements Open(), OpenInMemory().
   //
-  // `db_file_path` is a UTF-8 path to the file storing the database pages. The
-  // path must be empty if `mode` is kTemporary. The path must be the SQLite
-  // magic memory path string if `mode` is kMemory.
-  bool OpenInternal(const std::string& file_name, OpenMode mode);
+  // `db_file_path` is a UTF-8 path to the file storing the database pages. If
+  // `file_name` is the SQLite magic memory path :memory:, the database will be
+  // opened in-memory.
+  bool OpenInternal(const std::string& file_name);
 
   // Configures the underlying sqlite3* object via sqlite3_db_config().
   //
@@ -781,7 +758,7 @@ class COMPONENT_EXPORT(SQL) Database {
   }
 
   // Internal helper for Does*Exist() functions.
-  bool DoesSchemaItemExist(base::StringPiece name, base::StringPiece type);
+  bool DoesSchemaItemExist(std::string_view name, std::string_view type);
 
   // Used to implement the interface with sql::test::ScopedErrorExpecter.
   static ScopedErrorExpecterCallback* current_expecter_cb_;
@@ -955,9 +932,7 @@ class COMPONENT_EXPORT(SQL) Database {
   // Returns a SQLite VFS interface pointer to the file storing database pages.
   //
   // Returns null if the database is not backed by a VFS file. This is always
-  // the case for in-memory databases. Temporary databases (only used by sq
-  // ::Recovery) start without a backing VFS file, and only get a file when they
-  // outgrow their page cache.
+  // the case for in-memory databases.
   //
   // This method must only be called while the database is successfully opened.
   sqlite3_file* GetSqliteVfsFile();

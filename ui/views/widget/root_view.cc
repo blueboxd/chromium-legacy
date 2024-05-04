@@ -6,13 +6,13 @@
 
 #include <algorithm>
 #include <memory>
+#include <string_view>
 
 #include "base/logging.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/raw_ptr_exclusion.h"
 #include "base/memory/raw_ref.h"
 #include "base/scoped_observation.h"
-#include "base/strings/string_piece.h"
 #include "build/build_config.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -60,7 +60,7 @@ class MouseEnterExitEvent : public ui::MouseEvent {
   }
 };
 
-// TODO(crbug.com/1295290): This class is for debug purpose only.
+// TODO(crbug.com/40821061): This class is for debug purpose only.
 // Remove it after resolving the issue.
 class DanglingMouseMoveHandlerOnViewDestroyingChecker
     : public views::ViewObserver {
@@ -128,7 +128,7 @@ class AnnounceTextView : public View {
     // On ChromeOS, kAlert role can invoke an unnecessary event on reparenting.
     node_data->role = ax::mojom::Role::kStaticText;
 #elif BUILDFLAG(IS_LINUX)
-    // TODO(crbug.com/1024898): Use live regions (do not use alerts).
+    // TODO(crbug.com/40658933): Use live regions (do not use alerts).
     // May require setting kLiveStatus, kContainerLiveStatus to "polite".
     node_data->role = ax::mojom::Role::kAlert;
 #else
@@ -193,7 +193,7 @@ class PreEventDispatchHandler : public ui::EventHandler {
 #endif
   }
 
-  base::StringPiece GetLogContext() const override {
+  std::string_view GetLogContext() const override {
     return "PreEventDispatchHandler";
   }
 
@@ -243,7 +243,7 @@ class PostEventDispatchHandler : public ui::EventHandler {
     }
   }
 
-  base::StringPiece GetLogContext() const override {
+  std::string_view GetLogContext() const override {
     return "PostEventDispatchHandler";
   }
 
@@ -798,7 +798,7 @@ void RootView::HandleMouseEnteredOrMoved(const ui::MouseEvent& event) {
       }
       View* old_handler = mouse_move_handler_;
       mouse_move_handler_ = v;
-      // TODO(crbug.com/1295290): This is for debug purpose only.
+      // TODO(crbug.com/40821061): This is for debug purpose only.
       // Remove it after resolving the issue.
       DanglingMouseMoveHandlerOnViewDestroyingChecker
           mouse_move_handler_dangling_checker(mouse_move_handler_);

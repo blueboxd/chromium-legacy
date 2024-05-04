@@ -112,7 +112,14 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   AppLaunchConfiguration config;
   config.additional_args.push_back(
       std::string("--") + switches::kSearchEngineChoiceCountry + "=US");
-  config.features_enabled.push_back(switches::kSearchEngineChoiceTrigger);
+  if ([self isRunningTest:@selector
+            (testDeleteSelectedCustomSearchEngineBySwipe)]) {
+    config.features_disabled.push_back(switches::kSearchEngineChoiceTrigger);
+  } else {
+    config.additional_args.push_back(
+        "--enable-features=SearchEngineChoiceTrigger:for_tagged_profiles_only/"
+        "false");
+  }
   return config;
 }
 
@@ -138,7 +145,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
       waitForSufficientlyVisibleElementWithMatcher:chrome_test_util::Omnibox()];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
       performAction:grey_replaceText(@"firstsearch")];
-  // TODO(crbug.com/1454516): Use simulatePhysicalKeyboardEvent until
+  // TODO(crbug.com/40916974): Use simulatePhysicalKeyboardEvent until
   // replaceText can properly handle \n.
   [ChromeEarlGrey simulatePhysicalKeyboardEvent:@"\n" flags:0];
 
@@ -174,7 +181,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   // doesn't use the history instead of really searching.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
       performAction:grey_replaceText(@"secondsearch")];
-  // TODO(crbug.com/1454516): Use simulatePhysicalKeyboardEvent until
+  // TODO(crbug.com/40916974): Use simulatePhysicalKeyboardEvent until
   // replaceText can properly handle \n.
   [ChromeEarlGrey simulatePhysicalKeyboardEvent:@"\n" flags:0];
 

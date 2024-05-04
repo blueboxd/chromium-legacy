@@ -43,7 +43,7 @@ class InterestGroupCachingStorageTest : public testing::Test {
     ASSERT_TRUE(temp_directory_.CreateUniqueTempDir());
     feature_list_.InitWithFeatures(
         /*enabled_features=*/{features::kFledgeUseInterestGroupCache},
-        /*disabled_features=*/{features::kCookieDeprecationFacilitatedTesting});
+        /*disabled_features=*/{});
   }
 
   std::optional<scoped_refptr<StorageInterestGroups>> GetInterestGroupsForOwner(
@@ -327,7 +327,7 @@ TEST_F(InterestGroupCachingStorageTest, DBUpdatesShouldModifyCache) {
   previously_loaded_igs = loaded_igs;
 
   StorageInterestGroup::KAnonymityData k_anon_data{
-      blink::KAnonKeyForAdBid(ig1, GURL(kAdURL)), true, base::Time::Now()};
+      blink::HashedKAnonKeyForAdBid(ig1, kAdURL), true, base::Time::Now()};
   caching_storage->UpdateKAnonymity(k_anon_data);
   task_environment().FastForwardBy(base::Minutes(1));
   loaded_igs = GetInterestGroupsForOwner(caching_storage.get(), owner);
@@ -345,13 +345,13 @@ TEST_F(InterestGroupCachingStorageTest, DBUpdatesShouldModifyCache) {
   // UpdateLastKAnonymityReported does not alter any cached values but does
   // update the reported time.
   base::Time update_time = base::Time::Now();
-  caching_storage->UpdateLastKAnonymityReported(k_anon_data.key);
+  caching_storage->UpdateLastKAnonymityReported(k_anon_data.hashed_key);
   task_environment().FastForwardBy(base::Minutes(1));
   loaded_igs = GetInterestGroupsForOwner(caching_storage.get(), owner);
   ASSERT_EQ(loaded_igs->get(), previously_loaded_igs->get());
 
   std::optional<base::Time> loaded_time =
-      GetLastKAnonymityReported(caching_storage.get(), k_anon_data.key);
+      GetLastKAnonymityReported(caching_storage.get(), k_anon_data.hashed_key);
   ASSERT_EQ(loaded_time, update_time);
   loaded_igs = GetInterestGroupsForOwner(caching_storage.get(), owner);
   ASSERT_EQ(loaded_igs->get(), previously_loaded_igs->get());
@@ -803,27 +803,6 @@ TEST_F(InterestGroupCachingStorageTest, NoCachingWhenFeatureDisabled) {
   ASSERT_TRUE(histogram_tester
                   .GetAllSamples("Ads.InterestGroup.GetInterestGroupCacheHit")
                   .empty());
-}
-
-TEST_F(InterestGroupCachingStorageTest,
-       NoCachingWhenCookieDeprecationFacilitatedTestingEnabled) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures(
-      /*enabled_features=*/{features::kFledgeUseInterestGroupCache,
-                            features::kCookieDeprecationFacilitatedTesting},
-      /*disabled_features=*/{});
-  std::unique_ptr<content::InterestGroupCachingStorage> caching_storage =
-      CreateCachingStorage();
-  url::Origin owner = url::Origin::Create(GURL("https://www.example.com/"));
-  auto ig = MakeInterestGroup(owner, "name");
-
-  JoinInterestGroup(caching_storage.get(), ig, GURL("https://www.test.com"));
-
-  std::optional<scoped_refptr<StorageInterestGroups>> loaded_igs =
-      GetInterestGroupsForOwner(caching_storage.get(), owner);
-  std::optional<scoped_refptr<StorageInterestGroups>> loaded_igs_again =
-      GetInterestGroupsForOwner(caching_storage.get(), owner);
-  ASSERT_NE(loaded_igs->get(), loaded_igs_again->get());
 }
 
 TEST_F(InterestGroupCachingStorageTest, LoadGroupsCacheHitHistogram) {

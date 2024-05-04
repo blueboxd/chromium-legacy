@@ -35,6 +35,7 @@ class AX_EXPORT AXEventGenerator : public AXTreeObserver {
     ACTIVE_DESCENDANT_CHANGED,
     ALERT,
     ARIA_CURRENT_CHANGED,
+    ARIA_NOTIFICATIONS_POSTED,
 
     // ATK treats alignment, indentation, and other format-related attributes as
     // text attributes even when they are only applicable to the entire object.
@@ -48,7 +49,6 @@ class AX_EXPORT AXEventGenerator : public AXTreeObserver {
     CHECKED_STATE_CHANGED,
     CHECKED_STATE_DESCRIPTION_CHANGED,
     CHILDREN_CHANGED,
-    CLASS_NAME_CHANGED,
     COLLAPSED,
     CONTROLS_CHANGED,
     DETAILS_CHANGED,
@@ -56,7 +56,6 @@ class AX_EXPORT AXEventGenerator : public AXTreeObserver {
     DESCRIPTION_CHANGED,
     DOCUMENT_SELECTION_CHANGED,
     DOCUMENT_TITLE_CHANGED,
-    DROPEFFECT_CHANGED,
 
     // TODO(nektar): Deprecate this event and replace it with
     // "VALUE_IN_TEXT_FIELD_CHANGED".
@@ -66,7 +65,6 @@ class AX_EXPORT AXEventGenerator : public AXTreeObserver {
     FOCUS_CHANGED,
     FLOW_FROM_CHANGED,
     FLOW_TO_CHANGED,
-    GRABBED_CHANGED,
     HASPOPUP_CHANGED,
     HIERARCHICAL_LEVEL_CHANGED,
     IGNORED_CHANGED,
@@ -95,7 +93,6 @@ class AX_EXPORT AXEventGenerator : public AXTreeObserver {
     NAME_CHANGED,
     OBJECT_ATTRIBUTE_CHANGED,
     ORIENTATION_CHANGED,
-    OTHER_ATTRIBUTE_CHANGED,
     PARENT_CHANGED,
     PLACEHOLDER_CHANGED,
     PORTAL_ACTIVATED,

@@ -63,7 +63,7 @@ suite('VcBackgroundUITest', () => {
   test('initial breadcrumbs', async () => {
     assertArrayEquals(
         getVcBackgroundBreadcrumbsText(),
-        [getVcBackgroundBreadcrumbs().i18n('seaPenLabel')]);
+        [getVcBackgroundBreadcrumbs().i18n('vcBackgroundLabel')]);
   });
 
   test('shows template options when template is clicked', async () => {
@@ -87,11 +87,26 @@ suite('VcBackgroundUITest', () => {
     const seaPenTemplateQuery = getSeaPenTemplateQuery();
     assertTrue(!!seaPenTemplateQuery, 'sea-pen-template-query exists');
 
+    const templateTokens =
+        seaPenTemplateQuery.shadowRoot!.querySelectorAll<HTMLElement>(
+            '.chip-text, .template-text');
+    assertTrue(
+        templateTokens.length > 0, 'template tokens should be available');
+
+    const templateText: string[] = [];
+    templateTokens.forEach((currentToken: HTMLElement) => {
+      if (currentToken.classList.contains('chip-text')) {
+        templateText.push(
+            currentToken.shadowRoot?.getElementById('chipText')?.innerText ??
+            '');
+      } else {
+        templateText.push(currentToken.innerText ?? '');
+      }
+    });
+
     assertEquals(
         'A painting of a field of flowers in the avant-garde style',
-        seaPenTemplateQuery?.shadowRoot?.getElementById('template')
-            ?.textContent?.trim()
-            .replace(/\s+/g, ' '),
+        templateText.join(' '),
         'Expected template text is shown for Classic art');
 
     assertEquals(
@@ -100,9 +115,10 @@ suite('VcBackgroundUITest', () => {
         'VC Background Classic art template id is added to url');
 
     // Breadcrumbs should show 'Classic art'.
-    assertArrayEquals(
-        getVcBackgroundBreadcrumbsText(),
-        [getVcBackgroundBreadcrumbs().i18n('seaPenLabel'), 'Classic art']);
+    assertArrayEquals(getVcBackgroundBreadcrumbsText(), [
+      getVcBackgroundBreadcrumbs().i18n('vcBackgroundLabel'),
+      'Classic art',
+    ]);
   });
 
   test('verifies breadcrumbs when create button clicked', async () => {
@@ -137,9 +153,10 @@ suite('VcBackgroundUITest', () => {
         'App is on /results and Classic art template id is added to url');
 
     // Breadcrumbs should show 'Classic art'.
-    assertArrayEquals(
-        getVcBackgroundBreadcrumbsText(),
-        [getVcBackgroundBreadcrumbs().i18n('seaPenLabel'), 'Classic art']);
+    assertArrayEquals(getVcBackgroundBreadcrumbsText(), [
+      getVcBackgroundBreadcrumbs().i18n('vcBackgroundLabel'),
+      'Classic art',
+    ]);
   });
 
   test('allows changing templates via breadcrumbs dropdown menu', async () => {
@@ -150,15 +167,25 @@ suite('VcBackgroundUITest', () => {
 
     const breadcrumbElement = getVcBackgroundBreadcrumbs();
 
+    const classicArtTitle = 'Classic art';
     // Breadcrumbs should show 'Classic art'.
     assertArrayEquals(
         getVcBackgroundBreadcrumbsText(),
-        [breadcrumbElement.i18n('seaPenLabel'), 'Classic art']);
+        [breadcrumbElement.i18n('vcBackgroundLabel'), classicArtTitle]);
 
     const dropdownMenu =
         breadcrumbElement.shadowRoot!.querySelector('cr-action-menu');
     assertTrue(!!dropdownMenu);
     assertFalse(dropdownMenu!.open, 'the action menu should not open yet');
+
+    // Verify the selected template.
+    const selectedElement =
+        dropdownMenu.querySelectorAll('button[aria-checked=\'true\']');
+    assertEquals(
+        1, selectedElement.length, 'there should be one template selected');
+    assertEquals(
+        classicArtTitle, (selectedElement[0] as HTMLElement)!.innerText.trim(),
+        `selected template in the dropdown should be ${classicArtTitle}`);
 
     // Activate the dropdown menu.
     const lastBreadcrumb = breadcrumbElement.shadowRoot!.querySelector(
@@ -189,6 +216,6 @@ suite('VcBackgroundUITest', () => {
     // Breadcrumbs should now show 'Stylish office'.
     assertArrayEquals(
         getVcBackgroundBreadcrumbsText(),
-        [getVcBackgroundBreadcrumbs().i18n('seaPenLabel'), officeTitle]);
+        [getVcBackgroundBreadcrumbs().i18n('vcBackgroundLabel'), officeTitle]);
   });
 });

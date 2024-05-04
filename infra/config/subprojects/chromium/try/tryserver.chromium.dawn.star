@@ -14,11 +14,14 @@ try_.defaults.set(
     pool = try_.DEFAULT_POOL,
     builderless = False,
     os = os.LINUX_DEFAULT,
+    check_for_flakiness = False,
+    check_for_flakiness_with_resultdb = False,
     contact_team_email = "chrome-gpu-infra@google.com",
     execution_timeout = try_.DEFAULT_EXECUTION_TIMEOUT,
     reclient_instance = reclient.instance.DEFAULT_UNTRUSTED,
-    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
     service_account = try_.gpu.SERVICE_ACCOUNT,
+    siso_enabled = True,
+    siso_remote_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
 consoles.list_view(
@@ -222,6 +225,37 @@ try_.builder(
     ],
     gn_args = "ci/Dawn Win10 x86 DEPS Builder",
     os = os.WINDOWS_ANY,
+    check_for_flakiness = False,
+    check_for_flakiness_with_resultdb = False,
+    main_list_view = "try",
+    test_presentation = resultdb.test_presentation(
+        grouping_keys = ["status", "v.test_suite", "v.gpu"],
+    ),
+    tryjob = try_.job(
+        location_filters = [
+            cq.location_filter(path_regexp = "content/test/gpu/.+"),
+            cq.location_filter(path_regexp = "gpu/.+"),
+            cq.location_filter(path_regexp = "testing/buildbot/chromium.dawn.json"),
+            cq.location_filter(path_regexp = "third_party/blink/renderer/modules/webgpu/.+"),
+            cq.location_filter(path_regexp = "third_party/blink/web_tests/external/wpt/webgpu/.+"),
+            cq.location_filter(path_regexp = "third_party/blink/web_tests/wpt_internal/webgpu/.+"),
+            cq.location_filter(path_regexp = "third_party/blink/web_tests/WebGPUExpectations"),
+            cq.location_filter(path_regexp = "third_party/dawn/.+"),
+            cq.location_filter(path_regexp = "third_party/webgpu-cts/.+"),
+            cq.location_filter(path_regexp = "tools/clang/scripts/update.py"),
+            cq.location_filter(path_regexp = "ui/gl/features.gni"),
+        ],
+    ),
+)
+
+try_.builder(
+    name = "dawn-win11-arm64-deps-rel",
+    description_html = "Compiles and tests DEPSed binaries for Windows/ARM64",
+    mirrors = [
+        "ci/Dawn Win11 arm64 DEPS Builder",
+    ],
+    gn_args = "ci/Dawn Win11 arm64 DEPS Builder",
+    os = os.WINDOWS_ANY,
     main_list_view = "try",
     test_presentation = resultdb.test_presentation(
         grouping_keys = ["status", "v.test_suite", "v.gpu"],
@@ -285,6 +319,42 @@ try_.builder(
 )
 
 try_.builder(
+    # This is not part of "android-dawn-arm64-rel" at the moment since there is
+    # not sufficient S24 capacity for that.
+    name = "android-dawn-arm64-s24-rel",
+    description_html = "Runs ToT Dawn tests on Samsung S24 devices",
+    mirrors = [
+        "ci/Dawn Android arm64 Builder",
+        "ci/Dawn Android arm64 Release (Samsung S24)",
+    ],
+    gn_args = "ci/Dawn Android arm64 Builder",
+    # TODO(crbug.com/333424893): Change this to a dedicated S24 pool once
+    # additional GCE quota is available.
+    pool = "luci.chromium.gpu.android.s23.try",
+    builderless = True,
+    os = os.LINUX_DEFAULT,
+    test_presentation = resultdb.test_presentation(
+        grouping_keys = ["status", "v.test_suite", "v.gpu"],
+    ),
+)
+
+try_.builder(
+    name = "linux-dawn-intel-exp-rel",
+    description_html = "Runs ToT Dawn tests on experimental Linux/Intel configs",
+    mirrors = [
+        "ci/Dawn Linux x64 Builder",
+        "ci/Dawn Linux x64 Experimental Release (Intel UHD 630)",
+    ],
+    gn_args = "ci/Dawn Linux x64 Builder",
+    pool = "luci.chromium.gpu.linux.intel.try",
+    builderless = True,
+    os = os.LINUX_DEFAULT,
+    test_presentation = resultdb.test_presentation(
+        grouping_keys = ["status", "v.test_suite", "v.gpu"],
+    ),
+)
+
+try_.builder(
     name = "linux-dawn-rel",
     mirrors = [
         "ci/Dawn Linux x64 Builder",
@@ -321,6 +391,7 @@ try_.builder(
     ],
     gn_args = "ci/Dawn Mac x64 Builder",
     os = os.MAC_ANY,
+    cpu = cpu.ARM64,
     test_presentation = resultdb.test_presentation(
         grouping_keys = ["status", "v.test_suite", "v.gpu"],
     ),
@@ -465,6 +536,22 @@ try_.builder(
 )
 
 try_.builder(
+    name = "dawn-try-win-x86-nvidia-exp",
+    description_html = "Runs ToT Dawn tests on experimental Win/NVIDIA/x86 configs",
+    mirrors = [
+        "ci/Dawn Win10 x86 Builder",
+        "ci/Dawn Win10 x86 Experimental Release (NVIDIA)",
+    ],
+    gn_args = "ci/Dawn Win10 x86 Builder",
+    pool = "luci.chromium.gpu.win10.nvidia.try",
+    builderless = True,
+    os = os.WINDOWS_ANY,
+    test_presentation = resultdb.test_presentation(
+        grouping_keys = ["status", "v.test_suite", "v.gpu"],
+    ),
+)
+
+try_.builder(
     name = "win-dawn-rel",
     mirrors = [
         "ci/Dawn Win10 x64 Builder",
@@ -472,6 +559,19 @@ try_.builder(
         "ci/Dawn Win10 x64 Release (NVIDIA)",
     ],
     gn_args = "ci/Dawn Win10 x64 Builder",
+    os = os.WINDOWS_ANY,
+    test_presentation = resultdb.test_presentation(
+        grouping_keys = ["status", "v.test_suite", "v.gpu"],
+    ),
+)
+
+try_.builder(
+    name = "win11-arm64-dawn-rel",
+    description_html = "Compiles and tests ToT binaries for Windows/ARM64",
+    mirrors = [
+        "ci/Dawn Win11 arm64 Builder",
+    ],
+    gn_args = "ci/Dawn Win11 arm64 Builder",
     os = os.WINDOWS_ANY,
     test_presentation = resultdb.test_presentation(
         grouping_keys = ["status", "v.test_suite", "v.gpu"],

@@ -25,15 +25,8 @@ const modifiers: Modifier[] = [
   Modifier.CONTROL,
   Modifier.ALT,
   Modifier.COMMAND,
+  Modifier.FN_KEY,
 ];
-
-export const keyCodeToModifier: {[keyCode: number]: number} = {
-  16: Modifier.SHIFT,
-  17: Modifier.CONTROL,
-  18: Modifier.ALT,
-  91: Modifier.COMMAND,
-  92: Modifier.COMMAND,
-};
 
 export const unidentifiedKeyCodeToKey: {[keyCode: number]: string} = {
   159: 'MicrophoneMuteToggle',
@@ -241,7 +234,7 @@ export const canBypassErrorWithRetry =
  * Sort the modifiers in the order of ctrl, alt, shift, meta.
  */
 export const getSortedModifiers = (modifierStrings: string[]): string[] => {
-  const sortOrder = ['meta', 'ctrl', 'alt', 'shift'];
+  const sortOrder = ['meta', 'ctrl', 'alt', 'shift', 'function'];
   if (modifierStrings.length <= 1) {
     return modifierStrings;
   }
@@ -308,6 +301,8 @@ export function getModifierString(modifier: Modifier): string {
       return 'ctrl';
     case Modifier.ALT:
       return 'alt';
+    case Modifier.FN_KEY:
+      return 'function';
     case Modifier.COMMAND:
       return 'meta';
     default:

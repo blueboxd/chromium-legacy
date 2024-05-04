@@ -78,6 +78,8 @@ class WebContentsViewIOS : public WebContentsView,
   // RenderViewHostDelegateView:
   void GotFocus(RenderWidgetHostImpl* render_widget_host) override;
   void LostFocus(RenderWidgetHostImpl* render_widget_host) override;
+  void ShowContextMenu(RenderFrameHost& render_frame_host,
+                       const ContextMenuParams& params) override;
 
   void ShowPopupMenu(
       RenderFrameHost* render_frame_host,

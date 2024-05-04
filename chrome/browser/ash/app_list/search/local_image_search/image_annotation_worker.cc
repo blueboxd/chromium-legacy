@@ -18,6 +18,7 @@
 #include "base/files/file_path_watcher.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/sequenced_task_runner.h"
@@ -25,6 +26,8 @@
 #include "base/time/time.h"
 #include "chrome/browser/ash/app_list/search/local_image_search/annotation_storage.h"
 #include "chrome/browser/ash/app_list/search/local_image_search/search_utils.h"
+#include "chrome/browser/ash/app_list/search/search_features.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chromeos/ash/components/string_matching/tokenized_string.h"
 
 namespace app_list {
@@ -34,10 +37,11 @@ using TokenizedString = ::ash::string_matching::TokenizedString;
 using Mode = ::ash::string_matching::TokenizedString::Mode;
 
 constexpr int kMaxFileSizeBytes = 2e+7;    // ~ 20MiB
-constexpr int kConfidenceThreshold = 128;  // 50% of 255 (max of ICA)
+constexpr int kConfidenceThreshold = 79;   // 30% of 255 (max of ICA)
 constexpr int kOcrMinWordLength = 3;
 constexpr int kRetryDelay = 2;  // For exponential delays.
-constexpr int kMaxNumRetries = 10;
+constexpr int kMaxNumRetries = 12;          // Over 2 hrs.
+constexpr int kDefaultIndexingLimit = 500;  // 500 images per user session.
 constexpr base::TimeDelta kInitialIndexingDelay = base::Seconds(1);
 constexpr base::TimeDelta kMaxImageProcessingTime = base::Minutes(2);
 
@@ -55,6 +59,29 @@ enum class Status {
 void LogStatusUma(Status status) {
   base::UmaHistogramEnumeration(
       "Apps.AppList.AnnotationStorage.ImageAnnotationWorker.Status", status);
+}
+
+// These values persist to logs. Entries should not be renumbered and numeric
+// values should never be reused.
+enum class IndexingStatus {
+  kStart = 0,
+  kOcrStart = 1,
+  kOcrSucceed = 2,
+  kIcaStart = 3,
+  kIcaSucceed = 4,
+  kMaxValue = kIcaSucceed,
+};
+
+void LogIndexingUma(IndexingStatus status) {
+  base::UmaHistogramEnumeration(
+      "Apps.AppList.AnnotationStorage.ImageAnnotationWorker.IndexingStatus",
+      status);
+}
+
+int GetConfidenceThreshold() {
+  return base::GetFieldTrialParamByFeatureAsInt(
+      search_features::kLauncherLocalImageSearchConfidence,
+      "confidence_threshold", kConfidenceThreshold);
 }
 
 // Exclude animated WebPs.
@@ -166,6 +193,7 @@ bool IsPathExcluded(const base::FilePath& path,
 ImageAnnotationWorker::ImageAnnotationWorker(
     const base::FilePath& root_path,
     const std::vector<base::FilePath>& excluded_paths,
+    Profile* profile,
     bool use_file_watchers,
     bool use_ocr,
     bool use_ica)
@@ -174,10 +202,21 @@ ImageAnnotationWorker::ImageAnnotationWorker(
       use_file_watchers_(use_file_watchers),
       use_ica_(use_ica),
       use_ocr_(use_ocr),
+      indexing_limit_(base::GetFieldTrialParamByFeatureAsInt(
+          search_features::kLauncherImageSearchIndexingLimit,
+          "indexing_limit",
+          kDefaultIndexingLimit)),
       task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
           {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
+
+  if (use_ocr_) {
+    CHECK(profile);
+    // `OpticalCharacterRecognizer` should be created on the UI thread.
+    optical_character_recognizer_ =
+        screen_ai::OpticalCharacterRecognizer::Create(profile);
+  }
 }
 
 ImageAnnotationWorker::~ImageAnnotationWorker() = default;
@@ -189,11 +228,6 @@ void ImageAnnotationWorker::Initialize(AnnotationStorage* annotation_storage) {
 
   on_file_change_callback_ = base::BindRepeating(
       &ImageAnnotationWorker::OnFileChange, weak_ptr_factory_.GetWeakPtr());
-
-  if (use_ocr_) {
-    DVLOG(1) << "Initializing OCR DLC.";
-    optical_character_recognizer_.InitializeComponent();
-  }
 
   if (use_ica_) {
     DVLOG(1) << "Initializing ICA DLC.";
@@ -209,7 +243,8 @@ void ImageAnnotationWorker::Initialize(AnnotationStorage* annotation_storage) {
 
 void ImageAnnotationWorker::OnDlcInstalled() {
   bool is_ica_dlc_installed = image_content_annotator_.IsDlcInitialized();
-  bool is_ocr_dlc_installed = optical_character_recognizer_.IsServiceReady();
+  bool is_ocr_dlc_installed = optical_character_recognizer_ &&
+                              optical_character_recognizer_->is_ready();
 
   if ((use_ocr_ && !is_ocr_dlc_installed) ||
       (use_ica_ && !is_ica_dlc_installed)) {
@@ -237,6 +272,7 @@ void ImageAnnotationWorker::OnDlcInstalled() {
                        weak_ptr_factory_.GetWeakPtr()),
         base::Seconds(std::pow(kRetryDelay, num_retries_passed_)));
     num_retries_passed_ += 1;
+    image_content_annotator_.set_num_retries_passed(num_retries_passed_);
     return;
   }
 
@@ -270,6 +306,7 @@ void ImageAnnotationWorker::OnFileChange(const base::FilePath& path,
   DVLOG(1) << "Adding to a queue";
   files_to_process_.push(std::move(path));
   if (files_to_process_.size() == 1) {
+    queue_processing_start_time_ = base::TimeTicks::Now();
     return ProcessNextItem();
   }
   return;
@@ -277,10 +314,17 @@ void ImageAnnotationWorker::OnFileChange(const base::FilePath& path,
 
 void ImageAnnotationWorker::ProcessNextItem() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  base::UmaHistogramCounts100000(
+      "Apps.AppList.AnnotationStorage.ImageAnnotationWorker."
+      "QueueNumberOfObjectsToProcess",
+      files_to_process_.size());
   if (files_to_process_.empty()) {
     DVLOG(1) << "The queue is empty.";
+    base::UmaHistogramLongTimes100(
+        "Apps.AppList.AnnotationStorage.ImageAnnotationWorker."
+        "QueueProcessingTime",
+        base::TimeTicks::Now() - queue_processing_start_time_);
     image_content_annotator_.DisconnectAnnotator();
-    optical_character_recognizer_.DisconnectAnnotator();
     return;
   }
 
@@ -377,7 +421,16 @@ void ImageAnnotationWorker::ProcessNextImage() {
   ImageInfo image_info({}, image_path, file_info->last_modified,
                        file_info->size);
 
+  if (search_features::IsLauncherImageSearchIndexingLimitEnabled()) {
+    // Early return if reaches the indexing limit.
+    if (num_indexing_images_ >= indexing_limit_) {
+      return;
+    }
+    num_indexing_images_ += 1;
+  }
+
   if (use_ocr_ || use_ica_) {
+    LogIndexingUma(IndexingStatus::kStart);
     ash::image_util::DecodeImageFile(
         base::BindOnce(&ImageAnnotationWorker::OnDecodeImageFile,
                        weak_ptr_factory_.GetWeakPtr(), image_info),
@@ -404,7 +457,9 @@ void ImageAnnotationWorker::OnDecodeImageFile(
                      weak_ptr_factory_.GetWeakPtr()));
 
   if (use_ocr_ && use_ica_) {
-    optical_character_recognizer_.ReadImage(
+    LogIndexingUma(IndexingStatus::kOcrStart);
+    LogIndexingUma(IndexingStatus::kIcaStart);
+    optical_character_recognizer_->PerformOCR(
         *image_skia.bitmap(),
         base::BindOnce(&ImageAnnotationWorker::OnPerformOcr,
                        weak_ptr_factory_.GetWeakPtr(), image_info)
@@ -418,7 +473,8 @@ void ImageAnnotationWorker::OnDecodeImageFile(
   }
 
   if (use_ocr_) {
-    optical_character_recognizer_.ReadImage(
+    LogIndexingUma(IndexingStatus::kOcrStart);
+    optical_character_recognizer_->PerformOCR(
         *image_skia.bitmap(),
         base::BindOnce(&ImageAnnotationWorker::OnPerformOcr,
                        weak_ptr_factory_.GetWeakPtr(), std::move(image_info)));
@@ -426,6 +482,7 @@ void ImageAnnotationWorker::OnDecodeImageFile(
   }
 
   if (use_ica_) {
+    LogIndexingUma(IndexingStatus::kIcaStart);
     image_content_annotator_.AnnotateEncodedImage(
         image_info.path,
         base::BindOnce(&ImageAnnotationWorker::OnPerformIca,
@@ -438,6 +495,7 @@ void ImageAnnotationWorker::OnDecodeImageFile(
 void ImageAnnotationWorker::OnPerformOcr(
     ImageInfo image_info,
     screen_ai::mojom::VisualAnnotationPtr visual_annotation) {
+  LogIndexingUma(IndexingStatus::kOcrSucceed);
   DVLOG(1) << "OnPerformOcr";
   for (const auto& text_line : visual_annotation->lines) {
     TokenizedString tokens(base::UTF8ToUTF16(text_line->text_line),
@@ -465,10 +523,14 @@ void ImageAnnotationWorker::OnPerformOcr(
 void ImageAnnotationWorker::OnPerformIca(
     ImageInfo image_info,
     chromeos::machine_learning::mojom::ImageAnnotationResultPtr ptr) {
+  if (ptr->status ==
+      chromeos::machine_learning::mojom::ImageAnnotationResult::Status::OK) {
+    LogIndexingUma(IndexingStatus::kIcaSucceed);
+  }
   DVLOG(1) << "OnPerformIca. Status: " << ptr->status
            << " Size: " << ptr->annotations.size();
   for (const auto& a : ptr->annotations) {
-    if (a->confidence < kConfidenceThreshold || !a->name.has_value() ||
+    if (a->confidence < GetConfidenceThreshold() || !a->name.has_value() ||
         a->name->empty()) {
       continue;
     }

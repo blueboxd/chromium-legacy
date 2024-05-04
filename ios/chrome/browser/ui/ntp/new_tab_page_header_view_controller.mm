@@ -6,7 +6,6 @@
 
 #import "base/apple/foundation_util.h"
 #import "base/check.h"
-#import "base/feature_list.h"
 #import "base/ios/ios_util.h"
 #import "base/metrics/histogram_macros.h"
 #import "base/metrics/user_metrics.h"
@@ -14,7 +13,6 @@
 #import "components/prefs/pref_service.h"
 #import "components/signin/public/base/signin_switches.h"
 #import "components/strings/grit/components_strings.h"
-#import "components/sync/base/features.h"
 #import "ios/chrome/browser/ntp/model/new_tab_page_tab_helper.h"
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
 #import "ios/chrome/browser/shared/public/commands/browser_coordinator_commands.h"
@@ -28,7 +26,6 @@
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/shared/ui/util/util_swift.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_utils.h"
-#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_commands.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/lens/lens_entrypoint.h"
 #import "ios/chrome/browser/ui/ntp/logo_vendor.h"
@@ -116,6 +113,14 @@ const CGFloat kFakeLocationBarHeightMargin = 2;
           self.traitCollection.preferredContentSizeCategory) {
     [self updateFakeboxDisplay];
   }
+  if (previousTraitCollection.userInterfaceStyle !=
+      self.traitCollection.userInterfaceStyle) {
+    if (base::FeatureList::IsEnabled(kOmniboxColorIcons)) {
+      [self.headerView
+          updateButtonsForUserInterfaceStyle:self.traitCollection
+                                                 .userInterfaceStyle];
+    }
+  }
 }
 
 - (void)willTransitionToTraitCollection:(UITraitCollection*)newCollection
@@ -191,7 +196,7 @@ const CGFloat kFakeLocationBarHeightMargin = 2;
   }
 }
 
-// TODO(crbug.com/1403613): Name animateScrollAnimation something more aligned
+// TODO(crbug.com/40251610): Name animateScrollAnimation something more aligned
 // to its true state indication. Why update the constraints only sometimes?
 - (void)updateFakeOmniboxForOffset:(CGFloat)offset
                        screenWidth:(CGFloat)screenWidth
@@ -304,6 +309,10 @@ const CGFloat kFakeLocationBarHeightMargin = 2;
   DCHECK([self.identityDiscButton imageForState:UIControlStateNormal]);
 }
 
+- (void)setAllowFontScaleAnimation:(BOOL)allowFontScaleAnimation {
+  _allowFontScaleAnimation = allowFontScaleAnimation;
+  self.headerView.allowFontScaleAnimation = allowFontScaleAnimation;
+}
 #pragma mark - Private
 
 // Initialize and add a search field tap target and a voice search button.
@@ -496,8 +505,8 @@ const CGFloat kFakeLocationBarHeightMargin = 2;
                                   self.fakeOmnibox);
 }
 
-// TODO(crbug.com/807330) The fakebox is currently a collection of views spread
-// between NewTabPageHeaderViewController and inside
+// TODO(crbug.com/41367911) The fakebox is currently a collection of views
+// spread between NewTabPageHeaderViewController and inside
 // NewTabPageHeaderView.  Post refresh this can be coalesced into one
 // control, and the KVO highlight logic below can be removed.
 - (void)observeValueForKeyPath:(NSString*)keyPath
@@ -679,12 +688,8 @@ const CGFloat kFakeLocationBarHeightMargin = 2;
   self.identityDiscImage = DefaultSymbolTemplateWithPointSize(
       kPersonCropCircleSymbol, ntp_home::kSignedOutIdentityIconDimension);
 
-  self.identityDiscAccessibilityLabel =
-      base::FeatureList::IsEnabled(syncer::kReplaceSyncPromosWithSignInPromos)
-          ? l10n_util::GetNSString(
-                IDS_IOS_IDENTITY_DISC_SIGNED_OUT_ACCESSIBILITY_LABEL)
-          : l10n_util::GetNSString(
-                IDS_IOS_IDENTITY_DISC_SIGNED_OUT_ACCESSIBILITY_LABEL_WITH_SYNC);
+  self.identityDiscAccessibilityLabel = l10n_util::GetNSString(
+      IDS_IOS_IDENTITY_DISC_SIGNED_OUT_ACCESSIBILITY_LABEL);
   // `self.identityDiscButton` should not be updated if the view has not been
   // created yet.
   if (self.identityDiscButton) {

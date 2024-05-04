@@ -26,7 +26,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import static org.chromium.chrome.browser.flags.ChromeFeatureList.INSTANT_START;
 import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.BOTTOM_BAR_HEIGHT;
 import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.EXPLORE_SURFACE_COORDINATOR;
 import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.IS_EXPLORE_SURFACE_VISIBLE;
@@ -103,6 +102,10 @@ import org.chromium.chrome.browser.tab.MockTab;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab.TabSelectionType;
+import org.chromium.chrome.browser.tab_ui.TabSwitcher;
+import org.chromium.chrome.browser.tab_ui.TabSwitcher.TabListDelegate;
+import org.chromium.chrome.browser.tab_ui.TabSwitcher.TabSwitcherType;
+import org.chromium.chrome.browser.tab_ui.TabSwitcher.TabSwitcherViewObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelFilter;
 import org.chromium.chrome.browser.tabmodel.TabModelFilterProvider;
@@ -110,10 +113,6 @@ import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.tasks.ReturnToChromeUtil;
-import org.chromium.chrome.browser.tasks.tab_management.TabManagementDelegate.TabSwitcherType;
-import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher;
-import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher.TabListDelegate;
-import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher.TabSwitcherViewObserver;
 import org.chromium.chrome.features.start_surface.StartSurface.OnTabSelectingListener;
 import org.chromium.chrome.features.tasks.TasksSurfaceProperties;
 import org.chromium.components.browser_ui.styles.ChromeColors;
@@ -238,7 +237,7 @@ public class StartSurfaceMediatorUnitTest {
         doReturn(mTab).when(mTabModelSelector).getCurrentTab();
         doReturn(mExploreSurfaceCoordinator)
                 .when(mExploreSurfaceCoordinatorFactory)
-                .create(anyBoolean(), anyBoolean(), anyInt());
+                .create(anyBoolean(), anyInt());
         doReturn(mFeedReliabilityLogger)
                 .when(mExploreSurfaceCoordinator)
                 .getFeedReliabilityLogger();
@@ -276,7 +275,7 @@ public class StartSurfaceMediatorUnitTest {
         mCardTabSwitcherModuleVisibilityObserverCaptor.getValue().startedHiding();
         mCardTabSwitcherModuleVisibilityObserverCaptor.getValue().finishedHiding();
 
-        // TODO(crbug.com/1020223): Test the other SurfaceMode.NO_START_SURFACE operations.
+        // TODO(crbug.com/40105674): Test the other SurfaceMode.NO_START_SURFACE operations.
     }
 
     @Test
@@ -326,10 +325,10 @@ public class StartSurfaceMediatorUnitTest {
 
         mCardTabSwitcherModuleVisibilityObserverCaptor.getValue().finishedHiding();
 
-        // TODO(crbug.com/1020223): Test the other SurfaceMode.SINGLE_PANE operations.
+        // TODO(crbug.com/40105674): Test the other SurfaceMode.SINGLE_PANE operations.
     }
 
-    // TODO(crbug.com/1020223): Test SurfaceMode.SINGLE_PANE and SurfaceMode.TWO_PANES modes.
+    // TODO(crbug.com/40105674): Test SurfaceMode.SINGLE_PANE and SurfaceMode.TWO_PANES modes.
     @Test
     public void hideTabCardWithNoTabs() {
         doReturn(false).when(mTabModelSelector).isIncognitoSelected();
@@ -358,12 +357,12 @@ public class StartSurfaceMediatorUnitTest {
         assertThat(mPropertyModel.get(IS_SHOWING_OVERVIEW), equalTo(true));
         assertThat(mPropertyModel.get(IS_TAB_CARD_VISIBLE), equalTo(true));
 
-        mTabModelObserverCaptor.getValue().willCloseTab(mock(Tab.class), false, true);
+        mTabModelObserverCaptor.getValue().willCloseTab(mock(Tab.class), true);
         assertThat(mPropertyModel.get(IS_SHOWING_OVERVIEW), equalTo(true));
         assertThat(mPropertyModel.get(IS_TAB_CARD_VISIBLE), equalTo(true));
 
         doReturn(1).when(mNormalTabModel).getCount();
-        mTabModelObserverCaptor.getValue().willCloseTab(mock(Tab.class), false, true);
+        mTabModelObserverCaptor.getValue().willCloseTab(mock(Tab.class), true);
         assertThat(mPropertyModel.get(IS_SHOWING_OVERVIEW), equalTo(true));
         assertThat(mPropertyModel.get(IS_TAB_CARD_VISIBLE), equalTo(false));
     }
@@ -731,7 +730,7 @@ public class StartSurfaceMediatorUnitTest {
         assertFalse(mediator.isHomepageShown());
 
         mPropertyModel.set(IS_EXPLORE_SURFACE_VISIBLE, true);
-        when(mExploreSurfaceCoordinatorFactory.create(anyBoolean(), anyBoolean(), anyInt()))
+        when(mExploreSurfaceCoordinatorFactory.create(anyBoolean(), anyInt()))
                 .thenReturn(mExploreSurfaceCoordinator);
         showHomepageAndVerify(mediator);
         carouselTabSwitcherModuleController
@@ -870,26 +869,6 @@ public class StartSurfaceMediatorUnitTest {
     }
 
     @Test
-    @EnableFeatures(INSTANT_START)
-    public void feedPlaceholderFromWarmStart() {
-        doReturn(false).when(mTabModelSelector).isIncognitoSelected();
-        doReturn(true).when(mVoiceRecognitionHandler).isVoiceSearchEnabled();
-
-        StartSurfaceMediator mediator =
-                createStartSurfaceMediator(/* hadWarmStart= */ true, /* useMagicStack= */ false);
-        assertFalse(mediator.shouldShowFeedPlaceholder());
-
-        mPropertyModel.set(IS_EXPLORE_SURFACE_VISIBLE, true);
-        when(mExploreSurfaceCoordinatorFactory.create(anyBoolean(), anyBoolean(), anyInt()))
-                .thenReturn(mExploreSurfaceCoordinator);
-        showHomepageAndVerify(mediator);
-
-        assertThat(
-                mPropertyModel.get(EXPLORE_SURFACE_COORDINATOR),
-                equalTo(mExploreSurfaceCoordinator));
-    }
-
-    @Test
     public void singeTabSwitcherHideTabSwitcherTitle() {
         doReturn(false).when(mTabModelSelector).isIncognitoSelected();
         doReturn(true).when(mVoiceRecognitionHandler).isVoiceSearchEnabled();
@@ -1023,6 +1002,7 @@ public class StartSurfaceMediatorUnitTest {
     }
 
     @Test
+    @DisableFeatures({ChromeFeatureList.BACK_GESTURE_REFACTOR})
     public void testFeedReliabilityLoggerBackPressed() {
         StartSurfaceMediator mediator = createStartSurfaceMediator();
         showHomepageAndVerify(mediator);
@@ -1031,6 +1011,7 @@ public class StartSurfaceMediatorUnitTest {
     }
 
     @Test
+    @DisableFeatures({ChromeFeatureList.BACK_GESTURE_REFACTOR})
     public void testBackPressHandlerOnStartSurfaceWithTabSwitcherCreated() {
         doReturn(false).when(mTabModelSelector).isIncognitoSelected();
         doReturn(false).when(mTabModelSelector).isIncognitoSelected();
@@ -1040,13 +1021,8 @@ public class StartSurfaceMediatorUnitTest {
 
         showHomepageAndVerify(mediator);
 
-        doReturn(true).when(mSingleTabSwitcherModuleController).isDialogVisible();
         mediator.onBackPressed();
-        verify(mSingleTabSwitcherModuleController, times(1)).onBackPressed();
-
-        doReturn(false).when(mSingleTabSwitcherModuleController).isDialogVisible();
-        mediator.onBackPressed();
-        verify(mSingleTabSwitcherModuleController, times(2)).onBackPressed();
+        verify(mSingleTabSwitcherModuleController).onBackPressed();
     }
 
     /** Tests the logic of recording time spend in start surface. */
@@ -1323,7 +1299,6 @@ public class StartSurfaceMediatorUnitTest {
                 mParentTabSupplier,
                 mLogoContainerView,
                 mBackPressManager,
-                /* feedPlaceholderParentView= */ null,
                 mActivityLifecycleDispatcher,
                 mProfileSupplier);
     }

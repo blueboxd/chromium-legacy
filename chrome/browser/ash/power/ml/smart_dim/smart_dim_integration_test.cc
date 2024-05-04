@@ -4,9 +4,11 @@
 
 #include "base/cpu.h"
 #include "base/run_loop.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/time/time.h"
 #include "chrome/browser/ash/crosapi/browser_manager.h"
 #include "chrome/browser/ash/crosapi/browser_util.h"
 #include "chrome/browser/ash/crosapi/crosapi_manager.h"
@@ -212,11 +214,19 @@ IN_PROC_BROWSER_TEST_F(SmartDimLacrosIntegrationTest, SmartDim) {
   ASSERT_TRUE(crosapi::CrosapiManager::Get()->crosapi_ash());
 
   // Request a Lacros window to open and wait for it to become visible.
-  LacrosWindowWaiter waiter;
+  LacrosWindowWaiter window_waiter;
   crosapi::BrowserManager::Get()->NewWindow(
       /*incognito=*/false, /*should_trigger_session_restore=*/false);
-  waiter.Wait();
+  window_waiter.Wait();
   ASSERT_TRUE(crosapi::BrowserManager::Get()->IsRunning());
+
+  // Speculative fix for test flake. Sometimes WebPageInfoSource returns 0
+  // because Lacros does not provide info about the current page. Give Lacros
+  // time to stabilize. See b/332806059
+  base::RunLoop loop;
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
+      FROM_HERE, loop.QuitClosure(), base::Milliseconds(500));
+  loop.Run();
 
   base::HistogramTester histograms;
 

@@ -73,8 +73,8 @@
 namespace extensions {
 namespace {
 
-// TODO(crbug.com/1213400): Consider removing traces when the cause of the issue
-// is identified.
+// TODO(crbug.com/40768738): Consider removing traces when the cause of the
+// issue is identified.
 constexpr char kWebRequestProxyingURLLoaderFactoryScope[] =
     "WebRequestProxyingURLLoaderFactory";
 
@@ -1126,7 +1126,7 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
   // 'extraHeaders' option. We need to repopulate the ParsedHeader to reflect
   // the modified headers.
   //
-  // TODO(https://crbug.com/1208142): Once problems with 'extraHeaders' are
+  // TODO(crbug.com/40765899): Once problems with 'extraHeaders' are
   // sorted out, migrate these headers over to requiring 'extraHeaders' and
   // remove this code.
   //
@@ -1285,12 +1285,13 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
   if (request_.url.SchemeIsHTTPOrHTTPS() ||
       request_.url.SchemeIs(url::kUuidInPackageScheme)) {
     DCHECK(info_.has_value());
-    int result =
-        WebRequestEventRouter::Get(factory_->browser_context_)
-            ->OnHeadersReceived(factory_->browser_context_, &info_.value(),
-                                std::move(callback_pair.first),
-                                current_response_->headers.get(),
-                                &override_headers_, &redirect_url_);
+    bool should_collapse_initiator = false;
+    int result = WebRequestEventRouter::Get(factory_->browser_context_)
+                     ->OnHeadersReceived(
+                         factory_->browser_context_, &info_.value(),
+                         std::move(callback_pair.first),
+                         current_response_->headers.get(), &override_headers_,
+                         &redirect_url_, &should_collapse_initiator);
     if (result == net::ERR_BLOCKED_BY_CLIENT) {
       const int status_code = current_response_->headers
                                   ? current_response_->headers->response_code()
@@ -1304,7 +1305,9 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
       } else {
         state = State::kRejectedByOnHeadersReceivedForFinalResponse;
       }
-      OnRequestError(CreateURLLoaderCompletionStatus(result), state);
+      OnRequestError(
+          CreateURLLoaderCompletionStatus(result, should_collapse_initiator),
+          state);
       return;
     }
 

@@ -52,6 +52,9 @@ chromium-metrics-reviews@google.com.
   <int value="5"
       label="Returned result as not enabled because model execution
              capability was disabled for the user account"/>
+  <int value="6"
+      label="Returned result as enabled because the feature has graduated
+             from experimental AI settings"/>
 </enum>
 
 <enum name="FeaturesSettingsVisibilityResult">
@@ -66,6 +69,7 @@ chromium-metrics-reviews@google.com.
   <int value="6"
       label="Not visible because model execution capability was disabled for
              the user account"/>
+  <int value="7" label="Not visible because the feature is already graduated"/>
 </enum>
 
 <enum name="HintCacheStoreEntryType">
@@ -234,8 +238,9 @@ chromium-metrics-reviews@google.com.
   <int value="3" label="Net Error">
     Upload was not successful because of network error.
   </int>
-  <int value="4" label="No User Metrics Consent">
-    Upload was not allowed due to user metrics consent.
+  <int value="4" label="Metrics reporting disabled">
+    Upload was not allowed due to metrics reporting being disabled in
+    chrome://settings.
   </int>
   <int value="5" label="Disabled due to Enterprise Policy">
     Upload was disabled due to enterprise policy.
@@ -298,6 +303,21 @@ chromium-metrics-reviews@google.com.
              is not supported by the safety model">
     Used on-device and got output, but the detected output language is not
     supported by the safety model
+  </int>
+  <int value="14"
+      label="Used on-device and got output, but failed to create remote text
+             safety request">
+    Used on-device and got output, but failed to create the remote text safety
+    request to evaluate safety of the response.
+  </int>
+  <int value="15"
+      label="Used on-device and got output, but remote text safety request
+             failed">
+    Used on-device and got output, but the remote text safety request failed to
+    evaluate safety of the response.
+  </int>
+  <int value="16" label="Used on-device, but a request safety check failed">
+    Used on-device, but a request safety check failed.
   </int>
 </enum>
 
@@ -440,23 +460,6 @@ chromium-metrics-reviews@google.com.
     Service was started, but requested URL was invalid. (Added in M115,
     Previously, this was combined with &quot;No hint available for page
     load&quot;.)
-  </int>
-</enum>
-
-<enum name="OptimizationGuidePageContentAnnotationsStorageStatus">
-  <int value="0" label="Unknown"/>
-  <int value="1" label="Success">
-    The specific visit that we wanted to annotate content for was found in the
-    History Service and the content annotations for the visit were required to
-    be stored in the History Service.
-  </int>
-  <int value="2" label="No visits for URL found">
-    There were no visits found in the History Service for the URL that the
-    content annotations are associated with.
-  </int>
-  <int value="3" label="Specific visit for URL not found">
-    Visits for the URL the content annotations are for were found, but not the
-    specific visit we were annotating for.
   </int>
 </enum>
 
@@ -663,6 +666,24 @@ chromium-metrics-reviews@google.com.
   <int value="46" label="CAPITAL_ONE_CREDIT_CARD_STREAMING_BENEFITS"/>
   <int value="47" label="AMERICAN_EXPRESS_CREDIT_CARD_FLIGHT_BENEFITS"/>
   <int value="48" label="AMERICAN_EXPRESS_CREDIT_CARD_SUBSCRIPTION_BENEFITS"/>
+  <int value="55" label="CAPITAL_ONE_CREDIT_CARD_BENEFITS_BLOCKED"/>
+</enum>
+
+<enum name="PageContentAnnotationsStorageStatus">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Success">
+    The specific visit that we wanted to annotate content for was found in the
+    History Service and the content annotations for the visit were required to
+    be stored in the History Service.
+  </int>
+  <int value="2" label="No visits for URL found">
+    There were no visits found in the History Service for the URL that the
+    content annotations are associated with.
+  </int>
+  <int value="3" label="Specific visit for URL not found">
+    Visits for the URL the content annotations are for were found, but not the
+    specific visit we were annotating for.
+  </int>
 </enum>
 
 </enums>

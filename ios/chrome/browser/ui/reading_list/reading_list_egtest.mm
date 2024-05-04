@@ -17,12 +17,12 @@
 #import "base/strings/sys_string_conversions.h"
 #import "base/strings/utf_string_conversions.h"
 #import "base/test/ios/wait_util.h"
-#import "components/sync/base/features.h"
 #import "components/sync/base/user_selectable_type.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/shared/ui/symbols/symbols.h"
 #import "ios/chrome/browser/shared/ui/table_view/table_view_constants.h"
 #import "ios/chrome/browser/signin/model/fake_system_identity.h"
+#import "ios/chrome/browser/ui/authentication/authentication_constants.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui_test_util.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
@@ -473,9 +473,9 @@ void AssertIsShowingDistillablePage(bool online, const GURL& distillable_url) {
             (testAccountSettingsViewedFroReadingListManager)] ||
       [self isRunningTest:@selector
             (testSignOutFromAccountSettingsFromReadingListManager)] ||
-      [self isRunningTest:@selector(testSigninToReviewAccountSettingsPromo)]) {
-    config.features_enabled.push_back(
-        syncer::kReplaceSyncPromosWithSignInPromos);
+      [self isRunningTest:@selector(testNoReviewAccountSettingsPromo)] ||
+      [self isRunningTest:@selector(testUndoSignInTypeDisabled)] ||
+      [self isRunningTest:@selector(testUndoSignInTypeEnabled)]) {
     config.features_enabled.push_back(kEnableReviewAccountSettingsPromo);
   }
 
@@ -564,18 +564,10 @@ void AssertIsShowingDistillablePage(bool online, const GURL& distillable_url) {
   [ChromeEarlGrey waitForPageToFinishLoading];
   base::test::ios::SpinRunLoopWithMinDelay(base::Seconds(1));
 
-  if ([ChromeEarlGrey isLoadSimulatedRequestAPIEnabled]) {
-    // Check that the online version is now displayed.
-    AssertIsShowingDistillablePage(true, distillablePageURL);
-    GREYAssertEqual(1, [ChromeEarlGrey navigationBackListItemsCount],
-                    @"The NTP page should be the first committed URL.");
-  } else {
-    // Check that the offline version is still displayed.
-    AssertIsShowingDistillablePage(false, distillablePageURL);
-    // Check that a new navigation wasn't created.
-    GREYAssertEqual(0, [ChromeEarlGrey navigationBackListItemsCount],
-                    @"The offline page should be the first committed URL.");
-  }
+  // Check that the online version is now displayed.
+  AssertIsShowingDistillablePage(true, distillablePageURL);
+  GREYAssertEqual(1, [ChromeEarlGrey navigationBackListItemsCount],
+                  @"The NTP page should be the first committed URL.");
 
   // Check that navigating forward navigates to the correct page.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::ForwardButton()]
@@ -622,8 +614,8 @@ void AssertIsShowingDistillablePage(bool online, const GURL& distillable_url) {
   OpenPageSecurityInfoBubble();
   // Verify that the Page Info is about offline pages.
   [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::HeaderWithAccessibilityLabelId(
-                                   IDS_IOS_PAGE_INFO_OFFLINE_PAGE_LABEL)]
+      selectElementWithMatcher:grey_text(l10n_util::GetNSString(
+                                   IDS_IOS_PAGE_INFO_OFFLINE_PAGE_LABEL))]
       assertWithMatcher:grey_notNil()];
 
   // Verify that the webState's title is correct.
@@ -721,7 +713,7 @@ void AssertIsShowingDistillablePage(bool online, const GURL& distillable_url) {
 // Tests that sharing a web page to the Reading List results in a snackbar
 // appearing, and that the Reading List entry is present in the Reading List.
 // Loads offline version by tapping on entry without web server.
-// TODO(crbug.com/1326627): Fix flakiness.
+// TODO(crbug.com/40840653): Fix flakiness.
 - (void)DISABLED_testSavingToReadingListAndLoadNoNetwork {
   [ReadingListAppInterface forceConnectionToWifi];
   GURL distillableURL = self.testServer->GetURL(kDistillableURL);
@@ -1153,7 +1145,7 @@ void AssertIsShowingDistillablePage(bool online, const GURL& distillable_url) {
 
 // Tests that the VC can be dismissed by swiping down.
 - (void)testSwipeDownDismiss {
-  // TODO(crbug.com/1129589): Test disabled on iOS14 iPhones.
+  // TODO(crbug.com/40149458): Test disabled on iOS14 iPhones.
   if (![ChromeEarlGrey isIPadIdiom]) {
     EARL_GREY_TEST_DISABLED(@"Fails on iOS14 iPhones.");
   }
@@ -1429,9 +1421,9 @@ void AssertIsShowingDistillablePage(bool online, const GURL& distillable_url) {
   [SigninEarlGrey verifySignedInWithFakeIdentity:fakeIdentity1];
 }
 
-// Tests sign-in promo changes to review account settings promo after signing
-// in.
-- (void)testSigninToReviewAccountSettingsPromo {
+// Tests the review account settings promo does not show after signing in as
+// reading list gets enabled by default on sign-in.
+- (void)testNoReviewAccountSettingsPromo {
   FakeSystemIdentity* fakeIdentity1 = [FakeSystemIdentity fakeIdentity1];
   [SigninEarlGrey signinWithFakeIdentity:fakeIdentity1];
 
@@ -1457,28 +1449,116 @@ void AssertIsShowingDistillablePage(bool online, const GURL& distillable_url) {
                                    base::SysNSStringToUTF16(
                                        fakeIdentity1.userEmail)))]
       performAction:grey_tap()];
+  [ChromeEarlGreyUI waitForAppToIdle];
 
-  // Verify Account Settings promo shows.
-  [SigninEarlGreyUI verifySigninPromoVisibleWithMode:
-                        SigninPromoViewModeSignedInWithPrimaryAccount];
+  // Verify Account Settings promo does not show.
+  [SigninEarlGreyUI verifySigninPromoNotVisible];
 
-  // Open the settings using the sign-in promo.
+  // Verify that the reading list type is now enabled.
+  GREYAssertTrue(
+      [SigninEarlGrey
+          isSelectedTypeEnabled:syncer::UserSelectableType::kReadingList],
+      @"Reading list should be enabled.");
+}
+
+// Tests that reading list type gets disabled as it was before signing in when
+// the snackbar undo is tapped.
+- (void)testUndoSignInTypeDisabled {
+  FakeSystemIdentity* fakeIdentity1 = [FakeSystemIdentity fakeIdentity1];
+  [SigninEarlGrey signinWithFakeIdentity:fakeIdentity1];
+
+  // By default, `signinWithFakeIdentity` above enables reading list data type,
+  // so turn it off.
+  [SigninEarlGrey setSelectedType:(syncer::UserSelectableType::kReadingList)
+                          enabled:NO];
+
+  // Sign out.
+  [SigninEarlGreyUI signOut];
+
+  // Sign in from Reading List promo.
+  OpenReadingList();
+  [SigninEarlGreyUI
+      verifySigninPromoVisibleWithMode:SigninPromoViewModeSigninWithAccount];
   [[EarlGrey
       selectElementWithMatcher:grey_allOf(PrimarySignInButton(),
                                           grey_sufficientlyVisible(), nil)]
       performAction:grey_tap()];
 
-  // Verify Account Settings are viewed.
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(
-                                   kManageSyncTableViewAccessibilityIdentifier)]
+  // Tap undo button from the snackbar.
+  NSString* snackbarMessage = l10n_util::GetNSStringF(
+      IDS_IOS_SIGNIN_SNACKBAR_SIGNED_IN_AS,
+      base::SysNSStringToUTF16(fakeIdentity1.userEmail));
+  [[EarlGrey selectElementWithMatcher:grey_text(snackbarMessage)]
       assertWithMatcher:grey_sufficientlyVisible()];
+  [[EarlGrey
+      selectElementWithMatcher:grey_allOf(
+                                   grey_accessibilityID(kSigninSnackbarUndo),
+                                   grey_sufficientlyVisible(), nil)]
+      performAction:grey_tap()];
+  [SigninEarlGrey verifySignedOut];
+
+  // Sign back in without using the promo.
+  [SigninEarlGrey signinWithFakeIdentity:fakeIdentity1];
+
+  // Verify that the reading list type is disabled as it was before signing in.
+  GREYAssertFalse(
+      [SigninEarlGrey
+          isSelectedTypeEnabled:syncer::UserSelectableType::kReadingList],
+      @"Reading list should be disabled.");
+}
+
+// Tests that reading list type remains enabled as it was before signing in even
+// when the snackbar undo is tapped.
+- (void)testUndoSignInTypeEnabled {
+  FakeSystemIdentity* fakeIdentity1 = [FakeSystemIdentity fakeIdentity1];
+  [SigninEarlGrey signinWithFakeIdentity:fakeIdentity1];
+
+  // Make sure reading list type is enabled.
+  GREYAssertTrue(
+      [SigninEarlGrey
+          isSelectedTypeEnabled:syncer::UserSelectableType::kReadingList],
+      @"Reading list should be enabled.");
+
+  // Sign out.
+  [SigninEarlGreyUI signOut];
+
+  // Sign in from Reading List promo.
+  OpenReadingList();
+  [SigninEarlGreyUI
+      verifySigninPromoVisibleWithMode:SigninPromoViewModeSigninWithAccount];
+  [[EarlGrey
+      selectElementWithMatcher:grey_allOf(PrimarySignInButton(),
+                                          grey_sufficientlyVisible(), nil)]
+      performAction:grey_tap()];
+
+  // Tap undo button from the snackbar.
+  NSString* snackbarMessage = l10n_util::GetNSStringF(
+      IDS_IOS_SIGNIN_SNACKBAR_SIGNED_IN_AS,
+      base::SysNSStringToUTF16(fakeIdentity1.userEmail));
+  [[EarlGrey selectElementWithMatcher:grey_text(snackbarMessage)]
+      assertWithMatcher:grey_sufficientlyVisible()];
+  [[EarlGrey
+      selectElementWithMatcher:grey_allOf(
+                                   grey_accessibilityID(kSigninSnackbarUndo),
+                                   grey_sufficientlyVisible(), nil)]
+      performAction:grey_tap()];
+  [SigninEarlGrey verifySignedOut];
+
+  // Sign back in without using the promo.
+  [SigninEarlGrey signinWithFakeIdentity:fakeIdentity1];
+
+  // Verify that the reading list type remains enabled as it was before signing
+  // in.
+  GREYAssertTrue(
+      [SigninEarlGrey
+          isSelectedTypeEnabled:syncer::UserSelectableType::kReadingList],
+      @"Reading list should be enabled.");
 }
 
 #pragma mark - Multiwindow
 
 // Tests the Open in New Window context menu action for a reading list entry.
-// TODO(crbug.com/1274099): Test is flaky
+// TODO(crbug.com/40807345): Test is flaky
 - (void)testContextMenuOpenInNewWindow {
   if (![ChromeEarlGrey areMultipleWindowsSupported])
     EARL_GREY_TEST_DISABLED(@"Multiple windows can't be opened.");

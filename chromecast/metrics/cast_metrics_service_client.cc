@@ -361,8 +361,9 @@ void CastMetricsServiceClient::InitializeMetricsService() {
   // Perform additional setup that should be done after the FieldTrialList, the
   // MetricsStateManager, and its CleanExitBeacon exist. Since the list already
   // exists, the entropy provider type is unused.
-  // TODO(crbug/1249485): Make Chromecast consistent with other platforms. I.e.
-  // create the FieldTrialList and the MetricsStateManager around the same time.
+  // TODO(crbug.com/40791269): Make Chromecast consistent with other platforms.
+  // I.e. create the FieldTrialList and the MetricsStateManager around the same
+  // time.
   metrics_state_manager_->InstantiateFieldTrialList();
 
   synthetic_trial_registry_ =
@@ -391,7 +392,7 @@ void CastMetricsServiceClient::StartMetricsService() {
 #if !BUILDFLAG(IS_ANDROID)
   // Signal that the session has not yet exited cleanly. We later signal that
   // the session exited cleanly via MetricsService::LogCleanShutdown().
-  // TODO(crbug.com/1208587): See whether this can be called even earlier.
+  // TODO(crbug.com/40766116): See whether this can be called even earlier.
   metrics_state_manager_->LogHasSessionShutdownCleanly(false);
 #endif  // !BUILDFLAG(IS_ANDROID)
 

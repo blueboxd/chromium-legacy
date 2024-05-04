@@ -12,30 +12,16 @@
 #import "ios/web/public/test/web_test_with_web_state.h"
 #import "ios/web/public/web_client.h"
 
+using autofill::test::kTrackFormMutationsDelayInMs;
 using base::test::ios::kWaitForJSCompletionTimeout;
 using base::test::ios::WaitUntilConditionOrTimeout;
-
-namespace {
-const int kTrackFormMutationsDelayInMs = 10;
-}
 
 AutofillTestWithWebState::AutofillTestWithWebState(
     std::unique_ptr<web::WebClient> web_client)
     : web::WebTestWithWebState(std::move(web_client)) {}
 
-void AutofillTestWithWebState::SetUpForUniqueIds(web::WebFrame* frame) {
-  uint32_t next_available_id = 1;
-  autofill::FormUtilJavaScriptFeature::GetInstance()
-      ->SetUpForUniqueIDsWithInitialState(frame, next_available_id);
-
-  // Wait for |SetUpForUniqueIDsWithInitialState| to complete.
-  EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^bool {
-    return [ExecuteJavaScript(@"document[__gCrWeb.fill.ID_SYMBOL]") intValue] ==
-           static_cast<int>(next_available_id);
-  }));
-}
-
-void AutofillTestWithWebState::TrackFormMutations(web::WebFrame* frame) {
+void AutofillTestWithWebState::TrackFormMutations(web::WebFrame* frame,
+                                                  bool allow_batching) {
   // Override |__gCrWeb.formHandlers.trackFormMutations| to set a boolean
   // trackFormMutationsComplete after the function is called.
   ExecuteJavaScript(
@@ -49,7 +35,7 @@ void AutofillTestWithWebState::TrackFormMutations(web::WebFrame* frame) {
       @"};");
 
   autofill::FormHandlersJavaScriptFeature::GetInstance()->TrackFormMutations(
-      frame, kTrackFormMutationsDelayInMs);
+      frame, kTrackFormMutationsDelayInMs, allow_batching);
 
   // Wait for |TrackFormMutations| to add form listeners.
   ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{

@@ -117,23 +117,12 @@ ValidateManifestIdFromParsableSyncEntity(
 
   return base::ok(manifest_id.value());
 }
+
 }  // namespace
 
 BASE_FEATURE(kDeleteBadWebAppSyncEntitites,
              "DeleteBadWebAppSyncEntitites",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-namespace {
-// Return whether `app` has a UserDisplayMode set for the current platform.
-// May be false for not-yet-migrated apps loaded from the database.
-bool HasCurrentPlatformUserDisplayMode(const WebApp& app) {
-#if BUILDFLAG(IS_CHROMEOS)
-  return app.user_display_mode_cros().has_value();
-#else
-  return app.user_display_mode_default().has_value();
-#endif  // BUILDFLAG(IS_CHROMEOS)
-}
-}  // namespace
 
 std::unique_ptr<syncer::EntityData> CreateSyncEntityData(const WebApp& app) {
   // The Sync System doesn't allow empty entity_data name.
@@ -141,61 +130,70 @@ std::unique_ptr<syncer::EntityData> CreateSyncEntityData(const WebApp& app) {
 
   auto entity_data = std::make_unique<syncer::EntityData>();
   entity_data->name = app.untranslated_name();
-  // TODO(crbug.com/1103570): Remove this fallback later.
+  // TODO(crbug.com/40139320): Remove this fallback later.
   if (entity_data->name.empty())
     entity_data->name = app.start_url().spec();
 
-  *(entity_data->specifics.mutable_web_app()) = WebAppToSyncProto(app);
+  *(entity_data->specifics.mutable_web_app()) = app.sync_proto();
   return entity_data;
 }
 
-void ApplySyncDataToApp(const sync_pb::WebAppSpecifics& sync_data,
+void ApplySyncDataToApp(const sync_pb::WebAppSpecifics& sync_proto,
                         WebApp* app) {
   app->AddSource(WebAppManagement::kSync);
 
-  // Store both platform-specific UserDisplayModes from sync_data if
-  // available. This ensures the sync data is preserved.
-  if (base::FeatureList::IsEnabled(kSeparateUserDisplayModeForCrOS) ||
-      base::FeatureList::IsEnabled(kSyncOnlySeparateUserDisplayModeForCrOS)) {
-    if (sync_data.has_user_display_mode_cros()) {
-      app->SetUserDisplayModeCrOS(
-          CreateUserDisplayModeFromWebAppSpecificsUserDisplayMode(
-              sync_data.user_display_mode_cros()));
-    }
-    if (sync_data.has_user_display_mode_default()) {
-      app->SetUserDisplayModeDefault(
-          CreateUserDisplayModeFromWebAppSpecificsUserDisplayMode(
-              sync_data.user_display_mode_default()));
-    }
-  }
+  sync_pb::WebAppSpecifics modified_sync_proto = sync_proto;
 
-  if (base::FeatureList::IsEnabled(kSeparateUserDisplayModeForCrOS)) {
-    // Ensure the current platform's UserDisplayMode is set.
-    // Conditional to avoid clobbering a valid UDM with an absent one, for the
-    // case of old clients clearing the CrOS UDM value or non-sync-installed
-    // apps.
-    if (!HasCurrentPlatformUserDisplayMode(*app)) {
-      app->SetUserDisplayMode(
-          ResolvePlatformSpecificUserDisplayMode(sync_data));
-    }
+  std::string relative_manifest_id_path =
+      RelativeManifestIdPath(app->manifest_id());
+  if (modified_sync_proto.has_relative_manifest_id() &&
+      modified_sync_proto.relative_manifest_id() != relative_manifest_id_path) {
+    modified_sync_proto.set_relative_manifest_id(relative_manifest_id_path);
+    // Record when this happens. When it is rare enough we could remove the
+    // logic here and instead drop incoming sync data with fragment parts in the
+    // manifest_id_path.
+    base::UmaHistogramBoolean("WebApp.ApplySyncDataToApp.ManifestIdMatch",
+                              false);
   } else {
-    // Always overwrite the original UserDisplayMode with sync data.
-    app->SetUserDisplayMode(
-        CreateUserDisplayModeFromWebAppSpecificsUserDisplayMode(
-            sync_data.user_display_mode_default()));
+    // Record success for comparison.
+    base::UmaHistogramBoolean("WebApp.ApplySyncDataToApp.ManifestIdMatch",
+                              true);
   }
 
-  app->SetUserPageOrdinal(syncer::StringOrdinal(sync_data.user_page_ordinal()));
-  app->SetUserLaunchOrdinal(
-      syncer::StringOrdinal(sync_data.user_launch_ordinal()));
+  // Prevent incoming sync data from clearing recently-added fields in our local
+  // copy. This ensures new sync fields are preserved despite old (pre-M125)
+  // clients incorrectly clearing unknown fields. Any new fields added to the
+  // sync proto should also be added here (if we don't want them to be cleared
+  // by old clients) until this block can be removed. This can be removed when
+  // there are few <M125 clients remaining.
+  if (base::FeatureList::IsEnabled(kSyncOnlySeparateUserDisplayModeForCrOS)) {
+    if (app->sync_proto().has_user_display_mode_cros() &&
+        !modified_sync_proto.has_user_display_mode_cros()) {
+      modified_sync_proto.set_user_display_mode_cros(
+          app->sync_proto().user_display_mode_cros());
+    }
+    if (base::FeatureList::IsEnabled(kSeparateUserDisplayModeForCrOS)) {
+      if (app->sync_proto().has_user_display_mode_default() &&
+          !modified_sync_proto.has_user_display_mode_default()) {
+        modified_sync_proto.set_user_display_mode_default(
+            app->sync_proto().user_display_mode_default());
+      }
 
-  std::optional<WebApp::SyncFallbackData> parsed_sync_fallback_data =
-      ParseSyncFallbackDataStruct(sync_data);
-  if (!parsed_sync_fallback_data.has_value()) {
-    // ParseSyncFallbackDataStruct() reports any errors.
-    return;
+      // Ensure the current platform's UserDisplayMode is set.
+      // Conditional to avoid clobbering a valid UDM with an absent one, for the
+      // case of old clients clearing the CrOS UDM value or non-sync-installed
+      // apps.
+      if (!HasCurrentPlatformUserDisplayMode(modified_sync_proto)) {
+        auto udm = ResolvePlatformSpecificUserDisplayMode(modified_sync_proto);
+        SetPlatformSpecificUserDisplayMode(udm, &modified_sync_proto);
+      }
+    }
+    // If `kSeparateUserDisplayModeForCrOS` is disabled, maintain original
+    // behaviour of clobbering UDM-default with the synced value, even if
+    // absent.
   }
-  app->SetSyncFallbackData(std::move(parsed_sync_fallback_data.value()));
+
+  app->SetSyncProto(std::move(modified_sync_proto));
 }
 
 WebAppSyncBridge::WebAppSyncBridge(WebAppRegistrarMutable* registrar)
@@ -252,26 +250,9 @@ void WebAppSyncBridge::Init(base::OnceClosure initialized_callback) {
                                          std::move(initialized_callback)));
 }
 
-void WebAppSyncBridge::SetAppUserDisplayMode(
+void WebAppSyncBridge::SetAppUserDisplayModeForTesting(
     const webapps::AppId& app_id,
-    mojom::UserDisplayMode user_display_mode,
-    bool is_user_action) {
-  if (is_user_action) {
-    switch (user_display_mode) {
-      case mojom::UserDisplayMode::kStandalone:
-        base::RecordAction(
-            base::UserMetricsAction("WebApp.SetWindowMode.Window"));
-        break;
-      case mojom::UserDisplayMode::kBrowser:
-        base::RecordAction(base::UserMetricsAction("WebApp.SetWindowMode.Tab"));
-        break;
-      case mojom::UserDisplayMode::kTabbed:
-        base::RecordAction(
-            base::UserMetricsAction("WebApp.SetWindowMode.Tabbed"));
-        break;
-    }
-  }
-
+    mojom::UserDisplayMode user_display_mode) {
   {
     ScopedRegistryUpdate update = BeginUpdate();
     WebApp* web_app = update->UpdateApp(app_id);
@@ -380,6 +361,7 @@ void WebAppSyncBridge::SetAppManifestUpdateTime(const webapps::AppId& app_id,
 
 void WebAppSyncBridge::SetUserPageOrdinal(const webapps::AppId& app_id,
                                           syncer::StringOrdinal page_ordinal) {
+  CHECK(page_ordinal.IsValid(), base::NotFatalUntil::M126);
   ScopedRegistryUpdate update = BeginUpdate();
   WebApp* web_app = update->UpdateApp(app_id);
   // Due to the extensions sync system setting ordinals on sync, this can get
@@ -390,13 +372,16 @@ void WebAppSyncBridge::SetUserPageOrdinal(const webapps::AppId& app_id,
     return;
   }
   if (web_app) {
-    web_app->SetUserPageOrdinal(std::move(page_ordinal));
+    sync_pb::WebAppSpecifics mutable_sync_proto = web_app->sync_proto();
+    mutable_sync_proto.set_user_page_ordinal(page_ordinal.ToInternalValue());
+    web_app->SetSyncProto(std::move(mutable_sync_proto));
   }
 }
 
 void WebAppSyncBridge::SetUserLaunchOrdinal(
     const webapps::AppId& app_id,
     syncer::StringOrdinal launch_ordinal) {
+  CHECK(launch_ordinal.IsValid(), base::NotFatalUntil::M126);
   ScopedRegistryUpdate update = BeginUpdate();
   // Due to the extensions sync system setting ordinals on sync, this can get
   // called before the app is installed in the web apps system. Until apps are
@@ -407,7 +392,10 @@ void WebAppSyncBridge::SetUserLaunchOrdinal(
   }
   WebApp* web_app = update->UpdateApp(app_id);
   if (web_app) {
-    web_app->SetUserLaunchOrdinal(std::move(launch_ordinal));
+    sync_pb::WebAppSpecifics mutable_sync_proto = web_app->sync_proto();
+    mutable_sync_proto.set_user_launch_ordinal(
+        launch_ordinal.ToInternalValue());
+    web_app->SetSyncProto(std::move(mutable_sync_proto));
   }
 }
 
@@ -613,13 +601,14 @@ void WebAppSyncBridge::OnDatabaseOpened(
 void WebAppSyncBridge::EnsureAppsHaveUserDisplayModeForCurrentPlatform() {
   web_app::ScopedRegistryUpdate update = BeginUpdate();
   for (const WebApp& app : registrar().GetAppsIncludingStubs()) {
-    if (!HasCurrentPlatformUserDisplayMode(app)) {
+    if (!HasCurrentPlatformUserDisplayMode(app.sync_proto())) {
       // On CrOS, populate the UDM-CrOS value by copying from the default value
       // (falling back to Standalone). On non-CrOS, populate the UDM-Default
       // value with Standalone.
-      mojom::UserDisplayMode udm = app.user_display_mode_default().value_or(
-          mojom::UserDisplayMode::kStandalone);
-      update->UpdateApp(app.app_id())->SetUserDisplayMode(udm);
+      sync_pb::WebAppSpecifics_UserDisplayMode udm =
+          ResolvePlatformSpecificUserDisplayMode(app.sync_proto());
+      update->UpdateApp(app.app_id())
+          ->SetUserDisplayMode(ToMojomUserDisplayMode(udm));
     }
   }
 }
@@ -733,9 +722,6 @@ ManifestIdParseResult WebAppSyncBridge::PrepareLocalUpdateFromSyncChange(
   ApplySyncDataToApp(specifics, web_app.get());
 
   if (existing_web_app) {
-    CHECK(existing_web_app->user_display_mode().has_value(),
-          base::NotFatalUntil::M125);
-    CHECK(web_app->user_display_mode().has_value(), base::NotFatalUntil::M125);
     if (existing_web_app->user_display_mode() != web_app->user_display_mode()) {
       apps_display_mode_changed.push_back(app_id);
     }
@@ -773,9 +759,8 @@ void WebAppSyncBridge::ApplyIncrementalSyncChangesToRegistrar(
 
   for (const webapps::AppId& app_id : apps_display_mode_changed) {
     const WebApp* app = registrar_->GetAppById(app_id);
-    DCHECK(app->user_display_mode().has_value());
-    registrar_->NotifyWebAppUserDisplayModeChanged(
-        app_id, app->user_display_mode().value());
+    registrar_->NotifyWebAppUserDisplayModeChanged(app_id,
+                                                   app->user_display_mode());
   }
 
   std::vector<webapps::AppId> apps_to_delete;
@@ -794,8 +779,9 @@ void WebAppSyncBridge::ApplyIncrementalSyncChangesToRegistrar(
           apps_to_delete, callback);
     } else {
       for (const webapps::AppId& app_id : apps_to_delete) {
-        command_scheduler_->RemoveUserUninstallableManagements(
-            app_id, webapps::WebappUninstallSource::kSync,
+        command_scheduler_->RemoveAllManagementTypesAndUninstall(
+            base::PassKey<WebAppSyncBridge>(), app_id,
+            webapps::WebappUninstallSource::kSync,
             base::BindOnce(callback, app_id));
       }
     }
@@ -880,8 +866,8 @@ std::optional<syncer::ModelError> WebAppSyncBridge::ApplyIncrementalSyncChanges(
   return std::nullopt;
 }
 
-void WebAppSyncBridge::GetData(StorageKeyList storage_keys,
-                               DataCallback callback) {
+void WebAppSyncBridge::GetDataForCommit(StorageKeyList storage_keys,
+                                        DataCallback callback) {
   auto data_batch = std::make_unique<syncer::MutableDataBatch>();
 
   for (const webapps::AppId& app_id : storage_keys) {
@@ -991,8 +977,9 @@ void WebAppSyncBridge::MaybeUninstallAppsPendingUninstall() {
         base::BindRepeating(&WebAppSyncBridge::OnWebAppUninstallComplete,
                             weak_ptr_factory_.GetWeakPtr());
     for (const auto& app_id : apps_uninstalling) {
-      command_scheduler_->RemoveUserUninstallableManagements(
-          app_id, webapps::WebappUninstallSource::kSync,
+      command_scheduler_->RemoveAllManagementTypesAndUninstall(
+          base::PassKey<WebAppSyncBridge>(), app_id,
+          webapps::WebappUninstallSource::kSync,
           base::BindOnce(callback, app_id));
     }
   }

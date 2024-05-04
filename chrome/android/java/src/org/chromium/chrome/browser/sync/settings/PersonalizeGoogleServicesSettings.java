@@ -9,6 +9,7 @@ import android.os.Bundle;
 import androidx.annotation.Nullable;
 import androidx.preference.Preference;
 
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.settings.ChromeBaseSettingsFragment;
@@ -33,7 +34,7 @@ public class PersonalizeGoogleServicesSettings extends ChromeBaseSettingsFragmen
 
     @Override
     public void onCreatePreferences(@Nullable Bundle bundle, @Nullable String s) {
-        getActivity().setTitle(R.string.sign_in_personalize_google_services_title);
+        getActivity().setTitle(R.string.sign_in_personalize_google_services_title_eea);
         SettingsUtils.addPreferencesFromResource(
                 this, R.xml.personalize_google_services_preferences);
 
@@ -89,11 +90,13 @@ public class PersonalizeGoogleServicesSettings extends ChromeBaseSettingsFragmen
         AppHooks.get()
                 .createGoogleActivityController()
                 .openWebAndAppActivitySettings(getActivity(), signedInAccountName);
+        RecordUserAction.record("Signin_AccountSettings_GoogleActivityControlsClicked");
     }
 
     private void onLinkedGoogleServicesClicked(String signedInAccountName) {
         AppHooks.get()
                 .createGoogleActivityController()
                 .openLinkedGoogleServicesSettings(getActivity(), signedInAccountName);
+        RecordUserAction.record("Signin_AccountSettings_LinkedGoogleServicesClicked");
     }
 }

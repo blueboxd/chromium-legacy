@@ -41,7 +41,6 @@
 #include "components/autofill/core/browser/geo/autofill_country.h"
 #include "components/autofill/core/browser/geo/phone_number_i18n.h"
 #include "components/autofill/core/browser/geo/state_names.h"
-#include "components/autofill/core/browser/metrics/address_rewriter_in_profile_subset_metrics.h"
 #include "components/autofill/core/browser/metrics/autofill_metrics.h"
 #include "components/autofill/core/browser/profile_token_quality.h"
 #include "components/autofill/core/browser/validation.h"
@@ -135,7 +134,7 @@ FieldType GetStorableTypeCollapsingGroups(FieldType type) {
 // example, if the profile is going to fill ADDRESS_HOME_ZIP, it should
 // prioritize showing that over ADDRESS_HOME_STATE in the suggestion sublabel.
 int SpecificityForType(FieldType type) {
-  // TODO(crbug.com/1459990): Clean up after launch.
+  // TODO(crbug.com/40274514): Clean up after launch.
   if (!base::FeatureList::IsEnabled(
           features::kAutofillGranularFillingAvailable)) {
     switch (type) {
@@ -303,7 +302,7 @@ AutofillProfile CreateStarterProfile(
     AutofillProfile profile = AutofillProfile(source, country_code);
     // Only set the guid if CreateStartProfile is called on an existing profile
     // (java guid not empty). Otherwise, keep the generated one.
-    // TODO(crbug.com/1484006): `guid` should be always empty when existing
+    // TODO(crbug.com/40282123): `guid` should be always empty when existing
     // profile is not set. CHECK should be added when this condition holds.
     if (!guid.empty()) {
       profile.set_guid(guid);
@@ -391,7 +390,8 @@ base::android::ScopedJavaLocalRef<jobject> AutofillProfile::CreateJavaObject(
 
   for (FieldType type : GetDatabaseStoredTypesOfAutofillProfile()) {
     auto status = static_cast<jint>(GetVerificationStatus(type));
-    // TODO(crbug.com/1471502): Reconcile usage of GetInfo and GetRawInfo below.
+    // TODO(crbug.com/40278253): Reconcile usage of GetInfo and GetRawInfo
+    // below.
     if (type == NAME_FULL) {
       Java_AutofillProfile_setInfo(
           env, jprofile, static_cast<jint>(type),
@@ -431,7 +431,8 @@ AutofillProfile AutofillProfile::CreateFromJavaObject(
     if (!value) {
       continue;
     }
-    // TODO(crbug.com/1471502): Reconcile usage of GetInfo and GetRawInfo below.
+    // TODO(crbug.com/40278253): Reconcile usage of GetInfo and GetRawInfo
+    // below.
     if (field_type == NAME_FULL || field_type == ADDRESS_HOME_COUNTRY) {
       profile.SetInfoWithVerificationStatus(
           field_type, base::android::ConvertJavaStringToUTF16(value),
@@ -654,9 +655,6 @@ bool AutofillProfile::IsSubsetOfForFieldSet(
     const AutofillProfile& profile,
     const FieldTypeSet& types) const {
   const std::string& app_locale = comparator.app_locale();
-  // TODO(crbug.com/1417975): Remove when
-  // `kAutofillUseAddressRewriterInProfileSubsetComparison` launches.
-  bool has_different_address = false;
   const AddressComponent& address = GetAddress().GetRoot();
   const AddressComponent& other_address = profile.GetAddress().GetRoot();
 
@@ -670,16 +668,16 @@ bool AutofillProfile::IsSubsetOfForFieldSet(
     if (value.empty()) {
       continue;
     }
-    // TODO(crbug.com/1417975): Use rewriter rules for all kAddressHome types.
+    // TODO(crbug.com/40257475): Use rewriter rules for all kAddressHome types.
     if (type == ADDRESS_HOME_STREET_ADDRESS || type == ADDRESS_HOME_LINE1 ||
         type == ADDRESS_HOME_LINE2 || type == ADDRESS_HOME_LINE3) {
       // This will compare street addresses after applying appropriate address
       // rewriter rules to both values, so that for example US streets like
       // `Main Street` and `main st` evaluate to equal.
-      has_different_address =
-          has_different_address ||
-          (address.GetValueForComparisonForType(type, other_address) !=
-           other_address.GetValueForComparisonForType(type, address));
+      if (address.GetValueForComparisonForType(type, other_address) !=
+          other_address.GetValueForComparisonForType(type, address)) {
+        return false;
+      }
     } else if (type == NAME_FULL) {
       if (!comparator.IsNameVariantOf(
               AutofillProfileComparator::NormalizeForComparison(
@@ -709,15 +707,7 @@ bool AutofillProfile::IsSubsetOfForFieldSet(
       return false;
     }
   }
-  // When `kAutofillUseAddressRewriterInProfileSubsetComparison` is disabled,
-  // Ignore street addresses because comparing addresses such as 200 Elm St and
-  // 200 Elm Street could cause |profile| to not be seen as a subset of |this|.
-  // If the form includes a street address, then it is likely it contains
-  // another address field, e.g. a city or postal code, and comparing these
-  // other address parts is more reliable.
-  return !has_different_address ||
-         !base::FeatureList::IsEnabled(
-             features::kAutofillUseAddressRewriterInProfileSubsetComparison);
+  return true;
 }
 
 bool AutofillProfile::IsStrictSupersetOf(
@@ -919,7 +909,7 @@ void AutofillProfile::CreateInferredLabels(
       suggested_fields ? &suggested_fields_types : nullptr, excluded_fields,
       &fields_to_use);
 
-  // TODO(crbug.com/1459990): Clean up after launch.
+  // TODO(crbug.com/40274514): Clean up after launch.
   CHECK(base::FeatureList::IsEnabled(
             features::kAutofillGranularFillingAvailable) ||
         !triggering_field_type);

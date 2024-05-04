@@ -4,15 +4,18 @@
 
 package org.chromium.chrome.browser.tab;
 
+import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.os.Handler;
 import android.view.KeyEvent;
 
 import org.jni_zero.CalledByNative;
+import org.jni_zero.JniType;
 import org.jni_zero.NativeMethods;
 
 import org.chromium.base.BuildInfo;
+import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ObserverList.RewindableIterator;
 import org.chromium.chrome.browser.AppHooks;
@@ -20,6 +23,7 @@ import org.chromium.chrome.browser.app.bluetooth.BluetoothNotificationService;
 import org.chromium.chrome.browser.app.usb.UsbNotificationService;
 import org.chromium.chrome.browser.back_press.BackPressManager;
 import org.chromium.chrome.browser.bluetooth.BluetoothNotificationManager;
+import org.chromium.chrome.browser.gesturenav.NativePageBitmapCapturer;
 import org.chromium.chrome.browser.media.MediaCaptureNotificationServiceImpl;
 import org.chromium.chrome.browser.policy.PolicyAuditor;
 import org.chromium.chrome.browser.policy.PolicyAuditorJni;
@@ -423,6 +427,11 @@ final class TabWebContentsDelegateAndroidImpl extends TabWebContentsDelegateAndr
         return mDelegate.getVirtualKeyboardHeight();
     }
 
+    @Override
+    public boolean maybeCopyContentAreaAsBitmap(Callback<Bitmap> callback) {
+        return NativePageBitmapCapturer.maybeCaptureNativeView(mTab, callback);
+    }
+
     void showFramebustBlockInfobarForTesting(String url) {
         TabWebContentsDelegateAndroidImplJni.get()
                 .showFramebustBlockInfoBar(mTab.getWebContents(), url);
@@ -437,6 +446,7 @@ final class TabWebContentsDelegateAndroidImpl extends TabWebContentsDelegateAndr
     interface Natives {
         void onRendererUnresponsive(WebContents webContents);
 
-        void showFramebustBlockInfoBar(WebContents webContents, String url);
+        void showFramebustBlockInfoBar(
+                WebContents webContents, @JniType("std::u16string") String url);
     }
 }

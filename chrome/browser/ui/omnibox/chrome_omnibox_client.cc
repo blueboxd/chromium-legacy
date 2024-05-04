@@ -240,6 +240,37 @@ gfx::Image ChromeOmniboxClient::GetSizedIcon(const gfx::Image& icon) const {
   return icon;
 }
 
+std::u16string ChromeOmniboxClient::GetFormattedFullURL() const {
+  return location_bar_->GetLocationBarModel()->GetFormattedFullURL();
+}
+
+std::u16string ChromeOmniboxClient::GetURLForDisplay() const {
+  return location_bar_->GetLocationBarModel()->GetURLForDisplay();
+}
+
+GURL ChromeOmniboxClient::GetNavigationEntryURL() const {
+  return location_bar_->GetLocationBarModel()->GetURL();
+}
+
+metrics::OmniboxEventProto::PageClassification
+ChromeOmniboxClient::GetPageClassification(OmniboxFocusSource focus_source,
+                                           bool is_prefetch) {
+  return location_bar_->GetLocationBarModel()->GetPageClassification(
+      focus_source, is_prefetch);
+}
+
+security_state::SecurityLevel ChromeOmniboxClient::GetSecurityLevel() const {
+  return location_bar_->GetLocationBarModel()->GetSecurityLevel();
+}
+
+net::CertStatus ChromeOmniboxClient::GetCertStatus() const {
+  return location_bar_->GetLocationBarModel()->GetCertStatus();
+}
+
+const gfx::VectorIcon& ChromeOmniboxClient::GetVectorIcon() const {
+  return location_bar_->GetLocationBarModel()->GetVectorIcon();
+}
+
 bool ChromeOmniboxClient::ProcessExtensionKeyword(
     const std::u16string& text,
     const TemplateURL* template_url,
@@ -518,10 +549,6 @@ void ChromeOmniboxClient::OnPopupVisibilityChanged() {
   location_bar_->OnPopupVisibilityChanged();
 }
 
-LocationBarModel* ChromeOmniboxClient::GetLocationBarModel() {
-  return location_bar_->GetLocationBarModel();
-}
-
 base::WeakPtr<OmniboxClient> ChromeOmniboxClient::AsWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
@@ -533,7 +560,7 @@ void ChromeOmniboxClient::DoPrerender(const AutocompleteMatch& match) {
   if (content::DevToolsAgentHost::IsDebuggerAttached(web_contents))
     return;
 
-  // TODO(https://crbug.com/1278634): Refactor relevant code to reuse common
+  // TODO(crbug.com/40208255): Refactor relevant code to reuse common
   // code, and ensure metrics are correctly recorded.
   DCHECK(!AutocompleteMatch::IsSearchType(match.type));
   gfx::Rect container_bounds = web_contents->GetContainerBounds();

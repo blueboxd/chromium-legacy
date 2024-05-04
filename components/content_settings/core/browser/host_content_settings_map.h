@@ -77,26 +77,7 @@ class PrefRegistrySyncable;
 class HostContentSettingsMap : public content_settings::Observer,
                                public RefcountedKeyedService {
  public:
-  enum ProviderType {
-    // EXTENSION names is a layering violation when this class will move to
-    // components.
-    // TODO(mukai): find the solution.
-    WEBUI_ALLOWLIST_PROVIDER = 0,
-    POLICY_PROVIDER,
-    SUPERVISED_PROVIDER,
-    CUSTOM_EXTENSION_PROVIDER,
-    INSTALLED_WEBAPP_PROVIDER,
-    NOTIFICATION_ANDROID_PROVIDER,
-    ONE_TIME_PERMISSION_PROVIDER,
-    PREF_PROVIDER,
-    DEFAULT_PROVIDER,
-
-    // The following providers are for tests only.
-    PROVIDER_FOR_TESTS,
-    OTHER_PROVIDER_FOR_TESTS,
-
-    NUM_PROVIDER_TYPES
-  };
+  using ProviderType = content_settings::ProviderType;
 
   // This should be called on the UI thread, otherwise |thread_checker_| handles
   // CalledOnValidThread() wrongly. |is_off_the_record| indicates incognito
@@ -133,7 +114,7 @@ class HostContentSettingsMap : public content_settings::Observer,
   // This may be called on any thread.
   ContentSetting GetDefaultContentSetting(
       ContentSettingsType content_type,
-      std::string* provider_id = nullptr) const;
+      ProviderType* provider_id = nullptr) const;
 
   // Returns a single |ContentSetting| which applies to the given URLs.  Note
   // that certain internal schemes are allowlisted. For |CONTENT_TYPE_COOKIES|,
@@ -162,12 +143,11 @@ class HostContentSettingsMap : public content_settings::Observer,
   // |primary_pattern| and the |secondary_pattern| fields of |info| are set to
   // the patterns of the applying rule.  Note that certain internal schemes are
   // allowlisted. For allowlisted schemes the |source| field of |info| is set
-  // the |SETTING_SOURCE_ALLOWLIST| and the |primary_pattern| and
+  // the |SettingSource::kAllowList| and the |primary_pattern| and
   // |secondary_pattern| are set to a wildcard pattern.  If there is no content
   // setting, a NONE-type value is returned and the |source| field of |info| is
-  // set to |SETTING_SOURCE_NONE|. The pattern fields of |info| are set to empty
-  // patterns.
-  // May be called on any thread.
+  // set to |SettingSource::kNone|. The pattern fields of |info| are set to
+  // empty patterns. May be called on any thread.
   base::Value GetWebsiteSetting(
       const GURL& primary_url,
       const GURL& secondary_url,
@@ -215,8 +195,9 @@ class HostContentSettingsMap : public content_settings::Observer,
   // instead.
   //
   // NOTICE: This is just a convenience method for content types that use
-  // |CONTENT_SETTING| as their data type. For content types that use other
-  // data types please use the method SetWebsiteSettingDefaultScope().
+  // |ContentSetting| as their data type. For content types that use other data
+  // types (e.g. arbitrary base::Values) please use the method
+  // SetWebsiteSettingDefaultScope().
   //
   // This should only be called on the UI thread.
   void SetContentSettingCustomScope(
@@ -232,8 +213,9 @@ class HostContentSettingsMap : public content_settings::Observer,
   // default setting for that type to be used.
   //
   // NOTICE: This is just a convenience method for content types that use
-  // |CONTENT_SETTING| as their data type. For content types that use other
-  // data types please use the method SetWebsiteSettingDefaultScope().
+  // |ContentSetting| as their data type. For content types that use other data
+  // types (e.g. arbitrary base::Values) please use the method
+  // SetWebsiteSettingDefaultScope().
   //
   // This should only be called on the UI thread.
   //
@@ -363,7 +345,12 @@ class HostContentSettingsMap : public content_settings::Observer,
   // to convert backwards.
   static ProviderType GetProviderTypeFromSource(const std::string& source);
 
-  // Returns the SettingSource associated with the given |provider_name| string.
+  // Returns the SettingSource associated with the given ProviderType.
+  static content_settings::SettingSource GetSettingSourceFromProviderType(
+      content_settings::ProviderType provider_type);
+
+  // Returns the SettingSource associated with the given |provider_name|
+  // string.
   static content_settings::SettingSource GetSettingSourceFromProviderName(
       const std::string& provider_name);
 
@@ -383,7 +370,8 @@ class HostContentSettingsMap : public content_settings::Observer,
   // |last_modified| timestamp.
   void SetClockForTesting(base::Clock* clock);
 
-  // Returns the provider that contains content settings from user preferences.
+  // Returns the provider that contains content settings from user
+  // preferences.
   content_settings::PrefProvider* GetPrefProvider() const {
     return pref_provider_;
   }

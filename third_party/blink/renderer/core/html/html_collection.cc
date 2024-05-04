@@ -30,7 +30,9 @@
 #include "third_party/blink/renderer/core/html/document_all_name_collection.h"
 #include "third_party/blink/renderer/core/html/document_name_collection.h"
 #include "third_party/blink/renderer/core/html/forms/html_data_list_options_collection.h"
+#include "third_party/blink/renderer/core/html/forms/html_field_set_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_control_element.h"
+#include "third_party/blink/renderer/core/html/forms/html_form_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_option_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_options_collection.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
@@ -553,6 +555,17 @@ void HTMLCollection::NamedItems(const AtomicString& name,
     result.AppendVector(*id_results);
   if (const auto* name_results = cache.GetElementsByName(name))
     result.AppendVector(*name_results);
+}
+
+bool HTMLCollection::HasNamedItems(const AtomicString& name) const {
+  if (name.empty()) {
+    return false;
+  }
+
+  UpdateIdNameCache();
+
+  const NamedItemCache& cache = GetNamedItemCache();
+  return cache.GetElementsById(name) || cache.GetElementsByName(name);
 }
 
 HTMLCollection::NamedItemCache::NamedItemCache() = default;

@@ -119,8 +119,8 @@ export class Oobe extends DisplayManager {
       enterpriseEnroll: boolean = false): void {
     // Helper method that runs |fn| after |screenName| is visible.
     function waitForOobeScreen(screenName: string, fn: () => void) {
-      if (Oobe.getInstance().currentScreen &&
-          Oobe.getInstance().currentScreen.id === screenName) {
+      const currentScreen = Oobe.getInstance().currentScreen;
+      if (currentScreen && currentScreen.id === screenName) {
         fn();
       } else {
         const oobe = document.querySelector('#oobe');
@@ -138,14 +138,14 @@ export class Oobe extends DisplayManager {
     chrome.send('OobeTestApi.skipToLoginForTesting');
 
     if (!enterpriseEnroll) {
-      chrome.send('completeLogin', [gaiaId, username, password, false]);
+      chrome.send('OobeTestApi.completeLogin', [gaiaId, username, password]);
     } else {
       waitForOobeScreen('gaia-signin', function(): void {
-        // TODO(crbug.com/1100910): migrate logic to dedicated test api.
         chrome.send('OobeTestApi.advanceToScreen', ['enterprise-enrollment']);
       });
 
       waitForOobeScreen('enterprise-enrollment', function(): void {
+        // TODO(b/260015541): migrate logic to dedicated test api.
         chrome.send(
             'toggleFakeEnrollmentAndCompleteLogin',
             [username, OobeTypes.LicenseType.ENTERPRISE],
@@ -165,6 +165,7 @@ export class Oobe extends DisplayManager {
                      ?.uiStep;
     // TODO(crbug.com/1229130) - Improve this check.
     if (step === OobeTypes.EnrollmentStep.ATTRIBUTE_PROMPT) {
+      // TODO(b/260015541): migrate logic to dedicated test api.
       chrome.send('oauthEnrollAttributes', ['', '']);
       return true;
     }
@@ -228,8 +229,6 @@ export class Oobe extends DisplayManager {
       const localizedString = loadTimeData.getValue(stringName);
       document.documentElement.setAttribute(attribute, localizedString);
     }
-    document.documentElement.toggleAttribute(
-        'tablet', loadTimeData.getBoolean('isInTabletMode'));
 
     document.querySelector<ApiKeysNoticeElement>('#api-keys-notice')
         ?.updateLocaleAndMaybeShowNotice();
@@ -240,7 +239,7 @@ export class Oobe extends DisplayManager {
    * @param isInTabletMode True when in tablet mode.
    */
   static setTabletModeState(isInTabletMode: boolean): void {
-    Oobe.getInstance().setTabletModeState(isInTabletMode);
+    document.documentElement.toggleAttribute('tablet', isInTabletMode);
   }
 
   /**

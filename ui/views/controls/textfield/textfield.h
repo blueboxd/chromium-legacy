@@ -335,7 +335,8 @@ class VIEWS_EXPORT Textfield : public View,
 
   // View overrides:
   int GetBaseline() const override;
-  gfx::Size CalculatePreferredSize() const override;
+  gfx::Size CalculatePreferredSize(
+      const SizeBounds& available_size) const override;
   gfx::Size GetMinimumSize() const override;
   void SetBorder(std::unique_ptr<Border> b) override;
   ui::Cursor GetCursor(const ui::MouseEvent& event) override;
@@ -718,7 +719,7 @@ class VIEWS_EXPORT Textfield : public View,
   std::unique_ptr<TextfieldModel> model_;
 
   // This is the current listener for events from this Textfield.
-  raw_ptr<TextfieldController, DanglingUntriaged> controller_ = nullptr;
+  raw_ptr<TextfieldController> controller_ = nullptr;
 
   // An edit command to execute on the next key event. When set to a valid
   // value, the key event is still passed to |controller_|, but otherwise

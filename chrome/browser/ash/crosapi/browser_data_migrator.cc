@@ -79,8 +79,9 @@ bool BrowserDataMigratorImpl::MaybeForceResumeMoveMigration(
     const AccountId& account_id,
     const std::string& user_id_hash,
     crosapi::browser_util::PolicyInitState policy_init_state) {
-  if (!MoveMigrator::ResumeRequired(local_state, user_id_hash))
+  if (!MoveMigrator::ResumeRequired(local_state, user_id_hash)) {
     return false;
+  }
 
   LOG(WARNING) << "Calling RestartToMigrate() to resume move migration.";
   return RestartToMigrate(account_id, user_id_hash, local_state,
@@ -187,7 +188,7 @@ bool BrowserDataMigratorImpl::MaybeRestartToMigrateInternal(
         break;
       case MigrationStep::kEnded:
       default:
-        // TODO(crbug.com/1277848): Once `BrowserDataMigrator` stabilises,
+        // TODO(crbug.com/40207942): Once `BrowserDataMigrator` stabilises,
         // remove this log message or reduce to VLOG(1).
         if (ash::standalone_browser::migrator_util::
                 IsProfileMigrationCompletedForUser(local_state, user_id_hash,
@@ -206,8 +207,9 @@ bool BrowserDataMigratorImpl::MaybeRestartToMigrateInternal(
   const std::string force_migration_switch =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kForceBrowserDataMigrationForTesting);
-  if (force_migration_switch == kBrowserDataMigrationForceSkip)
+  if (force_migration_switch == kBrowserDataMigrationForceSkip) {
     return false;
+  }
   if (force_migration_switch == kBrowserDataMigrationForceMigration) {
     LOG(WARNING) << "`kBrowserDataMigrationForceMigration` switch is present.";
     return true;
@@ -216,8 +218,9 @@ bool BrowserDataMigratorImpl::MaybeRestartToMigrateInternal(
   const user_manager::User* user =
       user_manager::UserManager::Get()->FindUser(account_id);
   // Check if user exists i.e. not a guest session.
-  if (!user)
+  if (!user) {
     return false;
+  }
 
   // Migration should not run for secondary users.
   const auto* primary_user = user_manager::UserManager::Get()->GetPrimaryUser();
@@ -254,7 +257,7 @@ bool BrowserDataMigratorImpl::MaybeRestartToMigrateInternal(
       return false;
     }
 
-    // TODO(crbug.com/1277848): Once `BrowserDataMigrator` stabilises, remove
+    // TODO(crbug.com/40207942): Once `BrowserDataMigrator` stabilises, remove
     // this log message.
     LOG(WARNING)
         << "Lacros is disabled. Call ClearMigrationAttemptCountForUser() so "
@@ -284,7 +287,8 @@ bool BrowserDataMigratorImpl::MaybeRestartToMigrateInternal(
           IsProfileMigrationCompletedForUser(local_state, user_id_hash,
                                              true /* print_mode */)) {
     LOG(WARNING) << "Profile migration is already completed at version "
-                 << crosapi::browser_util::GetDataVer(local_state, user_id_hash)
+                 << ash::standalone_browser::migrator_util::GetDataVer(
+                        local_state, user_id_hash)
                         .GetString();
 
     return false;
@@ -317,7 +321,7 @@ bool BrowserDataMigratorImpl::RestartToMigrate(
   CHECK(user) << "User could not be found for " << account_id.GetUserEmail()
               << " but RestartToMigrate() was called.";
 
-  // TODO(crbug.com/1277848): Once `BrowserDataMigrator` stabilises, remove
+  // TODO(crbug.com/40207942): Once `BrowserDataMigrator` stabilises, remove
   // this log message.
   LOG(WARNING) << "Making a dbus method call to session_manager";
   bool success =
@@ -325,7 +329,7 @@ bool BrowserDataMigratorImpl::RestartToMigrate(
           cryptohome::CreateAccountIdentifierFromAccountId(account_id),
           browser_data_migrator_util::kMoveSwitchValue);
 
-  // TODO(crbug.com/1261730): Add an UMA.
+  // TODO(crbug.com/40799062): Add an UMA.
   if (!success) {
     LOG(ERROR) << "SessionManagerClient::BlockingRequestBrowserDataMigration() "
                   "failed.";
@@ -360,7 +364,7 @@ void BrowserDataMigratorImpl::Migrate(MigrateCallback callback) {
   DCHECK(completion_callback_.is_null());
   completion_callback_ = std::move(callback);
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // TODO(crbug.com/1178702): Once BrowserDataMigrator stabilises, reduce the
+  // TODO(crbug.com/40169227): Once BrowserDataMigrator stabilises, reduce the
   // log level to VLOG(1).
   LOG(WARNING) << "BrowserDataMigratorImpl::Migrate() is called.";
 
@@ -390,7 +394,7 @@ void BrowserDataMigratorImpl::MigrateInternalFinishedUIThread(
   DCHECK(GetMigrationStep(local_state_) == MigrationStep::kStarted);
   SetMigrationStep(local_state_, MigrationStep::kEnded);
 
-  // TODO(crbug.com/1178702): Once BrowserDataMigrator stabilises, reduce the
+  // TODO(crbug.com/40169227): Once BrowserDataMigrator stabilises, reduce the
   // log level to VLOG(1).
   LOG(WARNING)
       << "MigrateInternalFinishedUIThread() called with results data wipe = "
@@ -400,8 +404,8 @@ void BrowserDataMigratorImpl::MigrateInternalFinishedUIThread(
   if (result.data_wipe_result != DataWipeResult::kFailed) {
     // kSkipped means that the directory did not exist so record the current
     // version as the data version.
-    crosapi::browser_util::RecordDataVer(local_state_, user_id_hash_,
-                                         version_info::GetVersion());
+    ash::standalone_browser::migrator_util::RecordDataVer(
+        local_state_, user_id_hash_, version_info::GetVersion());
   }
 
   switch (result.data_migration_result.kind) {
@@ -459,8 +463,20 @@ void BrowserDataMigratorImpl::ClearMigrationStep(PrefService* local_state) {
 }
 
 // static
+bool BrowserDataMigratorImpl::IsFirstLaunchAfterMigration(
+    const PrefService* local_state) {
+  return GetMigrationStep(local_state) == MigrationStep::kEnded;
+}
+
+// static
+void BrowserDataMigratorImpl::SetFirstLaunchAfterMigrationForTesting(
+    PrefService* local_state) {
+  SetMigrationStep(local_state, MigrationStep::kEnded);
+}
+
+// static
 BrowserDataMigratorImpl::MigrationStep
-BrowserDataMigratorImpl::GetMigrationStep(PrefService* local_state) {
+BrowserDataMigratorImpl::GetMigrationStep(const PrefService* local_state) {
   return static_cast<MigrationStep>(local_state->GetInteger(kMigrationStep));
 }
 

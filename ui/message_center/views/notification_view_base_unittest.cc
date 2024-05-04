@@ -264,7 +264,7 @@ void NotificationViewBaseTest::OnViewPreferredSizeChanged(
     return;
   }
   notification_view_->GetWidget()->SetSize(
-      notification_view()->GetPreferredSize());
+      notification_view()->GetPreferredSize({}));
 }
 
 std::vector<ButtonInfo> NotificationViewBaseTest::CreateButtons(int number) {
@@ -293,7 +293,7 @@ void NotificationViewBaseTest::UpdateNotificationViews(
     auto* widget = new views::Widget();
     widget->Init(std::move(init_params));
     notification_view_ = widget->SetContentsView(std::move(notification_view));
-    widget->SetSize(notification_view_->GetPreferredSize());
+    widget->SetSize(notification_view_->GetPreferredSize({}));
     widget->Show();
     widget->widget_delegate()->SetCanActivate(true);
     widget->Activate();
@@ -500,7 +500,7 @@ TEST_F(NotificationViewBaseTest, TestActionButtonClick) {
   EXPECT_EQ(1, delegate_->clicked_button_index());
 }
 
-// TODO(crbug.com/1232197): Test failing on linux-lacros-tester-rel and ozone.
+// TODO(crbug.com/40780100): Test failing on linux-lacros-tester-rel and ozone.
 #if BUILDFLAG(IS_CHROMEOS_LACROS) || BUILDFLAG(IS_OZONE)
 #define MAYBE_TestInlineReply DISABLED_TestInlineReply
 #else

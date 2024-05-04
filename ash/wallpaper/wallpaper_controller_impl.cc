@@ -13,6 +13,7 @@
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/login/login_screen_controller.h"
 #include "ash/public/cpp/image_downloader.h"
+#include "ash/public/cpp/image_util.h"
 #include "ash/public/cpp/schedule_enums.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/wallpaper/google_photos_wallpaper_params.h"
@@ -54,6 +55,7 @@
 #include "ash/wm/overview/overview_controller.h"
 #include "base/barrier_closure.h"
 #include "base/check.h"
+#include "base/check_is_test.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -136,6 +138,11 @@ base::FilePath& GlobalChromeOSGooglePhotosWallpapersDir() {
   return *dir_chrome_os_google_photos_wallpapers;
 }
 
+base::FilePath& GlobalChromeOSSeaPenWallpaperDir() {
+  static base::NoDestructor<base::FilePath> dir_chrome_os_sea_pen_wallpaper;
+  return *dir_chrome_os_sea_pen_wallpaper;
+}
+
 void SetGlobalUserDataDir(const base::FilePath& path) {
   base::FilePath& global_path = GlobalUserDataDir();
   global_path = path;
@@ -151,6 +158,11 @@ void SetGlobalChromeOSGooglePhotosWallpapersDir(const base::FilePath& path) {
   global_path = path;
 }
 
+void SetGlobalChromeOSSeaPenWallpaperDir(const base::FilePath& path) {
+  base::FilePath& global_path = GlobalChromeOSSeaPenWallpaperDir();
+  global_path = path;
+}
+
 void SetGlobalChromeOSCustomWallpapersDir(const base::FilePath& path) {
   base::FilePath& global_path = GlobalChromeOSCustomWallpapersDir();
   global_path = path;
@@ -160,6 +172,13 @@ base::FilePath GetUserGooglePhotosWallpaperDir(const AccountId& account_id) {
   DCHECK(account_id.HasAccountIdKey());
   return GlobalChromeOSGooglePhotosWallpapersDir().Append(
       account_id.GetAccountIdKey());
+}
+
+base::FilePath GetUserSeaPenWallpaperDir(const AccountId& account_id) {
+  DCHECK(account_id.HasAccountIdKey());
+  const base::FilePath& global_sea_pen_dir = GlobalChromeOSSeaPenWallpaperDir();
+  DCHECK(!global_sea_pen_dir.empty());
+  return global_sea_pen_dir.Append(account_id.GetAccountIdKey());
 }
 
 // Returns wallpaper subdirectory name for current resolution.
@@ -342,8 +361,6 @@ WallpaperControllerImpl::WallpaperControllerImpl(
       google_photos_wallpaper_manager_(
           GooglePhotosWallpaperManager(wallpaper_image_downloader_.get(),
                                        wallpaper_file_manager_.get())),
-      sea_pen_wallpaper_manager_(
-          SeaPenWallpaperManager(wallpaper_file_manager_.get())),
       sequenced_task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
           {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})) {
@@ -427,11 +444,6 @@ bool WallpaperControllerImpl::ShouldShowInitialAnimation() {
     return false;
 
   return true;
-}
-
-bool WallpaperControllerImpl::CanOpenWallpaperPicker() {
-  return ShouldShowWallpaperSetting() &&
-         !IsActiveUserWallpaperControlledByPolicy();
 }
 
 bool WallpaperControllerImpl::HasShownAnyWallpaper() const {
@@ -650,9 +662,9 @@ void WallpaperControllerImpl::Init(
   SetGlobalChromeOSWallpapersDir(chromeos_wallpapers_path);
   SetGlobalChromeOSGooglePhotosWallpapersDir(
       chromeos_wallpapers_path.Append("google_photos/"));
+  SetGlobalChromeOSSeaPenWallpaperDir(chromeos_wallpapers_path.Append(
+      wallpaper_constants::kSeaPenWallpaperDirName));
   SetGlobalChromeOSCustomWallpapersDir(chromeos_custom_wallpapers_path);
-  sea_pen_wallpaper_manager_.SetStorageDirectory(
-      chromeos_wallpapers_path.Append("sea_pen/"));
   SetDevicePolicyWallpaperPath(device_policy_wallpaper_path);
 }
 
@@ -773,6 +785,12 @@ void WallpaperControllerImpl::SetOnlineWallpaper(
       current_wallpaper_->wallpaper_info().MatchesAsset(*new_info)) {
     DVLOG(1) << "Detected no change in online wallpaper";
     std::move(callback).Run(/*success=*/true);
+    // Fires resized signal to
+    // `PersonalizationAppWallpaperProviderImpl::OnWallpaperResized` to tell the
+    // UI to clear the loading state.
+    for (auto& observer : observers_) {
+      observer.OnWallpaperResized();
+    }
     return;
   }
 
@@ -1093,30 +1111,7 @@ bool WallpaperControllerImpl::SetThirdPartyWallpaper(
 
 void WallpaperControllerImpl::SetSeaPenWallpaper(
     const AccountId& account_id,
-    const SeaPenImage& sea_pen_image,
-    const personalization_app::mojom::SeaPenQueryPtr& query,
-    SetWallpaperCallback callback) {
-  CHECK(features::IsSeaPenEnabled());
-  DCHECK(callback);
-  DCHECK(Shell::Get()->session_controller()->IsActiveUserSessionStarted());
-  DVLOG(1) << __func__ << " sea_pen_image.id=" << sea_pen_image.id;
-  if (!CanSetUserWallpaper(account_id)) {
-    wallpaper_metrics_manager_->LogWallpaperResult(
-        WallpaperType::kSeaPen, SetWallpaperResult::kPermissionDenied);
-    std::move(callback).Run(/*success=*/false);
-    return;
-  }
-
-  sea_pen_wallpaper_manager_.DecodeAndSaveSeaPenImage(
-      account_id, sea_pen_image, query,
-      base::BindOnce(&WallpaperControllerImpl::OnSeaPenWallpaperDecoded,
-                     set_wallpaper_weak_factory_.GetWeakPtr(), account_id,
-                     sea_pen_image.id, std::move(callback)));
-}
-
-void WallpaperControllerImpl::SetSeaPenWallpaperFromFile(
-    const AccountId& account_id,
-    const uint32_t id,
+    const uint32_t image_id,
     SetWallpaperCallback callback) {
   DCHECK(Shell::Get()->session_controller()->IsActiveUserSessionStarted());
   if (!CanSetUserWallpaper(account_id)) {
@@ -1127,37 +1122,15 @@ void WallpaperControllerImpl::SetSeaPenWallpaperFromFile(
     return;
   }
 
-  const base::FilePath file_path =
-      sea_pen_wallpaper_manager_.GetFilePathForImageId(account_id, id);
+  sea_pen_wallpaper_manager_.TouchFile(account_id, image_id);
+
   // Invalidate weak ptrs to cancel prior requests to set wallpaper.
   set_wallpaper_weak_factory_.InvalidateWeakPtrs();
-  wallpaper_file_manager_->LoadWallpaper(
-      WallpaperType::kSeaPen, file_path.DirName(), file_path.BaseName().value(),
+  sea_pen_wallpaper_manager_.GetImage(
+      account_id, image_id,
       base::BindOnce(&WallpaperControllerImpl::OnSeaPenWallpaperDecoded,
-                     set_wallpaper_weak_factory_.GetWeakPtr(), account_id, id,
-                     std::move(callback)));
-}
-
-void WallpaperControllerImpl::GetSeaPenMetadata(
-    const AccountId& account_id,
-    const uint32_t id,
-    GetSeaPenMetadataCallback callback) {
-  wallpaper_file_manager_->GetSeaPenMetadata(
-      sea_pen_wallpaper_manager_.GetFilePathForImageId(account_id, id),
-      std::move(callback));
-}
-
-void WallpaperControllerImpl::DeleteRecentSeaPenImage(
-    const AccountId& account_id,
-    const uint32_t id,
-    DeleteRecentSeaPenImageCallback callback) {
-  DCHECK(Shell::Get()->session_controller()->IsActiveUserSessionStarted());
-  if (!CanSetUserWallpaper(account_id)) {
-    std::move(callback).Run(/*success=*/false);
-    return;
-  }
-  sea_pen_wallpaper_manager_.DeleteSeaPenImage(account_id, id,
-                                               std::move(callback));
+                     set_wallpaper_weak_factory_.GetWeakPtr(), account_id,
+                     image_id, std::move(callback)));
 }
 
 void WallpaperControllerImpl::ConfirmPreviewWallpaper() {
@@ -1386,8 +1359,11 @@ void WallpaperControllerImpl::SetAnimationDuration(
 }
 
 void WallpaperControllerImpl::OpenWallpaperPickerIfAllowed() {
-  if (wallpaper_controller_client_ && CanOpenWallpaperPicker())
+  const auto* session = GetActiveUserSession();
+  if (wallpaper_controller_client_ && session &&
+      CanSetUserWallpaper(session->user_info.account_id)) {
     wallpaper_controller_client_->OpenWallpaperPicker();
+  }
 }
 
 void WallpaperControllerImpl::MinimizeInactiveWindows(
@@ -1484,20 +1460,6 @@ WallpaperControllerImpl::GetActiveUserWallpaperInfo() const {
     return std::nullopt;
   }
   return info;
-}
-
-bool WallpaperControllerImpl::ShouldShowWallpaperSetting() {
-  const UserSession* const active_user_session = GetActiveUserSession();
-  if (!active_user_session)
-    return false;
-
-  // Since everything gets wiped at the end of the Public Session (and Managed
-  // Guest Session), users are disallowed to set wallpaper (and other
-  // personalization settings) to avoid unnecessary confusion and surprise when
-  // everything resets.
-  user_manager::UserType active_user_type = active_user_session->user_info.type;
-  return active_user_type == user_manager::UserType::kRegular ||
-         active_user_type == user_manager::UserType::kChild;
 }
 
 void WallpaperControllerImpl::OnDisplayConfigurationChanged() {
@@ -1718,6 +1680,16 @@ void WallpaperControllerImpl::CompositorLockTimedOut() {
 void WallpaperControllerImpl::OnActiveUserPrefServiceChanged(
     PrefService* pref_service) {
   AccountId account_id = GetActiveAccountId();
+
+  // Tests may not initialize global wallpaper dirs before logging in a user.
+  if (sea_pen_wallpaper_manager_.ShouldMigrate(account_id) &&
+      !GlobalChromeOSSeaPenWallpaperDir().empty()) {
+    sea_pen_wallpaper_manager_.Migrate(
+        account_id, GetUserSeaPenWallpaperDir(account_id),
+        base::BindOnce(&WallpaperControllerImpl::OnSeaPenFilesMigrated,
+                       weak_factory_.GetWeakPtr(), account_id));
+  }
+
   if (wallpaper_controller_client_->IsWallpaperSyncEnabled(account_id)) {
     pref_change_registrar_ = std::make_unique<PrefChangeRegistrar>();
     pref_change_registrar_->Init(pref_service);
@@ -1790,6 +1762,12 @@ void WallpaperControllerImpl::ReloadWallpaperForTesting(bool clear_cache) {
 
 void WallpaperControllerImpl::ClearPrefChangeObserverForTesting() {
   pref_change_registrar_.reset();
+}
+
+void WallpaperControllerImpl::OverrideDriveFsDelegateForTesting(
+    std::unique_ptr<WallpaperDriveFsDelegate> drivefs_delegate) {
+  CHECK_IS_TEST();
+  drivefs_delegate_ = std::move(drivefs_delegate);
 }
 
 void WallpaperControllerImpl::UpdateWallpaperForRootWindow(
@@ -2054,14 +2032,8 @@ void WallpaperControllerImpl::ShowOobeWallpaper() {
     file_path = base::FilePath(
         FILE_PATH_LITERAL("/usr/share/chromeos-assets/animated_splash_screen/"
                           "oobe_wallpaper.jpg"));
-  } else if (features::IsOobeJellyModalEnabled()) {
-    file_path =
-        base::FilePath(FILE_PATH_LITERAL("/usr/share/chromeos-assets/wallpaper/"
-                                         "oobe_wallpaper.jpg"));
   } else {
-    OnOobeWallpaperDecoded(base::FilePath(),
-                           CreateSolidColorWallpaper(kOobeWallpaperColor));
-    return;
+    file_path = GetDefaultWallpaperPath(user_manager::UserType::kRegular);
   }
 
   if (!cached_oobe_wallpaper_.image.isNull() &&
@@ -2078,9 +2050,7 @@ void WallpaperControllerImpl::ShowOobeWallpaper() {
 void WallpaperControllerImpl::OnOobeWallpaperDecoded(
     const base::FilePath& path,
     const gfx::ImageSkia& image) {
-  // TODO (b/268463435) also check for path.empty when solid wallpaper is
-  // removed from ShowOobeWallpaper
-  if (image.isNull()) {
+  if (path.empty() || image.isNull()) {
     LOG(ERROR) << "Failed to decode OOBE wallpaper.";
     wallpaper_metrics_manager_->LogWallpaperResult(
         WallpaperType::kOobe, SetWallpaperResult::kDecodingError);
@@ -2094,9 +2064,14 @@ void WallpaperControllerImpl::OnOobeWallpaperDecoded(
     cached_oobe_wallpaper_.file_path = path;
   }
 
-  WallpaperInfo info(cached_oobe_wallpaper_.file_path.value(),
-                     WALLPAPER_LAYOUT_CENTER_CROPPED, WallpaperType::kOobe,
-                     base::Time::Now());
+  const bool use_small =
+      (GetAppropriateResolution() == WallpaperResolution::kSmall);
+  WallpaperLayout layout =
+      use_small ? WallpaperLayout::WALLPAPER_LAYOUT_CENTER
+                : WallpaperLayout::WALLPAPER_LAYOUT_CENTER_CROPPED;
+
+  WallpaperInfo info(cached_oobe_wallpaper_.file_path.value(), layout,
+                     WallpaperType::kOobe, base::Time::Now());
   ShowWallpaperImage(cached_oobe_wallpaper_.image, info,
                      /*preview_mode=*/false, /*is_override=*/false);
 }
@@ -2334,18 +2309,16 @@ void WallpaperControllerImpl::SetWallpaperFromInfo(const AccountId& account_id,
     return;
   }
   if (info.type == WallpaperType::kSeaPen) {
-    const std::optional<uint32_t> id =
-        GetIdFromFileName(base::FilePath(info.location));
-    if (id.has_value()) {
-      const auto path = sea_pen_wallpaper_manager_.GetFilePathForImageId(
-          account_id, id.value());
-      wallpaper_file_manager_->LoadWallpaper(
-          info.type, path.DirName(), path.BaseName().value(),
-          base::BindOnce(&WallpaperControllerImpl::OnWallpaperDecoded,
-                         weak_factory_.GetWeakPtr(), account_id, path, info,
-                         /*show_wallpaper=*/true));
-      return;
-    }
+    const auto user_sea_pen_wallpaper_dir =
+        GetUserSeaPenWallpaperDir(account_id);
+    wallpaper_file_manager_->LoadWallpaper(
+        WallpaperType::kSeaPen, user_sea_pen_wallpaper_dir, info.location,
+        base::BindOnce(&WallpaperControllerImpl::OnWallpaperDecoded,
+                       weak_factory_.GetWeakPtr(), account_id,
+                       user_sea_pen_wallpaper_dir.Append(info.location)
+                           .ReplaceExtension(".jpg"),
+                       info, /*show_wallpaper=*/true));
+    return;
   }
 
   LOG(ERROR) << "Wallpaper reverts to default unexpected.";
@@ -2399,6 +2372,45 @@ void WallpaperControllerImpl::OnSeaPenWallpaperDecoded(
     return;
   }
 
+  if (IsEphemeralUser(account_id)) {
+    DCHECK(features::IsSeaPenDemoModeEnabled());
+    // Demo mode users are eligible for SeaPen but should not save the wallpaper
+    // image. Set a fake file path to use for the in memory wallpaper cache.
+    const auto cache_file_path =
+        base::FilePath("in_memory_cache")
+            .Append(wallpaper_constants::kSeaPenWallpaperDirName)
+            .Append(base::NumberToString(sea_pen_image_id))
+            .AddExtension(".jpg");
+    OnSeaPenWallpaperSavedToPublic(account_id, image_skia, sea_pen_image_id,
+                                   std::move(callback), cache_file_path);
+    return;
+  }
+
+  // Save a copy of the currently selected SeaPen wallpaper in the global
+  // wallpaper directory so that it is available on lock screen.
+  wallpaper_file_manager_->SaveWallpaperToDisk(
+      WallpaperType::kSeaPen, GetUserSeaPenWallpaperDir(account_id),
+      base::FilePath(base::NumberToString(sea_pen_image_id))
+          .AddExtension(".jpg")
+          .value(),
+      WALLPAPER_LAYOUT_CENTER_CROPPED, image_skia,
+      base::BindOnce(&WallpaperControllerImpl::OnSeaPenWallpaperSavedToPublic,
+                     set_wallpaper_weak_factory_.GetWeakPtr(), account_id,
+                     image_skia, sea_pen_image_id, std::move(callback)));
+}
+
+void WallpaperControllerImpl::OnSeaPenWallpaperSavedToPublic(
+    const AccountId& account_id,
+    const gfx::ImageSkia& image_skia,
+    const uint32_t sea_pen_image_id,
+    SetWallpaperCallback callback,
+    const base::FilePath& file_path) {
+  if (file_path.empty()) {
+    wallpaper_metrics_manager_->LogWallpaperResult(
+        WallpaperType::kSeaPen, SetWallpaperResult::kFileNotFound);
+    std::move(callback).Run(false);
+    return;
+  }
   wallpaper_metrics_manager_->LogWallpaperResult(WallpaperType::kSeaPen,
                                                  SetWallpaperResult::kSuccess);
   for (auto& observer : observers_) {
@@ -2406,15 +2418,42 @@ void WallpaperControllerImpl::OnSeaPenWallpaperDecoded(
   }
   std::move(callback).Run(true);
 
-  WallpaperInfo wallpaper_info(
-      base::NumberToString(sea_pen_image_id), WALLPAPER_LAYOUT_CENTER_CROPPED,
-      WallpaperType::kSeaPen, base::Time::Now(),
-      sea_pen_wallpaper_manager_
-          .GetFilePathForImageId(account_id, sea_pen_image_id)
-          .value());
+  WallpaperInfo wallpaper_info(base::NumberToString(sea_pen_image_id),
+                               WALLPAPER_LAYOUT_CENTER_CROPPED,
+                               WallpaperType::kSeaPen, base::Time::Now());
 
   SetWallpaperImpl(account_id, wallpaper_info, image_skia,
                    /*show_wallpaper=*/IsActiveUser(account_id));
+}
+
+void WallpaperControllerImpl::OnSeaPenFilesMigrated(const AccountId& account_id,
+                                                    const bool success) {
+  if (!success) {
+    LOG(WARNING) << "Failed to migrate SeaPen files";
+    return;
+  }
+
+  WallpaperInfo wallpaper_info;
+  if (!GetUserWallpaperInfo(account_id, &wallpaper_info)) {
+    LOG(WARNING) << "Failed to get user wallpaper info post SeaPen migration";
+    return;
+  }
+
+  if (wallpaper_info.type != WallpaperType::kSeaPen) {
+    DVLOG(0) << "Current wallpaper is not SeaPen, migration complete";
+    return;
+  }
+
+  std::optional<uint32_t> sea_pen_image_id =
+      GetIdFromFileName(base::FilePath(wallpaper_info.location));
+  if (!sea_pen_image_id.has_value()) {
+    LOG(WARNING) << "Invalid SeaPen info.location";
+    SetDefaultWallpaper(account_id, /*show_wallpaper=*/IsActiveUser(account_id),
+                        base::DoNothing());
+    return;
+  }
+
+  SetSeaPenWallpaper(account_id, sea_pen_image_id.value(), base::DoNothing());
 }
 
 void WallpaperControllerImpl::SaveAndSetWallpaper(const AccountId& account_id,
@@ -2490,8 +2529,7 @@ void WallpaperControllerImpl::SaveAndSetWallpaperWithCompletionFilesId(
   if (should_save_to_disk) {
     wallpaper_file_manager_->SaveWallpaperToDisk(
         type, GlobalChromeOSCustomWallpapersDir(), file_name, layout, image,
-        /*image_metadata=*/"", std::move(image_saved_callback),
-        wallpaper_files_id);
+        std::move(image_saved_callback), wallpaper_files_id);
   }
 
   if (show_wallpaper) {
@@ -3085,11 +3123,19 @@ void WallpaperControllerImpl::HandleSettingOnlineWallpaperFromWallpaperInfo(
 void WallpaperControllerImpl::CleanUpBeforeSettingUserWallpaperInfo(
     const AccountId& account_id,
     const WallpaperInfo& info) {
-  if (info.type != WallpaperType::kOnceGooglePhotos &&
+  std::vector<base::FilePath> directories_to_remove;
+  if (account_id.HasAccountIdKey() &&
+      info.type != WallpaperType::kOnceGooglePhotos &&
       info.type != WallpaperType::kDailyGooglePhotos) {
-    sequenced_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(&DeleteGooglePhotosCache, account_id));
+    directories_to_remove.push_back(
+        GetUserGooglePhotosWallpaperDir(account_id));
   }
+  if (account_id.HasAccountIdKey() && info.type != WallpaperType::kSeaPen) {
+    directories_to_remove.push_back(GetUserSeaPenWallpaperDir(account_id));
+  }
+  sequenced_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&DeleteWallpaperInList, std::move(directories_to_remove)));
 }
 
 bool WallpaperControllerImpl::IsOobeState() const {
@@ -3110,7 +3156,7 @@ bool WallpaperControllerImpl::IsOobeState() const {
 const ScheduledFeature& WallpaperControllerImpl::GetScheduleForOnlineWallpaper(
     const std::string& collection_id) const {
   if (::ash::IsTimeOfDayWallpaper(collection_id) &&
-      features::IsTimeOfDayWallpaperForcedAutoScheduleEnabled()) {
+      features::IsTimeOfDayWallpaperEnabled()) {
     return *time_of_day_scheduler_;
   } else {
     return *Shell::Get()->dark_light_mode_controller();

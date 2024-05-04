@@ -74,6 +74,12 @@ struct TrustedUrlRequestParams {
   // FollowRedirect().
   bool allow_cookies_from_browser;
 
+  // Specifies that the response head should include request cookies which were
+  // sent, including cookies added by the browser. Clients which set this flag
+  // should take care to remove them if they forward the response head to a
+  // client which should not be able to see them.
+  bool include_request_cookies_with_response = false;
+
   // Observer which should be notified when this URLRequest reads or writes
   // a cookie. If this is set to non-null, the observer passed to
   // URLLoaderFactory will be ignored.
@@ -147,7 +153,7 @@ struct URLRequest {
   // third-party context when it otherwise wouldn't be able to.
   // https://crbug.com/1060631 will move the SFC computation into the browser
   // process to prevent this.
-  // TODO(https://crbug.com/1060631): Remove this message after the fix is
+  // TODO(crbug.com/40122112): Remove this message after the fix is
   // landed.
   SiteForCookies site_for_cookies;
 
@@ -259,7 +265,7 @@ struct URLRequest {
   // What this resource load is for (main frame, sub-frame, sub-resource,
   // object).
   // Note: this is an enum of type blink::mojom::ResourceType.
-  // TODO(https://crbug.com/1059639): remove this in favor of `destination`.
+  // TODO(crbug.com/40121693): remove this in favor of `destination`.
   int32 resource_type;
 
   // The priority of this request determined by Blink.
@@ -303,7 +309,7 @@ struct URLRequest {
   // This member must be kFollow as long as |mode| is kNoCors.
   RedirectMode redirect_mode;
 
-  // The integrity used in Fetch API.
+  // Exposed as Request.integrity in Service Workers
   string fetch_integrity;
 
   // https://fetch.spec.whatwg.org/#concept-request-destination
@@ -526,7 +532,7 @@ struct URLRequest {
   // Indicates whether Attribution Reporting API related runtime features are
   // enabled.
   //
-  // TODO(https://crbug.com/1443602): Get rid of this with proper OT
+  // TODO(crbug.com/40267414): Get rid of this with proper OT
   // infrastructure support in the network service.
   AttributionReportingRuntimeFeatures attribution_reporting_runtime_features;
 
@@ -540,12 +546,12 @@ struct URLRequest {
 
   // Indicate the state of CompressionDictionaryTransport feature. When it is
   // true, `use-as-dictionary` response HTTP header may be processed.
-  // TODO(crbug.com/1413922): Remove this flag when we launch
+  // TODO(crbug.com/40255884): Remove this flag when we launch
   // CompressionDictionaryTransport feature.
   bool shared_dictionary_writer_enabled = false;
 
   // Indicates where the original ResourceRequest is created.
-  // TODO(https://crbug.com/1456586): Remove this once the issue is fixed.
+  // TODO(crbug.com/40066149): Remove this once the issue is fixed.
   [EnableIf=is_android]
   string created_location;
 };

@@ -102,6 +102,9 @@ class NetworkPortalDetectorImplTest
     network_portal_detector_->enabled_ = true;
 
     set_detector(network_portal_detector_->captive_portal_detector_.get());
+
+    ASSERT_EQ(State::STATE_IDLE, state());
+    ASSERT_EQ(GetPortalState(), NetworkState::PortalState::kOnline);
   }
 
   void TearDown() override {
@@ -111,17 +114,13 @@ class NetworkPortalDetectorImplTest
     ConciergeClient::Shutdown();
   }
 
-  bool CheckPortalState(NetworkPortalDetector::CaptivePortalStatus status,
-                        int response_code,
+  bool CheckPortalState(int response_code,
                         NetworkState::PortalState portal_state,
                         const std::string& guid) {
-    NetworkPortalDetector::CaptivePortalStatus detector_status =
-        network_portal_detector()->GetCaptivePortalStatus();
     int detector_response_code =
         network_portal_detector()->response_code_for_testing();
     std::string default_network_id =
         network_portal_detector()->default_network_id_for_testing();
-    EXPECT_EQ(status, detector_status);
     EXPECT_EQ(response_code, detector_response_code);
     EXPECT_EQ(guid, default_network_id);
     const NetworkState* default_network =
@@ -133,8 +132,7 @@ class NetworkPortalDetectorImplTest
     }
     EXPECT_EQ(default_network_portal_state, portal_state);
 
-    return status == detector_status &&
-           response_code == detector_response_code &&
+    return response_code == detector_response_code &&
            guid == default_network_id &&
            default_network_portal_state == portal_state;
   }
@@ -149,8 +147,13 @@ class NetworkPortalDetectorImplTest
     return network_portal_detector()->state();
   }
 
-  NetworkPortalDetector::CaptivePortalStatus status() {
-    return network_portal_detector()->GetCaptivePortalStatus();
+  NetworkState::PortalState GetPortalState() {
+    const NetworkState* default_network =
+        NetworkHandler::Get()->network_state_handler()->DefaultNetwork();
+    if (!default_network) {
+      return NetworkState::PortalState::kUnknown;
+    }
+    return default_network->GetPortalState();
   }
 
   void StopDetection() { network_portal_detector()->StopDetection(); }
@@ -262,111 +265,124 @@ class NetworkPortalDetectorImplTest
 };
 
 TEST_F(NetworkPortalDetectorImplTest, NoPortal) {
-  ASSERT_EQ(State::STATE_IDLE, state());
-  ASSERT_EQ(status(), NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_UNKNOWN);
-
   // Connect with a proxy to trigger Chrome portal detection.
   SetConnectedWithProxy(kStubWireless1);
   EXPECT_EQ(State::STATE_CHECKING_FOR_PORTAL, state());
 
   // Check HTTP 204 response code.
-  CompleteURLFetch(net::OK, 204, nullptr);
+  CompleteURLFetch(net::OK, /*status_code=*/204, /*content_length=*/0, nullptr);
   EXPECT_EQ(State::STATE_IDLE, state());
-  EXPECT_TRUE(
-      CheckPortalState(NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE, 204,
-                       NetworkState::PortalState::kOnline, kStubWireless1));
+  EXPECT_TRUE(CheckPortalState(204, NetworkState::PortalState::kOnline,
+                               kStubWireless1));
 }
 
 TEST_F(NetworkPortalDetectorImplTest, Portal200) {
-  ASSERT_EQ(State::STATE_IDLE, state());
-  ASSERT_EQ(status(), NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_UNKNOWN);
-
   // Connect with a proxy to trigger Chrome portal detection.
   SetConnectedWithProxy(kStubWireless1);
   EXPECT_EQ(State::STATE_CHECKING_FOR_PORTAL, state());
 
   // Check HTTP 200 response code.
-  CompleteURLFetch(net::OK, 200, nullptr);
+  CompleteURLFetch(net::OK, /*status_code=*/200, /*content_length=*/2, nullptr);
   EXPECT_EQ(State::STATE_PORTAL_CHECK_PENDING, state());
-  EXPECT_TRUE(
-      CheckPortalState(NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL, 200,
-                       NetworkState::PortalState::kPortal, kStubWireless1));
+  EXPECT_TRUE(CheckPortalState(200, NetworkState::PortalState::kPortal,
+                               kStubWireless1));
 }
 
 TEST_F(NetworkPortalDetectorImplTest, Portal302) {
-  ASSERT_EQ(State::STATE_IDLE, state());
-  ASSERT_EQ(status(), NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_UNKNOWN);
-
   // Connect with a proxy to trigger Chrome portal detection.
   SetConnectedWithProxy(kStubWireless1);
   EXPECT_EQ(State::STATE_CHECKING_FOR_PORTAL, state());
 
   // Check HTTP 302 response code.
-  CompleteURLFetch(net::OK, 302, nullptr);
+  CompleteURLFetch(net::OK, /*status_code=*/302, /*content_length=*/0, nullptr);
   EXPECT_EQ(State::STATE_PORTAL_CHECK_PENDING, state());
-  EXPECT_TRUE(
-      CheckPortalState(NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL, 302,
-                       NetworkState::PortalState::kPortal, kStubWireless1));
+  EXPECT_TRUE(CheckPortalState(302, NetworkState::PortalState::kPortal,
+                               kStubWireless1));
+}
+
+TEST_F(NetworkPortalDetectorImplTest, Online200WithContentLength1) {
+  // Connect with a proxy to trigger Chrome portal detection.
+  SetConnectedWithProxy(kStubWireless1);
+  EXPECT_EQ(State::STATE_CHECKING_FOR_PORTAL, state());
+
+  // Check HTTP 302 response code.
+  CompleteURLFetch(net::OK, /*status_code=*/200, /*content_length=*/1, nullptr);
+  EXPECT_EQ(State::STATE_IDLE, state());
+  EXPECT_TRUE(CheckPortalState(200, NetworkState::PortalState::kOnline,
+                               kStubWireless1));
+}
+
+TEST_F(NetworkPortalDetectorImplTest, Online200WithContentLength0) {
+  // Connect with a proxy to trigger Chrome portal detection.
+  SetConnectedWithProxy(kStubWireless1);
+  EXPECT_EQ(State::STATE_CHECKING_FOR_PORTAL, state());
+
+  // Check HTTP 302 response code.
+  CompleteURLFetch(net::OK, /*status_code=*/200, /*content_length=*/0, nullptr);
+  EXPECT_EQ(State::STATE_IDLE, state());
+  EXPECT_TRUE(CheckPortalState(200, NetworkState::PortalState::kOnline,
+                               kStubWireless1));
 }
 
 TEST_F(NetworkPortalDetectorImplTest, Online2Offline) {
-  ASSERT_EQ(State::STATE_IDLE, state());
-  ASSERT_EQ(status(), NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_UNKNOWN);
-
   // WiFi is in online state with a proxy configured to trigger Chrome portal
   // detection.
   SetConnectedWithProxy(kStubWireless1);
   EXPECT_EQ(State::STATE_CHECKING_FOR_PORTAL, state());
 
-  CompleteURLFetch(net::OK, 204, nullptr);
+  CompleteURLFetch(net::OK, /*status_code=*/204, /*content_length=*/0, nullptr);
   EXPECT_EQ(State::STATE_IDLE, state());
-  EXPECT_EQ(status(), NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE);
+  EXPECT_EQ(GetPortalState(), NetworkState::PortalState::kOnline);
 
   // WiFi is turned off.
   SetDisconnected(kStubWireless1);
   EXPECT_EQ(State::STATE_IDLE, state());
-  EXPECT_EQ(status(), NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_OFFLINE);
+
+  // When the network is disconnected, the portal state is unknown.
+  EXPECT_EQ(GetPortalState(), NetworkState::PortalState::kUnknown);
 }
 
 TEST_F(NetworkPortalDetectorImplTest, NetworkChanged) {
-  ASSERT_EQ(State::STATE_IDLE, state());
-  ASSERT_EQ(status(), NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_UNKNOWN);
-
   // Connect with a proxy to trigger Chrome portal detection.
   SetConnectedWithProxy(kStubWireless1);
 
-  // WiFi is in portal state.
+  // Portal detector is checking for portal.
   EXPECT_EQ(State::STATE_CHECKING_FOR_PORTAL, state());
 
   // Active network is changed during portal detection for WiFi.
   SetConnected(kStubEthernet);
 
   // Portal detection for WiFi is cancelled, portal detection for
-  // ethernet is initiated.
+  // ethernet is not initiated since it is not behind a proxy.
+  EXPECT_EQ(State::STATE_IDLE, state());
+
+  // Disconnect from kStubWireless1 and kStubEthernet.
+  SetDisconnected(kStubWireless1);
+  SetDisconnected(kStubEthernet);
+
+  // Connect to another WiFi with proxy to trigger detection.
+  SetConnectedWithProxy(kStubWireless2);
+
+  // Portal detector is checking for portal.
   EXPECT_EQ(State::STATE_CHECKING_FOR_PORTAL, state());
 
   // ethernet is in online state.
-  CompleteURLFetch(net::OK, 204, nullptr);
+  CompleteURLFetch(net::OK, /*status_code=*/204, /*content_length=*/0, nullptr);
   EXPECT_EQ(State::STATE_IDLE, state());
-  EXPECT_TRUE(
-      CheckPortalState(NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE, 204,
-                       NetworkState::PortalState::kOnline, kStubEthernet));
+  EXPECT_TRUE(CheckPortalState(204, NetworkState::PortalState::kOnline,
+                               kStubWireless2));
 }
 
 TEST_F(NetworkPortalDetectorImplTest, NetworkStateReconnect) {
-  ASSERT_EQ(State::STATE_IDLE, state());
-  ASSERT_EQ(status(), NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_UNKNOWN);
-
   // Connect with a proxy to trigger Chrome portal detection.
   SetConnectedWithProxy(kStubWireless1);
   EXPECT_EQ(State::STATE_CHECKING_FOR_PORTAL, state());
 
-  CompleteURLFetch(net::OK, 204, nullptr);
+  CompleteURLFetch(net::OK, /*status_code=*/204, /*content_length=*/0, nullptr);
 
   EXPECT_EQ(State::STATE_IDLE, state());
-  EXPECT_TRUE(
-      CheckPortalState(NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE, 204,
-                       NetworkState::PortalState::kOnline, kStubWireless1));
+  EXPECT_TRUE(CheckPortalState(204, NetworkState::PortalState::kOnline,
+                               kStubWireless1));
 
   // Reconnecting to the same network will trigger another portal check with the
   // same results.
@@ -375,17 +391,15 @@ TEST_F(NetworkPortalDetectorImplTest, NetworkStateReconnect) {
   SetConnectedWithProxy(kStubWireless1);
   EXPECT_EQ(State::STATE_CHECKING_FOR_PORTAL, state());
 
-  CompleteURLFetch(net::OK, 204, nullptr);
+  CompleteURLFetch(net::OK, /*status_code=*/204, /*content_length=*/0, nullptr);
 
   EXPECT_EQ(State::STATE_IDLE, state());
-  EXPECT_TRUE(
-      CheckPortalState(NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE, 204,
-                       NetworkState::PortalState::kOnline, kStubWireless1));
+  EXPECT_TRUE(CheckPortalState(204, NetworkState::PortalState::kOnline,
+                               kStubWireless1));
 }
 
 TEST_F(NetworkPortalDetectorImplTest, NetworkStateChanged) {
   // Test for Portal -> Online -> Portal network state transitions.
-  ASSERT_EQ(State::STATE_IDLE, state());
 
   // Connect with a proxy to trigger Chrome portal detection.
   SetConnectedWithProxy(kStubWireless1);
@@ -394,28 +408,17 @@ TEST_F(NetworkPortalDetectorImplTest, NetworkStateChanged) {
   // To run CaptivePortalDetector::DetectCaptivePortal().
   base::RunLoop().RunUntilIdle();
 
-  CompleteURLFetch(net::OK, 200, nullptr);
-
+  // Find a portal from the portal detection.
+  CompleteURLFetch(net::OK, /*status_code=*/200, /*content_length=*/2, nullptr);
   EXPECT_EQ(State::STATE_PORTAL_CHECK_PENDING, state());
-  EXPECT_TRUE(
-      CheckPortalState(NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL, 200,
-                       NetworkState::PortalState::kPortal, kStubWireless1));
+  EXPECT_TRUE(CheckPortalState(200, NetworkState::PortalState::kPortal,
+                               kStubWireless1));
 
-  // Setting the state to portal-suspected should trigger chrome detection.
+  // Setting the state to kStateNoConnectivity with a proxy should not trigger
+  // chrome detection.
   set_attempt_delay(base::TimeDelta());
-  SetNetworkState(kStubWireless1, shill::kStatePortalSuspected);
-  EXPECT_EQ(State::STATE_CHECKING_FOR_PORTAL, state());
-
-  // To run CaptivePortalDetector::DetectCaptivePortal().
-  base::RunLoop().RunUntilIdle();
-
-  // Chrome detects that the network is online, which does not update the
-  // captive portal state.
-  CompleteURLFetch(net::OK, 204, nullptr);
+  SetNetworkState(kStubWireless1, shill::kStateNoConnectivity);
   EXPECT_EQ(State::STATE_IDLE, state());
-  EXPECT_TRUE(CheckPortalState(
-      NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE, 204,
-      NetworkState::PortalState::kPortalSuspected, kStubWireless1));
 
   // Setting the state back to online should trigger chrome detection since a
   // proxy is configured.
@@ -427,16 +430,13 @@ TEST_F(NetworkPortalDetectorImplTest, NetworkStateChanged) {
   base::RunLoop().RunUntilIdle();
 
   // Chrome detects that the network is in a portal state.
-  CompleteURLFetch(net::OK, 200, nullptr);
+  CompleteURLFetch(net::OK, /*status_code=*/200, /*content_length=*/2, nullptr);
   EXPECT_EQ(State::STATE_PORTAL_CHECK_PENDING, state());
-  EXPECT_TRUE(
-      CheckPortalState(NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL, 200,
-                       NetworkState::PortalState::kPortal, kStubWireless1));
+  EXPECT_TRUE(CheckPortalState(200, NetworkState::PortalState::kPortal,
+                               kStubWireless1));
 }
 
 TEST_F(NetworkPortalDetectorImplTest, PortalDetectionTimeout) {
-  ASSERT_EQ(State::STATE_IDLE, state());
-
   // For instantaneous timeout.
   set_attempt_timeout(base::Seconds(0));
 
@@ -452,8 +452,6 @@ TEST_F(NetworkPortalDetectorImplTest, PortalDetectionTimeout) {
 }
 
 TEST_F(NetworkPortalDetectorImplTest, PortalDetectionRetryAfter) {
-  ASSERT_EQ(State::STATE_IDLE, state());
-
   const int retry_delay = 101;
   std::string retry_response = GetRetryResponse(retry_delay);
 
@@ -463,7 +461,8 @@ TEST_F(NetworkPortalDetectorImplTest, PortalDetectionRetryAfter) {
   // Connect with a proxy to trigger Chrome portal detection.
   SetConnectedWithProxy(kStubWireless1);
   ASSERT_EQ(State::STATE_CHECKING_FOR_PORTAL, state());
-  CompleteURLFetch(net::OK, 503, retry_response.c_str());
+  CompleteURLFetch(net::OK, /*status_code=*/503, /*content_length=*/0,
+                   retry_response.c_str());
 
   // First portal detection completed, next portal detection is
   // scheduled after |retry_delay| seconds.
@@ -473,8 +472,6 @@ TEST_F(NetworkPortalDetectorImplTest, PortalDetectionRetryAfter) {
 }
 
 TEST_F(NetworkPortalDetectorImplTest, PortalDetectionRetryAfterIsSmall) {
-  ASSERT_EQ(State::STATE_IDLE, state());
-
   const int retry_delay = 1;
   std::string retry_response = GetRetryResponse(retry_delay);
 
@@ -483,7 +480,8 @@ TEST_F(NetworkPortalDetectorImplTest, PortalDetectionRetryAfterIsSmall) {
 
   // Connect with a proxy to trigger Chrome portal detection.
   SetConnectedWithProxy(kStubWireless1);
-  CompleteURLFetch(net::OK, 503, retry_response.c_str());
+  CompleteURLFetch(net::OK, /*status_code=*/503, /*content_length=*/0,
+                   retry_response.c_str());
 
   // First portal detection completed, next portal detection is
   // scheduled after 3 seconds (due to minimum time between detection
@@ -493,7 +491,6 @@ TEST_F(NetworkPortalDetectorImplTest, PortalDetectionRetryAfterIsSmall) {
 }
 
 TEST_F(NetworkPortalDetectorImplTest, FirstAttemptFailed) {
-  ASSERT_EQ(State::STATE_IDLE, state());
   ASSERT_EQ(0, captive_portal_detector_run_count());
   base::HistogramTester histogram_tester;
 
@@ -505,7 +502,8 @@ TEST_F(NetworkPortalDetectorImplTest, FirstAttemptFailed) {
   SetConnectedWithProxy(kStubWireless1);
   EXPECT_EQ(State::STATE_CHECKING_FOR_PORTAL, state());
 
-  CompleteURLFetch(net::OK, 503, retry_response.c_str());
+  CompleteURLFetch(net::OK, /*status_code=*/503, /*content_length=*/0,
+                   retry_response.c_str());
   EXPECT_EQ(State::STATE_PORTAL_CHECK_PENDING, state());
   EXPECT_EQ(1, captive_portal_detector_run_count());
   EXPECT_EQ(base::Seconds(retry_delay), next_attempt_delay());
@@ -513,11 +511,10 @@ TEST_F(NetworkPortalDetectorImplTest, FirstAttemptFailed) {
   // To run CaptivePortalDetector::DetectCaptivePortal().
   base::RunLoop().RunUntilIdle();
 
-  CompleteURLFetch(net::OK, 204, nullptr);
+  CompleteURLFetch(net::OK, /*status_code=*/204, /*content_length=*/0, nullptr);
   EXPECT_EQ(State::STATE_IDLE, state());
-  EXPECT_TRUE(
-      CheckPortalState(NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE, 204,
-                       NetworkState::PortalState::kOnline, kStubWireless1));
+  EXPECT_TRUE(CheckPortalState(204, NetworkState::PortalState::kOnline,
+                               kStubWireless1));
 
   // Metric records the number of probes.
   histogram_tester.ExpectUniqueSample("Network.NetworkPortalDetectorRunCount",
@@ -528,11 +525,10 @@ TEST_F(NetworkPortalDetectorImplTest, FirstAttemptFailed) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(State::STATE_CHECKING_FOR_PORTAL, state());
 
-  CompleteURLFetch(net::OK, 204, nullptr);
+  CompleteURLFetch(net::OK, /*status_code=*/204, /*content_length=*/0, nullptr);
   EXPECT_EQ(State::STATE_IDLE, state());
-  EXPECT_TRUE(
-      CheckPortalState(NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE, 204,
-                       NetworkState::PortalState::kOnline, kStubWireless1));
+  EXPECT_TRUE(CheckPortalState(204, NetworkState::PortalState::kOnline,
+                               kStubWireless1));
 
   EXPECT_THAT(
       histogram_tester.GetAllSamples("Network.NetworkPortalDetectorRunCount"),
@@ -540,7 +536,6 @@ TEST_F(NetworkPortalDetectorImplTest, FirstAttemptFailed) {
 }
 
 TEST_F(NetworkPortalDetectorImplTest, MultipleAttemptsFailed) {
-  ASSERT_EQ(State::STATE_IDLE, state());
   ASSERT_EQ(0, captive_portal_detector_run_count());
   base::HistogramTester histogram_tester;
 
@@ -552,7 +547,8 @@ TEST_F(NetworkPortalDetectorImplTest, MultipleAttemptsFailed) {
   SetConnectedWithProxy(kStubWireless1);
   EXPECT_EQ(State::STATE_CHECKING_FOR_PORTAL, state());
 
-  CompleteURLFetch(net::OK, 503, retry_response.c_str());
+  CompleteURLFetch(net::OK, /*status_code=*/503, /*content_length=*/0,
+                   retry_response.c_str());
   EXPECT_EQ(State::STATE_PORTAL_CHECK_PENDING, state());
   EXPECT_EQ(1, captive_portal_detector_run_count());
   EXPECT_EQ(base::Seconds(retry_delay), next_attempt_delay());
@@ -560,7 +556,8 @@ TEST_F(NetworkPortalDetectorImplTest, MultipleAttemptsFailed) {
   // To run CaptivePortalDetector::DetectCaptivePortal().
   base::RunLoop().RunUntilIdle();
 
-  CompleteURLFetch(net::OK, 503, retry_response.c_str());
+  CompleteURLFetch(net::OK, /*status_code=*/503, /*content_length=*/0,
+                   retry_response.c_str());
   EXPECT_EQ(State::STATE_PORTAL_CHECK_PENDING, state());
   EXPECT_EQ(2, captive_portal_detector_run_count());
   EXPECT_EQ(base::Seconds(retry_delay), next_attempt_delay());
@@ -568,7 +565,8 @@ TEST_F(NetworkPortalDetectorImplTest, MultipleAttemptsFailed) {
   // To run CaptivePortalDetector::DetectCaptivePortal().
   base::RunLoop().RunUntilIdle();
 
-  CompleteURLFetch(net::OK, 503, retry_response.c_str());
+  CompleteURLFetch(net::OK, /*status_code=*/503, /*content_length=*/0,
+                   retry_response.c_str());
   EXPECT_EQ(State::STATE_PORTAL_CHECK_PENDING, state());
   EXPECT_EQ(3, captive_portal_detector_run_count());
   EXPECT_EQ(base::Seconds(retry_delay), next_attempt_delay());
@@ -578,11 +576,10 @@ TEST_F(NetworkPortalDetectorImplTest, MultipleAttemptsFailed) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(State::STATE_CHECKING_FOR_PORTAL, state());
 
-  CompleteURLFetch(net::OK, 204, nullptr);
+  CompleteURLFetch(net::OK, /*status_code=*/204, /*content_length=*/0, nullptr);
   EXPECT_EQ(State::STATE_IDLE, state());
-  EXPECT_TRUE(
-      CheckPortalState(NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE, 204,
-                       NetworkState::PortalState::kOnline, kStubWireless1));
+  EXPECT_TRUE(CheckPortalState(204, NetworkState::PortalState::kOnline,
+                               kStubWireless1));
 
   EXPECT_THAT(
       histogram_tester.GetAllSamples("Network.NetworkPortalDetectorRunCount"),
@@ -590,7 +587,6 @@ TEST_F(NetworkPortalDetectorImplTest, MultipleAttemptsFailed) {
 }
 
 TEST_F(NetworkPortalDetectorImplTest, MultipleRetries) {
-  ASSERT_EQ(State::STATE_IDLE, state());
   ASSERT_EQ(0, captive_portal_detector_run_count());
   base::HistogramTester histogram_tester;
 
@@ -601,7 +597,8 @@ TEST_F(NetworkPortalDetectorImplTest, MultipleRetries) {
   // Connect with a proxy to trigger Chrome portal detection.
   SetConnectedWithProxy(kStubWireless1);
   EXPECT_EQ(State::STATE_CHECKING_FOR_PORTAL, state());
-  CompleteURLFetch(net::OK, 200, retry_response.c_str());
+  CompleteURLFetch(net::OK, /*status_code=*/200, /*content_length=*/2,
+                   retry_response.c_str());
   EXPECT_EQ(State::STATE_PORTAL_CHECK_PENDING, state());
   EXPECT_EQ(1, captive_portal_detector_run_count());
   EXPECT_EQ(base::Seconds(retry_delay), next_attempt_delay());
@@ -609,7 +606,8 @@ TEST_F(NetworkPortalDetectorImplTest, MultipleRetries) {
   // To run CaptivePortalDetector::DetectCaptivePortal().
   base::RunLoop().RunUntilIdle();
 
-  CompleteURLFetch(net::OK, 302, retry_response.c_str());
+  CompleteURLFetch(net::OK, /*status_code=*/302, /*content_length=*/0,
+                   retry_response.c_str());
   EXPECT_EQ(State::STATE_PORTAL_CHECK_PENDING, state());
   EXPECT_EQ(2, captive_portal_detector_run_count());
   EXPECT_EQ(base::Seconds(retry_delay), next_attempt_delay());
@@ -617,7 +615,8 @@ TEST_F(NetworkPortalDetectorImplTest, MultipleRetries) {
   // To run CaptivePortalDetector::DetectCaptivePortal().
   base::RunLoop().RunUntilIdle();
 
-  CompleteURLFetch(net::OK, 511, retry_response.c_str());
+  CompleteURLFetch(net::OK, /*status_code=*/511, /*content_length=*/0,
+                   retry_response.c_str());
   EXPECT_EQ(State::STATE_PORTAL_CHECK_PENDING, state());
   EXPECT_EQ(3, captive_portal_detector_run_count());
   EXPECT_EQ(base::Seconds(retry_delay), next_attempt_delay());
@@ -627,10 +626,9 @@ TEST_F(NetworkPortalDetectorImplTest, MultipleRetries) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(State::STATE_CHECKING_FOR_PORTAL, state());
 
-  CompleteURLFetch(net::OK, 204, nullptr);
-  EXPECT_TRUE(
-      CheckPortalState(NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE, 204,
-                       NetworkState::PortalState::kOnline, kStubWireless1));
+  CompleteURLFetch(net::OK, /*status_code=*/204, /*content_length=*/0, nullptr);
+  EXPECT_TRUE(CheckPortalState(204, NetworkState::PortalState::kOnline,
+                               kStubWireless1));
   EXPECT_THAT(
       histogram_tester.GetAllSamples("Network.NetworkPortalDetectorRunCount"),
       ElementsAre(base::Bucket(4, 1)));
@@ -644,65 +642,61 @@ TEST_F(NetworkPortalDetectorImplTest, MultipleRetries) {
   base::RunLoop().RunUntilIdle();
 
   // Online result will end portal detection.
-  CompleteURLFetch(net::OK, 204, nullptr);
+  CompleteURLFetch(net::OK, /*status_code=*/204, /*content_length=*/0, nullptr);
 
   // To run CaptivePortalDetector::DetectCaptivePortal().
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(State::STATE_IDLE, state());
-  EXPECT_TRUE(
-      CheckPortalState(NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE, 204,
-                       NetworkState::PortalState::kOnline, kStubWireless1));
+  EXPECT_TRUE(CheckPortalState(204, NetworkState::PortalState::kOnline,
+                               kStubWireless1));
 }
 
 TEST_F(NetworkPortalDetectorImplTest, ProxyAuthRequired) {
-  ASSERT_EQ(State::STATE_IDLE, state());
   set_attempt_delay(base::TimeDelta());
 
   // Connect with a proxy to trigger Chrome portal detection.
   SetConnectedWithProxy(kStubWireless1);
   EXPECT_EQ(State::STATE_CHECKING_FOR_PORTAL, state());
 
-  // A 407 response does not set the kProxyAuthRequired state or trigger
-  // additional portal detection.
-  CompleteURLFetch(net::OK, 407, nullptr);
+  // A 407 response does not set a portal state or trigger additional portal
+  // detection.
+  CompleteURLFetch(net::OK, /*status_code=*/407, /*content_length=*/0, nullptr);
   EXPECT_EQ(State::STATE_IDLE, state());
 
   // To run CaptivePortalDetector::DetectCaptivePortal().
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_TRUE(CheckPortalState(
-      NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PROXY_AUTH_REQUIRED, 407,
-      NetworkState::PortalState::kOnline, kStubWireless1));
+  EXPECT_TRUE(CheckPortalState(407, NetworkState::PortalState::kOnline,
+                               kStubWireless1));
 }
 
-TEST_F(NetworkPortalDetectorImplTest, NoResponseButBehindPortal) {
-  ASSERT_EQ(State::STATE_IDLE, state());
+TEST_F(NetworkPortalDetectorImplTest, NoResponseDefaultToShillOnlineState) {
   set_attempt_delay(base::TimeDelta());
 
-  // Set a portal-suspected state to trigger Chrome portal detection.
-  SetNetworkState(kStubWireless1, shill::kStatePortalSuspected);
+  // Connect with a proxy to trigger Chrome portal detection.
+  SetConnectedWithProxy(kStubWireless1);
+  SetNetworkState(kStubWireless1, shill::kStateOnline);
   EXPECT_EQ(State::STATE_CHECKING_FOR_PORTAL, state());
 
-  CompleteURLFetch(net::ERR_CONNECTION_CLOSED, 0, nullptr);
+  CompleteURLFetch(net::ERR_CONNECTION_CLOSED, /*status_code=*/0,
+                   /*content_length=*/0, nullptr);
   EXPECT_EQ(State::STATE_PORTAL_CHECK_PENDING, state());
 
   // To run CaptivePortalDetector::DetectCaptivePortal().
   base::RunLoop().RunUntilIdle();
+
   EXPECT_TRUE(
-      CheckPortalState(NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL, 0,
-                       NetworkState::PortalState::kPortal, kStubWireless1));
+      CheckPortalState(-1, NetworkState::PortalState::kOnline, kStubWireless1));
 }
 
 TEST_F(NetworkPortalDetectorImplTest, DetectionTimeoutIsCancelled) {
-  ASSERT_EQ(State::STATE_IDLE, state());
   set_attempt_delay(base::TimeDelta());
 
   // Connect with a proxy to trigger Chrome portal detection.
   SetConnectedWithProxy(kStubWireless1);
   EXPECT_EQ(State::STATE_CHECKING_FOR_PORTAL, state());
   EXPECT_TRUE(CheckPortalState(
-      NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE, kStatusCodeUnset,
-      NetworkState::PortalState::kOnline, kStubWireless1));
+      kStatusCodeUnset, NetworkState::PortalState::kOnline, kStubWireless1));
 
   // Stop Chrome portal detection before it completes, the attempt should be
   // cancelled and the result 'unknown'.
@@ -711,39 +705,7 @@ TEST_F(NetworkPortalDetectorImplTest, DetectionTimeoutIsCancelled) {
   EXPECT_EQ(State::STATE_IDLE, state());
   EXPECT_TRUE(attempt_timeout_is_cancelled());
   EXPECT_TRUE(CheckPortalState(
-      NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_UNKNOWN, kStatusCodeUnset,
-      NetworkState::PortalState::kOnline, kStubWireless1));
-}
-
-TEST_F(NetworkPortalDetectorImplTest, RequestCaptivePortalDetection) {
-  SetDisconnected(kStubEthernet);
-  SetConnected(kStubWireless1);
-
-  auto* handler = NetworkHandler::Get()->network_state_handler();
-  ASSERT_TRUE(handler);
-  const NetworkState* default_network = handler->DefaultNetwork();
-  ASSERT_TRUE(default_network);
-  EXPECT_EQ(default_network->connection_state(), shill::kStateOnline);
-
-  // When the default network is online, portal detection should not be
-  // triggered.
-  ShillServiceClient::Get()->GetTestInterface()->SetRequestPortalState(
-      shill::kStateRedirectFound);
-  network_portal_detector()->RequestCaptivePortalDetection();
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(shill::kStateOnline, default_network->connection_state());
-  EXPECT_EQ(State::STATE_IDLE, state());
-
-  // When the default network is not online, shill portal detection should be
-  // triggered.
-  helper()->SetServiceProperty(kStubWireless1, shill::kStateProperty,
-                               base::Value(shill::kStateRedirectFound));
-  EXPECT_EQ(shill::kStateRedirectFound, default_network->connection_state());
-  ShillServiceClient::Get()->GetTestInterface()->SetRequestPortalState(
-      shill::kStateOnline);
-  network_portal_detector()->RequestCaptivePortalDetection();
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(shill::kStateOnline, default_network->connection_state());
+      kStatusCodeUnset, NetworkState::PortalState::kOnline, kStubWireless1));
 }
 
 }  // namespace ash

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import UIKit
+import ios_chrome_browser_ui_tab_switcher_tab_strip_ui_swift_constants
 
 /// UIView that contains two decoration separators for tab strip collection
 /// view. They are visible when the selected cell reaches an edge of the
@@ -27,8 +28,8 @@ class TabStripDecorationView: UIView {
         equalToConstant: TabStripConstants.StaticSeparator.viewHeight),
 
       /// `smallSeparator` constraints.
-      smallSeparator.leftAnchor.constraint(
-        equalTo: self.leftAnchor,
+      smallSeparator.leadingAnchor.constraint(
+        equalTo: self.leadingAnchor,
         constant: TabStripConstants.StaticSeparator.leadingInset),
       smallSeparator.widthAnchor.constraint(
         equalToConstant: TabStripConstants.StaticSeparator.separatorWidth),
@@ -37,11 +38,11 @@ class TabStripDecorationView: UIView {
       smallSeparator.centerYAnchor.constraint(equalTo: self.centerYAnchor),
 
       /// `regularSeparator` constraints.
-      regularSeparator.leftAnchor.constraint(
-        equalTo: smallSeparator.rightAnchor,
+      regularSeparator.leadingAnchor.constraint(
+        equalTo: smallSeparator.trailingAnchor,
         constant: TabStripConstants.StaticSeparator.horizontalInset),
-      regularSeparator.rightAnchor.constraint(
-        equalTo: self.rightAnchor),
+      regularSeparator.trailingAnchor.constraint(
+        equalTo: self.trailingAnchor),
       regularSeparator.widthAnchor.constraint(
         equalToConstant: TabStripConstants.StaticSeparator.separatorWidth),
       regularSeparator.heightAnchor.constraint(
@@ -49,10 +50,14 @@ class TabStripDecorationView: UIView {
       regularSeparator.centerYAnchor.constraint(equalTo: self.centerYAnchor),
 
       /// `solidBackgroundView` constraints.
-      solidBackgroundView.leftAnchor.constraint(equalTo: self.leftAnchor),
-      solidBackgroundView.rightAnchor.constraint(equalTo: regularSeparator.leftAnchor),
-      solidBackgroundView.topAnchor.constraint(equalTo: regularSeparator.topAnchor),
-      solidBackgroundView.bottomAnchor.constraint(equalTo: regularSeparator.bottomAnchor),
+      solidBackgroundView.leadingAnchor.constraint(equalTo: self.leadingAnchor),
+      solidBackgroundView.trailingAnchor.constraint(equalTo: regularSeparator.leadingAnchor),
+      solidBackgroundView.topAnchor.constraint(
+        equalTo: regularSeparator.topAnchor,
+        constant: -TabStripConstants.StaticSeparator.solidBackgroundVerticalPadding),
+      solidBackgroundView.bottomAnchor.constraint(
+        equalTo: regularSeparator.bottomAnchor,
+        constant: +TabStripConstants.StaticSeparator.solidBackgroundVerticalPadding),
     ])
 
   }

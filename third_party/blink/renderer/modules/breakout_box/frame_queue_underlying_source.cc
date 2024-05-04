@@ -20,11 +20,15 @@
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/webrtc/api/frame_transformer_interface.h"
 
+namespace blink {
+
 BASE_FEATURE(kBreakoutBoxEnqueueInSeparateTask,
              "BreakoutBoxEnqueueInSeparateTask",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-namespace blink {
+BASE_FEATURE(kBreakoutBoxPreferCaptureTimestampInVideoFrames,
+             "BreakoutBoxPreferCaptureTimestampInVideoFrames",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 namespace {
 
@@ -79,7 +83,7 @@ FrameQueueUnderlyingSource<NativeFrameType>::FrameQueueUnderlyingSource(
 }
 
 template <typename NativeFrameType>
-ScriptPromise FrameQueueUnderlyingSource<NativeFrameType>::Pull(
+ScriptPromiseUntyped FrameQueueUnderlyingSource<NativeFrameType>::Pull(
     ScriptState* script_state,
     ExceptionState&) {
   DCHECK(realm_task_runner_->RunsTasksInCurrentSequence());
@@ -89,7 +93,7 @@ ScriptPromise FrameQueueUnderlyingSource<NativeFrameType>::Pull(
   }
   auto frame_queue = frame_queue_handle_.Queue();
   if (!frame_queue)
-    return ScriptPromise::CastUndefined(script_state);
+    return ScriptPromiseUntyped::CastUndefined(script_state);
 
   if (!frame_queue->IsEmpty()) {
     // Enqueuing the frame in the stream controller synchronously can lead to a
@@ -102,11 +106,11 @@ ScriptPromise FrameQueueUnderlyingSource<NativeFrameType>::Pull(
                           NativeFrameType>::MaybeSendFrameFromQueueToStream,
                       WrapPersistent(this)));
   }
-  return ScriptPromise::CastUndefined(script_state);
+  return ScriptPromiseUntyped::CastUndefined(script_state);
 }
 
 template <typename NativeFrameType>
-ScriptPromise FrameQueueUnderlyingSource<NativeFrameType>::Start(
+ScriptPromiseUntyped FrameQueueUnderlyingSource<NativeFrameType>::Start(
     ScriptState* script_state,
     ExceptionState& exception_state) {
   DCHECK(realm_task_runner_->RunsTasksInCurrentSequence());
@@ -119,21 +123,21 @@ ScriptPromise FrameQueueUnderlyingSource<NativeFrameType>::Start(
       // implementations should return their own failure messages.
       exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                         "Invalid track");
-      return ScriptPromise();
+      return ScriptPromiseUntyped();
     }
   }
 
-  return ScriptPromise::CastUndefined(script_state);
+  return ScriptPromiseUntyped::CastUndefined(script_state);
 }
 
 template <typename NativeFrameType>
-ScriptPromise FrameQueueUnderlyingSource<NativeFrameType>::Cancel(
+ScriptPromiseUntyped FrameQueueUnderlyingSource<NativeFrameType>::Cancel(
     ScriptState* script_state,
     ScriptValue reason,
     ExceptionState&) {
   DCHECK(realm_task_runner_->RunsTasksInCurrentSequence());
   Close();
-  return ScriptPromise::CastUndefined(script_state);
+  return ScriptPromiseUntyped::CastUndefined(script_state);
 }
 
 template <typename NativeFrameType>
@@ -432,8 +436,12 @@ ScriptWrappable*
 FrameQueueUnderlyingSource<scoped_refptr<media::VideoFrame>>::MakeBlinkFrame(
     scoped_refptr<media::VideoFrame> media_frame) {
   DCHECK(realm_task_runner_->RunsTasksInCurrentSequence());
-  return MakeGarbageCollected<VideoFrame>(std::move(media_frame),
-                                          GetExecutionContext(), device_id_);
+  return MakeGarbageCollected<VideoFrame>(
+      std::move(media_frame), GetExecutionContext(), device_id_,
+      /*sk_image=*/nullptr,
+      /*prefer_capture_timestamp=*/
+      base::FeatureList::IsEnabled(
+          kBreakoutBoxPreferCaptureTimestampInVideoFrames));
 }
 
 template <>

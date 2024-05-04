@@ -13,6 +13,7 @@ class PrefService;
 
 namespace ash {
 class InstallAttributes;
+class OobeConfiguration;
 namespace system {
 class StatisticsProvider;
 }
@@ -89,18 +90,33 @@ struct EnrollmentConfig {
     // Attestation re-enrollment just failed, attempt manual enrollment as
     // fallback. Cannot be skipped.
     MODE_ATTESTATION_ROLLBACK_MANUAL_FALLBACK = 18,
+    // Forced initial enrollment triggered after presenting an enrollment
+    // token (for Flex Auto Enrollment) to the server. Cannot be skipped.
+    MODE_ENROLLMENT_TOKEN_INITIAL_SERVER_FORCED = 19,
+    // Forced manual enrollment triggered as a fallback to a failed
+    // token-based enrollment. Cannot be skipped.
+    MODE_ENROLLMENT_TOKEN_INITIAL_MANUAL_FALLBACK = 20,
   };
 
   // An enumeration of authentication mechanisms that can be used for
   // enrollment.
   enum AuthMechanism {
     // Interactive authentication.
+    // Note: the entry is used as both a signal for interactive enrollment and
+    // as a default value (e.g. in `should_enroll_with_attestation()`).
+    // TODO(b/332529631): Introduce kNone entry to represent default config
+    // that does not require enrollment.
     AUTH_MECHANISM_INTERACTIVE = 0,
     // Automatic authentication relying on the attestation process.
     AUTH_MECHANISM_ATTESTATION = 1,
-    // Let the system determine the best mechanism (typically the one
-    // that requires the least user interaction).
-    AUTH_MECHANISM_BEST_AVAILABLE = 2,
+    // Prefer to use attestation enrollment, falling back to manual enrollment
+    // if attestation fails or manual enrollment is forced on the system.
+    AUTH_MECHANISM_ATTESTATION_PREFERRED = 2,
+    // Prefer to use automatic enrollment-token-based authentication relying on
+    // the device. If token-based auth fails, fall back to manual enrollment.
+    // As of writing, token-based-enrollment on ChromeOS only happens for Flex
+    // Auto Enrollment.
+    AUTH_MECHANISM_TOKEN_PREFERRED = 3,
   };
 
   // An enumeration of assigned upgrades that a device can after initial
@@ -130,7 +146,8 @@ struct EnrollmentConfig {
   static EnrollmentConfig GetPrescribedEnrollmentConfig(
       PrefService* local_state,
       const ash::InstallAttributes& install_attributes,
-      ash::system::StatisticsProvider* statistics_provider);
+      ash::system::StatisticsProvider* statistics_provider,
+      const ash::OobeConfiguration* oobe_configuration);
 
   // Returns the respective manual fallback enrollment mode when given an
   // attestation mode.
@@ -157,7 +174,8 @@ struct EnrollmentConfig {
   bool is_manual_fallback() const {
     return mode == MODE_ATTESTATION_MANUAL_FALLBACK ||
            mode == MODE_ATTESTATION_INITIAL_MANUAL_FALLBACK ||
-           mode == MODE_ATTESTATION_ROLLBACK_MANUAL_FALLBACK;
+           mode == MODE_ATTESTATION_ROLLBACK_MANUAL_FALLBACK ||
+           mode == MODE_ENROLLMENT_TOKEN_INITIAL_MANUAL_FALLBACK;
   }
 
   // Whether enrollment is forced. The user can't skip the enrollment step
@@ -169,6 +187,7 @@ struct EnrollmentConfig {
            mode == MODE_INITIAL_SERVER_FORCED ||
            mode == MODE_ATTESTATION_INITIAL_SERVER_FORCED ||
            mode == MODE_ATTESTATION_ROLLBACK_FORCED || mode == MODE_RECOVERY ||
+           mode == MODE_ENROLLMENT_TOKEN_INITIAL_SERVER_FORCED ||
            is_manual_fallback();
   }
 
@@ -196,12 +215,13 @@ struct EnrollmentConfig {
            mode == MODE_ATTESTATION_ROLLBACK_FORCED;
   }
 
-  // Whether this configuration is an attestation mode that has a manual
-  // fallback. I.e. after a failed attempt at automatic enrolling, manual
-  // enrollment will be triggered.
-  bool is_mode_attestation_with_manual_fallback() const {
+  // Whether this configuration is an automatic enrollment mode that has a
+  // manual fallback. I.e. after a failed attempt at automatic enrolling,
+  // manual enrollment will be triggered.
+  bool is_mode_with_manual_fallback() const {
     return is_mode_attestation_server() ||
-           mode == MODE_ATTESTATION_ROLLBACK_FORCED;
+           mode == MODE_ATTESTATION_ROLLBACK_FORCED ||
+           mode == MODE_ENROLLMENT_TOKEN_INITIAL_SERVER_FORCED;
   }
 
   // Whether this configuration is in attestation mode.
@@ -209,13 +229,24 @@ struct EnrollmentConfig {
     return is_mode_attestation_client() || is_mode_attestation_server();
   }
 
+  // Whether this configuration's mode causes the device to automatically
+  // enroll without user interaction.
+  bool is_automatic_enrollment() const {
+    return is_mode_attestation() ||
+           mode == MODE_ENROLLMENT_TOKEN_INITIAL_SERVER_FORCED;
+  }
+
   // Whether this configuration is in OAuth mode.
   bool is_mode_oauth() const {
-    return mode != MODE_NONE && !is_mode_attestation();
+    return mode != MODE_NONE && !is_automatic_enrollment();
   }
 
   // Indicates the enrollment flow variant to trigger during OOBE.
   Mode mode = MODE_NONE;
+
+  // The authentication mechanism to use.
+  // TODO(drcrash): Change to best available once ZTE is everywhere.
+  AuthMechanism auth_mechanism = AUTH_MECHANISM_INTERACTIVE;
 
   // The domain to enroll the device to, if applicable. If this is not set, the
   // device may be enrolled to any domain. Note that for the case where the
@@ -226,9 +257,6 @@ struct EnrollmentConfig {
   // match.
   std::string management_domain;
 
-  // The realm the device is joined to (if managed by AD).
-  std::string management_realm;
-
   // Is a license packaged with device or not.
   bool is_license_packaged_with_device = false;
 
@@ -236,23 +264,33 @@ struct EnrollmentConfig {
   LicenseType license_type = LicenseType::kNone;
 
   // The assigned upgrade for a device after initial enrollment. Chrome
-  // Enterpise Upgrade is the default upgrade for ZTE devices, unless other is
+  // Enterprise Upgrade is the default upgrade for ZTE devices, unless other is
   // specified in the server-backed initial state retrieval.
   AssignedUpgradeType assigned_upgrade_type =
       AssignedUpgradeType::kAssignedUpgradeTypeChromeEnterprise;
 
-  // The authentication mechanism to use.
-  // TODO(drcrash): Change to best available once ZTE is everywhere.
-  AuthMechanism auth_mechanism = AUTH_MECHANISM_INTERACTIVE;
-
-  // The path for the device policy blob data for the offline demo mode. This
-  // should be empty and never used for other modes.
-  base::FilePath offline_policy_path;
-
   // User's email which can be passed from the Gaia screen in the enrollment
   // nudge flow.
   std::string enrollment_nudge_email;
+
+  // Enrollment token to use for authentication (for Flex Auto Enrollment).
+  std::string enrollment_token;
+
+ private:
+  // Hold fields to be filled corresponding to ones in `EnrollmentConfig`.
+  struct PrescribedConfig;
+  struct PrescribedLicense;
+
+  EnrollmentConfig(PrescribedConfig prescribed_config,
+                   PrescribedLicense prescribed_license);
 };
+
+std::ostream& operator<<(std::ostream& os, const EnrollmentConfig::Mode& mode);
+
+std::ostream& operator<<(std::ostream& os,
+                         const EnrollmentConfig::AuthMechanism& auth);
+
+std::ostream& operator<<(std::ostream& os, const EnrollmentConfig& config);
 
 }  // namespace policy
 

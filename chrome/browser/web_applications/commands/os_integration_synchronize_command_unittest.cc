@@ -54,8 +54,7 @@ class OsIntegrationSynchronizeCommandTest : public WebAppTest {
     WebAppTest::SetUp();
     {
       base::ScopedAllowBlockingForTesting allow_blocking;
-      test_override_ =
-          OsIntegrationTestOverrideImpl::OverrideForTesting(base::GetHomeDir());
+      test_override_ = OsIntegrationTestOverrideImpl::OverrideForTesting();
     }
 
     provider_ = FakeWebAppProvider::Get(profile());
@@ -251,9 +250,8 @@ TEST_F(OsIntegrationSynchronizeCommandTest, ProtocolHandlers) {
 }
 
 TEST_F(OsIntegrationSynchronizeCommandTest, InstallSynchronizesFileHandlers) {
-  auto install_info = std::make_unique<WebAppInstallInfo>();
-
-  install_info->start_url = kWebAppUrl;
+  auto install_info =
+      WebAppInstallInfo::CreateWithStartUrlForTesting(kWebAppUrl);
   install_info->title = u"Test App";
   install_info->user_display_mode =
       web_app::mojom::UserDisplayMode::kStandalone;
@@ -291,9 +289,8 @@ TEST_F(OsIntegrationSynchronizeCommandTest, InstallSynchronizesFileHandlers) {
 }
 
 TEST_F(OsIntegrationSynchronizeCommandTest, RunOnOsLogin) {
-  auto install_info = std::make_unique<WebAppInstallInfo>();
-
-  install_info->start_url = kWebAppUrl;
+  auto install_info =
+      WebAppInstallInfo::CreateWithStartUrlForTesting(kWebAppUrl);
   install_info->title = u"Test App";
   install_info->user_display_mode =
       web_app::mojom::UserDisplayMode::kStandalone;
@@ -322,9 +319,8 @@ TEST_F(OsIntegrationSynchronizeCommandTest, RunOnOsLogin) {
 }
 
 TEST_F(OsIntegrationSynchronizeCommandTest, InstallSynchronizesShortcutsMenu) {
-  auto install_info = std::make_unique<WebAppInstallInfo>();
-
-  install_info->start_url = kWebAppUrl;
+  auto install_info =
+      WebAppInstallInfo::CreateWithStartUrlForTesting(kWebAppUrl);
   install_info->title = u"Test App";
   install_info->user_display_mode =
       web_app::mojom::UserDisplayMode::kStandalone;
@@ -373,9 +369,8 @@ TEST_F(OsIntegrationSynchronizeCommandTest, InstallSynchronizesShortcutsMenu) {
 }
 
 TEST_F(OsIntegrationSynchronizeCommandTest, InstallSynchronizesShortcuts) {
-  auto install_info = std::make_unique<WebAppInstallInfo>();
-
-  install_info->start_url = kWebAppUrl;
+  auto install_info =
+      WebAppInstallInfo::CreateWithStartUrlForTesting(kWebAppUrl);
   install_info->title = u"Test App";
   install_info->user_display_mode =
       web_app::mojom::UserDisplayMode::kStandalone;
@@ -405,9 +400,8 @@ TEST_F(OsIntegrationSynchronizeCommandTest, InstallSynchronizesShortcuts) {
 
 TEST_F(OsIntegrationSynchronizeCommandTest,
        InstallSynchronizesUninstallRegistration) {
-  auto install_info = std::make_unique<WebAppInstallInfo>();
-
-  install_info->start_url = kWebAppUrl;
+  auto install_info =
+      WebAppInstallInfo::CreateWithStartUrlForTesting(kWebAppUrl);
   install_info->title = u"Test App";
   install_info->user_display_mode =
       web_app::mojom::UserDisplayMode::kStandalone;
@@ -417,13 +411,12 @@ TEST_F(OsIntegrationSynchronizeCommandTest,
       provider()->registrar_unsafe().GetAppCurrentOsIntegrationState(app_id);
   ASSERT_TRUE(states.has_value());
   const proto::WebAppOsIntegrationState& os_integration_state = states.value();
-  ASSERT_TRUE(os_integration_state.has_uninstall_registration());
 #if BUILDFLAG(IS_WIN)
+  ASSERT_TRUE(os_integration_state.has_uninstall_registration());
   EXPECT_TRUE(
       os_integration_state.uninstall_registration().registered_with_os());
 #else
-  EXPECT_FALSE(
-      os_integration_state.uninstall_registration().registered_with_os());
+  ASSERT_FALSE(os_integration_state.has_uninstall_registration());
 #endif
 }
 

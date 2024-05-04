@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -16,7 +17,6 @@
 #include "base/path_service.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
@@ -77,7 +77,7 @@ const int kOldAvatarIconWidth = 38;
 const int kOldAvatarIconHeight = 31;
 
 // 2x sized versions of the old profile avatar icons.
-// TODO(crbug.com/937834): Clean this up.
+// TODO(crbug.com/41444689): Clean this up.
 const int kProfileAvatarIconResources2x[] = {
     IDR_PROFILE_AVATAR_2X_0,  IDR_PROFILE_AVATAR_2X_1,
     IDR_PROFILE_AVATAR_2X_2,  IDR_PROFILE_AVATAR_2X_3,
@@ -298,8 +298,7 @@ ui::ImageModel GetGuestAvatar(int size) {
   return ui::ImageModel::FromVectorIcon(
       features::IsChromeRefresh2023() ? kUserAccountAvatarRefreshIcon
                                       : kUserAccountAvatarIcon,
-      switches::IsExplicitBrowserSigninUIOnDesktopEnabled(
-          switches::ExplicitBrowserSigninPhase::kFull)
+      switches::IsExplicitBrowserSigninUIOnDesktopEnabled()
           ? ui::kColorMenuIcon
           : ui::kColorAvatarIconGuest,
       size);
@@ -383,7 +382,7 @@ size_t GetModernAvatarIconStartIndex() {
   return GetPlaceholderAvatarIndex() + 1;
 #else
   // Only use the placeholder avatar on ChromeOS and Android.
-  // TODO(crbug.com/937834): Clean up code and remove code dependencies from
+  // TODO(crbug.com/41444689): Clean up code and remove code dependencies from
   // Android and ChromeOS. Avatar icons from this file are not used on these
   // platforms.
   return GetPlaceholderAvatarIndex();
@@ -396,7 +395,7 @@ bool IsModernAvatarIconIndex(size_t icon_index) {
 }
 
 int GetPlaceholderAvatarIconResourceID() {
-  // TODO(crbug.com/1100835): Replace with the new icon. Consider coloring the
+  // TODO(crbug.com/40138086): Replace with the new icon. Consider coloring the
   // icon (i.e. providing the image through
   // ProfileAttributesEntry::GetAvatarIcon(), instead) which would require more
   // refactoring.
@@ -404,7 +403,7 @@ int GetPlaceholderAvatarIconResourceID() {
 }
 
 std::string GetPlaceholderAvatarIconUrl() {
-  // TODO(crbug.com/1100835): Replace with the new icon. Consider coloring the
+  // TODO(crbug.com/40138086): Replace with the new icon. Consider coloring the
   // icon (i.e. providing the image through
   // ProfileAttributesEntry::GetAvatarIcon(), instead) which would require more
   // refactoring.

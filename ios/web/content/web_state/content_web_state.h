@@ -29,7 +29,14 @@
 #error File can only be included when USE_BLINK is true
 #endif
 
+namespace blink {
+namespace mojom {
+class FileChooserParams;
+}
+}  // namespace blink
+
 namespace content {
+class FileSelectListener;
 class NavigationEntry;
 class NavigationHandle;
 class RenderFrameHost;
@@ -63,6 +70,8 @@ class ContentWebState : public WebState,
 
   // WebState implementation.
   void SerializeToProto(proto::WebStateStorage& storage) const override;
+  void SerializeMetadataToProto(
+      proto::WebStateMetadataStorage& storage) const override;
   WebStateDelegate* GetDelegate() override;
   void SetDelegate(WebStateDelegate* delegate) override;
   std::unique_ptr<WebState> Clone() const override;
@@ -195,10 +204,24 @@ class ContentWebState : public WebState,
   bool ShouldAnimateBrowserControlsHeightChanges() override;
   bool DoBrowserControlsShrinkRendererSize(
       content::WebContents* web_contents) override;
+  int GetVirtualKeyboardHeight(content::WebContents* web_contents) override;
   bool OnlyExpandTopControlsAtPageTop() override;
   void SetTopControlsGestureScrollInProgress(bool in_progress) override;
+  std::unique_ptr<content::ColorChooser> OpenColorChooser(
+      content::WebContents* web_contents,
+      SkColor color,
+      const std::vector<blink::mojom::ColorSuggestionPtr>& suggestions)
+      override;
+  void RunFileChooser(content::RenderFrameHost* render_frame_host,
+                      scoped_refptr<content::FileSelectListener> listener,
+                      const blink::mojom::FileChooserParams& params) override;
 
  private:
+  // Helper method to register notification observers.
+  void RegisterNotificationObservers();
+  void OnKeyboardShow(NSNotification* notification);
+  void OnKeyboardHide(NSNotification* notification);
+
   WebStateDelegate* delegate_ = nullptr;
   CRCWebViewportContainerView* web_view_;
   CRWSessionStorage* session_storage_;
@@ -216,6 +239,9 @@ class ContentWebState : public WebState,
   FaviconStatus favicon_status_;
   bool top_control_scroll_in_progress_ = false;
   bool cached_shrink_controls_ = false;
+  id keyboard_showing_observer_;
+  id keyboard_hiding_observer_;
+  int keyboard_height_ = 0;
 
   base::WeakPtrFactory<ContentWebState> weak_factory_{this};
 };

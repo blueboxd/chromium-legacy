@@ -78,6 +78,25 @@ chromium-metrics-reviews@google.com.
   <int value="2" label="Malformed response"/>
 </enum>
 
+<enum name="AuthenticationResultStatusWin">
+  <summary>Result of authenticating using Windows Hello.</summary>
+  <int value="0" label="User verified successfully."/>
+  <int value="1" label="There is no biometric verifier device available."/>
+  <int value="2"
+      label="A biometric verifier device is not configured for this user."/>
+  <int value="3"
+      label="Group policy has disabled the biometric verifier device."/>
+  <int value="4"
+      label="The biometric verifier device is performing an operation and is
+             unavailable."/>
+  <int value="5"
+      label="After 10 attempts, the original verification request and all
+             subsequent attempts at the same verification were not verified."/>
+  <int value="6" label="The verification operation was canceled."/>
+  <int value="7" label="Failed to create UserConsentVerifier factory."/>
+  <int value="8" label="Failed to call UserConsentVerifier API."/>
+</enum>
+
 <enum name="AutoSigninFirstRun">
   <int value="0" label="No action"/>
   <int value="1" label="Turn off"/>
@@ -316,6 +335,12 @@ chromium-metrics-reviews@google.com.
   <int value="2" label="User typed or autofilled values"/>
 </enum>
 
+<enum name="LocalPwdMigrationProgressState">
+  <int value="0" label="Scheduled"/>
+  <int value="1" label="Started"/>
+  <int value="2" label="Finished"/>
+</enum>
+
 <enum name="LocalUpmActivationError">
   <int value="0"
       label="None (activated / migration scheduled / previously activated)"/>
@@ -409,6 +434,7 @@ chromium-metrics-reviews@google.com.
   <int value="19" label="Add Username bubble"/>
   <int value="20" label="Omnibox Pedal Suggestion"/>
   <int value="21" label="Default store changed bubble"/>
+  <int value="22" label="Manage Password Details Bubble"/>
 </enum>
 
 <enum name="MigrationToOSCryptEnum">
@@ -680,18 +706,14 @@ chromium-metrics-reviews@google.com.
   <int value="15" label="Part of a note copied"/>
   <int value="16" label="Full note copied"/>
   <int value="17" label="Move password link clicked in details footer"/>
+  <int value="18"
+      label="Link redirecting to the specific password page clicked"/>
 </enum>
 
 <enum name="PasswordManager.AssistantStoppedBubble.CloseReason">
   <int value="0" label="User restarted the flow."/>
   <int value="1" label="User closed the bubble."/>
   <int value="2" label="User moved or closed the tab, or closed the browser."/>
-</enum>
-
-<enum name="PasswordManager.GroupedPasswordFetchResult">
-  <int value="0" label="No grouped matches"/>
-  <int value="1" label="Grouped matches exist among other matches"/>
-  <int value="2" label="Only grouped matches exist"/>
 </enum>
 
 <enum name="PasswordManager.MoveToAccountStoreTrigger">
@@ -911,6 +933,10 @@ chromium-metrics-reviews@google.com.
     A credential exists for an affiliated site but not for the current security
     origin.
   </int>
+  <int value="4" label="Grouped website">
+    A credential exists for a web site, which is grouped with the current domain
+    by the AffiliationService.
+  </int>
 </enum>
 
 <enum name="PasswordManagerOfferedAndroidCredentials">
@@ -951,7 +977,8 @@ chromium-metrics-reviews@google.com.
   <int value="1" label="Clicked 'Save'/'Update'/'Move'/etc"/>
   <int value="2" label="Clicked 'Nope'"/>
   <int value="3" label="Clicked 'Never'"/>
-  <int value="4" label="Clicked 'Manage passwords'"/>
+  <int value="4"
+      label="Clicked 'Manage passwords' in the passwords for domain bubble"/>
   <int value="5" label="Clicked 'Done' (obsolete)"/>
   <int value="6" label="Clicked 'Unblocklist' (obsolete)"/>
   <int value="7" label="Clicked 'OK' (obsolete)"/>
@@ -960,6 +987,8 @@ chromium-metrics-reviews@google.com.
   <int value="10" label="Auto-signin toast clicked (obsolete)"/>
   <int value="11" label="Clicked 'Google Smart Lock' (obsolete)"/>
   <int value="12" label="Clicked the link passwords.google.com"/>
+  <int value="13"
+      label="Clicked 'Manage Password' in password details bubble."/>
 </enum>
 
 <enum name="PasswordMigrationWarningSheetStateAtClosing">
@@ -1093,13 +1122,6 @@ chromium-metrics-reviews@google.com.
   <int value="1" label="Has password field"/>
 </enum>
 
-<enum name="PasswordsAccountStorageNoticeDismissalReason">
-  <int value="0" label="Unknown"/>
-  <int value="1" label="Primary button"/>
-  <int value="2" label="Settings link"/>
-  <int value="3" label="Swipe"/>
-</enum>
-
 <enum name="PasswordsImportDesktopInteractions">
   <int value="0" label="Import dialog opened from the three-dot menu."/>
   <int value="1" label="Import dialog opened from the empty passwords list."/>
@@ -1198,6 +1220,8 @@ chromium-metrics-reviews@google.com.
   <int value="2" label="AuthErrorUnresolvable"/>
   <int value="3" label="KeychainError"/>
   <int value="4" label="kKeyRetrievalRequired"/>
+  <int value="5" label="kGMSCoreOutdatedSavingDisabled"/>
+  <int value="6" label="kGMSCoreOutdatedSavingPossible"/>
 </enum>
 
 <enum name="PasswordSubmissionEvent">

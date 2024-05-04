@@ -22,6 +22,7 @@
 namespace autofill {
 
 class FormStructure;
+class AutofillClient;
 class AutofillManager;
 
 // AutofillDriver is Autofill's lowest-level abstraction of a frame that is
@@ -69,6 +70,9 @@ class AutofillDriver {
   // Returns the AutofillDriver of the parent frame, if such a frame and driver
   // exist, and nullptr otherwise.
   virtual AutofillDriver* GetParent() = 0;
+
+  // The owning AutofillClient.
+  virtual AutofillClient& GetAutofillClient() = 0;
 
   // Returns the AutofillManager owned by the AutofillDriver.
   virtual AutofillManager& GetAutofillManager() = 0;
@@ -206,9 +210,6 @@ class AutofillDriver {
   virtual void RendererShouldAcceptDataListSuggestion(
       const FieldGlobalId& field_id,
       const std::u16string& value) = 0;
-
-  // Tells the renderer to clear the current section of the autofilled values.
-  virtual void RendererShouldClearFilledSection() = 0;
 
   // Tells the renderer to clear the currently previewed Autofill results.
   virtual void RendererShouldClearPreviewedForm() = 0;

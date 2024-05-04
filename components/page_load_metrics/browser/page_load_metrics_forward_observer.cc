@@ -142,6 +142,15 @@ PageLoadMetricsForwardObserver::ShouldObserveMimeType(
   return CONTINUE_OBSERVING;
 }
 
+PageLoadMetricsObserverInterface::ObservePolicy
+PageLoadMetricsForwardObserver::ShouldObserveScheme(const GURL& url) const {
+  if (!parent_observer_ ||
+      parent_observer_->ShouldObserveScheme(url) == STOP_OBSERVING) {
+    return STOP_OBSERVING;
+  }
+  return CONTINUE_OBSERVING;
+}
+
 // As PageLoadTracker handles OnTimingUpdate to dispatch also for the parent
 // page, do not forward the event to the target here.
 void PageLoadMetricsForwardObserver::OnTimingUpdate(
@@ -418,6 +427,13 @@ void PageLoadMetricsForwardObserver::OnSharedStorageWorkletHostCreated() {
   if (!parent_observer_)
     return;
   parent_observer_->OnSharedStorageWorkletHostCreated();
+}
+
+void PageLoadMetricsForwardObserver::OnSharedStorageSelectURLCalled() {
+  if (!parent_observer_) {
+    return;
+  }
+  parent_observer_->OnSharedStorageSelectURLCalled();
 }
 
 }  // namespace page_load_metrics

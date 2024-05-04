@@ -12,6 +12,7 @@
 #include "chrome/browser/devtools/protocol/autofill.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller_impl.h"
 #include "chrome/browser/ui/autofill/chrome_autofill_client.h"
+#include "components/autofill/content/browser/content_autofill_client.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/autofill/content/browser/scoped_autofill_managers_observation.h"
@@ -91,7 +92,9 @@ AutofillHandler::AutofillHandler(protocol::UberDispatcher* dispatcher,
   }
 }
 
-AutofillHandler::~AutofillHandler() = default;
+AutofillHandler::~AutofillHandler() {
+  Disable();
+}
 
 protocol::Response AutofillHandler::Trigger(
     int field_id,
@@ -176,6 +179,12 @@ protocol::Response AutofillHandler::Trigger(
 void AutofillHandler::SetAddresses(
     std::unique_ptr<protocol::Array<protocol::Autofill::Address>> addresses,
     std::unique_ptr<SetAddressesCallback> callback) {
+  if (!base::FeatureList::IsEnabled(
+          autofill::features::kAutofillTestFormWithTestAddresses)) {
+    std::move(callback)->sendSuccess();
+    return;
+  }
+
   if (!content::DevToolsAgentHost::GetForId(target_id_)) {
     std::move(callback)->sendFailure(Response::ServerError("Target not found"));
     return;
@@ -210,8 +219,7 @@ void AutofillHandler::SetAddresses(
   static_cast<autofill::BrowserAutofillManager&>(
       autofill_driver->GetAutofillManager())
       .client()
-      .GetPersonalDataManager()
-      ->set_test_addresses(test_address_for_countries);
+      .set_test_addresses(test_address_for_countries);
   std::move(callback)->sendSuccess();
 }
 
@@ -270,15 +278,15 @@ void AutofillHandler::OnFillOrPreviewDataModelForm(
         field_id_to_form_field_data.find(autofill_field->global_id());
     const std::u16string filled_value =
         filled_field_iterator != field_id_to_form_field_data.end()
-            ? filled_field_iterator->second->value
+            ? filled_field_iterator->second->value()
             : u"";
     filled_fields_to_be_sent_to_devtools->push_back(
         protocol::Autofill::FilledField::Create()
-            .SetId(base::UTF16ToUTF8(autofill_field->id_attribute))
-            .SetName(base::UTF16ToUTF8(autofill_field->name_attribute))
+            .SetId(base::UTF16ToUTF8(autofill_field->id_attribute()))
+            .SetName(base::UTF16ToUTF8(autofill_field->name_attribute()))
             .SetValue(base::UTF16ToUTF8(filled_value))
             .SetHtmlType(std::string(autofill::FormControlTypeToString(
-                autofill_field->form_control_type)))
+                autofill_field->form_control_type())))
             .SetAutofillType(
                 std::string(FieldTypeToDeveloperRepresentationString(
                     autofill_field->Type().GetStorableType())))
@@ -291,7 +299,7 @@ void AutofillHandler::OnFillOrPreviewDataModelForm(
                             target_id_,
                             autofill_field->global_id().frame_token->ToString())
                             .value_or(""))
-            .SetFieldId(autofill_field->renderer_id.value())
+            .SetFieldId(autofill_field->renderer_id().value())
             .Build());
   }
 
@@ -378,6 +386,16 @@ void AutofillHandler::OnFillOrPreviewDataModelForm(
           .Build());
 }
 
+void AutofillHandler::OnAutofillManagerDestroyed(
+    autofill::AutofillManager& manager) {
+  autofill_manager_observation_.Reset();
+}
+
+void AutofillHandler::OnContentAutofillDriverFactoryDestroyed(
+    autofill::ContentAutofillDriverFactory& factory) {
+  autofill_manager_observation_.Reset();
+}
+
 void AutofillHandler::OnContentAutofillDriverCreated(
     autofill::ContentAutofillDriverFactory&,
     autofill::ContentAutofillDriver& new_driver) {
@@ -395,11 +413,27 @@ autofill::ContentAutofillDriver* AutofillHandler::GetAutofillDriver() {
   auto host = content::DevToolsAgentHost::GetForId(target_id_);
   CHECK(host);
 
+  if (!host->GetWebContents()) {
+    return nullptr;
+  }
+
   content::RenderFrameHost* outermost_primary_rfh =
       host->GetWebContents()->GetOutermostWebContents()->GetPrimaryMainFrame();
 
   return autofill::ContentAutofillDriver::GetForRenderFrameHost(
       outermost_primary_rfh);
+}
+
+autofill::AutofillClient* AutofillHandler::GetAutofillClient() {
+  auto host = content::DevToolsAgentHost::GetForId(target_id_);
+  CHECK(host);
+
+  if (!host->GetWebContents()) {
+    return nullptr;
+  }
+
+  return autofill::ContentAutofillClient::FromWebContents(
+      host->GetWebContents());
 }
 
 Response AutofillHandler::Enable() {
@@ -428,5 +462,9 @@ Response AutofillHandler::Enable() {
 Response AutofillHandler::Disable() {
   enabled_ = false;
   autofill_manager_observation_.Reset();
+  autofill::AutofillClient* autofill_client = GetAutofillClient();
+  if (autofill_client) {
+    autofill_client->set_test_addresses({});
+  }
   return Response::Success();
 }

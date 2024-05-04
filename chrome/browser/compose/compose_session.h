@@ -8,11 +8,14 @@
 #include <memory>
 #include <stack>
 #include <string>
+#include <string_view>
+#include <vector>
 
 #include "base/check_op.h"
 #include "base/functional/callback_helpers.h"
 #include "base/timer/elapsed_timer.h"
 #include "base/timer/timer.h"
+#include "base/types/optional_ref.h"
 #include "chrome/browser/content_extraction/inner_text.h"
 #include "chrome/common/compose/compose.mojom.h"
 #include "components/autofill/core/common/unique_ids.h"
@@ -101,7 +104,7 @@ class ComposeSession
   // Requests a rewrite the last response. `style` specifies how the response
   // should be changed. An empty `style` without a tone or length requests a
   // rewrite without changes to the tone or length.
-  void Rewrite(compose::mojom::StyleModifiersPtr style) override;
+  void Rewrite(compose::mojom::StyleModifier style) override;
 
   // Tracks that there was a user action to edit the input in the current
   // session in `session_events`.
@@ -115,8 +118,15 @@ class ComposeSession
   // disk or processed by the Browser Process at all.
   void SaveWebUIState(const std::string& webui_state) override;
 
-  // Undo to the last state with an kOk status and valid response text.
+  // Revert from a server error to the last state with a kOk status and valid
+  // response text.
+  void RecoverFromErrorState(RecoverFromErrorStateCallback callback) override;
+
+  // Undo to the previous saved state in the history.
   void Undo(UndoCallback callback) override;
+
+  // Redo to the next saved state in the history.
+  void Redo(RedoCallback callback) override;
 
   // Indicates that the compose result should be accepted by Autofill.
   // Callback<bool> indicates if the accept was successful.
@@ -141,12 +151,26 @@ class ComposeSession
   // Saves the user feedback supplied form the UI to include in quality logs.
   void SetUserFeedback(compose::mojom::UserFeedback feedback) override;
 
+  // Edits the result from the model. Callback returns true if the edit text
+  // `new_result` is different from the result text.
+  void EditResult(const std::string& new_result,
+                  EditResultCallback callback) override;
+
   // Non-ComposeSessionUntrustedPageHandler Methods
 
-  // Notifies the session that a new dialog is opening and starts refreshing
-  // inner text. Calls Compose immediately if the initial input is valid.
-  void InitializeWithText(const std::optional<std::string>& text,
-                          const bool text_selected);
+  // Notifies the session that a new dialog is opening and starts. Saves the
+  // |selected_text| for use as an initial prompt and refreshes innertext.
+  void InitializeWithText(const std::string_view selected_text);
+
+  // If all pre-conditions are acknowledged starts refreshing inner text. If
+  // autocompose is enabled and has not been tried yet this session will also
+  // start a compose request.
+  void MaybeRefreshInnerText(bool has_selection);
+
+  // Returns true if the feedback page can be shown. If
+  // |skip_feedback_ui_for_testing_| is true then this always returns false and
+  // the optimization guide checks are not done.
+  bool CanShowFeedbackPage();
 
   // Opens the Chrome Feedback UI for Compose. |feedback_id| is returned from
   // OptimizationGuideModel result.
@@ -158,9 +182,6 @@ class ComposeSession
   void set_compose_callback(ComposeCallback callback) {
     callback_ = std::move(callback);
   }
-
-  // Sets an initial input value for the session given by the renderer.
-  void set_initial_input(const std::string input) { initial_input_ = input; }
 
   void set_collect_inner_text(bool collect_inner_text) {
     collect_inner_text_ = collect_inner_text;
@@ -190,11 +211,12 @@ class ComposeSession
 
   void SetCloseReason(compose::ComposeSessionCloseReason close_reason);
 
-  void SetAllowFeedbackForTesting(bool allowed);
+  void SetSkipFeedbackUiForTesting(bool allowed);
 
  private:
   void ProcessError(compose::EvalLocation eval_location,
-                    compose::mojom::ComposeStatus status);
+                    compose::mojom::ComposeStatus status,
+                    compose::ComposeRequestReason request_reason);
   void ModelExecutionCallback(
       const base::ElapsedTimer& request_start,
       int request_id,
@@ -209,10 +231,13 @@ class ComposeSession
       bool was_input_edited,
       optimization_guide::OptimizationGuideModelStreamingExecutionResult
           result);
+  void AddNewResponseToHistory(std::unique_ptr<ComposeState> new_state);
+  void EraseForwardStatesInHistory();
 
   // Adds page content to the session context.
   void AddPageContentToSession(std::string inner_text,
-                               std::optional<uint64_t> node_offset);
+                               std::optional<uint64_t> node_offset,
+                               std::string trimmed_inner_text);
 
   // Makes compose or rewrite request.
   void MakeRequest(optimization_guide::proto::ComposeRequest request,
@@ -240,6 +265,14 @@ class ComposeSession
       base::TimeDelta request_time,
       bool was_input_edited);
 
+  // Returns a reference to the ComposeState at `history_current_index`, or at
+  // `offset` from the current index if `offset` is specified, if it exists.
+  base::optional_ref<ComposeState> CurrentState(int offset = 0);
+
+  // Returns a reference to the ComposeState with a server response at or
+  // directly preceding `history_current_index`, if it exists.
+  base::optional_ref<ComposeState> LastResponseState();
+
   // Outlives `this`.
   raw_ptr<optimization_guide::OptimizationGuideModelExecutor> executor_;
 
@@ -248,32 +281,37 @@ class ComposeSession
   mojo::Remote<compose::mojom::ComposeUntrustedDialog> dialog_remote_;
 
   // Initialized during construction, and always remains valid during the
-  // lifetime of ComposeSession.
-  compose::mojom::ComposeStatePtr current_state_;
-
-  // The most recent state that was received via a request/response pair.
-  std::unique_ptr<ComposeState> most_recent_ok_state_;
+  // lifetime of ComposeSession. This diverges from CurrentState()->mojo_state()
+  // to handle error states and store webui state changes in the dialog. This is
+  // otherwise expected to be the same as CurrentState()->mojo_state().
+  compose::mojom::ComposeStatePtr active_mojo_state_;
 
   // the most recent log that wont be stored in the undo stack.
   std::unique_ptr<optimization_guide::ModelQualityLogEntry>
       most_recent_error_log_;
 
-  // The state returned when user clicks undo.
-  std::stack<std::unique_ptr<ComposeState>> undo_states_;
+  // Tracks the position of the current state in the history. This index is only
+  // valid when `history_` is non-empty.
+  size_t history_current_index_ = 0;
+  // The saved states that can be navigated between through Undo and Redo.
+  std::vector<std::unique_ptr<ComposeState>> history_;
 
   // Renderer provided text selection.
-  std::string initial_input_;
-  // True if the user selected text when the dialog is opened.
-  bool text_selected_;
+  std::string initial_input_ = "";
+  // True if there was selected text when the dialog was last opened.
+  bool currently_has_selection_ = false;
 
   // The state of the MSBB preference
-  bool current_msbb_state_;
-  bool msbb_initially_off_;
+  bool current_msbb_state_ = false;
+  bool msbb_initially_off_ = false;
 
   // Reason that a compose msbb session was exited, used for metrics.
   compose::ComposeMSBBSessionCloseReason msbb_close_reason_;
   // State tracking whether the FRE has been completed
   bool fre_complete_ = false;
+
+  // True if we have checked if autocompose is possible this session.
+  bool has_checked_autocompose_ = false;
 
   // Reason that a FRE session was exited, used for metrics.
   compose::ComposeFirstRunSessionCloseReason fre_close_reason_;
@@ -333,7 +371,7 @@ class ComposeSession
 
   base::Token session_id_;
 
-  bool allow_feedback_for_testing_ = false;
+  bool skip_feedback_ui_for_testing_ = false;
 
   base::WeakPtrFactory<ComposeSession> weak_ptr_factory_;
 };

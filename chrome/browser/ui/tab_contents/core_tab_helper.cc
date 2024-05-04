@@ -56,9 +56,7 @@
 #include "ui/gfx/codec/webp_codec.h"
 #include "ui/gfx/image/image_util.h"
 
-#if BUILDFLAG(IS_ANDROID)
-#include "chrome/browser/android/tab_android.h"
-#else
+#if !BUILDFLAG(IS_ANDROID)
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -143,12 +141,10 @@ std::vector<unsigned char> CoreTabHelper::EncodeImage(
 
   // Get the front and end of the image bytes in order to store them in the
   // search_args to be sent as part of the PostContent in the request
-  size_t image_bytes_size = image.As1xPNGBytes()->size();
-  const unsigned char* image_bytes_begin = image.As1xPNGBytes()->front();
-  const unsigned char* image_bytes_end = image_bytes_begin + image_bytes_size;
   content_type = "image/png";
   image_format = lens::mojom::ImageFormat::PNG;
-  data.assign(image_bytes_begin, image_bytes_end);
+  auto bytes = image.As1xPNGBytes();
+  data.assign(bytes->begin(), bytes->end());
   return data;
 }
 
@@ -418,20 +414,6 @@ void CoreTabHelper::SearchByImageImpl(
       std::move(chrome_render_frame), src_url, additional_query_params,
       use_side_panel, is_image_translate, thumbnail_min_area,
       thumbnail_max_width, thumbnail_max_height));
-}
-
-std::unique_ptr<content::WebContents> CoreTabHelper::SwapWebContents(
-    std::unique_ptr<content::WebContents> new_contents,
-    bool did_start_load,
-    bool did_finish_load) {
-#if BUILDFLAG(IS_ANDROID)
-  TabAndroid* tab = TabAndroid::FromWebContents(web_contents());
-  return tab->SwapWebContents(std::move(new_contents), did_start_load,
-                              did_finish_load);
-#else
-  Browser* browser = chrome::FindBrowserWithTab(web_contents());
-  return browser->SwapWebContents(web_contents(), std::move(new_contents));
-#endif
 }
 
 // static
@@ -736,10 +718,10 @@ void CoreTabHelper::PostContentToURL(TemplateURLRef::PostContent post_content,
     lens::OpenLensSidePanel(chrome::FindBrowserWithTab(web_contents()),
                             open_url_params);
 #else
-    web_contents()->OpenURL(open_url_params);
+    web_contents()->OpenURL(open_url_params, /*navigation_handle_callback=*/{});
 #endif  // BUILDFLAG(ENABLE_LENS_DESKTOP_GOOGLE_BRANDED_FEATURES)
   } else {
-    web_contents()->OpenURL(open_url_params);
+    web_contents()->OpenURL(open_url_params, /*navigation_handle_callback=*/{});
   }
 }
 

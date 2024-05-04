@@ -38,6 +38,9 @@
 #include "content/shell/browser/shell_content_browser_client.h"
 #include "net/base/features.h"
 #include "net/base/net_errors.h"
+#include "net/cookies/cookie_base.h"
+#include "net/cookies/cookie_partition_key.h"
+#include "net/cookies/cookie_partition_key_collection.h"
 #include "net/cookies/cookie_util.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -278,7 +281,7 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverImplBrowserTest,
 
 // Verify that TransportSecurityState data is not cleared if REMOVE_CACHE is not
 // set or there is a deletelist filter.
-// TODO(crbug.com/1040065): Add support for filtered deletions and update test.
+// TODO(crbug.com/40667157): Add support for filtered deletions and update test.
 IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverImplBrowserTest,
                        PreserveTransportSecurityState) {
   IssueRequestThatSetsHsts();
@@ -489,7 +492,7 @@ class CookiesBrowsingDataRemoverImplBrowserTest
       const GURL& url,
       const std::string& cookie_line,
       const std::optional<net::CookiePartitionKey>& cookie_partition_key) {
-    auto cookie_obj = net::CanonicalCookie::Create(
+    auto cookie_obj = net::CanonicalCookie::CreateForTesting(
         url, cookie_line, base::Time::Now(), /*server_time=*/std::nullopt,
         cookie_partition_key);
 
@@ -535,7 +538,9 @@ IN_PROC_BROWSER_TEST_F(CookiesBrowsingDataRemoverImplBrowserTest,
   ASSERT_TRUE(
       SetCookie(GURL("https://f.com"), "C=2; secure; samesite=none",
                 net::CookiePartitionKey::FromURLForTesting(
-                    GURL("https://g.com"), base::UnguessableToken::Create())));
+                    GURL("https://g.com"),
+                    net::CookiePartitionKey::AncestorChainBit::kCrossSite,
+                    base::UnguessableToken::Create())));
 
   ASSERT_EQ(7u, GetAllCookies().size());
   RemoveAndWait(BrowsingDataRemover::DATA_TYPE_COOKIES);
@@ -607,7 +612,7 @@ IN_PROC_BROWSER_TEST_F(CookiesBrowsingDataRemoverImplBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(CookiesBrowsingDataRemoverImplBrowserTest,
-                       ClearSiteData_PartitionedStateAllowedOnly) {
+                       ClearSiteData_PartitionedCookiesOnly) {
   // Unpartitioned cookie should not be removed when third-party cookie blocking
   // applies to the request that sent Clear-Site-Data.
   ASSERT_TRUE(SetCookie(GURL("https://a.com"), "A=0; secure;",
@@ -620,13 +625,15 @@ IN_PROC_BROWSER_TEST_F(CookiesBrowsingDataRemoverImplBrowserTest,
   ASSERT_TRUE(
       SetCookie(GURL("https://a.com"), "C=2; secure;",
                 net::CookiePartitionKey::FromURLForTesting(
-                    GURL("https://b.com"), base::UnguessableToken::Create())));
+                    GURL("https://b.com"),
+                    net::CookiePartitionKey::AncestorChainBit::kCrossSite,
+                    base::UnguessableToken::Create())));
 
   std::unique_ptr<BrowsingDataFilterBuilder> builder(
       BrowsingDataFilterBuilder::Create(
           BrowsingDataFilterBuilder::Mode::kDelete));
   builder->AddRegisterableDomain("a.com");
-  builder->SetPartitionedStateAllowedOnly(true);
+  builder->SetPartitionedCookiesOnly(true);
 
   RemoveWithFilterAndWait(BrowsingDataRemover::DATA_TYPE_COOKIES,
                           std::move(builder));
@@ -634,6 +641,58 @@ IN_PROC_BROWSER_TEST_F(CookiesBrowsingDataRemoverImplBrowserTest,
   auto cookies = GetAllCookies();
   EXPECT_EQ(1u, cookies.size());
   EXPECT_EQ("A", cookies[0].Name());
+}
+
+IN_PROC_BROWSER_TEST_F(CookiesBrowsingDataRemoverImplBrowserTest,
+                       ClearSiteData_AllDomainsPartitionedCookiesOnly) {
+  // Unpartitioned cookies should not be removed when
+  // SetPartitionedCookiesOnly(true)
+  ASSERT_TRUE(SetCookie(GURL("https://a.com"), "A=0; secure;",
+                        /*cookie_partition_key=*/std::nullopt));
+  // All partitioned cookies should be removed.
+  ASSERT_TRUE(SetCookie(
+      GURL("https://a.com"), "B=1; secure; partitioned",
+      net::CookiePartitionKey::FromURLForTesting(GURL("https://b.com"))));
+
+  std::unique_ptr<BrowsingDataFilterBuilder> builder(
+      BrowsingDataFilterBuilder::Create(
+          BrowsingDataFilterBuilder::Mode::kPreserve));
+  // Mode::kPreserve + no origins/domains = delete everything.
+  builder->SetPartitionedCookiesOnly(true);
+
+  RemoveWithFilterAndWait(BrowsingDataRemover::DATA_TYPE_COOKIES,
+                          std::move(builder));
+
+  EXPECT_THAT(GetAllCookies(), testing::ElementsAre(testing::Property(
+                                   &net::CookieBase::Name, "A")));
+}
+
+IN_PROC_BROWSER_TEST_F(CookiesBrowsingDataRemoverImplBrowserTest,
+                       ClearSiteData_AllDomainsCookiePartitionKeyCollection) {
+  // All unpartitioned cookies should be removed.
+  ASSERT_TRUE(SetCookie(GURL("https://a.com"), "A=0; secure;",
+                        /*cookie_partition_key=*/std::nullopt));
+  // Cookies partitioned under b.com should also be removed.
+  ASSERT_TRUE(SetCookie(
+      GURL("https://a.com"), "B=1; secure; partitioned",
+      net::CookiePartitionKey::FromURLForTesting(GURL("https://b.com"))));
+  // Cookies partitioned under other sites should NOT be removed.
+  ASSERT_TRUE(SetCookie(
+      GURL("https://a.com"), "C=2; secure; partitioned",
+      net::CookiePartitionKey::FromURLForTesting(GURL("https://c.com"))));
+
+  std::unique_ptr<BrowsingDataFilterBuilder> builder(
+      BrowsingDataFilterBuilder::Create(
+          BrowsingDataFilterBuilder::Mode::kPreserve));
+  // Mode::kPreserve + no origins/domains = delete everything.
+  builder->SetCookiePartitionKeyCollection(net::CookiePartitionKeyCollection(
+      net::CookiePartitionKey::FromURLForTesting(GURL("https://b.com"))));
+
+  RemoveWithFilterAndWait(BrowsingDataRemover::DATA_TYPE_COOKIES,
+                          std::move(builder));
+
+  EXPECT_THAT(GetAllCookies(), testing::ElementsAre(testing::Property(
+                                   &net::CookieBase::Name, "C")));
 }
 
 namespace {

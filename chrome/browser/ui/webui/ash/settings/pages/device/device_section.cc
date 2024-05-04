@@ -764,6 +764,12 @@ void AddDeviceKeyboardStrings(content::WebUIDataSource* html_source) {
       {"fKeyShiftOption", IDS_SETTINGS_F_KEY_SHIFT_DROPDOWN_OPTION},
       {"fKeyCtrlShiftOption", IDS_SETTINGS_F_KEY_CTRL_SHIFT_DROPDOWN_OPTION},
       {"fKeyAltOption", IDS_SETTINGS_F_KEY_ALT_DROPDOWN_OPTION},
+      {"keyboardEnableAutoBrightnessLabel",
+       IDS_SETTINGS_KEYBOARD_AUTO_BRIGHNTESS_ENABLE_LABEL},
+      {"keyboardEnableAutoBrightnessSubLabel",
+       IDS_SETTINGS_KEYBOARD_AUTO_BRIGHNTESS_ENABLE_SUB_LABEL},
+      {"keyboardBrightnessLabel", IDS_SETTINGS_KEYBOARD_BRIGHTNESS_LABEL},
+      {"keyboardColors", IDS_SETTINGS_KEYBOARD_COLORS},
       {"keyboardEnableAutoRepeat", IDS_SETTINGS_KEYBOARD_AUTO_REPEAT_ENABLE},
       {"keyboardEnableAutoRepeatSubLabel",
        IDS_SETTINGS_KEYBOARD_AUTO_REPEAT_ENABLE_SUB_LABEL},
@@ -785,6 +791,8 @@ void AddDeviceKeyboardStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_KEYBOARD_SEND_INVERTED_FUNCTION_KEYS},
       {"keyboardSendInvertedFunctionKeysDescription",
        IDS_SETTINGS_KEYBOARD_SEND_INVERTED_FUNCTION_KEYS_DESCRIPTION},
+      {"splitModifierKeyboardSendInvertedFunctionKeysDescription",
+       IDS_SETTINGS_KEYBOARD_SEND_INVERTED_FUNCTION_KEYS_DESCRIPTION},
       {"keyboardShowInputSettings",
        kIsRevampEnabled ? IDS_OS_SETTINGS_REVAMP_KEYBOARD_SHOW_INPUT_SETTINGS
                         : IDS_SETTINGS_KEYBOARD_SHOW_INPUT_SETTINGS},
@@ -803,7 +811,7 @@ void AddDeviceKeyboardStrings(content::WebUIDataSource* html_source) {
       {"remapKeyboardKeysRowLabel", IDS_SETTINGS_KEYBOARD_REMAP_KEYS_ROW_LABEL},
       {"remapKeyboardKeysDescription",
        IDS_SETTINGS_KEYBOARD_REMAP_KEYS_DESCRIPTION},
-      {"showKeyboardShortcutViewer",
+      {"showShortcutCustomizationApp",
        IDS_SETTINGS_KEYBOARD_SHOW_SHORTCUT_VIEWER},
       {"viewAndCustomizeKeyboardShortcut",
        IDS_SETTINGS_KEYBOARD_VIEW_AND_CUSTOMIZE_SHORTCUTS},
@@ -833,8 +841,15 @@ void AddDeviceKeyboardStrings(content::WebUIDataSource* html_source) {
       {"perDeviceKeyboardKeyEscape",
        IDS_SETTINGS_PER_DEVICE_KEYBOARD_KEY_ESCAPE},
       {"perDeviceKeyboardKeyMeta", IDS_SETTINGS_PER_DEVICE_KEYBOARD_KEY_META},
+      {"perDeviceKeyboardKeyRightAlt",
+       IDS_SETTINGS_PER_DEVICE_KEYBOARD_KEY_RIGHT_ALT},
+      {"perDeviceKeyboardKeyFunction",
+       IDS_SETTINGS_PER_DEVICE_KEYBOARD_KEY_FUNCTION},
   };
   html_source->AddLocalizedStrings(keyboard_strings);
+
+  html_source->AddBoolean("enableModifierSplit",
+                          ash::features::IsModifierSplitEnabled());
 
   if (Shell::Get()->keyboard_capability()->HasLauncherButtonOnAnyKeyboard()) {
     html_source->AddLocalizedString(
@@ -851,6 +866,9 @@ void AddDeviceKeyboardStrings(content::WebUIDataSource* html_source) {
     html_source->AddLocalizedString(
         "keyboardSendFunctionKeysDescription",
         IDS_SETTINGS_KEYBOARD_SEND_FUNCTION_KEYS_LAYOUT2_DESCRIPTION);
+    html_source->AddLocalizedString(
+        "splitModifierKeyboardSendFunctionKeysDescription",
+        IDS_SETTINGS_SPLIT_MODIFIER_KEYBOARD_SEND_FUNCTION_KEYS_LAYOUT_DESCRIPTION);
     html_source->AddLocalizedString("sixPackKeyDeleteSearch",
                                     IDS_SETTINGS_SIX_PACK_KEY_DELETE_LAUNCHER);
     html_source->AddLocalizedString("sixPackKeyHomeSearch",
@@ -1132,6 +1150,10 @@ void DeviceSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
   html_source->AddBoolean(
       "enableAltClickAndSixPackCustomization",
       ash::features::IsAltClickAndSixPackCustomizationEnabled());
+
+  html_source->AddBoolean(
+      "enableKeyboardBacklightControlInSettings",
+      ash::features::IsKeyboardBacklightControlInSettingsEnabled());
 
   html_source->AddBoolean(
       "enableF11AndF12KeyShortcuts",
@@ -1808,6 +1830,11 @@ void DeviceSection::AddDeviceDisplayStrings(
       {"displayAmbientColorSubtitle",
        IDS_SETTINGS_DISPLAY_AMBIENT_COLOR_SUBTITLE},
       {"displayArrangementTitle", IDS_SETTINGS_DISPLAY_ARRANGEMENT_TITLE},
+      {"displayBrightnessLabel", IDS_SETTINGS_DISPLAY_BRIGHTNESS_LABEL},
+      {"displayAutoBrightnessToggleLabel",
+       IDS_SETTINGS_DISPLAY_AUTO_BRIGHTNESS_TOGGLE_LABEL},
+      {"displayAutoBrightnessToggleSubtitle",
+       IDS_SETTINGS_DISPLAY_AUTO_BRIGHTNESS_TOGGLE_SUBTITLE},
       {"displayMirror", IDS_SETTINGS_DISPLAY_MIRROR},
       {"displayMirrorDisplayName", IDS_SETTINGS_DISPLAY_MIRROR_DISPLAY_NAME},
       {"displayNightLightLabel", IDS_SETTINGS_DISPLAY_NIGHT_LIGHT_LABEL},
@@ -1941,6 +1968,9 @@ void DeviceSection::AddDeviceDisplayStrings(
 
   html_source->AddBoolean("isDisplayPerformanceSupported",
                           IsDisplayPerformanceSupported());
+
+  html_source->AddBoolean("enableDisplayBrightnessControlInSettings",
+                          features::IsBrightnessControlInSettingsEnabled());
 }
 
 }  // namespace ash::settings

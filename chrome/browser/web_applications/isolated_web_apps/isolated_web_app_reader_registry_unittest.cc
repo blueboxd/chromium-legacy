@@ -26,10 +26,12 @@
 #include "base/types/expected.h"
 #include "chrome/browser/web_applications/isolated_web_apps/error/uma_logging.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_response_reader.h"
+#include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_response_reader_factory.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_trust_checker.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_validator.h"
 #include "chrome/browser/web_applications/test/signed_web_bundle_utils.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/test/base/testing_profile.h"
 #include "components/web_package/mojom/web_bundle_parser.mojom.h"
 #include "components/web_package/signed_web_bundles/ed25519_public_key.h"
 #include "components/web_package/signed_web_bundles/signed_web_bundle_id.h"
@@ -37,6 +39,7 @@
 #include "components/web_package/signed_web_bundles/signed_web_bundle_signature_verifier.h"
 #include "components/web_package/test_support/mock_web_bundle_parser_factory.h"
 #include "content/public/common/content_features.h"
+#include "content/public/test/browser_task_environment.h"
 #include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -47,7 +50,11 @@ namespace web_app {
 
 namespace {
 
+using base::test::ErrorIs;
+using base::test::HasValue;
 using testing::ElementsAre;
+using testing::Field;
+using testing::HasSubstr;
 
 using ReadResponseError = IsolatedWebAppReaderRegistry::ReadResponseError;
 using VerifierError = web_package::SignedWebBundleSignatureVerifier::Error;
@@ -64,25 +71,26 @@ constexpr uint8_t kEd25519Signature[64] = {
 class FakeIsolatedWebAppValidator : public IsolatedWebAppValidator {
  public:
   explicit FakeIsolatedWebAppValidator(
-      std::optional<std::string> integrity_block_error)
-      : IsolatedWebAppValidator(/*isolated_web_app_trust_checker=*/nullptr),
-        integrity_block_error_(integrity_block_error) {}
+      base::expected<void, std::string> integrity_block_validation_result)
+      : integrity_block_validation_result_(integrity_block_validation_result) {}
 
   void ValidateIntegrityBlock(
       const web_package::SignedWebBundleId& web_bundle_id,
       const web_package::SignedWebBundleIntegrityBlock& integrity_block,
       bool dev_mode,
-      base::OnceCallback<void(std::optional<std::string>)> callback) override {
-    std::move(callback).Run(integrity_block_error_);
+      const IsolatedWebAppTrustChecker& trust_checker,
+      IntegrityBlockCallback callback) override {
+    std::move(callback).Run(integrity_block_validation_result_);
   }
 
-  void set_integrity_block_error(
-      std::optional<std::string> integrity_block_error) {
-    integrity_block_error_ = std::move(integrity_block_error);
+  void set_integrity_block_validation_result(
+      base::expected<void, std::string> integrity_block_validation_result) {
+    integrity_block_validation_result_ =
+        std::move(integrity_block_validation_result);
   }
 
  private:
-  std::optional<std::string> integrity_block_error_;
+  base::expected<void, std::string> integrity_block_validation_result_;
 };
 
 class FakeSignatureVerifier
@@ -113,6 +121,9 @@ class IsolatedWebAppReaderRegistryTest : public ::testing::Test {
  protected:
   void SetUp() override {
     scoped_feature_list_.InitAndEnableFeature(features::kIsolatedWebApps);
+    SetTrustedWebBundleIdsForTesting({kWebBundleId});
+
+    profile_ = std::make_unique<TestingProfile>();
 
     parser_factory_ = std::make_unique<web_package::MockWebBundleParserFactory>(
         on_create_parser_future_.GetCallback());
@@ -131,13 +142,19 @@ class IsolatedWebAppReaderRegistryTest : public ::testing::Test {
     metadata_ = web_package::mojom::BundleMetadata::New();
     metadata_->requests = std::move(requests);
 
+    auto signature_info_ed25519 =
+        web_package::mojom::SignatureInfoEd25519::New();
+    signature_info_ed25519->public_key = web_package::Ed25519PublicKey::Create(
+        base::make_span(kEd25519PublicKey));
+    signature_info_ed25519->signature = web_package::Ed25519Signature::Create(
+        base::make_span(kEd25519Signature));
+
     web_package::mojom::BundleIntegrityBlockSignatureStackEntryPtr
         signature_stack_entry =
             web_package::mojom::BundleIntegrityBlockSignatureStackEntry::New();
-    signature_stack_entry->public_key = web_package::Ed25519PublicKey::Create(
-        base::make_span(kEd25519PublicKey));
-    signature_stack_entry->signature = web_package::Ed25519Signature::Create(
-        base::make_span(kEd25519Signature));
+    signature_stack_entry->signature_info =
+        web_package::mojom::SignatureInfo::NewEd25519(
+            std::move(signature_info_ed25519));
 
     std::vector<web_package::mojom::BundleIntegrityBlockSignatureStackEntryPtr>
         signature_stack;
@@ -148,12 +165,14 @@ class IsolatedWebAppReaderRegistryTest : public ::testing::Test {
     integrity_block_->signature_stack = std::move(signature_stack);
 
     registry_ = std::make_unique<IsolatedWebAppReaderRegistry>(
-        std::make_unique<FakeIsolatedWebAppValidator>(std::nullopt),
-        base::BindRepeating(
-            []() -> std::unique_ptr<
-                     web_package::SignedWebBundleSignatureVerifier> {
-              return std::make_unique<FakeSignatureVerifier>(std::nullopt);
-            }));
+        std::make_unique<IsolatedWebAppResponseReaderFactory>(
+            *profile_,
+            std::make_unique<FakeIsolatedWebAppValidator>(base::ok()),
+            base::BindRepeating(
+                []() -> std::unique_ptr<
+                         web_package::SignedWebBundleSignatureVerifier> {
+                  return std::make_unique<FakeSignatureVerifier>(std::nullopt);
+                })));
 
     EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
     EXPECT_TRUE(
@@ -166,7 +185,10 @@ class IsolatedWebAppReaderRegistryTest : public ::testing::Test {
             base::Unretained(parser_factory_.get())));
   }
 
-  void TearDown() override { registry_.reset(); }
+  void TearDown() override {
+    registry_.reset();
+    profile_.reset();
+  }
 
   void FulfillIntegrityBlock() {
     parser_factory_->RunIntegrityBlockCallback(integrity_block_->Clone());
@@ -184,13 +206,14 @@ class IsolatedWebAppReaderRegistryTest : public ::testing::Test {
         response_->Clone());
   }
 
-  base::test::TaskEnvironment task_environment_{
+  content::BrowserTaskEnvironment task_environment_{
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
   base::test::ScopedFeatureList scoped_feature_list_;
   data_decoder::test::InProcessDataDecoder in_process_data_decoder_;
   base::ScopedTempDir temp_dir_;
   base::FilePath web_bundle_path_;
   base::test::RepeatingTestFuture<std::optional<GURL>> on_create_parser_future_;
+  std::unique_ptr<TestingProfile> profile_;
 
   const web_package::SignedWebBundleId kWebBundleId =
       *web_package::SignedWebBundleId::Create(
@@ -246,6 +269,37 @@ TEST_F(IsolatedWebAppReaderRegistryTest, TestSingleRequest) {
 }
 
 TEST_F(IsolatedWebAppReaderRegistryTest,
+       ReadResponseWhenBundleIsNoLongerTrusted) {
+  network::ResourceRequest resource_request;
+  resource_request.url = kUrl;
+
+  {
+    base::test::TestFuture<ReadResult> read_response_future;
+    registry_->ReadResponse(web_bundle_path_, /*dev_mode=*/false, kWebBundleId,
+                            resource_request,
+                            read_response_future.GetCallback());
+
+    FulfillIntegrityBlock();
+    FulfillMetadata();
+    FulfillResponse(resource_request);
+
+    EXPECT_THAT(read_response_future.Take(), HasValue());
+  }
+
+  SetTrustedWebBundleIdsForTesting({});
+  {
+    base::test::TestFuture<ReadResult> read_response_future;
+    registry_->ReadResponse(web_bundle_path_, /*dev_mode=*/false, kWebBundleId,
+                            resource_request,
+                            read_response_future.GetCallback());
+
+    EXPECT_THAT(read_response_future.Take(),
+                ErrorIs(Field(&ReadResponseError::message,
+                              HasSubstr("public key(s) are not trusted"))));
+  }
+}
+
+TEST_F(IsolatedWebAppReaderRegistryTest,
        TestSingleRequestWithQueryAndFragment) {
   network::ResourceRequest resource_request;
   resource_request.url = kUrl.Resolve("/?bar=baz#foo");
@@ -270,23 +324,24 @@ TEST_F(IsolatedWebAppReaderRegistryTest,
 }
 
 TEST_F(IsolatedWebAppReaderRegistryTest, TestMixedDevModeAndProdModeRequests) {
-  auto validator = std::make_unique<FakeIsolatedWebAppValidator>(std::nullopt);
+  auto validator = std::make_unique<FakeIsolatedWebAppValidator>(base::ok());
   auto* validator_ref = validator.get();
 
   registry_ = std::make_unique<IsolatedWebAppReaderRegistry>(
-      std::move(validator),
-      base::BindRepeating(
-          []() -> std::unique_ptr<
-                   web_package::SignedWebBundleSignatureVerifier> {
-            return std::make_unique<FakeSignatureVerifier>(std::nullopt);
-          }));
+      std::make_unique<IsolatedWebAppResponseReaderFactory>(
+          *profile_, std::move(validator),
+          base::BindRepeating(
+              []() -> std::unique_ptr<
+                       web_package::SignedWebBundleSignatureVerifier> {
+                return std::make_unique<FakeSignatureVerifier>(std::nullopt);
+              })));
 
   network::ResourceRequest resource_request;
   resource_request.url = kUrl;
 
   // First, simulate a successful parsing of the integrity block, and read a
   // response.
-  validator_ref->set_integrity_block_error(std::nullopt);
+  validator_ref->set_integrity_block_validation_result(base::ok());
   {
     base::test::TestFuture<ReadResult> read_response_future;
     registry_->ReadResponse(web_bundle_path_, /*dev_mode=*/false, kWebBundleId,
@@ -302,7 +357,8 @@ TEST_F(IsolatedWebAppReaderRegistryTest, TestMixedDevModeAndProdModeRequests) {
 
   // Now, make all further attempts to parse an integrity block return with an
   // error.
-  validator_ref->set_integrity_block_error("some error");
+  validator_ref->set_integrity_block_validation_result(
+      base::unexpected("some error"));
   {
     // A request to the already opened bundle should still succeed.
     base::test::TestFuture<ReadResult> read_response_future;
@@ -407,20 +463,21 @@ TEST_F(IsolatedWebAppReaderRegistryTest, TestSignedWebBundleReaderLifetime) {
   resource_request.url = kUrl;
 
   size_t num_signature_verifications = 0;
+
   registry_ = std::make_unique<IsolatedWebAppReaderRegistry>(
-      std::make_unique<FakeIsolatedWebAppValidator>(std::nullopt),
-      base::BindLambdaForTesting(
-          [&]() -> std::unique_ptr<
-                    web_package::SignedWebBundleSignatureVerifier> {
-            return std::make_unique<FakeSignatureVerifier>(
-                std::nullopt, base::BindLambdaForTesting(
-                                  [&]() { ++num_signature_verifications; }));
-          }));
+      std::make_unique<IsolatedWebAppResponseReaderFactory>(
+          *profile_, std::make_unique<FakeIsolatedWebAppValidator>(base::ok()),
+          base::BindLambdaForTesting(
+              [&]() -> std::unique_ptr<
+                        web_package::SignedWebBundleSignatureVerifier> {
+                return std::make_unique<FakeSignatureVerifier>(
+                    std::nullopt, base::BindLambdaForTesting([&]() {
+                      ++num_signature_verifications;
+                    }));
+              })));
 
   // Verify that the cache cleanup timer has not yet started.
-  EXPECT_EQ(task_environment_.GetPendingMainThreadTaskCount(), 0ul)
-      << (task_environment_.DescribeCurrentTasks(),
-          "Pending Tasks have been logged.");
+  EXPECT_FALSE(registry_->reader_cache_.IsCleanupTimerRunningForTesting());
 
   {
     base::test::TestFuture<ReadResult> read_response_future;
@@ -452,9 +509,7 @@ TEST_F(IsolatedWebAppReaderRegistryTest, TestSignedWebBundleReaderLifetime) {
 #endif
 
   // Verify that the cache cleanup timer has started.
-  EXPECT_EQ(task_environment_.GetPendingMainThreadTaskCount(), 1ul)
-      << (task_environment_.DescribeCurrentTasks(),
-          "Pending Tasks have been logged.");
+  EXPECT_TRUE(registry_->reader_cache_.IsCleanupTimerRunningForTesting());
 
   {
     base::test::TestFuture<ReadResult> read_response_future;
@@ -478,9 +533,7 @@ TEST_F(IsolatedWebAppReaderRegistryTest, TestSignedWebBundleReaderLifetime) {
 #endif
 
   // Verify that the cache cleanup timer is still running.
-  EXPECT_EQ(task_environment_.GetPendingMainThreadTaskCount(), 1ul)
-      << (task_environment_.DescribeCurrentTasks(),
-          "Pending Tasks have been logged.");
+  EXPECT_TRUE(registry_->reader_cache_.IsCleanupTimerRunningForTesting());
 
   // After some time has passed, the `SignedWebBundleReader` should be evicted
   // from the cache.
@@ -488,9 +541,7 @@ TEST_F(IsolatedWebAppReaderRegistryTest, TestSignedWebBundleReaderLifetime) {
 
   // Verify that the cache cleanup timer has stopped, given that the cache is
   // now empty again.
-  EXPECT_EQ(task_environment_.GetPendingMainThreadTaskCount(), 0ul)
-      << (task_environment_.DescribeCurrentTasks(),
-          "Pending Tasks have been logged.");
+  EXPECT_FALSE(registry_->reader_cache_.IsCleanupTimerRunningForTesting());
 
   {
     base::test::TestFuture<ReadResult> read_response_future;
@@ -518,9 +569,7 @@ TEST_F(IsolatedWebAppReaderRegistryTest, TestSignedWebBundleReaderLifetime) {
 #endif
 
   // Verify that the cache cleanup timer has started again.
-  EXPECT_EQ(task_environment_.GetPendingMainThreadTaskCount(), 1ul)
-      << (task_environment_.DescribeCurrentTasks(),
-          "Pending Tasks have been logged.");
+  EXPECT_TRUE(registry_->reader_cache_.IsCleanupTimerRunningForTesting());
 }
 
 class IsolatedWebAppReaderRegistryIntegrityBlockParserErrorTest
@@ -577,12 +626,15 @@ TEST_F(IsolatedWebAppReaderRegistryTest, TestInvalidIntegrityBlockContents) {
   resource_request.url = kUrl;
 
   registry_ = std::make_unique<IsolatedWebAppReaderRegistry>(
-      std::make_unique<FakeIsolatedWebAppValidator>("test error"),
-      base::BindRepeating(
-          []() -> std::unique_ptr<
-                   web_package::SignedWebBundleSignatureVerifier> {
-            return std::make_unique<FakeSignatureVerifier>(std::nullopt);
-          }));
+      std::make_unique<IsolatedWebAppResponseReaderFactory>(
+          *profile_,
+          std::make_unique<FakeIsolatedWebAppValidator>(
+              base::unexpected("test error")),
+          base::BindRepeating(
+              []() -> std::unique_ptr<
+                       web_package::SignedWebBundleSignatureVerifier> {
+                return std::make_unique<FakeSignatureVerifier>(std::nullopt);
+              })));
 
   base::test::TestFuture<ReadResult> read_response_future;
   registry_->ReadResponse(web_bundle_path_, /*dev_mode=*/false, kWebBundleId,
@@ -613,12 +665,13 @@ TEST_P(IsolatedWebAppReaderRegistrySignatureVerificationErrorTest,
   resource_request.url = kUrl;
 
   registry_ = std::make_unique<IsolatedWebAppReaderRegistry>(
-      std::make_unique<FakeIsolatedWebAppValidator>(std::nullopt),
-      base::BindRepeating(
-          []() -> std::unique_ptr<
-                   web_package::SignedWebBundleSignatureVerifier> {
-            return std::make_unique<FakeSignatureVerifier>(GetParam());
-          }));
+      std::make_unique<IsolatedWebAppResponseReaderFactory>(
+          *profile_, std::make_unique<FakeIsolatedWebAppValidator>(base::ok()),
+          base::BindRepeating(
+              []() -> std::unique_ptr<
+                       web_package::SignedWebBundleSignatureVerifier> {
+                return std::make_unique<FakeSignatureVerifier>(GetParam());
+              })));
 
   base::test::TestFuture<ReadResult> read_response_future;
   registry_->ReadResponse(web_bundle_path_, /*dev_mode=*/false, kWebBundleId,
@@ -757,7 +810,8 @@ TEST_F(IsolatedWebAppReaderRegistryTest, TestInvalidMetadataInvalidExchange) {
             "Failed to validate metadata: The URL of an exchange is invalid: "
             "The host of isolated-app:// URLs must be a valid Signed Web "
             "Bundle ID (got foo): The signed web bundle ID must be exactly 56 "
-            "characters long, but was 3 characters long.");
+            "characters long (for Ed25519) or 58 characters long (for ECDSA "
+            "P-256), but was 3 characters long.");
 }
 
 class IsolatedWebAppReaderRegistryResponseHeadParserErrorTest
@@ -1005,7 +1059,7 @@ TEST_F(IsolatedWebAppReaderRegistryTest, OpenCloseOpen) {
   }
 }
 
-// TODO(crbug.com/1365853): Add a test that checks the behavior when
+// TODO(crbug.com/40239531): Add a test that checks the behavior when
 // `SignedWebBundleReader`s for two different Web Bundle IDs are requested
 // concurrently. Testing this is currently not possible, since running two
 // `MockWebBundleParser`s at the same time is not yet possible.

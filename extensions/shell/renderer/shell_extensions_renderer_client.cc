@@ -8,19 +8,19 @@
 
 #include "content/public/renderer/render_thread.h"
 #include "extensions/renderer/dispatcher.h"
-#include "extensions/renderer/dispatcher_delegate.h"
 #include "extensions/renderer/extensions_renderer_api_provider.h"
 
 namespace extensions {
 
-ShellExtensionsRendererClient::ShellExtensionsRendererClient()
-    : dispatcher_(std::make_unique<Dispatcher>(
-          std::make_unique<DispatcherDelegate>(),
-          std::vector<std::unique_ptr<ExtensionsRendererAPIProvider>>())) {
-  dispatcher_->OnRenderThreadStarted(content::RenderThread::Get());
-}
+ShellExtensionsRendererClient::ShellExtensionsRendererClient() = default;
 
 ShellExtensionsRendererClient::~ShellExtensionsRendererClient() = default;
+
+void ShellExtensionsRendererClient::RenderThreadStarted() {
+  dispatcher_ = std::make_unique<Dispatcher>(std::move(api_providers_));
+
+  dispatcher_->OnRenderThreadStarted(content::RenderThread::Get());
+}
 
 bool ShellExtensionsRendererClient::IsIncognitoProcess() const {
   // app_shell doesn't support off-the-record contexts.

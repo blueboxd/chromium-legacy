@@ -119,7 +119,8 @@ void FormFetcherImpl::Fetch() {
   // that things work correctly (i.e. we don't notify of completion too early)
   // even if the fetches return synchronously (which is the case in tests).
   wait_counter_++;
-
+  // Clears the flag since it will be outdated after this fetch is finished.
+  were_grouped_credentials_availible_ = false;
   PasswordStoreInterface* profile_password_store =
       client_->GetProfilePasswordStore();
   if (!profile_password_store) {
@@ -198,7 +199,8 @@ bool FormFetcherImpl::IsMovingBlocked(const signin::GaiaIdHash& destination,
       // entries anyway).
       if (form->IsUsingAccountStore())
         continue;
-      // Ignore non-exact matches for blocking moving.
+      // Ignore non-exact matches for blocking moving. PLS, affiliated and
+      // grouped matches are ignored.
       if (GetMatchType(*form) !=
           password_manager_util::GetLoginMatchType::kExact) {
         continue;
@@ -266,6 +268,10 @@ FormFetcherImpl::GetAccountStoreBackendError() const {
   return account_store_backend_error_;
 }
 
+bool FormFetcherImpl::WereGroupedCredentialsAvailable() const {
+  return were_grouped_credentials_availible_;
+}
+
 void FormFetcherImpl::FindMatchesAndNotifyConsumers(
     std::vector<std::unique_ptr<PasswordForm>> results) {
   DCHECK_EQ(State::WAITING, state_);
@@ -289,7 +295,8 @@ void FormFetcherImpl::SplitResults(
   insecure_credentials_.clear();
   for (auto& form : forms) {
     if (form->blocked_by_user) {
-      // Ignore non-exact matches for blocklisted entries.
+      // Ignore non-exact matches for blocklisted entries. PLS, affiliated and
+      // grouped matches are ignored.
       if (password_manager_util::GetMatchType(*form) ==
               password_manager_util::GetLoginMatchType::kExact &&
           form->scheme == form_digest_.scheme) {
@@ -327,7 +334,7 @@ void FormFetcherImpl::OnGetPasswordStoreResultsFrom(
 void FormFetcherImpl::OnGetPasswordStoreResultsOrErrorFrom(
     PasswordStoreInterface* store,
     LoginsResultOrError results_or_error) {
-  // TODO(https://crbug.com/1365324): Handle errors coming from the account
+  // TODO(crbug.com/40239372): Handle errors coming from the account
   // store.
   if (store == client_->GetProfilePasswordStore()) {
     profile_store_backend_error_.reset();
@@ -345,6 +352,17 @@ void FormFetcherImpl::OnGetPasswordStoreResultsOrErrorFrom(
 
   std::vector<PasswordForm> results =
       GetLoginsOrEmptyListOnFailure(std::move(results_or_error));
+  if (filter_grouped_credentials_) {
+    auto grouped_credentials_count =
+        std::erase_if(results, [](const auto& form) {
+          return form.match_type == PasswordForm::MatchType::kGrouped;
+        });
+    // If users is using two password stores this code will executed twice.
+    // Meaning that if either one of them had grouped credentials, the value
+    // should be maintained.
+    were_grouped_credentials_availible_ =
+        were_grouped_credentials_availible_ || grouped_credentials_count > 0;
+  }
 
   DCHECK_EQ(State::WAITING, state_);
   DCHECK_GT(wait_counter_, 0);

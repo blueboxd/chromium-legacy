@@ -17,13 +17,16 @@
 #include "build/build_config.h"
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/chromeos/read_write_cards/read_write_cards_ui_controller.h"
 #include "chrome/browser/ui/quick_answers/quick_answers_browsertest_base.h"
 #include "chrome/browser/ui/quick_answers/quick_answers_controller_impl.h"
+#include "chrome/browser/ui/quick_answers/quick_answers_ui_controller.h"
 #include "chrome/browser/ui/quick_answers/ui/quick_answers_view.h"
 #include "chrome/browser/ui/quick_answers/ui/rich_answers_view.h"
 #include "chrome/browser/ui/quick_answers/ui/user_consent_view.h"
 #include "chrome/test/base/chrome_test_utils.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chromeos/components/quick_answers/public/cpp/controller/quick_answers_controller.h"
 #include "chromeos/components/quick_answers/public/cpp/quick_answers_prefs.h"
 #include "chromeos/components/quick_answers/quick_answers_model.h"
 #include "chromeos/constants/chromeos_features.h"
@@ -38,6 +41,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/message_center/public/cpp/notification.h"
 #include "ui/message_center/public/cpp/notification_delegate.h"
+#include "ui/views/controls/button/label_button.h"
 #include "ui/views/widget/any_widget_observer.h"
 #include "ui/views/widget/widget.h"
 #include "url/gurl.h"
@@ -298,7 +302,8 @@ class QuickAnswersBrowserTest : public QuickAnswersBrowserTestBase {
   // Trigger the Quick Answers widget and wait until it appears.
   views::Widget* ShowQuickAnswersWidget() {
     views::NamedWidgetShownWaiter quick_answers_view_widget_waiter(
-        views::test::AnyWidgetTestPasskey(), QuickAnswersView::kWidgetName);
+        views::test::AnyWidgetTestPasskey(),
+        chromeos::ReadWriteCardsUiController::kWidgetName);
 
     ShowMenuParams params;
     params.selected_text = kTestQuery;
@@ -310,6 +315,18 @@ class QuickAnswersBrowserTest : public QuickAnswersBrowserTestBase {
         quick_answers_view_widget_waiter.WaitIfNeededAndGet();
 
     return quick_answers_view_widget;
+  }
+
+  UserConsentView* GetUserConsentView() {
+    return static_cast<QuickAnswersControllerImpl*>(controller())
+        ->quick_answers_ui_controller()
+        ->user_consent_view();
+  }
+
+  QuickAnswersView* GetQuickAnswersView() {
+    return static_cast<QuickAnswersControllerImpl*>(controller())
+        ->quick_answers_ui_controller()
+        ->quick_answers_view();
   }
 };
 
@@ -347,8 +364,11 @@ IN_PROC_BROWSER_TEST_F(QuickAnswersBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(QuickAnswersBrowserTest,
                        UserConsentViewAboveNotification) {
+  // User consent view is stored within the `ReadWriteCardsUiController`'s
+  // widget.
   views::NamedWidgetShownWaiter user_consent_view_widget_waiter(
-      views::test::AnyWidgetTestPasskey(), UserConsentView::kWidgetName);
+      views::test::AnyWidgetTestPasskey(),
+      chromeos::ReadWriteCardsUiController::kWidgetName);
 
   ShowMenuParams params;
   params.selected_text = kTestQuery;
@@ -383,6 +403,78 @@ IN_PROC_BROWSER_TEST_F(QuickAnswersBrowserTest,
   // TODO(b/239716419): Quick answers UI should be above the notification.
   EXPECT_TRUE(message_popup_widget->IsStackedAbove(
       user_consent_view_widget->GetNativeView()));
+}
+
+IN_PROC_BROWSER_TEST_F(QuickAnswersBrowserTest, ClickAllowOnUserConsentView) {
+  // User consent view is stored within the `ReadWriteCardsUiController`'s
+  // widget.
+  views::NamedWidgetShownWaiter user_consent_view_widget_waiter(
+      views::test::AnyWidgetTestPasskey(),
+      chromeos::ReadWriteCardsUiController::kWidgetName);
+
+  ShowMenuParams params;
+  params.selected_text = kTestQuery;
+  params.x = kCursorXToOverlapWithANotification;
+  params.y = kCursorYToOverlapWithANotification;
+  ShowMenu(params);
+
+  views::Widget* user_consent_view_widget =
+      user_consent_view_widget_waiter.WaitIfNeededAndGet();
+  ASSERT_TRUE(user_consent_view_widget);
+  ASSERT_EQ(QuickAnswersVisibility::kUserConsentVisible,
+            controller()->GetQuickAnswersVisibility());
+
+  ASSERT_FALSE(chrome_test_utils::GetProfile(this)->GetPrefs()->GetBoolean(
+      prefs::kQuickAnswersEnabled));
+
+  ui::test::EventGenerator generator(ash::Shell::GetPrimaryRootWindow());
+
+  generator.MoveMouseTo(GetUserConsentView()
+                            ->allow_button_for_test()
+                            ->GetBoundsInScreen()
+                            .CenterPoint());
+  generator.ClickLeftButton();
+
+  // Prefs should be set and quick answers view should be shown.
+  EXPECT_TRUE(chrome_test_utils::GetProfile(this)->GetPrefs()->GetBoolean(
+      prefs::kQuickAnswersEnabled));
+  EXPECT_EQ(QuickAnswersVisibility::kQuickAnswersVisible,
+            controller()->GetQuickAnswersVisibility());
+}
+
+IN_PROC_BROWSER_TEST_F(QuickAnswersBrowserTest,
+                       ClickNoThanksOnUserConsentView) {
+  // User consent view is stored within the `ReadWriteCardsUiController`'s
+  // widget.
+  views::NamedWidgetShownWaiter user_consent_view_widget_waiter(
+      views::test::AnyWidgetTestPasskey(),
+      chromeos::ReadWriteCardsUiController::kWidgetName);
+
+  ShowMenuParams params;
+  params.selected_text = kTestQuery;
+  params.x = kCursorXToOverlapWithANotification;
+  params.y = kCursorYToOverlapWithANotification;
+  ShowMenu(params);
+
+  views::Widget* user_consent_view_widget =
+      user_consent_view_widget_waiter.WaitIfNeededAndGet();
+  ASSERT_TRUE(user_consent_view_widget);
+  ASSERT_EQ(QuickAnswersVisibility::kUserConsentVisible,
+            controller()->GetQuickAnswersVisibility());
+
+  ui::test::EventGenerator generator(ash::Shell::GetPrimaryRootWindow());
+
+  generator.MoveMouseTo(GetUserConsentView()
+                            ->no_thanks_button_for_test()
+                            ->GetBoundsInScreen()
+                            .CenterPoint());
+  generator.ClickLeftButton();
+
+  // Prefs should not be set and no views should be shown.
+  EXPECT_FALSE(chrome_test_utils::GetProfile(this)->GetPrefs()->GetBoolean(
+      prefs::kQuickAnswersEnabled));
+  EXPECT_EQ(QuickAnswersVisibility::kClosed,
+            controller()->GetQuickAnswersVisibility());
 }
 
 class RichAnswersBrowserTest : public QuickAnswersBrowserTest {
@@ -431,7 +523,7 @@ IN_PROC_BROWSER_TEST_F(RichAnswersBrowserTest,
 
   // Check that all quick answers views are closed.
   EXPECT_TRUE(quick_answers_view_widget->IsClosed());
-  EXPECT_TRUE(controller()->GetVisibilityForTesting() ==
+  EXPECT_TRUE(controller()->GetQuickAnswersVisibility() ==
               QuickAnswersVisibility::kClosed);
 }
 
@@ -449,7 +541,7 @@ IN_PROC_BROWSER_TEST_F(RichAnswersBrowserTest,
 
   // Check that the quick answers view closes when the rich answers view shows.
   EXPECT_TRUE(quick_answers_view_widget->IsClosed());
-  EXPECT_TRUE(controller()->GetVisibilityForTesting() ==
+  EXPECT_TRUE(controller()->GetQuickAnswersVisibility() ==
               QuickAnswersVisibility::kRichAnswersVisible);
 
   // Click outside the rich answers view window bounds to dismiss it.
@@ -461,7 +553,7 @@ IN_PROC_BROWSER_TEST_F(RichAnswersBrowserTest,
 
   // Check that the rich answers view is dismissed.
   EXPECT_TRUE(rich_answers_view_widget->IsClosed());
-  EXPECT_TRUE(controller()->GetVisibilityForTesting() ==
+  EXPECT_TRUE(controller()->GetQuickAnswersVisibility() ==
               QuickAnswersVisibility::kClosed);
 }
 
@@ -475,13 +567,10 @@ IN_PROC_BROWSER_TEST_F(RichAnswersBrowserTest,
 
   // Check that the shown result type icon on the QuickAnswersView
   // correctly corresponds to the definition result type.
-  quick_answers::QuickAnswersView* quick_answers_view =
-      static_cast<quick_answers::QuickAnswersView*>(
-          quick_answers_view_widget->GetContentsView());
   ui::ImageModel expected_image_model = ui::ImageModel::FromVectorIcon(
       omnibox::kAnswerDictionaryIcon, ui::kColorSysBaseContainerElevated,
       /*icon_size=*/kQuickAnswersResultTypeIconSizeDip);
-  EXPECT_TRUE(quick_answers_view->GetIconImageModelForTesting() ==
+  EXPECT_TRUE(GetQuickAnswersView()->GetIconImageModelForTesting() ==
               expected_image_model);
 
   views::Widget* rich_answers_view_widget =
@@ -510,13 +599,10 @@ IN_PROC_BROWSER_TEST_F(RichAnswersBrowserTest,
 
   // Check that the shown result type icon on the QuickAnswersView
   // correctly corresponds to the translation result type.
-  quick_answers::QuickAnswersView* quick_answers_view =
-      static_cast<quick_answers::QuickAnswersView*>(
-          quick_answers_view_widget->GetContentsView());
   ui::ImageModel expected_image_model = ui::ImageModel::FromVectorIcon(
       omnibox::kAnswerTranslationIcon, ui::kColorSysBaseContainerElevated,
       /*icon_size=*/kQuickAnswersResultTypeIconSizeDip);
-  EXPECT_TRUE(quick_answers_view->GetIconImageModelForTesting() ==
+  EXPECT_TRUE(GetQuickAnswersView()->GetIconImageModelForTesting() ==
               expected_image_model);
 
   views::Widget* rich_answers_view_widget =
@@ -545,13 +631,10 @@ IN_PROC_BROWSER_TEST_F(RichAnswersBrowserTest,
 
   // Check that the shown result type icon on the QuickAnswersView
   // correctly corresponds to the unit conversion result type.
-  quick_answers::QuickAnswersView* quick_answers_view =
-      static_cast<quick_answers::QuickAnswersView*>(
-          quick_answers_view_widget->GetContentsView());
   ui::ImageModel expected_image_model = ui::ImageModel::FromVectorIcon(
       omnibox::kAnswerCalculatorIcon, ui::kColorSysBaseContainerElevated,
       /*icon_size=*/kQuickAnswersResultTypeIconSizeDip);
-  EXPECT_TRUE(quick_answers_view->GetIconImageModelForTesting() ==
+  EXPECT_TRUE(GetQuickAnswersView()->GetIconImageModelForTesting() ==
               expected_image_model);
 
   views::Widget* rich_answers_view_widget =

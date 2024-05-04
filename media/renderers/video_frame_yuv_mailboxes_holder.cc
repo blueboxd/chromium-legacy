@@ -17,23 +17,12 @@
 #include "gpu/command_buffer/common/shared_image_usage.h"
 #include "media/base/media_switches.h"
 #include "media/base/video_util.h"
-#include "third_party/skia/include/core/SkColorSpace.h"
-#include "third_party/skia/include/core/SkImage.h"
-#include "third_party/skia/include/core/SkSurface.h"
+#include "third_party/skia/include/core/SkImageInfo.h"
 #include "third_party/skia/include/core/SkYUVAPixmaps.h"
-#include "third_party/skia/include/gpu/GrDirectContext.h"
-#include "third_party/skia/include/gpu/ganesh/SkImageGanesh.h"
-#include "third_party/skia/include/gpu/ganesh/SkSurfaceGanesh.h"
-#include "third_party/skia/include/gpu/ganesh/gl/GrGLBackendSurface.h"
-#include "third_party/skia/include/gpu/gl/GrGLTypes.h"
 
 namespace media {
 
 namespace {
-
-BASE_FEATURE(kAddSharedImageRasterUsageWithNonOOPR,
-             "VideoFrameYUVAddSharedImageRasterUsageWithNonOOPR",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 viz::SharedImageFormat PlaneSharedImageFormat(int num_channels,
                                               bool supports_red) {
@@ -70,12 +59,6 @@ viz::SharedImageFormat VideoPixelFormatToSharedImageFormat(
   }
 }
 
-GLenum PlaneGLFormat(int num_channels,
-                     viz::RasterContextProvider* context_provider) {
-  return context_provider->GetGrGLTextureFormat(PlaneSharedImageFormat(
-      num_channels, context_provider->ContextCapabilities().texture_rg));
-}
-
 }  // namespace
 
 VideoFrameYUVMailboxesHolder::VideoFrameYUVMailboxesHolder() = default;
@@ -87,8 +70,6 @@ VideoFrameYUVMailboxesHolder::~VideoFrameYUVMailboxesHolder() {
 void VideoFrameYUVMailboxesHolder::ReleaseCachedData() {
   if (holders_[0].mailbox.IsZero())
     return;
-
-  ReleaseTextures();
 
   // Don't destroy shared images we don't own.
   if (!created_shared_images_)
@@ -156,25 +137,26 @@ void VideoFrameYUVMailboxesHolder::VideoFrameToMailboxes(
   DCHECK(sii);
 
   // These SharedImages will be written to (and later read from) via the raster
-  // interface. The correct usage depends on whether raster is OOP or is going
+  // interface. The full usage depends on whether raster is OOP or is going
   // over the GLES2 interface.
-  uint32_t mailbox_usage;
+  uint32_t mailbox_usage = gpu::SHARED_IMAGE_USAGE_RASTER_READ |
+                           gpu::SHARED_IMAGE_USAGE_RASTER_WRITE;
   auto& caps = provider_->ContextCapabilities();
   if (caps.gpu_rasterization) {
-    mailbox_usage = gpu::SHARED_IMAGE_USAGE_RASTER_READ |
-                    gpu::SHARED_IMAGE_USAGE_RASTER_WRITE |
-                    gpu::SHARED_IMAGE_USAGE_OOP_RASTERIZATION;
+    mailbox_usage |= gpu::SHARED_IMAGE_USAGE_OOP_RASTERIZATION;
   } else {
-    mailbox_usage = gpu::SHARED_IMAGE_USAGE_GLES2_READ |
-                    gpu::SHARED_IMAGE_USAGE_GLES2_WRITE;
-    // RASTER_{READ, WRITE} usages should be included as these SharedImages are
-    // both read and written via raster, but historically these usages were not
-    // included. Currently in the process of adding with a killswitch.
-    // TODO(crbug.com/1524009): Remove this killswitch post-safe rollout.
-    if (base::FeatureList::IsEnabled(kAddSharedImageRasterUsageWithNonOOPR)) {
-      mailbox_usage = mailbox_usage | gpu::SHARED_IMAGE_USAGE_RASTER_READ |
-                      gpu::SHARED_IMAGE_USAGE_RASTER_WRITE;
-    }
+    // NOTE: This GLES2 usage is *only* for raster, as these SharedImages are
+    // created to hold YUV data that is then converted to RGBA via the raster
+    // interface before being shared with some other use case (e.g., WebGL).
+    // There is no flow wherein these SharedImages are directly exposed to
+    // WebGL. Moreover, this raster usage is by definition *only* over GLES2
+    // (since this is non-OOP-R). It is critical to specify both of these facts
+    // to the service side to ensure that the needed SharedImage backing gets
+    // created (see crbug.com/328472684).
+    mailbox_usage |= gpu::SHARED_IMAGE_USAGE_GLES2_READ |
+                     gpu::SHARED_IMAGE_USAGE_GLES2_WRITE |
+                     gpu::SHARED_IMAGE_USAGE_GLES2_FOR_RASTER_ONLY |
+                     gpu::SHARED_IMAGE_USAGE_RASTER_OVER_GLES2_ONLY;
   }
 
   // Enabled with flags UseWritePixelsYUV and
@@ -250,10 +232,6 @@ void VideoFrameYUVMailboxesHolder::VideoFrameToMailboxes(
     created_shared_images_ = true;
   }
 
-  // If we have cached shared images that have been imported release them to
-  // prevent writing to a shared image for which we're holding read access.
-  ReleaseTextures();
-
   for (size_t plane = 0; plane < num_planes_; ++plane) {
     int num_channels = yuva_info_.numChannelsInPlane(plane);
     SkColorType color_type = SkYUVAPixmapInfo::DefaultColorTypeForDataType(
@@ -261,143 +239,11 @@ void VideoFrameYUVMailboxesHolder::VideoFrameToMailboxes(
     SkImageInfo info =
         SkImageInfo::Make(plane_sizes_[plane], color_type, kPlaneAlphaType);
     ri->WritePixels(
-        holders_[plane].mailbox, /*dst_x_offset=*/0,
-        /*dst_y_offset=*/0, /*dst_plane_index=*/0, GL_TEXTURE_2D,
+        holders_[plane].mailbox, /*dst_x_offset=*/0, /*dst_y_offset=*/0,
+        GL_TEXTURE_2D,
         SkPixmap(info, video_frame->data(plane), video_frame->stride(plane)));
     mailboxes[plane] = holders_[plane].mailbox;
   }
-}
-
-GrYUVABackendTextures VideoFrameYUVMailboxesHolder::VideoFrameToSkiaTextures(
-    const VideoFrame* video_frame,
-    viz::RasterContextProvider* raster_context_provider,
-    bool for_surface) {
-  gpu::Mailbox mailboxes[kMaxPlanes];
-  VideoFrameToMailboxes(video_frame, raster_context_provider, mailboxes,
-                        /*allow_multiplanar_for_upload=*/false);
-  ImportTextures(for_surface);
-  GrBackendTexture backend_textures[SkYUVAInfo::kMaxPlanes];
-  for (size_t plane = 0; plane < num_planes_; ++plane) {
-    backend_textures[plane] = GrBackendTextures::MakeGL(
-        plane_sizes_[plane].width(), plane_sizes_[plane].height(),
-        skgpu::Mipmapped::kNo, textures_[plane].texture);
-  }
-  return GrYUVABackendTextures(yuva_info_, backend_textures,
-                               kTopLeft_GrSurfaceOrigin);
-}
-
-sk_sp<SkImage> VideoFrameYUVMailboxesHolder::VideoFrameToSkImage(
-    const VideoFrame* video_frame,
-    viz::RasterContextProvider* raster_context_provider,
-    sk_sp<SkColorSpace> reinterpret_color_space) {
-  GrDirectContext* gr_context = raster_context_provider->GrContext();
-  DCHECK(gr_context);
-
-  GrYUVABackendTextures yuva_backend_textures = VideoFrameToSkiaTextures(
-      video_frame, raster_context_provider, /*for_surface=*/false);
-  auto rgb_color_space =
-      reinterpret_color_space
-          ? reinterpret_color_space
-          : video_frame->ColorSpace().GetAsFullRangeRGB().ToSkColorSpace();
-
-  DCHECK(yuva_backend_textures.isValid());
-  auto result = SkImages::TextureFromYUVATextures(
-      gr_context, yuva_backend_textures, rgb_color_space);
-  DCHECK(result);
-  return result;
-}
-
-bool VideoFrameYUVMailboxesHolder::VideoFrameToPlaneSkSurfaces(
-    const VideoFrame* video_frame,
-    viz::RasterContextProvider* raster_context_provider,
-    sk_sp<SkSurface> surfaces[SkYUVAInfo::kMaxPlanes]) {
-  for (size_t plane = 0; plane < SkYUVAInfo::kMaxPlanes; ++plane)
-    surfaces[plane] = nullptr;
-
-  if (!video_frame->HasTextures()) {
-    // The below call to VideoFrameToSkiaTextures would blit |video_frame| into
-    // a temporary SharedImage, which would be exposed as a SkSurface. That is
-    // probably undesirable (it has no current use cases), so just return an
-    // error.
-    DLOG(ERROR) << "VideoFrameToPlaneSkSurfaces requires texture backing.";
-    return false;
-  }
-
-  GrDirectContext* gr_context = raster_context_provider->GrContext();
-  DCHECK(gr_context);
-  GrYUVABackendTextures yuva_backend_textures = VideoFrameToSkiaTextures(
-      video_frame, raster_context_provider, /*for_surface=*/true);
-
-  bool result = true;
-  for (size_t plane = 0; plane < num_planes_; ++plane) {
-    const int num_channels = yuva_info_.numChannelsInPlane(plane);
-    SkColorType color_type = SkYUVAPixmapInfo::DefaultColorTypeForDataType(
-        SkYUVAPixmaps::DataType::kUnorm8, num_channels);
-    // Gray is not renderable.
-    if (color_type == kGray_8_SkColorType)
-      color_type = kAlpha_8_SkColorType;
-
-    auto surface = SkSurfaces::WrapBackendTexture(
-        gr_context, yuva_backend_textures.texture(plane),
-        kTopLeft_GrSurfaceOrigin, /*sampleCnt=*/1, color_type,
-        SkColorSpace::MakeSRGB(), nullptr);
-    if (!surface) {
-      DLOG(ERROR)
-          << "VideoFrameToPlaneSkSurfaces failed to make surface for plane "
-          << plane << " of " << num_planes_ << ".";
-      result = false;
-    }
-    surfaces[plane] = surface;
-  }
-  return result;
-}
-
-void VideoFrameYUVMailboxesHolder::ImportTextures(bool for_surface) {
-  DCHECK(!imported_textures_)
-      << "Textures should always be released after converting video frame. "
-         "Call ReleaseTextures() for each call to VideoFrameToSkiaTextures()";
-
-  auto* ri = provider_->RasterInterface();
-  for (size_t plane = 0; plane < num_planes_; ++plane) {
-    textures_[plane].texture.fID =
-        ri->CreateAndConsumeForGpuRaster(holders_[plane].mailbox);
-    if (holders_[plane].mailbox.IsSharedImage()) {
-      textures_[plane].is_shared_image = true;
-      ri->BeginSharedImageAccessDirectCHROMIUM(
-          textures_[plane].texture.fID,
-          for_surface ? GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM
-                      : GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM);
-    } else {
-      textures_[plane].is_shared_image = false;
-    }
-
-    int num_channels = yuva_info_.numChannelsInPlane(plane);
-    textures_[plane].texture.fTarget = holders_[plane].texture_target;
-    textures_[plane].texture.fFormat =
-        PlaneGLFormat(num_channels, provider_.get());
-  }
-
-  imported_textures_ = true;
-}
-
-void VideoFrameYUVMailboxesHolder::ReleaseTextures() {
-  if (!imported_textures_)
-    return;
-
-  auto* ri = provider_->RasterInterface();
-  DCHECK(ri);
-  for (auto& tex_info : textures_) {
-    if (!tex_info.texture.fID)
-      continue;
-
-    if (tex_info.is_shared_image)
-      ri->EndSharedImageAccessDirectCHROMIUM(tex_info.texture.fID);
-    ri->DeleteGpuRasterTexture(tex_info.texture.fID);
-
-    tex_info.texture.fID = 0;
-  }
-
-  imported_textures_ = false;
 }
 
 // static
@@ -410,7 +256,7 @@ SkYUVAInfo VideoFrameYUVMailboxesHolder::VideoFrameGetSkYUVAInfo(
   std::tie(plane_config, subsampling) =
       VideoPixelFormatToSkiaValues(video_frame->format());
 
-  // TODO(crbug.com/828599): This should really default to rec709.
+  // TODO(crbug.com/41380578): This should really default to rec709.
   SkYUVColorSpace color_space = kRec601_SkYUVColorSpace;
   video_frame->ColorSpace().ToSkYUVColorSpace(video_frame->BitDepth(),
                                               &color_space);

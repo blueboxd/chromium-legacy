@@ -28,7 +28,6 @@
 #include "gpu/command_buffer/service/gl_state_restorer_impl.h"
 #include "gpu/command_buffer/service/gpu_fence_manager.h"
 #include "gpu/command_buffer/service/logger.h"
-#include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/command_buffer/service/scheduler.h"
 #include "gpu/command_buffer/service/service_utils.h"
@@ -107,8 +106,7 @@ gpu::ContextResult GLES2CommandBufferStub::Initialize(
         manager->gpu_driver_bug_workarounds(), manager->gpu_feature_info());
     context_group_ = new gles2::ContextGroup(
         manager->gpu_preferences(), gles2::PassthroughCommandDecoderSupported(),
-        manager->mailbox_manager(), CreateMemoryTracker(),
-        manager->shader_translator_cache(),
+        CreateMemoryTracker(), manager->shader_translator_cache(),
         manager->framebuffer_completeness_cache(), feature_info,
         init_params.attribs.bind_generates_resource,
         manager->watchdog() /* progress_reporter */,
@@ -138,7 +136,7 @@ gpu::ContextResult GLES2CommandBufferStub::Initialize(
       channel_->sync_point_manager()->CreateSyncPointClientState(
           CommandBufferNamespace::GPU_IO, command_buffer_id_, sequence_id_);
 
-  // TODO(crbug.com/1251724): Remove this after testing.
+  // TODO(crbug.com/40198488): Remove this after testing.
   // Only enable multiple displays on ANGLE/Metal and only behind a feature.
   bool force_default_display = true;
   if (gl::GetGLImplementation() == gl::kGLImplementationEGLANGLE &&
@@ -196,8 +194,7 @@ gpu::ContextResult GLES2CommandBufferStub::Initialize(
     // offscreen.
     auto surface_format = default_surface->GetFormat();
     surface_ = ImageTransportSurface::CreateNativeGLSurface(
-        display, weak_ptr_factory_.GetWeakPtr(), init_params.surface_handle,
-        surface_format);
+        display, init_params.surface_handle, surface_format);
     if (!surface_ || !surface_->Initialize(surface_format)) {
       surface_ = nullptr;
       LOG(ERROR) << "ContextResult::kSurfaceFailure: Failed to create surface.";
@@ -388,21 +385,6 @@ gpu::ContextResult GLES2CommandBufferStub::Initialize(
   manager->delegate()->DidCreateContextSuccessfully();
   initialized_ = true;
   return gpu::ContextResult::kSuccess;
-}
-
-#if BUILDFLAG(IS_WIN)
-void GLES2CommandBufferStub::AddChildWindowToBrowser(
-    gpu::SurfaceHandle child_window) {
-  NOTREACHED();
-}
-#endif
-
-const gles2::FeatureInfo* GLES2CommandBufferStub::GetFeatureInfo() const {
-  return context_group_->feature_info();
-}
-
-const GpuPreferences& GLES2CommandBufferStub::GetGpuPreferences() const {
-  return context_group_->gpu_preferences();
 }
 
 MemoryTracker* GLES2CommandBufferStub::GetContextGroupMemoryTracker() const {

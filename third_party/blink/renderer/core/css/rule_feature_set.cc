@@ -179,8 +179,10 @@ bool SupportsInvalidation(CSSSelector::PseudoType type) {
     case CSSSelector::kPseudoOpen:
     case CSSSelector::kPseudoClosed:
     case CSSSelector::kPseudoDialogInTopLayer:
-    case CSSSelector::kPseudoSelectAuthorButton:
-    case CSSSelector::kPseudoSelectAuthorDatalist:
+    case CSSSelector::kPseudoSelectFallbackButton:
+    case CSSSelector::kPseudoSelectFallbackButtonIcon:
+    case CSSSelector::kPseudoSelectFallbackButtonText:
+    case CSSSelector::kPseudoSelectFallbackDatalist:
     case CSSSelector::kPseudoPopoverInTopLayer:
     case CSSSelector::kPseudoPopoverOpen:
     case CSSSelector::kPseudoSlotted:
@@ -203,6 +205,7 @@ bool SupportsInvalidation(CSSSelector::PseudoType type) {
     case CSSSelector::kPseudoViewTransitionNew:
     case CSSSelector::kPseudoViewTransitionOld:
     case CSSSelector::kPseudoActiveViewTransition:
+    case CSSSelector::kPseudoActiveViewTransitionType:
       return true;
     case CSSSelector::kPseudoUnknown:
     case CSSSelector::kPseudoLeftPage:
@@ -752,6 +755,7 @@ InvalidationSet* RuleFeatureSet::InvalidationSetForSimpleSelector(
       case CSSSelector::kPseudoModal:
       case CSSSelector::kPseudoSelectorFragmentAnchor:
       case CSSSelector::kPseudoActiveViewTransition:
+      case CSSSelector::kPseudoActiveViewTransitionType:
         return &EnsurePseudoInvalidationSet(selector.GetPseudoType(), type,
                                             position);
       case CSSSelector::kPseudoFirstOfType:

@@ -8,6 +8,7 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <string_view>
 #include <type_traits>
 #include <utility>
 #include <vector>
@@ -23,7 +24,6 @@
 #include "base/functional/callback_helpers.h"
 #include "base/functional/overloaded.h"
 #include "base/strings/strcat.h"
-#include "base/strings/string_piece.h"
 #include "base/test/bind.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/test/gmock_expected_support.h"
@@ -33,13 +33,15 @@
 #include "base/types/expected.h"
 #include "chrome/browser/ui/web_applications/test/isolated_web_app_test_utils.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_install_command_helper.h"
-#include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_location.h"
+#include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_install_source.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_response_reader_factory.h"
+#include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_source.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_storage_location.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_trust_checker.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_url_info.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_validator.h"
 #include "chrome/browser/web_applications/isolated_web_apps/pending_install_info.h"
+#include "chrome/browser/web_applications/isolated_web_apps/test/isolated_web_app_builder.h"
 #include "chrome/browser/web_applications/isolated_web_apps/test/test_signed_web_bundle_builder.h"
 #include "chrome/browser/web_applications/locks/lock.h"
 #include "chrome/browser/web_applications/test/fake_web_app_provider.h"
@@ -56,12 +58,13 @@
 #include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/browser/web_applications/web_app_install_utils.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
-#include "chrome/browser/web_applications/web_contents/web_app_url_loader.h"
 #include "chrome/common/chrome_features.h"
 #include "components/web_package/signed_web_bundles/ed25519_public_key.h"
 #include "components/web_package/signed_web_bundles/signed_web_bundle_id.h"
+#include "components/web_package/web_bundle_builder.h"
 #include "components/webapps/browser/installable/installable_logging.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
+#include "components/webapps/browser/web_contents/web_app_url_loader.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
 #include "net/http/http_status_code.h"
@@ -102,13 +105,13 @@ using ::testing::UnorderedElementsAre;
 using ::testing::VariantWith;
 using ::testing::WithArg;
 
-constexpr base::StringPiece kManifestPath =
+constexpr std::string_view kManifestPath =
     "/.well-known/_generated_install_page.html";
-constexpr base::StringPiece kIconPath = "/icon.png";
+constexpr std::string_view kIconPath = "/icon.png";
 
 IsolatedWebAppUrlInfo CreateRandomIsolatedWebAppUrlInfo() {
   web_package::SignedWebBundleId signed_web_bundle_id =
-      web_package::SignedWebBundleId::CreateRandomForDevelopment();
+      web_package::SignedWebBundleId::CreateRandomForProxyMode();
   return IsolatedWebAppUrlInfo::CreateFromSignedWebBundleId(
       signed_web_bundle_id);
 }
@@ -122,10 +125,9 @@ IsolatedWebAppUrlInfo CreateEd25519IsolatedWebAppUrlInfo() {
       signed_web_bundle_id);
 }
 
-IsolatedWebAppLocation CreateDevProxyLocation(
-    base::StringPiece dev_mode_proxy_url = "http://default-proxy-url.org/") {
-  return DevModeProxy{.proxy_url =
-                          url::Origin::Create(GURL(dev_mode_proxy_url))};
+IwaSourceProxy CreateDevProxySource() {
+  return IwaSourceProxy(
+      url::Origin::Create(GURL("http://default-proxy-url.org/")));
 }
 
 blink::mojom::ManifestPtr CreateDefaultManifest(const GURL& application_url) {
@@ -182,7 +184,7 @@ class InstallIsolatedWebAppCommandTest : public WebAppTest {
     GURL application_url = url_info.origin().GetURL();
     auto& page_state = web_contents_manager().GetOrCreatePageState(
         application_url.Resolve(kManifestPath));
-    page_state.url_load_result = WebAppUrlLoader::Result::kUrlLoaded;
+    page_state.url_load_result = webapps::WebAppUrlLoaderResult::kUrlLoaded;
     page_state.error_code = webapps::InstallableStatusCode::NO_ERROR_DETECTED;
 
     page_state.manifest_url = CreateDefaultManifestURL(application_url);
@@ -199,7 +201,7 @@ class InstallIsolatedWebAppCommandTest : public WebAppTest {
 
   struct Parameters {
     IsolatedWebAppUrlInfo url_info;
-    std::optional<IsolatedWebAppLocation> location;
+    std::optional<IsolatedWebAppInstallSource> install_source;
     std::optional<base::Version> expected_version;
   };
 
@@ -211,7 +213,8 @@ class InstallIsolatedWebAppCommandTest : public WebAppTest {
         test_future;
     fake_provider().scheduler().InstallIsolatedWebApp(
         parameters.url_info,
-        parameters.location.value_or(CreateDevProxyLocation()),
+        parameters.install_source.value_or(
+            IsolatedWebAppInstallSource::FromDevUi(CreateDevProxySource())),
         parameters.expected_version, /* optional_keep_alive=*/nullptr,
         /*optional_profile_keep_alive=*/nullptr, test_future.GetCallback());
     return test_future.Take();
@@ -224,7 +227,8 @@ class InstallIsolatedWebAppCommandTest : public WebAppTest {
 TEST_F(InstallIsolatedWebAppCommandTest, PropagateErrorWhenURLLoaderFails) {
   IsolatedWebAppUrlInfo url_info = CreateRandomIsolatedWebAppUrlInfo();
   auto [page_state, icon_state] = SetUpPageAndIconStates(url_info);
-  page_state.url_load_result = WebAppUrlLoader::Result::kFailedErrorPageLoaded;
+  page_state.url_load_result =
+      webapps::WebAppUrlLoaderResult::kFailedErrorPageLoaded;
 
   EXPECT_THAT(ExecuteCommand(Parameters{.url_info = url_info}),
               ErrorIs(Field(&InstallIsolatedWebAppCommandError::message,
@@ -236,7 +240,7 @@ TEST_F(InstallIsolatedWebAppCommandTest,
   IsolatedWebAppUrlInfo url_info = CreateRandomIsolatedWebAppUrlInfo();
   auto [page_state, icon_state] = SetUpPageAndIconStates(url_info);
   page_state.url_load_result =
-      WebAppUrlLoader::Result::kFailedWebContentsDestroyed;
+      webapps::WebAppUrlLoaderResult::kFailedWebContentsDestroyed;
 
   EXPECT_THAT(
       ExecuteCommand(Parameters{.url_info = url_info}),
@@ -267,23 +271,48 @@ TEST_F(InstallIsolatedWebAppCommandTest,
                 HasSubstr("Isolated Web App Developer Mode is not enabled"))));
 }
 
-TEST_F(InstallIsolatedWebAppCommandTest,
-       InstallationFinalizedWithIsolatedWebAppDevInstallInstallSource) {
+struct ProxyInstallSourceParam {
+  IsolatedWebAppInstallSource install_source;
+  WebAppManagement::Type expected_management_type;
+};
+
+class InstallIsolatedWebAppCommandProxyInstallSourceTest
+    : public InstallIsolatedWebAppCommandTest,
+      public ::testing::WithParamInterface<ProxyInstallSourceParam> {};
+
+TEST_P(InstallIsolatedWebAppCommandProxyInstallSourceTest,
+       InstallationFinalizedWithCorrectInstallSurface) {
   IsolatedWebAppUrlInfo url_info = CreateRandomIsolatedWebAppUrlInfo();
   SetUpPageAndIconStates(url_info);
 
-  EXPECT_THAT(ExecuteCommand(Parameters{.url_info = url_info}), HasValue());
-
-  using InstallSource = webapps::WebappInstallSource;
+  EXPECT_THAT(
+      ExecuteCommand(Parameters{.url_info = url_info,
+                                .install_source = GetParam().install_source}),
+      HasValue());
 
   const WebApp* web_app = web_app_registrar().GetAppById(url_info.app_id());
   ASSERT_THAT(web_app, NotNull());
 
-  EXPECT_TRUE(web_app->GetSources().Has(WebAppManagement::kCommandLine));
-
+  EXPECT_THAT(web_app->GetSources(),
+              Eq(WebAppManagementTypes{GetParam().expected_management_type}));
   EXPECT_THAT(web_app->latest_install_source(),
-              Optional(Eq(InstallSource::ISOLATED_APP_DEV_INSTALL)));
+              Optional(Eq(GetParam().install_source.install_surface())));
 }
+
+INSTANTIATE_TEST_SUITE_P(
+    /* no prefix */,
+    InstallIsolatedWebAppCommandProxyInstallSourceTest,
+    ::testing::Values(
+        ProxyInstallSourceParam{
+            .install_source =
+                IsolatedWebAppInstallSource::FromDevUi(CreateDevProxySource()),
+            .expected_management_type =
+                WebAppManagement::Type::kIwaUserInstalled},
+        ProxyInstallSourceParam{
+            .install_source = IsolatedWebAppInstallSource::FromDevCommandLine(
+                CreateDevProxySource()),
+            .expected_management_type =
+                WebAppManagement::Type::kIwaUserInstalled}));
 
 TEST_F(InstallIsolatedWebAppCommandTest,
        InstallationFailsWhenAppIsNotInstallable) {
@@ -336,7 +365,8 @@ TEST_F(InstallIsolatedWebAppCommandTest, CommandLocksOnAppId) {
           *profile()));
 
   auto command = std::make_unique<InstallIsolatedWebAppCommand>(
-      url_info, CreateDevProxyLocation(), /*expected_version=*/std::nullopt,
+      url_info, IsolatedWebAppInstallSource::FromDevUi(CreateDevProxySource()),
+      /*expected_version=*/std::nullopt,
       content::WebContents::Create(
           content::WebContents::CreateParams(profile())),
       /*optional_keep_alive=*/nullptr,
@@ -354,13 +384,13 @@ TEST_F(InstallIsolatedWebAppCommandTest, LocationSentToFinalizer) {
   IsolatedWebAppUrlInfo url_info = CreateRandomIsolatedWebAppUrlInfo();
   SetUpPageAndIconStates(url_info);
 
-  EXPECT_THAT(
-      ExecuteCommand(Parameters{
-          .url_info = url_info,
-          .location = DevModeProxy{.proxy_url = url::Origin::Create(GURL(
-                                       "http://some-testing-proxy-url.com/"))},
-      }),
-      HasValue());
+  EXPECT_THAT(ExecuteCommand(Parameters{
+                  .url_info = url_info,
+                  .install_source = IsolatedWebAppInstallSource::FromDevUi(
+                      IwaSourceProxy(url::Origin::Create(
+                          GURL("http://some-testing-proxy-url.com/")))),
+              }),
+              HasValue());
 
   EXPECT_THAT(
       web_app_registrar().GetAppById(url_info.app_id()),
@@ -408,7 +438,7 @@ TEST_F(InstallIsolatedWebAppCommandTest,
   web_contents_manager().TrackLoadUrlCalls(base::BindLambdaForTesting(
       [&](content::NavigationController::LoadURLParams& load_url_params,
           content::WebContents* unused_web_contents,
-          WebAppUrlLoader::UrlComparison unused_url_comparison) {
+          webapps::WebAppUrlLoader::UrlComparison unused_url_comparison) {
         EXPECT_THAT(load_url_params.url,
                     Eq(url_info.origin().GetURL().Resolve(kManifestPath)));
         storage_partition_during_url_loading = profile()->GetStoragePartition(
@@ -574,7 +604,8 @@ TEST_F(InstallIsolatedWebAppCommandMetricsTest,
 TEST_F(InstallIsolatedWebAppCommandMetricsTest, ReportErrorWhenUrlLoaderFails) {
   IsolatedWebAppUrlInfo url_info = CreateRandomIsolatedWebAppUrlInfo();
   auto [page_state, icon_state] = SetUpPageAndIconStates(url_info);
-  page_state.url_load_result = WebAppUrlLoader::Result::kFailedErrorPageLoaded;
+  page_state.url_load_result =
+      webapps::WebAppUrlLoaderResult::kFailedErrorPageLoaded;
 
   base::HistogramTester histogram_tester;
 
@@ -672,13 +703,13 @@ class InstallIsolatedWebAppCommandBundleTest
     base::FilePath bundle_path;
     ASSERT_NO_FATAL_FAILURE(WriteWebBundle(bundle_path));
     if (is_dev_mode_) {
-      location_ = IsolatedWebAppLocation(DevModeBundle{
-          .path = bundle_path,
-      });
+      install_source_ = IsolatedWebAppInstallSource::FromDevUi(
+          IwaSourceBundleDevModeWithFileOp(bundle_path,
+                                           kDefaultBundleDevFileOp));
     } else {
-      location_ = IsolatedWebAppLocation(InstalledBundle{
-          .path = bundle_path,
-      });
+      install_source_ = IsolatedWebAppInstallSource::FromGraphicalInstaller(
+          IwaSourceBundleProdModeWithFileOp(bundle_path,
+                                            IwaSourceBundleProdFileOp::kCopy));
     }
 
     InstallIsolatedWebAppCommandTest::SetUp();
@@ -691,8 +722,9 @@ class InstallIsolatedWebAppCommandBundleTest
     TestSignedWebBundleBuilder::BuildOptions build_options;
     if (bundle_info_.has_error) {
       build_options.SetErrorsForTesting(
-          {web_package::WebBundleSigner::ErrorForTesting::
-               kInvalidIntegrityBlockStructure});
+          {{web_package::WebBundleSigner::IntegrityBlockErrorForTesting::
+                kInvalidIntegrityBlockStructure},
+           {}});
     }
 
     TestSignedWebBundleBuilder builder;
@@ -706,7 +738,7 @@ class InstallIsolatedWebAppCommandBundleTest
   base::ScopedTempDir temp_dir_;
   bool is_dev_mode_;
   BundleTestInfo bundle_info_;
-  IsolatedWebAppLocation location_;
+  std::optional<IsolatedWebAppInstallSource> install_source_;
   IsolatedWebAppUrlInfo url_info_ = CreateEd25519IsolatedWebAppUrlInfo();
 };
 
@@ -715,7 +747,7 @@ TEST_P(InstallIsolatedWebAppCommandBundleTest, InstallsWhenThereIsNoError) {
 
   auto result = ExecuteCommand(Parameters{
       .url_info = url_info_,
-      .location = location_,
+      .install_source = install_source_,
   });
 
   const base::FilePath iwa_root_dir = profile()->GetPath().Append(kIwaDirName);
@@ -738,15 +770,23 @@ TEST_P(InstallIsolatedWebAppCommandBundleTest, InstallsWhenThereIsNoError) {
     // Wait till IWA directory is removed.
     task_environment()->RunUntilIdle();
     absl::visit(
-        base::Overloaded{[&iwa_root_dir](const InstalledBundle&) {
-                           EXPECT_TRUE(DirectoryExists(iwa_root_dir));
-                           EXPECT_TRUE(base::IsDirectoryEmpty(iwa_root_dir));
-                         },
-                         [&iwa_root_dir](const DevModeBundle&) {
-                           EXPECT_FALSE(DirectoryExists(iwa_root_dir));
-                         },
-                         [](const DevModeProxy&) { FAIL(); }},
-        location_);
+        base::Overloaded{
+            [&iwa_root_dir](const IwaSourceBundleWithModeAndFileOp& source) {
+              switch (source.mode_and_file_op()) {
+                case IwaSourceBundleModeAndFileOp::kDevModeCopy:
+                case IwaSourceBundleModeAndFileOp::kDevModeMove:
+                case IwaSourceBundleModeAndFileOp::kProdModeCopy:
+                case IwaSourceBundleModeAndFileOp::kProdModeMove:
+                  EXPECT_TRUE(DirectoryExists(iwa_root_dir));
+                  EXPECT_TRUE(base::IsDirectoryEmpty(iwa_root_dir));
+                  break;
+                case IwaSourceBundleModeAndFileOp::kDevModeReference:
+                  EXPECT_FALSE(DirectoryExists(iwa_root_dir));
+                  break;
+              }
+            },
+            [](const IwaSourceProxy&) { FAIL(); }},
+        install_source_->source().variant());
   }
 }
 
@@ -773,6 +813,92 @@ INSTANTIATE_TEST_SUITE_P(
            std::get<1>(param_info.param).not_trusted ? "not_trusted"
                                                      : "is_trusted"});
     });
+
+struct BundleInstallSourceParam {
+  base::FunctionRef<IsolatedWebAppInstallSource(const base::FilePath&)>
+      install_source;
+  WebAppManagement::Type expected_management_type;
+};
+
+class InstallIsolatedWebAppCommandBundleInstallSourceTest
+    : public InstallIsolatedWebAppCommandTest,
+      public ::testing::WithParamInterface<BundleInstallSourceParam> {
+ private:
+  data_decoder::test::InProcessDataDecoder in_process_data_decoder_;
+};
+
+TEST_P(InstallIsolatedWebAppCommandBundleInstallSourceTest,
+       InstallationFinalizedWithCorrectInstallSurface) {
+  IsolatedWebAppBuilder builder{ManifestBuilder()};
+  auto app = builder.BuildBundle(web_package::WebBundleSigner::Ed25519KeyPair(
+      base::make_span(kTestPublicKey), base::make_span(kTestPrivateKey)));
+  app->FakeInstallPageState(profile());
+  app->TrustSigningKey();
+  IsolatedWebAppUrlInfo url_info = CreateEd25519IsolatedWebAppUrlInfo();
+  IsolatedWebAppInstallSource install_source =
+      GetParam().install_source(app->path());
+
+  EXPECT_THAT(ExecuteCommand(Parameters{.url_info = url_info,
+                                        .install_source = install_source}),
+              HasValue());
+
+  const WebApp* web_app = web_app_registrar().GetAppById(url_info.app_id());
+  ASSERT_THAT(web_app, NotNull());
+
+  EXPECT_THAT(web_app->GetSources(),
+              Eq(WebAppManagementTypes{GetParam().expected_management_type}));
+  EXPECT_THAT(web_app->latest_install_source(),
+              Optional(Eq(install_source.install_surface())));
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    /* no prefix */,
+    InstallIsolatedWebAppCommandBundleInstallSourceTest,
+    ::testing::Values(
+        BundleInstallSourceParam{
+            .install_source =
+                [](const base::FilePath& path) {
+                  return IsolatedWebAppInstallSource::FromGraphicalInstaller(
+                      IwaSourceBundleProdModeWithFileOp(
+                          path, IwaSourceBundleProdFileOp::kCopy));
+                },
+            .expected_management_type =
+                WebAppManagement::Type::kIwaUserInstalled},
+        BundleInstallSourceParam{
+            .install_source =
+                [](const base::FilePath& path) {
+                  return IsolatedWebAppInstallSource::FromExternalPolicy(
+                      IwaSourceBundleProdModeWithFileOp(
+                          path, IwaSourceBundleProdFileOp::kMove));
+                },
+            .expected_management_type = WebAppManagement::Type::kIwaPolicy},
+        BundleInstallSourceParam{
+            .install_source =
+                [](const base::FilePath& path) {
+                  return IsolatedWebAppInstallSource::FromShimlessRma(
+                      IwaSourceBundleProdModeWithFileOp(
+                          path, IwaSourceBundleProdFileOp::kCopy));
+                },
+            .expected_management_type =
+                WebAppManagement::Type::kIwaShimlessRma},
+        BundleInstallSourceParam{
+            .install_source =
+                [](const base::FilePath& path) {
+                  return IsolatedWebAppInstallSource::FromDevUi(
+                      IwaSourceBundleDevModeWithFileOp(
+                          path, IwaSourceBundleDevFileOp::kReference));
+                },
+            .expected_management_type =
+                WebAppManagement::Type::kIwaUserInstalled},
+        BundleInstallSourceParam{
+            .install_source =
+                [](const base::FilePath& path) {
+                  return IsolatedWebAppInstallSource::FromDevCommandLine(
+                      IwaSourceBundleDevModeWithFileOp(
+                          path, IwaSourceBundleDevFileOp::kCopy));
+                },
+            .expected_management_type =
+                WebAppManagement::Type::kIwaUserInstalled}));
 
 }  // namespace
 }  // namespace web_app

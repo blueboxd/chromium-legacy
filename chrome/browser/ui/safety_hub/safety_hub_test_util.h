@@ -9,6 +9,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/safety_hub/password_status_check_service.h"
 #include "chrome/browser/ui/safety_hub/safety_hub_service.h"
+#include "extensions/common/extension_urls.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace safety_hub_test_util {
@@ -36,18 +37,42 @@ void UpdateSafetyHubServiceAsync(SafetyHubService* service);
 void UpdatePasswordCheckServiceAsync(
     PasswordStatusCheckService* password_service);
 
-// Creates a mock service that returns mock results for the CWS info service. In
-// total six extensions with different properties are mocked: malware, policy
-// violation, unpublished, combination of malware and unpublished, no violation,
-// and an extension that is not present.
+// This will run until ongoing checks in PasswordStatusCheckService to be
+// completed.
+void RunUntilPasswordCheckCompleted(Profile* profile);
+
+// Creates a mock service that returns mock results for the CWS info service. If
+// |with_calls| is true, total six extensions with different properties are
+// mocked: malware, policy violation, unpublished, combination of malware and
+// unpublished, no violation, and an extension that is not present.
 std::unique_ptr<testing::NiceMock<MockCWSInfoService>> GetMockCWSInfoService(
-    Profile* profile);
+    Profile* profile,
+    bool with_calls = true);
+
+// Adds a testing extension with |name| and |location| to |profile|.
+void AddExtension(
+    const std::string& name,
+    extensions::mojom::ManifestLocation location,
+    Profile* profile,
+    std::string update_url = extension_urls::kChromeWebstoreUpdateURL);
 
 // Adds seven extensions, of which one is installed by an external policy.
 void CreateMockExtensions(Profile* profile);
 
 // Deletes all mock extensions that are added by CreateMockExtensions.
 void CleanAllMockExtensions(Profile* profile);
+
+// Creates and returns a CWSInfo without any triggers.
+extensions::CWSInfoService::CWSInfo GetCWSInfoNoTrigger();
+
+// Removes an extension from the Chrome registry and extension prefs.
+void RemoveExtension(const std::string& name,
+                     extensions::mojom::ManifestLocation location,
+                     Profile* profile);
+
+// Add the `ack_safety_check_warning` pref to an extension.
+void AcknowledgeSafetyCheckExtensions(const std::string& name,
+                                      Profile* profile);
 
 }  // namespace safety_hub_test_util
 

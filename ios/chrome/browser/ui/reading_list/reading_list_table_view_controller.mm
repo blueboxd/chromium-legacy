@@ -157,6 +157,19 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
     [self removeEmptySections];
   }
   [self updateToolbarItems];
+
+  // Force update a11y actions based on edit mode.
+  for (int section = 0; section < self.tableViewModel.numberOfSections;
+       section++) {
+    if (![self.tableViewModel numberOfItemsInSection:section]) {
+      continue;
+    }
+    NSInteger sectionIdentifier =
+        [self.tableViewModel sectionIdentifierForSectionIndex:section];
+    [self reconfigureCellsForItems:
+              [self.tableViewModel
+                  itemsInSectionWithIdentifier:sectionIdentifier]];
+  }
 }
 
 - (void)setSelectedUnreadItemCount:(NSUInteger)selectedUnreadItemCount {
@@ -289,7 +302,7 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
   } else {
     // Open the URL.
     TableViewItem* item = [self.tableViewModel itemAtIndexPath:indexPath];
-    // TODO(crbug.com/1430839): the runtime check will be replaced using new
+    // TODO(crbug.com/40263259): the runtime check will be replaced using new
     // methods implementations in TableViewItem and ReadingListTableViewItem.
     if ([item conformsToProtocol:@protocol(ReadingListListItem)]) {
       [self.delegate
@@ -332,7 +345,7 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
     return nil;
   }
   TableViewItem* item = [self.tableViewModel itemAtIndexPath:indexPath];
-  // TODO(crbug.com/1430839): the runtime check will be replaced using new
+  // TODO(crbug.com/40263259): the runtime check will be replaced using new
   // methods implementations in TableViewItem and ReadingListTableViewItem.
   if ([item conformsToProtocol:@protocol(ReadingListListItem)]) {
     return [self.menuProvider
@@ -360,7 +373,7 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
   if (self.tableView.editing)
     return nil;
   TableViewItem* item = [self.tableViewModel itemAtIndexPath:indexPath];
-  // TODO(crbug.com/1430839): the runtime check will be replaced using new
+  // TODO(crbug.com/40263259): the runtime check will be replaced using new
   // methods implementations in TableViewItem and ReadingListTableViewItem.
   if ([item conformsToProtocol:@protocol(ReadingListListItem)]) {
     id<ReadingListListItem> readingListItem = (id<ReadingListListItem>)item;
@@ -769,7 +782,7 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
     // Updating the favicon can lead to synchronous update of the item if the
     // icon is already available. To avoid causing a crash, update the trigger
     // the favicon asynchronously.
-    // TODO(crbug.com/1368111): check the fix actually prevents crashing.
+    // TODO(crbug.com/40240200): check the fix actually prevents crashing.
     __weak __typeof(item) weakItem = item;
     dispatch_async(dispatch_get_main_queue(), ^{
       if (weakSelf && weakItem) {
@@ -832,7 +845,7 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
   NSArray* items = [self.tableViewModel itemsInSectionWithIdentifier:section];
   // Read the objects in reverse order to keep the order (last modified first).
   for (TableViewItem* item in [items reverseObjectEnumerator]) {
-    // TODO(crbug.com/1430839): the runtime check will be replaced using new
+    // TODO(crbug.com/40263259): the runtime check will be replaced using new
     // methods implementations in TableViewItem and ReadingListTableViewItem.
     if ([item conformsToProtocol:@protocol(ReadingListListItem)]) {
       updater((id<ReadingListListItem>)item);
@@ -851,7 +864,7 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
   // Read the objects in reverse order to keep the order (last modified first).
   for (NSIndexPath* indexPath in [indexPaths reverseObjectEnumerator]) {
     TableViewItem* item = [self.tableViewModel itemAtIndexPath:indexPath];
-    // TODO(crbug.com/1430839): the runtime check will be replaced by new
+    // TODO(crbug.com/40263259): the runtime check will be replaced by new
     // methods implementations in TableViewItem and ReadingListTableViewItem.
     if ([item conformsToProtocol:@protocol(ReadingListListItem)]) {
       updater((id<ReadingListListItem>)item);

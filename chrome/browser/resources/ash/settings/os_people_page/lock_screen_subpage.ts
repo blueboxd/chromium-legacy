@@ -14,7 +14,7 @@
  * </settings-lock-screen-subpage>
  */
 
-import 'chrome://resources/cr_components/settings_prefs/prefs.js';
+import '/shared/settings/prefs/prefs.js';
 import 'chrome://resources/ash/common/cr_elements/cr_button/cr_button.js';
 import 'chrome://resources/ash/common/cr_elements/cr_radio_button/cr_radio_button.js';
 import 'chrome://resources/ash/common/cr_elements/cr_radio_group/cr_radio_group.js';
@@ -204,7 +204,7 @@ export class SettingsLockScreenElement extends SettingsLockScreenElementBase {
   override ready(): void {
     super.ready();
     // Register observer for auth factor updates.
-    // TODO(crbug/1321440): Are we leaking |this| here because we never remove
+    // TODO(crbug.com/40223898): Are we leaking |this| here because we never remove
     // the observer? We could close the pipe with |$.close()|, but not clear
     // whether that removes all references to |receiver| and then eventually to
     // |this|.

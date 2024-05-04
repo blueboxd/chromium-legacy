@@ -53,6 +53,7 @@
 #include "chrome/common/webui_url_constants.h"
 #include "components/cloud_devices/common/cloud_device_description.h"
 #include "components/cloud_devices/common/printer_description.h"
+#include "components/enterprise/buildflags/buildflags.h"
 #include "components/prefs/pref_service.h"
 #include "components/printing/common/cloud_print_cdd_conversion.h"
 #include "components/url_formatter/url_formatter.h"
@@ -72,7 +73,7 @@
 #include "third_party/icu/source/i18n/unicode/ulocdata.h"
 #include "ui/shell_dialogs/selected_file_info.h"
 
-#if BUILDFLAG(ENABLE_PRINT_CONTENT_ANALYSIS)
+#if BUILDFLAG(ENTERPRISE_CONTENT_ANALYSIS)
 #include "chrome/browser/enterprise/data_protection/print_utils.h"
 #if BUILDFLAG(IS_MAC)
 #include "chrome/grit/generated_resources.h"
@@ -730,7 +731,6 @@ void PrintPreviewHandler::HandleDoPrint(const base::Value::List& args) {
     return;
   }
   DCHECK(data->size());
-  DCHECK(data->front());
 
   // After validating |settings|, record metrics.
   const mojom::RequestPrintPreviewParams* request_params = GetRequestParams();
@@ -746,7 +746,7 @@ void PrintPreviewHandler::HandleDoPrint(const base::Value::List& args) {
   }
   ReportUserActionHistogram(user_action);
 
-#if BUILDFLAG(ENABLE_PRINT_CONTENT_ANALYSIS)
+#if BUILDFLAG(ENTERPRISE_CONTENT_ANALYSIS)
   std::string device_name = *settings.FindString(kSettingDeviceName);
 
   using enterprise_data_protection::PrintScanningContext;
@@ -780,10 +780,10 @@ void PrintPreviewHandler::HandleDoPrint(const base::Value::List& args) {
 
 #else
   FinishHandleDoPrint(user_action, std::move(settings), data, callback_id);
-#endif  // BUILDFLAG(ENABLE_PRINT_CONTENT_ANALYSIS)
+#endif  // BUILDFLAG(ENTERPRISE_CONTENT_ANALYSIS)
 }
 
-#if BUILDFLAG(ENABLE_PRINT_CONTENT_ANALYSIS)
+#if BUILDFLAG(ENTERPRISE_CONTENT_ANALYSIS)
 void PrintPreviewHandler::OnVerdictByEnterprisePolicy(
     UserActionBuckets user_action,
     base::Value::Dict settings,
@@ -800,7 +800,7 @@ void PrintPreviewHandler::OnVerdictByEnterprisePolicy(
 void PrintPreviewHandler::OnHidePreviewDialog() {
   print_preview_ui()->OnHidePreviewDialog();
 }
-#endif  // BUILDFLAG(ENABLE_PRINT_CONTENT_ANALYSIS)
+#endif  // BUILDFLAG(ENTERPRISE_CONTENT_ANALYSIS)
 
 void PrintPreviewHandler::FinishHandleDoPrint(
     UserActionBuckets user_action,
@@ -1238,7 +1238,7 @@ void PrintPreviewHandler::BadMessageReceived() {
       GetInitiator()->GetPrimaryMainFrame()->GetProcess(),
       bad_message::BadMessageReason::PPH_EXTRA_PREVIEW_MESSAGE);
 #if DCHECK_IS_ON()
-  // TODO(crbug.com/1371776): Remove this once the bug is fixed.
+  // TODO(crbug.com/40870686): Remove this once the bug is fixed.
   base::debug::StackTrace().Print();
 #endif
 }

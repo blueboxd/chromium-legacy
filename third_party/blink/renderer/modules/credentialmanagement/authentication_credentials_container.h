@@ -7,8 +7,8 @@
 
 #include <optional>
 
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/modules/credentialmanagement/credentials_container.h"
-#include "third_party/blink/renderer/modules/credentialmanagement/web_identity_requester.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
@@ -33,29 +33,29 @@ class MODULES_EXPORT AuthenticationCredentialsContainer final
   explicit AuthenticationCredentialsContainer(Navigator&);
 
   // CredentialsContainer:
-  ScriptPromiseTyped<IDLNullable<Credential>>
-  get(ScriptState*, const CredentialRequestOptions*, ExceptionState&) override;
-  ScriptPromiseTyped<Credential>
-  store(ScriptState*, Credential*, ExceptionState& exception_state) override;
-  ScriptPromiseTyped<IDLNullable<Credential>> create(
+  ScriptPromise<IDLNullable<Credential>> get(ScriptState*,
+                                             const CredentialRequestOptions*,
+                                             ExceptionState&) override;
+  ScriptPromise<Credential> store(ScriptState*,
+                                  Credential*,
+                                  ExceptionState& exception_state) override;
+  ScriptPromise<IDLNullable<Credential>> create(
       ScriptState*,
       const CredentialCreationOptions*,
       ExceptionState&) override;
-  ScriptPromise preventSilentAccess(ScriptState*) override;
+  ScriptPromise<IDLUndefined> preventSilentAccess(ScriptState*) override;
 
   void Trace(Visitor*) const override;
 
  private:
   // get() implementation for FedCM and WebIdentityDigitalCredential.
   void GetForIdentity(ScriptState*,
-                      ScriptPromiseResolverTyped<IDLNullable<Credential>>*,
+                      ScriptPromiseResolver<IDLNullable<Credential>>*,
                       const CredentialRequestOptions&,
                       const IdentityCredentialRequestOptions&);
 
   class OtpRequestAbortAlgorithm;
   class PublicKeyRequestAbortAlgorithm;
-
-  Member<WebIdentityRequester> web_identity_requester_;
 };
 
 }  // namespace blink

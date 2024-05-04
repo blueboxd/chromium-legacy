@@ -18,7 +18,17 @@
 namespace autofill {
 
 CardUnmaskAuthenticationSelectionDialogControllerImpl::
-    CardUnmaskAuthenticationSelectionDialogControllerImpl() = default;
+    CardUnmaskAuthenticationSelectionDialogControllerImpl(
+        const std::vector<CardUnmaskChallengeOption>& challenge_options,
+        base::OnceCallback<void(const std::string&)>
+            confirm_unmasking_method_callback,
+        base::OnceClosure cancel_unmasking_closure)
+    : challenge_options_(challenge_options),
+      confirm_unmasking_method_callback_(
+          std::move(confirm_unmasking_method_callback)),
+      cancel_unmasking_closure_(std::move(cancel_unmasking_closure)) {
+  CHECK(!challenge_options_.empty());
+}
 
 CardUnmaskAuthenticationSelectionDialogControllerImpl::
     ~CardUnmaskAuthenticationSelectionDialogControllerImpl() {
@@ -35,25 +45,9 @@ CardUnmaskAuthenticationSelectionDialogControllerImpl::
 }
 
 void CardUnmaskAuthenticationSelectionDialogControllerImpl::ShowDialog(
-    const std::vector<CardUnmaskChallengeOption>& challenge_options,
-    base::OnceCallback<void(const std::string&)>
-        confirm_unmasking_method_callback,
-    base::OnceClosure cancel_unmasking_closure,
     CardUnmaskAuthenticationSelectionDialogControllerImpl::CreateAndShowCallback
         create_and_show_callback) {
-  if (dialog_view_) {
-    return;
-  }
-
-  CHECK(!challenge_options.empty());
-  challenge_options_ = challenge_options;
-
-  confirm_unmasking_method_callback_ =
-      std::move(confirm_unmasking_method_callback);
-  cancel_unmasking_closure_ = std::move(cancel_unmasking_closure);
-
-  dialog_view_ =
-      std::move(create_and_show_callback).Run(this);
+  dialog_view_ = std::move(create_and_show_callback).Run(this);
 
   DCHECK(dialog_view_);
   AutofillMetrics::LogCardUnmaskAuthenticationSelectionDialogShown(
@@ -131,7 +125,7 @@ void CardUnmaskAuthenticationSelectionDialogControllerImpl::
     OnOkButtonClicked() {
   DCHECK(!selected_challenge_option_id_.value().empty());
 
-  // TODO(crbug.com/1392939): Remove this lambda once we refactor
+  // TODO(crbug.com/40247983): Remove this lambda once we refactor
   // `SetSelectedChallengeOptionId()` to `SetSelectedChallengeOptionForId()`.
   auto selected_challenge_option =
       base::ranges::find(challenge_options_, selected_challenge_option_id_,
@@ -165,7 +159,7 @@ void CardUnmaskAuthenticationSelectionDialogControllerImpl::
         dialog_view_->UpdateContent();
         break;
       case CardUnmaskChallengeOptionType::kThreeDomainSecure:
-        // TODO(crbug.com/1521960): Add kThreeDomainSecure logic.
+        // TODO(crbug.com/41494927): Add kThreeDomainSecure logic.
       case CardUnmaskChallengeOptionType::kUnknownType:
         NOTREACHED();
         break;
@@ -228,7 +222,7 @@ CardUnmaskAuthenticationSelectionDialogControllerImpl::GetContentFooterText()
 std::u16string
 CardUnmaskAuthenticationSelectionDialogControllerImpl::GetOkButtonLabel()
     const {
-  // TODO(crbug.com/1392939): Remove this lambda once we refactor
+  // TODO(crbug.com/40247983): Remove this lambda once we refactor
   // `SetSelectedChallengeOptionId()` to `SetSelectedChallengeOptionForId()`.
   auto selected_challenge_option =
       base::ranges::find(challenge_options_, selected_challenge_option_id_,
@@ -261,6 +255,11 @@ void CardUnmaskAuthenticationSelectionDialogControllerImpl::
         const CardUnmaskChallengeOption::ChallengeOptionId&
             selected_challenge_option_id) {
   selected_challenge_option_id_ = selected_challenge_option_id;
+}
+
+base::WeakPtr<CardUnmaskAuthenticationSelectionDialogControllerImpl>
+CardUnmaskAuthenticationSelectionDialogControllerImpl::GetWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
 }
 
 }  // namespace autofill

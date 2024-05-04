@@ -141,7 +141,7 @@ class CloudPolicyInvalidator : public invalidation::InvalidationHandler,
 
   // Unregisters this handler and unsubscribes from the current topic with
   // the invalidation service.
-  // TODO(crbug.com/1056114): Topic subscriptions remain active after browser
+  // TODO(crbug.com/40676667): Topic subscriptions remain active after browser
   // restart, so explicit unsubscription here causes redundant (un)subscription
   // traffic (and potentially leaking subscriptions).
   void Unregister();
@@ -218,9 +218,6 @@ class CloudPolicyInvalidator : public invalidation::InvalidationHandler,
 
   // The highest invalidation version that was handled already.
   int64_t highest_handled_invalidation_version_;
-
-  // The most up to date invalidation.
-  std::unique_ptr<invalidation::Invalidation> invalidation_;
 
   // The maximum random delay, in ms, between receiving an invalidation and
   // fetching the new policy.

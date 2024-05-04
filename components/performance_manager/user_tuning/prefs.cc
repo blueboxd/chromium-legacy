@@ -33,6 +33,7 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
       kBatterySaverModeState,
       static_cast<int>(BatterySaverModeState::kEnabledBelowThreshold));
   registry->RegisterTimePref(kLastBatteryUseTimestamp, base::Time());
+  registry->RegisterBooleanPref(kDiscardRingTreatmentEnabled, true);
 }
 
 void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
@@ -47,7 +48,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 MemorySaverModeState GetCurrentMemorySaverModeState(PrefService* pref_service) {
   int state = pref_service->GetInteger(kMemorySaverModeState);
   if (state < static_cast<int>(MemorySaverModeState::kDisabled) ||
-      state > static_cast<int>(MemorySaverModeState::kEnabledOnTimer)) {
+      state > static_cast<int>(MemorySaverModeState::kEnabled)) {
     int disabled_state = static_cast<int>(MemorySaverModeState::kDisabled);
     pref_service->SetInteger(kMemorySaverModeState, disabled_state);
     state = disabled_state;
@@ -82,6 +83,18 @@ BatterySaverModeState GetCurrentBatterySaverModeState(
   return static_cast<BatterySaverModeState>(state);
 }
 
+bool ShouldShowDiscardRingTreatment(PrefService* pref_service) {
+#if BUILDFLAG(IS_ANDROID)
+  return false;
+#else
+  if (!base::FeatureList::IsEnabled(
+          performance_manager::features::kDiscardRingImprovements)) {
+    return true;
+  }
+  return pref_service->GetBoolean(kDiscardRingTreatmentEnabled);
+#endif
+}
+
 void MigrateMemorySaverModePref(PrefService* pref_service) {
   const PrefService::Preference* state_pref =
       pref_service->FindPreference(kMemorySaverModeState);
@@ -98,7 +111,7 @@ void MigrateMemorySaverModePref(PrefService* pref_service) {
 
   bool enabled = bool_pref->GetValue()->GetBool();
   int equivalent_int_pref =
-      enabled ? static_cast<int>(MemorySaverModeState::kEnabledOnTimer)
+      enabled ? static_cast<int>(MemorySaverModeState::kEnabled)
               : static_cast<int>(MemorySaverModeState::kDisabled);
   if (!bool_pref->IsDefaultValue()) {
     // The user has changed the old pref, but the new pref is still set to the
@@ -108,6 +121,19 @@ void MigrateMemorySaverModePref(PrefService* pref_service) {
     // Clear the old pref because it won't be used anymore.
     pref_service->ClearPref(kMemorySaverModeEnabled);
   }
+}
+
+void MigrateMultiStateMemorySaverModePref(PrefService* pref_service) {
+  const PrefService::Preference* state_pref =
+      pref_service->FindPreference(kMemorySaverModeState);
+  if (!state_pref->IsDefaultValue() &&
+      static_cast<MemorySaverModeState>(state_pref->GetValue()->GetInt()) ==
+          MemorySaverModeState::kDeprecated) {
+    pref_service->SetInteger(kMemorySaverModeState,
+                             static_cast<int>(MemorySaverModeState::kEnabled));
+  }
+
+  pref_service->ClearPref(kMemorySaverModeTimeBeforeDiscardInMinutes);
 }
 
 void MigrateTabDiscardingExceptionsPref(PrefService* pref_service) {

@@ -4,15 +4,19 @@
 
 #import "ios/chrome/browser/ui/bubble/gesture_iph/gesture_in_product_help_view.h"
 
-#import "base/i18n/rtl.h"
 #import "base/ios/block_types.h"
+#import "base/metrics/histogram_functions.h"
 #import "base/task/sequenced_task_runner.h"
 #import "base/time/time.h"
+#import "ios/chrome/browser/shared/ui/util/rtl_geometry.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/bubble/bubble_constants.h"
 #import "ios/chrome/browser/ui/bubble/bubble_util.h"
 #import "ios/chrome/browser/ui/bubble/bubble_view.h"
 #import "ios/chrome/browser/ui/bubble/gesture_iph/gesture_in_product_help_constants.h"
+#import "ios/chrome/browser/ui/bubble/gesture_iph/gesture_in_product_help_gesture_recognizer.h"
+#import "ios/chrome/browser/ui/bubble/gesture_iph/gesture_in_product_help_view+subclassing.h"
+#import "ios/chrome/browser/ui/bubble/gesture_iph/gesture_in_product_help_view_delegate.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
 #import "ios/chrome/common/ui/util/image_util.h"
@@ -30,9 +34,6 @@ const CGFloat kInitialBubbleDistanceToEdgeSpacingVertical = 16.0f;
 // The distance that the bubble should move during the animation.
 const CGFloat kBubbleDistanceAnimated = 40.0f;
 
-// The radius of the gesture indicator when it's animating the user's finger
-// movement.
-const CGFloat kGestureIndicatorRadius = 33.0f;
 // The radius of the gesture indicator when the animation starts fading in and
 // ends fading out.
 const CGFloat kFadingGestureIndicatorRadius = 46.0f;
@@ -45,6 +46,9 @@ const CGFloat
 const CGFloat kGestureIndicatorDistanceAnimatedDefault = 140.0f;
 const CGFloat kGestureIndicatorDistanceAnimatedVerticalSwipeInCompactHeight =
     80.0f;
+// The distance between the gesture indicator and the edge for horizontal side
+// swipe gestures within compact widths.
+const CGFloat kSideSwipeGestureIndicatorDistance = 22.0f;
 
 // The distance between the dismiss button and the bottom edge (or the top edge,
 // when the bubble points down.)
@@ -63,13 +67,10 @@ const base::TimeDelta kStartShrinkingGestureIndicator =
 // before captureing a snapshot to create a blurred background.
 const base::TimeDelta kBlurSuperviewWaitTime = base::Milliseconds(400);
 
-// Time taken for the bubble to fade for bidirectional swipes.
-const base::TimeDelta kBubbleDisappearDuration = base::Milliseconds(250);
-
 // Whether bubble with arrow direction `direction` is pointing left.
 BOOL IsArrowPointingLeft(BubbleArrowDirection direction) {
-  return direction == (base::i18n::IsRTL() ? BubbleArrowDirectionTrailing
-                                           : BubbleArrowDirectionLeading);
+  return direction == (UseRTLLayout() ? BubbleArrowDirectionTrailing
+                                      : BubbleArrowDirectionLeading);
 }
 
 // Whether the gesture indicator should offset from the center. The gesture
@@ -84,16 +85,36 @@ BOOL ShouldGestureIndicatorOffsetFromCenter(
 }
 
 // Returns the opposite direction of `direction`.
-BubbleArrowDirection GetOppositeDirection(BubbleArrowDirection direction) {
+UISwipeGestureRecognizerDirection GetOppositeDirection(
+    UISwipeGestureRecognizerDirection direction) {
   switch (direction) {
-    case BubbleArrowDirectionUp:
+    case UISwipeGestureRecognizerDirectionUp:
+      return UISwipeGestureRecognizerDirectionDown;
+    case UISwipeGestureRecognizerDirectionDown:
+      return UISwipeGestureRecognizerDirectionUp;
+    case UISwipeGestureRecognizerDirectionLeft:
+      return UISwipeGestureRecognizerDirectionRight;
+    case UISwipeGestureRecognizerDirectionRight:
+    default:
+      return UISwipeGestureRecognizerDirectionLeft;
+  }
+}
+
+// Returns the expected bubble arrow direction for `swipe_direction`.
+BubbleArrowDirection GetExpectedBubbleArrowDirectionForSwipeDirection(
+    UISwipeGestureRecognizerDirection swipe_direction) {
+  switch (swipe_direction) {
+    case UISwipeGestureRecognizerDirectionUp:
       return BubbleArrowDirectionDown;
-    case BubbleArrowDirectionDown:
+    case UISwipeGestureRecognizerDirectionDown:
       return BubbleArrowDirectionUp;
-    case BubbleArrowDirectionLeading:
-      return BubbleArrowDirectionTrailing;
-    case BubbleArrowDirectionTrailing:
-      return BubbleArrowDirectionLeading;
+    case UISwipeGestureRecognizerDirectionLeft:
+      return UseRTLLayout() ? BubbleArrowDirectionLeading
+                            : BubbleArrowDirectionTrailing;
+    case UISwipeGestureRecognizerDirectionRight:
+    default:
+      return UseRTLLayout() ? BubbleArrowDirectionTrailing
+                            : BubbleArrowDirectionLeading;
   }
 }
 
@@ -165,6 +186,7 @@ UIView* CreateInitialGestureIndicator() {
   gesture_indicator.layer.cornerRadius = kFadingGestureIndicatorRadius;
   gesture_indicator.backgroundColor = UIColor.whiteColor;
   gesture_indicator.alpha = 0;
+  gesture_indicator.userInteractionEnabled = NO;
   // Shadow.
   gesture_indicator.layer.shadowColor = UIColor.blackColor.CGColor;
   gesture_indicator.layer.shadowOffset = CGSizeMake(0, 4);
@@ -203,16 +225,19 @@ UIButton* CreateDismissButton(UIAction* primaryAction) {
 }  // namespace
 
 @implementation GestureInProductHelpView {
+  // Subclass Properties.
+  BubbleView* _bubbleView;
+  UIView* _gestureIndicator;
+  UIButton* _dismissButton;
+
   // Bubble text.
   NSString* _text;
-  // Bubble view.
-  BubbleView* _bubbleView;
-  // Ellipsis that instructs the user's finger movement.
-  UIView* _gestureIndicator;
-  // Button at the bottom that dismisses the IPH.
-  UIButton* _dismissButton;
   // Gaussian blurred super view that creates a blur-filter effect.
-  UIImageView* _blurredSuperview;
+  UIView* _blurredSuperview;
+  // Gesture recognizer of the view.
+  GestureInProductHelpGestureRecognizer* _gestureRecognizer;
+  // Currently displaying or animating direction of the gesture indicator.
+  UISwipeGestureRecognizerDirection _animatingDirection;
 
   // Constraints for the gesture indicator defining its size, margin to the
   // bubble view, and its center alignment. Saved as ivar to be updated during
@@ -241,26 +266,28 @@ UIButton* CreateDismissButton(UIAction* primaryAction) {
   // If `YES`, a static view, instead of an animation, would be displayed and
   // auto-dismissed on timeout.
   BOOL _reduceMotion;
+
+  // If `YES`, the in-product help view is either currently being dismissed or
+  // has already been removed from superview.
+  BOOL _dismissed;
 }
 
 - (instancetype)initWithText:(NSString*)text
           bubbleBoundingSize:(CGSize)bubbleBoundingSize
-              arrowDirection:(BubbleArrowDirection)direction
+              swipeDirection:(UISwipeGestureRecognizerDirection)direction
        voiceOverAnnouncement:(NSString*)voiceOverAnnouncement {
   if (self = [super initWithFrame:CGRectZero]) {
     _text = UIAccessibilityIsVoiceOverRunning() && voiceOverAnnouncement
                 ? voiceOverAnnouncement
                 : text;
+    _animatingDirection = direction;
     _needsRepositionBubbleAndGestureIndicator = NO;
     _blurringSuperview = NO;
     _currentAnimationRepeatCount = 0;
-    _dismissCallback = ^(IPHDismissalReasonType reason,
-                         feature_engagement::Tracker::SnoozeAction action) {
-    };
     _animationRepeatCount = 3;
-    _bidirectional = NO;
     _reduceMotion = UIAccessibilityIsReduceMotionEnabled() ||
                     UIAccessibilityIsVoiceOverRunning();
+    _dismissed = NO;
 
     // Background view.
     UIView* backgroundView = [[UIView alloc] initWithFrame:CGRectZero];
@@ -274,7 +301,9 @@ UIButton* CreateDismissButton(UIAction* primaryAction) {
 
     // Bubble view. This has to be positioned according to the initial view's
     // size.
-    [self setInitialBubbleViewWithDirection:direction
+    [self setInitialBubbleViewWithDirection:
+              GetExpectedBubbleArrowDirectionForSwipeDirection(
+                  _animatingDirection)
                                boundingSize:bubbleBoundingSize];
 
     // Gesture indicator ellipsis.
@@ -302,20 +331,27 @@ UIButton* CreateDismissButton(UIAction* primaryAction) {
       [self addSubview:_dismissButton];
       [NSLayoutConstraint activateConstraints:[self dismissButtonConstraints]];
     }
+
+    _gestureRecognizer = [[GestureInProductHelpGestureRecognizer alloc]
+        initWithExpectedSwipeDirection:_animatingDirection
+                                target:self
+                                action:@selector
+                                (handleInstructedSwipeGesture:)];
+    [self addGestureRecognizer:_gestureRecognizer];
+
     self.alpha = 0;
     self.isAccessibilityElement = YES;
     self.accessibilityViewIsModal = YES;
-    self.clipsToBounds = YES;
   }
   return self;
 }
 
 - (instancetype)initWithText:(NSString*)text
           bubbleBoundingSize:(CGSize)bubbleBoundingSize
-              arrowDirection:(BubbleArrowDirection)direction {
+              swipeDirection:(UISwipeGestureRecognizerDirection)direction {
   return [self initWithText:text
          bubbleBoundingSize:bubbleBoundingSize
-             arrowDirection:direction
+             swipeDirection:direction
       voiceOverAnnouncement:nil];
 }
 
@@ -340,7 +376,7 @@ UIButton* CreateDismissButton(UIAction* primaryAction) {
   if (_reduceMotion) {
     return CGSizeMake(min_width, min_height);
   }
-  switch (_bubbleView.direction) {
+  switch (_animatingDirection) {
     case BubbleArrowDirectionUp:
     case BubbleArrowDirectionDown:
       min_height += kInitialBubbleDistanceToEdgeSpacingVertical +
@@ -388,9 +424,10 @@ UIButton* CreateDismissButton(UIAction* primaryAction) {
     [_animator startAnimation];
   }
 
-  if (self.superview && _blurredSuperview && !_blurringSuperview &&
+  UIView* blurredBackgroundImageView = _blurredSuperview.subviews.firstObject;
+  if (self.superview && blurredBackgroundImageView && !_blurringSuperview &&
       !CGSizeEqualToSize(self.superview.bounds.size,
-                         _blurredSuperview.bounds.size)) {
+                         blurredBackgroundImageView.bounds.size)) {
     _blurringSuperview = YES;
     [_blurredSuperview removeFromSuperview];
     _blurredSuperview = nil;
@@ -402,6 +439,24 @@ UIButton* CreateDismissButton(UIAction* primaryAction) {
         }),
         kBlurSuperviewWaitTime);
   }
+}
+
+#pragma mark - Public Properties
+
+- (BOOL)bidirectional {
+  return _gestureRecognizer.bidirectional;
+}
+
+- (void)setBidirectional:(BOOL)bidirectional {
+  _gestureRecognizer.bidirectional = bidirectional;
+}
+
+- (BOOL)isEdgeSwipe {
+  return [_gestureRecognizer isEdgeSwipe];
+}
+
+- (void)setEdgeSwipe:(BOOL)edgeSwipe {
+  _gestureRecognizer.edgeSwipe = edgeSwipe;
 }
 
 #pragma mark - Public
@@ -446,7 +501,7 @@ UIButton* CreateDismissButton(UIAction* primaryAction) {
   // Total and relative time for each cycle of keyframe animation.
   base::TimeDelta keyframeAnimationDurationPerCycle = kAnimationDuration;
   if (self.bidirectional) {
-    keyframeAnimationDurationPerCycle -= kBubbleDisappearDuration;
+    keyframeAnimationDurationPerCycle -= kDurationBetweenBidirectionalCycles;
   }
   double gestureIndicatorSizeChangeDuration =
       kGestureIndicatorShrinkOrExpandTime / keyframeAnimationDurationPerCycle;
@@ -529,128 +584,15 @@ UIButton* CreateDismissButton(UIAction* primaryAction) {
 }
 
 - (void)dismissWithReason:(IPHDismissalReasonType)reason {
-  if (!self.superview) {
-    return;
-  }
-  self.dismissCallback(reason,
-                       feature_engagement::Tracker::SnoozeAction::DISMISSED);
-  // Avoid multiple taps when fading.
-  self.dismissCallback = ^(IPHDismissalReasonType type,
-                           feature_engagement::Tracker::SnoozeAction action) {
-  };
-  GestureInProductHelpView* weakSelf = self;
-  [UIView
-      animateWithDuration:kGestureInProductHelpViewAppearDuration.InSecondsF()
-      animations:^{
-        weakSelf.alpha = 0;
-      }
-      completion:^(BOOL finished) {
-        [weakSelf removeFromSuperview];
-      }];
+  [self dismissWithReason:reason completionHandler:nil];
 }
 
 #pragma mark - Private
-
-// Update the bottom-most subview to be a Gaussian blurred version of the
-// superview to make the in-product help act as a blur-filter as well. If the
-// superview is already blurred, this method does nothing.
-- (void)blurrifySuperview {
-  if (!self.superview || _blurredSuperview) {
-    _blurringSuperview = NO;
-    return;
-  }
-  // Using frame based layout so we can compare its frame with the superview's
-  // frame to detect whether a redraw is needed.
-  UIView* superview = self.superview;
-  // Hide view to capture snapshot without IPH view elements.
-  self.hidden = YES;
-  UIImage* backgroundImage = CaptureViewWithOption(
-      superview, 1.0f, CaptureViewOption::kClientSideRendering);
-  self.hidden = NO;
-  UIImage* blurredBackgroundImage =
-      BlurredImageWithImage(backgroundImage, kBlurRadius);
-  _blurredSuperview =
-      [[UIImageView alloc] initWithImage:blurredBackgroundImage];
-  _blurredSuperview.contentMode = UIViewContentModeScaleAspectFill;
-  [self insertSubview:_blurredSuperview atIndex:0];
-  _blurredSuperview.frame = [self convertRect:superview.bounds
-                                     fromView:superview];
-  _blurringSuperview = NO;
-}
-
-// Handles the completion of each round of animation.
-- (void)onAnimationCycleComplete {
-  if (!self.superview) {
-    return;
-  }
-  _currentAnimationRepeatCount++;
-  if (_currentAnimationRepeatCount == self.animationRepeatCount) {
-    [self dismissWithReason:IPHDismissalReasonType::kTimedOut];
-  } else {
-    if (self.bidirectional) {
-      BubbleView* previousBubbleView = _bubbleView;
-      __weak GestureInProductHelpView* weakSelf = self;
-      [UIView animateWithDuration:kBubbleDisappearDuration.InSecondsF()
-          animations:^{
-            previousBubbleView.alpha = 0;
-          }
-          completion:^(BOOL completed) {
-            [previousBubbleView removeFromSuperview];
-            [weakSelf setInitialBubbleViewWithDirection:GetOppositeDirection(
-                                                            previousBubbleView
-                                                                .direction)
-                                           boundingSize:weakSelf.frame.size];
-            [weakSelf startAnimation];
-          }];
-    } else {
-      [self startAnimation];
-    }
-  }
-}
 
 // Action handler that executes when voiceover announcement ends.
 - (void)handleUIAccessibilityAnnouncementDidFinishNotification:
     (NSNotification*)notification {
   [self dismissWithReason:IPHDismissalReasonType::kVoiceOverAnnouncementEnded];
-}
-
-#pragma mark - Initial positioning helpers
-
-// Initial bubble setup and positioning.
-- (void)setInitialBubbleViewWithDirection:(BubbleArrowDirection)direction
-                             boundingSize:(CGSize)boundingSize {
-  _bubbleView = [[BubbleView alloc] initWithText:_text
-                                  arrowDirection:direction
-                                       alignment:BubbleAlignmentCenter];
-  _bubbleView.frame = GetInitialBubbleFrameForView(boundingSize, _bubbleView);
-  _bubbleView.accessibilityIdentifier = kGestureInProductHelpViewBubbleAXId;
-  [self addSubview:_bubbleView];
-  [_bubbleView setArrowHidden:!_reduceMotion animated:NO];
-}
-
-// Initial distance between the bubble and the center of the gesture indicator
-// ellipsis.
-- (CGFloat)initialGestureIndicatorToBubbleSpacing {
-  BOOL verticalSwipeInCompactHeight =
-      self.traitCollection.verticalSizeClass ==
-          UIUserInterfaceSizeClassCompact &&
-      (_bubbleView.direction == BubbleArrowDirectionUp ||
-       _bubbleView.direction == BubbleArrowDirectionDown);
-  return verticalSwipeInCompactHeight
-             ? kInitialGestureIndicatorToBubbleSpacingVerticalSwipeInCompactHeight
-             : kInitialGestureIndicatorToBubbleSpacingDefault;
-}
-
-// Animated distance of the gesture indicator.
-- (CGFloat)gestureIndicatorAnimatedDistance {
-  BOOL verticalSwipeInCompactHeight =
-      self.traitCollection.verticalSizeClass ==
-          UIUserInterfaceSizeClassCompact &&
-      (_bubbleView.direction == BubbleArrowDirectionUp ||
-       _bubbleView.direction == BubbleArrowDirectionDown);
-  return verticalSwipeInCompactHeight
-             ? kGestureIndicatorDistanceAnimatedVerticalSwipeInCompactHeight
-             : kGestureIndicatorDistanceAnimatedDefault;
 }
 
 // If the bubble view is fully visible in safe area, do nothing; otherwise, move
@@ -705,27 +647,163 @@ UIButton* CreateDismissButton(UIAction* primaryAction) {
   [self.superview layoutIfNeeded];
 }
 
-// Returns the desired value of `_gestureIndicatorMarginConstraint`.
-//
-// NOTE: Despite that the returning object defines the distance between the
-// gesture indicator to the bubble, it anchors on the view's nearest edge
-// instead of the bubble's, so that the gesture indicator's movement during the
-// animation would NOT be influenced by the bubble's movement.
+// Update the bottom-most subview to be a Gaussian blurred version of the
+// superview to make the in-product help act as a blur-filter as well. If the
+// superview is already blurred, this method does nothing.
+- (void)blurrifySuperview {
+  if (!self.superview || _blurredSuperview) {
+    _blurringSuperview = NO;
+    return;
+  }
+  // Using frame based layout so we can compare its frame with the superview's
+  // frame to detect whether a redraw is needed.
+  UIView* superview = self.superview;
+  // Hide view to capture snapshot without IPH view elements.
+  self.hidden = YES;
+  UIImage* backgroundImage = CaptureViewWithOption(
+      superview, 1.0f, CaptureViewOption::kClientSideRendering);
+  self.hidden = NO;
+  UIImage* blurredBackgroundImage =
+      BlurredImageWithImage(backgroundImage, kBlurRadius);
+  UIImageView* blurredBackgroundImageView =
+      [[UIImageView alloc] initWithImage:blurredBackgroundImage];
+  blurredBackgroundImageView.contentMode = UIViewContentModeScaleAspectFill;
+
+  // Create wrapper view to clip the blurred image to the edge of the superview.
+  _blurredSuperview = [[UIView alloc] initWithFrame:CGRectZero];
+  _blurredSuperview.translatesAutoresizingMaskIntoConstraints = NO;
+  _blurredSuperview.clipsToBounds = YES;
+  [_blurredSuperview addSubview:blurredBackgroundImageView];
+  blurredBackgroundImageView.frame =
+      [_blurredSuperview convertRect:superview.bounds fromView:superview];
+
+  [self insertSubview:_blurredSuperview atIndex:0];
+  AddSameConstraints(_blurredSuperview, self);
+  _blurringSuperview = NO;
+}
+
+// Handles the completion of each round of animation.
+- (void)onAnimationCycleComplete {
+  if (!self.superview) {
+    return;
+  }
+  _currentAnimationRepeatCount++;
+  if (_currentAnimationRepeatCount == self.animationRepeatCount) {
+    [self dismissWithReason:IPHDismissalReasonType::kTimedOut];
+    return;
+  }
+  if (!self.bidirectional) {
+    [self startAnimation];
+    return;
+  }
+  // Handle direction change.
+  _animatingDirection = GetOppositeDirection(_animatingDirection);
+  [self handleDirectionChangeToOppositeDirection];
+}
+
+// Helper of "dismissWithReason:" that comes with an optional completion
+// handler.
+- (void)dismissWithReason:(IPHDismissalReasonType)reason
+        completionHandler:(ProceduralBlock)completionHandler {
+  if (!self.superview || _dismissed) {
+    return;
+  }
+  _dismissed = YES;
+  GestureInProductHelpView* weakSelf = self;
+  [UIView
+      animateWithDuration:kGestureInProductHelpViewAppearDuration.InSecondsF()
+      animations:^{
+        weakSelf.alpha = 0;
+      }
+      completion:^(BOOL finished) {
+        GestureInProductHelpView* strongSelf = weakSelf;
+        if (!strongSelf) {
+          return;
+        }
+        [strongSelf removeFromSuperview];
+        base::UmaHistogramEnumeration(kUMAGesturalIPHDismissalReason, reason);
+        [strongSelf.delegate gestureInProductHelpView:strongSelf
+                                 didDismissWithReason:reason];
+        if (completionHandler) {
+          completionHandler();
+        }
+      }];
+}
+
+@end
+
+@implementation GestureInProductHelpView (Subclassing)
+
+#pragma mark - Subclass Properties
+
+- (BubbleView*)bubbleView {
+  return _bubbleView;
+}
+
+- (UIView*)gestureIndicator {
+  return _gestureIndicator;
+}
+
+- (UIButton*)dismissButton {
+  return _dismissButton;
+}
+
+- (UISwipeGestureRecognizerDirection)animatingDirection {
+  return _animatingDirection;
+}
+
+#pragma mark - Positioning
+
+- (void)setInitialBubbleViewWithDirection:(BubbleArrowDirection)direction
+                             boundingSize:(CGSize)boundingSize {
+  _bubbleView = [[BubbleView alloc] initWithText:_text
+                                  arrowDirection:direction
+                                       alignment:BubbleAlignmentCenter];
+  _bubbleView.frame = GetInitialBubbleFrameForView(boundingSize, _bubbleView);
+  _bubbleView.accessibilityIdentifier = kGestureInProductHelpViewBubbleAXId;
+  [self addSubview:_bubbleView];
+  [_bubbleView setArrowHidden:!_reduceMotion animated:NO];
+}
+
+- (CGFloat)initialGestureIndicatorToBubbleSpacing {
+  BOOL verticalSwipeInCompactHeight =
+      self.traitCollection.verticalSizeClass ==
+          UIUserInterfaceSizeClassCompact &&
+      (_animatingDirection == UISwipeGestureRecognizerDirectionUp ||
+       _animatingDirection == UISwipeGestureRecognizerDirectionDown);
+  return verticalSwipeInCompactHeight
+             ? kInitialGestureIndicatorToBubbleSpacingVerticalSwipeInCompactHeight
+             : kInitialGestureIndicatorToBubbleSpacingDefault;
+}
+
+- (CGFloat)gestureIndicatorAnimatedDistance {
+  BOOL verticalSwipeInCompactHeight =
+      self.traitCollection.verticalSizeClass ==
+          UIUserInterfaceSizeClassCompact &&
+      (_animatingDirection == UISwipeGestureRecognizerDirectionUp ||
+       _animatingDirection == UISwipeGestureRecognizerDirectionDown);
+  if (verticalSwipeInCompactHeight) {
+    CGFloat swipeDistance =
+        kGestureIndicatorDistanceAnimatedVerticalSwipeInCompactHeight;
+    if ([self isEdgeSwipe]) {
+      CGFloat bubbleWidth = CGRectGetWidth(_bubbleView.bounds);
+      swipeDistance += bubbleWidth / 2 - kSideSwipeGestureIndicatorDistance;
+    }
+    return swipeDistance;
+  }
+  return kGestureIndicatorDistanceAnimatedDefault;
+}
+
 - (NSLayoutConstraint*)initialGestureIndicatorMarginConstraint {
-  CGSize bubbleSize = _bubbleView.frame.size;
+  // NOTE: Despite that the returning object defines the distance between the
+  // gesture indicator to the bubble, it anchors on the view's nearest edge
+  // instead of the bubble's, so that the gesture indicator's movement during
+  // the animation would NOT be influenced by the bubble's movement.
+  CGSize bubbleSize = _bubbleView.bounds.size;
   CGFloat gestureIndicatorToBubbleSpacing =
       [self initialGestureIndicatorToBubbleSpacing];
-  switch (_bubbleView.direction) {
-    case BubbleArrowDirectionUp: {
-      // Gesture indicator should be `kInitialGestureIndicatorToBubbleSpacing`
-      // away from the bubble's bottom edge.
-      CGFloat margin = kInitialBubbleDistanceToEdgeSpacingVertical +
-                       bubbleSize.height + gestureIndicatorToBubbleSpacing;
-      return [_gestureIndicator.centerYAnchor
-          constraintEqualToAnchor:self.safeAreaLayoutGuide.topAnchor
-                         constant:margin];
-    }
-    case BubbleArrowDirectionDown: {
+  switch (_animatingDirection) {
+    case UISwipeGestureRecognizerDirectionUp: {
       // Gesture indicator should be `kInitialGestureIndicatorToBubbleSpacing`
       // away from the bubble's top edge.
       CGFloat margin = kInitialBubbleDistanceToEdgeSpacingVertical +
@@ -734,48 +812,58 @@ UIButton* CreateDismissButton(UIAction* primaryAction) {
           constraintEqualToAnchor:self.safeAreaLayoutGuide.bottomAnchor
                          constant:-margin];
     }
-    case BubbleArrowDirectionLeading: {
-      CGFloat margin;
-      if (ShouldGestureIndicatorOffsetFromCenter(self.traitCollection)) {
-        // Gesture indicator should be center-aligned with the bubble.
-        margin = bubbleSize.width / 2;
-      } else {
-        // Gesture indicator should be `kInitialGestureIndicatorToBubbleSpacing`
-        // away from the bubble's trailing edge.
-        margin = bubbleSize.width + gestureIndicatorToBubbleSpacing;
-      }
-      return [_gestureIndicator.centerXAnchor
-          constraintEqualToAnchor:self.safeAreaLayoutGuide.leadingAnchor
+    case UISwipeGestureRecognizerDirectionDown: {
+      // Gesture indicator should be `kInitialGestureIndicatorToBubbleSpacing`
+      // away from the bubble's bottom edge.
+      CGFloat margin = kInitialBubbleDistanceToEdgeSpacingVertical +
+                       bubbleSize.height + gestureIndicatorToBubbleSpacing;
+      return [_gestureIndicator.centerYAnchor
+          constraintEqualToAnchor:self.safeAreaLayoutGuide.topAnchor
                          constant:margin];
     }
-    case BubbleArrowDirectionTrailing: {
+    case UISwipeGestureRecognizerDirectionLeft:
+    case UISwipeGestureRecognizerDirectionRight:
+    default: {
       CGFloat margin;
+      NSLayoutAnchor* anchorForMargin;
       if (ShouldGestureIndicatorOffsetFromCenter(self.traitCollection)) {
-        // Gesture indicator should be center-aligned with the bubble.
-        margin = bubbleSize.width / 2;
+        // If the user should swipe from the edge, the gesture indicator should
+        // start from the edge of the view; otherwise, it should be
+        // center-aligned with the bubble.
+        margin = [self isEdgeSwipe] ? kSideSwipeGestureIndicatorDistance
+                                    : bubbleSize.width / 2;
       } else {
         // Gesture indicator should be `gestureIndicatorToBubbleSpacing`
-        // away from the bubble's leading edge.
+        // away from the bubble's leading/trailing edge.
         margin = bubbleSize.width + gestureIndicatorToBubbleSpacing;
       }
+      BOOL isSwipingLeadingDirection =
+          _animatingDirection == (UseRTLLayout()
+                                      ? UISwipeGestureRecognizerDirectionRight
+                                      : UISwipeGestureRecognizerDirectionLeft);
+      if (isSwipingLeadingDirection) {
+        margin = -margin;
+        anchorForMargin = self.safeAreaLayoutGuide.trailingAnchor;
+      } else {
+        anchorForMargin = self.safeAreaLayoutGuide.leadingAnchor;
+      }
       return [_gestureIndicator.centerXAnchor
-          constraintEqualToAnchor:self.safeAreaLayoutGuide.trailingAnchor
-                         constant:-margin];
+          constraintEqualToAnchor:anchorForMargin
+                         constant:margin];
     }
   }
 }
 
-// Returns the desired value of `_gestureIndicatorCenterConstraints`.
 - (NSLayoutConstraint*)initialGestureIndicatorCenterConstraint {
   NSLayoutConstraint* gestureIndicatorCenterConstraint;
-  switch (_bubbleView.direction) {
-    case BubbleArrowDirectionUp:
-    case BubbleArrowDirectionDown:
+  switch (_animatingDirection) {
+    case UISwipeGestureRecognizerDirectionUp:
+    case UISwipeGestureRecognizerDirectionDown:
       gestureIndicatorCenterConstraint = [_gestureIndicator.centerXAnchor
           constraintEqualToAnchor:self.centerXAnchor];
       break;
-    case BubbleArrowDirectionLeading:
-    case BubbleArrowDirectionTrailing:
+    case UISwipeGestureRecognizerDirectionLeft:
+    case UISwipeGestureRecognizerDirectionRight:
       CGFloat offset = [self initialGestureIndicatorToBubbleSpacing] +
                        _bubbleView.frame.size.height / 2;
       gestureIndicatorCenterConstraint = [_gestureIndicator.centerYAnchor
@@ -789,12 +877,11 @@ UIButton* CreateDismissButton(UIAction* primaryAction) {
   return gestureIndicatorCenterConstraint;
 }
 
-// Returns the desired value of `_dismissButtonConstraints`.
 - (NSArray<NSLayoutConstraint*>*)dismissButtonConstraints {
   NSLayoutConstraint* centerConstraint =
       [_dismissButton.centerXAnchor constraintEqualToAnchor:self.centerXAnchor];
   NSLayoutConstraint* marginConstraint =
-      _bubbleView.direction == BubbleArrowDirectionDown
+      _animatingDirection == UISwipeGestureRecognizerDirectionUp
           ? [_dismissButton.topAnchor
                 constraintEqualToAnchor:self.topAnchor
                                constant:kDismissButtonMargin]
@@ -804,12 +891,8 @@ UIButton* CreateDismissButton(UIAction* primaryAction) {
   return @[ centerConstraint, marginConstraint ];
 }
 
-#pragma mark - Animation Helpers
+#pragma mark - Animation Keyframe
 
-// Animation block that resizes the gesture indicator and update transparency.
-// If `visible`, the gesture indicator will shrink from a large size and ends
-// with the correct size and correct visiblity; otherwise, it will enlarge and
-// fade into background.
 - (void)animateGestureIndicatorForVisibility:(BOOL)visible {
   const CGFloat radius =
       visible ? kGestureIndicatorRadius : kFadingGestureIndicatorRadius;
@@ -826,48 +909,87 @@ UIButton* CreateDismissButton(UIAction* primaryAction) {
   [self layoutIfNeeded];
 }
 
-// Animate the "swipe" movement of the gesture indicator in accordance to the
-// direction.
 - (void)animateGestureIndicatorSwipe {
-  BubbleArrowDirection direction = _bubbleView.direction;
+  BOOL animatingAwayFromOrigin =
+      _animatingDirection == UISwipeGestureRecognizerDirectionDown ||
+      (_animatingDirection == UISwipeGestureRecognizerDirectionLeft &&
+       UseRTLLayout()) ||
+      (_animatingDirection == UISwipeGestureRecognizerDirectionRight &&
+       !UseRTLLayout());
   CGFloat gestureIndicatorAnimatedDistance =
       [self gestureIndicatorAnimatedDistance];
-  CGFloat animateDistance = (direction == BubbleArrowDirectionUp ||
-                             direction == BubbleArrowDirectionLeading)
-                                ? gestureIndicatorAnimatedDistance
-                                : -gestureIndicatorAnimatedDistance;
-  _gestureIndicatorMarginConstraint.constant += animateDistance;
+  _gestureIndicatorMarginConstraint.constant +=
+      animatingAwayFromOrigin ? gestureIndicatorAnimatedDistance
+                              : -gestureIndicatorAnimatedDistance;
   [self layoutIfNeeded];
 }
 
-// If `reverse` is `NO`, animate the "swipe" movement of the bubble view in
-// accordance to the direction; otherwise, swipe it in the reverse direction.
-// Note that swiping in reverse direction hides the bubble arrow.
 - (void)animateBubbleSwipeInReverseDrection:(BOOL)reverse {
-  BubbleArrowDirection direction = _bubbleView.direction;
+  UISwipeGestureRecognizerDirection direction = _animatingDirection;
   if (reverse) {
     direction = GetOppositeDirection(direction);
   }
   CGRect newFrame = _bubbleView.frame;
   switch (direction) {
-    case BubbleArrowDirectionUp:
-      newFrame.origin.y += kBubbleDistanceAnimated;
-      break;
-    case BubbleArrowDirectionDown:
+    case UISwipeGestureRecognizerDirectionUp:
       newFrame.origin.y -= kBubbleDistanceAnimated;
       break;
-    case BubbleArrowDirectionLeading:
-    case BubbleArrowDirectionTrailing:
-      if (IsArrowPointingLeft(direction)) {
-        newFrame.origin.x += kBubbleDistanceAnimated;
-      } else {
-        newFrame.origin.x -= kBubbleDistanceAnimated;
-      }
+    case UISwipeGestureRecognizerDirectionDown:
+      newFrame.origin.y += kBubbleDistanceAnimated;
+      break;
+    case UISwipeGestureRecognizerDirectionLeft:
+      newFrame.origin.x -= kBubbleDistanceAnimated;
+      break;
+    case UISwipeGestureRecognizerDirectionRight:
+      newFrame.origin.x += kBubbleDistanceAnimated;
       break;
   }
   _bubbleView.frame = newFrame;
   [_bubbleView setArrowHidden:reverse animated:YES];
   [self layoutIfNeeded];
+}
+
+#pragma mark - Event handler
+
+- (void)handleInstructedSwipeGesture:
+    (GestureInProductHelpGestureRecognizer*)gesture {
+  __weak GestureInProductHelpView* weakSelf = self;
+  // Triggers an animation that resembles a user-initiated swipe on the views
+  // beneath the IPH. For one directional IPH, the swipe direction should be
+  // opposite to the arrow direction. Also dismisses the IPH with the reason
+  // `kSwipedAsInstructedByGestureIPH`.
+  [self
+      dismissWithReason:IPHDismissalReasonType::kSwipedAsInstructedByGestureIPH
+      completionHandler:^{
+        [weakSelf.delegate
+                gestureInProductHelpView:weakSelf
+            shouldHandleSwipeInDirection:gesture.actualSwipeDirection];
+      }];
+}
+
+- (void)handleDirectionChangeToOppositeDirection {
+  BubbleView* previousBubbleView = _bubbleView;
+  __weak GestureInProductHelpView* weakSelf = self;
+  [UIView animateWithDuration:kDurationBetweenBidirectionalCycles.InSecondsF()
+      animations:^{
+        previousBubbleView.alpha = 0;
+      }
+      completion:^(BOOL completed) {
+        [previousBubbleView removeFromSuperview];
+        if (completed) {
+          [weakSelf setInitialBubbleViewWithDirection:
+                        GetExpectedBubbleArrowDirectionForSwipeDirection(
+                            weakSelf.animatingDirection)
+                                         boundingSize:weakSelf.frame.size];
+          [weakSelf startAnimation];
+        } else {
+          // This will be most likely caused by that the view has been
+          // dismissed during animation, but in case it's not, dismiss the
+          // view. If the view has already been dismissed, this call does
+          // nothing.
+          [weakSelf dismissWithReason:IPHDismissalReasonType::kUnknown];
+        }
+      }];
 }
 
 @end

@@ -31,7 +31,6 @@
 #import "ios/chrome/browser/signin/model/authentication_service.h"
 #import "ios/chrome/browser/signin/model/chrome_account_manager_service.h"
 #import "ios/chrome/browser/signin/model/chrome_account_manager_service_observer_bridge.h"
-#import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_return_to_recent_tab_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_mediator.h"
 #import "ios/chrome/browser/ui/content_suggestions/user_account_image_update_delegate.h"
 #import "ios/chrome/browser/ui/ntp/feed_control_delegate.h"
@@ -220,7 +219,7 @@ const char kFeedLearnMoreURL[] = "https://support.google.com/chrome/"
 }
 
 - (void)handleNavigateToFollowedURL:(const GURL&)url {
-  // TODO(crbug.com/1331102): Add metrics.
+  // TODO(crbug.com/40227407): Add metrics.
   [self openMenuItemWebPage:url];
 }
 
@@ -291,7 +290,7 @@ const char kFeedLearnMoreURL[] = "https://support.google.com/chrome/"
 // Opens web page for a menu item in the NTP.
 - (void)openMenuItemWebPage:(GURL)URL {
   _URLLoader->Load(UrlLoadParams::InCurrentTab(URL));
-  // TODO(crbug.com/1085419): Add metrics.
+  // TODO(crbug.com/40693626): Add metrics.
 }
 
 // Returns an updated value for feedHeaderVisible.

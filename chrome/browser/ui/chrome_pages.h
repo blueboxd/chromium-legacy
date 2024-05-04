@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <string>
+#include <string_view>
 
 #include "base/values.h"
 #include "build/branding_buildflags.h"
@@ -37,8 +38,7 @@ namespace signin {
 enum class ConsentLevel;
 }  // namespace signin
 
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
-    BUILDFLAG(IS_FUCHSIA)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
 namespace web_app {
 enum class AppSettingsPageEntryPoint;
 }  // namespace web_app
@@ -124,10 +124,14 @@ enum FeedbackSource {
   kFeedbackSourcePriceInsights,
   kFeedbackSourceCookieControls,
   kFeedbackSourceGameDashboard,
+  kFeedbackSourceLensOverlay,
   kFeedbackSourceLogin,
   kFeedbackSourceAI,
   kFeedbackSourceFocusMode,
   kFeedbackSourceOverview,
+  kFeedbackSourceSnapGroups,
+  kFeedbackSourceBirch,
+  kFeedbackSourceBorealis,
 
   // ATTENTION: Before making any changes or adding to feedback collection,
   // please ensure the teams that operationalize feedback are aware and
@@ -209,6 +213,8 @@ void ShowSettingsSubPageInTabbedBrowser(Browser* browser,
                                         const std::string& sub_page);
 void ShowClearBrowsingDataDialog(Browser* browser);
 void ShowPasswordManager(Browser* browser);
+void ShowPasswordDetailsPage(Browser* browser,
+                             const std::string& password_domain_name);
 void ShowPasswordCheck(Browser* browser);
 void ShowSafeBrowsingEnhancedProtection(Browser* browser);
 void ShowSafeBrowsingEnhancedProtectionWithIph(
@@ -217,7 +223,7 @@ void ShowSafeBrowsingEnhancedProtectionWithIph(
 void ShowImportDialog(Browser* browser);
 void ShowAboutChrome(Browser* browser);
 void ShowSearchEngineSettings(Browser* browser);
-void ShowWebStore(Browser* browser, const base::StringPiece& utm_source_value);
+void ShowWebStore(Browser* browser, std::string_view utm_source_value);
 void ShowPrivacySandboxSettings(Browser* browser);
 void ShowPrivacySandboxAdMeasurementSettings(Browser* browser);
 void ShowAddresses(Browser* browser);
@@ -230,9 +236,6 @@ void ShowAllSitesSettingsFilteredByFpsOwner(
 // Shows the enterprise management info page in a browser tab.
 void ShowEnterpriseManagementPageInTabbedBrowser(Browser* browser);
 
-// Constructs an OS settings GURL for the specified |sub_page|.
-GURL GetOSSettingsUrl(const std::string& sub_page);
-
 void ShowAppManagementPage(Profile* profile,
                            const std::string& app_id,
                            ash::settings::AppManagementEntryPoint entry_point);
@@ -240,6 +243,9 @@ void ShowAppManagementPage(Profile* profile,
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS)
+// Constructs an OS settings GURL for the specified `sub_page`.
+GURL GetOSSettingsUrl(const std::string& sub_page);
+
 void ShowPrintManagementApp(Profile* profile);
 
 void ShowConnectivityDiagnosticsApp(Profile* profile);
@@ -258,8 +264,7 @@ void ShowShortcutCustomizationApp(Profile* profile,
                                   const std::string& category);
 #endif
 
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
-    BUILDFLAG(IS_FUCHSIA)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
 // Show chrome://app-settings/<app-id> page.
 void ShowWebAppSettings(Browser* browser,
                         const std::string& app_id,

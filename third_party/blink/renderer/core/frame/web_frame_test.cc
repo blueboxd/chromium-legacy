@@ -67,6 +67,7 @@
 #include "third_party/blink/public/common/messaging/transferable_message.h"
 #include "third_party/blink/public/common/navigation/navigation_params.h"
 #include "third_party/blink/public/common/page/launching_process_state.h"
+#include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/common/widget/device_emulation_params.h"
 #include "third_party/blink/public/mojom/blob/blob.mojom-blink.h"
 #include "third_party/blink/public/mojom/blob/data_element.mojom-blink.h"
@@ -75,11 +76,11 @@
 #include "third_party/blink/public/mojom/frame/frame.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/viewport_intersection_state.mojom-blink.h"
+#include "third_party/blink/public/mojom/page/draggable_region.mojom-blink.h"
 #include "third_party/blink/public/mojom/page_state/page_state.mojom-blink.h"
 #include "third_party/blink/public/mojom/scroll/scrollbar_mode.mojom-blink.h"
 #include "third_party/blink/public/mojom/webpreferences/web_preferences.mojom-blink.h"
 #include "third_party/blink/public/mojom/window_features/window_features.mojom-blink.h"
-#include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/public/platform/web_cache.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/public/platform/web_url.h"
@@ -203,7 +204,9 @@
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/runtime_feature_state/runtime_feature_state_override_context.h"
 #include "third_party/blink/renderer/platform/scheduler/public/event_loop.h"
+#include "third_party/blink/renderer/platform/scheduler/public/main_thread_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
+#include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/testing/find_cc_layer.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/task_environment.h"
@@ -317,7 +320,7 @@ const cc::OverscrollBehavior kOverscrollBehaviorContain =
 const cc::OverscrollBehavior kOverscrollBehaviorNone =
     cc::OverscrollBehavior(cc::OverscrollBehavior::Type::kNone);
 
-class WebFrameTest : public testing::Test {
+class WebFrameTest : public PageTestBase {
  protected:
   WebFrameTest()
       : base_url_("http://internal.test/"),
@@ -337,8 +340,9 @@ class WebFrameTest : public testing::Test {
     // Make sure that the RendererScheduler is foregrounded to avoid getting
     // throttled.
     if (kLaunchingProcessIsBackgrounded) {
-      blink::scheduler::WebThreadScheduler::MainThreadScheduler()
-          .SetRendererBackgrounded(false);
+      ThreadScheduler::Current()
+          ->ToMainThreadScheduler()
+          ->SetRendererBackgroundedForTesting(false);
     }
   }
 
@@ -505,7 +509,6 @@ class WebFrameTest : public testing::Test {
   std::string not_base_url_;
   std::string chrome_url_;
 
-  test::TaskEnvironment task_environment_;
   ScopedTestingPlatformSupport<TestingPlatformSupport> platform_;
   url::ScopedSchemeRegistryForTests scoped_registry_;
 };
@@ -7324,6 +7327,8 @@ class TestAccessInitialDocumentLocalFrameHost
   void DidAccessInitialMainDocument() override {
     ++did_access_initial_main_document_;
   }
+  void DraggableRegionsChanged(
+      Vector<mojom::blink::DraggableRegionPtr> regions) override {}
 
   // !!!!!!!!!!!!!!!!!! IMPORTANT !!!!!!!!!!!!!!!!!!
   // If the actual counts in the tests below increase, this could be an
@@ -8122,10 +8127,13 @@ class TestDidNavigateCommitTypeWebFrameClient
   ~TestDidNavigateCommitTypeWebFrameClient() override = default;
 
   // frame_test_helpers::TestWebFrameClient:
-  void DidFinishSameDocumentNavigation(WebHistoryCommitType type,
-                                       bool is_synchronously_committed,
-                                       mojom::blink::SameDocumentNavigationType,
-                                       bool is_client_redirect) override {
+  void DidFinishSameDocumentNavigation(
+      WebHistoryCommitType type,
+      bool is_synchronously_committed,
+      mojom::blink::SameDocumentNavigationType,
+      bool is_client_redirect,
+      const std::optional<blink::SameDocNavigationScreenshotDestinationToken>&
+          screenshot_destination) override {
     last_commit_type_ = type;
   }
 
@@ -13857,7 +13865,7 @@ TEST_F(WebFrameSimTest, PageSizeType) {
   frame->PrintBegin(print_params, WebNode());
   // Initially empty @page rule.
   EXPECT_EQ(PageSizeType::kAuto,
-            main_frame->GetPageDescription(1).page_size_type);
+            main_frame->GetPageDescription(0).page_size_type);
   frame->PrintEnd();
 
   for (const auto& test : test_cases) {
@@ -13865,7 +13873,7 @@ TEST_F(WebFrameSimTest, PageSizeType) {
                             ASSERT_NO_EXCEPTION);
     frame->PrintBegin(print_params, WebNode());
     EXPECT_EQ(test.page_size_type,
-              main_frame->GetPageDescription(1).page_size_type);
+              main_frame->GetPageDescription(0).page_size_type);
     frame->PrintEnd();
   }
 }

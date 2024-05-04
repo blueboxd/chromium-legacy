@@ -75,7 +75,7 @@ void RedirectHeuristicTabHelper::MaybeRecordRedirectHeuristic(
   }
   size_t third_party_site_index = third_party_site_info->first;
   ukm::SourceId third_party_source_id =
-      third_party_site_info->second->source_id;
+      third_party_site_info->second->url.source_id;
   bool is_current_interaction =
       detector_->CommittedRedirectContext().SiteHadUserActivation(
           third_party_site);
@@ -137,7 +137,7 @@ void RedirectHeuristicTabHelper::RecordRedirectHeuristic(
 
   int32_t access_id = base::RandUint64();
 
-  ukm::builders::RedirectHeuristic_CookieAccess(first_party_source_id)
+  ukm::builders::RedirectHeuristic_CookieAccess2(first_party_source_id)
       .SetAccessId(access_id)
       .SetAccessAllowed(!details.blocked_by_policy)
       .SetIsAdTagged(static_cast<int64_t>(is_ad_tagged_cookie))
@@ -149,7 +149,8 @@ void RedirectHeuristicTabHelper::RecordRedirectHeuristic(
       .SetIsCurrentInteraction(is_current_interaction)
       .Record(ukm::UkmRecorder::Get());
 
-  ukm::builders::RedirectHeuristic_CookieAccessThirdParty(third_party_source_id)
+  ukm::builders::RedirectHeuristic_CookieAccessThirdParty2(
+      third_party_source_id)
       .SetAccessId(access_id)
       .Record(ukm::UkmRecorder::Get());
 }
@@ -212,10 +213,10 @@ void RedirectHeuristicTabHelper::CreateRedirectHeuristicGrant(
     base::TimeDelta grant_duration,
     bool has_interaction) {
   if (has_interaction) {
-    // TODO(crbug.com/1484324): Make these grants lossy to avoid spamming
+    // TODO(crbug.com/40282235): Make these grants lossy to avoid spamming
     // profile prefs with blocking requests.
-    // TODO(crbug.com/1484324): Add bounds to these grants to avoid overflow.
-    // TODO(crbug.com/1484324): Consider applying these grants only to rSA
+    // TODO(crbug.com/40282235): Add bounds to these grants to avoid overflow.
+    // TODO(crbug.com/40282235): Consider applying these grants only to rSA
     // calls.
     cookie_settings_->SetTemporaryCookieGrantForHeuristic(url, first_party_url,
                                                           grant_duration);

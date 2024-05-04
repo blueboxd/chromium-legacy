@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/api/printing/printing_test_utils.h"
 
+#include <string_view>
+
 #include "base/check_deref.h"
 #include "base/containers/fixed_flat_map.h"
 #include "base/containers/map_util.h"
@@ -17,6 +19,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "extensions/common/constants.h"
 #include "extensions/test/test_extension_dir.h"
+#include "printing/backend/cups_ipp_constants.h"
+#include "printing/backend/print_backend.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "base/strings/utf_string_conversions.h"
@@ -66,7 +70,7 @@ constexpr int kCustomPaperMaxHeight = 300000;
 // manifest file names to create an extension of that type. The actual location
 // of these files is at //chrome/test/data/extensions/api_test/printing/.
 static constexpr auto kManifestFileNames =
-    base::MakeFixedFlatMap<ExtensionType, base::StringPiece>(
+    base::MakeFixedFlatMap<ExtensionType, std::string_view>(
         {{ExtensionType::kChromeApp, "manifest_chrome_app.json"},
          {ExtensionType::kExtensionMV2, "manifest_extension.json"},
          {ExtensionType::kExtensionMV3, "manifest_v3_extension.json"}});
@@ -248,6 +252,12 @@ ConstructPrinterCapabilities() {
   capabilities->papers = {std::move(iso_a4_paper), std::move(na_letter_paper),
                           std::move(custom_paper)};
   capabilities->collate_capable = true;
+  std::vector<printing::AdvancedCapabilityValue> media_source_vals(
+      {{"auto", ""}, {"tray-1", ""}});
+  capabilities->advanced_capabilities.emplace_back(
+      /*name=*/printing::kIppMediaSource, /*localized_name=*/"",
+      printing::AdvancedCapability::Type::kString, /*default_value=*/"auto",
+      /*values=*/std::move(media_source_vals));
   return capabilities;
 }
 

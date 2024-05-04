@@ -19,13 +19,12 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_controller.h"
 #include "chrome/browser/ui/views/user_education/browser_user_education_service.h"
-#include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/user_education/user_education_service.h"
 #include "chrome/browser/user_education/user_education_service_factory.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/feature_engagement/public/event_constants.h"
 #include "components/feature_engagement/public/feature_constants.h"
-#include "components/search_engines/search_engine_choice_utils.h"
+#include "components/search_engines/search_engine_choice/search_engine_choice_utils.h"
 #include "ui/base/interaction/element_tracker.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/accessible_pane_view.h"
@@ -155,7 +154,7 @@ std::u16string BrowserFeaturePromoController::GetTutorialScreenReaderHint()
   if (browser_view_->GetAccelerator(kAccelerator, &accelerator)) {
     accelerator_text = accelerator.GetShortcutText();
   } else {
-    // TODO(crbug.com/1432803): GetAccelerator appears to be failing
+    // TODO(crbug.com/40903127): GetAccelerator appears to be failing
     // sporadically on Windows, for unknown reasons. Since we can't have this
     // code crashing in release, it's being returned to the original NOTREACHED
     // before everything was changed to CHECKs. This bug will continue to be
@@ -188,7 +187,9 @@ BrowserFeaturePromoController::GetFocusHelpBubbleScreenReaderHint(
   if (promo_type ==
           user_education::FeaturePromoSpecification::PromoType::kTutorial ||
       (anchor_view &&
-       (anchor_view->view()->IsAccessibilityFocusable() ||
+       (anchor_view->view()
+            ->GetViewAccessibility()
+            .IsAccessibilityFocusable() ||
         views::IsViewClass<views::AccessiblePaneView>(anchor_view->view())))) {
     return l10n_util::GetStringFUTF16(IDS_FOCUS_HELP_BUBBLE_TOGGLE_DESCRIPTION,
                                       accelerator_text);
@@ -216,12 +217,4 @@ BrowserFeaturePromoController::GetScreenReaderPromptPromoFeature() const {
 const char* BrowserFeaturePromoController::GetScreenReaderPromptPromoEventName()
     const {
   return feature_engagement::events::kFocusHelpBubbleAcceleratorPromoRead;
-}
-
-std::string BrowserFeaturePromoController::GetAppId() const {
-  if (const web_app::AppBrowserController* const controller =
-          browser_view_->browser()->app_controller()) {
-    return controller->app_id();
-  }
-  return std::string();
 }

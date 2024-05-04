@@ -192,10 +192,9 @@ TEST_F(ExtensionCookiesTest, DomainMatching) {
 
 TEST_F(ExtensionCookiesTest, DecodeUTF8WithErrorHandling) {
   std::unique_ptr<net::CanonicalCookie> canonical_cookie(
-      net::CanonicalCookie::Create(
+      net::CanonicalCookie::CreateForTesting(
           GURL("http://test.com"), "=011Q255bNX_1!yd\203e+;path=/path\203",
-          base::Time::Now(), std::nullopt /* server_time */,
-          std::nullopt /* cookie_partition_key */));
+          base::Time::Now()));
   ASSERT_NE(nullptr, canonical_cookie.get());
   Cookie cookie =
       cookies_helpers::CreateCookie(*canonical_cookie, "some cookie store");
@@ -250,7 +249,9 @@ TEST_F(ExtensionCookiesTest, PartitionKeySerialization) {
       /*httponly=*/false, net::CookieSameSite::UNSPECIFIED,
       net::COOKIE_PRIORITY_LOW,
       net::CookiePartitionKey::FromURLForTesting(
-          GURL("https://toplevelsite.com"), base::UnguessableToken::Create()));
+          GURL("https://toplevelsite.com"),
+          net::CookiePartitionKey::AncestorChainBit::kCrossSite,
+          base::UnguessableToken::Create()));
 
   EXPECT_TRUE(nonce_cookie->IsPartitioned());
   EXPECT_TRUE(net::CookiePartitionKey::HasNonce(nonce_cookie->PartitionKey()));

@@ -14,9 +14,12 @@
 #include <vector>
 
 #include "base/containers/contains.h"
+#include "base/feature_list.h"
 #include "base/strings/strcat.h"
 #include "base/time/time.h"
+#include "crypto/sha2.h"
 #include "third_party/blink/public/common/common_export.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/interest_group/ad_display_size_utils.h"
 #include "third_party/blink/public/mojom/interest_group/interest_group_types.mojom.h"
 #include "third_party/boringssl/src/include/openssl/curve25519.h"
@@ -42,8 +45,8 @@ bool IsUrlAllowedForRenderUrls(const GURL& url) {
 }
 
 // Check if `url` can be used with the specified interest group for any of
-// script URL, update URL, or realtime data URL. Ad render URLs should be
-// checked with IsUrlAllowedForRenderUrls(), which doesn't have the same-origin
+// script URL, update URL. Ad render URLs should be checked with
+// IsUrlAllowedForRenderUrls(), which doesn't have the same-origin
 // check, and allows references.
 bool IsUrlAllowed(const GURL& url, const InterestGroup& group) {
   if (url::Origin::Create(url) != group.owner) {
@@ -51,6 +54,22 @@ bool IsUrlAllowed(const GURL& url, const InterestGroup& group) {
   }
 
   return IsUrlAllowedForRenderUrls(url) && !url.has_ref();
+}
+
+// Check if `url` can be used with the specified interest group for trusted
+// bidding signals URL.
+bool IsUrlAllowedForTrustedBiddingSignals(const GURL& url,
+                                          const InterestGroup& group) {
+  if (!IsUrlAllowedForRenderUrls(url) || url.has_ref() || url.has_query()) {
+    return false;
+  }
+
+  if (base::FeatureList::IsEnabled(
+          blink::features::kFledgePermitCrossOriginTrustedSignals)) {
+    return true;
+  } else {
+    return url::Origin::Create(url) == group.owner;
+  }
 }
 
 size_t EstimateFlatMapSize(
@@ -178,13 +197,8 @@ bool InterestGroup::IsValid() const {
   }
 
   if (trusted_bidding_signals_url) {
-    if (!IsUrlAllowed(*trusted_bidding_signals_url, *this)) {
-      return false;
-    }
-
-    // `trusted_bidding_signals_url` must not have a query string, since the
-    // query parameter needs to be set as part of running an auction.
-    if (trusted_bidding_signals_url->has_query()) {
+    if (!IsUrlAllowedForTrustedBiddingSignals(*trusted_bidding_signals_url,
+                                              *this)) {
       return false;
     }
   }
@@ -429,66 +443,71 @@ std::string_view InterestGroup::TrustedBiddingSignalsSlotSizeModeToString(
   }
 }
 
-std::string KAnonKeyForAdBid(const InterestGroup& group, const GURL& ad_url) {
-  return KAnonKeyForAdBid(group, blink::AdDescriptor(ad_url));
-}
-
-std::string KAnonKeyForAdBid(const InterestGroup& group,
-                             const std::string& ad_url_from_gurl_spec) {
-  return KAnonKeyForAdBid(group.owner, group.bidding_url.value_or(GURL()),
-                          ad_url_from_gurl_spec);
-}
-
-std::string KAnonKeyForAdBid(const blink::InterestGroup& group,
-                             const blink::AdDescriptor& ad_descriptor) {
-  DCHECK(group.ads);
-  DCHECK(base::Contains(
-      *group.ads, ad_descriptor.url,
-      [](const blink::InterestGroup::Ad& ad) { return ad.render_url(); }))
-      << "No such ad: " << ad_descriptor.url;
-  DCHECK(group.bidding_url);
-  return KAnonKeyForAdBid(group.owner, group.bidding_url.value_or(GURL()),
-                          ad_descriptor);
-}
-
-std::string KAnonKeyForAdBid(const url::Origin& owner,
-                             const GURL& bidding_url,
-                             const GURL& ad_url) {
-  return KAnonKeyForAdBid(owner, bidding_url, ad_url.spec());
-}
-
-std::string KAnonKeyForAdBid(const url::Origin& owner,
-                             const GURL& bidding_url,
-                             const blink::AdDescriptor& ad_descriptor) {
-  // TODO(crbug.com/1442242): Add size back to this check.
-  return KAnonKeyForAdBid(owner, bidding_url, ad_descriptor.url.spec());
-}
-
-std::string KAnonKeyForAdBid(const url::Origin& owner,
-                             const GURL& bidding_url,
-                             const std::string& ad_url_from_gurl_spec) {
+std::string DEPRECATED_KAnonKeyForAdBid(
+    const url::Origin& owner,
+    const GURL& bidding_url,
+    const std::string& ad_url_from_gurl_spec) {
   return base::StrCat({kKAnonKeyForAdBidPrefix, owner.GetURL().spec(), "\n",
                        bidding_url.spec(), "\n", ad_url_from_gurl_spec});
 }
 
-std::string KAnonKeyForAdComponentBid(const GURL& ad_url) {
-  return KAnonKeyForAdComponentBid(ad_url.spec());
+std::string DEPRECATED_KAnonKeyForAdBid(
+    const InterestGroup& group,
+    const std::string& ad_url_from_gurl_spec) {
+  DCHECK(group.ads);
+  DCHECK(base::Contains(
+      *group.ads, ad_url_from_gurl_spec,
+      [](const blink::InterestGroup::Ad& ad) { return ad.render_url(); }))
+      << "No such ad: " << ad_url_from_gurl_spec;
+  DCHECK(group.bidding_url);
+  return DEPRECATED_KAnonKeyForAdBid(
+      group.owner, group.bidding_url.value_or(GURL()), ad_url_from_gurl_spec);
 }
 
-std::string KAnonKeyForAdComponentBid(
-    const blink::AdDescriptor& ad_descriptor) {
-  // TODO(crbug.com/1442242): Add size back to this check.
-  return KAnonKeyForAdComponentBid(ad_descriptor.url.spec());
+std::string HashedKAnonKeyForAdBid(const url::Origin& owner,
+                                   const GURL& bidding_url,
+                                   const std::string& ad_url_from_gurl_spec) {
+  return crypto::SHA256HashString(
+      DEPRECATED_KAnonKeyForAdBid(owner, bidding_url, ad_url_from_gurl_spec));
 }
 
-std::string KAnonKeyForAdComponentBid(
+std::string HashedKAnonKeyForAdBid(const InterestGroup& group,
+                                   const std::string& ad_url_from_gurl_spec) {
+  return crypto::SHA256HashString(
+      DEPRECATED_KAnonKeyForAdBid(group, ad_url_from_gurl_spec));
+}
+
+std::string HashedKAnonKeyForAdBid(const InterestGroup& group,
+                                   const blink::AdDescriptor& ad_descriptor) {
+  return HashedKAnonKeyForAdBid(group, ad_descriptor.url.spec());
+}
+
+std::string DEPRECATED_KAnonKeyForAdComponentBid(
     const std::string& ad_url_from_gurl_spec) {
   return base::StrCat(
       {kKAnonKeyForAdComponentBidPrefix, ad_url_from_gurl_spec});
 }
 
-std::string KAnonKeyForAdNameReporting(const blink::InterestGroup& group,
-                                       const blink::InterestGroup::Ad& ad) {
+std::string HashedKAnonKeyForAdComponentBid(
+    const std::string& ad_url_from_gurl_spec) {
+  return crypto::SHA256HashString(
+      DEPRECATED_KAnonKeyForAdComponentBid(ad_url_from_gurl_spec));
+}
+
+std::string HashedKAnonKeyForAdComponentBid(const GURL& ad_url) {
+  return crypto::SHA256HashString(
+      DEPRECATED_KAnonKeyForAdComponentBid(ad_url.spec()));
+}
+
+std::string HashedKAnonKeyForAdComponentBid(
+    const blink::AdDescriptor& ad_descriptor) {
+  // TODO(crbug.com/40266862): Add size back to this check.
+  return HashedKAnonKeyForAdComponentBid(ad_descriptor.url.spec());
+}
+
+std::string DEPRECATED_KAnonKeyForAdNameReporting(
+    const blink::InterestGroup& group,
+    const blink::InterestGroup::Ad& ad) {
   DCHECK(group.ads);
   DCHECK(base::Contains(*group.ads, ad)) << "No such ad: " << ad.render_url();
   DCHECK(group.bidding_url);
@@ -505,6 +524,13 @@ std::string KAnonKeyForAdNameReporting(const blink::InterestGroup& group,
   }
   return base::StrCat(
       {kKAnonKeyForAdNameReportingNamePrefix, middle, group.name});
+}
+
+std::string HashedKAnonKeyForAdNameReporting(
+    const blink::InterestGroup& group,
+    const blink::InterestGroup::Ad& ad) {
+  return crypto::SHA256HashString(
+      DEPRECATED_KAnonKeyForAdNameReporting(group, ad));
 }
 
 }  // namespace blink

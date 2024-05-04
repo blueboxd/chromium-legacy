@@ -354,7 +354,6 @@ chromium-metrics-reviews@google.com.
              unknown fields"/>
   <suffix name="PhoneOnly" label="Form has phone field only"/>
   <affected-histogram name="Autofill.FormEvents.Address"/>
-  <affected-histogram name="Autofill.UserHappiness.Address"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="AutofillCreditCardType" separator=".">
@@ -399,6 +398,15 @@ chromium-metrics-reviews@google.com.
       name="Autofill.SaveCreditCardPromptResult.Upload.FirstShow"/>
   <affected-histogram
       name="Autofill.SaveCreditCardPromptResult.Upload.Reshows"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="AutofillStoredCardHasInvalidCardNumber" separator=".">
+  <owner>smcgruer@google.com</owner>
+  <owner>chrome-payments-team@google.com</owner>
+  <suffix name="WithInvalidCardNumber" label="Card with an invalid number"/>
+<!-- Server cards always have valid card numbers, so this is local only. -->
+
+  <affected-histogram name="Autofill.StoredCreditCardCount.Local"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="AutofillStoredCardHasNickname" separator=".">
@@ -878,6 +886,7 @@ chromium-metrics-reviews@google.com.
   <suffix name="ServerStream" label="A client created by CRAS server."/>
   <suffix name="Test" label="A client created by cras_test_client."/>
   <suffix name="Unknown" label="Unknown client."/>
+  <affected-histogram name="Cras.FetchDelayCount"/>
   <affected-histogram name="Cras.FetchDelayMilliSeconds"/>
   <affected-histogram name="Cras.StreamCallbackThreshold.Input"/>
   <affected-histogram name="Cras.StreamCallbackThreshold.Output"/>
@@ -887,6 +896,8 @@ chromium-metrics-reviews@google.com.
   <affected-histogram name="Cras.StreamEffects.Output"/>
   <affected-histogram name="Cras.StreamFlags.Input"/>
   <affected-histogram name="Cras.StreamFlags.Output"/>
+  <affected-histogram name="Cras.StreamOverrunCount"/>
+  <affected-histogram name="Cras.StreamOverrunFrames"/>
   <affected-histogram name="Cras.StreamRuntime.Input"/>
   <affected-histogram name="Cras.StreamRuntime.Output"/>
   <affected-histogram name="Cras.StreamSamplingFormat.Input"/>
@@ -911,12 +922,30 @@ chromium-metrics-reviews@google.com.
   <suffix name="Default" label="Default"/>
   <suffix name="ProAudio" label="ProAudio"/>
   <suffix name="VoiceCommunication" label="WebRTC"/>
+  <affected-histogram name="Cras.FetchDelayCount.ARC"/>
+  <affected-histogram name="Cras.FetchDelayCount.ARCVM"/>
+  <affected-histogram name="Cras.FetchDelayCount.BOREALIS"/>
+  <affected-histogram name="Cras.FetchDelayCount.Chrome"/>
+  <affected-histogram name="Cras.FetchDelayCount.CrOSVM"/>
+  <affected-histogram name="Cras.FetchDelayCount.LaCrOS"/>
   <affected-histogram name="Cras.FetchDelayMilliSeconds.ARC"/>
   <affected-histogram name="Cras.FetchDelayMilliSeconds.ARCVM"/>
   <affected-histogram name="Cras.FetchDelayMilliSeconds.BOREALIS"/>
   <affected-histogram name="Cras.FetchDelayMilliSeconds.Chrome"/>
   <affected-histogram name="Cras.FetchDelayMilliSeconds.CrOSVM"/>
   <affected-histogram name="Cras.FetchDelayMilliSeconds.LaCrOS"/>
+  <affected-histogram name="Cras.StreamOverrunCount.ARC"/>
+  <affected-histogram name="Cras.StreamOverrunCount.ARCVM"/>
+  <affected-histogram name="Cras.StreamOverrunCount.BOREALIS"/>
+  <affected-histogram name="Cras.StreamOverrunCount.Chrome"/>
+  <affected-histogram name="Cras.StreamOverrunCount.CrOSVM"/>
+  <affected-histogram name="Cras.StreamOverrunCount.LaCrOS"/>
+  <affected-histogram name="Cras.StreamOverrunFrames.ARC"/>
+  <affected-histogram name="Cras.StreamOverrunFrames.ARCVM"/>
+  <affected-histogram name="Cras.StreamOverrunFrames.BOREALIS"/>
+  <affected-histogram name="Cras.StreamOverrunFrames.Chrome"/>
+  <affected-histogram name="Cras.StreamOverrunFrames.CrOSVM"/>
+  <affected-histogram name="Cras.StreamOverrunFrames.LaCrOS"/>
   <affected-histogram name="Cras.StreamRuntime.Input.ARC"/>
   <affected-histogram name="Cras.StreamRuntime.Input.ARCVM"/>
   <affected-histogram name="Cras.StreamRuntime.Input.BOREALIS"/>
@@ -1324,8 +1353,6 @@ chromium-metrics-reviews@google.com.
       name="Autofill.FieldPredictionQuality.ByFieldType.Overall"/>
   <affected-histogram
       name="Autofill.FieldPredictionQuality.ByFieldType.Server"/>
-  <affected-histogram
-      name="Autofill.NumberOfEditedAutofilledFieldsAtSubmission"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="FirstUserActionType" separator="">
@@ -1394,7 +1421,7 @@ chromium-metrics-reviews@google.com.
   <suffix name="SentRequest" label="The request was sent over the network."/>
   <suffix name="Used"
       label="A cache entry was used without using the network."/>
-  <affected-histogram name="HttpCache.AccessToDone"/>
+  <affected-histogram name="HttpCache.AccessToDone2"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="HttpCacheBeforeSendCases" separator=".">
@@ -1448,15 +1475,6 @@ chromium-metrics-reviews@google.com.
   <suffix name="IPv6_probe_skipped"
       label="with IPv6 not probed, and default OS settings used"/>
   <affected-histogram name="DNS.PrefetchResolution"/>
-</histogram_suffixes>
-
-<histogram_suffixes name="JavaStartMode" separator=".">
-  <suffix name="Instant" label=""/>
-  <suffix name="NoInstant" label=""/>
-  <affected-histogram name="Startup.Android.FeedContentFirstLoadedTime"/>
-  <affected-histogram name="Startup.Android.FeedStreamCreatedTime"/>
-  <affected-histogram name="Startup.Android.FirstDrawCompletedTime"/>
-  <affected-histogram name="Startup.Android.SingleTabTitleAvailableTime"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="LeakDetectionDialogType" separator=".">
@@ -2043,7 +2061,7 @@ chromium-metrics-reviews@google.com.
   <affected-histogram name="NewTabPage.LogoShown"/>
 </histogram_suffixes>
 
-<!-- TODO(crbug.com/1309706): Migrate these histograms to use the patterned histograms instead. -->
+<!-- TODO(crbug.com/40829943): Migrate these histograms to use the patterned histograms instead. -->
 
 <histogram_suffixes name="NewTabPageModules" separator=".">
   <suffix name="chrome_cart" label="Module ID for Chrome Cart"/>
@@ -2055,6 +2073,7 @@ chromium-metrics-reviews@google.com.
   <suffix name="photos" label="Module ID for Google Photos module"/>
   <suffix name="recipe_tasks" label="Module ID for Recipe Tasks"/>
   <suffix name="shopping_tasks" label="Module ID for Shopping Tasks"/>
+  <suffix name="tab_resumption" label="Module ID for Tab Resumption"/>
   <affected-histogram name="NewTabPage.Modules.Dismissed"/>
   <affected-histogram name="NewTabPage.Modules.EnabledOnNTPLoad"/>
   <affected-histogram name="NewTabPage.Modules.Impression"/>
@@ -2689,10 +2708,14 @@ chromium-metrics-reviews@google.com.
   <suffix name="CapturedSurfaceControl"
       label="Captured Surface Control permission"/>
   <suffix name="Geolocation" label="Geolocation permission"/>
+  <suffix name="KeyboardAndPointerLock"
+      label="Keyboard and pointer lock permission"/>
+  <suffix name="KeyboardLock" label="Keyboard lock permission"/>
   <suffix name="MidiSysEx" label="Midi SysEx permission"/>
   <suffix name="MultipleDownload" label="Multiple downloads permission"/>
   <suffix name="Nfc" label="NFC permission"/>
   <suffix name="Notifications" label="Notification permission"/>
+  <suffix name="PointerLock" label="Pointer lock permission"/>
   <suffix name="ProtectedMedia" label="Protected media permission"/>
   <suffix name="PushMessaging" label="Push messaging permission"/>
   <suffix name="Quota" label="Quota permission"/>
@@ -2880,9 +2903,6 @@ chromium-metrics-reviews@google.com.
 
 <histogram_suffixes name="PrerenderSource" separator="_" ordering="prefix">
   <suffix name="" label="All prerenders."/>
-  <suffix name="externalrequest" label="Externally triggered prerender."/>
-  <suffix name="externalrequestforced"
-      label="Forced prerender regardless of network."/>
   <suffix name="gws" label="GWS triggered prerender."/>
   <suffix name="navigationpredictor"
       label="Triggered by the NavigationPredictor."/>
@@ -2954,14 +2974,15 @@ chromium-metrics-reviews@google.com.
   <suffix name="Malloc.CommittedSize"
       label="Committed memory size for malloc(). Recorded only when
              PartitionAlloc is used as malloc()."/>
-  <suffix name="Malloc.Fragmentation"
-      label="Fragmentation of PartitionAlloc."/>
+  <suffix name="Malloc.ExtremeLUD"
+      label="Memory stats of the Extreme LUD. Recorded only when the Extreme
+             LUD is enabled."/>
+  <suffix name="Malloc.Fragmentation" label="Fragmentation of PartitionAlloc."/>
   <suffix name="Malloc.Fragmentation.After1H"
-      label="Fragmentation of PartitionAlloc for processes that have
-             existed for &gt;=1H."/>
+      label="Fragmentation of PartitionAlloc for processes that have existed
+             for &gt;=1H."/>
   <suffix name="Malloc.Fragmentation.After24H"
-      label="Fragmentation of PartitionAlloc for processes older than 1
-             day."/>
+      label="Fragmentation of PartitionAlloc for processes older than 1 day."/>
   <suffix name="Malloc.MaxAllocatedSize"
       label="Highwatermark for allocated memory for malloc(). Recorded only
              when PartitionAlloc is used as malloc()."/>
@@ -3326,9 +3347,23 @@ chromium-metrics-reviews@google.com.
   <suffix name="Malloc.BRPQuarantinedBytesPerMinute"
       label="Total size of BRP quarantined bytes per minute, averaged during
              the last memory dump interval."/>
+  <suffix name="Malloc.ExtremeLUD.CumulativeSizeInBytes"
+      label="Total size of quarantined allocations in the ELUD quarantine
+             since process start, including already dequarantined
+             allocations."/>
+  <suffix name="Malloc.ExtremeLUD.SizeInBytes"
+      label="Size of quarantined allocations in the ELUD quarantine at dump
+             time."/>
   <suffix name="Malloc.Original.ObjectCount"
       label="Number of allocated objects. Only counting malloc memory
              allocated in the partition_alloc original partition."/>
+  <suffix name="Malloc.SchedulerLoopQuarantine.CumulativeSizeInBytes"
+      label="Total size of quarantined allocations in Scheduler-Loop
+             Quarantine since process start, including already dequarantined
+             allocations."/>
+  <suffix name="Malloc.SchedulerLoopQuarantine.SizeInBytes"
+      label="Size of quarantined allocations in Scheduler-Loop Quarantine at
+             dump time."/>
   <suffix name="Malloc.ThreadCache"
       label="Memory used by all thread caches, recorded when PartitionAlloc
              is used as malloc()."/>
@@ -3412,6 +3447,41 @@ chromium-metrics-reviews@google.com.
   <suffix name="Malloc.BRPQuarantinedCountPerMinute"
       label="Number of BRP quarantined allocations per minute, averaged
              during the last memory dump interval."/>
+  <suffix name="Malloc.ExtremeLUD.BytesPerMinute"
+      label="Size of ELUD quarantined bytes per minute, averaged during the
+             last memory dump interval."/>
+  <suffix name="Malloc.ExtremeLUD.Count"
+      label="Count of all quarantined allocations in the ELUD quarantine at
+             dump time."/>
+  <suffix name="Malloc.ExtremeLUD.CountPerMinute"
+      label="Number of ELUD quarantined allocations per minute, averaged
+             during the last memory dump interval."/>
+  <suffix name="Malloc.ExtremeLUD.CumulativeCount"
+      label="Total count of quarantined allocations in the ELUD quarantine
+             since process start, including already dequarantined
+             allocations."/>
+  <suffix name="Malloc.ExtremeLUD.MissCountPerMinute"
+      label="Number of ELUD quarantine requests that were not satisfied per
+             minute, averaged during the last memory dump interval."/>
+  <suffix name="Malloc.ExtremeLUD.QuarantinedTime"
+      label="Time to use up the capacity of the ELUD quarantine in
+             milliseconds, estimated from BytesPerMinute. Very rough
+             approximation to how long time allocations are quarantined."/>
+  <suffix name="Malloc.ExtremeLUD.QuarantineMissCount"
+      label="Monotonically increasing count of quarantine requests that were
+             not satisfied due to the configured size limit of the ELUD
+             quarantine."/>
+  <suffix name="Malloc.SchedulerLoopQuarantine.Count"
+      label="Count of all quarantined allocations in Scheduler-Loop
+             Quarantine at dump time."/>
+  <suffix name="Malloc.SchedulerLoopQuarantine.CumulativeCount"
+      label="Total count of quarantined allocations in Scheduler-Loop
+             Quarantine since process start, including already dequarantined
+             allocations."/>
+  <suffix name="Malloc.SchedulerLoopQuarantine.QuarantineMissCount"
+      label="Monotonically increasing count of quarantine requests that were
+             not satisfied due to the configured size limit of Scheduler-Loop
+             Quarantine."/>
   <suffix name="Malloc.SyscallsPerMinute"
       label="Number of system calls made per minute, averaged during the last
              memory dump interval. Only collected when PartitionAlloc is
@@ -3542,7 +3612,6 @@ chromium-metrics-reviews@google.com.
   <suffix name="100Percent_8MinMax"
       label="Progressive scan @ 100%, 8 frequency bins."/>
   <suffix name="FullScan" label="Using WPA_supplicant to scan."/>
-  <affected-histogram name="Network.Shill.TimeToDrop"/>
   <affected-histogram name="Network.Shill.WiFi.ScanResult"/>
   <affected-histogram name="Network.Shill.Wifi.TimeToConnect"/>
   <affected-histogram name="Network.Shill.Wifi.TimeToJoin"/>
@@ -3732,28 +3801,6 @@ chromium-metrics-reviews@google.com.
   <affected-histogram name="Network.Shill.WiFi.SessionLength"/>
 </histogram_suffixes>
 
-<histogram_suffixes name="SafeBrowsing_Settings_AccessPoint" separator=".">
-  <suffix name="Default"
-      label="The user enters the Safe Browsing settings page from a default
-             access point."/>
-  <suffix name="ParentSettings"
-      label="The user enters the Safe Browsing settings page from the parent
-             setting page."/>
-  <suffix name="SafetyCheck"
-      label="The user enters the Safe Browsing settings page from the
-             SafetyCheck page."/>
-  <suffix name="SecurityInterstitial"
-      label="The user enters the Safe Browsing settings page from the
-             security interstitial."/>
-  <suffix name="SurfaceExplorerPromoSlinger"
-      label="The user enters the Safe Browsing settings page from the Surface
-             Explorer page."/>
-  <suffix name="TailoredSecurity"
-      label="The user enters the Safe Browsing settings page from the UX
-             shown due to a change in the Tailored Security setting"/>
-  <affected-histogram name="SafeBrowsing.Settings.UserAction"/>
-</histogram_suffixes>
-
 <histogram_suffixes name="SafeBrowsing_V4Store_Metrics" separator=".">
   <suffix name="CertCsdDownloadAllowlist" label=""/>
   <suffix name="CertCsdDownloadWhitelist" label=""/>
@@ -3889,14 +3936,6 @@ chromium-metrics-reviews@google.com.
   <suffix name="SECURE_WITH_POLICY_INSTALLED_CERT"
       label="SecurityLevel is SECURE_WITH_POLICY_INSTALLED_CERT."/>
   <suffix name="WARNING" label="SecurityLevel is WARNING."/>
-  <affected-histogram name="Autofill.SaveCreditCardPromptOffer.Local"/>
-  <affected-histogram name="Autofill.SaveCreditCardPromptOffer.Upload"/>
-  <affected-histogram name="Autofill.SaveCreditCardPromptResult.Local"/>
-  <affected-histogram name="Autofill.SaveCreditCardPromptResult.Upload"/>
-  <affected-histogram name="Autofill.UserHappiness.Address"/>
-  <affected-histogram name="Autofill.UserHappiness.CreditCard"/>
-  <affected-histogram name="Autofill.UserHappiness.Password"/>
-  <affected-histogram name="Autofill.UserHappiness.Unknown"/>
   <affected-histogram name="Security.PageEndReason"/>
   <affected-histogram name="Security.PageInfo.TimeOpen"/>
   <affected-histogram name="Security.PageInfo.TimeOpen.Action"/>
@@ -3921,7 +3960,7 @@ chromium-metrics-reviews@google.com.
 </histogram_suffixes>
 
 <histogram_suffixes name="ServiceWorker_EventType" separator="_">
-<!-- TODO(crbug.com/1353689): rewrite with the new way. -->
+<!-- TODO(crbug.com/40858621): rewrite with the new way. -->
 
   <suffix name="ACTIVATE" label="ACTIVATE"/>
   <suffix name="BACKGROUND_FETCH_ABORT" label=""/>
@@ -4154,6 +4193,7 @@ chromium-metrics-reviews@google.com.
   <suffix name="Sync" label="User has opted in to Sync."/>
   <affected-histogram name="Signin.InterceptResult.Enterprise"/>
   <affected-histogram name="Signin.InterceptResult.EnterpriseForced"/>
+  <affected-histogram name="Signin.InterceptResult.EnterpriseOIDC"/>
   <affected-histogram name="Signin.InterceptResult.MultiUser"/>
   <affected-histogram name="Signin.InterceptResult.Switch"/>
 </histogram_suffixes>
@@ -4162,6 +4202,7 @@ chromium-metrics-reviews@google.com.
   <suffix name="ChromeSignin" label="ChromeSignin bubble."/>
   <suffix name="Enterprise" label="Enterprise bubble."/>
   <suffix name="EnterpriseForced" label="Enterprise dialog."/>
+  <suffix name="EnterpriseOIDC" label="Enterprise dialog for OIDC signin."/>
   <suffix name="MultiUser" label="MultiUser bubble."/>
   <suffix name="Switch" label="Profile-switch bubble."/>
   <affected-histogram name="Signin.InterceptResult"/>

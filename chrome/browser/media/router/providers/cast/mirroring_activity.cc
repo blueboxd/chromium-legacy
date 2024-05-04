@@ -11,6 +11,7 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <string_view>
 #include <utility>
 
 #include "base/command_line.h"
@@ -22,7 +23,6 @@
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/string_piece.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -174,12 +174,12 @@ std::optional<MirroringActivity::MirroringType> GetMirroringType(
 }
 
 // TODO(crbug.com/1363512): Remove support for sender side letterboxing.
-bool ShouldForceLetterboxing(base::StringPiece model_name) {
+bool ShouldForceLetterboxing(std::string_view model_name) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           "disable-cast-letterboxing")) {
     return false;
   }
-  return model_name.find("Nest Hub") != base::StringPiece::npos;
+  return model_name.find("Nest Hub") != std::string_view::npos;
 }
 
 std::optional<int> GetExceededPlayoutDelayPacketPercent(
@@ -255,7 +255,7 @@ void MaybeRecordMemoryHistogram(const char* fmt,
 }
 
 void RecordCastStreamingSenderUma(const base::Value::Dict& all_mirroring_stats,
-                                  base::StringPiece stats_dict_key,
+                                  std::string_view stats_dict_key,
                                   int64_t target_playout_delay) {
   const base::Value::Dict* mirroring_stats =
       all_mirroring_stats.FindDict(stats_dict_key);
@@ -735,7 +735,7 @@ void MirroringActivity::HandleParseJsonResult(
   }
 
   if (!result.has_value() || !result.value().is_dict()) {
-    // TODO(crbug.com/905002): Record UMA metric for parse result.
+    // TODO(crbug.com/41426190): Record UMA metric for parse result.
     logger_->LogError(
         media_router::mojom::LogCategory::kMirroring, kLoggerComponent,
         base::StrCat({"Failed to parse Cast client message:", result.error()}),

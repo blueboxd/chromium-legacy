@@ -13,7 +13,7 @@
 #include "base/version.h"
 #include "chrome/updater/activity.h"
 #include "chrome/updater/registration_data.h"
-#include "chrome/updater/test_scope.h"
+#include "chrome/updater/test/test_scope.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/update_client/update_client.h"
@@ -32,8 +32,8 @@ TEST(PersistedDataTest, Simple) {
   auto pref = std::make_unique<TestingPrefServiceSimple>();
   update_client::RegisterPrefs(pref->registry());
   RegisterPersistedDataPrefs(pref->registry());
-  auto metadata =
-      base::MakeRefCounted<PersistedData>(GetTestScope(), pref.get(), nullptr);
+  auto metadata = base::MakeRefCounted<PersistedData>(
+      GetUpdaterScopeForTesting(), pref.get(), nullptr);
 
   EXPECT_FALSE(metadata->GetProductVersion("someappid").IsValid());
   EXPECT_TRUE(metadata->GetFingerprint("someappid").empty());
@@ -69,8 +69,8 @@ TEST(PersistedDataTest, MixedCase) {
   auto pref = std::make_unique<TestingPrefServiceSimple>();
   update_client::RegisterPrefs(pref->registry());
   RegisterPersistedDataPrefs(pref->registry());
-  auto metadata =
-      base::MakeRefCounted<PersistedData>(GetTestScope(), pref.get(), nullptr);
+  auto metadata = base::MakeRefCounted<PersistedData>(
+      GetUpdaterScopeForTesting(), pref.get(), nullptr);
 
   metadata->SetProductVersion("someappid", base::Version("1.0"));
   metadata->SetProductVersion("SOMEAPPID2", base::Version("2.0"));
@@ -87,8 +87,8 @@ TEST(PersistedDataTest, MixedCase) {
 TEST(PersistedDataTest, RegistrationRequest) {
   auto pref = std::make_unique<TestingPrefServiceSimple>();
   update_client::RegisterPrefs(pref->registry());
-  auto metadata =
-      base::MakeRefCounted<PersistedData>(GetTestScope(), pref.get(), nullptr);
+  auto metadata = base::MakeRefCounted<PersistedData>(
+      GetUpdaterScopeForTesting(), pref.get(), nullptr);
 
   RegistrationRequest data;
   data.app_id = "someappid";
@@ -115,7 +115,7 @@ TEST(PersistedDataTest, RegistrationRequest) {
 
 #if BUILDFLAG(IS_WIN)
   base::win::RegKey key;
-  EXPECT_EQ(key.Open(UpdaterScopeToHKeyRoot(GetTestScope()),
+  EXPECT_EQ(key.Open(UpdaterScopeToHKeyRoot(GetUpdaterScopeForTesting()),
                      GetAppClientStateKey(L"someappid").c_str(),
                      Wow6432(KEY_QUERY_VALUE)),
             ERROR_SUCCESS);
@@ -128,8 +128,8 @@ TEST(PersistedDataTest, RegistrationRequest) {
 TEST(PersistedDataTest, RegistrationRequestPartial) {
   auto pref = std::make_unique<TestingPrefServiceSimple>();
   update_client::RegisterPrefs(pref->registry());
-  auto metadata =
-      base::MakeRefCounted<PersistedData>(GetTestScope(), pref.get(), nullptr);
+  auto metadata = base::MakeRefCounted<PersistedData>(
+      GetUpdaterScopeForTesting(), pref.get(), nullptr);
 
   RegistrationRequest data;
   data.app_id = "someappid";
@@ -175,8 +175,8 @@ TEST(PersistedDataTest, RegistrationRequestPartial) {
 TEST(PersistedDataTest, SharedPref) {
   auto pref = std::make_unique<TestingPrefServiceSimple>();
   update_client::RegisterPrefs(pref->registry());
-  auto metadata =
-      base::MakeRefCounted<PersistedData>(GetTestScope(), pref.get(), nullptr);
+  auto metadata = base::MakeRefCounted<PersistedData>(
+      GetUpdaterScopeForTesting(), pref.get(), nullptr);
 
   metadata->SetProductVersion("someappid", base::Version("1.0"));
   EXPECT_STREQ("1.0",
@@ -184,8 +184,8 @@ TEST(PersistedDataTest, SharedPref) {
 
   // Now, create a new PersistedData reading from the same path, verify
   // that it loads the value.
-  metadata =
-      base::MakeRefCounted<PersistedData>(GetTestScope(), pref.get(), nullptr);
+  metadata = base::MakeRefCounted<PersistedData>(GetUpdaterScopeForTesting(),
+                                                 pref.get(), nullptr);
   EXPECT_STREQ("1.0",
                metadata->GetProductVersion("someappid").GetString().c_str());
 }
@@ -193,8 +193,8 @@ TEST(PersistedDataTest, SharedPref) {
 TEST(PersistedDataTest, RemoveAppId) {
   auto pref = std::make_unique<TestingPrefServiceSimple>();
   update_client::RegisterPrefs(pref->registry());
-  auto metadata =
-      base::MakeRefCounted<PersistedData>(GetTestScope(), pref.get(), nullptr);
+  auto metadata = base::MakeRefCounted<PersistedData>(
+      GetUpdaterScopeForTesting(), pref.get(), nullptr);
 
   RegistrationRequest data;
   data.app_id = "someappid";
@@ -216,7 +216,7 @@ TEST(PersistedDataTest, RemoveAppId) {
   metadata->RegisterApp(data);
   EXPECT_EQ(size_t{2}, metadata->GetAppIds().size());
 
-  metadata->RemoveApp("someappid");
+  metadata->RemoveApp("someAPPID");
   EXPECT_EQ(size_t{1}, metadata->GetAppIds().size());
 
   metadata->RemoveApp("someappid2");
@@ -226,8 +226,8 @@ TEST(PersistedDataTest, RemoveAppId) {
 TEST(PersistedDataTest, RegisterApp_SetFirstActive) {
   auto pref = std::make_unique<TestingPrefServiceSimple>();
   update_client::RegisterPrefs(pref->registry());
-  auto metadata =
-      base::MakeRefCounted<PersistedData>(GetTestScope(), pref.get(), nullptr);
+  auto metadata = base::MakeRefCounted<PersistedData>(
+      GetUpdaterScopeForTesting(), pref.get(), nullptr);
 
   RegistrationRequest data;
   data.app_id = "someappid";
@@ -260,8 +260,8 @@ TEST(PersistedDataTest, LastOSVersion) {
   auto pref = std::make_unique<TestingPrefServiceSimple>();
   update_client::RegisterPrefs(pref->registry());
   RegisterPersistedDataPrefs(pref->registry());
-  auto metadata =
-      base::MakeRefCounted<PersistedData>(GetTestScope(), pref.get(), nullptr);
+  auto metadata = base::MakeRefCounted<PersistedData>(
+      GetUpdaterScopeForTesting(), pref.get(), nullptr);
 
   EXPECT_EQ(metadata->GetLastOSVersion(), std::nullopt);
 

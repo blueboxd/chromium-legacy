@@ -4,6 +4,8 @@
 
 #include "content/browser/private_aggregation/private_aggregation_host.h"
 
+#include <stddef.h>
+
 #include <iterator>
 #include <map>
 #include <optional>
@@ -15,11 +17,12 @@
 #include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/containers/flat_map.h"
+#include "base/containers/span.h"
 #include "base/feature_list.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/notreached.h"
+#include "base/not_fatal_until.h"
 #include "base/rand_util.h"
 #include "base/ranges/algorithm.h"
 #include "base/time/time.h"
@@ -41,7 +44,7 @@
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "third_party/blink/public/common/features.h"
-#include "third_party/blink/public/mojom/private_aggregation/aggregatable_report.mojom.h"
+#include "third_party/blink/public/mojom/aggregation_service/aggregatable_report.mojom.h"
 #include "third_party/blink/public/mojom/private_aggregation/private_aggregation_host.mojom.h"
 #include "url/origin.h"
 
@@ -228,7 +231,8 @@ void PrivateAggregationHost::ContributeToHistogram(
         contribution_ptrs) {
   const url::Origin& reporting_origin =
       receiver_set_.current_context()->worklet_origin;
-  DCHECK(network::IsOriginPotentiallyTrustworthy(reporting_origin));
+  CHECK(network::IsOriginPotentiallyTrustworthy(reporting_origin),
+        base::NotFatalUntil::M128);
 
   if (!GetContentClient()->browser()->IsPrivateAggregationAllowed(
           &*browser_context_, receiver_set_.current_context()->top_frame_origin,
@@ -237,18 +241,34 @@ void PrivateAggregationHost::ContributeToHistogram(
     return;
   }
 
-  // Null pointers should fail mojo validation.
-  DCHECK(base::ranges::none_of(
-      contribution_ptrs,
-      [](const blink::mojom::AggregatableReportHistogramContributionPtr&
-             contribution_ptr) { return contribution_ptr.is_null(); }));
+  using Contribution = blink::mojom::AggregatableReportHistogramContribution;
+  using ContributionPtr =
+      blink::mojom::AggregatableReportHistogramContributionPtr;
 
-  if (base::ranges::any_of(
-          contribution_ptrs,
-          [](const blink::mojom::AggregatableReportHistogramContributionPtr&
-                 contribution_ptr) { return contribution_ptr->value < 0; })) {
+  base::span<ContributionPtr> incoming_ptrs{contribution_ptrs};
+  std::vector<Contribution>& accepted =
+      receiver_set_.current_context()->contributions;
+
+  // Null pointers should fail mojo validation.
+  CHECK(base::ranges::none_of(incoming_ptrs, &ContributionPtr::is_null),
+        base::NotFatalUntil::M128);
+
+  if (base::ranges::any_of(incoming_ptrs,
+                           [](const ContributionPtr& contribution) {
+                             return contribution->value < 0;
+                           })) {
     mojo::ReportBadMessage("Negative value encountered");
     CloseCurrentPipe(PipeResult::kNegativeValue);
+    return;
+  }
+
+  // TODO(crbug.com/330744610): Allow filtering ID to be set.
+  if (base::ranges::any_of(incoming_ptrs,
+                           [&](const ContributionPtr& contribution) {
+                             return contribution->filtering_id.has_value();
+                           })) {
+    mojo::ReportBadMessage("Filtering ID set inappropriately");
+    CloseCurrentPipe(PipeResult::kFilteringIdInvalid);
     return;
   }
 
@@ -256,26 +276,20 @@ void PrivateAggregationHost::ContributeToHistogram(
   // potentially merging contributions with the same bucket (although that
   // should probably be done after budgeting).
 
-  bool too_many_contributions =
-      contribution_ptrs.size() +
-          receiver_set_.current_context()->contributions.size() >
-      kMaxNumberOfContributions;
-  if (too_many_contributions) {
+  CHECK_LE(accepted.size(), kMaxNumberOfContributions);
+  const size_t num_remaining = kMaxNumberOfContributions - accepted.size();
+
+  if (incoming_ptrs.size() > num_remaining) {
     receiver_set_.current_context()->too_many_contributions = true;
-    const int num_to_copy =
-        kMaxNumberOfContributions -
-        receiver_set_.current_context()->contributions.size();
-    CHECK_GE(num_to_copy, 0);
-    contribution_ptrs.resize(num_to_copy);
+    incoming_ptrs = incoming_ptrs.first(num_remaining);
   }
-  base::ranges::transform(
-      contribution_ptrs,
-      std::back_inserter(receiver_set_.current_context()->contributions),
-      [](const blink::mojom::AggregatableReportHistogramContributionPtr&
-             contribution_ptr) { return std::move(*contribution_ptr); });
+
+  base::ranges::transform(incoming_ptrs, std::back_inserter(accepted),
+                          &ContributionPtr::operator*);
 }
 
 AggregatableReportRequest PrivateAggregationHost::GenerateReportRequest(
+    base::ElapsedTimer timeout_or_disconnect_timer,
     blink::mojom::DebugModeDetailsPtr debug_mode_details,
     base::Time scheduled_report_time,
     base::Uuid report_id,
@@ -292,7 +306,9 @@ AggregatableReportRequest PrivateAggregationHost::GenerateReportRequest(
       std::move(contributions),
       // TODO(alexmt): Consider allowing this to be set.
       blink::mojom::AggregationServiceMode::kDefault,
-      std::move(aggregation_coordinator_origin), kMaxNumberOfContributions);
+      std::move(aggregation_coordinator_origin), kMaxNumberOfContributions,
+      // TODO(crbug.com/330744610): Allow this to be set.
+      /*filtering_id_byte_size=*/std::nullopt);
 
   CHECK(debug_mode_details);
   AggregatableReportSharedInfo shared_info(
@@ -327,6 +343,13 @@ AggregatableReportRequest PrivateAggregationHost::GenerateReportRequest(
 
   // All failure cases should've been handled by earlier validation code.
   CHECK(report_request.has_value());
+
+  if (context_id.has_value()) {
+    base::UmaHistogramTimes(
+        "PrivacySandbox.PrivateAggregation.Host."
+        "TimeToGenerateReportRequestWithContextId",
+        timeout_or_disconnect_timer.Elapsed());
+  }
 
   return std::move(report_request).value();
 }
@@ -404,8 +427,11 @@ void PrivateAggregationHost::OnReceiverDisconnected() {
 void PrivateAggregationHost::SendReportOnTimeoutOrDisconnect(
     ReceiverContext& receiver_context,
     base::TimeDelta remaining_timeout) {
+  base::ElapsedTimer timeout_or_disconnect_timer;
+
   const url::Origin& reporting_origin = receiver_context.worklet_origin;
-  DCHECK(network::IsOriginPotentiallyTrustworthy(reporting_origin));
+  CHECK(network::IsOriginPotentiallyTrustworthy(reporting_origin),
+        base::NotFatalUntil::M128);
 
   if (!GetContentClient()->browser()->IsPrivateAggregationAllowed(
           &*browser_context_, receiver_context.top_frame_origin,
@@ -435,7 +461,7 @@ void PrivateAggregationHost::SendReportOnTimeoutOrDisconnect(
     }
 
     // Null reports caused by no contributions never have debug mode enabled.
-    // TODO(crbug.com/1466668): Consider permitting this.
+    // TODO(crbug.com/40276453): Consider permitting this.
     receiver_context.report_debug_details =
         blink::mojom::DebugModeDetails::New();
   }
@@ -452,7 +478,8 @@ void PrivateAggregationHost::SendReportOnTimeoutOrDisconnect(
        receiver_context.timeout_enabled);
 
   ReportRequestGenerator report_request_generator = base::BindOnce(
-      GenerateReportRequest, std::move(receiver_context.report_debug_details),
+      GenerateReportRequest, std::move(timeout_or_disconnect_timer),
+      std::move(receiver_context.report_debug_details),
       /*scheduled_report_time=*/
       should_not_delay_this_report ? report_issued_time
                                    : GetScheduledReportTime(report_issued_time),
@@ -472,7 +499,7 @@ void PrivateAggregationHost::SendReportOnTimeoutOrDisconnect(
           /*api=*/receiver_context.api_for_budgeting);
 
   // The origin should be potentially trustworthy.
-  DCHECK(budget_key.has_value());
+  CHECK(budget_key.has_value(), base::NotFatalUntil::M128);
 
   on_report_request_details_received_.Run(
       std::move(report_request_generator),

@@ -14,13 +14,11 @@
 #include "third_party/blink/renderer/core/css/css_custom_ident_value.h"
 #include "third_party/blink/renderer/core/css/css_font_family_value.h"
 #include "third_party/blink/renderer/core/css/css_keyframes_rule.h"
-#include "third_party/blink/renderer/core/css/css_position_fallback_rule.h"
 #include "third_party/blink/renderer/core/css/css_position_try_rule.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value_mappings.h"
 #include "third_party/blink/renderer/core/css/css_selector.h"
 #include "third_party/blink/renderer/core/css/css_style_sheet.h"
 #include "third_party/blink/renderer/core/css/css_syntax_string_parser.h"
-#include "third_party/blink/renderer/core/css/css_try_rule.h"
 #include "third_party/blink/renderer/core/css/css_unparsed_declaration_value.h"
 #include "third_party/blink/renderer/core/css/parser/at_rule_descriptor_parser.h"
 #include "third_party/blink/renderer/core/css/parser/container_query_parser.h"
@@ -60,10 +58,6 @@ using std::swap;
 namespace blink {
 
 namespace {
-
-// Max number of @try rules in a @position-fallback rule to prevent the amount
-// of excess layout work that may be required.
-const size_t kPositionFallbackRuleMaxLength = 5;
 
 // This may still consume tokens if it fails
 AtomicString ConsumeStringOrURI(CSSParserTokenStream& stream) {
@@ -129,6 +123,8 @@ StyleRule::RuleType RuleTypeForMutableDeclaration(
       return StyleRule::kProperty;
     case kCSSFontPaletteValuesRuleMode:
       return StyleRule::kFontPaletteValues;
+    case kCSSPositionTryRuleMode:
+      return StyleRule::kPositionTry;
     default:
       return StyleRule::kStyle;
   }
@@ -236,7 +232,21 @@ static inline void FilterProperties(
 
 static ImmutableCSSPropertyValueSet* CreateCSSPropertyValueSet(
     HeapVector<CSSPropertyValue, 64>& parsed_properties,
-    CSSParserMode mode) {
+    CSSParserMode mode,
+    const Document* document) {
+  if (mode != kHTMLQuirksMode &&
+      (parsed_properties.size() < 2 ||
+       (parsed_properties.size() == 2 &&
+        parsed_properties[0].Id() != parsed_properties[1].Id()))) {
+    // Fast path for the situations where we can trivially detect that there can
+    // be no collision between properties, and don't need to reorder, make
+    // bitsets, or similar.
+    ImmutableCSSPropertyValueSet* result = ImmutableCSSPropertyValueSet::Create(
+        parsed_properties.data(), parsed_properties.size(), mode);
+    parsed_properties.clear();
+    return result;
+  }
+
   std::bitset<kNumCSSProperties> seen_properties;
   wtf_size_t unused_entries = parsed_properties.size();
   HeapVector<CSSPropertyValue, 64> results(unused_entries);
@@ -247,8 +257,37 @@ static ImmutableCSSPropertyValueSet* CreateCSSPropertyValueSet(
   FilterProperties(false, parsed_properties, results, unused_entries,
                    seen_properties, seen_custom_properties);
 
+  bool count_cursor_hand = false;
+  if (document && mode == kHTMLQuirksMode &&
+      seen_properties.test(GetCSSPropertyIDIndex(CSSPropertyID::kCursor))) {
+    // See if the properties contain “cursor: hand” without also containing
+    // “cursor: pointer”. This is a reasonable approximation for whether
+    // removing support for the former would actually matter. (Of course,
+    // we don't check whether “cursor: hand” could lose in the cascade
+    // due to properties coming from other declarations, but that would be
+    // much more complicated)
+    bool contains_cursor_hand = false;
+    bool contains_cursor_pointer = false;
+    for (const CSSPropertyValue& property : parsed_properties) {
+      const CSSIdentifierValue* value =
+          DynamicTo<CSSIdentifierValue>(property.Value());
+      if (value) {
+        if (value->WasQuirky()) {
+          contains_cursor_hand = true;
+        } else if (value->GetValueID() == CSSValueID::kPointer) {
+          contains_cursor_pointer = true;
+        }
+      }
+    }
+    if (contains_cursor_hand && !contains_cursor_pointer) {
+      document->CountUse(WebFeature::kQuirksModeCursorHand);
+      count_cursor_hand = true;
+    }
+  }
+
   ImmutableCSSPropertyValueSet* result = ImmutableCSSPropertyValueSet::Create(
-      results.data() + unused_entries, results.size() - unused_entries, mode);
+      results.data() + unused_entries, results.size() - unused_entries, mode,
+      count_cursor_hand);
   parsed_properties.clear();
   return result;
 }
@@ -270,13 +309,14 @@ ImmutableCSSPropertyValueSet* CSSParserImpl::ParseInlineStyleDeclaration(
                                 CSSNestingType::kNone,
                                 /*parent_rule_for_nesting=*/nullptr,
                                 /*child_rules=*/nullptr);
-  return CreateCSSPropertyValueSet(parser.parsed_properties_, mode);
+  return CreateCSSPropertyValueSet(parser.parsed_properties_, mode, &document);
 }
 
 ImmutableCSSPropertyValueSet* CSSParserImpl::ParseInlineStyleDeclaration(
     const String& string,
     CSSParserMode parser_mode,
-    SecureContextMode secure_context_mode) {
+    SecureContextMode secure_context_mode,
+    const Document* document) {
   auto* context =
       MakeGarbageCollected<CSSParserContext>(parser_mode, secure_context_mode);
   CSSParserImpl parser(context);
@@ -286,7 +326,8 @@ ImmutableCSSPropertyValueSet* CSSParserImpl::ParseInlineStyleDeclaration(
                                 CSSNestingType::kNone,
                                 /*parent_rule_for_nesting=*/nullptr,
                                 /*child_rules=*/nullptr);
-  return CreateCSSPropertyValueSet(parser.parsed_properties_, parser_mode);
+  return CreateCSSPropertyValueSet(parser.parsed_properties_, parser_mode,
+                                   document);
 }
 
 bool CSSParserImpl::ParseDeclarationList(
@@ -555,7 +596,8 @@ CSSPropertyValueSet* CSSParserImpl::ParseDeclarationListForLazyStyle(
                                 CSSNestingType::kNone,
                                 /*parent_rule_for_nesting=*/nullptr,
                                 /*child_rules=*/nullptr);
-  return CreateCSSPropertyValueSet(parser.parsed_properties_, context->Mode());
+  return CreateCSSPropertyValueSet(parser.parsed_properties_, context->Mode(),
+                                   context->GetDocument());
 }
 
 static CSSParserImpl::AllowedRulesType ComputeNewAllowedRules(
@@ -563,7 +605,6 @@ static CSSParserImpl::AllowedRulesType ComputeNewAllowedRules(
     StyleRuleBase* rule) {
   if (!rule || allowed_rules == CSSParserImpl::kKeyframeRules ||
       allowed_rules == CSSParserImpl::kFontFeatureRules ||
-      allowed_rules == CSSParserImpl::kTryRules ||
       allowed_rules == CSSParserImpl::kNoRules) {
     return allowed_rules;
   }
@@ -605,9 +646,6 @@ bool CSSParserImpl::ConsumeRuleList(CSSParserTokenStream& stream,
       break;
     case kFontFeatureRuleList:
       allowed_rules = kFontFeatureRules;
-      break;
-    case kPositionFallbackRuleList:
-      allowed_rules = kTryRules;
       break;
     default:
       NOTREACHED();
@@ -762,12 +800,6 @@ StyleRuleBase* CSSParserImpl::ConsumeAtRuleContents(
   } else if (allowed_rules <= kAllowNamespaceRules &&
              id == CSSAtRuleID::kCSSAtRuleNamespace) {
     return ConsumeNamespaceRule(stream);
-  } else if (allowed_rules == kTryRules) {
-    if (id == CSSAtRuleID::kCSSAtRuleTry) {
-      return ConsumeTryRule(stream);
-    }
-    ConsumeErroneousAtRule(stream, id);
-    return nullptr;
   } else if (allowed_rules == kFontFeatureRules) {
     if (id == CSSAtRuleID::kCSSAtRuleStylistic ||
         id == CSSAtRuleID::kCSSAtRuleStyleset ||
@@ -825,8 +857,6 @@ StyleRuleBase* CSSParserImpl::ConsumeAtRuleContents(
         return ConsumeScopeRule(stream, nesting_type, parent_rule_for_nesting);
       case CSSAtRuleID::kCSSAtRuleCounterStyle:
         return ConsumeCounterStyleRule(stream);
-      case CSSAtRuleID::kCSSAtRulePositionFallback:
-        return ConsumePositionFallbackRule(stream);
       case CSSAtRuleID::kCSSAtRuleFunction:
         return ConsumeFunctionRule(stream);
       case CSSAtRuleID::kCSSAtRulePositionTry:
@@ -835,7 +865,6 @@ StyleRuleBase* CSSParserImpl::ConsumeAtRuleContents(
       case CSSAtRuleID::kCSSAtRuleCharset:
       case CSSAtRuleID::kCSSAtRuleImport:
       case CSSAtRuleID::kCSSAtRuleNamespace:
-      case CSSAtRuleID::kCSSAtRuleTry:
       case CSSAtRuleID::kCSSAtRuleStylistic:
       case CSSAtRuleID::kCSSAtRuleStyleset:
       case CSSAtRuleID::kCSSAtRuleCharacterVariant:
@@ -904,16 +933,6 @@ StyleRuleBase* CSSParserImpl::ConsumeQualifiedRule(
     stream.ConsumeUntilPeekedTypeIs<kAtKeywordToken>();
     return nullptr;
   }
-  if (allowed_rules == kTryRules) {
-    // We reach here only when there's a parse error. Treat everything before
-    // the first block we reach as a bad prelude, then skip this block.
-    stream.EnsureLookAhead();
-    stream.ConsumeUntilPeekedTypeIs<kLeftBraceToken>();
-    if (!stream.AtEnd()) {
-      CSSParserTokenStream::BlockGuard guard(stream);
-    }
-    return nullptr;
-  }
 
   NOTREACHED();
   return nullptr;
@@ -958,7 +977,8 @@ StyleRulePageMargin* CSSParserImpl::ConsumePageMarginRule(
                          /*parent_rule_for_nesting=*/nullptr,
                          /*child_rules=*/nullptr);
   return MakeGarbageCollected<StyleRulePageMargin>(
-      rule_id, CreateCSSPropertyValueSet(parsed_properties_, context_->Mode()));
+      rule_id, CreateCSSPropertyValueSet(parsed_properties_, context_->Mode(),
+                                         context_->GetDocument()));
 }
 
 StyleRuleCharset* CSSParserImpl::ConsumeCharsetRule(
@@ -1119,7 +1139,8 @@ StyleRule* CSSParserImpl::CreateImplicitNestedRule(
 
   return StyleRule::Create(
       base::span<CSSSelector>{selectors.data(), selectors.size()},
-      CreateCSSPropertyValueSet(parsed_properties_, context_->Mode()));
+      CreateCSSPropertyValueSet(parsed_properties_, context_->Mode(),
+                                context_->GetDocument()));
 }
 
 StyleRule* CSSParserImpl::CreateInvisibleRule(const CSSSelector* selector_list,
@@ -1151,7 +1172,8 @@ StyleRule* CSSParserImpl::CreateInvisibleRule(const CSSSelector* selector_list,
 
   return StyleRule::Create(
       base::span<CSSSelector>{selectors.data(), selectors.size()},
-      CreateCSSPropertyValueSet(invisible_declarations, context_->Mode()));
+      CreateCSSPropertyValueSet(invisible_declarations, context_->Mode(),
+                                context_->GetDocument()));
 }
 
 void CSSParserImpl::EmitInvisibleRuleIfNeeded(
@@ -1347,8 +1369,8 @@ StyleRuleFontFace* CSSParserImpl::ConsumeFontFaceRule(
   ConsumeDeclarationList(stream, StyleRule::kFontFace, CSSNestingType::kNone,
                          /*parent_rule_for_nesting=*/nullptr,
                          /*child_rules=*/nullptr);
-  return MakeGarbageCollected<StyleRuleFontFace>(
-      CreateCSSPropertyValueSet(parsed_properties_, kCSSFontFaceRuleMode));
+  return MakeGarbageCollected<StyleRuleFontFace>(CreateCSSPropertyValueSet(
+      parsed_properties_, kCSSFontFaceRuleMode, context_->GetDocument()));
 }
 
 StyleRuleKeyframes* CSSParserImpl::ConsumeKeyframesRule(
@@ -1621,7 +1643,8 @@ StyleRulePage* CSSParserImpl::ConsumePageRule(CSSParserTokenStream& stream) {
 
   return MakeGarbageCollected<StyleRulePage>(
       selector_list,
-      CreateCSSPropertyValueSet(parsed_properties_, context_->Mode()),
+      CreateCSSPropertyValueSet(parsed_properties_, context_->Mode(),
+                                context_->GetDocument()),
       child_rules);
 }
 
@@ -1657,8 +1680,8 @@ StyleRuleProperty* CSSParserImpl::ConsumePropertyRule(
                          /*parent_rule_for_nesting=*/nullptr,
                          /*child_rules=*/nullptr);
   StyleRuleProperty* rule = MakeGarbageCollected<StyleRuleProperty>(
-      name,
-      CreateCSSPropertyValueSet(parsed_properties_, kCSSPropertyRuleMode));
+      name, CreateCSSPropertyValueSet(parsed_properties_, kCSSPropertyRuleMode,
+                                      context_->GetDocument()));
 
   std::optional<CSSSyntaxDefinition> syntax =
       PropertyRegistration::ConvertSyntax(rule->GetSyntax());
@@ -1720,7 +1743,8 @@ StyleRuleCounterStyle* CSSParserImpl::ConsumeCounterStyleRule(
                          /*parent_rule_for_nesting=*/nullptr,
                          /*child_rules=*/nullptr);
   return MakeGarbageCollected<StyleRuleCounterStyle>(
-      name, CreateCSSPropertyValueSet(parsed_properties_, context_->Mode()));
+      name, CreateCSSPropertyValueSet(parsed_properties_, context_->Mode(),
+                                      context_->GetDocument()));
 }
 
 StyleRuleFontPaletteValues* CSSParserImpl::ConsumeFontPaletteValuesRule(
@@ -1758,15 +1782,14 @@ StyleRuleFontPaletteValues* CSSParserImpl::ConsumeFontPaletteValuesRule(
                          /*child_rules=*/nullptr);
   return MakeGarbageCollected<StyleRuleFontPaletteValues>(
       name, CreateCSSPropertyValueSet(parsed_properties_,
-                                      kCSSFontPaletteValuesRuleMode));
+                                      kCSSFontPaletteValuesRuleMode,
+                                      context_->GetDocument()));
 }
 
 StyleRuleBase* CSSParserImpl::ConsumeScopeRule(
     CSSParserTokenStream& stream,
     CSSNestingType nesting_type,
     StyleRule* parent_rule_for_nesting) {
-  DCHECK(RuntimeEnabledFeatures::CSSScopeEnabled());
-
   wtf_size_t prelude_offset_start = stream.LookAheadOffset();
   CSSParserTokenRange prelude = ConsumeAtRulePrelude(stream);
   wtf_size_t prelude_offset_end = stream.LookAheadOffset();
@@ -1834,7 +1857,8 @@ StyleRuleViewTransition* CSSParserImpl::ConsumeViewTransitionRule(
                          /*child_rules=*/nullptr);
 
   return MakeGarbageCollected<StyleRuleViewTransition>(
-      *CreateCSSPropertyValueSet(parsed_properties_, context_->Mode()));
+      *CreateCSSPropertyValueSet(parsed_properties_, context_->Mode(),
+                                 context_->GetDocument()));
 }
 
 StyleRuleContainer* CSSParserImpl::ConsumeContainerRule(
@@ -2015,100 +2039,16 @@ StyleRulePositionTry* CSSParserImpl::ConsumePositionTryRule(
   if (observer_) {
     observer_->StartRuleHeader(StyleRule::kPositionTry, prelude_offset_start);
     observer_->EndRuleHeader(prelude_offset_end);
-    observer_->StartRuleBody(stream.Offset());
   }
 
   ConsumeDeclarationList(stream, StyleRule::kPositionTry, CSSNestingType::kNone,
                          /*parent_rule_for_nesting=*/nullptr,
                          /*child_rules=*/nullptr);
 
-  if (observer_) {
-    observer_->EndRuleBody(stream.Offset());
-  }
-
   return MakeGarbageCollected<StyleRulePositionTry>(
       AtomicString(name),
-      CreateCSSPropertyValueSet(parsed_properties_, context_->Mode()));
-}
-
-StyleRulePositionFallback* CSSParserImpl::ConsumePositionFallbackRule(
-    CSSParserTokenStream& stream) {
-  wtf_size_t prelude_offset_start = stream.LookAheadOffset();
-  CSSParserTokenRange prelude = ConsumeAtRulePrelude(stream);
-  wtf_size_t prelude_offset_end = stream.LookAheadOffset();
-  if (!ConsumeEndOfPreludeForAtRuleWithBlock(stream)) {
-    return nullptr;
-  }
-  CSSParserTokenStream::BlockGuard guard(stream);
-
-  const CSSParserToken& name_token = prelude.ConsumeIncludingWhitespace();
-  if (!prelude.AtEnd()) {
-    return nullptr;
-  }
-
-  // <dashed-ident>, and -internal-* for UA sheets only.
-  String name;
-  if (name_token.GetType() == kIdentToken) {
-    name = name_token.Value().ToString();
-    if (!name.StartsWith("--") &&
-        !(context_->Mode() == kUASheetMode && name.StartsWith("-internal-"))) {
-      return nullptr;
-    }
-  } else {
-    return nullptr;
-  }
-
-  if (observer_) {
-    observer_->StartRuleHeader(StyleRule::kPositionFallback,
-                               prelude_offset_start);
-    observer_->EndRuleHeader(prelude_offset_end);
-    observer_->StartRuleBody(stream.Offset());
-  }
-
-  const bool has_max_length = context_->Mode() != kUASheetMode;
-  HeapVector<Member<StyleRuleBase>> try_rules;
-  ConsumeRuleList(
-      stream, kPositionFallbackRuleList, CSSNestingType::kNone,
-      /*parent_rule_for_nesting=*/nullptr,
-      [&try_rules, has_max_length](StyleRuleBase* try_rule, wtf_size_t) {
-        if (!has_max_length ||
-            try_rules.size() < kPositionFallbackRuleMaxLength) {
-          try_rules.push_back(try_rule);
-        }
-      });
-
-  if (observer_) {
-    observer_->EndRuleBody(stream.Offset());
-  }
-
-  return MakeGarbageCollected<StyleRulePositionFallback>(AtomicString(name),
-                                                         std::move(try_rules));
-}
-
-StyleRuleTry* CSSParserImpl::ConsumeTryRule(CSSParserTokenStream& stream) {
-  wtf_size_t prelude_offset_start = stream.LookAheadOffset();
-  CSSParserTokenRange prelude = ConsumeAtRulePrelude(stream);
-  wtf_size_t prelude_offset_end = stream.LookAheadOffset();
-  if (!ConsumeEndOfPreludeForAtRuleWithBlock(stream)) {
-    return nullptr;
-  }
-  CSSParserTokenStream::BlockGuard guard(stream);
-
-  prelude.ConsumeWhitespace();
-  if (!prelude.AtEnd()) {
-    return nullptr;
-  }
-
-  if (observer_) {
-    observer_->StartRuleHeader(StyleRule::kTry, prelude_offset_start);
-    observer_->EndRuleHeader(prelude_offset_end);
-  }
-
-  ConsumeDeclarationList(stream, StyleRule::kTry, CSSNestingType::kNone,
-                         /*parent_rule_for_nesting=*/nullptr,
-                         /*child_rules=*/nullptr);
-  return MakeGarbageCollected<StyleRuleTry>(
-      CreateCSSPropertyValueSet(parsed_properties_, context_->Mode()));
+      CreateCSSPropertyValueSet(parsed_properties_, kCSSPositionTryRuleMode,
+                                context_->GetDocument()));
 }
 
 // Parse a type for CSS Functions; e.g. length, color, etc..
@@ -2321,7 +2261,8 @@ StyleRuleKeyframe* CSSParserImpl::ConsumeKeyframeStyleRule(
 
   return MakeGarbageCollected<StyleRuleKeyframe>(
       std::move(key_list),
-      CreateCSSPropertyValueSet(parsed_properties_, kCSSKeyframeRuleMode));
+      CreateCSSPropertyValueSet(parsed_properties_, kCSSKeyframeRuleMode,
+                                context_->GetDocument()));
 }
 
 // A (hopefully) fast check for whether the given declaration block could
@@ -2383,8 +2324,7 @@ StyleRule* CSSParserImpl::ConsumeStyleRule(
   //
   // https://drafts.csswg.org/css-syntax/#consume-qualified-rule
   bool custom_property_ambiguity = false;
-  if (RuntimeEnabledFeatures::CSSNestingIdentEnabled() &&
-      CSSVariableParser::IsValidVariableName(stream.Peek())) {
+  if (CSSVariableParser::IsValidVariableName(stream.Peek())) {
     CSSParserTokenStream::State state = stream.Save();
     stream.ConsumeIncludingWhitespace();  // <ident>
     custom_property_ambiguity = stream.Peek().GetType() == kColonToken;
@@ -2472,8 +2412,8 @@ StyleRule* CSSParserImpl::ConsumeStyleRuleContents(
   for (StyleRuleBase* child_rule : child_rules) {
     style_rule->AddChildRule(child_rule);
   }
-  style_rule->SetProperties(
-      CreateCSSPropertyValueSet(parsed_properties_, context_->Mode()));
+  style_rule->SetProperties(CreateCSSPropertyValueSet(
+      parsed_properties_, context_->Mode(), context_->GetDocument()));
   return style_rule;
 }
 
@@ -2510,7 +2450,7 @@ void CSSParserImpl::ConsumeDeclarationList(
       rule_type == StyleRule::kCounterStyle ||
       rule_type == StyleRule::kFontPaletteValues ||
       rule_type == StyleRule::kKeyframe || rule_type == StyleRule::kScope ||
-      rule_type == StyleRule::kViewTransition || rule_type == StyleRule::kTry ||
+      rule_type == StyleRule::kViewTransition ||
       rule_type == StyleRule::kPositionTry;
   bool use_observer = observer_ && is_observer_rule_type;
   if (use_observer) {
@@ -2578,12 +2518,9 @@ void CSSParserImpl::ConsumeDeclarationList(
             context_->Count(WebFeature::kCSSDeclarationAfterNestedRule);
           }
           break;
-        } else if (!RuntimeEnabledFeatures::CSSNestingIdentEnabled() ||
-                   stream.UncheckedPeek().GetType() == kSemicolonToken) {
-          // Recover from an error when CSSNestingIdent is not enabled.
-          // When CSSNestingIdent is enabled, we would instead normally Restore
-          // the stream and retry as a nested style rule, but as an optimization
-          // we avoid this restart if we ended on a kSemicolonToken, as this
+        } else if (stream.UncheckedPeek().GetType() == kSemicolonToken) {
+          // As an optimization, we avoid the restart below (retrying as a
+          // nested style rule) if we ended on a kSemicolonToken, as this
           // situation can't produce a valid rule.
           stream.ConsumeUntilPeekedTypeIs<kSemicolonToken>();
           if (!stream.AtEnd()) {
@@ -2880,7 +2817,6 @@ bool CSSParserImpl::ConsumeDeclaration(CSSParserTokenStream& stream,
             ConsumeRestrictedPropertyValue(stream);
         important = RemoveImportantAnnotationIfPresent(tokenized_value);
         if (important && (rule_type == StyleRule::kKeyframe ||
-                          rule_type == StyleRule::kTry ||
                           rule_type == StyleRule::kPositionTry)) {
           return false;
         }
@@ -2894,7 +2830,7 @@ bool CSSParserImpl::ConsumeDeclaration(CSSParserTokenStream& stream,
 
   if (observer_ &&
       (rule_type == StyleRule::kStyle || rule_type == StyleRule::kKeyframe ||
-       rule_type == StyleRule::kProperty || rule_type == StyleRule::kTry ||
+       rule_type == StyleRule::kProperty ||
        rule_type == StyleRule::kPositionTry ||
        rule_type == StyleRule::kFontPaletteValues)) {
     if (!id) {
@@ -2957,10 +2893,6 @@ CSSTokenizedValue CSSParserImpl::ConsumeValue(
 
 CSSTokenizedValue CSSParserImpl::ConsumeRestrictedPropertyValue(
     CSSParserTokenStream& stream) {
-  if (!RuntimeEnabledFeatures::CSSNestingIdentEnabled()) {
-    return ConsumeUnrestrictedPropertyValue(stream);
-  }
-
   if (stream.Peek().GetType() == kLeftBraceToken) {
     // '{}' must be the whole value, hence we simply consume a component
     // value from the stream, and consider this the whole value.

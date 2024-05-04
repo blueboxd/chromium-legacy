@@ -139,9 +139,6 @@ class AutofillWebDataService : public WebDataServiceBase {
   // |guid| is identifier of the credit card to remove.
   void RemoveCreditCard(const std::string& guid);
 
-  // Schedules a task to add a full server credit card to the web database.
-  void AddFullServerCreditCard(const CreditCard& credit_card);
-
   // Methods to schedule a task to add, update, remove, clear server cvc in the
   // web database.
   void AddServerCvc(int64_t instrument_id, const std::u16string& cvc);
@@ -159,12 +156,6 @@ class AutofillWebDataService : public WebDataServiceBase {
   WebDataServiceBase::Handle GetCreditCards(WebDataServiceConsumer* consumer);
   WebDataServiceBase::Handle GetServerCreditCards(
       WebDataServiceConsumer* consumer);
-
-  // Toggles the record for a server credit card between masked (only last 4
-  // digits) and full (all digits).
-  // TODO(crbug.com/1497734): Remove this method.
-  void UnmaskServerCreditCard(const CreditCard& card,
-                              const std::u16string& full_number);
 
   // Initiates the request for Payments customer data.  The method
   // OnWebDataServiceRequestDone of |consumer| gets called when the request is
@@ -212,7 +203,6 @@ class AutofillWebDataService : public WebDataServiceBase {
   void ClearAllCreditCardBenefits();
 
   void ClearAllServerData();
-  void ClearAllLocalData();
 
   // Updates the metadata for a server card (masked or not).
   void UpdateServerCardMetadata(const CreditCard& credit_card);
@@ -252,6 +242,12 @@ class AutofillWebDataService : public WebDataServiceBase {
   // hasn't been used since over the retention threshold.
   virtual WebDataServiceBase::Handle RemoveExpiredAutocompleteEntries(
       WebDataServiceConsumer* consumer);
+
+  // Schedules a task to add a server credit card to the web database.
+  //
+  // This is used for tests only. In production, server cards are set directly
+  // by Chrome Sync code.
+  void AddServerCreditCardForTesting(const CreditCard& credit_card);
 
  protected:
   ~AutofillWebDataService() override;

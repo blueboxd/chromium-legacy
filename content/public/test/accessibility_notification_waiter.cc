@@ -20,7 +20,6 @@
 #include "content/public/browser/browser_plugin_guest_manager.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/url_constants.h"
 #include "content/public/test/test_utils.h"
 #include "ui/accessibility/ax_node.h"
 
@@ -158,10 +157,6 @@ void AccessibilityNotificationWaiter::OnAccessibilityEvent(
     RenderFrameHostImpl* rfhi,
     ax::mojom::Event event_type,
     int event_target_id) {
-  if (IsAboutBlank(rfhi)) {
-    return;
-  }
-
   VLOG(1) << "OnAccessibilityEvent " << event_type;
 
   if (event_to_wait_for_ == ax::mojom::Event::kNone ||
@@ -206,10 +201,6 @@ void AccessibilityNotificationWaiter::OnGeneratedEvent(
   DCHECK_NE(event_target_id, ui::kInvalidAXNodeID);
   VLOG(1) << "OnGeneratedEvent " << event;
 
-  if (IsAboutBlank(/*render_frame=*/nullptr)) {
-    return;
-  }
-
   if (generated_event_to_wait_for_ == event) {
     event_target_id_ = event_target_id;
     event_browser_accessibility_manager_ = manager;
@@ -222,16 +213,12 @@ void AccessibilityNotificationWaiter::OnGeneratedEvent(
 }
 
 void AccessibilityNotificationWaiter::OnLocationsChanged() {
-  if (IsAboutBlank(/*render_frame=*/nullptr)) {
-    return;
-  }
-
   notification_received_ = true;
   loop_runner_quit_closure_.Run();
 }
 
-// TODO(982776): Remove this method once we migrate to using AXEventGenerator
-// for focus changed events.
+// TODO(crbug.com/41470112): Remove this method once we migrate to using
+// AXEventGenerator for focus changed events.
 void AccessibilityNotificationWaiter::OnFocusChanged() {
   WebContentsImpl* web_contents_impl =
       static_cast<WebContentsImpl*>(web_contents());
@@ -251,16 +238,6 @@ const ui::AXTree& AccessibilityNotificationWaiter::GetAXTreeForFrame(
   BrowserAccessibilityManager* manager =
       web_contents_impl->GetRootBrowserAccessibilityManager();
   return manager && manager->ax_tree() ? *manager->ax_tree() : *empty_tree;
-}
-
-bool AccessibilityNotificationWaiter::IsAboutBlank(
-    RenderFrameHostImpl* render_frame) {
-  // Skip any accessibility notifications related to "about:blank",
-  // to avoid a possible race condition between the test beginning
-  // listening for accessibility events and "about:blank" loading.
-  const auto& ax_tree =
-      render_frame ? GetAXTreeForFrame(render_frame) : GetAXTree();
-  return ax_tree.data().url == url::kAboutBlankURL;
 }
 
 // WebContentsObserver override:

@@ -421,11 +421,13 @@ TEST_F(SlimLayerTreeCompositorFrameTest, SuccessPresentationCallback) {
   std::optional<base::TimeTicks> feedback_time_opt_1;
   std::optional<base::TimeTicks> feedback_time_opt_2;
   layer_tree_->RequestSuccessfulPresentationTimeForNextFrame(
-      base::BindLambdaForTesting(
-          [&](base::TimeTicks timeticks) { feedback_time_opt_1 = timeticks; }));
+      base::BindLambdaForTesting([&](const viz::FrameTimingDetails& details) {
+        feedback_time_opt_1 = details.presentation_feedback.timestamp;
+      }));
   layer_tree_->RequestSuccessfulPresentationTimeForNextFrame(
-      base::BindLambdaForTesting(
-          [&](base::TimeTicks timeticks) { feedback_time_opt_2 = timeticks; }));
+      base::BindLambdaForTesting([&](const viz::FrameTimingDetails& details) {
+        feedback_time_opt_2 = details.presentation_feedback.timestamp;
+      }));
   viz::CompositorFrame frame1 = ProduceFrame();
 
   viz::FrameTimingDetailsMap timing_map;
@@ -450,15 +452,17 @@ TEST_F(SlimLayerTreeCompositorFrameTest,
 
   std::optional<base::TimeTicks> feedback_time_opt_1;
   layer_tree_->RequestSuccessfulPresentationTimeForNextFrame(
-      base::BindLambdaForTesting(
-          [&](base::TimeTicks timeticks) { feedback_time_opt_1 = timeticks; }));
+      base::BindLambdaForTesting([&](const viz::FrameTimingDetails& details) {
+        feedback_time_opt_1 = details.presentation_feedback.timestamp;
+      }));
   viz::CompositorFrame frame1 = ProduceFrame();
   viz::CompositorFrame frame2 = ProduceFrame();
 
   std::optional<base::TimeTicks> feedback_time_opt_2;
   layer_tree_->RequestSuccessfulPresentationTimeForNextFrame(
-      base::BindLambdaForTesting(
-          [&](base::TimeTicks timeticks) { feedback_time_opt_2 = timeticks; }));
+      base::BindLambdaForTesting([&](const viz::FrameTimingDetails& details) {
+        feedback_time_opt_2 = details.presentation_feedback.timestamp;
+      }));
   viz::CompositorFrame frame3 = ProduceFrame();
 
   // Frame 1 failed. Should not run either callback.
@@ -593,10 +597,6 @@ TEST_F(SlimLayerTreeCompositorFrameTest, UIResourceLayerAppendQuads) {
     EXPECT_NE(viz::kInvalidResourceId, texture_quad->resource_id());
     EXPECT_EQ(gfx::PointF(0.0f, 0.0f), texture_quad->uv_top_left);
     EXPECT_EQ(gfx::PointF(1.0f, 1.0f), texture_quad->uv_bottom_right);
-    EXPECT_EQ(1.0f, texture_quad->vertex_opacity[0]);
-    EXPECT_EQ(1.0f, texture_quad->vertex_opacity[1]);
-    EXPECT_EQ(1.0f, texture_quad->vertex_opacity[2]);
-    EXPECT_EQ(1.0f, texture_quad->vertex_opacity[3]);
 
     ASSERT_EQ(frame.resource_list.size(), 1u);
     EXPECT_EQ(frame.resource_list[0].id, texture_quad->resource_id());
@@ -610,7 +610,6 @@ TEST_F(SlimLayerTreeCompositorFrameTest, UIResourceLayerAppendQuads) {
 
   ui_resource_layer->SetUV(gfx::PointF(0.25f, 0.25f),
                            gfx::PointF(0.75f, 0.75f));
-  ui_resource_layer->SetVertexOpacity(0.1f, 0.2f, 0.3f, 0.4f);
   {
     auto image_info =
         SkImageInfo::Make(2, 2, kN32_SkColorType, kPremul_SkAlphaType);
@@ -632,10 +631,6 @@ TEST_F(SlimLayerTreeCompositorFrameTest, UIResourceLayerAppendQuads) {
     EXPECT_NE(viz::kInvalidResourceId, texture_quad->resource_id());
     EXPECT_EQ(gfx::PointF(0.25f, 0.25f), texture_quad->uv_top_left);
     EXPECT_EQ(gfx::PointF(0.75f, 0.75f), texture_quad->uv_bottom_right);
-    EXPECT_EQ(0.1f, texture_quad->vertex_opacity[0]);
-    EXPECT_EQ(0.2f, texture_quad->vertex_opacity[1]);
-    EXPECT_EQ(0.3f, texture_quad->vertex_opacity[2]);
-    EXPECT_EQ(0.4f, texture_quad->vertex_opacity[3]);
 
     ASSERT_EQ(frame.resource_list.size(), 1u);
     EXPECT_EQ(frame.resource_list[0].id, texture_quad->resource_id());
@@ -772,10 +767,6 @@ TEST_F(SlimLayerTreeCompositorFrameTest, NinePatchLayerAppendQuads) {
     EXPECT_TRUE(texture_quad->nearest_neighbor);
     EXPECT_EQ(expected_uv_top_left[i], texture_quad->uv_top_left);
     EXPECT_EQ(expected_uv_bottom_right[i], texture_quad->uv_bottom_right);
-    EXPECT_EQ(1.0f, texture_quad->vertex_opacity[0]);
-    EXPECT_EQ(1.0f, texture_quad->vertex_opacity[1]);
-    EXPECT_EQ(1.0f, texture_quad->vertex_opacity[2]);
-    EXPECT_EQ(1.0f, texture_quad->vertex_opacity[3]);
 
     EXPECT_EQ(frame.resource_list[0].id, texture_quad->resource_id());
     EXPECT_EQ(frame_sink_->uploaded_resources().begin()->second.viz_resource_id,

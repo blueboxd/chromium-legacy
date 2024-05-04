@@ -29,6 +29,10 @@
 
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "ui/events/event_utils.h"
+#include "ui/events/platform_event.h"
+#include "ui/gfx/image/image.h"
+#include "ui/resources/grit/ui_resources.h"
 
 using content::DropData;
 using features::kMacWebContentsOcclusion;
@@ -137,7 +141,7 @@ STATIC_ASSERT_ENUM(NSDragOperationMove, ui::DragDropTypes::DRAG_MOVE);
 
   gfx::Rect _windowControlsOverlayRect;
 
-  // TODO(https://crbug.com/883031): Remove this when kMacWebContentsOcclusion
+  // TODO(crbug.com/40593221): Remove this when kMacWebContentsOcclusion
   // is enabled by default.
   BOOL _inFullScreenTransition;
   BOOL _willSetWebContentsOccludedAfterDelay;
@@ -225,8 +229,7 @@ STATIC_ASSERT_ENUM(NSDragOperationMove, ui::DragDropTypes::DRAG_MOVE);
 - (void)mouseEvent:(NSEvent*)theEvent {
   if (!_host)
     return;
-  _host->OnMouseEvent([theEvent type] == NSEventTypeMouseMoved,
-                      [theEvent type] == NSEventTypeMouseExited);
+  _host->OnMouseEvent(ui::EventFromNative(base::apple::OwnedNSEvent(theEvent)));
 }
 
 - (void)setMouseDownCanMoveWindow:(BOOL)canMove {

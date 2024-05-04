@@ -30,7 +30,6 @@
 #include "chrome/browser/signin/chrome_device_id_helper.h"
 #include "chrome/browser/signin/force_signin_verifier.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/signin/signin_features.h"
 #include "chrome/browser/signin/signin_util.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/channel_info.h"
@@ -52,7 +51,6 @@
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/primary_account_change_event.h"
 #include "components/signin/public/identity_manager/scope_set.h"
-#include "components/supervised_user/core/common/buildflags.h"
 #include "components/version_info/channel.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
@@ -60,10 +58,6 @@
 #include "google_apis/gaia/gaia_urls.h"
 #include "ui/base/models/tree_node_iterator.h"
 #include "url/gurl.h"
-
-#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-#include "components/supervised_user/core/common/supervised_user_constants.h"
-#endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/signin/wait_for_network_callback_helper_ash.h"
@@ -110,7 +104,7 @@
 namespace {
 
 // List of sources for which sign out is always allowed.
-// TODO(crbug.com/1161966): core product logic should not rely on metric
+// TODO(crbug.com/40162614): core product logic should not rely on metric
 // sources/callsites.  Consider removing such logic, potentially as part of
 // introducing a cross-platform SigninManager.
 signin_metrics::ProfileSignout kAlwaysAllowedSignoutSources[] = {
@@ -141,6 +135,8 @@ signin_metrics::ProfileSignout kAlwaysAllowedSignoutSources[] = {
     // Data not synced yet.
     // Used when moving the primary account (e.g. profile switch).
     signin_metrics::ProfileSignout::kMovePrimaryAccount,
+    // Allowed as the profile is being deleted anyway.
+    signin_metrics::ProfileSignout::kSignoutDuringProfileDeletion,
 };
 
 // Returns the histogram suffix name per group of `signin_metrics::AccessPoint`.
@@ -311,7 +307,7 @@ void ChromeSigninClient::PreSignOut(
   // `signin_metrics::ProfileSignout::kRevokeSyncFromSettings` when the user
   // turns off sync from the settings, we should also keep the window open at
   // this point.
-  // TODO(https://crbug.com/1478102): Check for managed accounts to be modified
+  // TODO(crbug.com/40280466): Check for managed accounts to be modified
   // when aligning Managed vs Consumer accounts.
   bool user_declines_sync_after_consenting_to_management =
       (signout_source_metric == signin_metrics::ProfileSignout::kAbortSignin ||
@@ -368,7 +364,7 @@ std::unique_ptr<GaiaAuthFetcher> ChromeSigninClient::CreateGaiaAuthFetcher(
   if (BoundSessionCookieRefreshService* bound_session_cookie_refresh_service =
           BoundSessionCookieRefreshServiceFactory::GetForProfile(profile_);
       bound_session_cookie_refresh_service) {
-    CHECK(switches::IsBoundSessionCredentialsEnabled());
+    CHECK(switches::IsBoundSessionCredentialsEnabled(profile_->GetPrefs()));
     return std::make_unique<ThrottledGaiaAuthFetcher>(
         consumer, source, GetURLLoaderFactory(),
         bound_session_cookie_refresh_service->GetBoundSessionThrottlerParams(),
@@ -434,7 +430,7 @@ ChromeSigninClient::CreateBoundSessionOAuthMultiloginDelegate() const {
 SigninClient::SignoutDecision ChromeSigninClient::GetSignoutDecision(
     bool has_sync_account,
     const std::optional<signin_metrics::ProfileSignout> signout_source) const {
-  // TODO(crbug.com/1366360): Revisit |kAlwaysAllowedSignoutSources| in general
+  // TODO(crbug.com/40239707): Revisit |kAlwaysAllowedSignoutSources| in general
   // and for Lacros main profile.
   for (const auto& always_allowed_source : kAlwaysAllowedSignoutSources) {
     if (!signout_source.has_value()) {

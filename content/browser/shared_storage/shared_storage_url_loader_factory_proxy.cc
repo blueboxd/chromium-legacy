@@ -12,7 +12,6 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/escape.h"
-#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "content/public/browser/global_request_id.h"
 #include "mojo/public/cpp/bindings/message.h"
@@ -69,8 +68,10 @@ void SharedStorageURLLoaderFactoryProxy::CreateLoaderAndStart(
   new_request.site_for_cookies = site_for_cookies_;
   new_request.request_initiator = frame_origin_;
   new_request.mode = network::mojom::RequestMode::kCors;
+  new_request.destination =
+      network::mojom::RequestDestination::kSharedStorageWorklet;
 
-  // TODO(crbug/1268616): create a new factory when the current one gets
+  // TODO(crbug.com/40803630): create a new factory when the current one gets
   // disconnected.
   frame_url_loader_factory_->CreateLoaderAndStart(
       std::move(receiver), GlobalRequestID::MakeBrowserInitiated().request_id,

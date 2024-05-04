@@ -68,6 +68,7 @@ Checkbox::Checkbox(const std::u16string& label,
     : LabelButton(std::move(callback), label, button_context) {
   SetImageCentered(false);
   SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  SetAccessibleRole(ax::mojom::Role::kCheckBox);
 
   SetRequestFocusOnPress(false);
   InkDrop::Get(this)->SetMode(views::InkDropHost::InkDropMode::ON);
@@ -93,7 +94,7 @@ Checkbox::Checkbox(const std::u16string& label,
       this));
 
   // Limit the checkbox height to match the legacy appearance.
-  const gfx::Size preferred_size(LabelButton::CalculatePreferredSize());
+  const gfx::Size preferred_size(LabelButton::CalculatePreferredSize({}));
   SetMinSize(gfx::Size(0, preferred_size.height() + 4));
 
   // Checkboxes always have a focus ring, even when the platform otherwise

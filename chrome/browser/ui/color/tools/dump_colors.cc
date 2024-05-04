@@ -25,6 +25,7 @@
 // clang-format off
 const char* enum_names[] = {
   COLOR_IDS
+  COMPONENTS_COLOR_IDS
   CHROME_COLOR_IDS
 };
 // clang-format on
@@ -55,7 +56,6 @@ int main(int argc, const char* argv[]) {
     ui::AddColorMixers(provider, key);
     color::AddComponentsColorMixers(provider, key);
     AddChromeColorMixers(provider, key);
-    provider->GenerateColorMap();
   };
   ui::ColorProvider light_provider, dark_provider, light_high_contrast_provider,
       dark_high_contrast_provider;

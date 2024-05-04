@@ -43,9 +43,9 @@ if (use_typeface_fontations) {
     cxx_bindings = [ "//third_party/skia/src/ports/fontations/src/ffi.rs" ]
     deps = [
       ":path_bridge",
-      "//third_party/rust/font_types/v0_4:lib",
-      "//third_party/rust/read_fonts/v0_15:lib",
-      "//third_party/rust/skrifa/v0_15:lib",
+      "//third_party/rust/font_types/v0_5:lib",
+      "//third_party/rust/read_fonts/v0_19:lib",
+      "//third_party/rust/skrifa/v0_19:lib",
     ]
     configs -= [ "//build/config/compiler:chromium_code" ]
     configs += [
@@ -240,8 +240,10 @@ component("skia") {
     "ext/benchmarking_canvas.h",
     "ext/cicp.h",
     "ext/convolver.h",
+    "ext/draw_gainmap_image.h",
     "ext/event_tracer_impl.h",
     "ext/font_utils.h",
+    "ext/geometry.h",
     "ext/image_operations.h",
     "ext/legacy_display_globals.h",
     "ext/opacity_filter_canvas.h",
@@ -264,8 +266,10 @@ component("skia") {
     "ext/benchmarking_canvas.cc",
     "ext/cicp.cc",
     "ext/convolver.cc",
+    "ext/draw_gainmap_image.cc",
     "ext/event_tracer_impl.cc",
     "ext/font_utils.cc",
+    "ext/geometry.cc",
     "ext/google_logging.cc",
     "ext/image_operations.cc",
     "ext/legacy_display_globals.cc",
@@ -344,8 +348,8 @@ component("skia") {
   sources += skia_encode_png_srcs
   sources += skia_encode_webp_srcs
   sources += [
-    "//third_party/skia/src/fonts/SkFontMgr_indirect.cpp",
-    "//third_party/skia/src/fonts/SkRemotableFontMgr.cpp",
+    "//third_party/skia/src/codec/SkEncodedInfo.cpp",
+    "//third_party/skia/src/codec/SkPngCodec.cpp",
     "//third_party/skia/src/ports/SkGlobalInitialization_default.cpp",
     "//third_party/skia/src/ports/SkImageGenerator_none.cpp",
     "//third_party/skia/src/ports/SkOSFile_stdio.cpp",
@@ -358,7 +362,6 @@ component("skia") {
     sources += skia_encode_jpeg_srcs
     public += skia_encode_jpeg_public
     sources += [
-      "//third_party/skia/src/codec/SkEncodedInfo.cpp",
       "//third_party/skia/src/codec/SkIcoCodec.cpp",
       "//third_party/skia/src/codec/SkJpegCodec.cpp",
       "//third_party/skia/src/codec/SkJpegDecoderMgr.cpp",
@@ -367,7 +370,6 @@ component("skia") {
       "//third_party/skia/src/codec/SkJpegSourceMgr.cpp",
       "//third_party/skia/src/codec/SkJpegUtility.cpp",
       "//third_party/skia/src/codec/SkParseEncodedOrigin.cpp",
-      "//third_party/skia/src/codec/SkPngCodec.cpp",
       "//third_party/skia/src/codec/SkWebpCodec.cpp",
       "//third_party/skia/src/codec/SkWuffsCodec.cpp",
       "//third_party/skia/src/ports/SkImageGenerator_skia.cpp",
@@ -423,7 +425,6 @@ component("skia") {
     sources += [
       "//third_party/skia/src/ports/SkFontMgr_win_dw.cpp",
       "//third_party/skia/src/ports/SkOSFile_win.cpp",
-      "//third_party/skia/src/ports/SkRemotableFontMgr_win_dw.cpp",
       "//third_party/skia/src/ports/SkScalerContext_win_dw.cpp",
       "//third_party/skia/src/ports/SkTypeface_win_dw.cpp",
     ]
@@ -489,11 +490,12 @@ component("skia") {
   deps += [
     ":skcms",
     ":skia_opts",
+    ":skia_switches",
     "//base",
-    "//base/third_party/dynamic_annotations",
     "//third_party/libpng",
     "//third_party/libwebp",
     "//third_party/libwebp:libwebp_webp",
+    "//ui/base:features",
   ]
   public_deps = [
     ":buildflags",
@@ -609,6 +611,18 @@ component("skia") {
       "SKOTTIE_TRIVIAL_FONTRUN_ITER",
     ]
   }
+}
+
+component("skia_switches") {
+  sources = [
+    "ext/switches.cc",
+    "ext/switches.h",
+    "ext/switches_export.h",
+  ]
+
+  defines = [ "SKIA_SWITCHES_IMPLEMENTATION" ]
+
+  deps = [ "//base" ]
 }
 
 # Template for things that are logically part of :skia, but need to be split out
@@ -735,6 +749,8 @@ skia_source_set("skia_opts") {
     # Conditional and empty body needed to avoid assert() below.
   } else if (current_cpu == "riscv64") {
     # Conditional and empty body needed to avoid assert() below.
+  } else if (current_cpu == "loong64") {
+    # Conditional and empty body needed to avoid assert() below.
   } else {
     assert(false, "Unknown cpu target")
   }
@@ -831,7 +847,6 @@ if (skia_support_gpu) {
       public += skia_graphite_dawn_public
       public_deps = [
         "//third_party/dawn/include/dawn:cpp_headers",
-        "//third_party/dawn/src/dawn:cpp",
         "//third_party/dawn/src/dawn:proc",
       ]
     }
@@ -954,6 +969,7 @@ source_set("test_fonts") {
 test("skia_unittests") {
   sources = [
     "ext/convolver_unittest.cc",
+    "ext/geometry_unittest.cc",
     "ext/image_operations_unittest.cc",
     "ext/platform_canvas_unittest.cc",
     "ext/recursive_gaussian_convolution_unittest.cc",

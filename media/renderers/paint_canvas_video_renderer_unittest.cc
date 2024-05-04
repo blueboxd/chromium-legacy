@@ -9,7 +9,7 @@
 #include "base/logging.h"
 #include "base/memory/aligned_memory.h"
 #include "base/memory/raw_ptr.h"
-#include "base/sys_byteorder.h"
+#include "base/numerics/byte_conversions.h"
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "cc/paint/paint_flags.h"
@@ -411,7 +411,8 @@ uint32_t MaybeConvertABGRToARGB(uint32_t abgr) {
     SK_A32_SHIFT == 24
   return abgr;
 #else
-  return (base::ByteSwap(abgr & 0x00FFFFFF) >> 8) | (abgr & 0xFF000000);
+  return (base::numerics::ByteSwap(abgr & 0x00FFFFFF) >> 8) |
+         (abgr & 0xFF000000);
 #endif
 }
 
@@ -911,11 +912,11 @@ TEST_F(PaintCanvasVideoRendererTest, ContextLost) {
   cc::SkiaPaintCanvas canvas(AllocBitmap(kWidth, kHeight));
 
   gfx::Size size(kWidth, kHeight);
-  gpu::MailboxHolder holders[VideoFrame::kMaxPlanes] = {
-      gpu::MailboxHolder(gpu::Mailbox::GenerateForSharedImage(),
-                         gpu::SyncToken(), GL_TEXTURE_RECTANGLE_ARB)};
-  auto video_frame = VideoFrame::WrapNativeTextures(
-      PIXEL_FORMAT_NV12, holders, base::BindOnce(MailboxHoldersReleased), size,
+  scoped_refptr<gpu::ClientSharedImage> shared_images[VideoFrame::kMaxPlanes] =
+      {gpu::ClientSharedImage::CreateForTesting()};
+  auto video_frame = VideoFrame::WrapSharedImages(
+      PIXEL_FORMAT_NV12, shared_images, gpu::SyncToken(),
+      GL_TEXTURE_RECTANGLE_ARB, base::BindOnce(MailboxHoldersReleased), size,
       gfx::Rect(size), size, kNoTimestamp);
 
   cc::PaintFlags flags;

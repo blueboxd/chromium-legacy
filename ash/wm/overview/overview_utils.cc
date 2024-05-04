@@ -14,6 +14,7 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
+#include "ash/utility/forest_util.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/cleanup_animation_observer.h"
 #include "ash/wm/overview/delayed_animation_observer_impl.h"
@@ -212,17 +213,21 @@ gfx::Rect GetGridBoundsInScreen(
     wm::ConvertRectToScreen(target_root, &target_bounds_in_screen);
     bounds.Subtract(target_bounds_in_screen);
   } else {
+    const bool account_for_divider_width =
+        display::Screen::GetScreen()->InTabletMode();
     switch (state) {
       case SplitViewController::State::kPrimarySnapped:
         bounds = split_view_controller->GetSnappedWindowBoundsInScreen(
             SnapPosition::kSecondary,
-            /*window_for_minimum_size=*/nullptr, chromeos::kDefaultSnapRatio);
+            /*window_for_minimum_size=*/nullptr, chromeos::kDefaultSnapRatio,
+            account_for_divider_width);
         opposite_position = SnapPosition::kSecondary;
         break;
       case SplitViewController::State::kSecondarySnapped:
         bounds = split_view_controller->GetSnappedWindowBoundsInScreen(
             SnapPosition::kPrimary,
-            /*window_for_minimum_size=*/nullptr, chromeos::kDefaultSnapRatio);
+            /*window_for_minimum_size=*/nullptr, chromeos::kDefaultSnapRatio,
+            account_for_divider_width);
         opposite_position = SnapPosition::kPrimary;
         break;
       case SplitViewController::State::kNoSnap:
@@ -235,12 +240,14 @@ gfx::Rect GetGridBoundsInScreen(
   }
 
   // Hotseat overlaps the work area / split view bounds when extended, but in
-  // some cases we don't want its bounds in our calculations.
+  // some cases we don't want its bounds in our calculations. When the forest
+  // features are enabled, we want to exclude the hotseat bounds when it is
+  // shown in home launcher.
   if (account_for_hotseat && display::Screen::GetScreen()->InTabletMode()) {
-    const bool hotseat_extended =
-        Shelf::ForWindow(target_root)
-            ->shelf_layout_manager()
-            ->hotseat_state() == HotseatState::kExtended;
+    const HotseatState hotseat_state =
+        Shelf::ForWindow(target_root)->shelf_layout_manager()->hotseat_state();
+
+    const bool hotseat_extended = hotseat_state == HotseatState::kExtended;
     // When a window is dragged from the top of the screen, overview gets
     // entered immediately but the window does not get deactivated right away so
     // the hotseat state does not get updated until the window gets dragged a
@@ -250,15 +257,26 @@ gfx::Rect GetGridBoundsInScreen(
     const bool hotseat_will_extend =
         overview_session && overview_session->ShouldEnterWithoutAnimations() &&
         !split_view_controller->InSplitViewMode();
-    if (hotseat_extended || hotseat_will_extend) {
-      // Use the default hotseat size here to avoid the possible re-layout
-      // due to the update in HotseatWidget::is_forced_dense_.
-      const int hotseat_bottom_inset =
-          ShelfConfig::Get()->GetHotseatSize(
-              /*density=*/HotseatDensity::kNormal) +
-          ShelfConfig::Get()->hotseat_bottom_padding();
 
+    const bool show_home_launcher =
+        hotseat_state == HotseatState::kShownHomeLauncher;
+
+    const bool oak_enabled =
+        features::IsOakFeatureEnabled() || IsForestFeatureEnabled();
+
+    // Use the default hotseat size here to avoid the possible re-layout
+    // due to the update in HotseatWidget::is_forced_dense_.
+    const int hotseat_bottom_inset =
+        ShelfConfig::Get()->GetHotseatSize(
+            /*density=*/HotseatDensity::kNormal) +
+        ShelfConfig::Get()->hotseat_bottom_padding();
+
+    if (!oak_enabled && (hotseat_extended || hotseat_will_extend)) {
       bounds.Inset(gfx::Insets::TLBR(0, 0, hotseat_bottom_inset, 0));
+    } else if (oak_enabled && show_home_launcher) {
+      bounds.Inset(gfx::Insets::TLBR(
+          0, 0, hotseat_bottom_inset - ShelfConfig::Get()->in_app_shelf_size(),
+          0));
     }
   }
 

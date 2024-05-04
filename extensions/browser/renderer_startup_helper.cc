@@ -34,6 +34,7 @@
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/process_manager_factory.h"
 #include "extensions/browser/service_worker/service_worker_task_queue.h"
+#include "extensions/browser/user_script_world_configuration_manager.h"
 #include "extensions/common/extension_id.h"
 #include "extensions/common/extension_l10n_util.h"
 #include "extensions/common/extension_set.h"
@@ -212,10 +213,11 @@ void RendererStartupHelper::InitializeProcess(
         *ext, true /* include tab permissions*/, renderer_context));
     extension_process_map_[ext->id()].insert(process);
 
-    // Each extension needs to know its user script world configuration.
-    mojom::UserScriptWorldInfoPtr info =
-        util::GetUserScriptWorldInfo(ext->id(), browser_context_);
-    renderer->UpdateUserScriptWorld(std::move(info));
+    // Each extension needs to know its user script world configurations.
+    std::vector<mojom::UserScriptWorldInfoPtr> worlds_info =
+        UserScriptWorldConfigurationManager::Get(browser_context_)
+            ->GetAllUserScriptWorlds(ext->id());
+    renderer->UpdateUserScriptWorlds(std::move(worlds_info));
   }
 
   // Activate pending extensions.
@@ -362,10 +364,11 @@ void RendererStartupHelper::OnDeveloperModeChanged(bool in_developer_mode) {
 
 void RendererStartupHelper::SetUserScriptWorldProperties(
     const Extension& extension,
+    std::optional<std::string> world_id,
     std::optional<std::string> csp,
     bool enable_messaging) {
   mojom::UserScriptWorldInfoPtr info = mojom::UserScriptWorldInfo::New(
-      extension.id(), std::move(csp), enable_messaging);
+      extension.id(), std::move(world_id), std::move(csp), enable_messaging);
   for (auto& process_entry : process_mojo_map_) {
     content::RenderProcessHost* process = process_entry.first;
     mojom::Renderer* renderer = GetRenderer(process);
@@ -378,7 +381,28 @@ void RendererStartupHelper::SetUserScriptWorldProperties(
       continue;
     }
 
-    renderer->UpdateUserScriptWorld(info.Clone());
+    std::vector<mojom::UserScriptWorldInfoPtr> worlds_info;
+    worlds_info.push_back(info.Clone());
+    renderer->UpdateUserScriptWorlds(std::move(worlds_info));
+  }
+}
+
+void RendererStartupHelper::ClearUserScriptWorldProperties(
+    const Extension& extension,
+    const std::optional<std::string>& world_id) {
+  for (auto& process_entry : process_mojo_map_) {
+    content::RenderProcessHost* process = process_entry.first;
+    mojom::Renderer* renderer = GetRenderer(process);
+    if (!renderer) {
+      continue;
+    }
+
+    if (!util::IsExtensionVisibleToContext(extension,
+                                           process->GetBrowserContext())) {
+      continue;
+    }
+
+    renderer->ClearUserScriptWorldConfig(extension.id(), world_id);
   }
 }
 

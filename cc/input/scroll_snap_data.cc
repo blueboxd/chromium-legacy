@@ -225,8 +225,18 @@ SnapPositionData SnapContainerData::FindSnapPosition(
                           (axis == SnapAxis::kX || axis == SnapAxis::kBoth);
   bool should_snap_on_y = strategy.ShouldSnapOnY() &&
                           (axis == SnapAxis::kY || axis == SnapAxis::kBoth);
-  if (!should_snap_on_x && !should_snap_on_y)
+  if (!should_snap_on_x && !should_snap_on_y) {
+    // We may arrive here because the strategy wants to snap in an axis in
+    // which we do not snap, and doesn't want to snap in an axis in which we do
+    // snap. Ensure that we retain the id of the target in any axis where we are
+    // snapped.
+    if (axis == SnapAxis::kY) {
+      result.target_element_ids.y = target_snap_area_element_ids_.y;
+    } else {
+      result.target_element_ids.x = target_snap_area_element_ids_.x;
+    }
     return result;
+  }
 
   bool should_prioritize_x_target =
       strategy.ShouldPrioritizeSnapTargets() &&
@@ -279,22 +289,11 @@ SnapPositionData SnapContainerData::FindSnapPosition(
     return result;
   }
 
-  // If snapping in one axis pushes off-screen the other snap area, this snap
-  // position is invalid. https://drafts.csswg.org/css-scroll-snap-1/#snap-scope
-  // In this case, first check if we need to prioritize the snap area from
-  // one axis over the other and select that axis, or if we don't prioritize an
-  // axis over the other, we choose the axis whose snap area is closer.
-  // Then find a new snap area on the other axis that is mutually visible with
-  // the selected axis' snap area.
   if (selected_x.has_value() && selected_y.has_value() &&
       !IsMutualVisible(selected_x.value(), selected_y.value())) {
-    bool keep_candidate_on_x = should_prioritize_x_target;
-    if (should_prioritize_x_target == should_prioritize_y_target) {
-      keep_candidate_on_x =
-          std::abs(selected_x.value().snap_offset() - base_position.x()) <=
-          std::abs(selected_y.value().snap_offset() - base_position.y());
-    }
-    if (keep_candidate_on_x) {
+    SnapAxis axis_to_follow = SelectAxisToFollowForMutualVisibility(
+        strategy, selected_x.value(), selected_y.value());
+    if (axis_to_follow == SnapAxis::kX) {
       selected_y =
           FindClosestValidArea(SearchAxis::kY, strategy, selected_x.value());
     } else {
@@ -318,6 +317,18 @@ SnapPositionData SnapContainerData::FindSnapPosition(
 
   result.type = SnapPositionData::Type::kAligned;
   result.position = strategy.current_position();
+  // Make sure that |result| retains what we are currently snapped to in each
+  // axis in case this search had no result for one axis. This ensures we don't
+  // incorrectly trigger a snap event. Don't retain ids of areas that may no
+  // longer exist.
+  for (const auto& area : snap_area_list_) {
+    if (area.element_id == target_snap_area_element_ids_.x) {
+      result.target_element_ids.x = target_snap_area_element_ids_.x;
+    }
+    if (area.element_id == target_snap_area_element_ids_.y) {
+      result.target_element_ids.y = target_snap_area_element_ids_.y;
+    }
+  }
 
   if (selected_x) {
     result.position.set_x(selected_x->snap_offset());
@@ -389,21 +400,6 @@ bool SnapContainerData::FindSnapPositionForMutualSnap(
   }
 
   return found;
-}
-
-std::set<ElementId> SnapContainerData::FindSnappedTargetsAtScrollOffset(
-    const SnapContainerData* container_data,
-    const gfx::PointF& scroll_offset) {
-  std::set<ElementId> snapped_target_ids;
-  if (container_data) {
-    for (size_t i = 0; i < container_data->size(); i++) {
-      const auto& area = container_data->at(i);
-      if (container_data->IsSnappedToArea(area, scroll_offset)) {
-        snapped_target_ids.insert(area.element_id);
-      }
-    }
-  }
-  return snapped_target_ids;
 }
 
 std::optional<SnapSearchResult>
@@ -839,7 +835,7 @@ bool SnapContainerData::IsSnapportCoveredOnAxis(
   }
 }
 
-// TODO(crbug.com/1501103): Use tolerance value less than 1.
+// TODO(crbug.com/40941354): Use tolerance value less than 1.
 // It is currently set to 1 because of differences in the way Blink and cc
 // currently handle fractional offsets when snapping.
 constexpr float kSnappedToTolerance = 1.0;
@@ -965,11 +961,53 @@ void SnapContainerData::SelectAlternativeIdForSearchResult(
   }
 }
 
-SnappedTargetData::SnappedTargetData() = default;
-SnappedTargetData::SnappedTargetData(const SnappedTargetData& other) = default;
-SnappedTargetData::SnappedTargetData(const std::set<ElementId>& ids)
-    : snapped_target_ids_(std::move(ids)) {}
-SnappedTargetData::~SnappedTargetData() = default;
+SnapAxis SnapContainerData::SelectAxisToFollowForMutualVisibility(
+    const SnapSelectionStrategy& strategy,
+    const SnapSearchResult& selected_x,
+    const SnapSearchResult& selected_y) const {
+  // If snapping in one axis pushes off-screen the other snap area, this snap
+  // position is invalid. https://drafts.csswg.org/css-scroll-snap-1/#snap-scope
+  // In this case, first check if we need to prioritize snapping to the most
+  // recent snap targets in each axis and prioritize one axis over the other
+  // according to the following order:
+  //  1. an axis with the focused area.
+  //  2. an axis with the targeted [1] area.
+  //  3. the block axis.
+  //  (See step 8 at
+  //   https://github.com/w3c/csswg-drafts/issues/9622#issue-2006578282)
+  // [1]https://drafts.csswg.org/selectors/#the-target-pseudo
+  // If we don't prioritize snapping to the most recent snap targets, we choose
+  // the axis whose snap area is closer. Then find a new snap area on the other
+  // axis that is mutually visible with the selected axis' snap area.
+  if (strategy.ShouldPrioritizeSnapTargets()) {
+    // If we we're previously snapped in one axis but not the other, follow the
+    // axis we we're previously snapped in.
+    if (target_snap_area_element_ids_.x == ElementId()) {
+      return SnapAxis::kY;
+    } else if (target_snap_area_element_ids_.y == ElementId()) {
+      return SnapAxis::kX;
+    }
+
+    // Focused, then targeted snap areas should be followed.
+    if (selected_x.has_focus_within()) {
+      return SnapAxis::kX;
+    } else if (selected_y.has_focus_within()) {
+      return SnapAxis::kY;
+    } else if (selected_x.element_id() == targeted_area_id_) {
+      return SnapAxis::kX;
+    } else if (selected_y.element_id() == targeted_area_id_) {
+      return SnapAxis::kY;
+    }
+
+    // Follow the block axis target.
+    return has_horizontal_writing_mode_ ? SnapAxis::kY : SnapAxis::kX;
+  }
+  return (
+      std::abs(selected_x.snap_offset() - strategy.base_position().x()) <=
+              std::abs(selected_y.snap_offset() - strategy.base_position().y())
+          ? SnapAxis::kX
+          : SnapAxis::kY);
+}
 
 std::ostream& operator<<(std::ostream& ostream, const SnapAreaData& area_data) {
   return ostream << area_data.rect.ToString();

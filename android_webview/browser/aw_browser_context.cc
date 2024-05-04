@@ -261,7 +261,7 @@ void AwBrowserContext::RegisterPrefs(PrefRegistrySimple* registry) {
   // We only use the autocomplete feature of Autofill, which is controlled via
   // the manager_delegate. We don't use the rest of Autofill, which is why it is
   // hardcoded as disabled here.
-  // TODO(crbug.com/873740): The following also disables autocomplete.
+  // TODO(crbug.com/40589187): The following also disables autocomplete.
   // Investigate what the intended behavior is.
   registry->RegisterBooleanPref(autofill::prefs::kAutofillProfileEnabled,
                                 false);
@@ -307,7 +307,7 @@ void AwBrowserContext::CreateUserPrefService() {
           browser_policy_connector->GetHandlerList(),
           policy::POLICY_LEVEL_MANDATORY));
   {
-    // TODO(crbug.com/1446913): We can potentially use
+    // TODO(crbug.com/40268809): We can potentially use
     // pref_service_factory.set_async(true) instead of ScopedAllowBlocking in
     // order to avoid blocking here or to at least parallelize work in the
     // background, but it might require additional cross-thread synchronization.
@@ -505,6 +505,13 @@ void AwBrowserContext::RebuildTable(
   enumerator->OnComplete(true);
 }
 
+void AwBrowserContext::BuildVisitedLinkTable(
+    const scoped_refptr<VisitedLinkEnumerator>& enumerator) {
+  // Partitioned visited link hashtables are not supported in Android WebView,
+  // so this initialization path is not used.
+  enumerator->OnVisitedLinkComplete(true);
+}
+
 void AwBrowserContext::SetExtendedReportingAllowed(bool allowed) {
   user_pref_service_->SetBoolean(
       ::prefs::kSafeBrowsingExtendedReportingOptInAllowed, allowed);
@@ -698,7 +705,7 @@ void AwBrowserContext::DeleteContext(const base::FilePath& relative_path) {
   // and (as of writing) should never be deleted.
   CHECK_NE(relative_path.value(), AwBrowserContextStore::kDefaultContextPath);
 
-  // TODO(crbug.com/1446913): This could be partially backgrounded by deleting
+  // TODO(crbug.com/40268809): This could be partially backgrounded by deleting
   // on the thread pool. Ideally, any interrupted profile directory deletion
   // would be resumed in the background on startup. For now, this just deletes
   // synchronously.

@@ -40,8 +40,11 @@ class BluetoothRemoteGATTDescriptor final : public ScriptWrappable {
   }
   String uuid() { return descriptor_->uuid; }
   DOMDataView* value() const { return value_.Get(); }
-  ScriptPromiseTyped<DOMDataView> readValue(ScriptState*, ExceptionState&);
-  ScriptPromise writeValue(ScriptState*, const DOMArrayPiece&, ExceptionState&);
+  ScriptPromise<NotShared<DOMDataView>> readValue(ScriptState*,
+                                                  ExceptionState&);
+  ScriptPromise<IDLUndefined> writeValue(ScriptState*,
+                                         const DOMArrayPiece&,
+                                         ExceptionState&);
 
   // Interface required by garbage collection.
   void Trace(Visitor*) const override;
@@ -56,11 +59,11 @@ class BluetoothRemoteGATTDescriptor final : public ScriptWrappable {
     return characteristic_->device_->GetBluetooth();
   }
 
-  void ReadValueCallback(ScriptPromiseResolverTyped<DOMDataView>*,
+  void ReadValueCallback(ScriptPromiseResolver<NotShared<DOMDataView>>*,
                          mojom::blink::WebBluetoothResult,
                          const std::optional<Vector<uint8_t>>&);
 
-  void WriteValueCallback(ScriptPromiseResolver*,
+  void WriteValueCallback(ScriptPromiseResolver<IDLUndefined>*,
                           const Vector<uint8_t>&,
                           mojom::blink::WebBluetoothResult);
 

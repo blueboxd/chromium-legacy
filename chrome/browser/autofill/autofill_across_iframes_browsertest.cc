@@ -9,6 +9,7 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <string_view>
 #include <vector>
 
 #include "base/command_line.h"
@@ -77,9 +78,10 @@ constexpr char kCvc[] = "123";
 // Adds waiting capabilities to BrowserAutofillManager.
 class TestAutofillManager : public BrowserAutofillManager {
  public:
-  TestAutofillManager(ContentAutofillDriver* driver, AutofillClient* client)
-      : BrowserAutofillManager(driver, client, "en-US") {
-    test_api(*this).set_limit_before_refill(base::Minutes(1));
+  explicit TestAutofillManager(ContentAutofillDriver* driver)
+      : BrowserAutofillManager(driver, "en-US") {
+    test_api(test_api(*this).form_filler())
+        .set_limit_before_refill(base::Hours(1));
   }
 
   static TestAutofillManager& GetForRenderFrameHost(
@@ -129,11 +131,11 @@ void FillCard(content::RenderFrameHost* rfh,
               const FormFieldData& triggered_field) {
   CreditCard card;
   test::SetCreditCardInfo(&card, kNameFull, kNumber, kExpMonth, kExpYear, "",
-                          base::ASCIIToUTF16(base::StringPiece(kCvc)));
+                          base::ASCIIToUTF16(std::string_view(kCvc)));
   auto& manager = TestAutofillManager::GetForRenderFrameHost(rfh);
   manager.FillOrPreviewCreditCardForm(
       mojom::ActionPersistence::kFill, form, triggered_field, card,
-      base::ASCIIToUTF16(base::StringPiece(kCvc)),
+      base::ASCIIToUTF16(std::string_view(kCvc)),
       AutofillTriggerDetails(AutofillTriggerSource::kPopup));
 }
 
@@ -172,7 +174,7 @@ std::vector<std::string> AllFieldValues(content::WebContents* web_contents,
 
   std::vector<std::string> values;
   for (const FormFieldData& field : form.fields) {
-    LocalFrameToken frame = field.host_frame;
+    LocalFrameToken frame = field.host_frame();
     if (frame_to_iters[frame] == frame_to_values[frame].end())
       return {};
     values.push_back(*frame_to_iters[frame]++);
@@ -202,8 +204,8 @@ auto IsWithinAutofillLimits() {
                                   Le(kTypeValueFormFillingLimit)))));
 }
 
-auto HasValue(base::StringPiece value) {
-  return Field(&FormFieldData::value, base::ASCIIToUTF16(value));
+auto HasValue(std::string_view value) {
+  return Property(&FormFieldData::value, base::ASCIIToUTF16(value));
 }
 
 }  // namespace
@@ -246,8 +248,8 @@ class AutofillAcrossIframesTest : public InProcessBrowserTest {
   void TearDownOnMainThread() override {
     base::RunLoop().RunUntilIdle();
     // Make sure to close any showing popups prior to tearing down the UI.
-    main_autofill_manager().client().HideAutofillPopup(
-        PopupHidingReason::kTabGone);
+    main_autofill_manager().client().HideAutofillSuggestions(
+        SuggestionHidingReason::kTabGone);
     test::ReenableSystemServices();
     InProcessBrowserTest::TearDownOnMainThread();
   }
@@ -263,8 +265,7 @@ class AutofillAcrossIframesTest : public InProcessBrowserTest {
   // all placeholders $1, $2, ... in `content_html` replaced with the
   // corresponding hostname from `kHostnames`.
   // This response is served by for *every* hostname.
-  void SetUrlContent(std::string relative_path,
-                     base::StringPiece content_html) {
+  void SetUrlContent(std::string relative_path, std::string_view content_html) {
     ASSERT_EQ(relative_path[0], '/');
     std::vector<std::string> replacements;
     replacements.reserve(std::size(kHostnames));
@@ -286,7 +287,7 @@ class AutofillAcrossIframesTest : public InProcessBrowserTest {
   //
   // Each test shall prepare the intended response using SetUrlContent() in
   // advance.
-  const FormStructure* NavigateToUrl(base::StringPiece relative_url,
+  const FormStructure* NavigateToUrl(std::string_view relative_url,
                                      size_t num_fields) {
     NavigateParams params(
         browser(),
@@ -313,7 +314,7 @@ class AutofillAcrossIframesTest : public InProcessBrowserTest {
   // FormFieldData::is_focusable for all forms. This is admissible for our
   // testing purposes because all test forms only have (what should be)
   // focusable fields.
-  // TODO(crbug.com/1393058): Remove this hack when the focusability issue is
+  // TODO(crbug.com/40248042): Remove this hack when the focusability issue is
   // fixed.
   const FormStructure* GetOrWaitForFormWithFocusableFields(size_t num_fields) {
     const FormStructure* form =
@@ -323,7 +324,7 @@ class AutofillAcrossIframesTest : public InProcessBrowserTest {
             },
             num_fields));
     for (const auto& field : *form)
-      const_cast<AutofillField&>(*field).is_focusable = true;
+      const_cast<AutofillField&>(*field).set_is_focusable(true);
     return form;
   }
 
@@ -539,9 +540,9 @@ class AutofillAcrossIframesTest_Dynamic : public AutofillAcrossIframesTest {
     // Now, after FillCard(), the form gets filled in the renderer (which
     // triggers three OnDidFillAutofillFormData() events) and then changes.
     // The change triggers an OnFormsSeen() event, followed by a form
-    // re-extraction and re-fill, which then triggers another four
-    // OnDidFillAutofillFormData() events.
-    EXPECT_TRUE(manager.WaitForAutofill(3 + 4));
+    // re-extraction and re-fill. The only newly filled field in the refill is
+    // the CVC field, which triggers another OnDidFillAutofillFormData() event.
+    EXPECT_TRUE(manager.WaitForAutofill(3 + 1));
     form =
         manager.form_structures().find(form.global_id())->second->ToFormData();
     EXPECT_EQ(4u, form.fields.size());  // The CVC field has now been seen.
@@ -674,10 +675,10 @@ IN_PROC_BROWSER_TEST_F(AutofillAcrossIframesTest_NestedAndLargeForm,
     auto exp = HtmlFieldType::kCreditCardExpDate4DigitYear;
     auto cvc = HtmlFieldType::kCreditCardVerificationCode;
     auto unspecified = HtmlFieldType::kUnspecified;
-    auto m = [](base::StringPiece host, HtmlFieldType type) {
+    auto m = [](std::string_view host, HtmlFieldType type) {
       return Pointee(AllOf(Property(&AutofillField::html_type, Eq(type)),
-                           Field(&AutofillField::origin,
-                                 Property(&url::Origin::host, Eq(host)))));
+                           Property(&AutofillField::origin,
+                                    Property(&url::Origin::host, Eq(host)))));
     };
     // The indentation reflects the nesting of frames.
     // clang-format off
@@ -739,8 +740,8 @@ IN_PROC_BROWSER_TEST_F(AutofillAcrossIframesTest_NestedAndLargeForm,
     // clang-format on
   }
   const FormData& form_data = form->ToFormData();
-  ASSERT_EQ("e.com", form_data.fields[4].origin.host());
-  ASSERT_EQ("cc-name", form_data.fields[4].autocomplete_attribute);
+  ASSERT_EQ("e.com", form_data.fields[4].origin().host());
+  ASSERT_EQ("cc-name", form_data.fields[4].autocomplete_attribute());
   FillCard(main_frame(), form_data, form_data.fields[4]);
   EXPECT_TRUE(main_autofill_manager().WaitForAutofill(5));
   {
@@ -789,9 +790,10 @@ IN_PROC_BROWSER_TEST_F(AutofillAcrossIframesTest_NestedAndLargeForm,
     auto exp = HtmlFieldType::kCreditCardExpDate4DigitYear;
     auto cvc = HtmlFieldType::kCreditCardVerificationCode;
     auto m = [](HtmlFieldType type) {
-      return Pointee(AllOf(Property(&AutofillField::html_type, Eq(type)),
-                           Field(&AutofillField::origin,
-                                 Property(&url::Origin::host, Eq("a.com")))));
+      return Pointee(
+          AllOf(Property(&AutofillField::html_type, Eq(type)),
+                Property(&AutofillField::origin,
+                         Property(&url::Origin::host, Eq("a.com")))));
     };
     EXPECT_THAT(form->fields(), ElementsAre(m(name), m(num), m(exp), m(cvc),  //
                                             m(name), m(num), m(exp), m(cvc),  //

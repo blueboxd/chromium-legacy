@@ -49,6 +49,7 @@ All changes to this list should go through Blink's feature review process: http:
     align-self
     alignment-baseline
     all
+    anchor-name
     animation-composition
     animation-delay
     animation-direction
@@ -214,6 +215,7 @@ All changes to this list should go through Blink's feature review process: http:
     image-rendering
     initial-letter
     inline-size
+    inset-area
     inset-block-end
     inset-block-start
     inset-inline-end
@@ -301,6 +303,10 @@ All changes to this list should go through Blink's feature review process: http:
     perspective-origin
     pointer-events
     position
+    position-anchor
+    position-try-options
+    position-try-order
+    position-visibility
     quotes
     r
     resize
@@ -397,6 +403,7 @@ All changes to this list should go through Blink's feature review process: http:
     view-timeline-axis
     view-timeline-inset
     view-timeline-name
+    view-transition-class
     view-transition-name
     visibility
     white-space-collapse
@@ -632,16 +639,9 @@ All changes to this list should go through Blink's feature review process: http:
     grid-column
         grid-column-end
         grid-column-start
-    grid-column-gap
-        column-gap
-    grid-gap
-        column-gap
-        row-gap
     grid-row
         grid-row-end
         grid-row-start
-    grid-row-gap
-        row-gap
     grid-template
         grid-template-areas
         grid-template-columns
@@ -731,6 +731,9 @@ All changes to this list should go through Blink's feature review process: http:
     place-self
         align-self
         justify-self
+    position-try
+        position-try-options
+        position-try-order
     scroll-margin
         scroll-margin-bottom
         scroll-margin-left
@@ -1007,6 +1010,12 @@ All changes to this list should go through Blink's feature review process: http:
         transition-timing-function
     -webkit-user-select
         user-select
+    grid-column-gap
+        column-gap
+    grid-gap
+        gap
+    grid-row-gap
+        row-gap
     word-wrap
         overflow-wrap
 

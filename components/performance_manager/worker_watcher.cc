@@ -21,6 +21,8 @@
 #include "components/performance_manager/process_node_source.h"
 #include "components/performance_manager/public/features.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
+#include "url/gurl.h"
+#include "url/origin.h"
 
 namespace performance_manager {
 
@@ -229,14 +231,14 @@ void WorkerWatcher::TearDown() {
 void WorkerWatcher::OnWorkerCreated(
     const blink::DedicatedWorkerToken& dedicated_worker_token,
     int worker_process_id,
+    const url::Origin& security_origin,
     content::DedicatedWorkerCreator creator) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  // TODO(https://crbug.com/993029): Plumb through the URL.
   auto worker_node = PerformanceManagerImpl::CreateWorkerNode(
       browser_context_id_, WorkerNode::WorkerType::kDedicated,
       process_node_source_->GetProcessNode(worker_process_id),
-      dedicated_worker_token);
+      dedicated_worker_token, security_origin);
   auto insertion_result = dedicated_worker_nodes_.emplace(
       dedicated_worker_token, std::move(worker_node));
   DCHECK(insertion_result.second);
@@ -319,13 +321,14 @@ void WorkerWatcher::OnFinalResponseURLDetermined(
 void WorkerWatcher::OnWorkerCreated(
     const blink::SharedWorkerToken& shared_worker_token,
     int worker_process_id,
+    const url::Origin& security_origin,
     const base::UnguessableToken& /* dev_tools_token */) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   auto worker_node = PerformanceManagerImpl::CreateWorkerNode(
       browser_context_id_, WorkerNode::WorkerType::kShared,
       process_node_source_->GetProcessNode(worker_process_id),
-      shared_worker_token);
+      shared_worker_token, security_origin);
 
   bool inserted =
       shared_worker_nodes_.emplace(shared_worker_token, std::move(worker_node))
@@ -401,13 +404,14 @@ void WorkerWatcher::OnVersionStartedRunning(
     const content::ServiceWorkerRunningInfo& running_info) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  auto insertion_result = service_worker_nodes_.emplace(
+  const auto& [it, node_inserted] = service_worker_nodes_.emplace(
       version_id,
       PerformanceManagerImpl::CreateWorkerNode(
           browser_context_id_, WorkerNode::WorkerType::kService,
           process_node_source_->GetProcessNode(running_info.render_process_id),
-          running_info.token));
-  DCHECK(insertion_result.second);
+          running_info.token, running_info.key.origin()));
+  DCHECK(node_inserted);
+  WorkerNodeImpl* worker_node = it->second.get();
 
   const auto& [_, token_inserted] =
       service_worker_ids_by_token_.emplace(running_info.token, version_id);
@@ -416,8 +420,11 @@ void WorkerWatcher::OnVersionStartedRunning(
   // Exclusively for service workers, some notifications for clients
   // (OnControlleeAdded) may have been received before the worker started.
   // Add those clients to the service worker on the PM graph.
-  ConnectAllServiceWorkerClients(insertion_result.first->second.get(),
-                                 version_id);
+  ConnectAllServiceWorkerClients(worker_node, version_id);
+
+  // Unlike other workers, the service worker script url is already set when its
+  // added to the graph.
+  SetFinalResponseURL(worker_node, running_info.script_url);
 }
 
 void WorkerWatcher::OnVersionStoppedRunning(int64_t version_id) {
@@ -589,7 +596,7 @@ void WorkerWatcher::AddFrameClientConnection(
 
   FrameNodeImpl* frame_node =
       frame_node_source_->GetFrameNode(client_render_frame_host_id);
-  // TODO(https://crbug.com/1078161): The client frame's node should always be
+  // TODO(crbug.com/40129396): The client frame's node should always be
   // accessible. If it isn't, this means there is a missing
   // CreatePageNodeForWebContents() somewhere.
   if (!frame_node) {
@@ -635,7 +642,7 @@ void WorkerWatcher::RemoveFrameClientConnection(
   // that case because OnBeforeFrameNodeRemoved() took care of removing this
   // client from its child worker nodes.
   //
-  // TODO(https://crbug.com/1078161): A second possibility is that it wasn't
+  // TODO(crbug.com/40129396): A second possibility is that it wasn't
   // possible to connect a worker to its client frame.
   if (!frame_node) {
 #if DCHECK_IS_ON()

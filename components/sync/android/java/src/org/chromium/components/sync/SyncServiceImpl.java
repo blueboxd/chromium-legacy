@@ -34,7 +34,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * usable from the UI thread as the native SyncServiceImpl requires its access to be on the UI
  * thread. See components/sync/service/sync_service_impl.h for more details.
  *
- * <p>TODO(crbug.com/1451811): Update to no reference UI thread.
+ * <p>TODO(crbug.com/40270701): Update to no reference UI thread.
  */
 public class SyncServiceImpl implements SyncService, AccountsChangeObserver {
     // Pointer to the C++ counterpart object. Set on construction and reset on destroy() to avoid
@@ -183,6 +183,13 @@ public class SyncServiceImpl implements SyncService, AccountsChangeObserver {
         int[] userSelectableTypeArray =
                 SyncServiceImplJni.get().getSelectedTypes(mSyncServiceAndroidBridge);
         return userSelectableTypeArrayToSet(userSelectableTypeArray);
+    }
+
+    @Override
+    public void getTypesWithUnsyncedData(Callback<Set<Integer>> callback) {
+        ThreadUtils.assertOnUiThread();
+        assert mSyncServiceAndroidBridge != 0;
+        SyncServiceImplJni.get().getTypesWithUnsyncedData(mSyncServiceAndroidBridge, callback);
     }
 
     @Override
@@ -470,6 +477,12 @@ public class SyncServiceImpl implements SyncService, AccountsChangeObserver {
                 .keepAccountSettingsPrefsOnlyForUsers(mSyncServiceAndroidBridge, gaiaIds);
     }
 
+    @CalledByNative
+    private static void onGetTypesWithUnsyncedDataResult(
+            Callback<Set<Integer>> callback, int[] types) {
+        callback.onResult(modelTypeArrayToSet(types));
+    }
+
     /** Invokes the onResult method of the callback from native code. */
     @CalledByNative
     private static void onGetAllNodesResult(Callback<JSONArray> callback, String serializedNodes) {
@@ -540,6 +553,9 @@ public class SyncServiceImpl implements SyncService, AccountsChangeObserver {
         int[] getActiveDataTypes(long nativeSyncServiceAndroidBridge);
 
         int[] getSelectedTypes(long nativeSyncServiceAndroidBridge);
+
+        void getTypesWithUnsyncedData(
+                long nativeSyncServiceAndroidBridge, Callback<Set<Integer>> callback);
 
         boolean isTypeManagedByPolicy(long nativeSyncServiceAndroidBridge, int type);
 

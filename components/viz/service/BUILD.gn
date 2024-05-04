@@ -90,6 +90,8 @@ viz_component("service") {
     "display/frame_rate_decider.h",
     "display/null_renderer.cc",
     "display/null_renderer.h",
+    "display/occlusion_culler.cc",
+    "display/occlusion_culler.h",
     "display/output_surface.cc",
     "display/output_surface.h",
     "display/output_surface_client.h",
@@ -191,6 +193,8 @@ viz_component("service") {
     "frame_sinks/gmb_video_frame_pool_context_provider_impl.h",
     "frame_sinks/root_compositor_frame_sink_impl.cc",
     "frame_sinks/root_compositor_frame_sink_impl.h",
+    "frame_sinks/shared_image_interface_provider.cc",
+    "frame_sinks/shared_image_interface_provider.h",
     "frame_sinks/surface_resource_holder.cc",
     "frame_sinks/surface_resource_holder.h",
     "frame_sinks/surface_resource_holder_client.h",
@@ -407,6 +411,8 @@ viz_component("service") {
     sources += [
       "display/overlay_processor_delegated.cc",
       "display/overlay_processor_delegated.h",
+      "display/overlay_processor_delegated_support.cc",
+      "display/overlay_processor_delegated_support.h",
       "display/overlay_processor_ozone.cc",
       "display/overlay_processor_ozone.h",
       "display_embedder/software_output_device_ozone.cc",
@@ -420,6 +426,8 @@ viz_component("service") {
     sources += [
       "display/dc_layer_overlay.cc",
       "display/dc_layer_overlay.h",
+      "display/overlay_processor_delegated_support.cc",
+      "display/overlay_processor_delegated_support.h",
       "display/overlay_processor_win.cc",
       "display/overlay_processor_win.h",
       "display_embedder/output_device_backing.cc",
@@ -471,7 +479,7 @@ viz_component("service") {
       ]
     }
 
-    # TODO(1239521): ideally, ozone_platform_x11 should not be used outside
+    # TODO(crbug.com/40193891): ideally, ozone_platform_x11 should not be used outside
     # ui/ozone.
     if (ozone_platform_x11) {
       sources += [
@@ -503,7 +511,7 @@ viz_component("service") {
     public_deps += [ "//third_party/dawn/include/dawn:headers" ]
 
     deps += [
-      "//third_party/dawn/src/dawn:cpp",
+      "//third_party/dawn/include/dawn:cpp_headers",
       "//third_party/dawn/src/dawn:proc",
       "//third_party/dawn/src/dawn/native",
     ]
@@ -532,10 +540,11 @@ viz_source_set("unit_tests") {
     "display/display_utils_unittest.cc",
     "display/draw_polygon_unittest.cc",
     "display/frame_rate_decider_unittest.cc",
+    "display/occlusion_culler_unittest.cc",
     "display/overlay_candidate_factory_unittest.cc",
+    "display/readback_pixeltest.cc",
     "display/renderer_pixeltest.cc",
     "display/resolved_frame_data_unittest.cc",
-    "display/skia_readback_pixeltest.cc",
     "display/software_renderer_unittest.cc",
     "display/surface_aggregator_pixeltest.cc",
     "display/surface_aggregator_unittest.cc",

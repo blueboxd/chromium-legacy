@@ -173,6 +173,15 @@ export class ChromeHelperFake extends ChromeHelper {
     return fakeEndpoint();
   }
 
+  override async initScreenLockedMonitor(
+      _onChange: (isScreenLocked: boolean) => void): Promise<boolean> {
+    return false;
+  }
+
+  override async renderPdfAsImage(_pdf: Blob): Promise<Blob> {
+    return new Blob();
+  }
+
   /* eslint-enable @typescript-eslint/require-await */
 }
 

@@ -52,20 +52,44 @@ public class NotificationServiceImpl extends NotificationService.Impl {
                     (JobScheduler) context.getSystemService(Context.JOB_SCHEDULER_SERVICE);
             PersistableBundle extras = NotificationJobServiceImpl.getJobExtrasFromIntent(intent);
             putJobScheduledTimeInExtras(extras);
-            JobInfo job =
-                    new JobInfo.Builder(
-                                    TaskIds.NOTIFICATION_SERVICE_JOB_ID,
-                                    new ComponentName(context, NotificationJobService.class))
-                            .setExtras(extras)
-                            .setOverrideDeadline(0)
-                            .build();
 
-            recordJobIsAlreadyPendingHistogram(scheduler, intent);
+            // Use a different task ID for notification unsubscribe actions to ensure it is not
+            // overridden by the task handling the dismiss intent; plus use a higher priority to
+            // avoid scheduling delays up to several minutes as indicated by telemetry.
+            int taskId = TaskIds.NOTIFICATION_SERVICE_JOB_ID;
+            boolean isExpedited = false;
+            if (NotificationConstants.ACTION_PRE_UNSUBSCRIBE.equals(intent.getAction())) {
+                taskId = TaskIds.NOTIFICATION_SERVICE_PRE_UNSUBSCRIBE_JOB_ID;
+                isExpedited = true;
+            }
+
+            JobInfo.Builder jobBuilder =
+                    new JobInfo.Builder(
+                            taskId, new ComponentName(context, NotificationJobService.class));
+            jobBuilder.setExtras(extras);
+
+            // The `setExpedited` option must not be used together with `setDeadlineOverride`, while
+            // `setImportantWhileForeground` must be used together with at least one constraint.
+            if (isExpedited) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    jobBuilder.setExpedited(true);
+                } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                    jobBuilder.setImportantWhileForeground(true);
+                    jobBuilder.setOverrideDeadline(0);
+                } else {
+                    assert false; // Not reached, PRE_UNSUBSCRIBE is not supported before Pie.
+                }
+            } else {
+                jobBuilder.setOverrideDeadline(0);
+            }
+
+            recordJobIsAlreadyPendingHistogram(scheduler, taskId, intent);
             NotificationUmaTracker.getInstance()
                     .recordIntentHandlerJobStage(
                             NotificationUmaTracker.IntentHandlerJobStage.SCHEDULE_JOB,
                             intent.getAction());
 
+            JobInfo job = jobBuilder.build();
             int result = scheduler.schedule(job);
 
             if (result != JobScheduler.RESULT_SUCCESS) {
@@ -77,14 +101,13 @@ public class NotificationServiceImpl extends NotificationService.Impl {
 
             recordJobScheduleResultHistogram(result, intent);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-                recordJobPendingReasonHistogram(scheduler, intent);
+                recordJobPendingReasonHistogram(scheduler, taskId, intent);
             }
         }
 
         private static void recordJobIsAlreadyPendingHistogram(
-                JobScheduler scheduler, Intent intent) {
-            boolean isAlreadyPending =
-                    scheduler.getPendingJob(TaskIds.NOTIFICATION_SERVICE_JOB_ID) != null;
+                JobScheduler scheduler, int taskId, Intent intent) {
+            boolean isAlreadyPending = scheduler.getPendingJob(taskId) != null;
             RecordHistogram.recordBooleanHistogram(
                     "Notifications.Android.JobIsAlreadyPending", isAlreadyPending);
             if (NotificationConstants.ACTION_PRE_UNSUBSCRIBE.equals(intent.getAction())) {
@@ -105,9 +128,9 @@ public class NotificationServiceImpl extends NotificationService.Impl {
         }
 
         @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
-        private static void recordJobPendingReasonHistogram(JobScheduler scheduler, Intent intent) {
-            int jobPendingReason =
-                    scheduler.getPendingJobReason(TaskIds.NOTIFICATION_SERVICE_JOB_ID);
+        private static void recordJobPendingReasonHistogram(
+                JobScheduler scheduler, int taskId, Intent intent) {
+            int jobPendingReason = scheduler.getPendingJobReason(taskId);
             RecordHistogram.recordSparseHistogram(
                     "Notifications.Android.JobPendingReason", jobPendingReason);
             if (NotificationConstants.ACTION_PRE_UNSUBSCRIBE.equals(intent.getAction())) {

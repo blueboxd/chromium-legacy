@@ -19,7 +19,6 @@
 #include "chrome/common/extensions/extension_metrics.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/renderer/chrome_render_thread_observer.h"
-#include "chrome/renderer/extensions/chrome_extensions_dispatcher_delegate.h"
 #include "chrome/renderer/extensions/renderer_permissions_policy_delegate.h"
 #include "chrome/renderer/extensions/resource_request_policy.h"
 #include "content/public/common/content_constants.h"
@@ -139,7 +138,6 @@ void ChromeExtensionsRendererClient::RenderThreadStarted() {
   // injects it using SetExtensionDispatcher(). Don't overwrite it.
   if (!extension_dispatcher_) {
     extension_dispatcher_ = std::make_unique<extensions::Dispatcher>(
-        std::make_unique<ChromeExtensionsDispatcherDelegate>(),
         std::move(api_providers_));
   }
   extension_dispatcher_->OnRenderThreadStarted(thread);
@@ -276,7 +274,7 @@ void ChromeExtensionsRendererClient::WillSendRequest(
     *new_url = GURL(chrome::kExtensionInvalidRequestURL);
   }
 
-  // TODO(https://crbug.com/588766): Remove metrics after bug is fixed.
+  // TODO(crbug.com/41240557): Remove metrics after bug is fixed.
   GURL request_url(url);
   if (url.ProtocolIs(extensions::kExtensionScheme) &&
       request_url.host_piece() == extension_misc::kDocsOfflineExtensionId) {

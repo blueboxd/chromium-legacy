@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "ash/wm/desks/legacy_desk_bar_view.h"
+
 #include "ash/ash_element_identifiers.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/views/view_class_properties.h"
@@ -19,7 +20,8 @@ LegacyDeskBarView::LegacyDeskBarView(base::WeakPtr<OverviewGrid> overview_grid)
   overview_grid_ = overview_grid;
 }
 
-gfx::Size LegacyDeskBarView::CalculatePreferredSize() const {
+gfx::Size LegacyDeskBarView::CalculatePreferredSize(
+    const views::SizeBounds& available_size) const {
   // For overview bar, it always come with the fixed width (the full available
   // width).
   return {GetAvailableBounds().width(),

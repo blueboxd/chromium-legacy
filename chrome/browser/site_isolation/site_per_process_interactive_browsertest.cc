@@ -295,7 +295,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
 // The test then presses <tab> six times to cycle through focused elements 1-6.
 // The test then repeats this with <shift-tab> to cycle in reverse order.
 #if BUILDFLAG(IS_MAC)
-// TODO(crbug.com/1295296): Fails on Mac 10.11.
+// TODO(crbug.com/40821065): Fails on Mac 10.11.
 #define MAYBE_SequentialFocusNavigation DISABLED_SequentialFocusNavigation
 #else
 #define MAYBE_SequentialFocusNavigation SequentialFocusNavigation
@@ -572,7 +572,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessInteractiveFencedFrameBrowserTest,
 //              \------------/.
 //
 // The test then presses <tab> twice to focus on elements 1 and 2.
-// TODO(crbug.com/1466478): Re-enable this test once this bug is fixed.
+// TODO(crbug.com/40276413): Re-enable this test once this bug is fixed.
 IN_PROC_BROWSER_TEST_P(SitePerProcessInteractiveFencedFrameBrowserTest,
                        SequentialFocusNavigationPassThrough) {
   GURL main_url(https_server()->GetURL(
@@ -667,7 +667,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessInteractiveFencedFrameBrowserTest,
 //
 // The test then presses <tab> twice to focus on elements 1 and 2, <tab> to
 // move focus to the UI, and <tab> one more time to focus on element 1 again.
-// TODO(crbug.com/1466478): Re-enable this test once this bug is fixed.
+// TODO(crbug.com/40276413): Re-enable this test once this bug is fixed.
 IN_PROC_BROWSER_TEST_P(SitePerProcessInteractiveFencedFrameBrowserTest,
                        SequentialFocusWrapBackIntoChildFrame) {
   GURL main_url(https_server()->GetURL(
@@ -756,7 +756,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessInteractiveFencedFrameBrowserTest,
   EXPECT_EQ("\"child3-focused-input1\"", press_tab_and_wait_for_message(false));
 }
 
-// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
+// TODO(crbug.com/40118868): Revisit the macro expression once build flag switch
 // of lacros-chrome is complete.
 #if (BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)) || BUILDFLAG(IS_WIN)
 // Ensures that renderers know to advance focus to sibling frames and parent
@@ -1313,7 +1313,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
 // The test also exits fullscreen by simulating pressing ESC rather than using
 // document.webkitExitFullscreen(), which tests the browser-initiated
 // fullscreen exit path.
-// TODO(crbug.com/756338): flaky on all platforms.
+// TODO(crbug.com/40535621): flaky on all platforms.
 IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
                        DISABLED_FullscreenElementInMultipleSubframes) {
   // Allow fullscreen in all iframes descending to |c_middle|.
@@ -1547,11 +1547,18 @@ class SitePerProcessInteractivePDFTest
 
 // This test loads a PDF inside an OOPIF and then verifies that context menu
 // shows up at the correct position.
-// TODO(1423184,327338993): Fix flaky test.
-// defined(ADDRESS_SANITIZER)
+// TODO(crbug.com/1423184, crbug.com/327338993): Fix flaky test.
+#if BUILDFLAG(IS_WIN) || (BUILDFLAG(IS_LINUX) && defined(ADDRESS_SANITIZER))
+#define MAYBE_ContextMenuPositionForEmbeddedPDFInCrossOriginFrame \
+  DISABLED_ContextMenuPositionForEmbeddedPDFInCrossOriginFrame
+#else
+#define MAYBE_ContextMenuPositionForEmbeddedPDFInCrossOriginFrame \
+  ContextMenuPositionForEmbeddedPDFInCrossOriginFrame
+#endif  // BUILDFLAG(IS_WIN) || (BUILDFLAG(IS_LINUX) &&
+        // defined(ADDRESS_SANITIZER))
 IN_PROC_BROWSER_TEST_P(
     SitePerProcessInteractivePDFTest,
-    DISABLED_ContextMenuPositionForEmbeddedPDFInCrossOriginFrame) {
+    MAYBE_ContextMenuPositionForEmbeddedPDFInCrossOriginFrame) {
   // Navigate to a page with an <iframe>.
   GURL main_url(embedded_test_server()->GetURL("a.com", "/iframe.html"));
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), main_url));
@@ -1695,7 +1702,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessInteractivePDFTest,
           .ExtractBool());
 }
 
-// TODO(crbug.com/1445746): Stop testing both modes after OOPIF PDF viewer
+// TODO(crbug.com/40268279): Stop testing both modes after OOPIF PDF viewer
 // launches.
 INSTANTIATE_FEATURE_OVERRIDE_TEST_SUITE(SitePerProcessInteractivePDFTest);
 #endif  // BUILDFLAG(ENABLE_PDF)

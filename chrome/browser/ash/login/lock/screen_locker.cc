@@ -23,7 +23,6 @@
 #include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
-#include "chrome/browser/ash/accessibility/accessibility_manager.h"
 #include "chrome/browser/ash/login/helper.h"
 #include "chrome/browser/ash/login/lock/views_screen_locker.h"
 #include "chrome/browser/ash/login/login_auth_recorder.h"
@@ -47,7 +46,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/ash/components/audio/sounds.h"
 #include "chromeos/ash/components/browser_context_helper/browser_context_helper.h"
 #include "chromeos/ash/components/dbus/biod/constants.pb.h"
 #include "chromeos/ash/components/dbus/session_manager/session_manager_client.h"
@@ -67,9 +65,7 @@
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
-#include "services/audio/public/cpp/sounds/sounds_manager.h"
 #include "services/device/public/mojom/fingerprint.mojom-shared.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/image/image.h"
@@ -182,17 +178,8 @@ ScreenLocker::ScreenLocker(const user_manager::UserList& users)
   CHECK(!screen_locker_);
   screen_locker_ = this;
 
-  ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-  audio::SoundsManager* manager = audio::SoundsManager::Get();
-  manager->Initialize(static_cast<int>(Sound::kLock),
-                      bundle.GetRawDataResource(IDR_SOUND_LOCK_WAV),
-                      media::AudioCodec::kPCM);
-  manager->Initialize(static_cast<int>(Sound::kUnlock),
-                      bundle.GetRawDataResource(IDR_SOUND_UNLOCK_WAV),
-                      media::AudioCodec::kPCM);
   content::GetDeviceService().BindFingerprint(
       fp_service_.BindNewPipeAndPassReceiver());
-
   fp_service_->AddFingerprintObserver(
       fingerprint_observer_receiver_.BindNewPipeAndPassRemote());
 
@@ -452,7 +439,7 @@ void ScreenLocker::OnChallengeResponseKeysPrepared(
     const AccountId& account_id,
     std::vector<ChallengeResponseKey> challenge_response_keys) {
   if (challenge_response_keys.empty()) {
-    // TODO(crbug.com/826417): Indicate the error in the UI.
+    // TODO(crbug.com/40568975): Indicate the error in the UI.
     if (pending_auth_state_) {
       std::move(pending_auth_state_->callback).Run(/*auth_success=*/false);
       pending_auth_state_.reset();
@@ -518,9 +505,6 @@ void ScreenLocker::OnStartLockCallback(bool locked) {
   }
 
   views_screen_locker_->OnAshLockAnimationFinished();
-
-  AccessibilityManager::Get()->PlayEarcon(
-      Sound::kLock, PlaySoundOption::kOnlyIfSpokenFeedbackEnabled);
 }
 
 user_manager::UserList ScreenLocker::GetUsersToShow() const {
@@ -564,8 +548,9 @@ void ScreenLocker::HandleShowLockScreenRequest() {
     UserAddingScreen::Get()->Cancel();
     return;
   }
-  if (g_screen_lock_observer->session_started() &&
-      user_manager::UserManager::Get()->CanCurrentUserLock()) {
+  auto* active_user = user_manager::UserManager::Get()->GetActiveUser();
+  if (g_screen_lock_observer->session_started() && active_user &&
+      active_user->CanLock()) {
     ScreenLocker::Show();
   } else {
     // If the current user's session cannot be locked or the user has not
@@ -658,9 +643,6 @@ void ScreenLocker::ScheduleDeletion() {
     return;
   }
   VLOG(1) << "Deleting ScreenLocker " << screen_locker_;
-
-  AccessibilityManager::Get()->PlayEarcon(
-      Sound::kUnlock, PlaySoundOption::kOnlyIfSpokenFeedbackEnabled);
 
   delete screen_locker_;
   screen_locker_ = nullptr;

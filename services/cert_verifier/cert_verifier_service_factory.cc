@@ -5,6 +5,7 @@
 #include "services/cert_verifier/cert_verifier_service_factory.h"
 
 #include <memory>
+#include <string_view>
 
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
@@ -40,7 +41,9 @@
 #if BUILDFLAG(CHROME_ROOT_STORE_SUPPORTED)
 #include <optional>
 
+#include "base/version_info/version_info.h"  // nogncheck
 #include "mojo/public/cpp/base/big_buffer.h"
+#include "mojo/public/cpp/base/proto_wrapper.h"
 #include "net/cert/internal/trust_store_chrome.h"
 #include "net/cert/root_store_proto_lite/root_store.pb.h"
 #include "third_party/boringssl/src/pki/parse_name.h"
@@ -99,22 +102,41 @@ internal::CertVerifierServiceImpl* GetNewCertVerifierImpl(
 }
 
 #if BUILDFLAG(CHROME_ROOT_STORE_SUPPORTED)
-std::string GetName(const bssl::ParsedCertificate& cert) {
-  bssl::RDNSequence subject_rdn;
-  if (!bssl::ParseName(cert.subject_tlv(), &subject_rdn)) {
-    return "UNKNOWN";
-  }
-  std::string subject_string;
-  if (!bssl::ConvertToRFC2253(subject_rdn, &subject_string)) {
-    return "UNKNOWN";
-  }
-  return subject_string;
-}
-
 std::string GetHash(const bssl::ParsedCertificate& cert) {
   net::SHA256HashValue hash =
       net::X509Certificate::CalculateFingerprint256(cert.cert_buffer());
   return base::HexEncode(hash.data);
+}
+
+bool IsVersionConstraintSatisified(
+    const net::ChromeRootCertConstraints constraint) {
+  if (constraint.min_version.has_value() &&
+      version_info::GetVersion() < constraint.min_version.value()) {
+    return false;
+  }
+
+  if (constraint.max_version_exclusive.has_value() &&
+      version_info::GetVersion() >= constraint.max_version_exclusive.value()) {
+    return false;
+  }
+
+  return true;
+}
+
+// we only check any version constraints, as we don't have a certificate here to
+// check any SCT constraints.
+bool IsAnchorTrustedOnThisChromeVersion(
+    const net::ChromeRootStoreData::Anchor& anchor) {
+  if (anchor.constraints.empty()) {
+    return true;
+  }
+
+  for (const auto& constraint : anchor.constraints) {
+    if (IsVersionConstraintSatisified(constraint)) {
+      return true;
+    }
+  }
+  return false;
 }
 #endif
 
@@ -125,8 +147,8 @@ scoped_refptr<net::CRLSet> ParseCRLSet(mojo_base::BigBuffer crl_set) {
   // The BigBuffer comes from a trusted process, so we don't need to copy the
   // data out before parsing.
   if (!net::CRLSet::Parse(
-          base::StringPiece(reinterpret_cast<const char*>(crl_set.data()),
-                            crl_set.size()),
+          std::string_view(reinterpret_cast<const char*>(crl_set.data()),
+                           crl_set.size()),
           &result)) {
     return nullptr;
   }
@@ -223,7 +245,7 @@ void CertVerifierServiceFactoryImpl::UpdateCtLogList(
     scoped_refptr<const net::CTLogVerifier> log_verifier =
         net::CTLogVerifier::Create(log->public_key, log->name);
     if (!log_verifier) {
-      // TODO(crbug.com/1211056): Signal bad configuration (such as bad key).
+      // TODO(crbug.com/40767441): Signal bad configuration (such as bad key).
       continue;
     }
     ct_logs.push_back(std::move(log_verifier));
@@ -267,20 +289,13 @@ void CertVerifierServiceFactoryImpl::OnCRLSetParsed(
 
 #if BUILDFLAG(CHROME_ROOT_STORE_SUPPORTED)
 void CertVerifierServiceFactoryImpl::UpdateChromeRootStore(
-    mojom::ChromeRootStorePtr new_root_store,
+    mojo_base::ProtoWrapper new_root_store,
     UpdateChromeRootStoreCallback callback) {
   // Ensure the callback is run regardless which return path is used.
   base::ScopedClosureRunner scoped_callback_runner(std::move(callback));
 
-  if (new_root_store->serialized_proto_root_store.size() == 0) {
-    LOG(ERROR) << "Empty serialized RootStore proto";
-    return;
-  }
-
-  chrome_root_store::RootStore proto;
-  if (!proto.ParseFromArray(
-          new_root_store->serialized_proto_root_store.data(),
-          new_root_store->serialized_proto_root_store.size())) {
+  auto message = new_root_store.As<chrome_root_store::RootStore>();
+  if (!message.has_value()) {
     LOG(ERROR) << "error parsing proto for Chrome Root Store";
     return;
   }
@@ -289,12 +304,12 @@ void CertVerifierServiceFactoryImpl::UpdateChromeRootStore(
   // Component Updater to revert to older versions. Check is left in
   // to guard against Component updater being stuck on older versions due
   // to daily updates of the PKI Metadata component being broken.
-  if (proto.version_major() <= net::CompiledChromeRootStoreVersion()) {
+  if (message->version_major() <= net::CompiledChromeRootStoreVersion()) {
     return;
   }
 
   std::optional<net::ChromeRootStoreData> root_store_data =
-      net::ChromeRootStoreData::CreateChromeRootStoreData(proto);
+      net::ChromeRootStoreData::CreateChromeRootStoreData(message.value());
   if (!root_store_data) {
     LOG(ERROR) << "error interpreting proto for Chrome Root Store";
     return;
@@ -315,19 +330,28 @@ void CertVerifierServiceFactoryImpl::UpdateChromeRootStore(
 void CertVerifierServiceFactoryImpl::GetChromeRootStoreInfo(
     GetChromeRootStoreInfoCallback callback) {
   mojom::ChromeRootStoreInfoPtr info_ptr = mojom::ChromeRootStoreInfo::New();
+
+  std::vector<net::ChromeRootStoreData::Anchor> anchors;
   if (proc_params_.root_store_data) {
     info_ptr->version = proc_params_.root_store_data->version();
-    for (auto cert : proc_params_.root_store_data->anchors()) {
-      info_ptr->root_cert_info.push_back(
-          mojom::ChromeRootCertInfo::New(GetName(*cert), GetHash(*cert)));
-    }
+    anchors = proc_params_.root_store_data->anchors();
   } else {
     info_ptr->version = net::CompiledChromeRootStoreVersion();
-    for (auto cert : net::CompiledChromeRootStoreAnchors()) {
-      info_ptr->root_cert_info.push_back(
-          mojom::ChromeRootCertInfo::New(GetName(*cert), GetHash(*cert)));
-    }
+    anchors = net::CompiledChromeRootStoreAnchors();
   }
+
+  for (const auto& anchor : anchors) {
+    if (!IsAnchorTrustedOnThisChromeVersion(anchor)) {
+      continue;
+    }
+    const bssl::ParsedCertificate* cert = anchor.certificate.get();
+    base::span<const uint8_t> cert_bytes =
+        net::x509_util::CryptoBufferAsSpan(cert->cert_buffer());
+    info_ptr->root_cert_info.push_back(mojom::ChromeRootCertInfo::New(
+        GetHash(*cert),
+        std::vector<uint8_t>(cert_bytes.begin(), cert_bytes.end())));
+  }
+
   std::move(callback).Run(std::move(info_ptr));
 }
 #endif

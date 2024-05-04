@@ -5,7 +5,6 @@
 #ifndef COMPONENTS_SYNC_BASE_DATA_TYPE_HISTOGRAM_H_
 #define COMPONENTS_SYNC_BASE_DATA_TYPE_HISTOGRAM_H_
 
-#include "base/metrics/histogram_macros.h"
 #include "components/sync/base/model_type.h"
 
 namespace syncer {
@@ -38,9 +37,13 @@ void SyncRecordModelTypeMemoryHistogram(ModelType model_type, size_t bytes);
 // entities.
 void SyncRecordModelTypeCountHistogram(ModelType model_type, size_t count);
 
-// Records sync entity size `bytes` in `model_type` related histogram for
-// distribution of entity sizes.
-void SyncRecordModelTypeEntitySizeHistogram(ModelType model_type, size_t bytes);
+// Records the serialized byte size of a sync entity from `model_type`, both
+// with and without sync metadata (`total_bytes` and `specifics_bytes`
+// respectively). Meant to be called when the entity is committed.
+void SyncRecordModelTypeEntitySizeHistogram(ModelType model_type,
+                                            bool is_tombstone,
+                                            size_t specifics_bytes,
+                                            size_t total_bytes);
 
 // Records when the model (including both data and metadata) was cleared for a
 // given `model_type` due to
@@ -49,6 +52,7 @@ void SyncRecordModelClearedOnceHistogram(ModelType model_type);
 
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
+// LINT.IfChange(SyncToSigninMigrationReadingListStep)
 enum class ReadingListMigrationStep {
   kMigrationRequested = 0,
   kMigrationStarted = 1,
@@ -56,6 +60,7 @@ enum class ReadingListMigrationStep {
   kMigrationFinishedAndPrefCleared = 3,
   kMaxValue = kMigrationFinishedAndPrefCleared
 };
+// LINT.ThenChange(/tools/metrics/histograms/metadata/sync/enums.xml:SyncToSigninMigrationReadingListStep)
 void RecordSyncToSigninMigrationReadingListStep(ReadingListMigrationStep step);
 
 }  // namespace syncer

@@ -4,12 +4,17 @@
 
 #include "content/web_test/browser/devtools_protocol_test_bindings.h"
 
+#include <string_view>
+
 #include "base/command_line.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
 #include "base/json/json_reader.h"
+#include "base/json/json_writer.h"
 #include "base/json/string_escape.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -36,12 +41,14 @@ constexpr size_t kWebTestMaxMessageChunkSize =
 }  // namespace
 
 DevToolsProtocolTestBindings::DevToolsProtocolTestBindings(
-    WebContents* devtools)
+    WebContents* devtools,
+    std::string log)
     : WebContentsObserver(devtools),
       agent_host_(DevToolsAgentHost::CreateForBrowser(
           nullptr,
           DevToolsAgentHost::CreateServerSocketCallback())) {
   agent_host_->AttachClient(this);
+  ParseLog(log);
 }
 
 DevToolsProtocolTestBindings::~DevToolsProtocolTestBindings() {
@@ -71,6 +78,20 @@ GURL DevToolsProtocolTestBindings::MapTestURLIfNeeded(const GURL& test_url,
   return GURL(spec);
 }
 
+void DevToolsProtocolTestBindings::ParseLog(const std::string_view log) {
+  if (log.empty()) {
+    return;
+  }
+  std::vector<std::string> lines = base::SplitStringUsingSubstr(
+      log, "\n", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  for (const std::string& line : lines) {
+    std::optional<base::Value::Dict> item = base::JSONReader::ReadDict(line);
+    CHECK(!item->empty());
+    log_.push_back(std::move(item.value()));
+  }
+  log_enabled_ = true;
+}
+
 void DevToolsProtocolTestBindings::ReadyToCommitNavigation(
     NavigationHandle* navigation_handle) {
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
@@ -91,6 +112,39 @@ void DevToolsProtocolTestBindings::WebContentsDestroyed() {
   }
 }
 
+void DevToolsProtocolTestBindings::HandleMessagesFromLog(
+    const std::string_view protocol_message_string) {
+  std::optional<base::Value::Dict> parsed =
+      base::JSONReader::ReadDict(protocol_message_string);
+  if (!parsed) {
+    return;
+  }
+  base::Value::Dict protocol_message = std::move(parsed.value());
+
+  CHECK(log_pos_ < log_.size()) << "Test sent commands but the log is empty";
+  const base::Value::Dict& top = log_[log_pos_];
+  CHECK(protocol_message == top)
+      << "Test sent a command that is not the next in the log \n"
+      << protocol_message << "\n"
+      << top;
+  log_pos_++;
+  while (log_pos_ < log_.size()) {
+    const base::Value::Dict& item = log_[log_pos_];
+    // Stop when the next command is encountered in the log.
+    if (item.FindString("method") && item.FindInt("id")) {
+      break;
+    }
+    log_pos_++;
+    std::optional<std::string> str_message = base::WriteJson(item);
+    CHECK(str_message) << "Could not convert log message to JSON";
+    std::string param;
+    base::EscapeJSONString(str_message.value(), true, &param);
+    std::string javascript = "DevToolsAPI.dispatchMessage(" + param + ");";
+    web_contents()->GetPrimaryMainFrame()->ExecuteJavaScriptForTests(
+        base::UTF8ToUTF16(javascript), base::NullCallback());
+  }
+}
+
 void DevToolsProtocolTestBindings::HandleMessageFromTest(
     base::Value::Dict message) {
   const std::string* method = message.FindString("method");
@@ -102,6 +156,11 @@ void DevToolsProtocolTestBindings::HandleMessageFromTest(
     const std::string* protocol_message = (*params)[0].GetIfString();
     if (!protocol_message)
       return;
+
+    if (log_enabled_) {
+      HandleMessagesFromLog(*protocol_message);
+      return;
+    }
 
     if (agent_host_) {
       WebTestControlHost::Get()->PrintMessageToStderr(
@@ -116,7 +175,10 @@ void DevToolsProtocolTestBindings::HandleMessageFromTest(
 void DevToolsProtocolTestBindings::DispatchProtocolMessage(
     DevToolsAgentHost* agent_host,
     base::span<const uint8_t> message) {
-  base::StringPiece str_message(reinterpret_cast<const char*>(message.data()),
+  if (log_enabled_) {
+    NOTREACHED_NORETURN() << "Unexpected messages dispatched by the browser";
+  }
+  std::string_view str_message(reinterpret_cast<const char*>(message.data()),
                                 message.size());
   WebTestControlHost::Get()->PrintMessageToStderr(
       "Protocol message: " + std::string(str_message) + "\n");

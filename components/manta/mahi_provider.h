@@ -15,6 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
 #include "components/endpoint_fetcher/endpoint_fetcher.h"
+#include "components/manta/base_provider.h"
 #include "components/manta/manta_service_callbacks.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -27,14 +28,15 @@ namespace manta {
 // IMPORTANT: This class depends on `IdentityManager`.
 // `MahiProvider::Call` will return an empty response after `IdentityManager`
 // destruction.
-class COMPONENT_EXPORT(MANTA) MahiProvider
-    : public signin::IdentityManager::Observer {
+class COMPONENT_EXPORT(MANTA) MahiProvider : public BaseProvider {
  public:
   // Returns a `MahiProvider` instance tied to the profile of the passed
   // arguments.
   MahiProvider(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      signin::IdentityManager* identity_manager);
+      signin::IdentityManager* identity_manager,
+      bool is_demo_mode,
+      const std::string& chrome_version);
 
   MahiProvider(const MahiProvider&) = delete;
   MahiProvider& operator=(const MahiProvider&) = delete;
@@ -51,29 +53,19 @@ class COMPONENT_EXPORT(MANTA) MahiProvider
   // Similar to `Summarize` but outlines the `input`.
   void Outline(const std::string& input, MantaGenericCallback done_callback);
 
-  // signin::IdentityManager::Observer:
-  void OnIdentityManagerShutdown(
-      signin::IdentityManager* identity_manager) override;
+  using MahiQAPair = std::pair<std::string, std::string>;
+  void QuestionAndAnswer(const std::string& content,
+                         const std::vector<MahiQAPair> QAHistory,
+                         const std::string& question,
+                         MantaGenericCallback done_callback);
+
+ protected:
+  MahiProvider(
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      signin::IdentityManager* identity_manager);
 
  private:
   friend class FakeMahiProvider;
-
-  // Creates and returns unique pointer to an `EndpointFetcher` initialized
-  // with the provided parameters and defaults relevant to `MahiProvider`.
-  // Virtual to allow overriding in tests.
-  virtual std::unique_ptr<EndpointFetcher> CreateEndpointFetcher(
-      const GURL& url,
-      const std::vector<std::string>& scopes,
-      const std::string& post_data);
-
-  void RequestInternal(const proto::Request& request,
-                       MantaGenericCallback done_callback);
-
-  const scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
-
-  base::ScopedObservation<signin::IdentityManager,
-                          signin::IdentityManager::Observer>
-      identity_manager_observation_{this};
 
   base::WeakPtrFactory<MahiProvider> weak_ptr_factory_{this};
 };

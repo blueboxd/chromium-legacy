@@ -41,6 +41,7 @@ class VIZ_SERVICE_EXPORT NullRenderer : public DirectRenderer {
       const AggregatedRenderPassId render_pass_id) override {}
   void SetScissorTestRect(const gfx::Rect& scissor_rect) override {}
   void BeginDrawingRenderPass(
+      const AggregatedRenderPass* render_pass,
       bool needs_clear,
       const gfx::Rect& render_pass_update_rect) override {}
   void DoDrawQuad(const DrawQuad* quad,
@@ -52,7 +53,6 @@ class VIZ_SERVICE_EXPORT NullRenderer : public DirectRenderer {
   void DidChangeVisibility() override {}
   void CopyDrawnRenderPass(const copy_output::RenderPassGeometry& geometry,
                            std::unique_ptr<CopyOutputRequest> request) override;
-  void GenerateMipmap() override {}
 };
 
 }  // namespace viz

@@ -150,7 +150,7 @@ class FailingURLLoaderFactory : public network::SharedURLLoaderFactory {
 
 class MockColorProviderSource : public ui::ColorProviderSource {
  public:
-  explicit MockColorProviderSource() { provider_.GenerateColorMap(); }
+  explicit MockColorProviderSource() = default;
   MockColorProviderSource(const MockColorProviderSource&) = delete;
   MockColorProviderSource& operator=(const MockColorProviderSource&) = delete;
   ~MockColorProviderSource() override = default;
@@ -160,7 +160,7 @@ class MockColorProviderSource : public ui::ColorProviderSource {
     return &provider_;
   }
 
-  const ui::RendererColorMap GetRendererColorMap(
+  ui::RendererColorMap GetRendererColorMap(
       ui::ColorProviderKey::ColorMode color_mode,
       ui::ColorProviderKey::ForcedColors forced_colors) const override {
     auto key = GetColorProviderKey();
@@ -434,9 +434,6 @@ void RenderViewTest::SetUp() {
   command_line_ =
       std::make_unique<base::CommandLine>(base::CommandLine::NO_PROGRAM);
   params_ = std::make_unique<MainFunctionParams>(command_line_.get());
-  // Platform needs to be initialized before blink::Initialize. This is because
-  // Blink retrieves fonts for NativeThemeFluent, but the platform expects the
-  // font manager singleton to be uninitialized.
   platform_ = std::make_unique<RendererMainPlatformDelegate>(*params_);
   platform_->PlatformInitialize();
 
@@ -837,7 +834,8 @@ void RenderViewTest::OnSameDocumentNavigation(blink::WebLocalFrame* frame,
                             : blink::kWebHistoryInertCommit,
           true /* is_synchronously_committed */,
           blink::mojom::SameDocumentNavigationType::kFragment,
-          false /* is_client_redirect */);
+          false /* is_client_redirect */,
+          /*screenshot_destination=*/std::nullopt);
 }
 
 blink::WebFrameWidget* RenderViewTest::GetWebFrameWidget() {

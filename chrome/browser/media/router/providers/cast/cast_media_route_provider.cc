@@ -5,6 +5,7 @@
 #include "chrome/browser/media/router/providers/cast/cast_media_route_provider.h"
 
 #include <array>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -43,7 +44,7 @@ namespace {
 constexpr char kLoggerComponent[] = "CastMediaRouteProvider";
 
 // List of origins allowed to use a PresentationRequest to initiate mirroring.
-constexpr std::array<base::StringPiece, 3> kPresentationApiAllowlist = {
+constexpr std::array<std::string_view, 3> kPresentationApiAllowlist = {
     "https://docs.google.com",
     "https://meet.google.com",
     "https://music.youtube.com",
@@ -187,7 +188,7 @@ void CastMediaRouteProvider::CreateRoute(const std::string& source_id,
                                          CreateRouteCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  // TODO(https://crbug.com/809249): Handle mirroring routes, including
+  // TODO(crbug.com/40561499): Handle mirroring routes, including
   // mirror-to-Cast transitions.
   const MediaSinkInternal* sink = media_sink_service_->GetSinkById(sink_id);
   if (!sink) {

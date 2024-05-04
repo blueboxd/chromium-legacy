@@ -12,12 +12,12 @@
 <translation id="1588438908519853928">ნორმალური</translation>
 <translation id="1591562245178063882">ამ თვეში</translation>
 <translation id="1637811476055996098">აირჩიეთ ფაილები</translation>
+<translation id="1680090928918677457">კამერის გამოყენება</translation>
 <translation id="1681022320378710418">ამჟამინდელი დრო</translation>
 <translation id="1727839386348365796">საწვეთური</translation>
 <translation id="1729654308190250600">გთხოვთ შეიყვანოთ შევსებული ელექტრონული ფოსტის მისამართი.</translation>
 <translation id="1758486001363313524">სხვა…</translation>
 <translation id="1787192514241997742">საერთო დრო: <ph name="REMAINING_TIME" /></translation>
-<translation id="1800494066469288780">კამერაზე წვდომის დაშვება</translation>
 <translation id="1822429046913737220">AM/PM</translation>
 <translation id="1832974991323546415">დისტანციურ მოწყობილობაზე დაკვრა</translation>
 <translation id="1921819250265091946">დდ</translation>
@@ -54,7 +54,6 @@
 <translation id="3220661731597678625">ამჟამინდელი ნაბიჯი</translation>
 <translation id="3321030238473337787">დაკვრის სიჩქარე</translation>
 <translation id="3329013043687509092">გაჯერება</translation>
-<translation id="3377518164566272702">მიკროფონსა და კამერაზე წვდომის დაშვება</translation>
 <translation id="3450233048674729344">მნიშვნელობა უნდა იყოს ნაკლები ან უდრიდეს <ph name="MAXIMUM" />-ს.</translation>
 <translation id="3732799496749320381">თთ</translation>
 <translation id="3754210790023674521">რეჟიმიდან „გამოსახულება გამოსახულებაში“ გასვლა</translation>
@@ -77,6 +76,7 @@
 <translation id="4912200001568447310">ამჟამინდელი ერთეული</translation>
 <translation id="4915360478455618802">დროის ამომრჩევის ჩვენება</translation>
 <translation id="4924138096460353083">განუსაზღვრელი</translation>
+<translation id="49269513399674318">მიკროფონის გამოყენება</translation>
 <translation id="4950364064308314478">ადგილობრივი თარიღისა და დროის ამომრჩევის ჩვენება</translation>
 <translation id="4971739861736909480">არჩეულია <ph name="ACCNAME" /></translation>
 <translation id="4975562563186953947"><ph name="SELECTED_COUNT" /> არჩეულია</translation>
@@ -144,6 +144,7 @@
 <translation id="7080893216867146095">მდებარეობის გაზიარება დაშვებულია</translation>
 <translation id="709897737746224366">გთხოვთ, შეუსაბამეთ მოთხოვნილ ფორმატს.</translation>
 <translation id="7102274145889307184">ამჟამინდელი მდებარეობა</translation>
+<translation id="7134810312945846184">მიკროფონისა და კამერის გამოყენება</translation>
 <translation id="7263440858009898357">გთხოვთ აირჩიოთ ელემენტი სიაში.</translation>
 <translation id="7320576522385648310">ბუფერირდება</translation>
 <translation id="7341556277900466204">ფერთა წრე</translation>
@@ -188,7 +189,6 @@
 <translation id="9132465097189459683">სხვა…</translation>
 <translation id="9155987714137265666"><ph name="WEEK" />, რომლის დაწყების თარიღია: <ph name="WEEK_START_DATE" /></translation>
 <translation id="916607977885256133">გამოსახულება გამოსახულებაში</translation>
-<translation id="918430632320614861">მიკროფონზე წვდომის დაშვება</translation>
 <translation id="945780513535800434">ნახევრად მონიშნული</translation>
 <translation id="954003015749068518">რეჟიმში „გამოსახულება გამოსახულებაში“ შესვლა</translation>
 </translationbundle>

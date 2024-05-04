@@ -29,6 +29,7 @@
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/ash/components/kiosk/vision/kiosk_vision.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user.h"
 #include "extensions/browser/extension_registry.h"
@@ -129,7 +130,11 @@ KioskSystemSession::KioskSystemSession(
       network_metrics_service_(
           std::make_unique<NetworkConnectivityMetricsService>()),
       periodic_metrics_service_(std::make_unique<PeriodicMetricsService>(
-          g_browser_process->local_state())) {
+          g_browser_process->local_state())),
+      device_weekly_scheduled_suspend_controller_(
+          std::make_unique<DeviceWeeklyScheduledSuspendController>(
+              g_browser_process->local_state())),
+      kiosk_vision_(g_browser_process->local_state()) {
   switch (kiosk_app_id_.type) {
     case KioskAppType::kChromeApp:
       InitForChromeAppKiosk();
@@ -149,6 +154,7 @@ KioskSystemSession::~KioskSystemSession() = default;
 
 // static
 void KioskSystemSession::RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
+  kiosk_vision::RegisterLocalStatePrefs(registry);
   policy::DeviceWeeklyScheduledSuspendPolicyHandler::RegisterLocalStatePrefs(
       registry);
 }
@@ -197,7 +203,7 @@ void KioskSystemSession::SetRebootAfterUpdateIfNecessary() {
       g_browser_process->platform_part()->browser_policy_connector_ash();
   if (!connector->IsDeviceEnterpriseManaged()) {
     PrefService* local_state = g_browser_process->local_state();
-    local_state->SetBoolean(prefs::kRebootAfterUpdate, true);
+    local_state->SetBoolean(::prefs::kRebootAfterUpdate, true);
     KioskModeIdleAppNameNotification::Initialize();
   }
 }

@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/web_applications/web_app_metrics.h"
-
 #include <bitset>
 #include <vector>
 
@@ -22,7 +20,8 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
-#include "chrome/browser/ui/web_applications/web_app_controller_browsertest.h"
+#include "chrome/browser/ui/web_applications/web_app_browsertest_base.h"
+#include "chrome/browser/ui/web_applications/web_app_metrics.h"
 #include "chrome/browser/web_applications/external_install_options.h"
 #include "chrome/browser/web_applications/externally_managed_app_manager.h"
 #include "chrome/browser/web_applications/mojom/user_display_mode.mojom.h"
@@ -129,7 +128,7 @@ void ExpectLaunchCounts(const base::HistogramTester& tester,
 
 namespace web_app {
 
-class WebAppEngagementBrowserTest : public WebAppControllerBrowserTest {
+class WebAppEngagementBrowserTest : public WebAppBrowserTestBase {
  public:
   WebAppEngagementBrowserTest() = default;
   WebAppEngagementBrowserTest(const WebAppEngagementBrowserTest&) = delete;
@@ -199,8 +198,8 @@ IN_PROC_BROWSER_TEST_F(WebAppEngagementBrowserTest, AppInWindow) {
 
   GURL example_url(
       embedded_test_server()->GetURL("/banners/manifest_test_page.html"));
-  auto web_app_info = std::make_unique<WebAppInstallInfo>();
-  web_app_info->start_url = example_url;
+  auto web_app_info =
+      WebAppInstallInfo::CreateWithStartUrlForTesting(example_url);
   web_app_info->scope = example_url;
   web_app_info->user_display_mode = mojom::UserDisplayMode::kStandalone;
   webapps::AppId app_id = InstallWebAppAndCountApps(std::move(web_app_info));
@@ -232,8 +231,8 @@ IN_PROC_BROWSER_TEST_F(WebAppEngagementBrowserTest, AppInTab) {
   GURL example_url(
       embedded_test_server()->GetURL("/banners/manifest_test_page.html"));
 
-  auto web_app_info = std::make_unique<WebAppInstallInfo>();
-  web_app_info->start_url = example_url;
+  auto web_app_info =
+      WebAppInstallInfo::CreateWithStartUrlForTesting(example_url);
   web_app_info->scope = example_url;
   web_app_info->user_display_mode = mojom::UserDisplayMode::kBrowser;
   webapps::AppId app_id = InstallWebAppAndCountApps(std::move(web_app_info));
@@ -266,8 +265,8 @@ IN_PROC_BROWSER_TEST_F(WebAppEngagementBrowserTest, AppWithoutScope) {
   GURL example_url(
       embedded_test_server()->GetURL("/banners/manifest_test_page.html"));
 
-  auto web_app_info = std::make_unique<WebAppInstallInfo>();
-  web_app_info->start_url = example_url;
+  auto web_app_info =
+      WebAppInstallInfo::CreateWithStartUrlForTesting(example_url);
   // If app has no scope then UrlHandlers::GetUrlHandlers are empty. Therefore,
   // the app is counted as installed via the Create Shortcut button.
   web_app_info->scope = GURL();
@@ -307,14 +306,14 @@ IN_PROC_BROWSER_TEST_F(WebAppEngagementBrowserTest, TwoApps) {
 
   // Install two apps.
   {
-    auto web_app_info = std::make_unique<WebAppInstallInfo>();
-    web_app_info->start_url = example_url1;
+    auto web_app_info =
+        WebAppInstallInfo::CreateWithStartUrlForTesting(example_url1);
     web_app_info->scope = example_url1;
     app_id1 = InstallWebAppAndCountApps(std::move(web_app_info));
   }
   {
-    auto web_app_info = std::make_unique<WebAppInstallInfo>();
-    web_app_info->start_url = example_url2;
+    auto web_app_info =
+        WebAppInstallInfo::CreateWithStartUrlForTesting(example_url2);
     web_app_info->scope = example_url2;
     app_id2 = InstallWebAppAndCountApps(std::move(web_app_info));
   }
@@ -361,8 +360,7 @@ IN_PROC_BROWSER_TEST_F(WebAppEngagementBrowserTest, ManyUserApps) {
   for (int i = 0; i < num_user_apps; ++i) {
     const GURL url = GetUrlForSuffix(base_url, i);
 
-    auto web_app_info = std::make_unique<WebAppInstallInfo>();
-    web_app_info->start_url = url;
+    auto web_app_info = WebAppInstallInfo::CreateWithStartUrlForTesting(url);
     web_app_info->scope = url;
     webapps::AppId app_id = InstallWebAppAndCountApps(std::move(web_app_info));
     app_ids.push_back(app_id);
@@ -393,7 +391,7 @@ IN_PROC_BROWSER_TEST_F(WebAppEngagementBrowserTest, ManyUserApps) {
                      /*tabLaunches=*/0);
 }
 
-// TODO(crbug.com/1401607): Flaky on Mac.
+// TODO(crbug.com/40884336): Flaky on Mac.
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_CHROMEOS)
 #define MAYBE_DefaultApp DISABLED_DefaultApp
 #else
@@ -440,8 +438,8 @@ IN_PROC_BROWSER_TEST_F(WebAppEngagementBrowserTest, NavigateAwayFromAppTab) {
   const GURL outer_url =
       embedded_test_server()->GetURL("/banners/manifest_test_page.html");
 
-  auto web_app_info = std::make_unique<WebAppInstallInfo>();
-  web_app_info->start_url = start_url;
+  auto web_app_info =
+      WebAppInstallInfo::CreateWithStartUrlForTesting(start_url);
   web_app_info->scope = start_url;
   web_app_info->user_display_mode = mojom::UserDisplayMode::kBrowser;
   webapps::AppId app_id = InstallWebAppAndCountApps(std::move(web_app_info));
@@ -541,7 +539,7 @@ IN_PROC_BROWSER_TEST_F(WebAppEngagementBrowserTest, CommandLineWindowByUrl) {
   EXPECT_EQ(expected_tabs, app_browser->tab_strip_model()->count());
 }
 
-// TODO(crbug.com/1382269): Flaky on Mac.
+// TODO(crbug.com/40877225): Flaky on Mac.
 #if BUILDFLAG(IS_MAC)
 #define MAYBE_CommandLineWindowByAppId DISABLED_CommandLineWindowByAppId
 #else

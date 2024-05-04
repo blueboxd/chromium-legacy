@@ -87,6 +87,7 @@ void SVGObjectPainter::PaintResourceSubtree(GraphicsContext& context,
   DCHECK(!layout_object_.SelfNeedsFullLayout());
 
   PaintInfo info(context, CullRect::Infinite(), PaintPhase::kForeground,
+                 layout_object_.ChildPaintBlockedByDisplayLock(),
                  PaintFlag::kOmitCompositingInfo |
                      PaintFlag::kPaintingResourceSubtree | additional_flags);
   layout_object_.Paint(info);
@@ -96,16 +97,39 @@ SvgContextPaints::ContextPaint SVGObjectPainter::ResolveContextPaint(
     const SVGPaint& initial_paint) {
   switch (initial_paint.type) {
     case SVGPaintType::kContextFill:
+      DCHECK(RuntimeEnabledFeatures::SvgContextPaintEnabled());
       return context_paints_
                  ? context_paints_->fill
                  : SvgContextPaints::ContextPaint(layout_object_, SVGPaint());
     case SVGPaintType::kContextStroke:
+      DCHECK(RuntimeEnabledFeatures::SvgContextPaintEnabled());
       return context_paints_
                  ? context_paints_->stroke
                  : SvgContextPaints::ContextPaint(layout_object_, SVGPaint());
     default:
       return SvgContextPaints::ContextPaint(layout_object_, initial_paint);
   }
+}
+
+std::optional<AffineTransform> SVGObjectPainter::ResolveContextTransform(
+    const SVGPaint& initial_paint,
+    const AffineTransform* additional_paint_server_transform) {
+  std::optional<AffineTransform> result;
+  if (additional_paint_server_transform) {
+    result.emplace(*additional_paint_server_transform);
+  }
+  switch (initial_paint.type) {
+    case SVGPaintType::kContextFill:
+    case SVGPaintType::kContextStroke:
+      if (context_paints_) {
+        result.emplace(result.value_or(AffineTransform()) *
+                       context_paints_->transform.Inverse());
+      }
+      break;
+    default:
+      break;
+  }
+  return result;
 }
 
 bool SVGObjectPainter::PreparePaint(
@@ -125,8 +149,10 @@ bool SVGObjectPainter::PreparePaint(
   DCHECK(paint.HasColor() || paint.HasUrl());
 
   if (paint.HasUrl()) {
-    if (ApplyPaintResource(context_paint, additional_paint_server_transform,
-                           flags)) {
+    std::optional<AffineTransform> resolved_transform = ResolveContextTransform(
+        initial_paint, additional_paint_server_transform);
+    if (ApplyPaintResource(context_paint,
+                           base::OptionalToPtr(resolved_transform), flags)) {
       flags.setColor(ScaleAlpha(SK_ColorBLACK, alpha));
       ApplyColorInterpolation(paint_flags, style, flags);
       return true;
@@ -142,9 +168,9 @@ bool SVGObjectPainter::PreparePaint(
       flag_color = style.VisitedDependentContextStroke(
           paint, context_paint.object.StyleRef());
     } else {
-      const Longhand& property = apply_to_fill
-                                     ? To<Longhand>(GetCSSPropertyFill())
-                                     : To<Longhand>(GetCSSPropertyStroke());
+      const Longhand& property =
+          apply_to_fill ? static_cast<const Longhand&>(GetCSSPropertyFill())
+                        : static_cast<const Longhand&>(GetCSSPropertyStroke());
       flag_color = style.VisitedDependentColor(property);
     }
     flag_color.SetAlpha(flag_color.Alpha() * alpha);

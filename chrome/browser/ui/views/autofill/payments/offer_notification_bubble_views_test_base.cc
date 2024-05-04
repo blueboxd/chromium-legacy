@@ -20,6 +20,8 @@
 #include "components/autofill/content/browser/content_autofill_client.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/content/browser/test_autofill_manager_injector.h"
+#include "components/autofill/core/browser/payments_data_manager.h"
+#include "components/autofill/core/browser/payments_data_manager_test_api.h"
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/commerce/core/commerce_feature_list.h"
@@ -107,7 +109,8 @@ OfferNotificationBubbleViewsTestBase::CreateCardLinkedOfferDataWithDomains(
     const std::vector<GURL>& domains) {
   auto card = std::make_unique<CreditCard>();
   card->set_instrument_id(kCreditCardInstrumentId);
-  personal_data_->AddServerCreditCardForTest(std::move(card));
+  personal_data_->payments_data_manager().AddServerCreditCardForTest(
+      std::move(card));
   personal_data_->NotifyPersonalDataObserver();
   int64_t offer_id = 4444;
   base::Time expiry = AutofillClock::Now() + base::Days(2);
@@ -190,27 +193,27 @@ void OfferNotificationBubbleViewsTestBase::SetUpOfferDataWithDomains(
 
 void OfferNotificationBubbleViewsTestBase::SetUpCardLinkedOfferDataWithDomains(
     const std::vector<GURL>& domains) {
-  personal_data_->ClearAllServerDataForTesting();
+  personal_data_->payments_data_manager().ClearAllServerDataForTesting();
   // CreateCardLinkedOfferDataWithDomains(~) will add the necessary card.
-  personal_data_->AddOfferDataForTest(
-      CreateCardLinkedOfferDataWithDomains(domains));
+  test_api(personal_data_->payments_data_manager())
+      .AddOfferData(CreateCardLinkedOfferDataWithDomains(domains));
   personal_data_->NotifyPersonalDataObserver();
 }
 
 void OfferNotificationBubbleViewsTestBase::
     SetUpFreeListingCouponOfferDataWithDomains(
         const std::vector<GURL>& domains) {
-  personal_data_->ClearAllServerDataForTesting();
-  personal_data_->AddOfferDataForTest(
-      CreateFreeListingCouponDataWithDomains(domains));
+  personal_data_->payments_data_manager().ClearAllServerDataForTesting();
+  test_api(personal_data_->payments_data_manager())
+      .AddOfferData(CreateFreeListingCouponDataWithDomains(domains));
   personal_data_->NotifyPersonalDataObserver();
 }
 
 void OfferNotificationBubbleViewsTestBase::
     SetUpGPayPromoCodeOfferDataWithDomains(const std::vector<GURL>& domains) {
-  personal_data_->ClearAllServerDataForTesting();
-  personal_data_->AddOfferDataForTest(
-      CreateGPayPromoCodeOfferDataWithDomains(domains));
+  personal_data_->payments_data_manager().ClearAllServerDataForTesting();
+  test_api(personal_data_->payments_data_manager())
+      .AddOfferData(CreateGPayPromoCodeOfferDataWithDomains(domains));
   personal_data_->NotifyPersonalDataObserver();
 }
 

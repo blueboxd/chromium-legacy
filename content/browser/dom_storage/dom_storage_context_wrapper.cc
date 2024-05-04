@@ -47,7 +47,7 @@ namespace content {
 namespace {
 
 void AdaptSessionStorageUsageInfo(
-    DOMStorageContext::GetSessionStorageUsageCallback callback,
+    DOMStorageContextWrapper::GetSessionStorageUsageCallback callback,
     std::vector<storage::mojom::SessionStorageUsageInfoPtr> usage) {
   std::vector<SessionStorageUsageInfo> result;
   result.reserve(usage.size());
@@ -254,7 +254,7 @@ void DOMStorageContextWrapper::OpenLocalStorage(
   DCHECK(local_storage_control_);
   local_storage_control_->BindStorageArea(storage_key, std::move(receiver));
   if (storage_policy_observer_) {
-    // TODO(https://crbug.com/1199077): Pass the real StorageKey when
+    // TODO(crbug.com/40177656): Pass the real StorageKey when
     // StoragePolicyObserver is converted.
     storage_policy_observer_->StartTrackingOrigin(storage_key.origin());
   }
@@ -433,7 +433,7 @@ void DOMStorageContextWrapper::OnStartupUsageRetrieved(
   for (const auto& info : usage) {
     origins.emplace_back(std::move(info->storage_key.origin()));
   }
-  // TODO(https://crbug.com/1199077): Pass the real StorageKey when
+  // TODO(crbug.com/40177656): Pass the real StorageKey when
   // StoragePolicyObserver is converted.
   storage_policy_observer_->StartTrackingOrigins(std::move(origins));
 }

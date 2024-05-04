@@ -7,11 +7,11 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <string_view>
 
 #include "base/functional/bind.h"
 #include "base/functional/callback_forward.h"
 #include "base/strings/strcat.h"
-#include "base/strings/string_piece.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
@@ -36,17 +36,20 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace supervised_user {
+
+bool operator==(const ProtoFetcherStatus& a, const ProtoFetcherStatus& b) {
+  return a.state() == b.state();
+}
+
 namespace {
 
 using ::base::BindOnce;
 using ::base::Time;
-using ::kids_chrome_management::ClassifyUrlRequest;
-using ::kids_chrome_management::ClassifyUrlResponse;
-using ::kids_chrome_management::CreatePermissionRequestResponse;
-using ::kids_chrome_management::FamilyRole;
-using ::kids_chrome_management::ListFamilyMembersRequest;
-using ::kids_chrome_management::ListFamilyMembersResponse;
-using ::kids_chrome_management::PermissionRequest;
+using ::kidsmanagement::ClassifyUrlRequest;
+using ::kidsmanagement::ClassifyUrlResponse;
+using ::kidsmanagement::CreatePermissionRequestResponse;
+using ::kidsmanagement::FamilyRole;
+using ::kidsmanagement::PermissionRequest;
 using ::network::GetUploadData;
 using ::network::TestURLLoaderFactory;
 using ::signin::ConsentLevel;
@@ -199,7 +202,7 @@ class ProtoFetcherTestBase {
         GetUrlOfPendingRequest(index).spec(), response.SerializeAsString());
   }
   void SimulateResponseForPendingRequest(size_t index,
-                                         base::StringPiece content) {
+                                         std::string_view content) {
     Response response;
     test_url_loader_factory_.SimulateResponseForPendingRequest(
         GetUrlOfPendingRequest(index).spec(), std::string(content));
@@ -320,6 +323,8 @@ TEST_P(ProtoFetcherTest, NoAccessToken) {
   std::unique_ptr<Receiver> receiver = MakeReceiver();
   std::unique_ptr<Fetcher> fetcher = MakeFetcher(*receiver.get());
 
+  base::HistogramTester histogram_tester;
+
   identity_test_env_.WaitForAccessTokenRequestIfNecessaryAndRespondWithError(
       GoogleServiceAuthError(
           GoogleServiceAuthError::State::INVALID_GAIA_CREDENTIALS));
@@ -329,6 +334,19 @@ TEST_P(ProtoFetcherTest, NoAccessToken) {
             ProtoFetcherStatus::State::GOOGLE_SERVICE_AUTH_ERROR);
   EXPECT_EQ(receiver->GetResult().error().google_service_auth_error().state(),
             GoogleServiceAuthError::State::INVALID_GAIA_CREDENTIALS);
+
+  if (MetricsAreExpected()) {
+    // This tests just the metrics related to the auth error case; the rest of
+    // the metrics are tested in other tests.
+    histogram_tester.ExpectUniqueSample(
+        base::StrCat({*GetConfig().histogram_basename, ".Status"}),
+        ProtoFetcherStatus::State::GOOGLE_SERVICE_AUTH_ERROR, 1);
+    histogram_tester.ExpectUniqueSample(
+        base::StrCat({*GetConfig().histogram_basename, ".AuthError"}),
+        GoogleServiceAuthError::State::INVALID_GAIA_CREDENTIALS, 1);
+  } else {
+    EXPECT_FALSE(fetcher->IsMetricsRecordingEnabled());
+  }
 }
 
 // Tests a flow where incoming data from RPC can't be deserialized to a valid
@@ -720,6 +738,83 @@ TEST_P(ProtoFetcherTest, RetryingFetcherContinuesOnTransientError) {
   }
 }
 
+// Test whether fetcher forbids being started twice.
+TEST_P(ProtoFetcherTest, MustBeStoppedBeforeRestarting) {
+  MakePrimaryAccountAvailable();
+  SetAutomaticIssueOfAccessTokens();
+  std::unique_ptr<Receiver> receiver = MakeReceiver();
+
+  std::unique_ptr<Fetcher> fetcher = CreateTestFetcher(
+      *identity_test_env_.identity_manager(),
+      test_url_loader_factory_.GetSafeWeakWrapper(), Request(), GetConfig());
+
+  // This fetch won't finish anytime soon because there's an unmocked HTTP
+  // response pending.
+  fetcher->Start(
+      BindOnce(&Receiver::Receive, base::Unretained(receiver.get())));
+  ASSERT_EQ(test_url_loader_factory_.NumPending(), 1);
+
+  // Subsequent call should not be allowed.
+  EXPECT_DEATH_IF_SUPPORTED(
+      fetcher->Start(
+          BindOnce(&Receiver::Receive, base::Unretained(&*receiver))),
+      "");
+  ASSERT_EQ(test_url_loader_factory_.NumPending(), 1);
+
+  // But a restart is allowed (which erases HTTP mock queue):
+  fetcher->Stop();
+  ASSERT_EQ(test_url_loader_factory_.NumPending(), 0);
+
+  fetcher->Start(BindOnce(&Receiver::Receive, base::Unretained(&*receiver)));
+  ASSERT_EQ(test_url_loader_factory_.NumPending(), 1);
+}
+
+class StatusFetcherTest : public ProtoFetcherTest {
+ protected:
+  MOCK_METHOD(void, OnStatus, (const ProtoFetcherStatus&));
+};
+
+// Tests a default flow, where an empty (default) proto is received.
+TEST_P(StatusFetcherTest, StatusFetcherReportsSuccess) {
+  MakePrimaryAccountAvailable();
+  SetAutomaticIssueOfAccessTokens();
+
+  EXPECT_CALL(*this, OnStatus(ProtoFetcherStatus::Ok())).Times(1);
+
+  StatusFetcher fetcher(
+      *identity_test_env_.identity_manager(),
+      test_url_loader_factory_.GetSafeWeakWrapper(), /* payload= */ "",
+      GetConfig(), /* args= */ {},
+      base::BindOnce(
+          &StatusFetcherTest_StatusFetcherReportsSuccess_Test::OnStatus,
+          base::Unretained(this)));
+
+  ASSERT_EQ(test_url_loader_factory_.NumPending(), 1);
+  SimulateDefaultResponseForPendingRequest(0);
+}
+
+// Tests an error flow.
+TEST_P(StatusFetcherTest, StatusFetcherReportsFailure) {
+  MakePrimaryAccountAvailable();
+  SetAutomaticIssueOfAccessTokens();
+
+  EXPECT_CALL(
+      *this,
+      OnStatus(ProtoFetcherStatus::HttpStatusOrNetError(net::HTTP_BAD_REQUEST)))
+      .Times(1);
+
+  StatusFetcher fetcher(
+      *identity_test_env_.identity_manager(),
+      test_url_loader_factory_.GetSafeWeakWrapper(), /* payload= */ "",
+      GetConfig(), /* args= */ {},
+      base::BindOnce(
+          &StatusFetcherTest_StatusFetcherReportsFailure_Test::OnStatus,
+          base::Unretained(this)));
+
+  ASSERT_EQ(test_url_loader_factory_.NumPending(), 1);
+  SimulateResponseForPendingRequestWithTransientError(0);
+}
+
 // Instead of /0, /1... print human-readable description of the test: status of
 // the retrying feature followed by http method.
 std::string PrettyPrintFetcherTestCaseName(
@@ -739,6 +834,14 @@ std::string PrettyPrintFetcherTestCaseName(
 
 INSTANTIATE_TEST_SUITE_P(All,
                          ProtoFetcherTest,
+                         testing::Values(kTestGetConfig,
+                                         kTestPostConfig,
+                                         kTestRetryConfig,
+                                         kTestGetConfigWithoutMetrics),
+                         &PrettyPrintFetcherTestCaseName);
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         StatusFetcherTest,
                          testing::Values(kTestGetConfig,
                                          kTestPostConfig,
                                          kTestRetryConfig,

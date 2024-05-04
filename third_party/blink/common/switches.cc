@@ -61,10 +61,6 @@ const char kDisableImageAnimationResync[] = "disable-image-animation-resync";
 // during fast scrolling especially on slower devices.
 const char kDisableLowResTiling[] = "disable-low-res-tiling";
 
-// Disallow use of the feature NewBaseUrlInheritanceBehavior.
-const char kDisableNewBaseUrlInheritanceBehavior[] =
-    "disable-new-base-url-inheritance-behavior";
-
 // Disable partial raster in the renderer. Disabling this switch also disables
 // the use of persistent gpu memory buffers.
 const char kDisablePartialRaster[] = "disable-partial-raster";
@@ -175,9 +171,6 @@ const char kConditionalFocusWindowMs[] = "conditional-focus-window-ms";
 
 // Specifies the flags passed to JS engine.
 const char kJavaScriptFlags[] = "js-flags";
-
-// Controls whether WebSQL is force enabled.
-const char kWebSQLAccess[] = "web-sql-access";
 
 }  // namespace switches
 }  // namespace blink

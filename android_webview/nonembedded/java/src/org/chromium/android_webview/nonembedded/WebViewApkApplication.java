@@ -58,16 +58,13 @@ public class WebViewApkApplication extends Application {
     @Override
     protected void attachBaseContext(Context context) {
         super.attachBaseContext(context);
-        // Using concatenation rather than %s to allow values to be inlined by R8.
         Log.i(
                 TAG,
-                "Launched version="
-                        + VersionConstants.PRODUCT_VERSION
-                        + " minSdkVersion="
-                        + BuildConfig.MIN_SDK_VERSION
-                        + " isBundle="
-                        + ProductConfig.IS_BUNDLE
-                        + " processName=%s",
+                "version=%s (%s) minSdkVersion=%s isBundle=%s processName=%s",
+                VersionConstants.PRODUCT_VERSION,
+                BuildConfig.VERSION_CODE,
+                BuildConfig.MIN_SDK_VERSION,
+                ProductConfig.IS_BUNDLE,
                 ContextUtils.getProcessName());
 
         ContextUtils.initApplicationContext(this);
@@ -106,7 +103,7 @@ public class WebViewApkApplication extends Application {
             PureJavaExceptionHandler.installHandler(AwPureJavaExceptionReporter::new);
             CustomAssertionHandler.installPreNativeHandler(AwPureJavaExceptionReporter::new);
 
-            // TODO(crbug.com/1182693): Do set up a native UMA recorder once we support recording
+            // TODO(crbug.com/40751605): Do set up a native UMA recorder once we support recording
             // metrics from native nonembedded code.
             UmaRecorderHolder.setUpNativeUmaRecorder(false);
 

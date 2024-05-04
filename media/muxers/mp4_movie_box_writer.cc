@@ -9,6 +9,8 @@
 #include <vector>
 
 #include "base/big_endian.h"
+#include "base/numerics/safe_conversions.h"
+#include "media/base/audio_timestamp_helper.h"
 #include "media/formats/mp4/es_descriptor.h"
 #include "media/muxers/box_byte_stream.h"
 #include "media/muxers/mp4_muxer_context.h"
@@ -38,7 +40,7 @@ constexpr int32_t kDisplayIdentityMatrix[9] = {
 
 void WriteIsoTime(BoxByteStream& writer, base::Time time) {
   uint64_t iso_time =
-      time.ToDeltaSinceWindowsEpoch().InSecondsF() - k1601To1904DeltaInSeconds;
+      base::saturated_cast<uint64_t>((time - kMP4Epoch).InSecondsF());
 
   writer.WriteU64(iso_time);
 }
@@ -632,16 +634,20 @@ Mp4MovieSampleDescriptionBoxWriter::Mp4MovieSampleDescriptionBoxWriter(
     const mp4::writable_boxes::SampleDescription& box)
     : Mp4BoxWriter(context), box_(box) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-#if BUILDFLAG(USE_PROPRIETARY_CODECS)
-  if (box_.visual_sample_entry.has_value()) {
+
+  if (box_.video_sample_entry.has_value()) {
     CHECK(!box_.audio_sample_entry.has_value());
     AddChildBox(std::make_unique<Mp4MovieVisualSampleEntryBoxWriter>(
-        context, box_.visual_sample_entry.value()));
-  } else if (box_.audio_sample_entry.has_value()) {
+        context, box_.video_sample_entry.value()));
+    return;
+  }
+
+  // TODO(crbug.com://331682616): Add validation of DCHECK for sample entry
+  // existence.
+  if (box_.audio_sample_entry.has_value()) {
     AddChildBox(std::make_unique<Mp4MovieAudioSampleEntryBoxWriter>(
         context, box_.audio_sample_entry.value()));
   }
-#endif
 }
 
 Mp4MovieSampleDescriptionBoxWriter::~Mp4MovieSampleDescriptionBoxWriter() =
@@ -659,16 +665,31 @@ void Mp4MovieSampleDescriptionBoxWriter::Write(BoxByteStream& writer) {
   writer.EndBox();
 }
 
-#if BUILDFLAG(USE_PROPRIETARY_CODECS)
-// Mp4MovieVisualSampleEntryBoxWriter (`avc1`) class.
+// Mp4MovieVisualSampleEntryBoxWriter (`avc1`, 'vp09') class.
 Mp4MovieVisualSampleEntryBoxWriter::Mp4MovieVisualSampleEntryBoxWriter(
     const Mp4MuxerContext& context,
     const mp4::writable_boxes::VisualSampleEntry& box)
     : Mp4BoxWriter(context), box_(box) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  AddChildBox(std::make_unique<Mp4MovieAVCDecoderConfigurationBoxWriter>(
-      context, box_.avc_decoder_configuration));
+
   AddChildBox(std::make_unique<Mp4MoviePixelAspectRatioBoxBoxWriter>(context));
+
+  switch (box_.codec) {
+    case VideoCodec::kVP9:
+      CHECK(box_.vp_decoder_configuration.has_value());
+      AddChildBox(std::make_unique<Mp4MovieVPCodecConfigurationBoxWriter>(
+          context, box_.vp_decoder_configuration.value()));
+      break;
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
+    case VideoCodec::kH264:
+      CHECK(box_.avc_decoder_configuration.has_value());
+      AddChildBox(std::make_unique<Mp4MovieAVCDecoderConfigurationBoxWriter>(
+          context, box_.avc_decoder_configuration.value()));
+      break;
+#endif
+    default:
+      NOTREACHED();
+  }
 }
 
 Mp4MovieVisualSampleEntryBoxWriter::~Mp4MovieVisualSampleEntryBoxWriter() =
@@ -677,7 +698,18 @@ Mp4MovieVisualSampleEntryBoxWriter::~Mp4MovieVisualSampleEntryBoxWriter() =
 void Mp4MovieVisualSampleEntryBoxWriter::Write(BoxByteStream& writer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  writer.StartBox(mp4::FOURCC_AVC1);
+  switch (box_.codec) {
+    case VideoCodec::kVP9:
+      writer.StartBox(mp4::FOURCC_VP09);
+      break;
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
+    case VideoCodec::kH264:
+      writer.StartBox(mp4::FOURCC_AVC1);
+      break;
+#endif
+    default:
+      NOTREACHED();
+  }
 
   writer.WriteU32(0);  // reserved.
   writer.WriteU16(0);  // reserved.
@@ -713,6 +745,7 @@ void Mp4MovieVisualSampleEntryBoxWriter::Write(BoxByteStream& writer) {
   writer.EndBox();
 }
 
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
 // Mp4MovieAVCDecoderConfigurationBoxWriter (`avcC`) class.
 Mp4MovieAVCDecoderConfigurationBoxWriter::
     Mp4MovieAVCDecoderConfigurationBoxWriter(
@@ -734,49 +767,6 @@ void Mp4MovieAVCDecoderConfigurationBoxWriter::Write(BoxByteStream& writer) {
   CHECK(box_.avc_config_record.Serialize(write_data));
 
   writer.WriteBytes(write_data.data(), write_data.size());
-
-  writer.EndBox();
-}
-
-// Mp4MovieAudioSampleEntryBoxWriter (`mp4a`) class.
-Mp4MovieAudioSampleEntryBoxWriter::Mp4MovieAudioSampleEntryBoxWriter(
-    const Mp4MuxerContext& context,
-    const mp4::writable_boxes::AudioSampleEntry& box)
-    : Mp4BoxWriter(context), box_(box) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  AddChildBox(std::make_unique<Mp4MovieElementaryStreamDescriptorBoxWriter>(
-      context, box_.elementary_stream_descriptor));
-  AddChildBox(
-      std::make_unique<Mp4MovieBitRateBoxWriter>(context, box_.bit_rate));
-}
-
-Mp4MovieAudioSampleEntryBoxWriter::~Mp4MovieAudioSampleEntryBoxWriter() =
-    default;
-
-void Mp4MovieAudioSampleEntryBoxWriter::Write(BoxByteStream& writer) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  writer.StartBox(mp4::FOURCC_MP4A);
-
-  constexpr size_t kAudioSampleEntryReservedSize = 6u;
-  for (size_t i = 0; i < kAudioSampleEntryReservedSize; ++i) {
-    writer.WriteU8(0);
-  }
-
-  writer.WriteU16(1);  // data_reference_index in `dref` box, 1 is start index.
-  writer.WriteU32(0);  // reserved1[0]
-  writer.WriteU32(0);  // reserved1[1]
-
-  // TODO: Probably you'll need to plumb the actual channel count at some point.
-  // Since we may be recording mono or multi-channel sources.
-  writer.WriteU16(2);   // channel count. 2 (Stereo).
-  writer.WriteU16(16);  // sample size.
-  writer.WriteU16(0);   // predefined.
-  writer.WriteU16(0);   // reserved.
-
-  WriteLowHigh(writer, box_.sample_rate);
-
-  WriteChildren(writer);
 
   writer.EndBox();
 }
@@ -804,8 +794,157 @@ void Mp4MovieElementaryStreamDescriptorBoxWriter::Write(BoxByteStream& writer) {
 
   writer.EndBox();
 }
-
 #endif
+
+// Mp4MovieAudioSampleEntryBoxWriter (`mp4a` or 'Opus') class.
+Mp4MovieAudioSampleEntryBoxWriter::Mp4MovieAudioSampleEntryBoxWriter(
+    const Mp4MuxerContext& context,
+    const mp4::writable_boxes::AudioSampleEntry& box)
+    : Mp4BoxWriter(context), box_(box) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  AddChildBox(
+      std::make_unique<Mp4MovieBitRateBoxWriter>(context, box_.bit_rate));
+
+  switch (box_.codec) {
+    case AudioCodec::kOpus:
+      AddChildBox(std::make_unique<Mp4MovieOpusSpecificBoxWriter>(
+          context, box_.opus_specific_box.value()));
+      break;
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
+    case AudioCodec::kAAC:
+      AddChildBox(std::make_unique<Mp4MovieElementaryStreamDescriptorBoxWriter>(
+          context, box_.elementary_stream_descriptor.value()));
+      break;
+#endif
+    default:
+      NOTREACHED();
+  }
+}
+
+Mp4MovieAudioSampleEntryBoxWriter::~Mp4MovieAudioSampleEntryBoxWriter() =
+    default;
+
+void Mp4MovieAudioSampleEntryBoxWriter::Write(BoxByteStream& writer) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  switch (box_.codec) {
+    case AudioCodec::kOpus:
+      writer.StartBox(mp4::FOURCC_OPUS);
+      break;
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
+    case AudioCodec::kAAC:
+      writer.StartBox(mp4::FOURCC_MP4A);
+      break;
+#endif
+    default:
+      NOTREACHED();
+  }
+
+  constexpr size_t kAudioSampleEntryReservedSize = 6u;
+  for (size_t i = 0; i < kAudioSampleEntryReservedSize; ++i) {
+    writer.WriteU8(0);
+  }
+
+  writer.WriteU16(1);  // data_reference_index in `dref` box, 1 is start index.
+  writer.WriteU32(0);  // reserved1[0]
+  writer.WriteU32(0);  // reserved1[1]
+  writer.WriteU16(box_.channel_count);
+  writer.WriteU16(16);  // sample size.
+  writer.WriteU16(0);   // predefined.
+  writer.WriteU16(0);   // reserved.
+
+  WriteLowHigh(writer, box_.sample_rate);
+
+  WriteChildren(writer);
+
+  writer.EndBox();
+}
+
+// Mp4MovieOpusSpecificBoxWriter (`dOps`) class.
+Mp4MovieOpusSpecificBoxWriter::Mp4MovieOpusSpecificBoxWriter(
+    const Mp4MuxerContext& context,
+    const mp4::writable_boxes::OpusSpecificBox& box)
+    : Mp4BoxWriter(context), box_(box) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+}
+
+Mp4MovieOpusSpecificBoxWriter::~Mp4MovieOpusSpecificBoxWriter() = default;
+
+void Mp4MovieOpusSpecificBoxWriter::Write(BoxByteStream& writer) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  writer.StartBox(mp4::FOURCC_DOPS);
+
+  constexpr base::TimeDelta kOpusSkipDuration = base::Milliseconds(80);
+  writer.WriteU8(0u);  // Version.
+  writer.WriteU8(box_.channel_count);
+  writer.WriteU16(static_cast<uint16_t>(AudioTimestampHelper::TimeToFrames(
+      kOpusSkipDuration, box_.sample_rate)));  // Preskip.
+  writer.WriteU32(box_.sample_rate);
+  writer.WriteU16(0u);  // OutputGain.
+  writer.WriteU8(0u);   // ChannelMappingFamily
+
+  // TODO(crbug.com/330815378): Write channel mapping table.
+  writer.EndBox();
+}
+
+// Mp4MovieVPCodecConfigurationBoxWriter (`vpcC`) class.
+Mp4MovieVPCodecConfigurationBoxWriter::Mp4MovieVPCodecConfigurationBoxWriter(
+    const Mp4MuxerContext& context,
+    const mp4::writable_boxes::VPCodecConfiguration& box)
+    : Mp4BoxWriter(context), box_(box) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+}
+
+Mp4MovieVPCodecConfigurationBoxWriter::
+    ~Mp4MovieVPCodecConfigurationBoxWriter() = default;
+
+void Mp4MovieVPCodecConfigurationBoxWriter::Write(BoxByteStream& writer) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  writer.StartFullBox(mp4::FOURCC_VPCC);
+
+  switch (box_.profile) {
+    case VP9PROFILE_PROFILE0:
+      writer.WriteU8(0);
+      break;
+    case VP9PROFILE_PROFILE1:
+      writer.WriteU8(1);
+      break;
+    case VP9PROFILE_PROFILE2:
+      writer.WriteU8(2);
+      break;
+    case VP9PROFILE_PROFILE3:
+      writer.WriteU8(3);
+      break;
+    default:
+      NOTREACHED();
+  }
+
+  writer.WriteU8(box_.level);
+
+  auto video_color_space =
+      box_.color_space.IsValid()
+          ? VideoColorSpace::FromGfxColorSpace(box_.color_space)
+          : VideoColorSpace(VideoColorSpace::PrimaryID::UNSPECIFIED,
+                            VideoColorSpace::TransferID::UNSPECIFIED,
+                            VideoColorSpace::MatrixID::UNSPECIFIED,
+                            gfx::ColorSpace::RangeID::DERIVED);
+
+  constexpr uint8_t bit_depth = 8u;
+  constexpr uint8_t chroma_sub_sampling = 0u;
+  uint8_t video_full_range_flag =
+      video_color_space.range == gfx::ColorSpace::RangeID::FULL ? 1u : 0u;
+
+  writer.WriteU8(bit_depth << 4 | chroma_sub_sampling << 1 |
+                 video_full_range_flag);
+  writer.WriteU8(static_cast<uint8_t>(video_color_space.primaries));
+  writer.WriteU8(static_cast<uint8_t>(video_color_space.transfer));
+  writer.WriteU8(static_cast<uint8_t>(video_color_space.matrix));
+  writer.WriteU16(/*codecInitializationData Size*/ 0);
+
+  writer.EndBox();
+}
 
 // Mp4MoviePixelAspectRatioBoxBoxWriter (`pasp`) class.
 Mp4MoviePixelAspectRatioBoxBoxWriter::Mp4MoviePixelAspectRatioBoxBoxWriter(

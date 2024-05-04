@@ -38,6 +38,7 @@
 #include "chrome/browser/flags/android/chrome_feature_list.h"
 #include "components/pdf/common/constants.h"
 #include "content/public/browser/download_item_utils.h"
+#include "content/public/browser/download_manager_delegate.h"
 #include "content/public/common/content_features.h"
 #include "ui/base/device_form_factor.h"
 #endif
@@ -317,7 +318,7 @@ void DownloadOfflineContentProvider::GetVisualsForItem(
     const ContentId& id,
     GetVisualsOptions options,
     VisualsCallback callback) {
-  // TODO(crbug.com/855330) Supply thumbnail if item is visible.
+  // TODO(crbug.com/40581903) Supply thumbnail if item is visible.
   DownloadItem* item = GetDownload(id.id);
   display::Screen* screen = display::Screen::GetScreen();
   if (!item || !options.get_icon || !screen) {
@@ -451,7 +452,7 @@ void DownloadOfflineContentProvider::OnDownloadUpdated(DownloadItem* item) {
   if (offline_item.state == OfflineItemState::COMPLETE ||
       offline_item.state == OfflineItemState::FAILED ||
       offline_item.state == OfflineItemState::CANCELLED) {
-    // TODO(crbug.com/938152): May be move this to DownloadItem.
+    // TODO(crbug.com/40616574): May be move this to DownloadItem.
     // Never call this for completed downloads from history.
     item->RemoveObserver(this);
 
@@ -507,8 +508,9 @@ void DownloadOfflineContentProvider::AddCompletedDownloadDone(
     return;
   }
 
-  if (item->GetMimeType() == pdf::kPDFMimeType &&
-      base::FeatureList::IsEnabled(features::kAndroidOpenPdfInline)) {
+  if (profile_ && profile_->GetDownloadManagerDelegate() &&
+      profile_->GetDownloadManagerDelegate()->ShouldOpenPdfInline() &&
+      item->GetMimeType() == pdf::kPDFMimeType) {
     return;
   }
 

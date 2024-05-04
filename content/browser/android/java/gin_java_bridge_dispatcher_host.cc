@@ -38,8 +38,12 @@ GinJavaBridgeDispatcherHost::GinJavaBridgeDispatcherHost(
       WebContentsObserver(web_contents),
       retained_object_set_(base::android::AttachCurrentThread(),
                            retained_object_set),
-      mojo_enabled_(
-          base::FeatureList::IsEnabled(features::kGinJavaBridgeMojo)) {
+      mojo_enabled_(base::FeatureList::IsEnabled(features::kGinJavaBridgeMojo)),
+      mojo_skip_clear_on_main_document_(
+          mojo_enabled_ &&
+          base::FeatureList::IsEnabled(
+              features::
+                  kGinJavaBridgeMojoSkipClearObjectsOnMainDocumentReady)) {
   DCHECK(!retained_object_set.is_null());
 }
 
@@ -424,6 +428,11 @@ void GinJavaBridgeDispatcherHost::SetAllowObjectContentsInspection(bool allow) {
 
 void GinJavaBridgeDispatcherHost::PrimaryMainDocumentElementAvailable() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  // If we are skipping clearing on main document return early.
+  if (mojo_skip_clear_on_main_document_) {
+    return;
+  }
   // Called when the window object has been cleared in the main frame.
   // That means, all sub-frames have also been cleared, so only named
   // objects survived.
@@ -443,7 +452,7 @@ void GinJavaBridgeDispatcherHost::PrimaryMainDocumentElementAvailable() {
       }
       ++iter;
     } else {
-      objects_.erase(iter++);
+      iter = objects_.erase(iter);
     }
   }
 }
@@ -555,6 +564,14 @@ void GinJavaBridgeDispatcherHost::GetObject(
   object_receivers_.Add(
       this, std::move(receiver),
       std::make_pair(receivers_.current_context(), object_id));
+
+  // Add a holder reference because the object may become unnamed
+  // yet the renderer can still hold a reference to it. See
+  // crbug.com/333171288.
+  scoped_refptr<GinJavaBoundObject> object = FindObject(object_id);
+  if (object.get()) {
+    object->AddHolder(receivers_.current_context());
+  }
 }
 
 void GinJavaBridgeDispatcherHost::ObjectWrapperDeleted(int32_t object_id) {

@@ -91,7 +91,7 @@ constexpr int kCircularImageButtonTransparentRefreshSize = 24;
 constexpr float kShortcutIconToImageRatio = 9.0f / 16.0f;
 constexpr float kShortcutIconToImageRefreshRatio = 20.0f / 32.0f;
 constexpr float kShortcutIconToImageTransparentRefreshRatio = 16.0f / 24.0f;
-// TODO(crbug.com/1128499): Remove this constant by extracting art height from
+// TODO(crbug.com/40148993): Remove this constant by extracting art height from
 // |avatar_header_art|.
 constexpr int kHeaderArtHeight = 80;
 constexpr int kIdentityImageBorder = 2;
@@ -217,7 +217,7 @@ const ui::ImageModel ProfileManagementImageFromIcon(
   return ui::ImageModel::FromImageSkia(SizeImage(image, kIconSize));
 }
 
-// TODO(crbug.com/1146998): Adjust button size to be 16x16.
+// TODO(crbug.com/40156444): Adjust button size to be 16x16.
 class CircularImageButton : public views::ImageButton {
   METADATA_HEADER(CircularImageButton, views::ImageButton)
 
@@ -266,7 +266,7 @@ class CircularImageButton : public views::ImageButton {
           this));
     }
 
-    // TODO(crbug.com/1422119): Remove border for Chrome Refresh 2023.
+    // TODO(crbug.com/40259490): Remove border for Chrome Refresh 2023.
     if (show_border_) {
       SetBorder(views::CreateThemedRoundedRectBorder(
           kBorderThickness, kButtonRadius, ui::kColorMenuSeparator));
@@ -312,8 +312,8 @@ class CircularImageButton : public views::ImageButton {
   // top of a background with the profile theme color (e.g. edit button) have a
   // different color than the default icon color. For the default icons, this is
   // set to transparent and not used.
-  // TODO(crbug.com/1422119): Remove this parameter after Chrome Refresh 2023 is
-  // launched.
+  // TODO(crbug.com/40259490): Remove this parameter after Chrome Refresh 2023
+  // is launched.
   SkColor themed_icon_color_;
 };
 
@@ -395,10 +395,7 @@ class AvatarImageView : public views::ImageView {
                   const ui::ImageModel& management_badge,
                   const ProfileMenuViewBase* root_view)
       : avatar_image_(avatar_image),
-        management_badge_(
-            base::FeatureList::IsEnabled(features::kEnterpriseProfileBadging)
-                ? management_badge
-                : ui::ImageModel()),
+        management_badge_(management_badge),
         root_view_(root_view) {
     if (avatar_image_.IsEmpty()) {
       // This can happen if the account image hasn't been fetched yet, if there
@@ -592,7 +589,7 @@ ProfileMenuViewBase::ProfileMenuViewBase(views::Button* anchor_button,
 
   SetEnableArrowKeyTraversal(true);
 
-  // TODO(crbug.com/1341017): Using `SetAccessibleWindowRole(kMenu)` here will
+  // TODO(crbug.com/40230528): Using `SetAccessibleWindowRole(kMenu)` here will
   // result in screenreader to announce the menu having only one item. This is
   // probably because this API sets the a11y role for the widget, but not root
   // view in it. This is confusing and prone to misuse. We should unify the two
@@ -639,7 +636,7 @@ void ProfileMenuViewBase::BuildProfileBackgroundContainer(
         &ProfileMenuViewBase::BuildIdentityInfoColorCallback,
         base::Unretained(this));
   } else if (avatar_header_art.empty()) {
-    // TODO(crbug.com/1147038): Remove the zero-radius rounded background.
+    // TODO(crbug.com/40156460): Remove the zero-radius rounded background.
     profile_background_container_->SetBackground(
         views::CreateBackgroundFromPainter(
             views::Painter::CreateSolidRoundRectPainter(
@@ -724,7 +721,7 @@ void ProfileMenuViewBase::SetProfileIdentityInfo(
   auto avatar_image_view =
       std::make_unique<AvatarImageView>(image_model, management_badge, this);
 
-// TODO(crbug.com/1052397): Revisit once build flag switch of lacros-chrome is
+// TODO(crbug.com/40118868): Revisit once build flag switch of lacros-chrome is
 // complete.
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
   // crbug.com/1161166: Orca does not read the accessible window title of the
@@ -837,8 +834,7 @@ void ProfileMenuViewBase::BuildSyncInfoWithCallToAction(
 
   if (show_sync_badge) {
     description_container->AddChildView(std::make_unique<SyncImageView>(this));
-  } else if (switches::IsExplicitBrowserSigninUIOnDesktopEnabled(
-                 switches::ExplicitBrowserSigninPhase::kFull)) {
+  } else if (switches::IsExplicitBrowserSigninUIOnDesktopEnabled()) {
     description_layout->SetMainAxisAlignment(views::LayoutAlignment::kStart);
   } else {
     // If there is no image, the description is centered.
@@ -857,8 +853,7 @@ void ProfileMenuViewBase::BuildSyncInfoWithCallToAction(
       views::kFlexBehaviorKey,
       views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToZero,
                                views::MaximumFlexSizeRule::kPreferred, true));
-  if (switches::IsExplicitBrowserSigninUIOnDesktopEnabled(
-          switches::ExplicitBrowserSigninPhase::kFull)) {
+  if (switches::IsExplicitBrowserSigninUIOnDesktopEnabled()) {
     label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   }
 
@@ -871,8 +866,7 @@ void ProfileMenuViewBase::BuildSyncInfoWithCallToAction(
 
   // Add account card in the signin promo it the user is in the web-only signed
   // in state in the UNO model.
-  if (switches::IsExplicitBrowserSigninUIOnDesktopEnabled(
-          switches::ExplicitBrowserSigninPhase::kFull) &&
+  if (switches::IsExplicitBrowserSigninUIOnDesktopEnabled() &&
       !account.IsEmpty()) {
     views::View* account_container =
         sync_info_container_->AddChildView(std::make_unique<views::View>());
@@ -933,7 +927,7 @@ void ProfileMenuViewBase::BuildSyncInfoWithCallToAction(
           button_text));
   button->SetStyle(ui::ButtonStyle::kProminent);
 
-  // TODO(crbug.com/1422119): Remove `background_color_id` parameter after
+  // TODO(crbug.com/40259490): Remove `background_color_id` parameter after
   // Chrome Refresh 2023 is launched.
   sync_info_background_callback_ = base::BindRepeating(
       &ProfileMenuViewBase::BuildSyncInfoCallToActionBackground,
@@ -1219,8 +1213,7 @@ void ProfileMenuViewBase::Reset() {
   // Third, add the profile management buttons.
   selectable_profiles_container_ =
       components->AddChildView(std::make_unique<views::View>());
-  if (switches::IsExplicitBrowserSigninUIOnDesktopEnabled(
-          switches::ExplicitBrowserSigninPhase::kFull)) {
+  if (switches::IsExplicitBrowserSigninUIOnDesktopEnabled()) {
     profile_mgmt_features_separator_container_ =
         components->AddChildView(std::make_unique<views::View>());
   }
@@ -1232,7 +1225,7 @@ void ProfileMenuViewBase::Reset() {
   auto scroll_view = std::make_unique<views::ScrollView>();
   scroll_view->SetHorizontalScrollBarMode(
       views::ScrollView::ScrollBarMode::kDisabled);
-  // TODO(https://crbug.com/871762): it's a workaround for the crash.
+  // TODO(crbug.com/41406562): it's a workaround for the crash.
   scroll_view->SetDrawOverflowIndicator(false);
   scroll_view->ClipHeightTo(0, GetMaxHeight());
   scroll_view->SetContents(std::move(components));

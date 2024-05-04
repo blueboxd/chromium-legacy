@@ -29,7 +29,7 @@ namespace chromeos {
 
 ReadWriteCardsManagerImpl::ReadWriteCardsManagerImpl()
     : quick_answers_controller_(
-          std::make_unique<QuickAnswersControllerImpl>()) {
+          std::make_unique<QuickAnswersControllerImpl>(ui_controller_)) {
   quick_answers_controller_->SetClient(
       std::make_unique<quick_answers::QuickAnswersClient>(
           g_browser_process->shared_url_loader_factory(),
@@ -41,7 +41,7 @@ ReadWriteCardsManagerImpl::ReadWriteCardsManagerImpl()
   }
 
   if (chromeos::features::IsMahiEnabled()) {
-    mahi_menu_controller_ = std::make_unique<mahi::MahiMenuController>();
+    mahi_menu_controller_.emplace(ui_controller_);
   }
 }
 
@@ -67,6 +67,11 @@ void ReadWriteCardsManagerImpl::FetchController(
   }
 
   std::move(callback).Run(GetMahiOrQuickAnswerControllersIfEligible(params));
+}
+
+void ReadWriteCardsManagerImpl::SetContextMenuBounds(
+    const gfx::Rect& context_menu_bounds) {
+  ui_controller_.SetContextMenuBounds(context_menu_bounds);
 }
 
 void ReadWriteCardsManagerImpl::OnGetEditorModeResult(

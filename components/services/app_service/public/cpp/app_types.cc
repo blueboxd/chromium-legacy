@@ -22,6 +22,13 @@ APP_ENUM_TO_STRING(AppType,
                    kExtension,
                    kStandaloneBrowserExtension,
                    kBruschetta)
+APP_ENUM_TO_STRING(PackageType,
+                   kUnknown,
+                   kArc,
+                   kBorealis,
+                   kChromeApp,
+                   kGeForceNow,
+                   kWeb)
 APP_ENUM_TO_STRING(Readiness,
                    kUnknown,
                    kReady,
@@ -84,6 +91,49 @@ ApplicationType ConvertAppTypeToProtoApplicationType(AppType app_type) {
       return ApplicationType::APPLICATION_TYPE_STANDALONE_BROWSER_EXTENSION;
     case AppType::kBruschetta:
       return ApplicationType::APPLICATION_TYPE_BRUSCHETTA;
+  }
+}
+
+std::optional<AppType> ConvertPackageTypeToAppType(PackageType package_type) {
+  switch (package_type) {
+    case PackageType::kUnknown:
+      return AppType::kUnknown;
+    case PackageType::kArc:
+      return AppType::kArc;
+    case PackageType::kBorealis:
+      return AppType::kBorealis;
+    case PackageType::kChromeApp:
+      return AppType::kChromeApp;
+    case PackageType::kGeForceNow:
+      return std::nullopt;
+    case PackageType::kWeb:
+      return AppType::kWeb;
+  }
+}
+
+std::optional<PackageType> ConvertAppTypeToPackageType(AppType app_type) {
+  switch (app_type) {
+    case AppType::kUnknown:
+      return PackageType::kUnknown;
+    case AppType::kArc:
+      return PackageType::kArc;
+    case AppType::kChromeApp:
+      return PackageType::kChromeApp;
+    case AppType::kWeb:
+      return PackageType::kWeb;
+    case AppType::kBorealis:
+      return PackageType::kBorealis;
+    case AppType::kBruschetta:
+    case AppType::kBuiltIn:
+    case AppType::kCrostini:
+    case AppType::kPluginVm:
+    case AppType::kStandaloneBrowser:
+    case AppType::kRemote:
+    case AppType::kSystemWeb:
+    case AppType::kStandaloneBrowserChromeApp:
+    case AppType::kExtension:
+    case AppType::kStandaloneBrowserExtension:
+      return std::nullopt;
   }
 }
 

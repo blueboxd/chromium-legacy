@@ -13,30 +13,22 @@ import android.view.View;
 public class SimpleEdgeToEdgePadAdjuster implements EdgeToEdgePadAdjuster {
 
     private final View mViewToPad;
-    private boolean mPadded;
+    private final int mDefaultBottomPadding;
+    private final boolean mAccountForBrowserControls;
 
-    public SimpleEdgeToEdgePadAdjuster(View view) {
+    public SimpleEdgeToEdgePadAdjuster(View view, boolean accountForBrowserControls) {
         mViewToPad = view;
+        mDefaultBottomPadding = mViewToPad.getPaddingBottom();
+        mAccountForBrowserControls = accountForBrowserControls;
     }
 
     @Override
-    public void adjustToEdge(boolean toEdge, int inset) {
-        if (toEdge) {
-            if (mPadded) return;
-            mViewToPad.setPadding(
-                    mViewToPad.getPaddingLeft(),
-                    mViewToPad.getPaddingTop(),
-                    mViewToPad.getPaddingRight(),
-                    mViewToPad.getPaddingBottom() + inset);
-            mPadded = true;
-        } else if (mPadded) {
-            // reset to normal.
-            mViewToPad.setPadding(
-                    mViewToPad.getPaddingLeft(),
-                    mViewToPad.getPaddingTop(),
-                    mViewToPad.getPaddingRight(),
-                    mViewToPad.getPaddingBottom() - inset);
-            mPadded = false;
-        }
+    public void overrideBottomInset(int defaultInset, int insetWithBrowserControls) {
+        int inset = mAccountForBrowserControls ? insetWithBrowserControls : defaultInset;
+        mViewToPad.setPadding(
+                mViewToPad.getPaddingLeft(),
+                mViewToPad.getPaddingTop(),
+                mViewToPad.getPaddingRight(),
+                mDefaultBottomPadding + inset);
     }
 }

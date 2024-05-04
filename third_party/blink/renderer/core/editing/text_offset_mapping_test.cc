@@ -189,9 +189,11 @@ TEST_F(TextOffsetMappingTest, RangeOfBlockWithPRE) {
 }
 
 TEST_F(TextOffsetMappingTest, RangeOfBlockWithRUBY) {
-  EXPECT_EQ("<ruby>^abc|<rt>123</rt></ruby>",
+  const char* whole_text_selected = "^<ruby>abc<rt>123|</rt></ruby>";
+  const bool is_ruby_lb = RuntimeEnabledFeatures::RubyLineBreakableEnabled();
+  EXPECT_EQ(is_ruby_lb ? whole_text_selected : "<ruby>^abc|<rt>123</rt></ruby>",
             GetRange("<ruby>|abc<rt>123</rt></ruby>"));
-  EXPECT_EQ("<ruby>abc<rt>^123|</rt></ruby>",
+  EXPECT_EQ(is_ruby_lb ? whole_text_selected : "<ruby>abc<rt>^123|</rt></ruby>",
             GetRange("<ruby>abc<rt>1|23</rt></ruby>"));
 }
 
@@ -209,30 +211,39 @@ TEST_F(TextOffsetMappingTest, RangeOfBlockWithRubyAsBlock) {
   //       LayoutRubyBase (anonymous) at (0,0) size 22x20
   //         LayoutText {#text} at (0,0) size 22x19
   //           text run at (0,0) width 22: "abc"
+  const char* whole_text_selected = "<ruby>^abc<rt>XYZ|</rt></ruby>";
+  const bool is_ruby_lb = RuntimeEnabledFeatures::RubyLineBreakableEnabled();
   InsertStyleElement("ruby { display: block; }");
-  EXPECT_EQ("<ruby>^abc|<rt>XYZ</rt></ruby>",
+  EXPECT_EQ(is_ruby_lb ? whole_text_selected : "<ruby>^abc|<rt>XYZ</rt></ruby>",
             GetRange("|<ruby>abc<rt>XYZ</rt></ruby>"));
-  EXPECT_EQ("<ruby>^abc|<rt>XYZ</rt></ruby>",
+  EXPECT_EQ(is_ruby_lb ? whole_text_selected : "<ruby>^abc|<rt>XYZ</rt></ruby>",
             GetRange("<ruby>|abc<rt>XYZ</rt></ruby>"));
-  EXPECT_EQ("<ruby>abc<rt>^XYZ|</rt></ruby>",
+  EXPECT_EQ(is_ruby_lb ? whole_text_selected : "<ruby>abc<rt>^XYZ|</rt></ruby>",
             GetRange("<ruby>abc<rt>|XYZ</rt></ruby>"));
 }
 
 TEST_F(TextOffsetMappingTest, RangeOfBlockWithRubyAsInlineBlock) {
+  const char* whole_text_selected = "^<ruby>abc<rt>XYZ|</rt></ruby>";
+  const bool is_ruby_lb = RuntimeEnabledFeatures::RubyLineBreakableEnabled();
   InsertStyleElement("ruby { display: inline-block; }");
-  EXPECT_EQ("<ruby>^abc|<rt>XYZ</rt></ruby>",
+  EXPECT_EQ(is_ruby_lb ? whole_text_selected : "<ruby>^abc|<rt>XYZ</rt></ruby>",
             GetRange("|<ruby>abc<rt>XYZ</rt></ruby>"));
-  EXPECT_EQ("<ruby>^abc|<rt>XYZ</rt></ruby>",
+  EXPECT_EQ(is_ruby_lb ? whole_text_selected : "<ruby>^abc|<rt>XYZ</rt></ruby>",
             GetRange("<ruby>|abc<rt>XYZ</rt></ruby>"));
-  EXPECT_EQ("<ruby>abc<rt>^XYZ|</rt></ruby>",
+  EXPECT_EQ(is_ruby_lb ? whole_text_selected : "<ruby>abc<rt>^XYZ|</rt></ruby>",
             GetRange("<ruby>abc<rt>|XYZ</rt></ruby>"));
 }
 
 TEST_F(TextOffsetMappingTest, RangeOfBlockWithRUBYandBR) {
-  EXPECT_EQ("<ruby>^abc<br>def|<rt>123<br>456</rt></ruby>",
+  const char* whole_text_selected =
+      "^<ruby>abc<br>def<rt>123<br>456|</rt></ruby>";
+  const bool is_ruby_lb = RuntimeEnabledFeatures::RubyLineBreakableEnabled();
+  EXPECT_EQ(is_ruby_lb ? whole_text_selected
+                       : "<ruby>^abc<br>def|<rt>123<br>456</rt></ruby>",
             GetRange("<ruby>|abc<br>def<rt>123<br>456</rt></ruby>"))
       << "RT(LayoutRubyColumn) is a block";
-  EXPECT_EQ("<ruby>abc<br>def<rt>^123<br>456|</rt></ruby>",
+  EXPECT_EQ(is_ruby_lb ? whole_text_selected
+                       : "<ruby>abc<br>def<rt>^123<br>456|</rt></ruby>",
             GetRange("<ruby>abc<br>def<rt>123|<br>456</rt></ruby>"))
       << "RUBY introduce LayoutRuleBase for 'abc'";
 }
@@ -445,15 +456,35 @@ TEST_F(TextOffsetMappingTest, RangeWithSelect1) {
   Element* select = GetDocument().QuerySelector(AtomicString("select"));
   const auto& expected_outer =
       "^<select>"
-      "<slot id=\"select-button\"><div aria-hidden=\"true\"></div></slot>"
-      "<slot id=\"select-datalist\"></slot>"
+      "<div aria-hidden=\"true\"></div>"
       "<slot id=\"select-options\"></slot>"
+      "<slot id=\"select-button\">"
+      "<button pseudo=\"select-fallback-button\" type=\"popover\">"
+      "<span pseudo=\"select-fallback-button-text\"></span>"
+      "<div pseudo=\"select-fallback-button-icon\"></div>"
+      "</button>"
+      "</slot>"
+      "<slot id=\"select-datalist\">"
+      "<datalist pseudo=\"select-fallback-datalist\">"
+      "<slot id=\"select-datalist-options\"></slot>"
+      "</datalist>"
+      "</slot>"
       "</select>foo|";
   const auto& expected_inner =
       "<select>"
-      "<slot id=\"select-button\"><div aria-hidden=\"true\">^|</div></slot>"
-      "<slot id=\"select-datalist\"></slot>"
+      "<div aria-hidden=\"true\">^|</div>"
       "<slot id=\"select-options\"></slot>"
+      "<slot id=\"select-button\">"
+      "<button pseudo=\"select-fallback-button\" type=\"popover\">"
+      "<span pseudo=\"select-fallback-button-text\"></span>"
+      "<div pseudo=\"select-fallback-button-icon\"></div>"
+      "</button>"
+      "</slot>"
+      "<slot id=\"select-datalist\">"
+      "<datalist pseudo=\"select-fallback-datalist\">"
+      "<slot id=\"select-datalist-options\"></slot>"
+      "</datalist>"
+      "</slot>"
       "</select>foo";
   EXPECT_EQ(expected_outer, GetRange(PositionInFlatTree::BeforeNode(*select)));
   EXPECT_EQ(expected_inner, GetRange(PositionInFlatTree(select, 0)));
@@ -465,15 +496,35 @@ TEST_F(TextOffsetMappingTest, RangeWithSelect2) {
   Element* select = GetDocument().QuerySelector(AtomicString("select"));
   const auto& expected_outer =
       "^<select>"
-      "<slot id=\"select-button\"><div aria-hidden=\"true\"></div></slot>"
-      "<slot id=\"select-datalist\"></slot>"
+      "<div aria-hidden=\"true\"></div>"
       "<slot id=\"select-options\"></slot>"
+      "<slot id=\"select-button\">"
+      "<button pseudo=\"select-fallback-button\" type=\"popover\">"
+      "<span pseudo=\"select-fallback-button-text\"></span>"
+      "<div pseudo=\"select-fallback-button-icon\"></div>"
+      "</button>"
+      "</slot>"
+      "<slot id=\"select-datalist\">"
+      "<datalist pseudo=\"select-fallback-datalist\">"
+      "<slot id=\"select-datalist-options\"></slot>"
+      "</datalist>"
+      "</slot>"
       "</select>foo|";
   const auto& expected_inner =
       "<select>"
-      "<slot id=\"select-button\"><div aria-hidden=\"true\">^|</div></slot>"
-      "<slot id=\"select-datalist\"></slot>"
+      "<div aria-hidden=\"true\">^|</div>"
       "<slot id=\"select-options\"></slot>"
+      "<slot id=\"select-button\">"
+      "<button pseudo=\"select-fallback-button\" type=\"popover\">"
+      "<span pseudo=\"select-fallback-button-text\"></span>"
+      "<div pseudo=\"select-fallback-button-icon\"></div>"
+      "</button>"
+      "</slot>"
+      "<slot id=\"select-datalist\">"
+      "<datalist pseudo=\"select-fallback-datalist\">"
+      "<slot id=\"select-datalist-options\"></slot>"
+      "</datalist>"
+      "</slot>"
       "</select>foo";
   EXPECT_EQ(expected_outer, GetRange(PositionInFlatTree::BeforeNode(*select)));
   EXPECT_EQ(expected_inner, GetRange(PositionInFlatTree(select, 0)));

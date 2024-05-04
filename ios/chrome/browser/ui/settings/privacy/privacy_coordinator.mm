@@ -13,10 +13,12 @@
 #import "ios/chrome/browser/shared/public/commands/browsing_data_commands.h"
 #import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
 #import "ios/chrome/browser/shared/public/commands/open_new_tab_command.h"
+#import "ios/chrome/browser/shared/public/commands/quick_delete_commands.h"
 #import "ios/chrome/browser/shared/public/commands/settings_commands.h"
 #import "ios/chrome/browser/shared/public/commands/snackbar_commands.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/ui/settings/clear_browsing_data/clear_browsing_data_coordinator.h"
+#import "ios/chrome/browser/ui/settings/clear_browsing_data/features.h"
 #import "ios/chrome/browser/ui/settings/privacy/handoff_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/privacy/lockdown_mode/lockdown_mode_coordinator.h"
 #import "ios/chrome/browser/ui/settings/privacy/privacy_guide/privacy_guide_main_coordinator.h"
@@ -33,14 +35,16 @@
     PrivacyNavigationCommands,
     PrivacySafeBrowsingCoordinatorDelegate,
     PrivacyTableViewControllerPresentationDelegate,
-    LockdownModeCoordinatorDelegate>
+    LockdownModeCoordinatorDelegate> {
+}
 
 @property(nonatomic, strong) PrivacyTableViewController* viewController;
 // Coordinator for Privacy Safe Browsing settings.
 @property(nonatomic, strong)
     PrivacySafeBrowsingCoordinator* safeBrowsingCoordinator;
 
-// The coordinator for the clear browsing data screen.
+// TODO(crbug.com/335387869): Delete this coordinator when Quick Delete is fully
+// launched. The coordinator for the clear browsing data screen.
 @property(nonatomic, strong)
     ClearBrowsingDataCoordinator* clearBrowsingDataCoordinator;
 
@@ -126,11 +130,17 @@
 }
 
 - (void)showClearBrowsingData {
-  self.clearBrowsingDataCoordinator = [[ClearBrowsingDataCoordinator alloc]
-      initWithBaseNavigationController:self.baseNavigationController
-                               browser:self.browser];
-  self.clearBrowsingDataCoordinator.delegate = self;
-  [self.clearBrowsingDataCoordinator start];
+  if (IsIosQuickDeleteEnabled()) {
+    id<QuickDeleteCommands> quickDeleteHandler = HandlerForProtocol(
+        self.browser->GetCommandDispatcher(), QuickDeleteCommands);
+    [quickDeleteHandler showQuickDelete];
+  } else {
+    self.clearBrowsingDataCoordinator = [[ClearBrowsingDataCoordinator alloc]
+        initWithBaseNavigationController:self.baseNavigationController
+                                 browser:self.browser];
+    self.clearBrowsingDataCoordinator.delegate = self;
+    [self.clearBrowsingDataCoordinator start];
+  }
 }
 
 - (void)showSafeBrowsing {

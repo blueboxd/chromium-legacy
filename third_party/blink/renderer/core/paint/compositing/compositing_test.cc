@@ -170,7 +170,6 @@ TEST_P(CompositingTest, DidScrollCallbackAfterScrollableAreaChanges) {
                                 ->property_trees()
                                 ->scroll_tree()
                                 .FindNodeFromElementId(scroll_element_id);
-  EXPECT_TRUE(scroll_node->scrollable);
   EXPECT_EQ(scroll_node->container_bounds, gfx::Size(100, 100));
 
   // Ensure a synthetic impl-side scroll offset propagates to the scrollable
@@ -230,7 +229,6 @@ TEST_P(CompositingTest, FrameViewScroll) {
           ->scroll_tree()
           .FindNodeFromElementId(scrollable_area->GetScrollElementId());
   ASSERT_TRUE(scroll_node);
-  EXPECT_TRUE(scroll_node->scrollable);
 
   // Ensure a synthetic impl-side scroll offset propagates to the scrollable
   // area using the DidScroll callback.
@@ -603,9 +601,11 @@ TEST_P(CompositingTest, CompositedOverlayScrollbarUnderNonNonFastBorderRadius) {
 }
 
 // https://crbug.com/1459318
-TEST_P(CompositingTest, FullPACUpdateOnScrollWithSyntheticClipAcrossScroller) {
+TEST_P(CompositingTest,
+       FullPACUpdateOnScrollWithSyntheticClipAcrossScrollerSimpleRadius) {
   InitializeWithHTML(*WebView()->MainFrameImpl()->GetFrame(), R"HTML(
-    <div id="scroll" style="width: 200px; height: 200px; border-radius: 2px;
+    <div id="scroll" style="width: 200px; height: 200px;
+                            border-radius: 2px;
                             overflow: scroll; background: white">
       <div id="masked" style="width: 100px; height: 100px;
                               backdrop-filter: blur(1px)"></div>
@@ -618,6 +618,28 @@ TEST_P(CompositingTest, FullPACUpdateOnScrollWithSyntheticClipAcrossScroller) {
   GetLocalFrameView()->UpdateAllLifecyclePhasesExceptPaint(
       DocumentUpdateReason::kTest);
   EXPECT_TRUE(paint_artifact_compositor()->NeedsUpdate());
+  UpdateAllLifecyclePhases();
+}
+
+// https://crbug.com/1459318
+TEST_P(CompositingTest,
+       FullPACUpdateOnScrollWithSyntheticClipAcrossScrollerComplexRadius) {
+  InitializeWithHTML(*WebView()->MainFrameImpl()->GetFrame(), R"HTML(
+    <div id="scroll" style="width: 200px; height: 200px;
+                            border-radius: 2px / 4px;
+                            overflow: scroll; background: white">
+      <div id="masked" style="width: 100px; height: 100px;
+                              backdrop-filter: blur(1px)"></div>
+      <div style="height: 200px"></div>
+    </div>
+  )HTML");
+
+  EXPECT_FALSE(paint_artifact_compositor()->NeedsUpdate());
+  GetElementById("scroll")->scrollTo(0, 2);
+  GetLocalFrameView()->UpdateAllLifecyclePhasesExceptPaint(
+      DocumentUpdateReason::kTest);
+  EXPECT_TRUE(paint_artifact_compositor()->NeedsUpdate());
+  UpdateAllLifecyclePhases();
 }
 
 TEST_P(CompositingTest, HitTestOpaqueness) {
@@ -804,6 +826,43 @@ TEST_P(CompositingTest, HitTestOpaquenessOnChangeOfUsedPointerEvents) {
   EXPECT_TRUE(display_item_client->IsValid());
   UpdateAllLifecyclePhases();
   EXPECT_EQ(hit_test_opaque, target_layer->hit_test_opaqueness());
+}
+
+TEST_P(CompositingTest, AnchorPositionAdjustmentTransformIdReference) {
+  GetLocalFrameView()
+      ->GetFrame()
+      .GetSettings()
+      ->SetPreferCompositingToLCDTextForTesting(false);
+
+  InitializeWithHTML(*WebView()->MainFrameImpl()->GetFrame(), R"HTML(
+    <div id="anchored1"
+         style="position: absolute; position-anchor: --a; top: anchor(bottom)">
+      anchored
+    </div>
+    <div id="scroller" style="overflow: scroll; width: 200px; height: 200px">
+      <div id="anchor" style="anchor-name: --a">anchor</div>
+      <div style="height: 1000px"></div>
+    </div>
+    <div id="anchored2"
+         style="position: absolute; position-anchor: --a; top: anchor(bottom)">
+      anchored
+    </div>
+  )HTML");
+  UpdateAllLifecyclePhases();
+
+  int scroll_translation_id =
+      GetElementById("scroller")
+          ->GetLayoutObject()
+          ->FirstFragment()
+          .PaintProperties()
+          ->ScrollTranslation()
+          ->CcNodeId(LayerTreeHost()->property_trees()->sequence_number());
+  EXPECT_LT(scroll_translation_id,
+            CcLayersByDOMElementId(RootCcLayer(), "anchored1")[0]
+                ->transform_tree_index());
+  EXPECT_LT(scroll_translation_id,
+            CcLayersByDOMElementId(RootCcLayer(), "anchored2")[0]
+                ->transform_tree_index());
 }
 
 class CompositingSimTest : public PaintTestConfigurations, public SimTest {
@@ -2142,8 +2201,52 @@ TEST_P(CompositingSimTest, ImplSideScrollSkipsCommit) {
 
   // Simulate the scroll update with scroll delta from impl-side.
   cc::CompositorCommitData commit_data;
-  commit_data.scrolls.emplace_back(cc::CompositorCommitData::ScrollUpdateInfo(
-      element_id, gfx::Vector2dF(0, 10), std::nullopt));
+  commit_data.scrolls.emplace_back(element_id, gfx::Vector2dF(0, 10),
+                                   std::nullopt);
+  Compositor().LayerTreeHost()->ApplyCompositorChanges(&commit_data);
+  EXPECT_EQ(gfx::PointF(0, 10), scrollable_area->ScrollPosition());
+  EXPECT_EQ(
+      gfx::PointF(0, 10),
+      GetPropertyTrees()->scroll_tree().current_scroll_offset(element_id));
+
+  // Update just the blink lifecycle because a full frame would clear the bit
+  // for whether a commit was requested.
+  UpdateAllLifecyclePhases();
+
+  // A main frame is needed to call UpdateLayers which updates property trees,
+  // re-calculating cached to/from-screen transforms.
+  EXPECT_TRUE(Compositor().LayerTreeHost()->RequestedMainFramePending());
+
+  // A full commit is not needed.
+  EXPECT_FALSE(Compositor().LayerTreeHost()->CommitRequested());
+}
+
+TEST_P(CompositingSimTest, ImplSideScrollUnpaintedSkipsCommit) {
+  InitializeWithHTML(R"HTML(
+    <div style='height: 10000px'></div>
+    <div id='scroller' style='overflow: scroll; width: 100px; height: 100px'>
+      <div style='height: 1000px'></div>
+    </div>
+  )HTML");
+  Compositor().BeginFrame();
+
+  auto* scroller = GetDocument().getElementById(AtomicString("scroller"));
+  auto* scrollable_area = scroller->GetLayoutBox()->GetScrollableArea();
+  auto element_id = scrollable_area->GetScrollElementId();
+
+  // The scroller is far away from the viewport so is not painted.
+  // The scroll node always exists.
+  auto* scroll_node =
+      GetPropertyTrees()->scroll_tree().FindNodeFromElementId(element_id);
+  ASSERT_TRUE(scroll_node);
+  EXPECT_EQ(cc::kInvalidPropertyNodeId, scroll_node->transform_id);
+
+  EXPECT_FALSE(Compositor().LayerTreeHost()->CommitRequested());
+
+  // Simulate the scroll update with scroll delta from impl-side.
+  cc::CompositorCommitData commit_data;
+  commit_data.scrolls.emplace_back(element_id, gfx::Vector2dF(0, 10),
+                                   std::nullopt);
   Compositor().LayerTreeHost()->ApplyCompositorChanges(&commit_data);
   EXPECT_EQ(gfx::PointF(0, 10), scrollable_area->ScrollPosition());
   EXPECT_EQ(

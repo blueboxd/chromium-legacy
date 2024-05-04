@@ -27,7 +27,6 @@ namespace os.diagnostics {
     disk_read,
     dns_resolution,
     memory,
-    nvme_wear_level,
     smartctl_check,
     lan_connectivity,
     signal_strength,
@@ -152,10 +151,6 @@ namespace os.diagnostics {
     NvmeSelfTestType test_type;
   };
 
-  dictionary RunNvmeWearLevelRequest {
-    long wear_level_threshold;
-  };
-
   dictionary RunSmartctlCheckRequest {
     long? percentage_used_threshold;
   };
@@ -183,14 +178,56 @@ namespace os.diagnostics {
     DOMString? uuid;
   };
 
+  enum NetworkBandwidthRoutineRunningType {
+    download,
+    upload
+  };
+
+  dictionary NetworkBandwidthRoutineRunningInfo {
+    // The type of test that routine is running.
+    NetworkBandwidthRoutineRunningType type;
+    // The current network speed in Kbps.
+    double speedKbps;
+  };
+
+  // This is a union type. Exactly one field should be set.
+  dictionary RoutineRunningInfoUnion {
+    NetworkBandwidthRoutineRunningInfo? networkBandwidth;
+  };
+
   dictionary RoutineRunningInfo {
     DOMString? uuid;
     long? percentage;
+    RoutineRunningInfoUnion? info;
+  };
+
+  // Details regarding the inquiry to check the LED lit up state. Clients should
+  // inspect the target LED and report its state using `CheckLedLitUpStateReply`
+  // as the argument of `replyToRoutineInquiry`.
+  dictionary CheckLedLitUpStateInquiry {
+  };
+
+  // This is a union type. Exactly one field should be set.
+  //
+  // At this time, there is only one member type. Other member types will be
+  // added when needed.
+  dictionary RoutineInquiryUnion {
+    CheckLedLitUpStateInquiry? checkLedLitUpState;
+  };
+
+  // This is a union type. Exactly one field should be set.
+  //
+  // At this time, there is only one member type. Other member types will be
+  // added later.
+  dictionary RoutineInteractionUnion {
+    // Routine inquiries need to be replied to with the `replyToRoutineInquiry`
+    // method.
+    RoutineInquiryUnion? inquiry;
   };
 
   enum RoutineWaitingReason {
     waiting_to_be_scheduled,
-    waiting_user_input
+    waiting_for_interaction
   };
 
   dictionary RoutineWaitingInfo {
@@ -200,6 +237,10 @@ namespace os.diagnostics {
     RoutineWaitingReason? reason;
     // Additional information, may be used to pass instruction or explanation.
     DOMString? message;
+    // The requested interaction. When set, clients must respond to the
+    // interaction for the routine to proceed. See `RoutineInteractionUnion` to
+    // learn about how to respond to each interaction.
+    RoutineInteractionUnion? interaction;
   };
 
   enum ExceptionReason {
@@ -277,20 +318,32 @@ namespace os.diagnostics {
   };
 
   dictionary MemtesterResult {
+    MemtesterTestItemEnum[] passedItems;
+    MemtesterTestItemEnum[] failedItems;
+  };
+
+  dictionary LegacyMemtesterResult {
     MemtesterTestItemEnum[] passed_items;
     MemtesterTestItemEnum[] failed_items;
   };
 
-  dictionary MemoryRoutineFinishedInfo {
-    DOMString? uuid;
-    boolean? has_passed;
+  dictionary MemoryRoutineFinishedDetail {
     // Number of bytes tested in the memory routine.
     double? bytesTested;
     // Contains the memtester test results.
     MemtesterResult? result;
   };
 
-  dictionary RunMemoryRoutineArguments {
+  dictionary LegacyMemoryRoutineFinishedInfo {
+    DOMString? uuid;
+    boolean? has_passed;
+    // Number of bytes tested in the memory routine.
+    double? bytesTested;
+    // Contains the memtester test results.
+    LegacyMemtesterResult? result;
+  };
+
+  dictionary CreateMemoryRoutineArguments {
     // An optional field to indicate how much memory should be tested. If the
     // value is null, memory test will run with as much memory as possible.
     long? maxTestingMemKib;
@@ -303,12 +356,20 @@ namespace os.diagnostics {
     volume_down
   };
 
-  dictionary VolumeButtonRoutineFinishedInfo {
+  dictionary LegacyVolumeButtonRoutineFinishedInfo {
     DOMString? uuid;
     boolean? has_passed;
   };
 
-  dictionary RunVolumeButtonRoutineArguments {
+  dictionary CreateVolumeButtonRoutineArguments {
+    // The volume button to be tested.
+    VolumeButtonType buttonType;
+    // Length of time to listen to the volume button events. The value should be
+    // positive and less or equal to 600 seconds.
+    long timeoutSeconds;
+  };
+
+  dictionary LegacyCreateVolumeButtonRoutineArguments {
     // The volume button to be tested.
     VolumeButtonType button_type;
     // Length of time to listen to the volume button events. The value should be
@@ -325,7 +386,16 @@ namespace os.diagnostics {
     not_configured
   };
 
-  dictionary FanRoutineFinishedInfo {
+  dictionary FanRoutineFinishedDetail {
+    // The ids of fans that can be controlled.
+    long[]? passedFanIds;
+    // The ids of fans that cannot be controlled.
+    long[]? failedFanIds;
+    // Whether the number of fan probed is matched.
+    HardwarePresenceStatus? fanCountStatus;
+  };
+
+  dictionary LegacyFanRoutineFinishedInfo {
     DOMString? uuid;
     boolean? has_passed;
     // The ids of fans that can be controlled.
@@ -336,7 +406,78 @@ namespace os.diagnostics {
     HardwarePresenceStatus? fan_count_status;
   };
 
-  dictionary RunFanRoutineArguments {
+  dictionary CreateFanRoutineArguments {
+  };
+
+  dictionary CreateNetworkBandwidthRoutineArguments {
+  };
+
+  dictionary NetworkBandwidthRoutineFinishedDetail {
+    // Average download speed in Kbit/s.
+    double downloadSpeedKbps;
+    // Average upload speed in Kbit/s.
+    double uploadSpeedKbps;
+  };
+
+  enum LedName {
+    battery,
+    power,
+    adapter,
+    left,
+    right
+  };
+
+  enum LedColor {
+    red,
+    green,
+    blue,
+    yellow,
+    white,
+    amber
+  };
+
+  // The routine lights up the target LED in the specified color and requests
+  // the caller to verify the change.
+  //
+  // This routine is supported if and only if the device has a ChromeOS EC.
+  //
+  // When an LED name or LED color is not supported by the EC, it will cause a
+  // routine exception (by emitting an `onRoutineException` event) at runtime.
+  //
+  // The routine proceeds with the following steps:
+  // 1. Set the specified LED with the specified color and enter the waiting
+  //    state with the `CheckLedLitUpStateInquiry` interaction request.
+  // 2. After receiving `CheckLedLitUpStateReply` with the observed LED state,
+  //    the color of the LED will be reset (back to auto control). Notice that
+  //    there is no timeout so the routine will be in the waiting state
+  //    indefinitely.
+  // 3. The routine passes if the LED is lit up in the correct color. Otherwise,
+  //    the routine fails.
+  dictionary CreateLedLitUpRoutineArguments {
+    LedName name;
+    LedColor color;
+  };
+
+  // This is a union type. Exactly one field should be set.
+  [ignoreAdditionalProperties] dictionary CreateRoutineArgumentsUnion {
+    CreateMemoryRoutineArguments? memory;
+    CreateVolumeButtonRoutineArguments? volumeButton;
+    CreateFanRoutineArguments? fan;
+    CreateNetworkBandwidthRoutineArguments? networkBandwidth;
+    CreateLedLitUpRoutineArguments? ledLitUp;
+  };
+
+  // This is a union type. Exactly one field should be set.
+  dictionary RoutineFinishedDetailUnion {
+    MemoryRoutineFinishedDetail? memory;
+    FanRoutineFinishedDetail? fan;
+    NetworkBandwidthRoutineFinishedDetail? networkBandwidth;
+  };
+
+  dictionary RoutineFinishedInfo {
+    DOMString? uuid;
+    boolean? hasPassed;
+    RoutineFinishedDetailUnion? detail;
   };
 
   dictionary CreateRoutineResponse {
@@ -367,6 +508,32 @@ namespace os.diagnostics {
   };
 
   callback CancelRoutineCallback = void ();
+
+  enum LedLitUpState {
+    correct_color,
+    not_lit_up
+  };
+
+  dictionary CheckLedLitUpStateReply {
+    // State of the target LED.
+    LedLitUpState state;
+  };
+
+  // This is a union type. Exactly one field should be set.
+  //
+  // At this time, there is only one member type. Other member types will be
+  // added when needed.
+  [ignoreAdditionalProperties] dictionary RoutineInquiryReplyUnion {
+    CheckLedLitUpStateReply? checkLedLitUpState;
+  };
+
+  dictionary ReplyToRoutineInquiryRequest {
+    DOMString uuid;
+    // The reply to an inquiry in the routine waiting info.
+    RoutineInquiryReplyUnion reply;
+  };
+
+  callback ReplyToRoutineInquiryCallback = void ();
 
   interface Functions {
     static void getAvailableRoutines(GetAvailableRoutinesCallback callback);
@@ -441,10 +608,6 @@ namespace os.diagnostics {
         RunNvmeSelfTestRequest request,
         RunRoutineCallback callback);
 
-    static void runNvmeWearLevelRoutine(
-        RunNvmeWearLevelRequest request,
-        RunRoutineCallback callback);
-
     static void runSensitiveSensorRoutine(RunRoutineCallback callback);
 
     static void runSignalStrengthRoutine(RunRoutineCallback callback);
@@ -465,6 +628,20 @@ namespace os.diagnostics {
 
     // ----------------- DIAGNOSTICS API V2 -----------------
 
+    // Checks whether a certain routine arguments (expected to be of type
+    // `CreateRoutineArgumentsUnion`) is supported on the platform. Exactly one
+    // routine should be set in `CreateRoutineArgumentsUnion`.
+    static void isRoutineArgumentSupported(
+        CreateRoutineArgumentsUnion args,
+        RoutineSupportStatusInfoCallback callback);
+
+    // Create a routine with routine arguments (expected to be of type
+    // `CreateRoutineArgumentsUnion`). Exactly one routine should be set in
+    // `CreateRoutineArgumentsUnion`.
+    static void createRoutine(
+        CreateRoutineArgumentsUnion args,
+        CreateRoutineCallback callback);
+
     // Starts execution of a routine. This can only be expected to work after
     // `onRoutineInitialized` was emitted for the routine with `UUID`.
     static void startRoutine(
@@ -477,34 +654,50 @@ namespace os.diagnostics {
         CancelRoutineRequest request,
         CancelRoutineCallback callback);
 
+    // Replies to a routine inquiry. This can only work when the routine with
+    // `UUID` is in the waiting state and has set an inquiry in the waiting
+    // info.
+    static void replyToRoutineInquiry(
+        ReplyToRoutineInquiryRequest request,
+        ReplyToRoutineInquiryCallback callback);
+
+    // ----------------- DEPRECATED DIAGNOSTICS API V2 -----------------
+    // TODO(b/331540565): Remove legacy APIs.
+
+    // Deprecated. Use `createRoutine` instead.
     static void createMemoryRoutine(
-        RunMemoryRoutineArguments args,
+        CreateMemoryRoutineArguments args,
         CreateRoutineCallback callback);
 
-    // Checks whether a certain `RunMemoryRoutineArguments` is supported on the
-    // platform.
+    // Deprecated. Use `isRoutineArgumentSupported` instead.
+    // Checks whether a certain `CreateMemoryRoutineArguments` is supported on
+    // the platform.
     static void isMemoryRoutineArgumentSupported(
-        RunMemoryRoutineArguments args,
+        CreateMemoryRoutineArguments args,
         RoutineSupportStatusInfoCallback callback);
 
+    // Deprecated. Use `createRoutine` instead.
     static void createVolumeButtonRoutine(
-        RunVolumeButtonRoutineArguments args,
+        LegacyCreateVolumeButtonRoutineArguments args,
         CreateRoutineCallback callback);
 
-    // Checks whether a certain `RunVolumeButtonRoutineArguments` is supported
-    // on the platform.
+    // Deprecated. Use `isRoutineArgumentSupported` instead.
+    // Checks whether a certain `LegacyCreateVolumeButtonRoutineArguments` is
+    // supported on the platform.
     static void isVolumeButtonRoutineArgumentSupported(
-        RunVolumeButtonRoutineArguments args,
+        LegacyCreateVolumeButtonRoutineArguments args,
         RoutineSupportStatusInfoCallback callback);
 
+    // Deprecated. Use `createRoutine` instead.
     static void createFanRoutine(
-        RunFanRoutineArguments args,
+        CreateFanRoutineArguments args,
         CreateRoutineCallback callback);
 
-    // Checks whether a certain `RunFanRoutineArguments` is supported on the
+    // Deprecated. Use `isRoutineArgumentSupported` instead.
+    // Checks whether a certain `CreateFanRoutineArguments` is supported on the
     // platform.
     static void isFanRoutineArgumentSupported(
-        RunFanRoutineArguments args,
+        CreateFanRoutineArguments args,
         RoutineSupportStatusInfoCallback callback);
   };
 
@@ -524,19 +717,29 @@ namespace os.diagnostics {
     // about what the routine is waiting for (see prototype above).
     static void onRoutineWaiting(RoutineWaitingInfo waitingInfo);
 
-    // Informs the extension that a memory routine finished.
-    static void onMemoryRoutineFinished(MemoryRoutineFinishedInfo finishedInfo);
-
-    // Informs the extension that a volume button routine finished.
-    static void onVolumeButtonRoutineFinished(
-        VolumeButtonRoutineFinishedInfo finishedInfo);
-
-    // Informs the extension that a fan routine finished.
-    static void onFanRoutineFinished(FanRoutineFinishedInfo finishedInfo);
+    // Informs the extension that a routine finished.
+    static void onRoutineFinished(RoutineFinishedInfo finishedInfo);
 
     // Informs the extension that an exception occured. The error passed in
     // `ExceptionInfo` is non-recoverable.
     static void onRoutineException(ExceptionInfo exceptionInfo);
+
+    // ----------------- DEPRECATED DIAGNOSTICS API V2 -----------------
+    // TODO(b/331540565): Remove legacy APIs.
+
+    // Deprecated. Use `onRoutineFinished` instead.
+    // Informs the extension that a memory routine finished.
+    static void onMemoryRoutineFinished(
+        LegacyMemoryRoutineFinishedInfo finishedInfo);
+
+    // Deprecated. Use `onRoutineFinished` instead.
+    // Informs the extension that a volume button routine finished.
+    static void onVolumeButtonRoutineFinished(
+        LegacyVolumeButtonRoutineFinishedInfo finishedInfo);
+
+    // Deprecated. Use `onRoutineFinished` instead.
+    // Informs the extension that a fan routine finished.
+    static void onFanRoutineFinished(LegacyFanRoutineFinishedInfo finishedInfo);
   };
 
   // LINT.ThenChange(//docs/telemetry_extension/api_overview.md)

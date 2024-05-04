@@ -6,16 +6,17 @@
 #define CHROME_BROWSER_ASH_APP_MODE_KIOSK_CONTROLLER_H_
 
 #include <optional>
+#include <string>
 #include <vector>
 
-#include "chrome/browser/ash/app_mode/arc/arc_kiosk_app_manager.h"
 #include "chrome/browser/ash/app_mode/kiosk_app.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_types.h"
-#include "chrome/browser/ash/app_mode/kiosk_chrome_app_manager.h"
-#include "chrome/browser/ash/app_mode/web_app/web_kiosk_app_manager.h"
-#include "ui/gfx/image/image_skia.h"
+
+class Profile;
 
 namespace ash {
+
+class KioskSystemSession;
 
 // Public interface for Kiosk.
 class KioskController {
@@ -23,18 +24,23 @@ class KioskController {
   static KioskController& Get();
 
   KioskController();
-  KioskController(const KioskController&) = delete;
-  KioskController& operator=(const KioskController&) = delete;
-  ~KioskController();
+  virtual ~KioskController();
 
-  std::vector<KioskApp> GetApps() const;
-  std::optional<KioskApp> GetAppById(const KioskAppId& app_id) const;
-  std::optional<KioskApp> GetAutoLaunchApp() const;
+  virtual std::vector<KioskApp> GetApps() const = 0;
+  virtual std::optional<KioskApp> GetAppById(
+      const KioskAppId& app_id) const = 0;
+  virtual std::optional<KioskApp> GetAutoLaunchApp() const = 0;
 
- private:
-  WebKioskAppManager web_app_manager_;
-  KioskChromeAppManager chrome_app_manager_;
-  ArcKioskAppManager arc_app_manager_;
+  // Initializes the `KioskSystemSession`. Should be called at the end of the
+  // Kiosk launch.
+  virtual void InitializeKioskSystemSession(
+      Profile* profile,
+      const KioskAppId& kiosk_app_id,
+      const std::optional<std::string>& app_name) = 0;
+
+  // Returns the `KioskSystemSession`. Can be `nullptr` if called outside a
+  // Kiosk session, or before `InitializeSystemSession`.
+  virtual KioskSystemSession* GetKioskSystemSession() = 0;
 };
 
 }  // namespace ash

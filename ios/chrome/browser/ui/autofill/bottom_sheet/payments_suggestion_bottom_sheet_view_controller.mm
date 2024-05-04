@@ -134,9 +134,9 @@ CGFloat const kTitleLogoHeight = 24;
 - (void)viewDidDisappear:(BOOL)animated {
   [super viewDidDisappear:animated];
   if (self.disableBottomSheetOnExit) {
-    [self.delegate disableBottomSheet];
+    [self.delegate disableBottomSheetAndRefocus:YES];
   }
-  [self.handler viewDidDisappear:animated];
+  [self.handler viewDidDisappear];
 }
 
 #pragma mark - PaymentsSuggestionBottomSheetConsumer
@@ -219,6 +219,8 @@ CGFloat const kTitleLogoHeight = 24;
 #pragma mark - ConfirmationAlertActionHandler
 
 - (void)confirmationAlertPrimaryAction {
+  self.disableBottomSheetOnExit = NO;
+
   NSInteger index = [self selectedRow];
   [self.handler primaryButtonTapped:_creditCardData[index]];
 
@@ -316,8 +318,15 @@ CGFloat const kTitleLogoHeight = 24;
 - (NSString*)accessibleCardNameAtRow:(NSInteger)row {
   return l10n_util::GetNSStringF(
       IDS_IOS_AUTOFILL_ACCNAME_SUGGESTION,
-      base::SysNSStringToUTF16([_creditCardData[row] accessibleCardName]), u"",
-      base::NumberToString16(row + 1), base::NumberToString16([self rowCount]));
+      base::SysNSStringToUTF16([_creditCardData[row] accessibleCardName]), u"");
+}
+
+// Returns the accessibility value for the card at a given row in the table
+// view.
+- (NSString*)accessibilityValueForCardAtRow:(NSInteger)row {
+  return l10n_util::GetNSStringF(IDS_IOS_AUTOFILL_SUGGESTION_INDEX_VALUE,
+                                 base::NumberToString16(row + 1),
+                                 base::NumberToString16([self rowCount]));
 }
 
 // Creates the UI action used to open the payment methods view.
@@ -372,6 +381,14 @@ CGFloat const kTitleLogoHeight = 24;
   cell.backgroundColor = [UIColor colorNamed:kSecondaryBackgroundColor];
   cell.userInteractionEnabled = YES;
   cell.customAccessibilityLabel = [self accessibleCardNameAtRow:indexPath.row];
+  cell.accessibilityValue = [self accessibilityValueForCardAtRow:indexPath.row];
+
+  [cell setDetailText:[self descriptionAtRow:indexPath.row]];
+  [cell setIconImage:[self iconAtRow:indexPath.row]
+            tintColor:nil
+      backgroundColor:cell.backgroundColor
+         cornerRadius:kCreditCardIconCornerRadius];
+  [cell setTextLayoutConstraintAxis:UILayoutConstraintAxisVertical];
 
   cell.textLabel.text = [self suggestionAtRow:indexPath.row];
   cell.textLabel.lineBreakMode = NSLineBreakByTruncatingMiddle;
@@ -387,13 +404,6 @@ CGFloat const kTitleLogoHeight = 24;
   } else {
     cell.accessibilityIdentifier = cell.textLabel.text;
   }
-
-  [cell setDetailText:[self descriptionAtRow:indexPath.row]];
-  [cell setIconImage:[self iconAtRow:indexPath.row]
-            tintColor:nil
-      backgroundColor:cell.backgroundColor
-         cornerRadius:kCreditCardIconCornerRadius];
-  [cell setTextLayoutConstraintAxis:UILayoutConstraintAxisVertical];
 
   cell.separatorInset = [self separatorInsetForTableViewWidth:tableViewWidth
                                                   atIndexPath:indexPath];

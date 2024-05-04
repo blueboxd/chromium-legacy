@@ -35,6 +35,7 @@ class MockModelTypeChangeProcessor : public ModelTypeChangeProcessor {
   MOCK_METHOD(void,
               Delete,
               (const std::string& storage_key,
+               const DeletionOrigin& origin,
                MetadataChangeList* metadata_change_list),
               (override));
   MOCK_METHOD(void,
@@ -88,10 +89,8 @@ class MockModelTypeChangeProcessor : public ModelTypeChangeProcessor {
               GetPossiblyTrimmedRemoteSpecifics,
               (const std::string& storage_key),
               (const override));
-  MOCK_METHOD(base::WeakPtr<ModelTypeChangeProcessor>,
-              GetWeakPtr,
-              (),
-              (override));
+
+  base::WeakPtr<ModelTypeChangeProcessor> GetWeakPtr() override;
 
   // Returns a processor that forwards all calls to
   // |this|. |*this| must outlive the returned processor.
@@ -100,6 +99,9 @@ class MockModelTypeChangeProcessor : public ModelTypeChangeProcessor {
   // Delegates all calls to another instance. |delegate| must not be null and
   // must outlive this object.
   void DelegateCallsByDefaultTo(ModelTypeChangeProcessor* delegate);
+
+ private:
+  base::WeakPtrFactory<MockModelTypeChangeProcessor> weak_ptr_factory_{this};
 };
 
 }  //  namespace syncer

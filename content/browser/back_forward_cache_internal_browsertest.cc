@@ -104,7 +104,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, BackForwardCacheFlush) {
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, ForEachRenderFrameHost) {
   // There are sometimes unexpected messages from a renderer to the browser,
   // which caused test flakiness on macOS.
-  // TODO(crbug.com/1263536): Fix the test flakiness.
+  // TODO(crbug.com/40800266): Fix the test flakiness.
   DoNotFailForUnexpectedMessagesWhileCached();
 
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -1091,7 +1091,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
 // updated during the "freeze" event in a way that would have prevented the
 // document from entering the BackForwardCache in the first place.
 //
-// TODO(https://crbug.com/996267): The document should be evicted.
+// TODO(crbug.com/41477477): The document should be evicted.
 //
 // ┌───────┐                     ┌────────┐
 // │browser│                     │renderer│
@@ -2221,7 +2221,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
 #endif
 
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, PageshowMetrics) {
-  // TODO(https://crbug.com/1099395): Do not check for unexpected messages
+  // TODO(crbug.com/40702446): Do not check for unexpected messages
   // because the input task queue is not currently frozen, causing flakes in
   // this test.
   DoNotFailForUnexpectedMessagesWhileCached();
@@ -3211,7 +3211,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
 
   // 3) Go back to A, which should restore the page saved in the back-forward
   // cache and use the old user agent.
-  // TODO(https://crbug.com/1194880): This should use the new UA override.
+  // TODO(crbug.com/40758687): This should use the new UA override.
   {
     FrameNavigateParamsCapturer params_capturer(root);
     controller.GoBack();
@@ -3544,15 +3544,8 @@ INSTANTIATE_TEST_SUITE_P(All,
                          BackForwardCacheBrowserTestWithFlagForScreenReader,
                          ::testing::Bool());
 
-// TODO(crbug.com/328681322): Disabled due to flakiness on Linux and
-// Linux-chromeos.
-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
-#define MAYBE_ScreenReaderOn DISABLED_ScreenReaderOn
-#else
-#define MAYBE_ScreenReaderOn ScreenReaderOn
-#endif
 IN_PROC_BROWSER_TEST_P(BackForwardCacheBrowserTestWithFlagForScreenReader,
-                       MAYBE_ScreenReaderOn) {
+                       ScreenReaderOn) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
   GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
@@ -3870,7 +3863,7 @@ IN_PROC_BROWSER_TEST_F(
 // Test that a series of cross-site navigations (which use different processes)
 // use the background limit.
 //
-// TODO(crbug.com/1203418): This test is flaky. It has been reenabled with
+// TODO(crbug.com/40179515): This test is flaky. It has been reenabled with
 // improved failure output (https://crrev.com/c/2862346). It's OK to disable it
 // again when it fails.
 IN_PROC_BROWSER_TEST_F(
@@ -4067,8 +4060,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   // Navigate forward to b.com again and block with an error again.
   NavigateAndBlock(url_b, /*history_offset=*/1);
   ExpectNotRestored(
-      {NotRestoredReason::kHTTPStatusNotOK, NotRestoredReason::kNoResponseHead,
-       NotRestoredReason::kErrorDocument},
+      {NotRestoredReason::kHTTPStatusNotOK, NotRestoredReason::kErrorDocument},
       {}, {}, {}, {}, FROM_HERE);
 }
 
@@ -4105,8 +4097,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
       web_contents()->GetController().GetLastCommittedEntry()->GetUniqueID());
   // The reasons from the old entry should be copied to the new entry.
   ExpectNotRestored(
-      {NotRestoredReason::kHTTPStatusNotOK, NotRestoredReason::kNoResponseHead,
-       NotRestoredReason::kErrorDocument},
+      {NotRestoredReason::kHTTPStatusNotOK, NotRestoredReason::kErrorDocument},
       {}, {}, {}, {}, FROM_HERE);
 }
 

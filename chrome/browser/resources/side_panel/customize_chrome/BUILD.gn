@@ -22,7 +22,7 @@ build_webui("build") {
     "cards.ts",
     "categories.ts",
     "check_mark_wrapper.ts",
-    "chrome_colors.ts",
+    "customize_toolbar/toolbar.ts",
     "hover_button.ts",
     "shortcuts.ts",
     "themes.ts",
@@ -36,8 +36,21 @@ build_webui("build") {
     "chrome_cart_proxy.ts",
     "common.ts",
     "customize_chrome_api_proxy.ts",
+    "customize_toolbar/customize_toolbar_api_proxy.ts",
     "wallpaper_search/wallpaper_search_proxy.ts",
     "window_proxy.ts",
+  ]
+
+  css_files = [
+    "appearance.css",
+    "button_label.css",
+    "cards.css",
+    "categories.css",
+    "check_mark_wrapper.css",
+    "hover_button.css",
+    "shortcuts.css",
+    "themes.css",
+    "theme_snapshot.css",
   ]
 
   mojo_files_deps = [
@@ -47,12 +60,16 @@ build_webui("build") {
   mojo_files = [
     "$root_gen_dir/chrome/browser/cart/chrome_cart.mojom-webui.ts",
     "$root_gen_dir/chrome/browser/ui/webui/side_panel/customize_chrome/customize_chrome.mojom-webui.ts",
+    "$root_gen_dir/chrome/browser/ui/webui/side_panel/customize_chrome/customize_toolbar/customize_toolbar.mojom-webui.ts",
     "$root_gen_dir/chrome/browser/ui/webui/side_panel/customize_chrome/wallpaper_search/wallpaper_search.mojom-webui.ts",
   ]
+
+  html_to_wrapper_template = "detect"
 
   ts_composite = true
   ts_deps = [
     "../shared:build_ts",
+    "//third_party/lit/v3_0:build_ts",
     "//third_party/polymer/v3_0:library",
     "//ui/webui/resources/cr_components/color_change_listener:build_ts",
     "//ui/webui/resources/cr_components/help_bubble:build_ts",
@@ -68,4 +85,5 @@ build_webui("build") {
         rebase_path(
             "$root_gen_dir/chrome/browser/resources/side_panel/shared/tsc/*",
             target_gen_dir) ]
+  webui_context_type = "trusted"
 }

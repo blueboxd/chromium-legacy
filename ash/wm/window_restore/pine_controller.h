@@ -6,12 +6,12 @@
 #define ASH_WM_WINDOW_RESTORE_PINE_CONTROLLER_H_
 
 #include "ash/ash_export.h"
+#include "ash/wm/overview/overview_observer.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/gfx/image/image_skia.h"
-
-namespace views {
-class Widget;
-}  // namespace views
+#include "ui/views/widget/unique_widget_ptr.h"
+#include "ui/wm/public/activation_change_observer.h"
+#include "ui/wm/public/activation_client.h"
 
 namespace ash {
 
@@ -19,12 +19,13 @@ struct PineContentsData;
 
 // Controls showing the pine dialog. Receives data from the full restore
 // service.
-class ASH_EXPORT PineController {
+class ASH_EXPORT PineController : public OverviewObserver,
+                                  public wm::ActivationChangeObserver {
  public:
   PineController();
   PineController(const PineController&) = delete;
   PineController& operator=(const PineController&) = delete;
-  ~PineController();
+  ~PineController() override;
 
   PineContentsData* pine_contents_data() { return pine_contents_data_.get(); }
   const PineContentsData* pine_contents_data() const {
@@ -53,23 +54,44 @@ class ASH_EXPORT PineController {
   // `pine_contents_data_`.
   void MaybeEndPineOverviewSession();
 
-  // TODO(sammiequon): Entering overview normally should show the pine dialog if
-  // `pine_contents_data_` is not null.
+  // OverviewObserver:
+  void OnOverviewModeEnding(OverviewSession* overview_session) override;
+  void OnOverviewModeEndingAnimationComplete(bool canceled) override;
+
+  // wm::ActivationChangeObserver:
+  void OnWindowActivated(ActivationReason reason,
+                         aura::Window* gained_active,
+                         aura::Window* lost_active) override;
 
  private:
+  friend class PineTestApi;
+  FRIEND_TEST_ALL_PREFIXES(PineTest, OnboardingMetrics);
+
   // Callback function for when the pine image is finished decoding.
-  void OnPineImageDecoded(const gfx::ImageSkia& pine_image);
+  void OnPineImageDecoded(base::TimeTicks start_time,
+                          const gfx::ImageSkia& pine_image);
 
   void StartPineOverviewSession();
 
+  // Called when the accept or cancel button in the onboarding dialog is
+  // pressed.
+  void OnOnboardingAcceptPressed(bool restore_on);
+  void OnOnboardingCancelPressed();
+
+  // True if overview was in pine session, up until the overview animation is
+  // ended.
+  bool in_pine_ = false;
+
   // The first-time experience onboarding dialog.
-  std::unique_ptr<views::Widget> onboarding_widget_;
+  views::UniqueWidgetPtr onboarding_widget_;
 
   // Stores the data needed to display the pine dialog. Created on login, and
   // deleted after the user interacts with the dialog. If the user exits
   // overview, this will persist until a window is opened.
-  // TODO(sammiequon): Delete this object when an app window is created.
   std::unique_ptr<PineContentsData> pine_contents_data_;
+
+  base::ScopedObservation<wm::ActivationClient, wm::ActivationChangeObserver>
+      activation_change_observation_{this};
 
   base::WeakPtrFactory<PineController> weak_ptr_factory_{this};
 };

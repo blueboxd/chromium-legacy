@@ -12,6 +12,7 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -353,8 +354,7 @@ Status ExecuteTouchEvent(Session* session,
   if (!status.IsOk())
     return status;
   std::vector<TouchEvent> events;
-  events.push_back(
-      TouchEvent(type, relative_x, relative_y));
+  events.emplace_back(type, relative_x, relative_y);
   return web_view->DispatchTouchEvents(events, false);
 }
 
@@ -629,7 +629,7 @@ Status ParsePageRanges(const base::Value::Dict& params,
 template <typename T>
 std::optional<T> ParseIfInDictionary(
     const base::Value::Dict& dict,
-    base::StringPiece key,
+    std::string_view key,
     T default_value,
     std::optional<T> (base::Value::*getterIfType)() const) {
   const auto* val = dict.Find(key);
@@ -639,14 +639,14 @@ std::optional<T> ParseIfInDictionary(
 }
 
 std::optional<double> ParseDoubleIfInDictionary(const base::Value::Dict& dict,
-                                                base::StringPiece key,
+                                                std::string_view key,
                                                 double default_value) {
   return ParseIfInDictionary(dict, key, default_value,
                              &base::Value::GetIfDouble);
 }
 
 std::optional<int> ParseIntIfInDictionary(const base::Value::Dict& dict,
-                                          base::StringPiece key,
+                                          std::string_view key,
                                           int default_value) {
   return ParseIfInDictionary(dict, key, default_value, &base::Value::GetIfInt);
 }
@@ -707,11 +707,23 @@ Status ExecuteWindowCommand(const WindowCommand& command,
     nav_status = web_view->WaitForPendingNavigations(
         session->GetCurrentFrameId(),
         Timeout(session->page_load_timeout, &timeout), true);
-    if (nav_status.IsError())
+    // Impossible errors:
+    // * kNoSuchExecutionContext as WebView::WaitForPendingNavigations never
+    //   returns it.
+    // Some possible errors:
+    // * kTimeout. The pending navigation has taken too long, the whole command
+    //   has timed out.
+    // * kDisconnected. The connection was lost. There is no point to retry.
+    if (nav_status.IsError()) {
       return nav_status;
+    }
 
     status = command.Run(session, web_view, params, value, &timeout);
-    if (status.code() == kNoSuchExecutionContext || status.code() == kTimeout) {
+    if (status.code() == kNoSuchExecutionContext) {
+      // Navigation was detected while running the command. Retry.
+      continue;
+    }
+    if (status.code() == kTimeout) {
       // If the command timed out, let WaitForPendingNavigations cancel
       // the navigation if there is one.
       continue;
@@ -744,12 +756,20 @@ Status ExecuteWindowCommand(const WindowCommand& command,
       Timeout(session->page_load_timeout, &timeout), true);
 
   if (status.IsOk() && nav_status.IsError() &&
-      nav_status.code() != kUnexpectedAlertOpen)
+      nav_status.code() != kUnexpectedAlertOpen) {
     return nav_status;
-  if (status.code() == kUnexpectedAlertOpen)
+  }
+  if (status.code() == kUnexpectedAlertOpen) {
     return Status(kOk);
-  if (status.code() == kUnexpectedAlertOpen_Keep)
+  }
+  if (status.code() == kUnexpectedAlertOpen_Keep) {
     return Status(kUnexpectedAlertOpen, status.message());
+  }
+  if (status.code() == kNoSuchExecutionContext) {
+    // The command has failed to run due to pending navigation three times.
+    // Giving up with an appropriate standard error.
+    return Status{kUnknownError, status};
+  }
   return status;
 }
 
@@ -2176,7 +2196,7 @@ Status ExecuteFullPageScreenshot(Session* session,
     return status;
 
   std::unique_ptr<base::Value> layout_metrics;
-  // TODO(crbug.com/1444533): Pass base::Value::Dict* as return param.
+  // TODO(crbug.com/40911917): Pass base::Value::Dict* as return param.
   status = web_view->SendCommandAndGetResult(
       "Page.getLayoutMetrics", base::Value::Dict(), &layout_metrics);
   if (status.IsError())
@@ -2491,6 +2511,46 @@ Status ExecuteDeleteAllCookies(Session* session,
         return status;
     }
   }
+
+  return Status(kOk);
+}
+
+Status ExecuteRunBounceTrackingMitigations(Session* session,
+                                           WebView* web_view,
+                                           const base::Value::Dict& params,
+                                           std::unique_ptr<base::Value>* value,
+                                           Timeout* timeout) {
+  // Run command and get result
+  auto result = std::make_unique<base::Value>(base::Value::Type::DICT);
+  Status status = web_view->SendCommandAndGetResult(
+      "Storage.runBounceTrackingMitigations", base::Value::Dict(), &result);
+  if (status.IsError()) {
+    return status;
+  }
+
+  if (result->GetDict().empty()) {
+    // The result dictionary should only be empty if there is no bounce tracking
+    // mitigations service (DIPSService) for the current browser context.
+    return Status(
+        kUnsupportedOperation,
+        "current remote end configuration does not support bounce tracking "
+        "mitigations");
+  }
+
+  const base::Value::List* deleted_sites =
+      result->GetDict().FindList("deletedSites");
+
+  // create copies of items `deleted_sites` and add them to the output list.
+  auto site_list = std::make_unique<base::Value>(base::Value::Type::LIST);
+  for (const base::Value& site : *deleted_sites) {
+    if (!site.is_string()) {
+      return Status(kUnknownError,
+                    "DevTools returns a non-string bounce tracker site");
+    }
+    site_list->GetList().Append(site.GetString());
+  }
+
+  *value = std::move(site_list);
 
   return Status(kOk);
 }
@@ -2856,4 +2916,27 @@ Status ExecuteSetPermission(Session* session,
 
   auto dict = std::make_unique<base::Value::Dict>(descriptor->Clone());
   return session->chrome->SetPermission(std::move(dict), valid_state, web_view);
+}
+
+Status ExecuteSetDevicePosture(Session* session,
+                               WebView* web_view,
+                               const base::Value::Dict& params,
+                               std::unique_ptr<base::Value>* value,
+                               Timeout* timeout) {
+  const std::string* posture = params.FindString("posture");
+  if (!posture) {
+    return Status(kInvalidArgument, "'posture' must be a string");
+  }
+  base::Value::Dict args;
+  args.Set("posture", base::Value::Dict().Set("type", *posture));
+  return web_view->SendCommand("Emulation.setDevicePostureOverride", args);
+}
+
+Status ExecuteClearDevicePosture(Session* session,
+                                 WebView* web_view,
+                                 const base::Value::Dict& params,
+                                 std::unique_ptr<base::Value>* value,
+                                 Timeout* timeout) {
+  return web_view->SendCommand("Emulation.clearDevicePostureOverride",
+                               base::Value::Dict());
 }

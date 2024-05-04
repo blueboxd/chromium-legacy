@@ -55,9 +55,11 @@ class TestPlatformEventSource : public PlatformEventSource {
 class UserActivityDetectorTest : public testing::Test {
  public:
   UserActivityDetectorTest()
-      : platform_event_source_(new TestPlatformEventSource),
-        detector_(new UserActivityDetector),
-        observer_(new TestUserActivityObserver) {
+      : platform_event_source_(std::make_unique<TestPlatformEventSource>()),
+        detector_(ui::UserActivityDetector::Get()),
+        observer_(std::make_unique<TestUserActivityObserver>()) {
+    platform_event_source_->RemovePlatformEventObserver(detector_.get());
+    detector_->InitPlatformEventSourceObservationForTesting();
     detector_->AddObserver(observer_.get());
     now_ = base::TimeTicks::Now();
     detector_->set_now_for_test(now_);
@@ -68,6 +70,7 @@ class UserActivityDetectorTest : public testing::Test {
 
   ~UserActivityDetectorTest() override {
     detector_->RemoveObserver(observer_.get());
+    detector_->ResetStateForTesting();
   }
 
  protected:
@@ -82,7 +85,7 @@ class UserActivityDetectorTest : public testing::Test {
   }
 
   std::unique_ptr<TestPlatformEventSource> platform_event_source_;
-  std::unique_ptr<UserActivityDetector> detector_;
+  raw_ptr<UserActivityDetector> detector_;
   std::unique_ptr<TestUserActivityObserver> observer_;
 
   base::TimeTicks now_;

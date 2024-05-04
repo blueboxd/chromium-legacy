@@ -207,7 +207,7 @@ std::string GetOSUsername() {
 
   return creds->pw_name;
 #elif BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_FUCHSIA)
-  // TODO(crbug.com/1257674): This should be fully implemented when there is
+  // TODO(crbug.com/40200780): This should be fully implemented when there is
   // support in fuchsia.
   return std::string();
 #else
@@ -276,17 +276,7 @@ void GetBrowserDeviceIdentifierAsync(
 #endif  // BUILDFLAG(IS_WIN)
 
 bool IsMachineLevelUserCloudPolicyType(const std::string& type) {
-  return type == GetMachineLevelUserCloudPolicyTypeForCurrentOS();
-}
-
-std::string GetMachineLevelUserCloudPolicyTypeForCurrentOS() {
-#if BUILDFLAG(IS_IOS)
-  return dm_protocol::kChromeMachineLevelUserCloudPolicyIOSType;
-#elif BUILDFLAG(IS_ANDROID)
-  return dm_protocol::kChromeMachineLevelUserCloudPolicyAndroidType;
-#else
-  return dm_protocol::kChromeMachineLevelUserCloudPolicyType;
-#endif
+  return type == dm_protocol::kChromeMachineLevelUserCloudPolicyType;
 }
 
 }  // namespace policy

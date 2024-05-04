@@ -230,6 +230,8 @@ chromium-metrics-reviews@google.com.
   <int value="42" label="TEXT_INSERTION_REQUESTED"/>
   <int value="43" label="TEXT_QUEUED_FOR_INSERTION"/>
   <int value="44" label="REQUEST"/>
+  <int value="45" label="FEATURE_BLOCKED_BY_UNSUPPORTED_CAPABILITY"/>
+  <int value="46" label="FEATURE_BLOCKED_BY_UNKNOWN_CAPABILITY"/>
 </enum>
 
 <enum name="IMEGrammarActions">
@@ -479,6 +481,14 @@ Unsupported non-ascii characters will cause issues with xml presubmits.
   <int value="5" label="page-down"/>
 </enum>
 
+<enum name="PointerDigitizerType">
+  <int value="0" label="Unknown digitizer type"/>
+  <int value="1" label="Direct pen digitizer (integrated into display)"/>
+  <int value="2" label="Indirect pen digitizer (not integrated into display)"/>
+  <int value="3" label="Touch digitizer"/>
+  <int value="4" label="Touchpad digitizer"/>
+</enum>
+
 <enum name="PrimaryPointerType">
   <int value="0" label="No pointer"/>
   <int value="1" label="Coarse pointer"/>
@@ -564,12 +574,6 @@ Unsupported non-ascii characters will cause issues with xml presubmits.
 
 <enum name="VirtualKeyboardErrorTypeHashes">
   <int value="30998784" label="Generic Error"/>
-</enum>
-
-<enum name="VirtualKeyboardHandwritingCommitType">
-  <int value="0" label="Commit text only"/>
-  <int value="1" label="Commit text with newline"/>
-  <int value="2" label="Commit text with space"/>
 </enum>
 
 </enums>

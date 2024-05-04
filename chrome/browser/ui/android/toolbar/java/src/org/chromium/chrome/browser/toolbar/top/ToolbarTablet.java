@@ -54,7 +54,9 @@ import org.chromium.chrome.browser.toolbar.menu_button.MenuButtonCoordinator;
 import org.chromium.chrome.browser.toolbar.top.CaptureReadinessResult.TopToolbarBlockCaptureReason;
 import org.chromium.chrome.browser.toolbar.top.NavigationPopup.HistoryDelegate;
 import org.chromium.chrome.browser.ui.theme.BrandedColorScheme;
+import org.chromium.chrome.browser.user_education.UserEducationHelper;
 import org.chromium.components.browser_ui.styles.ChromeColors;
+import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.widget.Toast;
@@ -524,16 +526,20 @@ public class ToolbarTablet extends ToolbarLayout
     }
 
     @Override
-    public void onTintChanged(ColorStateList tint, @BrandedColorScheme int brandedColorScheme) {
-        ImageViewCompat.setImageTintList(mHomeButton, tint);
-        ImageViewCompat.setImageTintList(mBackButton, tint);
-        ImageViewCompat.setImageTintList(mForwardButton, tint);
+    public void onTintChanged(
+            ColorStateList tint,
+            ColorStateList activityFocusTint,
+            @BrandedColorScheme int brandedColorScheme) {
+        ImageViewCompat.setImageTintList(mHomeButton, activityFocusTint);
+        ImageViewCompat.setImageTintList(mBackButton, activityFocusTint);
+        ImageViewCompat.setImageTintList(mForwardButton, activityFocusTint);
+        // The tint of the |mSaveOfflineButton| should not be affected by an activity focus change.
         ImageViewCompat.setImageTintList(mSaveOfflineButton, tint);
-        ImageViewCompat.setImageTintList(mReloadButton, tint);
-        mSwitcherButton.setBrandedColorScheme(brandedColorScheme);
+        ImageViewCompat.setImageTintList(mReloadButton, activityFocusTint);
+        ImageViewCompat.setImageTintList(mSwitcherButton, activityFocusTint);
 
         if (mOptionalButton != null && mOptionalButtonUsesTint) {
-            ImageViewCompat.setImageTintList(mOptionalButton, tint);
+            ImageViewCompat.setImageTintList(mOptionalButton, activityFocusTint);
         }
     }
 
@@ -655,14 +661,18 @@ public class ToolbarTablet extends ToolbarLayout
             MenuButtonCoordinator menuButtonCoordinator,
             HistoryDelegate historyDelegate,
             BooleanSupplier partnerHomepageEnabledSupplier,
-            OfflineDownloader offlineDownloader) {
+            OfflineDownloader offlineDownloader,
+            UserEducationHelper userEducationHelper,
+            ObservableSupplier<Tracker> trackerSupplier) {
         super.initialize(
                 toolbarDataProvider,
                 tabController,
                 menuButtonCoordinator,
                 historyDelegate,
                 partnerHomepageEnabledSupplier,
-                offlineDownloader);
+                offlineDownloader,
+                userEducationHelper,
+                trackerSupplier);
         mHistoryDelegate = historyDelegate;
         mOfflineDownloader = offlineDownloader;
         menuButtonCoordinator.setVisibility(true);
@@ -959,5 +969,9 @@ public class ToolbarTablet extends ToolbarLayout
 
     void setToolbarButtonsVisibleForTesting(boolean value) {
         mToolbarButtonsVisible = value;
+    }
+
+    public ImageButton getBookmarkButtonForTesting() {
+        return mBookmarkButton;
     }
 }

@@ -24,7 +24,7 @@ public class TabState {
 
     public int parentId = Tab.INVALID_TAB_ID;
 
-    // TODO(crbug/1524345): deprecate this field once tabGroupId has finished replacing it.
+    // TODO(crbug.com/41497290): deprecate this field once tabGroupId has finished replacing it.
     /**
      * The legacy tab group ID. This field is planned to be replaced by {@link tabGroupId}. While
      * the "AndroidTabGroupStableIds" is rolled out, tab groups will be associated with both a
@@ -53,6 +53,10 @@ public class TabState {
     public @TabUserAgent int userAgent;
 
     public long lastNavigationCommittedTimestampMillis = TIMESTAMP_NOT_SET;
+
+    // Flag to signal TabState should be migrated to new FlatBuffer format.
+    // This field is not persisted on disk.
+    public boolean shouldMigrate;
 
     public boolean isIncognito() {
         return isIncognito;

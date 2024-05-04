@@ -156,6 +156,7 @@ SharedWorkerHost::SharedWorkerHost(
   worker_receiver_ = worker_.BindNewPipeAndPassReceiver();
 
   service_->NotifyWorkerCreated(token_, GetProcessHost()->GetID(),
+                                instance_.storage_key().origin(),
                                 devtools_handle_->dev_tools_token());
 }
 
@@ -227,7 +228,7 @@ void SharedWorkerHost::Start(
   scoped_refptr<PolicyContainerHost> policy_container_host;
 
   if (final_response_url.SchemeIsLocal()) {
-    // TODO(https://crbug.com/1146362): Inherit from the file creator instead
+    // TODO(crbug.com/40053797): Inherit from the file creator instead
     // once creator policies are persisted through the filesystem store.
     if (creator_policy_container_host_) {
       worker_client_security_state_ =
@@ -369,6 +370,9 @@ void SharedWorkerHost::Start(
       receiver_.BindNewPipeAndPassRemote(), std::move(worker_receiver_),
       std::move(browser_interface_broker), ukm_source_id_,
       instance_.DoesRequireCrossSiteRequestForCookies());
+  if (service_worker_handle_->container_host()) {
+    service_worker_handle_->container_host()->SetContainerReady();
+  }
 
   // |service_worker_remote_object| is an associated interface ptr, so calls
   // can't be made on it until its request endpoint is sent. Now that the
@@ -408,6 +412,7 @@ SharedWorkerHost::CreateNetworkFactoryForSubresources(
       url_loader_factory::ContentClientParams(
           GetProcessHost()->GetBrowserContext(),
           /*frame=*/nullptr, GetProcessHost()->GetID(), origin,
+          GetStorageKey().ToPartialNetIsolationInfo(),
           ukm::SourceIdObj::FromInt64(ukm_source_id_), bypass_redirect_checks),
       devtools_instrumentation::WillCreateURLLoaderFactoryParams::
           ForSharedWorker(this));
@@ -677,7 +682,7 @@ bool SharedWorkerHost::CheckCrossOriginEmbedderPolicy(
   // cross-origin embedder policy inheritance violation with response, "worker
   // initialization", owner's policy's report only reporting endpoint,
   // "reporting", and owner.
-  // TODO(https://crbug.com/1060832): Add reporters.
+  // TODO(crbug.com/40122193): Add reporters.
 
   // [spec]: 5. If ownerPolicy's value is "unsafe-none" or policy's value is
   // "require-corp" or "credentialless", then return true.

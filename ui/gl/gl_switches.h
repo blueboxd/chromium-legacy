@@ -91,7 +91,6 @@ namespace features {
 GL_EXPORT BASE_DECLARE_FEATURE(kDCompDebugVisualization);
 GL_EXPORT BASE_DECLARE_FEATURE(kDCompTripleBufferRootSwapChain);
 GL_EXPORT BASE_DECLARE_FEATURE(kDCompTripleBufferVideoSwapChain);
-GL_EXPORT BASE_DECLARE_FEATURE(kDCompVisualTreeOptimization);
 GL_EXPORT BASE_DECLARE_FEATURE(kDirectCompositionSoftwareOverlays);
 GL_EXPORT BASE_DECLARE_FEATURE(kDirectCompositionLetterboxVideoOptimization);
 GL_EXPORT BASE_DECLARE_FEATURE(kDirectCompositionUnlimitedOverlays);
@@ -105,7 +104,6 @@ GL_EXPORT BASE_DECLARE_FEATURE(kDefaultANGLEMetal);
 GL_EXPORT BASE_DECLARE_FEATURE(kDefaultANGLEVulkan);
 GL_EXPORT BASE_DECLARE_FEATURE(kTrackCurrentShaders);
 GL_EXPORT BASE_DECLARE_FEATURE(kVulkanFromANGLE);
-GL_EXPORT BASE_DECLARE_FEATURE(kANGLEDebugLayer);
 GL_EXPORT BASE_DECLARE_FEATURE(kDXGIWaitableSwapChain);
 GL_EXPORT extern const base::FeatureParam<int>
     kDXGIWaitableSwapChainMaxQueuedFrames;

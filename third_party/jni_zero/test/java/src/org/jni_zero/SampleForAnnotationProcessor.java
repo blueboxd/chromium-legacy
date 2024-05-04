@@ -6,8 +6,10 @@ package org.jni_zero;
 import android.content.Context;
 import android.view.View;
 
-import org.dummy.MyClass;
-import org.dummy.MyInterface;
+import org.stubs.MyClass;
+import org.stubs.MyClass.FirstNestedInterface;
+import org.stubs.MyClass.SecondNestedInterface;
+import org.stubs.MyInterface;
 
 import java.util.ArrayList;
 
@@ -70,12 +72,19 @@ class SampleForAnnotationProcessor {
                 Object obj,
                 @JniType("jni_zero::tests::CPPClass") Object convertedObj,
                 Object[] objects,
+                MyClass.SecondNestedInterface nestedInterface,
+                View view,
+                Context context,
                 @JniType("std::vector<jni_zero::tests::CPPClass>") Object[] convertedObjects);
 
         Throwable returnThrowable();
+
         Throwable[] returnThrowables();
+
         Class returnClass();
+
         Class[] returnClasses();
+
         String returnString();
 
         @JniType("std::string")
@@ -85,6 +94,12 @@ class SampleForAnnotationProcessor {
 
         @JniType("std::vector<std::string>")
         String[] returnConvertedStrings();
+
+        @JniType("std::vector")
+        SampleForAnnotationProcessor[] returnConvertedAppObjects();
+
+        @JniType("std::vector")
+        int[] returnConvertedInts();
 
         TestStruct returnStruct();
         TestStruct[] returnStructs();
@@ -97,6 +112,8 @@ class SampleForAnnotationProcessor {
         View view = null;
         Context context = null;
         MyClass myclass = null;
+        FirstNestedInterface nested1 = null;
+        SecondNestedInterface nested2 = null;
         MyInterface myinterface = null;
         ArrayList myList = new ArrayList<String>();
 

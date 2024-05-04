@@ -14,6 +14,11 @@ BASE_FEATURE(kArcOnDemandFeature,
              "ArcOnDemand",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+// Controls whether to start ARC with the GKI kernel.
+BASE_FEATURE(kArcVmGki,
+             "ArcVmGki",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Controls ACTION_BOOT_COMPLETED broadcast for third party applications on ARC.
 // When disabled, third party apps will not receive this broadcast.
 BASE_FEATURE(kBootCompletedBroadcastFeature,
@@ -30,6 +35,34 @@ BASE_FEATURE(kContainerAppKiller,
 BASE_FEATURE(kCustomTabsExperimentFeature,
              "ArcCustomTabsExperiment",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Defers the ARC actvation until the user session start up tasks
+// are completed to give more resources to critical tasks for user session
+// starting.
+BASE_FEATURE(kDeferArcActivationUntilUserSessionStartUpTaskCompletion,
+             "DeferArcActivationUntilUserSessionStartUpTaskCompletion",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+// We decide whether to defer ARC activation by taking a look at recent
+// user activities. If the user activates ARC soon after user session start
+// recently, ARC will be immediately activated when ready in following
+// sessions.
+// The details are configured by these two variables; history_window and
+// history_threshold. If the user activates ARC soon after the user session
+// starts more than or equal to `history_threshold` sessions in recent
+// `history_window` sessions, ARC will be launched immediately.
+// Note: if `history_threshold` > `history_window`, as it will never be
+// satisfied, ARC will be always deferred.
+const base::FeatureParam<int> kDeferArcActivationHistoryWindow{
+    &kDeferArcActivationUntilUserSessionStartUpTaskCompletion,
+    "history_window",
+    5,
+};
+const base::FeatureParam<int> kDeferArcActivationHistoryThreshold{
+    &kDeferArcActivationUntilUserSessionStartUpTaskCompletion,
+    "history_threshold",
+    3,
+};
 
 // Controls whether to handle files with unknown size.
 BASE_FEATURE(kDocumentsProviderUnknownSizeFeature,
@@ -172,6 +205,11 @@ const base::FeatureParam<bool> kGuestReclaimEnabled{
 // Ignored when the "guest_reclaim_enabled" param is false.
 const base::FeatureParam<bool> kGuestReclaimOnlyAnonymous{
     &kGuestZram, "guest_reclaim_only_anonymous", false};
+
+// Controls whether enable ignoring hover event ANR in input dispatcher.
+BASE_FEATURE(kIgnoreHoverEventAnr,
+             "IgnoreHoverEventAnr",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables/disables ghost when user launch ARC app from shelf/launcher when
 // App already ready for launch.
@@ -405,6 +443,15 @@ const base::FeatureParam<int> kVmmSwapOutTimeIntervalSecond{
 // Controls the time interval of ARC silence. The default value is 15 minutes.
 const base::FeatureParam<int> kVmmSwapArcSilenceIntervalSecond{
     &kVmmSwapPolicy, "arc_silence_interval_sec", 60 * 15};
+
+// Controls the interval for swap trimming maintenance.
+const base::FeatureParam<base::TimeDelta> kVmmSwapTrimInterval{
+    &kVmmSwapPolicy, "swap_trim_interval", base::Hours(1)};
+
+// Controls the minimum time interval between attempts to shrink ARCVM memory
+// when swap is enabled or swap trimming is performed.
+const base::FeatureParam<base::TimeDelta> kVmmSwapMinShrinkInterval{
+    &kVmmSwapPolicy, "min_shrink_interval", base::Minutes(10)};
 
 // When enabled, ARC uses XDG-based Wayland protocols.
 BASE_FEATURE(kXdgMode, "ArcXdgMode", base::FEATURE_DISABLED_BY_DEFAULT);

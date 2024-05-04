@@ -291,7 +291,7 @@ extern const char kFollowingFeedURLOpened[];
 extern const char kDiscoverFeedActivityLoggingEnabled[];
 
 // Histogram name for broken NTP view hierarchy logs.
-// TODO(crbug.com/1262536): Remove this when issue is fixed.
+// TODO(crbug.com/40799579): Remove this when issue is fixed.
 extern const char kDiscoverFeedBrokenNTPHierarchy[];
 
 // Histogram name for triggers causing feed refreshes.
@@ -399,7 +399,7 @@ extern const char kFollowingFeedSelected[];
 
 // User action triggered when the NTP view hierarchy was fixed after being
 // detected as broken.
-// TODO(crbug.com/1262536): Remove this when issue is fixed.
+// TODO(crbug.com/40799579): Remove this when issue is fixed.
 extern const char kNTPViewHierarchyFixed[];
 
 // User actions for following and unfollowing publishers from the overflow menu.
@@ -413,20 +413,14 @@ extern const char kFollowingFeedSortByLatest[];
 
 #pragma mark - User Actions for Feed Sign-in Promo
 
-// User actions triggered when a user clicks the buttons on the Feed sign-in
-// promo UI.
-extern const char kFeedSignInPromoUIContinueTapped[];
-extern const char kFeedSignInPromoUICancelTapped[];
-
 // User actions triggered when a user taps on Feed Back of Card menu
 // personalization options when not signed in.
 extern const char kShowFeedSignInOnlyUIWithUserId[];
 extern const char kShowFeedSignInOnlyUIWithoutUserId[];
 
 // User actions triggered when a user taps on Feed personalization controls and
-// a corresponding sign-in related UI is shown. Ex. A sign-in half sheet, a
-// sign-in only flow, or a disabled toast is shown.
-extern const char kShowSyncHalfSheetFromFeed[];
+// a corresponding sign-in related UI is shown. Ex. a sign-in only flow, or a
+// disabled toast is shown.
 extern const char kShowSignInOnlyFlowFromFeed[];
 extern const char kShowSignInDisableToastFromFeed[];
 

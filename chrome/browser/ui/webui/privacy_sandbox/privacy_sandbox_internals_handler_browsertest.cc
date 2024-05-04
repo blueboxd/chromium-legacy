@@ -1,6 +1,8 @@
 // Copyright 2023 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+#include "chrome/browser/ui/webui/privacy_sandbox/privacy_sandbox_internals_handler.h"
+
 #include "base/functional/bind.h"
 #include "base/run_loop.h"
 #include "base/test/bind.h"
@@ -9,11 +11,11 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/webui/privacy_sandbox/privacy_sandbox_internals.mojom.h"
-#include "chrome/browser/ui/webui/privacy_sandbox/privacy_sandbox_internals_handler.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_pattern_parser.h"
+#include "components/tpcd/metadata/browser/parser.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -151,17 +153,13 @@ IN_PROC_BROWSER_TEST_F(PrivacySandboxInternalsMojoTest, GetCookieSettings) {
           SizeIs(Ge(1u))));  // Don't check exact size (default list may change)
 }
 
-// TODO(https://crbug.com/1517710): Once ConvertGenerator<T>() is provided by
+// TODO(crbug.com/41490688): Once ConvertGenerator<T>() is provided by
 // the version of googletest used by Chromium we can type the test param.
 class PrivacySandboxInternalsContentSettingsMojoTest
     : public PrivacySandboxInternalsMojoTest,
       public testing::WithParamInterface<int> {
  public:
   PrivacySandboxInternalsContentSettingsMojoTest() {
-    EXPECT_THAT(ContentSettingsType::NUM_TYPES,
-                Eq(ContentSettingsType::kMaxValue))
-        << "This test depends on kMaxValue being equal to the total number of "
-           "content settings.";
     EXPECT_THAT(ContentSettingsType::DEFAULT,
                 Eq(ContentSettingsType::kMinValue))
         << "This test depends on kMinValue being equal to the DEFAULT content "
@@ -180,9 +178,6 @@ IN_PROC_BROWSER_TEST_P(PrivacySandboxInternalsContentSettingsMojoTest,
   ContentSettingsType type = static_cast<ContentSettingsType>(GetParam());
   LOG(INFO) << "Testing for type " << type;
   EXPECT_TRUE(IsKnownEnumValue(type));
-  if (type == ContentSettingsType::NUM_TYPES) {
-    return;
-  }
   remote_->ReadContentSettings(
       type,
       base::BindOnce(&PrivacySandboxInternalsMojoTest::ContentSettingsCallback,
@@ -194,16 +189,22 @@ IN_PROC_BROWSER_TEST_P(PrivacySandboxInternalsContentSettingsMojoTest,
 }
 
 IN_PROC_BROWSER_TEST_F(PrivacySandboxInternalsMojoTest, GetTpcdMetadataGrants) {
-  ContentSettingsForOneType tpcd_metadata_grants;
   const auto primary_pattern =
       ContentSettingsPattern::FromString("[*.]example.com");
   const auto secondary_pattern = ContentSettingsPattern::FromString("*");
-  base::Value value(ContentSetting::CONTENT_SETTING_ALLOW);
-  tpcd_metadata_grants.emplace_back(primary_pattern, secondary_pattern,
-                                    std::move(value), std::string(), false);
+
+  tpcd::metadata::Metadata metadata;
+  tpcd::metadata::helpers::AddEntryToMetadata(
+      metadata, primary_pattern.ToString(), secondary_pattern.ToString(),
+      tpcd::metadata::Parser::kSourceTest, /*dtrp=*/0);
+  EXPECT_EQ(metadata.metadata_entries_size(), 1);
+
+  auto* tpcd_metadata_parser = tpcd::metadata::Parser::GetInstance();
+  tpcd_metadata_parser->ParseMetadata(metadata.SerializeAsString());
+
   content_settings::CookieSettings* settings =
       CookieSettingsFactory::GetForProfile(browser()->profile()).get();
-  settings->SetContentSettingsFor3pcdMetadataGrants(tpcd_metadata_grants);
+
   // TODO: TPCD_METADATA_GRANTS are special and don't show up if read with the
   // regular method.
   remote_->GetTpcdMetadataGrants(

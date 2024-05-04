@@ -161,7 +161,7 @@ TEST_P(ProxyResolvingClientSocketTest, NetworkIsolationKeyDirect) {
 // because it uses SpdySessionDependencies to create a NetworkSession configured
 // to test H2.
 //
-// TODO(https://crbug.com/1505550): SPDY isn't currently supported, even through
+// TODO(crbug.com/40946183): SPDY isn't currently supported, even through
 // proxies, by ProxyResolvingClientSocket. Change that or switch to using an H1
 // proxy.
 TEST_P(ProxyResolvingClientSocketTest, NetworkIsolationKeyWithH2Proxy) {
@@ -403,7 +403,7 @@ TEST_P(ProxyResolvingClientSocketTest, ConnectToProxy) {
     net::SSLSocketDataProvider proxy_ssl_data(net::ASYNC, net::OK);
     // Only H1 be allowed for the proxy.
     //
-    // TODO(https://crbug.com/1505550): Investigate changing that.
+    // TODO(crbug.com/40946183): Investigate changing that.
     proxy_ssl_data.next_protos_expected_in_ssl_config =
         net::NextProtoVector{net::kProtoHTTP11};
 
@@ -1068,7 +1068,7 @@ TEST_P(ReconsiderProxyAfterErrorTest, ReconsiderProxyAfterError) {
 
   // Configure the HTTP CONNECT to fail with `mock_error`.
   //
-  // TODO(crbug.com/1279685): Test this more accurately. Errors like
+  // TODO(crbug.com/40810987): Test this more accurately. Errors like
   // `ERR_PROXY_CONNECTION_FAILED` or `ERR_PROXY_CERTIFICATE_INVALID` are
   // surfaced in response to other errors in TCP or TLS connection setup.
   static const char kHttpConnect[] =

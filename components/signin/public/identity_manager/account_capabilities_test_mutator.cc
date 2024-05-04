@@ -53,8 +53,19 @@ void AccountCapabilitiesTestMutator::set_can_use_chrome_ip_protection(
   capabilities_->capabilities_map_[kCanUseChromeIpProtectionName] = value;
 }
 
+void AccountCapabilitiesTestMutator::
+    set_can_use_devtools_generative_ai_features(bool value) {
+  capabilities_
+      ->capabilities_map_[kCanUseDevToolsGenerativeAiFeaturesCapabilityName] =
+      value;
+}
+
 void AccountCapabilitiesTestMutator::set_can_use_edu_features(bool value) {
   capabilities_->capabilities_map_[kCanUseEduFeaturesCapabilityName] = value;
+}
+
+void AccountCapabilitiesTestMutator::set_can_use_manta_service(bool value) {
+  capabilities_->capabilities_map_[kCanUseMantaServiceName] = value;
 }
 
 void AccountCapabilitiesTestMutator::set_can_use_model_execution_features(

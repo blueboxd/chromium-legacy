@@ -225,7 +225,7 @@ std::unique_ptr<ShortcutInfo> BuildShortcutInfoWithoutFavicon(
     }
   }
 
-// TODO(crbug.com/1416965): Implement tests on Linux for using shortcuts_menu
+// TODO(crbug.com/40257107): Implement tests on Linux for using shortcuts_menu
 // actions.
 #if BUILDFLAG(IS_LINUX)
   const std::vector<WebAppShortcutsMenuItemInfo>& shortcuts_menu_item_infos =
@@ -401,7 +401,7 @@ base::FilePath GetOsIntegrationResourcesDirectoryForApp(
 #if BUILDFLAG(IS_WIN)
   base::FilePath::StringType host_path(base::UTF8ToWide(host));
   base::FilePath::StringType scheme_port_path(base::UTF8ToWide(scheme_port));
-#elif BUILDFLAG(IS_POSIX) || BUILDFLAG(IS_FUCHSIA)
+#elif BUILDFLAG(IS_POSIX)
   base::FilePath::StringType host_path(host);
   base::FilePath::StringType scheme_port_path(scheme_port);
 #else
@@ -419,7 +419,7 @@ base::span<const int> GetDesiredIconSizesForShortcut() {
 gfx::ImageSkia CreateDefaultApplicationIcon(int size) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  // TODO(crbug.com/860581): Create web_app_browser_resources.grd with the
+  // TODO(crbug.com/40583793): Create web_app_browser_resources.grd with the
   // default app icon. Remove dependency on extensions_browser_resources.h and
   // use IDR_WEB_APP_DEFAULT_ICON here.
   gfx::Image default_icon =

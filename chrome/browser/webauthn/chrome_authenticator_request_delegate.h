@@ -13,7 +13,6 @@
 #include "base/functional/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
-#include "base/strings/string_piece.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/webauthn/authenticator_request_dialog_model.h"
@@ -21,14 +20,19 @@
 #include "content/public/browser/authenticator_request_client_delegate.h"
 #include "content/public/browser/global_routing_id.h"
 #include "device/fido/cable/cable_discovery_data.h"
+#include "device/fido/discoverable_credential_metadata.h"
 #include "device/fido/fido_request_handler_base.h"
 #include "device/fido/fido_transport_protocol.h"
 #include "device/fido/fido_types.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 
-class EnclaveManager;
+class GPMEnclaveController;
 class PrefService;
 class Profile;
+
+namespace base {
+class Clock;
+}
 
 namespace content {
 class BrowserContext;
@@ -41,18 +45,7 @@ class FidoDiscoveryFactory;
 class PublicKeyCredentialDescriptor;
 class PublicKeyCredentialUserEntity;
 enum class FidoRequestType : uint8_t;
-namespace enclave {
-struct CredentialRequest;
-}
 }  // namespace device
-
-namespace signin {
-class PrimaryAccountAccessTokenFetcher;
-}  // namespace signin
-
-namespace sync_pb {
-class WebauthnCredentialSpecifics;
-}
 
 namespace user_prefs {
 class PrefRegistrySyncable;
@@ -61,7 +54,8 @@ class PrefRegistrySyncable;
 // ChromeWebAuthenticationDelegate is the //chrome layer implementation of
 // content::WebAuthenticationDelegate.
 class ChromeWebAuthenticationDelegate
-    : public content::WebAuthenticationDelegate {
+    : public content::WebAuthenticationDelegate,
+      base::SupportsWeakPtr<ChromeWebAuthenticationDelegate> {
  public:
 #if BUILDFLAG(IS_MAC)
   // Returns a configuration struct for instantiating the macOS WebAuthn
@@ -69,6 +63,8 @@ class ChromeWebAuthenticationDelegate
   static TouchIdAuthenticatorConfig TouchIdAuthenticatorConfigForProfile(
       Profile* profile);
 #endif  // BUILDFLAG(IS_MAC)
+
+  ChromeWebAuthenticationDelegate();
 
   ~ChromeWebAuthenticationDelegate() override;
 
@@ -91,13 +87,15 @@ class ChromeWebAuthenticationDelegate
       content::RenderFrameHost* render_frame_host) override;
   bool SupportsPasskeyMetadataSyncing() override;
   bool IsFocused(content::WebContents* web_contents) override;
-  std::optional<bool> IsUserVerifyingPlatformAuthenticatorAvailableOverride(
-      content::RenderFrameHost* render_frame_host) override;
+  void IsUserVerifyingPlatformAuthenticatorAvailableOverride(
+      content::RenderFrameHost* render_frame_host,
+      base::OnceCallback<void(std::optional<bool>)> callback) override;
   content::WebAuthenticationRequestProxy* MaybeGetRequestProxy(
       content::BrowserContext* browser_context,
       const url::Origin& caller_origin) override;
-  bool IsEnclaveAuthenticatorAvailable(
-      content::BrowserContext* browser_context) override;
+  void IsEnclaveAuthenticatorAvailable(
+      content::BrowserContext* browser_context,
+      base::OnceCallback<void(bool)> callback) override;
 
 #if BUILDFLAG(IS_MAC)
   std::optional<TouchIdAuthenticatorConfig> GetTouchIdAuthenticatorConfig(
@@ -107,6 +105,14 @@ class ChromeWebAuthenticationDelegate
   ChromeOSGenerateRequestIdCallback GetGenerateRequestIdCallback(
       content::RenderFrameHost* render_frame_host) override;
 #endif  // BUILDFLAG(IS_CHROMEOS)
+
+ private:
+#if BUILDFLAG(IS_WIN)
+  // Caches the result from looking up whether a TPM is available for Enclave
+  // requests.
+  std::optional<bool> tpm_available_;
+#endif
+  base::WeakPtrFactory<ChromeWebAuthenticationDelegate> weak_ptr_factory_{this};
 };
 
 class ChromeAuthenticatorRequestDelegate
@@ -119,6 +125,8 @@ class ChromeAuthenticatorRequestDelegate
   class TestObserver {
    public:
     virtual void Created(ChromeAuthenticatorRequestDelegate* delegate) = 0;
+
+    virtual void OnDestroy(ChromeAuthenticatorRequestDelegate* delegate) {}
 
     virtual std::vector<std::unique_ptr<device::cablev2::Pairing>>
     GetCablePairingsFromSyncedDevices() = 0;
@@ -163,6 +171,12 @@ class ChromeAuthenticatorRequestDelegate
     return dialog_model_.get();
   }
 
+  AuthenticatorRequestDialogController* dialog_controller() const {
+    return dialog_controller_.get();
+  }
+
+  GPMEnclaveController* enclave_controller_for_testing() const;
+
   // content::AuthenticatorRequestClientDelegate:
   void SetRelyingPartyId(const std::string& rp_id) override;
   bool DoesBlockRequestOnFailure(InterestingFailureReason reason) override;
@@ -187,6 +201,7 @@ class ChromeAuthenticatorRequestDelegate
       device::FidoRequestType request_type,
       std::optional<device::ResidentKeyRequirement> resident_key_requirement,
       device::UserVerificationRequirement user_verification_requirement,
+      std::optional<std::string_view> user_name,
       base::span<const device::CableDiscoveryData> pairings_from_extension,
       bool is_enclave_authenticator_available,
       device::FidoDiscoveryFactory* discovery_factory) override;
@@ -211,7 +226,7 @@ class ChromeAuthenticatorRequestDelegate
       const device::FidoAuthenticator& authenticator) override;
   void FidoAuthenticatorAdded(
       const device::FidoAuthenticator& authenticator) override;
-  void FidoAuthenticatorRemoved(base::StringPiece authenticator_id) override;
+  void FidoAuthenticatorRemoved(std::string_view authenticator_id) override;
   void BluetoothAdapterPowerChanged(bool is_powered_on) override;
   bool SupportsPIN() const override;
   void CollectPIN(
@@ -225,12 +240,8 @@ class ChromeAuthenticatorRequestDelegate
   // AuthenticatorRequestDialogModel::Observer:
   void OnStartOver() override;
   void OnModelDestroyed(AuthenticatorRequestDialogModel* model) override;
-  void OnStepTransition() override;
   void OnCancelRequest() override;
   void OnManageDevicesClicked() override;
-
-  // A non-const version of dialog_model().
-  AuthenticatorRequestDialogModel* GetDialogModelForTesting();
 
   // SetPassEmptyUsbDeviceManagerForTesting controls whether the
   // `DiscoveryFactory` will be given an empty USB device manager. This is
@@ -239,6 +250,14 @@ class ChromeAuthenticatorRequestDelegate
   // for deletion until after the thread-pool is shutdown when testing, causing
   // "leaks" to be reported.
   void SetPassEmptyUsbDeviceManagerForTesting(bool value);
+
+  // Allows setting a mock `TrustedVaultConnection` so a real one will not be
+  // created. This is only used for a single request, and is destroyed
+  // afterward.
+  void SetTrustedVaultConnectionForTesting(
+      std::unique_ptr<trusted_vault::TrustedVaultConnection> connection);
+
+  void SetClockForTesting(base::Clock*);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ChromeAuthenticatorRequestDelegatePrivateTest,
@@ -260,30 +279,7 @@ class ChromeAuthenticatorRequestDelegate
 
   std::optional<device::FidoTransportProtocol> GetLastTransportUsed() const;
 
-  // Called each time `enclave_manager_` has finished processing all pending
-  // actions.
-  void OnEnclaveManagerIdle();
-
-  // Called when the user selects an account from modal or conditional UI.
-  // Stores the credential ID in `preselected_cred_id_` then forwards to the
-  // `AccountPreselectedCallback` that was passed to
-  // `RegisterActionCallbacks`.
-  void OnAccountPreselected(device::PublicKeyCredentialDescriptor);
-
-  // Called to start fetching the state of the primary account from the
-  // trusted vault service.
-  void DownloadAccountState();
-
-  // Called when the state of the trusted vault has been determined by
-  // `DownloadAccountState`.
-  void OnAccountStateDownloaded(
-      std::unique_ptr<trusted_vault::TrustedVaultConnection> unused,
-      trusted_vault::DownloadAuthenticationFactorsRegistrationStateResult
-          result);
-
-  // Called when the UI has reached a state where it needs to do an enclave
-  // operation and an OAuth token for the enclave has been fetched.
-  void StartEnclaveTransaction(std::optional<std::string> token);
+  void OnReadyForUI() override;
 
   // ShouldPermitCableExtension returns true if the given |origin| may set a
   // caBLE extension. This extension contains website-chosen BLE pairing
@@ -298,14 +294,9 @@ class ChromeAuthenticatorRequestDelegate
   void GetPhoneContactableGpmPasskeysForRpId(
       std::vector<device::DiscoverableCredentialMetadata>* passkeys);
 
-  // Configures an WebAuthn enclave authenticator discovery and provides it with
-  // synced passkeys.
-  void ConfigureEnclaveDiscovery(
-      const std::string& rp_id,
-      device::FidoDiscoveryFactory* discovery_factory);
-
-  // Invoked when a new GPM passkey is created, to save it to sync data.
-  void OnPasskeyCreated(sync_pb::WebauthnCredentialSpecifics passkey);
+  // Update `tai` to remove credentials that aren't applicable to this request.
+  void FilterRecognizedCredentials(
+      device::FidoRequestHandlerBase::TransportAvailabilityInfo* tai);
 
 #if BUILDFLAG(IS_MAC)
   // DaysSinceDate returns the number of days between `formatted_date` (in ISO
@@ -336,13 +327,16 @@ class ChromeAuthenticatorRequestDelegate
       std::optional<bool> preference);
 
   // ConfigureICloudKeychain is called by `ConfigureDiscoveries` to configure
-  // the `AuthenticatorRequestDialogModel` with iCloud Keychain-related values.
+  // the `AuthenticatorRequestDialogController` with iCloud Keychain-related
+  // values.
   void ConfigureICloudKeychain(RequestSource request_source,
                                const std::string& rp_id);
 #endif
 
   const content::GlobalRenderFrameHostId render_frame_host_id_;
   const std::unique_ptr<AuthenticatorRequestDialogModel> dialog_model_;
+  const std::unique_ptr<AuthenticatorRequestDialogController>
+      dialog_controller_;
   base::OnceClosure cancel_callback_;
   base::RepeatingClosure start_over_callback_;
   AccountPreselectedCallback account_preselected_callback_;
@@ -374,15 +368,7 @@ class ChromeAuthenticatorRequestDelegate
   // available that can service requests for synced GPM passkeys.
   bool can_use_synced_phone_passkeys_ = false;
 
-  // Non-null when the cloud enclave authenticator is available for use. The
-  // `EnclaveManager` is a `KeyedService` for the current profile and so
-  // outlives this object.
-  raw_ptr<EnclaveManager> enclave_manager_ = nullptr;
-
-  // Used to observe `enclave_manager_` without implementing the Observer
-  // interface directly and thus needing to #include all of `enclave_manager.h`
-  // in this header file.
-  std::unique_ptr<EnclaveManagerObserver> enclave_manager_observer_;
+  std::unique_ptr<GPMEnclaveController> enclave_controller_;
 
   // Stores the TransportAvailabilityInfo while we're waiting for the enclave
   // state to load from the disk.
@@ -394,27 +380,11 @@ class ChromeAuthenticatorRequestDelegate
   std::optional<device::UserVerificationRequirement>
       user_verification_requirement_;
 
-  // The set of pertinent synced passkeys for this request. Persisted here
-  // so that a consistent set of passkeys is used throughout the transaction.
-  std::optional<std::vector<sync_pb::WebauthnCredentialSpecifics>>
-      gpm_credentials_;
-
-  // The pending request to fetch the state of the trusted vault.
-  std::unique_ptr<trusted_vault::TrustedVaultConnection::Request>
-      download_account_state_request_;
-
-  // The pending request to fetch an OAuth token for the enclave request.
-  std::unique_ptr<signin::PrimaryAccountAccessTokenFetcher>
-      access_token_fetcher_;
-
-  // The callback used to trigger a request to the enclave.
-  base::RepeatingCallback<void(
-      std::unique_ptr<device::enclave::CredentialRequest>)>
-      enclave_request_callback_;
-
-  // The credential ID of the last credential to be selected by the user in
-  // modal or conditional UI.
-  std::optional<std::vector<uint8_t>> preselected_cred_id_;
+  // This holds a `TrustedVaultConnection` which will be set on
+  // `enclave_controller_` when it is created.
+  std::unique_ptr<trusted_vault::TrustedVaultConnection>
+      pending_trusted_vault_connection_;
+  raw_ptr<base::Clock> clock_ = nullptr;
 
   base::WeakPtrFactory<ChromeAuthenticatorRequestDelegate> weak_ptr_factory_{
       this};

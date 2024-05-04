@@ -338,20 +338,6 @@ TEST_F(NetworkListNetworkItemViewTest, HasCorrectPortalSublabel) {
       network_list_network_item_view()->sub_text_label()->GetText());
 }
 
-TEST_F(NetworkListNetworkItemViewTest, HasCorrectProxyAuthSublabel) {
-  EXPECT_FALSE(network_list_network_item_view()->sub_text_label());
-
-  NetworkStatePropertiesPtr wifi_network = CreateStandaloneNetworkProperties(
-      kWiFiName, NetworkType::kWiFi, ConnectionStateType::kPortal);
-  wifi_network->portal_state = PortalState::kProxyAuthRequired;
-
-  UpdateViewForNetwork(wifi_network);
-  EXPECT_TRUE(network_list_network_item_view()->sub_text_label());
-  EXPECT_EQ(
-      l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_NETWORK_STATUS_SIGNIN),
-      network_list_network_item_view()->sub_text_label()->GetText());
-}
-
 TEST_F(NetworkListNetworkItemViewTest, HasCorrectPortalSuspectedSublabel) {
   EXPECT_FALSE(network_list_network_item_view()->sub_text_label());
 
@@ -361,9 +347,9 @@ TEST_F(NetworkListNetworkItemViewTest, HasCorrectPortalSuspectedSublabel) {
 
   UpdateViewForNetwork(wifi_network);
   EXPECT_TRUE(network_list_network_item_view()->sub_text_label());
-  EXPECT_EQ(l10n_util::GetStringUTF16(
-                IDS_ASH_STATUS_TRAY_NETWORK_STATUS_CONNECTED_NO_INTERNET),
-            network_list_network_item_view()->sub_text_label()->GetText());
+  EXPECT_EQ(
+      l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_NETWORK_STATUS_SIGNIN),
+      network_list_network_item_view()->sub_text_label()->GetText());
 }
 
 TEST_F(NetworkListNetworkItemViewTest, HasCorrectNoConnectivitySublabel) {

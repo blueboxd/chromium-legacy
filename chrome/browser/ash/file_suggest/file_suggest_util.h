@@ -39,6 +39,25 @@ enum class FileSuggestionType {
   kLocalFile,
 };
 
+// The reason the file is suggested.
+enum class FileSuggestionJustificationType {
+  // Used only for deprecated suggestions from drive's ItemSuggest API, for
+  // which the exact justification type is obscured.
+  kUnknown,
+
+  // The user recently viewed the file.
+  kViewed,
+
+  // The file was recently modified, usually by another user.
+  kModified,
+
+  // The file was recently modified by the current user.
+  kModifiedByCurrentUser,
+
+  // The file was shared with the current user.
+  kShared,
+};
+
 // Returns the max amount of time from now that a file was modified or viewed to
 // be available as a file suggestion.
 base::TimeDelta GetMaxFileSuggestionRecency();
@@ -53,9 +72,12 @@ struct FileSuggestData {
   FileSuggestData(FileSuggestionType new_type,
                   const base::FilePath& new_file_path,
                   const std::optional<std::u16string>& new_prediction_reason,
-                  const std::optional<base::Time>& timestamp,
-                  const std::optional<base::Time>& secondary_timestamp,
-                  std::optional<float> new_score);
+                  const std::optional<base::Time>& modified_time,
+                  const std::optional<base::Time>& viewed_time,
+                  const std::optional<base::Time>& shared_time,
+                  std::optional<float> new_score,
+                  const std::optional<std::string>& drive_file_id,
+                  const std::optional<std::string>& icon_url);
   FileSuggestData(FileSuggestData&&);
   FileSuggestData(const FileSuggestData&);
   FileSuggestData& operator=(const FileSuggestData&);
@@ -73,15 +95,23 @@ struct FileSuggestData {
   // The reason why the file is suggested.
   std::optional<std::u16string> prediction_reason;
 
-  // Timestamp of when the file was last modified, or viewed.
-  std::optional<base::Time> timestamp;
+  // Timestamp of when the file was last modified by the user.
+  std::optional<base::Time> modified_time;
 
-  // Timestamp to be used to compare suggestion recency for suggestions whose
-  // `timestamp`s match.
-  std::optional<base::Time> secondary_timestamp;
+  // Timestamp of when the file was last viewed by the user.
+  std::optional<base::Time> viewed_time;
+
+  // Timestamp of when the file was shared with the user.
+  std::optional<base::Time> shared_time;
 
   // Only has a value when `type` == `FileSuggestionType::kLocalFile`.
   std::optional<float> score;
+
+  // The drive file id for the file.
+  std::optional<std::string> drive_file_id;
+
+  // The custom icon url for the file.
+  std::optional<std::string> icon_url;
 };
 
 // Calculates the id of a file suggestion specified by `type` and `file_path`.

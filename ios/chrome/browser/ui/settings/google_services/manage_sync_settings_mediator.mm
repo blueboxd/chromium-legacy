@@ -20,7 +20,6 @@
 #import "components/signin/public/identity_manager/account_info.h"
 #import "components/signin/public/identity_manager/objc/identity_manager_observer_bridge.h"
 #import "components/strings/grit/components_strings.h"
-#import "components/sync/base/features.h"
 #import "components/sync/base/model_type.h"
 #import "components/sync/base/user_selectable_type.h"
 #import "components/sync/service/local_data_description.h"
@@ -46,7 +45,6 @@
 #import "ios/chrome/browser/signin/model/constants.h"
 #import "ios/chrome/browser/sync/model/enterprise_utils.h"
 #import "ios/chrome/browser/sync/model/sync_observer_bridge.h"
-#import "ios/chrome/browser/sync/model/sync_setup_service.h"
 #import "ios/chrome/browser/ui/authentication/cells/central_account_view.h"
 #import "ios/chrome/browser/ui/authentication/history_sync/history_sync_utils.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_image_detail_text_item.h"
@@ -68,8 +66,7 @@ using l10n_util::GetNSString;
 namespace {
 
 // Ordered list of all sync switches.
-// This is the list of available datatypes for account state kSyncing and
-// kAdvancedInitialSyncSetup.
+// This is the list of available datatypes for account state kSyncing.
 static const syncer::UserSelectableType kSyncSwitchItems[] = {
     syncer::UserSelectableType::kAutofill,
     syncer::UserSelectableType::kBookmarks,
@@ -195,17 +192,6 @@ constexpr CGFloat kBatchUploadSymbolPointSize = 22.;
 - (void)autofillAlertConfirmed:(BOOL)value {
   _syncService->GetUserSettings()->SetSelectedType(
       syncer::UserSelectableType::kAutofill, value);
-  if (!base::FeatureList::IsEnabled(
-          syncer::kSyncDecoupleAddressPaymentSettings)) {
-    // When the auto fill data type is updated, the autocomplete wallet
-    // should be updated too. Autocomplete wallet should not be enabled
-    // when auto fill data type disabled. This behaviour not be
-    // implemented in the UI code. This code can be removed once
-    // either of crbug.com/937234 (move logic to infra layers) or
-    // crbug.com/1435431 (remove the coupling) is fixed.
-    _syncService->GetUserSettings()->SetSelectedType(
-        syncer::UserSelectableType::kPayments, value);
-  }
 }
 
 #pragma mark - Loads sync data type section
@@ -217,7 +203,6 @@ constexpr CGFloat kBatchUploadSymbolPointSize = 22.;
     case SyncSettingsAccountState::kSignedOut:
       return;
     case SyncSettingsAccountState::kSyncing:
-    case SyncSettingsAccountState::kAdvancedInitialSyncSetup:
       [model addSectionWithIdentifier:SyncDataTypeSectionIdentifier];
       if (self.allItemsAreSynceable) {
         SyncSwitchItem* button =
@@ -288,7 +273,6 @@ constexpr CGFloat kBatchUploadSymbolPointSize = 22.;
     case SyncSettingsAccountState::kSignedOut:
     case SyncSettingsAccountState::kSignedIn:
       return;
-    case SyncSettingsAccountState::kAdvancedInitialSyncSetup:
     case SyncSettingsAccountState::kSyncing:
       if ([self.syncEverythingItem
               isKindOfClass:[TableViewInfoButtonItem class]]) {
@@ -326,7 +310,6 @@ constexpr CGFloat kBatchUploadSymbolPointSize = 22.;
   switch (self.syncAccountState) {
     case SyncSettingsAccountState::kSignedOut:
     case SyncSettingsAccountState::kSyncing:
-    case SyncSettingsAccountState::kAdvancedInitialSyncSetup:
       return;
     case SyncSettingsAccountState::kSignedIn:
       [self.consumer
@@ -354,16 +337,6 @@ constexpr CGFloat kBatchUploadSymbolPointSize = 22.;
         _syncService->GetUserSettings()->GetSelectedTypes().Has(dataType);
     BOOL isEnabled = self.shouldSyncDataItemEnabled &&
                      ![self isManagedSyncSettingsDataType:dataType];
-
-    // kPayments can only be selected if kAutofill is also selected.
-    // TODO(crbug.com/1435431): Remove this coupling.
-    if (!base::FeatureList::IsEnabled(
-            syncer::kSyncDecoupleAddressPaymentSettings) &&
-        dataType == syncer::UserSelectableType::kPayments &&
-        !_syncService->GetUserSettings()->GetSelectedTypes().Has(
-            syncer::UserSelectableType::kAutofill)) {
-      isEnabled = false;
-    }
 
     if (self.syncAccountState == SyncSettingsAccountState::kSignedIn &&
         dataType == syncer::UserSelectableType::kHistory) {
@@ -444,20 +417,24 @@ constexpr CGFloat kBatchUploadSymbolPointSize = 22.;
         [[TableViewImageItem alloc]
             initWithType:PersonalizeGoogleServicesItemType];
     if (self.isEEAAccount) {
+      personalizeGoogleServicesItem.title = GetNSString(
+          IDS_IOS_MANAGE_SYNC_PERSONALIZE_GOOGLE_SERVICES_TITLE_EEA);
       personalizeGoogleServicesItem.accessoryView = [[UIImageView alloc]
           initWithImage:DefaultAccessorySymbolConfigurationWithRegularWeight(
                             kChevronForwardSymbol)];
     } else {
+      personalizeGoogleServicesItem.title =
+          GetNSString(IDS_IOS_MANAGE_SYNC_PERSONALIZE_GOOGLE_SERVICES_TITLE);
       personalizeGoogleServicesItem.accessoryView = [[UIImageView alloc]
           initWithImage:DefaultAccessorySymbolConfigurationWithRegularWeight(
                             kExternalLinkSymbol)];
     }
     personalizeGoogleServicesItem.accessoryView.tintColor =
         [UIColor colorNamed:kTextQuaternaryColor];
-    personalizeGoogleServicesItem.title =
-        GetNSString(IDS_IOS_MANAGE_SYNC_PERSONALIZE_GOOGLE_SERVICES_TITLE);
     personalizeGoogleServicesItem.detailText = GetNSString(
         IDS_IOS_MANAGE_SYNC_PERSONALIZE_GOOGLE_SERVICES_DESCRIPTION);
+    personalizeGoogleServicesItem.accessibilityIdentifier =
+        kPersonalizeGoogleServicesIdentifier;
     personalizeGoogleServicesItem.accessibilityTraits |=
         UIAccessibilityTraitButton;
     [model addItem:personalizeGoogleServicesItem
@@ -509,8 +486,6 @@ constexpr CGFloat kBatchUploadSymbolPointSize = 22.;
           GetNSString(IDS_IOS_MANAGE_SYNC_DATA_FROM_CHROME_SYNC_DESCRIPTION);
       [model addItem:dataFromChromeSyncItem
           toSectionWithIdentifier:AdvancedSettingsSectionIdentifier];
-      break;
-    case SyncSettingsAccountState::kAdvancedInitialSyncSetup:
       break;
     case SyncSettingsAccountState::kSignedOut:
       NOTREACHED();
@@ -570,9 +545,6 @@ constexpr CGFloat kBatchUploadSymbolPointSize = 22.;
       // out and the UI is in the process of being dismissed. In this case,
       // don't bother updating the section.
       return;
-    case SyncSettingsAccountState::kAdvancedInitialSyncSetup:
-      CHECK(!self.signOutAndTurnOffSyncItem);
-      return;
     case SyncSettingsAccountState::kSignedIn:
       // For kSignedIn, loadSignOutAndManageAccountsSection will load the
       // corresponding section.
@@ -629,18 +601,6 @@ constexpr CGFloat kBatchUploadSymbolPointSize = 22.;
             [model sectionForSectionIdentifier:SignOutSectionIdentifier];
         [self.consumer
             insertSections:[NSIndexSet indexSetWithIndex:sectionIndex]
-              rowAnimation:NO];
-      }
-      break;
-    case SyncSettingsAccountState::kAdvancedInitialSyncSetup:
-      // There shouldn't be a sign-out section. Remove it if it's there.
-      if (hasSignOutSection) {
-        NSUInteger sectionIndex =
-            [model sectionForSectionIdentifier:SignOutSectionIdentifier];
-        [model removeSectionWithIdentifier:SignOutSectionIdentifier];
-        self.signOutAndTurnOffSyncItem = nil;
-        [self.consumer
-            deleteSections:[NSIndexSet indexSetWithIndex:sectionIndex]
               rowAnimation:NO];
       }
       break;
@@ -763,8 +723,7 @@ constexpr CGFloat kBatchUploadSymbolPointSize = 22.;
 // `-[ManageSyncSettingsMediator localDataDescriptionsFetchedWithDescription:]`
 // to process those description.
 - (void)fetchLocalDataDescriptionsForBatchUploadWithFirstLoad:(BOOL)firstLoad {
-  if (self.syncAccountState != SyncSettingsAccountState::kSignedIn ||
-      !base::FeatureList::IsEnabled(syncer::kSyncEnableBatchUploadLocalData)) {
+  if (self.syncAccountState != SyncSettingsAccountState::kSignedIn) {
     return;
   }
 
@@ -843,7 +802,6 @@ constexpr CGFloat kBatchUploadSymbolPointSize = 22.;
   switch (self.syncAccountState) {
     case SyncSettingsAccountState::kSignedOut:
     case SyncSettingsAccountState::kSyncing:
-    case SyncSettingsAccountState::kAdvancedInitialSyncSetup:
       return;
     case SyncSettingsAccountState::kSignedIn:
       break;
@@ -941,6 +899,8 @@ constexpr CGFloat kBatchUploadSymbolPointSize = 22.;
     case syncer::UserSelectableType::kApps:
     case syncer::UserSelectableType::kSavedTabGroups:
     case syncer::UserSelectableType::kSharedTabGroupData:
+    case syncer::UserSelectableType::kCompare:
+    case syncer::UserSelectableType::kCookies:
       NOTREACHED();
       break;
   }
@@ -1011,7 +971,6 @@ constexpr CGFloat kBatchUploadSymbolPointSize = 22.;
     case SyncSettingsAccountState::kSignedIn:
       return !self.disabledBecauseOfSyncError;
     case SyncSettingsAccountState::kSyncing:
-    case SyncSettingsAccountState::kAdvancedInitialSyncSetup:
       return (!_syncService->GetUserSettings()->IsSyncEverythingEnabled() ||
               !self.allItemsAreSynceable) &&
              !self.disabledBecauseOfSyncError;
@@ -1035,7 +994,6 @@ constexpr CGFloat kBatchUploadSymbolPointSize = 22.;
   switch (self.syncAccountState) {
     case SyncSettingsAccountState::kSignedIn:
       return l10n_util::GetNSString(IDS_IOS_GOOGLE_ACCOUNT_SETTINGS_TITLE);
-    case SyncSettingsAccountState::kAdvancedInitialSyncSetup:
     case SyncSettingsAccountState::kSyncing:
     case SyncSettingsAccountState::kSignedOut:
       return nil;
@@ -1122,7 +1080,7 @@ constexpr CGFloat kBatchUploadSymbolPointSize = 22.;
 
 - (void)onChromeAccountManagerServiceShutdown:
     (ChromeAccountManagerService*)accountManagerService {
-  // TODO(crbug.com/1489595): Remove `[self disconnect]`.
+  // TODO(crbug.com/40284086): Remove `[self disconnect]`.
   [self disconnect];
 }
 
@@ -1136,9 +1094,7 @@ constexpr CGFloat kBatchUploadSymbolPointSize = 22.;
     if (value &&
         static_cast<syncer::UserSelectableType>(syncSwitchItem.dataType) ==
             syncer::UserSelectableType::kAutofill &&
-        _syncService->GetUserSettings()->IsUsingExplicitPassphrase() &&
-        base::FeatureList::IsEnabled(
-            syncer::kReplaceSyncPromosWithSignInPromos)) {
+        _syncService->GetUserSettings()->IsUsingExplicitPassphrase()) {
       [self.commandHandler showAdressesNotEncryptedDialog];
       return;
     }
@@ -1196,19 +1152,6 @@ constexpr CGFloat kBatchUploadSymbolPointSize = 22.;
         }
 
         _syncService->GetUserSettings()->SetSelectedType(dataType, value);
-
-        if (!base::FeatureList::IsEnabled(
-                syncer::kSyncDecoupleAddressPaymentSettings) &&
-            dataType == syncer::UserSelectableType::kAutofill) {
-          // When the auto fill data type is updated, the autocomplete wallet
-          // should be updated too. Autocomplete wallet should not be enabled
-          // when auto fill data type disabled. This behaviour not be
-          // implemented in the UI code. This code can be removed once
-          // either of crbug.com/937234 (move logic to infra layers) or
-          // crbug.com/1435431 (remove the coupling) is fixed.
-          _syncService->GetUserSettings()->SetSelectedType(
-              syncer::UserSelectableType::kPayments, value);
-        }
         break;
       }
       case SignOutAndTurnOffSyncItemType:

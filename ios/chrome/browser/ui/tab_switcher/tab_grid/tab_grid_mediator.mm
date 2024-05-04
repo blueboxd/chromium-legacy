@@ -7,6 +7,7 @@
 #import "base/feature_list.h"
 #import "base/memory/raw_ptr.h"
 #import "base/metrics/histogram_macros.h"
+#import "base/notimplemented.h"
 #import "components/feature_engagement/public/event_constants.h"
 #import "components/feature_engagement/public/tracker.h"
 #import "components/prefs/ios/pref_observer_bridge.h"
@@ -37,7 +38,7 @@
   // Registrar for pref changes notifications.
   PrefChangeRegistrar _prefChangeRegistrar;
   // Current page.
-  // TODO(crbug.com/1515084): Remove once the mediator and the view controller
+  // TODO(crbug.com/41487637): Remove once the mediator and the view controller
   // are fully sync.
   TabGridPage _currentPage;
 }
@@ -110,6 +111,10 @@
     case TabGridPageRemoteTabs:
       _currentPageMutator = self.remotePageMutator;
       break;
+    case TabGridPage::TabGridPageTabGroups:
+      // TODO(crbug.com/329626033): Handle displaying Tab Groups.
+      NOTIMPLEMENTED();
+      break;
   }
 }
 
@@ -146,7 +151,7 @@
         break;
     }
   }
-  // TODO(crbug.com/1462133): Implement the incognito grid or content visible
+  // TODO(crbug.com/40921760): Implement the incognito grid or content visible
   // notification.
 }
 

@@ -38,11 +38,23 @@ class MockRemoteCommandInvalidator : public RemoteCommandsInvalidator {
   MOCK_METHOD0(OnStart, void());
   MOCK_METHOD0(OnStop, void());
   MOCK_METHOD1(DoRemoteCommandsFetch, void(const invalidation::Invalidation&));
+  MOCK_METHOD0(DoInitialRemoteCommandsFetch, void());
 
   void SetInvalidationTopic(const invalidation::Topic& topic) {
+    // An initial remote command fetch must be triggered when subscribed to a
+    // topic.
+    EXPECT_CALL(*this, DoInitialRemoteCommandsFetch()).Times(1);
+
     em::PolicyData policy_data;
     policy_data.set_command_invalidation_topic(topic);
     ReloadPolicyData(&policy_data);
+
+    // Reloading policy will make invalidator subscribe to topic. Pretend we got
+    // signal for successful subscription to verify the behaviour upon
+    // subscription.
+    OnSuccessfullySubscribed(topic);
+
+    Mock::VerifyAndClearExpectations(this);
   }
 
   void ClearInvalidationTopic() {
@@ -61,12 +73,12 @@ class RemoteCommandsInvalidatorTest : public testing::Test {
 
   void EnableInvalidationService() {
     invalidation_service_.SetInvalidatorState(
-        invalidation::INVALIDATIONS_ENABLED);
+        invalidation::InvalidatorState::kEnabled);
   }
 
   void DisableInvalidationService() {
     invalidation_service_.SetInvalidatorState(
-        invalidation::TRANSIENT_INVALIDATION_ERROR);
+        invalidation::InvalidatorState::kDisabled);
   }
 
   invalidation::Invalidation CreateInvalidation(

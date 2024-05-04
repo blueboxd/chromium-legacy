@@ -8,6 +8,7 @@
 #include "ash/ash_export.h"
 #include "ash/picker/model/picker_search_results_section.h"
 #include "ash/picker/views/picker_page_view.h"
+#include "ash/picker/views/picker_preview_bubble_controller.h"
 #include "base/containers/span.h"
 #include "base/functional/callback_forward.h"
 #include "base/memory/raw_ptr.h"
@@ -21,6 +22,7 @@ namespace ash {
 
 class PickerAssetFetcher;
 class PickerSearchResult;
+class PickerSearchResultsViewDelegate;
 class PickerSectionListView;
 class PickerSectionView;
 
@@ -28,15 +30,10 @@ class ASH_EXPORT PickerSearchResultsView : public PickerPageView {
   METADATA_HEADER(PickerSearchResultsView, PickerPageView)
 
  public:
-  // Indicates the user has selected a result.
-  using SelectSearchResultCallback =
-      base::OnceCallback<void(const PickerSearchResult& result)>;
-
   // `asset_fetcher` must remain valid for the lifetime of this class.
-  explicit PickerSearchResultsView(
-      int picker_view_width,
-      SelectSearchResultCallback select_search_result_callback,
-      PickerAssetFetcher* asset_fetcher);
+  explicit PickerSearchResultsView(PickerSearchResultsViewDelegate* delegate,
+                                   int picker_view_width,
+                                   PickerAssetFetcher* asset_fetcher);
   PickerSearchResultsView(const PickerSearchResultsView&) = delete;
   PickerSearchResultsView& operator=(const PickerSearchResultsView&) = delete;
   ~PickerSearchResultsView() override;
@@ -56,6 +53,8 @@ class ASH_EXPORT PickerSearchResultsView : public PickerPageView {
   // TODO: b/325840864 - Merge with existing sections if needed.
   void AppendSearchResults(PickerSearchResultsSection section);
 
+  void ShowNoResultsFound();
+
   PickerSectionListView* section_list_view_for_testing() {
     return section_list_view_;
   }
@@ -64,6 +63,8 @@ class ASH_EXPORT PickerSearchResultsView : public PickerPageView {
       const {
     return section_views_;
   }
+
+  views::View* no_results_view_for_testing() { return no_results_view_; }
 
  private:
   // Runs `select_search_result_callback_` on `result`. Note that only one
@@ -79,7 +80,10 @@ class ASH_EXPORT PickerSearchResultsView : public PickerPageView {
 
   void ScrollPseudoFocusedViewToVisible();
 
-  SelectSearchResultCallback select_search_result_callback_;
+  void OnTrailingLinkClicked(PickerSectionType section_type,
+                             const ui::Event& event);
+
+  raw_ptr<PickerSearchResultsViewDelegate> delegate_;
 
   // `asset_fetcher` outlives `this`.
   raw_ptr<PickerAssetFetcher> asset_fetcher_ = nullptr;
@@ -93,6 +97,11 @@ class ASH_EXPORT PickerSearchResultsView : public PickerPageView {
   // The currently pseudo focused view, which responds to user actions that
   // trigger `DoPseudoFocusedAction`.
   raw_ptr<views::View> pseudo_focused_view_ = nullptr;
+
+  // A view for when there are no results.
+  raw_ptr<views::View> no_results_view_ = nullptr;
+
+  PickerPreviewBubbleController preview_bubble_controller_;
 };
 
 }  // namespace ash

@@ -18,10 +18,12 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
+#include "components/autofill/core/browser/address_data_manager.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/data_model/autofill_structured_address_component.h"
 #include "components/autofill/core/browser/field_type_utils.h"
 #include "components/autofill/core/browser/field_types.h"
+#include "components/autofill/core/browser/payments_data_manager.h"
 
 namespace autofill {
 
@@ -56,7 +58,7 @@ constexpr std::string_view kKeyInitialCreatorId = "initial_creator_id";
 bool IsFullyStructuredProfile(const AutofillProfile& profile) {
   AutofillProfile finalized_profile = profile;
   finalized_profile.FinalizeAfterImport();
-  // TODO(1445454): Re-enable this check.
+  // TODO(crbug.com/40268162): Re-enable this check.
   // return profile == finalized_profile;
   return true;
 }
@@ -157,7 +159,8 @@ std::optional<CreditCard> MakeCard(const base::Value::Dict& dict) {
 // collecting all GUIDs to remove first.
 void RemoveAllExistingProfiles(PersonalDataManager& pdm) {
   std::vector<std::string> existing_guids;
-  base::ranges::transform(pdm.GetProfiles(), std::back_inserter(existing_guids),
+  base::ranges::transform(pdm.address_data_manager().GetProfiles(),
+                          std::back_inserter(existing_guids),
                           &AutofillProfile::guid);
   for (const std::string& guid : existing_guids) {
     pdm.RemoveByGUID(guid);
@@ -183,11 +186,12 @@ void SetData(
   if (!profiles_or_credit_cards->profiles->empty()) {
     RemoveAllExistingProfiles(*pdm);
     for (const AutofillProfile& profile : *profiles_or_credit_cards->profiles) {
-      pdm->AddProfile(profile);
+      pdm->address_data_manager().AddProfile(profile);
     }
   }
   if (!profiles_or_credit_cards->credit_cards->empty()) {
-    pdm->SetCreditCards(&*profiles_or_credit_cards->credit_cards);
+    pdm->payments_data_manager().SetCreditCards(
+        &*profiles_or_credit_cards->credit_cards);
   }
 }
 

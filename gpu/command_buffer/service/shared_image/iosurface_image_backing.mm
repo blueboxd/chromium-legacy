@@ -156,7 +156,7 @@ base::apple::scoped_nsprotocol<id<MTLTexture>> CreateMetalTexture(
   [mtl_tex_desc.get() setMipmapLevelCount:1];
   [mtl_tex_desc.get() setArrayLength:1];
   [mtl_tex_desc.get() setSampleCount:1];
-  // TODO(https://crbug.com/952063): For zero-copy resources that are populated
+  // TODO(crbug.com/40622826): For zero-copy resources that are populated
   // on the CPU (e.g, video frames), it may be that MTLStorageModeManaged will
   // be more appropriate.
 #if BUILDFLAG(IS_IOS)
@@ -663,7 +663,7 @@ bool IOSurfaceImageBacking::OverlayRepresentation::BeginReadAccess(
 #if BUILDFLAG(USE_DAWN)
   // Likewise do the same for Dawn's commands.
   iosurface_backing->WaitForDawnCommandsToBeScheduled(
-      /*excluded_device=*/nullptr);
+      /*device_to_exclude=*/nullptr);
 #endif
 
   gl::GLContext* context = gl::GLContext::GetCurrent();
@@ -758,6 +758,7 @@ class IOSurfaceImageBacking::DawnRepresentation final
 
   wgpu::Texture BeginAccess(wgpu::TextureUsage usage) final;
   void EndAccess() final;
+  bool SupportsMultipleConcurrentReadAccess() final;
 
  private:
   static constexpr wgpu::TextureUsage kReadOnlyUsage =
@@ -784,28 +785,35 @@ wgpu::Texture IOSurfaceImageBacking::DawnRepresentation::BeginAccess(
   }
 
   // IOSurface might be written on a different GPU. We need to wait for
-  // previous commands to be scheduled first.
+  // previous Dawn and ANGLE commands to be scheduled first.
   // Note: we don't need to wait for the commands from the same wgpu::Device to
   // be scheduled.
+  // TODO(crbug.com/40260114): Skip this if we're not on a dual-GPU system.
   iosurface_backing->WaitForANGLECommandsToBeScheduled();
   iosurface_backing->WaitForDawnCommandsToBeScheduled(
-      /*excluded_device=*/device_);
+      /*device_to_exclude=*/device_);
 
   usage_ = wgpu_texture_usage;
 
   texture_ = iosurface_backing->GetCachedWGPUTexture(device_, usage_);
+  if (!texture_) {
+    texture_ =
+        CreateWGPUTexture(shared_texture_memory_, usage(), io_surface_size_,
+                          wgpu_format_, view_formats_, wgpu_texture_usage);
+    iosurface_backing->MaybeCacheWGPUTexture(device_, texture_);
+  }
 
-  if (texture_ && iosurface_backing->WGPUTextureHasOngoingAccess(texture_)) {
-    // If there is already an ongoing access for this texture, then the
-    // necessary work for starting the access (i.e., waiting on fences and
-    // informing SharedTextureMemory) already happened as part of the initial
-    // BeginAccess(). Short-circuit out here, but ensure that the backing knows
-    // that there is now another ongoing access on this texture.  NOTE:
-    // SharedTextureMemory does not allow a BeginAccess() call on a texture
-    // that already has an ongoing access (at the internal wgpu::Texture
-    // level), so short-circuiting out here is not simply an optimization but
-    // is actually necessary.
-    iosurface_backing->IncrementNumberOfOngoingWGPUTextureAccesses(texture_);
+  // If there is already an ongoing Dawn access for this texture, then the
+  // necessary work for starting the access (i.e., waiting on fences and
+  // informing SharedTextureMemory) already happened as part of the initial
+  // BeginAccess().
+  // NOTE: SharedTextureMemory does not allow a BeginAccess() call on a texture
+  // that already has an ongoing access (at the internal wgpu::Texture
+  // level), so short-circuiting out here is not simply an optimization but
+  // is actually necessary.
+  int num_accesses_already_present =
+      iosurface_backing->TrackBeginAccessToWGPUTexture(texture_);
+  if (num_accesses_already_present > 0) {
     return texture_;
   }
 
@@ -831,10 +839,11 @@ wgpu::Texture IOSurfaceImageBacking::DawnRepresentation::BeginAccess(
         [&](id<MTLSharedEvent> shared_event, uint64_t signaled_value) {
           wgpu::SharedFenceMTLSharedEventDescriptor shared_event_desc;
           shared_event_desc.sharedEvent = shared_event;
+
           wgpu::SharedFenceDescriptor fence_desc;
           fence_desc.nextInChain = &shared_event_desc;
-          shared_fences.push_back(device_.ImportSharedFence(&fence_desc));
 
+          shared_fences.push_back(device_.ImportSharedFence(&fence_desc));
           signaled_values.push_back(signaled_value);
         });
   }
@@ -845,27 +854,18 @@ wgpu::Texture IOSurfaceImageBacking::DawnRepresentation::BeginAccess(
   begin_access_desc.fences = shared_fences.data();
   begin_access_desc.signaledValues = signaled_values.data();
 
-  if (!texture_) {
-    texture_ =
-        CreateWGPUTexture(shared_texture_memory_, usage(), io_surface_size_,
-                          wgpu_format_, view_formats_, wgpu_texture_usage);
-    iosurface_backing->MaybeCacheWGPUTexture(device_, texture_);
-  }
-
   if (!shared_texture_memory_.BeginAccess(texture_, &begin_access_desc)) {
     // NOTE: WebGPU CTS tests intentionally pass in formats that are
     // incompatible with the format of the backing IOSurface to check error
     // handling.
     LOG(ERROR) << "SharedTextureMemory::BeginAccess() failed";
+    iosurface_backing->TrackEndAccessToWGPUTexture(texture_);
     iosurface_backing->RemoveWGPUTextureFromCache(device_, texture_);
     texture_ = {};
 
     iosurface_backing->EndAccess(readonly);
   }
 
-  // NOTE: If SharedTextureMemory::BeginAccess() succeeds, `texture` is
-  // guaranteed to be non-null.
-  iosurface_backing->IncrementNumberOfOngoingWGPUTextureAccesses(texture_);
   return texture_.Get();
 }
 
@@ -886,13 +886,14 @@ void IOSurfaceImageBacking::DawnRepresentation::EndAccess() {
       static_cast<IOSurfaceImageBacking*>(backing());
   const bool readonly = (usage_ & ~kReadOnlyUsage) == 0;
   iosurface_backing->EndAccess(readonly);
-  iosurface_backing->DecrementNumberOfOngoingWGPUTextureAccesses(texture_);
+  int num_outstanding_accesses =
+      iosurface_backing->TrackEndAccessToWGPUTexture(texture_);
 
   // However, if there is still an ongoing Dawn access on this texture,
   // short-circuit out of doing any other work. In particular, do not consume
   // fences or end the access at the level of SharedTextureMemory. That work
   // will happen when the last ongoing Dawn access finishes.
-  if (iosurface_backing->WGPUTextureHasOngoingAccess(texture_)) {
+  if (num_outstanding_accesses > 0) {
     texture_ = nullptr;
     usage_ = wgpu::TextureUsage::None;
     return;
@@ -944,6 +945,30 @@ void IOSurfaceImageBacking::DawnRepresentation::EndAccess() {
 }
 #endif  // BUILDFLAG(USE_DAWN)
 
+// Enabling this functionality reduces overhead in the compositor by lowering
+// the frequency of begin/end access pairs. The semantic constraints for a
+// representation being able to return true are the following:
+// * It is valid to call BeginScopedReadAccess() concurrently on two
+//   different representations of the same image
+// * The backing supports true concurrent read access rather than emulating
+//   concurrent reads by "pausing" a first read when a second read of a
+//   different representation type begins, which requires that the second
+//   representation's read finish within the scope of its GPU task in order
+//   to ensure that nothing actually accesses the first representation
+//   while it is paused. Some backings that support only exclusive access
+//   from the SI perspective do the latter (e.g.,
+//   ExternalVulkanImageBacking as its "support" of concurrent GL and
+//   Vulkan access). SupportsMultipleConcurrentReadAccess() results in the
+//   compositor's read access being long-lived (i.e., beyond the scope of
+//   a single GPU task).
+// The Graphite Skia representation returns true if the underlying Dawn
+// representation does so. This representation meets both of the above
+// constraints.
+bool IOSurfaceImageBacking::DawnRepresentation::
+    SupportsMultipleConcurrentReadAccess() {
+  return true;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // IOSurfaceImageBacking
 
@@ -985,6 +1010,7 @@ IOSurfaceImageBacking::IOSurfaceImageBacking(
       gl_target_(gl_target),
       framebuffer_attachment_angle_(framebuffer_attachment_angle),
       cleared_rect_(is_cleared ? gfx::Rect(size) : gfx::Rect()),
+      gr_context_type_(gr_context_type),
       weak_factory_(this) {
   CHECK(io_surface_);
 
@@ -1018,6 +1044,12 @@ IOSurfaceImageBacking::~IOSurfaceImageBacking() {
 bool IOSurfaceImageBacking::ReadbackToMemory(
     const std::vector<SkPixmap>& pixmaps) {
   CHECK_LE(pixmaps.size(), 3u);
+
+  // Make sure any pending ANGLE EGLDisplays and Dawn devices are flushed.
+  WaitForANGLECommandsToBeScheduled();
+#if BUILDFLAG(USE_DAWN)
+  WaitForDawnCommandsToBeScheduled(/*device_to_exclude=*/nullptr);
+#endif
 
   ScopedIOSurfaceLock io_surface_lock(io_surface_.get(), /*options=*/0);
 
@@ -1065,6 +1097,12 @@ bool IOSurfaceImageBacking::ReadbackToMemory(
 bool IOSurfaceImageBacking::UploadFromMemory(
     const std::vector<SkPixmap>& pixmaps) {
   CHECK_LE(pixmaps.size(), 3u);
+
+  // Make sure any pending ANGLE EGLDisplays and Dawn devices are flushed.
+  WaitForANGLECommandsToBeScheduled();
+#if BUILDFLAG(USE_DAWN)
+  WaitForDawnCommandsToBeScheduled(/*device_to_exclude=*/nullptr);
+#endif
 
   ScopedIOSurfaceLock io_surface_lock(io_surface_.get(), /*options=*/0);
 
@@ -1257,27 +1295,25 @@ IOSurfaceImageBacking::ProduceOverlay(SharedImageManager* manager,
 }
 
 #if BUILDFLAG(USE_DAWN)
-bool IOSurfaceImageBacking::WGPUTextureHasOngoingAccess(wgpu::Texture texture) {
-  return wgpu_texture_ongoing_accesses_.contains(texture.Get());
+int IOSurfaceImageBacking::TrackBeginAccessToWGPUTexture(
+    wgpu::Texture texture) {
+  return wgpu_texture_ongoing_accesses_[texture.Get()]++;
 }
 
-void IOSurfaceImageBacking::IncrementNumberOfOngoingWGPUTextureAccesses(
-    wgpu::Texture texture) {
-  wgpu_texture_ongoing_accesses_[texture.Get()]++;
-}
-
-void IOSurfaceImageBacking::DecrementNumberOfOngoingWGPUTextureAccesses(
-    wgpu::Texture texture) {
+int IOSurfaceImageBacking::TrackEndAccessToWGPUTexture(wgpu::Texture texture) {
   if (!wgpu_texture_ongoing_accesses_.contains(texture.Get())) {
-    return;
+    return 0;
   }
 
-  wgpu_texture_ongoing_accesses_[texture.Get()]--;
-  CHECK_GE(wgpu_texture_ongoing_accesses_[texture.Get()], 0);
+  int num_outstanding_accesses =
+      --wgpu_texture_ongoing_accesses_[texture.Get()];
+  CHECK_GE(num_outstanding_accesses, 0);
 
-  if (!wgpu_texture_ongoing_accesses_[texture.Get()]) {
+  if (num_outstanding_accesses == 0) {
     wgpu_texture_ongoing_accesses_.erase(texture.Get());
   }
+
+  return num_outstanding_accesses;
 }
 
 IOSurfaceImageBacking::WGPUTextureCache*
@@ -1353,18 +1389,18 @@ void IOSurfaceImageBacking::AddWGPUDeviceWithPendingCommands(
 }
 
 void IOSurfaceImageBacking::WaitForDawnCommandsToBeScheduled(
-    const wgpu::Device& excluded_device) {
-  for (const auto& device : wgpu_devices_pending_flush_) {
-    if (device.Get() == excluded_device.Get()) {
+    const wgpu::Device& device_to_exclude) {
+  bool excluded_device_was_pending_flush = false;
+  for (const auto& device : std::move(wgpu_devices_pending_flush_)) {
+    if (device.Get() == device_to_exclude.Get()) {
+      excluded_device_was_pending_flush = true;
       continue;
     }
     dawn::native::metal::WaitForCommandsToBeScheduled(device.Get());
   }
-
-  wgpu_devices_pending_flush_.clear();
-  if (excluded_device != nullptr) {
+  if (excluded_device_was_pending_flush) {
     // This device wasn't flushed, so we need to add it to the list again.
-    wgpu_devices_pending_flush_.insert(excluded_device);
+    wgpu_devices_pending_flush_.insert(device_to_exclude);
   }
 }
 #endif
@@ -1375,11 +1411,16 @@ void IOSurfaceImageBacking::AddEGLDisplayWithPendingCommands(
 }
 
 void IOSurfaceImageBacking::WaitForANGLECommandsToBeScheduled() {
-  for (auto* display : egl_displays_pending_flush_) {
+  for (auto* display : std::move(egl_displays_pending_flush_)) {
     eglWaitUntilWorkScheduledANGLE(display->GetDisplay());
   }
+}
 
-  egl_displays_pending_flush_.clear();
+void IOSurfaceImageBacking::ClearEGLDisplaysWithPendingCommands(
+    gl::GLDisplayEGL* display_to_exclude) {
+  if (std::move(egl_displays_pending_flush_).contains(display_to_exclude)) {
+    egl_displays_pending_flush_.insert(display_to_exclude);
+  }
 }
 
 std::unique_ptr<DawnImageRepresentation> IOSurfaceImageBacking::ProduceDawn(
@@ -1396,7 +1437,7 @@ std::unique_ptr<DawnImageRepresentation> IOSurfaceImageBacking::ProduceDawn(
   if (io_surface_format_ == 'BGRA') {
     wgpu_format = wgpu::TextureFormat::BGRA8Unorm;
   }
-  // TODO(crbug.com/1293514): Remove these if conditions after using single
+  // TODO(crbug.com/40213546): Remove these if conditions after using single
   // multiplanar mailbox for which wgpu_format should already be correct.
   if (io_surface_format_ == '420v') {
     wgpu_format = wgpu::TextureFormat::R8BG8Biplanar420Unorm;
@@ -1447,7 +1488,7 @@ std::unique_ptr<DawnImageRepresentation> IOSurfaceImageBacking::ProduceDawn(
       // repeatedly). If Graphite is being used, however, we can and do cache
       // the SharedTextureMemory instance that is associated with the Graphite
       // device.
-      // TODO(crbug.com/1493854): Cache SharedTextureMemory objects for WebGPU
+      // TODO(crbug.com/40936879): Cache SharedTextureMemory objects for WebGPU
       // as well once crbug.com/1515822 is resolved.
       // NOTE: `dawn_context_provider` may be null if Graphite is not being
       // used.
@@ -1685,37 +1726,39 @@ bool IOSurfaceImageBacking::IOSurfaceBackingEGLStateBeginAccess(
     return false;
   }
 
+  gl::GLDisplayEGL* display = gl::GLDisplayEGL::GetDisplayForCurrentContext();
+  CHECK(display);
+  CHECK_EQ(display->GetDisplay(), egl_state->egl_display_);
+
   // IOSurface might be written on a different GPU. So we have to wait for the
-  // previous Dawn commands to be scheduled first.
-  // Note we don't need to wait for previous GL commands on a different GPU to
-  // be scheduled because it is already done when the previous GL context is
-  // made uncurrent.
+  // previous Dawn and ANGLE commands to be scheduled first.
+  // TODO(crbug.com/40260114): Skip this if we're not on a dual-GPU system.
 #if BUILDFLAG(USE_DAWN)
-  WaitForDawnCommandsToBeScheduled(/*excluded_device=*/nullptr);
+  WaitForDawnCommandsToBeScheduled(/*device_to_exclude=*/nullptr);
 #endif
+
+  // Note that we don't need to call WaitForANGLECommandsToBeScheduled for other
+  // EGLDisplays because it is already done when the previous GL context is made
+  // uncurrent. We can simply remove the other EGLDisplays from the list.
+  ClearEGLDisplaysWithPendingCommands(/*display_to_exclude=*/display);
+
+  if (gl::GetANGLEImplementation() == gl::ANGLEImplementation::kMetal) {
+    // If this image could potentially be shared with another Metal device,
+    // it's necessary to synchronize between the two devices. If any Metal
+    // shared events have been enqueued (the assumption is that this was done by
+    // for a Dawn device or another ANGLE Metal EGLDisplay), wait on them.
+    ProcessSharedEventsForBeginAccess(
+        readonly,
+        [display](id<MTLSharedEvent> shared_event, uint64_t signaled_value) {
+          display->WaitForMetalSharedEvent(shared_event, signaled_value);
+        });
+  }
 
   // If the GL texture is already bound (the bind is not marked as pending),
   // then early-out.
   if (!egl_state->is_bind_pending()) {
+    CHECK(!egl_state->egl_surfaces_.empty());
     return true;
-  }
-
-  if (gl::GetANGLEImplementation() == gl::ANGLEImplementation::kMetal) {
-    // If this image could potentially be shared with WebGPU's Metal
-    // device, it's necessary to synchronize between the two devices.
-    // If any Metal shared events have been enqueued (the assumption
-    // is that this was done by the Dawn representation), wait on
-    // them.
-    gl::GLDisplayEGL* display = gl::GLDisplayEGL::GetDisplayForCurrentContext();
-    CHECK(display);
-    CHECK(display->GetDisplay() == egl_state->egl_display_);
-    if (display->IsANGLEMetalSharedEventSyncSupported()) {
-      ProcessSharedEventsForBeginAccess(
-          readonly,
-          [display](id<MTLSharedEvent> shared_event, uint64_t signaled_value) {
-            display->WaitForMetalSharedEvent(shared_event, signaled_value);
-          });
-    }
   }
 
   if (egl_state->egl_surfaces_.empty()) {
@@ -1756,10 +1799,10 @@ bool IOSurfaceImageBacking::IOSurfaceBackingEGLStateBeginAccess(
     egl_state->egl_surfaces_ = std::move(egl_surfaces);
   }
 
-  DCHECK_EQ(static_cast<int>(egl_state->gl_textures_.size()),
-            format().NumberOfPlanes());
-  DCHECK_EQ(static_cast<int>(egl_state->egl_surfaces_.size()),
-            format().NumberOfPlanes());
+  CHECK_EQ(static_cast<int>(egl_state->gl_textures_.size()),
+           format().NumberOfPlanes());
+  CHECK_EQ(static_cast<int>(egl_state->egl_surfaces_.size()),
+           format().NumberOfPlanes());
   for (int plane_index = 0; plane_index < format().NumberOfPlanes();
        plane_index++) {
     gl::ScopedRestoreTexture scoped_restore(
@@ -1785,13 +1828,38 @@ void IOSurfaceImageBacking::IOSurfaceBackingEGLStateEndAccess(
     bool readonly) {
   EndAccess(readonly);
 
-  // If this image could potentially be shared with Metal via WebGPU, then flush
-  // the GL context to ensure Metal will see it.
-  if (usage() &
-      (SHARED_IMAGE_USAGE_WEBGPU_READ | SHARED_IMAGE_USAGE_WEBGPU_WRITE)) {
-    gl::GLApi* api = gl::g_current_gl_context;
-    api->glFlushFn();
+  // Early out if BeginAccess didn't succeed and we didn't bind any surfaces.
+  if (egl_state->is_bind_pending()) {
+    return;
   }
+
+  gl::GLDisplayEGL* display = gl::GLDisplayEGL::GetDisplayForCurrentContext();
+  CHECK(display);
+  CHECK_EQ(display->GetDisplay(), egl_state->egl_display_);
+
+  // Only enqueue shared events if we might ever use this backing on another
+  // Metal device e.g. with WebGPU or Graphite.
+  const bool has_webgpu_usage =
+      usage() &
+      (SHARED_IMAGE_USAGE_WEBGPU_READ | SHARED_IMAGE_USAGE_WEBGPU_WRITE |
+       SHARED_IMAGE_USAGE_WEBGPU_SWAP_CHAIN_TEXTURE |
+       SHARED_IMAGE_USAGE_WEBGPU_STORAGE_TEXTURE);
+  if (gl::GetANGLEImplementation() == gl::ANGLEImplementation::kMetal &&
+      (has_webgpu_usage || gr_context_type_ != GrContextType::kGL)) {
+    id<MTLSharedEvent> shared_event = nil;
+    uint64_t signal_value = 0;
+    if (display->CreateMetalSharedEvent(&shared_event, &signal_value)) {
+      AddSharedEventForEndAccess(shared_event, signal_value, readonly);
+    } else {
+      LOG(DFATAL) << "Failed to create Metal shared event";
+    }
+  }
+
+  // We have to call eglWaitUntilWorkScheduledANGLE on multi-GPU systems for
+  // IOSurface synchronization by the kernel e.g. using waitUntilScheduled on
+  // Metal or glFlush on OpenGL. Defer the call until CoreAnimation, Dawn,
+  // or another ANGLE EGLDisplay needs to access to avoid unnecessary overhead.
+  AddEGLDisplayWithPendingCommands(display);
 
   // When SwANGLE is used as the GL implementation, it holds an internal
   // texture. We have to call ReleaseTexImage here to trigger a copy from that
@@ -1808,64 +1876,20 @@ void IOSurfaceImageBacking::IOSurfaceBackingEGLStateEndAccess(
   // serialized with respect to reads (so that the end of a write always
   // triggers a release and copy). By design, IOSurfaceImageBackingFactory
   // enforces this property for this use case.
-  bool needs_sync_for_swangle =
-      (gl::GetANGLEImplementation() == gl::ANGLEImplementation::kSwiftShader &&
-       (num_ongoing_read_accesses_ == 0));
-
-  // Similarly, when ANGLE's metal backend is used, we have to signal a call to
-  // waitUntilScheduled() using the same method on EndAccess to ensure IOSurface
-  // synchronization. In this case, it is sufficient to release the image at the
-  // end of a write. As above, IOSurfaceImageBackingFactory enforces
-  // serialization of reads and writes for this use case.
-  // TODO(https://anglebug.com/7626): Enable on Metal only when
-  // CPU_READ or SCANOUT is specified. When doing so, adjust the conditions for
-  // disallowing concurrent read/write in IOSurfaceImageBackingFactory as
-  // suitable.
-  bool needs_sync_for_metal =
-      (gl::GetANGLEImplementation() == gl::ANGLEImplementation::kMetal &&
-       !readonly);
-
-  bool needs_synchronization = needs_sync_for_swangle || needs_sync_for_metal;
-  if (needs_synchronization) {
-    if (needs_sync_for_metal) {
-      if (!egl_state->egl_surfaces_.empty()) {
-        gl::GLDisplayEGL* display =
-            gl::GLDisplayEGL::GetDisplayForCurrentContext();
-        CHECK(display);
-        CHECK(display->GetDisplay() == egl_state->egl_display_);
-        id<MTLSharedEvent> shared_event = nil;
-        uint64_t signal_value = 0;
-        if (display->CreateMetalSharedEvent(&shared_event, &signal_value)) {
-          AddSharedEventForEndAccess(shared_event, signal_value, readonly);
-        } else {
-          LOG(DFATAL) << "Failed to create Metal shared event";
-        }
-
-        // Defer WaitForANGLECommandsToBeScheduled() call until CoreAnimation or
-        // Dawn needs to access this image. This is to avoid waiting overhead.
-        // TODO(b/328411251): Investigate whether this is needed if the access
-        // is readonly.
-        AddEGLDisplayWithPendingCommands(display);
-      }
+  if (gl::GetANGLEImplementation() == gl::ANGLEImplementation::kSwiftShader &&
+      num_ongoing_read_accesses_ == 0) {
+    CHECK_EQ(static_cast<int>(egl_state->gl_textures_.size()),
+             format().NumberOfPlanes());
+    CHECK_EQ(static_cast<int>(egl_state->egl_surfaces_.size()),
+             format().NumberOfPlanes());
+    for (int plane_index = 0; plane_index < format().NumberOfPlanes();
+         plane_index++) {
+      gl::ScopedRestoreTexture scoped_restore(
+          gl::g_current_gl_context, egl_state->GetGLTarget(),
+          egl_state->GetGLServiceId(plane_index));
+      egl_state->egl_surfaces_[plane_index]->ReleaseTexImage();
     }
-
-    DCHECK_EQ(static_cast<int>(egl_state->gl_textures_.size()),
-              format().NumberOfPlanes());
-    DCHECK(egl_state->egl_surfaces_.empty() ||
-           static_cast<int>(egl_state->egl_surfaces_.size()) ==
-               format().NumberOfPlanes());
-    if (!egl_state->is_bind_pending()) {
-      if (!egl_state->egl_surfaces_.empty()) {
-        for (int plane_index = 0; plane_index < format().NumberOfPlanes();
-             plane_index++) {
-          gl::ScopedRestoreTexture scoped_restore(
-              gl::g_current_gl_context, egl_state->GetGLTarget(),
-              egl_state->GetGLServiceId(plane_index));
-          egl_state->egl_surfaces_[plane_index]->ReleaseTexImage();
-        }
-      }
-      egl_state->set_bind_pending();
-    }
+    egl_state->set_bind_pending();
   }
 }
 

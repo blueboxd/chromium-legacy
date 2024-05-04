@@ -7,8 +7,10 @@
 
 #include <cstdint>
 #include <optional>
+#include <string_view>
 
 #include "base/profiler/sample_metadata.h"
+#include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -60,8 +62,9 @@ class PageTimingMetadataRecorder {
   // user interaction with the given start, end and queued time.
   void AddInteractionDurationAfterQueueingMetadata(
       const base::TimeTicks interaction_start,
-      const base::TimeTicks interaction_end,
-      const base::TimeTicks interaction_queued_main_thread);
+      const base::TimeTicks interaction_queued_main_thread,
+      const base::TimeTicks interaction_commit_finish,
+      const base::TimeTicks interaction_end);
 
   // Packs the 32 bit instance_id and interaction_id into one 64 bit signed int
   // to fit the int64 key field of the Metadata API. Public for testing.
@@ -73,7 +76,7 @@ class PageTimingMetadataRecorder {
   // To be overridden by test class.
   virtual void ApplyMetadataToPastSamples(base::TimeTicks period_start,
                                           base::TimeTicks period_end,
-                                          base::StringPiece name,
+                                          std::string_view name,
                                           int64_t key,
                                           int64_t value,
                                           base::SampleMetadataScope scope);

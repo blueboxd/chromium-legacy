@@ -101,8 +101,8 @@ bool IsFormatSupported(viz::SharedImageFormat format,
   // on Skia to do YUV/RGB conversion using Vulkan before accessing textures via
   // GL (implemented by setting VideoFrame's MailboxHolder::texture_target to
   // zero on Fuchsia and checking it everywhere necessary).
-  // TODO(crbug.com/1310026): Enable ImageBackingOzone to be used for all planes
-  // in Fuchsia and enable this check for Fuchsia.
+  // TODO(crbug.com/40219694): Enable ImageBackingOzone to be used for all
+  // planes in Fuchsia and enable this check for Fuchsia.
 #if !BUILDFLAG(IS_FUCHSIA)
   if (HasGLES2ReadOrWriteUsage(usage)) {
     if (format.IsLegacyMultiplanar() || format.PrefersExternalSampler()) {
@@ -153,9 +153,10 @@ constexpr uint32_t kSupportedUsage =
     SHARED_IMAGE_USAGE_WEBGPU_STORAGE_TEXTURE |
 #endif
     SHARED_IMAGE_USAGE_GLES2_READ | SHARED_IMAGE_USAGE_GLES2_WRITE |
-    SHARED_IMAGE_USAGE_GLES2_FRAMEBUFFER_HINT |
+    SHARED_IMAGE_USAGE_GLES2_FOR_RASTER_ONLY |
     SHARED_IMAGE_USAGE_DISPLAY_WRITE | SHARED_IMAGE_USAGE_DISPLAY_READ |
     SHARED_IMAGE_USAGE_RASTER_READ | SHARED_IMAGE_USAGE_RASTER_WRITE |
+    SHARED_IMAGE_USAGE_RASTER_OVER_GLES2_ONLY |
     SHARED_IMAGE_USAGE_OOP_RASTERIZATION | SHARED_IMAGE_USAGE_SCANOUT |
     SHARED_IMAGE_USAGE_VIDEO_DECODE | SHARED_IMAGE_USAGE_HIGH_PERFORMANCE_GPU |
     SHARED_IMAGE_USAGE_CPU_UPLOAD | SHARED_IMAGE_USAGE_CPU_WRITE;
@@ -193,7 +194,7 @@ ExternalVkImageBackingFactory::CreateSharedImage(
     uint32_t usage,
     std::string debug_label,
     bool is_thread_safe) {
-  DCHECK(!is_thread_safe);
+  CHECK(!is_thread_safe);
   return ExternalVkImageBacking::Create(
       context_state_, command_pool_.get(), mailbox, format, size, color_space,
       surface_origin, alpha_type, usage, std::move(debug_label),
@@ -210,7 +211,9 @@ ExternalVkImageBackingFactory::CreateSharedImage(
     SkAlphaType alpha_type,
     uint32_t usage,
     std::string debug_label,
+    bool is_thread_safe,
     base::span<const uint8_t> pixel_data) {
+  CHECK(!is_thread_safe);
   return ExternalVkImageBacking::Create(
       context_state_, command_pool_.get(), mailbox, format, size, color_space,
       surface_origin, alpha_type, usage, std::move(debug_label),

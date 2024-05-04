@@ -82,7 +82,11 @@ class ZpsSectionWithMVTiles : public ZpsSection {
 // Android prefixed section for Adaptive Suggestions grouping.
 class AndroidNonZPSSection : public Section {
  public:
-  explicit AndroidNonZPSSection(omnibox::GroupConfigMap& group_configs);
+  explicit AndroidNonZPSSection(bool show_only_search_suggestions,
+                                omnibox::GroupConfigMap& group_configs);
+
+  // Section:
+  void InitFromMatches(ACMatches& matches) override;
 
   // Specify number of matches that are at least 50% exposed while the
   // software keyboard is visible.
@@ -167,6 +171,26 @@ class DesktopWebZpsSection : public ZpsSection {
   explicit DesktopWebZpsSection(omnibox::GroupConfigMap& group_configs);
 };
 
+// Section expressing the Desktop ZPS limits and grouping for the Lens
+// contextual searchbox.
+// - up to 8 suggestions total.
+//  - up to 8 page related suggestions.
+class DesktopLensContextualZpsSection : public ZpsSection {
+ public:
+  explicit DesktopLensContextualZpsSection(
+      omnibox::GroupConfigMap& group_configs);
+};
+
+// Section expressing the Desktop ZPS limits and grouping for the Lens
+// multimodal searchbox.
+// - up to 8 suggestions total.
+//  - up to 8 multimodal suggestions.
+class DesktopLensMultimodalZpsSection : public ZpsSection {
+ public:
+  explicit DesktopLensMultimodalZpsSection(
+      omnibox::GroupConfigMap& group_configs);
+};
+
 // Section expressing the Desktop, non-ZPS limits and grouping.
 // - up to 10 suggestions total.
 //  - up to 1 default, 10 starer packs, 10 search, 8 nav, and 1 history cluster
@@ -190,9 +214,7 @@ class DesktopNonZpsSection : public Section {
 //  - up to `max_trending_queries` trending suggestions.
 class IOSNTPZpsSection : public ZpsSection {
  public:
-  explicit IOSNTPZpsSection(size_t max_trending_queries,
-                            size_t max_psuggest_queries,
-                            omnibox::GroupConfigMap& group_configs);
+  explicit IOSNTPZpsSection(omnibox::GroupConfigMap& group_configs);
 };
 
 // Section expressing the iPhone ZPS limits and grouping for the SRP.

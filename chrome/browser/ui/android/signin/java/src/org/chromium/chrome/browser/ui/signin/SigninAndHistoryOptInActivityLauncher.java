@@ -8,8 +8,10 @@ import android.content.Context;
 
 import androidx.annotation.IntDef;
 import androidx.annotation.MainThread;
+import androidx.annotation.NonNull;
 
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.ui.signin.account_picker.AccountPickerBottomSheetStrings;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
 
 import java.lang.annotation.Retention;
@@ -35,20 +37,53 @@ public interface SigninAndHistoryOptInActivityLauncher {
 
     /**
      * Launches the {@link SigninAndHistoryOptInActivity} from an eligible access point, shows error
-     * UI if sign-in is not allowed.
+     * UI if sign-in is not allowed. Returns a boolean indicating whether the activity was launched.
      *
      * @param profile the current profile.
+     * @param bottomSheetString the strings shown in the sign-in bottom sheet.
      * @param noAccountSigninMode The type of UI that should be shown for the sign-in step if
      *     there's no account on the device.
+     * @param withAccountSigninMode The type of UI that should be shown for the sign-in step if
+     *     there are 1+ accounts on the device.
      * @param historyOptInMode Whether the history opt-in should be always, optionally or never
      *     shown.
      * @param accessPoint The access point from which the sign-in was triggered.
      */
     @MainThread
-    public void launchActivityIfAllowed(
+    boolean launchActivityIfAllowed(
             Context context,
             Profile profile,
+            @NonNull AccountPickerBottomSheetStrings bottomSheetStrings,
             @SigninAndHistoryOptInCoordinator.NoAccountSigninMode int noAccountSigninMode,
+            @SigninAndHistoryOptInCoordinator.WithAccountSigninMode int withAccountSigninMode,
             @SigninAndHistoryOptInCoordinator.HistoryOptInMode int historyOptInMode,
             @AccessPoint int accessPoint);
+
+    /**
+     * Launches the {@link SigninAndHistoryOptInActivity} from an eligible access point where the
+     * flow is dedicated to enabling history sync. Shows error UI if sign-in is not allowed.
+     *
+     * @param profile the current profile.
+     * @param bottomSheetString the strings shown in the sign-in bottom sheet.
+     * @param noAccountSigninMode The type of UI that should be shown for the sign-in step if *
+     *     there's no account on the device.
+     * @param withAccountSigninMode The type of UI that should be shown for the sign-in step if *
+     *     there are 1+ accounts on the device.
+     * @param signinAccessPoint The access point from which the sign-in was triggered.
+     */
+    @MainThread
+    void launchActivityForHistorySyncDedicatedFlow(
+            @NonNull Context context,
+            @NonNull Profile profile,
+            @NonNull AccountPickerBottomSheetStrings bottomSheetStrings,
+            @SigninAndHistoryOptInCoordinator.NoAccountSigninMode int noAccountSigninMode,
+            @SigninAndHistoryOptInCoordinator.WithAccountSigninMode int withAccountSigninMode,
+            @SigninAccessPoint int signinAccessPoint);
+
+    /**
+     * Launches the upgrade promo flavor of the {@link SigninAndHistoryOptInActivity} if sign-in and
+     * history opt-in are allowed.
+     */
+    @MainThread
+    void launchUpgradePromoActivityIfAllowed(Context context, Profile profile);
 }

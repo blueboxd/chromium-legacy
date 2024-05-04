@@ -4,6 +4,8 @@
 
 #include "chrome/renderer/extensions/resource_request_policy.h"
 
+#include <string_view>
+
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/common/extensions/chrome_manifest_url_handlers.h"
@@ -26,11 +28,6 @@
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 #include "url/origin.h"
-
-#if BUILDFLAG(ENABLE_PDF)
-#include "base/feature_list.h"
-#include "pdf/pdf_features.h"
-#endif  // BUILDFLAG(ENABLE_PDF)
 
 namespace extensions {
 
@@ -129,10 +126,9 @@ bool ResourceRequestPolicy::CanRequestResource(
 
 #if BUILDFLAG(ENABLE_PDF)
   // Handle specific cases for the PDF viewer.
-  if (base::FeatureList::IsEnabled(chrome_pdf::features::kPdfOopif) &&
-      extension_origin.scheme() == kExtensionScheme &&
+  if (extension_origin.scheme() == kExtensionScheme &&
       extension_origin.host() == extension_misc::kPdfExtensionId) {
-    // For OOPIF PDF viewer, `page_origin` doesn't match the `extension_origin`,
+    // For the PDF viewer, `page_origin` doesn't match the `extension_origin`,
     // but the PDF extension frame should still be able to request resources
     // from itself. The PDF content frame should also be able to request
     // resources from the PDF extension. For both cases, the parent origin of
@@ -181,8 +177,8 @@ bool ResourceRequestPolicy::CanRequestResource(
   // hybrid hosted/packaged apps. The one exception is access to icons, since
   // some extensions want to be able to do things like create their own
   // launchers.
-  base::StringPiece resource_root_relative_path =
-      resource_url.path_piece().empty() ? base::StringPiece()
+  std::string_view resource_root_relative_path =
+      resource_url.path_piece().empty() ? std::string_view()
                                         : resource_url.path_piece().substr(1);
   if (extension->is_hosted_app() &&
       !IconsInfo::GetIcons(extension)

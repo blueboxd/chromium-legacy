@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_ALLOCATOR_PARTITION_ALLOCATOR_SRC_PARTITION_ALLOC_RESERVATION_OFFSET_TABLE_H_
-#define BASE_ALLOCATOR_PARTITION_ALLOCATOR_SRC_PARTITION_ALLOC_RESERVATION_OFFSET_TABLE_H_
+#ifndef PARTITION_ALLOC_RESERVATION_OFFSET_TABLE_H_
+#define PARTITION_ALLOC_RESERVATION_OFFSET_TABLE_H_
 
 #include <cstddef>
 #include <cstdint>
 #include <limits>
 #include <tuple>
 
-#include "build/build_config.h"
 #include "partition_alloc/address_pool_manager.h"
+#include "partition_alloc/build_config.h"
 #include "partition_alloc/partition_address_space.h"
 #include "partition_alloc/partition_alloc_base/compiler_specific.h"
 #include "partition_alloc/partition_alloc_base/component_export.h"
@@ -163,8 +163,8 @@ PA_ALWAYS_INLINE const uint16_t* GetReservationOffsetTableEnd(
 PA_ALWAYS_INLINE uint16_t* ReservationOffsetPointer(uintptr_t address) {
 #if BUILDFLAG(HAS_64_BIT_POINTERS)
   // In 64-bit mode, find the owning Pool and compute the offset from its base.
-  auto [pool, unused_base, offset] = GetPoolInfo(address);
-  return ReservationOffsetPointer(pool, offset);
+  PartitionAddressSpace::PoolInfo info = GetPoolInfo(address);
+  return ReservationOffsetPointer(info.handle, info.offset);
 #else
   size_t table_index = address >> kSuperPageShift;
   PA_DCHECK(table_index <
@@ -289,4 +289,4 @@ PA_ALWAYS_INLINE bool IsManagedByNormalBucketsOrDirectMap(uintptr_t address) {
 
 }  // namespace partition_alloc::internal
 
-#endif  // BASE_ALLOCATOR_PARTITION_ALLOCATOR_SRC_PARTITION_ALLOC_RESERVATION_OFFSET_TABLE_H_
+#endif  // PARTITION_ALLOC_RESERVATION_OFFSET_TABLE_H_

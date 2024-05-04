@@ -4,6 +4,10 @@
 
 #import "ios/chrome/browser/web/model/chrome_web_client.h"
 
+#import <UIKit/UIKit.h>
+
+#import <string_view>
+
 #import "base/apple/bundle_locations.h"
 #import "base/command_line.h"
 #import "base/feature_list.h"
@@ -23,7 +27,7 @@
 #import "components/password_manager/core/common/password_manager_features.h"
 #import "components/password_manager/ios/password_manager_java_script_feature.h"
 #import "components/strings/grit/components_strings.h"
-#import "components/supervised_user/core/common/buildflags.h"
+#import "components/supervised_user/core/browser/supervised_user_interstitial.h"
 #import "components/translate/ios/browser/translate_java_script_feature.h"
 #import "components/version_info/version_info.h"
 #import "ios/chrome/browser/autofill/model/bottom_sheet/autofill_bottom_sheet_java_script_feature.h"
@@ -50,6 +54,11 @@
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/shared/ui/elements/windowed_container_view.h"
 #import "ios/chrome/browser/ssl/model/ios_ssl_error_handler.h"
+#import "ios/chrome/browser/supervised_user/model/supervised_user_error.h"
+#import "ios/chrome/browser/supervised_user/model/supervised_user_error_container.h"
+#import "ios/chrome/browser/supervised_user/model/supervised_user_interstitial_java_script_feature.h"
+#import "ios/chrome/browser/supervised_user/model/supervised_user_service_factory.h"
+#import "ios/chrome/browser/supervised_user/model/supervised_user_url_filter_tab_helper.h"
 #import "ios/chrome/browser/web/model/browser_about_rewriter.h"
 #import "ios/chrome/browser/web/model/choose_file/choose_file_java_script_feature.h"
 #import "ios/chrome/browser/web/model/chrome_main_parts.h"
@@ -94,18 +103,6 @@
 #import "ui/base/l10n/l10n_util.h"
 #import "ui/base/resource/resource_bundle.h"
 #import "url/gurl.h"
-
-#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-#import "components/supervised_user/core/browser/supervised_user_interstitial.h"
-#import "ios/chrome/browser/supervised_user/model/supervised_user_error.h"
-#import "ios/chrome/browser/supervised_user/model/supervised_user_error_container.h"
-#import "ios/chrome/browser/supervised_user/model/supervised_user_interstitial_java_script_feature.h"
-#import "ios/chrome/browser/supervised_user/model/supervised_user_service_factory.h"
-#import "ios/chrome/browser/supervised_user/model/supervised_user_url_filter_tab_helper.h"
-#endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
-
-#import <UIKit/UIKit.h>
-
 namespace {
 // The tag describing the product name with a placeholder for the version.
 const char kProductTagWithPlaceholder[] = "CriOS/%s";
@@ -179,7 +176,6 @@ NSString* GetHttpsOnlyModeErrorPageHtml(web::WebState* web_state,
   return base::SysUTF8ToNSString(error_page_content);
 }
 
-#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
 // Returns the Supervised User Error Page Interstitial HTML.
 NSString* GetSupervisedUserErrorPageHTML(web::WebState* web_state,
                                          int64_t navigation_id,
@@ -213,7 +209,6 @@ NSString* GetSupervisedUserErrorPageHTML(web::WebState* web_state,
       ->AssociateBlockingPage(navigation_id, std::move(page));
   return base::SysUTF8ToNSString(error_page_content);
 }
-#endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
 
 // Returns a string describing the product name and version, of the
 // form "productname/version". Used as part of the user agent string.
@@ -296,7 +291,7 @@ std::u16string ChromeWebClient::GetLocalizedString(int message_id) const {
   return l10n_util::GetStringUTF16(message_id);
 }
 
-base::StringPiece ChromeWebClient::GetDataResource(
+std::string_view ChromeWebClient::GetDataResource(
     int resource_id,
     ui::ResourceScaleFactor scale_factor) const {
   return ui::ResourceBundle::GetSharedInstance().GetRawDataResourceForScale(
@@ -364,10 +359,8 @@ std::vector<web::JavaScriptFeature*> ChromeWebClient::GetJavaScriptFeatures(
   features.push_back(FollowJavaScriptFeature::GetInstance());
   features.push_back(ChooseFileJavaScriptFeature::GetInstance());
 
-#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   features.push_back(
       SupervisedUserInterstitialJavaScriptFeature::GetInstance());
-#endif
   return features;
 }
 
@@ -412,13 +405,11 @@ void ChromeWebClient::PrepareErrorPage(
     DCHECK_EQ(kLookalikeUrlErrorCode, final_underlying_error.code);
     std::move(callback).Run(
         GetLookalikeUrlErrorPageHtml(web_state, navigation_id));
-#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   } else if ([final_underlying_error.domain
                  isEqualToString:kSupervisedUserInterstitialErrorDomain]) {
     CHECK_EQ(kSupervisedUserInterstitialErrorCode, final_underlying_error.code);
     std::move(callback).Run(
         GetSupervisedUserErrorPageHTML(web_state, navigation_id, url));
-#endif
   } else if ([final_underlying_error.domain
                  isEqualToString:kHttpsOnlyModeErrorDomain]) {
     // Only kHttpsOnlyModeErrorCode is supported.
@@ -532,20 +523,6 @@ bool ChromeWebClient::IsPointingToSameDocument(const GURL& url1,
   GURL url_to_compare1 = GetOnlineUrl(url1);
   GURL url_to_compare2 = GetOnlineUrl(url2);
   return url_to_compare1 == url_to_compare2;
-}
-
-bool ChromeWebClient::IsMixedContentAutoupgradeEnabled(
-    web::BrowserState* browser_state) const {
-  ChromeBrowserState* chrome_browser_state =
-      ChromeBrowserState::FromBrowserState(browser_state);
-  if (!chrome_browser_state->GetPrefs()->GetBoolean(
-          prefs::kMixedContentAutoupgradeEnabled) &&
-      chrome_browser_state->GetPrefs()->IsManagedPreference(
-          prefs::kMixedContentAutoupgradeEnabled)) {
-    return false;
-  }
-  return base::FeatureList::IsEnabled(
-      security_interstitials::features::kMixedContentAutoupgrade);
 }
 
 bool ChromeWebClient::IsBrowserLockdownModeEnabled(

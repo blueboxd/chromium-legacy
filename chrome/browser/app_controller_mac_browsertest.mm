@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#import "chrome/browser/app_controller_mac.h"
+
 #import <Cocoa/Cocoa.h>
 #import <Foundation/Foundation.h>
 #import <objc/runtime.h>
@@ -21,11 +23,11 @@
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/app/chrome_command_ids.h"
-#import "chrome/browser/app_controller_mac.h"
 #include "chrome/browser/apps/platform_apps/app_browsertest_util.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browser_features.h"
@@ -44,7 +46,6 @@
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/profiles/profile_observer.h"
 #include "chrome/browser/profiles/profile_test_util.h"
-#include "chrome/browser/signin/signin_features.h"
 #include "chrome/browser/signin/signin_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -61,7 +62,6 @@
 #include "chrome/browser/ui/tabs/tab_enums.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/ui_features.h"
-#include "chrome/browser/ui/webui/welcome/helpers.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
@@ -75,6 +75,7 @@
 #include "components/bookmarks/test/bookmark_test_helpers.h"
 #include "components/policy/core/common/policy_pref_names.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/public/base/signin_switches.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test.h"
@@ -354,6 +355,37 @@ class AppControllerProfilePickerBrowserTest : public InProcessBrowserTest {
     return active_browser_list_;
   }
 
+  // Brings the ProfilerPicker onscreen and returns its NSWindow.
+  NSWindow* ActivateProfilePicker() {
+    NSArray<NSWindow*>* startingWindows = [NSApp windows];
+
+    // ProfilePicker::Show() calls ProfilePicker::Display(), which, for tests,
+    // creates the profile asynchronously. Only after the profile gets created
+    // is the profile picker initialized and brought onscreen. Therefore, we
+    // need to wait for the picker to appear before proceeding with the test.
+    ProfilePicker::Show(ProfilePicker::Params::FromEntryPoint(
+        ProfilePicker::EntryPoint::kProfileMenuManageProfiles));
+
+    int counter = 5;
+    while (!ProfilePicker::IsActive() && counter--) {
+      base::TimeDelta delay = base::Seconds(1);
+      base::RunLoop run_loop;
+      base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
+          FROM_HERE, run_loop.QuitClosure(), delay);
+      run_loop.Run();
+    }
+    EXPECT_TRUE(ProfilePicker::IsActive());
+
+    // The ProfilePicker is the new window in the list.
+    for (NSWindow* window in [NSApp windows]) {
+      if (![startingWindows containsObject:window]) {
+        return window;
+      }
+    }
+
+    return nil;
+  }
+
  private:
   raw_ptr<const BrowserList> active_browser_list_;
 };
@@ -527,29 +559,41 @@ IN_PROC_BROWSER_TEST_F(AppControllerProfilePickerBrowserTest,
 
 // Checks that menu items and commands work when the profile picker is open.
 IN_PROC_BROWSER_TEST_F(AppControllerProfilePickerBrowserTest, MenuCommands) {
-  // Show the profile picker.
-  ProfilePicker::Show(ProfilePicker::Params::FromEntryPoint(
-      ProfilePicker::EntryPoint::kProfileMenuManageProfiles));
-
   AppController* app_controller = AppController.sharedController;
 
-  // Unhandled menu items are disabled.
-  NSMenu* file_submenu = [[NSApp.mainMenu itemWithTag:IDC_FILE_MENU] submenu];
-  NSMenuItem* close_tab_menu_item = [file_submenu itemWithTag:IDC_CLOSE_TAB];
-  EXPECT_FALSE([app_controller validateUserInterfaceItem:close_tab_menu_item]);
-  [file_submenu update];
-  EXPECT_FALSE([close_tab_menu_item isEnabled]);
+  // Bring the ProfilePicker onscreen. In normal browser operation, it would
+  // be the mainWindow, but with Ventura, the test harness can't activate
+  // Chrome, and -mainWindow can return nil. Use a workaround to make it the
+  // main window.
+  NSWindow* profileWindow = ActivateProfilePicker();
+  [app_controller setMainWindowForTesting:profileWindow];
 
-  // Enabled menu items work.
+  // Menus are updated before they are brought onscreen. This includes a call
+  // to -menuNeedsUpdate: to update the menu's items.
+  NSMenu* file_submenu = [[NSApp.mainMenu itemWithTag:IDC_FILE_MENU] submenu];
+  [app_controller menuNeedsUpdate:file_submenu];
+
+  // The Profiler Picker has no tabs, so Close Tab should not be present.
+  NSMenuItem* close_tab_menu_item = [file_submenu itemWithTag:IDC_CLOSE_TAB];
+  EXPECT_EQ(nil, close_tab_menu_item);
+
+  // Close Window should be available.
+  NSMenuItem* close_window_menu_item =
+      [file_submenu itemWithTag:IDC_CLOSE_WINDOW];
+  EXPECT_FALSE([close_window_menu_item isHidden]);
+  EXPECT_TRUE([NSApp validateMenuItem:close_window_menu_item]);
+
+  // Make sure New Window works.
   NSMenuItem* new_window_menu_item = [file_submenu itemWithTag:IDC_NEW_WINDOW];
   EXPECT_TRUE([new_window_menu_item isEnabled]);
   EXPECT_TRUE([app_controller validateUserInterfaceItem:new_window_menu_item]);
-  // Click on the item and checks that a new browser is opened.
+
+  // Activate the item and check that a new browser is opened.
   ui_test_utils::BrowserChangeObserver browser_added_observer(
       nullptr, ui_test_utils::BrowserChangeObserver::ChangeType::kAdded);
   [file_submenu
       performActionForItemAtIndex:[file_submenu
-                                      indexOfItemWithTag:IDC_NEW_WINDOW]];
+                                      indexOfItem:new_window_menu_item]];
   EXPECT_TRUE(browser_added_observer.Wait());
 }
 
@@ -559,9 +603,6 @@ class AppControllerFirstRunBrowserTest : public AppControllerBrowserTest {
     InProcessBrowserTest::SetUpDefaultCommandLine(command_line);
     command_line->RemoveSwitch(switches::kNoFirstRun);
   }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_{kForYouFre};
 };
 
 IN_PROC_BROWSER_TEST_F(AppControllerFirstRunBrowserTest,
@@ -594,21 +635,7 @@ IN_PROC_BROWSER_TEST_F(AppControllerFirstRunBrowserTest,
 
 class AppControllerOpenShortcutBrowserTest : public InProcessBrowserTest {
  protected:
-  AppControllerOpenShortcutBrowserTest()
-      : AppControllerOpenShortcutBrowserTest(/*enable_fre=*/false) {}
-
-  AppControllerOpenShortcutBrowserTest(bool enable_fre) {
-    std::vector<base::test::FeatureRef> enabled_features = {
-        welcome::kForceEnabled};
-    std::vector<base::test::FeatureRef> disabled_features = {};
-    if (enable_fre) {
-      enabled_features.push_back(kForYouFre);
-    } else {
-      disabled_features.push_back(kForYouFre);
-    }
-
-    scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
-  }
+  AppControllerOpenShortcutBrowserTest() = default;
 
   void SetUpInProcessBrowserTestFixture() override {
     // In order to mimic opening shortcut during browser startup, we need to
@@ -647,31 +674,10 @@ class AppControllerOpenShortcutBrowserTest : public InProcessBrowserTest {
     // append about:blank as default url.
     command_line->AppendArg(chrome::kChromeUINewTabURL);
   }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 IN_PROC_BROWSER_TEST_F(AppControllerOpenShortcutBrowserTest,
                        OpenShortcutOnStartup) {
-  // The two tabs expected are the Welcome page and the desired URL.
-  EXPECT_EQ(2, browser()->tab_strip_model()->count());
-  EXPECT_EQ(g_open_shortcut_url, browser()
-                                     ->tab_strip_model()
-                                     ->GetActiveWebContents()
-                                     ->GetLastCommittedURL());
-}
-
-class AppControllerOpenShortcutWithFreBrowserTest
-    : public AppControllerOpenShortcutBrowserTest {
- protected:
-  AppControllerOpenShortcutWithFreBrowserTest()
-      : AppControllerOpenShortcutBrowserTest(/*enable_fre=*/true) {}
-};
-
-IN_PROC_BROWSER_TEST_F(AppControllerOpenShortcutWithFreBrowserTest,
-                       OpenShortcutOnStartup) {
-  // The Welcome page is not expected.
   EXPECT_EQ(1, browser()->tab_strip_model()->count());
 
   EXPECT_EQ(g_open_shortcut_url,

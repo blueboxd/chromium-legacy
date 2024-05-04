@@ -17,11 +17,8 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
-import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
-import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager.ThumbnailChangeListener;
 import org.chromium.chrome.browser.compositor.overlays.strip.StripLayoutHelperManager;
 import org.chromium.chrome.browser.device.DeviceClassManager;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.hub.HubFieldTrial;
 import org.chromium.chrome.browser.hub.HubLayout;
@@ -29,15 +26,18 @@ import org.chromium.chrome.browser.hub.HubLayoutDependencyHolder;
 import org.chromium.chrome.browser.layouts.LayoutType;
 import org.chromium.chrome.browser.layouts.components.VirtualView;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab_ui.TabContentManager;
+import org.chromium.chrome.browser.tab_ui.TabContentManager.ThumbnailChangeListener;
+import org.chromium.chrome.browser.tab_ui.TabSwitcher;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tasks.tab_management.TabManagementDelegate;
 import org.chromium.chrome.browser.tasks.tab_management.TabManagementDelegateProvider;
-import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher;
 import org.chromium.chrome.browser.theme.ThemeColorProvider;
 import org.chromium.chrome.browser.theme.ThemeColorProvider.ThemeColorObserver;
 import org.chromium.chrome.browser.theme.TopUiThemeColorProvider;
 import org.chromium.chrome.browser.toolbar.ControlContainer;
+import org.chromium.chrome.browser.ui.desktop_windowing.DesktopWindowStateProvider;
 import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
 import org.chromium.chrome.features.start_surface.StartSurface;
 import org.chromium.chrome.features.start_surface.StartSurfaceDelegate;
@@ -87,6 +87,7 @@ public class LayoutManagerChrome extends LayoutManagerImpl
     // Lazy Tab Switcher Init
     private final Supplier<StartSurface> mStartSurfaceSupplier;
     private final Supplier<TabSwitcher> mTabSwitcherSupplier;
+    private final Supplier<TabModelSelector> mTabModelSelectorSupplier;
     private final ScrimCoordinator mScrimCoordinator;
     private final Callable<ViewGroup> mCreateTabSwitcherOrStartSurfaceCallable;
 
@@ -98,6 +99,8 @@ public class LayoutManagerChrome extends LayoutManagerImpl
     private TopUiThemeColorProvider mTopUiThemeColorProvider;
     private ThemeColorObserver mThemeColorObserver;
 
+    protected @Nullable DesktopWindowStateProvider mDesktopWindowStateProvider;
+
     /**
      * Creates the {@link LayoutManagerChrome} instance.
      *
@@ -107,6 +110,7 @@ public class LayoutManagerChrome extends LayoutManagerImpl
      *     StartSurfaceHomeLayout if it has value.
      * @param tabSwitcherSupplier Supplier for an interface to talk to the Grid Tab Switcher. Used
      *     to create TabSwitcherLayout if it has value.
+     * @param tabModelSelectorSupplier Supplier for an interface to talk to the Tab Model Selector.
      * @param browserControlsStateProvider The {@link BrowserControlsStateProvider} for top
      *     controls.
      * @param tabContentManagerSupplier Supplier of the {@link TabContentManager} instance.
@@ -122,6 +126,7 @@ public class LayoutManagerChrome extends LayoutManagerImpl
             ViewGroup contentContainer,
             Supplier<StartSurface> startSurfaceSupplier,
             Supplier<TabSwitcher> tabSwitcherSupplier,
+            Supplier<TabModelSelector> tabModelSelectorSupplier,
             BrowserControlsStateProvider browserControlsStateProvider,
             ObservableSupplier<TabContentManager> tabContentManagerSupplier,
             Supplier<TopUiThemeColorProvider> topUiThemeColorProvider,
@@ -138,6 +143,7 @@ public class LayoutManagerChrome extends LayoutManagerImpl
 
         mStartSurfaceSupplier = startSurfaceSupplier;
         mTabSwitcherSupplier = tabSwitcherSupplier;
+        mTabModelSelectorSupplier = tabModelSelectorSupplier;
         mScrimCoordinator = scrimCoordinator;
         mCreateTabSwitcherOrStartSurfaceCallable = delayedTabSwitcherOrStartSurfaceCallable;
         mHubLayoutDependencyHolder = hubLayoutDependencyHolder;
@@ -175,19 +181,6 @@ public class LayoutManagerChrome extends LayoutManagerImpl
             HubLayoutDependencyHolder hubLayoutDependencyHolder) {
         assert mTabSwitcherLayout == null && mStartSurfaceHomeLayout == null && mHubLayout == null;
 
-        // TabSwitcherLayout creation is deferred until it is first shown.
-        if (!ChromeFeatureList.sDeferTabSwitcherLayoutCreation.isEnabled()) {
-            if (HubFieldTrial.isHubEnabled()) {
-                createHubLayout(hubLayoutDependencyHolder);
-            } else {
-                assert tabSwitcher != null;
-                createTabSwitcherLayout(
-                        tabSwitcher,
-                        browserControlsStateProvider,
-                        scrimCoordinator,
-                        tabSwitcherScrimAnchor);
-            }
-        }
         if (startSurface != null) {
             createStartSurfaceHomeLayout(startSurface);
         }
@@ -222,7 +215,8 @@ public class LayoutManagerChrome extends LayoutManagerImpl
                         browserControlsStateProvider,
                         tabSwitcher,
                         tabSwitcherScrimAnchor,
-                        scrimCoordinator);
+                        scrimCoordinator,
+                        mDesktopWindowStateProvider);
 
         if (DeviceFormFactor.isNonMultiDisplayContextOnTablet(mHost.getContext())) {
             mTabSwitcherFocusLayoutStateObserver =
@@ -258,7 +252,9 @@ public class LayoutManagerChrome extends LayoutManagerImpl
                         /* updateHost= */ this,
                         renderHost,
                         /* layoutStateProvider= */ this,
-                        hubLayoutDependencyHolder);
+                        hubLayoutDependencyHolder,
+                        mTabModelSelectorSupplier,
+                        mDesktopWindowStateProvider);
         if (mTabContentManagerSupplier.hasValue()) {
             mHubLayout.setTabContentManager(mTabContentManagerSupplier.get());
         }
@@ -378,8 +374,6 @@ public class LayoutManagerChrome extends LayoutManagerImpl
      * tab switcher is shown on tablets and phones.
      */
     private void initTabSwitcher() {
-        // Implicitly guarded by sDeferTabSwitcherLayoutCreation as mTabSwitcherSupplier will
-        // have a value already if the feature is disabled.
         if (mStartSurfaceSupplier.hasValue() && mTabSwitcherSupplier.hasValue()) {
             return;
         }
@@ -600,9 +594,7 @@ public class LayoutManagerChrome extends LayoutManagerImpl
             mScrollDirection = computeScrollDirection(dx, dy);
             if (mScrollDirection == ScrollDirection.UNKNOWN) return;
 
-            if (mSupportSwipeDown
-                    && isTabSwitcherReady()
-                    && mScrollDirection == ScrollDirection.DOWN) {
+            if (mSupportSwipeDown && mScrollDirection == ScrollDirection.DOWN) {
                 RecordUserAction.record("MobileToolbarSwipeOpenStackView");
                 showLayout(LayoutType.TAB_SWITCHER, true);
             } else if (mScrollDirection == ScrollDirection.LEFT
@@ -669,20 +661,9 @@ public class LayoutManagerChrome extends LayoutManagerImpl
                 return false;
             }
 
-            if (direction == ScrollDirection.DOWN) {
-                return isTabSwitcherReady();
-            }
-
-            return direction == ScrollDirection.LEFT || direction == ScrollDirection.RIGHT;
-        }
-
-        /** Returns whether or not we are ready to show the GTS layout. */
-        private boolean isTabSwitcherReady() {
-            // Attempting to show the GTS while it's null will trigger its creation.
-            return mTabSwitcherLayout != null
-                    || mHubLayout != null
-                    || DeviceFormFactor.isNonMultiDisplayContextOnTablet(mHost.getContext())
-                    || ChromeFeatureList.sDeferTabSwitcherLayoutCreation.isEnabled();
+            return direction == ScrollDirection.DOWN
+                    || direction == ScrollDirection.LEFT
+                    || direction == ScrollDirection.RIGHT;
         }
     }
 

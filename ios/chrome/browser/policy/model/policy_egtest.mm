@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/testing/earl_grey/earl_grey_test.h"
-
 #import "base/strings/strcat.h"
 #import "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
@@ -19,7 +17,6 @@
 #import "components/policy/test_support/signature_provider.h"
 #import "components/safe_browsing/core/common/features.h"
 #import "components/strings/grit/components_strings.h"
-#import "components/sync/base/features.h"
 #import "ios/chrome/browser/policy/model/cloud/user_policy_constants.h"
 #import "ios/chrome/browser/policy/model/policy_app_interface.h"
 #import "ios/chrome/browser/policy/model/policy_earl_grey_utils.h"
@@ -33,7 +30,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_constants.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_constants.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
-#import "ios/chrome/browser/ui/settings/autofill/autofill_constants.h"
+#import "ios/chrome/browser/ui/settings/autofill/autofill_settings_constants.h"
 #import "ios/chrome/browser/ui/settings/elements/elements_constants.h"
 #import "ios/chrome/browser/ui/settings/language/language_settings_ui_constants.h"
 #import "ios/chrome/browser/ui/settings/password/password_settings/password_settings_constants.h"
@@ -53,6 +50,7 @@
 #import "ios/chrome/test/earl_grey/test_switches.h"
 #import "ios/testing/earl_grey/app_launch_configuration.h"
 #import "ios/testing/earl_grey/app_launch_manager.h"
+#import "ios/testing/earl_grey/earl_grey_test.h"
 #import "net/test/embedded_test_server/embedded_test_server.h"
 #import "ui/base/l10n/l10n_util.h"
 
@@ -60,7 +58,7 @@ using policy_test_utils::SetPolicy;
 
 namespace {
 
-// TODO(crbug.com/1065522): Add helpers as needed for:
+// TODO(crbug.com/40124201): Add helpers as needed for:
 //    - STRING
 //    - LIST (and subtypes, e.g. int list, string list, etc)
 //    - DICTIONARY (and subtypes, e.g. int dictionary, string dictionary, etc)
@@ -165,16 +163,6 @@ NSString* const kDomain2 = @"domain2.com";
   } else {
     config.features_disabled.push_back(
         policy::kUserPolicyForSigninAndNoSyncConsentLevel);
-  }
-
-  if ([self isRunningTest:@selector
-            (testManagementPageManagedWithCBCMAndUserPolicyDifferentDomains)] ||
-      [self isRunningTest:@selector
-            (testManagementPageManagedWithCBCMAndUserPolicySameDomains)] ||
-      [self isRunningTest:@selector(testManagementPageManagedWithUserPolicy)] ||
-      [self isRunningTest:@selector(testPopupMenuItemWithUserPolicy)]) {
-    config.features_disabled.push_back(
-        syncer::kReplaceSyncPromosWithSignInPromos);
   }
 
   return config;
@@ -639,8 +627,6 @@ NSString* const kDomain2 = @"domain2.com";
                     _server->GetServiceURL().spec()}));
   config.features_enabled.push_back(
       policy::kUserPolicyForSigninOrSyncConsentLevel);
-  config.features_disabled.push_back(
-      syncer::kReplaceSyncPromosWithSignInPromos);
   [[AppLaunchManager sharedManager] ensureAppLaunchedWithConfiguration:config];
 
   // Set CBCM policies.
@@ -687,8 +673,6 @@ NSString* const kDomain2 = @"domain2.com";
                     _server->GetServiceURL().spec()}));
   config.features_enabled.push_back(
       policy::kUserPolicyForSigninOrSyncConsentLevel);
-  config.features_disabled.push_back(
-      syncer::kReplaceSyncPromosWithSignInPromos);
   [[AppLaunchManager sharedManager] ensureAppLaunchedWithConfiguration:config];
 
   // Set CBCM policies.
@@ -820,10 +804,7 @@ NSString* const kDomain2 = @"domain2.com";
   ConditionBlock condition = ^{
     NSError* error = nil;
     NSString* noticeTitle =
-        [ChromeEarlGrey isReplaceSyncWithSigninEnabled]
-            ? l10n_util::GetNSString(
-                  IDS_IOS_ENTERPRISE_SYNC_DISABLED_TITLE_WITH_UNO)
-            : l10n_util::GetNSString(IDS_IOS_ENTERPRISE_SYNC_DISABLED_TITLE);
+        l10n_util::GetNSString(IDS_IOS_ENTERPRISE_SYNC_DISABLED_TITLE_WITH_UNO);
     [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(noticeTitle)]
         assertWithMatcher:grey_sufficientlyVisible()
                     error:&error];

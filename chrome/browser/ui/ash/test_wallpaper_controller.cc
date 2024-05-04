@@ -13,6 +13,7 @@
 #include "ash/public/cpp/wallpaper/wallpaper_info.h"
 #include "ash/public/cpp/wallpaper/wallpaper_types.h"
 #include "ash/wallpaper/wallpaper_drag_drop_delegate.h"
+#include "ash/webui/common/mojom/sea_pen.mojom.h"
 #include "base/containers/adapters.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_number_conversions.h"
@@ -216,51 +217,14 @@ bool TestWallpaperController::SetThirdPartyWallpaper(
 
 void TestWallpaperController::SetSeaPenWallpaper(
     const AccountId& account_id,
-    const ash::SeaPenImage& sea_pen_image,
-    const ash::personalization_app::mojom::SeaPenQueryPtr& query,
+    const uint32_t image_id,
     SetWallpaperCallback callback) {
   ++sea_pen_wallpaper_count_;
 
-  const std::string sea_pen_id_str = base::NumberToString(sea_pen_image.id);
-
   wallpaper_info_ = ash::WallpaperInfo();
   wallpaper_info_->type = ash::WallpaperType::kSeaPen;
-  wallpaper_info_->location = sea_pen_id_str;
-  wallpaper_info_->user_file_path =
-      base::FilePath(sea_pen_id_str).AddExtension(".jpg").value();
-
-  sea_pen_query_ = query.Clone();
+  wallpaper_info_->location = base::NumberToString(image_id);
   std::move(callback).Run(/*success=*/true);
-}
-
-void TestWallpaperController::SetSeaPenWallpaperFromFile(
-    const AccountId& account_id,
-    const uint32_t id,
-    SetWallpaperCallback callback) {
-  ++sea_pen_wallpaper_count_;
-
-  const std::string sea_pen_id_str = base::NumberToString(id);
-
-  wallpaper_info_ = ash::WallpaperInfo();
-  wallpaper_info_->type = ash::WallpaperType::kSeaPen;
-  wallpaper_info_->location = sea_pen_id_str;
-  wallpaper_info_->user_file_path =
-      base::FilePath(sea_pen_id_str).AddExtension(".jpg").value();
-  std::move(callback).Run(/*success=*/true);
-}
-
-void TestWallpaperController::GetSeaPenMetadata(
-    const AccountId& account_id,
-    const uint32_t id,
-    GetSeaPenMetadataCallback callback) {
-  std::move(callback).Run(std::move(sea_pen_metadata_));
-}
-
-void TestWallpaperController::DeleteRecentSeaPenImage(
-    const AccountId& account_id,
-    const uint32_t id,
-    DeleteRecentSeaPenImageCallback callback) {
-  std::move(callback).Run(/*success=*/false);
 }
 
 void TestWallpaperController::ConfirmPreviewWallpaper() {
@@ -377,11 +341,6 @@ bool TestWallpaperController::IsWallpaperControlledByPolicy(
 std::optional<ash::WallpaperInfo>
 TestWallpaperController::GetActiveUserWallpaperInfo() const {
   return wallpaper_info_;
-}
-
-bool TestWallpaperController::ShouldShowWallpaperSetting() {
-  NOTIMPLEMENTED();
-  return false;
 }
 
 void TestWallpaperController::SetDailyRefreshCollectionId(

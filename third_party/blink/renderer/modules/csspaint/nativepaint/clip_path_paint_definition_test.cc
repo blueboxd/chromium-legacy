@@ -22,26 +22,6 @@ namespace blink {
 
 using CompositedPaintStatus = ElementAnimations::CompositedPaintStatus;
 
-class MockClipPathPaintImageGenerator : public ClipPathPaintImageGenerator {
- public:
-  scoped_refptr<Image> Paint(float zoom,
-                             const gfx::RectF& reference_box,
-                             const gfx::SizeF& clip_area_size,
-                             const Node& node) override {
-    return ClipPathPaintDefinition::Paint(zoom, reference_box, clip_area_size,
-                                          node, 0 /* use a dummy worklet id */);
-  }
-  gfx::RectF ClipAreaRect(const Node& node,
-                          const gfx::RectF& reference_box,
-                          float zoom) const override {
-    return ClipPathPaintDefinition::ClipAreaRect(node, reference_box, zoom);
-  }
-  Animation* GetAnimationIfCompositable(const Element* element) override {
-    return ClipPathPaintDefinition::GetAnimationIfCompositable(element);
-  }
-  void Shutdown() override {}
-};
-
 class ClipPathPaintDefinitionTest : public PageTestBase {
  public:
   ClipPathPaintDefinitionTest() = default;
@@ -49,18 +29,24 @@ class ClipPathPaintDefinitionTest : public PageTestBase {
 
  protected:
   void SetUp() override {
+    scoped_composite_clip_path_animation =
+        std::make_unique<ScopedCompositeClipPathAnimationForTest>(true);
+    scoped_composite_bgcolor_animation =
+        std::make_unique<ScopedCompositeBGColorAnimationForTest>(false);
     PageTestBase::SetUp();
-    MockClipPathPaintImageGenerator* generator =
-        MakeGarbageCollected<MockClipPathPaintImageGenerator>();
-    GetFrame().SetClipPathPaintImageGeneratorForTesting(generator);
     GetDocument().GetSettings()->SetAcceleratedCompositingEnabled(true);
   }
+
+ private:
+  std::unique_ptr<ScopedCompositeClipPathAnimationForTest>
+      scoped_composite_clip_path_animation;
+  std::unique_ptr<ScopedCompositeBGColorAnimationForTest>
+      scoped_composite_bgcolor_animation;
 };
 
 // Test the case where there is a clip-path animation with two simple
 // keyframes that will not fall back to main.
 TEST_F(ClipPathPaintDefinitionTest, SimpleClipPathAnimationNotFallback) {
-  ScopedCompositeClipPathAnimationForTest composite_clip_path_animation(true);
   SetBodyInnerHTML(R"HTML(
     <div id ="target" style="width: 100px; height: 100px">
     </div>
@@ -111,11 +97,68 @@ TEST_F(ClipPathPaintDefinitionTest, SimpleClipPathAnimationNotFallback) {
             animation);
 }
 
+TEST_F(ClipPathPaintDefinitionTest, ClipPathAnimationCancel) {
+  SetBodyInnerHTML(R"HTML(
+    <div id ="target" style="width: 100px; height: 100px">
+    </div>
+  )HTML");
+
+  Timing timing;
+  timing.iteration_duration = ANIMATION_TIME_DELTA_FROM_SECONDS(30);
+
+  CSSPropertyID property_id = CSSPropertyID::kClipPath;
+  Persistent<StringKeyframe> start_keyframe =
+      MakeGarbageCollected<StringKeyframe>();
+  start_keyframe->SetCSSPropertyValue(property_id, "circle(50% at 50% 50%)",
+                                      SecureContextMode::kInsecureContext,
+                                      nullptr);
+  Persistent<StringKeyframe> end_keyframe =
+      MakeGarbageCollected<StringKeyframe>();
+  end_keyframe->SetCSSPropertyValue(property_id, "circle(30% at 30% 30%)",
+                                    SecureContextMode::kInsecureContext,
+                                    nullptr);
+
+  StringKeyframeVector keyframes;
+  keyframes.push_back(start_keyframe);
+  keyframes.push_back(end_keyframe);
+
+  auto* model = MakeGarbageCollected<StringKeyframeEffectModel>(keyframes);
+  model->SetComposite(EffectModel::kCompositeReplace);
+
+  Element* element = GetElementById("target");
+  LayoutObject* lo = element->GetLayoutObject();
+  NonThrowableExceptionState exception_state;
+  DocumentTimeline* timeline =
+      MakeGarbageCollected<DocumentTimeline>(&GetDocument());
+  Animation* animation = Animation::Create(
+      MakeGarbageCollected<KeyframeEffect>(element, model, timing), timeline,
+      exception_state);
+  animation->play();
+
+  UpdateAllLifecyclePhasesForTest();
+
+  animation->cancel();
+  // Cancelling the animation should trigger a repaint to clear the composited
+  // paint image.
+  GetDocument().View()->UpdateLifecycleToCompositingInputsClean(
+      DocumentUpdateReason::kTest);
+  EXPECT_TRUE(lo->NeedsPaintPropertyUpdate());
+  EXPECT_EQ(element->GetElementAnimations()->CompositedClipPathStatus(),
+            CompositedPaintStatus::kNoAnimation);
+  UpdateAllLifecyclePhasesForTest();
+
+  // Further frames shouldn't cause more property updates.
+  GetDocument().View()->UpdateLifecycleToCompositingInputsClean(
+      DocumentUpdateReason::kTest);
+  EXPECT_FALSE(lo->NeedsPaintPropertyUpdate());
+  EXPECT_EQ(element->GetElementAnimations()->CompositedClipPathStatus(),
+            CompositedPaintStatus::kNoAnimation);
+}
+
 // Test the case where a 2nd composited clip path animation causes a fallback to
 // the main thread. In this case, the paint properties should update to avoid
 // any crashes or paint worklets existing beyond their validity.
 TEST_F(ClipPathPaintDefinitionTest, FallbackOnNonCompositableSecondAnimation) {
-  ScopedCompositeClipPathAnimationForTest composite_clip_path_animation(true);
   SetBodyInnerHTML(R"HTML(
     <div id ="target" style="width: 100px; height: 100px">
     </div>
@@ -155,6 +198,7 @@ TEST_F(ClipPathPaintDefinitionTest, FallbackOnNonCompositableSecondAnimation) {
 
   GetDocument().View()->UpdateLifecycleToCompositingInputsClean(
       DocumentUpdateReason::kTest);
+  EXPECT_TRUE(lo->ShouldDoFullPaintInvalidation());
   EXPECT_TRUE(lo->NeedsPaintPropertyUpdate());
   UpdateAllLifecyclePhasesForTest();
 
@@ -187,19 +231,24 @@ TEST_F(ClipPathPaintDefinitionTest, FallbackOnNonCompositableSecondAnimation) {
   GetDocument().View()->UpdateLifecycleToCompositingInputsClean(
       DocumentUpdateReason::kTest);
   EXPECT_TRUE(lo->NeedsPaintPropertyUpdate());
+  EXPECT_TRUE(lo->ShouldDoFullPaintInvalidation());
+  EXPECT_EQ(element->GetElementAnimations()->CompositedClipPathStatus(),
+            CompositedPaintStatus::kNeedsRepaint);
   UpdateAllLifecyclePhasesForTest();
   EXPECT_FALSE(lo->FirstFragment().PaintProperties()->ClipPathMask());
 
   // Further frames shouldn't cause more property updates than necessary.
   GetDocument().View()->UpdateLifecycleToCompositingInputsClean(
       DocumentUpdateReason::kTest);
+  EXPECT_FALSE(lo->ShouldDoFullPaintInvalidation());
   EXPECT_FALSE(lo->NeedsPaintPropertyUpdate());
+  EXPECT_EQ(element->GetElementAnimations()->CompositedClipPathStatus(),
+            CompositedPaintStatus::kNotComposited);
   UpdateAllLifecyclePhasesForTest();
   EXPECT_FALSE(lo->FirstFragment().PaintProperties()->ClipPathMask());
 }
 
 TEST_F(ClipPathPaintDefinitionTest, ClipBoundingBoxEncompassesAnimation) {
-  ScopedCompositeClipPathAnimationForTest composite_clip_path_animation(true);
   SetBodyInnerHTML(R"HTML(
     <div id ="target" style="position: fixed; width: 100px; height: 100px">
     </div>

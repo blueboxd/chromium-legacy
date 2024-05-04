@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/browser_switch/browser_switch_ui.h"
 
 #include <memory>
+#include <string_view>
 
 #include "base/functional/bind.h"
 #include "base/metrics/histogram_macros.h"
@@ -42,7 +43,7 @@ void GotoNewTabPage(content::WebContents* web_contents) {
   content::OpenURLParams params(url, content::Referrer(),
                                 WindowOpenDisposition::CURRENT_TAB,
                                 ui::PAGE_TRANSITION_AUTO_TOPLEVEL, false);
-  web_contents->OpenURL(params);
+  web_contents->OpenURL(params, /*navigation_handle_callback=*/{});
 }
 
 // Returns true if there's only 1 tab left open in this profile. Incognito
@@ -451,10 +452,10 @@ void BrowserSwitchHandler::HandleGetDecision(const base::Value::List& args) {
   auto* service = GetBrowserSwitcherService(web_ui());
   browser_switcher::Decision decision = service->sitelist()->GetDecision(url);
 
-  base::StringPiece action_name =
+  std::string_view action_name =
       (decision.action == browser_switcher::kStay) ? "stay" : "go";
 
-  base::StringPiece reason_name;
+  std::string_view reason_name;
   switch (decision.reason) {
     case browser_switcher::kDisabled:
       reason_name = "globally_disabled";

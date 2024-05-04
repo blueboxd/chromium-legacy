@@ -124,12 +124,37 @@ class MojoLPMAction:
   dependencies: typing.FrozenSet[str]
 
   @property
+  def camel_case_namespace(self) -> typing.Optional[str]:
+    if not self.namespace:
+      return None
+    ns = '_'.join(self.namespace.split('.')[:-1])
+    return snake_to_camel_case(ns)
+
+  @property
+  def snake_case_namespace(self) -> typing.Optional[str]:
+    if not self.namespace:
+      return None
+    ns = '_'.join(self.namespace.split('.')[:-1])
+    return camel_to_snake_case(ns)
+
+  @property
   def proto_identifier(self) -> str:
     """Returns the proto identifier for this action. The identifier will be
     used as a unique name for this action. For instance, it can either be a
     message name or a field name.
     """
-    return f"{self.identifier}_{camel_to_snake_case(self.type.value)}"
+    id_type = camel_to_snake_case(self.type.value)
+    if self.snake_case_namespace:
+      return f"{self.snake_case_namespace}_{self.identifier}_{id_type}"
+    return f"{self.identifier}_{id_type}"
+
+  @property
+  def cpp_identifier(self) -> str:
+    """Returns the cpp identifier for this action."""
+    snake_id = snake_to_camel_case(self.identifier)
+    if self.camel_case_namespace:
+      return f"{self.camel_case_namespace}{snake_id}"
+    return f"{snake_id}"
 
   @property
   def mojolpm_proto_type(self) -> str:
@@ -139,7 +164,9 @@ class MojoLPMAction:
         the proto type as a string
     """
     if self.type == MojoLPMActionType.NEW_ACTION:
-      return f"{snake_to_camel_case(self.identifier)}{self.type.value}"
+      assert self.camel_case_namespace
+      ns = self.camel_case_namespace
+      return f"{ns}{snake_to_camel_case(self.identifier)}{self.type.value}"
     if not self.namespace:
       return f"mojolpm.{self.type.value}"
     return f"mojolpm.{self.namespace}.{self.type.value}"
@@ -232,7 +259,7 @@ def snake_to_camel_case(snake_str: str) -> str:
   Returns:
      `snake_str` converted to a camel case identifier.
   """
-  return "".join(x.capitalize() for x in snake_str.lower().split("_"))
+  return "".join(x.title() for x in snake_str.lower().split("_"))
 
 
 def is_data_pipe_kind(kind: module.Kind) -> bool:
@@ -435,7 +462,7 @@ class MojoLPMCppGenerator(MojoLPMJinjaGenerator):
             "case_name":
             "k" + snake_to_camel_case(a.proto_identifier),
             "cpp_name":
-            snake_to_camel_case(a.identifier),
+            a.cpp_identifier,
             "mojo_name":
             a.proto_identifier,
         })
@@ -510,7 +537,7 @@ def build_new_actions(interface: module.Interface) -> MojoLPMActionSet:
   return MojoLPMActionSet([
       MojoLPMAction(
           type=MojoLPMActionType.NEW_ACTION,
-          namespace=None,
+          namespace=interface.qualified_name,
           identifier=camel_to_snake_case(interface.mojom_name),
           dependencies=frozenset(),
       )
@@ -585,19 +612,21 @@ def build(interface: module.Interface,
 
       child_def_type = def_type
       if is_pending_kind(kind):
-        # kind.spec will look something like '{?}rcv:x:blink.mojom.Blob'. This
-        # is meant at fully describing the underlying type being parsed. For
-        # instance, we only care about knowing the mojom action type here,
-        # which is 'rcv' in this particular example.
-        t = kind.spec.split(':')[0].lstrip('?')
-        actions.update(
-            build_pending_actions(MojomActionType(t), kind.kind, def_type))
+        # MojoLPM doesn't generate actions when the interface has no methods.
+        if kind.kind.methods:
+          # kind.spec will look something like '{?}rcv:x:blink.mojom.Blob'. This
+          # is meant at fully describing the underlying type being parsed. For
+          # instance, we only care about knowing the mojom action type here,
+          # which is 'rcv' in this particular example.
+          t = kind.spec.split(':')[0].lstrip('?')
+          actions.update(
+              build_pending_actions(MojomActionType(t), kind.kind, def_type))
 
-        if module.IsPendingRemoteKind(
-            kind) or module.IsPendingAssociatedRemoteKind(kind):
-          child_def_type = (MojoLPMDefinitionType.EMULATED
-                            if def_type == MojoLPMDefinitionType.REMOTE else
-                            MojoLPMDefinitionType.REMOTE)
+          if module.IsPendingRemoteKind(
+              kind) or module.IsPendingAssociatedRemoteKind(kind):
+            child_def_type = (MojoLPMDefinitionType.EMULATED
+                              if def_type == MojoLPMDefinitionType.REMOTE else
+                              MojoLPMDefinitionType.REMOTE)
         kind = kind.kind
 
       assert module.IsInterfaceKind(kind) or module.IsStructKind(
@@ -611,13 +640,14 @@ def build(interface: module.Interface,
   # Since the interface is remote, we'll add an action as if it was
   # declared in the mojo interface as is:
   # Create(pending_receiver<BaseInterface>);
-  if remote_type == MojoLPMActionType.ASSOCIATED_REMOTE_ACTION:
-    action_type = MojomActionType.ASSOCIATED_RECEIVER
-  else:
-    action_type = MojomActionType.RECEIVER
-  actions.update(
-      build_pending_actions(action_type, interface,
-                            MojoLPMDefinitionType.REMOTE))
+  if interface.methods:
+    if remote_type == MojoLPMActionType.ASSOCIATED_REMOTE_ACTION:
+      action_type = MojomActionType.ASSOCIATED_RECEIVER
+    else:
+      action_type = MojomActionType.RECEIVER
+    actions.update(
+        build_pending_actions(action_type, interface,
+                              MojoLPMDefinitionType.REMOTE))
 
   handled_definitions.add(interface.qualified_name)
   __build_impl(interface, MojoLPMDefinitionType.REMOTE)

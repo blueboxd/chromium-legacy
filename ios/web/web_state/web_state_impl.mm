@@ -7,6 +7,8 @@
 #import <stddef.h>
 #import <stdint.h>
 
+#import <string_view>
+
 #import "base/compiler_specific.h"
 #import "base/debug/dump_without_crashing.h"
 #import "base/feature_list.h"
@@ -305,7 +307,7 @@ bool WebStateImpl::HasWebUI() const {
 }
 
 void WebStateImpl::HandleWebUIMessage(const GURL& source_url,
-                                      base::StringPiece message,
+                                      std::string_view message,
                                       const base::Value::List& args) {
   RealizedState()->HandleWebUIMessage(source_url, message, args);
 }
@@ -432,6 +434,19 @@ void WebStateImpl::RequestPermissionsWithDecisionHandler(
 void WebStateImpl::SerializeToProto(proto::WebStateStorage& storage) const {
   DCHECK(IsRealized());
   pimpl_->SerializeToProto(storage);
+}
+
+void WebStateImpl::SerializeMetadataToProto(
+    proto::WebStateMetadataStorage& storage) const {
+  if (pimpl_) {
+    proto::WebStateStorage full_storage;
+    pimpl_->SerializeToProto(full_storage);
+    DCHECK(full_storage.has_metadata());
+    storage.Swap(full_storage.mutable_metadata());
+    return;
+  }
+
+  saved_->SerializeMetadataToProto(storage);
 }
 
 WebStateDelegate* WebStateImpl::GetDelegate() {

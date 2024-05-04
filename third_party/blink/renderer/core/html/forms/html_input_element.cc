@@ -30,6 +30,7 @@
 
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/choosers/date_time_chooser.mojom-blink.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-blink.h"
 #include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom-blink.h"
@@ -1326,12 +1327,18 @@ void HTMLInputElement::SetValue(const String& value,
     }
   }
 
-  // We set the Autofilled state again because setting the autofill value
-  // triggers JavaScript events and the site may override the autofilled value,
-  // which resets the autofill state. Even if the website modifies the form
-  // control element's content during the autofill operation, we want the state
-  // to show as autofilled.
-  SetAutofillState(autofill_state);
+  if (!base::FeatureList::IsEnabled(
+          features::kAutofillDontSetAutofillStateAfterJavaScriptChanges)) {
+    // We set the Autofilled state again because setting the autofill value
+    // triggers JavaScript events and the site may override the autofilled
+    // value, which resets the autofill state. Even if the website modifies the
+    // form control element's content during the autofill operation, we want the
+    // state to show as autofilled.
+    // If kAutofillDontSetAutofillStateAfterJavaScriptChanges is enabled, the
+    // WebAutofillClient will monitor JavaScript induced changes and take care
+    // of resetting the autofill state when appropriate.
+    SetAutofillState(autofill_state);
+  }
 }
 
 void HTMLInputElement::SetNonAttributeValue(const String& sanitized_value) {
@@ -1973,6 +1980,10 @@ bool HTMLInputElement::IsSteppable() const {
   return input_type_->IsSteppable();
 }
 
+bool HTMLInputElement::IsButton() const {
+  return input_type_->IsButton();
+}
+
 bool HTMLInputElement::IsTextButton() const {
   return input_type_->IsTextButton();
 }
@@ -2277,15 +2288,6 @@ bool HTMLInputElement::IsInteractiveContent() const {
   return input_type_->IsInteractiveContent();
 }
 
-const ComputedStyle* HTMLInputElement::CustomStyleForLayoutObject(
-    const StyleRecalcContext& style_recalc_context) {
-  // TODO(crbug.com/953707): Avoid marking style dirty in
-  // HTMLImageFallbackHelper and use AdjustStyle instead.
-  const ComputedStyle* original_style =
-      OriginalStyleForLayoutObject(style_recalc_context);
-  return input_type_view_->CustomStyleForLayoutObject(original_style);
-}
-
 void HTMLInputElement::AdjustStyle(ComputedStyleBuilder& builder) {
   return input_type_view_->AdjustStyle(builder);
 }
@@ -2410,20 +2412,29 @@ void HTMLInputElement::showPicker(ExceptionState& exception_state) {
   input_type_view_->OpenPopupView();
 }
 
+bool HTMLInputElement::IsValidInvokeAction(HTMLElement& invoker,
+                                           InvokeAction action) {
+  bool parent_is_valid = HTMLElement::IsValidInvokeAction(invoker, action);
+  if (!RuntimeEnabledFeatures::HTMLInvokeActionsV2Enabled() ||
+      parent_is_valid) {
+    return parent_is_valid;
+  }
+
+  if (input_type_->IsNumberInputType()) {
+    if (action == InvokeAction::kStepUp || action == InvokeAction::kStepDown) {
+      return true;
+    }
+  }
+
+  return action == InvokeAction::kShowPicker;
+}
+
 bool HTMLInputElement::HandleInvokeInternal(HTMLElement& invoker,
-                                            AtomicString& action) {
+                                            InvokeAction action) {
+  CHECK(IsValidInvokeAction(invoker, action));
+
   if (HTMLElement::HandleInvokeInternal(invoker, action)) {
     return true;
-  }
-
-  if (!RuntimeEnabledFeatures::HTMLInvokeActionsV2Enabled()) {
-    return false;
-  }
-
-  // Step 3. If action is an ASCII case-insensitive match for showPicker ...
-  // Early return instead of doing this in step 3.
-  if (!EqualIgnoringASCIICase(action, keywords::kShowPicker)) {
-    return false;
   }
 
   // Step 1. If this is not mutable, then return.
@@ -2431,32 +2442,63 @@ bool HTMLInputElement::HandleInvokeInternal(HTMLElement& invoker,
     return false;
   }
 
-  // Step 2. If this's relevant settings object's origin is not same origin with
-  // this's relevant settings object's top-level origin, [...], then return.
-  Document& document = GetDocument();
-  LocalFrame* frame = document.GetFrame();
-  if (frame && !frame->IsSameOrigin()) {
-    String message = "Input cannot be invoked from cross-origin iframe.";
-    document.AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
-        mojom::ConsoleMessageSource::kJavaScript,
-        mojom::ConsoleMessageLevel::kWarning, message));
-    return false;
+  if (action == InvokeAction::kShowPicker) {
+    // Step 2. If this's relevant settings object's origin is not same origin
+    // with this's relevant settings object's top-level origin, [...], then
+    // return.
+    Document& document = GetDocument();
+    LocalFrame* frame = document.GetFrame();
+    if (frame && !frame->IsSameOrigin()) {
+      String message = "Input cannot be invoked from cross-origin iframe.";
+      document.AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+          mojom::ConsoleMessageSource::kJavaScript,
+          mojom::ConsoleMessageLevel::kWarning, message));
+      return false;
+    }
+
+    // If this's relevant global object does not have transient
+    // activation, then return.
+    if (!LocalFrame::HasTransientUserActivation(frame)) {
+      String message = "Input cannot be invoked without a user gesture.";
+      document.AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+          mojom::ConsoleMessageSource::kJavaScript,
+          mojom::ConsoleMessageLevel::kWarning, message));
+      return false;
+    }
+
+    // Step 3. ... show the picker, if applicable, for this.
+    input_type_view_->OpenPopupView();
+    return true;
   }
 
-  // If this's relevant global object does not have transient
-  // activation, then return.
-  if (!LocalFrame::HasTransientUserActivation(frame)) {
-    String message = "Input cannot be invoked without a user gesture.";
-    document.AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
-        mojom::ConsoleMessageSource::kJavaScript,
-        mojom::ConsoleMessageLevel::kWarning, message));
-    return false;
+  if (input_type_->IsNumberInputType()) {
+    if (action == InvokeAction::kStepUp) {
+      input_type_->StepUp(1.0, ASSERT_NO_EXCEPTION);
+      return true;
+    }
+
+    if (action == InvokeAction::kStepDown) {
+      input_type_->StepUp(-1.0, ASSERT_NO_EXCEPTION);
+      return true;
+    }
   }
 
-  // Step 3. ... show the picker, if applicable, for this.
-  input_type_view_->OpenPopupView();
+  return false;
+}
 
-  return true;
+void HTMLInputElement::SetFocused(bool is_focused,
+                                  mojom::blink::FocusType focus_type) {
+  TextControlElement::SetFocused(is_focused, focus_type);
+  // Multifield inputs will call SetFocused when switching between the
+  // individual parts, but we don't want to start matching
+  // :user-valid/:user-invalid at that time. However, for other inputs, we want
+  // to start matching :user-valid/:user-invalid as soon as possible, especially
+  // to support the case where the user types something, then deletes it, then
+  // blurs the input.
+  if (!is_focused && !input_type_view_->IsMultipleFieldsTemporal() &&
+      UserHasEditedTheField()) {
+    SetUserHasEditedTheFieldAndBlurred();
+  }
 }
 
 }  // namespace blink

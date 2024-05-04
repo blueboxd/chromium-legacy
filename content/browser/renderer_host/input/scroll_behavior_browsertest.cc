@@ -331,7 +331,7 @@ class ScrollBehaviorBrowserTestWithPercentBasedScrolling
 // This tests that a in-progress smooth scroll on an overflow:scroll element
 // stops when interrupted by an instant scroll.
 //
-// TODO(crbug.com/1133492): the last animation is committed after we set the
+// TODO(crbug.com/40722572): the last animation is committed after we set the
 // scrollTop even when we cancel the animation, so the final scrollTop value
 // is not 0, we need to fix it.
 IN_PROC_BROWSER_TEST_F(ScrollBehaviorBrowserTest,
@@ -442,7 +442,7 @@ IN_PROC_BROWSER_TEST_F(ScrollBehaviorBrowserTest,
 // This tests that a in-progress smooth scroll on an overflow:scroll element
 // stops when interrupted by a touch scroll.
 //
-// TODO(crbug.com/1116647): compositing scroll should be able to cancel a
+// TODO(crbug.com/40712058): compositing scroll should be able to cancel a
 // running programmatic scroll.
 IN_PROC_BROWSER_TEST_F(ScrollBehaviorBrowserTest,
                        DISABLED_TouchScrollAbortsSmoothScriptScroll) {
@@ -470,7 +470,7 @@ IN_PROC_BROWSER_TEST_F(ScrollBehaviorBrowserTest,
 // This tests that a in-progress smooth scroll on an overflow:scroll element
 // stops when interrupted by a mouse wheel scroll.
 //
-// TODO(crbug.com/1116647): compositing scroll should be able to cancel a
+// TODO(crbug.com/40712058): compositing scroll should be able to cancel a
 // running programmatic scroll.
 IN_PROC_BROWSER_TEST_F(ScrollBehaviorBrowserTest,
                        DISABLED_WheelScrollAbortsSmoothScriptScroll) {

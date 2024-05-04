@@ -731,7 +731,7 @@ void DesktopCaptureDevice::Core::ScheduleNextCaptureFrame() {
 void DesktopCaptureDevice::Core::RequestWakeLock() {
   mojo::Remote<device::mojom::WakeLockProvider> wake_lock_provider;
   auto receiver = wake_lock_provider.BindNewPipeAndPassReceiver();
-  // TODO(https://crbug.com/823869): Fix DesktopCaptureDeviceTest and remove
+  // TODO(crbug.com/41377723): Fix DesktopCaptureDeviceTest and remove
   // this conditional.
   if (BrowserThread::IsThreadInitialized(BrowserThread::UI)) {
     GetUIThreadTaskRunner({})->PostTask(
@@ -768,7 +768,7 @@ std::unique_ptr<media::VideoCaptureDevice> DesktopCaptureDevice::Create(
   // the captured frame in combination with DXGI; hence most cursors will be
   // added separately by a desktop and cursor composer even if this option is
   // set to true. GDI does not use this option.
-  // TODO(crbug.com/1421656): Possibly remove this flag. Keeping for now to
+  // TODO(crbug.com/40259358): Possibly remove this flag. Keeping for now to
   // force non embedded cursor for all capture APIs on Windows.
   static BASE_FEATURE(kAllowWinCursorEmbedded, "AllowWinCursorEmbedded",
                       base::FEATURE_ENABLED_BY_DEFAULT);
@@ -816,7 +816,7 @@ std::unique_ptr<media::VideoCaptureDevice> DesktopCaptureDevice::Create(
   switch (source.type) {
     case DesktopMediaID::TYPE_SCREEN: {
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
-      // TODO(https://crbug.com/1094460): Handle options.
+      // TODO(crbug.com/40135428): Handle options.
       std::unique_ptr<webrtc::DesktopCapturer> screen_capturer =
           std::make_unique<DesktopCapturerLacros>(
               DesktopCapturerLacros::CaptureType::kScreen,
@@ -921,7 +921,7 @@ DesktopCaptureDevice::DesktopCaptureDevice(
       base::FeatureList::IsEnabled(features::kWebRtcAllowWgcScreenZeroHz);
   const bool wgc_window_zero_hertz =
       base::FeatureList::IsEnabled(features::kWebRtcAllowWgcWindowZeroHz);
-  // TODO(https://crbug.com/1421656): 0Hz mode seems to cause a flickering
+  // TODO(crbug.com/40259358): 0Hz mode seems to cause a flickering
   // cursor in some setups. This flag allows us to disable 0Hz when needed.
   const bool dxgi_gdi_zero_hertz =
       base::FeatureList::IsEnabled(features::kWebRtcAllowDxgiGdiZeroHz);

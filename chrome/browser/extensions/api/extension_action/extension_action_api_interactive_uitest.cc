@@ -6,6 +6,7 @@
 #include "base/test/bind.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/extension_action_test_helper.h"
@@ -13,6 +14,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/version_info/channel.h"
 #include "content/public/test/browser_test.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/background_script_executor.h"
 #include "extensions/browser/extension_action.h"
@@ -118,7 +120,7 @@ IN_PROC_BROWSER_TEST_F(ActionAPIInteractiveUITest, OpenPopupInSpecifiedWindow) {
   ASSERT_TRUE(second_browser);
   ui_test_utils::BrowserActivationWaiter(second_browser).WaitForActivation();
 
-  // TODO(https://crbug.com/1245093): We should allow extensions to open a
+  // TODO(crbug.com/40057101): We should allow extensions to open a
   // popup in an inactive window. Currently, this fails, so try to open the
   // popup in the active window (but with a specified ID).
   EXPECT_FALSE(browser()->window()->IsActive());

@@ -13,7 +13,6 @@
 #import "base/values.h"
 #import "components/prefs/pref_service.h"
 #import "ios/chrome/app/startup/app_launch_metrics.h"
-#import "ios/chrome/browser/push_notification/model/constants.h"
 #import "ios/chrome/browser/push_notification/model/push_notification_client_manager.h"
 #import "ios/chrome/browser/push_notification/model/push_notification_configuration.h"
 #import "ios/chrome/browser/push_notification/model/push_notification_delegate.h"
@@ -25,9 +24,8 @@
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state_manager.h"
 #import "ios/chrome/browser/shared/model/prefs/pref_names.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
-#import "ios/chrome/grit/ios_branded_strings.h"
-#import "ios/chrome/grit/ios_strings.h"
-#import "ui/base/l10n/l10n_util.h"
+#import "ios/chrome/browser/signin/model/authentication_service.h"
+#import "ios/chrome/browser/signin/model/authentication_service_factory.h"
 
 namespace {
 // The time range's expected min and max values for custom histograms.
@@ -96,25 +94,6 @@ GaiaIdToPushNotificationPreferenceMapFromCache(
 - (instancetype)initWithAppState:(AppState*)appState {
   [appState addObserver:self];
   return self;
-}
-
-- (void)registerNotificationCategories {
-  UNUserNotificationCenter* center =
-      UNUserNotificationCenter.currentNotificationCenter;
-  NSMutableSet<UNNotificationCategory*>* notificationCategories =
-      [[NSMutableSet alloc] init];
-  UNNotificationAction* feedbackAction = [UNNotificationAction
-      actionWithIdentifier:kContentNotificationFeedbackActionIdentifier
-                     title:l10n_util::GetNSString(
-                               IDS_IOS_CONTENT_NOTIFICATIONS_SEND_FEEDBACK)
-                   options:UNNotificationActionOptionForeground];
-  UNNotificationCategory* contentNotificationCategory = [UNNotificationCategory
-      categoryWithIdentifier:kContentNotificationFeedbackCategoryIdentifier
-                     actions:@[ feedbackAction ]
-           intentIdentifiers:@[]
-                     options:UNNotificationCategoryOptionCustomDismissAction];
-  [notificationCategories addObject:contentNotificationCategory];
-  [center setNotificationCategories:notificationCategories];
 }
 
 #pragma mark - UNUserNotificationCenterDelegate -
@@ -188,7 +167,8 @@ GaiaIdToPushNotificationPreferenceMapFromCache(
   return result;
 }
 
-- (void)applicationDidRegisterWithAPNS:(NSData*)deviceToken {
+- (void)applicationDidRegisterWithAPNS:(NSData*)deviceToken
+                          browserState:(ChromeBrowserState*)browserState {
   BrowserStateInfoCache* infoCache = GetApplicationContext()
                                          ->GetChromeBrowserStateManager()
                                          ->GetBrowserStateInfoCache();
@@ -215,7 +195,19 @@ GaiaIdToPushNotificationPreferenceMapFromCache(
   config.accountIDs = accountPreferenceMap.allKeys;
   config.preferenceMap = accountPreferenceMap;
   config.deviceToken = deviceToken;
-  config.ssoService = GetApplicationContext()->GetSSOService();
+  config.singleSignOnService =
+      GetApplicationContext()->GetSingleSignOnService();
+
+  if (IsContentPushNotificationsEnabled() && browserState) {
+    AuthenticationService* authService =
+        AuthenticationServiceFactory::GetForBrowserState(browserState);
+    if (authService &&
+        authService->HasPrimaryIdentity(signin::ConsentLevel::kSignin)) {
+      id<SystemIdentity> identity =
+          authService->GetPrimaryIdentity(signin::ConsentLevel::kSignin);
+      config.primaryAccount = identity;
+    }
+  }
 
   notificationService->RegisterDevice(config, ^(NSError* error) {
     if (error) {

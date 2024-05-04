@@ -23,7 +23,7 @@ chromium-metrics-reviews@google.com.
 <histograms>
 
 <histogram name="PDF.Actions" enum="ChromePDFViewerActions"
-    expires_after="2024-07-21">
+    expires_after="2024-09-22">
   <owner>hnakashima@chromium.org</owner>
   <summary>
     Tracks user actions in the PDF viewer. Logged when the document is opened
@@ -35,21 +35,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="PDF.AttachmentType" enum="ViewFileType"
-    expires_after="2024-05-19">
-  <owner>nigi@chromium.org</owner>
-  <owner>thestig@chromium.org</owner>
-  <summary>
-    Records encountering a PDF attachment with a specific file extension. This
-    is logged when a document is opened in the PDF viewer but not in the Print
-    Preview. The index of &quot;directory&quot; won't be used for this log since
-    a PDF attachment cannot be a directory. The index of &quot;unknown
-    extension&quot; won't be used for this log since it will be represented as
-    the index of &quot;other&quot;.
-  </summary>
-</histogram>
-
-<histogram name="PDF.FormType" enum="PDFFormTypes" expires_after="2024-04-28">
+<histogram name="PDF.FormType" enum="PDFFormTypes" expires_after="2025-04-28">
   <owner>dhoss@chromium.org</owner>
   <owner>kmoon@chromium.org</owner>
   <owner>thestig@chromium.org</owner>
@@ -59,7 +45,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="PDF.HasAttachment" enum="Boolean" expires_after="2024-07-21">
+<histogram name="PDF.HasAttachment" enum="Boolean" expires_after="2024-09-22">
   <owner>nigi@chromium.org</owner>
   <owner>thestig@chromium.org</owner>
   <summary>
@@ -69,7 +55,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PDF.LoadStatus" enum="ChromePDFViewerLoadStatus"
-    expires_after="2024-07-14">
+    expires_after="2024-09-15">
   <owner>kmoon@chromium.org</owner>
   <owner>thestig@chromium.org</owner>
   <summary>
@@ -79,7 +65,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="PDF.PageCount" units="pages" expires_after="2024-07-21">
+<histogram name="PDF.PageCount" units="pages" expires_after="2024-09-22">
   <owner>hnakashima@chromium.org</owner>
   <owner>thestig@chromium.org</owner>
   <summary>

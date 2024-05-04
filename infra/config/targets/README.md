@@ -134,12 +134,31 @@ generate the targets spec files.
 It is now possible to specify test in starlark for builders in limited
 conditions:
 
-* No legacy suites can be referenced
-* Only compile-only targets and script tests can be included
+* No legacy matrix compound suites can be referenced
 * Cannot rely on any fields being set on the builder's waterfall in
-  waterfalls.pyl
-* Cannot rely on any fields besides additional_compile_targets and
-  test_suites being set for the builder in waterfalls.pyl.
+  waterfalls.pyl except mixins
+* Cannot rely on any fields besides additional_compile_targets, test_suites,
+  mixins, os_type and use_swarming being set for the builder in waterfalls.pyl
+  (fields that are present in targets.mixin can be specified by specifying an
+  in-place mixin in the mixins field instead)
+  * Under test_suites, test can only be specified for the scripts,
+    gtest_tests and isolated_scripts keys
+    * Only the following fields can be set on gtests & isolated scripts either
+      directly or via mixins:
+      * args
+      * android_args (expanding these isn't supported yet, so this won't take
+        effect, but won't be rejected)
+      * android_swarming (expanding these isn't supported yet, so this won't
+        take effect, but won't be rejected)
+      * ci_only
+      * isolate_profile_data
+      * merge
+      * precommit_args
+      * resultdb
+      * swarming
+      * test (only allowed in declaration of gtest itself)
+      * use_isolated_script_api
+* Cannot use variants
 
 These conditions will be removed as more support is implemented.
 
@@ -168,6 +187,18 @@ ci.builder(
       additional_compile_targets = "all",
       targets = "public_build_scripts",
   ),
+)
+```
+
+Fields that would be specified on the waterfall can instead be set on
+targets.builder_defaults, which will apply to all builders defined in the file.
+
+```starlark
+targets.builder_defaults.set(
+  mixins = [
+    "chromium-tester-service-account",
+    "linux-jammy",
+  ],
 )
 ```
 

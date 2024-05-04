@@ -30,6 +30,7 @@
 #include "chrome/browser/profiles/profile_destroyer.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_test_util.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -859,7 +860,7 @@ class DebuggerExtensionApiPdfTest : public base::test::WithFeatureOverride,
 };
 
 IN_PROC_BROWSER_TEST_P(DebuggerExtensionApiPdfTest, AttachToPdf) {
-  // TODO(crbug.com/1445746): Remove this once the test passes for OOPIF PDF.
+  // TODO(crbug.com/40268279): Remove this once the test passes for OOPIF PDF.
   if (IsParamFeatureEnabled()) {
     GTEST_SKIP();
   }
@@ -867,7 +868,7 @@ IN_PROC_BROWSER_TEST_P(DebuggerExtensionApiPdfTest, AttachToPdf) {
   ASSERT_TRUE(RunExtensionTest("debugger_attach_to_pdf")) << message_;
 }
 
-// TODO(crbug.com/1445746): Stop testing both modes after OOPIF PDF viewer
+// TODO(crbug.com/40268279): Stop testing both modes after OOPIF PDF viewer
 // launches.
 INSTANTIATE_FEATURE_OVERRIDE_TEST_SUITE(DebuggerExtensionApiPdfTest);
 #endif  // BUILDFLAG(ENABLE_PDF)
@@ -879,7 +880,7 @@ IN_PROC_BROWSER_TEST_F(DebuggerExtensionApiTest, AttachToBlob) {
 // Tests that navigation to a forbidden URL is properly denied and
 // does not cause a crash.
 // This is a regression test for https://crbug.com/1188889.
-// TODO(crbug.com/1517512): Re-enable this test.
+// TODO(crbug.com/41490490): Re-enable this test.
 #if BUILDFLAG(IS_WIN)
 #define MAYBE_NavigateToForbiddenUrl DISABLED_NavigateToForbiddenUrl
 #else
@@ -967,6 +968,17 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessDebuggerExtensionApiTest,
       "a.com",
       "/extensions/api_test/debugger_auto_attach_permissions/page.html"));
   ASSERT_TRUE(RunExtensionTest("debugger_auto_attach_permissions",
+                               {.custom_arg = url.spec().c_str()}))
+      << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(SitePerProcessDebuggerExtensionApiTest,
+                       AutoAttachFlatModePermissions) {
+  GURL url(embedded_test_server()->GetURL(
+      "a.com",
+      "/extensions/api_test/debugger_auto_attach_flat_mode_permissions/"
+      "page.html"));
+  ASSERT_TRUE(RunExtensionTest("debugger_auto_attach_flat_mode_permissions",
                                {.custom_arg = url.spec().c_str()}))
       << message_;
 }

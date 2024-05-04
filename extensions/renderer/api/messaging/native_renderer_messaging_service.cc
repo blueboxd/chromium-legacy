@@ -357,13 +357,13 @@ v8::Local<v8::Promise> NativeRendererMessagingService::SendOneTimeMessage(
       GetMessagePortScope(script_context->GetRenderFrame());
   bool is_opener = true;
 
-  // TODO(crbug.com/248548): Instead of inferring the mojom::SerializationFormat
-  // from Message, it'd be better to have the clients pass it directly. This is
-  // because, in case of `kStructuredCloned` to `kJson` fallback, the format for
-  // the ports will also be `kJson`. This is inconsistent with what we do for
-  // ports for long-lived channels where the port's `mojom::SerializationFormat`
-  // is always the same as that passed by messaging clients and is independent
-  // of any fallback behavior.
+  // TODO(crbug.com/40321352): Instead of inferring the
+  // mojom::SerializationFormat from Message, it'd be better to have the clients
+  // pass it directly. This is because, in case of `kStructuredCloned` to
+  // `kJson` fallback, the format for the ports will also be `kJson`. This is
+  // inconsistent with what we do for ports for long-lived channels where the
+  // port's `mojom::SerializationFormat` is always the same as that passed by
+  // messaging clients and is independent of any fallback behavior.
   PortId port_id(script_context->context_id(), data->next_port_id++, is_opener,
                  message.format);
   mojo::PendingAssociatedRemote<mojom::MessagePort> message_port;
@@ -507,7 +507,7 @@ void NativeRendererMessagingService::DeliverMessageToWorker(
   v8::HandleScope handle_scope(isolate);
   std::unique_ptr<InteractionProvider::Scope> scoped_extension_interaction;
   if (message.user_gesture) {
-    // TODO(https://crbug.com/977629): Add logging for privilege level for
+    // TODO(crbug.com/41467311): Add logging for privilege level for
     // sender and receiver and decide if want to allow unprivileged to
     // privileged support.
     scoped_extension_interaction =

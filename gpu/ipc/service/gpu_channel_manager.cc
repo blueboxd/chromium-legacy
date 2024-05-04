@@ -28,7 +28,6 @@
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/command_buffer/service/gpu_tracer.h"
-#include "gpu/command_buffer/service/mailbox_manager_factory.h"
 #include "gpu/command_buffer/service/memory_program_cache.h"
 #include "gpu/command_buffer/service/passthrough_program_cache.h"
 #include "gpu/command_buffer/service/scheduler.h"
@@ -352,7 +351,6 @@ GpuChannelManager::GpuChannelManager(
       delegate_(delegate),
       watchdog_(watchdog),
       share_group_(new gl::GLShareGroup()),
-      mailbox_manager_(gles2::CreateMailboxManager(gpu_preferences)),
       scheduler_(scheduler),
       sync_point_manager_(sync_point_manager),
       shared_image_manager_(shared_image_manager),
@@ -579,7 +577,8 @@ void GpuChannelManager::OnDiskCacheHandleDestoyed(
       // different handles).
       break;
     }
-    case gpu::GpuDiskCacheType::kDawnWebGPU: {
+    case gpu::GpuDiskCacheType::kDawnWebGPU:
+    case gpu::GpuDiskCacheType::kDawnGraphite: {
 #if BUILDFLAG(USE_DAWN)
       dawn_caching_interface_factory()->ReleaseHandle(handle);
 #endif
@@ -614,7 +613,8 @@ void GpuChannelManager::PopulateCache(const gpu::GpuDiskCacheHandle& handle,
         program_cache()->LoadProgram(key, data);
       break;
     }
-    case gpu::GpuDiskCacheType::kDawnWebGPU: {
+    case gpu::GpuDiskCacheType::kDawnWebGPU:
+    case gpu::GpuDiskCacheType::kDawnGraphite: {
 #if BUILDFLAG(USE_DAWN) || BUILDFLAG(SKIA_USE_DAWN)
       std::unique_ptr<gpu::webgpu::DawnCachingInterface>
           dawn_caching_interface =
@@ -941,7 +941,7 @@ scoped_refptr<SharedContextState> GpuChannelManager::GetSharedContextState(
         gles2::GenerateGLContextAttribsForCompositor(use_passthrough_decoder);
 
     // Disable robust resource initialization for raster decoder and compositor.
-    // TODO(crbug.com/1192632): disable robust_resource_initialization for
+    // TODO(crbug.com/40174948): disable robust_resource_initialization for
     // SwANGLE.
     if (gl::GLSurfaceEGL::GetGLDisplayEGL()->GetDisplayType() !=
         gl::ANGLE_SWIFTSHADER) {

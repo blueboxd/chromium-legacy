@@ -22,7 +22,7 @@ class MockPlusAddressHttpClient : public PlusAddressHttpClient {
 
   MOCK_METHOD(void,
               ReservePlusAddress,
-              (const url::Origin&, PlusAddressRequestCallback),
+              (const url::Origin&, bool, PlusAddressRequestCallback),
               (override));
   MOCK_METHOD(void,
               ConfirmPlusAddress,
@@ -33,6 +33,7 @@ class MockPlusAddressHttpClient : public PlusAddressHttpClient {
               GetAllPlusAddresses,
               (PlusAddressMapRequestCallback),
               (override));
+  MOCK_METHOD(void, Reset, (), (override));
 };
 
 }  // namespace plus_addresses

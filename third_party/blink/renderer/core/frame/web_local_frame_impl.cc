@@ -88,6 +88,7 @@
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 
 #include <algorithm>
+#include <cmath>
 #include <memory>
 #include <numeric>
 #include <utility>
@@ -344,18 +345,6 @@ class ChromePrintContext : public PrintContext {
   }
 
   void SpoolSinglePage(cc::PaintCanvas* canvas, wtf_size_t page_number) {
-    DispatchEventsForPrintingOnAllFrames();
-    if (!GetFrame()->GetDocument() ||
-        !GetFrame()->GetDocument()->GetLayoutView()) {
-      return;
-    }
-
-    GetFrame()->View()->UpdateLifecyclePhasesForPrinting();
-    if (!GetFrame()->GetDocument() ||
-        !GetFrame()->GetDocument()->GetLayoutView()) {
-      return;
-    }
-
     // The page rect gets scaled and translated, so specify the entire
     // print content area here as the recording rect.
     PaintRecordBuilder builder;
@@ -370,16 +359,6 @@ class ChromePrintContext : public PrintContext {
   void SpoolPagesWithBoundariesForTesting(cc::PaintCanvas* canvas,
                                           const gfx::Size& spool_size_in_pixels,
                                           const WebVector<uint32_t>* pages) {
-    DispatchEventsForPrintingOnAllFrames();
-    if (!GetFrame()->GetDocument() ||
-        !GetFrame()->GetDocument()->GetLayoutView())
-      return;
-
-    GetFrame()->View()->UpdateLifecyclePhasesForPrinting();
-    if (!GetFrame()->GetDocument() ||
-        !GetFrame()->GetDocument()->GetLayoutView())
-      return;
-
     gfx::Rect all_pages_rect(spool_size_in_pixels);
 
     PaintRecordBuilder builder;
@@ -417,8 +396,13 @@ class ChromePrintContext : public PrintContext {
           GetFrame()->GetDocument()->GetPageDescription(page_index);
 
       AffineTransform transform;
-      transform.Translate(description.margin_left,
-                          current_height + description.margin_top);
+      // The transform offset should be in integers, or everything will look
+      // blurry. The value is also rounded to the nearest integer (not ceil /
+      // floor), to better match what it would look like if the same offset were
+      // applied from within the document contents (e.g. margin / padding on a
+      // regular DIV). Some tests depend on this.
+      transform.Translate(std::round(description.margin_left),
+                          current_height + std::round(description.margin_top));
 
       if (description.orientation == PageOrientation::kUpright) {
         current_height += description.size.height() + 1;
@@ -447,6 +431,15 @@ class ChromePrintContext : public PrintContext {
 
  protected:
   virtual void SpoolPage(GraphicsContext& context, wtf_size_t page_number) {
+    DispatchEventsForPrintingOnAllFrames();
+    if (!IsFrameValid()) {
+      return;
+    }
+
+    auto* frame_view = GetFrame()->View();
+    DCHECK(frame_view);
+    frame_view->UpdateLifecyclePhasesForPrinting();
+
     if (!IsFrameValid() || page_number >= PageCount()) {
       // TODO(crbug.com/452672): The number of pages may change after layout for
       // pagination.
@@ -455,14 +448,12 @@ class ChromePrintContext : public PrintContext {
     gfx::Rect page_rect = PageRect(page_number);
     AffineTransform transform;
 
-    auto* frame_view = GetFrame()->View();
-    DCHECK(frame_view);
     const LayoutView* layout_view = frame_view->GetLayoutView();
 
     // Layout may have used a larger viewport size in order to fit more
     // unbreakable content in the inline direction. Now we need to scale it down
     // to fit on the actual pages.
-    float inverse_scale = 1.f / layout_view->PageScaleFactor();
+    float inverse_scale = 1.f / layout_view->PaginationScaleFactor();
     transform.Scale(inverse_scale, inverse_scale);
 
     transform.Translate(static_cast<float>(-page_rect.x()),
@@ -1419,10 +1410,11 @@ bool WebLocalFrameImpl::HasSelection() const {
   if (plugin_container)
     return plugin_container->Plugin()->HasSelection();
 
-  // frame()->selection()->isNone() never returns true.
-  const auto& selection =
-      GetFrame()->Selection().ComputeVisibleSelectionInDOMTreeDeprecated();
-  return selection.Start() != selection.End();
+  // TODO(editing-dev): The use of UpdateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited.  See http://crbug.com/590369 for more details.
+  GetFrame()->GetDocument()->UpdateStyleAndLayout(
+      DocumentUpdateReason::kSelection);
+  return GetFrame()->Selection().ComputeVisibleSelectionInDOMTree().IsRange();
 }
 
 WebRange WebLocalFrameImpl::SelectionRange() const {
@@ -1433,7 +1425,7 @@ WebRange WebLocalFrameImpl::SelectionRange() const {
 
   return GetFrame()
       ->Selection()
-      .ComputeVisibleSelectionInDOMTreeDeprecated()
+      .ComputeVisibleSelectionInDOMTree()
       .ToNormalizedEphemeralRange();
 }
 
@@ -2385,10 +2377,7 @@ LocalFrame* WebLocalFrameImpl::CreateChildFrame(
         std::make_unique<PolicyContainer>(std::move(policy_container_remote),
                                           std::move(policy_container_data));
 
-    KURL creator_base_url;
-    if (features::IsNewBaseUrlInheritanceBehaviorEnabled()) {
-      creator_base_url = owner_element->GetDocument().BaseURL();
-    }
+    KURL creator_base_url(owner_element->GetDocument().BaseURL());
     To<WebLocalFrameImpl>(new_child_frame)
         ->InitializeCoreFrameInternal(
             *GetFrame()->GetPage(), owner_element, this, LastChild(),
@@ -2667,8 +2656,7 @@ void WebLocalFrameImpl::CommitNavigation(
     if (navigation_params->is_synchronous_commit_for_bug_778318 &&
         // Explicitly check for about:blank or about:srcdoc to prevent things
         // like about:mumble propagating the base url.
-        (url.IsAboutBlankURL() || url.IsAboutSrcdocURL()) &&
-        features::IsNewBaseUrlInheritanceBehaviorEnabled()) {
+        (url.IsAboutBlankURL() || url.IsAboutSrcdocURL())) {
       navigation_params->fallback_base_url =
           GetFrame()->GetDocument()->BaseURL();
     }
@@ -3187,7 +3175,7 @@ WebLocalFrameImpl::ConvertNotRestoredReasons(
         CHECK_GT(reason_to_copy->source->column_number, 0U);
         mojom::blink::ScriptSourceLocationPtr source_location =
             mojom::blink::ScriptSourceLocation::New(
-                WTF::String(reason_to_copy->source->url),
+                KURL(reason_to_copy->source->url),
                 WTF::String(reason_to_copy->source->function_name),
                 reason_to_copy->source->line_number,
                 reason_to_copy->source->column_number);
@@ -3248,6 +3236,14 @@ void WebLocalFrameImpl::SetLCPPHint(
     preconnect_origins.emplace_back(url::Origin::Create(origin_url));
   }
   lcpp->set_preconnected_origins(preconnect_origins);
+
+  Vector<KURL> unused_preloads;
+  unused_preloads.reserve(
+      base::checked_cast<wtf_size_t>(hint->unused_preloads.size()));
+  for (const auto& url : hint->unused_preloads) {
+    unused_preloads.emplace_back(url);
+  }
+  lcpp->set_unused_preloads(std::move(unused_preloads));
 }
 
 void WebLocalFrameImpl::AddHitTestOnTouchStartCallback(
@@ -3331,6 +3327,12 @@ void WebLocalFrameImpl::RemoveObserver(WebLocalFrameObserver* observer) {
 void WebLocalFrameImpl::WillSendSubmitEvent(const WebFormElement& form) {
   for (auto& observer : observers_)
     observer.WillSendSubmitEvent(form);
+}
+
+bool WebLocalFrameImpl::AllowStorageAccessSyncAndNotify(
+    WebContentSettingsClient::StorageType storage_type) {
+  return LocalFrame::FromFrameToken(GetLocalFrameToken())
+      ->AllowStorageAccessSyncAndNotify(storage_type);
 }
 
 }  // namespace blink

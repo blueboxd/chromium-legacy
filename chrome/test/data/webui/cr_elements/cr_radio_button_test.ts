@@ -52,7 +52,7 @@ suite('cr-radio-button', function() {
     assertTrue(radioButton.hasAttribute('disabled'));
     assertEquals('true', radioButton.$.button.getAttribute('aria-disabled'));
     assertStyle(radioButton, 'pointer-events', 'none');
-    assertNotStyle(radioButton, 'opacity', '1');
+    assertStyle(radioButton, 'opacity', '1');
   }
 
   function assertNotDisabled() {
@@ -85,15 +85,16 @@ suite('cr-radio-button', function() {
   });
 
   test('Ripple', function() {
-    assertFalse(!!radioButton.shadowRoot!.querySelector('paper-ripple'));
-    radioButton.dispatchEvent(
-        new CustomEvent('focus', {bubbles: true, composed: true}));
-    assertTrue(!!radioButton.shadowRoot!.querySelector('paper-ripple'));
-    assertTrue(radioButton.shadowRoot!.querySelector('paper-ripple')!.holdDown);
+    function getRipple() {
+      return radioButton.shadowRoot!.querySelector('cr-ripple');
+    }
+
+    assertFalse(!!getRipple());
     radioButton.dispatchEvent(
         new CustomEvent('up', {bubbles: true, composed: true}));
-    assertFalse(
-        radioButton.shadowRoot!.querySelector('paper-ripple')!.holdDown);
+    const ripple = getRipple();
+    assertTrue(!!ripple);
+    assertFalse(ripple.holdDown);
   });
 
   test('Label Hidden', async () => {

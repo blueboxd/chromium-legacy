@@ -4,6 +4,7 @@
 <translation id="1011749477052068769">Zhvendose këtu</translation>
 <translation id="1014147525163127655">Nuk ka asnjë çelës kalimi për <ph name="ORIGIN" /> në këtë pajisje</translation>
 <translation id="1016498331642356377">Kërko me shpejtësi me zërin tënd. Për ta modifikuar këtë shkurtore, preke dhe mbaje të prekur.</translation>
+<translation id="1017104654974573432">Zgjidh një problem</translation>
 <translation id="1024113959924243553">Chrome Dev</translation>
 <translation id="1028699632127661925">Po dërgohet te <ph name="DEVICE_NAME" />...</translation>
 <translation id="103269572468856066">Të pastrohen edhe të dhënat nga këto sajte dhe aplikacione?</translation>
@@ -14,6 +15,7 @@
 <translation id="1058669287135776095">Je offline. Kontrollo lidhjen e internetit dhe provo përsëri.</translation>
 <translation id="10614374240317010">Nuk u ruaj asnjëherë</translation>
 <translation id="107147699690128016">Nëse e ndryshon prapashtesën e skedarit, skedari mund të hapet në një aplikacion tjetër dhe mund të jetë një rrezik për pajisjen tënde.</translation>
+<translation id="1082920045291562218">Fleta për ndarjen e komenteve për përmbledhjen u mbyll</translation>
 <translation id="1089606299949659462">Shqyrtimi përfundoi!</translation>
 <translation id="1095761715416917775">Sigurohu që gjithmonë të mund të qasesh në të dhënat e tua të sinkronizimit</translation>
 <translation id="1100066534610197918">Hap në skedë të re në grup</translation>
@@ -21,9 +23,6 @@
 <translation id="1105960400813249514">Regjistrimi i ekranit</translation>
 <translation id="1108938384783527433">Sinkronizimi i historikut</translation>
 <translation id="1111673857033749125">Faqeshënuesit e ruajtur në pajisjet e tua të tjera do të shfaqen këtu.</translation>
-<translation id="1113057722807951993">Enkriptimi me frazën e kalimit nuk përfshin mënyrat e pagesës dhe adresat nga Google Pay.
-
-Për ta ndryshuar këtë cilësim, <ph name="BEGIN_LINK" />pastro të dhënat e Chrome në llogarinë tënde<ph name="END_LINK" />.</translation>
 <translation id="1113597929977215864">Shfaq pamjen e thjeshtuar</translation>
 <translation id="1126809382673880764">Nuk të mbron kundër faqeve të internetit, shkarkimeve dhe shtesave të rrezikshme. Do të vazhdosh të marrësh mbrojtje për "Shfletimin e sigurt", aty ku ofrohet, në shërbimet e tjera të Google, si Gmail dhe "Kërko".</translation>
 <translation id="1129510026454351943">Detajet: <ph name="ERROR_DESCRIPTION" /></translation>
@@ -49,7 +48,6 @@ Për ta ndryshuar këtë cilësim, <ph name="BEGIN_LINK" />pastro të dhënat e 
 <translation id="1231733316453485619">Të aktivizohet sinkronizimi?</translation>
 <translation id="123724288017357924">Ringarko faqen aktuale, duke shpërfillur përmbajtjen në memorien specifike</translation>
 <translation id="1239792311949352652">Ndaje me shpejtësi këtë faqe. Për ta modifikuar këtë shkurtore, shko te "Cilësimet".</translation>
-<translation id="1240190568154816272">Këshilla për Chrome</translation>
 <translation id="1240288207750131269"><ph name="LANG" /> po ngarkohet</translation>
 <translation id="1240903469550363138">Për të vazhduar, <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" /> do të ndajë emrin, adresën e email-it dhe fotografinë tënde të profilit me këtë sajt. Shiko <ph name="BEGIN_LINK1" />politikën e privatësisë<ph name="END_LINK1" /> dhe <ph name="BEGIN_LINK2" />kushtet e shërbimit<ph name="END_LINK2" /> të këtij sajti.</translation>
 <translation id="124116460088058876">Gjuhë të tjera</translation>
@@ -60,12 +58,10 @@ Për ta ndryshuar këtë cilësim, <ph name="BEGIN_LINK" />pastro të dhënat e 
 <translation id="1258753120186372309">Logoja alternative e Google: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1263063910731171689">Tani do të shohësh përmbajtje nga <ph name="SITE_NAME" /> dhe në lidhje me të te "Ndjekjet". Sajtet dhe kërkimet që ndjek ruhen në "Llogarinë tënde të Google". Mund t'i menaxhosh ndjekjet te cilësimet në çdo kohë.</translation>
 <translation id="1263231323834454256">Lista e leximit</translation>
-<translation id="1266864766717917324">Nuk mund të ndahet <ph name="CONTENT_TYPE" /></translation>
 <translation id="1269129608791067105">Këtu do të gjesh historikun tënd</translation>
 <translation id="1273937721055267968">Blloko <ph name="DOMAIN" /></translation>
 <translation id="1283039547216852943">Trokit për të zgjeruar</translation>
 <translation id="1289059016768036948">Do të të kërkohet të identifikohesh në "Llogarinë tënde të Google"</translation>
-<translation id="1291207594882862231">Pastro historikun, kukit, të dhënat e sajtit, memorien specifike…</translation>
 <translation id="129553762522093515">Të mbyllura së fundi</translation>
 <translation id="1298077576058087471">Kurse deri në 60% të të dhënave, lexo lajmet e sotme</translation>
 <translation id="1303339473099049190">Ai fjalëkalim nuk mund të gjendet. Kontrollo drejtshkrimin dhe provo përsëri.</translation>
@@ -97,7 +93,6 @@ Për ta ndryshuar këtë cilësim, <ph name="BEGIN_LINK" />pastro të dhënat e 
 <translation id="1436784010935106834">U hoq</translation>
 <translation id="1437543266176261764">Po ekzekutohet në <ph name="APP_NAME" /></translation>
 <translation id="1448440926884431741">Organizo produktet e tua të monitoruara te "Faqeshënuesit"</translation>
-<translation id="1450753235335490080">Nuk mund të ndahet <ph name="CONTENT_TYPE" /></translation>
 <translation id="1466383950273130737">Zgjidh gjuhën e Chrome</translation>
 <translation id="1477626028522505441">Shkarkimi i <ph name="FILE_NAME" /> dështoi për shkak të problemeve të serverit.</translation>
 <translation id="148482509007564431">Fluksi i ruajtjes së faqeshënuesve</translation>
@@ -110,6 +105,7 @@ Për ta ndryshuar këtë cilësim, <ph name="BEGIN_LINK" />pastro të dhënat e 
 <translation id="1513858653616922153">Fshi fjalëkalimin</translation>
 <translation id="1521774566618522728">Aktiv sot</translation>
 <translation id="1544826120773021464">Për të menaxhuar "Llogarinë tënde të Google", prek butonin "Menaxho llogarinë"</translation>
+<translation id="154513667535157406">Opsioni i gishtave lart tregon se të pëlqen kjo përmbledhje</translation>
 <translation id="1549000191223877751">Zhvendose te dritarja tjetër</translation>
 <translation id="1553358976309200471">Përditëso Chrome</translation>
 <translation id="1554532453982918912">Ndihmo në përmirësimin e Chrome për njerëzit që e përdorin si ti</translation>
@@ -121,10 +117,10 @@ Për ta ndryshuar këtë cilësim, <ph name="BEGIN_LINK" />pastro të dhënat e 
 <translation id="1594635596540195766"><ph name="SUGGESTIONS_COUNT" /> artikuj të sugjeruar në listën e mëposhtme.</translation>
 <translation id="1598163867407640634">Përdor <ph name="SITE_ETLD_PLUS_ONE" /> me <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" /></translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{Hiq 1 artikull të zgjedhur}other{Hiq # artikuj të zgjedhur}}</translation>
-<translation id="1633659023549081553">Zbulo përmbajtje të reja në faqen kryesore të Chrome</translation>
 <translation id="1641113438599504367">Shfletimi i sigurt</translation>
 <translation id="164269334534774161">Po shikon një kopje offline të kësaj faqeje nga <ph name="CREATION_TIME" /></translation>
 <translation id="1644574205037202324">Historiku</translation>
+<translation id="1644969410150602449">Shiko historikun e uebit këtu</translation>
 <translation id="1657932388559784161">Fleta e poshtme e statistikave të faqes është mbyllur</translation>
 <translation id="1670399744444387456">Themeloret</translation>
 <translation id="1671236975893690980">Shkarkimi në pritje...</translation>
@@ -149,6 +145,7 @@ Për ta ndryshuar këtë cilësim, <ph name="BEGIN_LINK" />pastro të dhënat e 
 <translation id="1760873718737761808">{FILE_COUNT,plural, =1{Faqet, 1 faqe në listë}other{Faqet, # faqe në listë}}</translation>
 <translation id="1778457539567749232">Shëno si të palexuar</translation>
 <translation id="1779766957982586368">Mbyll dritaren</translation>
+<translation id="1780023393214832643">Fjalëkalimet e ruajtura te <ph name="USERNAME" /></translation>
 <translation id="1791662854739702043">I instaluar</translation>
 <translation id="1792959175193046959">Ndrysho në çdo moment vendndodhjen e parazgjedhur të shkarkimit</translation>
 <translation id="1796666869097395659">Minimizo skedën për t'u kthyer më vonë tek ajo</translation>
@@ -174,13 +171,16 @@ Për ta ndryshuar këtë cilësim, <ph name="BEGIN_LINK" />pastro të dhënat e 
 <translation id="1933845786846280168">Skeda e zgjedhur</translation>
 <translation id="1943432128510653496">Ruaj fjalëkalimet</translation>
 <translation id="1944535645109964458">Nuk ofrohet asnjë çelës kalimi</translation>
+<translation id="1957557050935255529">PDF-ja po ngarkohet…</translation>
 <translation id="1959679933317802873">Në pritje të përmbajtjes</translation>
 <translation id="1960290143419248813">Përditësimet e Chrome nuk mbështeten më për këtë version të Android</translation>
 <translation id="1963976881984600709">Mbrojtja standarde</translation>
 <translation id="1966710179511230534">Përditëso detajet e identifikimit.</translation>
+<translation id="1969037871259811890">Fshirja e të dhënave të shfletimit nuk bën që të dalësh nga "Llogaria jote e Google". Për ta bërë këtë, <ph name="BEGIN_LINK1" />dil nga llogaria në Chrome<ph name="END_LINK1" />.</translation>
 <translation id="197288927597451399">Mbaje</translation>
 <translation id="1973912524893600642">Mbaj të dhënat</translation>
 <translation id="1974060860693918893">Të përparuara</translation>
+<translation id="1974251558382034745">Historiku i uebit</translation>
 <translation id="1984417487208496350">Asnjë mbrojtje (nuk rekomandohet)</translation>
 <translation id="1986685561493779662">Emri ekziston tashmë</translation>
 <translation id="1995884366040846621">Për të vazhduar, <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" /> do të ndajë emrin, adresën e email-it dhe fotografinë tënde të profilit me këtë sajt. Shiko <ph name="BEGIN_LINK1" />politikën e privatësisë<ph name="END_LINK1" /> të këtij sajti.</translation>
@@ -201,7 +201,6 @@ Për ta ndryshuar këtë cilësim, <ph name="BEGIN_LINK" />pastro të dhënat e 
 <translation id="2093731487903423814">15 minutat e fundit</translation>
 <translation id="2096012225669085171">Sinkronizo e personalizo përmes pajisjeve</translation>
 <translation id="2100273922101894616">Identifikohu automatikisht</translation>
-<translation id="2100314319871056947">Provo ta ndash tekstin në copëza më të vogla</translation>
 <translation id="2111511281910874386">Shko te faqja</translation>
 <translation id="2119609734654412418">Këtu do të gjesh faqeshënuesit e tu</translation>
 <translation id="2122601567107267586">Aplikacioni nuk mund të hapej</translation>
@@ -231,7 +230,6 @@ Për ta ndryshuar këtë cilësim, <ph name="BEGIN_LINK" />pastro të dhënat e 
 <translation id="2248941474044011069">Fjalëkalimet enkriptohen në pajisjen tënde para se të ruhen në "Menaxherin e fjalëkalimeve të Google"</translation>
 <translation id="2249635629516220541">Personalizo informacionet e përdorura nga sajtet për të të shfaqur reklama</translation>
 <translation id="2259659629660284697">Eksporto fjalëkalimet…</translation>
-<translation id="2276231040576210443">Mund të zgjedhësh gjithmonë se çfarë do të sinkronizosh te <ph name="BEGIN_LINK1" />cilësimet<ph name="END_LINK1" />. Google mund t'i personalizojë "Kërko" dhe shërbimet e tjera bazuar në historikun tënd.</translation>
 <translation id="2276696007612801991">Identifikohu në "Llogarinë tënde të Google" për të kontrolluar fjalëkalimet e tua</translation>
 <translation id="2278052315791335171">Fshirja e këtij fjalëkalimi nuk do ta fshijë llogarinë tënde në <ph name="SITE" /></translation>
 <translation id="2286841657746966508">Adresa e faturimit</translation>
@@ -250,6 +248,7 @@ Për ta ndryshuar këtë cilësim, <ph name="BEGIN_LINK" />pastro të dhënat e 
 <translation id="2364539095045928896">Butoni i mbylljes për mbylljen e njoftimit të privatësisë të qendrës së statistikave të faqes.</translation>
 <translation id="2386938421315164605">Fshih dhe shfaq temat</translation>
 <translation id="2390510615457643724">Do ta shkarkosh <ph name="FILE_NAME" /> (<ph name="FILE_SIZE" />) sërish?</translation>
+<translation id="2395004545133500011">"Ndaj me fletën e përmbledhjes" u hap</translation>
 <translation id="2410754283952462441">Zgjidh një llogari</translation>
 <translation id="2414886740292270097">E errët</translation>
 <translation id="2421705177906985956">Nuk ka sajte për të shfaqur për momentin</translation>
@@ -284,7 +283,6 @@ Për ta ndryshuar këtë cilësim, <ph name="BEGIN_LINK" />pastro të dhënat e 
 <translation id="2569733278091928697">Do të mund të menaxhosh lehtësisht kontrollet e medias, sesionet "e fshehta", shkarkimet dhe të tjera</translation>
 <translation id="2571711316400087311">Ofro të dërgosh faqe në gjuhë të tjera te "Përkthe me Google"</translation>
 <translation id="2571834852878229351">Krijo fjalëkalimin tim</translation>
-<translation id="2573452357057307036">Mëso se si ta caktosh Chrome si të parazgjedhur</translation>
 <translation id="2574249610672786438">Për të parë skedat e tua nga çdo vend ku përdor Chrome, identifikohu në të gjitha pajisjet e tua</translation>
 <translation id="2578337197553672982">Përmbajtje nga Google për mendjet e të vegjëlve</translation>
 <translation id="2581165646603367611">Kjo do të pastrojë kukit, memorien e përkohshme dhe të dhënat e tjera të sajteve që Chrome nuk i konsideron si të rëndësishme.</translation>
@@ -294,21 +292,23 @@ Për ta ndryshuar këtë cilësim, <ph name="BEGIN_LINK" />pastro të dhënat e 
 <translation id="260403163289591229">Po ndjek</translation>
 <translation id="2604446170045642109">Mund ta çaktivizosh temën e errët për sajtet te cilësimet.</translation>
 <translation id="2612676031748830579">Numri i kartës</translation>
+<translation id="2620314865574742210"><ph name="NAME" /> të ftoi që të kesh qasje në një artikull të ndarë.</translation>
 <translation id="2625189173221582860">Fjalëkalimi u kopjua</translation>
 <translation id="2634393460268044753">Dërgon URL-të e sajteve që viziton ti dhe një kampion të vogël të përmbajtjes së faqes, shkarkimeve, aktivitetit të shtesave dhe informacioneve të sistemit te "Shfletimi i sigurt i Google" për të kontrolluar nëse janë të dëmshme.</translation>
 <translation id="2642087927315268160">Fleta e poshtme e identifikimit u mbyll.</translation>
 <translation id="2643064289437760082">Mund t'i fshish gjithmonë të dhënat për matjen e reklamave duke fshirë të dhënat e tua të shfletimit</translation>
 <translation id="2647434099613338025">Shto gjuhën</translation>
-<translation id="2649068648233607930">Shfletuesi yt menaxhohet nga <ph name="DOMAIN" /></translation>
 <translation id="2650077116157640844">Më shumë në pajisjet e sinkronizuara</translation>
 <translation id="2650348088770008516">Shpjegimi i udhëzuesit të privatësisë u mbyll</translation>
 <translation id="2650408372219180431">Eksporto dhe fshi fjalëkalimet e ruajtura në këtë pajisje</translation>
 <translation id="2650751991977523696">Të shkarkohet skedari sërish?</translation>
 <translation id="265156376773362237">Ngarkimi paraprak standard</translation>
+<translation id="2653659639078652383">Dërgoje</translation>
 <translation id="2656405586795711023">Aplikacionet e uebit</translation>
 <translation id="2669454659051515572">Çdo person që e përdor këtë pajisje mund t'i shikojë skedarët e shkarkuar</translation>
 <translation id="2673169232805572412">Nëse një sajt përpiqet të vjedhë fjalëkalimin tënd ose kur shkarkon një skedar të dëmshëm, Chrome mund t'i dërgojë URL-të, duke përfshirë pjesë të përmbajtjes së faqes, te Google</translation>
 <translation id="2702516483241149200">E re: Ndaj një lidhje që të drejton te ky tekst</translation>
+<translation id="2705073298859543115">Krijo përmbledhjen</translation>
 <translation id="2708051474374549906">Mbrojtje proaktive dhe në kohë reale nga sajtet, shkarkimet dhe shtesat e rrezikshme që bazohet në të dhënat e tua të shfletimit që dërgohen te Google</translation>
 <translation id="2708226184420201102">Hape në shfletuesin <ph name="PRODUCT_NAME" /></translation>
 <translation id="271033894570825754">E re</translation>
@@ -326,6 +326,7 @@ Për ta ndryshuar këtë cilësim, <ph name="BEGIN_LINK" />pastro të dhënat e 
 <translation id="2781151931089541271">1 sekondë e mbetur</translation>
 <translation id="2789486458103222910">Në rregull</translation>
 <translation id="2800066122460699237">Skeda <ph name="TAB_TITLE" /> do të mbyllet</translation>
+<translation id="2805756323405976993">Aplikacionet</translation>
 <translation id="281504910091592009">Shfaq dhe menaxho fjalëkalimet e ruajtura në <ph name="BEGIN_LINK" />llogarinë tënde të Google<ph name="END_LINK" /></translation>
 <translation id="2827278682606527653">Menyja e kartave të furnizimit në gjysmë lartësi</translation>
 <translation id="2830783625999891985">Përmbajtjet e kujtesës së fragmenteve janë fshehur</translation>
@@ -336,6 +337,7 @@ Për ta ndryshuar këtë cilësim, <ph name="BEGIN_LINK" />pastro të dhënat e 
 <translation id="2841216154655874070">{NUM_DAYS,plural, =1{Kontrolluar 1 ditë më parë}other{Kontrolluar # ditë më parë}}</translation>
 <translation id="2842985007712546952">Dosja mëmë</translation>
 <translation id="2853415089995957805">Chrome ngarkon paraprakisht faqet që mund t'i vizitosh që ato të ngarkohen më shpejt kur t'i vizitosh</translation>
+<translation id="2855243985454069333">Fshin historikun nga të gjitha pajisjet e sinkronizuara</translation>
 <translation id="2856503607207334158">Identifikimi dështoi</translation>
 <translation id="2860954141821109167">Sigurohu që një aplikacion i telefonit të jetë i aktivizuar në këtë pajisje</translation>
 <translation id="2861923151411510142">Disa veçori të Chrome nuk do të ofrohen më</translation>
@@ -365,6 +367,7 @@ Për ta ndryshuar këtë cilësim, <ph name="BEGIN_LINK" />pastro të dhënat e 
 <translation id="2942036813789421260">Skeda e shikimit paraprak është e mbyllur</translation>
 <translation id="2946420957526726953">Chrome po përditësohet për t'u lidhur me pajisjet e tjera</translation>
 <translation id="2951071800649516099">Shto faqe në listën tënde të leximit për më vonë</translation>
+<translation id="2956070106555335453">Përmbledhja</translation>
 <translation id="2961208450284224863">{READING_LIST_UNREAD_PAGE_COUNT,plural, =1{<ph name="READING_LIST_UNREAD_PAGE_COUNT_ONE" /> faqe e palexuar}other{<ph name="READING_LIST_UNREAD_PAGE_COUNT_MANY" /> faqe të palexuara}}</translation>
 <translation id="296370266220139811">Kurse kohën dhe shkruaj më pak</translation>
 <translation id="2977350910003566746">Po renditen sipas hapjes së fundit</translation>
@@ -374,15 +377,12 @@ Për ta ndryshuar këtë cilësim, <ph name="BEGIN_LINK" />pastro të dhënat e 
 <translation id="2981364137500752533">Mund të kesh deri në 5 dritare.</translation>
 <translation id="2983102365694924129">Bazuar në aktivitetin tënd në një sajt. Ky cilësim është joaktiv.</translation>
 <translation id="2984978667043170458">Përfshi tekstin përreth në kërkimet e Google</translation>
-<translation id="2987620471460279764">Teksti i ndarë nga pajisje tjetër</translation>
 <translation id="2989523299700148168">Vizituar së fundi</translation>
 <translation id="2992473221983447149">Përshkrimet e imazheve</translation>
 <translation id="2996291259634659425">Krijo një frazë kalimi</translation>
 <translation id="2996809686854298943">URL-ja e detyrueshme</translation>
-<translation id="2996932914629936323">Pastron historikun nga të gjitha pajisjet e sinkronizuara</translation>
 <translation id="2997081575621687554">Kur një sajt i Google kërkon të ngarkojë paraprakisht lidhje në mënyrë private në faqen e tij, Chrome i enkripton dhe i ngarkon paraprakisht faqet nëpërmjet serverëve të Google pa kuki. Kjo e fsheh identitetin tënd nga sajti i ngarkuar paraprakisht.</translation>
 <translation id="3003253259757197230">URL-të që viziton dërgohen te Google për të parashikuar sajtet që mund të vizitosh në vijim dhe për të shfaqur informacione shtesë për faqen që po viziton ti</translation>
-<translation id="3016635187733453316">Sigurohu që kjo pajisje të jetë e lidhur me internetin</translation>
 <translation id="3026955690410463085">Përfshi lidhjen</translation>
 <translation id="3027644380269727216">Bazuar në aktivitetin tënd në një sajt. Ky cilësim është aktiv.</translation>
 <translation id="3029276696788198026">Pa ngarkim paraprak</translation>
@@ -394,6 +394,7 @@ Për ta ndryshuar këtë cilësim, <ph name="BEGIN_LINK" />pastro të dhënat e 
 <translation id="3046945242843292318">Shko më shpejt te ky sajt herën tjetër</translation>
 <translation id="3055259925215945098">Faqeshënuesi u zhvendos</translation>
 <translation id="3055841435094910999">Informacioni për përdorimin tënd të Chrome dërgohet te Google, por nuk lidhet me ty\n\nNëse Chrome ndërpritet aksidentalisht, detajet rreth aksidentit mund të përfshijnë disa informacione personale\n\nNëse aktivizon sinkronizimin, metrikat mund të përfshijnë edhe informacione për URL-të që ti viziton</translation>
+<translation id="3059531648236115056">Shto përmbledhjen</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> faqeshënues}other{<ph name="BOOKMARKS_COUNT_MANY" /> faqeshënues}}</translation>
 <translation id="3062802207422175757">Artikuj rreth interesave të tua në Chrome</translation>
 <translation id="3066573403916685335">Lëviz poshtë</translation>
@@ -401,9 +402,11 @@ Për ta ndryshuar këtë cilësim, <ph name="BEGIN_LINK" />pastro të dhënat e 
 <translation id="3072980200212375806"><ph name="APP_NAME" /> do të hapet në Chrome. Duke vazhduar, ti pranon <ph name="BEGIN_LINK1" />"Kushtet e shërbimit" të Google<ph name="END_LINK1" /> dhe <ph name="BEGIN_LINK2" />"Kushtet shtesë të shërbimit" të Google Chrome dhe të ChromeOS<ph name="END_LINK2" />. Zbatohet gjithashtu <ph name="BEGIN_LINK3" />Politika e privatësisë<ph name="END_LINK3" />.</translation>
 <translation id="3080525922482950719">Mund t'i ruash faqet për t'i lexuar më vonë ose offline</translation>
 <translation id="3091010850649238832">Shfaq përmbajtjet e kujtesës së fragmenteve</translation>
+<translation id="3093004810561729002">Dikush</translation>
 <translation id="3098745985164956033">Disa imazhet i dërgohen Google për të përmirësuar përshkrimet për ty</translation>
 <translation id="3114507951000454849">Lexo lajmet e sotme <ph name="NEWS_ICON" /></translation>
 <translation id="3123734510202723619">Njoftime</translation>
+<translation id="3146775326699342508">Identifikohu për të marrë faqeshënuesit dhe më shumë nga pajisjet e tua të tjera</translation>
 <translation id="314939179385989105">Faqja kryesore e Chrome</translation>
 <translation id="3158667104057012316">Po renditen sipas renditjes manuale</translation>
 <translation id="3166827708714933426">Shkurtoret e skedës dhe dritares</translation>
@@ -418,10 +421,10 @@ Për ta ndryshuar këtë cilësim, <ph name="BEGIN_LINK" />pastro të dhënat e 
 <translation id="3220943972464248773">Për të sinkronizuar fjalëkalimet e tua, verifiko që je ti</translation>
 <translation id="3226612997184048185">Nëse i ruan faqeshënuesit e tu vetëm në "Llogarinë tënde të Google", mund t'i monitorosh çmimet e produkteve në Chrome dhe të marrësh njoftime kur të ulet çmimi</translation>
 <translation id="3227557059438308877">Google Chrome si çelës sigurie</translation>
+<translation id="3232293466644486101">Fshi të dhënat e shfletimit…</translation>
 <translation id="3232754137068452469">Aplikacioni i uebit</translation>
 <translation id="3236059992281584593">1 minutë e mbetur</translation>
 <translation id="3237087289225714896">Ngarkimi paraprak standard:</translation>
-<translation id="3237433641417325993">Lëviz poshtë për të parë artikujt e sugjeruar</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3245429137663807393">Nëse ndan edhe raportet e përdorimit të Chrome, ato raporte përfshijnë URL-të që viziton</translation>
 <translation id="3250563604907490871">Përshkrimet e imazheve do të vazhdojnë kur të lidhesh me Wi-Fi</translation>
@@ -436,21 +439,21 @@ Për ta ndryshuar këtë cilësim, <ph name="BEGIN_LINK" />pastro të dhënat e 
 <translation id="3290249595466894471">Dërgon gjithashtu një shembull të vogël të faqeve, shkarkimeve, aktivitetit të shtesave dhe informacioneve të sistemit për të ndihmuar në zbulimin e kërcënimeve të reja</translation>
 <translation id="3293181007446299124">Historiku yt i shfletimit ruhet privat në pajisjen tënde dhe raportet dërgohen me një vonesë për të mbrojtur identitetin tënd</translation>
 <translation id="3303414029551471755">Të vazhdohet me shkarkimin e përmbajtjes?</translation>
+<translation id="3303855915957856445">Nuk u gjetën rezultate kërkimi</translation>
 <translation id="3305130791745726624">Dërgo te pajisjet</translation>
 <translation id="3305795716056605962">Përkthe faqet nga butoni "Opsione të tjera"</translation>
 <translation id="3334729583274622784">Do ta ndryshosh prapashtesën e skedarit?</translation>
 <translation id="3341262203274374114">Ndjekja nuk mund të anulohet. Ndodhi një gabim.</translation>
 <translation id="3359667936385849800">Përdor ofruesin aktual të shërbimit</translation>
 <translation id="3373701465337594448">Kur ky cilësim është aktiv, këtu shfaqet një listë e sajteve që viziton që hamendësojnë interesat e tu</translation>
-<translation id="3373979091428520308">Për ta ndarë këtë faqe në një pajisje tjetër, aktivizo sinkronizimin në cilësimet e Chrome në pajisjen tjetër</translation>
 <translation id="3374023511497244703">Faqeshënuesit, historiku, fjalëkalimet dhe të dhënat e tjera të Chrome nuk do të sinkronizohen më në "Llogarinë tënde të Google"</translation>
 <translation id="3384347053049321195">Ndaje imazhin</translation>
 <translation id="3387650086002190359">Shkarkimi i <ph name="FILE_NAME" /> dështoi për shkak të gabimeve të sistemit të skedarëve.</translation>
-<translation id="3389286852084373014">Teksti është tepër i madh</translation>
 <translation id="3398320232533725830">Hap menaxherin e faqeshënuesve</translation>
 <translation id="3407392651057365886">Ngarkohen paraprakisht më shumë faqe. Faqet mund të ngarkohen paraprakisht nëpërmjet serverëve të Google kur kërkohen nga sajte të tjera.</translation>
 <translation id="3414952576877147120">Madhësia:</translation>
 <translation id="3421726884497337397">Zgjidh se kur do t'i bllokosh kukit e palëve të treta</translation>
+<translation id="342220687432920852">{HOURS,plural, =1{# orë më parë}other{# orë më parë}}</translation>
 <translation id="3428747202529429621">Të mban të sigurt në Chrome dhe mund të përdoret për të përmirësuar sigurinë tënde në aplikacionet e tjera të Google kur je i identifikuar</translation>
 <translation id="3430670036890315772">Çaktivizimi i kyçjes së profilit do të heqë informacionet e tua të ruajtura</translation>
 <translation id="3435465986463792564">Ke shumë dritare? Mund t'i menaxhosh ato nga këtu</translation>
@@ -493,6 +496,7 @@ Për ta ndryshuar këtë cilësim, <ph name="BEGIN_LINK" />pastro të dhënat e 
 <translation id="3631987586758005671">Po ndahet te <ph name="DEVICE_NAME" /></translation>
 <translation id="363596933471559332">Identifikohu automatikisht në uebsajte duke përdorur kredencialet e ruajtura. Kur veçoria është e çaktivizuar, do të të kërkohet gjithmonë verifikimi  përpara se të identifikohesh në një uebsajt.</translation>
 <translation id="3636940436873918441">Gjuhët e preferuara</translation>
+<translation id="368329460027487650">Ke dalë Hap opsionet për t'u identifikuar.</translation>
 <translation id="3687645719033307815">Po shikon një pamje paraprake të kësaj faqeje</translation>
 <translation id="3690369331356918524">Të paralajmëron nëse fjalëkalimet janë ekspozuar në një nxjerrje të paautorizuar të të dhënave</translation>
 <translation id="3692944402865947621">Shkarkimi i skedarit <ph name="FILE_NAME" /> dështoi sepse vendndodhja e hapësirës ruajtëse nuk është e arritshme.</translation>
@@ -527,7 +531,6 @@ Për ta ndryshuar këtë cilësim, <ph name="BEGIN_LINK" />pastro të dhënat e 
 <translation id="3847319713229060696">Ndihmo në përmirësimin e sigurisë për të gjithë</translation>
 <translation id="3856096718352044181">Verifiko që ky është një ofrues i vlefshëm ose provo përsëri më vonë</translation>
 <translation id="3858860766373142691">Emri</translation>
-<translation id="3872520701277728051">Nëse ke harruar frazën tënde të kalimit apo dëshiron ta ndryshosh këtë cilësim, <ph name="BEGIN_LINK" />pastro të dhënat e Chrome në llogarinë tënde<ph name="END_LINK" />.</translation>
 <translation id="3892148308691398805">Kopjo tekstin</translation>
 <translation id="3894427358181296146">Shto dosje</translation>
 <translation id="3899682235662194879">Mbylli të gjitha skedat "e fshehta"</translation>
@@ -541,7 +544,6 @@ Për ta ndryshuar këtë cilësim, <ph name="BEGIN_LINK" />pastro të dhënat e 
 <translation id="3932390316856284148">Fleta e poshtme e identifikimit u hap në lartësi të plotë.</translation>
 <translation id="393697183122708255">Nuk ofrohet kërkimi i aktivizuar me zë</translation>
 <translation id="395377504920307820">Përdor pa një llogari</translation>
-<translation id="3958287878205277013">Për të pastruar historikun e shfletimit "Të fshehtë" nga pajisja jote, mbylli të gjitha skedat "E fshehta".</translation>
 <translation id="396192773038029076">{NUM_IN_PROGRESS,plural, =1{Chrome do ta ngarkojë faqen tënde kur të jesh gati}other{Chrome do të ngarkojë faqet e tua kur të jesh gati}}</translation>
 <translation id="3962119236270174787">Mbrojtje standarde ndaj sajteve të uebit, shkarkimeve dhe shtesave që njihen si të rrezikshme</translation>
 <translation id="3969142555815019568">Chrome nuk mund t'i kontrollojë fjalëkalimet e tua</translation>
@@ -559,7 +561,9 @@ Për ta ndryshuar këtë cilësim, <ph name="BEGIN_LINK" />pastro të dhënat e 
 <translation id="4034817413553209278">{HOURS,plural, =1{# orë}other{# orë}}</translation>
 <translation id="4035877632587724847">Mos lejo</translation>
 <translation id="4042941173059740150">Vazhdo te <ph name="SITE_ETLD_PLUS_ONE" /> me <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" /></translation>
+<translation id="404352903042073578">Grup pa emër</translation>
 <translation id="4044708993631234325">Fleta e poshtme</translation>
+<translation id="405365679581583349">Përditëso shërbimet e Google Play</translation>
 <translation id="405399507749852140">Merr sinjalizime nëse ulet çmimi në ndonjë sajt</translation>
 <translation id="4056223980640387499">Sepia</translation>
 <translation id="4062305924942672200">Informacioni ligjor</translation>
@@ -629,11 +633,13 @@ Për ta ndryshuar këtë cilësim, <ph name="BEGIN_LINK" />pastro të dhënat e 
 <translation id="4404568932422911380">Nuk ka faqeshënues</translation>
 <translation id="4405224443901389797">Zhvendos te…</translation>
 <translation id="4405636711880428279">Të hiqet karta virtuale?</translation>
+<translation id="4409014848144759297"><ph name="WEBSITE_TITLE" /> dhe <ph name="TAB_COUNT" /> skeda të tjera</translation>
 <translation id="4409271659088619928">Motori yt i kërkimit është <ph name="DSE" />. Shiko udhëzimet e motorit të kërkimit për fshirjen e historikut të kërkimit, nëse është e vlefshme.</translation>
 <translation id="4415276339145661267">Menaxho "Llogarinë tënde të Google"</translation>
 <translation id="4425140285732600465">Çmimi po monitorohet. Merr sinjalizime nëse ulet çmimi në ndonjë sajt.</translation>
 <translation id="4425173294238317796">Fleta e konfirmimit të çelësit të kalimit</translation>
 <translation id="442518031075347249">Nuk do të mund ta përdorësh më kartën virtuale me Google Pay. <ph name="BEGIN_LINK1" />Mëso më shumë rreth kartave virtuale<ph name="END_LINK1" /></translation>
+<translation id="4425786638332151079">Një pjesë e historikut tënd të uebit mund të mos shfaqet këtu. Nëse është e nevojshme, trokit te "Hap historikun e plotë të Chrome". "Llogaria jote e Google" mund të ketë gjithashtu forma të tjera të historikut të shfletimit në <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="4430277756566635951">Aktualisht është zgjedhur <ph name="EMAIL" />. Zgjidh një llogari.</translation>
 <translation id="4452411734226507615">Mbyll skedën <ph name="TAB_TITLE" /></translation>
 <translation id="4452548195519783679">Faqeshënuesi u shtua te <ph name="FOLDER_NAME" /></translation>
@@ -643,6 +649,7 @@ Për ta ndryshuar këtë cilësim, <ph name="BEGIN_LINK" />pastro të dhënat e 
 <translation id="4481181637083926190">{BOOKMARK_COUNT,plural, =1{Faqeshënuesi u ruajt te "<ph name="FOLDER_NAME" />". Ai ruhet vetëm në këtë pajisje.}other{Faqeshënuesit u ruajtën te "<ph name="FOLDER_NAME" />". Ata ruhen vetëm te kjo pajisje.}}</translation>
 <translation id="4484496141267039529">Nuk ka lidhje. Provo sërish më vonë.</translation>
 <translation id="4487967297491345095">Të gjitha të dhënat e aplikacionit të Chrome do të fshihen përgjithmonë. Kjo përfshin të gjithë skedarët, cilësimet, llogaritë, bazat e të dhënave etj.</translation>
+<translation id="4489640160615759754">Ndaj me fletën e përmbledhjes</translation>
 <translation id="4494806687727322324">Ruajtja e fjalëkalimeve është aktivizuar nga administratori yt</translation>
 <translation id="4508528996305412043">Menyja e kartave të furnizimit është hapur</translation>
 <translation id="4509501256689523862">Kur shfleton, nëse një reklamë që shikon është e personalizuar, kjo varet nga ky cilësim, nga <ph name="BEGIN_LINK_1" />Temat e reklamave<ph name="END_LINK_1" />, <ph name="BEGIN_LINK_2" />cilësimet e tua të kukive<ph name="END_LINK_2" />, si dhe nëse sajti që po shikon i personalizon reklamat</translation>
@@ -652,6 +659,7 @@ Për ta ndryshuar këtë cilësim, <ph name="BEGIN_LINK" />pastro të dhënat e 
 <translation id="4521489764227272523">Të dhënat e zgjedhura janë hequr nga Chrome dhe nga pajisjet e sinkronizuara.
 
 Llogaria jote e Google mund të ketë forma të tjera të historikut të shfletimit, si kërkimet dhe aktivitetet nga shërbimet e tjera të Google në <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
+<translation id="452279259461584111">"Ndaj me fletën e përmbledhjes" u mbyll</translation>
 <translation id="4523326818319942067">ora e fundit</translation>
 <translation id="452750746583162491">Rishiko të dhënat e tua të sinkronizuara</translation>
 <translation id="4532845899244822526">Zgjidh dosjen</translation>
@@ -680,6 +688,7 @@ Llogaria jote e Google mund të ketë forma të tjera të historikut të shfleti
 <translation id="465657074423018424">"Shfletimi i sigurt" të mbron kundër sajteve mashtruese. Nëse e çaktivizon, ki shumë kujdes kur shfleton, sidomos përpara se të futësh fjalëkalime.</translation>
 <translation id="4662373422909645029">Pseudonimi nuk mund të përmbajë numra</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> faqeshënuesë u fshinë</translation>
+<translation id="4664020984660113387">Hiq përmbledhjen</translation>
 <translation id="4668279686271488041">Të dhënat për matjen e reklamave fshihen rregullisht nga pajisja jote</translation>
 <translation id="4668347365065281350">Të gjitha të dhënat e ruajtura nga sajtet, duke përfshirë kukit dhe të dhënat e tjera të ruajtura lokalisht</translation>
 <translation id="4678082183394354975">Tema e errët për sajtet është aktive në Chrome</translation>
@@ -694,8 +703,11 @@ Llogaria jote e Google mund të ketë forma të tjera të historikut të shfleti
 <translation id="4732120983431207637">Moduli i zbërthimit të stivës</translation>
 <translation id="4736934858538408121">Karta virtuale</translation>
 <translation id="473775607612524610">Përditësoje</translation>
+<translation id="4738065825338914557">Po çabonohet…</translation>
 <translation id="4738836084190194332">Sinkronizimi i fundit: <ph name="WHEN" /></translation>
+<translation id="474121291218385686">Filtro sipas aplikacionit</translation>
 <translation id="4741753828624614066">Do të marrësh sugjerime të përmirësuara në shiritin e kërkimit</translation>
+<translation id="4742795653798179840">Të dhënat e Chrome u fshinë</translation>
 <translation id="4742970037960872810">Hiq theksimin</translation>
 <translation id="4749960740855309258">Hap një skedë të re</translation>
 <translation id="4750356170202299988">Përmbajtje për mendjet e të vegjëlve</translation>
@@ -719,7 +731,6 @@ Llogaria jote e Google mund të ketë forma të tjera të historikut të shfleti
 <translation id="4835385943915508971">Chrome nuk ka qasje te burimi i kërkuar.</translation>
 <translation id="4837753911714442426">Hap opsionet për të printuar faqen</translation>
 <translation id="4842092870884894799">Po shfaq dritaren kërcyese të krijimit të fjalëkalimit</translation>
-<translation id="4842515939542199281">Trokit te mikrofoni për të kërkuar me zë</translation>
 <translation id="4844633725025837809">Për më shumë siguri, enkripto fjalëkalimet në pajisjen tënde para se të ruhen në "Menaxherin e fjalëkalimeve të Google"</translation>
 <translation id="4850886885716139402">Pamja</translation>
 <translation id="4852014461738377247">Po identifikohesh\u2026</translation>
@@ -737,10 +748,10 @@ Llogaria jote e Google mund të ketë forma të tjera të historikut të shfleti
 <translation id="4885273946141277891">Numër i pambështetur i versioneve të Chrome.</translation>
 <translation id="4905823827770127520">Përfshi një lidhje për te faqja</translation>
 <translation id="4908869848243824489">"Zbulo" nga Google</translation>
-<translation id="4909709702739934280">Shfletuesi yt menaxhohet nga administratori yt</translation>
 <translation id="4910889077668685004">Aplikacionet e pagesës</translation>
 <translation id="4912413785358399818">Lëviz skedën</translation>
 <translation id="4913169188695071480">Ndalo rifreskimin</translation>
+<translation id="4918086044614829423">Prano</translation>
 <translation id="492284538114688557">U zbulua rënie çmimi</translation>
 <translation id="4925120120285606924">Pamja e ekranit më <ph name="CURRENT_DATE_ISO" /></translation>
 <translation id="49268022542405662">Fjalëkalimet e tua do të eksportohen dhe shkarkohen si skedar teksti. Ato do të jenë të dukshme për këdo dhe çdo aplikacion me qasje në dosjen e destinacionit.</translation>
@@ -751,6 +762,7 @@ Llogaria jote e Google mund të ketë forma të tjera të historikut të shfleti
 <translation id="4950924971025849764">Kur je identifikuar në të njëjtën "Llogari të Google", pajisjet e tjera mund ta përdorin këtë telefon si një çelës sigurie.</translation>
 <translation id="4957722034734105353">Mëso më shumë...</translation>
 <translation id="4961107849584082341">Përktheje këtë faqe në çdo gjuhë</translation>
+<translation id="496607651705915226">Për të ruajtur dhe përdorur fjalëkalimet e reja në "Llogarinë tënde të Google", përditëso shërbimet e Google Play</translation>
 <translation id="4971735654804503942">Mbrojtje më e shpejtë dhe proaktive kundër faqeve të internetit, shkarkimeve dhe shtesave të rrezikshme. Të paralajmëron rreth nxjerrjeve të paautorizuara të fjalëkalimeve. Kërkon që të dhënat e shfletimit t'i dërgohen Google.</translation>
 <translation id="497421865427891073">Vazhdo përpara</translation>
 <translation id="4987271110129728827">Faqja nuk mund të gjendet. Kontrollo drejtshkrimin ose provo të kërkosh në ueb.</translation>
@@ -778,6 +790,7 @@ Llogaria jote e Google mund të ketë forma të tjera të historikut të shfleti
 <translation id="5099845111805573968">Kur zgjedh një herë sajtin për desktop, cilësimi zbatohet te sajti sa herë që e viziton atë</translation>
 <translation id="5102401324271069229">Nëse një sajt përpiqet të vjedhë fjalëkalimin tënd ose kur shkarkon një skedar të dëmshëm, Chrome mund t'i dërgojë URL-të, duke përfshirë pjesë të përmbajtjes së faqeve te "Shfletimi i sigurt"</translation>
 <translation id="510275257476243843">1 orë e mbetur</translation>
+<translation id="5114895953710637392">Fleta e filtrit të aplikacioneve është mbyllur.</translation>
 <translation id="5115811374190515607">te <ph name="PRODUCT_NAME" /></translation>
 <translation id="5118713593561876160">Interesat</translation>
 <translation id="5122378528687922675">Nëse ke nevojë për ndihmë, pyet prindin tënd (<ph name="PARENT_NAME_1" /> ose <ph name="PARENT_NAME_2" />)</translation>
@@ -795,7 +808,6 @@ Llogaria jote e Google mund të ketë forma të tjera të historikut të shfleti
 <translation id="5180063720319462041">Faqja është përkthyer në <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="5186634140793586141">Menaxho temat dhe kërkimet që të interesojnë</translation>
 <translation id="5191251636205085390">Mëso dhe kontrollo teknologjitë e reja që synojnë të zëvendësojnë kukit e palëve të treta</translation>
-<translation id="5193988420012215838">Kopjuar te kujtesa e fragmenteve</translation>
 <translation id="5204967432542742771">Fut fjalëkalimin</translation>
 <translation id="5206168361184759344">{FILE_COUNT,plural, =1{Po shkarkohet skedari…}other{Po shkarkohen # skedarë…}}</translation>
 <translation id="5210286577605176222">Kalo te skeda e mëparshme</translation>
@@ -817,12 +829,10 @@ Llogaria jote e Google mund të ketë forma të tjera të historikut të shfleti
 <translation id="5319359161174645648">Google rekomandon Chrome</translation>
 <translation id="5320351714793324716">Nëse lejon kukit, Chrome mund t'i përdorë ato gjatë ngarkimit paraprak</translation>
 <translation id="5326921373682845375">Për shkak se faqet e ngarkuara paraprakisht janë të enkriptuara dhe lidhja e sajtit në faqe është një sajt i Google, serverët e Google nuk marrin informacione të reja kur ngarkojnë paraprakisht këto faqe në mënyrë private.</translation>
-<translation id="5329858041417644019">Shfletuesi yt nuk është i menaxhuar</translation>
 <translation id="5342314432463739672">Kërkesat për autorizim</translation>
 <translation id="534580735623577507">Asnjë sajt nga <ph name="TIME_PERIOD" /></translation>
 <translation id="5355191726083956201">"Mbrojtja e përmirësuar" është aktive</translation>
-<translation id="5361107212971249203">teksti</translation>
-<translation id="5368227114232678694">Provo modalitetin "E fshehtë" për të shfletuar në mënyrë private në këtë pajisje</translation>
+<translation id="5364112109233799727">URL-ja e faqes për të cilën po jep komente do të dërgohet te Google dhe mund të shqyrtohet nga persona për të përmirësuar këtë veçori</translation>
 <translation id="5375577065097716013">Kërko imazh me "Lenten e Google" <ph name="BEGIN_NEW" />E re<ph name="END_NEW" /></translation>
 <translation id="5395376160638294582">Sigurohu që mund t'i përdorësh gjithmonë të dhënat e Chrome në "Llogarinë tënde të Google"</translation>
 <translation id="539881862970320163">U sugjerua një fjalëkalim i fortë. Tastiera është e fshehur.</translation>
@@ -845,12 +855,12 @@ Llogaria jote e Google mund të ketë forma të tjera të historikut të shfleti
 <translation id="5468068603361015296">Do ta shkarkosh <ph name="FILE_NAME" /> gjithsesi?</translation>
 <translation id="548278423535722844">Hape në aplikacionin e hartave</translation>
 <translation id="5486841595534124508">Logoja e njoftimit të privatësisë për qendrën e statistikave të faqes, e cila ridrejton për te faqja "Aktiviteti im".</translation>
-<translation id="5487521232677179737">Pastro të dhënat</translation>
 <translation id="5492637351392383067">Enkriptimi në pajisje</translation>
 <translation id="5514904542973294328">Çaktivizuar nga administratori i kësaj pajisjeje</translation>
 <translation id="5515439363601853141">Shkyçe për të parë fjalëkalimin</translation>
 <translation id="5517095782334947753">Ke faqeshënues, historik, fjalëkalime dhe cilësime të tjera nga <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="5524843473235508879">Ridrejtimi u bllokua.</translation>
+<translation id="5528925345478618296">{MINUTES,plural, =1{# minuta më parë}other{# minuta më parë}}</translation>
 <translation id="5548606607480005320">Kontrolli i sigurisë</translation>
 <translation id="5554520618550346933">Kur përdor një fjalëkalim, Chrome të paralajmëron nëse ai është publikuar online. Kur vepron kështu, fjalëkalimet dhe emrat e tu të përdoruesit enkriptohen, në mënyrë që të mos lexohen nga askush, duke përfshirë Google.</translation>
 <translation id="5555525474779371165">Zgjidh mbrojtjen me "Shfletimin e sigurt"</translation>
@@ -862,12 +872,9 @@ Llogaria jote e Google mund të ketë forma të tjera të historikut të shfleti
 <translation id="557018954714092179">Krijo dosje të re</translation>
 <translation id="5578795271662203820">Kërko në <ph name="SEARCH_ENGINE" /> për këtë imazh</translation>
 <translation id="5581519193887989363">Mund të zgjedhësh gjithmonë se çfarë do të sinkronizosh te <ph name="BEGIN_LINK1" />cilësimet<ph name="END_LINK1" />.</translation>
-<translation id="558429399979870715">Lidh Chrome dhe shërbimet e tjera të Google nëse dëshiron që të ndajnë të dhëna me njëra-tjetrën</translation>
 <translation id="5590372121997663538">Kujtoje këtë kompjuter</translation>
 <translation id="5596627076506792578">Më shumë opsione</translation>
 <translation id="5599455543593328020">Modaliteti "i fshehtë"</translation>
-<translation id="5605283439565877834">Mënyrat e pagesës dhe adresat nga Google Pay nuk do të enkriptohen. Historiku i shfletimit nga Chrome nuk do të sinkronizohet.
-Vetëm dikush me frazën tënde të kalimit mund të lexojë të dhënat e tua të enkriptuara. Fraza e kalimit nuk dërgohet apo ruhet nga Google. Nëse e harron frazën tënde të kalimit apo dëshiron të ndryshosh këtë cilësim, <ph name="BEGIN_LINK" />pastro të dhënat e Chrome në llogarinë tënde<ph name="END_LINK" />.</translation>
 <translation id="5620163320393916465">Nuk ka asnjë fjalëkalim të ruajtur</translation>
 <translation id="5620928963363755975">Gjej skedarët dhe faqet e tua te "Shkarkimet" nga butoni "Më shumë opsione"</translation>
 <translation id="562289928968387744">Menaxho reagimet</translation>
@@ -880,10 +887,10 @@ Vetëm dikush me frazën tënde të kalimit mund të lexojë të dhënat e tua t
 <translation id="5657871969392618475">Informacionet e tua janë siguruar me një kyçje profili</translation>
 <translation id="5659593005791499971">Mail-i</translation>
 <translation id="5665379678064389456">Krijo ngjarje në <ph name="APP_NAME" /></translation>
+<translation id="5680616253592639556">Mungojnë informacione</translation>
 <translation id="5683547024293500885">Chrome nuk mund të kontrollojë për përditësime</translation>
 <translation id="5686790454216892815">Emri i skedarit është tepër i gjatë</translation>
 <translation id="5687606994963670306">Chrome i fshin automatikisht sajtet që janë më të vjetra se 30 ditë. Një sajt që e viziton përsëri mund të shfaqet përsëri në listë. Ose mund ta bllokosh një sajt që të mos sugjerojë reklama për ty. Mëso më shumë rreth <ph name="BEGIN_LINK" />menaxhimit të privatësisë së reklamave në Chrome<ph name="END_LINK" />.</translation>
-<translation id="569435661099256888">Mund të shikosh faqet që ke vizituar ose pastroji ato nga historiku yt</translation>
 <translation id="569536719314091526">Përktheje këtë faqe në çdo gjuhë nga butoni "Më shumë opsione"</translation>
 <translation id="5696597120588531049">Chrome mund të të ndihmojë të qëndrosh i sigurt nga nxjerrjet e paautorizuara të të dhënave, faqet e pasigurta të internetit etj.</translation>
 <translation id="5698878456427040674">Kontrollo nëse llogaria e zgjedhur mbështetet.</translation>
@@ -898,10 +905,8 @@ Vetëm dikush me frazën tënde të kalimit mund të lexojë të dhënat e tua t
 <translation id="5749068826913805084">Chrome ka nevojë për qasje te hapësira ruajtëse për të shkarkuar skedarë.</translation>
 <translation id="5749237766298580851">Joaktiv <ph name="SEPARATOR" /> Nuk rekomandohet</translation>
 <translation id="5752232708629533680">Ndaj vetëm imazhin GIF</translation>
-<translation id="5753139477036638699">Në Chrome mund të përdorësh zërin për të kërkuar</translation>
 <translation id="5754350196967618083">"Zbulo" nuk mund të rifreskohet</translation>
 <translation id="5755162682436943950">Ke dalë Hap dialogun për t'u identifikuar dhe për të aktivizuar sinkronizimin.</translation>
-<translation id="5759897675466110265">Sajti nuk funksionon? Provo të lejosh përkohësisht kukit e një pale të tretë</translation>
 <translation id="5763382633136178763">Skedat "e fshehura"</translation>
 <translation id="5763514718066511291">Trokit për të kopjuar URL-në për këtë aplikacion</translation>
 <translation id="5765517223145864268">Na trego për përvojën tënde. Përndryshe, <ph name="BEGIN_LINK" />ndrysho cilësimet<ph name="END_LINK" />.</translation>
@@ -911,12 +916,12 @@ Vetëm dikush me frazën tënde të kalimit mund të lexojë të dhënat e tua t
 <translation id="5780792035410621042">Për të kopjuar fjalëkalimet, në fillim cakto një kyçje ekrani në pajisjen tënde</translation>
 <translation id="5793665092639000975">Po përdoret <ph name="SPACE_USED" /> nga <ph name="SPACE_AVAILABLE" /></translation>
 <translation id="5795872532621730126">Kërko dhe shfleto</translation>
-<translation id="5797521893972859201">Pastron historikun, duke përfshirë dhe në kutinë e kërkimit</translation>
 <translation id="5797949256525811424">Tema u bllokua</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{# orë më parë}other{# orë më parë}}</translation>
 <translation id="5810288467834065221">Të drejtat e autorit <ph name="YEAR" /> Google LLC. Të gjitha të drejtat e rezervuara.</translation>
 <translation id="5814749351757353073">Ndiq sajtet e tua të preferuara</translation>
 <translation id="5822875253699806474">Për t'u kthyer me shpejtësi te sajtet që ke vizituar, sinkronizo skedat dhe historikun</translation>
+<translation id="5828921839638612740">Mund t'i fshish të dhënat në "Cilësimet" e Chrome</translation>
 <translation id="5829586821381540080">Ruajtur në: <ph name="FOLDER_NAME" /></translation>
 <translation id="583281660410589416">E panjohur</translation>
 <translation id="5833984609253377421">Ndaj lidhjen</translation>
@@ -959,6 +964,7 @@ Vetëm dikush me frazën tënde të kalimit mund të lexojë të dhënat e tua t
 <translation id="6030719887161080597">Menaxho informacionet e përdorura nga sajtet për të matur performancën e reklamave</translation>
 <translation id="6039379616847168523">Kalo te skeda tjetër</translation>
 <translation id="6040143037577758943">Mbyll</translation>
+<translation id="6040939430773295212">E përsëritur</translation>
 <translation id="604124094241169006">Automatike</translation>
 <translation id="6042308850641462728">Më shumë</translation>
 <translation id="604996488070107836">Shkarkimi i <ph name="FILE_NAME" /> dështoi për shkak të një gabimi të panjohur.</translation>
@@ -978,6 +984,7 @@ Vetëm dikush me frazën tënde të kalimit mund të lexojë të dhënat e tua t
 <translation id="6138832295072039549">Ndrysho këtu cilësimet e sajtit tënd</translation>
 <translation id="6140709049082532940">Mbrojtja e përmirësuar:</translation>
 <translation id="6140912465461743537">Shteti/rajoni</translation>
+<translation id="6142183503755612900">Mund ta ndërrosh parazgjedhjen në çdo kohë te cilësimet</translation>
 <translation id="6150320133806434356">Faqeshënuesi u ruajt</translation>
 <translation id="6150706324143004339">Për të përdorur dhe ruajtur të dhënat e Chrome në "Llogarinë tënde të Google", përditëso Chrome</translation>
 <translation id="6154478581116148741">Aktivizo kyçjen e ekranit te "Cilësimet" për të eksportuar fjalëkalime e tua nga kjo pajisje</translation>
@@ -1010,6 +1017,7 @@ Për shembull, disa uebsajte mund t'i përgjigjen kësaj kërkese duke të tregu
 <translation id="6324997754869598316">(Gabim <ph name="ERROR_CODE" />)</translation>
 <translation id="6333140779060797560">Ndaje nëpërmjet <ph name="APPLICATION" /></translation>
 <translation id="6337234675334993532">Enkriptimi</translation>
+<translation id="6340526405444716530">Personalizimi</translation>
 <translation id="6341580099087024258">Pyet ku të ruhen skedarët</translation>
 <translation id="6342069812937806050">Pikërisht tani</translation>
 <translation id="6343495912647200061">{SHIPPING_ADDRESS,plural, =1{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 dhe <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> tjetër}other{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 dhe <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> të tjera}}</translation>
@@ -1045,7 +1053,9 @@ Për shembull, disa uebsajte mund t'i përgjigjen kësaj kërkese duke të tregu
 <translation id="6473086018775716761">Listë e opsioneve të ndarjes e hapur në gjysmën e lartësisë.</translation>
 <translation id="6475951671322991020">Shkarko videon</translation>
 <translation id="6477928892249167417">Këto sajte duken të rëndësishme për ty:</translation>
+<translation id="6481963882741794338">Lidh Chrome dhe shërbimet e tjera të Google për personalizimin dhe qëllime të tjera</translation>
 <translation id="6482749332252372425">Shkarkimi i <ph name="FILE_NAME" /> dështoi për shkak të mungesës së hapësirës ruajtëse.</translation>
+<translation id="6495590690749880440">Të hapet grupi i skedave?</translation>
 <translation id="650224091954855786">{FILE_COUNT,plural, =1{Skedar i shkarkuar}other{# shkarkime të përfunduara}}</translation>
 <translation id="6508722015517270189">Rinis Chrome</translation>
 <translation id="6518133107902771759">Verifiko</translation>
@@ -1073,6 +1083,7 @@ Për shembull, disa uebsajte mund t'i përgjigjen kësaj kërkese duke të tregu
 <translation id="6595046016124923392">Imazhet janë dërguar te Google për të përmirësuar përshkrimet për ty.</translation>
 <translation id="661266467055912436">Përmirëson sigurinë për ty dhe këdo në ueb.</translation>
 <translation id="6621391692573306628">Për ta dërguar këtë skedë te një pajisje tjetër, identifikohu në Chrome në të dyja pajisjet</translation>
+<translation id="6625890511281718257">Fleta për ndarjen e komenteve për përmbledhjen</translation>
 <translation id="6627583120233659107">Modifiko dosjen</translation>
 <translation id="6633067410344541938">Shkyç modalitetin "I fshehtë"</translation>
 <translation id="6636623428211296678">Eksploro më shumë cilësime më poshtë ose përfundo tani</translation>
@@ -1080,7 +1091,6 @@ Për shembull, disa uebsajte mund t'i përgjigjen kësaj kërkese duke të tregu
 <translation id="6637100877383020115">Për të ndihmuar në përmirësimin e aplikacionit, Chrome dërgon të dhëna të përdorimit dhe të ndërprerjeve aksidentale te Google. <ph name="BEGIN_UMA_LINK" />Menaxho<ph name="END_UMA_LINK" /></translation>
 <translation id="6640207029842583248">Bllokoji gjithmonë</translation>
 <translation id="6641780377503683465">Hiq <ph name="INTEREST" /></translation>
-<translation id="6643016212128521049">Pastro</translation>
 <translation id="6645629752388991326">Kontrollo se cilat pajisje mund të identifikohen duke përdorur këtë pajisje si çelës sigurie.</translation>
 <translation id="6646696210740573446">Dërgon një pjesë të pakuptueshme të URL-së te Google nëpërmjet një serveri të privatësisë që e fsheh adresën tënde IP. Nëse një sajt përpiqet të vjedhë fjalëkalimin tënd ose kur shkarkon një skedar të dëmshëm, Chrome mund t'i dërgojë gjithashtu URL-të, duke përfshirë pjesë të përmbajtjes së faqeve, te Google.</translation>
 <translation id="6647441008198474441">URL-të që viziton dërgohen te Google për të parashikuar sajtet që mund të vizitosh në vijim</translation>
@@ -1094,7 +1104,6 @@ Për shembull, disa uebsajte mund t'i përgjigjen kësaj kërkese duke të tregu
 <translation id="6672697278890207089">Fut frazën tënde të kalimit</translation>
 <translation id="6672917148207387131">Shto <ph name="DOMAIN" /></translation>
 <translation id="6674571176963658787">Për të nisur sinkronizimin, fut frazën e kalimit</translation>
-<translation id="6676840375528380067">Të pastrohen të dhënat e tua të Chrome nga kjo pajisje?</translation>
 <translation id="6676927815633975364">Identifikohu në këtë sajt dhe në Chrome</translation>
 <translation id="6684809838922667136">Bëje Chrome më të mirë</translation>
 <translation id="670498945988402717">Kontrolluar dje</translation>
@@ -1103,7 +1112,9 @@ Për shembull, disa uebsajte mund t'i përgjigjen kësaj kërkese duke të tregu
 <translation id="6715020873764921614">Do ta shkarkosh <ph name="FILE_NAME" /> (<ph name="FILE_SIZE" />) gjithsesi?</translation>
 <translation id="6719634564325948108">Të lidhet me kod QR?</translation>
 <translation id="6723740634201835758">Në "Llogarinë tënde të Google"</translation>
+<translation id="6734310707649923383">Mund të shikosh faqet që ke vizituar ose të fshish ato nga historiku yt</translation>
 <translation id="6738867403308150051">Po shkarkon...</translation>
+<translation id="67404633032079629">Një pjesë e historikut tënd të uebit mund të mos shfaqet këtu. Për të parë historikun e plotë të uebit, trokit te "Hap historikun e plotë të Chrome".</translation>
 <translation id="674388916582496364">Zakonisht, sajtet që ti viziton i kujtojnë gjërat që të interesojnë për të personalizuar përvojën tënde. Sajtet mund të ruajnë po ashtu informacione në Chrome për interesat e tu.</translation>
 <translation id="6751521182688001123">Hap me shpejtësi një skedë të re. Për ta modifikuar këtë shkurtore, preke dhe mbaje të prekur.</translation>
 <translation id="6756507620369789050">Ndaj komente</translation>
@@ -1118,7 +1129,6 @@ Për shembull, disa uebsajte mund t'i përgjigjen kësaj kërkese duke të tregu
 <translation id="6813359536773993594">{FILE_COUNT,plural, =1{Imazhet, 1 imazh në listë}other{Imazhet, # imazhe në listë}}</translation>
 <translation id="6813446258015311409">"Identifikohu në Chrome", i hapur.</translation>
 <translation id="6817747507826986771">Ndaje me shpejtësi këtë faqe. Për ta modifikuar këtë shkurtore, preke dhe mbaje të prekur.</translation>
-<translation id="6819199143469632133">Identifikohu për të marrë gjërat e Google në pajisje të ndryshme</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6823561724060793716">Nga shiriti i adresës, mund të hapësh informacionet e faqes për të parë informacione shtesë për faqen që po viziton</translation>
 <translation id="6828070228333235514">Ndalo monitorimin e çmimit</translation>
@@ -1132,6 +1142,7 @@ Për shembull, disa uebsajte mund t'i përgjigjen kësaj kërkese duke të tregu
 <translation id="685850645784703949">"Zbulo" nga Google - joaktive</translation>
 <translation id="686366188661646310">Të fshihet fjalëkalimi?</translation>
 <translation id="6864459304226931083">Shkarko imazhin</translation>
+<translation id="686490460830618322">Fleta e filtrit të aplikacioneve</translation>
 <translation id="6865313869410766144">Plotëso automatikisht të dhënat e formularit</translation>
 <translation id="6867400383614725881">Skedë e re "e fshehtë"</translation>
 <translation id="6869056123412990582">kompjuter</translation>
@@ -1150,6 +1161,7 @@ Për shembull, disa uebsajte mund t'i përgjigjen kësaj kërkese duke të tregu
 <translation id="6910211073230771657">Fshirë</translation>
 <translation id="6918398787259831832">Nëse ky problem vazhdon të ndodhë, <ph name="BEGIN_LINK" />merr më shumë informacione<ph name="END_LINK" /> nga <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" />.</translation>
 <translation id="6929224077895306814">Të gjitha kodet e sigurisë të ruajtura në pajisjen tënde dhe në "Llogarinë e Google" do të fshihen</translation>
+<translation id="6937524809504266803">Personalizimi dhe lidhja</translation>
 <translation id="6942665639005891494">Ndrysho në çdo moment vendndodhjen e parazgjedhur të shkarkimit duke përdorur opsionin e menysë "Cilësimet"</translation>
 <translation id="694267552845942083">Aktualisht po personalizon cilësimet e "Sinkronizimit". Për të përfunduar aktivizimin e sinkronizimit, trokit butonin "Konfirmo" pranë fundit të ekranit. Ngjitu lart</translation>
 <translation id="6945221475159498467">Përzgjidhe</translation>
@@ -1167,11 +1179,12 @@ Për shembull, disa uebsajte mund t'i përgjigjen kësaj kërkese duke të tregu
 <translation id="7013762323294215682">Ky çelës kalimi do të ruhet te menaxheri i fjalëkalimeve. Çdo person që ka qasje në të do të mund ta përdorë këtë çelës kalimi.</translation>
 <translation id="7020741890149022655">Shto te lista e leximit <ph name="BEGIN_NEW" />E re<ph name="END_NEW" /></translation>
 <translation id="7022756207310403729">Hape në shfletues</translation>
+<translation id="7025769836128625875">Kjo është një veçori eksperimentale nga IA-ja dhe nuk do t'ia dalë gjithmonë. <ph name="BEGIN_LINK" />Mëso më shumë<ph name="END_LINK" /></translation>
 <translation id="7027549951530753705">Restauruar në datën <ph name="ITEM_TITLE" /></translation>
 <translation id="7029809446516969842">Fjalëkalimet</translation>
 <translation id="7030304022046916278">I dërgon URL-të te "Shfletimi i sigurt" për t'i kontrolluar</translation>
 <translation id="7035701931849773472">Opsione të tjera…</translation>
-<translation id="7037830628447527439">Identifikohu në Chrome me "Llogarinë tënde të Google"</translation>
+<translation id="7053983685419859001">Bllokoje</translation>
 <translation id="7054588988317389591">Të merren përshkrimet e imazheve?</translation>
 <translation id="7055152154916055070">Ridrejtimi u bllokua:</translation>
 <translation id="7057969023583258980">Hap historikun e plotë të Chrome</translation>
@@ -1183,7 +1196,7 @@ Për shembull, disa uebsajte mund t'i përgjigjen kësaj kërkese duke të tregu
 <translation id="7080806333218412752">I dërgon URL-të te "Shfletimi i sigurt" për t'i kontrolluar. Dërgon gjithashtu një shembull të vogël të faqeve, shkarkimeve, aktivitetit të shtesave dhe informacionit të sistemit për të ndihmuar në zbulimin e kërcënimeve të reja. I lidh përkohësisht këto të dhëna me "Llogarinë e Google" kur je i identifikuar, për të të mbrojtur nëpër aplikacionet e Google.</translation>
 <translation id="7085332316435785646">Zgjidh nëse do të përfshish historikun e Chrome për përvoja më të personalizuara në shërbimet e Google</translation>
 <translation id="7088681679121566888">Chrome është i përditësuar</translation>
-<translation id="7093458400248449925">Qendra e sigurisë</translation>
+<translation id="7094933634769755999">E pasaktë</translation>
 <translation id="7105047059074518658">Identifikohu për të shfletuar më lehtë nëpër pajisje</translation>
 <translation id="7106762743910369165">Shfletuesi yt menaxhohet nga organizata jote</translation>
 <translation id="7111394291981742152">Chrome të jep më shumë kontroll mbi reklamat që shikon ti dhe kufizon ato që sajtet mund të mësojnë për ty kur të shfaqin reklama të personalizuara.</translation>
@@ -1197,18 +1210,18 @@ Për shembull, disa uebsajte mund t'i përgjigjen kësaj kërkese duke të tregu
 <translation id="7177466738963138057">Këtë mund ta ndryshosh më vonë te "Cilësimet"</translation>
 <translation id="7177873915659574692">Kodi QR nuk mund të krijohet. URL-ja është më shumë se <ph name="CHARACTER_LIMIT" /> karaktere.</translation>
 <translation id="7180611975245234373">Rifresko</translation>
+<translation id="7183517696921903380">Fleta e filtrit të aplikacioneve është hapur.</translation>
 <translation id="7183693674623539380">Grupi i skedave - <ph name="TITLE_OF_GROUP" /></translation>
+<translation id="7186568385131859684">Kontrollo se si përdoret historiku i shfletimit me të dhënat e tua të tjera nëpër shërbimet e Google</translation>
 <translation id="7187993566681480880">Të mban të sigurt në Chrome dhe mund të përdoret për të përmirësuar sigurinë tënde në aplikacionet e tjera të Google kur je i identifikuar.</translation>
 <translation id="7191430249889272776">Skeda u hap në sfond.</translation>
 <translation id="7196215469483532480">Shpjegimi i udhëzuesit të privatësisë u hap në lartësi të plotë</translation>
 <translation id="7205672015775254816">Përmbajtje nga Google për mendjet e të vegjëlve - joaktive</translation>
 <translation id="7207760545532569765">Restauro <ph name="TAB_COUNT" /> skeda si skeda të reja në sfond.</translation>
 <translation id="7217781228893594884">Skedat "e fshehta" do të kyçen kur të largohesh nga Chrome</translation>
-<translation id="722055596168483966">Personalizo shërbimet e Google</translation>
 <translation id="7221869452894271364">Ringarkoje këtë faqe</translation>
 <translation id="7227218174981371415">{FILE_COUNT,plural, =1{1 shkarkim në pritje}other{# shkarkime në pritje}}</translation>
 <translation id="72415438529550637">Sugjerimi i fjalëkalimit u mbyll.</translation>
-<translation id="7248069434667874558">Sigurohu që <ph name="TARGET_DEVICE_NAME" /> të ketë të aktivizuar sinkronizimin në Chrome</translation>
 <translation id="7252076891734325316">Vendose telefonin tënd pranë kompjuterit</translation>
 <translation id="7260367682327802201">Pajisja jote Android mund të përfshijë një cilësim të ngjashëm. Nëse "Matja e reklamave" është aktivizuar në Chrome dhe në pajisjen tënde Android, një kompani mund të matë efektivitetin e një reklame nëpër uebsajtet që viziton dhe aplikacionet që përdor ti.</translation>
 <translation id="727288900855680735">Të dërgohet <ph name="ONE_TIME_CODE" /> te <ph name="ORIGIN" />?</translation>
@@ -1235,6 +1248,7 @@ Për shembull, disa uebsajte mund t'i përgjigjen kësaj kërkese duke të tregu
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Ndaj 1 artikull të zgjedhur}other{Ndaj # artikuj të zgjedhur}}</translation>
 <translation id="7359002509206457351">Qasu te mënyrat e pagesës</translation>
 <translation id="7363349185727752629">Udhëzues për zgjedhjet e tua të privatësisë</translation>
+<translation id="7364103838544876661">Opsione të tjera për të fshirë të dhënat e shfletimit</translation>
 <translation id="7375125077091615385">Shkruaj:</translation>
 <translation id="7376560087009844242">Duke përfshirë më shumë nga teksti i një faqeje, mund të shikosh rezultate më të mira kur përdor "Prek për të kërkuar". Mund të vizitosh gjithmonë <ph name="BEGIN_LINK" />cilësimet<ph name="END_LINK" /> për ta ndryshuar këtë.</translation>
 <translation id="7379900596734708416">Ofrohet "Tema e errët" për sajtet</translation>
@@ -1278,8 +1292,6 @@ Për shembull, disa uebsajte mund t'i përgjigjen kësaj kërkese duke të tregu
 <translation id="752220631458524187">Shkëputu kur të kesh mbaruar</translation>
 <translation id="7523960634226602883">Kërko me kamerën duke përdorur "Lenten e Google"</translation>
 <translation id="752731652852882757">Bllokoji kur përdor modalitetin "e fshehtë"</translation>
-<translation id="7562080006725997899">Të dhënat e pastrimit të shfletimit</translation>
-<translation id="756809126120519699">Të dhënat e Chrome u pastruan</translation>
 <translation id="7577900504646297215">Menaxho interesat</translation>
 <translation id="757855969265046257">{FILES,plural, =1{<ph name="FILES_DOWNLOADED_ONE" /> skedar i shkarkuar}other{<ph name="FILES_DOWNLOADED_MANY" /> skedarë të shkarkuar}}</translation>
 <translation id="7581273696622423628">Merr pjesë në anketë</translation>
@@ -1295,7 +1307,6 @@ Për shembull, disa uebsajte mund t'i përgjigjen kësaj kërkese duke të tregu
 <translation id="7626032353295482388">Mirë se vjen në Chrome</translation>
 <translation id="7630202231528827509">URL-ja e ofruesit</translation>
 <translation id="7638584964844754484">Shprehje kalimi e pasaktë</translation>
-<translation id="7641339528570811325">Pastro të dhënat e shfletimit...</translation>
 <translation id="7646772052135772216">Sinkronizimi i fjalëkalimeve nuk po funksionon</translation>
 <translation id="7655240423373329753">7 ditët e fundit</translation>
 <translation id="7655900163790317559">Po aktivizon Bluetooth-in…</translation>
@@ -1304,7 +1315,6 @@ Për shembull, disa uebsajte mund t'i përgjigjen kësaj kërkese duke të tregu
 <translation id="7658239707568436148">Anulo</translation>
 <translation id="7665369617277396874">Shto një llogari</translation>
 <translation id="766587987807204883">Këtu shfaqen artikujt, të cilët mund t'i lexosh edhe kur je offline</translation>
-<translation id="7670101447063278728">Fjalëkalimet e ruajtura te <ph name="USERNAME" />.</translation>
 <translation id="7682724950699840886">Provoni këshillat e mëposhtme: sigurohu që ka hapësirë ​​të mjaftueshme në pajisjen tënde dhe provo të eksportosh përsëri.</translation>
 <translation id="7686086654630106285">Më shumë rreth reklamave të sugjeruara nga sajtet</translation>
 <translation id="768618399695552958">Disa nga faqet që ti viziton janë të ngarkuara paraprakisht. Faqet mund të ngarkohen paraprakisht nëpërmjet serverëve të Google kur lidhen nga një sajt i Google.</translation>
@@ -1313,15 +1323,12 @@ Për shembull, disa uebsajte mund t'i përgjigjen kësaj kërkese duke të tregu
 <translation id="7697383401610880082">Doreza e zvarritjes</translation>
 <translation id="7698359219371678927">Krijo mail në <ph name="APP_NAME" /></translation>
 <translation id="7702029078562412515">Pllakëzat e kërkesave</translation>
-<translation id="7702388902581909985">Pastrimi i të dhënave të shfletimit nuk bën që të dalësh nga "Llogaria jote e Google". Për ta bërë këtë, <ph name="BEGIN_LINK1" />dil nga llogaria në Chrome<ph name="END_LINK1" />.</translation>
 <translation id="7707922173985738739">Përdor të dhënat celulare</translation>
 <translation id="7709918231054955894">Merr të gjitha skedat e tua</translation>
 <translation id="7733878270780732638">Nuk ka hapësirë të mjaftueshme në pajisje.</translation>
-<translation id="7757787379047923882">Teksti u nda nga <ph name="DEVICE_NAME" /></translation>
 <translation id="7759809451544302770">Opsionale</translation>
 <translation id="7762668264895820836">Karta SD <ph name="SD_CARD_NUMBER" /></translation>
 <translation id="7764225426217299476">Shto adresë</translation>
-<translation id="7766587497031415281">Opsione të tjera për të pastruar të dhënat e shfletimit</translation>
 <translation id="7772032839648071052">Konfirmo shprehjen e kalimit</translation>
 <translation id="7772375229873196092">Mbyll <ph name="APP_NAME" /></translation>
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 dhe <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> tjetër}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 dhe <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> të tjera}}</translation>
@@ -1330,6 +1337,7 @@ Për shembull, disa uebsajte mund t'i përgjigjen kësaj kërkese duke të tregu
 <translation id="7780645209293383778">I lidh përkohësisht këto të dhëna me "Llogarinë tënde të Google" kur je identifikuar, për të të mbrojtur në të gjitha aplikacionet e Google</translation>
 <translation id="7791543448312431591">Shtoje</translation>
 <translation id="7798392620021911922">Rikthyer <ph name="TAB_COUNT" /> skeda</translation>
+<translation id="780287761701992588">Merr faqeshënuesit, fjalëkalimet etj. në të gjitha pajisjet e tua</translation>
 <translation id="780301667611848630">Jo, faleminderit</translation>
 <translation id="7808889146555843082">Fshirja e këtij fjalëkalimi nuk do ta fshijë llogarinë tënde në <ph name="SITE" />. Ndrysho fjalëkalimin ose fshi llogarinë tënde në <ph name="SITE" /> për ta mbajtur të sigurt nga të tjerët.</translation>
 <translation id="7810647596859435254">Hape me...</translation>
@@ -1362,7 +1370,6 @@ Për shembull, disa uebsajte mund t'i përgjigjen kësaj kërkese duke të tregu
 <translation id="7934668619883965330">Skedari nuk mund të shkarkohet. Formati i skedarit nuk mbështetet.</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> është i vjetruar.</translation>
 <translation id="7944772052836377867">Sinkronizimi ka nevojë të verifikojë që je ti</translation>
-<translation id="7947953824732555851">Pranoje dhe identifikohu</translation>
 <translation id="7951102827450076904">Hap gjithmonë skedarët e shkarkuar PDF</translation>
 <translation id="7957413488482743710">Një kartë virtuale fsheh kartën tënde aktuale për të të mbrojtur nga mashtrimi i mundshëm. <ph name="BEGIN_LINK1" />Mëso më shumë rreth kartave virtuale<ph name="END_LINK1" /></translation>
 <translation id="7959485987650214982">Skedat në këtë pajisje</translation>
@@ -1378,10 +1385,8 @@ Për shembull, disa uebsajte mund t'i përgjigjen kësaj kërkese duke të tregu
 <translation id="7995059495660416932">Do ta shikosh përmbajtjen kur të ofrohet</translation>
 <translation id="799576009106109668">Do të shfletosh më shpejt sepse përmbajtja ngarkohet në mënyrë proaktive bazuar në vizitën aktuale në faqen e uebit</translation>
 <translation id="8004582292198964060">Shfletuesi</translation>
-<translation id="8013372441983637696">Pastro po ashtu të dhënat e tua të Chrome nga kjo pajisje</translation>
 <translation id="8015452622527143194">Ktheje gjithçka në faqe në madhësinë e parazgjedhur</translation>
 <translation id="8026238112629815203">Ne e kemi ndryshuar mënyrën se si ruhen fjalëkalimet në këtë pajisje</translation>
-<translation id="8026334261755873520">Pastro të dhënat e shfletimit</translation>
 <translation id="8027863900915310177">Zgjidh ku do ta shkarkosh</translation>
 <translation id="8030852056903932865">Mirato</translation>
 <translation id="8032569120109842252">Po ndjek</translation>
@@ -1419,6 +1424,7 @@ Për shembull, disa uebsajte mund t'i përgjigjen kësaj kërkese duke të tregu
 <translation id="8135406045838672858">Skedarët e shkarkuar PDF hapen automatikisht me aplikacionin "<ph name="APP_NAME" />"</translation>
 <translation id="8137562778192957619">Nuk është nevoja ta kujtosh këtë fjalëkalim. Ai do të ruhet te "Menaxheri i fjalëkalimeve i Google".</translation>
 <translation id="8163820386638255770">Për të përdorur dhe për të ruajtur fjalëkalimet në "Llogarinë tënde të Google", verifiko që je ti</translation>
+<translation id="8171286197772512427">Fleta për ndarjen e komenteve për përmbledhjen u hap</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8186512483418048923"><ph name="FILES" /> skedarë të mbetur</translation>
 <translation id="8190358571722158785">1 ditë e mbetur</translation>
@@ -1430,6 +1436,7 @@ Për shembull, disa uebsajte mund t'i përgjigjen kësaj kërkese duke të tregu
 <translation id="8215740705341534369">Fleta anësore</translation>
 <translation id="8218622182176210845">Menaxho llogarinë tënde</translation>
 <translation id="8221401890884589479">Mund t'i bllokosh sajtet që nuk i dëshiron. Gjithashtu, Chrome i fshin automatikisht nga lista sajtet që janë më të vjetra se 30 ditë. <ph name="BEGIN_LINK" />Mëso më shumë<ph name="END_LINK" /></translation>
+<translation id="8221985041778490865">Të dhënat e shfletimit po fshihen</translation>
 <translation id="8223642481677794647">Menyja e kartave të furnizimit</translation>
 <translation id="8236097722223016103">Shto te faqeshënuesit</translation>
 <translation id="8237871086242677046">Fleta e poshtme e statistikave të faqes</translation>
@@ -1448,7 +1455,6 @@ Për shembull, disa uebsajte mund t'i përgjigjen kësaj kërkese duke të tregu
 <translation id="8310344678080805313">Skedat standarde</translation>
 <translation id="831192587911042850">Shton sajtin aktual të uebit në listën e sajteve të uebit që po ndjek ti.</translation>
 <translation id="8333340769932050274">Mund t'i bllokosh temat që nuk dëshiron të ndahen me sajtet. Chrome gjithashtu i fshin automatikisht temat më të vjetra se 4 javë. <ph name="BEGIN_LINK" />Mëso më shumë<ph name="END_LINK" /></translation>
-<translation id="8336984817750547763">Përfshi historikun e Chrome nëse dëshiron ta shtosh atë tek "Aktiviteti i uebit dhe i aplikacioneve" në "Llogarinë tënde të Google"</translation>
 <translation id="834313815369870491">Mos i përkthe asnjëherë sajtet</translation>
 <translation id="8348430946834215779">Përdor HTTPS kur është e mundur dhe merr paralajmërime para ngarkimit të sajteve që nuk e mbështesin atë</translation>
 <translation id="8354977102499939946">Kërko me shpejtësi me zërin tënd. Për ta modifikuar këtë shkurtore, shko te "Cilësimet".</translation>
@@ -1462,6 +1468,7 @@ Për shembull, disa uebsajte mund t'i përgjigjen kësaj kërkese duke të tregu
 <translation id="8413126021676339697">Shfaq historikun e plotë</translation>
 <translation id="8413795581997394485">Të mbron kundër sajteve, shkarkimeve dhe shtesave që njihen si të rrezikshme. Kur ti viziton një sajt, Chrome dërgon një pjesë të pakuptueshme të URL-së te Google nëpërmjet një serveri të privatësisë që e fsheh adresën tënde IP. Nëse një sajt bën diçka të dyshimtë, dërgohen edhe URL-të e plota dhe pjesët e përmbajtjeve të faqeve.</translation>
 <translation id="8414396119627470038">Identifikohu në <ph name="SITE_ETLD_PLUS_ONE" /> me <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" /></translation>
+<translation id="8419144699778179708">Fshin historikun, duke përfshirë edhe në kutinë e kërkimit</translation>
 <translation id="8419244640277402268">Përfshi</translation>
 <translation id="8422250855136581222">Asnjë skedë në këtë pajisje</translation>
 <translation id="8424781820952413435">Faqja u dërgua. Për ta parë, hap Chrome në <ph name="DEVICE_TYPE" /> tënde</translation>
@@ -1477,9 +1484,8 @@ Për shembull, disa uebsajte mund t'i përgjigjen kësaj kërkese duke të tregu
 <translation id="8453310803815879010">Fillo lojën Dino</translation>
 <translation id="84594714173170813">Vazhdo të përdorësh të dhënat e Chrome në "Llogarinë tënde të Google"</translation>
 <translation id="8460448946170646641">Shqyrto kontrollet kryesore të privatësisë dhe sigurisë</translation>
-<translation id="8466613982764129868">Sigurohu që <ph name="TARGET_DEVICE_NAME" /> të jetë lidhur me internetin</translation>
 <translation id="8473863474539038330">Adresat dhe të tjera</translation>
-<translation id="8478751349603791277">Kontrollo se si mund të përdoret historiku yt i sinkronizuar për të personalizuar shërbimet e tjera të Google</translation>
+<translation id="8477178913400731244">Fshi të dhënat</translation>
 <translation id="8485434340281759656"><ph name="FILE_SIZE" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
 <translation id="8489271220582375723">Hap faqen e historikut</translation>
 <translation id="8493948351860045254">Liro hapësirë</translation>
@@ -1494,18 +1500,19 @@ Për shembull, disa uebsajte mund t'i përgjigjen kësaj kërkese duke të tregu
 <translation id="8512053371384421952">Nuk do të marrësh më njoftime nga <ph name="DOMAIN" />.</translation>
 <translation id="8514477925623180633">Eksporto fjalëkalimet e ruajtura me Chrome</translation>
 <translation id="8516012719330875537">Redaktori i imazheve</translation>
+<translation id="8521833595674902532">Ndodhi një gabim. Përmbledhja nuk mund të përfundohej</translation>
 <translation id="8523928698583292556">Fshi fjalëkalimin e ruajtur</translation>
 <translation id="8526855376374973824">Rrjedha e lejeve për njoftimet</translation>
 <translation id="8540136935098276800">Fut një URL të formatuar saktë</translation>
 <translation id="854522910157234410">Hape këtë faqe</translation>
 <translation id="8551513938758868521">Kyçi skedat "e fshehta" kur të largohesh nga Chrome</translation>
+<translation id="8551524210492420949">Fyese ose e pasigurt</translation>
 <translation id="8559961053328923750">Chrome e kufizon sasinë totale të të dhënave që sajtet mund të ndajnë nëpërmjet shfletuesit për matjen e perfomancës së reklamave</translation>
 <translation id="8559990750235505898">Ofro që t'i përkthesh faqet në gjuhë të tjera</translation>
 <translation id="8560602726703398413">Gjej listën tënd të leximit te "Faqeshënuesit"</translation>
 <translation id="8562452229998620586">Fjalëkalimet e ruajtura do të shfaqen këtu.</translation>
 <translation id="8570677896027847510">Skedari nuk mund të shkarkohet në mënyrë të sigurt</translation>
 <translation id="8571213806525832805">4 javët e fundit</translation>
-<translation id="8583805026567836021">Po pastron të dhënat e llogarisë</translation>
 <translation id="859046281437143747">Monitoro çmimin nga butoni "Opsione të tjera"</translation>
 <translation id="860043288473659153">Emri i mbajtësit të kartës</translation>
 <translation id="8602358303461588329">"Identifikohu në Chrome", i mbyllur</translation>
@@ -1516,7 +1523,6 @@ Për shembull, disa uebsajte mund t'i përgjigjen kësaj kërkese duke të tregu
 <translation id="8636825310635137004">Për të marrë skedat e tua nga pajisjet e tjera, aktivizo sinkronizimin.</translation>
 <translation id="864544049772947936">Menaxho dritaret (<ph name="INSTANCE_COUNTS" />)</translation>
 <translation id="8645920082661222035">Parashikon dhe të paralajmëron rreth ngjarjeve të rrezikshme përpara se ato të ndodhin</translation>
-<translation id="8655129584991699539">Mund t'i pastrosh të dhënat në "Cilësimet" e Chrome</translation>
 <translation id="8664215986015753476">Përdore Chrome sipas mënyrës sate</translation>
 <translation id="8664979001105139458">Emri i skedarit ekziston tashmë</translation>
 <translation id="8676276370198826499">Regjistrohu në <ph name="SITE_ETLD_PLUS_ONE" /> me <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" /></translation>
@@ -1564,11 +1570,11 @@ Për shembull, disa uebsajte mund t'i përgjigjen kësaj kërkese duke të tregu
 <translation id="893938492099608175">Në varësi të cilësimeve të tua, Chrome mund të dërgojë po ashtu kukit, URL-në aktuale dhe vendndodhjen tënde.</translation>
 <translation id="8942627711005830162">Hap në një dritare tjetër</translation>
 <translation id="8945143127965743188"><ph name="LANG" /> - Kjo gjuhë nuk mund të shkarkohet. Provo përsëri më vonë.</translation>
-<translation id="8964479563882643397">Për të hapur një skedë të re "të fshehtë", hap menynë</translation>
 <translation id="8965591936373831584">në pritje</translation>
 <translation id="8968085728801125376">{TAB_COUNT,plural, =1{<ph name="INCOGNITO_TAB_COUNT" /> skedë "e fshehtë" dhe <ph name="TAB_COUNT_ONE" /> skedë tjetër do të mbyllen}other{<ph name="INCOGNITO_TAB_COUNT" /> skeda "të fshehta" dhe <ph name="TAB_COUNT_MANY" /> skeda të tjera do të mbyllen}}</translation>
 <translation id="8970887620466824814">Ndodhi një gabim.</translation>
 <translation id="8972098258593396643">Të shkarkohet në dosjen e parazgjedhur?</translation>
+<translation id="8982113230057126145">Opsioni i gishtave poshtë tregon se nuk të pëlqen kjo përmbledhje</translation>
 <translation id="8992769679401294069">Të dhënat e tua janë të enkriptuara me frazën tënde të kalimit. Fute atë për të përdorur dhe ruajtur të dhënat e Chrome në "Llogarinë tënde të Google".</translation>
 <translation id="8993760627012879038">Hap një skedë të re në "Modalitetin e fshehtë"</translation>
 <translation id="8996847606757455498">Zgjidh një ofrues tjetër</translation>
@@ -1619,23 +1625,25 @@ Për shembull, disa uebsajte mund t'i përgjigjen kësaj kërkese duke të tregu
 <translation id="9206873250291191720">A</translation>
 <translation id="9209888181064652401">Telefonatat nuk mund të kryhen</translation>
 <translation id="9212845824145208577">Nuk mund të shkosh më poshtë. Provo të fillosh më poshtë në faqe.</translation>
+<translation id="9218430445555521422">Cakto si parazgjedhje</translation>
 <translation id="9219103736887031265">Imazhet</translation>
 <translation id="92381315203627188">Kur një sajt kërkon të ngarkojë paraprakisht lidhje në mënyrë private në faqen e tij, Chrome i enkripton dhe i ngarkon paraprakisht faqet nëpërmjet serverëve të Google pa kuki. Kjo e fsheh identitetin tënd nga sajti i ngarkuar paraprakisht.</translation>
 <translation id="926205370408745186">Hiq aktivitetin tënd të Chrome nga "Mirëqenia dixhitale"</translation>
 <translation id="927968626442779827">Përdor "Modalitetin e lehtë" në Google Chrome</translation>
 <translation id="928550791203542716">Po ndjek <ph name="SITE_NAME" /></translation>
+<translation id="930124987204876019">Fshi historikun, kukit, të dhënat e sajtit, memorien specifike…</translation>
 <translation id="93533588269984624">Të gjitha fjalëkalimet do të shkarkohen në pajisjen tënde dhe do të hiqen nga <ph name="CHROME_CHANNEL" /></translation>
 <translation id="938850635132480979">Gabim: <ph name="ERROR_CODE" /></translation>
 <translation id="939598580284253335">Fut frazën e kalimit</translation>
 <translation id="952301137339791907">Fleta e poshtme e statistikave të faqes është hapur</translation>
 <translation id="95817756606698420">Chrome mund të përdorë <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> për kërkimin në Kinë. Mund ta ndryshosh këtë te <ph name="BEGIN_LINK" />Cilësimet<ph name="END_LINK" />.</translation>
-<translation id="962979164594783469">Instalo këtë aplikacion</translation>
+<translation id="961856697154696964">Fshi të dhënat e shfletimit</translation>
 <translation id="96681097142096641">Të shikohet faqja e thjeshtuar?</translation>
 <translation id="970715775301869095"><ph name="MINUTES" /> minuta të mbetura</translation>
 <translation id="981121421437150478">Offline</translation>
 <translation id="983192555821071799">Mbyll të gjitha skedat</translation>
 <translation id="987264212798334818">Të përgjithshme</translation>
+<translation id="988091779042748639">Për të fshirë historikun e shfletimit në modalitetin "I fshehtë" nga pajisja jote, mbylli të gjitha skedat "e fshehta".</translation>
 <translation id="992745192656291733"><ph name="TAB_COUNT" /> skeda</translation>
-<translation id="993520549480398880">Gjithashtu, pastro faqeshënuesit, historikun dhe të tjera nga kjo makinë</translation>
 <translation id="996149300115483134">Menyja e kartave të furnizimit është mbyllur</translation>
 </translationbundle>

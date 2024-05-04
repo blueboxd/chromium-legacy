@@ -55,6 +55,11 @@ bool IsFrameWithOpaqueOrigin(WebFrame* frame) {
 
 ContentSettingsAgentImpl::Delegate::~Delegate() = default;
 
+bool ContentSettingsAgentImpl::Delegate::IsFrameAllowlistedForStorageAccess(
+    blink::WebFrame* frame) const {
+  return false;
+}
+
 bool ContentSettingsAgentImpl::Delegate::IsSchemeAllowlisted(
     const std::string& scheme) {
   return false;
@@ -191,10 +196,6 @@ void ContentSettingsAgentImpl::SetAllowRunningInsecureContent() {
     frame->StartReload(blink::WebFrameLoadType::kReload);
 }
 
-void ContentSettingsAgentImpl::SetDisabledMixedContentUpgrades() {
-  mixed_content_autoupgrades_disabled_ = true;
-}
-
 void ContentSettingsAgentImpl::SendRendererContentSettingRules(
     const RendererContentSettingRules& renderer_settings) {
   content_setting_rules_ = std::make_unique<RendererContentSettingRules>(
@@ -230,6 +231,11 @@ void ContentSettingsAgentImpl::AllowStorageAccess(
     StorageType storage_type,
     base::OnceCallback<void(bool)> callback) {
   WebLocalFrame* frame = render_frame()->GetWebFrame();
+  if (delegate_->IsFrameAllowlistedForStorageAccess(frame)) {
+    std::move(callback).Run(true);
+    return;
+  }
+
   if (IsFrameWithOpaqueOrigin(frame)) {
     std::move(callback).Run(false);
     return;
@@ -263,8 +269,13 @@ void ContentSettingsAgentImpl::AllowStorageAccess(
 bool ContentSettingsAgentImpl::AllowStorageAccessSync(
     StorageType storage_type) {
   WebLocalFrame* frame = render_frame()->GetWebFrame();
-  if (IsFrameWithOpaqueOrigin(frame))
+  if (delegate_->IsFrameAllowlistedForStorageAccess(frame)) {
+    return true;
+  }
+
+  if (IsFrameWithOpaqueOrigin(frame)) {
     return false;
+  }
 
   StoragePermissionsKey key(url::Origin(frame->GetSecurityOrigin()),
                             storage_type);
@@ -311,9 +322,6 @@ bool ContentSettingsAgentImpl::AllowRunningInsecureContent(
 }
 
 bool ContentSettingsAgentImpl::ShouldAutoupgradeMixedContent() {
-  if (mixed_content_autoupgrades_disabled_)
-    return false;
-
   if (content_setting_rules_) {
     auto setting = GetContentSettingFromRules(
         content_setting_rules_->mixed_content_rules, GURL());

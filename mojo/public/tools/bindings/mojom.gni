@@ -77,7 +77,7 @@ if (is_chromeos_ash) {
 # consequently also when building for NaCl toolchains.) For this reason we
 # check |target_os| explicitly, as it's consistent across all toolchains.
 #
-# TODO(crbug.com/1052397): Remove !chromeos_is_browser_only once
+# TODO(crbug.com/40118868): Remove !chromeos_is_browser_only once
 # lacros-chrome switches to target_os="chromeos"
 enable_scrambled_message_ids =
     enable_mojom_message_id_scrambling &&
@@ -277,13 +277,6 @@ if (enable_scrambled_message_ids) {
 #   enable_mojolpm_fuzzing (optional)
 #       Enables generation of fuzzing sources for the target if the global build
 #       arg |enable_mojom_fuzzer| is also set to |true|. Defaults to |true|.
-#
-#   support_lazy_serialization (optional)
-#       If set to |true|, generated C++ bindings will effectively prefer to
-#       transmit messages in an unserialized form when going between endpoints
-#       in the same process. This avoids the runtime cost of serialization,
-#       deserialization, and validation logic at the expensive of increased
-#       code size. Defaults to |false|.
 #
 #   disable_variants (optional)
 #       If |true|, no variant sources will be generated for the target. Defaults
@@ -750,6 +743,10 @@ template("mojom") {
 
     action(parser_target_name) {
       allow_remote = true
+
+      # Use large worker to avoid OOM (b/325844324) and make it faster with
+      # multiple cores.
+      remote_worker = "large"
       custom_processor = "mojom_parser"
       script = mojom_parser_script
       inputs = mojom_parser_sources + ply_sources + [ build_metadata_filename ]
@@ -874,12 +871,9 @@ template("mojom") {
     } else if (defined(invoker.export_class_attribute_shared) ||
                defined(invoker.export_class_attribute)) {
       if (defined(invoker.export_class_attribute_shared)) {
-        assert(defined(invoker.export_header_shared))
         shared_component_export_macro = invoker.export_class_attribute_shared
         shared_component_impl_macro = invoker.export_define_shared
       } else {
-        assert(!defined(invoker.export_header_shared))
-
         # If no explicit shared attribute/define was provided by the invoker,
         # we derive some reasonable settings frorm the default variant.
         shared_component_export_macro = "COMPONENT_EXPORT(MOJOM_SHARED_" +
@@ -1337,7 +1331,7 @@ template("mojom") {
 
       generator_target_name = "${target_name}${variant_suffix}__generator"
 
-      # TODO(crbug.com/1194274): Investigate nondeterminism in Py3 builds.
+      # TODO(crbug.com/40758345): Investigate nondeterminism in Py3 builds.
       action(generator_target_name) {
         allow_remote = true
         visibility = [ ":*" ]
@@ -1421,11 +1415,6 @@ template("mojom") {
         if (defined(bindings_configuration.for_blink) &&
             bindings_configuration.for_blink) {
           args += [ "--for_blink" ]
-        }
-
-        if (defined(invoker.support_lazy_serialization) &&
-            invoker.support_lazy_serialization) {
-          args += [ "--support_lazy_serialization" ]
         }
 
         if (enable_kythe_annotations) {
@@ -2089,9 +2078,9 @@ template("mojom") {
           args += [ "--js_generate_struct_deserializers" ]
         }
 
-        # TODO(crbug.com/1007587): Support scramble_message_ids if above is
+        # TODO(crbug.com/40100373): Support scramble_message_ids if above is
         # insufficient.
-        # TODO(crbug.com/1007591): Support generate_fuzzing.
+        # TODO(crbug.com/40100376): Support generate_fuzzing.
       }
     }
   }

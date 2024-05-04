@@ -350,6 +350,9 @@ Style notes:
       <message name="IDS_ASH_QUICK_SETTINGS_BUBBLE_EOL_NOTICE_SHORT" desc="A short message shown to the user in the quick settings bubble when their device reaches end of life, and stops receiving software updates.">
         Updates ended
       </message>
+      <message name="IDS_ASH_QUICK_SETTINGS_BUBBLE_EXTENDED_UPDATES_NOTICE" desc="Message shown to the user in the quick settings bubble when their device is eligible to receive extended updates support.">
+        Extended security updates available
+      </message>
       <message name="IDS_ASH_STATUS_TRAY_AUTOZOOM_BUTTON_LABEL" desc="The shorter label used for the button in the status tray to toggle the Autozoom feature (which controls if camera auto zoom to faces) on or off. [CHAR_LIMIT=14]">
         Camera framing
       </message>
@@ -767,6 +770,12 @@ Style notes:
       <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TIME_SUBLABEL" translateable="false" desc="The text used for the subtext of the quick settings pod for remaining time in an active session.">
         <ph name="REMAINING_TIME">$1<ex>1 hr, 4 min</ex></ph> left
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_DETAILED_VIEW_FIRST_TIME_USER_ACCESSIBLE_NAME" translateable="false" desc="The accessible name for focus mode detailed view for first time user.">
+        Focus settings. Set a timer, task, and music to get in the flow
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_DETAILED_VIEW_EXPERIENCED_USER_ACCESSIBLE_NAME" translateable="false" desc="The accessible name for focus mode detailed view for experienced user.">
+        Focus settings
+      </message>
       <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TIMER_SUBHEADER" translateable="false" desc="The text used for the subheader of the timer section of the focus mode detailed view.">
         Timer
       </message>
@@ -774,13 +783,13 @@ Style notes:
         minutes
       </message>
       <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TIMER_TEXTFIELD" translateable="false" desc="The accessible name for the textfield that the user can use to input a specific time value for a focus session.">
-        Input minutes for focus session
+        Edit timer. <ph name="FOCUS_DURATION">$1<ex>25 minutes</ex></ph>
       </message>
       <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TIMER_INCREMENT_BUTTON" translateable="false" desc="The accessible name for the button that the user can press to increase focus session duration.">
-        Increase current timer by <ph name="FOCUS_DURATION_DELTA">$1<ex>5</ex></ph> minutes
+        Add <ph name="FOCUS_DURATION_DELTA">$1<ex>5 minutes</ex></ph>
       </message>
       <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TIMER_DECREMENT_BUTTON" translateable="false" desc="The accessible name for the button that the user can press to decrease focus session duration.">
-        Decrease current timer by <ph name="FOCUS_DURATION_DELTA">$1<ex>5</ex></ph> minutes
+        Reduce <ph name="FOCUS_DURATION_DELTA">$1<ex>5 minutes</ex></ph>
       </message>
       <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TASK_SUBHEADER" translateable="false" desc="The text used for the subheader of the task section of the focus mode detailed view.">
         Task to focus on
@@ -788,8 +797,11 @@ Style notes:
       <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TASK_TEXTFIELD_PLACEHOLDER" translateable="false" desc="The text used for the placeholder for the textfield in the task section of the focus mode detailed view.">
         What would you like to focus on?
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TASK_RADIO_BUTTON" translateable="false" desc="The text used for the radio button accessible name for a selected task view.">
-        Mark completed
+      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TRAY_RADIO_BUTTON" translateable="false" desc="The accessible name for the radio button of a selected task view in contextual panel.">
+        Mark task <ph name="TASK_NAME">$1<ex>Plan for trip to Paris</ex></ph> as completed
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TASK_VIEW_RADIO_BUTTON" translateable="false" desc="The accessible name for the radio button of a selected task view in focus panel.">
+        Mark task as completed
       </message>
       <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TASK_DESELECT_BUTTON" translateable="false" desc="The text used for the deselect button accessible name for a selected task view.">
         Remove task as goal for the focus session
@@ -800,14 +812,29 @@ Style notes:
       <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_SOUNDS_YOUTUBE_MUSIC_BUTTON" translateable="false" desc="The text on the label slider button used for showing personalized YouTube music playlists to help users relax and focus.">
         YouTube Music
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_SOUNDS_NON_PREMIUM_LABEL" translateable="false" desc="The text on the label used for showing a text to mention the user without a premium account for YouTube Music.">
+        For personalized playlists and more focus music, try YouTube Music Premium
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_SOUNDS_LEARN_MORE_BUTTON" translateable="false" desc="The text on the learn more button.">
+        Learn more
+      </message>
       <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_DO_NOT_DISTURB" translateable="false" desc="The label text shown on the left side of do not disturb button in Focus mode settings panel.">
         Do not disturb while in Focus
       </message>
       <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_EXTEND_TEN_MINUTES_BUTTON_LABEL" translateable="false" desc="The text used for the label of the add ten minutes button in the countdown view.">
         +10 min
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_EXTEND_TEN_MINUTES_BUTTON_ACCESSIBLE_NAME" translateable="false" desc="The accessible name for the add ten minutes button in the countdown view.">
-        Add 10 minutes
+      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_INCREASE_TEN_MINUTES_BUTTON_ACCESSIBLE_NAME" translateable="false" desc="The accessible name for the add ten minutes button in the countdown view.">
+        Increase the current session by 10 minutes
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_INCREASE_TEN_MINUTES_BUTTON_ALERT" translateable="false" desc="The accessibility alert for the add ten minutes button in the countdown view.">
+        10 minutes added. <ph name="REMAINING_TIME">$1<ex>24 minutes 35 seconds</ex></ph> left
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_EXTEND_TEN_MINUTES_BUTTON_ACCESSIBLE_NAME" translateable="false" desc="The accessible name for the add ten minutes button in the ending moment.">
+        Extend the current session by 10 minutes
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_EXTEND_TEN_MINUTES_BUTTON_ALERT" translateable="false" desc="The accessibility alert for the add ten minutes button in the ending moment.">
+        10 minutes left
       </message>
       <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TOGGLE_ACTIVE_LABEL" translateable="false" desc="The text used for the label of the focus mode toggle row in the focus mode detailed view when focus mode is active.">
         Focusing
@@ -818,7 +845,7 @@ Style notes:
       <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TOGGLE_START_BUTTON" translateable="false" desc="The text used for the label of the toggle button in the focus mode toggle row in the focus mode detailed view when focus mode is not active.">
         Start
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TOGGLE_END_BUTTON" translateable="false" desc="The text used for the label of the toggle button in the focus mode detailed view and countdown view for when focus mode is active.">
+      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TOGGLE_END_BUTTON_LABEL" translateable="false" desc="The text used for the label of the toggle button in the focus mode detailed view and countdown view for when focus mode is active.">
         Finish
       </message>
       <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_FIRST_TIME_SUBLABEL" translateable="false" desc="The text used for the sublabel of the detailed view toggle row for when a user has never used focus mode before.">
@@ -828,7 +855,10 @@ Style notes:
         Send feedback
       </message>
       <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_ENDING_MOMENT_NUDGE" translateable="false" desc="The text used for the ending moment nudge, as well as the tooltip.">
-        Time's up for your Focus session! Great job!
+        Time's up! Great job!🎉
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_ENDING_MOMENT_NUDGE_ALERT" translateable="false" desc="The accessibility alert for the ending moment nudge.">
+        Time's up! Great job! You've just focused for <ph name="FOCUSED_TIME">$1<ex>24 minutes</ex></ph>. Open Quick settings to start a new session
       </message>
       <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_ENDING_MOMENT_TITLE" translateable="false" desc="The title for the ending moment panel.">
         You are an inspiration!
@@ -864,7 +894,7 @@ Style notes:
         Start Focus session
       </message>
       <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TOGGLE_END_BUTTON_ACCESSIBLE_NAME" translateable="false" desc="The accessible name for the toggle button in the focus mode toggle row in the focus mode detailed view for when focus mode is active.">
-        Finish Focus session. <ph name="REMAINING_TIME">$1<ex>24 minutes</ex></ph> left
+        Finish Focus session
       </message>
       <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TASK_TEXTFIELD_SELECTED_ACCESSIBLE_NAME" translateable="false" desc="The accessible name for the task textfield in the focus mode detailed view.">
         Focusing on <ph name="TASK_NAME">$1<ex>Plan for trip to Paris</ex></ph> Press enter to edit task
@@ -873,7 +903,7 @@ Style notes:
         Enter a task you'd like to focus on. Press enter to add the task
       </message>
       <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TASK_CHIP_ACCESSIBLE_NAME" translateable="false" desc="The accessible name for the task chip in the chip carousel in the focus mode detailed view.">
-        <ph name="TASK_NAME">$1<ex>Plan for trip to Paris</ex></ph> (List item) Suggested tasks to focus on from Google Tasks (List)
+        <ph name="TASK_NAME">$1<ex>Plan for trip to Paris</ex></ph> (List item) Suggested tasks to focus on
       </message>
       <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_DO_NOT_DISTURB_ACCESSIBLE_NAME_ENABLED" translateable="false" desc="The accessible name for the do not disturb switch when enabled in the focus mode detailed view.">
         Enable Do not disturb while in Focus. Do not disturb is enabled
@@ -882,13 +912,13 @@ Style notes:
         Enable Do not disturb while in Focus. Do not disturb is disabled
       </message>
       <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TRAY_ACCESSIBLE_NAME" translateable="false" desc="The accessible name for the focus mode tray icon.">
-        Focusing, <ph name="REMAINING_TIME">$1<ex>24 minutes 35 seconds</ex></ph> left
+        Focus settings, <ph name="REMAINING_TIME">$1<ex>24 minutes 35 seconds</ex></ph> left
       </message>
       <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TRAY_BUBBLE_TASK_ACCESSIBLE_NAME" translateable="false" desc="The accessible name for the tray bubble contextual panel when there is a selected task.">
-        Focus session, <ph name="REMAINING_TIME">$1<ex>24 minutes 35 seconds</ex></ph>, focusing on <ph name="TASK_NAME">$2<ex>Plan for trip to Paris</ex></ph>
+        Focus session in progress, <ph name="REMAINING_TIME">$1<ex>24 minutes 35 seconds</ex></ph> left, focusing on <ph name="TASK_NAME">$2<ex>Plan for trip to Paris</ex></ph>
       </message>
       <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TRAY_BUBBLE_ACCESSIBLE_NAME" translateable="false" desc="The accessible name for the tray bubble contextual panel when there is no selected task.">
-        Focus session, <ph name="REMAINING_TIME">$1<ex>24 minutes 35 seconds</ex></ph>
+        Focus session in progress, <ph name="REMAINING_TIME">$1<ex>24 minutes 35 seconds</ex></ph> left
       </message>
 
       <message name="IDS_ASH_STATUS_TRAY_UPDATE" desc="The label used in the tray popup to notify that the user should restart to get system updates.">
@@ -1728,20 +1758,23 @@ Style notes:
       <message name="IDS_ASH_VIDEO_CONFERENCE_RETURN_TO_APP_HIDE_TOOLTIP" desc="The tooltip text for the expand button (when in expanded state) of the return to app panel.">
         Hide apps
       </message>
-      <message name="IDS_ASH_VIDEO_CONFERENCE_BUBBLE_BACKGROUND_BLUR_NAME" desc="Text for name of the background blur effect in the VC bubble.">
-        Background blur
+      <message name="IDS_ASH_VIDEO_CONFERENCE_BUBBLE_BACKGROUND_BLUR_NAME" desc="Text for name of the background blur or replace effect in the VC bubble.">
+        Background
       </message>
       <message name="IDS_ASH_VIDEO_CONFERENCE_BUBBLE_BACKGROUND_BLUR_OFF" desc="Text for background blur 'off' setting, in the VC bubble.">
         Off
       </message>
       <message name="IDS_ASH_VIDEO_CONFERENCE_BUBBLE_BACKGROUND_BLUR_LIGHT" meaning="This describes the strength of background blur for a video conferencing background. In this case, `light` refers to the level of intensity, so this is a slight blur." desc="Text for background blur 'light' setting, in the VC bubble.">
-        Light
+        Light Blur
       </message>
       <message name="IDS_ASH_VIDEO_CONFERENCE_BUBBLE_BACKGROUND_BLUR_FULL" meaning="This describes the strength of background blur for a video conferencing background. In this case, `full` refers to the level of intensity, so this is a full-strength, strongly blurred background." desc="Text 'full' is a synonym of the background blur 'maximum' setting, in the VC bubble.">
-        Full
+        Full Blur
       </message>
       <message name="IDS_ASH_VIDEO_CONFERENCE_BUBBLE_BACKGROUND_BLUR_IMAGE" desc="Text for background blur 'Image' setting, in the VC bubble.">
         Image
+      </message>
+      <message name="IDS_ASH_VIDEO_CONFERENCE_BUBBLE_BACKGROUND_BLUR_IMAGE_LIST_ITEM_DESCRIPTION" desc="Text for description of background image buttons in the VC bubble. Only for accessibility purpose.">
+       Background
       </message>
       <message name="IDS_ASH_VIDEO_CONFERENCE_BUBBLE_PORTRAIT_RELIGHT_NAME" desc="Text for name of the portrait relight effect in the VC bubble, which is a toggle and effectively adjusts the users lighting.">
         Improve lighting
@@ -2398,7 +2431,7 @@ Style notes:
         Key shortcuts, tips for using device, and more
       </message>
       <message name="IDS_ASH_SEARCH_CATEGORY_FILTER_MENU_IMAGES_TOOLTIP" desc="The tooltip text of the images menu item in the search category filter menu that shows what search results the category includes.">
-        Image search by content and image previews
+        Search for text within images and see image previews
       </message>
       <message name="IDS_ASH_SEARCH_CATEGORY_FILTER_MENU_PLAYSTORE_TOOLTIP" desc="The tooltip text of the playstore menu item in the search category filter menu that shows what search results the category includes.">
         Available apps from the Play Store
@@ -3115,7 +3148,7 @@ Some features are limited to increase battery life.
         <ph name="DEVICE_NAME">$1<ex>Chromebook</ex></ph> hotspot is on, no devices connected
       </message>
       <message name="IDS_ASH_HOTSPOT_ON_TITLE" desc="Title used for the system notification shown when the hotspot is turned on.">
-        With hotspot on, Wi-Fi is off
+        Hotspot is on (Wi-Fi is off)
       </message>
       <message name="IDS_ASH_HOTSPOT_ON_MESSAGE_MULTIPLE_CONNECTED_DEVICES" desc="Message displayed in the notification when hotspot is turned on and multiple devices are connected.">
         <ph name="DEVICECOUNT">$1</ph> devices connected
@@ -3124,16 +3157,19 @@ Some features are limited to increase battery life.
         1 device connected
       </message>
       <message name="IDS_ASH_HOTSPOT_ON_MESSAGE_NO_CONNECTED_DEVICES_NOTIFICATION" desc="Message displayed in the notification when hotspot is turned on and no devices are connected.">
-        No devices connected. While using hotspot, Wi-Fi will stay off.
+        This may incur data cost.
+No devices connected.
       </message>
       <message name="IDS_ASH_HOTSPOT_ON_MESSAGE_MULTIPLE_CONNECTED_DEVICES_NOTIFICATION" desc="Message displayed in the notification when hotspot is turned on and multiple devices are connected.">
-        <ph name="DEVICECOUNT">$1</ph> devices connected. While using hotspot, Wi-Fi will stay off.
+        This may incur data cost.
+<ph name="DEVICECOUNT">$1</ph> devices connected.
       </message>
       <message name="IDS_ASH_HOTSPOT_ON_MESSAGE_ONE_CONNECTED_DEVICE_NOTIFICATION" desc="Message displayed in the notification when hotspot is turned on and one device is connected.">
-        1 device connected. While using hotspot, Wi-Fi will stay off.
+        This may incur data cost.
+1 device connected.
       </message>
       <message name="IDS_ASH_TURN_OFF_HOTSPOT_LABEL" desc="The label for button used to turn off hotspot.">
-        Turn off hotspot
+        Turn off
       </message>
       <message name="IDS_ASH_HOTSPOT_OFF_TITLE" desc="Title used for the system notification shown when the hotspot is turned off.">
         Hotspot is off
@@ -3261,6 +3297,38 @@ Some features are limited to increase battery life.
         Scanning
       </message>
 
+      <!-- Strings for audio selection -->
+      <message name="IDS_ASH_AUDIO_SELECTION_SWITCH_INPUT_TITLE" desc="label used for audio selection switch input title" translateable="false">
+        Switch audio input?
+      </message>
+      <message name="IDS_ASH_AUDIO_SELECTION_SWITCH_OUTPUT_TITLE" desc="label used for audio selection switch output title" translateable="false">
+        Switch audio output?
+      </message>
+      <message name="IDS_ASH_AUDIO_SELECTION_SWITCH_SOURCE_TITLE" desc="label used for audio selection switch audio source title" translateable="false">
+        Switch audio source?
+      </message>
+      <message name="IDS_ASH_AUDIO_SELECTION_MULTIPLE_DEVICES_TITLE" desc="label used for audio selection multiple audio sources detected title" translateable="false">
+        Multiple audio sources detected
+      </message>
+      <message name="IDS_ASH_AUDIO_SELECTION_SWITCH_INPUT_OR_OUTPUT_BODY" desc="body of audio selection notification to select only or output input" translateable="false">
+        Use "<ph name="DEVICE_NAME">$1<ex>Logitech Webcam</ex></ph>"
+      </message>
+      <message name="IDS_ASH_AUDIO_SELECTION_SWITCH_INPUT_AND_OUTPUT_BODY" desc="body of audio selection notification to select only input and output" translateable="false">
+        Use "<ph name="DEVICE_NAME">$1<ex>Dell external display</ex></ph>" for audio input and output
+      </message>
+      <message name="IDS_ASH_AUDIO_SELECTION_MULTIPLE_DEVICES_BODY" desc="body of audio selection notification to inform users multiple devices are detected" translateable="false">
+        Input audio is "<ph name="INPUT_DEVICE_NAME">$1<ex>Logitech Webcam</ex></ph>" and output audio is "<ph name="OUTPUT_DEVICE_NAME">$2<ex>USB Speaker</ex></ph>". Go to Settings to change.
+      </message>
+      <message name="IDS_ASH_AUDIO_SELECTION_BUTTON_SWITCH" desc="label used for audio selection switch button" translateable="false">
+        Switch
+      </message>
+      <message name="IDS_ASH_AUDIO_SELECTION_BUTTON_SETTINGS" desc="label used for audio selection settings button" translateable="false">
+        Settings
+      </message>
+      <message name="IDS_ASH_AUDIO_SELECTION_SOURCE" desc="notification source of audio selection notification" translateable="false">
+        Audio selection
+      </message>
+
       <!-- Status Tray Bluetooth strings -->
       <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_DISPLAY_PINCODE" desc="Bluetooth pairing message typically shown on a request from a 2.0 device that has a keyboard.">
         Bluetooth device "<ph name="DEVICE_NAME">$1<ex>Nexus S</ex></ph>" would like permission to pair. Please enter this PIN code on that device: <ph name="PINCODE">$2<ex>123456</ex></ph>
@@ -3292,13 +3360,13 @@ Some features are limited to increase battery life.
         Keep on
       </message>
       <message name="IDS_ASH_DISCONNECT_BLUETOOTH_WARNING_DIALOG_DESCRIPTION_ONE_DEVICE" desc="Bluetooth pairing message shown to indicate a Bluetooth device will disconnect when Bluetooth is turned off.">
-        When you turn off Bluetooth, this external device will disconnect from your <ph name="DEVICE_TYPE">$1<ex>ChromeBox</ex></ph>:  &#x0D;&#x0D; &#x2022; <ph name="DEVICE_NAME">$2<ex>Mx Mouse</ex></ph>
+        When you turn off Bluetooth, this external device will disconnect from your <ph name="DEVICE_TYPE">$1<ex>Chromebox</ex></ph>:
       </message>
       <message name="IDS_ASH_DISCONNECT_BLUETOOTH_WARNING_DIALOG_DESCRIPTION_TWO_DEVICES" desc="Bluetooth pairing message shown to indicate that two Bluetooth devices will disconnect when Bluetooth is turned off.">
-         When you turn off Bluetooth, these external devices will disconnect from your <ph name="DEVICE_TYPE">$1<ex>ChromeBox</ex></ph>: &#x0D;&#x0D; &#x2022; <ph name="DEVICE_NAME_1">$2<ex>Mano 703</ex></ph> &#x0D; &#x2022; <ph name="DEVICE_NAME_2">$3<ex>RGB Keyboard</ex></ph>
+        When you turn off Bluetooth, these external devices will disconnect from your <ph name="DEVICE_TYPE">$1<ex>Chromebox</ex></ph>:
       </message>
       <message name="IDS_ASH_DISCONNECT_BLUETOOTH_WARNING_DIALOG_DESCRIPTION_MULTIPLE_DEVICES" desc="Bluetooth pairing message shown to indicate that multiple Bluetooth devices will disconnect when Bluetooth is turned off.">
-         When you turn off Bluetooth, <ph name="DEVICE_COUNT">$1<ex>2</ex></ph> external devices will disconnect from your <ph name="DEVICE_TYPE">$2<ex>ChromeBox</ex></ph>, including: &#x0D;&#x0D; &#x2022; <ph name="DEVICE_NAME_1">$3<ex>Mano 703</ex></ph> &#x0D; &#x2022; <ph name="DEVICE_NAME_2">$4<ex>RGB Keyboard</ex></ph> &#x0D; &#x2022; <ph name="DEVICE_NAME_3">$5<ex>Logitech Mouse</ex></ph>
+        When you turn off Bluetooth, <ph name="DEVICE_COUNT">$1<ex>2</ex></ph> external devices will disconnect from your <ph name="DEVICE_TYPE">$2<ex>Chromebox</ex></ph>, including:
       </message>
 
       <!-- Ash multi-user warning dialog -->
@@ -3491,14 +3559,17 @@ Some features are limited to increase battery life.
       <message name="IDS_ASH_RESOLUTION_CHANGE_DIALOG_FALLBACK" desc="The label used in the dialog to notify that the display resolution settings has changed to an unsupported resolution and the system falls back to another resolution.">
         <ph name="DISPLAY_NAME">$1<ex>Google Monitor X</ex></ph> doesn't support <ph name="SPECIFIED_RESOLUTION">$2<ex>1920x1080</ex></ph>. The resolution was changed to <ph name="FALLBACK_RESOLUTION">$3<ex>1920x1200</ex></ph>. Click confirm to keep changes. The previous settings will be restored in <ph name="TIMEOUT_SECONDS">$4</ph>.
       </message>
-      <message name="IDS_ASH_RESOLUTION_REFRESH_CHANGE_DIALOG_TITLE" desc="The title used in the dialog to notify that the display resolution settings has changed and asks the user to confirm the new resolution.">
-        Confirm Display Configuration
+      <message name="IDS_ASH_RESOLUTION_REFRESH_CHANGE_DIALOG_TITLE_FALLBACK" desc="The title used in the dialog to notify that the display resolution settings has changed and asks the user to confirm the new resolution. This is used when the resolution user requested is not supported.">
+        Confirm new resolution?
       </message>
-      <message name="IDS_ASH_RESOLUTION_REFRESH_CHANGE_DIALOG_CHANGED" desc="The label used in the dialog to notify that the display resolution settings has changed. Hz is the SI unit Hertz.">
-        <ph name="DISPLAY_NAME">$1<ex>Google Monitor X</ex></ph> changed to <ph name="RESOLUTION">$2<ex>2560x1600</ex></ph> (<ph name="REFRESH_RATE">$3<ex>60</ex></ph> Hz). Click confirm to keep changes. The previous settings will be restored in <ph name="TIMEOUT_SECONDS">$4</ph>.
+      <message name="IDS_ASH_RESOLUTION_REFRESH_CHANGE_DIALOG_TITLE_SUCCESS" desc="The title used in the dialog to notify that the display resolution settings has changed and asks the user to confirm the new resolution. This is used when the resolution user requested is supported.">
+        Confirm resolution?
       </message>
-      <message name="IDS_ASH_RESOLUTION_REFRESH_CHANGE_DIALOG_FALLBACK" desc="The label used in the dialog to notify that the display resolution settings has changed to an unsupported resolution and the system falls back to another resolution. Hz is the SI unit Hertz.">
-        <ph name="DISPLAY_NAME">$1<ex>Google Monitor X</ex></ph> doesn't support <ph name="SPECIFIED_RESOLUTION">$2<ex>1920x1080</ex></ph> (<ph name="SPECIFIED_REFRESH_RATE">$3<ex>60</ex></ph> Hz). The resolution was changed to <ph name="FALLBACK_RESOLUTION">$4<ex>1920x1200</ex></ph> (<ph name="FALLBACK_REFRESH_RATE">$5<ex>30</ex></ph> Hz). Click confirm to keep changes. The previous settings will be restored in <ph name="TIMEOUT_SECONDS">$6</ph>.
+      <message name="IDS_ASH_RESOLUTION_REFRESH_CHANGE_DIALOG_CHANGED_NEW" desc="The label used in the dialog to notify that the display resolution settings has changed. Hz is the SI unit Hertz.">
+        "<ph name="DISPLAY_NAME">$1<ex>Google Monitor X</ex></ph>" was changed to <ph name="RESOLUTION">$2<ex>3840x2160</ex></ph> (<ph name="REFRESH_RATE">$3<ex>60</ex></ph> Hz) resolution. Without confirming, the previous settings will be restored in <ph name="TIMEOUT_SECONDS">$4</ph>.
+      </message>
+      <message name="IDS_ASH_RESOLUTION_REFRESH_CHANGE_DIALOG_FALLBACK_NEW" desc="The label used in the dialog to notify that the display resolution settings has changed to an unsupported resolution and the system falls back to another resolution. Hz is the SI unit Hertz.">
+        "<ph name="DISPLAY_NAME">$1<ex>Google Monitor X</ex></ph>" was changed to <ph name="FALLBACK_RESOLUTION">$2<ex>1920x1080</ex></ph> (<ph name="FALLBACK_REFRESH_RATE">$3<ex>60</ex></ph> Hz) resolution. Due to port bandwidth limitations, your display can't support a <ph name="SPECIFIED_RESOLUTION">$4<ex>3840x2160</ex></ph> (<ph name="SPECIFIED_REFRESH_RATE">$5<ex>60</ex></ph> Hz) resolution. Without confirming, the previous settings will be restored in <ph name="TIMEOUT_SECONDS">$6</ph>.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_DISPLAY_RESOLUTION_CHANGED_TO_UNSUPPORTED" desc="The label used in the tray to notify that the display resolution settings has changed to an unsupported resolution and the system falls back to another resolution.">
         <ph name="DISPLAY_NAME">$1<ex>Google Monitor X</ex></ph> doesn't support <ph name="SPECIFIED_RESOLUTION">$2<ex>2560x1600</ex></ph>. The resolution was changed to <ph name="FALLBACK_RESOLUTION">$3<ex>1920x1200</ex></ph>.
@@ -3704,7 +3775,7 @@ Some features are limited to increase battery life.
         No available hotspot. Make sure your device is nearby and Bluetooth is turned on.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_NETWORK_TETHER_NO_BLUETOOTH" desc="The message to display in the tether hosts network list when Bluetooth is disabled.">
-        Turn on Bluetooth to discover available hotspots nearby
+        Turn on Bluetooth to scan for nearby hotspots
       </message>
       <message name="IDS_ASH_STATUS_TRAY_VPN_DISCONNECTED" desc="The label used in system tray bubble to display vpn is disconnected.">
         VPN disconnected
@@ -3737,7 +3808,7 @@ Some features are limited to increase battery life.
         Wi-Fi
       </message>
       <message name="IDS_ASH_STATUS_TRAY_NETWORK_TETHER_HOSTS" desc="The label used in the tray popup to separate your tether devices.">
-        Your devices
+        Your device hotspots
       </message>
       <message name="IDS_ASH_STATUS_TRAY_ADD_CONNECTION" desc="Title for control to add a new network connection." >
         Add connection
@@ -4360,8 +4431,8 @@ Some features are limited to increase battery life.
       <message name="IDS_BROWSER_ACCELERATOR_DESCRIPTION_TAB_SEARCH" desc="Label for accelerator action - Search tabs.">
         Search tabs
       </message>
-      <message name="IDS_BROWSER_ACCELERATOR_DESCRIPTION_CLEAR_BROWSING_DATA" desc="Label for accelerator action - Clear browsing data.">
-        Clear browsing data
+      <message name="IDS_BROWSER_ACCELERATOR_DESCRIPTION_CLEAR_BROWSING_DATA" desc="Label for accelerator action - Delete browsing data.">
+        Delete browsing data
       </message>
       <message name="IDS_BROWSER_ACCELERATOR_DESCRIPTION_FOCUS_BOOKMARKS" desc="Label for accelerator action - Focus on or highlight bookmarks bar (if shown).">
         Focus on or highlight bookmarks bar (if shown)
@@ -5126,14 +5197,39 @@ Some features are limited to increase battery life.
       </message>
 
       <!-- Mahi -->
-      <message name="IDS_ASH_MAHI_DISCLAIMER_LABEL_TEXT" translateable="false" desc="Text for the disclaimer label in the Mahi panel">
+      <!-- TODO(b/331127382): Finalize Mahi strings, move them here and mark them translateable. -->
+      <message name="IDS_ASH_MAHI_PANEL_TITLE" translateable="false" desc="Title text shown on the header of the Mahi panel.">
+        Mahi Panel
+      </message>
+      <message name="IDS_ASH_MAHI_PANEL_DISCLAIMER" translateable="false" desc="Text for the disclaimer label in the Mahi panel">
         Disclaimer: this is only used for experimental.
       </message>
       <message name="IDS_ASH_MAHI_LEARN_MORE_LINK_LABEL_TEXT" desc="Text for the learn more link that user can navigate to learn more about the project information">
         Learn more
       </message>
+      <message name="IDS_ASH_MAHI_THUMBS_UP_FEEDBACK_BUTTON_ACCESSIBLE_NAME" translateable="false" desc="The tooltip of the thumbs up feedback button in the mahi panel">
+        Good output
+      </message>
+      <message name="IDS_ASH_MAHI_THUMBS_DOWN_FEEDBACK_BUTTON_ACCESSIBLE_NAME" translateable="false" desc="The accessible name of the thumbs down feedback button in the mahi panel">
+        Bad output
+      </message>
       <message name="IDS_ASH_MAHI_REFRESH_BANNER_LABEL_TEXT" desc="Text for the refresh banner shown above the mahi panel.">
         Refresh <ph name="CONTENT_TITLE">$1<ex>test content title</ex></ph>
+      </message>
+      <message name="IDS_ASH_MAHI_RESPONSE_STATUS_INAPPROPRIATE_LABEL_TEXT" translateable="false" desc="Text of the service response that suggests the previous Mahi request is inappropriate">
+        This may violate Google's policy. Try another request.
+      </message>
+      <message name="IDS_ASH_MAHI_ERROR_STATUS_LABEL_GENERAL" translateable="false" desc="Text that indicates a general error incurred by a Mahi request">
+        Something went wrong
+      </message>
+      <message name="IDS_ASH_MAHI_ERROR_STATUS_LABEL_QUOTA_LIMIT_HIT" translateable="false" desc="Text that indicates service request limit reached">
+        Due to high request volume, your access is temporary limited. Try again tomorrow.
+      </message>
+      <message name="IDS_ASH_MAHI_ERROR_STATUS_LABEL_RESOURCE_EXHAUSTED" translateable="false" desc="Text indicates that the service resource has been exhausted">
+        Can't use right now. Try again later.
+      </message>
+      <message name="IDS_ASH_MAHI_RETRY_LINK_LABEL_TEXT" desc="Text for the link that user can retry their previous Mahi request">
+        Try again
       </message>
 
       <!-- Multi-profiles intro dialog -->
@@ -5322,6 +5418,10 @@ Some features are limited to increase battery life.
       </message>
 
       <!-- Media Tray  -->
+      <message name="IDS_ASH_GLOBAL_MEDIA_CONTROLS_CAST_LIST_HEADER" desc="Label for the Global Media Controls cast list header.">
+        Cast to
+      </message>
+
       <message name="IDS_ASH_GLOBAL_MEDIA_CONTROLS_BUTTON_TOOLTIP_TEXT" desc="Tooltip for the Global Media Controls icon, which appears in the toolbar. The tooltip appears on mouseover of the icon.">
         Control your music, videos, and more
       </message>
@@ -6332,6 +6432,9 @@ Here are some things you can try to get started.
       <message name="IDS_ASH_SCREEN_CAPTURE_SAVE_TO_LINUX_FILES" desc="The label of the menu item button for selecting the root of the Linux Files path to store the captured images and videos.">
         Linux files
       </message>
+      <message name="IDS_ASH_SCREEN_CAPTURE_SAVE_TO_ONE_DRIVE" desc="The label of the menu item button for selecting the root of the OneDrive path to store the captured images and videos.">
+        OneDrive
+      </message>
       <message name="IDS_ASH_GAME_CAPTURE_START_RECORDING_BUTTON" desc="The label of the start recording button inside the game capture bar.">
         Start recording
       </message>
@@ -6503,8 +6606,29 @@ Here are some things you can try to get started.
         Key Shortcuts
       </message>
 
+      <!-- Shimless RMA Diagnostics App -->
       <message name="IDS_ASH_SHIMLESS_RMA_APP_TITLE" translateable="false" desc="The title of shimless RMA flow SWA. Shimless RMA guides repair technicians through step-by-step repair flow.">
         Shimless RMA
+      </message>
+
+      <message name="IDS_ASH_SHIMLESS_RMA_APP_ACCESS_PERMISSION" desc="The string prompted to request user permission during install time of the app.">
+        Access the following permissions:
+      </message>
+
+      <message name="IDS_ASH_SHIMLESS_RMA_APP_ACCESS_PERMISSION_CAMERA" desc="The string prompted to request user permission for camera during install time of the app.">
+        Camera
+      </message>
+
+      <message name="IDS_ASH_SHIMLESS_RMA_APP_ACCESS_PERMISSION_MICROPHONE" desc="The string prompted to request user permission for microphone during install time of the app.">
+        Microphone
+      </message>
+
+      <message name="IDS_ASH_SHIMLESS_RMA_APP_ACCESS_PERMISSION_FULLSCREEN" desc="The string prompted to request user permission for fullscreen during install time of the app.">
+        Fullscreen
+      </message>
+
+      <message name="IDS_ASH_SHIMLESS_RMA_APP_ACCESS_PERMISSION_HID_DEVICES" desc="The string prompted to request user permission for HID devices during install time of the app.">
+        HID devices
       </message>
 
       <!-- Firmware Update App -->
@@ -6603,9 +6727,6 @@ Here are some things you can try to get started.
       <message name="IDS_ASH_DEBUG_PACKET_CAPTURE_STARTED" desc="The label used for the notification to indicate network packet capture operation has started and network information is being collected on the device.">
         Collecting network information
       </message>
-      <message name="IDS_ASH_DEBUG_PACKET_CAPTURE_DESCRIPTION" desc="The message shown on notification bubble about ongoing network packet capture operation and the description of how to stop by clicking the button.">
-        You can stop packet capture at any time
-      </message>
       <message name="IDS_ASH_DEBUG_STOP_PACKET_CAPTURE_BUTTON" desc="The label on notification button for user to stop the ongoing packet capture operation.">
         Stop
       </message>
@@ -6655,6 +6776,52 @@ Here are some things you can try to get started.
       </message>
       <message name="IDS_AUTH_FACTOR_LABEL_SIGNED_IN" desc="Label on user's login screen when a Chromebook is successfully logged in.">
         Signing in...
+      </message>
+      <!-- Launcher: Apps Collections -->
+      <message name="IDS_ASH_LAUNCHER_APPS_COLLECTIONS_ESSENTIALS_NAME" desc="Label for the 'Essentials' collection in the Launcher Apps Collections Tutorial View, which shows a subset of default apps that were categorized as belonging to the Essential apps.">
+        Essentials
+      </message>
+      <message name="IDS_ASH_LAUNCHER_APPS_COLLECTIONS_PRODUCTIVITY_NAME" desc="Label for the 'Productivity' collection in the Launcher Apps Collections Tutorial View, which shows a subset of default apps that were categorized as belonging to the Productivity apps.">
+        Productivity
+      </message>
+      <message name="IDS_ASH_LAUNCHER_APPS_COLLECTIONS_CREATIVITY_NAME" desc="Label for the 'Creativity' collection in the Launcher Apps Collections Tutorial View, which shows a subset of default apps that were categorized as belonging to the Creativity apps.">
+        Creativity
+      </message>
+      <message name="IDS_ASH_LAUNCHER_APPS_COLLECTIONS_ENTERTAINMENT_NAME" desc="Label for the 'Entertainment' collection in the Launcher Apps Collections Tutorial View, which shows a subset of default apps that were categorized as belonging to the Entertainment apps section.">
+        Entertainment
+      </message>
+      <message name="IDS_ASH_LAUNCHER_APPS_COLLECTIONS_UTILITIES_NAME" desc="Label for the 'Utilities' collection in the Launcher Apps Collections Tutorial View, which shows a subset of default apps that were categorized as belonging to the Utilities apps section.">
+        Utilities
+      </message>
+      <message name="IDS_ASH_LAUNCHER_APPS_COLLECTIONS_YOUR_APPS_NAME" desc="Label for the 'Your apps' collection in the Launcher Apps Collections Tutorial View, which shows a subset of apps that were downloaded by the user.">
+        Your apps
+      </message>
+      <message name="IDS_ASH_LAUNCHER_APPS_COLLECTIONS_NUDGE_TITLE" desc="Text for the Apps Collections Tutorial View nudge that is shown on top of the Apps Collections in the Launcher. The tutorial view displays apps categorized in different subsets.">
+        Get to know your built-in apps
+      </message>
+      <message name="IDS_ASH_LAUNCHER_APPS_COLLECTIONS_NUDGE_SUBTITLE" desc="Subtext for the Apps Collections Tutorial View nudge that is shown on top of the Apps Collections in the Launcher. The tutorial view displays apps categorized in different subsets.">
+        Apps are organized by category temporarily
+      </message>
+      <message name="IDS_ASH_LAUNCHER_APPS_COLLECTIONS_NUDGE_DISMISS_BUTTON" desc="Label for the Apps Collections Tutorial View nudge button that show on top of the Apps Collections in the Launcher. The tutorial view displays apps categorized in different subsets. Clicking the button will return users to the default launcher with apps displayed in a grid.">
+        Exit
+      </message>
+      <message name="IDS_ASH_LAUNCHER_APPS_COLLECTIONS_NUDGE_DISMISS_BUTTON_SPOKEN_TEXT" desc="Accessibility text read by chromevox when focusing the Apps Collections Tutorial View nudge button that show on top of the Apps Collections in the Launcher. The tutorial view displays apps categorized in different subsets. Clicking the button will return users to the default launcher with apps displayed in a grid.">
+        Exit tutorial view
+      </message>
+      <message name="IDS_ASH_LAUNCHER_APPS_COLLECTIONS_DISMISS_DIALOG_TITLE" desc="Text for the Apps Collections Tutorial View dismiss dialog that shows over the Apps Collections in the Launcher when the user attempts to sort their apps. The dialog serves as confirmation to exit the Apps Collections Tutorial View">
+        Exit view?
+      </message>
+      <message name="IDS_ASH_LAUNCHER_APPS_COLLECTIONS_DISMISS_DIALOG_SUBTITLE" desc="Subtext for the Apps Collections Tutorial View dismiss dialog that shows over the Apps Collections in the Launcher when the user attempts to sort their apps. The dialog serves as confirmation to exit the Apps Collections Tutorial View">
+        You can start customizing your app layout once you exit this view.
+      </message>
+      <message name="IDS_ASH_LAUNCHER_APPS_COLLECTIONS_DISMISS_DIALOG_CANCEL" desc="The label for the cancel button on the Apps Collections Tutorial View dismiss dialog that shows over the Apps Collections in the Launcher when the user attempts to sort their apps. The dialog asks for confirmation to exit the Apps Collections Tutorial View and pressing the cancel buton will close the dialog and keep the Tutorial View">
+        Cancel
+      </message>
+      <message name="IDS_ASH_LAUNCHER_APPS_COLLECTIONS_DISMISS_DIALOG_EXIT" desc="The label for the exit button on the Apps Collections Tutorial View dismiss dialog that shows over the Apps Collections in the Launcher when the user attempts to sort their apps. The dialog serves as confirmation to exit the Apps Collections Tutorial View and pressing the exit buton will close the dialog and exit the Tutorial View">
+        Exit
+      </message>
+      <message name="IDS_ASH_LAUNCHER_APPS_COLLECTIONS_DISCOVERY_CHIP_LABEL" desc="The label for the button displayed at the bottom of Apps Collections Tutorial View. When the user clicks the Discovery chip, it will launch a secondary app to showcase more apps.">
+        Explore more apps and games
       </message>
 
       <!-- Launcher: Continue Section -->
@@ -6852,16 +7019,16 @@ New install
         <ph name="action_description">$1<ex>You edited</ex></ph> · <ph name="time">$2<ex>Dec 5</ex></ph>
       </message>
       <message name="IDS_FILE_SUGGESTION_JUSTIFICATION_YOU_VIEWED_ACTION" desc="Part of the file suggestion chip UI in Chrome OS launcher. The suggestion chip provides users suggestions for files they may want to open based on the recent activity. The suggestion contains the file name, and a justification describing why the file was suggested (which contains the user action that prompted suggestion, followed by the time the action was taken). The justification is displayed under the file name. This string is the justification action text shown when the file is suggested because the user recently viewed/opened the file.">
-        You viewed
+        You opened
       </message>
       <message name="IDS_FILE_SUGGESTION_JUSTIFICATION_GENERIC_MODIFIED_ACTION" desc="Part of the file suggestion chip UI in Chrome OS launcher. The suggestion chip provides users suggestions for files they may want to open based on the recent activity. The suggestion contains the file name, and a justification describing why the file was suggested (which contains the user action that prompted suggestion, followed by the time the action was taken). The justification is displayed under the file name. This string is the justification action text shown when the file is suggested because the file was recently modified. This justification is shown when the user that modified the file is not know (file suggestions may be shown for Google Drive files, which may be modified my multiple users).">
-        Modified
+        Edited
       </message>
       <message name="IDS_FILE_SUGGESTION_JUSTIFICATION_YOU_MODIFIED_ACTION" desc="Part of the file suggestion chip UI in Chrome OS launcher. The suggestion chip provides users suggestions for files they may want to open based on the recent activity. The suggestion contains the file name, and a justification describing why the file was suggested (which contains the user action that prompted suggestion, followed by the time the action was taken). The justification is displayed under the file name. This string is the justification action text shown when the file is suggested because the user recently modified the file.">
-        You modified
+        You edited
       </message>
       <message name="IDS_FILE_SUGGESTION_JUSTIFICATION_USER_MODIFIED_ACTION" desc="Part of the file suggestion chip UI in Chrome OS launcher. The suggestion chip provides users suggestions for files they may want to open based on the recent activity. The suggestion contains the file name, and a justification describing why the file was suggested (which contains the user action that prompted suggestion, followed by the time the action was taken). The justification is displayed under the file name. This string is the justification action text shown when the file is suggested because the file was recently modified by a user other than the current user (file suggestions may be shown for Google Drive files, which may be modified my multiple users). The string has a placeholder that will be replaced by the name of the user that last modified the file.">
-        <ph name="user">$1<ex>John Doe</ex></ph> modified
+        <ph name="user">$1<ex>John Doe</ex></ph> edited
       </message>
       <message name="IDS_FILE_SUGGESTION_JUSTIFICATION_GENERIC_SHARED_ACTION" desc="Part of the file suggestion chip UI in Chrome OS launcher. The suggestion chip provides users suggestions for files they may want to open based on the recent activity. The suggestion contains the file name, and a justification describing why the file was suggested (which contains the user action that prompted suggestion, followed by the time the action was taken). The justification is displayed under the file name. This string is the justification action text shown when the file is suggested because another user recently shared the file with the user (file suggestions may be shown for Google Drive files).">
         Shared with you
@@ -6982,56 +7149,50 @@ New install
 
       <!-- Picker -->
       <!-- TODO: b/309706053 - Finalize these strings and then mark them as these as translateable -->
-      <message name="IDS_PICKER_EMOJIS_CATEGORY_LABEL" translateable="false" desc="Label of the Picker list item which can be clicked to show emoji results.">
-        Emojis
+      <message name="IDS_PICKER_EXPRESSIONS_CATEGORY_LABEL" translateable="false" desc="Label of the Picker list item which can be clicked to show expression results.">
+        Emojis, GIFs, and more
       </message>
-      <message name="IDS_PICKER_SYMBOLS_CATEGORY_LABEL" translateable="false" desc="Label of the Picker list item which can be clicked to show symbol results.">
-        Symbols
-      </message>
-      <message name="IDS_PICKER_EMOTICONS_CATEGORY_LABEL" translateable="false" desc="Label of the Picker list item which can be clicked to show emoticon results.">
-        Emoticons
-      </message>
-      <message name="IDS_PICKER_GIFS_CATEGORY_LABEL" translateable="false" desc="Label of the Picker list item which can be clicked to show gif results.">
-        Gifs
-      </message>
-      <message name="IDS_PICKER_OPEN_TABS_CATEGORY_LABEL" translateable="false" desc="Label of the Picker list item which can be clicked to show open tab results.">
-        Open tabs
-      </message>
-      <message name="IDS_PICKER_BROWSING_HISTORY_CATEGORY_LABEL" translateable="false" desc="Label of the Picker list item which can be clicked to show browsing history results.">
+      <message name="IDS_PICKER_LINKS_CATEGORY_LABEL" translateable="false" desc="Label of the Picker list item which can be clicked to show browsing history results.">
         Browsing history
-      </message>
-      <message name="IDS_PICKER_BOOKMARKS_CATEGORY_LABEL" translateable="false" desc="Label of the Picker list item which can be clicked to show bookmark results.">
-        Bookmarks
       </message>
       <message name="IDS_PICKER_DRIVE_FILES_CATEGORY_LABEL" translateable="false" desc="Label of the Picker list item which can be clicked to show Drive results.">
         Drive Files
       </message>
       <message name="IDS_PICKER_LOCAL_FILES_CATEGORY_LABEL" translateable="false" desc="Label of the Picker list item which can be clicked to show local file results.">
-        Files from Chromebook
+        My Files
+      </message>
+      <message name="IDS_PICKER_DATES_TIMES_CATEGORY_LABEL" translateable="false" desc="Label of the Picker list item which can be clicked to show date and time results.">
+        Dates &amp; Times
+      </message>
+      <message name="IDS_PICKER_UNITS_MATHS_CATEGORY_LABEL" translateable="false" desc="Label of the Picker list item which can be clicked to show unit and maths results.">
+        Units &amp; Mathematics
+      </message>
+      <message name="IDS_PICKER_CAPS_ON_CATEGORY_LABEL" translateable="false" desc="Label of the Picker list item which can be clicked to turn on caps lock.">
+        Turn ON Caps Lock
+      </message>
+      <message name="IDS_PICKER_CAPS_OFF_CATEGORY_LABEL" translateable="false" desc="Label of the Picker list item which can be clicked to turn off caps lock.">
+        Turn OFF Caps Lock
+      </message>
+      <message name="IDS_PICKER_CLIPBOARD_CATEGORY_LABEL" translateable="false" desc="Label of the Picker list item which can be clicked to show clipboard results.">
+        Clipboard
+      </message>
+      <message name="IDS_PICKER_UPPER_CASE_CATEGORY_LABEL" translateable="false" desc="Label of the Picker list item which can be clicked to transform the selected text to upper case.">
+        Turn into uppercase
+      </message>
+      <message name="IDS_PICKER_LOWER_CASE_CATEGORY_LABEL" translateable="false" desc="Label of the Picker list item which can be clicked to transform the selected text to lower case.">
+        Turn into lowercase
+      </message>
+      <message name="IDS_PICKER_SENTENCE_CASE_CATEGORY_LABEL" translateable="false" desc="Label of the Picker list item which can be clicked to transform the selected text to sentence case.">
+        Turn into sentence case
+      </message>
+      <message name="IDS_PICKER_TITLE_CASE_CATEGORY_LABEL" translateable="false" desc="Label of the Picker list item which can be clicked to transform the selected text to title case.">
+        Turn into title case
       </message>
       <message name="IDS_PICKER_ZERO_STATE_SEARCH_FIELD_PLACEHOLDER_TEXT" translateable="false" desc="Placeholder text for the search field shown in the Picker UI.">
         Search to insert
       </message>
-      <message name="IDS_PICKER_EMOJIS_CATEGORY_SEARCH_FIELD_PLACEHOLDER_TEXT" translateable="false" desc="Placeholder text for the search field shown in the Picker UI when the emojis category is selected.">
-        Search Emojis
-      </message>
-      <message name="IDS_PICKER_SYMBOLS_CATEGORY_SEARCH_FIELD_PLACEHOLDER_TEXT" translateable="false" desc="Placeholder text for the search field shown in the Picker UI when the symbols category is selected.">
-        Search Symbols
-      </message>
-      <message name="IDS_PICKER_EMOTICONS_CATEGORY_SEARCH_FIELD_PLACEHOLDER_TEXT" translateable="false" desc="Placeholder text for the search field shown in the Picker UI when the emoticons category is selected.">
-        Search Emoticons
-      </message>
-      <message name="IDS_PICKER_GIFS_CATEGORY_SEARCH_FIELD_PLACEHOLDER_TEXT" translateable="false" desc="Placeholder text for the search field shown in the Picker UI when the gifs category is selected.">
-        Search Gifs
-      </message>
-      <message name="IDS_PICKER_OPEN_TABS_CATEGORY_SEARCH_FIELD_PLACEHOLDER_TEXT" translateable="false" desc="Placeholder text for the search field shown in the Picker UI when the open tabs category is selected.">
-        Search Open Tabs
-      </message>
-      <message name="IDS_PICKER_BROWSING_HISTORY_CATEGORY_SEARCH_FIELD_PLACEHOLDER_TEXT" translateable="false" desc="Placeholder text for the search field shown in the Picker UI when the browsing history category is selected.">
+      <message name="IDS_PICKER_LINKS_CATEGORY_SEARCH_FIELD_PLACEHOLDER_TEXT" translateable="false" desc="Placeholder text for the search field shown in the Picker UI when the browsing history category is selected.">
         Search Browsing History
-      </message>
-      <message name="IDS_PICKER_BOOKMARKS_CATEGORY_SEARCH_FIELD_PLACEHOLDER_TEXT" translateable="false" desc="Placeholder text for the search field shown in the Picker UI when the bookmarks category is selected.">
-        Search Bookmarks
       </message>
       <message name="IDS_PICKER_DRIVE_FILES_CATEGORY_SEARCH_FIELD_PLACEHOLDER_TEXT" translateable="false" desc="Placeholder text for the search field shown in the Picker UI when the drive files category is selected.">
         Search Drive
@@ -7039,20 +7200,44 @@ New install
       <message name="IDS_PICKER_LOCAL_FILES_CATEGORY_SEARCH_FIELD_PLACEHOLDER_TEXT" translateable="false" desc="Placeholder text for the search field shown in the Picker UI when the local files category is selected.">
         Search Chromebook
       </message>
-      <message name="IDS_PICKER_EXPRESSIONS_CATEGORY_TYPE_SECTION_TITLE" translateable="false" desc="Title of the Picker section which contains expression categories, i.e. emojis, symbols, emoticons and gifs.">
-        Expressions
+      <message name="IDS_PICKER_DATES_TIMES_CATEGORY_SEARCH_FIELD_PLACEHOLDER_TEXT" translateable="false" desc="Placeholder text for the search field shown in the Picker UI when the date and times category is selected.">
+        Search Dates and Times
       </message>
-      <message name="IDS_PICKER_LINKS_CATEGORY_TYPE_SECTION_TITLE" translateable="false" desc="Title of the Picker section which contains link categories, e.g. browsing history, open tabs, bookmarks.">
-        Links
+      <message name="IDS_PICKER_UNITS_MATHS_CATEGORY_SEARCH_FIELD_PLACEHOLDER_TEXT" translateable="false" desc="Placeholder text for the search field shown in the Picker UI when the units and maths category is selected.">
+        Search Units and Maths
       </message>
-      <message name="IDS_PICKER_FILES_CATEGORY_TYPE_SECTION_TITLE" translateable="false" desc="Title of the Picker section which contains files categories, e.g. Drive files and local files">
-        Files
+      <message name="IDS_PICKER_CLIPBOARD_CATEGORY_SEARCH_FIELD_PLACEHOLDER_TEXT" translateable="false" desc="Placeholder text for the search field shown in the Picker UI when the clipboard category is selected.">
+        Search Clipboard
+      </message>
+      <message name="IDS_PICKER_GENERAL_CATEGORY_TYPE_SECTION_TITLE" translateable="false" desc="Title of the Picker section which contains general categories, i.e. expressions, browsing history, files.">
+        Search
+      </message>
+      <message name="IDS_PICKER_EDITOR_CATEGORY_TYPE_SECTION_TITLE" translateable="false" desc="Title of the Picker section which contains editor categories">
+        Editor
+      </message>
+      <message name="IDS_PICKER_CALCULATIONS_CATEGORY_TYPE_SECTION_TITLE" translateable="false" desc="Title of the Picker section which contains calculation categories, e.g. Dates and Maths.">
+        Calculations
+      </message>
+      <message name="IDS_PICKER_CASE_TRANSFORMATIONS_CATEGORY_TYPE_SECTION_TITLE" translateable="false" desc="Title of the Picker section which contains case transformation actions.">
+        Transform letter case
+      </message>
+      <message name="IDS_PICKER_FORMATTING_CATEGORY_TYPE_SECTION_TITLE" translateable="false" desc="Title of the Picker section which contains formatting categories, e.g. toggling caps lock.">
+        Formatting
       </message>
       <message name="IDS_PICKER_SUGGESTED_SECTION_TITLE" translateable="false" desc="Title of the Picker section which contains suggested items.">
         You may want to insert
       </message>
+      <message name="IDS_PICKER_HTML_CONTENT" translateable="false" desc="Display text for the clipboard html item.">
+        Html content
+      </message>
       <message name="IDS_PICKER_FROM_CLIPBOARD_TEXT" translateable="false" desc="Secondary text of the suggested items from the clipboard history.">
         From clipboard
+      </message>
+      <message name="IDS_PICKER_SEE_MORE_BUTTON_TEXT" translateable="false" desc="Button text shown in a section when there are more results.">
+        See more
+      </message>
+      <message name="IDS_PICKER_NO_RESULTS_TEXT" translateable="false" desc="Label of the view showing that there are no search results.">
+        No results found.
       </message>
 
       <!-- WM -->
@@ -7273,9 +7458,6 @@ New install
       <message name="IDS_GLANCEABLES_DUE_TODAY" desc="Classroom glanceable displays upcoming/missed/completed assignments from Google Classroom. Tasks glanceable displays upcoming/missed assignments from Google Tasks. This text is displayed for tasks and assignments that are due today. In other cases date formatter is used and no translation is needed.">
         Today
       </message>
-      <message name="IDS_GLANCEABLES_ITEMS_TURNED_IN_AND_GRADED" desc="The teacher classroom glanceable shows upcoming/missed/completed assignments from Google Classroom. For each assignment item, this text displays the number of submissions turned in along side the total number of sumbissions. Then this text also displays the number of submissions currently graded.">
-        <ph name="NUM_TURNED_IN">$1<ex>8</ex></ph>/<ph name="TOTAL_NUM_OF_SUBMISSIONS">$2<ex>22</ex></ph> turned in • <ph name="NUM_GRADED">$3<ex>5</ex></ph> graded
-      </message>
       <message name="IDS_GLANCEABLES_CLASSROOM_STUDENT_EMPTY_ITEM_DUE_LIST" desc="The student classroom glanceable shows this label when there are no assignments to show for the 'Due Soon' or 'No Due Date' list.">
         Nothing on this to-do list.
       </message>
@@ -7300,8 +7482,11 @@ New install
       <message name="IDS_GLANCEABLES_TASKS_EDIT_IN_TASKS_LABEL" desc="A glanceables label button placed under the task title textfield that allows users to edit the task in Google Tasks website.">
         Edit in Google Tasks
       </message>
-      <message name="IDS_GLANCEABLES_ERROR_DISMISS" desc="A glanceables bubble (classroom or tasks) displays a notification with an error message when an error occurs during any action within said glaceables bubble. This is the text that is displayed on the button within said notification in order to dismiss it.">
+      <message name="IDS_GLANCEABLES_ERROR_DISMISS" desc="A glanceables bubble (classroom or tasks) displays a notification with an error message when an error occurs during any action within said glanceables bubble. This is the text that is displayed on the button within said notification in order to dismiss it.">
         Dismiss
+      </message>
+      <message name="IDS_GLANCEABLES_ERROR_RELOAD" desc="A glanceables bubble (classroom or tasks) displays a notification with an error message when an error occurs during any action within said glanceables bubble. This is the text that is displayed on the button within said notification in order to reload the list of tasks to update it.">
+        Reload
       </message>
       <message name="IDS_GLANCEABLES_CLASSROOM_SEE_ALL_BUTTON_ACCESSIBLE_NAME" desc="The glanceable displays classroom items fetched from Google Classroom API. Glanceables UI renders only limited number of items, the rest of them can be seen by clicking this button, which will open a corresponding website. This is the text announced by ChromeVox for this button.">
         See all classwork on Google Classroom website
@@ -7339,9 +7524,6 @@ New install
       <message name="IDS_GLANCEABLES_CLASSROOM_ASSIGNMENT_DUE_ACCESSIBLE_DESCRIPTION" desc="The classroom glanceable displays classroom items for student and/or teachers fetched from Google Classroom API. This text is the part of a11y description to announce that an assignment has a due date and/or time.">
         due <ph name="DUE_DATE_AND_TIME">$1<ex>Wed, Aug 23</ex></ph>
       </message>
-      <message name="IDS_GLANCEABLES_CLASSROOM_ASSIGNMENT_SUBMISSIONS_STATE_ACCESSIBLE_DESCRIPTION" desc="The teacher classroom glanceable shows upcoming/missed/completed assignments from Google Classroom. For each assignment item, this text displays the number of submissions turned in along side the total number of sumbissions. Then this text also displays the number of submissions currently graded.">
-        <ph name="NUM_TURNED_IN">$1<ex>8</ex></ph> of <ph name="TOTAL_NUM_OF_SUBMISSIONS">$2<ex>22</ex></ph> turned in, <ph name="NUM_GRADED">$3<ex>5</ex></ph> graded
-      </message>
       <message name="IDS_GLANCEABLES_CLASSROOM_DROPDOWN_ACCESSIBLE_NAME" desc="The glanceable displays classroom items fetched from Google Classroom API. This is the a11y name announced by ChromeVox for the dropdown menu allowing to switch assignments lists: Due soon, No due date, etc.">
         Classwork type
       </message>
@@ -7349,13 +7531,10 @@ New install
         Classwork type: <ph name="GLANCEABLES_CLASSROOM_LIST_NAME">$1<ex>Due soon</ex></ph>
       </message>
       <message name="IDS_GLANCEABLES_TASKS_DROPDOWN_ACCESSIBLE_NAME" desc="The glanceable displays tasks items fetched from Google Tasks API. This is the a11y name announced by ChromeVox for the dropdown menu allowing to switch tasks lists.">
-        Google tasks list
+        Task list: <ph name="GLANCEABLES_TASKS_LIST_NAME">$1<ex>Task List 1</ex></ph>
       </message>
       <message name="IDS_GLANCEABLES_TASKS_SELECTED_LIST_ACCESSIBLE_NAME" desc="The glanceable displays tasks items fetched from Google Tasks API. This is the a11y name announced by ChromeVox for the active tasks list.">
         Google tasks list: <ph name="GLANCEABLES_TASKS_LIST_NAME">$1<ex>Task List 1</ex></ph>
-      </message>
-      <message name="IDS_GLANCEABLES_TASKS_SELECTED_LIST_EMPTY_ACCESSIBLE_NAME" desc="The glanceable displays tasks items fetched from Google Tasks API. This is the text announced by ChromeVox in case the selected tasks list is empty.">
-        Selected list empty, navigate down to add a new task
       </message>
       <message name="IDS_GLANCEABLES_CLASSROOM_HEADER_ICON_ACCESSIBLE_NAME" desc="The glanceable displays classroom items fetched from Google Classroom API. This is the a11y name announced by ChromeVox for the top left corner header icon that opens Google Classroom website (home page).">
         Google Classroom website
@@ -7378,11 +7557,23 @@ New install
       <message name="IDS_GLANCEABLES_TASKS_ERROR_LAST_UPDATE_TIME" desc="The error message used in the task glanceable to notify users that the task list is not updated since the shown time today.">
         Tasks last updated: <ph name="TIME">$1<ex>3:17 PM</ex></ph>.
       </message>
+      <message name="IDS_GLANCEABLES_TASKS_ERROR_LOAD_ITEMS_FAILED" desc="The error message used in the glanceables to notify users that the glanceables failed to load the tasks or classroom data.">
+        Couldn't load items.
+      </message>
+      <message name="IDS_GLANCEABLES_TASKS_ERROR_LOAD_ITEMS_FAILED_WHILE_OFFLINE" desc="The error message used in the glanceables to notify users that the glanceables failed to load the tasks or classroom data because the device is offline. Also guide the user to try again when the device is connected to the network.">
+        Couldn't load items. Try again when online.
+      </message>
       <message name="IDS_GLANCEABLES_TASKS_ERROR_MARK_COMPLETE_FAILED" desc="The error message used in the task glanceable to notify users that clicking on the check button to mark a task as complete failed.">
         Couldn't mark as complete.
       </message>
       <message name="IDS_GLANCEABLES_TASKS_ERROR_MARK_COMPLETE_FAILED_WHILE_OFFLINE" desc="The error message used in the task glanceable to notify users that clicking on the check button to mark a task as complete failed because the device is offline. Also guide the user to try again when the device is connected to the network.">
         Couldn't mark as complete. Try again when online.
+      </message>
+      <message name="IDS_GLANCEABLES_TASKS_ERROR_EDIT_TASK_FAILED" desc="The error message used in the task glanceable to notify users that the glanceables failed to commit the task that they edited.">
+        Couldn't edit task.
+      </message>
+      <message name="IDS_GLANCEABLES_TASKS_ERROR_EDIT_TASK_FAILED_WHILE_OFFLINE" desc="The error message used in the task glanceable to notify users that the glanceables failed to commit the task that they edited because the device is offline. Also guide the user to try again when the device is connected to the network.">
+        Couldn't edit task. Try again when online.
       </message>
       <!-- Do Not Disturb notification -->
       <message name="IDS_ASH_DO_NOT_DISTURB_NOTIFICATION_TITLE" desc="Label used for the notification that shows up when the 'Do Not Disturb' feature is enabled.">
@@ -7445,14 +7636,26 @@ To shut down the device, press and hold the power button on the device again.
       <message name="IDS_ASH_WELCOME_TOUR_DIALOG_DESCRIPTION_TEXT" desc="Text shown in the body of the dialog as part of the System UI Welcome Tour.">
         Take a quick tour to learn how to get around your <ph name="PRODUCT_NAME">$1<ex>Chromebook</ex></ph>. Get up and running in 5 steps.
       </message>
+      <message name="IDS_ASH_WELCOME_TOUR_DIALOG_DESCRIPTION_TEXT_V2" desc="Text shown in the body of the dialog as part of the System UI Welcome Tour V2.">
+        Take a quick tour to learn how to get around your <ph name="PRODUCT_NAME">$1<ex>Chromebook</ex></ph>
+      </message>
       <message name="IDS_ASH_WELCOME_TOUR_DIALOG_TITLE_TEXT" desc="Text shown as the Welcome Tour dialog title.">
         Hi there. <ph name="PRODUCT_NAME">$1<ex>Chromebook</ex></ph> is a little different.
+      </message>
+      <message name="IDS_ASH_WELCOME_TOUR_DIALOG_TITLE_TEXT_V2" desc="Text shown as the Welcome Tour V2 dialog title.">
+        6 tips to get started on <ph name="PRODUCT_NAME">$1<ex>Chromebook</ex></ph>
       </message>
       <message name="IDS_ASH_WELCOME_TOUR_EXPLORE_APP_BUBBLE_BODY_TEXT" desc="Text shown in the body of a help bubble anchored to the Explore app as part of the System UI Welcome Tour.">
         Those were the basics! Continue in Explore, our built-in app for tips and help. You’ll find tips for getting started, recommended apps, special offers, and the newest <ph name="PRODUCT_NAME">$1<ex>Chromebook</ex></ph> features.
       </message>
+      <message name="IDS_ASH_WELCOME_TOUR_FILES_APP_BUBBLE_ACCNAME" desc="The accessible name of a help bubble anchored to the Files app as part of the System UI Welcome Tour.">
+        Tour step <ph name="STEP">$1<ex>1</ex></ph> of <ph name="TOTAL_STEPS">$2<ex>5</ex></ph>. You can find the Files app in Launcher. Manage your local files and your Google Drive files, all in the Files app.
+      </message>
+      <message name="IDS_ASH_WELCOME_TOUR_FILES_APP_BUBBLE_BODY_TEXT" desc="Text shown in the body of a help bubble anchored to the Files app as part of the System UI Welcome Tour.">
+        Manage your local files and your Google Drive files, all in the Files app.
+      </message>
       <message name="IDS_ASH_WELCOME_TOUR_HOME_BUTTON_BUBBLE_ACCNAME" desc="The accessible name of a help bubble anchored to the home button as part of the System UI Welcome Tour.">
-        Tour step 3 of 5. Use apps to do everything you need on your <ph name="PRODUCT_NAME">$1<ex>Chromebook</ex></ph>. You can find your apps in the Launcher. Press Alt + Shift + L to focus on the Launcher button.
+        Tour step <ph name="STEP">$1<ex>1</ex></ph> of <ph name="TOTAL_STEPS">$2<ex>5</ex></ph>. Use apps to do everything you need on your <ph name="PRODUCT_NAME">$3<ex>Chromebook</ex></ph>. You can find your apps in the Launcher. Press Alt + Shift + L to focus on the Launcher button.
       </message>
       <message name="IDS_ASH_WELCOME_TOUR_HOME_BUTTON_BUBBLE_BODY_TEXT_CHROMEBOOK" desc="Text shown in the body of a help bubble anchored to the home button as part of the System UI Welcome Tour.">
         Use apps to do everything you need on your <ph name="PRODUCT_NAME">$1<ex>Chromebook</ex></ph>. You can find your apps in the Launcher. You can also press the Launcher key (above the left Shift key) on the keyboard.
@@ -7464,25 +7667,25 @@ To shut down the device, press and hold the power button on the device again.
         ''' '''
       </message>
       <message name="IDS_ASH_WELCOME_TOUR_SEARCH_BOX_BUBBLE_ACCNAME" desc="The accessible name of a help bubble anchored to the search box as part of the System UI Welcome Tour.">
-        Tour step 4 of 5. Once Launcher is activated, you’ll get an enhanced search bar. You can start typing to search for your files, apps, and more. You can also get answers to questions about your <ph name="PRODUCT_NAME">$1<ex>Chromebook</ex></ph>.
+        Tour step <ph name="STEP">$1<ex>1</ex></ph> of <ph name="TOTAL_STEPS">$2<ex>5</ex></ph>. Once Launcher is activated, you’ll get an enhanced search bar. You can start typing to search for your files, apps, and more. You can also get answers to questions about your <ph name="PRODUCT_NAME">$3<ex>Chromebook</ex></ph>.
       </message>
       <message name="IDS_ASH_WELCOME_TOUR_SEARCH_BOX_BUBBLE_BODY_TEXT" desc="Text shown in the body of a help bubble anchored to the search box as part of the System UI Welcome Tour.">
         Search for your files, apps, and more in the Launcher. You can also get answers to questions about your <ph name="PRODUCT_NAME">$1<ex>Chromebook</ex></ph>.
       </message>
       <message name="IDS_ASH_WELCOME_TOUR_SETTINGS_APP_BUBBLE_ACCNAME" desc="The accessible name of a help bubble anchored to the Settings app as part of the System UI Welcome Tour">
-        Tour step 5 of 5. You can find your device Settings in Launcher. Try customizing your <ph name="PRODUCT_NAME">$1<ex>Chromebook</ex></ph> in Settings like changing your wallpaper or setting a screen saver.
+        Tour step <ph name="STEP">$1<ex>1</ex></ph> of <ph name="TOTAL_STEPS">$2<ex>5</ex></ph>. You can find your device Settings in Launcher. Try customizing your <ph name="PRODUCT_NAME">$3<ex>Chromebook</ex></ph> in Settings like changing your wallpaper or setting a screen saver.
       </message>
       <message name="IDS_ASH_WELCOME_TOUR_SETTINGS_APP_BUBBLE_BODY_TEXT" desc="Text shown in the body of a help bubble anchored to the Settings app as part of the System UI Welcome Tour">
         Customize and personalize your <ph name="PRODUCT_NAME">$1<ex>Chromebook</ex></ph> in Settings. Try changing your wallpaper or setting a screen saver.
       </message>
       <message name="IDS_ASH_WELCOME_TOUR_SHELF_BUBBLE_ACCNAME" desc="The accessible name of a help bubble anchored to the shelf as part of the System UI Welcome Tour.">
-        Tour step 1 of 5. Your pinned and open apps are on the shelf located at the bottom of your screen. Press Alt + Shift + L then tab to focus on shelf items.
+        Tour step <ph name="STEP">$1<ex>1</ex></ph> of <ph name="TOTAL_STEPS">$2<ex>5</ex></ph>. Your pinned and open apps are on the shelf located at the bottom of your screen. Press Alt + Shift + L then tab to focus on shelf items.
       </message>
       <message name="IDS_ASH_WELCOME_TOUR_SHELF_BUBBLE_BODY_TEXT" desc="Text shown in the body of a help bubble anchored to the shelf as part of the System UI Welcome Tour.">
         Your pinned and open apps are on the shelf. To pin an app to the shelf, right-click an app or tap your touchpad with two fingers.
       </message>
       <message name="IDS_ASH_WELCOME_TOUR_STATUS_AREA_BUBBLE_ACCNAME" desc="The accessible name of a help bubble anchored to the status area as part of the System UI Welcome Tour.">
-        Tour step 2 of 5. Frequently used controls like Wi-Fi, Bluetooth and volume are in Quick Settings. You can also go here to take screenshots. Press Alt + Shift + S to open Quick Settings.
+        Tour step <ph name="STEP">$1<ex>1</ex></ph> of <ph name="TOTAL_STEPS">$2<ex>5</ex></ph>. Frequently used controls like Wi-Fi, Bluetooth and volume are in Quick Settings. You can also go here to take screenshots. Press Alt + Shift + S to open Quick Settings.
       </message>
       <message name="IDS_ASH_WELCOME_TOUR_STATUS_AREA_BUBBLE_BODY_TEXT" desc="Text shown in the body of a help bubble anchored to the status area as part of the System UI Welcome Tour.">
         Frequently used controls like Wi-Fi, Bluetooth and volume are in Quick Settings. You can also go here to take screenshots.
@@ -7490,13 +7693,13 @@ To shut down the device, press and hold the power button on the device again.
 
       <!-- TODO(b/286455407): Update strings once finalized with UX Writing -->
       <!-- Game Dashboard strings -->
-      <message name="IDS_ASH_GAME_DASHBOARD_BACK_TOOLTIP" translateable="false" desc="Tooltip for the Game Dashboard back button.">
+      <message name="IDS_ASH_GAME_DASHBOARD_BACK_TOOLTIP" desc="Tooltip for the Game Dashboard back button.">
         Back
       </message>
-      <message name="IDS_ASH_GAME_DASHBOARD_CONTROLS_TILE_BUTTON_TITLE" translateable="false" desc="The display name for the Game Dashboard game controls tile.">
+      <message name="IDS_ASH_GAME_DASHBOARD_CONTROLS_TILE_BUTTON_TITLE" desc="The display name for the Game Dashboard game controls tile.">
         Controls
       </message>
-      <message name="IDS_ASH_GAME_DASHBOARD_HELP_TOOLTIP" translateable="false" desc="Tooltip for the Game Dashboard help icon button.">
+      <message name="IDS_ASH_GAME_DASHBOARD_HELP_TOOLTIP" desc="Tooltip for the Game Dashboard help icon button.">
         Help center
       </message>
       <message name="IDS_ASH_GAME_DASHBOARD_GAME_DASHBOARD_BUTTON_RECORDING" desc="The title of the Game Dashboard button when the window is being recorded, and also shows the recording duration.">
@@ -7505,71 +7708,89 @@ To shut down the device, press and hold the power button on the device again.
       <message name="IDS_ASH_GAME_DASHBOARD_GAME_DASHBOARD_BUTTON_TITLE" desc="The default title of the Game Dashboard button.">
         Game dashboard
       </message>
-      <message name="IDS_ASH_GAME_DASHBOARD_HELP_BUTTON_A11Y_LABEL" translateable="false" desc="Help button a11y label. Spoken by screen readers when the help button gets focus but not visually rendered.">
+      <message name="IDS_ASH_GAME_DASHBOARD_HELP_BUTTON_A11Y_LABEL" desc="Help button a11y label. Spoken by screen readers when the help button gets focus but not visually rendered.">
         Get help
       </message>
-      <message name="IDS_ASH_GAME_DASHBOARD_HIDDEN_STATUS" translateable="false" desc="The hidden state for compact Game Dashboard tile sub-labels.">
+      <message name="IDS_ASH_GAME_DASHBOARD_HIDDEN_STATUS" desc="The hidden state for compact Game Dashboard tile sub-labels.">
         Hidden
       </message>
-      <message name="IDS_ASH_GAME_DASHBOARD_RECORD_GAME_TILE_TOOLTIPS_RECORD_START" translateable="false" desc="The tooltips for record game tile when recording has not yet started.">
+      <message name="IDS_ASH_GAME_DASHBOARD_RECORD_GAME_TILE_TOOLTIPS_RECORD_START" desc="The tooltips for record game tile when recording has not yet started.">
         Record game
       </message>
-      <message name="IDS_ASH_GAME_DASHBOARD_RECORD_GAME_TILE_TOOLTIPS_RECORD_STOP" translateable="false" desc="The tooltips for record game tile when recording is in progress.">
+      <message name="IDS_ASH_GAME_DASHBOARD_RECORD_GAME_TILE_TOOLTIPS_RECORD_STOP" desc="The tooltips for record game tile when recording is in progress.">
         Stop recording
       </message>
-      <message name="IDS_ASH_GAME_DASHBOARD_RECORD_GAME_TILE_BUTTON_TITLE" translateable="false" desc="The display name for the Game Dashboard record game tile.">
+      <message name="IDS_ASH_GAME_DASHBOARD_RECORD_GAME_TILE_BUTTON_TITLE" desc="The display name for the Game Dashboard record game tile.">
         Record game
       </message>
-      <message name="IDS_ASH_GAME_DASHBOARD_RECORD_GAME_TILE_BUTTON_RECORDING_TITLE" translateable="false" desc="The display name for the Game Dashboard record game tile when the window is being recorded.">
+      <message name="IDS_ASH_GAME_DASHBOARD_RECORD_GAME_TILE_BUTTON_RECORDING_TITLE" desc="The display name for the Game Dashboard record game tile when the window is being recorded.">
         Recording
       </message>
-      <message name="IDS_ASH_GAME_DASHBOARD_SCREENSHOT_TILE_BUTTON_TITLE" translateable="false" desc="The display name for the Game Dashboard screenshot tile.">
+      <message name="IDS_ASH_GAME_DASHBOARD_SCREENSHOT_TILE_BUTTON_TITLE" desc="The display name for the Game Dashboard screenshot tile.">
         Take screenshot
       </message>
-      <message name="IDS_ASH_GAME_DASHBOARD_SCREEN_SIZE_SETTINGS_BUTTON_A11Y_LABEL" translateable="false" desc="Screen size settings button a11y label. Spoken by screen readers when the screen size settings button button gets focus but not visually rendered.">
+      <message name="IDS_ASH_GAME_DASHBOARD_SCREEN_SIZE_SETTINGS_BUTTON_A11Y_LABEL" desc="Screen size settings button a11y label. Spoken by screen readers when the screen size settings button button gets focus but not visually rendered.">
         Edit screen size
       </message>
-      <message name="IDS_ASH_GAME_DASHBOARD_SCREEN_SIZE_SETTINGS_TITLE" translateable="false" desc="The display name for the Game Dashboard screen size settings.">
+      <message name="IDS_ASH_GAME_DASHBOARD_FEATURE_NOT_AVAILABLE_TOOLTIP" desc="Tooltip for when a feature in the Game Dashboard is unavailable.">
+        Not available for this game
+      </message>
+      <message name="IDS_ASH_GAME_DASHBOARD_SCREEN_SIZE_SETTINGS_TITLE" desc="The display name for the Game Dashboard screen size settings.">
         Screen size
       </message>
-      <message name="IDS_ASH_GAME_DASHBOARD_SEND_FEEDBACK_TITLE" translateable="false" desc="The display name for the Game Dashboard send feedback button.">
+      <message name="IDS_ASH_GAME_DASHBOARD_SEND_FEEDBACK_TITLE" desc="The display name for the Game Dashboard send feedback button.">
         Send feedback
       </message>
-      <message name="IDS_ASH_GAME_DASHBOARD_SETTINGS_TITLE" translateable="false" desc="The display name for the Game Dashboard settings.">
+      <message name="IDS_ASH_GAME_DASHBOARD_SETTINGS_TITLE" desc="The display name for the Game Dashboard settings.">
         Game dashboard options
       </message>
-      <message name="IDS_ASH_GAME_DASHBOARD_SETTINGS_TOOLTIP" translateable="false" desc="Tooltip for the Game Dashboard settings icon button.">
+      <message name="IDS_ASH_GAME_DASHBOARD_SETTINGS_TOOLTIP" desc="Tooltip for the Game Dashboard settings icon button.">
         Game dashboard settings
       </message>
-      <message name="IDS_ASH_GAME_DASHBOARD_SETTINGS_WELCOME_DIALOG_A11Y_LABEL" translateable="false" desc="The accessibility label for the welcome dialog switch in the Game Dashboard Settings.">
+      <message name="IDS_ASH_GAME_DASHBOARD_SETTINGS_WELCOME_DIALOG_A11Y_LABEL" desc="The accessibility label for the welcome dialog switch in the Game Dashboard Settings.">
         Welcome notification is <ph name="STATE">$1<ex>on</ex></ph>
       </message>
-      <message name="IDS_ASH_GAME_DASHBOARD_SETTINGS_WELCOME_DIALOG_TITLE" translateable="false" desc="The label displayed for the welcome dialog row of the Game Dashboard Settings.">
+      <message name="IDS_ASH_GAME_DASHBOARD_SETTINGS_WELCOME_DIALOG_TITLE" desc="The label displayed for the welcome dialog row of the Game Dashboard Settings.">
         Welcome notification
       </message>
       <message name="IDS_ASH_GAME_DASHBOARD_TILE_ON" desc="The label for enabled Game Dashboard tiles.">
         On
       </message>
-      <message name="IDS_ASH_GAME_DASHBOARD_TOOLBAR_TILE_TOOLTIPS_HIDE_TOOLBAR" translateable="false" desc="The tooltips for toolbar tile when the toolbar is visible.">
+      <message name="IDS_ASH_GAME_DASHBOARD_TOOLBAR_TILE_TOOLTIPS_CLOSE_TOOLBAR" desc="The tooltips for the toolbar gamepad button when the toolbar is expanded.">
+        Close toolbar
+      </message>
+      <message name="IDS_ASH_GAME_DASHBOARD_TOOLBAR_TILE_TOOLTIPS_OPEN_TOOLBAR" desc="The tooltips for the toolbar gamepad button when the toolbar is not expanded.">
+        Open toolbar
+      </message>
+      <message name="IDS_ASH_GAME_DASHBOARD_TOOLBAR_TILE_TOOLTIPS_HIDE_TOOLBAR" desc="The tooltips for toolbar tile when the toolbar is visible.">
         Hide toolbar
       </message>
-      <message name="IDS_ASH_GAME_DASHBOARD_TOOLBAR_TILE_TOOLTIPS_SHOW_TOOLBAR" translateable="false" desc="The tooltips for toolbar tile when the toolbar is not visible.">
+      <message name="IDS_ASH_GAME_DASHBOARD_TOOLBAR_TILE_TOOLTIPS_SHOW_TOOLBAR" desc="The tooltips for toolbar tile when the toolbar is not visible.">
         Show toolbar
       </message>
-      <message name="IDS_ASH_GAME_DASHBOARD_TOOLBAR_TILE_BUTTON_TITLE" translateable="false" desc="The display name for the Game Dashboard toolbar tile.">
+      <message name="IDS_ASH_GAME_DASHBOARD_TOOLBAR_TILE_BUTTON_TITLE" desc="The display name for the Game Dashboard toolbar tile.">
         Toolbar
       </message>
-      <message name="IDS_ASH_GAME_DASHBOARD_VISIBLE_STATUS" translateable="false" desc="The visible state for compact Game Dashboard tile sub-labels.">
+      <message name="IDS_ASH_GAME_DASHBOARD_VISIBLE_STATUS" desc="The visible state for compact Game Dashboard tile sub-labels.">
         Visible
       </message>
-      <message name="IDS_ASH_GAME_DASHBOARD_WELCOME_DIALOG_SHORTCUT" translateable="false" desc="The text displayed in the welcome dialog to show how to toggle the Game Dashboard.">
+      <message name="IDS_ASH_GAME_DASHBOARD_WELCOME_DIALOG_SHORTCUT" desc="The text displayed in the welcome dialog to show how to toggle the Game Dashboard.">
         Press <ph name="LAUNCHER_KEY_NAME">$1<ex>Launcher</ex></ph> + g at anytime
       </message>
-      <message name="IDS_ASH_GAME_DASHBOARD_WELCOME_DIALOG_A11Y_LABEL" translateable="false" desc="The a11y label for the welcome dialog. Spoken by screen readers when the welcome dialog is a11y focused but not visually rendered.">
+      <message name="IDS_ASH_GAME_DASHBOARD_WELCOME_DIALOG_A11Y_ANNOUNCEMENT" desc="The announcement spoken by the screen reader when the welcome dialog is shown on screen.">
+        Game Dashboard available. Press <ph name="LAUNCHER_KEY_NAME">$1<ex>Launcher</ex></ph> + Shift + Escape, then <ph name="LAUNCHER_KEY_NAME">$1<ex>Launcher</ex></ph> + g anytime to open
+      </message>
+      <message name="IDS_ASH_GAME_DASHBOARD_WELCOME_DIALOG_A11Y_LABEL" desc="The a11y label for the welcome dialog. Spoken by screen readers when the welcome dialog is a11y focused but not visually rendered.">
         Welcome dialog
       </message>
-      <message name="IDS_ASH_GAME_DASHBOARD_WELCOME_DIALOG_SUB_LABEL" translateable="false" desc="The additional context added to the welcome dialog about the Game Dashboard.">
+      <message name="IDS_ASH_GAME_DASHBOARD_WELCOME_DIALOG_SUB_LABEL" desc="The additional context added to the welcome dialog about the Game Dashboard.">
         Customize your gaming experience
+      </message>
+      <message name="IDS_ASH_GAME_DASHBOARD_TABLET_TOAST" desc="The toast text when entering the tablet mode.">
+        Tablet mode is on. Game dashboard is unavailable.
+      </message>
+      <message name="IDS_ASH_GAME_DASHBOARD_TABLET_STOP_RECORDING_TOAST" desc="The toast text when entering the tablet mode with recording in progress.">
+        Recording stopped. Can't use Game dashboard in tablet mode.
       </message>
 
       <!-- Game Dashboard / Game Controls strings -->
@@ -7606,19 +7827,19 @@ To shut down the device, press and hold the power button on the device again.
       <message name="IDS_ASH_GAME_DASHBOARD_GC_SET_UP_SUB_TITLE" desc="The subtitle on the menu details row of Game Controls when no action is set up and Setup button shows up.">
         Keys, buttons, and more
       </message>
-      <message name="IDS_ASH_GAME_DASHBOARD_GC_DETAILS_SUB_TITLE_ON_TEMPLATE" translateable="false" desc="The subtitle on the Controls row of the Game Dashboard when the controls have been toggled on and the feature is enabled.">
+      <message name="IDS_ASH_GAME_DASHBOARD_GC_DETAILS_SUB_TITLE_ON_TEMPLATE" desc="The subtitle on the Controls row of the Game Dashboard when the controls have been toggled on and the feature is enabled.">
         On for <ph name="GAME_APP_NAME">$1<ex>app name</ex></ph>
       </message>
-      <message name="IDS_ASH_GAME_DASHBOARD_GC_DETAILS_SUB_TITLE_OFF_TEMPLATE" translateable="false" desc="The subtitle on the Controls row of the Game Dashboard when the controls have been toggled off and the feature is disabled.">
+      <message name="IDS_ASH_GAME_DASHBOARD_GC_DETAILS_SUB_TITLE_OFF_TEMPLATE" desc="The subtitle on the Controls row of the Game Dashboard when the controls have been toggled off and the feature is disabled.">
         Off for <ph name="GAME_APP_NAME">$1<ex>app name</ex></ph>
       </message>
-      <message name="IDS_ASH_GAME_DASHBOARD_GC_SET_UP_BUTTON_LABEL" translateable="false" desc="The label on the Setup button in the Controls row of the Game Dashboard when no buttons have been assigned.">
+      <message name="IDS_ASH_GAME_DASHBOARD_GC_SET_UP_BUTTON_LABEL" desc="The label on the Setup button in the Controls row of the Game Dashboard when no buttons have been assigned.">
         Set up
       </message>
-      <message name="IDS_ASH_GAME_DASHBOARD_GC_KEYBOARD_SETUP_NUDGE_TITLE" translateable="false" desc="The label on the Nudge next to the Controls row of the Game Dashboard when no buttons have been assigned.">
+      <message name="IDS_ASH_GAME_DASHBOARD_GC_KEYBOARD_SETUP_NUDGE_TITLE" desc="The label on the Nudge next to the Controls row of the Game Dashboard when no buttons have been assigned.">
         This is a touch game
       </message>
-      <message name="IDS_ASH_GAME_DASHBOARD_GC_KEYBOARD_SETUP_NUDGE_SUB_TITLE" translateable="false" desc="The subtitle on the Nudge next to the Controls row of the Game Dashboard when no buttons have been assigned.">
+      <message name="IDS_ASH_GAME_DASHBOARD_GC_KEYBOARD_SETUP_NUDGE_SUB_TITLE" desc="The subtitle on the Nudge next to the Controls row of the Game Dashboard when no buttons have been assigned.">
         Set up to play with your keyboard
       </message>
 
@@ -7700,6 +7921,49 @@ To shut down the device, press and hold the power button on the device again.
       </message>
       <message name="IDS_ASH_SETTINGS_SIX_PACK_KEY_PAGE_UP_SEARCH" desc="In the keyboard settings subpage, the dropdown list item for the alt + backspace option.">
         <ph name="LAUNCHER_KEY_NAME">$1<ex>launcher</ex></ph> + up arrow
+      </message>
+      <!-- TODO(b/330399248: Finalize and translate the shortcut notification strings. -->
+      <message name="IDS_ASH_SETTINGS_KEYBOARD_USE_FN_KEY_NUDGE_TITLE" translateable="false" desc="Title of the pop up nudge to remind using fn key.">
+        Use your Fn Key
+      </message>
+      <message name="IDS_ASH_SETTINGS_KEYBOARD_USE_FN_KEY_FOR_SEARCH_NUDGE_DESCRIPTION" translateable="false" desc="Description of the pop up nudge to remind using fn key when user presses search plus top row key.">
+        Press Fn + top Row key instead of search + top row key
+      </message>
+      <message name="IDS_ASH_SETTINGS_KEYBOARD_USE_FN_KEY_FOR_CAPS_LOCK_NUDGE_DESCRIPTION" translateable="false" desc="Description of the pop up nudge to remind using fn key when user presses search plus top row key.">
+        Press Fn + Right-alt key to switch caps lock
+      </message>
+      <message name="IDS_ASH_SETTINGS_KEYBOARD_USE_FN_KEY_FOR_SEARCH_PLUS_UP_NUDGE_DESCRIPTION" translateable="false" desc="Description of the pop up nudge to remind using fn key when user presses search plus up arrow key.">
+        Press Fn + up arrow key in stead of search + up arrow key
+      </message>
+      <message name="IDS_ASH_SETTINGS_KEYBOARD_USE_FN_KEY_FOR_SEARCH_PLUS_DOWN_NUDGE_DESCRIPTION" translateable="false" desc="Description of the pop up nudge to remind using fn key when user presses search plus down arrow key.">
+        Press Fn + down arrow key in stead of search + down arrow key
+      </message>
+      <message name="IDS_ASH_SETTINGS_KEYBOARD_USE_FN_KEY_FOR_SEARCH_PLUS_LEFT_NUDGE_DESCRIPTION" translateable="false" desc="Description of the pop up nudge to remind using fn key when user presses search plus left arrow key.">
+        Press Fn + left arrow key in stead of search + left arrow key
+      </message>
+      <message name="IDS_ASH_SETTINGS_KEYBOARD_USE_FN_KEY_FOR_SEARCH_PLUS_RIGHT_NUDGE_DESCRIPTION" translateable="false" desc="Description of the pop up nudge to remind using fn key when user presses search plus right arrow key.">
+        Press Fn + right arrow key in stead of search + right arrow key
+      </message>
+      <message name="IDS_ASH_SETTINGS_KEYBOARD_USE_FN_KEY_FOR_SEARCH_PLUS_BACKSPACE_NUDGE_DESCRIPTION" translateable="false" desc="Description of the pop up nudge to remind using fn key when user presses search plus backspace key.">
+        Press Fn + backspace in stead of search + backspace key
+      </message>
+      <message name="IDS_ASH_SETTINGS_KEYBOARD_USE_FN_KEY_FOR_SEARCH_PLUS_SHIFT_BACKSPACE_NUDGE_DESCRIPTION" translateable="false" desc="Description of the pop up nudge to remind using fn key when user presses search plus shift backspace key.">
+        Press Fn + shift + backspace in stead of search + shift + backspace key
+      </message>
+      <message name="IDS_ASH_SETTINGS_KEYBOARD_USE_FN_KEY_FOR_ALT_PLUS_UP_NUDGE_DESCRIPTION" translateable="false" desc="Description of the pop up nudge to remind using fn key when user presses alt plus up arrow key.">
+        Press Fn + up arrow key in stead of alt + up arrow key
+      </message>
+      <message name="IDS_ASH_SETTINGS_KEYBOARD_USE_FN_KEY_FOR_ALT_PLUS_DOWN_NUDGE_DESCRIPTION" translateable="false" desc="Description of the pop up nudge to remind using fn key when user presses alt plus down arrow key.">
+        Press Fn + down arrow key in stead of alt + down arrow key
+      </message>
+      <message name="IDS_ASH_SETTINGS_KEYBOARD_USE_FN_KEY_FOR_ALT_PLUS_LEFT_NUDGE_DESCRIPTION" translateable="false" desc="Description of the pop up nudge to remind using fn key when user presses alt plus left arrow key.">
+        Press Fn + left arrow key in stead of alt + left arrow key
+      </message>
+      <message name="IDS_ASH_SETTINGS_KEYBOARD_USE_FN_KEY_FOR_ALT_PLUS_RIGHT_NUDGE_DESCRIPTION" translateable="false" desc="Description of the pop up nudge to remind using fn key when user presses alt plus right arrow key.">
+        Press Fn + right arrow key in stead of allt + right arrow key
+      </message>
+      <message name="IDS_ASH_SETTINGS_KEYBOARD_USE_FN_KEY_FOR_ALT_PLUS_BACKSPACE_NUDGE_DESCRIPTION" translateable="false" desc="Description of the pop up nudge to remind using fn key when user presses alt plus backspace key.">
+        Press Fn + backspace in stead of alt + backspace key
       </message>
       <!-- Modifier key names -->
       <message name="IDS_ASH_SETTINGS_SHORTCUT_MODIFIER_LAUNCHER" desc="Name of the [Launcher] key. This key has a different name and keyboard glyph/icon depending on the device. This is the string for when it is called Launcher and has a circle/launcher icon.">
@@ -7798,8 +8062,14 @@ To shut down the device, press and hold the power button on the device again.
       <message name="IDS_ASH_PINE_DIALOG_TITLE" translateable="false" desc="Label of the title for the pine dialog.">
         Welcome Back
       </message>
+      <message name="IDS_ASH_PINE_DIALOG_CRASH_TITLE" translateable="false" desc="Label of the title for the pine dialog, if the previous session ended with a crash.">
+        Your Chromebook restarted because of a problem
+      </message>
       <message name="IDS_ASH_PINE_DIALOG_DESCRIPTION" translateable="false" desc="Label of the description for the pine dialog. Gives a little more information than the title.">
         Continue from where you left off?
+      </message>
+      <message name="IDS_ASH_PINE_DIALOG_CRASH_DESCRIPTION" translateable="false" desc="Label of the description for the pine dialog, if the previous session ended with a crash. Gives a little more information than the title.">
+        Restore last opened apps and sites?
       </message>
       <message name="IDS_ASH_PINE_DIALOG_NO_THANKS_BUTTON" translateable="false" desc="Label of the no thanks button for the pine dialog, which users can click if they choose not to restore.">
         No Thanks
@@ -7842,6 +8112,53 @@ To shut down the device, press and hold the power button on the device again.
       </message>
       <message name="IDS_ASH_PINE_ONBOARDING_RESTORE_OFF_CANCEL" translateable="false" desc="Label of the cancel button if the user had Restore off.">
       Keep restore off
+      </message>
+      <message name="IDS_ASH_PINE_ONBOARDING_TOAST" translateable="false" desc="Label of the toast the user sees, if the user had Restore off and they clicked accept in the onboarding dialog.">
+      Your windows and apps will be restored next time when you sign in
+      </message>
+      <message name="IDS_ASH_PINE_EDUCATION_NUDGE" translateable="false" desc="Text of the Pine education nudge.">
+        You can go back to Overview at anytime to get back to suggestions
+      </message>
+      <message name="IDS_ASH_BIRCH_CALENDAR_ONGOING_SUBTITLE" translateable="false" desc="Subtitle for the suggestion chip for an ongoing calendar event (e.g. a meeting that is happening right now)">
+        Now · Ends <ph name="END_TIME">$1<ex>11:20 AM</ex></ph>
+      </message>
+      <message name="IDS_ASH_BIRCH_CALENDAR_MINUTES" translateable="false" desc="Brief description of the number of minutes until an upcoming calendar event">
+        {MINUTES, plural,
+         =1 {In 1 min}
+         other {In # mins}}
+      </message>
+      <message name="IDS_ASH_BIRCH_CALENDAR_TOMORROW" translateable="false" desc="Subtitle text for a calendar event that occurs tomorrow">
+        Tomorrow
+      </message>
+      <message name="IDS_ASH_BIRCH_CALENDAR_ALL_DAY" translateable="false" desc="Subtitle text for a calendar event that occurs all day">
+        All Day
+      </message>
+      <message name="IDS_ASH_BIRCH_CALENDAR_ATTACHMENT_UPCOMING_SUBTITLE" translateable="false" desc="Subtitle for a suggestion chip for a file attached to a calendar event in the future">
+        From upcoming calendar event
+      </message>
+      <message name="IDS_ASH_BIRCH_CALENDAR_ATTACHMENT_NOW_SUBTITLE" translateable="false" desc="Subtitle for a suggestion chip for a file attached to a calendar event happening now">
+        From event happening now
+      </message>
+      <message name="IDS_ASH_BIRCH_CALENDAR_JOIN_BUTTON" translateable="false" desc="Button label for joining a meeting associated with a calendar event">
+        Join
+      </message>
+      <message name="IDS_ASH_BIRCH_RECENT_TAB_SUBTITLE_YESTERDAY" translateable="false" desc="Subtitle for the suggestion chip with recent tabs from other devices shared yesterday">
+        Yesterday
+      </message>
+      <message name="IDS_ASH_BIRCH_RECENT_TAB_SUBTITLE_PREFIX" translateable="false" desc="Start of the subtitle for the suggestion chip with recent tabs from other devices">
+        {HOURS, plural,
+         =0 {&lt; 1 hour ago}
+         =1 {1 hour ago}
+         other {# hours ago}}
+      </message>
+      <message name="IDS_ASH_BIRCH_RECENT_TAB_SUBTITLE_SUFFIX" translateable="false" desc="End of the subtitle for the suggestion chip with recent tabs from other devices">
+        From <ph name="SESSION_NAME">$1<ex>Chromebook</ex></ph>
+      </message>
+      <message name="IDS_ASH_BIRCH_RELEASE_NOTES_TITLE" translateable="false" desc="Title for the suggestion chip that links to release notes">
+        See what's new
+      </message>
+      <message name="IDS_ASH_BIRCH_RELEASE_NOTES_SUBTITLE" translateable="false" desc="Subtitle for the suggestion chip that links to release notes">
+        Explore the latest features
       </message>
      </messages>
     </release>

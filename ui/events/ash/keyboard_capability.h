@@ -52,7 +52,8 @@ enum class TopRowActionKey {
   kEmojiPicker,
   kDictation,
   kPrivacyScreenToggle,
-  kMaxValue = kPrivacyScreenToggle,
+  kAccessibility,
+  kMaxValue = kAccessibility,
 };
 
 static const TopRowActionKey kLayout1TopRowActionKeys[] = {
@@ -209,8 +210,9 @@ class KeyboardCapability : public InputDeviceEventObserver {
     KeyboardInfo& operator=(const KeyboardInfo&) = delete;
     ~KeyboardInfo();
 
-    DeviceType device_type;
-    KeyboardTopRowLayout top_row_layout;
+    DeviceType device_type = DeviceType::kDeviceInternalKeyboard;
+    KeyboardTopRowLayout top_row_layout =
+        KeyboardTopRowLayout::kKbdTopRowLayoutDefault;
     std::vector<uint32_t> top_row_scan_codes;
     std::vector<TopRowActionKey> top_row_action_keys;
   };
@@ -345,6 +347,14 @@ class KeyboardCapability : public InputDeviceEventObserver {
   // Check if the CapsLock key exists on the given keyboard.
   bool HasCapsLockKey(const KeyboardDevice& keyboard) const;
 
+  // Check if the Function key exists on the given keyboard.
+  bool HasFunctionKey(const KeyboardDevice& keyboard) const;
+  bool HasFunctionKey(int device_id) const;
+
+  // Check if the RightAlt key exists on the given keyboard.
+  bool HasRightAltKey(const KeyboardDevice& keyboard) const;
+  bool HasRightAltKey(int device_id) const;
+
   // Finds the keyboard with the corresponding  `device_id` and checks its
   // `DeviceType` to determine if it's a ChromeOS keyboard.
   bool IsChromeOSKeyboard(int device_id) const;
@@ -364,6 +374,8 @@ class KeyboardCapability : public InputDeviceEventObserver {
   const std::vector<TopRowActionKey>* GetTopRowActionKeys(
       const KeyboardDevice& keyboard);
 
+  void SetBoardNameForTesting(const std::string& board_name);
+
   const base::flat_map<int, KeyboardInfo>& keyboard_info_map() const {
     return keyboard_info_map_;
   }
@@ -382,6 +394,9 @@ class KeyboardCapability : public InputDeviceEventObserver {
   // Whether or not to disable "trimming" which means the `keyboard_info_map_`
   // will not remove entries when they are disconnected.
   bool should_disable_trimming_ = false;
+
+  // Board name of the current ChromeOS device.
+  std::string board_name_;
 };
 
 }  // namespace ui

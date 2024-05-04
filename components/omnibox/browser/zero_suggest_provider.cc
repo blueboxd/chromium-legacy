@@ -132,16 +132,8 @@ bool AllowRemoteNoURL(const AutocompleteProviderClient* client) {
     return false;
   }
 
-  // Zero-suggest on the NTP is allowed only if the user is signed-in. This
-  // check is done not for privacy reasons but to prevent signed-out users from
-  // querying the server which does not have any suggestions for them.
-  bool check_authentication_state = !base::FeatureList::IsEnabled(
-      omnibox::kZeroSuggestOnNTPForSignedOutUsers);
-
-  return (!check_authentication_state || client->IsAuthenticated()) &&
-         BaseSearchProvider::CanSendSuggestRequestWithoutPageURL(
-             default_provider, template_url_service->search_terms_data(),
-             client);
+  return BaseSearchProvider::CanSendSuggestRequestWithoutPageURL(
+      default_provider, template_url_service->search_terms_data(), client);
 }
 
 // Called in StoreRemoteResponse() and ReadStoredResponse() to determine if the
@@ -316,6 +308,14 @@ ZeroSuggestProvider::ResultType ZeroSuggestProvider::ResultTypeToRun(
     }
   }
 
+  // Lens searchboxes.
+  if (omnibox::IsLensSearchbox(page_class)) {
+    if (focus_type_input_type ==
+        std::make_pair(OFT::INTERACTION_FOCUS, OIT::EMPTY)) {
+      return ResultType::kRemoteSendURL;
+    }
+  }
+
   return ResultType::kNone;
 }
 
@@ -378,10 +378,15 @@ void ZeroSuggestProvider::StartPrefetch(const AutocompleteInput& input) {
 
   TemplateURLRef::SearchTermsArgs search_terms_args;
   search_terms_args.page_classification = input.current_page_classification();
+  search_terms_args.request_source = input.request_source();
   search_terms_args.focus_type = input.focus_type();
   search_terms_args.current_page_url = result_type == ResultType::kRemoteSendURL
                                            ? input.current_url().spec()
                                            : std::string();
+  // Make sure the Lens interaction response is sent in the request, if
+  // available.
+  search_terms_args.lens_overlay_interaction_response =
+      input.lens_overlay_interaction_response();
 
   // AllowZeroPrefixSuggestions() ensures these are not nullptr.
   const TemplateURLService* template_url_service =
@@ -465,11 +470,16 @@ void ZeroSuggestProvider::Start(const AutocompleteInput& input,
 
   TemplateURLRef::SearchTermsArgs search_terms_args;
   search_terms_args.page_classification = input.current_page_classification();
+  search_terms_args.request_source = input.request_source();
   search_terms_args.focus_type = input.focus_type();
   search_terms_args.current_page_url =
       result_type_running_ == ResultType::kRemoteSendURL
           ? input.current_url().spec()
           : std::string();
+  // Make sure the Lens interaction response is sent in the request, if
+  // available.
+  search_terms_args.lens_overlay_interaction_response =
+      input.lens_overlay_interaction_response();
 
   // Create a loader for the request and take ownership of it.
   loader_ =

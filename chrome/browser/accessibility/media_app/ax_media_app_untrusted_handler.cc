@@ -5,22 +5,25 @@
 #include "chrome/browser/accessibility/media_app/ax_media_app_untrusted_handler.h"
 
 #include <algorithm>
+#include <iterator>
 #include <numeric>
 #include <utility>
 
 #include "ash/constants/ash_features.h"
+#include "base/auto_reset.h"
 #include "base/check_is_test.h"
 #include "base/check_op.h"
+#include "base/compiler_specific.h"
 #include "base/feature_list.h"
 #include "base/functional/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/notimplemented.h"
+#include "base/notreached.h"
 #include "base/strings/stringprintf.h"
 #include "base/types/to_address.h"
 #include "chrome/browser/accessibility/accessibility_state_utils.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/screen_ai/screen_ai_service_router.h"
-#include "chrome/browser/screen_ai/screen_ai_service_router_factory.h"
+#include "chrome/browser/screen_ai/public/optical_character_recognizer.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -52,24 +55,13 @@ constexpr ui::AXNodeID kStartPageAXNodeId = 2;
 
 // The maximum number of pages supported by the OCR service. This maximum is
 // used both to validate the number of pages (untrusted data) coming from the
-// MediaApp and manage resources (caps the number of pages stored at a time).
-constexpr size_t kMaxPages = 10000;
+// MediaApp, and manage resources (i.e. caps the number of pages stored at a
+// time).
+constexpr size_t kMaxPages = 10000u;
 
-namespace {
-
-bool ReportIfNonExistentPageId(
-    const std::string& context,
-    const std::string& page_id,
-    const std::map<const std::string, AXMediaAppPageMetadata>& metadata) {
-  if (!metadata.contains(page_id)) {
-    mojo::ReportBadMessage(
-        std::format("{} called with previously non-existent page ID", context));
-    return true;
-  }
-  return false;
-}
-
-}  // namespace
+// In the case of large PDFs, pages are OCRed in patches in order to improve the
+// user experience.
+constexpr size_t kMaxPagesPerBatch = 20u;
 
 AXMediaAppUntrustedHandler::AXMediaAppUntrustedHandler(
     content::BrowserContext& context,
@@ -78,37 +70,32 @@ AXMediaAppUntrustedHandler::AXMediaAppUntrustedHandler(
   if (!base::FeatureList::IsEnabled(ash::features::kMediaAppPdfA11yOcr)) {
     return;
   }
-  screen_ai::ScreenAIServiceRouterFactory::GetForBrowserContext(
-      base::to_address(browser_context_))
-      ->GetServiceStateAsync(
-          screen_ai::ScreenAIServiceRouter::Service::kOCR,
-          base::BindOnce(&AXMediaAppUntrustedHandler::OnOCRServiceInitialized,
-                         weak_ptr_factory_.GetWeakPtr()));
+  ocr_ = screen_ai::OpticalCharacterRecognizer::CreateWithStatusCallback(
+      Profile::FromBrowserContext(base::to_address(browser_context_)),
+      base::BindOnce(&AXMediaAppUntrustedHandler::OnOCRServiceInitialized,
+                     weak_ptr_factory_.GetWeakPtr()));
   ax_mode_observation_.Observe(&ui::AXPlatform::GetInstance());
 }
 
 AXMediaAppUntrustedHandler::~AXMediaAppUntrustedHandler() = default;
 
 bool AXMediaAppUntrustedHandler::IsOcrServiceEnabled() const {
-  return screen_ai_annotator_.is_bound();
+  return ocr_->is_ready();
 }
 
 void AXMediaAppUntrustedHandler::OnOCRServiceInitialized(bool successful) {
   if (!successful) {
     return;
   }
-  // This is expected to be called only once.
-  CHECK(!screen_ai_annotator_.is_bound());
-  screen_ai::ScreenAIServiceRouter* service_router =
-      screen_ai::ScreenAIServiceRouterFactory::GetForBrowserContext(
-          base::to_address(browser_context_));
-  service_router->BindScreenAIAnnotator(
-      screen_ai_annotator_.BindNewPipeAndPassReceiver());
-  OcrNextDirtyPageIfAny();
-  if (media_app_) {
+  if (!dirty_page_ids_.empty()) {
+    OcrNextDirtyPageIfAny();
+  }
+  if (media_app_) [[unlikely]] {
     // `media_app_` is only used for testing.
     CHECK_IS_TEST();
     media_app_->OcrServiceEnabledChanged(true);
+  } else {
+    // TODO(b/301007305): Implement `OcrServiceEnabledChanged` in the Media App.
   }
 }
 
@@ -141,10 +128,12 @@ void AXMediaAppUntrustedHandler::PerformAction(
           ax::mojom::IntAttribute::kScrollYMin));
       viewport_box_.set_y(
           std::max(viewport_box_.y() - viewport_box_.height(), y_min));
-      if (media_app_) {
+      if (media_app_) [[unlikely]] {
         // `media_app_` is only used for testing.
         CHECK_IS_TEST();
         media_app_->SetViewport(viewport_box_);
+      } else {
+        media_app_page_->SetViewport(viewport_box_);
       }
       return;
     }
@@ -154,10 +143,12 @@ void AXMediaAppUntrustedHandler::PerformAction(
           ax::mojom::IntAttribute::kScrollYMax));
       viewport_box_.set_y(
           std::min(viewport_box_.y() + viewport_box_.height(), y_max));
-      if (media_app_) {
+      if (media_app_) [[unlikely]] {
         // `media_app_` is only used for testing.
         CHECK_IS_TEST();
         media_app_->SetViewport(viewport_box_);
+      } else {
+        media_app_page_->SetViewport(viewport_box_);
       }
       return;
     }
@@ -166,10 +157,12 @@ void AXMediaAppUntrustedHandler::PerformAction(
           ax::mojom::IntAttribute::kScrollXMin));
       viewport_box_.set_x(
           std::max(viewport_box_.x() - viewport_box_.width(), x_min));
-      if (media_app_) {
+      if (media_app_) [[unlikely]] {
         // `media_app_` is only used for testing.
         CHECK_IS_TEST();
         media_app_->SetViewport(viewport_box_);
+      } else {
+        media_app_page_->SetViewport(viewport_box_);
       }
       return;
     }
@@ -178,10 +171,12 @@ void AXMediaAppUntrustedHandler::PerformAction(
           ax::mojom::IntAttribute::kScrollXMax));
       viewport_box_.set_x(
           std::min(viewport_box_.x() + viewport_box_.width(), x_max));
-      if (media_app_) {
+      if (media_app_) [[unlikely]] {
         // `media_app_` is only used for testing.
         CHECK_IS_TEST();
         media_app_->SetViewport(viewport_box_);
+      } else {
+        media_app_page_->SetViewport(viewport_box_);
       }
       return;
     }
@@ -194,7 +189,7 @@ void AXMediaAppUntrustedHandler::PerformAction(
       }
       CHECK_NE(action_data.target_node_id, ui::kInvalidAXNodeID);
       CHECK_EQ(pages_.size(), document_.GetRoot()->GetUnignoredChildCount());
-      for (size_t page_index = 0u; const auto& page : pages_) {
+      for (int32_t page_index = 0; const auto& page : pages_) {
         const std::unique_ptr<ui::AXTreeManager>& page_manager = page.second;
         if (page_manager->GetTreeID() != action_data.target_tree_id) {
           ++page_index;
@@ -229,10 +224,12 @@ void AXMediaAppUntrustedHandler::PerformAction(
         }
         break;
       }
-      if (media_app_) {
+      if (media_app_) [[unlikely]] {
         // `media_app_` is only used for testing.
         CHECK_IS_TEST();
         media_app_->SetViewport(viewport_box_);
+      } else {
+        media_app_page_->SetViewport(viewport_box_);
       }
       return;
     }
@@ -269,17 +266,26 @@ void AXMediaAppUntrustedHandler::PerformAction(
 }
 
 void AXMediaAppUntrustedHandler::OnAXModeAdded(ui::AXMode mode) {
-  if (media_app_) {
+  if (media_app_) [[unlikely]] {
     // `media_app_` is only used for testing.
     CHECK_IS_TEST();
     media_app_->AccessibilityEnabledChanged(
         accessibility_state_utils::IsScreenReaderEnabled());
+  } else {
+    // TODO(b/301007305): Implement `AccessibilityEnabledChanged` in the Media
+    // App.
   }
 }
 
 void AXMediaAppUntrustedHandler::PageMetadataUpdated(
     const std::vector<ash::media_app_ui::mojom::PageMetadataPtr>
         page_metadata) {
+  // `mojo::GetBadMessageCallback` only works when in a non-test environment.
+  base::AutoReset<std::optional<mojo::ReportBadMessageCallback>> call_resetter(
+      &bad_message_callback_,
+      !media_app_ && mojo::IsInMessageDispatch()
+          ? std::make_optional(mojo::GetBadMessageCallback())
+          : std::nullopt);
   if (page_metadata.empty()) {
     mojo::ReportBadMessage(
         "`PageMetadataUpdated()` called with no page metadata");
@@ -292,18 +298,18 @@ void AXMediaAppUntrustedHandler::PageMetadataUpdated(
 
   if (is_first_load) {
     for (size_t i = 0; i < num_pages; ++i) {
-      AXMediaAppPageMetadata data;
-      // The page IDs will never change, so this should be the only place that
-      // updates them.
-      data.id = page_metadata[i]->id;
-      if (page_metadata_.contains(data.id)) {
+      if (page_metadata_.contains(page_metadata.at(i)->id)) {
         mojo::ReportBadMessage(
             "`PageMetadataUpdated()` called with pages with duplicate page "
             "IDs");
         return;
       }
-      page_metadata_[data.id] = data;
-      PushDirtyPage(data.id);
+      AXMediaAppPageMetadata metadata;
+      // The page IDs will never change, so this should be the only place that
+      // updates them.
+      metadata.id = page_metadata.at(i)->id;
+      page_metadata_.insert(std::pair(metadata.id, metadata));
+      PushDirtyPage(metadata.id);
     }
     // Only one page goes through OCR at a time, so start the process here.
     OcrNextDirtyPageIfAny();
@@ -312,21 +318,20 @@ void AXMediaAppUntrustedHandler::PageMetadataUpdated(
   // Update all page numbers and rects.
   std::set<const std::string> page_id_updated;
   for (size_t i = 0; i < page_metadata.size(); ++i) {
-    const std::string& page_id = page_metadata[i]->id;
-    if (ReportIfNonExistentPageId("PageMetadataUpdated()", page_id,
-                                  page_metadata_)) {
+    const std::string& page_id = page_metadata.at(i)->id;
+    if (HasRendererTerminatedDueToBadPageId("PageMetadataUpdated", page_id)) {
       return;
     }
-    page_metadata_[page_id].page_num = i + 1;  // 1-indexed.
-    page_metadata_[page_id].rect = page_metadata[i]->rect;
+    page_metadata_.at(page_id).page_num = i + 1;  // 1-indexed.
+    page_metadata_.at(page_id).rect = page_metadata.at(i)->rect;
     // Page location can only be set after the corresponding `pages_`
     // `AXTreeManager` entry has been created, so don't update it for first
     // load.
     if (!is_first_load) {
       page_id_updated.insert(page_id);
-      UpdatePageLocation(page_id, page_metadata[i]->rect);
-      SendAXTreeToAccessibilityService(*pages_[page_id],
-                                       *page_serializers_[page_id]);
+      UpdatePageLocation(page_id, page_metadata.at(i)->rect);
+      SendAXTreeToAccessibilityService(*pages_.at(page_id),
+                                       *page_serializers_.at(page_id));
     }
   }
 
@@ -337,7 +342,7 @@ void AXMediaAppUntrustedHandler::PageMetadataUpdated(
 
   // If a page was missing from `page_metadata` (its location was not updated),
   // then that means it got deleted. Set its page number to 0.
-  for (auto const& [page_id, _] : page_metadata_) {
+  for (const auto& [page_id, _] : page_metadata_) {
     if (!page_id_updated.contains(page_id)) {
       // Since `pages_` and `page_metadata_` are both populated from untrusted
       // code, mitigate potential security issues by never mutating the size of
@@ -351,6 +356,12 @@ void AXMediaAppUntrustedHandler::PageMetadataUpdated(
 
 void AXMediaAppUntrustedHandler::PageContentsUpdated(
     const std::string& dirty_page_id) {
+  // `mojo::GetBadMessageCallback` only works when in a non-test environment.
+  base::AutoReset<std::optional<mojo::ReportBadMessageCallback>> call_resetter(
+      &bad_message_callback_,
+      !media_app_ && mojo::IsInMessageDispatch()
+          ? std::make_optional(mojo::GetBadMessageCallback())
+          : std::nullopt);
   if (!page_metadata_.contains(dirty_page_id)) {
     mojo::ReportBadMessage(
         "`PageContentsUpdated()` called with a non-existent page ID");
@@ -377,22 +388,21 @@ content::WebContents* AXMediaAppUntrustedHandler::GetMediaAppWebContents()
 content::RenderFrameHost*
 AXMediaAppUntrustedHandler::GetMediaAppRenderFrameHost() const {
   content::WebContents* web_contents = GetMediaAppWebContents();
-  return web_contents ? web_contents->GetPrimaryMainFrame() : nullptr;
+  content::RenderFrameHost* media_app_render_frame_host =
+      web_contents->GetPrimaryMainFrame();
+  // Return the last inner iframe.
+  web_contents->ForEachRenderFrameHost(
+      [&media_app_render_frame_host](content::RenderFrameHost* rfh) {
+        media_app_render_frame_host = rfh;
+      });
+  return media_app_render_frame_host;
 }
 
-ui::AXNodeID AXMediaAppUntrustedHandler::GetMediaAppRootNodeID() const {
-  content::WebContents* web_contents = GetMediaAppWebContents();
-  if (!web_contents) {
-    return ui::kInvalidAXNodeID;
-  }
-  // Search for the first <canvas> element.
-  for (ui::AXNode* node = web_contents->GetAccessibilityRootNode(); node;
-       node = node->GetNextUnignoredInTreeOrder()) {
-    if (node->GetRole() == ax::mojom::Role::kCanvas) {
-      return node->id();
-    }
-  }
-  return ui::kInvalidAXNodeID;
+size_t AXMediaAppUntrustedHandler::ComputePagesPerBatch() const {
+  CHECK_LE(min_pages_per_batch_, kMaxPagesPerBatch);
+  size_t page_count = page_metadata_.size();
+  return std::clamp<size_t>(page_count * 0.1, min_pages_per_batch_,
+                            kMaxPagesPerBatch);
 }
 
 void AXMediaAppUntrustedHandler::SendAXTreeToAccessibilityService(
@@ -400,6 +410,7 @@ void AXMediaAppUntrustedHandler::SendAXTreeToAccessibilityService(
     TreeSerializer& serializer) {
   CHECK(manager.GetRoot());
   ui::AXTreeUpdate update;
+  serializer.MarkSubtreeDirty(manager.GetRoot()->id());
   if (!serializer.SerializeChanges(manager.GetRoot(), &update)) {
     NOTREACHED_NORETURN() << "Failure to serialize should have already caused "
                              "the process to crash due to the `crash_on_error` "
@@ -416,16 +427,15 @@ void AXMediaAppUntrustedHandler::SendAXTreeToAccessibilityService(
   CHECK(event_router);
   const gfx::Point& mouse_location =
       aura::Env::GetInstance()->last_mouse_location();
-  event_router->DispatchAccessibilityEvents(
-      update.tree_data.tree_id, {update}, mouse_location,
-      {ui::AXEvent(update.root_id, ax::mojom::Event::kLayoutComplete,
-                   ax::mojom::EventFrom::kNone)});
+  event_router->DispatchAccessibilityEvents(update.tree_data.tree_id, {update},
+                                            mouse_location, {});
 #endif  // defined(USE_AURA)
 }
 
 void AXMediaAppUntrustedHandler::ViewportUpdated(const gfx::RectF& viewport_box,
                                                  float scale_factor) {
-  // TODO(nektar): Use scale factor to convert to device independent pixels.
+  // TODO(nektar): Use scale factor to convert to device independent
+  // pixels.
   viewport_box_ = viewport_box;
   if (!document_.GetRoot()) {
     return;
@@ -459,14 +469,13 @@ void AXMediaAppUntrustedHandler::ViewportUpdated(const gfx::RectF& viewport_box,
 void AXMediaAppUntrustedHandler::UpdatePageLocation(
     const std::string& page_id,
     const gfx::RectF& page_location) {
-  if (ReportIfNonExistentPageId("UpdatePageLocation()", page_id,
-                                page_metadata_)) {
+  // `bad_message_callback_` (used by `HasRendererTerminatedDueToBadPageId`)
+  // should have been set by `PageMetadataUpdated`, which calls this method.
+  if (HasRendererTerminatedDueToBadPageId("UpdatePageLocation", page_id)) {
     return;
   }
-  if (!pages_.contains(page_id)) {
-    return;
-  }
-  ui::AXTree* tree = pages_[page_id]->ax_tree();
+  CHECK(pages_.contains(page_id));
+  ui::AXTree* tree = pages_.at(page_id)->ax_tree();
   CHECK(tree->root());
   ui::AXNodeData root_data = tree->root()->data();
   root_data.relative_bounds.bounds = page_location;
@@ -498,20 +507,29 @@ void AXMediaAppUntrustedHandler::UpdateDocumentTree() {
   document_root_data.SetTextAlign(ax::mojom::TextAlign::kLeft);
   // The PDF document cannot itself be modified.
   document_root_data.SetRestriction(ax::mojom::Restriction::kReadOnly);
+
+  std::map<const uint32_t, const AXMediaAppPageMetadata> pages_in_order;
+  auto end_iter = std::begin(page_metadata_);
+  std::advance(end_iter, pages_ocred_on_initial_load_);
+  std::transform(
+      std::begin(page_metadata_), end_iter,
+      std::inserter(pages_in_order, std::begin(pages_in_order)),
+      [](const std::pair<const std::string, const AXMediaAppPageMetadata>
+             page) { return std::pair(page.second.page_num, page.second); });
+  // Remove all the deleted pages.
+  std::erase_if(pages_in_order, [](const auto& page) { return !page.first; });
+
   // TODO(b/319536234): Populate the title with the PDF's filename by
   // retrieving it from the Media App.
-  document_root_data.SetNameChecked(
-      base::StringPrintf("PDF document containing %zu pages", pages_.size()));
-
-  std::vector<int32_t> child_ids(pages_.size());
+  document_root_data.SetNameChecked(base::StringPrintf(
+      "PDF document containing %zu pages", pages_in_order.size()));
+  std::vector<int32_t> child_ids(pages_in_order.size());
   std::iota(std::begin(child_ids), std::end(child_ids), kStartPageAXNodeId);
   document_root_data.child_ids = child_ids;
 
   gfx::RectF document_location;
-  for (const auto& [_, page] : page_metadata_) {
-    if (page.page_num != 0u) {  // Not deleted page.
-      document_location.Union(page.rect);
-    }
+  for (const auto& [_, page] : pages_in_order) {
+    document_location.Union(page.rect);
   }
   document_root_data.relative_bounds.bounds = document_location;
   document_root_data.AddIntAttribute(ax::mojom::IntAttribute::kScrollXMin,
@@ -523,7 +541,8 @@ void AXMediaAppUntrustedHandler::UpdateDocumentTree() {
   document_update.root_id = document_root_data.id;
   std::vector<ui::AXNodeData> document_pages;
   document_pages.push_back(document_root_data);
-  for (size_t page_index = 0; const auto& [page_id, _] : pages_) {
+  for (size_t page_index = 0;
+       const auto& [page_num, page_metadata] : pages_in_order) {
     ui::AXNodeData page_data;
     page_data.role = ax::mojom::Role::kRegion;
     base::CheckedNumeric<ui::AXNodeID> ax_page_id =
@@ -535,15 +554,15 @@ void AXMediaAppUntrustedHandler::UpdateDocumentTree() {
     page_data.AddBoolAttribute(ax::mojom::BoolAttribute::kIsPageBreakingObject,
                                true);
     page_data.SetRestriction(ax::mojom::Restriction::kReadOnly);
-    // Page numbers are 1-indexed, so add one here.
     // TODO(b/319543924): Add a localized version of an accessible name.
-    page_data.SetNameChecked(base::StringPrintf("Page %zu", page_index + 1u));
+    page_data.SetNameChecked(base::StringPrintf("Page %u", page_num));
+    const std::string& page_id = page_metadata.id;
     // If the page doesn't exist, that means it hasn't been through OCR yet.
-    if (pages_.contains(page_id) && pages_[page_id]->ax_tree() &&
-        pages_[page_id]->GetRoot()) {
-      page_data.AddChildTreeId(pages_[page_id]->GetTreeID());
+    if (pages_.contains(page_id) && pages_.at(page_id)->ax_tree() &&
+        pages_.at(page_id)->GetRoot()) {
+      page_data.AddChildTreeId(pages_.at(page_id)->GetTreeID());
       page_data.relative_bounds.bounds =
-          pages_[page_id]->GetRoot()->data().relative_bounds.bounds;
+          pages_.at(page_id)->GetRoot()->data().relative_bounds.bounds;
     }
     document_pages.push_back(page_data);
     ++page_index;
@@ -585,15 +604,11 @@ void AXMediaAppUntrustedHandler::StitchDocumentTree() {
   if (!render_frame_host || !render_frame_host->IsRenderFrameLive()) {
     return;
   }
-  ui::AXNodeID media_app_root_node_id = GetMediaAppRootNodeID();
-  if (media_app_root_node_id == ui::kInvalidAXNodeID) {
-    return;
-  }
   ui::AXActionData action_data;
   action_data.action = ax::mojom::Action::kStitchChildTree;
   CHECK(document_.ax_tree());
   action_data.target_tree_id = document_.GetParentTreeID();
-  action_data.target_node_id = media_app_root_node_id;
+  action_data.target_role = ax::mojom::Role::kCanvas;
   action_data.child_tree_id = document_.GetTreeID();
   render_frame_host->AccessibilityPerformAction(action_data);
 }
@@ -615,7 +630,7 @@ std::string AXMediaAppUntrustedHandler::PopDirtyPage() {
   if (dirty_page_ids_.empty()) {
     mojo::ReportBadMessage("`PopDirtyPage()` found no more dirty pages.");
   }
-  auto dirty_page_id = dirty_page_ids_.front();
+  std::string dirty_page_id = dirty_page_ids_.front();
   dirty_page_ids_.pop_front();
   return dirty_page_id;
 }
@@ -626,44 +641,71 @@ void AXMediaAppUntrustedHandler::OcrNextDirtyPageIfAny() {
   }
   // If there are no more dirty pages, we can assume all pages have up-to-date
   // page locations. Update the document tree information to reflect that.
-  if (dirty_page_ids_.empty()) {
+  if (dirty_page_ids_.empty() ||
+      (pages_ocred_on_initial_load_ &&
+       pages_ocred_on_initial_load_ % ComputePagesPerBatch() == 0u)) {
     UpdateDocumentTree();
-    return;
+    if (dirty_page_ids_.empty()) {
+      return;
+    }
   }
-  auto dirty_page_id = PopDirtyPage();
+  const std::string dirty_page_id = PopDirtyPage();
   // TODO(b/289012145): Refactor this code to support things happening
   // asynchronously - i.e. `RequestBitmap` will be async.
-  if (media_app_) {
+  if (media_app_) [[unlikely]] {
     // `media_app_` is only used for testing.
     CHECK_IS_TEST();
-    // TODO(b/303133098): Change this as soon as `RequestBitmap` becomes
-    // available by the Backlight team.
     SkBitmap page_bitmap = media_app_->RequestBitmap(dirty_page_id);
-    screen_ai_annotator_->PerformOcrAndReturnAXTreeUpdate(
+    // TODO - b/289012145: screen_ai_annotator_ is only bound in builds with
+    // the ENABLE_SCREEN_AI_SERVICE buildflag. We should figure out a way to
+    // mock it in tests running on bots without this flag and call
+    // OnBitmapReceived() here.
+    ocr_->PerformOCR(
         page_bitmap,
         base::BindOnce(&AXMediaAppUntrustedHandler::OnPageOcred,
                        weak_ptr_factory_.GetWeakPtr(), dirty_page_id));
+  } else {
+    media_app_ui::mojom::OcrUntrustedPage::RequestBitmapCallback cb =
+        base::BindOnce(&AXMediaAppUntrustedHandler::OnBitmapReceived,
+                       weak_ptr_factory_.GetWeakPtr(), dirty_page_id);
+    media_app_page_->RequestBitmap(dirty_page_id, std::move(cb));
   }
+}
+
+void AXMediaAppUntrustedHandler::OnBitmapReceived(
+    const std::string& dirty_page_id,
+    const SkBitmap& bitmap) {
+  // If there was a failure getting a page's bitmap, the app will return a null
+  // value which shows up as an empty bitmap here. To prevent the entire app
+  // crashing just because one page failed to render, send it to ScreenAI
+  // anyway, which should just produce an empty A11y tree.
+  ocr_->PerformOCR(
+      bitmap, base::BindOnce(&AXMediaAppUntrustedHandler::OnPageOcred,
+                             weak_ptr_factory_.GetWeakPtr(), dirty_page_id));
 }
 
 void AXMediaAppUntrustedHandler::OnPageOcred(
     const std::string& dirty_page_id,
     const ui::AXTreeUpdate& tree_update) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!tree_update.has_tree_data ||
+  if (
       // TODO(b/319536234): Validate tree ID.
+      // !tree_update.has_tree_data ||
       // ui::AXTreeIDUnknown() == tree_update.tree_data.tree_id ||
       ui::kInvalidAXNodeID == tree_update.root_id) {
     mojo::ReportBadMessage("OnPageOcred() bad tree update from Screen AI.");
     return;
   }
   ui::AXTreeUpdate complete_tree_update = tree_update;
+  complete_tree_update.has_tree_data = true;
   complete_tree_update.tree_data.parent_tree_id = document_tree_id_;
-  if (ReportIfNonExistentPageId("OnPageOcred()", dirty_page_id,
-                                page_metadata_)) {
+  if (HasRendererTerminatedDueToBadPageId("OnPageOcred", dirty_page_id)) {
     return;
   }
   if (!pages_.contains(dirty_page_id)) {
+    // Add a newly generated tree id to the tree update so that the new
+    // `AXSerializableTree` that's generated has a non-empty tree id.
+    complete_tree_update.tree_data.tree_id = ui::AXTreeID::CreateNewAXTreeID();
     auto page_tree =
         std::make_unique<ui::AXSerializableTree>(complete_tree_update);
     page_sources_[dirty_page_id] =
@@ -672,22 +714,46 @@ void AXMediaAppUntrustedHandler::OnPageOcred(
         page_sources_[dirty_page_id].get(), /* crash_on_error */ true);
     pages_[dirty_page_id] =
         std::make_unique<ui::AXTreeManager>(std::move(page_tree));
-    UpdatePageLocation(dirty_page_id, page_metadata_[dirty_page_id].rect);
   } else {
-    complete_tree_update.tree_data.tree_id = pages_[dirty_page_id]->GetTreeID();
-    if (!pages_[dirty_page_id]->ax_tree() ||
-        !pages_[dirty_page_id]->ax_tree()->Unserialize(complete_tree_update)) {
-      mojo::ReportBadMessage(pages_[dirty_page_id]->ax_tree()->error());
+    complete_tree_update.tree_data.tree_id =
+        pages_.at(dirty_page_id)->GetTreeID();
+    if (!pages_.at(dirty_page_id)->ax_tree() ||
+        !pages_.at(dirty_page_id)
+             ->ax_tree()
+             ->Unserialize(complete_tree_update)) {
+      mojo::ReportBadMessage(pages_.at(dirty_page_id)->ax_tree()->error());
       return;
     }
   }
+  CHECK_NE(pages_.at(dirty_page_id)->GetTreeID().type(),
+           ax::mojom::AXTreeIDType::kUnknown);
+
   // Update the page location again - running the page through OCR overwrites
   // the previous `AXTree` it was given and thus the page location it was
   // already given in `PageMetadataUpdated()`. Restore it here.
   UpdatePageLocation(dirty_page_id, page_metadata_[dirty_page_id].rect);
-  SendAXTreeToAccessibilityService(*pages_[dirty_page_id],
-                                   *page_serializers_[dirty_page_id]);
+  SendAXTreeToAccessibilityService(*pages_.at(dirty_page_id),
+                                   *page_serializers_.at(dirty_page_id));
+  if (pages_ocred_on_initial_load_ < page_metadata_.size()) {
+    ++pages_ocred_on_initial_load_;
+  }
   OcrNextDirtyPageIfAny();
+}
+
+bool AXMediaAppUntrustedHandler::HasRendererTerminatedDueToBadPageId(
+    const std::string& method_name,
+    const std::string& page_id) {
+  if (!page_metadata_.contains(page_id)) {
+    const std::string error_str = std::format(
+        "`{}` called with previously non-existent page ID", method_name);
+    if (bad_message_callback_ && !(*bad_message_callback_).is_null()) {
+      std::move(*bad_message_callback_).Run(error_str);
+    } else {
+      mojo::ReportBadMessage(error_str);
+    }
+    return true;
+  }
+  return false;
 }
 
 }  // namespace ash

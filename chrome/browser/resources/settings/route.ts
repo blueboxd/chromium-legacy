@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 import {assert} from 'chrome://resources/js/assert.js';
-import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 
+import {loadTimeData} from './i18n_setup.js';
 import {pageVisibility} from './page_visibility.js';
 import type {SettingsRoutes} from './router.js';
 import {Route, Router} from './router.js';
@@ -54,9 +54,7 @@ function addPrivacyChildRoutes(r: Partial<SettingsRoutes>) {
         r.PRIVACY_SANDBOX.createChild('/adPrivacy/measurement');
   }
 
-  // <if expr="use_nss_certs">
   r.CERTIFICATES = r.SECURITY.createChild('/certificates');
-  // </if>
 
   if (loadTimeData.getBoolean('enableSecurityKeysSubpage')) {
     r.SECURITY_KEYS = r.SECURITY.createChild('/securityKeys');
@@ -84,6 +82,10 @@ function addPrivacyChildRoutes(r: Partial<SettingsRoutes>) {
     r.SITE_SETTINGS_AUTO_PICTURE_IN_PICTURE =
         r.SITE_SETTINGS.createChild('autoPictureInPicture');
   }
+  if (loadTimeData.getBoolean('capturedSurfaceControlEnabled')) {
+    r.SITE_SETTINGS_CAPTURED_SURFACE_CONTROL =
+        r.SITE_SETTINGS.createChild('capturedSurfaceControl');
+  }
   if (loadTimeData.getBoolean('privateStateTokensEnabled')) {
     r.SITE_SETTINGS_AUTO_VERIFY = r.SITE_SETTINGS.createChild('autoVerify');
   }
@@ -96,6 +98,10 @@ function addPrivacyChildRoutes(r: Partial<SettingsRoutes>) {
   r.SITE_SETTINGS_MIXEDSCRIPT = r.SITE_SETTINGS.createChild('insecureContent');
   r.SITE_SETTINGS_JAVASCRIPT = r.SITE_SETTINGS.createChild('javascript');
   r.SITE_SETTINGS_JAVASCRIPT_JIT = r.SITE_SETTINGS.createChild('v8');
+  if (loadTimeData.getBoolean('enableKeyboardAndPointerLockPrompt')) {
+    r.SITE_SETTINGS_KEYBOARD_LOCK = r.SITE_SETTINGS.createChild('keyboardLock');
+    r.SITE_SETTINGS_POINTER_LOCK = r.SITE_SETTINGS.createChild('pointerLock');
+  }
   r.SITE_SETTINGS_SOUND = r.SITE_SETTINGS.createChild('sound');
   r.SITE_SETTINGS_SENSORS = r.SITE_SETTINGS.createChild('sensors');
   r.SITE_SETTINGS_LOCATION = r.SITE_SETTINGS.createChild('location');
@@ -142,7 +148,7 @@ function addPrivacyChildRoutes(r: Partial<SettingsRoutes>) {
 
   if (loadTimeData.getBoolean('enableAutomaticFullscreenContentSetting')) {
     r.SITE_SETTINGS_AUTOMATIC_FULLSCREEN =
-        r.SITE_SETTINGS.createChild('automaticFullscreen');
+        r.SITE_SETTINGS.createChild('automaticFullScreen');
   }
 }
 

@@ -44,31 +44,18 @@ class BLINK_EXPORT WebAXContext {
   // structure and properties of each node.
   void MarkDocumentDirty();
 
+  void SetSerializationResetToken(uint32_t reset_token) const;
+
   // Compared with MarkDocumentDirty(), this does less work, because it assumes
   // the AXObjectCache's tree of objects and properties is correct, but needs to
   // be reserialized.
   void ResetSerializer();
-
-  // Retrieves a vector of all WebAXObjects in this document whose
-  // bounding boxes may have changed since the last query. Sends that vector
-  // via mojo to the browser process.
-  void SerializeLocationChanges(uint32_t reset_token) const;
 
   bool SerializeEntireTree(
       size_t max_node_count,
       base::TimeDelta timeout,
       ui::AXTreeUpdate* response,
       std::set<ui::AXSerializationErrorFlag>* out_error = nullptr);
-
-  // Serialize all AXObjects that are dirty (have changed their state since
-  // the last serialization) into |updates|. (Heuristically) skips
-  // serializing dirty nodes whose AX id is in |already_serialized_ids|, and
-  // adds serialized dirty objects into |already_serialized_ids|.
-  void SerializeDirtyObjectsAndEvents(std::vector<ui::AXTreeUpdate>& updates,
-                                      std::vector<ui::AXEvent>& events,
-                                      bool& had_end_of_test_event,
-                                      bool& had_load_complete_messages,
-                                      bool& need_to_send_location_changes);
 
   // Returns a vector of the images found in |updates|.
   void GetImagesToAnnotate(ui::AXTreeUpdate& updates,
@@ -88,7 +75,8 @@ class BLINK_EXPORT WebAXContext {
   // Ensures that a serialization of all pending events and dirty objects is
   // sent to the client as soon as possible at the next lifecycle update.
   // Technically, ensures that a call to
-  // RenderAccessibilityImpl::AXReadyCallback() will occur as soon as possible.
+  // RenderAccessibilityImpl::SendAccessibilitySerialization() will occur as
+  // soon as possible.
   void ScheduleImmediateSerialization();
 
   // Add an event to the queue of events to be processed as well as mark the

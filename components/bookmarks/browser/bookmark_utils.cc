@@ -161,13 +161,13 @@ GURL GetUrlFromClipboard(bool notify_if_restricted) {
 }
 
 template <class type>
-void GetBookmarksMatchingPropertiesImpl(
+std::vector<const BookmarkNode*> GetBookmarksMatchingPropertiesImpl(
     type& iterator,
     BookmarkModel* model,
     const QueryFields& query,
     const std::vector<std::u16string>& query_words,
-    size_t max_count,
-    std::vector<const BookmarkNode*>* nodes) {
+    size_t max_count) {
+  std::vector<const BookmarkNode*> nodes;
   while (iterator.has_next()) {
     const BookmarkNode* node = iterator.Next();
     if ((!query_words.empty() &&
@@ -179,10 +179,12 @@ void GetBookmarksMatchingPropertiesImpl(
     if (query.title && node->GetTitle() != *query.title)
       continue;
 
-    nodes->push_back(node);
-    if (nodes->size() == max_count)
-      return;
+    nodes.push_back(node);
+    if (nodes.size() == max_count) {
+      break;
+    }
   }
+  return nodes;
 }
 
 template <class Comparator>
@@ -257,7 +259,8 @@ void CopyToClipboard(
     BookmarkModel* model,
     const std::vector<raw_ptr<const BookmarkNode, VectorExperimental>>& nodes,
     bool remove_nodes,
-    metrics::BookmarkEditSource source) {
+    metrics::BookmarkEditSource source,
+    bool is_off_the_record) {
   if (nodes.empty())
     return;
 
@@ -268,12 +271,12 @@ void CopyToClipboard(
       filtered_nodes.push_back(node);
   }
 
-  BookmarkNodeData(filtered_nodes).WriteToClipboard();
+  BookmarkNodeData(filtered_nodes).WriteToClipboard(is_off_the_record);
 
   if (remove_nodes) {
     ScopedGroupBookmarkActions group_cut(model);
     for (const bookmarks::BookmarkNode* node : filtered_nodes) {
-      model->Remove(node, source);
+      model->Remove(node, source, FROM_HERE);
     }
   }
 }
@@ -433,13 +436,14 @@ void GetMostRecentlyUsedEntries(BookmarkModel* model,
   std::move(nodes_set.begin(), nodes_set.end(), std::back_inserter(*nodes));
 }
 
-void GetBookmarksMatchingProperties(BookmarkModel* model,
-                                    const QueryFields& query,
-                                    size_t max_count,
-                                    std::vector<const BookmarkNode*>* nodes) {
+std::vector<const BookmarkNode*> GetBookmarksMatchingProperties(
+    BookmarkModel* model,
+    const QueryFields& query,
+    size_t max_count) {
   std::vector<std::u16string> query_words = ParseBookmarkQuery(query);
-  if (query.word_phrase_query && query_words.empty())
-    return;
+  if (query.word_phrase_query && query_words.empty()) {
+    return {};
+  }
 
   if (query.url) {
     // Shortcut into the BookmarkModel if searching for URL.
@@ -450,14 +454,14 @@ void GetBookmarksMatchingProperties(BookmarkModel* model,
       url_matched_nodes = model->GetNodesByURL(url);
     }
     VectorIterator iterator(&url_matched_nodes);
-    GetBookmarksMatchingPropertiesImpl<VectorIterator>(
-        iterator, model, query, query_words, max_count, nodes);
-  } else {
-    ui::TreeNodeIterator<const BookmarkNode> iterator(model->root_node());
-    GetBookmarksMatchingPropertiesImpl<
-        ui::TreeNodeIterator<const BookmarkNode>>(
-        iterator, model, query, query_words, max_count, nodes);
+    return GetBookmarksMatchingPropertiesImpl<VectorIterator>(
+        iterator, model, query, query_words, max_count);
   }
+
+  ui::TreeNodeIterator<const BookmarkNode> iterator(model->root_node());
+  return GetBookmarksMatchingPropertiesImpl<
+      ui::TreeNodeIterator<const BookmarkNode>>(iterator, model, query,
+                                                query_words, max_count);
 }
 
 // Parses the provided query and returns a vector of query words.
@@ -492,6 +496,9 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(prefs::kEditBookmarksEnabled, true);
   registry->RegisterBooleanPref(
       prefs::kShowAppsShortcutInBookmarkBar, false,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterBooleanPref(
+      prefs::kShowTabGroupsInBookmarkBar, true,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterBooleanPref(
       prefs::kShowManagedBookmarksInBookmarkBar, true,
@@ -532,14 +539,15 @@ const BookmarkNode* GetParentForNewNodes(
 }
 
 void DeleteBookmarkFolders(BookmarkModel* model,
-                           const std::vector<int64_t>& ids) {
+                           const std::vector<int64_t>& ids,
+                           const base::Location& location) {
   // Remove the folders that were removed. This has to be done after all the
   // other changes have been committed.
   for (auto iter = ids.begin(); iter != ids.end(); ++iter) {
     const BookmarkNode* node = GetBookmarkNodeByID(model, *iter);
     if (!node)
       continue;
-    model->Remove(node, metrics::BookmarkEditSource::kUser);
+    model->Remove(node, metrics::BookmarkEditSource::kUser, location);
   }
 }
 
@@ -559,11 +567,13 @@ const BookmarkNode* AddIfNotBookmarked(BookmarkModel* model,
                           title, url);
 }
 
-void RemoveAllBookmarks(BookmarkModel* model, const GURL& url) {
+void RemoveAllBookmarks(BookmarkModel* model,
+                        const GURL& url,
+                        const base::Location& location) {
   // Remove all the user bookmarks.
   for (const BookmarkNode* node : model->GetNodesByURL(url)) {
     if (!model->client()->IsNodeManaged(node)) {
-      model->Remove(node, metrics::BookmarkEditSource::kUser);
+      model->Remove(node, metrics::BookmarkEditSource::kUser, location);
     }
   }
 }

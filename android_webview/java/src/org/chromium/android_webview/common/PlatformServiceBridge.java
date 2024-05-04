@@ -107,16 +107,11 @@ public abstract class PlatformServiceBridge {
     // Takes an uncompressed, serialized UMA proto and logs it via a platform-specific mechanism.
     public void logMetrics(byte[] data) {}
 
-    // TODO(crbug.com/1485663): remove this once downstream lands
-    public void logMetrics(byte[] data, boolean useDefaultUploadQos) {}
-
     /**
      * Similar to {@link logMetrics}, logs a serialized UMA proto via a platform-specific mechanism
      * but blocks until the operation finishes.
      *
      * @param data uncompressed, serialized UMA proto.
-     * @param useDefaultUploadQos whether to use an experimental change that increases upload
-     *         frequency
      * @return Status code of the logging operation. The status codes are:
      * - Success cache (went to the devices cache): -1
      * - Success: 0
@@ -127,15 +122,8 @@ public abstract class PlatformServiceBridge {
      * - API not connected (probably means the API is not available on device): 17
      */
     public int logMetricsBlocking(byte[] data) {
-        // TODO(crbug.com/1248039): remove this once downstream implementation lands.
-        logMetrics(data, true);
-        return 0;
-    }
-
-    // TODO(crbug.com/1485663): remove this once downstream lands
-    public int logMetricsBlocking(byte[] data, boolean useDefaultUploadQos) {
-        // TODO(crbug.com/1248039): remove this once downstream implementation lands.
-        logMetrics(data, useDefaultUploadQos);
+        // TODO(crbug.com/40790308): remove this once downstream implementation lands.
+        logMetrics(data);
         return 0;
     }
 
@@ -159,6 +147,21 @@ public abstract class PlatformServiceBridge {
      */
     public void injectPlatformJsInterfaces(
             @NonNull Context context, @NonNull AwContentsWrapper receiver) {}
+
+    /**
+     * Asynchronously obtain a MediaIntegrityProvider implementation.
+     *
+     * @param cloudProjectNumber cloud project number passed by caller
+     * @param apiStatus Enablement status of the api for given origin
+     * @param callback Callback to call with the result containing either a non-null
+     *     MediaIntegrityProvider implementation or an appropriate exception.
+     */
+    public void getMediaIntegrityProvider(
+            long cloudProjectNumber,
+            @MediaIntegrityApiStatus int apiStatus,
+            ValueOrErrorCallback<MediaIntegrityProvider, Integer> callback) {
+        callback.onError(MediaIntegrityErrorCode.NON_RECOVERABLE_ERROR);
+    }
 
     /**
      * Wrapper interface to allow us to pass an {@link org.chromium.android_webview.AwContents}

@@ -231,6 +231,8 @@ ToolbarView::ToolbarView(Browser* browser, BrowserView* browser_view)
 
   container_view_ = AddChildView(std::make_unique<ContainerView>());
 
+  SetAccessibleRole(ax::mojom::Role::kToolbar);
+
   if (display_mode_ == DisplayMode::NORMAL) {
     container_view_->SetBackground(
         std::make_unique<TopContainerBackground>(browser_view));
@@ -520,6 +522,13 @@ void ToolbarView::Init() {
 
   location_bar_->Init();
 
+  show_forward_button_.Init(
+      prefs::kShowForwardButton, prefs,
+      base::BindRepeating(&ToolbarView::OnShowForwardButtonChanged,
+                          base::Unretained(this)));
+
+  forward_->SetVisible(show_forward_button_.GetValue());
+
   show_home_button_.Init(
       prefs::kShowHomeButton, prefs,
       base::BindRepeating(&ToolbarView::OnShowHomeButtonChanged,
@@ -726,7 +735,8 @@ bool ToolbarView::GetAcceleratorForCommandId(
 ////////////////////////////////////////////////////////////////////////////////
 // ToolbarView, views::View overrides:
 
-gfx::Size ToolbarView::CalculatePreferredSize() const {
+gfx::Size ToolbarView::CalculatePreferredSize(
+    const views::SizeBounds& available_size) const {
   gfx::Size size;
   switch (display_mode_) {
     case DisplayMode::CUSTOM_TAB:
@@ -741,7 +751,7 @@ gfx::Size ToolbarView::CalculatePreferredSize() const {
       // the toolbar to report an unreasonable height (see crbug.com/985909), we
       // cap the height at the size of known child views (location bar and back
       // button) plus margins.
-      // TODO(crbug.com/1033627): Figure out why the height reports incorrectly
+      // TODO(crbug.com/40663413): Figure out why the height reports incorrectly
       // on some installations.
       if (layout_manager_ && location_bar_->GetVisible()) {
         const int max_height =
@@ -770,7 +780,7 @@ gfx::Size ToolbarView::GetMinimumSize() const {
       // the toolbar to report an unreasonable height (see crbug.com/985909), we
       // cap the height at the size of known child views (location bar and back
       // button) plus margins.
-      // TODO(crbug.com/1033627): Figure out why the height reports incorrectly
+      // TODO(crbug.com/40663413): Figure out why the height reports incorrectly
       // on some installations.
       if (layout_manager_ && location_bar_->GetVisible()) {
         const int max_height =
@@ -826,7 +836,7 @@ void ToolbarView::Layout(PassKey) {
   // to the overflow state determined by the first pass.
   // TODO(pengchaocai): Explore possible optimizations.
   if (toolbar_controller_) {
-    // TODO(crbug.com/1499021) Move this logic into LayoutManager.
+    // TODO(crbug.com/40939901) Move this logic into LayoutManager.
     views::ManualLayoutUtil manual_layout_util(layout_manager_);
     const bool was_overflow_button_visible =
         toolbar_controller_->overflow_button()->GetVisible();
@@ -1012,7 +1022,7 @@ void ToolbarView::InitLayout() {
   if (base::FeatureList::IsEnabled(features::kResponsiveToolbar)) {
     constexpr int kToolbarFlexOrderStart = 1;
 
-    // TODO(crbug.com/1479588): Ignore containers till issue addressed.
+    // TODO(crbug.com/40929989): Ignore containers till issue addressed.
     toolbar_controller_ = std::make_unique<ToolbarController>(
         ToolbarController::GetDefaultResponsiveElements(browser_),
         ToolbarController::GetDefaultOverflowOrder(), kToolbarFlexOrderStart,
@@ -1099,6 +1109,16 @@ void ToolbarView::UpdateTypeAndSeverity(
   }
   app_menu_button_->SetAccessibleName(accname_app);
   app_menu_button_->SetTypeAndSeverity(type_and_severity);
+
+  if (base::FeatureList::IsEnabled(features::kDefaultBrowserPromptRefresh) &&
+      DefaultBrowserPromptManager::GetInstance()->get_show_app_menu_prompt()) {
+    // Anytime the default chip is eligible to be shown, log whether the prompt
+    // was actually shown. This helps us understand how often it is pre-empted.
+    base::UmaHistogramBoolean(
+        "DefaultBrowser.AppMenu.DefaultChipShown",
+        type_and_severity.type ==
+            AppMenuIconController::IconType::DEFAULT_BROWSER_PROMPT);
+  }
 }
 
 SkColor ToolbarView::GetDefaultColorForSeverity(
@@ -1168,7 +1188,8 @@ views::AccessiblePaneView* ToolbarView::GetAsAccessiblePaneView() {
   return this;
 }
 
-views::View* ToolbarView::GetAnchorView(PageActionIconType type) {
+views::View* ToolbarView::GetAnchorView(
+    std::optional<PageActionIconType> type) {
   return location_bar_;
 }
 
@@ -1200,9 +1221,17 @@ DownloadToolbarButtonView* ToolbarView::GetDownloadButton() {
   return download_button();
 }
 
-BrowserRootView::DropIndex ToolbarView::GetDropIndex(
-    const ui::DropTargetEvent& event) {
-  return {browser_->tab_strip_model()->active_index(), false};
+std::optional<BrowserRootView::DropIndex> ToolbarView::GetDropIndex(
+    const ui::DropTargetEvent& event,
+    bool allow_replacement) {
+  if (!allow_replacement) {
+    return std::nullopt;
+  }
+
+  return BrowserRootView::DropIndex{
+      .index = browser_->tab_strip_model()->active_index(),
+      .relative_to_index =
+          BrowserRootView::DropIndex::RelativeToIndex::kReplaceIndex};
 }
 
 BrowserRootView::DropTarget* ToolbarView::GetDropTarget(
@@ -1229,10 +1258,13 @@ void ToolbarView::LoadImages() {
     extensions_container_->UpdateAllIcons();
 }
 
+void ToolbarView::OnShowForwardButtonChanged() {
+  forward_->SetVisible(show_forward_button_.GetValue());
+  InvalidateLayout();
+}
+
 void ToolbarView::OnShowHomeButtonChanged() {
   home_->SetVisible(show_home_button_.GetValue());
-  DeprecatedLayoutImmediately();
-  SchedulePaint();
 }
 
 void ToolbarView::OnTouchUiChanged() {

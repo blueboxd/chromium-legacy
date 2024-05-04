@@ -39,6 +39,7 @@ namespace blink {
 class ImageBitmapOptions;
 class IntersectionObserverEntry;
 class MediaCustomControlsFullscreenDetector;
+class MediaVideoVisibilityTracker;
 class MediaRemotingInterstitial;
 class PictureInPictureInterstitial;
 class StaticBitmapImage;
@@ -131,7 +132,7 @@ class CORE_EXPORT HTMLVideoElement final
 
   // ImageBitmapSource implementation
   gfx::Size BitmapSourceSize() const override;
-  ScriptPromiseTyped<ImageBitmap> CreateImageBitmap(
+  ScriptPromise<ImageBitmap> CreateImageBitmap(
       ScriptState*,
       std::optional<gfx::Rect> crop_rect,
       const ImageBitmapOptions*,
@@ -163,6 +164,10 @@ class CORE_EXPORT HTMLVideoElement final
   bool IsRichlyEditableForAccessibility() const override { return false; }
 
   VideoWakeLock* wake_lock_for_tests() const { return wake_lock_.Get(); }
+
+  MediaVideoVisibilityTracker* visibility_tracker_for_tests() const {
+    return visibility_tracker_.Get();
+  }
 
  protected:
   // EventTarget overrides.
@@ -200,6 +205,11 @@ class CORE_EXPORT HTMLVideoElement final
   void OnLoadStarted() final;
   void OnLoadFinished() final;
 
+  // Wrapper for the |MediaVideoVisibilityTracker|
+  // |UpdateVisibilityTrackerState| method. |UpdateVisibilityTrackerState| is
+  // called only if the |visibility_tracker_| exists.
+  void UpdateVideoVisibilityTracker() final;
+
   // Video-specific overrides for part of the media::mojom::MediaPlayer
   // interface, fully implemented in the parent class HTMLMediaElement.
   void RequestEnterPictureInPicture() final;
@@ -214,6 +224,11 @@ class CORE_EXPORT HTMLVideoElement final
 
   void SetPersistentStateInternal(bool persistent);
 
+  // Creates a |MediaVideoVisibilityTracker| if one does not already exist.
+  void CreateVisibilityTrackerIfNeeded();
+
+  void ReportVisibility(bool meets_visibility_threshold);
+
   Member<HTMLImageLoader> image_loader_;
   Member<MediaCustomControlsFullscreenDetector>
       custom_controls_fullscreen_detector_;
@@ -223,6 +238,10 @@ class CORE_EXPORT HTMLVideoElement final
   Member<PictureInPictureInterstitial> picture_in_picture_interstitial_;
 
   AtomicString default_poster_url_;
+
+  // Tracks visibility of playing videos, taking into account both: viewport
+  // intersection and occluding elements.
+  Member<MediaVideoVisibilityTracker> visibility_tracker_;
 
   // Represents whether the video is 'persistent'. It is used for videos with
   // custom controls that are in auto-pip (Android). This boolean is used by a

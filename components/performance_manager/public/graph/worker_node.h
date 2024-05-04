@@ -10,6 +10,7 @@
 #include "base/containers/flat_set.h"
 #include "base/functional/callback_forward.h"
 #include "base/functional/function_ref.h"
+#include "base/observer_list_types.h"
 #include "base/types/token_type.h"
 #include "components/performance_manager/public/execution_context_priority/execution_context_priority.h"
 #include "components/performance_manager/public/graph/node.h"
@@ -17,6 +18,10 @@
 #include "third_party/blink/public/common/tokens/tokens.h"
 
 class GURL;
+
+namespace url {
+class Origin;
+}
 
 namespace performance_manager {
 
@@ -88,8 +93,14 @@ class WorkerNode : public Node {
   virtual resource_attribution::WorkerContext GetResourceContext() const = 0;
 
   // Returns the URL of the worker script. This is the final response URL which
-  // takes into account redirections.
+  // takes into account redirections. Note that for dedicated workers, this will
+  // be empty unless the PlzDedicatedWorker feature is enabled.
   virtual const GURL& GetURL() const = 0;
+
+  // Returns the worker's security origin. This will be set even if GetURL() is
+  // empty. See docs/security/origin-vs-url.md for the difference between GURL
+  // and Origin.
+  virtual const url::Origin& GetOrigin() const = 0;
 
   // Returns the current priority of the worker, and the reason for the worker
   // having that particular priority.
@@ -150,14 +161,14 @@ class WorkerNode : public Node {
 
 // Pure virtual observer interface. Derive from this if you want to be forced to
 // implement the entire interface.
-class WorkerNodeObserver {
+class WorkerNodeObserver : public base::CheckedObserver {
  public:
   WorkerNodeObserver();
 
   WorkerNodeObserver(const WorkerNodeObserver&) = delete;
   WorkerNodeObserver& operator=(const WorkerNodeObserver&) = delete;
 
-  virtual ~WorkerNodeObserver();
+  ~WorkerNodeObserver() override;
 
   // Node lifetime notifications.
 
@@ -174,10 +185,18 @@ class WorkerNodeObserver {
   // Notifications of property changes.
 
   // Invoked when the final url of the worker script has been determined, which
-  // happens when the script has finished loading.
+  // happens when the script has finished loading. Note that for dedicated
+  // workers, this won't be called unless the PlzDedicatedWorker feature is
+  // enabled.
   virtual void OnFinalResponseURLDetermined(const WorkerNode* worker_node) = 0;
 
-  // Invoked when |client_frame_node| becomes a client of |worker_node|.
+  // Invoked before |client_frame_node| becomes a client of |worker_node|. This
+  // is the last chance to traverse the graph and capture state that doesn't
+  // include the worker/frame client relationship.
+  virtual void OnBeforeClientFrameAdded(const WorkerNode* worker_node,
+                                        const FrameNode* client_frame_node) = 0;
+
+  // Invoked after |client_frame_node| becomes a client of |worker_node|.
   virtual void OnClientFrameAdded(const WorkerNode* worker_node,
                                   const FrameNode* client_frame_node) = 0;
 
@@ -186,7 +205,14 @@ class WorkerNodeObserver {
       const WorkerNode* worker_node,
       const FrameNode* client_frame_node) = 0;
 
-  // Invoked when |client_worker_node| becomes a client of |worker_node|.
+  // Invoked before |client_worker_node| becomes a client of |worker_node|. This
+  // is the last chance to traverse the graph and capture state that doesn't
+  // include the worker/worker client relationship.
+  virtual void OnBeforeClientWorkerAdded(
+      const WorkerNode* worker_node,
+      const WorkerNode* client_worker_node) = 0;
+
+  // Invoked after |client_worker_node| becomes a client of |worker_node|.
   virtual void OnClientWorkerAdded(const WorkerNode* worker_node,
                                    const WorkerNode* client_worker_node) = 0;
 
@@ -219,11 +245,16 @@ class WorkerNode::ObserverDefaultImpl : public WorkerNodeObserver {
   void OnWorkerNodeAdded(const WorkerNode* worker_node) override {}
   void OnBeforeWorkerNodeRemoved(const WorkerNode* worker_node) override {}
   void OnFinalResponseURLDetermined(const WorkerNode* worker_node) override {}
+  void OnBeforeClientFrameAdded(const WorkerNode* worker_node,
+                                const FrameNode* client_frame_node) override {}
   void OnClientFrameAdded(const WorkerNode* worker_node,
                           const FrameNode* client_frame_node) override {}
   void OnBeforeClientFrameRemoved(const WorkerNode* worker_node,
                                   const FrameNode* client_frame_node) override {
   }
+  void OnBeforeClientWorkerAdded(
+      const WorkerNode* worker_node,
+      const WorkerNode* client_worker_node) override {}
   void OnClientWorkerAdded(const WorkerNode* worker_node,
                            const WorkerNode* client_worker_node) override {}
   void OnBeforeClientWorkerRemoved(

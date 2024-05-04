@@ -165,8 +165,7 @@ void Layer::SetLayerTreeHost(LayerTreeHost* host) {
   }
 
   // See comment in layer.h to learn why this assignment is so weird.
-  raw_ptr<LayerTreeHost> host_ptr(host);
-  swap(host_ptr, const_cast<raw_ptr<LayerTreeHost>&>(layer_tree_host_));
+  const_cast<raw_ptr<LayerTreeHost>&>(layer_tree_host_) = host;
 
   if (property_tree_indices_invalid)
     InvalidatePropertyTreesIndices();
@@ -1113,42 +1112,6 @@ void Layer::SetScrollable(const gfx::Size& bounds) {
 
 bool Layer::IsScrollbarLayerForTesting() const {
   return false;
-}
-
-void Layer::SetUserScrollable(bool horizontal, bool vertical) {
-  DCHECK(IsPropertyChangeAllowed());
-  auto& inputs = EnsureLayerTreeInputs();
-  if (inputs.user_scrollable_horizontal == horizontal &&
-      inputs.user_scrollable_vertical == vertical)
-    return;
-  inputs.user_scrollable_horizontal = horizontal;
-  inputs.user_scrollable_vertical = vertical;
-  if (!IsAttached())
-    return;
-
-  if (scrollable()) {
-    auto& scroll_tree =
-        layer_tree_host()->property_trees()->scroll_tree_mutable();
-    if (auto* scroll_node = scroll_tree.Node(scroll_tree_index_.Read(*this))) {
-      scroll_node->user_scrollable_horizontal = horizontal;
-      scroll_node->user_scrollable_vertical = vertical;
-    } else {
-      SetPropertyTreesNeedRebuild();
-    }
-  }
-
-  SetNeedsCommit();
-}
-
-bool Layer::GetUserScrollableHorizontal() const {
-  // user_scrollable_horizontal is true by default.
-  return !layer_tree_inputs() ||
-         layer_tree_inputs()->user_scrollable_horizontal;
-}
-
-bool Layer::GetUserScrollableVertical() const {
-  // user_scrollable_vertical is true by default.
-  return !layer_tree_inputs() || layer_tree_inputs()->user_scrollable_vertical;
 }
 
 void Layer::SetNonFastScrollableRegion(const Region& region) {

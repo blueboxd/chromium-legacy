@@ -5,8 +5,10 @@
 #include "chrome/browser/first_party_sets/first_party_sets_policy_service_factory.h"
 
 #include "base/no_destructor.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/first_party_sets/first_party_sets_policy_service.h"
 #include "chrome/browser/first_party_sets/first_party_sets_pref_names.h"
+#include "chrome/browser/privacy_sandbox/privacy_sandbox_settings_factory.h"
 #include "chrome/browser/privacy_sandbox/tracking_protection_settings_factory.h"
 #include "chrome/browser/profiles/profile_keyed_service_factory.h"
 #include "chrome/browser/profiles/profile_selections.h"
@@ -53,12 +55,12 @@ FirstPartySetsPolicyServiceFactory::FirstPartySetsPolicyServiceFactory()
           "FirstPartySetsPolicyService",
           ProfileSelections::Builder()
               .WithRegular(ProfileSelection::kOwnInstance)
-              // TODO(crbug.com/1418376): Check if this service is needed in
+              // TODO(crbug.com/40257657): Check if this service is needed in
               // Guest mode.
               .WithGuest(ProfileSelection::kRedirectedToOriginal)
               .Build()) {
-  // TODO(https://crbug.com/1464637): explicitly declare a dependency on
-  // HostContentSettingsMapFactory.
+  DependsOn(HostContentSettingsMapFactory::GetInstance());
+  DependsOn(PrivacySandboxSettingsFactory::GetInstance());
   DependsOn(TrackingProtectionSettingsFactory::GetInstance());
 }
 

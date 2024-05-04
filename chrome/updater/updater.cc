@@ -165,15 +165,14 @@ int HandleUpdaterCommands(UpdaterScope updater_scope,
   // continue to function.
   ScopedIPCSupportWrapper ipc_support;
 #endif
-  // TODO(crbug.com/1476296) - eliminate the need to have a UI message type
+  // TODO(crbug.com/40279944) - eliminate the need to have a UI message type
   // on the main sequence by refactoring the splash screen and the rest of UI.
   const bool is_app_install_mode = command_line->HasSwitch(kInstallSwitch) ||
-                                   command_line->HasSwitch(kTagSwitch) ||
-                                   command_line->HasSwitch(kRuntimeSwitch) ||
                                    command_line->HasSwitch(kHandoffSwitch);
+  const bool is_silent = command_line->HasSwitch(kSilentSwitch);
   base::SingleThreadTaskExecutor main_task_executor(
-      is_app_install_mode ? base::MessagePumpType::UI
-                          : base::MessagePumpType::DEFAULT);
+      (is_app_install_mode && !is_silent) ? base::MessagePumpType::UI
+                                          : base::MessagePumpType::DEFAULT);
   if (is_app_install_mode) {
     return MakeAppInstall(command_line->HasSwitch(kSilentSwitch))->Run();
   }
@@ -227,17 +226,23 @@ int HandleUpdaterCommands(UpdaterScope updater_scope,
 // if the command is not found.
 const char* GetUpdaterCommand(const base::CommandLine* command_line) {
   // Contains the literals which are associated with specific updater commands.
-  const char* commands[] = {
-      kWindowsServiceSwitch, kCrashHandlerSwitch,
-      kInstallSwitch,        kRecoverSwitch,
-      kServerSwitch,         kTagSwitch,
-      kTestSwitch,           kUninstallIfUnusedSwitch,
-      kUninstallSelfSwitch,  kUninstallSwitch,
-      kUpdateSwitch,         kWakeSwitch,
-      kWakeAllSwitch,        kHealthCheckSwitch,
-      kHandoffSwitch,        kRuntimeSwitch,
+  static constexpr const char* commands[] = {
+      kWindowsServiceSwitch,
+      kCrashHandlerSwitch,
+      kInstallSwitch,
+      kRecoverSwitch,
+      kServerSwitch,
+      kTestSwitch,
+      kUninstallIfUnusedSwitch,
+      kUninstallSelfSwitch,
+      kUninstallSwitch,
+      kUpdateSwitch,
+      kWakeSwitch,
+      kWakeAllSwitch,
+      kHealthCheckSwitch,
+      kHandoffSwitch,
   };
-  const char** it = base::ranges::find_if(commands, [command_line](auto cmd) {
+  const auto it = base::ranges::find_if(commands, [command_line](auto cmd) {
     return command_line->HasSwitch(cmd);
   });
   // Return the command. As a workaround for recovery component invocations
@@ -287,6 +292,17 @@ base::CommandLine::StringType GetCommandLineString() {
 #endif
 }
 
+void EnableLoggingByDefault() {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (!command_line->HasSwitch(kEnableLoggingSwitch)) {
+    command_line->AppendSwitch(kEnableLoggingSwitch);
+  }
+  if (!command_line->HasSwitch(kLoggingModuleSwitch)) {
+    command_line->AppendSwitchASCII(kLoggingModuleSwitch,
+                                    kLoggingModuleSwitchValue);
+  }
+}
+
 }  // namespace
 
 int UpdaterMain(int argc, const char* const* argv) {
@@ -303,6 +319,7 @@ int UpdaterMain(int argc, const char* const* argv) {
 #if BUILDFLAG(IS_WIN)
   *command_line = GetCommandLineLegacyCompatible();
 #endif
+  EnableLoggingByDefault();
   InitializeCrashKeys(*command_line);
   const UpdaterScope updater_scope = GetUpdaterScope();
   InitLogging(updater_scope);

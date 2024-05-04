@@ -331,8 +331,9 @@ AX_TEST_F(
           {type: chrome.automation.TreeChangeType.NODE_REMOVED});
     });
 
+// TODO(crbug.com/336827654): Investigate failures.
 AX_TEST_F(
-    'SwitchAccessItemScanManagerTest', 'ScanAndTypeVirtualKeyboard',
+  'SwitchAccessItemScanManagerTest', 'DISABLED_ScanAndTypeVirtualKeyboard',
     async function() {
       const website = `<input type="text" id="testinput"></input>`;
       const rootWebArea = await this.runWithLoadedTree(website);
@@ -366,7 +367,7 @@ AX_TEST_F(
       }
     });
 
-// TODO(crbug.com/1506001): Test is flaky.
+// TODO(crbug.com/40946640): Test is flaky.
 AX_TEST_F(
     'SwitchAccessItemScanManagerTest', 'DISABLED_DismissVirtualKeyboard',
     async function() {
@@ -479,6 +480,7 @@ AX_TEST_F('SwitchAccessItemScanManagerTest', 'InitialFocus', async function() {
       chrome.automation.RoleType.DESKTOP, desktop.role,
       `Unexpected desktop ${desktop.toString()}`);
   const manager = new ItemScanManager(desktop);
+  manager.start();
   assertEquals(
       button.automationNode, manager.node_.automationNode,
       `Unexpected focus ${manager.node_.debugString()}`);

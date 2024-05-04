@@ -2772,7 +2772,6 @@ TEST_F(InputHandlerProxyEventQueueTest, OriginalEventsTracing) {
   //    stored in the begin event.
   // 2. Enum values are converted to strings for better readability.
   // So test expectations differ a bit in the SDK build and non-SDK build.
-#if BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
   EXPECT_EQ("kGestureScrollUpdate",
             begin_events[0]->GetKnownArgAsString("type"));
   EXPECT_EQ(3, begin_events[0]->GetKnownArgAsInt("coalesced_count"));
@@ -2791,29 +2790,6 @@ TEST_F(InputHandlerProxyEventQueueTest, OriginalEventsTracing) {
   EXPECT_EQ(4, begin_events[4]->GetKnownArgAsInt("coalesced_count"));
   EXPECT_EQ("kGesturePinchEnd", begin_events[5]->GetKnownArgAsString("type"));
   EXPECT_EQ("kGestureScrollEnd", begin_events[6]->GetKnownArgAsString("type"));
-#else   // !BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
-  EXPECT_EQ(static_cast<int>(WebInputEvent::Type::kGestureScrollUpdate),
-            end_events[0]->GetKnownArgAsInt("type"));
-  EXPECT_EQ(3, end_events[0]->GetKnownArgAsInt("coalesced_count"));
-  EXPECT_EQ(static_cast<int>(WebInputEvent::Type::kGestureScrollEnd),
-            end_events[1]->GetKnownArgAsInt("type"));
-
-  EXPECT_EQ(static_cast<int>(WebInputEvent::Type::kGestureScrollBegin),
-            end_events[2]->GetKnownArgAsInt("type"));
-  EXPECT_EQ(static_cast<int>(WebInputEvent::Type::kGesturePinchBegin),
-            end_events[3]->GetKnownArgAsInt("type"));
-  // Original scroll and pinch updates will be stored in the coalesced
-  // PinchUpdate of the <ScrollUpdate, PinchUpdate> pair.
-  // The ScrollUpdate of the pair doesn't carry original events and won't be
-  // traced.
-  EXPECT_EQ(static_cast<int>(WebInputEvent::Type::kGesturePinchUpdate),
-            end_events[4]->GetKnownArgAsInt("type"));
-  EXPECT_EQ(4, end_events[4]->GetKnownArgAsInt("coalesced_count"));
-  EXPECT_EQ(static_cast<int>(WebInputEvent::Type::kGesturePinchEnd),
-            end_events[5]->GetKnownArgAsInt("type"));
-  EXPECT_EQ(static_cast<int>(WebInputEvent::Type::kGestureScrollEnd),
-            end_events[6]->GetKnownArgAsInt("type"));
-#endif  // !BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
 
   testing::Mock::VerifyAndClearExpectations(&mock_input_handler_);
 }
@@ -3344,7 +3320,7 @@ TEST_P(InputHandlerProxyMainThreadScrollingReasonTest,
 
   cc::InputHandler::ScrollStatus scroll_status = kImplThreadScrollState;
   scroll_status.main_thread_repaint_reasons =
-      cc::MainThreadScrollingReason::kNoScrollingLayer;
+      cc::MainThreadScrollingReason::kPreferNonCompositedScrolling;
 
   EXPECT_CALL(mock_input_handler_, ScrollBegin(_, _))
       .WillOnce(testing::Return(scroll_status));
@@ -3360,7 +3336,7 @@ TEST_P(InputHandlerProxyMainThreadScrollingReasonTest,
   VERIFY_AND_RESET_MOCKS();
 
   EXPECT_MAIN_THREAD_WHEEL_SCROLL_SAMPLE(
-      cc::MainThreadScrollingReason::kNoScrollingLayer);
+      cc::MainThreadScrollingReason::kPreferNonCompositedScrolling);
 }
 
 TEST_P(InputHandlerProxyMainThreadScrollingReasonTest, WheelScrollHistogram) {

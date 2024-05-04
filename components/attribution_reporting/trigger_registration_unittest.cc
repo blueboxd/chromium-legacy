@@ -12,12 +12,11 @@
 #include "base/functional/function_ref.h"
 #include "base/test/gmock_expected_support.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/values_test_util.h"
 #include "base/time/time.h"
 #include "base/types/expected.h"
 #include "base/values.h"
-#include "components/aggregation_service/features.h"
+#include "components/aggregation_service/aggregation_coordinator_utils.h"
 #include "components/attribution_reporting/aggregatable_dedup_key.h"
 #include "components/attribution_reporting/aggregatable_trigger_config.h"
 #include "components/attribution_reporting/aggregatable_trigger_data.h"
@@ -144,7 +143,7 @@ TEST(TriggerRegistrationTest, Parse) {
       {
           "event_triggers_wrong_type",
           R"json({"event_trigger_data":{}})json",
-          ErrorIs(TriggerRegistrationError::kEventTriggerDataListWrongType),
+          ErrorIs(TriggerRegistrationError::kEventTriggerDataWrongType),
       },
       {
           "event_trigger_data_wrong_type",
@@ -199,8 +198,7 @@ TEST(TriggerRegistrationTest, Parse) {
       {
           "aggregatable_trigger_data_list_wrong_type",
           R"json({"aggregatable_trigger_data": {}})json",
-          ErrorIs(
-              TriggerRegistrationError::kAggregatableTriggerDataListWrongType),
+          ErrorIs(TriggerRegistrationError::kAggregatableTriggerDataWrongType),
       },
       {
           "aggregatable_trigger_data_wrong_type",
@@ -245,7 +243,7 @@ TEST(TriggerRegistrationTest, Parse) {
       {
           "aggregatable_dedup_keys_wrong_type",
           R"json({"aggregatable_deduplication_keys":{}})json",
-          ErrorIs(TriggerRegistrationError::kAggregatableDedupKeyListWrongType),
+          ErrorIs(TriggerRegistrationError::kAggregatableDedupKeyWrongType),
       },
       {
           "aggregatable_dedup_key_wrong_type",
@@ -282,7 +280,7 @@ TEST(TriggerRegistrationTest, Parse) {
   };
 
   static constexpr char kTriggerRegistrationErrorMetric[] =
-      "Conversions.TriggerRegistrationError10";
+      "Conversions.TriggerRegistrationError11";
 
   for (const auto& test_case : kTestCases) {
     SCOPED_TRACE(test_case.description);
@@ -361,10 +359,9 @@ TEST(TriggerRegistrationTest, ParseAggregationCoordinator) {
   } kTestCases[] = {
       {
           "aggregation_coordinator_origin_valid",
-          R"json({"aggregation_coordinator_origin":"https://aws.example.test"})json",
-          ValueIs(
-              Field(&TriggerRegistration::aggregation_coordinator_origin,
-                    *SuitableOrigin::Create(GURL("https://aws.example.test")))),
+          R"json({"aggregation_coordinator_origin":"https://a.test"})json",
+          ValueIs(Field(&TriggerRegistration::aggregation_coordinator_origin,
+                        *SuitableOrigin::Create(GURL("https://a.test")))),
       },
       {
           "aggregation_coordinator_origin_wrong_type",
@@ -374,19 +371,18 @@ TEST(TriggerRegistrationTest, ParseAggregationCoordinator) {
       },
       {
           "aggregation_coordinator_origin_invalid_value",
-          R"json({"aggregation_coordinator_origin":"https://unknown.example.test"})json",
+          R"json({"aggregation_coordinator_origin":"https://b.test"})json",
           ErrorIs(
               TriggerRegistrationError::kAggregationCoordinatorValueInvalid),
       },
   };
 
   static constexpr char kTriggerRegistrationErrorMetric[] =
-      "Conversions.TriggerRegistrationError10";
+      "Conversions.TriggerRegistrationError11";
 
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeatureWithParameters(
-      aggregation_service::kAggregationServiceMultipleCloudProviders,
-      {{"aws_cloud", "https://aws.example.test"}});
+  aggregation_service::ScopedAggregationCoordinatorAllowlistForTesting
+      scoped_coordinator_allowlist(
+          {url::Origin::Create(GURL("https://a.test"))});
 
   for (const auto& test_case : kTestCases) {
     SCOPED_TRACE(test_case.description);
@@ -419,18 +415,15 @@ TEST(TriggerRegistrationTest, SerializeAggregationCoordinator) {
       {
           TriggerRegistrationWith([](TriggerRegistration& r) {
             r.aggregation_coordinator_origin =
-                SuitableOrigin::Create(GURL("https://aws.example.test"));
+                SuitableOrigin::Create(GURL("https://a.test"));
           }),
           R"json({
             "aggregatable_source_registration_time": "exclude",
-            "aggregation_coordinator_origin": "https://aws.example.test",
+            "aggregation_coordinator_origin": "https://a.test",
             "debug_reporting": false
           })json",
       },
   };
-
-  base::test::ScopedFeatureList scoped_feature_list(
-      aggregation_service::kAggregationServiceMultipleCloudProviders);
 
   for (const auto& test_case : kTestCases) {
     EXPECT_THAT(test_case.input.ToJson(),

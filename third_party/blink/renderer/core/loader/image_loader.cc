@@ -47,8 +47,12 @@
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/html/cross_origin_attribute.h"
+#include "third_party/blink/renderer/core/html/html_embed_element.h"
 #include "third_party/blink/renderer/core/html/html_image_element.h"
+#include "third_party/blink/renderer/core/html/html_object_element.h"
+#include "third_party/blink/renderer/core/html/html_picture_element.h"
 #include "third_party/blink/renderer/core/html/loading_attribute.h"
+#include "third_party/blink/renderer/core/html/media/html_video_element.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/layout/layout_image.h"
@@ -459,6 +463,8 @@ void ImageLoader::DoUpdateFromElement(const DOMWrapperWorld* world,
         url.ProtocolIsData()) {
       if (auto transparent_image =
               BitmapImage::MaybeCreateTransparentPlaceholderImage(url)) {
+        document.CountUse(
+            WebFeature::kSimplifyLoadingTransparentPlaceholderImage);
         new_image_content = MakeGarbageCollected<ImageResourceContent>(
             std::move(transparent_image));
       }
@@ -910,7 +916,8 @@ ResourcePriority ImageLoader::ComputeResourcePriority() const {
 
   ResourcePriority priority = image_resource->ComputeResourcePriority();
   priority.source = ResourcePriority::Source::kImageLoader;
-  if (features::
+  if (base::FeatureList::IsEnabled(features::kLCPCriticalPathPredictor) &&
+      features::
           kLCPCriticalPathPredictorImageLoadPriorityEnabledForHTMLImageElement
               .Get()) {
     auto* html_image_element = DynamicTo<HTMLImageElement>(element_.Get());
@@ -964,8 +971,9 @@ bool ImageLoader::GetImageAnimationPolicy(
   return true;
 }
 
-ScriptPromise ImageLoader::Decode(ScriptState* script_state,
-                                  ExceptionState& exception_state) {
+ScriptPromise<IDLUndefined> ImageLoader::Decode(
+    ScriptState* script_state,
+    ExceptionState& exception_state) {
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
   // It's possible that |script_state|'s context isn't valid, which means we
   // should immediately reject the request. This is possible in situations like
@@ -975,13 +983,13 @@ ScriptPromise ImageLoader::Decode(ScriptState* script_state,
   if (!script_state->ContextIsValid() || !execution_context) {
     exception_state.ThrowDOMException(DOMExceptionCode::kEncodingError,
                                       "The source image cannot be decoded.");
-    return ScriptPromise();
+    return ScriptPromise<IDLUndefined>();
   }
 
   UseCounter::Count(execution_context, WebFeature::kImageDecodeAPI);
 
   auto* request = MakeGarbageCollected<DecodeRequest>(
-      this, MakeGarbageCollected<ScriptPromiseResolver>(
+      this, MakeGarbageCollected<ScriptPromiseResolver<IDLUndefined>>(
                 script_state, exception_state.GetContext()));
   execution_context->GetAgent()->event_loop()->EnqueueMicrotask(WTF::BindOnce(
       &DecodeRequest::ProcessForTask, WrapWeakPersistent(request)));
@@ -1020,8 +1028,9 @@ void ImageLoader::ElementDidMoveToNewDocument() {
 // request.
 uint64_t ImageLoader::DecodeRequest::s_next_request_id_ = 0;
 
-ImageLoader::DecodeRequest::DecodeRequest(ImageLoader* loader,
-                                          ScriptPromiseResolver* resolver)
+ImageLoader::DecodeRequest::DecodeRequest(
+    ImageLoader* loader,
+    ScriptPromiseResolver<IDLUndefined>* resolver)
     : request_id_(s_next_request_id_++), resolver_(resolver), loader_(loader) {}
 
 void ImageLoader::DecodeRequest::Resolve() {

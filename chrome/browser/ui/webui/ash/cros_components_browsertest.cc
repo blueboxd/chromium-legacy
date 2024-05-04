@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <string_view>
+
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/profiles/profile.h"
@@ -64,12 +66,12 @@ class CrosComponentsUIConfig : public content::WebUIConfig {
 
 struct ComponentTestData {
   // The URL of the component.
-  base::StringPiece script_src;
+  std::string_view script_src;
   // The name of the custom element.
-  base::StringPiece component_name;
+  std::string_view component_name;
   // Used to generate the test name. GTest names are only allowed to use
   // alphanumeric characters.
-  base::StringPiece gtest_name;
+  std::string_view gtest_name;
 };
 
 // Used by GTest to generate the test name.
@@ -207,8 +209,7 @@ static constexpr const ComponentTestData kComponentsTestData[] = {
         .gtest_name = "CrosIconButton",
     },
     {
-        .script_src =
-            "chrome://resources/cros_components/dropdown/dropdown.js",
+        .script_src = "chrome://resources/cros_components/dropdown/dropdown.js",
         .component_name = "cros-dropdown",
         .gtest_name = "CrosDropdown",
     },
@@ -219,26 +220,22 @@ static constexpr const ComponentTestData kComponentsTestData[] = {
         .gtest_name = "CrosDropdownOption",
     },
     {
-        .script_src =
-            "chrome://resources/cros_components/tabs/tabs.js",
+        .script_src = "chrome://resources/cros_components/tabs/tabs.js",
         .component_name = "cros-tabs",
         .gtest_name = "CrosTabs",
     },
     {
-        .script_src =
-            "chrome://resources/cros_components/tabs/tab.js",
+        .script_src = "chrome://resources/cros_components/tabs/tab.js",
         .component_name = "cros-tab",
         .gtest_name = "CrosTab",
     },
     {
-        .script_src =
-            "chrome://resources/cros_components/menu/menu.js",
+        .script_src = "chrome://resources/cros_components/menu/menu.js",
         .component_name = "cros-menu",
         .gtest_name = "CrosMenu",
     },
     {
-        .script_src =
-            "chrome://resources/cros_components/menu/menu_item.js",
+        .script_src = "chrome://resources/cros_components/menu/menu_item.js",
         .component_name = "cros-menu-item",
         .gtest_name = "CrosMenuItem",
     },
@@ -255,8 +252,7 @@ static constexpr const ComponentTestData kComponentsTestData[] = {
         .gtest_name = "CrosSubMenuItem",
     },
     {
-        .script_src =
-            "chrome://resources/cros_components/snackbar/snackbar.js",
+        .script_src = "chrome://resources/cros_components/snackbar/snackbar.js",
         .component_name = "cros-snackbar",
         .gtest_name = "CrosSnackbar",
     },
@@ -266,6 +262,14 @@ static constexpr const ComponentTestData kComponentsTestData[] = {
         .component_name = "cros-snackbar-item",
         .gtest_name = "CrosSnackbarItem",
     },
+    // TODO(b:332970280): Bring orca-feedback back once we can support safeHTML
+    // properly.
+    // {
+    //     .script_src =
+    //         "chrome://resources/cros_components/orca_feedback/orca-feedback.js",
+    //     .component_name = "mako-orca-feedback",
+    //     .gtest_name = "CrosOrcaFeedbackItem",
+    // },
 };
 
 INSTANTIATE_TEST_SUITE_P(All,

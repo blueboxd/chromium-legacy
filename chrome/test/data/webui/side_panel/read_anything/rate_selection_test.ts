@@ -1,14 +1,16 @@
 // Copyright 2024 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import 'chrome-untrusted://read-anything-side-panel.top-chrome/read_anything_toolbar.js';
+import 'chrome-untrusted://read-anything-side-panel.top-chrome/read_anything.js';
 
 import {BrowserProxy} from '//resources/cr_components/color_change_listener/browser_proxy.js';
 import type {CrIconButtonElement} from '//resources/cr_elements/cr_icon_button/cr_icon_button.js';
-import type {ReadAnythingToolbarElement} from 'chrome-untrusted://read-anything-side-panel.top-chrome/read_anything_toolbar.js';
+import {flush} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {RATE_EVENT} from 'chrome-untrusted://read-anything-side-panel.top-chrome/read_anything.js';
+import type {ReadAnythingToolbarElement} from 'chrome-untrusted://read-anything-side-panel.top-chrome/read_anything.js';
 import {assertEquals, assertFalse, assertGT, assertTrue} from 'chrome-untrusted://webui-test/chai_assert.js';
 
-import {suppressInnocuousErrors} from './common.js';
+import {getItemsInMenu, stubAnimationFrame, suppressInnocuousErrors} from './common.js';
 import {FakeReadingMode} from './fake_reading_mode.js';
 import {TestColorUpdaterBrowserProxy} from './test_color_updater_browser_proxy.js';
 
@@ -29,10 +31,11 @@ suite('RateSelection', () => {
 
     toolbar = document.createElement('read-anything-toolbar');
     document.body.appendChild(toolbar);
+    flush();
     rateButton =
         toolbar.shadowRoot!.querySelector<CrIconButtonElement>('#rate')!;
     rateEmitted = -1;
-    document.addEventListener('rate-change', event => {
+    document.addEventListener(RATE_EVENT, event => {
       rateEmitted = (event as CustomEvent).detail.rate;
     });
   });
@@ -44,22 +47,24 @@ suite('RateSelection', () => {
     });
 
     test('menu is not open', () => {
-      assertFalse(toolbar.$.rateMenu.open);
+      assertFalse(toolbar.$.rateMenu.get().open);
     });
   });
 
-  suite('on menu button click', () => {
+  test('menu button opens menu', () => {
+    stubAnimationFrame();
+
+    rateButton.click();
+    flush();
+
+    assertTrue(toolbar.$.rateMenu.get().open);
+  });
+
+  suite('dropdown menu', () => {
     let options: HTMLButtonElement[];
 
     setup(() => {
-      rateButton.click();
-      options =
-          Array.from(toolbar.$.rateMenu.querySelectorAll<HTMLButtonElement>(
-              '.dropdown-item'));
-    });
-
-    test('opens menu', () => {
-      assertTrue(toolbar.$.rateMenu.open);
+      options = getItemsInMenu(toolbar.$.rateMenu);
     });
 
     test('has multiple options', () => {
@@ -76,7 +81,7 @@ suite('RateSelection', () => {
       });
     });
 
-    suite(', then option click', () => {
+    suite('on option click', () => {
       let menuOption: HTMLButtonElement;
       let rateValue: number;
 
@@ -98,7 +103,7 @@ suite('RateSelection', () => {
       });
 
       test('closes menu', () => {
-        assertFalse(toolbar.$.rateMenu.open);
+        assertFalse(toolbar.$.rateMenu.get().open);
       });
     });
   });

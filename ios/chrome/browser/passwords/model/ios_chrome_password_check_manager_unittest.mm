@@ -6,6 +6,7 @@
 
 #import <memory>
 #import <string>
+#import <string_view>
 #import <vector>
 
 #import "base/functional/bind.h"
@@ -18,7 +19,6 @@
 #import "base/strings/utf_string_conversions.h"
 #import "base/test/bind.h"
 #import "base/test/metrics/histogram_tester.h"
-#import "base/test/scoped_feature_list.h"
 #import "base/time/time.h"
 #import "components/affiliations/core/browser/fake_affiliation_service.h"
 #import "components/keyed_service/core/service_access_type.h"
@@ -84,16 +84,16 @@ std::unique_ptr<KeyedService> MakeMockPasswordCheckManagerObserver(
   return std::make_unique<MockBulkLeakCheckService>();
 }
 
-PasswordForm MakeSavedPassword(base::StringPiece signon_realm,
-                               base::StringPiece16 username,
-                               base::StringPiece16 password = kPassword116) {
+PasswordForm MakeSavedPassword(std::string_view signon_realm,
+                               std::u16string_view username,
+                               std::u16string_view password = kPassword116) {
   PasswordForm form;
   form.url = GURL(signon_realm);
   form.signon_realm = std::string(signon_realm);
   form.username_value = std::u16string(username);
   form.password_value = std::u16string(password);
   form.in_store = PasswordForm::Store::kProfileStore;
-  // TODO(crbug.com/1223022): Once all places that operate changes on forms
+  // TODO(crbug.com/40774419): Once all places that operate changes on forms
   // via UpdateLogin properly set `password_issues`, setting them to an empty
   // map should be part of the default constructor.
   form.password_issues =
@@ -155,7 +155,6 @@ class IOSChromePasswordCheckManagerTest : public PlatformTest {
 
  private:
   web::WebTaskEnvironment task_env_{
-      web::WebTaskEnvironment::Options::DEFAULT,
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
   std::unique_ptr<ChromeBrowserState> browser_state_;
   raw_ptr<MockBulkLeakCheckService> bulk_leak_check_service_;

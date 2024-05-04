@@ -124,10 +124,6 @@ TabGroupHeader::TabGroupHeader(TabSlotController& tab_slot_controller,
   title_->SetElideBehavior(gfx::FADE_TAIL);
   if (features::IsChromeRefresh2023()) {
     title_->SetLineHeight(20);
-    if (base::FeatureList::IsEnabled(
-            features::kChromeRefresh2023TopChromeFont)) {
-      title_->SetTextStyle(views::style::STYLE_BODY_4_EMPHASIS);
-    }
   } else {
     title_->SetTextStyle(views::style::STYLE_BODY_4);
   }
@@ -327,10 +323,10 @@ gfx::Rect TabGroupHeader::GetAnchorBoundsInScreen() const {
   // Skip the insetting in TabSlotView::GetAnchorBoundsInScreen(). In this
   // context insetting makes the anchored bubble partially cut into the tab
   // outline.
-  // TODO(crbug.com/1268481): See if the layout of TabGroupHeader can be unified
-  // with tabs so that bounds do not need to be calculated differently between
-  // tabs and headers. As of writing this, hover cards to not cut into the tab
-  // outline but without this change TabGroupEditorBubbleView does.
+  // TODO(crbug.com/40803556): See if the layout of TabGroupHeader can be
+  // unified with tabs so that bounds do not need to be calculated differently
+  // between tabs and headers. As of writing this, hover cards to not cut into
+  // the tab outline but without this change TabGroupEditorBubbleView does.
   return View::GetAnchorBoundsInScreen();
 }
 
@@ -481,10 +477,12 @@ void TabGroupHeader::VisualsChanged() {
     // radius, taking into account the group underline stroke.
     const int corner_radius = group_style_->GetChipCornerRadius();
 
-    // TODO(crbug.com/1416895): The math of the layout in this function is done
+    // TODO(crbug.com/40893761): The math of the layout in this function is done
     // arithmetically and can be hard to understand. This should instead be done
     // by a layout manager.
-    const int text_height = title_->GetPreferredSize().height();
+    const int text_height =
+        title_->GetPreferredSize(views::SizeBounds(title_->width(), {}))
+            .height();
 
     const gfx::Size sync_icon_size =
         ShouldShowSyncIcon()
@@ -500,8 +498,10 @@ void TabGroupHeader::VisualsChanged() {
         (tab_style_->GetStandardWidth() - tab_style_->GetTabOverlap()) / 2 -
         sync_icon_size.width() - padding_between_label_sync_icon;
 
-    const int text_width =
-        std::min(title_->GetPreferredSize().width(), text_max_width);
+    const int text_width = std::min(
+        title_->GetPreferredSize(views::SizeBounds(title_->width(), {}))
+            .width(),
+        text_max_width);
 
     // width of the content including the text label, sync icon and the padding
     // between them
@@ -578,11 +578,8 @@ int TabGroupHeader::GetCollapsedHeaderWidth() const {
 }
 
 bool TabGroupHeader::ShouldShowSyncIcon() const {
-  const bool is_group_saved =
-      saved_tab_group_service_ && saved_tab_group_service_->model() &&
-      saved_tab_group_service_->model()->Contains(group().value());
-  return base::FeatureList::IsEnabled(features::kTabGroupsSave) &&
-         is_group_saved;
+  return saved_tab_group_service_ && saved_tab_group_service_->model() &&
+         saved_tab_group_service_->model()->Contains(group().value());
 }
 
 void TabGroupHeader::RemoveObserverFromWidget(views::Widget* widget) {
@@ -598,10 +595,9 @@ TabGroupHeader::EditorBubbleTracker::EditorBubbleTracker(
     : tab_slot_controller_(tab_slot_controller) {}
 
 TabGroupHeader::EditorBubbleTracker::~EditorBubbleTracker() {
-  if (is_open_) {
+  if (is_open_ && widget_) {
     widget_->RemoveObserver(this);
-    widget_->CloseWithReason(views::Widget::ClosedReason::kUnspecified);
-    OnWidgetDestroyed(widget_);
+    widget_->Close();
   }
   CHECK(!IsInObserverList());
 }
@@ -615,8 +611,11 @@ void TabGroupHeader::EditorBubbleTracker::Opened(views::Widget* bubble_widget) {
   tab_slot_controller_->NotifyTabGroupEditorBubbleOpened();
 }
 
-void TabGroupHeader::EditorBubbleTracker::OnWidgetDestroyed(
-    views::Widget* widget) {
+void TabGroupHeader::EditorBubbleTracker::OnWidgetDestroying(
+    views::Widget* bubble_widget) {
+  CHECK(widget_ == bubble_widget);
   is_open_ = false;
+  widget_->RemoveObserver(this);
+  widget_ = nullptr;
   tab_slot_controller_->NotifyTabGroupEditorBubbleClosed();
 }

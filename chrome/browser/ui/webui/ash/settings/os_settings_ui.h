@@ -8,12 +8,14 @@
 #include <memory>
 
 #include "ash/public/mojom/hid_preserving_bluetooth_state_controller.mojom-forward.h"
+#include "ash/webui/common/mojom/accelerator_fetcher.mojom.h"
 #include "ash/webui/common/mojom/shortcut_input_provider.mojom.h"
 #include "ash/webui/personalization_app/search/search.mojom-forward.h"
 #include "base/time/time.h"
 #include "chrome/browser/ui/webui/app_management/app_management_page_handler_base.h"
 #include "chrome/browser/ui/webui/app_management/app_management_page_handler_factory.h"
 #include "chrome/browser/ui/webui/ash/settings/pages/apps/mojom/app_notification_handler.mojom-forward.h"
+#include "chrome/browser/ui/webui/ash/settings/pages/apps/mojom/app_parental_controls_handler.mojom-forward.h"
 #include "chrome/browser/ui/webui/ash/settings/pages/device/display_settings/display_settings_provider.mojom.h"
 #include "chrome/browser/ui/webui/ash/settings/pages/device/input_device_settings/input_device_settings_provider.mojom.h"
 #include "chrome/browser/ui/webui/ash/settings/pages/files/google_drive_page_handler_factory.h"
@@ -124,6 +126,12 @@ class OSSettingsUI : public ui::MojoWebUIController {
       mojo::PendingReceiver<app_notification::mojom::AppNotificationsHandler>
           receiver);
 
+  // Instantiates implementor of the mojom::AppParentalControlsHandler mojo
+  // interface passing the pending receiver that will be internally bound.
+  void BindInterface(
+      mojo::PendingReceiver<
+          app_parental_controls::mojom::AppParentalControlsHandler> receiver);
+
   // Instantiates implementor of the mojom::AppPermissionsHandler mojo interface
   // passing the pending receiver that will be internally bound.
   void BindInterface(
@@ -139,6 +147,11 @@ class OSSettingsUI : public ui::MojoWebUIController {
   // interface passing the pending receiver that will be internally bound.
   void BindInterface(
       mojo::PendingReceiver<mojom::DisplaySettingsProvider> receiver);
+
+  // Instantiates implementor of the mojom::AcceleratorFetcher mojo
+  // interface passing the pending receiver that will be internally bound.
+  void BindInterface(
+      mojo::PendingReceiver<::ash::common::mojom::AcceleratorFetcher> receiver);
 
   // Instantiates implementor of the mojom::ShortcutInputProvider mojo
   // interface passing the pending receiver that will be internally bound.

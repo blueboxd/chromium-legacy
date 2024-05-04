@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/hash/hash.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -21,6 +22,7 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
@@ -41,7 +43,11 @@ class LogWebUIUrlTest : public InProcessBrowserTest {
 
   void RunTest(int title_ids, const GURL& url) {
     auto* tab = browser()->tab_strip_model()->GetActiveWebContents();
-    std::u16string title = l10n_util::GetStringUTF16(title_ids);
+    // When a page does not have a dedicated title the URL with a trailing slash
+    // is displayed as the title.
+    std::u16string title =
+        title_ids == -1 ? base::UTF8ToUTF16(url.GetWithEmptyPath().spec())
+                        : l10n_util::GetStringUTF16(title_ids);
     content::TitleWatcher title_watcher(tab, title);
     ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
     ASSERT_EQ(title, title_watcher.WaitAndGetTitle());
@@ -66,5 +72,15 @@ IN_PROC_BROWSER_TEST_F(LogWebUIUrlTest, TestHistoryPage) {
 IN_PROC_BROWSER_TEST_F(LogWebUIUrlTest, TestSettingsPage) {
   RunTest(IDS_SETTINGS_SETTINGS, GURL(chrome::kChromeUISettingsURL));
 }
+
+IN_PROC_BROWSER_TEST_F(LogWebUIUrlTest, TestDinoPage) {
+  RunTest(-1, content::GetWebUIURL(content::kChromeUIDinoHost));
+}
+
+#if !BUILDFLAG(IS_ANDROID)
+IN_PROC_BROWSER_TEST_F(LogWebUIUrlTest, TestChromeUntrustedPage) {
+  RunTest(-1, GURL(chrome::kChromeUIUntrustedPrintURL));
+}
+#endif
 
 }  // namespace webui

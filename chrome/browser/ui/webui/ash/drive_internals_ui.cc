@@ -12,6 +12,7 @@
 #include <memory>
 #include <sstream>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -228,7 +229,7 @@ std::pair<ino_t, Value::List> GetServiceLogContents(const FilePath& log_path,
         continue;
       }
 
-      base::StringPiece log_line = line;
+      std::string_view log_line = line;
       size_t severity_index = 0;
       if (base::MatchPattern(log_line.substr(0, pattern_length),
                              kTimestampPattern) &&
@@ -448,17 +449,17 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler,
   }
 
   void UpdateAboutResourceSection() {
-    // TODO(crbug.com/896123): Maybe worth implementing.
+    // TODO(crbug.com/41421123): Maybe worth implementing.
     SetSectionEnabled("account-information-section", false);
   }
 
   void UpdateDeltaUpdateStatusSection() {
-    // TODO(crbug.com/896123): Maybe worth implementing.
+    // TODO(crbug.com/41421123): Maybe worth implementing.
     SetSectionEnabled("delta-update-status-section", false);
   }
 
   void UpdateInFlightOperationsSection() {
-    // TODO(crbug.com/896123): Maybe worth implementing.
+    // TODO(crbug.com/41421123): Maybe worth implementing.
     SetSectionEnabled("in-flight-operations-section", false);
   }
 
@@ -784,7 +785,7 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler,
   }
 
   void UpdateCacheContentsSection() {
-    // TODO(crbug.com/896123): Maybe worth implementing.
+    // TODO(crbug.com/41421123): Maybe worth implementing.
     SetSectionEnabled("cache-contents-section", false);
   }
 

@@ -165,7 +165,7 @@ TEST_F(NotificationPermissionReviewServiceTest,
   EXPECT_EQ(GetUpdatedReviewList(service).size(), 2UL);
 }
 
-// TODO(crbug.com/1363714): Move this test to ContentSettingsPatternTest.
+// TODO(crbug.com/40865125): Move this test to ContentSettingsPatternTest.
 TEST_F(NotificationPermissionReviewServiceTest, SingleOriginTest) {
   auto pattern_1 =
       ContentSettingsPattern::FromString("https://[*.]example1.com:443");
@@ -249,6 +249,8 @@ TEST_F(NotificationPermissionReviewServiceTest,
       NotificationsEngagementServiceFactory::GetForProfile(profile());
   notification_engagement_service->RecordNotificationDisplayed(
       GURL("https://google.com:443"), 10 * 7);
+  // Letting service update the cached result.
+  safety_hub_test_util::UpdateSafetyHubServiceAsync(service);
   const auto& updated_notification_permissions =
       service->PopulateNotificationPermissionReviewData();
   EXPECT_EQ(2UL, updated_notification_permissions.size());

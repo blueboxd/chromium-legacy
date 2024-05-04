@@ -241,12 +241,6 @@ public final class ChromePreferenceKeys {
     public static final String EXPLORE_OFFLINE_CONTENT_AVAILABILITY_STATUS =
             "Chrome.NTPExploreOfflineCard.HasExploreOfflineContent";
 
-    /**
-     * The Feed articles visibility. This value is used as a pre-native cache and should be kept
-     * consistent with {@link Pref.ARTICLES_LIST_VISIBLE}.
-     */
-    public static final String FEED_ARTICLES_LIST_VISIBLE = "Chrome.Feed.ArticlesListVisible";
-
     public static final String FIRST_RUN_CACHED_TOS_ACCEPTED = "first_run_tos_accepted";
     public static final String FIRST_RUN_FLOW_COMPLETE = "first_run_flow";
     // BACKUP_FLOW_SIGNIN_ACCOUNT_NAME used to be employed for the FRE too, thus the "first_run_"
@@ -268,6 +262,10 @@ public final class ChromePreferenceKeys {
             AccessibilityConstants.FONT_USER_SET_FORCE_ENABLE_ZOOM;
 
     public static final String HISTORY_SHOW_HISTORY_INFO = "history_home_show_info";
+
+    /** Whether the app-specific history info text was already seen by users. */
+    public static final String HISTORY_APP_SPECIFIC_INFO_SEEN =
+            "Chrome.History.AppSpecificInfoSeen";
 
     /** Keys used to save settings related to homepage. */
     public static final String DEPRECATED_HOMEPAGE_CUSTOM_URI = "homepage_custom_uri";
@@ -541,6 +539,14 @@ public final class ChromePreferenceKeys {
             new KeyPrefix("Chrome.HomeModules.FreshnessCount.*");
 
     /**
+     * The timestamp of the last time when a freshness store was logged for the module type. The
+     * number at the end should be consistent with {@link
+     * org.chromium.chrome.browser.magic_stack.ModuleDelegate.ModuleType}
+     */
+    public static final KeyPrefix HOME_MODULES_FRESHNESS_TIMESTAMP_MS =
+            new KeyPrefix("Chrome.HomeModules.FreshnessScoreTimeStamp.*");
+
+    /**
      * Save the timestamp of the last time that we record metrics on whether user enables the price
      * tracking annotations.
      */
@@ -759,13 +765,13 @@ public final class ChromePreferenceKeys {
     public static final String SIGNIN_PROMO_BOOKMARKS_DECLINED = "signin_promo_bookmarks_declined";
 
     /**
-     * Whether the user dismissed the personalized sign in promo from the Settings.
-     * Default value is false.
+     * Whether the user dismissed the personalized sign in promo from the Settings. Default value is
+     * false.
      */
     public static final String SIGNIN_PROMO_SETTINGS_PERSONALIZED_DISMISSED =
             "settings_personalized_signin_promo_dismissed";
 
-    // TODO(https://crbug.com/1091858): Remove this after migrating the legacy code that uses
+    // TODO(crbug.com/40697988): Remove this after migrating the legacy code that uses
     //                                  the sync account before the native is loaded.
     public static final String SIGNIN_LEGACY_SYNC_ACCOUNT_EMAIL = "google.services.username";
 
@@ -794,6 +800,13 @@ public final class ChromePreferenceKeys {
             "org.chromium.chrome.browser.tabmodel.TabPersistentStore."
                     + "HAS_RUN_MULTI_INSTANCE_FILE_MIGRATION";
 
+    public static final String TAB_DECLUTTER_ARCHIVE_ENABLED = "Chrome.Tab.ArchiveEnabled";
+    public static final String TAB_DECLUTTER_ARCHIVE_TIME_DELTA_HOURS =
+            "Chrome.Tab.ArchiveTimeDeltaHours";
+    public static final String TAB_DECLUTTER_AUTO_DELETE_ENABLED =
+            "Chrome.Tab.ArchiveAutoDeleteEnabled";
+    public static final String TAB_DECLUTTER_AUTO_DELETE_TIME_DELTA_HOURS =
+            "Chrome.Tab.ArchiveAutoDeleteTimeDeltaHours";
     public static final String TAB_ID_MANAGER_NEXT_ID =
             "org.chromium.chrome.browser.tab.TabIdManager.NEXT_ID";
 
@@ -931,11 +944,12 @@ public final class ChromePreferenceKeys {
                 DOWNLOAD_INTERSTITIAL_DOWNLOAD_PENDING_REMOVAL,
                 DSE_NEW_TAB_URL,
                 EXPLORE_OFFLINE_CONTENT_AVAILABILITY_STATUS,
-                FEED_ARTICLES_LIST_VISIBLE,
                 FIRST_RUN_SKIPPED_BY_POLICY,
                 FLAGS_LAST_CACHED_MINIMAL_BROWSER_FLAGS_TIME_MILLIS,
+                HISTORY_APP_SPECIFIC_INFO_SEEN,
                 HOME_MODULES_MODULE_TYPE.pattern(),
                 HOME_MODULES_FRESHNESS_COUNT.pattern(),
+                HOME_MODULES_FRESHNESS_TIMESTAMP_MS.pattern(),
                 HOMEPAGE_CUSTOM_GURL,
                 HOMEPAGE_LOCATION_POLICY_GURL,
                 HOMEPAGE_USE_CHROME_NTP,
@@ -1017,6 +1031,10 @@ public final class ChromePreferenceKeys {
                 SWAA_TIMESTAMP,
                 SWAA_STATUS,
                 TABBED_ACTIVITY_LAST_VISIBLE_TIME_MS,
+                TAB_DECLUTTER_ARCHIVE_ENABLED,
+                TAB_DECLUTTER_ARCHIVE_TIME_DELTA_HOURS,
+                TAB_DECLUTTER_AUTO_DELETE_ENABLED,
+                TAB_DECLUTTER_AUTO_DELETE_TIME_DELTA_HOURS,
                 TWA_DISCLOSURE_SEEN_PACKAGES,
                 UMA_ON_POSTCREATE_COUNTER,
                 UMA_ON_RESUME_COUNTER,

@@ -32,7 +32,7 @@ enum class SnippetButtonState {
 // Favicon image to display the search engine icon.
 @property(nonatomic, strong) UIImage* faviconImage;
 // The search engine name.
-@property(nonatomic, strong, readonly) UILabel* nameLabel;
+@property(nonatomic, copy) NSString* searchEngineName;
 // The search engine snippet for the description.
 @property(nonatomic, copy) NSString* snippetText;
 // Snippet state (hidden or closed). Setting the value using this property
@@ -41,8 +41,9 @@ enum class SnippetButtonState {
 // YES if the search engine has been selected by the user.
 @property(nonatomic, assign) BOOL checked;
 // Identifier for button.
-@property(nonatomic, weak) NSString* searchEngineKeyword;
-// View to layout when animating the chevron.
+@property(nonatomic, copy) NSString* searchEngineKeyword;
+// View to layout when animating the chevron. This should be a weak pointer
+// to avoid a circular retain cycle, since it should be a super view of `self`.
 @property(nonatomic, weak) UIView* animatedLayoutView;
 // YES to hide an horizontal separator at the button of the button.
 // Default value is NO.

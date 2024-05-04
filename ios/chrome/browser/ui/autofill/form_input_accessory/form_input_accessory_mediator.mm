@@ -5,11 +5,15 @@
 #import "ios/chrome/browser/ui/autofill/form_input_accessory/form_input_accessory_mediator.h"
 
 #import "base/apple/foundation_util.h"
+#import "base/containers/contains.h"
+#import "base/containers/fixed_flat_set.h"
 #import "base/ios/block_types.h"
 #import "base/ios/ios_util.h"
 #import "base/memory/raw_ptr.h"
 #import "base/metrics/histogram_functions.h"
 #import "base/strings/sys_string_conversions.h"
+#import "components/autofill/core/browser/address_data_manager.h"
+#import "components/autofill/core/browser/payments_data_manager.h"
 #import "components/autofill/core/browser/personal_data_manager.h"
 #import "components/autofill/core/common/autofill_features.h"
 #import "components/autofill/ios/browser/form_suggestion.h"
@@ -17,7 +21,7 @@
 #import "components/autofill/ios/browser/personal_data_manager_observer_bridge.h"
 #import "components/autofill/ios/form_util/form_activity_observer_bridge.h"
 #import "components/autofill/ios/form_util/form_activity_params.h"
-#import "components/password_manager/core/browser/password_counter.h"
+#import "components/feature_engagement/public/tracker.h"
 #import "components/prefs/pref_service.h"
 #import "ios/chrome/browser/autofill/model/bottom_sheet/autofill_bottom_sheet_observer_bridge.h"
 #import "ios/chrome/browser/autofill/model/bottom_sheet/autofill_bottom_sheet_tab_helper.h"
@@ -25,6 +29,7 @@
 #import "ios/chrome/browser/autofill/model/form_input_suggestions_provider.h"
 #import "ios/chrome/browser/autofill/model/form_suggestion_tab_helper.h"
 #import "ios/chrome/browser/default_browser/model/default_browser_interest_signals.h"
+#import "ios/chrome/browser/passwords/model/password_counter_delegate_bridge.h"
 #import "ios/chrome/browser/shared/coordinator/chrome_coordinator/chrome_coordinator.h"
 #import "ios/chrome/browser/shared/model/prefs/pref_backed_boolean.h"
 #import "ios/chrome/browser/shared/model/prefs/pref_names.h"
@@ -50,35 +55,30 @@
 
 using base::UmaHistogramEnumeration;
 
-// Protocol to be notified when number of passwords in the store changes.
-@protocol PasswordCounterObserver <NSObject>
+namespace {
 
-- (void)passwordCounterChanged:(size_t)totalPasswords;
+// Returns whether the input field type triggers the keyboard to open. If the
+// field type isn't recognized, it returns the provided default value.
+bool InputTriggersKeyboard(std::string field_type, bool default_value) {
+  static const auto triggers_keyboard = base::MakeFixedFlatSet<std::string>(
+      {"email", "number", "password", "search", "tel", "text", "url", "week"});
+  static const auto no_keyboard = base::MakeFixedFlatSet<std::string>(
+      {"button", "checkbox", "color", "date", "datetime-local", "file",
+       "hidden", "image", "month", "radio", "range", "reset", "submit",
+       "time"});
 
-@end
-
-class PasswordCounterDelegateBridge
-    : public password_manager::PasswordCounter::Delegate {
- public:
-  explicit PasswordCounterDelegateBridge(
-      id<PasswordCounterObserver> observer,
-      password_manager::PasswordStoreInterface* profile_store,
-      password_manager::PasswordStoreInterface* account_store)
-      : observer_(observer), counter_(profile_store, account_store, this) {}
-  PasswordCounterDelegateBridge(const PasswordCounterDelegateBridge&) = delete;
-  PasswordCounterDelegateBridge& operator=(
-      const PasswordCounterDelegateBridge&) = delete;
-
-  // PasswordCounter::Delegate:
-  void OnPasswordCounterChanged() override {
-    [observer_ passwordCounterChanged:(counter_.profile_passwords() +
-                                       counter_.account_passwords())];
+  if (base::Contains(triggers_keyboard, field_type)) {
+    return true;
   }
 
- private:
-  __weak id<PasswordCounterObserver> observer_ = nil;
-  password_manager::PasswordCounter counter_;
-};
+  if (base::Contains(no_keyboard, field_type)) {
+    return false;
+  }
+
+  return default_value;
+}
+
+}  // namespace
 
 @interface FormInputAccessoryMediator () <AutofillBottomSheetObserving,
                                           BooleanObserver,
@@ -105,9 +105,6 @@ class PasswordCounterDelegateBridge
 // The object that provides suggestions while filling forms.
 @property(nonatomic, weak) id<FormInputSuggestionsProvider> provider;
 
-// Whether suggestions are disabled.
-@property(nonatomic, assign) BOOL suggestionsDisabled;
-
 // YES if the latest form activity was made in a form that supports the
 // accessory.
 @property(nonatomic, assign) BOOL validActivityForAccessoryView;
@@ -124,6 +121,9 @@ class PasswordCounterDelegateBridge
 // ID of the latest query to get suggestions. Using a uint to handle overflow
 // which will realistically never happen, but just in case.
 @property(nonatomic, assign) uint latestQueryId;
+
+// Feature engagement tracker for notifying promo events.
+@property(nonatomic, assign) feature_engagement::Tracker* engagementTracker;
 
 @end
 
@@ -168,6 +168,9 @@ class PasswordCounterDelegateBridge
 
   // Pref tracking if bottom omnibox is enabled.
   PrefBackedBoolean* _bottomOmniboxEnabled;
+
+  // Whether the keyboard height change notifications are enabled.
+  BOOL _keyboardHeightChangeNotificationsEnabled;
 }
 
 - (instancetype)
@@ -182,7 +185,8 @@ class PasswordCounterDelegateBridge
           (scoped_refptr<password_manager::PasswordStoreInterface>)
               accountPasswordStore
       securityAlertHandler:(id<SecurityAlertCommands>)securityAlertHandler
-    reauthenticationModule:(ReauthenticationModule*)reauthenticationModule {
+    reauthenticationModule:(ReauthenticationModule*)reauthenticationModule
+         engagementTracker:(feature_engagement::Tracker*)engagementTracker {
   self = [super init];
   if (self) {
     _consumer = consumer;
@@ -224,6 +228,14 @@ class PasswordCounterDelegateBridge
                       selector:@selector(keyboardWillShow:)
                           name:UIKeyboardWillShowNotification
                         object:nil];
+    [defaultCenter addObserver:self
+                      selector:@selector(keyboardWillChangeFrame:)
+                          name:UIKeyboardWillChangeFrameNotification
+                        object:nil];
+    [defaultCenter addObserver:self
+                      selector:@selector(textInputModeDidChange:)
+                          name:UITextInputCurrentInputModeDidChangeNotification
+                        object:nil];
 
     // In BVC unit tests the password store doesn't exist. Skip creating the
     // counter.
@@ -242,10 +254,11 @@ class PasswordCounterDelegateBridge
       // button is hidden when local cards are saved and then
       // kAutofillCreditCardEnabled is changed to disabled.
       consumer.creditCardButtonHidden =
-          personalDataManager->GetCreditCards().empty();
+          personalDataManager->payments_data_manager().GetCreditCards().empty();
 
-      consumer.addressButtonHidden =
-          personalDataManager->GetProfilesToSuggest().empty();
+      consumer.addressButtonHidden = personalDataManager->address_data_manager()
+                                         .GetProfilesToSuggest()
+                                         .empty();
     } else {
       consumer.creditCardButtonHidden = YES;
       consumer.addressButtonHidden = YES;
@@ -258,12 +271,16 @@ class PasswordCounterDelegateBridge
     _validActivityForAccessoryView = YES;
 
     _latestQueryId = 0;
+
+    _engagementTracker = engagementTracker;
+
+    self.suggestionsEnabled = YES;
   }
   return self;
 }
 
 - (void)dealloc {
-  // TODO(crbug.com/1454777)
+  // TODO(crbug.com/40272467)
   DUMP_WILL_BE_CHECK(!_formActivityObserverBridge.get());
   DUMP_WILL_BE_CHECK(!_autofillBottomSheetObserverBridge.get());
   DUMP_WILL_BE_CHECK(!_personalDataManager);
@@ -317,6 +334,36 @@ class PasswordCounterDelegateBridge
 
 - (void)keyboardWillShow:(NSNotification*)notification {
   [self updateSuggestionsIfNeeded];
+  _keyboardHeightChangeNotificationsEnabled = YES;
+}
+
+- (void)keyboardWillChangeFrame:(NSNotification*)notification {
+  if (!_keyboardHeightChangeNotificationsEnabled) {
+    return;
+  }
+
+  if (@available(iOS 16.1, *)) {
+    CGRect oldKeyboardRect =
+        [notification.userInfo[UIKeyboardFrameBeginUserInfoKey] CGRectValue];
+    CGRect newKeyboardRect =
+        [notification.userInfo[UIKeyboardFrameEndUserInfoKey] CGRectValue];
+
+    // We're only interested in quick height only changes.
+    if (oldKeyboardRect.origin.x != newKeyboardRect.origin.x ||
+        oldKeyboardRect.size.width != newKeyboardRect.size.width) {
+      return;
+    }
+
+    [self.consumer keyboardHeightChanged:newKeyboardRect.size.height
+                               oldHeight:oldKeyboardRect.size.height];
+  }
+}
+
+- (void)textInputModeDidChange:(NSNotification*)notification {
+  // Disable height change notifications when they are caused by the keyboard
+  // language or layout changing. They will get re-enabled in the next
+  // "keyboardWillShow:" call above.
+  _keyboardHeightChangeNotificationsEnabled = NO;
 }
 
 #pragma mark - AutofillBottomSheetObserving
@@ -387,7 +434,12 @@ class PasswordCounterDelegateBridge
     return;
   }
 
-  if (_lastSeenParams.field_type != params.field_type) {
+  // Check if we need to reload input views after using an input which did not
+  // require the keyboard accessory to show up. Err on the side of calling
+  // "reloadInputViews" if the input field types are unrecognized.
+  if (!InputTriggersKeyboard(_lastSeenParams.field_type,
+                             /*default_value=*/false) &&
+      InputTriggersKeyboard(params.field_type, /*default_value=*/true)) {
     [GetFirstResponder() reloadInputViews];
   }
   _lastSeenParams = params;
@@ -414,6 +466,23 @@ class PasswordCounterDelegateBridge
 - (void)formInputAccessoryViewDidTapManualFillButton:
     (FormInputAccessoryView*)sender {
   [self.consumer manualFillButtonPressed:sender.manualFillButton];
+}
+
+- (void)formInputAccessoryViewDidTapPasswordManualFillButton:
+    (FormInputAccessoryView*)sender {
+  [self.consumer
+      passwordManualFillButtonPressed:sender.passwordManualFillButton];
+}
+
+- (void)formInputAccessoryViewDidTapCreditCardManualFillButton:
+    (FormInputAccessoryView*)sender {
+  [self.consumer
+      creditCardManualFillButtonPressed:sender.creditCardManualFillButton];
+}
+
+- (void)formInputAccessoryViewDidTapAddressManualFillButton:
+    (FormInputAccessoryView*)sender {
+  [self.consumer addressManualFillButtonPressed:sender.addressManualFillButton];
 }
 
 - (FormInputAccessoryViewTextData*)textDataforFormInputAccessoryView:
@@ -462,13 +531,16 @@ class PasswordCounterDelegateBridge
 
 #pragma mark - Public
 
-- (void)disableSuggestions {
-  self.suggestionsDisabled = YES;
-}
+- (void)setSuggestionsEnabled:(BOOL)enabled {
+  // Disable height change notifications when they are caused by the keyboard
+  // getting reset. They will get re-enabled in the next "keyboardWillShow:"
+  // call above.
+  _keyboardHeightChangeNotificationsEnabled = NO;
 
-- (void)enableSuggestions {
-  self.suggestionsDisabled = NO;
-  [self updateSuggestionsIfNeeded];
+  _suggestionsEnabled = enabled;
+  if (enabled) {
+    [self updateSuggestionsIfNeeded];
+  }
 }
 
 - (BOOL)isInputAccessoryViewActive {
@@ -504,7 +576,7 @@ class PasswordCounterDelegateBridge
 
 - (void)setOriginalPrefService:(PrefService*)originalPrefService {
   _originalPrefService = originalPrefService;
-  if (IsBottomOmniboxSteadyStateEnabled() && _originalPrefService) {
+  if (IsBottomOmniboxAvailable() && _originalPrefService) {
     _bottomOmniboxEnabled =
         [[PrefBackedBoolean alloc] initWithPrefService:_originalPrefService
                                               prefName:prefs::kBottomOmnibox];
@@ -584,7 +656,7 @@ class PasswordCounterDelegateBridge
 
   [self.handler resetFormInputView];
 
-  self.suggestionsDisabled = NO;
+  self.suggestionsEnabled = YES;
   self.currentProvider = nil;
 }
 
@@ -626,19 +698,20 @@ class PasswordCounterDelegateBridge
 // Post the passed `suggestions` to the consumer.
 - (void)updateWithProvider:(id<FormInputSuggestionsProvider>)provider
                suggestions:(NSArray<FormSuggestion*>*)suggestions {
-  if (self.suggestionsDisabled)
+  if (!self.suggestionsEnabled) {
     return;
+  }
 
   // If suggestions are enabled, update `currentProvider`.
   self.currentProvider = provider;
 
   // Post it to the consumer.
   self.consumer.mainFillingProduct = provider.mainFillingProduct;
-  self.consumer.currentFieldId = _lastSeenParams.unique_field_id;
+  self.consumer.currentFieldId = _lastSeenParams.field_renderer_id;
   [self.consumer showAccessorySuggestions:suggestions];
   if (suggestions.count) {
     if (provider.type == SuggestionProviderTypeAutofill) {
-      default_browser::NotifyAutofillSuggestionsShown();
+      default_browser::NotifyAutofillSuggestionsShown(self.engagementTracker);
     }
 
     if (suggestions.firstObject.featureForIPH.length > 0) {
@@ -654,16 +727,16 @@ class PasswordCounterDelegateBridge
 
 // Logs information about what type of suggestion the user selected.
 - (void)logReauthenticationEvent:(ReauthenticationEvent)reauthenticationEvent
-                     popupItemId:(autofill::PopupItemId)popupItemId {
+                     popupItemId:(autofill::SuggestionType)popupItemId {
   std::string histogramName;
   if (self.currentProvider.type == SuggestionProviderTypePassword) {
     histogramName = "IOS.Reauth.Password.Autofill";
   } else if (self.currentProvider.type == SuggestionProviderTypeAutofill) {
     switch (popupItemId) {
-      case autofill::PopupItemId::kCreditCardEntry:
+      case autofill::SuggestionType::kCreditCardEntry:
         histogramName = "IOS.Reauth.CreditCard.Autofill";
         break;
-      case autofill::PopupItemId::kAddressEntry:
+      case autofill::SuggestionType::kAddressEntry:
         histogramName = "IOS.Reauth.Address.Autofill";
         break;
       default:
@@ -678,7 +751,8 @@ class PasswordCounterDelegateBridge
 // Handles the selection of a suggestion.
 - (void)handleSuggestion:(FormSuggestion*)formSuggestion {
   if (self.currentProvider.type == SuggestionProviderTypePassword) {
-    default_browser::NotifyPasswordAutofillSuggestionUsed();
+    default_browser::NotifyPasswordAutofillSuggestionUsed(
+        self.engagementTracker);
   }
 
   if (formSuggestion.featureForIPH.length) {
@@ -694,7 +768,6 @@ class PasswordCounterDelegateBridge
 
 - (void)booleanDidChange:(id<ObservableBoolean>)observableBoolean {
   if (observableBoolean == _bottomOmniboxEnabled) {
-    CHECK(IsBottomOmniboxSteadyStateEnabled());
     [self.consumer newOmniboxPositionIsBottom:_bottomOmniboxEnabled.value];
   }
 }
@@ -753,10 +826,12 @@ class PasswordCounterDelegateBridge
   DCHECK(_personalDataManager);
 
   self.consumer.creditCardButtonHidden =
-      _personalDataManager->GetCreditCards().empty();
+      _personalDataManager->payments_data_manager().GetCreditCards().empty();
 
   self.consumer.addressButtonHidden =
-      _personalDataManager->GetProfilesToSuggest().empty();
+      _personalDataManager->address_data_manager()
+          .GetProfilesToSuggest()
+          .empty();
 }
 
 #pragma mark - Tests

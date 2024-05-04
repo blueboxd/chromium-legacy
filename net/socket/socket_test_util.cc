@@ -10,7 +10,9 @@
 #include <stdio.h>
 
 #include <memory>
+#include <ostream>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -248,6 +250,60 @@ bool StaticSocketDataHelper::VerifyWriteData(const std::string& data,
         << HexDump(expected_data);
   }
   return expected_data == actual_data;
+}
+
+void StaticSocketDataHelper::ExpectAllReadDataConsumed(
+    SocketDataPrinter* printer) const {
+  if (AllReadDataConsumed()) {
+    return;
+  }
+
+  std::ostringstream msg;
+  if (read_index_ < read_count()) {
+    msg << "Unconsumed reads:\n";
+    for (size_t i = read_index_; i < read_count(); i++) {
+      msg << (reads_[i].mode == ASYNC ? "ASYNC" : "SYNC") << " MockRead seq "
+          << reads_[i].sequence_number << ":\n";
+      if (reads_[i].result != OK) {
+        msg << "Result: " << reads_[i].result << "\n";
+      }
+      if (reads_[i].data) {
+        std::string data(reads_[i].data, reads_[i].data_len);
+        if (printer) {
+          msg << printer->PrintWrite(data);
+        }
+        msg << HexDump(data);
+      }
+    }
+  }
+  EXPECT_TRUE(AllReadDataConsumed()) << msg.str();
+}
+
+void StaticSocketDataHelper::ExpectAllWriteDataConsumed(
+    SocketDataPrinter* printer) const {
+  if (AllWriteDataConsumed()) {
+    return;
+  }
+
+  std::ostringstream msg;
+  if (write_index_ < write_count()) {
+    msg << "Unconsumed writes:\n";
+    for (size_t i = write_index_; i < write_count(); i++) {
+      msg << (writes_[i].mode == ASYNC ? "ASYNC" : "SYNC") << " MockWrite seq "
+          << writes_[i].sequence_number << ":\n";
+      if (writes_[i].result != OK) {
+        msg << "Result: " << writes_[i].result << "\n";
+      }
+      if (writes_[i].data) {
+        std::string data(writes_[i].data, writes_[i].data_len);
+        if (printer) {
+          msg << printer->PrintWrite(data);
+        }
+        msg << HexDump(data);
+      }
+    }
+  }
+  EXPECT_TRUE(AllWriteDataConsumed()) << msg.str();
 }
 
 const MockWrite& StaticSocketDataHelper::PeekRealWrite() const {
@@ -546,6 +602,14 @@ void SequencedSocketData::CancelPendingRead() {
 
 bool SequencedSocketData::AllWriteDataConsumed() const {
   return helper_.AllWriteDataConsumed();
+}
+
+void SequencedSocketData::ExpectAllReadDataConsumed() const {
+  helper_.ExpectAllReadDataConsumed(printer_.get());
+}
+
+void SequencedSocketData::ExpectAllWriteDataConsumed() const {
+  helper_.ExpectAllWriteDataConsumed(printer_.get());
 }
 
 bool SequencedSocketData::IsIdle() const {
@@ -932,7 +996,8 @@ void MockClientSocket::RunCallback(CompletionOnceCallback callback,
 MockTCPClientSocket::MockTCPClientSocket(const AddressList& addresses,
                                          net::NetLog* net_log,
                                          SocketDataProvider* data)
-    : MockClientSocket(NetLogWithSource::Make(net_log, NetLogSourceType::NONE)),
+    : MockClientSocket(
+          NetLogWithSource::Make(net_log, NetLogSourceType::SOCKET)),
       addresses_(addresses),
       data_(data),
       read_data_(SYNCHRONOUS, ERR_UNEXPECTED) {
@@ -1400,13 +1465,12 @@ NextProto MockSSLClientSocket::GetNegotiatedProtocol() const {
   return data_->next_proto;
 }
 
-std::optional<base::StringPiece>
+std::optional<std::string_view>
 MockSSLClientSocket::GetPeerApplicationSettings() const {
   return data_->peer_application_settings;
 }
 
 bool MockSSLClientSocket::GetSSLInfo(SSLInfo* requested_ssl_info) {
-  requested_ssl_info->Reset();
   *requested_ssl_info = data_->ssl_info;
   return true;
 }
@@ -1452,9 +1516,9 @@ void MockSSLClientSocket::GetSSLCertRequestInfo(
   }
 }
 
-int MockSSLClientSocket::ExportKeyingMaterial(base::StringPiece label,
+int MockSSLClientSocket::ExportKeyingMaterial(std::string_view label,
                                               bool has_context,
-                                              base::StringPiece context,
+                                              std::string_view context,
                                               unsigned char* out,
                                               unsigned int outlen) {
   memset(out, 'A', outlen);
@@ -1495,7 +1559,8 @@ MockUDPClientSocket::MockUDPClientSocket(SocketDataProvider* data,
     : data_(data),
       read_data_(SYNCHRONOUS, ERR_UNEXPECTED),
       source_host_(IPAddress(192, 0, 2, 33)),
-      net_log_(NetLogWithSource::Make(net_log, NetLogSourceType::NONE)) {
+      net_log_(NetLogWithSource::Make(net_log,
+                                      NetLogSourceType::UDP_CLIENT_SOCKET)) {
   if (data_) {
     data_->Initialize(this);
     peer_addr_ = data->connect_data().peer_addr;

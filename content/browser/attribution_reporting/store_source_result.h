@@ -6,19 +6,23 @@
 #define CONTENT_BROWSER_ATTRIBUTION_REPORTING_STORE_SOURCE_RESULT_H_
 
 #include <optional>
-#include <utility>
 
 #include "base/time/time.h"
+#include "content/browser/attribution_reporting/storable_source.h"
 #include "content/browser/attribution_reporting/store_source_result.mojom-forward.h"
-#include "content/browser/attribution_reporting/store_source_result_internal.h"
 #include "content/common/content_export.h"
+#include "third_party/abseil-cpp/absl/numeric/int128.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
 
 namespace content {
 
 class CONTENT_EXPORT StoreSourceResult {
  public:
-  struct Success {};
+  struct Success {
+    std::optional<base::Time> min_fake_report_time;
+    explicit Success(std::optional<base::Time> min_fake_report_time)
+        : min_fake_report_time(min_fake_report_time) {}
+  };
 
   struct InternalError {};
 
@@ -36,12 +40,6 @@ class CONTENT_EXPORT StoreSourceResult {
 
   struct ProhibitedByBrowserPolicy {};
 
-  struct SuccessNoised {
-    std::optional<base::Time> min_fake_report_time;
-    explicit SuccessNoised(std::optional<base::Time> min_fake_report_time)
-        : min_fake_report_time(min_fake_report_time) {}
-  };
-
   struct DestinationReportingLimitReached {
     int limit;
     explicit DestinationReportingLimitReached(int limit) : limit(limit) {}
@@ -54,9 +52,21 @@ class CONTENT_EXPORT StoreSourceResult {
     explicit DestinationBothLimitsReached(int limit) : limit(limit) {}
   };
 
-  struct ReportingOriginsPerSiteLimitReached {};
+  struct ReportingOriginsPerSiteLimitReached {
+    int limit;
+    explicit ReportingOriginsPerSiteLimitReached(int limit) : limit(limit) {}
+  };
 
-  struct ExceedsMaxChannelCapacity {};
+  struct ExceedsMaxChannelCapacity {
+    double limit;
+    explicit ExceedsMaxChannelCapacity(double limit) : limit(limit) {}
+  };
+
+  struct ExceedsMaxTriggerStateCardinality {
+    absl::uint128 limit;
+    explicit ExceedsMaxTriggerStateCardinality(absl::uint128 limit)
+        : limit(limit) {}
+  };
 
   using Result = absl::variant<Success,
                                InternalError,
@@ -64,32 +74,34 @@ class CONTENT_EXPORT StoreSourceResult {
                                InsufficientUniqueDestinationCapacity,
                                ExcessiveReportingOrigins,
                                ProhibitedByBrowserPolicy,
-                               SuccessNoised,
                                DestinationReportingLimitReached,
                                DestinationGlobalLimitReached,
                                DestinationBothLimitsReached,
                                ReportingOriginsPerSiteLimitReached,
-                               ExceedsMaxChannelCapacity>;
+                               ExceedsMaxChannelCapacity,
+                               ExceedsMaxTriggerStateCardinality>;
 
-  // Allows implicit conversion from one of the variant types.
-  template <typename T,
-            internal::EnableIfIsVariantAlternative<T, Result> = true>
-  StoreSourceResult(T&& result)  // NOLINT
-      : result_(std::forward<T>(result)) {}
+  StoreSourceResult(StorableSource, bool is_noised, Result);
 
-  ~StoreSourceResult() = default;
+  ~StoreSourceResult();
 
-  StoreSourceResult(const StoreSourceResult&) = default;
-  StoreSourceResult(StoreSourceResult&&) = default;
+  StoreSourceResult(const StoreSourceResult&);
+  StoreSourceResult(StoreSourceResult&&);
 
-  StoreSourceResult& operator=(const StoreSourceResult&) = default;
-  StoreSourceResult& operator=(StoreSourceResult&&) = default;
+  StoreSourceResult& operator=(const StoreSourceResult&);
+  StoreSourceResult& operator=(StoreSourceResult&&);
 
   attribution_reporting::mojom::StoreSourceResult status() const;
+
+  const StorableSource& source() const { return source_; }
+
+  bool is_noised() const { return is_noised_; }
 
   const Result& result() const { return result_; }
 
  private:
+  StorableSource source_;
+  bool is_noised_;
   Result result_;
 };
 

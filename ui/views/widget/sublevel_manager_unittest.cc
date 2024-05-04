@@ -126,7 +126,7 @@ TEST_P(SublevelManagerTest, EnsureSublevel) {
 }
 
 // Level should takes precedence over sublevel.
-// TODO(crbug.com/1358586): disabled because currently non-desktop widgets
+// TODO(crbug.com/40237029): disabled because currently non-desktop widgets
 // ignore z-order level (except on ash) and we don't have a reliable way to
 // test desktop widgets.
 TEST_P(SublevelManagerTest, DISABLED_LevelSupersedeSublevel) {
@@ -307,7 +307,7 @@ TEST_P(SublevelManagerTest, SkipInvisibleWidget) {
                                                      children[1].get()));
 }
 
-// TODO(crbug.com/1333445): We should also test NativeWidgetType::kDesktop,
+// TODO(crbug.com/40227915): We should also test NativeWidgetType::kDesktop,
 // but currently IsWindowStackedAbove() does not work for desktop widgets.
 INSTANTIATE_TEST_SUITE_P(
     ,

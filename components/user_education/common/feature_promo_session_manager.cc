@@ -8,6 +8,7 @@
 #include "base/callback_list.h"
 #include "base/check_op.h"
 #include "base/functional/bind.h"
+#include "base/functional/callback_forward.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/user_metrics.h"
@@ -29,6 +30,10 @@ void FeaturePromoSessionManager::Init(
   storage_service_ = storage_service;
   idle_policy_ = std::move(idle_policy);
   idle_policy_->Init(this, storage_service_.get());
+  // Assume the application is active at application start; this avoids making
+  // additional system calls during startup.
+  UpdateLastActiveTime(storage_service_->GetCurrentTime());
+  // Start observing state.
   SetIdleObserver(std::move(idle_observer));
 }
 
@@ -51,10 +56,18 @@ void FeaturePromoSessionManager::MaybeUpdateSessionState() {
   }
 }
 
+base::CallbackListSubscription
+FeaturePromoSessionManager::AddNewSessionCallback(
+    base::RepeatingClosure new_session_callback) {
+  return new_session_callbacks_.Add(std::move(new_session_callback));
+}
+
 void FeaturePromoSessionManager::OnNewSession(
     const base::Time old_start_time,
     const base::Time old_active_time,
     const base::Time new_active_time) {
+  new_session_since_startup_ = true;
+
   base::RecordAction(
       base::UserMetricsAction("UserEducation.Session.ActivePeriodStart"));
 
@@ -65,6 +78,9 @@ void FeaturePromoSessionManager::OnNewSession(
   // The now-elapsed Idle Period is difference between now and the
   // previous most_recent_active_time.
   RecordIdlePeriodDuration(new_active_time - old_active_time);
+
+  // Notify any listeners of the new session.
+  new_session_callbacks_.Notify();
 }
 
 void FeaturePromoSessionManager::OnLastActiveTimeUpdating(base::Time) {}
@@ -73,12 +89,6 @@ void FeaturePromoSessionManager::SetIdleObserver(
     std::unique_ptr<FeaturePromoIdleObserver> new_observer) {
   idle_observer_ = std::move(new_observer);
   idle_observer_->Init(storage_service_.get());
-
-  // Immediately update the current state, then subscribe to future updates.
-  const auto last_active = idle_observer_->MaybeGetNewLastActiveTime();
-  if (last_active) {
-    UpdateLastActiveTime(*last_active);
-  }
   idle_observer_subscription_ = idle_observer_->AddUpdateCallback(
       base::BindRepeating(&FeaturePromoSessionManager::UpdateLastActiveTime,
                           base::Unretained(this)));
@@ -128,12 +138,17 @@ void FeaturePromoSessionManager::UpdateLastActiveTime(
   const auto old_start_time = session_data.start_time;
   const auto old_active_time = session_data.most_recent_active_time;
   session_data.most_recent_active_time = new_active_time;
-  if (idle_policy_->IsNewSession(old_start_time, old_active_time,
-                                 new_active_time)) {
+  const bool is_new_session = idle_policy_->IsNewSession(
+      old_start_time, old_active_time, new_active_time);
+  if (is_new_session) {
     session_data.start_time = new_active_time;
+  }
+  // Save the session data before calling OnNewSession, since some listeners
+  // will be relying on the data being current.
+  storage_service_->SaveSessionData(session_data);
+  if (is_new_session) {
     OnNewSession(old_start_time, old_active_time, new_active_time);
   }
-  storage_service_->SaveSessionData(session_data);
 }
 
 }  // namespace user_education

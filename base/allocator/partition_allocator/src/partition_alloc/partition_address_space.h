@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_ALLOCATOR_PARTITION_ALLOCATOR_SRC_PARTITION_ALLOC_PARTITION_ADDRESS_SPACE_H_
-#define BASE_ALLOCATOR_PARTITION_ALLOCATOR_SRC_PARTITION_ALLOC_PARTITION_ADDRESS_SPACE_H_
+#ifndef PARTITION_ALLOC_PARTITION_ADDRESS_SPACE_H_
+#define PARTITION_ALLOC_PARTITION_ADDRESS_SPACE_H_
 
 #include <bit>
 #include <cstddef>
 #include <utility>
 
-#include "build/build_config.h"
 #include "partition_alloc/address_pool_manager_types.h"
+#include "partition_alloc/build_config.h"
 #include "partition_alloc/page_allocator_constants.h"
 #include "partition_alloc/partition_alloc_base/compiler_specific.h"
 #include "partition_alloc/partition_alloc_base/component_export.h"
@@ -41,14 +41,21 @@ class PA_COMPONENT_EXPORT(PARTITION_ALLOC) PartitionAddressSpace {
   struct PoolInfo {
     pool_handle handle;
     uintptr_t base;
+    uintptr_t base_mask;
     uintptr_t offset;
   };
 
 #if PA_CONFIG(DYNAMICALLY_SELECT_POOL_SIZE)
+  PA_ALWAYS_INLINE static uintptr_t BRPPoolBaseMask() {
+    return setup_.brp_pool_base_mask_;
+  }
   PA_ALWAYS_INLINE static uintptr_t RegularPoolBaseMask() {
     return setup_.regular_pool_base_mask_;
   }
 #else
+  PA_ALWAYS_INLINE static constexpr uintptr_t BRPPoolBaseMask() {
+    return kBRPPoolBaseMask;
+  }
   PA_ALWAYS_INLINE static constexpr uintptr_t RegularPoolBaseMask() {
     return kRegularPoolBaseMask;
   }
@@ -61,28 +68,36 @@ class PA_COMPONENT_EXPORT(PARTITION_ALLOC) PartitionAddressSpace {
 #endif
     pool_handle pool = kNullPoolHandle;
     uintptr_t base = 0;
+    uintptr_t base_mask = 0;
 #if BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
     if (IsInBRPPool(address)) {
       pool = kBRPPoolHandle;
       base = setup_.brp_pool_base_address_;
+      base_mask = BRPPoolBaseMask();
     } else
 #endif  // BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
       if (IsInRegularPool(address)) {
         pool = kRegularPoolHandle;
         base = setup_.regular_pool_base_address_;
+        base_mask = RegularPoolBaseMask();
       } else if (IsInConfigurablePool(address)) {
         PA_DCHECK(IsConfigurablePoolInitialized());
         pool = kConfigurablePoolHandle;
         base = setup_.configurable_pool_base_address_;
+        base_mask = setup_.configurable_pool_base_mask_;
 #if BUILDFLAG(ENABLE_THREAD_ISOLATION)
       } else if (IsInThreadIsolatedPool(address)) {
         pool = kThreadIsolatedPoolHandle;
         base = setup_.thread_isolated_pool_base_address_;
+        base_mask = kThreadIsolatedPoolBaseMask;
 #endif
       } else {
         PA_NOTREACHED();
       }
-    return PoolInfo{.handle = pool, .base = base, .offset = address - base};
+    return PoolInfo{.handle = pool,
+                    .base = base,
+                    .base_mask = base_mask,
+                    .offset = address - base};
   }
   PA_ALWAYS_INLINE static constexpr size_t ConfigurablePoolMaxSize() {
     return kConfigurablePoolMaxSize;
@@ -215,7 +230,7 @@ class PA_COMPONENT_EXPORT(PARTITION_ALLOC) PartitionAddressSpace {
     } else if (pool == kBRPPoolHandle) {
       return brp_pool_shadow_offset_;
     } else {
-      // TODO(crbug.com/1362969): Add shadow for configurable pool as well.
+      // TODO(crbug.com/40238514): Add shadow for configurable pool as well.
       // Shadow is not created for ConfigurablePool for now, so this part should
       // be unreachable.
       PA_NOTREACHED();
@@ -451,4 +466,4 @@ PA_ALWAYS_INLINE bool IsConfigurablePoolAvailable() {
 
 #endif  // BUILDFLAG(HAS_64_BIT_POINTERS)
 
-#endif  // BASE_ALLOCATOR_PARTITION_ALLOCATOR_SRC_PARTITION_ALLOC_PARTITION_ADDRESS_SPACE_H_
+#endif  // PARTITION_ALLOC_PARTITION_ADDRESS_SPACE_H_

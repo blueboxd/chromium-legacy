@@ -22,6 +22,7 @@
 #include "third_party/blink/renderer/core/layout/layout_multi_column_flow_thread.h"
 #include "third_party/blink/renderer/core/layout/layout_shift_tracker.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/layout/pagination_utils.h"
 #include "third_party/blink/renderer/core/layout/physical_box_fragment.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/link_highlight.h"
@@ -794,13 +795,18 @@ void PrePaintTreeWalk::WalkFragmentationContextRootChildren(
     const LayoutObject& object,
     const PhysicalBoxFragment& fragment,
     const PrePaintTreeWalkContext& parent_context) {
-  // If this is a multicol container, the actual children are inside the flow
-  // thread child of |object|.
-  const auto* flow_thread =
-      To<LayoutBlockFlow>(&object)->MultiColumnFlowThread();
-  const LayoutObject& actual_parent = flow_thread ? *flow_thread : object;
-
   DCHECK(fragment.IsFragmentationContextRoot());
+
+  if (fragment.IsPaginatedRoot()) {
+    wtf_size_t fragmentainer_idx = 0;
+    for (PhysicalFragmentLink child : fragment.Children()) {
+      const auto* box_fragment = To<PhysicalBoxFragment>(child.fragment.Get());
+      DCHECK_EQ(box_fragment->GetBoxType(), PhysicalFragment::kPageContainer);
+      WalkPageContainer(child, object, parent_context, fragmentainer_idx);
+      fragmentainer_idx++;
+    }
+    return;
+  }
 
   std::optional<wtf_size_t> inner_fragmentainer_idx;
 
@@ -832,61 +838,19 @@ void PrePaintTreeWalk::WalkFragmentationContextRootChildren(
     // |OwnerLayoutBox()| has a few DCHECKs for this purpose.
     DCHECK(box_fragment->OwnerLayoutBox());
 
-    // A fragmentainer doesn't paint anything itself. Just include its offset
-    // and descend into children.
-    DCHECK(box_fragment->IsFragmentainerBox());
-
-    PrePaintTreeWalkContext fragmentainer_context(
-        parent_context, parent_context.NeedsTreeBuilderContext());
-
-    fragmentainer_context.current_container.fragmentation_nesting_level++;
-    fragmentainer_context.is_parent_first_for_node =
-        box_fragment->IsFirstForNode();
-
-    // Always keep track of the current innermost fragmentainer we're handling,
-    // as they may serve as containing blocks for OOF descendants.
-    fragmentainer_context.current_container.fragment = box_fragment;
-
     // Set up |inner_fragmentainer_idx| lazily, as it's O(n) (n == number of
     // multicol container fragments).
     if (!inner_fragmentainer_idx)
       inner_fragmentainer_idx = PreviousInnerFragmentainerIndex(fragment);
-    fragmentainer_context.current_container.fragmentainer_idx =
-        *inner_fragmentainer_idx;
 
-    PaintPropertyTreeBuilderFragmentContext::ContainingBlockContext*
-        containing_block_context = nullptr;
-    if (LIKELY(fragmentainer_context.tree_builder_context)) {
-      PaintPropertyTreeBuilderFragmentContext& fragment_context =
-          fragmentainer_context.tree_builder_context->fragment_context;
-      containing_block_context = &fragment_context.current;
-      containing_block_context->paint_offset += child.offset;
-
-      // Keep track of the paint offset at the fragmentainer. This is needed
-      // when entering OOF descendants. OOFs have the nearest fragmentainer as
-      // their containing block, so when entering them during LayoutObject tree
-      // traversal, we have to compensate for this.
-      containing_block_context->paint_offset_for_oof_in_fragmentainer =
-          containing_block_context->paint_offset;
-
-      if (object.IsLayoutView()) {
-        // Out-of-flow positioned descendants are positioned relatively to this
-        // fragmentainer (page).
-        fragment_context.absolute_position = *containing_block_context;
-        fragment_context.fixed_position = *containing_block_context;
-      }
-    }
-
-    WalkChildren(actual_parent, box_fragment, fragmentainer_context);
-
-    if (containing_block_context)
-      containing_block_context->paint_offset -= child.offset;
+    WalkFragmentainer(object, child, parent_context, *inner_fragmentainer_idx);
 
     (*inner_fragmentainer_idx)++;
   }
 
-  if (!flow_thread)
+  if (!To<LayoutBlockFlow>(&object)->MultiColumnFlowThread()) {
     return;
+  }
   // Multicol containers only contain special legacy children invisible to
   // LayoutNG, so we need to clean them manually.
   if (fragment.GetBreakToken()) {
@@ -897,6 +861,105 @@ void PrePaintTreeWalk::WalkFragmentationContextRootChildren(
     DCHECK(child->IsLayoutFlowThread() || child->IsLayoutMultiColumnSet() ||
            child->IsLayoutMultiColumnSpannerPlaceholder());
     child->GetMutableForPainting().ClearPaintFlags();
+  }
+}
+
+void PrePaintTreeWalk::WalkPageContainer(
+    const PhysicalFragmentLink& page_container_link,
+    const LayoutObject& parent_object,
+    const PrePaintTreeWalkContext& parent_context,
+    wtf_size_t fragmentainer_idx) {
+  // In paginated layout, each fragmentainer (page area) is wrapped inside a
+  // page box and a page border box.
+  DCHECK_EQ(page_container_link->GetBoxType(),
+            PhysicalFragment::kPageContainer);
+  const auto& page_container =
+      To<PhysicalBoxFragment>(*page_container_link.get());
+  PhysicalOffset adjustment = page_container_link.offset;
+  for (const PhysicalFragmentLink& grandchild : page_container.Children()) {
+    DCHECK_EQ(grandchild->GetBoxType(), PhysicalFragment::kPageBorderBox);
+
+    // This is a page border box, which contains the page contents area fragment
+    // (the fragmentainer that contains a portion of the document's fragmented
+    // contents).
+
+    const PhysicalFragmentLink& page_area = grandchild->Children()[0];
+    DCHECK_EQ(page_area->GetBoxType(), PhysicalFragment::kPageArea);
+
+    PrePaintTreeWalkContext page_area_context(
+        parent_context, parent_context.NeedsTreeBuilderContext());
+    PaintPropertyTreeBuilderFragmentContext::ContainingBlockContext*
+        containing_block_context = nullptr;
+
+    if (page_area_context.tree_builder_context) {
+      PaintPropertyTreeBuilderFragmentContext& fragment_context =
+          page_area_context.tree_builder_context->fragment_context;
+      containing_block_context = &fragment_context.current;
+      containing_block_context->paint_offset += adjustment;
+    }
+
+    WalkFragmentainer(parent_object, page_area, page_area_context,
+                      fragmentainer_idx);
+
+    if (containing_block_context) {
+      containing_block_context->paint_offset -= adjustment;
+    }
+  }
+}
+
+void PrePaintTreeWalk::WalkFragmentainer(
+    const LayoutObject& parent_object,
+    const PhysicalFragmentLink& child_link,
+    const PrePaintTreeWalkContext& parent_context,
+    wtf_size_t fragmentainer_idx) {
+  DCHECK(child_link->IsFragmentainerBox());
+  const auto& fragmentainer = To<PhysicalBoxFragment>(*child_link.get());
+
+  PrePaintTreeWalkContext fragmentainer_context(
+      parent_context, parent_context.NeedsTreeBuilderContext());
+
+  fragmentainer_context.current_container.fragmentation_nesting_level++;
+  fragmentainer_context.is_parent_first_for_node =
+      fragmentainer.IsFirstForNode();
+
+  // Always keep track of the current innermost fragmentainer we're handling, as
+  // they may serve as containing blocks for OOF descendants.
+  fragmentainer_context.current_container.fragment = &fragmentainer;
+
+  fragmentainer_context.current_container.fragmentainer_idx = fragmentainer_idx;
+
+  PaintPropertyTreeBuilderFragmentContext::ContainingBlockContext*
+      containing_block_context = nullptr;
+  if (fragmentainer_context.tree_builder_context) {
+    PaintPropertyTreeBuilderFragmentContext& fragment_context =
+        fragmentainer_context.tree_builder_context->fragment_context;
+    containing_block_context = &fragment_context.current;
+    containing_block_context->paint_offset += child_link.offset;
+
+    // Keep track of the paint offset at the fragmentainer. This is needed when
+    // entering OOF descendants. OOFs have the nearest fragmentainer as their
+    // containing block, so when entering them during LayoutObject tree
+    // traversal, we have to compensate for this.
+    containing_block_context->paint_offset_for_oof_in_fragmentainer =
+        containing_block_context->paint_offset;
+
+    if (parent_object.IsLayoutView()) {
+      // Out-of-flow positioned descendants are positioned relatively to this
+      // fragmentainer (page).
+      fragment_context.absolute_position = *containing_block_context;
+      fragment_context.fixed_position = *containing_block_context;
+    }
+  }
+
+  // If this is a multicol container, the actual children are inside the flow
+  // thread child of |parent_object|.
+  const auto* flow_thread =
+      To<LayoutBlockFlow>(&parent_object)->MultiColumnFlowThread();
+  const auto& actual_parent = flow_thread ? *flow_thread : parent_object;
+  WalkChildren(actual_parent, &fragmentainer, fragmentainer_context);
+
+  if (containing_block_context) {
+    containing_block_context->paint_offset -= child_link.offset;
   }
 }
 

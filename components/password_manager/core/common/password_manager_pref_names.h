@@ -76,7 +76,7 @@ inline constexpr char kCurrentMigrationVersionToGoogleMobileServices[] =
     "current_migration_version_to_google_mobile_services";
 
 // Timestamps of when credentials from the GMS Core to the built in storage were
-// last time migrated, in microseconds since Windows epoch.
+// last time migrated, in milliseconds since UNIX epoch.
 inline constexpr char kTimeOfLastMigrationAttempt[] =
     "time_of_last_migration_attempt";
 
@@ -269,9 +269,9 @@ inline constexpr char kPasswordDismissCompromisedAlertEnabled[] =
 // Boolean value indicating if the user has clicked on the "Password Manager"
 // item in settings after switching to the Unified Password Manager. A "New"
 // label is shown for the users who have not clicked on this item yet.
-// TODO(crbug.com/1217070): Remove this on Android once the feature is rolled
+// TODO(crbug.com/40185049): Remove this on Android once the feature is rolled
 // out.
-// TODO(crbug.com/1420597): Remove this for desktop once the feature is rolled
+// TODO(crbug.com/40258836): Remove this for desktop once the feature is rolled
 // out.
 inline constexpr char kPasswordsPrefWithNewLabelUsed[] =
     "passwords_pref_with_new_label_used";
@@ -301,18 +301,6 @@ inline constexpr char kBiometricAuthenticationBeforeFilling[] =
 inline constexpr char kHadBiometricsAvailable[] =
     "password_manager.had_biometrics_available";
 #endif
-
-#if BUILDFLAG(IS_IOS)
-// Boolean pref indicating if the one-time notice for account storage was shown.
-// The notice informs passwords will start being saved to the signed-in account.
-inline constexpr char kAccountStorageNoticeShown[] =
-    "password_manager.account_storage_notice_shown";
-
-// Integer value indicating the number of times the "new feature icon" was
-// displayed with the account storage opt-out toggle.
-inline constexpr char kAccountStorageNewFeatureIconImpressions[] =
-    "password_manager.account_storage_new_feature_icon_impressions";
-#endif  // BUILDFLAG(IS_IOS)
 
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)  // Desktop
 // How many times in a row the password generation popup in `kNudgePassword`

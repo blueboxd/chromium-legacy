@@ -17,7 +17,6 @@
 <translation id="1729654308190250600">कृपया एउटा खाली नभएको इमेल ठेगाना प्रविष्टि गर्नुहोस्।</translation>
 <translation id="1758486001363313524">अन्य ...</translation>
 <translation id="1787192514241997742">कुल समय: <ph name="REMAINING_TIME" /></translation>
-<translation id="1800494066469288780">क्यामेरा प्रयोग गर्ने अनुमति दिनुहोस्</translation>
 <translation id="1822429046913737220">बिहना/साँझ</translation>
 <translation id="1832974991323546415">टाढाको यन्त्रमा प्ले गर्नुहोस्</translation>
 <translation id="1921819250265091946">dd</translation>
@@ -48,13 +47,12 @@
 <translation id="2761667185364618470">यदि तपाईं अगाडि बढ्न चाहनुहुन्छ भने यस बाकसमा ठिक चिह्न लगाउनुहोस्।</translation>
 <translation id="2908441821576996758">कृपया अल्पविरामले विभाजित गरिएको इमले ठेगानाहरूको सूची प्रविष्टि गर्नुहोस्।</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" /> एमबी</translation>
-<translation id="3053226512517284904">"अडियोको वर्णन" मेनु देखाइयोस्</translation>
+<translation id="3053226512517284904">"अडियोको वर्णन" मेनु देखाउनुहोस्</translation>
 <translation id="3075154866155599887">कृपया एउटा वैध मान प्रविष्टि गर्नुहोस्। क्षेत््र अपूर्ण छ वा त्यसमा एउटा अमान्य मिति छ।</translation>
 <translation id="310520048233152454">कृपया एउटा URL प्रविष्टि गर्नुहोस्।</translation>
 <translation id="3220661731597678625">हालको चरण</translation>
 <translation id="3321030238473337787">प्लेब्याकको गति</translation>
 <translation id="3329013043687509092">संतृप्तीकरण</translation>
-<translation id="3377518164566272702">माइक्रोफोन तथा क्यामेरा प्रयोग गर्ने अनुमति दिनुहोस्</translation>
 <translation id="3450233048674729344">मूल्य <ph name="MAXIMUM" /> भन्दा थोरै वा बराबर हुनै पर्छ।</translation>
 <translation id="3732799496749320381">mm</translation>
 <translation id="3754210790023674521">Picture-in-picture बाट बाहिरिनुहोस्</translation>
@@ -105,7 +103,7 @@
 <translation id="5630795885300617244">१० सेकेन्ड छाडेर अगाडि पछाडि जान बायाँ वा दायाँतिर डबल ट्याप गर्नुहोस्</translation>
 <translation id="5677946354068040947">थप विकल्पहरू</translation>
 <translation id="57838592816432529">म्यूट गर्नुहोस्</translation>
-<translation id="5786442179789148008">प्लेब्याकको गति नामक मेनु देखाइयोस्</translation>
+<translation id="5786442179789148008">प्लेब्याकको गति नामक मेनु देखाउनुहोस्</translation>
 <translation id="5787939484346677755">विस्तृत गरियो, यो शब्द स्वतः पूरा गर्ने विकल्पहरू उपलब्ध छन्।</translation>
 <translation id="5860033963881614850">बन्द</translation>
 <translation id="588258955323874662">पूर्णस्क्रिन</translation>
@@ -123,7 +121,7 @@
 <translation id="6398862346408813489">महिना चयन प्यानल देखाउनुहोस्</translation>
 <translation id="6404546809543547843">अडियो समय स्क्रबर</translation>
 <translation id="6443871981718447451">उपशीर्षकहरूको मेनु देखाउनुहोस्</translation>
-<translation id="6484738902856791350">प्रिटी प्रिन्ट गरियोस्</translation>
+<translation id="6484738902856791350">प्रिटी प्रिन्ट गर्नुहोस्</translation>
 <translation id="6550675742724504774">विकल्पहरू</translation>
 <translation id="6572309429103589720">व्याकरणसम्बन्धी त्रुटि</translation>
 <translation id="658823671542763450">पूरा स्क्रिनमा प्रवेश गर्नुहोस्</translation>
@@ -175,7 +173,7 @@
 <translation id="8613126697340063924">टाढाको प्लेब्याक नियन्त्रण गर्नुहोस्</translation>
 <translation id="8634971699417195529">महिना चयनकर्ता देखाउनुहोस्</translation>
 <translation id="8637593834423658414">१.७५</translation>
-<translation id="8668988909814782445">लाइन र्‍याप गरियोस्</translation>
+<translation id="8668988909814782445">लाइन र्‍याप गर्नुहोस्</translation>
 <translation id="8750798805984357768">कृपया यी विकल्पहरू मध्ये एउटा चयन गर्नुहोस्।</translation>
 <translation id="8845239796550121995">हाल तपाईंको टिभी मा cast गर्दै</translation>
 <translation id="8875657656876809964">भिडियो प्लेब्याकसम्बन्धी त्रुटि</translation>
@@ -188,7 +186,6 @@
 <translation id="9132465097189459683">अन्य...</translation>
 <translation id="9155987714137265666"><ph name="WEEK" /> , <ph name="WEEK_START_DATE" />मा सुरु गर्दै</translation>
 <translation id="916607977885256133">Picture in Picture</translation>
-<translation id="918430632320614861">माइक्रोफोन प्रयोग गर्ने अनुमति दिनुहोस्</translation>
 <translation id="945780513535800434">सबै विकल्पहरूमा चिन्ह लगाइएको छैन</translation>
 <translation id="954003015749068518">picture-in-picture मा प्रवेश गर्नुहोस्‌</translation>
 </translationbundle>

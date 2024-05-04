@@ -582,7 +582,14 @@ bool InterfaceEndpointClient::SendMessage(Message* message,
                                           bool is_control_message) {
   CHECK(sequence_checker_.CalledOnValidSequence());
   DCHECK(!message->has_flag(Message::kFlagExpectsResponse));
-  DCHECK(!handle_.pending_association());
+
+  CHECK(!handle_.pending_association())
+      << "Cannot send a message when the endpoint hasn't been associated with "
+         "a message pipe. This failure typically happens when attempting to "
+         "make a call with an AssociatedRemote before one of the endpoints "
+         "(either the AssociatedRemote itself or its entangled "
+         "AssociatedReceiver) is sent over a Remote/Receiver pair or an "
+         "already-established AssociatedRemote/AssociatedReceiver pair.";
 
   // This has to been done even if connection error has occurred. For example,
   // the message contains a pending associated request. The user may try to use
@@ -591,19 +598,23 @@ bool InterfaceEndpointClient::SendMessage(Message* message,
   // to work properly.
   message->SerializeHandles(handle_.group_controller());
 
-  if (encountered_error_)
+  if (encountered_error_) {
+    message->NotifyPeerClosureForSerializedHandles(handle_.group_controller());
     return false;
+  }
 
   InitControllerIfNecessary();
 
 #if DCHECK_IS_ON()
-  // TODO(https://crbug.com/695289): Send |next_call_location_| in a control
+  // TODO(crbug.com/40507817): Send |next_call_location_| in a control
   // message before calling |SendMessage()| below.
 #endif
 
   message->set_heap_profiler_tag(interface_name_);
-  if (!controller_->SendMessage(message))
+  if (!controller_->SendMessage(message)) {
+    message->NotifyPeerClosureForSerializedHandles(handle_.group_controller());
     return false;
+  }
 
   if (!is_control_message && idle_handler_)
     ++num_unacked_messages_;
@@ -623,8 +634,10 @@ bool InterfaceEndpointClient::SendMessageWithResponder(
   // Please see comments in Accept().
   message->SerializeHandles(handle_.group_controller());
 
-  if (encountered_error_)
+  if (encountered_error_) {
+    message->NotifyPeerClosureForSerializedHandles(handle_.group_controller());
     return false;
+  }
 
   InitControllerIfNecessary();
 
@@ -637,7 +650,7 @@ bool InterfaceEndpointClient::SendMessageWithResponder(
   message->set_heap_profiler_tag(interface_name_);
 
 #if DCHECK_IS_ON()
-  // TODO(https://crbug.com/695289): Send |next_call_location_| in a control
+  // TODO(crbug.com/40507817): Send |next_call_location_| in a control
   // message before calling |SendMessage()| below.
 #endif
 
@@ -646,8 +659,10 @@ bool InterfaceEndpointClient::SendMessageWithResponder(
   const bool exclusive_wait =
       message->has_flag(Message::kFlagNoInterrupt) ||
       !SyncCallRestrictions::AreSyncCallInterruptsEnabled();
-  if (!controller_->SendMessage(message))
+  if (!controller_->SendMessage(message)) {
+    message->NotifyPeerClosureForSerializedHandles(handle_.group_controller());
     return false;
+  }
 
   if (!is_control_message && idle_handler_)
     ++num_unacked_messages_;

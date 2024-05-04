@@ -66,7 +66,7 @@ void PasswordBubbleViewBase::ShowBubble(content::WebContents* web_contents,
       CreateBubble(web_contents, anchor_view, reason);
   DCHECK(bubble);
   DCHECK_EQ(bubble, g_manage_passwords_bubble_);
-  // TODO(crbug.com/1305276): In non-DCHECK mode we could fall through here and
+  // TODO(crbug.com/40218026): In non-DCHECK mode we could fall through here and
   // hard-crash if we requested a bubble and were in the wrong state. In the
   // meantime we will abort if we did not create a bubble.
   if (!g_manage_passwords_bubble_)
@@ -95,14 +95,7 @@ PasswordBubbleViewBase* PasswordBubbleViewBase::CreateBubble(
     view = new PasswordAutoSignInView(web_contents, anchor_view);
   } else if (model_state == password_manager::ui::SAVE_CONFIRMATION_STATE ||
              model_state == password_manager::ui::UPDATE_CONFIRMATION_STATE) {
-    if (base::FeatureList::IsEnabled(
-            password_manager::features::
-                kNewConfirmationBubbleForGeneratedPasswords)) {
-      view = new ManagePasswordsView(web_contents, anchor_view);
-    } else {
-      view = new PasswordGenerationConfirmationView(web_contents, anchor_view,
-                                                    reason);
-    }
+    view = new ManagePasswordsView(web_contents, anchor_view);
   } else if (model_state ==
                  password_manager::ui::PENDING_PASSWORD_UPDATE_STATE ||
              model_state == password_manager::ui::PENDING_PASSWORD_STATE) {

@@ -12,6 +12,14 @@ namespace switches {
 // letter code from ISO-639.
 const char kAcceptLang[] = "accept-lang";
 
+// A comma-separated, case-insenitive list of video codecs to allow. If
+// specified, codecs not matching the list will not be used. '*' will match
+// everything,
+// '-' at the start of an entry means codec is disallowed. First entry that
+// matches determines the outcome. Codec names are as returned by
+// `GetCodecName()` in media/base/video_codecs.cc
+const char kAllowVideoCodecs[] = "allow-video-codecs";
+
 // Allowlist for Negotiate Auth servers.
 const char kAuthServerAllowlist[] = "auth-server-allowlist";
 
@@ -39,6 +47,9 @@ const char kDisableLazyLoading[] = "disable-lazy-loading";
 // Use a specific disk cache location, rather than one derived from the
 // UserDatadir.
 const char kDiskCacheDir[] = "disk-cache-dir";
+
+// Enable Back Forward Cache support
+const char kEnableBackForwardCache[] = "enable-bfcache";
 
 // Whether or not begin frames should be issued over DevToolsProtocol
 // (experimental).
@@ -75,7 +86,7 @@ const char kNoSystemProxyConfigService[] = "no-system-proxy-config-service";
 // Specifies which encryption storage backend to use. Possible values are
 // kwallet, kwallet5, gnome-libsecret, basic. Any other value will lead to
 // Chrome detecting the best backend automatically.
-// TODO(crbug.com/571003): Once PasswordStore no longer uses KWallet for
+// TODO(crbug.com/40449930): Once PasswordStore no longer uses KWallet for
 // storing passwords, rename this flag to stop referencing passwords. Do not
 // rename it sooner, though; developers and testers might rely on it keeping
 // large amounts of testing passwords out of their KWallets.
@@ -90,12 +101,6 @@ const char kProxyBypassList[] = "proxy-bypass-list";
 // Uses a specified proxy server, overrides system settings. This switch only
 // affects HTTP and HTTPS requests.
 const char kProxyServer[] = "proxy-server";
-
-// Use the given address instead of the default loopback for accepting remote
-// debugging connections. Should be used together with --remote-debugging-port.
-// Note that the remote debugging protocol does not perform any authentication,
-// so exposing it too widely can be a security risk.
-const char kRemoteDebuggingAddress[] = "remote-debugging-address";
 
 // A string used to override the default user agent with a custom one.
 const char kUserAgent[] = "user-agent";

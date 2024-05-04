@@ -11,16 +11,19 @@
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
+#import "ios/chrome/browser/shared/ui/symbols/symbols.h"
 #import "ios/chrome/browser/signin/model/authentication_service.h"
 #import "ios/chrome/browser/signin/model/authentication_service_factory.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ui/base/l10n/l10n_util_mac.h"
 #import "ui/strings/grit/ui_strings.h"
 
-@implementation FeedMenuCoordinator {
-  // The action sheet coordinator that will display the menu.
-  ActionSheetCoordinator* _actionSheetCoordinator;
-}
+namespace {
+// The size of the icons in the management context menu.
+const CGFloat kManagementContextMenuIconSize = 18;
+}  // namespace
+
+@implementation FeedMenuCoordinator
 
 #pragma mark - ChromeCoordinator
 
@@ -34,39 +37,32 @@
   [self.browser->GetCommandDispatcher()
       stopDispatchingForProtocol:@protocol(FeedMenuCommands)];
   self.delegate = nil;
-  [self stopActionSheetCoordinator];
 }
 
 #pragma mark - FeedMenuCommands
 
-- (void)openFeedMenuFromButton:(UIButton*)button {
-  [self stopActionSheetCoordinator];
+- (void)configureManagementMenu:(UIButton*)button {
+  NSMutableArray<UIAction*>* feedActions = [NSMutableArray array];
 
-  _actionSheetCoordinator = [[ActionSheetCoordinator alloc]
-      initWithBaseViewController:self.baseViewController
-                         browser:self.browser
-                           title:nil
-                         message:nil
-                            rect:button.frame
-                            view:button.superview];
-
-  // Add all the appropriate menu items.
   FeedMenuItemType toggle = [self isFeedExpanded] ? FeedMenuItemType::kTurnOff
                                                   : FeedMenuItemType::kTurnOn;
-  [self addItem:toggle];
+  [feedActions addObject:[self createMenuAction:toggle]];
+
   if ([self isSignedIn]) {
     if (IsWebChannelsEnabled()) {
       // Following feed is available.
-      [self addItem:FeedMenuItemType::kManage];
+      [feedActions addObject:[self createMenuAction:FeedMenuItemType::kManage]];
     } else {
-      [self addItem:FeedMenuItemType::kManageActivity];
-      [self addItem:FeedMenuItemType::kManageInterests];
+      [feedActions
+          addObject:[self createMenuAction:FeedMenuItemType::kManageActivity]];
+      [feedActions
+          addObject:[self createMenuAction:FeedMenuItemType::kManageInterests]];
     }
   }
-  [self addItem:FeedMenuItemType::kLearnMore];
-  [self addItem:FeedMenuItemType::kCancel];
 
-  [_actionSheetCoordinator start];
+  [feedActions addObject:[self createMenuAction:FeedMenuItemType::kLearnMore]];
+
+  button.menu = [UIMenu menuWithTitle:@"" children:feedActions];
 }
 
 #pragma mark - Private methods
@@ -88,23 +84,9 @@
   return authService->HasPrimaryIdentity(signin::ConsentLevel::kSignin);
 }
 
-// Returns the action style for an item of the given `type`.
-- (UIAlertActionStyle)actionStyleForItem:(FeedMenuItemType)type {
-  switch (type) {
-    case FeedMenuItemType::kCancel:
-      return UIAlertActionStyleCancel;
-    case FeedMenuItemType::kTurnOff:
-      return UIAlertActionStyleDestructive;
-    default:
-      return UIAlertActionStyleDefault;
-  }
-}
-
 // Returns the message id to use for the title for an item of the given `type`.
-- (int)titleMessageIdForItem:(FeedMenuItemType)type {
+- (int)titleMessageIdForMenuAction:(FeedMenuItemType)type {
   switch (type) {
-    case FeedMenuItemType::kCancel:
-      return IDS_APP_CANCEL;
     case FeedMenuItemType::kTurnOff:
       return IDS_IOS_DISCOVER_FEED_MENU_TURN_OFF_ITEM;
     case FeedMenuItemType::kTurnOn:
@@ -120,23 +102,42 @@
   }
 }
 
-// Adds an item of the given `type` to the action sheet.
-- (void)addItem:(FeedMenuItemType)type {
-  __weak __typeof(self) weakSelf = self;
-  NSString* title = l10n_util::GetNSString([self titleMessageIdForItem:type]);
-  [_actionSheetCoordinator
-      addItemWithTitle:title
-                action:^{
-                  [weakSelf.delegate didSelectFeedMenuItem:type];
-                  [weakSelf stopActionSheetCoordinator];
-                }
-                 style:[self actionStyleForItem:type]];
+// Returns an image icon for the context menu item.
+- (UIImage*)iconForMenuAction:(FeedMenuItemType)type {
+  switch (type) {
+    case FeedMenuItemType::kTurnOff:
+      return DefaultSymbolWithPointSize(kMinusInCircleSymbol,
+                                        kManagementContextMenuIconSize);
+    case FeedMenuItemType::kTurnOn:
+      return DefaultSymbolWithPointSize(kPlusInCircleSymbol,
+                                        kManagementContextMenuIconSize);
+    case FeedMenuItemType::kManage:
+      return DefaultSymbolWithPointSize(kSliderHorizontalSymbol,
+                                        kManagementContextMenuIconSize);
+    case FeedMenuItemType::kManageActivity:
+      return DefaultSymbolWithPointSize(kSliderHorizontalSymbol,
+                                        kManagementContextMenuIconSize);
+    case FeedMenuItemType::kManageInterests:
+      return DefaultSymbolWithPointSize(kSliderHorizontalSymbol,
+                                        kManagementContextMenuIconSize);
+    case FeedMenuItemType::kLearnMore:
+      return DefaultSymbolWithPointSize(kInfoCircleSymbol,
+                                        kManagementContextMenuIconSize);
+  }
 }
 
-// Stops and clears the ActionSheetCoordinator instance.
-- (void)stopActionSheetCoordinator {
-  [_actionSheetCoordinator stop];
-  _actionSheetCoordinator = nil;
+// Creates an action to be added to the management menu.
+- (UIAction*)createMenuAction:(FeedMenuItemType)type {
+  __weak __typeof(self) weakSelf = self;
+  UIAction* menuAction =
+      [UIAction actionWithTitle:l10n_util::GetNSString(
+                                    [self titleMessageIdForMenuAction:type])
+                          image:[self iconForMenuAction:type]
+                     identifier:nil
+                        handler:^(UIAction* action) {
+                          [weakSelf.delegate didSelectFeedMenuItem:type];
+                        }];
+  return menuAction;
 }
 
 @end

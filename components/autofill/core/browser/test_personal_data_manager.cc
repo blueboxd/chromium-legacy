@@ -6,341 +6,94 @@
 
 #include <memory>
 
-#include "base/ranges/algorithm.h"
-#include "base/strings/utf_string_conversions.h"
-#include "base/uuid.h"
 #include "components/autofill/core/browser/payments_data_manager.h"
 #include "components/autofill/core/browser/personal_data_manager_observer.h"
-#include "components/autofill/core/browser/strike_databases/autofill_profile_migration_strike_database.h"
 #include "components/autofill/core/browser/test_address_data_manager.h"
 #include "components/autofill/core/browser/test_payments_data_manager.h"
 
 namespace autofill {
 
 TestPersonalDataManager::TestPersonalDataManager()
-    : PersonalDataManager("en-US", "US") {
-  address_data_manager_ = std::make_unique<TestAddressDataManager>(
-      base::BindRepeating(&PersonalDataManager::NotifyPersonalDataObserver,
-                          base::Unretained(this)));
-  payments_data_manager_ =
-      std::make_unique<TestPaymentsDataManager>(app_locale(), this);
+    : PersonalDataManager(
+          /*profile_database=*/nullptr,
+          /*account_database=*/nullptr,
+          /*pref_service=*/nullptr,
+          /*local_state=*/nullptr,
+          /*identity_manager=*/nullptr,
+          /*history_service=*/nullptr,
+          /*sync_service=*/nullptr,
+          /*strike_database=*/nullptr,
+          /*image_fetcher=*/nullptr,
+          /*shared_storage_handler=*/nullptr,
+          "en-US",
+          "US") {
+  set_address_data_manager(
+      std::make_unique<TestAddressDataManager>(app_locale()));
+  set_payments_data_manager(
+      std::make_unique<TestPaymentsDataManager>(app_locale()));
 }
 
 TestPersonalDataManager::~TestPersonalDataManager() = default;
 
-bool TestPersonalDataManager::IsPaymentsWalletSyncTransportEnabled() const {
-  if (payments_wallet_sync_transport_enabled_.has_value()) {
-    return *payments_wallet_sync_transport_enabled_;
-  }
-  return PersonalDataManager::IsPaymentsWalletSyncTransportEnabled();
+void TestPersonalDataManager::set_address_data_manager(
+    std::unique_ptr<TestAddressDataManager> address_data_manager) {
+  address_data_manager_observation_.Reset();
+  address_data_manager_ = std::move(address_data_manager);
+  address_data_manager_observation_.Observe(address_data_manager_.get());
 }
 
-void TestPersonalDataManager::RecordUseOf(
-    absl::variant<const AutofillProfile*, const CreditCard*>
-        profile_or_credit_card) {
-  if (absl::holds_alternative<const CreditCard*>(profile_or_credit_card)) {
-    CreditCard* credit_card = GetCreditCardByGUID(
-        absl::get<const CreditCard*>(profile_or_credit_card)->guid());
-
-    if (credit_card)
-      credit_card->RecordAndLogUse();
-  } else {
-    address_data_manager_->RecordUseOf(
-        *absl::get<const AutofillProfile*>(profile_or_credit_card));
-  }
-}
-
-void TestPersonalDataManager::RecordUseOfIban(Iban& iban) {
-  std::unique_ptr<Iban> updated_iban = std::make_unique<Iban>(iban);
-  std::vector<std::unique_ptr<Iban>>& container =
-      iban.record_type() == Iban::kLocalIban
-          ? payments_data_manager_->local_ibans_
-          : payments_data_manager_->server_ibans_;
-  auto it = base::ranges::find(
-      container,
-      iban.record_type() == Iban::kLocalIban
-          ? payments_data_manager().GetIbanByGUID(iban.guid())
-          : payments_data_manager().GetIbanByInstrumentId(iban.instrument_id()),
-      &std::unique_ptr<Iban>::get);
-  if (it != container.end()) {
-    it->get()->RecordAndLogUse();
-  }
-}
-
-std::string TestPersonalDataManager::SaveImportedCreditCard(
-    const CreditCard& imported_credit_card) {
-  num_times_save_imported_credit_card_called_++;
-  AddCreditCard(imported_credit_card);
-  return imported_credit_card.guid();
-}
-
-void TestPersonalDataManager::AddProfile(const AutofillProfile& profile) {
-  // TODO(b/322170538): The PDM implementation checks if Autofill is enabled,
-  // which doesn't work without a pref service. Once the pref service moves into
-  // the `AddressDataManager`, the override here can be removed.
-  address_data_manager_->AddProfile(profile);
-}
-
-void TestPersonalDataManager::RemoveByGUID(const std::string& guid) {
-  RemoveByGuidWithoutNotifications(guid);
-  NotifyPersonalDataObserver();
-}
-
-void TestPersonalDataManager::RemoveByGuidWithoutNotifications(
-    const std::string& guid) {
-  if (CreditCard* credit_card = GetCreditCardByGUID(guid)) {
-    payments_data_manager_->local_credit_cards_.erase(
-        base::ranges::find(payments_data_manager_->local_credit_cards_,
-                           credit_card, &std::unique_ptr<CreditCard>::get));
-  } else if (GetProfileByGUID(guid)) {
-    address_data_manager_->RemoveProfile(guid);
-  } else if (const Iban* iban = payments_data_manager().GetIbanByGUID(guid)) {
-    payments_data_manager_->local_ibans_.erase(
-        base::ranges::find(payments_data_manager_->local_ibans_, iban,
-                           &std::unique_ptr<Iban>::get));
-  }
-}
-
-bool TestPersonalDataManager::IsEligibleForAddressAccountStorage() const {
-  return eligible_for_account_storage_.has_value()
-             ? *eligible_for_account_storage_
-             : PersonalDataManager::IsEligibleForAddressAccountStorage();
-}
-
-void TestPersonalDataManager::AddCreditCard(const CreditCard& credit_card) {
-  std::unique_ptr<CreditCard> local_credit_card =
-      std::make_unique<CreditCard>(credit_card);
-  payments_data_manager_->local_credit_cards_.push_back(
-      std::move(local_credit_card));
-  NotifyPersonalDataObserver();
-}
-
-std::string TestPersonalDataManager::AddAsLocalIban(Iban iban) {
-  CHECK_EQ(iban.record_type(), Iban::kUnknown);
-  iban.set_record_type(Iban::kLocalIban);
-  iban.set_identifier(
-      Iban::Guid(base::Uuid::GenerateRandomV4().AsLowercaseString()));
-  std::unique_ptr<Iban> local_iban = std::make_unique<Iban>(iban);
-  payments_data_manager_->local_ibans_.push_back(std::move(local_iban));
-  NotifyPersonalDataObserver();
-  return iban.guid();
-}
-
-std::string TestPersonalDataManager::UpdateIban(const Iban& iban) {
-  const Iban* old_iban = payments_data_manager().GetIbanByGUID(iban.guid());
-  CHECK(old_iban);
-  payments_data_manager_->local_ibans_.push_back(std::make_unique<Iban>(iban));
-  RemoveByGUID(old_iban->guid());
-  return iban.guid();
-}
-
-void TestPersonalDataManager::DeleteLocalCreditCards(
-    const std::vector<CreditCard>& cards) {
-  for (const auto& card : cards)
-    // Removed the cards silently and trigger a single notification to match the
-    // behavior of PersonalDataManager.
-    RemoveByGuidWithoutNotifications(card.guid());
-
-  NotifyPersonalDataObserver();
-}
-
-void TestPersonalDataManager::UpdateCreditCard(const CreditCard& credit_card) {
-  CreditCard* existing_credit_card = GetCreditCardByGUID(credit_card.guid());
-  if (existing_credit_card) {
-    // AddCreditCard will trigger a notification to observers. We remove the old
-    // card without notification so that exactly one notification is sent, which
-    // matches the behavior of the PersonalDataManager.
-    RemoveByGuidWithoutNotifications(existing_credit_card->guid());
-    AddCreditCard(credit_card);
-  }
-}
-
-const std::string& TestPersonalDataManager::GetDefaultCountryCodeForNewAddress()
-    const {
-  if (default_country_code_.empty())
-    return PersonalDataManager::GetDefaultCountryCodeForNewAddress();
-
-  return default_country_code_;
-}
-
-bool TestPersonalDataManager::IsAutofillProfileEnabled() const {
-  // Return the value of autofill_profile_enabled_ if it has been set,
-  // otherwise fall back to the normal behavior of checking the pref_service.
-  if (autofill_profile_enabled_.has_value())
-    return autofill_profile_enabled_.value();
-  return PersonalDataManager::IsAutofillProfileEnabled();
-}
-
-bool TestPersonalDataManager::IsAutofillPaymentMethodsEnabled() const {
-  // Return the value of autofill_payment_methods_enabled_ if it has been set,
-  // otherwise fall back to the normal behavior of checking the pref_service.
-  if (autofill_payment_methods_enabled_.has_value()) {
-    return autofill_payment_methods_enabled_.value();
-  }
-  return PersonalDataManager::IsAutofillPaymentMethodsEnabled();
-}
-
-bool TestPersonalDataManager::IsAutofillWalletImportEnabled() const {
-  // Return the value of autofill_wallet_import_enabled_ if it has been set,
-  // otherwise fall back to the normal behavior of checking the pref_service.
-  if (autofill_wallet_import_enabled_.has_value())
-    return autofill_wallet_import_enabled_.value();
-  return PersonalDataManager::IsAutofillWalletImportEnabled();
-}
-
-bool TestPersonalDataManager::ShouldSuggestServerPaymentMethods() const {
-  return IsAutofillPaymentMethodsEnabled() && IsAutofillWalletImportEnabled();
+void TestPersonalDataManager::set_payments_data_manager(
+    std::unique_ptr<TestPaymentsDataManager> payments_data_manager) {
+  payments_data_manager_observation_.Reset();
+  payments_data_manager_ = std::move(payments_data_manager);
+  payments_data_manager_observation_.Observe(payments_data_manager_.get());
 }
 
 void TestPersonalDataManager::ClearAllLocalData() {
-  ClearProfiles();
-  payments_data_manager_->local_credit_cards_.clear();
+  test_address_data_manager().ClearProfiles();
+  test_payments_data_manager().ClearAllLocalData();
 }
 
 bool TestPersonalDataManager::IsDataLoaded() const {
   return true;
 }
 
-bool TestPersonalDataManager::IsSyncFeatureEnabledForPaymentsServerMetrics()
-    const {
-  return false;
-}
-
-CoreAccountInfo TestPersonalDataManager::GetAccountInfoForPaymentsServer()
-    const {
-  return account_info_;
-}
-
-const AutofillProfileMigrationStrikeDatabase*
-TestPersonalDataManager::GetProfileMigrationStrikeDatabase() const {
-  return &inmemory_profile_migration_strike_database_;
-}
-
-const AutofillProfileSaveStrikeDatabase*
-TestPersonalDataManager::GetProfileSaveStrikeDatabase() const {
-  return &inmemory_profile_save_strike_database_;
-}
-
-const AutofillProfileUpdateStrikeDatabase*
-TestPersonalDataManager::GetProfileUpdateStrikeDatabase() const {
-  return &inmemory_profile_update_strike_database_;
-}
-
-bool TestPersonalDataManager::IsPaymentMethodsMandatoryReauthEnabled() {
-  if (payment_methods_mandatory_reauth_enabled_.has_value()) {
-    return payment_methods_mandatory_reauth_enabled_.value();
-  }
-  return PersonalDataManager::IsPaymentMethodsMandatoryReauthEnabled();
-}
-
-void TestPersonalDataManager::SetPaymentMethodsMandatoryReauthEnabled(
-    bool enabled) {
-  payment_methods_mandatory_reauth_enabled_ = enabled;
-  PersonalDataManager::SetPaymentMethodsMandatoryReauthEnabled(enabled);
-}
-
-bool TestPersonalDataManager::IsPaymentCvcStorageEnabled() {
-  if (payments_cvc_storage_enabled_.has_value()) {
-    return payments_cvc_storage_enabled_.value();
-  }
-  return PersonalDataManager::IsPaymentCvcStorageEnabled();
-}
-
-void TestPersonalDataManager::AddServerCvc(int64_t instrument_id,
-                                           const std::u16string& cvc) {
-  auto card_iterator =
-      std::find_if(payments_data_manager_->server_credit_cards_.begin(),
-                   payments_data_manager_->server_credit_cards_.end(),
-                   [instrument_id](auto& card) {
-                     return card->instrument_id() == instrument_id;
-                   });
-
-  if (card_iterator != payments_data_manager_->server_credit_cards_.end()) {
-    card_iterator->get()->set_cvc(cvc);
-  }
-}
-
-void TestPersonalDataManager::ClearServerCvcs() {
-  for (CreditCard* card : PersonalDataManager::GetServerCreditCards()) {
-    if (!card->cvc().empty()) {
-      card->clear_cvc();
-    }
-  }
-}
-
-void TestPersonalDataManager::ClearLocalCvcs() {
-  for (CreditCard* card : PersonalDataManager::GetLocalCreditCards()) {
-    if (!card->cvc().empty()) {
-      card->clear_cvc();
-    }
-  }
+void TestPersonalDataManager::SetPrefService(PrefService* pref_service) {
+  pref_service_ = pref_service;
+  test_address_data_manager().SetPrefService(pref_service);
+  test_payments_data_manager().SetPrefService(pref_service);
 }
 
 void TestPersonalDataManager::ClearProfiles() {
-  static_cast<TestAddressDataManager*>(address_data_manager_.get())
-      ->ClearProfiles();
+  test_address_data_manager().ClearProfiles();
 }
 
 void TestPersonalDataManager::AddServerCreditCard(
     const CreditCard& credit_card) {
-  std::unique_ptr<CreditCard> server_credit_card =
-      std::make_unique<CreditCard>(credit_card);
-  payments_data_manager_->server_credit_cards_.push_back(
-      std::move(server_credit_card));
-  NotifyPersonalDataObserver();
-}
-
-void TestPersonalDataManager::AddCloudTokenData(
-    const CreditCardCloudTokenData& cloud_token_data) {
-  std::unique_ptr<CreditCardCloudTokenData> data =
-      std::make_unique<CreditCardCloudTokenData>(cloud_token_data);
-  payments_data_manager_->server_credit_card_cloud_token_data_.push_back(
-      std::move(data));
-  NotifyPersonalDataObserver();
+  test_payments_data_manager().AddServerCreditCard(credit_card);
 }
 
 void TestPersonalDataManager::AddAutofillOfferData(
     const AutofillOfferData& offer_data) {
-  std::unique_ptr<AutofillOfferData> data =
-      std::make_unique<AutofillOfferData>(offer_data);
-  payments_data_manager_->autofill_offer_data_.emplace_back(std::move(data));
-  NotifyPersonalDataObserver();
+  test_payments_data_manager().AddAutofillOfferData(offer_data);
 }
 
-void TestPersonalDataManager::AddServerIban(const Iban& iban) {
-  CHECK(iban.value().empty());
-  payments_data_manager_->server_ibans_.push_back(std::make_unique<Iban>(iban));
-  NotifyPersonalDataObserver();
+void TestPersonalDataManager::SetAutofillPaymentMethodsEnabled(
+    bool autofill_payment_methods_enabled) {
+  test_payments_data_manager().SetAutofillPaymentMethodsEnabled(
+      autofill_payment_methods_enabled);
 }
 
-void TestPersonalDataManager::AddCardArtImage(const GURL& url,
-                                              const gfx::Image& image) {
-  payments_data_manager_->credit_card_art_images_[url] =
-      std::make_unique<gfx::Image>(image);
-  NotifyPersonalDataObserver();
+void TestPersonalDataManager::SetAutofillProfileEnabled(
+    bool autofill_profile_enabled) {
+  test_address_data_manager().SetAutofillProfileEnabled(
+      autofill_profile_enabled);
 }
 
-void TestPersonalDataManager::AddVirtualCardUsageData(
-    const VirtualCardUsageData& usage_data) {
-  payments_data_manager_->autofill_virtual_card_usage_data_.push_back(
-      std::make_unique<VirtualCardUsageData>(usage_data));
-  NotifyPersonalDataObserver();
-}
-
-void TestPersonalDataManager::SetNicknameForCardWithGUID(
-    std::string_view guid,
-    std::string_view nickname) {
-  for (auto& card : payments_data_manager_->local_credit_cards_) {
-    if (card->guid() == guid) {
-      card->SetNickname(base::ASCIIToUTF16(nickname));
-    }
-  }
-  for (auto& card : payments_data_manager_->server_credit_cards_) {
-    if (card->guid() == guid) {
-      card->SetNickname(base::ASCIIToUTF16(nickname));
-    }
-  }
-  NotifyPersonalDataObserver();
+void TestPersonalDataManager::SetAutofillWalletImportEnabled(
+    bool autofill_wallet_import_enabled) {
+  test_payments_data_manager().SetAutofillWalletImportEnabled(
+      autofill_wallet_import_enabled);
 }
 
 }  // namespace autofill

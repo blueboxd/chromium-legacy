@@ -82,7 +82,6 @@ public interface WebContents extends Parcelable {
     }
 
     /**
-     * TODO(ctzsm): Rename this method to setDelegates()
      *
      * Initialize various content objects of {@link WebContents} lifetime.
      *
@@ -96,7 +95,7 @@ public interface WebContents extends Parcelable {
      * @param windowAndroid An instance of the WindowAndroid.
      * @param internalsHolder A holder of objects used internally by WebContents.
      */
-    void initialize(
+    void setDelegates(
             String productVersion,
             ViewAndroidDelegate viewDelegate,
             ViewEventSink.InternalAccessDelegate accessDelegate,
@@ -230,10 +229,15 @@ public interface WebContents extends Parcelable {
     boolean isLoading();
 
     /**
-     * @return Whether this WebContents is loading and expects any loading UI to
-     * be displayed.
+     * @return Whether this WebContents is loading and expects any loading UI to be displayed.
      */
     boolean shouldShowLoadingUI();
+
+    /**
+     * Returns whether this WebContents's primary frame tree node is navigating, i.e. it has an
+     * associated NavigationRequest.
+     */
+    boolean hasUncommittedNavigationInPrimaryMainFrame();
 
     /**
      * Runs the beforeunload handler, if any. The tab will be closed if there's no beforeunload
@@ -416,13 +420,16 @@ public interface WebContents extends Parcelable {
 
     /**
      * This returns the theme color as set by the theme-color meta tag.
-     * <p>
-     * The color returned may retain non-fully opaque alpha components.  A value of
-     * {@link android.graphics.Color#TRANSPARENT} means there was no theme color specified.
+     *
+     * <p>The color returned may retain non-fully opaque alpha components. A value of {@link
+     * android.graphics.Color#TRANSPARENT} means there was no theme color specified.
      *
      * @return The theme color for the content as set by the theme-color meta tag.
      */
     int getThemeColor();
+
+    /** This returns the background color for the web contents. */
+    int getBackgroundColor();
 
     /**
      * @return Current page load progress on a scale of 0 to 1.

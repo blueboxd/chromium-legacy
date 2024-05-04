@@ -35,7 +35,6 @@
 #include "chrome/browser/predictors/predictors_enums.h"
 #include "chrome/browser/predictors/predictors_features.h"
 #include "chrome/browser/predictors/predictors_switches.h"
-#include "chrome/browser/preloading/prefetch/no_state_prefetch/no_state_prefetch_manager_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/common/chrome_features.h"
@@ -55,6 +54,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/referrer.h"
+#include "content/public/test/back_forward_cache_util.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/prerender_test_util.h"
@@ -392,7 +392,7 @@ class LoadingPredictorBrowserTest : public InProcessBrowserTest {
         {features::kLoadingOnlyLearnHighPriorityResources,
          features::kLoadingPreconnectToRedirectTarget,
          features::kNavigationPredictorPreconnectHoldback},
-        // TODO(crbug.com/1394910): Use HTTPS URLs in tests to avoid having to
+        // TODO(crbug.com/40248833): Use HTTPS URLs in tests to avoid having to
         // disable this feature.
         {features::kHttpsUpgrades});
   }
@@ -679,9 +679,6 @@ class TestPrerenderStopObserver
     }
   }
 
-  void OnPrefetchNetworkBytesChanged(
-      prerender::NoStatePrefetchHandle* handle) override {}
-
  private:
   base::OnceClosure on_stop_closure_;
 };
@@ -899,7 +896,7 @@ IN_PROC_BROWSER_TEST_F(LoadingPredictorBrowserTest, PreconnectNonCors) {
   EXPECT_EQ(0u, connection_tracker()->GetReadSocketCount());
 }
 
-// TODO(crbug.com/1419756): isolate test per feature.  Currently, it has
+// TODO(crbug.com/40063266): isolate test per feature.  Currently, it has
 // test for script observer and fonts.
 class LCPCriticalPathPredictorBrowserTest : public LoadingPredictorBrowserTest {
  public:
@@ -912,13 +909,13 @@ class LCPCriticalPathPredictorBrowserTest : public LoadingPredictorBrowserTest {
       const base::Location& from_here,
       const GURL& url,
       size_t expected_locator_count) {
-    auto lcpp_data =
-        loading_predictor()->resource_prefetch_predictor()->GetLcppData(url);
+    auto lcpp_stat =
+        loading_predictor()->resource_prefetch_predictor()->GetLcppStat(url);
     std::vector<std::string> locators;
-    if (lcpp_data) {
+    if (lcpp_stat) {
       std::optional<blink::mojom::LCPCriticalPathPredictorNavigationTimeHint>
-          hint = ConvertLcppDataToLCPCriticalPathPredictorNavigationTimeHint(
-              *lcpp_data);
+          hint = ConvertLcppStatToLCPCriticalPathPredictorNavigationTimeHint(
+              *lcpp_stat);
       if (hint) {
         locators = hint->lcp_element_locators;
       }
@@ -1820,10 +1817,19 @@ IN_PROC_BROWSER_TEST_P(LoadingPredictorBrowserTestWithOptimizationGuide,
   content::AwaitDocumentOnLoadCompleted(observer->web_contents());
   ASSERT_TRUE(observer->WaitForNavigationFinished());
 
-  // Navigate to another URL - make sure optimization guide prediction is
-  // cleared.
+  // Navigate to another URL and wait until the previous RFH is destroyed (i.e.
+  // until the optimization guide prediction is cleared and metrics are
+  // recorded).
+  content::RenderFrameHostWrapper rfh(
+      observer->web_contents()->GetPrimaryMainFrame());
+  // Disable BFCache to ensure the navigation below unloads |rfh|.
+  content::DisableBackForwardCacheForTesting(
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      content::BackForwardCache::DisableForTestingReason::
+          TEST_REQUIRES_NO_CACHING);
   ASSERT_TRUE(ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL("nohints.com", "/")));
+  ASSERT_TRUE(rfh.WaitUntilRenderFrameDeleted());
 
   histogram_tester.ExpectUniqueSample(
       "LoadingPredictor.PreconnectLearningRecall.OptimizationGuide", 0, 1);

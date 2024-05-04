@@ -18,6 +18,7 @@
 #include "chromeos/components/kcer/chaps/session_chaps_client.h"
 #include "chromeos/components/kcer/helpers/key_helper.h"
 #include "chromeos/components/kcer/helpers/pkcs12_reader.h"
+#include "chromeos/components/kcer/helpers/pkcs12_validator.h"
 #include "chromeos/components/kcer/kcer_token_utils.h"
 #include "chromeos/components/kcer/kcer_utils.h"
 #include "chromeos/constants/pkcs11_definitions.h"
@@ -377,7 +378,6 @@ std::vector<uint8_t> GetPssSignParams(SigningScheme kcer_signing_scheme) {
 
 }  // namespace
 
-// TODO(244409232): Implement receiving of cert change notifications.
 KcerTokenImpl::KcerTokenImpl(Token token, HighLevelChapsClient* chaps_client)
     : token_(token),
       pkcs_11_slot_id_(0),
@@ -385,7 +385,9 @@ KcerTokenImpl::KcerTokenImpl(Token token, HighLevelChapsClient* chaps_client)
       kcer_utils_(token, chaps_client) {
   CHECK(chaps_client_);
 }
-KcerTokenImpl::~KcerTokenImpl() = default;
+KcerTokenImpl::~KcerTokenImpl() {
+  net::CertDatabase::GetInstance()->RemoveObserver(this);
+}
 
 // Returns a weak pointer for the token. The pointer can be used to post tasks
 // for the token.
@@ -400,9 +402,20 @@ void KcerTokenImpl::InitializeWithoutNss(
     SessionChapsClient::SlotId pkcs11_slot_id) {
   pkcs_11_slot_id_ = pkcs11_slot_id;
   kcer_utils_.Initialize(pkcs_11_slot_id_);
+  net::CertDatabase::GetInstance()->AddObserver(this);
   // This is supposed to be the first time the task queue is unblocked, no
   // other tasks should be already running.
   UnblockQueueProcessNextTask();
+}
+
+void KcerTokenImpl::OnClientCertStoreChanged() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  cache_state_ = CacheState::kOutdated;
+
+  // If task queue is not blocked, trigger cache update immediately.
+  if (!is_blocked_) {
+    UnblockQueueProcessNextTask();
+  }
 }
 
 //==============================================================================
@@ -913,8 +926,25 @@ void KcerTokenImpl::ImportCertFromBytesWithKeyHandle(
         .Run(base::unexpected(Error::kInvalidCertificate));
   }
 
-  // TODO(b/244409232): Assign the correct nickname.
-  std::string label = "";
+  std::vector<scoped_refptr<const Cert>> existing_certs =
+      cert_cache_.GetAllCerts();
+
+  std::vector<std::string_view> existing_nicknames;
+  existing_nicknames.reserve(existing_certs.size());
+  for (const auto& existing_cert : existing_certs) {
+    existing_nicknames.push_back(
+        std::string_view(existing_cert->GetNickname()));
+  }
+
+  std::string label;
+  Pkcs12ReaderStatusCode get_nickname_result =
+      GetNickname(std::move(existing_certs), std::move(existing_nicknames),
+                  cert.get(), reader, label);
+  if (get_nickname_result != Pkcs12ReaderStatusCode::kSuccess) {
+    return std::move(task.callback)
+        .Run(base::unexpected(Error::kFailedToMakeCertNickname));
+  }
+
   CertDer cert_der = task.cert_der;
   auto import_callback =
       base::BindOnce(&KcerTokenImpl::DidImportCertFromBytes,
@@ -952,7 +982,66 @@ void KcerTokenImpl::ImportPkcs12Cert(Pkcs12Blob pkcs12_blob,
                                      bool hardware_backed,
                                      bool mark_as_migrated,
                                      Kcer::StatusCallback callback) {
-  // TODO(244409232): Implement.
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (is_blocked_) {
+    return task_queue_.push_back(base::BindOnce(
+        &KcerTokenImpl::ImportPkcs12Cert, weak_factory_.GetWeakPtr(),
+        std::move(pkcs12_blob), std::move(password), hardware_backed,
+        mark_as_migrated, std::move(callback)));
+  }
+  // Block task queue, attach unblocking task to the callback.
+  auto unblocking_callback = BlockQueueGetUnblocker(std::move(callback));
+
+  Pkcs12Reader pkcs12_reader;
+  KeyData key_data;
+  bssl::UniquePtr<STACK_OF(X509)> certs;
+  Pkcs12ReaderStatusCode get_key_and_cert_status =
+      pkcs12_reader.GetPkcs12KeyAndCerts(pkcs12_blob.value(), password,
+                                         key_data.key, certs);
+  if (get_key_and_cert_status != Pkcs12ReaderStatusCode::kSuccess) {
+    return std::move(unblocking_callback)
+        .Run(base::unexpected(
+            ConvertPkcs12ParsingError(get_key_and_cert_status)));
+  }
+
+  Pkcs12ReaderStatusCode enrich_key_data_result =
+      pkcs12_reader.EnrichKeyData(key_data);
+  if ((enrich_key_data_result != Pkcs12ReaderStatusCode::kSuccess) ||
+      key_data.cka_id_value.empty()) {
+    return std::move(unblocking_callback)
+        .Run(base::unexpected(Error::kFailedToGetKeyId));
+  }
+
+  std::vector<CertData> certs_data;
+  Pkcs12ReaderStatusCode prepare_certs_status = ValidateAndPrepareCertData(
+      cert_cache_, pkcs12_reader, std::move(certs), key_data, certs_data);
+  if ((prepare_certs_status != Pkcs12ReaderStatusCode::kSuccess) ||
+      certs_data.empty()) {
+    return std::move(unblocking_callback)
+        .Run(base::unexpected(ConvertPkcs12ParsingError(prepare_certs_status)));
+  }
+
+  auto import_callback = base::BindOnce(&KcerTokenImpl::DidImportPkcs12Cert,
+                                        weak_factory_.GetWeakPtr(),
+                                        std::move(unblocking_callback));
+
+  kcer_utils_.ImportPkcs12(std::move(key_data), std::move(certs_data),
+                           hardware_backed, mark_as_migrated,
+                           std::move(import_callback));
+}
+
+void KcerTokenImpl::DidImportPkcs12Cert(
+    Kcer::StatusCallback callback,
+    bool did_modify,
+    base::expected<void, Error> import_result) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  if (did_modify) {
+    return NotifyCertsChanged(
+        base::BindOnce(std::move(callback), std::move(import_result)));
+  }
+
+  return std::move(callback).Run(std::move(import_result));
 }
 
 //==============================================================================
@@ -1026,6 +1115,9 @@ void KcerTokenImpl::RemoveKeyAndCertsWithObjectHandles(
   if (result_code != chromeos::PKCS11_CKR_OK) {
     return std::move(task.callback)
         .Run(base::unexpected(Error::kFailedToSearchForObjects));
+  }
+  if (handles.empty()) {
+    return std::move(task.callback).Run(base::unexpected(Error::kKeyNotFound));
   }
 
   chaps_client_->DestroyObjectsWithRetries(
@@ -1120,6 +1212,10 @@ void KcerTokenImpl::RemoveCertWithHandles(RemoveCertTask task,
   if (result_code != chromeos::PKCS11_CKR_OK) {
     return std::move(task.callback)
         .Run(base::unexpected(Error::kFailedToSearchForObjects));
+  }
+  if (handles.empty()) {
+    return std::move(task.callback)
+        .Run(base::unexpected(Error::kFailedToRemoveCertificate));
   }
 
   chaps_client_->DestroyObjectsWithRetries(
@@ -1422,11 +1518,6 @@ void KcerTokenImpl::ListKeysDidFindEcPrivateKey(
 
 //==============================================================================
 
-KcerTokenImpl::ListCertsTask::ListCertsTask(TokenListCertsCallback in_callback)
-    : callback(std::move(in_callback)) {}
-KcerTokenImpl::ListCertsTask::ListCertsTask(ListCertsTask&& other) = default;
-KcerTokenImpl::ListCertsTask::~ListCertsTask() = default;
-
 void KcerTokenImpl::ListCerts(TokenListCertsCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -1438,114 +1529,10 @@ void KcerTokenImpl::ListCerts(TokenListCertsCallback callback) {
   // Block task queue, attach unblocking task to the callback.
   auto unblocking_callback = BlockQueueGetUnblocker(std::move(callback));
 
-  ListCertsImpl(ListCertsTask(std::move(unblocking_callback)));
-}
-
-// Finds all certificate objects in Chaps.
-void KcerTokenImpl::ListCertsImpl(ListCertsTask task) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  task.attemps_left--;
-  if (task.attemps_left < 0) {
-    return std::move(task.callback)
-        .Run(base::unexpected(Error::kPkcs11SessionFailure));
-  }
-
-  chromeos::PKCS11_CK_OBJECT_CLASS cert_class =
-      chromeos::PKCS11_CKO_CERTIFICATE;
-  chaps::AttributeList attributes;
-  AddAttribute(attributes, chromeos::PKCS11_CKA_CLASS, MakeSpan(&cert_class));
-
-  chaps_client_->FindObjects(
-      pkcs_11_slot_id_, std::move(attributes),
-      base::BindOnce(&KcerTokenImpl::ListCertsWithCertHandles,
-                     weak_factory_.GetWeakPtr(), std::move(task)));
-}
-
-void KcerTokenImpl::ListCertsWithCertHandles(ListCertsTask task,
-                                             std::vector<ObjectHandle> handles,
-                                             uint32_t result_code) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  if (SessionChapsClient::IsSessionError(result_code)) {
-    return ListCertsImpl(std::move(task));
-  }
-  if (result_code != chromeos::PKCS11_CKR_OK) {
-    return std::move(task.callback)
-        .Run(base::unexpected(Error::kFailedToSearchForObjects));
-  }
-
-  ListCertsGetOneCert(std::move(task), std::move(handles),
-                      std::vector<scoped_refptr<const Cert>>());
-}
-
-// This is called repeatedly until `handles` is empty.
-void KcerTokenImpl::ListCertsGetOneCert(
-    ListCertsTask task,
-    std::vector<ObjectHandle> handles,
-    std::vector<scoped_refptr<const Cert>> certs) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  if (handles.empty()) {
-    return std::move(task.callback).Run(std::move(certs));
-  }
-
-  ObjectHandle current_handle = handles.back();
-  handles.pop_back();
-
-  chaps_client_->GetAttributeValue(
-      pkcs_11_slot_id_, current_handle,
-      {AttributeId::kPkcs11Id, AttributeId::kLabel, AttributeId::kValue},
-      base::BindOnce(&KcerTokenImpl::ListCertsDidGetOneCert,
-                     weak_factory_.GetWeakPtr(), std::move(task),
-                     std::move(handles), std::move(certs)));
-}
-
-// Parses attributes of a single cert and adds the new object to `certs`.
-void KcerTokenImpl::ListCertsDidGetOneCert(
-    ListCertsTask task,
-    std::vector<ObjectHandle> handles,
-    std::vector<scoped_refptr<const Cert>> certs,
-    chaps::AttributeList attributes,
-    uint32_t result_code) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  if (SessionChapsClient::IsSessionError(result_code)) {
-    return ListCertsImpl(std::move(task));
-  }
-  if (result_code != chromeos::PKCS11_CKR_OK) {
-    LOG(WARNING) << "Failed to get attributes for a cert, skipping it";
-    // Try to get as many certs as possible even if some of them fail.
-    return ListCertsGetOneCert(std::move(task), std::move(handles),
-                               std::move(certs));
-  }
-
-  base::span<const uint8_t> pkcs11_id =
-      GetAttributeValue(attributes, AttributeId::kPkcs11Id);
-  base::span<const uint8_t> nickname =
-      GetAttributeValue(attributes, AttributeId::kLabel);
-  base::span<const uint8_t> cert_der =
-      GetAttributeValue(attributes, AttributeId::kValue);
-  if (pkcs11_id.empty() || cert_der.empty()) {
-    LOG(WARNING) << "Invalid cert was fetched from Chaps, skipping it";
-    return ListCertsGetOneCert(std::move(task), std::move(handles),
-                               std::move(certs));
-  }
-
-  scoped_refptr<net::X509Certificate> x509_cert =
-      net::X509Certificate::CreateFromBytes(cert_der);
-  if (!x509_cert) {
-    LOG(WARNING) << "Failed to parse a cert from Chaps, skipping it";
-    return ListCertsGetOneCert(std::move(task), std::move(handles),
-                               std::move(certs));
-  }
-
-  std::vector<uint8_t> id(pkcs11_id.begin(), pkcs11_id.end());
-  certs.push_back(base::MakeRefCounted<Cert>(
-      token_, Pkcs11Id(std::move(id)),
-      std::string(nickname.begin(), nickname.end()), std::move(x509_cert)));
-  return ListCertsGetOneCert(std::move(task), std::move(handles),
-                             std::move(certs));
+  // Return current certs from the cache. It's expected to always be up-to-date
+  // at this point. UnblockQueueProcessNextTask() will update the cache first
+  // when necessary.
+  return std::move(unblocking_callback).Run(cert_cache_.GetAllCerts());
 }
 
 //==============================================================================
@@ -2393,6 +2380,177 @@ void KcerTokenImpl::SetCertProvisioningProfileId(
 
 //==============================================================================
 
+KcerTokenImpl::UpdateCacheTask::UpdateCacheTask(base::OnceClosure in_callback)
+    : callback(std::move(in_callback)) {}
+KcerTokenImpl::UpdateCacheTask::UpdateCacheTask(UpdateCacheTask&& other) =
+    default;
+KcerTokenImpl::UpdateCacheTask::~UpdateCacheTask() = default;
+
+void KcerTokenImpl::UpdateCache() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  if (is_blocked_) {
+    return task_queue_.push_back(base::BindOnce(&KcerTokenImpl::UpdateCache,
+                                                weak_factory_.GetWeakPtr()));
+  }
+  // Block task queue, attach unblocking task to the DoNothing closure.
+  auto unblocking_callback =
+      BlockQueueGetUnblocker(base::OnceClosure(base::DoNothing()));
+
+  UpdateCacheImpl(UpdateCacheTask(std::move(unblocking_callback)));
+}
+
+// Finds all certificate objects in Chaps.
+void KcerTokenImpl::UpdateCacheImpl(UpdateCacheTask task) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  task.attemps_left--;
+  if (task.attemps_left < 0) {
+    return UpdateCacheWithCerts(std::move(task),
+                                base::unexpected(Error::kPkcs11SessionFailure));
+  }
+
+  cache_state_ = CacheState::kUpdating;
+
+  chromeos::PKCS11_CK_OBJECT_CLASS cert_class =
+      chromeos::PKCS11_CKO_CERTIFICATE;
+  chaps::AttributeList attributes;
+  AddAttribute(attributes, chromeos::PKCS11_CKA_CLASS, MakeSpan(&cert_class));
+
+  chaps_client_->FindObjects(
+      pkcs_11_slot_id_, std::move(attributes),
+      base::BindOnce(&KcerTokenImpl::UpdateCacheWithCertHandles,
+                     weak_factory_.GetWeakPtr(), std::move(task)));
+}
+
+void KcerTokenImpl::UpdateCacheWithCertHandles(
+    UpdateCacheTask task,
+    std::vector<ObjectHandle> handles,
+    uint32_t result_code) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  if (cache_state_ == CacheState::kOutdated) {
+    // If the status switched from kUpdating, then a new update happened since
+    // the cache started to update, `handles` might already be outdated.
+    // Skip re-building the cache and try again by unblocking the queue and
+    // returning to UnblockQueueProcessNextTask().
+    return std::move(task.callback).Run();
+  }
+  if (SessionChapsClient::IsSessionError(result_code)) {
+    return UpdateCacheImpl(std::move(task));
+  }
+  if (result_code != chromeos::PKCS11_CKR_OK) {
+    return UpdateCacheWithCerts(
+        std::move(task), base::unexpected(Error::kFailedToSearchForObjects));
+  }
+
+  UpdateCacheGetOneCert(std::move(task), std::move(handles),
+                        std::vector<scoped_refptr<const Cert>>());
+}
+
+// This is called repeatedly until `handles` is empty.
+void KcerTokenImpl::UpdateCacheGetOneCert(
+    UpdateCacheTask task,
+    std::vector<ObjectHandle> handles,
+    std::vector<scoped_refptr<const Cert>> certs) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  if (handles.empty()) {
+    return UpdateCacheWithCerts(std::move(task), std::move(certs));
+  }
+
+  ObjectHandle current_handle = handles.back();
+  handles.pop_back();
+
+  chaps_client_->GetAttributeValue(
+      pkcs_11_slot_id_, current_handle,
+      {AttributeId::kPkcs11Id, AttributeId::kLabel, AttributeId::kValue},
+      base::BindOnce(&KcerTokenImpl::UpdateCacheDidGetOneCert,
+                     weak_factory_.GetWeakPtr(), std::move(task),
+                     std::move(handles), std::move(certs)));
+}
+
+// Parses attributes of a single cert and adds the new object to `certs`.
+void KcerTokenImpl::UpdateCacheDidGetOneCert(
+    UpdateCacheTask task,
+    std::vector<ObjectHandle> handles,
+    std::vector<scoped_refptr<const Cert>> certs,
+    chaps::AttributeList attributes,
+    uint32_t result_code) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  if (cache_state_ == CacheState::kOutdated) {
+    // If the status switched from kUpdating, then new update happened since
+    // the cache started to update, `certs` might already be outdated.
+    // Skip re-building the cache and try again by unblocking the queue and
+    // returning to UnblockQueueProcessNextTask().
+    return std::move(task.callback).Run();
+  }
+  if (SessionChapsClient::IsSessionError(result_code)) {
+    return UpdateCacheImpl(std::move(task));
+  }
+  if (result_code != chromeos::PKCS11_CKR_OK) {
+    LOG(WARNING) << "Failed to get attributes for a cert, skipping it";
+    // Try to get as many certs as possible even if some of them fail.
+    return UpdateCacheGetOneCert(std::move(task), std::move(handles),
+                                 std::move(certs));
+  }
+
+  base::span<const uint8_t> pkcs11_id =
+      GetAttributeValue(attributes, AttributeId::kPkcs11Id);
+  base::span<const uint8_t> nickname =
+      GetAttributeValue(attributes, AttributeId::kLabel);
+  base::span<const uint8_t> cert_der =
+      GetAttributeValue(attributes, AttributeId::kValue);
+  if (pkcs11_id.empty() || cert_der.empty()) {
+    LOG(WARNING) << "Invalid cert was fetched from Chaps, skipping it";
+    return UpdateCacheGetOneCert(std::move(task), std::move(handles),
+                                 std::move(certs));
+  }
+
+  scoped_refptr<const Cert> existing_cert = cert_cache_.FindCert(cert_der);
+  if (existing_cert) {
+    certs.push_back(std::move(existing_cert));
+    return UpdateCacheGetOneCert(std::move(task), std::move(handles),
+                                 std::move(certs));
+  }
+
+  scoped_refptr<net::X509Certificate> x509_cert =
+      net::X509Certificate::CreateFromBytes(cert_der);
+  if (!x509_cert) {
+    LOG(WARNING) << "Failed to parse a cert from Chaps, skipping it";
+    return UpdateCacheGetOneCert(std::move(task), std::move(handles),
+                                 std::move(certs));
+  }
+
+  std::vector<uint8_t> id(pkcs11_id.begin(), pkcs11_id.end());
+  certs.push_back(base::MakeRefCounted<Cert>(
+      token_, Pkcs11Id(std::move(id)),
+      std::string(nickname.begin(), nickname.end()), std::move(x509_cert)));
+  return UpdateCacheGetOneCert(std::move(task), std::move(handles),
+                               std::move(certs));
+}
+
+void KcerTokenImpl::UpdateCacheWithCerts(
+    UpdateCacheTask task,
+    base::expected<std::vector<scoped_refptr<const Cert>>, Error> certs) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  if (certs.has_value()) {
+    cert_cache_ = CertCache(std::move(certs).value());
+  } else {
+    LOG(ERROR) << "Failed to update cert cache, error: "
+               << static_cast<uint32_t>(certs.error());
+  }
+  // Even if the update failed, mark it as complete to avoid an infinite loop in
+  // case of persistent errors.
+  cache_state_ = CacheState::kUpToDate;
+
+  return std::move(task.callback).Run();
+}
+
+//==============================================================================
+
 void KcerTokenImpl::NotifyCertsChanged(base::OnceClosure callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -2432,6 +2590,10 @@ void KcerTokenImpl::UnblockQueueProcessNextTask() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   is_blocked_ = false;
+
+  if (cache_state_ == CacheState::kOutdated) {
+    return UpdateCache();
+  }
 
   if (task_queue_.empty()) {
     return;

@@ -30,7 +30,6 @@ import org.chromium.chrome.test.util.browser.signin.SigninTestRule;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetControllerProvider;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetTestSupport;
-import org.chromium.components.signin.AccountUtils;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -44,7 +43,7 @@ import java.util.concurrent.TimeoutException;
 @RunWith(ChromeJUnit4ClassRunner.class)
 @DoNotBatch(
         reason =
-                "TODO(crbug.com/1346583): add resetting logic for"
+                "TODO(crbug.com/40232561): add resetting logic for"
                         + "FakePasswordStoreAndroidBackend to allow batching")
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE, "show-autofill-signatures"})
 public class TouchToFillMainFlowIntegrationTest {
@@ -66,21 +65,8 @@ public class TouchToFillMainFlowIntegrationTest {
 
     @Before
     public void setUp() {
-        PasswordStoreAndroidBackendFactory.setFactoryInstanceForTesting(
-                new FakePasswordStoreAndroidBackendFactoryImpl());
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> {
-                    ((FakePasswordStoreAndroidBackend)
-                                    PasswordStoreAndroidBackendFactory.getInstance()
-                                            .createBackend())
-                            .setSyncingAccount(
-                                    AccountUtils.createAccountFromName(
-                                            SigninTestRule.TEST_ACCOUNT_EMAIL));
-                });
-        PasswordSyncControllerDelegateFactory.setFactoryInstanceForTesting(
-                new FakePasswordSyncControllerDelegateFactoryImpl());
-
         mActivityTestRule.startMainActivityOnBlankPage();
+        PasswordManagerTestHelper.setAccountForPasswordStore(SigninTestRule.TEST_ACCOUNT_EMAIL);
         PasswordManagerTestUtilsBridge.disableServerPredictions();
         mSigninTestRule.addTestAccountThenSigninAndEnableSync();
 

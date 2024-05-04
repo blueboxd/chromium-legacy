@@ -154,8 +154,10 @@ class FakeLocalFrame : public blink::mojom::LocalFrame {
       const std::string& page_state,
       bool is_browser_initiated) override;
   void SnapshotDocumentForViewTransition(
+      const blink::ViewTransitionToken& transition_token,
       blink::mojom::PageSwapEventParamsPtr,
       SnapshotDocumentForViewTransitionCallback callback) override;
+  void NotifyViewTransitionAbortedToOldDocument() override;
   void DispatchPageSwap(blink::mojom::PageSwapEventParamsPtr) override;
   void AddResourceTimingEntryForFailedSubframeNavigation(
       const ::blink::FrameToken& subframe_token,
@@ -174,6 +176,8 @@ class FakeLocalFrame : public blink::mojom::LocalFrame {
       const std::string& normalized_server_timing,
       const ::network::URLLoaderCompletionStatus& completion_status) override;
   void RequestFullscreenDocumentElement() override;
+  void UpdatePrerenderURL(const ::GURL& matched_url,
+                          UpdatePrerenderURLCallback callback) override;
 
  private:
   void BindFrameHostReceiver(mojo::ScopedInterfaceEndpointHandle handle);

@@ -124,40 +124,24 @@ class FuchsiaVideoDecoder::OutputMailbox {
                      gpu::SHARED_IMAGE_USAGE_SCANOUT |
                      gpu::SHARED_IMAGE_USAGE_VIDEO_DECODE;
 
-    if (IsMultiPlaneFormatForHardwareVideoEnabled()) {
-      // The GMB is either YUV_420_BIPLANAR (SIF kNV12) or YVU_420 (SIF kYV12).
-      auto shared_image_format = viz::MultiPlaneFormat::kNV12;
-      switch (buffer_format) {
-        case gfx::BufferFormat::YUV_420_BIPLANAR:
-          break;
-        case gfx::BufferFormat::YVU_420:
-          shared_image_format = viz::MultiPlaneFormat::kYV12;
-          break;
-        default:
-          NOTREACHED_NORETURN();
-      }
-      shared_image_format.SetPrefersExternalSampler();
-
-      shared_image_ =
-          raster_context_provider_->SharedImageInterface()->CreateSharedImage(
-              {shared_image_format, size, color_space, usage,
-               "FuchsiaVideoDecoder"},
-              std::move(gmb_handle));
-    } else {
-      // Note that we are keeping |gmb| creation intact here for the sake of not
-      // changing this path. This path should anyways go away when we fully move
-      // to supporting MultiPlanarSI above.
-      auto gmb = gpu::GpuMemoryBufferImplNativePixmap::CreateFromHandle(
-          pixmap_factory, std::move(gmb_handle), size, buffer_format,
-          gfx::BufferUsage::GPU_READ,
-          gpu::GpuMemoryBufferImpl::DestructionCallback());
-
-      shared_image_ =
-          raster_context_provider_->SharedImageInterface()->CreateSharedImage(
-              gmb.get(), nullptr, gfx::BufferPlane::DEFAULT,
-              {color_space, kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType,
-               usage, "FuchsiaVideoDecoder"});
+    // The GMB is either YUV_420_BIPLANAR (SIF kNV12) or YVU_420 (SIF kYV12).
+    auto shared_image_format = viz::MultiPlaneFormat::kNV12;
+    switch (buffer_format) {
+      case gfx::BufferFormat::YUV_420_BIPLANAR:
+        break;
+      case gfx::BufferFormat::YVU_420:
+        shared_image_format = viz::MultiPlaneFormat::kYV12;
+        break;
+      default:
+        NOTREACHED_NORETURN();
     }
+    shared_image_format.SetPrefersExternalSampler();
+
+    shared_image_ =
+        raster_context_provider_->SharedImageInterface()->CreateSharedImage(
+            {shared_image_format, size, color_space, usage,
+             "FuchsiaVideoDecoder"},
+            std::move(gmb_handle));
 
     create_sync_token_ = raster_context_provider_->SharedImageInterface()
                              ->GenVerifiedSyncToken();
@@ -187,24 +171,18 @@ class FuchsiaVideoDecoder::OutputMailbox {
     is_used_ = true;
     reuse_callback_ = std::move(reuse_callback);
 
-    gpu::MailboxHolder mailboxes[VideoFrame::kMaxPlanes];
-    mailboxes[0].mailbox = shared_image_->mailbox();
+    scoped_refptr<gpu::ClientSharedImage> shared_images[VideoFrame::kMaxPlanes];
+    shared_images[0] = shared_image_;
 
-    if (create_sync_token_.HasData()) {
-      mailboxes[0].sync_token = create_sync_token_;
-      create_sync_token_.Clear();
-    }
-
-    auto frame = VideoFrame::WrapNativeTextures(
-        pixel_format, mailboxes,
+    auto frame = VideoFrame::WrapSharedImages(
+        pixel_format, shared_images, create_sync_token_, 0,
         base::BindPostTaskToCurrentDefault(base::BindOnce(
             &OutputMailbox::OnFrameDestroyed, base::Unretained(this))),
         coded_size, visible_rect, natural_size, timestamp);
+    create_sync_token_.Clear();
 
-    if (IsMultiPlaneFormatForHardwareVideoEnabled()) {
-      frame->set_shared_image_format_type(
-          media::SharedImageFormatType::kSharedImageFormatExternalSampler);
-    }
+    frame->set_shared_image_format_type(
+        media::SharedImageFormatType::kSharedImageFormatExternalSampler);
 
     // Request a fence we'll wait on before reusing the buffer.
     frame->metadata().read_lock_fences_enabled = true;
@@ -371,7 +349,7 @@ void FuchsiaVideoDecoder::Initialize(const VideoDecoderConfig& config,
   current_config_ = config;
 
   // Default to REC601 when the colorspace is not specified in the container.
-  // TODO(crbug.com/1364366): HW decoders currently don't provide accurate
+  // TODO(crbug.com/42050522): HW decoders currently don't provide accurate
   // color space information to sysmem. Once that issue is resolved, we'll
   // need to update this logic accordingly.
   if (!current_config_.color_space_info().IsSpecified())

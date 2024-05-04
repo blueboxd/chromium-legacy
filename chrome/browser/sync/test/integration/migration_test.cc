@@ -29,8 +29,8 @@ namespace {
 // Utility functions to make a model type set out of a small number of
 // model types.
 
-// TODO(crbug/1444105): MakeSet() seems pretty redundant, can be replaced with
-// its body.
+// TODO(crbug.com/40911681): MakeSet() seems pretty redundant, can be replaced
+// with its body.
 syncer::ModelTypeSet MakeSet(syncer::ModelType type) {
   return {type};
 }
@@ -172,7 +172,7 @@ class MigrationTest : public SyncTest {
                         TriggerMethod trigger_method) {
     // Make sure migration hasn't been triggered prematurely.
     for (int i = 0; i < num_clients(); ++i) {
-      ASSERT_TRUE(migration_watchers_[i]->GetMigratedTypes().Empty());
+      ASSERT_TRUE(migration_watchers_[i]->GetMigratedTypes().empty());
     }
 
     // Phase 1: Trigger the migrations on the server.

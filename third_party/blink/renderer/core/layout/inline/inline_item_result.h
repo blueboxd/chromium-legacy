@@ -25,6 +25,7 @@ class InlineItem;
 class LayoutResult;
 class ShapeResult;
 class ShapeResultView;
+struct InlineItemResultRubyColumn;
 struct PositionedFloat;
 
 // The result of measuring InlineItem.
@@ -89,7 +90,10 @@ struct CORE_EXPORT InlineItemResult {
 #if DCHECK_IS_ON()
   void CheckConsistency(bool allow_null_shape_result = false) const;
 #endif
-  String ToString(const String& ifc_text_content) const;
+  // `indent` is prepended to the content. If the content consists of multiple
+  // lines, `indent` is prepended to each of lines.
+  String ToString(const String& ifc_text_content,
+                  const String& indent = "") const;
 
   // The InlineItem and its index.
   const InlineItem* item = nullptr;
@@ -120,6 +124,9 @@ struct CORE_EXPORT InlineItemResult {
 
   // LayoutResult for atomic inline items.
   Member<const LayoutResult> layout_result;
+
+  // Data for kOpenRubyColumn type. This member is null for other types.
+  Member<InlineItemResultRubyColumn> ruby_column;
 
   // PositionedFloat for floating inline items. Should only be present for
   // positioned floats (not unpositioned). It indicates where it was placed

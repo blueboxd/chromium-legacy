@@ -40,7 +40,7 @@ inline constexpr char kMaxSnoozeCountParamName[] = "max_snooze_count";
 inline constexpr int kDefaultMaxSnoozeCount = 3;
 
 inline constexpr char kMaxPromoShowCount[] = "max_promo_show_count";
-inline constexpr int kDefaultMaxPromoShowCount = 12;
+inline constexpr int kDefaultMaxPromoShowCount = 3;
 
 inline constexpr char kNewBadgeShowCount[] = "new_badge_show_count";
 inline constexpr int kDefaultNewBadgeShowCount = 10;
@@ -56,6 +56,10 @@ inline constexpr base::TimeDelta kDefaultNewBadgeDisplayWindow = base::Days(60);
 
 BASE_FEATURE(kUserEducationExperienceVersion2,
              "UserEducationExperienceVersion2",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kNewBadgeTestFeature,
+             "NewBadgeTestFeature",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 bool IsUserEducationV2() {

@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.signin;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 
@@ -31,8 +33,11 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.profiles.ProfileManager;
 import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.services.SigninManager;
+import org.chromium.chrome.browser.signin.services.SigninPreferencesManager;
 import org.chromium.chrome.test.util.browser.signin.SigninTestRule;
 import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
+import org.chromium.components.signin.SigninFeatures;
+import org.chromium.components.signin.base.AccountInfo;
 import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.signin.identitymanager.ConsentLevel;
 import org.chromium.components.signin.identitymanager.IdentityManager;
@@ -97,7 +102,7 @@ public class SigninManagerIntegrationTest {
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     // Run test.
-                    if (!ChromeFeatureList.isEnabled(ChromeFeatureList.SEED_ACCOUNTS_REVAMP)) {
+                    if (!ChromeFeatureList.isEnabled(SigninFeatures.SEED_ACCOUNTS_REVAMP)) {
                         mSigninManager.reloadAllAccountsFromSystem(null);
                     }
 
@@ -116,7 +121,7 @@ public class SigninManagerIntegrationTest {
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     // Run test.
-                    if (!ChromeFeatureList.isEnabled(ChromeFeatureList.SEED_ACCOUNTS_REVAMP)) {
+                    if (!ChromeFeatureList.isEnabled(SigninFeatures.SEED_ACCOUNTS_REVAMP)) {
                         mSigninManager.reloadAllAccountsFromSystem(null);
                     }
 
@@ -144,8 +149,8 @@ public class SigninManagerIntegrationTest {
 
     @Test
     @MediumTest
-    @DisableFeatures(ChromeFeatureList.SEED_ACCOUNTS_REVAMP)
-    // TODO(crbug.com/1491005): Delete this test
+    @DisableFeatures(SigninFeatures.SEED_ACCOUNTS_REVAMP)
+    // TODO(crbug.com/40284908): Delete this test
     public void testUpdateAccountListOneAccountsRegisteredSignedInOther() {
         mSigninTestRule.addAccountAndWaitForSeeding(TEST_ACCOUNT1);
 
@@ -181,7 +186,7 @@ public class SigninManagerIntegrationTest {
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     // Re-run validation.
-                    if (!ChromeFeatureList.isEnabled(ChromeFeatureList.SEED_ACCOUNTS_REVAMP)) {
+                    if (!ChromeFeatureList.isEnabled(SigninFeatures.SEED_ACCOUNTS_REVAMP)) {
                         mSigninManager.reloadAllAccountsFromSystem(mTestAccount1.getId());
                     }
 
@@ -196,7 +201,7 @@ public class SigninManagerIntegrationTest {
 
     @Test
     @MediumTest
-    @EnableFeatures(ChromeFeatureList.SEED_ACCOUNTS_REVAMP)
+    @EnableFeatures(SigninFeatures.SEED_ACCOUNTS_REVAMP)
     public void testUpdateAccountListTwoAccountsThenRemoveOne() {
         // Add accounts.
         mSigninTestRule.addAccountAndWaitForSeeding(TEST_ACCOUNT1);
@@ -213,7 +218,7 @@ public class SigninManagerIntegrationTest {
                                             mIdentityManager.getAccountsWithRefreshTokens())));
                 });
 
-        mSigninTestRule.removeAccountAndWaitForSeeding(TEST_ACCOUNT2);
+        mSigninTestRule.removeAccountAndWaitForSeeding(mTestAccount2.getId());
 
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> {
@@ -243,13 +248,13 @@ public class SigninManagerIntegrationTest {
                 });
 
         // Remove all.
-        mSigninTestRule.removeAccountAndWaitForSeeding(TEST_ACCOUNT1);
-        mSigninTestRule.removeAccountAndWaitForSeeding(TEST_ACCOUNT2);
+        mSigninTestRule.removeAccountAndWaitForSeeding(mTestAccount1.getId());
+        mSigninTestRule.removeAccountAndWaitForSeeding(mTestAccount2.getId());
 
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     // Re-validate and run checks.
-                    if (!ChromeFeatureList.isEnabled(ChromeFeatureList.SEED_ACCOUNTS_REVAMP)) {
+                    if (!ChromeFeatureList.isEnabled(SigninFeatures.SEED_ACCOUNTS_REVAMP)) {
                         mSigninManager.reloadAllAccountsFromSystem(mTestAccount1.getId());
                     }
 
@@ -262,7 +267,7 @@ public class SigninManagerIntegrationTest {
 
     @Test
     @MediumTest
-    @EnableFeatures(ChromeFeatureList.SEED_ACCOUNTS_REVAMP)
+    @EnableFeatures(SigninFeatures.SEED_ACCOUNTS_REVAMP)
     public void testUpdateAccountListTwoAccountsThenRemoveAllSignOut() {
         // Add accounts.
         mSigninTestRule.addAccountAndWaitForSeeding(TEST_ACCOUNT1);
@@ -280,8 +285,8 @@ public class SigninManagerIntegrationTest {
                 });
 
         mSigninTestRule.signOut();
-        mSigninTestRule.removeAccountAndWaitForSeeding(TEST_ACCOUNT1);
-        mSigninTestRule.removeAccountAndWaitForSeeding(TEST_ACCOUNT2);
+        mSigninTestRule.removeAccountAndWaitForSeeding(mTestAccount1.getId());
+        mSigninTestRule.removeAccountAndWaitForSeeding(mTestAccount2.getId());
 
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> {
@@ -313,8 +318,8 @@ public class SigninManagerIntegrationTest {
 
     @Test
     @MediumTest
-    @DisableFeatures(ChromeFeatureList.SEED_ACCOUNTS_REVAMP)
-    // TODO(crbug.com/1491005): Delete this test
+    @DisableFeatures(SigninFeatures.SEED_ACCOUNTS_REVAMP)
+    // TODO(crbug.com/40284908): Delete this test
     public void testUpdateAccountListNoAccountsRegisteredButSignedIn() {
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> {
@@ -325,6 +330,61 @@ public class SigninManagerIntegrationTest {
                             "No accounts available",
                             new CoreAccountInfo[] {},
                             mIdentityManager.getAccountsWithRefreshTokens());
+                });
+    }
+
+    @Test
+    @MediumTest
+    @EnableFeatures(SigninFeatures.SEED_ACCOUNTS_REVAMP)
+    public void testPrimaryAccountRemoval_signsOut() {
+        mSigninTestRule.addAccount(TEST_ACCOUNT1);
+        SigninTestUtil.signinAndEnableSync(mTestAccount1, null);
+
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> {
+                    assertEquals(
+                            SigninPreferencesManager.getInstance().getLegacySyncAccountEmail(),
+                            mTestAccount1.getEmail());
+                });
+
+        mSigninTestRule.removeAccount(mTestAccount1.getId());
+
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> {
+                    assertNull(mIdentityManager.getPrimaryAccountInfo(ConsentLevel.SIGNIN));
+                    assertNull(SigninPreferencesManager.getInstance().getLegacySyncAccountEmail());
+                });
+    }
+
+    @Test
+    @MediumTest
+    @EnableFeatures(SigninFeatures.SEED_ACCOUNTS_REVAMP)
+    public void testPrimaryAccountRenaming_updatesLegacySyncAccountEmail() {
+        mSigninTestRule.addAccount(TEST_ACCOUNT1);
+        SigninTestUtil.signinAndEnableSync(mTestAccount1, null);
+
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> {
+                    assertEquals(
+                            SigninPreferencesManager.getInstance().getLegacySyncAccountEmail(),
+                            mTestAccount1.getEmail());
+                });
+
+        mSigninTestRule.blockGetCoreAccountInfosUpdate(true);
+        mSigninTestRule.removeAccount(mTestAccount1.getId());
+        AccountInfo renamedAccount =
+                new AccountInfo.Builder("renamed@gmail.com", mTestAccount1.getGaiaId()).build();
+        mSigninTestRule.addAccount(renamedAccount);
+        mSigninTestRule.unblockGetCoreAccountInfos();
+
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> {
+                    assertEquals(
+                            mIdentityManager.getPrimaryAccountInfo(ConsentLevel.SYNC).getEmail(),
+                            renamedAccount.getEmail());
+                    assertEquals(
+                            SigninPreferencesManager.getInstance().getLegacySyncAccountEmail(),
+                            renamedAccount.getEmail());
                 });
     }
 

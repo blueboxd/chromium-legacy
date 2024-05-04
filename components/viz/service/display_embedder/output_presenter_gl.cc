@@ -115,23 +115,15 @@ gl::OverlayImage PresenterImageGL::GetOverlayImage(
 
 }  // namespace
 
-// static
-const uint32_t OutputPresenterGL::kDefaultSharedImageUsage =
-    gpu::SHARED_IMAGE_USAGE_SCANOUT | gpu::SHARED_IMAGE_USAGE_DISPLAY_READ |
-    gpu::SHARED_IMAGE_USAGE_DISPLAY_WRITE |
-    gpu::SHARED_IMAGE_USAGE_GLES2_FRAMEBUFFER_HINT;
-
 OutputPresenterGL::OutputPresenterGL(
     scoped_refptr<gl::Presenter> presenter,
     SkiaOutputSurfaceDependency* deps,
     gpu::SharedImageFactory* factory,
-    gpu::SharedImageRepresentationFactory* representation_factory,
-    uint32_t shared_image_usage)
+    gpu::SharedImageRepresentationFactory* representation_factory)
     : presenter_(presenter),
       dependency_(deps),
       shared_image_factory_(factory),
-      shared_image_representation_factory_(representation_factory),
-      shared_image_usage_(shared_image_usage) {}
+      shared_image_representation_factory_(representation_factory) {}
 
 OutputPresenterGL::~OutputPresenterGL() = default;
 
@@ -163,7 +155,7 @@ void OutputPresenterGL::InitializeCapabilities(
       !capabilities->renderer_allocates_images ||
       !presenter_->SupportsPlaneGpuFences();
 
-  // TODO(https://crbug.com/1108406): only add supported formats base on
+  // TODO(crbug.com/40141277): only add supported formats base on
   // platform, driver, etc.
   capabilities->sk_color_types[static_cast<int>(gfx::BufferFormat::BGR_565)] =
       kRGB_565_SkColorType;
@@ -203,13 +195,16 @@ std::vector<std::unique_ptr<OutputPresenter::Image>>
 OutputPresenterGL::AllocateImages(gfx::ColorSpace color_space,
                                   gfx::Size image_size,
                                   size_t num_images) {
+  const uint32_t usage = gpu::SHARED_IMAGE_USAGE_SCANOUT |
+                         gpu::SHARED_IMAGE_USAGE_DISPLAY_READ |
+                         gpu::SHARED_IMAGE_USAGE_DISPLAY_WRITE;
+
   std::vector<std::unique_ptr<Image>> images;
   for (size_t i = 0; i < num_images; ++i) {
     auto image = std::make_unique<PresenterImageGL>(
         shared_image_factory_, shared_image_representation_factory_,
         dependency_);
-    if (!image->Initialize(image_size, color_space, image_format_,
-                           shared_image_usage_)) {
+    if (!image->Initialize(image_size, color_space, image_format_, usage)) {
       DLOG(ERROR) << "Failed to initialize image.";
       return {};
     }
@@ -217,19 +212,6 @@ OutputPresenterGL::AllocateImages(gfx::ColorSpace color_space,
   }
 
   return images;
-}
-
-std::unique_ptr<OutputPresenter::Image> OutputPresenterGL::AllocateSingleImage(
-    gfx::ColorSpace color_space,
-    gfx::Size image_size) {
-  auto image = std::make_unique<PresenterImageGL>(
-      shared_image_factory_, shared_image_representation_factory_, dependency_);
-  if (!image->Initialize(image_size, color_space, image_format_,
-                         shared_image_usage_)) {
-    DLOG(ERROR) << "Failed to initialize image.";
-    return nullptr;
-  }
-  return image;
 }
 
 void OutputPresenterGL::Present(SwapCompletionCallback completion_callback,
@@ -279,7 +261,7 @@ void OutputPresenterGL::ScheduleOverlayPlane(
   // macOS it is a CALayeroverlay.
 #if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_OZONE)
 #if BUILDFLAG(IS_OZONE)
-  // TODO(crbug.com/1366808): Add ScopedOverlayAccess::GetOverlayImage() that
+  // TODO(crbug.com/40239878): Add ScopedOverlayAccess::GetOverlayImage() that
   // works on all platforms.
   gl::OverlayImage overlay_image = access ? access->GetNativePixmap() : nullptr;
 #elif BUILDFLAG(IS_ANDROID)
@@ -369,6 +351,9 @@ void OutputPresenterGL::SetCALayerErrorCode(
   ca_layer_error_code_ = ca_layer_error_code;
 }
 
+void OutputPresenterGL::SetMaxPendingSwaps(int max_pending_swaps) {
+  presenter_->SetMaxPendingSwaps(max_pending_swaps);
+}
 #endif
 
 }  // namespace viz

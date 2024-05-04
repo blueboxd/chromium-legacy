@@ -56,6 +56,8 @@ class CORE_EXPORT IntersectionObservation final
     // If this bit is set, we only process intersection observations that
     // require post-layout delivery.
     kPostLayoutDeliveryOnly = 1 << 6,
+    // Corresponding to LocalFrameView::kScrollAndVisibilityOnly.
+    kScrollAndVisibilityOnly = 1 << 7,
   };
 
   IntersectionObservation(IntersectionObserver&, Element&);
@@ -76,7 +78,7 @@ class CORE_EXPORT IntersectionObservation final
 
   void Trace(Visitor*) const;
 
-  bool CanUseCachedRectsForTesting() const;
+  bool CanUseCachedRectsForTesting(bool scroll_and_visibility_only) const;
 
  private:
   bool ShouldCompute(unsigned flags) const;

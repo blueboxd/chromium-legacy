@@ -410,7 +410,7 @@ void ReportingCacheImpl::OnParsedHeader(
   // Compute the total endpoint count for this origin. We can't just count the
   // number of endpoints per group because there may be duplicate endpoint URLs,
   // which we ignore. See http://crbug.com/983000 for discussion.
-  // TODO(crbug.com/983000): Allow duplicate endpoint URLs.
+  // TODO(crbug.com/40635629): Allow duplicate endpoint URLs.
   for (const auto& group_key_and_endpoint_set : endpoints_per_group) {
     new_client.endpoint_count += group_key_and_endpoint_set.second.size();
 
@@ -961,8 +961,8 @@ IsolationInfo ReportingCacheImpl::GetIsolationInfoForEndpoint(
     const ReportingEndpoint& endpoint) const {
   // V0 endpoint groups do not support credentials.
   if (!endpoint.group_key.reporting_source.has_value()) {
-    // TODO(crbug/1372769): Remove this and have a better way to get an correct
-    // IsolationInfo here.
+    // TODO(crbug.com/40871266): Remove this and have a better way to get an
+    // correct IsolationInfo here.
     return IsolationInfo::DoNotUseCreatePartialFromNak(
         endpoint.group_key.network_anonymization_key);
   }
@@ -1007,7 +1007,7 @@ ReportingCacheImpl::FindReportToEvict() const {
 }
 
 void ReportingCacheImpl::ConsistencyCheckClients() const {
-  // TODO(crbug.com/1165308): Remove this CHECK once the investigation is done.
+  // TODO(crbug.com/40054414): Remove this CHECK once the investigation is done.
   CHECK_LE(endpoint_groups_.size(), context_->policy().max_endpoint_count);
 #if DCHECK_IS_ON()
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

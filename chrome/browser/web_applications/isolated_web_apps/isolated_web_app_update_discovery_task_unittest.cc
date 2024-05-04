@@ -17,7 +17,7 @@
 #include "base/time/time.h"
 #include "base/version.h"
 #include "chrome/browser/ui/web_applications/test/isolated_web_app_test_utils.h"
-#include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_location.h"
+#include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_source.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_storage_location.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_trust_checker.h"
 #include "chrome/browser/web_applications/isolated_web_apps/policy/isolated_web_app_policy_constants.h"
@@ -28,12 +28,12 @@
 #include "chrome/browser/web_applications/test/web_app_test.h"
 #include "chrome/browser/web_applications/web_app_command_scheduler.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
-#include "chrome/browser/web_applications/web_contents/web_app_url_loader.h"
 #include "chrome/browser/web_applications/web_contents/web_contents_manager.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/webapps/browser/installable/installable_logging.h"
+#include "components/webapps/browser/web_contents/web_app_url_loader.h"
 #include "content/public/common/content_features.h"
 #include "net/http/http_status_code.h"
 #include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
@@ -313,7 +313,7 @@ class IsolatedWebAppUpdateDiscoveryTaskPrepareUpdateTest
 
     auto& page_state =
         fake_web_contents_manager().GetOrCreatePageState(install_url_);
-    page_state.url_load_result = WebAppUrlLoaderResult::kUrlLoaded;
+    page_state.url_load_result = webapps::WebAppUrlLoaderResult::kUrlLoaded;
     page_state.error_code = webapps::InstallableStatusCode::NO_ERROR_DETECTED;
     page_state.manifest_url =
         url_info_.origin().GetURL().Resolve("manifest.webmanifest");

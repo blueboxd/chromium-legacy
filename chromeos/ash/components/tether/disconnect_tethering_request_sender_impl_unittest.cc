@@ -28,12 +28,13 @@ namespace {
 class FakeDisconnectTetheringOperation : public DisconnectTetheringOperation {
  public:
   FakeDisconnectTetheringOperation(
-      multidevice::RemoteDeviceRef device_to_connect,
+      const TetherHost& tether_host,
       device_sync::DeviceSyncClient* device_sync_client,
       secure_channel::SecureChannelClient* secure_channel_client)
-      : DisconnectTetheringOperation(device_to_connect,
+      : DisconnectTetheringOperation(tether_host,
                                      device_sync_client,
-                                     secure_channel_client) {}
+                                     secure_channel_client),
+        tether_host_(tether_host) {}
 
   ~FakeDisconnectTetheringOperation() override = default;
 
@@ -41,10 +42,10 @@ class FakeDisconnectTetheringOperation : public DisconnectTetheringOperation {
     NotifyObserversOperationFinished(success);
   }
 
-  multidevice::RemoteDeviceRef GetRemoteDevice() {
-    EXPECT_EQ(1u, remote_devices().size());
-    return remote_devices()[0];
-  }
+  std::string GetDeviceId() { return tether_host_.GetDeviceId(); }
+
+ private:
+  TetherHost tether_host_;
 };
 
 class FakeDisconnectTetheringOperationFactory
@@ -61,12 +62,12 @@ class FakeDisconnectTetheringOperationFactory
  protected:
   // DisconnectTetheringOperation::Factory:
   std::unique_ptr<DisconnectTetheringOperation> CreateInstance(
-      multidevice::RemoteDeviceRef device_to_connect,
+      const TetherHost& tether_host,
       device_sync::DeviceSyncClient* device_sync_client,
       secure_channel::SecureChannelClient* secure_channel_client) override {
     FakeDisconnectTetheringOperation* operation =
-        new FakeDisconnectTetheringOperation(
-            device_to_connect, device_sync_client, secure_channel_client);
+        new FakeDisconnectTetheringOperation(tether_host, device_sync_client,
+                                             secure_channel_client);
     created_operations_.push_back(operation);
     return base::WrapUnique(operation);
   }
@@ -116,7 +117,7 @@ class DisconnectTetheringRequestSenderTest : public testing::Test {
     fake_secure_channel_client_ =
         std::make_unique<secure_channel::FakeSecureChannelClient>();
     fake_tether_host_fetcher_ =
-        std::make_unique<FakeTetherHostFetcher>(test_devices_);
+        std::make_unique<FakeTetherHostFetcher>(test_devices_[0]);
 
     fake_operation_factory_ =
         std::make_unique<FakeDisconnectTetheringOperationFactory>();
@@ -151,12 +152,10 @@ class DisconnectTetheringRequestSenderTest : public testing::Test {
                       ->num_no_more_pending_requests_events());
 
     ASSERT_EQ(2u, fake_operation_factory_->created_operations().size());
-    EXPECT_EQ(
-        test_devices_[0],
-        fake_operation_factory_->created_operations()[0]->GetRemoteDevice());
-    EXPECT_EQ(
-        test_devices_[1],
-        fake_operation_factory_->created_operations()[1]->GetRemoteDevice());
+    EXPECT_EQ(test_devices_[0].GetDeviceId(),
+              fake_operation_factory_->created_operations()[0]->GetDeviceId());
+    EXPECT_EQ(test_devices_[1].GetDeviceId(),
+              fake_operation_factory_->created_operations()[1]->GetDeviceId());
     fake_operation_factory_->created_operations()[0]->NotifyFinished(
         first_operation_successful);
     EXPECT_TRUE(disconnect_tethering_request_sender_->HasPendingRequests());
@@ -182,9 +181,8 @@ class DisconnectTetheringRequestSenderTest : public testing::Test {
     // When multiple concurrent attempts are made to send a request to the same
     // device, only one DisconnectTetheringOperation is created.
     ASSERT_EQ(1u, fake_operation_factory_->created_operations().size());
-    EXPECT_EQ(
-        test_devices_[0],
-        fake_operation_factory_->created_operations()[0]->GetRemoteDevice());
+    EXPECT_EQ(test_devices_[0].GetDeviceId(),
+              fake_operation_factory_->created_operations()[0]->GetDeviceId());
     fake_operation_factory_->created_operations()[0]->NotifyFinished(
         operation_successful);
     EXPECT_FALSE(disconnect_tethering_request_sender_->HasPendingRequests());
@@ -214,9 +212,8 @@ TEST_F(DisconnectTetheringRequestSenderTest, DISABLED_SendRequest_Success) {
   EXPECT_TRUE(disconnect_tethering_request_sender_->HasPendingRequests());
 
   ASSERT_EQ(1u, fake_operation_factory_->created_operations().size());
-  EXPECT_EQ(
-      test_devices_[0],
-      fake_operation_factory_->created_operations()[0]->GetRemoteDevice());
+  EXPECT_EQ(test_devices_[0].GetDeviceId(),
+            fake_operation_factory_->created_operations()[0]->GetDeviceId());
   fake_operation_factory_->created_operations()[0]->NotifyFinished(
       true /* success */);
   EXPECT_FALSE(disconnect_tethering_request_sender_->HasPendingRequests());
@@ -228,8 +225,7 @@ TEST_F(DisconnectTetheringRequestSenderTest,
        DISABLED_SendRequest_CannotFetchHost) {
   // Remove hosts from |fake_tether_host_fetcher_|; this will cause the fetcher
   // to return a null RemoteDevice.
-  fake_tether_host_fetcher_->set_tether_hosts(
-      multidevice::RemoteDeviceRefList());
+  fake_tether_host_fetcher_->SetTetherHost(std::nullopt);
 
   disconnect_tethering_request_sender_->SendDisconnectRequestToDevice(
       test_devices_[0].GetDeviceId());
@@ -290,9 +286,8 @@ TEST_F(DisconnectTetheringRequestSenderTest,
   EXPECT_EQ(0u, fake_disconnect_tethering_request_sender_observer_
                     ->num_no_more_pending_requests_events());
   ASSERT_EQ(1u, fake_operation_factory_->created_operations().size());
-  EXPECT_EQ(
-      test_devices_[0],
-      fake_operation_factory_->created_operations()[0]->GetRemoteDevice());
+  EXPECT_EQ(test_devices_[0].GetDeviceId(),
+            fake_operation_factory_->created_operations()[0]->GetDeviceId());
   fake_operation_factory_->created_operations()[0]->NotifyFinished(
       true /* success */);
   EXPECT_FALSE(disconnect_tethering_request_sender_->HasPendingRequests());
@@ -302,9 +297,8 @@ TEST_F(DisconnectTetheringRequestSenderTest,
   disconnect_tethering_request_sender_->SendDisconnectRequestToDevice(
       test_devices_[0].GetDeviceId());
   ASSERT_EQ(2u, fake_operation_factory_->created_operations().size());
-  EXPECT_EQ(
-      test_devices_[0],
-      fake_operation_factory_->created_operations()[1]->GetRemoteDevice());
+  EXPECT_EQ(test_devices_[0].GetDeviceId(),
+            fake_operation_factory_->created_operations()[1]->GetDeviceId());
   fake_operation_factory_->created_operations()[1]->NotifyFinished(
       false /* success */);
   EXPECT_FALSE(disconnect_tethering_request_sender_->HasPendingRequests());
@@ -314,9 +308,8 @@ TEST_F(DisconnectTetheringRequestSenderTest,
   disconnect_tethering_request_sender_->SendDisconnectRequestToDevice(
       test_devices_[0].GetDeviceId());
   ASSERT_EQ(3u, fake_operation_factory_->created_operations().size());
-  EXPECT_EQ(
-      test_devices_[0],
-      fake_operation_factory_->created_operations()[2]->GetRemoteDevice());
+  EXPECT_EQ(test_devices_[0].GetDeviceId(),
+            fake_operation_factory_->created_operations()[2]->GetDeviceId());
   fake_operation_factory_->created_operations()[2]->NotifyFinished(
       true /* success */);
   EXPECT_FALSE(disconnect_tethering_request_sender_->HasPendingRequests());

@@ -56,9 +56,10 @@ class DataObserver : public bookmarks::BookmarkModelObserver,
   void BookmarkNodeRemoved(const bookmarks::BookmarkNode* parent,
                            size_t old_index,
                            const bookmarks::BookmarkNode* node,
-                           const std::set<GURL>& removed_urls) override;
-  void BookmarkAllUserNodesRemoved(
-      const std::set<GURL>& removed_urls) override;
+                           const std::set<GURL>& removed_urls,
+                           const base::Location& location) override;
+  void BookmarkAllUserNodesRemoved(const std::set<GURL>& removed_urls,
+                                   const base::Location& location) override;
   void BookmarkNodeChanged(const bookmarks::BookmarkNode* node) override;
   void BookmarkNodeFaviconChanged(const bookmarks::BookmarkNode* node) override;
   void BookmarkNodeChildrenReordered(
@@ -68,8 +69,8 @@ class DataObserver : public bookmarks::BookmarkModelObserver,
   void OnURLVisited(history::HistoryService* history_service,
                     const history::URLRow& url_row,
                     const history::VisitRow& new_visit) override;
-  void OnURLsDeleted(history::HistoryService* history_service,
-                     const history::DeletionInfo& deletion_info) override;
+  void OnHistoryDeletions(history::HistoryService* history_service,
+                          const history::DeletionInfo& deletion_info) override;
   void HistoryServiceBeingDeleted(
       history::HistoryService* history_service) override;
 

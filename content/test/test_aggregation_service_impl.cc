@@ -28,7 +28,7 @@
 #include "content/browser/aggregation_service/aggregation_service_test_utils.h"
 #include "content/browser/aggregation_service/public_key.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
-#include "third_party/blink/public/mojom/private_aggregation/aggregatable_report.mojom.h"
+#include "third_party/blink/public/mojom/aggregation_service/aggregatable_report.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -126,10 +126,13 @@ void TestAggregationServiceImpl::AssembleReport(
   AggregationServicePayloadContents payload_contents(
       ConvertToOperation(request.operation),
       {blink::mojom::AggregatableReportHistogramContribution(
-          /*bucket=*/request.bucket, /*value=*/request.value)},
+          /*bucket=*/request.bucket, /*value=*/request.value,
+          /*filtering_id=*/std::nullopt)},
       ConvertToAggregationMode(request.aggregation_mode),
       /*aggregation_coordinator_origin=*/std::nullopt,
-      /*max_contributions_allowed=*/20);
+      /*max_contributions_allowed=*/20,
+      // TODO(crbug.com/330744610): Allow setting.
+      /*filtering_id_byte_size=*/std::nullopt);
 
   AggregatableReportSharedInfo shared_info(
       /*scheduled_report_time=*/base::Time::Now() + base::Seconds(30),

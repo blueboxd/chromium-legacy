@@ -8,6 +8,7 @@
 #include <iterator>
 #include <memory>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -26,7 +27,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/strcat.h"
-#include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -113,7 +113,7 @@ std::vector<std::string> GetSurveyEligibleModuleIds() {
 // and the One Google Bar. This is done to fix specific GWS themes where the
 // always-light logo and OGB colors do not sufficiently contrast with lighter
 // image backgrounds (see crbug.com/1329552).
-// TODO(crbug.com/1328918): Address this in a general way and extend support to
+// TODO(crbug.com/40842305): Address this in a general way and extend support to
 // custom background images, not just CWS themes.
 bool ShouldForceDarkForegroundColorsForLogo(const ThemeService* theme_service) {
   const auto* theme_supplier = theme_service->GetThemeSupplier();
@@ -123,7 +123,7 @@ bool ShouldForceDarkForegroundColorsForLogo(const ThemeService* theme_service) {
     return false;
   }
   static constexpr auto kPrideThemeExtensionIdsDarkForeground =
-      base::MakeFixedFlatSet<base::StringPiece>({
+      base::MakeFixedFlatSet<std::string_view>({
           "klnkeldihpjnjoopojllmnpepbpljico",
           "iffdmpenldeofnlfjmbjcdmafhoekmka",
           "mckialangcdpcdcflekinnpamfkmkobo",
@@ -164,7 +164,7 @@ new_tab_page::mojom::ThemePtr MakeTheme(
     theme->logo_color =
         color_provider.GetColor(kColorNewTabPageLogoUnthemedLight);
 
-    // TODO(crbug.com/1375760): Post GM3 launch, we can remove the
+    // TODO(crbug.com/40061384): Post GM3 launch, we can remove the
     // kColorNewTabPageMostVisitedTileBackgroundUnthemed color and related
     // logic.
     most_visited->background_color =
@@ -468,8 +468,8 @@ NewTabPageHandler::NewTabPageHandler(
         customize_chrome_feature_promo_helper,
     const base::Time& ntp_navigation_start_time,
     const std::vector<std::pair<const std::string, int>>* module_id_names)
-    : SettingsEnabledObserver(optimization_guide::proto::ModelExecutionFeature::
-                                  MODEL_EXECUTION_FEATURE_WALLPAPER_SEARCH),
+    : SettingsEnabledObserver(
+          optimization_guide::UserVisibleFeatureKey::kWallpaperSearch),
       ntp_background_service_(
           NtpBackgroundServiceFactory::GetForProfile(profile)),
       ntp_custom_background_service_(ntp_custom_background_service),
@@ -1377,7 +1377,7 @@ void NewTabPageHandler::OnLogoAvailable(
     }
     auto image_doodle = new_tab_page::mojom::AllModeImageDoodle::New();
     image_doodle->light = MakeImageDoodle(
-        logo->metadata.type, logo->encoded_image->data(),
+        logo->metadata.type, logo->encoded_image->as_string(),
         logo->metadata.mime_type, logo->metadata.animated_url,
         logo->metadata.width_px, logo->metadata.height_px, "#ffffff",
         logo->metadata.share_button_x, logo->metadata.share_button_y,
@@ -1386,7 +1386,7 @@ void NewTabPageHandler::OnLogoAvailable(
         logo->metadata.cta_log_url);
     if (logo->dark_encoded_image) {
       image_doodle->dark = MakeImageDoodle(
-          logo->metadata.type, logo->dark_encoded_image->data(),
+          logo->metadata.type, logo->dark_encoded_image->as_string(),
           logo->metadata.dark_mime_type, logo->metadata.dark_animated_url,
           logo->metadata.dark_width_px, logo->metadata.dark_height_px,
           logo->metadata.dark_background_color,

@@ -54,8 +54,8 @@ void CommandQueue::ScheduleCleanupForPendingWork(
 
   HRESULT hr = fence->SetEventOnCompletion(last_fence_value, fence_event.get());
   if (FAILED(hr)) {
-    DLOG(ERROR) << "Failed to set event on completion : "
-                << logging::SystemErrorCodeToString(hr);
+    LOG(ERROR) << "[WebNN] Failed to set event on completion: "
+               << logging::SystemErrorCodeToString(hr);
     return;
   }
 
@@ -89,13 +89,17 @@ CommandQueue::~CommandQueue() {
 scoped_refptr<CommandQueue> CommandQueue::Create(ID3D12Device* d3d12_device) {
   ComPtr<ID3D12CommandQueue> command_queue;
   D3D12_COMMAND_QUEUE_DESC command_queue_desc = {};
-  command_queue_desc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
-  command_queue_desc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
+  command_queue_desc.Type = D3D12_COMMAND_LIST_TYPE_COMPUTE;
+  // To avoid TDRs on account of long compute work, create WebNN command queues
+  // with the "disable timeout" flag. If other compute work on the system
+  // competes with WebNN, the scheduler will TDR us anyways if it cannot preempt
+  // our queue.
+  command_queue_desc.Flags = D3D12_COMMAND_QUEUE_FLAG_DISABLE_GPU_TIMEOUT;
   HRESULT hr = d3d12_device->CreateCommandQueue(&command_queue_desc,
                                                 IID_PPV_ARGS(&command_queue));
   if (FAILED(hr)) {
-    DLOG(ERROR) << "Failed to create ID3D12CommandQueue: "
-                << logging::SystemErrorCodeToString(hr);
+    LOG(ERROR) << "[WebNN] Failed to create ID3D12CommandQueue: "
+               << logging::SystemErrorCodeToString(hr);
     return nullptr;
   }
 
@@ -103,8 +107,8 @@ scoped_refptr<CommandQueue> CommandQueue::Create(ID3D12Device* d3d12_device) {
   hr =
       d3d12_device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence));
   if (FAILED(hr)) {
-    DLOG(ERROR) << "Failed to create ID3D12Fence: "
-                << logging::SystemErrorCodeToString(hr);
+    LOG(ERROR) << "[WebNN] Failed to create ID3D12Fence: "
+               << logging::SystemErrorCodeToString(hr);
     return nullptr;
   }
 
@@ -145,6 +149,15 @@ void CommandQueue::OnObjectSignaled(HANDLE object) {
   TRACE_EVENT_NESTABLE_ASYNC_END0("gpu", "dml::CommandQueue::WaitAsync",
                                   TRACE_ID_LOCAL(this));
   CHECK_EQ(object, fence_event_.get());
+
+  // If the owning document has shutdown by the time we get here, the only
+  // remaining references to CommandQueue are inside of the queued_callbacks_
+  // callbacks. Running them while continuing to dereference member variables
+  // will free "this" and cause use-after-free  The caller of OnObjectSignaled,
+  // ObjectWatcher::Signal, has a similar problem. To fix, we take a reference
+  // to ourselves while we run the callbacks.
+  scoped_refptr<CommandQueue> self = this;
+
   while (!queued_callbacks_.empty() &&
          queued_callbacks_.front().fence_value <= fence_->GetCompletedValue()) {
     std::move(queued_callbacks_.front().callback).Run();
@@ -152,7 +165,7 @@ void CommandQueue::OnObjectSignaled(HANDLE object) {
   }
 }
 
-void CommandQueue::WaitAsync(OnWaitAyncCallback callback) {
+void CommandQueue::WaitAsync(base::OnceCallback<void(HRESULT hr)> callback) {
   if (!object_watcher_.IsWatching()) {
     CHECK(object_watcher_.StartWatchingMultipleTimes(fence_event_.get(), this));
   }
@@ -160,8 +173,8 @@ void CommandQueue::WaitAsync(OnWaitAyncCallback callback) {
   HRESULT hr =
       fence_->SetEventOnCompletion(last_fence_value_, fence_event_.get());
   if (FAILED(hr)) {
-    DLOG(ERROR) << "Failed to set event on completion : "
-                << logging::SystemErrorCodeToString(hr);
+    LOG(ERROR) << "[WebNN] Failed to set event on completion: "
+               << logging::SystemErrorCodeToString(hr);
     std::move(callback).Run(hr);
     return;
   }

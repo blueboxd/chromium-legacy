@@ -4,12 +4,19 @@
 
 #include "components/web_package/signed_web_bundles/integrity_block_parser.h"
 
+#include "base/containers/extend.h"
+#include "base/containers/fixed_flat_map.h"
+#include "base/containers/map_util.h"
+#include "base/containers/span.h"
 #include "base/functional/bind.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/stringprintf.h"
 #include "base/types/expected_macros.h"
 #include "components/web_package/input_reader.h"
-#include "components/web_package/mojom/web_bundle_parser.mojom-forward.h"
+#include "components/web_package/mojom/web_bundle_parser.mojom.h"
+#include "components/web_package/signed_web_bundles/constants.h"
+#include "components/web_package/signed_web_bundles/ecdsa_p256_public_key.h"
+#include "components/web_package/signed_web_bundles/ecdsa_p256_sha256_signature.h"
 #include "components/web_package/signed_web_bundles/ed25519_public_key.h"
 #include "components/web_package/signed_web_bundles/ed25519_signature.h"
 #include "components/web_package/web_bundle_parser.h"
@@ -19,11 +26,21 @@ namespace web_package {
 
 namespace {
 
-constexpr char kSignatureAttributesPublicKeyWithCBORHeader[] = {
-    0x70,  // UTF-8 string of 16 bytes.
-    'e',  'd', '2', '5', '5', '1', '9', 'P',
-    'u',  'b', 'l', 'i', 'c', 'K', 'e', 'y',
-};
+using SignatureType = mojom::SignatureInfo::Tag;
+
+constexpr auto kPublicKeyAttributeNameToSignatureType =
+    base::MakeFixedFlatMap<std::string_view, SignatureType>({
+        // clang-format off
+        {kEd25519PublicKeyAttributeName, SignatureType::kEd25519},
+        {kEcdsaP256PublicKeyAttributeName, SignatureType::kEcdsaP256Sha256},
+        // clang-format on
+    });
+
+SignatureType GetSignatureType(std::string_view attribute_name) {
+  auto* signature_type =
+      base::FindOrNull(kPublicKeyAttributeNameToSignatureType, attribute_name);
+  return signature_type ? *signature_type : SignatureType::kUnknown;
+}
 
 }  // namespace
 
@@ -158,12 +175,11 @@ void IntegrityBlockParser::ParseSignatureStackEntry(
 
   mojom::BundleIntegrityBlockSignatureStackEntryPtr signature_stack_entry =
       mojom::BundleIntegrityBlockSignatureStackEntry::New();
-  // Start to keep track of the complete CBOR bytes of the signature stack
-  // entry.
-  signature_stack_entry->complete_entry_cbor =
-      std::vector(data->begin(), data->begin() + input.CurrentOffset());
 
+  base::Extend(signature_stack_entry->complete_entry_cbor,
+               base::span(*data).first(input.CurrentOffset()));
   offset_in_stream += input.CurrentOffset();
+
   data_source_->get()->Read(
       offset_in_stream, kMaxCBORItemHeaderSize,
       base::BindOnce(
@@ -200,49 +216,70 @@ void IntegrityBlockParser::ParseSignatureStackEntryAttributesHeader(
 
   // Keep track of the raw CBOR bytes of both the complete signature stack entry
   // and its attributes.
-  signature_stack_entry->complete_entry_cbor.insert(
-      signature_stack_entry->complete_entry_cbor.end(), data->begin(),
-      data->begin() + input.CurrentOffset());
-  signature_stack_entry->attributes_cbor.assign(
-      data->begin(), data->begin() + input.CurrentOffset());
+  auto current_entry = base::span(*data).first(input.CurrentOffset());
+  base::Extend(signature_stack_entry->complete_entry_cbor, current_entry);
+  base::Extend(signature_stack_entry->attributes_cbor, current_entry);
 
   offset_in_stream += input.CurrentOffset();
   data_source_->get()->Read(
-      offset_in_stream,
-      sizeof(kSignatureAttributesPublicKeyWithCBORHeader) +
-          kMaxCBORItemHeaderSize,
+      offset_in_stream, kMaxCBORItemHeaderSize,
       base::BindOnce(
-          &IntegrityBlockParser::ParseSignatureStackEntryAttributesPublicKeyKey,
+          &IntegrityBlockParser::ParseSignatureStackEntryAttributesKey,
           weak_factory_.GetWeakPtr(), offset_in_stream,
           signature_stack_entries_left, std::move(signature_stack_entry)));
 }
 
-// Parse the attribute map key of the public key attribute
-void IntegrityBlockParser::ParseSignatureStackEntryAttributesPublicKeyKey(
+void IntegrityBlockParser::ParseSignatureStackEntryAttributesKey(
     uint64_t offset_in_stream,
     const uint64_t signature_stack_entries_left,
     mojom::BundleIntegrityBlockSignatureStackEntryPtr signature_stack_entry,
     const std::optional<std::vector<uint8_t>>& data) {
   if (!data) {
     RunErrorCallback(
-        "Error reading signature stack entry's ed25519PublicKey attribute.");
+        "Error reading signature stack entry's attributes header.");
     return;
   }
 
   InputReader input(*data);
-  const auto attribute_name =
-      input.ReadBytes(sizeof(kSignatureAttributesPublicKeyWithCBORHeader));
-  if (!attribute_name) {
-    RunErrorCallback(
-        "Error reading signature stack entry's ed25519PublicKey attribute.");
+
+  const auto attribute_name_size = input.ReadCBORHeader(CBORType::kTextString);
+  if (!attribute_name_size.has_value()) {
+    RunErrorCallback("The value of the attribute name must be a text string.");
     return;
   }
 
-  if (!base::ranges::equal(*attribute_name,
-                           kSignatureAttributesPublicKeyWithCBORHeader)) {
+  auto span = base::span(*data).first(input.CurrentOffset());
+  base::Extend(signature_stack_entry->complete_entry_cbor, span);
+  base::Extend(signature_stack_entry->attributes_cbor, span);
+  offset_in_stream += input.CurrentOffset();
+
+  data_source_->get()->Read(
+      offset_in_stream, *attribute_name_size + kMaxCBORItemHeaderSize,
+      base::BindOnce(&IntegrityBlockParser::
+                         ParseSignatureStackEntryAttributesPublicKeyName,
+                     weak_factory_.GetWeakPtr(), offset_in_stream,
+                     signature_stack_entries_left,
+                     std::move(signature_stack_entry), *attribute_name_size));
+}
+
+void IntegrityBlockParser::ParseSignatureStackEntryAttributesPublicKeyName(
+    uint64_t offset_in_stream,
+    const uint64_t signature_stack_entries_left,
+    mojom::BundleIntegrityBlockSignatureStackEntryPtr signature_stack_entry,
+    const uint64_t attribute_name_length,
+    const std::optional<std::vector<uint8_t>>& data) {
+  if (!data) {
     RunErrorCallback(
-        "The signature stack entry's attribute must have 'ed25519PublicKey' as "
-        "its key.");
+        "Error reading signature stack entry's public key attribute name.");
+    return;
+  }
+
+  InputReader input(*data);
+
+  const auto attribute_name = input.ReadString(attribute_name_length);
+  if (!attribute_name) {
+    RunErrorCallback(
+        "Error reading signature stack entry's ed25519PublicKey attribute.");
     return;
   }
 
@@ -257,14 +294,33 @@ void IntegrityBlockParser::ParseSignatureStackEntryAttributesPublicKeyKey(
 
   // Keep track of the raw CBOR bytes of both the complete signature stack entry
   // and its attributes.
-  signature_stack_entry->complete_entry_cbor.insert(
-      signature_stack_entry->complete_entry_cbor.end(), data->begin(),
-      data->begin() + input.CurrentOffset());
-  signature_stack_entry->attributes_cbor.insert(
-      signature_stack_entry->attributes_cbor.end(), data->begin(),
-      data->begin() + input.CurrentOffset());
+  auto current_entry = base::span(*data).first(input.CurrentOffset());
+  base::Extend(signature_stack_entry->complete_entry_cbor, current_entry);
+  base::Extend(signature_stack_entry->attributes_cbor, current_entry);
 
   offset_in_stream += input.CurrentOffset();
+
+  switch (GetSignatureType(*attribute_name)) {
+    case SignatureType::kEd25519: {
+      signature_stack_entry->signature_info =
+          mojom::SignatureInfo::NewEd25519(mojom::SignatureInfoEd25519::New());
+    } break;
+    case SignatureType::kEcdsaP256Sha256: {
+      signature_stack_entry->signature_info =
+          mojom::SignatureInfo::NewEcdsaP256Sha256(
+              mojom::SignatureInfoEcdsaP256SHA256::New());
+    } break;
+    case SignatureType::kUnknown: {
+      // Unknown signature cipher type.
+      if (signature_stack_.size() == 0) {
+        RunErrorCallback("Unknown cipher type of the first signature.");
+        return;
+      }
+
+      signature_stack_entry->signature_info =
+          mojom::SignatureInfo::NewUnknown(mojom::SignatureInfoUnknown::New());
+    } break;
+  }
   data_source_->get()->Read(
       offset_in_stream, *public_key_value_size,
       base::BindOnce(&IntegrityBlockParser::
@@ -283,19 +339,29 @@ void IntegrityBlockParser::ReadSignatureStackEntryAttributesPublicKeyValue(
     RunErrorCallback("Error reading signature stack entry's public key.");
     return;
   }
-  ASSIGN_OR_RETURN(
-      signature_stack_entry->public_key,
-      Ed25519PublicKey::Create(*public_key_bytes),
-      [&](std::string error) { RunErrorCallback(std::move(error)); });
+
+  auto& signature_info = signature_stack_entry->signature_info;
+  switch (signature_info->which()) {
+    case SignatureType::kEd25519: {
+      ASSIGN_OR_RETURN(
+          signature_stack_entry->signature_info->get_ed25519()->public_key,
+          Ed25519PublicKey::Create(*public_key_bytes),
+          [&](std::string error) { RunErrorCallback(std::move(error)); });
+    } break;
+    case SignatureType::kEcdsaP256Sha256: {
+      ASSIGN_OR_RETURN(
+          signature_info->get_ecdsa_p256_sha256()->public_key,
+          EcdsaP256PublicKey::Create(*public_key_bytes),
+          [&](std::string error) { RunErrorCallback(std::move(error)); });
+    } break;
+    case SignatureType::kUnknown:
+      break;
+  }
 
   // Keep track of the raw CBOR bytes of both the complete signature stack entry
   // and its attributes.
-  signature_stack_entry->complete_entry_cbor.insert(
-      signature_stack_entry->complete_entry_cbor.end(),
-      public_key_bytes->begin(), public_key_bytes->end());
-  signature_stack_entry->attributes_cbor.insert(
-      signature_stack_entry->attributes_cbor.end(), public_key_bytes->begin(),
-      public_key_bytes->end());
+  base::Extend(signature_stack_entry->complete_entry_cbor, *public_key_bytes);
+  base::Extend(signature_stack_entry->attributes_cbor, *public_key_bytes);
 
   offset_in_stream += public_key_bytes->size();
   data_source_->get()->Read(
@@ -325,18 +391,27 @@ void IntegrityBlockParser::ParseSignatureStackEntrySignatureHeader(
         "Cannot parse the size of signature stack entry's signature.");
     return;
   }
-  if (*signature_length != ED25519_SIGNATURE_LEN) {
-    RunErrorCallback(
-        base::StringPrintf("The signature does not have the correct length, "
-                           "expected %u bytes.",
-                           ED25519_SIGNATURE_LEN));
-    return;
+
+  auto& signature_info = signature_stack_entry->signature_info;
+  switch (signature_info->which()) {
+    case SignatureType::kEd25519: {
+      if (*signature_length != ED25519_SIGNATURE_LEN) {
+        RunErrorCallback(base::StringPrintf(
+            "The signature does not have the correct length, "
+            "expected %u bytes.",
+            ED25519_SIGNATURE_LEN));
+        return;
+      }
+    } break;
+    // No restrictions on other signature types.
+    case SignatureType::kEcdsaP256Sha256:
+    case SignatureType::kUnknown:
+      break;
   }
 
   // Keep track of the raw CBOR bytes of the complete signature stack entry.
-  signature_stack_entry->complete_entry_cbor.insert(
-      signature_stack_entry->complete_entry_cbor.end(), data->begin(),
-      data->begin() + input.CurrentOffset());
+  auto current_entry = base::span(*data).first(input.CurrentOffset());
+  base::Extend(signature_stack_entry->complete_entry_cbor, current_entry);
 
   offset_in_stream += input.CurrentOffset();
   data_source_->get()->Read(
@@ -357,20 +432,38 @@ void IntegrityBlockParser::ParseSignatureStackEntrySignature(
     return;
   }
 
-  ASSIGN_OR_RETURN(
-      signature_stack_entry->signature,
-      Ed25519Signature::Create(*signature_bytes),
-      [&](std::string error) { RunErrorCallback(std::move(error)); });
+  auto& signature_info = signature_stack_entry->signature_info;
+  switch (signature_info->which()) {
+    case SignatureType::kEd25519: {
+      ASSIGN_OR_RETURN(
+          signature_stack_entry->signature_info->get_ed25519()->signature,
+          Ed25519Signature::Create(*signature_bytes),
+          [&](std::string error) { RunErrorCallback(std::move(error)); });
+    } break;
+    case SignatureType::kEcdsaP256Sha256: {
+      ASSIGN_OR_RETURN(
+          signature_stack_entry->signature_info->get_ecdsa_p256_sha256()
+              ->signature,
+          EcdsaP256SHA256Signature::Create(*signature_bytes),
+          [&](std::string error) { RunErrorCallback(std::move(error)); });
+    } break;
+    case SignatureType::kUnknown:
+      break;
+  }
 
   // Keep track of the raw CBOR bytes of the complete signature stack entry.
-  signature_stack_entry->complete_entry_cbor.insert(
-      signature_stack_entry->complete_entry_cbor.end(),
-      signature_bytes->begin(), signature_bytes->end());
+  base::Extend(signature_stack_entry->complete_entry_cbor, *signature_bytes);
 
   signature_stack_.emplace_back(std::move(signature_stack_entry));
 
   offset_in_stream += signature_bytes->size();
 
+  ProcessNextSignatureBlock(offset_in_stream, signature_stack_entries_left);
+}
+
+void IntegrityBlockParser::ProcessNextSignatureBlock(
+    uint64_t offset_in_stream,
+    uint64_t signature_stack_entries_left) {
   DCHECK(signature_stack_entries_left > 0);
   --signature_stack_entries_left;
   if (signature_stack_entries_left > 0) {

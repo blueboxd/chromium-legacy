@@ -280,7 +280,7 @@ void CookieStoreIOS::GetCookieListWithOptionsAsync(
   // instead.
   DCHECK(SystemCookiesAllowed());
 
-  // TODO(crbug.com/1225444): Include cookie partition key when/if iOS supports
+  // TODO(crbug.com/40188414): Include cookie partition key when/if iOS supports
   // it.
 
   // TODO(mkwst): If/when iOS supports Same-Site cookies, we'll need to pass
@@ -298,8 +298,8 @@ void CookieStoreIOS::GetAllCookiesAsync(GetAllCookiesCallback callback) {
   // instead.
   DCHECK(SystemCookiesAllowed());
 
-  // TODO(crbug.com/459154): If/when iOS supports Same-Site cookies, we'll need
-  // to pass options in here as well.
+  // TODO(crbug.com/40406003): If/when iOS supports Same-Site cookies, we'll
+  // need to pass options in here as well.
   system_store_->GetAllCookiesAsync(
       base::BindOnce(&CookieStoreIOS::RunGetAllCookiesCallbackOnSystemCookies,
                      weak_factory_.GetWeakPtr(), std::move(callback)));
@@ -619,7 +619,7 @@ void CookieStoreIOS::RunCallbacksForCookies(
   CookieChangeCallbackList* callbacks = hook_map_[key].get();
   for (const auto& cookie : cookies) {
     DCHECK_EQ(name, cookie.Name());
-    // TODO(crbug.com/978172): Support CookieAccessSemantics values on iOS and
+    // TODO(crbug.com/40633505): Support CookieAccessSemantics values on iOS and
     // use it to check IncludeForRequestURL before notifying?
     callbacks->Notify(
         net::CookieChangeInfo(cookie, net::CookieAccessResult(), cause));

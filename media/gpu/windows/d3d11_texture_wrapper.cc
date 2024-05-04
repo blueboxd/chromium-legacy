@@ -14,13 +14,13 @@
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/command_buffer/service/dxgi_shared_handle_manager.h"
-#include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/shared_image/d3d_image_backing.h"
 #include "gpu/command_buffer/service/shared_image/shared_image_format_service_utils.h"
 #include "gpu/ipc/service/shared_image_stub.h"
 #include "media/base/media_switches.h"
 #include "media/base/win/mf_helpers.h"
 #include "media/gpu/windows/d3d11_picture_buffer.h"
+#include "media/gpu/windows/format_utils.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 
 namespace media {
@@ -50,23 +50,7 @@ size_t NumPlanes(DXGI_FORMAT dxgi_format) {
     return 1;
   }
 
-  switch (dxgi_format) {
-    case DXGI_FORMAT_Y210:
-    case DXGI_FORMAT_Y410:
-    case DXGI_FORMAT_Y216:
-    case DXGI_FORMAT_Y416:
-      return 3;
-    case DXGI_FORMAT_NV12:
-    case DXGI_FORMAT_P010:
-    case DXGI_FORMAT_P016:
-      return 2;
-    case DXGI_FORMAT_B8G8R8A8_UNORM:
-    case DXGI_FORMAT_R10G10B10A2_UNORM:
-    case DXGI_FORMAT_R16G16B16A16_FLOAT:
-      return 1;
-    default:
-      NOTREACHED_NORETURN();
-  }
+  return GetFormatPlaneCount(dxgi_format);
 }
 
 viz::SharedImageFormat DXGIFormatToMultiPlanarSharedImageFormat(

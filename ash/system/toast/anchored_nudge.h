@@ -12,6 +12,7 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_observer.h"
 #include "ash/shell_observer.h"
+#include "base/functional/callback_forward.h"
 #include "base/scoped_observation.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/display/display_observer.h"
@@ -44,7 +45,9 @@ class ASH_EXPORT AnchoredNudge : public display::DisplayObserver,
   METADATA_HEADER(AnchoredNudge, views::BubbleDialogDelegateView)
 
  public:
-  explicit AnchoredNudge(AnchoredNudgeData& nudge_data);
+  AnchoredNudge(AnchoredNudgeData& nudge_data,
+                base::RepeatingCallback<void(/*has_hover_or_focus=*/bool)>
+                    hover_or_focus_changed_callback);
   AnchoredNudge(const AnchoredNudge&) = delete;
   AnchoredNudge& operator=(const AnchoredNudge&) = delete;
   ~AnchoredNudge() override;
@@ -100,6 +103,9 @@ class ASH_EXPORT AnchoredNudge : public display::DisplayObserver,
 
   // Whether the nudge should set its bounds anchored by its corners.
   const bool is_corner_anchored_;
+
+  // Whether the nudge should set its parent as the `anchor_view`.
+  const bool set_anchor_view_as_parent_ = false;
 
   // Owned by the views hierarchy. Contents view of the anchored nudge.
   raw_ptr<SystemNudgeView> system_nudge_view_ = nullptr;

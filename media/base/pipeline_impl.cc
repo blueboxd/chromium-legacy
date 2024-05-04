@@ -225,7 +225,7 @@ class PipelineImpl::RendererWrapper final : public DemuxerHost,
   bool was_played_with_user_activation_ = false;
 
   // Lock used to serialize |shared_state_|.
-  // TODO(crbug.com/893739): Add GUARDED_BY annotations.
+  // TODO(crbug.com/41419817): Add GUARDED_BY annotations.
   mutable base::Lock shared_state_lock_;
 
   // State shared between main and media thread.
@@ -691,7 +691,8 @@ void PipelineImpl::RendererWrapper::OnEnded() {
   CheckPlaybackEnded();
 }
 
-// TODO(crbug/817089): Combine this functionality into renderer->GetMediaTime().
+// TODO(crbug.com/40564930): Combine this functionality into
+// renderer->GetMediaTime().
 base::TimeDelta PipelineImpl::RendererWrapper::GetCurrentTimestamp() {
   DCHECK(media_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(demuxer_);
@@ -1177,7 +1178,7 @@ void PipelineImpl::RendererWrapper::ReportMetadata(StartType start_type) {
   DCHECK(media_task_runner_->RunsTasksInCurrentSequence());
 
   PipelineMetadata metadata;
-  std::vector<raw_ptr<DemuxerStream, VectorExperimental>> streams;
+  std::vector<DemuxerStream*> streams;
 
   switch (demuxer_->GetType()) {
     case MediaResource::Type::kStream:

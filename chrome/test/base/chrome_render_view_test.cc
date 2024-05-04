@@ -32,7 +32,6 @@
 #include "third_party/blink/public/web/web_view.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-#include "chrome/renderer/extensions/chrome_extensions_dispatcher_delegate.h"
 #include "chrome/renderer/extensions/chrome_extensions_renderer_client.h"
 #include "extensions/browser/extension_function_dispatcher.h"
 #include "extensions/common/extension.h"
@@ -63,8 +62,8 @@ void ChromeRenderViewTest::SetUp() {
 
   registry_ = std::make_unique<service_manager::BinderRegistry>();
 
-  // TODO(crbug/862989): Before this SetUp, the test agents defined at the end
-  // of this method should be injected into the creation of RenderViewImpl.
+  // TODO(crbug.com/41401202): Before this SetUp, the test agents defined at the
+  // end of this method should be injected into the creation of RenderViewImpl.
   // In the current state, regular agents are created before the test agents.
   content::RenderViewTest::SetUp();
 
@@ -128,9 +127,8 @@ void ChromeRenderViewTest::InitChromeContentRendererClient(
       ChromeExtensionsRendererClient::GetInstance();
   ext_client->SetExtensionDispatcherForTest(
       std::make_unique<extensions::Dispatcher>(
-          std::make_unique<ChromeExtensionsDispatcherDelegate>(),
-          std::vector<
-              std::unique_ptr<extensions::ExtensionsRendererAPIProvider>>()));
+          std::vector<std::unique_ptr<
+              const extensions::ExtensionsRendererAPIProvider>>()));
 #endif
 
 #if BUILDFLAG(ENABLE_SPELLCHECK)

@@ -294,7 +294,7 @@ id<GREYMatcher> AddBookmarkButton() {
                   openEditor:kBookmarkEditViewContainerIdentifier
            setParentFolderTo:@"Folder 1.1"
                         from:@"Mobile Bookmarks"
-            onlyOnThisDevice:NO];
+                  kindOfTest:chrome_test_util::KindOfTest::kSignedOut];
 
   // Verify edit mode remains.
   [BookmarkEarlGreyUI verifyContextBarInEditMode];
@@ -738,12 +738,11 @@ id<GREYMatcher> AddBookmarkButton() {
 
   // Verify current parent folder for "Title For New Folder" folder is "Mobile
   // Bookmarks" folder.
-  [[EarlGrey
-      selectElementWithMatcher:grey_allOf(
-                                   grey_accessibilityID(@"Change Folder"),
-                                   grey_accessibilityLabel(@"Mobile Bookmarks"),
-                                   nil)]
-      assertWithMatcher:grey_sufficientlyVisible()];
+
+  [BookmarkEarlGreyUI
+      assertChangeFolderIsCorrectlySet:@"Mobile Bookmarks"
+                            kindOfTest:chrome_test_util::KindOfTest::
+                                           kSignedOut];
 
   // Tap Done to close bookmark move flow.
   [[EarlGrey selectElementWithMatcher:BookmarksSaveEditFolderButton()]
@@ -1057,8 +1056,7 @@ id<GREYMatcher> AddBookmarkButton() {
       performAction:grey_tap()];
 
   // Tap on Folder to open folder picker.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Change Folder")]
-      performAction:grey_tap()];
+  [BookmarkEarlGreyUI openFolderPicker];
 
   // Check that Change Folder is presented.
   [[EarlGrey
@@ -1126,7 +1124,7 @@ id<GREYMatcher> AddBookmarkButton() {
     EARL_GREY_TEST_DISABLED(@"Multiple windows can't be opened.");
   }
 
-  // TODO(crbug.com/1285974).
+  // TODO(crbug.com/40210654).
   if ([ChromeEarlGrey isNewOverflowMenuEnabled]) {
     EARL_GREY_TEST_DISABLED(
         @"Earl Grey doesn't work properly with SwiftUI and multiwindow");
@@ -1198,7 +1196,7 @@ id<GREYMatcher> AddBookmarkButton() {
       assertWithMatcher:grey_notNil()];
 
   // Switch to the next Tab and verify "Second URL" appears.
-  // TODO(crbug.com/695749): see we if can add switchToNextTab to
+  // TODO(crbug.com/40508042): see we if can add switchToNextTab to
   // chrome_test_util so that we don't need to pass tabIndex here.
   [ChromeEarlGrey selectTabAtIndex:tabIndex + 1];
   [[EarlGrey selectElementWithMatcher:OmniboxText(GetSecondUrl().GetContent())]

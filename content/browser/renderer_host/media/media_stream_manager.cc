@@ -382,7 +382,7 @@ void SendVideoCaptureLogMessage(const std::string& message) {
 // will be captured. Otherwise, the capturer ends up capturing
 // their own tab.
 //
-// TODO(crbug.com/1512911): Refactor this function.
+// TODO(crbug.com/41485487): Refactor this function.
 MediaStreamDevices DisplayMediaDevicesFromFakeDeviceConfig(
     blink::mojom::MediaStreamType media_type,
     bool request_audio,
@@ -669,7 +669,8 @@ class MediaStreamManager::DeviceRequest {
         salt_and_origin.origin(), user_gesture, request_type_,
         requested_audio_device_ids, requested_video_device_ids, audio_type_,
         video_type_, stream_controls_.disable_local_echo,
-        stream_controls_.request_pan_tilt_zoom_permission);
+        stream_controls_.request_pan_tilt_zoom_permission,
+        captured_surface_control_active_);
     ui_request_->suppress_local_audio_playback =
         stream_controls_.suppress_local_audio_playback;
     ui_request_->exclude_system_audio = stream_controls_.exclude_system_audio;
@@ -693,7 +694,8 @@ class MediaStreamManager::DeviceRequest {
         salt_and_origin.origin(), user_gesture, request_type_,
         std::vector<std::string>{}, std::vector<std::string>{}, audio_type_,
         video_type_, stream_controls_.disable_local_echo,
-        /*request_pan_tilt_zoom_permission=*/false);
+        /*request_pan_tilt_zoom_permission=*/false,
+        captured_surface_control_active_);
     ui_request_->exclude_system_audio = stream_controls_.exclude_system_audio;
   }
 
@@ -829,7 +831,7 @@ class MediaStreamManager::DeviceRequest {
     stream_controls_.exclude_system_audio = false;
   }
 
-  // TODO(crbug.com/1386165): Remove this method from DeviceRequest when
+  // TODO(crbug.com/40247147): Remove this method from DeviceRequest when
   // GenerateStreamRequest::FinalizeRequest and
   // GetOpenDeviceRequest::FinalizeRequest have been implemented (this should be
   // an internal callback in those subclasses).
@@ -838,7 +840,7 @@ class MediaStreamManager::DeviceRequest {
     NOTREACHED();
   }
 
-  // TODO(crbug.com/1386165): Combine FinalizeRequest and
+  // TODO(crbug.com/40247147): Combine FinalizeRequest and
   // FinalizeMediaAccessRequest, implement it for the remaining subclasses and
   // make it into on pure virtual function.
   virtual void FinalizeRequest(const std::string& label) { NOTREACHED(); }
@@ -916,6 +918,15 @@ class MediaStreamManager::DeviceRequest {
   // If capturing a tab, zoom-level updates are received through this callback.
   virtual void OnZoomLevelChange(const std::string& label, int zoom_level) {}
 #endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
+
+  // Marks that CSC was used at least once during this capture-session.
+  void SetCapturedSurfaceControlActive() {
+    captured_surface_control_active_ = true;
+  }
+
+  bool captured_surface_control_active() const {
+    return captured_surface_control_active_;
+  }
 
   // The render frame host id that requested this stream to be generated and
   // that will receive a handle to the MediaStream. This may be different from
@@ -1018,10 +1029,9 @@ class MediaStreamManager::DeviceRequest {
   GlobalRenderFrameHostId target_render_frame_host_id_;
   std::string label_;
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
-  // If an attempt to access any of the Captured Surface Control APIs is made,
-  // a controller is instantiated to manage state.
   std::unique_ptr<CapturedSurfaceController> captured_surface_controller_;
 #endif
+  bool captured_surface_control_active_ = false;
 };
 
 class MediaStreamManager::MediaAccessRequest
@@ -1613,22 +1623,11 @@ MediaStreamManager::MediaStreamManager(
               &VideoCaptureDependencies::CreateJpegEncodeAccelerator));
     }
 #endif
-
-    if (base::FeatureList::IsEnabled(features::kMojoVideoCapture)) {
-      video_capture_provider = std::make_unique<VideoCaptureProviderSwitcher>(
-          std::make_unique<ServiceVideoCaptureProvider>(
-              base::BindRepeating(&SendVideoCaptureLogMessage)),
-          InProcessVideoCaptureProvider::CreateInstanceForNonDeviceCapture(
-              std::move(device_task_runner),
-              base::BindRepeating(&SendVideoCaptureLogMessage)));
-    } else {
-      video_capture_provider = InProcessVideoCaptureProvider::CreateInstance(
-          std::make_unique<media::VideoCaptureSystemImpl>(
-              media::CreateVideoCaptureDeviceFactory(
-                  GetUIThreadTaskRunner({}))),
-          std::move(device_task_runner),
-          base::BindRepeating(&SendVideoCaptureLogMessage));
-    }
+    video_capture_provider = std::make_unique<VideoCaptureProviderSwitcher>(
+        std::make_unique<ServiceVideoCaptureProvider>(
+            base::BindRepeating(&SendVideoCaptureLogMessage)),
+        InProcessVideoCaptureProvider::CreateInstanceForScreenCapture(
+            std::move(device_task_runner)));
   }
   InitializeMaybeAsync(std::move(video_capture_provider));
 
@@ -2380,12 +2379,12 @@ std::optional<MediaStreamDevice> MediaStreamManager::CloneExistingOpenDevice(
 
   DeviceRequest* const new_request = FindRequest(new_label);
   DCHECK(new_request);
-  // TODO(crbug.com/1334583): Generalize to multiple streams.
+  // TODO(crbug.com/40846554): Generalize to multiple streams.
   DCHECK(new_request->stream_devices_set.stream_devices.empty());
   for (const LabeledDeviceRequest& labeled_request : requests_) {
     DeviceRequest* const existing_request = labeled_request.second.get();
     // Skipping requests that contain multiple streams.
-    // TODO(crbug.com/1334583): Generalize to multiple streams.
+    // TODO(crbug.com/40846554): Generalize to multiple streams.
     if (existing_request->stream_devices_set.stream_devices.size() > 1u) {
       continue;
     }
@@ -2399,7 +2398,7 @@ std::optional<MediaStreamDevice> MediaStreamManager::CloneExistingOpenDevice(
       }
       if (existing_request->state(existing_device->type) !=
           MEDIA_REQUEST_STATE_DONE) {
-        // TODO(https://crbug.com/1288839): Ensure state of MediaStreamDevice
+        // TODO(crbug.com/40058526): Ensure state of MediaStreamDevice
         // doesn't change while MediaStreamTrack is being transferred.
         // Skip devices not in state MEDIA_REQUEST_STATE_DONE.
         continue;
@@ -2407,9 +2406,9 @@ std::optional<MediaStreamDevice> MediaStreamManager::CloneExistingOpenDevice(
 
       MediaStreamDevice new_device = *existing_device;
       if (!blink::IsMediaStreamDeviceTransferrable(*existing_device)) {
-        // TODO(https://crbug.com/1288839): Remove bad message after transfer
+        // TODO(crbug.com/40058526): Remove bad message after transfer
         // is supported for these stream types.
-        // TODO(https://crbug.com/1288839): Hash device id and group_id for
+        // TODO(crbug.com/40058526): Hash device id and group_id for
         // MediaStreamType DEVICE_AUDIO_CAPTURE and DEVICE_VIDEO_CAPTURE.
         ReceivedBadMessage(
             new_request->requesting_render_frame_host_id.child_id,
@@ -2432,7 +2431,7 @@ void MediaStreamManager::UpdateDeviceTransferStatus(
     const blink::MediaStreamDevice* const device,
     const base::UnguessableToken& transfer_id,
     TransferState transfer_state) {
-  // TODO(https://crbug.com/1288839): Use |start_time| to enforce a timeout to
+  // TODO(crbug.com/40058526): Use |start_time| to enforce a timeout to
   // stop device in case a transfer never completes.
   MediaStreamType stream_type = device->type;
   std::optional<TransferState> existing_state =
@@ -3050,12 +3049,12 @@ void MediaStreamManager::FinalizeGenerateStreams(const std::string& label,
   }
 #endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 
-  // TODO(crbug.com/1300883): Generalize to multiple streams.
+  // TODO(crbug.com/40216442): Generalize to multiple streams.
   DCHECK_EQ(1u, request->stream_devices_set.stream_devices.size());
 
   // It is safe to bind base::Unretained(this) because MediaStreamManager is
   // owned by BrowserMainLoop and so outlives the IO thread.
-  // TODO(crbug.com/1314741): Avoid using PTZ permission checks for non-gUM
+  // TODO(crbug.com/40833062): Avoid using PTZ permission checks for non-gUM
   // tracks.
   GetUIThreadTaskRunner({})->PostTaskAndReplyWithResult(
       FROM_HERE,
@@ -3089,7 +3088,7 @@ void MediaStreamManager::FinalizeGetOpenDevice(const std::string& label,
 
   // It is safe to bind base::Unretained(this) because MediaStreamManager is
   // owned by BrowserMainLoop and so outlives the IO thread.
-  // TODO(crbug.com/1314743): Avoid this check once you have this permission
+  // TODO(crbug.com/40833063): Avoid this check once you have this permission
   // value from original context.
   GetUIThreadTaskRunner({})->PostTaskAndReplyWithResult(
       FROM_HERE,
@@ -3103,9 +3102,9 @@ void MediaStreamManager::FinalizeGetOpenDevice(const std::string& label,
           request->stream_devices_set.stream_devices[0]->video_device));
 }
 
-// TODO(https://crbug.com/1288839): Ensure CaptureHandle works for transferred
+// TODO(crbug.com/40058526): Ensure CaptureHandle works for transferred
 // MediaStreamTracks and add tests for the same.
-// TODO(https://crbug.com/1314634): Ensure track transfer does not initiate
+// TODO(crbug.com/40832991): Ensure track transfer does not initiate
 // focus-change with Conditional focus enabled.
 void MediaStreamManager::PanTiltZoomPermissionChecked(
     const std::string& label,
@@ -3189,7 +3188,7 @@ void MediaStreamManager::FinalizeRequestFailed(
       if (devices.video_device.has_value()) {
         const blink::MediaStreamDevice& device = devices.video_device.value();
         DCHECK_NE(device.type, MediaStreamType::DISPLAY_VIDEO_CAPTURE_SET);
-        // TODO(crbug.com/1334332): Also consider
+        // TODO(crbug.com/40228114): Also consider
         // DISPLAY_VIDEO_CAPTURE_THIS_TAB.
         if (device.type == MediaStreamType::GUM_DESKTOP_VIDEO_CAPTURE ||
             device.type == MediaStreamType::DISPLAY_VIDEO_CAPTURE) {
@@ -3385,10 +3384,7 @@ void MediaStreamManager::HandleRequestDone(const std::string& label,
       break;
     case blink::MEDIA_GENERATE_STREAM: {
       FinalizeGenerateStreams(label, request);
-      if (base::FeatureList::IsEnabled(
-              blink::features::kStartMediaStreamCaptureIndicatorInBrowser)) {
-        OnStreamStarted(label);
-      }
+      OnStreamStarted(label);
       break;
     }
     case blink::MEDIA_GET_OPEN_DEVICE: {
@@ -3765,7 +3761,8 @@ void MediaStreamManager::StopMediaStreamFromBrowser(const std::string& label) {
 
 void MediaStreamManager::ChangeMediaStreamSourceFromBrowser(
     const std::string& label,
-    const DesktopMediaID& media_id) {
+    const DesktopMediaID& media_id,
+    bool captured_surface_control_active) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   DeviceRequest* request = FindRequest(label);
@@ -3777,6 +3774,10 @@ void MediaStreamManager::ChangeMediaStreamSourceFromBrowser(
   const blink::mojom::StreamDevices& devices =
       *request->stream_devices_set.stream_devices[0];
 
+  if (captured_surface_control_active) {
+    request->SetCapturedSurfaceControlActive();
+  }
+
   if (request->ui_proxy) {
     for (const std::optional<blink::MediaStreamDevice>* device_ptr :
          {&devices.audio_device, &devices.video_device}) {
@@ -3786,8 +3787,9 @@ void MediaStreamManager::ChangeMediaStreamSourceFromBrowser(
       const blink::MediaStreamDevice& device = device_ptr->value();
       const DesktopMediaID old_media_id = DesktopMediaID::Parse(device.id);
       if (!old_media_id.is_null()) {
-        request->ui_proxy->OnDeviceStoppedForSourceChange(label, old_media_id,
-                                                          media_id);
+        request->ui_proxy->OnDeviceStoppedForSourceChange(
+            label, old_media_id, media_id,
+            request->captured_surface_control_active());
       }
     }
   }

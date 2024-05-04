@@ -166,11 +166,23 @@ class AX_EXPORT AXComputedNodeData final {
   // Only one copy (either UTF8 or UTF16) should be cached as each platform
   // should only need one of the encodings. This applies to both text content as
   // well as text content with paragraph breaks.
+  // TODO(kevers): Presently it is possible to get both cached since the bounds
+  // calculations are done using UTF16 and text content can be extracted in
+  // either format (platform specific). We should be able to remove the UTF16
+  // extraction for bounds calculations now that the character bounds vector is
+  // guaranteed to match the length of the text in UTF16. The CharacterWidths
+  // method in AbstractInlineTextBox pads the vector in the event of the shaper
+  // failing to return glyph metrics for all characters.
   mutable std::optional<std::string> text_content_with_paragraph_breaks_utf8_;
   mutable std::optional<std::u16string>
       text_content_with_paragraph_breaks_utf16_;
   mutable std::optional<std::string> text_content_utf8_;
   mutable std::optional<std::u16string> text_content_utf16_;
+  // In rare cases, the length of the text content in UTF16 does not align with
+  // the length of the character offsets array. Store the computed length to
+  // avoid needing to cache the UTF16 representation of the text.
+  // TODO(kevers): Remove once alignment is guaranteed.
+  mutable std::optional<int32_t> utf16_length_;
 };
 
 }  // namespace ui

@@ -6,9 +6,7 @@
 
 #if !defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
 
-#include "partition_alloc/starscan/pcscan.h"
-
-#include "build/build_config.h"
+#include "partition_alloc/build_config.h"
 #include "partition_alloc/partition_alloc-inl.h"
 #include "partition_alloc/partition_alloc_base/bits.h"
 #include "partition_alloc/partition_alloc_base/compiler_specific.h"
@@ -18,9 +16,12 @@
 #include "partition_alloc/partition_alloc_config.h"
 #include "partition_alloc/partition_alloc_constants.h"
 #include "partition_alloc/partition_alloc_for_testing.h"
+#include "partition_alloc/partition_freelist_entry.h"
 #include "partition_alloc/partition_root.h"
-#include "partition_alloc/starscan/stack/stack.h"
+#include "partition_alloc/stack/stack.h"
+#include "partition_alloc/starscan/pcscan.h"
 #include "partition_alloc/tagging.h"
+#include "partition_alloc/use_death_tests.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if BUILDFLAG(USE_STARSCAN)
@@ -174,8 +175,11 @@ bool IsInFreeList(uintptr_t slot_start) {
   // slot_start isn't MTE-tagged, whereas pointers in the freelist are.
   void* slot_start_tagged = SlotStartAddr2Ptr(slot_start);
   auto* slot_span = SlotSpanMetadata::FromSlotStart(slot_start);
+  const PartitionFreelistDispatcher* freelist_dispatcher =
+      PartitionRoot::FromSlotSpanMetadata(slot_span)->get_freelist_dispatcher();
   for (auto* entry = slot_span->get_freelist_head(); entry;
-       entry = entry->GetNext(slot_span->bucket->slot_size)) {
+       entry =
+           freelist_dispatcher->GetNext(entry, slot_span->bucket->slot_size)) {
     if (entry == slot_start_tagged) {
       return true;
     }
@@ -527,16 +531,15 @@ TEST_F(PartitionAllocPCScanTest, DanglingReferenceFromNonScannablePartition) {
   TestDanglingReferenceNotVisited(*this, value, value_root);
 }
 
-// Death tests misbehave on Android, http://crbug.com/643760.
-#if defined(GTEST_HAS_DEATH_TEST) && !BUILDFLAG(IS_ANDROID)
-#if PA_CONFIG(STARSCAN_EAGER_DOUBLE_FREE_DETECTION_ENABLED)
+#if PA_USE_DEATH_TESTS() && \
+    PA_CONFIG(STARSCAN_EAGER_DOUBLE_FREE_DETECTION_ENABLED)
 TEST_F(PartitionAllocPCScanTest, DoubleFree) {
   auto* list = List<1>::Create(root());
   List<1>::Destroy(root(), list);
   EXPECT_DEATH(List<1>::Destroy(root(), list), "");
 }
-#endif  // PA_CONFIG(STARSCAN_EAGER_DOUBLE_FREE_DETECTION_ENABLED)
-#endif  // defined(GTEST_HAS_DEATH_TEST) && !BUILDFLAG(IS_ANDROID)
+#endif  // PA_USE_DEATH_TESTS() &&
+        // PA_CONFIG(STARSCAN_EAGER_DOUBLE_FREE_DETECTION_ENABLED)
 
 template <typename SourceList, typename ValueList>
 void TestDanglingReferenceWithSafepoint(PartitionAllocPCScanTest& test,
@@ -604,7 +607,7 @@ class PartitionAllocPCScanStackScanningTest : public PartitionAllocPCScanTest {
 
   PA_NOINLINE void SetupAndRunTest() {
     // Register the top of the stack to be the current pointer.
-    PCScan::NotifyThreadCreated(GetStackPointer());
+    StackTopRegistry::Get().NotifyThreadCreated();
     RunTest();
   }
 

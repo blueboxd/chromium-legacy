@@ -8,19 +8,25 @@
 #import <Foundation/Foundation.h>
 
 @class CRWSessionStorage;
+@class SessionTabGroup;
 
 // Encapsulates everything required to save a session "window".
 @interface SessionWindowIOS : NSObject<NSCoding>
 
 // Initializes SessionsWindowIOS using the parameters are initial values for
 // the `sessions` and `selectedIndex` properties. `selectedIndex` must be a
-// valid indice in `sessions` or NSNotFound if `sessions` is empty.
+// valid index in `sessions` or NSNotFound if `sessions` is empty.
 - (instancetype)initWithSessions:(NSArray<CRWSessionStorage*>*)sessions
+                       tabGroups:(NSArray<SessionTabGroup*>*)tabGroups
                    selectedIndex:(NSUInteger)selectedIndex
     NS_DESIGNATED_INITIALIZER;
+- (instancetype)init NS_UNAVAILABLE;
 
 // The serialized session objects. May be empty but never nil.
 @property(nonatomic, readonly) NSArray<CRWSessionStorage*>* sessions;
+
+// The serialized tab group objects. May be empty but never nil.
+@property(nonatomic, readonly) NSArray<SessionTabGroup*>* tabGroups;
 
 // The currently selected session. NSNotFound if the sessionWindow contains
 // no sessions; otherwise a valid index in `sessions`.

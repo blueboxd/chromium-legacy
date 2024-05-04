@@ -18,8 +18,6 @@ source_set("find_bar") {
   ]
   deps = [
     ":constants",
-    "resources:find_next",
-    "resources:find_prev",
     "//base",
     "//base:i18n",
     "//components/strings",
@@ -33,14 +31,16 @@ source_set("find_bar") {
     "//ios/chrome/browser/shared/public/features",
     "//ios/chrome/browser/shared/ui/util",
     "//ios/chrome/browser/shared/ui/util/image",
+    "//ios/chrome/browser/ui/find_bar/resources",
     "//ios/chrome/browser/ui/keyboard",
     "//ios/chrome/browser/ui/presenters",
-    "//ios/chrome/browser/ui/resources:menu_shadow",
+    "//ios/chrome/browser/ui/resources",
     "//ios/chrome/browser/ui/toolbar/accessory",
     "//ios/chrome/common/ui/colors",
     "//ios/chrome/common/ui/util",
     "//ios/chrome/common/ui/util:dynamic_type_util",
     "//ios/third_party/material_components_ios",
+    "//ios/web/public",
     "//ui/base",
     "//ui/gfx",
   ]

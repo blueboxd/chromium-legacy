@@ -143,16 +143,17 @@ TCPSocket::TCPSocket(ScriptState* script_state)
 
 TCPSocket::~TCPSocket() = default;
 
-ScriptPromiseTyped<TCPSocketOpenInfo> TCPSocket::opened(
+ScriptPromise<TCPSocketOpenInfo> TCPSocket::opened(
     ScriptState* script_state) const {
   return opened_->Promise(script_state->World());
 }
 
-ScriptPromise TCPSocket::close(ScriptState*, ExceptionState& exception_state) {
+ScriptPromise<IDLUndefined> TCPSocket::close(ScriptState*,
+                                             ExceptionState& exception_state) {
   if (GetState() == State::kOpening) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "Socket is not properly initialized.");
-    return ScriptPromise();
+    return ScriptPromise<IDLUndefined>();
   }
 
   auto* script_state = GetScriptState();
@@ -164,7 +165,7 @@ ScriptPromise TCPSocket::close(ScriptState*, ExceptionState& exception_state) {
       writable_stream_wrapper_->Locked()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "Close called on locked streams.");
-    return ScriptPromise();
+    return ScriptPromise<IDLUndefined>();
   }
 
   auto* reason = MakeGarbageCollected<DOMException>(
@@ -227,8 +228,11 @@ void TCPSocket::OnTCPSocketOpened(
     base::UmaHistogramSparse(kTCPNetworkFailuresHistogramName, -result);
     ReleaseResources();
 
-    opened_->Reject(CreateDOMExceptionFromNetErrorCode(result));
-    GetClosedPromiseResolver()->Reject();
+    ScriptState::Scope scope(GetScriptState());
+    auto* exception = CreateDOMExceptionFromNetErrorCode(result);
+    opened_->Reject(exception);
+    GetClosedProperty().Reject(ScriptValue(GetScriptState()->GetIsolate(),
+                                           exception->ToV8(GetScriptState())));
 
     SetState(State::kAborted);
   }
@@ -342,10 +346,10 @@ void TCPSocket::OnBothStreamsClosed(std::vector<ScriptValue> args) {
   // If neither stream was errored, resolves |closed|.
   if (auto it = base::ranges::find_if_not(args, &ScriptValue::IsEmpty);
       it != args.end()) {
-    GetClosedPromiseResolver()->Reject(*it);
+    GetClosedProperty().Reject(*it);
     SetState(State::kAborted);
   } else {
-    GetClosedPromiseResolver()->Resolve();
+    GetClosedProperty().ResolveWithUndefined();
     SetState(State::kClosed);
   }
   ReleaseResources();

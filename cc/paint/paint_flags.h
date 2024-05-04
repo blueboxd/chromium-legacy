@@ -9,14 +9,14 @@
 
 #include "base/compiler_specific.h"
 #include "cc/paint/color_filter.h"
+#include "cc/paint/draw_looper.h"
 #include "cc/paint/paint_export.h"
-#include "third_party/skia/include/core/SkDrawLooper.h"
-#include "third_party/skia/include/core/SkMaskFilter.h"
+#include "cc/paint/path_effect.h"
 #include "third_party/skia/include/core/SkPaint.h"
-#include "third_party/skia/include/core/SkPathEffect.h"
 #include "third_party/skia/include/core/SkSamplingOptions.h"
 
 class SkCanvas;
+class SkPath;
 
 namespace cc {
 class PaintFilter;
@@ -41,7 +41,7 @@ class CC_PAINT_EXPORT PaintFlags {
     return static_cast<Style>(bitfields_.style_);
   }
   ALWAYS_INLINE void setStyle(Style style) { bitfields_.style_ = style; }
-  // TODO(crbug.com/1399566): Remove this function
+  // TODO(crbug.com/40249893): Remove this function
   ALWAYS_INLINE SkColor getColor() const { return color_.toSkColor(); }
   ALWAYS_INLINE SkColor4f getColor4f() const { return color_; }
   ALWAYS_INLINE void setColor(SkColor color) {
@@ -65,6 +65,11 @@ class CC_PAINT_EXPORT PaintFlags {
   ALWAYS_INLINE void setAntiAlias(bool aa) { bitfields_.antialias_ = aa; }
   ALWAYS_INLINE bool isDither() const { return bitfields_.dither_; }
   ALWAYS_INLINE void setDither(bool dither) { bitfields_.dither_ = dither; }
+
+  ALWAYS_INLINE void setArcClosed(bool value) {
+    bitfields_.is_arc_closed_ = value;
+  }
+  ALWAYS_INLINE bool isArcClosed() const { return bitfields_.is_arc_closed_; }
 
   enum class FilterQuality {
     kNone,
@@ -166,12 +171,6 @@ class CC_PAINT_EXPORT PaintFlags {
   ALWAYS_INLINE void setColorFilter(sk_sp<ColorFilter> filter) {
     color_filter_ = std::move(filter);
   }
-  ALWAYS_INLINE const sk_sp<SkMaskFilter>& getMaskFilter() const {
-    return mask_filter_;
-  }
-  ALWAYS_INLINE void setMaskFilter(sk_sp<SkMaskFilter> mask) {
-    mask_filter_ = std::move(mask);
-  }
 
   ALWAYS_INLINE const PaintShader* getShader() const { return shader_.get(); }
 
@@ -184,10 +183,10 @@ class CC_PAINT_EXPORT PaintFlags {
 
   void setShader(sk_sp<PaintShader> shader);
 
-  ALWAYS_INLINE const sk_sp<SkPathEffect>& getPathEffect() const {
+  ALWAYS_INLINE const sk_sp<PathEffect>& getPathEffect() const {
     return path_effect_;
   }
-  ALWAYS_INLINE void setPathEffect(sk_sp<SkPathEffect> effect) {
+  ALWAYS_INLINE void setPathEffect(sk_sp<PathEffect> effect) {
     path_effect_ = std::move(effect);
   }
   bool getFillPath(const SkPath& src,
@@ -200,10 +199,10 @@ class CC_PAINT_EXPORT PaintFlags {
   }
   void setImageFilter(sk_sp<PaintFilter> filter);
 
-  ALWAYS_INLINE const sk_sp<SkDrawLooper>& getLooper() const {
+  ALWAYS_INLINE const sk_sp<DrawLooper>& getLooper() const {
     return draw_looper_;
   }
-  ALWAYS_INLINE void setLooper(sk_sp<SkDrawLooper> looper) {
+  ALWAYS_INLINE void setLooper(sk_sp<DrawLooper> looper) {
     draw_looper_ = std::move(looper);
   }
 
@@ -219,10 +218,11 @@ class CC_PAINT_EXPORT PaintFlags {
   template <typename Proc>
   void DrawToSk(SkCanvas* canvas, Proc proc) const {
     SkPaint paint = ToSkPaint();
-    if (const sk_sp<SkDrawLooper>& looper = getLooper())
-      looper->apply(canvas, paint, proc);
-    else
+    if (const sk_sp<DrawLooper>& looper = getLooper()) {
+      looper->Apply(canvas, paint, proc);
+    } else {
       proc(canvas, paint);
+    }
   }
 
   static SkSamplingOptions FilterQualityToSkSamplingOptions(
@@ -237,11 +237,10 @@ class CC_PAINT_EXPORT PaintFlags {
   friend class PaintOpReader;
   friend class PaintOpWriter;
 
-  sk_sp<SkPathEffect> path_effect_;
+  sk_sp<PathEffect> path_effect_;
   sk_sp<PaintShader> shader_;
-  sk_sp<SkMaskFilter> mask_filter_;
   sk_sp<ColorFilter> color_filter_;
-  sk_sp<SkDrawLooper> draw_looper_;
+  sk_sp<DrawLooper> draw_looper_;
   sk_sp<PaintFilter> image_filter_;
 
   // Match(ish) SkPaint defaults.  SkPaintDefaults is not public, so this
@@ -263,6 +262,8 @@ class CC_PAINT_EXPORT PaintFlags {
     // Specifies whether the compositor should use a dark mode filter when
     // rasterizing image on the draw op with this PaintFlags.
     uint32_t use_dark_mode_for_image_ : 1;
+    // Whether the arc should be drawn as a closed path.
+    uint32_t is_arc_closed_ : 1;
   };
 
   union {

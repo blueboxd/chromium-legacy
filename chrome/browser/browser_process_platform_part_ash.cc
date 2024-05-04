@@ -24,7 +24,7 @@
 #include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/scheduler_configuration_manager.h"
-#include "chrome/browser/ash/settings/cros_settings.h"
+#include "chrome/browser/ash/settings/cros_settings_holder.h"
 #include "chrome/browser/ash/system/automatic_reboot_manager.h"
 #include "chrome/browser/ash/system/device_disabling_manager.h"
 #include "chrome/browser/ash/system/device_disabling_manager_default_delegate.h"
@@ -38,6 +38,7 @@
 #include "chromeos/ash/components/browser_context_helper/browser_context_flusher.h"
 #include "chromeos/ash/components/dbus/debug_daemon/debug_daemon_client.h"
 #include "chromeos/ash/components/geolocation/simple_geolocation_provider.h"
+#include "chromeos/ash/components/settings/cros_settings.h"
 #include "chromeos/ash/components/timezone/timezone_resolver.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "components/keep_alive_registry/scoped_keep_alive.h"
@@ -102,12 +103,16 @@ void BrowserProcessPlatformPart::ShutdownAutomaticRebootManager() {
 
 void BrowserProcessPlatformPart::InitializeUserManager() {
   DCHECK(!user_manager_);
+  CHECK(session_manager_);
   user_manager_ = ash::ChromeUserManagerImpl::CreateChromeUserManager();
   user_image_manager_registry_ =
       std::make_unique<ash::UserImageManagerRegistry>(user_manager_.get());
+  session_manager_->OnUserManagerCreated(user_manager_.get());
   // LoginState and DeviceCloudPolicyManager outlives UserManager, so on
   // their initialization, there's no way to start observing UserManager.
   // This is the earliest timing to do so.
+  // TODO(b/332481586): Consider move the initialization to the constructor
+  // of each class.
   if (auto* login_state = ash::LoginState::Get()) {
     login_state->OnUserManagerCreated(user_manager_.get());
   }
@@ -151,7 +156,7 @@ void BrowserProcessPlatformPart::ShutdownDeviceDisablingManager() {
 }
 
 void BrowserProcessPlatformPart::InitializeSessionManager() {
-  DCHECK(!session_manager_);
+  CHECK(!session_manager_);
   session_manager_ = std::make_unique<ash::ChromeSessionManager>();
 }
 
@@ -159,26 +164,38 @@ void BrowserProcessPlatformPart::ShutdownSessionManager() {
   session_manager_.reset();
 }
 
-void BrowserProcessPlatformPart::InitializeCrosComponentManager() {
-  if (using_testing_cros_component_manager_)
-    return;
+void BrowserProcessPlatformPart::InitializeCrosSettings() {
+  CHECK(!cros_settings_holder_);
+  cros_settings_holder_ = std::make_unique<ash::CrosSettingsHolder>(
+      ash::DeviceSettingsService::Get(), g_browser_process->local_state());
+}
 
-  DCHECK(!cros_component_manager_);
-  cros_component_manager_ =
+void BrowserProcessPlatformPart::ShutdownCrosSettings() {
+  cros_settings_holder_.reset();
+}
+
+void BrowserProcessPlatformPart::InitializeComponentManager() {
+  if (using_testing_component_manager_ash_) {
+    return;
+  }
+
+  DCHECK(!component_manager_ash_);
+  component_manager_ash_ =
       base::MakeRefCounted<component_updater::CrOSComponentInstaller>(
           std::make_unique<component_updater::MetadataTable>(
               g_browser_process->local_state()),
           g_browser_process->component_updater());
 
   // Register all installed components for regular update.
-  cros_component_manager_->RegisterInstalled();
+  component_manager_ash_->RegisterInstalled();
 }
 
-void BrowserProcessPlatformPart::ShutdownCrosComponentManager() {
-  if (using_testing_cros_component_manager_)
+void BrowserProcessPlatformPart::ShutdownComponentManager() {
+  if (using_testing_component_manager_ash_) {
     return;
+  }
 
-  cros_component_manager_.reset();
+  component_manager_ash_.reset();
 }
 
 void BrowserProcessPlatformPart::InitializeSchedulerConfigurationManager() {

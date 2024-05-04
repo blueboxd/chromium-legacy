@@ -268,7 +268,8 @@ bool PartialTranslateBubbleView::AcceleratorPressed(
   return BubbleDialogDelegateView::AcceleratorPressed(accelerator);
 }
 
-gfx::Size PartialTranslateBubbleView::CalculatePreferredSize() const {
+gfx::Size PartialTranslateBubbleView::CalculatePreferredSize(
+    const views::SizeBounds& available_size) const {
   int width = 0;
   for (const views::View* child : children()) {
     width = std::max(width, child->GetPreferredSize().width());
@@ -581,8 +582,8 @@ std::unique_ptr<views::View> PartialTranslateBubbleView::CreateView() {
   return view;
 }
 
-// TODO(crbug/301568): Revise this later to show a specific message for each
-// error.
+// TODO(crbug.com/40335010): Revise this later to show a specific message for
+// each error.
 std::unique_ptr<views::View> PartialTranslateBubbleView::CreateViewError() {
   auto full_page_button = std::make_unique<views::MdTextButton>(
       base::BindRepeating(&PartialTranslateBubbleView::TranslateFullPage,
@@ -1074,7 +1075,7 @@ void PartialTranslateBubbleView::SwitchToErrorView(
     translate::TranslateErrors error_type) {
   SwitchView(PartialTranslateBubbleModel::VIEW_STATE_ERROR);
   model_->SetError(error_type);
-  // TODO(crbug/1314825): Record the error when Partial Translate-specific
+  // TODO(crbug.com/40221545): Record the error when Partial Translate-specific
   // metrics are added.
 }
 

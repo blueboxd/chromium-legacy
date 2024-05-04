@@ -41,6 +41,10 @@ class ClientDiscardableSharedMemoryManager;
 
 namespace printing {
 
+#if BUILDFLAG(IS_WIN)
+class ScopedXPSInitializer;
+#endif
+
 class PrintCompositorImpl : public mojom::PrintCompositor {
  public:
   // Creates an instance with an optional Mojo receiver (may be null) and
@@ -88,6 +92,8 @@ class PrintCompositorImpl : public mojom::PrintCompositor {
       override;
   void SetWebContentsURL(const GURL& url) override;
   void SetUserAgent(const std::string& user_agent) override;
+  void SetGenerateDocumentOutline(
+      mojom::GenerateDocumentOutline generate_document_outline) override;
   void SetTitle(const std::string& title) override;
 
  protected:
@@ -239,6 +245,10 @@ class PrintCompositorImpl : public mojom::PrintCompositor {
 
   mojo::Receiver<mojom::PrintCompositor> receiver_{this};
 
+#if BUILDFLAG(IS_WIN)
+  std::unique_ptr<ScopedXPSInitializer> xps_initializer_;
+#endif
+
   const scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
   scoped_refptr<discardable_memory::ClientDiscardableSharedMemoryManager>
       discardable_shared_memory_manager_;
@@ -260,6 +270,10 @@ class PrintCompositorImpl : public mojom::PrintCompositor {
   // If present, the accessibility tree for the document needed to
   // export a tagged (accessible) PDF.
   ui::AXTreeUpdate accessibility_tree_;
+
+  // How (or if) to generate a document outline.
+  mojom::GenerateDocumentOutline generate_document_outline_ =
+      mojom::GenerateDocumentOutline::kNone;
 
   // The title of the document.
   std::string title_;

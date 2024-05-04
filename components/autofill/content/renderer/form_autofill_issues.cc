@@ -274,8 +274,8 @@ std::vector<FormIssue> CheckForLabelsWithIncorrectForAttribute(
 
   std::set<std::u16string> elements_whose_name_match_a_label_for_attr;
   for (const FormFieldData& field : fields) {
-    if (field.label_source == FormFieldData::LabelSource::kForName) {
-      elements_whose_name_match_a_label_for_attr.insert(field.name_attribute);
+    if (field.label_source() == FormFieldData::LabelSource::kForName) {
+      elements_whose_name_match_a_label_for_attr.insert(field.name_attribute());
     }
   }
 
@@ -313,12 +313,8 @@ std::vector<FormIssue> CheckForLabelsWithIncorrectForAttribute(
 
 void MaybeEmitFormIssuesToDevtools(blink::WebLocalFrame& web_local_frame,
                                    base::span<const FormData> forms) {
-  // TODO(crbug.com/1399414): Only calculate and emit these issues if devtools
+  // TODO(crbug.com/40249826): Only calculate and emit these issues if devtools
   // is open.
-  if (!base::FeatureList::IsEnabled(features::kAutofillEnableDevtoolsIssues)) {
-    return;
-  }
-
   WebDocument document = web_local_frame.GetDocument();
   std::vector<FormIssue> form_issues;
   // Get issues from forms input elements.

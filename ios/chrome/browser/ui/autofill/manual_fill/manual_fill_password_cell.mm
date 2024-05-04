@@ -7,11 +7,13 @@
 #import "base/metrics/user_metrics.h"
 #import "base/strings/sys_string_conversions.h"
 #import "ios/chrome/browser/favicon/model/favicon_loader.h"
+#import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/shared/ui/list_model/list_model.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_cell_utils.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_content_injector.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_credential.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
+#import "ios/chrome/common/ui/favicon/favicon_container_view.h"
 #import "ios/chrome/common/ui/favicon/favicon_view.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
 #import "ios/chrome/grit/ios_strings.h"
@@ -21,6 +23,18 @@
 
 NSString* const kMaskedPasswordTitle = @"••••••••";
 
+namespace {
+
+constexpr CGFloat kFaviconContainterViewSize = 30;
+
+// Returns the size that the favicon should have.
+CGFloat GetFaviconSize() {
+  return IsKeyboardAccessoryUpgradeEnabled() ? kFaviconContainterViewSize
+                                             : gfx::kFaviconSize;
+}
+
+}  // namespace
+
 @interface ManualFillCredentialItem ()
 
 // The credential for this item.
@@ -28,14 +42,21 @@ NSString* const kMaskedPasswordTitle = @"••••••••";
 
 // The cell won't show a title (site name) label if it is connected to the
 // previous password item.
+// TODO(crbug.com/326398845): Remove once the Keyboard Accessory Upgrade feature
+// has launched both on iPhone and iPad.
 @property(nonatomic, assign) BOOL isConnectedToPreviousItem;
 
 // The separator line won't show if it is connected to the next password item.
+// TODO(crbug.com/326398845): Remove once the Keyboard Accessory Upgrade feature
+// has launched both on iPhone and iPad.
 @property(nonatomic, assign) BOOL isConnectedToNextItem;
 
 // The delegate for this item.
 @property(nonatomic, weak, readonly) id<ManualFillContentInjector>
     contentInjector;
+
+// The UIActions that should be available from the cell's overflow menu button.
+@property(nonatomic, strong) NSArray<UIAction*>* menuActions;
 
 @end
 
@@ -45,13 +66,15 @@ NSString* const kMaskedPasswordTitle = @"••••••••";
          isConnectedToPreviousItem:(BOOL)isConnectedToPreviousItem
              isConnectedToNextItem:(BOOL)isConnectedToNextItem
                    contentInjector:
-                       (id<ManualFillContentInjector>)contentInjector {
+                       (id<ManualFillContentInjector>)contentInjector
+                       menuActions:(NSArray<UIAction*>*)menuActions {
   self = [super initWithType:kItemTypeEnumZero];
   if (self) {
     _credential = credential;
     _isConnectedToPreviousItem = isConnectedToPreviousItem;
     _isConnectedToNextItem = isConnectedToNextItem;
     _contentInjector = contentInjector;
+    _menuActions = menuActions;
     self.cellClass = [ManualFillPasswordCell class];
   }
   return self;
@@ -63,7 +86,8 @@ NSString* const kMaskedPasswordTitle = @"••••••••";
   [cell setUpWithCredential:self.credential
       isConnectedToPreviousCell:self.isConnectedToPreviousItem
           isConnectedToNextCell:self.isConnectedToNextItem
-                contentInjector:self.contentInjector];
+                contentInjector:self.contentInjector
+                    menuActions:self.menuActions];
 }
 
 - (const GURL&)faviconURL {
@@ -78,12 +102,9 @@ NSString* const kMaskedPasswordTitle = @"••••••••";
 
 namespace {
 
-// The multiplier for the base system spacing at the top margin for connected
-// cells.
-static const CGFloat TopSystemSpacingMultiplierForConnectedCell = 1.28;
-
-// When no extra multiplier is required.
-static const CGFloat NoMultiplier = 1.0;
+// The offset to apply to a cell's top margin when connected to the previous
+// cell.
+static const CGFloat kOffsetForConnectedCell = 16;
 
 }  // namespace
 
@@ -99,11 +120,19 @@ static const CGFloat NoMultiplier = 1.0;
 // The constraints for the visible favicon.
 @property(nonatomic, strong) NSArray<NSLayoutConstraint*>* faviconContraints;
 
-// The favicon for the credential.
-@property(nonatomic, strong) FaviconView* faviconView;
+// The view displayed at the top the cell containing the favicon, the site name
+// and an overflow button.
+@property(nonatomic, strong) UIView* headerView;
+
+// The favicon for the credential. Of type FaviconView when the Keyboard
+// Accessory Upgrade is disabled, and FaviconContainerView when enabled.
+@property(nonatomic, strong) UIView* faviconView;
 
 // The label with the site name and host.
 @property(nonatomic, strong) UILabel* siteNameLabel;
+
+// The menu button displayed in the cell's header.
+@property(nonatomic, strong) UIButton* overflowMenuButton;
 
 // A button showing the username, or "No Username".
 @property(nonatomic, strong) UIButton* usernameButton;
@@ -111,11 +140,19 @@ static const CGFloat NoMultiplier = 1.0;
 // A button showing "••••••••" to resemble a password.
 @property(nonatomic, strong) UIButton* passwordButton;
 
-// Separator line between cells, if needed.
+// Separator line. When the Keyboard Accessory Upgrade feature is enbaled, used
+// to delimit the header from the rest of the cell. When disabled, used when
+// needed to delimit cells.
 @property(nonatomic, strong) UIView* grayLine;
 
 // The delegate in charge of processing the user actions in this cell.
 @property(nonatomic, weak) id<ManualFillContentInjector> contentInjector;
+
+// Layout guide for the cell's content.
+@property(nonatomic, strong) UILayoutGuide* layoutGuide;
+
+// Button to autofill the current form with the credential's data.
+@property(nonatomic, strong) UIButton* autofillFormButton;
 
 @end
 
@@ -132,7 +169,7 @@ static const CGFloat NoMultiplier = 1.0;
   [self.dynamicConstraints removeAllObjects];
 
   self.siteNameLabel.text = @"";
-  [self.faviconView configureWithAttributes:nil];
+  [self configureFaviconWithAttributes:nil];
 
   [self.usernameButton setTitle:@"" forState:UIControlStateNormal];
   self.usernameButton.enabled = YES;
@@ -151,49 +188,51 @@ static const CGFloat NoMultiplier = 1.0;
 - (void)setUpWithCredential:(ManualFillCredential*)credential
     isConnectedToPreviousCell:(BOOL)isConnectedToPreviousCell
         isConnectedToNextCell:(BOOL)isConnectedToNextCell
-              contentInjector:(id<ManualFillContentInjector>)contentInjector {
+              contentInjector:(id<ManualFillContentInjector>)contentInjector
+                  menuActions:(NSArray<UIAction*>*)menuActions {
   if (self.contentView.subviews.count == 0) {
     [self createViewHierarchy];
   }
   self.contentInjector = contentInjector;
   self.credential = credential;
 
-  NSMutableArray<UIView*>* verticalLeadViews = [[NSMutableArray alloc] init];
+  // Holds the views whose leading anchor is constrained relative to the cell's
+  // leading anchor.
+  std::vector<ManualFillCellView> verticalLeadViews;
 
+  // Header.
   if (isConnectedToPreviousCell) {
     self.siteNameLabel.hidden = YES;
     self.faviconView.hidden = YES;
   } else {
-    NSMutableAttributedString* attributedString =
-        [[NSMutableAttributedString alloc]
-            initWithString:credential.siteName ? credential.siteName : @""
-                attributes:@{
-                  NSForegroundColorAttributeName :
-                      [UIColor colorNamed:kTextPrimaryColor],
-                  NSFontAttributeName :
-                      [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline]
-                }];
-    if (credential.host && credential.host.length &&
-        ![credential.host isEqualToString:credential.siteName]) {
-      NSString* hostString =
-          [NSString stringWithFormat:@" –– %@", credential.host];
-      NSDictionary* attributes = @{
-        NSForegroundColorAttributeName :
-            [UIColor colorNamed:kTextSecondaryColor],
-        NSFontAttributeName :
-            [UIFont preferredFontForTextStyle:UIFontTextStyleBody]
-      };
-      NSAttributedString* hostAttributedString =
-          [[NSAttributedString alloc] initWithString:hostString
-                                          attributes:attributes];
-      [attributedString appendAttributedString:hostAttributedString];
+    self.siteNameLabel.attributedText =
+        [self createSiteNameLabelAttributedText:credential];
+    if (IsKeyboardAccessoryUpgradeEnabled()) {
+      self.siteNameLabel.numberOfLines = 0;
     }
-    self.siteNameLabel.attributedText = attributedString;
-    [verticalLeadViews addObject:self.siteNameLabel];
     self.siteNameLabel.hidden = NO;
     self.faviconView.hidden = NO;
+    AddViewToVerticalLeadViews(self.headerView,
+                               ManualFillCellView::ElementType::kOther,
+                               verticalLeadViews);
+    if (IsKeyboardAccessoryUpgradeEnabled()) {
+      AddViewToVerticalLeadViews(
+          self.grayLine, ManualFillCellView::ElementType::kHeaderSeparator,
+          verticalLeadViews);
+    }
+  }
+  if (menuActions && menuActions.count) {
+    self.overflowMenuButton.menu = [UIMenu menuWithChildren:menuActions];
+    self.overflowMenuButton.hidden = NO;
+  } else {
+    self.overflowMenuButton.hidden = YES;
   }
 
+  // Holds the chip buttons related to the credential that are vertical leads.
+  NSMutableArray<UIView*>* credentialGroupVerticalLeadChips =
+      [[NSMutableArray alloc] init];
+
+  // Username chip button.
   if (credential.username.length) {
     [self.usernameButton setTitle:credential.username
                          forState:UIControlStateNormal];
@@ -205,33 +244,38 @@ static const CGFloat NoMultiplier = 1.0;
                               forState:UIControlStateNormal];
     self.usernameButton.enabled = NO;
   }
-  [verticalLeadViews addObject:self.usernameButton];
+  [credentialGroupVerticalLeadChips addObject:self.usernameButton];
 
+  // Password chip button.
   if (credential.password.length) {
     [self.passwordButton setTitle:kMaskedPasswordTitle
                          forState:UIControlStateNormal];
     self.passwordButton.accessibilityLabel =
         l10n_util::GetNSString(IDS_IOS_SETTINGS_PASSWORD_HIDDEN_LABEL);
-    [verticalLeadViews addObject:self.passwordButton];
+    [credentialGroupVerticalLeadChips addObject:self.passwordButton];
     self.passwordButton.hidden = NO;
   } else {
     self.passwordButton.hidden = YES;
   }
 
+  AddChipGroupsToVerticalLeadViews(@[ credentialGroupVerticalLeadChips ],
+                                   verticalLeadViews);
+
   if (isConnectedToNextCell) {
     self.grayLine.hidden = YES;
   }
 
-  CGFloat topSystemSpacingMultiplier =
-      isConnectedToPreviousCell ? TopSystemSpacingMultiplierForConnectedCell
-                                : TopSystemSpacingMultiplier;
-  CGFloat bottomSystemSpacingMultiplier =
-      isConnectedToNextCell ? NoMultiplier : BottomSystemSpacingMultiplier;
+  if (IsKeyboardAccessoryUpgradeEnabled()) {
+    AddViewToVerticalLeadViews(self.autofillFormButton,
+                               ManualFillCellView::ElementType::kOther,
+                               verticalLeadViews);
+  }
 
+  // Set and activate constraints.
   self.dynamicConstraints = [[NSMutableArray alloc] init];
+  CGFloat offset = isConnectedToPreviousCell ? -kOffsetForConnectedCell : 0;
   AppendVerticalConstraintsSpacingForViews(
-      self.dynamicConstraints, verticalLeadViews, self.contentView,
-      topSystemSpacingMultiplier, bottomSystemSpacingMultiplier);
+      self.dynamicConstraints, verticalLeadViews, self.layoutGuide, offset);
   [NSLayoutConstraint activateConstraints:self.dynamicConstraints];
 }
 
@@ -243,7 +287,7 @@ static const CGFloat NoMultiplier = 1.0;
   if (attributes.faviconImage) {
     self.faviconView.hidden = NO;
     [NSLayoutConstraint activateConstraints:self.faviconContraints];
-    [self.faviconView configureWithAttributes:attributes];
+    [self configureFaviconWithAttributes:attributes];
     return;
   }
   [NSLayoutConstraint deactivateConstraints:self.faviconContraints];
@@ -254,45 +298,41 @@ static const CGFloat NoMultiplier = 1.0;
 
 // Creates and sets up the view hierarchy.
 - (void)createViewHierarchy {
+  self.layoutGuide =
+      AddLayoutGuideToContentView(self.contentView, /*cell_has_header=*/YES);
+
   self.selectionStyle = UITableViewCellSelectionStyleNone;
 
-  self.grayLine = CreateGraySeparatorForContainer(self.contentView);
   NSMutableArray<NSLayoutConstraint*>* staticConstraints =
       [[NSMutableArray alloc] init];
 
-  self.faviconView = [[FaviconView alloc] init];
+  self.faviconView = IsKeyboardAccessoryUpgradeEnabled()
+                         ? [[FaviconContainerView alloc] init]
+                         : [[FaviconView alloc] init];
   self.faviconView.translatesAutoresizingMaskIntoConstraints = NO;
   self.faviconView.clipsToBounds = YES;
   self.faviconView.hidden = YES;
-  [self.contentView addSubview:self.faviconView];
   self.faviconContraints = @[
-    [self.faviconView.widthAnchor constraintEqualToConstant:gfx::kFaviconSize],
+    [self.faviconView.widthAnchor constraintEqualToConstant:GetFaviconSize()],
     [self.faviconView.heightAnchor
         constraintEqualToAnchor:self.faviconView.widthAnchor],
   ];
 
   self.siteNameLabel = CreateLabel();
-  self.siteNameLabel.translatesAutoresizingMaskIntoConstraints = NO;
-  self.siteNameLabel.adjustsFontForContentSizeCategory = YES;
-  [self.contentView addSubview:self.siteNameLabel];
+  self.overflowMenuButton = CreateOverflowMenuButton();
+  self.headerView = CreateHeaderView(self.faviconView, self.siteNameLabel,
+                                     self.overflowMenuButton);
+  [self.contentView addSubview:self.headerView];
+  AppendHorizontalConstraintsForViews(staticConstraints, @[ self.headerView ],
+                                      self.layoutGuide);
 
-  UIStackView* stackView = [[UIStackView alloc]
-      initWithArrangedSubviews:@[ self.faviconView, self.siteNameLabel ]];
-  stackView.translatesAutoresizingMaskIntoConstraints = NO;
-  stackView.spacing = UIStackViewSpacingUseSystem;
-  stackView.alignment = UIStackViewAlignmentCenter;
-
-  [self.contentView addSubview:stackView];
-
-  AppendHorizontalConstraintsForViews(staticConstraints, @[ stackView ],
-                                      self.contentView,
-                                      kButtonHorizontalMargin);
+  self.grayLine = CreateGraySeparatorForContainer(self.contentView);
 
   self.usernameButton = CreateChipWithSelectorAndTarget(
       @selector(userDidTapUsernameButton:), self);
   [self.contentView addSubview:self.usernameButton];
   AppendHorizontalConstraintsForViews(
-      staticConstraints, @[ self.usernameButton ], self.grayLine,
+      staticConstraints, @[ self.usernameButton ], self.layoutGuide,
       kChipsHorizontalMargin,
       AppendConstraintsHorizontalEqualOrSmallerThanGuide);
 
@@ -300,9 +340,16 @@ static const CGFloat NoMultiplier = 1.0;
       @selector(userDidTapPasswordButton:), self);
   [self.contentView addSubview:self.passwordButton];
   AppendHorizontalConstraintsForViews(
-      staticConstraints, @[ self.passwordButton ], self.grayLine,
+      staticConstraints, @[ self.passwordButton ], self.layoutGuide,
       kChipsHorizontalMargin,
       AppendConstraintsHorizontalEqualOrSmallerThanGuide);
+
+  if (IsKeyboardAccessoryUpgradeEnabled()) {
+    self.autofillFormButton = CreateAutofillFormButton();
+    [self.contentView addSubview:self.autofillFormButton];
+    AppendHorizontalConstraintsForViews(
+        staticConstraints, @[ self.autofillFormButton ], self.layoutGuide);
+  }
 
   [NSLayoutConstraint activateConstraints:staticConstraints];
 }
@@ -325,6 +372,58 @@ static const CGFloat NoMultiplier = 1.0;
   [self.contentInjector userDidPickContent:self.credential.password
                              passwordField:YES
                              requiresHTTPS:YES];
+}
+
+// Configure the favicon with the given `attributes`.
+- (void)configureFaviconWithAttributes:(FaviconAttributes*)attributes {
+  FaviconView* favicon;
+  if (IsKeyboardAccessoryUpgradeEnabled()) {
+    FaviconContainerView* faviconContainerView =
+        static_cast<FaviconContainerView*>(self.faviconView);
+    favicon = faviconContainerView.faviconView;
+  } else {
+    favicon = static_cast<FaviconView*>(self.faviconView);
+  }
+  [favicon configureWithAttributes:attributes];
+}
+
+// Creates the attributed string containing the site name and potentially a host
+// subtitle for the site name label.
+- (NSMutableAttributedString*)createSiteNameLabelAttributedText:
+    (ManualFillCredential*)credential {
+  NSString* siteName = credential.siteName ? credential.siteName : @"";
+  NSString* host;
+  NSMutableAttributedString* attributedString;
+
+  BOOL shouldShowHost = credential.host && credential.host.length &&
+                        ![credential.host isEqualToString:credential.siteName];
+  if (shouldShowHost) {
+    if (IsKeyboardAccessoryUpgradeEnabled()) {
+      host = credential.host;
+    }
+
+    // If the Keyboard Accessory Upgrade feature is disabled, `host` will be
+    // `nil` here, and so it won't be added to `attributedString` right away.
+    attributedString = CreateHeaderAttributedString(siteName, host);
+
+    if (!IsKeyboardAccessoryUpgradeEnabled()) {
+      host = [NSString stringWithFormat:@" –– %@", credential.host];
+      NSDictionary* attributes = @{
+        NSForegroundColorAttributeName :
+            [UIColor colorNamed:kTextSecondaryColor],
+        NSFontAttributeName :
+            [UIFont preferredFontForTextStyle:UIFontTextStyleBody]
+      };
+      NSAttributedString* hostAttributedString =
+          [[NSAttributedString alloc] initWithString:host
+                                          attributes:attributes];
+      [attributedString appendAttributedString:hostAttributedString];
+    }
+  } else {
+    attributedString = CreateHeaderAttributedString(siteName, nil);
+  }
+
+  return attributedString;
 }
 
 @end

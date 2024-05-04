@@ -14,22 +14,15 @@
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/debug/dump_without_crashing.h"
-#include "base/feature_list.h"
 #include "base/functional/bind.h"
 #include "base/notreached.h"
-#include "base/values.h"
-#include "build/branding_buildflags.h"
 #include "build/build_config.h"
-#include "build/chromeos_buildflags.h"
 #include "chrome/browser/apps/platform_apps/install_chrome_app.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/buildflags.h"
-#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/headless/headless_command_processor.h"
-#include "chrome/browser/infobars/simple_alert_infobar_creator.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/privacy_sandbox/privacy_sandbox_service.h"
 #include "chrome/browser/privacy_sandbox/privacy_sandbox_service_factory.h"
@@ -37,12 +30,9 @@
 #include "chrome/browser/profiles/keep_alive/scoped_profile_keep_alive.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_io_data.h"
-#include "chrome/browser/sessions/app_session_service.h"
-#include "chrome/browser/sessions/app_session_service_factory.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
-#include "chrome/browser/signin/signin_features.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -57,31 +47,21 @@
 #include "chrome/browser/ui/startup/startup_tab.h"
 #include "chrome/browser/ui/startup/startup_tab_provider.h"
 #include "chrome/browser/ui/startup/startup_types.h"
-#include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/webui/welcome/helpers.h"
 #include "chrome/browser/ui/webui/whats_new/whats_new_util.h"
-#include "chrome/browser/web_applications/web_app_provider.h"
-#include "chrome/browser/web_applications/web_app_provider_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/url_constants.h"
 #include "components/custom_handlers/protocol_handler_registry.h"
-#include "components/infobars/content/content_infobar_manager.h"
 #include "components/prefs/pref_service.h"
 #include "components/privacy_sandbox/privacy_sandbox_features.h"
+#include "components/signin/public/base/signin_switches.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/dom_storage_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_switches.h"
-#include "rlz/buildflags/buildflags.h"
-#include "ui/base/buildflags.h"
 
 #if BUILDFLAG(IS_MAC)
 #include "base/mac/mac_util.h"
 #include "chrome/browser/app_controller_mac.h"
-#if BUILDFLAG(ENABLE_UPDATER)
-#include "chrome/browser/ui/cocoa/keystone_infobar_delegate.h"
-#endif
 #endif  // BUILDFLAG(IS_MAC)
 
 #if BUILDFLAG(IS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
@@ -206,14 +186,6 @@ void StartupBrowserCreatorImpl::Launch(
     install_chrome_app::InstallChromeApp(
         command_line_->GetSwitchValueASCII(switches::kInstallChromeApp));
   }
-
-#if BUILDFLAG(IS_MAC) && BUILDFLAG(ENABLE_UPDATER)
-  if (process_startup == chrome::startup::IsProcessStartup::kYes) {
-    // Check whether the auto-update system needs to be promoted from user
-    // to system.
-    KeystoneInfoBar::PromotionInfoBar(profile);
-  }
-#endif
 
   // It's possible for there to be no browser window, e.g. if someone
   // specified a non-sensical combination of options
@@ -370,7 +342,7 @@ StartupBrowserCreatorImpl::DetermineURLsAndLaunch(
     bool restore_tabbed_browser) {
   if (StartupBrowserCreator::ShouldLoadProfileWithoutWindow(*command_line_)) {
     // Checking the flags this late in the launch should be redundant.
-    // TODO(https://crbug.com/1300109): Remove by M104.
+    // TODO(crbug.com/40216113): Remove by M104.
     NOTREACHED();
     base::debug::DumpWithoutCrashing();
     return LaunchResult::kNormally;
@@ -406,12 +378,6 @@ StartupBrowserCreatorImpl::DetermineURLsAndLaunch(
         !SessionStartupPref::TypeHasRecommendedValue(profile_->GetPrefs());
   }
 
-  bool welcome_enabled = false;
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
-  welcome_enabled =
-      welcome::IsEnabled(profile_) && welcome::HasModulesToShow(profile_);
-#endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
-
   const bool whats_new_enabled =
       whats_new::ShouldShowForState(local_state, promotional_tabs_enabled);
 
@@ -435,7 +401,7 @@ StartupBrowserCreatorImpl::DetermineURLsAndLaunch(
   auto result = DetermineStartupTabs(
       StartupTabProviderImpl(), process_startup, is_incognito_or_guest,
       is_post_crash_launch, has_incompatible_applications,
-      promotional_tabs_enabled, welcome_enabled, whats_new_enabled,
+      promotional_tabs_enabled, whats_new_enabled,
       privacy_sandbox_dialog_required);
   StartupTabs tabs = std::move(result.tabs);
 
@@ -504,7 +470,6 @@ StartupBrowserCreatorImpl::DetermineStartupTabs(
     bool is_post_crash_launch,
     bool has_incompatible_applications,
     bool promotional_tabs_enabled,
-    bool welcome_enabled,
     bool whats_new_enabled,
     bool privacy_sandbox_dialog_required) {
   StartupTabs tabs =
@@ -552,36 +517,15 @@ StartupBrowserCreatorImpl::DetermineStartupTabs(
       return {std::move(distribution_tabs), launch_result};
 
     // Whether a first run experience was or will be shown as part of this
-    // startup. Specifically, this refers to either chrome://welcome or the
-    // Desktop "For You" First Run Experience.
+    // startup.
     bool has_first_run_experience = false;
-    // Whether some tabs featuring the "welcome" experience (chrome://welcome)
-    // have been added to the startup tabs.
-    bool has_welcome_tabs = false;
-
     if (promotional_tabs_enabled) {
+      // TODO(b/337135021): Investigate whether the below build flag is causing
+      // a wrong behavior on Lacros.
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
-      if (is_first_run_ == chrome::startup::IsFirstRun::kYes &&
-          base::FeatureList::IsEnabled(kForYouFre)) {
-        // We just showed the first run experience in the Desktop FRE window,
-        // suppress the in-browser welcome.
+      if (is_first_run_ == chrome::startup::IsFirstRun::kYes) {
+        // We just showed the first run experience in the Desktop FRE window.
         has_first_run_experience = true;
-      } else if (welcome_enabled) {
-        if (is_first_run_ == chrome::startup::IsFirstRun::kYes &&
-            base::FeatureList::IsEnabled(kForYouFre)) {
-          // This is the first run and we already showed a welcome experience
-          // through the Desktop FRE.
-          has_first_run_experience = true;
-        } else {
-          // Policies for welcome (e.g., first run) may show promotional and
-          // introductory content depending on a number of system status
-          // factors, including OS and whether or not this is First Run.
-          StartupTabs onboarding_tabs = provider.GetOnboardingTabs(profile_);
-          AppendTabs(onboarding_tabs, &tabs);
-
-          has_welcome_tabs = !onboarding_tabs.empty();
-          has_first_run_experience = has_welcome_tabs;
-        }
       }
 #endif
 
@@ -604,17 +548,17 @@ StartupBrowserCreatorImpl::DetermineStartupTabs(
         provider.GetPreferencesTabs(*command_line_, profile_);
     AppendTabs(prefs_tabs, &tabs);
 
-    // Potentially add the New Tab Page. The welcome page (but not the FRE) is
-    // designed to replace (and eventually funnel the user to) the NTP. Note
-    // URLs from preferences are explicitly meant to override showing the NTP.
-    if (!has_welcome_tabs && prefs_tabs.empty()) {
+    // Potentially add the New Tab Page.
+    // Note that URLs from preferences are explicitly meant to override showing
+    // the NTP.
+    if (prefs_tabs.empty()) {
       AppendTabs(provider.GetNewTabPageTabs(*command_line_, profile_), &tabs);
     }
 
     // Potentially add a tab appropriate to display the Privacy Sandbox
     // confirmaton dialog on top of. Ideally such a tab will already exist
     // in |tabs|, and no additional tab will be required.
-    if (!has_welcome_tabs && privacy_sandbox_dialog_required &&
+    if (privacy_sandbox_dialog_required &&
         launch_result == LaunchResult::kNormally) {
       AppendTabs(provider.GetPrivacySandboxTabs(profile_, tabs), &tabs);
     }

@@ -10,6 +10,7 @@
 #include "chrome/browser/apps/app_shim/app_shim_manager_mac.h"
 #include "components/permissions/permission_prompt.h"
 #include "components/webapps/common/web_app_id.h"
+#include "content/public/browser/weak_document_ptr.h"
 
 // PermissionPrompt implementation that delegates the permission request to an
 // app shim associated with an (installed) PWA. If showing the OS-native prompt
@@ -42,6 +43,8 @@ class PermissionPromptNotificationsMac : public permissions::PermissionPrompt {
       const override;
   std::optional<gfx::Rect> GetViewBoundsInScreen() const override;
   bool ShouldFinalizeRequestAfterDecided() const override;
+  std::vector<permissions::ElementAnchoredBubbleVariant> GetPromptVariants()
+      const override;
 
  private:
   void ShowPrompt();

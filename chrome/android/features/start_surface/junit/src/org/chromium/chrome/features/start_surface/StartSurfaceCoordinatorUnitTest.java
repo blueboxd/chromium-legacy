@@ -27,18 +27,16 @@ import org.robolectric.annotation.Config;
 import org.chromium.base.Callback;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.base.test.util.Features.DisableFeatures;
 import org.chromium.base.test.util.HistogramWatcher;
 import org.chromium.chrome.browser.feed.FeedActionDelegate;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.suggestions.SiteSuggestion;
 import org.chromium.chrome.browser.suggestions.tile.Tile;
 import org.chromium.chrome.browser.suggestions.tile.TileGroupDelegateImpl;
 import org.chromium.chrome.browser.suggestions.tile.TileSectionType;
 import org.chromium.chrome.browser.suggestions.tile.TileSource;
 import org.chromium.chrome.browser.suggestions.tile.TileTitleSource;
-import org.chromium.chrome.browser.tasks.tab_management.TabManagementDelegate.TabSwitcherType;
-import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher;
+import org.chromium.chrome.browser.tab_ui.TabSwitcher;
+import org.chromium.chrome.browser.tab_ui.TabSwitcher.TabSwitcherType;
 import org.chromium.chrome.browser.util.BrowserUiUtils.ModuleTypeOnStartAndNtp;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.base.PageTransition;
@@ -48,7 +46,6 @@ import org.chromium.url.GURL;
 /** Tests for {@link StartSurfaceCoordinator}. */
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
-@DisableFeatures({ChromeFeatureList.WEB_FEED})
 public class StartSurfaceCoordinatorUnitTest {
     private static final String START_SURFACE_TIME_SPENT = "StartSurface.TimeSpent";
     private static final String HISTOGRAM_START_SURFACE_MODULE_CLICK = "StartSurface.Module.Click";
@@ -57,7 +54,7 @@ public class StartSurfaceCoordinatorUnitTest {
     private static final String TEST_URL = "https://www.example.com/";
 
     @Mock private Callback mOnVisitComplete;
-    @Mock private Runnable mOnPageLoaded;
+    @Mock private FeedActionDelegate.PageLoadObserver mPageLoadObserver;
 
     @Rule
     public StartSurfaceCoordinatorUnitTestRule mTestRule =
@@ -261,7 +258,8 @@ public class StartSurfaceCoordinatorUnitTest {
                 WindowOpenDisposition.CURRENT_TAB,
                 new LoadUrlParams(TEST_URL, PageTransition.AUTO_BOOKMARK),
                 false,
-                mOnPageLoaded,
+                0,
+                mPageLoadObserver,
                 mOnVisitComplete);
         assertEquals(
                 HISTOGRAM_START_SURFACE_MODULE_CLICK
@@ -276,7 +274,8 @@ public class StartSurfaceCoordinatorUnitTest {
                 WindowOpenDisposition.NEW_BACKGROUND_TAB,
                 new LoadUrlParams(TEST_URL, PageTransition.AUTO_BOOKMARK),
                 false,
-                mOnPageLoaded,
+                0,
+                mPageLoadObserver,
                 mOnVisitComplete);
         assertEquals(
                 HISTOGRAM_START_SURFACE_MODULE_CLICK
@@ -291,7 +290,8 @@ public class StartSurfaceCoordinatorUnitTest {
                 WindowOpenDisposition.OFF_THE_RECORD,
                 new LoadUrlParams(TEST_URL, PageTransition.AUTO_BOOKMARK),
                 false,
-                mOnPageLoaded,
+                0,
+                mPageLoadObserver,
                 mOnVisitComplete);
         assertEquals(
                 HISTOGRAM_START_SURFACE_MODULE_CLICK

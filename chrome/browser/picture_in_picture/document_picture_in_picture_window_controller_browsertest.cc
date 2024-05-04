@@ -29,7 +29,7 @@
 #include "chrome/browser/ui/views/frame/picture_in_picture_browser_frame_view.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
-#include "chrome/browser/ui/web_applications/web_app_controller_browsertest.h"
+#include "chrome/browser/ui/web_applications/web_app_browsertest_base.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -473,7 +473,7 @@ IN_PROC_BROWSER_TEST_F(DocumentPictureInPictureWindowControllerBrowserTest,
 }
 
 // Make sure that document PiP fails without a secure context.
-// TODO(crbug.com/1328840): Consider replacing this with a web platform test.
+// TODO(crbug.com/40842257): Consider replacing this with a web platform test.
 IN_PROC_BROWSER_TEST_F(DocumentPictureInPictureWindowControllerBrowserTest,
                        RequiresSecureContext) {
   GURL test_page_url("http://media/picture-in-picture/blank.html");
@@ -717,7 +717,7 @@ INSTANTIATE_TEST_SUITE_P(WindowSizes,
                                          gfx::Size(250, 670)));
 
 #if BUILDFLAG(IS_LINUX)
-// TODO(crbug.com/1465020): Fix and re-enable this test for Linux.
+// TODO(crbug.com/40923223): Fix and re-enable this test for Linux.
 // This test is flaky on Linux, sometimes the window origin is not updated
 // before the test harness timeout.
 #define MAYBE_VerifyWindowMargins DISABLED_VerifyWindowMargins

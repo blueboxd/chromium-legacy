@@ -59,6 +59,10 @@
         padding-block-start: var(--cr-section-vertical-padding);
         padding-block-end: var(--cr-section-vertical-padding);
       }
+
+      #learnMoreLabelContainer {
+        pointer-events: auto;
+      }
     </style>
     <picture>
       <source
@@ -187,7 +191,7 @@
                   </li>
                 </ul>
                 <div id="learnMoreLabelContainer" class="cr-secondary-text">
-                  $i18nRaw{enhancedProtectionLearnMoreLabel}
+                  $i18nRaw{safeBrowsingEnhancedLearnMoreLabel}
                 </div>
               </div>
             </div>
@@ -314,53 +318,89 @@
         </cr-link-row>
     </template>
 </if>
-    <cr-link-row id="v8-setting-link"
-        class="hr"
-        on-click="onV8SettingsClick_"
+    <cr-link-row id="v8-setting-link" class="hr" on-click="onV8SettingsClick_"
         label="$i18n{securityV8LinkTitle}"
         sub-label="$i18n{securityV8LinkDescription}"
         role-description="$i18n{subpageArrowRoleDescription}">
     </cr-link-row>
     <template is="dom-if" if="[[enableSecurityKeysSubpage_]]">
-        <cr-link-row id="security-keys-subpage-trigger"
-          class="hr"
-          label="$i18n{securityKeysTitle}"
-          sub-label="$i18n{securityKeysDesc}"
-          on-click="onSecurityKeysClick_"
-          role-description="$i18n{subpageArrowRoleDescription}"></cr-link-row>
+        <cr-link-row id="security-keys-subpage-trigger" class="hr"
+            label="$i18n{securityKeysTitle}"
+            sub-label="$i18n{securityKeysDesc}"
+            on-click="onSecurityKeysClick_"
+            role-description="$i18n{subpageArrowRoleDescription}">
+        </cr-link-row>
     </template>
 
 <if expr="is_win">
     <template is="dom-if" if="[[enableSecurityKeysPhonesSubpage_]]">
-        <cr-link-row
-          id="security-keys-phones-subpage-trigger"
-          label="$i18n{securityKeysPhonesManage}"
-          sub-label="$i18n{securityKeysPhonesManageDesc}"
-          on-click="onManagePhonesClick_"></cr-link-row>
+        <cr-link-row id="security-keys-phones-subpage-trigger"
+            label="$i18n{securityKeysPhonesManage}"
+            sub-label="$i18n{securityKeysPhonesManageDesc}"
+            on-click="onManagePhonesClick_">
+        </cr-link-row>
     </template>
 </if>
 
-    <cr-link-row id="manageCertificates"
-        class="hr"
+<if expr="chrome_root_store_cert_management_ui">
+    <template is="dom-if" if="[[enableCertManagementUIV2_]]">
+      <cr-link-row id="manageCertificatesLinkRow"
+          class="hr"
+          role-description="$i18n{subpageArrowRoleDescription}"
+          label="$i18n{manageCertificates}"
+          sub-label="$i18n{manageCertificatesDescription}"
+          on-click="onNewManageCertificatesClick_">
+      </cr-link-row>
+    </template>
+
+    <template is="dom-if" if="[[!enableCertManagementUIV2_]]">
+      <cr-link-row id="manageCertificatesLinkRow"
+          class="hr"
 <if expr="not use_nss_certs">
-        external
+          external
 </if>
 <if expr="use_nss_certs">
-        role-description="$i18n{subpageArrowRoleDescription}"
+          role-description="$i18n{subpageArrowRoleDescription}"
 </if>
-        label="$i18n{manageCertificates}"
-        sub-label="$i18n{manageCertificatesDescription}"
-        on-click="onManageCertificatesClick_"></cr-link-row>
+          label="$i18n{manageCertificates}"
+          sub-label="$i18n{manageCertificatesDescription}"
+          on-click="onManageCertificatesClick_">
+      </cr-link-row>
 
-    <cr-link-row id="chromeCertificates"
-        class="hr"
-        external
-        label="$i18n{chromeCertificates}"
-        sub-label="$i18n{chromeCertificatesDescription}"
-        on-click="onChromeCertificatesClick_"></cr-link-row>
+      <cr-link-row id="chromeCertificates"
+          class="hr"
+          external
+          label="$i18n{chromeCertificates}"
+          sub-label="$i18n{chromeCertificatesDescription}"
+          on-click="onChromeCertificatesClick_">
+      </cr-link-row>
+    </template>
+</if>
 
-    <cr-link-row id="advanced-protection-program-link"
-        class="hr"
+<if expr="not chrome_root_store_cert_management_ui">
+      <cr-link-row id="manageCertificatesLinkRow"
+          class="hr"
+<if expr="not use_nss_certs">
+          external
+</if>
+<if expr="use_nss_certs">
+          role-description="$i18n{subpageArrowRoleDescription}"
+</if>
+          label="$i18n{manageCertificates}"
+          sub-label="$i18n{manageCertificatesDescription}"
+          on-click="onManageCertificatesClick_">
+      </cr-link-row>
+
+      <cr-link-row id="chromeCertificates"
+          class="hr"
+          external
+          label="$i18n{chromeCertificates}"
+          sub-label="$i18n{chromeCertificatesDescription}"
+          on-click="onChromeCertificatesClick_">
+      </cr-link-row>
+</if>
+
+    <cr-link-row id="advanced-protection-program-link" class="hr"
         label="$i18n{advancedProtectionProgramTitle}"
         sub-label="$i18n{advancedProtectionProgramDesc}"
         on-click="onAdvancedProtectionProgramLinkClick_"

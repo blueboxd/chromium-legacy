@@ -16,7 +16,7 @@ class ContextImpl;
 
 class BufferImpl final : public WebNNBufferImpl {
  public:
-  BufferImpl(mojo::PendingReceiver<mojom::WebNNBuffer> receiver,
+  BufferImpl(mojo::PendingAssociatedReceiver<mojom::WebNNBuffer> receiver,
              Microsoft::WRL::ComPtr<ID3D12Resource> buffer,
              ContextImpl* context,
              uint64_t size,
@@ -26,7 +26,12 @@ class BufferImpl final : public WebNNBufferImpl {
   BufferImpl& operator=(const BufferImpl&) = delete;
   ~BufferImpl() override;
 
+  ID3D12Resource* buffer() const { return buffer_.Get(); }
+
  private:
+  void ReadBufferImpl(ReadBufferCallback callback) override;
+  void WriteBufferImpl(mojo_base::BigBuffer src_buffer) override;
+
   Microsoft::WRL::ComPtr<ID3D12Resource> buffer_;
 };
 

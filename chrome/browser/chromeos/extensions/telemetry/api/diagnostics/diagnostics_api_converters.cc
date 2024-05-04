@@ -4,7 +4,10 @@
 
 #include "chrome/browser/chromeos/extensions/telemetry/api/diagnostics/diagnostics_api_converters.h"
 
+#include <optional>
+
 #include "base/notreached.h"
+#include "base/time/time.h"
 #include "chrome/common/chromeos/extensions/api/diagnostics.h"
 #include "chromeos/crosapi/mojom/diagnostics_service.mojom.h"
 #include "chromeos/crosapi/mojom/telemetry_diagnostic_routine_service.mojom.h"
@@ -15,6 +18,88 @@ namespace {
 
 namespace cx_diag = ::chromeos::api::os_diagnostics;
 namespace crosapi = ::crosapi::mojom;
+
+// Populates a `TelemetryDiagnosticRoutineArgumentPtr` object from a
+// `CreateMemoryRoutineArguments` instance. Returns whether `out` was
+// successfully populated.
+bool PopulateMemoryRoutineArguments(
+    const cx_diag::CreateMemoryRoutineArguments& cx_args,
+    crosapi::TelemetryDiagnosticRoutineArgumentPtr& out) {
+  if (cx_args.max_testing_mem_kib.has_value() &&
+      cx_args.max_testing_mem_kib.value() < 0) {
+    return false;
+  }
+
+  auto args = crosapi::TelemetryDiagnosticMemoryRoutineArgument::New();
+  args->max_testing_mem_kib = cx_args.max_testing_mem_kib;
+  out = crosapi::TelemetryDiagnosticRoutineArgument::NewMemory(std::move(args));
+  return true;
+}
+
+// Populates a `TelemetryDiagnosticRoutineArgumentPtr` object from a
+// `CreateVolumeButtonRoutineArguments` instance. Returns whether `out` was
+// successfully populated.
+bool PopulateVolumeButtonRoutineArguments(
+    const cx_diag::CreateVolumeButtonRoutineArguments& cx_args,
+    crosapi::TelemetryDiagnosticRoutineArgumentPtr& out) {
+  if (cx_args.timeout_seconds <= 0 ||
+      cx_args.button_type == cx_diag::VolumeButtonType::kNone) {
+    return false;
+  }
+
+  auto args = crosapi::TelemetryDiagnosticVolumeButtonRoutineArgument::New();
+  args->type = ConvertVolumeButtonRoutineButtonType(cx_args.button_type);
+  args->timeout = base::Seconds(cx_args.timeout_seconds);
+  out = crosapi::TelemetryDiagnosticRoutineArgument::NewVolumeButton(
+      std::move(args));
+  return true;
+}
+
+// Populates a `TelemetryDiagnosticRoutineArgumentPtr` object from a
+// `CreateFanRoutineArguments` instance. Returns whether `out` was successfully
+// populated.
+bool PopulateFanRoutineArguments(
+    const cx_diag::CreateFanRoutineArguments& cx_args,
+    crosapi::TelemetryDiagnosticRoutineArgumentPtr& out) {
+  out = crosapi::TelemetryDiagnosticRoutineArgument::NewFan(
+      crosapi::TelemetryDiagnosticFanRoutineArgument::New());
+  return true;
+}
+
+bool PopulateNetworkBandwidthRoutineArguments(
+    const cx_diag::CreateNetworkBandwidthRoutineArguments& cx_args,
+    crosapi::TelemetryDiagnosticRoutineArgumentPtr& out) {
+  out = crosapi::TelemetryDiagnosticRoutineArgument::NewNetworkBandwidth(
+      crosapi::TelemetryDiagnosticNetworkBandwidthRoutineArgument::New());
+  return true;
+}
+
+// Populates a `TelemetryDiagnosticRoutineArgumentPtr` object from a
+// `CreateLedLitUpRoutineArguments` instance. Returns whether `out` was
+// successfully populated.
+bool PopulateLedLitUpRoutineArguments(
+    const cx_diag::CreateLedLitUpRoutineArguments& cx_args,
+    crosapi::TelemetryDiagnosticRoutineArgumentPtr& out) {
+  auto args = crosapi::TelemetryDiagnosticLedLitUpRoutineArgument::New();
+  args->name = ConvertLedName(cx_args.name);
+  args->color = ConvertLedColor(cx_args.color);
+  out =
+      crosapi::TelemetryDiagnosticRoutineArgument::NewLedLitUp(std::move(args));
+  return true;
+}
+
+// Populates a `TelemetryDiagnosticRoutineInquiryReplyPtr` object from a
+// `CheckLedLitUpStateReply` instance. Returns whether `out` was successfully
+// populated.
+bool PopulateCheckLedLitUpStateReply(
+    const cx_diag::CheckLedLitUpStateReply& cx_args,
+    crosapi::TelemetryDiagnosticRoutineInquiryReplyPtr& out) {
+  auto args = crosapi::TelemetryDiagnosticCheckLedLitUpStateReply::New();
+  args->state = ConvertLedLitUpState(cx_args.state);
+  out = crosapi::TelemetryDiagnosticRoutineInquiryReply::NewCheckLedLitUpState(
+      std::move(args));
+  return true;
+}
 
 }  // namespace
 
@@ -64,9 +149,6 @@ bool ConvertMojoRoutine(crosapi::DiagnosticsRoutineEnum in,
     case crosapi::DiagnosticsRoutineEnum::kMemory:
       *out = cx_diag::RoutineType::kMemory;
       return true;
-    case crosapi::DiagnosticsRoutineEnum::kNvmeWearLevel:
-      *out = cx_diag::RoutineType::kNvmeWearLevel;
-      return true;
     case crosapi::DiagnosticsRoutineEnum::kSignalStrength:
       *out = cx_diag::RoutineType::kSignalStrength;
       return true;
@@ -115,6 +197,8 @@ bool ConvertMojoRoutine(crosapi::DiagnosticsRoutineEnum in,
     case crosapi::DiagnosticsRoutineEnum::kFan:
       *out = cx_diag::RoutineType::kFan;
       return true;
+    // Below are deprecated routines.
+    case crosapi::DiagnosticsRoutineEnum::DEPRECATED_kNvmeWearLevel:
     case crosapi::DiagnosticsRoutineEnum::kUnknown:
       return false;
   }
@@ -235,6 +319,128 @@ ConvertVolumeButtonRoutineButtonType(
       return crosapi::TelemetryDiagnosticVolumeButtonRoutineArgument::
           ButtonType::kVolumeDown;
   }
+}
+
+crosapi::TelemetryDiagnosticLedName ConvertLedName(cx_diag::LedName led_name) {
+  switch (led_name) {
+    case cx_diag::LedName::kNone:
+      return crosapi::TelemetryDiagnosticLedName::kUnmappedEnumField;
+    case cx_diag::LedName::kBattery:
+      return crosapi::TelemetryDiagnosticLedName::kBattery;
+    case cx_diag::LedName::kPower:
+      return crosapi::TelemetryDiagnosticLedName::kPower;
+    case cx_diag::LedName::kAdapter:
+      return crosapi::TelemetryDiagnosticLedName::kAdapter;
+    case cx_diag::LedName::kLeft:
+      return crosapi::TelemetryDiagnosticLedName::kLeft;
+    case cx_diag::LedName::kRight:
+      return crosapi::TelemetryDiagnosticLedName::kRight;
+  }
+}
+
+crosapi::TelemetryDiagnosticLedColor ConvertLedColor(
+    cx_diag::LedColor led_color) {
+  switch (led_color) {
+    case cx_diag::LedColor::kNone:
+      return crosapi::TelemetryDiagnosticLedColor::kUnmappedEnumField;
+    case cx_diag::LedColor::kRed:
+      return crosapi::TelemetryDiagnosticLedColor::kRed;
+    case cx_diag::LedColor::kGreen:
+      return crosapi::TelemetryDiagnosticLedColor::kGreen;
+    case cx_diag::LedColor::kBlue:
+      return crosapi::TelemetryDiagnosticLedColor::kBlue;
+    case cx_diag::LedColor::kYellow:
+      return crosapi::TelemetryDiagnosticLedColor::kYellow;
+    case cx_diag::LedColor::kWhite:
+      return crosapi::TelemetryDiagnosticLedColor::kWhite;
+    case cx_diag::LedColor::kAmber:
+      return crosapi::TelemetryDiagnosticLedColor::kAmber;
+  }
+}
+
+crosapi::TelemetryDiagnosticCheckLedLitUpStateReply::State ConvertLedLitUpState(
+    cx_diag::LedLitUpState led_lit_up_state) {
+  switch (led_lit_up_state) {
+    case cx_diag::LedLitUpState::kNone:
+      return crosapi::TelemetryDiagnosticCheckLedLitUpStateReply::State::
+          kUnmappedEnumField;
+    case cx_diag::LedLitUpState::kCorrectColor:
+      return crosapi::TelemetryDiagnosticCheckLedLitUpStateReply::State::
+          kCorrectColor;
+    case cx_diag::LedLitUpState::kNotLitUp:
+      return crosapi::TelemetryDiagnosticCheckLedLitUpStateReply::State::
+          kNotLitUp;
+  }
+}
+
+std::optional<crosapi::TelemetryDiagnosticRoutineArgumentPtr>
+ConvertRoutineArgumentsUnion(
+    cx_diag::CreateRoutineArgumentsUnion extension_union) {
+  // Implementation note: when more than one field is set in `extension_union`,
+  // return std::nullopt because it is an invalid union.
+
+  crosapi::TelemetryDiagnosticRoutineArgumentPtr result;
+  if (extension_union.memory) {
+    if (result || !PopulateMemoryRoutineArguments(
+                      extension_union.memory.value(), result)) {
+      return std::nullopt;
+    }
+  }
+  if (extension_union.volume_button) {
+    if (result || !PopulateVolumeButtonRoutineArguments(
+                      extension_union.volume_button.value(), result)) {
+      return std::nullopt;
+    }
+  }
+  if (extension_union.fan) {
+    if (result ||
+        !PopulateFanRoutineArguments(extension_union.fan.value(), result)) {
+      return std::nullopt;
+    }
+  }
+  if (extension_union.network_bandwidth) {
+    if (result || !PopulateNetworkBandwidthRoutineArguments(
+                      extension_union.network_bandwidth.value(), result)) {
+      return std::nullopt;
+    }
+  }
+  if (extension_union.led_lit_up) {
+    if (result || !PopulateLedLitUpRoutineArguments(
+                      extension_union.led_lit_up.value(), result)) {
+      return std::nullopt;
+    }
+  }
+  if (result) {
+    return result;
+  }
+  // When extension is newer than the browser, extension might pass in a routine
+  // argument that cannot be recognized by the browser. For better developer
+  // experience, don't treat it as an invalid union.
+  return crosapi::TelemetryDiagnosticRoutineArgument::NewUnrecognizedArgument(
+      false);
+}
+
+std::optional<crosapi::TelemetryDiagnosticRoutineInquiryReplyPtr>
+ConvertRoutineInquiryReplyUnion(
+    cx_diag::RoutineInquiryReplyUnion extension_union) {
+  // Implementation note: when more than one field is set in `extension_union`,
+  // return std::nullopt because it is an invalid union.
+
+  crosapi::TelemetryDiagnosticRoutineInquiryReplyPtr result;
+  if (extension_union.check_led_lit_up_state) {
+    if (result || !PopulateCheckLedLitUpStateReply(
+                      extension_union.check_led_lit_up_state.value(), result)) {
+      return std::nullopt;
+    }
+  }
+  if (result) {
+    return result;
+  }
+  // When extension is newer than the browser, extension might pass in a reply
+  // that cannot be recognized by the browser. For better developer experience,
+  // don't treat it as an invalid union.
+  return crosapi::TelemetryDiagnosticRoutineInquiryReply::NewUnrecognizedReply(
+      false);
 }
 
 }  // namespace chromeos::converters::diagnostics

@@ -17,17 +17,17 @@
 
 namespace {
 
-const uint8_t kFinalBit = 0x80;
-const uint8_t kReserved1Bit = 0x40;
-const uint8_t kReserved2Bit = 0x20;
-const uint8_t kReserved3Bit = 0x10;
-const uint8_t kOpCodeMask = 0xF;
-const uint8_t kMaskBit = 0x80;
-const uint8_t kPayloadLengthMask = 0x7F;
-const uint64_t kMaxPayloadLengthWithoutExtendedLengthField = 125;
-const uint64_t kPayloadLengthWithTwoByteExtendedLengthField = 126;
-const uint64_t kPayloadLengthWithEightByteExtendedLengthField = 127;
-const size_t kMaximumFrameHeaderSize =
+constexpr uint8_t kFinalBit = 0x80;
+constexpr uint8_t kReserved1Bit = 0x40;
+constexpr uint8_t kReserved2Bit = 0x20;
+constexpr uint8_t kReserved3Bit = 0x10;
+constexpr uint8_t kOpCodeMask = 0xF;
+constexpr uint8_t kMaskBit = 0x80;
+constexpr uint8_t kPayloadLengthMask = 0x7F;
+constexpr uint64_t kMaxPayloadLengthWithoutExtendedLengthField = 125;
+constexpr uint64_t kPayloadLengthWithTwoByteExtendedLengthField = 126;
+constexpr uint64_t kPayloadLengthWithEightByteExtendedLengthField = 127;
+constexpr size_t kMaximumFrameHeaderSize =
     net::WebSocketFrameHeader::kBaseHeaderSize +
     net::WebSocketFrameHeader::kMaximumExtendedLengthSize +
     net::WebSocketFrameHeader::kMaskingKeyLength;
@@ -131,7 +131,7 @@ size_t WebSocketFrameParser::DecodeFrameHeader(base::span<const uint8_t> data) {
     if (data.size() < current + 2)
       return 0;
     uint16_t payload_length_16 =
-        base::numerics::U16FromBigEndian(data.subspan(current).first<2>());
+        base::U16FromBigEndian(data.subspan(current).first<2>());
     current += 2;
     payload_length = payload_length_16;
     if (payload_length <= kMaxPayloadLengthWithoutExtendedLengthField) {
@@ -141,8 +141,7 @@ size_t WebSocketFrameParser::DecodeFrameHeader(base::span<const uint8_t> data) {
   } else if (payload_length == kPayloadLengthWithEightByteExtendedLengthField) {
     if (data.size() < current + 8)
       return 0;
-    payload_length =
-        base::numerics::U64FromBigEndian(data.subspan(current).first<8>());
+    payload_length = base::U64FromBigEndian(data.subspan(current).first<8>());
     current += 8;
     if (payload_length <= UINT16_MAX ||
         payload_length > static_cast<uint64_t>(INT64_MAX)) {
@@ -158,7 +157,8 @@ size_t WebSocketFrameParser::DecodeFrameHeader(base::span<const uint8_t> data) {
 
   WebSocketMaskingKey masking_key = {};
   const bool masked = (second_byte & kMaskBit) != 0;
-  static const int kMaskingKeyLength = WebSocketFrameHeader::kMaskingKeyLength;
+  static constexpr int kMaskingKeyLength =
+      WebSocketFrameHeader::kMaskingKeyLength;
   if (masked) {
     if (data.size() < current + kMaskingKeyLength)
       return 0;

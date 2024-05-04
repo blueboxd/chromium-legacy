@@ -114,7 +114,7 @@ class SearchPreloadUnifiedBrowserTest : public PlatformBrowserTest,
         /*disabled_features=*/{});
   }
 
-  // TODO(crbug.com/1491942): This fails with the field trial testing config.
+  // TODO(crbug.com/40285326): This fails with the field trial testing config.
   void SetUpCommandLine(base::CommandLine* command_line) override {
     PlatformBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch("disable-field-trial-config");
@@ -354,17 +354,19 @@ class SearchPreloadUnifiedBrowserTest : public PlatformBrowserTest,
           content::TestNavigationObserver::WaitEvent::kLoadStopped) {
     content::TestNavigationObserver observer(GetActiveWebContents());
     observer.set_wait_event(wait_event);
-    GetActiveWebContents()->OpenURL(content::OpenURLParams(
-        expected_prerender_url, content::Referrer(),
-        WindowOpenDisposition::CURRENT_TAB,
-        ui::PageTransitionFromInt(ui::PAGE_TRANSITION_GENERATED |
-                                  ui::PAGE_TRANSITION_FROM_ADDRESS_BAR),
-        /*is_renderer_initiated=*/false));
+    GetActiveWebContents()->OpenURL(
+        content::OpenURLParams(
+            expected_prerender_url, content::Referrer(),
+            WindowOpenDisposition::CURRENT_TAB,
+            ui::PageTransitionFromInt(ui::PAGE_TRANSITION_GENERATED |
+                                      ui::PAGE_TRANSITION_FROM_ADDRESS_BAR),
+            /*is_renderer_initiated=*/false),
+        /*navigation_handle_callback=*/{});
     observer.Wait();
   }
 
   void WaitForActivatedPageLoaded() {
-    // TODO(https://crbug.com/1415185):
+    // TODO(crbug.com/40256454):
     // `content::WaitForLoadStop(GetActiveWebContents())` would end before the
     // page actually finishes loading. This is the workaround to ensure that the
     // page is fully loaded.
@@ -468,7 +470,7 @@ class SearchPreloadUnifiedBrowserTest : public PlatformBrowserTest,
 
 // Tests that the SearchSuggestionService can trigger prerendering after the
 // corresponding prefetch request succeeds.
-// TODO(crbug.com/1503002): enable the flaky test.
+// TODO(crbug.com/40943413): enable the flaky test.
 #if BUILDFLAG(IS_LINUX)
 #define MAYBE_PrerenderHintReceivedBeforeSucceed \
   DISABLED_PrerenderHintReceivedBeforeSucceed
@@ -1013,7 +1015,7 @@ IN_PROC_BROWSER_TEST_F(SearchPreloadUnifiedBrowserTest, ChunkedResponseBody) {
   DispatchDelayedResponseTask();
   content::WaitForLoadStop(GetActiveWebContents());
 
-  // TODO(https://crbug.com/1415185):
+  // TODO(crbug.com/40256454):
   // `content::WaitForLoadStop(GetActiveWebContents())` would end before the
   // page actually finishes loading. This is the workaround to ensure that the
   // page is fully loaded.
@@ -1415,7 +1417,7 @@ IN_PROC_BROWSER_TEST_F(SearchPreloadUnifiedBrowserTest,
 
 // TODO(https://cubug.com/1282624): This test should run on Android after we're
 // able to interact with Android UI.
-// TODO(https://crbug.com/1342481): On LacrOS, the window's bound changes
+// TODO(crbug.com/40231021): On LacrOS, the window's bound changes
 // unexpectedly, and it stops auto completing.
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_LACROS)
 IN_PROC_BROWSER_TEST_F(SearchPreloadUnifiedBrowserTest, TriggerAndActivate) {
@@ -2368,7 +2370,7 @@ class NoCancelSearchPreloadUnifiedFallbackBrowserTest
   }
   ~NoCancelSearchPreloadUnifiedFallbackBrowserTest() override = default;
 
-  // TODO(crbug.com/1491942): This fails with the field trial testing config.
+  // TODO(crbug.com/40285326): This fails with the field trial testing config.
   void SetUpCommandLine(base::CommandLine* command_line) override {
     SearchPreloadUnifiedBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch("disable-field-trial-config");
@@ -2389,7 +2391,7 @@ class NoCancelSearchPreloadUnifiedFallbackBrowserTest
 #define MAYBE_OpenPrefetchedResponseInBackgroundedTab \
   OpenPrefetchedResponseInBackgroundedTab
 #endif
-// TODO(https://crbug.com/1454675): Flaky on chromiumos ASAN LSAN and Linux
+// TODO(crbug.com/40272425): Flaky on chromiumos ASAN LSAN and Linux
 // ASAN.
 IN_PROC_BROWSER_TEST_F(NoCancelSearchPreloadUnifiedFallbackBrowserTest,
                        MAYBE_OpenPrefetchedResponseInBackgroundedTab) {
@@ -2441,16 +2443,17 @@ IN_PROC_BROWSER_TEST_F(NoCancelSearchPreloadUnifiedFallbackBrowserTest,
   // 4. Open the search in a background new tab. This is the default disposition
   // when users open a suggestion in another tab. Prerender will be canceled in
   // this case.
-  content::WebContents* new_prefetch_tab =
-      GetActiveWebContents()->OpenURL(content::OpenURLParams(
+  content::WebContents* new_prefetch_tab = GetActiveWebContents()->OpenURL(
+      content::OpenURLParams(
           expected_prerender_url, content::Referrer(),
           WindowOpenDisposition::NEW_BACKGROUND_TAB,
           ui::PageTransitionFromInt(ui::PAGE_TRANSITION_GENERATED |
                                     ui::PAGE_TRANSITION_FROM_ADDRESS_BAR),
-          /*is_renderer_initiated=*/false));
+          /*is_renderer_initiated=*/false),
+      /*navigation_handle_callback=*/{});
   WaitUntilStatusChangesTo(GetCanonicalSearchURL(expected_prerender_url), {});
 
-  // TODO(crbug.com/1423259): Ideally we should open the tab with the
+  // TODO(crbug.com/40259971): Ideally we should open the tab with the
   // prerendered result.
   prerender_observer.WaitForDestroyed();
 

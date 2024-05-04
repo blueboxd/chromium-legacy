@@ -10,12 +10,16 @@
 #include "base/json/values_util.h"
 #include "base/test/test_timeouts.h"
 #include "build/buildflag.h"
+#include "content/browser/web_contents/web_contents_impl.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/test/back_forward_cache_util.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/file_system_chooser_test_helpers.h"
+#include "content/shell/browser/shell.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -101,7 +105,7 @@ enum class TestFileSystemType {
        return await promise;", \
       base::Int64ToValue(TestTimeouts::action_timeout().InMilliseconds())) +
 
-// TODO(https://crbug.com/1019297): Consider making these WPTs, and adding a
+// TODO(crbug.com/40105284): Consider making these WPTs, and adding a
 // lot more of them. For example:
 //   - change types
 //   - observing a handle without permission should fail
@@ -109,8 +113,6 @@ enum class TestFileSystemType {
 //     (see https://crbug.com/1488874)
 //   - changes should not be reported if permission to the handle is lost
 //     (see https://crbug.com/1489035)
-//   - changes should not be reported if the page is not fully-active
-//     (see https://crbug.com/1488875)
 //   - moving an observed handle
 
 class FileSystemAccessObserverBrowserTestBase : public ContentBrowserTest {
@@ -382,7 +384,7 @@ class FileSystemAccessObserverBrowserTest
       return true;
     }
 
-    // TODO(https://crbug.com/1425601): Some platforms do not support reporting
+    // TODO(crbug.com/40260973): Some platforms do not support reporting
     // the modified path.
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
     return true;
@@ -392,7 +394,7 @@ class FileSystemAccessObserverBrowserTest
   }
 
   bool SupportsChangeInfo() const {
-    // TODO(https://crbug.com/1425601): Reporting change info and the modified
+    // TODO(crbug.com/40260973): Reporting change info and the modified
     // path are both only supported on inotify, for now.
     return SupportsReportingModifiedPath();
   }
@@ -478,7 +480,7 @@ IN_PROC_BROWSER_TEST_P(FileSystemAccessObserverBrowserTest, ObserveDirectory) {
   EXPECT_THAT(records.GetList(), testing::Not(testing::IsEmpty()));
 }
 
-/// TODO(crbug/1499075): Re-enable after fixing flakiness.
+/// TODO(crbug.com/40939929): Re-enable after fixing flakiness.
 IN_PROC_BROWSER_TEST_P(FileSystemAccessObserverBrowserTest,
                        ObserveDirectoryRecursively) {
   base::FilePath dir_path = CreateDirectoryToBePicked();
@@ -598,7 +600,7 @@ IN_PROC_BROWSER_TEST_P(FileSystemAccessObserverBrowserTest,
   EXPECT_THAT(records.GetList(), testing::IsEmpty());
 }
 
-// TODO(https://crbug.com/1489029): Add a ReObserveAfterUnobserve test once the
+// TODO(crbug.com/40283884): Add a ReObserveAfterUnobserve test once the
 // unobserve() method is no longer racy. See https://crrev.com/c/4814709.
 IN_PROC_BROWSER_TEST_P(FileSystemAccessObserverBrowserTest,
                        ReObserveAfterDisconnect) {
@@ -635,10 +637,10 @@ IN_PROC_BROWSER_TEST_P(FileSystemAccessObserverBrowserTest,
   // clang-format on
   auto records = EvalJs(shell(), script).ExtractList();
   ASSERT_THAT(records.GetList(), testing::Not(testing::IsEmpty()));
-  // TODO(https://crbug.com/1425601): Support change types for the local file
+  // TODO(crbug.com/40260973): Support change types for the local file
   // system on more platforms.
   //
-  // TODO(https://crbug.com/1019297): Consider reporting a consistent change
+  // TODO(crbug.com/40105284): Consider reporting a consistent change
   // type when writing to a file via a WritableFileStream. On the local file
   // system, changes are naively considered "moved" events because the swap file
   // is moved over the target file. Meanwhile, the BucketFS intentionally
@@ -701,7 +703,7 @@ IN_PROC_BROWSER_TEST_P(FileSystemAccessObserverBrowserTest,
                        ObserveDirectoryReportsCorrectHandle) {
   base::FilePath dir_path = CreateDirectoryToBePicked();
 
-  // TODO(https://crbug.com/1425601): Some platforms do not report the modified
+  // TODO(crbug.com/40260973): Some platforms do not report the modified
   // path. In these cases, `changedHandle` will always be the handle passed to
   // observe().
   const std::string changed_handle =
@@ -736,7 +738,7 @@ IN_PROC_BROWSER_TEST_P(FileSystemAccessObserverBrowserTest,
   // The modified handle is a file, so the change record should contain a
   // FileSystemFileHandle.
   //
-  // TODO(https://crbug.com/1425601): Some platforms do not report the modified
+  // TODO(crbug.com/40260973): Some platforms do not report the modified
   // path. In these cases, `changedHandle` will always be the handle passed to
   // observe().
   const std::string changed_handle =
@@ -799,5 +801,102 @@ INSTANTIATE_TEST_SUITE_P(
     testing::Values(TestFileSystemType::kBucket, TestFileSystemType::kLocal)
 #endif  // BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS) || BUILDFLAG(IS_FUCHSIA)
 );
+
+
+// Local file system access - including the open*Picker() methods used here
+// - is not supported on Android or iOS. See https://crbug.com/1011535.
+// Meanwhile, `base::FilePathWatcher` is not implemented on Fuchsia. See
+// https://crbug.com/851641.
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS) && !BUILDFLAG(IS_FUCHSIA)
+class FileSystemAccessObserverWithBFCacheBrowserTest
+    : public FileSystemAccessObserverBrowserTestBase {
+ public:
+  FileSystemAccessObserverWithBFCacheBrowserTest() {
+    InitBackForwardCacheFeature(&feature_list_for_back_forward_cache_,
+                                /*enable_back_forward_cache=*/true);
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    // Enable experimental web platform features to enable read/write access.
+    command_line->AppendSwitch(
+        switches::kEnableExperimentalWebPlatformFeatures);
+  }
+
+ protected:
+  base::test::ScopedFeatureList feature_list_for_back_forward_cache_;
+};
+
+IN_PROC_BROWSER_TEST_F(FileSystemAccessObserverWithBFCacheBrowserTest,
+                       NoChangesAfterNavigatingAway) {
+  base::FilePath file_path = CreateFileToBePicked();
+
+  // Start observing the file.
+  std::string script =
+      // clang-format off
+      "(async () => {"
+         CREATE_PROMISE_AND_RESOLVERS
+         "self.promise = promise;"
+         "self.promiseResolve = promiseResolve;"
+         "self.numCbInvokes = 0;"
+         "async function onChange(records, observer) {"
+         "  ++self.numCbInvokes;"
+         "};"
+         START_OBSERVING_FILE(TestFileSystemType::kLocal)
+         "self.entry = file;"
+         "self.obs = observer;"
+      "})()";
+  // clang-format on
+  EXPECT_TRUE(ExecJs(shell(), script));
+
+  RenderFrameHostWrapper initial_rfh(
+      shell()->web_contents()->GetPrimaryMainFrame());
+
+  // Navigate to another page and expect the previous RenderFrameHost to be
+  // in the BFCache.
+  ASSERT_TRUE(
+      NavigateToURL(shell(), embedded_test_server()->GetURL("/title2.html")));
+  EXPECT_TRUE(static_cast<RenderFrameHostImpl*>(initial_rfh.get())
+                  ->IsInBackForwardCache());
+
+  // Write to the file from the new origin and validate that change
+  // notifications were sent.
+  script =
+      // clang-format off
+      "(async () => {"
+         CREATE_PROMISE_AND_RESOLVERS
+         START_OBSERVING_FILE(TestFileSystemType::kLocal)
+         WRITE_TO_FILE
+         SET_CHANGE_TIMEOUT
+      "})()";
+  // clang-format on
+  auto records = EvalJs(shell(), script).ExtractList();
+  EXPECT_THAT(records.GetList(), testing::Not(testing::IsEmpty()));
+
+  // Navigate back and restore `initial_rfh` as the primary main frame.
+  ASSERT_TRUE(HistoryGoBack(shell()->web_contents()));
+  EXPECT_EQ(initial_rfh.get(), shell()->web_contents()->GetPrimaryMainFrame());
+
+  // No file changes from when the page was in BFCache should be reported.
+  EXPECT_EQ(EvalJs(shell(), "self.numCbInvokes;").ExtractInt(), 0);
+
+  // Write to the file again. These changes should be reported.
+  script =
+      // clang-format off
+      "(async () => {"
+         "const file = await self.entry;"
+         WRITE_TO_FILE
+         "setTimeout(() => {promiseResolve(self.numCbInvokes);}, $1);"
+         "return await self.promise;"
+      "})()";
+  // clang-format on
+  EXPECT_GE(
+      EvalJs(shell(),
+             JsReplace(script,
+                       base::Int64ToValue(
+                           TestTimeouts::action_timeout().InMilliseconds())))
+          .ExtractInt(),
+      1);
+}
+#endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS) && !BUILDFLAG(IS_FUCHSIA)
 
 }  // namespace content

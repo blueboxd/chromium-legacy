@@ -17,6 +17,7 @@ import sys
 import zipfile
 
 from codegen import header_common
+from codegen import natives_header
 import common
 import java_types
 import jni_generator
@@ -122,6 +123,10 @@ def _Generate(options, native_sources, java_sources):
       short=False,
       name_prefix=options.module_name,
       package_prefix=options.package_prefix)
+  if options.use_proxy_hash or options.enable_jni_multiplexing:
+    gen_jni_class = short_gen_jni_class
+  else:
+    gen_jni_class = full_gen_jni_class
   # PROXY_NATIVE_SIGNATURES and PROXY_NATIVE_METHOD_ARRAY will have
   # duplicates for JNI multiplexing since all native methods with similar
   # signatures map to the same proxy. Similarly, there may be multiple switch
@@ -148,11 +153,8 @@ def _Generate(options, native_sources, java_sources):
         signature_to_cases, short_gen_jni_class)
 
   if options.header_path:
-    header_guard = os.path.splitext(options.header_path)[0].upper() + '_'
-    header_guard = re.sub(r'[/.-]', '_', header_guard)
-    combined_dict['HEADER_GUARD'] = header_guard
     combined_dict['NAMESPACE'] = options.namespace or ''
-    header_content = CreateFromDict(options, combined_dict)
+    header_content = CreateFromDict(gen_jni_class, options, combined_dict)
     with common.atomic_output(options.header_path, mode='w') as f:
       f.write(header_content)
 
@@ -160,11 +162,6 @@ def _Generate(options, native_sources, java_sources):
 
   with common.atomic_output(options.srcjar_path) as f:
     with zipfile.ZipFile(f, 'w') as srcjar:
-      if options.use_proxy_hash or options.enable_jni_multiplexing:
-        gen_jni_class = short_gen_jni_class
-      else:
-        gen_jni_class = full_gen_jni_class
-
       if options.use_proxy_hash or options.enable_jni_multiplexing:
         # J/N.java
         common.add_to_zip_hermetic(
@@ -212,8 +209,7 @@ To bypass this check, add stubs to Java with --add-stubs-for-missing-jni.
 Excess Java files:
 '''
     sys.stderr.write(warning_message)
-    sys.stderr.write('\n'.join(jni_obj.filename
-                               for jni_obj in java_only_jni_objs))
+    sys.stderr.write('\n'.join(o.filename for o in java_only_jni_objs))
     sys.stderr.write('\n')
   if not options.remove_uncalled_methods and native_only_jni_objs:
     failed = True
@@ -224,15 +220,12 @@ To bypass this check, delete these extra methods with --remove-uncalled-jni.
 Unneeded Java files:
 '''
     sys.stderr.write(warning_message)
-    sys.stderr.write('\n'.join(native_only_jni_objs.filename
-                               for jni_obj in native_only_jni_objs))
+    sys.stderr.write('\n'.join(o.filename for o in native_only_jni_objs))
     sys.stderr.write('\n')
   if failed:
     sys.exit(1)
 
-  return [
-      _GenerateStubs(jni_obj.proxy_natives) for jni_obj in java_only_jni_objs
-  ]
+  return [_GenerateStubs(o.proxy_natives) for o in java_only_jni_objs]
 
 
 def _GenerateStubs(natives):
@@ -302,9 +295,9 @@ JNI_BOUNDARY_EXPORT ${RETURN} Java_${CLASS_NAME}_${PROXY_SIGNATURE}(
         switch (switch_num) {
           ${CASES}
           default:
-            JNI_ZERO_ELOG("${CLASS_NAME}_${PROXY_SIGNATURE} was called with an \
+            JNI_ZERO_ILOG("${CLASS_NAME}_${PROXY_SIGNATURE} was called with an \
 invalid switch number: %d", switch_num);
-            JNI_ZERO_DCHECK(false);
+            JNI_ZERO_CHECK(false);
             return${DEFAULT_RETURN};
         }
 }""")
@@ -370,13 +363,13 @@ JNI_ZERO_COMPONENT_BUILD_EXPORT bool ${REGISTRATION_NAME}(JNIEnv* env) {
 """)
 
   manual_registration = string.Template("""\
-// Step 3: Method declarations.
+// Method declarations.
 
 ${JNI_NATIVE_METHOD_ARRAY}\
 ${PROXY_NATIVE_METHOD_ARRAY}\
 
 ${JNI_NATIVE_METHOD}
-// Step 4: Registration function.
+// Registration function.
 
 namespace ${NAMESPACE} {
 
@@ -398,8 +391,7 @@ ${REGISTER_NATIVES}
       'KMETHODS':
       registration_dict['PROXY_NATIVE_METHOD_ARRAY'],
       'REGISTRATION_NAME':
-      jni_generator.GetRegistrationFunctionName(
-          gen_jni_class.full_name_with_slashes),
+      _GetRegistrationFunctionName(gen_jni_class.full_name_with_slashes),
   }
 
   if registration_dict['PROXY_NATIVE_METHOD_ARRAY']:
@@ -467,45 +459,30 @@ ${METHODS}
   })
 
 
-def CreateFromDict(options, registration_dict):
+def CreateFromDict(gen_jni_class, options, registration_dict):
   """Returns the content of the header file."""
+  header_guard = os.path.splitext(options.header_path)[0].upper() + '_'
+  header_guard = re.sub(r'[/.-]', '_', header_guard)
 
+  preamble, epilogue = header_common.header_preamble(
+      jni_generator.GetScriptName(),
+      gen_jni_class,
+      system_includes=['iterator'],  # For std::size().
+      user_includes=['third_party/jni_zero/jni_zero_internal.h'],
+      header_guard=header_guard)
+  registration_dict['PREAMBLE'] = preamble
+  registration_dict['EPILOGUE'] = epilogue
   template = string.Template("""\
-// Copyright 2017 The Chromium Authors
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
+${PREAMBLE}
 
-
-// This file is autogenerated by
-//     third_party/jni_zero/jni_registration_generator.py
-// Please do not change its content.
-
-#ifndef ${HEADER_GUARD}
-#define ${HEADER_GUARD}
-
-#include <jni.h>
-
-#include <iterator>
-
-#include "third_party/jni_zero/jni_export.h"
-#include "third_party/jni_zero/jni_zero_internal.h"
-#include "third_party/jni_zero/jni_zero.h"
-
-
-// Step 1: Class Accessors.
 ${CLASS_ACCESSORS}
-
-// Step 2: Forward declarations (methods).
+// Forward declarations (methods).
 
 ${FORWARD_DECLARATIONS}
 ${FORWARDING_CALLS}
 ${MANUAL_REGISTRATION}
-#endif  // ${HEADER_GUARD}
+${EPILOGUE}
 """)
-  gen_jni_class = proxy.get_gen_jni_class(short=options.use_proxy_hash
-                                          or options.enable_jni_multiplexing,
-                                          name_prefix=options.module_name,
-                                          package_prefix=options.package_prefix)
   _SetProxyRegistrationFields(options, gen_jni_class, registration_dict)
   if not options.enable_jni_multiplexing:
     registration_dict['FORWARDING_CALLS'] = ''
@@ -529,6 +506,11 @@ def _GetJavaToNativeParamsList(param_types):
         '[]', '_array').lower(), params_type_count[t]))
 
   return 'jint switch_num, ' + ', '.join(params_in_stub)
+
+
+def _GetRegistrationFunctionName(fully_qualified_class):
+  """Returns the register name with a given class."""
+  return 'RegisterNative_' + common.escape_class_name(fully_qualified_class)
 
 
 class DictionaryGenerator(object):
@@ -587,20 +569,11 @@ class DictionaryGenerator(object):
 
   def _AddForwardDeclaration(self):
     """Add the content of the forward declaration to the dictionary."""
-    template = string.Template("""\
-JNI_BOUNDARY_EXPORT ${RETURN} ${STUB_NAME}(
-    JNIEnv* env,
-    ${PARAMS_IN_STUB});
-""")
-    forward_declaration = ''
+    sb = common.StringBuilder()
     for native in self.natives:
-      value = {
-          'RETURN': native.proxy_return_type.to_cpp(),
-          'STUB_NAME': self.jni_obj.GetStubName(native),
-          'PARAMS_IN_STUB': jni_generator.GetParamsInStub(native),
-      }
-      forward_declaration += template.substitute(value)
-    self._SetDictValue('FORWARD_DECLARATIONS', forward_declaration)
+      with sb.statement():
+        natives_header.proxy_declaration(sb, self.jni_obj, native)
+    self._SetDictValue('FORWARD_DECLARATIONS', sb.to_string())
 
   def _AddRegisterNativesCalls(self):
     """Add the body of the RegisterNativesImpl method to the dictionary."""
@@ -615,7 +588,7 @@ JNI_BOUNDARY_EXPORT ${RETURN} ${STUB_NAME}(
 """)
     value = {
         'REGISTER_NAME':
-        jni_generator.GetRegistrationFunctionName(self.fully_qualified_class)
+        _GetRegistrationFunctionName(self.fully_qualified_class)
     }
     register_body = template.substitute(value)
     self._SetDictValue('REGISTER_NATIVES', register_body)
@@ -668,7 +641,7 @@ ${KMETHODS}
         stub_name = 'Java_' + class_name + '_' + proxy_signature
 
         multipliexed_signature = java_types.JavaSignature(
-            native.return_type, (java_types.LONG, ), None)
+            native.return_type, (java_types.INT, ), None)
         jni_descriptor = multipliexed_signature.to_descriptor()
       elif self.options.use_proxy_hash:
         name = native.hashed_proxy_name
@@ -704,11 +677,14 @@ ${KMETHODS}
         namespace_str = self.content_namespace + '::'
       if kmethods:
         values = {
-            'NAMESPACE': namespace_str,
-            'JAVA_CLASS': common.escape_class_name(full_clazz),
+            'NAMESPACE':
+            namespace_str,
+            'JAVA_CLASS':
+            common.escape_class_name(full_clazz),
             'JAVA_CLASS_ACCESSOR':
-            header_common.class_accessor_call(java_class),
-            'KMETHODS': kmethods
+            header_common.class_accessor_expression(java_class),
+            'KMETHODS':
+            kmethods
         }
         ret += [template.substitute(values)]
     return '\n'.join(ret)
@@ -727,9 +703,8 @@ ${NATIVES}\
 """)
     values = {
         'REGISTER_NAME':
-        jni_generator.GetRegistrationFunctionName(self.fully_qualified_class),
-        'NATIVES':
-        natives
+        _GetRegistrationFunctionName(self.fully_qualified_class),
+        'NATIVES': natives
     }
     self._SetDictValue('JNI_NATIVE_METHOD', template.substitute(values))
 
@@ -805,26 +780,32 @@ _MULTIPLEXED_CHAR_BY_TYPE = {
     'String': 'R',
     'short': 'S',
     'Throwable': 'T',
+    'void': 'V',
     'boolean': 'Z',
 }
+
+
+def _GetShortenedMultiplexingType(type_name):
+  # Parameter types could contain multi-dimensional arrays and every
+  # instance of [] has to be replaced in the proxy signature name.
+  for k, v in _MULTIPLEXED_CHAR_BY_TYPE.items():
+    type_name = type_name.replace(k, v)
+  return type_name
 
 
 def _GetMultiplexProxyName(signature):
   # Proxy signatures for methods are named after their return type and
   # parameters to ensure uniqueness, even for the same return types.
-  params_part = ''
-  params_list = [t.to_java() for t in signature.param_types]
-  # Parameter types could contain multi-dimensional arrays and every
-  # instance of [] has to be replaced in the proxy signature name.
-  for k, v in _MULTIPLEXED_CHAR_BY_TYPE.items():
-    params_list = [p.replace(k, v) for p in params_list]
+  params_list = [
+      _GetShortenedMultiplexingType(t.to_java()) for t in signature.param_types
+  ]
   params_part = ''
   if params_list:
     params_part = '_' + ''.join(p for p in params_list)
 
-  java_return_type = signature.return_type.to_java()
-  return_value_part = java_return_type.replace('[]', '_array').lower()
-  return 'resolve_for_' + return_value_part + params_part
+  return_value_part = _GetShortenedMultiplexingType(
+      signature.return_type.to_java())
+  return '_' + return_value_part + params_part
 
 
 def _MakeForwardingProxy(options, gen_jni_class, proxy_native):

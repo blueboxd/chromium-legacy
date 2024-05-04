@@ -64,7 +64,10 @@ class WidgetDestroyHandler : public ui::test::TestEventHandler {
 // Derived directly from `View` so no additional frames would be generated.
 class FakeTestView : public views::View {
  public:
-  FakeTestView() { SetAccessibleName(u"FakeTestView"); }
+  FakeTestView() {
+    SetAccessibleRole(ax::mojom::Role::kStaticText);
+    SetAccessibleName(u"FakeTestView");
+  }
   ~FakeTestView() override = default;
 
   // views::View:

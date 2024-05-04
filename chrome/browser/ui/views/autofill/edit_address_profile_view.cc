@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/functional/bind.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/autofill/address_editor_controller.h"
@@ -33,6 +34,7 @@ AutofillBubbleBase* ShowEditAddressProfileDialogView(
   EditAddressProfileView* dialog = new EditAddressProfileView(controller);
   dialog->ShowForWebContents(web_contents);
   constrained_window::ShowWebModalDialogViews(dialog, web_contents);
+  dialog->RequestFocus();
   return dialog;
 }
 
@@ -47,9 +49,8 @@ EditAddressProfileView::EditAddressProfileView(
   set_fixed_width(views::LayoutProvider::Get()->GetDistanceMetric(
       views::DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH));
 
-  SetAcceptCallback(base::BindOnce(
-      &EditAddressProfileView::OnUserDecision, base::Unretained(this),
-      AutofillClient::AddressPromptUserDecision::kEditAccepted));
+  SetAcceptCallbackWithClose(base::BindRepeating(
+      &EditAddressProfileView::OnAcceptButtonClicked, base::Unretained(this)));
   SetCancelCallback(base::BindOnce(
       &EditAddressProfileView::OnUserDecision, base::Unretained(this),
       AutofillClient::AddressPromptUserDecision::kEditDeclined));
@@ -88,7 +89,6 @@ void EditAddressProfileView::ShowForWebContents(
       address_editor_controller->AddIsValidChangedCallback(
           base::BindRepeating(&EditAddressProfileView::UpdateActionButtonState,
                               base::Unretained(this)));
-  UpdateActionButtonState(address_editor_controller->is_valid());
 
   address_editor_view_ = AddChildView(std::make_unique<AddressEditorView>(
       std::move(address_editor_controller)));
@@ -108,6 +108,11 @@ void EditAddressProfileView::ShowForWebContents(
 void EditAddressProfileView::Hide() {
   controller_ = nullptr;
   GetWidget()->Close();
+}
+
+views::View* EditAddressProfileView::GetInitiallyFocusedView() {
+  return address_editor_view_ ? address_editor_view_->initial_focus_view()
+                              : nullptr;
 }
 
 void EditAddressProfileView::WindowClosing() {
@@ -137,6 +142,14 @@ void EditAddressProfileView::OnUserDecision(
 
 void EditAddressProfileView::UpdateActionButtonState(bool is_valid) {
   SetButtonEnabled(ui::DIALOG_BUTTON_OK, is_valid);
+}
+
+bool EditAddressProfileView::OnAcceptButtonClicked() {
+  bool is_form_valid = address_editor_view_->ValidateAllFields();
+  if (is_form_valid) {
+    OnUserDecision(AutofillClient::AddressPromptUserDecision::kEditAccepted);
+  }
+  return is_form_valid;
 }
 
 DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(EditAddressProfileView, kTopViewId);

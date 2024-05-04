@@ -7,6 +7,7 @@
 #include <iterator>
 #include <memory>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -23,15 +24,17 @@
 #include "chrome/browser/extensions/extension_allowlist.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
+#include "chrome/browser/extensions/permissions/site_permissions_helper.h"
 #include "chrome/browser/extensions/shared_module_service.h"
-#include "chrome/browser/extensions/site_permissions_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/branded_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/supervised_user/core/browser/supervised_user_preferences.h"
 #include "components/supervised_user/core/common/pref_names.h"
 #include "content/public/browser/render_frame_host.h"
 #include "extensions/browser/blocklist_extension_prefs.h"
@@ -73,6 +76,7 @@
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
 #include "components/supervised_user/core/browser/supervised_user_preferences.h"
+#include "components/supervised_user/core/common/features.h"
 #endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
 
 namespace extensions {
@@ -200,11 +204,11 @@ void ConstructCommands(CommandService* command_service,
     command_value.is_extension_action = is_extension_action;
     return command_value;
   };
-  // TODO(https://crbug.com/1067130): Extensions shouldn't be able to specify
+  // TODO(crbug.com/40124879): Extensions shouldn't be able to specify
   // commands for actions they don't have, so we should just be able to query
   // for a single action type.
-  for (auto action_type : {ActionInfo::TYPE_BROWSER, ActionInfo::TYPE_PAGE,
-                           ActionInfo::TYPE_ACTION}) {
+  for (auto action_type : {ActionInfo::Type::kBrowser, ActionInfo::Type::kPage,
+                           ActionInfo::Type::kAction}) {
     bool active = false;
     Command action_command;
     if (command_service->GetExtensionActionCommand(extension_id, action_type,
@@ -552,22 +556,18 @@ void ExtensionInfoGenerator::CreateExtensionInfoHelper(
       ExtensionManagementFactory::GetForBrowserContext(browser_context_);
   Profile* profile = Profile::FromBrowserContext(browser_context_);
 
-  // Safety Hub Strings
-  if (base::FeatureList::IsEnabled(kCWSInfoService)) {
-    std::optional<CWSInfoService::CWSInfo> cws_info =
-        cws_info_service_->GetCWSInfo(extension);
-    if (cws_info.has_value()) {
-      info->safety_check_text =
-          CreateSafetyCheckDisplayString(*cws_info, state, blocklist_state);
-    }
-  }
-
+  bool updates_from_web_store =
+      extension_management->UpdatesFromWebstore(extension);
   // ControlledInfo.
   bool is_policy_location = Manifest::IsPolicyLocation(extension.location());
   if (is_policy_location) {
     info->controlled_info.emplace();
     info->controlled_info->text =
         l10n_util::GetStringUTF8(IDS_EXTENSIONS_INSTALL_LOCATION_ENTERPRISE);
+  } else {
+    // Create Safety Hub strings for any non-enterprise extension.
+    info->safety_check_text = CreateSafetyCheckDisplayString(
+        extension, updates_from_web_store, state, blocklist_state);
   }
 
   bool is_enabled = state == developer::ExtensionState::kEnabled;
@@ -611,15 +611,15 @@ void ExtensionInfoGenerator::CreateExtensionInfoHelper(
       0;
   info->disable_reasons.custodian_approval_required =
       custodian_approval_required;
-#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   bool permissions_increase =
       (disable_reasons & disable_reason::DISABLE_PERMISSIONS_INCREASE) != 0;
   info->disable_reasons.parent_disabled_permissions =
       supervised_user::AreExtensionsPermissionsEnabled(*profile->GetPrefs()) &&
+      !supervised_user::
+          IsSupervisedUserSkipParentApprovalToInstallExtensionsEnabled() &&
       !profile->GetPrefs()->GetBoolean(
           prefs::kSupervisedUserExtensionsMayRequestPermissions) &&
       (custodian_approval_required || permissions_increase);
-#endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
   info->disable_reasons.published_in_store_required =
       (disable_reasons &
        disable_reason::DISABLE_PUBLISHED_IN_STORE_REQUIRED_BY_POLICY) != 0;
@@ -681,8 +681,6 @@ void ExtensionInfoGenerator::CreateExtensionInfoHelper(
   }
 
   // Location.
-  bool updates_from_web_store =
-      extension_management->UpdatesFromWebstore(extension);
   if (extension.location() == mojom::ManifestLocation::kInternal &&
       updates_from_web_store) {
     info->location = developer::Location::kFromStore;
@@ -790,7 +788,7 @@ void ExtensionInfoGenerator::CreateExtensionInfoHelper(
           extension.id());
 
   // Pinned to toolbar.
-  // TODO(crbug.com/1477884): Currently this information is only shown for
+  // TODO(crbug.com/40280426): Currently this information is only shown for
   // enabled extensions as only enabled extensions can have actions. However,
   // this information can be found in prefs, so disabled extensiosn can be
   // included as well.
@@ -802,10 +800,9 @@ void ExtensionInfoGenerator::CreateExtensionInfoHelper(
   }
 
   // The icon.
-  ExtensionResource icon =
-      IconsInfo::GetIconResource(&extension,
-                                 extension_misc::EXTENSION_ICON_MEDIUM,
-                                 ExtensionIconSet::MATCH_BIGGER);
+  ExtensionResource icon = IconsInfo::GetIconResource(
+      &extension, extension_misc::EXTENSION_ICON_MEDIUM,
+      ExtensionIconSet::Match::kBigger);
   if (icon.empty()) {
     info->icon_url = GetDefaultIconUrl(extension.name());
     list_.push_back(std::move(*info));
@@ -824,40 +821,106 @@ void ExtensionInfoGenerator::CreateExtensionInfoHelper(
 
 developer::SafetyCheckStrings
 ExtensionInfoGenerator::CreateSafetyCheckDisplayString(
-    const CWSInfoService::CWSInfo& cws_info,
+    const Extension& extension,
+    bool updates_from_webstore,
     developer::ExtensionState state,
     BitMapBlocklistState blocklist_state) {
   developer::SafetyCheckStrings display_strings;
-  std::string detail_page_string;
-  std::string panel_page_string;
-  if (cws_info.is_present) {
-    if (blocklist_state == BitMapBlocklistState::BLOCKLISTED_MALWARE ||
-        cws_info.violation_type == CWSInfoService::CWSViolationType::kMalware) {
-      detail_page_string =
-          l10n_util::GetStringUTF8(IDS_SAFETY_CHECK_EXTENSIONS_MALWARE);
-      panel_page_string = l10n_util::GetStringUTF8(IDS_EXTENSIONS_SC_MALWARE);
-    } else if (blocklist_state ==
-                   BitMapBlocklistState::BLOCKLISTED_CWS_POLICY_VIOLATION ||
-               cws_info.violation_type ==
-                   CWSInfoService::CWSViolationType::kPolicy) {
-      detail_page_string = l10n_util::GetStringUTF8(
-          IDS_SAFETY_CHECK_EXTENSIONS_POLICY_VIOLATION);
-      panel_page_string =
-          state == developer::ExtensionState::kEnabled
-              ? l10n_util::GetStringUTF8(IDS_EXTENSIONS_SC_POLICY_VIOLATION_ON)
-              : l10n_util::GetStringUTF8(
-                    IDS_EXTENSIONS_SC_POLICY_VIOLATION_OFF);
-    } else if (cws_info.unpublished_long_ago) {
-      detail_page_string =
-          l10n_util::GetStringUTF8(IDS_SAFETY_CHECK_EXTENSIONS_UNPUBLISHED);
-      panel_page_string =
-          state == developer::ExtensionState::kEnabled
-              ? l10n_util::GetStringUTF8(IDS_EXTENSIONS_SC_UNPUBLISHED_ON)
-              : l10n_util::GetStringUTF8(IDS_EXTENSIONS_SC_UNPUBLISHED_OFF);
+  int detail_string_id = -1;
+  int panel_string_id = -1;
+  std::optional<CWSInfoService::CWSInfo> cws_info;
+  bool valid_cws_info = false;
+
+  if (base::FeatureList::IsEnabled(kCWSInfoService)) {
+    cws_info = cws_info_service_->GetCWSInfo(extension);
+    valid_cws_info = cws_info.has_value() && cws_info->is_present;
+  }
+
+  bool malware =
+      blocklist_state == BitMapBlocklistState::BLOCKLISTED_MALWARE ||
+      (valid_cws_info &&
+       cws_info->violation_type == CWSInfoService::CWSViolationType::kMalware);
+  bool policy_violation =
+      blocklist_state ==
+          BitMapBlocklistState::BLOCKLISTED_CWS_POLICY_VIOLATION ||
+      (valid_cws_info &&
+       cws_info->violation_type == CWSInfoService::CWSViolationType::kPolicy);
+  bool potentially_unwanted =
+      base::FeatureList::IsEnabled(features::kSafetyHubExtensionsUwSTrigger) &&
+      blocklist_state == BitMapBlocklistState::BLOCKLISTED_POTENTIALLY_UNWANTED;
+  bool no_privacy_practice =
+      base::FeatureList::IsEnabled(
+          features::kSafetyHubExtensionsNoPrivacyPracticesTrigger) &&
+      (valid_cws_info && cws_info->no_privacy_practice);
+
+  bool warn_for_offstore_extension = false;
+  if (base::FeatureList::IsEnabled(
+          features::kSafetyHubExtensionsOffStoreTrigger)) {
+    // There is a chance that extensions installed by the command line
+    // will not follow normal extension behavior for installing and
+    // uninstalling. To avoid confusing the user, the Safety Hub
+    // will not show command line extensions.
+    if (extension.location() != mojom::ManifestLocation::kCommandLine) {
+      bool dev_mode = Profile::FromBrowserContext(browser_context_)
+                          ->GetPrefs()
+                          ->GetBoolean(prefs::kExtensionsUIDeveloperMode);
+      if (Manifest::IsUnpackedLocation(extension.location())) {
+        // Extensions that are unpacked will only trigger a review if dev
+        // mode is not enabled.
+        warn_for_offstore_extension = !dev_mode;
+      } else {
+        if (updates_from_webstore) {
+          if (cws_info.has_value() && !cws_info->is_present) {
+            // If the extension has a webstore update URL but is not present
+            // in the webstore itself, then we will not consider it from
+            // the webstore.
+            warn_for_offstore_extension = true;
+          }
+        } else {
+          // extension does not update from the webstore.
+          warn_for_offstore_extension = true;
+        }
+      }
     }
   }
-  display_strings.detail_string = detail_page_string;
-  display_strings.panel_string = panel_page_string;
+
+  if (malware) {
+    detail_string_id = IDS_SAFETY_CHECK_EXTENSIONS_MALWARE;
+    panel_string_id = IDS_EXTENSIONS_SC_MALWARE;
+  } else if (policy_violation) {
+    detail_string_id = IDS_SAFETY_CHECK_EXTENSIONS_POLICY_VIOLATION;
+    panel_string_id = state == developer::ExtensionState::kEnabled
+                          ? IDS_EXTENSIONS_SC_POLICY_VIOLATION_ON
+                          : IDS_EXTENSIONS_SC_POLICY_VIOLATION_OFF;
+  } else if (potentially_unwanted) {
+    detail_string_id = IDS_SAFETY_CHECK_EXTENSIONS_POLICY_VIOLATION;
+    panel_string_id = state == developer::ExtensionState::kEnabled
+                          ? IDS_EXTENSIONS_SC_POLICY_VIOLATION_ON
+                          : IDS_EXTENSIONS_SC_POLICY_VIOLATION_OFF;
+  } else if (valid_cws_info && cws_info->unpublished_long_ago) {
+    detail_string_id = IDS_SAFETY_CHECK_EXTENSIONS_UNPUBLISHED;
+    panel_string_id = state == developer::ExtensionState::kEnabled
+                          ? IDS_EXTENSIONS_SC_UNPUBLISHED_ON
+                          : IDS_EXTENSIONS_SC_UNPUBLISHED_OFF;
+  } else if (no_privacy_practice) {
+    // TODO(crbug.com/335430214): Update strings to real values once finalized.
+    detail_string_id = IDS_EXTENSIONS_SAFETY_CHECK_OFFSTORE;
+    panel_string_id = state == developer::ExtensionState::kEnabled
+                          ? IDS_EXTENSIONS_SAFETY_CHECK_OFFSTORE_ON
+                          : IDS_EXTENSIONS_SAFETY_CHECK_OFFSTORE_OFF;
+  } else if (warn_for_offstore_extension) {
+    detail_string_id = IDS_EXTENSIONS_SAFETY_CHECK_OFFSTORE;
+    panel_string_id = state == developer::ExtensionState::kEnabled
+                          ? IDS_EXTENSIONS_SAFETY_CHECK_OFFSTORE_ON
+                          : IDS_EXTENSIONS_SAFETY_CHECK_OFFSTORE_OFF;
+  }
+
+  if (detail_string_id != -1) {
+    display_strings.detail_string = l10n_util::GetStringUTF8(detail_string_id);
+  }
+  if (panel_string_id != -1) {
+    display_strings.panel_string = l10n_util::GetStringUTF8(panel_string_id);
+  }
   return display_strings;
 }
 
@@ -868,10 +931,7 @@ std::string ExtensionInfoGenerator::GetDefaultIconUrl(const std::string& name) {
 
 std::string ExtensionInfoGenerator::GetIconUrlFromImage(
     const gfx::Image& image) {
-  scoped_refptr<base::RefCountedMemory> data;
-  data = image.As1xPNGBytes();
-  std::string base_64 = base::Base64Encode(
-      base::StringPiece(data->front_as<char>(), data->size()));
+  std::string base_64 = base::Base64Encode(*image.As1xPNGBytes());
   const char kDataUrlPrefix[] = "data:image/png;base64,";
   return GURL(kDataUrlPrefix + base_64).spec();
 }
@@ -895,6 +955,11 @@ void ExtensionInfoGenerator::OnImageLoaded(
     std::move(callback_).Run(std::move(list));
     // WARNING: |this| is possibly deleted after this line!
   }
+}
+
+void ExtensionInfoGenerator::SetCWSInfoServiceForTesting(
+    extensions::CWSInfoService* cws_info_service) {
+  cws_info_service_ = cws_info_service;
 }
 
 }  // namespace extensions

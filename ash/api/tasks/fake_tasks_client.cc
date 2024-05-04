@@ -17,9 +17,11 @@
 #include "base/functional/callback_forward.h"
 #include "base/notreached.h"
 #include "base/ranges/algorithm.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "base/uuid.h"
+#include "url/gurl.h"
 
 namespace ash::api {
 namespace {
@@ -37,10 +39,13 @@ size_t RunPendingCallbacks(std::list<base::OnceClosure>& pending_callbacks) {
 
 FakeTasksClient::FakeTasksClient()
     : task_lists_(std::make_unique<ui::ListModel<TaskList>>()),
-      cached_task_lists_(std::make_unique<ui::ListModel<TaskList>>()),
-      cached_tasks_(std::make_unique<ui::ListModel<Task>>()) {}
+      cached_task_lists_(std::make_unique<ui::ListModel<TaskList>>()) {}
 
 FakeTasksClient::~FakeTasksClient() = default;
+
+bool FakeTasksClient::IsDisabledByAdmin() const {
+  return is_disabled_by_admin_;
+}
 
 const ui::ListModel<api::TaskList>* FakeTasksClient::GetCachedTaskLists() {
   if (cached_task_lists_->item_count() == 0) {
@@ -58,12 +63,12 @@ void FakeTasksClient::GetTaskLists(bool force_fetch,
 
   if (paused_ || (paused_on_fetch_ && need_fetch)) {
     pending_get_task_lists_callbacks_.push_back(base::BindOnce(
-        [](ui::ListModel<TaskList>* task_lists, GetTaskListsCallback callback) {
-          std::move(callback).Run(/*success=*/true, task_lists);
-        },
-        task_lists_returned, std::move(callback)));
+        [](ui::ListModel<TaskList>* task_lists, GetTaskListsCallback callback,
+           bool success) { std::move(callback).Run(success, task_lists); },
+        task_lists_returned, std::move(callback), !get_task_lists_error_));
   } else {
-    std::move(callback).Run(/*success=*/true, task_lists_returned);
+    std::move(callback).Run(/*success=*/!get_task_lists_error_,
+                            task_lists_returned);
   }
 }
 
@@ -90,12 +95,11 @@ void FakeTasksClient::GetTasks(const std::string& task_list_id,
 
   if (paused_ || (paused_on_fetch_ && need_fetch)) {
     pending_get_tasks_callbacks_.push_back(base::BindOnce(
-        [](ui::ListModel<Task>* tasks, GetTasksCallback callback) {
-          std::move(callback).Run(/*success=*/true, tasks);
-        },
-        tasks_returned, std::move(callback)));
+        [](ui::ListModel<Task>* tasks, GetTasksCallback callback,
+           bool success) { std::move(callback).Run(success, tasks); },
+        tasks_returned, std::move(callback), !get_tasks_error_));
   } else {
-    std::move(callback).Run(/*success=*/true, tasks_returned);
+    std::move(callback).Run(/*success=*/!get_tasks_error_, tasks_returned);
   }
 }
 
@@ -144,8 +148,7 @@ std::optional<base::Time> FakeTasksClient::GetTasksLastUpdateTime(
   return last_updated_time_;
 }
 
-void FakeTasksClient::OnGlanceablesBubbleClosed(
-    TasksClient::OnAllPendingCompletedTasksSavedCallback callback) {
+void FakeTasksClient::OnGlanceablesBubbleClosed(base::OnceClosure callback) {
   ++bubble_closed_count_;
   RunPendingGetTaskListsCallbacks();
   RunPendingGetTasksCallbacks();
@@ -216,7 +219,7 @@ size_t FakeTasksClient::RunPendingUpdateTaskCallbacks() {
 void FakeTasksClient::AddTaskImpl(const std::string& task_list_id,
                                   const std::string& title,
                                   TasksClient::OnTaskSavedCallback callback) {
-  if (run_with_errors_) {
+  if (update_errors_) {
     std::move(callback).Run(/*task=*/nullptr);
     return;
   }
@@ -224,12 +227,15 @@ void FakeTasksClient::AddTaskImpl(const std::string& task_list_id,
   auto task_list_iter = tasks_in_task_lists_.find(task_list_id);
   CHECK(task_list_iter != tasks_in_task_lists_.end());
 
+  const auto new_task_id = base::Uuid::GenerateRandomV4().AsLowercaseString();
   auto pending_task = std::make_unique<Task>(
-      base::Uuid::GenerateRandomV4().AsLowercaseString(), title,
+      new_task_id, title,
       /*due=*/std::nullopt, /*completed=*/false,
       /*has_subtasks=*/false, /*has_email_link=*/false,
       /*has_notes=*/false,
-      /*updated=*/base::Time::Now());
+      /*updated=*/base::Time::Now(),
+      /*web_view_link=*/
+      GURL(base::StrCat({"https://tasks.google.com/task/", new_task_id})));
 
   const auto* const task = task_list_iter->second->AddAt(
       /*index=*/0, std::move(pending_task));
@@ -242,7 +248,7 @@ void FakeTasksClient::UpdateTaskImpl(
     const std::string& title,
     bool completed,
     TasksClient::OnTaskSavedCallback callback) {
-  if (run_with_errors_) {
+  if (update_errors_) {
     std::move(callback).Run(/*task=*/nullptr);
     return;
   }
@@ -271,13 +277,21 @@ void FakeTasksClient::CacheTaskLists() {
 
 void FakeTasksClient::CacheTasks() {
   auto iter = tasks_in_task_lists_.find(cached_task_list_id_);
-  CHECK(iter != tasks_in_task_lists_.end());
+  if (iter == tasks_in_task_lists_.end()) {
+    return;
+  }
 
-  cached_tasks_->DeleteAll();
+  if (!cached_tasks_) {
+    cached_tasks_ = std::make_unique<ui::ListModel<Task>>();
+  } else {
+    cached_tasks_->DeleteAll();
+  }
+
   for (const auto& task : *iter->second) {
     cached_tasks_->Add(std::make_unique<Task>(
         task->id, task->title, task->due, task->completed, task->has_subtasks,
-        task->has_email_link, task->has_notes, task->updated));
+        task->has_email_link, task->has_notes, task->updated,
+        task->web_view_link));
   }
 }
 

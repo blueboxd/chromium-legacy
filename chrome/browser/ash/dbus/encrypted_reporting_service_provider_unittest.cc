@@ -19,6 +19,7 @@
 #include "chrome/browser/policy/messaging_layer/util/reporting_server_connector_test_util.h"
 #include "chrome/browser/policy/messaging_layer/util/test_request_payload.h"
 #include "chrome/browser/policy/messaging_layer/util/test_response_payload.h"
+#include "chrome/browser/policy/messaging_layer/util/upload_declarations.h"
 #include "chromeos/ash/components/dbus/services/service_provider_test_helper.h"
 #include "chromeos/dbus/missive/missive_client.h"
 #include "components/policy/core/common/management/scoped_management_service_override_for_testing.h"
@@ -31,14 +32,17 @@
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 using ReportSuccessfulUploadCallback =
-    ::reporting::UploadClient::ReportSuccessfulUploadCallback;
+    ::reporting::ReportSuccessfulUploadCallback;
 using EncryptionKeyAttachedCallback =
-    ::reporting::UploadClient::EncryptionKeyAttachedCallback;
+    ::reporting::EncryptionKeyAttachedCallback;
+using UpdateConfigInMissiveCallback =
+    ::reporting::UpdateConfigInMissiveCallback;
 
 using UploadProvider = ::reporting::EncryptedReportingUploadProvider;
 
 using ::base::test::EqualsProto;
 using ::testing::_;
+using ::testing::ElementsAre;
 using ::testing::Eq;
 
 namespace ash {
@@ -53,10 +57,12 @@ class TestEncryptedReportingServiceProvider
  public:
   TestEncryptedReportingServiceProvider(
       ReportSuccessfulUploadCallback report_successful_upload_cb,
-      EncryptionKeyAttachedCallback encrypted_key_cb)
+      EncryptionKeyAttachedCallback encrypted_key_cb,
+      UpdateConfigInMissiveCallback update_config_in_missive_cb)
       : EncryptedReportingServiceProvider(std::make_unique<UploadProvider>(
             report_successful_upload_cb,
             encrypted_key_cb,
+            update_config_in_missive_cb,
             /*upload_client_builder_cb=*/
             base::BindRepeating(&::reporting::FakeUploadClient::Create))) {}
 
@@ -76,6 +82,10 @@ class EncryptedReportingServiceProviderTest : public ::testing::Test {
               EncryptionKeyCallback,
               (::reporting::SignedEncryptionInfo),
               ());
+  MOCK_METHOD(void,
+              ConfigFileCallback,
+              (::reporting::ListOfBlockedDestinations),
+              ());
 
  protected:
   void SetUp() override {
@@ -87,8 +97,11 @@ class EncryptedReportingServiceProviderTest : public ::testing::Test {
     auto encryption_key_cb = base::BindRepeating(
         &EncryptedReportingServiceProviderTest::EncryptionKeyCallback,
         base::Unretained(this));
+    auto config_file_cb = base::BindRepeating(
+        &EncryptedReportingServiceProviderTest::ConfigFileCallback,
+        base::Unretained(this));
     service_provider_ = std::make_unique<TestEncryptedReportingServiceProvider>(
-        successful_upload_cb, encryption_key_cb);
+        successful_upload_cb, encryption_key_cb, config_file_cb);
 
     record_.set_encrypted_wrapped_record("TEST_DATA");
 
@@ -177,6 +190,8 @@ TEST_F(EncryptedReportingServiceProviderTest, SuccessfullyUploadsRecord) {
   test_env_.SimulateResponseForRequest(0);
 
   EXPECT_THAT(response.status().code(), Eq(::reporting::error::OK));
+  EXPECT_THAT(response.cached_events_seq_ids(),
+              ElementsAre(record_.sequence_information().sequencing_id()));
 }
 }  // namespace
 }  // namespace ash

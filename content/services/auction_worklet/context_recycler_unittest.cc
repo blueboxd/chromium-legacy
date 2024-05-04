@@ -7,9 +7,11 @@
 #include <stdint.h>
 
 #include <limits>
+#include <optional>
 #include <string>
 #include <vector>
 
+#include "base/strings/stringprintf.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
@@ -22,6 +24,7 @@
 #include "content/services/auction_worklet/register_ad_beacon_bindings.h"
 #include "content/services/auction_worklet/register_ad_macro_bindings.h"
 #include "content/services/auction_worklet/report_bindings.h"
+#include "content/services/auction_worklet/seller_lazy_filler.h"
 #include "content/services/auction_worklet/set_bid_bindings.h"
 #include "content/services/auction_worklet/set_priority_bindings.h"
 #include "content/services/auction_worklet/worklet_test_util.h"
@@ -33,8 +36,7 @@
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/interest_group/ad_auction_currencies.h"
 #include "third_party/blink/public/common/interest_group/interest_group.h"
-#include "third_party/blink/public/mojom/private_aggregation/aggregatable_report.mojom-shared.h"
-#include "third_party/blink/public/mojom/private_aggregation/aggregatable_report.mojom.h"
+#include "third_party/blink/public/mojom/aggregation_service/aggregatable_report.mojom.h"
 #include "third_party/blink/public/mojom/private_aggregation/private_aggregation_host.mojom-forward.h"
 #include "v8/include/v8-context.h"
 #include "v8/include/v8-primitive.h"
@@ -85,8 +87,9 @@ class ContextRecyclerTest : public testing::Test {
       std::vector<std::string>& error_msgs,
       v8::Local<v8::Value> maybe_arg = v8::Local<v8::Value>()) {
     v8::LocalVector<v8::Value> args(helper_->isolate());
-    if (!maybe_arg.IsEmpty())
+    if (!maybe_arg.IsEmpty()) {
       args.push_back(maybe_arg);
+    }
     if (!helper_->RunScript(scope.GetContext(), script,
                             /*debug_id=*/nullptr, time_limit_.get(),
                             error_msgs)) {
@@ -113,6 +116,26 @@ class ContextRecyclerTest : public testing::Test {
         scope.GetContext(),
         /*debug_id=*/nullptr, helper_->FormatScriptName(script), function_name,
         args, time_limit_.get(), error_msgs);
+  }
+
+  std::string RunExpectString(
+      ContextRecyclerScope& scope,
+      v8::Local<v8::UnboundScript> script,
+      const std::string& function_name,
+      v8::Local<v8::Value> maybe_arg = v8::Local<v8::Value>()) {
+    std::vector<std::string> error_msgs;
+    v8::Local<v8::Value> r;
+    v8::MaybeLocal<v8::Value> maybe_r =
+        Run(scope, script, function_name, error_msgs, maybe_arg);
+    EXPECT_THAT(error_msgs, ElementsAre());
+    if (!maybe_r.ToLocal(&r)) {
+      return "no return value";
+    }
+    std::string r_s;
+    if (!gin::ConvertFromV8(helper_->isolate(), r, &r_s)) {
+      return "return not convertible to string";
+    }
+    return r_s;
   }
 
   // Runs a script twice, using a new ContextRecyclerScope each time, testing
@@ -250,6 +273,24 @@ class ContextRecyclerTest : public testing::Test {
     }
   }
 
+  // URL of length url::kMaxURLChars.
+  const std::string& almost_too_long_url() {
+    if (!almost_too_long_url_) {
+      almost_too_long_url_ = "https://report.test/";
+      *almost_too_long_url_ +=
+          std::string(url::kMaxURLChars - almost_too_long_url_->size(), '1');
+    }
+    return *almost_too_long_url_;
+  }
+
+  // URL of length url::kMaxURLChars + 1.
+  const std::string& too_long_url() {
+    if (!too_long_url_) {
+      too_long_url_ = almost_too_long_url() + "2";
+    }
+    return *too_long_url_;
+  }
+
  protected:
   base::test::TaskEnvironment task_environment_;
   const GURL bidding_logic_url_{"https://example.test/script.js"};
@@ -257,6 +298,12 @@ class ContextRecyclerTest : public testing::Test {
   std::unique_ptr<AuctionV8Helper::FullIsolateScope> v8_scope_;
   std::unique_ptr<AuctionV8Helper::TimeLimit> time_limit_;
   std::unique_ptr<AuctionV8Helper::TimeLimitScope> time_limit_scope_;
+
+  // URLs of length url::kMaxURLChars and url::kMaxURLChars + 1. These are
+  // constructed only as needed, since working with URLs this large is fairly
+  // resource intensive.
+  std::optional<std::string> almost_too_long_url_;
+  std::optional<std::string> too_long_url_;
 };
 
 // Test with no binding objects, just context creation.
@@ -285,10 +332,32 @@ TEST_F(ContextRecyclerTest, ForDebuggingOnlyBindings) {
       blink::features::kBiddingAndScoringDebugReportingAPI);
 
   const char kScript[] = R"(
-    function test(suffix) {
-      forDebuggingOnly.reportAdAuctionLoss('https://example2.test/loss' + suffix);
-      forDebuggingOnly.reportAdAuctionWin('https://example2.test/win' + suffix);
+    function test() {
+      forDebuggingOnly.reportAdAuctionLoss('https://example2.test/loss');
+      forDebuggingOnly.reportAdAuctionWin('https://example2.test/win');
     }
+
+    function testMultiCalls() {
+      forDebuggingOnly.reportAdAuctionLoss('https://example2.test/loss1');
+      forDebuggingOnly.reportAdAuctionLoss('https://example2.test/loss2');
+      forDebuggingOnly.reportAdAuctionWin('https://example2.test/win1');
+      forDebuggingOnly.reportAdAuctionWin('https://example2.test/win2');
+    }
+
+    function testErrorCaught() {
+      try {
+        forDebuggingOnly.reportAdAuctionLoss("not-a-url");
+      } catch (e) {}
+    }
+
+    function testValidURLsPreserved() {
+      forDebuggingOnly.reportAdAuctionLoss('https://example2.test/loss');
+      forDebuggingOnly.reportAdAuctionWin('https://example2.test/win');
+      forDebuggingOnly.reportAdAuctionLoss("not-a-url");
+      forDebuggingOnly.reportAdAuctionWin("not-a-url");
+    }
+
+    function doNothing() {}
   )";
 
   v8::Local<v8::UnboundScript> script = Compile(kScript);
@@ -303,41 +372,236 @@ TEST_F(ContextRecyclerTest, ForDebuggingOnlyBindings) {
   {
     ContextRecyclerScope scope(context_recycler);
     std::vector<std::string> error_msgs;
-    Run(scope, script, "test", error_msgs,
-        gin::ConvertToV8(helper_->isolate(), 1));
+    Run(scope, script, "test", error_msgs);
+
     EXPECT_THAT(error_msgs, ElementsAre());
     EXPECT_EQ(
-        GURL("https://example2.test/loss1"),
+        GURL("https://example2.test/loss"),
         context_recycler.for_debugging_only_bindings()->TakeLossReportUrl());
     EXPECT_EQ(
-        GURL("https://example2.test/win1"),
+        GURL("https://example2.test/win"),
         context_recycler.for_debugging_only_bindings()->TakeWinReportUrl());
+  }
+
+  // Should already be cleared between executions.
+  EXPECT_FALSE(context_recycler.for_debugging_only_bindings()
+                   ->TakeLossReportUrl()
+                   .has_value());
+  EXPECT_FALSE(context_recycler.for_debugging_only_bindings()
+                   ->TakeWinReportUrl()
+                   .has_value());
+
+  // Can be called multiple times, and the last call's argument is used.
+  {
+    ContextRecyclerScope scope(context_recycler);
+    std::vector<std::string> error_msgs;
+    Run(scope, script, "testMultiCalls", error_msgs);
+
+    EXPECT_THAT(error_msgs, ElementsAre());
+    EXPECT_EQ(
+        GURL("https://example2.test/loss2"),
+        context_recycler.for_debugging_only_bindings()->TakeLossReportUrl());
+    EXPECT_EQ(
+        GURL("https://example2.test/win2"),
+        context_recycler.for_debugging_only_bindings()->TakeWinReportUrl());
+  }
+
+  // Should already be cleared between executions.
+  EXPECT_FALSE(context_recycler.for_debugging_only_bindings()
+                   ->TakeLossReportUrl()
+                   .has_value());
+  EXPECT_FALSE(context_recycler.for_debugging_only_bindings()
+                   ->TakeWinReportUrl()
+                   .has_value());
+
+  // No message if caught, but still no debug report URLs.
+  {
+    ContextRecyclerScope scope(context_recycler);
+    std::vector<std::string> error_msgs;
+    Run(scope, script, "testErrorCaught", error_msgs);
+
+    EXPECT_THAT(error_msgs, ElementsAre());
+    EXPECT_FALSE(context_recycler.for_debugging_only_bindings()
+                     ->TakeLossReportUrl()
+                     .has_value());
+  }
+
+  // Valid debug report URLs before an exception happens are preserved.
+  {
+    ContextRecyclerScope scope(context_recycler);
+    std::vector<std::string> error_msgs;
+    Run(scope, script, "testValidURLsPreserved", error_msgs);
+
+    EXPECT_THAT(
+        error_msgs,
+        ElementsAre("https://example.test/script.js:23 Uncaught TypeError: "
+                    "reportAdAuctionLoss must be passed a valid HTTPS url."));
+    EXPECT_EQ(
+        GURL("https://example2.test/loss"),
+        context_recycler.for_debugging_only_bindings()->TakeLossReportUrl());
+    EXPECT_EQ(
+        GURL("https://example2.test/win"),
+        context_recycler.for_debugging_only_bindings()->TakeWinReportUrl());
+  }
+
+  // No debug report URLs when APIs are not called.
+  {
+    ContextRecyclerScope scope(context_recycler);
+    std::vector<std::string> error_msgs;
+    Run(scope, script, "doNothing", error_msgs);
+
+    EXPECT_THAT(error_msgs, ElementsAre());
+    EXPECT_FALSE(context_recycler.for_debugging_only_bindings()
+                     ->TakeLossReportUrl()
+                     .has_value());
+    EXPECT_FALSE(context_recycler.for_debugging_only_bindings()
+                     ->TakeWinReportUrl()
+                     .has_value());
+  }
+}
+
+// Exercise ForDebuggingOnlyBindings, and test invalid arguments.
+TEST_F(ContextRecyclerTest, ForDebuggingOnlyBindingsInvalidArguments) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      blink::features::kBiddingAndScoringDebugReportingAPI);
+
+  // reportAdAuctionWin() and reportAdAuctionLoss() have the same code path
+  // handling their arguments, so will randomly use one of the two APIs to test
+  // different cases.
+  const char kScript[] = R"(
+    function testNoArgument() {
+      forDebuggingOnly.reportAdAuctionWin();
+    }
+
+    function testNonConvertibleToString() {
+      forDebuggingOnly.reportAdAuctionLoss({toString:42});
+    }
+
+    function testNotValidHttpsUrl(arg) {
+      forDebuggingOnly.reportAdAuctionLoss(arg);
+    }
+  )";
+
+  v8::Local<v8::UnboundScript> script = Compile(kScript);
+  ASSERT_FALSE(script.IsEmpty());
+
+  ContextRecycler context_recycler(helper_.get());
+  {
+    ContextRecyclerScope scope(context_recycler);  // Initialize context
+    context_recycler.AddForDebuggingOnlyBindings();
+  }
+
+  // No argument.
+  {
+    ContextRecyclerScope scope(context_recycler);
+    std::vector<std::string> error_msgs;
+    Run(scope, script, "testNoArgument", error_msgs);
+    EXPECT_THAT(
+        error_msgs,
+        ElementsAre(
+            "https://example.test/script.js:3 Uncaught TypeError: "
+            "reportAdAuctionWin(): at least 1 argument(s) are required."));
+    EXPECT_FALSE(context_recycler.for_debugging_only_bindings()
+                     ->TakeWinReportUrl()
+                     .has_value());
   }
 
   {
     ContextRecyclerScope scope(context_recycler);
     std::vector<std::string> error_msgs;
-    Run(scope, script, "test", error_msgs,
-        gin::ConvertToV8(helper_->isolate(), 3));
-    EXPECT_THAT(error_msgs, ElementsAre());
-    EXPECT_EQ(
-        GURL("https://example2.test/loss3"),
-        context_recycler.for_debugging_only_bindings()->TakeLossReportUrl());
-    EXPECT_EQ(
-        GURL("https://example2.test/win3"),
-        context_recycler.for_debugging_only_bindings()->TakeWinReportUrl());
+    Run(scope, script, "testNonConvertibleToString", error_msgs);
+    EXPECT_THAT(
+        error_msgs,
+        ElementsAre("https://example.test/script.js:7 Uncaught TypeError: "
+                    "Cannot convert object to primitive value."));
+    EXPECT_FALSE(context_recycler.for_debugging_only_bindings()
+                     ->TakeLossReportUrl()
+                     .has_value());
+  }
+
+  // Not valid HTTPS URL.
+  {
+    std::vector<std::string> non_https_urls = {"http://report.url",
+                                               "file:///foo/", "Not a URL"};
+    for (const auto& url_string : non_https_urls) {
+      ContextRecyclerScope scope(context_recycler);
+      std::vector<std::string> error_msgs;
+      Run(scope, script, "testNotValidHttpsUrl", error_msgs,
+          gin::ConvertToV8(helper_->isolate(), url_string));
+      EXPECT_THAT(
+          error_msgs,
+          ElementsAre("https://example.test/script.js:11 Uncaught TypeError: "
+                      "reportAdAuctionLoss must be passed a valid HTTPS url."));
+      EXPECT_FALSE(context_recycler.for_debugging_only_bindings()
+                       ->TakeLossReportUrl()
+                       .has_value());
+    }
+  }
+
+  // Null
+  {
+    ContextRecyclerScope scope(context_recycler);
+    std::vector<std::string> error_msgs;
+    Run(scope, script, "testNotValidHttpsUrl", error_msgs,
+        v8::Null(helper_->isolate()));
+    EXPECT_THAT(
+        error_msgs,
+        ElementsAre("https://example.test/script.js:11 Uncaught TypeError: "
+                    "reportAdAuctionLoss must be passed a valid HTTPS url."));
+    EXPECT_FALSE(context_recycler.for_debugging_only_bindings()
+                     ->TakeLossReportUrl()
+                     .has_value());
+  }
+
+  // Array
+  {
+    ContextRecyclerScope scope(context_recycler);
+    std::vector<std::string> error_msgs;
+    v8::LocalVector<v8::Value> arg(helper_->isolate());
+    arg.push_back(gin::ConvertToV8(helper_->isolate(), 5));
+
+    Run(scope, script, "testNotValidHttpsUrl", error_msgs,
+        gin::ConvertToV8(helper_->isolate(), arg));
+    EXPECT_THAT(
+        error_msgs,
+        ElementsAre("https://example.test/script.js:11 Uncaught TypeError: "
+                    "reportAdAuctionLoss must be passed a valid HTTPS url."));
+    EXPECT_FALSE(context_recycler.for_debugging_only_bindings()
+                     ->TakeLossReportUrl()
+                     .has_value());
   }
 }
 
 // Exercise RegisterAdBeaconBindings, and make sure they reset properly.
 TEST_F(ContextRecyclerTest, RegisterAdBeaconBindings) {
   const char kScript[] = R"(
-    function test(num) {
+    function AddNumBeacons(num) {
       let obj = {};
       for (let i = num; i < num * 2; ++i) {
         obj['f' + i] = 'https://example2.test/' + i;
       }
       registerAdBeacon(obj);
+    }
+
+    function RegisterBeaconsTwiceForUrl(url) {
+      registerAdBeacon({call1: url});
+      registerAdBeacon({call2: url});
+    }
+
+    function AddTwoBeaconsForUrl(url) {
+      registerAdBeacon({
+          f1: url,
+          f2: url
+      });
+    }
+
+    function AddThreeBeaconsIncludingOneForUrl(url) {
+      registerAdBeacon({
+          f1: 'https://example2.test/1',
+          f2: url,
+          f3: 'https://example2.test/3',
+      });
     }
   )";
 
@@ -353,7 +617,7 @@ TEST_F(ContextRecyclerTest, RegisterAdBeaconBindings) {
   {
     ContextRecyclerScope scope(context_recycler);
     std::vector<std::string> error_msgs;
-    Run(scope, script, "test", error_msgs,
+    Run(scope, script, "AddNumBeacons", error_msgs,
         gin::ConvertToV8(helper_->isolate(), 1));
     EXPECT_THAT(error_msgs, ElementsAre());
     EXPECT_THAT(
@@ -364,7 +628,7 @@ TEST_F(ContextRecyclerTest, RegisterAdBeaconBindings) {
   {
     ContextRecyclerScope scope(context_recycler);
     std::vector<std::string> error_msgs;
-    Run(scope, script, "test", error_msgs,
+    Run(scope, script, "AddNumBeacons", error_msgs,
         gin::ConvertToV8(helper_->isolate(), 2));
     EXPECT_THAT(error_msgs, ElementsAre());
     EXPECT_THAT(
@@ -372,12 +636,90 @@ TEST_F(ContextRecyclerTest, RegisterAdBeaconBindings) {
         ElementsAre(Pair("f2", GURL("https://example2.test/2")),
                     Pair("f3", GURL("https://example2.test/3"))));
   }
+
+  // Calling RegisterBeaconsTwiceForUrl() twice throws an exception. The result
+  // from the first call is returned.
+  {
+    ContextRecyclerScope scope(context_recycler);
+    std::vector<std::string> error_msgs;
+    Run(scope, script, "RegisterBeaconsTwiceForUrl", error_msgs,
+        gin::ConvertToV8(helper_->isolate(),
+                         std::string("https://example2.test/")));
+    EXPECT_THAT(
+        error_msgs,
+        ElementsAre("https://example.test/script.js:12 Uncaught TypeError: "
+                    "registerAdBeacon may be called at most once."));
+    EXPECT_THAT(
+        context_recycler.register_ad_beacon_bindings()->TakeAdBeaconMap(),
+        ElementsAre(Pair("call1", "https://example2.test/")));
+  }
+
+  // URLs that are the max URL length should be passed along without issues.
+  {
+    ContextRecyclerScope scope(context_recycler);
+    std::vector<std::string> error_msgs;
+    Run(scope, script, "AddTwoBeaconsForUrl", error_msgs,
+        gin::ConvertToV8(helper_->isolate(), almost_too_long_url()));
+    EXPECT_THAT(error_msgs, ElementsAre());
+    EXPECT_THAT(
+        context_recycler.register_ad_beacon_bindings()->TakeAdBeaconMap(),
+        ElementsAre(Pair("f1", almost_too_long_url()),
+                    Pair("f2", almost_too_long_url())));
+  }
+
+  // URLs that are longer than the max URL length should be ignored.
+  {
+    ContextRecyclerScope scope(context_recycler);
+    std::vector<std::string> error_msgs;
+    Run(scope, script, "AddTwoBeaconsForUrl", error_msgs,
+        gin::ConvertToV8(helper_->isolate(), too_long_url()));
+    EXPECT_THAT(error_msgs, ElementsAre());
+    EXPECT_THAT(
+        context_recycler.register_ad_beacon_bindings()->TakeAdBeaconMap(),
+        ElementsAre());
+  }
+
+  // If there are a mix of URLs that are too long and URLs that are not, the
+  // URLs that are too long should be ignored, leaving only the URLs that are
+  // not too long.
+  {
+    ContextRecyclerScope scope(context_recycler);
+    std::vector<std::string> error_msgs;
+    Run(scope, script, "AddThreeBeaconsIncludingOneForUrl", error_msgs,
+        gin::ConvertToV8(helper_->isolate(), too_long_url()));
+    EXPECT_THAT(error_msgs, ElementsAre());
+    EXPECT_THAT(
+        context_recycler.register_ad_beacon_bindings()->TakeAdBeaconMap(),
+        ElementsAre(Pair("f1", GURL("https://example2.test/1")),
+                    Pair("f3", GURL("https://example2.test/3"))));
+  }
+
+  // Even with a URL that is too long, calling RegisterBeaconsTwiceForUrl()
+  // twice still throws an exception.
+  {
+    ContextRecyclerScope scope(context_recycler);
+    std::vector<std::string> error_msgs;
+    Run(scope, script, "RegisterBeaconsTwiceForUrl", error_msgs,
+        gin::ConvertToV8(helper_->isolate(), too_long_url()));
+    EXPECT_THAT(
+        error_msgs,
+        ElementsAre("https://example.test/script.js:12 Uncaught TypeError: "
+                    "registerAdBeacon may be called at most once."));
+    EXPECT_THAT(
+        context_recycler.register_ad_beacon_bindings()->TakeAdBeaconMap(),
+        ElementsAre());
+  }
 }
 
 // Exercise ReportBindings, and make sure they reset properly.
 TEST_F(ContextRecyclerTest, ReportBindings) {
   const char kScript[] = R"(
-    function test(url) {
+    function sendReportOnce(url) {
+      sendReportTo(url);
+    }
+
+    function sendReportTwice(url) {
+      sendReportTo(url);
       sendReportTo(url);
     }
   )";
@@ -395,7 +737,7 @@ TEST_F(ContextRecyclerTest, ReportBindings) {
     // Make sure an exception doesn't stick around between executions.
     ContextRecyclerScope scope(context_recycler);
     std::vector<std::string> error_msgs;
-    Run(scope, script, "test", error_msgs,
+    Run(scope, script, "sendReportOnce", error_msgs,
         gin::ConvertToV8(helper_->isolate(), std::string("not-a-url")));
     EXPECT_THAT(
         error_msgs,
@@ -406,7 +748,7 @@ TEST_F(ContextRecyclerTest, ReportBindings) {
   {
     ContextRecyclerScope scope(context_recycler);
     std::vector<std::string> error_msgs;
-    Run(scope, script, "test", error_msgs,
+    Run(scope, script, "sendReportOnce", error_msgs,
         gin::ConvertToV8(helper_->isolate(),
                          std::string("https://example2.test/a")));
     EXPECT_THAT(error_msgs, ElementsAre());
@@ -414,14 +756,13 @@ TEST_F(ContextRecyclerTest, ReportBindings) {
     EXPECT_EQ("https://example2.test/a",
               context_recycler.report_bindings()->report_url()->spec());
   }
-
   // Should already be cleared between executions.
   EXPECT_FALSE(context_recycler.report_bindings()->report_url().has_value());
 
   {
     ContextRecyclerScope scope(context_recycler);
     std::vector<std::string> error_msgs;
-    Run(scope, script, "test", error_msgs,
+    Run(scope, script, "sendReportOnce", error_msgs,
         gin::ConvertToV8(helper_->isolate(),
                          std::string("https://example.test/b")));
     EXPECT_THAT(error_msgs, ElementsAre());
@@ -429,6 +770,62 @@ TEST_F(ContextRecyclerTest, ReportBindings) {
     EXPECT_EQ("https://example.test/b",
               context_recycler.report_bindings()->report_url()->spec());
   }
+  EXPECT_FALSE(context_recycler.report_bindings()->report_url().has_value());
+
+  // Calling sendReportTo() twice should result in an error.
+  {
+    ContextRecyclerScope scope(context_recycler);
+    std::vector<std::string> error_msgs;
+    Run(scope, script, "sendReportTwice", error_msgs,
+        gin::ConvertToV8(helper_->isolate(),
+                         std::string("https://example.test/b")));
+    EXPECT_THAT(
+        error_msgs,
+        ElementsAre("https://example.test/script.js:8 Uncaught TypeError: "
+                    "sendReportTo may be called at most once."));
+    EXPECT_FALSE(context_recycler.report_bindings()->report_url().has_value());
+  }
+  EXPECT_FALSE(context_recycler.report_bindings()->report_url().has_value());
+
+  // URLs that are the max URL length should be passed along without issues.
+  {
+    ContextRecyclerScope scope(context_recycler);
+    std::vector<std::string> error_msgs;
+    Run(scope, script, "sendReportOnce", error_msgs,
+        gin::ConvertToV8(helper_->isolate(), almost_too_long_url()));
+    EXPECT_THAT(error_msgs, ElementsAre());
+    ASSERT_TRUE(context_recycler.report_bindings()->report_url().has_value());
+    EXPECT_EQ(almost_too_long_url(),
+              context_recycler.report_bindings()->report_url()->spec());
+  }
+  EXPECT_FALSE(context_recycler.report_bindings()->report_url().has_value());
+
+  // URLs that are too long should be treated as empty URLs, but should not
+  // throw.
+  {
+    ContextRecyclerScope scope(context_recycler);
+    std::vector<std::string> error_msgs;
+    Run(scope, script, "sendReportOnce", error_msgs,
+        gin::ConvertToV8(helper_->isolate(), too_long_url()));
+    EXPECT_THAT(error_msgs, ElementsAre());
+    EXPECT_FALSE(context_recycler.report_bindings()->report_url().has_value());
+  }
+  EXPECT_FALSE(context_recycler.report_bindings()->report_url().has_value());
+
+  // Calling sendReportTo() twice, even with too-long URLs should result in an
+  // error.
+  {
+    ContextRecyclerScope scope(context_recycler);
+    std::vector<std::string> error_msgs;
+    Run(scope, script, "sendReportTwice", error_msgs,
+        gin::ConvertToV8(helper_->isolate(), too_long_url()));
+    EXPECT_THAT(
+        error_msgs,
+        ElementsAre("https://example.test/script.js:8 Uncaught TypeError: "
+                    "sendReportTo may be called at most once."));
+    EXPECT_FALSE(context_recycler.report_bindings()->report_url().has_value());
+  }
+  EXPECT_FALSE(context_recycler.report_bindings()->report_url().has_value());
 }
 
 // Exercise SetBidBindings, and make sure they reset properly.
@@ -484,12 +881,11 @@ TEST_F(ContextRecyclerTest, SetBidBindings) {
 
     EXPECT_THAT(error_msgs, ElementsAre());
     ASSERT_TRUE(context_recycler.set_bid_bindings()->has_bids());
-    std::vector<mojom::BidderWorkletBidPtr> bids =
-        context_recycler.set_bid_bindings()->TakeBids();
+    auto bids = context_recycler.set_bid_bindings()->TakeBids();
     ASSERT_EQ(1u, bids.size());
-    EXPECT_EQ("https://example2.test/ad1", bids[0]->ad_descriptor.url);
-    EXPECT_EQ(10.0, bids[0]->bid);
-    EXPECT_EQ(base::Milliseconds(500), bids[0]->bid_duration);
+    EXPECT_EQ("https://example2.test/ad1", bids[0].bid->ad_descriptor.url);
+    EXPECT_EQ(10.0, bids[0].bid->bid);
+    EXPECT_EQ(base::Milliseconds(500), bids[0].bid->bid_duration);
     EXPECT_EQ(mojom::RejectReason::kNotAvailable,
               context_recycler.set_bid_bindings()->reject_reason());
   }
@@ -614,15 +1010,14 @@ TEST_F(ContextRecyclerTest, SetBidBindings) {
 
     EXPECT_THAT(error_msgs, ElementsAre());
     ASSERT_TRUE(context_recycler.set_bid_bindings()->has_bids());
-    std::vector<mojom::BidderWorkletBidPtr> bids =
-        context_recycler.set_bid_bindings()->TakeBids();
+    auto bids = context_recycler.set_bid_bindings()->TakeBids();
     ASSERT_EQ(1u, bids.size());
-    EXPECT_EQ("https://example2.test/ad5", bids[0]->ad_descriptor.url);
-    EXPECT_EQ(15.0, bids[0]->bid);
-    EXPECT_EQ(base::Milliseconds(200), bids[0]->bid_duration);
-    ASSERT_TRUE(bids[0]->ad_component_descriptors.has_value());
+    EXPECT_EQ("https://example2.test/ad5", bids[0].bid->ad_descriptor.url);
+    EXPECT_EQ(15.0, bids[0].bid->bid);
+    EXPECT_EQ(base::Milliseconds(200), bids[0].bid->bid_duration);
+    ASSERT_TRUE(bids[0].bid->ad_component_descriptors.has_value());
     EXPECT_THAT(
-        bids[0]->ad_component_descriptors.value(),
+        bids[0].bid->ad_component_descriptors.value(),
         ElementsAre(
             blink::AdDescriptor(GURL("https://example2.test/portion3")),
             blink::AdDescriptor(GURL("https://example2.test/portion5"))));
@@ -741,12 +1136,11 @@ TEST_F(ContextRecyclerTest, SetBidBindings) {
 
     EXPECT_THAT(error_msgs, ElementsAre());
     ASSERT_TRUE(context_recycler.set_bid_bindings()->has_bids());
-    std::vector<mojom::BidderWorkletBidPtr> bids =
-        context_recycler.set_bid_bindings()->TakeBids();
+    auto bids = context_recycler.set_bid_bindings()->TakeBids();
     ASSERT_EQ(1u, bids.size());
-    EXPECT_EQ("https://example2.test/ad2", bids[0]->ad_descriptor.url);
-    EXPECT_EQ(10.0, bids[0]->bid);
-    EXPECT_EQ(base::Milliseconds(500), bids[0]->bid_duration);
+    EXPECT_EQ("https://example2.test/ad2", bids[0].bid->ad_descriptor.url);
+    EXPECT_EQ(10.0, bids[0].bid->bid);
+    EXPECT_EQ(base::Milliseconds(500), bids[0].bid->bid_duration);
   }
 
   {
@@ -777,13 +1171,12 @@ TEST_F(ContextRecyclerTest, SetBidBindings) {
 
     EXPECT_THAT(error_msgs, ElementsAre());
     ASSERT_TRUE(context_recycler.set_bid_bindings()->has_bids());
-    std::vector<mojom::BidderWorkletBidPtr> bids =
-        context_recycler.set_bid_bindings()->TakeBids();
+    auto bids = context_recycler.set_bid_bindings()->TakeBids();
     ASSERT_EQ(1u, bids.size());
-    EXPECT_EQ("https://example2.test/ad2", bids[0]->ad_descriptor.url);
-    EXPECT_EQ(10.0, bids[0]->bid);
-    ASSERT_TRUE(bids[0]->bid_currency.has_value());
-    EXPECT_EQ("USD", bids[0]->bid_currency->currency_code());
+    EXPECT_EQ("https://example2.test/ad2", bids[0].bid->ad_descriptor.url);
+    EXPECT_EQ(10.0, bids[0].bid->bid);
+    ASSERT_TRUE(bids[0].bid->bid_currency.has_value());
+    EXPECT_EQ("USD", bids[0].bid->bid_currency->currency_code());
     EXPECT_EQ(mojom::RejectReason::kNotAvailable,
               context_recycler.set_bid_bindings()->reject_reason());
   }
@@ -852,13 +1245,12 @@ TEST_F(ContextRecyclerTest, SetBidBindings) {
 
     EXPECT_THAT(error_msgs, ElementsAre());
     ASSERT_TRUE(context_recycler.set_bid_bindings()->has_bids());
-    std::vector<mojom::BidderWorkletBidPtr> bids =
-        context_recycler.set_bid_bindings()->TakeBids();
+    auto bids = context_recycler.set_bid_bindings()->TakeBids();
     ASSERT_EQ(1u, bids.size());
-    EXPECT_EQ("https://example2.test/ad2", bids[0]->ad_descriptor.url);
-    EXPECT_EQ(10.0, bids[0]->bid);
-    ASSERT_TRUE(bids[0]->bid_currency.has_value());
-    EXPECT_EQ("CAD", bids[0]->bid_currency->currency_code());
+    EXPECT_EQ("https://example2.test/ad2", bids[0].bid->ad_descriptor.url);
+    EXPECT_EQ(10.0, bids[0].bid->bid);
+    ASSERT_TRUE(bids[0].bid->bid_currency.has_value());
+    EXPECT_EQ("CAD", bids[0].bid->bid_currency->currency_code());
     EXPECT_EQ(mojom::RejectReason::kNotAvailable,
               context_recycler.set_bid_bindings()->reject_reason());
   }
@@ -898,12 +1290,12 @@ TEST_F(ContextRecyclerTest, SetBidBindings) {
     std::vector<std::string> error_msgs;
     Run(scope, script, "test", error_msgs, gin::ConvertToV8(isolate, bids));
     EXPECT_THAT(error_msgs, ElementsAre());
-    auto mojo_bids = context_recycler.set_bid_bindings()->TakeBids();
-    ASSERT_EQ(2u, mojo_bids.size());
-    EXPECT_EQ("https://example1.test/ad1", mojo_bids[0]->ad_descriptor.url);
-    EXPECT_EQ(10.0, mojo_bids[0]->bid);
-    EXPECT_EQ("https://example2.test/ad2", mojo_bids[1]->ad_descriptor.url);
-    EXPECT_EQ(9.5, mojo_bids[1]->bid);
+    auto bid_info = context_recycler.set_bid_bindings()->TakeBids();
+    ASSERT_EQ(2u, bid_info.size());
+    EXPECT_EQ("https://example1.test/ad1", bid_info[0].bid->ad_descriptor.url);
+    EXPECT_EQ(10.0, bid_info[0].bid->bid);
+    EXPECT_EQ("https://example2.test/ad2", bid_info[1].bid->ad_descriptor.url);
+    EXPECT_EQ(9.5, bid_info[1].bid->bid);
   }
 
   {
@@ -951,8 +1343,8 @@ TEST_F(ContextRecyclerTest, SetBidBindings) {
                 ElementsAre("https://example.test/script.js:3 Uncaught "
                             "TypeError: more bids provided than permitted by "
                             "auction configuration."));
-    auto mojo_bids = context_recycler.set_bid_bindings()->TakeBids();
-    EXPECT_EQ(0u, mojo_bids.size());
+    auto bid_info = context_recycler.set_bid_bindings()->TakeBids();
+    EXPECT_EQ(0u, bid_info.size());
   }
 
   {
@@ -995,12 +1387,12 @@ TEST_F(ContextRecyclerTest, SetBidBindings) {
     std::vector<std::string> error_msgs;
     Run(scope, script, "test", error_msgs, gin::ConvertToV8(isolate, bids));
     EXPECT_THAT(error_msgs, ElementsAre());
-    auto mojo_bids = context_recycler.set_bid_bindings()->TakeBids();
-    ASSERT_EQ(2u, mojo_bids.size());
-    EXPECT_EQ("https://example1.test/ad1", mojo_bids[0]->ad_descriptor.url);
-    EXPECT_EQ(10.0, mojo_bids[0]->bid);
-    EXPECT_EQ("https://example2.test/ad2", mojo_bids[1]->ad_descriptor.url);
-    EXPECT_EQ(9.5, mojo_bids[1]->bid);
+    auto bid_info = context_recycler.set_bid_bindings()->TakeBids();
+    ASSERT_EQ(2u, bid_info.size());
+    EXPECT_EQ("https://example1.test/ad1", bid_info[0].bid->ad_descriptor.url);
+    EXPECT_EQ(10.0, bid_info[0].bid->bid);
+    EXPECT_EQ("https://example2.test/ad2", bid_info[1].bid->ad_descriptor.url);
+    EXPECT_EQ(9.5, bid_info[1].bid->bid);
   }
 
   {
@@ -1047,8 +1439,8 @@ TEST_F(ContextRecyclerTest, SetBidBindings) {
                             "TypeError: bids sequence entry: bid render URL "
                             "'https://example3.test/ad3' isn't one of the "
                             "registered creative URLs."));
-    auto mojo_bids = context_recycler.set_bid_bindings()->TakeBids();
-    EXPECT_EQ(0u, mojo_bids.size());
+    auto bid_info = context_recycler.set_bid_bindings()->TakeBids();
+    EXPECT_EQ(0u, bid_info.size());
   }
   {
     // Empty array is no bids.
@@ -1069,8 +1461,8 @@ TEST_F(ContextRecyclerTest, SetBidBindings) {
     std::vector<std::string> error_msgs;
     Run(scope, script, "test", error_msgs, gin::ConvertToV8(isolate, bids));
     EXPECT_THAT(error_msgs, ElementsAre());
-    auto mojo_bids = context_recycler.set_bid_bindings()->TakeBids();
-    EXPECT_EQ(0u, mojo_bids.size());
+    auto bid_info = context_recycler.set_bid_bindings()->TakeBids();
+    EXPECT_EQ(0u, bid_info.size());
   }
 }
 
@@ -1690,6 +2082,382 @@ TEST_F(ContextRecyclerTest, SharedStorageMethodsPermissionsPolicyDisabled) {
   }
 }
 
+TEST_F(ContextRecyclerTest, SellerBrowserSignalsLazyFiller) {
+  const char kScript[] = R"(
+    function test(browserSignals) {
+      if (!browserSignals.renderUrl)
+        return typeof browserSignals.renderUrl;
+      return JSON.stringify(browserSignals.renderUrl);
+    }
+  )";
+
+  v8::Local<v8::UnboundScript> script = Compile(kScript);
+  ASSERT_FALSE(script.IsEmpty());
+
+  GURL browser_signal_render_url_1("https://a.org/render_url1");
+  GURL browser_signal_render_url_2("https://a.org/render_url2");
+
+  v8::Isolate* isolate = helper_->isolate();
+  ContextRecycler context_recycler(helper_.get());
+
+  v8::Local<v8::Object> o1;
+  v8::Local<v8::Object> o2;
+
+  {
+    // Fill in o1.
+    ContextRecyclerScope scope(context_recycler);
+    o1 = v8::Object::New(isolate);
+    context_recycler.AddSellerBrowserSignalsLazyFiller();
+    EXPECT_TRUE(
+        context_recycler.seller_browser_signals_lazy_filler()->FillInObject(
+            browser_signal_render_url_1, o1));
+
+    EXPECT_EQ("\"https://a.org/render_url1\"",
+              RunExpectString(scope, script, "test", o1));
+  }
+
+  {
+    // Fill in o2 with a different value.
+    ContextRecyclerScope scope(context_recycler);
+    o2 = v8::Object::New(isolate);
+
+    EXPECT_TRUE(
+        context_recycler.seller_browser_signals_lazy_filler()->FillInObject(
+            browser_signal_render_url_2, o2));
+
+    EXPECT_EQ("\"https://a.org/render_url2\"",
+              RunExpectString(scope, script, "test", o2));
+    // o1 was already accessed with url 1.
+    EXPECT_EQ("\"https://a.org/render_url1\"",
+              RunExpectString(scope, script, "test", o1));
+  }
+
+  {
+    // Make a new object that isn't filled.
+    ContextRecyclerScope scope(context_recycler);
+    o1 = v8::Object::New(isolate);
+
+    EXPECT_EQ(R"(undefined)", RunExpectString(scope, script, "test", o1));
+
+    // Now fill it in for later but don't access it.
+    EXPECT_TRUE(
+        context_recycler.seller_browser_signals_lazy_filler()->FillInObject(
+            browser_signal_render_url_1, o1));
+  }
+
+  {
+    // Filling in o2 will overwrite the unaccessed value for o1.
+    ContextRecyclerScope scope(context_recycler);
+
+    o2 = v8::Object::New(isolate);
+    EXPECT_TRUE(
+        context_recycler.seller_browser_signals_lazy_filler()->FillInObject(
+            browser_signal_render_url_2, o2));
+
+    EXPECT_EQ("\"https://a.org/render_url2\"",
+              RunExpectString(scope, script, "test", o2));
+    EXPECT_EQ("\"https://a.org/render_url2\"",
+              RunExpectString(scope, script, "test", o1));
+  }
+}
+
+TEST_F(ContextRecyclerTest, AuctionConfigLazyFiller) {
+  std::optional<GURL> decision_logic_url;
+  std::optional<GURL> trusted_scoring_signals_url;
+  blink::AuctionConfig::NonSharedParams params;
+  params.interest_group_buyers.emplace();
+  params.interest_group_buyers->push_back(
+      url::Origin::Create(GURL("https://example.org")));
+
+  blink::AuctionConfig::NonSharedParams params2;
+  params2.interest_group_buyers.emplace();
+  params2.interest_group_buyers->push_back(
+      url::Origin::Create(GURL("https://a.com")));
+  params2.interest_group_buyers->push_back(
+      url::Origin::Create(GURL("https://b.com")));
+
+  const char kScript[] = R"(
+    function test(auctionConfig) {
+      if (!auctionConfig.interestGroupBuyers)
+        return typeof auctionConfig.interestGroupBuyers;
+      return JSON.stringify(auctionConfig.interestGroupBuyers);
+    }
+  )";
+
+  v8::Local<v8::UnboundScript> script = Compile(kScript);
+  ASSERT_FALSE(script.IsEmpty());
+
+  v8::Isolate* isolate = helper_->isolate();
+  v8::Local<v8::Object> o1;
+  v8::Local<v8::Object> o2;
+
+  ContextRecycler context_recycler(helper_.get());
+  {
+    // Fill in o1 and o2 based on a run with 2 auctions.
+    ContextRecyclerScope scope(context_recycler);
+    std::vector<std::string> error_msgs;
+
+    o1 = v8::Object::New(isolate);
+    o2 = v8::Object::New(isolate);
+
+    context_recycler.EnsureAuctionConfigLazyFillers(2);
+    EXPECT_TRUE(context_recycler.auction_config_lazy_fillers()[0]->FillInObject(
+        params, decision_logic_url, trusted_scoring_signals_url, o1));
+
+    EXPECT_TRUE(context_recycler.auction_config_lazy_fillers()[1]->FillInObject(
+        params2, decision_logic_url, trusted_scoring_signals_url, o2));
+
+    EXPECT_EQ(R"(["https://example.org"])",
+              RunExpectString(scope, script, "test", o1));
+    EXPECT_EQ(R"(["https://a.com","https://b.com"])",
+              RunExpectString(scope, script, "test", o2));
+  }
+
+  {
+    // Make new o1 and o2, fill them in, but do not access their fields;
+    // they'll get accessed next time.
+    ContextRecyclerScope scope(context_recycler);
+    o1 = v8::Object::New(isolate);
+    o2 = v8::Object::New(isolate);
+
+    context_recycler.EnsureAuctionConfigLazyFillers(2);
+    EXPECT_TRUE(context_recycler.auction_config_lazy_fillers()[0]->FillInObject(
+        params, decision_logic_url, trusted_scoring_signals_url, o1));
+
+    EXPECT_TRUE(context_recycler.auction_config_lazy_fillers()[1]->FillInObject(
+        params2, decision_logic_url, trusted_scoring_signals_url, o2));
+  }
+
+  {
+    // Do run with one lazy filler; access both old objects.
+    ContextRecyclerScope scope(context_recycler);
+
+    context_recycler.EnsureAuctionConfigLazyFillers(1);
+    // Now using params2 to fill it in.
+    v8::Local<v8::Object> o3 = v8::Object::New(isolate);
+    EXPECT_TRUE(context_recycler.auction_config_lazy_fillers()[0]->FillInObject(
+        params2, decision_logic_url, trusted_scoring_signals_url, o3));
+
+    // What the current filler for that slot happens to point to.
+    EXPECT_EQ(R"(["https://a.com","https://b.com"])",
+              RunExpectString(scope, script, "test", o1));
+
+    // Out-of-range; undefined returned.
+    EXPECT_EQ(R"(undefined)", RunExpectString(scope, script, "test", o2));
+
+    // Actual value.
+    EXPECT_EQ(R"(["https://a.com","https://b.com"])",
+              RunExpectString(scope, script, "test", o3));
+  }
+
+  {
+    // Make new o1, fill it in, but do not access its fields; they'll get
+    // accessed next time.
+    ContextRecyclerScope scope(context_recycler);
+    o1 = v8::Object::New(isolate);
+
+    context_recycler.EnsureAuctionConfigLazyFillers(1);
+    EXPECT_TRUE(context_recycler.auction_config_lazy_fillers()[0]->FillInObject(
+        params, decision_logic_url, trusted_scoring_signals_url, o1));
+  }
+
+  {
+    // Go from 1 -> 2; also make the first one does not have any values.
+    ContextRecyclerScope scope(context_recycler);
+    params.interest_group_buyers = std::nullopt;
+
+    v8::Local<v8::Object> o3 = v8::Object::New(isolate);
+    o2 = v8::Object::New(isolate);
+
+    context_recycler.EnsureAuctionConfigLazyFillers(2);
+    EXPECT_TRUE(context_recycler.auction_config_lazy_fillers()[0]->FillInObject(
+        params, decision_logic_url, trusted_scoring_signals_url, o3));
+
+    EXPECT_TRUE(context_recycler.auction_config_lazy_fillers()[1]->FillInObject(
+        params2, decision_logic_url, trusted_scoring_signals_url, o2));
+
+    EXPECT_EQ(R"(undefined)", RunExpectString(scope, script, "test", o1));
+    EXPECT_EQ(R"(["https://a.com","https://b.com"])",
+              RunExpectString(scope, script, "test", o2));
+    EXPECT_EQ(R"(undefined)", RunExpectString(scope, script, "test", o3));
+  }
+}
+
+// Test for error-handling when lazy-filling various field in AuctionConfig
+// (except interestGroupBuyers, which is covered by the above test).
+// An initial value is also serialized to make sure we're not always just
+// accessing a typo.
+TEST_F(ContextRecyclerTest, AuctionConfigLazyFillerErrorHandling) {
+  const char kScriptTemplate[] = R"(
+    function test(auctionConfig) {
+      const fieldName = '%s';
+      if (!auctionConfig[fieldName])
+        return typeof auctionConfig[fieldName];
+      return JSON.stringify(auctionConfig[fieldName]);
+    }
+  )";
+
+  const struct TestCase {
+    const char* field;
+    const char* expected_val;
+  } kTests[] = {
+      {"deprecatedRenderURLReplacements", R"({"a":"1","b":"2"})"},
+      {"perBuyerSignals", R"({"https://a.com":1,"https://b.com":2})"},
+      {"perBuyerTimeouts",
+       R"({"https://a.com":100,"https://b.com":200,"*":50})"},
+      {"perBuyerCumulativeTimeouts",
+       R"({"https://a.com":1000,"https://b.com":2000,"*":500})"},
+      {"perBuyerCurrencies",
+       R"({"https://a.com":"EUR","https://b.com":"CAD","*":"USD"})"},
+      {"perBuyerPrioritySignals", R"({"*":{"a":0.5}})"},
+      {"requestedSize", R"({"width":"100px","height":"50px"})"},
+      {"allSlotsRequestedSizes", R"([{"width":"200px","height":"75px"}])"},
+      {"decisionLogicUrl", "\"https://a.com/decision/\""},
+      {"trustedScoringSignalsUrl", "\"https://a.com/scoring/\""}};
+
+  for (const auto& test : kTests) {
+    SCOPED_TRACE(test.field);
+    std::optional<GURL> decision_logic_url = GURL("https://a.com/decision/");
+    std::optional<GURL> trusted_scoring_signals_url =
+        GURL("https://a.com/scoring/");
+    blink::AuctionConfig::NonSharedParams params;
+    std::vector<blink::AuctionConfig::AdKeywordReplacement> replacements = {
+        {"a", "1"}, {"b", "2"}};
+    params.deprecated_render_url_replacements =
+        blink::AuctionConfig::MaybePromiseDeprecatedRenderURLReplacements::
+            FromValue(std::move(replacements));
+
+    params.per_buyer_signals =
+        blink::AuctionConfig::MaybePromisePerBuyerSignals::FromValue(
+            {{{url::Origin::Create(GURL("https://a.com")), "1"},
+              {url::Origin::Create(GURL("https://b.com")), "2"}}});
+
+    params.buyer_timeouts =
+        blink::AuctionConfig::MaybePromiseBuyerTimeouts::FromValue(
+            {base::Milliseconds(50),
+             {{{url::Origin::Create(GURL("https://a.com")),
+                base::Milliseconds(100)},
+               {url::Origin::Create(GURL("https://b.com")),
+                base::Milliseconds(200)}}}});
+
+    params.buyer_cumulative_timeouts =
+        blink::AuctionConfig::MaybePromiseBuyerTimeouts::FromValue(
+            {base::Milliseconds(500),
+             {{{url::Origin::Create(GURL("https://a.com")),
+                base::Milliseconds(1000)},
+               {url::Origin::Create(GURL("https://b.com")),
+                base::Milliseconds(2000)}}}});
+
+    params.buyer_currencies =
+        blink::AuctionConfig::MaybePromiseBuyerCurrencies::FromValue(
+            {blink::AdCurrency::From("USD"),
+             {{{url::Origin::Create(GURL("https://a.com")),
+                blink::AdCurrency::From("EUR")},
+               {url::Origin::Create(GURL("https://b.com")),
+                blink::AdCurrency::From("CAD")}}}});
+
+    params.all_buyers_priority_signals = {{{"a", 0.5}}};
+
+    params.requested_size =
+        blink::AdSize(100.0, blink::AdSize::LengthUnit::kPixels, 50.0,
+                      blink::AdSize::LengthUnit::kPixels);
+
+    params.all_slots_requested_sizes = {
+        {blink::AdSize(200.0, blink::AdSize::LengthUnit::kPixels, 75.0,
+                       blink::AdSize::LengthUnit::kPixels)}};
+
+    v8::Local<v8::UnboundScript> script =
+        Compile(base::StringPrintf(kScriptTemplate, test.field));
+    ASSERT_FALSE(script.IsEmpty());
+
+    v8::Isolate* isolate = helper_->isolate();
+    v8::Local<v8::Object> o1;
+    v8::Local<v8::Object> o2;
+
+    ContextRecycler context_recycler(helper_.get());
+    {
+      // Make new o1 and o2, fill them in, and check that accessing the fields
+      // works, so we're setting them up and reading them correctly.
+      ContextRecyclerScope scope(context_recycler);
+      o1 = v8::Object::New(isolate);
+      o2 = v8::Object::New(isolate);
+
+      context_recycler.EnsureAuctionConfigLazyFillers(2);
+      EXPECT_TRUE(
+          context_recycler.auction_config_lazy_fillers()[0]->FillInObject(
+              params, decision_logic_url, trusted_scoring_signals_url, o1));
+
+      EXPECT_TRUE(
+          context_recycler.auction_config_lazy_fillers()[1]->FillInObject(
+              params, decision_logic_url, trusted_scoring_signals_url, o2));
+
+      EXPECT_EQ(test.expected_val, RunExpectString(scope, script, "test", o1));
+      EXPECT_EQ(test.expected_val, RunExpectString(scope, script, "test", o2));
+    }
+
+    {
+      // Make new o1 and o2, fill them in, but do not access their fields;
+      // they'll get accessed next time. (If they got accessed, v8 would
+      // cache the value, so we won't be able to cache trying to fill it in
+      // under strange conditions).
+      ContextRecyclerScope scope(context_recycler);
+      o1 = v8::Object::New(isolate);
+      o2 = v8::Object::New(isolate);
+
+      context_recycler.EnsureAuctionConfigLazyFillers(2);
+      EXPECT_TRUE(
+          context_recycler.auction_config_lazy_fillers()[0]->FillInObject(
+              params, decision_logic_url, trusted_scoring_signals_url, o1));
+
+      EXPECT_TRUE(
+          context_recycler.auction_config_lazy_fillers()[1]->FillInObject(
+              params, decision_logic_url, trusted_scoring_signals_url, o2));
+    }
+
+    {
+      // Exercise the field getter with both null non-shared-params pointer and
+      // missing field. To hit the latter conditional, we need a new object
+      // filled so that the lazy filler it shares with the old one gets a
+      // non-null params pointer.
+      ContextRecyclerScope scope(context_recycler);
+      context_recycler.EnsureAuctionConfigLazyFillers(1);
+      v8::Local<v8::Object> o3 = v8::Object::New(isolate);
+      params.deprecated_render_url_replacements.mutable_value_for_testing()
+          .clear();
+      params.per_buyer_signals.mutable_value_for_testing() = std::nullopt;
+      params.buyer_timeouts.mutable_value_for_testing().all_buyers_timeout =
+          std::nullopt;
+      params.buyer_timeouts.mutable_value_for_testing().per_buyer_timeouts =
+          std::nullopt;
+      params.buyer_cumulative_timeouts.mutable_value_for_testing()
+          .all_buyers_timeout = std::nullopt;
+      params.buyer_cumulative_timeouts.mutable_value_for_testing()
+          .per_buyer_timeouts = std::nullopt;
+      params.buyer_currencies.mutable_value_for_testing().all_buyers_currency =
+          std::nullopt;
+      params.buyer_currencies.mutable_value_for_testing().per_buyer_currencies =
+          std::nullopt;
+      params.all_buyers_priority_signals = std::nullopt;
+      params.requested_size->width = -5;
+      params.all_slots_requested_sizes = std::nullopt;
+      decision_logic_url = std::nullopt;
+      trusted_scoring_signals_url = std::nullopt;
+      EXPECT_TRUE(
+          context_recycler.auction_config_lazy_fillers()[0]->FillInObject(
+              params, decision_logic_url, trusted_scoring_signals_url, o3));
+
+      // New config doesn't have a value.
+      EXPECT_EQ("undefined", RunExpectString(scope, script, "test", o3));
+
+      // New config doesn't have a value.
+      EXPECT_EQ("undefined", RunExpectString(scope, script, "test", o1));
+
+      // Out-of-range; undefined returned.
+      EXPECT_EQ("undefined", RunExpectString(scope, script, "test", o2));
+    }
+  }
+}
+
 class ContextRecyclerPrivateAggregationEnabledTest
     : public ContextRecyclerTest {
  public:
@@ -1717,7 +2485,7 @@ class ContextRecyclerPrivateAggregationEnabledTest
       int value,
       std::optional<blink::mojom::DebugKeyPtr> debug_key = std::nullopt) {
     blink::mojom::AggregatableReportHistogramContribution expected_contribution(
-        bucket, value);
+        bucket, value, /*filtering_id=*/std::nullopt);
 
     blink::mojom::DebugModeDetailsPtr debug_mode_details;
     if (debug_key.has_value()) {
@@ -1910,7 +2678,8 @@ TEST_F(ContextRecyclerPrivateAggregationEnabledTest,
     }
 
     blink::mojom::AggregatableReportHistogramContribution
-        expected_contribution_1(/*bucket=*/123, /*value=*/45);
+        expected_contribution_1(/*bucket=*/123, /*value=*/45,
+                                /*filtering_id=*/std::nullopt);
     auction_worklet::mojom::PrivateAggregationRequest expected_request_1(
         auction_worklet::mojom::AggregatableReportContribution::
             NewHistogramContribution(expected_contribution_1.Clone()),
@@ -1918,7 +2687,8 @@ TEST_F(ContextRecyclerPrivateAggregationEnabledTest,
         blink::mojom::DebugModeDetails::New());
 
     blink::mojom::AggregatableReportHistogramContribution
-        expected_contribution_2(/*bucket=*/678, /*value=*/90);
+        expected_contribution_2(/*bucket=*/678, /*value=*/90,
+                                /*filtering_id=*/std::nullopt);
     auction_worklet::mojom::PrivateAggregationRequest expected_request_2(
         auction_worklet::mojom::AggregatableReportContribution::
             NewHistogramContribution(expected_contribution_2.Clone()),
@@ -2339,7 +3109,8 @@ TEST_F(ContextRecyclerPrivateAggregationEnabledTest,
     }
 
     blink::mojom::AggregatableReportHistogramContribution
-        expected_contribution_1(/*bucket=*/123, /*value=*/45);
+        expected_contribution_1(/*bucket=*/123, /*value=*/45,
+                                /*filtering_id=*/std::nullopt);
     auction_worklet::mojom::PrivateAggregationRequest expected_request_1(
         auction_worklet::mojom::AggregatableReportContribution::
             NewHistogramContribution(expected_contribution_1.Clone()),
@@ -2349,7 +3120,8 @@ TEST_F(ContextRecyclerPrivateAggregationEnabledTest,
             /*debug_key=*/blink::mojom::DebugKey::New(1234u)));
 
     blink::mojom::AggregatableReportHistogramContribution
-        expected_contribution_2(/*bucket=*/678, /*value=*/90);
+        expected_contribution_2(/*bucket=*/678, /*value=*/90,
+                                /*filtering_id=*/std::nullopt);
     auction_worklet::mojom::PrivateAggregationRequest expected_request_2(
         auction_worklet::mojom::AggregatableReportContribution::
             NewHistogramContribution(expected_contribution_2.Clone()),

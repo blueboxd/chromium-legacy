@@ -2,9 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40284755): Remove this and spanify to fix the errors.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "base/files/file_util.h"
 
 #include <windows.h>
+#include <winsock2.h>
 
 #include <io.h>
 #include <psapi.h>
@@ -13,7 +19,6 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <time.h>
-#include <winsock2.h>
 
 #include <algorithm>
 #include <limits>
@@ -379,6 +384,7 @@ OnceClosure GetDeleteFileCallbackInternal(
 // might cause the browser or operating system to fail in unexpected ways.
 bool IsPathSafeToSetAclOn(const FilePath& path) {
 #if BUILDFLAG(CLANG_PROFILING)
+  // TODO(crbug.com/329482479) Use PreventExecuteMappingUnchecked for .profraw.
   // Ignore .profraw profiling files, as they can occur anywhere, and only occur
   // during testing.
   if (path.Extension() == FILE_PATH_LITERAL(".profraw")) {
@@ -920,7 +926,7 @@ bool GetFileInfo(const FilePath& file_path, File::Info* results) {
   ULARGE_INTEGER size;
   size.HighPart = attr.nFileSizeHigh;
   size.LowPart = attr.nFileSizeLow;
-  // TODO(crbug.com/1333521): Change Info::size to uint64_t and eliminate this
+  // TODO(crbug.com/40227936): Change Info::size to uint64_t and eliminate this
   // cast.
   results->size = checked_cast<int64_t>(size.QuadPart);
 
@@ -993,7 +999,7 @@ std::optional<uint64_t> ReadFile(const FilePath& filename, span<char> buffer) {
     return std::nullopt;
   }
 
-  // TODO(crbug.com/1333521): Consider supporting reading more than INT_MAX
+  // TODO(crbug.com/40227936): Consider supporting reading more than INT_MAX
   // bytes.
   DWORD bytes_to_read = static_cast<DWORD>(checked_cast<int>(buffer.size()));
 
@@ -1152,13 +1158,13 @@ bool PreReadFile(const FilePath& file_path,
                                  /*Flags=*/0);
 }
 
-bool PreventExecuteMapping(const FilePath& path) {
+bool PreventExecuteMappingInternal(const FilePath& path, bool skip_path_check) {
   if (!base::FeatureList::IsEnabled(
           features::kEnforceNoExecutableFileHandles)) {
     return true;
   }
 
-  bool is_path_safe = IsPathSafeToSetAclOn(path);
+  bool is_path_safe = skip_path_check || IsPathSafeToSetAclOn(path);
 
   if (!is_path_safe) {
     // To mitigate the effect of past OS bugs where attackers are able to use
@@ -1205,6 +1211,16 @@ bool PreventExecuteMapping(const FilePath& path) {
   // ACE if it already exists.
   return win::DenyAccessToPath(path, *sids, FILE_EXECUTE, /*NO_INHERITANCE=*/0,
                                /*recursive=*/false);
+}
+
+bool PreventExecuteMapping(const FilePath& path) {
+  return PreventExecuteMappingInternal(path, false);
+}
+
+bool PreventExecuteMappingUnchecked(
+    const FilePath& path,
+    base::PassKey<PreventExecuteMappingClasses> passkey) {
+  return PreventExecuteMappingInternal(path, true);
 }
 
 void SetExtraNoExecuteAllowedPath(int path_key) {

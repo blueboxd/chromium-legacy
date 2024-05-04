@@ -156,7 +156,7 @@ class TransparentButton : public views::Button {
         [](views::View* host) {
           // This button will be used like a LabelButton, so use the same
           // foreground base color as a label button.
-          // TODO(crbug.com/1423975): Replace by a `ui::ColorId` and use it in
+          // TODO(crbug.com/40260264): Replace by a `ui::ColorId` and use it in
           // `InkDropHost::SetBaseColorId`.
           return color_utils::DeriveDefaultIconColor(
               host->GetColorProvider()->GetColor(
@@ -372,7 +372,7 @@ void DownloadItemView::AddedToWidget() {
 }
 
 void DownloadItemView::Layout(PassKey) {
-  // TODO(crbug.com/1005568): Replace Layout()/CalculatePreferredSize() with a
+  // TODO(crbug.com/40648316): Replace Layout()/CalculatePreferredSize() with a
   // LayoutManager.
 
   LayoutSuperclass<View>(this);
@@ -396,9 +396,10 @@ void DownloadItemView::Layout(PassKey) {
 
     file_name_label_->SetBounds(text_x, CenterY(text_height), text_width,
                                 file_name_height);
-    status_label_->SetBounds(text_x, file_name_label_->bounds().bottom(),
-                             text_width,
-                             status_label_->GetPreferredSize().height());
+    status_label_->SetBounds(
+        text_x, file_name_label_->bounds().bottom(), text_width,
+        status_label_->GetPreferredSize(views::SizeBounds(text_width, {}))
+            .height());
   } else {
     auto* const label = (mode_ == download::DownloadItemMode::kDeepScanning)
                             ? deep_scanning_label_.get()
@@ -547,14 +548,15 @@ void DownloadItemView::AnimationEnded(const gfx::Animation* animation) {
   AnimationProgressed(animation);
 }
 
-gfx::Size DownloadItemView::CalculatePreferredSize() const {
+gfx::Size DownloadItemView::CalculatePreferredSize(
+    const views::SizeBounds& /*available_size*/) const {
   int height, width = dropdown_button_->GetVisible()
                           ? (dropdown_button_->width() + kEndPadding)
                           : 0;
 
   if (mode_ == download::DownloadItemMode::kNormal) {
     int label_width =
-        std::max(file_name_label_->GetPreferredSize().width(), kTextWidth);
+        std::max(file_name_label_->GetPreferredSize({}).width(), kTextWidth);
     if (model_->GetDangerType() ==
         download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_SAFE) {
       label_width =
@@ -1041,7 +1043,6 @@ ui::ImageModel DownloadItemView::GetIcon() const {
     case download::DOWNLOAD_DANGER_TYPE_PROMPT_FOR_SCANNING:
     case download::DOWNLOAD_DANGER_TYPE_PROMPT_FOR_LOCAL_PASSWORD_SCANNING:
       return kInfo;
-    case download::DOWNLOAD_DANGER_TYPE_BLOCKED_UNSUPPORTED_FILETYPE:
     case download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_SAFE:
     case download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_FAILED:
     case download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS:

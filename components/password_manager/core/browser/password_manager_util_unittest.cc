@@ -24,9 +24,10 @@
 #include "components/autofill/core/browser/payments/local_card_migration_manager.h"
 #include "components/autofill/core/browser/test_autofill_client.h"
 #include "components/autofill/core/browser/ui/payments/card_unmask_prompt_options.h"
-#include "components/autofill/core/browser/ui/popup_hiding_reasons.h"
-#include "components/autofill/core/browser/ui/popup_item_ids.h"
 #include "components/autofill/core/browser/ui/suggestion.h"
+#include "components/autofill/core/browser/ui/suggestion_hiding_reason.h"
+#include "components/autofill/core/browser/ui/suggestion_type.h"
+#include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/password_generation_util.h"
 #include "components/device_reauth/mock_device_authenticator.h"
 #include "components/password_manager/core/browser/features/password_features.h"
@@ -238,16 +239,9 @@ TEST(PasswordManagerUtil, GetMatchType_Web) {
 
   form.match_type = PasswordForm::MatchType::kPSL;
   EXPECT_EQ(GetLoginMatchType::kPSL, GetMatchType(form));
-}
 
-TEST(PasswordManagerUtil, GetMatchType_Grouped) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      password_manager::features::kFillingAcrossGroupedSites);
-
-  PasswordForm form = GetTestAndroidCredential();
   form.match_type = PasswordForm::MatchType::kGrouped;
-  EXPECT_EQ(GetLoginMatchType::kAffiliated, GetMatchType(form));
+  EXPECT_EQ(GetLoginMatchType::kGrouped, GetMatchType(form));
 }
 
 TEST(PasswordManagerUtil, FindBestMatches) {
@@ -687,13 +681,20 @@ TEST(PasswordManagerUtil, AvoidOverlappingAutofillMenuAndManualGeneration) {
   password_manager::StubPasswordManagerClient stub_password_client;
   autofill::TestAutofillClient test_autofill_client;
 
-  test_autofill_client.ShowAutofillPopup(
+  test_autofill_client.ShowAutofillSuggestions(
       autofill::AutofillClient::PopupOpenArgs(), /*delegate=*/nullptr);
+  test_autofill_client.ShowAutofillFieldIphForManualFallbackFeature(
+      autofill::FormFieldData());
+
+  ASSERT_TRUE(test_autofill_client.IsShowingAutofillPopup());
+  ASSERT_TRUE(test_autofill_client.IsShowingManualFallbackIph());
+
   UserTriggeredManualGenerationFromContextMenu(&stub_password_client,
                                                &test_autofill_client);
-  EXPECT_EQ(
-      test_autofill_client.popup_hiding_reason(),
-      autofill::PopupHidingReason::kOverlappingWithPasswordGenerationPopup);
+  EXPECT_EQ(test_autofill_client.popup_hiding_reason(),
+            autofill::SuggestionHidingReason::
+                kOverlappingWithPasswordGenerationPopup);
+  EXPECT_FALSE(test_autofill_client.IsShowingManualFallbackIph());
 }
 
 TEST(PasswordManagerUtil, StripAuthAndParams) {

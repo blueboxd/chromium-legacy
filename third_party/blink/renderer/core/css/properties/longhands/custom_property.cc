@@ -115,6 +115,13 @@ void CustomProperty::ApplyInherit(StyleResolverState& state) const {
 void CustomProperty::ApplyValue(StyleResolverState& state,
                                 const CSSValue& value,
                                 ValueMode value_mode) const {
+  // Highlight Pseudos do not allow custom property definitions.
+  // Properties are copied from the originating element when the
+  // style is created.
+  if (state.UsesHighlightPseudoInheritance()) {
+    return;
+  }
+
   ComputedStyleBuilder& builder = state.StyleBuilder();
   DCHECK(!value.IsCSSWideKeyword());
 
@@ -207,7 +214,7 @@ void CustomProperty::ApplyValue(StyleResolverState& state,
   builder.SetVariableValue(name_, registered_value, is_inherited_property);
 }
 
-const CSSValue* CustomProperty::ParseSingleValue(
+const CSSValue* CustomProperty::ParseSingleValueFromRange(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext& local_context) const {

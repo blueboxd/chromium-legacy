@@ -5,6 +5,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <string_view>
 #include <vector>
 
 #include "base/base64.h"
@@ -68,7 +69,6 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/common/features_generated.h"
 #include "third_party/blink/public/mojom/webauthn/authenticator.mojom.h"
 
 #if BUILDFLAG(IS_WIN)
@@ -157,14 +157,14 @@ constexpr char kExcludeCredentialsRangeErrorMessage[] =
 constexpr char kRpIdContentTypeMessage[] =
     "SecurityError: The relying party ID is not a registrable domain suffix "
     "of, nor equal to the current domain. Subsequently, the "
-    ".well-known/webauthn-origins resource of the claimed RP ID had the wrong "
+    ".well-known/webauthn resource of the claimed RP ID had the wrong "
     "content-type. (It should be application/json.)";
 
 constexpr char kRpIdNoEntryMessage[] =
     "SecurityError: The relying party ID is not a registrable domain suffix "
     "of, nor equal to the current domain. Subsequently, fetching the "
-    ".well-known/webauthn-origins resource of the claimed RP ID was successful, "
-    "but no listed origin matched the caller.";
+    ".well-known/webauthn resource of the claimed RP ID was "
+    "successful, but no listed origin matched the caller.";
 
 // Templates to be used with base::ReplaceStringPlaceholders. Can be
 // modified to include up to 9 replacements. The default values for
@@ -471,9 +471,9 @@ class WebAuthBrowserTestContentBrowserClient
   }
 
   // set_webauthn_origins_response sets the fake HTTP response that will be
-  // returned for all requests for `.well-known/webauthn-origins` requests.
-  void set_webauthn_origins_response(base::StringPiece content_type,
-                                     base::StringPiece authorized_origin) {
+  // returned for all requests for `.well-known/webauthn` requests.
+  void set_webauthn_origins_response(std::string_view content_type,
+                                     std::string_view authorized_origin) {
     auto fake_url_loader_factory =
         std::make_unique<FakeNetworkURLLoaderFactory>(
             base::StrCat(
@@ -968,13 +968,7 @@ IN_PROC_BROWSER_TEST_F(WebAuthLocalClientBrowserTest,
 // normally accessed from Javascript in the renderer process.
 class WebAuthJavascriptClientBrowserTest : public WebAuthBrowserTestBase {
  public:
-  WebAuthJavascriptClientBrowserTest() {
-    // The "payment" extension tests require that SPC be enabled.
-    scoped_feature_list_.InitWithFeatures(
-        {features::kSecurePaymentConfirmation,
-         blink::features::kWebAuthAllowCreateInCrossOriginFrame},
-        {});
-  }
+  WebAuthJavascriptClientBrowserTest() = default;
 
   WebAuthJavascriptClientBrowserTest(
       const WebAuthJavascriptClientBrowserTest&) = delete;
@@ -984,7 +978,9 @@ class WebAuthJavascriptClientBrowserTest : public WebAuthBrowserTestBase {
   ~WebAuthJavascriptClientBrowserTest() override = default;
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list_;
+  // The "payment" extension tests require that SPC be enabled.
+  const base::test::ScopedFeatureList scoped_feature_list_{
+      features::kSecurePaymentConfirmation};
 };
 
 constexpr device::ProtocolVersion kAllProtocols[] = {

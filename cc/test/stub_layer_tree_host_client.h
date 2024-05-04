@@ -56,11 +56,10 @@ class StubLayerTreeHostClient : public LayerTreeHostClient {
       int source_frame_number,
       base::TimeDelta first_scroll_delay,
       base::TimeTicks first_scroll_timestamp) override {}
-  void DidReceiveCompositorFrameAck() override {}
   void DidCompletePageScaleAnimation(int source_frame_number) override {}
   void DidPresentCompositorFrame(
       uint32_t frame_token,
-      const gfx::PresentationFeedback& feedback) override {}
+      const viz::FrameTimingDetails& frame_timing_details) override {}
 };
 
 }  // namespace cc

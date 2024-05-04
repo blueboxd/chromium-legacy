@@ -26,6 +26,7 @@
 #include "gpu/command_buffer/service/gr_shader_cache.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/command_buffer/service/shared_image/shared_image_format_service_utils.h"
+#include "gpu/command_buffer/service/shared_image/shared_image_representation.h"
 #include "gpu/config/gpu_preferences.h"
 #include "gpu/gpu_gles2_export.h"
 #include "gpu/ipc/common/command_buffer_id.h"
@@ -123,6 +124,10 @@ class GPU_GLES2_EXPORT SharedContextState
                     scoped_refptr<gles2::FeatureInfo> feature_info);
   bool IsGLInitialized() const { return !!feature_info_; }
 
+  void FlushAndSubmit(bool sync_to_cpu);
+  void FlushWriteAccess(SkiaImageRepresentation::ScopedWriteAccess* access);
+  void SubmitIfNecessary(std::vector<GrBackendSemaphore> signal_semaphores);
+
   // Returns true if context state is using GL, either for Skia to run on
   // or if there is no skia context and context state exists for WebGL fallback
   // only.
@@ -151,7 +156,7 @@ class GPU_GLES2_EXPORT SharedContextState
   gl::GLShareGroup* share_group() const { return share_group_.get(); }
   gl::GLContext* context() const { return context_.get(); }
   gl::GLContext* real_context() const { return real_context_.get(); }
-  gl::GLSurface* surface() const { return surface_.get(); }
+  gl::GLSurface* surface() const;
   gl::GLDisplay* display();  // non const since it calls GLSurface::GetGLDisplay
   viz::VulkanContextProvider* vk_context_provider() const {
     return vk_context_provider_;
@@ -340,6 +345,8 @@ class GPU_GLES2_EXPORT SharedContextState
   bool InitializeGraphite(const GpuPreferences& gpu_preferences,
                           const GpuDriverBugWorkarounds& workarounds);
 
+  void FlushGraphiteRecorder();
+
   std::optional<error::ContextLostReason> GetResetStatus(bool needs_gl);
 
   // gpu::GLContextVirtualDelegate implementation.
@@ -374,6 +381,7 @@ class GPU_GLES2_EXPORT SharedContextState
   const raw_ptr<viz::MetalContextProvider> metal_context_provider_ = nullptr;
   const raw_ptr<DawnContextProvider> dawn_context_provider_ = nullptr;
   bool created_on_compositor_gpu_thread_ = false;
+  bool is_drdc_enabled_ = false;
   raw_ptr<GrDirectContext, DanglingUntriaged> gr_context_ = nullptr;
   raw_ptr<skgpu::graphite::Context, DanglingUntriaged> graphite_context_ =
       nullptr;
@@ -383,7 +391,6 @@ class GPU_GLES2_EXPORT SharedContextState
   scoped_refptr<gl::GLShareGroup> share_group_;
   scoped_refptr<gl::GLContext> context_;
   scoped_refptr<gl::GLContext> real_context_;
-  scoped_refptr<gl::GLSurface> surface_;
 
   // Most recent surface that this ShareContextState was made current with.
   // Avoids a call to MakeCurrent with a different surface, if we don't

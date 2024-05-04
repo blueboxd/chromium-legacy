@@ -76,6 +76,13 @@ class CONTENT_EXPORT DownloadManagerDelegate {
   // Lets the delegate know that the download manager is shutting down.
   virtual void Shutdown() {}
 
+  // Lets the delegate know that the download is canceled at shutdown. This
+  // event is notified separately from normal download update events through
+  // the download item observer, because it is called too late (after
+  // ManagerGoingDown is called). Most observers have already unsubscribed
+  // download events at this point.
+  virtual void OnDownloadCanceledAtShutdown(download::DownloadItem* download) {}
+
   // Runs |callback| with a new download id when possible, perhaps
   // synchronously. If this call fails, |callback| will be called with
   // kInvalidId.
@@ -223,6 +230,9 @@ class CONTENT_EXPORT DownloadManagerDelegate {
 #if BUILDFLAG(IS_ANDROID)
   // Returns whether download is triggered by an external app.
   virtual bool IsFromExternalApp(download::DownloadItem* item);
+
+  // Whether to open pdf inline.
+  virtual bool ShouldOpenPdfInline();
 #endif  // BUILDFLAG(IS_ANDROID)
  protected:
   virtual ~DownloadManagerDelegate();

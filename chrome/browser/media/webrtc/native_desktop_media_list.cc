@@ -46,6 +46,7 @@
 
 #if BUILDFLAG(IS_WIN)
 #include <windows.h>
+
 #include "base/strings/string_util_win.h"
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host_win.h"
 #endif
@@ -66,6 +67,16 @@ BASE_FEATURE(kNativeDesktopMediaList,
 const base::FeatureParam<int> kNativeDesktopMediaListMaxConcurrentStreams{
     &kNativeDesktopMediaList, "max_concurrent_streams", 100};
 
+#if defined(USE_AURA)
+// Controls whether we take VideoCaptureLocks for aura windows to force them
+// to be visible. This is required for their thumbnails to be taken correctly
+// if native occlusion applying to the compositor
+// (`kApplyNativeOcclusionToCompositor`) is enabled.
+BASE_FEATURE(kMediaPickerWindowsForcedVisible,
+             "MediaPickerWindowsForcedVisible",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+#endif
+
 // Update the list every second.
 const int kDefaultNativeDesktopMediaListUpdatePeriod = 1000;
 
@@ -75,7 +86,7 @@ std::optional<size_t> GetFrameHash(webrtc::DesktopFrame* frame) {
   // These checks ensure invalid data isn't passed along, potentially leading to
   // crashes, e.g. when we calculate the hash which assumes a positive height
   // and stride.
-  // TODO(crbug.com/1085230): figure out why the height is sometimes negative.
+  // TODO(crbug.com/40132113): figure out why the height is sometimes negative.
   if (!frame || !frame->data() || frame->stride() < 0 ||
       frame->size().height() < 0) {
     return std::nullopt;
@@ -188,7 +199,7 @@ content::DesktopMediaID::Id GetUpdatedWindowId(
 
   // Update |window_id| if |desktop_media_id.id| corresponds to a
   // viz::FrameSinkId.
-  // TODO(https://crbug.com/1366579): This lookup is fairly fragile and has
+  // TODO(crbug.com/40239799): This lookup is fairly fragile and has
   // now resulted in at least two patches to avoid it (though both are Wayland
   // based problems). On top of that, the series of ifdefs is a bit confusing.
   // We should try to simplify/abstract/cleanup this logic.
@@ -358,7 +369,7 @@ class NativeDesktopMediaList::Worker
   // Used to keep track of the view dialog where the thumbnails are displayed,
   // so as to avoid offering the user to capture that dialog, which will
   // disappear as soon as the user makes that choice.
-  // TODO(https://crbug.com/1471931): Set this earlier to avoid frames being
+  // TODO(crbug.com/40278456): Set this earlier to avoid frames being
   // dropped because it's not set. If possible set it in the constructor.
   DesktopMediaID::Id excluded_window_id_ = DesktopMediaID::kNullId;
 
@@ -418,7 +429,7 @@ void NativeDesktopMediaList::Worker::Refresh(bool update_thumbnails) {
 
   if (capturer_->GetFrameDeliveryMethod() ==
       ThumbnailCapturer::FrameDeliveryMethod::kMultipleSourcesRecurrent) {
-    // TODO(https://crbug.com/1471931): Select windows to stream based on what's
+    // TODO(crbug.com/40278456): Select windows to stream based on what's
     // visible. For now, select the first N windows.
     const size_t target_size = std::min(
         static_cast<size_t>(kNativeDesktopMediaListMaxConcurrentStreams.Get()),
@@ -788,7 +799,7 @@ NativeDesktopMediaList::NativeDesktopMediaList(
   DCHECK(type_ == DesktopMediaList::Type::kWindow ||
          !add_current_process_windows_);
 
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_FUCHSIA)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
   // webrtc::DesktopCapturer implementations on Windows, MacOS and Fuchsia
   // expect to run on a thread with a UI message pump. Under Fuchsia the
   // capturer needs an async loop to support FIDL I/O.
@@ -1049,6 +1060,10 @@ void NativeDesktopMediaList::CaptureAuraWindowThumbnail(
       gfx::Rect(thumbnail_size_), window_rect.size());
 
   pending_aura_capture_requests_++;
+  if (base::FeatureList::IsEnabled(kMediaPickerWindowsForcedVisible)) {
+    capture_locks_.push_back(window->GetHost()->CreateVideoCaptureLock());
+  }
+
   ui::GrabWindowSnapshotAndScaleAura(
       window, window_rect, scaled_rect.size(),
       base::BindOnce(&NativeDesktopMediaList::OnAuraThumbnailCaptured,
@@ -1073,10 +1088,13 @@ void NativeDesktopMediaList::OnAuraThumbnailCaptured(const DesktopMediaID& id,
   DCHECK_GE(pending_aura_capture_requests_, 0);
   if (pending_aura_capture_requests_ == 0) {
     previous_aura_thumbnail_hashes_ = std::move(new_aura_thumbnail_hashes_);
-    // Schedule next refresh if aura thumbnail captures finished after native
-    // thumbnail captures.
-    if (!pending_native_thumbnail_capture_)
+    previous_capture_locks_ = std::move(capture_locks_);
+    capture_locks_.clear();
+    // Schedule next refresh if aura thumbnail captures finished after
+    // native thumbnail captures.
+    if (!pending_native_thumbnail_capture_) {
       OnRefreshComplete();
+    }
   }
 }
 

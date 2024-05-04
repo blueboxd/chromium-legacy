@@ -4,8 +4,9 @@
 
 /* #css_wrapper_metadata_start
  * #type=style
- * #import=chrome://resources/ash/common/cr_elements/cros_color_overrides.css.js
- * #import=chrome://resources/ash/common/cr_elements/cr_shared_vars.css.js
+ * #scheme=relative
+ * #import=//resources/ash/common/cr_elements/cros_color_overrides.css.js
+ * #import=//resources/ash/common/cr_elements/cr_shared_vars.css.js
  * #include=cros-color-overrides
  * #css_wrapper_metadata_end */
 
@@ -20,7 +21,7 @@
   --personalization-app-breadcrumb-height: 56px;
   --personalization-app-subpage-container-min-height: calc(100vh - var(--personalization-app-breadcrumb-height));
   --personalization-app-grid-item-background-color: var(--google-grey-100);
-  --personalization-app-grid-item-border-radius: 12px;
+  --personalization-app-grid-item-border-radius: 16px;
   --personalization-app-grid-item-height: 120px;
   --personalization-app-grid-item-spacing: 20px;
 
@@ -106,11 +107,11 @@
 
 .placeholder {
   background-color: var(--personalization-app-grid-item-background-color);
-  border-radius: 12px;
+  border-radius: 16px;
 }
 
 .preview-image-container {
-  border-radius: 12px;
+  border-radius: 16px;
   box-sizing: border-box;
   overflow: hidden;
   position: relative;
@@ -124,7 +125,7 @@
 .photo-images-border,
 .wallpaper-grid-item-border {
   border: 1px solid rgba(0, 0, 0, 0.08);
-  border-radius: 12px;
+  border-radius: 16px;
   bottom: 0;
   box-sizing: border-box;
   left: 0;
@@ -308,4 +309,8 @@ img.disabled {
 cr-action-menu::part(dialog) {
   /* Prevent jank due to overscrolling from the dialog */
   overscroll-behavior: contain;
+}
+
+a[href] {
+  color: var(--cros-sys-primary);
 }

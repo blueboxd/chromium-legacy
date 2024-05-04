@@ -21,11 +21,11 @@ TEST_F(BookmarkRemoverHelperUnitTest,
        TestRemoveAllUserBookmarksIOSBeforeIntialization) {
   base::test::TestFuture<bool> test_future;
   BookmarkRemoverHelper helper(chrome_browser_state_.get());
-  helper.RemoveAllUserBookmarksIOS(test_future.GetCallback());
+  helper.RemoveAllUserBookmarksIOS(FROM_HERE, test_future.GetCallback());
   ASSERT_FALSE(test_future.IsReady());
   WaitForLegacyBookmarkModelToLoad(local_or_syncable_bookmark_model_);
   WaitForLegacyBookmarkModelToLoad(account_bookmark_model_);
   ASSERT_TRUE(test_future.Get());
 }
 
-// TODO(crbug.com/1480008): Add more tests for BookmarkRemoverHelper.
+// TODO(crbug.com/40281153): Add more tests for BookmarkRemoverHelper.

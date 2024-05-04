@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "ash/birch/birch_model.h"
+#include "ash/calendar/calendar_controller.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/shell.h"
@@ -48,6 +49,25 @@ class TestCalendarFetcher : public BirchCalendarFetcher {
   std::unique_ptr<google_apis::calendar::EventList> events_;
 };
 
+// A fetcher that counts how many times GetCalendarEvents() was called.
+class CountingCalendarFetcher : public BirchCalendarFetcher {
+ public:
+  explicit CountingCalendarFetcher(Profile* profile)
+      : BirchCalendarFetcher(profile) {}
+  ~CountingCalendarFetcher() override = default;
+
+  // BirchCalendarFetcher:
+  void GetCalendarEvents(
+      base::Time start_time,
+      base::Time end_time,
+      google_apis::calendar::CalendarEventListCallback callback) override {
+    ++get_calendar_events_count_;
+    // Intentionally don't run the callback.
+  }
+
+  int get_calendar_events_count_ = 0;
+};
+
 // BrowserWithTestWindowTest provides a Profile and ash::Shell (which provides
 // a BirchModel) needed by the test.
 class BirchCalendarProviderTest : public BrowserWithTestWindowTest {
@@ -60,8 +80,23 @@ class BirchCalendarProviderTest : public BrowserWithTestWindowTest {
     switches::SetIgnoreForestSecretKeyForTest(false);
   }
 
+  void SetUp() override {
+    BrowserWithTestWindowTest::SetUp();
+
+    calendar_client_ =
+        std::make_unique<calendar_test_utils::CalendarClientTestImpl>();
+
+    AccountId account_id = AccountId::FromUserEmail("user1@email.com");
+    Shell::Get()->calendar_controller()->SetActiveUserAccountIdForTesting(
+        account_id);
+    Shell::Get()->calendar_controller()->RegisterClientForUser(
+        account_id, calendar_client_.get());
+  }
+
  private:
   base::test::ScopedFeatureList feature_list_;
+
+  std::unique_ptr<calendar_test_utils::CalendarClientTestImpl> calendar_client_;
 };
 
 TEST_F(BirchCalendarProviderTest, GetCalendarEvents) {
@@ -84,12 +119,12 @@ TEST_F(BirchCalendarProviderTest, GetCalendarEvents) {
   // Verify the events were inserted into the birch model.
   const auto& items = Shell::Get()->birch_model()->GetCalendarItemsForTest();
   ASSERT_EQ(2u, items.size());
-  EXPECT_EQ(items[0].title, u"title_0");
-  EXPECT_EQ(items[0].start_time, TimeFromString("10 Jan 2010 10:00 GMT"));
-  EXPECT_EQ(items[0].end_time, TimeFromString("10 Jan 2010 11:00 GMT"));
-  EXPECT_EQ(items[1].title, u"title_1");
-  EXPECT_EQ(items[1].start_time, TimeFromString("11 Jan 2010 10:00 GMT"));
-  EXPECT_EQ(items[1].end_time, TimeFromString("11 Jan 2010 11:00 GMT"));
+  EXPECT_EQ(items[0].title(), u"title_0");
+  EXPECT_EQ(items[0].start_time(), TimeFromString("10 Jan 2010 10:00 GMT"));
+  EXPECT_EQ(items[0].end_time(), TimeFromString("10 Jan 2010 11:00 GMT"));
+  EXPECT_EQ(items[1].title(), u"title_1");
+  EXPECT_EQ(items[1].start_time(), TimeFromString("11 Jan 2010 10:00 GMT"));
+  EXPECT_EQ(items[1].end_time(), TimeFromString("11 Jan 2010 11:00 GMT"));
 }
 
 TEST_F(BirchCalendarProviderTest, GetCalendarEvents_WithAttachments) {
@@ -106,10 +141,12 @@ TEST_F(BirchCalendarProviderTest, GetCalendarEvents_WithAttachments) {
   attachment0.set_title("attachment0");
   attachment0.set_file_url(GURL("http://file0.com/"));
   attachment0.set_icon_link(GURL("http://icon0.com/"));
+  attachment0.set_file_id("file_id_0");
   google_apis::calendar::Attachment attachment1;
   attachment1.set_title("attachment1");
   attachment1.set_file_url(GURL("http://file1.com/"));
   attachment1.set_icon_link(GURL("http://icon1.com/"));
+  attachment1.set_file_id("file_id_1");
   event->set_attachments({attachment0, attachment1});
   events->InjectItemForTesting(std::move(event));
   fetcher->events_ = std::move(events);
@@ -122,19 +159,21 @@ TEST_F(BirchCalendarProviderTest, GetCalendarEvents_WithAttachments) {
   auto* birch_model = Shell::Get()->birch_model();
   const auto& items = birch_model->GetCalendarItemsForTest();
   ASSERT_EQ(1u, items.size());
-  EXPECT_EQ(items[0].title, u"title_0");
-  EXPECT_EQ(items[0].start_time, TimeFromString("10 Jan 2010 10:00 GMT"));
-  EXPECT_EQ(items[0].end_time, TimeFromString("10 Jan 2010 11:00 GMT"));
-  EXPECT_EQ(items[0].conference_url.spec(), "http://meet.com/");
+  EXPECT_EQ(items[0].title(), u"title_0");
+  EXPECT_EQ(items[0].start_time(), TimeFromString("10 Jan 2010 10:00 GMT"));
+  EXPECT_EQ(items[0].end_time(), TimeFromString("10 Jan 2010 11:00 GMT"));
+  EXPECT_EQ(items[0].conference_url().spec(), "http://meet.com/");
 
   // Verify the attachments were converted correctly to Birch data types.
   const auto& attachments = birch_model->GetAttachmentItemsForTest();
-  EXPECT_EQ(attachments[0].title, u"attachment0");
-  EXPECT_EQ(attachments[0].file_url.spec(), "http://file0.com/");
-  EXPECT_EQ(attachments[0].icon_url.spec(), "http://icon0.com/");
-  EXPECT_EQ(attachments[1].title, u"attachment1");
-  EXPECT_EQ(attachments[1].file_url.spec(), "http://file1.com/");
-  EXPECT_EQ(attachments[1].icon_url.spec(), "http://icon1.com/");
+  EXPECT_EQ(attachments[0].title(), u"attachment0");
+  EXPECT_EQ(attachments[0].file_url().spec(), "http://file0.com/");
+  EXPECT_EQ(attachments[0].icon_url().spec(), "http://icon0.com/");
+  EXPECT_EQ(attachments[0].file_id(), "file_id_0");
+  EXPECT_EQ(attachments[1].title(), u"attachment1");
+  EXPECT_EQ(attachments[1].file_url().spec(), "http://file1.com/");
+  EXPECT_EQ(attachments[1].icon_url().spec(), "http://icon1.com/");
+  EXPECT_EQ(attachments[1].file_id(), "file_id_1");
 }
 
 TEST_F(BirchCalendarProviderTest, GetCalendarEvents_HttpError) {
@@ -143,7 +182,10 @@ TEST_F(BirchCalendarProviderTest, GetCalendarEvents_HttpError) {
   // Populate the birch model with an event so the test can sense when the
   // model is cleared later.
   std::vector<BirchCalendarItem> items;
-  items.emplace_back(u"Event 1");
+  items.emplace_back(u"Event 1", /*start_time=*/base::Time(),
+                     /*end_time=*/base::Time(), /*calendar_url=*/GURL(),
+                     /*conference_url=*/GURL(), /*event_id=*/"",
+                     /*all_day_event=*/false);
   Shell::Get()->birch_model()->SetCalendarItems(std::move(items));
 
   // Set up a customer fetcher that returns an error.
@@ -164,7 +206,10 @@ TEST_F(BirchCalendarProviderTest, GetCalendarEvents_NullEventList) {
   // Populate the birch model with an event so the test can sense when the
   // model is cleared later.
   std::vector<BirchCalendarItem> items;
-  items.emplace_back(u"Event 1");
+  items.emplace_back(u"Event 1", /*start_time=*/base::Time(),
+                     /*end_time=*/base::Time(), /*calendar_url=*/GURL(),
+                     /*conference_url=*/GURL(), /*event_id=*/"",
+                     /*all_day_event=*/false);
   Shell::Get()->birch_model()->SetCalendarItems(std::move(items));
 
   // Set up a customer fetcher that returns a null event list.
@@ -177,6 +222,23 @@ TEST_F(BirchCalendarProviderTest, GetCalendarEvents_NullEventList) {
 
   // Verify the birch model is empty.
   EXPECT_TRUE(Shell::Get()->birch_model()->GetCalendarItemsForTest().empty());
+}
+
+TEST_F(BirchCalendarProviderTest, GetCalendarEvents_MultipleRequests) {
+  BirchCalendarProvider provider(profile());
+
+  // Set up a customer fetcher.
+  auto fetcher = std::make_unique<CountingCalendarFetcher>(profile());
+  auto* fetcher_ptr = fetcher.get();
+  provider.SetFetcherForTest(std::move(fetcher));
+  ASSERT_EQ(fetcher_ptr->get_calendar_events_count_, 0);
+
+  // Request calendar events twice in a row.
+  provider.RequestBirchDataFetch();
+  provider.RequestBirchDataFetch();
+
+  // The fetcher was only triggered once.
+  EXPECT_EQ(fetcher_ptr->get_calendar_events_count_, 1);
 }
 
 }  // namespace

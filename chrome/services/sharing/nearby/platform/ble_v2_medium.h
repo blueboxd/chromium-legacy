@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/services/sharing/nearby/platform/ble_v2_remote_peripheral.h"
 #include "device/bluetooth/public/mojom/adapter.mojom.h"
@@ -15,6 +16,8 @@
 #include "third_party/nearby/src/internal/platform/implementation/ble_v2.h"
 
 namespace nearby::chrome {
+
+class BleV2GattServer;
 
 // Concrete ble_v2::BleMedium implementation.
 // Productionized impl will also consumes bluetooth::mojom::Adapter methods.
@@ -91,6 +94,10 @@ class BleV2Medium : public ::nearby::api::ble_v2::BleMedium,
                            GetRemotePeripheralCallback callback) override;
 
  private:
+  // TODO(b/330759317): Remove FRIEND call once unit tests can rely on
+  // Fake classes instead of accessing private members.
+  FRIEND_TEST_ALL_PREFIXES(BleV2MediumTest,
+                           TestAdvertising_MultipleStartAdvertisingSuccess);
   // bluetooth::mojom::AdapterObserver:
   void PresentChanged(bool present) override;
   void PoweredChanged(bool powered) override;
@@ -105,10 +112,13 @@ class BleV2Medium : public ::nearby::api::ble_v2::BleMedium,
   uint64_t GenerateUniqueSessionId();
   chrome::BleV2RemotePeripheral* GetDiscoveredBlePeripheral(
       const std::string& address);
-  Uuid BluetoothServiceUuidToNearbyUuid(
-      const device::BluetoothUUID& bluetooth_service_uuid);
 
   mojo::SharedRemote<bluetooth::mojom::Adapter> adapter_;
+
+  // Only set in `StartGattServer()` if the LE Dual Scatternet role
+  // is supported on the device. This is used to trigger asynchronous GATT
+  // server registration in `StartAdvertising()`.
+  base::WeakPtr<BleV2GattServer> gatt_server_;
 
   // Only set while discovery is active.
   mojo::Remote<bluetooth::mojom::DiscoverySession> discovery_session_;
@@ -126,6 +136,11 @@ class BleV2Medium : public ::nearby::api::ble_v2::BleMedium,
   // operation only invalidates the reference to the erased element.
   std::map<std::string, chrome::BleV2RemotePeripheral>
       discovered_ble_peripherals_map_;
+
+  // Group registered advertisements with the same bluetooth service uuid.
+  std::map<device::BluetoothUUID,
+           std::vector<mojo::Remote<bluetooth::mojom::Advertisement>>>
+      registered_advertisements_map_;
 
   // |adapter_observer_| is only set and bound during active discovery so that
   // events we don't care about outside of discovery don't pile up.

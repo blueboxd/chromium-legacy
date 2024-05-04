@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.app.appmenu;
 
 import static androidx.test.espresso.matcher.ViewMatchers.assertThat;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -88,6 +89,11 @@ import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.chrome.browser.toolbar.menu_button.MenuUiState;
 import org.chromium.chrome.browser.translate.TranslateBridge;
 import org.chromium.chrome.browser.translate.TranslateBridgeJni;
+import org.chromium.chrome.browser.ui.appmenu.AppMenuHandler;
+import org.chromium.chrome.browser.ui.appmenu.AppMenuItemProperties;
+import org.chromium.chrome.browser.ui.appmenu.AppMenuPropertiesDelegate;
+import org.chromium.chrome.browser.ui.appmenu.CustomViewBinder;
+import org.chromium.chrome.browser.ui.native_page.NativePage;
 import org.chromium.chrome.browser.webapps.WebappRegistry;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.browser_ui.accessibility.PageZoomCoordinator;
@@ -108,10 +114,13 @@ import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.net.ConnectionType;
 import org.chromium.ui.accessibility.AccessibilityState;
+import org.chromium.ui.modelutil.MVCListAdapter.ListItem;
+import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
 import org.chromium.url.GURL;
 import org.chromium.url.JUnitTestGURLs;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
@@ -150,7 +159,9 @@ public class AppMenuPropertiesDelegateUnitTest {
     @Mock private AppBannerManager.Natives mAppBannerManagerJniMock;
     @Mock private ReadAloudController mReadAloudController;
     @Mock private TranslateBridge.Natives mTranslateBridgeJniMock;
-
+    @Mock private AppMenuHandler mAppMenuHandler;
+    @Mock private AppMenuPropertiesDelegate.CustomItemViewTypeProvider mCustomItemViewTypeProvider;
+    @Mock private NativePage mNativePage;
     private OneshotSupplierImpl<IncognitoReauthController> mIncognitoReauthControllerSupplier =
             new OneshotSupplierImpl<>();
     private OneshotSupplierImpl<LayoutStateProvider> mLayoutStateProviderSupplier =
@@ -206,7 +217,7 @@ public class AppMenuPropertiesDelegateUnitTest {
 
         mJniMocker.mock(ManagedBrowserUtilsJni.TEST_HOOKS, mManagedBrowserUtilsJniMock);
         Mockito.when(mManagedBrowserUtilsJniMock.isBrowserManaged(mProfile)).thenReturn(false);
-        Mockito.when(mManagedBrowserUtilsJniMock.getBrowserManagerName(mProfile)).thenReturn("");
+        Mockito.when(mManagedBrowserUtilsJniMock.getTitle(mProfile)).thenReturn("title");
 
         mJniMocker.mock(AppBannerManagerJni.TEST_HOOKS, mAppBannerManagerJniMock);
         Mockito.when(mAppBannerManagerJniMock.getInstallableWebAppManifestId(any()))
@@ -245,8 +256,6 @@ public class AppMenuPropertiesDelegateUnitTest {
         setShoppingListEligible(false);
         setShoppingListEligible(false);
         mTestValues.addFeatureFlagOverride(ChromeFeatureList.PWA_UNIVERSAL_INSTALL_UI, false);
-        mTestValues.addFeatureFlagOverride(
-                ChromeFeatureList.SYNC_SHOW_IDENTITY_ERRORS_FOR_SIGNED_IN_USERS, false);
         FeatureList.setTestValues(mTestValues);
     }
 
@@ -322,6 +331,8 @@ public class AppMenuPropertiesDelegateUnitTest {
         setUpMocksForPageMenu();
         when(mTab.getUrl()).thenReturn(JUnitTestGURLs.NTP_URL);
         when(mTab.isNativePage()).thenReturn(true);
+        when(mNativePage.isPdf()).thenReturn(false);
+        when(mTab.getNativePage()).thenReturn(mNativePage);
         doReturn(false)
                 .when(mAppMenuPropertiesDelegate)
                 .shouldShowTranslateMenuItem(any(Tab.class));
@@ -341,6 +352,43 @@ public class AppMenuPropertiesDelegateUnitTest {
             R.id.downloads_menu_id,
             R.id.all_bookmarks_menu_id,
             R.id.recent_tabs_menu_id,
+            R.id.divider_line_id,
+            R.id.preferences_id,
+            R.id.help_id
+        };
+        assertMenuItemsAreEqual(menu, expectedItems);
+    }
+
+    @Test
+    @Config(qualifiers = "sw320dp")
+    public void testPageMenuItems_Phone_Pdf() {
+        setUpMocksForPageMenu();
+        when(mTab.getUrl()).thenReturn(JUnitTestGURLs.URL_1_WITH_PDF_PATH);
+        when(mTab.isNativePage()).thenReturn(true);
+        when(mNativePage.isPdf()).thenReturn(true);
+        when(mTab.getNativePage()).thenReturn(mNativePage);
+        doReturn(false)
+                .when(mAppMenuPropertiesDelegate)
+                .shouldShowTranslateMenuItem(any(Tab.class));
+
+        Assert.assertEquals(MenuGroup.PAGE_MENU, mAppMenuPropertiesDelegate.getMenuGroup());
+        Menu menu = createTestMenu();
+        mAppMenuPropertiesDelegate.prepareMenu(menu, null);
+
+        Integer[] expectedItems = {
+            R.id.icon_row_menu_id,
+            R.id.new_tab_menu_id,
+            R.id.new_incognito_tab_menu_id,
+            R.id.divider_line_id,
+            R.id.open_history_menu_id,
+            R.id.quick_delete_menu_id,
+            R.id.quick_delete_divider_line_id,
+            R.id.downloads_menu_id,
+            R.id.all_bookmarks_menu_id,
+            R.id.recent_tabs_menu_id,
+            R.id.divider_line_id,
+            R.id.share_row_menu_id,
+            R.id.find_in_page_id,
             R.id.divider_line_id,
             R.id.preferences_id,
             R.id.help_id
@@ -1313,6 +1361,62 @@ public class AppMenuPropertiesDelegateUnitTest {
         Menu menu = createTestMenu();
         mAppMenuPropertiesDelegate.prepareMenu(menu, null);
         assertTrue(menu.findItem(R.id.readaloud_menu_id).isVisible());
+    }
+
+    @Test
+    public void testReadaloudMenuItem_readableBecomesUnreadable() {
+        testReadAloudMenuItemUpdates(/* initiallyReadable= */ true, /* laterReadable= */ false);
+    }
+
+    @Test
+    public void testReadaloudMenuItem_unreadableBecomesReadable() {
+        testReadAloudMenuItemUpdates(/* initiallyReadable= */ false, /* laterReadable= */ true);
+    }
+
+    @Test
+    public void testReadaloudMenuItem_noChangeInReadability_notReadable() {
+        testReadAloudMenuItemUpdates(/* initiallyReadable= */ false, /* laterReadable= */ false);
+    }
+
+    @Test
+    public void testReadaloudMenuItem_noChangeInReadability_readable() {
+        testReadAloudMenuItemUpdates(/* initiallyReadable= */ true, /* laterReadable= */ true);
+    }
+
+    private void testReadAloudMenuItemUpdates(boolean initiallyReadable, boolean laterReadable) {
+        AccessibilityState.setIsScreenReaderEnabledForTesting(false);
+        when(mTab.getUrl()).thenReturn(JUnitTestGURLs.EXAMPLE_URL);
+        when(mReadAloudController.isReadable(mTab)).thenReturn(initiallyReadable);
+        setUpMocksForPageMenu();
+        Menu menu = createTestMenu();
+        mAppMenuPropertiesDelegate.getMenuItemsForMenu(
+                menu, mCustomItemViewTypeProvider, mAppMenuHandler);
+        // When menu is created, the visibility should match readability state at that time
+        assertEquals(initiallyReadable, hasReadAloudInMenu());
+
+        when(mCustomItemViewTypeProvider.fromMenuItemId(anyInt()))
+                .thenReturn(CustomViewBinder.NOT_HANDLED);
+        when(mReadAloudController.isReadable(mTab)).thenReturn(laterReadable);
+        // When a new readability result is retrieved, ensure that the menu item visibility matches
+        // the current readability state.
+        mAppMenuPropertiesDelegate.getReadAloudmenuResetter().run();
+        assertEquals(laterReadable, hasReadAloudInMenu());
+    }
+
+    private boolean hasReadAloudInMenu() {
+        ModelList modelList = mAppMenuPropertiesDelegate.getModelList();
+        if (modelList == null) {
+            return false;
+        }
+        Iterator<ListItem> it = modelList.iterator();
+        while (it.hasNext()) {
+            ListItem li = it.next();
+            int id = li.model.get(AppMenuItemProperties.MENU_ITEM_ID);
+            if (id == R.id.readaloud_menu_id) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private boolean doTestShouldShowNewMenu(

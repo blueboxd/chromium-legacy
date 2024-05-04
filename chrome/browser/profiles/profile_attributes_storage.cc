@@ -33,7 +33,6 @@
 #include "chrome/browser/profiles/profile_avatar_downloader.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/profiles/profile_metrics.h"
-#include "chrome/browser/signin/signin_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/account_id/account_id.h"
@@ -43,6 +42,7 @@
 #include "components/profile_metrics/state.h"
 #include "components/signin/public/base/persistent_repeating_timer.h"
 #include "components/signin/public/base/signin_pref_names.h"
+#include "components/signin/public/base/signin_switches.h"
 #include "components/signin/public/identity_manager/account_managed_status_finder.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -220,7 +220,7 @@ profile_metrics::UnconsentedPrimaryAccountType GetUnconsentedPrimaryAccountType(
     return profile_metrics::UnconsentedPrimaryAccountType::kSignedOut;
   if (entry->IsChild())
     return profile_metrics::UnconsentedPrimaryAccountType::kChild;
-  // TODO(crbug.com/1060113): Replace this check by
+  // TODO(crbug.com/40121889): Replace this check by
   // !entry->GetHostedDomain().has_value() in M84 (once the attributes storage
   // gets reasonably well populated).
   if (signin::AccountManagedStatusFinder::IsEnterpriseUserBasedOnEmail(
@@ -229,7 +229,7 @@ profile_metrics::UnconsentedPrimaryAccountType GetUnconsentedPrimaryAccountType(
           kKnownNonEnterprise) {
     return profile_metrics::UnconsentedPrimaryAccountType::kConsumer;
   }
-  // TODO(crbug.com/1060113): Figure out how to distinguish EDU accounts from
+  // TODO(crbug.com/40121889): Figure out how to distinguish EDU accounts from
   // other enterprise.
   return profile_metrics::UnconsentedPrimaryAccountType::kEnterprise;
 }
@@ -673,7 +673,7 @@ std::u16string ProfileAttributesStorage::ChooseNameForNewProfile(
     name = l10n_util::GetStringFUTF16(IDS_NEW_NUMBERED_PROFILE_NAME,
                                       base::NumberToString16(name_index));
 #else
-    // TODO(crbug.com/937834): Clean up this code.
+    // TODO(crbug.com/41444689): Clean up this code.
     if (icon_index < profiles::GetGenericAvatarIconCount() ||
         profiles::IsModernAvatarIconIndex(icon_index)) {
       name = l10n_util::GetStringFUTF16Int(IDS_NUMBERED_PROFILE_NAME,
@@ -1014,9 +1014,9 @@ void ProfileAttributesStorage::SaveAvatarImageAtPath(
     base::OnceClosure callback) {
   cached_avatar_images_[key] = image;
 
-  std::unique_ptr<ImageData> data(new ImageData);
   scoped_refptr<base::RefCountedMemory> png_data = image.As1xPNGBytes();
-  data->assign(png_data->front(), png_data->front() + png_data->size());
+  auto data = std::make_unique<ImageData>(png_data->size());
+  base::span(*data).copy_from(*png_data);
 
   // Remove the file from the list of downloads in progress. Note that this list
   // only contains the high resolution avatars, and not the Gaia profile images.

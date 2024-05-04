@@ -32,7 +32,7 @@ namespace sql {
 //       recovery should not be attempted on WAL databases for now.
 //
 // Uses SQLite's recovery extension: https://www.sqlite.org/recovery.html
-class COMPONENT_EXPORT(SQL) BuiltInRecovery {
+class COMPONENT_EXPORT(SQL) Recovery {
  public:
   enum class Strategy {
     // Razes the database if it could not be recovered.
@@ -44,7 +44,7 @@ class COMPONENT_EXPORT(SQL) BuiltInRecovery {
     // the database schema.
     kRecoverWithMetaVersionOrRaze,
 
-    // TODO(https://crbug.com/1385500): Consider exposing a way to keep around a
+    // TODO(crbug.com/40061775): Consider exposing a way to keep around a
     // successfully-recovered, but unsuccessfully-restored database if needed.
   };
 
@@ -112,7 +112,7 @@ class COMPONENT_EXPORT(SQL) BuiltInRecovery {
   // It is not considered an error if some or all of the data cannot be
   // recovered due to database corruption, so it is possible that some records
   // could not be salvaged from the corrupted database.
-  // TODO(https://crbug.com/1385500): Support the lost-and-found table if the
+  // TODO(crbug.com/40061775): Support the lost-and-found table if the
   // need arises to try to restore all these records.
   //
   // It is illegal to attempt recovery if:
@@ -137,9 +137,9 @@ class COMPONENT_EXPORT(SQL) BuiltInRecovery {
   // Recommended usage from within a database error callback:
   //
   //  // Attempt to recover the database, if recovery is possible.
-  //  if (sql::BuiltInRecovery::RecoverIfPossible(
+  //  if (sql::Recovery::RecoverIfPossible(
   //          &db, extended_error,
-  //          sql::BuiltInRecovery::Strategy::kRecoverWithMetaVersionOrRaze)) {
+  //          sql::Recovery::Strategy::kRecoverWithMetaVersionOrRaze)) {
   //    // Recovery was attempted. The database handle has been poisoned and the
   //    // error callback has been reset.
   //
@@ -150,12 +150,12 @@ class COMPONENT_EXPORT(SQL) BuiltInRecovery {
                                               int extended_error,
                                               Strategy strategy);
 
-  BuiltInRecovery(const BuiltInRecovery&) = delete;
-  BuiltInRecovery& operator=(const BuiltInRecovery&) = delete;
+  Recovery(const Recovery&) = delete;
+  Recovery& operator=(const Recovery&) = delete;
 
  private:
-  BuiltInRecovery(Database* database, Strategy strategy);
-  ~BuiltInRecovery();
+  Recovery(Database* database, Strategy strategy);
+  ~Recovery();
 
   // Entry point.
   SqliteResultCode RecoverAndReplaceDatabase();

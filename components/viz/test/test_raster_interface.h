@@ -83,7 +83,6 @@ class TestRasterInterface : public gpu::raster::RasterInterface {
   void WritePixels(const gpu::Mailbox& dest_mailbox,
                    int dst_x_offset,
                    int dst_y_offset,
-                   int dst_plane_index,
                    GLenum texture_target,
                    const SkPixmap& src_sk_pixmap) override {}
   void WritePixelsYUV(const gpu::Mailbox& dest_mailbox,
@@ -154,13 +153,13 @@ class TestRasterInterface : public gpu::raster::RasterInterface {
       const gfx::Point& paste_location,
       base::OnceCallback<void()> release_mailbox,
       base::OnceCallback<void(bool)> readback_done) override {}
-  void ReadbackImagePixels(const gpu::Mailbox& source_mailbox,
+  bool ReadbackImagePixels(const gpu::Mailbox& source_mailbox,
                            const SkImageInfo& dst_info,
                            GLuint dst_row_bytes,
                            int src_x,
                            int src_y,
                            int plane_index,
-                           void* dst_pixels) override {}
+                           void* dst_pixels) override;
   GLuint CreateAndConsumeForGpuRaster(const gpu::Mailbox& mailbox) override;
   GLuint CreateAndConsumeForGpuRaster(
       const scoped_refptr<gpu::ClientSharedImage>& shared_image) override;

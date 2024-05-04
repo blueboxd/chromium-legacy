@@ -116,6 +116,7 @@ class MockDownloadBubbleSecurityViewDelegate
   }
 
   void ProcessDeepScanPress(const ContentId&,
+                            DownloadItemWarningData::DeepScanTrigger trigger,
                             base::optional_ref<const std::string>) override {}
   void ProcessLocalDecryptionPress(
       const offline_items_collection::ContentId& id,
@@ -141,7 +142,9 @@ class MockDownloadCoreService : public DownloadCoreService {
               ());
   MOCK_METHOD(bool, HasCreatedDownloadManager, ());
   MOCK_METHOD(int, BlockingShutdownCount, (), (const));
-  MOCK_METHOD(void, CancelDownloads, ());
+  MOCK_METHOD(void,
+              CancelDownloads,
+              (DownloadCoreService::CancelDownloadsTrigger));
   MOCK_METHOD(void,
               SetDownloadManagerDelegateForTesting,
               (std::unique_ptr<ChromeDownloadManagerDelegate> delegate));

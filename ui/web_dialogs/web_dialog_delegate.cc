@@ -128,6 +128,8 @@ bool WebDialogDelegate::HandleContextMenu(
 bool WebDialogDelegate::HandleOpenURLFromTab(
     content::WebContents* source,
     const content::OpenURLParams& params,
+    base::OnceCallback<void(content::NavigationHandle&)>
+        navigation_handle_callback,
     content::WebContents** out_new_contents) {
   return false;
 }
@@ -168,6 +170,18 @@ bool WebDialogDelegate::CheckMediaAccessPermission(
 
 WebDialogDelegate::FrameKind WebDialogDelegate::GetWebDialogFrameKind() const {
   return frame_kind_;
+}
+
+content::KeyboardEventProcessingResult
+WebDialogDelegate::PreHandleKeyboardEvent(
+    content::WebContents* source,
+    const content::NativeWebKeyboardEvent& event) {
+  return content::KeyboardEventProcessingResult::NOT_HANDLED;
+}
+
+bool WebDialogDelegate::IsFullscreenForTabOrPending(
+    const content::WebContents* web_contents) {
+  return false;
 }
 
 }  // namespace ui

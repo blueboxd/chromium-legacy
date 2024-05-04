@@ -5,19 +5,19 @@
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_prepare_and_store_update_command.h"
 
 #include <memory>
+#include <string_view>
 
 #include "base/containers/flat_set.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/strings/strcat.h"
-#include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/gmock_expected_support.h"
 #include "base/test/test_future.h"
 #include "base/types/expected.h"
 #include "chrome/browser/ui/web_applications/test/isolated_web_app_test_utils.h"
-#include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_location.h"
+#include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_source.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_storage_location.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_trust_checker.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_url_info.h"
@@ -31,10 +31,10 @@
 #include "chrome/browser/web_applications/web_app_command_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registry_update.h"
-#include "chrome/browser/web_applications/web_contents/web_app_url_loader.h"
 #include "chrome/common/url_constants.h"
 #include "components/web_package/signed_web_bundles/signed_web_bundle_id.h"
 #include "components/webapps/browser/install_result_code.h"
+#include "components/webapps/browser/web_contents/web_app_url_loader.h"
 #include "content/public/browser/web_contents.h"
 #include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -55,7 +55,7 @@ using ::testing::IsNull;
 using ::testing::IsTrue;
 using ::testing::Return;
 
-constexpr base::StringPiece kIconPath = "/icon.png";
+constexpr std::string_view kIconPath = "/icon.png";
 
 blink::mojom::ManifestPtr CreateDefaultManifest(const GURL& application_url,
                                                 const base::Version version) {
@@ -126,7 +126,10 @@ class IsolatedWebAppUpdatePrepareAndStoreCommandTest : public WebAppTest {
         future;
     provider()->scheduler().PrepareAndStoreIsolatedWebAppUpdate(
         IsolatedWebAppUpdatePrepareAndStoreCommand::UpdateInfo(
-            InstalledBundle({.path = update_bundle_path_}), expected_version),
+            IwaSourceBundleWithModeAndFileOp(
+                update_bundle_path_,
+                IwaSourceBundleModeAndFileOp::kProdModeMove),
+            expected_version),
         url_info_, /*optional_keep_alive=*/nullptr,
         /*optional_profile_keep_alive=*/nullptr, future.GetCallback());
 
@@ -149,7 +152,7 @@ class IsolatedWebAppUpdatePrepareAndStoreCommandTest : public WebAppTest {
                       "/.well-known/_generated_install_page.html"}));
     auto& page_state = fake_web_contents_manager().GetOrCreatePageState(url);
 
-    page_state.url_load_result = WebAppUrlLoaderResult::kUrlLoaded;
+    page_state.url_load_result = webapps::WebAppUrlLoaderResult::kUrlLoaded;
     page_state.error_code = webapps::InstallableStatusCode::NO_ERROR_DETECTED;
     page_state.manifest_url =
         url_info_.origin().GetURL().Resolve("manifest.webmanifest");
@@ -190,8 +193,9 @@ class IsolatedWebAppUpdatePrepareAndStoreCommandTest : public WebAppTest {
   data_decoder::test::InProcessDataDecoder in_process_data_decoder_;
   base::ScopedTempDir scoped_temp_dir_;
 
-  web_package::WebBundleSigner::KeyPair key_pair_ =
-      web_package::WebBundleSigner::KeyPair(kTestPublicKey, kTestPrivateKey);
+  web_package::WebBundleSigner::Ed25519KeyPair key_pair_ =
+      web_package::WebBundleSigner::Ed25519KeyPair(kTestPublicKey,
+                                                   kTestPrivateKey);
   web_package::SignedWebBundleId web_bundle_id_ =
       *web_package::SignedWebBundleId::Create(kTestEd25519WebBundleId);
   IsolatedWebAppUrlInfo url_info_ =
@@ -403,7 +407,8 @@ TEST_F(IsolatedWebAppUpdatePrepareAndStoreCommandTest, FailsIfUrlLoadingFails) {
   const base::flat_set<base::FilePath> existing_dirs = GetIwaDirContent();
   WriteUpdateBundleToDisk();
   auto& page_state = CreateDefaultPageState();
-  page_state.url_load_result = WebAppUrlLoader::Result::kFailedErrorPageLoaded;
+  page_state.url_load_result =
+      webapps::WebAppUrlLoaderResult::kFailedErrorPageLoaded;
 
   auto result = PrepareAndStoreUpdateInfo(update_version_);
   EXPECT_THAT(result, IsErrorWithMessage(HasSubstr("FailedErrorPageLoaded")));

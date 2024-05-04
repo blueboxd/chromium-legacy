@@ -133,7 +133,6 @@ class PwaInstallViewBrowserTest : public extensions::ExtensionBrowserTest,
       disabled_features.push_back(features::kWebAppUniversalInstall);
     }
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-        // TODO(crbug.com/1462253): Also test with Lacros flags enabled.
     const std::vector<base::test::FeatureRef> lacros_disable_flags =
         ash::standalone_browser::GetFeatureRefs();
     disabled_features.insert(disabled_features.end(),
@@ -245,9 +244,11 @@ class PwaInstallViewBrowserTest : public extensions::ExtensionBrowserTest,
 
   // Starts a navigation to |url| but does not wait for it to finish.
   void StartNavigateToUrl(const GURL& url) {
-    browser()->OpenURL(content::OpenURLParams(
-        url, content::Referrer(), WindowOpenDisposition::CURRENT_TAB,
-        ui::PAGE_TRANSITION_TYPED, false /* is_renderer_initiated */));
+    browser()->OpenURL(
+        content::OpenURLParams(
+            url, content::Referrer(), WindowOpenDisposition::CURRENT_TAB,
+            ui::PAGE_TRANSITION_TYPED, false /* is_renderer_initiated */),
+        /*navigation_handle_callback=*/{});
     app_banner_manager_->WaitForInstallableCheckTearDown();
   }
 
@@ -412,8 +413,8 @@ IN_PROC_BROWSER_TEST_P(PwaInstallViewBrowserTest,
   // Change launch container to open in tab.
   web_app::WebAppProvider::GetForTest(browser()->profile())
       ->sync_bridge_unsafe()
-      .SetAppUserDisplayMode(app_id, web_app::mojom::UserDisplayMode::kBrowser,
-                             /*is_user_action=*/false);
+      .SetAppUserDisplayModeForTesting(
+          app_id, web_app::mojom::UserDisplayMode::kBrowser);
 
   // Use a new tab because installed app may have opened in new window.
   OpenTabResult result = OpenTab(GetInstallableAppURL());
@@ -768,7 +769,7 @@ IN_PROC_BROWSER_TEST_P(PwaInstallViewBrowserTest,
       "Manifest listing related chrome app"));
 }
 
-// TODO(crbug.com/1258062): Flaky.
+// TODO(crbug.com/40796769): Flaky.
 IN_PROC_BROWSER_TEST_P(PwaInstallViewBrowserTest,
                        DISABLED_PwaIntallIphSiteEngagement) {
   GURL app_url = GetInstallableAppURL();

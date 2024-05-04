@@ -40,8 +40,9 @@
 #endif
 
 #if BUILDFLAG(IS_WIN)
-#include <netfw.h>
 #include <windows.h>
+
+#include <netfw.h>
 #include <wrl/client.h>
 
 #include "net/dns/public/win_dns_system_settings.h"
@@ -332,8 +333,8 @@ std::vector<std::string> ContextInfoFetcher::GetDnsServers() {
   }
 #elif BUILDFLAG(IS_WIN)
   std::optional<std::vector<net::IPEndPoint>> nameservers;
-  std::optional<net::WinDnsSystemSettings> settings =
-      net::ReadWinSystemDnsSettings();
+  base::expected<net::WinDnsSystemSettings, net::ReadWinSystemDnsSettingsError>
+      settings = net::ReadWinSystemDnsSettings();
   if (settings.has_value()) {
     nameservers = settings->GetAllNameservers();
   }

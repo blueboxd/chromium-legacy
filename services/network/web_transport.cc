@@ -236,7 +236,7 @@ class WebTransport::Stream final {
     MaySendFin();
     while (readable_ && outgoing_ && outgoing_->CanWrite()) {
       const void* data = nullptr;
-      uint32_t available = 0;
+      size_t available = 0;
       MojoResult result = readable_->BeginReadData(
           &data, &available, MOJO_BEGIN_READ_DATA_FLAG_NONE);
       if (result == MOJO_RESULT_SHOULD_WAIT) {
@@ -251,7 +251,7 @@ class WebTransport::Stream final {
       DCHECK_EQ(result, MOJO_RESULT_OK);
 
       bool send_result = outgoing_->Write(
-          absl::string_view(reinterpret_cast<const char*>(data), available));
+          std::string_view(reinterpret_cast<const char*>(data), available));
       if (!send_result) {
         // TODO(yhirano): Handle this failure.
         readable_->EndReadData(0);
@@ -286,7 +286,7 @@ class WebTransport::Stream final {
       quic::WebTransportStream::ReadResult read_result;
       if (incoming_->ReadableBytes() > 0) {
         void* buffer = nullptr;
-        uint32_t available = 0;
+        size_t available = 0;
         MojoResult result = writable_->BeginWriteData(
             &buffer, &available, MOJO_BEGIN_WRITE_DATA_FLAG_NONE);
         if (result == MOJO_RESULT_SHOULD_WAIT) {
@@ -430,8 +430,7 @@ void WebTransport::SendDatagram(base::span<const uint8_t> data,
   datagram_callbacks_.emplace(std::move(callback));
 
   CHECK(transport_->session());
-  transport_->session()->SendOrQueueDatagram(absl::string_view(
-      reinterpret_cast<const char*>(data.data()), data.size()));
+  transport_->session()->SendOrQueueDatagram(base::as_string_view(data));
 }
 
 void WebTransport::CreateStream(
@@ -453,7 +452,7 @@ void WebTransport::CreateStream(
   if (writable) {
     // Bidirectional
     if (!session->CanOpenNextOutgoingBidirectionalStream()) {
-      // TODO(crbug.com/104236): Instead of rejecting the creation request, we
+      // TODO(crbug.com/40114825): Instead of rejecting the creation request, we
       // should wait in this case.
       std::move(callback).Run(false, 0);
       return;
@@ -471,7 +470,7 @@ void WebTransport::CreateStream(
 
   // Unidirectional
   if (!session->CanOpenNextOutgoingUnidirectionalStream()) {
-    // TODO(crbug.com/104236): Instead of rejecting the creation request, we
+    // TODO(crbug.com/40114825): Instead of rejecting the creation request, we
     // should wait in this case.
     std::move(callback).Run(false, 0);
     return;

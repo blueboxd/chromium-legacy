@@ -30,13 +30,13 @@ import org.mockito.junit.MockitoRule;
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.chrome.browser.omnibox.OmniboxFeatures;
 import org.chromium.chrome.browser.omnibox.styles.OmniboxImageSupplier;
 import org.chromium.chrome.browser.omnibox.styles.OmniboxResourceProvider;
 import org.chromium.chrome.browser.omnibox.suggestions.SuggestionHost;
 import org.chromium.chrome.browser.omnibox.suggestions.carousel.BaseCarouselSuggestionViewProperties;
 import org.chromium.chrome.browser.omnibox.test.R;
 import org.chromium.components.omnibox.AutocompleteMatchBuilder;
+import org.chromium.components.omnibox.OmniboxFeatures;
 import org.chromium.components.omnibox.OmniboxSuggestionType;
 import org.chromium.components.omnibox.suggestions.OmniboxSuggestionUiType;
 import org.chromium.ui.modelutil.MVCListAdapter.ListItem;
@@ -44,6 +44,7 @@ import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.url.GURL;
 
 import java.util.List;
+import java.util.Optional;
 
 /** Tests for {@link MostVisitedTilesProcessor}. */
 @RunWith(BaseRobolectricTestRunner.class)
@@ -62,7 +63,8 @@ public class QueryTilesProcessorUnitTest {
         mContext =
                 new ContextThemeWrapper(
                         ContextUtils.getApplicationContext(), R.style.Theme_BrowserUI_DayNight);
-        mProcessor = new QueryTilesProcessor(mContext, mSuggestionHost, mImageSupplier);
+        mProcessor =
+                new QueryTilesProcessor(mContext, mSuggestionHost, Optional.of(mImageSupplier));
         mModel = mProcessor.createModel();
         mTiles = mModel.get(BaseCarouselSuggestionViewProperties.TILES);
         OmniboxResourceProvider.disableCachesForTesting();
@@ -218,7 +220,7 @@ public class QueryTilesProcessorUnitTest {
 
     @Test
     public void populateModel_noImageRequestsWhenImageSupplierIsNotSet() {
-        mProcessor = new QueryTilesProcessor(mContext, mSuggestionHost, null);
+        mProcessor = new QueryTilesProcessor(mContext, mSuggestionHost, Optional.empty());
         var imageUrl = new GURL("http://image.url");
         var match =
                 AutocompleteMatchBuilder.searchWithType(OmniboxSuggestionType.TILE_SUGGESTION)

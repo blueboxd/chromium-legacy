@@ -13,6 +13,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/test_future.h"
 #include "base/unguessable_token.h"
+#include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/app_service_test.h"
@@ -24,6 +25,7 @@
 #include "chrome/browser/web_applications/external_install_options.h"
 #include "chrome/browser/web_applications/externally_managed_app_manager.h"
 #include "chrome/browser/web_applications/test/fake_web_app_provider.h"
+#include "chrome/browser/web_applications/test/fake_web_app_ui_manager.h"
 #include "chrome/browser/web_applications/test/fake_web_contents_manager.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/browser/web_applications/test/web_app_test_utils.h"
@@ -33,13 +35,13 @@
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registry_update.h"
 #include "chrome/browser/web_applications/web_app_ui_manager.h"
-#include "chrome/browser/web_applications/web_contents/web_app_url_loader.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/ash/components/login/login_state/login_state.h"
 #include "components/services/app_service/public/cpp/instance.h"
 #include "components/webapps/browser/install_result_code.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
+#include "components/webapps/browser/web_contents/web_app_url_loader.h"
 #include "components/webapps/common/web_app_id.h"
 #include "components/webapps/common/web_page_metadata.mojom.h"
 #include "content/public/browser/web_contents.h"
@@ -108,16 +110,9 @@ class WebKioskAppServiceLauncherTest : public BrowserWithTestWindowTest {
     app_service_test_.UninstallAllApps(profile());
     app_service_test_.SetUp(profile());
 
-    web_app::WebAppLaunchProcess::SetOpenApplicationCallbackForTesting(
-        base::BindLambdaForTesting(
-            [this](apps::AppLaunchParams&& params) -> content::WebContents* {
-              auto instance = std::make_unique<apps::Instance>(
-                  params.app_id, base::UnguessableToken(), /*window=*/nullptr);
-              app_service()->InstanceRegistry().OnInstance(std::move(instance));
-              return nullptr;
-            }));
-
     web_app::test::AwaitStartWebAppProviderAndSubsystems(profile());
+    static_cast<web_app::FakeWebAppUiManager*>(&web_app_provider().ui_manager())
+        ->SetOnLaunchWebAppCallback(app_launch_future_.GetRepeatingCallback());
 
     app_manager_ = std::make_unique<WebKioskAppManager>();
     account_id_ = AccountId::FromUserEmail(kAppEmail);
@@ -143,7 +138,7 @@ class WebKioskAppServiceLauncherTest : public BrowserWithTestWindowTest {
     auto& install_page_state =
         web_contents_manager().GetOrCreatePageState(install_url);
     install_page_state.url_load_result =
-        web_app::WebAppUrlLoaderResult::kUrlLoaded;
+        webapps::WebAppUrlLoaderResult::kUrlLoaded;
     install_page_state.redirection_url = std::nullopt;
 
     install_page_state.opt_metadata =
@@ -191,6 +186,10 @@ class WebKioskAppServiceLauncherTest : public BrowserWithTestWindowTest {
         .has_value();
   }
 
+  apps::AppLaunchParams WaitForWebAppLaunch() {
+    return std::get<0>(app_launch_future_.Take());
+  }
+
   MockAppLauncherDelegate& delegate() { return delegate_; }
   MockAppLauncherObserver& observer() { return observer_; }
   WebKioskAppServiceLauncher& launcher() { return *launcher_; }
@@ -227,6 +226,9 @@ class WebKioskAppServiceLauncherTest : public BrowserWithTestWindowTest {
   data_decoder::test::InProcessDataDecoder in_process_data_decoder_;
 
   AccountId account_id_;
+  base::test::TestFuture<apps::AppLaunchParams,
+                         web_app::LaunchWebAppWindowSetting>
+      app_launch_future_;
 
   apps::AppServiceTest app_service_test_;
 
@@ -303,6 +305,15 @@ TEST_F(WebKioskAppServiceLauncherTest,
 
   EXPECT_TRUE(profile()->GetExtensionSpecialStoragePolicy()->IsStorageUnlimited(
       GURL(kAppInstallUrl)));
+}
+
+TEST_F(WebKioskAppServiceLauncherTest,
+       InstallUrlShouldBeSetAsOverrideUrlInLaunchParams) {
+  InstallApp();
+  launcher().Initialize();
+  launcher().LaunchApp();
+
+  EXPECT_EQ(WaitForWebAppLaunch().override_url, GURL(kAppInstallUrl));
 }
 
 TEST_F(WebKioskAppServiceLauncherTest, FullFlowNotInstalled) {

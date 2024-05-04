@@ -17,7 +17,6 @@
 #include "ui/gfx/geometry/mojom/geometry_mojom_traits.h"
 
 namespace mojo {
-
 template <>
 struct EnumTraits<media::mojom::VideoEncodeAcceleratorSupportedRateControlMode,
                   media::VideoEncodeAccelerator::SupportedRateControlMode> {
@@ -140,30 +139,33 @@ class StructTraits<media::mojom::VideoEncodeOptionsDataView,
 };
 
 template <>
-struct UnionTraits<media::mojom::CodecMetadataDataView,
+struct UnionTraits<media::mojom::OptionalMetadataDataView,
                    media::BitstreamBufferMetadata> {
-  static media::mojom::CodecMetadataDataView::Tag GetTag(
+  static media::mojom::OptionalMetadataDataView::Tag GetTag(
       const media::BitstreamBufferMetadata& metadata) {
-    if (metadata.h264) {
-      return media::mojom::CodecMetadataDataView::Tag::kH264;
+    if (metadata.drop) {
+      return media::mojom::OptionalMetadataDataView::Tag::kDrop;
+    } else if (metadata.h264) {
+      return media::mojom::OptionalMetadataDataView::Tag::kH264;
     } else if (metadata.vp8) {
-      return media::mojom::CodecMetadataDataView::Tag::kVp8;
+      return media::mojom::OptionalMetadataDataView::Tag::kVp8;
     } else if (metadata.vp9) {
-      return media::mojom::CodecMetadataDataView::Tag::kVp9;
+      return media::mojom::OptionalMetadataDataView::Tag::kVp9;
     } else if (metadata.av1) {
-      return media::mojom::CodecMetadataDataView::Tag::kAv1;
+      return media::mojom::OptionalMetadataDataView::Tag::kAv1;
     } else if (metadata.h265) {
-      return media::mojom::CodecMetadataDataView::Tag::kH265;
+      return media::mojom::OptionalMetadataDataView::Tag::kH265;
     }
     NOTREACHED_NORETURN();
   }
 
   static bool IsNull(const media::BitstreamBufferMetadata& metadata) {
-    return !metadata.h264 && !metadata.vp8 && !metadata.vp9 && !metadata.av1 &&
-           !metadata.h265;
+    return !metadata.drop && !metadata.h264 && !metadata.vp8 && !metadata.vp9 &&
+           !metadata.av1 && !metadata.h265;
   }
 
   static void SetToNull(media::BitstreamBufferMetadata* metadata) {
+    metadata->drop.reset();
     metadata->h264.reset();
     metadata->vp8.reset();
     metadata->vp9.reset();
@@ -171,6 +173,10 @@ struct UnionTraits<media::mojom::CodecMetadataDataView,
     metadata->h265.reset();
   }
 
+  static const media::DropFrameMetadata& drop(
+      const media::BitstreamBufferMetadata& metadata) {
+    return *metadata.drop;
+  }
   static const media::H264Metadata& h264(
       const media::BitstreamBufferMetadata& metadata) {
     return *metadata.h264;
@@ -196,7 +202,7 @@ struct UnionTraits<media::mojom::CodecMetadataDataView,
     return *metadata.h265;
   }
 
-  static bool Read(media::mojom::CodecMetadataDataView data,
+  static bool Read(media::mojom::OptionalMetadataDataView data,
                    media::BitstreamBufferMetadata* metadata);
 };
 
@@ -213,13 +219,10 @@ class StructTraits<media::mojom::BitstreamBufferMetadataDataView,
   static base::TimeDelta timestamp(const media::BitstreamBufferMetadata& bbm) {
     return bbm.timestamp;
   }
-  static bool end_of_picture(const media::BitstreamBufferMetadata& bbm) {
-    return bbm.end_of_picture;
-  }
   static int32_t qp(const media::BitstreamBufferMetadata& bbm) {
     return bbm.qp;
   }
-  static const media::BitstreamBufferMetadata& codec_metadata(
+  static const media::BitstreamBufferMetadata& optional_metadata(
       const media::BitstreamBufferMetadata& bbm) {
     return bbm;
   }
@@ -236,6 +239,19 @@ class StructTraits<media::mojom::BitstreamBufferMetadataDataView,
                    media::BitstreamBufferMetadata* out_metadata);
 };
 
+template <>
+class StructTraits<media::mojom::DropFrameMetadataDataView,
+                   media::DropFrameMetadata> {
+ public:
+  static uint8_t spatial_idx(const media::DropFrameMetadata& drop) {
+    return drop.spatial_idx;
+  }
+  static bool end_of_picture(const media::DropFrameMetadata& drop) {
+    return drop.end_of_picture;
+  }
+  static bool Read(media::mojom::DropFrameMetadataDataView data,
+                   media::DropFrameMetadata* out_metadata);
+};
 template <>
 class StructTraits<media::mojom::H264MetadataDataView, media::H264Metadata> {
  public:
@@ -296,6 +312,9 @@ class StructTraits<media::mojom::Vp9MetadataDataView, media::Vp9Metadata> {
   }
   static bool reference_lower_spatial_layers(const media::Vp9Metadata& vp9) {
     return vp9.reference_lower_spatial_layers;
+  }
+  static bool end_of_picture(const media::Vp9Metadata& vp9) {
+    return vp9.end_of_picture;
   }
   static uint8_t temporal_idx(const media::Vp9Metadata& vp9) {
     return vp9.temporal_idx;

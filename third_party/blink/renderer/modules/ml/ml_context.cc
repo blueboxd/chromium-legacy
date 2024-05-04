@@ -5,40 +5,57 @@
 #include "third_party/blink/renderer/modules/ml/ml_context.h"
 
 #include "base/notreached.h"
+#include "components/ml/webnn/features.mojom-blink.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_ml_context_options.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/typed_arrays/array_buffer/array_buffer_contents.h"
+#include "third_party/blink/renderer/modules/ml/buildflags.h"
 #include "third_party/blink/renderer/modules/ml/ml.h"
-#include "third_party/blink/renderer/modules/ml/ml_model_loader.h"
 #include "third_party/blink/renderer/modules/ml/ml_trace.h"
 #include "third_party/blink/renderer/modules/ml/webnn/ml_buffer_mojo.h"
 #include "third_party/blink/renderer/modules/ml/webnn/ml_error_mojo.h"
 #include "third_party/blink/renderer/modules/ml/webnn/ml_graph_mojo.h"
+#include "third_party/blink/renderer/platform/bindings/exception_code.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 
 namespace blink {
 
 namespace {
 
-#if !BUILDFLAG(IS_CHROMEOS)
-webnn::mojom::blink::PowerPreference ConvertBlinkPowerPreferenceToMojo(
+webnn::mojom::blink::CreateContextOptions::Device ConvertBlinkDeviceTypeToMojo(
+    const V8MLDeviceType& device_type_blink) {
+  switch (device_type_blink.AsEnum()) {
+    case V8MLDeviceType::Enum::kCpu:
+      return webnn::mojom::blink::CreateContextOptions::Device::kCpu;
+    case V8MLDeviceType::Enum::kGpu:
+      return webnn::mojom::blink::CreateContextOptions::Device::kGpu;
+    case V8MLDeviceType::Enum::kNpu:
+      return webnn::mojom::blink::CreateContextOptions::Device::kNpu;
+  }
+}
+
+webnn::mojom::blink::CreateContextOptions::PowerPreference
+ConvertBlinkPowerPreferenceToMojo(
     const V8MLPowerPreference& power_preference_blink) {
   switch (power_preference_blink.AsEnum()) {
     case V8MLPowerPreference::Enum::kAuto:
-      return webnn::mojom::blink::PowerPreference::kDefault;
+      return webnn::mojom::blink::CreateContextOptions::PowerPreference::
+          kDefault;
     case V8MLPowerPreference::Enum::kLowPower:
-      return webnn::mojom::blink::PowerPreference::kLowPower;
+      return webnn::mojom::blink::CreateContextOptions::PowerPreference::
+          kLowPower;
     case V8MLPowerPreference::Enum::kHighPerformance:
-      return webnn::mojom::blink::PowerPreference::kHighPerformance;
+      return webnn::mojom::blink::CreateContextOptions::PowerPreference::
+          kHighPerformance;
   }
 }
-#endif
 
 }  // namespace
 
 // static
-void MLContext::ValidateAndCreate(ScriptPromiseResolver* resolver,
+void MLContext::ValidateAndCreate(ScriptPromiseResolver<MLContext>* resolver,
                                   MLContextOptions* options,
                                   ML* ml) {
   ScopedMLTrace scoped_trace("MLContext::ValidateAndCreate");
@@ -47,18 +64,27 @@ void MLContext::ValidateAndCreate(ScriptPromiseResolver* resolver,
       options->powerPreference(), options->modelFormat(), options->numThreads(),
       ml);
 
-#if !BUILDFLAG(IS_CHROMEOS)
-  if (options->deviceType() == V8MLDeviceType::Enum::kGpu) {
+#if BUILDFLAG(BUILD_WEBNN_WITH_XNNPACK)
+  if (options->deviceType() == V8MLDeviceType::Enum::kCpu) {
+    resolver->Resolve(context);
+  }
+#endif
+
+  if (base::FeatureList::IsEnabled(
+          webnn::mojom::features::kWebMachineLearningNeuralNetwork)) {
     auto options_mojo = webnn::mojom::blink::CreateContextOptions::New(
-        ConvertBlinkPowerPreferenceToMojo(options->powerPreference()));
+        ConvertBlinkDeviceTypeToMojo(options->deviceType()),
+        ConvertBlinkPowerPreferenceToMojo(options->powerPreference()),
+        options->numThreads());
+
     ml->CreateWebNNContext(
         std::move(options_mojo),
         WTF::BindOnce(&MLContext::OnCreateWebNNContext, WrapPersistent(context),
                       std::move(scoped_trace), WrapPersistent(resolver)));
     return;
   }
-#endif
 
+  // TODO: crbug.com/325612086 - Remove this fallback.
   resolver->Resolve(context);
 }
 
@@ -112,24 +138,14 @@ ML* MLContext::GetML() {
   return ml_.Get();
 }
 
-MLModelLoader* MLContext::GetModelLoaderForWebNN(ScriptState* script_state) {
-  if (!ml_model_loader_) {
-    ExecutionContext* execution_context = ExecutionContext::From(script_state);
-    ml_model_loader_ =
-        MakeGarbageCollected<MLModelLoader>(execution_context, this);
-  }
-  return ml_model_loader_.Get();
-}
-
 void MLContext::Trace(Visitor* visitor) const {
   visitor->Trace(ml_);
-  visitor->Trace(ml_model_loader_);
   visitor->Trace(remote_context_);
 
   ScriptWrappable::Trace(visitor);
 }
 
-ScriptPromiseTyped<MLComputeResult> MLContext::compute(
+ScriptPromise<MLComputeResult> MLContext::compute(
     ScriptState* script_state,
     MLGraph* graph,
     const MLNamedArrayBufferViews& inputs,
@@ -139,18 +155,15 @@ ScriptPromiseTyped<MLComputeResult> MLContext::compute(
   if (!script_state->ContextIsValid()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "Invalid script state");
-    return ScriptPromiseTyped<MLComputeResult>();
+    return ScriptPromise<MLComputeResult>();
   }
 
-  auto* resolver =
-      MakeGarbageCollected<ScriptPromiseResolverTyped<MLComputeResult>>(
-          script_state, exception_state.GetContext());
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver<MLComputeResult>>(
+      script_state, exception_state.GetContext());
   auto promise = resolver->Promise();
 
   if (graph->Context() != this) {
-    resolver->Reject(MakeGarbageCollected<DOMException>(
-        DOMExceptionCode::kDataError,
-        "The graph isn't built within this context."));
+    resolver->RejectWithTypeError("The graph isn't built within this context.");
   } else {
     graph->Compute(std::move(scoped_trace), inputs, outputs, resolver,
                    exception_state);
@@ -176,7 +189,7 @@ void MLContext::CreateWebNNGraph(
 
 void MLContext::OnCreateWebNNContext(
     ScopedMLTrace scoped_trace,
-    ScriptPromiseResolver* resolver,
+    ScriptPromiseResolver<MLContext>* resolver,
     webnn::mojom::blink::CreateContextResultPtr result) {
   ScriptState* script_state = resolver->GetScriptState();
   if (!script_state) {
@@ -199,7 +212,7 @@ void MLContext::OnCreateWebNNContext(
 }
 
 void MLContext::CreateWebNNBuffer(
-    mojo::PendingReceiver<webnn::mojom::blink::WebNNBuffer> receiver,
+    mojo::PendingAssociatedReceiver<webnn::mojom::blink::WebNNBuffer> receiver,
     webnn::mojom::blink::BufferInfoPtr buffer_info,
     const base::UnguessableToken& buffer_handle) {
   // Remote context gets automatically unbound when the execution context
@@ -223,15 +236,182 @@ MLBuffer* MLContext::createBuffer(ScriptState* script_state,
     return nullptr;
   }
 
-#if !BUILDFLAG(IS_CHROMEOS)
-  if (device_type_ == V8MLDeviceType::Enum::kGpu) {
+  if (base::FeatureList::IsEnabled(
+          webnn::mojom::features::kWebMachineLearningNeuralNetwork)) {
     return MLBufferMojo::Create(std::move(scoped_trace), script_state, this,
                                 descriptor, exception_state);
   }
-#endif
 
+  // TODO: crbug.com/325612086 - Remove this fallback.
   exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
                                     "Not implemented");
   return nullptr;
 }
+
+void MLContext::writeBuffer(
+    ScriptState* script_state,
+    MLBuffer* dst_buffer,
+    const MaybeShared<DOMArrayBufferView>& src_data_view,
+    uint64_t src_element_offset,
+    ExceptionState& exception_state) {
+  WriteWebNNBuffer(script_state, dst_buffer,
+                   src_data_view->ByteSpanMaybeShared(), src_element_offset,
+                   src_data_view->TypeSize(),
+                   /*src_element_count=*/std::nullopt, exception_state);
+}
+
+void MLContext::writeBuffer(
+    ScriptState* script_state,
+    MLBuffer* dst_buffer,
+    const MaybeShared<DOMArrayBufferView>& src_data_view,
+    uint64_t src_element_offset,
+    uint64_t src_element_count,
+    ExceptionState& exception_state) {
+  WriteWebNNBuffer(script_state, dst_buffer,
+                   src_data_view->ByteSpanMaybeShared(), src_element_offset,
+                   src_data_view->TypeSize(), src_element_count,
+                   exception_state);
+}
+
+void MLContext::writeBuffer(ScriptState* script_state,
+                            MLBuffer* dst_buffer,
+                            const DOMArrayBufferBase* src_data_base,
+                            uint64_t src_byte_offset,
+                            ExceptionState& exception_state) {
+  WriteWebNNBuffer(script_state, dst_buffer,
+                   src_data_base->ByteSpanMaybeShared(), src_byte_offset,
+                   /*src_data_type_size_bytes=*/1,
+                   /*src_element_count=*/std::nullopt, exception_state);
+}
+
+void MLContext::writeBuffer(ScriptState* script_state,
+                            MLBuffer* dst_buffer,
+                            const DOMArrayBufferBase* src_data_base,
+                            uint64_t src_byte_offset,
+                            uint64_t src_byte_size,
+                            ExceptionState& exception_state) {
+  WriteWebNNBuffer(script_state, dst_buffer,
+                   src_data_base->ByteSpanMaybeShared(), src_byte_offset,
+                   /*src_data_type_size_bytes=*/1,
+                   /*src_element_count=*/src_byte_size, exception_state);
+}
+
+ScriptPromise<DOMArrayBuffer> MLContext::readBuffer(
+    ScriptState* script_state,
+    MLBuffer* src_buffer,
+    ExceptionState& exception_state) {
+  if (!script_state->ContextIsValid()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      "Invalid script state");
+    return ScriptPromise<DOMArrayBuffer>();
+  }
+
+  if (src_buffer->context() != this) {
+    exception_state.ThrowTypeError(
+        "The source buffer wasn't created with this context.");
+    return ScriptPromise<DOMArrayBuffer>();
+  }
+
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver<DOMArrayBuffer>>(
+      script_state, exception_state.GetContext());
+  auto promise = resolver->Promise();
+
+  if (device_type_ == V8MLDeviceType::Enum::kGpu) {
+    src_buffer->ReadBufferImpl(resolver);
+    return promise;
+  }
+
+  resolver->RejectWithDOMException(DOMExceptionCode::kNotSupportedError,
+                                   "Not implemented");
+
+  return promise;
+}
+
+void MLContext::WriteWebNNBuffer(ScriptState* script_state,
+                                 MLBuffer* dst_buffer,
+                                 base::span<const uint8_t> src_data,
+                                 uint64_t src_element_offset,
+                                 unsigned src_data_type_size_bytes,
+                                 std::optional<uint64_t> src_element_count,
+                                 ExceptionState& exception_state) {
+  if (!script_state->ContextIsValid()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      "Invalid script state");
+    return;
+  }
+
+  if (dst_buffer->context() != this) {
+    exception_state.ThrowTypeError(
+        "The destination buffer wasn't created with this context.");
+    return;
+  }
+
+  const size_t src_data_byte_length = src_data.size();
+  if (src_element_offset > src_data_byte_length / src_data_type_size_bytes) {
+    exception_state.ThrowTypeError(
+        "Data offset is too large: srcOffset exceeded byte length of srcData.");
+    return;
+  }
+
+  uint64_t src_byte_offset;
+  if (!base::CheckMul(src_element_offset, src_data_type_size_bytes)
+           .AssignIfValid(&src_byte_offset)) {
+    exception_state.ThrowTypeError(
+        "Data offset is too large: srcOffset will overflow.");
+    return;
+  }
+
+  uint64_t max_write_size_bytes;
+  if (!base::CheckSub(src_data_byte_length, src_byte_offset)
+           .AssignIfValid(&max_write_size_bytes)) {
+    exception_state.ThrowTypeError(
+        "Number of bytes to write is too large: offset exceeds byte length.");
+    return;
+  }
+
+  uint64_t write_byte_size = max_write_size_bytes;
+  if (src_element_count.has_value()) {
+    if (src_element_count.value() >
+        max_write_size_bytes / src_data_type_size_bytes) {
+      exception_state.ThrowTypeError(
+          "Number of bytes to write is too large: number of elements will "
+          "overflow.");
+      return;
+    }
+
+    write_byte_size = src_element_count.value() * src_data_type_size_bytes;
+  }
+
+  if (write_byte_size > dst_buffer->size()) {
+    exception_state.ThrowTypeError(
+        "Number of bytes to write is too large: write size exceeded buffer "
+        "size.");
+    return;
+  }
+
+  // Write size and offset needs to be cast to size_t.
+  base::CheckedNumeric<size_t> checked_write_byte_size(write_byte_size);
+  if (!checked_write_byte_size.IsValid()) {
+    exception_state.ThrowRangeError("Number of bytes to write is too large");
+    return;
+  }
+
+  base::CheckedNumeric<size_t> checked_src_byte_offset(src_byte_offset);
+  if (!checked_src_byte_offset.IsValid()) {
+    exception_state.ThrowRangeError("Offset to write is too large");
+    return;
+  }
+
+  if (device_type_ == V8MLDeviceType::Enum::kGpu) {
+    dst_buffer->WriteBufferImpl(
+        src_data.subspan(checked_src_byte_offset.ValueOrDie(),
+                         checked_write_byte_size.ValueOrDie()),
+        exception_state);
+    return;
+  }
+
+  exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
+                                    "Not implemented");
+}
+
 }  // namespace blink

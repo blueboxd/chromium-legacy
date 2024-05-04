@@ -3,9 +3,13 @@
 // found in the LICENSE file.
 
 #include "components/global_media_controls/public/views/media_item_ui_detailed_view.h"
+
 #include <memory>
 
+#include "base/functional/bind.h"
 #include "base/metrics/histogram_functions.h"
+#include "components/global_media_controls/media_view_utils.h"
+#include "components/global_media_controls/public/views/media_action_button.h"
 #include "components/global_media_controls/public/views/media_progress_view.h"
 #include "components/media_message_center/media_notification_container.h"
 #include "components/media_message_center/media_notification_item.h"
@@ -18,19 +22,21 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/gfx/geometry/skia_conversions.h"
+#include "ui/gfx/text_constants.h"
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/background.h"
-#include "ui/views/controls/button/image_button.h"
-#include "ui/views/controls/button/image_button_factory.h"
 #include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/box_layout_view.h"
 #include "ui/views/layout/fill_layout.h"
+#include "ui/views/view_class_properties.h"
 #include "ui/views/view_utils.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "components/global_media_controls/public/views/chapter_item_view.h"
+#include "components/vector_icons/vector_icons.h"
 #endif
 
 namespace global_media_controls {
@@ -49,15 +55,13 @@ constexpr gfx::Insets kDeviceSelectorSeparatorLineInsets =
     gfx::Insets::VH(1, 1);
 
 constexpr int kBackgroundCornerRadius = 16;
-constexpr int kArtworkCornerRadius = 12;
 constexpr int kSourceTextLineHeight = 18;
 constexpr int kTextLineHeight = 20;
 constexpr int kFontSize = 12;
 constexpr int kMediaInfoSeparator = 4;
 constexpr int kControlsColumnSeparator = 10;
 constexpr int kChevronIconSize = 15;
-constexpr int kMediaButtonIconSize = 20;
-constexpr int kNotMediaActionButtonId = -1;
+constexpr int kMediaActionButtonIconSize = 20;
 
 constexpr float kFocusRingHaloInset = -3.0f;
 
@@ -66,6 +70,16 @@ constexpr gfx::Size kPlayPauseButtonSize = gfx::Size(40, 40);
 constexpr gfx::Size kControlsButtonSize = gfx::Size(32, 32);
 
 constexpr char kMediaDisplayPageHistogram[] = "Media.Notification.DisplayPage";
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+constexpr int kProgressRowHeight = 20;
+constexpr gfx::Insets kButtonRowInsets = gfx::Insets::TLBR(0, 8, 0, 0);
+constexpr char16_t kTimestampDelimiter[] = u" / ";
+const gfx::FontList kTimestampFont({"Google Sans"},
+                                   gfx::Font::NORMAL,
+                                   13,
+                                   gfx::Font::Weight::MEDIUM);
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 class MediaLabelButton : public views::Button {
   METADATA_HEADER(MediaLabelButton, views::Button)
@@ -106,74 +120,6 @@ class MediaLabelButton : public views::Button {
 
 BEGIN_METADATA(MediaLabelButton)
 END_METADATA
-
-class MediaButton : public views::ImageButton {
-  METADATA_HEADER(MediaButton, views::ImageButton)
-
- public:
-  MediaButton(PressedCallback callback,
-              int button_id,
-              const gfx::VectorIcon& vector_icon,
-              int tooltip_text_id,
-              ui::ColorId foreground_color_id,
-              ui::ColorId foreground_disabled_color_id,
-              ui::ColorId focus_ring_color_id)
-      : ImageButton(std::move(callback)),
-        foreground_disabled_color_id_(foreground_disabled_color_id) {
-    views::ConfigureVectorImageButton(this);
-
-    bool enable_flip_canvas =
-        (button_id == static_cast<int>(MediaSessionAction::kPreviousTrack) ||
-         button_id == static_cast<int>(MediaSessionAction::kNextTrack));
-    SetFlipCanvasOnPaintForRTLUI(enable_flip_canvas);
-
-    auto button_size = (button_id == static_cast<int>(MediaSessionAction::kPlay)
-                            ? kPlayPauseButtonSize
-                            : kControlsButtonSize);
-    views::InstallRoundRectHighlightPathGenerator(this, gfx::Insets(),
-                                                  button_size.height() / 2);
-    SetPreferredSize(button_size);
-
-    SetInstallFocusRingOnFocus(true);
-    SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
-    views::FocusRing::Get(this)->SetColorId(focus_ring_color_id);
-
-    Update(button_id, vector_icon, tooltip_text_id, foreground_color_id);
-  }
-
-  void Update(int button_id,
-              const gfx::VectorIcon& vector_icon,
-              int tooltip_text_id,
-              ui::ColorId foreground_color_id) {
-    if (button_id != kNotMediaActionButtonId) {
-      SetID(button_id);
-    }
-    SetTooltipText(l10n_util::GetStringUTF16(tooltip_text_id));
-    views::SetImageFromVectorIconWithColorId(
-        this, vector_icon, foreground_color_id, foreground_disabled_color_id_,
-        kMediaButtonIconSize);
-  }
-
-  void UpdateText(int tooltip_text_id) {
-    SetTooltipText(l10n_util::GetStringUTF16(tooltip_text_id));
-  }
-
- private:
-  const ui::ColorId foreground_disabled_color_id_;
-};
-
-BEGIN_METADATA(MediaButton)
-END_METADATA
-
-// If the image does not fit the square view, scale the image to fill the view
-// even if part of the image is cropped.
-gfx::Size ScaleImageSizeToFitView(const gfx::Size& image_size,
-                                  const gfx::Size& view_size) {
-  const float scale =
-      std::max(view_size.width() / static_cast<float>(image_size.width()),
-               view_size.height() / static_cast<float>(image_size.height()));
-  return gfx::ScaleToFlooredSize(image_size, scale);
-}
 
 }  // namespace
 
@@ -301,7 +247,7 @@ MediaItemUIDetailedView::MediaItemUIDetailedView(
   }
 
   // Create the play/pause button.
-  play_pause_button_ = CreateMediaButton(
+  play_pause_button_ = CreateMediaActionButton(
       controls_column, static_cast<int>(MediaSessionAction::kPlay),
       media_message_center::kPlayArrowIcon,
       IDS_MEDIA_MESSAGE_CENTER_MEDIA_NOTIFICATION_ACTION_PLAY);
@@ -317,9 +263,14 @@ MediaItemUIDetailedView::MediaItemUIDetailedView(
   // controls_row->SetCrossAxisAlignment(
   //     views::BoxLayout::CrossAxisAlignment::kCenter);
 
+  views::View* button_container = CreateControlsRow();
+  if (!button_container) {
+    button_container = controls_row;
+  }
+
   // Create the previous track button.
-  CreateMediaButton(
-      controls_row, static_cast<int>(MediaSessionAction::kPreviousTrack),
+  CreateMediaActionButton(
+      button_container, static_cast<int>(MediaSessionAction::kPreviousTrack),
       media_message_center::kMediaPreviousTrackIcon,
       IDS_MEDIA_MESSAGE_CENTER_MEDIA_NOTIFICATION_ACTION_PREVIOUS_TRACK);
 
@@ -335,19 +286,56 @@ MediaItemUIDetailedView::MediaItemUIDetailedView(
           base::BindRepeating(&MediaItemUIDetailedView::OnProgressDragging,
                               base::Unretained(this)),
           base::BindRepeating(&MediaItemUIDetailedView::SeekTo,
-                              base::Unretained(this))));
+                              base::Unretained(this)),
+          base::BindRepeating(
+              &MediaItemUIDetailedView::OnProgressViewUpdateProgress,
+              base::Unretained(this))));
   controls_row->SetFlexForView(progress_view_, 1);
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  if (base::FeatureList::IsEnabled(media::kBackgroundListening)) {
+    controls_row->SetMinimumCrossAxisSize(kProgressRowHeight);
+
+    // Create the replay 10 button.
+    CreateMediaActionButton(
+        button_container, static_cast<int>(MediaSessionAction::kSeekBackward),
+        vector_icons::kReplay10Icon,
+        IDS_MEDIA_MESSAGE_CENTER_MEDIA_NOTIFICATION_ACTION_REPLAY_10);
+
+    // Create the forward 10 button.
+    CreateMediaActionButton(
+        button_container, static_cast<int>(MediaSessionAction::kSeekForward),
+        vector_icons::kForward10Icon,
+        IDS_MEDIA_MESSAGE_CENTER_MEDIA_NOTIFICATION_ACTION_FORWARD_10);
+  }
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
   // Create the next track button.
-  CreateMediaButton(
-      controls_row, static_cast<int>(MediaSessionAction::kNextTrack),
+  CreateMediaActionButton(
+      button_container, static_cast<int>(MediaSessionAction::kNextTrack),
       media_message_center::kMediaNextTrackIcon,
       IDS_MEDIA_MESSAGE_CENTER_MEDIA_NOTIFICATION_ACTION_NEXT_TRACK);
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  if (base::FeatureList::IsEnabled(media::kBackgroundListening)) {
+    // Create the chapter list button.
+    // TODO(b/327505486): The string id is a place holder for now, the real
+    // label is TBD.
+    chapter_list_button_ = CreateMediaActionButton(
+        button_container, kEmptyMediaActionButtonId,
+        vector_icons::kVideoLibraryIcon,
+        IDS_MEDIA_MESSAGE_CENTER_MEDIA_NOTIFICATION_ACTION_SHOW_DEVICE_LIST);
+    chapter_list_button_->SetCallback(
+        base::BindRepeating(&MediaItemUIDetailedView::ToggleChapterListView,
+                            base::Unretained(this)));
+    chapter_list_button_->SetVisible(false);
+  }
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
   // Create the start casting button.
   if (device_selector_view) {
-    start_casting_button_ = CreateMediaButton(
-        controls_row, kNotMediaActionButtonId,
+    start_casting_button_ = CreateMediaActionButton(
+        button_container, kEmptyMediaActionButtonId,
         media_message_center::kMediaCastStartIcon,
         IDS_MEDIA_MESSAGE_CENTER_MEDIA_NOTIFICATION_ACTION_SHOW_DEVICE_LIST);
     start_casting_button_->SetCallback(
@@ -357,8 +345,8 @@ MediaItemUIDetailedView::MediaItemUIDetailedView(
   }
 
   // Create the picture-in-picture button.
-  picture_in_picture_button_ = CreateMediaButton(
-      controls_row,
+  picture_in_picture_button_ = CreateMediaActionButton(
+      button_container,
       static_cast<int>(MediaSessionAction::kEnterPictureInPicture),
       media_message_center::kMediaEnterPipIcon,
       IDS_MEDIA_MESSAGE_CENTER_MEDIA_NOTIFICATION_ACTION_ENTER_PIP);
@@ -366,7 +354,7 @@ MediaItemUIDetailedView::MediaItemUIDetailedView(
   // Create the stop casting button. It will only show up when this media item
   // is being casted to another device.
   if (footer_view) {
-    footer_view_ = controls_row->AddChildView(std::move(footer_view));
+    footer_view_ = button_container->AddChildView(std::move(footer_view));
     picture_in_picture_button_->SetVisible(false);
   }
 
@@ -455,38 +443,8 @@ void MediaItemUIDetailedView::UpdateWithMediaMetadata(
   title_label_->SetText(metadata.title);
   artist_label_->SetText(metadata.artist);
 
+  UpdateChapterListViewWithMetadata(metadata);
   container_->OnMediaSessionMetadataChanged(metadata);
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  if (!base::FeatureList::IsEnabled(media::kBackgroundListening)) {
-    return;
-  }
-
-  if (!chapter_list_view_ && metadata.chapters.empty()) {
-    return;
-  }
-
-  if (metadata.chapters.empty()) {
-    chapter_list_view_->RemoveAllChildViews();
-    return;
-  }
-
-  if (!chapter_list_view_) {
-    chapter_list_view_ = AddChildView(
-        views::Builder<views::BoxLayoutView>()
-            .SetOrientation(views::BoxLayout::Orientation::kVertical)
-            .SetInsideBorderInsets(gfx::Insets::TLBR(16, 8, 8, 8))
-            .Build());
-  } else {
-    chapter_list_view_->RemoveAllChildViews();
-  }
-
-  for (int index = 0; index < static_cast<int>(metadata.chapters.size());
-       index++) {
-    chapters_[index] = chapter_list_view_->AddChildView(
-        std::make_unique<ChapterItemView>(metadata.chapters[index], theme_));
-  }
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
 
 void MediaItemUIDetailedView::UpdateWithMediaActions(
@@ -501,6 +459,13 @@ void MediaItemUIDetailedView::UpdateWithMediaPosition(
     const media_session::MediaPosition& position) {
   position_ = position;
   progress_view_->UpdateProgress(position);
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  if (base::FeatureList::IsEnabled(media::kBackgroundListening)) {
+    total_duration_view_->SetText(kTimestampDelimiter +
+                                  GetFormattedDuration(position.duration()));
+  }
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
 
 void MediaItemUIDetailedView::UpdateWithMediaArtwork(
@@ -586,20 +551,24 @@ void MediaItemUIDetailedView::MediaLabelPressed(MediaLabelButton* button) {
   container_->OnHeaderClicked(/*activate_original_media=*/true);
 }
 
-MediaButton* MediaItemUIDetailedView::CreateMediaButton(
+MediaActionButton* MediaItemUIDetailedView::CreateMediaActionButton(
     views::View* parent,
     int button_id,
     const gfx::VectorIcon& vector_icon,
     int tooltip_text_id) {
-  auto button = std::make_unique<MediaButton>(
-      views::Button::PressedCallback(), button_id, vector_icon, tooltip_text_id,
+  auto button = std::make_unique<MediaActionButton>(
+      views::Button::PressedCallback(), button_id, tooltip_text_id,
+      kMediaActionButtonIconSize, vector_icon,
+      (button_id == static_cast<int>(MediaSessionAction::kPlay)
+           ? kPlayPauseButtonSize
+           : kControlsButtonSize),
       theme_.primary_foreground_color_id, theme_.secondary_foreground_color_id,
       theme_.focus_ring_color_id);
   auto* button_ptr = parent->AddChildView(std::move(button));
 
-  if (button_id != kNotMediaActionButtonId) {
+  if (button_id != kEmptyMediaActionButtonId) {
     button_ptr->SetCallback(
-        base::BindRepeating(&MediaItemUIDetailedView::MediaButtonPressed,
+        base::BindRepeating(&MediaItemUIDetailedView::MediaActionButtonPressed,
                             base::Unretained(this), button_ptr));
     action_buttons_.push_back(button_ptr);
   }
@@ -642,7 +611,7 @@ void MediaItemUIDetailedView::UpdateActionButtonsVisibility() {
   }
 }
 
-void MediaItemUIDetailedView::MediaButtonPressed(views::Button* button) {
+void MediaItemUIDetailedView::MediaActionButtonPressed(views::Button* button) {
   const auto action = static_cast<MediaSessionAction>(button->GetID());
   if (item_) {
     item_->OnMediaSessionActionButtonPressed(action);
@@ -667,6 +636,11 @@ void MediaItemUIDetailedView::OnProgressDragging(bool pause) {
 
 void MediaItemUIDetailedView::SeekTo(double seek_progress) {
   const auto time = seek_progress * position_.duration();
+  SeekToTimestamp(time);
+}
+
+void MediaItemUIDetailedView::SeekToTimestamp(
+    const base::TimeDelta time) const {
   if (item_) {
     item_->SeekTo(time);
   } else {
@@ -695,6 +669,12 @@ void MediaItemUIDetailedView::StartCastingButtonPressed() {
       if (device_selector_view_->IsDeviceSelectorExpanded()) {
         device_selector_view_->HideDevices();
       } else {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+        // Hide the chapter list view if it's shown.
+        if (chapter_list_view_ && chapter_list_view_->GetVisible()) {
+          ToggleChapterListView();
+        }
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
         device_selector_view_->ShowDevices();
       }
       UpdateCastingState();
@@ -731,13 +711,153 @@ void MediaItemUIDetailedView::UpdateCastingState() {
       start_casting_button_->UpdateText(
           IDS_MEDIA_MESSAGE_CENTER_MEDIA_NOTIFICATION_ACTION_SHOW_DEVICE_LIST);
     }
-    device_selector_view_separator_->SetVisible(is_expanded);
+
+    bool is_ash_background_listening_enabled = false;
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    is_ash_background_listening_enabled =
+        base::FeatureList::IsEnabled(media::kBackgroundListening);
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+    device_selector_view_separator_->SetVisible(
+        is_expanded && !is_ash_background_listening_enabled);
   } else {
     device_selector_view_->SetVisible(false);
     device_selector_view_separator_->SetVisible(false);
   }
 
-  container_->OnDeviceSelectorViewSizeChanged();
+  container_->OnListViewSizeChanged();
+}
+
+void MediaItemUIDetailedView::UpdateChapterListViewWithMetadata(
+    const media_session::MediaMetadata& metadata) {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  if (!base::FeatureList::IsEnabled(media::kBackgroundListening)) {
+    return;
+  }
+
+  const bool is_chapter_button_visible = chapter_list_button_->GetVisible();
+  if (!chapter_list_view_ && metadata.chapters.empty()) {
+    if (is_chapter_button_visible) {
+      chapter_list_button_->SetVisible(false);
+    }
+    return;
+  }
+
+  if (metadata.chapters.empty()) {
+    chapter_list_view_->RemoveAllChildViews();
+    chapters_.clear();
+
+    if (is_chapter_button_visible) {
+      chapter_list_button_->SetVisible(false);
+    }
+    if (chapter_list_view_->GetVisible()) {
+      chapter_list_view_->SetVisible(false);
+      container_->OnListViewSizeChanged();
+    }
+    return;
+  }
+
+  if (!is_chapter_button_visible) {
+    chapter_list_button_->SetVisible(true);
+  }
+
+  // Ensures the chapter list view exists and is up-to-date:
+  //  1) Creates the chapter list view if it doesn't exist.
+  //  2) Compares existing chapter item views to new metadata:
+  //     a) If chapters match, no updates are needed.
+  //     b) If chapters differ, the list is cleared and updated with the new
+  // chapters.
+  if (!chapter_list_view_) {
+    chapter_list_view_ = AddChildView(
+        views::Builder<views::BoxLayoutView>()
+            .SetOrientation(views::BoxLayout::Orientation::kVertical)
+            .SetInsideBorderInsets(gfx::Insets::TLBR(16, 8, 8, 8))
+            .Build());
+    chapter_list_view_->SetVisible(false);
+  } else {
+    bool chapters_not_changed = metadata.chapters.size() == chapters_.size();
+    // Further checks if every chapter is the same.
+    if (chapters_not_changed) {
+      for (int index = 0; index < static_cast<int>(metadata.chapters.size());
+           index++) {
+        if (!chapters_[index] ||
+            chapters_[index]->chapter() != metadata.chapters[index]) {
+          chapters_not_changed = false;
+          break;
+        }
+      }
+    }
+    if (chapters_not_changed) {
+      return;
+    }
+    chapter_list_view_->RemoveAllChildViews();
+  }
+
+  chapters_.clear();
+  for (int index = 0; index < static_cast<int>(metadata.chapters.size());
+       index++) {
+    chapters_[index] =
+        chapter_list_view_->AddChildView(std::make_unique<ChapterItemView>(
+            metadata.chapters[index], theme_,
+            /*on_chapter_pressed=*/
+            base::BindRepeating(&MediaItemUIDetailedView::SeekToTimestamp,
+                                weak_factory_.GetWeakPtr())));
+  }
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+}
+
+views::View* MediaItemUIDetailedView::CreateControlsRow() {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  if (!base::FeatureList::IsEnabled(media::kBackgroundListening)) {
+    return nullptr;
+  }
+
+  views::View* button_container;
+  AddChildView(
+      views::Builder<views::BoxLayoutView>()
+          .SetOrientation(views::BoxLayout::Orientation::kHorizontal)
+          .SetInsideBorderInsets(kButtonRowInsets)
+          .AddChildren(
+              views::Builder<views::BoxLayoutView>()
+                  .SetOrientation(views::BoxLayout::Orientation::kHorizontal)
+                  .SetProperty(views::kBoxLayoutFlexKey,
+                               views::BoxLayoutFlexSpecification())
+                  .AddChildren(
+                      views::Builder<views::Label>()
+                          .CopyAddressTo(&current_timestamp_view_)
+                          .SetText(
+                              GetFormattedDuration(position_.GetPosition()))
+                          .SetFontList(kTimestampFont)
+                          .SetHorizontalAlignment(gfx::ALIGN_LEFT)
+                          .SetEnabledColorId(
+                              theme_.primary_foreground_color_id),
+                      views::Builder<views::Label>()
+                          .CopyAddressTo(&total_duration_view_)
+                          .SetText(kTimestampDelimiter +
+                                   GetFormattedDuration(position_.duration()))
+                          .SetFontList(kTimestampFont)
+                          .SetHorizontalAlignment(gfx::ALIGN_LEFT)
+                          .SetEnabledColorId(
+                              theme_.primary_foreground_color_id)))
+          .AddChildren(
+              views::Builder<views::BoxLayoutView>()
+                  .CopyAddressTo(&button_container)
+                  .SetOrientation(views::BoxLayout::Orientation::kHorizontal))
+          .Build());
+
+  return button_container;
+#else
+  return nullptr;
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+}
+
+void MediaItemUIDetailedView::OnProgressViewUpdateProgress(
+    base::TimeDelta current_timestamp) {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  if (base::FeatureList::IsEnabled(media::kBackgroundListening)) {
+    current_timestamp_view_->SetText(GetFormattedDuration(current_timestamp));
+  }
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
 
 // Helper functions for testing:
@@ -794,13 +914,68 @@ views::View* MediaItemUIDetailedView::GetDeviceSelectorSeparatorForTesting() {
 }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+views::Button* MediaItemUIDetailedView::GetChapterListButtonForTesting() {
+  return chapter_list_button_;
+}
+
 views::View* MediaItemUIDetailedView::GetChapterListViewForTesting() {
   return chapter_list_view_;
+}
+
+views::Label* MediaItemUIDetailedView::GetCurrentTimestampViewForTesting() {
+  return current_timestamp_view_;
+}
+
+views::Label* MediaItemUIDetailedView::GetTotalDurationViewForTesting() {
+  return total_duration_view_;
 }
 
 base::flat_map<int, ChapterItemView*>
 MediaItemUIDetailedView::GetChaptersForTesting() {
   return chapters_;
+}
+
+void MediaItemUIDetailedView::ToggleChapterListView() {
+  if (!base::FeatureList::IsEnabled(media::kBackgroundListening)) {
+    return;
+  }
+
+  if (!chapter_list_view_) {
+    return;
+  }
+
+  const bool is_showing_chapters = chapter_list_view_->GetVisible();
+
+  if (chapters_.empty()) {
+    if (chapter_list_button_->GetVisible()) {
+      chapter_list_button_->SetVisible(false);
+    }
+
+    if (is_showing_chapters) {
+      chapter_list_view_->SetVisible(false);
+    }
+    return;
+  }
+
+  // TODO(b/327505486): Update tooltips.
+  if (is_showing_chapters) {
+    // Hide the ink drop color if user clicks the button to hide devices.
+    views::InkDrop::Get(chapter_list_button_)->GetInkDrop()->SnapToHidden();
+  } else {
+    // Use the ink drop color as the button background if user clicks the
+    // button to show devices.
+    views::InkDrop::Get(chapter_list_button_)->GetInkDrop()->SnapToActivated();
+
+    // Hide the `device_selector_view_` if it's shown.
+    if (device_selector_view_ &&
+        device_selector_view_->IsDeviceSelectorExpanded()) {
+      device_selector_view_->HideDevices();
+      UpdateCastingState();
+    }
+  }
+
+  chapter_list_view_->SetVisible(!is_showing_chapters);
+  container_->OnListViewSizeChanged();
 }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 

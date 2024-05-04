@@ -21,6 +21,7 @@ class AbortSignal;
 class DOMTaskSignal;
 class ScriptState;
 class ScriptWrappableTaskState;
+class SoftNavigationContext;
 }  // namespace blink
 
 namespace v8 {
@@ -46,6 +47,7 @@ class PLATFORM_EXPORT TaskAttributionTracker {
     kSchedulerPostTask,
     kRequestIdleCallback,
     kXMLHttpRequest,
+    kSoftNavigation,
   };
 
   // `TaskScope` stores state for the current task, which is propagated to tasks
@@ -66,16 +68,12 @@ class PLATFORM_EXPORT TaskAttributionTracker {
     TaskScope(TaskScope&& other)
         : task_tracker_(std::exchange(other.task_tracker_, nullptr)),
           script_state_(other.script_state_),
-          previous_running_task_(other.previous_running_task_),
-          previous_continuation_task_state_(
-              other.previous_continuation_task_state_) {}
+          previous_task_state_(other.previous_task_state_) {}
 
     TaskScope& operator=(TaskScope&& other) {
       task_tracker_ = std::exchange(other.task_tracker_, nullptr);
       script_state_ = other.script_state_;
-      previous_running_task_ = other.previous_running_task_;
-      previous_continuation_task_state_ =
-          other.previous_continuation_task_state_;
+      previous_task_state_ = other.previous_task_state_;
       return *this;
     }
 
@@ -85,12 +83,10 @@ class PLATFORM_EXPORT TaskAttributionTracker {
 
     TaskScope(TaskAttributionTracker* tracker,
               ScriptState* script_state,
-              TaskAttributionInfo* previous_running_task,
-              ScriptWrappableTaskState* previous_continuation_task_state)
+              ScriptWrappableTaskState* previous_task_state)
         : task_tracker_(tracker),
           script_state_(script_state),
-          previous_running_task_(previous_running_task),
-          previous_continuation_task_state_(previous_continuation_task_state) {}
+          previous_task_state_(previous_task_state) {}
 
     // `task_tracker_` is tied to the lifetime of the isolate, which will
     // outlive the current task.
@@ -99,8 +95,7 @@ class PLATFORM_EXPORT TaskAttributionTracker {
     // The rest are on the Oilpan heap, so these are stored as raw pointers
     // since the class is stack allocated.
     ScriptState* script_state_;
-    TaskAttributionInfo* previous_running_task_;
-    ScriptWrappableTaskState* previous_continuation_task_state_;
+    ScriptWrappableTaskState* previous_task_state_;
   };
 
   class Observer : public GarbageCollectedMixin {
@@ -149,31 +144,34 @@ class PLATFORM_EXPORT TaskAttributionTracker {
 
   virtual ~TaskAttributionTracker() = default;
 
-  // Create a new task scope.
+  // Creates a new `TaskScope` to propagate `task_state` to descendant tasks and
+  // continuations.
   virtual TaskScope CreateTaskScope(ScriptState*,
-                                    TaskAttributionInfo* parent_task,
+                                    TaskAttributionInfo* task_state,
                                     TaskScopeType type) = 0;
-  // Create a new task scope with web scheduling context.
+
+  // Create a new `TaskScope` to propagate the given `SoftNavigationContext`,
+  // initiating propagation for the context.
+  virtual TaskScope CreateTaskScope(ScriptState*, SoftNavigationContext*) = 0;
+
+  // Creates a new `TaskScope` with web scheduling context. `task_state` will be
+  // propagated to descendant tasks and continuations; `abort_source` and
+  // `priority_source` will only be propagated to continuations.
   virtual TaskScope CreateTaskScope(ScriptState*,
-                                    TaskAttributionInfo* parent_task,
+                                    TaskAttributionInfo* task_state,
                                     TaskScopeType type,
                                     AbortSignal* abort_source,
                                     DOMTaskSignal* priority_source) = 0;
 
+  // Conditionally create a `TaskScope` for a generic v8 callback. A `TaskScope`
+  // is always created if `task_state` is non-null, and one is additionally
+  // created if there isn't an active `TaskScope`.
+  virtual std::optional<TaskScope> MaybeCreateTaskScopeForCallback(
+      ScriptState*,
+      TaskAttributionInfo* task_state) = 0;
+
   // Get the `TaskAttributionInfo` for the currently running task.
   virtual TaskAttributionInfo* RunningTask() const = 0;
-
-  // Returns true iff `task` has an ancestor task with `ancestor_id`.
-  virtual bool IsAncestor(const TaskAttributionInfo& task,
-                          TaskAttributionId anscestor_id) = 0;
-
-  // Runs `visitor` for each ancestor `TaskAttributionInfo` of `task`. `visitor`
-  // controls iteration with its return value.
-  enum class IterationStatus { kContinue, kStop };
-  virtual void ForEachAncestor(
-      const TaskAttributionInfo& task,
-      base::FunctionRef<IterationStatus(const TaskAttributionInfo& task)>
-          visitor) = 0;
 
   // Registers an observer to be notified when a `TaskScope` has been created.
   // Multiple `Observer`s can be registered, but only the innermost one will

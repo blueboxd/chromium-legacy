@@ -23,6 +23,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_browsertest_util.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/test_launcher_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -662,7 +663,14 @@ IN_PROC_BROWSER_TEST_F(WebViewFocusInteractiveTest, Focus_FocusEvent) {
   TestHelper("testFocusEvent", "web_view/focus", NO_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewFocusInteractiveTest, Focus_FocusTakeFocus) {
+// TODO(crbug.com/334045674): Flaky timeouts on Mac.
+#if BUILDFLAG(IS_MAC)
+#define MAYBE_Focus_FocusTakeFocus DISABLED_Focus_FocusTakeFocus
+#else
+#define MAYBE_Focus_FocusTakeFocus Focus_FocusTakeFocus
+#endif
+IN_PROC_BROWSER_TEST_F(WebViewFocusInteractiveTest,
+                       MAYBE_Focus_FocusTakeFocus) {
   TestHelper("testFocusTakeFocus", "web_view/focus", NO_TEST_SERVER);
   ASSERT_TRUE(GetGuestRenderFrameHost());
 
@@ -915,8 +923,8 @@ IN_PROC_BROWSER_TEST_F(DISABLED_WebViewPopupInteractiveTest,
 }
 
 // Flaky on ChromeOS and Linux: http://crbug.com/526886
-// TODO(crbug.com/807446): Flaky on Mac.
-// TODO(crbug.com/809383): Flaky on Windows.
+// TODO(crbug.com/40560638): Flaky on Mac.
+// TODO(crbug.com/41369000): Flaky on Windows.
 // Tests that moving browser plugin (without resize/UpdateRects) correctly
 // repositions popup.
 IN_PROC_BROWSER_TEST_F(DISABLED_WebViewPopupInteractiveTest,
@@ -1149,7 +1157,7 @@ IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, MAYBE_Focus_InputMethod) {
 #endif
 
 #if BUILDFLAG(IS_LINUX) || \
-    BUILDFLAG(IS_CHROMEOS)  // TODO(https://crbug.com/801552): Flaky.
+    BUILDFLAG(IS_CHROMEOS)  // TODO(crbug.com/41364503): Flaky.
 #define MAYBE_LongPressSelection DISABLED_LongPressSelection
 #else
 #define MAYBE_LongPressSelection LongPressSelection
@@ -1633,7 +1641,7 @@ IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest,
 
   // Wait for guest's document to consider itself focused. This avoids
   // flakiness on some platforms.
-  // TODO(crbug.com/1519130): `base::test::RunUntil` times out on mac.
+  // TODO(crbug.com/41492111): `base::test::RunUntil` times out on mac.
   while (!content::EvalJs(guest_rfh, "document.hasFocus()").ExtractBool()) {
     base::RunLoop run_loop;
     base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(

@@ -10,11 +10,9 @@
 #include "base/containers/span.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/token.h"
-#include "chrome/android/chrome_jni_headers/RecentlyClosedBridge_jni.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/flags/android/chrome_feature_list.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_android.h"
 #include "chrome/browser/sessions/session_restore.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/ui/android/tab_model/android_live_tab_context.h"
@@ -25,17 +23,15 @@
 #include "content/public/browser/web_contents.h"
 #include "url/android/gurl_android.h"
 
+// Must come after other includes, because FromJniType() uses Profile.
+#include "chrome/android/chrome_jni_headers/RecentlyClosedBridge_jni.h"
+#include "chrome/android/chrome_jni_headers/RecentlyClosedTab_jni.h"
+
 using base::android::AttachCurrentThread;
-using base::android::ConvertUTF16ToJavaString;
-using base::android::ConvertUTF8ToJavaString;
 using base::android::JavaParamRef;
 using base::android::JavaRef;
 using base::android::ScopedJavaGlobalRef;
 using base::android::ScopedJavaLocalRef;
-using base::android::ToJavaArrayOfStrings;
-using base::android::ToJavaIntArray;
-using base::android::ToJavaLongArray;
-using base::android::TokenAndroid;
 
 namespace recent_tabs {
 namespace {
@@ -51,149 +47,107 @@ bool TabEntryWithIdExists(const sessions::TabRestoreService::Entries& entries,
   return false;
 }
 
-// Helpers for GetRecentlyClosedEntries:
+jni_zero::ScopedJavaLocalRef<jobject> CreateJavaRecentlyClosedTab(
+    JNIEnv* env,
+    const sessions::tab_restore::Tab& tab) {
+  const sessions::SerializedNavigationEntry& current_navigation =
+      tab.navigations.at(tab.current_navigation_index);
+  return Java_RecentlyClosedTab_Constructor(
+      env, tab.id.id(), tab.timestamp.InMillisecondsSinceUnixEpoch(),
+      current_navigation.title(), current_navigation.virtual_url(),
+      tab.group ? std::optional<base::Token>(tab.group->token())
+                : std::nullopt);
+}
 
-void PrepareTabs(
+std::vector<jni_zero::ScopedJavaLocalRef<jobject>> PrepareTabs(
     JNIEnv* env,
     TabIterator& it,
     const sessions::TabRestoreService::Entries::const_iterator& current_entry,
-    std::vector<int>& ids,
-    std::vector<int64_t>& timestamps,
-    std::vector<std::u16string>& titles,
-    std::vector<ScopedJavaLocalRef<jobject>>& urls,
-    std::vector<std::optional<base::Token>>& group_ids) {
+    size_t tab_count) {
+  std::vector<jni_zero::ScopedJavaLocalRef<jobject>> ret;
+  ret.reserve(tab_count);
   while (it.CurrentEntry() == current_entry) {
-    const sessions::TabRestoreService::Tab& tab = *it;
-    const sessions::SerializedNavigationEntry& current_navigation =
-        tab.navigations.at(tab.current_navigation_index);
-    ids.push_back(tab.id.id());
-    timestamps.push_back(tab.timestamp.InMillisecondsSinceUnixEpoch());
-    titles.push_back(current_navigation.title());
-    urls.push_back(url::GURLAndroid::FromNativeGURL(
-        env, current_navigation.virtual_url()));
-    group_ids.push_back(tab.group
-                            ? std::optional<base::Token>(tab.group->token())
-                            : std::nullopt);
+    ret.push_back(CreateJavaRecentlyClosedTab(env, *it));
     ++it;
   }
+  return ret;
 }
 
 // Add a tab entry to the main entries list.
-void JNI_RecentlyClosedBridge_AddTabToEntries(
-    JNIEnv* env,
-    const sessions::TabRestoreService::Tab& tab,
-    const JavaRef<jobject>& jentries) {
-  const sessions::SerializedNavigationEntry& current_navigation =
-      tab.navigations.at(tab.current_navigation_index);
+void AddTabToEntries(JNIEnv* env,
+                     const sessions::tab_restore::Tab& tab,
+                     const JavaRef<jobject>& jentries) {
   Java_RecentlyClosedBridge_addTabToEntries(
-      env, jentries, tab.id.id(), tab.timestamp.InMillisecondsSinceUnixEpoch(),
-      ConvertUTF16ToJavaString(env, current_navigation.title()),
-      url::GURLAndroid::FromNativeGURL(env, current_navigation.virtual_url()),
-      tab.group ? ConvertUTF8ToJavaString(env, tab.group->ToString())
-                : nullptr);
+      env, jentries, CreateJavaRecentlyClosedTab(env, tab));
 }
 
-void JNI_RecentlyClosedBridge_AddGroupToEntries(
+void AddGroupToEntries(
     JNIEnv* env,
     TabIterator& it,
     const sessions::TabRestoreService::Entries::const_iterator& current_entry,
-    const sessions::TabRestoreService::Group& group,
+    const sessions::tab_restore::Group& group,
     const JavaRef<jobject>& jentries) {
-  std::vector<int> ids;
-  std::vector<int64_t> timestamps;
-  std::vector<std::u16string> titles;
-  std::vector<ScopedJavaLocalRef<jobject>> urls;
-  std::vector<std::optional<base::Token>> group_ids;
-
-  const size_t tab_count = group.tabs.size();
-  ids.reserve(tab_count);
-  timestamps.reserve(tab_count);
-  titles.reserve(tab_count);
-  urls.reserve(tab_count);
-  group_ids.reserve(tab_count);
-  PrepareTabs(env, it, current_entry, ids, timestamps, titles, urls, group_ids);
+  std::vector<jni_zero::ScopedJavaLocalRef<jobject>> tabs =
+      PrepareTabs(env, it, current_entry, group.tabs.size());
 
   Java_RecentlyClosedBridge_addGroupToEntries(
       env, jentries, group.id.id(),
-      group.timestamp.InMillisecondsSinceUnixEpoch(),
-      ConvertUTF16ToJavaString(env, group.visual_data.title()),
-      ToJavaIntArray(env, ids), ToJavaLongArray(env, timestamps),
-      ToJavaArrayOfStrings(env, titles),
-      url::GURLAndroid::ToJavaArrayOfGURLs(env, urls),
-      TokenAndroid::ToJavaArrayOfTokens(env, group_ids));
+      group.timestamp.InMillisecondsSinceUnixEpoch(), group.visual_data.title(),
+      tabs);
 }
 
-void JNI_RecentlyClosedBridge_AddBulkEventToEntries(
+void AddBulkEventToEntries(
     JNIEnv* env,
     TabIterator& it,
     const sessions::TabRestoreService::Entries::const_iterator& current_entry,
-    const sessions::TabRestoreService::Window& window,
+    const sessions::tab_restore::Window& window,
     const JavaRef<jobject>& jentries) {
-  std::vector<int> ids;
-  std::vector<int64_t> timestamps;
-  std::vector<std::u16string> titles;
-  std::vector<ScopedJavaLocalRef<jobject>> urls;
-  std::vector<std::optional<base::Token>> per_tab_group_ids;
-
-  const size_t tab_count = window.tabs.size();
-  ids.reserve(tab_count);
-  timestamps.reserve(tab_count);
-  titles.reserve(tab_count);
-  urls.reserve(tab_count);
-  per_tab_group_ids.reserve(tab_count);
-  PrepareTabs(env, it, current_entry, ids, timestamps, titles, urls,
-              per_tab_group_ids);
+  std::vector<jni_zero::ScopedJavaLocalRef<jobject>> tabs =
+      PrepareTabs(env, it, current_entry, window.tabs.size());
 
   std::vector<std::optional<base::Token>> group_ids;
-  std::vector<std::u16string> group_titles;
+  std::vector<const std::u16string*> group_titles;
 
   const size_t group_count = window.tab_groups.size();
   group_ids.reserve(group_count);
   group_titles.reserve(group_count);
   for (const auto& tab_group : window.tab_groups) {
     group_ids.push_back(tab_group.first.token());
-    group_titles.push_back(tab_group.second.title());
+    group_titles.push_back(&tab_group.second->visual_data.title());
   }
 
   Java_RecentlyClosedBridge_addBulkEventToEntries(
       env, jentries, window.id.id(),
-      window.timestamp.InMillisecondsSinceUnixEpoch(),
-      TokenAndroid::ToJavaArrayOfTokens(env, group_ids),
-      ToJavaArrayOfStrings(env, group_titles), ToJavaIntArray(env, ids),
-      ToJavaLongArray(env, timestamps), ToJavaArrayOfStrings(env, titles),
-      url::GURLAndroid::ToJavaArrayOfGURLs(env, urls),
-      TokenAndroid::ToJavaArrayOfTokens(env, per_tab_group_ids));
+      window.timestamp.InMillisecondsSinceUnixEpoch(), group_ids, group_titles,
+      tabs);
 }
 
 // Add `entries` to `jentries`.
-void JNI_RecentlyClosedBridge_AddEntriesToList(
-    JNIEnv* env,
-    const sessions::TabRestoreService::Entries& entries,
-    const JavaRef<jobject>& jentries,
-    int max_entry_count) {
+void AddEntriesToList(JNIEnv* env,
+                      const sessions::TabRestoreService::Entries& entries,
+                      const JavaRef<jobject>& jentries,
+                      int max_entry_count) {
   int added_count = 0;
   for (auto it = TabIterator::begin(entries);
        it != TabIterator::end(entries) && added_count < max_entry_count;
        ++added_count) {
     if (it.IsCurrentEntryTab()) {
-      JNI_RecentlyClosedBridge_AddTabToEntries(env, *it, jentries);
+      AddTabToEntries(env, *it, jentries);
       ++it;
       continue;
     }
 
     auto entry = it.CurrentEntry();
-    if ((*entry)->type == sessions::TabRestoreService::GROUP) {
+    if ((*entry)->type == sessions::tab_restore::Type::GROUP) {
       const auto& group =
-          static_cast<const sessions::TabRestoreService::Group&>(**entry);
-      JNI_RecentlyClosedBridge_AddGroupToEntries(env, it, entry, group,
-                                                 jentries);
+          static_cast<const sessions::tab_restore::Group&>(**entry);
+      AddGroupToEntries(env, it, entry, group, jentries);
       continue;
     }
-    if ((*entry)->type == sessions::TabRestoreService::WINDOW) {
+    if ((*entry)->type == sessions::tab_restore::Type::WINDOW) {
       const auto& window =
-          static_cast<const sessions::TabRestoreService::Window&>(**entry);
-      JNI_RecentlyClosedBridge_AddBulkEventToEntries(env, it, entry, window,
-                                                     jentries);
+          static_cast<const sessions::tab_restore::Window&>(**entry);
+      AddBulkEventToEntries(env, it, entry, window, jentries);
       continue;
     }
     NOTREACHED();
@@ -223,7 +177,7 @@ TabIterator TabIterator::end(
 }
 
 bool TabIterator::IsCurrentEntryTab() const {
-  return (*current_entry_)->type == sessions::TabRestoreService::TAB;
+  return (*current_entry_)->type == sessions::tab_restore::Type::TAB;
 }
 
 sessions::TabRestoreService::Entries::const_iterator TabIterator::CurrentEntry()
@@ -273,15 +227,15 @@ bool TabIterator::operator!=(TabIterator other) const {
   return !(*this == other);
 }
 
-const sessions::TabRestoreService::Tab& TabIterator::operator*() const {
-  return current_tab_ ? ***current_tab_
-                      : static_cast<const sessions::TabRestoreService::Tab&>(
-                            **current_entry_);
+const sessions::tab_restore::Tab& TabIterator::operator*() const {
+  return current_tab_
+             ? ***current_tab_
+             : static_cast<const sessions::tab_restore::Tab&>(**current_entry_);
 }
 
-const sessions::TabRestoreService::Tab* TabIterator::operator->() const {
+const sessions::tab_restore::Tab* TabIterator::operator->() const {
   return current_tab_ ? (*current_tab_)->get()
-                      : static_cast<const sessions::TabRestoreService::Tab*>(
+                      : static_cast<const sessions::tab_restore::Tab*>(
                             current_entry_->get());
 }
 
@@ -290,13 +244,13 @@ void TabIterator::SetupInnerTabList() {
     return;
   }
 
-  if ((*current_entry_)->type == sessions::TabRestoreService::GROUP) {
-    tabs_ = &static_cast<const sessions::TabRestoreService::Group*>(
-                 current_entry_->get())
-                 ->tabs;
+  if ((*current_entry_)->type == sessions::tab_restore::Type::GROUP) {
+    tabs_ =
+        &static_cast<const sessions::tab_restore::Group*>(current_entry_->get())
+             ->tabs;
   }
-  if ((*current_entry_)->type == sessions::TabRestoreService::WINDOW) {
-    tabs_ = &static_cast<const sessions::TabRestoreService::Window*>(
+  if ((*current_entry_)->type == sessions::tab_restore::Type::WINDOW) {
+    tabs_ = &static_cast<const sessions::tab_restore::Window*>(
                  current_entry_->get())
                  ->tabs;
   }
@@ -334,8 +288,8 @@ jboolean RecentlyClosedTabsBridge::GetRecentlyClosedEntries(
     return false;
   }
 
-  JNI_RecentlyClosedBridge_AddEntriesToList(
-      env, tab_restore_service_->entries(), jentries_list, max_entry_count);
+  AddEntriesToList(env, tab_restore_service_->entries(), jentries_list,
+                   max_entry_count);
   return true;
 }
 
@@ -462,20 +416,22 @@ void RecentlyClosedTabsBridge::RestoreAndroidTabGroups(
     const std::map<tab_groups::TabGroupId,
                    AndroidLiveTabContextRestoreWrapper::TabGroup>& groups) {
   for (const auto& group : groups) {
+    std::string saved_tab_group_id =
+        group.second.saved_tab_group_id
+            ? group.second.saved_tab_group_id->AsLowercaseString()
+            : "";
     Java_RecentlyClosedBridge_restoreTabGroup(
-        env, bridge_, jtab_model,
-        ConvertUTF16ToJavaString(env, group.second.visual_data.title()),
-        base::android::ToJavaIntArray(env, group.second.tab_ids));
+        env, bridge_, jtab_model, saved_tab_group_id,
+        group.second.visual_data.title(), (int)group.second.visual_data.color(),
+        group.second.tab_ids);
   }
 }
 
-static jlong JNI_RecentlyClosedBridge_Init(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& jbridge,
-    const JavaParamRef<jobject>& jprofile) {
+static jlong JNI_RecentlyClosedBridge_Init(JNIEnv* env,
+                                           const JavaParamRef<jobject>& jbridge,
+                                           Profile* profile) {
   RecentlyClosedTabsBridge* bridge = new RecentlyClosedTabsBridge(
-      ScopedJavaGlobalRef<jobject>(env, jbridge.obj()),
-      ProfileAndroid::FromProfileAndroid(jprofile));
+      ScopedJavaGlobalRef<jobject>(env, jbridge.obj()), profile);
   return reinterpret_cast<intptr_t>(bridge);
 }
 

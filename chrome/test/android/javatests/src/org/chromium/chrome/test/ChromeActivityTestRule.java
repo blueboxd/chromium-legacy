@@ -40,6 +40,7 @@ import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.prefetch.settings.PreloadPagesSettingsBridge;
 import org.chromium.chrome.browser.prefetch.settings.PreloadPagesState;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.profiles.ProfileManager;
 import org.chromium.chrome.browser.profiles.ProfileProvider;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.Tab.LoadUrlResult;
@@ -113,7 +114,7 @@ public class ChromeActivityTestRule<T extends ChromeActivity> extends BaseActivi
                         // Tests are run on bots that are offline by default. This might cause
                         // offline UI to show and cause flakiness or failures in tests. Using this
                         // switch will prevent that.
-                        // TODO(crbug.com/1093085): Remove this once we disable the offline
+                        // TODO(crbug.com/40134877): Remove this once we disable the offline
                         // indicator for specific tests.
                         CommandLine.getInstance()
                                 .appendSwitch(
@@ -146,8 +147,8 @@ public class ChromeActivityTestRule<T extends ChromeActivity> extends BaseActivi
     }
 
     /**
-     * TODO(https://crbug.com/1146574): This only exists here because legacy ActivityTestRule
-     * inherited from UiThreadTestRule. This function should be removed.
+     * TODO(crbug.com/40156325): This only exists here because legacy ActivityTestRule inherited
+     * from UiThreadTestRule. This function should be removed.
      */
     public void runOnUiThread(Runnable r) {
         ThreadUtils.runOnUiThreadBlocking(r);
@@ -251,16 +252,14 @@ public class ChromeActivityTestRule<T extends ChromeActivity> extends BaseActivi
     public void setNetworkPredictionEnabled(final boolean enabled) {
         InstrumentationRegistry.getInstrumentation()
                 .runOnMainSync(
-                        new Runnable() {
-                            @Override
-                            public void run() {
-                                if (enabled) {
-                                    PreloadPagesSettingsBridge.setState(
-                                            PreloadPagesState.STANDARD_PRELOADING);
-                                } else {
-                                    PreloadPagesSettingsBridge.setState(
-                                            PreloadPagesState.NO_PRELOADING);
-                                }
+                        () -> {
+                            Profile profile = ProfileManager.getLastUsedRegularProfile();
+                            if (enabled) {
+                                PreloadPagesSettingsBridge.setState(
+                                        profile, PreloadPagesState.STANDARD_PRELOADING);
+                            } else {
+                                PreloadPagesSettingsBridge.setState(
+                                        profile, PreloadPagesState.NO_PRELOADING);
                             }
                         });
     }

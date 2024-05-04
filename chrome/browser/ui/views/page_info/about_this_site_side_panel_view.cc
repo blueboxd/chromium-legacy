@@ -4,7 +4,8 @@
 
 #include "chrome/browser/ui/views/page_info/about_this_site_side_panel_view.h"
 
-#include "base/strings/string_piece.h"
+#include <string_view>
+
 #include "base/task/single_thread_task_runner.h"
 #include "chrome/browser/page_info/about_this_site_side_panel_throttle.h"
 #include "chrome/browser/profiles/profile.h"
@@ -127,13 +128,16 @@ void AboutThisSiteSidePanelView::DidOpenRequestedURL(
 // SidePanel.
 content::WebContents* AboutThisSiteSidePanelView::OpenURLFromTab(
     content::WebContents* source,
-    const content::OpenURLParams& params) {
+    const content::OpenURLParams& params,
+    base::OnceCallback<void(content::NavigationHandle&)>
+        navigation_handle_callback) {
   // Redirect requests to open a new tab to the main browser. These come e.g.
   // from the context menu.
   content::OpenURLParams new_params(params);
   new_params.url = CleanUpQueryParams(params.url);
   if (auto* delegate = outer_delegate()) {
-    delegate->OpenURLFromTab(source, new_params);
+    delegate->OpenURLFromTab(source, new_params,
+                             std::move(navigation_handle_callback));
   }
   return nullptr;
 }
@@ -167,7 +171,8 @@ void AboutThisSiteSidePanelView::OpenUrlInBrowser(
   if (auto* browser_view = outer_browser_view()) {
     content::OpenURLParams new_params(params);
     new_params.url = CleanUpQueryParams(params.url);
-    browser_view->browser()->OpenURL(new_params);
+    browser_view->browser()->OpenURL(new_params,
+                                     /*navigation_handle_callback=*/{});
   }
 }
 
@@ -182,7 +187,7 @@ GURL AboutThisSiteSidePanelView::CleanUpQueryParams(const GURL& url) {
   // Override the ilrm=minimal parameter for navigations to a real tab.
   if (url::IsSameOriginWith(url, last_url_) &&
       url.query_piece().find(page_info::AboutThisSiteRenderModeParameterName) !=
-          base::StringPiece::npos) {
+          std::string_view::npos) {
     return net::AppendOrReplaceQueryParameter(
         url, page_info::AboutThisSiteRenderModeParameterName, std::string());
   }

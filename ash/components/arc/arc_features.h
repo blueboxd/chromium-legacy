@@ -7,6 +7,7 @@
 #ifndef ASH_COMPONENTS_ARC_ARC_FEATURES_H_
 #define ASH_COMPONENTS_ARC_ARC_FEATURES_H_
 
+#include <base/time/time.h>
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
 
@@ -14,9 +15,13 @@ namespace arc {
 
 // Please keep alphabetized.
 BASE_DECLARE_FEATURE(kArcOnDemandFeature);
+BASE_DECLARE_FEATURE(kArcVmGki);
 BASE_DECLARE_FEATURE(kBootCompletedBroadcastFeature);
 BASE_DECLARE_FEATURE(kContainerAppKiller);
 BASE_DECLARE_FEATURE(kCustomTabsExperimentFeature);
+BASE_DECLARE_FEATURE(kDeferArcActivationUntilUserSessionStartUpTaskCompletion);
+extern const base::FeatureParam<int> kDeferArcActivationHistoryWindow;
+extern const base::FeatureParam<int> kDeferArcActivationHistoryThreshold;
 BASE_DECLARE_FEATURE(kDocumentsProviderUnknownSizeFeature);
 BASE_DECLARE_FEATURE(kEnableArcIdleManager);
 extern const base::FeatureParam<bool> kEnableArcIdleManagerIgnoreBatteryForPLT;
@@ -45,6 +50,7 @@ extern const base::FeatureParam<int> kGuestZramSizePercentage;
 extern const base::FeatureParam<int> kGuestZramSwappiness;
 extern const base::FeatureParam<bool> kGuestReclaimEnabled;
 extern const base::FeatureParam<bool> kGuestReclaimOnlyAnonymous;
+BASE_DECLARE_FEATURE(kIgnoreHoverEventAnr);
 BASE_DECLARE_FEATURE(kInstantResponseWindowOpen);
 BASE_DECLARE_FEATURE(kLockGuestMemory);
 BASE_DECLARE_FEATURE(kLvmApplicationContainers);
@@ -87,6 +93,8 @@ BASE_DECLARE_FEATURE(kVmmSwapPolicy);
 extern const base::FeatureParam<int> kVmmSwapOutDelaySecond;
 extern const base::FeatureParam<int> kVmmSwapOutTimeIntervalSecond;
 extern const base::FeatureParam<int> kVmmSwapArcSilenceIntervalSecond;
+extern const base::FeatureParam<base::TimeDelta> kVmmSwapTrimInterval;
+extern const base::FeatureParam<base::TimeDelta> kVmmSwapMinShrinkInterval;
 BASE_DECLARE_FEATURE(kXdgMode);
 BASE_DECLARE_FEATURE(kPriorityAppLmkDelay);
 extern const base::FeatureParam<int> kPriorityAppLmkDelaySecond;

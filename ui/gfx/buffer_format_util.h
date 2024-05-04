@@ -29,6 +29,9 @@ GFX_EXPORT size_t AlphaBitsForBufferFormat(BufferFormat format);
 // Returns the number of planes for |format|.
 GFX_EXPORT size_t NumberOfPlanesForLinearBufferFormat(BufferFormat format);
 
+// Returns whether |format| is multiplanar.
+GFX_EXPORT bool BufferFormatIsMultiplanar(BufferFormat format);
+
 // Returns the subsampling factor applied to the given zero-indexed |plane| of
 // |format| both horizontally and vertically.
 GFX_EXPORT size_t SubsamplingFactorForBufferFormat(BufferFormat format,
@@ -106,7 +109,7 @@ GFX_EXPORT constexpr VkFormat ToVkFormat(const BufferFormat format) {
     case gfx::BufferFormat::RGBA_F16:
       return VK_FORMAT_R16G16B16A16_SFLOAT;
     case gfx::BufferFormat::BGR_565:
-      return VK_FORMAT_B5G6R5_UNORM_PACK16;
+      return VK_FORMAT_R5G6B5_UNORM_PACK16;
     case gfx::BufferFormat::RG_88:
       return VK_FORMAT_R8G8_UNORM;
     case gfx::BufferFormat::RGBX_8888:

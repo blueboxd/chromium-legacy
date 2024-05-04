@@ -71,6 +71,7 @@
 #include "ash/display/mouse_cursor_event_filter.h"
 #include "ash/display/privacy_screen_controller.h"
 #include "ash/display/projecting_observer.h"
+#include "ash/display/refresh_rate_controller.h"
 #include "ash/display/resolution_notification_controller.h"
 #include "ash/display/screen_ash.h"
 #include "ash/display/screen_orientation_controller.h"
@@ -197,6 +198,7 @@
 #include "ash/tray_action/tray_action.h"
 #include "ash/user_education/user_education_controller.h"
 #include "ash/user_education/user_education_delegate.h"
+#include "ash/utility/forest_util.h"
 #include "ash/utility/occlusion_tracker_pauser.h"
 #include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "ash/wm/ash_focus_rules.h"
@@ -673,9 +675,7 @@ DeskProfilesDelegate* Shell::GetDeskProfilesDelegate() {
 // Shell, private:
 
 Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate)
-    : brightness_control_delegate_(
-          std::make_unique<system::BrightnessControllerChromeos>()),
-      focus_cycler_(std::make_unique<FocusCycler>()),
+    : focus_cycler_(std::make_unique<FocusCycler>()),
       ime_controller_(std::make_unique<ImeControllerImpl>()),
       immersive_context_(std::make_unique<ImmersiveContextAsh>()),
       webauthn_dialog_controller_(
@@ -886,8 +886,6 @@ Shell::~Shell() {
 
   display_highlight_controller_.reset();
 
-  display_performance_mode_controller_.reset();
-
   // VideoActivityNotifier must be deleted before |video_detector_| is
   // deleted because it's observing video activity through
   // VideoDetector::Observer interface.
@@ -927,6 +925,9 @@ Shell::~Shell() {
 
   // Relies on `overview_controller`.
   post_login_glanceables_metrics_reporter_.reset();
+
+  // Has to happen before `~OverviewController` since it's an observer.
+  pine_controller_.reset();
 
   // Has to happen before `~MruWindowTracker` and after
   // `~GameDashboardController`.
@@ -986,7 +987,6 @@ Shell::~Shell() {
   backlights_forced_off_setter_.reset();
 
   float_controller_.reset();
-  pine_controller_.reset();
   pip_controller_.reset();
   screen_pinning_controller_.reset();
 
@@ -1096,6 +1096,10 @@ Shell::~Shell() {
 
   laser_pointer_controller_.reset();
 
+  refresh_rate_controller_.reset();
+
+  display_performance_mode_controller_.reset();
+
   if (display_change_observer_) {
     display_manager_->configurator()->RemoveObserver(
         display_change_observer_.get());
@@ -1162,6 +1166,7 @@ Shell::~Shell() {
 
   // Observes `SessionController` and must be destroyed before it.
   federated_service_controller_.reset();
+  brightness_control_delegate_.reset();
 
   UsbguardClient::Shutdown();
 
@@ -1222,6 +1227,11 @@ void Shell::Init(
 
   // Initialized early since it is used by some other objects.
   keyboard_capability_ = std::make_unique<ui::KeyboardCapability>();
+
+  // This needs to be initialized after SessionController.
+  brightness_control_delegate_ =
+      std::make_unique<system::BrightnessControllerChromeos>(
+          local_state_, session_controller_.get());
 
   // These controllers call Shell::Get() in their constructors, so they cannot
   // be in the member initialization list.
@@ -1491,10 +1501,6 @@ void Shell::Init(
 
   // The order in which event filters are added is significant.
 
-  // ui::UserActivityDetector passes events to observers, so let them get
-  // rewritten first.
-  user_activity_detector_ = std::make_unique<ui::UserActivityDetector>();
-
   control_v_histogram_recorder_ = std::make_unique<ControlVHistogramRecorder>();
   AddPreTargetHandler(control_v_histogram_recorder_.get(),
                       ui::EventTarget::Priority::kAccessibility);
@@ -1590,7 +1596,7 @@ void Shell::Init(
   // used in its constructor.
   app_list_controller_ = std::make_unique<AppListControllerImpl>();
 
-  if (features::IsForestFeatureEnabled()) {
+  if (IsForestFeatureFlagEnabled()) {
     birch_model_ = std::make_unique<BirchModel>();
   }
 
@@ -1715,7 +1721,7 @@ void Shell::Init(
       fingerprint.InitWithNewPipeAndPassReceiver());
   user_activity_notifier_ =
       std::make_unique<ui::UserActivityPowerManagerNotifier>(
-          user_activity_detector_.get(), std::move(fingerprint));
+          ui::UserActivityDetector::Get(), std::move(fingerprint));
   video_activity_notifier_ =
       std::make_unique<VideoActivityNotifier>(video_detector_.get());
   bluetooth_state_cache_ = std::make_unique<BluetoothStateCache>();
@@ -1744,16 +1750,12 @@ void Shell::Init(
   display_highlight_controller_ =
       std::make_unique<DisplayHighlightController>();
 
-  display_performance_mode_controller_ =
-      std::make_unique<DisplayPerformanceModeController>();
-
   if (features::IsDisplayAlignmentAssistanceEnabled()) {
     display_alignment_controller_ =
         std::make_unique<DisplayAlignmentController>();
   }
 
   if (features::AreGlanceablesV2Enabled() ||
-      features::AreGlanceablesV2EnabledForTrustedTesters() ||
       features::AreAnyGlanceablesTimeManagementViewsEnabled()) {
     glanceables_controller_ = std::make_unique<GlanceablesController>();
   }
@@ -1768,7 +1770,7 @@ void Shell::Init(
   projector_controller_ = std::make_unique<ProjectorControllerImpl>();
 
   float_controller_ = std::make_unique<FloatController>();
-  if (features::IsForestFeatureEnabled()) {
+  if (IsForestFeatureFlagEnabled()) {
     pine_controller_ = std::make_unique<PineController>();
   }
   pip_controller_ = std::make_unique<PipController>();
@@ -1902,6 +1904,13 @@ void Shell::InitializeDisplayManager() {
   if (!display_initialized) {
     display_manager_->InitDefaultDisplay();
   }
+
+  display_performance_mode_controller_ =
+      std::make_unique<DisplayPerformanceModeController>();
+
+  refresh_rate_controller_ = std::make_unique<RefreshRateController>(
+      display_configurator(), PowerStatus::Get(),
+      display_performance_mode_controller());
 }
 
 void Shell::InitRootWindow(aura::Window* root_window) {
@@ -2023,7 +2032,8 @@ void Shell::OnSessionStateChanged(session_manager::SessionState state) {
     firmware_update_notification_controller_ =
         std::make_unique<FirmwareUpdateNotificationController>(
             message_center::MessageCenter::Get());
-    firmware_update_manager_->RequestAllUpdates();
+    firmware_update_manager_->RequestAllUpdates(
+        FirmwareUpdateManager::Source::kStartup);
   }
 
   // Disable drag-and-drop during OOBE and GAIA login screens by only enabling

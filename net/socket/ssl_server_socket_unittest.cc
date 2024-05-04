@@ -19,6 +19,7 @@
 #include <stdlib.h>
 
 #include <memory>
+#include <string_view>
 #include <utility>
 
 #include "base/check.h"
@@ -56,6 +57,7 @@
 #include "net/socket/socket_test_util.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/socket/stream_socket.h"
+#include "net/ssl/openssl_private_key.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/ssl/ssl_cipher_suite_names.h"
 #include "net/ssl/ssl_client_session_cache.h"
@@ -64,7 +66,6 @@
 #include "net/ssl/ssl_private_key.h"
 #include "net/ssl/ssl_server_config.h"
 #include "net/ssl/test_ssl_config_service.h"
-#include "net/ssl/test_ssl_private_key.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/gtest_util.h"
 #include "net/test/test_data_directory.h"
@@ -461,7 +462,7 @@ class SSLServerSocketTest : public PlatformTest, public WithTaskEnvironment {
   }
 #endif  // BUILDFLAG(ENABLE_CLIENT_CERTIFICATES)
 
-  std::unique_ptr<crypto::RSAPrivateKey> ReadTestKey(base::StringPiece name) {
+  std::unique_ptr<crypto::RSAPrivateKey> ReadTestKey(std::string_view name) {
     base::FilePath certs_dir(GetTestCertsDirectory());
     base::FilePath key_path = certs_dir.AppendASCII(name);
     std::string key_string;
@@ -501,11 +502,13 @@ class SSLServerSocketTest : public PlatformTest, public WithTaskEnvironment {
 
   std::unique_ptr<FakeDataChannel> channel_1_;
   std::unique_ptr<FakeDataChannel> channel_2_;
-  SSLConfig client_ssl_config_;
-  SSLServerConfig server_ssl_config_;
   std::unique_ptr<TestSSLConfigService> ssl_config_service_;
   std::unique_ptr<MockCertVerifier> cert_verifier_;
   std::unique_ptr<MockClientCertVerifier> client_cert_verifier_;
+  SSLConfig client_ssl_config_;
+  // Note that this has a pointer to the `cert_verifier_`, so must be destroyed
+  // before that is.
+  SSLServerConfig server_ssl_config_;
   std::unique_ptr<TransportSecurityState> transport_security_state_;
   std::unique_ptr<SSLClientSessionCache> ssl_client_session_cache_;
   std::unique_ptr<SSLClientContext> client_context_;

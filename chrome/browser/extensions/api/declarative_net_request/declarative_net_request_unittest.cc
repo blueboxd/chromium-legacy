@@ -113,7 +113,7 @@ InstallWarning GetLargeRegexWarning(
 
 // Returns the vector of install warnings, filtering out the one associated with
 // a deprecated manifest version.
-// TODO(https://crbug.com/1269161): Remove this method when the associated tests
+// TODO(crbug.com/40804030): Remove this method when the associated tests
 // are updated to MV3.
 std::vector<InstallWarning> GetFilteredInstallWarnings(
     const Extension& extension) {
@@ -905,8 +905,8 @@ TEST_P(SingleRulesetTest, TooManyParseFailures) {
   extension_loader()->set_ignore_manifest_warnings(true);
   LoadAndExpectSuccess(kNumValidRules);
 
-  // TODO(crbug.com/879355): CrxInstaller reloads the extension after moving it,
-  // which causes it to lose the install warning. This should be fixed.
+  // TODO(crbug.com/40591637): CrxInstaller reloads the extension after moving
+  // it, which causes it to lose the install warning. This should be fixed.
   if (GetParam() != ExtensionLoadType::PACKED) {
     std::vector<InstallWarning> expected_warnings =
         GetFilteredInstallWarnings(*extension());
@@ -927,7 +927,7 @@ TEST_P(SingleRulesetTest, TooManyParseFailures) {
 
     warning.message = ErrorUtils::FormatErrorMessage(
         GetErrorWithFilename(kTooManyParseFailuresWarning),
-        std::to_string(kMaxUnparsedRulesWarnings));
+        base::NumberToString(kMaxUnparsedRulesWarnings));
     EXPECT_EQ(warning, expected_warnings[kMaxUnparsedRulesWarnings]);
   }
 }
@@ -964,8 +964,8 @@ TEST_P(SingleRulesetTest, InvalidJSONRules_StrongTypes) {
   extension_loader()->set_ignore_manifest_warnings(true);
   LoadAndExpectSuccess(2u);
 
-  // TODO(crbug.com/879355): CrxInstaller reloads the extension after moving it,
-  // which causes it to lose the install warning. This should be fixed.
+  // TODO(crbug.com/40591637): CrxInstaller reloads the extension after moving
+  // it, which causes it to lose the install warning. This should be fixed.
   if (GetParam() != ExtensionLoadType::PACKED) {
     std::vector<InstallWarning> install_warnings =
         GetFilteredInstallWarnings(*extension());
@@ -1022,8 +1022,8 @@ TEST_P(SingleRulesetTest, InvalidJSONRules_Parsed) {
   size_t expected_rule_count = 2;
   LoadAndExpectSuccess(expected_rule_count);
 
-  // TODO(crbug.com/879355): CrxInstaller reloads the extension after moving it,
-  // which causes it to lose the install warning. This should be fixed.
+  // TODO(crbug.com/40591637): CrxInstaller reloads the extension after moving
+  // it, which causes it to lose the install warning. This should be fixed.
   if (GetParam() != ExtensionLoadType::PACKED) {
     std::vector<InstallWarning> install_warnings =
         GetFilteredInstallWarnings(*extension());
@@ -1078,8 +1078,8 @@ TEST_P(SingleRulesetTest, LargeRegexIgnored) {
   tester.ExpectTotalCount(kRegexRuleSizeHistogram,
                           kNumSmallRegex + kNumLargeRegex);
 
-  // TODO(crbug.com/879355): CrxInstaller reloads the extension after moving it,
-  // which causes it to lose the install warning. This should be fixed.
+  // TODO(crbug.com/40591637): CrxInstaller reloads the extension after moving
+  // it, which causes it to lose the install warning. This should be fixed.
   if (GetParam() != ExtensionLoadType::PACKED) {
     InstallWarning warning_1 = GetLargeRegexWarning(kMinValidID + 5);
     InstallWarning warning_2 = GetLargeRegexWarning(kMinValidID + 6);
@@ -1115,7 +1115,7 @@ TEST_P(SingleRulesetTest, RegexRuleCountExceeded) {
   int rule_id = kMinValidID;
   for (int i = 1; i <= GetRegexRuleLimit() + 5; ++i, ++rule_id) {
     regex_rule.id = rule_id;
-    regex_rule.condition->regex_filter = std::to_string(i);
+    regex_rule.condition->regex_filter = base::NumberToString(i);
     AddRule(regex_rule);
   }
 
@@ -1123,14 +1123,14 @@ TEST_P(SingleRulesetTest, RegexRuleCountExceeded) {
   TestRule rule = CreateGenericRule();
   for (int i = 1; i <= kCountNonRegexRules; i++, ++rule_id) {
     rule.id = rule_id;
-    rule.condition->url_filter = std::to_string(i);
+    rule.condition->url_filter = base::NumberToString(i);
     AddRule(rule);
   }
 
   extension_loader()->set_ignore_manifest_warnings(true);
   LoadAndExpectSuccess(GetRegexRuleLimit() + kCountNonRegexRules);
-  // TODO(crbug.com/879355): CrxInstaller reloads the extension after moving it,
-  // which causes it to lose the install warning. This should be fixed.
+  // TODO(crbug.com/40591637): CrxInstaller reloads the extension after moving
+  // it, which causes it to lose the install warning. This should be fixed.
   if (GetParam() != ExtensionLoadType::PACKED) {
     std::vector<InstallWarning> install_warnings =
         GetFilteredInstallWarnings(*extension());
@@ -1373,7 +1373,7 @@ TEST_P(SingleRulesetTest, RuleCountLimitMatched) {
   TestRule rule = CreateGenericRule();
   for (int i = 0; i < GetMaximumRulesPerRuleset(); ++i) {
     rule.id = kMinValidID + i;
-    rule.condition->url_filter = std::to_string(i);
+    rule.condition->url_filter = base::NumberToString(i);
     AddRule(rule);
   }
 
@@ -1400,7 +1400,7 @@ TEST_P(SingleRulesetTest, AllocationKeptWhenDisabled) {
   TestRule rule = CreateGenericRule();
   for (int i = 0; i < GetMaximumRulesPerRuleset(); ++i) {
     rule.id = kMinValidID + i;
-    rule.condition->url_filter = std::to_string(i);
+    rule.condition->url_filter = base::NumberToString(i);
     AddRule(rule);
   }
 
@@ -1443,7 +1443,7 @@ TEST_P(SingleRulesetTest, RuleCountLimitExceeded) {
   TestRule rule = CreateGenericRule();
   for (int i = 1; i <= GetMaximumRulesPerRuleset() + 1; ++i) {
     rule.id = kMinValidID + i;
-    rule.condition->url_filter = std::to_string(i);
+    rule.condition->url_filter = base::NumberToString(i);
     AddRule(rule);
   }
 
@@ -1460,18 +1460,18 @@ TEST_P(SingleRulesetTest, RuleCountLimitExceeded) {
   ASSERT_EQ(1u, static_sources.size());
   EXPECT_FALSE(base::PathExists(static_sources[0].indexed_path()));
 
-  // TODO(crbug.com/879355): CrxInstaller reloads the extension after moving it,
-  // which causes it to lose the install warning. This should be fixed.
+  // TODO(crbug.com/40591637): CrxInstaller reloads the extension after moving
+  // it, which causes it to lose the install warning. This should be fixed.
   if (GetParam() != ExtensionLoadType::PACKED) {
     std::vector<InstallWarning> install_warnings =
         GetFilteredInstallWarnings(*extension());
     ASSERT_EQ(1u, install_warnings.size());
-    InstallWarning expected_warning =
-        InstallWarning(GetErrorWithFilename(ErrorUtils::FormatErrorMessage(
-                           kIndexingRuleLimitExceeded,
-                           std::to_string(static_sources[0].id().value()))),
-                       dnr_api::ManifestKeys::kDeclarativeNetRequest,
-                       dnr_api::DNRInfo::kRuleResources);
+    InstallWarning expected_warning = InstallWarning(
+        GetErrorWithFilename(ErrorUtils::FormatErrorMessage(
+            kIndexingRuleLimitExceeded,
+            base::NumberToString(static_sources[0].id().value()))),
+        dnr_api::ManifestKeys::kDeclarativeNetRequest,
+        dnr_api::DNRInfo::kRuleResources);
 
     EXPECT_EQ(expected_warning, install_warnings[0]);
   }
@@ -1609,8 +1609,8 @@ class SingleRulesetWithoutSafeRulesTest : public SingleRulesetTest {
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
-// TODO(crbug.com/1485747): This is just a sanity check that rule counts work as
-// intended when the safe rules feature flag is turned off. Remove this test
+// TODO(crbug.com/40282671): This is just a sanity check that rule counts work
+// as intended when the safe rules feature flag is turned off. Remove this test
 // once feature is enabled and the feature flag is removed.
 TEST_P(SingleRulesetWithoutSafeRulesTest, DynamicAndSessionRuleLimits) {
   // With `kDeclarativeNetRequestSafeRuleLimits` disabled, the dynamic/session
@@ -1830,7 +1830,8 @@ TEST_P(MultipleRulesetsTest, Success) {
   size_t kRulesPerRuleset = 10;
 
   for (size_t i = 0; i < kNumRulesets; ++i) {
-    AddRuleset(CreateRuleset(std::to_string(i), kRulesPerRuleset, 0, true));
+    AddRuleset(
+        CreateRuleset(base::NumberToString(i), kRulesPerRuleset, 0, true));
   }
 
   LoadAndExpectSuccess();
@@ -1847,7 +1848,7 @@ TEST_P(MultipleRulesetsTest, EmptyRulesets) {
   size_t kNumRulesets = 7;
 
   for (size_t i = 0; i < kNumRulesets; ++i)
-    AddRuleset(CreateRuleset(std::to_string(i), 0, 0, true));
+    AddRuleset(CreateRuleset(base::NumberToString(i), 0, 0, true));
 
   LoadAndExpectSuccess();
 }
@@ -1912,8 +1913,8 @@ TEST_P(MultipleRulesetsTest, InstallWarnings) {
   extension_loader()->set_ignore_manifest_warnings(true);
   LoadAndExpectSuccess(expected_rule_count, enabled_rule_count);
 
-  // TODO(crbug.com/879355): CrxInstaller reloads the extension after moving it,
-  // which causes it to lose the install warning. This should be fixed.
+  // TODO(crbug.com/40591637): CrxInstaller reloads the extension after moving
+  // it, which causes it to lose the install warning. This should be fixed.
   if (GetParam() != ExtensionLoadType::PACKED) {
     std::vector<InstallWarning> warnings =
         GetFilteredInstallWarnings(*extension());
@@ -2257,7 +2258,7 @@ TEST_P(MultipleRulesetsTest, StaticRuleCountExceeded) {
     std::string expected_warning = GetErrorWithFilename(
         ErrorUtils::FormatErrorMessage(
             kIndexingRuleLimitExceeded,
-            std::to_string(static_sources[0].id().value())),
+            base::NumberToString(static_sources[0].id().value())),
         kId1);
 
     EXPECT_THAT(GetFilteredInstallWarnings(*extension()),

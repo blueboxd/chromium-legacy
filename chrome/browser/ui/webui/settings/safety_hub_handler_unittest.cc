@@ -2,8 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/ui/webui/settings/safety_hub_handler.h"
+
 #include <ctime>
 #include <memory>
+#include <string_view>
 
 #include "base/containers/fixed_flat_set.h"
 #include "base/functional/bind.h"
@@ -15,17 +18,18 @@
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/browser/extensions/cws_info_service.h"
 #include "chrome/browser/extensions/cws_info_service_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/password_manager/password_manager_test_util.h"
 #include "chrome/browser/permissions/notifications_engagement_service_factory.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/safety_hub/notification_permission_review_service_factory.h"
 #include "chrome/browser/ui/safety_hub/password_status_check_service.h"
 #include "chrome/browser/ui/safety_hub/password_status_check_service_factory.h"
 #include "chrome/browser/ui/safety_hub/safety_hub_constants.h"
 #include "chrome/browser/ui/safety_hub/safety_hub_test_util.h"
 #include "chrome/browser/ui/safety_hub/unused_site_permissions_service.h"
-#include "chrome/browser/ui/webui/settings/safety_hub_handler.h"
 #include "chrome/browser/ui/webui/settings/site_settings_helper.h"
 #include "chrome/browser/ui/webui/version/version_ui.h"
 #include "chrome/browser/upgrade_detector/build_state.h"
@@ -40,6 +44,7 @@
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/content_settings/core/common/features.h"
+#include "components/crx_file/id_util.h"
 #include "components/password_manager/core/browser/password_store/test_password_store.h"
 #include "components/permissions/constants.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
@@ -48,10 +53,16 @@
 #include "content/public/common/content_features.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_web_ui.h"
+#include "extensions/browser/extension_prefs.h"
+#include "extensions/browser/extension_prefs_factory.h"
+#include "extensions/browser/extension_registry.h"
+#include "extensions/common/extension_builder.h"
+#include "extensions/common/extension_id.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
+using extensions::mojom::ManifestLocation;
 using password_manager::TestPasswordStore;
 using safety_hub::SafetyHubCardState;
 
@@ -73,6 +84,8 @@ class SafetyHubHandlerTest : public testing::Test {
         {content_settings::features::kSafetyCheckUnusedSitePermissions,
          content_settings::features::
              kSafetyCheckUnusedSitePermissionsForSupportedChooserPermissions,
+         features::kSafetyHubExtensionsUwSTrigger,
+         features::kSafetyHubExtensionsOffStoreTrigger,
          features::kSafetyHub},
         /*disabled_features=*/{});
   }
@@ -177,6 +190,10 @@ class SafetyHubHandlerTest : public testing::Test {
     safety_hub_test_util::CreateMockExtensions(profile());
   }
 
+  void AddTriggeringExtension() {
+    handler_->SetTriggeringExtensionForTesting("Test");
+  }
+
   void ExpectRevokedPermission() {
     ContentSettingsForOneType revoked_permissions_list =
         hcsm()->GetSettingsForOneType(
@@ -255,23 +272,31 @@ class SafetyHubHandlerTest : public testing::Test {
               *data.arg3()->GetDict().FindInt("state"));
   }
 
-  void ValidateHandleGetSafetyHubHasRecommendations(bool hasRecommendations) {
+  void ValidateEntryPointHasRecommendationsAndHeader(bool hasRecommendations) {
     base::Value::List args;
-    args.Append("getSafetyHubHasRecommendations");
+    args.Append("getSafetyHubEntryPointData");
 
-    handler()->HandleGetSafetyHubHasRecommendations(args);
+    handler()->HandleGetSafetyHubEntryPointData(args);
 
     const content::TestWebUI::CallData& data = *web_ui()->call_data().back();
 
     EXPECT_EQ("cr.webUIResponse", data.function_name());
     ASSERT_TRUE(data.arg1()->is_string());
-    EXPECT_EQ("getSafetyHubHasRecommendations", data.arg1()->GetString());
+    EXPECT_EQ("getSafetyHubEntryPointData", data.arg1()->GetString());
     // arg2 is a boolean that is true if the callback is successful.
     ASSERT_TRUE(data.arg2()->is_bool());
     ASSERT_TRUE(data.arg2());
 
-    ASSERT_TRUE(data.arg3()->is_bool());
-    EXPECT_EQ(hasRecommendations, data.arg3()->GetBool());
+    // Validate the hasRecommendations value.
+    ASSERT_TRUE(data.arg3()->is_dict());
+    EXPECT_EQ(hasRecommendations,
+              data.arg3()->GetDict().FindBool("hasRecommendations"));
+    // Validate the header value.
+    std::string header = hasRecommendations
+                             ? l10n_util::GetStringUTF8(
+                                   IDS_SETTINGS_SAFETY_HUB_ENTRY_POINT_HEADER)
+                             : "";
+    EXPECT_EQ(header, *data.arg3()->GetDict().FindString("header"));
   }
 
   // For a given Safety Hub module, configure the test environment so that tests
@@ -301,9 +326,8 @@ class SafetyHubHandlerTest : public testing::Test {
             : SetPrefsForSafeBrowsing(true, true, SettingManager::USER);
         break;
       case SafetyHubHandler::SafetyHubModule::kExtensions:
-        isModuleRecommended
-            ? AddExtensionsForReview()
-            : safety_hub_test_util::CleanAllMockExtensions(profile());
+        isModuleRecommended ? AddTriggeringExtension()
+                            : ClearTriggeringExtensions();
         break;
       case SafetyHubHandler::SafetyHubModule::kNotifications:
         hcsm()->ClearSettingsForOneType(
@@ -326,6 +350,10 @@ class SafetyHubHandlerTest : public testing::Test {
     }
   }
 
+  void ClearTriggeringExtensions() {
+    handler_->ClearExtensionResultsForTesting();
+  }
+
   void ValidateEntryPointSubheader(
       std::string subheader,
       std::optional<SafetyHubHandler::SafetyHubModule> module = std::nullopt) {
@@ -338,21 +366,21 @@ class SafetyHubHandlerTest : public testing::Test {
 
     // Send a message to handler to get the current state of the subheader.
     base::Value::List args;
-    args.Append("getSafetyHubEntryPointSubheader");
-    handler()->HandleGetSafetyHubEntryPointSubheader(args);
+    args.Append("getSafetyHubEntryPointData");
+    handler()->HandleGetSafetyHubEntryPointData(args);
     const content::TestWebUI::CallData& data = *web_ui()->call_data().back();
 
     // Check that response from the handler follows the right format.
     EXPECT_EQ("cr.webUIResponse", data.function_name());
     ASSERT_TRUE(data.arg1()->is_string());
-    EXPECT_EQ("getSafetyHubEntryPointSubheader", data.arg1()->GetString());
+    EXPECT_EQ("getSafetyHubEntryPointData", data.arg1()->GetString());
     // arg2 is a boolean that is true if the callback is successful.
     ASSERT_TRUE(data.arg2()->is_bool());
     ASSERT_TRUE(data.arg2());
 
     // Validate that the subheader we get is equal to the one we expect.
-    ASSERT_TRUE(data.arg3()->is_string());
-    EXPECT_EQ(subheader, data.arg3()->GetString());
+    ASSERT_TRUE(data.arg3()->is_dict());
+    EXPECT_EQ(subheader, *data.arg3()->GetDict().FindString("subheader"));
 
     // If in the beginning of the method the test environment is set for a
     // module to have a recommendation, reset that back.
@@ -369,10 +397,11 @@ class SafetyHubHandlerTest : public testing::Test {
     return origins;
   }
 
-  // TODO(crbug.com/1443466): Consider moving common test util functions between
-  // this file and password_status_check_service_unittest.cc to a util class.
-  password_manager::PasswordForm MakeForm(base::StringPiece16 username,
-                                          base::StringPiece16 password,
+  // TODO(crbug.com/40267370): Consider moving common test util functions
+  // between this file and password_status_check_service_unittest.cc to a util
+  // class.
+  password_manager::PasswordForm MakeForm(std::u16string_view username,
+                                          std::u16string_view password,
                                           std::string origin = kUsedTestSite,
                                           bool is_leaked = false) {
     password_manager::PasswordForm form;
@@ -410,7 +439,6 @@ class SafetyHubHandlerTest : public testing::Test {
  private:
   base::test::ScopedFeatureList feature_list_;
   content::BrowserTaskEnvironment task_environment_;
-  std::unique_ptr<SafetyHubHandler> handler_;
   TestingProfile profile_;
   content::TestWebUI web_ui_;
   scoped_refptr<HostContentSettingsMap> hcsm_;
@@ -419,6 +447,7 @@ class SafetyHubHandlerTest : public testing::Test {
       CreateAndUseTestPasswordStore(&profile_);
   scoped_refptr<password_manager::TestPasswordStore> account_store_ =
       CreateAndUseTestAccountPasswordStore(&profile_);
+  std::unique_ptr<SafetyHubHandler> handler_;
 };
 
 TEST_F(SafetyHubHandlerTest, PopulateUnusedSitePermissionsData) {
@@ -696,7 +725,7 @@ TEST_F(SafetyHubHandlerTest, HandleGetSafeBrowsingCardData_DisabledByUser) {
 
 // Test that revocation is happen correctly for all content setting types.
 TEST_F(SafetyHubHandlerTest, RevokeAllContentSettingTypes) {
-  // TODO(crbug.com/1459305): Remove this after adding names for those
+  // TODO(crbug.com/40066645): Remove this after adding names for those
   // types.
   static constexpr auto kNoNameTypes =
       base::MakeFixedFlatSet<ContentSettingsType>({
@@ -793,7 +822,8 @@ TEST_F(SafetyHubHandlerTest, VersionCardOutOfDate) {
             *data.arg3()->GetDict().FindInt("state"));
 }
 
-TEST_F(SafetyHubHandlerTest, HandleGetSafetyHubHasRecommendations) {
+TEST_F(SafetyHubHandlerTest,
+       HandleGetSafetyHubEntryPointData_HasRecommendationsAndHeader) {
   std::vector<SafetyHubHandler::SafetyHubModule> modules;
   modules.push_back(SafetyHubHandler::SafetyHubModule::kPasswords);
   modules.push_back(SafetyHubHandler::SafetyHubModule::kVersion);
@@ -825,12 +855,12 @@ TEST_F(SafetyHubHandlerTest, HandleGetSafetyHubHasRecommendations) {
       }
     }
 
-    ValidateHandleGetSafetyHubHasRecommendations(!recommendedModules.empty());
+    ValidateEntryPointHasRecommendationsAndHeader(!recommendedModules.empty());
   }
 }
 
 TEST_F(SafetyHubHandlerTest,
-       HandleGetSafetyHubEntryPointSubheader_NothingToDo) {
+       HandleGetSafetyHubEntryPointData_Subheader_NothingToDo) {
   // Reset unused site permissions data that is set in the test suite setup.
   SetupTestToShowOrHideRecommendationForModule(
       SafetyHubHandler::SafetyHubModule::kUnusedSitePermissions, false);
@@ -838,7 +868,8 @@ TEST_F(SafetyHubHandlerTest,
       IDS_SETTINGS_SAFETY_HUB_ENTRY_POINT_NOTHING_TO_DO));
 }
 
-TEST_F(SafetyHubHandlerTest, HandleGetSafetyHubEntryPointSubheader_OneModule) {
+TEST_F(SafetyHubHandlerTest,
+       HandleGetSafetyHubEntryPointData_Subheader_OneModule) {
   SetupTestToShowOrHideRecommendationForModule(
       SafetyHubHandler::SafetyHubModule::kUnusedSitePermissions, false);
 
@@ -873,7 +904,7 @@ TEST_F(SafetyHubHandlerTest, HandleGetSafetyHubEntryPointSubheader_OneModule) {
 }
 
 TEST_F(SafetyHubHandlerTest,
-       HandleGetSafetyHubEntryPointSubheader_TwoModulesWithPassword) {
+       HandleGetSafetyHubEntryPointData_Subheader_TwoModulesWithPassword) {
   SetupTestToShowOrHideRecommendationForModule(
       SafetyHubHandler::SafetyHubModule::kUnusedSitePermissions, false);
   // Passwords module will always be in a subheader string.
@@ -933,7 +964,8 @@ TEST_F(SafetyHubHandlerTest,
       SafetyHubHandler::SafetyHubModule::kUnusedSitePermissions);
 }
 
-TEST_F(SafetyHubHandlerTest, HandleGetSafetyHubEntryPointSubheader_AllModules) {
+TEST_F(SafetyHubHandlerTest,
+       HandleGetSafetyHubEntryPointData_Subheader_AllModules) {
   SetupTestToShowOrHideRecommendationForModule(
       SafetyHubHandler::SafetyHubModule::kPasswords, true);
   SetupTestToShowOrHideRecommendationForModule(
@@ -970,4 +1002,30 @@ TEST_F(SafetyHubHandlerTest, HandleGetSafetyHubEntryPointSubheader_AllModules) {
       l10n_util::GetStringUTF8(
           IDS_SETTINGS_SAFETY_HUB_PERMISSIONS_MODULE_LOWERCASE_NAME);
   ValidateEntryPointSubheader(expected_subheader);
+}
+
+TEST_F(SafetyHubHandlerTest, ExtensionPrefAndInitialization) {
+  // Create fake extensions for our pref service to load and test that
+  // the `web_ui()` has recorded no events
+  AddExtensionsForReview();
+  EXPECT_EQ(5, handler()->GetNumberOfExtensionsThatNeedReview());
+  EXPECT_EQ(0u, web_ui()->call_data().size());
+  // After `AcknowledgeSafetyCheckExtensions` one event should have been fired.
+  safety_hub_test_util::AcknowledgeSafetyCheckExtensions(
+      crx_file::id_util::GenerateId("TestExtension5"), profile());
+  EXPECT_EQ(1u, web_ui()->call_data().size());
+  // After `RemoveExtension` one additional event should have been fired
+  // making two total events.
+  safety_hub_test_util::AcknowledgeSafetyCheckExtensions(
+      crx_file::id_util::GenerateId("TestExtension4"), profile());
+  EXPECT_EQ(2u, web_ui()->call_data().size());
+  // When the same actions are preformed on good extensions, no more
+  // events are fired.
+  safety_hub_test_util::AcknowledgeSafetyCheckExtensions(
+      crx_file::id_util::GenerateId("lgcbbihjdcmnlndohpfhppljiilnkoab"),
+      profile());
+  EXPECT_EQ(2u, web_ui()->call_data().size());
+  safety_hub_test_util::RemoveExtension("jadkojfancihcakelhdnpkcidencgdjg",
+                                        ManifestLocation::kInternal, profile());
+  EXPECT_EQ(2u, web_ui()->call_data().size());
 }

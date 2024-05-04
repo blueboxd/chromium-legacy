@@ -9,6 +9,7 @@
 #include <initializer_list>
 #include <optional>
 #include <string>
+#include <variant>
 #include <vector>
 
 #include "base/containers/flat_tree.h"
@@ -18,7 +19,6 @@
 #include "components/user_education/common/help_bubble_params.h"
 #include "components/user_education/common/tutorial_identifier.h"
 #include "components/user_education/common/user_education_metadata.h"
-#include "third_party/abseil-cpp/absl/types/variant.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/interaction/element_identifier.h"
 #include "ui/base/interaction/element_tracker.h"
@@ -43,7 +43,7 @@ class FeaturePromoSpecification {
     ~AdditionalConditions();
 
     // Provides constraints on when the promo can show based on some other
-    // Feautre Engagement event.
+    // Feature Engagement event.
     enum class Constraint { kAtMost, kAtLeast, kExactly };
 
     // Represents an additional condition for the promo to show.
@@ -101,7 +101,7 @@ class FeaturePromoSpecification {
   // Provide different ways to specify parameters for title or body text.
   struct NoSubstitution {};
   using StringSubstitutions = std::vector<std::u16string>;
-  using FormatParameters = absl::variant<
+  using FormatParameters = std::variant<
       // No substitutions; use the string as-is (default).
       NoSubstitution,
       // Use the following substitutions for the various substitution fields.
@@ -151,7 +151,11 @@ class FeaturePromoSpecification {
     // A simple promo that acts like a toast but without the required
     // accessibility data.
     kLegacy = 5,
-    kMaxValue = kLegacy
+    // Rotating promos have a list of different promos they cycle between.
+    // Because they are shown over and over, possibly at startup, this type
+    // requires being on an allowlist.
+    kRotating = 6,
+    kMaxValue = kRotating
   };
 
   // These values are persisted to logs. Entries should not be renumbered and
@@ -162,9 +166,10 @@ class FeaturePromoSpecification {
   enum class PromoSubtype {
     // A normal promo. Follows the default rules for when it can show.
     kNormal = 0,
-    // A promo designed to be shown in multiple apps (or webapps). Can show once
-    // per app.
-    kPerApp = 1,
+    // A promo designed to be shown per app or account, keyed to a unique
+    // identifier. This type requires being on an allowlist.
+    // (Previously known as "kPerApp".)
+    kKeyedNotice = 1,
     // A promo that must be able to be shown until explicitly acknowledged and
     // dismissed by the user. This type requires being on an allowlist.
     kLegalNotice = 2,
@@ -181,7 +186,7 @@ class FeaturePromoSpecification {
    public:
     // You can assign either an int (command ID) or a ui::Accelerator to an
     // AcceleratorInfo object.
-    using ValueType = absl::variant<int, ui::Accelerator>;
+    using ValueType = std::variant<int, ui::Accelerator>;
 
     AcceleratorInfo();
     AcceleratorInfo(const AcceleratorInfo& other);
@@ -198,6 +203,42 @@ class FeaturePromoSpecification {
 
    private:
     ValueType value_;
+  };
+
+  // A list of rotating promos. The order or index of promos should not change,
+  // but a promo can be replaced with `std::nullopt` or another promo if it
+  // becomes deprecated.
+  class RotatingPromos {
+   public:
+    RotatingPromos();
+    RotatingPromos(RotatingPromos&&) noexcept;
+    RotatingPromos& operator=(RotatingPromos&&) noexcept;
+    ~RotatingPromos();
+
+    template <typename... Args>
+    explicit RotatingPromos(Args&&... args) {
+      (promos_.emplace_back(std::forward<Args>(args)), ...);
+    }
+
+    using ListType = std::vector<std::optional<FeaturePromoSpecification>>;
+    using iterator = ListType::iterator;
+    using const_iterator = ListType::const_iterator;
+    using size_type = ListType::size_type;
+    using value_type = ListType::value_type;
+    using reference = ListType::reference;
+    using const_reference = ListType::const_reference;
+
+    iterator begin() { return promos_.begin(); }
+    const_iterator begin() const { return promos_.begin(); }
+    iterator end() { return promos_.end(); }
+    const_iterator end() const { return promos_.end(); }
+    reference operator[](size_type index) { return promos_[index]; }
+    reference at(size_type index) { return promos_.at(index); }
+    const_reference at(size_type index) const { return promos_.at(index); }
+    size_type size() const { return promos_.size(); }
+
+   private:
+    ListType promos_;
   };
 
   FeaturePromoSpecification();
@@ -267,6 +308,29 @@ class FeaturePromoSpecification {
       int custom_action_string_id,
       CustomActionCallback custom_action_callback);
 
+  // Specifies a promo that shows a rotating set of promos.
+  static FeaturePromoSpecification CreateForRotatingPromo(
+      const base::Feature& feature,
+      RotatingPromos rotating_promos);
+
+  // Specifies a promo that shows a rotating set of promos.
+  //
+  // This is a convenience version of the method that allows each rotating promo
+  // to be passed in as a list of items without boilerplate.
+  template <typename Arg, typename... Args>
+    requires std::same_as<std::remove_reference_t<Arg>,
+                          std::optional<FeaturePromoSpecification>> ||
+             std::same_as<std::remove_reference_t<Arg>,
+                          FeaturePromoSpecification>
+  static FeaturePromoSpecification CreateForRotatingPromo(
+      const base::Feature& feature,
+      Arg&& arg,
+      Args&&... args) {
+    return CreateForRotatingPromo(
+        feature,
+        RotatingPromos(std::forward<Arg>(arg), std::forward<Args>(args)...));
+  }
+
   // Specifies a text-only promo without additional accessibility information.
   // Deprecated. Only included for backwards compatibility with existing
   // promos. This is the only case in which |feature| can be null, and if it is
@@ -298,8 +362,8 @@ class FeaturePromoSpecification {
   // can be done to fix it.
   FeaturePromoSpecification& OverrideFocusOnShow(bool focus_on_show);
 
-  // Set the promo subtype. Setting the subtype to LegalNotice requires being on
-  // an allowlist.
+  // Set the promo subtype. Setting the subtype to most values other than
+  // `kNormal` requires being on an allowlist.
   FeaturePromoSpecification& SetPromoSubtype(PromoSubtype promo_subtype);
 
   // Set the anchor element filter.
@@ -316,6 +380,8 @@ class FeaturePromoSpecification {
 
   // Get the anchor element based on `anchor_element_id`,
   // `anchor_element_filter`, and `context`.
+  //
+  // For rotating promos, call this method on the specific sub-promo.
   ui::TrackedElement* GetAnchorElement(ui::ElementContext context) const;
 
   const base::Feature* feature() const { return feature_; }
@@ -385,12 +451,21 @@ class FeaturePromoSpecification {
     return SetMetadata(Metadata(std::forward<Args>(args)...));
   }
 
+  // Only valid for rotating promo subtype.
+  const RotatingPromos& rotating_promos() const { return rotating_promos_; }
+
   // Force the subtype to a particular value, bypassing permission checks.
   FeaturePromoSpecification& set_promo_subtype_for_testing(
       PromoSubtype promo_subtype) {
     promo_subtype_ = promo_subtype;
     return *this;
   }
+
+  // Force the type of promo to rotating and set the given `rotating_promos`,
+  // bypassing permission checks and safeguards.
+  static FeaturePromoSpecification CreateRotatingPromoForTesting(
+      const base::Feature& feature,
+      RotatingPromos rotating_promos);
 
  private:
   static constexpr HelpBubbleArrow kDefaultBubbleArrow =
@@ -469,6 +544,9 @@ class FeaturePromoSpecification {
 
   // Additional conditions describing when the promo can show.
   AdditionalConditions additional_conditions_;
+
+  // For rotating promos, maintain a list of sub-promos.
+  RotatingPromos rotating_promos_;
 
   // Metadata for this promo.
   Metadata metadata_;

@@ -12,6 +12,7 @@
 #include <list>
 #include <map>
 #include <string>
+#include <string_view>
 #include <utility>
 
 #include "base/apple/bridging.h"
@@ -53,6 +54,7 @@
 #include "cc/paint/paint_flags.h"
 #import "chrome/browser/mac/dock.h"
 #include "chrome/browser/shell_integration.h"
+#include "chrome/browser/shortcuts/platform_util_mac.h"
 #include "chrome/browser/web_applications/os_integration/icns_encoder.h"
 #include "chrome/browser/web_applications/os_integration/os_integration_test_override.h"
 #include "chrome/browser/web_applications/os_integration/web_app_shortcut.h"
@@ -111,6 +113,10 @@ OSStatus SecCodeSignerAddSignatureWithErrors(SecCodeSignerRef signer,
                                              SecStaticCodeRef code,
                                              SecCSFlags flags,
                                              CFErrorRef* errors);
+
+// Key used within CoreFoundation for loaded Info plists
+extern const CFStringRef _kCFBundleNumericVersionKey;
+
 }  // extern "C"
 
 // A TerminationObserver observes a NSRunningApplication for when it
@@ -196,7 +202,7 @@ OSStatus SecCodeSignerAddSignatureWithErrors(SecCodeSignerRef signer,
 }
 @end
 
-// TODO(https://crbug.com/941909): Change all launch functions to take a single
+// TODO(crbug.com/41446873): Change all launch functions to take a single
 // callback that returns a NSRunningApplication, rather than separate launch and
 // termination callbacks.
 void RunAppLaunchCallbacks(
@@ -216,7 +222,7 @@ void RunAppLaunchCallbacks(
   }
 
   // Otherwise, indicate successful launch, and watch for termination.
-  // TODO(https://crbug.com/941909): This watches for termination indefinitely,
+  // TODO(crbug.com/41446873): This watches for termination indefinitely,
   // but we only need to watch for termination until the app establishes a
   // (whereupon termination will be noticed by the mojo connection closing).
   std::move(launch_callback).Run(std::move(process));
@@ -265,10 +271,6 @@ enum class CreateShortcutResult {
 void RecordCreateShortcut(CreateShortcutResult result) {
   UMA_HISTOGRAM_ENUMERATION(kCreateShortcutResult, result);
 }
-
-// The maximum number to append to to an app name before giving up and using the
-// extension id.
-constexpr int kMaxConflictNumber = 999;
 
 // Remove the leading . from the entries of |extensions|. Any items that do not
 // have a leading . are removed.
@@ -716,7 +718,7 @@ NSImageRep* ImageRepForGFXImage(const gfx::Image& image) {
 
 using ResourceIDToImage = std::map<int, NSImageRep*>;
 
-// Generates a map of NSImageReps used by SetWorkspaceIconOnFILEThread and
+// Generates a map of NSImageReps used by SetWorkspaceIconOnWorkerThread and
 // passes it to |io_task|. Since ui::ResourceBundle can only be used on UI
 // thread, this function also needs to run on UI thread, and the gfx::Images
 // need to be converted to NSImageReps on the UI thread due to non-thread-safety
@@ -730,18 +732,15 @@ void GetImageResourcesOnUIThread(
       std::make_unique<ResourceIDToImage>();
 
   // These resource ID should match to the ones used by
-  // SetWorkspaceIconOnFILEThread below.
+  // SetWorkspaceIconOnWorkerThread below.
   for (int id : {IDR_APPS_FOLDER_16, IDR_APPS_FOLDER_32,
                  IDR_APPS_FOLDER_OVERLAY_128, IDR_APPS_FOLDER_OVERLAY_512}) {
     gfx::Image image = resource_bundle.GetNativeImageNamed(id);
     (*result)[id] = ImageRepForGFXImage(image);
   }
 
-  base::ThreadPool::PostTask(
-      FROM_HERE,
-      {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
-       base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
-      base::BindOnce(std::move(io_task), std::move(result)));
+  internals::GetShortcutIOTaskRunner()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(io_task), std::move(result)));
 }
 
 void SetWorkspaceIconOnWorkerThread(const base::FilePath& apps_directory,
@@ -774,10 +773,8 @@ void SetWorkspaceIconOnWorkerThread(const base::FilePath& apps_directory,
     if (with_overlay)
       [folder_icon_image addRepresentation:with_overlay];
   }
-  [NSWorkspace.sharedWorkspace
-      setIcon:folder_icon_image
-      forFile:base::apple::FilePathToNSString(apps_directory)
-      options:0];
+  shortcuts::SetIconForFile(folder_icon_image, apps_directory,
+                            base::DoNothing());
 }
 
 // Adds a localized strings file for the Chrome Apps directory using the current
@@ -818,7 +815,7 @@ base::FilePath GetMultiProfileAppDataDir(base::FilePath app_data_dir) {
   // The kCrAppModeUserDataDirKey is expected to be a path in kWebAppDirname,
   // and the true user data dir is extracted by going three directories up.
   // For profile-agnostic apps, remove this reference to the profile name.
-  // TODO(https://crbug.com/1021237): Do not specify kCrAppModeUserDataDirKey
+  // TODO(crbug.com/40656955): Do not specify kCrAppModeUserDataDirKey
   // if Chrome is using the default user data dir.
 
   // Strip the app name directory.
@@ -1237,14 +1234,10 @@ base::FilePath WebAppShortcutCreator::GetApplicationsShortcutPath(
     return applications_dir.Append(GetShortcutBasename());
   }
 
-  // Attempt to use the application's title for the file name. Resolve conflicts
-  // by appending 1 through kMaxConflictNumber, before giving up and using the
-  // concatenated profile and extension for a name name.
-  for (int i = 1; i <= kMaxConflictNumber; ++i) {
-    base::FilePath path = applications_dir.Append(GetShortcutBasename(i));
-    if (base::DirectoryExists(path)) {
-      continue;
-    }
+  // Attempt to use the application's title for the file name.
+  base::FilePath path = base::GetUniquePathWithSuffixFormat(
+      applications_dir.Append(GetShortcutBasename()), " %d");
+  if (!path.empty()) {
     return path;
   }
 
@@ -1253,31 +1246,20 @@ base::FilePath WebAppShortcutCreator::GetApplicationsShortcutPath(
   return applications_dir.Append(GetFallbackBasename());
 }
 
-base::FilePath WebAppShortcutCreator::GetShortcutBasename(
-    int copy_number) const {
+base::FilePath WebAppShortcutCreator::GetShortcutBasename() const {
   // For profile-less shortcuts, use the fallback naming scheme to avoid change.
   if (info_->profile_name.empty()) {
     return GetFallbackBasename();
   }
 
-  // Strip all preceding '.'s from the path.
   std::u16string title = info_->title;
-  size_t first_non_dot = 0;
-  while (first_non_dot < title.size() && title[first_non_dot] == '.')
-    first_non_dot += 1;
-  title = title.substr(first_non_dot);
-  if (title.empty()) {
+  std::optional<base::SafeBaseName> base_name =
+      shortcuts::SanitizeTitleForFileName(base::UTF16ToUTF8(info_->title));
+  if (!base_name.has_value()) {
     return GetFallbackBasename();
   }
 
-  // Finder will display ':' as '/', so replace all '/' instances with ':'.
-  std::replace(title.begin(), title.end(), '/', ':');
-
-  // Append the copy number.
-  std::string title_utf8 = base::UTF16ToUTF8(title);
-  if (copy_number != 1)
-    title_utf8 += base::StringPrintf(" %d", copy_number);
-  return base::FilePath(title_utf8 + ".app");
+  return base_name->path().AddExtension(".app");
 }
 
 base::FilePath WebAppShortcutCreator::GetFallbackBasename() const {
@@ -1452,6 +1434,30 @@ bool CopyStagingBundleToDestination(base::FilePath staging_path,
   command_line.AppendArgPath(staging_path);
   command_line.AppendArgPath(dst_app_path);
 
+  // Pass NSBundle's cached copy of the app's Info.plist data to the helper tool
+  // for use in dynamic signature validation. The data is validated against a
+  // hash recorded in the code signature before being used during requirement
+  // validation. NSBundle's cached copy is used to ensure that any changes to
+  // Info.plist on disk due to pending updates do not result in a version of the
+  // data being used that doesn't match the code signature of the running app.
+  NSMutableDictionary* info_plist_dictionary =
+      [base::apple::OuterBundle().infoDictionary mutableCopy];
+  // NSBundle inserts CFBundleNumericVersion into its in-memory copy of the info
+  // dictionary despite it not being present on disk. Remove it so that the
+  // serialized dictionary matches the Info.plist that was present at signing
+  // time.
+  info_plist_dictionary[base::apple::CFToNSPtrCast(
+      _kCFBundleNumericVersionKey)] = nil;
+  NS_VALID_UNTIL_END_OF_SCOPE NSData* info_plist_xml_data =
+      [NSPropertyListSerialization
+          dataWithPropertyList:info_plist_dictionary
+                        format:NSPropertyListXMLFormat_v1_0
+                       options:0
+                         error:nullptr];
+  command_line.AppendArg(
+      std::string_view(static_cast<const char*>(info_plist_xml_data.bytes),
+                       info_plist_xml_data.length));
+
   // Synchronously wait for the copy to complete to match the semantics of
   // `base::CopyDirectory`.
   std::string command_output;
@@ -1571,8 +1577,8 @@ bool WebAppShortcutCreator::UpdateShortcuts(
       LOG(ERROR) << "Couldn't find an Applications directory to copy app to.";
       return false;
     }
-    // Only set folder icons and a localized name once. This avoids concurrent
-    // calls to -[NSWorkspace setIcon:..], which is not reentrant.
+    // Only set folder icons and a localized name once, as nothing should be
+    // changing the folder icon and name.
     if (!g_have_localized_app_dir_name) {
       g_have_localized_app_dir_name =
           UpdateAppShortcutsSubdirLocalizedName(applications_dir);
@@ -1744,7 +1750,7 @@ bool WebAppShortcutCreator::UpdatePlist(const base::FilePath& app_path) const {
     } ];
   }
 
-  // TODO(crbug.com/1273526): If we decide to rename app bundles on app title
+  // TODO(crbug.com/40807015): If we decide to rename app bundles on app title
   // changes, instead of relying on localization, then this will need to change
   // to use GetShortcutBaseName, most likely only for non-legacy-apps
   // (in other words, revert to what the code looked like before on these

@@ -105,7 +105,7 @@ FeaturePromoSessionPolicy::SpecificationToPromoInfo(
       promo_info.priority = PromoPriority::kHigh;
       break;
     case FeaturePromoSpecification::PromoSubtype::kActionableAlert:
-    case FeaturePromoSpecification::PromoSubtype::kPerApp:
+    case FeaturePromoSpecification::PromoSubtype::kKeyedNotice:
       promo_info.priority = PromoPriority::kMedium;
       break;
     case FeaturePromoSpecification::PromoSubtype::kNormal:
@@ -115,6 +115,7 @@ FeaturePromoSessionPolicy::SpecificationToPromoInfo(
   switch (spec.promo_type()) {
     case FeaturePromoSpecification::PromoType::kToast:
     case FeaturePromoSpecification::PromoType::kLegacy:
+    case FeaturePromoSpecification::PromoType::kRotating:
       promo_info.weight = PromoWeight::kLight;
       break;
     case FeaturePromoSpecification::PromoType::kSnooze:

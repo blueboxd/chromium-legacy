@@ -33,11 +33,6 @@ crosapi::TelemetryDiagnosticMemoryRoutineDetailPtr UncheckedConvertPtr(
       input->bytes_tested, ConvertRoutinePtr(std::move(input->result)));
 }
 
-crosapi::TelemetryDiagnosticVolumeButtonRoutineDetailPtr UncheckedConvertPtr(
-    healthd::VolumeButtonRoutineDetailPtr input) {
-  return crosapi::TelemetryDiagnosticVolumeButtonRoutineDetail::New();
-}
-
 crosapi::TelemetryDiagnosticFanRoutineDetailPtr UncheckedConvertPtr(
     healthd::FanRoutineDetailPtr input) {
   return crosapi::TelemetryDiagnosticFanRoutineDetail::New(
@@ -50,15 +45,76 @@ crosapi::TelemetryDiagnosticRoutineStateInitializedPtr UncheckedConvertPtr(
   return crosapi::TelemetryDiagnosticRoutineStateInitialized::New();
 }
 
+crosapi::TelemetryDiagnosticNetworkBandwidthRoutineDetailPtr
+UncheckedConvertPtr(healthd::NetworkBandwidthRoutineDetailPtr input) {
+  auto detail =
+      crosapi::TelemetryDiagnosticNetworkBandwidthRoutineDetail::New();
+  detail->download_speed_kbps = input->download_speed_kbps;
+  detail->upload_speed_kbps = input->upload_speed_kbps;
+  return detail;
+}
+
+crosapi::TelemetryDiagnosticNetworkBandwidthRoutineRunningInfoPtr
+UncheckedConvertPtr(healthd::NetworkBandwidthRoutineRunningInfoPtr input) {
+  return crosapi::TelemetryDiagnosticNetworkBandwidthRoutineRunningInfo::New(
+      Convert(input->type), input->speed_kbps);
+}
+
+crosapi::TelemetryDiagnosticRoutineRunningInfoPtr UncheckedConvertPtr(
+    healthd::RoutineRunningInfoPtr input) {
+  switch (input->which()) {
+    case healthd::RoutineRunningInfo::Tag::kUnrecognizedArgument:
+      return crosapi::TelemetryDiagnosticRoutineRunningInfo::
+          NewUnrecognizedArgument(input->get_unrecognizedArgument());
+    case healthd::RoutineRunningInfo::Tag::kNetworkBandwidth:
+      return crosapi::TelemetryDiagnosticRoutineRunningInfo::
+          NewNetworkBandwidth(
+              ConvertRoutinePtr(std::move(input->get_network_bandwidth())));
+  }
+}
+
 crosapi::TelemetryDiagnosticRoutineStateRunningPtr UncheckedConvertPtr(
     healthd::RoutineStateRunningPtr input) {
-  return crosapi::TelemetryDiagnosticRoutineStateRunning::New();
+  return crosapi::TelemetryDiagnosticRoutineStateRunning::New(
+      ConvertRoutinePtr(std::move(input->info)));
+}
+
+crosapi::TelemetryDiagnosticCheckLedLitUpStateInquiryPtr UncheckedConvertPtr(
+    healthd::CheckLedLitUpStateInquiryPtr input) {
+  return crosapi::TelemetryDiagnosticCheckLedLitUpStateInquiry::New();
+}
+
+crosapi::TelemetryDiagnosticRoutineInquiryPtr UncheckedConvertPtr(
+    healthd::RoutineInquiryPtr input) {
+  switch (input->which()) {
+    case healthd::RoutineInquiry::Tag::kUnrecognizedInquiry:
+      return crosapi::TelemetryDiagnosticRoutineInquiry::NewUnrecognizedInquiry(
+          input->get_unrecognizedInquiry());
+    case healthd::RoutineInquiry::Tag::kCheckLedLitUpState:
+      return crosapi::TelemetryDiagnosticRoutineInquiry::NewCheckLedLitUpState(
+          ConvertRoutinePtr(std::move(input->get_check_led_lit_up_state())));
+  }
+  NOTREACHED_NORETURN();
+}
+
+crosapi::TelemetryDiagnosticRoutineInteractionPtr UncheckedConvertPtr(
+    healthd::RoutineInteractionPtr input) {
+  switch (input->which()) {
+    case healthd::RoutineInteraction::Tag::kUnrecognizedInteraction:
+      return crosapi::TelemetryDiagnosticRoutineInteraction::
+          NewUnrecognizedInteraction(input->get_unrecognizedInteraction());
+    case healthd::RoutineInteraction::Tag::kInquiry:
+      return crosapi::TelemetryDiagnosticRoutineInteraction::NewInquiry(
+          ConvertRoutinePtr(std::move(input->get_inquiry())));
+  }
+  NOTREACHED_NORETURN();
 }
 
 crosapi::TelemetryDiagnosticRoutineStateWaitingPtr UncheckedConvertPtr(
     healthd::RoutineStateWaitingPtr input) {
   return crosapi::TelemetryDiagnosticRoutineStateWaiting::New(
-      Convert(input->reason), input->message);
+      Convert(input->reason), input->message,
+      ConvertRoutinePtr(std::move(input->interaction)));
 }
 
 crosapi::TelemetryDiagnosticRoutineDetailPtr UncheckedConvertPtr(
@@ -70,12 +126,24 @@ crosapi::TelemetryDiagnosticRoutineDetailPtr UncheckedConvertPtr(
     case healthd::RoutineDetail::Tag::kMemory:
       return crosapi::TelemetryDiagnosticRoutineDetail::NewMemory(
           ConvertRoutinePtr(std::move(input->get_memory())));
-    case healthd::RoutineDetail::Tag::kVolumeButton:
-      return crosapi::TelemetryDiagnosticRoutineDetail::NewVolumeButton(
-          ConvertRoutinePtr(std::move(input->get_volume_button())));
     case healthd::RoutineDetail::Tag::kFan:
       return crosapi::TelemetryDiagnosticRoutineDetail::NewFan(
           ConvertRoutinePtr(std::move(input->get_fan())));
+    case healthd::RoutineDetail::Tag::kNetworkBandwidth:
+      return crosapi::TelemetryDiagnosticRoutineDetail::NewNetworkBandwidth(
+          ConvertRoutinePtr(std::move(input->get_network_bandwidth())));
+    // The following routines have not been added to crosapi yet.
+    case healthd::RoutineDetail::Tag::kAudioDriver:
+    case healthd::RoutineDetail::Tag::kUfsLifetime:
+    case healthd::RoutineDetail::Tag::kBluetoothPower:
+    case healthd::RoutineDetail::Tag::kBluetoothDiscovery:
+    case healthd::RoutineDetail::Tag::kBluetoothScanning:
+    case healthd::RoutineDetail::Tag::kBluetoothPairing:
+    case healthd::RoutineDetail::Tag::kCameraAvailability:
+      // The actual value of unrecognizedArgument should not be used. Assign an
+      // arbitrary value to it.
+      return crosapi::TelemetryDiagnosticRoutineDetail::NewUnrecognizedArgument(
+          /*unrecognizedArgument*/ false);
   }
   NOTREACHED_NORETURN();
 }
@@ -130,6 +198,12 @@ healthd::RoutineArgumentPtr UncheckedConvertPtr(
     case crosapi::TelemetryDiagnosticRoutineArgument::Tag::kFan:
       return healthd::RoutineArgument::NewFan(
           ConvertRoutinePtr(std::move(input->get_fan())));
+    case crosapi::TelemetryDiagnosticRoutineArgument::Tag::kLedLitUp:
+      return healthd::RoutineArgument::NewLedLitUp(
+          ConvertRoutinePtr(std::move(input->get_led_lit_up())));
+    case crosapi::TelemetryDiagnosticRoutineArgument::Tag::kNetworkBandwidth:
+      return healthd::RoutineArgument::NewNetworkBandwidth(
+          ConvertRoutinePtr(std::move(input->get_network_bandwidth())));
   }
 }
 
@@ -166,7 +240,95 @@ healthd::FanRoutineArgumentPtr UncheckedConvertPtr(
   return healthd::FanRoutineArgument::New();
 }
 
+healthd::LedLitUpRoutineArgumentPtr UncheckedConvertPtr(
+    crosapi::TelemetryDiagnosticLedLitUpRoutineArgumentPtr input) {
+  auto arg = healthd::LedLitUpRoutineArgument::New();
+  arg->name = Convert(input->name);
+  arg->color = Convert(input->color);
+  return arg;
+}
+
+healthd::CheckLedLitUpStateReplyPtr UncheckedConvertPtr(
+    crosapi::TelemetryDiagnosticCheckLedLitUpStateReplyPtr input) {
+  auto arg = healthd::CheckLedLitUpStateReply::New();
+  arg->state = Convert(input->state);
+  return arg;
+}
+
+healthd::NetworkBandwidthRoutineArgumentPtr UncheckedConvertPtr(
+    crosapi::TelemetryDiagnosticNetworkBandwidthRoutineArgumentPtr input) {
+  return healthd::NetworkBandwidthRoutineArgument::New();
+}
+
+healthd::RoutineInquiryReplyPtr UncheckedConvertPtr(
+    crosapi::TelemetryDiagnosticRoutineInquiryReplyPtr input) {
+  switch (input->which()) {
+    case crosapi::TelemetryDiagnosticRoutineInquiryReply::Tag::
+        kUnrecognizedReply:
+      return healthd::RoutineInquiryReply::NewUnrecognizedReply(
+          input->get_unrecognizedReply());
+    case crosapi::TelemetryDiagnosticRoutineInquiryReply::Tag::
+        kCheckLedLitUpState:
+      return healthd::RoutineInquiryReply::NewCheckLedLitUpState(
+          ConvertRoutinePtr(std::move(input->get_check_led_lit_up_state())));
+  }
+  NOTREACHED_NORETURN();
+}
+
 }  // namespace unchecked
+
+healthd::LedName Convert(crosapi::TelemetryDiagnosticLedName input) {
+  switch (input) {
+    case crosapi::TelemetryDiagnosticLedName::kUnmappedEnumField:
+      return healthd::LedName::kUnmappedEnumField;
+    case crosapi::TelemetryDiagnosticLedName::kBattery:
+      return healthd::LedName::kBattery;
+    case crosapi::TelemetryDiagnosticLedName::kPower:
+      return healthd::LedName::kPower;
+    case crosapi::TelemetryDiagnosticLedName::kAdapter:
+      return healthd::LedName::kAdapter;
+    case crosapi::TelemetryDiagnosticLedName::kLeft:
+      return healthd::LedName::kLeft;
+    case crosapi::TelemetryDiagnosticLedName::kRight:
+      return healthd::LedName::kRight;
+  }
+  NOTREACHED_NORETURN();
+}
+
+healthd::LedColor Convert(crosapi::TelemetryDiagnosticLedColor input) {
+  switch (input) {
+    case crosapi::TelemetryDiagnosticLedColor::kUnmappedEnumField:
+      return healthd::LedColor::kUnmappedEnumField;
+    case crosapi::TelemetryDiagnosticLedColor::kRed:
+      return healthd::LedColor::kRed;
+    case crosapi::TelemetryDiagnosticLedColor::kGreen:
+      return healthd::LedColor::kGreen;
+    case crosapi::TelemetryDiagnosticLedColor::kBlue:
+      return healthd::LedColor::kBlue;
+    case crosapi::TelemetryDiagnosticLedColor::kYellow:
+      return healthd::LedColor::kYellow;
+    case crosapi::TelemetryDiagnosticLedColor::kWhite:
+      return healthd::LedColor::kWhite;
+    case crosapi::TelemetryDiagnosticLedColor::kAmber:
+      return healthd::LedColor::kAmber;
+  }
+  NOTREACHED_NORETURN();
+}
+
+healthd::CheckLedLitUpStateReply::State Convert(
+    crosapi::TelemetryDiagnosticCheckLedLitUpStateReply::State input) {
+  switch (input) {
+    case crosapi::TelemetryDiagnosticCheckLedLitUpStateReply::State::
+        kUnmappedEnumField:
+      return healthd::CheckLedLitUpStateReply::State::kUnmappedEnumField;
+    case crosapi::TelemetryDiagnosticCheckLedLitUpStateReply::State::
+        kCorrectColor:
+      return healthd::CheckLedLitUpStateReply::State::kCorrectColor;
+    case crosapi::TelemetryDiagnosticCheckLedLitUpStateReply::State::kNotLitUp:
+      return healthd::CheckLedLitUpStateReply::State::kNotLitUp;
+  }
+  NOTREACHED_NORETURN();
+}
 
 crosapi::TelemetryDiagnosticMemtesterTestItemEnum Convert(
     healthd::MemtesterTestItemEnum input) {
@@ -244,9 +406,25 @@ crosapi::TelemetryDiagnosticRoutineStateWaiting::Reason Convert(
     case healthd::RoutineStateWaiting_Reason::kWaitingToBeScheduled:
       return crosapi::TelemetryDiagnosticRoutineStateWaiting::Reason::
           kWaitingToBeScheduled;
-    case healthd::RoutineStateWaiting_Reason::kWaitingUserInput:
+    case healthd::RoutineStateWaiting_Reason::kWaitingInteraction:
       return crosapi::TelemetryDiagnosticRoutineStateWaiting_Reason::
-          kWaitingUserInput;
+          kWaitingForInteraction;
+  }
+  NOTREACHED_NORETURN();
+}
+
+crosapi::TelemetryDiagnosticNetworkBandwidthRoutineRunningInfo::Type Convert(
+    healthd::NetworkBandwidthRoutineRunningInfo::Type input) {
+  switch (input) {
+    case healthd::NetworkBandwidthRoutineRunningInfo::Type::kUnmappedEnumField:
+      return crosapi::TelemetryDiagnosticNetworkBandwidthRoutineRunningInfo::
+          Type::kUnmappedEnumField;
+    case healthd::NetworkBandwidthRoutineRunningInfo::Type::kDownload:
+      return crosapi::TelemetryDiagnosticNetworkBandwidthRoutineRunningInfo::
+          Type::kDownload;
+    case healthd::NetworkBandwidthRoutineRunningInfo::Type::kUpload:
+      return crosapi::TelemetryDiagnosticNetworkBandwidthRoutineRunningInfo::
+          Type::kUpload;
   }
   NOTREACHED_NORETURN();
 }

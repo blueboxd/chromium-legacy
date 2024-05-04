@@ -6,9 +6,11 @@
 
 #include <algorithm>
 #include <optional>
+#include <string_view>
 #include <utility>
 
 #include "base/base64.h"
+#include "base/debug/crash_logging.h"
 #include "base/files/file.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
@@ -16,7 +18,6 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/timer/elapsed_timer.h"
@@ -336,6 +337,21 @@ class BaseFileInputStream : public google::protobuf::io::ZeroCopyInputStream {
   CopyingBaseFileInputStream stream_;
   google::protobuf::io::CopyingInputStreamAdaptor impl_;
 };
+
+size_t GetIterationCount(const HashPrefixMap& hash_prefix_map,
+                         const IteratorMap& iterator_map) {
+  size_t max_iterations = 0;
+  for (const auto& iterator_pair : iterator_map) {
+    PrefixSize prefix_size = iterator_pair.first;
+    HashPrefixesView::const_iterator start = iterator_pair.second;
+
+    size_t distance =
+        std::distance(start, hash_prefix_map.at(prefix_size).end());
+    max_iterations += distance / prefix_size;
+  }
+
+  return max_iterations;
+}
 
 }  // namespace
 
@@ -986,10 +1002,10 @@ StoreWriteResult V4Store::WriteToDisk(V4StoreFileFormat* file_format) {
 }
 
 HashPrefixStr V4Store::GetMatchingHashPrefix(const FullHashStr& full_hash) {
-  return GetMatchingHashPrefix(base::StringPiece(full_hash));
+  return GetMatchingHashPrefix(std::string_view(full_hash));
 }
 
-HashPrefixStr V4Store::GetMatchingHashPrefix(base::StringPiece full_hash) {
+HashPrefixStr V4Store::GetMatchingHashPrefix(std::string_view full_hash) {
   // It should never be the case that more than one hash prefixes match a given
   // full hash. However, if that happens, this method returns any one of them.
   // It does not guarantee which one of those will be returned.
@@ -1012,6 +1028,13 @@ bool V4Store::VerifyChecksum() {
   HashPrefixStr next_smallest_prefix;
   InitializeIteratorMap(*hash_prefix_map_, &iterator_map);
   CHECK_EQ(hash_prefix_map_->view().size(), iterator_map.size());
+
+  // Crash keys added to investigate http://crbug.com/331054795
+  SCOPED_CRASH_KEY_NUMBER("SafeBrowsing", "VerifyChecksumSizeCount",
+                          iterator_map.size());
+  SCOPED_CRASH_KEY_NUMBER("SafeBrowsing", "VerifyChecksumIterations",
+                          GetIterationCount(*hash_prefix_map_, iterator_map));
+
   bool has_unmerged = GetNextSmallestUnmergedPrefix(
       *hash_prefix_map_, iterator_map, &next_smallest_prefix);
 

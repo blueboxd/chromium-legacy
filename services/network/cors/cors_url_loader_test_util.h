@@ -31,6 +31,7 @@
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/network/resource_scheduler/resource_scheduler.h"
+#include "services/network/test/test_url_loader_network_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class GURL;
@@ -153,6 +154,9 @@ class CorsURLLoaderTestBase : public testing::Test {
     bool skip_cors_enabled_scheme_check;
 
     net::IsolationInfo isolation_info;
+
+    mojo::PendingRemote<mojom::URLLoaderNetworkServiceObserver>
+        url_loader_network_observer;
   };
 
   void CreateLoaderAndStart(
@@ -318,14 +322,6 @@ class CorsURLLoaderTestBase : public testing::Test {
       std::string_view referrer = std::string_view(),
       net::ReferrerPolicy referrer_policy = net::ReferrerPolicy::NO_REFERRER,
       net::SiteForCookies site_for_cookies = net::SiteForCookies());
-
-  // TODO(crbug.com/1478868): This is an interim method only for AFP block list
-  // experiment.
-  // Adds a domain to the resource block list and a corresponding domain that
-  // allows the request to bypass the block list if the top frame domain matches
-  // it.
-  void AddResourceBlockListRule(const std::string& domain,
-                                const std::string& top_frame_bypass);
 
  private:
   // Test environment.

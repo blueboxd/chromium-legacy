@@ -171,7 +171,8 @@ def check_distro(options):
 def check_architecture():
   architecture = subprocess.check_output(["uname", "-m"]).decode().strip()
   if architecture not in ["i686", "x86_64", 'aarch64']:
-    print("Only x86 and ARM64 architectures are currently supported", file=sys.stderr)
+    print("Only x86 and ARM64 architectures are currently supported",
+          file=sys.stderr)
     sys.exit(1)
 
 
@@ -331,7 +332,6 @@ def dev_list():
 # List of required run-time libraries
 def lib_list():
   packages = [
-      "libasound2",
       "libatk1.0-0",
       "libatspi2.0-0",
       "libc6",
@@ -377,8 +377,8 @@ def lib_list():
       "libxrender1",
       "libxtst6",
       "x11-utils",
-      "xserver-xorg-core",  # TODO(crbug.com/1417069): Experimental.
-      "xserver-xorg-video-dummy",  # TODO(crbug.com/1417069): Experimental.
+      "xserver-xorg-core",  # TODO(crbug.com/40257169): Experimental.
+      "xserver-xorg-video-dummy",  # TODO(crbug.com/40257169): Experimental.
       "xvfb",
       "zlib1g",
   ]
@@ -400,7 +400,10 @@ def lib_list():
   elif package_exists("libffi6"):
     packages.append("libffi6")
 
-  if package_exists("libpng16-16"):
+  # Workaround for dependency On Ubuntu 24.04 LTS (noble)
+  if distro_codename() == "noble":
+    packages.append("libpng16-16t64")
+  elif package_exists("libpng16-16"):
     packages.append("libpng16-16")
   else:
     packages.append("libpng12-0")
@@ -424,8 +427,10 @@ def lib_list():
   # Work around for dependency On Ubuntu 24.04 LTS (noble)
   if distro_codename() == "noble":
     packages.append("libncurses6")
+    packages.append("libasound2t64")
   else:
     packages.append("libncurses5")
+    packages.append("libasound2")
 
   return packages
 
@@ -637,6 +642,12 @@ def arm_list(options):
         "gcc-arm-linux-gnueabihf",
         "g++-11-arm-linux-gnueabihf",
         "gcc-11-arm-linux-gnueabihf",
+    ])
+  elif distro_codename() == "noble":
+    packages.extend([
+        "gcc-arm-linux-gnueabihf",
+        "g++-13-arm-linux-gnueabihf",
+        "gcc-13-arm-linux-gnueabihf",
     ])
 
   return packages

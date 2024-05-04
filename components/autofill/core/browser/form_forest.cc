@@ -590,8 +590,8 @@ FormForest::RendererForms FormForest::GetRendererFormsOfBrowserForm(
           };
       const url::Origin& main_origin = browser_form.main_frame_origin;
       return security_options.all_origins_are_trusted() ||
-             field.origin == security_options.triggered_origin() ||
-             (field.origin == main_origin &&
+             field.origin() == security_options.triggered_origin() ||
+             (field.origin() == main_origin &&
               !IsSensitiveFieldType(
                   security_options.GetFieldType(field.global_id())) &&
               HasSharedAutofillPermission(renderer_form->host_frame)) ||
@@ -601,7 +601,7 @@ FormForest::RendererForms FormForest::GetRendererFormsOfBrowserForm(
 
     renderer_form->fields.push_back(browser_field);
     if (!IsSafeToFill(renderer_form->fields.back())) {
-      renderer_form->fields.back().value.clear();
+      renderer_form->fields.back().set_value({});
     } else {
       result.safe_fields.insert(browser_field.global_id());
     }

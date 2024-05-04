@@ -5,77 +5,81 @@
 #include "ash/picker/picker_clipboard_provider.h"
 
 #include "ash/clipboard/clipboard_history_item.h"
-#include "ash/picker/views/picker_list_item_view.h"
 #include "ash/public/cpp/clipboard_history_controller.h"
-#include "ash/resources/vector_icons/vector_icons.h"
-#include "ash/strings/grit/ash_strings.h"
+#include "base/i18n/case_conversion.h"
 #include "chromeos/crosapi/mojom/clipboard_history.mojom.h"
-#include "ui/base/l10n/l10n_util.h"
-#include "ui/base/models/image_model.h"
-#include "ui/chromeos/styles/cros_tokens_color_mappings.h"
-#include "ui/gfx/image/image.h"
-#include "ui/views/controls/image_view.h"
 
 namespace ash {
 namespace {
-constexpr base::TimeDelta kRecencyThreshold = base::Seconds(60);
+std::optional<PickerSearchResult::ClipboardData::DisplayFormat>
+GetDisplayFormat(crosapi::mojom::ClipboardHistoryDisplayFormat format) {
+  switch (format) {
+    case crosapi::mojom::ClipboardHistoryDisplayFormat::kFile:
+      return PickerSearchResult::ClipboardData::DisplayFormat::kFile;
+    case crosapi::mojom::ClipboardHistoryDisplayFormat::kText:
+      return PickerSearchResult::ClipboardData::DisplayFormat::kText;
+    case crosapi::mojom::ClipboardHistoryDisplayFormat::kPng:
+      return PickerSearchResult::ClipboardData::DisplayFormat::kImage;
+    case crosapi::mojom::ClipboardHistoryDisplayFormat::kHtml:
+      return PickerSearchResult::ClipboardData::DisplayFormat::kHtml;
+    default:
+      return std::nullopt;
+  }
 }
 
-PickerClipboardProvider::PickerClipboardProvider(
-    SelectSearchResultCallback select_result_callback,
-    base::Clock* clock)
-    : select_result_callback_(std::move(select_result_callback)),
-      clock_(clock) {}
+bool MatchQuery(const ClipboardHistoryItem& item, const std::u16string& query) {
+  if (query.empty()) {
+    return true;
+  }
+  if (item.display_format() !=
+          crosapi::mojom::ClipboardHistoryDisplayFormat::kText &&
+      item.display_format() !=
+          crosapi::mojom::ClipboardHistoryDisplayFormat::kFile) {
+    return false;
+  }
+  return base::i18n::ToLower(item.display_text())
+             .find(base::i18n::ToLower(query)) != std::u16string::npos;
+}
+}
+
+PickerClipboardProvider::PickerClipboardProvider(base::Clock* clock)
+    : clock_(clock) {}
 
 PickerClipboardProvider::~PickerClipboardProvider() = default;
 
-void PickerClipboardProvider::FetchResult(OnFetchResultCallback callback) {
+void PickerClipboardProvider::FetchResults(OnFetchResultsCallback callback,
+                                           const std::u16string& query,
+                                           base::TimeDelta recency) {
   ash::ClipboardHistoryController* clipboard_history_controller =
       ash::ClipboardHistoryController::Get();
   if (clipboard_history_controller) {
-    clipboard_history_controller->GetHistoryValues(
-        base::BindOnce(&PickerClipboardProvider::OnFetchHistory,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+    clipboard_history_controller->GetHistoryValues(base::BindOnce(
+        &PickerClipboardProvider::OnFetchHistory,
+        weak_ptr_factory_.GetWeakPtr(), std::move(callback), query, recency));
   }
 }
 
 void PickerClipboardProvider::OnFetchHistory(
-    OnFetchResultCallback callback,
+    OnFetchResultsCallback callback,
+    const std::u16string& query,
+    base::TimeDelta recency,
     std::vector<ClipboardHistoryItem> items) {
+  std::vector<PickerSearchResult> results;
   for (const auto& item : items) {
-    if ((clock_->Now() - item.time_copied()) > kRecencyThreshold) {
+    if ((clock_->Now() - item.time_copied()) > recency) {
       continue;
     }
-    if (item.display_format() ==
-        crosapi::mojom::ClipboardHistoryDisplayFormat::kText) {
-      auto result = PickerSearchResult::Text(item.display_text());
-      auto item_view = std::make_unique<PickerListItemView>(
-          base::BindRepeating(select_result_callback_, result));
-      item_view->SetPrimaryText(item.display_text());
-      item_view->SetSecondaryText(
-          l10n_util::GetStringUTF16(IDS_PICKER_FROM_CLIPBOARD_TEXT));
-      item_view->SetLeadingIcon(ui::ImageModel::FromVectorIcon(
-          kClipboardIcon, cros_tokens::kCrosSysOnSurface));
-      callback.Run(std::move(item_view));
-    } else if (item.display_format() ==
-               crosapi::mojom::ClipboardHistoryDisplayFormat::kPng) {
-      const std::optional<std::vector<uint8_t>>& png_opt =
-          item.data().maybe_png();
-      if (!png_opt.has_value() || !item.display_image().has_value()) {
-        continue;
-      }
-      auto result = PickerSearchResult::Png(*png_opt);
-      auto item_view = std::make_unique<PickerListItemView>(
-          base::BindRepeating(select_result_callback_, result));
-      item_view->SetPrimaryImage(
-          std::make_unique<views::ImageView>(*item.display_image()));
-      item_view->SetSecondaryText(
-          l10n_util::GetStringUTF16(IDS_PICKER_FROM_CLIPBOARD_TEXT));
-      item_view->SetLeadingIcon(ui::ImageModel::FromVectorIcon(
-          kClipboardIcon, cros_tokens::kCrosSysOnSurface));
-      callback.Run(std::move(item_view));
+    if (!MatchQuery(item, query)) {
+      continue;
+    }
+    if (std::optional<PickerSearchResult::ClipboardData::DisplayFormat>
+            display_format = GetDisplayFormat(item.display_format());
+        display_format.has_value()) {
+      results.push_back(PickerSearchResult::Clipboard(
+          item.id(), *display_format, item.display_text(),
+          item.display_image()));
     }
   }
+  std::move(callback).Run(std::move(results));
 }
-
 }  // namespace ash

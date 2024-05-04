@@ -15,9 +15,12 @@
 #import "base/test/ios/wait_util.h"
 #import "base/test/metrics/histogram_tester.h"
 #import "base/uuid.h"
+#import "components/autofill/core/browser/address_data_manager.h"
+#import "components/autofill/core/browser/address_data_manager_test_api.h"
 #import "components/autofill/core/browser/browser_autofill_manager.h"
 #import "components/autofill/core/browser/form_structure.h"
 #import "components/autofill/core/browser/metrics/autofill_metrics.h"
+#import "components/autofill/core/browser/payments_data_manager.h"
 #import "components/autofill/core/browser/personal_data_manager.h"
 #import "components/autofill/core/browser/personal_data_manager_test_utils.h"
 #import "components/autofill/core/browser/test_autofill_manager_waiter.h"
@@ -30,7 +33,6 @@
 #import "components/autofill/ios/browser/autofill_java_script_feature.h"
 #import "components/autofill/ios/browser/form_suggestion.h"
 #import "components/autofill/ios/browser/test_autofill_manager_injector.h"
-#import "components/autofill/ios/form_util/unique_id_data_tab_helper.h"
 #import "components/infobars/core/confirm_infobar_delegate.h"
 #import "components/infobars/core/infobar.h"
 #import "components/infobars/core/infobar_manager.h"
@@ -158,7 +160,7 @@ void CheckField(const FormStructure& form,
                 const char* name) {
   for (const auto& field : form) {
     if (field->heuristic_type() == fieldType) {
-      EXPECT_EQ(base::UTF8ToUTF16(name), field->name);
+      EXPECT_EQ(base::UTF8ToUTF16(name), field->name());
       return;
     }
   }
@@ -241,8 +243,8 @@ class AutofillControllerTest : public PlatformTest {
 
   class TestAutofillManager : public BrowserAutofillManager {
    public:
-    TestAutofillManager(AutofillDriverIOS* driver, AutofillClient* client)
-        : BrowserAutofillManager(driver, client, "en-US") {}
+    explicit TestAutofillManager(AutofillDriverIOS* driver)
+        : BrowserAutofillManager(driver, "en-US") {}
 
     TestAutofillManagerWaiter& waiter() { return waiter_; }
 
@@ -275,9 +277,6 @@ class AutofillControllerTest : public PlatformTest {
 
   // Fails if the specified metric was not registered the given number of times.
   void ExpectMetric(const std::string& histogram_name, int sum);
-
-  // Fails if the specified user happiness metric was not registered.
-  void ExpectHappinessMetric(AutofillMetrics::UserHappinessMetric metric);
 
   TestSuggestionController* suggestion_controller() {
     return suggestion_controller_;
@@ -320,7 +319,6 @@ void AutofillControllerTest::SetUp() {
 
   // Create a PasswordController instance that will handle set up for renderer
   // ids.
-  UniqueIDDataTabHelper::CreateForWebState(web_state());
   passwordController_ =
       [[PasswordController alloc] initWithWebState:web_state()];
 
@@ -338,7 +336,8 @@ void AutofillControllerTest::SetUp() {
       browser_state_.get(), web_state(), infobar_manager, autofill_agent_);
 
   autofill_client_->GetPersonalDataManager()
-      ->get_alternative_state_name_map_updater_for_testing()
+      ->address_data_manager()
+      .get_alternative_state_name_map_updater_for_testing()
       ->set_local_state_for_testing(local_state_.Get());
 
   std::string locale("en");
@@ -357,7 +356,8 @@ void AutofillControllerTest::SetUp() {
                                       profilePasswordStore:nullptr
                                       accountPasswordStore:nullptr
                                       securityAlertHandler:nil
-                                    reauthenticationModule:nil];
+                                    reauthenticationModule:nil
+                                         engagementTracker:nil];
 
   [accessory_mediator_ injectWebState:web_state()];
   [accessory_mediator_ injectProvider:suggestion_controller_];
@@ -407,11 +407,6 @@ void AutofillControllerTest::ExpectMetric(const std::string& histogram_name,
   histogram_tester_->ExpectBucketCount(histogram_name, sum, 1);
 }
 
-void AutofillControllerTest::ExpectHappinessMetric(
-    AutofillMetrics::UserHappinessMetric metric) {
-  histogram_tester_->ExpectBucketCount("Autofill.UserHappiness", metric, 1);
-}
-
 void AutofillControllerTest::WaitForCondition(ConditionBlock condition) {
   ASSERT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(base::Seconds(1000),
                                                            true, condition));
@@ -436,7 +431,6 @@ TEST_F(AutofillControllerTest, ReadForm) {
   CheckField(form, ADDRESS_HOME_STATE, "state");
   CheckField(form, ADDRESS_HOME_ZIP, "zip");
   ExpectMetric("Autofill.IsEnabled.PageLoad", 1);
-  ExpectHappinessMetric(AutofillMetrics::FORMS_LOADED);
 }
 
 // Checks that viewing an HTML page containing a form with an 'id' results in
@@ -463,9 +457,11 @@ TEST_F(AutofillControllerTest, ProfileImport) {
   PersonalDataManager* personal_data_manager =
       PersonalDataManagerFactory::GetForBrowserState(
           ChromeBrowserState::FromBrowserState(browser_state_.get()));
-  personal_data_manager->set_auto_accept_address_imports_for_testing(true);
+  test_api(personal_data_manager->address_data_manager())
+      .set_auto_accept_address_imports(true);
   // Check there are no registered profiles already.
-  EXPECT_EQ(0U, personal_data_manager->GetProfiles().size());
+  EXPECT_EQ(0U,
+            personal_data_manager->address_data_manager().GetProfiles().size());
   ASSERT_TRUE(LoadHtmlAndWaitForFormFetched(kProfileFormHtml, 1));
   web::test::ExecuteJavaScript(
       @"document.forms[0].name.value = 'Homer Simpson'", web_state());
@@ -479,10 +475,10 @@ TEST_F(AutofillControllerTest, ProfileImport) {
                                web_state());
   web::test::ExecuteJavaScript(@"submit.click()", web_state());
   WaitForCondition(^bool {
-    return personal_data_manager->GetProfiles().size();
+    return personal_data_manager->address_data_manager().GetProfiles().size();
   });
   const std::vector<AutofillProfile*>& profiles =
-      personal_data_manager->GetProfiles();
+      personal_data_manager->address_data_manager().GetProfiles();
   if (profiles.size() != 1)
     FAIL() << "Not exactly one profile found after attempted import";
   const AutofillProfile& profile = *profiles[0];
@@ -509,11 +505,13 @@ void AutofillControllerTest::SetUpForSuggestions(
   profile.SetRawInfo(ADDRESS_HOME_CITY, u"Springfield");
   profile.SetRawInfo(ADDRESS_HOME_STATE, u"IL");
   profile.SetRawInfo(ADDRESS_HOME_ZIP, u"55123");
-  EXPECT_EQ(0U, personal_data_manager->GetProfiles().size());
+  EXPECT_EQ(0U,
+            personal_data_manager->address_data_manager().GetProfiles().size());
   PersonalDataChangedWaiter waiter(*personal_data_manager);
-  personal_data_manager->AddProfile(profile);
+  personal_data_manager->address_data_manager().AddProfile(profile);
   std::move(waiter).Wait();
-  EXPECT_EQ(1U, personal_data_manager->GetProfiles().size());
+  EXPECT_EQ(1U,
+            personal_data_manager->address_data_manager().GetProfiles().size());
 
   ASSERT_TRUE(LoadHtmlAndWaitForFormFetched(data, expected_number_of_forms));
   web::test::WaitForBackgroundTasks();
@@ -524,7 +522,7 @@ void AutofillControllerTest::SetUpForSuggestions(
 // test data manager.
 TEST_F(AutofillControllerTest, ProfileSuggestions) {
   if (@available(iOS 16.3, *)) {
-    // TODO(crbug.com/1442607): Re-enable when fixed on iOS16.3+.
+    // TODO(crbug.com/40064372): Re-enable when fixed on iOS16.3+.
     return;
   }
 
@@ -534,7 +532,6 @@ TEST_F(AutofillControllerTest, ProfileSuggestions) {
   web::test::ExecuteJavaScript(@"document.forms[0].name.focus()", web_state());
   WaitForSuggestionRetrieval(/*wait_for_trigger=*/YES);
   ExpectMetric("Autofill.AddressSuggestionsCount", 1);
-  ExpectHappinessMetric(AutofillMetrics::SUGGESTIONS_SHOWN);
   EXPECT_EQ(1U, [suggestion_controller() suggestions].count);
   FormSuggestion* suggestion = [suggestion_controller() suggestions][0];
   EXPECT_NSEQ(@"Homer Simpson", suggestion.value);
@@ -544,7 +541,7 @@ TEST_F(AutofillControllerTest, ProfileSuggestions) {
 // there is another anonymous form on the page.
 TEST_F(AutofillControllerTest, ProfileSuggestionsTwoAnonymousForms) {
   if (@available(iOS 16.3, *)) {
-    // TODO(crbug.com/1442607): Re-enable when fixed on iOS16.3+.
+    // TODO(crbug.com/40064372): Re-enable when fixed on iOS16.3+.
     return;
   }
 
@@ -556,7 +553,6 @@ TEST_F(AutofillControllerTest, ProfileSuggestionsTwoAnonymousForms) {
   web::test::ExecuteJavaScript(@"document.forms[0].name.focus()", web_state());
   WaitForSuggestionRetrieval(/*wait_for_trigger=*/YES);
   ExpectMetric("Autofill.AddressSuggestionsCount", 1);
-  ExpectHappinessMetric(AutofillMetrics::SUGGESTIONS_SHOWN);
   EXPECT_EQ(1U, [suggestion_controller() suggestions].count);
   FormSuggestion* suggestion = [suggestion_controller() suggestions][0];
   EXPECT_NSEQ(@"Homer Simpson", suggestion.value);
@@ -567,7 +563,7 @@ TEST_F(AutofillControllerTest, ProfileSuggestionsTwoAnonymousForms) {
 // into a test data manager.
 TEST_F(AutofillControllerTest, ProfileSuggestionsFromSelectField) {
   if (@available(iOS 16.3, *)) {
-    // TODO(crbug.com/1442607): Re-enable when fixed on iOS16.3+.
+    // TODO(crbug.com/40064372): Re-enable when fixed on iOS16.3+.
     return;
   }
 
@@ -577,7 +573,6 @@ TEST_F(AutofillControllerTest, ProfileSuggestionsFromSelectField) {
   web::test::ExecuteJavaScript(@"document.forms[0].state.focus()", web_state());
   WaitForSuggestionRetrieval(/*wait_for_trigger=*/YES);
   ExpectMetric("Autofill.AddressSuggestionsCount", 1);
-  ExpectHappinessMetric(AutofillMetrics::SUGGESTIONS_SHOWN);
   EXPECT_EQ(1U, [suggestion_controller() suggestions].count);
   FormSuggestion* suggestion = [suggestion_controller() suggestions][0];
   EXPECT_NSEQ(@"IL", suggestion.value);
@@ -586,7 +581,7 @@ TEST_F(AutofillControllerTest, ProfileSuggestionsFromSelectField) {
 // Checks that multiple profiles will offer a matching number of suggestions.
 TEST_F(AutofillControllerTest, MultipleProfileSuggestions) {
   if (@available(iOS 16.3, *)) {
-    // TODO(crbug.com/1442607): Re-enable when fixed on iOS16.3+.
+    // TODO(crbug.com/40064372): Re-enable when fixed on iOS16.3+.
     return;
   }
 
@@ -611,12 +606,14 @@ TEST_F(AutofillControllerTest, MultipleProfileSuggestions) {
   profile2.SetRawInfo(ADDRESS_HOME_STATE, u"CA");
   profile2.SetRawInfo(ADDRESS_HOME_ZIP, u"94043");
 
-  EXPECT_EQ(0U, personal_data_manager->GetProfiles().size());
+  EXPECT_EQ(0U,
+            personal_data_manager->address_data_manager().GetProfiles().size());
   PersonalDataChangedWaiter waiter(*personal_data_manager);
-  personal_data_manager->AddProfile(profile);
-  personal_data_manager->AddProfile(profile2);
+  personal_data_manager->address_data_manager().AddProfile(profile);
+  personal_data_manager->address_data_manager().AddProfile(profile2);
   std::move(waiter).Wait();
-  EXPECT_EQ(2U, personal_data_manager->GetProfiles().size());
+  EXPECT_EQ(2U,
+            personal_data_manager->address_data_manager().GetProfiles().size());
 
   EXPECT_TRUE(LoadHtmlAndWaitForFormFetched(kProfileFormHtml, 1));
   ForceViewRendering(web_state()->GetView());
@@ -624,7 +621,6 @@ TEST_F(AutofillControllerTest, MultipleProfileSuggestions) {
   web::test::ExecuteJavaScript(@"document.forms[0].name.focus()", web_state());
   WaitForSuggestionRetrieval(/*wait_for_trigger=*/YES);
   ExpectMetric("Autofill.AddressSuggestionsCount", 2);
-  ExpectHappinessMetric(AutofillMetrics::SUGGESTIONS_SHOWN);
   EXPECT_EQ(2U, [suggestion_controller() suggestions].count);
 }
 
@@ -673,8 +669,8 @@ void AutofillControllerTest::SetUpKeyValueData() {
   // Load value into database.
   std::vector<FormFieldData> values;
   FormFieldData fieldData;
-  fieldData.name = u"greeting";
-  fieldData.value = u"Bonjour";
+  fieldData.set_name(u"greeting");
+  fieldData.set_value(u"Bonjour");
   values.push_back(fieldData);
   web_data_service->AddFormFields(values);
 
@@ -792,7 +788,9 @@ TEST_F(AutofillControllerTest, CreditCardImport) {
   personal_data_manager->SetSyncServiceForTest(nullptr);
 
   // Check there are no registered profiles already.
-  EXPECT_EQ(0U, personal_data_manager->GetCreditCards().size());
+  EXPECT_EQ(
+      0U,
+      personal_data_manager->payments_data_manager().GetCreditCards().size());
   ASSERT_TRUE(LoadHtmlAndWaitForFormFetched(kCreditCardFormHtml, 1));
   web::test::ExecuteJavaScript(@"document.forms[0].name.value = 'Superman'",
                                web_state());
@@ -822,7 +820,7 @@ TEST_F(AutofillControllerTest, CreditCardImport) {
   std::move(waiter).Wait();
 
   const std::vector<CreditCard*>& credit_cards =
-      personal_data_manager->GetCreditCards();
+      personal_data_manager->payments_data_manager().GetCreditCards();
   ASSERT_EQ(1U, credit_cards.size());
   const CreditCard& credit_card = *credit_cards[0];
   EXPECT_EQ(u"Superman",

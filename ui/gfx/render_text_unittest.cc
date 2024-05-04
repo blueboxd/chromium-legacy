@@ -723,11 +723,14 @@ TEST_F(RenderTextTest, ApplyStyles) {
   render_text->SetText(u"012345678");
 
   constexpr int kTestFontSizeOverride = 20;
+  constexpr SkScalar kStrokeWidth = 1.0f;
 
   // Apply a ranged color and style and check the resulting breaks.
   render_text->ApplyColor(SK_ColorGREEN, Range(1, 4));
   render_text->ApplyBaselineStyle(BaselineStyle::kSuperior, Range(2, 4));
   render_text->ApplyWeight(Font::Weight::BOLD, Range(2, 5));
+  render_text->ApplyFillStyle(cc::PaintFlags::kStroke_Style, Range(3, 6));
+  render_text->ApplyStrokeWidth(kStrokeWidth, Range(4, 6));
   render_text->ApplyFontSizeOverride(kTestFontSizeOverride, Range(5, 7));
 
   EXPECT_TRUE(test_api()->colors().EqualsForTesting(
@@ -745,6 +748,12 @@ TEST_F(RenderTextTest, ApplyStyles) {
       test_api()->weights().EqualsForTesting({{0, Font::Weight::NORMAL},
                                               {2, Font::Weight::BOLD},
                                               {5, Font::Weight::NORMAL}}));
+  EXPECT_TRUE(test_api()->fill_styles().EqualsForTesting(
+      {{0, cc::PaintFlags::kFill_Style},
+       {3, cc::PaintFlags::kStroke_Style},
+       {6, cc::PaintFlags::kFill_Style}}));
+  EXPECT_TRUE(test_api()->stroke_widths().EqualsForTesting(
+      {{0, 0.0f}, {4, kStrokeWidth}, {6, 0.0f}}));
 
   // Ensure that setting a value overrides the ranged values.
   render_text->SetColor(SK_ColorBLUE);
@@ -899,6 +908,27 @@ TEST_F(RenderTextTest, ApplyColorLongEmoji) {
   EXPECT_EQ(SK_ColorBLACK, text_log()[0].color());
 }
 
+TEST_F(RenderTextTest, ApplyFillStyle) {
+  constexpr float kGlyphWidth = 5.0f;
+  static const char16_t kLongJapaneseString[] =
+      u"星星星星星星星星星星星星星星星星";
+  RenderText* render_text = GetRenderText();
+  render_text->SetText(kLongJapaneseString);
+  render_text->AppendText(kLongJapaneseString);
+  render_text->AppendText(kLongJapaneseString);
+
+  SetGlyphWidth(kGlyphWidth);
+
+  render_text->SetFillStyle(cc::PaintFlags::kFill_Style);
+  const int fill_width = render_text->GetStringSize().width();
+
+  // Apply a fill style and check that the new width is unchanged.
+  render_text->SetFillStyle(cc::PaintFlags::kStroke_Style);
+  render_text->SetStrokeWidth(1.0f);
+  const int stroke_width = render_text->GetStringSize().width();
+  EXPECT_EQ(fill_width, stroke_width);
+}
+
 TEST_F(RenderTextTest, ApplyColorObscuredEmoji) {
   RenderText* render_text = GetRenderText();
   render_text->SetText(u"\U0001F628\U0001F628\U0001F628");
@@ -1043,13 +1073,18 @@ TEST_F(RenderTextTest, ApplyElidingAndTruncate) {
 }
 
 TEST_F(RenderTextTest, AppendTextKeepsStyles) {
+  constexpr SkScalar kStrokeWidth = 1.0f;
+
   RenderText* render_text = GetRenderText();
   // Setup basic functionality.
-  render_text->SetText(u"abcd");
+  render_text->SetText(u"abcde");
   render_text->ApplyColor(SK_ColorGREEN, Range(0, 1));
   render_text->ApplyBaselineStyle(BaselineStyle::kSuperscript, Range(1, 2));
   render_text->ApplyStyle(TEXT_STYLE_UNDERLINE, true, Range(2, 3));
   render_text->ApplyFontSizeOverride(20, Range(3, 4));
+  render_text->ApplyFillStyle(cc::PaintFlags::kStroke_Style, Range(4, 5));
+  render_text->ApplyStrokeWidth(1.0f, Range(4, 5));
+
   // Verify basic functionality.
   const std::vector<std::pair<size_t, SkColor>> expected_color = {
       {0, SK_ColorGREEN}, {1, kPlaceholderColor}};
@@ -1063,20 +1098,32 @@ TEST_F(RenderTextTest, AppendTextKeepsStyles) {
       {0, false}, {2, true}, {3, false}};
   EXPECT_TRUE(test_api()->styles()[TEXT_STYLE_UNDERLINE].EqualsForTesting(
       expected_style));
-  const std::vector<std::pair<size_t, int>> expected_font_size = {{0, 0},
-                                                                  {3, 20}};
+  const std::vector<std::pair<size_t, int>> expected_font_size = {
+      {0, 0}, {3, 20}, {4, 0}};
   EXPECT_TRUE(
       test_api()->font_size_overrides().EqualsForTesting(expected_font_size));
 
+  const std::vector<std::pair<size_t, cc::PaintFlags::Style>>
+      expected_fill_style = {{0, cc::PaintFlags::kFill_Style},
+                             {4, cc::PaintFlags::kStroke_Style}};
+  EXPECT_TRUE(test_api()->fill_styles().EqualsForTesting(expected_fill_style));
+  const std::vector<std::pair<size_t, SkScalar>> expected_stroke_width = {
+      {0, 0.0f}, {4, kStrokeWidth}};
+  EXPECT_TRUE(
+      test_api()->stroke_widths().EqualsForTesting(expected_stroke_width));
+
   // Ensure AppendText maintains current text styles.
-  render_text->AppendText(u"efg");
-  EXPECT_EQ(render_text->GetDisplayText(), u"abcdefg");
+  render_text->AppendText(u"fgh");
+  EXPECT_EQ(render_text->GetDisplayText(), u"abcdefgh");
   EXPECT_TRUE(test_api()->colors().EqualsForTesting(expected_color));
   EXPECT_TRUE(test_api()->baselines().EqualsForTesting(expected_baseline));
   EXPECT_TRUE(test_api()->styles()[TEXT_STYLE_UNDERLINE].EqualsForTesting(
       expected_style));
   EXPECT_TRUE(
       test_api()->font_size_overrides().EqualsForTesting(expected_font_size));
+  EXPECT_TRUE(test_api()->fill_styles().EqualsForTesting(expected_fill_style));
+  EXPECT_TRUE(
+      test_api()->stroke_widths().EqualsForTesting(expected_stroke_width));
 }
 
 TEST_F(RenderTextTest, SetSelection) {
@@ -2455,7 +2502,7 @@ TEST_F(RenderTextTest, MultilineElideWrap) {
   }
 }
 
-// TODO(crbug.com/866720): The current implementation of eliding is not aware
+// TODO(crbug.com/40586307): The current implementation of eliding is not aware
 // of text styles. The elide text algorithm doesn't take into account the style
 // properties when eliding the text. This lead to incorrect text size when the
 // styles are applied.
@@ -2517,7 +2564,7 @@ TEST_F(RenderTextTest, MultilineElideWrapStress) {
   }
 }
 
-// TODO(crbug.com/866720): The current implementation of eliding is not aware
+// TODO(crbug.com/40586307): The current implementation of eliding is not aware
 // of text styles. The elide text algorithm doesn't take into account the style
 // properties when eliding the text. This lead to incorrect text size when the
 // styles are applied.
@@ -4688,7 +4735,7 @@ TEST_F(RenderTextTest, MoveLeftRightByWordInThaiText) {
   EXPECT_EQ(0U, render_text->cursor_position());
 }
 
-// TODO(crbug.com/865527): Chinese and Japanese tokenization doesn't work on
+// TODO(crbug.com/40585744): Chinese and Japanese tokenization doesn't work on
 // mobile.
 #if !BUILDFLAG(IS_ANDROID)
 TEST_F(RenderTextTest, MoveLeftRightByWordInChineseText) {
@@ -6846,7 +6893,7 @@ TEST_F(RenderTextTest, HarfBuzz_BreakRunsByEmojiVariationSelectors) {
   EXPECT_EQ(gfx::Range(1, 1), render_text->selection());
   EXPECT_EQ(1 * kGlyphWidth, render_text->GetUpdatedCursorBounds().x());
 
-  // TODO(865709): make this work on Android.
+  // TODO(crbug.com/40585824): make this work on Android.
 #if !BUILDFLAG(IS_ANDROID)
   // Jump over the telephone: two codepoints, but a single glyph.
   render_text->MoveCursor(CHARACTER_BREAK, CURSOR_RIGHT, SELECTION_NONE);
@@ -7087,7 +7134,7 @@ TEST_F(RenderTextTest, StringFitsOwnWidth) {
   EXPECT_EQ(kString, render_text->GetDisplayText());
 }
 
-// TODO(865715): Figure out why this fails on Android.
+// TODO(crbug.com/40585825): Figure out why this fails on Android.
 #if !BUILDFLAG(IS_ANDROID)
 // Ensure that RenderText examines all of the fonts in its FontList before
 // falling back to other fonts.
@@ -7749,7 +7796,7 @@ TEST_F(RenderTextTest, GetWordLookupDataAtPoint_LTR) {
   // Set an integer glyph width; GetCursorBounds() and
   // GetWordLookupDataAtPoint() use different rounding internally.
   //
-  // TODO(crbug.com/1111044): this shouldn't be necessary once RenderText keeps
+  // TODO(crbug.com/40142424): this shouldn't be necessary once RenderText keeps
   // float precision through GetCursorBounds().
   SetGlyphWidth(5);
   const std::u16string ltr = u"  ab  c ";
@@ -7834,7 +7881,7 @@ TEST_F(RenderTextTest, GetWordLookupDataAtPoint_RTL) {
   // Set an integer glyph width; GetCursorBounds() and
   // GetWordLookupDataAtPoint() use different rounding internally.
   //
-  // TODO(crbug.com/1111044): this shouldn't be necessary once RenderText keeps
+  // TODO(crbug.com/40142424): this shouldn't be necessary once RenderText keeps
   // float precision through GetCursorBounds().
   SetGlyphWidth(5);
   const std::u16string rtl = u" \u0634\u0632  \u0634";
@@ -8701,7 +8748,8 @@ TEST_F(RenderTextTest, GetLookupDataForRange_Obscured) {
     // VerifyDecoratedWordsAreEqual, that we use to validate the expected
     // attributes, iterates over all codepoints instead of the graphemes.
     //
-    // TODO(1498166): Remove the last two ranged attributes once this is fixed.
+    // TODO(crbug.com/40287345): Remove the last two ranged attributes once this
+    // is fixed.
     expected_word_2.text = u"\U0001F44D\uFE0F";
     expected_word_2.attributes.push_back(CreateRangedAttribute(
         font_spans, 0, kWordRange2.start(), Font::Weight::NORMAL, STRIKE_MASK));

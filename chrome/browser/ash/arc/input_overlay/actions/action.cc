@@ -530,8 +530,7 @@ bool Action::IsRepeatedKeyEvent(const ui::KeyEvent& key_event) {
 
 bool Action::VerifyOnKeyRelease(ui::DomCode code) {
   if (!touch_id_) {
-    LOG(ERROR) << "There should be a touch ID for the release {"
-               << ui::KeycodeConverter::DomCodeToCodeString(code) << "}.";
+    // The simulated touch events may be released by other events forcely.
     DCHECK_EQ(keys_pressed_.size(), 0u);
     return false;
   }
@@ -632,7 +631,7 @@ void Action::UpdateTouchDownPositions() {
   }
 
   on_left_or_middle_side_ =
-      touch_down_positions_[0].x() <= content_bounds.width() / 2 ? true : false;
+      touch_down_positions_[0].x() <= content_bounds.width() / 2;
 
   DCHECK_EQ(touch_down_positions_.size(), original_positions_.size());
 }

@@ -9,7 +9,7 @@ import {webUIListenerCallback} from 'chrome://resources/js/cr.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import type {SettingsSyncControlsElement} from 'chrome://settings/lazy_load.js';
 import type {CrLinkRowElement, CrRadioButtonElement, CrToggleElement, SyncPrefs} from 'chrome://settings/settings.js';
-import {Router, StatusAction, SyncBrowserProxyImpl} from 'chrome://settings/settings.js';
+import {Router, SignedInState, StatusAction, SyncBrowserProxyImpl} from 'chrome://settings/settings.js';
 import {assertEquals, assertDeepEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {waitBeforeNextRender} from 'chrome://webui-test/polymer_test_util.js';
 import {eventToPromise, isVisible} from 'chrome://webui-test/test_util.js';
@@ -18,7 +18,9 @@ import type {SyncRoutes} from './sync_test_util.js';
 import {getSyncAllPrefs, getSyncAllPrefsManaged, setupRouterWithSyncRoutes} from './sync_test_util.js';
 import {TestSyncBrowserProxy} from './test_sync_browser_proxy.js';
 
+// <if expr="chromeos_lacros">
 import {loadTimeData} from 'chrome://settings/settings.js';
+// </if>
 
 // clang-format on
 
@@ -143,7 +145,7 @@ suite('SyncControlsTest', async function() {
     syncControls.syncStatus = {
       disabled: false,
       hasError: false,
-      signedIn: true,
+      signedInState: SignedInState.SYNCING,
       statusAction: StatusAction.NO_ACTION,
     };
     // Controls are available when signed in and there is no error.
@@ -154,7 +156,7 @@ suite('SyncControlsTest', async function() {
     syncControls.syncStatus = {
       disabled: true,
       hasError: false,
-      signedIn: true,
+      signedInState: SignedInState.SYNCING,
       statusAction: StatusAction.NO_ACTION,
     };
     // Controls are hidden when sync is disabled.
@@ -165,7 +167,7 @@ suite('SyncControlsTest', async function() {
     syncControls.syncStatus = {
       disabled: false,
       hasError: true,
-      signedIn: true,
+      signedInState: SignedInState.SYNCING,
       statusAction: StatusAction.NO_ACTION,
     };
     // Controls are hidden when there is an error but it's not a
@@ -175,7 +177,7 @@ suite('SyncControlsTest', async function() {
     syncControls.syncStatus = {
       disabled: false,
       hasError: true,
-      signedIn: true,
+      signedInState: SignedInState.SYNCING,
       statusAction: StatusAction.ENTER_PASSPHRASE,
     };
     // Controls are available when there is a passphrase error.
@@ -201,7 +203,7 @@ suite('SyncControlsSubpageTest', function() {
     syncControls.syncStatus = {
       disabled: false,
       hasError: false,
-      signedIn: true,
+      signedInState: SignedInState.SYNCING,
       statusAction: StatusAction.NO_ACTION,
     };
     flush();
@@ -215,7 +217,7 @@ suite('SyncControlsSubpageTest', function() {
     syncControls.syncStatus = {
       disabled: false,
       hasError: false,
-      signedIn: false,
+      signedInState: SignedInState.SIGNED_OUT,
       statusAction: StatusAction.NO_ACTION,
     };
     const router = Router.getInstance();
@@ -228,7 +230,7 @@ suite('SyncControlsSubpageTest', function() {
     syncControls.syncStatus = {
       disabled: false,
       hasError: true,
-      signedIn: true,
+      signedInState: SignedInState.SYNCING,
       statusAction: StatusAction.ENTER_PASSPHRASE,
     };
     const router = Router.getInstance();
@@ -241,7 +243,7 @@ suite('SyncControlsSubpageTest', function() {
     syncControls.syncStatus = {
       disabled: false,
       hasError: true,
-      signedIn: true,
+      signedInState: SignedInState.SYNCING,
       statusAction: StatusAction.REAUTHENTICATE,
     };
     const router = Router.getInstance();
@@ -392,38 +394,9 @@ suite('AutofillAndPaymentsToggles', async function() {
     assertTrue(paymentsCheckbox.checked);
   });
 
-  test('CoupledAutofillPaymentsToggles', async function() {
-    loadTimeData.overrideValues({
-      syncDecoupleAddressPaymentSettings: false,
-    });
-
-    // Disable Autofill sync.
-    autofillCheckbox.click();
-    await updateComplete();
-    assertFalse(autofillCheckbox.checked);
-    assertFalse(paymentsCheckbox.checked);
-    assertTrue(paymentsCheckbox.disabled);
-
-    // Enable Autofill sync.
-    autofillCheckbox.click();
-    await updateComplete();
-    assertTrue(autofillCheckbox.checked);
-    assertTrue(paymentsCheckbox.checked);
-    assertFalse(paymentsCheckbox.disabled);
-
-    // Disable Payment methods sync.
-    paymentsCheckbox.click();
-    await updateComplete();
-    assertTrue(autofillCheckbox.checked);
-    assertFalse(paymentsCheckbox.checked);
-    assertFalse(paymentsCheckbox.disabled);
-  });
-
+  // Before crbug.com/40265120, the autofill and payments toggles used to be
+  // coupled. This test verifies they no longer are.
   test('DecoupledAutofillPaymentsToggles', async function() {
-    loadTimeData.overrideValues({
-      syncDecoupleAddressPaymentSettings: true,
-    });
-
     // Disable Autofill sync.
     autofillCheckbox.click();
     await updateComplete();

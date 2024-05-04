@@ -9,10 +9,10 @@
 #import "base/memory/raw_ptr.h"
 #import "base/strings/sys_string_conversions.h"
 #import "base/strings/utf_string_conversions.h"
-#import "components/prefs/pref_service.h"
 #import "components/search_engines/choice_made_location.h"
 #import "components/search_engines/prepopulated_engines.h"
-#import "components/search_engines/search_engine_choice_utils.h"
+#import "components/search_engines/search_engine_choice/search_engine_choice_service.h"
+#import "components/search_engines/search_engine_choice/search_engine_choice_utils.h"
 #import "components/search_engines/template_url.h"
 #import "components/search_engines/template_url_service.h"
 #import "components/search_engines/template_url_service_observer.h"
@@ -31,7 +31,7 @@ SnippetSearchEngineElement* CreateSnippetSearchEngineElementFromTemplateURL(
     const TemplateURL& template_url) {
   SnippetSearchEngineElement* element = nil;
   // Only works for prepopulated search engines.
-  CHECK_GT(template_url.prepopulate_id(), 0, base::NotFatalUntil::M124)
+  CHECK_GT(template_url.prepopulate_id(), 0, base::NotFatalUntil::M127)
       << base::UTF16ToUTF8(template_url.short_name());
   element = [[SnippetSearchEngineElement alloc] init];
   // Add the name and snippet to the element.
@@ -41,6 +41,10 @@ SnippetSearchEngineElement* CreateSnippetSearchEngineElementFromTemplateURL(
   element.snippetDescription = base::SysUTF16ToNSString(string);
   // Add the favicon to the element.
   element.faviconImage = SearchEngineFaviconFromTemplateURL(template_url);
+  // With the choice screen, all the search engines should have embedded icons,
+  // since the search engine list cannot modified by the user.
+  CHECK(element.faviconImage, base::NotFatalUntil::M127)
+      << base::SysNSStringToUTF8(element.name);
   element.keyword = base::SysUTF16ToNSString(template_url.keyword());
   return element;
 }
@@ -51,23 +55,25 @@ SnippetSearchEngineElement* CreateSnippetSearchEngineElementFromTemplateURL(
 @end
 
 @implementation SearchEngineChoiceMediator {
+  raw_ptr<search_engines::SearchEngineChoiceService>
+      _searchEngineChoiceService;                   // weak
   raw_ptr<TemplateURLService> _templateURLService;  // weak
-  raw_ptr<PrefService> _prefService;
-  std::unique_ptr<SearchEngineObserverBridge> _observer;
-  // The list of URLs of prepopulated search engines and search engines that are
-  // created by policy.
-  std::vector<std::unique_ptr<TemplateURL>> _templateUrlList;
+  std::unique_ptr<SearchEngineObserverBridge> _observerTemplateURLService;
+  // The template URLs to be shown on the choice screen and some associated
+  // data.
+  std::unique_ptr<search_engines::ChoiceScreenData> _choiceScreenData;
   NSString* _selectedSearchEngineKeyword;
 }
 
-- (instancetype)initWithTemplateURLService:
-                    (TemplateURLService*)templateURLService
-                               prefService:(PrefService*)prefService {
+- (instancetype)
+    initWithTemplateURLService:(TemplateURLService*)templateURLService
+     searchEngineChoiceService:
+         (search_engines::SearchEngineChoiceService*)searchEngineChoiceService {
   self = [super init];
   if (self) {
     _templateURLService = templateURLService;
-    _prefService = prefService;
-    _observer =
+    _searchEngineChoiceService = searchEngineChoiceService;
+    _observerTemplateURLService =
         std::make_unique<SearchEngineObserverBridge>(self, _templateURLService);
     _templateURLService->Load();
   }
@@ -76,23 +82,34 @@ SnippetSearchEngineElement* CreateSnippetSearchEngineElementFromTemplateURL(
 
 - (void)saveDefaultSearchEngine {
   CHECK(_selectedSearchEngineKeyword);
+  // When the default search engine is saved, there is no reason to observe
+  // `_templateURLService` anymore since the dialog should disappear right
+  // after.
+  _observerTemplateURLService.reset();
   std::u16string keyword =
       base::SysNSStringToUTF16(_selectedSearchEngineKeyword);
   TemplateURL* selectedTemplateURL = nil;
-  for (auto& templateURL : _templateUrlList) {
+  search_engines::ChoiceScreenDisplayState display_state =
+      _choiceScreenData->display_state();
+  for (size_t i = 0; i < _choiceScreenData->search_engines().size(); ++i) {
+    auto& templateURL = _choiceScreenData->search_engines()[i];
     if (templateURL->keyword() == keyword) {
       selectedTemplateURL = templateURL.get();
+      display_state.selected_engine_index = i;
+      break;
     }
   }
   CHECK(selectedTemplateURL);
   _templateURLService->SetUserSelectedDefaultSearchProvider(
       selectedTemplateURL, search_engines::ChoiceMadeLocation::kChoiceScreen);
+  _searchEngineChoiceService->MaybeRecordChoiceScreenDisplayState(
+      display_state);
 }
 
 - (void)disconnect {
-  _observer.reset();
+  _searchEngineChoiceService = nullptr;
   _templateURLService = nullptr;
-  _prefService = nullptr;
+  _observerTemplateURLService.reset();
 }
 
 #pragma mark - Properties
@@ -118,17 +135,15 @@ SnippetSearchEngineElement* CreateSnippetSearchEngineElementFromTemplateURL(
 
 #pragma mark - Private
 
-// Loads all TemplateURLs from TemplateURLService and classifies them into
-// `_firstList` and `_secondList`. If a TemplateURL is
-// prepopulated, created by policy or the default search engine, it will get
-// into the first list, otherwise the second list.
+// Loads all the data for the choice screen in `_choiceScreenData` and updates
+// the consumer.
 - (void)loadSearchEngines {
-  _templateUrlList = _templateURLService->GetTemplateURLsForChoiceScreen();
+  _choiceScreenData = _templateURLService->GetChoiceScreenData();
   NSMutableArray<SnippetSearchEngineElement*>* searchEngineList =
       [[NSMutableArray<SnippetSearchEngineElement*> alloc]
-          initWithCapacity:_templateUrlList.size()];
+          initWithCapacity:_choiceScreenData->search_engines().size()];
   // Convert TemplateURLs to SnippetSearchEngineElements.
-  for (auto& templateURL : _templateUrlList) {
+  for (auto& templateURL : _choiceScreenData->search_engines()) {
     SnippetSearchEngineElement* element =
         CreateSnippetSearchEngineElementFromTemplateURL(*templateURL);
     [searchEngineList addObject:element];

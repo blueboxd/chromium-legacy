@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "ash/app_list/app_list_view_delegate.h"
+#include "ash/app_list/apps_collections_controller.h"
 #include "ash/public/cpp/app_list/app_list_client.h"
 #include "ash/public/cpp/app_list/app_list_controller.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
@@ -37,6 +38,7 @@
 #include "chrome/browser/ash/app_list/search/search_controller_factory.h"
 #include "chrome/browser/ash/crosapi/browser_util.h"
 #include "chrome/browser/ash/crosapi/url_handler_ash.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/feature_engagement/tracker_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -53,6 +55,7 @@
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
+#include "chromeos/ash/components/browser_context_helper/browser_context_helper.h"
 #include "chromeos/ash/components/scalable_iph/scalable_iph.h"
 #include "chromeos/crosapi/cpp/gurl_os_handler_utils.h"
 #include "components/feature_engagement/public/feature_constants.h"
@@ -134,10 +137,31 @@ class ScopedIphSessionImpl : public ash::ScopedIphSession {
   const raw_ref<const base::Feature> iph_feature_;
 };
 
+app_list::AppListSyncableService* GetAppListSyncableService(Profile* profile) {
+  return app_list::AppListSyncableServiceFactory::GetForProfile(profile);
+}
+
+Profile* GetProfile(const AccountId& account_id) {
+  return Profile::FromBrowserContext(
+      ash::BrowserContextHelper::Get()->GetBrowserContextByAccountId(
+          account_id));
+}
+
+bool IsPrimaryProfile(Profile* profile) {
+  return user_manager::UserManager::Get()->IsPrimaryUser(
+      ash::BrowserContextHelper::Get()->GetUserByBrowserContext(profile));
+}
+
 }  // namespace
 
 AppListClientImpl::AppListClientImpl()
     : app_list_controller_(ash::AppListController::Get()) {
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  profile_manager_observation_.Observe(profile_manager);
+  for (Profile* profile : profile_manager->GetLoadedProfiles()) {
+    OnProfileAdded(profile);
+  }
+
   app_list_controller_->SetClient(this);
   user_manager::UserManager::Get()->AddSessionStateObserver(this);
   session_manager::SessionManager::Get()->AddObserver(this);
@@ -270,7 +294,8 @@ void AppListClientImpl::OpenSearchResult(int profile_id,
 
   app_list_notifier_->NotifyLaunched(
       result->display_type(),
-      ash::AppListNotifier::Result(result_id, result->metrics_type()));
+      ash::AppListNotifier::Result(result_id, result->metrics_type(),
+                                   result->continue_file_suggestion_type()));
 
   RecordSearchResultOpenTypeHistogram(
       launched_from, result->metrics_type(),
@@ -333,8 +358,9 @@ void AppListClientImpl::ActivateItem(int profile_id,
     auto* result = FindAppResultByAppId(search_controller_.get(), id);
     if (result) {
       app_list_notifier_->NotifyLaunched(
-          result->display_type(),
-          ash::AppListNotifier::Result(result->id(), result->metrics_type()));
+          result->display_type(), ash::AppListNotifier::Result(
+                                      result->id(), result->metrics_type(),
+                                      result->continue_file_suggestion_type()));
     }
   }
 
@@ -392,7 +418,8 @@ void AppListClientImpl::OnAppListVisibilityWillChange(bool visible) {
 void AppListClientImpl::OnAppListVisibilityChanged(bool visible) {
   app_list_visible_ = visible;
   if (visible) {
-    RecordViewShown();
+    RecordViewShown(
+        ash::AppsCollectionsController::Get()->ShouldShowAppsCollection());
   } else if (current_model_updater_) {
     current_model_updater_->OnAppListHidden();
     // If the user started search, record no action if a result open event has
@@ -528,6 +555,7 @@ AppListModelUpdater* AppListClientImpl::GetModelUpdaterForTest() {
 void AppListClientImpl::InitializeAsIfNewUserLoginForTest() {
   new_user_session_activation_time_ = base::Time::Now();
   state_for_new_user_ = StateForNewUser();
+  is_primary_profile_new_user_ = true;
 }
 
 void AppListClientImpl::OnSessionStateChanged() {
@@ -650,6 +678,36 @@ void AppListClientImpl::OpenURL(Profile* profile,
   }
 }
 
+void AppListClientImpl::OnProfileAdded(Profile* profile) {
+  // NOTE: Apps Collections in Ash is currently only supported for the primary
+  // user profile. This is a self-imposed restriction.
+  if (!IsPrimaryProfile(profile)) {
+    return;
+  }
+
+  // Since we only currently support the primary user profile, we can stop
+  // observing the profile manager once it has been added.
+  profile_manager_observation_.Reset();
+
+  // Cache whether the user associated with the primary profile is considered
+  // new, based on whether the first app list sync in the session was the first
+  // sync ever across all ChromeOS devices and sessions for the given user.
+  if (auto* app_list_syncable_service = GetAppListSyncableService(profile)) {
+    app_list_syncable_service->OnFirstSync(base::BindOnce(
+        [](const base::WeakPtr<AppListClientImpl>& self,
+           bool was_first_sync_ever) {
+          if (self) {
+            self->is_primary_profile_new_user_ = was_first_sync_ever;
+          }
+        },
+        weak_ptr_factory_.GetWeakPtr()));
+  }
+}
+
+void AppListClientImpl::OnProfileManagerDestroying() {
+  profile_manager_observation_.Reset();
+}
+
 ash::AppListNotifier* AppListClientImpl::GetNotifier() {
   return app_list_notifier_.get();
 }
@@ -704,7 +762,7 @@ ash::AppListSortOrder AppListClientImpl::GetPermanentSortingOrder() const {
       ->GetPermanentSortingOrder();
 }
 
-void AppListClientImpl::RecordViewShown() {
+void AppListClientImpl::RecordViewShown(bool is_app_collections_shown) {
   base::RecordAction(base::UserMetricsAction("Launcher_Show"));
 
   // Record the time duration between session activation and the first launcher
@@ -715,7 +773,7 @@ void AppListClientImpl::RecordViewShown() {
   // initial account-> show the launcher
   // In this case, when showing the launcher, the current user is not
   // new anymore.
-  // TODO(https://crbug.com/1211620): If this bug is fixed, we might need to
+  // TODO(crbug.com/40767698): If this bug is fixed, we might need to
   // do some changes here.
   if (!user_manager::UserManager::Get()->IsCurrentUserNew()) {
     DCHECK(!state_for_new_user_);
@@ -723,7 +781,7 @@ void AppListClientImpl::RecordViewShown() {
   }
 
   // Record launcher usage only when the session is active.
-  // TODO(https://crbug.com/1248250): handle ui events during OOBE in a more
+  // TODO(crbug.com/40790443): handle ui events during OOBE in a more
   // elegant way. For example, do not bother showing the app list when handling
   // the app list toggling event because the app list is not visible in OOBE.
   if (!IsSessionActive()) {
@@ -731,7 +789,7 @@ void AppListClientImpl::RecordViewShown() {
   }
 
   // Return early if `state_for_new_user_` is null.
-  // TODO(https://crbug.com/1278947): Theoretically, `state_for_new_user_`
+  // TODO(crbug.com/40208386): Theoretically, `state_for_new_user_`
   // should be meaningful when the current user is new. However, it is not hold
   // under some edge cases. When the root issue gets fixed, replace it with a
   // check statement.
@@ -770,6 +828,12 @@ void AppListClientImpl::RecordViewShown() {
           "ClamshellMode",
           /*sample=*/opening_duration, kTimeMetricsMin, kTimeMetricsMax,
           kTimeMetricsBucketCount);
+      if (is_app_collections_shown) {
+        base::UmaHistogramTimes(
+            "Apps."
+            "TimeDurationBetweenNewUserSessionActivationAndAppsCollectionShown",
+            opening_duration);
+      }
     }
   }
 }
@@ -805,12 +869,14 @@ void AppListClientImpl::RecordOpenedResultFromSearchBox(
 
 void AppListClientImpl::MaybeRecordLauncherAction(
     ash::AppListLaunchedFrom launched_from) {
-  DCHECK(launched_from == ash::AppListLaunchedFrom::kLaunchedFromGrid ||
-         launched_from == ash::AppListLaunchedFrom::kLaunchedFromRecentApps ||
-         launched_from == ash::AppListLaunchedFrom::kLaunchedFromSearchBox ||
-         launched_from == ash::AppListLaunchedFrom::kLaunchedFromContinueTask ||
-         launched_from ==
-             ash::AppListLaunchedFrom::kLaunchedFromQuickAppAccess);
+  DCHECK(
+      launched_from == ash::AppListLaunchedFrom::kLaunchedFromGrid ||
+      launched_from == ash::AppListLaunchedFrom::kLaunchedFromRecentApps ||
+      launched_from == ash::AppListLaunchedFrom::kLaunchedFromSearchBox ||
+      launched_from == ash::AppListLaunchedFrom::kLaunchedFromContinueTask ||
+      launched_from == ash::AppListLaunchedFrom::kLaunchedFromQuickAppAccess ||
+      launched_from == ash::AppListLaunchedFrom::kLaunchedFromAppsCollections ||
+      launched_from == ash::AppListLaunchedFrom::kLaunchedFromDiscoveryChip);
 
   // Return early if the current user is not new.
   if (!user_manager::UserManager::Get()->IsCurrentUserNew()) {
@@ -854,4 +920,13 @@ void AppListClientImpl::MaybeRecordLauncherAction(
           kTimeMetricsBucketCount);
     }
   }
+}
+
+std::optional<bool> AppListClientImpl::IsNewUser(
+    const AccountId& account_id) const {
+  // NOTE: Apps Collections in Ash is currently only supported for the primary
+  // user profile. This is a self-imposed restriction.
+  auto* const profile = GetProfile(account_id);
+  CHECK(IsPrimaryProfile(profile));
+  return is_primary_profile_new_user_;
 }

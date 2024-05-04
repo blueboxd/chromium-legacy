@@ -112,8 +112,11 @@ enum class ProfileSignout {
   // Move primary account to another profile on sign in interception or sync
   // merge data confirmation.
   kMovePrimaryAccount = 33,
+  // Signout as part of the profile deletion procedure, to avoid that deletion
+  // of data propagates via sync.
+  kSignoutDuringProfileDeletion = 34,
   // Keep this as the last enum.
-  kMaxValue = kMovePrimaryAccount
+  kMaxValue = kSignoutDuringProfileDeletion
 };
 
 // Enum values which enumerates all access points where sign in could be
@@ -123,6 +126,7 @@ enum class ProfileSignout {
 // A Java counterpart will be generated for this enum.
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.signin.metrics
 // GENERATED_JAVA_CLASS_NAME_OVERRIDE: SigninAccessPoint
+// LINT.IfChange
 enum class AccessPoint : int {
   ACCESS_POINT_START_PAGE = 0,
   ACCESS_POINT_NTP_LINK = 1,
@@ -146,7 +150,7 @@ enum class AccessPoint : int {
   ACCESS_POINT_UNKNOWN = 17,
   ACCESS_POINT_PASSWORD_BUBBLE = 18,
   ACCESS_POINT_AUTOFILL_DROPDOWN = 19,
-  ACCESS_POINT_NTP_CONTENT_SUGGESTIONS = 20,
+  // ACCESS_POINT_NTP_CONTENT_SUGGESTIONS = 20, no longer used.
   ACCESS_POINT_RESIGNIN_INFOBAR = 21,
   ACCESS_POINT_TAB_SWITCHER = 22,
   // ACCESS_POINT_FORCE_SIGNIN_WARNING = 23, no longer used.
@@ -203,11 +207,24 @@ enum class AccessPoint : int {
   ACCESS_POINT_TIPS_NOTIFICATION = 58,
   // Access point for the Notifications Opt-In Screen.
   ACCESS_POINT_NOTIFICATIONS_OPT_IN_SCREEN_CONTENT_TOGGLE = 59,
+  // Access point for a web sign with an explicit signin choice remembered.
+  ACCESS_POINT_SIGNIN_CHOICE_REMEMBERED = 60,
+  // Confirmation prompt shown when the user tries to sign out from the profile
+  // menu or settings. The signout prompt may have a "Verify it's you" button
+  // allowing the user to reauth.
+  ACCESS_POINT_PROFILE_MENU_SIGNOUT_CONFIRMATION_PROMPT = 61,
+  ACCESS_POINT_SETTINGS_SIGNOUT_CONFIRMATION_PROMPT = 62,
+  // The identity disc (avatar) on the New Tab page. Note that this only covers
+  // signed-in avatars - interactions with the signed-out avatar are instead
+  // counted under ACCESS_POINT_NTP_SIGNED_OUT_ICON.
+  ACCESS_POINT_NTP_IDENTITY_DISC = 63,
 
   // Add values above this line with a corresponding label to the
-  // "SigninAccessPoint" enum in tools/metrics/histograms/enums.xml
+  // "SigninAccessPoint" enum in
+  // tools/metrics/histograms/metadata/signin/enums.xml.
   ACCESS_POINT_MAX,  // This must be last.
 };
+// LINT.ThenChange(/tools/metrics/histograms/metadata/signin/enums.xml)
 
 // Enum values which enumerates all access points where transactional reauth
 // could be initiated. Transactional reauth is used when the user already has
@@ -369,17 +386,6 @@ enum class AccountReconcilorState {
   kMaxValue = kInactive,
 };
 
-// Values of Signin.AccountType histogram. This histogram records if the user
-// uses a gmail account or a managed account when signing in.
-enum class SigninAccountType : int {
-  // Gmail account.
-  kRegular = 0,
-  // Managed account.
-  kManaged = 1,
-  // Always the last enumerated type.
-  kMaxValue = kManaged,
-};
-
 // This is the relationship between the account used to sign into chrome, and
 // the account(s) used to sign into the content area/cookie jar. This enum
 // gets messy because we're trying to capture quite a few things, if there was
@@ -477,6 +483,34 @@ enum class FetchAccountCapabilitiesFromSystemLibraryResult {
   kMaxValue = kErrorUnexpectedValue
 };
 
+// Tracks type of the button that was presented to the user.
+enum class SyncButtonsType : int {
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  kSyncEqualWeighted = 0,
+  kSyncNotEqualWeighted = 1,
+  kHistorySyncEqualWeighted = 2,
+  kHistorySyncNotEqualWeighted = 3,
+  kMaxValue = kHistorySyncNotEqualWeighted,
+};
+
+// Tracks type of the button that was clicked by the user.
+enum class SyncButtonClicked : int {
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  kSyncOptInEqualWeighted = 0,
+  kSyncCancelEqualWeighted = 1,
+  kSyncSettingsEqualWeighted = 2,
+  kSyncOptInNotEqualWeighted = 3,
+  kSyncCancelNotEqualWeighted = 4,
+  kSyncSettingsNotEqualWeighted = 5,
+  kHistorySyncOptInEqualWeighted = 6,
+  kHistorySyncCancelEqualWeighted = 7,
+  kHistorySyncOptInNotEqualWeighted = 8,
+  kHistorySyncCancelNotEqualWeighted = 9,
+  kMaxValue = kHistorySyncCancelNotEqualWeighted,
+};
+
 // -----------------------------------------------------------------------------
 // Histograms
 // -----------------------------------------------------------------------------
@@ -567,12 +601,6 @@ void RecordRefreshTokenUpdatedFromSource(bool refresh_token_is_valid,
 
 // Records the source that revoked a refresh token.
 void RecordRefreshTokenRevokedFromSource(SourceForRefreshTokenOperation source);
-
-#if BUILDFLAG(IS_IOS)
-// Records the account type when the user signs in.
-void RecordSigninAccountType(signin::ConsentLevel consent_level,
-                             bool is_managed_account);
-#endif
 
 // -----------------------------------------------------------------------------
 // User actions

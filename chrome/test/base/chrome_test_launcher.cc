@@ -5,6 +5,7 @@
 #include "chrome/test/base/chrome_test_launcher.h"
 
 #include <memory>
+#include <string_view>
 #include <utility>
 
 #include "base/base_paths.h"
@@ -28,9 +29,11 @@
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/metrics/chrome_feature_list_creator.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/profiler/main_thread_stack_sampling_profiler.h"
 #include "chrome/install_static/test/scoped_install_details.h"
+#include "chrome/installer/util/taskbar_util.h"
 #include "chrome/test/base/chrome_test_suite.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/utility/chrome_content_utility_client.h"
@@ -63,7 +66,7 @@
 #include "chrome/installer/util/firewall_manager_win.h"
 #endif
 
-// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
+// TODO(crbug.com/40118868): Revisit the macro expression once build flag switch
 // of lacros-chrome is complete.
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || \
     (BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS))
@@ -107,7 +110,7 @@ int ChromeTestSuiteRunner::RunTestSuiteInternal(ChromeTestSuite* test_suite) {
   // Android browser tests run child processes as threads instead.
   content::ContentTestSuiteBase::RegisterInProcessThreads();
 #endif
-// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
+// TODO(crbug.com/40118868): Revisit the macro expression once build flag switch
 // of lacros-chrome is complete.
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || \
     (BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS))
@@ -178,14 +181,28 @@ ChromeTestLauncherDelegate::GetUserDataDirectoryCommandLineSwitch() {
 
 // Acts like normal ChromeContentBrowserClient but injects a test TaskTracker to
 // watch for long-running tasks and produce a useful timeout message in order to
-// find the cause of flaky timeout tests.
+// find the cause of flaky timeout tests. On Windows, this client also overrides
+// the GetAppContainerId to add a test-specific suffix to avoid hitting a race
+// condition in CreateAppContainerProfile.
 class BrowserTestChromeContentBrowserClient
     : public ChromeContentBrowserClient {
  public:
-  bool CreateThreadPool(base::StringPiece name) override {
+  bool CreateThreadPool(std::string_view name) override {
     base::test::TaskEnvironment::CreateThreadPool();
     return true;
   }
+
+#if BUILDFLAG(IS_WIN)
+  std::string GetAppContainerId() override {
+    base::FilePath path = base::PathService::CheckedGet(chrome::DIR_USER_DATA);
+    // Multiple tests running at the same time from the same binary might try to
+    // race each other to create the AppContainer profile for sandboxed
+    // processes. To avoid this hitting in tests, append the data dir so they
+    // are all unique for each test instance. See https://crbug.com/40223285.
+    return base::StrCat({ContentBrowserClient::GetAppContainerId(),
+                         base::WideToUTF8(path.value())});
+  }
+#endif  // BUILDFLAG(IS_WIN)
 };
 
 // A replacement ChromeContentUtilityClient that binds the
@@ -319,7 +336,7 @@ int LaunchChromeTests(size_t parallel_jobs,
   // On some platforms pthreads can malloc internally to access higher-numbered
   // TLS slots, which can cause reentry in the heap profiler. (See the comment
   // on ReentryGuard::InitTLSSlot().)
-  // TODO(https://crbug.com/1411454): Clean up other paths that call this Init()
+  // TODO(crbug.com/40062835): Clean up other paths that call this Init()
   // function, which are now redundant.
   base::PoissonAllocationSampler::Init();
 
@@ -346,7 +363,7 @@ int LaunchChromeTests(size_t parallel_jobs,
   std::unique_ptr<content::NetworkServiceTestHelper>
       network_service_test_helper = content::NetworkServiceTestHelper::Create();
 
-// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
+// TODO(crbug.com/40118868): Revisit the macro expression once build flag switch
 // of lacros-chrome is complete.
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || \
     (BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS))
@@ -361,6 +378,16 @@ int LaunchChromeTests(size_t parallel_jobs,
         return false;
       }));
 #endif
+
+#if BUILDFLAG(IS_WIN)
+  SetCanPinToTaskbarDelegate(([]() {
+    ADD_FAILURE()
+        << "Attempting to pint shortcut to taskbar in test."
+        << " Use web_app::OsIntegrationManager::ScopedSuppressForTesting or "
+        << "other mechanism to not pin to taskbar.";
+    return false;
+  }));
+#endif  // BUILDFLAG(IS_WIN)
 
   return content::LaunchTests(delegate, parallel_jobs, argc, argv);
 }

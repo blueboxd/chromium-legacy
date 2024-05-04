@@ -576,6 +576,8 @@ component("net") {
     "http/http_connection_info.h",
     "http/http_content_disposition.cc",
     "http/http_content_disposition.h",
+    "http/http_cookie_indices.cc",
+    "http/http_cookie_indices.h",
     "http/http_log_util.cc",
     "http/http_log_util.h",
     "http/http_network_layer.cc",
@@ -811,6 +813,10 @@ component("net") {
     "quic/quic_session_pool_direct_job.h",
     "quic/quic_session_pool_job.cc",
     "quic/quic_session_pool_job.h",
+    "quic/quic_session_pool_proxy_job.cc",
+    "quic/quic_session_pool_proxy_job.h",
+    "quic/quic_session_pool_session_attempt.cc",
+    "quic/quic_session_pool_session_attempt.h",
     "quic/set_quic_flag.cc",
     "quic/set_quic_flag.h",
     "quic/web_transport_client.cc",
@@ -831,6 +837,10 @@ component("net") {
     "socket/connect_job.h",
     "socket/connect_job_factory.cc",
     "socket/connect_job_factory.h",
+    "socket/connect_job_params.cc",
+    "socket/connect_job_params.h",
+    "socket/connect_job_params_factory.cc",
+    "socket/connect_job_params_factory.h",
     "socket/connection_attempts.h",
     "socket/datagram_client_socket.h",
     "socket/datagram_server_socket.h",
@@ -943,6 +953,8 @@ component("net") {
     "ssl/client_cert_identity.cc",
     "ssl/client_cert_identity.h",
     "ssl/client_cert_store.h",
+    "ssl/openssl_private_key.cc",
+    "ssl/openssl_private_key.h",
     "ssl/openssl_ssl_util.cc",
     "ssl/openssl_ssl_util.h",
     "ssl/ssl_cert_request_info.cc",
@@ -1100,8 +1112,12 @@ component("net") {
 
   if (enable_device_bound_sessions) {
     sources += [
-      "device_bound_sessions/bound_session_registration_fetcher_param.cc",
-      "device_bound_sessions/bound_session_registration_fetcher_param.h",
+      "device_bound_sessions/cookie_craving.cc",
+      "device_bound_sessions/cookie_craving.h",
+      "device_bound_sessions/device_bound_session_registration_fetcher_param.cc",
+      "device_bound_sessions/device_bound_session_registration_fetcher_param.h",
+      "device_bound_sessions/device_bound_session_service.cc",
+      "device_bound_sessions/device_bound_session_service.h",
     ]
   }
 
@@ -1359,6 +1375,7 @@ component("net") {
       "cert/internal/trust_store_chrome.h",
     ]
     deps += [
+      "//base/version_info",
       "//net/cert:root_store_proto_lite",
       "//net/data/ssl/chrome_root_store:gen_root_store_inc",
     ]
@@ -1404,7 +1421,7 @@ component("net") {
       ]
     }
 
-    # TODO(https://crbug.com/978854): This is a public config because
+    # TODO(crbug.com/41467965): This is a public config because
     # multi_threaded_cert_verifier.h depends on NSS. When the linked bug is
     # fixed, switch this to a non-public config, so NSS usage must be explicit
     # in the build.
@@ -1592,6 +1609,10 @@ component("net") {
     configs -= [ "//build/config/compiler:default_optimization" ]
     configs += [ "//build/config/compiler:optimize_max" ]
   }
+
+  if (!is_cronet_build) {
+    deps += [ "//mojo/public/cpp/bindings:default_construct_tag" ]
+  }
 }
 
 # net_export.h has its own build target so that code (eg
@@ -1623,7 +1644,6 @@ source_set("net_deps") {
     ":net_export_header",
     ":preload_decoder",
     "//base",
-    "//base/third_party/dynamic_annotations",
     "//net/base/registry_controlled_domains",
     "//third_party/protobuf:protobuf_lite",
     "//third_party/zlib",
@@ -1982,6 +2002,7 @@ static_library("test_support") {
     "test/test_data_directory.h",
     "test/test_doh_server.cc",
     "test/test_doh_server.h",
+    "test/test_with_task_environment.cc",
     "test/test_with_task_environment.h",
     "test/url_request/ssl_certificate_error_job.cc",
     "test/url_request/ssl_certificate_error_job.h",
@@ -2404,7 +2425,6 @@ source_set("simple_quic_tools") {
   deps = [
     ":net",
     "//base",
-    "//base/third_party/dynamic_annotations",
     "//net/third_party/quiche:quiche_tool_support",
     "//third_party/protobuf:protobuf_lite",
     "//url",
@@ -2460,11 +2480,17 @@ if (is_ios) {
   }
 }
 
-if (fuzztest_supported && !is_cronet_build) {
+if (!is_cronet_build) {
   test("net_fuzztests") {
-    sources = [ "cert/x509_certificate_fuzztest.cc" ]
+    sources = [
+      "cert/x509_certificate_fuzztest.cc",
+      "http/http_cookie_indices_fuzztest.cc",
+    ]
 
-    fuzztests = [ "X509CertificateFuzzTest.FuzzCreateFromDERCertChain" ]
+    fuzztests = [
+      "CookieIndicesFuzzTest.FuzzParseFromHeader",
+      "X509CertificateFuzzTest.FuzzCreateFromDERCertChain",
+    ]
 
     deps = [
       ":net",
@@ -2552,6 +2578,7 @@ test("net_unittests") {
     "cert/x509_util_unittest.cc",
     "cert_net/cert_net_fetcher_url_request_unittest.cc",
     "cookies/canonical_cookie_unittest.cc",
+    "cookies/cookie_base_unittest.cc",
     "cookies/cookie_constants_unittest.cc",
     "cookies/cookie_deletion_info_unittest.cc",
     "cookies/cookie_inclusion_status_unittest.cc",
@@ -2612,6 +2639,7 @@ test("net_unittests") {
     "http/http_cache_writers_unittest.cc",
     "http/http_chunked_decoder_unittest.cc",
     "http/http_content_disposition_unittest.cc",
+    "http/http_cookie_indices_unittest.cc",
     "http/http_log_util_unittest.cc",
     "http/http_network_layer_unittest.cc",
     "http/http_network_transaction_unittest.cc",
@@ -2694,7 +2722,13 @@ test("net_unittests") {
     "quic/quic_session_key_unittest.cc",
     "quic/quic_session_pool_peer.cc",
     "quic/quic_session_pool_peer.h",
+    "quic/quic_session_pool_proxy_job_unittest.cc",
     "quic/quic_session_pool_test.cc",
+    "quic/quic_session_pool_test_base.cc",
+    "quic/quic_session_pool_test_base.h",
+    "quic/quic_socket_data_provider.cc",
+    "quic/quic_socket_data_provider.h",
+    "quic/quic_socket_data_provider_unittest.cc",
     "quic/quic_test_packet_maker.cc",
     "quic/quic_test_packet_maker.h",
     "quic/quic_test_packet_printer.cc",
@@ -2705,6 +2739,7 @@ test("net_unittests") {
     "socket/client_socket_pool_base_unittest.cc",
     "socket/client_socket_pool_unittest.cc",
     "socket/connect_job_factory_unittest.cc",
+    "socket/connect_job_params_factory_unittest.cc",
     "socket/connect_job_test_util.cc",
     "socket/connect_job_test_util.h",
     "socket/connect_job_unittest.cc",
@@ -2754,6 +2789,7 @@ test("net_unittests") {
     "spdy/spdy_write_queue_unittest.cc",
     "ssl/client_cert_identity_unittest.cc",
     "ssl/client_cert_store_unittest-inl.h",
+    "ssl/openssl_private_key_unittest.cc",
     "ssl/ssl_cipher_suite_names_unittest.cc",
     "ssl/ssl_client_auth_cache_unittest.cc",
     "ssl/ssl_client_session_cache_unittest.cc",
@@ -2862,7 +2898,6 @@ test("net_unittests") {
     ":test_support",
     "//base",
     "//base:i18n",
-    "//base/third_party/dynamic_annotations",
     "//build:chromeos_buildflags",
     "//crypto",
     "//crypto:test_support",
@@ -2876,6 +2911,7 @@ test("net_unittests") {
     "//net/tools/huffman_trie:huffman_trie_generator_sources",
     "//testing/gmock",
     "//testing/gtest",
+    "//third_party/abseil-cpp:absl",
     "//third_party/anonymous_tokens:anonymous_tokens_tests",
     "//third_party/protobuf:protobuf_lite",
     "//third_party/zlib",
@@ -2968,7 +3004,11 @@ test("net_unittests") {
   }
 
   if (is_mac) {
-    frameworks = [ "Security.framework" ]
+    sources += [ "base/network_change_notifier_apple_unittest.cc" ]
+    frameworks = [
+      "Security.framework",
+      "SystemConfiguration.framework",
+    ]
   }
 
   if (!is_win) {
@@ -3059,7 +3099,7 @@ test("net_unittests") {
     ]
 
     if (!is_ios) {
-      # TODO(crbug.com/1281277): iOS does not have support for the spawned test
+      # TODO(crbug.com/40812029): iOS does not have support for the spawned test
       # server, which is used by this test. The long term plan is to add
       # websocket support to the embedded test server and when that happens,
       # this test could be enabled.
@@ -3138,11 +3178,11 @@ test("net_unittests") {
     deps += [
       ":net_jni_headers",
       "//base:base_unittest_support_java",
+      "//net/android:dummy_spnego_authenticator_java",
+      "//net/android:dummy_spnego_authenticator_jni",
       "//net/android:net_java",
       "//net/android:net_java_test_support",
       "//net/android:net_test_support_jni",
-      "//net/android:net_test_support_provider_java",
-      "//net/android:net_test_support_provider_jni",
       "//net/android:net_tests_java",
       "//net/android:net_tests_jni",
       "//net/android:net_unittests_apk_resources",
@@ -3173,7 +3213,10 @@ test("net_unittests") {
 
   if (chrome_root_store_supported) {
     sources += [ "cert/internal/trust_store_chrome_unittest.cc" ]
-    deps += [ "//net/data/ssl/chrome_root_store:gen_root_store_test_inc" ]
+    deps += [
+      "//base/version_info",
+      "//net/data/ssl/chrome_root_store:gen_root_store_test_inc",
+    ]
 
     if (is_win) {
       sources += [ "cert/internal/trust_store_win_unittest.cc" ]
@@ -3191,13 +3234,18 @@ test("net_unittests") {
   }
 
   if (enable_device_bound_sessions) {
-    sources += [ "device_bound_sessions/bound_session_registration_fetcher_param_unittest.cc" ]
+    sources += [
+      "device_bound_sessions/cookie_craving_unittest.cc",
+      "device_bound_sessions/device_bound_session_registration_fetcher_param_unittest.cc",
+      "device_bound_sessions/test_util.cc",
+      "device_bound_sessions/test_util.h",
+    ]
   }
 }
 
 # !is_android && !is_win && !is_mac
 if (!is_ios) {
-  # TODO(crbug.com/594965): this should be converted to "app" template and
+  # TODO(crbug.com/40460932): this should be converted to "app" template and
   # enabled on iOS too.
   test("net_perftests") {
     sources = [
@@ -3473,6 +3521,15 @@ fuzzer_test("net_http_stream_parser_fuzzer") {
     "//net",
   ]
   dict = "data/fuzzer_dictionaries/net_http_stream_parser_fuzzer.dict"
+}
+
+fuzzer_test("canonicalize_host_fuzzer") {
+  sources = [ "base/canonicalize_host_fuzzer.cc" ]
+  deps = [
+    "//net",
+    "//third_party/icu/fuzzers:fuzzer_support",
+  ]
+  dict = "base/canonicalize_host_fuzzer.dict"
 }
 
 if (!is_win) {

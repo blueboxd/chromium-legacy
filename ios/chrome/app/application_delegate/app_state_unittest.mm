@@ -17,6 +17,7 @@
 #import "ios/chrome/app/application_delegate/fake_startup_information.h"
 #import "ios/chrome/app/application_delegate/memory_warning_helper.h"
 #import "ios/chrome/app/application_delegate/metrics_mediator.h"
+#import "ios/chrome/app/application_delegate/observing_app_state_agent.h"
 #import "ios/chrome/app/application_delegate/startup_information.h"
 #import "ios/chrome/app/enterprise_app_agent.h"
 #import "ios/chrome/app/safe_mode_app_state_agent+private.h"
@@ -38,6 +39,7 @@
 #import "ios/chrome/browser/shared/public/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/shared/public/features/system_flags.h"
 #import "ios/chrome/browser/ui/safe_mode/safe_mode_coordinator.h"
+#import "ios/chrome/browser/ui/scoped_iphone_portrait_only/scoped_iphone_portrait_only.h"
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
 #import "ios/chrome/browser/web_state_list/model/web_usage_enabler/web_usage_enabler_browser_agent.h"
 #import "ios/chrome/common/crash_report/crash_helper.h"
@@ -52,6 +54,7 @@
 #import "ios/web/public/thread/web_task_traits.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #import "third_party/ocmock/gtest_support.h"
+#import "ui/base/device_form_factor.h"
 
 // Subclass of AppState that allow returning a fake list of connected scenes.
 @interface TestAppState : AppState
@@ -117,10 +120,19 @@
     case InitStageFirstRun:
       [appState queueTransitionToNextInitStage];
       break;
+    case InitStageChoiceScreen:
+      [appState queueTransitionToNextInitStage];
+      break;
     case InitStageFinal:
       break;
   }
 }
+@end
+
+// Trivial app agent used to test -connectedAgents and agent retrieval.
+@interface TestAppAgent : ObservingAppAgent
+@end
+@implementation TestAppAgent
 @end
 
 #pragma mark - Class definition.
@@ -201,7 +213,8 @@ class AppStateTest : public BlockCleanupTest {
     TestingApplicationContext::GetGlobal()->SetChromeBrowserStateManager(
         browser_state_manager_.get());
 
-    browser_state_ = browser_state_manager_->GetLastUsedBrowserState();
+    browser_state_ =
+        browser_state_manager_->GetLastUsedBrowserStateForTesting();
   }
 
   void TearDown() override {
@@ -350,12 +363,18 @@ class AppStateTest : public BlockCleanupTest {
 using AppStateNoFixtureTest = PlatformTest;
 
 // Test that -willResignActive set cold start to NO and launch record.
-TEST_F(AppStateNoFixtureTest, willResignActive) {
+TEST_F(AppStateNoFixtureTest, WillResignActive) {
   // Setup.
   base::test::TaskEnvironment task_environment;
   FakeStartupInformation* startupInformation =
       [[FakeStartupInformation alloc] init];
   [startupInformation setIsColdStart:YES];
+
+  TestChromeBrowserState::Builder test_cbs_builder;
+  std::unique_ptr<TestChromeBrowserStateManager> browser_state_manager =
+      std::make_unique<TestChromeBrowserStateManager>(test_cbs_builder.Build());
+  TestingApplicationContext::GetGlobal()->SetChromeBrowserStateManager(
+      browser_state_manager.get());
 
   AppState* appState =
       [[AppState alloc] initWithStartupInformation:startupInformation];
@@ -380,7 +399,7 @@ TEST_F(AppStateNoFixtureTest, willResignActive) {
 }
 
 // Test that -applicationWillTerminate clears everything.
-TEST_F(AppStateTest, willTerminate) {
+TEST_F(AppStateTest, WillTerminate) {
   // Setup.
   ios::provider::test::ResetAppDistributionNotificationsState();
   ASSERT_FALSE(ios::provider::test::AreAppDistributionNotificationsCanceled());
@@ -426,7 +445,7 @@ TEST_F(AppStateTest, willTerminate) {
 }
 
 // Tests that -applicationWillEnterForeground resets components as needed.
-TEST_F(AppStateTest, applicationWillEnterForeground) {
+TEST_F(AppStateTest, ApplicationWillEnterForeground) {
   SwizzleSafeModeShouldStart(NO);
   [[GetStartupInformationMock() stub] setIsFirstRun:YES];
   [[[GetStartupInformationMock() stub] andReturnValue:@YES] isFirstRun];
@@ -439,6 +458,9 @@ TEST_F(AppStateTest, applicationWillEnterForeground) {
       std::make_unique<TestBrowser>(GetBrowserState());
 
   [[metricsMediator expect] updateMetricsStateBasedOnPrefsUserTriggered:NO];
+  [[metricsMediator expect]
+      notifyCredentialProviderWasUsed:static_cast<feature_engagement::Tracker*>(
+                                          [OCMArg anyPointer])];
   [[memoryHelper expect] resetForegroundMemoryWarningCount];
   [[[memoryHelper stub] andReturnValue:@0] foregroundMemoryWarningCount];
 
@@ -475,7 +497,7 @@ TEST_F(AppStateTest, applicationWillEnterForeground) {
 
 // Tests that -applicationWillEnterForeground starts the browser if the
 // application is in background.
-TEST_F(AppStateTest, applicationWillEnterForegroundFromBackground) {
+TEST_F(AppStateTest, ApplicationWillEnterForegroundFromBackground) {
   // Setup.
   id application = [OCMockObject mockForClass:[UIApplication class]];
   id metricsMediator = [OCMockObject mockForClass:[MetricsMediator class]];
@@ -500,7 +522,7 @@ TEST_F(AppStateTest, applicationWillEnterForegroundFromBackground) {
 
 // Tests that -applicationDidEnterBackground do nothing if the application has
 // never been in a Foreground stage.
-TEST_F(AppStateTest, applicationDidEnterBackgroundStageBackground) {
+TEST_F(AppStateTest, ApplicationDidEnterBackgroundStageBackground) {
   SwizzleSafeModeShouldStart(NO);
   [[GetStartupInformationMock() stub] setIsFirstRun:YES];
   [[[GetStartupInformationMock() stub] andReturnValue:@YES] isFirstRun];
@@ -559,7 +581,7 @@ TEST_F(AppStateTest, queueTransitionToNextInitStageNotifiesObservers) {
 // call, first completes sending previous updates and doesn't change the init
 // stage, then transitions to the next init stage and sends updates.
 TEST_F(AppStateTest,
-       queueTransitionToNextInitStageReentrantFromWillTransitionToInitStage) {
+       QueueTransitionToNextInitStageReentrantFromWillTransitionToInitStage) {
   // Setup.
   AppState* appState = GetAppStateWithMock(/*with_safe_mode_agent=*/false);
   id observer1 = [OCMockObject mockForProtocol:@protocol(AppStateObserver)];
@@ -600,7 +622,7 @@ TEST_F(AppStateTest,
 // call, first completes sending previous updates and doesn't change the init
 // stage, then transitions to the next init stage and sends updates.
 TEST_F(AppStateTest,
-       queueTransitionToNextInitStageReentrantFromdidTransitionFromInitStage) {
+       QueueTransitionToNextInitStageReentrantFromDidTransitionFromInitStage) {
   // Setup.
   AppState* appState = GetAppStateWithMock(/*with_safe_mode_agent=*/false);
   id observer1 = [OCMockObject mockForProtocol:@protocol(AppStateObserver)];
@@ -636,4 +658,43 @@ TEST_F(AppStateTest,
   [appState queueTransitionToNextInitStage];
   [observer1 verify];
   [observer2 verify];
+}
+
+// Tests, on iPhone, that when ScopedIphonePortraitOnly is created,
+// `-AppState.portraitOnly` returns YES.
+TEST_F(AppStateTest, BlockIphonePortraitOnly) {
+  AppState* appState = GetAppStateWithMock();
+  if (ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_PHONE) {
+    [[[GetWindowMock() stub] andReturn:nil] rootViewController];
+    SwizzleSafeModeShouldStart(NO);
+
+    [[[GetStartupInformationMock() stub] andReturnValue:@YES] isColdStart];
+    [[GetStartupInformationMock() stub] setIsFirstRun:YES];
+    [[[GetStartupInformationMock() stub] andReturnValue:@YES] isFirstRun];
+
+    // Simulate finishing the initialization before going to background.
+    [GetAppStateWithMock() startInitialization];
+    [GetAppStateWithMock() queueTransitionToNextInitStage];
+
+    ASSERT_FALSE(appState.portraitOnly);
+    std::unique_ptr<ScopedIphonePortraitOnly> scopedIphonePortraitOnly =
+        std::make_unique<ScopedIphonePortraitOnly>(appState);
+    ASSERT_TRUE(appState.portraitOnly);
+    scopedIphonePortraitOnly.reset();
+    ASSERT_FALSE(appState.portraitOnly);
+  }
+}
+
+TEST_F(AppStateTest, AppAgentRetrieval) {
+  AppState* appState = GetAppStateWithMock();
+  // There should be the safe mode agent and enterprise agent connected.
+  EXPECT_EQ(appState.connectedAgents.count, 2UL);
+
+  TestAppAgent* agent = [[TestAppAgent alloc] init];
+  [appState addAgent:agent];
+  // `agent` should also now be added.
+  EXPECT_EQ(appState.connectedAgents.count, 3UL);
+
+  TestAppAgent* retrievedAgent = [TestAppAgent agentFromApp:appState];
+  EXPECT_EQ(retrievedAgent, agent);
 }

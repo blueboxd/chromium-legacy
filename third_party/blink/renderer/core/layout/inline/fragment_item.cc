@@ -113,12 +113,30 @@ FragmentItem::FragmentItem(const PhysicalLineBoxFragment& line)
       const_type_(kLine),
       sub_type_(static_cast<unsigned>(line.GetLineBoxType())),
       style_variant_(static_cast<unsigned>(line.GetStyleVariant())),
-      is_hidden_for_paint_(false),
+      is_hidden_for_paint_(line.IsHiddenForPaint()),
       text_direction_(static_cast<unsigned>(line.BaseDirection())),
       ink_overflow_type_(static_cast<unsigned>(InkOverflow::Type::kNotSet)),
       is_dirty_(false),
       is_last_for_node_(true) {
   DCHECK(!IsFormattingContextRoot());
+}
+
+FragmentItem::FragmentItem(const PhysicalSize& size,
+                           const PhysicalLineBoxFragment& base_line)
+    : line_({nullptr, /* descendants_count */ 1}),
+      rect_({PhysicalOffset(), size}),
+      layout_object_(base_line.ContainerLayoutObject()),
+      const_type_(kLine),
+      sub_type_(
+          static_cast<unsigned>(FragmentItem::LineBoxType::kNormalLineBox)),
+      style_variant_(static_cast<unsigned>(base_line.GetStyleVariant())),
+      is_hidden_for_paint_(false),
+      text_direction_(static_cast<unsigned>(base_line.BaseDirection())),
+      ink_overflow_type_(static_cast<unsigned>(InkOverflow::Type::kNotSet)),
+      is_dirty_(false),
+      is_last_for_node_(true) {
+  DCHECK(!IsFormattingContextRoot());
+  DCHECK(RuntimeEnabledFeatures::RubyLineBreakableEnabled());
 }
 
 FragmentItem::FragmentItem(const PhysicalBoxFragment& box,
@@ -150,6 +168,8 @@ FragmentItem::FragmentItem(LogicalLineItem&& line_item,
           line_item.text_content,
           ToPhysicalSize(line_item.MarginSize(), writing_mode),
           line_item.is_hidden_for_paint);
+      has_over_annotation_ = line_item.has_over_annotation;
+      has_under_annotation_ = line_item.has_under_annotation;
       return;
     }
 
@@ -158,6 +178,8 @@ FragmentItem::FragmentItem(LogicalLineItem&& line_item,
                      line_item.text_offset,
                      ToPhysicalSize(line_item.MarginSize(), writing_mode),
                      line_item.is_hidden_for_paint);
+    has_over_annotation_ = line_item.has_over_annotation;
+    has_under_annotation_ = line_item.has_under_annotation;
     return;
   }
 
@@ -195,6 +217,8 @@ FragmentItem::FragmentItem(const FragmentItem& source)
       style_variant_(source.style_variant_),
       is_hidden_for_paint_(source.is_hidden_for_paint_),
       text_direction_(source.text_direction_),
+      has_over_annotation_(source.has_over_annotation_),
+      has_under_annotation_(source.has_under_annotation_),
       ink_overflow_type_(static_cast<unsigned>(InkOverflow::Type::kNotSet)),
       is_dirty_(source.is_dirty_),
       is_last_for_node_(source.is_last_for_node_) {
@@ -234,6 +258,8 @@ FragmentItem::FragmentItem(FragmentItem&& source)
       style_variant_(source.style_variant_),
       is_hidden_for_paint_(source.is_hidden_for_paint_),
       text_direction_(source.text_direction_),
+      has_over_annotation_(source.has_over_annotation_),
+      has_under_annotation_(source.has_under_annotation_),
       ink_overflow_type_(source.ink_overflow_type_),
       is_dirty_(source.is_dirty_),
       is_last_for_node_(source.is_last_for_node_) {
@@ -915,6 +941,12 @@ void FragmentItem::RecalcInkOverflow(const InlineCursor& cursor,
   }
 
   if (Type() == kLine) {
+    if (!LineBoxFragment()) {
+      // InlinePaintContext::ScopedLineBox doesn't support nested scopes.
+      // Nested kLine items are placed at the end of the base line. So it's ok
+      // to clear the current line before handling nested lines.
+      inline_context->ClearLineBox();
+    }
     InlinePaintContext::ScopedLineBox scoped_line_box(cursor, inline_context);
     PhysicalRect contents_rect =
         RecalcInkOverflowForDescendantsOf(cursor, inline_context);

@@ -7,12 +7,12 @@
 #include <functional>
 #include <map>
 #include <memory>
+#include <optional>
 #include <string>
 #include <type_traits>
 #include <utility>
 
 #include "base/memory/scoped_refptr.h"
-#include "base/strings/string_piece.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "content/browser/attribution_reporting/attribution_manager.h"
@@ -38,7 +38,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/fenced_frame/fenced_frame_utils.h"
 #include "third_party/blink/public/common/fenced_frame/redacted_fenced_frame_config.h"
-#include "third_party/blink/public/mojom/private_aggregation/aggregatable_report.mojom.h"
+#include "third_party/blink/public/mojom/aggregation_service/aggregatable_report.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -57,7 +57,8 @@ const auction_worklet::mojom::PrivateAggregationRequestPtr
                 NewHistogramContribution(
                     blink::mojom::AggregatableReportHistogramContribution::New(
                         /*bucket=*/1,
-                        /*value=*/2)),
+                        /*value=*/2,
+                        /*filtering_id=*/std::nullopt)),
             blink::mojom::AggregationServiceMode::kDefault,
             blink::mojom::DebugModeDetails::New());
 
@@ -68,7 +69,8 @@ const auction_worklet::mojom::PrivateAggregationRequestPtr
                 NewHistogramContribution(
                     blink::mojom::AggregatableReportHistogramContribution::New(
                         /*bucket=*/3,
-                        /*value=*/4)),
+                        /*value=*/4,
+                        /*filtering_id=*/std::nullopt)),
             blink::mojom::AggregationServiceMode::kDefault,
             blink::mojom::DebugModeDetails::New());
 

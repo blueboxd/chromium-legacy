@@ -86,6 +86,8 @@ FlexItem::FlexItem(const FlexibleBoxAlgorithm* algorithm,
                    BoxStrut scrollbars,
                    WritingMode baseline_writing_mode,
                    BaselineGroup baseline_group,
+                   bool is_initial_block_size_indefinite,
+                   bool is_used_flex_basis_indefinite,
                    bool depends_on_min_max_sizes)
     : algorithm_(algorithm),
       line_number_(0),
@@ -101,6 +103,8 @@ FlexItem::FlexItem(const FlexibleBoxAlgorithm* algorithm,
       scrollbars_(scrollbars),
       baseline_writing_direction_({baseline_writing_mode, TextDirection::kLtr}),
       baseline_group_(baseline_group),
+      is_initial_block_size_indefinite_(is_initial_block_size_indefinite),
+      is_used_flex_basis_indefinite_(is_used_flex_basis_indefinite),
       depends_on_min_max_sizes_(depends_on_min_max_sizes),
       frozen_(false),
       ng_input_node_(/* LayoutBox* */ nullptr) {
@@ -288,6 +292,8 @@ void FlexItem::ComputeStretchedSize() {
       std::max(cross_axis_border_padding_,
                Line()->cross_axis_extent_ - CrossAxisMarginExtent());
 
+  // TODO(https://crbug.com/313072): This probably needs some work to support
+  // calc-size(auto, ...).
   if ((MainAxisIsInlineAxis() && style_->LogicalHeight().IsAuto()) ||
       (!MainAxisIsInlineAxis() && style_->LogicalWidth().IsAuto())) {
     cross_axis_size_ =
@@ -546,10 +552,10 @@ void FlexLine::ComputeLineItemsPosition(LayoutUnit main_axis_start_offset,
     flex_item.UpdateAutoMarginsInMainAxis(auto_margin_offset);
 
     LayoutUnit child_cross_axis_margin_box_extent;
-    const auto alignment = flex_item.Alignment();
     // TODO(crbug.com/1272533): We may not have a layout-result during min/max
-    // calculations. This is incorrect, and should be re-enabled once we have
-    // more cache slots.
+    // calculations. This is incorrect, and we should produce a layout-result
+    // when baseline aligned.
+    const auto alignment = flex_item.Alignment();
     if (flex_item.layout_result_ &&
         (alignment == ItemPosition::kBaseline ||
          alignment == ItemPosition::kLastBaseline)) {
@@ -665,7 +671,7 @@ FlexibleBoxAlgorithm::FlexibleBoxAlgorithm(const ComputedStyle* style,
       UseCounter::Count(document, WebFeature::kFlexGapPositive);
   }
 
-  if (row_gap && row_gap->IsPercentOrCalc()) {
+  if (row_gap && row_gap->HasPercent()) {
     UseCounter::Count(document, WebFeature::kFlexRowGapPercent);
     if (percent_resolution_sizes.block_size == LayoutUnit(-1))
       UseCounter::Count(document, WebFeature::kFlexRowGapPercentIndefinite);
@@ -777,6 +783,8 @@ bool FlexibleBoxAlgorithm::ShouldApplyMinSizeAutoForChild(
       main_axis_is_childs_block_axis &&
       (min.IsMinContent() || min.IsMaxContent() || min.IsMinIntrinsic() ||
        min.IsFitContent());
+  // TODO(https://crbug.com/313072): This needs some work to support
+  // calc-size(auto, ...).
   if (!min.IsAuto() && !intrinsic_in_childs_block_axis)
     return false;
 
@@ -787,10 +795,10 @@ bool FlexibleBoxAlgorithm::ShouldApplyMinSizeAutoForChild(
   if (child.ShouldApplySizeContainment())
     return false;
 
-  // For replaced elements treat 'clip' similar to 'visible'.
-  return MainAxisOverflowForChild(child) == EOverflow::kVisible ||
-         (child.IsLayoutReplaced() &&
-          MainAxisOverflowForChild(child) == EOverflow::kClip);
+  // Note that the spec uses "scroll container", but it's resolved to just look
+  // at the computed value of overflow not being scrollable, see
+  // https://github.com/w3c/csswg-drafts/issues/7714#issuecomment-1879319762
+  return child.StyleRef().IsOverflowVisibleOrClip();
 }
 
 LayoutUnit FlexibleBoxAlgorithm::IntrinsicContentBlockSize() const {
@@ -1180,13 +1188,6 @@ LayoutUnit FlexibleBoxAlgorithm::ContentDistributionSpaceBetweenChildren(
       return available_free_space / (number_of_items + 1);
   }
   return LayoutUnit();
-}
-
-EOverflow FlexibleBoxAlgorithm::MainAxisOverflowForChild(
-    const LayoutBox& child) const {
-  if (IsHorizontalFlow())
-    return child.StyleRef().OverflowX();
-  return child.StyleRef().OverflowY();
 }
 
 // Above, we calculated the positions of items in a column reverse container as

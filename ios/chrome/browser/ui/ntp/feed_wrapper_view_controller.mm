@@ -24,7 +24,7 @@
 
       // Iterates through subviews to find collection view containing feed
       // articles.
-      // TODO(crbug.com/1085419): Once the CollectionView is cleanly exposed,
+      // TODO(crbug.com/40693626): Once the CollectionView is cleanly exposed,
       // remove this loop.
       for (UIView* view in _feedViewController.view.subviews) {
         if ([view isKindOfClass:[UICollectionView class]]) {
@@ -87,9 +87,7 @@
   [emptyCollectionView setShowsVerticalScrollIndicator:NO];
   [self.view addSubview:emptyCollectionView];
   self.contentCollectionView = emptyCollectionView;
-  self.contentCollectionView.backgroundColor =
-      IsMagicStackEnabled() ? [UIColor clearColor]
-                            : ntp_home::NTPBackgroundColor();
+  self.contentCollectionView.backgroundColor = [UIColor clearColor];
   self.contentCollectionView.translatesAutoresizingMaskIntoConstraints = NO;
   AddSameConstraints(self.contentCollectionView, self.view.safeAreaLayoutGuide);
 }

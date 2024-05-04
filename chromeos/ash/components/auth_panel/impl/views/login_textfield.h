@@ -33,13 +33,14 @@ class LoginTextfield : public SystemTextfield {
   void OnFocus() override;
   // This is useful when the display password button is not shown. In such a
   // case, the login text field needs to define its size.
-  gfx::Size CalculatePreferredSize() const override;
+  gfx::Size CalculatePreferredSize(
+      const views::SizeBounds& available_size) const override;
 
   void OnStateChanged(
-      const AuthFactorStore::State::PasswordViewState& password_view_state);
+      const AuthFactorStore::State::LoginTextfieldState& login_textfield_state);
 
  private:
-  raw_ptr<AuthPanelEventDispatcher> dispatcher_;
+  raw_ptr<AuthPanelEventDispatcher, DanglingUntriaged> dispatcher_;
 };
 
 }  // namespace ash

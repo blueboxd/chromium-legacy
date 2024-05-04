@@ -74,8 +74,7 @@ ExternalInstallOptions GetInstallOptions(
 
 std::unique_ptr<WebAppInstallInfo> GetWebAppInstallInfo(const GURL& url) {
   std::unique_ptr<WebAppInstallInfo> info =
-      std::make_unique<WebAppInstallInfo>();
-  info->start_url = url;
+      WebAppInstallInfo::CreateWithStartUrlForTesting(url);
   info->scope = url.GetWithoutFilename();
   info->title = u"Foo Web App";
   return info;
@@ -398,8 +397,8 @@ class TestExternallyManagedAppManager : public ExternallyManagedAppManager {
   base::OneShotEvent web_contents_released_event_;
 };
 
-// TODO(crbug.com/1464507): Avoid mocking the scheduler in favor of only mocking
-// external dependencies.
+// TODO(crbug.com/40275639): Avoid mocking the scheduler in favor of only
+// mocking external dependencies.
 class TestWebAppCommandScheduler : public WebAppCommandScheduler {
  public:
   TestWebAppCommandScheduler(Profile& profile,

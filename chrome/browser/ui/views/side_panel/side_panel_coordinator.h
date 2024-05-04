@@ -88,9 +88,10 @@ class SidePanelCoordinator final : public SidePanelRegistryObserver,
 
   // Returns the web contents in a side panel if one exists.
   content::WebContents* GetWebContentsForTest(SidePanelEntryId id) override;
+  void DisableAnimationsForTesting() override;
 
-  // TODO(crbug.com/1341399): Move this method to `SidePanelUI` after decoupling
-  // `SidePanelEntry` from views.
+  // TODO(crbug.com/40851017): Move this method to `SidePanelUI` after
+  // decoupling `SidePanelEntry` from views.
   bool IsSidePanelEntryShowing(const SidePanelEntry* entry) const;
 
   // Re-runs open new tab URL check and sets button state to enabled/disabled
@@ -101,9 +102,7 @@ class SidePanelCoordinator final : public SidePanelRegistryObserver,
 
   // Prevent content swapping delays from happening for testing.
   // This should be called before the side panel is first shown.
-  void SetNoDelaysForTesting(bool no_delays_for_testing) {
-    no_delays_for_testing_ = no_delays_for_testing;
-  }
+  void SetNoDelaysForTesting(bool no_delays_for_testing);
 
   SidePanelEntry* GetCurrentSidePanelEntryForTesting() {
     return current_entry_.get();
@@ -142,6 +141,7 @@ class SidePanelCoordinator final : public SidePanelRegistryObserver,
   void Show(SidePanelEntry* entry,
             std::optional<SidePanelUtil::SidePanelOpenTrigger> open_trigger =
                 std::nullopt);
+  void OnClosed();
 
   views::View* GetContentContainerView() const;
 
@@ -180,7 +180,8 @@ class SidePanelCoordinator final : public SidePanelRegistryObserver,
   void UpdateToolbarButtonHighlight(bool side_panel_visible);
 
   void UpdatePanelIconAndTitle(const ui::ImageModel& icon,
-                               const std::u16string& text);
+                               const std::u16string& text,
+                               const bool is_extension);
 
   // views::ViewObserver:
   void OnViewVisibilityChanged(views::View* observed_view,

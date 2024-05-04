@@ -43,8 +43,6 @@ constexpr webui::LocalizedString kElementLocalizedStrings[] = {
     {"OncTypeWiFi", IDS_NETWORK_TYPE_WIFI},
     {"ipAddressNotAvailable", IDS_NETWORK_IP_ADDRESS_NA},
     {"networkListItemConnected", IDS_STATUSBAR_NETWORK_DEVICE_CONNECTED},
-    {"networkListItemConnectedLimited",
-     IDS_STATUSBAR_NETWORK_DEVICE_CONNECTED_LIMITED},
     {"networkListItemConnectedNoConnectivity",
      IDS_STATUSBAR_NETWORK_DEVICE_CONNECTED_NO_CONNECTIVITY},
     {"networkListItemConnecting", IDS_STATUSBAR_NETWORK_DEVICE_CONNECTING},
@@ -342,6 +340,8 @@ void AddDetailsLocalizedStrings(content::WebUIDataSource* html_source) {
       {"customApnLimitReached", IDS_SETTINGS_CUSTOM_APN_LIMIT_REACHED},
       {"apnSettingsZeroStateDescription",
        IDS_SETTINGS_APN_ZERO_STATE_DESCRIPTION},
+      {"apnSettingsZeroStateDescriptionWithAddLink",
+       IDS_SETTINGS_APN_ZERO_STATE_DESCRIPTION_WITH_ADD_LINK},
       {"apnSettingsDatabaseApnsErrorMessage",
        IDS_SETTINGS_APN_DATABASE_APNS_ERROR_MESSAGE},
       {"apnSettingsCustomApnsErrorMessage",
@@ -551,11 +551,19 @@ void AddDetailsLocalizedStrings(content::WebUIDataSource* html_source) {
                           ash::features::IsApnRevampEnabled());
   html_source->AddBoolean("isCellularCarrierLockEnabled",
                           ash::features::IsCellularCarrierLockEnabled());
+  html_source->AddBoolean("isApnRevampAndPoliciesEnabled",
+                          ash::features::IsApnRevampAndPoliciesEnabled());
 
   html_source->AddString("apnSettingsDescriptionWithLink",
                          l10n_util::GetStringFUTF16(
                              IDS_SETTINGS_APN_DESCRIPTION_WITH_LEARN_MORE_LINK,
                              chrome::kApnSettingsLearnMoreUrl));
+
+  html_source->AddString(
+      "apnSelectionDialogDescriptionWithLink",
+      l10n_util::GetStringFUTF16(
+          IDS_SETTINGS_APN_SELECTION_DIALOG_DESCRIPTION_WITH_LINK,
+          chrome::kApnSettingsLearnMoreUrl));
 }
 
 void AddConfigLocalizedStrings(content::WebUIDataSource* html_source) {
@@ -586,19 +594,17 @@ void AddConfigLocalizedStrings(content::WebUIDataSource* html_source) {
       "showHiddenNetworkWarning",
       base::FeatureList::IsEnabled(ash::features::kHiddenNetworkWarning));
 
-  // Login screen and public account users can only create shared network
+  // Login screen and Managed Guest Session (MGS) users can only create shared
+  // network configurations. Kiosk users default to shared network
   // configurations. Other users default to unshared network configurations.
-  // NOTE: Guest and kiosk users can only create unshared network configs.
-  // NOTE: Insecure wifi networks are always shared.
+  // NOTE: Guest users can only create unshared network configs.
   html_source->AddBoolean("shareNetworkDefault",
-                          !ash::LoginState::Get()->UserHasNetworkProfile());
-  // Only authenticated users can toggle the share state.
+                          !ash::LoginState::Get()->UserHasNetworkProfile() ||
+                              ash::LoginState::Get()->IsKioskSession());
+  // Authenticated and Kiosk users can toggle the share state.
   html_source->AddBoolean("shareNetworkAllowEnable",
-                          ash::LoginState::Get()->IsUserAuthenticated());
-
-  html_source->AddBoolean(
-      "eapDefaultCasWithoutSubjectVerificationAllowed",
-      ash::features::IsEapDefaultCasWithoutSubjectVerificationAllowed());
+                          ash::LoginState::Get()->IsUserAuthenticated() ||
+                              ash::LoginState::Get()->IsKioskSession());
 
   html_source->AddBoolean(
       "ephemeralNetworkPoliciesEnabled",

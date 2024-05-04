@@ -5,6 +5,7 @@
 #include "media/audio/win/audio_low_latency_input_win.h"
 
 #include <objbase.h>
+
 #include <propkey.h>
 #include <windows.devices.enumeration.h>
 #include <windows.media.devices.h>
@@ -282,7 +283,7 @@ class WASAPIAudioInputStream::DataDiscontinuityReporter {
     if (callback_count_ % kCallbacksPerLogPeriod)
       return;
 
-    // TODO(https://crbug.com/825744): It can be possible to replace
+    // TODO(crbug.com/41378888): It can be possible to replace
     // "Media.Audio.Capture.Glitches2" with this new (simplified) metric
     // instead.
     base::UmaHistogramCounts1000("Media.Audio.Capture.Win.Glitches2",
@@ -790,8 +791,9 @@ void WASAPIAudioInputStream::Run() {
   if (recording && error) {
     // TODO(henrika): perhaps it worth improving the cleanup here by e.g.
     // stopping the audio client, joining the thread etc.?
+    auto saved_last_error = GetLastError();
     NOTREACHED() << "WASAPI capturing failed with error code "
-                 << GetLastError();
+                 << saved_last_error;
   }
 
   // Disable MMCSS.
@@ -882,7 +884,7 @@ void WASAPIAudioInputStream::PullCaptureDataAndPushToSink() {
     // The behavior of the AUDCLNT_BUFFERFLAGS_DATA_DISCONTINUITY flag is
     // undefined on the application's first call to GetBuffer after Start and
     // Windows 7 or later is required for support.
-    // TODO(https://crbug.com/1427096): take this into account when reporting
+    // TODO(crbug.com/40261628): take this into account when reporting
     // glitch info.
     const bool observed_data_discontinuity =
         (device_position > 0 && flags & AUDCLNT_BUFFERFLAGS_DATA_DISCONTINUITY);
@@ -897,7 +899,7 @@ void WASAPIAudioInputStream::PullCaptureDataAndPushToSink() {
     // current data packet.
     bool timestamp_error_was_detected = false;
     if (flags & AUDCLNT_BUFFERFLAGS_TIMESTAMP_ERROR) {
-      // TODO(https://crbug.com/825744): it might be possible to improve error
+      // TODO(crbug.com/41378888): it might be possible to improve error
       // handling here and avoid using the counter in |capture_time_100ns|.
       LOG(WARNING) << "WAIS::" << __func__
                    << " => (WARNING: AUDCLNT_BUFFERFLAGS_TIMESTAMP_ERROR)";
@@ -925,7 +927,7 @@ void WASAPIAudioInputStream::PullCaptureDataAndPushToSink() {
         }
         glitch_reporter_.UpdateStats(glitch_duration);
         if (glitch_duration.is_positive()) {
-          glitch_accumulator_.Add(AudioGlitchInfo::SingleBoundedGlitch(
+          glitch_accumulator_.Add(AudioGlitchInfo::SingleBoundedSystemGlitch(
               glitch_duration, AudioGlitchInfo::Direction::kCapture));
         }
       }

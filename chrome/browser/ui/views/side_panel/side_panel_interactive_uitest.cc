@@ -251,7 +251,7 @@ class PinnedSidePanelInteractiveTest : public InteractiveBrowserTest {
   }
 
   auto OpenBookmarksSidePanel() {
-    // TODO(crbug/1495440): When initially writing this step, opening the
+    // TODO(crbug.com/40286543): When initially writing this step, opening the
     // bookmarks submenu is flaky and sometimes causes a crash but the crash
     // doesn't seem reproducible anymore. Unsure if the crash was fixed so will
     // need to track down cause of crash if this step becomes flaky again.
@@ -516,4 +516,27 @@ IN_PROC_BROWSER_TEST_F(PinnedSidePanelInteractiveTest,
       // Click on the close button to dismiss the side panel
       PressButton(kSidePanelCloseButtonElementId),
       WaitForHide(kSidePanelElementId));
+}
+
+IN_PROC_BROWSER_TEST_F(PinnedSidePanelInteractiveTest,
+                       ToolbarButtonDisappearsOnEntryDeregister) {
+  constexpr char kBookmarksButton[] = "bookmarks_button";
+  RunTestSequence(
+      // Ensure the side panel isn't open
+      EnsureNotPresent(kSidePanelElementId),
+      EnsureNotPresent(kPinnedActionToolbarButtonElementId),
+      // Open bookmarks sidepanel
+      OpenBookmarksSidePanel(), WaitForShow(kSidePanelElementId), FlushEvents(),
+      WaitForShow(kPinnedToolbarActionsContainerElementId), FlushEvents(),
+      WaitForShow(kPinnedActionToolbarButtonElementId),
+      NameChildViewByType<PinnedActionToolbarButton>(
+          kPinnedToolbarActionsContainerElementId, kBookmarksButton),
+      WaitForShow(kBookmarksButton), FlushEvents(),
+      // Deregister the entry and verify the side panel and ephemeral toolbar
+      // button are hidden.
+      Do([this]() {
+        SidePanelCoordinator::GetGlobalSidePanelRegistry(browser())->Deregister(
+            SidePanelEntry::Key(SidePanelEntry::Id::kBookmarks));
+      }),
+      WaitForHide(kSidePanelElementId), WaitForHide(kBookmarksButton));
 }

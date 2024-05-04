@@ -11,6 +11,7 @@
 #include "base/check.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
+#include "base/types/optional_util.h"
 #include "components/performance_manager/public/graph/frame_node.h"
 #include "components/performance_manager/public/graph/graph.h"
 #include "components/performance_manager/public/graph/graph_operations.h"
@@ -99,8 +100,8 @@ double PageResourceCPUMonitor::EstimatePageCPUUsage(
   GraphOperations::VisitFrameTreePreOrder(page_node, [&accumulate_cpu_usage](
                                                          const FrameNode* f) {
     accumulate_cpu_usage(f->GetResourceContext());
-    // TODO(crbug.com/1410503): Handle non-dedicated workers, which could appear
-    // as children of multiple frames.
+    // TODO(crbug.com/40889748): Handle non-dedicated workers, which could
+    // appear as children of multiple frames.
     f->VisitChildDedicatedWorkers([&accumulate_cpu_usage](const WorkerNode* w) {
       accumulate_cpu_usage(w->GetResourceContext());
       return true;
@@ -154,7 +155,8 @@ PageResourceCPUMonitor::CPUMeasurement::CPUMeasurement(
       // Record the CPU usage immediately on starting to measure a process, so
       // that the first call to MeasureAndDistributeCPUUsage() will cover the
       // time between the measurement starting and the snapshot.
-      most_recent_measurement_(delegate_->GetCumulativeCPUUsage()) {}
+      most_recent_measurement_(
+          base::OptionalFromExpected(delegate_->GetCumulativeCPUUsage())) {}
 
 PageResourceCPUMonitor::CPUMeasurement::~CPUMeasurement() = default;
 
@@ -170,7 +172,7 @@ void PageResourceCPUMonitor::CPUMeasurement::MeasureAndDistributeCPUUsage(
     base::TimeTicks measurement_interval_start,
     base::TimeTicks measurement_interval_end,
     CPUUsageMap& cpu_usage_map) {
-  // TODO(crbug.com/1410503): There isn't a good way to get the process CPU
+  // TODO(crbug.com/40889748): There isn't a good way to get the process CPU
   // usage after it exits here:
   //
   // 1. Attempts to measure it with GetCumulativeCPUUsage() will fail because
@@ -283,7 +285,7 @@ void PageResourceCPUMonitor::CPUMeasurement::MeasureAndDistributeCPUUsage(
   // most_recent_measurement_`. In case 3 and 4, GetCumulativeCPUUsage() will
   // return an error code.
   std::optional<base::TimeDelta> current_cpu_usage =
-      delegate_->GetCumulativeCPUUsage();
+      base::OptionalFromExpected(delegate_->GetCumulativeCPUUsage());
   if (!current_cpu_usage.has_value()) {
     // GetCumulativeCPUUsage() failed. Don't update the measurement state.
     return;

@@ -12,7 +12,7 @@
 #include "base/time/time.h"
 #include "services/device/public/cpp/geolocation/geoposition.h"
 #include "services/device/public/cpp/geolocation/system_geolocation_source.h"
-#include "services/device/public/cpp/test/fake_geolocation_manager.h"
+#include "services/device/public/cpp/test/fake_geolocation_system_permission_manager.h"
 #include "services/device/public/cpp/test/fake_system_geolocation_source.h"
 #include "services/device/public/mojom/geolocation_internals.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -26,12 +26,13 @@ class CoreLocationProviderTest : public testing::Test {
   std::unique_ptr<CoreLocationProvider> provider_;
 
   void SetUp() override {
-    fake_geolocation_manager_ = std::make_unique<FakeGeolocationManager>();
-    provider_ = std::make_unique<CoreLocationProvider>(
-        base::SingleThreadTaskRunner::GetCurrentDefault(),
-        fake_geolocation_manager_.get());
+    fake_geolocation_system_permission_manager_ =
+        std::make_unique<FakeGeolocationSystemPermissionManager>();
     fake_system_geolocation_source_ =
-        &fake_geolocation_manager_->SystemGeolocationSourceForTest();
+        &fake_geolocation_system_permission_manager_
+             ->SystemGeolocationSourceForTest();
+    provider_ = std::make_unique<CoreLocationProvider>(
+        *fake_system_geolocation_source_);
   }
 
  protected:
@@ -61,7 +62,8 @@ class CoreLocationProviderTest : public testing::Test {
 
   base::test::TaskEnvironment task_environment_;
   const LocationProvider::LocationProviderUpdateCallback callback_;
-  std::unique_ptr<FakeGeolocationManager> fake_geolocation_manager_;
+  std::unique_ptr<FakeGeolocationSystemPermissionManager>
+      fake_geolocation_system_permission_manager_;
   raw_ptr<SystemGeolocationSource> fake_system_geolocation_source_ = nullptr;
 };
 
@@ -71,8 +73,6 @@ TEST_F(CoreLocationProviderTest, CreateDestroy) {
 }
 
 TEST_F(CoreLocationProviderTest, StartAndStopUpdating) {
-  fake_geolocation_manager_->SetSystemPermission(
-      LocationSystemPermissionStatus::kAllowed);
   base::RunLoop().RunUntilIdle();
   provider_->StartProvider(/*high_accuracy=*/true);
   EXPECT_TRUE(IsUpdating());
@@ -85,43 +85,7 @@ TEST_F(CoreLocationProviderTest, StartAndStopUpdating) {
   provider_.reset();
 }
 
-TEST_F(CoreLocationProviderTest, DontStartUpdatingIfPermissionDenied) {
-  fake_geolocation_manager_->SetSystemPermission(
-      LocationSystemPermissionStatus::kDenied);
-  base::RunLoop().RunUntilIdle();
-  provider_->StartProvider(/*high_accuracy=*/true);
-  EXPECT_FALSE(IsUpdating());
-  EXPECT_EQ(
-      GetProviderState(),
-      mojom::GeolocationDiagnostics::ProviderState::kBlockedBySystemPermission);
-  provider_.reset();
-}
-
-TEST_F(CoreLocationProviderTest, DontStartUpdatingUntilPermissionGranted) {
-  provider_->StartProvider(/*high_accuracy=*/true);
-  EXPECT_FALSE(IsUpdating());
-  EXPECT_EQ(
-      GetProviderState(),
-      mojom::GeolocationDiagnostics::ProviderState::kBlockedBySystemPermission);
-  fake_geolocation_manager_->SetSystemPermission(
-      LocationSystemPermissionStatus::kDenied);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(IsUpdating());
-  EXPECT_EQ(
-      GetProviderState(),
-      mojom::GeolocationDiagnostics::ProviderState::kBlockedBySystemPermission);
-  fake_geolocation_manager_->SetSystemPermission(
-      LocationSystemPermissionStatus::kAllowed);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(IsUpdating());
-  EXPECT_EQ(GetProviderState(),
-            mojom::GeolocationDiagnostics::ProviderState::kHighAccuracy);
-  provider_.reset();
-}
-
 TEST_F(CoreLocationProviderTest, GetPositionUpdates) {
-  fake_geolocation_manager_->SetSystemPermission(
-      LocationSystemPermissionStatus::kAllowed);
   base::RunLoop().RunUntilIdle();
   provider_->StartProvider(/*high_accuracy=*/true);
   EXPECT_TRUE(IsUpdating());

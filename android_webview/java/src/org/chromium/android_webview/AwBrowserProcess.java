@@ -364,7 +364,7 @@ public final class AwBrowserProcess {
         // to copy a file usually means that retrying won't succeed either,
         // because e.g. the disk is full, or the file system is corrupted.
         int fileCount = minidumpFiles.length;
-        // TODO(https://crbug.com/1399777): We should limit the number of crashes we upload in
+        // TODO(crbug.com/40883324): We should limit the number of crashes we upload in
         //     order to not use too much data, and in order to minimize the chance of exhausting
         //     file descriptors (https://crbug.com/1399777).
         ParcelFileDescriptor[] minidumpFds = new ParcelFileDescriptor[fileCount];
@@ -604,10 +604,6 @@ public final class AwBrowserProcess {
 
     /** Initialize the metrics uploader. */
     public static void initializeMetricsLogUploader() {
-        boolean useDefaultUploadQos =
-                AwFeatureMap.isEnabled(
-                        AwFeatures.WEBVIEW_UMA_UPLOAD_QUALITY_OF_SERVICE_SET_TO_DEFAULT);
-
         boolean metricServiceEnabledOnlySdkRuntime =
                 ContextUtils.isSdkSandboxProcess()
                         && AwFeatureMap.isEnabled(
@@ -618,7 +614,7 @@ public final class AwBrowserProcess {
             boolean isAsync =
                     AwFeatureMap.isEnabled(
                             AndroidMetricsFeatures.ANDROID_METRICS_ASYNC_METRIC_LOGGING);
-            AwMetricsLogUploader uploader = new AwMetricsLogUploader(isAsync, useDefaultUploadQos);
+            AwMetricsLogUploader uploader = new AwMetricsLogUploader(isAsync);
             // Open a connection during startup while connecting to other services such as
             // ComponentsProviderService and VariationSeedServer to try to avoid spinning the
             // nonembedded ":webview_service" twice.
@@ -627,7 +623,7 @@ public final class AwBrowserProcess {
         } else {
             AndroidMetricsLogConsumer directUploader =
                     data -> {
-                        PlatformServiceBridge.getInstance().logMetrics(data, useDefaultUploadQos);
+                        PlatformServiceBridge.getInstance().logMetrics(data);
                         return HttpURLConnection.HTTP_OK;
                     };
             AndroidMetricsLogUploader.setConsumer(new MetricsFilteringDecorator(directUploader));

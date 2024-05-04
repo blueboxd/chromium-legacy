@@ -18,12 +18,14 @@
 #include "components/password_manager/core/browser/password_store/login_database.h"
 #include "components/password_manager/core/browser/password_store/password_store_interface.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
+#include "components/prefs/pref_service.h"
 
 namespace password_manager {
 
 std::unique_ptr<LoginDatabase> CreateLoginDatabaseForProfileStorage(
     const base::FilePath& db_directory,
-    const base::RepeatingCallback<void(bool)>& is_empty_cb) {
+    const base::RepeatingCallback<
+        void(LoginDatabase::LoginDatabaseEmptynessState)>& is_empty_cb) {
   base::FilePath login_db_file_path =
       db_directory.Append(kLoginDataForProfileFileName);
   return std::make_unique<LoginDatabase>(login_db_file_path,
@@ -58,7 +60,7 @@ void RemoveUselessCredentials(
   }
 #endif  // BUILDFLAG(USE_BLINK)
 
-  // TODO(crbug.com/450621): Remove this when enough number of clients switch
+  // TODO(crbug.com/41153113): Remove this when enough number of clients switch
   // to the new version of Chrome.
   cleaning_tasks_runner->MaybeAddCleaningTask(
       std::make_unique<password_manager::OldGoogleCredentialCleaner>(store,
@@ -74,6 +76,19 @@ void RemoveUselessCredentials(
             cleaning_tasks_runner->GetWeakPtr()),
         delay);
   }
+}
+
+void SetEmptyStorePref(PrefService* prefs,
+                       const std::string& pref,
+                       LoginDatabase::LoginDatabaseEmptynessState value) {
+  prefs->SetBoolean(pref, value.no_login_found);
+}
+
+void SetAutofillableCredentialsStorePref(
+    PrefService* prefs,
+    const std::string& pref,
+    LoginDatabase::LoginDatabaseEmptynessState value) {
+  prefs->SetBoolean(pref, value.autofillable_credentials_exist);
 }
 
 }  // namespace password_manager

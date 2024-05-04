@@ -24,6 +24,7 @@
 #include "components/send_tab_to_self/metrics_util.h"
 #include "components/send_tab_to_self/proto/send_tab_to_self.pb.h"
 #include "components/send_tab_to_self/target_device_info.h"
+#include "components/sync/base/deletion_origin.h"
 #include "components/sync/model/entity_change.h"
 #include "components/sync/model/metadata_batch.h"
 #include "components/sync/model/metadata_change_list.h"
@@ -168,7 +169,8 @@ SendTabToSelfBridge::ApplyIncrementalSyncChanges(
       }
       if (remote_entry->IsExpired(clock_->Now())) {
         // Remove expired data from server.
-        change_processor()->Delete(guid, batch->GetMetadataChangeList());
+        change_processor()->Delete(guid, syncer::DeletionOrigin::Unspecified(),
+                                   batch->GetMetadataChangeList());
       } else {
         SendTabToSelfEntry* local_entry =
             GetMutableEntryByGUID(remote_entry->GetGUID());
@@ -274,7 +276,7 @@ const SendTabToSelfEntry* SendTabToSelfBridge::AddEntry(
     const std::string& title,
     const std::string& target_device_cache_guid) {
   if (!change_processor()->IsTrackingMetadata()) {
-    // TODO(crbug.com/940512) handle failure case.
+    // TODO(crbug.com/40617641) handle failure case.
     return nullptr;
   }
 
@@ -389,7 +391,7 @@ void SendTabToSelfBridge::MarkEntryOpened(const std::string& guid) {
   Commit(std::move(batch));
 }
 
-void SendTabToSelfBridge::OnURLsDeleted(
+void SendTabToSelfBridge::OnHistoryDeletions(
     history::HistoryService* history_service,
     const history::DeletionInfo& deletion_info) {
   // We only care about actual user (or sync) deletions.
@@ -434,7 +436,7 @@ SendTabToSelfBridge::GetTargetDeviceInfoSortedList() {
   // Filter expired devices (some timestamps in the cached list may now be too
   // old). |target_device_info_sorted_list_| is copied here to avoid mutations
   // inside a getter.
-  // TODO(crbug.com/1257573): Consider having a timer that fires on the next
+  // TODO(crbug.com/40200734): Consider having a timer that fires on the next
   // expiry and removes the corresponding device(s) then.
   std::vector<TargetDeviceInfo> non_expired_devices =
       target_device_info_sorted_list_;
@@ -490,7 +492,7 @@ void SendTabToSelfBridge::NotifyRemoteSendTabToSelfEntryDeleted(
     return;
   }
 
-  // TODO(crbug.com/956216): Only send the entries that targeted this device.
+  // TODO(crbug.com/40624520): Only send the entries that targeted this device.
   for (SendTabToSelfModelObserver& observer : observers_) {
     observer.EntriesRemovedRemotely(guids);
   }
@@ -683,7 +685,8 @@ void SendTabToSelfBridge::DeleteEntryWithBatch(
   DCHECK(GetEntryByGUID(guid) != nullptr);
   DCHECK(change_processor()->IsTrackingMetadata());
 
-  change_processor()->Delete(guid, batch->GetMetadataChangeList());
+  change_processor()->Delete(guid, syncer::DeletionOrigin::Unspecified(),
+                             batch->GetMetadataChangeList());
 
   if (mru_entry_ && mru_entry_->GetGUID() == guid) {
     mru_entry_ = nullptr;
@@ -732,7 +735,8 @@ void SendTabToSelfBridge::DeleteAllEntries() {
   std::vector<std::string> all_guids = GetAllGuids();
 
   for (const auto& guid : all_guids) {
-    change_processor()->Delete(guid, batch->GetMetadataChangeList());
+    change_processor()->Delete(guid, syncer::DeletionOrigin::Unspecified(),
+                               batch->GetMetadataChangeList());
     batch->DeleteData(guid);
   }
   entries_.clear();

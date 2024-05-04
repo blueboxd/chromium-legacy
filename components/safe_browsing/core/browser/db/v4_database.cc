@@ -117,8 +117,8 @@ void V4Database::CreateOnTaskRunner(
   if (!g_store_factory.Get())
     g_store_factory.Get() = std::make_unique<V4StoreFactory>();
 
-  // TODO(crbug/1434333): This is being used temporarily to investigate why this
-  // NOTREACHED is being triggered.
+  // TODO(crbug.com/40904161): This is being used temporarily to investigate why
+  // this NOTREACHED is being triggered.
   base::File::Error error = base::File::FILE_OK;
   bool success = base::CreateDirectoryAndGetError(base_path, &error);
   base::UmaHistogramExactLinear(
@@ -437,7 +437,7 @@ ListInfo::ListInfo(const bool fetch_updates,
       list_id_(list_id),
       sb_threat_type_(sb_threat_type) {
   DCHECK(!fetch_updates_ || !filename_.empty());
-  DCHECK_NE(SB_THREAT_TYPE_SAFE, sb_threat_type_);
+  DCHECK_NE(SBThreatType::SB_THREAT_TYPE_SAFE, sb_threat_type_);
 }
 
 ListInfo::~ListInfo() {}

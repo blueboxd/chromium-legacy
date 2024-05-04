@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <string>
+#include <string_view>
 #include <vector>
 
 #include "base/component_export.h"
@@ -15,7 +16,6 @@
 #include "base/dcheck_is_on.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequence_checker.h"
-#include "base/strings/string_piece.h"
 #include "base/thread_annotations.h"
 #include "base/time/time.h"
 #include "sql/database.h"
@@ -135,11 +135,11 @@ class COMPONENT_EXPORT(SQL) Statement {
   void BindInt64(int param_index, int64_t val);
   void BindDouble(int param_index, double val);
   void BindCString(int param_index, const char* val);
-  void BindString(int param_index, base::StringPiece val);
+  void BindString(int param_index, std::string_view val);
 
   // If you need to store (potentially invalid) UTF-16 strings losslessly,
   // store them as BLOBs instead. `BindBlob()` has an overload for this purpose.
-  void BindString16(int param_index, base::StringPiece16 value);
+  void BindString16(int param_index, std::u16string_view value);
   void BindBlob(int param_index, base::span<const uint8_t> value);
 
   // Overload that makes it easy to pass in std::string values.
@@ -162,7 +162,8 @@ class COMPONENT_EXPORT(SQL) Statement {
   // InMillisecondsSinceUnixEpoch(), will require a database migration to be
   // converted to this (recommended) serialization method.
   //
-  // TODO(crbug.com/1195962): Migrate all time serialization to this method, and
+  // TODO(crbug.com/40176243): Migrate all time serialization to this method,
+  // and
   //                          then remove the migration details above.
   void BindTime(int param_index, base::Time time);
 
@@ -172,7 +173,8 @@ class COMPONENT_EXPORT(SQL) Statement {
   // * BindInt64(col, delta.ToInternalValue())
   // * BindInt64(col, delta.InMicroseconds())
   //
-  // TODO(crbug.com/1402777): Migrate all TimeDelta serialization to this method
+  // TODO(crbug.com/40251269): Migrate all TimeDelta serialization to this
+  // method
   //                          and remove the migration details above.
   void BindTimeDelta(int param_index, base::TimeDelta delta);
 
@@ -208,7 +210,8 @@ class COMPONENT_EXPORT(SQL) Statement {
   // * base::Time::FromDeltaSinceWindowsEpoch(
   //       base::Microseconds(ColumnInt64(col)))
   //
-  // TODO(crbug.com/1195962): Migrate all time serialization to this method, and
+  // TODO(crbug.com/40176243): Migrate all time serialization to this method,
+  // and
   //                          then remove the migration details above.
   base::Time ColumnTime(int column_index);
 
@@ -217,7 +220,8 @@ class COMPONENT_EXPORT(SQL) Statement {
   // This is equivalent to the following snippets, which should be replaced.
   // * base::TimeDelta::FromInternalValue(ColumnInt64(column_index))
   //
-  // TODO(crbug.com/1402777): Migrate all TimeDelta serialization to this method
+  // TODO(crbug.com/40251269): Migrate all TimeDelta serialization to this
+  // method
   //                          and remove the migration details above.
   base::TimeDelta ColumnTimeDelta(int column_index);
 

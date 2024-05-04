@@ -25,6 +25,7 @@ import org.chromium.chrome.browser.price_tracking.PriceTrackingFeatures;
 import org.chromium.chrome.browser.price_tracking.PriceTrackingUtilities;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab_ui.TabSwitcher;
 import org.chromium.chrome.browser.tabmodel.TabModelFilter;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tasks.tab_management.MessageService.MessageType;
@@ -76,7 +77,7 @@ public class TabSwitcherMessageManager implements PriceWelcomeMessageController 
     private final TabModelObserver mTabModelObserver =
             new TabModelObserver() {
                 @Override
-                public void willCloseTab(Tab tab, boolean animate, boolean didCloseAlone) {
+                public void willCloseTab(Tab tab, boolean didCloseAlone) {
                     if (mCurrentTabModelFilterSupplier.get().getTabModel().getCount() == 1) {
                         removeAllAppendedMessage();
                     } else if (mPriceMessageService != null
@@ -98,7 +99,7 @@ public class TabSwitcherMessageManager implements PriceWelcomeMessageController 
 
                 @Override
                 public void tabClosureCommitted(Tab tab) {
-                    // TODO(crbug.com/1157578): Auto update the PriceMessageService instead of
+                    // TODO(crbug.com/40160889): Auto update the PriceMessageService instead of
                     // updating it based on the client caller.
                     if (mPriceMessageService != null
                             && mPriceMessageService.getBindingTabId() == tab.getId()) {
@@ -351,7 +352,7 @@ public class TabSwitcherMessageManager implements PriceWelcomeMessageController 
                     == MessageService.MessageType.INCOGNITO_REAUTH_PROMO_MESSAGE) {
                 mayAddIncognitoReauthPromoCard(messages.get(i).model);
             } else if (messages.get(i).type == MessageService.MessageType.TAB_SUGGESTION) {
-                // TODO(crbug.com/1487664): Update to a mayAdd call checking show criteria
+                // TODO(crbug.com/40073668): Update to a mayAdd call checking show criteria
                 mTabListCoordinator.addSpecialListItem(
                         mCurrentTabModelFilterSupplier.get().index() + 1,
                         TabProperties.UiType.LARGE_MESSAGE,

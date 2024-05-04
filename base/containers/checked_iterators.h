@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40284755): Remove this and spanify to fix the errors.
+#pragma allow_unsafe_buffers
+#endif
+
 #ifndef BASE_CONTAINERS_CHECKED_ITERATORS_H_
 #define BASE_CONTAINERS_CHECKED_ITERATORS_H_
 
@@ -194,7 +199,7 @@ class CheckedContiguousIterator {
     CHECK_EQ(end_, other.end_);
   }
 
-  // RAW_PTR_EXCLUSION: T can be a STACK_ALLOCATED class.
+  // RAW_PTR_EXCLUSION: The embedding class is stack-scoped.
   RAW_PTR_EXCLUSION const T* start_ = nullptr;
   RAW_PTR_EXCLUSION T* current_ = nullptr;
   RAW_PTR_EXCLUSION const T* end_ = nullptr;

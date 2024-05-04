@@ -96,7 +96,7 @@ const HashMap<String, MLGraph::ResourceInfo>& MLGraph::GetOutputResourcesInfo()
 void MLGraph::Compute(ScopedMLTrace scoped_trace,
                       const MLNamedArrayBufferViews& inputs,
                       const MLNamedArrayBufferViews& outputs,
-                      ScriptPromiseResolverTyped<MLComputeResult>* resolver,
+                      ScriptPromiseResolver<MLComputeResult>* resolver,
                       ExceptionState& exception_state) {
   // The MLGraph object should be initialized before computing.
   DCHECK(resources_info_initialized_);
@@ -105,14 +105,12 @@ void MLGraph::Compute(ScopedMLTrace scoped_trace,
   String error_message;
   if (!ValidateNamedArrayBufferViews(inputs, input_resources_info_,
                                      error_message)) {
-    resolver->Reject(MakeGarbageCollected<DOMException>(
-        DOMExceptionCode::kDataError, "Invalid inputs: " + error_message));
+    resolver->RejectWithTypeError("Invalid inputs: " + error_message);
     return;
   }
   if (!ValidateNamedArrayBufferViews(outputs, output_resources_info_,
                                      error_message)) {
-    resolver->Reject(MakeGarbageCollected<DOMException>(
-        DOMExceptionCode::kDataError, "Invalid outputs: " + error_message));
+    resolver->RejectWithTypeError("Invalid outputs: " + error_message);
     return;
   }
 
@@ -123,11 +121,10 @@ void MLGraph::Compute(ScopedMLTrace scoped_trace,
 
 void MLGraph::Build(ScopedMLTrace scoped_trace,
                     const MLNamedOperands& named_outputs,
-                    ScriptPromiseResolver* resolver) {
+                    ScriptPromiseResolver<MLGraph>* resolver) {
   String error_message;
   if (!ValidateAndInitializeResourcesInfo(named_outputs, error_message)) {
-    resolver->Reject(MakeGarbageCollected<DOMException>(
-        DOMExceptionCode::kDataError, error_message));
+    resolver->RejectWithTypeError(error_message);
     return;
   }
   BuildImpl(std::move(scoped_trace), named_outputs, resolver);

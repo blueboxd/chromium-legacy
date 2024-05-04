@@ -10,6 +10,7 @@
 #include "base/functional/callback_forward.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/password_manager/android/built_in_backend_to_android_backend_migrator.h"
 #include "components/password_manager/core/browser/password_store/password_store.h"
 #include "components/password_manager/core/browser/password_store/password_store_backend.h"
 #include "components/sync/service/sync_service_observer.h"
@@ -17,8 +18,6 @@
 class PrefService;
 
 namespace password_manager {
-
-class BuiltInBackendToAndroidBackendMigrator;
 
 // This is the backend that should be used on Android platform until the full
 // migration to the Android backend is launched. Internally, this backend
@@ -42,10 +41,13 @@ class LegacyPasswordStoreBackendMigrationDecorator : public PasswordStoreBackend
       LegacyPasswordStoreBackendMigrationDecorator&&) = delete;
   ~LegacyPasswordStoreBackendMigrationDecorator() override;
 
+  BuiltInBackendToAndroidBackendMigrator::MigrationType
+  migration_in_progress_type() const;
+
  private:
   class PasswordSyncSettingsHelper {
    public:
-    explicit PasswordSyncSettingsHelper(PrefService* prefs);
+    PasswordSyncSettingsHelper();
 
     // Remembers the initial sync setting to track its changes later.
     // Should be called after SyncService is initialized.
@@ -54,8 +56,9 @@ class LegacyPasswordStoreBackendMigrationDecorator : public PasswordStoreBackend
     // Called when sync settings were applied to confirm change of state.
     bool ShouldActOnSyncStatusChanges();
 
-    // Clears cached prefs when they are not needed anymore.
-    void ResetCachedPrefs();
+    // Returns sync_util::IsSyncFeatureEnabledIncludingPasswords value.
+    bool IsSyncFeatureEnabledIncludingPasswords();
+
    private:
 
     // Pref service.
@@ -93,15 +96,18 @@ class LegacyPasswordStoreBackendMigrationDecorator : public PasswordStoreBackend
                      PasswordChangesOrErrorReply callback) override;
   void UpdateLoginAsync(const PasswordForm& form,
                         PasswordChangesOrErrorReply callback) override;
-  void RemoveLoginAsync(const PasswordForm& form,
+  void RemoveLoginAsync(const base::Location& location,
+                        const PasswordForm& form,
                         PasswordChangesOrErrorReply callback) override;
   void RemoveLoginsByURLAndTimeAsync(
+      const base::Location& location,
       const base::RepeatingCallback<bool(const GURL&)>& url_filter,
       base::Time delete_begin,
       base::Time delete_end,
       base::OnceCallback<void(bool)> sync_completion,
       PasswordChangesOrErrorReply callback) override;
   void RemoveLoginsCreatedBetweenAsync(
+      const base::Location& location,
       base::Time delete_begin,
       base::Time delete_end,
       PasswordChangesOrErrorReply callback) override;
@@ -109,7 +115,7 @@ class LegacyPasswordStoreBackendMigrationDecorator : public PasswordStoreBackend
       const base::RepeatingCallback<bool(const GURL&)>& origin_filter,
       base::OnceClosure completion) override;
   SmartBubbleStatsStore* GetSmartBubbleStatsStore() override;
-  std::unique_ptr<syncer::ProxyModelTypeControllerDelegate>
+  std::unique_ptr<syncer::ModelTypeControllerDelegate>
   CreateSyncControllerDelegate() override;
   void OnSyncServiceInitialized(syncer::SyncService* sync_service) override;
   void RecordAddLoginAsyncCalledFromTheStore() override;
@@ -121,7 +127,7 @@ class LegacyPasswordStoreBackendMigrationDecorator : public PasswordStoreBackend
 
   // React on sync changes to keep GMS Core local storage up-to-date.
   // Called when the changed setting is applied.
-  // TODO(https://crbug.com/) Remove this method when no longer needed.
+  // TODO(crbug.com/) Remove this method when no longer needed.
   void SyncStatusChanged();
 
   // Proxy backend to which all responsibilities are being delegated.
@@ -131,8 +137,6 @@ class LegacyPasswordStoreBackendMigrationDecorator : public PasswordStoreBackend
   raw_ptr<PasswordStoreBackend> android_backend_;
 
   const raw_ptr<PrefService> prefs_ = nullptr;
-
-  raw_ptr<const syncer::SyncService> sync_service_ = nullptr;
 
   std::unique_ptr<BuiltInBackendToAndroidBackendMigrator> migrator_;
 

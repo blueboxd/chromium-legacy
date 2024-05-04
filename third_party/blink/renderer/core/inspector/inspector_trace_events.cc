@@ -17,6 +17,7 @@
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/events/keyboard_event.h"
+#include "third_party/blink/renderer/core/events/message_event.h"
 #include "third_party/blink/renderer/core/events/wheel_event.h"
 #include "third_party/blink/renderer/core/execution_context/agent.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
@@ -25,6 +26,7 @@
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 #include "third_party/blink/renderer/core/html/parser/html_document_parser.h"
 #include "third_party/blink/renderer/core/inspector/identifiers_factory.h"
+#include "third_party/blink/renderer/core/inspector/inspector_animation_agent.h"
 #include "third_party/blink/renderer/core/inspector/inspector_network_agent.h"
 #include "third_party/blink/renderer/core/inspector/inspector_page_agent.h"
 #include "third_party/blink/renderer/core/layout/hit_test_location.h"
@@ -290,6 +292,7 @@ const char* PseudoTypeToString(CSSSelector::PseudoType pseudo_type) {
   case CSSSelector::k##pseudoType:        \
     return #pseudoType;
     DEFINE_STRING_MAPPING(PseudoActiveViewTransition)
+    DEFINE_STRING_MAPPING(PseudoActiveViewTransitionType)
     DEFINE_STRING_MAPPING(PseudoUnknown)
     DEFINE_STRING_MAPPING(PseudoEmpty)
     DEFINE_STRING_MAPPING(PseudoFirstChild)
@@ -358,6 +361,8 @@ const char* PseudoTypeToString(CSSSelector::PseudoType pseudo_type) {
     DEFINE_STRING_MAPPING(PseudoScrollbarThumb)
     DEFINE_STRING_MAPPING(PseudoScrollbarTrack)
     DEFINE_STRING_MAPPING(PseudoScrollbarTrackPiece)
+    DEFINE_STRING_MAPPING(PseudoScrollMarker)
+    DEFINE_STRING_MAPPING(PseudoScrollMarkers)
     DEFINE_STRING_MAPPING(PseudoWindowInactive)
     DEFINE_STRING_MAPPING(PseudoCornerPresent)
     DEFINE_STRING_MAPPING(PseudoDecrement)
@@ -399,8 +404,10 @@ const char* PseudoTypeToString(CSSSelector::PseudoType pseudo_type) {
     DEFINE_STRING_MAPPING(PseudoMultiSelectFocus)
     DEFINE_STRING_MAPPING(PseudoOpen)
     DEFINE_STRING_MAPPING(PseudoClosed)
-    DEFINE_STRING_MAPPING(PseudoSelectAuthorButton)
-    DEFINE_STRING_MAPPING(PseudoSelectAuthorDatalist)
+    DEFINE_STRING_MAPPING(PseudoSelectFallbackButton)
+    DEFINE_STRING_MAPPING(PseudoSelectFallbackButtonIcon)
+    DEFINE_STRING_MAPPING(PseudoSelectFallbackButtonText)
+    DEFINE_STRING_MAPPING(PseudoSelectFallbackDatalist)
     DEFINE_STRING_MAPPING(PseudoDialogInTopLayer)
     DEFINE_STRING_MAPPING(PseudoPopoverInTopLayer)
     DEFINE_STRING_MAPPING(PseudoPopoverOpen)
@@ -478,6 +485,19 @@ const char* NotStreamedReasonString(ScriptStreamer::NotStreamingReason reason) {
       return "not a javascript module";
     case ScriptStreamer::NotStreamingReason::kLoadingCancelled:
       return "loading was cancelled";
+    case ScriptStreamer::NotStreamingReason::
+        kBackgroundResponseProcessorWillBeUsed:
+      return "Backgound streaming will be used";
+    case ScriptStreamer::NotStreamingReason::kNonJavascriptModuleBackground:
+      return "not a javascript module (background)";
+    case ScriptStreamer::NotStreamingReason::kHasCodeCacheBackground:
+      return "script has code-cache available (background)";
+    case ScriptStreamer::NotStreamingReason::kScriptTooSmallBackground:
+      return "script too small (background)";
+    case ScriptStreamer::NotStreamingReason::kErrorOccurredBackground:
+      return "an error occurred (background)";
+    case ScriptStreamer::NotStreamingReason::kEncodingNotSupportedBackground:
+      return "encoding not supported (background)";
     case ScriptStreamer::NotStreamingReason::kDidntTryToStartStreaming:
     case ScriptStreamer::NotStreamingReason::kAlreadyLoaded:
     case ScriptStreamer::NotStreamingReason::kInvalid:
@@ -972,6 +992,8 @@ void inspector_receive_response_event::Data(perfetto::TracedValue context,
 
   auto dict = std::move(context).WriteDictionary();
   dict.Add("requestId", request_id);
+  dict.Add("connectionId", response.ConnectionID());
+  dict.Add("connectionReused", response.ConnectionReused());
   dict.Add("frame", IdentifiersFactory::FrameId(frame));
   dict.Add("statusCode", response.HttpStatusCode());
   dict.Add("mimeType", response.MimeType().GetString());
@@ -1016,6 +1038,7 @@ void inspector_receive_response_event::Data(perfetto::TracedValue context,
   }
 
   SetHeaders(dict.AddItem("headers"), response.HttpHeaderFields());
+  dict.Add("protocol", InspectorNetworkAgent::GetProtocolAsString(response));
 }
 
 void inspector_receive_data_event::Data(perfetto::TracedValue context,
@@ -1272,6 +1295,43 @@ void inspector_evaluate_script_event::Data(perfetto::TracedValue context,
   SetCallStack(isolate, dict);
 }
 
+void inspector_target_rundown_event::Data(perfetto::TracedValue context,
+                                          ExecutionContext* execution_context,
+                                          v8::Isolate* isolate,
+                                          ScriptState* scriptState,
+                                          int scriptId) {
+  // Target related info
+  LocalDOMWindow* window = DynamicTo<LocalDOMWindow>(execution_context);
+  LocalFrame* frame = window ? window->GetFrame() : nullptr;
+  if (!frame) {
+    return;
+  }
+  auto dict = std::move(context).WriteDictionary();
+  String frameType = "page";
+  if (frame->Parent() || frame->IsFencedFrameRoot()) {
+    frameType = "iframe";
+  }
+  dict.Add("frame", IdentifiersFactory::FrameId(frame));
+  dict.Add("frameType", frameType);
+  dict.Add("url", window->Url().GetString());
+  dict.Add("isolate", base::NumberToString(reinterpret_cast<size_t>(isolate)));
+
+  // ExecutionContext related info
+  DOMWrapperWorld& world = scriptState->World();
+  String executionContextType = "default";
+  const SecurityOrigin* origin = frame->DomWindow()->GetSecurityOrigin();
+  if (world.IsIsolatedWorld()) {
+    executionContextType = "isolated";
+  } else if (world.IsWorkerOrWorkletWorld()) {
+    executionContextType = "worker";
+  }
+  dict.Add("v8context", scriptState->GetToken().ToString());
+  dict.Add("isDefault", world.IsMainWorld());
+  dict.Add("contextType", executionContextType);
+  dict.Add("origin", origin ? origin->ToRawString() : String());
+  dict.Add("scriptId", scriptId);
+}
+
 void inspector_parse_script_event::Data(perfetto::TracedValue context,
                                         uint64_t identifier,
                                         const String& url) {
@@ -1333,6 +1393,23 @@ void inspector_produce_script_cache_event::Data(
   auto dict = std::move(context).WriteDictionary();
   FillLocation(dict, url, text_position);
   dict.Add("producedCacheSize", cache_size);
+}
+
+void inspector_handle_post_message_event::Data(
+    perfetto::TracedValue context,
+    ExecutionContext* execution_context,
+    const MessageEvent& message_event) {
+  auto dict = std::move(context).WriteDictionary();
+  dict.Add("traceId", base::NumberToString(message_event.GetTraceId()));
+}
+
+void inspector_schedule_post_message_event::Data(
+    perfetto::TracedValue context,
+    ExecutionContext* execution_context,
+    uint64_t trace_id) {
+  auto dict = std::move(context).WriteDictionary();
+  dict.Add("traceId", base::NumberToString(trace_id));
+  SetCallStack(execution_context->GetIsolate(), dict);
 }
 
 void inspector_function_call_event::Data(
@@ -1547,6 +1624,8 @@ void inspector_animation_event::Data(perfetto::TracedValue context,
   dict.Add("id", String::Number(animation.SequenceNumber()));
   dict.Add("state", animation.PlayStateString());
   if (const AnimationEffect* effect = animation.effect()) {
+    dict.Add("displayName",
+             InspectorAnimationAgent::AnimationDisplayName(animation));
     dict.Add("name", animation.id());
     if (auto* frame_effect = DynamicTo<KeyframeEffect>(effect)) {
       if (Element* target = frame_effect->EffectTarget())

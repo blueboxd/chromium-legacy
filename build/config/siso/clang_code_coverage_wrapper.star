@@ -39,7 +39,7 @@ _COVERAGE_EXCLUSION_LIST_MAP = {
         "../../device/gamepad/dualshock4_controller.cc",
     ],
     "fuchsia": [
-        # TODO(crbug.com/1174725): These files caused clang to crash while
+        # TODO(crbug.com/40167659): These files caused clang to crash while
         # compiling them.
         "../../base/allocator/partition_allocator/src/partition_alloc/pcscan.cc",
         "../../third_party/skia/src/core/SkOpts.cpp",
@@ -49,7 +49,7 @@ _COVERAGE_EXCLUSION_LIST_MAP = {
     "linux": [
         # These files caused a static initializer to be generated, which
         # shouldn't.
-        # TODO(crbug.com/990948): Remove when the bug is fixed.
+        # TODO(crbug.com/41474559): Remove when the bug is fixed.
         "../../chrome/browser/media/router/providers/cast/cast_internal_message_util.cc",  #pylint: disable=line-too-long
         "../../components/media_router/common/providers/cast/channel/cast_channel_enum.cc",  #pylint: disable=line-too-long
         "../../components/media_router/common/providers/cast/channel/cast_message_util.cc",  #pylint: disable=line-too-long
@@ -75,7 +75,7 @@ _COVERAGE_FORCE_LIST_MAP = {
     # be linked in. Therefore we force coverage for this file to ensure that
     # any target that includes it will also get the profiling runtime.
     "win": [r"..\..\base\test\clang_profiling.cc"],
-    # TODO(crbug.com/1141727) We're seeing runtime LLVM errors in mac-rel when
+    # TODO(crbug.com/40154378) We're seeing runtime LLVM errors in mac-rel when
     # no files are changed, so we suspect that this is similar to the other
     # problem with clang_profiling.cc on Windows. The TODO here is to force
     # coverage for this specific file on ALL platforms, if it turns out to fix

@@ -42,8 +42,10 @@ class LanguagePackFontService : public KeyedService {
 
  private:
   base::flat_set<std::string> GetLanguagePacksForAcceptLanguage();
-  void InstallFontDlcs();
-  void AddDlcFontDirsToFontConfigPackCallback(const PackResult& result);
+  void OnAcceptLanguageChanged();
+  void GetPackStateOnInitCallback(const PackResult& result);
+  void InstallPackOnInitCallback(const PackResult& result);
+  void AddFontDirFromPackResult(const PackResult& result);
 
   // Not owned by this class
   const raw_ref<PrefService> prefs_;

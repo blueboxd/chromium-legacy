@@ -82,6 +82,7 @@
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/public/web/web_content_capture_client.h"
 #include "third_party/blink/public/web/web_frame.h"
+#include "third_party/blink/public/web/web_link_preview_triggerer.h"
 #include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
@@ -153,10 +154,13 @@
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
 #include "third_party/blink/renderer/core/fullscreen/scoped_allow_fullscreen.h"
+#include "third_party/blink/renderer/core/html/canvas/html_canvas_element.h"
 #include "third_party/blink/renderer/core/html/html_frame_element_base.h"
+#include "third_party/blink/renderer/core/html/html_image_element.h"
 #include "third_party/blink/renderer/core/html/html_link_element.h"
 #include "third_party/blink/renderer/core/html/html_object_element.h"
 #include "third_party/blink/renderer/core/html/html_plugin_element.h"
+#include "third_party/blink/renderer/core/html/media/html_audio_element.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
 #include "third_party/blink/renderer/core/html/plugin_document.h"
@@ -169,6 +173,7 @@
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer_controller.h"
 #include "third_party/blink/renderer/core/layout/anchor_position_scroll_data.h"
+#include "third_party/blink/renderer/core/layout/anchor_position_visibility_observer.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/text_autosizer.h"
@@ -200,6 +205,7 @@
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
 #include "third_party/blink/renderer/platform/bindings/source_location.h"
 #include "third_party/blink/renderer/platform/bindings/v8_binding.h"
+#include "third_party/blink/renderer/platform/bindings/v8_histogram_accumulator.h"
 #include "third_party/blink/renderer/platform/blob/blob_data.h"
 #include "third_party/blink/renderer/platform/graphics/image_data_buffer.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
@@ -321,7 +327,7 @@ mojom::blink::BlockingDetailsPtr CreateBlockingDetailsMojom(
       blocking_details.ColumnNumber() > 0) {
     // `Url()` and `Function()` may return nullptr.
     auto source_location = mojom::blink::ScriptSourceLocation::New(
-        blocking_details.Url() ? blocking_details.Url() : "",
+        blocking_details.Url() ? KURL(blocking_details.Url()) : KURL(),
         blocking_details.Function() ? blocking_details.Function() : "",
         blocking_details.LineNumber(), blocking_details.ColumnNumber());
     feature_location_to_report->source = std::move(source_location);
@@ -353,6 +359,27 @@ bool IsNavigationBlockedByCoopRestrictProperties(
   }
 
   return false;
+}
+
+// TODO: b/338175253 - remove the need for this conversion
+mojom::blink::StorageTypeAccessed ToMojoStorageType(
+    blink::WebContentSettingsClient::StorageType storage_type) {
+  switch (storage_type) {
+    case blink::WebContentSettingsClient::StorageType::kDatabase:
+      return mojom::blink::StorageTypeAccessed::kDatabase;
+    case blink::WebContentSettingsClient::StorageType::kCacheStorage:
+      return mojom::blink::StorageTypeAccessed::kCacheStorage;
+    case blink::WebContentSettingsClient::StorageType::kIndexedDB:
+      return mojom::blink::StorageTypeAccessed::kIndexedDB;
+    case blink::WebContentSettingsClient::StorageType::kFileSystem:
+      return mojom::blink::StorageTypeAccessed::kFileSystem;
+    case blink::WebContentSettingsClient::StorageType::kWebLocks:
+      return mojom::blink::StorageTypeAccessed::kWebLocks;
+    case blink::WebContentSettingsClient::StorageType::kLocalStorage:
+      return mojom::blink::StorageTypeAccessed::kLocalStorage;
+    case blink::WebContentSettingsClient::StorageType::kSessionStorage:
+      return mojom::blink::StorageTypeAccessed::kSessionStorage;
+  }
 }
 
 }  // namespace
@@ -453,6 +480,7 @@ LocalFrame::~LocalFrame() {
 
 void LocalFrame::Trace(Visitor* visitor) const {
   visitor->Trace(ad_tracker_);
+  visitor->Trace(script_observer_);
   visitor->Trace(attribution_src_loader_);
   visitor->Trace(probe_sink_);
   visitor->Trace(performance_monitor_);
@@ -712,6 +740,9 @@ bool LocalFrame::DetachImpl(FrameDetachType type) {
       box_shadow_paint_image_generator_->Shutdown();
     if (clip_path_paint_image_generator_)
       clip_path_paint_image_generator_->Shutdown();
+    if (script_observer_) {
+      script_observer_->Shutdown();
+    }
   }
   idleness_detector_->Shutdown();
   if (inspector_issue_reporter_)
@@ -1013,6 +1044,19 @@ void LocalFrame::SetDOMWindow(LocalDOMWindow* dom_window) {
 
 Document* LocalFrame::GetDocument() const {
   return DomWindow() ? DomWindow()->document() : nullptr;
+}
+
+void LocalFrame::DocumentDetached() {
+  // Resets WebLinkPreviewTrigerer when the document detached as
+  // WebLinkPreviewInitiator depends on document.
+  is_link_preivew_triggerer_initialized_ = false;
+  link_preview_triggerer_.reset();
+
+  if (LocalFrameView* view = View()) {
+    // Pagination layout may hold on to layout objects that are not part of the
+    // Document's DOM. Destroy them now.
+    view->DestroyPaginationLayout();
+  }
 }
 
 void LocalFrame::SetPagePopupOwner(Element& owner) {
@@ -1360,6 +1404,8 @@ void LocalFrame::SetPrinting(bool printing, float maximum_shrink_ratio) {
     }
     GetDocument()->UpdateStyleAndLayout(DocumentUpdateReason::kPrinting);
     View()->AdjustViewSize();
+
+    View()->DestroyPaginationLayout();
   }
 
   // Subframes of the one we're printing don't lay out to the page size.
@@ -1539,7 +1585,8 @@ void LocalFrame::MediaQueryAffectingValueChangedForLocalSubtree(
 
 void LocalFrame::ViewportSegmentsChanged(
     const WebVector<gfx::Rect>& viewport_segments) {
-  if (!RuntimeEnabledFeatures::ViewportSegmentsEnabled()) {
+  if (!RuntimeEnabledFeatures::ViewportSegmentsEnabled(
+          GetDocument()->GetExecutionContext())) {
     return;
   }
 
@@ -1565,7 +1612,8 @@ void LocalFrame::ViewportSegmentsChanged(
 
 void LocalFrame::UpdateViewportSegmentCSSEnvironmentVariables(
     const WebVector<gfx::Rect>& viewport_segments) {
-  DCHECK(RuntimeEnabledFeatures::ViewportSegmentsEnabled());
+  DCHECK(RuntimeEnabledFeatures::ViewportSegmentsEnabled(
+      GetDocument()->GetExecutionContext()));
 
   // Update the variable values on the root instance so that documents that
   // are created after the values change automatically have the right values.
@@ -1797,6 +1845,9 @@ LocalFrame::LocalFrame(LocalFrameClient* client,
     if (RuntimeEnabledFeatures::AdTaggingEnabled()) {
       ad_tracker_ = MakeGarbageCollected<AdTracker>(this);
     }
+    if (blink::LcppScriptObserverEnabled()) {
+      script_observer_ = MakeGarbageCollected<LCPScriptObserver>(this);
+    }
   } else {
     // Inertness only needs to be updated if this frame might inherit the
     // inert state from a higher-level frame. If this is an OOPIF local root,
@@ -1805,6 +1856,7 @@ LocalFrame::LocalFrame(LocalFrameClient* client,
     UpdateInheritedEffectiveTouchActionIfPossible();
     ad_tracker_ = LocalFrameRoot().ad_tracker_;
     performance_monitor_ = LocalFrameRoot().performance_monitor_;
+    script_observer_ = LocalFrameRoot().script_observer_;
   }
   idleness_detector_ = MakeGarbageCollected<IdlenessDetector>(this, clock);
   attribution_src_loader_ = MakeGarbageCollected<AttributionSrcLoader>(this);
@@ -2624,7 +2676,18 @@ void LocalFrame::MainFrameInteractive() {
   if (Page* page = GetPage()) {
     page->GetV8CrowdsourcedCompileHintsProducer().GenerateData();
   }
-  v8_local_compile_hints_producer_->GenerateData();
+  constexpr bool kIsFinalData = true;
+  v8_local_compile_hints_producer_->GenerateData(kIsFinalData);
+
+  V8HistogramAccumulator::GetInstance()->GenerateDataInteractive();
+}
+
+void LocalFrame::MainFrameFirstMeaningfulPaint() {
+  // Generate local compile hints early (the user might navigate away before the
+  // page turns interactive). If we still reach interactive, we replace the
+  // compile hints with new data.
+  constexpr bool kIsFinalData = false;
+  v8_local_compile_hints_producer_->GenerateData(kIsFinalData);
 }
 
 mojom::blink::ReportingServiceProxy* LocalFrame::GetReportingService() {
@@ -3177,7 +3240,7 @@ void LocalFrame::EvictFromBackForwardCache(
   mojom::blink::ScriptSourceLocationPtr source = nullptr;
   if (source_location) {
     source = mojom::blink::ScriptSourceLocation::New(
-        source_location->Url() ? source_location->Url() : "",
+        source_location->Url() ? KURL(source_location->Url()) : KURL(),
         source_location->Function() ? source_location->Function() : "",
         source_location->LineNumber(), source_location->ColumnNumber());
   }
@@ -3850,6 +3913,28 @@ void LocalFrame::ScheduleNextServiceForScrollSnapshotClients() {
   }
 }
 
+void LocalFrame::CheckPositionAnchorsForCssVisibilityChanges() {
+  if (!RuntimeEnabledFeatures::CSSPositionVisibilityEnabled()) {
+    return;
+  }
+  for (auto& client : scroll_snapshot_clients_) {
+    if (AnchorPositionScrollData* scroll_data =
+            DynamicTo<AnchorPositionScrollData>(client.Get())) {
+      if (auto* observer = scroll_data->GetAnchorPositionVisibilityObserver()) {
+        observer->UpdateForCssAnchorVisibility();
+      }
+    }
+  }
+}
+
+void LocalFrame::CheckPositionAnchorsForChainedVisibilityChanges() {
+  if (!RuntimeEnabledFeatures::CSSPositionVisibilityEnabled()) {
+    return;
+  }
+  AnchorPositionVisibilityObserver::UpdateForChainedAnchorVisibility(
+      scroll_snapshot_clients_);
+}
+
 bool LocalFrame::IsSameOrigin() {
   const SecurityOrigin* security_origin =
       GetSecurityContext()->GetSecurityOrigin();
@@ -3894,6 +3979,71 @@ LocalFrame::IssueKeepAliveHandle() {
   GetLocalFrameHostRemote().IssueKeepAliveHandle(
       keep_alive_remote.InitWithNewPipeAndPassReceiver());
   return keep_alive_remote;
+}
+
+WebLinkPreviewTriggerer* LocalFrame::GetOrCreateLinkPreviewTriggerer() {
+  EnsureLinkPreviewTriggererInitialized();
+  return link_preview_triggerer_.get();
+}
+
+void LocalFrame::EnsureLinkPreviewTriggererInitialized() {
+  if (is_link_preivew_triggerer_initialized_) {
+    return;
+  }
+
+  CHECK(!link_preview_triggerer_);
+
+  WebLocalFrameImpl* web_local_frame = WebLocalFrameImpl::FromFrame(this);
+  if (!web_local_frame) {
+    return;
+  }
+
+  link_preview_triggerer_ =
+      web_local_frame->Client()->CreateLinkPreviewTriggerer();
+  is_link_preivew_triggerer_initialized_ = true;
+}
+
+void LocalFrame::SetLinkPreviewTriggererForTesting(
+    std::unique_ptr<WebLinkPreviewTriggerer> trigger) {
+  link_preview_triggerer_ = std::move(trigger);
+  is_link_preivew_triggerer_initialized_ = true;
+}
+
+void LocalFrame::AllowStorageAccessAndNotify(
+    blink::WebContentSettingsClient::StorageType storage_type,
+    base::OnceCallback<void(bool)> callback) {
+  mojom::blink::StorageTypeAccessed mojo_storage_type =
+      ToMojoStorageType(storage_type);
+  auto wrapped_callback = WTF::BindOnce(&LocalFrame::OnStorageAccessCallback,
+                                        WrapWeakPersistent(this),
+                                        std::move(callback), mojo_storage_type);
+  if (WebContentSettingsClient* content_settings_client =
+          GetContentSettingsClient()) {
+    content_settings_client->AllowStorageAccess(storage_type,
+                                                std::move(wrapped_callback));
+  } else {
+    std::move(wrapped_callback).Run(true);
+  }
+}
+
+bool LocalFrame::AllowStorageAccessSyncAndNotify(
+    blink::WebContentSettingsClient::StorageType storage_type) {
+  bool allowed = true;
+  if (WebContentSettingsClient* content_settings_client =
+          GetContentSettingsClient()) {
+    allowed = content_settings_client->AllowStorageAccessSync(storage_type);
+  }
+  GetLocalFrameHostRemote().NotifyStorageAccessed(
+      ToMojoStorageType(storage_type), !allowed);
+  return allowed;
+}
+
+void LocalFrame::OnStorageAccessCallback(
+    base::OnceCallback<void(bool)> callback,
+    mojom::blink::StorageTypeAccessed storage_type,
+    bool is_allowed) {
+  GetLocalFrameHostRemote().NotifyStorageAccessed(storage_type, !is_allowed);
+  std::move(callback).Run(is_allowed);
 }
 
 }  // namespace blink

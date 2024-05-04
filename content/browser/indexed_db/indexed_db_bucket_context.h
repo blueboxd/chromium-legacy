@@ -64,7 +64,7 @@ class IndexedDBPreCloseTaskQueue;
 // When these qualities are no longer true, `RunTasks()` will invoke
 // `ResetBackingStore()`, which returns `this` to an uninitialized state.
 //
-// TODO(crbug.com/1474996): it's intended that each bucket gets its own
+// TODO(crbug.com/40279485): it's intended that each bucket gets its own
 // IndexedDB task runner. To facilitate IndexedDB code running on multiple task
 // runners, `IndexedDBBucketContext` is in the process of becoming the single
 // point of communication between classes running on the main task runner, such
@@ -126,7 +126,7 @@ class CONTENT_EXPORT IndexedDBBucketContext
   // This structure defines the interface between `IndexedDBBucketContext` and
   // the broader context that exists per Storage Partition (i.e.
   // BrowserContext).
-  // TODO(crbug.com/1474996): for now these callbacks execute on the current
+  // TODO(crbug.com/40279485): for now these callbacks execute on the current
   // sequence, but in the future they should be bound to the main IDB sequence.
   struct CONTENT_EXPORT Delegate {
     Delegate();
@@ -492,9 +492,8 @@ class CONTENT_EXPORT IndexedDBBucketContext
   base::TimeTicks bucket_space_remaining_timestamp_;
 
   // Members in the following block are used for `CreateAllExternalObjects`.
-  // Shared task runner used to read blob files on.
-  const scoped_refptr<base::TaskRunner> file_task_runner_;
-  // Shared task runner used for async I/O while reading blob files.
+  // This handle to the content IO thread is necessary because
+  // net::FileStream::Context can only be used from an IO thread on Windows.
   const scoped_refptr<base::TaskRunner> io_task_runner_;
   // Mojo connection to `BlobStorageContext`, which runs on the IO thread.
   mojo::Remote<storage::mojom::BlobStorageContext> blob_storage_context_;

@@ -74,7 +74,7 @@ void SupervisedUserService::SetDelegate(Delegate* delegate) {
   delegate_ = delegate;
 }
 
-SupervisedUserURLFilter* SupervisedUserService::GetURLFilter() {
+SupervisedUserURLFilter* SupervisedUserService::GetURLFilter() const {
   return url_filter_.get();
 }
 
@@ -124,6 +124,11 @@ std::string SupervisedUserService::GetSecondCustodianName() const {
 bool SupervisedUserService::HasACustodian() const {
   return !GetCustodianEmailAddress().empty() ||
          !GetSecondCustodianEmailAddress().empty();
+}
+
+bool SupervisedUserService::IsBlockedURL(GURL url) const {
+  return GetURLFilter()->GetFilteringBehaviorForURL(url) ==
+         supervised_user::FilteringBehavior::kBlock;
 }
 
 void SupervisedUserService::AddObserver(
@@ -198,7 +203,7 @@ void SupervisedUserService::SetActive(bool active) {
   // Trigger a sync reconfig to enable/disable the right SU data types.
   // The logic to do this lives in the
   // SupervisedUserSettingsModelTypeController.
-  // TODO(crbug.com/946473): Get rid of this hack and instead call
+  // TODO(crbug.com/40620346): Get rid of this hack and instead call
   // DataTypePreconditionChanged from the controller.
   if (sync_service_ &&
       sync_service_->GetUserSettings()->IsInitialSyncFeatureSetupComplete()) {

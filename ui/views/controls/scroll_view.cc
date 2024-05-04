@@ -312,9 +312,9 @@ ScrollView::ScrollView(ScrollWithLayers scroll_with_layers)
   // "Ignored" removes the scrollbar from the accessibility tree.
   // "IsLeaf" removes their children (e.g. the buttons and thumb).
   horiz_sb_->GetViewAccessibility().SetIsIgnored(true);
-  horiz_sb_->GetViewAccessibility().OverrideIsLeaf(true);
+  horiz_sb_->GetViewAccessibility().SetIsLeaf(true);
   vert_sb_->GetViewAccessibility().SetIsIgnored(true);
-  vert_sb_->GetViewAccessibility().OverrideIsLeaf(true);
+  vert_sb_->GetViewAccessibility().SetIsLeaf(true);
 
   // Just make sure the more_content indicators aren't visible for now. They'll
   // be added as child controls and appropriately made visible depending on
@@ -465,7 +465,7 @@ void ScrollView::SetHorizontalScrollBarMode(
   // "IsLeaf" removes their children (e.g. the buttons and thumb).
   bool is_disabled = horizontal_scroll_bar_mode == ScrollBarMode::kDisabled;
   horiz_sb_->GetViewAccessibility().SetIsIgnored(is_disabled);
-  horiz_sb_->GetViewAccessibility().OverrideIsLeaf(is_disabled);
+  horiz_sb_->GetViewAccessibility().SetIsLeaf(is_disabled);
 }
 
 void ScrollView::SetVerticalScrollBarMode(
@@ -486,7 +486,7 @@ void ScrollView::SetVerticalScrollBarMode(
   // "IsLeaf" removes their children (e.g. the buttons and thumb).
   bool is_disabled = vertical_scroll_bar_mode == ScrollBarMode::kDisabled;
   vert_sb_->GetViewAccessibility().SetIsIgnored(is_disabled);
-  vert_sb_->GetViewAccessibility().OverrideIsLeaf(is_disabled);
+  vert_sb_->GetViewAccessibility().SetIsLeaf(is_disabled);
 }
 
 void ScrollView::SetTreatAllScrollEventsAsHorizontal(
@@ -618,8 +618,10 @@ base::CallbackListSubscription ScrollView::AddContentsScrollEndedCallback(
   return on_contents_scroll_ended_.Add(std::move(callback));
 }
 
-gfx::Size ScrollView::CalculatePreferredSize() const {
-  gfx::Size size = contents_ ? contents_->GetPreferredSize() : gfx::Size();
+gfx::Size ScrollView::CalculatePreferredSize(
+    const SizeBounds& available_size) const {
+  gfx::Size size =
+      contents_ ? contents_->GetPreferredSize(available_size) : gfx::Size();
   if (is_bounded()) {
     size.SetToMax(gfx::Size(size.width(), min_height_));
     size.SetToMin(gfx::Size(size.width(), max_height_));
@@ -661,7 +663,7 @@ void ScrollView::Layout(PassKey) {
   }
 
   gfx::Rect available_rect = GetContentsBounds();
-  if (is_bounded()) {
+  if (is_bounded() && contents_) {
     int content_width = available_rect.width();
     int content_height = contents_->GetHeightForWidth(content_width);
     if (content_height > available_rect.height()) {
@@ -693,7 +695,7 @@ void ScrollView::Layout(PassKey) {
 
   const int header_height =
       std::min(viewport_bounds.height(),
-               header_ ? header_->GetPreferredSize().height() : 0);
+               header_ ? header_->GetPreferredSize({}).height() : 0);
   viewport_bounds.set_height(
       std::max(0, viewport_bounds.height() - header_height));
   viewport_bounds.set_y(viewport_bounds.y() + header_height);
@@ -867,7 +869,7 @@ bool ScrollView::OnMouseWheel(const ui::MouseWheelEvent& e) {
                 e, CombineScrollOffsets(e.x_offset(), e.y_offset()), 0)
           : e;
 
-  // TODO(https://crbug.com/615948): Use composited scrolling.
+  // TODO(crbug.com/40471184): Use composited scrolling.
   if (IsVerticalScrollEnabled())
     processed = vert_sb_->OnMouseWheel(to_propagate);
 
@@ -938,7 +940,7 @@ void ScrollView::OnGestureEvent(ui::GestureEvent* event) {
   // have a vertical finger gesture on a touchscreen cause the scroll pane to
   // scroll horizontally.
 
-  // TODO(https://crbug.com/615948): Use composited scrolling.
+  // TODO(crbug.com/40471184): Use composited scrolling.
   if (IsVerticalScrollEnabled() &&
       (scroll_event || (vert_sb_->GetVisible() &&
                         vert_sb_->bounds().Contains(event->location())))) {
@@ -1346,7 +1348,7 @@ std::optional<ui::ColorId> ScrollView::GetBackgroundThemeColorId() const {
 }
 
 void ScrollView::PositionOverflowIndicators() {
-  // TODO(https://crbug.com/1166949): Use a layout manager to position these.
+  // TODO(crbug.com/40742414): Use a layout manager to position these.
   const gfx::Rect contents_bounds = GetContentsBounds();
   const int x = contents_bounds.x();
   const int y = contents_bounds.y();

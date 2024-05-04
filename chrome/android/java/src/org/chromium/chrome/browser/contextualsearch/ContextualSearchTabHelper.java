@@ -10,6 +10,7 @@ import android.content.Context;
 import androidx.annotation.Nullable;
 
 import org.jni_zero.CalledByNative;
+import org.jni_zero.JniType;
 import org.jni_zero.NativeMethods;
 
 import org.chromium.base.Callback;
@@ -369,7 +370,8 @@ public class ContextualSearchTabHelper extends EmptyTabObserver
             Tab tab) {
         // Window may be null in tests.
         if (tab.getWindowAndroid() == null) return null;
-        // TODO(crbug.com/1192143): This shouldn't have a reference to ChromeActivity, find a way to
+        // TODO(crbug.com/40757075): This shouldn't have a reference to ChromeActivity, find a way
+        // to
         // inject the supplier instead.
         Activity activity = tab.getWindowAndroid().getActivity().get();
         if (activity instanceof ChromeActivity) {
@@ -406,7 +408,7 @@ public class ContextualSearchTabHelper extends EmptyTabObserver
 
     @NativeMethods
     interface Natives {
-        long init(ContextualSearchTabHelper caller, Profile profile);
+        long init(ContextualSearchTabHelper caller, @JniType("Profile*") Profile profile);
 
         void installUnhandledTapNotifierIfNeeded(
                 long nativeContextualSearchTabHelper,

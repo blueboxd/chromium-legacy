@@ -5,7 +5,6 @@
 #include "components/exo/ui_lock_controller.h"
 
 #include <memory>
-#include <optional>
 
 #include "ash/bluetooth_devices_observer.h"
 #include "ash/constants/app_types.h"
@@ -149,7 +148,7 @@ views::Widget* CreateEscNotification(
       l10n_util::GetStringFUTF16(message_id, key_names, nullptr),
       std::move(icons));
 
-  gfx::Size size = content_view->GetPreferredSize();
+  gfx::Size size = content_view->GetPreferredSize({});
   views::Widget* popup = SubtleNotificationView::CreatePopupWidget(
       parent, std::move(content_view));
   popup->SetZOrderLevel(ui::ZOrderLevel::kSecuritySurface);

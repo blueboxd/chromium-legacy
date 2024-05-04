@@ -7,10 +7,10 @@
 
 #include <cstdint>
 #include <string>
+#include <string_view>
 
 #include "base/component_export.h"
 #include "base/memory/raw_ptr.h"
-#include "base/strings/string_piece.h"
 
 namespace sql {
 
@@ -55,12 +55,12 @@ class COMPONENT_EXPORT(SQL) MetaTable {
   // Returns false if razing the database was necessary but failed or if
   // determining the metadata version failed.
   //
-  // TODO(crbug.com/1228463): At this time the database is razed IFF meta exists
-  // and contains a version row with the value not satisfying the constraints.
-  // It may make sense to also raze if meta exists but has no version row, or if
-  // meta doesn't exist. In those cases if the database is not already empty, it
-  // probably resulted from a broken initialization.
-  // TODO(crbug.com/1228463): Folding this into Init() would allow enforcing
+  // TODO(crbug.com/40777743): At this time the database is razed IFF meta
+  // exists and contains a version row with the value not satisfying the
+  // constraints. It may make sense to also raze if meta exists but has no
+  // version row, or if meta doesn't exist. In those cases if the database is
+  // not already empty, it probably resulted from a broken initialization.
+  // TODO(crbug.com/40777743): Folding this into Init() would allow enforcing
   // the version constraint, but Init() is often called in a transaction.
   static constexpr int kNoLowestSupportedVersion = 0;
   [[nodiscard]] static bool RazeIfIncompatible(Database* db,
@@ -113,17 +113,17 @@ class COMPONENT_EXPORT(SQL) MetaTable {
   int GetCompatibleVersionNumber();
 
   // Set the given arbitrary key with the given data. Returns true on success.
-  bool SetValue(base::StringPiece key, const std::string& value);
-  bool SetValue(base::StringPiece key, int64_t value);
+  bool SetValue(std::string_view key, const std::string& value);
+  bool SetValue(std::string_view key, int64_t value);
 
   // Retrieves the value associated with the given key. This will use sqlite's
   // type conversion rules. It will return true on success.
-  bool GetValue(base::StringPiece key, std::string* value);
-  bool GetValue(base::StringPiece key, int* value);
-  bool GetValue(base::StringPiece key, int64_t* value);
+  bool GetValue(std::string_view key, std::string* value);
+  bool GetValue(std::string_view key, int* value);
+  bool GetValue(std::string_view key, int64_t* value);
 
   // Deletes the key from the table.
-  bool DeleteKey(base::StringPiece key);
+  bool DeleteKey(std::string_view key);
 
  private:
   raw_ptr<Database, DanglingUntriaged> db_ = nullptr;

@@ -96,7 +96,7 @@ component("policy") {
       deps += [ "//media/gpu:buildflags" ]
     }
     if (is_linux) {
-      deps += [ "//net" ]  # TODO(crbug.com/1312226): remove this.
+      deps += [ "//net" ]  # TODO(crbug.com/40220507): remove this.
     }
     if (enable_oop_printing) {
       sources += [
@@ -186,7 +186,7 @@ component("policy") {
       "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.kernel:fuchsia.kernel_hlcpp",
       "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.logger:fuchsia.logger_hlcpp",
 
-      # TODO(crbug.com/1224707): Remove after switching to fuchsia.scheduler API.
+      # TODO(crbug.com/42050308): Remove after switching to fuchsia.scheduler API.
       "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.media:fuchsia.media_hlcpp",
       "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.mediacodec:fuchsia.mediacodec_hlcpp",
       "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.memorypressure:fuchsia.memorypressure_hlcpp",
@@ -204,7 +204,7 @@ buildflag_header("chromecast_sandbox_allowlist_buildflags") {
   flags = [ "ENABLE_CHROMECAST_GPU_SANDBOX_ALLOWLIST=$is_castos" ]
 }
 
-# TODO(crbug.com/1097376): Figure out a better organization for //sandbox
+# TODO(crbug.com/40136586): Figure out a better organization for //sandbox
 # tests.
 source_set("tests") {
   testonly = true

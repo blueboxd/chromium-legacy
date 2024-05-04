@@ -7,9 +7,18 @@
 #include "ash/birch/birch_item.h"
 #include "ash/birch/birch_model.h"
 #include "ash/shell.h"
+#include "base/callback_list.h"
+#include "base/functional/bind.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/ash/crosapi/browser_util.h"
+#include "chrome/browser/ash/crosapi/crosapi_ash.h"
+#include "chrome/browser/ash/crosapi/crosapi_manager.h"
+#include "chrome/browser/ash/crosapi/suggestion_service_ash.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/session_sync_service_factory.h"
+#include "chrome/browser/sync/sync_service_factory.h"
+#include "components/sync/service/sync_service.h"
+#include "components/sync/service/sync_user_settings.h"
 #include "components/sync_sessions/open_tabs_ui_delegate.h"
 #include "components/sync_sessions/session_sync_service.h"
 
@@ -32,6 +41,18 @@ BirchTabItem::DeviceFormFactor GetTabItemFormFactor(
   }
 }
 
+BirchTabItem::DeviceFormFactor FromMojomFormFactor(
+    crosapi::mojom::SuggestionDeviceFormFactor form_factor) {
+  switch (form_factor) {
+    case crosapi::mojom::SuggestionDeviceFormFactor::kDesktop:
+      return BirchTabItem::DeviceFormFactor::kDesktop;
+    case crosapi::mojom::SuggestionDeviceFormFactor::kPhone:
+      return BirchTabItem::DeviceFormFactor::kPhone;
+    case crosapi::mojom::SuggestionDeviceFormFactor::kTablet:
+      return BirchTabItem::DeviceFormFactor::kTablet;
+  }
+}
+
 }  // namespace
 
 BirchRecentTabsProvider::BirchRecentTabsProvider(Profile* profile)
@@ -40,15 +61,46 @@ BirchRecentTabsProvider::BirchRecentTabsProvider(Profile* profile)
 BirchRecentTabsProvider::~BirchRecentTabsProvider() = default;
 
 void BirchRecentTabsProvider::RequestBirchDataFetch() {
+  if (crosapi::browser_util::IsLacrosEnabled()) {
+    crosapi::CrosapiManager::Get()
+        ->crosapi_ash()
+        ->suggestion_service_ash()
+        ->GetTabSuggestionItems(
+            base::BindOnce(&BirchRecentTabsProvider::OnTabsRetrieved,
+                           weak_factory_.GetWeakPtr()));
+    return;
+  }
+
+  bool tab_sync_enabled = SyncServiceFactory::GetForProfile(profile_)
+                              ->GetUserSettings()
+                              ->GetSelectedTypes()
+                              .Has(syncer::UserSelectableType::kTabs);
+  if (!tab_sync_enabled) {
+    // Complete the request with an empty set of tabs when tab sync is
+    // disabled
+    Shell::Get()->birch_model()->SetRecentTabItems({});
+    return;
+  }
+
   auto* session_sync_service =
       SessionSyncServiceFactory::GetInstance()->GetForProfile(profile_);
-
   sync_sessions::OpenTabsUIDelegate* open_tabs =
       session_sync_service->GetOpenTabsUIDelegate();
+
+  if (!open_tabs) {
+    // When no open tabs delegate is available, return early and wait for a
+    // foreign session change to occur before attempting to fetch tab items.
+    foreign_sessions_subscription_ =
+        session_sync_service->SubscribeToForeignSessionsChanged(
+            base::BindRepeating(
+                &BirchRecentTabsProvider::OnForeignSessionsChanged,
+                weak_factory_.GetWeakPtr()));
+    return;
+  }
+
   std::vector<raw_ptr<const sync_sessions::SyncedSession, VectorExperimental>>
       remote_sessions;
-
-  if (!open_tabs || !open_tabs->GetAllForeignSessions(&remote_sessions)) {
+  if (!open_tabs->GetAllForeignSessions(&remote_sessions)) {
     Shell::Get()->birch_model()->SetRecentTabItems({});
     return;
   }
@@ -73,6 +125,23 @@ void BirchRecentTabsProvider::RequestBirchDataFetch() {
   }
 
   Shell::Get()->birch_model()->SetRecentTabItems(std::move(items));
+}
+
+void BirchRecentTabsProvider::OnForeignSessionsChanged() {
+  foreign_sessions_subscription_ = base::CallbackListSubscription();
+  RequestBirchDataFetch();
+}
+
+void BirchRecentTabsProvider::OnTabsRetrieved(
+    std::vector<crosapi::mojom::TabSuggestionItemPtr> items) {
+  std::vector<BirchTabItem> tab_items;
+  for (auto& item : items) {
+    tab_items.emplace_back(base::UTF8ToUTF16(item->title), item->url,
+                           item->timestamp, item->favicon_url,
+                           item->session_name,
+                           FromMojomFormFactor(item->form_factor));
+  }
+  Shell::Get()->birch_model()->SetRecentTabItems(std::move(tab_items));
 }
 
 }  // namespace ash

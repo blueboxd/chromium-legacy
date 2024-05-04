@@ -33,3 +33,8 @@
 -FormControlsBrowserTest.Checkbox
 -FormControlsBrowserTest.MultiSelect
 -FormControlsBrowserTest.Select
+
+# crbug.com/338082561
+-ViewTransitionBrowserTest.OwnershipTransferredToNewRenderer
+-ViewTransitionBrowserTest.NavigationCancelledAfterScreenshot
+-ViewTransitionBrowserTest.NavigationCancelledBeforeScreenshot

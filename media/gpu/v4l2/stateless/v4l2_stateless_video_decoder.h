@@ -9,6 +9,7 @@
 #include <queue>
 #include <vector>
 
+#include "base/atomic_ref_count.h"
 #include "base/containers/lru_cache.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
@@ -70,6 +71,10 @@ class MEDIA_GPU_EXPORT V4L2StatelessVideoDecoder
                    size_t size,
                    scoped_refptr<StatelessDecodeSurface> dec_surface) override;
 
+  static int GetMaxNumDecoderInstancesForTesting() {
+    return GetMaxNumDecoderInstances();
+  }
+
  private:
   V4L2StatelessVideoDecoder(
       std::unique_ptr<MediaLog> media_log,
@@ -107,23 +112,23 @@ class MEDIA_GPU_EXPORT V4L2StatelessVideoDecoder
   bool CreateDecoder(VideoCodecProfile profile, VideoColorSpace color_space);
 
   // Trampoline the preparation of a resolution change to the client.
-  void PrepareChangeResolution(DecoderStatus status);
+  void PrepareChangeResolution();
+
+  // Continue with the resolution change after allowing the teardown of the
+  // queues to occur.
+  void ContinueApplyResolutionChange();
 
   // The uncompressed format that the driver produces is setup by the
   // |output_queue_|. This format then needs to be passed further down the
   // pipeline.
   bool SetupOutputFormatForPipeline();
 
-  // Restart the thread that will wait on a dequeue event from the driver.
-  void ArmBufferMonitor();
-
   // Callbacks used to handle buffers that have been dequeued.
-  void HandleDequeuedOutputBuffers(Buffer buffer);
-  void HandleDequeuedInputBuffers(Buffer buffer);
+  void DequeueBuffers(bool success);
 
-  // Callback for frame destructor observer that will enqueue the output
-  // buffer after it is done being used.
-  void EnqueueDecodedOutputBufferByFrameID(uint64_t frame_id);
+  // Callback for frame destructor observer that will return the output
+  // buffer back to the queue for future use.
+  void ReturnDecodedOutputBuffer(uint64_t frame_id);
 
   // Empty out the |decode_request_queue_| and |display_queue_|.
   void ClearPendingRequests(DecoderStatus status);
@@ -137,6 +142,13 @@ class MEDIA_GPU_EXPORT V4L2StatelessVideoDecoder
   // multiple compressed frames without waiting for a callback. These frames
   // need to be queued up as there may not be free input buffers available.
   void ServiceDecodeRequestQueue();
+
+  // Pages with multiple decoder instances might run out of memory (e.g.
+  // b/170870476) or crash (e.g. crbug.com/1109312). this class method provides
+  // that number to prevent that erroneous behaviour during Initialize().
+  static int GetMaxNumDecoderInstances();
+  // Tracks the number of decoder instances globally in the process.
+  static base::AtomicRefCount num_decoder_instances_;
 
   SEQUENCE_CHECKER(decoder_sequence_checker_);
 
@@ -158,6 +170,9 @@ class MEDIA_GPU_EXPORT V4L2StatelessVideoDecoder
 
   // Queue to hold uncompressed image buffers returned by the hardware
   std::unique_ptr<OutputQueue> output_queue_;
+
+  // Queue for interfacing with the request api
+  std::unique_ptr<RequestQueue> request_queue_;
 
   // Surfaces enqueued to V4L2 device. Since we are stateless, they are
   // guaranteed to be proceeded in FIFO order.
@@ -183,8 +198,8 @@ class MEDIA_GPU_EXPORT V4L2StatelessVideoDecoder
   // through the queue. To do that the |last_frame_id_generated_| holds the id
   // of the last input buffer while |last_frame_id_dequeued_| holds the id of
   // the last output buffer.
-  uint64_t last_frame_id_generated_;
-  uint64_t last_frame_id_dequeued_;
+  uint64_t last_frame_id_generated_ = 0;
+  uint64_t last_frame_id_dequeued_ = 0;
 
   base::LRUCache<int32_t, base::TimeDelta> bitstream_id_to_timestamp_;
 
@@ -196,6 +211,13 @@ class MEDIA_GPU_EXPORT V4L2StatelessVideoDecoder
 
   // Queue holding surfaces in display order.
   std::queue<scoped_refptr<StatelessDecodeSurface>> display_queue_;
+
+  // Prevent nested resolution changes by tracking when one is occurring.
+  bool resolution_changing_ = false;
+
+  // High priority task runner that can block. This task runner is to be used
+  // for synchronizing queue tasks.
+  scoped_refptr<base::SequencedTaskRunner> queue_task_runner_;
 
   // Weak factories associated with the main thread
   // (|decoder_sequence_checker_|).

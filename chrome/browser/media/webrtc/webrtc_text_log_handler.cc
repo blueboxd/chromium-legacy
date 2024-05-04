@@ -7,6 +7,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -323,7 +324,7 @@ void WebRtcTextLogHandler::ReleaseLog(
 
   // Checking log_buffer_ here due to seeing some crashes out in the wild.
   // See crbug/699960 for more details.
-  // TODO(crbug/807547): Remove if condition.
+  // TODO(crbug.com/41368009): Remove if condition.
   if (log_buffer_) {
     log_buffer_->SetComplete();
     *log_buffer = std::move(log_buffer_);
@@ -479,7 +480,7 @@ void WebRtcTextLogHandler::OnGetNetworkInterfaceListFinish(
 #if BUILDFLAG(IS_MAC)
   computer_model = base::SysInfo::HardwareModelName();
 #elif BUILDFLAG(IS_CHROMEOS_ASH)
-  if (const std::optional<base::StringPiece> computer_model_statistic =
+  if (const std::optional<std::string_view> computer_model_statistic =
           ash::system::StatisticsProvider::GetInstance()->GetMachineStatistic(
               ash::system::kHardwareClassKey)) {
     computer_model = std::string(computer_model_statistic.value());

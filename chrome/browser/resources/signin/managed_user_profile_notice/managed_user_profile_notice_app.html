@@ -1,48 +1,27 @@
 <style include="signin-shared tangible-sync-style-shared">
-  :host {
-    --banner-height: 244px;
-    --footer-margin: 40px;
-    --text-container-margin-inline: auto;
-    --text-container-margin-bottom: calc(48px + var(--footer-margin));
-    --text-container-margin-top: 104px;
-    --info-box-margin-inline: auto;
-    --info-box-margin-top: 32px;
-    --info-box-width: 530px;
+  :host([use-updated-ui_]) {
     color: var(--cr-primary-text-color);
-    display: block;
-  }
-
-  :host([is-modal-dialog_]) {
-    --banner-height: 128px;
-    --footer-margin: 16px;
-    --text-container-margin-inline: 32px;
-    --text-container-margin-bottom: 0;
-    --text-container-margin-top: 72px;
-    --info-box-margin-inline: 0;
-    --info-box-margin-top: 28px;
-    --info-box-width: auto;
     display: flex;
     flex-direction: column;
-    min-height: 512px;
+    min-height: 600px;
+    min-width: 600px;
+    height: 100vh;
+    width: 100vw;
     position: relative;
-    width: 512px;
   }
 
-  .main-container:not(.dialog) {
-    height: calc(100vh -
-        (2*var(--action-container-padding) + var(--cr-button-height)));
+  .main-container {
     width: 100vw;
+    margin-block-start: auto;
   }
 
   .action-container {
     align-items: flex-end;
-    bottom: 0;
     box-sizing: border-box;
-    position: absolute;
-    width: 100%;
-    /* Hotfix for cases where the linkData checkbox may be pushed under the action container
-       so that it remains clickable. */
-    pointer-events: none;
+    margin-block-start: auto;
+    width: 100vw;
+    flex-wrap: wrap-reverse;
+    max-width: 100%;
   }
 
   .action-container cr-button {
@@ -50,24 +29,13 @@
     pointer-events: all;
   }
 
-  .action-container.dialog {
-    margin-top: auto;
-  }
-
-  .tangible-sync-style:not(.dialog) #content-container {
-    left: 50%;
+  .tangible-sync-style #content-container {
     position: relative;
-    top: 50%;
-    transform: translate(-50%, -50%);
   }
 
   #header-container {
     position: relative;
     width: 100%;
-  }
-
-  .dialog #header-container {
-    height: var(--banner-height);
   }
 
   #avatar-container {
@@ -78,11 +46,6 @@
     right: 0;
     width: var(--tangible-sync-style-avatar-size);
     z-index: 1;
-  }
-
-  .dialog #avatar-container {
-    bottom: calc(var(--tangible-sync-style-avatar-size)/-2);
-    position: absolute;
   }
 
   #avatar {
@@ -101,65 +64,71 @@
     text-align: center;
   }
 
-  .dialog #text-container {
-    margin-bottom: var(--text-container-margin-bottom);
-    margin-inline: var(--text-container-margin-inline);
-    margin-top: var(--text-container-margin-top);
+  h1.title {
+    font-size: 36px;
+    font-weight: 500;
+    line-height: 44px;
+    text-align: center;
+
   }
 
   .subtitle {
     margin-top: 0;
+    line-height: 24px;
+    font-size: 20px;
+    font-weight: 400;
+    text-align: center;
+
   }
 
-  .info-box {
-    align-items: center;
-    border: 1px solid var(--google-grey-200);
-    border-radius: 8px;
-    color: var(--google-grey-700);
+  h2 {
+    font-size: 15px;
+    font-weight: 500;
+    line-height: 32px;
+    text-align: center;
+  }
+
+  .disclaimer-container {
     display: flex;
-    flex-direction: row;
-    margin-inline: var(--info-box-margin-inline);
-    margin-top: var(--info-box-margin-top);
-    padding: 12px 0;
-    padding-inline-end: 18px;
-    width: var(--info-box-width);
+    justify-content: center;
+    margin-block-start: 30px;
+    min-height: 212px;
+    max-height: 300px;
+    flex-wrap: wrap;
+    overflow-y: auto;
+    overflow-x: hidden;
+    gap: 24px;
+    box-sizing: border-box;
   }
 
-  .info-box > p {
-    flex-grow: 1;
-    margin-block: 0;
-    text-align: start;
+  .disclaimer {
+    min-width: 360px;
+    width: 360px;
+    border-radius: 24px;
+    border: 1px solid var(--cr-fallback-color-surface-variant);
+    padding: 24px;
+    text-align: center;
+    box-sizing: border-box;
   }
 
-  .icon-container {
-    --icon-container-size: 28px;
-    --icon-container-margin: 16px;
-    background-color: var(--google-grey-100);
-    border-radius: 50%;
-    height: var(--icon-container-size);
-    margin-inline: var(--icon-container-margin);
-    width: var(--icon-container-size);
+  .disclaimer .icon {
+    height: 24px;
+    width: 24px;
+    color: var(--google-blue-500);
   }
 
-  .icon-container iron-icon {
-    --icon-size: 16px;
-    --iron-icon-height: var(--icon-size);
-    --iron-icon-width: var(--icon-size);
-    padding: calc((var(--icon-container-size) - var(--icon-size)) / 2);
+  .disclaimer h3 {
+    line-height: 32px;
+    text-align: center;
   }
 
-  .action-container {
-    flex-wrap: wrap-reverse;
-    max-width: 100%;
-    right: 0;
+  .disclaimer p {
+    line-height: 20px;
+    text-align: center;
   }
 
-  .action-container #cancelButton {
+  .action-container #cancel-button {
     font-weight: normal;
-  }
-
-  #linkData {
-    margin: 16px 32px;
   }
 
   .tangible-sync-style-left-banner {
@@ -170,37 +139,14 @@
     content: url(images/right-banner.svg);
   }
 
-  .dialog .tangible-sync-style-left-banner,
-  .dialog .tangible-sync-style-right-banner {
-    display: none;
-  }
-
-  .tangible-sync-style-dialog-illustration {
-    content: url(images/dialog_illustration.svg);
-    top: 100px;
-  }
-
-  .tangible-sync-style:not(.dialog) .tangible-sync-style-dialog-illustration {
-    display: none;
-  }
-
   @media (prefers-color-scheme: dark) {
     .work-badge {
       border-color: var(--md-background-color);
     }
 
     .work-badge > iron-icon {
-      box-shadow: 0 0 2px rgba(60, 64, 67, 0.12),
-         0 0 6px rgba(60, 64, 67, 0.15);
-    }
-
-    .info-box {
-      border-color: var(--google-grey-600);
-      color: var(--google-grey-100);
-    }
-
-    .icon-container {
-      background-color: var(--google-grey-700);
+      box-shadow: 0 0 2px rgba(var(--google-grey-800-rgb), 0.12),
+         0 0 6px rgba(var(--google-grey-800-rgb), 0.15);
     }
 
     .tangible-sync-style-right-banner {
@@ -210,64 +156,56 @@
     .tangible-sync-style-left-banner {
       content: url(images/left-banner-dark.svg);
     }
-
-    .tangible-sync-style-dialog-illustration {
-      content: url(images/dialog_illustration_dark.svg);
-    }
   }
 </style>
 
-<div class$="main-container tangible-sync-style
-    [[getMaybeDialogClass_(isModalDialog_)]]">
-  <img class="tangible-sync-style-left-banner" alt="">
-  <img class="tangible-sync-style-right-banner" alt="">
-  <img class="tangible-sync-style-dialog-illustration" alt="">
-  <div id="content-container">
-    <div id="header-container">
-      <div id="avatar-container">
-        <img id="avatar" alt="" src="[[pictureUrl_]]">
-        <div class="work-badge" hidden="[[!showEnterpriseBadge_]]">
-          <iron-icon class="icon" icon="cr:domain"></iron-icon>
+<template is="dom-if" if="[[useUpdatedUi_]]">
+  <div class="main-container tangible-sync-style">
+    <img class="tangible-sync-style-left-banner" alt="">
+    <img class="tangible-sync-style-right-banner" alt="">
+    <div id="content-container">
+      <div id="header-container">
+        <div id="avatar-container">
+          <img id="avatar" alt="" src="[[pictureUrl_]]">
+          <div class="work-badge" hidden="[[!showEnterpriseBadge_]]">
+            <iron-icon class="icon" icon="cr:domain"></iron-icon>
+          </div>
         </div>
       </div>
-    </div>
-    <div id="text-container">
-      <template is="dom-if" if="[[title_]]">
-        <h2 class="title">
-          [[title_]]
-        </h2>
-      </template>
-      <template is="dom-if" if="[[subtitle_]]">
-        <p class="subtitle">
-          [[subtitle_]]
-        </p>
-      </template>
-      <template is="dom-if" if="[[enterpriseInfo_]]">
-        <div class="info-box">
-          <div class="icon-container">
-            <iron-icon icon="cr:domain"></iron-icon>
-          </div>
-          <p id="enterpriseInfo">
-            [[enterpriseInfo_]]
+      <div id="text-container">
+        <template is="dom-if" if="[[title_]]">
+          <h1 class="title">
+            [[title_]]
+          </h1>
+        </template>
+        <template is="dom-if" if="[[subtitle_]]">
+          <p class="subtitle">
+            [[subtitle_]]
           </p>
-        </div>
-      </template>
+        </template>
+      </div>
+      <div class="disclaimer-container">
+        <section class="disclaimer">
+          <iron-icon class="icon" icon="cr:person"></iron-icon>
+          <h2>$i18n{profileInformationTitle}</h2>
+          <p>$i18n{profileInformationDetails}</p>
+        </section>
+        <section class="disclaimer">
+          <iron-icon class="icon" icon="cr:phonelink"></iron-icon>
+          <h2>$i18n{deviceInformationTitle}</h2>
+          <p>$i18n{deviceInformationDetails}</p>
+        </section>
+      </div>
     </div>
-    <template is="dom-if" if="[[showLinkDataCheckbox_]]">
-      <cr-checkbox id="linkData" checked="{{linkData_}}">
-        <div>$i18n{linkDataText}</div>
-      </cr-checkbox>
-    </template>
   </div>
-</div>
-<div class$="action-container tangible-sync-style
-    [[getMaybeDialogClass_(isModalDialog_)]]">
-  <cr-button id="proceedButton" class="action-button" on-click="onProceed_"
-      autofocus$="[[isModalDialog_]]" disabled="[[disableProceedButton_]]">
-    [[proceedLabel_]]
-  </cr-button>
-  <cr-button id="cancelButton" on-click="onCancel_"
-      hidden="[[!showCancelButton_]]">
-    $i18n{cancelLabel}
-  </cr-button>
-</div>
+  <div class="action-container tangible-sync-style">
+    <cr-button id="proceed-button" class="action-button" on-click="onProceed_"
+        autofocus$="[[isModalDialog_]]" disabled="[[disableProceedButton_]]">
+      [[proceedLabel_]]
+    </cr-button>
+    <cr-button id="cancel-button" on-click="onCancel_"
+        hidden="[[!showCancelButton_]]">
+      $i18n{cancelLabel}
+    </cr-button>
+  </div>
+</template>

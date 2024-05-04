@@ -9,7 +9,8 @@
 
 #include "base/check.h"
 #include "base/containers/span.h"
-#include "base/memory/raw_ptr.h"
+#include "base/memory/raw_ptr_exclusion.h"
+#include "base/memory/stack_allocated.h"
 #include "base/notreached.h"
 #include "base/unguessable_token.h"
 #include "components/viz/common/quads/compositor_render_pass_draw_quad.h"
@@ -445,12 +446,6 @@ struct StructTraits<viz::mojom::TextureQuadStateDataView, viz::DrawQuad> {
     return quad->background_color;
   }
 
-  static base::span<const float> vertex_opacity(const viz::DrawQuad& input) {
-    const viz::TextureDrawQuad* quad =
-        viz::TextureDrawQuad::MaterialCast(&input);
-    return quad->vertex_opacity;
-  }
-
   static bool y_flipped(const viz::DrawQuad& input) {
     const viz::TextureDrawQuad* quad =
         viz::TextureDrawQuad::MaterialCast(&input);
@@ -603,18 +598,6 @@ struct StructTraits<viz::mojom::YUVVideoQuadStateDataView, viz::DrawQuad> {
     return quad->a_plane_resource_id();
   }
 
-  static float resource_offset(const viz::DrawQuad& input) {
-    const viz::YUVVideoDrawQuad* quad =
-        viz::YUVVideoDrawQuad::MaterialCast(&input);
-    return quad->resource_offset;
-  }
-
-  static float resource_multiplier(const viz::DrawQuad& input) {
-    const viz::YUVVideoDrawQuad* quad =
-        viz::YUVVideoDrawQuad::MaterialCast(&input);
-    return quad->resource_multiplier;
-  }
-
   static uint32_t bits_per_channel(const viz::DrawQuad& input) {
     const viz::YUVVideoDrawQuad* quad =
         viz::YUVVideoDrawQuad::MaterialCast(&input);
@@ -651,8 +634,9 @@ struct StructTraits<viz::mojom::YUVVideoQuadStateDataView, viz::DrawQuad> {
 };
 
 struct DrawQuadWithSharedQuadState {
-  raw_ptr<const viz::DrawQuad> quad;
-  raw_ptr<const viz::SharedQuadState, DanglingUntriaged> shared_quad_state;
+  // RAW_PTR_EXCLUSION: Performance reasons (based on analysis of speedometer3).
+  RAW_PTR_EXCLUSION const viz::DrawQuad* quad = nullptr;
+  RAW_PTR_EXCLUSION const viz::SharedQuadState* shared_quad_state = nullptr;
 };
 
 template <>
@@ -671,7 +655,7 @@ struct StructTraits<viz::mojom::DrawQuadDataView, DrawQuadWithSharedQuadState> {
   }
 
   static OptSharedQuadState sqs(const DrawQuadWithSharedQuadState& input) {
-    return {input.shared_quad_state.get()};
+    return {input.shared_quad_state};
   }
 
   static const viz::DrawQuad& draw_quad_state(
@@ -691,11 +675,14 @@ template <>
 struct ArrayTraits<viz::QuadList> {
   using Element = DrawQuadWithSharedQuadState;
   struct ConstIterator {
+    STACK_ALLOCATED();
+
+   public:
     explicit ConstIterator(const viz::QuadList::ConstIterator& it)
         : it(it), last_shared_quad_state(nullptr) {}
 
     viz::QuadList::ConstIterator it;
-    raw_ptr<const viz::SharedQuadState> last_shared_quad_state;
+    const viz::SharedQuadState* last_shared_quad_state = nullptr;
   };
 
   static ConstIterator GetBegin(const viz::QuadList& input) {

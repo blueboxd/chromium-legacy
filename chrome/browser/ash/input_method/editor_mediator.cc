@@ -16,8 +16,9 @@
 #include "chrome/browser/ash/input_method/editor_helpers.h"
 #include "chrome/browser/ash/input_method/editor_metrics_enums.h"
 #include "chrome/browser/ash/input_method/editor_metrics_recorder.h"
+#include "chrome/browser/ash/input_method/editor_text_query_from_manta.h"
+#include "chrome/browser/ash/input_method/editor_text_query_from_memory.h"
 #include "chrome/browser/ash/input_method/editor_text_query_provider.h"
-#include "chrome/browser/ash/input_method/editor_text_query_provider_for_testing.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ui/webui/ash/mako/mako_bubble_coordinator.h"
 #include "ui/base/ime/ash/ime_bridge.h"
@@ -65,9 +66,10 @@ void EditorMediator::SetUpNewEditorService() {
     system_actuator_ = std::make_unique<EditorSystemActuator>(
         profile_, system_actuator_remote.InitWithNewEndpointAndPassReceiver(),
         this);
-    text_query_provider_ = std::make_unique<TextQueryProviderForOrca>(
+    text_query_provider_ = std::make_unique<EditorTextQueryProvider>(
         text_query_provider_remote.InitWithNewEndpointAndPassReceiver(),
-        profile_, metrics_recorder_.get());
+        metrics_recorder_.get(),
+        std::make_unique<EditorTextQueryFromManta>(profile_));
     editor_client_connector_ = std::make_unique<EditorClientConnector>(
         editor_client_connector_receiver.InitWithNewEndpointAndPassRemote());
     editor_event_proxy_ = std::make_unique<EditorEventProxy>(
@@ -79,9 +81,9 @@ void EditorMediator::SetUpNewEditorService() {
         std::move(system_actuator_remote),
         std::move(text_query_provider_remote));
 
-    // TODO: b:300838514 - We should only bind the native UI with the shared lib when the
-    // Rewrite UI is shown. Consider add a listener to the write/rewrite UI and
-    // move the binding there.
+    // TODO: b:300838514 - We should only bind the native UI with the shared lib
+    // when the Rewrite UI is shown. Consider add a listener to the
+    // write/rewrite UI and move the binding there.
     panel_manager_.BindEditorClient();
   }
 }
@@ -146,9 +148,6 @@ void EditorMediator::OnSurroundingTextChanged(const std::u16string& text,
   }
 
   surrounding_text_ = {.text = text, .selection_range = selection_range};
-
-  size_t selected_length = NonWhitespaceAndSymbolsLength(text, selection_range);
-  editor_switch_->OnTextSelectionLengthChanged(selected_length);
 }
 
 void EditorMediator::Announce(const std::u16string& message) {
@@ -207,16 +206,31 @@ void EditorMediator::HandleTrigger(
 
 void EditorMediator::CacheContext() {
   mako_bubble_coordinator_.CacheContextCaretBounds();
+
+  size_t selected_length = NonWhitespaceAndSymbolsLength(
+      surrounding_text_.text, surrounding_text_.selection_range);
+  editor_switch_->OnTextSelectionLengthChanged(selected_length);
+
   if (editor_event_proxy_ != nullptr) {
     editor_event_proxy_->OnSurroundingTextChanged(
         surrounding_text_.text, surrounding_text_.selection_range);
   }
 }
 
+void EditorMediator::FetchAndUpdateInputContext() {
+  GetTextFieldContextualInfo(
+      base::BindOnce(&EditorMediator::OnTextFieldContextualInfoChanged,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
 void EditorMediator::OnTextFieldContextualInfoChanged(
     const TextFieldContextualInfo& info) {
   editor_switch_->OnInputContextUpdated(
       IMEBridge::Get()->GetCurrentInputContext(), info);
+
+  if (system_actuator_ != nullptr) {
+    system_actuator_->OnInputContextUpdated(info.tab_url);
+  }
 }
 
 bool EditorMediator::IsAllowedForUse() {
@@ -224,6 +238,9 @@ bool EditorMediator::IsAllowedForUse() {
 }
 
 EditorMode EditorMediator::GetEditorMode() const {
+  if (editor_mode_override_for_testing_.has_value()) {
+    return *editor_mode_override_for_testing_;
+  }
   return editor_switch_->GetEditorMode();
 }
 
@@ -254,14 +271,13 @@ void EditorMediator::Shutdown() {
 
 bool EditorMediator::SetTextQueryProviderResponseForTesting(
     const std::vector<std::string>& mock_results) {
-  auto pending_receiver = text_query_provider_->Unbind();
-
-  if (!pending_receiver.has_value()) {
-    return false;
-  }
-  text_query_provider_ = std::make_unique<TextQueryProviderForTesting>(
-      std::move(pending_receiver.value()), mock_results);  // IN-TEST
+  text_query_provider_->SetProvider(
+      std::make_unique<EditorTextQueryFromMemory>(mock_results));  // IN-TEST
   return true;
+}
+
+void EditorMediator::OverrideEditorModeForTesting(EditorMode editor_mode) {
+  editor_mode_override_for_testing_ = editor_mode;
 }
 
 }  // namespace ash::input_method

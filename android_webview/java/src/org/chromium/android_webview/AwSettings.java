@@ -17,6 +17,9 @@ import android.provider.Settings;
 import android.webkit.WebSettings;
 
 import androidx.annotation.IntDef;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import org.jni_zero.CalledByNative;
 import org.jni_zero.JNINamespace;
@@ -50,8 +53,10 @@ import java.util.Set;
 /**
  * Stores Android WebView specific settings that does not need to be synced to WebKit.
  *
- * Methods in this class can be called from any thread, including threads created by
- * the client of WebView.
+ * <p>Methods in this class can be called from any thread, including threads created by the client
+ * of WebView.
+ *
+ * <p>Flushing the BFCache is required if a settings property is changed.
  */
 @Lifetime.WebView
 @JNINamespace("android_webview")
@@ -378,6 +383,12 @@ public class AwSettings {
         // Defer initializing the native side until a native WebContents instance is set.
     }
 
+    /** Get the AwSettings for the WebView with the given WebContents */
+    @Nullable
+    public static AwSettings fromWebContents(@NonNull WebContents webContents) {
+        return AwSettingsJni.get().fromWebContents(webContents);
+    }
+
     public int getUiModeNight() {
         return mContext.getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
     }
@@ -408,6 +419,28 @@ public class AwSettings {
         }
     }
 
+    private void flushBackForwardCacheOnUiThreadLocked() {
+        synchronized (mAwSettingsLock) {
+            WebContents contents = mWebContents;
+            mEventHandler.maybePostOnUiThread(() -> flushBackForwardCache(contents));
+        }
+    }
+
+    private void flushBackForwardCache() {
+        assert Thread.holdsLock(mAwSettingsLock);
+        flushBackForwardCache(mWebContents);
+    }
+
+    private void flushBackForwardCache(WebContents contents) {
+        ThreadUtils.assertOnUiThread();
+        if (contents != null) {
+            AwContents awContents = AwContents.fromWebContents(contents);
+            if (awContents != null) {
+                awContents.flushBackForwardCache();
+            }
+        }
+    }
+
     void setWebContents(WebContents webContents) {
         synchronized (mAwSettingsLock) {
             if (mNativeAwSettings != 0) {
@@ -420,6 +453,7 @@ public class AwSettings {
                 updateEverythingLocked();
                 WebauthnModeProvider.getInstance()
                         .setWebauthnModeForWebContents(webContents, mWebauthnMode);
+                flushBackForwardCacheOnUiThreadLocked();
             }
             mWebContents = webContents;
         }
@@ -440,6 +474,9 @@ public class AwSettings {
             if (!flag && !mHasInternetPermission) {
                 throw new SecurityException(
                         "Permission denied - " + "application missing INTERNET permission");
+            }
+            if (mBlockNetworkLoads != flag) {
+                flushBackForwardCacheOnUiThreadLocked();
             }
             mBlockNetworkLoads = flag;
         }
@@ -472,10 +509,14 @@ public class AwSettings {
 
     /**
      * Enable/Disable SafeBrowsing per WebView
+     *
      * @param enabled true if this WebView should have SafeBrowsing
      */
     public void setSafeBrowsingEnabled(boolean enabled) {
         synchronized (mAwSettingsLock) {
+            if (mSafeBrowsingEnabled == null || mSafeBrowsingEnabled != enabled) {
+                flushBackForwardCacheOnUiThreadLocked();
+            }
             mSafeBrowsingEnabled = enabled;
         }
     }
@@ -530,6 +571,9 @@ public class AwSettings {
     public void setAllowContentAccess(boolean allow) {
         if (TRACE) Log.i(TAG, "setAllowContentAccess=" + allow);
         synchronized (mAwSettingsLock) {
+            if (mAllowContentUrlAccess != allow) {
+                flushBackForwardCacheOnUiThreadLocked();
+            }
             mAllowContentUrlAccess = allow;
         }
     }
@@ -545,6 +589,9 @@ public class AwSettings {
     public void setCacheMode(int mode) {
         if (TRACE) Log.i(TAG, "setCacheMode=" + mode);
         synchronized (mAwSettingsLock) {
+            if (mCacheMode != mode) {
+                flushBackForwardCacheOnUiThreadLocked();
+            }
             mCacheMode = mode;
         }
     }
@@ -560,6 +607,9 @@ public class AwSettings {
     public void setShouldFocusFirstNode(boolean flag) {
         if (TRACE) Log.i(TAG, "setNeedInitialFocus=" + flag);
         synchronized (mAwSettingsLock) {
+            if (mShouldFocusFirstNode != flag) {
+                flushBackForwardCacheOnUiThreadLocked();
+            }
             mShouldFocusFirstNode = flag;
         }
     }
@@ -571,13 +621,7 @@ public class AwSettings {
             if (mInitialPageScalePercent != scaleInPercent) {
                 mInitialPageScalePercent = scaleInPercent;
                 mEventHandler.runOnUiThreadBlockingAndLocked(
-                        () -> {
-                            if (mNativeAwSettings != 0) {
-                                AwSettingsJni.get()
-                                        .updateInitialPageScaleLocked(
-                                                mNativeAwSettings, AwSettings.this);
-                            }
-                        });
+                        () -> updateInitialPageScaleOnUiThreadLocked());
             }
         }
     }
@@ -588,7 +632,8 @@ public class AwSettings {
         return mInitialPageScalePercent;
     }
 
-    void setSpatialNavigationEnabled(boolean enable) {
+    @VisibleForTesting
+    public void setSpatialNavigationEnabled(boolean enable) {
         synchronized (mAwSettingsLock) {
             if (mSpatialNavigationEnabled != enable) {
                 mSpatialNavigationEnabled = enable;
@@ -603,7 +648,8 @@ public class AwSettings {
         return mSpatialNavigationEnabled;
     }
 
-    void setEnableSupportedHardwareAcceleratedFeatures(boolean enable) {
+    @VisibleForTesting
+    public void setEnableSupportedHardwareAcceleratedFeatures(boolean enable) {
         synchronized (mAwSettingsLock) {
             if (mEnableSupportedHardwareAcceleratedFeatures != enable) {
                 mEnableSupportedHardwareAcceleratedFeatures = enable;
@@ -644,6 +690,9 @@ public class AwSettings {
     public void setGeolocationEnabled(boolean flag) {
         if (TRACE) Log.i(TAG, "setGeolocationEnabled=" + flag);
         synchronized (mAwSettingsLock) {
+            if (mGeolocationEnabled != flag) {
+                flushBackForwardCacheOnUiThreadLocked();
+            }
             mGeolocationEnabled = flag;
         }
     }
@@ -705,12 +754,7 @@ public class AwSettings {
                             AwContents.BAD_HEADER_MSG + "Invalid User-Agent '" + ua + "'");
                 }
                 mEventHandler.runOnUiThreadBlockingAndLocked(
-                        () -> {
-                            if (mNativeAwSettings != 0) {
-                                AwSettingsJni.get()
-                                        .updateUserAgentLocked(mNativeAwSettings, AwSettings.this);
-                            }
-                        });
+                        () -> updateUserAgentOnUiThreadLocked());
             }
         }
     }
@@ -748,12 +792,7 @@ public class AwSettings {
                 mHasUserAgentMetadataOverrides =
                         (uaMetadataMap != null && !uaMetadataMap.isEmpty());
                 mEventHandler.runOnUiThreadBlockingAndLocked(
-                        () -> {
-                            if (mNativeAwSettings != 0) {
-                                AwSettingsJni.get()
-                                        .updateUserAgentLocked(mNativeAwSettings, AwSettings.this);
-                            }
-                        });
+                        () -> updateUserAgentOnUiThreadLocked());
             }
         }
     }
@@ -1261,6 +1300,7 @@ public class AwSettings {
 
         mEventHandler.runOnUiThreadBlockingAndLocked(
                 () -> {
+                    flushBackForwardCache();
                     String[] rejected =
                             AwSettingsJni.get()
                                     .updateXRequestedWithAllowListOriginMatcher(
@@ -1313,6 +1353,9 @@ public class AwSettings {
     public void setBlockSpecialFileUrls(boolean block) {
         if (TRACE) Log.i(TAG, "setBlockSpecialFileUrls=" + block);
         synchronized (mAwSettingsLock) {
+            if (mBlockSpecialFileUrls != block) {
+                flushBackForwardCacheOnUiThreadLocked();
+            }
             mBlockSpecialFileUrls = block;
         }
     }
@@ -1382,12 +1425,7 @@ public class AwSettings {
 
     private void updateWillSuppressErrorStateLocked() {
         mEventHandler.runOnUiThreadBlockingAndLocked(
-                () -> {
-                    assert Thread.holdsLock(mAwSettingsLock);
-                    assert mNativeAwSettings != 0;
-                    AwSettingsJni.get()
-                            .updateWillSuppressErrorStateLocked(mNativeAwSettings, AwSettings.this);
-                });
+                () -> updateWillSuppressErrorStateOnUiThreadLocked());
     }
 
     @CalledByNative
@@ -1627,6 +1665,7 @@ public class AwSettings {
         if (TRACE) Log.i(TAG, "setSupportZoom=" + support);
         synchronized (mAwSettingsLock) {
             if (mSupportZoom != support) {
+                flushBackForwardCacheOnUiThreadLocked();
                 mSupportZoom = support;
                 onGestureZoomSupportChanged(
                         supportsDoubleTapZoomLocked(), supportsMultiTouchZoomLocked());
@@ -1646,6 +1685,7 @@ public class AwSettings {
         if (TRACE) Log.i(TAG, "setBuiltInZoomControls=" + enabled);
         synchronized (mAwSettingsLock) {
             if (mBuiltInZoomControls != enabled) {
+                flushBackForwardCacheOnUiThreadLocked();
                 mBuiltInZoomControls = enabled;
                 onGestureZoomSupportChanged(
                         supportsDoubleTapZoomLocked(), supportsMultiTouchZoomLocked());
@@ -1664,6 +1704,9 @@ public class AwSettings {
     public void setDisplayZoomControls(boolean enabled) {
         if (TRACE) Log.i(TAG, "setDisplayZoomControls=" + enabled);
         synchronized (mAwSettingsLock) {
+            if (mDisplayZoomControls != enabled) {
+                flushBackForwardCacheOnUiThreadLocked();
+            }
             mDisplayZoomControls = enabled;
         }
     }
@@ -1849,13 +1892,7 @@ public class AwSettings {
             if (enabled != mOffscreenPreRaster) {
                 mOffscreenPreRaster = enabled;
                 mEventHandler.runOnUiThreadBlockingAndLocked(
-                        () -> {
-                            if (mNativeAwSettings != 0) {
-                                AwSettingsJni.get()
-                                        .updateOffscreenPreRasterLocked(
-                                                mNativeAwSettings, AwSettings.this);
-                            }
-                        });
+                        () -> updateOffscreenPreRasterOnUiThreadLocked());
             }
         }
     }
@@ -1868,6 +1905,9 @@ public class AwSettings {
 
     public void setDisabledActionModeMenuItems(int menuItems) {
         synchronized (mAwSettingsLock) {
+            if (mDisabledMenuItems != menuItems) {
+                flushBackForwardCacheOnUiThreadLocked();
+            }
             mDisabledMenuItems = menuItems;
         }
     }
@@ -1875,13 +1915,7 @@ public class AwSettings {
     public void updateAcceptLanguages() {
         synchronized (mAwSettingsLock) {
             mEventHandler.runOnUiThreadBlockingAndLocked(
-                    () -> {
-                        if (mNativeAwSettings != 0) {
-                            AwSettingsJni.get()
-                                    .updateRendererPreferencesLocked(
-                                            mNativeAwSettings, AwSettings.this);
-                        }
-                    });
+                    () -> updateRendererPreferencesOnUiThreadLocked());
         }
     }
 
@@ -1939,17 +1973,65 @@ public class AwSettings {
         }
     }
 
+    private void updateInitialPageScaleOnUiThreadLocked() {
+        assert mEventHandler.mHandler != null;
+        ThreadUtils.assertOnUiThread();
+        flushBackForwardCache();
+        if (mNativeAwSettings != 0) {
+            AwSettingsJni.get().updateInitialPageScaleLocked(mNativeAwSettings, AwSettings.this);
+        }
+    }
+
+    private void updateUserAgentOnUiThreadLocked() {
+        assert mEventHandler.mHandler != null;
+        ThreadUtils.assertOnUiThread();
+        flushBackForwardCache();
+        if (mNativeAwSettings != 0) {
+            AwSettingsJni.get().updateUserAgentLocked(mNativeAwSettings, AwSettings.this);
+        }
+    }
+
     private void updateWebkitPreferencesOnUiThreadLocked() {
         assert mEventHandler.mHandler != null;
         ThreadUtils.assertOnUiThread();
+        flushBackForwardCache();
         if (mNativeAwSettings != 0) {
             AwSettingsJni.get().updateWebkitPreferencesLocked(mNativeAwSettings, AwSettings.this);
+        }
+    }
+
+    private void updateRendererPreferencesOnUiThreadLocked() {
+        assert mEventHandler.mHandler != null;
+        ThreadUtils.assertOnUiThread();
+        flushBackForwardCache();
+        if (mNativeAwSettings != 0) {
+            AwSettingsJni.get().updateRendererPreferencesLocked(mNativeAwSettings, AwSettings.this);
+        }
+    }
+
+    private void updateOffscreenPreRasterOnUiThreadLocked() {
+        assert mEventHandler.mHandler != null;
+        ThreadUtils.assertOnUiThread();
+        flushBackForwardCache();
+        if (mNativeAwSettings != 0) {
+            AwSettingsJni.get().updateOffscreenPreRasterLocked(mNativeAwSettings, AwSettings.this);
+        }
+    }
+
+    private void updateWillSuppressErrorStateOnUiThreadLocked() {
+        assert mEventHandler.mHandler != null;
+        ThreadUtils.assertOnUiThread();
+        flushBackForwardCache();
+        if (mNativeAwSettings != 0) {
+            AwSettingsJni.get()
+                    .updateWillSuppressErrorStateLocked(mNativeAwSettings, AwSettings.this);
         }
     }
 
     private void updateCookiePolicyOnUiThreadLocked() {
         assert mEventHandler.mHandler != null;
         ThreadUtils.assertOnUiThread();
+        flushBackForwardCache();
         if (mNativeAwSettings != 0) {
             AwSettingsJni.get().updateCookiePolicyLocked(mNativeAwSettings, AwSettings.this);
         }
@@ -1958,6 +2040,7 @@ public class AwSettings {
     private void updateAllowFileAccessOnUiThreadLocked() {
         assert mEventHandler.mHandler != null;
         ThreadUtils.assertOnUiThread();
+        flushBackForwardCache();
         if (mNativeAwSettings != 0) {
             AwSettingsJni.get().updateAllowFileAccessLocked(mNativeAwSettings, AwSettings.this);
         }
@@ -1967,6 +2050,7 @@ public class AwSettings {
         synchronized (mAwSettingsLock) {
             mEventHandler.runOnUiThreadBlockingAndLocked(
                     () -> {
+                        flushBackForwardCache();
                         if (mNativeAwSettings != 0) {
                             AwSettingsJni.get()
                                     .setEnterpriseAuthenticationAppLinkPolicyEnabled(
@@ -2039,6 +2123,8 @@ public class AwSettings {
         long init(AwSettings caller, WebContents webContents);
 
         void destroy(long nativeAwSettings, AwSettings caller);
+
+        AwSettings fromWebContents(WebContents webContents);
 
         void populateWebPreferencesLocked(
                 long nativeAwSettings, AwSettings caller, long webPrefsPtr);

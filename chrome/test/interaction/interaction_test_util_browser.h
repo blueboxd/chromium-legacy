@@ -30,7 +30,7 @@ class InteractionTestUtilBrowser : public ui::test::InteractionTestUtil {
   // necessarily an error; the remainder of the test may still be valid.
   //
   // The name of the screenshot will be composed as follows:
-  //   TestFixture_TestName[_screenshot_name]_baseline
+  //   TestFixture_TestName[_screenshot_name]_baseline_cl
   // If you are taking more than one screenshot per test, then `screenshot_name`
   // must be specified and unique within the test; otherwise you may leave it
   // empty.
@@ -61,7 +61,16 @@ class InteractionTestUtilBrowser : public ui::test::InteractionTestUtil {
   static ui::test::ActionResult CompareScreenshot(
       ui::TrackedElement* element,
       const std::string& screenshot_name,
-      const std::string& baseline);
+      const std::string& baseline_cl);
+
+  // As `CompareScreenshot()` but takes a screenshot of the entire surface
+  // containing `element_in_surface`, not just the element itself. Be careful
+  // when taking screenshots of e.g. a browser window that can be resized, as
+  // different-sized windows may result in different-sized images.
+  static ui::test::ActionResult CompareSurfaceScreenshot(
+      ui::TrackedElement* element_in_surface,
+      const std::string& screenshot_name,
+      const std::string& baseline_cl);
 };
 
 #endif  // CHROME_TEST_INTERACTION_INTERACTION_TEST_UTIL_BROWSER_H_

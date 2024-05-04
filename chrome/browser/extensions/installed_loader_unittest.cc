@@ -8,8 +8,8 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
 #include "chrome/browser/extensions/extension_service_user_test_base.h"
-#include "chrome/browser/extensions/permissions_updater.h"
-#include "chrome/browser/extensions/scripting_permissions_modifier.h"
+#include "chrome/browser/extensions/permissions/permissions_updater.h"
+#include "chrome/browser/extensions/permissions/scripting_permissions_modifier.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/test/base/testing_profile.h"
 #include "extensions/common/extension_builder.h"
@@ -423,7 +423,7 @@ TEST_F(InstalledLoaderUnitTest,
   RunHostPermissionsMetricsTest(params);
 }
 
-// TODO(crbug.com/1383740): After deleting the deprecated unincremented
+// TODO(crbug.com/40878021): After deleting the deprecated unincremented
 // histograms, consider modifying these to becomes less of change detectors in
 // metrics being modified.
 // Tests that some histograms that only emit for profiles that can use

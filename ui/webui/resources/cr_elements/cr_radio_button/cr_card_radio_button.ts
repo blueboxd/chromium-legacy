@@ -9,14 +9,15 @@
  */
 import {CrLitElement} from '//resources/lit/v3_0/lit.rollup.js';
 
-import {CrPaperRippleMixin} from '../cr_paper_ripple_mixin.js';
+import {CrRippleMixin} from '../cr_ripple/cr_ripple_mixin.js';
+import '../cr_icon/cr_icon.js';
 
 import {getCss} from './cr_card_radio_button.css.js';
 import {getHtml} from './cr_card_radio_button.html.js';
 import {CrRadioButtonMixinLit} from './cr_radio_button_mixin_lit.js';
 
 const CrCardRadioButtonElementBase =
-    CrPaperRippleMixin(CrRadioButtonMixinLit(CrLitElement));
+    CrRippleMixin(CrRadioButtonMixinLit(CrLitElement));
 
 export interface CrCardRadioButtonElement {
   $: {
@@ -37,18 +38,12 @@ export class CrCardRadioButtonElement extends CrCardRadioButtonElementBase {
     return getHtml.bind(this)();
   }
 
-  // Overridden from CrRadioButtonMixinLit
-  override getPaperRipple() {
-    return this.getRipple();
-  }
-
-  // Overridden from CrPaperRippleMixin
+  // Overridden from CrRippleMixin
   override createRipple() {
     this.rippleContainer = this.shadowRoot!.querySelector('.disc-wrapper');
     const ripple = super.createRipple();
-    ripple.id = 'ink';
     ripple.setAttribute('recenters', '');
-    ripple.classList.add('circle', 'toggle-ink');
+    ripple.classList.add('circle');
     return ripple;
   }
 }

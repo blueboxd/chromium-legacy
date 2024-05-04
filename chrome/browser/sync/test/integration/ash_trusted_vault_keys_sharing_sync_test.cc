@@ -24,6 +24,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/ash/components/browser_context_helper/browser_context_helper.h"
 #include "chromeos/ash/components/standalone_browser/standalone_browser_features.h"
+#include "chromeos/crosapi/mojom/account_manager.mojom.h"
 #include "chromeos/crosapi/mojom/trusted_vault.mojom.h"
 #include "components/sync/service/sync_service_impl.h"
 #include "components/sync/test/fake_server_nigori_helper.h"
@@ -358,7 +359,7 @@ class AshTrustedVaultKeysSharingSyncTest : public SyncTest {
 
   // Should be created before any observed notification is shown. Must outlive
   // profile, i.e. TearDownOnMainThread().
-  // TODO(crbug.com/1513038): would be better to avoid non-trivial lifetime
+  // TODO(crbug.com/41485611): would be better to avoid non-trivial lifetime
   // requirements. Perhaps, NotificationDisplayServiceTester simply should not
   // call SetTestingFactory(ctx, NullFactory) in destructor, since this
   // contradicts class-level comment ("Profile may outlive this") and unlikely

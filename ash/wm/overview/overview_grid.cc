@@ -20,15 +20,19 @@
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "ash/root_window_controller.h"
 #include "ash/rotator/screen_rotation_animator.h"
 #include "ash/screen_util.h"
 #include "ash/shelf/shelf.h"
+#include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_id.h"
+#include "ash/style/rounded_label_widget.h"
 #include "ash/style/typography.h"
 #include "ash/system/toast/toast_manager_impl.h"
+#include "ash/utility/forest_util.h"
 #include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "ash/wm/desks/default_desk_button.h"
 #include "ash/wm/desks/desk_bar_view_base.h"
@@ -48,6 +52,7 @@
 #include "ash/wm/desks/templates/saved_desk_util.h"
 #include "ash/wm/gestures/wm_gesture_handler.h"
 #include "ash/wm/mru_window_tracker.h"
+#include "ash/wm/overview/birch/birch_bar_controller.h"
 #include "ash/wm/overview/overview_constants.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_drop_target.h"
@@ -63,6 +68,7 @@
 #include "ash/wm/overview/overview_utils.h"
 #include "ash/wm/overview/overview_window_drag_controller.h"
 #include "ash/wm/overview/scoped_overview_animation_settings.h"
+#include "ash/wm/overview/scoped_overview_hide_windows.h"
 #include "ash/wm/overview/scoped_overview_wallpaper_clipper.h"
 #include "ash/wm/splitview/faster_split_view.h"
 #include "ash/wm/splitview/split_view_constants.h"
@@ -72,6 +78,7 @@
 #include "ash/wm/splitview/split_view_utils.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_restore/pine_contents_view.h"
+#include "ash/wm/window_restore/pine_controller.h"
 #include "ash/wm/window_state_delegate.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_constants.h"
@@ -145,24 +152,13 @@ constexpr int kMinimumItemsForScrollingLayout = 6;
 
 constexpr int kTabletModeOverviewItemTopPaddingDp = 16;
 
-// The padding applied to the side of the effective bounds without neighboring
-// widget.
-constexpr int kSpaciousPaddingForEffectiveBounds = 32;
-// The padding applied to the side of the effective bounds with neighboring
-// widget.
-constexpr int kCompactPaddingForEffectiveBounds = 16;
-
 // The horizontal and vertical distance from the bottom left corner of the grid
 // area to the origin of the `feedback_widget_`.
-constexpr int kFeedbackCornerSpacing = 30;
+constexpr int kFeedbackCornerSpacing = 8;
 
 // The minimum height of the grid area in order for the feedback button to be
 // visible.
 constexpr int kFeedbackGridMinHeight = 100;
-
-// Vertical spacing between the desk bar widget's bottom edge and the clipped
-// wallpaper's top edge.
-const int kSpaceBetweenBottomOfDeskBarAndClipWallpaper = 16;
 
 // The bottom padding applied to the bottom of the birch bar.
 constexpr int kBirchBarBottomPadding = 16;
@@ -393,7 +389,9 @@ bool IsUnsupportedWindow(aura::Window* window) {
       (OverviewController::Get()->disable_app_id_check_for_saved_desks() ||
        !saved_desk_util::GetAppId(window).empty());
 
-  return !DeskTemplate::IsAppTypeSupported(window) || !has_restore_id;
+  return !has_restore_id ||
+         !Shell::Get()->saved_desk_delegate()->IsWindowSupportedForSavedDesk(
+             window);
 }
 
 bool IsIncognitoWindow(aura::Window* window) {
@@ -473,6 +471,17 @@ int GetTopViewInset(const aura::Window::Windows& windows) {
   return inset;
 }
 
+// Returns the bottom padding of birch bar according to the appearance of the
+// home launcher.
+int GetBirchBarBottomPadding(aura::Window* root_window) {
+  // There is no padding when home launcher shows.
+  return Shelf::ForWindow(root_window)
+                     ->shelf_layout_manager()
+                     ->hotseat_state() == HotseatState::kShownHomeLauncher
+             ? 0
+             : kBirchBarBottomPadding;
+}
+
 // Returns the corresponding `SplitViewOverviewSessionExitPoint` with the
 // overview end action deduced from the given `overview_session`.
 SplitViewOverviewSessionExitPoint GetSplitViewOverviewSessionExitPoint(
@@ -517,13 +526,21 @@ bool ShouldImmediatelyInitDeskBar(OverviewGrid* grid) {
 
 // Returns true if the birch bar should be shown in current state.
 bool ShouldShowBirchBar(aura::Window* root_window) {
-  // The birch bar should not be shown in tablet mode or partial split view or
-  // the feature is disabled.
-  // TODO(http://b/325963519): remove the restriction of tablet mode when the
-  // design is finalized.
-  return features::IsForestFeatureEnabled() &&
-         !Shell::Get()->IsInTabletMode() &&
+  // The birch bar should not be shown in tablet mode, partial split view,
+  // the forest feature is disabled, non-primary users, or the birch bars are
+  // disabled by users. We don't need to worry about showing/hiding the bar
+  // dynamically on primary/secondary user switch because we exit overview when
+  // we switch users.
+  return IsForestFeatureEnabled() &&
+         Shell::Get()->session_controller()->IsUserPrimary() &&
+         BirchBarController::Get()->GetShowBirchSuggestions() &&
          !SplitViewController::Get(root_window)->InSplitViewMode();
+}
+
+bool ShouldShowPineDialog(aura::Window* root_window) {
+  return root_window == Shell::GetPrimaryRootWindow() &&
+         IsForestFeatureEnabled() &&
+         !!Shell::Get()->pine_controller()->pine_contents_data();
 }
 
 }  // namespace
@@ -659,20 +676,27 @@ void OverviewGrid::PrepareForOverview() {
 
   MaybeInitBirchBarWidget();
 
-  if (features::IsForestFeatureEnabled()) {
+  if (features::IsOakFeatureEnabled() || IsForestFeatureEnabled()) {
     scoped_overview_wallpaper_clipper_ =
         std::make_unique<ScopedOverviewWallpaperClipper>(this);
   }
 
-  if (root_window_ == Shell::GetPrimaryRootWindow() &&
-      overview_session_->enter_exit_overview_type() ==
-          OverviewEnterExitType::kPine) {
-    pine_widget_ = PineContentsView::Create(root_window_);
+  // TODO(b/326434696): Currently this will return false if there is no restore
+  // data in the pine contents data. Show the zero-state dialog.
+  if (ShouldShowPineDialog(root_window_)) {
+    pine_widget_ = PineContentsView::Create(GetGridEffectiveBounds());
     pine_widget_->ShowInactive();
-    pine_widget_->SetOpacity(0.f);
-    FadeInWidgetToOverview(pine_widget_.get(),
-                           OVERVIEW_ANIMATION_ENTER_OVERVIEW_MODE_FADE_IN,
-                           /*observe=*/true);
+
+    // If the enter type is immediate, `ShowInactive()` is sufficient as
+    // `pine_widget_` has no default animation. Otherwise, set the opacity to
+    // 0.f and perform a fade in animation.
+    if (overview_session_->enter_exit_overview_type() !=
+        OverviewEnterExitType::kImmediateEnter) {
+      pine_widget_->SetOpacity(0.f);
+      FadeInWidgetToOverview(pine_widget_.get(),
+                             OVERVIEW_ANIMATION_ENTER_OVERVIEW_MODE_FADE_IN,
+                             /*observe=*/true);
+    }
   }
 
   for (const auto& item : item_list_) {
@@ -695,9 +719,9 @@ void OverviewGrid::PositionWindowsContinuously(float y_offset) {
   const float scroll_ratio = y_offset / WmGestureHandler::kVerticalThresholdDp;
 
   // Move the desks bar up/down.
-  if (auto* desks_bar = desks_bar_view()) {
-    desks_bar->layer()->SetTransform(gfx::Transform::MakeTranslation(
-        0, desks_bar->height() * (scroll_ratio - 1)));
+  if (desks_bar_view_) {
+    desks_bar_view_->layer()->SetTransform(gfx::Transform::MakeTranslation(
+        0, desks_bar_view_->height() * (scroll_ratio - 1)));
   }
 
   // Compute and adjust the "No recent items" label.
@@ -762,7 +786,7 @@ void OverviewGrid::PositionWindows(
 
   // Create a feedback button that shows even when no items are present (e.g.,
   // for Pine).
-  if (features::IsForestFeatureEnabled()) {
+  if (IsForestFeatureEnabled()) {
     UpdateFeedbackButton();
   }
 
@@ -905,7 +929,7 @@ void OverviewGrid::AddItem(
   const bool should_animate = animate && !IsShowingSavedDeskLibrary();
 
   if (should_animate && use_spawn_animation && reposition) {
-    item->set_should_use_spawn_animation(true);
+    item->SetShouldUseSpawnAnimation(true);
   } else {
     // The item is added after overview enter animation is complete, so
     // just call OnStartingAnimationComplete() only if we won't animate it with
@@ -1165,16 +1189,16 @@ void OverviewGrid::UpdateDropTargetBackgroundVisibility(
       gfx::ToRoundedPoint(location_in_screen));
 }
 
-void OverviewGrid::OnOverviewItemDragStarted(OverviewItemBase* item) {
+void OverviewGrid::OnOverviewItemDragStarted() {
   CommitNameChanges();
-  for (auto& overview_mode_item : item_list_) {
-    overview_mode_item->OnOverviewItemDragStarted(item);
+  for (auto& item : item_list_) {
+    item->OnOverviewItemDragStarted();
   }
 }
 
 void OverviewGrid::OnOverviewItemDragEnded(bool snap) {
-  for (auto& overview_mode_item : item_list_) {
-    overview_mode_item->OnOverviewItemDragEnded(snap);
+  for (auto& item : item_list_) {
+    item->OnOverviewItemDragEnded(snap);
   }
 }
 
@@ -1185,7 +1209,7 @@ void OverviewGrid::OnWindowDragStarted(aura::Window* dragged_window,
   // Stack the |dragged_window| at top during drag.
   dragged_window->parent()->StackChildAtTop(dragged_window);
   // Called to set caption and title visibility during dragging.
-  OnOverviewItemDragStarted(/*item=*/nullptr);
+  OnOverviewItemDragStarted();
 }
 
 void OverviewGrid::OnWindowDragContinued(
@@ -1629,13 +1653,18 @@ gfx::Rect OverviewGrid::GetGridEffectiveBounds() const {
 }
 
 gfx::Insets OverviewGrid::GetGridHorizontalPaddings() const {
-  if (!features::IsForestFeatureEnabled() || InTabletMode()) {
+  if (!features::IsOakFeatureEnabled() && !IsForestFeatureEnabled()) {
     return gfx::Insets();
   }
 
   // Use compact paddings for partial overview.
   if (SplitViewController::Get(root_window_)->InSplitViewMode()) {
     return gfx::Insets::VH(0, kCompactPaddingForEffectiveBounds);
+  }
+
+  // Use spacious padding for tablet mode.
+  if (InTabletMode()) {
+    return gfx::Insets::VH(0, kSpaciousPaddingForEffectiveBounds);
   }
 
   gfx::Insets horizontal_paddings;
@@ -1655,10 +1684,11 @@ gfx::Insets OverviewGrid::GetGridHorizontalPaddings() const {
 }
 
 gfx::Insets OverviewGrid::GetGridVerticalPaddings() const {
-  const bool forest_enabled = features::IsForestFeatureEnabled();
+  const bool oak_enabled =
+      features::IsOakFeatureEnabled() || IsForestFeatureEnabled();
 
   // Use compact paddings for partial overview.
-  if (forest_enabled &&
+  if (oak_enabled &&
       SplitViewController::Get(root_window_)->InSplitViewMode()) {
     return gfx::Insets::VH(kCompactPaddingForEffectiveBounds, 0);
   }
@@ -1674,41 +1704,44 @@ gfx::Insets OverviewGrid::GetGridVerticalPaddings() const {
   const bool has_desk_bar =
       desks_bar_view_ || desks_util::ShouldDesksBarBeCreated();
 
-  // TODO(http://b/326087216): extend the expanded desk bar height by 16px for
-  // Forest feature.
-  const int desk_bar_padding_with_clip_wallpaper =
-      forest_enabled ? kSpaceBetweenBottomOfDeskBarAndClipWallpaper : 0;
-  vertical_paddings.set_top(
-      has_desk_bar ? GetDesksBarHeight() + desk_bar_padding_with_clip_wallpaper
-                   : 0);
+  const int no_desk_bar_padding =
+      oak_enabled ? kSpaciousPaddingForEffectiveBounds : 0;
+  vertical_paddings.set_top(has_desk_bar ? GetDesksBarHeight()
+                                         : no_desk_bar_padding);
 
-  // TODO(http://b/325963519): implement the paddings in tablet mode when the
-  // design is finalized.
-  if (!forest_enabled || InTabletMode()) {
+  if (!oak_enabled) {
     return vertical_paddings;
   }
 
-  // Calculate the bottom padding according to the existence of birch bar and
-  // shelf.
-  const bool has_birch_bar = birch_bar_view_ && birch_bar_view_->GetChipsNum();
-
-  // If birch bar exist, add compact padding with birch bar height and birch bar
-  // bottom padding to the bottom.
-  if (has_birch_bar) {
-    vertical_paddings.set_bottom(kBirchBarBottomPadding +
-                                 birch_bar_view_->GetPreferredSize().height() +
+  // Calculate the bottom padding according to the existence of birch bar,
+  // shelf, and home launcher.
+  if (birch_bar_view_) {
+    // If birch bar exists, add compact padding with the maximum birch bar
+    // height and birch bar bottom padding to the bottom.
+    vertical_paddings.set_bottom(GetBirchBarBottomPadding(root_window_) +
+                                 birch_bar_view_->GetMaximumHeight() +
                                  kCompactPaddingForEffectiveBounds);
+    return vertical_paddings;
+  }
+
+  auto* shelf = Shelf::ForWindow(root_window_);
+
+  if (InTabletMode()) {
+    // Use compact padding for home launcher and spacious padding otherwise.
+    vertical_paddings.set_bottom(
+        shelf->shelf_layout_manager()->hotseat_state() ==
+                HotseatState::kShownHomeLauncher
+            ? kCompactPaddingForEffectiveBounds
+            : kSpaciousPaddingForEffectiveBounds);
     return vertical_paddings;
   }
 
   // Otherwise, if there is a bottom shelf, use compact padding and spacious
   // padding otherwise.
-  vertical_paddings.set_bottom(
-      Shelf::ForWindow(root_window_)
-          ->SelectValueForShelfAlignment(
-              /*bottom=*/kCompactPaddingForEffectiveBounds,
-              /*left=*/kSpaciousPaddingForEffectiveBounds,
-              /*right=*/kSpaciousPaddingForEffectiveBounds));
+  vertical_paddings.set_bottom(shelf->SelectValueForShelfAlignment(
+      /*bottom=*/kCompactPaddingForEffectiveBounds,
+      /*left=*/kSpaciousPaddingForEffectiveBounds,
+      /*right=*/kSpaciousPaddingForEffectiveBounds));
   return vertical_paddings;
 }
 
@@ -1761,20 +1794,6 @@ bool OverviewGrid::MaybeDropItemOnDeskMiniViewOrNewDeskButton(
 
   auto* desks_controller = DesksController::Get();
 
-  auto move_windows_to_target_desk = [&](Desk* target_desk) -> bool {
-    bool did_any_window_move = false;
-    for (aura::Window* dragged_window : dragged_item->GetWindows()) {
-      if (!desks_controller->MoveWindowFromActiveDeskTo(
-              dragged_window, target_desk, root_window_,
-              DesksMoveWindowFromActiveDeskSource::kDragAndDrop)) {
-        CHECK(!did_any_window_move);
-        return false;
-      }
-      did_any_window_move = true;
-    }
-    return true;
-  };
-
   for (ash::DeskMiniView* mini_view : desks_bar_view_->mini_views()) {
     if (!mini_view->IsPointOnMiniView(screen_location))
       continue;
@@ -1788,7 +1807,10 @@ bool OverviewGrid::MaybeDropItemOnDeskMiniViewOrNewDeskButton(
     desks_bar_view_->UpdateDeskIconButtonState(
         desks_bar_view_->new_desk_button(),
         /*target_state=*/DeskIconButton::State::kExpanded);
-    return move_windows_to_target_desk(target_desk);
+
+    return desks_controller->MoveWindowFromActiveDeskTo(
+        dragged_item->GetWindow(), target_desk, root_window_,
+        DesksMoveWindowFromActiveDeskSource::kDragAndDrop);
   }
 
   if (!desks_controller->CanCreateDesks()) {
@@ -1817,7 +1839,9 @@ bool OverviewGrid::MaybeDropItemOnDeskMiniViewOrNewDeskButton(
     }
   }
 
-  return move_windows_to_target_desk(target_desk);
+  return desks_controller->MoveWindowFromActiveDeskTo(
+      dragged_item->GetWindow(), target_desk, root_window_,
+      DesksMoveWindowFromActiveDeskSource::kDragAndDrop);
 }
 
 void OverviewGrid::StartScroll() {
@@ -2100,6 +2124,13 @@ void OverviewGrid::ShowSavedDeskLibrary() {
   }
 
   desks_bar_view_->UpdateButtonsForSavedDeskGrid();
+
+  if (pine_widget_) {
+    pine_widget_->GetNativeWindow()->SetEventTargetingPolicy(
+        aura::EventTargetingPolicy::kNone);
+    PerformFadeOutLayer(pine_widget_->GetLayer(), /*animate=*/true,
+                        base::DoNothing());
+  }
 }
 
 void OverviewGrid::HideSavedDeskLibrary(bool exit_overview) {
@@ -2191,8 +2222,7 @@ void OverviewGrid::UpdateNoWindowsWidget(bool no_items,
   }
 
   if (!no_items || IsShowingSavedDeskLibrary() ||
-      overview_session_->enter_exit_overview_type() ==
-          OverviewEnterExitType::kPine) {
+      ShouldShowPineDialog(root_window_)) {
     no_windows_widget_.reset();
     faster_splitview_widget_.reset();
     return;
@@ -2238,10 +2268,27 @@ void OverviewGrid::RefreshGridBounds(bool animate) {
   SetBoundsAndUpdatePositions(GetGridBoundsInScreen(root_window_),
                               /*ignored_items=*/{}, animate);
   UpdateNoWindowsWidget(empty(), animate, /*is_continuous_enter=*/false);
+
+  if (pine_widget_) {
+    PineContentsView* contents_view =
+        views::AsViewClass<PineContentsView>(pine_widget_->GetContentsView());
+    CHECK(contents_view);
+    gfx::Rect pine_bounds = GetGridEffectiveBounds();
+    pine_bounds.ClampToCenteredSize(contents_view->GetPreferredSize());
+    pine_widget_->SetBounds(pine_bounds);
+  }
+
+  if (scoped_overview_wallpaper_clipper_) {
+    scoped_overview_wallpaper_clipper_->RefreshWallpaperClipBounds();
+  }
+
+  if (IsForestFeatureEnabled()) {
+    UpdateFeedbackButton();
+  }
 }
 
 void OverviewGrid::UpdateSaveDeskButtons() {
-  // TODO(crbug.com/1275282): The button should be updated whenever the
+  // TODO(crbug.com/40207000): The button should be updated whenever the
   // overview grid changes, i.e. switches between active desks and/or the
   // saved desk grid. This will be needed when we make it so that switching
   // desks keeps us in overview mode.
@@ -2427,14 +2474,7 @@ void OverviewGrid::OnTabletModeChanged() {
   // either. In this case, we may need to init the virtual desk bar.
   MaybeInitDesksWidget();
 
-  // Show the birch bar in clamshell mode and hide it in tablet mode.
-  // TODO(http://b/325963519): remove it when the design of the birch bar in
-  // tablet mode is finalized.
-  if (ShouldShowBirchBar(root_window_)) {
-    MaybeInitBirchBarWidget();
-  } else {
-    DestroyBirchBarWidget();
-  }
+  MaybeInitBirchBarWidget();
 }
 
 size_t OverviewGrid::GetNumWindows() const {
@@ -2477,8 +2517,60 @@ FasterSplitView* OverviewGrid::GetFasterSplitView() {
              : nullptr;
 }
 
-bool OverviewGrid::IsBirchBarShowing() const {
-  return birch_bar_widget_ && birch_bar_widget_->IsVisible();
+gfx::Rect OverviewGrid::GetWallpaperClipBounds() const {
+  // The bottom of the clipping bounds should be above the birch bar.
+  gfx::Rect clipping_bounds = GetGridEffectiveBounds();
+
+  if (birch_bar_widget_) {
+    clipping_bounds.SetVerticalBounds(
+        clipping_bounds.y(), birch_bar_widget_->GetWindowBoundsInScreen().y() -
+                                 kCompactPaddingForEffectiveBounds);
+  }
+  return clipping_bounds;
+}
+
+void OverviewGrid::MaybeInitBirchBarWidget(bool by_user) {
+  if (!ShouldShowBirchBar(root_window_) || birch_bar_widget_) {
+    return;
+  }
+
+  birch_bar_widget_ = BirchBarView::CreateBirchBarWidget(root_window_);
+  birch_bar_view_ =
+      views::AsViewClass<BirchBarView>(birch_bar_widget_->GetContentsView());
+  birch_bar_relayout_callback_subscription_ =
+      birch_bar_view_->AddRelayoutCallback(base::BindRepeating(
+          &OverviewGrid::OnBirchBarLayoutChanged, base::Unretained(this)));
+
+  // Initialize the birch bar view with birch bar controller.
+  auto* birch_bar_controller = BirchBarController::Get();
+  CHECK(birch_bar_controller);
+  birch_bar_controller->RegisterBar(birch_bar_view_);
+
+  // Stack birch bar at bottom to guarantee the dragged window is above it.
+  auto* window = birch_bar_widget_->GetNativeWindow();
+  window->parent()->StackChildAtBottom(window);
+
+  // Initialize the birch bar bounds to get correct paddings for grid.
+  MaybeUpdateBirchBarWidgetBounds();
+
+  if (by_user) {
+    RefreshGridBounds(/*animate=*/true);
+  }
+}
+
+void OverviewGrid::DestroyBirchBarWidget(bool by_user) {
+  if (birch_bar_widget_) {
+    // The birch bar controller may be destroyed when shutting down Overview.
+    if (auto* birch_bar_controller = BirchBarController::Get()) {
+      birch_bar_controller->OnBarDestroying(birch_bar_view_);
+    }
+    birch_bar_view_ = nullptr;
+    birch_bar_widget_.reset();
+
+    if (by_user) {
+      RefreshGridBounds(/*animate=*/true);
+    }
+  }
 }
 
 void OverviewGrid::OnSplitViewStateChanged(
@@ -2492,15 +2584,17 @@ void OverviewGrid::OnSplitViewStateChanged(
 
   SplitViewController* split_view_controller =
       SplitViewController::Get(root_window_);
+  const auto end_reason = split_view_controller->end_reason();
   const bool unsnappable_window_activated =
       state == SplitViewController::State::kNoSnap &&
-      split_view_controller->end_reason() ==
-          SplitViewController::EndReason::kUnsnappableWindowActivated;
+      end_reason == SplitViewController::EndReason::kUnsnappableWindowActivated;
 
-  // If two windows were snapped to both sides of the screen or an unsnappable
-  // window was just activated, or we're in single split mode in clamshell mode
-  // and there is no window in overview, end overview mode and bail out.
+  // If two windows were snapped to both sides of the screen and/or we ended
+  // split view by adding a Snap Group, or an unsnappable window was just
+  // activated, or we're in single split mode in clamshell mode and there is no
+  // window in overview, end overview mode and bail out.
   if (state == SplitViewController::State::kBothSnapped ||
+      end_reason == SplitViewController::EndReason::kSnapGroups ||
       unsnappable_window_activated ||
       (split_view_controller->InClamshellSplitViewMode() &&
        overview_session_->IsEmpty())) {
@@ -2512,12 +2606,16 @@ void OverviewGrid::OnSplitViewStateChanged(
     return;
   }
 
-  // Hide the birch bar in partial split view and show the birch bar if the
-  // partial split view ends.
+  // Update visibility on split state change: hide `birch_bar_widget_`,
+  // `desks_widget_`, `saved_desk_library_widget_`, and
+  // `save_desk_button_container_widget_` in partial overview; show in full
+  // overview.
   if (state == SplitViewController::State::kNoSnap) {
     MaybeInitBirchBarWidget();
+    RefreshDesksWidgets(/*visible=*/true);
   } else {
     DestroyBirchBarWidget();
+    RefreshDesksWidgets(/*visible=*/false);
   }
 
   // Update the cannot snap warnings and adjust the grid bounds.
@@ -2637,32 +2735,6 @@ void OverviewGrid::MaybeInitDesksWidget() {
   window->parent()->StackChildAtBottom(window);
 }
 
-void OverviewGrid::MaybeInitBirchBarWidget() {
-  if (!ShouldShowBirchBar(root_window_) || birch_bar_widget_) {
-    return;
-  }
-
-  birch_bar_widget_ = BirchBarView::CreateBirchBarWidget(root_window_);
-  birch_bar_view_ =
-      views::AsViewClass<BirchBarView>(birch_bar_widget_->GetContentsView());
-  birch_bar_relayout_callback_subscription_ =
-      birch_bar_view_->AddRelayoutCallback(
-          base::BindRepeating(&OverviewGrid::OnBirchBarLayoutChanged,
-                              weak_ptr_factory_.GetWeakPtr()));
-  birch_bar_widget_->Show();
-
-  // Stack birch bar at bottom to guarantee the dragged window is above it.
-  auto* window = birch_bar_widget_->GetNativeWindow();
-  window->parent()->StackChildAtBottom(window);
-}
-
-void OverviewGrid::DestroyBirchBarWidget() {
-  if (birch_bar_widget_) {
-    birch_bar_view_ = nullptr;
-    birch_bar_widget_.reset();
-  }
-}
-
 std::vector<gfx::RectF> OverviewGrid::GetWindowRects(
     const base::flat_set<OverviewItemBase*>& ignored_items) {
   gfx::Rect total_bounds = GetGridEffectiveBounds();
@@ -2762,7 +2834,7 @@ std::vector<gfx::RectF> OverviewGrid::GetWindowRects(
                            &max_right);
   }
 
-  MaybeCenterOverviewItems(rects);
+  MaybeCenterOverviewItems(ignored_items, rects);
 
   gfx::Vector2dF offset(0, (total_bounds.bottom() - max_bottom) / 2.f);
   for (auto& rect : rects)
@@ -2918,8 +2990,13 @@ bool OverviewGrid::FitWindowRectsInBounds(
 }
 
 void OverviewGrid::MaybeCenterOverviewItems(
+    const base::flat_set<OverviewItemBase*>& ignored_items,
     std::vector<gfx::RectF>& out_window_rects) {
-  if (!features::IsForestFeatureEnabled() || out_window_rects.empty()) {
+  if (!features::IsOakFeatureEnabled() && !IsForestFeatureEnabled()) {
+    return;
+  }
+
+  if (out_window_rects.empty()) {
     return;
   }
 
@@ -2930,22 +3007,22 @@ void OverviewGrid::MaybeCenterOverviewItems(
 
   // Batch process to center overview items within the same row.
   auto batch_center_overview_items = [&](size_t end_index) {
-    // Undo the pre-added extra spacing.
-    current_row_union_range.set_end(current_row_union_range.end() -
-                                    kHorizontalSpaceBetweenItemsDp);
-
     // Calculate the shift amount `current_diff` required to center the overview
     // items.
     const float range_center =
         (current_row_union_range.start() + current_row_union_range.end()) / 2.f;
     const int center_position = GetGridEffectiveBounds().CenterPoint().x();
-    float current_diff = std::abs(center_position - range_center);
+    float current_diff = std::round(std::abs(center_position - range_center));
     for (size_t j = current_row_first_item_index; j < end_index; j++) {
       out_window_rects[j].Offset(current_diff, 0);
     }
   };
 
   for (size_t i = 0; i < out_window_rects.size(); i++) {
+    if (ShouldExcludeItemFromGridLayout(item_list_[i].get(), ignored_items)) {
+      continue;
+    }
+
     gfx::RectF& rect = out_window_rects[i];
     if (rect.y() != current_row_y) {
       // As a new row begins processing, batch-shift the previous row's rects
@@ -2958,8 +3035,7 @@ void OverviewGrid::MaybeCenterOverviewItems(
 
     // Extend the range by adding the `rect`'s width and extra in-between items
     // spacing.
-    current_row_union_range.set_end(rect.right() +
-                                    kHorizontalSpaceBetweenItemsDp);
+    current_row_union_range.set_end(rect.right());
   }
 
   // Post-processing rects in the last row.
@@ -3045,14 +3121,17 @@ gfx::Rect OverviewGrid::GetBirchBarWidgetBounds() const {
   birch_bar_view_->UpdateAvailableSpace(available_space.width());
   const gfx::Size birch_bar_widget_size = birch_bar_view_->GetPreferredSize();
 
+  const int birch_bar_bottom_padding = GetBirchBarBottomPadding(root_window_);
+
   // Centeralize the bich bar at the bottom.
   const int top_inset = available_space.height() -
-                        birch_bar_widget_size.height() - kBirchBarBottomPadding;
+                        birch_bar_widget_size.height() -
+                        birch_bar_bottom_padding;
   const int horizontal_inset =
       (available_space.width() - birch_bar_widget_size.width()) / 2;
 
   available_space.Inset(gfx::Insets::TLBR(
-      top_inset, horizontal_inset, kBirchBarBottomPadding, horizontal_inset));
+      top_inset, horizontal_inset, birch_bar_bottom_padding, horizontal_inset));
   return available_space;
 }
 
@@ -3097,6 +3176,11 @@ void OverviewGrid::OnSavedDeskGridFadedOut() {
   UpdateSaveDeskButtons();
   UpdateNoWindowsWidget(/*no_items=*/empty(), /*animate=*/true,
                         /*is_continuous_enter=*/false);
+  if (pine_widget_) {
+    pine_widget_->GetNativeWindow()->SetEventTargetingPolicy(
+        aura::EventTargetingPolicy::kTargetAndDescendants);
+    PerformFadeInLayer(pine_widget_->GetLayer(), /*animate=*/true);
+  }
 }
 
 void OverviewGrid::OnSaveDeskButtonContainerFadedOut() {
@@ -3109,8 +3193,37 @@ void OverviewGrid::OnBirchBarLayoutChanged(
     return;
   }
 
-  if (MaybeUpdateBirchBarWidgetBounds()) {
-    PositionWindows(/*animate=*/true);
+  MaybeUpdateBirchBarWidgetBounds();
+  if (scoped_overview_wallpaper_clipper_) {
+    scoped_overview_wallpaper_clipper_->RefreshWallpaperClipBounds();
+  }
+  UpdateFeedbackButton();
+}
+
+void OverviewGrid::RefreshDesksWidgets(bool visible) {
+  if (!IsForestFeatureEnabled()) {
+    return;
+  }
+
+  if (!visible) {
+    views::Widget::Widgets desks_widgets = {
+        desks_widget_.get(), saved_desk_library_widget_.get(),
+        save_desk_button_container_widget_.get()};
+    aura::Window::Windows hide_windows;
+    base::ranges::for_each(
+        desks_widgets, [&hide_windows](views::Widget* widget) {
+          if (widget) {
+            hide_windows.emplace_back(widget->GetNativeWindow());
+          }
+        });
+
+    hide_windows_in_partial_overview_ =
+        std::make_unique<ScopedOverviewHideWindows>(
+            /*windows=*/hide_windows,
+            /*forced_hidden=*/true);
+  } else {
+    hide_windows_in_partial_overview_.reset();
+    MaybeUpdateDesksWidgetBounds();
   }
 }
 
@@ -3184,6 +3297,7 @@ void OverviewGrid::AddDropTargetImpl(OverviewItemBase* dragged_item,
     ignored_items.insert(dragged_item);
   }
   PositionWindows(animate, ignored_items);
+  UpdateNoWindowsWidget(empty(), animate, /*is_continuous_enter=*/false);
 }
 
 void OverviewGrid::OnSkipButtonPressed() {
@@ -3260,25 +3374,24 @@ void OverviewGrid::UpdateFasterSplitViewWidget() {
 }
 
 void OverviewGrid::UpdateFeedbackButton() {
-  CHECK(features::IsForestFeatureEnabled());
+  CHECK(IsForestFeatureEnabled());
 
   if (SplitViewController::Get(root_window_)->InSplitViewMode()) {
     feedback_widget_.reset();
     return;
   }
 
-  // We don't want the feedback button to overlap the desk bar.
-  gfx::Rect grid_bounds = GetGridEffectiveBounds();
-  if (grid_bounds.height() < kFeedbackGridMinHeight) {
+  // We don't want the feedback button to overlap the desk bar and birch bar.
+  gfx::Rect wallpaper_clip_bounds = GetWallpaperClipBounds();
+  if (wallpaper_clip_bounds.height() < kFeedbackGridMinHeight) {
     return;
   }
 
   if (!feedback_widget_) {
     auto contents_view = std::make_unique<PillButton>(
-        // TODO(hewer): Add callback to open a feedback page.
         base::BindRepeating(&OverviewGrid::ShowFeedbackPage,
                             base::Unretained(this)),
-        u"Send Feedback", PillButton::Type::kDefaultWithIconLeading,
+        u"Send Feedback", PillButton::Type::kDefaultElevatedWithIconLeading,
         &kFeedbackIcon);
 
     views::Widget::InitParams params;
@@ -3296,14 +3409,11 @@ void OverviewGrid::UpdateFeedbackButton() {
 
   const gfx::Size contents_size =
       feedback_widget_->GetContentsView()->GetPreferredSize();
-
-  // TODO(hewer): Change the fixed distance of the button from the corner once
-  // the crop area is implemented.
-  feedback_widget_->SetBounds(
-      gfx::Rect(grid_bounds.bottom_left().x() + kFeedbackCornerSpacing,
-                grid_bounds.bottom_left().y() - kFeedbackCornerSpacing -
-                    contents_size.height(),
-                contents_size.width(), contents_size.height()));
+  feedback_widget_->SetBounds(gfx::Rect(
+      wallpaper_clip_bounds.bottom_left().x() + kFeedbackCornerSpacing,
+      wallpaper_clip_bounds.bottom_left().y() - kFeedbackCornerSpacing -
+          contents_size.height(),
+      contents_size.width(), contents_size.height()));
 }
 
 void OverviewGrid::ShowFeedbackPage() {

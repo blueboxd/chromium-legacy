@@ -20,6 +20,8 @@ class OptimizationGuideDecider;
 
 namespace payments::facilitated {
 
+class FacilitatedPaymentsClient;
+
 // Implementation of `FacilitatedPaymentsDriver` for Android/Desktop. It
 // is owned by `ContentFacilitatedPaymentsFactory`.
 // Each `ContentFacilitatedPaymentsDriver` is associated with exactly one
@@ -28,6 +30,7 @@ namespace payments::facilitated {
 class ContentFacilitatedPaymentsDriver : public FacilitatedPaymentsDriver {
  public:
   ContentFacilitatedPaymentsDriver(
+      FacilitatedPaymentsClient* client,
       optimization_guide::OptimizationGuideDecider* optimization_guide_decider,
       content::RenderFrameHost* render_frame_host);
   ContentFacilitatedPaymentsDriver(const ContentFacilitatedPaymentsDriver&) =
@@ -38,8 +41,8 @@ class ContentFacilitatedPaymentsDriver : public FacilitatedPaymentsDriver {
 
   // FacilitatedPaymentsDriver:
   void TriggerPixCodeDetection(
-      base::OnceCallback<void(mojom::PixCodeDetectionResult)> callback)
-      override;
+      base::OnceCallback<void(mojom::PixCodeDetectionResult,
+                              const std::string&)> callback) override;
 
  private:
   // Lazily binds the agent.

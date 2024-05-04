@@ -258,10 +258,12 @@ void OpenH264VideoEncoder::Initialize(VideoCodecProfile profile,
   output_cb_ = BindCallbackToCurrentLoopIfNeeded(std::move(output_cb));
   codec_ = std::move(codec);
 
-  VideoEncoderInfo info;
-  info.implementation_name = "OpenH264VideoEncoder";
-  info.is_hardware_accelerated = false;
-  BindCallbackToCurrentLoopIfNeeded(std::move(info_cb)).Run(info);
+  if (info_cb) {
+    VideoEncoderInfo info;
+    info.implementation_name = "OpenH264VideoEncoder";
+    info.is_hardware_accelerated = false;
+    BindCallbackToCurrentLoopIfNeeded(std::move(info_cb)).Run(info);
+  }
 
   std::move(done_cb).Run(EncoderStatus::Codes::kOk);
 }
@@ -281,8 +283,8 @@ EncoderStatus OpenH264VideoEncoder::DrainOutputs(const SFrameBSInfo& frame_info,
 
   result.key_frame = (frame_info.eFrameType == videoFrameTypeIDR);
   result.color_space = color_space;
-  result.data = std::make_unique<uint8_t[]>(total_chunk_size);
-  auto* gather_buffer = result.data.get();
+  result.data = base::HeapArray<uint8_t>::Uninit(total_chunk_size);
+  auto* gather_buffer = result.data.data();
 
   if (h264_converter_) {
     // Copy data to a temporary buffer instead.
@@ -322,9 +324,7 @@ EncoderStatus OpenH264VideoEncoder::DrainOutputs(const SFrameBSInfo& frame_info,
   size_t converted_output_size = 0;
   bool config_changed = false;
   auto status = h264_converter_->ConvertChunk(
-      conversion_buffer_,
-      base::span<uint8_t>(result.data.get(), total_chunk_size), &config_changed,
-      &converted_output_size);
+      conversion_buffer_, result.data, &config_changed, &converted_output_size);
 
   if (!status.is_ok())
     return EncoderStatus(EncoderStatus::Codes::kEncoderFailedEncode)

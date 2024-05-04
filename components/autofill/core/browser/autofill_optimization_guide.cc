@@ -11,6 +11,7 @@
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/payments/constants.h"
+#include "components/autofill/core/browser/payments_data_manager.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/optimization_guide/core/optimization_guide_decider.h"
@@ -71,6 +72,8 @@ GetCardBenefitsOptimizationTypesForCard(const CreditCard& card) {
             CAPITAL_ONE_CREDIT_CARD_ENTERTAINMENT_BENEFITS);
     optimization_types.push_back(
         optimization_guide::proto::CAPITAL_ONE_CREDIT_CARD_STREAMING_BENEFITS);
+    optimization_types.push_back(
+        optimization_guide::proto::CAPITAL_ONE_CREDIT_CARD_BENEFITS_BLOCKED);
   }
   return optimization_types;
 }
@@ -79,7 +82,8 @@ void AddCreditCardOptimizationTypes(
     const PersonalDataManager* personal_data_manager,
     base::flat_set<optimization_guide::proto::OptimizationType>&
         optimization_types) {
-  for (const CreditCard* card : personal_data_manager->GetServerCreditCards()) {
+  for (const CreditCard* card :
+       personal_data_manager->payments_data_manager().GetServerCreditCards()) {
     auto vcn_merchant_opt_out_optimization_type =
         GetVcnMerchantOptOutOptimizationTypeForCard(*card);
     if (vcn_merchant_opt_out_optimization_type !=
@@ -134,7 +138,7 @@ AutofillOptimizationGuide::AutofillOptimizationGuide(
 
 AutofillOptimizationGuide::~AutofillOptimizationGuide() = default;
 
-// TODO(crbug.com/1519658): Pass PersonalDataManager by reference and remove
+// TODO(crbug.com/41492637): Pass PersonalDataManager by reference and remove
 // check for presence.
 void AutofillOptimizationGuide::OnDidParseForm(
     const FormStructure& form_structure,
@@ -174,7 +178,7 @@ void AutofillOptimizationGuide::OnDidParseForm(
 CreditCardCategoryBenefit::BenefitCategory
 AutofillOptimizationGuide::AttemptToGetEligibleCreditCardBenefitCategory(
     std::string_view issuer_id,
-    const url::Origin& origin) const {
+    const GURL& url) const {
   std::vector<optimization_guide::proto::OptimizationType>
       issuer_optimization_types;
   if (issuer_id == kAmexCardIssuerId) {
@@ -198,7 +202,7 @@ AutofillOptimizationGuide::AttemptToGetEligibleCreditCardBenefitCategory(
 
   for (auto& optimization_type : issuer_optimization_types) {
     optimization_guide::OptimizationGuideDecision decision =
-        decider_->CanApplyOptimization(origin.GetURL(), optimization_type,
+        decider_->CanApplyOptimization(url, optimization_type,
                                        /*optimization_metadata=*/nullptr);
     if (decision == optimization_guide::OptimizationGuideDecision::kTrue) {
       // Webpage is eligible for category benefit `optimization_type`. Early
@@ -207,7 +211,7 @@ AutofillOptimizationGuide::AttemptToGetEligibleCreditCardBenefitCategory(
       return GetBenefitCategoryForOptimizationType(optimization_type);
     }
   }
-  // No applicable category benefit for the 'issuer_id' on `origin` webpage.
+  // No applicable category benefit for the 'issuer_id' on the 'url'.
   return CreditCardCategoryBenefit::BenefitCategory::kUnknownBenefitCategory;
 }
 
@@ -259,6 +263,29 @@ bool AutofillOptimizationGuide::ShouldBlockFormFieldSuggestion(
 
   // No conditions to block displaying this virtual card suggestion were met,
   // so return that we should not block displaying this suggestion.
+  return false;
+}
+
+bool AutofillOptimizationGuide::ShouldBlockBenefitSuggestionLabelsForCardAndUrl(
+    const CreditCard& card,
+    const GURL& url) const {
+  if (card.issuer_id() == kCapitalOneCardIssuerId) {
+    optimization_guide::OptimizationGuideDecision decision =
+        decider_->CanApplyOptimization(
+            url,
+            optimization_guide::proto::CAPITAL_ONE_CREDIT_CARD_BENEFITS_BLOCKED,
+            /*optimization_metadata=*/nullptr);
+    // Since the Capital One benefit suggestions hint uses a blocklist, it will
+    // return kFalse if the `url` is present, meaning when kFalse is returned,
+    // we should block the suggestion from being shown. If the optimization type
+    // was not registered in time before being queried, it will be kUnknown, so
+    // the default functionality in this case will be to not block the
+    // suggestion from being shown.
+    return decision == optimization_guide::OptimizationGuideDecision::kFalse;
+  }
+
+  // No conditions indicating benefits suggestions should be blocked were
+  // encountered, so return that they should not be blocked.
   return false;
 }
 

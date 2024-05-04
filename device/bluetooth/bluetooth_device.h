@@ -110,6 +110,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
     ERROR_DEVICE_UNCONNECTED = 11,
     ERROR_DOES_NOT_EXIST = 12,
     ERROR_INVALID_ARGS = 13,
+    ERROR_NON_AUTH_TIMEOUT = 14,
     NUM_CONNECT_ERROR_CODES,  // Keep as last enum.
   };
 
@@ -403,7 +404,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
   // if a device stops advertising manufacturer data for a Manufacturer Id, this
   // function will still return the cached value for that Id.
   //
-  // TODO(crbug.com/661814) Support this on platforms that don't use BlueZ.
+  // TODO(crbug.com/41284350) Support this on platforms that don't use BlueZ.
   // Only BlueZ supports this now. This method returns an empty map on platforms
   // that don't use BlueZ.
   const ManufacturerDataMap& GetManufacturerData() const;
@@ -646,6 +647,11 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
   // Returns the time of the last call to UpdateTimestamp(), or base::Time() if
   // it hasn't been called yet.
   virtual base::Time GetLastUpdateTime() const;
+
+#if BUILDFLAG(IS_APPLE)
+  // Returns true if this device is a Low Energy device.
+  virtual bool IsLowEnergyDevice() = 0;
+#endif  // BUILDFLAG(IS_APPLE)
 
   // Called by BluetoothAdapter when a new Advertisement is seen for this
   // device. This replaces previously seen Advertisement Data. The order of

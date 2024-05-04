@@ -19,7 +19,7 @@ constexpr char kSuppressedScreenshotError[] =
     "Screenshot can only run in pixel_tests on Windows.";
 }  // namespace
 
-// TODO(crbug.com/1479563): Cover EditAddressProfileDialogControllerImpl with
+// TODO(crbug.com/40280921): Cover EditAddressProfileDialogControllerImpl with
 // more tests.
 class EditAddressProfileDialogControllerImplTest
     : public InteractiveBrowserTest {
@@ -80,11 +80,12 @@ class EditAddressProfileDialogControllerImplTest
               web_contents());
       ASSERT_THAT(controller, ::testing::NotNull());
       controller->OfferEdit(
-          profile, original_profile, footer_message,
+          profile, /*title_override=*/u"", footer_message,
+          /*is_editing_existing_address*/ original_profile != nullptr,
+          is_migration_to_account,
           base::BindOnce(
               &EditAddressProfileDialogControllerImplTest::OnUserDecision,
-              base::Unretained(this)),
-          is_migration_to_account);
+              base::Unretained(this)));
     });
   }
 
@@ -105,7 +106,8 @@ IN_PROC_BROWSER_TEST_F(EditAddressProfileDialogControllerImplTest,
       InAnyContext(Steps(
           SetOnIncompatibleAction(OnIncompatibleAction::kIgnoreAndContinue,
                                   kSuppressedScreenshotError),
-          Screenshot(EditAddressProfileView::kTopViewId, "editor", "4846629"),
+          Screenshot(EditAddressProfileView::kTopViewId,
+                     /*screenshot_name=*/"editor", /*baseline_cl=*/"4846629"),
           PressButton(views::DialogClientView::kOkButtonElementId),
           WaitForHide(EditAddressProfileView::kTopViewId), FlushEvents())),
       EnsureClosedWithDecisionAndProfile(

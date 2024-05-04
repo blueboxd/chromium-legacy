@@ -34,8 +34,8 @@ export enum MemorySaverModeExceptionListAction {
 // components/performance_manager/public/user_tuning/prefs.h
 export enum MemorySaverModeState {
   DISABLED = 0,
-  ENABLED = 1,
-  ENABLED_ON_TIMER = 2,
+  DEPRECATED = 1,
+  ENABLED = 2,
 
   // Must be last.
   COUNT = 3,
@@ -44,6 +44,7 @@ export enum MemorySaverModeState {
 export interface PerformanceMetricsProxy {
   recordBatterySaverModeChanged(state: BatterySaverModeState): void;
   recordMemorySaverModeChanged(state: MemorySaverModeState): void;
+  recordDiscardRingTreatmentEnabledChanged(enabled: boolean): void;
   recordExceptionListAction(action: MemorySaverModeExceptionListAction): void;
 }
 
@@ -58,6 +59,11 @@ export class PerformanceMetricsProxyImpl implements PerformanceMetricsProxy {
     chrome.metricsPrivate.recordEnumerationValue(
         'PerformanceControls.MemorySaver.SettingsChangeMode', state,
         MemorySaverModeState.COUNT);
+  }
+
+  recordDiscardRingTreatmentEnabledChanged(enabled: boolean): void {
+    chrome.metricsPrivate.recordBoolean(
+        'PerformanceControls.MemorySaver.DiscardRingTreatment', enabled);
   }
 
   recordExceptionListAction(action: MemorySaverModeExceptionListAction) {

@@ -6,16 +6,29 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_ANCHOR_EVALUATOR_H_
 
 #include <optional>
+
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/css/css_anchor_query_enums.h"
+#include "third_party/blink/renderer/core/layout/geometry/physical_offset.h"
+#include "third_party/blink/renderer/core/style/inset_area.h"
 #include "third_party/blink/renderer/platform/geometry/layout_unit.h"
+#include "third_party/blink/renderer/platform/heap/member.h"
+#include "third_party/blink/renderer/platform/heap/visitor.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
 namespace blink {
 
+class AnchorQuery;
 class AnchorScope;
-class CalculationExpressionNode;
+class ComputedStyleBuilder;
+class ScopedCSSName;
 
 class CORE_EXPORT AnchorEvaluator {
+  DISALLOW_NEW();
+
  public:
+  AnchorEvaluator() = default;
+
   // The evaluation of anchor() and anchor-size() functions is affected
   // by the context they are used in. For example, it is not allowed to
   // do anchor() queries "cross-axis" (e.g. left:anchor(--a top)),
@@ -52,18 +65,34 @@ class CORE_EXPORT AnchorEvaluator {
     kSize
   };
 
-  // Evaluates an anchor() or anchor-size() function given by the
-  // CalculationExpressionNode. Returns |nullopt| if the query is invalid
-  // (e.g., no targets or wrong axis.), in which case the fallback should
-  // be used.
+  // Evaluates an anchor() or anchor-size() query.
+  // Returns |nullopt| if the query is invalid (e.g., no targets or wrong
+  // axis.), in which case the fallback should be used.
   virtual std::optional<LayoutUnit> Evaluate(
-      const CalculationExpressionNode&) = 0;
+      const AnchorQuery&,
+      const ScopedCSSName* position_anchor,
+      const std::optional<InsetAreaOffsets>&) = 0;
+
+  // Take the computed inset-area and position-anchor and compute the physical
+  // offsets to inset the containing block with.
+  virtual std::optional<InsetAreaOffsets> ComputeInsetAreaOffsetsForLayout(
+      const ScopedCSSName* position_anchor,
+      InsetArea inset_area) = 0;
+
+  // Take the computed inset-area and position-anchor from the builder and
+  // compute the physical offset for anchor-center
+  virtual std::optional<PhysicalOffset> ComputeAnchorCenterOffsets(
+      const ComputedStyleBuilder&) = 0;
+
+  virtual void Trace(Visitor*) const {}
 
  protected:
   Mode GetMode() const { return mode_; }
 
  private:
   friend class AnchorScope;
+
+  // The computed position-anchor in use for the current try option.
   Mode mode_ = Mode::kNone;
 };
 

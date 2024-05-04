@@ -167,11 +167,6 @@ class CC_EXPORT LayerTreeSettings {
   // the device scale factor.
   bool use_painted_device_scale_factor = false;
 
-  // When true, LayerTreeHostImplClient will be posting a task to call
-  // DidReceiveCompositorFrameAck, used by the Compositor but not the
-  // LayerTreeView.
-  bool send_compositor_frame_ack = true;
-
   // When false, scroll deltas accumulated on the impl thread are rounded to
   // integer values when sent to Blink on commit. This flag should eventually
   // go away and CC should send Blink fractional values:
@@ -219,13 +214,17 @@ class CC_EXPORT LayerTreeSettings {
   bool disable_frame_rate_limit = false;
 
   // Enables shared image cache for gpu.
-  // TODO(crbug.com/1378251): not ready to be used by renderer cc instance yet.
+  // TODO(crbug.com/40243842): not ready to be used by renderer cc instance yet.
   bool enable_shared_image_cache_for_gpu = false;
 
   // Maximum size for buffers allocated for rendering when GPU compositing is
   // disabled. This size is equivalent to the max texture size in GPU mode.
   // This is an arbitrary limit here similar to what hardware might have.
   int max_render_buffer_bounds_for_sw = 16 * 1024;
+
+  // Whether the client supports HitTestOpaqueness::kOpaque. If yes, cc will
+  // respect the flag and optimize scroll hit testing.
+  bool enable_hit_test_opaqueness = false;
 
   // Whether to use variable refresh rates when generating begin frames.
   bool enable_variable_refresh_rate = false;

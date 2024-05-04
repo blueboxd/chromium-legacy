@@ -47,10 +47,10 @@ void VerifyValidationResult(const base::FilePath& path1,
   ASSERT_TRUE(process1.IsRunning());
   auto process2 = StartSuspendedFakeProcess(path2);
   ASSERT_TRUE(process2.IsRunning());
-  const auto data =
-      GenerateValidationData(ProtectionLevel::PATH_VALIDATION, process1);
+  const auto data = GenerateValidationData(
+      ProtectionLevel::PROTECTION_PATH_VALIDATION, process1);
   ASSERT_TRUE(data.has_value()) << data.error();
-  EXPECT_EQ(expected_match, ValidateData(process2, *data))
+  EXPECT_EQ(expected_match, SUCCEEDED(ValidateData(process2, *data)))
       << path1 << " vs. " << path2;
   process1.Terminate(0, /*wait=*/true);
   process2.Terminate(0, /*wait=*/true);
@@ -67,35 +67,68 @@ class CallerValidationTest : public ::testing::Test {
 
 TEST_F(CallerValidationTest, NoneValidationTest) {
   const auto my_process = base::Process::Current();
-  const auto data = GenerateValidationData(ProtectionLevel::NONE, my_process);
+  const auto data =
+      GenerateValidationData(ProtectionLevel::PROTECTION_NONE, my_process);
   ASSERT_TRUE(data.has_value()) << data.error();
-  ASSERT_TRUE(ValidateData(my_process, *data));
+  ASSERT_HRESULT_SUCCEEDED(ValidateData(my_process, *data));
 }
 
 TEST_F(CallerValidationTest, PathValidationTest) {
   const auto my_process = base::Process::Current();
-  const auto data =
-      GenerateValidationData(ProtectionLevel::PATH_VALIDATION, my_process);
+  const auto data = GenerateValidationData(
+      ProtectionLevel::PROTECTION_PATH_VALIDATION, my_process);
   ASSERT_TRUE(data.has_value()) << data.error();
-  ASSERT_TRUE(ValidateData(my_process, *data));
+  ASSERT_HRESULT_SUCCEEDED(ValidateData(my_process, *data));
+}
+
+TEST_F(CallerValidationTest, PathValidationOldDataTest) {
+  // Test old format validation data.
+  const std::vector<uint8_t> data = {'P', 'A', 'T', 'H'};
+  const auto result = ValidateData(base::Process::Current(), data);
+  ASSERT_HRESULT_FAILED(result);
+  ASSERT_EQ(result, E_INVALIDARG);
+}
+
+TEST_F(CallerValidationTest, DeprecatedPathValidationTest) {
+  const auto data =
+      GenerateValidationData(ProtectionLevel::PROTECTION_PATH_VALIDATION_OLD,
+                             base::Process::Current());
+
+  ASSERT_FALSE(data.has_value());
+  EXPECT_EQ(data.error(), Elevator::kErrorUnsupportedProtectionLevel);
+}
+
+TEST_F(CallerValidationTest, BackwardsCompatiblePathDataTest) {
+  auto data = GenerateValidationData(
+      ProtectionLevel::PROTECTION_PATH_VALIDATION, base::Process::Current());
+  ASSERT_TRUE(data.has_value());
+  ASSERT_EQ((*data)[0], ProtectionLevel::PROTECTION_PATH_VALIDATION);
+  // Simulate a client that has previously generated path validation data but
+  // with the old validation type (0x01). This is compatible with the new data
+  // type (0x02).
+  (*data)[0] = ProtectionLevel::PROTECTION_PATH_VALIDATION_OLD;
+  const auto result = ValidateData(base::Process::Current(), *data);
+  ASSERT_HRESULT_SUCCEEDED(result);
 }
 
 TEST_F(CallerValidationTest, PathValidationTestFail) {
   const auto my_process = base::Process::Current();
-  const auto data =
-      GenerateValidationData(ProtectionLevel::PATH_VALIDATION, my_process);
+  const auto data = GenerateValidationData(
+      ProtectionLevel::PROTECTION_PATH_VALIDATION, my_process);
   ASSERT_TRUE(data.has_value()) << data.error();
 
   auto notepad_process =
       base::LaunchProcess(L"calc.exe", base::LaunchOptions());
   ASSERT_TRUE(notepad_process.IsRunning());
 
-  ASSERT_FALSE(ValidateData(notepad_process, *data));
+  const HRESULT res = ValidateData(notepad_process, *data);
+  ASSERT_HRESULT_FAILED(res);
+  ASSERT_EQ(res, Elevator::kValidationDidNotPass);
   ASSERT_TRUE(notepad_process.Terminate(0, true));
 }
 
 TEST_F(CallerValidationTest, PathValidationTestOtherProcess) {
-  base::expected<std::string, HRESULT> data;
+  base::expected<std::vector<uint8_t>, HRESULT> data;
 
   // Start two separate notepad processes to validate that path validation only
   // cares about the process path and not the process itself.
@@ -104,7 +137,7 @@ TEST_F(CallerValidationTest, PathValidationTestOtherProcess) {
         base::LaunchProcess(L"calc.exe", base::LaunchOptions());
     ASSERT_TRUE(notepad_process.IsRunning());
 
-    data = GenerateValidationData(ProtectionLevel::PATH_VALIDATION,
+    data = GenerateValidationData(ProtectionLevel::PROTECTION_PATH_VALIDATION,
                                   notepad_process);
     ASSERT_TRUE(notepad_process.Terminate(0, true));
   }
@@ -116,14 +149,15 @@ TEST_F(CallerValidationTest, PathValidationTestOtherProcess) {
         base::LaunchProcess(L"calc.exe", base::LaunchOptions());
     ASSERT_TRUE(notepad_process.IsRunning());
 
-    ASSERT_TRUE(ValidateData(notepad_process, *data));
+    ASSERT_HRESULT_SUCCEEDED(ValidateData(notepad_process, *data));
     ASSERT_TRUE(notepad_process.Terminate(0, true));
   }
 }
 
 TEST_F(CallerValidationTest, NoneValidationTestOtherProcess) {
   const auto my_process = base::Process::Current();
-  const auto data = GenerateValidationData(ProtectionLevel::NONE, my_process);
+  const auto data =
+      GenerateValidationData(ProtectionLevel::PROTECTION_NONE, my_process);
   ASSERT_TRUE(data.has_value()) << data.error();
 
   auto notepad_process =
@@ -131,7 +165,7 @@ TEST_F(CallerValidationTest, NoneValidationTestOtherProcess) {
   ASSERT_TRUE(notepad_process.IsRunning());
 
   // None validation should not care if the process is different.
-  ASSERT_TRUE(ValidateData(notepad_process, *data));
+  ASSERT_HRESULT_SUCCEEDED(ValidateData(notepad_process, *data));
   ASSERT_TRUE(notepad_process.Terminate(0, true));
 }
 
@@ -150,23 +184,34 @@ TEST_F(CallerValidationTest, NoneValidationTestOtherProcess) {
 // |__ Blah
 // |   |__ app5.exe
 // |   |__ app6.exe
+// |
+// |__ Program Files
+// |   |__ app8.exe
+// |
+// |__ Program Files (x86)
+// |   |__ app9.exe
+
 TEST_F(CallerValidationTest, PathValidationFuzzyPathMatch) {
   // Build the paths.
-  const auto app1_path = temp_dir_.GetPath().AppendASCII("app1.exe");
+  // the temp dir must not end with the 'scoped_dir' dir or else it will be
+  // removed by the trim path function, so place the test binaries into a subdir
+  // of the temp dir.
+  const auto temp_dir = temp_dir_.GetPath().AppendASCII("testdir");
+  const auto app1_path = temp_dir.AppendASCII("app1.exe");
   const auto app2_path =
-      temp_dir_.GetPath().AppendASCII("Application").AppendASCII("app2.exe");
+      temp_dir.AppendASCII("Application").AppendASCII("app2.exe");
   const auto app3_path =
-      temp_dir_.GetPath().AppendASCII("Application").AppendASCII("app3.exe");
-  const auto app4_path =
-      temp_dir_.GetPath().AppendASCII("Temp").AppendASCII("app4.exe");
-  const auto app5_path =
-      temp_dir_.GetPath().AppendASCII("Blah").AppendASCII("app5.exe");
-  const auto app6_path =
-      temp_dir_.GetPath().AppendASCII("Blah").AppendASCII("app6.exe");
-  const auto app7_path = temp_dir_.GetPath()
-                             .AppendASCII("Application")
+      temp_dir.AppendASCII("Application").AppendASCII("app3.exe");
+  const auto app4_path = temp_dir.AppendASCII("Temp").AppendASCII("app4.exe");
+  const auto app5_path = temp_dir.AppendASCII("Blah").AppendASCII("app5.exe");
+  const auto app6_path = temp_dir.AppendASCII("Blah").AppendASCII("app6.exe");
+  const auto app7_path = temp_dir.AppendASCII("Application")
                              .AppendASCII("Temp")
                              .AppendASCII("app7.exe");
+  const auto app8_path =
+      temp_dir.AppendASCII("Program Files").AppendASCII("app8.exe");
+  const auto app9_path =
+      temp_dir.AppendASCII("Program Files (x86)").AppendASCII("app9.exe");
 
   // Should ignore 'Temp' and 'Application' for matches.
   ASSERT_NO_FATAL_FAILURE(
@@ -198,6 +243,10 @@ TEST_F(CallerValidationTest, PathValidationFuzzyPathMatch) {
       VerifyValidationResult(app7_path, app3_path, /*expected_match=*/false));
   ASSERT_NO_FATAL_FAILURE(
       VerifyValidationResult(app7_path, app1_path, /*expected_match=*/false));
+  ASSERT_NO_FATAL_FAILURE(
+      VerifyValidationResult(app8_path, app9_path, /*expected_match=*/true));
+  ASSERT_NO_FATAL_FAILURE(
+      VerifyValidationResult(app1_path, app8_path, /*expected_match=*/false));
 }
 
 // To run this locally, copy the elevation_service_unittests binary to a
@@ -206,10 +255,49 @@ TEST_F(CallerValidationTest, PathValidationFuzzyPathMatch) {
 // --gtest_filter=CallerValidationTest.PathValidationNetwork
 // --gtest_also_run_disabled_tests.
 TEST_F(CallerValidationTest, DISABLED_PathValidationNetwork) {
-  const auto data = GenerateValidationData(ProtectionLevel::PATH_VALIDATION,
-                                           base::Process::Current());
+  const auto data = GenerateValidationData(
+      ProtectionLevel::PROTECTION_PATH_VALIDATION, base::Process::Current());
   EXPECT_FALSE(data.has_value());
   EXPECT_EQ(data.error(), Elevator::kErrorUnsupportedFilePath);
+}
+
+TEST_F(CallerValidationTest, TrimProcessPath) {
+  struct TestData {
+    base::FilePath::StringPieceType input;
+    base::FilePath::StringPieceType expected;
+  } cases[] = {
+      {L"C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+       L"C:\\Program Files\\Google\\Chrome"},
+      {L"C:\\Program Files\\Google\\Chrome\\Temp\\chrome.exe",
+       L"C:\\Program Files\\Google\\Chrome"},
+      {L"C:\\Program Files (x86)\\Google\\Chrome\\Temp\\chrome.exe",
+       L"C:\\Program Files\\Google\\Chrome"},
+      {L"C:\\Program Files (x86)\\Google\\Chrome\\Blah\\chrome.exe",
+       L"C:\\Program Files\\Google\\Chrome\\Blah"},
+      {L"C:\\Dir\\app.exe", L"C:\\Dir"},
+      {L"C:\\Dir\\", L"C:\\Dir"},
+      {L"C:\\Dir", L"C:\\Dir"},
+      {L"C:\\Program Files "
+       L"(x86)\\Google\\Chrome\\Temp\\scoped_dir11452_73964817\\chrome.exe",
+       L"C:\\Program Files\\Google\\Chrome"},
+      {L"C:\\Program Files "
+       L"(x86)\\Google\\Chrome\\scoped_dir11452_73964817\\Temp\\chrome.exe",
+       L"C:\\Program Files\\Google\\Chrome\\scoped_dir11452_73964817"},
+      {L"C:\\Program Files (x86)\\Google\\scoped_dir1\\Chrome\\chrome.exe",
+       L"C:\\Program Files\\Google\\scoped_dir1\\Chrome"},
+      {L"C:\\Temp\\Program Files "
+       L"(x86)\\Google\\scoped_dir1\\Chrome\\chrome.exe",
+       L"C:\\Temp\\Program Files\\Google\\scoped_dir1\\Chrome"},
+      {L"C:\\scoped_dir1234\\Program Files "
+       L"(x86)\\Google\\scoped_dir1234\\Chrome\\chrome.exe",
+       L"C:\\scoped_dir1234\\Program Files\\Google\\scoped_dir1234\\Chrome"},
+  };
+
+  for (size_t i = 0; i < std::size(cases); ++i) {
+    base::FilePath input(cases[i].input);
+    auto output = MaybeTrimProcessPathForTesting(input);
+    EXPECT_EQ(output.value(), cases[i].expected);
+  }
 }
 
 }  // namespace elevation_service

@@ -14,26 +14,38 @@ namespace {
 
 const gfx::VectorIcon& GetVectorIconForPickerCategory(PickerCategory category) {
   switch (category) {
-    case PickerCategory::kEmojis:
+    case PickerCategory::kEditorWrite:
+      // TODO: b/322926823 - Use correct icons.
+      return kPencilIcon;
+    case PickerCategory::kEditorRewrite:
+      // TODO: b/322926823 - Use correct icons.
+      return kPencilIcon;
+    case PickerCategory::kExpressions:
       return kPickerEmojiIcon;
-    case PickerCategory::kSymbols:
-      return kPickerSymbolIcon;
-    case PickerCategory::kEmoticons:
-      return kPickerEmoticonIcon;
-    case PickerCategory::kGifs:
-      return kPickerGifIcon;
-    case PickerCategory::kOpenTabs:
-      return kPickerOpenTabIcon;
-    case PickerCategory::kBrowsingHistory:
+    case PickerCategory::kLinks:
       return kPickerBrowsingHistoryIcon;
-    case PickerCategory::kBookmarks:
-      return kPickerBookmarkIcon;
+    case PickerCategory::kClipboard:
+      return kPickerClipboardIcon;
     case PickerCategory::kDriveFiles:
-      // TODO: b/327492842 - Use correct icons.
-      return kFolderIcon;
+      return kPickerDriveFilesIcon;
     case PickerCategory::kLocalFiles:
-      // TODO: b/327492842 - Use correct icons.
-      return kFolderIcon;
+      return kPickerLocalFilesIcon;
+    case PickerCategory::kDatesTimes:
+      return kPickerCalendarIcon;
+    case PickerCategory::kUnitsMaths:
+      return kPickerUnitsMathsIcon;
+    case PickerCategory::kUpperCase:
+      return kPickerUpperCaseIcon;
+    case PickerCategory::kLowerCase:
+      return kPickerLowerCaseIcon;
+    case PickerCategory::kSentenceCase:
+      return kPickerSentenceCaseIcon;
+    case PickerCategory::kTitleCase:
+      return kPickerTitleCaseIcon;
+    case PickerCategory::kCapsOn:
+      return kPickerCapsLockOnIcon;
+    case PickerCategory::kCapsOff:
+      return kPickerCapsLockOffIcon;
   }
 }
 

@@ -214,8 +214,8 @@ class SyncTest : public PlatformBrowserTest, public ProfileObserver {
   // Default is to return false. Test should override this if they require
   // different behavior.
   // Warning: do not use verifier in new tests.
-  // TODO(crbug.com/1137705): remove verifier profile logic completely, once all
-  // tests are rewritten in a way to not use verifier.
+  // TODO(crbug.com/40152770): remove verifier profile logic completely, once
+  // all tests are rewritten in a way to not use verifier.
   virtual bool UseVerifier();
 
   // Initializes sync clients and profiles but does not sync any of them.
@@ -350,8 +350,6 @@ class SyncTest : public PlatformBrowserTest, public ProfileObserver {
   // Internal routine for setting up sync.
   void SetupSyncInternal(SetupSyncMode setup_mode);
 
-  void ClearProfiles();
-
   // Used to determine whether ARC_PACKAGE data type needs to be enabled. This
   // is applicable on ChromeOS-Ash platform only.
   bool UseArcPackage();
@@ -398,7 +396,7 @@ class SyncTest : public PlatformBrowserTest, public ProfileObserver {
   // Collection of sync profiles used by a test. A sync profile maintains sync
   // data contained within its own subdirectory under the chrome user data
   // directory. Profiles are owned by the ProfileManager.
-  // TODO(crbug.com/1349349): store |profiles_|, |browsers_| and |clients_| in
+  // TODO(crbug.com/40855871): store |profiles_|, |browsers_| and |clients_| in
   // one structure.
   std::vector<raw_ptr<Profile, AcrossTasksDanglingUntriaged>> profiles_;
 

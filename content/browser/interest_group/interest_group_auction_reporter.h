@@ -146,6 +146,7 @@ class CONTENT_EXPORT InterestGroupAuctionReporter {
     // returned by the component seller. Otherwise, it's the bid from the
     // bidder.
     double bid;
+    double rounded_bid;
 
     // Currency the bid is in.
     std::optional<blink::AdCurrency> bid_currency;
@@ -278,7 +279,7 @@ class CONTENT_EXPORT InterestGroupAuctionReporter {
   // at which point reports not managed by the InterestGroupAuctionReporter
   // should be sent, and the reporter can be destroyed.
   //
-  // TODO(https://crbug.com/1394777): Make InterestGroupAuctionReporter send all
+  // TODO(crbug.com/40248758): Make InterestGroupAuctionReporter send all
   // reports itself, and decouple its lifetime from the frame, so that it can
   // continue running scripts after a frame is navigated away from.
   void Start(base::OnceClosure callback);
@@ -330,6 +331,8 @@ class CONTENT_EXPORT InterestGroupAuctionReporter {
           PrivateAggregationKey,
           std::vector<auction_worklet::mojom::PrivateAggregationRequestPtr>>
           private_aggregation_requests);
+
+  static double RoundBidStochastically(double bid);
 
   // Returns the result of performing stochastic rounding on `value`. We limit
   // the value to `k` bits of precision in the mantissa (not including sign) and

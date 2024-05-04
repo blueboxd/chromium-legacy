@@ -29,17 +29,20 @@
 #include "base/memory/raw_ref.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/not_fatal_until.h"
+#include "base/notreached.h"
 #include "base/time/time.h"
 #include "base/types/expected.h"
 #include "base/types/expected_macros.h"
 #include "base/values.h"
+#include "components/attribution_reporting/constants.h"
 #include "components/attribution_reporting/features.h"
 #include "components/attribution_reporting/os_registration.h"
+#include "components/attribution_reporting/os_registration_error.mojom.h"
 #include "components/attribution_reporting/registrar.h"
 #include "components/attribution_reporting/registrar_info.h"
 #include "components/attribution_reporting/registration_eligibility.mojom.h"
 #include "components/attribution_reporting/registration_header_error.h"
-#include "components/attribution_reporting/registration_header_type.mojom.h"
 #include "components/attribution_reporting/registration_info.h"
 #include "components/attribution_reporting/source_registration.h"
 #include "components/attribution_reporting/source_registration_error.mojom.h"
@@ -89,16 +92,17 @@ namespace {
 using ::attribution_reporting::IssueType;
 using ::attribution_reporting::Registrar;
 using ::attribution_reporting::SuitableOrigin;
+using ::attribution_reporting::mojom::OsRegistrationError;
 using ::attribution_reporting::mojom::RegistrationEligibility;
 using ::attribution_reporting::mojom::RegistrationType;
 using ::attribution_reporting::mojom::SourceRegistrationError;
 using ::attribution_reporting::mojom::SourceType;
 using ::attribution_reporting::mojom::TriggerRegistrationError;
 using ::blink::mojom::AttributionReportingIssueType;
-using AttributionReportingOsReportType =
-    ::content::ContentBrowserClient::AttributionReportingOsReportType;
-using AttributionReportingOsReportTypes =
-    ::content::ContentBrowserClient::AttributionReportingOsReportTypes;
+using AttributionReportingOsRegistrar =
+    ::content::ContentBrowserClient::AttributionReportingOsRegistrar;
+using AttributionReportingOsRegistrars =
+    ::content::ContentBrowserClient::AttributionReportingOsRegistrars;
 
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
@@ -129,8 +133,11 @@ enum class RegistrationMethod {
   kLegacyBrowser = 6,
   kFencedFrameBeacon = 7,
   kFencedFrameAutomaticBeacon = 8,
+  kNavBackgroundBlinkViaSW = 9,
+  kAttributionSrcBlinkViaSW = 10,
+  kLegacyBlinkViaSW = 11,
 
-  kMaxValue = kFencedFrameAutomaticBeacon,
+  kMaxValue = kLegacyBlinkViaSW,
 };
 
 void RecordRegistrationMethod(RegistrationMethod method) {
@@ -182,8 +189,9 @@ void RecordBackgroundNavigationOutcome(BackgroundNavigationOutcome outcome) {
 }
 
 bool BackgroundRegistrationsEnabled() {
-  return base::FeatureList::IsEnabled(
-             blink::features::kKeepAliveInBrowserMigration) &&
+  return (base::FeatureList::IsEnabled(
+              blink::features::kKeepAliveInBrowserMigration) ||
+          base::FeatureList::IsEnabled(blink::features::kFetchLaterAPI)) &&
          base::FeatureList::IsEnabled(
              blink::features::kAttributionReportingInBrowserMigration);
 }
@@ -287,6 +295,17 @@ void LogInvalidInfoHeader(GlobalRenderFrameHostId render_frame_id,
   MaybeLogAuditIssue(render_frame_id, request_url, request_devtools_id,
                      info_header,
                      AttributionReportingIssueType::kInvalidInfoHeader);
+}
+
+Registrar ConvertToRegistrar(AttributionReportingOsRegistrar os_registrar) {
+  switch (os_registrar) {
+    case AttributionReportingOsRegistrar::kWeb:
+      return Registrar::kWeb;
+    case AttributionReportingOsRegistrar::kOs:
+      return Registrar::kOs;
+    case AttributionReportingOsRegistrar::kDisabled:
+      NOTREACHED_NORETURN();
+  }
 }
 
 }  // namespace
@@ -429,7 +448,45 @@ class AttributionDataHostManagerImpl::RegistrationContext {
     return suitable_context_.context_origin();
   }
 
-  RegistrationMethod registration_method() const { return method_; }
+  RegistrationMethod GetRegistrationMethod(
+      bool was_fetched_via_service_worker) const {
+    switch (method_) {
+      case RegistrationMethod::kNavBackgroundBlink:
+        return was_fetched_via_service_worker
+                   ? RegistrationMethod::kNavBackgroundBlinkViaSW
+                   : method_;
+      case RegistrationMethod::kAttributionSrcBlink:
+        return was_fetched_via_service_worker
+                   ? RegistrationMethod::kAttributionSrcBlinkViaSW
+                   : method_;
+      case RegistrationMethod::kLegacyBlink:
+        return was_fetched_via_service_worker
+                   ? RegistrationMethod::kLegacyBlinkViaSW
+                   : method_;
+      // Fetched via service worker is not applicable to foreground
+      // registrations.
+      case RegistrationMethod::kNavForeground:
+      // keep alive is not supported in service workers. As such, for browser
+      // registrations `was_fetched_via_serivce_worker` can only be false.
+      // TODO(crbug.com/41496810): Once service worker keep alive
+      // requests are supported, handle it here.
+      case RegistrationMethod::kNavBackgroundBrowser:
+      case RegistrationMethod::kAttributionSrcBrowser:
+      case RegistrationMethod::kLegacyBrowser:
+      // TODO(anthonygarant): propagate the information on whether fenced frame
+      // registrations were fetched from a service worker or not.
+      case RegistrationMethod::kFencedFrameBeacon:
+      case RegistrationMethod::kFencedFrameAutomaticBeacon:
+        CHECK(!was_fetched_via_service_worker);
+        return method_;
+      // When the context is created, we don't know if the registration was
+      // processed via a service worker or not.
+      case RegistrationMethod::kNavBackgroundBlinkViaSW:
+      case RegistrationMethod::kAttributionSrcBlinkViaSW:
+      case RegistrationMethod::kLegacyBlinkViaSW:
+        NOTREACHED_NORETURN();
+    }
+  }
 
   RegistrationEligibility registration_eligibility() const {
     return registration_eligibility_;
@@ -451,8 +508,8 @@ class AttributionDataHostManagerImpl::RegistrationContext {
     return suitable_context_.last_input_event();
   }
 
-  AttributionReportingOsReportTypes os_report_types() const {
-    return suitable_context_.os_report_types();
+  AttributionReportingOsRegistrars os_registrars() const {
+    return suitable_context_.os_registrars();
   }
 
   std::optional<int64_t> navigation_id() const { return navigation_id_; }
@@ -508,8 +565,9 @@ struct AttributionDataHostManagerImpl::HeaderPendingDecode {
         reporting_url(std::move(reporting_url)),
         verifications(std::move(verifications)),
         report_header_errors(report_header_errors) {
-    DCHECK_EQ(url::Origin::Create(this->reporting_origin->GetURL()),
-              url::Origin::Create(this->reporting_url));
+    CHECK_EQ(url::Origin::Create(this->reporting_origin->GetURL()),
+             url::Origin::Create(this->reporting_url),
+             base::NotFatalUntil::M128);
   }
 
   RegistrationType GetType() const {
@@ -574,8 +632,8 @@ class AttributionDataHostManagerImpl::Registrations {
     return context_.render_frame_id();
   }
 
-  AttributionReportingOsReportTypes os_report_types() const {
-    return context_.os_report_types();
+  AttributionReportingOsRegistrars os_registrars() const {
+    return context_.os_registrars();
   }
 
   const std::optional<std::string>& devtools_request_id() const {
@@ -614,7 +672,7 @@ class AttributionDataHostManagerImpl::Registrations {
   bool operator<(const Registrations& other) const { return Id() < other.Id(); }
 
   void CompleteRegistrations() {
-    DCHECK(!registrations_complete_);
+    CHECK(!registrations_complete_, base::NotFatalUntil::M128);
     registrations_complete_ = true;
   }
 
@@ -702,14 +760,16 @@ struct AttributionDataHostManagerImpl::RegistrationDataHeaders {
                  : std::nullopt;
     };
 
-    std::optional<std::string> web_source_header =
-        get_header(kAttributionReportingRegisterSourceHeader);
-    std::optional<std::string> web_trigger_header =
-        get_header(kAttributionReportingRegisterTriggerHeader);
+    std::optional<std::string> web_source_header = get_header(
+        attribution_reporting::kAttributionReportingRegisterSourceHeader);
+    std::optional<std::string> web_trigger_header = get_header(
+        attribution_reporting::kAttributionReportingRegisterTriggerHeader);
     std::optional<std::string> os_source_header = get_header(
-        kAttributionReportingRegisterOsSourceHeader, cross_app_web_enabled);
+        attribution_reporting::kAttributionReportingRegisterOsSourceHeader,
+        cross_app_web_enabled);
     std::optional<std::string> os_trigger_header = get_header(
-        kAttributionReportingRegisterOsTriggerHeader, cross_app_web_enabled);
+        attribution_reporting::kAttributionReportingRegisterOsTriggerHeader,
+        cross_app_web_enabled);
 
     const bool has_source =
         web_source_header.has_value() || os_source_header.has_value();
@@ -865,10 +925,11 @@ struct AttributionDataHostManagerImpl::PendingRegistrationData {
         reporting_origin(std::move(reporting_origin)),
         reporting_url(std::move(reporting_url)),
         verifications(std::move(verifications)) {
-    DCHECK_EQ(url::Origin::Create(this->reporting_origin->GetURL()),
-              url::Origin::Create(this->reporting_url));
-    DCHECK_EQ(this->headers.type == RegistrationType::kTrigger,
-              this->verifications.has_value());
+    CHECK_EQ(url::Origin::Create(this->reporting_origin->GetURL()),
+             url::Origin::Create(this->reporting_url),
+             base::NotFatalUntil::M128);
+    CHECK_EQ(this->headers.type == RegistrationType::kTrigger,
+             this->verifications.has_value(), base::NotFatalUntil::M128);
   }
 };
 
@@ -951,7 +1012,7 @@ class AttributionDataHostManagerImpl::OsRegistrationsBuffer {
   }
 
  private:
-  // TODO(https://crbug.com/1444525): update to 80 when supported by the OS.
+  // TODO(crbug.com/40267739): update to 80 when supported by the OS.
   static constexpr size_t kMaxBufferSize = 20u;
 
   int64_t navigation_id_;
@@ -1038,7 +1099,7 @@ void AttributionDataHostManagerImpl::ParseHeader(
     base::flat_set<Registrations>::iterator it,
     HeaderPendingDecode pending_decode,
     Registrar registrar) {
-  DCHECK(it != registrations_.end());
+  CHECK(it != registrations_.end());
 
   switch (it->eligibility()) {
     case RegistrationEligibility::kSourceOrTrigger:
@@ -1052,29 +1113,9 @@ void AttributionDataHostManagerImpl::ParseHeader(
   }
 
   const bool is_source = pending_decode.GetType() == RegistrationType::kSource;
-  const bool client_os_disabled =
-      is_source ? it->os_report_types().source_report_type ==
-                      AttributionReportingOsReportType::kDisabled
-                : it->os_report_types().trigger_report_type ==
-                      AttributionReportingOsReportType::kDisabled;
-
-  network::mojom::AttributionSupport attribution_support =
-      AttributionManager::GetAttributionSupport(client_os_disabled);
 
   switch (registrar) {
     case Registrar::kWeb:
-      if (!network::HasAttributionWebSupport(attribution_support)) {
-        MaybeLogAuditIssue(
-            it->render_frame_id(),
-            /*request_url=*/pending_decode.reporting_url,
-            it->devtools_request_id(),
-            /*invalid_parameter=*/std::nullopt,
-            /*violation_type=*/
-            blink::mojom::AttributionReportingIssueType::kNoWebOrOsSupport);
-        MaybeOnRegistrationsFinished(it);
-        break;
-      }
-
       // Max header size is 256 KB, use 1M count to encapsulate.
       base::UmaHistogramCounts1M(
           is_source ? "Conversions.HeadersSize.RegisterSource"
@@ -1089,17 +1130,6 @@ void AttributionDataHostManagerImpl::ParseHeader(
       }
       break;
     case Registrar::kOs:
-      if (!network::HasAttributionOsSupport(attribution_support)) {
-        MaybeLogAuditIssue(
-            it->render_frame_id(),
-            /*request_url=*/pending_decode.reporting_url,
-            it->devtools_request_id(),
-            /*invalid_parameter=*/std::nullopt,
-            /*violation_type=*/
-            blink::mojom::AttributionReportingIssueType::kNoWebOrOsSupport);
-        MaybeOnRegistrationsFinished(it);
-        break;
-      }
       if (auto* rfh = RenderFrameHostImpl::FromID(it->render_frame_id())) {
         GetContentClient()->browser()->LogWebFeatureForCurrentPage(
             rfh, blink::mojom::WebFeature::kAttributionReportingCrossAppWeb);
@@ -1124,7 +1154,7 @@ void AttributionDataHostManagerImpl::ParseHeader(
 void AttributionDataHostManagerImpl::HandleRegistrationData(
     base::flat_set<Registrations>::iterator it,
     PendingRegistrationData pending_registration_data) {
-  DCHECK(it != registrations_.end());
+  CHECK(it != registrations_.end());
 
   it->pending_registration_data().emplace_back(
       std::move(pending_registration_data));
@@ -1137,8 +1167,8 @@ void AttributionDataHostManagerImpl::HandleRegistrationData(
 
 void AttributionDataHostManagerImpl::HandleNextRegistrationData(
     base::flat_set<Registrations>::iterator it) {
-  DCHECK(it != registrations_.end());
-  DCHECK(!it->pending_registration_data().empty());
+  CHECK(it != registrations_.end());
+  CHECK(!it->pending_registration_data().empty());
 
   {
     auto& pending_registration_data = it->pending_registration_data().front();
@@ -1170,8 +1200,8 @@ void AttributionDataHostManagerImpl::OnInfoHeaderParsed(
     RegistrationsId id,
     InfoParseResult result) {
   auto it = registrations_.find(id);
-  DCHECK(it != registrations_.end());
-  DCHECK(!it->pending_registration_data().empty());
+  CHECK(it != registrations_.end());
+  CHECK(!it->pending_registration_data().empty());
 
   {
     auto& pending_registration_data = it->pending_registration_data().front();
@@ -1211,15 +1241,15 @@ void AttributionDataHostManagerImpl::HandleRegistrationInfo(
     base::flat_set<Registrations>::iterator it,
     PendingRegistrationData pending_registration_data,
     const attribution_reporting::RegistrationInfo& registration_info) {
-  DCHECK(it != registrations_.end());
+  CHECK(it != registrations_.end());
 
   const bool is_source =
       pending_registration_data.headers.type == RegistrationType::kSource;
   const bool client_os_disabled =
-      is_source ? it->os_report_types().source_report_type ==
-                      AttributionReportingOsReportType::kDisabled
-                : it->os_report_types().trigger_report_type ==
-                      AttributionReportingOsReportType::kDisabled;
+      is_source ? it->os_registrars().source_registrar ==
+                      AttributionReportingOsRegistrar::kDisabled
+                : it->os_registrars().trigger_registrar ==
+                      AttributionReportingOsRegistrar::kDisabled;
 
   auto registrar_info = attribution_reporting::RegistrarInfo::Get(
       pending_registration_data.headers.web_header.has_value(),
@@ -1262,7 +1292,7 @@ void AttributionDataHostManagerImpl::HandleNextWebDecode(
     return;
   }
 
-  DCHECK(!registrations.pending_web_decodes().empty());
+  CHECK(!registrations.pending_web_decodes().empty());
 
   const auto& pending_decode = registrations.pending_web_decodes().front();
 
@@ -1280,7 +1310,7 @@ void AttributionDataHostManagerImpl::HandleNextOsDecode(
     return;
   }
 
-  DCHECK(!registrations.pending_os_decodes().empty());
+  CHECK(!registrations.pending_os_decodes().empty());
 
   const auto& pending_decode = registrations.pending_os_decodes().front();
 
@@ -1334,33 +1364,29 @@ void AttributionDataHostManagerImpl::NotifyNavigationRegistrationStarted(
 
   MaybeStartNavigation(navigation_id);
 
-  // When background registrations are enabled, we don't use a data host. The
-  // registrations will be received via `NotifyBackgroundRegistration...`.
-  if (!BackgroundRegistrationsEnabled()) {
-    // A navigation-associated interface is used for
-    // `blink::mojom::ConversionHost` and an `AssociatedReceiver` is used on the
-    // browser side, therefore it's guaranteed that
-    // `AttributionHost::RegisterNavigationHost()` is called before
-    // `AttributionHost::DidStartNavigation()`.
-    if (auto it = navigation_data_host_map_.find(attribution_src_token);
-        it != navigation_data_host_map_.end()) {
-      // We defer trigger registrations until background registrations complete;
-      // when the navigation data host disconnects.
-      auto [__, inserted] =
-          ongoing_background_datahost_registrations_.emplace(navigation_id);
-      DCHECK(inserted);
+  // A navigation-associated interface is used for
+  // `blink::mojom::ConversionHost` and an `AssociatedReceiver` is used on the
+  // browser side, therefore it's guaranteed that
+  // `AttributionHost::RegisterNavigationHost()` is called before
+  // `AttributionHost::DidStartNavigation()`.
+  if (auto it = navigation_data_host_map_.find(attribution_src_token);
+      it != navigation_data_host_map_.end()) {
+    // We defer trigger registrations until background registrations complete;
+    // when the navigation data host disconnects.
+    auto [__, inserted] =
+        ongoing_background_datahost_registrations_.emplace(navigation_id);
+    CHECK(inserted, base::NotFatalUntil::M128);
 
-      receivers_.Add(this, std::move(it->second),
-                     RegistrationContext(
-                         suitable_context, RegistrationEligibility::kSource,
-                         /*devtools_request_id=*/std::nullopt, navigation_id,
-                         RegistrationMethod::kNavBackgroundBlink));
+    receivers_.Add(
+        this, std::move(it->second),
+        RegistrationContext(suitable_context, RegistrationEligibility::kSource,
+                            /*devtools_request_id=*/std::nullopt, navigation_id,
+                            RegistrationMethod::kNavBackgroundBlink));
 
-      navigation_data_host_map_.erase(it);
-      RecordNavigationDataHostStatus(NavigationDataHostStatus::kProcessed);
-    } else {
-      RecordNavigationDataHostStatus(NavigationDataHostStatus::kNotFound);
-    }
+    navigation_data_host_map_.erase(it);
+    RecordNavigationDataHostStatus(NavigationDataHostStatus::kProcessed);
+  } else {
+    RecordNavigationDataHostStatus(NavigationDataHostStatus::kNotFound);
   }
 
   if (auto waiting_ids_it =
@@ -1701,9 +1727,10 @@ AttributionDataHostManagerImpl::GetReceiverRegistrationContextForTrigger() {
 
 void AttributionDataHostManagerImpl::SourceDataAvailable(
     SuitableOrigin reporting_origin,
-    attribution_reporting::SourceRegistration data) {
+    attribution_reporting::SourceRegistration data,
+    bool was_fetched_via_service_worker) {
   // This is validated by the Mojo typemapping.
-  DCHECK(reporting_origin.IsValid());
+  CHECK(reporting_origin.IsValid(), base::NotFatalUntil::M128);
 
   const RegistrationContext* context =
       GetReceiverRegistrationContextForSource();
@@ -1722,7 +1749,13 @@ void AttributionDataHostManagerImpl::SourceDataAvailable(
     return;
   }
 
-  RecordRegistrationMethod(context->registration_method());
+  if (!CheckRegistrarSupport(Registrar::kWeb, RegistrationType::kSource,
+                             *context, reporting_origin)) {
+    return;
+  }
+
+  RecordRegistrationMethod(
+      context->GetRegistrationMethod(was_fetched_via_service_worker));
   attribution_manager_->HandleSource(
       StorableSource(std::move(reporting_origin), std::move(data),
                      /*source_origin=*/context->context_origin(), source_type,
@@ -1733,9 +1766,10 @@ void AttributionDataHostManagerImpl::SourceDataAvailable(
 void AttributionDataHostManagerImpl::TriggerDataAvailable(
     SuitableOrigin reporting_origin,
     attribution_reporting::TriggerRegistration data,
-    std::vector<network::TriggerVerification> verifications) {
+    std::vector<network::TriggerVerification> verifications,
+    bool was_fetched_via_service_worker) {
   // This is validated by the Mojo typemapping.
-  DCHECK(reporting_origin.IsValid());
+  CHECK(reporting_origin.IsValid(), base::NotFatalUntil::M128);
 
   const RegistrationContext* context =
       GetReceiverRegistrationContextForTrigger();
@@ -1743,7 +1777,12 @@ void AttributionDataHostManagerImpl::TriggerDataAvailable(
     return;
   }
 
-  RecordRegistrationMethod(context->registration_method());
+  if (!CheckRegistrarSupport(Registrar::kWeb, RegistrationType::kTrigger,
+                             *context, reporting_origin)) {
+    return;
+  }
+  RecordRegistrationMethod(
+      context->GetRegistrationMethod(was_fetched_via_service_worker));
   attribution_manager_->HandleTrigger(
       AttributionTrigger(std::move(reporting_origin), std::move(data),
                          /*destination_origin=*/context->context_origin(),
@@ -1753,13 +1792,22 @@ void AttributionDataHostManagerImpl::TriggerDataAvailable(
 }
 
 void AttributionDataHostManagerImpl::OsSourceDataAvailable(
-    std::vector<attribution_reporting::OsRegistrationItem> registration_items) {
+    attribution_reporting::SuitableOrigin reporting_origin,
+    std::vector<attribution_reporting::OsRegistrationItem> registration_items,
+    bool was_fetched_via_service_worker) {
   const RegistrationContext* context =
       GetReceiverRegistrationContextForSource();
   if (!context || registration_items.empty()) {
     return;
   }
-  RecordRegistrationMethod(context->registration_method());
+
+  if (!CheckRegistrarSupport(Registrar::kOs, RegistrationType::kSource,
+                             *context, reporting_origin)) {
+    return;
+  }
+
+  RecordRegistrationMethod(
+      context->GetRegistrationMethod(was_fetched_via_service_worker));
   if (context->navigation_id().has_value()) {
     MaybeBufferOsRegistrations(context->navigation_id().value(),
                                std::move(registration_items), *context);
@@ -1771,14 +1819,22 @@ void AttributionDataHostManagerImpl::OsSourceDataAvailable(
 }
 
 void AttributionDataHostManagerImpl::OsTriggerDataAvailable(
-    std::vector<attribution_reporting::OsRegistrationItem> registration_items) {
+    attribution_reporting::SuitableOrigin reporting_origin,
+    std::vector<attribution_reporting::OsRegistrationItem> registration_items,
+    bool was_fetched_via_service_worker) {
   const RegistrationContext* context =
       GetReceiverRegistrationContextForTrigger();
   if (!context || registration_items.empty()) {
     return;
   }
 
-  RecordRegistrationMethod(context->registration_method());
+  if (!CheckRegistrarSupport(Registrar::kOs, RegistrationType::kTrigger,
+                             *context, reporting_origin)) {
+    return;
+  }
+
+  RecordRegistrationMethod(
+      context->GetRegistrationMethod(was_fetched_via_service_worker));
   SubmitOsRegistrations(std::move(registration_items), *context,
                         RegistrationType::kTrigger);
 }
@@ -1833,7 +1889,7 @@ void AttributionDataHostManagerImpl::NotifyFencedFrameReportingBeaconData(
     return;
   }
 
-  DCHECK(!it->registrations_complete());
+  CHECK(!it->registrations_complete(), base::NotFatalUntil::M128);
   if (is_final_response) {
     it->CompleteRegistrations();
   }
@@ -1923,14 +1979,13 @@ void AttributionDataHostManagerImpl::HandleParsedWebSource(
                           registrations.is_within_fenced_frame());
   }();
   if (source.has_value()) {
-    RecordRegistrationMethod(registrations.context().registration_method());
+    RecordRegistrationMethod(registrations.context().GetRegistrationMethod(
+        /*was_fetched_via_service_worker=*/false));
     attribution_manager_->HandleSource(std::move(*source),
                                        registrations.render_frame_id());
   } else {
-    MaybeLogAuditIssueAndReportHeaderError(
-        registrations, pending_decode,
-        AttributionReportingIssueType::kInvalidRegisterSourceHeader,
-        attribution_reporting::mojom::RegistrationHeaderType::kSource);
+    MaybeLogAuditIssueAndReportHeaderError(registrations, pending_decode,
+                                           source.error());
     attribution_reporting::RecordSourceRegistrationError(source.error());
   }
 }
@@ -1959,14 +2014,13 @@ void AttributionDataHostManagerImpl::HandleParsedWebTrigger(
         registrations.is_within_fenced_frame());
   }();
   if (trigger.has_value()) {
-    RecordRegistrationMethod(registrations.context().registration_method());
+    RecordRegistrationMethod(registrations.context().GetRegistrationMethod(
+        /*was_fetched_via_service_worker=*/false));
     attribution_manager_->HandleTrigger(std::move(*trigger),
                                         registrations.render_frame_id());
   } else {
-    MaybeLogAuditIssueAndReportHeaderError(
-        registrations, pending_decode,
-        AttributionReportingIssueType::kInvalidRegisterTriggerHeader,
-        attribution_reporting::mojom::RegistrationHeaderType::kTrigger);
+    MaybeLogAuditIssueAndReportHeaderError(registrations, pending_decode,
+                                           trigger.error());
     attribution_reporting::RecordTriggerRegistrationError(trigger.error());
   }
 }
@@ -1978,9 +2032,9 @@ void AttributionDataHostManagerImpl::OnWebHeaderParsed(
         trigger_verifications,
     data_decoder::DataDecoder::ValueOrError result) {
   auto registrations = registrations_.find(id);
-  DCHECK(registrations != registrations_.end());
+  CHECK(registrations != registrations_.end());
 
-  DCHECK(!registrations->pending_web_decodes().empty());
+  CHECK(!registrations->pending_web_decodes().empty());
   {
     const auto& pending_decode = registrations->pending_web_decodes().front();
     switch (type) {
@@ -2044,49 +2098,49 @@ void AttributionDataHostManagerImpl::OnOsHeaderParsed(
     RegistrationType registration_type,
     OsParseResult result) {
   auto registrations = registrations_.find(id);
-  DCHECK(registrations != registrations_.end());
+  CHECK(registrations != registrations_.end());
 
-  DCHECK(!registrations->pending_os_decodes().empty());
+  CHECK(!registrations->pending_os_decodes().empty());
   {
-    std::vector<attribution_reporting::OsRegistrationItem> registration_items;
-    if (result.has_value()) {
-          registration_items =
-              attribution_reporting::ParseOsSourceOrTriggerHeader(*result);
-    }
+    auto registration_items =
+        [&]() -> base::expected<
+                  std::vector<attribution_reporting::OsRegistrationItem>,
+                  OsRegistrationError> {
+      if (!result.has_value()) {
+        return base::unexpected(OsRegistrationError::kInvalidList);
+      }
 
-    if (!registration_items.empty()) {
+      return attribution_reporting::ParseOsSourceOrTriggerHeader(*result);
+    }();
+
+    if (registration_items.has_value()) {
       if (registrations->navigation_id().has_value()) {
-        RecordRegistrationMethod(
-            registrations->context().registration_method());
+        RecordRegistrationMethod(registrations->context().GetRegistrationMethod(
+            /*was_fetched_via_service_worker=*/false));
         MaybeBufferOsRegistrations(*registrations->navigation_id(),
-                                   std::move(registration_items),
+                                   std::move(registration_items.value()),
                                    registrations->context());
       } else {
-        RecordRegistrationMethod(
-            registrations->context().registration_method());
-        SubmitOsRegistrations(std::move(registration_items),
+        RecordRegistrationMethod(registrations->context().GetRegistrationMethod(
+            /*was_fetched_via_service_worker=*/false));
+        SubmitOsRegistrations(std::move(registration_items.value()),
                               registrations->context(), registration_type);
       }
     } else {
-      AttributionReportingIssueType issue_type;
-      attribution_reporting::mojom::RegistrationHeaderType header_type;
+      attribution_reporting::RegistrationHeaderErrorDetails error_details;
       switch (registration_type) {
         case RegistrationType::kSource:
-          issue_type =
-              AttributionReportingIssueType::kInvalidRegisterOsSourceHeader;
-          header_type =
-              attribution_reporting::mojom::RegistrationHeaderType::kOsSource;
+          error_details = attribution_reporting::OsSourceRegistrationError(
+              registration_items.error());
           break;
         case RegistrationType::kTrigger:
-          issue_type =
-              AttributionReportingIssueType::kInvalidRegisterOsTriggerHeader;
-          header_type =
-              attribution_reporting::mojom::RegistrationHeaderType::kOsTrigger;
+          error_details = attribution_reporting::OsTriggerRegistrationError(
+              registration_items.error());
           break;
       }
       const auto& pending_decode = registrations->pending_os_decodes().front();
       MaybeLogAuditIssueAndReportHeaderError(*registrations, pending_decode,
-                                             issue_type, header_type);
+                                             error_details);
     }
   }
 
@@ -2101,7 +2155,7 @@ void AttributionDataHostManagerImpl::OnOsHeaderParsed(
 
 void AttributionDataHostManagerImpl::MaybeOnRegistrationsFinished(
     base::flat_set<Registrations>::const_iterator it) {
-  DCHECK(it != registrations_.end());
+  CHECK(it != registrations_.end());
   if (it->has_pending_decodes() || !it->registrations_complete()) {
     return;
   }
@@ -2243,13 +2297,21 @@ void AttributionDataHostManagerImpl::SubmitOsRegistrations(
   base::UmaHistogramCounts100("Conversions.OsRegistrationItemsPerBatch",
                               items.size());
 
-  if (type == RegistrationType::kSource) {
-    // The OsRegistration uses the optional to determine if its a source or a
-    // trigger. However, we want to send an actual input event only when the
-    // registration is tied to a navigation.
-    input_event.emplace(registration_context.navigation_id().has_value()
-                            ? registration_context.last_input_event()
-                            : AttributionInputEvent());
+  AttributionReportingOsRegistrar os_registrar;
+
+  switch (type) {
+    case RegistrationType::kSource:
+      // The OsRegistration uses the optional to determine if it's a source or a
+      // trigger. However, we want to send an actual input event only when the
+      // registration is tied to a navigation.
+      input_event.emplace(registration_context.navigation_id().has_value()
+                              ? registration_context.last_input_event()
+                              : AttributionInputEvent());
+      os_registrar = registration_context.os_registrars().source_registrar;
+      break;
+    case RegistrationType::kTrigger:
+      os_registrar = registration_context.os_registrars().trigger_registrar;
+      break;
   }
 
   attribution_manager_->HandleOsRegistration(OsRegistration(
@@ -2257,14 +2319,35 @@ void AttributionDataHostManagerImpl::SubmitOsRegistrations(
       /*top_level_origin=*/registration_context.context_origin(),
       std::move(input_event), registration_context.is_within_fenced_frame(),
       registration_context.render_frame_id(),
-      registration_context.os_report_types()));
+      ConvertToRegistrar(os_registrar)));
 }
 
 void AttributionDataHostManagerImpl::MaybeLogAuditIssueAndReportHeaderError(
     const Registrations& registrations,
     const HeaderPendingDecode& pending_decode,
-    blink::mojom::AttributionReportingIssueType issue_type,
-    attribution_reporting::mojom::RegistrationHeaderType header_type) {
+    attribution_reporting::RegistrationHeaderErrorDetails error_details) {
+  AttributionReportingIssueType issue_type = absl::visit(
+      base::Overloaded{
+          [](attribution_reporting::mojom::SourceRegistrationError) {
+            return AttributionReportingIssueType::kInvalidRegisterSourceHeader;
+          },
+
+          [](attribution_reporting::mojom::TriggerRegistrationError) {
+            return AttributionReportingIssueType::kInvalidRegisterTriggerHeader;
+          },
+
+          [](attribution_reporting::OsSourceRegistrationError) {
+            return AttributionReportingIssueType::
+                kInvalidRegisterOsSourceHeader;
+          },
+
+          [](attribution_reporting::OsTriggerRegistrationError) {
+            return AttributionReportingIssueType::
+                kInvalidRegisterOsTriggerHeader;
+          },
+      },
+      error_details);
+
   MaybeLogAuditIssue(registrations.render_frame_id(),
                      /*request_url=*/pending_decode.reporting_url,
                      registrations.devtools_request_id(),
@@ -2272,8 +2355,8 @@ void AttributionDataHostManagerImpl::MaybeLogAuditIssueAndReportHeaderError(
   if (pending_decode.report_header_errors) {
     attribution_manager_->ReportRegistrationHeaderError(
         pending_decode.reporting_origin,
-        attribution_reporting::RegistrationHeaderError(header_type,
-                                                       pending_decode.header),
+        attribution_reporting::RegistrationHeaderError(pending_decode.header,
+                                                       error_details),
         registrations.context_origin(), registrations.is_within_fenced_frame(),
         registrations.render_frame_id());
   }
@@ -2286,6 +2369,52 @@ void AttributionDataHostManagerImpl::ReportRegistrationHeaderError(
   attribution_manager_->ReportRegistrationHeaderError(
       std::move(reporting_origin), error, context.context_origin(),
       context.is_within_fenced_frame(), context.render_frame_id());
+}
+
+bool AttributionDataHostManagerImpl::CheckRegistrarSupport(
+    Registrar registrar,
+    RegistrationType registration_type,
+    const RegistrationContext& context,
+    const SuitableOrigin& reporting_origin) {
+  const bool is_source = registration_type == RegistrationType::kSource;
+  AttributionReportingOsRegistrar os_registrar =
+      is_source ? context.os_registrars().source_registrar
+                : context.os_registrars().trigger_registrar;
+
+  network::mojom::AttributionSupport attribution_support =
+      AttributionManager::GetAttributionSupport(
+          /*client_os_disabled=*/os_registrar ==
+          AttributionReportingOsRegistrar::kDisabled);
+
+  blink::mojom::AttributionReportingIssueType issue_type;
+
+  switch (registrar) {
+    case Registrar::kWeb:
+      if (network::HasAttributionWebSupport(attribution_support)) {
+        return true;
+      }
+      issue_type =
+          is_source
+              ? blink::mojom::AttributionReportingIssueType::kSourceIgnored
+              : blink::mojom::AttributionReportingIssueType::kTriggerIgnored;
+      break;
+    case Registrar::kOs:
+      if (network::HasAttributionOsSupport(attribution_support)) {
+        return true;
+      }
+      issue_type =
+          is_source
+              ? blink::mojom::AttributionReportingIssueType::kOsSourceIgnored
+              : blink::mojom::AttributionReportingIssueType::kOsTriggerIgnored;
+      break;
+  }
+
+  MaybeLogAuditIssue(context.render_frame_id(),
+                     /*request_url=*/reporting_origin->GetURL(),
+                     context.devtools_request_id(),
+                     /*invalid_parameter=*/std::nullopt,
+                     /*violation_type=*/issue_type);
+  return false;
 }
 
 }  // namespace content

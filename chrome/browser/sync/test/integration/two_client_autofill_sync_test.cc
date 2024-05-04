@@ -8,9 +8,11 @@
 #include "build/build_config.h"
 #include "chrome/browser/sync/test/integration/autofill_helper.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
+#include "components/autofill/core/browser/address_data_manager.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
+#include "components/autofill/core/browser/payments_data_manager.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/profile_token_quality.h"
 #include "components/autofill/core/browser/profile_token_quality_test_api.h"
@@ -406,7 +408,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillProfileSyncTest, MaxLength) {
 }
 
 // Tests that values exceeding `kMaxDataLengthForDatabase` are truncated.
-// TODO(crbug.com/1443393): As of the unified table layout, values are already
+// TODO(crbug.com/40267335): As of the unified table layout, values are already
 // truncated in AutofillTable. No special logic on the Sync-side is necessary.
 // Clean this up.
 IN_PROC_BROWSER_TEST_F(TwoClientAutofillProfileSyncTest, ExceedsMaxLength) {
@@ -459,7 +461,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillProfileSyncTest, NoCreditCardSync) {
   EXPECT_TRUE(AutofillProfileChecker(0, 1, /*expected_count=*/1U).Wait());
 
   PersonalDataManager* pdm = GetPersonalDataManager(1);
-  EXPECT_EQ(0U, pdm->GetCreditCards().size());
+  EXPECT_EQ(0U, pdm->payments_data_manager().GetCreditCards().size());
 }
 
 IN_PROC_BROWSER_TEST_F(TwoClientAutofillProfileSyncTest,
@@ -523,7 +525,10 @@ IN_PROC_BROWSER_TEST_F(TwoClientProfileTokenQualityAutofillProfileSyncTest,
 
   // Expect that only the observations for NAME_FIRST were reset on client 0.
   const autofill::ProfileTokenQuality& token_quality =
-      GetPersonalDataManager(0)->GetProfiles()[0]->token_quality();
+      GetPersonalDataManager(0)
+          ->address_data_manager()
+          .GetProfiles()[0]
+          ->token_quality();
   EXPECT_TRUE(
       token_quality.GetObservationTypesForFieldType(autofill::NAME_FIRST)
           .empty());

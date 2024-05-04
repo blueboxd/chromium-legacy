@@ -8,12 +8,14 @@
 #include <optional>
 #include <string_view>
 
+#include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_future.h"
 #include "base/time/time.h"
@@ -31,10 +33,10 @@ using ::testing::_;
 namespace growth {
 namespace {
 
-constexpr char kValidCampaignsFileTemplate[] = R"(
+inline constexpr char kValidCampaignsFileTemplate[] = R"(
     {
       "0": [
-        // Invalid targeting.
+        // List is an invalid targeting.
         {
           "id": 1,
           "targetings": [
@@ -42,6 +44,7 @@ constexpr char kValidCampaignsFileTemplate[] = R"(
           ],
           "payload": {}
         },
+        // String is an invalid campaign.
         "Invalid campaign",
         {
           "id": 3,
@@ -64,7 +67,37 @@ constexpr char kValidCampaignsFileTemplate[] = R"(
     }
 )";
 
-constexpr char kValidDemoModeTargeting[] = R"(
+inline constexpr char kValidCampaignsFileMultiTargetingsTemplate[] = R"(
+    {
+      "0": [
+        // List is an invalid targeting.
+        {
+          "id": 1,
+          "targetings": [
+            []
+          ],
+          "payload": {}
+        },
+        // String is an invalid campaign.
+        "Invalid campaign",
+        {
+          "id": 3,
+          "studyId":1,
+          "targetings": %s,
+          "payload": {
+            "demoModeApp": {
+              "attractionLoop": {
+                "videoSrcLang1": "/asset/peripherals_lang1.mp4",
+                "videoSrcLang2": "/asset/peripherals_lang2.mp4"
+              }
+            }
+          }
+        }
+      ]
+    }
+)";
+
+inline constexpr char kValidDemoModeTargeting[] = R"(
     "demoMode": {
       "retailers": ["bby", "bestbuy", "bbt"],
       "storeIds": ["2", "4", "6"],
@@ -76,7 +109,30 @@ constexpr char kValidDemoModeTargeting[] = R"(
     }
 )";
 
-constexpr char kCampaignsFileName[] = "campaigns.json";
+inline constexpr char kValidMultiTargetings[] = R"([
+    // Targeting 1.
+    {
+      "runtime": {
+        "appsOpened": [{"appId": "app_id_1"}]
+      }
+    },
+    // Targeting 2.
+    {
+      "runtime": {
+        "appsOpened": [{"appId": "app_id_2"}]
+      }
+    },
+    // Targeting 3.
+    {
+      "runtime": {
+        "appsOpened": [{"appId": "app_id_3"}]
+      }
+    }
+  ])";
+
+inline constexpr char kCampaignsFileName[] = "campaigns.json";
+
+inline constexpr char kCampaignsExperimentTag[] = "exp_tag";
 
 inline constexpr char kCampaignsManagerErrorHistogramName[] =
     "Ash.Growth.CampaignsManager.Error";
@@ -195,6 +251,16 @@ class CampaignsManagerTest : public testing::Test {
         .WillRepeatedly(testing::ReturnRef(app_version));
   }
 
+  void InitilizeCampaignsExperimentTag(const std::string& exp_tag) {
+    base::FieldTrialParams params;
+    params[kCampaignsExperimentTag] = exp_tag;
+    base::test::FeatureRefAndParams campaigns_experiment_tag(
+        ash::features::kGrowthCampaignsExperimentTagTargeting, params);
+
+    scoped_feature_list_.InitWithFeaturesAndParameters(
+        {campaigns_experiment_tag}, {});
+  }
+
   void VerifyDemoModePayload(const Campaign* campaign) {
     const auto* payload = campaign->FindDictByDottedPath("payload.demoModeApp");
     ASSERT_EQ("/asset/peripherals_lang1.mp4",
@@ -203,27 +269,121 @@ class CampaignsManagerTest : public testing::Test {
               *payload->FindStringByDottedPath("attractionLoop.videoSrcLang2"));
   }
 
-  void LoadComponentWithDeviceTargeting(const std::string& milestone_range) {
+  void LoadComponentWithBasicDeviceTargetings(
+      const std::string& milestone_range,
+      std::optional<bool> target_feature_aware_device = std::nullopt) {
+    std::string feature_aware_targeting = "";
+    if (target_feature_aware_device) {
+      std::string isFeatureAwareDeviceStr =
+          target_feature_aware_device.value() ? "true" : "false";
+      feature_aware_targeting =
+          base::StringPrintf(R"(,
+        "isFeatureAwareDevice": %s
+      )",
+                             isFeatureAwareDeviceStr.c_str());
+    }
     auto device_targeting = base::StringPrintf(R"(
             "device": {
               "locales": ["en-US"],
               "milestone": {
                 %s
-              }
+              }%s
             }
           )",
-                                               milestone_range.c_str());
+                                               milestone_range.c_str(),
+                                               feature_aware_targeting.c_str());
     LoadComponentAndVerifyLoadComplete(base::StringPrintf(
         kValidCampaignsFileTemplate, device_targeting.c_str()));
   }
 
-  void LoadComponentWithScheduling(const std::string& schedulings) {
+  void LoadComponentWithRegisteredTimeTargeting(
+      const std::string& registerd_time_targeting) {
+    auto device_targeting =
+        base::StringPrintf(R"(
+            "device": {
+              "registeredTime": %s
+            }
+          )",
+                           registerd_time_targeting.c_str());
+    LoadComponentAndVerifyLoadComplete(base::StringPrintf(
+        kValidCampaignsFileTemplate, device_targeting.c_str()));
+  }
+
+  void LoadComponentWithDeviceTargeting(const std::string& device_targeting) {
+    auto targeting = base::StringPrintf(R"(
+            "device": %s
+          )",
+                                        device_targeting.c_str());
+    LoadComponentAndVerifyLoadComplete(
+        base::StringPrintf(kValidCampaignsFileTemplate, targeting.c_str()));
+  }
+
+  void LoadComponentWithSessionTargeting(
+      const std::string& session_targeting_str) {
+    auto session_targeting = base::StringPrintf(R"(
+            "session": %s
+          )",
+                                                session_targeting_str.c_str());
+    LoadComponentAndVerifyLoadComplete(base::StringPrintf(
+        kValidCampaignsFileTemplate, session_targeting.c_str()));
+  }
+
+  void LoadComponentWithExperimentTagTargeting(const std::string& exp_tags) {
     auto session_targeting = base::StringPrintf(R"(
             "session": {
+              "experimentTags": %s
+            }
+          )",
+                                                exp_tags.c_str());
+    LoadComponentAndVerifyLoadComplete(base::StringPrintf(
+        kValidCampaignsFileTemplate, session_targeting.c_str()));
+  }
+
+  void LoadComponentWithScheduling(const std::string& schedulings) {
+    auto session_targeting = base::StringPrintf(R"(
+            "runtime": {
               "schedulings": %s
             }
           )",
                                                 schedulings.c_str());
+    LoadComponentAndVerifyLoadComplete(base::StringPrintf(
+        kValidCampaignsFileTemplate, session_targeting.c_str()));
+  }
+
+  void LoadComponentWithTriggerTargeting(const std::string& triggers) {
+    auto session_targeting = base::StringPrintf(R"(
+            "runtime": {
+              "triggers": %s
+            }
+          )",
+                                                triggers.c_str());
+    LoadComponentAndVerifyLoadComplete(base::StringPrintf(
+        kValidCampaignsFileTemplate, session_targeting.c_str()));
+  }
+
+  void LoadComponentWithAppsOpenedTargeting(const std::string& apps_opened) {
+    auto session_targeting = base::StringPrintf(R"(
+            "runtime": {
+              "appsOpened": %s
+            }
+          )",
+                                                apps_opened.c_str());
+    LoadComponentAndVerifyLoadComplete(base::StringPrintf(
+        kValidCampaignsFileTemplate, session_targeting.c_str()));
+  }
+
+  void LoadComponentWithMultiTargetings(const std::string& targetings) {
+    LoadComponentAndVerifyLoadComplete(base::StringPrintf(
+        kValidCampaignsFileMultiTargetingsTemplate, targetings.c_str()));
+  }
+
+  void LoadComponentWithActiveUrlTargeting(const std::string& active_url) {
+    auto session_targeting = base::StringPrintf(R"(
+            "runtime": {
+              "activeUrlRegexes": %s
+            }
+          )",
+                                                active_url.c_str());
     LoadComponentAndVerifyLoadComplete(base::StringPrintf(
         kValidCampaignsFileTemplate, session_targeting.c_str()));
   }
@@ -234,6 +394,8 @@ class CampaignsManagerTest : public testing::Test {
   std::unique_ptr<TestingPrefServiceSimple> local_state_;
   std::unique_ptr<TestingPrefServiceSimple> pref_;
   std::unique_ptr<CampaignsManager> campaigns_manager_;
+  // A sub-class might override this from `InitializeScopedFeatureList`.
+  base::test::ScopedFeatureList scoped_feature_list_;
 
  private:
   void InitializePrefService() {
@@ -246,6 +408,8 @@ class CampaignsManagerTest : public testing::Test {
         ash::prefs::kDemoModeRetailerId, std::string());
     local_state_->registry()->RegisterStringPref(ash::prefs::kDemoModeStoreId,
                                                  std::string());
+    local_state_->registry()->RegisterTimePref(
+        ash::prefs::kDeviceRegisteredTime, base::Time());
   }
 };
 
@@ -744,7 +908,7 @@ TEST_F(CampaignsManagerTest, LoadCampaignsEmptyFile) {
 
 TEST_F(CampaignsManagerTest, GetCampaignDeviceTargeting) {
   auto current_version = version_info::GetMajorVersionNumberAsInt();
-  LoadComponentWithDeviceTargeting(base::StringPrintf(
+  LoadComponentWithBasicDeviceTargetings(base::StringPrintf(
       R"(
       "min": %d,
       "max": %d
@@ -759,7 +923,7 @@ TEST_F(CampaignsManagerTest, GetCampaignDeviceTargeting) {
 
 TEST_F(CampaignsManagerTest, GetCampaignMilestoneMinMismatch) {
   auto current_version = version_info::GetMajorVersionNumberAsInt();
-  LoadComponentWithDeviceTargeting(base::StringPrintf(
+  LoadComponentWithBasicDeviceTargetings(base::StringPrintf(
       R"(
       "min": %d,
       "max": %d
@@ -773,7 +937,7 @@ TEST_F(CampaignsManagerTest, GetCampaignMilestoneMinMismatch) {
 
 TEST_F(CampaignsManagerTest, GetCampaignMilestoneMaxMismatch) {
   auto current_version = version_info::GetMajorVersionNumberAsInt();
-  LoadComponentWithDeviceTargeting(base::StringPrintf(
+  LoadComponentWithBasicDeviceTargetings(base::StringPrintf(
       R"(
         "min": %d,
         "max": %d
@@ -787,7 +951,7 @@ TEST_F(CampaignsManagerTest, GetCampaignMilestoneMaxMismatch) {
 
 TEST_F(CampaignsManagerTest, GetCampaignMinMilestoneOnly) {
   auto current_version = version_info::GetMajorVersionNumberAsInt();
-  LoadComponentWithDeviceTargeting(
+  LoadComponentWithBasicDeviceTargetings(
       base::StringPrintf(R"("min": %d)", current_version));
   EXPECT_CALL(mock_client_, GetApplicationLocale())
       .WillRepeatedly(testing::ReturnRefOfCopy(std::string("en-US")));
@@ -798,7 +962,7 @@ TEST_F(CampaignsManagerTest, GetCampaignMinMilestoneOnly) {
 
 TEST_F(CampaignsManagerTest, GetCampaignMinMilestoneOnlyMismatch) {
   auto current_version = version_info::GetMajorVersionNumberAsInt();
-  LoadComponentWithDeviceTargeting(
+  LoadComponentWithBasicDeviceTargetings(
       base::StringPrintf(R"("min": %d)", current_version + 1));
   EXPECT_CALL(mock_client_, GetApplicationLocale())
       .WillRepeatedly(testing::ReturnRefOfCopy(std::string("en-US")));
@@ -808,7 +972,7 @@ TEST_F(CampaignsManagerTest, GetCampaignMinMilestoneOnlyMismatch) {
 
 TEST_F(CampaignsManagerTest, GetCampaignMaxMilestoneOnly) {
   auto current_version = version_info::GetMajorVersionNumberAsInt();
-  LoadComponentWithDeviceTargeting(
+  LoadComponentWithBasicDeviceTargetings(
       base::StringPrintf(R"("max": %d)", current_version));
   EXPECT_CALL(mock_client_, GetApplicationLocale())
       .WillRepeatedly(testing::ReturnRefOfCopy(std::string("en-US")));
@@ -819,7 +983,7 @@ TEST_F(CampaignsManagerTest, GetCampaignMaxMilestoneOnly) {
 
 TEST_F(CampaignsManagerTest, GetCampaignMaxMilestoneOnlyMismatch) {
   auto current_version = version_info::GetMajorVersionNumberAsInt();
-  LoadComponentWithDeviceTargeting(
+  LoadComponentWithBasicDeviceTargetings(
       base::StringPrintf(R"("max": %d)", current_version - 1));
   EXPECT_CALL(mock_client_, GetApplicationLocale())
       .WillRepeatedly(testing::ReturnRefOfCopy(std::string("en-US")));
@@ -829,10 +993,223 @@ TEST_F(CampaignsManagerTest, GetCampaignMaxMilestoneOnlyMismatch) {
 
 TEST_F(CampaignsManagerTest, GetCampaignApplicationLocaleMismatch) {
   auto current_version = version_info::GetMajorVersionNumberAsInt();
-  LoadComponentWithDeviceTargeting(
+  LoadComponentWithBasicDeviceTargetings(
       base::StringPrintf(R"("max": %d)", current_version));
   EXPECT_CALL(mock_client_, GetApplicationLocale())
       .WillRepeatedly(testing::ReturnRefOfCopy(std::string("en-CA")));
+
+  ASSERT_EQ(nullptr, campaigns_manager_->GetCampaignBySlot(Slot::kDemoModeApp));
+}
+
+TEST_F(CampaignsManagerTest, GetCampaignTargetFeatureAwareDevice) {
+  auto current_version = version_info::GetMajorVersionNumberAsInt();
+  LoadComponentWithBasicDeviceTargetings(
+      base::StringPrintf(R"("max": %d)", current_version),
+      /*target_feature_aware_device=*/true);
+  EXPECT_CALL(mock_client_, GetApplicationLocale())
+      .WillRepeatedly(testing::ReturnRefOfCopy(std::string("en-US")));
+
+  scoped_feature_list_.InitWithFeatures(
+      {ash::features::kFeatureManagementGrowthFramework}, {});
+
+  VerifyDemoModePayload(
+      campaigns_manager_->GetCampaignBySlot(Slot::kDemoModeApp));
+}
+
+TEST_F(CampaignsManagerTest, GetCampaignTargetFeatureAwareDeviceMismatch) {
+  auto current_version = version_info::GetMajorVersionNumberAsInt();
+  LoadComponentWithBasicDeviceTargetings(
+      base::StringPrintf(R"("max": %d)", current_version),
+      /*target_feature_aware_device=*/false);
+  EXPECT_CALL(mock_client_, GetApplicationLocale())
+      .WillRepeatedly(testing::ReturnRefOfCopy(std::string("en-US")));
+
+  scoped_feature_list_.InitWithFeatures(
+      {ash::features::kFeatureManagementGrowthFramework}, {});
+
+  ASSERT_EQ(nullptr, campaigns_manager_->GetCampaignBySlot(Slot::kDemoModeApp));
+}
+
+TEST_F(CampaignsManagerTest, GetCampaignTargetNotFeatureAwareDevice) {
+  auto current_version = version_info::GetMajorVersionNumberAsInt();
+  LoadComponentWithBasicDeviceTargetings(
+      base::StringPrintf(R"("max": %d)", current_version),
+      /*target_feature_aware_device=*/false);
+  EXPECT_CALL(mock_client_, GetApplicationLocale())
+      .WillRepeatedly(testing::ReturnRefOfCopy(std::string("en-US")));
+
+  scoped_feature_list_.InitWithFeatures(
+      {}, {ash::features::kFeatureManagementGrowthFramework});
+
+  VerifyDemoModePayload(
+      campaigns_manager_->GetCampaignBySlot(Slot::kDemoModeApp));
+}
+
+TEST_F(CampaignsManagerTest, GetCampaignTargetNotFeatureAwareDeviceMismatch) {
+  auto current_version = version_info::GetMajorVersionNumberAsInt();
+  LoadComponentWithBasicDeviceTargetings(
+      base::StringPrintf(R"("max": %d)", current_version),
+      /*target_feature_aware_device=*/true);
+  EXPECT_CALL(mock_client_, GetApplicationLocale())
+      .WillRepeatedly(testing::ReturnRefOfCopy(std::string("en-US")));
+
+  scoped_feature_list_.InitWithFeatures(
+      {}, {ash::features::kFeatureManagementGrowthFramework});
+
+  ASSERT_EQ(nullptr, campaigns_manager_->GetCampaignBySlot(Slot::kDemoModeApp));
+}
+
+TEST_F(CampaignsManagerTest, GetCampaignTargetDeviceAge) {
+  // 3 years to 4 years.
+  LoadComponentWithDeviceTargeting(base::StringPrintf(R"({
+        "deviceAgeInHours": {
+          "start": 26280,
+          "end": 35040
+        }
+      })"));
+  campaigns_manager_->SetOobeCompleteTimeForTesting(base::Time::Now() -
+                                                    base::Hours(26281));
+
+  VerifyDemoModePayload(
+      campaigns_manager_->GetCampaignBySlot(Slot::kDemoModeApp));
+}
+
+TEST_F(CampaignsManagerTest, GetCampaignTargetDeviceAgeStartOnly) {
+  LoadComponentWithDeviceTargeting(base::StringPrintf(R"({
+        "deviceAgeInHours": {
+          "start": 26280
+        }
+      })"));
+  campaigns_manager_->SetOobeCompleteTimeForTesting(base::Time::Now() -
+                                                    base::Hours(26281));
+
+  VerifyDemoModePayload(
+      campaigns_manager_->GetCampaignBySlot(Slot::kDemoModeApp));
+}
+
+TEST_F(CampaignsManagerTest, GetCampaignTargetDeviceAgeEndOnly) {
+  LoadComponentWithDeviceTargeting(base::StringPrintf(R"({
+        "deviceAgeInHours": {
+          "end": 35040
+        }
+      })"));
+  campaigns_manager_->SetOobeCompleteTimeForTesting(base::Time::Now() -
+                                                    base::Hours(35039));
+
+  VerifyDemoModePayload(
+      campaigns_manager_->GetCampaignBySlot(Slot::kDemoModeApp));
+}
+
+TEST_F(CampaignsManagerTest, GetCampaignTargetDeviceAgeMismatch) {
+  campaigns_manager_->SetOobeCompleteTimeForTesting(base::Time::Now() -
+                                                    base::Hours(26281));
+  LoadComponentWithDeviceTargeting(base::StringPrintf(R"({
+        "deviceAgeInHours": {
+          "start": 26280,
+          "end": 35040
+        }
+      })"));
+  campaigns_manager_->SetOobeCompleteTimeForTesting(base::Time::Now() -
+                                                    base::Hours(26281));
+
+  VerifyDemoModePayload(
+      campaigns_manager_->GetCampaignBySlot(Slot::kDemoModeApp));
+}
+
+TEST_F(CampaignsManagerTest, GetCampaignTargetDeviceAgeStartOnlyMismatch) {
+  campaigns_manager_->SetOobeCompleteTimeForTesting(base::Time::Now() -
+                                                    base::Hours(26281));
+  LoadComponentWithDeviceTargeting(base::StringPrintf(R"({
+        "deviceAgeInHours": {
+          "start": 26280
+        }
+      })"));
+  campaigns_manager_->SetOobeCompleteTimeForTesting(base::Time::Now() -
+                                                    base::Hours(26281));
+
+  VerifyDemoModePayload(
+      campaigns_manager_->GetCampaignBySlot(Slot::kDemoModeApp));
+}
+
+TEST_F(CampaignsManagerTest, GetCampaignTargetDeviceAgeEndOnlyMismatch) {
+  campaigns_manager_->SetOobeCompleteTimeForTesting(base::Time::Now() -
+                                                    base::Hours(35041));
+  LoadComponentWithDeviceTargeting(base::StringPrintf(R"({
+        "deviceAgeInHours": {
+          "end": 35040
+        }
+      })"));
+  campaigns_manager_->SetOobeCompleteTimeForTesting(base::Time::Now() -
+                                                    base::Hours(26281));
+
+  VerifyDemoModePayload(
+      campaigns_manager_->GetCampaignBySlot(Slot::kDemoModeApp));
+}
+
+TEST_F(CampaignsManagerTest, GetCampaignExperimentTag) {
+  InitilizeCampaignsExperimentTag(/*exp_tag=*/"1");
+
+  LoadComponentWithExperimentTagTargeting(R"(["1", "2", "3"])");
+
+  VerifyDemoModePayload(
+      campaigns_manager_->GetCampaignBySlot(Slot::kDemoModeApp));
+}
+
+TEST_F(CampaignsManagerTest, GetCampaignExperimentTagOrRelationship) {
+  InitilizeCampaignsExperimentTag(/*exp_tag=*/"2");
+
+  LoadComponentWithExperimentTagTargeting(R"(["1", "2", "3"])");
+
+  VerifyDemoModePayload(
+      campaigns_manager_->GetCampaignBySlot(Slot::kDemoModeApp));
+}
+
+TEST_F(CampaignsManagerTest, GetCampaignExperimentTagMismatch) {
+  InitilizeCampaignsExperimentTag(/*exp_tag=*/"4");
+
+  LoadComponentWithExperimentTagTargeting(R"(["1", "2", "3"])");
+
+  ASSERT_EQ(nullptr, campaigns_manager_->GetCampaignBySlot(Slot::kDemoModeApp));
+}
+
+TEST_F(CampaignsManagerTest, GetCampaignForOwner) {
+  LoadComponentWithSessionTargeting(R"({
+    "isOwner": true
+  })");
+
+  campaigns_manager_->SetIsUserOwner(true);
+
+  VerifyDemoModePayload(
+      campaigns_manager_->GetCampaignBySlot(Slot::kDemoModeApp));
+}
+
+TEST_F(CampaignsManagerTest, GetCampaignForOwnerMismatch) {
+  LoadComponentWithSessionTargeting(R"({
+    "isOwner": true
+  })");
+
+  campaigns_manager_->SetIsUserOwner(false);
+
+  ASSERT_EQ(nullptr, campaigns_manager_->GetCampaignBySlot(Slot::kDemoModeApp));
+}
+
+TEST_F(CampaignsManagerTest, GetCampaignForNonOwner) {
+  LoadComponentWithSessionTargeting(R"({
+    "isOwner": false
+  })");
+
+  campaigns_manager_->SetIsUserOwner(false);
+
+  VerifyDemoModePayload(
+      campaigns_manager_->GetCampaignBySlot(Slot::kDemoModeApp));
+}
+
+TEST_F(CampaignsManagerTest, GetCampaignForNonOwnerMismatch) {
+  LoadComponentWithSessionTargeting(R"({
+    "isOwner": false
+  })");
+
+  campaigns_manager_->SetIsUserOwner(true);
 
   ASSERT_EQ(nullptr, campaigns_manager_->GetCampaignBySlot(Slot::kDemoModeApp));
 }
@@ -930,12 +1307,8 @@ TEST_F(CampaignsManagerTest, GetSchedulingCampaignInvalidTargeting) {
 
   LoadComponentWithScheduling("1");
 
-  ASSERT_EQ(nullptr, campaigns_manager_->GetCampaignBySlot(Slot::kDemoModeApp));
-
-  histogram_tester.ExpectBucketCount(
-      kCampaignsManagerErrorHistogramName,
-      CampaignsManagerError::kInvalidSchedulingTargeting,
-      /*count=*/1);
+  VerifyDemoModePayload(
+      campaigns_manager_->GetCampaignBySlot(Slot::kDemoModeApp));
 
   histogram_tester.ExpectBucketCount(kCampaignsManagerErrorHistogramName,
                                      CampaignsManagerError::kInvalidCampaign,
@@ -951,11 +1324,11 @@ TEST_F(CampaignsManagerTest, GetSchedulingCampaignInvalidScheduling) {
 
   LoadComponentWithScheduling(R"([
     "test1",
-    "test2",
-    {"end": 1}
+    "test2"
   ])");
 
-  ASSERT_EQ(nullptr, campaigns_manager_->GetCampaignBySlot(Slot::kDemoModeApp));
+  VerifyDemoModePayload(
+      campaigns_manager_->GetCampaignBySlot(Slot::kDemoModeApp));
 
   // Verify that two of the scheduling is invalids.
   histogram_tester.ExpectBucketCount(kCampaignsManagerErrorHistogramName,
@@ -971,6 +1344,262 @@ TEST_F(CampaignsManagerTest, GetSchedulingCampaignInvalidScheduling) {
   histogram_tester.ExpectBucketCount(kCampaignsManagerErrorHistogramName,
                                      CampaignsManagerError::kInvalidTargeting,
                                      /*count=*/1);
+}
+
+TEST_F(CampaignsManagerTest, GetCampaignWithRegisteredTimeTargeting) {
+  const auto now = base::Time::Now();
+  auto start = now;
+  auto end = now + base::Seconds(5);
+  LoadComponentWithRegisteredTimeTargeting(base::StringPrintf(
+      R"({"start": %f, "end": %f})", start.InSecondsFSinceUnixEpoch(),
+      end.InSecondsFSinceUnixEpoch()));
+  campaigns_manager_->SetOobeCompleteTimeForTesting(now);
+
+  VerifyDemoModePayload(
+      campaigns_manager_->GetCampaignBySlot(Slot::kDemoModeApp));
+}
+
+TEST_F(CampaignsManagerTest, GetCampaignWithRegisteredTimeTargetingStartOnly) {
+  const auto now = base::Time::Now();
+  auto start = now;
+  LoadComponentWithRegisteredTimeTargeting(
+      base::StringPrintf(R"({"start": %f})", start.InSecondsFSinceUnixEpoch()));
+  campaigns_manager_->SetOobeCompleteTimeForTesting(now);
+
+  VerifyDemoModePayload(
+      campaigns_manager_->GetCampaignBySlot(Slot::kDemoModeApp));
+}
+
+TEST_F(CampaignsManagerTest, GetCampaignWithRegisteredTimeTargetingEndOnly) {
+  const auto now = base::Time::Now();
+  auto end = now + base::Seconds(5);
+  LoadComponentWithRegisteredTimeTargeting(
+      base::StringPrintf(R"({"end": %f})", end.InSecondsFSinceUnixEpoch()));
+  campaigns_manager_->SetOobeCompleteTimeForTesting(now);
+
+  VerifyDemoModePayload(
+      campaigns_manager_->GetCampaignBySlot(Slot::kDemoModeApp));
+}
+
+TEST_F(CampaignsManagerTest,
+       GetCampaignWithRegisteredTimeTargetingStartMismatch) {
+  const auto now = base::Time::Now();
+  auto start = now + base::Seconds(5);
+  auto end = now + base::Seconds(10);
+  LoadComponentWithRegisteredTimeTargeting(base::StringPrintf(
+      R"({"start": %f, "end": %f})", start.InSecondsFSinceUnixEpoch(),
+      end.InSecondsFSinceUnixEpoch()));
+  campaigns_manager_->SetOobeCompleteTimeForTesting(now);
+
+  ASSERT_EQ(nullptr, campaigns_manager_->GetCampaignBySlot(Slot::kDemoModeApp));
+}
+
+TEST_F(CampaignsManagerTest,
+       GetCampaignWithRegisteredTimeTargetingEndMismatch) {
+  const auto now = base::Time::Now();
+  auto start = now - base::Seconds(2);
+  auto end = now - base::Seconds(1);
+  LoadComponentWithRegisteredTimeTargeting(base::StringPrintf(
+      R"({"start": %f, "end": %f})", start.InSecondsFSinceUnixEpoch(),
+      end.InSecondsFSinceUnixEpoch()));
+  campaigns_manager_->SetOobeCompleteTimeForTesting(now);
+
+  ASSERT_EQ(nullptr, campaigns_manager_->GetCampaignBySlot(Slot::kDemoModeApp));
+}
+
+TEST_F(CampaignsManagerTest,
+       GetCampaignWithRegisteredTimeTargetingStartOnlyMismatch) {
+  const auto now = base::Time::Now();
+  auto start = now + base::Seconds(5);
+  LoadComponentWithRegisteredTimeTargeting(
+      base::StringPrintf(R"({"start": %f})", start.InSecondsFSinceUnixEpoch()));
+  campaigns_manager_->SetOobeCompleteTimeForTesting(now);
+
+  ASSERT_EQ(nullptr, campaigns_manager_->GetCampaignBySlot(Slot::kDemoModeApp));
+}
+
+TEST_F(CampaignsManagerTest,
+       GetCampaignWithRegisteredTimeTargetingEndOnlyMismatch) {
+  const auto now = base::Time::Now();
+  auto end = now - base::Seconds(5);
+  LoadComponentWithRegisteredTimeTargeting(
+      base::StringPrintf(R"({"end": %f})", end.InSecondsFSinceUnixEpoch()));
+  campaigns_manager_->SetOobeCompleteTimeForTesting(now);
+
+  ASSERT_EQ(nullptr, campaigns_manager_->GetCampaignBySlot(Slot::kDemoModeApp));
+}
+
+TEST_F(CampaignsManagerTest, GetCampaignActiveUrl) {
+  campaigns_manager_->SetActiveUrl(GURL("https://www.google.com/?foo=bar"));
+
+  LoadComponentWithActiveUrlTargeting(
+      R"([
+        "https://www\\.google\\.com/\\?foo=bar",
+        "https://gmail\\.google\\.com/\\?foo=bar",
+        "https://www\\.google\\.com/\\?foo=bar2"
+    ])");
+
+  VerifyDemoModePayload(
+      campaigns_manager_->GetCampaignBySlot(Slot::kDemoModeApp));
+}
+
+TEST_F(CampaignsManagerTest, GetCampaignActiveUrlOrRelationship) {
+  campaigns_manager_->SetActiveUrl(GURL("https://www.google.com/?foo=bar"));
+
+  LoadComponentWithActiveUrlTargeting(
+      R"([
+        "https://gmail\\.google\\.com/\\?foo=bar",
+        "https://www\\.google\\.com/\\?foo=bar",
+        "https://www\\.google\\.com/\\?foo=bar2",
+        "https://www\\.google\\.com/foo=bar"
+    ])");
+
+  VerifyDemoModePayload(
+      campaigns_manager_->GetCampaignBySlot(Slot::kDemoModeApp));
+}
+
+TEST_F(CampaignsManagerTest, GetCampaignActiveUrlMismatch) {
+  campaigns_manager_->SetActiveUrl(GURL("https://www.google.com/?foo=bar"));
+
+  LoadComponentWithActiveUrlTargeting(
+      R"([
+        "1https://gmail\\.google\\.com/\\?foo=bar",
+        "http://www\\.google\\.com/\\?foo=bar",
+        "https://www\\.google\\.com/\\?foo=bar2"
+    ])");
+
+  ASSERT_EQ(nullptr, campaigns_manager_->GetCampaignBySlot(Slot::kDemoModeApp));
+}
+
+TEST_F(CampaignsManagerTest, GetCampaignActiveUrlEmptyActiveUrl) {
+  campaigns_manager_->SetActiveUrl(GURL::EmptyGURL());
+
+  LoadComponentWithActiveUrlTargeting(
+      R"([
+        "1https://gmail\\.google\\.com/\\?foo=bar",
+        "http://www\\.google\\.com/\\?foo=bar",
+        "https://www\\.google\\.com/\\?foo=bar2"
+    ])");
+
+  ASSERT_EQ(nullptr, campaigns_manager_->GetCampaignBySlot(Slot::kDemoModeApp));
+}
+
+TEST_F(CampaignsManagerTest, GetCampaignActiveUrlNoActiveUrl) {
+  LoadComponentWithActiveUrlTargeting(
+      R"([
+        "1https://gmail\\.google\\.com/\\?foo=bar",
+        "http://www\\.google\\.com/\\?foo=bar",
+        "https://www\\.google\\.com/\\?foo=bar2"
+    ])");
+
+  ASSERT_EQ(nullptr, campaigns_manager_->GetCampaignBySlot(Slot::kDemoModeApp));
+}
+
+TEST_F(CampaignsManagerTest, GetCampaignTriggers) {
+  campaigns_manager_->SetTrigger(TriggeringType::kAppOpened);
+
+  LoadComponentWithTriggerTargeting(R"([0])");
+
+  VerifyDemoModePayload(
+      campaigns_manager_->GetCampaignBySlot(Slot::kDemoModeApp));
+}
+
+TEST_F(CampaignsManagerTest, GetCampaignTriggersOrRelationship) {
+  campaigns_manager_->SetTrigger(TriggeringType::kAppOpened);
+
+  LoadComponentWithTriggerTargeting(R"([0, 1])");
+
+  VerifyDemoModePayload(
+      campaigns_manager_->GetCampaignBySlot(Slot::kDemoModeApp));
+}
+
+TEST_F(CampaignsManagerTest, GetCampaignTriggersMissmatch) {
+  campaigns_manager_->SetTrigger(TriggeringType::kAppOpened);
+
+  LoadComponentWithTriggerTargeting(R"([1])");
+
+  ASSERT_EQ(nullptr, campaigns_manager_->GetCampaignBySlot(Slot::kDemoModeApp));
+}
+
+TEST_F(CampaignsManagerTest, GetCampaignTriggersNoTrigger) {
+  LoadComponentWithTriggerTargeting(R"([0, 1])");
+
+  ASSERT_EQ(nullptr, campaigns_manager_->GetCampaignBySlot(Slot::kDemoModeApp));
+}
+
+TEST_F(CampaignsManagerTest, GetCampaignAppsOpened) {
+  campaigns_manager_->SetOpenedApp("app_id_1");
+
+  LoadComponentWithAppsOpenedTargeting(
+      R"([
+      {"appId": "app_id_1"},
+      {"appId": "app_id_10"},
+      {"appId": "app_id_15"}
+    ])");
+
+  VerifyDemoModePayload(
+      campaigns_manager_->GetCampaignBySlot(Slot::kDemoModeApp));
+}
+
+TEST_F(CampaignsManagerTest, GetCampaignAppsOpenedOrRelationship) {
+  campaigns_manager_->SetOpenedApp("app_id_10");
+
+  LoadComponentWithAppsOpenedTargeting(
+      R"([
+      {"appId": "app_id_1"},
+      {"appId": "app_id_10"},
+      {"appId": "app_id_15"}
+    ])");
+
+  VerifyDemoModePayload(
+      campaigns_manager_->GetCampaignBySlot(Slot::kDemoModeApp));
+}
+
+TEST_F(CampaignsManagerTest, GetCampaignAppOpenedMismatch) {
+  campaigns_manager_->SetOpenedApp("app_id_2");
+
+  LoadComponentWithAppsOpenedTargeting(
+      R"([
+      {"appId": "app_id_1"},
+      {"appId": "app_id_10"},
+      {"appId": "app_id_15"}
+    ])");
+
+  ASSERT_EQ(nullptr, campaigns_manager_->GetCampaignBySlot(Slot::kDemoModeApp));
+}
+
+TEST_F(CampaignsManagerTest, GetCampaignAppOpenedNoOpenedApp) {
+  LoadComponentWithAppsOpenedTargeting(
+      R"([
+      {"appId": "app_id_1"},
+      {"appId": "app_id_10"},
+      {"appId": "app_id_15"}
+    ])");
+
+  ASSERT_EQ(nullptr, campaigns_manager_->GetCampaignBySlot(Slot::kDemoModeApp));
+}
+
+TEST_F(CampaignsManagerTest, GetCampaignMatchFirstTargeting) {
+  campaigns_manager_->SetOpenedApp("app_id_1");
+
+  LoadComponentWithMultiTargetings(kValidMultiTargetings);
+  VerifyDemoModePayload(
+      campaigns_manager_->GetCampaignBySlot(Slot::kDemoModeApp));
+}
+
+TEST_F(CampaignsManagerTest, GetCampaignMatchSecondTargeting) {
+  campaigns_manager_->SetOpenedApp("app_id_2");
+
+  LoadComponentWithMultiTargetings(kValidMultiTargetings);
+  VerifyDemoModePayload(
+      campaigns_manager_->GetCampaignBySlot(Slot::kDemoModeApp));
+}
+
+TEST_F(CampaignsManagerTest, GetCampaignMatchMultiTargetingsMismatch) {
+  campaigns_manager_->SetOpenedApp("app_id_20");
+
+  LoadComponentWithMultiTargetings(kValidMultiTargetings);
+  ASSERT_EQ(nullptr, campaigns_manager_->GetCampaignBySlot(Slot::kDemoModeApp));
 }
 
 }  // namespace growth

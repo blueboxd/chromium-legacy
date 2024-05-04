@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/html/forms/form_controller.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_element.h"
+#include "third_party/blink/renderer/core/html/forms/html_option_element.h"
 #include "third_party/blink/renderer/core/html/forms/select_type.h"
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
@@ -54,7 +55,7 @@ class HTMLSelectElementTest : public PageTestBase {
 
   String MenuListLabel() const {
     auto* select = To<HTMLSelectElement>(GetDocument().body()->firstChild());
-    return select->InnerElement().textContent();
+    return select->InnerElementForAppearanceAuto().textContent();
   }
 
  private:
@@ -121,8 +122,9 @@ TEST_F(HTMLSelectElementTest, SaveRestoreSelectSingleFormControlState) {
   EXPECT_EQ(2, To<HTMLSelectElement>(element)->selectedIndex());
   EXPECT_FALSE(opt0->Selected());
   EXPECT_TRUE(opt2->Selected());
-  EXPECT_EQ("!666",
-            To<HTMLSelectElement>(element)->InnerElement().textContent());
+  EXPECT_EQ("!666", To<HTMLSelectElement>(element)
+                        ->InnerElementForAppearanceAuto()
+                        .textContent());
 }
 
 TEST_F(HTMLSelectElementTest, SaveRestoreSelectMultipleFormControlState) {

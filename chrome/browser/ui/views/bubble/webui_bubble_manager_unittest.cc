@@ -8,13 +8,13 @@
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/bubble/webui_bubble_dialog_view.h"
+#include "chrome/browser/ui/webui/top_chrome/top_chrome_web_ui_controller.h"
 #include "chrome/browser/ui/webui/top_chrome/webui_contents_wrapper.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "chrome/test/views/chrome_views_test_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/test/widget_test.h"
-#include "ui/webui/mojo_bubble_web_ui_controller.h"
 
 namespace {
 
@@ -22,7 +22,7 @@ const char* kTestURL = "chrome://test";
 
 }  // namespace
 
-class TestWebUIController : public ui::MojoBubbleWebUIController {
+class TestWebUIController : public TopChromeWebUIController {
   WEB_UI_CONTROLLER_TYPE_DECL();
 };
 WEB_UI_CONTROLLER_TYPE_IMPL(TestWebUIController)
@@ -34,12 +34,14 @@ class WebUIContentsWrapperT<TestWebUIController> : public WebUIContentsWrapper {
                         content::BrowserContext* browser_context,
                         int task_manager_string_id,
                         bool webui_resizes_host = true,
-                        bool esc_closes_ui = true)
+                        bool esc_closes_ui = true,
+                        bool supports_draggable_regions = false)
       : WebUIContentsWrapper(webui_url,
                              browser_context,
                              task_manager_string_id,
                              webui_resizes_host,
                              esc_closes_ui,
+                             supports_draggable_regions,
                              "Test") {}
   void ReloadWebContents() override {}
   base::WeakPtr<WebUIContentsWrapper> GetWeakPtr() override {
@@ -96,9 +98,8 @@ TEST_F(WebUIBubbleManagerPersistentRendererTest,
 
   std::unique_ptr<views::Widget> anchor_widget =
       CreateTestWidget(views::Widget::InitParams::TYPE_WINDOW);
-  auto bubble_manager =
-      std::make_unique<WebUIBubbleManagerT<TestWebUIController>>(
-          anchor_widget->GetContentsView(), test_profile, GURL(kTestURL), 1);
+  auto bubble_manager = WebUIBubbleManager::Create<TestWebUIController>(
+      anchor_widget->GetContentsView(), test_profile, GURL(kTestURL), 1);
   bubble_manager->DisableCloseBubbleHelperForTesting();
 
   // The per-profile persistent renderer will not have been created until the
@@ -137,9 +138,8 @@ TEST_F(WebUIBubbleManagerPersistentRendererTest,
 
   std::unique_ptr<views::Widget> anchor_widget =
       CreateTestWidget(views::Widget::InitParams::TYPE_WINDOW);
-  auto bubble_manager =
-      std::make_unique<WebUIBubbleManagerT<TestWebUIController>>(
-          anchor_widget->GetContentsView(), otr_profile, GURL(kTestURL), 1);
+  auto bubble_manager = WebUIBubbleManager::Create<TestWebUIController>(
+      anchor_widget->GetContentsView(), otr_profile, GURL(kTestURL), 1);
   bubble_manager->DisableCloseBubbleHelperForTesting();
 
   // The service should not exist for off the record profiles.
@@ -170,9 +170,8 @@ TEST_F(WebUIBubbleManagerTest, CreateWebUIBubbleDialogWithAnchorProvided) {
 
   std::unique_ptr<views::Widget> anchor_widget =
       CreateTestWidget(views::Widget::InitParams::TYPE_WINDOW);
-  auto bubble_manager =
-      std::make_unique<WebUIBubbleManagerT<TestWebUIController>>(
-          anchor_widget->GetContentsView(), test_profile, GURL(kTestURL), 1);
+  auto bubble_manager = WebUIBubbleManager::Create<TestWebUIController>(
+      anchor_widget->GetContentsView(), test_profile, GURL(kTestURL), 1);
   bubble_manager->DisableCloseBubbleHelperForTesting();
 
   gfx::Rect anchor(666, 666, 0, 0);
@@ -199,8 +198,9 @@ TEST_F(WebUIBubbleManagerPersistentRendererTest,
   std::unique_ptr<views::Widget> anchor_widget =
       CreateTestWidget(views::Widget::InitParams::TYPE_WINDOW);
   auto create_manager = [&](Profile* profile) {
-    auto manager = std::make_unique<WebUIBubbleManagerT<TestWebUIController>>(
-        anchor_widget->GetContentsView(), profile, GURL(kTestURL), 1);
+    std::unique_ptr<WebUIBubbleManager> manager =
+        WebUIBubbleManager::Create<TestWebUIController>(
+            anchor_widget->GetContentsView(), profile, GURL(kTestURL), 1);
     manager->DisableCloseBubbleHelperForTesting();
     return manager;
   };

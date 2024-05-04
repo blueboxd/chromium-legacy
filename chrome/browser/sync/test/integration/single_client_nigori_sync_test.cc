@@ -392,8 +392,8 @@ class SingleClientNigoriCrossUserSharingPublicPrivateKeyPairSyncTest
     // There is no easy way to wait for Cryptographer update to make it sure
     // that the new key pair is propagated, so use bookmarks to verify that
     // there was a sync cycle before testing password sharing.
-    // TODO(crbug.com/1511180): consider waiting for Cryptographer update rather
-    // than relying on bookmarks.
+    // TODO(crbug.com/41483767): consider waiting for Cryptographer update
+    // rather than relying on bookmarks.
     GetFakeServer()->InjectEntity(bookmarks_helper::CreateBookmarkServerEntity(
         "title", GURL("http://abc.com")));
     return bookmarks_helper::BookmarksTitleChecker(0, "title", 1).Wait();
@@ -404,7 +404,7 @@ class SingleClientNigoriCrossUserSharingPublicPrivateKeyPairSyncTest
 };
 
 // Some tests are flaky on Chromeos when run with IP Protection enabled.
-// TODO(crbug.com/1491411): Fix flakes.
+// TODO(crbug.com/40935754): Fix flakes.
 class SingleClientNigoriCrossUserSharingPublicPrivateKeyPairSyncTestNoIpProt
     : public SingleClientNigoriCrossUserSharingPublicPrivateKeyPairSyncTest {
  public:
@@ -421,8 +421,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientNigoriSyncTest,
                        ShouldCommitKeystoreNigoriWhenReceivedDefault) {
   // SetupSync() should make FakeServer send default NigoriSpecifics.
   ASSERT_TRUE(SetupSync());
-  // TODO(crbug/922900): we may want to actually wait for specifics update in
-  // fake server. Due to implementation details it's not currently needed.
+  // TODO(crbug.com/40609954): we may want to actually wait for specifics update
+  // in fake server. Due to implementation details it's not currently needed.
   sync_pb::NigoriSpecifics specifics;
   EXPECT_TRUE(GetServerNigori(GetFakeServer(), &specifics));
 
@@ -513,7 +513,7 @@ IN_PROC_BROWSER_TEST_F(
   // with the single key known to this client. This happens after SetupSync(),
   // so it's an incremental update.
   ASSERT_FALSE(
-      GetSyncService(0)->GetUserSettings()->GetEncryptedDataTypes().Has(
+      GetSyncService(0)->GetUserSettings()->GetAllEncryptedDataTypes().Has(
           syncer::ModelType::BOOKMARKS));
   const std::string kTitle = "Bookmark title";
   const GURL kUrl = GURL("https://g.com");
@@ -1461,7 +1461,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientNigoriWithWebApiTest,
                    ->IsTrustedVaultKeyRequiredForPreferredDataTypes());
 }
 
-// TODO(crbug.com/1466096): Some changes desired once test confirmed to be
+// TODO(crbug.com/40276245): Some changes desired once test confirmed to be
 // deflaked:
 // 1. ShouldRecordTrustedVaultErrorShownOnStartupWhenErrorNotShown does almost
 // the same, but have unique expectation. Consider to dedup them.
@@ -1528,7 +1528,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientNigoriWithWebApiTest,
 IN_PROC_BROWSER_TEST_F(
     SingleClientNigoriWithWebApiTest,
     PRE_ShouldClearEncryptionKeysFromTheWebWhenSigninCookiesCleared) {
-  // TODO(crbug.com/1466096): TrustedVaultKeysChangedStateChecker may be not
+  // TODO(crbug.com/40276245): TrustedVaultKeysChangedStateChecker may be not
   // sufficient and redundant in this test, consider rewriting it using
   // StandaloneTrustedVaultClient::WaitForFlushForTesting().
   ASSERT_TRUE(SetupClients());
@@ -1558,7 +1558,7 @@ IN_PROC_BROWSER_TEST_F(
 
   // TrustedVaultClient handles IdentityManager state changes after refresh
   // tokens are loaded.
-  // TODO(crbug.com/1148328): |keys_cleared_checker| should be sufficient alone
+  // TODO(crbug.com/40156992): |keys_cleared_checker| should be sufficient alone
   // once test properly manipulates AccountsInCookieJarInfo (this likely
   // involves using FakeGaia).
   signin::WaitForRefreshTokensLoaded(
@@ -1732,8 +1732,8 @@ IN_PROC_BROWSER_TEST_F(
   ASSERT_TRUE(GetClient(0)->SignInPrimaryAccount());
   ASSERT_TRUE(GetClient(0)->AwaitSyncTransportActive());
 #endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
-  // TODO(crbug.com/1448448): SetupSync(WAIT_FOR_COMMITS_TO_COMPLETE) (e.g. with
-  // default argument) causes test flakiness here due to unrelated issue in
+  // TODO(crbug.com/40914333): SetupSync(WAIT_FOR_COMMITS_TO_COMPLETE) (e.g.
+  // with default argument) causes test flakiness here due to unrelated issue in
   // SharingService. From this test perspective it doesn't matter whether to use
   // WAIT_FOR_COMMITS_TO_COMPLETE or WAIT_FOR_SYNC_SETUP_TO_COMPLETE, but it
   // would be nice to use default argument once the issue is resolved.
@@ -1909,7 +1909,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientNigoriWithWebApiTest,
       "Sync.TrustedVaultRecoverabilityDegradedOnStartup.MigratedLastDay",
       /*count=*/0);
 
-  // TODO(crbug.com/1201659): Verify the recovery method hint added to the fake
+  // TODO(crbug.com/40178774): Verify the recovery method hint added to the fake
   // server.
 }
 
@@ -2061,7 +2061,7 @@ IN_PROC_BROWSER_TEST_F(
 IN_PROC_BROWSER_TEST_F(SingleClientNigoriWithWebApiTest,
                        ShouldRegisterDeviceWithConstantKey) {
   ASSERT_TRUE(SetupSync());
-  // TODO(crbug.com/1113599): consider checking member public key (requires
+  // TODO(crbug.com/40143545): consider checking member public key (requires
   // either ability to overload key generator in the test or exposing public key
   // from the client).
   EXPECT_TRUE(FakeSecurityDomainsServerMemberStatusChecker(
@@ -2266,7 +2266,8 @@ class SingleClientNigoriWithWebApiExplicitParamTest
   }
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list_{switches::kUnoDesktop};
+  base::test::ScopedFeatureList scoped_feature_list_{
+      switches::kExplicitBrowserSigninUIOnDesktop};
 };
 
 IN_PROC_BROWSER_TEST_P(SingleClientNigoriWithWebApiExplicitParamTest,

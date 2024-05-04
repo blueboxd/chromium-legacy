@@ -262,7 +262,7 @@ void IOSChromeMainParts::PreCreateThreads() {
 
   metrics::EnableExpiryChecker(::kExpiredHistogramsHashes);
 
-  // TODO(crbug.com/1164533): Remove code below some time after February 2021.
+  // TODO(crbug.com/40163579): Remove code below some time after February 2021.
   NSString* const kRemoveProtectionFromPrefFileKey =
       @"RemoveProtectionFromPrefKey";
   if ([NSUserDefaults.standardUserDefaults
@@ -308,14 +308,18 @@ void IOSChromeMainParts::PreMainMessageLoopRun() {
   EnsureBrowserStateKeyedServiceFactoriesBuilt();
   ios::ChromeBrowserStateManager* browser_state_manager =
       application_context_->GetChromeBrowserStateManager();
+
+  // Load all BrowserStates.
+  browser_state_manager->LoadBrowserStates();
+
   // TODO(crbug.com/325257407): Factor all of the code that uses this to instead
   // initialize for every browser state.
   ChromeBrowserState* last_used_browser_state =
-      browser_state_manager->GetLastUsedBrowserState();
+      browser_state_manager->GetLastUsedBrowserStateDeprecatedDoNotUse();
 
   // This must occur at PreMainMessageLoopRun because `SetupMetrics()` uses the
   // blocking pool, which is disabled until the CreateThreads phase of startup.
-  // TODO(crbug.com/786494): Investigate whether metrics recording can be
+  // TODO(crbug.com/41356264): Investigate whether metrics recording can be
   // initialized consistently across iOS and non-iOS platforms
   SetupMetrics();
 
@@ -334,12 +338,12 @@ void IOSChromeMainParts::PreMainMessageLoopRun() {
   segmentation_platform::UkmDatabaseClientHolder::GetClientInstance(nullptr)
       .StartObservation();
 
-#if BUILDFLAG(USE_PARTITION_ALLOC)
+#if PA_BUILDFLAG(USE_PARTITION_ALLOC)
   base::allocator::PartitionAllocSupport::Get()
       ->ReconfigureAfterFeatureListInit("");
   base::allocator::PartitionAllocSupport::Get()->ReconfigureAfterTaskRunnerInit(
       "");
-#endif  // BUILDFLAG(USE_PARTITION_ALLOC)
+#endif  // PA_BUILDFLAG(USE_PARTITION_ALLOC)
 
 #if BUILDFLAG(ENABLE_RLZ)
   // Init the RLZ library. This just schedules a task on the file thread to be
@@ -419,7 +423,7 @@ void IOSChromeMainParts::SetUpFieldTrials(
 
   // FeatureList requires VariationsIdsProvider to be created.
 #if !BUILDFLAG(USE_BLINK)
-  // TODO(crbug.com/1427308) Move variations to PostEarlyInitialization.
+  // TODO(crbug.com/40261735) Move variations to PostEarlyInitialization.
   variations::VariationsIdsProvider::Create(
       variations::VariationsIdsProvider::Mode::kUseSignedInState);
 #endif
@@ -438,7 +442,7 @@ void IOSChromeMainParts::SetUpFieldTrials(
       RegisterAllFeatureVariationParameters(&flags_storage, feature_list.get());
 
 #if !BUILDFLAG(USE_BLINK)
-  // TODO(crbug.com/1427308) Move variations to PostEarlyInitialization.
+  // TODO(crbug.com/40261735) Move variations to PostEarlyInitialization.
   application_context_->GetVariationsService()->SetUpFieldTrials(
       variation_ids, command_line_variation_ids,
       std::vector<base::FeatureList::FeatureOverrideInfo>(),
@@ -457,7 +461,7 @@ void IOSChromeMainParts::SetupMetrics() {
 }
 
 void IOSChromeMainParts::StartMetricsRecording() {
-  // TODO(crbug.com/1417909) Add an EG2 test for cloned install detection.
+  // TODO(crbug.com/40894426) Add an EG2 test for cloned install detection.
   application_context_->GetMetricsService()->CheckForClonedInstall();
   application_context_->GetMetricsServicesManager()->UpdateUploadPermissions(
       true);

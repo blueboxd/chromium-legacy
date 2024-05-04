@@ -75,15 +75,15 @@ enum CreditCardSaveManagerObserverEvent : int {
 
 // The functions below are helpers for the SaveCardInfobarEGTest that requires
 // observing autofill events in the app process.
-// SaveCardInfobarEGTestHelper is an object instantiated in the app process that
+// FakeCreditCardServer is an object instantiated in the app process that
 // will observe the needed events.
 
-// Creates a SaveCardInfobarEGTestHelper object and call SetUp on it.
+// Creates a FakeCreditCardServer object and call SetUp on it.
 // This will register event observer and test URL loader and histogram tester.
-+ (void)setUpSaveCardInfobarEGTestHelper;
++ (void)setUpFakeCreditCardServer;
 
-// Tear down the SaveCardInfobarEGTestHelper, unregister it and delete it.
-+ (void)tearDownSaveCardInfobarEGTestHelper;
+// Tear down the FakeCreditCardServer, unregister it and delete it.
++ (void)tearDownFakeCreditCardServer;
 
 // Sets the Autofill events that are expected to be triggered.
 + (void)resetEventWaiterForEvents:(NSArray*)events
@@ -96,6 +96,12 @@ enum CreditCardSaveManagerObserverEvent : int {
 + (void)setPaymentsResponse:(NSString*)response
                  forRequest:(NSString*)request
               withErrorCode:(int)error;
+
+// Clear all existing fake response.
++ (void)clearPaymentsResponses;
+
+// Sets a fake access token to bypass the token fetch request.
++ (void)setAccessToken;
 
 // Sets the number of times the user refused to save a card.
 + (void)setFormFillMaxStrikes:(int)max forCard:(NSString*)card;

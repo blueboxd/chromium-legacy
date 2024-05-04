@@ -10,22 +10,22 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <string_view>
 
 #include "base/functional/callback.h"
-#import "base/memory/raw_ptr.h"
-#include "base/memory/weak_ptr.h"
+#include "base/memory/raw_ptr.h"
 #include "base/scoped_observation.h"
 #include "base/threading/thread_checker.h"
 #include "components/metrics/file_metrics_provider.h"
 #include "components/metrics/metrics_log_uploader.h"
 #include "components/metrics/metrics_service_client.h"
-#import "components/metrics/persistent_synthetic_trial_observer.h"
+#include "components/metrics/persistent_synthetic_trial_observer.h"
 #include "components/omnibox/browser/omnibox_event_global_tracker.h"
 #include "components/ukm/observers/history_delete_observer.h"
 #include "components/ukm/observers/ukm_consent_state_observer.h"
 #include "components/variations/synthetic_trial_registry.h"
-#import "ios/chrome/browser/metrics/model/incognito_web_state_observer.h"
-#import "ios/web/public/deprecated/global_web_state_observer.h"
+#include "ios/chrome/browser/metrics/model/incognito_web_state_observer.h"
+#include "ios/web/public/deprecated/global_web_state_observer.h"
 
 class ChromeBrowserState;
 class IOSChromeStabilityMetricsProvider;
@@ -82,7 +82,7 @@ class IOSChromeMetricsServiceClient : public IncognitoWebStateObserver,
   std::unique_ptr<metrics::MetricsLogUploader> CreateUploader(
       const GURL& server_url,
       const GURL& insecure_server_url,
-      base::StringPiece mime_type,
+      std::string_view mime_type,
       metrics::MetricsLogUploader::MetricServiceType service_type,
       const metrics::MetricsLogUploader::UploadCallback& on_upload_complete)
       override;
@@ -184,8 +184,6 @@ class IOSChromeMetricsServiceClient : public IncognitoWebStateObserver,
   // Subscription for receiving callbacks that a URL was opened from the
   // omnibox.
   base::CallbackListSubscription omnibox_url_opened_subscription_;
-
-  base::WeakPtrFactory<IOSChromeMetricsServiceClient> weak_ptr_factory_;
 };
 
 #endif  // IOS_CHROME_BROWSER_METRICS_MODEL_IOS_CHROME_METRICS_SERVICE_CLIENT_H_

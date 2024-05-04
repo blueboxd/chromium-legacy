@@ -8,6 +8,7 @@
 
 #include <memory>
 #include <string>
+#include <string_view>
 #include <tuple>
 #include <utility>
 #include <vector>
@@ -65,11 +66,9 @@
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkSerialProcs.h"
 #include "third_party/skia/include/core/SkStream.h"
+#include "third_party/skia/include/docs/SkMultiPictureDocument.h"
 #include "third_party/skia/include/docs/SkXPSDocument.h"
 #include "third_party/skia/include/encode/SkPngEncoder.h"
-// Note that headers in third_party/skia/src are fragile.  This is
-// an experimental, fragile, and diagnostic-only document type.
-#include "third_party/skia/src/utils/SkMultiPictureDocument.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/gfx/ca_layer_result.h"
 #include "ui/gfx/geometry/size_f.h"
@@ -85,10 +84,13 @@
 // XpsObjectModel.h indirectly includes <wincrypt.h> which is
 // incompatible with Chromium's OpenSSL. By including wincrypt_shim.h
 // first, problems are avoided.
+// clang-format off
 #include "base/win/wincrypt_shim.h"
+// clang-format on
+
+#include <objbase.h>
 
 #include <XpsObjectModel.h>
-#include <objbase.h>
 #include <wrl/client.h>
 #endif
 
@@ -351,7 +353,7 @@ std::optional<gfx::Vector2dF> ToVector(const std::string& direction,
   return std::nullopt;
 }
 
-int ToKeyModifiers(const base::StringPiece& key) {
+int ToKeyModifiers(std::string_view key) {
   if (key == "Alt")
     return blink::WebInputEvent::kAltKey;
   if (key == "Control")
@@ -370,7 +372,7 @@ int ToKeyModifiers(const base::StringPiece& key) {
   return 0;
 }
 
-int ToButtonModifiers(const base::StringPiece& button) {
+int ToButtonModifiers(std::string_view button) {
   if (button == "Left")
     return blink::WebMouseEvent::kLeftButtonDown;
   if (button == "Middle")
@@ -570,7 +572,7 @@ static void PrintDocumentTofile(v8::Isolate* isolate,
 }
 
 void OnSwapCompletedHelper(CallbackAndContext* callback_and_context,
-                           base::TimeTicks) {
+                           const viz::FrameTimingDetails&) {
   RunCallbackHelper(callback_and_context, /*value=*/{});
 }
 
@@ -730,7 +732,7 @@ void GpuBenchmarking::SetRasterizeOnlyVisibleContent() {
 
 namespace {
 sk_sp<SkDocument> make_multipicturedocument(SkWStream* stream) {
-  return SkMakeMultiPictureDocument(stream);
+  return SkMultiPictureDocument::Make(stream);
 }
 }  // namespace
 void GpuBenchmarking::PrintPagesToSkPictures(v8::Isolate* isolate,
@@ -850,9 +852,9 @@ bool GpuBenchmarking::SmoothScrollBy(gin::Arguments* args) {
     return false;
   gfx::Vector2dF fling_velocity(0, 0);
   int modifiers = 0;
-  std::vector<base::StringPiece> key_list = base::SplitStringPiece(
+  std::vector<std::string_view> key_list = base::SplitStringPiece(
       keys_value, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-  for (const base::StringPiece& key : key_list) {
+  for (std::string_view key : key_list) {
     int key_modifier = ToKeyModifiers(key);
     if (key_modifier == 0) {
       return false;
@@ -938,9 +940,9 @@ bool GpuBenchmarking::SmoothScrollByXY(gin::Arguments* args) {
   gfx::Vector2dF distances(pixels_to_scroll_x, pixels_to_scroll_y);
   gfx::Vector2dF fling_velocity(0, 0);
   int modifiers = 0;
-  std::vector<base::StringPiece> key_list = base::SplitStringPiece(
+  std::vector<std::string_view> key_list = base::SplitStringPiece(
       keys_value, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-  for (const base::StringPiece& key : key_list) {
+  for (std::string_view key : key_list) {
     int key_modifier = ToKeyModifiers(key);
     if (key_modifier == 0) {
       return false;
@@ -948,9 +950,9 @@ bool GpuBenchmarking::SmoothScrollByXY(gin::Arguments* args) {
     modifiers |= key_modifier;
   }
 
-  std::vector<base::StringPiece> button_list = base::SplitStringPiece(
+  std::vector<std::string_view> button_list = base::SplitStringPiece(
       buttons_value, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-  for (const base::StringPiece& button : button_list) {
+  for (std::string_view button : button_list) {
     int button_modifier = ToButtonModifiers(button);
     if (button_modifier == 0) {
       return false;

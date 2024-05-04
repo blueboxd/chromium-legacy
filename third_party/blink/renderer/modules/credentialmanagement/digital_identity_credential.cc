@@ -14,10 +14,9 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_credential_request_options.h"
-#include "third_party/blink/renderer/bindings/modules/v8/v8_digital_credential_provider.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_digital_credential_request_options.h"
-#include "third_party/blink/renderer/bindings/modules/v8/v8_identity_credential_request_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_identity_provider_request_options.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_identity_request_provider.h"
 #include "third_party/blink/renderer/core/dom/abort_signal.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/dom/scoped_abort_state.h"
@@ -28,6 +27,7 @@
 #include "third_party/blink/renderer/modules/credentialmanagement/credential_manager_proxy.h"
 #include "third_party/blink/renderer/modules/credentialmanagement/credential_manager_type_converters.h"  // IWYU pragma: keep
 #include "third_party/blink/renderer/modules/credentialmanagement/credential_utils.h"
+#include "third_party/blink/renderer/modules/credentialmanagement/digital_credential.h"
 #include "third_party/blink/renderer/modules/credentialmanagement/identity_credential.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
@@ -50,11 +50,11 @@ void AbortRequest(ScriptState* script_state) {
   CredentialManagerProxy::From(script_state)->DigitalIdentityRequest()->Abort();
 }
 
-void OnCompleteRequest(
-    ScriptPromiseResolverTyped<IDLNullable<Credential>>* resolver,
-    std::unique_ptr<ScopedAbortState> scoped_abort_state,
-    RequestDigitalIdentityStatus status,
-    const WTF::String& token) {
+void OnCompleteRequest(ScriptPromiseResolver<IDLNullable<Credential>>* resolver,
+                       std::unique_ptr<ScopedAbortState> scoped_abort_state,
+                       const WTF::String& protocol,
+                       RequestDigitalIdentityStatus status,
+                       const WTF::String& token) {
   switch (status) {
     case RequestDigitalIdentityStatus::kErrorTooManyRequests: {
       resolver->Reject(MakeGarbageCollected<DOMException>(
@@ -82,8 +82,11 @@ void OnCompleteRequest(
       return;
     }
     case RequestDigitalIdentityStatus::kSuccess: {
-      IdentityCredential* credential =
-          IdentityCredential::Create(token, /*is_auto_selected=*/false);
+      UseCounter::Count(resolver->GetExecutionContext(),
+                        WebFeature::kIdentityDigitalCredentialsSuccess);
+
+      DigitalCredential* credential =
+          DigitalCredential::Create(protocol, token);
       resolver->Resolve(credential);
       return;
     }
@@ -93,21 +96,13 @@ void OnCompleteRequest(
 }  // anonymous namespace
 
 bool IsDigitalIdentityCredentialType(const CredentialRequestOptions& options) {
-  if (options.hasIdentity()) {
-    return options.identity()->hasProviders() &&
-           base::ranges::any_of(options.identity()->providers(),
-                                &IdentityProviderConfig::hasHolder);
-  }
-  return options.hasDigital() && options.digital()->hasProviders() &&
-         !options.digital()->providers().empty();
+  return options.hasDigital();
 }
 
-ScriptPromiseTyped<IDLNullable<Credential>>
+ScriptPromise<IDLNullable<Credential>>
 DiscoverDigitalIdentityCredentialFromExternalSource(
-    ScriptState* script_state,
-    ScriptPromiseResolverTyped<IDLNullable<Credential>>* resolver,
-    const CredentialRequestOptions& options,
-    ExceptionState& exception_state) {
+    ScriptPromiseResolver<IDLNullable<Credential>>* resolver,
+    const CredentialRequestOptions& options) {
   CHECK(IsDigitalIdentityCredentialType(options));
   CHECK(RuntimeEnabledFeatures::WebIdentityDigitalCredentialsEnabled(
       resolver->GetExecutionContext()));
@@ -117,30 +112,32 @@ DiscoverDigitalIdentityCredentialFromExternalSource(
     return resolver->Promise();
   }
 
-  size_t num_providers = options.hasIdentity()
-                             ? options.identity()->providers().size()
-                             : options.digital()->providers().size();
+  size_t num_providers = options.digital()->hasProviders()
+                             ? options.digital()->providers().size()
+                             : 0u;
+
+  if (num_providers == 0) {
+    resolver->RejectWithTypeError(
+        "Digital identity API needs at least one provider.");
+    return resolver->Promise();
+  }
 
   // TODO(https://crbug.com/1416939): make sure the Digital Credentials
   // API works well with the Multiple IdP API.
   if (num_providers > 1u) {
-    exception_state.ThrowTypeError(
+    resolver->RejectWithTypeError(
         "Digital identity API currently does not support multiple "
         "providers.");
-    resolver->Detach();
-    return ScriptPromiseTyped<IDLNullable<Credential>>();
+    return resolver->Promise();
   }
 
-  // TODO(http://crbug.com/325425533) Determine whether real world identity API
-  // should be accessible from <iframe>.
-  if (!resolver->GetExecutionContext()->IsFeatureEnabled(
-          mojom::blink::PermissionsPolicyFeature::kIdentityCredentialsGet)) {
-    exception_state.ThrowDOMException(
+  if (!IsSameSecurityOriginWithAncestors(
+          To<LocalDOMWindow>(resolver->GetExecutionContext())->GetFrame())) {
+    resolver->RejectWithDOMException(
         DOMExceptionCode::kNotAllowedError,
-        "The 'identity-credentials-get` feature is not enabled in this "
-        "document.");
-    resolver->Detach();
-    return ScriptPromiseTyped<IDLNullable<Credential>>();
+        "The digital identity credential can only be requested in a "
+        "document which is same-origin with all of its ancestors.");
+    return resolver->Promise();
   }
 
   UseCounter::Count(resolver->GetExecutionContext(),
@@ -153,6 +150,7 @@ DiscoverDigitalIdentityCredentialFromExternalSource(
     return resolver->Promise();
   }
 
+  ScriptState* script_state = resolver->GetScriptState();
   std::unique_ptr<ScopedAbortState> scoped_abort_state;
   if (signal) {
     auto callback = WTF::BindOnce(&AbortRequest, WrapPersistent(script_state));
@@ -160,17 +158,19 @@ DiscoverDigitalIdentityCredentialFromExternalSource(
     scoped_abort_state = std::make_unique<ScopedAbortState>(signal, handle);
   }
 
-  const DigitalCredentialProvider& digital_provider =
-      options.hasIdentity() ? *options.identity()->providers()[0]->holder()
-                            : *options.digital()->providers()[0];
-  auto digital_credential_provider =
-      blink::mojom::blink::DigitalCredentialProvider::From(digital_provider);
+  blink::mojom::blink::DigitalCredentialProviderPtr
+      digital_credential_provider =
+          blink::mojom::blink::DigitalCredentialProvider::New();
+  auto provider = options.digital()->providers()[0];
+  digital_credential_provider->protocol = provider->protocol();
+  digital_credential_provider->request = provider->request();
 
   auto* request =
       CredentialManagerProxy::From(script_state)->DigitalIdentityRequest();
-  request->Request(std::move(digital_credential_provider),
-                   WTF::BindOnce(&OnCompleteRequest, WrapPersistent(resolver),
-                                 std::move(scoped_abort_state)));
+  request->Request(
+      std::move(digital_credential_provider),
+      WTF::BindOnce(&OnCompleteRequest, WrapPersistent(resolver),
+                    std::move(scoped_abort_state), provider->protocol()));
   return resolver->Promise();
 }
 

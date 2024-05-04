@@ -117,6 +117,7 @@ class DebugConnector : public auction_worklet::mojom::BidderWorklet {
       uint8_t browser_signal_recency,
       const url::Origin& browser_signal_seller_origin,
       const std::optional<url::Origin>& browser_signal_top_level_seller_origin,
+      const std::optional<base::TimeDelta> browser_signal_reporting_timeout,
       std::optional<uint32_t> bidding_data_version,
       uint64_t trace_id,
       ReportWinCallback report_win_callback) override {

@@ -20,6 +20,7 @@
 #include "components/privacy_sandbox/privacy_sandbox_attestations/proto/privacy_sandbox_attestations.pb.h"
 #include "components/privacy_sandbox/privacy_sandbox_attestations/scoped_privacy_sandbox_attestations.h"
 #include "components/privacy_sandbox/privacy_sandbox_features.h"
+#include "components/startup_metric_utils/browser/startup_metric_utils.h"
 #include "content/public/browser/privacy_sandbox_attestations_observer.h"
 #include "content/public/test/browser_task_environment.h"
 #include "net/base/schemeful_site.h"
@@ -130,7 +131,14 @@ class PrivacySandboxAttestationsFeatureEnabledTest
         kEnforcePrivacySandboxAttestations);
   }
 
-  bool IsAttestationsDefaultAllowed() { return IsParamFeatureEnabled(); }
+  void SetUp() override {
+    PrivacySandboxAttestationsTestBase::SetUp();
+
+    // Reset the singleton recorder to avoid interference across test cases.
+    startup_metric_utils::GetBrowser().ResetSessionForTesting();
+  }
+
+  bool IsAttestationsDefaultAllowed() const { return IsParamFeatureEnabled(); }
 
   // Return the final expected status of `IsSiteAttested` given the `status`
   // which represents the actual status of the attestation.
@@ -427,6 +435,28 @@ TEST_P(PrivacySandboxAttestationsFeatureEnabledTest, LoadAttestationsFile) {
 }
 
 TEST_P(PrivacySandboxAttestationsFeatureEnabledTest,
+       AttestationFirstCheckTimeHistogram) {
+  histogram_tester().ExpectTotalCount(kAttestationFirstCheckTimeUMA, 0);
+
+  std::string site = "https://example.com";
+  EXPECT_EQ(PrivacySandboxAttestations::GetInstance()->IsSiteAttested(
+                net::SchemefulSite(GURL(site)),
+                PrivacySandboxAttestationsGatedAPI::kProtectedAudience),
+            GetExpectedStatus(Status::kAttestationsFileNotYetReady));
+  histogram_tester().ExpectTotalCount(kAttestationStatusUMA, 1);
+  histogram_tester().ExpectTotalCount(kAttestationFirstCheckTimeUMA, 1);
+
+  // The first attestation check histogram should be only recorded once for each
+  // Chrome session.
+  EXPECT_EQ(PrivacySandboxAttestations::GetInstance()->IsSiteAttested(
+                net::SchemefulSite(GURL(site)),
+                PrivacySandboxAttestationsGatedAPI::kTopics),
+            GetExpectedStatus(Status::kAttestationsFileNotYetReady));
+  histogram_tester().ExpectTotalCount(kAttestationStatusUMA, 2);
+  histogram_tester().ExpectTotalCount(kAttestationFirstCheckTimeUMA, 1);
+}
+
+TEST_P(PrivacySandboxAttestationsFeatureEnabledTest,
        LoadAttestationsFilePauseDuringParsing) {
   PrivacySandboxAttestationsProto proto;
   ASSERT_TRUE(proto.site_attestations_size() == 0);
@@ -713,7 +743,7 @@ class PrivacySandboxAttestationsSentinelTest
         /*disabled_features=*/{kDefaultAllowPrivacySandboxAttestations});
   }
 
-  bool IsSentinelGuardEnabled() { return IsParamFeatureEnabled(); }
+  bool IsSentinelGuardEnabled() const { return IsParamFeatureEnabled(); }
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;

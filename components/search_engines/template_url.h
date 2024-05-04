@@ -7,13 +7,16 @@
 
 #include <cstddef>
 #include <memory>
+#include <optional>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/time/time.h"
+#include "components/lens/proto/server/lens_overlay_response.pb.h"
 #include "components/search_engines/search_engine_type.h"
 #include "components/search_engines/search_terms_data.h"
 #include "components/search_engines/template_url_data.h"
@@ -213,9 +216,13 @@ class TemplateURLRef {
     // the request was issued.  Set to std::u16string::npos if not used.
     size_t cursor_position = std::u16string::npos;
 
-    // The URL of the current webpage to be used for experimental zero-prefix
-    // suggestions.
+    // The URL of the current webpage.
     std::string current_page_url;
+
+    // The lens overlay interaction response to be sent as a query parameter in
+    // the suggest requests.
+    std::optional<lens::proto::LensOverlayInteractionResponse>
+        lens_overlay_interaction_response;
 
     // Which omnibox the user used to type the prefix.
     metrics::OmniboxEventProto::PageClassification page_classification =
@@ -374,7 +381,7 @@ class TemplateURLRef {
       const SearchTermsData& search_terms_data) const;
 
   // Converts the specified term in our owner's encoding to a std::u16string.
-  std::u16string SearchTermToString16(const base::StringPiece& term) const;
+  std::u16string SearchTermToString16(std::string_view term) const;
 
   // Returns true if this TemplateURLRef has a replacement term of
   // {google:baseURL} or {google:baseSuggestURL}.
@@ -436,7 +443,7 @@ class TemplateURLRef {
     GOOGLE_IMAGE_THUMBNAIL,
     GOOGLE_IMAGE_URL,
     GOOGLE_INPUT_TYPE,
-    GOOGLE_IOS_SEARCH_LANGUAGE,
+    GOOGLE_LANGUAGE,
     GOOGLE_NTP_IS_THEMED,
     GOOGLE_OMNIBOX_FOCUS_TYPE,
     GOOGLE_ORIGINAL_QUERY_FOR_SUGGESTION,
@@ -447,6 +454,7 @@ class TemplateURLRef {
     GOOGLE_RLZ,
     GOOGLE_SEARCH_CLIENT,
     GOOGLE_SEARCH_FIELDTRIAL_GROUP,
+    GOOGLE_SEARCH_SOURCE_ID,
     GOOGLE_SEARCH_VERSION,
     GOOGLE_SESSION_TOKEN,
     GOOGLE_SUGGEST_CLIENT,

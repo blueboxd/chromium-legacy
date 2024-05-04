@@ -17,6 +17,7 @@
 #include "third_party/blink/public/mojom/webtransport/web_transport_connector.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_property.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_web_transport_connection_stats.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_web_transport_datagram_stats.h"
@@ -68,24 +69,22 @@ class MODULES_EXPORT WebTransport final
   ~WebTransport() override;
 
   // WebTransport IDL implementation.
-  ScriptPromiseTyped<WritableStream> createUnidirectionalStream(
-      ScriptState*,
-      ExceptionState&);
+  ScriptPromise<WritableStream> createUnidirectionalStream(ScriptState*,
+                                                           ExceptionState&);
   ReadableStream* incomingUnidirectionalStreams();
 
-  ScriptPromiseTyped<BidirectionalStream> createBidirectionalStream(
-      ScriptState*,
-      ExceptionState&);
+  ScriptPromise<BidirectionalStream> createBidirectionalStream(ScriptState*,
+                                                               ExceptionState&);
   ReadableStream* incomingBidirectionalStreams();
 
   DatagramDuplexStream* datagrams();
   WritableStream* datagramWritable();
   ReadableStream* datagramReadable();
-  void close(const WebTransportCloseInfo*);
-  ScriptPromise ready() { return ready_; }
-  ScriptPromise closed() { return closed_; }
+  void close(WebTransportCloseInfo*);
+  ScriptPromise<IDLUndefined> ready(ScriptState*);
+  ScriptPromise<WebTransportCloseInfo> closed(ScriptState*);
   void setDatagramWritableQueueExpirationDuration(double ms);
-  ScriptPromiseTyped<WebTransportConnectionStats> getStats(ScriptState*);
+  ScriptPromise<WebTransportConnectionStats> getStats(ScriptState*);
 
   // WebTransportHandshakeClient implementation
   void OnConnectionEstablished(
@@ -144,18 +143,18 @@ class MODULES_EXPORT WebTransport final
             ExceptionState&);
 
   void Dispose();
-  void Cleanup(v8::Local<v8::Value> reason,
+  void Cleanup(WebTransportCloseInfo*,
                v8::Local<v8::Value> error,
                bool abruptly);
   void OnConnectionError();
   void RejectPendingStreamResolvers(v8::Local<v8::Value> error);
   void HandlePendingGetStatsResolvers(v8::Local<v8::Value> error);
-  void OnCreateSendStreamResponse(ScriptPromiseResolverTyped<WritableStream>*,
+  void OnCreateSendStreamResponse(ScriptPromiseResolver<WritableStream>*,
                                   mojo::ScopedDataPipeProducerHandle,
                                   bool succeeded,
                                   uint32_t stream_id);
   void OnCreateBidirectionalStreamResponse(
-      ScriptPromiseResolverTyped<BidirectionalStream>*,
+      ScriptPromiseResolver<BidirectionalStream>*,
       mojo::ScopedDataPipeProducerHandle,
       mojo::ScopedDataPipeConsumerHandle,
       bool succeeded,
@@ -214,10 +213,9 @@ class MODULES_EXPORT WebTransport final
       handshake_client_receiver_;
   HeapMojoReceiver<network::mojom::blink::WebTransportClient, WebTransport>
       client_receiver_;
-  Member<ScriptPromiseResolver> ready_resolver_;
-  ScriptPromise ready_;
-  Member<ScriptPromiseResolver> closed_resolver_;
-  ScriptPromise closed_;
+  using ReadyProperty = ScriptPromiseProperty<IDLUndefined, IDLAny>;
+  Member<ReadyProperty> ready_;
+  Member<ScriptPromiseProperty<WebTransportCloseInfo, IDLAny>> closed_;
   // True if [[State]] is "connecting".
   bool connection_pending_ = true;
 
@@ -225,12 +223,12 @@ class MODULES_EXPORT WebTransport final
   // stats are requested after the transport is closed.
   Member<WebTransportConnectionStats> latest_stats_;
   // Tracks resolvers for in-progress getStats() calls.
-  HeapVector<Member<ScriptPromiseResolverTyped<WebTransportConnectionStats>>>
+  HeapVector<Member<ScriptPromiseResolver<WebTransportConnectionStats>>>
       pending_get_stats_resolvers_;
 
   // Tracks resolvers for in-progress createSendStream() and
   // createBidirectionalStream() operations so they can be rejected.
-  HeapHashSet<Member<ScriptPromiseResolver>> create_stream_resolvers_;
+  HeapHashSet<Member<ScriptPromiseResolverBase>> create_stream_resolvers_;
 
   // The [[ReceivedStreams]] slot.
   // https://w3c.github.io/webtransport/#webtransport-receivedstreams

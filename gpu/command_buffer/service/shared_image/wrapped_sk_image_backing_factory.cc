@@ -17,6 +17,7 @@
 #include "gpu/command_buffer/service/shared_image/wrapped_graphite_texture_backing.h"
 #include "gpu/command_buffer/service/shared_image/wrapped_sk_image_backing.h"
 #include "gpu/config/gpu_finch_features.h"
+#include "skia/buildflags.h"
 #include "third_party/skia/include/core/SkAlphaType.h"
 #include "third_party/skia/include/core/SkColorType.h"
 #include "third_party/skia/include/core/SkSurface.h"
@@ -26,27 +27,28 @@
 
 namespace gpu {
 namespace {
+// NOTE: WrappedSkImage cannot be used with raster-over-GLES2 as it doesn't
+// support GLES2 usage, and hence it doesn't support RASTER_OVER_GLES2_ONLY
+// usage.
 constexpr uint32_t kSupportedUsage =
     SHARED_IMAGE_USAGE_DISPLAY_READ | SHARED_IMAGE_USAGE_DISPLAY_WRITE |
     SHARED_IMAGE_USAGE_RASTER_READ | SHARED_IMAGE_USAGE_RASTER_WRITE |
     SHARED_IMAGE_USAGE_OOP_RASTERIZATION | SHARED_IMAGE_USAGE_CPU_UPLOAD |
     SHARED_IMAGE_USAGE_MIPMAP;
 
-#if BUILDFLAG(IS_ANDROID)
-// AHardwareBufferImageBackingFactory is used for interop with WebGL and WebGPU
-// on Android.
-constexpr uint32_t kGraphiteDawnFallbackUsage = 0;
-#else
-constexpr uint32_t kGraphiteDawnFallbackUsage =
-    SHARED_IMAGE_USAGE_GLES2_READ | SHARED_IMAGE_USAGE_GLES2_WRITE |
-    SHARED_IMAGE_USAGE_GLES2_FRAMEBUFFER_HINT | SHARED_IMAGE_USAGE_WEBGPU_READ |
-    SHARED_IMAGE_USAGE_WEBGPU_WRITE |
-    SHARED_IMAGE_USAGE_WEBGPU_SWAP_CHAIN_TEXTURE;
-#endif
-
 uint32_t GetSupportedUsage(const SharedContextState* context_state) {
+#if BUILDFLAG(SKIA_USE_DAWN) && !BUILDFLAG(IS_ANDROID)
   // We support WebGL and WebGPU fallback when using Graphite Dawn Vulkan or
-  // D3D12.
+  // D3D12. Except on Android where AHardwareBufferImageBackingFactory is used
+  // for interop with WebGL and WebGPU.
+  constexpr uint32_t kGraphiteDawnFallbackUsage =
+      SHARED_IMAGE_USAGE_GLES2_READ | SHARED_IMAGE_USAGE_GLES2_WRITE |
+      SHARED_IMAGE_USAGE_GLES2_FOR_RASTER_ONLY |
+      // NOTE: In this case, it is also possible to support raster-over-GLES2.
+      SHARED_IMAGE_USAGE_RASTER_OVER_GLES2_ONLY |
+      SHARED_IMAGE_USAGE_WEBGPU_READ | SHARED_IMAGE_USAGE_WEBGPU_WRITE |
+      SHARED_IMAGE_USAGE_WEBGPU_SWAP_CHAIN_TEXTURE;
+
   if (context_state->gr_context_type() == GrContextType::kGraphiteDawn) {
     switch (context_state->dawn_context_provider()->backend_type()) {
       case wgpu::BackendType::D3D12:
@@ -56,8 +58,23 @@ uint32_t GetSupportedUsage(const SharedContextState* context_state) {
         break;
     }
   }
+#endif
   return kSupportedUsage;
 }
+
+bool GraphiteSupportsCompressedTextures(
+    const SharedContextState* context_state) {
+#if BUILDFLAG(SKIA_USE_DAWN)
+  // TODO(b/281151641): Query graphite instead of dawn to see if compressed
+  // textures are supported.
+  if (context_state->gr_context_type() == GrContextType::kGraphiteDawn) {
+    return context_state->dawn_context_provider()->SupportsFeature(
+        wgpu::FeatureName::TextureCompressionETC2);
+  }
+#endif
+  return false;
+}
+
 }  // namespace
 
 WrappedSkImageBackingFactory::WrappedSkImageBackingFactory(
@@ -67,7 +84,9 @@ WrappedSkImageBackingFactory::WrappedSkImageBackingFactory(
       use_graphite_(context_state_->graphite_context()),
       is_drdc_enabled_(
           features::IsDrDcEnabled() &&
-          !context_state_->feature_info()->workarounds().disable_drdc) {}
+          !context_state_->feature_info()->workarounds().disable_drdc),
+      graphite_supports_compressed_textures_(
+          GraphiteSupportsCompressedTextures(context_state_.get())) {}
 
 WrappedSkImageBackingFactory::~WrappedSkImageBackingFactory() = default;
 
@@ -83,21 +102,11 @@ WrappedSkImageBackingFactory::CreateSharedImage(
     uint32_t usage,
     std::string debug_label,
     bool is_thread_safe) {
-  // Ensure that the backing is treated as thread safe only when DrDc is enabled
-  // for vulkan context.
-  // TODO(vikassoni): Wire |is_thread_safe| flag in remaining
-  // CreateSharedImage() factory methods also. Without this flag, backing will
-  // always be considered as thread safe when DrDc is enabled for vulkan mode
-  // even though it might be used on a single thread (RenderPass for example).
-  // That should be fine for now since we do not have/use any locks in backing.
-  DCHECK(!is_thread_safe ||
-         (context_state_->GrContextIsVulkan() && is_drdc_enabled_));
   if (use_graphite_) {
     auto backing = std::make_unique<WrappedGraphiteTextureBacking>(
         base::PassKey<WrappedSkImageBackingFactory>(), mailbox, format, size,
         color_space, surface_origin, alpha_type, usage, std::move(debug_label),
-        context_state_,
-        /*is_thread_safe=*/false);
+        context_state_, is_thread_safe);
     if (!backing->Initialize()) {
       return nullptr;
     }
@@ -107,9 +116,7 @@ WrappedSkImageBackingFactory::CreateSharedImage(
   auto backing = std::make_unique<WrappedSkImageBacking>(
       base::PassKey<WrappedSkImageBackingFactory>(), mailbox, format, size,
       color_space, surface_origin, alpha_type, usage, debug_label,
-      context_state_,
-      /*is_thread_safe=*/is_thread_safe &&
-          context_state_->GrContextIsVulkan() && is_drdc_enabled_);
+      context_state_, is_thread_safe);
   if (!backing->Initialize(debug_label)) {
     return nullptr;
   }
@@ -126,13 +133,13 @@ WrappedSkImageBackingFactory::CreateSharedImage(
     SkAlphaType alpha_type,
     uint32_t usage,
     std::string debug_label,
+    bool is_thread_safe,
     base::span<const uint8_t> data) {
   if (use_graphite_) {
     auto backing = std::make_unique<WrappedGraphiteTextureBacking>(
         base::PassKey<WrappedSkImageBackingFactory>(), mailbox, format, size,
         color_space, surface_origin, alpha_type, usage, std::move(debug_label),
-        context_state_,
-        /*is_thread_safe=*/false);
+        context_state_, is_thread_safe);
     if (!backing->InitializeWithData(data)) {
       return nullptr;
     }
@@ -142,9 +149,7 @@ WrappedSkImageBackingFactory::CreateSharedImage(
   auto backing = std::make_unique<WrappedSkImageBacking>(
       base::PassKey<WrappedSkImageBackingFactory>(), mailbox, format, size,
       color_space, surface_origin, alpha_type, usage, debug_label,
-      context_state_,
-      /*is_thread_safe=*/context_state_->GrContextIsVulkan() &&
-          is_drdc_enabled_);
+      context_state_, is_thread_safe);
   if (!backing->InitializeWithData(debug_label, data)) {
     return nullptr;
   }
@@ -204,9 +209,12 @@ bool WrappedSkImageBackingFactory::IsSupported(
   // the reads/writes using semaphores. For this backing to support thread
   // safety across multiple queues, we need to synchronize the reads/writes via
   // semaphores.
-  if (thread_safe &&
-      (!is_drdc_enabled_ || gr_context_type != GrContextType::kVulkan)) {
-    return false;
+  if (thread_safe) {
+    bool is_vulkan = gr_context_type == GrContextType::kVulkan ||
+                     context_state_->IsGraphiteDawnVulkan();
+    if (!is_drdc_enabled_ || !is_vulkan) {
+      return false;
+    }
   }
 
   if (format == viz::SinglePlaneFormat::kLUMINANCE_8) {
@@ -239,16 +247,12 @@ bool WrappedSkImageBackingFactory::IsSupported(
       // ETC1 is only supported with initial pixel upload.
       return false;
     }
-    // TODO(crbug.com/1430206): Enable once compressed formats are supported.
     if (use_graphite_) {
-      return false;
+      return graphite_supports_compressed_textures_;
     }
     auto backend_format = context_state_->gr_context()->compressedBackendFormat(
         SkTextureCompressionType::kETC1_RGB8);
-    if (!backend_format.isValid()) {
-      return false;
-    }
-    return true;
+    return backend_format.isValid();
   }
 
   // TODO(b/281151641): Check for formats are supported with graphite.

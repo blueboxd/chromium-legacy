@@ -4,7 +4,6 @@
 
 #include "content/browser/preloading/prefetch/prefetch_response_reader.h"
 
-#include "base/debug/dump_without_crashing.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/task/sequenced_task_runner.h"
 #include "content/browser/preloading/prefetch/prefetch_features.h"
@@ -118,15 +117,6 @@ void PrefetchResponseReader::OnServingURLLoaderMojoDisconnect() {
 }
 
 PrefetchRequestHandler PrefetchResponseReader::CreateRequestHandler() {
-  if (create_request_handler_called_) {
-    // Monitor cases where CreateRequestHandler() is called multiple times, for
-    // investigation of crbug.com/1483599. Anyway such cases should be handled
-    // (failing gracefully) below, e.g. by checking `body_`.
-    // TODO(crbug.com/1483599): Remove this.
-    base::debug::DumpWithoutCrashing();
-  }
-  create_request_handler_called_ = true;
-
   mojo::ScopedDataPipeConsumerHandle body;
 
   // Returns a null handler if some checks fail here.
@@ -210,9 +200,9 @@ void PrefetchResponseReader::BindAndStart(
       // `ForwardResponse()` should be called. Other `kFailed` cases shouldn't
       // reach here.
       //
-      // TODO(crbug.com/1449360): we might want to revisit this behavior.
+      // TODO(crbug.com/40064891): we might want to revisit this behavior.
 
-      // TODO(crbug.com/1483599): The code below is duplicated to investigate
+      // TODO(crbug.com/40072532): The code below is duplicated to investigate
       // the `load_state_` value on CHECK failure. Remove the duplicated code.
       CHECK(GetHead());
       CHECK(forward_body_);
@@ -308,7 +298,7 @@ void PrefetchResponseReader::RunEventQueue(ServingUrlLoaderClientId client_id) {
 
 void PrefetchResponseReader::OnComplete(
     network::URLLoaderCompletionStatus completion_status) {
-  // TODO(crbug.com/1484028): Remove this alias.
+  // TODO(crbug.com/40072670): Remove this alias.
   auto load_state = load_state_;
   base::debug::Alias(&load_state);
 

@@ -47,11 +47,9 @@ namespace media {
 namespace {
 
 constexpr uint8_t kData[] = "foo";
-constexpr size_t kDataSize = std::size(kData);
 
 scoped_refptr<DecoderBuffer> CreateDecoderBuffer(base::TimeDelta timestamp) {
-  scoped_refptr<DecoderBuffer> buffer =
-      DecoderBuffer::CopyFrom(kData, kDataSize);
+  scoped_refptr<DecoderBuffer> buffer = DecoderBuffer::CopyFrom(kData);
   buffer->set_timestamp(timestamp);
   return buffer;
 }
@@ -164,7 +162,7 @@ class VdaVideoDecoderTest : public testing::TestWithParam<bool> {
         FROM_HERE,
         base::BindOnce(&VideoDecodeAccelerator::Client::ProvidePictureBuffers,
                        base::Unretained(client_), 1, PIXEL_FORMAT_XRGB,
-                       gfx::Size(1920, 1088), GL_TEXTURE_2D));
+                       gfx::Size(1920, 1088)));
     RunUntilIdle();
     DCHECK_EQ(picture_buffers.size(), 1U);
     return picture_buffers[0].id();
@@ -200,6 +198,10 @@ class VdaVideoDecoderTest : public testing::TestWithParam<bool> {
                                                                       1080)) {
     Picture picture(picture_buffer_id, bitstream_buffer_id, visible_rect,
                     gfx::ColorSpace::CreateSRGB(), true);
+    picture.set_scoped_shared_image(
+        base::MakeRefCounted<Picture::ScopedSharedImage>(
+            gpu::Mailbox::GenerateForSharedImage(), GL_TEXTURE_2D,
+            base::DoNothing()));
     EXPECT_CALL(output_cb_, Run(_)).WillOnce(SaveArg<0>(out_frame));
     if (GetParam()) {
       // TODO(sandersd): The first time a picture is output, VDAs will do so on

@@ -7,6 +7,7 @@
 #include "base/functional/callback.h"
 #include "base/metrics/histogram_functions.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
+#include "content/browser/webid/federated_auth_request_page_data.h"
 #include "content/browser/webid/flags.h"
 #include "content/browser/webid/webid_utils.h"
 #include "content/public/browser/federated_identity_api_permission_context_delegate.h"
@@ -75,14 +76,12 @@ FederatedAuthUserInfoRequest::Create(
     FederatedIdentityPermissionContextDelegate* permission_delegate,
     FederatedIdentityApiPermissionContextDelegate* api_permission_delegate,
     RenderFrameHost* render_frame_host,
-    FedCmMetrics* metrics,
     blink::mojom::IdentityProviderConfigPtr provider) {
   std::unique_ptr<FederatedAuthUserInfoRequest> request =
       base::WrapUnique<FederatedAuthUserInfoRequest>(
           new FederatedAuthUserInfoRequest(
               std::move(network_manager), permission_delegate,
-              api_permission_delegate, render_frame_host, metrics,
-              std::move(provider)));
+              api_permission_delegate, render_frame_host, std::move(provider)));
   return request;
 }
 
@@ -95,12 +94,10 @@ FederatedAuthUserInfoRequest::FederatedAuthUserInfoRequest(
     FederatedIdentityPermissionContextDelegate* permission_delegate,
     FederatedIdentityApiPermissionContextDelegate* api_permission_delegate,
     RenderFrameHost* render_frame_host,
-    FedCmMetrics* metrics,
     blink::mojom::IdentityProviderConfigPtr provider)
     : network_manager_(std::move(network_manager)),
       permission_delegate_(permission_delegate),
       api_permission_delegate_(api_permission_delegate),
-      metrics_(metrics),
       render_frame_host_(render_frame_host),
       client_id_(provider->client_id),
       idp_config_url_(provider->config_url),
@@ -221,7 +218,7 @@ void FederatedAuthUserInfoRequest::OnAccountsResponseReceived(
     IdpNetworkRequestManager::AccountList accounts) {
   webid::UpdateIdpSigninStatusForAccountsEndpointResponse(
       *render_frame_host_, idp_config_url_, fetch_status,
-      does_idp_have_failing_signin_status_, permission_delegate_, metrics_);
+      does_idp_have_failing_signin_status_, permission_delegate_);
 
   if (fetch_status.parse_status !=
       IdpNetworkRequestManager::ParseStatus::kSuccess) {
@@ -229,6 +226,10 @@ void FederatedAuthUserInfoRequest::OnAccountsResponseReceived(
         FederatedAuthUserInfoRequestResult::kInvalidAccountsResponse);
     return;
   }
+
+  webid::GetPageData(render_frame_host_)
+      ->SetUserInfoAccountsResponseTime(idp_config_url_,
+                                        base::TimeTicks::Now());
 
   // Populate the accounts login state.
   for (auto& account : accounts) {

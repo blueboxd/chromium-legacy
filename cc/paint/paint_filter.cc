@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/containers/span.h"
 #include "base/memory/values_equivalent.h"
 #include "base/no_destructor.h"
 #include "base/notreached.h"
@@ -26,6 +27,7 @@
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkMatrix.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkScalar.h"
 #include "third_party/skia/include/core/SkShader.h"
 #include "third_party/skia/include/core/SkString.h"
@@ -136,6 +138,24 @@ std::string PaintFilter::TypeToString(Type type) {
   return "Unknown";
 }
 
+SkIRect PaintFilter::MapRect(const SkIRect& src,
+                             const SkMatrix* ctm,
+                             MapDirection direction) const {
+  if (!cached_sk_filter_) {
+    return SkIRect::MakeEmpty();
+  }
+  if (direction == MapDirection::kForward_MapDirection && !ctm) {
+    // Compared to filterbounds(), computeFastBounds ensures the result rect
+    // covers the affected pixels regardless of CTM.
+    SkRect rect = cached_sk_filter_->computeFastBounds(SkRect::Make(src));
+    SkIRect result;
+    rect.roundOut(&result);
+    return result;
+  }
+  CHECK(ctm);
+  return cached_sk_filter_->filterBounds(src, *ctm, direction);
+}
+
 const PaintFilter::CropRect* PaintFilter::GetCropRect() const {
   return base::OptionalToPtr(crop_rect_);
 }
@@ -216,6 +236,16 @@ bool PaintFilter::EqualsForTesting(const PaintFilter& other) const {
   }
   NOTREACHED();
   return true;
+}
+
+std::vector<sk_sp<SkImageFilter>> PaintFilter::ToSkImageFilters(
+    base::span<const sk_sp<PaintFilter>> filters) {
+  std::vector<sk_sp<SkImageFilter>> sk_filters;
+  sk_filters.reserve(filters.size());
+  for (const sk_sp<PaintFilter>& filter : filters) {
+    sk_filters.push_back(GetSkFilter(filter.get()));
+  }
+  return sk_filters;
 }
 
 ColorFilterPaintFilter::ColorFilterPaintFilter(sk_sp<ColorFilter> color_filter,
@@ -307,12 +337,12 @@ DropShadowPaintFilter::DropShadowPaintFilter(SkScalar dx,
       shadow_mode_(shadow_mode),
       input_(std::move(input)) {
   if (shadow_mode == ShadowMode::kDrawShadowOnly) {
-    // TODO(crbug/1308932): Remove toSkColor and make all SkColor4f.
+    // TODO(crbug.com/40219248): Remove toSkColor and make all SkColor4f.
     cached_sk_filter_ = SkImageFilters::DropShadowOnly(
         dx_, dy_, sigma_x_, sigma_y_, color_.toSkColor(),
         GetSkFilter(input_.get()), crop_rect);
   } else {
-    // TODO(crbug/1308932): Remove toSkColor and make all SkColor4f.
+    // TODO(crbug.com/40219248): Remove toSkColor and make all SkColor4f.
     cached_sk_filter_ = SkImageFilters::DropShadow(
         dx_, dy_, sigma_x_, sigma_y_, color_.toSkColor(),
         GetSkFilter(input_.get()), crop_rect);
@@ -1095,7 +1125,7 @@ ShaderPaintFilter::ShaderPaintFilter(sk_sp<PaintShader> shader,
     // The blend effectively produces (shader * alpha), the rgb of the secondary
     // color are ignored.
     SkColor4f color{1.0f, 1.0f, 1.0f, alpha};
-    // TODO(crbug/1308932): Remove toSkColor and make all SkColor4f.
+    // TODO(crbug.com/40219248): Remove toSkColor and make all SkColor4f.
     sk_shader = SkShaders::Blend(SkBlendMode::kDstIn, std::move(sk_shader),
                                  SkShaders::Color(color.toSkColor()));
   }
@@ -1199,13 +1229,13 @@ LightingDistantPaintFilter::LightingDistantPaintFilter(
       input_(std::move(input)) {
   switch (lighting_type_) {
     case LightingType::kDiffuse:
-      // TODO(crbug/1308932): Remove toSkColor and make all SkColor4f.
+      // TODO(crbug.com/40219248): Remove toSkColor and make all SkColor4f.
       cached_sk_filter_ = SkImageFilters::DistantLitDiffuse(
           direction_, light_color_.toSkColor(), surface_scale_, kconstant_,
           GetSkFilter(input_.get()), crop_rect);
       break;
     case LightingType::kSpecular:
-      // TODO(crbug/1308932): Remove toSkColor and make all SkColor4f.
+      // TODO(crbug.com/40219248): Remove toSkColor and make all SkColor4f.
       cached_sk_filter_ = SkImageFilters::DistantLitSpecular(
           direction_, light_color_.toSkColor(), surface_scale_, kconstant_,
           shininess_, GetSkFilter(input_.get()), crop_rect);
@@ -1261,13 +1291,13 @@ LightingPointPaintFilter::LightingPointPaintFilter(LightingType lighting_type,
       input_(std::move(input)) {
   switch (lighting_type_) {
     case LightingType::kDiffuse:
-      // TODO(crbug/1308932): Remove toSkColor and make all SkColor4f.
+      // TODO(crbug.com/40219248): Remove toSkColor and make all SkColor4f.
       cached_sk_filter_ = SkImageFilters::PointLitDiffuse(
           location_, light_color_.toSkColor(), surface_scale_, kconstant_,
           GetSkFilter(input_.get()), crop_rect);
       break;
     case LightingType::kSpecular:
-      // TODO(crbug/1308932): Remove toSkColor and make all SkColor4f.
+      // TODO(crbug.com/40219248): Remove toSkColor and make all SkColor4f.
       cached_sk_filter_ = SkImageFilters::PointLitSpecular(
           location_, light_color_.toSkColor(), surface_scale_, kconstant_,
           shininess_, GetSkFilter(input_.get()), crop_rect);
@@ -1329,14 +1359,14 @@ LightingSpotPaintFilter::LightingSpotPaintFilter(LightingType lighting_type,
       input_(std::move(input)) {
   switch (lighting_type_) {
     case LightingType::kDiffuse:
-      // TODO(crbug/1308932): Remove toSkColor and make all SkColor4f.
+      // TODO(crbug.com/40219248): Remove toSkColor and make all SkColor4f.
       cached_sk_filter_ = SkImageFilters::SpotLitDiffuse(
           location_, target_, specular_exponent_, cutoff_angle_,
           light_color_.toSkColor(), surface_scale_, kconstant_,
           GetSkFilter(input_.get()), crop_rect);
       break;
     case LightingType::kSpecular:
-      // TODO(crbug/1308932): Remove toSkColor and make all SkColor4f.
+      // TODO(crbug.com/40219248): Remove toSkColor and make all SkColor4f.
       cached_sk_filter_ = SkImageFilters::SpotLitSpecular(
           location_, target_, specular_exponent_, cutoff_angle_,
           light_color_.toSkColor(), surface_scale_, kconstant_, shininess_,

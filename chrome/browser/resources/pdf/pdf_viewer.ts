@@ -211,6 +211,13 @@ export class PdfViewerElement extends PdfViewerBaseElement {
         value: false,
       },
 
+      // <if expr="enable_pdf_ink2">
+      pdfInk2Enabled_: {
+        type: Boolean,
+        value: false,
+      },
+      // </if>
+
       // <if expr="enable_screen_ai_service">
       pdfOcrEnabled_: {
         type: Boolean,
@@ -277,6 +284,9 @@ export class PdfViewerElement extends PdfViewerBaseElement {
   private navigator_: PdfNavigator|null = null;
   private pageNo_: number;
   private pdfAnnotationsEnabled_: boolean;
+  // <if expr="enable_pdf_ink2">
+  private pdfInk2Enabled_: boolean = false;
+  // </if>
   // <if expr="enable_screen_ai_service">
   private pdfOcrEnabled_: boolean;
   // </if>
@@ -332,7 +342,7 @@ export class PdfViewerElement extends PdfViewerBaseElement {
     this.tracker.add(
         this.inkController_.getEventTarget(),
         InkControllerEventType.HAS_UNSAVED_CHANGES, () => {
-          // TODO(crbug.com/1445746): Write an equivalent API call for
+          // TODO(crbug.com/40268279): Write an equivalent API call for
           // chrome.pdfViewerPrivate.
           if (!this.pdfOopifEnabled) {
             chrome.mimeHandlerPrivate.setShowBeforeUnloadDialog(true);
@@ -480,10 +490,24 @@ export class PdfViewerElement extends PdfViewerBaseElement {
     return this.sidenavCollapsed_ ? Promise.resolve() :
                                     this.waitForSidenavTransition_();
   }
+  // </if>
 
+  // <if expr="enable_ink or enable_pdf_ink2">
   /** Handles the annotation mode being toggled on or off. */
   private async onAnnotationModeToggled_(e: CustomEvent<boolean>) {
     const annotationMode = e.detail;
+    // <if expr="enable_pdf_ink2">
+    if (this.pdfInk2Enabled_) {
+      record(
+          annotationMode ? UserAction.ENTER_ANNOTATION_MODE :
+                           UserAction.EXIT_ANNOTATION_MODE);
+      this.pluginController_!.setAnnotationMode(annotationMode);
+      this.annotationMode_ = annotationMode;
+      return;
+    }
+    // </if> expr="enable_pdf_ink2"
+
+    // <if expr="enable_ink">
     if (annotationMode) {
       // Enter annotation mode.
       assert(this.pluginController_!.isActive);
@@ -535,6 +559,7 @@ export class PdfViewerElement extends PdfViewerBaseElement {
       this.currentController = this.pluginController_!;
       await this.pluginController_!.load(result.fileName, result.dataToSave);
     }
+    // </if> expr="enable_ink"
   }
 
   /** Exits annotation mode if active. */
@@ -544,10 +569,12 @@ export class PdfViewerElement extends PdfViewerBaseElement {
     }
     this.$.toolbar.toggleAnnotation();
     this.annotationMode_ = false;
+    // <if expr="enable_ink">
     await this.restoreSidenav_();
+    // </if> expr="enable_ink"
     await this.loaded;
   }
-  // </if>
+  // </if> expr="enable_ink or enable_pdf_ink2"
 
   private onDisplayAnnotationsChanged_(e: CustomEvent<boolean>) {
     assert(this.currentController);
@@ -715,6 +742,9 @@ export class PdfViewerElement extends PdfViewerBaseElement {
 
     this.pdfAnnotationsEnabled_ =
         loadTimeData.getBoolean('pdfAnnotationsEnabled');
+    // <if expr="enable_pdf_ink2">
+    this.pdfInk2Enabled_ = loadTimeData.getBoolean('pdfInk2Enabled');
+    // </if>
     // <if expr="enable_screen_ai_service">
     this.pdfOcrEnabled_ = loadTimeData.getBoolean('pdfOcrEnabled');
     // </if>
@@ -810,10 +840,6 @@ export class PdfViewerElement extends PdfViewerBaseElement {
       case 'setIsEditing':
         // Editing mode can only be entered once, and cannot be exited.
         this.hasEdits_ = true;
-        return;
-      case 'setIsSelecting':
-        const selectingData = data as unknown as {isSelecting: boolean};
-        this.viewportScroller!.setEnableScrolling(selectingData.isSelecting);
         return;
       case 'setSmoothScrolling':
         this.viewport.setSmoothScrolling(
@@ -972,7 +998,7 @@ export class PdfViewerElement extends PdfViewerBaseElement {
             writer.write(blob);
             // Unblock closing the window now that the user has saved
             // successfully.
-            // TODO(crbug.com/1445746): Write an equivalent API call for
+            // TODO(crbug.com/40268279): Write an equivalent API call for
             // chrome.pdfViewerPrivate.
             if (!this.pdfOopifEnabled) {
               chrome.mimeHandlerPrivate.setShowBeforeUnloadDialog(false);
@@ -1107,7 +1133,7 @@ export class PdfViewerElement extends PdfViewerBaseElement {
             writer.write(blob);
             // Unblock closing the window now that the user has saved
             // successfully.
-            // TODO(crbug.com/1445746): Write an equivalent API call for
+            // TODO(crbug.com/40268279): Write an equivalent API call for
             // chrome.pdfViewerPrivate.
             if (!this.pdfOopifEnabled) {
               chrome.mimeHandlerPrivate.setShowBeforeUnloadDialog(false);

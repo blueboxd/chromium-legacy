@@ -131,7 +131,7 @@ void UpdateModalDialogPosition(views::Widget* widget,
         host_widget->GetClientAreaBoundsInScreen().OffsetFromOrigin();
     const gfx::Rect host_screen_bounds = host_widget->GetWindowBoundsInScreen();
 
-    // TODO(crbug.com/1341530): The requested dialog bounds should never fall
+    // TODO(crbug.com/40851111): The requested dialog bounds should never fall
     // outside the bounds of the transient parent.
     DCHECK(dialog_screen_bounds.Intersects(host_screen_bounds));
 
@@ -174,7 +174,7 @@ void SetConstrainedWindowViewsClient(
 void UpdateWebContentsModalDialogPosition(
     views::Widget* widget,
     web_modal::WebContentsModalDialogHost* dialog_host) {
-  gfx::Size size = widget->GetRootView()->GetPreferredSize();
+  gfx::Size size = widget->GetRootView()->GetPreferredSize({});
   gfx::Size max_size = dialog_host->GetMaximumDialogSize();
   // Enlarge the max size by the top border, as the dialog will be shifted
   // outside the area specified by the dialog host by this amount later.
@@ -187,7 +187,7 @@ void UpdateWebContentsModalDialogPosition(
 void UpdateWidgetModalDialogPosition(views::Widget* widget,
                                      web_modal::ModalDialogHost* dialog_host) {
   UpdateModalDialogPosition(widget, dialog_host,
-                            widget->GetRootView()->GetPreferredSize());
+                            widget->GetRootView()->GetPreferredSize({}));
 }
 
 content::WebContents* GetTopLevelWebContents(

@@ -18,7 +18,6 @@
 #include "chrome/browser/performance_manager/decorators/frozen_frame_aggregator.h"
 #include "chrome/browser/performance_manager/decorators/helpers/page_live_state_decorator_helper.h"
 #include "chrome/browser/performance_manager/decorators/page_aggregator.h"
-#include "chrome/browser/performance_manager/decorators/page_live_state_decorator_delegate_impl.h"
 #include "chrome/browser/performance_manager/metrics/memory_pressure_metrics.h"
 #include "chrome/browser/performance_manager/metrics/metrics_provider_desktop.h"
 #include "chrome/browser/performance_manager/metrics/page_resource_monitor.h"
@@ -68,8 +67,6 @@
 #endif
 
 #if !BUILDFLAG(IS_ANDROID)
-#include "chrome/browser/performance_manager/mechanisms/freezer.h"
-#include "chrome/browser/performance_manager/policies/freezing_policy.h"
 #include "chrome/browser/performance_manager/policies/memory_saver_mode_policy.h"
 #include "chrome/browser/performance_manager/policies/page_discarding_helper.h"
 #include "chrome/browser/performance_manager/policies/urgent_page_discarding_policy.h"
@@ -78,7 +75,14 @@
 #include "chrome/browser/performance_manager/public/user_tuning/user_performance_tuning_manager.h"
 #include "chrome/browser/performance_manager/user_tuning/user_performance_tuning_notifier.h"
 #include "chrome/browser/tab_contents/form_interaction_tab_helper.h"
+#include "components/performance_manager/freezing/freezer.h"
+#include "components/performance_manager/freezing/freezing_policy.h"
 #endif  // !BUILDFLAG(IS_ANDROID)
+
+#if BUILDFLAG(IS_WIN)
+#include "base/path_service.h"
+#include "components/performance_manager/graph/policies/prefetch_virtual_memory_policy.h"
+#endif
 
 namespace {
 ChromeBrowserMainExtraPartsPerformanceManager* g_instance = nullptr;
@@ -114,8 +118,7 @@ void ChromeBrowserMainExtraPartsPerformanceManager::CreatePoliciesAndDecorators(
   graph->PassToGraph(
       std::make_unique<performance_manager::ProcessMetricsDecorator>());
   graph->PassToGraph(
-      std::make_unique<performance_manager::PageLiveStateDecorator>(
-          performance_manager::PageLiveStateDelegateImpl::Create()));
+      std::make_unique<performance_manager::PageLiveStateDecorator>());
   graph->PassToGraph(
       std::make_unique<performance_manager::TabRevisitTracker>());
 
@@ -194,8 +197,7 @@ void ChromeBrowserMainExtraPartsPerformanceManager::CreatePoliciesAndDecorators(
   // The freezing policy isn't enabled on Android yet as it doesn't play well
   // with the freezing logic already in place in renderers. This logic should be
   // moved to PerformanceManager, this is tracked in https://crbug.com/1156803.
-  graph->PassToGraph(
-      std::make_unique<performance_manager::policies::FreezingPolicy>());
+  graph->PassToGraph(std::make_unique<performance_manager::FreezingPolicy>());
 
   graph->PassToGraph(
       std::make_unique<performance_manager::policies::MemorySaverModePolicy>());
@@ -217,6 +219,19 @@ void ChromeBrowserMainExtraPartsPerformanceManager::CreatePoliciesAndDecorators(
     graph->PassToGraph(std::make_unique<
                        performance_manager::policies::ProcessPriorityPolicy>());
   }
+
+#if BUILDFLAG(IS_WIN)
+  if (base::FeatureList::IsEnabled(
+          performance_manager::features::kPrefetchVirtualMemoryPolicy)) {
+    base::FilePath current_module_path;
+    if (base::PathService::Get(base::FILE_MODULE, &current_module_path)) {
+      graph->PassToGraph(
+          std::make_unique<
+              performance_manager::policies::PrefetchVirtualMemoryPolicy>(
+              std::move(current_module_path)));
+    }
+  }
+#endif  // BUILDFLAG(IS_WIN)
 }
 
 content::FeatureObserverClient*
@@ -262,8 +277,12 @@ void ChromeBrowserMainExtraPartsPerformanceManager::PostCreateThreads() {
   battery_saver_mode_manager_ = base::WrapUnique(
       new performance_manager::user_tuning::BatterySaverModeManager(
           g_browser_process->local_state()));
-  performance_detection_manager_ = base::WrapUnique(
-      new performance_manager::user_tuning::PerformanceDetectionManager());
+
+  if (base::FeatureList::IsEnabled(
+          performance_manager::features::kPerformanceCPUIntervention)) {
+    performance_detection_manager_ = base::WrapUnique(
+        new performance_manager::user_tuning::PerformanceDetectionManager());
+  }
 #endif
 
   page_load_metrics_observer_ =
@@ -283,7 +302,7 @@ void ChromeBrowserMainExtraPartsPerformanceManager::PostCreateThreads() {
     // The ChromeOS `BatteryLevelProvider` and `SamplingEventSource`
     // implementations are in `components` for dependency reasons, so they need
     // to be created here and passed in explicitly to `BatteryStateSampler`.
-    // TODO(crbug.com/1373560): All of the battery level machinery should be in
+    // TODO(crbug.com/40871810): All of the battery level machinery should be in
     // the same location, and the ifdefs should be contained to the
     // `BatteryLevelProvider` and SamplingEventSource` instantiation functions.
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -308,8 +327,6 @@ void ChromeBrowserMainExtraPartsPerformanceManager::PreMainMessageLoopRun() {
       ->Start();
   performance_manager::user_tuning::UserPerformanceTuningManager::GetInstance()
       ->Start();
-  performance_manager::user_tuning::PerformanceDetectionManager::GetInstance()
-      ->Start();
 
   // This object is created by the metrics service before threads, but it
   // needs the UserPerformanceTuningManager to exist. At this point it's
@@ -332,6 +349,7 @@ void ChromeBrowserMainExtraPartsPerformanceManager::PostMainMessageLoopRun() {
 #if !BUILDFLAG(IS_ANDROID)
   battery_saver_mode_manager_.reset();
   user_performance_tuning_manager_.reset();
+  performance_detection_manager_.reset();
   profile_discard_opt_out_list_helper_.reset();
 
   if (battery_state_sampler_)

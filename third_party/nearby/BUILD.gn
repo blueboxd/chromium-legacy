@@ -8,6 +8,8 @@ if (is_chromeos_device) {
 }
 import("//build/config/rust.gni")
 
+assert(enable_rust, "Nearby Presence requires rust to be enabled")
+
 # Nearby Config
 config("nearby_include_config") {
   include_dirs = [
@@ -24,10 +26,6 @@ config("nearby_include_config") {
 
 config("nearby_defines") {
   defines = [ "NEARBY_CHROMIUM=1" ]
-}
-
-config("nearby_rust_defines") {
-  defines = [ "USE_RUST_LDT" ]
 }
 
 ###############################################################################
@@ -294,6 +292,8 @@ source_set("connections_implementation_mediums") {
     "src/connections/implementation/mediums/bluetooth_classic.cc",
     "src/connections/implementation/mediums/bluetooth_radio.cc",
     "src/connections/implementation/mediums/mediums.cc",
+    "src/connections/implementation/mediums/multiplex/multiplex_frames.cc",
+    "src/connections/implementation/mediums/multiplex/multiplex_output_stream.cc",
     "src/connections/implementation/mediums/webrtc.cc",
     "src/connections/implementation/mediums/wifi_direct.cc",
     "src/connections/implementation/mediums/wifi_hotspot.cc",
@@ -315,6 +315,8 @@ source_set("connections_implementation_mediums") {
     "src/connections/implementation/mediums/bluetooth_radio.h",
     "src/connections/implementation/mediums/lost_entity_tracker.h",
     "src/connections/implementation/mediums/mediums.h",
+    "src/connections/implementation/mediums/multiplex/multiplex_frames.h",
+    "src/connections/implementation/mediums/multiplex/multiplex_output_stream.h",
     "src/connections/implementation/mediums/webrtc.h",
     "src/connections/implementation/mediums/wifi_direct.h",
     "src/connections/implementation/mediums/wifi_hotspot.h",
@@ -325,6 +327,7 @@ source_set("connections_implementation_mediums") {
     ":connections_implementation_flags",
     ":connections_implementation_mediums_webrtc",
     ":connections_types",
+    ":multiplex_frames_proto",
     ":platform_base",
     ":platform_base_cancellation_flag",
     ":platform_base_util",
@@ -339,6 +342,7 @@ source_set("connections_implementation_mediums") {
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
 }
+
 source_set("connections_implementation_mediums_utils") {
   public_configs = [
     ":nearby_include_config",
@@ -363,6 +367,7 @@ source_set("connections_implementation_mediums_utils") {
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
 }
+
 source_set("connections_implementation_mediums_webrtc_data_types") {
   public_configs = [
     ":nearby_include_config",
@@ -381,6 +386,7 @@ source_set("connections_implementation_mediums_webrtc_data_types") {
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
 }
+
 source_set("connections_implementation_mediums_webrtc") {
   public_configs = [
     ":nearby_include_config",
@@ -454,6 +460,11 @@ source_set("analytics_event_logger") {
   public = [ "src/internal/analytics/event_logger.h" ]
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
+  public_deps = [
+    ":connections_log_proto",
+    ":fast_pair_log_proto",
+    ":sharing_log_proto",
+  ]
 }
 
 # src/internal/crypto
@@ -575,6 +586,7 @@ source_set("platform_api_comm") {
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
 }
+
 source_set("platform_api_types") {
   public_configs = [
     ":nearby_include_config",
@@ -944,10 +956,12 @@ source_set("presence_test") {
     ":nearby_defines",
   ]
   sources = [
+    "src/internal/interop/fake_device_provider.cc",
     "src/presence/fake_presence_client.cc",
     "src/presence/fake_presence_service.cc",
   ]
   public = [
+    "src/internal/interop/fake_device_provider.h",
     "src/presence/fake_presence_client.h",
     "src/presence/fake_presence_service.h",
   ]
@@ -1002,8 +1016,9 @@ source_set("presence_internal") {
   ]
   sources = [
     "src/presence/implementation/action_factory.cc",
-    "src/presence/implementation/advertisement_decoder.cc",
+    "src/presence/implementation/advertisement_decoder_impl.cc",
     "src/presence/implementation/advertisement_factory.cc",
+    "src/presence/implementation/advertisement_filter.cc",
     "src/presence/implementation/base_broadcast_request.cc",
     "src/presence/implementation/broadcast_manager.cc",
     "src/presence/implementation/connection_authenticator_impl.cc",
@@ -1015,7 +1030,9 @@ source_set("presence_internal") {
   public = [
     "src/presence/implementation/action_factory.h",
     "src/presence/implementation/advertisement_decoder.h",
+    "src/presence/implementation/advertisement_decoder_impl.h",
     "src/presence/implementation/advertisement_factory.h",
+    "src/presence/implementation/advertisement_filter.h",
     "src/presence/implementation/base_broadcast_request.h",
     "src/presence/implementation/broadcast_manager.h",
     "src/presence/implementation/connection_authenticator.h",
@@ -1037,30 +1054,17 @@ source_set("presence_internal") {
     ":platform_public_comm",
     ":platform_public_logging",
     ":platform_public_types",
-    ":presence_ldt_stub",
     ":presence_mediums",
     ":presence_types",
     "//crypto:crypto",
     "//third_party/abseil-cpp:absl",
+    "//third_party/beto-core:ldt_np_adv_ffi",
     "//third_party/boringssl:boringssl",
   ]
-  if (enable_rust && enable_all_rust_features && enable_rust_boringssl) {
-    public_deps += [ "//third_party/beto-core:ldt_np_adv_ffi" ]
-    public_configs += [ ":nearby_rust_defines" ]
-  }
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
 }
-source_set("presence_ldt_stub") {
-  public_configs = [
-    ":nearby_include_config",
-    ":nearby_defines",
-  ]
-  sources = [ "src/presence/implementation/np_ldt.c" ]
-  public = [ "src/presence/implementation/np_ldt.h" ]
-  configs -= [ "//build/config/compiler:chromium_code" ]
-  configs += [ "//build/config/compiler:no_chromium_code" ]
-}
+
 source_set("presence_sensor_fusion") {
   public_configs = [
     ":nearby_include_config",
@@ -1111,6 +1115,12 @@ proto_library("sharing_enums_proto") {
   proto_out_dir = "third_party/nearby"
 }
 
+proto_library("fast_pair_enums_proto") {
+  proto_in_dir = "src"
+  sources = [ "${proto_in_dir}/proto/fast_pair_enums.proto" ]
+  proto_out_dir = "third_party/nearby"
+}
+
 # src/internal/proto/analytics
 proto_library("connections_log_proto") {
   proto_in_dir = "src"
@@ -1123,6 +1133,20 @@ proto_library("connections_log_proto") {
   link_deps = [
     ":connections_enums_proto",
     ":error_code_enums_proto",
+  ]
+}
+
+proto_library("fast_pair_log_proto") {
+  proto_in_dir = "src"
+  sources = [ "${proto_in_dir}/internal/proto/analytics/fast_pair_log.proto" ]
+  proto_out_dir = "third_party/nearby"
+  proto_deps = [
+    ":connections_log_proto",
+    ":fast_pair_enums_proto",
+  ]
+  link_deps = [
+    ":connections_log_proto",
+    ":fast_pair_enums_proto",
   ]
 }
 
@@ -1231,6 +1255,15 @@ proto_library("certificate_rpc_proto") {
   link_deps = [ ":rpc_resources_proto" ]
 }
 
+# src/sharing/proto/analytics
+proto_library("sharing_log_proto") {
+  proto_in_dir = "src"
+  sources =
+      [ "${proto_in_dir}/sharing/proto/analytics/nearby_sharing_log.proto" ]
+  proto_out_dir = "third_party/nearby"
+  import_dirs = [ "../../third_party/protobuf/src" ]
+}
+
 # src/presence/proto
 proto_library("presence_frame_proto") {
   proto_in_dir = "src"
@@ -1249,6 +1282,12 @@ proto_library("error_code_enums_proto") {
 proto_library("ble_frames_proto") {
   proto_in_dir = "src"
   sources = [ "${proto_in_dir}/proto/mediums/ble_frames.proto" ]
+  proto_out_dir = "third_party/nearby"
+}
+
+proto_library("multiplex_frames_proto") {
+  proto_in_dir = "src"
+  sources = [ "${proto_in_dir}/proto/mediums/multiplex_frames.proto" ]
   proto_out_dir = "third_party/nearby"
 }
 

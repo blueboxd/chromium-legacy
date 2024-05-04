@@ -9,6 +9,11 @@
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/core/dom/shadow_including_tree_order_traversal.h"
 #include "third_party/blink/renderer/core/html/forms/html_label_element.h"
+#include "third_party/blink/renderer/core/html/forms/html_opt_group_element.h"
+#include "third_party/blink/renderer/core/html/forms/html_option_element.h"
+#include "third_party/blink/renderer/core/html/html_area_element.h"
+#include "third_party/blink/renderer/core/html/html_body_element.h"
+#include "third_party/blink/renderer/core/html/html_br_element.h"
 #include "ui/accessibility/ax_common.h"
 
 namespace blink {
@@ -51,9 +56,7 @@ void AXRelationCache::DoInitialDocumentScan(Document& document) {
 
       // Caching aria-owns requires creating target AXObjects.
       if (element->FastHasAttribute(html_names::kAriaOwnsAttr)) {
-        if (AXObject* owner = GetOrCreate(element, nullptr)) {
-          owner_ids_to_update_.insert(owner->AXObjectID());
-        }
+        owner_ids_to_update_.insert(element->GetDomNodeId());
       }
     }
   }
@@ -170,7 +173,7 @@ void AXRelationCache::CheckElementWasProcessed(Element& element) {
          "did not exist when the cache was first initialized:"
       << "\n* Element: " << ancestor
       << "\n* LayoutObject: " << ancestor->GetLayoutObject()
-      << "\n* AXObject: " << (obj ? obj->ToString(true, true) : "") << "\n"
+      << "\n* AXObject: " << obj << "\n"
       << (obj && obj->ParentObjectIncludedInTree()
               ? obj->ParentObjectIncludedInTree()->GetAXTreeForThis()
               : "");
@@ -178,13 +181,14 @@ void AXRelationCache::CheckElementWasProcessed(Element& element) {
 #endif
 
 void AXRelationCache::ProcessUpdatesWithCleanLayout() {
-  HashSet<AXID> old_owner_ids_to_update;
+  HashSet<DOMNodeId> old_owner_ids_to_update;
   old_owner_ids_to_update.swap(owner_ids_to_update_);
 
-  for (AXID aria_owns_obj_id : old_owner_ids_to_update) {
-    AXObject* obj = ObjectFromAXID(aria_owns_obj_id);
-    if (obj)
+  for (DOMNodeId aria_owns_id : old_owner_ids_to_update) {
+    AXObject* obj = Get(DOMNodeIds::NodeForId(aria_owns_id));
+    if (obj) {
       UpdateAriaOwnsWithCleanLayout(obj);
+    }
   }
 
   owner_ids_to_update_.clear();
@@ -197,8 +201,7 @@ bool AXRelationCache::IsDirty() const {
 bool AXRelationCache::IsAriaOwned(const AXObject* child) const {
   if (!child)
     return false;
-  DCHECK(!child->IsDetached())
-      << "Child was detached: " << child->ToString(true, true);
+  DCHECK(!child->IsDetached()) << "Child was detached: " << child;
   return aria_owned_child_to_owner_mapping_.Contains(child->AXObjectID());
 }
 
@@ -361,14 +364,13 @@ static bool ContainsCycle(AXObject* owner, Node& child_node) {
   // Walk up the parents of the owner object, make sure that this child
   // doesn't appear there, as that would create a cycle.
   for (AXObject* ancestor = owner; ancestor;
-       ancestor = ancestor->CachedParentObject()) {
+       ancestor = ancestor->ParentObject()) {
     if (ancestor->GetNode() == &child_node) {
       return true;
     }
     CHECK(visited.insert(ancestor->AXObjectID()).is_new_entry)
         << "Cycle in unexpected place:\n"
-        << "* Owner = " << owner->ToString(true, true)
-        << "* Child = " << child_node;
+        << "* Owner = " << owner << "* Child = " << child_node;
   }
   return false;
 }
@@ -540,9 +542,11 @@ void AXRelationCache::MapOwnedChildrenWithCleanLayout(
 
     // Now detach the object from its original parent and call childrenChanged
     // on the original parent so that it can recompute its list of children.
-    AXObject* original_parent = added_child->CachedParentObject();
+    AXObject* original_parent = added_child->ParentObjectIfPresent();
     if (original_parent != owner) {
-      added_child->DetachFromParent();
+      if (original_parent) {
+        added_child->DetachFromParent();
+      }
       added_child->SetParent(const_cast<AXObject*>(owner));
       if (original_parent) {
         ChildrenChangedWithCleanLayout(original_parent);
@@ -553,7 +557,7 @@ void AXRelationCache::MapOwnedChildrenWithCleanLayout(
         // - AccessibilityEventsSubtreeReparentedViaAriaOwns2/linux
         // TODO(crbug.com/1299031) Find out why this is necessary.
         object_cache_->MarkAXObjectDirtyWithCleanLayout(
-            original_parent->CachedParentObject());
+            original_parent->ParentObject());
       }
       // Now that we're replacing the parent, we need to update cached values
       // for the added child's subtree, because some cached values are inherited
@@ -620,9 +624,8 @@ void AXRelationCache::ValidatedAriaOwnedChildren(
     } else if (ValidatedAriaOwner(child) == owner) {
       validated_owned_children_result.push_back(child);
       DCHECK(IsAriaOwned(child))
-          << "Owned child not in owned child map:"
-          << "\n* Owner = " << owner->ToString(true, true)
-          << "\n* Child = " << child->ToString(true, true);
+          << "Owned child not in owned child map:" << "\n* Owner = " << owner
+          << "\n* Child = " << child;
     }
   }
 }
@@ -653,7 +656,7 @@ void AXRelationCache::UpdateAriaOwnsWithCleanLayout(AXObject* owner,
   if (!is_valid_owner) {
     DCHECK(force) << "Should not reach here except when an AXObject was "
                      "invalidated and is being refreshed: "
-                  << owner->ToString(true, true);
+                  << owner;
   } else if (element && element->HasExplicitlySetAttrAssociatedElements(
                             html_names::kAriaOwnsAttr)) {
     UpdateAriaOwnsFromAttrAssociatedElementsWithCleanLayout(
@@ -728,10 +731,10 @@ void AXRelationCache::UpdateAriaOwnerToChildrenMappingWithCleanLayout(
   // Owned children must be in tree to avoid serialization issues.
   for (AXObject* child : validated_owned_children_result) {
     DCHECK(IsAriaOwned(child));
-    DCHECK(child->ComputeAccessibilityIsIgnoredButIncludedInTree())
-        << "Owned child not in tree: " << child->ToString(true, false)
+    DCHECK(child->ComputeIsIgnoredButIncludedInTree())
+        << "Owned child not in tree: " << child
         << "\nRecompute included in tree: "
-        << child->ComputeAccessibilityIsIgnoredButIncludedInTree();
+        << child->ComputeIsIgnoredButIncludedInTree();
   }
 #endif
 
@@ -809,10 +812,8 @@ AXObject* AXRelationCache::GetOrCreateAriaOwnerFor(Node* node, AXObject* obj) {
     DCHECK(!obj->IsDetached());
   AXObject* obj_for_node = object_cache_->Get(node);
   DCHECK(!obj || obj_for_node == obj)
-      << "Object and node did not match:"
-      << "\n* node = " << node << "\n* obj = " << obj->ToString(true, true)
-      << "\n* obj_for_node = "
-      << (obj_for_node ? obj_for_node->ToString(true, true) : "null");
+      << "Object and node did not match:" << "\n* node = " << node
+      << "\n* obj = " << obj << "\n* obj_for_node = " << obj_for_node;
 #endif
 
   // Look for any new aria-owns relations.
@@ -826,6 +827,7 @@ AXObject* AXRelationCache::GetOrCreateAriaOwnerFor(Node* node, AXObject* obj) {
     if (related) {
       // Ensure that the candidate owner updates its children in its validity
       // as an owner is changing.
+      owner_ids_to_update_.insert(related->AXObjectID());
       object_cache_->MarkAXObjectDirtyWithCleanLayout(related);
       related->SetNeedsToUpdateChildren();
       if (IsValidOwnsRelation(related, *node)) {
@@ -860,7 +862,7 @@ void AXRelationCache::UpdateRelatedTree(Node* node, AXObject* obj) {
     return;
   }
 
-  if (AXObject* owner = GetOrCreateAriaOwnerFor(node, obj)) {
+  if (GetOrCreateAriaOwnerFor(node, obj)) {
     // Ensure the aria-owns relation is processed, which in turn ensures that
     // both the owner and owned child exist, and that the parent-child
     // relations are correctly set on each.
@@ -897,7 +899,7 @@ void AXRelationCache::UpdateRelatedText(Node* node) {
     GetReverseRelated(current_node, id_attr_to_text_relation_mapping_,
                       related_sources);
     for (AXObject* related : related_sources) {
-      if (related && related->LastKnownIsIncludedInTreeValue() &&
+      if (related && related->IsIncludedInTree() &&
           !related->NeedsToUpdateChildren()) {
         object_cache_->MarkAXObjectDirtyWithCleanLayout(related);
       }
@@ -908,7 +910,7 @@ void AXRelationCache::UpdateRelatedText(Node* node) {
     if (current_node != node) {
       AXObject* obj = Get(current_node);
       if (obj &&
-          (!obj->LastKnownIsIgnoredValue() || obj->CanSetFocusAttribute()) &&
+          (!obj->IsIgnored() || obj->CanSetFocusAttribute()) &&
           obj->SupportsNameFromContents(/*recursive=*/false) &&
           !obj->NeedsToUpdateChildren()) {
         object_cache_->MarkAXObjectDirtyWithCleanLayout(obj);
@@ -957,7 +959,7 @@ void AXRelationCache::RemoveAXID(AXID obj_id) {
           DUMP_WILL_BE_CHECK(!object_cache_->UpdatingTree())
               << "Removing owned child at a bad time, which leads to "
                  "parentless objects at a bad time: "
-              << owned_child->ToString(true, true);
+              << owned_child;
           MaybeRestoreParentOfOwnedChild(owned_child);
         }
       }
@@ -1025,9 +1027,11 @@ Node* AXRelationCache::LabelChanged(HTMLLabelElement& label) {
 void AXRelationCache::MaybeRestoreParentOfOwnedChild(AXObject* child) {
   // TODO Replace with AXObjectCacheImpl::RepairIncludedParentsChildren().
   DCHECK(child);
-  if (child->IsDetached())
+  if (child->IsDetached()) {
     return;
-  AXObject* old_parent = child->CachedParentObject();
+  }
+
+  AXObject* old_parent = child->ParentObjectIfPresent();
   if (object_cache_->IsProcessingDeferredEvents()) {
     if (AXObject* new_parent =
             object_cache_->RestoreParentOrPruneWithCleanLayout(child)) {

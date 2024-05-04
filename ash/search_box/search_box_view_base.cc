@@ -213,7 +213,8 @@ class SearchBoxTextfield : public views::Textfield {
   ~SearchBoxTextfield() override = default;
 
   // views::View:
-  gfx::Size CalculatePreferredSize() const override {
+  gfx::Size CalculatePreferredSize(
+      const views::SizeBounds& available_size) const override {
     // Overridden so the BoxLayoutView 'text_container_' can properly layout
     // the search box and ghost text.
     const std::u16string& text = GetText();
@@ -645,11 +646,16 @@ bool SearchBoxViewBase::OnTextfieldEvent(ui::EventType type) {
   return true;
 }
 
-gfx::Size SearchBoxViewBase::CalculatePreferredSize() const {
-  const int iph_height =
-      iph_view_tracker_.view()
-          ? iph_view_tracker_.view()->GetPreferredSize().height()
-          : 0;
+gfx::Size SearchBoxViewBase::CalculatePreferredSize(
+    const views::SizeBounds& available_size) const {
+  views::SizeBounds content_available_size(available_size);
+  gfx::Insets insets = GetInsets();
+  content_available_size.Enlarge(-insets.width(), -insets.height());
+  const int iph_height = iph_view_tracker_.view()
+                             ? iph_view_tracker_.view()
+                                   ->GetPreferredSize(content_available_size)
+                                   .height()
+                             : 0;
   return gfx::Size(kSearchBoxPreferredWidth,
                    kSearchBoxPreferredHeight + iph_height);
 }

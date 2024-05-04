@@ -56,9 +56,6 @@ class WebState;
 // Called when a snapshot of the content will be taken.
 - (void)willUpdateSnapshot;
 
-// Stop any scrolling in the scroll view.
-- (void)stopScrolling;
-
 // Whether the NTP is scrolled to the top.
 - (BOOL)isScrolledToTop;
 
@@ -80,8 +77,8 @@ class WebState;
 // Tell location bar has taken focus.
 - (void)locationBarDidBecomeFirstResponder;
 
-// Constrains the named layout guide for the Discover header menu button.
-- (void)constrainDiscoverHeaderMenuButtonNamedGuide;
+// Constrains the named layout guide for the feed header management button.
+- (void)constrainFeedHeaderManagementButtonNamedGuide;
 
 // Updates the new tab page based on if there is unseen content in the Following
 // feed.

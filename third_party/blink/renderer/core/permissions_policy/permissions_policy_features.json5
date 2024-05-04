@@ -152,8 +152,8 @@
       permissions_policy_name: "ch-ua-bitness",
     },
     {
-      name: "ClientHintUAFormFactor",
-      permissions_policy_name: "ch-ua-form-factor",
+      name: "ClientHintUAFormFactors",
+      permissions_policy_name: "ch-ua-form-factors",
     },
     {
       name: "ClientHintUAPlatform",
@@ -340,7 +340,6 @@
     {
       name: "PublicKeyCredentialsCreate",
       permissions_policy_name: "publickey-credentials-create",
-      depends_on: ["WebAuthAllowCreateInCrossOriginFrame"],
     },
     {
       name: "PublicKeyCredentialsGet",
@@ -452,7 +451,6 @@
     },
     {
       name: "WindowManagement",
-      // Parser also accepts "window-placement" alias (crbug.com/1328581).
       permissions_policy_name: "window-management",
     },
   ],

@@ -24,8 +24,8 @@
 #include "components/autofill/core/browser/payments/card_unmask_challenge_option.h"
 #include "components/autofill/core/browser/proto/api_v1.pb.h"
 #include "components/autofill/core/browser/proto/server.pb.h"
-#include "components/autofill/core/browser/ui/popup_item_ids.h"
 #include "components/autofill/core/browser/ui/suggestion.h"
+#include "components/autofill/core/browser/ui/suggestion_type.h"
 #include "components/autofill/core/common/autofill_test_utils.h"
 
 class PrefService;
@@ -40,10 +40,12 @@ class AutofillExternalDelegate;
 class AutofillProfile;
 class BankAccount;
 struct FormData;
-struct FormFieldData;
+class FormFieldData;
 struct FormDataPredictions;
 struct FormFieldDataPredictions;
 class PaymentsAutofillTable;
+class TestAutofillClient;
+class TestPersonalDataManager;
 
 // Defined by pair-wise equality of all members.
 bool operator==(const FormFieldDataPredictions& a,
@@ -98,10 +100,12 @@ std::unique_ptr<PrefService> PrefServiceForTesting(
 AutofillProfile GetFullValidProfileForCanada();
 
 // Returns a profile full of dummy info.
-AutofillProfile GetFullProfile();
+AutofillProfile GetFullProfile(
+    AddressCountryCode country_code = AddressCountryCode("US"));
 
 // Returns a profile full of dummy info, different to the above.
-AutofillProfile GetFullProfile2();
+AutofillProfile GetFullProfile2(
+    AddressCountryCode country_code = AddressCountryCode("US"));
 
 // Returns a profile full of dummy info, different to the above.
 AutofillProfile GetFullCanadianProfile();
@@ -205,6 +209,19 @@ std::vector<CardUnmaskChallengeOption> GetCardUnmaskChallengeOptions(
 CreditCardFlatRateBenefit GetActiveCreditCardFlatRateBenefit();
 CreditCardCategoryBenefit GetActiveCreditCardCategoryBenefit();
 CreditCardMerchantBenefit GetActiveCreditCardMerchantBenefit();
+
+// Returns a set of merchant origin webpages used for a merchant credit card
+// benefit.
+base::flat_set<url::Origin> GetOriginsForMerchantBenefit();
+
+// Adds `card` with a set `benefit` and `issuer_id` to `personal_data`. Also
+// configures a category benefit with the `optimization_guide`.
+void SetUpCreditCardAndBenefitData(
+    CreditCard& card,
+    const CreditCardBenefit& benefit,
+    const std::string& issuer_id,
+    TestPersonalDataManager& personal_data,
+    AutofillOptimizationGuide* optimization_guide);
 
 // A unit testing utility that is common to a number of the Autofill unit
 // tests.  |SetProfileInfo| provides a quick way to populate a profile with
@@ -366,7 +383,7 @@ void AddFieldPredictionsToForm(
     ::autofill::AutofillQueryResponse_FormSuggestion* form_suggestion);
 
 Suggestion CreateAutofillSuggestion(
-    PopupItemId popup_item_id,
+    SuggestionType type,
     const std::u16string& main_text_value = std::u16string(),
     const Suggestion::Payload& payload = Suggestion::Payload());
 

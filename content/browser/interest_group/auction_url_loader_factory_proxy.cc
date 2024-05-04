@@ -15,7 +15,6 @@
 #include "base/functional/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/escape.h"
-#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "content/browser/devtools/devtools_instrumentation.h"
@@ -38,6 +37,7 @@
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/interest_group/interest_group_types.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -123,7 +123,7 @@ void AuctionURLLoaderFactoryProxy::CreateLoaderAndStart(
   }
 
   bool is_request_allowed = false;
-  bool is_trusted_bidding_signals_request = false;
+  bool is_trusted_signals_request = false;
   std::optional<InterestGroupAuctionFetchType> event_type;
 
   const SubresourceUrlBuilder::BundleSubresourceInfo* maybe_subresource_info =
@@ -145,7 +145,7 @@ void AuctionURLLoaderFactoryProxy::CreateLoaderAndStart(
                      ? InterestGroupAuctionFetchType::kSellerTrustedSignals
                      : InterestGroupAuctionFetchType::kBidderTrustedSignals;
     is_request_allowed = true;
-    is_trusted_bidding_signals_request = true;
+    is_trusted_signals_request = true;
   } else {
     maybe_subresource_info =
         subresource_url_authorizations_.GetAuthorizationInfo(url_request.url);
@@ -180,6 +180,13 @@ void AuctionURLLoaderFactoryProxy::CreateLoaderAndStart(
     return;
   }
 
+  bool is_cross_origin_enabled_trusted_signals_request = false;
+  if (is_trusted_signals_request &&
+      base::FeatureList::IsEnabled(
+          blink::features::kFledgePermitCrossOriginTrustedSignals)) {
+    is_cross_origin_enabled_trusted_signals_request = true;
+  }
+
   // Create fresh request object, only keeping the URL field and Accept request
   // header, to protect against compromised auction worklet processes setting
   // values that should not have access to (e.g., sending credentialed
@@ -207,7 +214,7 @@ void AuctionURLLoaderFactoryProxy::CreateLoaderAndStart(
         *new_request.devtools_request_id, relevant_auction_ids);
   }
 
-  if (is_trusted_bidding_signals_request) {
+  if (is_trusted_signals_request) {
     std::optional<std::string> maybe_deprecation_label =
         get_cookie_deprecation_label_.Run();
     if (maybe_deprecation_label) {
@@ -216,11 +223,18 @@ void AuctionURLLoaderFactoryProxy::CreateLoaderAndStart(
     }
   }
 
+  if (is_cross_origin_enabled_trusted_signals_request) {
+    // For cross-origin trusted signals request, the principal is the origin
+    // of the script.
+    new_request.request_initiator = url::Origin::Create(script_url_);
+  }
+
   if (force_reload_) {
     new_request.load_flags = net::LOAD_BYPASS_CACHE;
   }
 
-  if (maybe_subresource_info || needs_cors_for_additional_bid_) {
+  if (maybe_subresource_info || needs_cors_for_additional_bid_ ||
+      is_cross_origin_enabled_trusted_signals_request) {
     // CORS is needed.
     //
     // For subresource bundle requests, CORS is supported if the subresource
@@ -242,13 +256,17 @@ void AuctionURLLoaderFactoryProxy::CreateLoaderAndStart(
     // signal's JSON response, if made in the context of the page, but the JSON
     // is only made available to the same-origin script, so ORB isn't needed
     // here.
+    //
+    // This does not apply if we permit trusted signals to be cross-origin from
+    // the corresponding script, in which has the signals origin's permission is
+    // required before sharing its data with the script.
     new_request.mode = network::mojom::RequestMode::kNoCors;
   }
 
   GetUrlLoaderFactoryCallback url_loader_factory_getter =
       get_trusted_url_loader_factory_;
   if (is_for_seller_) {
-    if (!is_trusted_bidding_signals_request && !maybe_subresource_info) {
+    if (!is_trusted_signals_request && !maybe_subresource_info) {
       // The script URL is provided in its entirety by the frame initiating the
       // auction, so just use its URLLoaderFactory for those requests.
       url_loader_factory_getter = get_frame_url_loader_factory_;
@@ -373,6 +391,16 @@ bool AuctionURLLoaderFactoryProxy::CouldBeTrustedSignalsUrl(
   if (url.has_ref()) {
     return false;
   }
+
+  // GURL's Mojo serialization logic may convert a valid URL that's too long
+  // to an invalid one. Since trusted signals URLs may be appended to, an
+  // invalid URL may have begun life as a valid trusted signals URL, but then
+  // exceeded the max length when appended to. The request for such a URL will
+  // fail, but that's how we normally treat such URLs, so just let it through.
+  if (!url.is_valid()) {
+    return true;
+  }
+
   std::string full_prefix = base::StringPrintf(
       "%s?hostname=%s&", trusted_signals_base_url_->spec().c_str(),
       top_frame_origin_.host().c_str());

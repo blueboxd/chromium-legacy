@@ -6,7 +6,10 @@
 
 #include "base/command_line.h"
 #include "base/functional/bind.h"
+#include "chrome/browser/ui/chromeos/read_write_cards/read_write_cards_ui_controller.h"
+#include "chrome/browser/ui/chromeos/read_write_cards/read_write_cards_view.h"
 #include "chrome/browser/ui/quick_answers/quick_answers_ui_controller.h"
+#include "chrome/browser/ui/views/editor_menu/utils/pre_target_handler.h"
 #include "chromeos/components/quick_answers/public/cpp/quick_answers_state.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
 #include "components/vector_icons/vector_icons.h"
@@ -14,6 +17,7 @@
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/base/models/image_model.h"
 #include "ui/color/color_id.h"
 #include "ui/color/color_provider.h"
 #include "ui/display/screen.h"
@@ -40,7 +44,6 @@ namespace quick_answers {
 namespace {
 
 // Main view (or common) specs.
-constexpr int kMarginDip = 10;
 constexpr int kLineHeightDip = 20;
 constexpr int kContentSpacingDip = 8;
 constexpr auto kMainViewInsets = gfx::Insets::TLBR(16, 12, 16, 16);
@@ -120,12 +123,11 @@ END_METADATA
 // -------------------------------------------------------------
 
 UserConsentView::UserConsentView(
-    const gfx::Rect& anchor_view_bounds,
+    const gfx::Rect& context_menu_bounds,
     const std::u16string& intent_type,
     const std::u16string& intent_text,
     base::WeakPtr<QuickAnswersUiController> controller)
-    : anchor_view_bounds_(anchor_view_bounds),
-      event_handler_(this),
+    : chromeos::ReadWriteCardsView(controller->GetReadWriteCardsUiController()),
       controller_(std::move(controller)),
       focus_search_(this,
                     base::BindRepeating(&UserConsentView::GetFocusableViews,
@@ -153,46 +155,10 @@ UserConsentView::UserConsentView(
 
 UserConsentView::~UserConsentView() = default;
 
-views::UniqueWidgetPtr UserConsentView::CreateWidget(
-    const gfx::Rect& anchor_view_bounds,
-    const std::u16string& intent_type,
-    const std::u16string& intent_text,
-    base::WeakPtr<QuickAnswersUiController> controller) {
-  views::Widget::InitParams params;
-  params.activatable = views::Widget::InitParams::Activatable::kNo;
-  params.shadow_elevation = 2;
-  params.shadow_type = views::Widget::InitParams::ShadowType::kDrop;
-  params.type = views::Widget::InitParams::TYPE_POPUP;
-  params.z_order = ui::ZOrderLevel::kFloatingUIElement;
-
-  // Parent the widget to the owner of the menu.
-  auto* active_menu_controller = views::MenuController::GetActiveInstance();
-  DCHECK(active_menu_controller && active_menu_controller->owner());
-
-  // This widget has to be a child of menu owner's widget to make keyboard focus
-  // work.
-  params.parent = active_menu_controller->owner()->GetNativeView();
-  params.child = true;
-  params.name = kWidgetName;
-
-  views::UniqueWidgetPtr widget =
-      std::make_unique<views::Widget>(std::move(params));
-  UserConsentView* user_consent_view =
-      widget->SetContentsView(std::make_unique<UserConsentView>(
-          anchor_view_bounds, intent_type, intent_text, controller));
-  user_consent_view->UpdateWidgetBounds();
-
-  // Allow tooltips to be shown despite menu-controller owning capture.
-  widget->SetNativeWindowProperty(
-      views::TooltipManager::kGroupingPropertyKey,
-      reinterpret_cast<void*>(views::MenuConfig::kMenuControllerGroupingId));
-
-  return widget;
-}
-
-gfx::Size UserConsentView::CalculatePreferredSize() const {
-  // View should match width of the anchor.
-  auto width = anchor_view_bounds_.width();
+gfx::Size UserConsentView::CalculatePreferredSize(
+    const views::SizeBounds& available_size) const {
+  // View should match width of the context menu.
+  auto width = context_menu_bounds().width();
   return gfx::Size(width, GetHeightForWidth(width));
 }
 
@@ -228,6 +194,10 @@ void UserConsentView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->SetDescription(desc_text);
 }
 
+void UserConsentView::UpdateBoundsForQuickAnswers() {
+  PreferredSizeChanged();
+}
+
 std::vector<views::View*> UserConsentView::GetFocusableViews() {
   std::vector<views::View*> focusable_views;
   // The view itself is not included in focus loop, unless screen-reader is on.
@@ -237,12 +207,6 @@ std::vector<views::View*> UserConsentView::GetFocusableViews() {
   focusable_views.push_back(no_thanks_button_);
   focusable_views.push_back(allow_button_);
   return focusable_views;
-}
-
-void UserConsentView::UpdateAnchorViewBounds(
-    const gfx::Rect& anchor_view_bounds) {
-  anchor_view_bounds_ = anchor_view_bounds;
-  UpdateWidgetBounds();
 }
 
 void UserConsentView::InitLayout() {
@@ -261,9 +225,9 @@ void UserConsentView::InitLayout() {
       main_view_->AddChildView(std::make_unique<views::ImageView>());
   google_icon->SetBorder(views::CreateEmptyBorder(
       gfx::Insets::TLBR((kLineHeightDip - kGoogleIconSizeDip) / 2, 0, 0, 0)));
-  google_icon->SetImage(gfx::CreateVectorIcon(vector_icons::kGoogleColorIcon,
-                                              kGoogleIconSizeDip,
-                                              gfx::kPlaceholderColor));
+  google_icon->SetImage(ui::ImageModel::FromVectorIcon(
+      vector_icons::kGoogleColorIcon, gfx::kPlaceholderColor,
+      kGoogleIconSizeDip));
 
   // Content.
   InitContent();
@@ -288,7 +252,9 @@ void UserConsentView::InitContent() {
   // Set the maximum width of the label to the width it would need to be for the
   // UserConsentView to be the same width as the anchor, so its preferred size
   // will be calculated correctly.
-  int maximum_width = GetActualLabelWidth(anchor_view_bounds_.width());
+  // TODO(b/331271987): Remove the usage of `context_menu_bounds()` in this view
+  // (use layout manager instead).
+  int maximum_width = GetActualLabelWidth(context_menu_bounds().width());
   title_->SetMaximumWidthSingleLine(maximum_width);
 
   // Description.
@@ -322,49 +288,28 @@ void UserConsentView::InitButtonBar() {
                           controller_, false),
       l10n_util::GetStringUTF16(
           IDS_QUICK_ANSWERS_USER_CONSENT_VIEW_NO_THANKS_BUTTON),
-      ShouldUseCompactButtonLayout(anchor_view_bounds_.width()));
+      ShouldUseCompactButtonLayout(context_menu_bounds().width()));
   no_thanks_button_ = button_bar->AddChildView(std::move(no_thanks_button));
 
   // Allow button
   auto allow_button = std::make_unique<CustomizedLabelButton>(
       base::BindRepeating(
-          [](chromeos::editor_menu::PreTargetHandler* handler,
-             base::WeakPtr<QuickAnswersUiController> controller) {
-            // When user consent is accepted, QuickAnswersView will be
-            // displayed instead of dismissing the menu.
-            handler->set_dismiss_anchor_menu_on_view_closed(false);
+          [](base::WeakPtr<QuickAnswersUiController> controller) {
             if (controller) {
+              // When user consent is accepted, QuickAnswersView will be
+              // displayed instead of dismissing the menu.
+              controller->GetReadWriteCardsUiController()
+                  .pre_target_handler()
+                  .set_dismiss_anchor_menu_on_view_closed(false);
               controller->OnUserConsentResult(true);
             }
           },
-          &event_handler_, controller_),
+          controller_),
       l10n_util::GetStringUTF16(
           IDS_QUICK_ANSWERS_USER_CONSENT_VIEW_ALLOW_BUTTON),
-      ShouldUseCompactButtonLayout(anchor_view_bounds_.width()));
+      ShouldUseCompactButtonLayout(context_menu_bounds().width()));
   allow_button->SetStyle(ui::ButtonStyle::kProminent);
   allow_button_ = button_bar->AddChildView(std::move(allow_button));
-}
-
-void UserConsentView::UpdateWidgetBounds() {
-  const gfx::Size size = GetPreferredSize();
-  int x = anchor_view_bounds_.x();
-  int y = anchor_view_bounds_.y() - size.height() - kMarginDip;
-  if (y < display::Screen::GetScreen()
-              ->GetDisplayMatching(anchor_view_bounds_)
-              .work_area()
-              .y()) {
-    y = anchor_view_bounds_.bottom() + kMarginDip;
-  }
-  gfx::Rect bounds({x, y}, size);
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  // For Ash, convert the position relative to the screen.
-  // For Lacros, `bounds` is already relative to the toplevel window and the
-  // position will be calculated on server side.
-  wm::ConvertRectFromScreen(GetWidget()->GetNativeWindow()->parent(), &bounds);
-#endif
-
-  GetWidget()->SetBounds(bounds);
 }
 
 BEGIN_METADATA(UserConsentView)

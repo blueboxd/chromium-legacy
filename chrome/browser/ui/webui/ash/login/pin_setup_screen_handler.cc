@@ -23,7 +23,7 @@ PinSetupScreenHandler::~PinSetupScreenHandler() = default;
 
 void PinSetupScreenHandler::DeclareLocalizedValues(
     ::login::LocalizedValuesBuilder* builder) {
-  // TODO(crbug.com/1104120): clean up constant names
+  // TODO(crbug.com/40139544): clean up constant names
   builder->Add("discoverPinSetup", IDS_DISCOVER_PIN_SETUP);
 
   builder->Add("discoverPinSetupDone", IDS_DISCOVER_PIN_SETUP_DONE);
@@ -73,11 +73,12 @@ void PinSetupScreenHandler::DeclareLocalizedValues(
 }
 
 void PinSetupScreenHandler::Show(const std::string& token,
-                                 bool is_child_account) {
-  base::Value::Dict data;
-  data.Set("auth_token", base::Value(token));
-  data.Set("is_child_account", is_child_account);
-  ShowInWebUI(std::move(data));
+                                 bool is_child_account,
+                                 bool has_login_support) {
+  ShowInWebUI(base::Value::Dict()
+                  .Set("authToken", base::Value(token))
+                  .Set("isChildAccount", is_child_account)
+                  .Set("hasLoginSupport", has_login_support));
 }
 
 void PinSetupScreenHandler::SetLoginSupportAvailable(bool available) {

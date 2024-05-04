@@ -19,6 +19,7 @@
 #include "media/base/audio_decoder_config.h"
 #include "media/base/encryption_pattern.h"
 #include "media/base/encryption_scheme.h"
+#include "media/base/media_client.h"
 #include "media/base/media_tracks.h"
 #include "media/base/media_util.h"
 #include "media/base/stream_parser.h"
@@ -152,8 +153,8 @@ bool MP4StreamParser::AppendToParseBuffer(const uint8_t* buf, size_t size) {
     // synchronous with the app's appendBuffer() call, instead of async decode
     // error during async parse. Since Parse() cannot succeed in kError state,
     // don't even copy `buf` into `queue_` in this case.
-    // TODO(crbug.com/1379160): Instrument this path to see if it can be changed
-    // to just DCHECK_NE(state_, kError).
+    // TODO(crbug.com/40244241): Instrument this path to see if it can be
+    // changed to just DCHECK_NE(state_, kError).
     return true;
   }
 
@@ -1109,9 +1110,20 @@ ParseResult MP4StreamParser::EnqueueSample(BufferQueueMap* buffers) {
   StreamParserBuffer::Type buffer_type = audio ? DemuxerStream::AUDIO :
       DemuxerStream::VIDEO;
 
-  auto stream_buf = StreamParserBuffer::FromExternalMemory(
-      std::make_unique<ExternalMemoryAdapter>(std::move(frame_buf)),
-      is_keyframe, buffer_type, runs_->track_id());
+  scoped_refptr<StreamParserBuffer> stream_buf;
+
+  if (auto* media_client = GetMediaClient()) {
+    if (auto* alloc = media_client->GetMediaAllocator()) {
+      stream_buf = StreamParserBuffer::FromExternalMemory(
+          alloc->CopyFrom(frame_buf), is_keyframe, buffer_type,
+          runs_->track_id());
+    }
+  }
+  if (!stream_buf) {
+    stream_buf = StreamParserBuffer::FromExternalMemory(
+        std::make_unique<ExternalMemoryAdapter>(std::move(frame_buf)),
+        is_keyframe, buffer_type, runs_->track_id());
+  }
 
   if (decrypt_config)
     stream_buf->set_decrypt_config(std::move(decrypt_config));

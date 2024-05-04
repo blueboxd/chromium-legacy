@@ -131,7 +131,7 @@ bool ValidateSubSourceAndGetData(DOMArrayBufferView* view,
     // type size is at most 8, so no overflow.
     byte_offset = sub_offset * type_size;
   }
-  base::CheckedNumeric<int64_t> total = byte_offset;
+  base::CheckedNumeric<size_t> total = byte_offset;
   total += byte_length;
   if (!total.IsValid() || total.ValueOrDie() > view->byteLength()) {
     return false;
@@ -1262,7 +1262,7 @@ void WebGL2RenderingContextBase::texImage2D(
     GLenum format,
     GLenum type,
     MaybeShared<DOMArrayBufferView> data,
-    GLuint src_offset) {
+    int64_t src_offset) {
   if (isContextLost())
     return;
   if (bound_pixel_unpack_buffer_) {
@@ -1578,7 +1578,7 @@ void WebGL2RenderingContextBase::texSubImage2D(
     GLenum format,
     GLenum type,
     MaybeShared<DOMArrayBufferView> pixels,
-    GLuint src_offset) {
+    int64_t src_offset) {
   if (isContextLost())
     return;
   if (bound_pixel_unpack_buffer_) {
@@ -2751,9 +2751,7 @@ void WebGL2RenderingContextBase::uniform1ui(
   if (isContextLost() || !location)
     return;
 
-  if (location->Program() != current_program_) {
-    SynthesizeGLError(GL_INVALID_OPERATION, "uniform1ui",
-                      "location not for current program");
+  if (!ValidateUniformLocation("uniform1ui", location, current_program_)) {
     return;
   }
 
@@ -2767,9 +2765,7 @@ void WebGL2RenderingContextBase::uniform2ui(
   if (isContextLost() || !location)
     return;
 
-  if (location->Program() != current_program_) {
-    SynthesizeGLError(GL_INVALID_OPERATION, "uniform2ui",
-                      "location not for current program");
+  if (!ValidateUniformLocation("uniform2ui", location, current_program_)) {
     return;
   }
 
@@ -2784,9 +2780,7 @@ void WebGL2RenderingContextBase::uniform3ui(
   if (isContextLost() || !location)
     return;
 
-  if (location->Program() != current_program_) {
-    SynthesizeGLError(GL_INVALID_OPERATION, "uniform3ui",
-                      "location not for current program");
+  if (!ValidateUniformLocation("uniform3ui", location, current_program_)) {
     return;
   }
 
@@ -2802,9 +2796,7 @@ void WebGL2RenderingContextBase::uniform4ui(
   if (isContextLost() || !location)
     return;
 
-  if (location->Program() != current_program_) {
-    SynthesizeGLError(GL_INVALID_OPERATION, "uniform4ui",
-                      "location not for current program");
+  if (!ValidateUniformLocation("uniform4ui", location, current_program_)) {
     return;
   }
 

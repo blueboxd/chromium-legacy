@@ -140,8 +140,11 @@ void FlushCookieStoreOnIOThread(
   // Whether the application is currently in the background.
   // This is a workaround for rdar://22392526 where
   // -applicationDidEnterBackground: can be called twice.
-  // TODO(crbug.com/546196): Remove this once rdar://22392526 is fixed.
+  // TODO(crbug.com/41211311): Remove this once rdar://22392526 is fixed.
   BOOL _applicationInBackground;
+  // The counter of the number of views which want to block the screen to
+  // portrait mode for iPhone. This counter should always be 0 for iPad.
+  NSUInteger _iphonePortraitOnlyCounter;
 }
 
 @synthesize userInteracted = _userInteracted;
@@ -217,11 +220,17 @@ void FlushCookieStoreOnIOThread(
   if (ui::GetDeviceFormFactor() != ui::DEVICE_FORM_FACTOR_PHONE) {
     return NO;
   }
-
+  if (_iphonePortraitOnlyCounter > 0) {
+    return YES;
+  }
   // Return YES if the First Run UI is showing.
   return self.initStage > InitStageSafeMode &&
          self.initStage <= InitStageFirstRun &&
          self.startupInformation.isFirstRun;
+}
+
+- (NSArray<id<AppStateAgent>>*)connectedAgents {
+  return [self.agents copy];
 }
 
 #pragma mark - Public methods.
@@ -322,7 +331,7 @@ void FlushCookieStoreOnIOThread(
   if (self.initStage < InitStageBrowserObjectsForUI) {
     // Invariant: The app has passed InitStageStart.
     CHECK(self.initStage != InitStageStart);
-    // TODO(crbug.com/1197330): This function should only be called once
+    // TODO(crbug.com/40760092): This function should only be called once
     // during a specific stage, but this requires non-trivial refactoring, so
     // for now #initializeUIPreSafeMode will just return early if called more
     // than once.
@@ -367,13 +376,18 @@ void FlushCookieStoreOnIOThread(
                              connectedScenes:self.connectedScenes];
   [memoryHelper resetForegroundMemoryWarningCount];
 
-  // TODO(crbug.com/325596368): Do this for each browser state.
-  if (self.mainBrowserState) {
+  std::vector<ChromeBrowserState*> loadedBrowserStates =
+      GetApplicationContext()
+          ->GetChromeBrowserStateManager()
+          ->GetLoadedBrowserStates();
+  for (ChromeBrowserState* chromeBrowserState : loadedBrowserStates) {
+    feature_engagement::Tracker* tracker =
+        feature_engagement::TrackerFactory::GetForBrowserState(
+            chromeBrowserState);
     // Send the "Chrome Opened" event to the feature_engagement::Tracker on a
     // warm start.
-    feature_engagement::TrackerFactory::GetForBrowserState(
-        self.mainBrowserState)
-        ->NotifyEvent(feature_engagement::events::kChromeOpened);
+    tracker->NotifyEvent(feature_engagement::events::kChromeOpened);
+    [metricsMediator notifyCredentialProviderWasUsed:tracker];
   }
 
   base::RecordAction(base::UserMetricsAction("MobileWillEnterForeground"));
@@ -460,16 +474,19 @@ void FlushCookieStoreOnIOThread(
   // time the app becomes active.
   [self.startupInformation setIsColdStart:NO];
 
-  // Record session metrics (self.mainBrowserState may be null during tests).
-  // TODO(crbug.com/325596568): Update for each browser state,
-  if (self.mainBrowserState) {
-    SessionMetrics::FromBrowserState(self.mainBrowserState)
+  // Record session metrics.
+  std::vector<ChromeBrowserState*> loadedBrowserStates =
+      GetApplicationContext()
+          ->GetChromeBrowserStateManager()
+          ->GetLoadedBrowserStates();
+  for (ChromeBrowserState* browserState : loadedBrowserStates) {
+    SessionMetrics::FromBrowserState(browserState)
         ->RecordAndClearSessionMetrics(
             MetricsToRecordFlags::kActivatedTabCount);
 
-    if (self.mainBrowserState->HasOffTheRecordChromeBrowserState()) {
+    if (browserState->HasOffTheRecordChromeBrowserState()) {
       ChromeBrowserState* otrChromeBrowserState =
-          self.mainBrowserState->GetOffTheRecordChromeBrowserState();
+          browserState->GetOffTheRecordChromeBrowserState();
 
       SessionMetrics::FromBrowserState(otrChromeBrowserState)
           ->RecordAndClearSessionMetrics(MetricsToRecordFlags::kNoMetrics);
@@ -533,7 +550,7 @@ void FlushCookieStoreOnIOThread(
   for (UIWindowScene* scene in connectedScenes) {
     if (![scene.delegate isKindOfClass:[SceneDelegate class]]) {
       // This might happen in tests.
-      // TODO(crbug.com/1113097): This shouldn't be needed. (It might also
+      // TODO(crbug.com/40710078): This shouldn't be needed. (It might also
       // be the cause of crbug.com/1142782).
       [sceneStates addObject:[[SceneState alloc] initWithAppState:self]];
       continue;
@@ -556,7 +573,7 @@ void FlushCookieStoreOnIOThread(
 }
 
 - (void)initializeUIPreSafeMode {
-  // TODO(crbug.com/1197330): Consider replacing this with a DCHECK once we
+  // TODO(crbug.com/40760092): Consider replacing this with a DCHECK once we
   // make sure that #initializeUIPreSafeMode is only called once. This should
   // be done in a one-line change that is easy to revert.
   // Only perform the pre-safemode initialization once.
@@ -612,6 +629,17 @@ void FlushCookieStoreOnIOThread(
     self.needsIncrementInitStage = NO;
     [self queueTransitionToNextInitStage];
   }
+}
+
+#pragma mark - IphonePortraitOnlyManager
+
+- (void)incrementIphonePortraitOnlyCounter {
+  ++_iphonePortraitOnlyCounter;
+}
+
+- (void)decrementIphonePortraitOnlyCounter {
+  CHECK_GT(_iphonePortraitOnlyCounter, 0ul);
+  --_iphonePortraitOnlyCounter;
 }
 
 #pragma mark - UIBlockerManager
@@ -686,7 +714,7 @@ void FlushCookieStoreOnIOThread(
 
 #pragma mark - AppStateObserver
 
-// TODO(crbug.com/1191489): Move this logic to a specific agent.
+// TODO(crbug.com/40756629): Move this logic to a specific agent.
 - (void)appState:(AppState*)appState
     didTransitionFromInitStage:(InitStage)previousInitStage {
   if (previousInitStage != InitStageBrowserObjectsForUI) {

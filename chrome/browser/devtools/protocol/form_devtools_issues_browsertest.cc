@@ -15,18 +15,13 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test_utils.h"
 
-// TODO(crbug.com/1399414): Refactor tests when we start emitting issues in
+// TODO(crbug.com/40249826): Refactor tests when we start emitting issues in
 // bulk, via checkFormsIssues command and FormIssuesAdded event.
 namespace autofill {
 
 namespace {
 class AutofillFormDevtoolsProtocolTest : public DevToolsProtocolTestBase {
  public:
-  AutofillFormDevtoolsProtocolTest() {
-    scoped_features_.InitAndEnableFeature(
-        features::kAutofillEnableDevtoolsIssues);
-  }
-
   void NavigateToFormPageAndEnableAudits() {
     GURL test_url = content::GetTestUrl(
         "autofill", "autofill_form_devtools_issues_test.html");

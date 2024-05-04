@@ -44,13 +44,15 @@
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/ash/accessibility/accessibility_feature_browsertest.h"
 #include "chrome/browser/ash/accessibility/accessibility_manager.h"
+#include "chrome/browser/ash/accessibility/accessibility_test_utils.h"
 #include "chrome/browser/ash/accessibility/automation_test_utils.h"
 #include "chrome/browser/ash/crosapi/browser_manager.h"
 #include "chrome/browser/ash/input_method/ui/candidate_window_view.h"
 #include "chrome/browser/ash/login/test/device_state_mixin.h"
 #include "chrome/browser/ash/login/test/login_manager_mixin.h"
 #include "chrome/browser/ash/login/test/oobe_base_test.h"
-#include "chrome/browser/ash/login/wizard_controller.h"
+#include "chrome/browser/ash/login/ui/login_display_host.h"
+#include "chrome/browser/ash/login/wizard_context.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/shelf/app_shortcut_shelf_item_controller.h"
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_controller.h"
@@ -331,9 +333,10 @@ IN_PROC_BROWSER_TEST_F(LoggedInSpokenFeedbackTest, DISABLED_AddBookmark) {
 }
 
 IN_PROC_BROWSER_TEST_F(LoggedInSpokenFeedbackTest, ChromeVoxSpeaksIntro) {
-  EnableChromeVox(/* check_for_intro = */ false);
+  EnableChromeVox(/*check_for_intro=*/false);
   sm_.ExpectSpeech("ChromeVox spoken feedback is ready");
   sm_.Replay();
+  HistogramWaiter("Accessibility.ChromeVox.StartUpSpeechDelay").Wait();
 }
 
 // Test Learn Mode by pressing a few keys in Learn Mode. Only available while
@@ -1213,7 +1216,7 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, NextGraphic) {
   sm_.Replay();
 }
 
-// TODO(crbug.com/1312004): Re-enable this test
+// TODO(crbug.com/40831399): Re-enable this test
 // Verify that enable chromeVox won't end overview.
 IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest,
                        DISABLED_EnableChromeVoxOnOverviewMode) {
@@ -1236,7 +1239,7 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest,
   sm_.Replay();
 }
 
-// TODO(https://crbug.com/1333373): Flaky on Linux ChromiumOS MSan.
+// TODO(crbug.com/40845611): Flaky on Linux ChromiumOS MSan.
 #if defined(MEMORY_SANITIZER)
 #define MAYBE_ChromeVoxFindInPage DISABLED_ChromeVoxFindInPage
 #else
@@ -1259,7 +1262,7 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, MAYBE_ChromeVoxFindInPage) {
   sm_.Replay();
 }
 
-// TODO(crbug.com/1177140) Re-enable test
+// TODO(crbug.com/40748296) Re-enable test
 IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest,
                        DISABLED_ChromeVoxNavigateAndSelect) {
   EnableChromeVox();
@@ -1340,7 +1343,7 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, MAYBE_ChromeVoxStickyModeRawKeys) {
   sm_.Replay();
 }
 
-// TODO(crbug.com/752427): Test is flaky.
+// TODO(crbug.com/41337748): Test is flaky.
 IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, DISABLED_TouchExploreStatusTray) {
   EnableChromeVox();
 
@@ -2036,7 +2039,7 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, DarkenScreenConfirmation) {
   sm_.Call([this]() { SendKeyPressWithSearch(ui::VKEY_F7); });
   sm_.ExpectSpeech("Turn off screen?");
   sm_.ExpectSpeech("Dialog");
-  // TODO(crbug.com/1228418) - Improve the generation of summaries across
+  // TODO(crbug.com/40777708) - Improve the generation of summaries across
   // ChromeOS. Expect the content to be spoken once it has been improved.
   /*sm_.ExpectSpeech(
       "Turn off screen? This improves privacy by turning off your screen so it "
@@ -2117,7 +2120,7 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, Tutorial) {
   sm_.Replay();
 }
 
-// TODO(crbug.com/1481691): Re-enable this test
+// TODO(crbug.com/40930988): Re-enable this test
 IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, DISABLED_ClipboardCopySpeech) {
   EnableChromeVox();
   sm_.Call([this]() {

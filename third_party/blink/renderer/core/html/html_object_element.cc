@@ -35,6 +35,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/html/html_embed_element.h"
 #include "third_party/blink/renderer/core/html/html_image_loader.h"
 #include "third_party/blink/renderer/core/html/html_meta_element.h"
 #include "third_party/blink/renderer/core/html/html_param_element.h"
@@ -326,14 +327,6 @@ void HTMLObjectElement::RenderFallbackContent(
   UseCounter::Count(GetDocument(), WebFeature::kHTMLObjectElementFallback);
   use_fallback_content_ = true;
   ReattachFallbackContent();
-}
-
-// static
-bool HTMLObjectElement::IsClassOf(const FrameOwner& owner) {
-  auto* owner_element = DynamicTo<HTMLFrameOwnerElement>(owner);
-  if (!owner_element)
-    return false;
-  return IsA<HTMLObjectElement>(owner_element);
 }
 
 bool HTMLObjectElement::IsExposed() const {

@@ -51,24 +51,23 @@ class SerialPort final : public EventTarget,
   DEFINE_ATTRIBUTE_EVENT_LISTENER(connect, kConnect)
   DEFINE_ATTRIBUTE_EVENT_LISTENER(disconnect, kDisconnect)
   SerialPortInfo* getInfo();
-  ScriptPromise open(ScriptState*,
-                     const SerialOptions* options,
-                     ExceptionState&);
+  ScriptPromise<IDLUndefined> open(ScriptState*,
+                                   const SerialOptions* options,
+                                   ExceptionState&);
   bool connected() { return connected_; }
   ReadableStream* readable(ScriptState*, ExceptionState&);
   WritableStream* writable(ScriptState*, ExceptionState&);
-  ScriptPromiseTyped<SerialInputSignals> getSignals(ScriptState*,
-                                                    ExceptionState&);
-  ScriptPromiseTyped<IDLUndefined> setSignals(ScriptState*,
-                                              const SerialOutputSignals*,
-                                              ExceptionState&);
-  ScriptPromise close(ScriptState*, ExceptionState&);
-  ScriptPromise forget(ScriptState*, ExceptionState&);
+  ScriptPromise<SerialInputSignals> getSignals(ScriptState*, ExceptionState&);
+  ScriptPromise<IDLUndefined> setSignals(ScriptState*,
+                                         const SerialOutputSignals*,
+                                         ExceptionState&);
+  ScriptPromise<IDLUndefined> close(ScriptState*, ExceptionState&);
+  ScriptPromise<IDLUndefined> forget(ScriptState*, ExceptionState&);
 
   const base::UnguessableToken& token() const { return info_->token; }
 
   void set_connected(bool connected) { connected_ = connected; }
-  ScriptPromise ContinueClose(ScriptState*);
+  ScriptPromise<IDLUndefined> ContinueClose(ScriptState*);
   void AbortClose();
   void StreamsClosed();
   bool IsClosing() const { return close_resolver_ != nullptr; }
@@ -99,13 +98,11 @@ class SerialPort final : public EventTarget,
                       mojo::ScopedDataPipeConsumerHandle* consumer);
   void OnConnectionError();
   void OnOpen(mojo::PendingReceiver<device::mojom::blink::SerialPortClient>,
-              ScriptPromiseResolver*,
               mojo::PendingRemote<device::mojom::blink::SerialPort>);
-  void OnGetSignals(ScriptPromiseResolverTyped<SerialInputSignals>*,
+  void OnGetSignals(ScriptPromiseResolver<SerialInputSignals>*,
                     device::mojom::blink::SerialPortControlSignalsPtr);
-  void OnSetSignals(ScriptPromiseResolverTyped<IDLUndefined>*, bool success);
+  void OnSetSignals(ScriptPromiseResolver<IDLUndefined>*, bool success);
   void OnClose();
-  void OnForget(ScriptPromiseResolver*);
 
   const mojom::blink::SerialPortInfoPtr info_;
   bool connected_;
@@ -130,12 +127,12 @@ class SerialPort final : public EventTarget,
   bool hardware_flow_control_ = false;
 
   // Resolver for the Promise returned by open().
-  Member<ScriptPromiseResolver> open_resolver_;
+  Member<ScriptPromiseResolver<IDLUndefined>> open_resolver_;
   // Resolvers for the Promises returned by getSignals() and setSignals() to
   // reject them on Mojo connection failure.
-  HeapHashSet<Member<ScriptPromiseResolver>> signal_resolvers_;
+  HeapHashSet<Member<ScriptPromiseResolverBase>> signal_resolvers_;
   // Resolver for the Promise returned by close().
-  Member<ScriptPromiseResolver> close_resolver_;
+  Member<ScriptPromiseResolver<IDLUndefined>> close_resolver_;
 
   FrameScheduler::SchedulingAffectingFeatureHandle
       feature_handle_for_scheduler_;

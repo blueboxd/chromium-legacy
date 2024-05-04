@@ -28,6 +28,7 @@ class ClientToServerResponse;
 class CollaborationGroupSpecifics;
 class CompareSpecifics;
 class ContactInfoSpecifics;
+class CookieSpecifics;
 class CrossUserSharingPublicKey;
 class DebugEventInfo;
 class DebugInfo;
@@ -63,7 +64,6 @@ class ReadingListSpecifics;
 class SavedTabGroupSpecifics;
 class SearchEngineSpecifics;
 class SecurityEventSpecifics;
-class SegmentationSpecifics;
 class SendTabToSelfSpecifics;
 class SessionHeader;
 class SessionSpecifics;
@@ -145,6 +145,8 @@ base::Value CompareSpecificsToValue(
 
 base::Value ContactInfoSpecificsToValue(
     const sync_pb::ContactInfoSpecifics& proto);
+
+base::Value CookieSpecificsToValue(const sync_pb::CookieSpecifics& proto);
 
 base::Value DebugEventInfoToValue(const sync_pb::DebugEventInfo& proto);
 
@@ -244,9 +246,6 @@ base::Value SavedTabGroupSpecificsToValue(
 
 base::Value SearchEngineSpecificsToValue(
     const sync_pb::SearchEngineSpecifics& search_engine_specifics);
-
-base::Value SegmentationSpecificsToValue(
-    const sync_pb::SegmentationSpecifics& segmentation_specifics);
 
 base::Value SendTabToSelfSpecificsToValue(
     const sync_pb::SendTabToSelfSpecifics& send_tab_specifics);

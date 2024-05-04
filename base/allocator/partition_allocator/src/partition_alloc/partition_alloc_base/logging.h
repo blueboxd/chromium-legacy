@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_ALLOCATOR_PARTITION_ALLOCATOR_SRC_PARTITION_ALLOC_PARTITION_ALLOC_BASE_LOGGING_H_
-#define BASE_ALLOCATOR_PARTITION_ALLOCATOR_SRC_PARTITION_ALLOC_PARTITION_ALLOC_BASE_LOGGING_H_
+#ifndef PARTITION_ALLOC_PARTITION_ALLOC_BASE_LOGGING_H_
+#define PARTITION_ALLOC_PARTITION_ALLOC_BASE_LOGGING_H_
 
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
 
-#include "build/build_config.h"
+#include "partition_alloc/build_config.h"
 #include "partition_alloc/partition_alloc_base/compiler_specific.h"
 #include "partition_alloc/partition_alloc_base/component_export.h"
 #include "partition_alloc/partition_alloc_base/debug/debugging_buildflags.h"
 #include "partition_alloc/partition_alloc_base/log_message.h"
 
-// TODO(1151236): Need to update the description, because logging for PA
-// standalone library was minimized.
+// TODO(crbug.com/40158212): Need to update the description, because logging for
+// PA standalone library was minimized.
 //
 // Optional message capabilities
 // -----------------------------
@@ -395,4 +395,4 @@ void RawLog(int level, const char* message);
 
 }  // namespace partition_alloc::internal::logging
 
-#endif  // BASE_ALLOCATOR_PARTITION_ALLOCATOR_SRC_PARTITION_ALLOC_PARTITION_ALLOC_BASE_LOGGING_H_
+#endif  // PARTITION_ALLOC_PARTITION_ALLOC_BASE_LOGGING_H_

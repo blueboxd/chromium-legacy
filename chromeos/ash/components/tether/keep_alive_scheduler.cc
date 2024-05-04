@@ -10,9 +10,7 @@
 #include "chromeos/ash/components/tether/host_scan_cache.h"
 #include "chromeos/ash/services/secure_channel/public/cpp/client/secure_channel_client.h"
 
-namespace ash {
-
-namespace tether {
+namespace ash::tether {
 
 // static
 const uint32_t KeepAliveScheduler::kKeepAliveIntervalMinutes = 3;
@@ -73,11 +71,7 @@ void KeepAliveScheduler::OnActiveHostChanged(
 }
 
 void KeepAliveScheduler::OnOperationFinished(
-    multidevice::RemoteDeviceRef remote_device,
     std::unique_ptr<DeviceStatus> device_status) {
-  // Make a copy before destroying the operation below.
-  const multidevice::RemoteDeviceRef device_copy = remote_device;
-
   keep_alive_operation_->RemoveObserver(this);
   keep_alive_operation_.reset();
 
@@ -103,10 +97,10 @@ void KeepAliveScheduler::OnOperationFinished(
   // assumed that setup is no longer required for an active connection attempt.
   host_scan_cache_->SetHostScanResult(
       *HostScanCacheEntry::Builder()
-           .SetTetherNetworkGuid(
-               device_id_tether_network_guid_map_
-                   ->GetTetherNetworkGuidForDeviceId(device_copy.GetDeviceId()))
-           .SetDeviceName(device_copy.name())
+           .SetTetherNetworkGuid(device_id_tether_network_guid_map_
+                                     ->GetTetherNetworkGuidForDeviceId(
+                                         active_host_device_->GetDeviceId()))
+           .SetDeviceName(active_host_device_->name())
            .SetCarrier(carrier)
            .SetBatteryPercentage(battery_percentage)
            .SetSignalStrength(signal_strength)
@@ -118,11 +112,10 @@ void KeepAliveScheduler::SendKeepAliveTickle() {
   DCHECK(active_host_device_);
 
   keep_alive_operation_ = KeepAliveOperation::Factory::Create(
-      *active_host_device_, device_sync_client_, secure_channel_client_);
+      TetherHost(*active_host_device_), device_sync_client_,
+      secure_channel_client_);
   keep_alive_operation_->AddObserver(this);
   keep_alive_operation_->Initialize();
 }
 
-}  // namespace tether
-
-}  // namespace ash
+}  // namespace ash::tether

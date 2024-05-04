@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.site_settings;
 
 import static androidx.test.espresso.Espresso.onView;
+import static androidx.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
@@ -28,10 +29,13 @@ import org.mockito.MockitoAnnotations;
 import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.Features;
 import org.chromium.base.test.util.JniMocker;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.permissions.PermissionTestRule;
 import org.chromium.chrome.browser.privacy_sandbox.FakeTrackingProtectionBridge;
+import org.chromium.chrome.browser.privacy_sandbox.PrivacySandboxBridgeJni;
 import org.chromium.chrome.browser.privacy_sandbox.TrackingProtectionBridgeJni;
 import org.chromium.chrome.browser.profiles.ProfileManager;
 import org.chromium.chrome.browser.settings.SettingsActivity;
@@ -47,6 +51,7 @@ import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.test.util.RenderTestRule;
 import org.chromium.ui.test.util.RenderTestRule.Component;
 
+import java.util.Set;
 import java.util.concurrent.TimeoutException;
 
 @RunWith(ChromeJUnit4ClassRunner.class)
@@ -54,6 +59,10 @@ import java.util.concurrent.TimeoutException;
 @CommandLineFlags.Add(ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE)
 public class AllSiteSettingsTest {
     public static final String TEST_BATCH_NAME = "AllSiteSettingsTest";
+    private static final String A_GITHUB_IO = "a.github.io";
+    private static final String B_GITHUB_IO = "b.github.io";
+    private static final String C_GITHUB_IO = "c.github.io";
+    private static final String D_GITHUB_IO = "d.github.io";
 
     @Rule
     public RenderTestRule mRenderTestRule =
@@ -89,7 +98,7 @@ public class AllSiteSettingsTest {
     public void testAllSitesViewEmpty() throws Exception {
         SettingsActivity settingsActivity =
                 SiteSettingsTestUtils.startAllSitesSettings(SiteSettingsCategory.Type.ALL_SITES);
-        onViewWaiting(withText(containsString("Clear browsing"))).check(matches(isDisplayed()));
+        onViewWaiting(withText(containsString("Delete browsing"))).check(matches(isDisplayed()));
         View view =
                 TestThreadUtils.runOnUiThreadBlocking(
                         () -> {
@@ -118,7 +127,7 @@ public class AllSiteSettingsTest {
 
         SettingsActivity settingsActivity =
                 SiteSettingsTestUtils.startAllSitesSettings(SiteSettingsCategory.Type.ALL_SITES);
-        onViewWaiting(withText(containsString("Clear browsing"))).check(matches(isDisplayed()));
+        onViewWaiting(withText(containsString("Delete browsing"))).check(matches(isDisplayed()));
         View view =
                 TestThreadUtils.runOnUiThreadBlocking(
                         () -> {
@@ -140,22 +149,99 @@ public class AllSiteSettingsTest {
                     WebsitePreferenceBridge.setContentSettingCustomScope(
                             getBrowserContextHandle(),
                             ContentSettingsType.COOKIES,
-                            "a.github.io",
+                            A_GITHUB_IO,
                             "*",
                             ContentSettingValues.ALLOW);
                     WebsitePreferenceBridge.setContentSettingCustomScope(
                             getBrowserContextHandle(),
                             ContentSettingsType.COOKIES,
-                            "b.github.io",
+                            B_GITHUB_IO,
                             "*",
                             ContentSettingValues.ALLOW);
                 });
 
         SettingsActivity settingsActivity =
                 SiteSettingsTestUtils.startAllSitesSettings(SiteSettingsCategory.Type.ALL_SITES);
-        onViewWaiting(withText(containsString("Clear browsing"))).check(matches(isDisplayed()));
-        onView(withText("a.github.io")).check(matches(isDisplayed()));
-        onView(withText("b.github.io")).check(matches(isDisplayed()));
+        onViewWaiting(withText(containsString("Delete browsing"))).check(matches(isDisplayed()));
+        onView(withText(A_GITHUB_IO)).check(matches(isDisplayed()));
+        onView(withText(B_GITHUB_IO)).check(matches(isDisplayed()));
+
+        settingsActivity.finish();
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    public void testAllSitesWithRelatedFilter() throws Exception {
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> {
+                    WebsitePreferenceBridge.setContentSettingCustomScope(
+                            getBrowserContextHandle(),
+                            ContentSettingsType.COOKIES,
+                            A_GITHUB_IO,
+                            "*",
+                            ContentSettingValues.ALLOW);
+                    WebsitePreferenceBridge.setContentSettingCustomScope(
+                            getBrowserContextHandle(),
+                            ContentSettingsType.COOKIES,
+                            B_GITHUB_IO,
+                            "*",
+                            ContentSettingValues.ALLOW);
+                });
+        String relatedFilter = String.format("related:%s", C_GITHUB_IO);
+
+        SettingsActivity settingsActivity =
+                SiteSettingsTestUtils.startAllSitesSettingsForRws(
+                        SiteSettingsCategory.Type.ALL_SITES, C_GITHUB_IO);
+        onViewWaiting(withText(containsString("Delete browsing"))).check(matches(isDisplayed()));
+        onView(withText(relatedFilter)).check(matches(isDisplayed()));
+        onView(withText(A_GITHUB_IO)).check(doesNotExist());
+        onView(withText(B_GITHUB_IO)).check(doesNotExist());
+
+        settingsActivity.finish();
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    @Features.EnableFeatures(ChromeFeatureList.PRIVACY_SANDBOX_RELATED_WEBSITE_SETS_UI)
+    public void testOneRwsGroupWithRelatedFilter() throws Exception {
+        FakeRwsPrivacySandboxBridge fakeRwsPrivacySandboxBridge =
+                new FakeRwsPrivacySandboxBridge(C_GITHUB_IO, Set.of(A_GITHUB_IO, B_GITHUB_IO));
+        mocker.mock(PrivacySandboxBridgeJni.TEST_HOOKS, fakeRwsPrivacySandboxBridge);
+
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> {
+                    WebsitePreferenceBridge.setContentSettingCustomScope(
+                            getBrowserContextHandle(),
+                            ContentSettingsType.COOKIES,
+                            A_GITHUB_IO,
+                            "*",
+                            ContentSettingValues.ALLOW);
+                    WebsitePreferenceBridge.setContentSettingCustomScope(
+                            getBrowserContextHandle(),
+                            ContentSettingsType.COOKIES,
+                            B_GITHUB_IO,
+                            "*",
+                            ContentSettingValues.ALLOW);
+                    WebsitePreferenceBridge.setContentSettingCustomScope(
+                            getBrowserContextHandle(),
+                            ContentSettingsType.COOKIES,
+                            D_GITHUB_IO,
+                            "*",
+                            ContentSettingValues.ALLOW);
+                });
+        String relatedFilter = String.format("related:%s", C_GITHUB_IO);
+
+        SettingsActivity settingsActivity =
+                SiteSettingsTestUtils.startAllSitesSettingsForRws(
+                        SiteSettingsCategory.Type.ALL_SITES, C_GITHUB_IO);
+        onViewWaiting(withText(containsString("Delete browsing"))).check(matches(isDisplayed()));
+
+        onView(withText(relatedFilter)).check(matches(isDisplayed()));
+        onView(withText(A_GITHUB_IO)).check(matches(isDisplayed()));
+        onView(withText(B_GITHUB_IO)).check(matches(isDisplayed()));
+        onView(withText(D_GITHUB_IO)).check(doesNotExist());
 
         settingsActivity.finish();
     }

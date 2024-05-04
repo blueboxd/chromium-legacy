@@ -19,7 +19,6 @@
 #import "components/bookmarks/browser/bookmark_node.h"
 #import "components/bookmarks/common/bookmark_features.h"
 #import "components/bookmarks/common/bookmark_metrics.h"
-#import "components/sync/base/features.h"
 #import "ios/chrome/browser/bookmarks/model/bookmark_model_bridge_observer.h"
 #import "ios/chrome/browser/bookmarks/model/bookmark_model_type.h"
 #import "ios/chrome/browser/bookmarks/model/bookmarks_utils.h"
@@ -314,7 +313,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
           _accountBookmarkModel.get());
   [self.snackbarCommandsHandler
       showSnackbarMessage:bookmark_utils_ios::DeleteBookmarksWithUndoToast(
-                              editedNodes, {modelForFolder}, _browserState)];
+                              editedNodes, {modelForFolder}, _browserState,
+                              FROM_HERE)];
   [self.delegate bookmarksFolderEditorDidDeleteEditedFolder:self];
 }
 
@@ -437,7 +437,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     // This might happen when the user has changed `_parentFolder` but has not
     // commited the changes by pressing done. And in the background the chosen
     // folder was deleted.
-    _parentFolder = model->mobile_node();
+    [self moveToDefaultFolderInModel:model];
     [self updateParentFolderState];
   }
 }
@@ -450,11 +450,27 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }
 
 - (void)bookmarkModelRemovedAllNodes:(LegacyBookmarkModel*)model {
-  if (model->is_permanent_node(_parentFolder)) {
-    return;  // The current parent folder is still valid.
-  }
+  // Nothing more to do.
+}
 
-  [self dismiss];
+- (void)bookmarkModelWillRemoveAllNodes:(const LegacyBookmarkModel*)model {
+  if (bookmark_utils_ios::GetBookmarkModelForNode(
+          _folder.get(), _localOrSyncableBookmarkModel.get(),
+          _accountBookmarkModel.get()) == model) {
+    // The current node is going to be deleted.
+    // Just close the view.
+    [self dismiss];
+    return;
+  }
+  if (bookmark_utils_ios::GetBookmarkModelForNode(
+          _parentFolder.get(), _localOrSyncableBookmarkModel.get(),
+          _accountBookmarkModel.get()) == model) {
+    // The user selected a new parent that was deleted. That is, they wanted
+    // to move the folder to account model, and was signed-out. Let’s move it
+    // back to mobile_node of local or syncable model.
+    [self moveToDefaultFolderInModel:model];
+    [self updateParentFolderState];
+  }
 }
 
 #pragma mark - BookmarkTextFieldItemDelegate
@@ -490,6 +506,19 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 #pragma mark - Private
 
+// Change parent folder to a default folder. Either the one of model if it
+// exists, or the one of local or syncable.
+- (void)moveToDefaultFolderInModel:(const LegacyBookmarkModel*)model {
+  if (model->mobile_node()) {
+    _parentFolder = model->mobile_node();
+  } else {
+    // When dealing with account bookmarks, it is possible that permanent
+    // folders no longer exist (e.g. the user signed out). In this case, fall
+    // back to the local model.
+    _parentFolder = _localOrSyncableBookmarkModel->mobile_node();
+  }
+}
+
 - (void)dismissActionSheetCoordinator {
   [_actionSheetCoordinator stop];
   _actionSheetCoordinator = nil;
@@ -503,7 +532,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
       bookmark_utils_ios::GetBookmarkModelForNode(
           _parentFolder, _localOrSyncableBookmarkModel.get(),
           _accountBookmarkModel.get());
-  if (!bookmark_utils_ios::IsAccountBookmarkStorageOptedIn(_syncService) &&
+  if (!bookmark_utils_ios::IsAccountBookmarkStorageAvailable(
+          _syncService, _accountBookmarkModel.get()) &&
       parentFolderModel == _accountBookmarkModel.get()) {
     [self dismiss];
     return YES;

@@ -17,6 +17,8 @@
 #include "chrome/browser/compose/proto/compose_optimization_guide.pb.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
 #include "chrome/common/compose/compose.mojom.h"
+#include "components/autofill/content/browser/scoped_autofill_managers_observation.h"
+#include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/common/unique_ids.h"
 #include "components/compose/core/browser/compose_client.h"
 #include "components/compose/core/browser/compose_dialog_controller.h"
@@ -24,6 +26,7 @@
 #include "components/compose/core/browser/compose_manager_impl.h"
 #include "components/optimization_guide/core/optimization_guide_decision.h"
 #include "components/optimization_guide/core/optimization_guide_model_executor.h"
+#include "components/prefs/pref_member.h"
 #include "content/public/browser/context_menu_params.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -43,6 +46,7 @@ class ChromeComposeClient
     : public compose::ComposeClient,
       public content::WebContentsObserver,
       public content::WebContentsUserData<ChromeComposeClient>,
+      public autofill::AutofillManager::Observer,
       public compose::mojom::ComposeClientUntrustedPageHandler,
       public InnerTextProvider {
  public:
@@ -61,8 +65,18 @@ class ChromeComposeClient
       ComposeCallback callback) override;
   bool HasSession(const autofill::FieldGlobalId& trigger_field_id) override;
   bool ShouldTriggerPopup(
-      const autofill::FormFieldData& trigger_field) override;
+      const autofill::FormFieldData& trigger_field,
+      autofill::AutofillSuggestionTriggerSource trigger_source) override;
   compose::PageUkmTracker* getPageUkmTracker() override;
+  void DisableProactiveNudge() override;
+
+  // autofill::AutofillManager::Observer:
+  // Used to observe field focus changes so that the saved state notification
+  // is only shown when an autofill suggestion will not be shown on another
+  // field.
+  void OnAfterFocusOnFormField(autofill::AutofillManager& manager,
+                               autofill::FormGlobalId form,
+                               autofill::FieldGlobalId field) override;
 
   // ComposeClientUntrustedPageHandler
   // Shows the compose dialog.
@@ -184,9 +198,9 @@ class ChromeComposeClient
   // `active_compose_form_id_`.
   void RemoveAllSessions();
 
-  // Shows the saved state notification for the active session if valid,
-  // otherwise noop.
-  void ShowSavedStateNotification();
+  // Shows the saved state notification for `field_id` as long as any newly
+  // focused field will not show autofill suggestions.
+  void ShowSavedStateNotification(autofill::FieldGlobalId field_id);
 
   // Returns nullptr if no such session exists.
   ComposeSession* GetSessionForActiveComposeField();
@@ -241,6 +255,14 @@ class ChromeComposeClient
   // OpenComposeSettings function, and gets set back to false when the current
   // page is refocused using OnWebContentsFocused.
   bool open_settings_requested_ = false;
+
+  // Observer for autofill field focus changes. This is used to prevent showing
+  // the saved state notification on a previous focused field when an autofill
+  // suggestion will be shown in a newly focused field.
+  autofill::ScopedAutofillManagersObservation autofill_managers_observation_{
+      this};
+
+  BooleanPrefMember proactive_nudge_enabled_;
 
   base::WeakPtrFactory<ChromeComposeClient> weak_ptr_factory_{this};
 

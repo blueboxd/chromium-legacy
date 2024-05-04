@@ -47,14 +47,17 @@ import {
   Mode,
   PreviewVideo,
   Resolution,
+  ViewName,
 } from '../type.js';
 import * as util from '../util.js';
 import {WaitableEvent} from '../waitable_event.js';
 
 import {
+  assertStrictPTZSettings,
   DigitalZoomPTZController,
   MediaStreamPTZController,
   PTZController,
+  StrictPTZSettings,
 } from './ptz_controller.js';
 import {
   StreamConstraints,
@@ -129,6 +132,19 @@ export class Preview {
 
   private readonly digitalZoomFlag =
       loadTimeData.getChromeFlag(Flag.DIGITAL_ZOOM);
+
+  private static ptzControllerForTest: PTZController|null = null;
+
+  /**
+   * Triggered when the screen orientation is updated.
+   */
+  private readonly orientationListener =
+      queuedAsyncCallback('keepLatest', async () => {
+        if (this.ptzController !== null) {
+          await this.ptzController.handleScreenRotationUpdated();
+          nav.close(ViewName.PTZ_PANEL);
+        }
+      });
 
   /**
    * PTZController for the current stream constraint. Null if PTZ is not
@@ -215,8 +231,10 @@ export class Preview {
     const deviceOperator = DeviceOperator.getInstance();
     const {pan, tilt, zoom} = this.getVideoTrack().getCapabilities();
     const {deviceId} = getVideoTrackSettings(this.getVideoTrack());
+    // TODO(b/336480993): Enable digital zoom in portrait mode.
     const isDigitalZoomSupported = this.digitalZoomFlag &&
-        (await deviceOperator?.isDigitalZoomSupported(deviceId) ?? false);
+        (await deviceOperator?.isDigitalZoomSupported(deviceId) ?? false) &&
+        !state.get(Mode.PORTRAIT);
 
     if (isDigitalZoomSupported) {
       this.isSupportPTZInternal = true;
@@ -396,6 +414,9 @@ export class Preview {
       this.updateFacing();
       this.deviceId = getVideoTrackSettings(this.getVideoTrack()).deviceId;
       await this.updatePTZ();
+      Preview.ptzControllerForTest = this.ptzController;
+      window.screen.orientation.addEventListener(
+          'change', this.orientationListener);
 
       this.enableFaceOverlay = false;
       const deviceOperator = DeviceOperator.getInstance();
@@ -412,6 +433,11 @@ export class Preview {
                   'The camera is probably being used by another app.'));
         } else {
           this.enableFaceOverlay = true;
+          // Camera frame rotation value is updated once
+          // |setCameraFrameRotationEnabledAtSource| is called.
+          if (this.ptzController !== null) {
+            await this.ptzController.handleScreenRotationUpdated();
+          }
         }
         this.vidPid = await deviceOperator.getVidPid(deviceId);
       }
@@ -447,6 +473,8 @@ export class Preview {
     this.clearWatchdog();
     // Pause video element to avoid black frames during transition.
     this.video.pause();
+    window.screen.orientation.removeEventListener(
+        'change', this.orientationListener);
     this.disableShowMetadata();
     this.enableFaceOverlay = false;
     if (this.streamInternal !== null && this.isStreamAlive()) {
@@ -654,6 +682,16 @@ export class Preview {
           this.faceOverlay?.show(rects);
         };
 
+    const updatePTZ = () => {
+      const ptz = this.ptzController?.getSettings();
+      showValue('#preview-ptz-pan', `Pan ${ptz?.pan?.toFixed(1) ?? '-'}`);
+      showValue('#preview-ptz-tilt', `Tilt ${ptz?.tilt?.toFixed(1) ?? '-'}`);
+      const zoomValue =
+          ptz?.zoom !== undefined ? `${ptz.zoom.toFixed(1)}x` : '-';
+      showValue('#preview-ptz-zoom', `Zoom ${zoomValue}`);
+    };
+    displayCategory('#preview-ptz', this.ptzController !== null);
+
     const callback = (metadata: CameraMetadata) => {
       showValue('#preview-resolution', resolution);
       showValue('#preview-device-name', deviceName);
@@ -689,7 +727,7 @@ export class Preview {
       // Disabling check because this code assumes that metadata.entries is
       // either undefined or defined, but at runtime Mojo will always set this
       // to null or defined.
-      // TODO(crbug.com/1442785): If this function only handles data
+      // TODO(crbug.com/40267104): If this function only handles data
       // from Mojo, the assertion above should be changed to null and the
       // null error suppression can be removed.
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -710,6 +748,8 @@ export class Preview {
       // We always need to run updateFace() even if face rectangles are obsent
       // in the metadata, which may happen if there is no face detected.
       updateFace(faceMode, faceRects);
+
+      updatePTZ();
     };
 
     this.metadataObserver = await deviceOperator.addMetadataObserver(
@@ -755,6 +795,9 @@ export class Preview {
    *     |x| and |y| are in range [0, 1).
    */
   setPointOfInterest(point: Point): Promise<void> {
+    if (this.ptzController instanceof DigitalZoomPTZController) {
+      point = this.ptzController.calculatePointOnCameraFrame(point);
+    }
     const constraints = {
       advanced: [{pointsOfInterest: [{x: point.x, y: point.y}]}],
     };
@@ -812,5 +855,14 @@ export class Preview {
     this.focusMarker = null;
     const aim = dom.get('#preview-focus-aim', HTMLElement);
     aim.hidden = true;
+  }
+
+  /**
+   * Returns current PTZ settings for testing.
+   */
+  static getPTZSettingsForTest(): StrictPTZSettings {
+    assert(Preview.ptzControllerForTest !== null, 'PTZ is not enabled');
+    const settings = Preview.ptzControllerForTest.getSettings();
+    return assertStrictPTZSettings(settings);
   }
 }

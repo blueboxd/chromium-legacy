@@ -22,6 +22,69 @@ each histogram.
   <variant name="Immediate" summary="when the CPU threshold is reached"/>
 </variants>
 
+<variants name="ResourceContextState">
+  <variant name="Dead"
+      summary="no longer in the PM graph but not yet reported"/>
+  <variant name="Live" summary="live in the PM graph"/>
+  <variant name="Total" summary="in any state"/>
+</variants>
+
+<variants name="ResourceContextType">
+  <variant name="AllContexts" summary="all context types"/>
+  <variant name="FrameContexts"/>
+  <variant name="OpaqueOriginContexts"
+      summary="OriginInPageContexts for opaque origins"/>
+  <variant name="OriginInPageContexts"
+      summary="OriginInPageContexts for all origins"/>
+  <variant name="PageContexts"/>
+  <variant name="ProcessContexts"/>
+  <variant name="WorkerContexts"/>
+</variants>
+
+<variants name="SiteDBWriteTrigger">
+  <variant name="ClearAllSiteData"/>
+  <variant name="ClearSiteDataForOrigins"/>
+  <variant name="WriteSiteDataIntoStore"/>
+</variants>
+
+<histogram name="CPU.Experimental.EstimatedFrequencyAsPercentOfLimit" units="%"
+    expires_after="2024-07-10">
+  <owner>anthonyvd@chromium.org</owner>
+  <owner>catan-team@chromium.org</owner>
+  <summary>
+    The CPU frequency as a percentage of the estimated current frequency (see
+    base::EstimateCpuFrequency) over the max frequency of the fastest CPU, as
+    reported by base::GetCpuMhzLimit.
+
+    Recorded every 5 minutes. Windows x86 only.
+  </summary>
+</histogram>
+
+<histogram name="CPU.Experimental.EstimatedFrequencyAsPercentOfMax" units="%"
+    expires_after="2024-07-10">
+  <owner>anthonyvd@chromium.org</owner>
+  <owner>catan-team@chromium.org</owner>
+  <summary>
+    The CPU frequency as a percentage of the estimated current frequency (see
+    base::EstimateCpuFrequency) over the max frequency of the fastest CPU, as
+    reported by base::GetCpuMaxMhz.
+
+    Recorded every 5 minutes. Windows x86 only.
+  </summary>
+</histogram>
+
+<histogram
+    name="PerformanceManager.CPUMonitorMemoryUse.{ResourceContextType}.{ResourceContextState}"
+    units="KB" expires_after="2024-10-17">
+  <owner>joenotcharles@google.com</owner>
+  <owner>chrome-catan@google.com</owner>
+  <summary>
+    The estimated size of CPUMeasurementMonitor's result cache. Recorded at the
+    same time as the Memory.Browser.PrivateMemoryFootprint. This slice is the
+    memory used to store {ResourceContextType} that are {ResourceContextState}.
+  </summary>
+</histogram>
+
 <histogram name="PerformanceManager.Experimental.AccessibilityModeFlag"
     enum="AccessibilityModeFlagEnum" expires_after="2024-09-01">
   <owner>anthonyvd@chromium.org</owner>
@@ -57,7 +120,7 @@ each histogram.
 
 <histogram
     name="PerformanceManager.PerformanceInterventions.CPU.AverageForegroundCPU.{Timing}"
-    units="%" expires_after="2024-07-14">
+    units="%" expires_after="2024-09-15">
   <owner>agale@chromium.org</owner>
   <owner>joenotcharles@chromium.org</owner>
   <owner>chrome-catan@google.com</owner>
@@ -123,7 +186,7 @@ each histogram.
 
 <histogram
     name="PerformanceManager.PerformanceInterventions.CPU.SystemCPUError.{Timing}"
-    enum="BooleanError" expires_after="2024-04-28">
+    enum="BooleanError" expires_after="2024-09-01">
   <owner>agale@chromium.org</owner>
   <owner>joenotcharles@chromium.org</owner>
   <owner>chrome-catan@google.com</owner>
@@ -290,8 +353,32 @@ each histogram.
   </summary>
 </histogram>
 
+<histogram name="PerformanceManager.SiteDB.WriteCompleted.{SiteDBWriteTrigger}"
+    enum="BooleanCompleted" expires_after="2024-06-30">
+  <owner>joenotcharles@google.com</owner>
+  <owner>chrome-catan@google.com</owner>
+  <summary>
+    Logged when a write to the Local Site Characteristics database finishes, if
+    the write was scheduled by a call to {SiteDBWriteTrigger}. The count of this
+    should match PerformanceManager.SiteDB.WriteScheduled.{SiteDBWriteTrigger},
+    otherwise writes are being lost.
+  </summary>
+</histogram>
+
+<histogram name="PerformanceManager.SiteDB.WriteScheduled.{SiteDBWriteTrigger}"
+    enum="BooleanAttempted" expires_after="2024-06-30">
+  <owner>joenotcharles@google.com</owner>
+  <owner>chrome-catan@google.com</owner>
+  <summary>
+    Logged whenever a write to the Local Site Characteristics database is
+    scheduled by a call to {SiteDBWriteTrigger}. The count of this should match
+    PerformanceManager.SiteDB.WriteCompleted.{SiteDBWriteTrigger}, otherwise
+    writes are being lost.
+  </summary>
+</histogram>
+
 <histogram name="PerformanceManager.TabRevisitTracker.TimeToClose2"
-    units="seconds" expires_after="2024-08-09">
+    units="seconds" expires_after="2024-10-13">
   <owner>anthonyvd@chromium.org</owner>
   <owner>chrome-catan@google.com</owner>
   <summary>
@@ -301,7 +388,7 @@ each histogram.
 </histogram>
 
 <histogram name="PerformanceManager.TabRevisitTracker.TimeToRevisit2"
-    units="seconds" expires_after="2024-08-09">
+    units="seconds" expires_after="2024-10-13">
   <owner>anthonyvd@chromium.org</owner>
   <owner>chrome-catan@google.com</owner>
   <summary>
@@ -311,7 +398,7 @@ each histogram.
 </histogram>
 
 <histogram name="PerformanceManager.UserTuning.BatterySaverModeEnabledPercent"
-    units="%" expires_after="2024-07-07">
+    units="%" expires_after="2024-09-15">
   <owner>anthonyvd@chromium.org</owner>
   <owner>chrome-catan@google.com</owner>
   <summary>
@@ -321,7 +408,7 @@ each histogram.
 </histogram>
 
 <histogram name="PerformanceManager.UserTuning.EfficiencyMode"
-    enum="EfficiencyMode" expires_after="2024-07-21">
+    enum="EfficiencyMode" expires_after="2024-09-22">
   <owner>anthonyvd@chromium.org</owner>
   <owner>chrome-catan@google.com</owner>
   <summary>
@@ -335,7 +422,7 @@ each histogram.
 </histogram>
 
 <histogram name="PerformanceManager.UserTuning.MemorySaverModeEnabledPercent"
-    units="%" expires_after="2024-07-07">
+    units="%" expires_after="2024-09-15">
   <owner>anthonyvd@chromium.org</owner>
   <owner>chrome-catan@google.com</owner>
   <summary>

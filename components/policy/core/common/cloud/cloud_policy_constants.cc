@@ -62,12 +62,13 @@ const char kValueRequestDeviceAttributeUpdate[] = "device_attribute_update";
 const char kValueRequestGcmIdUpdate[] = "gcm_id_update";
 const char kValueRequestCheckAndroidManagement[] = "check_android_management";
 const char kValueRequestCertBasedRegister[] = "certificate_based_register";
+const char kValueRequestTokenBasedRegister[] = "token_based_register";
 const char kValueRequestActiveDirectoryEnrollPlayUser[] =
     "active_directory_enroll_play_user";
 const char kValueRequestActiveDirectoryPlayActivity[] =
     "active_directory_play_activity";
 const char kValueRequestAppInstallReport[] = "app_install_report";
-const char kValueRequestTokenEnrollment[] = "register_browser";
+const char kValueRequestRegisterBrowser[] = "register_browser";
 const char kValueRequestChromeDesktopReport[] = "chrome_desktop_report";
 const char kValueRequestChromeOsUserReport[] = "chrome_os_user_report";
 const char kValueRequestInitialEnrollmentStateRetrieval[] =
@@ -92,12 +93,15 @@ const char kChromePublicAccountPolicyType[] = "google/chromeos/publicaccount";
 const char kChromeExtensionPolicyType[] = "google/chrome/extension";
 const char kChromeSigninExtensionPolicyType[] =
     "google/chromeos/signinextension";
+
 const char kChromeMachineLevelUserCloudPolicyType[] =
-    "google/chrome/machine-level-user";
-const char kChromeMachineLevelUserCloudPolicyAndroidType[] =
+#if BUILDFLAG(IS_ANDROID)
     "google/chrome/machine-level-user-android";
-const char kChromeMachineLevelUserCloudPolicyIOSType[] =
+#elif BUILDFLAG(IS_IOS)
     "google/chrome/machine-level-user-ios";
+#else
+    "google/chrome/machine-level-user";
+#endif
 const char kChromeMachineLevelExtensionCloudPolicyType[] =
     "google/chrome/machine-level-extension";
 const char kChromeRemoteCommandPolicyType[] = "google/chromeos/remotecommand";

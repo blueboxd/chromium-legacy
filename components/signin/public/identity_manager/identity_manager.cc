@@ -80,7 +80,7 @@ void SetPrimaryAccount(IdentityManager* identity_manager,
 
   if (!primary_account_id.empty()) {
     // Different primary account found, have to clear it first.
-    // TODO(https://crbug.com/1223364): Replace this if with a CHECK after all
+    // TODO(crbug.com/40774609): Replace this if with a CHECK after all
     //                                  the existing users have been migrated.
     identity_manager->GetPrimaryAccountMutator()->ClearPrimaryAccount(
         signin_metrics::ProfileSignout::kAccountRemovedFromDevice);
@@ -217,7 +217,7 @@ void IdentityManager::RemoveObserver(Observer* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
-// TODO(862619) change return type to std::optional<CoreAccountInfo>
+// TODO(crbug.com/40584518) change return type to std::optional<CoreAccountInfo>
 CoreAccountInfo IdentityManager::GetPrimaryAccountInfo(
     ConsentLevel consent) const {
   return primary_account_manager_->GetPrimaryAccountInfo(consent);
@@ -541,7 +541,7 @@ IdentityManager::GetAccountManagerFacade() const {
 
 AccountInfo IdentityManager::GetAccountInfoForAccountWithRefreshToken(
     const CoreAccountId& account_id) const {
-  // TODO(https://crbug.com/919793): This invariant is not currently possible to
+  // TODO(crbug.com/41434401): This invariant is not currently possible to
   // enforce on Android due to the underlying relationship between
   // O2TS::GetAccounts(), O2TS::RefreshTokenIsAvailable(), and
   // O2TS::Observer::OnRefreshTokenAvailable().
@@ -616,13 +616,14 @@ void IdentityManager::OnEndBatchChanges() {
 
 void IdentityManager::OnAuthErrorChanged(
     const CoreAccountId& account_id,
-    const GoogleServiceAuthError& auth_error) {
+    const GoogleServiceAuthError& auth_error,
+    signin_metrics::SourceForRefreshTokenOperation token_operation_source) {
   CoreAccountInfo account_info =
       GetAccountInfoForAccountWithRefreshToken(account_id);
 
   for (auto& observer : observer_list_)
-    observer.OnErrorStateOfRefreshTokenUpdatedForAccount(account_info,
-                                                         auth_error);
+    observer.OnErrorStateOfRefreshTokenUpdatedForAccount(
+        account_info, auth_error, token_operation_source);
 }
 
 void IdentityManager::OnGaiaAccountsInCookieUpdated(

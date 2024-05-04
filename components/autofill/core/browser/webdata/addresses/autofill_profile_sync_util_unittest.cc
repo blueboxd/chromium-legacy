@@ -162,6 +162,69 @@ AutofillProfile ConstructCompleteProfileBR() {
   return profile;
 }
 
+AutofillProfile ConstructCompleteProfileAU() {
+  AutofillProfile profile = ConstructBaseProfile(AddressCountryCode("AU"));
+  profile.SetRawInfoWithVerificationStatus(ADDRESS_HOME_CITY, u"Sydney",
+                                           VerificationStatus::kObserved);
+  profile.SetRawInfoWithVerificationStatus(ADDRESS_HOME_STATE, u"NWS",
+                                           VerificationStatus::kObserved);
+  profile.SetRawInfoWithVerificationStatus(
+      ADDRESS_HOME_STREET_ADDRESS, u"Unit 7 Level 8 189 Great Eastern Highway",
+      VerificationStatus::kObserved);
+
+  profile.SetRawInfoWithVerificationStatus(ADDRESS_HOME_STREET_NAME,
+                                           u"Great Eastern Highway",
+                                           VerificationStatus::kParsed);
+  profile.SetRawInfoWithVerificationStatus(ADDRESS_HOME_HOUSE_NUMBER, u"189",
+                                           VerificationStatus::kParsed);
+  profile.SetRawInfoWithVerificationStatus(ADDRESS_HOME_STREET_LOCATION,
+                                           u"189 Great Eastern Highway",
+                                           VerificationStatus::kFormatted);
+
+  profile.SetRawInfoWithVerificationStatus(ADDRESS_HOME_SUBPREMISE,
+                                           u"Unit 7 Level 8",
+                                           VerificationStatus::kFormatted);
+
+  profile.SetRawInfoWithVerificationStatus(ADDRESS_HOME_APT, u"Unit 7",
+                                           VerificationStatus::kParsed);
+  profile.SetRawInfoWithVerificationStatus(ADDRESS_HOME_APT_NUM, u"7",
+                                           VerificationStatus::kParsed);
+  profile.SetRawInfoWithVerificationStatus(ADDRESS_HOME_APT_TYPE, u"Unit",
+                                           VerificationStatus::kParsed);
+  profile.SetRawInfoWithVerificationStatus(ADDRESS_HOME_FLOOR, u"8",
+                                           VerificationStatus::kParsed);
+
+  profile.ClearFields({ADDRESS_HOME_ADMIN_LEVEL2, ADDRESS_HOME_SORTING_CODE,
+                       ADDRESS_HOME_DEPENDENT_LOCALITY});
+  return profile;
+}
+
+AutofillProfile ConstructCompleteProfileDE() {
+  AutofillProfile profile = ConstructBaseProfile(AddressCountryCode("DE"));
+  profile.SetRawInfoWithVerificationStatus(ADDRESS_HOME_CITY, u"Enkenbach",
+                                           VerificationStatus::kObserved);
+  profile.SetRawInfoWithVerificationStatus(
+      ADDRESS_HOME_STREET_ADDRESS, u"Mozartstr. 9\n Obergeschoss 2 Wohnung 3",
+      VerificationStatus::kObserved);
+
+  profile.SetRawInfoWithVerificationStatus(
+      ADDRESS_HOME_STREET_NAME, u"Mozartstr.", VerificationStatus::kParsed);
+  profile.SetRawInfoWithVerificationStatus(ADDRESS_HOME_HOUSE_NUMBER, u"9",
+                                           VerificationStatus::kParsed);
+  profile.SetRawInfoWithVerificationStatus(ADDRESS_HOME_STREET_LOCATION,
+                                           u"Mozartstr. 9",
+                                           VerificationStatus::kFormatted);
+
+  profile.SetRawInfoWithVerificationStatus(ADDRESS_HOME_OVERFLOW,
+                                           u"Obergeschoss 2 Wohnung 3",
+                                           VerificationStatus::kParsed);
+
+  profile.ClearFields({ADDRESS_HOME_ADMIN_LEVEL2, ADDRESS_HOME_SORTING_CODE,
+                       ADDRESS_HOME_FLOOR, ADDRESS_HOME_STATE,
+                       ADDRESS_HOME_DEPENDENT_LOCALITY});
+  return profile;
+}
+
 AutofillProfile ConstructCompleteProfileMX() {
   AutofillProfile profile = ConstructBaseProfile(AddressCountryCode("MX"));
   profile.SetRawInfoWithVerificationStatus(
@@ -256,7 +319,7 @@ AutofillProfileSpecifics ConstructBaseSpecifics() {
   AutofillProfileSpecifics specifics;
 
   specifics.set_guid(kGuid);
-  // TODO(crbug.com/1441905): Remove. See comment in
+  // TODO(crbug.com/40266694): Remove. See comment in
   // `CreateEntityDataFromAutofillProfile()`.
   specifics.set_deprecated_origin(kSettingsOrigin);
   specifics.set_use_count(7);
@@ -425,6 +488,11 @@ AutofillProfileSpecifics ConstructBaseSpecifics() {
       sync_pb::
           AutofillProfileSpecifics_VerificationStatus_VERIFICATION_STATUS_UNSPECIFIED);
 
+  specifics.set_address_home_thoroughfare_number_and_apt("");
+  specifics.set_address_home_thoroughfare_number_and_apt_status(
+      sync_pb::
+          AutofillProfileSpecifics_VerificationStatus_VERIFICATION_STATUS_UNSPECIFIED);
+
   return specifics;
 }
 
@@ -508,6 +576,151 @@ AutofillProfileSpecifics ConstructCompleteSpecificsBR() {
           AutofillProfileSpecifics_VerificationStatus_VERIFICATION_STATUS_UNSPECIFIED);
   specifics.set_address_home_admin_level_2("");
   specifics.set_address_home_admin_level_2_status(
+      sync_pb::
+          AutofillProfileSpecifics_VerificationStatus_VERIFICATION_STATUS_UNSPECIFIED);
+
+  return specifics;
+}
+
+AutofillProfileSpecifics ConstructCompleteSpecificsAU() {
+  AutofillProfileSpecifics specifics = ConstructBaseSpecifics();
+
+  specifics.set_address_home_country("AU");
+  specifics.set_address_home_country_status(
+      sync_pb::AutofillProfileSpecifics_VerificationStatus_OBSERVED);
+  specifics.set_address_home_city("Sydney");
+  specifics.set_address_home_city_status(
+      sync_pb::AutofillProfileSpecifics_VerificationStatus_OBSERVED);
+  specifics.set_address_home_state("NWS");
+  specifics.set_address_home_state_status(
+      sync_pb::AutofillProfileSpecifics_VerificationStatus_OBSERVED);
+
+  specifics.set_address_home_street_address(
+      "Unit 7 Level 8 189 Great Eastern Highway");
+  specifics.set_address_home_line1("Unit 7 Level 8 189 Great Eastern Highway");
+
+  specifics.set_address_home_street_address_status(
+      sync_pb::AutofillProfileSpecifics_VerificationStatus::
+          AutofillProfileSpecifics_VerificationStatus_OBSERVED);
+
+  specifics.set_address_home_thoroughfare_name("Great Eastern Highway");
+  specifics.set_address_home_thoroughfare_name_status(
+      sync_pb::AutofillProfileSpecifics_VerificationStatus_PARSED);
+
+  specifics.set_address_home_thoroughfare_number("189");
+  specifics.set_address_home_thoroughfare_number_status(
+      sync_pb::AutofillProfileSpecifics_VerificationStatus_PARSED);
+
+  specifics.set_address_home_street_location("189 Great Eastern Highway");
+  specifics.set_address_home_street_location_status(
+      sync_pb::AutofillProfileSpecifics_VerificationStatus_FORMATTED);
+
+  specifics.set_address_home_subpremise_name("Unit 7 Level 8");
+  specifics.set_address_home_subpremise_name_status(
+      sync_pb::AutofillProfileSpecifics_VerificationStatus_FORMATTED);
+
+  specifics.set_address_home_apt("Unit 7");
+  specifics.set_address_home_apt_status(
+      sync_pb::AutofillProfileSpecifics_VerificationStatus_PARSED);
+
+  specifics.set_address_home_apt_num("7");
+  specifics.set_address_home_apt_num_status(
+      sync_pb::AutofillProfileSpecifics_VerificationStatus_PARSED);
+
+  specifics.set_address_home_apt_type("Unit");
+  specifics.set_address_home_apt_type_status(
+      sync_pb::AutofillProfileSpecifics_VerificationStatus_PARSED);
+  specifics.set_address_home_floor("8");
+  specifics.set_address_home_floor_status(
+      sync_pb::AutofillProfileSpecifics_VerificationStatus_PARSED);
+
+  // Reset unused tokens from the default info.
+  specifics.set_address_home_sorting_code("");
+  specifics.set_address_home_sorting_code_status(
+      sync_pb::
+          AutofillProfileSpecifics_VerificationStatus_VERIFICATION_STATUS_UNSPECIFIED);
+  specifics.set_address_home_admin_level_2("");
+
+  specifics.set_address_home_admin_level_2_status(
+      sync_pb::
+          AutofillProfileSpecifics_VerificationStatus_VERIFICATION_STATUS_UNSPECIFIED);
+  specifics.set_address_home_dependent_locality("");
+  specifics.set_address_home_dependent_locality_status(
+      sync_pb::
+          AutofillProfileSpecifics_VerificationStatus_VERIFICATION_STATUS_UNSPECIFIED);
+
+  specifics.set_address_home_line2("");
+
+  return specifics;
+}
+
+AutofillProfileSpecifics ConstructCompleteSpecificsDE() {
+  AutofillProfileSpecifics specifics = ConstructBaseSpecifics();
+
+  specifics.set_address_home_country("DE");
+  specifics.set_address_home_country_status(
+      sync_pb::AutofillProfileSpecifics_VerificationStatus_OBSERVED);
+  specifics.set_address_home_city("Enkenbach");
+  specifics.set_address_home_city_status(
+      sync_pb::AutofillProfileSpecifics_VerificationStatus_OBSERVED);
+
+  specifics.set_address_home_street_address(
+      "Mozartstr. 9\n Obergeschoss 2 Wohnung 3");
+  specifics.set_address_home_line1("Mozartstr. 9");
+  specifics.set_address_home_line2("Obergeschoss 2 Wohnung 3");
+
+  specifics.set_address_home_street_address_status(
+      sync_pb::AutofillProfileSpecifics_VerificationStatus::
+          AutofillProfileSpecifics_VerificationStatus_OBSERVED);
+
+  specifics.set_address_home_thoroughfare_name("Mozartstr.");
+  specifics.set_address_home_thoroughfare_name_status(
+      sync_pb::AutofillProfileSpecifics_VerificationStatus_PARSED);
+
+  specifics.set_address_home_thoroughfare_number("9");
+  specifics.set_address_home_thoroughfare_number_status(
+      sync_pb::AutofillProfileSpecifics_VerificationStatus_PARSED);
+
+  specifics.set_address_home_street_location("Mozartstr. 9");
+  specifics.set_address_home_street_location_status(
+      sync_pb::AutofillProfileSpecifics_VerificationStatus_FORMATTED);
+
+  specifics.set_address_home_overflow("Obergeschoss 2 Wohnung 3");
+  specifics.set_address_home_overflow_status(
+      sync_pb::AutofillProfileSpecifics_VerificationStatus_PARSED);
+
+  // Reset unused tokens from the default info.
+  specifics.set_address_home_sorting_code("");
+  specifics.set_address_home_sorting_code_status(
+      sync_pb::
+          AutofillProfileSpecifics_VerificationStatus_VERIFICATION_STATUS_UNSPECIFIED);
+  specifics.set_address_home_admin_level_2("");
+
+  specifics.set_address_home_admin_level_2_status(
+      sync_pb::
+          AutofillProfileSpecifics_VerificationStatus_VERIFICATION_STATUS_UNSPECIFIED);
+  specifics.set_address_home_dependent_locality("");
+  specifics.set_address_home_dependent_locality_status(
+      sync_pb::
+          AutofillProfileSpecifics_VerificationStatus_VERIFICATION_STATUS_UNSPECIFIED);
+
+  specifics.set_address_home_subpremise_name("");
+  specifics.set_address_home_subpremise_name_status(
+      sync_pb::
+          AutofillProfileSpecifics_VerificationStatus_VERIFICATION_STATUS_UNSPECIFIED);
+
+  specifics.set_address_home_apt_num("");
+  specifics.set_address_home_apt_num_status(
+      sync_pb::
+          AutofillProfileSpecifics_VerificationStatus_VERIFICATION_STATUS_UNSPECIFIED);
+
+  specifics.set_address_home_floor("");
+  specifics.set_address_home_floor_status(
+      sync_pb::
+          AutofillProfileSpecifics_VerificationStatus_VERIFICATION_STATUS_UNSPECIFIED);
+
+  specifics.set_address_home_state("");
+  specifics.set_address_home_state_status(
       sync_pb::
           AutofillProfileSpecifics_VerificationStatus_VERIFICATION_STATUS_UNSPECIFIED);
 
@@ -685,7 +898,14 @@ AutofillProfileSpecifics ConstructCompleteSpecificsIN() {
   return specifics;
 }
 
-enum class I18nCountryModel { kLegacy = 0, kBR = 1, kMX = 2, kIN = 3 };
+enum class I18nCountryModel {
+  kLegacy = 0,
+  kAU = 1,
+  kBR = 2,
+  kDE = 3,
+  kIN = 4,
+  kMX = 5
+};
 
 // The tests are parametrized with a country to assert that all custom address
 // models are supported.
@@ -698,14 +918,19 @@ class AutofillProfileSyncUtilTest
     test_clock_.SetNow(kJune2017);
     features_.InitWithFeatures(
         {features::kAutofillUseI18nAddressModel,
+         features::kAutofillUseAUAddressModel,
+         features::kAutofillUseBRAddressModel,
+         features::kAutofillUseDEAddressModel,
          features::kAutofillUseINAddressModel,
+         features::kAutofillUseMXAddressModel,
          features::kAutofillEnableSupportForLandmark,
          features::kAutofillEnableSupportForAddressOverflow,
          features::kAutofillEnableSupportForBetweenStreets,
          features::kAutofillEnableSupportForBetweenStreetsOrLandmark,
          features::kAutofillEnableSupportForAddressOverflowAndLandmark,
          features::kAutofillEnableSupportForAdminLevel2,
-         features::kAutofillEnableSupportForApartmentNumbers},
+         features::kAutofillEnableSupportForApartmentNumbers,
+         features::kAutofillEnableDependentLocalityParsing},
         {});
   }
 
@@ -713,8 +938,12 @@ class AutofillProfileSyncUtilTest
     switch (country_model) {
       case I18nCountryModel::kLegacy:
         return ConstructBaseProfile();
+      case I18nCountryModel::kAU:
+        return ConstructCompleteProfileAU();
       case I18nCountryModel::kBR:
         return ConstructCompleteProfileBR();
+      case I18nCountryModel::kDE:
+        return ConstructCompleteProfileDE();
       case I18nCountryModel::kMX:
         return ConstructCompleteProfileMX();
       case I18nCountryModel::kIN:
@@ -727,8 +956,12 @@ class AutofillProfileSyncUtilTest
     switch (country_model) {
       case I18nCountryModel::kLegacy:
         return ConstructBaseSpecifics();
+      case I18nCountryModel::kAU:
+        return ConstructCompleteSpecificsAU();
       case I18nCountryModel::kBR:
         return ConstructCompleteSpecificsBR();
+      case I18nCountryModel::kDE:
+        return ConstructCompleteSpecificsDE();
       case I18nCountryModel::kMX:
         return ConstructCompleteSpecificsMX();
       case I18nCountryModel::kIN:
@@ -918,7 +1151,9 @@ TEST_F(AutofillProfileSyncUtilTest,
 INSTANTIATE_TEST_SUITE_P(AutofillI18nModels,
                          AutofillProfileSyncUtilTest,
                          testing::Values(I18nCountryModel::kLegacy,
+                                         I18nCountryModel::kAU,
                                          I18nCountryModel::kBR,
+                                         I18nCountryModel::kDE,
                                          I18nCountryModel::kMX,
                                          I18nCountryModel::kIN));
 

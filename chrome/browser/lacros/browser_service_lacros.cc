@@ -77,14 +77,13 @@ constexpr char kHistogramsFilename[] = "lacros_histograms.txt";
 std::string GetCompressedHistograms() {
   std::string histograms =
       base::StatisticsRecorder::ToJSON(base::JSON_VERBOSITY_LEVEL_FULL);
-  std::string compressed_histograms;
-  if (feedback_util::ZipString(base::FilePath(kHistogramsFilename),
-                               std::move(histograms), &compressed_histograms)) {
-    return compressed_histograms;
-  } else {
+  std::optional<std::string> compressed_histograms =
+      feedback_util::ZipString(base::FilePath(kHistogramsFilename), histograms);
+  if (!compressed_histograms.has_value()) {
     LOG(ERROR) << "Failed to compress lacros histograms.";
     return std::string();
   }
+  return compressed_histograms.value();
 }
 
 NavigateParams::PathBehavior ConvertPathBehavior(
@@ -126,7 +125,8 @@ Browser* FindBrowserWithTabId(const std::string& tab_id_str) {
 }
 
 // The return value indicates whether the profile picker was shown.
-bool ShowProfilePickerIfNeeded(bool incognito) {
+bool ShowProfilePickerIfNeeded(bool incognito,
+                               std::optional<int64_t> target_display_id) {
   if (StartupProfileModeFromReason(ProfilePicker::GetStartupModeReason()) ==
           StartupProfileMode::kProfilePicker &&
       chrome::GetTotalBrowserCount() == 0 && !incognito) {
@@ -137,6 +137,10 @@ bool ShowProfilePickerIfNeeded(bool incognito) {
     // default behavior for the first browser window supports session restore,
     // additional windows are opened blank and thus it works reasonably well for
     // BrowserServiceLacros.
+    std::optional<display::ScopedDisplayForNewWindows> scoped_display;
+    if (target_display_id.has_value()) {
+      scoped_display.emplace(target_display_id.value());
+    }
     ProfilePicker::Show(ProfilePicker::Params::FromEntryPoint(
         ProfilePicker::EntryPoint::kNewSessionOnExistingProcess));
     return true;
@@ -196,11 +200,11 @@ BrowserServiceLacros::~BrowserServiceLacros() {
   BrowserList::RemoveObserver(this);
 }
 
-void BrowserServiceLacros::REMOVED_0(REMOVED_0Callback callback) {
+void BrowserServiceLacros::REMOVED_0() {
   NOTIMPLEMENTED();
 }
 
-void BrowserServiceLacros::REMOVED_2(crosapi::mojom::BrowserInitParamsPtr) {
+void BrowserServiceLacros::REMOVED_2() {
   NOTIMPLEMENTED();
 }
 
@@ -224,6 +228,12 @@ void BrowserServiceLacros::NewWindow(bool incognito,
     return;
   }
 
+  if (ShowProfilePickerIfNeeded(incognito, target_display_id)) {
+    std::move(callback).Run(
+        crosapi::mojom::CreationResult::kBrowserWindowUnavailable);
+    return;
+  }
+
   if (profile_id.has_value()) {
     LoadProfileWithId(
         base::BindOnce(&BrowserServiceLacros::NewWindowWithProfile,
@@ -234,11 +244,6 @@ void BrowserServiceLacros::NewWindow(bool incognito,
     return;
   }
 
-  if (ShowProfilePickerIfNeeded(incognito)) {
-    std::move(callback).Run(
-        crosapi::mojom::CreationResult::kBrowserWindowUnavailable);
-    return;
-  }
   LoadMainProfile(base::BindOnce(&BrowserServiceLacros::NewWindowWithProfile,
                                  weak_ptr_factory_.GetWeakPtr(), incognito,
                                  should_trigger_session_restore,
@@ -314,6 +319,14 @@ void BrowserServiceLacros::NewTab(std::optional<uint64_t> profile_id,
     return;
   }
 
+  // TODO: crbug.com/333312496 - Update newtab to pass the target display id
+  // through the crosapi.
+  if (ShowProfilePickerIfNeeded(false, std::nullopt)) {
+    std::move(callback).Run(
+        crosapi::mojom::CreationResult::kBrowserWindowUnavailable);
+    return;
+  }
+
   if (profile_id.has_value()) {
     LoadProfileWithId(
         base::BindOnce(&BrowserServiceLacros::LaunchOrNewTabWithProfile,
@@ -325,11 +338,6 @@ void BrowserServiceLacros::NewTab(std::optional<uint64_t> profile_id,
     return;
   }
 
-  if (ShowProfilePickerIfNeeded(false)) {
-    std::move(callback).Run(
-        crosapi::mojom::CreationResult::kBrowserWindowUnavailable);
-    return;
-  }
   LoadMainProfile(
       base::BindOnce(&BrowserServiceLacros::LaunchOrNewTabWithProfile,
                      weak_ptr_factory_.GetWeakPtr(),
@@ -347,6 +355,12 @@ void BrowserServiceLacros::Launch(int64_t target_display_id,
     return;
   }
 
+  if (ShowProfilePickerIfNeeded(false, target_display_id)) {
+    std::move(callback).Run(
+        crosapi::mojom::CreationResult::kBrowserWindowUnavailable);
+    return;
+  }
+
   if (profile_id.has_value()) {
     LoadProfileWithId(
         base::BindOnce(&BrowserServiceLacros::LaunchOrNewTabWithProfile,
@@ -358,11 +372,6 @@ void BrowserServiceLacros::Launch(int64_t target_display_id,
     return;
   }
 
-  if (ShowProfilePickerIfNeeded(false)) {
-    std::move(callback).Run(
-        crosapi::mojom::CreationResult::kBrowserWindowUnavailable);
-    return;
-  }
   LoadMainProfile(
       base::BindOnce(&BrowserServiceLacros::LaunchOrNewTabWithProfile,
                      weak_ptr_factory_.GetWeakPtr(),

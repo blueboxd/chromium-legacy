@@ -12,6 +12,7 @@
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
+#include "chrome/browser/chromeos/launcher_search/search_util.h"
 #include "chrome/browser/chromeos/mahi/mahi_web_contents_manager.h"
 #include "chrome/browser/chromeos/reporting/metric_reporting_manager_lacros_factory.h"
 #include "chrome/browser/chromeos/smart_reader/smart_reader_client_impl.h"
@@ -34,6 +35,7 @@
 #include "chrome/browser/lacros/embedded_a11y_manager_lacros.h"
 #include "chrome/browser/lacros/field_trial_observer.h"
 #include "chrome/browser/lacros/force_installed_tracker_lacros.h"
+#include "chrome/browser/lacros/full_restore_client_lacros.h"
 #include "chrome/browser/lacros/fullscreen_controller_client_lacros.h"
 #include "chrome/browser/lacros/geolocation/system_geolocation_source_lacros.h"
 #include "chrome/browser/lacros/guest_os/vm_sk_forwarding_service.h"
@@ -42,11 +44,13 @@
 #include "chrome/browser/lacros/lacros_extension_apps_publisher.h"
 #include "chrome/browser/lacros/lacros_file_system_provider.h"
 #include "chrome/browser/lacros/lacros_memory_pressure_evaluator.h"
+#include "chrome/browser/lacros/launcher_search/search_controller_factory_lacros.h"
 #include "chrome/browser/lacros/launcher_search/search_controller_lacros.h"
 #include "chrome/browser/lacros/multitask_menu_nudge_delegate_lacros.h"
 #include "chrome/browser/lacros/net/network_change_manager_bridge.h"
 #include "chrome/browser/lacros/net/network_settings_observer.h"
 #include "chrome/browser/lacros/screen_orientation_delegate_lacros.h"
+#include "chrome/browser/lacros/suggestion_service_lacros.h"
 #include "chrome/browser/lacros/sync/sync_crosapi_manager_lacros.h"
 #include "chrome/browser/lacros/task_manager_lacros.h"
 #include "chrome/browser/lacros/ui_metric_recorder_lacros.h"
@@ -70,7 +74,7 @@
 #include "components/nacl/common/buildflags.h"
 #include "components/policy/core/common/policy_pref_names.h"
 #include "extensions/common/features/feature_session_type.h"
-#include "services/device/public/cpp/geolocation/geolocation_manager.h"
+#include "services/device/public/cpp/geolocation/geolocation_system_permission_manager.h"
 #include "ui/views/controls/views_text_services_context_menu_chromeos.h"
 
 #if BUILDFLAG(ENABLE_NACL)
@@ -174,9 +178,10 @@ void ChromeBrowserMainExtraPartsLacros::PreProfileInit() {
         std::make_unique<DeviceLocalAccountExtensionInstallerLacros>();
   }
 
-  DCHECK(!device::GeolocationManager::GetInstance());
-  device::GeolocationManager::SetInstance(
-      SystemGeolocationSourceLacros::CreateGeolocationManagerOnLacros());
+  DCHECK(!device::GeolocationSystemPermissionManager::GetInstance());
+  device::GeolocationSystemPermissionManager::SetInstance(
+      SystemGeolocationSourceLacros::
+          CreateGeolocationSystemPermissionManagerOnLacros());
 
 #if BUILDFLAG(ENABLE_NACL)
   // Ash ships PNaCl as part of rootfs, but Lacros doesn't ship it at all.
@@ -210,6 +215,7 @@ void ChromeBrowserMainExtraPartsLacros::PostBrowserStart() {
   download_controller_client_ =
       std::make_unique<DownloadControllerClientLacros>();
   file_system_provider_ = std::make_unique<LacrosFileSystemProvider>();
+  full_restore_client_ = std::make_unique<FullRestoreClientLacros>();
   fullscreen_controller_client_ =
       std::make_unique<FullscreenControllerClientLacros>();
   kiosk_session_service_ = std::make_unique<KioskSessionServiceLacros>();
@@ -217,7 +223,11 @@ void ChromeBrowserMainExtraPartsLacros::PostBrowserStart() {
       std::make_unique<NetworkChangeManagerBridge>();
   screen_orientation_delegate_ =
       std::make_unique<ScreenOrientationDelegateLacros>();
-  search_controller_ = std::make_unique<crosapi::SearchControllerLacros>();
+  search_controller_ = std::make_unique<crosapi::SearchControllerLacros>(
+      crosapi::ProviderTypes());
+  search_controller_->RegisterWithAsh();
+  search_controller_factory_ =
+      std::make_unique<crosapi::SearchControllerFactoryLacros>();
   task_manager_provider_ = std::make_unique<crosapi::TaskManagerLacros>();
   web_page_info_provider_ =
       std::make_unique<crosapi::WebPageInfoProviderLacros>();
@@ -310,6 +320,8 @@ void ChromeBrowserMainExtraPartsLacros::PostBrowserStart() {
           ->IsAvailable<crosapi::mojom::MahiBrowserDelegate>()) {
     mahi::MahiWebContentsManager::Get()->Initialize();
   }
+
+  suggestion_service_ = std::make_unique<SuggestionServiceLacros>();
 }
 
 void ChromeBrowserMainExtraPartsLacros::PostProfileInit(
@@ -399,5 +411,5 @@ void ChromeBrowserMainExtraPartsLacros::PostMainMessageLoopRun() {
   force_installed_tracker_.reset();
 
   // Initialized in PreProfileInit.
-  device::GeolocationManager::SetInstance(nullptr);
+  device::GeolocationSystemPermissionManager::SetInstance(nullptr);
 }

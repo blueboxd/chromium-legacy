@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40284755): Remove this and spanify to fix the errors.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "base/strings/escape.h"
 
 #include <ostream>
@@ -266,7 +271,7 @@ bool ShouldUnescapeCodePoint(UnescapeRule::Type rules,
   //
   // Can't use icu to make this cleaner, because Cronet cannot depend on
   // icu, and currently uses this file.
-  // TODO(https://crbug.com/829873): Try to make this use icu, both to
+  // TODO(crbug.com/41381359): Try to make this use icu, both to
   // protect against regressions as the Unicode standard is updated and to
   // reduce the number of long lists of characters.
   return !(
@@ -408,7 +413,7 @@ std::string UnescapeURLWithAdjustmentsImpl(
       // character. In that case, just unescaped and write the non-sense
       // character.
       //
-      // TODO(https://crbug.com/829868): Do not unescape illegal UTF-8
+      // TODO(crbug.com/40570496): Do not unescape illegal UTF-8
       // sequences.
       unsigned char non_utf8_byte;
       if (UnescapeUnsignedByteAtIndex(escaped_text, i, &non_utf8_byte)) {
@@ -539,7 +544,7 @@ std::string UnescapeBinaryURLComponent(StringPiece escaped_text,
   // before FeatureList initialization. In that case, fallback to the feature's
   // default state.
   //
-  // TODO(crbug.com/1321924): Cleanup this feature.
+  // TODO(crbug.com/40224104): Cleanup this feature.
   const bool optimize_data_urls_feature_is_enabled =
       base::FeatureList::GetInstance()
           ? base::FeatureList::IsEnabled(features::kOptimizeDataUrls)

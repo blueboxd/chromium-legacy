@@ -151,7 +151,8 @@ public class ClearBrowsingDataFragmentTest {
         mActivityTestRule.startMainActivityOnBlankPage();
 
         // There can be some left-over notification channels from other tests.
-        // TODO(crbug.com/951402): Find a general solution to avoid leaking channels between tests.
+        // TODO(crbug.com/41452182): Find a general solution to avoid leaking channels between
+        // tests.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             TestThreadUtils.runOnUiThreadBlocking(
                     () -> {
@@ -887,7 +888,7 @@ public class ClearBrowsingDataFragmentTest {
                 });
     }
 
-    // TODO(https://crbug.com/1334586): Move this to a test util class.
+    // TODO(crbug.com/40846557): Move this to a test util class.
     private ViewAction clickOnSignOutLink() {
         return new ViewAction() {
             @Override

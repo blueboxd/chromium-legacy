@@ -34,12 +34,12 @@
 #include "third_party/blink/renderer/platform/widget/frame_widget.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
-#if !BUILDFLAG(IS_ANDROID)
+#if !BUILDFLAG(TARGET_OS_IS_ANDROID)
 #include "third_party/blink/public/web/web_picture_in_picture_window_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_document_picture_in_picture_options.h"
 #include "third_party/blink/renderer/modules/document_picture_in_picture/document_picture_in_picture.h"
 #include "third_party/blink/renderer/modules/document_picture_in_picture/document_picture_in_picture_event.h"
-#endif  // !BUILDFLAG(IS_ANDROID)
+#endif  // !BUILDFLAG(TARGET_OS_IS_ANDROID)
 
 namespace blink {
 
@@ -123,7 +123,7 @@ PictureInPictureControllerImpl::IsElementAllowed(
 
 void PictureInPictureControllerImpl::EnterPictureInPicture(
     HTMLVideoElement* video_element,
-    ScriptPromiseResolverTyped<PictureInPictureWindow>* resolver) {
+    ScriptPromiseResolver<PictureInPictureWindow>* resolver) {
   if (!video_element->GetWebMediaPlayer()) {
     if (resolver) {
       // TODO(crbug.com/1293949): Add an error message.
@@ -189,7 +189,7 @@ void PictureInPictureControllerImpl::EnterPictureInPicture(
 
 void PictureInPictureControllerImpl::OnEnteredPictureInPicture(
     HTMLVideoElement* element,
-    ScriptPromiseResolverTyped<PictureInPictureWindow>* resolver,
+    ScriptPromiseResolver<PictureInPictureWindow>* resolver,
     mojo::PendingRemote<mojom::blink::PictureInPictureSession> session_remote,
     const gfx::Size& picture_in_picture_window_size) {
   // If |session_ptr| is null then Picture-in-Picture is not supported by the
@@ -231,12 +231,12 @@ void PictureInPictureControllerImpl::OnEnteredPictureInPicture(
   if (picture_in_picture_element_)
     OnExitedPictureInPicture(nullptr);
 
-#if !BUILDFLAG(IS_ANDROID)
+#if !BUILDFLAG(TARGET_OS_IS_ANDROID)
   if (document_picture_in_picture_window_) {
     // TODO(crbug.com/1360452): close the window too.
     document_picture_in_picture_window_ = nullptr;
   }
-#endif  // !BUILDFLAG(IS_ANDROID)
+#endif  // !BUILDFLAG(TARGET_OS_IS_ANDROID)
 
   picture_in_picture_element_ = element;
   picture_in_picture_element_->OnEnteredPictureInPicture();
@@ -267,7 +267,7 @@ void PictureInPictureControllerImpl::OnEnteredPictureInPicture(
 
 void PictureInPictureControllerImpl::ExitPictureInPicture(
     HTMLVideoElement* element,
-    ScriptPromiseResolver* resolver) {
+    ScriptPromiseResolver<IDLUndefined>* resolver) {
   if (!EnsureService())
     return;
 
@@ -281,7 +281,7 @@ void PictureInPictureControllerImpl::ExitPictureInPicture(
 }
 
 void PictureInPictureControllerImpl::OnExitedPictureInPicture(
-    ScriptPromiseResolver* resolver) {
+    ScriptPromiseResolver<IDLUndefined>* resolver) {
   DCHECK(GetSupplementable());
 
   // Bail out if document is not active.
@@ -344,7 +344,7 @@ bool PictureInPictureControllerImpl::IsPictureInPictureElement(
   return element == picture_in_picture_element_;
 }
 
-#if !BUILDFLAG(IS_ANDROID)
+#if !BUILDFLAG(TARGET_OS_IS_ANDROID)
 LocalDOMWindow* PictureInPictureControllerImpl::documentPictureInPictureWindow()
     const {
   return document_picture_in_picture_window_.Get();
@@ -359,7 +359,7 @@ void PictureInPictureControllerImpl::CreateDocumentPictureInPictureWindow(
     ScriptState* script_state,
     LocalDOMWindow& opener,
     DocumentPictureInPictureOptions* options,
-    ScriptPromiseResolverTyped<LocalDOMWindow>* resolver,
+    ScriptPromiseResolver<DOMWindow>* resolver,
     ExceptionState& exception_state) {
   if (!LocalFrame::ConsumeTransientUserActivation(opener.GetFrame())) {
     exception_state.ThrowDOMException(DOMExceptionCode::kNotAllowedError,
@@ -371,6 +371,7 @@ void PictureInPictureControllerImpl::CreateDocumentPictureInPictureWindow(
   WebPictureInPictureWindowOptions web_options;
   web_options.width = options->width();
   web_options.height = options->height();
+  web_options.disallow_return_to_opener = options->disallowReturnToOpener();
 
   // If either width or height is specified, then both must be specified.
   if (web_options.width > 0 && web_options.height == 0) {
@@ -439,7 +440,7 @@ void PictureInPictureControllerImpl::CreateDocumentPictureInPictureWindow(
 
   document_picture_in_picture_window_ = local_dom_window;
 
-  // There should not be an unresolved ScriptPromiseResolver at this point.
+  // There should not be an unresolved ScriptPromiseResolverBase at this point.
   // Leaving one unresolved and letting it get garbage collected will crash the
   // renderer.
   DCHECK(!open_document_pip_resolver_);
@@ -500,7 +501,7 @@ void PictureInPictureControllerImpl::
     open_document_pip_resolver_ = nullptr;
   }
 }
-#endif  // !BUILDFLAG(IS_ANDROID)
+#endif  // !BUILDFLAG(TARGET_OS_IS_ANDROID)
 
 void PictureInPictureControllerImpl::OnPictureInPictureStateChange() {
   DCHECK(picture_in_picture_element_);
@@ -550,11 +551,11 @@ void PictureInPictureControllerImpl::SetMayThrottleIfUndrawnFrames(
 }
 
 void PictureInPictureControllerImpl::Trace(Visitor* visitor) const {
-#if !BUILDFLAG(IS_ANDROID)
+#if !BUILDFLAG(TARGET_OS_IS_ANDROID)
   visitor->Trace(document_picture_in_picture_window_);
   visitor->Trace(document_pip_context_observer_);
   visitor->Trace(open_document_pip_resolver_);
-#endif  // !BUILDFLAG(IS_ANDROID)
+#endif  // !BUILDFLAG(TARGET_OS_IS_ANDROID)
   visitor->Trace(picture_in_picture_element_);
   visitor->Trace(picture_in_picture_window_);
   visitor->Trace(session_observer_receiver_);

@@ -71,8 +71,8 @@ int VideoFrameResource::GetDmabufFd(size_t i) const {
   return frame_->GetDmabufFd(i);
 }
 
-scoped_refptr<gfx::NativePixmapDmaBuf>
-VideoFrameResource::CreateNativePixmapDmaBuf() const {
+scoped_refptr<const gfx::NativePixmapDmaBuf>
+VideoFrameResource::GetNativePixmapDmaBuf() const {
   return media::CreateNativePixmapDmaBuf(frame_.get());
 }
 
@@ -137,16 +137,6 @@ const std::optional<gfx::HDRMetadata>& VideoFrameResource::hdr_metadata()
 void VideoFrameResource::set_hdr_metadata(
     const std::optional<gfx::HDRMetadata>& hdr_metadata) {
   GetMutableVideoFrame()->set_hdr_metadata(hdr_metadata);
-}
-
-const std::optional<gpu::VulkanYCbCrInfo>& VideoFrameResource::ycbcr_info()
-    const {
-  return frame_->ycbcr_info();
-}
-
-void VideoFrameResource::set_ycbcr_info(
-    const std::optional<gpu::VulkanYCbCrInfo>& ycbcr_info) {
-  GetMutableVideoFrame()->set_ycbcr_info(ycbcr_info);
 }
 
 const VideoFrameMetadata& VideoFrameResource::metadata() const {

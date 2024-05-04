@@ -17,7 +17,6 @@
 #include "gpu/command_buffer/service/gl_context_virtual.h"
 #include "gpu/command_buffer/service/gl_state_restorer_impl.h"
 #include "gpu/command_buffer/service/logger.h"
-#include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/command_buffer/service/service_utils.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
@@ -71,7 +70,7 @@ gpu::ContextResult WebGPUCommandBufferStub::Initialize(
     const mojom::CreateCommandBufferParams& init_params,
     base::UnsafeSharedMemoryRegion shared_state_shm) {
 #if BUILDFLAG(IS_FUCHSIA)
-  // TODO(crbug.com/707031): Implement this.
+  // TODO(crbug.com/40513405): Implement this.
   NOTIMPLEMENTED();
   LOG(ERROR) << "ContextResult::kFatalFailure: no fuchsia support";
   return gpu::ContextResult::kFatalFailure;

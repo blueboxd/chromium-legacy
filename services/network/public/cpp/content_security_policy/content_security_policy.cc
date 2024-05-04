@@ -6,6 +6,7 @@
 
 #include <sstream>
 #include <string>
+#include <string_view>
 
 #include "base/base64url.h"
 #include "base/containers/contains.h"
@@ -423,7 +424,8 @@ bool ParseScheme(std::string_view scheme, mojom::CSPSource* csp_source) {
   if (!std::all_of(scheme.begin() + 1, scheme.end(), is_scheme_character))
     return false;
 
-  csp_source->scheme = std::string(scheme);
+  csp_source->scheme = base::ToLowerASCII(scheme);
+
 
   return true;
 }
@@ -450,9 +452,9 @@ bool ParseHost(std::string_view host, mojom::CSPSource* csp_source) {
   if (host.empty())
     return false;
 
-  std::vector<base::StringPiece> host_pieces = base::SplitStringPiece(
+  std::vector<std::string_view> host_pieces = base::SplitStringPiece(
       host, ".", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
-  for (int i = 0; const std::string_view& piece : host_pieces) {
+  for (int i = 0; std::string_view piece : host_pieces) {
     // Only a trailing dot is allowed.
     if ((piece.empty() && i + 1 < std::ssize(host_pieces)) ||
         !base::ranges::all_of(piece, [](auto c) {
@@ -462,7 +464,7 @@ bool ParseHost(std::string_view host, mojom::CSPSource* csp_source) {
     }
     ++i;
   }
-  csp_source->host = std::string(host);
+  csp_source->host = base::ToLowerASCII(host);
 
   return true;
 }

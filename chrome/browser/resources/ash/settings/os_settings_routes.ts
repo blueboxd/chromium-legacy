@@ -13,7 +13,7 @@
 import {assert} from 'chrome://resources/js/assert.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 
-import {androidAppsVisible, isArcVmEnabled, isCrostiniSupported, isGuest, isInputDeviceSettingsSplitEnabled, isKerberosEnabled, isPluginVmAvailable, isPowerwashAllowed, isRevampWayfindingEnabled} from './common/load_time_booleans.js';
+import {androidAppsVisible, isAppParentalControlsFeatureAvailable, isArcVmEnabled, isCrostiniSupported, isGuest, isInputDeviceSettingsSplitEnabled, isKerberosEnabled, isPluginVmAvailable, isPowerwashAllowed, isRevampWayfindingEnabled} from './common/load_time_booleans.js';
 import * as routesMojom from './mojom-webui/routes.mojom-webui.js';
 
 /**
@@ -38,7 +38,15 @@ export class Route {
    * The document title that should be displayed for this route.
    */
   title: string|undefined;
+
+  /**
+   * The parent route, or null if this is a root route.
+   */
   parent: Route|null;
+
+  /**
+   * The URL path starting with a forward slash. e.g. `/internet`.
+   */
   path: string;
 
   constructor(path: string, title?: string) {
@@ -95,6 +103,23 @@ export class Route {
     return !this.isNavigableDialog && !!this.parent && this.section !== null &&
         this.parent.section === this.section;
   }
+
+  /**
+   * Returns the top-most ancestor Route for this route's `section`. If this
+   * route has no `section` then returns null.
+   */
+  getSectionAncestor(): Route|null {
+    if (this.section === null) {
+      return null;
+    }
+
+    let curr: Route = this;
+    while (curr.parent && curr.parent.section !== null) {
+      curr = curr.parent;
+    }
+
+    return curr;
+  }
 }
 
 interface MinimumRoutes {
@@ -126,6 +151,7 @@ export interface OsSettingsRoutes extends MinimumRoutes {
   APP_MANAGEMENT_DETAIL: Route;
   APP_MANAGEMENT_PLUGIN_VM_SHARED_PATHS: Route;
   APP_MANAGEMENT_PLUGIN_VM_SHARED_USB_DEVICES: Route;
+  APP_PARENTAL_CONTROLS: Route;
   APPS: Route;
   ANDROID_APPS_DETAILS: Route;
   ANDROID_APPS_DETAILS_ARC_VM_SHARED_USB_DEVICES: Route;
@@ -392,11 +418,9 @@ export function createRoutes(): OsSettingsRoutes {
   }
 
   // Personalization section.
-  if (!isGuest()) {
-    r.PERSONALIZATION = createSection(
-        r.BASIC, routesMojom.PERSONALIZATION_SECTION_PATH,
-        Section.kPersonalization);
-  }
+  r.PERSONALIZATION = createSection(
+      r.BASIC, routesMojom.PERSONALIZATION_SECTION_PATH,
+      Section.kPersonalization);
 
   // Apps section.
   r.APPS = createSection(r.BASIC, routesMojom.APPS_SECTION_PATH, Section.kApps);
@@ -435,6 +459,11 @@ export function createRoutes(): OsSettingsRoutes {
   r.MANAGE_ISOLATED_WEB_APPS = createSubpage(
       r.APPS, routesMojom.MANAGE_ISOLATED_WEB_APPS_SUBPAGE_PATH,
       Subpage.kManageIsolatedWebApps);
+  if (isAppParentalControlsFeatureAvailable()) {
+    r.APP_PARENTAL_CONTROLS = createSubpage(
+        r.APPS, routesMojom.APP_PARENTAL_CONTROLS_SUBPAGE_PATH,
+        Subpage.kAppParentalControls);
+  }
 
   // Accessibility section.
   r.OS_ACCESSIBILITY = createSection(
@@ -775,6 +804,16 @@ const PATH_REDIRECT_PAIRS: Array<[string, string]> = [
   [
     routesMojom.DATE_AND_TIME_SECTION_PATH,
     routesMojom.SYSTEM_PREFERENCES_SECTION_PATH,
+  ],
+  [
+    routesMojom.FILES_SECTION_PATH,
+    routesMojom.SYSTEM_PREFERENCES_SECTION_PATH,
+  ],
+  // TODO(b/309808834) Remove this pair once the Bluetooth L1 page is revamped
+  // with up-leveled content.
+  [
+    routesMojom.BLUETOOTH_SECTION_PATH,
+    routesMojom.BLUETOOTH_DEVICES_SUBPAGE_PATH,
   ],
 ];
 

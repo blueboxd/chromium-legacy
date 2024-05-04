@@ -37,6 +37,14 @@ void PinnedTabCollection::CloseTab(TabModel* tab_model) {
   impl_->CloseTab(tab_model);
 }
 
+tabs::TabModel* PinnedTabCollection::GetTabAtIndex(size_t index) const {
+  return impl_->GetTabAtIndex(index);
+}
+
+bool PinnedTabCollection::ContainsTab(TabModel* tab_model) const {
+  return impl_->ContainsTab(tab_model);
+}
+
 bool PinnedTabCollection::ContainsTabRecursive(TabModel* tab_model) const {
   return impl_->ContainsTab(tab_model);
 }
@@ -46,7 +54,7 @@ bool PinnedTabCollection::ContainsCollection(TabCollection* collection) const {
 }
 
 std::optional<size_t> PinnedTabCollection::GetIndexOfTabRecursive(
-    TabModel* tab_model) const {
+    const TabModel* tab_model) const {
   return impl_->GetIndexOfTab(tab_model);
 }
 
@@ -57,6 +65,10 @@ std::optional<size_t> PinnedTabCollection::GetIndexOfCollection(
 
 std::unique_ptr<TabModel> PinnedTabCollection::MaybeRemoveTab(
     TabModel* tab_model) {
+  if (!ContainsTab(tab_model)) {
+    return nullptr;
+  }
+
   std::unique_ptr<TabModel> removed_tab_model = impl_->RemoveTab(tab_model);
   removed_tab_model->set_pinned(/*pinned=*/false);
   removed_tab_model->OnReparented(nullptr, GetPassKey());

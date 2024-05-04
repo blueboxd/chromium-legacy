@@ -38,6 +38,7 @@
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 #include "third_party/blink/renderer/core/layout/geometry/axis.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/core/style/inset_area.h"
 #include "third_party/blink/renderer/platform/text/writing_mode.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
@@ -227,12 +228,16 @@ class CORE_EXPORT CSSToLengthConversionData : public CSSLengthResolver {
 
     std::optional<double> Width() const;
     std::optional<double> Height() const;
+    std::optional<double> Width(const ScopedCSSName&) const;
+    std::optional<double> Height(const ScopedCSSName&) const;
 
    private:
     void CacheSizeIfNeeded(PhysicalAxes, std::optional<double>& cache) const;
+    std::optional<double> FindNamedSize(const ScopedCSSName&,
+                                        PhysicalAxes) const;
 
     Member<Element> context_element_;
-    mutable PhysicalAxes cached_physical_axes_{kPhysicalAxisNone};
+    mutable PhysicalAxes cached_physical_axes_{kPhysicalAxesNone};
     mutable std::optional<double> cached_width_;
     mutable std::optional<double> cached_height_;
   };
@@ -246,11 +251,19 @@ class CORE_EXPORT CSSToLengthConversionData : public CSSLengthResolver {
 
    public:
     AnchorData() = default;
-    AnchorData(Element* anchored, AnchorEvaluator*);
+    AnchorData(AnchorEvaluator*,
+               const ScopedCSSName* position_anchor,
+               const std::optional<InsetAreaOffsets>&);
     AnchorEvaluator* GetEvaluator() const { return evaluator_; }
+    const ScopedCSSName* GetPositionAnchor() const { return position_anchor_; }
+    const std::optional<InsetAreaOffsets>& GetInsetAreaOffsets() const {
+      return inset_area_offsets_;
+    }
 
    private:
     AnchorEvaluator* evaluator_ = nullptr;
+    const ScopedCSSName* position_anchor_ = nullptr;
+    std::optional<InsetAreaOffsets> inset_area_offsets_;
   };
 
   using Flags = uint16_t;
@@ -336,6 +349,8 @@ class CORE_EXPORT CSSToLengthConversionData : public CSSLengthResolver {
   double DynamicViewportHeight() const override;
   double ContainerWidth() const override;
   double ContainerHeight() const override;
+  double ContainerWidth(const ScopedCSSName&) const override;
+  double ContainerHeight(const ScopedCSSName&) const override;
   WritingMode GetWritingMode() const override;
   void ReferenceTreeScope() const override;
 
@@ -343,11 +358,20 @@ class CORE_EXPORT CSSToLengthConversionData : public CSSLengthResolver {
   void SetLineHeightSize(const LineHeightSize& line_height_size) {
     line_height_size_ = line_height_size;
   }
+  void SetAnchorData(const AnchorData& anchor_data) {
+    anchor_data_ = anchor_data;
+  }
 
   void ReferenceAnchor() const override;
 
   AnchorEvaluator* GetAnchorEvaluator() const override {
     return anchor_data_.GetEvaluator();
+  }
+  const ScopedCSSName* GetPositionAnchor() const override {
+    return anchor_data_.GetPositionAnchor();
+  }
+  std::optional<InsetAreaOffsets> GetInsetAreaOffsets() const override {
+    return anchor_data_.GetInsetAreaOffsets();
   }
 
   // See ContainerSizes::PreCachedCopy.

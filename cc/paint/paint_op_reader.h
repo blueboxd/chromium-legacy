@@ -6,11 +6,13 @@
 #define CC_PAINT_PAINT_OP_READER_H_
 
 #include <optional>
+#include <type_traits>
 #include <vector>
 
 #include "base/bits.h"
-#include "base/memory/raw_ref.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/memory/stack_allocated.h"
+#include "cc/paint/draw_looper.h"
 #include "cc/paint/paint_export.h"
 #include "cc/paint/paint_filter.h"
 #include "cc/paint/paint_op_writer.h"
@@ -34,11 +36,14 @@ struct HDRMetadata;
 namespace cc {
 
 class PaintShader;
+class PathEffect;
 class SkottieWrapper;
 
 // PaintOpReader takes garbage |memory| and clobbers it with successive
 // read functions.
 class CC_PAINT_EXPORT PaintOpReader {
+  STACK_ALLOCATED();
+
  public:
   // The DeserializeOptions passed to the reader must set all fields if it can
   // be used to for deserializing images, paint records or text blobs.
@@ -81,6 +86,7 @@ class CC_PAINT_EXPORT PaintOpReader {
             PaintFlags::DynamicRangeLimitMixture dynamic_range_limit);
   void Read(sk_sp<SkData>* data);
   void Read(sk_sp<sktext::gpu::Slug>* slug);
+  void Read(sk_sp<DrawLooper>* looper);
   void Read(sk_sp<PaintFilter>* filter);
   void Read(sk_sp<PaintShader>* shader);
   void Read(SkMatrix* matrix);
@@ -143,8 +149,7 @@ class CC_PAINT_EXPORT PaintOpReader {
       return;
     }
 
-    vec->resize(size);
-    ReadData(size * sizeof(T), vec->data());
+    ReadVectorContent(size, vec);
   }
 
   // Returns a pointer to the next block of memory of size |bytes|, and treats
@@ -235,11 +240,6 @@ class CC_PAINT_EXPORT PaintOpReader {
                                size_t size,
                                const SkDeserialProcs* procs);
 
-  template <typename T>
-  void ReadFlattenable(sk_sp<T>* val,
-                       Factory<T> factory,
-                       DeserializationError error_on_factory_failure);
-
   template <typename Enum, Enum kMaxValue = Enum::kMaxValue>
   void ReadEnum(Enum* enum_value) {
     static_assert(static_cast<unsigned>(kMaxValue) <= 255,
@@ -256,6 +256,7 @@ class CC_PAINT_EXPORT PaintOpReader {
   void SetInvalid(DeserializationError error);
 
   void Read(sk_sp<ColorFilter>* filter);
+  void Read(sk_sp<PathEffect>* effect);
 
   // The main entry point is Read(sk_sp<PaintFilter>* filter) which calls one of
   // the following functions depending on read type.
@@ -333,10 +334,26 @@ class CC_PAINT_EXPORT PaintOpReader {
   uint8_t* CopyScratchSpace(size_t bytes);
   void DidRead(size_t bytes_read);
 
+  template <typename T>
+    requires(std::is_trivially_copyable_v<T>)
+  void ReadVectorContent(size_t size, std::vector<T>* vec) {
+    vec->resize(size);
+    ReadData(size * sizeof(T), vec->data());
+  }
+
+  template <typename T>
+    requires(!std::is_trivially_copyable_v<T>)
+  void ReadVectorContent(size_t size, std::vector<T>* vec) {
+    vec->resize(size);
+    for (size_t i = 0; i < size; ++i) {
+      Read(&(*vec)[i]);
+    }
+  }
+
   const volatile char* memory_ = nullptr;
   size_t remaining_bytes_ = 0u;
   bool valid_ = true;
-  const raw_ref<const PaintOp::DeserializeOptions> options_;
+  const PaintOp::DeserializeOptions& options_;
 
   // Indicates that the data was serialized with the following constraints:
   // 1) PaintRecords and SkDrawLoopers are ignored.

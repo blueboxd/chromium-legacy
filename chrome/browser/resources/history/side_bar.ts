@@ -7,18 +7,16 @@ import 'chrome://resources/cr_elements/cr_hidden_style.css.js';
 import 'chrome://resources/cr_elements/cr_icons.css.js';
 import 'chrome://resources/cr_elements/cr_menu_selector/cr_menu_selector.js';
 import 'chrome://resources/cr_elements/cr_nav_menu_item_style.css.js';
+import 'chrome://resources/cr_elements/cr_ripple/cr_ripple.js';
 import 'chrome://resources/cr_elements/icons.html.js';
+import 'chrome://resources/cr_elements/cr_icon/cr_icon.js';
 import 'chrome://resources/cr_elements/cr_shared_vars.css.js';
-import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
-import 'chrome://resources/polymer/v3_0/paper-ripple/paper-ripple.js';
-import 'chrome://resources/polymer/v3_0/paper-styles/color.js';
 import './shared_icons.html.js';
 import './shared_vars.css.js';
 import './strings.m.js';
 
 import type {CrMenuSelector} from 'chrome://resources/cr_elements/cr_menu_selector/cr_menu_selector.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
-import type {PaperRippleElement} from 'chrome://resources/polymer/v3_0/paper-ripple/paper-ripple.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {BrowserServiceImpl} from './browser_service.js';
@@ -32,10 +30,8 @@ export interface FooterInfo {
 
 export interface HistorySideBarElement {
   $: {
-    'cbd-ripple': PaperRippleElement,
     'history': HTMLAnchorElement,
     'menu': CrMenuSelector,
-    'thc-ripple': PaperRippleElement,
     'toggle-history-clusters': HTMLElement,
     'syncedTabs': HTMLElement,
   };
@@ -97,6 +93,8 @@ export class HistorySideBarElement extends PolymerElement {
         computed: 'computeShowHistoryClusters_(' +
             'historyClustersEnabled, historyClustersVisible)',
       },
+
+      productSpecificationsListsEnabled_: Boolean,
     };
   }
 
@@ -109,6 +107,8 @@ export class HistorySideBarElement extends PolymerElement {
   private historyClustersVisibleManagedByPolicy_: boolean;
   private showFooter_: boolean;
   private showHistoryClusters_: boolean;
+  private productSpecificationsListsEnabled_: boolean =
+      loadTimeData.getBoolean('productSpecificationsListsEnabled');
 
   override ready() {
     super.ready();
@@ -133,7 +133,6 @@ export class HistorySideBarElement extends PolymerElement {
     const browserService = BrowserServiceImpl.getInstance();
     browserService.recordAction('InitClearBrowsingData');
     browserService.openClearBrowsingData();
-    this.$['cbd-ripple'].upAction();
     e.preventDefault();
   }
 

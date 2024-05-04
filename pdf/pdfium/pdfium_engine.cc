@@ -63,6 +63,7 @@
 #include "third_party/pdfium/public/cpp/fpdf_scopers.h"
 #include "third_party/pdfium/public/fpdf_annot.h"
 #include "third_party/pdfium/public/fpdf_attachment.h"
+#include "third_party/pdfium/public/fpdf_catalog.h"
 #include "third_party/pdfium/public/fpdf_ext.h"
 #include "third_party/pdfium/public/fpdf_fwlevent.h"
 #include "third_party/pdfium/public/fpdf_ppo.h"
@@ -246,8 +247,8 @@ bool IsV8Initialized() {
 
 void SetUpV8() {
   if (!gin::IsolateHolder::Initialized()) {
-    // TODO(crbug.com/1111024): V8 flags for the PDF Viewer need to be set up as
-    // soon as the renderer process is created in the constructor of
+    // TODO(crbug.com/40142415): V8 flags for the PDF Viewer need to be set up
+    // as soon as the renderer process is created in the constructor of
     // `content::RenderProcessImpl`.
     const char* recommended = FPDF_GetRecommendedV8Flags();
     v8::V8::SetFlagsFromString(recommended, strlen(recommended));
@@ -1124,6 +1125,10 @@ AccessibilityFocusInfo PDFiumEngine::GetFocusInfo() {
     }
   }
   return focus_info;
+}
+
+bool PDFiumEngine::IsPDFDocTagged() {
+  return FPDFCatalog_IsTagged(doc());
 }
 
 uint32_t PDFiumEngine::GetLoadedByteSize() {
@@ -2821,7 +2826,7 @@ void PDFiumEngine::ContinueLoadingDocument(const std::string& password) {
 void PDFiumEngine::LoadPageInfo() {
   RefreshCurrentDocumentLayout();
 
-  // TODO(crbug.com/1013800): RefreshCurrentDocumentLayout() should send some
+  // TODO(crbug.com/40652841): RefreshCurrentDocumentLayout() should send some
   // sort of "current layout changed" notification, instead of proposing a new
   // layout. Proposals are never rejected currently, so this is OK for now.
   ProposeNextDocumentLayout();
@@ -2887,7 +2892,7 @@ std::vector<gfx::Size> PDFiumEngine::LoadPageSizes(
       page_available = doc_complete;
     }
 
-    // TODO(crbug.com/1013800): It'd be better if page size were independent of
+    // TODO(crbug.com/40652841): It'd be better if page size were independent of
     // layout options, and handled in the layout code.
     gfx::Size size = page_available ? GetPageSizeForLayout(i, layout_options)
                                     : default_page_size_;
@@ -3447,7 +3452,7 @@ gfx::Rect PDFiumEngine::GetVisibleRect() const {
   rv.set_x(static_cast<int>(position_.x() / current_zoom_));
   rv.set_y(static_cast<int>(position_.y() / current_zoom_));
 
-  // TODO(crbug.com/1237952): Can we avoid the need for .has_value()?
+  // TODO(crbug.com/40193305): Can we avoid the need for .has_value()?
   if (plugin_size_.has_value()) {
     rv.set_width(static_cast<int>(ceil(plugin_size_->width() / current_zoom_)));
     rv.set_height(
@@ -3796,7 +3801,7 @@ gfx::Size PDFiumEngine::ApplyDocumentLayout(
   // client_->ScrollToPage() would send another "viewport" message, triggering
   // an infinite loop.
   //
-  // TODO(crbug.com/1013800): The current implementation computes layout twice
+  // TODO(crbug.com/40652841): The current implementation computes layout twice
   // (here, and in InvalidateAllPages()). This shouldn't be too expensive at
   // realistic page counts, but could be avoided.
   UpdateDocumentLayout(&layout_);
@@ -3831,10 +3836,7 @@ gfx::Size PDFiumEngine::ApplyDocumentLayout(
 }
 
 void PDFiumEngine::SetSelecting(bool selecting) {
-  bool was_selecting = selecting_;
   selecting_ = selecting;
-  if (selecting_ != was_selecting)
-    client_->SetIsSelecting(selecting);
 }
 
 void PDFiumEngine::EnteredEditMode() {

@@ -3,13 +3,14 @@
 // found in the LICENSE file.
 
 import 'chrome://resources/cr_elements/md_select.css.js';
-import 'chrome://resources/polymer/v3_0/iron-collapse/iron-collapse.js';
+import 'chrome://resources/cr_elements/cr_collapse/cr_collapse.js';
 import './number_settings_section.js';
 import './print_preview_shared.css.js';
 import './settings_section.js';
 
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
+import type {Settings} from '../data/model.js';
 import {ScalingType} from '../data/scaling.js';
 
 import {getTemplate} from './scaling_settings.html.js';
@@ -89,7 +90,7 @@ export class PrintPreviewScalingSettingsElement extends
   private customSelected_: boolean;
   private dropdownDisabled_: boolean;
   private inputValid_: boolean;
-  private settingKey_: string;
+  private settingKey_: keyof Settings;
 
   private lastValidScaling_: string = '';
 

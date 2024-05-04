@@ -14,18 +14,21 @@
 #include "ash/wm/desks/desk_mini_view.h"
 #include "ash/wm/desks/desks_controller.h"
 #include "ash/wm/desks/scroll_arrow_button.h"
-#include "ash/wm/overview/overview_grid.h"
 #include "base/memory/raw_ptr.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/events/event.h"
-#include "ui/gfx/geometry/rect.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
+namespace gfx {
+class Rect;
+}  // namespace gfx
+
 namespace ash {
 
 class DeskBarHoverObserver;
+class OverviewGrid;
 
 // Base class for desk bar views, including desk bar view within overview and
 // desk bar view for the desk button.
@@ -336,8 +339,8 @@ class ASH_EXPORT DeskBarViewBase : public views::View,
   void OnLibraryButtonPressed();
 
   // This function cycles through `mini_views_` and updates the tooltip for each
-  // mini view's combine desks button.
-  void MaybeUpdateCombineDesksTooltips();
+  // mini view's desk action buttons.
+  void MaybeUpdateDeskActionButtonTooltips();
 
   // Scrollview callbacks.
   void OnContentsScrolled();
@@ -348,6 +351,9 @@ class ASH_EXPORT DeskBarViewBase : public views::View,
   // scroll. Return true if the scroll is triggered. Return false if the scroll
   // is ended.
   bool MaybeScrollByDraggedDesk();
+
+  // Maybe refreshes `overview_grid_` bounds on desk bar `state_` changed.
+  void MaybeRefreshOverviewGridBounds();
 
   // Records UMA histograms on desk profile adoption.
   void RecordDeskProfileAdoption();

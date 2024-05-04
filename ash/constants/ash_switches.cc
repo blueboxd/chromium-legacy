@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <string>
 
+#include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/hash/sha1.h"
 #include "base/metrics/field_trial.h"
@@ -34,6 +35,22 @@ bool g_ignore_forest_secret_key = false;
 constexpr char kCampbellHashKey[] =
     "\x78\xb6\xa7\x59\x06\x11\xc7\xea\x09\x7e\x92\xe3\xe9\xff\xa6\x01\x4c"
     "\x03\x18\x32";
+
+// The hash value for the secret key of the mahi feature.
+constexpr char kMahiHashKey[] =
+    "\xFE\x34\x22\x3F\xEA\x73\xC2\xD5\xA6\xE8\x82\x0B\xF3\x67\x7D\x01\xA3\x6F"
+    "\x3A\xFF";
+
+// Whether checking the mahi secret key is ignored.
+bool g_ignore_mahi_secret_key = false;
+
+// The hash value for the secret key of the mahi feature.
+constexpr char kModifierSplitHashKey[] =
+    "\xFC\xEF\x09\x7D\x01\x39\x86\x6A\x57\x08\x7C\x22\x5F\x1C\xEF\x8A\x3B\x7E"
+    "\x10\x99";
+
+// Whether checking the mahi secret key is ignored.
+bool g_ignore_modifier_split_secret_key = false;
 
 }  // namespace
 
@@ -134,10 +151,6 @@ const char kArcErofs[] = "arc-erofs";
 const char kArcForceMountAndroidVolumesInFiles[] =
     "arc-force-mount-android-volumes-in-files";
 
-// If set, forces post boot dexopt to run immediately without device idle
-// requirement.
-const char kArcForcePostBootDexOpt[] = "arc-force-post-boot-dex-opt";
-
 // Flag that forces the OptIn ui to be shown. Used in tests.
 const char kArcForceShowOptInUi[] = "arc-force-show-optin-ui";
 
@@ -200,11 +213,6 @@ const char kArcVmUreadaheadMode[] = "arcvm-ureadahead-mode";
 
 // Madvises the kernel to use Huge Pages for guest memory.
 const char kArcVmUseHugePages[] = "arcvm-use-hugepages";
-
-// Allows bypassing the GlanceablesEnabled pref. This requires that the
-// kGlanceablesV2 feature is enabled as well. Intended to force enable
-// glanceables for testing.
-const char kAshBypassGlanceablesPref[] = "ash-bypass-glanceables-pref";
 
 // Clear the fast ink buffer upon creation. This is needed on some devices that
 // do not zero out new buffers.
@@ -402,9 +410,6 @@ const char kDerelictIdleTimeout[] = "derelict-idle-timeout";
 // tests as some tests may time out if the ARC container is throttled.
 const char kDisableArcCpuRestriction[] = "disable-arc-cpu-restriction";
 
-// Disables android user data wipe on opt out.
-const char kDisableArcDataWipe[] = "disable-arc-data-wipe";
-
 // Disables ARC Opt-in verification process and ARC is enabled by default.
 const char kDisableArcOptInVerification[] = "disable-arc-opt-in-verification";
 
@@ -465,7 +470,7 @@ const char kDisableRollbackOption[] = "disable-rollback-option";
 
 // Disables client certificate authentication on the sign-in frame on the Chrome
 // OS sign-in profile.
-// TODO(https://crbug.com/844022): Remove this flag when reaching endpoints that
+// TODO(crbug.com/41389560): Remove this flag when reaching endpoints that
 // request client certs does not hang anymore when there is no system token yet.
 const char kDisableSigninFrameClientCerts[] =
     "disable-signin-frame-client-certs";
@@ -641,6 +646,10 @@ const char kFirstExecAfterBoot[] = "first-exec-after-boot";
 // Forces a fetch of Birch data whenever a Pine session starts.
 const char kForceBirchFetch[] = "force-birch-fetch";
 
+// If set, skips the logic in birch release notes provider and always sets
+// release notes item.
+const char kForceBirchReleaseNotes[] = "force-birch-release-notes";
+
 // Forces fetching tokens for Cryptohome Recovery.
 const char kForceCryptohomeRecoveryForTesting[] =
     "force-cryptohome-recovery-for-testing";
@@ -689,11 +698,19 @@ const char kForestFeatureKey[] = "forest-feature-key";
 // "CHROMEBIT", "CHROMEBOOK", "REFERENCE", "CHROMEBOX"
 const char kFormFactor[] = "form-factor";
 
+// Ignores `ENABLE_MERGE_REQUEST` build flag. Used only in tests where
+// `GlanceablesTimeManagementTasksView` feature flag is manually configured.
+const char kGlanceablesIgnoreEnableMergeRequestBuildFlag[] =
+    "glanceables-ignore-enable-merge-request-build-flag";
+
 // Switch name for "glanceables-v2-key" flag and its expected hashed value.
 const char kGlanceablesKeyExpectedHash[] =
     "\x52\xde\x04\xda\xef\x3a\xde\xe2\x90\x68\xa1\x5c\x36\xd5\x6b\x1d\xb8\x11"
     "\xe2\xcb";
 const char kGlanceablesKeySwitch[] = "glanceables-key";
+
+// Specifies campaigns to override for testing.
+const char kGrowthCampaigns[] = "growth-campaigns";
 
 // Path for which to load growth campaigns file for testing (instead of
 // downloading from Omaha).
@@ -872,6 +889,9 @@ const char kDisallowLacros[] = "disallow-lacros";
 // used, event if --disallow-lacros is set.
 const char kDisableDisallowLacros[] = "disable-disallow-lacros";
 
+// Supply secret key for the mahi feature.
+const char kMahiFeatureKey[] = "mahi-feature-key";
+
 // Specifies the user that the browser data migration should happen for.
 const char kBrowserDataMigrationForUser[] = "browser-data-migration-for-user";
 
@@ -986,7 +1006,7 @@ const char kProfileRequiresPolicy[] = "profile-requires-policy";
 
 // SAML assertion consumer URL, used to detect when Gaia-less SAML flows end
 // (e.g. for SAML managed guest sessions)
-// TODO(984021): Remove when URL is sent by DMServer.
+// TODO(crbug.com/40636049): Remove when URL is sent by DMServer.
 const char kPublicAccountsSamlAclUrl[] = "public-accounts-saml-acl-url";
 
 // Adds fake Bluetooth devices to the quick settings menu for UI testing.
@@ -1024,7 +1044,7 @@ const char kRmaNotAllowed[] = "rma-not-allowed";
 const char kSafeMode[] = "safe-mode";
 
 // Password change url for SAML users.
-// TODO(941489): Remove when the bug is fixed.
+// TODO(crbug.com/40618074): Remove when the bug is fixed.
 const char kSamlPasswordChangeUrl[] = "saml-password-change-url";
 
 // New modular design for the shelf with apps separated into a hotseat UI and
@@ -1128,9 +1148,6 @@ const char kUpdateRequiredAueForTest[] = "aue-reached-for-update-required-test";
 const char kUseFakeCrasAudioClientForDBus[] =
     "use-fake-cras-audio-client-for-dbus";
 
-// Use the fake MahiManager within the Mahi feature.
-const char kUseFakeMahiManager[] = "use-fake-mahi-manager";
-
 // Flag that stored MyFiles folder inside the user data directory.
 // $HOME/Downloads is used as MyFiles folder for ease access to local files for
 // debugging when running on Linux. By setting this flag, <cryptohome>/MyFiles
@@ -1150,10 +1167,6 @@ const char kWebUiDataSourcePathForTesting[] =
 // Enable the getAccessToken autotest API which creates access tokens using
 // the internal OAuth client ID.
 const char kGetAccessTokenForTest[] = "get-access-token-for-test";
-
-// Indicates whether camera effects use flag is set in ChromeOS.
-const char kCameraEffectsSupportedByHardware[] =
-    "camera-effects-supported-by-hardware";
 
 // Prevent kiosk autolaunch for testing.
 const char kPreventKioskAutolaunchForTesting[] =
@@ -1332,11 +1345,6 @@ bool IsStabilizeTimeDependentViewForTestsEnabled() {
       kStabilizeTimeDependentViewForTests);
 }
 
-bool IsCameraEffectsSupportedByHardware() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      kCameraEffectsSupportedByHardware);
-}
-
 bool UseFakeCrasAudioClientForDBus() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       kUseFakeCrasAudioClientForDBus);
@@ -1387,6 +1395,56 @@ bool IsForestSecretKeyMatched() {
 
 void SetIgnoreForestSecretKeyForTest(bool ignore) {
   g_ignore_forest_secret_key = ignore;
+}
+
+bool IsMahiSecretKeyMatched() {
+  if (g_ignore_mahi_secret_key) {
+    return true;
+  }
+
+  // Commandline looks like:
+  //  out/Default/chrome --user-data-dir=/tmp/tmp123
+  //  --mahi-feature-key="INSERT KEY HERE" --enable-features=Mahi
+  const std::string provided_key_hash = base::SHA1HashString(
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          kMahiFeatureKey));
+
+  bool mahi_key_matched = (provided_key_hash == kMahiHashKey);
+  if (!mahi_key_matched) {
+    LOG(ERROR) << "Provided secret key does not match with the expected one.";
+  }
+
+  return mahi_key_matched;
+}
+
+base::AutoReset<bool> SetIgnoreMahiSecretKeyForTest() {
+  return {&g_ignore_mahi_secret_key, true};
+}
+
+bool IsModifierSplitSecretKeyMatched() {
+  if (g_ignore_modifier_split_secret_key) {
+    return true;
+  }
+
+  // Commandline looks like:
+  //  out/Default/chrome --user-data-dir=/tmp/tmp123
+  //  --modifier-split-feature-key="INSERT KEY HERE"
+  //  --enable-features=ModifierSplit
+  const std::string provided_key_hash = base::SHA1HashString(
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          kModifierSplitFeatureKey));
+
+  bool modifier_split_key_matched =
+      (provided_key_hash == kModifierSplitHashKey);
+  if (!modifier_split_key_matched) {
+    LOG(ERROR) << "Provided secret key does not match with the expected one.";
+  }
+
+  return modifier_split_key_matched;
+}
+
+base::AutoReset<bool> SetIgnoreModifierSplitSecretKeyForTest() {
+  return {&g_ignore_modifier_split_secret_key, true};
 }
 
 }  // namespace ash::switches

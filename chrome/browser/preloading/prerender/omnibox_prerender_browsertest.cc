@@ -298,12 +298,14 @@ class PrerenderOmniboxSearchSuggestionBrowserTest
 
   void NavigateToPrerenderedResult(const GURL& expected_prerender_url) {
     content::TestNavigationObserver observer(GetActiveWebContents());
-    GetActiveWebContents()->OpenURL(content::OpenURLParams(
-        expected_prerender_url, content::Referrer(),
-        WindowOpenDisposition::CURRENT_TAB,
-        ui::PageTransitionFromInt(ui::PAGE_TRANSITION_GENERATED |
-                                  ui::PAGE_TRANSITION_FROM_ADDRESS_BAR),
-        /*is_renderer_initiated=*/false));
+    GetActiveWebContents()->OpenURL(
+        content::OpenURLParams(
+            expected_prerender_url, content::Referrer(),
+            WindowOpenDisposition::CURRENT_TAB,
+            ui::PageTransitionFromInt(ui::PAGE_TRANSITION_GENERATED |
+                                      ui::PAGE_TRANSITION_FROM_ADDRESS_BAR),
+            /*is_renderer_initiated=*/false),
+        /*navigation_handle_callback=*/{});
     observer.Wait();
   }
 
@@ -385,7 +387,7 @@ class PrerenderOmniboxSearchSuggestionReloadBrowserTest
         {features::kBackForwardCache});
   }
 
-  // TODO(crbug.com/1491942): This fails with the field trial testing config.
+  // TODO(crbug.com/40285326): This fails with the field trial testing config.
   void SetUpCommandLine(base::CommandLine* command_line) override {
     PrerenderOmniboxSearchSuggestionBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch("disable-field-trial-config");
@@ -457,7 +459,7 @@ class PrerenderOmniboxSearchSuggestionExpiryBrowserTest
         {});
   }
 
-  // TODO(crbug.com/1491942): This fails with the field trial testing config.
+  // TODO(crbug.com/40285326): This fails with the field trial testing config.
   void SetUpCommandLine(base::CommandLine* command_line) override {
     PrerenderOmniboxSearchSuggestionBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch("disable-field-trial-config");

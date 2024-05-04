@@ -8,6 +8,7 @@ import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
+import static androidx.test.espresso.matcher.RootMatchers.isDialog;
 import static androidx.test.espresso.matcher.ViewMatchers.Visibility.GONE;
 import static androidx.test.espresso.matcher.ViewMatchers.hasDescendant;
 import static androidx.test.espresso.matcher.ViewMatchers.hasSibling;
@@ -240,7 +241,7 @@ public class PageInfoViewTest {
                                     tab,
                                     ChromePageInfoHighlight.forPermission(highlightedPermission));
                 });
-        onViewWaiting(allOf(withId(R.id.page_info_url_wrapper), isDisplayed()));
+        onViewWaiting(allOf(withId(R.id.page_info_url_wrapper), isDisplayed()), true);
     }
 
     private View getPageInfoView() {
@@ -249,6 +250,13 @@ public class PageInfoViewTest {
         View view = controller.getPageInfoViewForTesting();
         assertNotNull(view);
         return view;
+    }
+
+    private void enableTrackingProtectionFixedExpiration() {
+        PageInfoController controller = PageInfoController.getLastPageInfoControllerForTesting();
+        assertNotNull(controller);
+        var tpController = controller.getTrackingProtectionControllerForTesting();
+        tpController.setFixedExceptionExpirationForTesting(true);
     }
 
     private void setThirdPartyCookieBlocking(@CookieControlsMode int value) {
@@ -418,7 +426,8 @@ public class PageInfoViewTest {
     public void tearDown() throws TimeoutException {
         LocationUtils.setFactory(null);
         // Notification channels don't get cleaned up automatically.
-        // TODO(crbug.com/951402): Find a general solution to avoid leaking channels between tests.
+        // TODO(crbug.com/41452182): Find a general solution to avoid leaking channels between
+        // tests.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             TestThreadUtils.runOnUiThreadBlocking(
                     () -> {
@@ -690,11 +699,11 @@ public class PageInfoViewTest {
     @Test
     @MediumTest
     @Feature({"RenderTest"})
-    @DisabledTest(message = "https://crbug.com/1510968")
     public void testShowCookiesSubpageTrackingProtection() throws IOException {
         enableTrackingProtection();
         setThirdPartyCookieBlocking(CookieControlsMode.BLOCK_THIRD_PARTY);
         loadUrlAndOpenPageInfo(mTestServerRule.getServer().getURL(sSimpleHtml));
+        enableTrackingProtectionFixedExpiration();
         onView(withId(R.id.page_info_cookies_row)).perform(click());
         onViewWaiting(
                 allOf(
@@ -718,12 +727,12 @@ public class PageInfoViewTest {
     @Test
     @MediumTest
     @Feature({"RenderTest"})
-    @DisabledTest(message = "https://crbug.com/1510968")
     public void testShowCookiesSubpageTrackingProtectionBlockAll() throws IOException {
         enableTrackingProtection();
         blockAll3PC();
         setThirdPartyCookieBlocking(CookieControlsMode.BLOCK_THIRD_PARTY);
         loadUrlAndOpenPageInfo(mTestServerRule.getServer().getURL(sSimpleHtml));
+        enableTrackingProtectionFixedExpiration();
         onView(withId(R.id.page_info_cookies_row)).perform(click());
         onViewWaiting(
                 allOf(withText(containsString("You blocked sites from using")), isDisplayed()));
@@ -857,7 +866,7 @@ public class PageInfoViewTest {
         expectHasPermissions(url, true);
         // Go to permissions subpage.
         openPageInfo(PageInfoController.NO_HIGHLIGHTED_PERMISSION);
-        onView(withId(R.id.page_info_permissions_row)).perform(click());
+        onView(withId(R.id.page_info_permissions_row)).inRoot(isDialog()).perform(click());
         // Clear permissions in page info.
         onViewWaiting(allOf(withText("Reset permissions"), isDisplayed())).perform(click());
         onView(withText("Reset")).perform(click());
@@ -942,7 +951,7 @@ public class PageInfoViewTest {
                             pageInfoControllerDelegate,
                             ChromePageInfoHighlight.noHighlight());
                 });
-        onViewWaiting(allOf(withText(R.string.page_info_connection_paint_preview), isDisplayed()));
+        onViewWaiting(allOf(withText(R.string.page_info_connection_paint_preview), isDisplayed()), true);
     }
 
     /** Tests PageInfo on a website with permissions and no particular row highlight. */
@@ -954,6 +963,7 @@ public class PageInfoViewTest {
                 mTestServerRule.getServer().getURL(sSimpleHtml),
                 PageInfoController.NO_HIGHLIGHTED_PERMISSION);
         onView(withId(R.id.page_info_permissions_row))
+                .inRoot(isDialog())
                 .check(matches(not(hasBackgroundColor(R.color.iph_highlight_blue))));
     }
 
@@ -1084,7 +1094,9 @@ public class PageInfoViewTest {
     public void testShowAdPersonalizationInfoSubPageV4() throws IOException {
         loadUrlAndOpenPageInfo(
                 mTestServerRule.getServer().getURLWithHostName("example.com", sSimpleHtml));
-        onView(withId(PageInfoAdPersonalizationController.ROW_ID)).perform(click());
+        onView(withId(PageInfoAdPersonalizationController.ROW_ID))
+                .inRoot(isDialog())
+                .perform(click());
         onViewWaiting(
                 allOf(
                         withText(R.string.page_info_ad_privacy_subpage_manage_button),
@@ -1112,5 +1124,6 @@ public class PageInfoViewTest {
         onView(withText(R.string.ad_privacy_page_topics_link_row_label)).check(doesNotExist());
     }
 
-    // TODO(1071762): Add tests for preview pages, offline pages, offline state and other states.
+    // TODO(crbug.com/40685274): Add tests for preview pages, offline pages, offline state and other
+    // states.
 }

@@ -240,27 +240,9 @@ class CONTENT_EXPORT ServiceWorkerVersion
   FetchHandlerType fetch_handler_type() const;
   void set_fetch_handler_type(FetchHandlerType fetch_handler_type);
 
-  // If the feature flag for `fetch_handler_type_` is enabled,
-  // the function returns `fetch_handler_type_`.
-  // Otherwise, kNotSkippable would be returned if `fetch_handler_type_`
-  // is not kNoHandler.  Note that kNoHandler will be returned if
-  // `fetch_handler_type_` is kNoHandler.
-  //
-  // You may wonder why we need to introduce the effective fetch handler
-  // type in addition to the existing fetch_handler_type.  That is because
-  // we cannot change the fetch_handler_type behavior for the service
-  // worker registration and the metrics.  Since the service worker
-  // registration is persistent data, I do not think it is good idea to
-  // change its contents by the flag.  For metrics, we want to compare the
-  // same fetch handler case with the different flags.  The
-  // fetch_handler_type should also need to be persistent here.
-  // Note that FCP/LCP with skippable fetch handler type is taken in this
-  // way.
-  FetchHandlerType EffectiveFetchHandlerType() const;
-
   // Return the option indicating how the fetch handler should be bypassed.
-  // ServiceWorkerBypassFetchHandler feature uses this to let the renderer know
-  // to bypass fetch handlers for subresources.
+  // This is used to let the renderer know to bypass fetch handlers for
+  // subresources.
   FetchHandlerBypassOption fetch_handler_bypass_option() {
     return fetch_handler_bypass_option_;
   }
@@ -470,6 +452,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
   controllee_map() const {
     return controllee_map_;
   }
+  // Returns true if |uuid| is captured by BFCache.
+  bool BFCacheContainsControllee(const std::string& uuid) const;
 
   // BackForwardCache:
   // Evicts all the controllees from back-forward cache. The controllees in
@@ -933,10 +917,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
                       const GURL& url,
                       NavigateClientCallback callback) override;
   void SkipWaiting(SkipWaitingCallback callback) override;
-  void RegisterRouter(const blink::ServiceWorkerRouterRules& rules,
-                      RegisterRouterCallback callback) override;
   void AddRoutes(const blink::ServiceWorkerRouterRules& rules,
-                 RegisterRouterCallback callback) override;
+                 AddRoutesCallback callback) override;
 
   // Implements blink::mojom::AssociatedInterfaceProvider.
   void GetAssociatedInterface(
@@ -1094,9 +1076,9 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // the updated script headers have been fetched.
   // For service workers loaded from disk, this is restored from disk.
   //
-  // TODO(https://crbug.com/1239551): Set all of this, not just COEP, on script
+  // TODO(crbug.com/40056874): Set all of this, not just COEP, on script
   // updates.
-  // TODO(https://crbug.com/1239551): Persist all of this to disk, not just the
+  // TODO(crbug.com/40056874): Persist all of this to disk, not just the
   // COEP field.
   network::mojom::ClientSecurityStatePtr client_security_state_;
 
@@ -1110,7 +1092,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // from calling nested StartWorker(). A nested StartWorker() call makes `this`
   // enter an invalid state (i.e., `start_callbacks_` is empty even when
   // `running_status()` is STARTING) so it should not happen.
-  // TODO(crbug.com/1161800): Figure out a way to disallow a callback to
+  // TODO(crbug.com/40739069): Figure out a way to disallow a callback to
   // re-enter StartWorker().
   bool is_running_start_callbacks_ = false;
   std::vector<StatusCallback> start_callbacks_;
@@ -1176,7 +1158,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // |controllee_map_| and |bfcached_controllee_map_| should not share the same
   // controllee.  ServiceWorkerContainerHost in the controllee maps should be
   // non-null.
-  // TODO(crbug.com/1253581): Fix cases where hosts can become nullptr while
+  // TODO(crbug.com/40199210): Fix cases where hosts can become nullptr while
   //                          stored in the maps.
   std::map<std::string, base::WeakPtr<ServiceWorkerContainerHost>>
       controllee_map_;
@@ -1186,7 +1168,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // Keeps track of the |client_uuid| of ContainerHost that is being evicted,
   // and the reason why it is evicted. Once eviction is complete, the entry will
   // be removed.
-  // TODO(crbug.com/1021718): Remove this once we fix the crash.
+  // TODO(crbug.com/40657227): Remove this once we fix the crash.
   std::map<std::string, BackForwardCacheMetrics::NotRestoredReason>
       controllees_to_be_evicted_;
 
@@ -1306,9 +1288,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // version is created.
   std::optional<std::string> sha256_script_checksum_;
 
-  using RouterRegistrationMethod = blink::mojom::RouterRegistrationMethod;
-  RouterRegistrationMethod router_registration_method_ =
-      RouterRegistrationMethod::Uninitialized;
   std::unique_ptr<content::ServiceWorkerRouterEvaluator> router_evaluator_;
 
   std::unique_ptr<blink::AssociatedInterfaceRegistry> associated_registry_;

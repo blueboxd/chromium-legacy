@@ -92,7 +92,9 @@ constexpr char kGetTetheringStatus[] = "getTetheringStatus";
 constexpr char kGetTetheringConfig[] = "getTetheringConfig";
 constexpr char kSetTetheringConfig[] = "setTetheringConfig";
 constexpr char kCheckTetheringReadiness[] = "checkTetheringReadiness";
-constexpr char kSetTetheringEnabled[] = "setTetheringEnabled";
+constexpr char kGetWifiDirectCapabilities[] = "getWifiDirectCapabilities";
+constexpr char kGetWifiDirectOwnerInfo[] = "getWifiDirectOwnerInfo";
+constexpr char kGetWifiDirectClientInfo[] = "getWifiDirectClientInfo";
 
 bool GetServicePathFromGuid(const std::string& guid,
                             std::string* service_path) {
@@ -576,10 +578,6 @@ class HotspotConfigMessageHandler : public content::WebUIMessageHandler {
         base::BindRepeating(
             &HotspotConfigMessageHandler::CheckTetheringReadiness,
             base::Unretained(this)));
-    web_ui()->RegisterMessageCallback(
-        kSetTetheringEnabled,
-        base::BindRepeating(&HotspotConfigMessageHandler::SetTetheringEnabled,
-                            base::Unretained(this)));
   }
 
  private:
@@ -628,34 +626,6 @@ class HotspotConfigMessageHandler : public content::WebUIMessageHandler {
         base::BindOnce(&HotspotConfigMessageHandler::RespondError,
                        weak_ptr_factory_.GetWeakPtr(), callback_id,
                        kCheckTetheringReadiness));
-  }
-
-  void SetTetheringEnabled(const base::Value::List& arg_list) {
-    CHECK_EQ(2u, arg_list.size());
-    std::string callback_id = arg_list[0].GetString();
-    bool enabled = arg_list[1].GetBool();
-
-    // Enable TetheringAllowed flag in Shill manager before turning on/off
-    // tethering.
-    ShillManagerClient::Get()->SetProperty(
-        shill::kTetheringAllowedProperty, base::Value(true),
-        base::BindOnce(&HotspotConfigMessageHandler::PerformSetTetheringEnabled,
-                       weak_ptr_factory_.GetWeakPtr(), callback_id, enabled),
-        base::BindOnce(
-            &HotspotConfigMessageHandler::SetManagerPropertiesErrorCallback,
-            weak_ptr_factory_.GetWeakPtr(), callback_id,
-            shill::kTetheringConfigProperty));
-  }
-
-  void PerformSetTetheringEnabled(const std::string& callback_id,
-                                  bool enabled) {
-    ShillManagerClient::Get()->SetTetheringEnabled(
-        enabled,
-        base::BindOnce(&HotspotConfigMessageHandler::RespondStringResult,
-                       weak_ptr_factory_.GetWeakPtr(), callback_id),
-        base::BindOnce(&HotspotConfigMessageHandler::RespondError,
-                       weak_ptr_factory_.GetWeakPtr(), callback_id,
-                       kSetTetheringEnabled));
   }
 
   void SetTetheringConfig(const base::Value::List& arg_list) {
@@ -741,6 +711,97 @@ class HotspotConfigMessageHandler : public content::WebUIMessageHandler {
   base::WeakPtrFactory<HotspotConfigMessageHandler> weak_ptr_factory_{this};
 };
 
+class WifiDirectMessageHandler : public content::WebUIMessageHandler {
+ public:
+  WifiDirectMessageHandler() = default;
+  ~WifiDirectMessageHandler() override = default;
+
+  // WebUIMessageHandler implementation.
+  void RegisterMessages() override {
+    web_ui()->RegisterMessageCallback(
+        kGetWifiDirectCapabilities,
+        base::BindRepeating(
+            &WifiDirectMessageHandler::GetWifiDirectCapabilities,
+            base::Unretained(this)));
+    web_ui()->RegisterMessageCallback(
+        kGetWifiDirectOwnerInfo,
+        base::BindRepeating(&WifiDirectMessageHandler::GetWifiDirectOwnerInfo,
+                            base::Unretained(this)));
+    web_ui()->RegisterMessageCallback(
+        kGetWifiDirectClientInfo,
+        base::BindRepeating(&WifiDirectMessageHandler::GetWifiDirectClientInfo,
+                            base::Unretained(this)));
+  }
+
+ private:
+  void Respond(const std::string& callback_id, const base::ValueView response) {
+    AllowJavascript();
+    ResolveJavascriptCallback(base::Value(callback_id), response);
+  }
+
+  void GetWifiDirectCapabilities(const base::Value::List& arg_list) {
+    CHECK_EQ(1u, arg_list.size());
+    std::string callback_id = arg_list[0].GetString();
+
+    ShillManagerClient::Get()->GetProperties(base::BindOnce(
+        &WifiDirectMessageHandler::OnGetShillManagerDictPropertiesByKey,
+        weak_ptr_factory_.GetWeakPtr(), callback_id,
+        shill::kP2PCapabilitiesProperty));
+  }
+
+  void GetWifiDirectOwnerInfo(const base::Value::List& arg_list) {
+    CHECK_EQ(1u, arg_list.size());
+    std::string callback_id = arg_list[0].GetString();
+
+    ShillManagerClient::Get()->GetProperties(base::BindOnce(
+        &WifiDirectMessageHandler::OnGetShillManagerListPropertiesByKey,
+        weak_ptr_factory_.GetWeakPtr(), callback_id,
+        shill::kP2PGroupInfosProperty));
+  }
+
+  void GetWifiDirectClientInfo(const base::Value::List& arg_list) {
+    CHECK_EQ(1u, arg_list.size());
+    std::string callback_id = arg_list[0].GetString();
+
+    ShillManagerClient::Get()->GetProperties(base::BindOnce(
+        &WifiDirectMessageHandler::OnGetShillManagerListPropertiesByKey,
+        weak_ptr_factory_.GetWeakPtr(), callback_id,
+        shill::kP2PClientInfosProperty));
+  }
+
+  void OnGetShillManagerListPropertiesByKey(
+      const std::string& callback_id,
+      const std::string& dict_key,
+      std::optional<base::Value::Dict> properties) {
+    if (!properties) {
+      NET_LOG(ERROR) << "Error getting Shill manager properties.";
+      Respond(callback_id,
+              base::Value("Error getting Shill manager properties."));
+      return;
+    }
+
+    base::Value::List* value = properties->FindList(dict_key);
+    Respond(callback_id, value ? std::move(*value) : base::Value::List());
+  }
+
+  void OnGetShillManagerDictPropertiesByKey(
+      const std::string& callback_id,
+      const std::string& dict_key,
+      std::optional<base::Value::Dict> properties) {
+    if (!properties) {
+      NET_LOG(ERROR) << "Error getting Shill manager properties.";
+      Respond(callback_id,
+              base::Value("Error getting Shill manager properties."));
+      return;
+    }
+
+    base::Value::Dict* value = properties->FindDict(dict_key);
+    Respond(callback_id, value ? std::move(*value) : base::Value::Dict());
+  }
+
+  base::WeakPtrFactory<WifiDirectMessageHandler> weak_ptr_factory_{this};
+};
+
 }  // namespace network_ui
 
 // static
@@ -760,6 +821,8 @@ base::Value::Dict NetworkUI::GetLocalizedStrings() {
            l10n_util::GetStringUTF16(IDS_NETWORK_UI_TAB_NETWORK_HOTSPOT))
       .Set("networkMetricsTab",
            l10n_util::GetStringUTF16(IDS_NETWORK_UI_TAB_NETWORK_METRICS))
+      .Set("networkWifiDirectTab",
+           l10n_util::GetStringUTF16(IDS_NETWORK_UI_TAB_NETWORK_WIFI_DIRECT))
       .Set("autoRefreshText",
            l10n_util::GetStringUTF16(IDS_NETWORK_UI_AUTO_REFRESH))
       .Set("deviceLogLinkText",
@@ -914,9 +977,29 @@ base::Value::Dict NetworkUI::GetLocalizedStrings() {
       .Set("checkTetheringReadinessButtonText",
            l10n_util::GetStringUTF16(
                IDS_NETWORK_UI_CHECK_TETHERING_READINESS_BUTTON_TEXT))
-      .Set("setTetheringEnabledLabel",
+      .Set(
+          "setTetheringEnabledLabel",
+          l10n_util::GetStringUTF16(IDS_NETWORK_UI_SET_TETHERING_ENABLED_LABEL))
+
+      // Network Wifi Direct
+      .Set("wifiDirectCapabilitiesLabel",
            l10n_util::GetStringUTF16(
-               IDS_NETWORK_UI_SET_TETHERING_ENABLED_LABEL));
+               IDS_NETWORK_UI_WIFI_DIRECT_CAPABILITIES_LABEL))
+      .Set("refreshWifiDirectCapabilitiesButtonText",
+           l10n_util::GetStringUTF16(
+               IDS_NETWORK_UI_REFRESH_WIFI_DIRECT_CAPABILITIES_BUTTON_TEXT))
+      .Set("wifiDirectOwnerInfoLabel",
+           l10n_util::GetStringUTF16(
+               IDS_NETWORK_UI_WIFI_DIRECT_OWNER_INFO_LABEL))
+      .Set("refreshWifiDirectOwnerInfoButtonText",
+           l10n_util::GetStringUTF16(
+               IDS_NETWORK_UI_REFRESH_WIFI_DIRECT_OWNER_INFO_BUTTON_TEXT))
+      .Set("wifiDirectClientInfoLabel",
+           l10n_util::GetStringUTF16(
+               IDS_NETWORK_UI_WIFI_DIRECT_CLIENT_INFO_LABEL))
+      .Set("refreshWifiDirectClientInfoButtonText",
+           l10n_util::GetStringUTF16(
+               IDS_NETWORK_UI_REFRESH_WIFI_DIRECT_CLIENT_INFO_BUTTON_TEXT));
 }
 
 NetworkUI::NetworkUI(content::WebUI* web_ui)
@@ -929,6 +1012,8 @@ NetworkUI::NetworkUI(content::WebUI* web_ui)
       std::make_unique<NetworkDiagnosticsMessageHandler>());
   web_ui->AddMessageHandler(
       std::make_unique<network_ui::HotspotConfigMessageHandler>());
+  web_ui->AddMessageHandler(
+      std::make_unique<network_ui::WifiDirectMessageHandler>());
 
   // Enable extension API calls in the WebUI.
   extensions::TabHelper::CreateForWebContents(web_ui->GetWebContents());
@@ -942,6 +1027,7 @@ NetworkUI::NetworkUI(content::WebUI* web_ui)
   html->AddLocalizedStrings(localized_strings);
   html->AddBoolean("isGuestModeActive", IsGuestModeActive());
   html->AddBoolean("isHotspotEnabled", features::IsHotspotEnabled());
+  html->AddBoolean("isWifiDirectEnabled", features::IsWifiDirectEnabled());
   html->AddString("tetheringStateStarting", shill::kTetheringStateStarting);
   html->AddString("tetheringStateActive", shill::kTetheringStateActive);
   network_health::AddResources(html);

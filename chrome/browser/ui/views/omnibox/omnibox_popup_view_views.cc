@@ -194,8 +194,7 @@ gfx::Image OmniboxPopupViewViews::GetMatchIcon(
 void OmniboxPopupViewViews::SetSelectedIndex(size_t index) {
   DCHECK(HasMatchAt(index));
 
-  if (!OmniboxFieldTrial::IsKeywordModeRefreshEnabled() ||
-      index != model()->GetPopupSelection().line) {
+  if (index != model()->GetPopupSelection().line) {
     OmniboxPopupSelection::LineState line_state = OmniboxPopupSelection::NORMAL;
     model()->SetPopupSelection(OmniboxPopupSelection(index, line_state));
     OnPropertyChanged(model(), views::kPropertyEffectsNone);
@@ -350,17 +349,7 @@ void OmniboxPopupViewViews::UpdatePopupAppearance() {
       FireAXEventsForNewActiveDescendant(result_view);
     }
 
-#if BUILDFLAG(IS_MAC)
-    // It's not great for promos to overlap the omnibox if the user opens the
-    // drop-down after showing the promo. This especially causes issues on Mac
-    // due to z-order/rendering issues, see crbug.com/1225046 for examples.
-    auto* const promo_controller =
-        BrowserFeaturePromoController::GetForView(omnibox_view_);
-    if (promo_controller) {
-      promo_controller->DismissNonCriticalBubbleInRegion(
-          omnibox_view_->GetBoundsInScreen());
-    }
-#endif
+    NotifyOpenListeners();
   }
   InvalidateLayout();
 }
@@ -509,7 +498,9 @@ void OmniboxPopupViewViews::OnWidgetVisibilityChanged(views::Widget* widget,
     popup_->GetCompositor()->RequestSuccessfulPresentationTimeForNextFrame(
         base::BindOnce(
             [](base::TimeTicks popup_create_start_time,
-               base::TimeTicks presentation_timestamp) {
+               const viz::FrameTimingDetails& frame_timing_details) {
+              base::TimeTicks presentation_timestamp =
+                  frame_timing_details.presentation_feedback.timestamp;
               base::UmaHistogramTimes(
                   "Omnibox.Views.PopupFirstPaint",
                   presentation_timestamp - popup_create_start_time);
@@ -530,15 +521,19 @@ gfx::Rect OmniboxPopupViewViews::GetTargetBounds() const {
         return height + v->GetPreferredSize().height();
       });
 
+  // Add 8dp at the bottom for aesthetic reasons. https://crbug.com/1076646
+  // It's expected that this space is dead unclickable/unhighlightable space.
+  // This extra padding is not added if the results section has no height
+  // (result set is empty or all results are hidden).
+  if (popup_height != 0) {
+    constexpr int kExtraBottomPadding = 8;
+    popup_height += kExtraBottomPadding;
+  }
+
   // Add enough space on the top and bottom so it looks like there is the same
   // amount of space between the text and the popup border as there is in the
   // interior between each row of text.
   popup_height += RoundedOmniboxResultsFrame::GetNonResultSectionHeight();
-
-  // Add 8dp at the bottom for aesthetic reasons. https://crbug.com/1076646
-  // It's expected that this space is dead unclickable/unhighlightable space.
-  constexpr int kExtraBottomPadding = 8;
-  popup_height += kExtraBottomPadding;
 
   // The rounded popup is always offset the same amount from the omnibox.
   gfx::Rect content_rect = location_bar_view_->GetBoundsInScreen();

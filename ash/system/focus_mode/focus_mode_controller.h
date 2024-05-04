@@ -20,6 +20,12 @@ class PrefRegistrySimple;
 
 namespace ash {
 
+namespace youtube_music {
+class YoutubeMusicController;
+}  //  namespace youtube_music
+
+class FocusModeSoundsController;
+
 // Controls starting and ending a Focus Mode session and its behavior. Also
 // keeps track of the system state to restore after a Focus Mode session ends.
 // Has a timer that runs while a session is active and notifies `observers_` on
@@ -80,11 +86,20 @@ class ASH_EXPORT FocusModeController : public SessionObserver {
   const std::optional<FocusModeSession>& current_session() const {
     return current_session_;
   }
-  const std::string& selected_task_id() const { return selected_task_id_; }
+  const std::string& selected_task_list_id() const {
+    return selected_task_.task_list_id;
+  }
+  const std::string& selected_task_id() const { return selected_task_.task_id; }
   const std::string& selected_task_title() const {
-    return selected_task_title_;
+    return selected_task_.title;
   }
   FocusModeTasksProvider& tasks_provider() { return tasks_provider_; }
+  FocusModeSoundsController* focus_mode_sounds_controller() const {
+    return focus_mode_sounds_controller_.get();
+  }
+  youtube_music::YoutubeMusicController* youtube_music_controller() const {
+    return youtube_music_controller_.get();
+  }
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
@@ -135,9 +150,8 @@ class ASH_EXPORT FocusModeController : public SessionObserver {
   // ending moment needs to account for the extra duration).
   base::Time GetActualEndTime() const;
 
-  // Stores the `selected_task_id_` and `selected_task_title_` of the provided
-  // task. If task is `nullptr`, clears the selected task data.
-  void SetSelectedTask(const api::Task* task);
+  // Stores the provided `task`.
+  void SetSelectedTask(const FocusModeTask& task);
 
   // Returns whether there is a currently selected task.
   bool HasSelectedTask() const;
@@ -202,10 +216,17 @@ class ASH_EXPORT FocusModeController : public SessionObserver {
   // This is used to track the current session, if any.
   std::optional<FocusModeSession> current_session_;
 
-  // This is the selected task data, which can be populated from an existing
-  // task or created by the user.
-  std::string selected_task_id_;
-  std::string selected_task_title_;
+  // This is the selected task, which can be populated from an existing task or
+  // created by the user.
+  FocusModeTask selected_task_;
+
+  // This is used to display focus mode playlists. Playback controls will be
+  // added later.
+  std::unique_ptr<FocusModeSoundsController> focus_mode_sounds_controller_;
+
+  // Controller for youtube music API integration.
+  std::unique_ptr<youtube_music::YoutubeMusicController>
+      youtube_music_controller_;
 
   base::ObserverList<Observer> observers_;
 };

@@ -11,8 +11,17 @@ group("unit_tests") {
   ]
 }
 
+source_set("constants") {
+  sources = [
+    "bottom_sheet_constants.h",
+    "bottom_sheet_constants.mm",
+  ]
+}
+
 source_set("bottom_sheet") {
   sources = [
+    "autofill_edit_profile_bottom_sheet_coordinator.h",
+    "autofill_edit_profile_bottom_sheet_coordinator.mm",
     "payments_suggestion_bottom_sheet_coordinator.h",
     "payments_suggestion_bottom_sheet_coordinator.mm",
     "payments_suggestion_bottom_sheet_exit_reason.h",
@@ -30,11 +39,17 @@ source_set("bottom_sheet") {
     "//ios/chrome/browser/autofill/model",
     "//ios/chrome/browser/autofill/model/bottom_sheet",
     "//ios/chrome/browser/autofill/model/credit_card",
+    "//ios/chrome/browser/infobars/model",
+    "//ios/chrome/browser/infobars/model:public",
     "//ios/chrome/browser/shared/coordinator/chrome_coordinator",
     "//ios/chrome/browser/shared/model/browser",
     "//ios/chrome/browser/shared/model/browser_state",
     "//ios/chrome/browser/shared/model/web_state_list",
     "//ios/chrome/browser/shared/public/commands",
+    "//ios/chrome/browser/shared/ui/table_view",
+    "//ios/chrome/browser/ui/autofill:autofill_shared_ui",
+    "//ios/chrome/browser/ui/autofill:constants",
+    "//ios/chrome/browser/ui/autofill/cells",
     "//ios/web/public",
     "//ios/web/public/js_messaging",
     "//ui/base",
@@ -43,6 +58,8 @@ source_set("bottom_sheet") {
 
 source_set("bottom_sheet_ui") {
   sources = [
+    "autofill_edit_profile_bottom_sheet_table_view_controller.h",
+    "autofill_edit_profile_bottom_sheet_table_view_controller.mm",
     "payments_suggestion_bottom_sheet_consumer.h",
     "payments_suggestion_bottom_sheet_delegate.h",
     "payments_suggestion_bottom_sheet_handler.h",
@@ -50,19 +67,27 @@ source_set("bottom_sheet_ui") {
     "payments_suggestion_bottom_sheet_view_controller.mm",
   ]
   deps = [
+    ":constants",
     "//build:branding_buildflags",
     "//components/autofill/core/browser",
     "//components/autofill/ios/browser",
     "//components/resources:components_scaled_resources_grit",
+    "//components/strings:components_strings_grit",
     "//components/url_formatter",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/autofill/model/credit_card",
     "//ios/chrome/browser/shared/ui/bottom_sheet:table_view_bottom_sheet_view_controller",
     "//ios/chrome/browser/shared/ui/symbols",
+    "//ios/chrome/browser/shared/ui/table_view:styler",
+    "//ios/chrome/browser/shared/ui/table_view:table_view",
+    "//ios/chrome/browser/shared/ui/table_view:utils",
     "//ios/chrome/browser/shared/ui/table_view/cells",
     "//ios/chrome/browser/shared/ui/util",
+    "//ios/chrome/browser/ui/autofill:autofill_shared_ui",
+    "//ios/chrome/browser/ui/autofill:constants",
     "//ios/chrome/common/ui/colors",
     "//ios/chrome/common/ui/confirmation_alert",
+    "//ios/chrome/common/ui/table_view:cells_constants",
     "//ui/base:base",
     "//url",
   ]
@@ -137,9 +162,12 @@ source_set("virtual_card_enrollment_bottom_sheet_coordinator") {
     "//components/autofill/core/browser",
     "//ios/chrome/browser/autofill/model/bottom_sheet:bottom_sheet",
     "//ios/chrome/browser/autofill/model/bottom_sheet:virtual_card_enrollment_callbacks",
+    "//ios/chrome/browser/net/model:crurl",
     "//ios/chrome/browser/shared/coordinator/chrome_coordinator:chrome_coordinator",
     "//ios/chrome/browser/shared/model/browser",
+    "//ios/chrome/browser/shared/model/browser_state:browser_state",
     "//ios/chrome/browser/shared/model/web_state_list",
+    "//ios/chrome/browser/shared/public/commands",
     "//ios/web/public:public",
   ]
   frameworks = [ "UIKit.framework" ]
@@ -156,13 +184,16 @@ source_set("virtual_card_enrollment_bottom_sheet_coordinator_unittest") {
     "//components/autofill/core/browser:browser",
     "//ios/chrome/browser/autofill/model/bottom_sheet",
     "//ios/chrome/browser/autofill/model/bottom_sheet:virtual_card_enrollment_callbacks",
+    "//ios/chrome/browser/net/model:crurl",
     "//ios/chrome/browser/shared/model/browser/test:test_support",
     "//ios/chrome/browser/shared/model/browser_state:test_support",
     "//ios/chrome/browser/shared/model/web_state_list",
+    "//ios/chrome/browser/shared/public/commands",
     "//ios/chrome/test:test_support",
     "//ios/web/public",
     "//ios/web/public/test",
     "//testing/gtest",
+    "//third_party/ocmock",
   ]
 }
 
@@ -233,7 +264,7 @@ source_set("virtual_card_enrollment_bottom_sheet_view_controller") {
     "//ios/chrome/browser/shared/ui/bottom_sheet:bottom_sheet_view_controller",
     "//ios/chrome/browser/shared/ui/table_view/cells",
     "//ios/chrome/browser/shared/ui/util",
-    "//ios/chrome/browser/ui/autofill/bottom_sheet/resources:virtual_card_enrollment_illustration",
+    "//ios/chrome/browser/ui/autofill/bottom_sheet/resources",
     "//ios/chrome/common/ui/colors:colors",
     "//ios/chrome/common/ui/confirmation_alert:confirmation_alert",
     "//ios/chrome/common/ui/util:util",

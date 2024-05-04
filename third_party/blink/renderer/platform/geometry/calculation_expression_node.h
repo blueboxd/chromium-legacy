@@ -31,7 +31,9 @@ enum class CalculationOperator {
   kAbs,
   kSign,
   kProgress,
+  kContainerProgress,
   kCalcSize,
+  kMediaProgress,
   kInvalid
 };
 
@@ -50,19 +52,24 @@ class PLATFORM_EXPORT CalculationExpressionNode
     return !operator==(other);
   }
 
+  bool HasAuto() const { return has_auto_; }
   bool HasContentOrIntrinsicSize() const { return has_content_or_intrinsic_; }
+  bool HasAutoOrContentOrIntrinsicSize() const {
+    return has_auto_ || has_content_or_intrinsic_;
+  }
+  bool HasStretch() const { return has_stretch_; }
   // HasPercent returns whether this node's value expression should be
   // treated as having a percent.  Note that this means that percentages
   // inside of the calculation part of a calc-size() do not make the
   // calc-size() act as though it has a percent.
   bool HasPercent() const { return has_percent_; }
+  bool HasPercentOrStretch() const { return has_percent_ || has_stretch_; }
 
   virtual bool IsNumber() const { return false; }
   virtual bool IsIdentifier() const { return false; }
   virtual bool IsSizingKeyword() const { return false; }
   virtual bool IsPixelsAndPercent() const { return false; }
   virtual bool IsOperation() const { return false; }
-  virtual bool IsAnchorQuery() const { return false; }
 
   virtual scoped_refptr<const CalculationExpressionNode> Zoom(
       double factor) const = 0;
@@ -82,7 +89,9 @@ class PLATFORM_EXPORT CalculationExpressionNode
   virtual bool Equals(const CalculationExpressionNode& other) const = 0;
 
   bool has_content_or_intrinsic_ = false;
+  bool has_auto_ = false;
   bool has_percent_ = false;
+  bool has_stretch_ = false;
 };
 
 class PLATFORM_EXPORT CalculationExpressionNumberNode final
@@ -167,7 +176,7 @@ class PLATFORM_EXPORT CalculationExpressionSizingKeywordNode final
   enum class Keyword : uint8_t {
     kSize,
     kAny,
-    // TODO(https://crbug.com/313072): Add support for 'auto'.
+    kAuto,
 
     // The keywords below should match those accepted by
     // css_parsing_utils::ValidWidthOrHeightKeyword.

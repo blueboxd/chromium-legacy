@@ -24,7 +24,9 @@ void ApplyDefaultChromeRefreshToolbarColors(ui::ColorMixer& mixer,
       kColorTabForegroundInactiveFrameActive};
 
   if (key.custom_theme && key.custom_theme->HasCustomImage(IDR_THEME_TOOLBAR)) {
-    mixer[kColorAppMenuHighlightDefault] = {ui::kColorSysTonalContainer};
+    mixer[kColorAppMenuHighlightDefault] = {
+        kColorToolbarBackgroundSubtleEmphasis};
+    mixer[kColorAppMenuExpandedForegroundDefault] = {kColorToolbarButtonText};
   }
 
   mixer[kColorAppMenuHighlightSeverityLow] = {kColorAppMenuHighlightDefault};
@@ -40,7 +42,7 @@ void AddMaterialChromeColorMixer(ui::ColorProvider* provider,
   // downloads bar etc). While both design systems continue to exist, the
   // material recipes are intended to leverage the existing chrome color mixers,
   // overriding when required to do so according to the new material spec.
-  // TODO(crbug.com/1408542): Update color recipes to match UX mocks.
+  // TODO(crbug.com/40888516): Update color recipes to match UX mocks.
   ui::ColorMixer& mixer = provider->AddMixer();
 
   // Apply default color transformations irrespective of whether a custom theme
@@ -57,6 +59,11 @@ void AddMaterialChromeColorMixer(ui::ColorProvider* provider,
   mixer[kColorDownloadBubbleRowHover] = {ui::kColorSysStateHoverOnSubtle};
   mixer[kColorDownloadBubbleShowAllDownloadsIcon] = {
       ui::kColorSysOnSurfaceSubtle};
+  mixer[kColorDownloadBubbleInfoBackground] = {
+      ui::kColorSubtleEmphasisBackground};
+  mixer[kColorDownloadBubbleInfoIcon] = {ui::kColorSysOnSurfaceSubtle};
+  mixer[kColorDownloadBubbleShowAllDownloadsIcon] = {ui::kColorIconSecondary};
+  mixer[kColorDownloadBubblePrimaryIcon] = {ui::kColorSysPrimary};
   mixer[kColorDownloadToolbarButtonActive] = ui::PickGoogleColor(
       ui::kColorSysPrimary, kColorDownloadToolbarButtonRingBackground,
       color_utils::kMinimumVisibleContrastRatio);
@@ -157,6 +164,9 @@ void AddMaterialChromeColorMixer(ui::ColorProvider* provider,
   mixer[kColorComposeDialogResultForegroundWhileLoading] = {
       ui::kColorSysPrimary};
   mixer[kColorComposeDialogResultIcon] = {ui::kColorSysOnSurfaceSubtle};
+  mixer[kColorComposeDialogResultButtonsDivider] = {ui::kColorSysTonalOutline};
+  mixer[kColorComposeDialogResultContainerScrollbarThumb] = {
+      ui::kColorSysTonalOutline};
   mixer[kColorComposeDialogTitle] = {ui::kColorSysOnSurface};
   mixer[kColorComposeDialogTextarea] = {ui::kColorSysOnSurface};
   mixer[kColorComposeDialogTextareaOutline] = {ui::kColorSysNeutralOutline};
@@ -167,6 +177,8 @@ void AddMaterialChromeColorMixer(ui::ColorProvider* provider,
   mixer[kColorComposeDialogTextareaReadonlyForeground] = {
       ui::kColorSysOnSurface};
   mixer[kColorComposeDialogTextareaIcon] = {ui::kColorSysOnSurfaceSubtle};
+  mixer[kColorComposeDialogSelectOptionDisabled] = {
+      ui::kColorLabelForegroundDisabled};
 #endif  // BUILDFLAG(ENABLE_COMPOSE)
 
   if (!ShouldApplyChromeMaterialOverrides(key)) {

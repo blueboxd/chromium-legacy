@@ -4,6 +4,8 @@
 
 #import "ios/chrome/browser/ui/location_bar/location_bar_model_delegate_ios.h"
 
+#import <string_view>
+
 #import "base/check.h"
 #import "components/omnibox/browser/autocomplete_classifier.h"
 #import "components/omnibox/browser/autocomplete_input.h"
@@ -82,7 +84,7 @@ bool LocationBarModelDelegateIOS::ShouldDisplayURL() const {
         virtual_url.SchemeIs(kChromeUIScheme)) {
       if (!url.SchemeIs(kChromeUIScheme))
         url = virtual_url;
-      base::StringPiece host = url.host_piece();
+      std::string_view host = url.host_piece();
       return host != kChromeUINewTabHost;
     }
   }
@@ -126,9 +128,9 @@ bool LocationBarModelDelegateIOS::IsNewTabPage() const {
   // This is currently only called by the OmniboxEditModel to determine if the
   // Google landing page is showing.
   //
-  // TODO(crbug.com/315563)(lliabraa): This should also check the user's default
-  // search engine because if they're not using Google the Google landing page
-  // is not shown.
+  // TODO(crbug.com/40340113)(lliabraa): This should also check the user's
+  // default search engine because if they're not using Google the Google
+  // landing page is not shown.
   GURL currentURL;
   if (!GetURL(&currentURL))
     return false;

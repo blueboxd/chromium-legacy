@@ -48,6 +48,7 @@ class Adapter : public mojom::Adapter,
   void RegisterAdvertisement(const device::BluetoothUUID& service_uuid,
                              const std::vector<uint8_t>& service_data,
                              bool use_scan_response,
+                             bool connectable,
                              RegisterAdvertisementCallback callback) override;
   void SetDiscoverable(bool discoverable,
                        SetDiscoverableCallback callback) override;
@@ -67,6 +68,8 @@ class Adapter : public mojom::Adapter,
       const device::BluetoothUUID& service_id,
       mojo::PendingRemote<mojom::GattServiceObserver> observer,
       CreateLocalGattServiceCallback callback) override;
+  void IsLeScatternetDualRoleSupported(
+      IsLeScatternetDualRoleSupportedCallback callback) override;
 
   // device::BluetoothAdapter::Observer overrides:
   void AdapterPresentChanged(device::BluetoothAdapter* adapter,
@@ -106,12 +109,18 @@ class Adapter : public mojom::Adapter,
     ConnectToServiceInsecurelyCallback callback;
   };
 
+  void OnGattServiceInvalidated(device::BluetoothUUID service_id);
+
   void OnDeviceFetchedForInsecureServiceConnection(
       int request_id,
       device::BluetoothDevice* device);
+  void ProcessDeviceForInsecureServiceConnection(
+      int request_id,
+      device::BluetoothDevice* device,
+      bool disconnected);
   void ProcessPendingInsecureServiceConnectionRequest(
-      const std::string& address,
-      device::BluetoothDevice* device);
+      device::BluetoothDevice* device,
+      bool disconnected);
 
   void OnGattConnect(
       ConnectToDeviceCallback callback,
@@ -171,7 +180,7 @@ class Adapter : public mojom::Adapter,
   // service discovery for the given device.
   std::vector<int> connect_to_service_requests_pending_discovery_;
 
-  base::flat_map<device::BluetoothUUID, std::unique_ptr<mojom::GattService>>
+  base::flat_map<device::BluetoothUUID, std::unique_ptr<GattService>>
       uuid_to_local_gatt_service_map_;
 
   // Allowed UUIDs for untrusted clients to initiate outgoing connections, or

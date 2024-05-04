@@ -9,7 +9,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
-#include "components/embedder_support/android/delegate/color_chooser_android.h"
+#include "components/embedder_support/android/delegate/color_picker_bridge.h"
 #include "components/embedder_support/android/web_contents_delegate_jni_headers/WebContentsDelegateAndroid_jni.h"
 #include "content/public/browser/color_chooser.h"
 #include "content/public/browser/global_request_id.h"
@@ -26,6 +26,7 @@
 #include "third_party/blink/public/mojom/frame/fullscreen.mojom.h"
 #include "ui/android/view_android.h"
 #include "ui/base/window_open_disposition.h"
+#include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/geometry/rect.h"
 #include "url/android/gurl_android.h"
 #include "url/gurl.h"
@@ -61,7 +62,7 @@ WebContentsDelegateAndroid::OpenColorChooser(
     WebContents* source,
     SkColor color,
     const std::vector<blink::mojom::ColorSuggestionPtr>& suggestions) {
-  return std::make_unique<ColorChooserAndroid>(source, color, suggestions);
+  return std::make_unique<ColorPickerBridge>(source, color, suggestions);
 }
 
 // OpenURLFromTab() will be called when we're performing a browser-intiated
@@ -69,7 +70,9 @@ WebContentsDelegateAndroid::OpenColorChooser(
 // RenderViewImpl::decidePolicyForNavigation for more details).
 WebContents* WebContentsDelegateAndroid::OpenURLFromTab(
     WebContents* source,
-    const content::OpenURLParams& params) {
+    const content::OpenURLParams& params,
+    base::OnceCallback<void(content::NavigationHandle&)>
+        navigation_handle_callback) {
   const GURL& url = params.url;
   WindowOpenDisposition disposition = params.disposition;
 
@@ -83,8 +86,10 @@ WebContents* WebContentsDelegateAndroid::OpenURLFromTab(
 
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);
-  if (obj.is_null())
-    return WebContentsDelegate::OpenURLFromTab(source, params);
+  if (obj.is_null()) {
+    return WebContentsDelegate::OpenURLFromTab(
+        source, params, std::move(navigation_handle_callback));
+  }
 
   if (disposition == WindowOpenDisposition::NEW_FOREGROUND_TAB ||
       disposition == WindowOpenDisposition::NEW_BACKGROUND_TAB ||
@@ -101,8 +106,12 @@ WebContents* WebContentsDelegateAndroid::OpenURLFromTab(
     return NULL;
   }
 
-  source->GetController().LoadURLWithParams(
+  auto navigation_handle = source->GetController().LoadURLWithParams(
       content::NavigationController::LoadURLParams(params));
+
+  if (navigation_handle_callback && navigation_handle) {
+    std::move(navigation_handle_callback).Run(*navigation_handle);
+  }
 
   return source;
 }
@@ -442,6 +451,46 @@ void WebContentsDelegateAndroid::DidChangeCloseSignalInterceptStatus() {
   }
 
   Java_WebContentsDelegateAndroid_didChangeCloseSignalInterceptStatus(env, obj);
+}
+
+bool WebContentsDelegateAndroid::MaybeCopyContentAreaAsBitmap(
+    base::OnceCallback<void(const SkBitmap&)> callback) {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);
+  if (obj.is_null()) {
+    return false;
+  }
+  std::unique_ptr<base::OnceCallback<void(const SkBitmap&)>> wrapped_callback =
+      std::make_unique<base::OnceCallback<void(const SkBitmap&)>>(
+          std::move(callback));
+  if (Java_WebContentsDelegateAndroid_maybeCopyContentAreaAsBitmap(
+          env, obj, reinterpret_cast<jlong>(wrapped_callback.get()))) {
+    // Ownership of callback has been transferred to java side and will be
+    // transferred back in |MaybeCopyContentAreaAsBitmapOutcome|.
+    wrapped_callback.release();
+    return true;
+  }
+  return false;
+}
+
+void JNI_WebContentsDelegateAndroid_MaybeCopyContentAreaAsBitmapOutcome(
+    JNIEnv* env,
+    jlong callback_ptr,
+    const base::android::JavaParamRef<jobject>& bitmap) {
+  std::unique_ptr<base::OnceCallback<void(const SkBitmap&)>> callback(
+      reinterpret_cast<base::OnceCallback<void(const SkBitmap&)>*>(
+          callback_ptr));
+  if (bitmap.is_null()) {
+    // Failed because of Out of Memory Error.
+    // Pass in an empty bitmap, rather than null in this case.
+    std::move(*callback).Run(SkBitmap());
+  } else {
+    gfx::JavaBitmap java_bitmap_lock(bitmap);
+    SkBitmap skbitmap = gfx::CreateSkBitmapFromJavaBitmap(java_bitmap_lock);
+    skbitmap.setImmutable();
+    CHECK(!skbitmap.drawsNothing());
+    std::move(*callback).Run(skbitmap);
+  }
 }
 
 }  // namespace web_contents_delegate_android

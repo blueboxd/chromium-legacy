@@ -54,17 +54,17 @@ void ML::Trace(Visitor* visitor) const {
   ScriptWrappable::Trace(visitor);
 }
 
-ScriptPromise ML::createContext(ScriptState* script_state,
-                                MLContextOptions* options,
-                                ExceptionState& exception_state) {
+ScriptPromise<MLContext> ML::createContext(ScriptState* script_state,
+                                           MLContextOptions* options,
+                                           ExceptionState& exception_state) {
   ScopedMLTrace scoped_trace("ML::createContext");
   if (!script_state->ContextIsValid()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "Invalid script state");
-    return ScriptPromise();
+    return ScriptPromise<MLContext>();
   }
 
-  ScriptPromiseResolver* resolver = MakeGarbageCollected<ScriptPromiseResolver>(
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver<MLContext>>(
       script_state, exception_state.GetContext());
 
   auto promise = resolver->Promise();

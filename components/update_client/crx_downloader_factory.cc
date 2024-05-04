@@ -4,6 +4,7 @@
 
 #include "components/update_client/crx_downloader_factory.h"
 
+#include <cstdint>
 #include <optional>
 
 #include "base/files/file_path.h"
@@ -65,7 +66,6 @@ scoped_refptr<CrxDownloader> CrxDownloaderFactoryChromium::MakeCrxDownloader(
   scoped_refptr<CrxDownloader> url_fetcher_downloader =
       base::MakeRefCounted<UrlFetcherDownloader>(nullptr,
                                                  network_fetcher_factory_);
-
   if (background_download_enabled) {
 #if BUILDFLAG(IS_MAC)
     if (background_downloader_shared_session_ &&

@@ -23,6 +23,7 @@
 #import "components/component_updater/installer_policies/optimization_hints_component_installer.h"
 #import "components/component_updater/installer_policies/safety_tips_component_installer.h"
 #import "components/component_updater/url_param_filter_remover.h"
+#import "components/content_settings/core/browser/host_content_settings_map.h"
 #import "components/enterprise/idle/idle_features.h"
 #import "components/feature_engagement/public/event_constants.h"
 #import "components/feature_engagement/public/tracker.h"
@@ -67,6 +68,7 @@
 #import "ios/chrome/browser/browsing_data/model/browsing_data_remover.h"
 #import "ios/chrome/browser/browsing_data/model/browsing_data_remover_factory.h"
 #import "ios/chrome/browser/browsing_data/model/sessions_storage_util.h"
+#import "ios/chrome/browser/content_settings/model/host_content_settings_map_factory.h"
 #import "ios/chrome/browser/crash_report/model/crash_helper.h"
 #import "ios/chrome/browser/crash_report/model/crash_keys_helper.h"
 #import "ios/chrome/browser/crash_report/model/crash_loop_detection_util.h"
@@ -109,6 +111,7 @@
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state_manager.h"
 #import "ios/chrome/browser/shared/model/paths/paths.h"
+#import "ios/chrome/browser/shared/model/prefs/pref_names.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/shared/public/commands/browser_coordinator_commands.h"
 #import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
@@ -119,7 +122,6 @@
 #import "ios/chrome/browser/signin/model/authentication_service_factory.h"
 #import "ios/chrome/browser/signin/model/identity_manager_factory.h"
 #import "ios/chrome/browser/snapshots/model/snapshot_browser_agent.h"
-#import "ios/chrome/browser/snapshots/model/snapshot_storage.h"
 #import "ios/chrome/browser/sync/model/sync_service_factory.h"
 #import "ios/chrome/browser/ui/appearance/appearance_customization.h"
 #import "ios/chrome/browser/ui/first_run/first_run_util.h"
@@ -136,6 +138,7 @@
 #import "ios/net/empty_nsurlcache.h"
 #import "ios/public/provider/chrome/browser/app_distribution/app_distribution_api.h"
 #import "ios/public/provider/chrome/browser/overrides/overrides_api.h"
+#import "ios/public/provider/chrome/browser/raccoon/raccoon_api.h"
 #import "ios/public/provider/chrome/browser/ui_utils/ui_utils_api.h"
 #import "ios/public/provider/chrome/browser/user_feedback/user_feedback_api.h"
 #import "ios/web/public/webui/web_ui_ios_controller_factory.h"
@@ -230,10 +233,9 @@ NSString* const kPurgeWebSessionStates = @"PurgeWebSessionStates";
 // Constants for deferred favicons clean up.
 NSString* const kFaviconsCleanup = @"FaviconsCleanup";
 
-// The minimum amount of time (2 weeks in seconds) between calculating and
+// The minimum amount of time (2 weeks) between calculating and
 // logging metrics about the amount of device storage space used by Chrome.
-const NSTimeInterval kMinimumTimeBetweenDocumentsSizeLogging =
-    60.0 * 60.0 * 24.0 * 14.0;
+const base::TimeDelta kMinimumTimeBetweenDocumentsSizeLogging = base::Days(14);
 
 // Adapted from chrome/browser/ui/browser_init.cc.
 void RegisterComponentsForUpdate() {
@@ -324,10 +326,10 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   // Registrar for pref changes notifications to the local state.
   PrefChangeRegistrar _localStatePrefChangeRegistrar;
 
-  // Updates data about the current default search engine to be accessed in
-  // extensions.
-  std::unique_ptr<ExtensionSearchEngineDataUpdater>
-      _extensionSearchEngineDataUpdater;
+  // Vector updating search engine data (to be accessed in extensions)
+  // for all loaded browserStates.
+  std::vector<std::unique_ptr<ExtensionSearchEngineDataUpdater>>
+      _extensionSearchEngineDataUpdaters;
 
   // The class in charge of showing/hiding the memory debugger when the
   // appropriate pref changes.
@@ -349,10 +351,14 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 // Handles collecting metrics on user triggered screenshots
 @property(nonatomic, strong)
     ScreenshotMetricsRecorder* screenshotMetricsRecorder;
+// Cleanup any persisted data for the session restration on disk.
+- (void)cleanupSessionStateCache;
 // Cleanup snapshots on disk.
 - (void)cleanupSnapshots;
 // Cleanup discarded sessions on disk.
 - (void)cleanupDiscardedSessions;
+// Pings distribution services.
+- (void)pingDistributionServices;
 // Sends any feedback that happens to still be on local storage.
 - (void)sendQueuedFeedback;
 // Called whenever an orientation change is received.
@@ -365,6 +371,8 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 - (void)scheduleAppDistributionPings;
 // Asynchronously schedule the init of the memoryDebuggerManager.
 - (void)scheduleMemoryDebuggingTools;
+// Creates the MailtoHandlerService for all loaded browserStates.
+- (void)createMailtoHandlerServices;
 // Asynchronously kick off regular free memory checks.
 - (void)startFreeMemoryMonitoring;
 // Asynchronously schedules the reset of the failed startup attempt counter.
@@ -476,14 +484,17 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   [[PreviousSessionInfo sharedInstance] beginRecordingFieldTrials];
 
   // TODO(crbug.com/324417250): Remove mainBrowserState from appState.
-  self.appState.mainBrowserState = GetApplicationContext()
-                                       ->GetChromeBrowserStateManager()
-                                       ->GetLastUsedBrowserState();
+  self.appState.mainBrowserState =
+      GetApplicationContext()
+          ->GetChromeBrowserStateManager()
+          ->GetLastUsedBrowserStateDeprecatedDoNotUse();
 
   std::vector<ChromeBrowserState*> loadedBrowserStates =
       GetApplicationContext()
           ->GetChromeBrowserStateManager()
           ->GetLoadedBrowserStates();
+  CHECK(!loadedBrowserStates.empty());
+
   // Initialize and set all loaded browser states.
   for (ChromeBrowserState* chromeBrowserState : loadedBrowserStates) {
     [self initializeBrowserState:chromeBrowserState];
@@ -508,7 +519,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   // time being for the control group of the extended Variations Safe Mode
   // experiment.
   //
-  // TODO(crbug/1232027): Stop watching for a crash if this is a background
+  // TODO(crbug.com/40190949): Stop watching for a crash if this is a background
   // fetch.
   if (_appState.userInteracted)
     GetApplicationContext()->GetMetricsService()->OnAppEnterForeground();
@@ -556,14 +567,21 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
           ? SessionRestorationServiceFactory::kOptimized
           : SessionRestorationServiceFactory::kLegacy;
 
+  std::vector<ChromeBrowserState*> loadedBrowserStates =
+      GetApplicationContext()
+          ->GetChromeBrowserStateManager()
+          ->GetLoadedBrowserStates();
+  // `completion` should be called only once when all browser states are
+  // migrated.
+  base::RepeatingClosure closure =
+      ExpectNCall(loadedBrowserStates.size(), base::BindRepeating(completion));
   // MigrateSessionStorageFormat is synchronous if the storage is already in
   // the requested format, so this is safe to call and won't block the app
   // startup.
-  // TODO(crbug.com/325596571): Call this for each loaded app state. Figure out
-  // what to do with the completion handler.
-  SessionRestorationServiceFactory::GetInstance()->MigrateSessionStorageFormat(
-      self.appState.mainBrowserState, requested_format,
-      base::BindOnce(completion));
+  for (ChromeBrowserState* browserState : loadedBrowserStates) {
+    SessionRestorationServiceFactory::GetInstance()
+        ->MigrateSessionStorageFormat(browserState, requested_format, closure);
+  }
 }
 
 // This initialization must happen before any windows are created.
@@ -602,6 +620,8 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
     // start.
     tracker->NotifyEvent(feature_engagement::events::kChromeOpened);
 
+    [_metricsMediator notifyCredentialProviderWasUsed:tracker];
+
     [_spotlightManagers
         addObject:[SpotlightManager
                       spotlightManagerWithBrowserState:chromeBrowserState]];
@@ -632,9 +652,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   CustomizeUIAppearance();
 
   [self scheduleStartupCleanupTasks];
-  [MetricsMediator
-      logLaunchMetricsWithStartupInformation:self
-                             connectedScenes:self.appState.connectedScenes];
 
   ios::provider::InstallOverrides();
 
@@ -674,8 +691,8 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 }
 
 - (void)startUpBrowserForegroundInitialization {
-  // TODO(crbug/1232027): Determine whether Chrome needs to resume watching for
-  // crashes.
+  // TODO(crbug.com/40190949): Determine whether Chrome needs to resume watching
+  // for crashes.
 
   self.appState.postCrashAction = [self postCrashAction];
   [self startUpBeforeFirstWindowCreated];
@@ -701,6 +718,17 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
       browserState,
       std::make_unique<MainControllerAuthenticationServiceDelegate>(
           browserState, self));
+
+  // Force desktop mode when raccoon is enabled.
+  if (ios::provider::IsRaccoonEnabled()) {
+    if (!browserState->GetPrefs()->GetBoolean(prefs::kUserAgentWasChanged)) {
+      HostContentSettingsMap* settingsMap =
+          ios::HostContentSettingsMapFactory::GetForBrowserState(browserState);
+      settingsMap->SetDefaultContentSetting(
+          ContentSettingsType::REQUEST_DESKTOP_SITE, CONTENT_SETTING_ALLOW);
+      browserState->GetPrefs()->SetBoolean(prefs::kUserAgentWasChanged, true);
+    }
+  }
 }
 
 #pragma mark - AppStateObserver
@@ -728,14 +756,14 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
     return;
   }
 
-  // TODO(crbug.com/1213955): Pass the scene to this method to make sure that
+  // TODO(crbug.com/40769058): Pass the scene to this method to make sure that
   // the chosen scene is initialized.
   [self startUpAfterFirstWindowCreated];
 }
 
 - (void)appState:(AppState*)appState
     didTransitionFromInitStage:(InitStage)previousInitStage {
-  // TODO(crbug.com/1213955): Remove this once the bug fixed.
+  // TODO(crbug.com/40769058): Remove this once the bug fixed.
   if (previousInitStage == InitStageNormalUI &&
       appState.firstSceneHasInitializedUI) {
     [self startUpAfterFirstWindowCreated];
@@ -769,7 +797,14 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
       break;
     case InitStageFirstRun:
       break;
+    case InitStageChoiceScreen:
+      break;
     case InitStageFinal:
+      // In a multi-window environment we have the correct number of
+      // connectedScenes only at this stage.
+      [MetricsMediator
+          logLaunchMetricsWithStartupInformation:self
+                                 connectedScenes:self.appState.connectedScenes];
       break;
   }
 }
@@ -780,7 +815,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   [self.appState addAgent:[[FirstRunAppAgent alloc] init]];
   [self.appState addAgent:[[CertificatePolicyAppAgent alloc] init]];
 #if BUILDFLAG(IOS_CREDENTIAL_PROVIDER_ENABLED)
-  [self.appState addAgent:[[CredentialProviderAppAgent alloc] init]];
+  [self.appState addAgent:[[CredentialProviderMigratorAppAgent alloc] init]];
 #endif
 }
 
@@ -866,7 +901,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   }
   [_spotlightManagers removeAllObjects];
 
-  _extensionSearchEngineDataUpdater = nullptr;
+  _extensionSearchEngineDataUpdaters.clear();
 
   // _localStatePrefChangeRegistrar is observing the PrefService, which is owned
   // indirectly by _chromeMain (through the ChromeBrowserState).
@@ -885,47 +920,57 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   // _chromeMain.reset() is a blocking call that regularly causes
   // applicationWillTerminate to fail after a 5s delay. Experiment with skipping
   // this shutdown call. See: crbug.com/1328891
-  // TODO(crbug.com/325597817): Update this logic for multiple browser states.
   if (base::FeatureList::IsEnabled(kFastApplicationWillTerminate)) {
-    // Expected number of time the `completionBlock` defined below needs to
+    // Expected number of time the `closure` defined below needs to
     // be called before it signal the semaphore. This corresponds to the
     // number of services that needs to be waited for.
-    uint32_t expected_count = 1;
+    uint32_t expectedCount = 0;
 
-    ChromeBrowserState* browserState = self.appState.mainBrowserState;
-    if (browserState->HasOffTheRecordChromeBrowserState()) {
-      expected_count += 1;
-    }
-
+    // MetricsService doesn't depend on a browser state.
     metrics::MetricsService* metrics =
         GetApplicationContext()->GetMetricsService();
     if (metrics) {
-      expected_count += 1;
+      expectedCount += 1;
     }
 
+    std::vector<ChromeBrowserState*> loadedBrowserStates =
+        GetApplicationContext()
+            ->GetChromeBrowserStateManager()
+            ->GetLoadedBrowserStates();
+    for (ChromeBrowserState* browserState : loadedBrowserStates) {
+      expectedCount += 1;
+      if (browserState->HasOffTheRecordChromeBrowserState()) {
+        expectedCount += 1;
+      }
+    }
+
+    // `dispatch_semaphore_signal` is called only once when `closure` is called
+    // `expectedCount` times.
     dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
     base::RepeatingClosure closure =
-        ExpectNCall(expected_count, base::BindRepeating(^{
+        ExpectNCall(expectedCount, base::BindRepeating(^{
                       dispatch_semaphore_signal(semaphore);
                     }));
 
-    SessionRestorationServiceFactory::GetForBrowserState(browserState)
-        ->InvokeClosureWhenBackgroundProcessingDone(closure);
-
-    if (browserState->HasOffTheRecordChromeBrowserState()) {
-      ChromeBrowserState* otrBrowserState =
-          browserState->GetOffTheRecordChromeBrowserState();
-      SessionRestorationServiceFactory::GetForBrowserState(otrBrowserState)
+    for (ChromeBrowserState* browserState : loadedBrowserStates) {
+      SessionRestorationServiceFactory::GetForBrowserState(browserState)
           ->InvokeClosureWhenBackgroundProcessingDone(closure);
+
+      if (browserState->HasOffTheRecordChromeBrowserState()) {
+        ChromeBrowserState* otrBrowserState =
+            browserState->GetOffTheRecordChromeBrowserState();
+        SessionRestorationServiceFactory::GetForBrowserState(otrBrowserState)
+            ->InvokeClosureWhenBackgroundProcessingDone(closure);
+      }
     }
 
     if (metrics) {
       metrics->Stop();
-      // MetricsService::Stop() depends on a committed local state, and does so
-      // asynchronously. To avoid losing metrics, this minimum wait is required.
-      // This will introduce a wait that will likely be the source of a number
-      // of watchdog kills, but it should still be fewer than the number of
-      // kills `_chromeMain.reset()` is responsible for.
+      // MetricsService::Stop() depends on a committed local state, and does
+      // so asynchronously. To avoid losing metrics, this minimum wait is
+      // required. This will introduce a wait that will likely be the source
+      // of a number of watchdog kills, but it should still be fewer than the
+      // number of kills `_chromeMain.reset()` is responsible for.
       GetApplicationContext()->GetLocalState()->CommitPendingWrite({}, closure);
     }
 
@@ -1014,34 +1059,24 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
     [self onPreferenceChanged:metrics::prefs::kMetricsReportingEnabled];
   }
 
-  // Track changes to default search engine.
-  // TODO(crbug.com/325611886): Update this for multiple browser states.
-  TemplateURLService* service =
-      ios::TemplateURLServiceFactory::GetForBrowserState(
-          self.appState.mainBrowserState);
-  _extensionSearchEngineDataUpdater =
-      std::make_unique<ExtensionSearchEngineDataUpdater>(service);
+  // Track changes to default search engine for all laoded browserStates.
+  std::vector<ChromeBrowserState*> loadedBrowserStates =
+      GetApplicationContext()
+          ->GetChromeBrowserStateManager()
+          ->GetLoadedBrowserStates();
+  for (ChromeBrowserState* browserState : loadedBrowserStates) {
+    TemplateURLService* service =
+        ios::TemplateURLServiceFactory::GetForBrowserState(browserState);
+    _extensionSearchEngineDataUpdaters.push_back(
+        std::make_unique<ExtensionSearchEngineDataUpdater>(service));
+  }
 }
 
 - (void)scheduleAppDistributionPings {
-  // TODO(crbug.com/325611888): Refactor this block to be a single method call.
-  // Have it handle multiple browser states.
   [[DeferredInitializationRunner sharedInstance]
       enqueueBlockNamed:kSendInstallPingIfNecessary
                   block:^{
-                    auto URLLoaderFactory = self.appState.mainBrowserState
-                                                ->GetSharedURLLoaderFactory();
-
-                    const bool is_first_run = FirstRun::IsChromeFirstRun();
-                    ios::provider::ScheduleAppDistributionNotifications(
-                        URLLoaderFactory, is_first_run);
-
-                    const base::Time install_date = base::Time::FromTimeT(
-                        GetApplicationContext()->GetLocalState()->GetInt64(
-                            metrics::prefs::kInstallDate));
-
-                    ios::provider::InitializeFirebase(install_date,
-                                                      is_first_run);
+                    [self pingDistributionServices];
                   }];
 }
 
@@ -1078,19 +1113,10 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 }
 
 - (void)scheduleSessionStateCacheCleanup {
-  // TODO(crbug.com/325612229): Refactor this to handle multiple browser states.
-  // Consider dedicated handling in DeferredInitializationRunner.
   [[DeferredInitializationRunner sharedInstance]
       enqueueBlockNamed:kPurgeWebSessionStates
                   block:^{
-                    ChromeBrowserState* browserState =
-                        self.appState.mainBrowserState;
-
-                    if (browserState) {
-                      SessionRestorationServiceFactory::GetForBrowserState(
-                          browserState)
-                          ->PurgeUnassociatedData(base::DoNothing());
-                    }
+                    [self cleanupSessionStateCache];
                   }];
 }
 
@@ -1101,20 +1127,20 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   [self scheduleCrashReportUpload];
 
   // ClearSessionCookies() is not synchronous.
-  // TODO(crbug.com/325612247): Rewrite this to properly handle both multiwindow
-  // and multi- profile, and to not use `browserProviderInterface`.
-  ChromeBrowserState* browserState = self.appState.mainBrowserState;
-  if (cookie_util::ShouldClearSessionCookies(browserState->GetPrefs())) {
-    cookie_util::ClearSessionCookies(
-        browserState->GetOriginalChromeBrowserState());
-    Browser* otrBrowser =
-        self.browserProviderInterface.incognitoBrowserProvider.browser;
-    if (otrBrowser && !(otrBrowser->GetWebStateList()->empty())) {
+  std::vector<ChromeBrowserState*> loadedBrowserStates =
+      GetApplicationContext()
+          ->GetChromeBrowserStateManager()
+          ->GetLoadedBrowserStates();
+  for (ChromeBrowserState* browserState : loadedBrowserStates) {
+    if (cookie_util::ShouldClearSessionCookies(browserState->GetPrefs())) {
       cookie_util::ClearSessionCookies(
-          browserState->GetOffTheRecordChromeBrowserState());
+          browserState->GetOriginalChromeBrowserState());
+      if (browserState->HasOffTheRecordChromeBrowserState()) {
+        cookie_util::ClearSessionCookies(
+            browserState->GetOffTheRecordChromeBrowserState());
+      }
     }
   }
-
   // Remove all discarded sessions from disk.
   [self scheduleDiscardedSessionsCleanup];
 
@@ -1145,18 +1171,21 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 }
 
 - (void)initializeMailtoHandling {
-  __weak __typeof(self) weakSelf = self;
   [[DeferredInitializationRunner sharedInstance]
       enqueueBlockNamed:kMailtoHandlingInitialization
                   block:^{
-                    __strong __typeof(weakSelf) strongSelf = weakSelf;
-                    if (!strongSelf || !strongSelf.appState.mainBrowserState) {
-                      return;
-                    }
-                    // Force the creation of the MailtoHandlerService.
-                    MailtoHandlerServiceFactory::GetForBrowserState(
-                        strongSelf.appState.mainBrowserState);
+                    [self createMailtoHandlerServices];
                   }];
+}
+
+- (void)createMailtoHandlerServices {
+  std::vector<ChromeBrowserState*> loadedBrowserStates =
+      GetApplicationContext()
+          ->GetChromeBrowserStateManager()
+          ->GetLoadedBrowserStates();
+  for (ChromeBrowserState* browserState : loadedBrowserStates) {
+    MailtoHandlerServiceFactory::GetForBrowserState(browserState);
+  }
 }
 
 // Schedule a call to `scheduleSaveFieldTrialValuesForExternals` for deferred
@@ -1346,23 +1375,26 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   if (!base::FeatureList::IsEnabled(kLogApplicationStorageSizeMetrics)) {
     return;
   }
-
-  // TODO(crbug.com/325612236): Rewrite this to use LocalStorage for time
-  // logging and to either do per-profile size logging or to aggregate to a
-  // single value for all profiles summed.
-  NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
-  NSDate* lastLogged = base::apple::ObjCCast<NSDate>(
-      [defaults objectForKey:kLastApplicationStorageMetricsLogTime]);
-  if (lastLogged && [[NSDate date] timeIntervalSinceDate:lastLogged] <
-                        kMinimumTimeBetweenDocumentsSizeLogging) {
-    return;
+  std::vector<ChromeBrowserState*> loadedBrowserStates =
+      GetApplicationContext()
+          ->GetChromeBrowserStateManager()
+          ->GetLoadedBrowserStates();
+  for (ChromeBrowserState* browserState : loadedBrowserStates) {
+    PrefService* prefService = browserState->GetPrefs();
+    const base::Time lastLogged =
+        prefService->GetTime(prefs::kLastApplicationStorageMetricsLogTime);
+    if (lastLogged != base::Time() &&
+        base::Time::Now() - lastLogged <
+            kMinimumTimeBetweenDocumentsSizeLogging) {
+      continue;
+    }
+    prefService->SetTime(prefs::kLastApplicationStorageMetricsLogTime,
+                         base::Time::Now());
+    base::FilePath profilePath = browserState->GetStatePath();
+    base::FilePath offTheRecordStatePath =
+        browserState->GetOffTheRecordStatePath();
+    LogApplicationStorageMetrics(profilePath, offTheRecordStatePath);
   }
-
-  ChromeBrowserState* browserState = self.appState.mainBrowserState;
-  base::FilePath profilePath = browserState->GetStatePath();
-  base::FilePath offTheRecordStatePath =
-      browserState->GetOffTheRecordStatePath();
-  LogApplicationStorageMetrics(profilePath, offTheRecordStatePath);
 }
 
 - (void)expireFirstUserActionRecorder {
@@ -1399,29 +1431,35 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   }
 }
 
-#pragma mark - Helper methods backed by interfaces.
+#pragma mark - Helper methods.
 
-// TODO(crbug.com/325612259): Perform favicon cleanup for all browser states and
-// remove this helper.
-- (ChromeBrowserState*)currentBrowserState {
-  if (!self.browserProviderInterface.currentBrowserProvider.browser) {
-    return nullptr;
+- (void)cleanupSessionStateCache {
+  std::vector<ChromeBrowserState*> loadedBrowserStates =
+      GetApplicationContext()
+          ->GetChromeBrowserStateManager()
+          ->GetLoadedBrowserStates();
+  for (ChromeBrowserState* browserState : loadedBrowserStates) {
+    SessionRestorationServiceFactory::GetForBrowserState(browserState)
+        ->PurgeUnassociatedData(base::DoNothing());
   }
-  return self.browserProviderInterface.currentBrowserProvider.browser
-      ->GetBrowserState();
 }
 
 - (void)cleanupSnapshots {
-  // TODO(crbug.com/1116496): Browsers for disconnected scenes are not in the
+  // TODO(crbug.com/40144759): Browsers for disconnected scenes are not in the
   // BrowserList, so this may not reach all folders.
-  // TODO(crbug.com/325611897): Handle multiple browser states.
-  BrowserList* browser_list =
-      BrowserListFactory::GetForBrowserState(self.appState.mainBrowserState);
-  for (Browser* browser : browser_list->AllRegularBrowsers()) {
-    SnapshotBrowserAgent::FromBrowser(browser)->PerformStorageMaintenance();
-  }
-  for (Browser* browser : browser_list->AllIncognitoBrowsers()) {
-    SnapshotBrowserAgent::FromBrowser(browser)->PerformStorageMaintenance();
+  std::vector<ChromeBrowserState*> loadedBrowserStates =
+      GetApplicationContext()
+          ->GetChromeBrowserStateManager()
+          ->GetLoadedBrowserStates();
+  for (ChromeBrowserState* browserState : loadedBrowserStates) {
+    BrowserList* browserList =
+        BrowserListFactory::GetForBrowserState(browserState);
+    for (Browser* browser : browserList->AllRegularBrowsers()) {
+      SnapshotBrowserAgent::FromBrowser(browser)->PerformStorageMaintenance();
+    }
+    for (Browser* browser : browserList->AllIncognitoBrowsers()) {
+      SnapshotBrowserAgent::FromBrowser(browser)->PerformStorageMaintenance();
+    }
   }
 }
 
@@ -1441,21 +1479,37 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
     identifiers.insert(session_util::GetSessionIdentifier(identifier, true));
   }
 
-  // TODO(crbug.com/325612597): Iterate over all browser states.
-  ChromeBrowserState* browserState = self.appState.mainBrowserState;
-  base::RepeatingClosure dataDeletedClosure = ExpectNCall(
-      browserState->HasOffTheRecordChromeBrowserState() ? 2u : 1u,
-      base::BindRepeating(&sessions_storage_util::ResetDiscardedSessions));
+  std::vector<ChromeBrowserState*> loadedBrowserStates =
+      GetApplicationContext()
+          ->GetChromeBrowserStateManager()
+          ->GetLoadedBrowserStates();
+  for (ChromeBrowserState* browserState : loadedBrowserStates) {
+    base::RepeatingClosure dataDeletedClosure = ExpectNCall(
+        browserState->HasOffTheRecordChromeBrowserState() ? 2u : 1u,
+        base::BindRepeating(&sessions_storage_util::ResetDiscardedSessions));
 
-  SessionRestorationServiceFactory::GetForBrowserState(browserState)
-      ->DeleteDataForDiscardedSessions(identifiers, dataDeletedClosure);
-
-  if (browserState->HasOffTheRecordChromeBrowserState()) {
-    ChromeBrowserState* otrBrowserState =
-        browserState->GetOffTheRecordChromeBrowserState();
-    SessionRestorationServiceFactory::GetForBrowserState(otrBrowserState)
+    SessionRestorationServiceFactory::GetForBrowserState(browserState)
         ->DeleteDataForDiscardedSessions(identifiers, dataDeletedClosure);
+
+    if (browserState->HasOffTheRecordChromeBrowserState()) {
+      ChromeBrowserState* otrBrowserState =
+          browserState->GetOffTheRecordChromeBrowserState();
+      SessionRestorationServiceFactory::GetForBrowserState(otrBrowserState)
+          ->DeleteDataForDiscardedSessions(identifiers, dataDeletedClosure);
+    }
   }
+}
+
+- (void)pingDistributionServices {
+  const base::Time installDate =
+      base::Time::FromTimeT(GetApplicationContext()->GetLocalState()->GetInt64(
+          metrics::prefs::kInstallDate));
+
+  auto URLLoaderFactory = GetApplicationContext()->GetSharedURLLoaderFactory();
+  const bool isFirstRun = FirstRun::IsChromeFirstRun();
+  ios::provider::ScheduleAppDistributionNotifications(URLLoaderFactory,
+                                                      isFirstRun);
+  ios::provider::InitializeFirebase(installDate, isFirstRun);
 }
 
 #pragma mark - BrowsingDataCommands
@@ -1552,24 +1606,25 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 
 #if BUILDFLAG(IOS_CREDENTIAL_PROVIDER_ENABLED)
 - (void)performFaviconsCleanup {
-  ChromeBrowserState* browserState = self.currentBrowserState;
-  if (!browserState)
-    return;
-
-  // TODO(crbug.com/325612259): Perform cleanup for all browser states.
-  syncer::SyncService* syncService =
-      SyncServiceFactory::GetForBrowserState(browserState);
-  // Only use the fallback to the Google server when fetching favicons for
-  // normal encryption users saving to the account, because they are the only
-  // users who consented to share data to Google.
-  BOOL fallbackToGoogleServer =
-      password_manager_util::IsSavingPasswordsToAccountWithNormalEncryption(
-          syncService);
-  if (fallbackToGoogleServer) {
-    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
-        FROM_HERE,
-        base::BindOnce(&UpdateFaviconsStorageForBrowserState,
-                       browserState->AsWeakPtr(), fallbackToGoogleServer));
+  std::vector<ChromeBrowserState*> loadedBrowserStates =
+      GetApplicationContext()
+          ->GetChromeBrowserStateManager()
+          ->GetLoadedBrowserStates();
+  for (ChromeBrowserState* browserState : loadedBrowserStates) {
+    syncer::SyncService* syncService =
+        SyncServiceFactory::GetForBrowserState(browserState);
+    // Only use the fallback to the Google server when fetching favicons for
+    // normal encryption users saving to the account, because they are the only
+    // users who consented to share data to Google.
+    BOOL fallbackToGoogleServer =
+        password_manager_util::IsSavingPasswordsToAccountWithNormalEncryption(
+            syncService);
+    if (fallbackToGoogleServer) {
+      base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
+          FROM_HERE,
+          base::BindOnce(&UpdateFaviconsStorageForBrowserState,
+                         browserState->AsWeakPtr(), fallbackToGoogleServer));
+    }
   }
 }
 #endif

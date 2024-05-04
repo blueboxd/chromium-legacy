@@ -9,6 +9,7 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <string_view>
 #include <vector>
 
 #include "ash/public/cpp/window_tree_host_lookup.h"
@@ -120,7 +121,6 @@ enum class PlaySoundOption {
 
 // AccessibilityManager changes the statuses of accessibility features
 // watching profile notifications and pref-changes.
-// TODO(yoshiki): merge MagnificationManager with AccessibilityManager.
 class AccessibilityManager
     : public session_manager::SessionManagerObserver,
       public extensions::api::braille_display_private::BrailleObserver,
@@ -551,6 +551,7 @@ class AccessibilityManager
 
   // session_manager::SessionManagerObserver:
   void OnLoginOrLockScreenVisible() override;
+  void OnSessionStateChanged() override;
 
   // Sets the current profile using the active profile.
   void SetActiveProfile();
@@ -611,12 +612,14 @@ class AccessibilityManager
 
   // Pumpkin-related methods.
   void OnPumpkinInstalled(bool success, const std::string& root_path);
-  void OnPumpkinError(const std::string& error);
+  void OnPumpkinError(std::string_view error);
   void OnPumpkinDataCreated(
       std::optional<::extensions::api::accessibility_private::PumpkinData>
           data);
 
   void OnAppTerminating();
+
+  void MaybeLogBrailleDisplayConnectedTime();
 
   // Profile which has the current a11y context.
   raw_ptr<Profile> profile_ = nullptr;
@@ -644,6 +647,7 @@ class AccessibilityManager
   std::unique_ptr<AccessibilityServiceClient> accessibility_service_client_;
 
   bool braille_display_connected_ = false;
+  base::Time braille_display_connect_time_;
   base::ScopedObservation<
       extensions::api::braille_display_private::BrailleController,
       extensions::api::braille_display_private::BrailleObserver>
@@ -709,6 +713,9 @@ class AccessibilityManager
 
   // Whether the virtual keyboard was enabled before Switch Access loaded.
   bool was_vk_enabled_before_switch_access_ = false;
+
+  // Tracks whether or not on the locked screen currently.
+  bool locked_ = false;
 
   InstallFaceGazeAssetsCallback install_facegaze_assets_callback_;
 

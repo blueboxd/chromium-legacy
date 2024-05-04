@@ -14,9 +14,6 @@ extern const CGFloat kHintTextScale;
 // Bottom margin for the Return to Recent Tab tile.
 extern const CGFloat kReturnToRecentTabSectionBottomMargin;
 
-// The width of NTP modules, as a multiplier of the view width.
-extern const CGFloat kModuleWidth;
-
 // Returns the proper height for the doodle. `logo_is_showing` is YES if showing
 // the Google logo. `doodle_is_showing` is YES if the doodle is showing. The
 // SizeClass of the `trait_collection` of the view displaying the doodle is used
@@ -55,15 +52,16 @@ CGFloat HeaderBottomPadding();
 // way `search_hint_label` is later tranformed.
 void ConfigureSearchHintLabel(UILabel* search_hint_label,
                               UIView* search_tab_target);
-// Configure the `voice_search_button`, adding it to the `search_tab_target` and
-// constraining it.
+// Configure the `voice_search_button` appearance.
 void ConfigureVoiceSearchButton(UIButton* voice_search_button,
-                                UIView* search_tab_target,
                                 BOOL use_color_icon);
 // Configure the `lens_button` appearance.
 void ConfigureLensButtonAppearance(UIButton* lens_button,
                                    BOOL use_new_badge,
                                    BOOL use_color_icon);
+// Configure the `lens_button` new badge's alpha.
+void ConfigureLensButtonWithNewBadgeAlpha(UIButton* lens_button,
+                                          CGFloat new_badge_alpha);
 
 // Returns the nearest ancestor of `view` that is kind of `of_class`.
 UIView* NearestAncestor(UIView* view, Class of_class);

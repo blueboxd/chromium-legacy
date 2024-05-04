@@ -50,7 +50,22 @@ SafetyHubMenuNotificationService::SafetyHubMenuNotificationService(
   const base::Value::Dict& stored_notifications =
       pref_service_->GetDict(safety_hub_prefs::kMenuNotificationsPrefsKey);
 
-  // TODO(crbug.com/1443466): Make the interval for each service finch
+  pref_dict_key_map_ = {
+      {safety_hub::SafetyHubModuleType::UNUSED_SITE_PERMISSIONS,
+       "unused-site-permissions"},
+      {safety_hub::SafetyHubModuleType::NOTIFICATION_PERMISSIONS,
+       "notification-permissions"},
+      {safety_hub::SafetyHubModuleType::SAFE_BROWSING, "safe-browsing"},
+      {safety_hub::SafetyHubModuleType::EXTENSIONS, "extensions"},
+  };
+  // PasswordStatusCheckService might be null for some profiles and testing. Add
+  // to the dictionary only if the service is available.
+  if (password_check_service) {
+    pref_dict_key_map_.emplace(safety_hub::SafetyHubModuleType::PASSWORDS,
+                               "passwords");
+  }
+
+  // TODO(crbug.com/40267370): Make the interval for each service finch
   // configurable.
   // The Safety Hub services will be available whenever the |GetCachedResult|
   // method is called, so it is safe to use |base::Unretained| here.
@@ -77,12 +92,16 @@ SafetyHubMenuNotificationService::SafetyHubMenuNotificationService(
                                      base::Unretained(extension_info_service),
                                      profile, true),
                  stored_notifications);
-  SetInfoElement(
-      safety_hub::SafetyHubModuleType::PASSWORDS,
-      MenuNotificationPriority::HIGH, base::Days(0),
-      base::BindRepeating(&PasswordStatusCheckService::GetCachedResult,
-                          base::Unretained(password_check_service)),
-      stored_notifications);
+  // PasswordStatusCheckService might be null for some profiles and testing. Add
+  // the info item only if the service is available.
+  if (password_check_service) {
+    SetInfoElement(
+        safety_hub::SafetyHubModuleType::PASSWORDS,
+        MenuNotificationPriority::HIGH, base::Days(0),
+        base::BindRepeating(&PasswordStatusCheckService::GetCachedResult,
+                            base::Unretained(password_check_service)),
+        stored_notifications);
+  }
 
   // Listen for changes to the Safe Browsing pref to accommodate the trigger
   // logic.
@@ -245,6 +264,11 @@ void SafetyHubMenuNotificationService::DismissActiveNotification() {
 
 void SafetyHubMenuNotificationService::DismissActiveNotificationOfModule(
     safety_hub::SafetyHubModuleType module) {
+  // Callers of this function do not know if the module is available. Do
+  // nothing, if the module is not available.
+  if (!module_info_map_.contains(module)) {
+    return;
+  }
   SafetyHubMenuNotification* notification =
       module_info_map_.at(module)->notification.get();
   if (notification->IsCurrentlyActive()) {

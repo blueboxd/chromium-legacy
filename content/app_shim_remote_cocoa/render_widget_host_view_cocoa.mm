@@ -18,6 +18,7 @@
 #include "base/debug/crash_logging.h"
 #import "base/mac/mac_util.h"
 #include "base/memory/raw_ptr.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/remote_cocoa/app_shim/ns_view_ids.h"
 #import "content/browser/accessibility/browser_accessibility_cocoa.h"
@@ -29,6 +30,7 @@
 #import "content/browser/renderer_host/render_widget_host_view_mac_editcommand_helper.h"
 #include "content/common/features.h"
 #include "content/common/input/web_input_event_builders_mac.h"
+#include "content/public/browser/browser_accessibility_state.h"
 #import "content/public/browser/render_widget_host_view_mac_delegate.h"
 #include "content/public/common/content_features.h"
 #include "skia/ext/skia_utils_mac.h"
@@ -357,6 +359,7 @@ void ExtractUnderlines(NSAttributedString* string,
   NSInteger _textSuggestionsSequenceNumber;
   BOOL _shouldRequestTextSubstitutions;
   BOOL _substitutionWasApplied;
+  bool _sonomaAccessibilityRefinementsAreActive;
 }
 
 @synthesize markedRange = _markedRange;
@@ -382,6 +385,10 @@ void ExtractUnderlines(NSAttributedString* string,
     _isStylusEnteringProximity = false;
     _keyboardLockActive = false;
     _textInputType = ui::TEXT_INPUT_TYPE_NONE;
+    _sonomaAccessibilityRefinementsAreActive =
+        base::mac::MacOSVersion() >= 14'00'00 &&
+        base::FeatureList::IsEnabled(
+            features::kSonomaAccessibilityActivationRefinements);
   }
   return self;
 }
@@ -831,7 +838,7 @@ void ExtractUnderlines(NSAttributedString* string,
   WebMouseEvent webEvent = WebMouseEventBuilder::Build(event, self);
   webEvent.SetModifiers(webEvent.GetModifiers() |
                         WebInputEvent::kRelativeMotionEvent);
-  // TODO(crbug.com/1465562): We shouldn't be posting events with null
+  // TODO(crbug.com/40276040): We shouldn't be posting events with null
   // timestamps. However `MessagePumpNSApplication::DoQuit` usage of
   // `otherEventWithType` seems to truncate `NSTimeInterval` to seconds. Which
   // could lead to those generated events be in the past, compared to ones
@@ -976,8 +983,7 @@ void ExtractUnderlines(NSAttributedString* string,
   WebMouseEvent event = WebMouseEventBuilder::Build(
       theEvent, self, _pointerType, unacceleratedMovement);
 
-  if (_mouseLocked &&
-      base::FeatureList::IsEnabled(features::kConsolidatedMovementXY)) {
+  if (_mouseLocked) {
     // When mouse is locked, we keep increasing |_lastMouseScreenPosition|
     // by movement_x/y so that we can still use PositionInScreen to calculate
     // movements in blink. We need to keep |_lastMouseScreenPosition| from
@@ -1982,6 +1988,20 @@ void ExtractUnderlines(NSAttributedString* string,
 }
 
 - (NSAccessibilityRole)accessibilityRole {
+  if (_sonomaAccessibilityRefinementsAreActive) {
+    content::BrowserAccessibilityState* accessibility_state =
+        content::BrowserAccessibilityState::GetInstance();
+
+    // When an AT asks the application object for its role, we activate
+    // nativeAPI accessibility support. If the AT descends into the AX tree
+    // and arrives here (the web contents container), activate basic support
+    // so that the AT can descend further into the web content.
+    if (!accessibility_state->GetAccessibilityMode().has_mode(
+            ui::kAXModeBasic.flags())) {
+      accessibility_state->AddAccessibilityModeFlags(ui::kAXModeBasic);
+    }
+  }
+
   return NSAccessibilityScrollAreaRole;
 }
 
@@ -2266,20 +2286,16 @@ extern NSString* NSTextInputReplacementRangeAttributeName;
       _markedRange.length = length;
     }
 
-    if (fixLiveConversion) {
-      CHECK_LE(_markedRange.location + newSelRange.location,
-               std::numeric_limits<uint32_t>::max())
-          << "`start` is too large; _markedRange.location="
-          << _markedRange.location
-          << "; newSelRange.location=" << newSelRange.location;
-      CHECK_LE(_markedRange.location + NSMaxRange(newSelRange),
-               std::numeric_limits<uint32_t>::max())
-          << "`end` is too large; _markedRange.location="
-          << _markedRange.location
-          << "; NSMaxRange(newSelRange)=" << NSMaxRange(newSelRange);
+    if (fixLiveConversion && newSelRange.location != NSNotFound) {
+      CHECK_NE(_markedRange.location, static_cast<NSUInteger>(NSNotFound));
+      CHECK_LE(_markedRange.location, std::numeric_limits<uint32_t>::max());
+      CHECK_LE(newSelRange.location, std::numeric_limits<uint32_t>::max());
+      // `_markedRange.location + NSMaxRange(newSelRange)` can be larger than
+      // the maximum uint32_t. See crbug.com/40060200.
+      uint32_t new_end = base::saturated_cast<uint32_t>(
+          _markedRange.location + NSMaxRange(newSelRange));
       _textSelectionRange =
-          gfx::Range(_markedRange.location + newSelRange.location,
-                     _markedRange.location + NSMaxRange(newSelRange));
+          gfx::Range(_markedRange.location + newSelRange.location, new_end);
     }
   } else {
     // An empty text means the composition is about to be cancelled,
@@ -2423,7 +2439,7 @@ extern NSString* NSTextInputReplacementRangeAttributeName;
     // into
     // |_availableText|. This variable will ultimately be asynchronously updated
     // by Blink.
-    // TODO(crbug.com/1169288): Mac's IME API is synchronous and it plays badly
+    // TODO(crbug.com/40165347): Mac's IME API is synchronous and it plays badly
     // with async APIs between the browser and the renderer. Probably replace
     // the sync |interpretKeyEvents:| with the async
     // |handleEventByInputMethod:|, which is an undocumented API used in

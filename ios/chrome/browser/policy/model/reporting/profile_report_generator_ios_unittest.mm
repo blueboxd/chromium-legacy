@@ -125,12 +125,18 @@ class ProfileReportGeneratorIOSTest : public PlatformTest {
     return report;
   }
 
-  // TODO(crbug.com/325256943): Migrate to use TestChromeBrowserStateManager or
-  // a TestChromeBrowserState.
   ChromeBrowserState* GetBrowserState() {
-    return GetApplicationContext()
-        ->GetChromeBrowserStateManager()
-        ->GetLastUsedBrowserState();
+    return GetTestChromeBrowserStateManager()
+        ->GetLastUsedBrowserStateForTesting();
+  }
+
+  TestChromeBrowserStateManager* GetTestChromeBrowserStateManager() {
+    // A TestChromeBrowserStateManager is installed in the constructor
+    // via `scoped_browser_state_manager_`, so it is safe to downcast
+    // the ChromeBrowserStateManager.
+    DCHECK(scoped_browser_state_manager_);
+    return static_cast<TestChromeBrowserStateManager*>(
+        GetApplicationContext()->GetChromeBrowserStateManager());
   }
 
   ReportingDelegateFactoryIOS delegate_factory_;
@@ -160,7 +166,7 @@ TEST_F(ProfileReportGeneratorIOSTest, SignedInProfile) {
   ASSERT_TRUE(report);
   EXPECT_TRUE(report->has_chrome_signed_in_user());
   EXPECT_EQ(kAccount + "@gmail.com", report->chrome_signed_in_user().email());
-  EXPECT_EQ(kAccount + "_hashID",
+  EXPECT_EQ(kAccount + "ID",
             report->chrome_signed_in_user().obfuscated_gaia_id());
 }
 

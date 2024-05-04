@@ -37,7 +37,8 @@ import java.lang.annotation.RetentionPolicy;
  *
  * <p>Use {@link resolveMinorMode} and {@link trackLatency} methods as entry points.
  */
-class MinorModeHelper implements IdentityManager.Observer {
+public class MinorModeHelper implements IdentityManager.Observer {
+
     /** Screen modes indicated by capability. */
     @IntDef({ScreenMode.PENDING, ScreenMode.RESTRICTED, ScreenMode.UNRESTRICTED})
     @Retention(RetentionPolicy.SOURCE)
@@ -62,12 +63,44 @@ class MinorModeHelper implements IdentityManager.Observer {
     private static final String IMMEDIATELY_AVAILABLE_HISTOGRAM_NAME =
             "Signin.AccountCapabilities.ImmediatelyAvailable";
 
+    private static final String BUTTONS_SHOWN_HISTOGRAM_NAME = "Signin.SyncButtons.Shown";
+    private static final String BUTTON_CLICKED_HISTOGRAM_NAME = "Signin.SyncButtons.Clicked";
+
+    public @interface SyncButtonsType {
+        // These values are persisted to logs. Entries should not be renumbered and
+        // numeric values should never be reused.
+        int SYNC_EQUAL_WEIGHTED = 0;
+        int SYNC_NOT_EQUAL_WEIGHTED = 1;
+        int HISTORY_SYNC_EQUAL_WEIGHTED = 2;
+        int HISTORY_SYNC_NOT_EQUAL_WEIGHTED = 3;
+        int NUM_ENTRIES = 4;
+    };
+
+    public @interface SyncButtonClicked {
+        // These values are persisted to logs. Entries should not be renumbered and
+        // numeric values should never be reused.
+        int SYNC_OPT_IN_EQUAL_WEIGHTED = 0;
+        int SYNC_CANCEL_EQUAL_WEIGHTED = 1;
+        int SYNC_SETTINGS_EQUAL_WEIGHTED = 2;
+        int SYNC_OPT_IN_NOT_EQUAL_WEIGHTED = 3;
+        int SYNC_CANCEL_NOT_EQUAL_WEIGHTED = 4;
+        int SYNC_SETTINGS_NOT_EQUAL_WEIGHTED = 5;
+        int HISTORY_SYNC_OPT_IN_EQUAL_WEIGHTED = 6;
+        int HISTORY_SYNC_CANCEL_EQUAL_WEIGHTED = 7;
+        int HISTORY_SYNC_OPT_IN_NOT_EQUAL_WEIGHTED = 8;
+        int HISTORY_SYNC_CANCEL_NOT_EQUAL_WEIGHTED = 9;
+        int NUM_ENTRIES = 8;
+    };
+
     private static final int CAPABILITY_TIMEOUT_MS = 400;
+
+    private static boolean sDisableHistorySyncOptInTimeout;
 
     private final long mCreated = SystemClock.elapsedRealtime();
 
     private final IdentityManager mIdentityManager;
-    private final AccountInfo mPrimaryAccount;
+
+    private final CoreAccountInfo mPrimaryAccount;
 
     // Disposable updater which is executed only once.
     private UiUpdater mUiUpdater;
@@ -78,15 +111,16 @@ class MinorModeHelper implements IdentityManager.Observer {
      * relatively short {@link CAPABILITY_TIMEOUT_MS} time then minor more is resolved with a
      * default value.
      *
-     * <p>Tracks the availability latency of {@link AccountCapabilities} for the primary account.
+     * <p>Tracks the availability latency of {@link AccountCapabilities} for the signed-in primary
+     * account.
      */
     static void resolveMinorMode(
-            IdentityManager identityManager, CoreAccountInfo account, UiUpdater uiUpdater) {
+            IdentityManager identityManager, CoreAccountInfo primaryAccount, UiUpdater uiUpdater) {
         if (uiUpdater == null) {
             throw new IllegalArgumentException("uiUpdater must not be null.");
         }
         AccountInfo accountInfo =
-                identityManager.findExtendedAccountInfoByEmailAddress(account.getEmail());
+                identityManager.findExtendedAccountInfoByEmailAddress(primaryAccount.getEmail());
 
         // TODO(b/40284908): remove accountInfo null check
         if (accountInfo != null && hasCapabilities(accountInfo)) {
@@ -97,12 +131,23 @@ class MinorModeHelper implements IdentityManager.Observer {
         }
 
         recordNoImmediateAvailability();
-        identityManager.addObserver(new MinorModeHelper(identityManager, accountInfo, uiUpdater));
+        identityManager.addObserver(
+                new MinorModeHelper(identityManager, primaryAccount, uiUpdater));
     }
 
     /** Similar to {@link resolveMinorMode}, but only tracks latency, without altering the UI. */
     static void trackLatency(IdentityManager identityManager, CoreAccountInfo primaryAccount) {
         resolveMinorMode(identityManager, primaryAccount, (mode) -> {});
+    }
+
+    static void recordButtonsShown(@SyncButtonsType int type) {
+        RecordHistogram.recordEnumeratedHistogram(
+                BUTTONS_SHOWN_HISTOGRAM_NAME, type, SyncButtonsType.NUM_ENTRIES);
+    }
+
+    static void recordButtonClicked(@SyncButtonClicked int type) {
+        RecordHistogram.recordEnumeratedHistogram(
+                BUTTON_CLICKED_HISTOGRAM_NAME, type, SyncButtonClicked.NUM_ENTRIES);
     }
 
     /**
@@ -132,13 +177,17 @@ class MinorModeHelper implements IdentityManager.Observer {
     }
 
     private MinorModeHelper(
-            IdentityManager identityManager, AccountInfo primaryAccount, UiUpdater uiUpdater) {
+            IdentityManager identityManager, CoreAccountInfo primaryAccount, UiUpdater uiUpdater) {
         this.mIdentityManager = identityManager;
         this.mPrimaryAccount = primaryAccount;
         mUiUpdater = uiUpdater;
 
-        PostTask.postDelayedTask(
-                TaskTraits.UI_DEFAULT, this::defaultToRestricted, CAPABILITY_TIMEOUT_MS);
+        // When the sDisableHistorySyncOptInTimeout is enabled in tests, the buttons should only be
+        // updated due to a capability change and not due to a timeout.
+        if (!sDisableHistorySyncOptInTimeout) {
+            PostTask.postDelayedTask(
+                    TaskTraits.UI_DEFAULT, this::defaultToRestricted, CAPABILITY_TIMEOUT_MS);
+        }
     }
 
     @Override
@@ -188,5 +237,10 @@ class MinorModeHelper implements IdentityManager.Observer {
         long latency = SystemClock.elapsedRealtime() - mCreated;
         RecordHistogram.recordTimesHistogram(USER_LATENCY_HISTOGRAM_NAME, latency);
         RecordHistogram.recordTimesHistogram(FETCH_LATENCY_HISTOGRAM_NAME, latency);
+    }
+
+    /** Disable timeout to show sync buttons on FRE for testing */
+    public static void disableTimeoutForTesting() {
+        sDisableHistorySyncOptInTimeout = true;
     }
 }

@@ -30,10 +30,11 @@ import java.lang.annotation.RetentionPolicy;
 public @interface StartSurfaceState {
     @Deprecated int NOT_SHOWN = 0;
 
-    // TODO(crbug.com/1115757): After crrev.com/c/2315823, Overview state and Startsurface state are
+    // TODO(crbug.com/40144466): After crrev.com/c/2315823, Overview state and Startsurface state
+    // are
     // two different things, let's audit all the state here.
 
-    // TODO(https://crbug.com/1315679): Replace this with {@link LayoutType} after the {@link
+    // TODO(crbug.com/40221890): Replace this with {@link LayoutType} after the {@link
     // ChromeFeatureList.START_SURFACE_REFACTOR} is enabled by default.
     // When overview is visible, it will be in one of the SHOWN states.
     @Deprecated int SHOWN_HOMEPAGE = 1;

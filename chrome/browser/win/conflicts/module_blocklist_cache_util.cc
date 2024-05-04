@@ -7,6 +7,7 @@
 #include <functional>
 #include <iterator>
 #include <string>
+#include <string_view>
 #include <tuple>
 #include <type_traits>
 #include <utility>
@@ -56,10 +57,10 @@ base::MD5Digest CalculateModuleBlocklistCacheMD5(
   base::MD5Init(&md5_context);
 
   base::MD5Update(&md5_context,
-                  base::StringPiece(reinterpret_cast<const char*>(&metadata),
-                                    sizeof(metadata)));
+                  std::string_view(reinterpret_cast<const char*>(&metadata),
+                                   sizeof(metadata)));
   base::MD5Update(&md5_context,
-                  base::StringPiece(
+                  std::string_view(
                       reinterpret_cast<const char*>(blocklisted_modules.data()),
                       sizeof(third_party_dlls::PackedListModule) *
                           blocklisted_modules.size()));
@@ -160,7 +161,7 @@ bool WriteModuleBlocklistCache(
       sizeof(third_party_dlls::PackedListModule) * blocklisted_modules.size());
   file_contents.append(std::begin(md5_digest->a), std::end(md5_digest->a));
 
-  // TODO(1022041): Investigate if using WriteFileAtomically() in a
+  // TODO(crbug.com/40106434): Investigate if using WriteFileAtomically() in a
   // CONTINUE_ON_SHUTDOWN sequence doesn't cause too many corrupted caches.
   return base::ImportantFileWriter::WriteFileAtomically(
       module_blocklist_cache_path, file_contents);
@@ -264,10 +265,10 @@ void RemoveAllowlistedEntries(
       *blocklisted_modules,
       [&module_list_filter](const third_party_dlls::PackedListModule& module) {
         return module_list_filter.IsAllowlisted(
-            base::StringPiece(
+            std::string_view(
                 reinterpret_cast<const char*>(&module.basename_hash[0]),
                 std::size(module.basename_hash)),
-            base::StringPiece(
+            std::string_view(
                 reinterpret_cast<const char*>(&module.code_id_hash[0]),
                 std::size(module.code_id_hash)));
       });

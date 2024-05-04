@@ -31,12 +31,19 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.LaunchIntentDispatcher;
 import org.chromium.chrome.browser.browserservices.intents.BrowserServicesIntentDataProvider.CustomTabsUiType;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
+import org.chromium.chrome.browser.password_manager.PasswordManagerUtilBridge;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.services.DisplayableProfileData;
+import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
+import org.chromium.chrome.browser.sync.SyncServiceFactory;
 import org.chromium.chrome.browser.sync.TrustedVaultClient;
 import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.signin.base.GoogleServiceAuthError;
+import org.chromium.components.signin.identitymanager.ConsentLevel;
 import org.chromium.components.sync.SyncService;
 import org.chromium.components.sync.TrustedVaultUserActionTriggerForUMA;
+import org.chromium.components.sync.UserSelectableType;
+import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.ui.widget.Toast;
 
 import java.lang.annotation.Retention;
@@ -55,6 +62,7 @@ public class SyncSettingsUtils {
         int EMAIL = 1;
     }
 
+    // Keep in sync with SyncErrorReason variant in sync/histograms.xml and signin/histograms.xml.
     @IntDef({
         SyncError.NO_ERROR,
         SyncError.AUTH_ERROR,
@@ -65,6 +73,7 @@ public class SyncSettingsUtils {
         SyncError.TRUSTED_VAULT_RECOVERABILITY_DEGRADED_FOR_PASSWORDS,
         SyncError.CLIENT_OUT_OF_DATE,
         SyncError.SYNC_SETUP_INCOMPLETE,
+        SyncError.UPM_BACKEND_OUTDATED,
         SyncError.OTHER_ERRORS
     })
     @Retention(RetentionPolicy.SOURCE)
@@ -78,6 +87,7 @@ public class SyncSettingsUtils {
         int TRUSTED_VAULT_RECOVERABILITY_DEGRADED_FOR_PASSWORDS = 5;
         int CLIENT_OUT_OF_DATE = 6;
         int SYNC_SETUP_INCOMPLETE = 7;
+        int UPM_BACKEND_OUTDATED = 8;
         int OTHER_ERRORS = 128;
     }
 
@@ -86,6 +96,7 @@ public class SyncSettingsUtils {
     // These are the actions users can taken on error cards, messages, and notifications.
     // Keep in sync with SyncErrorUiAction enum in sync/enums.xml, and SyncErrorPromptUIAction enum
     // in signin/enums.xml.
+    // LINT.IfChange(SyncErrorUiAction)
     @IntDef({
         ErrorUiAction.SHOWN,
         ErrorUiAction.DISMISSED,
@@ -100,6 +111,8 @@ public class SyncSettingsUtils {
         int NUM_ENTRIES = 3;
     }
 
+    // LINT.ThenChange(/tools/metrics/histograms/metadata/sync/enums.xml:SyncErrorUiAction)
+
     // Class to wrap the details of an error card.
     public static class ErrorCardDetails {
         public @StringRes int message;
@@ -112,7 +125,8 @@ public class SyncSettingsUtils {
     }
 
     /** Returns the type of the sync error, for syncing users. */
-    public static @SyncError int getSyncError(SyncService syncService) {
+    public static @SyncError int getSyncError(Profile profile) {
+        SyncService syncService = SyncServiceFactory.getForProfile(profile);
         if (syncService == null) {
             return SyncError.NO_ERROR;
         }
@@ -128,6 +142,12 @@ public class SyncSettingsUtils {
 
         if (!syncService.isInitialSyncFeatureSetupComplete()) {
             return SyncError.SYNC_SETUP_INCOMPLETE;
+        }
+
+        if (syncService.getSelectedTypes().contains(UserSelectableType.PASSWORDS)
+                && PasswordManagerUtilBridge.isGmsCoreUpdateRequired(
+                        UserPrefs.get(profile), /* isPwdSyncEnabled= */ true)) {
+            return SyncError.UPM_BACKEND_OUTDATED;
         }
 
         return SyncError.NO_ERROR;
@@ -160,6 +180,8 @@ public class SyncSettingsUtils {
                 return context.getString(R.string.hint_sync_recoverability_degraded_for_passwords);
             case SyncError.SYNC_SETUP_INCOMPLETE:
                 return context.getString(R.string.hint_sync_settings_not_confirmed_description);
+            case SyncError.UPM_BACKEND_OUTDATED:
+                return context.getString(R.string.sync_error_card_outdated_gms);
             case SyncError.NO_ERROR:
             default:
                 return null;
@@ -185,6 +207,8 @@ public class SyncSettingsUtils {
             case SyncError.TRUSTED_VAULT_RECOVERABILITY_DEGRADED_FOR_EVERYTHING:
             case SyncError.TRUSTED_VAULT_RECOVERABILITY_DEGRADED_FOR_PASSWORDS:
                 return context.getString(R.string.sync_needs_verification_title);
+            case SyncError.UPM_BACKEND_OUTDATED:
+                return context.getString(R.string.sync_error_outdated_gms);
             case SyncError.NO_ERROR:
             default:
                 return null;
@@ -211,6 +235,8 @@ public class SyncSettingsUtils {
                 return context.getString(R.string.trusted_vault_error_card_button);
             case SyncError.SYNC_SETUP_INCOMPLETE:
                 return context.getString(R.string.sync_promo_turn_on_sync);
+            case SyncError.UPM_BACKEND_OUTDATED:
+                return context.getString(R.string.password_manager_outdated_gms_positive_button);
             case SyncError.NO_ERROR:
             default:
                 return null;
@@ -218,7 +244,8 @@ public class SyncSettingsUtils {
     }
 
     /** Return a short summary of the current sync status. */
-    public static String getSyncStatusSummary(Context context, SyncService syncService) {
+    public static String getSyncStatusSummary(Context context, Profile profile) {
+        SyncService syncService = SyncServiceFactory.getForProfile(profile);
         if (syncService == null) {
             return context.getString(R.string.sync_off);
         }
@@ -271,6 +298,12 @@ public class SyncSettingsUtils {
             return context.getString(R.string.sync_needs_verification_title);
         }
 
+        if (syncService.getSelectedTypes().contains(UserSelectableType.PASSWORDS)
+                && PasswordManagerUtilBridge.isGmsCoreUpdateRequired(
+                        UserPrefs.get(profile), /* isPwdSyncEnabled= */ true)) {
+            return context.getString(R.string.sync_error_outdated_gms);
+        }
+
         return context.getString(R.string.sync_on);
     }
 
@@ -302,7 +335,8 @@ public class SyncSettingsUtils {
     }
 
     /** Returns an icon that represents the current sync state. */
-    public static @Nullable Drawable getSyncStatusIcon(Context context, SyncService syncService) {
+    public static @Nullable Drawable getSyncStatusIcon(Context context, Profile profile) {
+        SyncService syncService = SyncServiceFactory.getForProfile(profile);
         if (syncService == null
                 || !syncService.hasSyncConsent()
                 || syncService.getSelectedTypes().isEmpty()
@@ -310,7 +344,7 @@ public class SyncSettingsUtils {
             return AppCompatResources.getDrawable(context, R.drawable.ic_sync_off_48dp);
         }
 
-        if (getSyncError(syncService) != SyncError.NO_ERROR) {
+        if (getSyncError(profile) != SyncError.NO_ERROR) {
             return AppCompatResources.getDrawable(context, R.drawable.ic_sync_error_48dp);
         }
 
@@ -360,10 +394,11 @@ public class SyncSettingsUtils {
 
     /**
      * Opens web dashboard to manage sync in a custom tab.
+     *
      * @param activity The activity to use for starting the intent.
      */
     public static void openSyncDashboard(Activity activity) {
-        // TODO(https://crbug.com/948103): Create a builder for custom tab intents.
+        // TODO(crbug.com/41450409): Create a builder for custom tab intents.
         openCustomTabWithURL(activity, DASHBOARD_URL);
     }
 
@@ -539,8 +574,9 @@ public class SyncSettingsUtils {
     }
 
     /** Returns the type of the sync error/identity error for signed-in non-syncing users. */
-    public static @SyncError int getIdentityError(SyncService syncService) {
-        // TODO(crbug.com/1503649): Consider converting this to an assertion instead.
+    public static @SyncError int getIdentityError(Profile profile) {
+        SyncService syncService = SyncServiceFactory.getForProfile(profile);
+        // TODO(crbug.com/40944114): Consider converting this to an assertion instead.
         if (syncService == null) {
             return SyncError.NO_ERROR;
         }
@@ -550,9 +586,16 @@ public class SyncSettingsUtils {
             return SyncError.NO_ERROR;
         }
 
+        // No error for not signed-in users.
+        if (!IdentityServicesProvider.get()
+                .getIdentityManager(profile)
+                .hasPrimaryAccount(ConsentLevel.SIGNIN)) {
+            return SyncError.NO_ERROR;
+        }
+
         @SyncError int error = getSyncErrorFromSyncService(syncService);
         // Do not show identity error for unrecoverable errors, since they are not actionable.
-        // TODO(crbug.com/1503649): Remove these unused values after sync-to-signin transition.
+        // TODO(crbug.com/40944114): Remove these unused values after sync-to-signin transition.
         if (error == SyncError.OTHER_ERRORS) {
             return SyncError.NO_ERROR;
         }
@@ -670,6 +713,10 @@ public class SyncSettingsUtils {
                 return ".TrustedVaultRecoverabilityDegradedForEverything";
             case SyncError.TRUSTED_VAULT_RECOVERABILITY_DEGRADED_FOR_PASSWORDS:
                 return ".TrustedVaultRecoverabilityDegradedForPasswords";
+            case SyncError.UPM_BACKEND_OUTDATED:
+                return ".UpmBackendOutdated";
+            case SyncError.OTHER_ERRORS:
+                return ".OtherErrors";
             default:
                 assert false;
                 return "";

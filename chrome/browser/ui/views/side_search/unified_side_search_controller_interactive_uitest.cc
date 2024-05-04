@@ -64,7 +64,7 @@ class SideSearchV2Test : public SideSearchBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(SideSearchV2Test,
                        CarryOverSideSearchToNewTabFromSideSearchPanel) {
-  // TODO(crbug/1512129): Delete tests.
+  // TODO(crbug.com/41484710): Delete tests.
   if (base::FeatureList::IsEnabled(features::kSidePanelPinning) ||
       base::FeatureList::IsEnabled(features::kResponsiveToolbar)) {
     GTEST_SKIP() << "Side search feature no longer in use";
@@ -118,7 +118,7 @@ IN_PROC_BROWSER_TEST_F(SideSearchV2Test,
 
 IN_PROC_BROWSER_TEST_F(SideSearchV2Test,
                        CarryOverSideSearchToNewWindowFromSideSearchPanel) {
-  // TODO(crbug/1512129): Delete tests.
+  // TODO(crbug.com/41484710): Delete tests.
   if (base::FeatureList::IsEnabled(features::kSidePanelPinning) ||
       base::FeatureList::IsEnabled(features::kResponsiveToolbar)) {
     GTEST_SKIP() << "Side search feature no longer in use";
@@ -173,7 +173,7 @@ IN_PROC_BROWSER_TEST_F(SideSearchV2Test,
 IN_PROC_BROWSER_TEST_F(
     SideSearchV2Test,
     SideSearchNotCarriedOverToIncognitoWindowFromSideSearchPanel) {
-  // TODO(crbug/1512129): Delete tests.
+  // TODO(crbug.com/41484710): Delete tests.
   if (base::FeatureList::IsEnabled(features::kSidePanelPinning) ||
       base::FeatureList::IsEnabled(features::kResponsiveToolbar)) {
     GTEST_SKIP() << "Side search feature no longer in use";
@@ -220,7 +220,7 @@ IN_PROC_BROWSER_TEST_F(
 }
 
 IN_PROC_BROWSER_TEST_F(SideSearchV2Test, DisplayPageActionIconInNewTab) {
-  // TODO(crbug/1512129): Delete tests.
+  // TODO(crbug.com/41484710): Delete tests.
   if (base::FeatureList::IsEnabled(features::kSidePanelPinning) ||
       base::FeatureList::IsEnabled(features::kResponsiveToolbar)) {
     GTEST_SKIP() << "Side search feature no longer in use";
@@ -267,7 +267,7 @@ IN_PROC_BROWSER_TEST_F(SideSearchV2Test, DisplayPageActionIconInNewTab) {
 }
 
 IN_PROC_BROWSER_TEST_F(SideSearchV2Test, DisplayPageActionIconInNewWindow) {
-  // TODO(crbug/1512129): Delete tests.
+  // TODO(crbug.com/41484710): Delete tests.
   if (base::FeatureList::IsEnabled(features::kSidePanelPinning) ||
       base::FeatureList::IsEnabled(features::kResponsiveToolbar)) {
     GTEST_SKIP() << "Side search feature no longer in use";
@@ -314,7 +314,7 @@ IN_PROC_BROWSER_TEST_F(SideSearchV2Test, DisplayPageActionIconInNewWindow) {
 }
 
 IN_PROC_BROWSER_TEST_F(SideSearchV2Test, NoPageActionIconInIncognitoWindow) {
-  // TODO(crbug/1512129): Delete tests.
+  // TODO(crbug.com/41484710): Delete tests.
   if (base::FeatureList::IsEnabled(features::kSidePanelPinning) ||
       base::FeatureList::IsEnabled(features::kResponsiveToolbar)) {
     GTEST_SKIP() << "Side search feature no longer in use";
@@ -357,7 +357,7 @@ IN_PROC_BROWSER_TEST_F(SideSearchV2Test, NoPageActionIconInIncognitoWindow) {
 
 IN_PROC_BROWSER_TEST_F(SideSearchV2Test,
                        SidePanelButtonShowsCorrectlySingleTab) {
-  // TODO(crbug/1512129): Delete tests.
+  // TODO(crbug.com/41484710): Delete tests.
   if (base::FeatureList::IsEnabled(features::kSidePanelPinning) ||
       base::FeatureList::IsEnabled(features::kResponsiveToolbar)) {
     GTEST_SKIP() << "Side search feature no longer in use";
@@ -380,7 +380,7 @@ IN_PROC_BROWSER_TEST_F(SideSearchV2Test,
 
 IN_PROC_BROWSER_TEST_F(SideSearchV2Test,
                        SidePanelButtonShowsCorrectlyMultipleTabs) {
-  // TODO(crbug/1512129): Delete tests.
+  // TODO(crbug.com/41484710): Delete tests.
   if (base::FeatureList::IsEnabled(features::kSidePanelPinning) ||
       base::FeatureList::IsEnabled(features::kResponsiveToolbar)) {
     GTEST_SKIP() << "Side search feature no longer in use";
@@ -411,7 +411,7 @@ IN_PROC_BROWSER_TEST_F(SideSearchV2Test,
 }
 
 IN_PROC_BROWSER_TEST_F(SideSearchV2Test, SidePanelTogglesCorrectlySingleTab) {
-  // TODO(crbug/1512129): Delete tests.
+  // TODO(crbug.com/41484710): Delete tests.
   if (base::FeatureList::IsEnabled(features::kSidePanelPinning) ||
       base::FeatureList::IsEnabled(features::kResponsiveToolbar)) {
     GTEST_SKIP() << "Side search feature no longer in use";
@@ -439,7 +439,7 @@ IN_PROC_BROWSER_TEST_F(SideSearchV2Test, SidePanelTogglesCorrectlySingleTab) {
 }
 
 IN_PROC_BROWSER_TEST_F(SideSearchV2Test, CloseButtonClosesSidePanel) {
-  // TODO(crbug/1512129): Delete tests.
+  // TODO(crbug.com/41484710): Delete tests.
   if (base::FeatureList::IsEnabled(features::kSidePanelPinning) ||
       base::FeatureList::IsEnabled(features::kResponsiveToolbar)) {
     GTEST_SKIP() << "Side search feature no longer in use";
@@ -453,7 +453,7 @@ IN_PROC_BROWSER_TEST_F(SideSearchV2Test, CloseButtonClosesSidePanel) {
 }
 
 IN_PROC_BROWSER_TEST_F(SideSearchV2Test, SideSearchNotAvailableInOTR) {
-  // TODO(crbug/1512129): Delete tests.
+  // TODO(crbug.com/41484710): Delete tests.
   if (base::FeatureList::IsEnabled(features::kSidePanelPinning) ||
       base::FeatureList::IsEnabled(features::kResponsiveToolbar)) {
     GTEST_SKIP() << "Side search feature no longer in use";
@@ -469,7 +469,7 @@ IN_PROC_BROWSER_TEST_F(SideSearchV2Test, SideSearchNotAvailableInOTR) {
 
 IN_PROC_BROWSER_TEST_F(SideSearchV2Test,
                        SearchWebInSidePanelNotAvailableInOTR) {
-  // TODO(crbug/1512129): Delete tests.
+  // TODO(crbug.com/41484710): Delete tests.
   if (base::FeatureList::IsEnabled(features::kSidePanelPinning) ||
       base::FeatureList::IsEnabled(features::kResponsiveToolbar)) {
     GTEST_SKIP() << "Side search feature no longer in use";
@@ -483,7 +483,7 @@ IN_PROC_BROWSER_TEST_F(SideSearchV2Test,
 }
 
 IN_PROC_BROWSER_TEST_F(SideSearchV2Test, MenuEntryPointNotAvailableOnSRP) {
-  // TODO(crbug/1512129): Delete tests.
+  // TODO(crbug.com/41484710): Delete tests.
   if (base::FeatureList::IsEnabled(features::kSidePanelPinning) ||
       base::FeatureList::IsEnabled(features::kResponsiveToolbar)) {
     GTEST_SKIP() << "Side search feature no longer in use";
@@ -497,7 +497,7 @@ IN_PROC_BROWSER_TEST_F(SideSearchV2Test, MenuEntryPointNotAvailableOnSRP) {
 
 IN_PROC_BROWSER_TEST_F(SideSearchV2Test,
                        MenuEntryPointAvailableOnPageWithoutSRP) {
-  // TODO(crbug/1512129): Delete tests.
+  // TODO(crbug.com/41484710): Delete tests.
   if (base::FeatureList::IsEnabled(features::kSidePanelPinning) ||
       base::FeatureList::IsEnabled(features::kResponsiveToolbar)) {
     GTEST_SKIP() << "Side search feature no longer in use";
@@ -511,7 +511,7 @@ IN_PROC_BROWSER_TEST_F(SideSearchV2Test,
 
 IN_PROC_BROWSER_TEST_F(SideSearchV2Test,
                        MenuEntryPointDisplayAndUpdateSidePanel) {
-  // TODO(crbug/1512129): Delete tests.
+  // TODO(crbug.com/41484710): Delete tests.
   if (base::FeatureList::IsEnabled(features::kSidePanelPinning) ||
       base::FeatureList::IsEnabled(features::kResponsiveToolbar)) {
     GTEST_SKIP() << "Side search feature no longer in use";
@@ -540,7 +540,7 @@ IN_PROC_BROWSER_TEST_F(SideSearchV2Test,
 IN_PROC_BROWSER_TEST_F(
     SideSearchV2Test,
     SidePanelStatePreservedWhenMovingTabsAcrossBrowserWindows) {
-  // TODO(crbug/1512129): Delete tests.
+  // TODO(crbug.com/41484710): Delete tests.
   if (base::FeatureList::IsEnabled(features::kSidePanelPinning) ||
       base::FeatureList::IsEnabled(features::kResponsiveToolbar)) {
     GTEST_SKIP() << "Side search feature no longer in use";
@@ -567,7 +567,7 @@ IN_PROC_BROWSER_TEST_F(
 
 IN_PROC_BROWSER_TEST_F(SideSearchV2Test,
                        SidePanelTogglesCorrectlyMultipleTabs) {
-  // TODO(crbug/1512129): Delete tests.
+  // TODO(crbug.com/41484710): Delete tests.
   if (base::FeatureList::IsEnabled(features::kSidePanelPinning) ||
       base::FeatureList::IsEnabled(features::kResponsiveToolbar)) {
     GTEST_SKIP() << "Side search feature no longer in use";
@@ -631,7 +631,7 @@ IN_PROC_BROWSER_TEST_F(SideSearchV2Test,
 
 IN_PROC_BROWSER_TEST_F(SideSearchV2Test,
                        SidePanelTogglesClosedCorrectlyDuringNavigation) {
-  // TODO(crbug/1512129): Delete tests.
+  // TODO(crbug.com/41484710): Delete tests.
   if (base::FeatureList::IsEnabled(features::kSidePanelPinning) ||
       base::FeatureList::IsEnabled(features::kResponsiveToolbar)) {
     GTEST_SKIP() << "Side search feature no longer in use";
@@ -655,7 +655,7 @@ IN_PROC_BROWSER_TEST_F(SideSearchV2Test,
 }
 
 IN_PROC_BROWSER_TEST_F(SideSearchV2Test, SideSearchCrashesCloseSideSearch) {
-  // TODO(crbug/1512129): Delete tests.
+  // TODO(crbug.com/41484710): Delete tests.
   if (base::FeatureList::IsEnabled(features::kSidePanelPinning) ||
       base::FeatureList::IsEnabled(features::kResponsiveToolbar)) {
     GTEST_SKIP() << "Side search feature no longer in use";
@@ -718,7 +718,7 @@ IN_PROC_BROWSER_TEST_F(SideSearchV2Test, SideSearchCrashesCloseSideSearch) {
 }
 
 IN_PROC_BROWSER_TEST_F(SideSearchV2Test, SwitchSidePanelInSingleTab) {
-  // TODO(crbug/1512129): Delete tests.
+  // TODO(crbug.com/41484710): Delete tests.
   if (base::FeatureList::IsEnabled(features::kSidePanelPinning) ||
       base::FeatureList::IsEnabled(features::kResponsiveToolbar)) {
     GTEST_SKIP() << "Side search feature no longer in use";
@@ -750,7 +750,7 @@ IN_PROC_BROWSER_TEST_F(SideSearchV2Test, SwitchSidePanelInSingleTab) {
 }
 
 IN_PROC_BROWSER_TEST_F(SideSearchV2Test, SwitchTabsWithGlobalSidePanel) {
-  // TODO(crbug/1512129): Delete tests.
+  // TODO(crbug.com/41484710): Delete tests.
   if (base::FeatureList::IsEnabled(features::kSidePanelPinning) ||
       base::FeatureList::IsEnabled(features::kResponsiveToolbar)) {
     GTEST_SKIP() << "Side search feature no longer in use";
@@ -811,7 +811,7 @@ IN_PROC_BROWSER_TEST_F(SideSearchV2Test, SwitchTabsWithGlobalSidePanel) {
 }
 
 IN_PROC_BROWSER_TEST_F(SideSearchV2Test, SwitchTabsWithoutGlobalSidePanel) {
-  // TODO(crbug/1512129): Delete tests.
+  // TODO(crbug.com/41484710): Delete tests.
   if (base::FeatureList::IsEnabled(features::kSidePanelPinning) ||
       base::FeatureList::IsEnabled(features::kResponsiveToolbar)) {
     GTEST_SKIP() << "Side search feature no longer in use";
@@ -866,7 +866,7 @@ IN_PROC_BROWSER_TEST_F(SideSearchV2Test, SwitchTabsWithoutGlobalSidePanel) {
 }
 
 IN_PROC_BROWSER_TEST_F(SideSearchV2Test, CloseSidePanelShouldClearCache) {
-  // TODO(crbug/1512129): Delete tests.
+  // TODO(crbug.com/41484710): Delete tests.
   if (base::FeatureList::IsEnabled(features::kSidePanelPinning) ||
       base::FeatureList::IsEnabled(features::kResponsiveToolbar)) {
     GTEST_SKIP() << "Side search feature no longer in use";
@@ -896,7 +896,7 @@ IN_PROC_BROWSER_TEST_F(SideSearchV2Test, CloseSidePanelShouldClearCache) {
 // Test added for crbug.com/1349687 .
 IN_PROC_BROWSER_TEST_F(SideSearchV2Test,
                        NewForegroundTabShouldNotDestroySidePanelContents) {
-  // TODO(crbug/1512129): Delete tests.
+  // TODO(crbug.com/41484710): Delete tests.
   if (base::FeatureList::IsEnabled(features::kSidePanelPinning) ||
       base::FeatureList::IsEnabled(features::kResponsiveToolbar)) {
     GTEST_SKIP() << "Side search feature no longer in use";
@@ -922,7 +922,8 @@ IN_PROC_BROWSER_TEST_F(SideSearchV2Test,
       content::OpenURLParams(embedded_test_server()->GetURL("/foo"),
                              content::Referrer(),
                              WindowOpenDisposition::NEW_FOREGROUND_TAB,
-                             ui::PAGE_TRANSITION_TYPED, false));
+                             ui::PAGE_TRANSITION_TYPED, false),
+      /*navigation_handle_callback=*/{});
 
   // When swtiched to the new tab, side panel web contents should not be
   // destroyed. Otherwise a UAF will occur.
@@ -932,7 +933,7 @@ IN_PROC_BROWSER_TEST_F(SideSearchV2Test,
 // Test added for crbug.com/1356966 .
 IN_PROC_BROWSER_TEST_F(SideSearchV2Test,
                        CloseTabWithSideSearchOpenShouldNotCrash) {
-  // TODO(crbug/1512129): Delete tests.
+  // TODO(crbug.com/41484710): Delete tests.
   if (base::FeatureList::IsEnabled(features::kSidePanelPinning) ||
       base::FeatureList::IsEnabled(features::kResponsiveToolbar)) {
     GTEST_SKIP() << "Side search feature no longer in use";
@@ -953,7 +954,7 @@ IN_PROC_BROWSER_TEST_F(SideSearchV2Test,
 IN_PROC_BROWSER_TEST_F(
     SideSearchV2Test,
     SidePanelAvailabilityChangedShouldNotCloseSidePanelWhenSideSearchIsNotOpen) {
-  // TODO(crbug/1512129): Delete tests.
+  // TODO(crbug.com/41484710): Delete tests.
   if (base::FeatureList::IsEnabled(features::kSidePanelPinning) ||
       base::FeatureList::IsEnabled(features::kResponsiveToolbar)) {
     GTEST_SKIP() << "Side search feature no longer in use";
@@ -967,177 +968,6 @@ IN_PROC_BROWSER_TEST_F(
       browser()->tab_strip_model()->GetActiveWebContents());
   side_search_controller->SidePanelAvailabilityChanged(true);
   EXPECT_TRUE(GetSidePanelFor(browser())->GetVisible());
-}
-
-class SideSearchIPHAndTutorialBrowserTest
-    : public InteractiveFeaturePromoTestT<SideSearchBrowserTest> {
- public:
-  SideSearchIPHAndTutorialBrowserTest()
-      : InteractiveFeaturePromoTestT(UseDefaultTrackerAllowingPromos(
-            {feature_engagement::kIPHSideSearchFeature})) {
-    feature_list_.InitWithFeatures({features::kSideSearch}, {});
-  }
-
-  // TODO(crbug.com/1491942): This fails with the field trial testing config.
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    InteractiveFeaturePromoTestT::SetUpCommandLine(command_line);
-    command_line->AppendSwitch("disable-field-trial-config");
-  }
-
-  void SetUp() override {
-    // TODO(crbug/1512129): Delete tests.
-    if (base::FeatureList::IsEnabled(features::kSidePanelPinning)) {
-      GTEST_SKIP() << "Side search feature no longer in use";
-    }
-
-    set_open_about_blank_on_browser_launch(true);
-    InteractiveFeaturePromoTestT::SetUp();
-  }
-
-  auto CheckHelpBubbleAnchoredToCorrectElement(
-      ui::ElementIdentifier anchored_element_id) {
-    return CheckView(
-        user_education::HelpBubbleView::kHelpBubbleElementIdForTesting,
-        [](user_education::HelpBubbleView* view) {
-          return view->GetAnchorView()->GetProperty(
-              views::kElementIdentifierKey);
-        },
-        anchored_element_id);
-  }
-
-  auto StartNavigationFromSidePanel(Browser* browser, const GURL& url) {
-    return Do([this, browser, url]() {
-      auto* const side_contents = GetActiveSidePanelWebContents(browser);
-      side_contents->GetController().LoadURLWithParams(
-          content::NavigationController::LoadURLParams(url));
-    });
-  }
-
-  auto CheckIPHTriggeredCorrectly(const ui::ElementIdentifier& primary_tab_id) {
-    const auto srp_url = GetMatchingSearchUrl();
-    const auto non_srp_url_1 = GetNonMatchingUrl();
-    return Steps(
-        InstrumentTab(primary_tab_id),
-        // Navigate to a SRP URL and then once to a non-SRP URL.
-        NavigateWebContents(primary_tab_id, srp_url),
-        NavigateWebContents(primary_tab_id, non_srp_url_1),
-        // Ensure that the side search button is present, but the side search
-        // panel isn't open.
-        WaitForShow(kSideSearchButtonElementId),
-        EnsureNotPresent(kSidePanelElementId),
-
-        // IPH bubble appears.
-        // Verify it's created with correct body text and anchored to side
-        // search page action icon button.
-        WaitForShow(
-            user_education::HelpBubbleView::kHelpBubbleElementIdForTesting),
-        CheckViewProperty(user_education::HelpBubbleView::kBodyTextIdForTesting,
-                          &views::Label::GetText,
-                          l10n_util::GetStringUTF16(IDS_SIDE_SEARCH_PROMO)),
-        CheckHelpBubbleAnchoredToCorrectElement(kSideSearchButtonElementId));
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
-IN_PROC_BROWSER_TEST_F(SideSearchIPHAndTutorialBrowserTest,
-                       IPHDismissedCorrectly) {
-  DEFINE_LOCAL_ELEMENT_IDENTIFIER_VALUE(kPrimaryTabId);
-
-  RunTestSequence(
-      CheckIPHTriggeredCorrectly(kPrimaryTabId),
-
-      // Press "Remind me later".
-      PressButton(
-          user_education::HelpBubbleView::kFirstNonDefaultButtonIdForTesting),
-      WaitForHide(
-          user_education::HelpBubbleView::kHelpBubbleElementIdForTesting));
-}
-
-IN_PROC_BROWSER_TEST_F(SideSearchIPHAndTutorialBrowserTest,
-                       IPHTriggersTutorialCorrectly) {
-  DEFINE_LOCAL_ELEMENT_IDENTIFIER_VALUE(kPrimaryTabId);
-  const auto non_srp_url = GetNonMatchingUrl();
-
-  RunTestSequence(
-      CheckIPHTriggeredCorrectly(kPrimaryTabId),
-
-      // Press "Show me how".
-      PressButton(user_education::HelpBubbleView::kDefaultButtonIdForTesting),
-
-      // 1st tutorial bubble appears.
-      // Verify it's created with correct body text and anchored to side search
-      // page action icon button.
-      WaitForShow(
-          user_education::HelpBubbleView::kHelpBubbleElementIdForTesting),
-      CheckViewProperty(
-          user_education::HelpBubbleView::kBodyTextIdForTesting,
-          &views::Label::GetText,
-          l10n_util::GetStringUTF16(IDS_SIDE_SEARCH_TUTORIAL_OPEN_SIDE_PANEL)),
-      CheckHelpBubbleAnchoredToCorrectElement(kSideSearchButtonElementId),
-
-      // Click on side search page action icon to pop up side panel.
-      PressButton(kSideSearchButtonElementId),
-
-      // 2nd tutorial bubble appears.
-      // Verify it's created with correct body text and anchored to side panel
-      // web view.
-      WaitForShow(
-          user_education::HelpBubbleView::kHelpBubbleElementIdForTesting),
-      CheckViewProperty(user_education::HelpBubbleView::kBodyTextIdForTesting,
-                        &views::Label::GetText,
-                        l10n_util::GetStringUTF16(
-                            IDS_SIDE_SEARCH_TUTORIAL_OPEN_A_LINK_TO_TAB)),
-      CheckHelpBubbleAnchoredToCorrectElement(kSideSearchWebViewElementId),
-
-      // Simulate a click on a random result in side panel.
-      StartNavigationFromSidePanel(browser(), non_srp_url),
-      WaitForWebContentsNavigation(kPrimaryTabId),
-
-      // 3rd tutorial bubble appears.
-      // Verify it's created with correct body text and anchored to side panel
-      // close button.
-      WaitForShow(
-          user_education::HelpBubbleView::kHelpBubbleElementIdForTesting),
-      CheckViewProperty(
-          user_education::HelpBubbleView::kBodyTextIdForTesting,
-          &views::Label::GetText,
-          l10n_util::GetStringUTF16(IDS_SIDE_SEARCH_TUTORIAL_CLOSE_SIDE_PANEL)),
-      CheckHelpBubbleAnchoredToCorrectElement(kSidePanelCloseButtonElementId),
-
-      // Press side panel close button.
-      PressButton(kSidePanelCloseButtonElementId), FlushEvents(),
-
-      // Final tutorial button appears.
-      // Verify it's created with correct body text and anchored to side search
-      // page action icon button.
-      WaitForShow(
-          user_education::HelpBubbleView::kHelpBubbleElementIdForTesting),
-      CheckViewProperty(user_education::HelpBubbleView::kBodyTextIdForTesting,
-                        &views::Label::GetText,
-                        l10n_util::GetStringUTF16(IDS_SIDE_SEARCH_PROMO)),
-      CheckHelpBubbleAnchoredToCorrectElement(kSideSearchButtonElementId),
-
-      // Verify the final tutorial bubble has a Restart button.
-      CheckViewProperty(
-          user_education::HelpBubbleView::kFirstNonDefaultButtonIdForTesting,
-          &views::MdTextButton::GetText,
-          l10n_util::GetStringUTF16(IDS_TUTORIAL_RESTART_TUTORIAL)),
-
-      // Pressing Restart button restarts the tutorial flow.
-      // 1st tutorial bubble appears.
-      // Verify it's created with correct body text and anchored to side search
-      // page action icon button.
-      PressButton(
-          user_education::HelpBubbleView::kFirstNonDefaultButtonIdForTesting),
-      WaitForShow(
-          user_education::HelpBubbleView::kHelpBubbleElementIdForTesting),
-      CheckViewProperty(
-          user_education::HelpBubbleView::kBodyTextIdForTesting,
-          &views::Label::GetText,
-          l10n_util::GetStringUTF16(IDS_SIDE_SEARCH_TUTORIAL_OPEN_SIDE_PANEL)),
-      CheckHelpBubbleAnchoredToCorrectElement(kSideSearchButtonElementId));
 }
 
 // Fixture base to test feature engagement functionality for the side search
@@ -1248,7 +1078,7 @@ class SideSearchAutoTriggeringBrowserTest
 
 IN_PROC_BROWSER_TEST_F(SideSearchAutoTriggeringBrowserTest,
                        SidePanelAutoTriggersAfterReturningToAPreviousSRP) {
-  // TODO(crbug/1512129): Delete tests.
+  // TODO(crbug.com/41484710): Delete tests.
   if (base::FeatureList::IsEnabled(features::kSidePanelPinning) ||
       base::FeatureList::IsEnabled(features::kResponsiveToolbar)) {
     GTEST_SKIP() << "Side search feature no longer in use";
@@ -1353,7 +1183,7 @@ class SideSearchPageActionLabelTriggerBrowserTest
 
 IN_PROC_BROWSER_TEST_F(SideSearchPageActionLabelTriggerBrowserTest,
                        SideSearchPageActionLabelAnimationTriggersCorrectly) {
-  // TODO(crbug/1512129): Delete tests.
+  // TODO(crbug.com/41484710): Delete tests.
   if (base::FeatureList::IsEnabled(features::kSidePanelPinning) ||
       base::FeatureList::IsEnabled(features::kResponsiveToolbar)) {
     GTEST_SKIP() << "Side search feature no longer in use";

@@ -122,23 +122,32 @@ void FragmentBuilder::PropagateStickyDescendants(
   }
 }
 
-HeapHashSet<Member<LayoutBox>>& FragmentBuilder::EnsureSnapAreas() {
+HeapVector<Member<LayoutBox>>& FragmentBuilder::EnsureSnapAreas() {
   if (!snap_areas_) {
-    snap_areas_ = MakeGarbageCollected<HeapHashSet<Member<LayoutBox>>>();
+    snap_areas_ = MakeGarbageCollected<HeapVector<Member<LayoutBox>>>();
   }
   return *snap_areas_;
 }
 
 void FragmentBuilder::PropagateSnapAreas(const PhysicalFragment& child) {
+  auto get_insertion_pos = [&](LayoutBox* snap_area) {
+    auto& snap_areas = EnsureSnapAreas();
+    // Ensure that snap areas are added in DOM order.
+    for (int i = snap_areas.size(); i >= 1; i--) {
+      if (snap_areas.at(i - 1)->IsBeforeInPreOrder(*snap_area)) {
+        return i;
+      }
+    }
+    return 0;
+  };
   if (child.IsSnapArea()) {
-    EnsureSnapAreas().insert(To<LayoutBox>(child.GetMutableLayoutObject()));
+    auto* snap_area = To<LayoutBox>(child.GetMutableLayoutObject());
+    EnsureSnapAreas().insert(get_insertion_pos(snap_area), snap_area);
   }
 
   if (const auto* child_snap_areas = child.PropagatedSnapAreas()) {
-    auto& snap_areas = EnsureSnapAreas();
-    for (auto& child_snap_area : *child_snap_areas) {
-      snap_areas.insert(child_snap_area);
-    }
+    EnsureSnapAreas().InsertVector(get_insertion_pos(child_snap_areas->at(0)),
+                                   *child_snap_areas);
   }
 
   if (child.IsSnapArea() && child.PropagatedSnapAreas()) {
@@ -242,6 +251,13 @@ void FragmentBuilder::PropagateFromFragment(
     LogicalOffset child_offset,
     LogicalOffset relative_offset,
     const OofInlineContainer<LogicalOffset>* inline_container) {
+  if (GetBoxType() == PhysicalFragment::kPageBorderBox) {
+    // This is the boundary between page boxes and document contents. No
+    // propagation should take place.
+    DCHECK_EQ(child.GetBoxType(), PhysicalFragment::kPageArea);
+    return;
+  }
+
   // Propagate anchors from the |child|. Anchors are in |OofData| but the
   // |child| itself may have an anchor.
   PropagateChildAnchors(child, child_offset + relative_offset);
@@ -286,13 +302,13 @@ void FragmentBuilder::PropagateFromFragment(
     const auto& child_style = child.Style();
     if (child.IsCSSBox() && child_style.GetPosition() == EPosition::kRelative) {
       if (IsHorizontalWritingMode(Style().GetWritingMode())) {
-        if (child_style.Top().IsPercentOrCalc() ||
-            child_style.Bottom().IsPercentOrCalc()) {
+        if (child_style.Top().HasPercent() ||
+            child_style.Bottom().HasPercent()) {
           has_descendant_that_depends_on_percentage_block_size_ = true;
         }
       } else {
-        if (child_style.Left().IsPercentOrCalc() ||
-            child_style.Right().IsPercentOrCalc()) {
+        if (child_style.Left().HasPercent() ||
+            child_style.Right().HasPercent()) {
           has_descendant_that_depends_on_percentage_block_size_ = true;
         }
       }
@@ -381,36 +397,37 @@ void FragmentBuilder::AddOutOfFlowChildCandidate(
     BlockNode child,
     const LogicalOffset& child_offset,
     LogicalStaticPosition::InlineEdge inline_edge,
-    LogicalStaticPosition::BlockEdge block_edge) {
+    LogicalStaticPosition::BlockEdge block_edge,
+    bool is_hidden_for_paint) {
   DCHECK(child);
+  oof_candidates_may_have_anchor_queries_ |= child.MayHaveAnchorQuery();
   oof_positioned_candidates_.emplace_back(
       child, LogicalStaticPosition{child_offset, inline_edge, block_edge},
-      RequiresContentBeforeBreaking(), OofInlineContainer<LogicalOffset>());
-}
-
-void FragmentBuilder::AddOutOfFlowChildCandidate(
-    const LogicalOofPositionedNode& candidate) {
-  oof_positioned_candidates_.emplace_back(candidate);
+      RequiresContentBeforeBreaking(), is_hidden_for_paint,
+      OofInlineContainer<LogicalOffset>());
 }
 
 void FragmentBuilder::AddOutOfFlowInlineChildCandidate(
     BlockNode child,
     const LogicalOffset& child_offset,
-    TextDirection inline_container_direction) {
+    TextDirection inline_container_direction,
+    bool is_hidden_for_paint) {
   DCHECK(node_.IsInline() || layout_object_->IsLayoutInline());
 
   // As all inline-level fragments are built in the line-logical coordinate
   // system (Direction() is kLtr), we need to know the direction of the
   // parent element to correctly determine an OOF childs static position.
-  AddOutOfFlowChildCandidate(child, child_offset,
-                             IsLtr(inline_container_direction)
-                                 ? LogicalStaticPosition::kInlineStart
-                                 : LogicalStaticPosition::kInlineEnd,
-                             LogicalStaticPosition::kBlockStart);
+  AddOutOfFlowChildCandidate(
+      child, child_offset,
+      IsLtr(inline_container_direction) ? LogicalStaticPosition::kInlineStart
+                                        : LogicalStaticPosition::kInlineEnd,
+      LogicalStaticPosition::kBlockStart, is_hidden_for_paint);
 }
 
 void FragmentBuilder::AddOutOfFlowFragmentainerDescendant(
     const LogicalOofNodeForFragmentation& descendant) {
+  oof_fragmentainer_descendants_may_have_anchor_queries_ |=
+      descendant.box->MayHaveAnchorQuery();
   oof_positioned_fragmentainer_descendants_.push_back(descendant);
 }
 
@@ -429,10 +446,20 @@ void FragmentBuilder::AddOutOfFlowDescendant(
 void FragmentBuilder::SwapOutOfFlowPositionedCandidates(
     HeapVector<LogicalOofPositionedNode>* candidates) {
   DCHECK(candidates->empty());
+  if (oof_candidates_may_have_anchor_queries_) {
+    std::sort(oof_positioned_candidates_.begin(),
+              oof_positioned_candidates_.end(),
+              [](const LogicalOofPositionedNode& a,
+                 const LogicalOofPositionedNode& b) {
+                return a.box->IsBeforeInPreOrder(*b.box);
+              });
+    oof_candidates_may_have_anchor_queries_ = false;
+  }
   std::swap(oof_positioned_candidates_, *candidates);
 }
 
 void FragmentBuilder::ClearOutOfFlowPositionedCandidates() {
+  oof_candidates_may_have_anchor_queries_ = false;
   oof_positioned_candidates_.clear();
 }
 
@@ -455,6 +482,17 @@ void FragmentBuilder::SwapMulticolsWithPendingOOFs(
 void FragmentBuilder::SwapOutOfFlowFragmentainerDescendants(
     HeapVector<LogicalOofNodeForFragmentation>* descendants) {
   DCHECK(descendants->empty());
+  // If we have anchors *somewhere* in below the OOFs we need to ensure they
+  // are in pre-order so we perform layout in the correct order.
+  if (oof_fragmentainer_descendants_may_have_anchor_queries_) {
+    std::sort(oof_positioned_fragmentainer_descendants_.begin(),
+              oof_positioned_fragmentainer_descendants_.end(),
+              [](const LogicalOofNodeForFragmentation& a,
+                 const LogicalOofNodeForFragmentation& b) {
+                return a.box->IsBeforeInPreOrder(*b.box);
+              });
+    oof_fragmentainer_descendants_may_have_anchor_queries_ = false;
+  }
   std::swap(oof_positioned_fragmentainer_descendants_, *descendants);
 }
 
@@ -473,15 +511,18 @@ void FragmentBuilder::TransferOutOfFlowCandidates(
       destination_builder->AddOutOfFlowFragmentainerDescendant(
           {node, candidate.static_position,
            !!candidate.requires_content_before_breaking,
-           multicol->fixedpos_inline_container,
+           !!candidate.is_hidden_for_paint, multicol->fixedpos_inline_container,
            multicol->fixedpos_containing_block,
            multicol->fixedpos_containing_block,
            multicol->fixedpos_inline_container});
       continue;
     }
-    destination_builder->AddOutOfFlowChildCandidate(candidate);
+    destination_builder->oof_positioned_candidates_.emplace_back(candidate);
   }
-  oof_positioned_candidates_.clear();
+  destination_builder->oof_candidates_may_have_anchor_queries_ |=
+      oof_candidates_may_have_anchor_queries_;
+
+  ClearOutOfFlowPositionedCandidates();
 }
 
 void FragmentBuilder::MoveOutOfFlowDescendantCandidatesToDescendants() {
@@ -592,8 +633,9 @@ void FragmentBuilder::PropagateOOFPositionedInfo(
         AddOutOfFlowFragmentainerDescendant(
             {node, static_position,
              !!descendant.requires_content_before_breaking,
-             new_fixedpos_inline_container, *fixedpos_containing_block,
-             *fixedpos_containing_block, new_fixedpos_inline_container});
+             !!descendant.is_hidden_for_paint, new_fixedpos_inline_container,
+             *fixedpos_containing_block, *fixedpos_containing_block,
+             new_fixedpos_inline_container});
         continue;
       }
     }
@@ -602,9 +644,10 @@ void FragmentBuilder::PropagateOOFPositionedInfo(
     // |oof_positioned_candidates_| should not have duplicated entries.
     DCHECK(!base::Contains(oof_positioned_candidates_, node,
                            &LogicalOofPositionedNode::Node));
+    oof_candidates_may_have_anchor_queries_ |= node.MayHaveAnchorQuery();
     oof_positioned_candidates_.emplace_back(
         node, static_position, descendant.requires_content_before_breaking,
-        new_inline_container);
+        descendant.is_hidden_for_paint, new_inline_container);
   }
 
   const auto* oof_data = fragment.GetFragmentedOofData();
@@ -852,7 +895,8 @@ void FragmentBuilder::PropagateOOFFragmentainerDescendants(
     }
     LogicalOofNodeForFragmentation oof_node(
         descendant.Node(), static_position,
-        descendant.requires_content_before_breaking, new_inline_container,
+        descendant.requires_content_before_breaking,
+        descendant.is_hidden_for_paint, new_inline_container,
         OofContainingBlock<LogicalOffset>(
             containing_block_offset, containing_block_rel_offset,
             containing_block_fragment, clipped_container_block_offset,

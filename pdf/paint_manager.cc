@@ -107,7 +107,7 @@ void PaintManager::SetTransform(float scale,
     translate_with_origin.Scale(1.0f - scale);
     translate_with_origin.Subtract(translate);
 
-    // TODO(crbug.com/1263614): Should update be deferred until `Flush()`?
+    // TODO(crbug.com/40203030): Should update be deferred until `Flush()`?
     client_->UpdateLayerTransform(scale, translate_with_origin);
   }
 
@@ -217,7 +217,7 @@ void PaintManager::DoPaint() {
           SkImageInfo::MakeN32Premul(new_size.width(), new_size.height()));
       DCHECK(surface_);
 
-      // TODO(crbug.com/1317832): Can we guarantee repainting some other way?
+      // TODO(crbug.com/40222665): Can we guarantee repainting some other way?
       client_->InvalidatePluginContainer();
 
       device_scale_ = 1.0f;
@@ -254,7 +254,7 @@ void PaintManager::DoPaint() {
     if (update.has_scroll &&
         std::abs(update.scroll_delta.x()) < surface_->width() &&
         std::abs(update.scroll_delta.y()) < surface_->height()) {
-      // TODO(crbug.com/1263614): Use `SkSurface::notifyContentWillChange()`.
+      // TODO(crbug.com/40203030): Use `SkSurface::notifyContentWillChange()`.
       gfx::ScrollCanvas(surface_->getCanvas(), update.scroll_rect,
                         update.scroll_delta);
     }
@@ -305,7 +305,7 @@ void PaintManager::Flush() {
                                    SkSamplingOptions(), /*paint=*/nullptr);
   client_->UpdateSnapshot(std::move(snapshot));
 
-  // TODO(crbug.com/1403311): Complete flush synchronously.
+  // TODO(crbug.com/40251507): Complete flush synchronously.
   base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE, base::BindOnce(&PaintManager::OnFlushComplete,
                                 weak_factory_.GetWeakPtr()));

@@ -126,7 +126,7 @@ std::optional<std::string> MaybeFormatBytes(std::optional<uint64_t> bytes) {
     // implausibly large app (2^63 bytes ~= 9 exabytes).
     int64_t signed_bytes = static_cast<int64_t>(bytes.value());
     if (signed_bytes < 0) {
-      // TODO(crbug.com/1418590): Investigate ARC apps which have negative data
+      // TODO(crbug.com/40063212): Investigate ARC apps which have negative data
       // sizes.
       LOG(ERROR) << "Invalid app size: " << signed_bytes;
       base::debug::DumpWithoutCrashing();
@@ -229,9 +229,21 @@ void AppManagementPageHandlerChromeOs::SetResizeLocked(
 }
 
 void AppManagementPageHandlerChromeOs::Uninstall(const std::string& app_id) {
-  apps::AppServiceProxyFactory::GetForProfile(profile())->Uninstall(
-      app_id, apps::UninstallSource::kAppManagement,
-      delegate_->GetUninstallAnchorWindow());
+  auto* const proxy = apps::AppServiceProxyFactory::GetForProfile(profile());
+
+  std::optional<bool> allow_uninstall;
+  proxy->AppRegistryCache().ForOneApp(
+      app_id, [&](const apps::AppUpdate& update) {
+        allow_uninstall = update.AllowUninstall();
+      });
+
+  if (!allow_uninstall.value_or(false)) {
+    mojo::ReportBadMessage("Invalid attempt to uninstall app.");
+    return;
+  }
+
+  proxy->Uninstall(app_id, apps::UninstallSource::kAppManagement,
+                   delegate_->GetUninstallAnchorWindow());
 }
 
 void AppManagementPageHandlerChromeOs::SetPreferredApp(
@@ -358,6 +370,8 @@ app_management::mojom::AppPtr AppManagementPageHandlerChromeOs::CreateApp(
 
         app->resize_locked = update.ResizeLocked().value_or(false);
         app->hide_resize_locked = !update.ResizeLocked().has_value();
+
+        app->allow_uninstall = update.AllowUninstall().value_or(false);
 
         if (ash::settings::IsPerAppLanguageEnabled(profile())) {
           const std::string& system_locale =

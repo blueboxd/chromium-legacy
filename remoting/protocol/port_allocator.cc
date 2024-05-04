@@ -6,12 +6,12 @@
 
 #include <algorithm>
 #include <map>
+#include <string_view>
 
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
 #include "remoting/protocol/network_settings.h"
 #include "remoting/protocol/transport_context.h"
-#include "third_party/abseil-cpp/absl/strings/string_view.h"
 
 namespace remoting::protocol {
 
@@ -27,7 +27,7 @@ PortAllocator::PortAllocator(
   // performance when combined with TCP-based transport, so we have to disable
   // TCP ports. ENABLE_SHARED_UFRAG flag is specified so that the same username
   // fragment is shared between all candidates.
-  // TODO(crbug.com/488760): Ideally we want to add
+  // TODO(crbug.com/41175043): Ideally we want to add
   // PORTALLOCATOR_DISABLE_COSTLY_NETWORKS, but this is unreliable on iOS and
   // may end up removing mobile networks when no WiFi is available. We may want
   // to add this flag only if there is WiFi interface.
@@ -54,10 +54,10 @@ PortAllocator::PortAllocator(
 PortAllocator::~PortAllocator() = default;
 
 cricket::PortAllocatorSession* PortAllocator::CreateSessionInternal(
-    absl::string_view content_name,
+    std::string_view content_name,
     int component,
-    absl::string_view ice_username_fragment,
-    absl::string_view ice_password) {
+    std::string_view ice_username_fragment,
+    std::string_view ice_password) {
   return new PortAllocatorSession(this, std::string(content_name), component,
                                   std::string(ice_username_fragment),
                                   std::string(ice_password));

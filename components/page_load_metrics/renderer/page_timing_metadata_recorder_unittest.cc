@@ -4,6 +4,7 @@
 
 #include "components/page_load_metrics/renderer/page_timing_metadata_recorder.h"
 
+#include <string_view>
 #include <vector>
 
 #include "base/profiler/sample_metadata.h"
@@ -15,7 +16,7 @@ namespace page_load_metrics {
 struct MetadataTaggingRequest {
   base::TimeTicks period_start;
   base::TimeTicks period_end;
-  base::StringPiece name;
+  std::string_view name;
   int64_t key;
   int64_t value;
 };
@@ -28,7 +29,7 @@ class TestPageTimingMetadataRecorder : public PageTimingMetadataRecorder {
 
   void ApplyMetadataToPastSamples(base::TimeTicks period_start,
                                   base::TimeTicks period_end,
-                                  base::StringPiece name,
+                                  std::string_view name,
                                   int64_t key,
                                   int64_t value,
                                   base::SampleMetadataScope scope) override {
@@ -395,20 +396,22 @@ TEST_F(PageTimingMetadataRecorderTest,
   const std::vector<MetadataTaggingRequest>& requests =
       recorder.GetMetadataTaggingRequests();
 
-  const base::TimeTicks time_origin = base::TimeTicks::Now();
+  const base::TimeTicks time_origin = base::TimeTicks::Now() - base::Seconds(1);
 
-  const base::TimeTicks interaction1_start =
-      time_origin - base::Milliseconds(500);
-  const base::TimeTicks interaction1_end =
-      time_origin - base::Milliseconds(300);
+  const base::TimeTicks interaction1_start = time_origin;
   const base::TimeTicks interaction1_queued =
-      time_origin - base::Milliseconds(400);
+      time_origin + base::Milliseconds(200);
+  const base::TimeTicks interaction1_commit_finished =
+      time_origin + base::Milliseconds(300);
+  const base::TimeTicks interaction1_end =
+      time_origin + base::Milliseconds(500);
   recorder.AddInteractionDurationAfterQueueingMetadata(
-      interaction1_start, interaction1_queued, interaction1_end);
+      interaction1_start, interaction1_queued, interaction1_commit_finished,
+      interaction1_end);
 
   ASSERT_EQ(1u, requests.size());
   EXPECT_EQ(interaction1_queued, requests.at(0).period_start);
-  EXPECT_EQ(interaction1_end, requests.at(0).period_end);
+  EXPECT_EQ(interaction1_commit_finished, requests.at(0).period_end);
 }
 
 TEST_F(PageTimingMetadataRecorderTest,
@@ -418,25 +421,63 @@ TEST_F(PageTimingMetadataRecorderTest,
   const std::vector<MetadataTaggingRequest>& requests =
       recorder.GetMetadataTaggingRequests();
 
-  const base::TimeTicks time_origin = base::TimeTicks::Now();
+  const base::TimeTicks interaction_start =
+      base::TimeTicks::Now() - base::Seconds(1);
+  const base::TimeTicks interaction_end =
+      interaction_start + base::Milliseconds(500);
 
-  const base::TimeTicks interaction1_start =
-      time_origin - base::Milliseconds(500);
-  const base::TimeTicks interaction1_end =
-      time_origin - base::Milliseconds(300);
   // Queued timestamp earlier than start is invalid.
-  base::TimeTicks interaction1_queued = time_origin - base::Milliseconds(501);
+  base::TimeTicks interaction_queued =
+      interaction_start - base::Milliseconds(100);
+  base::TimeTicks interaction_commit_finished =
+      interaction_start + base::Milliseconds(200);
   recorder.AddInteractionDurationAfterQueueingMetadata(
-      interaction1_start, interaction1_queued, interaction1_end);
+      interaction_start, interaction_queued, interaction_commit_finished,
+      interaction_end);
 
   ASSERT_EQ(0u, requests.size());
 
-  // Queued timestamp after end is invalid.
-  interaction1_queued = time_origin - base::Milliseconds(299);
+  // Commit finish timestamp before queued is invalid.
+  interaction_queued = interaction_start + base::Milliseconds(200);
+  interaction_commit_finished = interaction_start + base::Milliseconds(100);
   recorder.AddInteractionDurationAfterQueueingMetadata(
-      interaction1_start, interaction1_queued, interaction1_end);
+      interaction_start, interaction_queued, interaction_commit_finished,
+      interaction_end);
 
   ASSERT_EQ(0u, requests.size());
+
+  // Commit finish timestamp after end is invalid.
+  interaction_queued = interaction_start + base::Milliseconds(100);
+  interaction_commit_finished = interaction_start + base::Milliseconds(600);
+  recorder.AddInteractionDurationAfterQueueingMetadata(
+      interaction_start, interaction_queued, interaction_commit_finished,
+      interaction_end);
+
+  ASSERT_EQ(0u, requests.size());
+}
+
+TEST_F(PageTimingMetadataRecorderTest,
+       InteractionDurationQueuedEmptyCommitFinishTimeFallbackToPresentation) {
+  PageTimingMetadataRecorder::MonotonicTiming timing;
+  TestPageTimingMetadataRecorder recorder(timing);
+  const std::vector<MetadataTaggingRequest>& requests =
+      recorder.GetMetadataTaggingRequests();
+
+  const base::TimeTicks time_origin = base::TimeTicks::Now() - base::Seconds(1);
+
+  const base::TimeTicks interaction1_start = time_origin;
+  const base::TimeTicks interaction1_queued =
+      time_origin + base::Milliseconds(200);
+  const base::TimeTicks interaction1_commit_finished = base::TimeTicks();
+  const base::TimeTicks interaction1_end =
+      time_origin + base::Milliseconds(500);
+  recorder.AddInteractionDurationAfterQueueingMetadata(
+      interaction1_start, interaction1_queued, interaction1_commit_finished,
+      interaction1_end);
+
+  ASSERT_EQ(1u, requests.size());
+  EXPECT_EQ(interaction1_queued, requests.at(0).period_start);
+  EXPECT_EQ(interaction1_end, requests.at(0).period_end);
 }
 
 }  // namespace page_load_metrics

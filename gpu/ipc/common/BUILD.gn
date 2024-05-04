@@ -333,6 +333,7 @@ mojom("interfaces") {
     "capabilities.mojom",
     "context_result.mojom",
     "device_perf_info.mojom",
+    "exported_shared_image.mojom",
     "gpu_disk_cache_type.mojom",
     "gpu_feature_info.mojom",
     "gpu_info.mojom",
@@ -417,6 +418,16 @@ mojom("interfaces") {
       ]
       traits_sources = [ "device_perf_info_mojom_traits.cc" ]
       traits_headers = [ "device_perf_info_mojom_traits.h" ]
+    },
+    {
+      types = [
+        {
+          mojom = "gpu.mojom.ExportedSharedImage"
+          cpp = "::gpu::ExportedSharedImage"
+        },
+      ]
+      traits_headers = [ "exported_shared_image_mojom_traits.h" ]
+      traits_public_deps = [ ":mojom_traits" ]
     },
     {
       types = [
@@ -579,6 +590,11 @@ mojom("interfaces") {
           cpp = "::gpu::GpuDiskCacheDawnWebGPUHandle"
           nullable_is_same_type = true
         },
+        {
+          mojom = "gpu.mojom.GpuDiskCacheDawnGraphiteHandle"
+          cpp = "::gpu::GpuDiskCacheDawnGraphiteHandle"
+          nullable_is_same_type = true
+        },
 
         # General types that are the ones generally exposed in interfaces.
         {
@@ -615,6 +631,16 @@ mojom("interfaces") {
         },
       ]
       traits_headers = [ "mailbox_holder_mojom_traits.h" ]
+      traits_public_deps = [ "//gpu" ]
+    },
+    {
+      types = [
+        {
+          mojom = "gpu.mojom.ExportedSharedImage"
+          cpp = "::gpu::ExportedSharedImage"
+        },
+      ]
+      traits_headers = [ "exported_shared_image_mojom_traits.h" ]
       traits_public_deps = [ "//gpu" ]
     },
     {
@@ -726,7 +752,7 @@ mojom("vulkan_interface") {
   webui_module_path = "/"
   generate_legacy_js_bindings = true
 
-  # TODO(crbug.com/1062364): This interface code is used by some javascript
+  # TODO(crbug.com/40122851): This interface code is used by some javascript
   # targets even when vulkan isn't enabled, but the C++ fuzzer code will fail
   # to compile if the headers aren't available.
   if (!enable_vulkan) {

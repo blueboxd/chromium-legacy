@@ -79,6 +79,8 @@ class BrowsingTopicsServiceImpl
       Annotator* annotator,
       const base::circular_deque<EpochTopics>& epochs,
       bool is_manually_triggered,
+      int previous_timeout_count,
+      base::Time session_start_time,
       BrowsingTopicsCalculator::CalculateCompletedCallback callback);
 
   // Allow tests to access `browsing_topics_state_`.
@@ -95,8 +97,8 @@ class BrowsingTopicsServiceImpl
   // On history deletion, the top topics of history epochs will be invalidated
   // if the deletion time range overlaps with the time range of the underlying
   // data used to derive the topics.
-  void OnURLsDeleted(history::HistoryService* history_service,
-                     const history::DeletionInfo& deletion_info) override;
+  void OnHistoryDeletions(history::HistoryService* history_service,
+                          const history::DeletionInfo& deletion_info) override;
 
   // Called when the outstanding calculation completes. It's going to reset
   // `topics_calculator_`, add the new `epoch_topics` to `browsing_topics_`, and
@@ -122,13 +124,17 @@ class BrowsingTopicsServiceImpl
       std::unique_ptr<Annotator> annotator,
       TopicAccessedCallback topic_accessed_callback);
 
-  void ScheduleBrowsingTopicsCalculation(base::TimeDelta delay);
+  void ScheduleBrowsingTopicsCalculation(bool is_manually_triggered,
+                                         int previous_timeout_count,
+                                         base::TimeDelta delay);
 
   // Initialize `topics_calculator_` to start calculating this epoch's top
-  // topics and context observed topics. Set `is_manually_triggered`  to true if
+  // topics and context observed topics. `is_manually_triggered`  is true if
   // this calculation was triggered via the topics-internals page rather than
-  // the regular schedule.
-  void CalculateBrowsingTopics(bool is_manually_triggered);
+  // the regular schedule. `previous_timeout_count` is the number of previous
+  // hanging calculations.
+  void CalculateBrowsingTopics(bool is_manually_triggered,
+                               int previous_timeout_count);
 
   // Set `browsing_topics_state_loaded_` to true. Start scheduling the topics
   // calculation.
@@ -189,6 +195,8 @@ class BrowsingTopicsServiceImpl
   base::OneShotTimer schedule_calculate_timer_;
 
   TopicAccessedCallback topic_accessed_callback_;
+
+  base::Time session_start_time_;
 
   base::ScopedObservation<privacy_sandbox::PrivacySandboxSettings,
                           privacy_sandbox::PrivacySandboxSettings::Observer>

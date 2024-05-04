@@ -23,9 +23,9 @@
 #include "chrome/browser/apps/app_service/app_registry_cache_waiter.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
-#include "chrome/browser/apps/app_service/browser_app_instance.h"
-#include "chrome/browser/apps/app_service/browser_app_instance_observer.h"
-#include "chrome/browser/apps/app_service/browser_app_instance_registry.h"
+#include "chrome/browser/apps/browser_instance/browser_app_instance.h"
+#include "chrome/browser/apps/browser_instance/browser_app_instance_observer.h"
+#include "chrome/browser/apps/browser_instance/browser_app_instance_registry.h"
 #include "chrome/browser/ash/crosapi/ash_requires_lacros_browsertestbase.h"
 #include "chrome/browser/ash/crosapi/browser_manager.h"
 #include "chrome/browser/profiles/profile.h"
@@ -44,6 +44,7 @@
 #include "content/public/test/browser_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/events/base_event_utils.h"
+#include "ui/wm/core/window_util.h"
 
 using ::app_constants::kChromeAppId;
 using ::app_constants::kLacrosAppId;
@@ -278,7 +279,8 @@ class BrowserAppShelfControllerBrowserTest
         [&app_id](const apps::BrowserAppInstance& instance) {
           return instance.app_id == app_id;
         });
-    return app && app->is_browser_active && app->is_web_contents_active;
+    return app && wm::IsActiveWindow(app->window) &&
+           app->is_web_contents_active;
   }
 
   // Get unique titles of all app instances.

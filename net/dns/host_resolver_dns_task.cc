@@ -4,10 +4,11 @@
 
 #include "net/dns/host_resolver_dns_task.h"
 
+#include <string_view>
+
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/ranges/algorithm.h"
-#include "base/strings/string_piece.h"
 #include "base/time/tick_clock.h"
 #include "net/base/features.h"
 #include "net/dns/address_sorter.h"
@@ -26,7 +27,7 @@ namespace net {
 
 namespace {
 
-DnsResponse CreateFakeEmptyResponse(base::StringPiece hostname,
+DnsResponse CreateFakeEmptyResponse(std::string_view hostname,
                                     DnsQueryType query_type) {
   std::optional<std::vector<uint8_t>> qname =
       dns_names_util::DottedNameToNetwork(
@@ -112,6 +113,21 @@ void RecordResolveTimeDiff(const char* histogram_variant,
 
 }  // namespace
 
+HostResolverDnsTask::SingleTransactionResults::SingleTransactionResults(
+    DnsQueryType query_type,
+    Results results)
+    : query_type(query_type), results(std::move(results)) {}
+
+HostResolverDnsTask::SingleTransactionResults::~SingleTransactionResults() =
+    default;
+
+HostResolverDnsTask::SingleTransactionResults::SingleTransactionResults(
+    SingleTransactionResults&&) = default;
+
+HostResolverDnsTask::SingleTransactionResults&
+HostResolverDnsTask::SingleTransactionResults::operator=(
+    SingleTransactionResults&&) = default;
+
 HostResolverDnsTask::TransactionInfo::TransactionInfo(
     DnsQueryType type,
     TransactionErrorBehavior error_behavior)
@@ -134,7 +150,7 @@ bool HostResolverDnsTask::TransactionInfo::operator<(
 
 HostResolverDnsTask::HostResolverDnsTask(
     DnsClient* client,
-    absl::variant<url::SchemeHostPort, std::string> host,
+    HostResolver::Host host,
     NetworkAnonymizationKey anonymization_key,
     DnsQueryTypeSet query_types,
     ResolveContext* resolve_context,
@@ -236,11 +252,11 @@ base::Value::Dict HostResolverDnsTask::NetLogDnsTaskTimeoutParams() {
 
 DnsQueryTypeSet HostResolverDnsTask::MaybeDisableAdditionalQueries(
     DnsQueryTypeSet types) {
-  DCHECK(!types.Empty());
+  DCHECK(!types.empty());
   DCHECK(!types.Has(DnsQueryType::UNSPECIFIED));
 
   // No-op if the caller explicitly requested this one query type.
-  if (types.Size() == 1) {
+  if (types.size() == 1) {
     return types;
   }
 
@@ -252,7 +268,7 @@ DnsQueryTypeSet HostResolverDnsTask::MaybeDisableAdditionalQueries(
       httpssvc_metrics_.emplace(secure_);
     }
   }
-  DCHECK(!types.Empty());
+  DCHECK(!types.empty());
   return types;
 }
 
@@ -293,13 +309,12 @@ void HostResolverDnsTask::CreateAndStartTransaction(
   DCHECK(!transaction_info.transaction);
   DCHECK_NE(DnsQueryType::UNSPECIFIED, transaction_info.type);
 
-  std::string transaction_hostname(HostResolver::GetHostname(host_));
+  std::string transaction_hostname(host_.GetHostnameWithoutBrackets());
 
   // For HTTPS, prepend "_<port>._https." for any non-default port.
   uint16_t request_port = 0;
-  if (transaction_info.type == DnsQueryType::HTTPS &&
-      absl::holds_alternative<url::SchemeHostPort>(host_)) {
-    const auto& scheme_host_port = absl::get<url::SchemeHostPort>(host_);
+  if (transaction_info.type == DnsQueryType::HTTPS && host_.HasScheme()) {
+    const auto& scheme_host_port = host_.AsSchemeHostPort();
     transaction_hostname =
         dns_util::GetNameForHttpsQuery(scheme_host_port, &request_port);
   }
@@ -352,10 +367,13 @@ void HostResolverDnsTask::OnTimeout() {
     }
   }
 
+  // Clear in-progress and scheduled transactions so that
+  // OnTransactionsFinished() doesn't call delegate's
+  // OnIntermediateTransactionComplete().
   transactions_needed_.clear();
   transactions_in_progress_.clear();
 
-  OnTransactionsFinished();
+  OnTransactionsFinished(/*single_transaction_results=*/std::nullopt);
 }
 
 void HostResolverDnsTask::OnDnsTransactionComplete(
@@ -413,8 +431,8 @@ void HostResolverDnsTask::OnDnsTransactionComplete(
              transaction_info.error_behavior ==
                  TransactionErrorBehavior::kSynthesizeEmpty);
       // For non-fatal failures, synthesize an empty response.
-      fake_response = CreateFakeEmptyResponse(HostResolver::GetHostname(host_),
-                                              transaction_info.type);
+      fake_response = CreateFakeEmptyResponse(
+          host_.GetHostnameWithoutBrackets(), transaction_info.type);
       response = &fake_response.value();
     }
   }
@@ -427,7 +445,7 @@ void HostResolverDnsTask::OnDnsTransactionComplete(
     DnsResponseResultExtractor extractor(*response);
     results = extractor.ExtractDnsResults(
         transaction_info.type,
-        /*original_domain_name=*/HostResolver::GetHostname(host_),
+        /*original_domain_name=*/host_.GetHostnameWithoutBrackets(),
         request_port);
   }
 
@@ -517,7 +535,8 @@ void HostResolverDnsTask::OnDnsTransactionComplete(
       break;
   }
 
-  if (base::FeatureList::IsEnabled(features::kUseHostResolverCache)) {
+  if (base::FeatureList::IsEnabled(features::kUseHostResolverCache) ||
+      base::FeatureList::IsEnabled(features::kUseServiceEndpointRequest)) {
     SortTransactionAndHandleResults(std::move(transaction_info),
                                     std::move(results).value());
   } else {
@@ -736,10 +755,10 @@ void HostResolverDnsTask::HandleTransactionResults(
     return;
   }
 
-  // TODO(crbug.com/1381506): Use new results type directly instead of
+  // TODO(crbug.com/40245250): Use new results type directly instead of
   // converting to HostCache::Entry.
-  HostCache::Entry legacy_results(std::move(transaction_results),
-                                  base::Time::Now(), tick_clock_->NowTicks(),
+  HostCache::Entry legacy_results(transaction_results, base::Time::Now(),
+                                  tick_clock_->NowTicks(),
                                   HostCache::Entry::SOURCE_DNS);
 
   // Merge results with saved results from previous transactions.
@@ -777,13 +796,18 @@ void HostResolverDnsTask::HandleTransactionResults(
   }
 
   saved_results_ = std::move(legacy_results);
-  OnTransactionsFinished();
+
+  OnTransactionsFinished(SingleTransactionResults(
+      transaction_info.type, std::move(transaction_results)));
 }
 
-void HostResolverDnsTask::OnTransactionsFinished() {
+void HostResolverDnsTask::OnTransactionsFinished(
+    std::optional<SingleTransactionResults> single_transaction_results) {
   if (!transactions_in_progress_.empty() || !transactions_needed_.empty()) {
-    delegate_->OnIntermediateTransactionsComplete();
     MaybeStartTimeoutTimer();
+    delegate_->OnIntermediateTransactionsComplete(
+        std::move(single_transaction_results));
+    // `this` may be deleted by `delegate_`. Do not add code below.
     return;
   }
 
@@ -883,7 +907,7 @@ void HostResolverDnsTask::OnFailure(
     saved_results_is_failure_ = true;
 
     CancelNonFatalTransactions();
-    OnTransactionsFinished();
+    OnTransactionsFinished(/*single_transaction_results=*/std::nullopt);
     return;
   }
 
@@ -1003,11 +1027,11 @@ bool HostResolverDnsTask::ShouldTriggerHttpToHttpsUpgrade(
   // Upgrade if at least one HTTPS record was compatible, and the host uses an
   // upgradable scheme.
 
-  if (!absl::holds_alternative<url::SchemeHostPort>(host_)) {
+  if (!host_.HasScheme()) {
     return false;
   }
 
-  base::StringPiece scheme = absl::get<url::SchemeHostPort>(host_).scheme();
+  const std::string& scheme = host_.GetScheme();
   if (scheme != url::kHttpScheme && scheme != url::kWsScheme) {
     return false;
   }

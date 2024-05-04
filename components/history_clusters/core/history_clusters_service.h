@@ -19,7 +19,6 @@
 #include "base/task/cancelable_task_tracker.h"
 #include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
-#include "base/timer/timer.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/history_service_observer.h"
 #include "components/history/core/browser/history_types.h"
@@ -162,16 +161,21 @@ class HistoryClustersService : public base::SupportsUserData,
   // chrome://history-clusters-internals triggers this.
   void PrintKeywordBagStateToLogMessage() const;
 
+  void set_keyword_cache_refresh_callback_for_testing(
+      base::OnceClosure&& closure) {
+    keyword_cache_refresh_callback_for_testing_ = std::move(closure);
+  }
+
   // history::HistoryServiceObserver:
   void OnURLVisited(history::HistoryService* history_service,
                     const history::URLRow& url_row,
                     const history::VisitRow& visit_row) override;
-  void OnURLsDeleted(history::HistoryService* history_service,
-                     const history::DeletionInfo& deletion_info) override;
+  void OnHistoryDeletions(history::HistoryService* history_service,
+                          const history::DeletionInfo& deletion_info) override;
 
  private:
   friend class HistoryClustersServiceTestApi;
-  friend class HistoryClustersServiceTestBase;
+  friend class HistoryClustersServiceTest;
 
   // Invokes `UpdateClusters()` after a short delay, then again periodically.
   // E.g., might invoke `UpdateClusters()` initially 5 minutes after startup,
@@ -248,6 +252,10 @@ class HistoryClustersService : public base::SupportsUserData,
   KeywordMap short_keyword_cache_;
   base::Time short_keyword_cache_timestamp_;
 
+  // Closure to signal that the keyword bag has been refreshed for testing.
+  // Used only for unit tests.
+  base::OnceClosure keyword_cache_refresh_callback_for_testing_;
+
   // Tracks the current keyword task. Will be `nullptr` or
   // `cache_keyword_query_task_.Done()` will be true if there is no ongoing
   // task.
@@ -256,14 +264,6 @@ class HistoryClustersService : public base::SupportsUserData,
   // Tracks the current update task. Will be `nullptr` or
   // `update_clusters_task_.Done()` will be true if there is no ongoing task.
   std::unique_ptr<HistoryClustersServiceTask> update_clusters_task_;
-
-  // Used to invoke `UpdateClusters()` on startup after a short delay. See
-  // `RepeatedlyUpdateClusters()`'s comment.
-  base::OneShotTimer update_clusters_after_startup_delay_timer_;
-
-  // Used to invoke `UpdateClusters()` periodically. See
-  // `RepeatedlyUpdateClusters()`'s comment.
-  base::RepeatingTimer update_clusters_period_timer_;
 
   // The time of the last `UpdateClusters()` call. Used for logging and to limit
   // requests when `persist_on_query` is enabled.

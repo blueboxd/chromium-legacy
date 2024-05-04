@@ -22,6 +22,7 @@
 #include "base/functional/overloaded.h"
 #include "base/memory/raw_ref.h"
 #include "base/notreached.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/ranges/algorithm.h"
 #include "base/time/time.h"
 #include "components/attribution_reporting/aggregation_keys.h"
@@ -96,7 +97,7 @@ attribution_internals::mojom::WebUISourcePtr WebUISource(
           }),
       source.aggregatable_budget_consumed(), source.aggregatable_dedup_keys(),
       source.trigger_data_matching(), source.event_level_epsilon(),
-      source.debug_cookie_set(), attributability);
+      source.common_info().debug_cookie_set(), attributability);
 }
 
 void ForwardSourcesToWebUI(
@@ -167,8 +168,8 @@ attribution_internals::mojom::WebUIReportPtr WebUIReport(
                 [](const auto& contribution) {
                   return ai_mojom::AggregatableHistogramContribution::New(
                       attribution_reporting::HexEncodeAggregationKey(
-                          contribution.key()),
-                      contribution.value());
+                          contribution.bucket),
+                      base::checked_cast<uint32_t>(contribution.value));
                 });
 
             return ai_mojom::WebUIReportData::NewAggregatableAttributionData(
@@ -388,7 +389,7 @@ void AttributionInternalsHandlerImpl::OnReportSent(
       break;
   }
 
-  observer_->OnReportSent(
+  observer_->OnReportHandled(
       WebUIReport(report, is_debug_report, std::move(status)));
 }
 
@@ -434,9 +435,9 @@ void AttributionInternalsHandlerImpl::OnOsRegistration(
 }
 
 void AttributionInternalsHandlerImpl::OnTriggerHandled(
-    const AttributionTrigger& trigger,
     const std::optional<uint64_t> cleared_debug_key,
     const CreateReportResult& result) {
+  const AttributionTrigger& trigger = result.trigger();
   const attribution_reporting::TriggerRegistration& registration =
       trigger.registration();
 
@@ -460,7 +461,7 @@ void AttributionInternalsHandlerImpl::OnTriggerHandled(
         AttributionTrigger::EventLevelResult::kSuccessDroppedLowerPriority);
     DCHECK(result.new_event_level_report().has_value());
 
-    observer_->OnReportDropped(
+    observer_->OnReportHandled(
         WebUIReport(*report, /*is_debug_report=*/false,
                     ReportStatus::NewReplacedByHigherPriorityReport(
                         result.new_event_level_report()

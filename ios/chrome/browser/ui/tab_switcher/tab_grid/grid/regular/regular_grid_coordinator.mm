@@ -7,13 +7,16 @@
 #import "ios/chrome/browser/policy/model/policy_util.h"
 #import "ios/chrome/browser/shared/model/browser/browser.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
-#import "ios/chrome/browser/tabs/model/features.h"
+#import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/disabled_grid_view_controller.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_container_view_controller.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_empty_state_view.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_theme.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/regular/regular_grid_mediator.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/regular/regular_grid_view_controller.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/tab_groups/tab_group_coordinator.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/tab_groups/tab_group_grid_view_controller.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/tab_groups/tab_group_view_controller.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/pinned_tabs/pinned_tabs_mediator.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/pinned_tabs/pinned_tabs_view_controller.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_context_menu/tab_context_menu_helper.h"
@@ -29,15 +32,21 @@
 @end
 
 @implementation RegularGridCoordinator {
-  // Mediator of regular grid.
-  RegularGridMediator* _mediator;
   // Mediator for pinned Tabs.
   PinnedTabsMediator* _pinnedTabsMediator;
   // Context menu provider.
   TabContextMenuHelper* _contextMenuProvider;
+  // Mediator of regular grid.
+  RegularGridMediator* _mediator;
 }
 
 #pragma mark - Property Implementation.
+
+- (RegularGridMediator*)mediator {
+  CHECK(_mediator)
+      << "RegularGridCoordinator's -start should be called before.";
+  return _mediator;
+}
 
 - (RegularGridMediator*)regularGridMediator {
   CHECK(_mediator)
@@ -54,6 +63,41 @@
 - (id<GridCommands>)gridHandler {
   CHECK(_mediator);
   return _mediator;
+}
+
+#pragma mark - Superclass overrides
+
+- (LegacyGridTransitionLayout*)transitionLayout {
+  if (IsTabGroupInGridEnabled()) {
+    if (self.tabGroupCoordinator) {
+      return [self.tabGroupCoordinator.viewController
+                  .gridViewController transitionLayout];
+    }
+  }
+
+  LegacyGridTransitionLayout* transitionLayout =
+      [_gridViewController transitionLayout];
+
+  if (IsPinnedTabsEnabled()) {
+    LegacyGridTransitionLayout* pinnedTabsTransitionLayout =
+        [self.pinnedTabsViewController transitionLayout];
+
+    return [self combineTransitionLayout:transitionLayout
+                    withTransitionLayout:pinnedTabsTransitionLayout];
+  }
+
+  return transitionLayout;
+}
+
+- (BOOL)isSelectedCellVisible {
+  BOOL isSelectedCellVisible = [super isSelectedCellVisible];
+
+  if (IsPinnedTabsEnabled() &&
+      !(IsTabGroupInGridEnabled() && self.tabGroupCoordinator)) {
+    isSelectedCellVisible |= self.pinnedTabsViewController.selectedCellVisible;
+  }
+
+  return isSelectedCellVisible;
 }
 
 #pragma mark - ChromeCoordinator
@@ -87,10 +131,6 @@
 
   _mediator = [[RegularGridMediator alloc] init];
   _mediator.consumer = gridViewController;
-  _mediator.browser = self.browser;
-  _mediator.delegate = self.gridMediatorDelegate;
-  _mediator.toolbarsMutator = self.toolbarsMutator;
-  _mediator.dispatcher = self;
 
   gridViewController.dragDropHandler = _mediator;
   gridViewController.mutator = _mediator;
@@ -98,11 +138,11 @@
   gridViewController.menuProvider = _contextMenuProvider;
 
   // If regular is enabled then the grid exists and it is not disabled.
-  // TODO(crbug.com/1457146): Get disabled status from the mediator.
+  // TODO(crbug.com/40273478): Get disabled status from the mediator.
   if (gridViewController) {
     gridViewController.dragDropHandler = _mediator;
-    // TODO(crbug.com/1457146): Move the following lines to the grid itself when
-    // specific grid file will be created.
+    // TODO(crbug.com/40273478): Move the following lines to the grid itself
+    // when specific grid file will be created.
     gridViewController.view.accessibilityIdentifier = kRegularTabGridIdentifier;
     gridViewController.emptyStateView =
         [[TabGridEmptyStateView alloc] initWithPage:TabGridPageRegularTabs];
@@ -131,9 +171,6 @@
 }
 
 - (void)stop {
-  [_mediator disconnect];
-  _mediator = nil;
-
   _pinnedTabsMediator = nil;
   _contextMenuProvider = nil;
 
@@ -143,6 +180,8 @@
 #pragma mark - Public
 
 - (void)stopChildCoordinators {
+  [self hideTabGroupCreationAnimated:NO];
+  [self.tabGroupCoordinator stopChildCoordinators];
   [self.gridViewController dismissModals];
   [self.pinnedTabsViewController dismissModals];
 }

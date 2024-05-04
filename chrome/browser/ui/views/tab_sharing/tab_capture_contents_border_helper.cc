@@ -76,7 +76,7 @@ void InitContentsBorderWidget(content::WebContents* web_contents) {
   widget->SetVisibilityChangedAnimationsEnabled(false);
   widget->SetOpacity(0.50f);
 
-  // TODO(crbug.com/1276822): Associate each captured tab with its own widget.
+  // TODO(crbug.com/40207590): Associate each captured tab with its own widget.
   // Otherwise, if tab A captures B, and tab C captures D, and all are in
   // the same browser window, then either the A<-B or C<-D sessions ending,
   // hides the widget, and there's no good way of avoiding it (other than
@@ -108,7 +108,7 @@ void TabCaptureContentsBorderHelper::OnCapturerRemoved(
     CaptureSessionId capture_session_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  // TODO(crbug.com/1294187): Destroy widget when the size of
+  // TODO(crbug.com/40213800): Destroy widget when the size of
   // `session_to_bounds_` hits 0. Same for `this`.
   session_to_bounds_.erase(capture_session_id);
 

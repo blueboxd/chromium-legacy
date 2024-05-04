@@ -87,11 +87,12 @@ scoped_refptr<VideoFrame> CreateTestNV12GpuMemoryBufferVideoFrame() {
     return nullptr;
   }
 
-  gpu::MailboxHolder dummy_mailbox[media::VideoFrame::kMaxPlanes];
+  scoped_refptr<gpu::ClientSharedImage>
+      dummy_shared_images[media::VideoFrame::kMaxPlanes];
   auto gmb_video_frame = VideoFrame::WrapExternalGpuMemoryBuffer(
       /*visible_rect=*/gfx::Rect(640, 368),
-      /*natural_size=*/gfx::Size(640, 368), std::move(gmb), dummy_mailbox,
-      base::NullCallback(), base::TimeDelta());
+      /*natural_size=*/gfx::Size(640, 368), std::move(gmb), dummy_shared_images,
+      gpu::SyncToken(), 0, base::NullCallback(), base::TimeDelta());
   if (!gmb_video_frame) {
     return nullptr;
   }
@@ -615,7 +616,7 @@ TEST_F(StableVideoDecoderServiceTest, StableVideoDecoderCanDecode) {
 
   constexpr uint8_t kEncodedData[] = {1, 2, 3};
   scoped_refptr<DecoderBuffer> decoder_buffer_to_send =
-      DecoderBuffer::CopyFrom(kEncodedData, std::size(kEncodedData));
+      DecoderBuffer::CopyFrom(kEncodedData);
   decoder_buffer_to_send->WritableSideData().secure_handle = 42;
   ASSERT_TRUE(decoder_buffer_to_send);
   mojom::DecoderBufferPtr received_decoder_buffer_ptr;
@@ -671,7 +672,7 @@ TEST_F(StableVideoDecoderServiceTest,
 
   constexpr uint8_t kEncodedData[] = {1, 2, 3};
   scoped_refptr<DecoderBuffer> decoder_buffer_to_send =
-      DecoderBuffer::CopyFrom(kEncodedData, std::size(kEncodedData));
+      DecoderBuffer::CopyFrom(kEncodedData);
   ASSERT_TRUE(decoder_buffer_to_send);
   StrictMock<base::MockOnceCallback<void(const media::DecoderStatus& status)>>
       decode_cb_to_send;

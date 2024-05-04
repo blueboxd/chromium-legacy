@@ -124,10 +124,6 @@ class ASH_EXPORT OverviewItemBase : public EventHandlerDelegate {
     return scrolling_bounds_;
   }
 
-  void set_should_use_spawn_animation(bool value) {
-    should_use_spawn_animation_ = value;
-  }
-
   bool should_use_spawn_animation() const {
     return should_use_spawn_animation_;
   }
@@ -157,8 +153,8 @@ class ASH_EXPORT OverviewItemBase : public EventHandlerDelegate {
   virtual OverviewItem* GetLeafItemForWindow(aura::Window* window) = 0;
 
   // Restores and animates the managed window(s) to its non overview mode state.
-  // Doesn't animate if `animate` is true. If `reset_transform` equals false,
-  // the window's transform will not be reset to identity transform when exiting
+  // Animates if `animate` is true. If `reset_transform` equals true, the
+  // window's transform will be reset to identity transform when exiting
   // overview mode. It's needed when dragging an Arc app window in overview mode
   // to put it in split screen. In this case the restore of its transform needs
   // to be deferred until the Arc app window is snapped successfully, otherwise
@@ -204,6 +200,9 @@ class ASH_EXPORT OverviewItemBase : public EventHandlerDelegate {
   // Returns the backdrop view of `this`.
   virtual views::View* GetBackDropView() const = 0;
 
+  // Returns true if `shadow_` should be created on the item, false otherwise.
+  virtual bool ShouldHaveShadow() const = 0;
+
   // Updates the rounded corners and shadow on `this`.
   virtual void UpdateRoundedCornersAndShadow() = 0;
 
@@ -213,6 +212,8 @@ class ASH_EXPORT OverviewItemBase : public EventHandlerDelegate {
 
   // Dispatched before entering overview.
   virtual void PrepareForOverview() = 0;
+
+  virtual void SetShouldUseSpawnAnimation(bool value) = 0;
 
   // Called when the starting animation is completed, or called immediately
   // if there was no starting animation to do any necessary visual changes.
@@ -242,7 +243,7 @@ class ASH_EXPORT OverviewItemBase : public EventHandlerDelegate {
   // order in order to keep them visible while being dragged around.
   virtual void StartDrag() = 0;
 
-  virtual void OnOverviewItemDragStarted(OverviewItemBase* item) = 0;
+  virtual void OnOverviewItemDragStarted() = 0;
   virtual void OnOverviewItemDragEnded(bool snap) = 0;
 
   // Called when performing the continuous scroll on overview item to set
@@ -307,8 +308,10 @@ class ASH_EXPORT OverviewItemBase : public EventHandlerDelegate {
     target_bounds_ = target_bounds;
   }
 
+  SystemShadow* shadow_for_testing() { return shadow_.get(); }
+
   gfx::Rect get_shadow_content_bounds_for_testing() const {
-    return shadow_.get()->GetContentBounds();
+    return shadow_ ? shadow_.get()->GetContentBounds() : gfx::Rect();
   }
 
   RoundedLabelWidget* get_cannot_snap_widget_for_testing() {
@@ -328,7 +331,7 @@ class ASH_EXPORT OverviewItemBase : public EventHandlerDelegate {
 
   // Creates the `shadow_` and stacks the shadow layer to be at the bottom after
   // `item_widget_` has been created.
-  void ConfigureTheShadow();
+  void CreateShadow();
 
   // Drag event can be handled differently based on the concreate instance of
   // `this`. For `OverviewItem`, the drag will be on window-level. For
@@ -360,9 +363,6 @@ class ASH_EXPORT OverviewItemBase : public EventHandlerDelegate {
 
   // The shadow around `this`.
   std::unique_ptr<SystemShadow> shadow_;
-
-  // True if `this` overview item is currently being dragged around.
-  bool is_being_dragged_ = false;
 
   // True when `this` is dragged and dropped on another desk's mini view and the
   // transform needs to be restored immediately without any animations.

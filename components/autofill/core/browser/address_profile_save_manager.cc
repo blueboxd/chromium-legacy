@@ -87,7 +87,8 @@ void AddressProfileSaveManager::MaybeOfferSavePrompt(
     case AutofillProfileImportType::kConfirmableMergeAndSilentUpdate:
     case AutofillProfileImportType::kProfileMigration:
     case AutofillProfileImportType::kProfileMigrationAndSilentUpdate:
-      if (personal_data_manager_->auto_accept_address_imports_for_testing()) {
+      if (personal_data_manager_->address_data_manager()
+              .auto_accept_address_imports_for_testing()) {
         import_process->AcceptWithoutEdits();
         FinalizeProfileImport(std::move(import_process));
         return;
@@ -106,10 +107,10 @@ void AddressProfileSaveManager::OfferSavePrompt(
   // The prompt should not have been shown yet.
   DCHECK(!import_process->prompt_shown());
 
-  // TODO(crbug.com/1175693): Pass the correct SaveAddressProfilePromptOptions
+  // TODO(crbug.com/40168046): Pass the correct SaveAddressProfilePromptOptions
   // below.
 
-  // TODO(crbug.com/1175693): Check import_process->set_prompt_was_shown() is
+  // TODO(crbug.com/40168046): Check import_process->set_prompt_was_shown() is
   // always correct even in cases where it conflicts with
   // SaveAddressProfilePromptOptions
 
@@ -121,9 +122,7 @@ void AddressProfileSaveManager::OfferSavePrompt(
   client_->ConfirmSaveAddressProfile(
       process_ptr->import_candidate().value(),
       base::OptionalToPtr(process_ptr->merge_candidate()),
-      AutofillClient::SaveAddressProfilePromptOptions{
-          .show_prompt = true,
-          .is_migration_to_account = process_ptr->is_migration()},
+      /*options=*/{.is_migration_to_account = process_ptr->is_migration()},
       base::BindOnce(&AddressProfileSaveManager::OnUserDecision,
                      weak_ptr_factory_.GetWeakPtr(),
                      std::move(import_process)));
@@ -143,6 +142,8 @@ void AddressProfileSaveManager::FinalizeProfileImport(
     std::unique_ptr<ProfileImportProcess> import_process) {
   DCHECK(personal_data_manager_);
 
+  const std::vector<AutofillProfile*> existing_profiles =
+      personal_data_manager_->address_data_manager().GetProfiles();
   import_process->ApplyImport();
 
   AdjustNewProfileStrikes(*import_process);
@@ -159,7 +160,7 @@ void AddressProfileSaveManager::FinalizeProfileImport(
   }
 
   import_process->CollectMetrics(client_->GetUkmRecorder(),
-                                 client_->GetUkmSourceId());
+                                 client_->GetUkmSourceId(), existing_profiles);
   ClearPendingImport(std::move(import_process));
 }
 
@@ -170,9 +171,11 @@ void AddressProfileSaveManager::AdjustNewProfileStrikes(
   }
   const GURL& url = import_process.form_source_url();
   if (import_process.UserDeclined()) {
-    personal_data_manager_->AddStrikeToBlockNewProfileImportForDomain(url);
+    personal_data_manager_->address_data_manager()
+        .AddStrikeToBlockNewProfileImportForDomain(url);
   } else if (import_process.UserAccepted()) {
-    personal_data_manager_->RemoveStrikesToBlockNewProfileImportForDomain(url);
+    personal_data_manager_->address_data_manager()
+        .RemoveStrikesToBlockNewProfileImportForDomain(url);
   }
 }
 
@@ -184,9 +187,11 @@ void AddressProfileSaveManager::AdjustUpdateProfileStrikes(
   CHECK(import_process.merge_candidate().has_value());
   const std::string& candidate_guid = import_process.import_candidate()->guid();
   if (import_process.UserDeclined()) {
-    personal_data_manager_->AddStrikeToBlockProfileUpdate(candidate_guid);
+    personal_data_manager_->address_data_manager()
+        .AddStrikeToBlockProfileUpdate(candidate_guid);
   } else if (import_process.UserAccepted()) {
-    personal_data_manager_->RemoveStrikesToBlockProfileUpdate(candidate_guid);
+    personal_data_manager_->address_data_manager()
+        .RemoveStrikesToBlockProfileUpdate(candidate_guid);
   }
 }
 
@@ -200,14 +205,15 @@ void AddressProfileSaveManager::AdjustMigrateProfileStrikes(
   if (import_process.UserAccepted()) {
     // Even though the profile to migrate changes GUID after a migration, the
     // original GUID should still be freed up from strikes.
-    personal_data_manager_->RemoveStrikesToBlockProfileMigration(
-        candidate_guid);
+    personal_data_manager_->address_data_manager()
+        .RemoveStrikesToBlockProfileMigration(candidate_guid);
   } else if (import_process.UserDeclined()) {
     if (import_process.user_decision() == UserDecision::kNever) {
-      personal_data_manager_->AddMaxStrikesToBlockProfileMigration(
-          candidate_guid);
+      personal_data_manager_->address_data_manager()
+          .AddMaxStrikesToBlockProfileMigration(candidate_guid);
     } else {
-      personal_data_manager_->AddStrikeToBlockProfileMigration(candidate_guid);
+      personal_data_manager_->address_data_manager()
+          .AddStrikeToBlockProfileMigration(candidate_guid);
     }
   }
 }

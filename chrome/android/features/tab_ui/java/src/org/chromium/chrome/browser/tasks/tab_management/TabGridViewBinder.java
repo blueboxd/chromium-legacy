@@ -25,10 +25,12 @@ import org.chromium.base.Callback;
 import org.chromium.base.ResettersForTesting;
 import org.chromium.chrome.browser.tab.TabUtils;
 import org.chromium.chrome.browser.tab.state.ShoppingPersistedTabData;
+import org.chromium.chrome.browser.tab_ui.TabListFaviconProvider;
+import org.chromium.chrome.browser.tab_ui.TabThumbnailView;
+import org.chromium.chrome.browser.tab_ui.TabUiThemeUtils;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
-import org.chromium.ui.widget.ButtonCompat;
 import org.chromium.ui.widget.ChromeImageView;
 import org.chromium.ui.widget.ViewLookupCachingFrameLayout;
 
@@ -134,15 +136,15 @@ class TabGridViewBinder {
 
     private static void bindClosableTabProperties(
             PropertyModel model, ViewLookupCachingFrameLayout view, PropertyKey propertyKey) {
-        if (TabProperties.TAB_CLOSED_LISTENER == propertyKey) {
-            if (model.get(TabProperties.TAB_CLOSED_LISTENER) == null) {
+        if (TabProperties.TAB_ACTION_BUTTON_LISTENER == propertyKey) {
+            if (model.get(TabProperties.TAB_ACTION_BUTTON_LISTENER) == null) {
                 view.fastFindViewById(R.id.action_button).setOnClickListener(null);
             } else {
                 view.fastFindViewById(R.id.action_button)
                         .setOnClickListener(
                                 v -> {
                                     int tabId = model.get(TabProperties.TAB_ID);
-                                    model.get(TabProperties.TAB_CLOSED_LISTENER).run(tabId);
+                                    model.get(TabProperties.TAB_ACTION_BUTTON_LISTENER).run(tabId);
                                 });
             }
         } else if (TabProperties.TAB_SELECTED_LISTENER == propertyKey) {
@@ -155,22 +157,6 @@ class TabGridViewBinder {
                             model.get(TabProperties.TAB_SELECTED_LISTENER).run(tabId);
                         });
             }
-        } else if (TabProperties.CREATE_GROUP_LISTENER == propertyKey) {
-            TabListMediator.TabActionListener listener =
-                    model.get(TabProperties.CREATE_GROUP_LISTENER);
-            ButtonCompat createGroupButton =
-                    (ButtonCompat) view.fastFindViewById(R.id.create_group_button);
-            if (listener == null) {
-                createGroupButton.setVisibility(View.GONE);
-                createGroupButton.setOnClickListener(null);
-                return;
-            }
-            createGroupButton.setVisibility(View.VISIBLE);
-            createGroupButton.setOnClickListener(
-                    v -> {
-                        int tabId = model.get(TabProperties.TAB_ID);
-                        listener.run(tabId);
-                    });
         } else if (CARD_ALPHA == propertyKey) {
             view.setAlpha(model.get(CARD_ALPHA));
         } else if (TabProperties.IPH_PROVIDER == propertyKey) {
@@ -232,6 +218,37 @@ class TabGridViewBinder {
             ((ClosableTabGridView) view)
                     .hideTabGridCardViewForQuickDelete(
                             model.get(TabProperties.QUICK_DELETE_ANIMATION_STATUS));
+        } else if (TabProperties.IS_TAB_GROUP == propertyKey
+                || TabProperties.TAB_ID == propertyKey) {
+            // Only change the drawable if the property key in question is for tab groups.
+            if (TabProperties.IS_TAB_GROUP == propertyKey) {
+                ((ClosableTabGridView) view)
+                        .setTabActionButtonDrawable(model.get(TabProperties.IS_TAB_GROUP));
+            }
+
+            // Note: TAB_ID changes are NOT flag guarded, so this code block will be used.
+            // However, IS_TAB_GROUP will never be set since it is flag guarded and will be
+            // defaulted to false so in theory this should never cause problems.
+            if (model.get(TabProperties.IS_TAB_GROUP)) {
+                ImageView actionButton = (ImageView) view.fastFindViewById(R.id.action_button);
+                actionButton.setOnClickListener(
+                        TabListGroupMenuCoordinator.getTabListGroupMenuOnClickListener(
+                                model.get(TabProperties.ON_MENU_ITEM_CLICKED_CALLBACK),
+                                model.get(TabProperties.TAB_ID),
+                                model.get(TabProperties.IS_INCOGNITO)));
+            } else {
+                if (model.get(TabProperties.TAB_ACTION_BUTTON_LISTENER) == null) {
+                    view.fastFindViewById(R.id.action_button).setOnClickListener(null);
+                } else {
+                    view.fastFindViewById(R.id.action_button)
+                            .setOnClickListener(
+                                    v -> {
+                                        int tabId = model.get(TabProperties.TAB_ID);
+                                        model.get(TabProperties.TAB_ACTION_BUTTON_LISTENER)
+                                                .run(tabId);
+                                    });
+                }
+            }
         }
     }
 
@@ -310,7 +327,8 @@ class TabGridViewBinder {
             return;
         }
 
-        // TODO(crbug/1395467): Consider unsetting the bitmap early to allow memory reuse if needed.
+        // TODO(crbug.com/40882123): Consider unsetting the bitmap early to allow memory reuse if
+        // needed.
         final Size thumbnailSize = TabUtils.deriveThumbnailSize(cardSize, view.getContext());
         Callback<Bitmap> callback =
                 result -> {
@@ -318,7 +336,8 @@ class TabGridViewBinder {
                             fetcher == model.get(TabProperties.THUMBNAIL_FETCHER)
                                     && cardSize.equals(model.get(TabProperties.GRID_CARD_SIZE));
                     if (result != null) {
-                        // TODO(crbug/1395467): look into cancelling if there are multiple in-flight
+                        // TODO(crbug.com/40882123): look into cancelling if there are multiple
+                        // in-flight
                         // requests. Ensure only the most recently requested bitmap is used.
                         if (!isMostRecentRequest) {
                             result.recycle();
@@ -394,13 +413,12 @@ class TabGridViewBinder {
 
         cardView.getBackground().mutate();
         final @ColorInt int backgroundColor =
-                TabUiThemeProvider.getCardViewBackgroundColor(
+                TabUiThemeUtils.getCardViewBackgroundColor(
                         cardView.getContext(), isIncognito, isSelected);
         ViewCompat.setBackgroundTintList(cardView, ColorStateList.valueOf(backgroundColor));
 
         titleView.setTextColor(
-                TabUiThemeProvider.getTitleTextColor(
-                        titleView.getContext(), isIncognito, isSelected));
+                TabUiThemeUtils.getTitleTextColor(titleView.getContext(), isIncognito, isSelected));
 
         thumbnail.updateThumbnailPlaceholder(isIncognito, isSelected);
 

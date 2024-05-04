@@ -84,8 +84,29 @@ mojom::blink::PermissionStatus NotificationManager::GetPermissionStatus() {
   return permission_status;
 }
 
-ScriptPromiseTyped<V8NotificationPermission>
-NotificationManager::RequestPermission(
+void NotificationManager::GetPermissionStatusAsync(
+    base::OnceCallback<void(mojom::blink::PermissionStatus)> callback) {
+  if (GetSupplementable()->IsContextDestroyed()) {
+    std::move(callback).Run(mojom::blink::PermissionStatus::DENIED);
+    return;
+  }
+
+  // Tentatively have an early return to avoid calling GetNotificationService()
+  // during prerendering. The return value is the same as
+  // `Notification::permission`'s.
+  // TODO(1280155): defer the construction of notification to ensure this method
+  // is not called during prerendering instead.
+  if (auto* window = DynamicTo<LocalDOMWindow>(GetSupplementable())) {
+    if (Document* document = window->document(); document->IsPrerendering()) {
+      std::move(callback).Run(mojom::blink::PermissionStatus::ASK);
+      return;
+    }
+  }
+
+  GetNotificationService()->GetPermissionStatus(std::move(callback));
+}
+
+ScriptPromise<V8NotificationPermission> NotificationManager::RequestPermission(
     ScriptState* script_state,
     V8NotificationPermissionCallback* deprecated_callback) {
   ExecutionContext* context = ExecutionContext::From(script_state);
@@ -102,8 +123,9 @@ NotificationManager::RequestPermission(
                       WrapWeakPersistent(this)));
   }
 
-  auto* resolver = MakeGarbageCollected<
-      ScriptPromiseResolverTyped<V8NotificationPermission>>(script_state);
+  auto* resolver =
+      MakeGarbageCollected<ScriptPromiseResolver<V8NotificationPermission>>(
+          script_state);
   auto promise = resolver->Promise();
 
   LocalDOMWindow* win = To<LocalDOMWindow>(context);
@@ -130,7 +152,7 @@ V8NotificationPermission PermissionStatusToEnum(
 }
 
 void NotificationManager::OnPermissionRequestComplete(
-    ScriptPromiseResolverTyped<V8NotificationPermission>* resolver,
+    ScriptPromiseResolver<V8NotificationPermission>* resolver,
     V8NotificationPermissionCallback* deprecated_callback,
     mojom::blink::PermissionStatus status) {
   V8NotificationPermission permission = PermissionStatusToEnum(status);
@@ -171,7 +193,7 @@ void NotificationManager::DisplayPersistentNotification(
     int64_t service_worker_registration_id,
     mojom::blink::NotificationDataPtr notification_data,
     mojom::blink::NotificationResourcesPtr notification_resources,
-    ScriptPromiseResolver* resolver) {
+    ScriptPromiseResolver<IDLUndefined>* resolver) {
   DCHECK(notification_data);
   DCHECK(notification_resources);
   DCHECK_EQ(notification_data->actions.has_value()
@@ -208,7 +230,7 @@ void NotificationManager::DisplayPersistentNotification(
 }
 
 void NotificationManager::DidDisplayPersistentNotification(
-    ScriptPromiseResolver* resolver,
+    ScriptPromiseResolver<IDLUndefined>* resolver,
     mojom::blink::PersistentNotificationError error) {
   switch (error) {
     case mojom::blink::PersistentNotificationError::NONE:
@@ -240,7 +262,7 @@ void NotificationManager::GetNotifications(
     int64_t service_worker_registration_id,
     const WebString& filter_tag,
     bool include_triggered,
-    ScriptPromiseResolverTyped<IDLSequence<Notification>>* resolver) {
+    ScriptPromiseResolver<IDLSequence<Notification>>* resolver) {
   GetNotificationService()->GetNotifications(
       service_worker_registration_id, filter_tag, include_triggered,
       WTF::BindOnce(&NotificationManager::DidGetNotifications,
@@ -248,7 +270,7 @@ void NotificationManager::GetNotifications(
 }
 
 void NotificationManager::DidGetNotifications(
-    ScriptPromiseResolverTyped<IDLSequence<Notification>>* resolver,
+    ScriptPromiseResolver<IDLSequence<Notification>>* resolver,
     const Vector<String>& notification_ids,
     Vector<mojom::blink::NotificationDataPtr> notification_datas) {
   DCHECK_EQ(notification_ids.size(), notification_datas.size());

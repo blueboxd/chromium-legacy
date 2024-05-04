@@ -49,6 +49,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/rect_f.h"
+#include "ui/gfx/geometry/transform.h"
 #include "ui/gfx/overlay_transform_utils.h"
 
 namespace viz {
@@ -143,6 +144,19 @@ struct MaskFilterInfoExt {
 };
 
 namespace {
+
+// Enum used for UMA histogram. These enum values must not be changed or
+// reused.
+enum class RenderPassDamage {
+  // Clipping at the root does not make the damage smaller than the output rect.
+  kOutputRect = 0,
+  // Clipping at the root will clip the render pass and make it smaller than
+  // output rect.
+  kRootClipped = 1,
+  //  Full output rect damage was forced for this render pass.
+  kForceFullOutputRect = 2,
+  kMaxValue = kForceFullOutputRect,
+};
 
 // Used for determine when to treat opacity close to 1.f as opaque. The value is
 // chosen to be smaller than 1/255.
@@ -322,7 +336,7 @@ void UpdateNeedsRedraw(
       resolved_pass.current_persistent_data().parent_clip_rect;
   current_parent_clip_rect.Union(dest_root_target_clip_rect.value());
 
-  // Get the parent_clip_rect from the preious frame;
+  // Get the parent_clip_rect from the previous frame;
   auto& previous_parent_clip_rect =
       resolved_pass.previous_persistent_data().parent_clip_rect;
 
@@ -437,12 +451,15 @@ SurfaceAggregator::SurfaceAggregator(
     DisplayResourceProvider* provider,
     bool aggregate_only_damaged,
     bool needs_surface_damage_rect_list,
-    ExtraPassForReadbackOption extra_pass_option)
+    ExtraPassForReadbackOption extra_pass_option,
+    bool prevent_merging_surfaces_to_root_pass)
     : manager_(manager),
       provider_(provider),
       aggregate_only_damaged_(aggregate_only_damaged),
       needs_surface_damage_rect_list_(needs_surface_damage_rect_list),
-      extra_pass_for_readback_option_(extra_pass_option) {
+      extra_pass_for_readback_option_(extra_pass_option),
+      prevent_merging_surfaces_to_root_pass_(
+          prevent_merging_surfaces_to_root_pass) {
   DCHECK(manager_);
   DCHECK(provider_);
   manager_->AddObserver(this);
@@ -825,7 +842,7 @@ void SurfaceAggregator::HandleSurfaceQuad(
     fallback_rect =
         gfx::IntersectRects(fallback_rect, surface_quad->visible_rect);
 
-    // TODO(crbug.com/1308932): CompositorFrameMetadata to SkColor4f
+    // TODO(crbug.com/40219248): CompositorFrameMetadata to SkColor4f
     EmitGutterQuadsIfNecessary(surface_quad->visible_rect, fallback_rect,
                                surface_quad->shared_quad_state,
                                embedder_client_namespace_id, target_transform,
@@ -946,7 +963,8 @@ void SurfaceAggregator::EmitSurfaceContent(
       CanPotentiallyMergePass(*surface_quad) && !reflected_and_scaled &&
       combined_transform.Preserves2dAxisAlignment() &&
       mask_filter_info.CanMergeMaskFilterInfo(*render_pass_list.back(),
-                                              combined_transform);
+                                              combined_transform) &&
+      !resolved_frame.GetRootRenderPassData().aggregation().prevent_merge;
 
   // When a surface has video capture enabled, but no copy requests, we do not
   // require an intermediate surface. However, video capture being enabled is a
@@ -1007,6 +1025,8 @@ void SurfaceAggregator::EmitSurfaceContent(
         root_content_color_usage_, source.has_transparent_background,
         source.cache_render_pass, resolved_pass.aggregation().has_damage,
         source.generate_mipmap);
+
+    copy_pass->is_from_surface_root_pass = resolved_pass.is_root();
 
     UpdatePersistentPassDataMergeState(resolved_pass, copy_pass.get(),
                                        /*is_merged_pass=*/false);
@@ -1451,7 +1471,7 @@ void SurfaceAggregator::CopyQuadsToPass(
   const DrawQuad* quad_with_overlay_damage_index = nullptr;
   if (needs_surface_damage_rect_list_ &&
       resolved_pass.aggregation().will_draw) {
-    // TODO(crbug.com/1323002): If there is one specific quad for this pass's
+    // TODO(crbug.com/40224514): If there is one specific quad for this pass's
     // damage we should move the allocation of the damage index below to be
     // consistent with quad ordering.
     quad_with_overlay_damage_index = FindQuadWithOverlayDamage(
@@ -1710,6 +1730,33 @@ void SurfaceAggregator::SetRenderPassDamageRect(
           cc::MathUtil::ProjectEnclosingClippedRect(inverse_transform,
                                                     root_damage_rect_);
       copy_pass->damage_rect.Intersect(damage_rect_in_render_pass_space);
+
+      if (metrics_subsampler_.ShouldSample(0.001)) {
+        gfx::Rect root_clip_in_render_pass_space =
+            cc::MathUtil::ProjectEnclosingClippedRect(
+                inverse_transform,
+                resolved_pass.previous_persistent_data().parent_clip_rect);
+
+        // The 'root_clip_in_render_pass_space' will now be a subrect of the
+        // 'output rect'.
+        root_clip_in_render_pass_space.Intersect(copy_pass->output_rect);
+
+        bool is_output_rect =
+            root_clip_in_render_pass_space == copy_pass->output_rect;
+
+        UMA_HISTOGRAM_ENUMERATION(
+            " Compositing.SurfaceAggregator.RenderPassDamageType",
+            is_output_rect ? RenderPassDamage::kOutputRect
+                           : RenderPassDamage::kRootClipped);
+
+        const auto render_pass_overdamage =
+            copy_pass->output_rect.size().Area64() -
+            root_clip_in_render_pass_space.size().Area64();
+
+        UMA_HISTOGRAM_COUNTS_10M(
+            "Compositing.SurfaceAggregator.ExcessPixelsClipped",
+            render_pass_overdamage);
+      }
     }
 
     // For unembeded render passes, their damages were not added to the
@@ -1720,6 +1767,10 @@ void SurfaceAggregator::SetRenderPassDamageRect(
     if (resolved_pass.IsUnembedded() && can_skip_render_pass) {
       copy_pass->damage_rect.Union(resolved_pass.aggregation().added_damage);
     }
+  } else if (metrics_subsampler_.ShouldSample(0.001)) {
+    UMA_HISTOGRAM_ENUMERATION(
+        " Compositing.SurfaceAggregator.RenderPassDamageType",
+        RenderPassDamage::kForceFullOutputRect);
   }
 }
 
@@ -1874,6 +1925,18 @@ gfx::Rect SurfaceAggregator::PrewalkRenderPass(
           result.page_fullscreen_mode = true;
         }
       }
+
+#if BUILDFLAG(IS_WIN)
+      // Force the root passes of surfaces referenced by the root pass of the
+      // root surface to be embedded instead of merged. This supports the
+      // feature |kDelegatedCompositingLimitToUi|.
+      if (prevent_merging_surfaces_to_root_pass_ && child_resolved_frame &&
+          resolved_pass.is_root() && IsRootSurface(resolved_frame.surface())) {
+        child_resolved_frame->GetRootRenderPassData()
+            .aggregation()
+            .prevent_merge = true;
+      }
+#endif
     } else if (auto* render_pass_quad =
                    quad->DynamicCast<CompositorRenderPassDrawQuad>()) {
       CompositorRenderPassId child_pass_id = render_pass_quad->render_pass_id;
@@ -1926,7 +1989,7 @@ gfx::Rect SurfaceAggregator::PrewalkRenderPass(
       // size of the RenderPassDrawQuad rect. Therefore when we find the damage
       // under the quad intersects quad render pass output rect, we extend the
       // damage rect to include the rpdq->rect.
-      // TODO(crbug/1379125): Work out how to correctly compute damage when
+      // TODO(crbug.com/40244221): Work out how to correctly compute damage when
       // offset backdrop filters may be involved.
 
       // For the pixel-moving foreground filters, all effects can be expanded
@@ -2136,6 +2199,9 @@ gfx::Rect SurfaceAggregator::PrewalkSurface(ResolvedFrameData& resolved_frame,
   }
 
   for (const SurfaceId& surface_id : surface->active_referenced_surfaces()) {
+    // Referenced surfaces that haven't been prewalked yet are not embedded so
+    // don't contribute any pixels to the display. They will only be drawn if
+    // necessary to fulfill CopyOutputRequests.
     if (!contained_surfaces_.count(surface_id)) {
       result.undrawn_surfaces.insert(surface_id);
       ResolvedFrameData* undrawn_surface = GetResolvedFrame(surface_id);
@@ -2346,7 +2412,9 @@ AggregatedFrame SurfaceAggregator::Aggregate(
     last_pass->damage_rect.Intersect(prewalk_damage_rect);
   }
 
-  AddColorConversionPass();
+  if (!base::FeatureList::IsEnabled(features::kColorConversionInRenderer)) {
+    AddColorConversionPass();
+  }
   AddRootReadbackPass();
 
   ProcessAddedAndRemovedSurfaces();
@@ -2445,7 +2513,22 @@ void SurfaceAggregator::SetMaxRenderTargetSize(int max_size) {
   max_render_target_size_ = max_size;
 }
 
-bool SurfaceAggregator::NotifySurfaceDamageAndCheckForDisplayDamage(
+bool SurfaceAggregator::CheckForDisplayDamage(const SurfaceId& surface_id) {
+  auto it = damage_ranges_.find(surface_id.frame_sink_id());
+  if (it == damage_ranges_.end()) {
+    return false;
+  }
+
+  for (const SurfaceRange& surface_range : it->second) {
+    if (surface_range.IsInRangeInclusive(surface_id)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+bool SurfaceAggregator::ForceReleaseResourcesIfNeeded(
     const SurfaceId& surface_id) {
   auto iter = resolved_frames_.find(surface_id);
   if (iter != resolved_frames_.end()) {
@@ -2457,15 +2540,6 @@ bool SurfaceAggregator::NotifySurfaceDamageAndCheckForDisplayDamage(
       resolved_frame.ForceReleaseResource();
     }
     return true;
-  }
-
-  auto it = damage_ranges_.find(surface_id.frame_sink_id());
-  if (it == damage_ranges_.end())
-    return false;
-
-  for (const SurfaceRange& surface_range : it->second) {
-    if (surface_range.IsInRangeInclusive(surface_id))
-      return true;
   }
 
   return false;

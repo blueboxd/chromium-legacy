@@ -142,6 +142,9 @@ PermissionRequest::GetDialogAnnotatedMessageText(
     case RequestType::kVrSession:
       message_id = IDS_VR_INFOBAR_TEXT;
       break;
+    case RequestType::kIdentityProvider:
+      message_id = IDS_IDENTITY_PROVIDER_INFOBAR_TEXT;
+      break;
   }
   DCHECK_NE(0, message_id);
 
@@ -210,6 +213,15 @@ std::optional<std::u16string> PermissionRequest::GetRequestChipText(
          IDS_PERMISSIONS_CAMERA_ALLOWED_CONFIRMATION_SCREENREADER_ANNOUNCEMENT,
          IDS_PERMISSIONS_CAMERA_ALLOWED_ONCE_CONFIRMATION_SCREENREADER_ANNOUNCEMENT,
          IDS_PERMISSIONS_CAMERA_NOT_ALLOWED_CONFIRMATION_SCREENREADER_ANNOUNCEMENT}},
+       {RequestType::kCapturedSurfaceControl,
+        {IDS_CAPTURED_SURFACE_CONTROL_PERMISSION_CHIP,
+         IDS_CAPTURED_SURFACE_CONTROL_PERMISSION_BLOCKED_CHIP,
+         IDS_PERMISSIONS_PERMISSION_ALLOWED_CONFIRMATION,
+         IDS_PERMISSIONS_PERMISSION_ALLOWED_ONCE_CONFIRMATION,
+         IDS_PERMISSIONS_PERMISSION_NOT_ALLOWED_CONFIRMATION,
+         IDS_PERMISSIONS_CAPTURED_SURFACE_CONTROL_ALLOWED_CONFIRMATION_SCREENREADER_ANNOUNCEMENT,
+         IDS_PERMISSIONS_PERMISSION_ALLOWED_ONCE_CONFIRMATION,
+         IDS_PERMISSIONS_CAPTURED_SURFACE_CONTROL_NOT_ALLOWED_CONFIRMATION_SCREENREADER_ANNOUNCEMENT}},
        {RequestType::kClipboard,
         {IDS_CLIPBOARD_PERMISSION_CHIP, -1, -1, -1, -1, -1, -1, -1}},
        {RequestType::kGeolocation,
@@ -290,6 +302,9 @@ std::u16string PermissionRequest::GetMessageTextFragment() const {
     case RequestType::kIdleDetection:
       message_id = IDS_IDLE_DETECTION_PERMISSION_FRAGMENT;
       break;
+    case RequestType::kKeyboardLock:
+      message_id = IDS_KEYBOARD_LOCK_PERMISSIONS_FRAGMENT;
+      break;
     case RequestType::kLocalFonts:
       message_id = IDS_FONT_ACCESS_PERMISSION_FRAGMENT;
       break;
@@ -304,6 +319,9 @@ std::u16string PermissionRequest::GetMessageTextFragment() const {
       break;
     case RequestType::kNotifications:
       message_id = IDS_NOTIFICATION_PERMISSIONS_FRAGMENT;
+      break;
+    case RequestType::kPointerLock:
+      message_id = IDS_POINTER_LOCK_PERMISSIONS_FRAGMENT;
       break;
 #if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_WIN)
     case RequestType::kProtectedMediaIdentifier:
@@ -334,6 +352,9 @@ std::u16string PermissionRequest::GetMessageTextFragment() const {
 #endif
     case RequestType::kWindowManagement:
       message_id = IDS_WINDOW_MANAGEMENT_PERMISSION_FRAGMENT;
+      break;
+    case RequestType::kIdentityProvider:
+      message_id = IDS_IDENTITY_PROVIDER_PERMISSION_FRAGMENT;
       break;
   }
   DCHECK_NE(0, message_id);

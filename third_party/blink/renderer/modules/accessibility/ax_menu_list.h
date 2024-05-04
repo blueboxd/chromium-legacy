@@ -26,15 +26,16 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_ACCESSIBILITY_AX_MENU_LIST_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_ACCESSIBILITY_AX_MENU_LIST_H_
 
-#include "third_party/blink/renderer/modules/accessibility/ax_layout_object.h"
+#include "third_party/blink/renderer/modules/accessibility/ax_node_object.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
 class AXObjectCacheImpl;
 
-class AXMenuList final : public AXLayoutObject {
+class AXMenuList final : public AXNodeObject {
  public:
+  AXMenuList(Node*, AXObjectCacheImpl&);
   AXMenuList(LayoutObject*, AXObjectCacheImpl&);
 
   AXMenuList(const AXMenuList&) = delete;
@@ -45,8 +46,8 @@ class AXMenuList final : public AXLayoutObject {
   AccessibilityExpanded IsExpanded() const final;
   bool OnNativeClickAction() override;
   void ChildrenChangedWithCleanLayout() override;
-  void SetNeedsToUpdateChildren(bool update = true) const override;
-  void ClearChildren() const override;
+  void SetNeedsToUpdateChildren(bool update = true) override;
+  void ClearChildren() override;
   void Detach() override;
 
   void DidUpdateActiveOption();
@@ -54,14 +55,6 @@ class AXMenuList final : public AXLayoutObject {
   void DidHidePopup();
 
   AXObject* GetOrCreateMockPopupChild();
-
-  const WTF::Vector<gfx::Rect>& GetOptionsBounds() const {
-    return options_bounds_;
-  }
-
-  void SetOptionsBounds(const WTF::Vector<gfx::Rect>& options_bounds) {
-    options_bounds_ = options_bounds;
-  }
 
  private:
   friend class AXMenuListOption;
@@ -72,8 +65,6 @@ class AXMenuList final : public AXLayoutObject {
   void AddChildren() override;
 
   bool IsCollapsed() const;
-
-  WTF::Vector<gfx::Rect> options_bounds_;
 
   Member<AXObject> popup_;
 };

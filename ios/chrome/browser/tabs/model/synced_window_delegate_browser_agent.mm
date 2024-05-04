@@ -37,7 +37,7 @@ bool SyncedWindowDelegateBrowserAgent::IsSessionRestoreInProgress() const {
   // * as this is in a batch operation, no event is forwarded to the sync engine
   // * as it is on main thread, the tab sync (also on the main thread) is not
   // called during the process.
-  // TODO(crbug.com/1010164): Use SessionRestorationObserver to track if the
+  // TODO(crbug.com/40650994): Use SessionRestorationObserver to track if the
   // session is being restored.
   return false;
 }
@@ -106,6 +106,22 @@ void SyncedWindowDelegateBrowserAgent::WebStateListDidChange(
       SetWindowIdForWebState(insert_change.inserted_web_state());
       break;
     }
+    case WebStateListChange::Type::kGroupCreate:
+      // TODO(crbug.com/329640035): Should Sync be notified of the group
+      // creation here?
+      break;
+    case WebStateListChange::Type::kGroupVisualDataUpdate:
+      // TODO(crbug.com/329640035): Should Sync be notified of the group's
+      // visual data update here?
+      break;
+    case WebStateListChange::Type::kGroupMove:
+      // TODO(crbug.com/329640035): Should Sync be notified of the group move
+      // here?
+      break;
+    case WebStateListChange::Type::kGroupDelete:
+      // TODO(crbug.com/329640035): Should Sync be notified of the group
+      // deletion here?
+      break;
   }
   if (base::FeatureList::IsEnabled(syncer::kSyncSessionOnVisibilityChanged)) {
     if (status.active_web_state_change()) {

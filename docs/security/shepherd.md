@@ -49,7 +49,7 @@ For [*every new incoming security bug*](#Every-New-Incoming-Security-Bug):
 All of the above should be completed as soon as possible during your shift,
 and at least, by the [shift-handoff](#shift-handoff).
 
-One or more of the above actions may necessary to complete the triage of an
+One or more of the above actions may be necessary to complete the triage of an
 under-triaged bug, i.e. covering any of the open red cells in the dashboard that
 were not completed from ClusterFuzz auto-triage or previous work on the bug.
 
@@ -68,7 +68,7 @@ All this is hard, so please remember to [ask for help](#Ask-for-help).
 
 ## Links to Helpful Resources
 
-Here are some of the importance references and resources you need or may need
+Here are some of the important references and resources you need or may need
 during your shepherding shift:
 
 * [Current Shepherds](https://script.google.com/a/macros/google.com/s/AKfycbz02xD4ghSzZu_tXyNRgjC95wFURATZeD_FHq0KRMHeqA-b0b9sow4NV1lhi0P2vy1j/exec)
@@ -108,7 +108,7 @@ There should be one complete, self-contained report, per root cause. To ensure
 this is the case when assigning security bugs to engineering teams, you may
 need to take some specific actions here:
 * If the report is a bug chain with several underlying causes, **open one new
-  bug per root cause** and marked the parent bug as `blocked on` each. The parent
+  bug per root cause** and mark the parent bug as `blocked on` each. The parent
   bug should be set to the severity of the full chain. Each child bug may have a
   lower severity.
   * If taking these actions for a VRP reported issue, update the Reporter field
@@ -182,7 +182,7 @@ please discuss outstanding cases with the next shepherd and don’t let bugs fal
 through the cracks. You are responsible for any bug reported or in an un-triaged
 state during your shift.
 
-The best way determine the validity of a security bug is to [*reproduce it*](#Reproduce-the-bug).
+The best way to determine the validity of a security bug is to [*reproduce it*](#Reproduce-the-bug).
 It’s helpful to remember that reporters invested time and energy in their bug
 reports:
 
@@ -263,7 +263,7 @@ otherwise, set a **Found In** milestone in the `Found In` field as follows:
 
 Check [ChromiumDash](https://chromiumdash.appspot.com/releases?platform=Windows) for the earliest relevant milestone number
 (Extended Stable or Stable – sometimes they are the same).
-* If that branch is affected, set the `Found In` field to, to the approparite
+* If that branch is affected, set the `Found In` field to, to the appropriate
   milestone number.
 * Otherwise, move forward through milestone numbers. Set the `Found In` field
   to the oldest impacted branch you find.
@@ -344,6 +344,17 @@ pass it along to / include someone who can direct it more precisely.
       Googlers can look at
       [the V8 security bug triage instructions](https://goto.google.com/v8-security-issue-triage-how-to)
       for lists of component owners, but this shouldn't normally be necessary.
+* **V8 Sandbox bypasses**. The V8 Sandbox is still under development, but V8
+  has begun accepting bypass submissions as low-severity security bugs with
+  specific submission rules. That being said, Chrome Shepherds are not expected
+  to fully triage these reports. You do not need to submit the sandbox bypasses
+  to Clusterfuzz. If the report is clearly a V8 sandbox bypass, simply:
+    * Set a provisional severity of Low (S3).
+    * Assign to the current [V8
+      Sheriff](https://goto.google.com/current-v8-sheriff).
+    * Apply the `Security_Impact-None` hotlist (hotlistID:5433277.
+    * If possible, please also apply the `V8 Sandbox` hotlist
+      (hotlistID:4802478).
 * **Skia bugs** can be assigned to hcm@chromium.org. Be careful while triaging
   these! The place where we're crashing isn't necessarily the place where the
   bug was introduced, so blame may be misleading. Skia fuzzing bugs can be
@@ -513,9 +524,10 @@ VRP Panel members are also members of that chat.
 
 ### There is PII or other data in a report we do not want to publicly disclose.
 
-For these cases, please add the `SecurityEmbargo` hotlist (hotlistID: 5432549)
-to the report. For cases of PII that can’t be permanently deleted for the
-report, this label should remain indefinitely.
+For cases of PII, simply delete the attachment or comment that contains PII
+within the issue tracker. If PII is contained in the text of the original
+description of the report, simply choose the `Edit description` option and
+remove any PII.
 
 For cases in which we are just delaying public disclosure (such as when a
 security issue impacts other products or vendors), please use this label and set
@@ -531,6 +543,13 @@ When reports are publicly disclosed, that becomes visible to all and we have to
 delete those comments to protect that information. To direct a comment at an
 external security researcher, please use “OP”, “reporter”, or "researcher”.
 
+### Deleted Reports / Issues Marked as Spam or Abuse
+
+You may come across some reports in the security bug triage queue with a red
+banner, "The issue has been deleted. Reason: ABUSE," this is generally due to
+the overactive spam filtering in the issue tracker. Just click `Undelete` in the
+right side of the banner, and triage the report as you normally would.
+
 ### Shepherding Scheduling
 
 * [Current Shepherds](http://go/whos-the-shepherd)
@@ -545,7 +564,7 @@ external security researcher, please use “OP”, “reporter”, or "researche
 Sometimes you’ll need to handle a security emergency, such as a critical
 severity bug or bug known or under active exploitation in the wild. In such
 cases:
-* As soon as possible, reach out the Shepherds chat for a Chrome Security
+* As soon as possible, reach out to the Shepherds chat for a Chrome Security
   Incident Responder, so they can take on IR Commander responsibilities.
 * Sometimes features can be switched off using feature flags – for example
   [in permissions](https://docs.google.com/document/d/17JeYt3c1GgghYoxy4NKJnlxrteAX8F4x-MAzTeXqP4U).  Check with the engineer if that is a possibility in the case of this issue.

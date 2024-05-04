@@ -115,8 +115,7 @@ class GPU_EXPORT SharedImageInterface
   // ClientSharedImage struct contains a mailbox that can be imported into said
   // APIs using their corresponding shared image functions (e.g.
   // GLES2Interface::CreateAndTexStorage2DSharedImageCHROMIUM or
-  // RasterInterface::CopySharedImage) or (deprecated) mailbox functions (e.g.
-  // GLES2Interface::CreateAndConsumeTextureCHROMIUM).
+  // RasterInterface::CopySharedImage).
   // The |SharedImageInterface| keeps ownership of the image until
   // |DestroySharedImage| is called or the interface itself is destroyed (e.g.
   // the GPU channel is lost).
@@ -131,7 +130,7 @@ class GPU_EXPORT SharedImageInterface
   // same format which would be passed to glTexImage2D to populate a similarly
   // specified texture.
   // May return null if |pixel_data| is too big for IPC.
-  // TODO(crbug.com/1447106): Have the caller specify a row span for
+  // TODO(crbug.com/40268891): Have the caller specify a row span for
   // |pixel_data| explicitly. Some backings have different row alignment
   // requirements which the caller has to match exactly or it won't work.
   virtual scoped_refptr<ClientSharedImage> CreateSharedImage(
@@ -144,7 +143,7 @@ class GPU_EXPORT SharedImageInterface
   // We are currently passing BufferUsage to this method for simplicity since
   // as of now we dont have a clear way to map BufferUsage to SharedImageUsage.
   // May return null if GPU memory buffer creation fails.
-  // TODO(crbug.com/1467584): Merge this method to above existing methods once
+  // TODO(crbug.com/40276844): Merge this method to above existing methods once
   // we figure out mapping between BufferUsage and SharedImageUsage and
   // eliminate all usages of BufferUsage.
   virtual scoped_refptr<ClientSharedImage> CreateSharedImage(
@@ -161,7 +160,7 @@ class GPU_EXPORT SharedImageInterface
   // NOTE: We are currently passing BufferUsage to this method for simplicity
   // since as of now we dont have a clear way to map BufferUsage to
   // SharedImageUsage.
-  // TODO(crbug.com/1467584): Merge this method to above existing methods once
+  // TODO(crbug.com/40276844): Merge this method to above existing methods once
   // we figure out mapping between BufferUsage and SharedImageUsage and
   // eliminate all usages of BufferUsage.
   virtual scoped_refptr<ClientSharedImage> CreateSharedImage(
@@ -219,8 +218,7 @@ class GPU_EXPORT SharedImageInterface
   // Returns a mailbox that can be imported into said APIs using their
   // corresponding shared image functions (e.g.
   // GLES2Interface::CreateAndTexStorage2DSharedImageCHROMIUM or
-  // RasterInterface::CopySharedImage) or (deprecated) mailbox functions (e.g.
-  // GLES2Interface::CreateAndConsumeTextureCHROMIUM).
+  // RasterInterface::CopySharedImage).
   // The |SharedImageInterface| keeps ownership of the image until
   // |DestroySharedImage| is called or the interface itself is destroyed (e.g.
   // the GPU channel is lost).
@@ -251,6 +249,16 @@ class GPU_EXPORT SharedImageInterface
   virtual void CopyToGpuMemoryBuffer(const SyncToken& sync_token,
                                      const Mailbox& mailbox);
 
+  // Update the GpuMemoryBuffer associated with the shared image |mailbox| after
+  // |sync_token| is released. The |callback| is run denoting if the copy was
+  // successful and the GpuMemoryBuffer is ready to be mapped by the client.
+  // This is needed when the GpuMemoryBuffer is backed by shared memory on
+  // platforms like Windows where the renderer cannot create native GMBs.
+  virtual void CopyToGpuMemoryBufferAsync(
+      const SyncToken& sync_token,
+      const Mailbox& mailbox,
+      base::OnceCallback<void(bool)> callback);
+
   // Destroys the shared image, unregistering its mailbox, after |sync_token|
   // has been released. After this call, the mailbox can't be used to reference
   // the image any more, however if the image was imported into other APIs,
@@ -270,6 +278,8 @@ class GPU_EXPORT SharedImageInterface
   // gpu channel and each can have only single reference.
   // Note: `usage` must be the same value as passed to CreateSharedImage call
   // and is just stored without validation.
+  // Note: `texture_target` is the texture target that should be used for this
+  // SharedImage.
   virtual scoped_refptr<ClientSharedImage> AddReferenceToSharedImage(
       const SyncToken& sync_token,
       const Mailbox& mailbox,
@@ -278,7 +288,8 @@ class GPU_EXPORT SharedImageInterface
       const gfx::ColorSpace& color_space,
       GrSurfaceOrigin surface_origin,
       SkAlphaType alpha_type,
-      uint32_t usage);
+      uint32_t usage,
+      uint32_t texture_target);
 
   // Imports SharedImage to this interface and returns an owning reference. It
   // must be released via DestroySharedImage in the same way as for SharedImages
@@ -299,8 +310,7 @@ class GPU_EXPORT SharedImageInterface
   // Creates a swap chain.
   // Returns shared images for front and back buffers of a DXGI Swap Chain that
   // can be imported into GL command buffer using shared image functions (e.g.
-  // GLES2Interface::CreateAndTexStorage2DSharedImageCHROMIUM) or (deprecated)
-  // mailbox functions (e.g. GLES2Interface::CreateAndConsumeTextureCHROMIUM).
+  // GLES2Interface::CreateAndTexStorage2DSharedImageCHROMIUM).
   virtual SwapChainSharedImages CreateSwapChain(
       viz::SharedImageFormat format,
       const gfx::Size& size,

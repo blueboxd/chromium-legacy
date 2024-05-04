@@ -6,9 +6,9 @@
 #define COMPONENTS_USER_EDUCATION_COMMON_FEATURE_PROMO_LIFECYCLE_H_
 
 #include <memory>
+#include <string_view>
 
 #include "base/memory/raw_ptr.h"
-#include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "components/feature_engagement/public/tracker.h"
 #include "components/user_education/common/feature_promo_result.h"
@@ -32,10 +32,11 @@ class FeaturePromoLifecycle {
   using PromoType = FeaturePromoSpecification::PromoType;
 
   FeaturePromoLifecycle(FeaturePromoStorageService* storage_service,
-                        const base::StringPiece& app_id,
+                        std::string_view promo_key,
                         const base::Feature* iph_feature,
                         PromoType promo_type,
-                        PromoSubtype promo_subtype);
+                        PromoSubtype promo_subtype,
+                        int num_rotating_entries);
   ~FeaturePromoLifecycle();
 
   FeaturePromoLifecycle(const FeaturePromoLifecycle&) = delete;
@@ -49,6 +50,23 @@ class FeaturePromoLifecycle {
   // Returns whether the policy and previous usage of this IPH would allow it to
   // be snoozed if it were shown; meaningless if `CanShow()` is false.
   bool CanSnooze() const;
+
+  // For rotating promos only; retrieves the current promo index. The index will
+  // be incremented when the promo data is written. The value returned will be
+  // clamped to the number of rotating promo entries, exclusive, such that if
+  // the current value exceeds the number of entries it will wrap around to 0.
+  int GetPromoIndex() const;
+
+  // Allows the current promo index to be set (rotating promos only). This is
+  // useful if a previously-available promo has been removed, leaving a gap in
+  // the rotation at the current index.
+  //
+  // For example, say the promos are {P1, null, P2, P3}. Then if GetPromoIndex()
+  // returns 1, the calling code may see the null value and increment the index
+  // to 2. Setting it back on the lifecycle ensures that the correct next index
+  // is stored on completion, so that P3 is shown next time rather than showing
+  // P2 again.
+  void SetPromoIndex(int new_index);
 
   // Notifies that the promo was shown. `tracker` will be used to release the
   // feature when the promo ends.
@@ -112,16 +130,25 @@ class FeaturePromoLifecycle {
   // `storage_service` and can be overridden by tests.
   base::Time GetCurrentTime() const;
 
+  // If `promo_index_` isn't yet known, reads it from `data`; if `data` is null,
+  // reads it from the storage service instead.
+  void MaybeCachePromoIndex(const FeaturePromoData* data) const;
+
   // The service that stores non-transient data about the IPH.
   const raw_ptr<FeaturePromoStorageService> storage_service_;
 
-  // The current app id, or empty for none.
-  const std::string app_id_;
+  // The current promo key, or empty for none.
+  const std::string promo_key_;
 
   // Data about the current IPH.
   const raw_ptr<const base::Feature> iph_feature_;
   const PromoType promo_type_;
   const PromoSubtype promo_subtype_;
+  const int num_rotating_entries_;
+
+  // These are cached values for rotating promos that are applied later when the
+  // data for the promo is updated.
+  mutable std::optional<int> promo_index_;
 
   // The current state of the promo.
   State state_ = State::kNotStarted;

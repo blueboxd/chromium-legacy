@@ -63,6 +63,11 @@ class PDFExtensionTestBase : public extensions::ExtensionApiTest {
   // embed element.
   testing::AssertionResult LoadPdfInFirstChild(const GURL& url);
 
+  // Same as `LoadPdf()` but allows the PDF embedder host to have multiple
+  // subframes. There are special cases where this can occur, such as
+  // crbug.com/40671023.
+  testing::AssertionResult LoadPdfAllowMultipleFrames(const GURL& url);
+
   // Same as LoadPdf(), but also returns a pointer to the `MimeHandlerViewGuest`
   // for the loaded PDF. Returns nullptr if the load fails.
   extensions::MimeHandlerViewGuest* LoadPdfGetMimeHandlerView(const GURL& url);
@@ -86,7 +91,12 @@ class PDFExtensionTestBase : public extensions::ExtensionApiTest {
   content::RenderFrameHost* LoadPdfInFirstChildGetExtensionHost(
       const GURL& url);
 
-  void TestGetSelectedTextReply(const GURL& url, bool expect_success);
+  // Test if a page embedding a PDF can get selected text in the PDF. The test
+  // will fail if the hook for sending flush messages for every getSelectedText
+  // message fails to attach to `extension_host`. The test will fail if the
+  // result of getting selected text does not match `expect_success`.
+  void TestGetSelectedTextReply(content::RenderFrameHost* extension_host,
+                                bool expect_success);
 
   content::WebContents* GetActiveWebContents();
 
@@ -102,7 +112,7 @@ class PDFExtensionTestBase : public extensions::ExtensionApiTest {
   pdf::TestPdfViewerStreamManager* GetTestPdfViewerStreamManager(
       content::WebContents* contents);
 
-  void CreateTestPdfViewerStreamManager();
+  void CreateTestPdfViewerStreamManager(content::WebContents* contents);
 
   content::RenderFrameHost* GetOnlyPdfExtensionHostEnsureValid();
 
@@ -111,14 +121,15 @@ class PDFExtensionTestBase : public extensions::ExtensionApiTest {
   // Checks if the full page PDF loaded. The test will fail if it does not meet
   // the requirements of `ValidateFrameTree()`.
   testing::AssertionResult EnsureFullPagePDFHasLoadedWithValidFrameTree(
-      content::WebContents* contents);
+      content::WebContents* contents,
+      bool allow_multiple_frames = false);
 
   // Check if the PDF loaded in the first child frame of `contents`. The test
   // will fail if it does not meet the requirements of `ValidateFrameTree()`.
   testing::AssertionResult EnsurePDFHasLoadedInFirstChildWithValidFrameTree(
       content::WebContents* contents);
 
-  // TODO(crbug.com/1445746): Remove this once there are no more existing use
+  // TODO(crbug.com/40268279): Remove this once there are no more existing use
   // cases.
   void SimulateMouseClickAt(extensions::MimeHandlerViewGuest* guest,
                             int modifiers,
@@ -133,7 +144,7 @@ class PDFExtensionTestBase : public extensions::ExtensionApiTest {
 
   // Returns true if the test should use the OOPIF PDF viewer instead of the
   // GuestView PDF viewer.
-  // TODO(crbug.com/1445746): Remove once only OOPIF PDF viewer is used.
+  // TODO(crbug.com/40268279): Remove once only OOPIF PDF viewer is used.
   virtual bool UseOopif() const;
 
   // Hooks to set up feature flags.

@@ -41,6 +41,7 @@
 #include "dbus/message.h"
 #include "dbus/object_path.h"
 #include "dbus/object_proxy.h"
+#include "third_party/cros_system_api/dbus/login_manager/dbus-constants.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace ash {
@@ -65,7 +66,7 @@ constexpr int kUpgradeTimeoutMs = 60 * 1000;  // 60 seconds
 const size_t kSharedMemoryDataSizeLimit = 10 * 1024 * 1024;
 
 // Copy of values from login_manager::SessionManagerImpl.
-// TODO(crbug.com/1477697): Move to system_api/dbus/service_constants.h
+// TODO(crbug.com/40071048): Move to system_api/dbus/service_constants.h
 constexpr char kStopping[] = "stopping";
 
 // Helper to get the enum type of RetrievePolicyResponseType based on error
@@ -76,7 +77,7 @@ RetrievePolicyResponseType GetPolicyResponseTypeByError(
     return RetrievePolicyResponseType::SUCCESS;
   } else if (error_name == login_manager::dbus_error::kGetServiceFail ||
              error_name == login_manager::dbus_error::kSessionDoesNotExist) {
-    // TODO(crbug.com/765644): Remove kSessionDoesNotExist case once Chrome OS
+    // TODO(crbug.com/41344863): Remove kSessionDoesNotExist case once Chrome OS
     // has switched to kGetServiceFail.
     return RetrievePolicyResponseType::GET_SERVICE_FAIL;
   } else if (error_name == login_manager::dbus_error::kSigEncodeFail) {
@@ -135,7 +136,7 @@ base::ScopedFD CreateSharedMemoryRegionFDWithData(const std::string& data) {
   base::WritableSharedMemoryMapping mapping = region.Map();
   if (!mapping.IsValid())
     return base::ScopedFD();
-  memcpy(mapping.memory(), data.data(), data.size());
+  mapping.GetMemoryAsSpan<uint8_t>().copy_from(base::as_byte_span(data));
   return base::WritableSharedMemoryRegion::TakeHandleForSerialization(
              std::move(region))
       .PassPlatformHandle()
@@ -1121,14 +1122,19 @@ class SessionManagerClientImpl : public SessionManagerClient {
   void OnGetServerBackedStateKeys(StateKeysCallback callback,
                                   dbus::Response* response,
                                   dbus::ErrorResponse* error_response) {
+    if (error_response &&
+        error_response->GetErrorName() ==
+            login_manager::dbus_error::kStateKeysRequestFail) {
+      // Session manager failed to generate state keys, report identifiers
+      // error.
+      return std::move(callback).Run(
+          base::unexpected(StateKeyErrorType::kMissingIdentifiers));
+    }
+
     if (!response) {
-      // When the implementation returns an error, `error_response` is not null.
-      // However, session manager's implementation of state key retrieval does
-      // not support returning errors, hence we assume that it is null and
-      // report communication error.
-      std::move(callback).Run(
+      // DBus call failed with unspecified error, report communication error.
+      return std::move(callback).Run(
           base::unexpected(StateKeyErrorType::kCommunicationError));
-      return;
     }
 
     dbus::MessageReader reader(response);
@@ -1163,9 +1169,9 @@ class SessionManagerClientImpl : public SessionManagerClient {
     }
 
     if (state_keys.empty()) {
-      // TODO(b/318708647): Improve session manager's implementation to report
-      // an error via DBus rather than return empty list of keys. This will
-      // allow to differentiate between various types of missing identifiers.
+      // TODO(b/318708647): Session manager did not report an error but still
+      // responded with empty state keys. Report something else than missing
+      // identifiers.
       std::move(callback).Run(
           base::unexpected(StateKeyErrorType::kMissingIdentifiers));
       return;
@@ -1262,7 +1268,7 @@ class SessionManagerClientImpl : public SessionManagerClient {
 
   raw_ptr<dbus::ObjectProxy> session_manager_proxy_ = nullptr;
   std::unique_ptr<chromeos::BlockingMethodCaller> blocking_method_caller_;
-  base::ObserverList<Observer>::Unchecked observers_{
+  base::ObserverList<Observer>::UncheckedAndDanglingUntriaged observers_{
       SessionManagerClient::kObserverListPolicy};
 
   // Most recent screen-lock state received from session_manager.

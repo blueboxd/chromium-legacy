@@ -1243,6 +1243,11 @@ public class CookieManagerTest extends AwParameterizedTest {
     public void testPartitionedNetCookies() throws Throwable {
         TestWebServer webServer = TestWebServer.startSsl();
 
+        // This test suite relies on an image to force a network request that has cookies attached.
+        // The AwParameterizedTest will disable this setting so force enabling it again so that
+        // we can still test the rest of the parameterized test settings.
+        mAwContents.getSettings().setImagesEnabled(true);
+
         try {
             String[] cookies = {
                 "partitioned_cookie=foo; SameSite=None; Secure; Partitioned",
@@ -1309,7 +1314,7 @@ public class CookieManagerTest extends AwParameterizedTest {
         // Using SSL server here since CookieStore API requires a secure schema.
         TestWebServer webServer = TestWebServer.startSsl();
         try {
-            // TODO(https://crbug.com/1523964): The WebView cookie manager API does not currently
+            // TODO(crbug.com/41496912): The WebView cookie manager API does not currently
             // provide access to
             // third party partitioned urls so we need to retrieve these cookies from the iframe
             // itself to validate this

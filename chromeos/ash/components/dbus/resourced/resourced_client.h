@@ -141,22 +141,22 @@ class COMPONENT_EXPORT(RESOURCED) ResourcedClient {
     kLacros = 1,
   };
 
-  virtual void ReportBackgroundProcesses(Component component,
-                                         const std::vector<int32_t>& pids) = 0;
-
   struct Process {
     Process(base::ProcessHandle pid,
             bool is_protected,
             bool is_visible,
-            bool is_focused)
+            bool is_focused,
+            base::TimeTicks last_visible)
         : pid(pid),
           is_protected(is_protected),
           is_visible(is_visible),
-          is_focused(is_focused) {}
+          is_focused(is_focused),
+          last_visible(last_visible) {}
     base::ProcessHandle pid;
     bool is_protected;
     bool is_visible;
     bool is_focused;
+    base::TimeTicks last_visible;
   };
 
   virtual void ReportBrowserProcesses(

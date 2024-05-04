@@ -4,9 +4,19 @@
 
 #include "chrome/browser/ash/app_mode/app_launch_utils.h"
 
+#include <cstddef>
+#include <iterator>
+#include <optional>
+#include <string>
+#include <vector>
+
 #include "ash/constants/ash_switches.h"
+#include "base/check.h"
 #include "base/check_deref.h"
 #include "base/command_line.h"
+#include "base/functional/bind.h"
+#include "base/notreached.h"
+#include "base/values.h"
 #include "chrome/browser/ash/app_mode/crash_recovery_launcher.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_launch_error.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_types.h"
@@ -18,6 +28,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
+#include "components/prefs/scoped_user_pref_update.h"
 #include "components/user_manager/user_manager.h"
 
 namespace ash {
@@ -29,9 +40,22 @@ const char* const kPrefsToReset[] = {"settings.accessibility",  // ChromeVox
                                      "settings.a11y", "ash.docked_magnifier",
                                      "settings.tts"};
 
+const char* const kOneTimeAutoLaunchWebKioskAccountId =
+    "one_time_auto_launch.web_app_account_id";
+const char* const kOneTimeAutoLaunchChromeAppAccountId =
+    "one_time_auto_launch.chrome_app_account_id";
+const char* const kOneTimeAutoLaunchChromeAppId =
+    "one_time_auto_launch.chrome_app_id";
+
 // This vector is used in tests when they want to replace `kPrefsToReset` with
 // their own list.
 std::vector<std::string>* test_prefs_to_reset = nullptr;
+
+AccountId ToAccountId(const std::string* account_id_string) {
+  AccountId account_id;
+  CHECK(AccountId::Deserialize(CHECK_DEREF(account_id_string), &account_id));
+  return account_id;
+}
 
 }  // namespace
 
@@ -73,7 +97,7 @@ void SetEphemeralKioskPreferencesListForTesting(
 }
 
 bool ShouldAutoLaunchKioskApp(const base::CommandLine& command_line,
-                              PrefService* local_state) {
+                              const PrefService& local_state) {
   // We shouldn't auto launch kiosk app if a designated command line switch was
   // used.
   //
@@ -85,7 +109,7 @@ bool ShouldAutoLaunchKioskApp(const base::CommandLine& command_line,
   }
 
   // We shouldn't auto launch kiosk app if powerwash screen should be shown.
-  if (local_state->GetBoolean(prefs::kFactoryResetRequested)) {
+  if (local_state.GetBoolean(prefs::kFactoryResetRequested)) {
     return false;
   }
 
@@ -101,19 +125,76 @@ bool ShouldAutoLaunchKioskApp(const base::CommandLine& command_line,
 void CreateKioskSystemSession(const KioskAppId& kiosk_app_id,
                               Profile* profile,
                               const std::optional<std::string>& app_name) {
+  if (kiosk_app_id.type == KioskAppType::kArcApp) {
+    // Do not initialize a `KioskSystemSession` for ARC kiosk.
+    return;
+  }
+  KioskController::Get().InitializeKioskSystemSession(profile, kiosk_app_id,
+                                                      app_name);
+}
+
+bool ShouldOneTimeAutoLaunchKioskApp(const base::CommandLine& command_line,
+                                     const PrefService& local_state) {
+  return command_line.HasSwitch(switches::kLoginManager) &&
+         GetOneTimeAutoLaunchKioskAppId(local_state).has_value();
+}
+
+std::optional<KioskAppId> GetOneTimeAutoLaunchKioskAppId(
+    const PrefService& local_state) {
+  const base::Value::Dict& dict =
+      local_state.GetDict(KioskChromeAppManager::kKioskDictionaryName);
+
+  if (dict.contains(kOneTimeAutoLaunchWebKioskAccountId)) {
+    return KioskAppId::ForWebApp(
+        ToAccountId(dict.FindString(kOneTimeAutoLaunchWebKioskAccountId)));
+  } else if (dict.contains(kOneTimeAutoLaunchChromeAppAccountId)) {
+    return KioskAppId::ForChromeApp(
+        CHECK_DEREF(dict.FindString(kOneTimeAutoLaunchChromeAppId)),
+        ToAccountId(dict.FindString(kOneTimeAutoLaunchChromeAppAccountId)));
+  }
+
+  return std::nullopt;
+}
+
+void ClearOneTimeAutoLaunchKioskAppId(PrefService& local_state) {
+  ScopedDictPrefUpdate dict_update(&local_state,
+                                   KioskChromeAppManager::kKioskDictionaryName);
+
+  dict_update->Remove(kOneTimeAutoLaunchWebKioskAccountId);
+  dict_update->Remove(kOneTimeAutoLaunchChromeAppAccountId);
+  dict_update->Remove(kOneTimeAutoLaunchChromeAppId);
+  local_state.CommitPendingWrite();
+}
+
+KioskAppId ExtractOneTimeAutoLaunchKioskAppId(PrefService& local_state) {
+  auto result = GetOneTimeAutoLaunchKioskAppId(local_state);
+  ClearOneTimeAutoLaunchKioskAppId(local_state);
+  return result.value();
+}
+
+void SetOneTimeAutoLaunchKioskAppId(PrefService& local_state,
+                                    const KioskAppId& kiosk_app_id) {
+  ScopedDictPrefUpdate dict_update(&local_state,
+                                   KioskChromeAppManager::kKioskDictionaryName);
+
   switch (kiosk_app_id.type) {
-    case KioskAppType::kWebApp:
-      WebKioskAppManager::Get()->InitKioskSystemSession(profile, kiosk_app_id,
-                                                        app_name);
+    case KioskAppType::kArcApp:
+      NOTREACHED();
       return;
     case KioskAppType::kChromeApp:
-      KioskChromeAppManager::Get()->InitKioskSystemSession(profile,
-                                                           kiosk_app_id);
+      dict_update->Set(kOneTimeAutoLaunchChromeAppAccountId,
+                       kiosk_app_id.account_id.Serialize());
+      dict_update->Set(kOneTimeAutoLaunchChromeAppId,
+                       kiosk_app_id.app_id.value());
+      local_state.CommitPendingWrite();
       return;
-    case KioskAppType::kArcApp:
-      // Do not create a `KioskBrowserSession` for ARC kiosk
+    case KioskAppType::kWebApp:
+      dict_update->Set(kOneTimeAutoLaunchWebKioskAccountId,
+                       kiosk_app_id.account_id.Serialize());
+      local_state.CommitPendingWrite();
       return;
   }
+  NOTREACHED_NORETURN();
 }
 
 }  // namespace ash

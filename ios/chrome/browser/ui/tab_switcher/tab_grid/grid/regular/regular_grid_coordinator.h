@@ -21,19 +21,15 @@
 // to make sure other can use it.
 @property(nonatomic, weak, readonly) id<GridCommands> gridHandler;
 
-// Delegate for the context menu.
-// TODO(crbug.com/1457146): Make it private.
-@property(nonatomic, weak) id<TabContextMenuDelegate> tabContextMenuDelegate;
-
 // Grid view controller.
-// TODO(crbug.com/1457146): Make it private.
+// TODO(crbug.com/40273478): Make it private.
 @property(nonatomic, readonly, strong)
     RegularGridViewController* gridViewController;
 // Pinned tabs view controller.
-// TODO(crbug.com/1457146): Make it private.
+// TODO(crbug.com/40273478): Make it private.
 @property(nonatomic, strong) PinnedTabsViewController* pinnedTabsViewController;
 // Regular grid mediator.
-// TODO(crbug.com/1457146): Make it private.
+// TODO(crbug.com/40273478): Make it private.
 @property(nonatomic, readonly, strong) RegularGridMediator* regularGridMediator;
 
 // Stops all child coordinators.

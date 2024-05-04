@@ -174,7 +174,7 @@ void CreateBrowserWithProfile(
   create_params.creation_source = Browser::CreationSource::kDeskTemplate;
   Browser* browser = Browser::Create(create_params);
 
-  // TODO(crbug.com/1442076): Remove after issue is root caused.
+  // TODO(crbug.com/40910343): Remove after issue is root caused.
   LOG(ERROR) << "window " << additional_state->restore_window_id
              << " created by lacros with " << additional_state->urls.size()
              << " tabs";
@@ -193,7 +193,13 @@ void CreateBrowserWithProfile(
   SetPinnedTabs(additional_state->first_non_pinned_index, browser);
 
   if (show_state == ui::SHOW_STATE_MINIMIZED) {
-    browser->window()->Minimize();
+    // TODO(crbug.com/329800621): This behavior difference between `Show()` and
+    // `ShowInactive()` is confusing and should be fixed.
+    // Calling `Show()` for a widget created as a minimized widget keeps the
+    // widget minimized the first time `Show()` is called. However calling
+    // `ShowInactive()` results in the browser window getting unminimized. So
+    // use `Show()` instead of `ShowInactive()`.
+    browser->window()->Show();
   } else {
     browser->window()->ShowInactive();
   }

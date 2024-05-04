@@ -9,6 +9,7 @@
 
 #include "base/check_op.h"
 #include "base/containers/fixed_flat_map.h"
+#include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "ui/base/default_style.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -83,6 +84,7 @@ const TypographyProvider& TypographyProvider::Get() {
 }
 
 const gfx::FontList& TypographyProvider::GetFont(int context, int style) const {
+  TRACE_EVENT0("ui", "TypographyProvider::GetFont");
   return GetFontForDetails(GetFontDetails(context, style));
 }
 
@@ -128,7 +130,7 @@ gfx::Font::Weight TypographyProvider::MediumWeightForUI() {
 }
 
 bool TypographyProvider::StyleAllowedForContext(int context, int style) const {
-  // TODO(https://crbug.com/1352340): Limit emphasizing text to contexts where
+  // TODO(crbug.com/40234831): Limit emphasizing text to contexts where
   // it's obviously correct. chrome_typography_provider.cc implements this
   // correctly, but that does not cover uses outside of //chrome or //ash.
   return true;
@@ -258,6 +260,10 @@ ui::ResourceBundle::FontDetails TypographyProvider::GetFontDetailsImpl(
       details.size_delta = gfx::PlatformFont::GetFontSizeDelta(11);
       details.weight = gfx::Font::Weight::BOLD;
       break;
+    case style::STYLE_LINK_5:
+      details.size_delta = gfx::PlatformFont::GetFontSizeDelta(11);
+      details.weight = gfx::Font::Weight::NORMAL;
+      break;
     case style::STYLE_CAPTION:
       details.size_delta = gfx::PlatformFont::GetFontSizeDelta(9);
       details.weight = gfx::Font::Weight::NORMAL;
@@ -284,6 +290,7 @@ ui::ColorId TypographyProvider::GetColorIdImpl(int context, int style) const {
     case style::STYLE_DISABLED:
       return GetDisabledColorId(context);
     case style::STYLE_LINK:
+    case style::STYLE_LINK_5:
       return (context == style::CONTEXT_BUBBLE_FOOTER)
                  ? ui::kColorLinkForegroundOnBubbleFooter
                  : ui::kColorLinkForeground;
@@ -331,7 +338,7 @@ int TypographyProvider::GetLineHeightImpl(int context, int style) const {
       {style::STYLE_BODY_4, 16},        {style::STYLE_BODY_4_MEDIUM, 16},
       {style::STYLE_BODY_4_BOLD, 16},   {style::STYLE_BODY_5, 16},
       {style::STYLE_BODY_5_MEDIUM, 16}, {style::STYLE_BODY_5_BOLD, 16},
-      {style::STYLE_CAPTION, 12},
+      {style::STYLE_LINK_5, 16},        {style::STYLE_CAPTION, 12},
   });
   const auto it = kLineHeights.find(style);
   return (it == kLineHeights.end())

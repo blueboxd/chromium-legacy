@@ -38,7 +38,7 @@ class WorkerNodeImpl;
 // The simplest case is dedicated workers, where each worker always has exactly
 // one frame client. Technically, it is possible to create a nested dedicated
 // worker, but for now they are treated as child of the ancestor frame.
-// TODO(1128645): Expose nested dedicated workers correctly.
+// TODO(crbug.com/40149051): Expose nested dedicated workers correctly.
 //
 // Shared workers are quite similar to dedicated workers but they can have any
 // number of clients. Also, a shared worker can temporarily appear to have no
@@ -77,6 +77,7 @@ class WorkerWatcher : public content::DedicatedWorkerService::Observer,
   void OnWorkerCreated(
       const blink::DedicatedWorkerToken& dedicated_worker_token,
       int worker_process_id,
+      const url::Origin& security_origin,
       content::DedicatedWorkerCreator creator) override;
   void OnBeforeWorkerDestroyed(
       const blink::DedicatedWorkerToken& dedicated_worker_token,
@@ -88,6 +89,7 @@ class WorkerWatcher : public content::DedicatedWorkerService::Observer,
   // content::SharedWorkerService::Observer:
   void OnWorkerCreated(const blink::SharedWorkerToken& shared_worker_token,
                        int worker_process_id,
+                       const url::Origin& security_origin,
                        const base::UnguessableToken& dev_tools_token) override;
   void OnBeforeWorkerDestroyed(
       const blink::SharedWorkerToken& shared_worker_token) override;

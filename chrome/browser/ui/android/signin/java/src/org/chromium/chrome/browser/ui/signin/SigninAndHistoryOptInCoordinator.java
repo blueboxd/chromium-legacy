@@ -7,9 +7,9 @@ package org.chromium.chrome.browser.ui.signin;
 import android.app.Activity;
 import android.content.res.Configuration;
 import android.view.LayoutInflater;
-import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.activity.ComponentActivity;
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
@@ -21,12 +21,16 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.services.SigninManager;
 import org.chromium.chrome.browser.sync.SyncServiceFactory;
+import org.chromium.chrome.browser.ui.signin.account_picker.AccountPickerBottomSheetStrings;
+import org.chromium.chrome.browser.ui.signin.account_picker.AccountPickerLaunchMode;
 import org.chromium.chrome.browser.ui.signin.history_sync.HistorySyncCoordinator;
+import org.chromium.chrome.browser.ui.signin.history_sync.HistorySyncHelper;
 import org.chromium.components.browser_ui.device_lock.DeviceLockActivityLauncher;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.identitymanager.ConsentLevel;
 import org.chromium.components.signin.identitymanager.IdentityManager;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
+import org.chromium.components.sync.SyncFeatureMap;
 import org.chromium.components.sync.SyncService;
 import org.chromium.components.sync.UserSelectableType;
 import org.chromium.ui.base.WindowAndroid;
@@ -44,7 +48,7 @@ public class SigninAndHistoryOptInCoordinator
         implements SigninAccountPickerCoordinator.Delegate,
                 HistorySyncCoordinator.HistorySyncDelegate {
     private final WindowAndroid mWindowAndroid;
-    private final Activity mActivity;
+    private final ComponentActivity mActivity;
     private final ViewGroup mContainerView;
 
     private final Delegate mDelegate;
@@ -53,15 +57,22 @@ public class SigninAndHistoryOptInCoordinator
     private final @SigninAccessPoint int mSigninAccessPoint;
     private final Supplier<ModalDialogManager> mModalDialogManagerSupplier;
 
-    // TODO(crbug.com/1520783): Start different flow according to the modes set.
+    private final AccountPickerBottomSheetStrings mBottomSheetStrings;
     private final @NoAccountSigninMode int mNoAccountSigninMode;
+    private final @WithAccountSigninMode int mWithAccountSigninMode;
     private final @HistoryOptInMode int mHistoryOptInMode;
 
     private SigninAccountPickerCoordinator mAccountPickerCoordinator;
     private HistorySyncCoordinator mHistorySyncCoordinator;
+    private PropertyModel mDialogModel;
+    private boolean mDidShowSigninStep;
+    private boolean mIsHistorySyncDedicatedFlow;
 
     /** This is a delegate that the embedder needs to implement. */
     public interface Delegate {
+        /** Called when the user starts the Google Play Services "add account" flow. */
+        void addAccount();
+
         /** Called when the whole flow finishes. */
         void onFlowComplete();
     }
@@ -74,7 +85,7 @@ public class SigninAndHistoryOptInCoordinator
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface NoAccountSigninMode {
-        /** Show the 0-account sign-in bottom sheet. */
+        /** Show the 0-account version of the sign-in bottom sheet. */
         int BOTTOM_SHEET = 0;
 
         /** Bring the user to GMS Core to add an account, then sign-in with the new account. */
@@ -82,6 +93,20 @@ public class SigninAndHistoryOptInCoordinator
 
         /** No sign-in should be done, the entry point should not be visible to the user. */
         int NO_SIGNIN = 2;
+    }
+
+    /** The sign-in step that should be shown to the user when there's 1+ accounts on the device. */
+    @IntDef({
+        WithAccountSigninMode.DEFAULT_ACCOUNT_BOTTOM_SHEET,
+        WithAccountSigninMode.CHOOSE_ACCOUNT_BOTTOM_SHEET,
+    })
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface WithAccountSigninMode {
+        /** Show the "collapsed" sign-in bottom sheet containing the default account. */
+        int DEFAULT_ACCOUNT_BOTTOM_SHEET = 0;
+
+        /** Show the "expanded" sign-in bottom sheet containing the accounts list. */
+        int CHOOSE_ACCOUNT_BOTTOM_SHEET = 1;
     }
 
     /** The visibility rule to apply to the history opt-in step. */
@@ -98,6 +123,30 @@ public class SigninAndHistoryOptInCoordinator
         int REQUIRED = 2;
     }
 
+    public static boolean willShowSigninUI(Profile profile) {
+        SigninManager signinManager = IdentityServicesProvider.get().getSigninManager(profile);
+        return signinManager.isSigninAllowed();
+    }
+
+    public static boolean willShowHistorySyncUI(
+            Profile profile, @HistoryOptInMode int historyOptInMode) {
+        IdentityManager identityManager =
+                IdentityServicesProvider.get().getIdentityManager(profile);
+        if (!willShowSigninUI(profile) && !identityManager.hasPrimaryAccount(ConsentLevel.SIGNIN)) {
+            // Signin is suppressed because of something other than the user being signed in. Since
+            // the user cannot sign in, we should not show history sync either.
+            return false;
+        }
+        return switch (historyOptInMode) {
+            case HistoryOptInMode.NONE -> false;
+                // TODO(crbug.com/331568233): Show history opt-in only if it's not suppressed.
+            case HistoryOptInMode.OPTIONAL, HistoryOptInMode.REQUIRED -> shouldShowHistorySync(
+                    profile);
+            default -> throw new IllegalArgumentException(
+                    "Unexpected value for historyOptInMode :" + historyOptInMode);
+        };
+    }
+
     /**
      * Creates an instance of {@link SigninAndHistoryOptInCoordinator} and shows the sign-in bottom
      * sheet.
@@ -109,17 +158,22 @@ public class SigninAndHistoryOptInCoordinator
      * @param profileSupplier The supplier of the current profile.
      * @param modalDialogManagerSupplier The supplier of the {@link ModalDialogManager}
      * @param signinAccessPoint The entry point for the sign-in.
+     * @param isHistorySyncDedicatedFlow Whether the flow is dedicated to enabling history sync
+     *     (recent tabs for example).
      */
     public SigninAndHistoryOptInCoordinator(
             @NonNull WindowAndroid windowAndroid,
-            @NonNull Activity activity,
+            @NonNull ComponentActivity activity,
             @NonNull Delegate delegate,
             @NonNull DeviceLockActivityLauncher deviceLockActivityLauncher,
             @NonNull OneshotSupplier<Profile> profileSupplier,
             @NonNull Supplier<ModalDialogManager> modalDialogManagerSupplier,
+            @NonNull AccountPickerBottomSheetStrings bottomSheetStrings,
             @NoAccountSigninMode int noAccountSigninMode,
+            @WithAccountSigninMode int withAccountSigninMode,
             @HistoryOptInMode int historyOptInMode,
-            @SigninAccessPoint int signinAccessPoint) {
+            @SigninAccessPoint int signinAccessPoint,
+            boolean isHistorySyncDedicatedFlow) {
         mWindowAndroid = windowAndroid;
         mActivity = activity;
         mDelegate = delegate;
@@ -127,9 +181,12 @@ public class SigninAndHistoryOptInCoordinator
         mProfileSupplier = profileSupplier;
         mProfileSupplier.onAvailable(this::onProfileAvailable);
         mModalDialogManagerSupplier = modalDialogManagerSupplier;
+        mBottomSheetStrings = bottomSheetStrings;
         mNoAccountSigninMode = noAccountSigninMode;
+        mWithAccountSigninMode = withAccountSigninMode;
         mHistoryOptInMode = historyOptInMode;
         mSigninAccessPoint = signinAccessPoint;
+        mIsHistorySyncDedicatedFlow = isHistorySyncDedicatedFlow;
         mContainerView =
                 (ViewGroup)
                         LayoutInflater.from(mActivity)
@@ -138,17 +195,50 @@ public class SigninAndHistoryOptInCoordinator
         // TODO(crbug.com/41493768): Implement the loading state UI.
     }
 
-    /** Called when the sign-in successfully finishes. */
+    /**
+     * Called when an account is added via Google Play Services "add account" flow started at the
+     * activity level.
+     */
+    public void onAccountAdded(@NonNull String accountEmail) {
+        showSigninBottomSheet();
+        mAccountPickerCoordinator.onAccountAdded(accountEmail);
+    }
+
+    /** Implements {@link SigninAccountPickerCoordinator.Delegate}. */
+    @Override
+    public void addAccount() {
+        mDelegate.addAccount();
+    }
+
+    /** Implements {@link SigninAccountPickerCoordinator.Delegate}. */
     @Override
     public void onSignInComplete() {
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.REPLACE_SYNC_PROMOS_WITH_SIGN_IN_PROMOS)
+                && SyncFeatureMap.isEnabled(
+                        SyncFeatureMap.ENABLE_BOOKMARK_FOLDERS_FOR_ACCOUNT_STORAGE)
+                && mSigninAccessPoint == SigninAccessPoint.BOOKMARK_MANAGER) {
+            Profile profile = mProfileSupplier.get();
+            SyncService syncService = SyncServiceFactory.getForProfile(profile);
+            syncService.setSelectedType(UserSelectableType.BOOKMARKS, true);
+            syncService.setSelectedType(UserSelectableType.READING_LIST, true);
+        }
+
+        if (mAccountPickerCoordinator == null) {
+            return;
+        }
+
         mAccountPickerCoordinator.destroy();
         mAccountPickerCoordinator = null;
         showHistoryOptInOrFinish();
     }
 
-    /** Called when the sign-in is aborted. */
+    /** Implements {@link SigninAccountPickerCoordinator.Delegate}. */
     @Override
     public void onSignInCancel() {
+        if (mAccountPickerCoordinator == null) {
+            return;
+        }
+
         mAccountPickerCoordinator.destroy();
         mAccountPickerCoordinator = null;
         onFlowComplete();
@@ -173,6 +263,15 @@ public class SigninAndHistoryOptInCoordinator
         if (mHistorySyncCoordinator != null) {
             mHistorySyncCoordinator.destroy();
             mHistorySyncCoordinator = null;
+        }
+    }
+
+    public void switchHistorySyncLayout() {
+        if (mHistorySyncCoordinator != null) {
+            mHistorySyncCoordinator.destroy();
+            Profile profile = mProfileSupplier.get();
+            assert profile != null;
+            showDialogContentView(profile);
         }
     }
 
@@ -222,7 +321,8 @@ public class SigninAndHistoryOptInCoordinator
                                     showSigninBottomSheet();
                                     break;
                                 case NoAccountSigninMode.ADD_ACCOUNT:
-                                    showAddAccount();
+                                    addAccount();
+                                    mDidShowSigninStep = true;
                                     break;
                                 case NoAccountSigninMode.NO_SIGNIN:
                                     // TODO(crbug.com/41493768): Implement the error state UI.
@@ -235,6 +335,15 @@ public class SigninAndHistoryOptInCoordinator
     private void showSigninBottomSheet() {
         SigninManager signinManager =
                 IdentityServicesProvider.get().getSigninManager(mProfileSupplier.get());
+        @AccountPickerLaunchMode int accountPickerMode = AccountPickerLaunchMode.DEFAULT;
+        switch (mWithAccountSigninMode) {
+            case WithAccountSigninMode.DEFAULT_ACCOUNT_BOTTOM_SHEET:
+                accountPickerMode = AccountPickerLaunchMode.DEFAULT;
+                break;
+            case WithAccountSigninMode.CHOOSE_ACCOUNT_BOTTOM_SHEET:
+                accountPickerMode = AccountPickerLaunchMode.CHOOSE_ACCOUNT;
+                break;
+        }
         mAccountPickerCoordinator =
                 new SigninAccountPickerCoordinator(
                         mWindowAndroid,
@@ -243,13 +352,10 @@ public class SigninAndHistoryOptInCoordinator
                         this,
                         mDeviceLockActivityLauncher,
                         signinManager,
+                        mBottomSheetStrings,
+                        accountPickerMode,
                         mSigninAccessPoint);
-    }
-
-    private void showAddAccount() {
-        // TODO(crbug.com/41493767): Implement the no-account sign-in flow.
-        assert false : "Not implemented.";
-        onFlowComplete();
+        mDidShowSigninStep = true;
     }
 
     private void showHistoryOptInOrFinish() {
@@ -260,18 +366,25 @@ public class SigninAndHistoryOptInCoordinator
             case HistoryOptInMode.OPTIONAL:
                 // TODO(crbug.com/40944119): Show history opt-in only if it's not suppressed.
             case HistoryOptInMode.REQUIRED:
-                showHistoryOptInDialog();
+                maybeShowHistoryOptInDialog();
                 break;
         }
     }
 
-    private void showHistoryOptInDialog() {
+    private void maybeShowHistoryOptInDialog() {
+        Profile profile = mProfileSupplier.get();
+        assert profile != null;
+        if (!shouldShowHistorySync(profile)) {
+            HistorySyncHelper historySyncHelper = HistorySyncHelper.getForProfile(profile);
+            historySyncHelper.recordHistorySyncNotShown(mSigninAccessPoint);
+            onFlowComplete();
+            return;
+        }
         ModalDialogManager manager = mModalDialogManagerSupplier.get();
         assert manager != null;
 
-        PropertyModel dialogModel =
+        mDialogModel =
                 new PropertyModel.Builder(ModalDialogProperties.ALL_KEYS)
-                        .with(ModalDialogProperties.CUSTOM_VIEW, getDialogContentView())
                         .with(ModalDialogProperties.CANCEL_ON_TOUCH_OUTSIDE, false)
                         .with(
                                 ModalDialogProperties.DIALOG_STYLES,
@@ -300,7 +413,6 @@ public class SigninAndHistoryOptInCoordinator
                                 new OnBackPressedCallback(true) {
                                     @Override
                                     public void handleOnBackPressed() {
-                                        // TODO(crbug.com/41493758): Better handle back press.
                                         if (mHistorySyncCoordinator != null) {
                                             dismissHistorySync();
                                         } else {
@@ -310,28 +422,35 @@ public class SigninAndHistoryOptInCoordinator
                                 })
                         .build();
 
+        showDialogContentView(profile);
+    }
+
+    private void showDialogContentView(Profile profile) {
+        mHistorySyncCoordinator =
+                new HistorySyncCoordinator(
+                        mActivity,
+                        this,
+                        profile,
+                        mSigninAccessPoint,
+                        mDidShowSigninStep,
+                        mDidShowSigninStep && mIsHistorySyncDedicatedFlow,
+                        null);
+        assert mDialogModel != null;
+        mDialogModel.set(ModalDialogProperties.CUSTOM_VIEW, mHistorySyncCoordinator.getView());
+        ModalDialogManager manager = mModalDialogManagerSupplier.get();
+        assert manager != null;
         manager.showDialog(
-                dialogModel,
+                mDialogModel,
                 ModalDialogManager.ModalDialogType.APP,
                 ModalDialogManager.ModalDialogPriority.VERY_HIGH);
     }
 
-    private @NonNull View getDialogContentView() {
-        Profile profile = mProfileSupplier.get();
-        assert profile != null;
-        mHistorySyncCoordinator =
-                new HistorySyncCoordinator(mActivity, this, profile, mSigninAccessPoint);
-        return mHistorySyncCoordinator.getView();
+    private static boolean shouldShowHistorySync(Profile profile) {
+        HistorySyncHelper historySyncHelper = HistorySyncHelper.getForProfile(profile);
+        return !historySyncHelper.shouldSuppressHistorySync();
     }
 
     private void onFlowComplete() {
-        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.REPLACE_SYNC_PROMOS_WITH_SIGN_IN_PROMOS)
-                && mSigninAccessPoint == SigninAccessPoint.BOOKMARK_MANAGER) {
-            Profile profile = mProfileSupplier.get();
-            SyncService syncService = SyncServiceFactory.getForProfile(profile);
-            syncService.setSelectedType(UserSelectableType.BOOKMARKS, true);
-            syncService.setSelectedType(UserSelectableType.READING_LIST, true);
-        }
         mDelegate.onFlowComplete();
     }
 }

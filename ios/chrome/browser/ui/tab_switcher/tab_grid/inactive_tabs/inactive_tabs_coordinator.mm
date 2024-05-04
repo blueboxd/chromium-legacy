@@ -187,7 +187,7 @@ const base::TimeDelta kPopUIDelay = base::Seconds(0.3);
       tabContextMenuDelegate:self.tabContextMenuDelegate];
 
   Browser* browser = self.browser;
-  SnapshotStorage* snapshotStorage =
+  SnapshotStorageWrapper* snapshotStorage =
       SnapshotBrowserAgent::FromBrowser(browser)->snapshot_storage();
   self.mediator = [[InactiveTabsMediator alloc]
       initWithWebStateList:browser->GetWebStateList()
@@ -270,6 +270,8 @@ const base::TimeDelta kPopUIDelay = base::Seconds(0.3);
   if (self.presentingSettings) {
     [self closeSettings];
   }
+  [_actionSheetCoordinator stop];
+  _actionSheetCoordinator = nil;
   [self.viewController.gridViewController dismissModals];
 
   // Unhide the snapshot.
@@ -300,6 +302,11 @@ const base::TimeDelta kPopUIDelay = base::Seconds(0.3);
 }
 
 - (void)gridViewController:(BaseGridViewController*)gridViewController
+            didSelectGroup:(const TabGroup*)group {
+  NOTREACHED_NORETURN();
+}
+
+- (void)gridViewController:(BaseGridViewController*)gridViewController
         didCloseItemWithID:(web::WebStateID)itemID {
   __weak __typeof(self) weakSelf = self;
   auto closeItem = ^{
@@ -322,9 +329,8 @@ const base::TimeDelta kPopUIDelay = base::Seconds(0.3);
   }
 }
 
-- (void)gridViewController:(BaseGridViewController*)gridViewController
-         didMoveItemWithID:(web::WebStateID)itemID
-                   toIndex:(NSUInteger)destinationIndex {
+- (void)gridViewControllerDidMoveItem:
+    (BaseGridViewController*)gridViewController {
   NOTREACHED();
 }
 
@@ -340,19 +346,14 @@ const base::TimeDelta kPopUIDelay = base::Seconds(0.3);
   // No op.
 }
 
-- (void)didChangeLastItemVisibilityInGridViewController:
+- (void)gridViewControllerDragSessionWillBeginForTab:
     (BaseGridViewController*)gridViewController {
   // No op.
 }
 
-- (void)gridViewControllerWillBeginDragging:
+- (void)gridViewControllerDragSessionWillBeginForTabGroup:
     (BaseGridViewController*)gridViewController {
-  // No op.
-}
-
-- (void)gridViewControllerDragSessionWillBegin:
-    (BaseGridViewController*)gridViewController {
-  // No op.
+  // No-op.
 }
 
 - (void)gridViewControllerDragSessionDidEnd:
@@ -383,6 +384,11 @@ const base::TimeDelta kPopUIDelay = base::Seconds(0.3);
 - (void)didTapInactiveTabsSettingsLinkInGridViewController:
     (BaseGridViewController*)gridViewController {
   [self presentSettings];
+}
+
+- (void)gridViewController:(BaseGridViewController*)gridViewController
+    didRequestContextMenuForItemWithID:(web::WebStateID)itemID {
+  // No-op.
 }
 
 #pragma mark - InactiveTabsUserEducationCoordinatorDelegate

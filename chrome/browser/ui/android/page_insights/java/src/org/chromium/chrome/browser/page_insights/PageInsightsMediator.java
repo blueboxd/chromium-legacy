@@ -36,7 +36,6 @@ import org.chromium.chrome.browser.browser_controls.BrowserControlsSizer;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsUtils;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
-import org.chromium.chrome.browser.page_insights.SheetStateTranslator.PageInsightsSheetState;
 import org.chromium.chrome.browser.page_insights.proto.Config.PageInsightsConfig;
 import org.chromium.chrome.browser.page_insights.proto.IntentParams.PageInsightsIntentParams;
 import org.chromium.chrome.browser.page_insights.proto.PageInsights.Page;
@@ -58,7 +57,6 @@ import org.chromium.components.browser_ui.bottomsheet.EmptyBottomSheetObserver;
 import org.chromium.components.browser_ui.bottomsheet.ExpandedSheetHelper;
 import org.chromium.components.browser_ui.bottomsheet.ManagedBottomSheetController;
 import org.chromium.components.browser_ui.widget.gesture.BackPressHandler;
-import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.NavigationEntry;
@@ -76,11 +74,12 @@ import java.util.function.BooleanSupplier;
 /**
  * PageInsights mediator component listening to various external events to update UI, internal
  * states accordingly:
+ *
  * <ul>
- * <li> Observes browser controls for hide-on-scroll behavior
- * <li> Closes the sheet when the Tab page gets reloaded
- * <li> Resizes contents upon Sheet offset/state changes
- * <li> Adjusts the top corner radius to the sheet height
+ *   <li>Observes browser controls for hide-on-scroll behavior
+ *   <li>Closes the sheet when the Tab page gets reloaded
+ *   <li>Resizes contents upon Sheet offset/state changes
+ *   <li>Adjusts the top corner radius to the sheet height
  * </ul>
  */
 public class PageInsightsMediator extends EmptyTabObserver implements BottomSheetObserver {
@@ -176,7 +175,11 @@ public class PageInsightsMediator extends EmptyTabObserver implements BottomShee
     // for testing.
     private int mAutoTriggerDelayMs;
 
-    private int mOldPihState = PageInsightsSheetState.NONE;
+    private int mOldState = SheetState.NONE;
+
+    // True if since the Page Insights component was created there has been at least one page load
+    // started.
+    private boolean mHasPageLoadBeenStartedSinceCreation;
 
     @IntDef({
         AutoTriggerStage.CANCELLED_OR_NOT_STARTED,
@@ -293,14 +296,13 @@ public class PageInsightsMediator extends EmptyTabObserver implements BottomShee
                 new EmptyBottomSheetObserver() {
                     @Override
                     public void onSheetStateChanged(@SheetState int newState, int reason) {
-                        // The PEEK state check is performed on the other bottom sheets
                         onOtherBottomSheetStateChanged(newState >= SheetState.PEEK);
                     }
                 };
         otherBottomSheetController.addObserver(mOtherBottomSheetObserver);
         mIsPageInsightsEnabledSupplier = isPageInsightsEnabledSupplier;
         mPageInsightsConfigProvider = pageInsightsConfigProvider;
-        mPageInsightsDataLoader = new PageInsightsDataLoader();
+        mPageInsightsDataLoader = new PageInsightsDataLoader(profileSupplier);
         mIsAccessibilityEnabled = ChromeAccessibilityUtil.get().isAccessibilityEnabled();
         mSurfaceRendererContextValues =
                 PageInsightsActionHandlerImpl.createContextValues(
@@ -386,10 +388,7 @@ public class PageInsightsMediator extends EmptyTabObserver implements BottomShee
         // See if we need to hide the sheet content temporarily while another bottom UI is
         // launched. No need to hide if not in peek/full state or in scrolled-away state,
         // hence not visible.
-        // TODO - update once COLLAPSED state is supported
-        return mSheetController.getSheetState()
-                        >= SheetStateTranslator.toBottomSheetState(PageInsightsSheetState.PEEK)
-                && !isInScrolledAwayState();
+        return mSheetController.getSheetState() >= SheetState.PEEK && !isInScrolledAwayState();
     }
 
     private boolean isInScrolledAwayState() {
@@ -397,9 +396,7 @@ public class PageInsightsMediator extends EmptyTabObserver implements BottomShee
     }
 
     private boolean handleBottomSheetTap() {
-        // TODO - update once COLLAPSED state is supported
-        if (mSheetController.getSheetState()
-                == SheetStateTranslator.toBottomSheetState(PageInsightsSheetState.PEEK)) {
+        if (mSheetController.getSheetState() == BottomSheetController.SheetState.PEEK) {
             mSheetController.expandSheet();
             return true;
         }
@@ -407,15 +404,11 @@ public class PageInsightsMediator extends EmptyTabObserver implements BottomShee
     }
 
     private boolean shouldInterceptBottomSheetTouchEvents() {
-        // TODO - update once COLLAPSED state is supported
-        return mSheetController.getSheetState()
-                == SheetStateTranslator.toBottomSheetState(PageInsightsSheetState.PEEK);
+        return mSheetController.getSheetState() == BottomSheetController.SheetState.PEEK;
     }
 
     private boolean handleBackPress() {
-        // TODO - update once COLLAPSED state is supported
-        if (mSheetController.getSheetState()
-                != SheetStateTranslator.toBottomSheetState(PageInsightsSheetState.EXPANDED)) {
+        if (mSheetController.getSheetState() != BottomSheetController.SheetState.FULL) {
             return false;
         }
 
@@ -439,6 +432,7 @@ public class PageInsightsMediator extends EmptyTabObserver implements BottomShee
     @Override
     public void onPageLoadStarted(Tab tab, GURL url) {
         Log.v(TAG, "onPageLoadStarted");
+        mHasPageLoadBeenStartedSinceCreation = true;
         onNewTabOrPage();
     }
 
@@ -495,7 +489,10 @@ public class PageInsightsMediator extends EmptyTabObserver implements BottomShee
         // triggering with these options is better than not triggering at all.
         PageInsightsConfig config =
                 mPageInsightsConfigProvider.get(
-                        mCurrentNavigationHandle, getLastCommittedNavigationEntry(tab));
+                        new PageInsightsConfigRequest(
+                                mCurrentNavigationHandle,
+                                getLastCommittedNavigationEntry(tab),
+                                mHasPageLoadBeenStartedSinceCreation));
         if (!shouldFetchDataForAutoTrigger(config)) {
             mAutoTriggerStage = AutoTriggerStage.CANCELLED_OR_NOT_STARTED;
             return;
@@ -623,7 +620,10 @@ public class PageInsightsMediator extends EmptyTabObserver implements BottomShee
         mSheetController.requestShowContent(mSheetContent, true);
         PageInsightsConfig config =
                 mPageInsightsConfigProvider.get(
-                        mCurrentNavigationHandle, getLastCommittedNavigationEntry(tab));
+                        new PageInsightsConfigRequest(
+                                mCurrentNavigationHandle,
+                                getLastCommittedNavigationEntry(tab),
+                                mHasPageLoadBeenStartedSinceCreation));
         mPageInsightsDataLoader.loadInsightsData(
                 tab.getUrl(),
                 /* isUserInitiated= */ true,
@@ -699,14 +699,12 @@ public class PageInsightsMediator extends EmptyTabObserver implements BottomShee
 
     @Override
     public void onSheetStateChanged(@SheetState int newState, @StateChangeReason int reason) {
-        int newPihState = SheetStateTranslator.toPageInsightsSheetState(newState);
-
-        if (newPihState == PageInsightsSheetState.HIDDEN) {
+        if (newState == SheetState.HIDDEN) {
             mWillHandleBackPressSupplier.set(false);
             if (mResizeInSync) mSheetInset.set(0);
             setBottomControlsHeight(mSheetController.getCurrentOffset());
-            handleDismissal(mOldPihState, reason);
-        } else if (newPihState == PageInsightsSheetState.PEEK) {
+            handleDismissal(mOldState, reason);
+        } else if (newState == SheetState.PEEK) {
             mWillHandleBackPressSupplier.set(false);
             if (mResizeInSync) mSheetInset.set(0);
             setBottomControlsHeight(mSheetController.getCurrentOffset());
@@ -716,14 +714,14 @@ public class PageInsightsMediator extends EmptyTabObserver implements BottomShee
             logPageInsightsEvent(PageInsightsEvent.STATE_PEEK);
             // We don't log peek state to XSurface here, as its BOTTOM_SHEET_PEEKING event is only
             // intended for when the feature initially auto-peeks.
-        } else if (newPihState == PageInsightsSheetState.EXPANDED) {
+        } else if (newState == SheetState.FULL) {
             mWillHandleBackPressSupplier.set(true);
             setBackgroundColors(/* ratioOfCompletionFromPeekToExpanded= */ 1.0f);
-            if (mOldPihState == PageInsightsSheetState.PEEK && mCanReturnToPeekAfterExpansion) {
+            if (mOldState == SheetState.PEEK && mCanReturnToPeekAfterExpansion) {
                 // Disable swiping to dismiss, so that swiping/scrim-tapping returns to peek state
                 // instead.
                 mSheetContent.setSwipeToDismissEnabled(false);
-            } else if (mOldPihState != PageInsightsSheetState.EXPANDED) {
+            } else if (mOldState != SheetState.FULL) {
                 // Enable swiping to dismiss, and also explicitly disable peek state. If peek state
                 // remains enabled then some lighter swipes can return to it, even with
                 // swipeToDismissEnabled true.
@@ -736,14 +734,12 @@ public class PageInsightsMediator extends EmptyTabObserver implements BottomShee
             mWillHandleBackPressSupplier.set(false);
         }
 
-        if (newPihState != PageInsightsSheetState.NONE
-                && newPihState != PageInsightsSheetState.SCROLLING) {
-            mOldPihState = newPihState;
+        if (newState != SheetState.NONE && newState != SheetState.SCROLLING) {
+            mOldState = newState;
         }
     }
 
-    private void handleDismissal(
-            @PageInsightsSheetState int oldState, @StateChangeReason int reason) {
+    private void handleDismissal(@SheetState int oldState, @StateChangeReason int reason) {
         mIsShowingChildView = false;
 
         if (mCurrentFeedView != null) {
@@ -756,10 +752,10 @@ public class PageInsightsMediator extends EmptyTabObserver implements BottomShee
         }
 
         if (USER_DISMISSAL_REASONS.contains(reason)) {
-            if (oldState == PageInsightsSheetState.PEEK) {
+            if (mOldState == SheetState.PEEK) {
                 logPageInsightsEvent(PageInsightsEvent.DISMISS_PEEK);
                 getSurfaceRenderer().onEvent(DISMISSED_FROM_PEEKING_STATE);
-            } else if (oldState == PageInsightsSheetState.EXPANDED) {
+            } else if (mOldState >= SheetState.HALF) {
                 logPageInsightsEvent(PageInsightsEvent.DISMISS_EXPANDED);
             }
         }
@@ -781,16 +777,13 @@ public class PageInsightsMediator extends EmptyTabObserver implements BottomShee
 
     @Override
     public void onSheetClosed(@StateChangeReason int reason) {
-        // Keep same logic as the default scrim implementation
-        hideScrim();
         mExpandedSheetHelper.onSheetCollapsed();
     }
 
     @Override
     public void onSheetOffsetChanged(float heightFraction, float offsetPx) {
         float peekHeightRatio = getPeekHeightRatio();
-        if (mSheetController.getSheetState()
-                == SheetStateTranslator.toBottomSheetState(PageInsightsSheetState.SCROLLING)) {
+        if (mSheetController.getSheetState() == SheetState.SCROLLING) {
             if (mResizeInSync) {
                 // Calling |setBottomControlsHeight| to resize WebContents per each offset change
                 // is janky. While the sheet is being dragged, let the app-wide inset supplier
@@ -815,13 +808,6 @@ public class PageInsightsMediator extends EmptyTabObserver implements BottomShee
         if (0 <= ratioOfCompletionFromPeekToExpanded
                 && ratioOfCompletionFromPeekToExpanded <= 1.f) {
             setCornerRadiusPx((int) (ratioOfCompletionFromPeekToExpanded * mMaxCornerRadiusPx));
-        }
-
-        // show scrim only when bottom sheet is greater than peek state
-        if (ratioOfCompletionFromPeekToExpanded > 0.f) {
-            showScrim();
-        } else {
-            hideScrim();
         }
     }
 
@@ -873,21 +859,6 @@ public class PageInsightsMediator extends EmptyTabObserver implements BottomShee
         }
         if (mPageInsightsDataLoader != null) {
             mPageInsightsDataLoader.cancelCallback();
-        }
-        hideScrim();
-    }
-
-    private void showScrim() {
-        ScrimCoordinator coordinator = mSheetController.getScrimCoordinator();
-        if (coordinator != null && !coordinator.isShowingScrim()) {
-            coordinator.showScrim(mSheetController.createScrimParams());
-        }
-    }
-
-    private void hideScrim() {
-        ScrimCoordinator coordinator = mSheetController.getScrimCoordinator();
-        if (coordinator != null && coordinator.isShowingScrim()) {
-            coordinator.hideScrim(/* animate= */ true);
         }
     }
 

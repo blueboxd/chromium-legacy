@@ -58,7 +58,6 @@ public class ExploreSurfaceCoordinator {
     private final JankTracker mJankTracker;
     private final FeedSurfaceCoordinator mFeedSurfaceCoordinator;
     private final ExploreSurfaceNavigationDelegate mExploreSurfaceNavigationDelegate;
-    private final boolean mIsPlaceholderShownInitially;
     private final Profile mProfile;
 
     private long mContentFirstAvailableTimeMs;
@@ -73,7 +72,6 @@ public class ExploreSurfaceCoordinator {
             Profile profile,
             Activity activity,
             boolean isInNightMode,
-            boolean isPlaceholderShown,
             BottomSheetController bottomSheetController,
             ScrollableContainerDelegate scrollableContainerDelegate,
             @NewTabPageLaunchOrigin int launchOrigin,
@@ -91,7 +89,6 @@ public class ExploreSurfaceCoordinator {
         mActivity = activity;
         mJankTracker = jankTracker;
         mExploreSurfaceNavigationDelegate = new ExploreSurfaceNavigationDelegate(parentTabSupplier);
-        mIsPlaceholderShownInitially = isPlaceholderShown;
         mProfile = profile;
 
         mFeedSurfaceCoordinator =
@@ -108,7 +105,6 @@ public class ExploreSurfaceCoordinator {
                         isInNightMode,
                         /* delegate= */ new ExploreFeedSurfaceDelegate(),
                         profile,
-                        isPlaceholderShown,
                         bottomSheetController,
                         shareDelegateSupplier,
                         scrollableContainerDelegate,
@@ -129,8 +125,8 @@ public class ExploreSurfaceCoordinator {
                         tabStripHeightSupplier);
 
         mFeedSurfaceCoordinator.getView().setId(R.id.start_surface_explore_view);
-        // TODO(crbug.com/982018): Customize surface background for incognito and dark mode.
-        // TODO(crbug.com/982018): Hide signin promo UI in incognito mode.
+        // TODO(crbug.com/40635216): Customize surface background for incognito and dark mode.
+        // TODO(crbug.com/40635216): Hide signin promo UI in incognito mode.
     }
 
     public void destroy() {
@@ -153,9 +149,7 @@ public class ExploreSurfaceCoordinator {
             mHasPendingUmaRecording = true;
         }
         StartSurfaceConfiguration.recordHistogram(
-                FEED_STREAM_CREATED_TIME_MS_UMA,
-                mStreamCreatedTimeMs - activityCreationTimeMs,
-                mIsPlaceholderShownInitially);
+                FEED_STREAM_CREATED_TIME_MS_UMA, mStreamCreatedTimeMs - activityCreationTimeMs);
     }
 
     private boolean maybeRecordContentLoadingTime() {
@@ -163,8 +157,7 @@ public class ExploreSurfaceCoordinator {
 
         StartSurfaceConfiguration.recordHistogram(
                 FEED_CONTENT_FIRST_LOADED_TIME_MS_UMA,
-                mContentFirstAvailableTimeMs - mActivityCreationTimeMs,
-                mIsPlaceholderShownInitially);
+                mContentFirstAvailableTimeMs - mActivityCreationTimeMs);
         return true;
     }
 

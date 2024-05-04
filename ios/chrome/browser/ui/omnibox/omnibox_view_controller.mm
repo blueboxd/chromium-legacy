@@ -13,7 +13,6 @@
 #import "components/omnibox/browser/omnibox_field_trial.h"
 #import "components/open_from_clipboard/clipboard_recent_content.h"
 #import "components/strings/grit/components_strings.h"
-#import "ios/chrome/browser/default_browser/model/utils.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_constants.h"
@@ -52,7 +51,7 @@ using base::UserMetricsAction;
 
 // YES if we are already forwarding an OnDidChange() message to the edit view.
 // Needed to prevent infinite recursion.
-// TODO(crbug.com/1015413): There must be a better way.
+// TODO(crbug.com/40103694): There must be a better way.
 @property(nonatomic, assign) BOOL forwardingOnDidChange;
 
 // YES if this text field is currently processing a user-initiated event,
@@ -407,6 +406,18 @@ using base::UserMetricsAction;
   _textChangeDelegate->OnDeleteBackward();
 }
 
+- (void)textFieldDidAcceptAutocomplete:(OmniboxTextFieldIOS*)textField {
+  if (_textChangeDelegate) {
+    _textChangeDelegate->OnAcceptAutocomplete();
+  }
+}
+
+- (void)textFieldDidRemoveAdditionalText:(OmniboxTextFieldIOS*)textField {
+  if (_textChangeDelegate) {
+    _textChangeDelegate->OnRemoveAdditionalText();
+  }
+}
+
 - (BOOL)canPasteItemProviders:(NSArray<NSItemProvider*>*)itemProviders {
   for (NSItemProvider* itemProvider in itemProviders) {
     if (((self.searchByImageEnabled || self.shouldUseLensInMenu) &&
@@ -515,6 +526,11 @@ using base::UserMetricsAction;
 
 - (void)updateText:(NSAttributedString*)text {
   [self.textField setText:text userTextLength:text.length];
+}
+
+- (void)updateAdditionalText:(NSAttributedString*)additionalText {
+  CHECK(IsRichAutocompletionEnabled());
+  self.textField.additionalText = additionalText;
 }
 
 #pragma mark - EditViewAnimatee
@@ -695,18 +711,12 @@ using base::UserMetricsAction;
 }
 
 - (void)visitCopiedLink:(id)sender {
-  // A search using clipboard link is activity that should indicate a user
-  // that would be interested in setting Chrome as the default browser.
-  LogCopyPasteInOmniboxForDefaultBrowserPromo();
   RecordAction(UserMetricsAction("Mobile.OmniboxContextMenu.VisitCopiedLink"));
   self.omniboxInteractedWhileFocused = YES;
   [self.pasteDelegate didTapVisitCopiedLink];
 }
 
 - (void)searchCopiedText:(id)sender {
-  // A search using clipboard text is activity that should indicate a user
-  // that would be interested in setting Chrome as the default browser.
-  LogCopyPasteInOmniboxForDefaultBrowserPromo();
   RecordAction(UserMetricsAction("Mobile.OmniboxContextMenu.SearchCopiedText"));
   self.omniboxInteractedWhileFocused = YES;
   [self.pasteDelegate didTapSearchCopiedText];
@@ -731,6 +741,10 @@ using base::UserMetricsAction;
 
   // Dismiss any inline autocomplete. The user expectation is to not have it.
   [self.textField clearAutocompleteText];
+
+  if (IsRichAutocompletionEnabled() && _textChangeDelegate) {
+    _textChangeDelegate->OnRemoveAdditionalText();
+  }
 }
 
 @end

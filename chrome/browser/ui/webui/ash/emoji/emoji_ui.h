@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/webui/ash/emoji/new_window_proxy.mojom.h"
 #include "chrome/browser/ui/webui/ash/emoji/seal.h"
 #include "chrome/browser/ui/webui/ash/emoji/seal.mojom.h"
+#include "chrome/browser/ui/webui/top_chrome/top_chrome_web_ui_controller.h"
 #include "chrome/browser/ui/webui/webui_load_timer.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chromeos/ash/components/emoji/emoji_search.h"
@@ -24,12 +25,12 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "ui/base/ime/text_input_client.h"
-#include "ui/webui/mojo_bubble_web_ui_controller.h"
 #include "ui/webui/resources/cr_components/color_change_listener/color_change_listener.mojom.h"
 
 namespace ui {
 class ColorChangeHandler;
 enum class EmojiPickerCategory;
+enum class EmojiPickerFocusBehavior;
 }  // namespace ui
 
 namespace ash {
@@ -44,7 +45,7 @@ class EmojiUIConfig : public content::DefaultWebUIConfig<EmojiUI> {
                            chrome::kChromeUIEmojiPickerHost) {}
 };
 
-class EmojiUI : public ui::MojoBubbleWebUIController,
+class EmojiUI : public TopChromeWebUIController,
                 public emoji_picker::mojom::PageHandlerFactory {
  public:
   explicit EmojiUI(content::WebUI* web_ui);
@@ -52,8 +53,11 @@ class EmojiUI : public ui::MojoBubbleWebUIController,
   EmojiUI& operator=(const EmojiUI&) = delete;
   ~EmojiUI() override;
 
-  static bool ShouldShow(const ui::TextInputClient* input_client);
-  static void Show(ui::EmojiPickerCategory category);
+  static bool ShouldShow(const ui::TextInputClient* input_client,
+                         ui::EmojiPickerFocusBehavior focus_behavior);
+  static void Show(ui::EmojiPickerCategory category,
+                   ui::EmojiPickerFocusBehavior focus_behavior,
+                   const std::string& initial_query);
 
   // Instantiates the implementor of the mojom::PageHandler mojo interface
   // passing the pending receiver that will be internally bound.
@@ -96,6 +100,7 @@ class EmojiUI : public ui::MojoBubbleWebUIController,
   bool incognito_mode_ = false;
   bool no_text_field_ = false;
   emoji_picker::mojom::Category initial_category_;
+  std::string initial_query_;
 
   WEB_UI_CONTROLLER_TYPE_DECL();
 };

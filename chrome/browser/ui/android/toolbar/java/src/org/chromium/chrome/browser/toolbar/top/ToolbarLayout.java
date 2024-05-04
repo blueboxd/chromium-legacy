@@ -58,9 +58,11 @@ import org.chromium.chrome.browser.toolbar.top.TopToolbarCoordinator.ToolbarColo
 import org.chromium.chrome.browser.toolbar.top.TopToolbarCoordinator.UrlExpansionObserver;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuButtonHelper;
 import org.chromium.chrome.browser.ui.theme.BrandedColorScheme;
+import org.chromium.chrome.browser.user_education.UserEducationHelper;
 import org.chromium.chrome.browser.util.BrowserUiUtils;
 import org.chromium.chrome.browser.util.BrowserUiUtils.HostSurface;
 import org.chromium.chrome.browser.util.BrowserUiUtils.ModuleTypeOnStartAndNtp;
+import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.ViewUtils;
 import org.chromium.ui.util.TokenHolder;
@@ -138,13 +140,16 @@ public abstract class ToolbarLayout extends FrameLayout
 
     /**
      * Initialize the external dependencies required for view interaction.
+     *
      * @param toolbarDataProvider The provider for toolbar data.
-     * @param tabController       The controller that handles interactions with the tab.
+     * @param tabController The controller that handles interactions with the tab.
      * @param menuButtonCoordinator Coordinator for interacting with the MenuButton.
      * @param historyDelegate Delegate used to display navigation history.
      * @param partnerHomepageEnabledSupplier A supplier of a boolean indicating that partner
-     *        homepage is enabled.
+     *     homepage is enabled.
      * @param offlineDownloader Triggers downloading an offline page.
+     * @param userEducationHelper Helper for user education flows.
+     * @param trackerSupplier Provides a {@link Tracker} when available.
      */
     @CallSuper
     public void initialize(
@@ -153,7 +158,9 @@ public abstract class ToolbarLayout extends FrameLayout
             MenuButtonCoordinator menuButtonCoordinator,
             HistoryDelegate historyDelegate,
             BooleanSupplier partnerHomepageEnabledSupplier,
-            OfflineDownloader offlineDownloader) {
+            OfflineDownloader offlineDownloader,
+            UserEducationHelper userEducationHelper,
+            ObservableSupplier<Tracker> trackerSupplier) {
         mToolbarDataProvider = toolbarDataProvider;
         mToolbarTabController = tabController;
         mMenuButtonCoordinator = menuButtonCoordinator;
@@ -241,13 +248,17 @@ public abstract class ToolbarLayout extends FrameLayout
     }
 
     @Override
-    public void onTintChanged(ColorStateList tint, @BrandedColorScheme int brandedColorScheme) {}
+    public void onTintChanged(
+            ColorStateList tint,
+            ColorStateList activityFocusTint,
+            @BrandedColorScheme int brandedColorScheme) {}
 
     @Override
     public void onThemeColorChanged(@ColorInt int color, boolean shouldAnimate) {}
 
     /**
      * Set the height that the progress bar should be.
+     *
      * @return The progress bar height in px.
      */
     int getProgressBarHeight() {
@@ -400,7 +411,7 @@ public abstract class ToolbarLayout extends FrameLayout
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
-        // TODO(crbug.com/1021877): lazy initialize progress bar.
+        // TODO(crbug.com/40657306): lazy initialize progress bar.
         // Posting adding progress bar can prevent parent view group from using a stale children
         // count, which can cause a crash in rare cases.
         post(this::addProgressBarToHierarchy);
@@ -803,11 +814,12 @@ public abstract class ToolbarLayout extends FrameLayout
 
     /**
      * Sets the toolbar hairline color, if the toolbar has a hairline below it.
+     *
      * @param toolbarColor The toolbar color to base the hairline color on.
      */
     protected void setToolbarHairlineColor(@ColorInt int toolbarColor) {
         final ImageView shadow = getRootView().findViewById(R.id.toolbar_hairline);
-        // Tests don't always set this up. TODO(https://crbug.com/1365954): Refactor this dep.
+        // Tests don't always set this up. TODO(crbug.com/40866629): Refactor this dep.
         if (shadow != null) {
             shadow.setImageTintList(ColorStateList.valueOf(getToolbarHairlineColor(toolbarColor)));
         }
@@ -831,7 +843,7 @@ public abstract class ToolbarLayout extends FrameLayout
         mBrowserControlsVisibilityDelegate = controlsVisibilityDelegate;
     }
 
-    // TODO(crbug.com/1512232): Rework the API if this method is called by multiple clients.
+    // TODO(crbug.com/41484813): Rework the API if this method is called by multiple clients.
     protected void keepControlsShownForAnimation() {
         // isShown() being false implies that the toolbar isn't visible. We don't want to force it
         // back into visibility just so that we can show an animation.

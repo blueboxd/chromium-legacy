@@ -25,7 +25,6 @@
 #include "base/memory/raw_ptr_exclusion.h"
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
-#include "base/strings/string_piece.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -66,8 +65,7 @@ namespace net {
 
 class CertVerifyResult;
 class DatagramClientSocket;
-struct HostResolverEndpointResult;
-class NetLog;
+struct ConnectionEndpointMetadata;
 class QuicCryptoClientStreamFactory;
 class QuicServerInfo;
 class QuicSessionPool;
@@ -143,6 +141,30 @@ enum class ProbingResult {
   DISABLED_BY_NON_MIGRABLE_STREAM,  // Probing disabled by special stream.
   INTERNAL_ERROR,                   // Probing failed for internal reason.
   FAILURE,                          // Probing failed for other reason.
+};
+
+// All possible combinations of observed ECN codepoints in a session. Several of
+// these should not be sent by a well-behaved sender.
+// These values are persisted to logs. Entries should not be renumbered
+// and numeric values should never be reused.
+enum class EcnPermutations {
+  kUnknown = 0,
+  kNotEct = 1,
+  kEct1 = 2,
+  kNotEctEct1 = 3,
+  kEct0 = 4,
+  kNotEctEct0 = 5,
+  kEct1Ect0 = 6,
+  kNotEctEct1Ect0 = 7,
+  kCe = 8,
+  kNotEctCe = 9,
+  kEct1Ce = 10,
+  kNotEctEct1Ce = 11,
+  kEct0Ce = 12,
+  kNotEctEct0Ce = 13,
+  kEct1Ect0Ce = 14,
+  kNotEctEct1Ect0Ce = 15,
+  kMaxValue = kNotEctEct1Ect0Ce,
 };
 
 class NET_EXPORT_PRIVATE QuicChromiumClientSession
@@ -276,6 +298,12 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
     const std::set<std::string>& GetDnsAliasesForSessionKey(
         const QuicSessionKey& key) const;
 
+    // Returns the largest payload that will fit into a single MESSAGE frame at
+    // any point during the connection.  This assumes the version and
+    // connection ID lengths do not change. Returns zero if the session is
+    // closed.
+    quic::QuicPacketLength GetGuaranteedLargestMessagePayload() const;
+
 #if BUILDFLAG(ENABLE_WEBSOCKETS)
     // This method returns nullptr on failure, such as when a new bidirectional
     // stream could not be made.
@@ -399,7 +427,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
     // if |session_| is destroyed while the stream request is still pending.
     void OnRequestCompleteFailure(int rv);
 
-    raw_ptr<QuicChromiumClientSession::Handle> session_;
+    const raw_ptr<QuicChromiumClientSession::Handle> session_;
     const bool requires_confirmation_;
     CompletionOnceCallback callback_;
     std::unique_ptr<QuicChromiumClientStream::Handle> stream_;
@@ -555,6 +583,13 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   // the server and the current network support QUIC, as HTTP fallback can't
   // trigger (or at least will take longer) after a QUIC stream has successfully
   // been created.
+  //
+  // For situations where no host resolution took place (such as a proxied
+  // connection), the `dns_resolution_*_time` arguments should be equal and
+  // the current time, and `endpoint_result` should be an empty value, with an
+  // empty address list.
+  // TODO(crbug.com/332924003): Delete the |report_ecn| argument when the
+  // feature is deprecated.
   QuicChromiumClientSession(
       quic::QuicConnection* connection,
       std::unique_ptr<DatagramClientSocket> socket,
@@ -582,13 +617,15 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
       int cert_verify_flags,
       const quic::QuicConfig& config,
       std::unique_ptr<QuicCryptoClientConfigHandle> crypto_config,
+      const char* const connection_description,
       base::TimeTicks dns_resolution_start_time,
       base::TimeTicks dns_resolution_end_time,
       const base::TickClock* tick_clock,
       base::SequencedTaskRunner* task_runner,
       std::unique_ptr<SocketPerformanceWatcher> socket_performance_watcher,
-      const HostResolverEndpointResult& endpoint_result,
-      NetLog* net_log);
+      const ConnectionEndpointMetadata& metadata,
+      bool report_ecn,
+      const NetLogWithSource& net_log);
 
   QuicChromiumClientSession(const QuicChromiumClientSession&) = delete;
   QuicChromiumClientSession& operator=(const QuicChromiumClientSession&) =
@@ -722,7 +759,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   // MultiplexedSession methods:
   int GetRemoteEndpoint(IPEndPoint* endpoint) override;
   bool GetSSLInfo(SSLInfo* ssl_info) const override;
-  base::StringPiece GetAcceptChViaAlps(
+  std::string_view GetAcceptChViaAlps(
       const url::SchemeHostPort& scheme_host_port) const override;
 
   // Helper for CreateContextForMultiPortPath. Gets the result of
@@ -896,8 +933,8 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
  private:
   friend class test::QuicChromiumClientSessionPeer;
 
-  typedef std::set<raw_ptr<Handle, SetExperimental>> HandleSet;
-  typedef std::list<raw_ptr<StreamRequest, CtnExperimental>> StreamRequestQueue;
+  typedef std::set<raw_ptr<Handle>> HandleSet;
+  typedef std::list<raw_ptr<StreamRequest>> StreamRequestQueue;
 
   bool WasConnectionEverUsed();
 
@@ -1062,6 +1099,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   std::unique_ptr<CertVerifyResult> cert_verify_result_;
   bool pkp_bypassed_ = false;
   bool is_fatal_cert_error_ = false;
+  bool report_ecn_;
   HandleSet handles_;
   StreamRequestQueue stream_requests_;
   std::vector<CompletionOnceCallback> waiting_for_confirmation_callbacks_;
@@ -1116,6 +1154,19 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
       accept_ch_entries_received_via_alps_;
 
   std::vector<uint8_t> ech_config_list_;
+
+  // Bitmap of incoming IP ECN marks observed on this session. Bit 0 = Not-ECT,
+  // Bit 1 = ECT(1), Bit 2 = ECT(0), Bit 3 = CE. Reported to metrics at the
+  // end of the session.
+  uint8_t observed_incoming_ecn_ = 0;
+
+  // The number of incoming packets in this session before it observes a change
+  // in the incoming packet ECN marking.
+  uint64_t incoming_packets_before_ecn_transition_ = 0;
+
+  // When true, the session has observed a transition and can stop incrementing
+  // incoming_packets_before_ecn_transition_.
+  bool observed_ecn_transition_ = false;
 
   base::WeakPtrFactory<QuicChromiumClientSession> weak_factory_{this};
 };

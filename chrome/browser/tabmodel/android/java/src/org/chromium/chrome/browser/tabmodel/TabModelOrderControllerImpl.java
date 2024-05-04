@@ -13,7 +13,7 @@ import org.chromium.chrome.browser.tab.TabLaunchType;
  * Implementation of the TabModelOrderController based off of tab_strip_model_order_controller.cc
  * and tab_strip_model.cc
  *
- * TODO(crbug.com/1138005): Move to chrome/browser/tabmodel/internal when all usages are
+ * <p>TODO(crbug.com/40152902): Move to chrome/browser/tabmodel/internal when all usages are
  * modularized.
  */
 class TabModelOrderControllerImpl implements TabModelOrderController {
@@ -39,7 +39,8 @@ class TabModelOrderControllerImpl implements TabModelOrderController {
             forgetAllOpeners();
         }
 
-        // TODO(crbug/1383067): This is a bandaid fix to ensure tab groups are contiguous such that
+        // TODO(crbug.com/40877620): This is a bandaid fix to ensure tab groups are contiguous such
+        // that
         // no tabs within a group are separate from one another and that no tab that is not part of
         // a group can be added in-between members of a group. This doesn't address the issue of
         // moving tabs to be between members of a group, however when a group is moved it is moved
@@ -150,6 +151,7 @@ class TabModelOrderControllerImpl implements TabModelOrderController {
         return type != TabLaunchType.FROM_LONGPRESS_BACKGROUND
                         && type != TabLaunchType.FROM_LONGPRESS_BACKGROUND_IN_GROUP
                         && type != TabLaunchType.FROM_RECENT_TABS
+                        && type != TabLaunchType.FROM_SYNC_BACKGROUND
                 || (!mTabModelSelector.isIncognitoSelected() && isNewTabIncognito);
     }
 

@@ -31,6 +31,7 @@ import org.chromium.base.TraceEvent;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.ObservableSupplierImpl;
+import org.chromium.base.supplier.OneShotCallback;
 import org.chromium.base.supplier.OneshotSupplier;
 import org.chromium.base.supplier.OneshotSupplierImpl;
 import org.chromium.base.supplier.Supplier;
@@ -52,7 +53,6 @@ import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager;
 import org.chromium.chrome.browser.compositor.bottombar.ephemeraltab.EphemeralTabCoordinator;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerImpl;
-import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchManager;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchObserver;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchSelection;
@@ -98,10 +98,10 @@ import org.chromium.chrome.browser.omnibox.voice.VoiceRecognitionHandler.VoiceIn
 import org.chromium.chrome.browser.paint_preview.DemoPaintPreview;
 import org.chromium.chrome.browser.password_manager.ManagePasswordsReferrer;
 import org.chromium.chrome.browser.password_manager.PasswordManagerLauncher;
+import org.chromium.chrome.browser.pdf.PdfPage;
 import org.chromium.chrome.browser.preferences.ChromeSharedPreferences;
 import org.chromium.chrome.browser.price_tracking.PriceTrackingButtonController;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.profiles.ProfileManager;
 import org.chromium.chrome.browser.quick_delete.QuickDeleteController;
 import org.chromium.chrome.browser.quick_delete.QuickDeleteDelegateImpl;
 import org.chromium.chrome.browser.readaloud.ReadAloudController;
@@ -124,10 +124,11 @@ import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab.TabLoadIfNeededCaller;
 import org.chromium.chrome.browser.tab.TabObscuringHandler;
 import org.chromium.chrome.browser.tab.TabObscuringHandlerSupplier;
+import org.chromium.chrome.browser.tab_ui.RecyclerViewPosition;
+import org.chromium.chrome.browser.tab_ui.TabContentManager;
+import org.chromium.chrome.browser.tab_ui.TabSwitcher;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
-import org.chromium.chrome.browser.tasks.tab_management.RecyclerViewPosition;
-import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher;
 import org.chromium.chrome.browser.theme.TopUiThemeColorProvider;
 import org.chromium.chrome.browser.toolbar.ButtonDataProvider;
 import org.chromium.chrome.browser.toolbar.ToolbarIntentMetadata;
@@ -145,11 +146,13 @@ import org.chromium.chrome.browser.ui.appmenu.AppMenuCoordinator;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuCoordinatorFactory;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuDelegate;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuObserver;
+import org.chromium.chrome.browser.ui.desktop_windowing.DesktopWindowStateProvider;
 import org.chromium.chrome.browser.ui.edge_to_edge.EdgeToEdgeController;
 import org.chromium.chrome.browser.ui.edge_to_edge.EdgeToEdgeControllerFactory;
 import org.chromium.chrome.browser.ui.edge_to_edge.EdgeToEdgeUtils;
 import org.chromium.chrome.browser.ui.fold_transitions.FoldTransitionController;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
+import org.chromium.chrome.browser.ui.native_page.NativePage;
 import org.chromium.chrome.browser.ui.system.StatusBarColorController;
 import org.chromium.chrome.browser.ui.system.StatusBarColorController.StatusBarColorProvider;
 import org.chromium.chrome.browser.wallet.BoardingPassController;
@@ -275,7 +278,7 @@ public class RootUiCoordinator
     private final ObservableSupplier<TabBookmarker> mTabBookmarkerSupplier;
     private final OneshotSupplierImpl<AppMenuCoordinator> mAppMenuSupplier;
     private BottomSheetObserver mBottomSheetObserver;
-    protected final Supplier<ContextualSearchManager> mContextualSearchManagerSupplier;
+    protected final ObservableSupplier<ContextualSearchManager> mContextualSearchManagerSupplier;
     protected final CallbackController mCallbackController;
     protected final BrowserControlsManager mBrowserControlsManager;
     private BrowserControlsStateProvider.Observer mBrowserControlsObserver;
@@ -397,7 +400,7 @@ public class RootUiCoordinator
             @NonNull ObservableSupplier<Profile> profileSupplier,
             @NonNull ObservableSupplier<BookmarkModel> bookmarkModelSupplier,
             @NonNull ObservableSupplier<TabBookmarker> tabBookmarkerSupplier,
-            @NonNull Supplier<ContextualSearchManager> contextualSearchManagerSupplier,
+            @NonNull ObservableSupplier<ContextualSearchManager> contextualSearchManagerSupplier,
             @NonNull ObservableSupplier<TabModelSelector> tabModelSelectorSupplier,
             @NonNull OneshotSupplier<StartSurface> startSurfaceSupplier,
             @NonNull OneshotSupplier<TabSwitcher> tabSwitcherSupplier,
@@ -522,12 +525,13 @@ public class RootUiCoordinator
 
         mStartSurfaceParentTabSupplier = startSurfaceParentTabSupplier;
 
+        boolean isTablet = DeviceFormFactor.isNonMultiDisplayContextOnTablet(activity);
         mTopUiThemeColorProvider =
                 new TopUiThemeColorProvider(
                         mActivity,
                         mActivityTabProvider,
                         activityThemeColorSupplier,
-                        DeviceFormFactor.isNonMultiDisplayContextOnTablet(activity),
+                        isTablet,
                         shouldAllowThemingInNightMode(),
                         shouldAllowBrightThemeColors());
 
@@ -556,7 +560,7 @@ public class RootUiCoordinator
 
                             @Override
                             public BrowserContextHandle getBrowserContextHandle() {
-                                return ProfileManager.getLastUsedRegularProfile();
+                                return mProfileSupplier.get().getOriginalProfile();
                             }
                         });
         mFoldTransitionController =
@@ -593,6 +597,13 @@ public class RootUiCoordinator
     // TODO(b/307046796): Remove this once we have found better way to integrate with back handling
     // logic.
     public @Nullable ManagedBottomSheetController getPageInsightsBottomSheetController() {
+        return null;
+    }
+
+    /**
+     * @return The {@link DesktopWindowStateProvider} instance associated with the current activity.
+     */
+    public @Nullable DesktopWindowStateProvider getDesktopWindowStateProvider() {
         return null;
     }
 
@@ -839,7 +850,8 @@ public class RootUiCoordinator
                         mWindowAndroid, mActivity.findViewById(R.id.capture_overlay));
 
         // Ensure the bottom sheet's container has been laid out at least once before hiding it.
-        // TODO(1196804): This should be owned by the BottomSheetControllerImpl, but there are some
+        // TODO(crbug.com/40759801): This should be owned by the BottomSheetControllerImpl, but
+        // there are some
         //                complexities around the order of events resulting from waiting for layout.
         ViewGroup sheetContainer = mActivity.findViewById(R.id.sheet_container);
         if (!sheetContainer.isLaidOut()) {
@@ -873,8 +885,15 @@ public class RootUiCoordinator
             initIncognitoReauthController();
         }
 
+        if (mProfileSupplier.hasValue()) {
+            initProfileDependentFeatures(mProfileSupplier.get());
+        } else {
+            new OneShotCallback<>(
+                    mProfileSupplier,
+                    mCallbackController.makeCancelable(this::initProfileDependentFeatures));
+        }
+
         initMessagesInfra();
-        initMerchantTrustSignals();
         initScrollCapture();
         initializeEdgeToEdgeController(
                 mActivity,
@@ -882,22 +901,6 @@ public class RootUiCoordinator
                 mEdgeToEdgeControllerSupplier,
                 mBrowserControlsManager);
         initBoardingPassDetector();
-
-        if (DeviceFormFactor.isWindowOnTablet(mWindowAndroid)
-                && (RequestDesktopUtils.maybeDefaultEnableGlobalSetting(
-                        getPrimaryDisplaySizeInInches(),
-                        ProfileManager.getLastUsedRegularProfile(),
-                        mActivity))) {
-            // TODO(crbug.com/1350274): Remove this explicit load when this bug is addressed.
-            if (mActivityTabProvider != null && mActivityTabProvider.get() != null) {
-                mActivityTabProvider
-                        .get()
-                        .loadIfNeeded(TabLoadIfNeededCaller.ON_FINISH_NATIVE_INITIALIZATION);
-            }
-        }
-
-        RequestDesktopUtils.maybeDefaultEnableWindowSetting(
-                mActivity, ProfileManager.getLastUsedRegularProfile());
 
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.READALOUD)) {
             TabModelSelector tabModelSelector = mTabModelSelectorSupplier.get();
@@ -936,7 +939,6 @@ public class RootUiCoordinator
                             controller.maybeShowPlayer();
                         }
                     };
-            mToolbarManager.setReadAloudReadabilitySupplier(controller.getReadabilitySupplier());
             ContextualSearchManager contextualSearchManager =
                     mContextualSearchManagerSupplier.get();
             if (contextualSearchManager != null) {
@@ -946,8 +948,28 @@ public class RootUiCoordinator
         }
     }
 
+    /** Handle post native initialization of features that require the Profile to be available. */
+    @CallSuper
+    protected void initProfileDependentFeatures(Profile currentlySelectedProfile) {
+        Profile originalProfile = currentlySelectedProfile.getOriginalProfile();
+        if (DeviceFormFactor.isWindowOnTablet(mWindowAndroid)
+                && (RequestDesktopUtils.maybeDefaultEnableGlobalSetting(
+                        getPrimaryDisplaySizeInInches(), originalProfile, mActivity))) {
+            // TODO(crbug.com/40856393): Remove this explicit load when this bug is addressed.
+            if (mActivityTabProvider != null && mActivityTabProvider.get() != null) {
+                mActivityTabProvider
+                        .get()
+                        .loadIfNeeded(TabLoadIfNeededCaller.ON_FINISH_NATIVE_INITIALIZATION);
+            }
+        }
+
+        RequestDesktopUtils.maybeDefaultEnableWindowSetting(mActivity, originalProfile);
+
+        initMerchantTrustSignals(originalProfile);
+    }
+
     private void initMessagesInfra() {
-        // TODO(crbug.com/1185887): Move feature flag and parameters into a separate class in
+        // TODO(crbug.com/40753426): Move feature flag and parameters into a separate class in
         MessagesResourceMapperInitializer.init();
         MessageContainer container = mActivity.findViewById(R.id.message_container);
         mMessageContainerCoordinator =
@@ -1024,9 +1046,8 @@ public class RootUiCoordinator
         return null;
     }
 
-    private void initMerchantTrustSignals() {
-        if (ShoppingServiceFactory.getForProfile(ProfileManager.getLastUsedRegularProfile())
-                        .isMerchantViewerEnabled()
+    private void initMerchantTrustSignals(Profile profile) {
+        if (ShoppingServiceFactory.getForProfile(profile).isMerchantViewerEnabled()
                 && shouldInitializeMerchantTrustSignals()) {
             MerchantTrustSignalsCoordinator merchantTrustSignalsCoordinator =
                     new MerchantTrustSignalsCoordinator(
@@ -1112,11 +1133,18 @@ public class RootUiCoordinator
             mAppMenuCoordinator.showAppMenuForKeyboardEvent();
             return true;
         } else if (id == R.id.find_in_page_id) {
+            Tab tab = mActivityTabProvider.get();
+            // PDF pages require Android pdf viewer API to "find in page".
+            if (tab != null && tab.isNativePage() && tab.getNativePage().isPdf()) {
+                NativePage pdfPage = tab.getNativePage();
+                assert pdfPage instanceof PdfPage;
+                return ((PdfPage) pdfPage).findInPage();
+            }
+
             if (mFindToolbarManager == null) return false;
 
             mFindToolbarManager.showToolbar();
 
-            Tab tab = mActivityTabProvider.get();
             if (fromMenu) {
                 RecordUserAction.record("MobileMenuFindInPage");
                 new UkmRecorder.Bridge()
@@ -1235,6 +1263,10 @@ public class RootUiCoordinator
                         }
                         mOmniboxFocusStateSupplier.set(hasFocus);
                     };
+            if (getDesktopWindowStateProvider() != null) {
+                toolbarContainer.setAppInUnfocusedDesktopWindow(
+                        getDesktopWindowStateProvider().isInUnfocusedDesktopWindow());
+            }
 
             Supplier<Tracker> trackerSupplier =
                     () -> {
@@ -1338,6 +1370,7 @@ public class RootUiCoordinator
                             mActivity,
                             new SettingsLauncherImpl(),
                             mActivityLifecycleDispatcher,
+                            mProfileSupplier,
                             new AdaptiveButtonActionMenuCoordinator(),
                             mWindowAndroid,
                             ChromeSharedPreferences.getInstance());
@@ -1458,7 +1491,9 @@ public class RootUiCoordinator
                             mInitializeUiWithIncognitoColors,
                             mBackPressManager,
                             mOverviewColorSupplier,
-                            mBaseChromeLayout);
+                            mBaseChromeLayout,
+                            mReadAloudControllerSupplier,
+                            getDesktopWindowStateProvider());
             if (!mSupportsAppMenuSupplier.getAsBoolean()) {
                 mToolbarManager.getToolbar().disableMenuButton();
             }
@@ -1524,7 +1559,8 @@ public class RootUiCoordinator
                             // Attempt to show the promo sheet for the restore tabs feature.
                             // Do not attempt to show the promo if in incognito mode.
                             if (!mTabModelSelectorSupplier.get().isIncognitoSelected()) {
-                                // TODO(1458646): Add support for triggering in incognito mode.
+                                // TODO(crbug.com/40274033): Add support for triggering in incognito
+                                // mode.
                                 attemptToShowRestoreTabsPromo();
                             }
                         }
@@ -1562,7 +1598,7 @@ public class RootUiCoordinator
     }
 
     private void initAppMenu() {
-        // TODO(https://crbug.com/931496): Revisit this as part of the broader
+        // TODO(crbug.com/40613711): Revisit this as part of the broader
         // discussion around activity-specific UI customizations.
         if (mSupportsAppMenuSupplier.getAsBoolean()) {
             mAppMenuCoordinator =
@@ -1690,7 +1726,8 @@ public class RootUiCoordinator
      * until content is requested in the sheet.
      */
     private void initializeBottomSheetController() {
-        // TODO(1093999): Componentize SnackbarManager so BottomSheetController can own this.
+        // TODO(crbug.com/40135254): Componentize SnackbarManager so BottomSheetController can own
+        // this.
         Callback<View> sheetInitializedCallback =
                 (view) -> {
                     mBottomSheetSnackbarManager =
@@ -1712,7 +1749,8 @@ public class RootUiCoordinator
                     return null;
                 };
 
-        // TODO(1094000): Initialize after inflation so we don't need to pass in view suppliers.
+        // TODO(crbug.com/40135255): Initialize after inflation so we don't need to pass in view
+        // suppliers.
         mBottomSheetController =
                 BottomSheetControllerFactory.createBottomSheetController(
                         () -> mScrimCoordinator,
@@ -1741,7 +1779,7 @@ public class RootUiCoordinator
                         panelManagerSupplier,
                         mLayoutStateProviderOneShotSupplier);
 
-        // TODO(crbug.com/1279941): Consider moving handler registration to feature code.
+        // TODO(crbug.com/40208738): Consider moving handler registration to feature code.
         if (BackPressManager.isEnabled()) {
             assert mBackPressManager != null
                     && !mBackPressManager.has(BackPressHandler.Type.BOTTOM_SHEET);
@@ -1825,8 +1863,10 @@ public class RootUiCoordinator
         return mBrowserControlsManager;
     }
 
-    /** @return The {@link ScrimCoordinator} to control activity's primary scrim. */
-    // TODO(crbug.com/1064140): This method is used to pass ScrimCoordinator to StartSurface. We
+    /**
+     * @return The {@link ScrimCoordinator} to control activity's primary scrim.
+     */
+    // TODO(crbug.com/40123584): This method is used to pass ScrimCoordinator to StartSurface. We
     // should be able to create StartSurface in this class so that we don't need to expose this
     // getter.
     public ScrimCoordinator getScrimCoordinator() {

@@ -21,14 +21,14 @@ FormData CreateSigninFormData(const GURL& url, const char* username) {
   FormData form;
   form.url = url;
   FormFieldData field;
-  field.name = u"username_element";
-  field.form_control_type = autofill::FormControlType::kInputText;
-  field.value = ASCIIToUTF16(username);
+  field.set_name(u"username_element");
+  field.set_form_control_type(autofill::FormControlType::kInputText);
+  field.set_value(ASCIIToUTF16(username));
   form.fields.push_back(field);
 
-  field.name = u"password_element";
-  field.form_control_type = autofill::FormControlType::kInputPassword;
-  field.value = u"strong_pw";
+  field.set_name(u"password_element");
+  field.set_form_control_type(autofill::FormControlType::kInputPassword);
+  field.set_value(u"strong_pw");
   form.fields.push_back(field);
   return form;
 }

@@ -17,11 +17,16 @@
     aria-label$="[[i18nDynamic(locale, 'networkSectionTitle')]]">
   <iron-icon slot="icon" icon="oobe-32:wifi">
   </iron-icon>
-  <h1 slot="title">
-    [[i18nDynamic(locale, 'networkSectionTitle')]]
+  <h1 slot="title" id="titleText">
+    <div hidden="[[useQuickStartWiFiErrorStrings]]">
+      [[i18nDynamic(locale, 'networkSectionTitle')]]
+    </div>
+    <div hidden="[[!useQuickStartWiFiErrorStrings]]">
+      [[i18nDynamic(locale, 'networkScreenQuickStartWiFiErrorTitle')]]
+    </div>
   </h1>
   <div slot="subtitle" id="subtitleText">
-    [[getSubtitleMessage(locale, errorMessage, useQuickStartSubtitle)]]
+    [[getSubtitleMessage(locale, errorMessage, useQuickStartSubtitle, useQuickStartWiFiErrorStrings)]]
   </div>
   <div slot="content" class="layout vertical">
     <network-select-login id="networkSelectLogin"
@@ -61,7 +66,7 @@
   </div>
   <div slot="cancel-button">
     <oobe-text-button id="cancelButton" on-click="onCancelClicked"
-        text-key="cancelButton">
+        text-key="cancelButton" hidden="[[!quickStartCancelButtonVisible]]">
     </oobe-text-button>
   </div>
 </oobe-loading-dialog>

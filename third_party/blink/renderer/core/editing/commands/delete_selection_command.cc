@@ -44,7 +44,10 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 #include "third_party/blink/renderer/core/html/html_br_element.h"
+#include "third_party/blink/renderer/core/html/html_hr_element.h"
+#include "third_party/blink/renderer/core/html/html_link_element.h"
 #include "third_party/blink/renderer/core/html/html_style_element.h"
+#include "third_party/blink/renderer/core/html/html_table_element.h"
 #include "third_party/blink/renderer/core/html/html_table_row_element.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
@@ -802,6 +805,16 @@ void DeleteSelectionCommand::HandleGeneralDelete(EditingState* editing_state) {
     bool start_node_was_descendant_of_end_node =
         upstream_start_.AnchorNode()->IsDescendantOf(
             downstream_end_.AnchorNode());
+
+    bool end_node_is_selected_from_first_position = false;
+    if (RuntimeEnabledFeatures::
+            RemoveNodeHavingChildrenIfFullySelectedEnabled()) {
+      end_node_is_selected_from_first_position =
+          ComparePositions(upstream_start_,
+                           Position::FirstPositionInNode(
+                               *downstream_end_.AnchorNode())) <= 0;
+    }
+
     // The selection to delete spans more than one node.
     Node* node(start_node);
     auto* start_text_node = DynamicTo<Text>(start_node);
@@ -834,8 +847,20 @@ void DeleteSelectionCommand::HandleGeneralDelete(EditingState* editing_state) {
         downstream_end_.IsConnected() &&
         downstream_end_.ComputeEditingOffset() >=
             CaretMinOffset(downstream_end_.AnchorNode())) {
-      if (downstream_end_.AtLastEditingPositionForNode() &&
-          !CanHaveChildrenForEditing(downstream_end_.AnchorNode())) {
+      bool is_node_fully_selected =
+          downstream_end_.AtLastEditingPositionForNode() &&
+          !CanHaveChildrenForEditing(downstream_end_.AnchorNode());
+      if (RuntimeEnabledFeatures::
+              RemoveNodeHavingChildrenIfFullySelectedEnabled()) {
+        // Even though `downstream_end_` has children, it can be fully selected.
+        // Update `is_node_fully_selected` if the selection includes the first
+        // position of the node.
+        if (!is_node_fully_selected &&
+            downstream_end_.AtLastEditingPositionForNode()) {
+          is_node_fully_selected = end_node_is_selected_from_first_position;
+        }
+      }
+      if (is_node_fully_selected) {
         // The node itself is fully selected, not just its contents.  Delete it.
         RemoveNode(downstream_end_.AnchorNode(), editing_state);
       } else {
@@ -924,6 +949,17 @@ void DeleteSelectionCommand::MergeParagraphs(EditingState* editing_state) {
   // There's nothing to merge.
   if (upstream_start_ == downstream_end_)
     return;
+
+  if (RuntimeEnabledFeatures::
+          RemoveNodeHavingChildrenIfFullySelectedEnabled()) {
+    // It can be the same position even though `upstream_start_` and
+    // `downstream_end_` are not identical.
+    // Compare them using ParentAnchoredEquivalent().
+    if (upstream_start_.ParentAnchoredEquivalent() ==
+        downstream_end_.ParentAnchoredEquivalent()) {
+      return;
+    }
+  }
 
   GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kEditing);
 

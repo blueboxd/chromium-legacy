@@ -14,6 +14,7 @@
 #include "base/feature_list.h"
 #include "base/functional/callback.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/strings/strcat.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "base/types/optional_ref.h"
@@ -229,13 +230,14 @@ void AuctionRunner::ResolvedDeprecatedRenderURLReplacementsPromise(
         "Invalid auction ID in ResolvedDeprecatedRenderURLReplacementsPromise");
     return;
   }
-  if (!config->deprecated_render_url_replacements.is_promise()) {
+  if (!config->non_shared_params.deprecated_render_url_replacements
+           .is_promise()) {
     mojo::ReportBadMessage(
         "ResolvedDeprecatedRenderURLReplacementsPromise updating non-promise");
     return;
   }
 
-  config->deprecated_render_url_replacements =
+  config->non_shared_params.deprecated_render_url_replacements =
       blink::AuctionConfig::MaybePromiseDeprecatedRenderURLReplacements::
           FromValue(deprecated_render_url_replacements);
   NotifyPromiseResolved(auction_id.get(), config);
@@ -436,8 +438,32 @@ void AuctionRunner::ResolvedAdditionalBids(
 void AuctionRunner::Abort() {
   // Don't abort if the auction already finished (either as success or failure;
   // this includes the case of multiple promise arguments rejecting).
-  if (state_ != State::kFailed && state_ != State::kSucceeded) {
-    FailAuction(/*aborted_by_script=*/true);
+  if (state_ == State::kFailed || state_ == State::kSucceeded) {
+    return;
+  }
+  std::string uma_prefix = owned_auction_config_->server_response.has_value()
+                               ? "Ads.InterestGroup.ServerAuction."
+                               : "Ads.InterestGroup.Auction.";
+  base::UmaHistogramEnumeration(base::StrCat({uma_prefix, "StateAtAbortTime"}),
+                                state_);
+  base::UmaHistogramMediumTimes(
+      uma_prefix + "SignaledAbortTime",
+      base::TimeTicks::Now() - auction_.creation_time());
+  FailAuction(/*aborted_by_script=*/true);
+}
+
+void AuctionRunner::NormalizeReportingTimeouts() {
+  if (owned_auction_config_->non_shared_params.reporting_timeout.has_value()) {
+    owned_auction_config_->non_shared_params.reporting_timeout =
+        std::min(*owned_auction_config_->non_shared_params.reporting_timeout,
+                 kMaxReportingTimeout);
+  }
+  for (auto& component :
+       owned_auction_config_->non_shared_params.component_auctions) {
+    if (component.non_shared_params.reporting_timeout.has_value()) {
+      component.non_shared_params.reporting_timeout = std::min(
+          *component.non_shared_params.reporting_timeout, kMaxReportingTimeout);
+    }
   }
 }
 
@@ -445,6 +471,7 @@ void AuctionRunner::FailAuction(
     bool aborted_by_script,
     blink::InterestGroupSet interest_groups_that_bid) {
   DCHECK(callback_);
+  State state_at_auction_fail = state_;
   state_ = State::kFailed;
 
   // Can have loss report URLs if the auction failed because the seller
@@ -457,6 +484,14 @@ void AuctionRunner::FailAuction(
   DCHECK(debug_win_report_urls.empty());
 
   if (!aborted_by_script) {
+    // A different metric is recorded for script-triggered abort in
+    // AuctionRunner::Abort.
+    std::string uma_prefix = owned_auction_config_->server_response.has_value()
+                                 ? "Ads.InterestGroup.ServerAuction."
+                                 : "Ads.InterestGroup.Auction.";
+    base::UmaHistogramEnumeration(base::StrCat({uma_prefix, "StateAtFailTime"}),
+                                  state_at_auction_fail);
+
     interest_group_manager_->RegisterAdKeysAsJoined(
         auction_.GetKAnonKeysToJoin());
     interest_group_manager_->EnqueueReports(
@@ -538,6 +573,8 @@ AuctionRunner::AuctionRunner(
                std::move(log_private_aggregation_requests_callback)) {}
 
 void AuctionRunner::StartAuction() {
+  NormalizeReportingTimeouts();
+
   if (owned_auction_config_->server_response) {
     // Entire auction is running server-side, so skip interest group loading.
     state_ = State::kBiddingAndScoringPhase;
@@ -548,11 +585,15 @@ void AuctionRunner::StartAuction() {
                        base::Unretained(this), base::TimeTicks::Now()));
     return;
   }
+  state_ = State::kLoadingGroupsPhase;
   auction_.StartLoadInterestGroupsPhase(base::BindOnce(
       &AuctionRunner::OnLoadInterestGroupsComplete, base::Unretained(this)));
 }
 
 void AuctionRunner::OnLoadInterestGroupsComplete(bool success) {
+  if (state_ == State::kFailed) {
+    return;
+  }
   if (!success) {
     FailAuction(/*aborted_by_script=*/false);
     return;
@@ -581,6 +622,9 @@ void AuctionRunner::OnLoadInterestGroupsComplete(bool success) {
 void AuctionRunner::OnLoadDebugReportLockoutAndCooldownsComplete(
     std::optional<DebugReportLockoutAndCooldowns>
         debug_report_lockout_and_cooldowns) {
+  if (state_ == State::kFailed) {
+    return;
+  }
   state_ = State::kBiddingAndScoringPhase;
   auction_.StartBiddingAndScoringPhase(
       std::move(debug_report_lockout_and_cooldowns),
@@ -591,6 +635,9 @@ void AuctionRunner::OnLoadDebugReportLockoutAndCooldownsComplete(
 
 void AuctionRunner::OnBidsGeneratedAndScored(base::TimeTicks start_time,
                                              bool success) {
+  if (state_ == State::kFailed) {
+    return;
+  }
   DCHECK(callback_);
   bool is_server_auction = owned_auction_config_->server_response.has_value();
 

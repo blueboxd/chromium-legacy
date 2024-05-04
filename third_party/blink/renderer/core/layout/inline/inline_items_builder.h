@@ -193,6 +193,7 @@ class InlineItemsBuilderTemplate {
 
   const SvgTextChunkOffsets* text_chunk_offsets_;
 
+  uint32_t ruby_text_nesting_level_ = 0;
   const bool is_text_combine_;
   bool has_bidi_controls_ = false;
   bool has_floats_ = false;
@@ -249,8 +250,6 @@ class InlineItemsBuilderTemplate {
   void AppendGeneratedBreakOpportunity(LayoutObject*);
 
   void Exit(LayoutObject*);
-
-  bool MayBeBidiEnabled() const;
 
   bool ShouldInsertBreakOpportunityAfterLeadingPreservedSpaces(
       StringView,

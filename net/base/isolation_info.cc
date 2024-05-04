@@ -36,7 +36,7 @@ bool ValidateSameSite(const url::Origin& origin,
   if (origin.opaque())
     return false;
 
-  // TODO(https://crbug.com/1060631): GetURL() is expensive. Maybe make a
+  // TODO(crbug.com/40122112): GetURL() is expensive. Maybe make a
   // version of IsFirstParty that works on origins?
   return site_for_cookies.IsFirstParty(origin.GetURL());
 }
@@ -68,11 +68,11 @@ bool IsConsistent(IsolationInfo::RequestType request_type,
   }
   switch (request_type) {
     case IsolationInfo::RequestType::kMainFrame:
-      // TODO(https://crbug.com/1056706): Check that |top_frame_origin| and
+      // TODO(crbug.com/40677006): Check that |top_frame_origin| and
       // |frame_origin| are the same, once the ViewSource code creates a
       // consistent IsolationInfo object.
       //
-      // TODO(https://crbug.com/1060631): Once CreatePartial() is removed,
+      // TODO(crbug.com/40122112): Once CreatePartial() is removed,
       // check if SiteForCookies is non-null if the scheme is HTTP or HTTPS.
       break;
     case IsolationInfo::RequestType::kSubFrame:
@@ -181,7 +181,7 @@ IsolationInfo IsolationInfo::DoNotUseCreatePartialFromNak(
   auto isolation_info = IsolationInfo::Create(
       IsolationInfo::RequestType::kOther, top_frame_origin,
       frame_origin.value(), SiteForCookies(), nonce);
-  // TODO(crbug/1343856): DCHECK isolation info is fully populated.
+  // TODO(crbug.com/40852603): DCHECK isolation info is fully populated.
   return isolation_info;
 }
 

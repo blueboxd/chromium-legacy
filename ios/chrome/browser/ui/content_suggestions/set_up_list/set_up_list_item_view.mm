@@ -5,12 +5,10 @@
 #import "ios/chrome/browser/ui/content_suggestions/set_up_list/set_up_list_item_view.h"
 #import "ios/chrome/browser/ui/content_suggestions/set_up_list/set_up_list_item_view+Testing.h"
 
-#import "base/feature_list.h"
 #import "base/notreached.h"
 #import "base/task/sequenced_task_runner.h"
 #import "base/time/time.h"
 #import "components/password_manager/core/common/password_manager_features.h"
-#import "components/sync/base/features.h"
 #import "ios/chrome/browser/ntp/model/set_up_list_item.h"
 #import "ios/chrome/browser/ntp/model/set_up_list_item_type.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
@@ -86,10 +84,7 @@ struct ViewConfig {
     if (data.compactLayout) {
       // ViewConfig for a compact layout.
       int syncString =
-          base::FeatureList::IsEnabled(
-              syncer::kReplaceSyncPromosWithSignInPromos)
-              ? IDS_IOS_SET_UP_LIST_SIGN_IN_SYNC_SHORT_DESCRIPTION_NO_SYNC
-              : IDS_IOS_SET_UP_LIST_SIGN_IN_SYNC_SHORT_DESCRIPTION;
+          IDS_IOS_SET_UP_LIST_SIGN_IN_SYNC_SHORT_DESCRIPTION_NO_SYNC;
       int notificationsString =
           IsIOSTipsNotificationsEnabled()
               ? IDS_IOS_SET_UP_LIST_NOTIFICATIONS_SHORT_DESCRIPTION
@@ -106,11 +101,7 @@ struct ViewConfig {
           kCompactTextSpacing,
       };
     } else if (data.heroCellMagicStackLayout) {
-      int syncString =
-          base::FeatureList::IsEnabled(
-              syncer::kReplaceSyncPromosWithSignInPromos)
-              ? IDS_IOS_IDENTITY_DISC_SIGN_IN_PROMO_LABEL
-              : IDS_IOS_SET_UP_LIST_SIGN_IN_SYNC_MAGIC_STACK_DESCRIPTION;
+      int syncString = IDS_IOS_IDENTITY_DISC_SIGN_IN_PROMO_LABEL;
       int notificationsString =
           IsIOSTipsNotificationsEnabled()
               ? IDS_IOS_SET_UP_LIST_NOTIFICATIONS_DESCRIPTION
@@ -128,10 +119,7 @@ struct ViewConfig {
       };
     } else {
       // Normal ViewConfig.
-      int syncString = base::FeatureList::IsEnabled(
-                           syncer::kReplaceSyncPromosWithSignInPromos)
-                           ? IDS_IOS_IDENTITY_DISC_SIGN_IN_PROMO_LABEL
-                           : IDS_IOS_SET_UP_LIST_SIGN_IN_SYNC_DESCRIPTION;
+      int syncString = IDS_IOS_IDENTITY_DISC_SIGN_IN_PROMO_LABEL;
       int notificationsString =
           IsIOSTipsNotificationsEnabled()
               ? IDS_IOS_SET_UP_LIST_NOTIFICATIONS_DESCRIPTION
@@ -171,6 +159,8 @@ struct ViewConfig {
   [super traitCollectionDidChange:previousTraitCollection];
   if (previousTraitCollection.preferredContentSizeCategory !=
       self.traitCollection.preferredContentSizeCategory) {
+    _description.hidden = self.traitCollection.preferredContentSizeCategory >
+                          UIContentSizeCategoryExtraExtraLarge;
     // Force a layout since the size of text components may have changed.
     [self setNeedsLayout];
     [self layoutIfNeeded];
@@ -336,7 +326,7 @@ struct ViewConfig {
   CrossfadeLabel* label = [[CrossfadeLabel alloc] init];
   label = [[CrossfadeLabel alloc] init];
   label.text = [self descriptionText];
-  label.numberOfLines = IsMagicStackEnabled() ? 2 : 4;
+  label.numberOfLines = 2;
   label.lineBreakMode = NSLineBreakByTruncatingTail;
   label.font = [UIFont preferredFontForTextStyle:_config.description_font];
   label.adjustsFontForContentSizeCategory = YES;
@@ -355,12 +345,8 @@ struct ViewConfig {
 - (NSString*)titleText {
   switch (_type) {
     case SetUpListItemType::kSignInSync:
-      return base::FeatureList::IsEnabled(
-                 syncer::kReplaceSyncPromosWithSignInPromos)
-                 ? l10n_util::GetNSString(
-                       IDS_IOS_CONSISTENCY_PROMO_DEFAULT_ACCOUNT_TITLE)
-                 : l10n_util::GetNSString(
-                       IDS_IOS_SET_UP_LIST_SIGN_IN_SYNC_TITLE);
+      return l10n_util::GetNSString(
+          IDS_IOS_CONSISTENCY_PROMO_DEFAULT_ACCOUNT_TITLE);
     case SetUpListItemType::kDefaultBrowser:
       return l10n_util::GetNSString(IDS_IOS_SET_UP_LIST_DEFAULT_BROWSER_TITLE);
     case SetUpListItemType::kAutofill:
@@ -374,7 +360,7 @@ struct ViewConfig {
     case SetUpListItemType::kAllSet:
       return l10n_util::GetNSString(IDS_IOS_SET_UP_LIST_ALL_SET_TITLE);
     case SetUpListItemType::kFollow:
-      // TODO(crbug.com/1428070): Add a Follow item to the Set Up List.
+      // TODO(crbug.com/40262090): Add a Follow item to the Set Up List.
       NOTREACHED_NORETURN();
   }
 }
@@ -393,7 +379,7 @@ struct ViewConfig {
     case SetUpListItemType::kAllSet:
       return l10n_util::GetNSString(IDS_IOS_SET_UP_LIST_ALL_SET_DESCRIPTION);
     case SetUpListItemType::kFollow:
-      // TODO(crbug.com/1428070): Add a Follow item to the Set Up List.
+      // TODO(crbug.com/40262090): Add a Follow item to the Set Up List.
       NOTREACHED_NORETURN();
   }
 }

@@ -50,8 +50,9 @@ class DIPSStorage {
 
   // Delete all DB rows for |sites|.
   void RemoveRows(const std::vector<std::string>& sites);
-  // Delete all DB rows for |sites| without eligible user interactions.
-  void RemoveRowsWithoutInteractionOrWaa(const std::set<std::string>& sites);
+  // Delete all DB rows for |sites| without a protective event. A protective
+  // event is a user interaction or successful WebAuthn assertion.
+  void RemoveRowsWithoutProtectiveEvent(const std::set<std::string>& sites);
 
   // DIPS Helper Method Impls --------------------------------------------------
 
@@ -68,9 +69,9 @@ class DIPSStorage {
 
   // Storage querying Methods --------------------------------------------------
 
-  // Returns the subset of sites in |sites| WITHOUT user interaction or
-  // successful web authn assertion recorded.
-  std::set<std::string> FilterSitesWithoutInteractionOrWaa(
+  // Returns the subset of sites in |sites| WITHOUT a protective event recorded.
+  // A protective event is a user interaction or successful WebAuthn assertion.
+  std::set<std::string> FilterSitesWithoutProtectiveEvent(
       std::set<std::string> sites) const;
 
   // Returns all sites that did a bounce that aren't protected from DIPS.
@@ -100,6 +101,9 @@ class DIPSStorage {
   // Returns the timestamp of the last user interaction time on `url`, or
   // std::nullopt if there has been no user interaction on `url`.
   std::optional<base::Time> LastInteractionTime(const GURL& url);
+
+  std::optional<base::Time> GetTimerLastFired();
+  bool SetTimerLastFired(base::Time time);
 
   // Utility Methods -----------------------------------------------------------
 

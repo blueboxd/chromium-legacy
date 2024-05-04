@@ -9,6 +9,7 @@
 #include <optional>
 #include <set>
 #include <string>
+#include <string_view>
 #include <tuple>
 #include <utility>
 
@@ -179,7 +180,7 @@ class FirstPartySchemeContentBrowserClient
   ~FirstPartySchemeContentBrowserClient() override = default;
 
   bool ShouldTreatURLSchemeAsFirstPartyWhenTopLevel(
-      base::StringPiece scheme,
+      std::string_view scheme,
       bool is_embedded_origin_secure) override {
     if (is_embedded_origin_secure && scheme == "trustmeifembeddingsecure")
       return true;
@@ -242,7 +243,7 @@ class RenderFrameHostImplBrowserTest : public ContentBrowserTest {
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    // TODO(https://crbug.com/794320): Remove this when the new Java Bridge code
+    // TODO(crbug.com/40554401): Remove this when the new Java Bridge code
     // is integrated into WebView.
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         blink::switches::kJavaScriptFlags, "--expose_gc");
@@ -2071,7 +2072,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest, FastNavigationAbort) {
   // RenderFrame, otherwise the document.open() will run on the previous
   // page's RenderFrame, and the navigation won't get aborted. We need to
   // ensure that we won't trigger a same-site cross-RFH navigation.
-  // TODO(crbug.com/1099193): This should also work on cross-RFH same-site
+  // TODO(crbug.com/40137364): This should also work on cross-RFH same-site
   // navigations.
   if (ShouldCreateNewHostForAllFrames()) {
     return;
@@ -2367,7 +2368,7 @@ class ScopedInterfaceRequestMonitor
     : public blink::mojom::BrowserInterfaceBrokerInterceptorForTesting {
  public:
   ScopedInterfaceRequestMonitor(RenderFrameHostImpl* render_frame_host,
-                                base::StringPiece interface_name,
+                                std::string_view interface_name,
                                 base::RepeatingClosure callback)
       : rfhi_(render_frame_host),
         impl_(receiver().SwapImplForTesting(this)),
@@ -3194,7 +3195,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   // their URLs do not match - matching instead using navigation id or mojo
   // interface identity).
 
-  // TODO(https://crbug.com/759184): Verify CSP frame-ancestors in the browser
+  // TODO(crbug.com/40537082): Verify CSP frame-ancestors in the browser
   // process. Currently, this is done by the renderer process, which commits an
   // empty document with success instead.
   EXPECT_TRUE(navigation_observer.has_committed());
@@ -3430,7 +3431,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
 
   // This will set up the page frame tree as A(A1()).
   ASSERT_TRUE(NavigateToURL(shell(), main_frame));
-  // TODO(crbug.com/954217): Re-enable this test
+  // TODO(crbug.com/41453701): Re-enable this test
   FrameTreeNode* root = web_contents()->GetPrimaryFrameTree().root();
   FrameTreeNode* nested_iframe_node = root->child_at(0);
   EXPECT_TRUE(NavigateToURLFromRenderer(nested_iframe_node, child_url));
@@ -4660,7 +4661,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
 // become active immediately, prior to the navigation committing. This is
 // an optimization to prevent the user from sitting around on the sad tab
 // unnecessarily.
-// TODO(https://crbug.com/1072817): This behavior might be revisited in the
+// TODO(crbug.com/40052076): This behavior might be revisited in the
 // future.
 IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
                        CheckRFHLifecycleStateWhenRendererCrashes) {
@@ -5023,7 +5024,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest, CrossSiteFrame) {
                                         "IsCrossSiteFrame"));
 }
 
-// TODO(https://crbug.com/794320): the code below is temporary and will be
+// TODO(crbug.com/40554401): the code below is temporary and will be
 // removed when Java Bridge is mojofied.
 #if BUILDFLAG(IS_ANDROID)
 
@@ -5180,7 +5181,7 @@ void SetupRemoteObjectInvocation(Shell* shell, const GURL& url) {
 }
 }  // namespace
 
-// TODO(https://crbug.com/794320): Remove this when the new Java Bridge code is
+// TODO(crbug.com/40554401): Remove this when the new Java Bridge code is
 // integrated into WebView.
 // This test is a temporary way of verifying that the renderer part
 // works as expected.
@@ -5208,7 +5209,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   EXPECT_THAT(EvalJs(web_contents(), kScript), EvalJsResult::IsError());
 }
 
-// TODO(crbug.com/1357783): This test is flaky.
+// TODO(crbug.com/40236762): This test is flaky.
 IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
                        DISABLED_RemoteObjectInvokeMethodReturningNumber) {
   GURL url(embedded_test_server()->GetURL("/empty.html"));
@@ -5220,7 +5221,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   EXPECT_EQ(kMainObject.id, EvalJs(web_contents(), kScript));
 }
 
-// TODO(crbug.com/1358215): This test is flaky.
+// TODO(crbug.com/40236899): This test is flaky.
 IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
                        DISABLED_RemoteObjectInvokeMethodTakingArray) {
   GURL url(embedded_test_server()->GetURL("/empty.html"));
@@ -5234,7 +5235,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
       3, injector.GetObjectHost().GetMockObject()->get_num_elements_received());
 }
 
-// TODO(crbug.com/1459205): This test is flaky.
+// TODO(crbug.com/40274210): This test is flaky.
 IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
                        DISABLED_RemoteObjectInvokeMethodReturningObject) {
   GURL url(embedded_test_server()->GetURL("/empty.html"));
@@ -6515,7 +6516,13 @@ class DestructorLifetimePageUserData
     auto& page = render_frame_host.GetPage();
     // Check returned Page reference is valid.
     EXPECT_EQ(page_.get(), &page);
-    EXPECT_TRUE(page.IsPrimary());
+    // The page is considered as primary if its RenderFrameHost is active. This
+    // will be true unless we changed RenderFrameHosts.
+    EXPECT_EQ(page.IsPrimary(), !ShouldCreateNewHostForAllFrames());
+    if (ShouldCreateNewHostForAllFrames()) {
+      EXPECT_EQ(render_frame_host.GetLifecycleState(),
+                RenderFrameHost::LifecycleState::kPendingDeletion);
+    }
   }
 
  private:
@@ -6533,7 +6540,7 @@ PAGE_USER_DATA_KEY_IMPL(DestructorLifetimePageUserData);
 // reasonable state.
 IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
                        PageUserDataDestructorLifetime) {
-  // The test assumes that the main frame RFH will be reused when navigating.
+  // The test assumes that the Page will get destructed after navigation.
   DisableBackForwardCacheForTesting(shell()->web_contents(),
                                     BackForwardCache::TEST_REQUIRES_NO_CACHING);
 
@@ -7161,16 +7168,16 @@ class RenderFrameHostImplBrowsingContextStateNameTest
 
  protected:
   void SetUp() override {
-    // TODO(https://crbug.com/1326944): Flaky on Mac and Android.
+    // TODO(crbug.com/40840863): Flaky on Mac and Android.
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_ANDROID)
     GTEST_SKIP();
 #else
-    // TODO(1326944): This configuration is flaky, for every tests.
+    // TODO(crbug.com/40840863): This configuration is flaky, for every tests.
     if (!DisableFrameNameUpdateOnNonCurrentRenderFrameHost()) {
       GTEST_SKIP();
     }
 
-    // TODO(https://crbug.com/1422190):
+    // TODO(crbug.com/40259517):
     // A RenderViewHostImpl from outside the BackForward take a
     // `main_browsing_context_state` associated with a RenderFrameHost from
     // within the BackForwardCache.
@@ -7643,7 +7650,7 @@ IN_PROC_BROWSER_TEST_F(
   }
 }
 
-// TODO(https://crbug.com/1434900): Consider enabling this test on Android.
+// TODO(crbug.com/40264958): Consider enabling this test on Android.
 // There is no plan to analyze the histogram on Android for now.
 #if !BUILDFLAG(IS_ANDROID)
 IN_PROC_BROWSER_TEST_F(
@@ -7997,7 +8004,7 @@ IN_PROC_BROWSER_TEST_F(
             GetDelegatedFrameHost(rfh_red->GetView())
                 ->GetFallbackSurfaceIdForTesting());
 
-  // TODO(https://crbug.com/1472026): If the red page's renderer still hasn't
+  // TODO(crbug.com/40278487): If the red page's renderer still hasn't
   // submitted a new frame after the ContentRenderingTimeout is up, we should
   // abort the transition. Expand this test to cover that behavior when we have
   // a way to abort the transition.

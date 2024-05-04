@@ -806,7 +806,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
   EXPECT_NEAR(expected.y(), viewport_offset.y(), tolerance);
 }
 
-// TODO(crbug.com/1168036): Flaky test.
+// TODO(crbug.com/40743132): Flaky test.
 IN_PROC_BROWSER_TEST_P(
     SitePerProcessBrowserTest,
     DISABLED_NestedIframeTransformedIntoViewViewportIntersection) {
@@ -858,7 +858,7 @@ IN_PROC_BROWSER_TEST_P(
 
 // Verify that OOPIF select element popup menu coordinates account for scroll
 // offset in containers embedding frame.
-// TODO(crbug.com/859552): Reenable this.
+// TODO(crbug.com/40583339): Reenable this.
 IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        DISABLED_PopupMenuInTallIframeTest) {
   GURL main_url(embedded_test_server()->GetURL(
@@ -1408,7 +1408,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
 
 // Verify an OOPIF resize handler doesn't fire immediately after load without
 // the frame having been resized. See https://crbug.com/826457.
-// TODO(crbug.com/1278038): Test is very flaky on many platforms.
+// TODO(crbug.com/40809978): Test is very flaky on many platforms.
 IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        DISABLED_NoResizeAfterIframeLoad) {
   GURL main_url(embedded_test_server()->GetURL(
@@ -1706,7 +1706,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
 // This test verifies that changing the CSS visibility of a cross-origin
 // <iframe> is forwarded to its corresponding RenderWidgetHost and all other
 // RenderWidgetHosts corresponding to the nested cross-origin frame.
-// TODO(crbug.com/1363740): Flaky on mac, linux-lacros, android.
+// TODO(crbug.com/40865141): Flaky on mac, linux-lacros, android.
 #if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_CHROMEOS_LACROS)
 #define MAYBE_CSSVisibilityChanged DISABLED_CSSVisibilityChanged
 #else
@@ -2131,7 +2131,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
 
 // Test that the compositing scale factor for an out-of-process iframe are set
 // and updated correctly, including accounting for all intermediate transforms.
-// TODO(crbug.com/1164391): Flaky test.
+// TODO(crbug.com/40163506): Flaky test.
 IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        DISABLED_CompositingScaleFactorInNestedFrameTest) {
   GURL main_url(embedded_test_server()->GetURL(
@@ -2322,8 +2322,15 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
 // that the scroll-delta matches the distance between TouchStart/End as seen
 // by the oopif, i.e. the oopif content 'sticks' to the finger during scrolling.
 // The relation is not exact, but should be close.
+// TODO(crbug.com/40697699): Re-enable the flaky test.
+#if BUILDFLAG(IS_ANDROID)
+#define MAYBE_DisableScrollOopifInPinchZoomedPage \
+  DISABLED_ScrollOopifInPinchZoomedPage
+#else
+#define MAYBE_DisableScrollOopifInPinchZoomedPage ScrollOopifInPinchZoomedPage
+#endif
 IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
-                       ScrollOopifInPinchZoomedPage) {
+                       MAYBE_DisableScrollOopifInPinchZoomedPage) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));

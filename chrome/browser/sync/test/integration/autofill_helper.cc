@@ -22,10 +22,12 @@
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/webdata_services/web_data_service_factory.h"
+#include "components/autofill/core/browser/address_data_manager.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/country_type.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
+#include "components/autofill/core/browser/payments_data_manager.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/personal_data_manager_test_utils.h"
 #include "components/autofill/core/browser/webdata/autocomplete/autocomplete_entry.h"
@@ -232,8 +234,8 @@ void AddKeys(int profile, const std::set<AutocompleteKey>& keys) {
   std::vector<FormFieldData> form_fields;
   for (const AutocompleteKey& key : keys) {
     FormFieldData field;
-    field.name = key.name();
-    field.value = key.value();
+    field.set_name(key.name());
+    field.set_value(key.value());
     form_fields.push_back(field);
   }
 
@@ -288,13 +290,14 @@ bool KeysMatch(int profile_a, int profile_b) {
 }
 
 void SetCreditCards(int profile, std::vector<CreditCard>* credit_cards) {
-  GetPersonalDataManager(profile)->SetCreditCards(credit_cards);
+  GetPersonalDataManager(profile)->payments_data_manager().SetCreditCards(
+      credit_cards);
 }
 
 void AddProfile(int profile, const AutofillProfile& autofill_profile) {
   PersonalDataManager* pdm = GetPersonalDataManager(profile);
   autofill::PersonalDataChangedWaiter waiter(*pdm);
-  pdm->AddProfile(autofill_profile);
+  pdm->address_data_manager().AddProfile(autofill_profile);
   std::move(waiter).Wait();
 }
 
@@ -311,7 +314,8 @@ void UpdateProfile(int profile,
                    const std::u16string& value,
                    autofill::VerificationStatus status) {
   PersonalDataManager* pdm = GetPersonalDataManager(profile);
-  AutofillProfile* pdm_profile = pdm->GetProfileByGUID(guid);
+  AutofillProfile* pdm_profile =
+      pdm->address_data_manager().GetProfileByGUID(guid);
   ASSERT_TRUE(pdm_profile);
   // `pdm_profile` points to the PDM's internal copy of the data. It shouldn't
   // be modified directly.
@@ -319,7 +323,7 @@ void UpdateProfile(int profile,
   updated_profile.SetRawInfoWithVerificationStatus(type.GetStorableType(),
                                                    value, status);
   autofill::PersonalDataChangedWaiter waiter(*pdm);
-  pdm->UpdateProfile(updated_profile);
+  pdm->address_data_manager().UpdateProfile(updated_profile);
   std::move(waiter).Wait();
 }
 
@@ -343,7 +347,7 @@ std::vector<AutofillProfile*> GetAllAutoFillProfiles(int profile) {
   // which we are about to block, which means we are safe.
   WaitForCurrentTasksToComplete(GetWebDataService(profile)->GetDBTaskRunner());
   std::move(waiter).Wait();
-  return pdm->GetProfiles();
+  return pdm->address_data_manager().GetProfiles();
 }
 
 size_t GetProfileCount(int profile) {
@@ -389,15 +393,22 @@ AutofillProfileChecker::AutofillProfileChecker(
     : profile_a_(profile_a),
       profile_b_(profile_b),
       expected_count_(expected_count) {
-  autofill_helper::GetPersonalDataManager(profile_a_)->AddObserver(this);
-  autofill_helper::GetPersonalDataManager(profile_b_)->AddObserver(this);
+  autofill_helper::GetPersonalDataManager(profile_a_)
+      ->address_data_manager()
+      .AddObserver(this);
+  autofill_helper::GetPersonalDataManager(profile_b_)
+      ->address_data_manager()
+      .AddObserver(this);
 }
 
 AutofillProfileChecker::~AutofillProfileChecker() {
-  autofill_helper::GetPersonalDataManager(profile_a_)->RemoveObserver(this);
-  autofill_helper::GetPersonalDataManager(profile_b_)->RemoveObserver(this);
+  autofill_helper::GetPersonalDataManager(profile_a_)
+      ->address_data_manager()
+      .RemoveObserver(this);
+  autofill_helper::GetPersonalDataManager(profile_b_)
+      ->address_data_manager()
+      .RemoveObserver(this);
 }
-
 bool AutofillProfileChecker::Wait() {
   DLOG(WARNING) << "AutofillProfileChecker::Wait() started";
   PersonalDataManager* pdm_a =
@@ -427,13 +438,17 @@ bool AutofillProfileChecker::Wait() {
 bool AutofillProfileChecker::IsExitConditionSatisfied(std::ostream* os) {
   *os << "Waiting for matching autofill profiles";
   const std::vector<AutofillProfile*>& autofill_profiles_a =
-      autofill_helper::GetPersonalDataManager(profile_a_)->GetProfiles();
+      autofill_helper::GetPersonalDataManager(profile_a_)
+          ->address_data_manager()
+          .GetProfiles();
   const std::vector<AutofillProfile*>& autofill_profiles_b =
-      autofill_helper::GetPersonalDataManager(profile_b_)->GetProfiles();
+      autofill_helper::GetPersonalDataManager(profile_b_)
+          ->address_data_manager()
+          .GetProfiles();
   return ProfilesMatchImpl(expected_count_, profile_a_, autofill_profiles_a,
                            profile_b_, autofill_profiles_b, os);
 }
 
-void AutofillProfileChecker::OnPersonalDataChanged() {
+void AutofillProfileChecker::OnAddressDataChanged() {
   CheckExitCondition();
 }

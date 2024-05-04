@@ -9,7 +9,7 @@
 namespace device {
 
 #if BUILDFLAG(IS_MAC)
-// TODO(crbug.com/1492383): Resolve or mitigate this issue before launching.
+// TODO(crbug.com/40074794): Resolve or mitigate this issue before launching.
 BASE_FEATURE(kNewUsbBackend,
              "NewUsbBackend",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -33,5 +33,11 @@ BASE_FEATURE(kWebBluetoothConfirmPairingSupport,
              "WebBluetoothConfirmPairingSupport",
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX)
+
+#if defined(USE_UDEV)
+BASE_FEATURE(kUdevUsbSubsystemFilter,
+             "UdevUsbSubsystemFilter",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+#endif  // defined(USE_UDEV)
 }  // namespace features
 }  // namespace device

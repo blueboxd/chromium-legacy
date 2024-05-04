@@ -11,6 +11,7 @@
 #include "base/strings/strcat.h"
 #include "content/browser/preloading/preloading.h"
 #include "content/browser/preloading/preloading_config.h"
+#include "content/browser/preloading/prerender/prerender_features.h"
 #include "content/public/browser/preloading.h"
 #include "services/metrics/public/cpp/metrics_utils.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
@@ -90,7 +91,7 @@ void PreloadingAttemptImpl::SetEligibility(PreloadingEligibility eligibility) {
   eligibility_ = eligibility;
 }
 
-// TODO(crbug.com/1464836): most call sites of this should be removed, as
+// TODO(crbug.com/40275772): most call sites of this should be removed, as
 // PreloadingConfig should subsume most feature-specific holdbacks that exist
 // today. Some cases can remain as specific overrides of the PreloadingConfig
 // logic, e.g. if DevTools is open, or for features that are still launching and
@@ -115,10 +116,10 @@ bool PreloadingAttemptImpl::ShouldHoldback() {
 
   bool should_holdback_due_to_preloading_config =
       PreloadingConfig::GetInstance().ShouldHoldback(preloading_type_,
-                                                     predictor_type_);
+                                                     creating_predictor_);
   bool should_holdback_due_to_autosr_holdback =
-      predictor_type_ == content_preloading_predictor::
-                             kSpeculationRulesFromAutoSpeculationRules &&
+      creating_predictor_ == content_preloading_predictor::
+                                 kSpeculationRulesFromAutoSpeculationRules &&
       blink::features::kAutoSpeculationRulesHoldback.Get();
   bool should_holdback = should_holdback_due_to_preloading_config ||
                          should_holdback_due_to_autosr_holdback;
@@ -183,18 +184,27 @@ base::WeakPtr<PreloadingAttempt> PreloadingAttemptImpl::GetWeakPtr() {
 }
 
 PreloadingAttemptImpl::PreloadingAttemptImpl(
-    PreloadingPredictor predictor,
+    const PreloadingPredictor& creating_predictor,
+    const PreloadingPredictor& enacting_predictor,
     PreloadingType preloading_type,
     ukm::SourceId triggered_primary_page_source_id,
-    base::RepeatingCallback<bool(const GURL&)> url_match_predicate,
+    PreloadingURLMatchCallback url_match_predicate,
     uint32_t sampling_seed)
-    : predictor_type_(predictor),
+    : creating_predictor_(creating_predictor),
+      enacting_predictor_(enacting_predictor),
       preloading_type_(preloading_type),
       triggered_primary_page_source_id_(triggered_primary_page_source_id),
       url_match_predicate_(std::move(url_match_predicate)),
       sampling_seed_(sampling_seed) {}
 
 PreloadingAttemptImpl::~PreloadingAttemptImpl() = default;
+
+std::vector<PreloadingPredictor> PreloadingAttemptImpl::GetPredictors() const {
+  if (creating_predictor_ == enacting_predictor_) {
+    return {creating_predictor_};
+  }
+  return {creating_predictor_, enacting_predictor_};
+}
 
 void PreloadingAttemptImpl::RecordPreloadingAttemptMetrics(
     ukm::SourceId navigated_page_source_id) {
@@ -203,14 +213,19 @@ void PreloadingAttemptImpl::RecordPreloadingAttemptMetrics(
   // Ensure that when the `triggering_outcome_` is kSuccess, then the
   // accurate_triggering should be true.
   if (triggering_outcome_ == PreloadingTriggeringOutcome::kSuccess) {
-    // TODO(https://crbug.com/1431055): Fix PreloadingAttempt for Prefetching in
+    // TODO(crbug.com/40263357): Fix PreloadingAttempt for Prefetching in
     // a different WebContents. It is allowed to activate a prefetched result in
     // another WebContents instance, and the WebContents that stores `this`
     // instance does not have the opportunity to set the
     // `is_accurate_triggering_` flag to true in this case.
     if (preloading_type_ != PreloadingType::kPrefetch) {
-      CHECK(is_accurate_triggering_)
-          << "TriggeringOutcome set to kSuccess without correct prediction\n";
+      if (!base::FeatureList::IsEnabled(features::kPrerender2NoVarySearch)) {
+        // TODO(crbug.com/41494389): is_accurate_triggering_ needs to be updated
+        // accordingly in the case when prerender is matched via No-Vary-Search
+        // matching.
+        CHECK(is_accurate_triggering_)
+            << "TriggeringOutcome set to kSuccess without correct prediction\n";
+      }
     }
   }
 
@@ -232,92 +247,99 @@ void PreloadingAttemptImpl::RecordPreloadingAttemptMetrics(
   }
 
   PreloadingConfig& config = PreloadingConfig::GetInstance();
-  uint32_t sampled_num = sampling_seed_;
-  sampled_num = base::Crc32(
-      sampled_num, base::as_bytes(base::make_span(&sampling_source, 1u)));
 
-  double sampling_likelihood =
-      config.SamplingLikelihood(preloading_type_, predictor_type_);
-  if (sampled_num >
-      sampling_likelihood * std::numeric_limits<uint32_t>::max()) {
-    // PreloadingAttempt is sampled out.
-    return;
-  }
+  for (const auto& predictor : GetPredictors()) {
+    uint32_t sampled_num = sampling_seed_;
+    sampled_num = base::Crc32(
+        sampled_num, base::as_bytes(base::make_span(&sampling_source, 1u)));
 
-  // Turn sampling_likelihood into an int64_t for UKM logging. Multiply by one
-  // million to preserve accuracy.
-  int64_t sampling_likelihood_per_million =
-      static_cast<int64_t>(1'000'000 * sampling_likelihood);
+    double sampling_likelihood =
+        config.SamplingLikelihood(preloading_type_, predictor);
+    if (sampled_num >
+        sampling_likelihood * std::numeric_limits<uint32_t>::max()) {
+      // PreloadingAttempt is sampled out.
+      continue;
+    }
 
-  if (navigated_page_source_id != ukm::kInvalidSourceId) {
-    ukm::builders::Preloading_Attempt builder(navigated_page_source_id);
-    builder.SetPreloadingType(static_cast<int64_t>(preloading_type_))
-        .SetPreloadingPredictor(predictor_type_.ukm_value())
-        .SetEligibility(static_cast<int64_t>(eligibility_))
-        .SetHoldbackStatus(static_cast<int64_t>(holdback_status_))
-        .SetTriggeringOutcome(static_cast<int64_t>(triggering_outcome_))
-        .SetFailureReason(static_cast<int64_t>(failure_reason_))
-        .SetAccurateTriggering(is_accurate_triggering_)
-        .SetSamplingLikelihood(sampling_likelihood_per_million);
-    if (time_to_next_navigation_) {
-      builder.SetTimeToNextNavigation(ukm::GetExponentialBucketMinForCounts1000(
-          time_to_next_navigation_->InMilliseconds()));
-    }
-    if (ready_time_) {
-      builder.SetReadyTime(ukm::GetExponentialBucketMinForCounts1000(
-          ready_time_->InMilliseconds()));
-    }
-    if (eagerness_) {
-      builder.SetSpeculationEagerness(static_cast<int64_t>(eagerness_.value()));
-    }
-    if (service_worker_registered_check_) {
-      builder.SetPrefetchServiceWorkerRegisteredCheck(
-          static_cast<int64_t>(service_worker_registered_check_.value()));
-    }
-    if (service_worker_registered_check_duration_) {
-      builder.SetPrefetchServiceWorkerRegisteredForURLCheckDuration(
-          ukm::GetExponentialBucketMin(
-              service_worker_registered_check_duration_.value()
-                  .InMicroseconds(),
-              kServiceWorkerRegisteredCheckDurationBucketSpacing));
-    }
-    builder.Record(ukm_recorder);
-  }
+    // Turn sampling_likelihood into an int64_t for UKM logging. Multiply by one
+    // million to preserve accuracy.
+    int64_t sampling_likelihood_per_million =
+        static_cast<int64_t>(1'000'000 * sampling_likelihood);
 
-  if (triggered_primary_page_source_id_ != ukm::kInvalidSourceId) {
-    ukm::builders::Preloading_Attempt_PreviousPrimaryPage builder(
-        triggered_primary_page_source_id_);
-    builder.SetPreloadingType(static_cast<int64_t>(preloading_type_))
-        .SetPreloadingPredictor(predictor_type_.ukm_value())
-        .SetEligibility(static_cast<int64_t>(eligibility_))
-        .SetHoldbackStatus(static_cast<int64_t>(holdback_status_))
-        .SetTriggeringOutcome(static_cast<int64_t>(triggering_outcome_))
-        .SetFailureReason(static_cast<int64_t>(failure_reason_))
-        .SetAccurateTriggering(is_accurate_triggering_)
-        .SetSamplingLikelihood(sampling_likelihood_per_million);
-    if (time_to_next_navigation_) {
-      builder.SetTimeToNextNavigation(ukm::GetExponentialBucketMinForCounts1000(
-          time_to_next_navigation_->InMilliseconds()));
+    if (navigated_page_source_id != ukm::kInvalidSourceId) {
+      ukm::builders::Preloading_Attempt builder(navigated_page_source_id);
+      builder.SetPreloadingType(static_cast<int64_t>(preloading_type_))
+          .SetPreloadingPredictor(predictor.ukm_value())
+          .SetEligibility(static_cast<int64_t>(eligibility_))
+          .SetHoldbackStatus(static_cast<int64_t>(holdback_status_))
+          .SetTriggeringOutcome(static_cast<int64_t>(triggering_outcome_))
+          .SetFailureReason(static_cast<int64_t>(failure_reason_))
+          .SetAccurateTriggering(is_accurate_triggering_)
+          .SetSamplingLikelihood(sampling_likelihood_per_million);
+      if (time_to_next_navigation_) {
+        builder.SetTimeToNextNavigation(
+            ukm::GetExponentialBucketMinForCounts1000(
+                time_to_next_navigation_->InMilliseconds()));
+      }
+      if (ready_time_) {
+        builder.SetReadyTime(ukm::GetExponentialBucketMinForCounts1000(
+            ready_time_->InMilliseconds()));
+      }
+      if (eagerness_) {
+        builder.SetSpeculationEagerness(
+            static_cast<int64_t>(eagerness_.value()));
+      }
+      if (service_worker_registered_check_) {
+        builder.SetPrefetchServiceWorkerRegisteredCheck(
+            static_cast<int64_t>(service_worker_registered_check_.value()));
+      }
+      if (service_worker_registered_check_duration_) {
+        builder.SetPrefetchServiceWorkerRegisteredForURLCheckDuration(
+            ukm::GetExponentialBucketMin(
+                service_worker_registered_check_duration_.value()
+                    .InMicroseconds(),
+                kServiceWorkerRegisteredCheckDurationBucketSpacing));
+      }
+      builder.Record(ukm_recorder);
     }
-    if (ready_time_) {
-      builder.SetReadyTime(ukm::GetExponentialBucketMinForCounts1000(
-          ready_time_->InMilliseconds()));
+
+    if (triggered_primary_page_source_id_ != ukm::kInvalidSourceId) {
+      ukm::builders::Preloading_Attempt_PreviousPrimaryPage builder(
+          triggered_primary_page_source_id_);
+      builder.SetPreloadingType(static_cast<int64_t>(preloading_type_))
+          .SetPreloadingPredictor(predictor.ukm_value())
+          .SetEligibility(static_cast<int64_t>(eligibility_))
+          .SetHoldbackStatus(static_cast<int64_t>(holdback_status_))
+          .SetTriggeringOutcome(static_cast<int64_t>(triggering_outcome_))
+          .SetFailureReason(static_cast<int64_t>(failure_reason_))
+          .SetAccurateTriggering(is_accurate_triggering_)
+          .SetSamplingLikelihood(sampling_likelihood_per_million);
+      if (time_to_next_navigation_) {
+        builder.SetTimeToNextNavigation(
+            ukm::GetExponentialBucketMinForCounts1000(
+                time_to_next_navigation_->InMilliseconds()));
+      }
+      if (ready_time_) {
+        builder.SetReadyTime(ukm::GetExponentialBucketMinForCounts1000(
+            ready_time_->InMilliseconds()));
+      }
+      if (eagerness_) {
+        builder.SetSpeculationEagerness(
+            static_cast<int64_t>(eagerness_.value()));
+      }
+      if (service_worker_registered_check_) {
+        builder.SetPrefetchServiceWorkerRegisteredCheck(
+            static_cast<int64_t>(service_worker_registered_check_.value()));
+      }
+      if (service_worker_registered_check_duration_) {
+        builder.SetPrefetchServiceWorkerRegisteredForURLCheckDuration(
+            ukm::GetExponentialBucketMin(
+                service_worker_registered_check_duration_.value()
+                    .InMicroseconds(),
+                kServiceWorkerRegisteredCheckDurationBucketSpacing));
+      }
+      builder.Record(ukm_recorder);
     }
-    if (eagerness_) {
-      builder.SetSpeculationEagerness(static_cast<int64_t>(eagerness_.value()));
-    }
-    if (service_worker_registered_check_) {
-      builder.SetPrefetchServiceWorkerRegisteredCheck(
-          static_cast<int64_t>(service_worker_registered_check_.value()));
-    }
-    if (service_worker_registered_check_duration_) {
-      builder.SetPrefetchServiceWorkerRegisteredForURLCheckDuration(
-          ukm::GetExponentialBucketMin(
-              service_worker_registered_check_duration_.value()
-                  .InMicroseconds(),
-              kServiceWorkerRegisteredCheckDurationBucketSpacing));
-    }
-    builder.Record(ukm_recorder);
   }
 }
 
@@ -326,11 +348,13 @@ void PreloadingAttemptImpl::RecordPreloadingAttemptUMA() {
   // 1. Track the number of attempts;
   // 2. Track the attempts' rates of various terminal status (i.e. success
   // rate).
-  const auto uma_triggering_outcome_histogram =
-      base::StrCat({"Preloading.", PreloadingTypeToString(preloading_type_),
-                    ".Attempt.", predictor_type_.name(), ".TriggeringOutcome"});
-  base::UmaHistogramEnumeration(std::move(uma_triggering_outcome_histogram),
-                                triggering_outcome_);
+  for (const auto& predictor : GetPredictors()) {
+    const auto uma_triggering_outcome_histogram =
+        base::StrCat({"Preloading.", PreloadingTypeToString(preloading_type_),
+                      ".Attempt.", predictor.name(), ".TriggeringOutcome"});
+    base::UmaHistogramEnumeration(std::move(uma_triggering_outcome_histogram),
+                                  triggering_outcome_);
+  }
 }
 
 void PreloadingAttemptImpl::SetIsAccurateTriggering(const GURL& navigated_url) {
@@ -349,16 +373,14 @@ void PreloadingAttemptImpl::SetIsAccurateTriggering(const GURL& navigated_url) {
 
 void PreloadingAttemptImpl::SetSpeculationEagerness(
     blink::mojom::SpeculationEagerness eagerness) {
-  CHECK(predictor_type_.ukm_value() ==
-            content_preloading_predictor::kSpeculationRules.ukm_value() ||
-        predictor_type_.ukm_value() ==
-            content_preloading_predictor::kSpeculationRulesFromIsolatedWorld
-                .ukm_value() ||
-        predictor_type_.ukm_value() ==
-            content_preloading_predictor::
-                kSpeculationRulesFromAutoSpeculationRules.ukm_value())
-      << "predictor_type_: " << predictor_type_.name()
-      << " (ukm_value = " << predictor_type_.ukm_value() << ")";
+  CHECK(creating_predictor_ ==
+            content_preloading_predictor::kSpeculationRules ||
+        creating_predictor_ ==
+            content_preloading_predictor::kSpeculationRulesFromIsolatedWorld ||
+        creating_predictor_ == content_preloading_predictor::
+                                   kSpeculationRulesFromAutoSpeculationRules)
+      << "predictor_type_: " << creating_predictor_.name()
+      << " (ukm_value = " << creating_predictor_.ukm_value() << ")";
   eagerness_ = eagerness;
 }
 

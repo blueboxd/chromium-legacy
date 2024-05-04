@@ -4,6 +4,7 @@
 
 #include <memory>
 
+#include "ash/constants/ash_features.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/raw_ptr.h"
 #include "base/scoped_observation.h"
@@ -59,7 +60,8 @@ TEST_F(FileSuggestKeyedServiceTest, GetSuggestData) {
   tester.ExpectBucketCount(
       "Ash.Search.DriveFileSuggestDataValidation.Status",
       /*sample=*/DriveSuggestValidationStatus::kDriveFSNotMounted,
-      /*expected_count=*/1);
+      /*expected_count=*/
+      features::IsLauncherContinueSectionWithRecentsEnabled() ? 0 : 1);
 }
 
 class FileSuggestKeyedServiceRemoveTest : public FileSuggestKeyedServiceTest {
@@ -136,9 +138,12 @@ class FileSuggestKeyedServiceRemoveTest : public FileSuggestKeyedServiceTest {
       suggested_file_paths.push_back(mount_point->CreateArbitraryFile());
       suggestions.emplace_back(type, suggested_file_paths.back(),
                                /*new_prediction_reason=*/std::nullopt,
-                               /*timestamp=*/std::nullopt,
-                               /*secondary_timestamp=*/std::nullopt,
-                               /*new_score=*/std::nullopt);
+                               /*modified_time=*/std::nullopt,
+                               /*viewed_time=*/std::nullopt,
+                               /*shared_time=*/std::nullopt,
+                               /*new_score=*/std::nullopt,
+                               /*drive_file_id=*/std::nullopt,
+                               /*icon_url=*/std::nullopt);
     }
     file_suggest_service_->SetSuggestionsForType(type, suggestions);
     return suggested_file_paths;

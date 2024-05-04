@@ -28,6 +28,13 @@
     number = base::SysUTF16ToNSString(autofill::CreditCard::StripSeparators(
         creditCard.GetRawInfo(autofill::CREDIT_CARD_NUMBER)));
   }
+
+  BOOL canFillDirectly =
+      (creditCard.record_type() !=
+       autofill::CreditCard::RecordType::kMaskedServerCard) &&
+      (creditCard.record_type() !=
+       autofill::CreditCard::RecordType::kVirtualCard);
+
   const int issuerNetworkIconID =
       autofill::data_util::GetPaymentRequestData(creditCard.network())
           .icon_resource_id;
@@ -60,7 +67,8 @@
            obfuscatedNumber:obfuscatedNumber
              expirationYear:expirationYear
             expirationMonth:expirationMonth
-                 recordType:creditCard.record_type()];
+                 recordType:creditCard.record_type()
+            canFillDirectly:canFillDirectly];
 }
 
 @end

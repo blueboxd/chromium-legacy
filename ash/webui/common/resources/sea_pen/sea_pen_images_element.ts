@@ -19,14 +19,18 @@ import './sea_pen_feedback_element.js';
 import './sea_pen_image_loading_element.js';
 import './sea_pen_zero_state_svg_element.js';
 
+import {afterNextRender} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
 import {Query, SeaPenImageId} from './constants.js';
+import {isLacrosEnabled} from './load_time_booleans.js';
 import {MantaStatusCode, SeaPenThumbnail} from './sea_pen.mojom-webui.js';
 import {clearSeaPenThumbnails, openFeedbackDialog, selectSeaPenWallpaper} from './sea_pen_controller.js';
 import {SeaPenTemplateId} from './sea_pen_generated.mojom-webui.js';
 import {getTemplate} from './sea_pen_images_element.html.js';
 import {getSeaPenProvider} from './sea_pen_interface_provider.js';
+import {logSeaPenTemplateFeedback, logSeaPenThumbnailClicked} from './sea_pen_metrics_logger.js';
 import {WithSeaPenStore} from './sea_pen_store.js';
-import {isNonEmptyArray, isSeaPenImageId, logSeaPenTemplateFeedback} from './sea_pen_utils.js';
+import {isNonEmptyArray, isPersonalizationApp, isSeaPenImageId} from './sea_pen_utils.js';
 
 const kLoadingPlaceholderCount = 8;
 
@@ -98,6 +102,7 @@ export class SeaPenImagesElement extends WithSeaPenStore {
   private pendingSelected_: SeaPenImageId|SeaPenThumbnail|null;
   private thumbnailResponseStatusCode_: MantaStatusCode|null;
   private showError_: boolean;
+  private cameraFeed_: HTMLVideoElement|null;
 
   override connectedCallback() {
     super.connectedCallback();
@@ -136,18 +141,23 @@ export class SeaPenImagesElement extends WithSeaPenStore {
     switch (statusCode) {
       case MantaStatusCode.kNoInternetConnection:
         return 'personalization-shared-illo:network_error';
-      default:
+      case MantaStatusCode.kPerUserQuotaExceeded:
+      case MantaStatusCode.kResourceExhausted:
         return 'personalization-shared-illo:resource_error';
+      default:
+        return 'personalization-shared-illo:generic_error';
     }
   }
 
   private getPoweredByGoogleMessage_(): string {
-    return window.location.origin === 'chrome://personalization' ?
+    return isPersonalizationApp() ?
         this.i18n('seaPenWallpaperPoweredByGoogle') :
         this.i18n('vcBackgroundPoweredByGoogle');
   }
 
   private onTemplateIdChanged_() {
+    this.cameraFeed_?.remove();
+    this.cameraFeed_ = null;
     clearSeaPenThumbnails(this.getStore());
   }
 
@@ -196,6 +206,17 @@ export class SeaPenImagesElement extends WithSeaPenStore {
         /*newList=*/ thumbnails,
         /*identityBasedUpdate=*/ true,
     );
+
+    if (this.cameraFeed_) {
+      this.cameraFeed_.style.display = 'none';
+    }
+
+    // focus on the first thumbnail if the thumbnails are generated
+    // successfully.
+    afterNextRender(this, () => {
+      window.scrollTo(0, 0);
+      this.shadowRoot!.querySelector<HTMLElement>('.sea-pen-image')?.focus();
+    });
   }
 
   private onThumbnailsLoadingChanged_(thumbnailsLoading: boolean) {
@@ -212,9 +233,54 @@ export class SeaPenImagesElement extends WithSeaPenStore {
     );
   }
 
+  private maybeCreateCameraFeed_(): HTMLVideoElement|null {
+    if (isPersonalizationApp() || isLacrosEnabled()) {
+      return null;
+    }
+    let cameraFeed: HTMLVideoElement|null = document.createElement('video');
+    // Stretch camera stream to fit into the image.
+    cameraFeed.style.objectFit = 'contain';
+    // Align camera feed with the clicked image.
+    cameraFeed.style.position = 'relative';
+    // Flip left and right so that camera matches with the image.
+    cameraFeed.style.transform = 'scale(-1, 1)';
+
+    if (navigator.mediaDevices.getUserMedia) {
+      navigator.mediaDevices.getUserMedia({video: true})
+          .then(function(stream: MediaStream) {
+            cameraFeed!.srcObject = stream;
+            cameraFeed!.play();
+          })
+          .catch(function(err) {
+            console.log(err);
+            cameraFeed = null;
+          });
+    }
+
+    return cameraFeed;
+  }
+
   private onThumbnailSelected_(event: Event&{model: {item: Tile}}) {
     if (!this.isSeaPenThumbnail_(event.model.item)) {
       return;
+    }
+
+    this.cameraFeed_?.remove();
+    this.cameraFeed_ = this.maybeCreateCameraFeed_();
+
+    if (this.cameraFeed_) {
+      // Attached cameraFeed_ to the selected image.
+      const item = ((event.target as Element)!.shadowRoot as
+                    ShadowRoot)!.querySelector<HTMLElement>('.item')!;
+      this.cameraFeed_.remove();
+      item.appendChild(this.cameraFeed_);
+      this.cameraFeed_.width = item.clientWidth;
+      this.cameraFeed_.height = item.clientHeight;
+      this.cameraFeed_.style.display = 'block';
+    }
+
+    if (this.templateId in SeaPenTemplateId) {
+      logSeaPenThumbnailClicked(this.templateId as SeaPenTemplateId);
     }
 
     selectSeaPenWallpaper(
@@ -223,6 +289,24 @@ export class SeaPenImagesElement extends WithSeaPenStore {
 
   private getAriaIndex_(i: number): number {
     return i + 1;
+  }
+
+  private getAriaDescription_(
+      thumbnail: Tile|undefined, currentSelected: SeaPenImageId|null,
+      pendingSelected: SeaPenImageId|SeaPenThumbnail|null): string {
+    // TODO(b/331657978): update the real string for aria-description of Sea Pen
+    // image.
+    if (this.isThumbnailPendingSelected_(thumbnail, pendingSelected)) {
+      // Do not show upscaling message for Vc Background.
+      return isPersonalizationApp() ? this.i18n('seaPenCreatingHighResImage') :
+                                      '';
+    }
+    if (this.isThumbnailSelected_(
+            thumbnail, currentSelected, pendingSelected)) {
+      return isPersonalizationApp() ? this.i18n('seaPenSetWallpaper') :
+                                      this.i18n('seaPenSetCameraBackground');
+    }
+    return '';
   }
 
   private isThumbnailSelected_(
@@ -310,14 +394,15 @@ export class SeaPenImagesElement extends WithSeaPenStore {
   }
   // END AUTOGENERATED - DO NOT EDIT!
 
-  private onSelectedFeedbackChanged_(event:
-                                         CustomEvent<{isThumbsUp: boolean}>) {
+  private onSelectedFeedbackChanged_(
+      event: CustomEvent<{isThumbsUp: boolean, thumbnailId: number}>) {
     const isThumbsUp = event.detail.isThumbsUp;
     const templateName = this.getTemplateNameFromId_(this.templateId);
     logSeaPenTemplateFeedback(templateName, isThumbsUp);
     const metadata = {
       isPositive: isThumbsUp,
       logId: templateName,
+      generationSeed: event.detail.thumbnailId,
     };
     openFeedbackDialog(metadata, getSeaPenProvider());
   }

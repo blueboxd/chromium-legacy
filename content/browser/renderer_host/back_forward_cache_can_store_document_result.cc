@@ -179,8 +179,6 @@ ProtoEnum::BackForwardCacheNotRestoredReason NotRestoredReasonToTraceEnum(
       return ProtoEnum::CACHE_CONTROL_NO_STORE_COOKIE_MODIFIED;
     case Reason::kCacheControlNoStoreHTTPOnlyCookieModified:
       return ProtoEnum::CACHE_CONTROL_NO_STORE_HTTP_ONLY_COOKIE_MODIFIED;
-    case Reason::kNoResponseHead:
-      return ProtoEnum::NO_RESPONSE_HEAD;
     case Reason::kErrorDocument:
       return ProtoEnum::ERROR_DOCUMENT;
     case Reason::kCookieDisabled:
@@ -231,21 +229,6 @@ bool BackForwardCacheCanStoreDocumentResult::HasNotRestoredReason(
 void BackForwardCacheCanStoreDocumentResult::AddNotRestoredReason(
     BackForwardCacheMetrics::NotRestoredReason reason) {
   not_restored_reasons_.Put(reason);
-
-  if (reason == BackForwardCacheMetrics::NotRestoredReason::kNoResponseHead ||
-      reason ==
-          BackForwardCacheMetrics::NotRestoredReason::kSchemeNotHTTPOrHTTPS) {
-    if (not_restored_reasons_.Has(
-            BackForwardCacheMetrics::NotRestoredReason::kNoResponseHead) &&
-        not_restored_reasons_.Has(BackForwardCacheMetrics::NotRestoredReason::
-                                      kSchemeNotHTTPOrHTTPS) &&
-        !not_restored_reasons_.Has(
-            BackForwardCacheMetrics::NotRestoredReason::kHTTPStatusNotOK)) {
-      CaptureTraceForNavigationDebugScenario(
-          DebugScenario::kDebugNoResponseHeadForHttpOrHttps);
-      base::debug::DumpWithoutCrashing();
-    }
-  }
 }
 
 bool BackForwardCacheCanStoreDocumentResult::CanStore() const {
@@ -262,14 +245,14 @@ bool BackForwardCacheCanStoreDocumentResult::CanStore() const {
                       {Reason::kCacheControlNoStore,
                        Reason::kCacheControlNoStoreCookieModified,
                        Reason::kCacheControlNoStoreHTTPOnlyCookieModified})
-        .Empty();
+        .empty();
   } else {
-    return not_restored_reasons_.Empty();
+    return not_restored_reasons_.empty();
   }
 }
 
 bool BackForwardCacheCanStoreDocumentResult::CanRestore() const {
-  return not_restored_reasons_.Empty();
+  return not_restored_reasons_.empty();
 }
 
 const BlockListedFeatures
@@ -452,9 +435,6 @@ std::string BackForwardCacheCanStoreDocumentResult::NotRestoredReasonToString(
       return "Pages with cache-control:no-store went into bfcache temporarily "
              "because of the flag, and while in bfcache the HTTP-only cookie"
              "was modified or deleted and thus evicted.";
-    case Reason::kNoResponseHead:
-      return "main RenderFrameHost doesn't have response headers set, probably "
-             "due not having successfully committed a navigation.";
     case Reason::kErrorDocument:
       return "Error documents cannot be stored in bfcache";
     case Reason::kCookieDisabled:
@@ -472,17 +452,17 @@ std::string
 BackForwardCacheCanStoreDocumentResult::NotRestoredReasonToReportString(
     BackForwardCacheMetrics::NotRestoredReason reason) const {
   switch (reason) {
-    // TODO(crbug.com/1349223): Add string to all reasons. Be sure to mask
-    // extension related reasons so that its presence would not be visible to
-    // the API.
+    // Report strings have to match the ones defined in the spec.
+    // If you ever add a new one, you have to add it to the spec as well.
+    // https://html.spec.whatwg.org/#nrr-details-reason
     case Reason::kNotPrimaryMainFrame:
       return "not-main-frame";
     case Reason::kRelatedActiveContentsExist:
-      return "related-active-contents";
+      return "non-trivial-browsing-context-group";
     case Reason::kSchemeNotHTTPOrHTTPS:
-      return "not-http-https-scheme";
+      return "response-scheme-not-http-or-https";
     case Reason::kLoading:
-      return "loading";
+      return "navigating";
     case Reason::kWasGrantedMediaAccess:
       return "granted-media-access";
     case Reason::kBlocklistedFeatures:
@@ -490,9 +470,9 @@ BackForwardCacheCanStoreDocumentResult::NotRestoredReasonToReportString(
       // reported.
       return "Blocklisted feature";
     case Reason::kHTTPMethodNotGET:
-      return "http-not-get";
+      return "response-method-not-get";
     case Reason::kSubframeIsNavigating:
-      return "subframe-navigating";
+      return "frame-navigating";
     case Reason::kTimeout:
       return "timeout";
     case Reason::kServiceWorkerVersionActivation:
@@ -506,17 +486,15 @@ BackForwardCacheCanStoreDocumentResult::NotRestoredReasonToReportString(
     case Reason::kServiceWorkerClaim:
       return "serviceworker-claim";
     case Reason::kNavigationCancelledWhileRestoring:
-      return "navigation-cancelled";
+      return "navigation-canceled";
     case Reason::kServiceWorkerUnregistration:
       return "serviceworker-unregistration";
-    case Reason::kNoResponseHead:
-      return "no-response-head";
     case Reason::kErrorDocument:
     case Reason::kHTTPStatusNotOK:
-      return "navigation-failure";
+      return "response-status-not-ok";
     case Reason::kUnloadHandlerExistsInMainFrame:
     case Reason::kUnloadHandlerExistsInSubFrame:
-      return "unload-handler";
+      return "unload-listener";
     case Reason::kNetworkRequestRedirected:
     case Reason::kNetworkRequestTimeout:
     case Reason::kNetworkExceedsBufferLimit:
@@ -527,13 +505,13 @@ BackForwardCacheCanStoreDocumentResult::NotRestoredReasonToReportString(
     case Reason::kCacheControlNoStore:
     case Reason::kCacheControlNoStoreCookieModified:
     case Reason::kCacheControlNoStoreHTTPOnlyCookieModified:
-      return "cache-control-no-store";
+      return "response-cache-control-no-store";
     case Reason::kCookieDisabled:
       return "cookie-disabled";
     case Reason::kHTTPAuthRequired:
-      return "http-auth-required";
+      return "response-auth-required";
     case Reason::kCookieFlushed:
-      return "cookie-flushed";
+      return "cookie-removed";
     case Reason::kDisableForRenderFrameHostCalled:
       return DisabledReasonsToString(disabled_reasons_,
                                      /*for_not_restored_reasons=*/true);

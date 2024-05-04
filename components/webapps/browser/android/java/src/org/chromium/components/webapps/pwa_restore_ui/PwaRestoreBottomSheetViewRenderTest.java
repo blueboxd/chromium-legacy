@@ -5,6 +5,7 @@
 package org.chromium.components.webapps.pwa_restore_ui;
 
 import android.app.Activity;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,11 +14,15 @@ import android.widget.LinearLayout.LayoutParams;
 
 import androidx.test.filters.SmallTest;
 
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.test.BaseActivityTestRule;
 import org.chromium.base.test.params.BaseJUnit4RunnerDelegate;
@@ -27,6 +32,7 @@ import org.chromium.base.test.params.ParameterSet;
 import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.JniMocker;
 import org.chromium.components.browser_ui.widget.test.R;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -34,6 +40,7 @@ import org.chromium.ui.test.util.BlankUiTestActivity;
 import org.chromium.ui.test.util.NightModeTestUtils;
 import org.chromium.ui.test.util.RenderTestRule;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /** Render test for {@link PwaRestoreBottomSheetView}. */
@@ -58,6 +65,8 @@ public class PwaRestoreBottomSheetViewRenderTest {
                     .setBugComponent(RenderTestRule.Component.UI_BROWSER_WEB_APP_INSTALLS)
                     .build();
 
+    @Rule public JniMocker mocker = new JniMocker();
+
     @BeforeClass
     public static void setupSuite() {
         sActivityTestRule.launchActivity(null);
@@ -65,6 +74,15 @@ public class PwaRestoreBottomSheetViewRenderTest {
                 () -> {
                     sActivity = sActivityTestRule.getActivity();
                 });
+    }
+
+    @Mock private PwaRestoreBottomSheetMediator.Natives mNativeMock;
+
+    @Before
+    public void setUp() {
+        MockitoAnnotations.initMocks(this);
+        mocker.mock(PwaRestoreBottomSheetMediatorJni.TEST_HOOKS, mNativeMock);
+        Mockito.when(mNativeMock.initialize(Mockito.any())).thenReturn(0L);
     }
 
     public PwaRestoreBottomSheetViewRenderTest(boolean nightModeEnabled) {
@@ -78,17 +96,29 @@ public class PwaRestoreBottomSheetViewRenderTest {
 
     private final boolean mNightModeEnabled;
 
+    private static Bitmap createBitmap(int color) {
+        int[] colors = {color};
+        return Bitmap.createBitmap(colors, 1, 1, Bitmap.Config.ALPHA_8);
+    }
+
     private void initializeBottomSheet() {
-        String[][] appList =
-                new String[][] {
-                    {"foo", "Bar"},
-                    {"bar", "Foo"},
-                    {"foobar", "Barfoo"},
-                };
-        int[] lastUsedList = {1, 2, 3};
+        String[] appIds = new String[] {"foo", "bar", "foobar"};
+        String[] appNames = new String[] {"Foo", "Bar", "Barfoo"};
+        List<Bitmap> appIcons = new ArrayList<Bitmap>();
+        appIcons.add(createBitmap(Color.RED));
+        appIcons.add(createBitmap(Color.GREEN));
+        appIcons.add(createBitmap(Color.BLUE));
+        int[] lastUsedList = new int[] {1, 2, 3};
+
         mCoordinator =
                 new PwaRestoreBottomSheetCoordinator(
-                        appList, lastUsedList, sActivity, null, R.drawable.ic_arrow_back_24dp);
+                        appIds,
+                        appNames,
+                        appIcons,
+                        lastUsedList,
+                        sActivity,
+                        null,
+                        R.drawable.ic_arrow_back_24dp);
         PropertyModel model = mCoordinator.getModelForTesting();
         model.set(PwaRestoreProperties.VIEW_STATE, PwaRestoreProperties.ViewState.PREVIEW);
 

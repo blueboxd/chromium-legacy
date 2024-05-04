@@ -32,8 +32,19 @@ class TestAnchorEvaluator : public AnchorEvaluator {
       : result_(result) {}
 
   std::optional<LayoutUnit> Evaluate(
-      const CalculationExpressionNode&) override {
+      const AnchorQuery&,
+      const ScopedCSSName* position_anchor,
+      const std::optional<InsetAreaOffsets>&) override {
     return result_;
+  }
+  std::optional<InsetAreaOffsets> ComputeInsetAreaOffsetsForLayout(
+      const ScopedCSSName*,
+      InsetArea) override {
+    return InsetAreaOffsets();
+  }
+  std::optional<PhysicalOffset> ComputeAnchorCenterOffsets(
+      const ComputedStyleBuilder&) override {
+    return std::nullopt;
   }
 
  private:
@@ -86,7 +97,10 @@ class CSSToLengthConversionDataTest : public PageTestBase {
         GetDocument().documentElement()->GetComputedStyle(),
         CSSToLengthConversionData::ViewportSize(GetDocument().GetLayoutView()),
         CSSToLengthConversionData::ContainerSizes(),
-        CSSToLengthConversionData::AnchorData(div, options.anchor_evaluator),
+        CSSToLengthConversionData::AnchorData(
+            options.anchor_evaluator,
+            /* position_anchor */ nullptr,
+            /* inset_area_offsets */ std::nullopt),
         options.data_zoom.value_or(div->GetComputedStyle()->EffectiveZoom()),
         options.flags ? *options.flags : ignored_flags_);
   }
@@ -364,7 +378,6 @@ TEST_F(CSSToLengthConversionDataTest, AnchorFunction) {
 
   CSSPropertyID right = CSSPropertyID::kRight;
 
-  EXPECT_FLOAT_EQ(60.0f, ConvertPx(data, "anchor(left)", right));
   EXPECT_FLOAT_EQ(60.0f, ConvertPx(data, "anchor(--a left)", right));
   EXPECT_FLOAT_EQ(2.0f, ConvertPx(data, "calc(anchor(--a left) / 30)", right));
 }
@@ -378,7 +391,6 @@ TEST_F(CSSToLengthConversionDataTest, AnchorFunctionFallback) {
 
   CSSPropertyID right = CSSPropertyID::kRight;
 
-  EXPECT_FLOAT_EQ(0.0f, ConvertPx(data, "anchor(left)", right));
   EXPECT_FLOAT_EQ(42.0f, ConvertPx(data, "anchor(--a left, 42px)", right));
   EXPECT_FLOAT_EQ(
       52.0f, ConvertPx(data, "anchor(--a left, calc(42px + 10px))", right));
@@ -410,7 +422,6 @@ TEST_F(CSSToLengthConversionDataTest, AnchorSizeFunctionFallback) {
 
   CSSPropertyID width = CSSPropertyID::kWidth;
 
-  EXPECT_FLOAT_EQ(0.0f, ConvertPx(data, "anchor-size(width)", width));
   EXPECT_FLOAT_EQ(42.0f,
                   ConvertPx(data, "anchor-size(--a width, 42px)", width));
   EXPECT_FLOAT_EQ(
@@ -434,7 +445,7 @@ TEST_F(CSSToLengthConversionDataTest, AnchorWithinOtherFunction) {
   EXPECT_EQ(ConvertLength(data, "calc(10px + 42%)", right),
             ConvertLength(data, "calc(anchor(--a left, 10px) + 42%)", right));
   EXPECT_EQ(ConvertLength(data, "calc(0px + 42%)", right),
-            ConvertLength(data, "calc(anchor(--a left) + 42%)", right));
+            ConvertLength(data, "calc(anchor(--a left, 0px) + 42%)", right));
   EXPECT_EQ(ConvertLength(data, "min(10px, 42%)", right),
             ConvertLength(data, "min(anchor(--a left, 10px), 42%)", right));
   EXPECT_EQ(ConvertLength(data, "min(10px, 42%)", right),
@@ -519,6 +530,36 @@ TEST_F(CSSToLengthConversionDataTest, AnchorFunctionLengthPercentageFallback) {
             ConvertLength(data, "anchor(--a left, calc(10px + 42%))", right));
   EXPECT_EQ(ConvertLength(data, "min(10px, 42%)", right),
             ConvertLength(data, "anchor(--a left, min(10px, 42%))", right));
+}
+
+TEST_F(CSSToLengthConversionDataTest, ContainerUnitsWithContainerName) {
+  auto* container = MakeGarbageCollected<HTMLDivElement>(GetDocument());
+  container->SetInlineStyleProperty(CSSPropertyID::kWidth, "322px");
+  container->SetInlineStyleProperty(CSSPropertyID::kHeight, "228px");
+  container->SetInlineStyleProperty(CSSPropertyID::kContainerName,
+                                    "root_container");
+  container->SetInlineStyleProperty(CSSPropertyID::kContainerType, "size");
+  auto* child = MakeGarbageCollected<HTMLDivElement>(GetDocument());
+  GetDocument().body()->AppendChild(container);
+  container->AppendChild(child);
+  UpdateAllLifecyclePhasesForTest();
+
+  CSSToLengthConversionData::Flags flags = 0;
+  CSSToLengthConversionData length_resolver(
+      child->ComputedStyleRef(), GetDocument().body()->GetComputedStyle(),
+      GetDocument().documentElement()->GetComputedStyle(),
+      CSSToLengthConversionData::ViewportSize(GetDocument().GetLayoutView()),
+      CSSToLengthConversionData::ContainerSizes(child),
+      CSSToLengthConversionData::AnchorData(
+          nullptr,
+          /* position_anchor */ nullptr,
+          /* inset_area_offsets */ std::nullopt),
+      child->GetComputedStyle()->EffectiveZoom(), flags);
+
+  ScopedCSSName* name = MakeGarbageCollected<ScopedCSSName>(
+      AtomicString("root_container"), nullptr);
+  EXPECT_EQ(length_resolver.ContainerWidth(*name), 322);
+  EXPECT_EQ(length_resolver.ContainerHeight(*name), 228);
 }
 
 }  // namespace blink

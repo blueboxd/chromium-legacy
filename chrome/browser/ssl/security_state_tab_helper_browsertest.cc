@@ -436,7 +436,7 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest, HttpsPage) {
       false /* expect cert status error */);
 }
 
-// TODO(https://crbug.com/1477317): Add an end-to-end test for
+// TODO(crbug.com/40928765): Add an end-to-end test for
 // security_state::SECURE_WITH_POLICY_INSTALLED_CERT (currently that depends on
 // a cros-specific policy/service).
 
@@ -636,7 +636,7 @@ class
 
 // Checks that the proper security state is displayed when the passive mixed
 // content warning feature is enabled.
-// TODO(crbug.com/1026464): Once that launch is finished and other tests run
+// TODO(crbug.com/40108287): Once that launch is finished and other tests run
 // with the feature enabled this test and the class will be redundant and can be
 // removed.
 IN_PROC_BROWSER_TEST_F(
@@ -1147,9 +1147,11 @@ IN_PROC_BROWSER_TEST_F(SecurityStateLoadingTest, NavigationStateChanges) {
 
   // Navigate to a page that doesn't finish loading. Test that the
   // security state is neutral while the page is loading.
-  browser()->OpenURL(content::OpenURLParams(
-      embedded_test_server()->GetURL("/title1.html"), content::Referrer(),
-      WindowOpenDisposition::CURRENT_TAB, ui::PAGE_TRANSITION_TYPED, false));
+  browser()->OpenURL(
+      content::OpenURLParams(
+          embedded_test_server()->GetURL("/title1.html"), content::Referrer(),
+          WindowOpenDisposition::CURRENT_TAB, ui::PAGE_TRANSITION_TYPED, false),
+      /*navigation_handle_callback=*/{});
   CheckSecurityInfoForNonCommitted(
       browser()->tab_strip_model()->GetActiveWebContents());
 }
@@ -1497,7 +1499,7 @@ IN_PROC_BROWSER_TEST_F(SignedExchangeSecurityStateTest, SecurityLevelIsSecure) {
       false /* expect_ran_mixed_content */, false /* expect_cert_error */);
 }
 
-// TODO(https://crbug.com/1461939): This test is failing on Mac12 Tests.
+// TODO(crbug.com/40921701): This test is failing on Mac12 Tests.
 #if BUILDFLAG(IS_MAC)
 #define MAYBE_SecurityLevelIsSecureAfterPrefetch \
   DISABLED_SecurityLevelIsSecureAfterPrefetch

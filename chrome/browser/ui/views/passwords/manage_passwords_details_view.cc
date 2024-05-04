@@ -48,10 +48,10 @@ using password_manager::ManagePasswordsViewIDs;
 using password_manager::metrics_util::PasswordManagementBubbleInteractions;
 
 constexpr int kIconSize = 16;
-// TODO(crbug.com/1408790): Row height should be computed from line/icon heights
-// and desired paddings, instead of a fixed value to account for font size
-// changes.
-// The height of the row in the table layout displaying the password details.
+// TODO(crbug.com/40253695): Row height should be computed from line/icon
+// heights and desired paddings, instead of a fixed value to account for font
+// size changes. The height of the row in the table layout displaying the
+// password details.
 constexpr int kDetailRowHeight = 44;
 constexpr int kMaxLinesVisibleFromPasswordNote = 7;
 
@@ -79,8 +79,8 @@ gfx::Insets ComputeRowMargins() {
 
 std::unique_ptr<views::View> CreateIconView(
     const gfx::VectorIcon& vector_icon) {
-  // TODO(crbug.com/1408790): Double check if it should always be not accessible
-  // and that there is always another way to let user know important
+  // TODO(crbug.com/40253695): Double check if it should always be not
+  // accessible and that there is always another way to let user know important
   // information.
   auto icon = std::make_unique<NonAccessibleImageView>();
   icon->SetImage(ui::ImageModel::FromVectorIcon(
@@ -464,10 +464,11 @@ std::unique_ptr<views::View> CreateEditNoteRow(
   return row;
 }
 
-std::unique_ptr<RichHoverButton> CreateManagePasswordRow() {
-  base::RepeatingClosure callback = base::DoNothing();
+std::unique_ptr<RichHoverButton> CreateManagePasswordRow(
+    base::RepeatingClosure on_manage_password_clicked_callback) {
   auto manage_password_row = std::make_unique<RichHoverButton>(
-      std::move(callback),
+      /*callback=*/
+      std::move(on_manage_password_clicked_callback),
       /*main_image_icon=*/
       ui::ImageModel::FromVectorIcon(vector_icons::kSettingsIcon,
                                      ui::kColorIcon),
@@ -526,7 +527,8 @@ ManagePasswordsDetailsView::ManagePasswordsDetailsView(
         username_exists_callback,
     base::RepeatingClosure switched_to_edit_mode_callback,
     base::RepeatingClosure on_activity_callback,
-    base::RepeatingCallback<void(bool)> on_input_validation_callback)
+    base::RepeatingCallback<void(bool)> on_input_validation_callback,
+    base::RepeatingClosure on_manage_password_clicked_callback)
     : username_exists_callback_(std::move(username_exists_callback)),
       switched_to_edit_mode_callback_(
           std::move(switched_to_edit_mode_callback)),
@@ -626,7 +628,8 @@ ManagePasswordsDetailsView::ManagePasswordsDetailsView(
                              0)))
                          .Build());
 
-    manage_password_row_ = AddChildView(CreateManagePasswordRow());
+    manage_password_row_ = AddChildView(CreateManagePasswordRow(
+        std::move(on_manage_password_clicked_callback)));
   } else {
     // We need the bottom padding only if the "Manage password" button is not
     // added to the layout.

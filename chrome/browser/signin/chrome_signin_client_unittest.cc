@@ -28,7 +28,6 @@
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
-#include "components/supervised_user/core/common/buildflags.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -134,9 +133,7 @@ TEST_F(ChromeSigninClientSignoutTest, AllAllowed) {
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   EXPECT_FALSE(profile->IsMainProfile());
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
-#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   EXPECT_FALSE(profile->IsChild());
-#endif
 
   CreateClient(profile.get());
 
@@ -218,6 +215,7 @@ bool IsAlwaysAllowedSignoutSources(
     case signin_metrics::ProfileSignout::kUserClickedRevokeSyncConsentSettings:
     case signin_metrics::ProfileSignout::
         kUserClickedSignoutFromUserPolicyNotificationDialog:
+    case signin_metrics::ProfileSignout::kSignoutDuringProfileDeletion:
       return true;
   }
 }
@@ -264,7 +262,7 @@ TEST_P(ChromeSigninClientSignoutSourceTest, UserSignoutAllowed) {
   PreSignOut(signout_source);
 }
 
-// TODO(crbug.com/1369588): Enable |ChromeSigninClientSignoutSourceTest| test
+// TODO(crbug.com/40240718): Enable |ChromeSigninClientSignoutSourceTest| test
 // suite on Android.
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || \
     BUILDFLAG(IS_MAC)
@@ -353,7 +351,9 @@ const signin_metrics::ProfileSignout kSignoutSources[] = {
     signin_metrics::ProfileSignout::kIdleTimeoutPolicyTriggeredSignOut,
     signin_metrics::ProfileSignout::kCancelSyncConfirmationRemoveAccount,
     signin_metrics::ProfileSignout::kMovePrimaryAccount,
+    signin_metrics::ProfileSignout::kSignoutDuringProfileDeletion,
 };
+
 // kNumberOfObsoleteSignoutSources should be updated when a ProfileSignout
 // value is deprecated.
 const int kNumberOfObsoleteSignoutSources = 6;

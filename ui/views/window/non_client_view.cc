@@ -38,6 +38,7 @@ int NonClientFrameView::GetHTComponentForFrame(const gfx::Point& point,
                                                int top_resize_corner_height,
                                                int resize_corner_width,
                                                bool can_resize) {
+  // If the point isnt within the resize boundaries, return nowhere.
   bool point_in_top = point.y() < resize_border.top();
   bool point_in_bottom = point.y() >= height() - resize_border.bottom();
   bool point_in_left = point.x() < resize_border.left();
@@ -46,37 +47,36 @@ int NonClientFrameView::GetHTComponentForFrame(const gfx::Point& point,
   if (!point_in_left && !point_in_right && !point_in_top && !point_in_bottom)
     return HTNOWHERE;
 
+  // If the window can't be resized, there are no resize boundaries, just
+  // window borders.
+  if (!can_resize) {
+    return HTBORDER;
+  }
+
+  // Shrink the resize boundaries
   point_in_top |= point.y() < top_resize_corner_height;
   point_in_left |= point.x() < resize_corner_width;
   point_in_right |= point.x() >= width() - resize_corner_width;
 
-  int component;
   if (point_in_top) {
     if (point_in_left) {
-      component = HTTOPLEFT;
+      return HTTOPLEFT;
     } else if (point_in_right) {
-      component = HTTOPRIGHT;
-    } else {
-      component = HTTOP;
+      return HTTOPRIGHT;
     }
+    return HTTOP;
   } else if (point_in_bottom) {
     if (point_in_left) {
-      component = HTBOTTOMLEFT;
+      return HTBOTTOMLEFT;
     } else if (point_in_right) {
-      component = HTBOTTOMRIGHT;
-    } else {
-      component = HTBOTTOM;
+      return HTBOTTOMRIGHT;
     }
+    return HTBOTTOM;
   } else if (point_in_left) {
-    component = HTLEFT;
-  } else {
-    CHECK(point_in_right);
-    component = HTRIGHT;
+    return HTLEFT;
   }
-
-  // If the window can't be resized, there are no resize boundaries, just
-  // window borders.
-  return can_resize ? component : HTBORDER;
+  CHECK(point_in_right);
+  return HTRIGHT;
 }
 
 gfx::Rect NonClientFrameView::GetBoundsForClientView() const {
@@ -90,6 +90,14 @@ gfx::Rect NonClientFrameView::GetWindowBoundsForClientBounds(
 
 bool NonClientFrameView::GetClientMask(const gfx::Size& size,
                                        SkPath* mask) const {
+  return false;
+}
+
+bool NonClientFrameView::HasWindowTitle() const {
+  return false;
+}
+
+bool NonClientFrameView::IsWindowTitleVisible() const {
   return false;
 }
 
@@ -244,11 +252,21 @@ void NonClientView::SizeConstraintsChanged() {
   frame_view_->SizeConstraintsChanged();
 }
 
-gfx::Size NonClientView::CalculatePreferredSize() const {
+bool NonClientView::HasWindowTitle() const {
+  return frame_view_->HasWindowTitle();
+}
+
+bool NonClientView::IsWindowTitleVisible() const {
+  return frame_view_->IsWindowTitleVisible();
+}
+
+gfx::Size NonClientView::CalculatePreferredSize(
+    const SizeBounds& available_size) const {
   // TODO(pkasting): This should probably be made to look similar to
   // GetMinimumSize() below.  This will require implementing GetPreferredSize()
   // better in the various frame views.
-  gfx::Rect client_bounds(gfx::Point(), client_view_->GetPreferredSize());
+  gfx::Rect client_bounds(gfx::Point(),
+                          client_view_->GetPreferredSize(available_size));
   return GetWindowBoundsForClientBounds(client_bounds).size();
 }
 
@@ -276,7 +294,8 @@ void NonClientView::Layout(PassKey) {
 }
 
 void NonClientView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  // TODO(crbug.com/1366294): Should this be pruned from the accessibility tree?
+  // TODO(crbug.com/40866857): Should this be pruned from the accessibility
+  // tree?
   node_data->role = ax::mojom::Role::kClient;
 }
 

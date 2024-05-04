@@ -19,9 +19,6 @@ namespace content {
 
 namespace {
 
-using ::network::mojom::VariantsHeaderPtr;
-
-const char kAcceptLanguageLowerCase[] = "accept-language";
 const char kReduceAcceptLanguageOriginTrial[] = "ReduceAcceptLanguage";
 
 std::string GetFirstUserAcceptLanguage(
@@ -144,18 +141,16 @@ bool ReduceAcceptLanguageUtils::ReadAndPersistAcceptLanguageForNavigation(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(parsed_headers);
 
-  if (!parsed_headers->content_language || !parsed_headers->variants_headers)
+  if (!parsed_headers->content_language || !parsed_headers->avail_language) {
     return false;
+  }
 
   if (!OriginCanReduceAcceptLanguage(request_origin))
     return false;
 
-  // Only parse and persist if the Variants headers include Accept-Language.
-  auto variants_accept_lang_iter = base::ranges::find(
-      parsed_headers->variants_headers.value(), kAcceptLanguageLowerCase,
-      &::network::mojom::VariantsHeader::name);
-  if (variants_accept_lang_iter ==
-      parsed_headers->variants_headers.value().end()) {
+  // Skip when reading user's accept-language is empty since it's required when
+  // doing language negotiation.
+  if (delegate_->GetUserAcceptLanguages().empty()) {
     return false;
   }
 
@@ -179,7 +174,7 @@ bool ReduceAcceptLanguageUtils::ReadAndPersistAcceptLanguageForNavigation(
   PersistLanguageResult persist_params = GetLanguageToPersist(
       initial_accept_language, parsed_headers->content_language.value(),
       delegate_->GetUserAcceptLanguages(),
-      (*variants_accept_lang_iter)->available_values, is_origin_trial_enabled);
+      parsed_headers->avail_language.value(), is_origin_trial_enabled);
 
   if (persist_params.language_to_persist) {
     delegate_->PersistReducedLanguage(
@@ -203,6 +198,13 @@ ReduceAcceptLanguageUtils::LookupReducedAcceptLanguage(
     return std::nullopt;
   }
 
+  const std::vector<std::string>& user_accept_languages =
+      delegate_->GetUserAcceptLanguages();
+  // Early return when user's accept-language preference is empty.
+  if (user_accept_languages.empty()) {
+    return std::nullopt;
+  }
+
   const std::optional<url::Origin>& origin_for_lookup =
       GetOriginForLanguageLookup(request_origin, frame_tree_node);
 
@@ -210,9 +212,6 @@ ReduceAcceptLanguageUtils::LookupReducedAcceptLanguage(
       origin_for_lookup
           ? delegate_->GetReducedLanguage(origin_for_lookup.value())
           : std::nullopt;
-
-  const std::vector<std::string>& user_accept_languages =
-      delegate_->GetUserAcceptLanguages();
 
   // We should not return user's first accept-language if the feature not enable
   // and no persist language was found in prefs service. The request headers

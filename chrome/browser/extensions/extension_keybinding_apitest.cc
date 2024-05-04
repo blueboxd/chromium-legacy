@@ -9,16 +9,18 @@
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/extensions/active_tab_permission_granter.h"
 #include "chrome/browser/extensions/api/commands/command_service.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/permissions/active_tab_permission_granter.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/extension_action_test_helper.h"
+#include "chrome/browser/ui/extensions/extensions_container.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
 #include "chrome/test/base/interactive_test_utils.h"
@@ -211,13 +213,13 @@ void SendKeyPressToAction(Browser* browser,
 const char* GetCommandKeyForActionType(ActionInfo::Type action_type) {
   const char* command_key = nullptr;
   switch (action_type) {
-    case ActionInfo::TYPE_BROWSER:
+    case ActionInfo::Type::kBrowser:
       command_key = manifest_values::kBrowserActionCommandEvent;
       break;
-    case ActionInfo::TYPE_PAGE:
+    case ActionInfo::Type::kPage:
       command_key = manifest_values::kPageActionCommandEvent;
       break;
-    case ActionInfo::TYPE_ACTION:
+    case ActionInfo::Type::kAction:
       command_key = manifest_values::kActionCommandEvent;
       break;
   }
@@ -237,9 +239,9 @@ class CommandsApiTest : public ExtensionApiTest {
 #if BUILDFLAG(IS_MAC)
     // ExtensionKeybindingRegistryViews doesn't get registered until BrowserView
     // is activated at least once.
-    // TODO(crbug.com/839469): Registry creation should happen independent of
+    // TODO(crbug.com/41386956): Registry creation should happen independent of
     // activation. Focus manager lifetime may make this tricky to untangle.
-    // TODO(crbug.com/650859): Reassess after activation is restored in the
+    // TODO(crbug.com/40486728): Reassess after activation is restored in the
     // focus manager.
     ui_test_utils::BrowserActivationWaiter waiter(browser());
     ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
@@ -378,7 +380,8 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, UnpinnedPageActionTriggers) {
   std::unique_ptr<ExtensionActionTestHelper> test_helper =
       ExtensionActionTestHelper::Create(browser());
   RunScheduledLayouts();
-  EXPECT_EQ(0, test_helper->VisibleBrowserActions());
+  EXPECT_FALSE(test_helper->GetExtensionsContainer()->IsActionVisibleOnToolbar(
+      extension->id()));
 
   const int tab_id = NavigateToTestURLAndReturnTabId();
   SetActionVisibleOnTab(profile(), *extension, tab_id);
@@ -1092,7 +1095,7 @@ IN_PROC_BROWSER_TEST_P(ActionCommandsApiTest,
       chrome.test.sendMessage('ready');
   )";
   const char* background_specification =
-      action_type == ActionInfo::TYPE_ACTION
+      action_type == ActionInfo::Type::kAction
           ? R"("service_worker": "background.js")"
           : R"("scripts": ["background.js"])";
 
@@ -1115,7 +1118,7 @@ IN_PROC_BROWSER_TEST_P(ActionCommandsApiTest,
   const int tab_id = NavigateToTestURLAndReturnTabId();
 
   // If the action is a page action, it's hidden by default. Show it.
-  if (action_type == ActionInfo::TYPE_PAGE) {
+  if (action_type == ActionInfo::Type::kPage) {
     SetActionVisibleOnTab(profile(), *extension, tab_id);
     ASSERT_TRUE(WaitForPageActionVisibilityChangeTo(1));
   }
@@ -1164,7 +1167,7 @@ IN_PROC_BROWSER_TEST_P(ActionCommandsApiTest, GetAllReturnsActionCommand) {
       });
   )";
   const char* background_specification =
-      action_type == ActionInfo::TYPE_ACTION
+      action_type == ActionInfo::Type::kAction
           ? R"("service_worker": "background.js")"
           : R"("scripts": ["background.js"])";
 
@@ -1228,7 +1231,7 @@ IN_PROC_BROWSER_TEST_P(ActionCommandsApiTest, TriggeringCommandTriggersPopup) {
 
   const int tab_id = NavigateToTestURLAndReturnTabId();
 
-  if (action_type == ActionInfo::TYPE_PAGE) {
+  if (action_type == ActionInfo::Type::kPage) {
     // Note: We don't use SetActionVisibleOnTab() here because it relies on a
     // background page, which this extension doesn't have.
     ExtensionActionManager::Get(profile())
@@ -1247,9 +1250,9 @@ IN_PROC_BROWSER_TEST_P(ActionCommandsApiTest, TriggeringCommandTriggersPopup) {
 
 INSTANTIATE_TEST_SUITE_P(All,
                          ActionCommandsApiTest,
-                         testing::Values(ActionInfo::TYPE_BROWSER,
-                                         ActionInfo::TYPE_PAGE,
-                                         ActionInfo::TYPE_ACTION));
+                         testing::Values(ActionInfo::Type::kBrowser,
+                                         ActionInfo::Type::kPage,
+                                         ActionInfo::Type::kAction));
 
 INSTANTIATE_TEST_SUITE_P(All, IncognitoCommandsApiTest, testing::Bool());
 

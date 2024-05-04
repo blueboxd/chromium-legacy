@@ -53,11 +53,12 @@ void ImageButton::SetImageModel(ButtonState for_state,
                                 const ui::ImageModel& image_model) {
   if (for_state == STATE_HOVERED)
     SetAnimateOnStateChange(!image_model.IsEmpty());
-  const gfx::Size old_preferred_size = GetPreferredSize();
+  const gfx::Size old_preferred_size = GetPreferredSize({});
   images_[for_state] = image_model;
 
-  if (old_preferred_size != GetPreferredSize())
+  if (old_preferred_size != GetPreferredSize({})) {
     PreferredSizeChanged();
+  }
 
   // Even if |for_state| isn't the current state this image could be painted;
   // see |GetImageToPaint()|. So, always repaint.
@@ -113,7 +114,8 @@ void ImageButton::SetMinimumImageSize(const gfx::Size& size) {
 ////////////////////////////////////////////////////////////////////////////////
 // ImageButton, View overrides:
 
-gfx::Size ImageButton::CalculatePreferredSize() const {
+gfx::Size ImageButton::CalculatePreferredSize(
+    const SizeBounds& available_size) const {
   gfx::Size size(kDefaultWidth, kDefaultHeight);
   if (!images_[STATE_NORMAL].IsEmpty())
     size = images_[STATE_NORMAL].Size();

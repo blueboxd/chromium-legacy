@@ -11,6 +11,7 @@
 #include "base/memory/raw_ptr.h"
 #include "chrome/browser/ui/views/profiles/profile_management_types.h"
 #include "chrome/browser/ui/views/profiles/profile_picker_web_contents_host.h"
+#include "content/public/browser/web_contents.h"
 
 class Profile;
 class ProfileManagementStepController;
@@ -27,7 +28,7 @@ class ProfilePickerWebContentsHost;
 // the next steps.
 class ProfileManagementFlowController {
  public:
-  // TODO(https://crbug.com/1358843): Split the steps more granularly across
+  // TODO(crbug.com/40237131): Split the steps more granularly across
   // logical steps instead of according to implementation details.
   enum class Step {
     kUnknown,
@@ -37,7 +38,7 @@ class ProfileManagementFlowController {
     kProfilePicker,
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
     // Renders the sign in screen on Dice platforms.
-    // TODO(https://crbug.com/1360773): Support the `kAccountSelection` step on
+    // TODO(crbug.com/40237764): Support the `kAccountSelection` step on
     // Lacros. Picking an account during the `kLacrosSelectAvailableAccount`
     // flow and the profile creation should be implemented as a standalone step.
     kAccountSelection,
@@ -141,6 +142,13 @@ class ProfileManagementFlowController {
 
   ProfilePickerWebContentsHost* host() { return host_; }
 
+  // Creates the web contents associated with `profile` and stores them in
+  // `signed_out_flow_web_contents_`.
+  void CreateSignedOutFlowWebContents(Profile* profile);
+
+  // Returns a pointer to `signed_out_flow_web_contents_`.
+  content::WebContents* GetSignedOutFlowWebContents() const;
+
  private:
   // Called after a browser is open. Clears the host and then runs the callback.
   void CloseHostAndRunCallback(
@@ -148,6 +156,10 @@ class ProfileManagementFlowController {
       Browser* browser);
 
   Step current_step_ = Step::kUnknown;
+
+  // The signed out flow web contents are used in some steps inside
+  // `initialized_steps_`. They have to be destroyed after `initialized_steps_`.
+  std::unique_ptr<content::WebContents> signed_out_flow_web_contents_;
 
   raw_ptr<ProfilePickerWebContentsHost> host_;
   ClearHostClosure clear_host_callback_;

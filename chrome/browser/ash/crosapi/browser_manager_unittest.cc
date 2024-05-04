@@ -15,10 +15,8 @@
 #include "base/test/scoped_command_line.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/ash/crosapi/browser_loader.h"
-#include "chrome/browser/ash/crosapi/fake_device_ownership_waiter.h"
 #include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/component_updater/fake_cros_component_manager.h"
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_controller.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -26,12 +24,15 @@
 #include "chromeos/ash/components/standalone_browser/browser_support.h"
 #include "chromeos/ash/components/standalone_browser/feature_refs.h"
 #include "chromeos/ash/components/standalone_browser/lacros_availability.h"
+#include "chromeos/ash/components/standalone_browser/lacros_selection.h"
 #include "chromeos/ash/components/standalone_browser/migrator_util.h"
-#include "chromeos/crosapi/mojom/crosapi.mojom-test-utils.h"
-#include "chromeos/crosapi/mojom/crosapi.mojom.h"
+#include "chromeos/crosapi/mojom/browser_service.mojom-test-utils.h"
+#include "chromeos/crosapi/mojom/browser_service.mojom.h"
 #include "components/account_id/account_id.h"
+#include "components/component_updater/ash/fake_component_manager_ash.h"
 #include "components/component_updater/mock_component_updater_service.h"
 #include "components/session_manager/core/session_manager.h"
+#include "components/user_manager/fake_device_ownership_waiter.h"
 #include "components/user_manager/known_user.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "components/user_manager/user_manager.h"
@@ -40,7 +41,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/test/test_screen.h"
 
-using ::component_updater::FakeCrOSComponentManager;
+using ::component_updater::FakeComponentManagerAsh;
 using ::component_updater::MockComponentUpdateService;
 using testing::_;
 using update_client::UpdateClient;
@@ -121,7 +122,7 @@ class BrowserManagerFake : public BrowserManager {
     SetStatePublic(State::STARTING);
     OnBrowserServiceConnected(*crosapi_id_,
                               mojo::RemoteSetElementId::FromUnsafeValue(70),
-                              browser_service, 70);
+                              browser_service, mojom::BrowserService::Version_);
   }
 
   // Make the State enum publicly available.
@@ -166,7 +167,7 @@ class MockVersionServiceDelegate : public BrowserVersionServiceAsh::Delegate {
 class MockBrowserLoader : public BrowserLoader {
  public:
   explicit MockBrowserLoader(
-      scoped_refptr<component_updater::CrOSComponentManager> manager)
+      scoped_refptr<component_updater::ComponentManagerAsh> manager)
       : BrowserLoader(manager) {}
   MockBrowserLoader(const MockBrowserLoader&) = delete;
   MockBrowserLoader& operator=(const MockBrowserLoader&) = delete;
@@ -235,7 +236,7 @@ class BrowserManagerTest : public testing::Test {
 
   virtual void SetUpBrowserManager() {
     auto fake_cros_component_manager =
-        base::MakeRefCounted<FakeCrOSComponentManager>();
+        base::MakeRefCounted<FakeComponentManagerAsh>();
 
     std::unique_ptr<MockBrowserLoader> browser_loader =
         std::make_unique<testing::StrictMock<MockBrowserLoader>>(
@@ -251,7 +252,7 @@ class BrowserManagerTest : public testing::Test {
     fake_browser_manager_->set_version_service_delegate_for_testing(
         std::move(version_service_delegate));
     fake_browser_manager_->set_device_ownership_waiter_for_testing(
-        std::make_unique<FakeDeviceOwnershipWaiter>());
+        std::make_unique<user_manager::FakeDeviceOwnershipWaiter>());
   }
 
   enum class UserType {
@@ -300,9 +301,10 @@ class BrowserManagerTest : public testing::Test {
     EXPECT_TRUE(browser_util::IsLacrosAllowedToLaunch());
   }
 
-  void ExpectCallingLoad(browser_util::LacrosSelection load_selection =
-                             browser_util::LacrosSelection::kRootfs,
-                         const std::string& lacros_path = "/run/lacros") {
+  void ExpectCallingLoad(
+      ash::standalone_browser::LacrosSelection load_selection =
+          ash::standalone_browser::LacrosSelection::kRootfs,
+      const std::string& lacros_path = "/run/lacros") {
     EXPECT_CALL(*browser_loader_, Load(_))
         .WillOnce([load_selection, lacros_path](
                       BrowserLoader::LoadCompletionCallback callback) {
@@ -358,7 +360,7 @@ TEST_F(BrowserManagerTest, LacrosKeepAlive) {
   EXPECT_EQ(fake_browser_manager_->start_count(), 0);
 
   // Creating a ScopedKeepAlive does not start Lacros.
-  std::unique_ptr<BrowserManager::ScopedKeepAlive> keep_alive =
+  std::unique_ptr<BrowserManagerScopedKeepAlive> keep_alive =
       fake_browser_manager_->KeepAlive(BrowserManager::Feature::kTestOnly);
   EXPECT_EQ(fake_browser_manager_->start_count(), 0);
 
@@ -399,10 +401,10 @@ TEST_F(BrowserManagerTest, LacrosKeepAliveReloadsWhenUpdateAvailable) {
   version_service_delegate_->set_latest_lauchable_version(
       base::Version("1.0.0"));
 
-  std::unique_ptr<BrowserManager::ScopedKeepAlive> keep_alive =
+  std::unique_ptr<BrowserManagerScopedKeepAlive> keep_alive =
       fake_browser_manager_->KeepAlive(BrowserManager::Feature::kTestOnly);
 
-  ExpectCallingLoad(browser_util::LacrosSelection::kStateful,
+  ExpectCallingLoad(ash::standalone_browser::LacrosSelection::kStateful,
                     kSampleLacrosPath);
 
   // On simulated termination, KeepAlive restarts Lacros. Since there is an
@@ -470,7 +472,7 @@ TEST_F(BrowserManagerTest, LacrosKeepAliveDoesNotBlockRestart) {
   EXPECT_EQ(fake_browser_manager_->start_count(), 0);
 
   // Creating a ScopedKeepAlive does not start Lacros.
-  std::unique_ptr<BrowserManager::ScopedKeepAlive> keep_alive =
+  std::unique_ptr<BrowserManagerScopedKeepAlive> keep_alive =
       fake_browser_manager_->KeepAlive(BrowserManager::Feature::kTestOnly);
   EXPECT_EQ(fake_browser_manager_->start_count(), 0);
 

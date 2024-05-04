@@ -153,9 +153,6 @@ CastContentBrowserClient::CastContentBrowserClient(
   std::vector<const base::Feature*> extra_enable_features = {
     &::media::kInternalMediaSession,
     &features::kNetworkServiceInProcess,
-#if BUILDFLAG(IS_ANDROID) && BUILDFLAG(ENABLE_VIDEO_CAPTURE_SERVICE)
-    &features::kMojoVideoCapture,
-#endif
 #if BUILDFLAG(USE_V4L2_CODEC)
     // Enable accelerated video decode if v4l2 codec is supported.
     &::media::kVaapiVideoDecodeLinux,
@@ -719,7 +716,7 @@ void CastContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
       base::GlobalDescriptors::GetInstance()->GetRegion(kAndroidPakDescriptor));
 #endif  // BUILDFLAG(IS_ANDROID)
 #if !BUILDFLAG(IS_FUCHSIA)
-  // TODO(crbug.com/753619): Complete crash reporting integration on Fuchsia.
+  // TODO(crbug.com/40534193): Complete crash reporting integration on Fuchsia.
   int crash_signal_fd = GetCrashSignalFD(command_line);
   if (crash_signal_fd >= 0) {
     mappings->Share(kCrashDumpSignal, crash_signal_fd);

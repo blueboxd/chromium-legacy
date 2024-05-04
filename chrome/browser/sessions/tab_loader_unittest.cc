@@ -16,6 +16,7 @@
 #include "chrome/browser/resource_coordinator/tab_manager_features.h"
 #include "chrome/browser/sessions/session_restore_test_utils.h"
 #include "chrome/browser/sessions/tab_loader_tester.h"
+#include "chrome/browser/ui/tabs/tab_model.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -73,7 +74,7 @@ class TabLoaderTest : public BrowserWithTestWindowTest {
   void SimulateLoadTimeout() {
     // Unfortunately there's no mock time in BrowserTaskEnvironment.
     // Fast-forward things and simulate firing the timer.
-    // TODO(crbug.com/905412): TaskEnvironment::TimeSource::MOCK_TIME now
+    // TODO(crbug.com/40602467): TaskEnvironment::TimeSource::MOCK_TIME now
     // supports this.
     EXPECT_TRUE(tab_loader_.force_load_timer().IsRunning());
     clock_.SetNowTicks(tab_loader_.force_load_time());

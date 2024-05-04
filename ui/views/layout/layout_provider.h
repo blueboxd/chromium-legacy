@@ -107,6 +107,8 @@ enum DistanceMetric {
   DISTANCE_TABLE_CELL_HORIZONTAL_MARGIN,
   // Horizontal padding applied to text in a textfield.
   DISTANCE_TEXTFIELD_HORIZONTAL_TEXT_PADDING,
+  // Horizontal spacing between controls that are logically unrelated.
+  DISTANCE_UNRELATED_CONTROL_HORIZONTAL,
   // Vertical spacing between controls that are logically unrelated.
   DISTANCE_UNRELATED_CONTROL_VERTICAL,
   // Padding in vector icons. This is a general number for more vector icons.
@@ -182,7 +184,7 @@ class VIEWS_EXPORT LayoutProvider {
   virtual ~LayoutProvider();
 
   // This should never return nullptr.
-  // TODO(crbug.com/1200584): Replace callers of this with
+  // TODO(crbug.com/40178332): Replace callers of this with
   // View::GetLayoutProvider().
   static LayoutProvider* Get();
 
@@ -213,7 +215,7 @@ class VIEWS_EXPORT LayoutProvider {
   gfx::Insets GetDialogInsetsForContentType(DialogContentType leading,
                                             DialogContentType trailing) const;
 
-  // TODO(https://crbug.com/822000): Possibly combine the following two
+  // TODO(crbug.com/41376600): Possibly combine the following two
   // functions into a single function returning a struct.
 
   // Returns the corner radius specific to the given emphasis.
@@ -224,7 +226,7 @@ class VIEWS_EXPORT LayoutProvider {
   virtual int GetShadowElevationMetric(Emphasis emphasis) const;
 
   // Returns the corner radius related to a specific context token.
-  // TODO(crbug.com/1412134): Replace GetCornerRadiusMetric(Emphasis...) with
+  // TODO(crbug.com/40255130): Replace GetCornerRadiusMetric(Emphasis...) with
   // context tokens.
   int GetCornerRadiusMetric(ShapeContextTokens token,
                             const gfx::Size& size = gfx::Size()) const;

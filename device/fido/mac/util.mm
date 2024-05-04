@@ -4,11 +4,12 @@
 
 #include "device/fido/mac/util.h"
 
+#import <Foundation/Foundation.h>
+#import <LocalAuthentication/LocalAuthentication.h>
+
 #include <array>
 #include <set>
 #include <string>
-
-#import <Foundation/Foundation.h>
 
 #include "base/apple/foundation_util.h"
 #include "base/apple/osstatus_logging.h"

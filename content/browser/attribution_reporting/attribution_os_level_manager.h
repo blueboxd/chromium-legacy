@@ -53,13 +53,14 @@ class CONTENT_EXPORT AttributionOsLevelManager {
   static ApiState GetApiState();
   static void SetApiState(std::optional<ApiState>);
 
-  [[nodiscard]] static ContentBrowserClient::AttributionReportingOsReportTypes
-  GetAttributionReportingOsReportTypes(WebContents*);
+  [[nodiscard]] static ContentBrowserClient::AttributionReportingOsRegistrars
+  GetAttributionReportingOsRegistrars(WebContents*);
 
   virtual ~AttributionOsLevelManager() = default;
 
   using RegisterCallback =
-      base::OnceCallback<void(const OsRegistration&, bool success)>;
+      base::OnceCallback<void(const OsRegistration&,
+                              const std::vector<bool>& success)>;
 
   virtual void Register(OsRegistration,
                         const std::vector<bool>& is_debug_key_allowed,

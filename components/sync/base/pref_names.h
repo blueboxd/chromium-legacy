@@ -21,7 +21,7 @@ inline constexpr char kLocalSyncBackendDir[] = "sync.local_sync_backend_dir";
 
 // NOTE: All the "internal" prefs should not be used directly by non-sync code,
 // but should rather always be accessed via SyncUserSettings.
-// TODO(crbug.com/1435427): Clean up/replace any existing references to these
+// TODO(crbug.com/40265119): Clean up/replace any existing references to these
 // prefs from outside components/sync/.
 namespace internal {
 
@@ -43,6 +43,8 @@ inline constexpr char kSyncKeepEverythingSynced[] =
 // bookmarks and reading list or not. This pref and the following preferences
 // (kSyncBookmarks, kSyncReadingList) should be both true to enable bookmarks
 // and reading lists for signed-in, non-syncing users only.
+// TODO(crbug.com/40066051): remove the pref when the remaining reference to it,
+// MaybeMigratePrefsForSyncToSigninPart1, is removed.
 inline constexpr char kBookmarksAndReadingListAccountStorageOptIn[] =
     "sync.bookmarks_and_reading_list_account_storage_opt_in";
 #endif  // BUILDFLAG(IS_IOS)
@@ -81,6 +83,8 @@ inline constexpr char kSyncAppsEnabledByOs[] = "sync.apps_enabled_by_os";
 inline constexpr char kSyncApps[] = "sync.apps";
 inline constexpr char kSyncAutofill[] = "sync.autofill";
 inline constexpr char kSyncBookmarks[] = "sync.bookmarks";
+inline constexpr char kSyncCompare[] = "sync.compare";
+inline constexpr char kSyncCookies[] = "sync.cookies";
 inline constexpr char kSyncExtensions[] = "sync.extensions";
 // Note: The pref for history is called "typed_urls" for historic reasons - not
 // worth the hassle of renaming.

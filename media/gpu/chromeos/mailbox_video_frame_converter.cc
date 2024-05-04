@@ -15,6 +15,7 @@
 #include "base/task/single_thread_task_runner.h"
 #include "base/trace_event/trace_event.h"
 #include "components/viz/common/resources/shared_image_format.h"
+#include "gpu/command_buffer/client/client_shared_image.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/command_buffer/service/scheduler.h"
 #include "gpu/command_buffer/service/shared_image/shared_image_factory.h"
@@ -25,6 +26,7 @@
 #include "media/gpu/chromeos/platform_video_frame_utils.h"
 #include "media/gpu/chromeos/video_frame_resource.h"
 #include "media/gpu/macros.h"
+#include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gl/gl_bindings.h"
 
@@ -399,12 +401,27 @@ void MailboxVideoFrameConverter::WrapMailboxAndVideoFrameAndOutput(
 
   gpu::MailboxHolder mailbox_holders[VideoFrame::kMaxPlanes];
 
+  uint32_t texture_target = GL_TEXTURE_2D;
+  // NOTE: The change to simplify logic for computing the texture target here is
+  // under the `kUseUniversalGetTextureTargetFunction` killswitch as it is
+  // following the same logic that ClientSharedImage::GetTextureTarget() is
+  // using, and thus it makes sense to roll out the changes together.
+  if (base::FeatureList::IsEnabled(
+          gpu::kUseUniversalGetTextureTargetFunction)) {
+    // The target should be GL_TEXTURE_2D unless external sampling is being
+    // used, which in this context is equivalent to the passed-in buffer format
+    // being multiplanar as we never use per-plane sampling in this context.
+    texture_target = gfx::BufferFormatIsMultiplanar(*buffer_format)
+                         ? GL_TEXTURE_EXTERNAL_OES
+                         : GL_TEXTURE_2D;
+  } else {
+    texture_target = gpu::NativeBufferNeedsPlatformSpecificTextureTarget(
+                         *buffer_format, gfx::BufferPlane::DEFAULT)
+                         ? GL_TEXTURE_EXTERNAL_OES
+                         : GL_TEXTURE_2D;
+  }
   mailbox_holders[0] =
-      gpu::MailboxHolder(mailbox, gpu::SyncToken(),
-                         gpu::NativeBufferNeedsPlatformSpecificTextureTarget(
-                             *buffer_format, gfx::BufferPlane::DEFAULT)
-                             ? gpu::GetPlatformSpecificTextureTarget()
-                             : GL_TEXTURE_2D);
+      gpu::MailboxHolder(mailbox, gpu::SyncToken(), texture_target);
 
   VideoFrame::ReleaseMailboxCB release_mailbox_cb = base::BindOnce(
       [](scoped_refptr<base::SequencedTaskRunner> gpu_task_runner,
@@ -438,22 +455,36 @@ void MailboxVideoFrameConverter::WrapMailboxAndVideoFrameAndOutput(
   // includes the non-visible area on the left and on top of the visible area
   // (so that the client can calculate the UV coordinates correctly). Hence the
   // use of GetRectSizeFromOrigin().
+  //
+  // Most video frames should use visible size instead of coded size because
+  // some videos use 0s to pad the frames to coded size, which will cause
+  // artifacting along the edges of the image when we scale using bilinear
+  // filtering. Tiled protected content is an exception though, because we have
+  // a custom Vulkan shader pipeline for scanning out these buffers that needs
+  // to know the underlying coded buffer size for detiling computations.
+  //
+  // The metadata field |needs_detiling| technically comes from an untrusted
+  // source, but we don't believe this is a security risk since the worst case
+  // scenario simply involves video corruption when the Vulkan detiler
+  // misinterprets the frame.
+  const gfx::Size coded_size =
+      frame->metadata().needs_detiling
+          ? frame->coded_size()
+          : GetRectSizeFromOrigin(frame->visible_rect());
   scoped_refptr<VideoFrame> mailbox_frame = VideoFrame::WrapNativeTextures(
       frame->format(), mailbox_holders, std::move(release_mailbox_cb),
-      GetRectSizeFromOrigin(frame->visible_rect()), frame->visible_rect(),
-      frame->natural_size(), frame->timestamp());
+      coded_size, frame->visible_rect(), frame->natural_size(),
+      frame->timestamp());
   mailbox_frame->set_color_space(frame->ColorSpace());
   mailbox_frame->set_hdr_metadata(frame->hdr_metadata());
   mailbox_frame->set_metadata(frame->metadata());
-  mailbox_frame->set_ycbcr_info(frame->ycbcr_info());
-  if (IsMultiPlaneFormatForHardwareVideoEnabled()) {
-    auto si_format = GetSharedImageFormat(*buffer_format);
+
+  auto si_format = GetSharedImageFormat(*buffer_format);
+  mailbox_frame->set_shared_image_format_type(
+      media::SharedImageFormatType::kSharedImageFormat);
+  if (si_format.PrefersExternalSampler()) {
     mailbox_frame->set_shared_image_format_type(
-        media::SharedImageFormatType::kSharedImageFormat);
-    if (si_format.PrefersExternalSampler()) {
-      mailbox_frame->set_shared_image_format_type(
-          media::SharedImageFormatType::kSharedImageFormatExternalSampler);
-    }
+        media::SharedImageFormatType::kSharedImageFormatExternalSampler);
   }
   mailbox_frame->metadata().read_lock_fences_enabled = true;
   mailbox_frame->metadata().is_webgpu_compatible =
@@ -561,7 +592,9 @@ bool MailboxVideoFrameConverter::GenerateSharedImageOnGPUThread(
   // these exotic visible rectangles, we must include the area on the left and
   // on the top of the frames when computing the SharedImage size.
   const gfx::Size shared_image_size =
-      GetRectSizeFromOrigin(destination_visible_rect);
+      origin_frame->metadata().needs_detiling
+          ? origin_frame->coded_size()
+          : GetRectSizeFromOrigin(destination_visible_rect);
 
   const std::optional<gpu::SharedImageCapabilities> shared_image_caps =
       gpu_delegate_->GetCapabilities();
@@ -583,19 +616,12 @@ bool MailboxVideoFrameConverter::GenerateSharedImageOnGPUThread(
     shared_image_usage |= gpu::SHARED_IMAGE_USAGE_WEBGPU_READ;
   }
 
-  gpu::SharedImageStub::SharedImageDestructionCallback destroy_shared_image_cb;
-  if (IsMultiPlaneFormatForHardwareVideoEnabled()) {
-    destroy_shared_image_cb = gpu_delegate_->CreateSharedImage(
-        mailbox, std::move(gpu_memory_buffer_handle),
-        GetSharedImageFormat(*buffer_format), shared_image_size,
-        src_color_space, kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType,
-        shared_image_usage);
-  } else {
-    destroy_shared_image_cb = gpu_delegate_->CreateSharedImage(
-        mailbox, std::move(gpu_memory_buffer_handle), *buffer_format,
-        gfx::BufferPlane::DEFAULT, shared_image_size, src_color_space,
-        kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType, shared_image_usage);
-  }
+  gpu::SharedImageStub::SharedImageDestructionCallback destroy_shared_image_cb =
+      gpu_delegate_->CreateSharedImage(
+          mailbox, std::move(gpu_memory_buffer_handle),
+          GetSharedImageFormat(*buffer_format), shared_image_size,
+          src_color_space, kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType,
+          shared_image_usage);
   if (destroy_shared_image_cb.is_null()) {
     OnError(FROM_HERE, "Failed to create shared image.");
     return false;

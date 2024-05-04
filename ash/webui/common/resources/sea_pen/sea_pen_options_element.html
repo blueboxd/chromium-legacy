@@ -1,27 +1,43 @@
 <style include="common cros-button-style">
-  #options {
+  #container {
     align-items: center;
     color: var(--cros-text-color-primary);
     display: flex;
+
+    margin-block-end: 24px;
+    max-height: 80px;
+    overflow: hidden;
+  }
+
+  #container.expanded {
+    max-height: unset;
+  }
+
+  #container #optionSelector {
+    align-items: center;
+    display: flex;
+    height: 100%;
+    justify-content: center;
     flex-wrap: wrap;
     gap: 8px;
-    justify-content: center;
-    margin-block: var(--cr-section-padding);
     /* Leave 4px of padding for chip outlines. */
     padding: 4px;
-    width: calc(100% - 8px);
+    width: 100%;
   }
 
-  #options cr-button {
+  #container cr-button {
     background-color: var(--cros-bg-color);
     border-radius: 12px;
-    height: 36px;
-    padding: 4px, 12px;
+    height: 32px;
+    padding: 6px 12px 6px 8px;
   }
 
-  #options cr-button[aria-selected] {
+  #container cr-button[aria-checked=true] {
     --text-color: var(--cros-button-label-color-primary);
     background-color: var(--cros-button-background-color-primary);
+  }
+
+  #container cr-button[aria-checked=true]:focus {
     border-radius: 10px;
     outline: 2px solid var(--cros-button-background-color-primary);
     outline-offset: 2px;
@@ -31,20 +47,45 @@
     border-radius: 50%;
     height: 20px;
     margin-inline-end: 8px;
+    outline: 2px solid var(--cros-separator-color);
+    outline-offset: -2px;
     width: 20px;
   }
+
+  .hidden {
+    display: none;
+  }
+
+  #expandButton {
+    --text-color: var(--cros-text-color-prominent);
+  }
 </style>
-<template is="dom-if" if="[[shouldShowOptions_(options)]]">
-  <div id="options">
+<div id="container" class$="[[getOptionsClassName_(chipsExpanded_)]]">
+  <iron-a11y-keys id="optionKeys" keys="left right esc" on-keys-pressed="onOptionKeyPressed_">
+  </iron-a11y-keys>
+  <iron-selector
+      id="optionSelector"
+      selected="0"
+      selected-item="{{ironSelectedOption_}}"
+      aria-label$="[[i18n('seaPenCustomizeAiPrompt')]]"
+      role="radiogroup">
     <template is="dom-repeat" items="[[options]]" as="option">
       <cr-button
+          class="option"
           on-click="onClickOption_"
-          aria-selected$="[[isSelected_(option, selectedChip, selectedOptions)]]">
+          tabindex$="[[getOptionTabIndex_(option, selectedChip, selectedOptions)]]"
+          aria-checked$="[[getOptionAriaChecked_(option, selectedChip, selectedOptions)]]"
+          role="radio">
         <template is="dom-if" if="[[option.previewUrl]]" restamp>
           <img is="cr-auto-img" auto-src="[[option.previewUrl]]">
         </template>
         [[option.translation]]
       </cr-button>
     </template>
-  </div>
-</template>
+    <cr-button
+        id="expandButton"
+        class$="[[getExpandButtonClassName_(shouldShowExpandButton_)]]"
+        on-click="onClickExpandButton_">
+    </cr-button>
+  </iron-selector>
+</div>

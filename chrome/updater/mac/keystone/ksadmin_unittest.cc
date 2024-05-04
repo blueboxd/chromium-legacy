@@ -20,7 +20,7 @@
 #include "chrome/updater/app/server/posix/update_service_stub.h"
 #include "chrome/updater/ipc/ipc_support.h"
 #include "chrome/updater/registration_data.h"
-#include "chrome/updater/test_scope.h"
+#include "chrome/updater/test/test_scope.h"
 #include "chrome/updater/update_service.h"
 #include "chrome/updater/updater_scope.h"
 #include "chrome/updater/updater_version.h"
@@ -64,11 +64,12 @@ TEST(KSAdminTest, PrintVersion) {
 }
 
 TEST(KSAdminTest, ParseCommandLine) {
-  const char* argv[] = {"ksadmin",  "--register",
-                        "-P",       "com.google.kipple",
-                        "-v",       "1.2.3.4",
-                        "--xcpath", "/Applications/GoogleKipple.app",
-                        "-u",       "https://tools.google.com/service/update2"};
+  static const char* argv[] = {
+      "ksadmin",  "--register",
+      "-P",       "com.google.kipple",
+      "-v",       "1.2.3.4",
+      "--xcpath", "/Applications/GoogleKipple.app",
+      "-u",       "https://tools.google.com/service/update2"};
 
   std::map<std::string, std::string> arg_map =
       ParseCommandLine(std::size(argv), argv);
@@ -104,7 +105,7 @@ TEST(KSAdminTest, ParseCommandLine_CombinedShortOptions) {
 }
 
 TEST(KSAdminTest, Register) {
-  if (GetTestScope() == UpdaterScope::kSystem) {
+  if (GetUpdaterScopeForTesting() == UpdaterScope::kSystem) {
     return;
   }
   class MockUpdateService final : public UpdateService {
@@ -216,8 +217,7 @@ TEST(KSAdminTest, Register) {
             RunKSAdmin(&out, {"--register", "--version", "1.2.3.4", "--xcpath",
                               "/xc_path", "--tag-key", "tag_key", "--tag-path",
                               "tag_path", "--version-key", "version_key",
-                              "--version-path", "version_path",
-                              "--enable-logging", "--vmodule", "*=2", "-P",
+                              "--version-path", "version_path", "-P",
                               "org.chromium.KSAdminTest.Register"}),
             0);
       }),

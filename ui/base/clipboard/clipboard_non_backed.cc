@@ -11,6 +11,7 @@
 #include <memory>
 #include <optional>
 #include <set>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -902,7 +903,8 @@ void ClipboardNonBacked::WritePortableAndPlatformRepresentations(
     ClipboardBuffer buffer,
     const ObjectMap& objects,
     std::vector<Clipboard::PlatformRepresentation> platform_representations,
-    std::unique_ptr<DataTransferEndpoint> data_src) {
+    std::unique_ptr<DataTransferEndpoint> data_src,
+    uint32_t privacy_types) {
   DCHECK(CalledOnValidThread());
   DCHECK(IsSupportedClipboardBuffer(buffer));
 
@@ -965,6 +967,18 @@ void ClipboardNonBacked::WriteData(const ClipboardFormatType& format,
                                    const char* data_data,
                                    size_t data_len) {
   ClipboardDataBuilder::WriteData(format.GetName(), data_data, data_len);
+}
+
+void ClipboardNonBacked::WriteClipboardHistory() {
+  // TODO(crbug.com/40945200): Add support for this.
+}
+
+void ClipboardNonBacked::WriteUploadCloudClipboard() {
+  // TODO(crbug.com/40945200): Add support for this.
+}
+
+void ClipboardNonBacked::WriteConfidentialDataForPassword() {
+  // TODO(crbug.com/40945200): Add support for this.
 }
 
 const ClipboardInternal& ClipboardNonBacked::GetInternalClipboard(

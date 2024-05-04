@@ -11,6 +11,8 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
+#include "components/affiliations/core/browser/fake_affiliation_service.h"
+#include "components/password_manager/core/browser/affiliation/mock_affiliated_match_helper.h"
 #include "components/password_manager/core/browser/features/password_features.h"
 #include "components/password_manager/core/browser/features/password_manager_features_util.h"
 #include "components/password_manager/core/browser/password_form.h"
@@ -37,13 +39,15 @@ using testing::ElementsAre;
 using testing::Field;
 using testing::IsEmpty;
 
-const std::string kUrl = "https://www.test.com";
-const std::string kPslMatchUrl = "https://m.test.com";
-const std::u16string kUsername = u"username";
-const std::u16string kPassword = u"password";
-const std::u16string kSenderEmail = u"sender@example.com";
-const std::u16string kSenderName = u"Sender Name";
-const std::string kSenderProfileImagerUrl = "https://sender.com/avatar";
+constexpr std::string_view kUrl = "https://www.test.com";
+constexpr std::string_view kPslMatchUrl = "https://m.test.com";
+constexpr std::string_view kGroupedMatchUrl = "https://grouped.match.com/";
+constexpr std::u16string_view kUsername = u"username";
+constexpr std::u16string_view kPassword = u"password";
+constexpr std::u16string_view kSenderEmail = u"sender@example.com";
+constexpr std::u16string_view kSenderName = u"Sender Name";
+constexpr std::string_view kSenderProfileImagerUrl =
+    "https://sender.com/avatar";
 
 // Creates an invitation that represents a group of passwords.
 sync_pb::IncomingPasswordSharingInvitationSpecifics
@@ -57,14 +61,14 @@ CreateIncomingSharingInvitation() {
 
   sync_pb::PasswordSharingInvitationData::PasswordGroupElementData*
       element_data = password_group_data->add_element_data();
-  element_data->set_origin(kUrl);
-  element_data->set_signon_realm(kUrl);
+  element_data->set_origin(std::string(kUrl));
+  element_data->set_signon_realm(std::string(kUrl));
 
   sync_pb::UserDisplayInfo* sender_info =
       invitation.mutable_sender_info()->mutable_user_display_info();
   sender_info->set_email(base::UTF16ToUTF8(kSenderEmail));
   sender_info->set_display_name(base::UTF16ToUTF8(kSenderName));
-  sender_info->set_profile_image_url(kSenderProfileImagerUrl);
+  sender_info->set_profile_image_url(std::string(kSenderProfileImagerUrl));
   return invitation;
 }
 
@@ -103,14 +107,28 @@ PasswordFormToIncomingSharingInvitation(const PasswordForm& form) {
 class PasswordReceiverServiceImplTest : public testing::TestWithParam<bool> {
  public:
   PasswordReceiverServiceImplTest() {
+    // Initialize `AffiliatedMatchHelper` for the password store that will be
+    // used for syncing.
+    auto profile_store_match_helper =
+        std::make_unique<MockAffiliatedMatchHelper>(&affiliation_service_);
+    mock_affiliated_match_helper_ = profile_store_match_helper.get();
+    std::unique_ptr<MockAffiliatedMatchHelper> account_store_match_helper;
+#if BUILDFLAG(IS_ANDROID)
+    if (GetEnableAccountStoreTestParam()) {
+      account_store_match_helper.swap(profile_store_match_helper);
+    }
+#endif  // BUILDFLAG(IS_ANDROID)
+
     profile_password_store_ = base::MakeRefCounted<TestPasswordStore>();
-    profile_password_store_->Init(/*prefs=*/nullptr,
-                                  /*affiliated_match_helper=*/nullptr);
+    profile_password_store_->Init(
+        /*prefs=*/nullptr,
+        /*affiliated_match_helper=*/std::move(profile_store_match_helper));
 
     if (GetEnableAccountStoreTestParam()) {
       account_password_store_ = base::MakeRefCounted<TestPasswordStore>();
-      account_password_store_->Init(/*prefs=*/nullptr,
-                                    /*affiliated_match_helper=*/nullptr);
+      account_password_store_->Init(
+          /*prefs=*/nullptr,
+          /*affiliated_match_helper=*/std::move(account_store_match_helper));
     }
 #if BUILDFLAG(IS_ANDROID)
     const auto upm_pref_value =
@@ -146,6 +164,7 @@ class PasswordReceiverServiceImplTest : public testing::TestWithParam<bool> {
   }
 
   void TearDown() override {
+    mock_affiliated_match_helper_ = nullptr;
     if (account_password_store_) {
       account_password_store_->ShutdownOnUIThread();
     }
@@ -214,6 +233,10 @@ class PasswordReceiverServiceImplTest : public testing::TestWithParam<bool> {
     return *account_password_store_;
   }
 
+  MockAffiliatedMatchHelper& affiliated_match_helper() {
+    return *mock_affiliated_match_helper_;
+  }
+
   TestingPrefServiceSimple& pref_service() { return pref_service_; }
   syncer::TestSyncService& sync_service() { return sync_service_; }
 
@@ -230,6 +253,8 @@ class PasswordReceiverServiceImplTest : public testing::TestWithParam<bool> {
   scoped_refptr<TestPasswordStore> profile_password_store_;
   scoped_refptr<TestPasswordStore> account_password_store_;
   std::unique_ptr<PasswordReceiverServiceImpl> password_receiver_service_;
+  affiliations::FakeAffiliationService affiliation_service_;
+  raw_ptr<MockAffiliatedMatchHelper> mock_affiliated_match_helper_;
 };
 
 TEST_P(PasswordReceiverServiceImplTest,
@@ -621,8 +646,8 @@ TEST_P(PasswordReceiverServiceImplTest, ShouldAddAllCredentialsInInvitation) {
       element_data = invitation.mutable_client_only_unencrypted_data()
                          ->mutable_password_group_data()
                          ->add_element_data();
-  element_data->set_origin(kPslMatchUrl);
-  element_data->set_signon_realm(kPslMatchUrl);
+  element_data->set_origin(std::string(kPslMatchUrl));
+  element_data->set_signon_realm(std::string(kPslMatchUrl));
 
   password_receiver_service()->ProcessIncomingSharingInvitation(invitation);
 
@@ -633,21 +658,23 @@ TEST_P(PasswordReceiverServiceImplTest, ShouldAddAllCredentialsInInvitation) {
   EXPECT_EQ(expected_password_store_for_syncing().stored_passwords().size(),
             2U);
 
-  ASSERT_TRUE(
-      expected_password_store_for_syncing().stored_passwords().contains(kUrl));
+  ASSERT_TRUE(expected_password_store_for_syncing().stored_passwords().contains(
+      std::string(kUrl)));
   EXPECT_THAT(
-      expected_password_store_for_syncing().stored_passwords().at(kUrl),
-      ElementsAre(AllOf(Field(&PasswordForm::signon_realm, kUrl),
+      expected_password_store_for_syncing().stored_passwords().at(
+          std::string(kUrl)),
+      ElementsAre(AllOf(Field(&PasswordForm::signon_realm, std::string(kUrl)),
                         Field(&PasswordForm::username_value, kUsername),
                         Field(&PasswordForm::password_value, kPassword))));
 
   ASSERT_TRUE(expected_password_store_for_syncing().stored_passwords().contains(
       kPslMatchUrl));
-  EXPECT_THAT(
-      expected_password_store_for_syncing().stored_passwords().at(kPslMatchUrl),
-      ElementsAre(AllOf(Field(&PasswordForm::signon_realm, kPslMatchUrl),
-                        Field(&PasswordForm::username_value, kUsername),
-                        Field(&PasswordForm::password_value, kPassword))));
+  EXPECT_THAT(expected_password_store_for_syncing().stored_passwords().at(
+                  std::string(kPslMatchUrl)),
+              ElementsAre(AllOf(
+                  Field(&PasswordForm::signon_realm, std::string(kPslMatchUrl)),
+                  Field(&PasswordForm::username_value, kUsername),
+                  Field(&PasswordForm::password_value, kPassword))));
 
   histogram_tester.ExpectUniqueSample(
       "PasswordManager.ProcessIncomingPasswordSharingInvitationResult",
@@ -671,6 +698,38 @@ TEST_P(PasswordReceiverServiceImplTest, ShouldIgnoreInvalidPasswordForm) {
       "PasswordManager.ProcessIncomingPasswordSharingInvitationResult",
       metrics_util::ProcessIncomingPasswordSharingInvitationResult::
           kInvalidInvitation,
+      1);
+}
+
+TEST_P(PasswordReceiverServiceImplTest, ShouldIgnoreGroupedCredentials) {
+  base::HistogramTester histogram_tester;
+  PasswordForm existing_password = CreatePasswordForm();
+  existing_password.scheme = PasswordForm::Scheme::kHtml;
+  existing_password.url = GURL(kGroupedMatchUrl);
+  existing_password.signon_realm = existing_password.url.spec();
+  existing_password.in_store = PasswordForm::Store::kProfileStore;
+  AddLoginAndWait(existing_password, expected_password_store_for_syncing());
+
+  PasswordForm shared_form = CreatePasswordForm();
+  PasswordFormDigest digest = PasswordFormDigest(shared_form);
+  affiliated_match_helper().ExpectCallToGetAffiliatedAndGrouped(
+      digest, {std::string(kUrl)}, {std::string(kGroupedMatchUrl)});
+  // Simulate an incoming invitation for the same stored passwords.
+  sync_pb::IncomingPasswordSharingInvitationSpecifics invitation =
+      PasswordFormToIncomingSharingInvitation(shared_form);
+  password_receiver_service()->ProcessIncomingSharingInvitation(invitation);
+
+  RunUntilIdle();
+
+  // The store should contain the `existing_password` and the
+  // incoming invitation is ignored.
+  ASSERT_TRUE(expected_password_store_for_syncing().stored_passwords().contains(
+      GetInvitationOrigin(invitation)));
+
+  histogram_tester.ExpectUniqueSample(
+      "PasswordManager.ProcessIncomingPasswordSharingInvitationResult",
+      metrics_util::ProcessIncomingPasswordSharingInvitationResult::
+          kInvitationAutoApproved,
       1);
 }
 

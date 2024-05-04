@@ -91,7 +91,7 @@ Status IsBidiMessage(const std::string& method,
     return Status{kUnknownError,
                   "name is missing in the Runtime.bindingCalled params"};
   }
-  if (*name != "sendBidiResponse") {
+  if (*name != "sendBidiResponse" && *name != "sendDebugMessage") {
     return Status{kOk};
   }
 
@@ -283,6 +283,28 @@ Status DevToolsClientImpl::StartBidiServer(
     params.Set("name", "sendBidiResponse");
     status =
         SendCommandAndIgnoreResponse("Runtime.addBinding", std::move(params));
+    if (status.IsError()) {
+      return status;
+    }
+  }
+  if (IsVLogOn(Log::kDebug)) {
+    // If debug logs are on, provide a channel for Mapper debug logs.
+    base::Value::Dict params;
+    params.Set("name", "sendDebugMessage");
+    status =
+        SendCommandAndIgnoreResponse("Runtime.addBinding", std::move(params));
+    if (status.IsError()) {
+      return status;
+    }
+  }
+  {
+    // Click on the Mapper tab to interact with the page in order to
+    // "beforeunload" being triggered when the tab is closed.
+    base::Value::Dict params;
+    params.Set("expression", "document.body.click()");
+    params.Set("userGesture", true);
+    status =
+        SendCommandAndIgnoreResponse("Runtime.evaluate", std::move(params));
     if (status.IsError()) {
       return status;
     }

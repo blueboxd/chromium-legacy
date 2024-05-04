@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_PASSWORD_MANAGER_ANDROID_PASSWORD_MANAGER_ANDROID_UTIL_H_
 #define CHROME_BROWSER_PASSWORD_MANAGER_ANDROID_PASSWORD_MANAGER_ANDROID_UTIL_H_
 
+#include "components/password_manager/core/common/password_manager_pref_names.h"
+
 class PrefService;
 
 namespace base {
@@ -13,9 +15,22 @@ class FilePath;
 
 namespace password_manager_android_util {
 
-// Checks that the GMS backend can be used, irrespective of whether for account
-// or local passwords.
-bool CanUseUPMBackend(bool is_pwd_sync_enabled, PrefService* pref_service);
+// Used to prevent static casting issues with
+// `PasswordsUseUPMLocalAndSeparateStores` pref.
+password_manager::prefs::UseUpmLocalAndSeparateStoresState
+GetSplitStoresAndLocalUpmPrefValue(PrefService* pref_service);
+
+// Used to decide whether using UPM as backend is possible. The check is based
+// on whether the GMSCore is installed and the internal wiring is present, and
+// whether the requirement for the minimum version is met.
+bool AreMinUpmRequirementsMet();
+
+// Used to decide whether to show the UPM password settings and password check
+// UIs or the old pre-UPM UIs. There are 2 cases when this check returns true:
+//  - If the user is using UPM and everything works as expected.
+//  - If the user is eligible for using UPM, but the GMSCore version is too old
+//  and doesn't support UPM.
+bool ShouldUseUpmWiring(bool is_pwd_sync_enabled, PrefService* pref_service);
 
 // Called on startup to update the value of UsesSplitStoresAndUPMForLocal(),
 // based on feature flags, minimum GmsCore version and other criteria.

@@ -64,18 +64,32 @@ declare namespace chrome {
     // Whether the Read Aloud feature flag is enabled.
     let isReadAloudEnabled: boolean;
 
-    // Indicates if select-to-distill works on the web page. Used to
-    // determine which empty state to display.
-    let isSelectable: boolean;
+    // Whether the automatic voice switching feature flag is enabled.
+    let isAutoVoiceSwitchingEnabled: boolean;
+
+    let isAutomaticWordHighlightingEnabled: boolean;
+
+    // Indicates if this page is a Google doc.
+    let isGoogleDocs: boolean;
 
     // Fonts supported by the browser's preferred language.
     let supportedFonts: string[];
 
-    // The language code that should be used for speech synthesis voices.
-    let speechSynthesisLanguageCode: string;
+    // The base language code that should be used for speech synthesis voices.
+    let baseLanguageForSpeech: string;
 
-    // Returns the stored user voice preference for the given language.
-    function getStoredVoice(lang: string): string;
+    // The fallback language, corresponding to the browser language, that
+    // should only be used when baseLanguageForSpeech is unavailable.
+    let defaultLanguageForSpeech: string;
+
+    // If the current platform is ChromeOS Ash.
+    let isChromeOsAsh: boolean;
+
+    // Returns the stored user voice preference for the current language
+    function getStoredVoice(): string;
+
+    // Returns the stored user preference for enabled languages.
+    function getLanguagesEnabledInPref(): string[];
 
     // Returns a list of AXNodeIDs corresponding to the unignored children of
     // the AXNode for the provided AXNodeID. If there is a selection contained
@@ -115,9 +129,6 @@ declare namespace chrome {
 
     // Returns true if the element is a leaf node.
     function isLeafNode(nodeId: number): boolean;
-
-    // Returns true if the webpage corresponds to a Google Doc.
-    function isGoogleDocs(): boolean;
 
     // Connects to the browser process. Called by ts when the read anything
     // element is added to the document.
@@ -167,6 +178,10 @@ declare namespace chrome {
     // Called when the voice used for speech is changed via the webui toolbar.
     function onVoiceChange(voice: string, lang: string): void;
 
+    // Called when a language is enabled/disabled for Read Aloud
+    // via the webui language menu.
+    function onLanguagePrefChange(lang: string, enabled: boolean): void;
+
     // Called when the highlight granularity is changed via the webui toolbar.
     function turnedHighlightOn(): void;
     function turnedHighlightOff(): void;
@@ -215,7 +230,7 @@ declare namespace chrome {
         foregroundColor: number, backgroundColor: number, lineSpacing: number,
         letterSpacing: number): void;
 
-    // Sets the default language. Used by tests only.
+    // Sets the page language. Used by tests only.
     function setLanguageForTesting(code: string): void;
 
     // Called when the side panel has finished loading and it's safe to call
@@ -249,6 +264,13 @@ declare namespace chrome {
     // Ping that the theme choices of the user have been changed using the
     // toolbar and are ready to consume.
     function updateTheme(): void;
+
+    // Called with the response of sendGetVoicePackInfoRequest()
+    function updateVoicePackStatus(lang: string, status: string): void;
+
+    // Called with the response of sendInstallVoicePackRequest()
+    function updateVoicePackStatusFromInstallResponse(
+        lang: string, status: string): void;
 
     // Ping that the theme choices of the user have been retrieved from
     // preferences and can be used to set up the page.
@@ -284,9 +306,8 @@ declare namespace chrome {
     // refer to the previous granularity.
     function movePositionToPreviousGranularity(): void;
 
-    // Signal that the supported fonts should be updated i.e. that the brower's
-    // preferred language has changed.
-    function updateFonts(): void;
+    // Signal that the page language has changed.
+    function languageChanged(): void;
 
     // Gets the accessible text boundary for the given string
     function getAccessibleBoundary(text: string, maxSpeechLength: number):
@@ -302,5 +323,33 @@ declare namespace chrome {
     // Gets the readable name for a locale code
     function getDisplayNameForLocale(locale: string, displayLocale: string):
         string;
+
+    // Sends an async request to get the status of a Natural voice pack for a
+    // specific language. The response is sent back to the UI via
+    // updateVoicePackStatus()
+    function sendGetVoicePackInfoRequest(language: string): void;
+
+    // Sends an async request to install a  Natural voice pack for a
+    // specific language. The response is sent back to the UI via
+    // updateVoicePackStatusFromInstallResponse()
+    function sendInstallVoicePackRequest(language: string): void;
+
+    // Log UmaHistogramLong
+    function logMetric(time: number, metricName: string): void;
+
+    // Log speech errors.
+    function logSpeechError(errorCode: string): void;
+
+    // Returns the node id associated with the index within the given text
+    // segment.
+    // For example, for a segment of text composed of two nodes:
+    // Node 1: "Hello, this is a "
+    // Node 2: "segment of text."
+    // An index of "20" will return the node id associated with node 2.
+    function getNodeIdForCurrentSegmentIndex(index: number): number;
+
+    // The highlight length of the next word starting at the given index within
+    // the current segment.
+    function getNextWordHighlightLength(index: number): number;
   }
 }

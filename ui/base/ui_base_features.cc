@@ -6,6 +6,7 @@
 
 #include <stdlib.h>
 
+#include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
 #include "build/build_config.h"
@@ -52,6 +53,12 @@ BASE_FEATURE(kApplyNativeOcclusionToCompositor,
 #endif
 );
 
+// If enabled, native window occlusion tracking will always be used, even if
+// CHROME_HEADLESS is set.
+BASE_FEATURE(kAlwaysTrackNativeWindowOcclusionForTest,
+             "AlwaysTrackNativeWindowOcclusionForTest",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Field trial param name for `kApplyNativeOcclusionToCompositor`.
 const base::FeatureParam<std::string> kApplyNativeOcclusionToCompositorType{
     &kApplyNativeOcclusionToCompositor, "type",
@@ -90,7 +97,7 @@ bool IsDeprecateAltClickEnabled() {
 
 BASE_FEATURE(kNotificationsIgnoreRequireInteraction,
              "NotificationsIgnoreRequireInteraction",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 bool IsNotificationsIgnoreRequireInteractionEnabled() {
   return base::FeatureList::IsEnabled(kNotificationsIgnoreRequireInteraction);
@@ -98,7 +105,7 @@ bool IsNotificationsIgnoreRequireInteractionEnabled() {
 
 BASE_FEATURE(kShortcutCustomization,
              "ShortcutCustomization",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 bool IsShortcutCustomizationEnabled() {
   return base::FeatureList::IsEnabled(kShortcutCustomization);
@@ -118,9 +125,9 @@ BASE_FEATURE(kSupportF11AndF12KeyShortcuts,
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 bool AreF11AndF12ShortcutsEnabled() {
-  // TODO(crbug/1264581): Remove this once kDeviceI18nShortcutsEnabled policy is
-  // deprecated. This policy allows managed users to still be able to use
-  // deprecated legacy shortcuts which some enterprise customers rely on.
+  // TODO(crbug.com/40203434): Remove this once kDeviceI18nShortcutsEnabled
+  // policy is deprecated. This policy allows managed users to still be able to
+  // use deprecated legacy shortcuts which some enterprise customers rely on.
   if (::ui::ShortcutMappingPrefDelegate::IsInitialized()) {
     ::ui::ShortcutMappingPrefDelegate* instance =
         ::ui::ShortcutMappingPrefDelegate::GetInstance();
@@ -133,6 +140,17 @@ bool AreF11AndF12ShortcutsEnabled() {
   return base::FeatureList::IsEnabled(features::kSupportF11AndF12KeyShortcuts);
 }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if BUILDFLAG(IS_OZONE)
+BASE_FEATURE(kOzoneBubblesUsePlatformWidgets,
+             "OzoneBubblesUsePlatformWidgets",
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+             base::FEATURE_ENABLED_BY_DEFAULT
+#else
+             base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+);
+#endif  // BUILDFLAG(IS_OZONE)
 
 // Update of the virtual keyboard settings UI as described in
 // https://crbug.com/876901.
@@ -176,7 +194,7 @@ BASE_FEATURE(kSystemCaptionStyle,
 // When enabled, the feature will query the OS for a default cursor size,
 // to be used in determining the concrete object size of a custom cursor in
 // blink. Currently enabled by default on Windows only.
-// TODO(crbug.com/1333523) - Implement for other platforms.
+// TODO(crbug.com/40845719) - Implement for other platforms.
 BASE_FEATURE(kSystemCursorSizeSupported,
              "SystemCursorSizeSupported",
 #if BUILDFLAG(IS_WIN)
@@ -213,7 +231,7 @@ bool IsUiGpuRasterizationEnabled() {
 // Enables scrolling with layers under ui using the ui::Compositor.
 BASE_FEATURE(kUiCompositorScrollWithLayers,
              "UiCompositorScrollWithLayers",
-// TODO(https://crbug.com/615948): Use composited scrolling on all platforms.
+// TODO(crbug.com/40471184): Use composited scrolling on all platforms.
 #if BUILDFLAG(IS_APPLE)
              base::FEATURE_ENABLED_BY_DEFAULT
 #else
@@ -225,7 +243,7 @@ BASE_FEATURE(kUiCompositorScrollWithLayers,
 // native apps on Windows.
 BASE_FEATURE(kExperimentalFlingAnimation,
              "ExperimentalFlingAnimation",
-// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
+// TODO(crbug.com/40118868): Revisit the macro expression once build flag switch
 // of lacros-chrome is complete.
 #if BUILDFLAG(IS_WIN) ||                                   \
     (BUILDFLAG(IS_LINUX) && !BUILDFLAG(IS_CHROMEOS_ASH) && \
@@ -254,11 +272,6 @@ BASE_FEATURE(kFocusFollowsCursor,
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 #if BUILDFLAG(IS_WIN)
-// Enables InputPane API for controlling on screen keyboard.
-BASE_FEATURE(kInputPaneOnScreenKeyboard,
-             "InputPaneOnScreenKeyboard",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Enables using WM_POINTER instead of WM_TOUCH for touch events.
 BASE_FEATURE(kPointerEventsForTouch,
              "PointerEventsForTouch",
@@ -278,8 +291,8 @@ BASE_FEATURE(kImprovedKeyboardShortcuts,
 
 bool IsImprovedKeyboardShortcutsEnabled() {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  // TODO(crbug/1264581): Remove this once kDeviceI18nShortcutsEnabled policy is
-  // deprecated.
+  // TODO(crbug.com/40203434): Remove this once kDeviceI18nShortcutsEnabled
+  // policy is deprecated.
   if (::ui::ShortcutMappingPrefDelegate::IsInitialized()) {
     ::ui::ShortcutMappingPrefDelegate* instance =
         ::ui::ShortcutMappingPrefDelegate::GetInstance();
@@ -333,8 +346,12 @@ BASE_FEATURE(kEyeDropper,
 #endif
 );
 
+const char kEyeDropperNotSupported[] = "eye-dropper-not-supported";
+
 bool IsEyeDropperEnabled() {
-  return base::FeatureList::IsEnabled(features::kEyeDropper);
+  return base::FeatureList::IsEnabled(features::kEyeDropper) &&
+         !base::CommandLine::ForCurrentProcess()->HasSwitch(
+             kEyeDropperNotSupported);
 }
 
 // Used to enable keyboard accessible tooltips in in-page content
@@ -361,12 +378,6 @@ BASE_FEATURE(kNotificationGesturesUpdate,
 bool IsNotificationGesturesUpdateEnabled() {
   return base::FeatureList::IsEnabled(kNotificationGesturesUpdate);
 }
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-BASE_FEATURE(kHandwritingGesture,
-             "HandwritingGesture",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-#endif
 
 BASE_FEATURE(kSynchronousPageFlipTesting,
              "SynchronousPageFlipTesting",
@@ -456,10 +467,13 @@ bool IsVariableRefreshRateEnabled() {
   }
 
   // Special default case for devices with |kVariableRefreshRateDefaultEnabled|
-  // set. Requires |kVariableRefreshRateAvailable| to also be set.
+  // set. Requires |kVariableRefreshRateAvailable| to also be set. We also check
+  // if the FeatureList exists as it can be null during the ASSERT_DEATH
+  // handling.
   // TODO(b/310666603): Remove after VRR is enabled-by-default for all hardware.
-  if (!base::FeatureList::GetInstance()->IsFeatureOverridden(
-          kEnableVariableRefreshRate.name) &&
+  if (!(base::FeatureList::GetInstance() &&
+        base::FeatureList::GetInstance()->IsFeatureOverridden(
+            kEnableVariableRefreshRate.name)) &&
       base::FeatureList::IsEnabled(kVariableRefreshRateDefaultEnabled) &&
       base::FeatureList::IsEnabled(kVariableRefreshRateAvailable)) {
     return true;
@@ -548,10 +562,6 @@ ChromeRefresh2023NTBVariation GetChromeRefresh2023NTB() {
   return option;
 }
 
-BASE_FEATURE(kChromeRefresh2023TopChromeFont,
-             "ChromeRefresh2023TopChromeFont",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 bool IsChromeRefresh2023() {
   if (!CustomizeChromeSupportsChromeRefresh2023()) {
     // Bail before checking any other feature flags so that associated studies
@@ -577,54 +587,9 @@ bool IsChromeWebuiRefresh2023() {
           base::FeatureList::IsEnabled(kChromeRefreshSecondary2023));
 }
 
-constexpr base::FeatureParam<ChromeRefresh2023Level>::Option
-    kChromeRefresh2023LevelOption[] = {{ChromeRefresh2023Level::kLevel1, "1"},
-                                       {ChromeRefresh2023Level::kLevel2, "2"}};
-
-const base::FeatureParam<ChromeRefresh2023Level> kChromeRefresh2023Level(
-    &kChromeRefresh2023,
-    "level",
-    ChromeRefresh2023Level::kLevel2,
-    &kChromeRefresh2023LevelOption);
-
-ChromeRefresh2023Level GetChromeRefresh2023LevelUncached() {
-  if (!CustomizeChromeSupportsChromeRefresh2023()) {
-    // Bail before checking any other feature flags so that associated studies
-    // don't get activated.
-    return ChromeRefresh2023Level::kDisabled;
-  }
-  // For simplicity, the secondary field trial to enable chrome refresh will
-  // also enable the omnibox refresh.
-  if (base::FeatureList::IsEnabled(kChromeRefreshSecondary2023)) {
-    return ChromeRefresh2023Level::kLevel2;
-  }
-
-  return IsChromeRefresh2023() ? kChromeRefresh2023Level.Get()
-                               : ChromeRefresh2023Level::kDisabled;
-}
-
-ChromeRefresh2023Level GetChromeRefresh2023Level() {
-  // Cached due to frequent calls for performance optimization.
-  // Please update `GetChromeRefresh2023LevelUncached()` for any changes.
-  static const ChromeRefresh2023Level level =
-      GetChromeRefresh2023LevelUncached();
-  return level;
-}
-
 BASE_FEATURE(kBubbleMetricsApi,
              "BubbleMetricsApi",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-#if BUILDFLAG(IS_MAC)
-// When enabled, images will be written to the system clipboard as both a TIFF
-// and a PNG (as opposed to just a TIFF). This requires encoding the sanitized
-// bitmap to a PNG on the UI thread on copy, which may cause jank. This matches
-// the behavior of other platforms.
-// TODO(https://crbug.com/1443646): Remove this flag eventually.
-BASE_FEATURE(kMacClipboardWriteImageWithPng,
-             "MacClipboardWriteImageWithPng",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-#endif  // BUILDFLAG(IS_MAC)
 
 #if BUILDFLAG(IS_APPLE)
 // Font Smoothing was enabled by default prior to introducing this feature.
@@ -637,7 +602,7 @@ BASE_FEATURE(kCr2023MacFontSmoothing,
 #if BUILDFLAG(IS_WIN)
 BASE_FEATURE(kUseGammaContrastRegistrySettings,
              "UseGammaContrastRegistrySettings",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(IS_WIN)
 
 }  // namespace features

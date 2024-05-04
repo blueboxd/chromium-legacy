@@ -747,8 +747,11 @@ class _LogcatProcessor:
     else:
       self._exit_on_match = None
     self._found_exit_match = False
-    self._native_stack_symbolizer = _LogcatProcessor.NativeStackSymbolizer(
-        stack_script_context, self._PrintParsedLine)
+    if stack_script_context:
+      self._print_func = _LogcatProcessor.NativeStackSymbolizer(
+          stack_script_context, self._PrintParsedLine).AddLine
+    else:
+      self._print_func = self._PrintParsedLine
     # Process ID for the app's main process (with no :name suffix).
     self._primary_pid = None
     # Set of all Process IDs that belong to the app.
@@ -889,7 +892,7 @@ class _LogcatProcessor:
     # belong to the current run of the app. Process all of the buffered lines.
     if self._primary_pid:
       for args in self._initial_buffered_lines:
-        self._native_stack_symbolizer.AddLine(*args)
+        self._print_func(*args)
     self._initial_buffered_lines = None
     self.nonce = None
 
@@ -939,7 +942,7 @@ class _LogcatProcessor:
     if owned_pid or self._verbose or (log.priority == 'F' or  # Java crash dump
                                       log.tag in self._ALLOWLISTED_TAGS):
       if nonce_found:
-        self._native_stack_symbolizer.AddLine(log, not owned_pid)
+        self._print_func(log, not owned_pid)
       else:
         self._initial_buffered_lines.append((log, not owned_pid))
 
@@ -1330,7 +1333,7 @@ class _Command:
       logging.debug('App supports (filtered): %r', app_abis)
     if not app_abis:
       # The app does not have any native libs, so all devices can support it.
-      return devices, None
+      return devices, {}
     fully_supported = []
     not_supported_reasons = {}
     for device in devices:
@@ -1437,13 +1440,17 @@ class _Command:
       else:
         fully_supported, not_supported_reasons = self._FindSupportedDevices(
             available_devices)
-        if fully_supported:
+        reason_string = '\n'.join(
+            'The device (serial={}) is not supported because {}'.format(
+                serial, reason)
+            for serial, reason in not_supported_reasons.items())
+        if args.devices:
+          if reason_string:
+            logging.warning('Devices not supported: %s', reason_string)
+          self.devices = available_devices
+        elif fully_supported:
           self.devices = fully_supported
         else:
-          reason_string = '\n'.join(
-              'The device (serial={}) is not supported because {}'.format(
-                  serial, reason)
-              for serial, reason in not_supported_reasons.items())
           raise Exception('Cannot find any supported devices for this app.\n\n'
                           f'{reason_string}')
 
@@ -1741,11 +1748,13 @@ To disable filtering, (but keep coloring), use --verbose.
     if self.args.proguard_mapping_path and not self.args.no_deobfuscate:
       deobfuscate = deobfuscator.Deobfuscator(self.args.proguard_mapping_path)
 
-    stack_script_context = _StackScriptContext(
-        self.args.output_directory,
-        self.args.apk_path,
-        self.bundle_generation_info,
-        quiet=True)
+    if self.args.apk_path or self.bundle_generation_info:
+      stack_script_context = _StackScriptContext(self.args.output_directory,
+                                                 self.args.apk_path,
+                                                 self.bundle_generation_info,
+                                                 quiet=True)
+    else:
+      stack_script_context = None
 
     extra_package_names = []
     if self.is_test_apk and self.additional_apk_helpers:
@@ -1763,7 +1772,8 @@ To disable filtering, (but keep coloring), use --verbose.
     except KeyboardInterrupt:
       pass  # Don't show stack trace upon Ctrl-C
     finally:
-      stack_script_context.Close()
+      if stack_script_context:
+        stack_script_context.Close()
       if deobfuscate:
         deobfuscate.Close()
 

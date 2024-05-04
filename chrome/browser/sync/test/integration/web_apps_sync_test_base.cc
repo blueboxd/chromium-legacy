@@ -29,7 +29,7 @@ WebAppsSyncTestBase::WebAppsSyncTestBase(TestType test_type)
   std::vector<base::test::FeatureRef> enabled_features;
 
 #if BUILDFLAG(IS_CHROMEOS)
-  // TODO(crbug.com/1357905): Update test driver to work with new UI.
+  // TODO(crbug.com/40236806): Update test driver to work with new UI.
   enabled_features.push_back(apps::features::kLinkCapturingUiUpdate);
 #else
   // TOOD(b/313492499): Update test driver to work with new intent picker UI.
@@ -38,7 +38,6 @@ WebAppsSyncTestBase::WebAppsSyncTestBase(TestType test_type)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // Disable Lacros, so that Web Apps get synced in the Ash browser.
-  // TODO(crbug.com/1462253): Also test with Lacros flags enabled.
   base::Extend(disabled_features, ash::standalone_browser::GetFeatureRefs());
 #endif
 

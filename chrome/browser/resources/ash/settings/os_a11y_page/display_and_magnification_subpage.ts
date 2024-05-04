@@ -17,7 +17,7 @@ import '../controls/settings_toggle_button.js';
 import '../settings_shared.css.js';
 import 'chrome://resources/ash/common/cr_elements/localized_link/localized_link.js';
 
-import {PrefsMixin} from 'chrome://resources/cr_components/settings_prefs/prefs_mixin.js';
+import {PrefsMixin} from '/shared/settings/prefs/prefs_mixin.js';
 import {I18nMixin} from 'chrome://resources/ash/common/cr_elements/i18n_mixin.js';
 import {WebUiListenerMixin} from 'chrome://resources/ash/common/cr_elements/web_ui_listener_mixin.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
@@ -94,6 +94,17 @@ export class SettingsDisplayAndMagnificationSubpageElement extends
               'isAccessibilityReducedAnimationsEnabled');
         },
       },
+      /**
+       * Whether the magnifier following select to speak words feature is
+       * enabled.
+       */
+      isAccessibilityMagnifierFollowsStsEnabled_: {
+        type: Boolean,
+        value() {
+          return loadTimeData.getBoolean(
+              'isAccessibilityMagnifierFollowsStsEnabled');
+        },
+      },
 
       colorVisionDeficiencyTypeOptions_: {
         readOnly: true,
@@ -135,6 +146,7 @@ export class SettingsDisplayAndMagnificationSubpageElement extends
           Setting.kFullscreenMagnifier,
           Setting.kFullscreenMagnifierMouseFollowingMode,
           Setting.kFullscreenMagnifierFocusFollowing,
+          Setting.kAccessibilityMagnifierFollowsSts,
           Setting.kDockedMagnifier,
         ]),
       },
@@ -145,6 +157,7 @@ export class SettingsDisplayAndMagnificationSubpageElement extends
   private screenMagnifierMouseFollowingModePrefValues_: {[key: string]: number};
   private screenMagnifierZoomOptions_: Array<{value: number, name: string}>;
   private isAccessibilityReducedAnimationsEnabled_: boolean;
+  private isAccessibilityMagnifierFollowsStsEnabled_: boolean;
 
 
   constructor() {

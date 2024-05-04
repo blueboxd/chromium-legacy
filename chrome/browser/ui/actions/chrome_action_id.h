@@ -157,6 +157,7 @@
   E(kActionManageExtensions, IDC_MANAGE_EXTENSIONS) \
   E(kActionDevToolsInspect, IDC_DEV_TOOLS_INSPECT) \
   E(kActionUpgradeDialog, IDC_UPGRADE_DIALOG) \
+  E(kActionSetBrowserAsDefault, IDC_SET_BROWSER_AS_DEFAULT) \
   E(kActionProfilingEnabled, IDC_PROFILING_ENABLED) \
   E(kActionBookmarksMenu, IDC_BOOKMARKS_MENU) \
   E(kActionExtensionErrors, IDC_EXTENSION_ERRORS) \
@@ -170,7 +171,6 @@
   E(kActionRecentTabsMenu, IDC_RECENT_TABS_MENU) \
   E(kActionRecentTabsNoDeviceTabs, IDC_RECENT_TABS_NO_DEVICE_TABS) \
   E(kActionShowSettingsResetBubble, IDC_SHOW_SETTINGS_RESET_BUBBLE) \
-  E(kActionDistillPage, IDC_DISTILL_PAGE) \
   E(kActionHelpMenu, IDC_HELP_MENU) \
   E(kActionShowSrtBubble, IDC_SHOW_SRT_BUBBLE) \
   E(kActionElevatedRecoveryDialog, IDC_ELEVATED_RECOVERY_DIALOG) \
@@ -486,6 +486,14 @@
     IDC_CONTENT_CONTEXT_AUTOFILL_FALLBACK_ADDRESS) \
   E(kActionContentContextAutofillFallbackPayments, \
     IDC_CONTENT_CONTEXT_AUTOFILL_FALLBACK_PAYMENTS) \
+  E(kActionContentContextAutofillFallbackPassowords, \
+    IDC_CONTENT_CONTEXT_AUTOFILL_FALLBACK_PASSWORDS) \
+  E(kActionContentContextAutofillFallbackPasswordsSelectPassword, \
+    IDC_CONTENT_CONTEXT_AUTOFILL_FALLBACK_PASSWORDS_SELECT_PASSWORD) \
+  E(kActionContentContextAutofillFallbackPasswordsImportPasswords, \
+    IDC_CONTENT_CONTEXT_AUTOFILL_FALLBACK_PASSWORDS_IMPORT_PASSWORDS) \
+  E(kActionContentContextAutofillFallbackPasswordsSuggestPassword, \
+    IDC_CONTENT_CONTEXT_AUTOFILL_FALLBACK_PASSWORDS_SUGGEST_PASSWORD) \
   /* Live Caption */ \
   E(kActionLiveCaption, IDC_LIVE_CAPTION) \
   /* Device API system tray icon */ \
@@ -514,7 +522,7 @@
 #define CHROME_PLATFORM_SPECIFIC_ACTION_IDS \
   E(kUseSystemTitleBar, IDC_USE_SYSTEM_TITLE_BAR) \
   E(kRestoreWindow, IDC_RESTORE_WINDOW)
-// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
+// TODO(crbug.com/40118868): Revisit the macro expression once build flag switch
 // of lacros-chrome is complete.
 #elif BUILDFLAG(IS_CHROMEOS_LACROS)
 #define CHROME_PLATFORM_SPECIFIC_ACTION_IDS \
@@ -532,7 +540,7 @@
 #define CHROME_GOOGLE_BRANDED_ACTION_IDS
 #endif // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
-// TODO(crbug.com/1491976): Adding temporarily to unblock the side panel team.
+// TODO(crbug.com/40285337): Adding temporarily to unblock the side panel team.
 // Should be reinserted into CHROME_COMMON_ACTION_IDS when general solution to
 // add action id mappings is implemented.
 #define SIDE_PANEL_ACTION_IDS \
@@ -544,7 +552,7 @@
   E(kActionSidePanelShowFeed) \
   E(kActionSidePanelShowHistoryCluster) \
   E(kActionSidePanelShowLens) \
-  E(kActionSidePanelShowLensOverlayResults) \
+  E(kActionSidePanelShowLensOverlayResults, IDC_CONTENT_CONTEXT_LENS_OVERLAY) \
   E(kActionSidePanelShowPerformance) \
   E(kActionSidePanelShowReadAnything) \
   E(kActionSidePanelShowReadingList, IDC_READING_LIST_MENU_SHOW_UI) \

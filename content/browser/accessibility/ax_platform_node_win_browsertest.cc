@@ -4,6 +4,7 @@
 
 #include "ui/accessibility/platform/ax_platform_node_win.h"
 
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/win/scoped_variant.h"
 #include "content/browser/accessibility/accessibility_content_browsertest.h"
@@ -236,6 +237,34 @@ IN_PROC_BROWSER_TEST_F(AXPlatformNodeWinUIABrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(AXPlatformNodeWinUIABrowserTest,
+                       UIAGetPropertyValueWebContentsHistogram) {
+  LoadInitialAccessibilityTreeFromHtml(std::string(R"HTML(
+      <!DOCTYPE html>
+      <html>
+        <p>Hello World</p>
+      </html>
+  )HTML"));
+
+  base::HistogramTester histogram_tester;
+  base::win::ScopedVariant property_value;
+  ComPtr<IRawElementProviderSimple> node_provider =
+      QueryInterfaceFromNode<IRawElementProviderSimple>(
+          FindNode(ax::mojom::Role::kStaticText, "Hello World"));
+
+  histogram_tester.ExpectTotalCount(
+      "Accessibility.Performance.WinAPIs.WebContents.UMA_API_GET_PROPERTY_"
+      "VALUE",
+      0);
+
+  node_provider->GetPropertyValue(UIA_NamePropertyId, property_value.Receive());
+
+  histogram_tester.ExpectTotalCount(
+      "Accessibility.Performance.WinAPIs.WebContents.UMA_API_GET_PROPERTY_"
+      "VALUE",
+      1);
+}
+
+IN_PROC_BROWSER_TEST_F(AXPlatformNodeWinUIABrowserTest,
                        UIAGetPropertyValueFlowsFromSingle) {
   LoadInitialAccessibilityTreeFromHtmlFilePath(
       "/accessibility/aria/aria-flowto.html");
@@ -303,7 +332,7 @@ IN_PROC_BROWSER_TEST_F(AXPlatformNodeWinUIABrowserTest,
   LoadInitialAccessibilityTreeFromHtml(std::string(R"HTML(
       <!DOCTYPE html>
       <html>
-        <body>
+        <body role="none">
           <dialog open>Example Text</dialog>
         </body>
       </html>
@@ -319,7 +348,7 @@ IN_PROC_BROWSER_TEST_F(AXPlatformNodeWinUIABrowserTest,
   LoadInitialAccessibilityTreeFromHtml(std::string(R"HTML(
       <!DOCTYPE html>
       <html>
-        <body>
+        <body role="none">
           <dialog open aria-modal="false">Example Text</dialog>
         </body>
       </html>
@@ -335,7 +364,7 @@ IN_PROC_BROWSER_TEST_F(AXPlatformNodeWinUIABrowserTest,
   LoadInitialAccessibilityTreeFromHtml(std::string(R"HTML(
       <!DOCTYPE html>
       <html>
-        <body>
+        <body role="none">
           <dialog open aria-modal="true">Example Text</dialog>
         </body>
       </html>
@@ -521,6 +550,36 @@ IN_PROC_BROWSER_TEST_F(AXPlatformNodeWinUIABrowserTest,
   expected_scoped_variant.Set(SysAllocString(L"id"));
   base::win::ScopedVariant scoped_variant;
   EXPECT_HRESULT_SUCCEEDED(browser_accessibility_com_win->GetPropertyValue(
+      UIA_AutomationIdPropertyId, scoped_variant.Receive()));
+  EXPECT_EQ(0, expected_scoped_variant.Compare(scoped_variant));
+}
+
+IN_PROC_BROWSER_TEST_F(AXPlatformNodeWinUIABrowserTest,
+                       UIAGetPropertyValueNonEmptyAutomationIdOnRootWebArea) {
+  LoadInitialAccessibilityTreeFromHtml(std::string(R"HTML(
+      <!DOCTYPE html>
+      <html>
+        <body>
+          <button></button>
+        </body>
+      </html>
+  )HTML"));
+
+  BrowserAccessibility* root_browser_accessibility = GetRootAndAssertNonNull();
+  ASSERT_NE(nullptr, root_browser_accessibility);
+  ASSERT_EQ(ax::mojom::Role::kRootWebArea,
+            root_browser_accessibility->GetRole());
+
+  BrowserAccessibilityComWin* root_browser_accessibility_com_win =
+      ToBrowserAccessibilityWin(root_browser_accessibility)->GetCOM();
+  ASSERT_NE(nullptr, root_browser_accessibility_com_win);
+
+  // kRootWebArea nodes should not be empty. Some UIA clients appear to rely on
+  // whether it's empty or not. See https://crbug.com/40065516#comment32.
+  base::win::ScopedVariant expected_scoped_variant;
+  expected_scoped_variant.Set(SysAllocString(L"RootWebArea"));
+  base::win::ScopedVariant scoped_variant;
+  EXPECT_HRESULT_SUCCEEDED(root_browser_accessibility_com_win->GetPropertyValue(
       UIA_AutomationIdPropertyId, scoped_variant.Receive()));
   EXPECT_EQ(0, expected_scoped_variant.Compare(scoped_variant));
 }

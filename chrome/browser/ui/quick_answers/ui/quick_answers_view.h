@@ -9,11 +9,14 @@
 
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/ui/chromeos/read_write_cards/read_write_cards_view.h"
 #include "chromeos/components/quick_answers/quick_answers_model.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/events/event_handler.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/focus/focus_manager.h"
+#include "ui/views/view_tracker.h"
 #include "ui/views/widget/unique_widget_ptr.h"
 
 namespace views {
@@ -26,7 +29,6 @@ class WebView;
 
 namespace chromeos::editor_menu {
 class FocusSearch;
-class PreTargetHandler;
 }  // namespace chromeos::editor_menu
 
 class QuickAnswersUiController;
@@ -35,17 +37,12 @@ namespace quick_answers {
 struct QuickAnswer;
 struct PhoneticsInfo;
 
-class QuickAnswersPreTargetHandler;
-
 // A bubble style view to show QuickAnswer.
-class QuickAnswersView : public views::View {
-  METADATA_HEADER(QuickAnswersView, views::View)
+class QuickAnswersView : public chromeos::ReadWriteCardsView {
+  METADATA_HEADER(QuickAnswersView, chromeos::ReadWriteCardsView)
 
  public:
-  static constexpr char kWidgetName[] = "QuickAnswersViewWidget";
-
-  QuickAnswersView(const gfx::Rect& anchor_view_bounds,
-                   const std::string& title,
+  QuickAnswersView(const std::string& title,
                    bool is_internal,
                    base::WeakPtr<QuickAnswersUiController> controller);
 
@@ -54,34 +51,25 @@ class QuickAnswersView : public views::View {
 
   ~QuickAnswersView() override;
 
-  static views::UniqueWidgetPtr CreateWidget(
-      const gfx::Rect& anchor_view_bounds,
-      const std::string& title,
-      bool is_internal,
-      base::WeakPtr<QuickAnswersUiController> controller);
-
-  // views::View:
+  // chromeos::ReadWriteCardsView:
   void RequestFocus() override;
   bool HasFocus() const override;
   void OnFocus() override;
   void OnThemeChanged() override;
   views::FocusTraversable* GetPaneFocusTraversable() override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
+  gfx::Size GetMaximumSize() const override;
+  void UpdateBoundsForQuickAnswers() override;
 
   // Called when a click happens to trigger Assistant Query.
   void SendQuickAnswersQuery();
 
-  void UpdateAnchorViewBounds(const gfx::Rect& anchor_view_bounds);
-
   // Update the quick answers view with quick answers result.
-  void UpdateView(const gfx::Rect& anchor_view_bounds,
-                  const quick_answers::QuickAnswer& quick_answer);
+  void UpdateView(const quick_answers::QuickAnswer& quick_answer);
 
   void ShowRetryView();
 
   ui::ImageModel GetIconImageModelForTesting();
-
-  gfx::Rect GetAnchorViewBounds() { return anchor_view_bounds_; }
 
  private:
   void InitLayout();
@@ -96,10 +84,8 @@ class QuickAnswersView : public views::View {
   void AddAssistantIcon();
   void AddGoogleIcon();
   void AddDefaultResultTypeIcon();
-  int GetBoundsWidth();
   int GetLabelWidth(bool is_title);
   void ResetContentView();
-  void UpdateBounds();
   void UpdateQuickAnswerResult(const quick_answers::QuickAnswer& quick_answer);
 
   // FocusSearch::GetFocusableViewsCallback to poll currently focusable views.
@@ -109,19 +95,14 @@ class QuickAnswersView : public views::View {
   void OnPhoneticsAudioButtonPressed(
       const quick_answers::PhoneticsInfo& phonetics_info);
 
-  // The relative position to the screen for Ash and to the toplevel window for
-  // Lacros.
-  gfx::Rect anchor_view_bounds_;
-
   base::WeakPtr<QuickAnswersUiController> controller_;
-  bool has_second_row_answer_ = false;
   std::string title_;
   bool is_internal_ = false;
 
-  raw_ptr<views::View> base_view_ = nullptr;
-  raw_ptr<views::View> main_view_ = nullptr;
-  raw_ptr<views::View> content_view_ = nullptr;
-  raw_ptr<views::View> report_query_view_ = nullptr;
+  views::ViewTracker base_view_;
+  views::ViewTracker main_view_;
+  views::ViewTracker content_view_;
+  views::ViewTracker report_query_view_;
   raw_ptr<views::Label> first_answer_label_ = nullptr;
   raw_ptr<views::LabelButton> retry_label_ = nullptr;
   raw_ptr<views::ImageButton> dogfood_feedback_button_ = nullptr;
@@ -129,11 +110,10 @@ class QuickAnswersView : public views::View {
   raw_ptr<views::ImageButton> phonetics_audio_button_ = nullptr;
   raw_ptr<views::ImageView> result_type_icon_ = nullptr;
 
-  // Invisible web view to play phonetics audio for definition results.
-  raw_ptr<views::WebView> phonetics_audio_web_view_ = nullptr;
+  // Invisible WebView to play phonetics audio for definition results. WebView
+  // is lazy created to improve performance.
+  views::ViewTracker phonetics_audio_web_view_;
 
-  std::unique_ptr<chromeos::editor_menu::PreTargetHandler>
-      quick_answers_view_handler_;
   std::unique_ptr<chromeos::editor_menu::FocusSearch> focus_search_;
   base::WeakPtrFactory<QuickAnswersView> weak_factory_{this};
 };

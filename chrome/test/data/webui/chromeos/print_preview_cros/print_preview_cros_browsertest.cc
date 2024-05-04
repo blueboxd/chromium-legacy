@@ -36,8 +36,26 @@ class PrintPreviewCrosBrowserTest : public WebUIMochaBrowserTest {
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
+IN_PROC_BROWSER_TEST_F(PrintPreviewCrosBrowserTest,
+                       DestinationDropdownControllerTest) {
+  RunTestAtPath("destination_dropdown_controller_test.js");
+}
+
+IN_PROC_BROWSER_TEST_F(PrintPreviewCrosBrowserTest, DestinationDropdownTest) {
+  RunTestAtPath("destination_dropdown_test.js");
+}
+
 IN_PROC_BROWSER_TEST_F(PrintPreviewCrosBrowserTest, DestinationManagerTest) {
   RunTestAtPath("destination_manager_test.js");
+}
+
+IN_PROC_BROWSER_TEST_F(PrintPreviewCrosBrowserTest,
+                       DestinationRowControllerTest) {
+  RunTestAtPath("destination_row_controller_test.js");
+}
+
+IN_PROC_BROWSER_TEST_F(PrintPreviewCrosBrowserTest, DestinationRowTest) {
+  RunTestAtPath("destination_row_test.js");
 }
 
 IN_PROC_BROWSER_TEST_F(PrintPreviewCrosBrowserTest,
@@ -54,8 +72,18 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewCrosBrowserTest, EventUtilsTest) {
 }
 
 IN_PROC_BROWSER_TEST_F(PrintPreviewCrosBrowserTest,
+                       FakeDestinationProviderTest) {
+  RunTestAtPath("fake_destination_provider_test.js");
+}
+
+IN_PROC_BROWSER_TEST_F(PrintPreviewCrosBrowserTest,
                        FakePrintPreviewPageHandlerTest) {
   RunTestAtPath("fake_print_preview_page_handler_test.js");
+}
+
+IN_PROC_BROWSER_TEST_F(PrintPreviewCrosBrowserTest,
+                       PrintPreviewCrosAppControllerTest) {
+  RunTestAtPath("print_preview_cros_app_controller_test.js");
 }
 
 IN_PROC_BROWSER_TEST_F(PrintPreviewCrosBrowserTest, PrintPreviewCrosAppTest) {

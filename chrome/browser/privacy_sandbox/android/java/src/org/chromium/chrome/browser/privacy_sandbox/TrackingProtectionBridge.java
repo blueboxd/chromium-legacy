@@ -4,42 +4,49 @@
 
 package org.chromium.chrome.browser.privacy_sandbox;
 
+import org.jni_zero.JniType;
 import org.jni_zero.NativeMethods;
 
+import org.chromium.chrome.browser.profiles.Profile;
+
 /** Bridge, providing access to the native-side Tracking Protection configuration. */
-// TODO(crbug.com/1410601): Pass in the profile and remove GetActiveUserProfile in C++.
 public class TrackingProtectionBridge {
+    private final Profile mProfile;
 
-    public static @NoticeType int getRequiredNotice() {
-        return TrackingProtectionBridgeJni.get().getRequiredNotice();
+    public TrackingProtectionBridge(Profile profile) {
+        mProfile = profile;
     }
 
-    public static void noticeActionTaken(@NoticeType int noticeType, @NoticeAction int action) {
-        TrackingProtectionBridgeJni.get().noticeActionTaken(noticeType, action);
+    public @NoticeType int getRequiredNotice() {
+        return TrackingProtectionBridgeJni.get().getRequiredNotice(mProfile);
     }
 
-    public static void noticeRequested(@NoticeType int noticeType) {
-        TrackingProtectionBridgeJni.get().noticeRequested(noticeType);
+    public void noticeActionTaken(@NoticeType int noticeType, @NoticeAction int action) {
+        TrackingProtectionBridgeJni.get().noticeActionTaken(mProfile, noticeType, action);
     }
 
-    public static void noticeShown(@NoticeType int noticeType) {
-        TrackingProtectionBridgeJni.get().noticeShown(noticeType);
+    public void noticeRequested(@NoticeType int noticeType) {
+        TrackingProtectionBridgeJni.get().noticeRequested(mProfile, noticeType);
     }
 
-    public static boolean isOffboarded() {
-        return TrackingProtectionBridgeJni.get().isOffboarded();
+    public void noticeShown(@NoticeType int noticeType) {
+        TrackingProtectionBridgeJni.get().noticeShown(mProfile, noticeType);
+    }
+
+    public boolean isOffboarded() {
+        return TrackingProtectionBridgeJni.get().isOffboarded(mProfile);
     }
 
     @NativeMethods
     public interface Natives {
-        void noticeRequested(int noticeType);
+        void noticeRequested(@JniType("Profile*") Profile profile, int noticeType);
 
-        void noticeShown(int noticeType);
+        void noticeShown(@JniType("Profile*") Profile profile, int noticeType);
 
-        void noticeActionTaken(int noticeType, int action);
+        void noticeActionTaken(@JniType("Profile*") Profile profile, int noticeType, int action);
 
-        int getRequiredNotice();
+        int getRequiredNotice(@JniType("Profile*") Profile profile);
 
-        boolean isOffboarded();
+        boolean isOffboarded(@JniType("Profile*") Profile profile);
     }
 }

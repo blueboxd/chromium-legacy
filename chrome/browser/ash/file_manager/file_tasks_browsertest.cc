@@ -50,6 +50,7 @@
 #include "chrome/browser/ash/file_system_provider/fake_extension_provider.h"
 #include "chrome/browser/ash/file_system_provider/provided_file_system_info.h"
 #include "chrome/browser/ash/file_system_provider/provider_interface.h"
+#include "chrome/browser/ash/login/test/guest_session_mixin.h"
 #include "chrome/browser/ash/login/test/logged_in_user_mixin.h"
 #include "chrome/browser/ash/policy/dlp/dlp_files_controller_ash.h"
 #include "chrome/browser/ash/system_web_apps/system_web_app_manager.h"
@@ -58,6 +59,7 @@
 #include "chrome/browser/chromeos/policy/dlp/test/mock_dlp_rules_manager.h"
 #include "chrome/browser/chromeos/upload_office_to_cloud/upload_office_to_cloud.h"
 #include "chrome/browser/extensions/extension_keeplist_chromeos.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/notifications/notification_display_service_factory.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
@@ -204,6 +206,30 @@ void ConvertExpectation(const Expectation& test,
   }
 }
 
+// The Office Fallback Dialog only exists when the is_chrome_branded GN flag set
+// because otherwise QuickOffice is not installed.
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+content::WebContents* GetWebContentsFromOfficeFallbackAndWaitForDialog() {
+  ash::SystemWebDialogDelegate* dialog =
+      ash::SystemWebDialogDelegate::FindInstance(
+          chrome::kChromeUIOfficeFallbackURL);
+  EXPECT_TRUE(dialog);
+  content::WebUI* webui = dialog->GetWebUIForTest();
+  EXPECT_TRUE(webui);
+  content::WebContents* web_contents = webui->GetWebContents();
+  EXPECT_TRUE(web_contents);
+
+  // Wait until the DOM element actually exists at office-fallback.
+  EXPECT_TRUE(base::test::RunUntil([&] {
+    return content::EvalJs(web_contents,
+                           "!!document.querySelector('office-fallback')")
+        .ExtractBool();
+  }));
+
+  return web_contents;
+}
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
+
 // Auxiliary class for abstracting over differences between the crosapi and
 // non-crosapi test variants.
 class TestController {
@@ -286,6 +312,16 @@ class TestControllerLacros : public TestController {
 
     lacros_waiter_.emplace(crosapi::TestControllerAsh::Get()
                                ->GetStandaloneBrowserTestController());
+
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+    // QuickOffice loads from rootfs at /usr/share/chromeos-assets/quickoffce
+    // which does not exist on bots for tests, so load test version.
+    base::FilePath data_dir;
+    CHECK(base::PathService::Get(chrome::DIR_TEST_DATA, &data_dir));
+    lacros_waiter_->InstallComponentExtension(
+        data_dir.Append("chromeos/file_manager/quickoffice").value(),
+        extension_misc::kQuickOfficeComponentExtensionId);
+#endif
   }
 
   std::string InstallExtension(const char* path) override {
@@ -717,7 +753,7 @@ IN_PROC_BROWSER_TEST_P(FileTasksBrowserTest, ExecuteWebApp) {
   base::RunLoop run_loop;
   web_app::WebAppLaunchProcess::SetOpenApplicationCallbackForTesting(
       base::BindLambdaForTesting(
-          [&run_loop](apps::AppLaunchParams&& params) -> content::WebContents* {
+          [&run_loop](apps::AppLaunchParams params) {
             if (GetParam().crosapi_state ==
                 TestProfileParam::CrosapiParam::kDisabled) {
               EXPECT_EQ(params.override_url,
@@ -731,7 +767,6 @@ IN_PROC_BROWSER_TEST_P(FileTasksBrowserTest, ExecuteWebApp) {
             EXPECT_TRUE(base::EndsWith(params.launch_files.at(1).MaybeAsASCII(),
                                        "bar.png"));
             run_loop.Quit();
-            return nullptr;
           }));
 
   base::FilePath file1 =
@@ -1282,6 +1317,28 @@ IN_PROC_BROWSER_TEST_F(NonManagedAccountNoFlag,
       chromeos::IsEligibleAndEnabledUploadOfficeToCloud(browser()->profile()));
 }
 
+// |InProcessBrowserTest| which allows a user to login to Guest mode.
+class GuestMode : public MixinBasedInProcessBrowserTest {
+ public:
+  GuestMode() {
+    feature_list_.InitAndEnableFeature(
+        chromeos::features::kUploadOfficeToCloud);
+  }
+
+ protected:
+  ash::GuestSessionMixin guest_session_{&mixin_host_};
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+// Tests that IsEligibleAndEnabledUploadOfficeToCloud() returns false when
+// |kUploadOfficeToCloud| is enabled but the user is in Guest mode.
+IN_PROC_BROWSER_TEST_F(GuestMode, IsEligibleAndEnabledUploadOfficeToCloud) {
+  ASSERT_FALSE(
+      chromeos::IsEligibleAndEnabledUploadOfficeToCloud(browser()->profile()));
+}
+
 // TODO(cassycc or petermarshall) share this class with other test files for
 // testing with a fake DriveFs.
 // Tests the cloud upload/open flow as well as the office fallback flow using a
@@ -1462,6 +1519,63 @@ IN_PROC_BROWSER_TEST_F(DriveTest, OfficeFallbackTryAgain) {
   histogram_.ExpectUniqueSample(
       ash::cloud_upload::kDriveErrorMetricName,
       ash::cloud_upload::OfficeDriveOpenErrors::kSuccess, 1);
+}
+
+// Tests that when the fallback dialog closes unexpectedly, a Cancel TaskResult
+// is logged.
+IN_PROC_BROWSER_TEST_F(DriveTest, OfficeFallbackClosesUnexpectedly) {
+  // Add test file to fake DriveFs.
+  SetUpTest();
+
+  // Disable the setup flow for office files because we want the office
+  // fallback dialog to run instead.
+  SetWordFileHandlerToFilesSWA(profile(), kActionIdWebDriveOfficeWord);
+
+  const TaskDescriptor web_drive_office_task = CreateWebDriveOfficeTask();
+  std::vector<storage::FileSystemURL> file_urls{drive_test_file_url_};
+
+  // Watch for dialog URL chrome://office-fallback.
+  GURL expected_dialog_URL(chrome::kChromeUIOfficeFallbackURL);
+  content::TestNavigationObserver navigation_observer_dialog(
+      expected_dialog_URL);
+  navigation_observer_dialog.StartWatchingNewWebContents();
+
+  // Launches the office fallback dialog as the system is offline.
+  base::test::TestFuture<TaskResult, std::string> executed_future;
+  ExecuteFileTask(profile(), web_drive_office_task, file_urls,
+                  executed_future.GetCallback());
+  ASSERT_EQ(executed_future.Get<0>(), TaskResult::kOpened);
+
+  // Wait for office fallback dialog to open.
+  navigation_observer_dialog.Wait();
+  ASSERT_TRUE(navigation_observer_dialog.last_navigation_succeeded());
+
+  // Get the web contents of chrome://office-fallback to be able to check that
+  // the dialog exists.
+  content::WebContents* web_contents =
+      GetWebContentsFromOfficeFallbackAndWaitForDialog();
+
+  // Close the dialog with no user response and wait for the dialog to close.
+  content::WebContentsDestroyedWatcher watcher(web_contents);
+  ash::SystemWebDialogDelegate* dialog =
+      ash::SystemWebDialogDelegate::FindInstance(
+          chrome::kChromeUIOfficeFallbackURL);
+  EXPECT_TRUE(dialog);
+  dialog->Close();
+
+  watcher.Wait();
+
+  histogram_.ExpectUniqueSample(
+      ash::cloud_upload::kNumberOfFilesToOpenWithGoogleDriveMetric, 1, 1);
+  histogram_.ExpectUniqueSample(
+      ash::cloud_upload::kOpenInitialCloudProviderMetric,
+      ash::cloud_upload::CloudProvider::kGoogleDrive, 1);
+  histogram_.ExpectUniqueSample(
+      ash::cloud_upload::kGoogleDriveTaskResultMetricName,
+      ash::cloud_upload::OfficeTaskResult::kCancelledAtFallback, 1);
+  histogram_.ExpectUniqueSample(
+      ash::cloud_upload::kDriveErrorMetricName,
+      ash::cloud_upload::OfficeDriveOpenErrors::kOffline, 1);
 }
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
@@ -1696,7 +1810,7 @@ class OneDriveTest : public TestAccountBrowserTest,
 
     // Create a fake ODFS.
     provided_file_system_ =
-        test::CreateFakeProvidedFileSystemOneDrive(profile());
+        test::MountFakeProvidedFileSystemOneDrive(profile());
 
     // Add test files to the fake ODFS.
     provided_file_system_->AddEntry(
@@ -1704,13 +1818,15 @@ class OneDriveTest : public TestAccountBrowserTest,
         base::Time::Now(),
         "application/"
         "vnd.openxmlformats-officedocument.wordprocessingml.document",
-        "");
+        /*cloud_file_info=*/nullptr,
+        /*contents=*/"");
     provided_file_system_->AddEntry(
         test_path_within_odfs_2_, false, test_pptx_file_name_2_, 0,
         base::Time::Now(),
         "application/"
         "vnd.openxmlformats-officedocument.presentationml.presentation",
-        "");
+        /*cloud_file_info=*/nullptr,
+        /*contents=*/"");
 
     // Get URLs of test files.
     odfs_docx_test_file_url_1_ = ash::cloud_upload::FilePathToFileSystemURL(
@@ -2039,21 +2155,8 @@ IN_PROC_BROWSER_TEST_F(
   ASSERT_TRUE(navigation_observer_dialog.last_navigation_succeeded());
 
   // Get the web contents of the fallback dialog.
-  ash::SystemWebDialogDelegate* dialog =
-      ash::SystemWebDialogDelegate::FindInstance(
-          chrome::kChromeUIOfficeFallbackURL);
-  EXPECT_TRUE(dialog);
-  content::WebUI* webui = dialog->GetWebUIForTest();
-  EXPECT_TRUE(webui);
-  content::WebContents* web_contents = webui->GetWebContents();
-  EXPECT_TRUE(web_contents);
-
-  // Wait until the DOM element actually exists at office-fallback.
-  EXPECT_TRUE(base::test::RunUntil([&] {
-    return content::EvalJs(web_contents,
-                           "!!document.querySelector('office-fallback')")
-        .ExtractBool();
-  }));
+  content::WebContents* web_contents =
+      GetWebContentsFromOfficeFallbackAndWaitForDialog();
 
   EXPECT_TRUE(content::ExecJs(web_contents,
                               "document.querySelector('office-fallback')"

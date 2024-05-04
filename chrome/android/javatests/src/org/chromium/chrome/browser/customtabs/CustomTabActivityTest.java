@@ -81,7 +81,6 @@ import androidx.test.runner.lifecycle.Stage;
 import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Assert;
-import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -113,7 +112,6 @@ import org.chromium.base.test.util.CriteriaNotSatisfiedException;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.DoNotBatch;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.Features.DisableFeatures;
 import org.chromium.base.test.util.Features.EnableFeatures;
 import org.chromium.base.test.util.HistogramWatcher;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
@@ -137,7 +135,6 @@ import org.chromium.chrome.browser.customtabs.CustomTabActivityLifecycleUmaTrack
 import org.chromium.chrome.browser.customtabs.CustomTabsIntentTestUtils.OnFinishedForTest;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityNavigationController.FinishReason;
 import org.chromium.chrome.browser.customtabs.features.partialcustomtab.PartialCustomTabBaseStrategy;
-import org.chromium.chrome.browser.customtabs.features.partialcustomtab.PartialCustomTabBottomSheetStrategy;
 import org.chromium.chrome.browser.customtabs.features.partialcustomtab.PartialCustomTabDisplayManager;
 import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbar;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
@@ -497,7 +494,7 @@ public class CustomTabActivityTest {
         assertEquals(
                 expectedStatusBarColor,
                 mCustomTabActivityTestRule.getActivity().getWindow().getStatusBarColor());
-        // TODO(https://crbug.com/871805): Use helper class to determine whether dark status icons
+        // TODO(crbug.com/40588353): Use helper class to determine whether dark status icons
         // are supported.
 
         MenuButton menuButtonView = toolbarView.findViewById(R.id.menu_button_wrapper);
@@ -515,7 +512,7 @@ public class CustomTabActivityTest {
     @Test
     @SmallTest
     @Feature({"UiCatalogue"})
-    @DisabledTest(message = "https://crbug.com/1456878")
+    @DisabledTest(message = "https://crbug.com/40898152")
     public void testActionButton() throws TimeoutException {
         Bitmap expectedIcon = createVectorDrawableBitmap(R.drawable.ic_credit_card_black, 77, 48);
         Intent intent = createMinimalCustomTabIntent();
@@ -561,7 +558,7 @@ public class CustomTabActivityTest {
     @Test
     @SmallTest
     @Feature({"UiCatalogue"})
-    @DisabledTest(message = "https://crbug.com/1455040")
+    @DisabledTest(message = "https://crbug.com/40898152")
     public void testMultipleActionButtons() throws TimeoutException {
         Bitmap expectedIcon1 = createVectorDrawableBitmap(R.drawable.ic_content_copy_black, 48, 48);
         Bitmap expectedIcon2 =
@@ -1389,7 +1386,7 @@ public class CustomTabActivityTest {
      * mayLaunchUrl("http://example.com/page.html#first-fragment") -
      * loadUrl("http://example.com/page.html#other-fragment")
      *
-     * <p>There are two parameters changing the bahavior:
+     * <p>There are two parameters changing the behavior:
      *
      * @param ignoreFragments Whether the hidden tab should be kept.
      * @param wait Whether to wait for the hidden tab to load.
@@ -1443,7 +1440,7 @@ public class CustomTabActivityTest {
         Assert.assertFalse(tab.canGoForward());
         Assert.assertFalse(tab.canGoBack());
 
-        // TODO(https://crbug.com/1467857):
+        // TODO(crbug.com/40276951):
         // Fragment misses will trigger two history entries
         // - url#speculated and url#actual are both inserted
         // This should ideally not be the case.
@@ -1861,13 +1858,11 @@ public class CustomTabActivityTest {
         CriteriaHelper.pollUiThread(activity::isFinishing);
     }
 
-    // The flags are necessary to ensure the experiment id 101 is honored.
+    // The flag is necessary to ensure the experiment id 101 is honored.
     @Test
     @SmallTest
     @CommandLineFlags.Add({
-        "disable-features=ExternalExperimentAllowlist",
-        "force-fieldtrials=Trial/Group",
-        "force-fieldtrial-params=Trial.Group:101/x"
+        "enable-features=ExternalExperimentAllowlist:101/x",
     })
     public void testExperimentIds() throws Exception {
         Context context = getInstrumentation().getTargetContext().getApplicationContext();
@@ -1887,17 +1882,24 @@ public class CustomTabActivityTest {
                 });
     }
 
-    // The flags are necessary to ensure the experiment id 101 is honored.
+    // The flag is necessary to ensure the experiment id 101 is honored.
     @Test
     @SmallTest
     @CommandLineFlags.Add({
-        "disable-features=ExternalExperimentAllowlist",
-        "force-fieldtrials=Trial/Group",
-        "force-fieldtrial-params=Trial.Group:101/x"
+        "enable-features=ExternalExperimentAllowlist:101/x",
     })
     public void testExperimentIdsFromMayLaunchUrl() throws Exception {
-        Context context = getInstrumentation().getTargetContext().getApplicationContext();
-        Intent intent = CustomTabsIntentTestUtils.createMinimalCustomTabIntent(context, mTestPage);
+        CallbackHelper warmupHelper = new CallbackHelper();
+        CustomTabsSession session =
+                CustomTabsTestUtils.bindWithCallback(
+                                new CustomTabsCallback() {
+                                    @Override
+                                    public void onWarmupCompleted(Bundle extras) {
+                                        warmupHelper.notifyCalled();
+                                    }
+                                })
+                        .session;
+        Intent intent = new CustomTabsIntent.Builder(session).build().intent;
         intent.setData(Uri.parse(mTestPage));
         CustomTabsSessionToken token = CustomTabsSessionToken.getSessionTokenFromIntent(intent);
         CustomTabsConnection connection = CustomTabsConnection.getInstance();
@@ -1914,6 +1916,12 @@ public class CustomTabActivityTest {
                 () -> {
                     assertTrue(CustomTabsTestUtils.hasVariationId(101));
                 });
+
+        warmupHelper.waitForCallback(0);
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> {
+                    WarmupManager.getInstance().destroySpareTab();
+                });
     }
 
     @Test
@@ -1923,7 +1931,6 @@ public class CustomTabActivityTest {
         "ignore-certificate-errors",
         "ignore-google-port-numbers"
     })
-    @DisabledTest(message = "https://crbug.com/1238931")
     public void testMayLaunchUrlAddsClientDataHeader() throws Exception {
         TestWebServer webServer = TestWebServer.start();
         webServer.setServerHost("www.google.com");
@@ -1977,31 +1984,7 @@ public class CustomTabActivityTest {
     @SmallTest
     @Restriction(DeviceRestriction.RESTRICTION_TYPE_NON_AUTO)
     @EnableFeatures({ChromeFeatureList.CCT_RESIZABLE_FOR_THIRD_PARTIES})
-    @DisableFeatures({ChromeFeatureList.CCT_RESIZABLE_SIDE_SHEET})
     public void testLaunchPartialCustomTabActivity_BottomSheet() throws Exception {
-        WindowManager wm =
-                (WindowManager)
-                        ContextUtils.getApplicationContext()
-                                .getSystemService(Context.WINDOW_SERVICE);
-        DisplayMetrics metrics = new DisplayMetrics();
-        wm.getDefaultDisplay().getMetrics(metrics);
-
-        Assume.assumeTrue(
-                "BottomSheet PCCT does not support landscape.",
-                metrics.heightPixels > metrics.widthPixels);
-        doTestLaunchPartialCustomTabWithInitialHeight();
-    }
-
-    @Test
-    @SmallTest
-    @Restriction(DeviceRestriction.RESTRICTION_TYPE_NON_AUTO)
-    @EnableFeatures({
-        ChromeFeatureList.CCT_RESIZABLE_FOR_THIRD_PARTIES,
-        ChromeFeatureList.CCT_RESIZABLE_SIDE_SHEET,
-        ChromeFeatureList.CCT_RESIZABLE_SIDE_SHEET_FOR_THIRD_PARTIES
-    })
-    public void testLaunchPartialCustomTabActivity_BottomSheet_SideSheetFlagEnabled()
-            throws Exception {
         doTestLaunchPartialCustomTabWithInitialHeight();
     }
 
@@ -2025,22 +2008,12 @@ public class CustomTabActivityTest {
                 (BaseCustomTabRootUiCoordinator)
                         mCustomTabActivityTestRule.getActivity().getRootUiCoordinatorForTesting();
 
-        boolean useDisplayManager =
-                ChromeFeatureList.isEnabled(ChromeFeatureList.CCT_RESIZABLE_SIDE_SHEET);
-        if (useDisplayManager) {
-            PartialCustomTabDisplayManager displayManager =
-                    (PartialCustomTabDisplayManager)
-                            coordinator.getCustomTabSizeStrategyForTesting();
-            assertEquals(
-                    "Incorrect strategy type with display manager.",
-                    PartialCustomTabBaseStrategy.PartialCustomTabType.BOTTOM_SHEET,
-                    displayManager.getActiveStrategyType());
-        } else {
-            assertEquals(
-                    "Incorrect strategy type is not bottom sheet.",
-                    PartialCustomTabBottomSheetStrategy.class.toString(),
-                    coordinator.getCustomTabSizeStrategyForTesting().getClass().toString());
-        }
+        PartialCustomTabDisplayManager displayManager =
+                (PartialCustomTabDisplayManager) coordinator.getCustomTabSizeStrategyForTesting();
+        assertEquals(
+                "Incorrect strategy type with display manager.",
+                PartialCustomTabBaseStrategy.PartialCustomTabType.BOTTOM_SHEET,
+                displayManager.getActiveStrategyType());
 
         // Verify the hierarchy of the enclosing layouts that PCCT relies on for its operation.
         CallbackHelper eventHelper = new CallbackHelper();
@@ -2072,15 +2045,8 @@ public class CustomTabActivityTest {
     @Test
     @SmallTest
     @Restriction(DeviceRestriction.RESTRICTION_TYPE_NON_AUTO)
-    @EnableFeatures({
-        ChromeFeatureList.CCT_RESIZABLE_FOR_THIRD_PARTIES,
-        ChromeFeatureList.CCT_RESIZABLE_SIDE_SHEET,
-        ChromeFeatureList.CCT_RESIZABLE_SIDE_SHEET_FOR_THIRD_PARTIES
-    })
+    @EnableFeatures({ChromeFeatureList.CCT_RESIZABLE_FOR_THIRD_PARTIES})
     @MinAndroidSdkLevel(Build.VERSION_CODES.O_MR1)
-    // Bug in O that's been fixed in 8.1
-    // https://issuetracker.google.com/issues/68427483
-    @DisabledTest(message = "http://crbug/1521989")
     public void testLaunchPartialCustomTabActivity_SideSheet() throws Exception {
         Intent intent = createMinimalCustomTabIntent();
         CustomTabsSessionToken token = CustomTabsSessionToken.getSessionTokenFromIntent(intent);
@@ -2132,11 +2098,7 @@ public class CustomTabActivityTest {
 
     @Test
     @SmallTest
-    @EnableFeatures({
-        ChromeFeatureList.CCT_RESIZABLE_FOR_THIRD_PARTIES,
-        ChromeFeatureList.CCT_RESIZABLE_SIDE_SHEET,
-        ChromeFeatureList.CCT_RESIZABLE_SIDE_SHEET_FOR_THIRD_PARTIES
-    })
+    @EnableFeatures({ChromeFeatureList.CCT_RESIZABLE_FOR_THIRD_PARTIES})
     // Screen rotation is not relevant on automotive.
     @Restriction(DeviceRestriction.RESTRICTION_TYPE_NON_AUTO)
     @MinAndroidSdkLevel(Build.VERSION_CODES.O_MR1)
@@ -2182,11 +2144,7 @@ public class CustomTabActivityTest {
     @Test
     @SmallTest
     @Restriction(DeviceRestriction.RESTRICTION_TYPE_NON_AUTO)
-    @EnableFeatures({
-        ChromeFeatureList.CCT_RESIZABLE_FOR_THIRD_PARTIES,
-        ChromeFeatureList.CCT_RESIZABLE_SIDE_SHEET,
-        ChromeFeatureList.CCT_RESIZABLE_SIDE_SHEET_FOR_THIRD_PARTIES
-    })
+    @EnableFeatures({ChromeFeatureList.CCT_RESIZABLE_FOR_THIRD_PARTIES})
     public void testLaunchPartialCustomTabActivity_FullSize() throws Exception {
         Intent intent = createMinimalCustomTabIntent();
         CustomTabsSessionToken token = CustomTabsSessionToken.getSessionTokenFromIntent(intent);
@@ -2220,11 +2178,7 @@ public class CustomTabActivityTest {
     @Test
     @SmallTest
     @Restriction(DeviceRestriction.RESTRICTION_TYPE_NON_AUTO)
-    @EnableFeatures({
-        ChromeFeatureList.CCT_RESIZABLE_FOR_THIRD_PARTIES,
-        ChromeFeatureList.CCT_RESIZABLE_SIDE_SHEET,
-        ChromeFeatureList.CCT_RESIZABLE_SIDE_SHEET_FOR_THIRD_PARTIES
-    })
+    @EnableFeatures({ChromeFeatureList.CCT_RESIZABLE_FOR_THIRD_PARTIES})
     public void testLaunchPartialCustomTabActivity_startActivityForResult() {
         CustomTabsIntent customTabsIntent =
                 new CustomTabsIntent.Builder().setInitialActivityHeightPx(200).build();
@@ -2651,8 +2605,7 @@ public class CustomTabActivityTest {
                     intent.putExtra(IntentHandler.EXTRA_CALLING_ACTIVITY_PACKAGE, "spoofed");
                     Activity activity = Mockito.mock(Activity.class);
 
-                    ComponentName component = new ComponentName("com.foo.bar", "className");
-                    when(activity.getCallingActivity()).thenReturn(component);
+                    when(activity.getCallingPackage()).thenReturn("com.foo.bar");
                     PowerManager powerManager =
                             (PowerManager)
                                     ContextUtils.getApplicationContext()

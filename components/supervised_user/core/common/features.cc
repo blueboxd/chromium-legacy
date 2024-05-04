@@ -18,9 +18,6 @@ BASE_FEATURE(kKidFriendlyContentFeed,
              "KidFriendlyContentFeed",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-constexpr base::FeatureParam<std::string> kKidFriendlyContentFeedEndpoint{
-    &kKidFriendlyContentFeed, "supervised_feed_endpoint", ""};
-
 // Enables local parent approvals for the blocked website on the Family Link
 // user's device.
 #if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS)
@@ -32,11 +29,6 @@ BASE_FEATURE(kLocalWebApprovals,
              "LocalWebApprovals",
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
-
-// Request priority experiment for ClassifyUrl (for critical path of rendering).
-BASE_FEATURE(kHighestRequestPriorityForClassifyUrl,
-             "HighestRequestPriorityForClassifyUrl",
-             base::FEATURE_DISABLED_BY_DEFAULT);
 
 bool IsGoogleBrandedBuild() {
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
@@ -61,6 +53,10 @@ bool IsLocalWebApprovalsEnabled() {
 
 BASE_FEATURE(kEnableSupervisedUserSkipParentApprovalToInstallExtensions,
              "EnableSupervisedUserSkipParentApprovalToInstallExtensions",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kUpdatedSupervisedUserExtensionApprovalStrings,
+             "UpdatedSupervisedUserExtensionApprovalStrings",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN)
@@ -106,6 +102,10 @@ BASE_FEATURE(kMigrateAccountManagementSettingsToCapabilities,
              "MigrateAccountManagementSettingsToCapabilities",
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
+
+BASE_FEATURE(kWaitUntilAccessTokenAvailableForClassifyUrl,
+             "WaitUntilAccessTokenAvailableForClassifyUrl",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 bool IsKidFriendlyContentFeedAvailable() {
   return base::FeatureList::IsEnabled(kKidFriendlyContentFeed);

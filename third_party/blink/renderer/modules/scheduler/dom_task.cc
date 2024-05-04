@@ -24,8 +24,10 @@
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/modules/scheduler/dom_task_signal.h"
 #include "third_party/blink/renderer/modules/scheduler/script_wrappable_task_state.h"
+#include "third_party/blink/renderer/modules/scheduler/web_scheduling_task_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/scheduler/public/task_attribution_info.h"
 #include "third_party/blink/renderer/platform/scheduler/public/task_attribution_tracker.h"
 #include "third_party/blink/renderer/platform/scheduler/public/web_scheduling_priority.h"
 #include "third_party/blink/renderer/platform/scheduler/public/web_scheduling_task_queue.h"
@@ -80,7 +82,7 @@ void AbortPostTaskCallbackTraceEventData(perfetto::TracedValue trace_context,
 
 }  // namespace
 
-DOMTask::DOMTask(ScriptPromiseResolver* resolver,
+DOMTask::DOMTask(ScriptPromiseResolver<IDLAny>* resolver,
                  V8SchedulerPostTaskCallback* callback,
                  AbortSignal* abort_source,
                  DOMTaskSignal* priority_source,
@@ -159,7 +161,7 @@ void DOMTask::Invoke() {
     // detached child frame. The callback's relvant context must be valid to run
     // the callback (enforced in the bindings layer). Since we can't run this
     // task, and therefore won't settle the associated promise, we need to clean
-    // up the ScriptPromiseResolver since it is associated with a different
+    // up the ScriptPromiseResolverBase since it is associated with a different
     // context.
     resolver_->Detach();
     RemoveAbortAlgorithm();
@@ -200,13 +202,13 @@ void DOMTask::InvokeInternal(ScriptState* script_state) {
                  ExecutionContext::From(script_state))) {
     ScriptWrappableTaskState::SetCurrent(
         script_state,
-        MakeGarbageCollected<ScriptWrappableTaskState>(
+        MakeGarbageCollected<WebSchedulingTaskState>(
             /*TaskAttributionInfo=*/nullptr, abort_source_, priority_source_));
   }
 
   ScriptValue result;
   if (callback_->Invoke(nullptr).To(&result)) {
-    resolver_->Resolve(result.V8Value());
+    resolver_->Resolve(result);
   } else if (try_catch.HasCaught()) {
     resolver_->Reject(try_catch.Exception());
   }

@@ -80,6 +80,8 @@ static_library("test_support") {
     "metrics/histogram_enum_reader.h",
     "metrics/histogram_tester.cc",
     "metrics/histogram_tester.h",
+    "metrics/histogram_variants_reader.cc",
+    "metrics/histogram_variants_reader.h",
     "metrics/user_action_tester.cc",
     "metrics/user_action_tester.h",
     "mock_callback.h",
@@ -180,7 +182,6 @@ static_library("test_support") {
 
   deps = [
     ":proto_test_support",
-    "//base/third_party/dynamic_annotations",
     "//build:chromeos_buildflags",
     "//third_party/google_benchmark",
     "//third_party/icu:icuuc",
@@ -211,6 +212,8 @@ static_library("test_support") {
     sources += [
       "async_results_test_values_win.h",
       "fake_iasync_operation_win.h",
+      "file_path_reparse_point_win.cc",
+      "file_path_reparse_point_win.h",
       "scoped_os_info_override_win.cc",
       "scoped_os_info_override_win.h",
       "test_file_util_win.cc",
@@ -261,7 +264,6 @@ static_library("test_support") {
       ":base_unittests_jni_headers",
       ":test_support_jni_headers",
     ]
-    public_deps += [ ":test_support_java" ]
   }
 
   if (is_ios) {
@@ -461,7 +463,6 @@ if (is_android) {
     sources = [
       "android/java/src/org/chromium/base/MainReturnCodeResult.java",
       "android/java/src/org/chromium/base/MultiprocessTestClientLauncher.java",
-      "android/javatests/src/org/chromium/base/test/ReachedCodeProfiler.java",
       "android/javatests/src/org/chromium/base/test/task/ThreadPoolTestHelpers.java",
       "android/javatests/src/org/chromium/base/test/util/UrlUtils.java",
     ]
@@ -632,6 +633,7 @@ if (is_android) {
       "//base:base_java",
       "//base:base_java_test_support",
       "//build/android:build_java",
+      "//third_party/android_deps:com_google_errorprone_error_prone_annotations_java",
       "//third_party/android_deps:espresso_java",
       "//third_party/android_deps:guava_android_java",
       "//third_party/androidx:androidx_annotation_annotation_java",
@@ -646,19 +648,23 @@ if (is_android) {
       "android/javatests/src/org/chromium/base/test/transit/CallbackCondition.java",
       "android/javatests/src/org/chromium/base/test/transit/Condition.java",
       "android/javatests/src/org/chromium/base/test/transit/ConditionChecker.java",
+      "android/javatests/src/org/chromium/base/test/transit/ConditionStatus.java",
       "android/javatests/src/org/chromium/base/test/transit/ConditionWaiter.java",
       "android/javatests/src/org/chromium/base/test/transit/ConditionalState.java",
       "android/javatests/src/org/chromium/base/test/transit/ElementInState.java",
       "android/javatests/src/org/chromium/base/test/transit/Elements.java",
+      "android/javatests/src/org/chromium/base/test/transit/Facility.java",
       "android/javatests/src/org/chromium/base/test/transit/FacilityCheckIn.java",
       "android/javatests/src/org/chromium/base/test/transit/FacilityCheckOut.java",
       "android/javatests/src/org/chromium/base/test/transit/InstrumentationThreadCondition.java",
+      "android/javatests/src/org/chromium/base/test/transit/ItemOnScreenFacility.java",
       "android/javatests/src/org/chromium/base/test/transit/LogicalElement.java",
       "android/javatests/src/org/chromium/base/test/transit/PublicTransitConfig.java",
-      "android/javatests/src/org/chromium/base/test/transit/StationFacility.java",
+      "android/javatests/src/org/chromium/base/test/transit/ScrollableFacility.java",
+      "android/javatests/src/org/chromium/base/test/transit/Station.java",
+      "android/javatests/src/org/chromium/base/test/transit/StatusStore.java",
       "android/javatests/src/org/chromium/base/test/transit/TrafficControl.java",
       "android/javatests/src/org/chromium/base/test/transit/TransitAsserts.java",
-      "android/javatests/src/org/chromium/base/test/transit/TransitStation.java",
       "android/javatests/src/org/chromium/base/test/transit/Transition.java",
       "android/javatests/src/org/chromium/base/test/transit/TravelException.java",
       "android/javatests/src/org/chromium/base/test/transit/Trip.java",

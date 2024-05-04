@@ -1047,6 +1047,10 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter storageFormat
 [Worker]     getter width
 [Worker]     method constructor
+[Worker] interface LanguageTranslator
+[Worker]     attribute @@toStringTag
+[Worker]     method constructor
+[Worker]     method translate
 [Worker] interface Lock
 [Worker]     attribute @@toStringTag
 [Worker]     getter mode
@@ -1209,13 +1213,22 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     setter onerror
 [Worker]     setter onshow
 [Worker] interface Observable
+[Worker]     static method from
 [Worker]     attribute @@toStringTag
 [Worker]     method constructor
 [Worker]     method drop
+[Worker]     method every
 [Worker]     method filter
+[Worker]     method find
+[Worker]     method first
+[Worker]     method flatMap
 [Worker]     method forEach
+[Worker]     method inspect
+[Worker]     method last
 [Worker]     method map
+[Worker]     method some
 [Worker]     method subscribe
+[Worker]     method switchMap
 [Worker]     method take
 [Worker]     method takeUntil
 [Worker]     method toArray
@@ -1458,7 +1471,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method requestAll
 [Worker]     method revoke
 [Worker] interface PressureObserver
-[Worker]     static getter supportedSources
+[Worker]     static getter knownSources
 [Worker]     attribute @@toStringTag
 [Worker]     method constructor
 [Worker]     method disconnect
@@ -1784,6 +1797,11 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method enqueue
 [Worker]     method error
 [Worker]     method terminate
+[Worker] interface Translation
+[Worker]     attribute @@toStringTag
+[Worker]     method canTranslate
+[Worker]     method constructor
+[Worker]     method createTranslator
 [Worker] interface TrustedHTML
 [Worker]     static method fromLiteral
 [Worker]     attribute @@toStringTag
@@ -1827,6 +1845,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker] interface URL
 [Worker]     static method canParse
 [Worker]     static method createObjectURL
+[Worker]     static method parse
 [Worker]     static method revokeObjectURL
 [Worker]     attribute @@toStringTag
 [Worker]     getter hash
@@ -2704,23 +2723,26 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter size
 [Worker]     getter type
 [Worker]     method constructor
-[Worker] interface WebGLBuffer
+[Worker] interface WebGLBuffer : WebGLObject
 [Worker]     attribute @@toStringTag
 [Worker]     method constructor
 [Worker] interface WebGLContextEvent : Event
 [Worker]     attribute @@toStringTag
 [Worker]     getter statusMessage
 [Worker]     method constructor
-[Worker] interface WebGLFramebuffer
+[Worker] interface WebGLFramebuffer : WebGLObject
 [Worker]     attribute @@toStringTag
 [Worker]     method constructor
-[Worker] interface WebGLProgram
+[Worker] interface WebGLObject
 [Worker]     attribute @@toStringTag
 [Worker]     method constructor
-[Worker] interface WebGLQuery
+[Worker] interface WebGLProgram : WebGLObject
 [Worker]     attribute @@toStringTag
 [Worker]     method constructor
-[Worker] interface WebGLRenderbuffer
+[Worker] interface WebGLQuery : WebGLObject
+[Worker]     attribute @@toStringTag
+[Worker]     method constructor
+[Worker] interface WebGLRenderbuffer : WebGLObject
 [Worker]     attribute @@toStringTag
 [Worker]     method constructor
 [Worker] interface WebGLRenderingContext
@@ -3171,10 +3193,10 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method viewport
 [Worker]     setter drawingBufferColorSpace
 [Worker]     setter unpackColorSpace
-[Worker] interface WebGLSampler
+[Worker] interface WebGLSampler : WebGLObject
 [Worker]     attribute @@toStringTag
 [Worker]     method constructor
-[Worker] interface WebGLShader
+[Worker] interface WebGLShader : WebGLObject
 [Worker]     attribute @@toStringTag
 [Worker]     method constructor
 [Worker] interface WebGLShaderPrecisionFormat
@@ -3183,19 +3205,19 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter rangeMax
 [Worker]     getter rangeMin
 [Worker]     method constructor
-[Worker] interface WebGLSync
+[Worker] interface WebGLSync : WebGLObject
 [Worker]     attribute @@toStringTag
 [Worker]     method constructor
-[Worker] interface WebGLTexture
+[Worker] interface WebGLTexture : WebGLObject
 [Worker]     attribute @@toStringTag
 [Worker]     method constructor
-[Worker] interface WebGLTransformFeedback
+[Worker] interface WebGLTransformFeedback : WebGLObject
 [Worker]     attribute @@toStringTag
 [Worker]     method constructor
 [Worker] interface WebGLUniformLocation
 [Worker]     attribute @@toStringTag
 [Worker]     method constructor
-[Worker] interface WebGLVertexArrayObject
+[Worker] interface WebGLVertexArrayObject : WebGLObject
 [Worker]     attribute @@toStringTag
 [Worker]     method constructor
 [Worker] interface WebSocket : EventTarget
@@ -3290,6 +3312,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter performance
 [Worker]     getter scheduler
 [Worker]     getter self
+[Worker]     getter translation
 [Worker]     getter trustedTypes
 [Worker]     method atob
 [Worker]     method btoa

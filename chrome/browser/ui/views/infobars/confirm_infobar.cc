@@ -10,6 +10,7 @@
 #include "base/functional/bind.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/views/controls/button/label_button.h"
@@ -19,7 +20,8 @@
 #include "ui/views/style/platform_style.h"
 #include "ui/views/view_class_properties.h"
 
-DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(ConfirmInfoBar, kInfoBarElementId);
+DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(ConfirmInfoBar, kOkButtonElementId);
+DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(ConfirmInfoBar, kCancelButtonElementId);
 
 ConfirmInfoBar::ConfirmInfoBar(std::unique_ptr<ConfirmInfoBarDelegate> delegate)
     : InfoBarView(std::move(delegate)) {
@@ -28,7 +30,7 @@ ConfirmInfoBar::ConfirmInfoBar(std::unique_ptr<ConfirmInfoBarDelegate> delegate)
   label_ = AddChildView(CreateLabel(delegate_ptr->GetMessageText()));
   label_->SetElideBehavior(delegate_ptr->GetMessageElideBehavior());
 
-  const auto buttons = delegate_ptr->GetButtons();
+  const int buttons = delegate_ptr->GetButtons();
   const auto create_button = [&](ConfirmInfoBarDelegate::InfoBarButton type,
                                  void (ConfirmInfoBar::*click_function)()) {
     auto* button = AddChildView(std::make_unique<views::MdTextButton>(
@@ -54,11 +56,14 @@ ConfirmInfoBar::ConfirmInfoBar(std::unique_ptr<ConfirmInfoBarDelegate> delegate)
   if (buttons & ConfirmInfoBarDelegate::BUTTON_OK) {
     ok_button_ = create_button(ConfirmInfoBarDelegate::BUTTON_OK,
                                &ConfirmInfoBar::OkButtonPressed);
+    ok_button_->SetProperty(views::kElementIdentifierKey, kOkButtonElementId);
   }
 
   if (buttons & ConfirmInfoBarDelegate::BUTTON_CANCEL) {
     cancel_button_ = create_button(ConfirmInfoBarDelegate::BUTTON_CANCEL,
                                    &ConfirmInfoBar::CancelButtonPressed);
+    cancel_button_->SetProperty(views::kElementIdentifierKey,
+                                kCancelButtonElementId);
   }
 
   // TODO(josephjoopark): It seems like link_ isn't always needed, but it's
@@ -160,3 +165,6 @@ int ConfirmInfoBar::NonLabelWidth() const {
   width += (width && !link_->GetText().empty()) ? label_spacing : 0;
   return width;
 }
+
+BEGIN_METADATA(ConfirmInfoBar)
+END_METADATA

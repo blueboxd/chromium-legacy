@@ -46,6 +46,26 @@ bool ShouldHaveAnchorElementMetricsSender(Document& document) {
          document.GetExecutionContext()->IsSecureContext();
 }
 
+wtf_size_t GetMaxNumberOfObservations() {
+  static const wtf_size_t max_observations = []() {
+    const base::FeatureParam<int> max_number_of_observations{
+        &features::kNavigationPredictor, "max_intersection_observations", -1};
+    int value = max_number_of_observations.Get();
+    return value >= 0 ? value : std::numeric_limits<wtf_size_t>::max();
+  }();
+  return max_observations;
+}
+
+DOMHighResTimeStamp GetIntersectionObserverDelay() {
+  static const DOMHighResTimeStamp intersection_observer_delay = []() {
+    const base::FeatureParam<base::TimeDelta> param{
+        &features::kNavigationPredictor, "intersection_observer_delay",
+        base::Milliseconds(100)};
+    return static_cast<DOMHighResTimeStamp>(param.Get().InMillisecondsF());
+  }();
+  return intersection_observer_delay;
+}
+
 }  // namespace
 
 // static
@@ -112,8 +132,9 @@ void AnchorElementMetricsSender::
 void AnchorElementMetricsSender::MaybeReportClickedMetricsOnClick(
     const HTMLAnchorElement& anchor_element) {
   DCHECK(base::FeatureList::IsEnabled(features::kNavigationPredictor));
-  Document* top_document = GetTopDocument(anchor_element);
-  if (!anchor_element.Href().ProtocolIsInHTTPFamily() || !top_document ||
+  Document* top_document = GetSupplementable();
+  CHECK(top_document);
+  if (!anchor_element.Href().ProtocolIsInHTTPFamily() ||
       !top_document->Url().ProtocolIsInHTTPFamily() ||
       !anchor_element.GetDocument().Url().ProtocolIsInHTTPFamily()) {
     return;
@@ -122,7 +143,7 @@ void AnchorElementMetricsSender::MaybeReportClickedMetricsOnClick(
     return;
   }
   base::TimeDelta navigation_start_to_click =
-      clock_->NowTicks() - NavigationStart(anchor_element);
+      clock_->NowTicks() - NavigationStart();
   auto click = mojom::blink::AnchorElementClick::New(
       AnchorElementId(anchor_element), anchor_element.Href(),
       navigation_start_to_click);
@@ -218,7 +239,8 @@ AnchorElementMetricsSender::AnchorElementMetricsSender(Document& document)
       WTF::BindRepeating(&AnchorElementMetricsSender::UpdateVisibleAnchors,
                          WrapWeakPersistent(this)),
       LocalFrameUkmAggregator::kAnchorElementMetricsIntersectionObserver,
-      {.thresholds = {kIntersectionRatioThreshold}, .delay = 100});
+      {.thresholds = {kIntersectionRatioThreshold},
+       .delay = GetIntersectionObserverDelay()});
 }
 
 void AnchorElementMetricsSender::SetNowAsNavigationStartForTesting() {
@@ -235,6 +257,11 @@ void AnchorElementMetricsSender::FireUpdateTimerForTesting() {
     update_timer_.Stop();
   }
   UpdateMetrics(&update_timer_);
+}
+
+IntersectionObserver*
+AnchorElementMetricsSender::GetIntersectionObserverForTesting() {
+  return intersection_observer_;
 }
 
 void AnchorElementMetricsSender::SetShouldSkipUpdateDelays(
@@ -276,14 +303,13 @@ void AnchorElementMetricsSender::UpdateVisibleAnchors(
   RegisterForLifecycleNotifications();
 }
 
-base::TimeTicks AnchorElementMetricsSender::NavigationStart(
-    const HTMLAnchorElement& element) {
+base::TimeTicks AnchorElementMetricsSender::NavigationStart() const {
   if (mock_navigation_start_for_testing_.has_value()) {
     return mock_navigation_start_for_testing_.value();
   }
 
-  Document* top_document = GetTopDocument(element);
-  DCHECK(top_document);
+  const Document* top_document = GetSupplementable();
+  CHECK(top_document);
 
   return top_document->Loader()->GetTiming().NavigationStart();
 }
@@ -326,7 +352,7 @@ void AnchorElementMetricsSender::MaybeReportAnchorElementPointerEvent(
       element_timing.pointer_over_timer_ = clock_->NowTicks();
 
       base::TimeDelta navigation_start_to_pointer_over =
-          clock_->NowTicks() - NavigationStart(element);
+          clock_->NowTicks() - NavigationStart();
       auto msg = mojom::blink::AnchorElementPointerOver::New(
           anchor_id, navigation_start_to_pointer_over);
 
@@ -354,7 +380,7 @@ void AnchorElementMetricsSender::MaybeReportAnchorElementPointerEvent(
     }
 
     base::TimeDelta navigation_start_to_pointer_down =
-        clock_->NowTicks() - NavigationStart(element);
+        clock_->NowTicks() - NavigationStart();
     auto msg = mojom::blink::AnchorElementPointerDown::New(
         anchor_id, navigation_start_to_pointer_down);
     metrics_host_->ReportAnchorElementPointerDown(std::move(msg));
@@ -395,7 +421,7 @@ void AnchorElementMetricsSender::EnqueueEnteredViewport(
   timing_stats.entered_viewport_should_be_enqueued_ = false;
 
   base::TimeDelta time_entered_viewport =
-      clock_->NowTicks() - NavigationStart(element);
+      clock_->NowTicks() - NavigationStart();
   auto msg = mojom::blink::AnchorElementEnteredViewport::New(
       anchor_id, time_entered_viewport);
   entered_viewport_messages_.push_back(std::move(msg));
@@ -425,6 +451,7 @@ void AnchorElementMetricsSender::DidFinishLifecycleUpdate(
     return;
   }
 
+  const wtf_size_t max_num_observations = GetMaxNumberOfObservations();
   for (const auto& member_element : anchor_elements_to_report_) {
     HTMLAnchorElement& anchor_element = *member_element;
 
@@ -434,14 +461,29 @@ void AnchorElementMetricsSender::DidFinishLifecycleUpdate(
       continue;
     }
 
-    int random = base::RandInt(1, random_anchor_sampling_period_);
-    if (random == 1) {
-      // This anchor element is sampled in.
-      const auto anchor_id = AnchorElementId(anchor_element);
-      anchor_elements_timing_stats_.insert(anchor_id,
-                                           AnchorElementTimingStats{});
-      // Observe the element to collect time_in_viewport stats.
-      intersection_observer_->observe(&anchor_element);
+    if (!intersection_observer_limit_exceeded_) {
+      int random = base::RandInt(1, random_anchor_sampling_period_);
+      if (random == 1) {
+        // This anchor element is sampled in.
+        const auto anchor_id = AnchorElementId(anchor_element);
+        anchor_elements_timing_stats_.insert(anchor_id,
+                                             AnchorElementTimingStats{});
+        // Observe the element to collect time_in_viewport stats.
+        intersection_observer_->observe(&anchor_element);
+        // If we've exceeded the limit of anchors observed by the intersection
+        // observer, disconnect the observer (stop observing all anchors).
+        // We disconnect instead of keeping previous observations alive as a
+        // viewport based heuristic is unlikely to be useful in pages with
+        // a large number of anchors (too many false positives, or no
+        // predictions made at all), and we might be better off saving CPU time
+        // by avoiding intersection computations altogether in such pages. This
+        // could be revisited in the future.
+        if (intersection_observer_->Observations().size() >
+            max_num_observations) {
+          intersection_observer_limit_exceeded_ = true;
+          intersection_observer_->disconnect();
+        }
+      }
     }
 
     metrics_.push_back(std::move(anchor_element_metrics));
@@ -500,9 +542,9 @@ void AnchorElementMetricsSender::UpdateMetrics(TimerBase* /*timer*/) {
   }
 
   if (!metrics_.empty() || !metrics_removed_anchors_.empty()) {
-    DCHECK(!metrics_partitions_.empty());
-    DCHECK(metrics_partitions_.back() ==
-           std::make_pair(metrics_.size(), metrics_removed_anchors_.size()));
+    CHECK(!metrics_partitions_.empty());
+    CHECK(metrics_partitions_.back() ==
+          std::make_pair(metrics_.size(), metrics_removed_anchors_.size()));
 
     // Multiple lifecycle updates, during which we buffer metrics updates, may
     // have happened before we send the buffered metrics updates here. Between
@@ -521,17 +563,25 @@ void AnchorElementMetricsSender::UpdateMetrics(TimerBase* /*timer*/) {
     WTF::HashMap<AnchorId, bool> newly_removed;
     wtf_size_t insert_idx = 0;
     wtf_size_t remove_idx = 0;
+    auto dump_if_id_is_invalid_key = [](AnchorId id) {
+      // TODO(https://crbug.com/331043758): Dump to investigate crash.
+      DUMP_WILL_BE_CHECK(
+          !WTF::IsHashTraitsEmptyOrDeletedValue<HashTraits<AnchorId>>(id))
+          << id;
+    };
     for (const auto& [insert_end, remove_end] : metrics_partitions_) {
       // For each partition, removals are processed before insertions.
       const auto removals = base::make_span(metrics_removed_anchors_)
                                 .subspan(remove_idx, (remove_end - remove_idx));
       for (AnchorId removed_id : removals) {
+        dump_if_id_is_invalid_key(removed_id);
         auto result = present.Set(removed_id, false);
         newly_removed.insert(removed_id, result.is_new_entry);
       }
       const auto insertions = base::make_span(metrics_).subspan(
           insert_idx, (insert_end - insert_idx));
       for (const auto& insertion : insertions) {
+        dump_if_id_is_invalid_key(insertion->anchor_id);
         present.Set(insertion->anchor_id, true);
       }
       insert_idx = insert_end;
@@ -540,12 +590,34 @@ void AnchorElementMetricsSender::UpdateMetrics(TimerBase* /*timer*/) {
     WTF::EraseIf(
         metrics_,
         [&present](const mojom::blink::AnchorElementMetricsPtr& metric) {
-          return !present.at(metric->anchor_id);
+          // TODO(https://crbug.com/331043758): Dump to investigate crash.
+          // Once resolved, this can just use `HashMap::at`.
+          const auto present_it = present.find(metric->anchor_id);
+          DUMP_WILL_BE_CHECK(present_it != present.end())
+              << present.size() << " " << metric->anchor_id;
+          if (present_it == present.end()) {
+            return false;
+          }
+          return !present_it->value;
         });
-    WTF::EraseIf(metrics_removed_anchors_,
-                 [&present, &newly_removed](AnchorId id) {
-                   return !newly_removed.at(id) || present.at(id);
-                 });
+    WTF::EraseIf(
+        metrics_removed_anchors_, [&present, &newly_removed](AnchorId id) {
+          // TODO(https://crbug.com/331043758): Dump to investigate
+          // crash. Once resolved, these can just use `HashMap::at`.
+          const auto newly_removed_it = newly_removed.find(id);
+          DUMP_WILL_BE_CHECK(newly_removed_it != newly_removed.end())
+              << newly_removed.size() << " " << id;
+          if (newly_removed_it == newly_removed.end()) {
+            return false;
+          }
+          const auto present_it = present.find(id);
+          DUMP_WILL_BE_CHECK(present_it != present.end())
+              << present.size() << " " << id;
+          if (present_it == present.end()) {
+            return false;
+          }
+          return !newly_removed_it->value || present_it->value;
+        });
 
     metrics_host_->ReportNewAnchorElements(std::move(metrics_),
                                            std::move(metrics_removed_anchors_));

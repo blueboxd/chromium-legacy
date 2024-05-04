@@ -10,10 +10,10 @@
 
 #include "base/json/json_reader.h"
 #include "base/logging.h"
+#include "base/numerics/byte_conversions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/sys_byteorder.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "components/policy/core/common/schema.h"
@@ -257,11 +257,19 @@ void RegistryDict::ReadRegistry(HKEY hive, const std::wstring& root) {
       case REG_DWORD_LITTLE_ENDIAN:
       case REG_DWORD_BIG_ENDIAN:
         if (it.ValueSize() == sizeof(DWORD)) {
-          DWORD dword_value = *(reinterpret_cast<const DWORD*>(it.Value()));
-          if (it.Type() == REG_DWORD_BIG_ENDIAN)
-            dword_value = base::NetToHost32(dword_value);
-          else
-            dword_value = base::ByteSwapToLE32(dword_value);
+          auto value =
+              // TODO(crbug.com/40284755): it.Value() should return a
+              // wcstring_view which will be usable as a span directly. The
+              // ValueSize() here is the number of non-NUL *bytes* in the
+              // Value() string, so we cast the Value() to bytes which is what
+              // we want in the end anyway.
+              UNSAFE_BUFFERS(
+                  base::span(reinterpret_cast<const uint8_t*>(it.Value()),
+                             it.ValueSize()))
+                  .first<sizeof(DWORD)>();
+          DWORD dword_value = it.Type() == REG_DWORD_BIG_ENDIAN
+                                  ? base::numerics::U32FromBigEndian(value)
+                                  : base::numerics::U32FromLittleEndian(value);
           SetValue(name, base::Value(static_cast<int>(dword_value)));
           continue;
         }

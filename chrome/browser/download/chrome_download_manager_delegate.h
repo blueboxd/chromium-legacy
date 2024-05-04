@@ -98,6 +98,7 @@ class ChromeDownloadManagerDelegate
 
   // content::DownloadManagerDelegate
   void Shutdown() override;
+  void OnDownloadCanceledAtShutdown(download::DownloadItem* item) override;
   void GetNextId(content::DownloadIdCallback callback) override;
   bool DetermineDownloadTarget(
       download::DownloadItem* item,
@@ -151,6 +152,7 @@ class ChromeDownloadManagerDelegate
       content::SavePackageAllowedCallback callback) override;
 #if BUILDFLAG(IS_ANDROID)
   bool IsFromExternalApp(download::DownloadItem* item) override;
+  bool ShouldOpenPdfInline() override;
 #else
   void AttachExtraInfo(download::DownloadItem* item) override;
 #endif  // BUILDFLAG(IS_ANDROID)
@@ -308,8 +310,18 @@ class ChromeDownloadManagerDelegate
       download::DownloadTargetInfo target_info,
       safe_browsing::DownloadFileType::DangerLevel danger_level);
 
+  // Sends a download report when the dangerous download is opened. This action
+  // can be performed multiple times after the warning is bypassed, so this
+  // report can be sent multiple times for a single download.
   void MaybeSendDangerousDownloadOpenedReport(download::DownloadItem* download,
                                               bool show_download_in_folder);
+
+  // Sends a download report when the dangerous download is canceled
+  // automatically. This code path is NOT triggered if a user explicitly
+  // canceled the download.
+  void MaybeSendDangerousDownloadCanceledReport(
+      download::DownloadItem* download,
+      bool is_shutdown);
 
   void OnCheckDownloadAllowedComplete(
       content::CheckDownloadAllowedCallback check_download_allowed_cb,

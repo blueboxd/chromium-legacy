@@ -202,8 +202,7 @@ void StructuredMetricsRecorder::RecordEvent(const Event& event) {
   LogEventRecordingState(EventRecordingState::kRecorded);
 
   // Events associated with UMA are deprecated.
-  if (!IsIndependentMetricsUploadEnabled() ||
-      project_validator->id_type() == IdType::kUmaId) {
+  if (project_validator->id_type() == IdType::kUmaId) {
     return;
   }
 
@@ -214,8 +213,7 @@ void StructuredMetricsRecorder::RecordEvent(const Event& event) {
                        *event_validator);
 
   // Sequence-related metadata.
-  if (project_validator->event_type() == StructuredEventProto::SEQUENCE &&
-      base::FeatureList::IsEnabled(kEventSequenceLogging)) {
+  if (project_validator->event_type() == StructuredEventProto::SEQUENCE) {
     AddSequenceMetadata(&event_proto, event, *project_validator, *key_data);
   }
 
@@ -258,7 +256,7 @@ void StructuredMetricsRecorder::InitializeEventProto(
       }
     } break;
     case IdType::kUmaId:
-      // TODO(crbug.com/1148168): Unimplemented.
+      // TODO(crbug.com/40156926): Unimplemented.
       break;
     case IdType::kUnidentified:
       // Do nothing.

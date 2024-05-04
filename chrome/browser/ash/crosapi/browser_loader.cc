@@ -20,14 +20,13 @@
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/values.h"
-#include "chrome/browser/ash/crosapi/browser_util.h"
 #include "chrome/browser/ash/crosapi/lacros_selection_loader.h"
 #include "chrome/browser/ash/crosapi/lacros_selection_loader_factory.h"
 #include "chrome/browser/ash/crosapi/rootfs_lacros_loader.h"
 #include "chrome/browser/ash/crosapi/stateful_lacros_loader.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/component_updater/cros_component_manager.h"
 #include "chromeos/ash/components/cryptohome/system_salt_getter.h"
+#include "components/component_updater/ash/component_manager_ash.h"
 
 namespace crosapi {
 
@@ -38,7 +37,7 @@ constexpr size_t kLacrosSelectionTypes = 2;
 class LacrosSelectionLoaderFactoryImpl : public LacrosSelectionLoaderFactory {
  public:
   explicit LacrosSelectionLoaderFactoryImpl(
-      scoped_refptr<component_updater::CrOSComponentManager> manager)
+      scoped_refptr<component_updater::ComponentManagerAsh> manager)
       : component_manager_(manager) {}
 
   LacrosSelectionLoaderFactoryImpl(const LacrosSelectionLoaderFactoryImpl&) =
@@ -57,7 +56,7 @@ class LacrosSelectionLoaderFactoryImpl : public LacrosSelectionLoaderFactory {
   }
 
  private:
-  scoped_refptr<component_updater::CrOSComponentManager> component_manager_;
+  scoped_refptr<component_updater::ComponentManagerAsh> component_manager_;
 };
 
 bool IsUnloading(LacrosSelectionLoader* loader) {
@@ -67,7 +66,7 @@ bool IsUnloading(LacrosSelectionLoader* loader) {
 }  // namespace
 
 BrowserLoader::BrowserLoader(
-    scoped_refptr<component_updater::CrOSComponentManager> manager)
+    scoped_refptr<component_updater::ComponentManagerAsh> manager)
     : factory_(std::make_unique<LacrosSelectionLoaderFactoryImpl>(manager)) {}
 
 BrowserLoader::BrowserLoader(
@@ -95,9 +94,9 @@ bool BrowserLoader::WillLoadStatefulComponentBuilds() {
 
   // If the lacros selection is forced by the user or by policy to rootfs it
   // will always be loaded and stateful component manager builds are ignored.
-  std::optional<browser_util::LacrosSelection> lacros_selection =
-      browser_util::DetermineLacrosSelection();
-  if (lacros_selection == browser_util::LacrosSelection::kRootfs) {
+  std::optional<ash::standalone_browser::LacrosSelection> lacros_selection =
+      ash::standalone_browser::DetermineLacrosSelection();
+  if (lacros_selection == ash::standalone_browser::LacrosSelection::kRootfs) {
     return false;
   }
 
@@ -164,7 +163,7 @@ void BrowserLoader::LoadNow(LoadCompletionCallback callback) {
   stateful_lacros_loader_.reset();
 
   lacros_start_load_time_ = base::TimeTicks::Now();
-  // TODO(crbug.com/1078607): Remove non-error logging from this class.
+  // TODO(crbug.com/40689435): Remove non-error logging from this class.
   LOG(WARNING) << "Starting lacros component load.";
 
   // If the user has specified a path for the lacros-chrome binary, use that
@@ -181,21 +180,21 @@ void BrowserLoader::LoadNow(LoadCompletionCallback callback) {
   // If the LacrosSelection policy or the user have specified to force using
   // stateful or rootfs lacros-chrome binary, force the selection. Otherwise,
   // load the newest available binary.
-  if (std::optional<browser_util::LacrosSelection> lacros_selection =
-          browser_util::DetermineLacrosSelection()) {
-    // TODO(crbug.com/1293250): We should check the version compatibility here,
+  if (std::optional<ash::standalone_browser::LacrosSelection> lacros_selection =
+          ash::standalone_browser::DetermineLacrosSelection()) {
+    // TODO(crbug.com/40213424): We should check the version compatibility here,
     // too.
     switch (lacros_selection.value()) {
-      case browser_util::LacrosSelection::kRootfs:
+      case ash::standalone_browser::LacrosSelection::kRootfs:
         rootfs_lacros_loader_ = factory_->CreateRootfsLacrosLoader();
         SelectRootfsLacros(std::move(callback), LacrosSelectionSource::kForced);
         return;
-      case browser_util::LacrosSelection::kStateful:
+      case ash::standalone_browser::LacrosSelection::kStateful:
         stateful_lacros_loader_ = factory_->CreateStatefulLacrosLoader();
         SelectStatefulLacros(std::move(callback),
                              LacrosSelectionSource::kForced);
         return;
-      case browser_util::LacrosSelection::kDeployedLocally:
+      case ash::standalone_browser::LacrosSelection::kDeployedLocally:
         NOTREACHED();
         std::move(callback).Run(base::FilePath(),
                                 LacrosSelection::kDeployedLocally,
@@ -282,7 +281,7 @@ void BrowserLoader::OnLoadVersions(
   // sessions, accidentally. For experiment, now we intentionally ignore
   // the case and forcibly load the selected one, which is the best we could do
   // at this moment.
-  // TODO(crbug.com/1293250): Check the condition and report it via UMA stats.
+  // TODO(crbug.com/40213424): Check the condition and report it via UMA stats.
 
   switch (selected->selection) {
     case LacrosSelection::kRootfs: {

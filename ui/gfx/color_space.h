@@ -140,7 +140,6 @@ class COLOR_SPACE_EXPORT ColorSpace {
     SMPTE240M,
     YCOCG,
     BT2020_NCL,
-    BT2020_CL,
     YDZDX,
     GBR,
     kMaxValue = GBR,

@@ -9,9 +9,10 @@
 
 #import "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
+#import "base/time/time.h"
+#import "components/autofill/ios/common/features.h"
 #import "components/password_manager/core/common/password_manager_features.h"
 #import "components/strings/grit/components_strings.h"
-#import "components/sync/base/features.h"
 #import "components/sync/base/user_selectable_type.h"
 #import "components/sync/service/sync_prefs.h"
 #import "ios/chrome/browser/passwords/model/password_manager_app_interface.h"
@@ -90,57 +91,24 @@ BOOL WaitForKeyboardToAppear() {
   net::test_server::RegisterDefaultHandlers(self.testServer);
   GREYAssertTrue(self.testServer->Start(), @"Server did not start.");
 
-  // Prefs aren't reset between tests, crbug.com/1069086. Most tests don't care
-  // about the account storage notice, so suppress it by marking it as shown.
-  [PasswordManagerAppInterface setAccountStorageNoticeShown:YES];
   // Also reset the dismiss count pref to 0 to make sure the bottom sheet is
   // enabled by default.
   [PasswordSuggestionBottomSheetAppInterface setDismissCount:0];
-  // Manually clear sync passwords pref before testShowAccountStorageNotice*.
-  [ChromeEarlGrey
-      clearUserPrefWithName:syncer::SyncPrefs::GetPrefNameForTypeForTesting(
-                                syncer::UserSelectableType::kPasswords)];
 }
 
 - (void)tearDown {
-  [PasswordManagerAppInterface clearCredentials];
+  GREYAssertTrue([PasswordManagerAppInterface clearCredentials],
+                 @"Clearing credentials wasn't done.");
   [super tearDown];
 }
 
 - (AppLaunchConfiguration)appConfigurationForTestCase {
   AppLaunchConfiguration config;
-  if ([self
-          isRunningTest:@selector(testShowAccountStorageNoticeBeforeSaving)]) {
-    config.features_disabled.push_back(
-        syncer::kReplaceSyncPromosWithSignInPromos);
-  }
-  if ([self
-          isRunningTest:@selector(testShowAccountStorageNoticeBeforeFilling)]) {
-    config.features_disabled.push_back(
-        syncer::kReplaceSyncPromosWithSignInPromos);
-    config.features_disabled.push_back(
-        password_manager::features::kIOSPasswordBottomSheet);
-  }
-  if ([self isRunningTest:@selector
-            (testShowAccountStorageNoticeBeforeFillingBottomSheet)]) {
-    config.features_enabled.push_back(
-        password_manager::features::kIOSPasswordBottomSheet);
-    config.features_disabled.push_back(
-        syncer::kReplaceSyncPromosWithSignInPromos);
-  }
   if ([self isRunningTest:@selector(testUpdatePromptAppearsOnFormSubmission)]) {
     config.features_enabled.push_back(
         password_manager::features::kIOSPasswordBottomSheet);
-  }
-  if ([self isRunningTest:@selector
-            (testPasswordGenerationForSignedInNotSyncingAccount)] ||
-      [self
-          isRunningTest:@selector
-          (testPasswordGenerationForSignedInNotSyncingWithPasswordsDisabled)] ||
-      [self isRunningTest:@selector
-            (testPasswordGenerationForSignedInNotSyncingWithError)]) {
-    config.features_enabled.push_back(
-        syncer::kReplaceSyncPromosWithSignInPromos);
+  } else if ([self isRunningTest:@selector(testStickySavePromptJourney)]) {
+    config.features_enabled.push_back(kAutofillStickyInfobarIos);
   }
   return config;
 }
@@ -157,8 +125,7 @@ BOOL WaitForKeyboardToAppear() {
 #pragma mark - Tests
 
 // Tests that save password prompt is shown on new login.
-// TODO(crbug.com/1192446): Reenable this test.
-- (void)DISABLED_testSavePromptAppearsOnFormSubmission {
+- (void)testSavePromptAppearsOnFormSubmission {
   [self loadLoginPage];
 
   // Simulate user interacting with fields.
@@ -186,100 +153,6 @@ BOOL WaitForKeyboardToAppear() {
 
   int credentialsCount = [PasswordManagerAppInterface storedCredentialsCount];
   GREYAssertEqual(1, credentialsCount, @"Wrong number of stored credentials.");
-}
-
-- (void)testShowAccountStorageNoticeBeforeSaving {
-  [PasswordManagerAppInterface setAccountStorageNoticeShown:NO];
-  FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
-  [SigninEarlGrey signinWithFakeIdentity:fakeIdentity];
-  [self loadLoginPage];
-
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
-      performAction:chrome_test_util::TapWebElementWithId("submit_button")];
-
-  [ChromeEarlGrey waitForUIElementToAppearWithMatcher:
-                      grey_accessibilityLabel(l10n_util::GetNSString(
-                          IDS_IOS_PASSWORDS_ACCOUNT_STORAGE_NOTICE_TITLE))];
-
-  [[EarlGrey selectElementWithMatcher:
-                 chrome_test_util::StaticTextWithAccessibilityLabel(
-                     l10n_util::GetNSString(
-                         IDS_IOS_PASSWORDS_ACCOUNT_STORAGE_NOTICE_BUTTON_TEXT))]
-      performAction:grey_tap()];
-
-  [ChromeEarlGrey waitForUIElementToAppearWithMatcher:
-                      grey_accessibilityLabel(l10n_util::GetNSStringF(
-                          IDS_IOS_PASSWORD_MANAGER_ON_ACCOUNT_SAVE_SUBTITLE,
-                          base::SysNSStringToUTF16(fakeIdentity.userEmail)))];
-}
-
-- (void)testShowAccountStorageNoticeBeforeFilling {
-  [PasswordManagerAppInterface
-      storeCredentialWithUsername:@"user"
-                         password:@"password"
-                              URL:net::NSURLWithGURL(self.testServer->GetURL(
-                                      "/simple_login_form.html"))];
-  [PasswordManagerAppInterface setAccountStorageNoticeShown:NO];
-  [SigninEarlGrey signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]];
-  [self loadLoginPage];
-
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
-      performAction:chrome_test_util::TapWebElementWithId(kFormPassword)];
-
-  [ChromeEarlGrey waitForUIElementToAppearWithMatcher:
-                      grey_accessibilityLabel(l10n_util::GetNSString(
-                          IDS_IOS_PASSWORDS_ACCOUNT_STORAGE_NOTICE_TITLE))];
-
-  [[EarlGrey selectElementWithMatcher:
-                 chrome_test_util::StaticTextWithAccessibilityLabel(
-                     l10n_util::GetNSString(
-                         IDS_IOS_PASSWORDS_ACCOUNT_STORAGE_NOTICE_BUTTON_TEXT))]
-      performAction:grey_tap()];
-
-  [ChromeEarlGrey waitForUIElementToAppearWithMatcher:grey_accessibilityLabel(
-                                                          @"user ••••••••")];
-}
-
-- (void)testShowAccountStorageNoticeBeforeFillingBottomSheet {
-  [PasswordSuggestionBottomSheetAppInterface setUpMockReauthenticationModule];
-  [PasswordSuggestionBottomSheetAppInterface
-      mockReauthenticationModuleExpectedResult:ReauthenticationResult::
-                                                   kSuccess];
-  [PasswordManagerAppInterface
-      storeCredentialWithUsername:@"user"
-                         password:@"password"
-                              URL:net::NSURLWithGURL(self.testServer->GetURL(
-                                      "/simple_login_form_empty.html"))];
-  [PasswordManagerAppInterface setAccountStorageNoticeShown:NO];
-  [SigninEarlGrey signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]];
-
-  // Loads simple login page with empty fields on localhost (it is considered a
-  // secure context).
-  [ChromeEarlGrey
-      loadURL:self.testServer->GetURL("/simple_login_form_empty.html")];
-  [ChromeEarlGrey waitForWebStateContainingText:"Login form."];
-
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
-      performAction:chrome_test_util::TapWebElementWithId(kFormPassword)];
-
-  [ChromeEarlGrey waitForUIElementToAppearWithMatcher:
-                      grey_accessibilityLabel(l10n_util::GetNSString(
-                          IDS_IOS_PASSWORDS_ACCOUNT_STORAGE_NOTICE_TITLE))];
-
-  [[EarlGrey selectElementWithMatcher:
-                 chrome_test_util::StaticTextWithAccessibilityLabel(
-                     l10n_util::GetNSString(
-                         IDS_IOS_PASSWORDS_ACCOUNT_STORAGE_NOTICE_BUTTON_TEXT))]
-      performAction:grey_tap()];
-
-  [ChromeEarlGrey
-      waitForUIElementToAppearWithMatcher:grey_accessibilityID(@"user")];
-
-  [[EarlGrey selectElementWithMatcher:
-                 chrome_test_util::StaticTextWithAccessibilityLabel(
-                     l10n_util::GetNSString(
-                         IDS_IOS_PASSWORD_BOTTOM_SHEET_USE_PASSWORD))]
-      performAction:grey_tap()];
 }
 
 // Tests that update password prompt is shown on submitting the new password
@@ -323,8 +196,8 @@ BOOL WaitForKeyboardToAppear() {
 }
 
 // Tests that update password prompt is shown on submitting the new password
-// for an already stored login in local store.
-- (void)testUpdateLocalPasswordPromptOnFormSubmission {
+// while signed in, for an already stored credential in local store.
+- (void)testUpdateLocalPasswordPromptOnFormSubmissionWhileSignedIn {
   // Load the page the first time an store credentials locally.
   [self loadLoginPage];
   [PasswordManagerAppInterface storeCredentialWithUsername:@"Eguser"
@@ -332,14 +205,13 @@ BOOL WaitForKeyboardToAppear() {
   int credentialsCount = [PasswordManagerAppInterface storedCredentialsCount];
   GREYAssertEqual(1, credentialsCount, @"Wrong number of initial credentials.");
 
-  // Sign in with identity.
-  [SigninEarlGreyUI signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]];
-  [ChromeEarlGrey waitForSyncEngineInitialized:YES
-                                   syncTimeout:base::Seconds(10)];
+  // Sign in with identity where the credential still lives in the local store.
+  [SigninEarlGrey signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]];
+  [ChromeEarlGrey waitForSyncTransportStateActiveWithTimeout:base::Seconds(10)];
 
   // Load the page again and have a new password value to save.
   [self loadLoginPage];
-  // Simulate user interacting with fields.
+  // Emulate user interacting with fields.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
       performAction:chrome_test_util::TapWebElementWithId(kFormUsername)];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
@@ -374,8 +246,73 @@ BOOL WaitForKeyboardToAppear() {
   GREYAssertEqual(1, credentialsCount, @"Wrong number of final credentials.");
 }
 
+// Tests the sticky password prompt journey where the prompt remains there when
+// navigating without an explicit user gesture, and then the prompt is dismissed
+// when navigating with a user gesture. Test with the password save prompt but
+// the type of password prompt doesn't matter in this test case.
+- (void)testStickySavePromptJourney {
+  [ChromeEarlGrey loadURL:self.testServer->GetURL("/simple_login_form.html")];
+  [ChromeEarlGrey waitForWebStateContainingText:"Login form."];
+
+  // Emulate user interacting with fields.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
+      performAction:chrome_test_util::TapWebElementWithId(kFormUsername)];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
+      performAction:chrome_test_util::TapWebElementWithId(kFormPassword)];
+
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
+      performAction:chrome_test_util::TapWebElementWithId("submit_button")];
+
+  // Wait until the save password prompt becomes visible.
+  [ChromeEarlGrey
+      waitForUIElementToAppearWithMatcher:
+          PasswordInfobarLabels(IDS_IOS_PASSWORD_MANAGER_SAVE_PASSWORD_PROMPT)];
+
+  {
+    // Reloading page from script shouldn't dismiss the infobar.
+    NSString* script = @"location.reload();";
+    [ChromeEarlGrey evaluateJavaScriptForSideEffect:script];
+  }
+  {
+    // Assigning url from script to the page aka open an url shouldn't dismiss
+    // the infobar.
+    NSString* script = @"window.location.assign(window.location.href);";
+    [ChromeEarlGrey evaluateJavaScriptForSideEffect:script];
+  }
+  {
+    // Pushing new history entry without reloading content shouldn't dismiss the
+    // infobar.
+    NSString* script = @"history.pushState({}, '', 'destination2.html');";
+    [ChromeEarlGrey evaluateJavaScriptForSideEffect:script];
+  }
+  {
+    // Replacing history entry without reloading content shouldn't dismiss the
+    // infobar.
+    NSString* script = @"history.replaceState({}, '', 'destination3.html');";
+    [ChromeEarlGrey evaluateJavaScriptForSideEffect:script];
+  }
+
+  // Wait some time for things to settle.
+  base::test::ios::SpinRunLoopWithMinDelay(base::Milliseconds(200));
+
+  // Verify that the prompt is still there after the non-user initiated
+  // navigations.
+  [[EarlGrey
+      selectElementWithMatcher:
+          PasswordInfobarLabels(IDS_IOS_PASSWORD_MANAGER_SAVE_PASSWORD_PROMPT)]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  // Navigate with an emulated user gesture.
+  [ChromeEarlGrey loadURL:self.testServer->GetURL("/simple_login_form.html")];
+
+  // Verify that the infobar is dismissed.
+  [ChromeEarlGrey
+      waitForUIElementToDisappearWithMatcher:
+          PasswordInfobarLabels(IDS_IOS_PASSWORD_MANAGER_UPDATE_PASSWORD)];
+}
+
 // Tests password generation flow.
-// TODO(crbug.com/1423865): The test fails on simulator.
+// TODO(crbug.com/40260214): The test fails on simulator.
 #if TARGET_IPHONE_SIMULATOR
 #define MAYBE_testPasswordGeneration FLAKY_testPasswordGeneration
 #else
@@ -383,8 +320,7 @@ BOOL WaitForKeyboardToAppear() {
 #endif
 - (void)MAYBE_testPasswordGeneration {
   [SigninEarlGrey signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]];
-  [ChromeEarlGrey waitForSyncEngineInitialized:YES
-                                   syncTimeout:base::Seconds(10)];
+  [ChromeEarlGrey waitForSyncTransportStateActiveWithTimeout:base::Seconds(10)];
 
   [ChromeEarlGrey loadURL:self.testServer->GetURL("/simple_signup_form.html")];
   [ChromeEarlGrey waitForWebStateContainingText:"Signup form."];
@@ -418,10 +354,9 @@ BOOL WaitForKeyboardToAppear() {
 }
 
 // Tests that password generation is offered for signed in not syncing users.
-- (void)testPasswordGenerationForSignedInNotSyncingAccount {
+- (void)testPasswordGenerationForSignedInAccount {
   [SigninEarlGrey signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]];
-  [ChromeEarlGrey waitForSyncEngineInitialized:YES
-                                   syncTimeout:base::Seconds(10)];
+  [ChromeEarlGrey waitForSyncTransportStateActiveWithTimeout:base::Seconds(10)];
 
   [ChromeEarlGrey loadURL:self.testServer->GetURL("/simple_signup_form.html")];
   [ChromeEarlGrey waitForWebStateContainingText:"Signup form."];
@@ -454,10 +389,9 @@ BOOL WaitForKeyboardToAppear() {
 
 // Tests that password generation is not offered for signed in not syncing users
 // with passwords toggle disabled.
-- (void)testPasswordGenerationForSignedInNotSyncingWithPasswordsDisabled {
+- (void)testPasswordGenerationWhileSignedInWithPasswordsDisabled {
   [SigninEarlGrey signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]];
-  [ChromeEarlGrey waitForSyncEngineInitialized:YES
-                                   syncTimeout:base::Seconds(10)];
+  [ChromeEarlGrey waitForSyncTransportStateActiveWithTimeout:base::Seconds(10)];
 
   // Disable Passwords toggle in account settings.
   [ChromeEarlGreyUI openSettingsMenu];
@@ -491,14 +425,13 @@ BOOL WaitForKeyboardToAppear() {
 
 // Tests that password generation is not offered for signed in not syncing users
 // with an encryption error; missing passphrase.
-- (void)testPasswordGenerationForSignedInNotSyncingWithError {
+- (void)testPasswordGenerationWhileSignedInWithError {
   // Encrypt synced data with a passphrase to enable passphrase encryption for
   // the signed in account.
   [ChromeEarlGrey addBookmarkWithSyncPassphrase:kPassphrase];
 
   [SigninEarlGrey signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]];
-  [ChromeEarlGrey waitForSyncEngineInitialized:YES
-                                   syncTimeout:base::Seconds(10)];
+  [ChromeEarlGrey waitForSyncTransportStateActiveWithTimeout:base::Seconds(10)];
 
   // Verify encryption error is showing in in account settings.
   [ChromeEarlGreyUI openSettingsMenu];

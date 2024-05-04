@@ -13,6 +13,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/posix/unix_domain_socket.h"
 #include "base/process/launch.h"
 #include "base/process/process.h"
 #include "base/strings/string_number_conversions.h"
@@ -24,7 +25,6 @@
 #include "base/time/time.h"
 #include "chrome/browser/ash/crosapi/browser_util.h"
 #include "chrome/browser/ash/crosapi/crosapi_manager.h"
-#include "chrome/browser/ash/crosapi/fake_device_ownership_waiter.h"
 #include "chrome/browser/ash/crosapi/idle_service_ash.h"
 #include "chrome/browser/ash/crosapi/test_crosapi_dependency_registry.h"
 #include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
@@ -33,11 +33,13 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "chromeos/ash/components/login/login_state/login_state.h"
+#include "chromeos/ash/components/standalone_browser/lacros_selection.h"
 #include "chromeos/ash/components/system/fake_statistics_provider.h"
 #include "chromeos/ash/components/system/statistics_provider.h"
 #include "chromeos/crosapi/cpp/crosapi_constants.h"
 #include "chromeos/startup/startup_switches.h"
 #include "components/account_id/account_id.h"
+#include "components/user_manager/fake_device_ownership_waiter.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_task_environment.h"
@@ -65,7 +67,7 @@ class BrowserLauncherTest : public testing::Test {
         &fake_statistics_provider_);
 
     browser_launcher_.set_device_ownership_waiter_for_testing(
-        std::make_unique<FakeDeviceOwnershipWaiter>());
+        std::make_unique<user_manager::FakeDeviceOwnershipWaiter>());
   }
 
   void TearDown() override {
@@ -146,6 +148,24 @@ TEST_F(BrowserLauncherTest, WithoutAdditionalParametersForCommandLine) {
   EXPECT_EQ(parameters.options.environment.size(), 0u);
 }
 
+// A --vmodule value provided via --lacros-chrome-additional-args is preserved.
+TEST_F(BrowserLauncherTest, LacrosChromeAdditionalArgsVModule) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      ash::switches::kLacrosChromeAdditionalArgs, "--vmodule=foo");
+
+  base::ScopedFD dummy_fd1, dummy_fd2;
+  base::CreateSocketPair(&dummy_fd1, &dummy_fd2);
+  mojo::PlatformChannel dummy_channel;
+
+  BrowserLauncher::LaunchParamsFromBackground bg_params;
+  bg_params.logfd = std::move(dummy_fd1);
+  BrowserLauncher::LaunchParams params =
+      browser_launcher()->CreateLaunchParamsForTesting({}, bg_params, {}, {},
+                                                       {}, dummy_channel, {});
+
+  EXPECT_EQ(params.command_line.GetSwitchValueASCII("vmodule"), "foo");
+}
+
 TEST_F(BrowserLauncherTest, LaunchAndTriggerTerminate) {
   // We'll use a process just does nothing for 30 seconds, which is long
   // enough to stably exercise the test cases we have.
@@ -185,7 +205,8 @@ TEST_F(BrowserLauncherTest, BackgroundWorkPreLaunch) {
 
   // Add feature and check if it's reflected to `params`.
   base::test::ScopedFeatureList scoped_features;
-  scoped_features.InitAndEnableFeature(features::kLacrosSharedComponentsDir);
+  scoped_features.InitAndEnableFeature(
+      browser_util::kLacrosForkZygotesAtLoginScreen);
 
   BrowserLauncher::LaunchParamsFromBackground params;
   base::test::TestFuture<void> future;
@@ -194,7 +215,7 @@ TEST_F(BrowserLauncherTest, BackgroundWorkPreLaunch) {
       /*launching_at_login_screen=*/false, future.GetCallback(), params);
 
   EXPECT_TRUE(future.Wait());
-  EXPECT_TRUE(params.enable_shared_components_dir);
+  EXPECT_TRUE(params.enable_fork_zygotes_at_login_screen);
 }
 
 TEST_F(BrowserLauncherTest, BackgroundWorkPreLaunchOnLaunchingAtLoginScreen) {
@@ -205,7 +226,8 @@ TEST_F(BrowserLauncherTest, BackgroundWorkPreLaunchOnLaunchingAtLoginScreen) {
 
   // Add feature and check if it's reflected to `params`.
   base::test::ScopedFeatureList scoped_features;
-  scoped_features.InitAndEnableFeature(features::kLacrosSharedComponentsDir);
+  scoped_features.InitAndEnableFeature(
+      browser_util::kLacrosForkZygotesAtLoginScreen);
 
   BrowserLauncher::LaunchParamsFromBackground params;
   base::test::TestFuture<void> future;
@@ -214,7 +236,7 @@ TEST_F(BrowserLauncherTest, BackgroundWorkPreLaunchOnLaunchingAtLoginScreen) {
       /*launching_at_login_screen=*/true, future.GetCallback(), params);
 
   EXPECT_TRUE(future.Wait());
-  EXPECT_TRUE(params.enable_shared_components_dir);
+  EXPECT_TRUE(params.enable_fork_zygotes_at_login_screen);
 }
 
 // TODO(elkurin): Add kLacrosChromeAdditionalArgsFile unit test.
@@ -232,7 +254,7 @@ TEST_F(BrowserLauncherTest, Launch) {
 
   constexpr bool launching_at_login_screen = false;
   browser_launcher()->Launch(lacros_path, launching_at_login_screen,
-                             browser_util::LacrosSelection::kRootfs,
+                             ash::standalone_browser::LacrosSelection::kRootfs,
                              /*mojo_disconneciton_cb=*/{},
                              /*is_keep_alive_enabled=*/false,
                              future.GetCallback());
@@ -263,7 +285,7 @@ TEST_F(BrowserLauncherTest, LaunchAtLoginScreen) {
 
   constexpr bool launching_at_login_screen = true;
   browser_launcher()->Launch(lacros_path, launching_at_login_screen,
-                             browser_util::LacrosSelection::kRootfs,
+                             ash::standalone_browser::LacrosSelection::kRootfs,
                              /*mojo_disconneciton_cb=*/{},
                              /*is_keep_alive_enabled=*/false,
                              future.GetCallback());
@@ -326,7 +348,7 @@ TEST_F(BrowserLauncherTest, ShutdownRequestedDuringLaunch) {
   // screen.
   constexpr bool launching_at_login_screen = false;
   browser_launcher()->Launch(base::FilePath(), launching_at_login_screen,
-                             browser_util::LacrosSelection::kRootfs,
+                             ash::standalone_browser::LacrosSelection::kRootfs,
                              /*mojo_disconneciton_cb=*/{},
                              /*is_keep_alive_enabled=*/false,
                              future.GetCallback());

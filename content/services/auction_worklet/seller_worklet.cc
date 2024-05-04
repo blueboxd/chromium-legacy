@@ -11,6 +11,7 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -28,8 +29,8 @@
 #include "base/types/optional_ref.h"
 #include "content/services/auction_worklet/auction_v8_helper.h"
 #include "content/services/auction_worklet/auction_v8_logger.h"
+#include "content/services/auction_worklet/auction_worklet_util.h"
 #include "content/services/auction_worklet/context_recycler.h"
-#include "content/services/auction_worklet/deprecated_url_lazy_filler.h"
 #include "content/services/auction_worklet/direct_from_seller_signals_requester.h"
 #include "content/services/auction_worklet/for_debugging_only_bindings.h"
 #include "content/services/auction_worklet/private_aggregation_bindings.h"
@@ -38,6 +39,7 @@
 #include "content/services/auction_worklet/public/mojom/seller_worklet.mojom.h"
 #include "content/services/auction_worklet/register_ad_beacon_bindings.h"
 #include "content/services/auction_worklet/report_bindings.h"
+#include "content/services/auction_worklet/seller_lazy_filler.h"
 #include "content/services/auction_worklet/shared_storage_bindings.h"
 #include "content/services/auction_worklet/trusted_signals.h"
 #include "content/services/auction_worklet/webidl_compat.h"
@@ -50,7 +52,6 @@
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/interest_group/ad_auction_currencies.h"
 #include "third_party/blink/public/common/interest_group/ad_display_size.h"
-#include "third_party/blink/public/common/interest_group/ad_display_size_utils.h"
 #include "third_party/blink/public/common/interest_group/auction_config.h"
 #include "third_party/blink/public/mojom/interest_group/interest_group_types.mojom.h"
 #include "url/gurl.h"
@@ -63,6 +64,16 @@
 namespace auction_worklet {
 
 namespace {
+
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class ScoreAdInput {
+  kTrustedSignals = 0,
+  kDirectFromSellerSignals = 1,
+  kScoringScript = 2,
+
+  kMaxValue = kScoringScript
+};
 
 // Checks both types of DirectFromSellerSignals results (subresource bundle
 // based and header based) -- at most one of these should be non-null.
@@ -87,181 +98,6 @@ v8::Local<v8::Value> GetDirectFromSellerSignals(
   return subresource_bundle_result.GetSignals(v8_helper, context, errors);
 }
 
-// TODO(crbug.com/1441988): Remove this code after rename. These functions allow
-// having multiple dictionary keys (e.g. renderUrl and renderURL) share the same
-// V8 value.
-bool SetDictMember(v8::Isolate* isolate,
-                   v8::Local<v8::Object> object,
-                   const std::string& key,
-                   v8::Local<v8::Value> v8_value) {
-  v8::Maybe<bool> result = object->Set(isolate->GetCurrentContext(),
-                                       gin::StringToV8(isolate, key), v8_value);
-  return !result.IsNothing() && result.FromJust();
-}
-
-bool CanSetRequestedAdSize(
-    const std::optional<blink::AdSize>& requested_ad_size) {
-  return requested_ad_size.has_value() &&
-         blink::IsValidAdSize(requested_ad_size.value());
-}
-
-// Creates an AdSize object with a "width" and a "height" from a blink::AdSize.
-// Returns false on failure.
-bool CreateAdSizeObject(v8::Isolate* isolate,
-                        const blink::AdSize& ad_size,
-                        v8::Local<v8::Object>& ad_size_out) {
-  DCHECK(blink::IsValidAdSize(ad_size));
-
-  v8::Local<v8::Value> v8_width;
-  if (!gin::TryConvertToV8(
-          isolate,
-          base::StrCat({base::NumberToString(ad_size.width),
-                        blink::ConvertAdSizeUnitToString(ad_size.width_units)}),
-          &v8_width)) {
-    return false;
-  }
-
-  v8::Local<v8::Value> v8_height;
-  if (!gin::TryConvertToV8(isolate,
-                           base::StrCat({base::NumberToString(ad_size.height),
-                                         blink::ConvertAdSizeUnitToString(
-                                             ad_size.height_units)}),
-                           &v8_height)) {
-    return false;
-  }
-
-  ad_size_out = v8::Object::New(isolate);
-
-  return SetDictMember(isolate, ad_size_out, "width", v8_width) &&
-         SetDictMember(isolate, ad_size_out, "height", v8_height);
-}
-
-// Must only be called after CanSetRequestedAdSize(). The requested_ad_size is
-// optional for the auction, so if it's invalid, it just won't be passed to the
-// auction config.
-bool SetRequestedAdSize(v8::Isolate* isolate,
-                        v8::Local<v8::Object> top_level_object,
-                        const blink::AdSize& requested_ad_size) {
-  v8::Local<v8::Object> size_object;
-  return CreateAdSizeObject(isolate, requested_ad_size, size_object) &&
-         SetDictMember(isolate, top_level_object, "requestedSize", size_object);
-}
-
-bool SetAllSlotsRequestedSizes(
-    v8::Isolate* isolate,
-    v8::Local<v8::Object> top_level_object,
-    const std::vector<blink::AdSize>& all_slots_requested_sizes) {
-  v8::LocalVector<v8::Value> size_vector(isolate);
-  for (const auto& slot_size : all_slots_requested_sizes) {
-    v8::Local<v8::Object> size_object;
-    if (!CreateAdSizeObject(isolate, slot_size, size_object)) {
-      return false;
-    }
-    size_vector.push_back(std::move(size_object));
-  }
-
-  return SetDictMember(
-      isolate, top_level_object, "allSlotsRequestedSizes",
-      v8::Array::New(isolate, size_vector.data(), size_vector.size()));
-}
-
-bool InsertPrioritySignals(
-    AuctionV8Helper* v8_helper,
-    base::StringPiece key,
-    const base::flat_map<std::string, double>& priority_signals,
-    v8::Local<v8::Object> object) {
-  v8::Isolate* isolate = v8_helper->isolate();
-  v8::Local<v8::Object> v8_priority_signals = v8::Object::New(isolate);
-  for (const auto& signal : priority_signals) {
-    if (!v8_helper->InsertValue(signal.first,
-                                v8::Number::New(isolate, signal.second),
-                                v8_priority_signals)) {
-      return false;
-    }
-  }
-  return v8_helper->InsertValue(key, v8_priority_signals, object);
-}
-
-// Attempts to create an v8 Object from `maybe_promise_buyer_timeouts`. On fatal
-// error, returns false. Otherwise, writes the result to
-// `out_per_buyer_timeouts`, which will be left unchanged if there are no times
-// to write to it.
-bool CreatePerBuyerTimeoutsObject(
-    v8::Isolate* isolate,
-    const blink::AuctionConfig::MaybePromiseBuyerTimeouts&
-        maybe_promise_buyer_timeouts,
-    v8::Local<v8::Object>& out_per_buyer_timeouts) {
-  DCHECK(!maybe_promise_buyer_timeouts.is_promise());
-
-  const blink::AuctionConfig::BuyerTimeouts& buyer_timeouts =
-      maybe_promise_buyer_timeouts.value();
-  // If there are no times, leave `out_per_buyer_timeouts` empty, and indicate
-  // success.
-  if (!buyer_timeouts.per_buyer_timeouts.has_value() &&
-      !buyer_timeouts.all_buyers_timeout.has_value()) {
-    return true;
-  }
-
-  out_per_buyer_timeouts = v8::Object::New(isolate);
-  gin::Dictionary per_buyer_timeouts_dict(isolate, out_per_buyer_timeouts);
-
-  if (buyer_timeouts.per_buyer_timeouts.has_value()) {
-    for (const auto& kv : buyer_timeouts.per_buyer_timeouts.value()) {
-      if (!per_buyer_timeouts_dict.Set(kv.first.Serialize(),
-                                       kv.second.InMilliseconds())) {
-        return false;
-      }
-    }
-  }
-  if (buyer_timeouts.all_buyers_timeout.has_value()) {
-    if (!per_buyer_timeouts_dict.Set(
-            "*", buyer_timeouts.all_buyers_timeout.value().InMilliseconds())) {
-      return false;
-    }
-  }
-  return true;
-}
-
-// Attempts to create an v8 Object from `maybe_promise_buyer_currencies`. On
-//  fatal error, returns false. Otherwise, writes the result to
-// `out_per_buyer_currencies`, which will be left unchanged if there are no
-// currencies to write to it.
-bool CreatePerBuyerCurrenciesObject(
-    v8::Isolate* isolate,
-    const blink::AuctionConfig::MaybePromiseBuyerCurrencies&
-        maybe_promise_buyer_currencies,
-    v8::Local<v8::Object>& out_per_buyer_currencies) {
-  DCHECK(!maybe_promise_buyer_currencies.is_promise());
-
-  const blink::AuctionConfig::BuyerCurrencies& buyer_currencies =
-      maybe_promise_buyer_currencies.value();
-  // If there is nothing specified, leave `out_per_buyer_currencies` empty, and
-  // indicate success.
-  if (!buyer_currencies.per_buyer_currencies.has_value() &&
-      !buyer_currencies.all_buyers_currency.has_value()) {
-    return true;
-  }
-
-  out_per_buyer_currencies = v8::Object::New(isolate);
-  gin::Dictionary per_buyer_currencies_dict(isolate, out_per_buyer_currencies);
-
-  if (buyer_currencies.per_buyer_currencies.has_value()) {
-    for (const auto& kv : buyer_currencies.per_buyer_currencies.value()) {
-      if (!per_buyer_currencies_dict.Set(kv.first.Serialize(),
-                                         kv.second.currency_code())) {
-        return false;
-      }
-    }
-  }
-  if (buyer_currencies.all_buyers_currency.has_value()) {
-    if (!per_buyer_currencies_dict.Set(
-            "*", buyer_currencies.all_buyers_currency->currency_code())) {
-      return false;
-    }
-  }
-  return true;
-}
-
 // ### some duplication with same in interest_group_auction.cc
 bool IsValidBid(double bid) {
   return std::isfinite(bid) && (bid > 0.0);
@@ -270,11 +106,14 @@ bool IsValidBid(double bid) {
 // Converts `auction_config` back to JSON format, and appends to args.
 // Returns true if conversion succeeded.
 //
-// On return, `deprecated_url_lazy_fillers` will hold helpers to log console
-// warnings when fields with deprecated URLs are accessed. `v8_helper` and
-// `v8_logger` must remain valid until all elements of
-// `deprecated_url_lazy_fillers` are torn down, as must the values pointed at by
-// `decision_logic_url` and `trusted_scoring_signals_url`.
+// `auction_config_lazy_fillers` is incoming, and is organized as follows:
+//   [0] corresponds to the top-level auction.
+//   [1] corresponds to the 0th component auction.
+//   [2] corresponds to the 1th component auction.
+//   ... and so on.
+// where `auction_config_lazy_filler_pos` describes the position the current
+// invocation is expected to use; e.g. it's 0 for top-level, and i + 1 for
+// i'th component auction.
 //
 // The resulting object will look something like this (based on example from
 // explainer):
@@ -285,6 +124,7 @@ bool IsValidBid(double bid) {
 //  'trustedScoringSignalsURL': ...,
 //  'interestGroupBuyers': ['https://www.example-dsp.com', 'https://buyer2.com',
 //  ...], 'auctionSignals': {...}, 'sellerSignals': {...}, 'sellerTimeout': 100,
+//  `reportingTimeout`: 600,
 //  'perBuyerSignals': {'https://www.example-dsp.com': {...},
 //                      'https://www.another-buyer.com': {...},
 //                       ...},
@@ -297,6 +137,8 @@ bool IsValidBid(double bid) {
 //                              '*': {...},
 //                              ...},
 // }
+//
+// (With many fields filled in on-demand by an AuctionConfigLazyFiller).
 bool AppendAuctionConfig(
     AuctionV8Helper* v8_helper,
     AuctionV8Logger* v8_logger,
@@ -307,54 +149,35 @@ bool AppendAuctionConfig(
     const std::optional<uint16_t> experiment_group_id,
     const blink::AuctionConfig::NonSharedParams&
         auction_ad_config_non_shared_params,
-    std::vector<std::unique_ptr<DeprecatedUrlLazyFiller>>&
-        deprecated_url_lazy_fillers,
+    const std::vector<std::unique_ptr<AuctionConfigLazyFiller>>&
+        auction_config_lazy_fillers,
+    size_t auction_config_lazy_filler_pos,
     v8::LocalVector<v8::Value>* args) {
   v8::Isolate* isolate = v8_helper->isolate();
   v8::Local<v8::Object> auction_config_value = v8::Object::New(isolate);
+
   gin::Dictionary auction_config_dict(isolate, auction_config_value);
   if (!auction_config_dict.Set("seller", seller.Serialize())) {
     return false;
   }
+
+  auction_config_lazy_fillers[auction_config_lazy_filler_pos]->FillInObject(
+      auction_ad_config_non_shared_params, decision_logic_url,
+      trusted_scoring_signals_url, auction_config_value);
+
+  // Deprecated decisionLogicUrl is lazily filled by AuctionConfigLazyFiller.
   if (decision_logic_url.has_value()) {
-    deprecated_url_lazy_fillers.emplace_back(
-        std::make_unique<DeprecatedUrlLazyFiller>(
-            v8_helper, v8_logger, &decision_logic_url.value(),
-            "auctionConfig.decisionLogicUrl is deprecated."
-            " Please use auctionConfig.decisionLogicURL instead."));
     if (!auction_config_dict.Set("decisionLogicURL",
-                                 decision_logic_url->spec()) ||
-        !deprecated_url_lazy_fillers.back()->AddDeprecatedUrlGetter(
-            auction_config_value, "decisionLogicUrl")) {
+                                 decision_logic_url->spec())) {
       return false;
     }
   }
-
-  if (trusted_scoring_signals_url.has_value()) {
-    deprecated_url_lazy_fillers.emplace_back(
-        std::make_unique<DeprecatedUrlLazyFiller>(
-            v8_helper, v8_logger, &trusted_scoring_signals_url.value(),
-            "auctionConfig.trustedScoringSignalsUrl is deprecated."
-            " Please use auctionConfig.trustedScoringSignalsURL instead."));
-    if (!auction_config_dict.Set("trustedScoringSignalsURL",
-                                 trusted_scoring_signals_url->spec()) ||
-        !deprecated_url_lazy_fillers.back()->AddDeprecatedUrlGetter(
-            auction_config_value, "trustedScoringSignalsUrl")) {
-      return false;
-    }
-  }
-
-  if (auction_ad_config_non_shared_params.interest_group_buyers) {
-    v8::LocalVector<v8::Value> interest_group_buyers(isolate);
-    for (const url::Origin& buyer :
-         *auction_ad_config_non_shared_params.interest_group_buyers) {
-      v8::Local<v8::String> v8_buyer;
-      if (!v8_helper->CreateUtf8String(buyer.Serialize()).ToLocal(&v8_buyer)) {
-        return false;
-      }
-      interest_group_buyers.push_back(v8_buyer);
-    }
-    auction_config_dict.Set("interestGroupBuyers", interest_group_buyers);
+  // Deprecated trustedScoringSignalsUrl is lazily filled by
+  // AuctionConfigLazyFiller.
+  if (trusted_scoring_signals_url.has_value() &&
+      !auction_config_dict.Set("trustedScoringSignalsURL",
+                               trusted_scoring_signals_url->spec())) {
+    return false;
   }
 
   DCHECK(!auction_ad_config_non_shared_params.auction_signals.is_promise());
@@ -363,21 +186,6 @@ bool AppendAuctionConfig(
           context, "auctionSignals",
           *auction_ad_config_non_shared_params.auction_signals.value(),
           auction_config_value)) {
-    return false;
-  }
-
-  if (CanSetRequestedAdSize(
-          auction_ad_config_non_shared_params.requested_size) &&
-      !SetRequestedAdSize(
-          isolate, auction_config_value,
-          auction_ad_config_non_shared_params.requested_size.value())) {
-    return false;
-  }
-
-  if (auction_ad_config_non_shared_params.all_slots_requested_sizes &&
-      !SetAllSlotsRequestedSizes(
-          isolate, auction_config_value,
-          *auction_ad_config_non_shared_params.all_slots_requested_sizes)) {
     return false;
   }
 
@@ -391,61 +199,22 @@ bool AppendAuctionConfig(
   }
 
   if (auction_ad_config_non_shared_params.seller_timeout.has_value() &&
-      !v8_helper->InsertJsonValue(
-          context, "sellerTimeout",
-          base::NumberToString(
-              auction_ad_config_non_shared_params.seller_timeout.value()
-                  .InMilliseconds()),
-          auction_config_value)) {
+      !auction_config_dict.Set(
+          "sellerTimeout",
+          auction_ad_config_non_shared_params.seller_timeout.value()
+              .InMilliseconds())) {
     return false;
   }
 
-  DCHECK(!auction_ad_config_non_shared_params.per_buyer_signals.is_promise());
-  if (auction_ad_config_non_shared_params.per_buyer_signals.value()
-          .has_value()) {
-    v8::Local<v8::Object> per_buyer_value = v8::Object::New(isolate);
-    for (const auto& kv :
-         auction_ad_config_non_shared_params.per_buyer_signals.value()
-             .value()) {
-      if (!v8_helper->InsertJsonValue(context, kv.first.Serialize(), kv.second,
-                                      per_buyer_value)) {
-        return false;
-      }
-    }
-    auction_config_dict.Set("perBuyerSignals", per_buyer_value);
-  }
+  base::TimeDelta reporting_timeout =
+      auction_ad_config_non_shared_params.reporting_timeout.has_value()
+          ? *auction_ad_config_non_shared_params.reporting_timeout
+          : AuctionV8Helper::kScriptTimeout;
 
-  v8::Local<v8::Object> per_buyer_timeouts;
-  if (!CreatePerBuyerTimeoutsObject(
-          isolate, auction_ad_config_non_shared_params.buyer_timeouts,
-          per_buyer_timeouts)) {
+  if (base::FeatureList::IsEnabled(blink::features::kFledgeReportingTimeout) &&
+      !auction_config_dict.Set("reportingTimeout",
+                               reporting_timeout.InMilliseconds())) {
     return false;
-  }
-  if (!per_buyer_timeouts.IsEmpty()) {
-    auction_config_dict.Set("perBuyerTimeouts", per_buyer_timeouts);
-  }
-
-  v8::Local<v8::Object> per_buyer_cumulative_timeouts;
-  if (!CreatePerBuyerTimeoutsObject(
-          isolate,
-          auction_ad_config_non_shared_params.buyer_cumulative_timeouts,
-          per_buyer_cumulative_timeouts)) {
-    return false;
-  }
-  if (!per_buyer_cumulative_timeouts.IsEmpty()) {
-    auction_config_dict.Set("perBuyerCumulativeTimeouts",
-                            per_buyer_cumulative_timeouts);
-  }
-
-  v8::Local<v8::Object> per_buyer_currencies;
-  if (!CreatePerBuyerCurrenciesObject(
-          isolate, auction_ad_config_non_shared_params.buyer_currencies,
-          per_buyer_currencies)) {
-    return false;
-  }
-
-  if (!per_buyer_currencies.IsEmpty()) {
-    auction_config_dict.Set("perBuyerCurrencies", per_buyer_currencies);
   }
 
   if (auction_ad_config_non_shared_params.seller_currency.has_value()) {
@@ -454,41 +223,20 @@ bool AppendAuctionConfig(
         auction_ad_config_non_shared_params.seller_currency->currency_code());
   }
 
-  if (auction_ad_config_non_shared_params.per_buyer_priority_signals ||
-      auction_ad_config_non_shared_params.all_buyers_priority_signals) {
-    v8::Local<v8::Object> per_buyer_priority_signals = v8::Object::New(isolate);
-    if (auction_ad_config_non_shared_params.per_buyer_priority_signals) {
-      for (const auto& kv :
-           *auction_ad_config_non_shared_params.per_buyer_priority_signals) {
-        if (!InsertPrioritySignals(v8_helper, kv.first.Serialize(), kv.second,
-                                   per_buyer_priority_signals)) {
-          return false;
-        }
-      }
-    }
-    if (auction_ad_config_non_shared_params.all_buyers_priority_signals) {
-      if (!InsertPrioritySignals(
-              v8_helper, "*",
-              *auction_ad_config_non_shared_params.all_buyers_priority_signals,
-              per_buyer_priority_signals)) {
-        return false;
-      }
-    }
-    auction_config_dict.Set("perBuyerPrioritySignals",
-                            per_buyer_priority_signals);
-  }
-
   const auto& component_auctions =
       auction_ad_config_non_shared_params.component_auctions;
   if (!component_auctions.empty()) {
     v8::LocalVector<v8::Value> component_auction_vector(isolate);
-    for (const auto& component_auction : component_auctions) {
+
+    for (size_t pos = 0; pos < component_auctions.size(); ++pos) {
+      const auto& component_auction = component_auctions[pos];
       if (!AppendAuctionConfig(
               v8_helper, v8_logger, context, component_auction.seller,
               component_auction.decision_logic_url,
               component_auction.trusted_scoring_signals_url,
               experiment_group_id, component_auction.non_shared_params,
-              deprecated_url_lazy_fillers, &component_auction_vector)) {
+              auction_config_lazy_fillers, pos + 1,
+              &component_auction_vector)) {
         return false;
       }
     }
@@ -563,7 +311,7 @@ bool VerifySellerCurrency(
     std::optional<blink::AdCurrency> expected_seller_currency,
     std::optional<blink::AdCurrency> component_expect_bid_currency,
     const GURL& script_url,
-    base::StringPiece bid_label,
+    std::string_view bid_label,
     std::vector<std::string>& errors_out) {
   if (!blink::VerifyAdCurrencyCode(expected_seller_currency,
                                    provided_currency)) {
@@ -594,6 +342,58 @@ std::optional<base::TimeDelta> NullOptIfZero(base::TimeDelta delta) {
   return delta;
 }
 
+// Check if trusted scoring signals are absent, same-origin, or cross-origin.
+SellerWorklet::SignalsOriginRelation ClassifyTrustedSignals(
+    const GURL& decision_logic_url,
+    const std::optional<url::Origin>& trusted_scoring_signals_origin) {
+  if (!trusted_scoring_signals_origin.has_value()) {
+    return SellerWorklet::SignalsOriginRelation::kNoTrustedSignals;
+  }
+
+  if (trusted_scoring_signals_origin->IsSameOriginWith(decision_logic_url)) {
+    return SellerWorklet::SignalsOriginRelation::kSameOriginSignals;
+  }
+
+  return SellerWorklet::SignalsOriginRelation::
+      kUnknownPermissionCrossOriginSignals;
+}
+
+// Sets the appropriate field (if any) of `browser_signals` to data version,
+// considering the cross-origin validity.
+// Returns success/failure.
+bool SetDataVersion(
+    SellerWorklet::SignalsOriginRelation trusted_signals_relation,
+    std::optional<uint32_t> scoring_signals_data_version,
+    gin::Dictionary& browser_signals_dict) {
+  if (!scoring_signals_data_version.has_value()) {
+    return true;
+  }
+
+  switch (trusted_signals_relation) {
+    case SellerWorklet::SignalsOriginRelation::kNoTrustedSignals:
+      return true;
+
+    case SellerWorklet::SignalsOriginRelation::kSameOriginSignals:
+      return browser_signals_dict.Set("dataVersion",
+                                      scoring_signals_data_version.value());
+
+    case SellerWorklet::SignalsOriginRelation::
+        kUnknownPermissionCrossOriginSignals:
+      // This should be turned into permitted or forbidden by now.
+      CHECK(false);
+      return false;
+
+    case SellerWorklet::SignalsOriginRelation::kPermittedCrossOriginSignals:
+      return browser_signals_dict.Set("crossOriginDataVersion",
+                                      scoring_signals_data_version.value());
+
+    case SellerWorklet::SignalsOriginRelation::kForbiddenCrossOriginSignals:
+      // We shouldn't have a fetch to get a version from if it's forbidden.
+      CHECK(false);
+      return false;
+  }
+}
+
 }  // namespace
 
 SellerWorklet::SellerWorklet(
@@ -616,6 +416,10 @@ SellerWorklet::SellerWorklet(
           base::MakeRefCounted<AuctionV8Helper::DebugId>(v8_helper_.get())),
       url_loader_factory_(std::move(pending_url_loader_factory)),
       script_source_url_(decision_logic_url),
+      trusted_scoring_signals_origin_(
+          trusted_scoring_signals_url ? std::make_optional(url::Origin::Create(
+                                            *trusted_scoring_signals_url))
+                                      : std::nullopt),
       v8_state_(nullptr, base::OnTaskRunnerDeleter(v8_runner_)),
       auction_network_events_handler_(
           std::move(auction_network_events_handler)) {
@@ -635,12 +439,23 @@ SellerWorklet::SellerWorklet(
                  /*trusted_bidding_signals_slot_size_param=*/std::string(),
                  v8_helper_.get())
            : nullptr);
+  trusted_signals_relation_ = ClassifyTrustedSignals(
+      script_source_url_, trusted_scoring_signals_origin_);
+  // If trusted seller signals are cross-origin, we cannot start fetching them
+  // until we have confirmation they are authorized by guaranteed-same-origin
+  // script, as otherwise we may end up sending sensitive IG information to an
+  // unrelated this party.
+  if (trusted_signals_relation_ ==
+      SignalsOriginRelation::kUnknownPermissionCrossOriginSignals) {
+    trusted_signals_request_manager_->Pause();
+  }
 
   v8_state_ = std::unique_ptr<V8State, base::OnTaskRunnerDeleter>(
       new V8State(v8_helper_, debug_id_, std::move(shared_storage_host_remote),
                   decision_logic_url, trusted_scoring_signals_url,
-                  top_window_origin, std::move(permissions_policy_state),
-                  experiment_group_id, weak_ptr_factory_.GetWeakPtr()),
+                  trusted_scoring_signals_origin_, top_window_origin,
+                  std::move(permissions_policy_state), experiment_group_id,
+                  weak_ptr_factory_.GetWeakPtr()),
       base::OnTaskRunnerDeleter(v8_runner_));
 
   paused_ = pause_for_debugger_on_start;
@@ -676,6 +491,7 @@ void SellerWorklet::ScoreAd(
     const GURL& browser_signal_render_url,
     const std::vector<GURL>& browser_signal_ad_components,
     uint32_t browser_signal_bidding_duration_msecs,
+    const std::optional<blink::AdSize>& browser_signal_render_size,
     bool browser_signal_for_debugging_only_in_cooldown_or_lockout,
     const std::optional<base::TimeDelta> seller_timeout,
     uint64_t trace_id,
@@ -686,6 +502,9 @@ void SellerWorklet::ScoreAd(
         (!direct_from_seller_seller_signals_header_ad_slot &&
          !direct_from_seller_auction_signals_header_ad_slot));
   DCHECK_CALLED_ON_VALID_SEQUENCE(user_sequence_checker_);
+  base::UmaHistogramCounts1000(
+      "Ads.InterestGroup.Auction.NumberOfPendingScoreAdTasks",
+      score_ad_tasks_.size());
   score_ad_tasks_.emplace_front();
 
   auto score_ad_task = score_ad_tasks_.begin();
@@ -705,6 +524,7 @@ void SellerWorklet::ScoreAd(
   }
   score_ad_task->browser_signal_bidding_duration_msecs =
       browser_signal_bidding_duration_msecs;
+  score_ad_task->browser_signal_render_size = browser_signal_render_size;
   score_ad_task->browser_signal_for_debugging_only_in_cooldown_or_lockout =
       browser_signal_for_debugging_only_in_cooldown_or_lockout;
   score_ad_task->seller_timeout = seller_timeout;
@@ -909,6 +729,7 @@ SellerWorklet::V8State::V8State(
         shared_storage_host_remote,
     const GURL& decision_logic_url,
     const std::optional<GURL>& trusted_scoring_signals_url,
+    const std::optional<url::Origin>& trusted_scoring_signals_origin,
     const url::Origin& top_window_origin,
     mojom::AuctionWorkletPermissionsPolicyStatePtr permissions_policy_state,
     std::optional<uint16_t> experiment_group_id,
@@ -919,6 +740,7 @@ SellerWorklet::V8State::V8State(
       user_thread_(base::SequencedTaskRunner::GetCurrentDefault()),
       decision_logic_url_(decision_logic_url),
       trusted_scoring_signals_url_(trusted_scoring_signals_url),
+      trusted_scoring_signals_origin_(trusted_scoring_signals_origin),
       top_window_origin_(top_window_origin),
       permissions_policy_state_(std::move(permissions_policy_state)),
       experiment_group_id_(experiment_group_id) {
@@ -929,9 +751,11 @@ SellerWorklet::V8State::V8State(
 }
 
 void SellerWorklet::V8State::SetWorkletScript(
-    WorkletLoader::Result worklet_script) {
+    WorkletLoader::Result worklet_script,
+    SignalsOriginRelation trusted_signals_relation) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(v8_sequence_checker_);
   worklet_script_ = WorkletLoader::TakeScript(std::move(worklet_script));
+  trusted_signals_relation_ = trusted_signals_relation;
 }
 
 void SellerWorklet::V8State::ScoreAd(
@@ -955,12 +779,23 @@ void SellerWorklet::V8State::ScoreAd(
     const GURL& browser_signal_render_url,
     const std::vector<std::string>& browser_signal_ad_components,
     uint32_t browser_signal_bidding_duration_msecs,
+    const std::optional<blink::AdSize>& browser_signal_render_size,
     bool browser_signal_for_debugging_only_in_cooldown_or_lockout,
     const std::optional<base::TimeDelta> seller_timeout,
     uint64_t trace_id,
     base::ScopedClosureRunner cleanup_score_ad_task,
+    base::TimeTicks task_enqueued_time,
     ScoreAdCallbackInternal callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(v8_sequence_checker_);
+  CHECK_NE(trusted_signals_relation_,
+           SignalsOriginRelation::kUnknownPermissionCrossOriginSignals);
+  if (trusted_signals_relation_ ==
+      SignalsOriginRelation::kForbiddenCrossOriginSignals) {
+    // We must have cancelled the fetch, so nothing should be set).
+    CHECK(!trusted_scoring_signals);
+  }
+  base::UmaHistogramTimes("Ads.InterestGroup.Auction.ScoreAdQueueTime",
+                          base::TimeTicks::Now() - task_enqueued_time);
   base::ElapsedTimer elapsed_timer;
 
   TRACE_EVENT_NESTABLE_ASYNC_END0("fledge", "post_v8_task", trace_id);
@@ -981,11 +816,21 @@ void SellerWorklet::V8State::ScoreAd(
   AuctionV8Helper::FullIsolateScope isolate_scope(v8_helper_.get());
   v8::Isolate* isolate = v8_helper_->isolate();
 
-  // Short lived context, to avoid leaking data at global scope between either
-  // repeated calls to this worklet, or to calls to any other worklet.
-  ContextRecycler context_recycler(v8_helper_.get());
-  ContextRecyclerScope context_recycler_scope(context_recycler);
+  ContextRecycler* context_recycler = nullptr;
+  std::unique_ptr<ContextRecycler> fresh_context_recycler;
+  if (context_recycler_for_context_reuse_) {
+    context_recycler = context_recycler_for_context_reuse_.get();
+  } else {
+    fresh_context_recycler =
+        std::make_unique<ContextRecycler>(v8_helper_.get());
+    context_recycler = fresh_context_recycler.get();
+  }
+
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("fledge", "get_seller_context", trace_id);
+  ContextRecyclerScope context_recycler_scope(*context_recycler);
   v8::Local<v8::Context> context = context_recycler_scope.GetContext();
+  TRACE_EVENT_NESTABLE_ASYNC_END0("fledge", "get_seller_context", trace_id);
+
   AuctionV8Logger v8_logger(v8_helper_.get(), context);
 
   v8::LocalVector<v8::Value> args(isolate);
@@ -999,14 +844,15 @@ void SellerWorklet::V8State::ScoreAd(
 
   args.push_back(gin::ConvertToV8(isolate, bid));
 
-  std::vector<std::unique_ptr<DeprecatedUrlLazyFiller>>
-      deprecated_url_lazy_fillers;
+  context_recycler->EnsureAuctionConfigLazyFillers(
+      1 + auction_ad_config_non_shared_params.component_auctions.size());
   if (!AppendAuctionConfig(v8_helper_.get(), &v8_logger, context,
                            url::Origin::Create(decision_logic_url_),
                            decision_logic_url_, trusted_scoring_signals_url_,
                            experiment_group_id_,
                            auction_ad_config_non_shared_params,
-                           deprecated_url_lazy_fillers, &args)) {
+                           context_recycler->auction_config_lazy_fillers(),
+                           /*auction_config_lazy_filler_pos=*/0, &args)) {
     PostScoreAdCallbackToUserThreadOnError(
         std::move(callback),
         /*scoring_latency=*/elapsed_timer.Elapsed(),
@@ -1014,6 +860,7 @@ void SellerWorklet::V8State::ScoreAd(
     return;
   }
 
+  std::vector<std::string> errors_out;
   v8::Local<v8::Value> trusted_scoring_signals_value;
   std::optional<uint32_t> scoring_signals_data_version;
   if (trusted_scoring_signals) {
@@ -1024,15 +871,33 @@ void SellerWorklet::V8State::ScoreAd(
   } else {
     trusted_scoring_signals_value = v8::Null(isolate);
   }
-  args.push_back(trusted_scoring_signals_value);
+
+  if (trusted_signals_relation_ ==
+      SignalsOriginRelation::kForbiddenCrossOriginSignals) {
+    // Add a warning to help people debug.
+    errors_out.push_back(base::StrCat(
+        {decision_logic_url_.spec(),
+         " disregarding trusted scoring signals since origin '",
+         trusted_scoring_signals_origin_->Serialize(),
+         "' is different from script's origin but not authorized by script's "
+         "Ad-Auction-Allow-Trusted-Scoring-Signals-From."}));
+  }
+
+  if (trusted_signals_relation_ == SignalsOriginRelation::kSameOriginSignals) {
+    args.push_back(trusted_scoring_signals_value);
+  } else {
+    args.push_back(v8::Null(isolate));
+  }
 
   v8::Local<v8::Object> browser_signals = v8::Object::New(isolate);
   gin::Dictionary browser_signals_dict(isolate, browser_signals);
 
-  DeprecatedUrlLazyFiller deprecated_render_url(
-      v8_helper_.get(), &v8_logger, &browser_signal_render_url,
-      "browserSignals.renderUrl is deprecated."
-      " Please use browserSignals.renderURL instead.");
+  if (!context_recycler->seller_browser_signals_lazy_filler()) {
+    context_recycler->AddSellerBrowserSignalsLazyFiller();
+  }
+  context_recycler->seller_browser_signals_lazy_filler()->FillInObject(
+      browser_signal_render_url, browser_signals);
+  // TODO(crbug.com/336164429): Construct the fields of browser signals lazily.
   if (!browser_signals_dict.Set("topWindowHostname",
                                 top_window_origin_.host()) ||
       !AddOtherSeller(browser_signals_other_seller.get(),
@@ -1042,16 +907,17 @@ void SellerWorklet::V8State::ScoreAd(
           browser_signal_interest_group_owner.Serialize()) ||
       !browser_signals_dict.Set("renderURL",
                                 browser_signal_render_url.spec()) ||
-      // TODO(crbug.com/1441988): Remove deprecated `renderUrl` alias.
-      !deprecated_render_url.AddDeprecatedUrlGetter(browser_signals,
-                                                    "renderUrl") ||
+      (base::FeatureList::IsEnabled(
+           blink::features::kRenderSizeInScoreAdBrowserSignals) &&
+       browser_signal_render_size.has_value() &&
+       !MaybeSetSizeMember(isolate, browser_signals_dict, "renderSize",
+                           browser_signal_render_size.value())) ||
       !browser_signals_dict.Set("biddingDurationMsec",
                                 browser_signal_bidding_duration_msecs) ||
       !browser_signals_dict.Set("bidCurrency",
                                 blink::PrintableAdCurrency(bid_currency)) ||
-      (scoring_signals_data_version.has_value() &&
-       !browser_signals_dict.Set("dataVersion",
-                                 scoring_signals_data_version.value())) ||
+      !SetDataVersion(trusted_signals_relation_, scoring_signals_data_version,
+                      browser_signals_dict) ||
       (base::FeatureList::IsEnabled(
            blink::features::kBiddingAndScoringDebugReportingAPI) &&
        base::FeatureList::IsEnabled(
@@ -1080,7 +946,6 @@ void SellerWorklet::V8State::ScoreAd(
   v8::Local<v8::Object> direct_from_seller_signals = v8::Object::New(isolate);
   gin::Dictionary direct_from_seller_signals_dict(isolate,
                                                   direct_from_seller_signals);
-  std::vector<std::string> errors_out;
   v8::Local<v8::Value> seller_signals = GetDirectFromSellerSignals(
       direct_from_seller_result_seller_signals,
       direct_from_seller_seller_signals_header_ad_slot, *v8_helper_, context,
@@ -1099,45 +964,64 @@ void SellerWorklet::V8State::ScoreAd(
   }
   args.push_back(direct_from_seller_signals);
 
+  if (base::FeatureList::IsEnabled(
+          blink::features::kFledgePermitCrossOriginTrustedSignals)) {
+    v8::Local<v8::Value> cross_origin_trusted_scoring_signals_value;
+    if (trusted_signals_relation_ ==
+        SignalsOriginRelation::kPermittedCrossOriginSignals) {
+      cross_origin_trusted_scoring_signals_value =
+          TrustedSignals::Result::WrapCrossOriginSignals(
+              v8_helper_.get(), context, *trusted_scoring_signals_origin_,
+              trusted_scoring_signals_value);
+    } else {
+      cross_origin_trusted_scoring_signals_value = v8::Null(isolate);
+    }
+    args.push_back(cross_origin_trusted_scoring_signals_value);
+  }
+
   v8::Local<v8::Value> score_ad_result;
   v8_helper_->MaybeTriggerInstrumentationBreakpoint(
       *debug_id_, "beforeSellerWorkletScoringStart");
 
-  TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("fledge", "score_ad", trace_id);
   v8::Local<v8::UnboundScript> unbound_worklet_script =
       worklet_script_.Get(isolate);
   std::unique_ptr<AuctionV8Helper::TimeLimit> total_timeout =
       v8_helper_->CreateTimeLimit(seller_timeout);
+  // For a context we're reusing, the top level script was already run and the
+  // bindings were already added.
+  if (!context_recycler_for_context_reuse_) {
+    TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("fledge", "sellerScript", trace_id);
+    bool success =
+        v8_helper_->RunScript(context, unbound_worklet_script, debug_id_.get(),
+                              total_timeout.get(), errors_out);
+    TRACE_EVENT_NESTABLE_ASYNC_END0("fledge", "sellerScript", trace_id);
+    if (!success) {
+      PostScoreAdCallbackToUserThread(
+          std::move(callback), /*score=*/0,
+          /*reject_reason=*/mojom::RejectReason::kNotAvailable,
+          /*component_auction_modified_bid_params=*/nullptr,
+          /*bid_in_seller_currency=*/std::nullopt,
+          /*scoring_signals_data_version=*/std::nullopt,
+          /*debug_loss_report_url=*/std::nullopt,
+          /*debug_win_report_url=*/std::nullopt,
+          /*pa_requests=*/{},
+          /*scoring_latency=*/elapsed_timer.Elapsed(), std::move(errors_out));
+      return;
+    }
+    context_recycler->AddForDebuggingOnlyBindings();
+    context_recycler->AddPrivateAggregationBindings(
+        permissions_policy_state_->private_aggregation_allowed);
+    if (base::FeatureList::IsEnabled(blink::features::kSharedStorageAPI)) {
+      context_recycler->AddSharedStorageBindings(
+          shared_storage_host_remote_.is_bound()
+              ? shared_storage_host_remote_.get()
+              : nullptr,
+          permissions_policy_state_->shared_storage_allowed);
+    }
+  }
+
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("fledge", "score_ad", trace_id);
   bool success =
-      v8_helper_->RunScript(context, unbound_worklet_script, debug_id_.get(),
-                            total_timeout.get(), errors_out);
-  if (!success) {
-    TRACE_EVENT_NESTABLE_ASYNC_END0("fledge", "score_ad", trace_id);
-    PostScoreAdCallbackToUserThread(
-        std::move(callback), /*score=*/0,
-        /*reject_reason=*/mojom::RejectReason::kNotAvailable,
-        /*component_auction_modified_bid_params=*/nullptr,
-        /*bid_in_seller_currency=*/std::nullopt,
-        /*scoring_signals_data_version=*/std::nullopt,
-        /*debug_loss_report_url=*/std::nullopt,
-        /*debug_win_report_url=*/std::nullopt,
-        /*pa_requests=*/{},
-        /*scoring_latency=*/elapsed_timer.Elapsed(), std::move(errors_out));
-    return;
-  }
-  context_recycler.AddForDebuggingOnlyBindings();
-  context_recycler.AddPrivateAggregationBindings(
-      permissions_policy_state_->private_aggregation_allowed);
-
-  if (base::FeatureList::IsEnabled(blink::features::kSharedStorageAPI)) {
-    context_recycler.AddSharedStorageBindings(
-        shared_storage_host_remote_.is_bound()
-            ? shared_storage_host_remote_.get()
-            : nullptr,
-        permissions_policy_state_->shared_storage_allowed);
-  }
-
-  success =
       v8_helper_
           ->CallFunction(context, debug_id_.get(),
                          v8_helper_->FormatScriptName(unbound_worklet_script),
@@ -1158,12 +1042,18 @@ void SellerWorklet::V8State::ScoreAd(
         /*bid_in_seller_currency=*/std::nullopt,
         /*scoring_signals_data_version=*/std::nullopt,
         /*debug_loss_report_url=*/
-        context_recycler.for_debugging_only_bindings()->TakeLossReportUrl(),
+        context_recycler->for_debugging_only_bindings()->TakeLossReportUrl(),
         /*debug_win_report_url=*/std::nullopt,
-        context_recycler.private_aggregation_bindings()
+        context_recycler->private_aggregation_bindings()
             ->TakePrivateAggregationRequests(),
         /*scoring_latency=*/elapsed, std::move(errors_out));
     return;
+  }
+
+  if (!context_recycler_for_context_reuse_ &&
+      base::FeatureList::IsEnabled(
+          blink::features::kFledgeAlwaysReuseSellerContext)) {
+    context_recycler_for_context_reuse_ = std::move(fresh_context_recycler);
   }
 
   double score;
@@ -1217,7 +1107,7 @@ void SellerWorklet::V8State::ScoreAd(
       PostScoreAdCallbackToUserThreadOnError(
           std::move(callback),
           /*scoring_latency=*/elapsed, std::move(errors_out),
-          context_recycler.private_aggregation_bindings()
+          context_recycler->private_aggregation_bindings()
               ->TakePrivateAggregationRequests());
       return;
     }
@@ -1256,7 +1146,7 @@ void SellerWorklet::V8State::ScoreAd(
         PostScoreAdCallbackToUserThreadOnError(
             std::move(callback),
             /*scoring_latency=*/elapsed, std::move(errors_out),
-            context_recycler.private_aggregation_bindings()
+            context_recycler->private_aggregation_bindings()
                 ->TakePrivateAggregationRequests());
         return;
       }
@@ -1284,7 +1174,7 @@ void SellerWorklet::V8State::ScoreAd(
       component_auction_modified_bid_params =
           mojom::ComponentAuctionModifiedBidParams::New();
 
-      // TODO(https://crbug.com/1506576): is this the right thing to do on
+      // TODO(crbug.com/40947242): is this the right thing to do on
       // timeout?
       if (!result_idl.ad.has_value() ||
           v8_helper_->ExtractJson(context, *result_idl.ad,
@@ -1337,7 +1227,7 @@ void SellerWorklet::V8State::ScoreAd(
     PostScoreAdCallbackToUserThreadOnError(
         std::move(callback),
         /*scoring_latency=*/elapsed, std::move(errors_out),
-        context_recycler.private_aggregation_bindings()
+        context_recycler->private_aggregation_bindings()
             ->TakePrivateAggregationRequests());
     return;
   }
@@ -1349,9 +1239,9 @@ void SellerWorklet::V8State::ScoreAd(
         std::move(callback), /*score=*/0, reject_reason,
         /*component_auction_modified_bid_params=*/nullptr,
         /*bid_in_seller_currency=*/std::nullopt, scoring_signals_data_version,
-        context_recycler.for_debugging_only_bindings()->TakeLossReportUrl(),
-        context_recycler.for_debugging_only_bindings()->TakeWinReportUrl(),
-        context_recycler.private_aggregation_bindings()
+        context_recycler->for_debugging_only_bindings()->TakeLossReportUrl(),
+        context_recycler->for_debugging_only_bindings()->TakeWinReportUrl(),
+        context_recycler->private_aggregation_bindings()
             ->TakePrivateAggregationRequests(),
         /*scoring_latency=*/elapsed, std::move(errors_out));
     return;
@@ -1370,7 +1260,7 @@ void SellerWorklet::V8State::ScoreAd(
     PostScoreAdCallbackToUserThreadOnError(
         std::move(callback),
         /*scoring_latency=*/elapsed, std::move(errors_out),
-        context_recycler.private_aggregation_bindings()
+        context_recycler->private_aggregation_bindings()
             ->TakePrivateAggregationRequests());
     return;
   }
@@ -1391,7 +1281,7 @@ void SellerWorklet::V8State::ScoreAd(
       PostScoreAdCallbackToUserThreadOnError(
           std::move(callback),
           /*scoring_latency=*/elapsed, std::move(errors_out),
-          context_recycler.private_aggregation_bindings()
+          context_recycler->private_aggregation_bindings()
               ->TakePrivateAggregationRequests());
       return;
     }
@@ -1415,9 +1305,9 @@ void SellerWorklet::V8State::ScoreAd(
       std::move(callback), score, reject_reason,
       std::move(component_auction_modified_bid_params), bid_in_seller_currency,
       scoring_signals_data_version,
-      context_recycler.for_debugging_only_bindings()->TakeLossReportUrl(),
-      context_recycler.for_debugging_only_bindings()->TakeWinReportUrl(),
-      context_recycler.private_aggregation_bindings()
+      context_recycler->for_debugging_only_bindings()->TakeLossReportUrl(),
+      context_recycler->for_debugging_only_bindings()->TakeWinReportUrl(),
+      context_recycler->private_aggregation_bindings()
           ->TakePrivateAggregationRequests(),
       /*scoring_latency=*/elapsed, std::move(errors_out));
 }
@@ -1453,6 +1343,19 @@ void SellerWorklet::V8State::ReportResult(
   TRACE_EVENT_NESTABLE_ASYNC_END0("fledge", "post_v8_task", trace_id);
   base::ElapsedTimer elapsed_timer;
 
+  // We may not be allowed any time to run.
+  if (auction_ad_config_non_shared_params.reporting_timeout.has_value() &&
+      !auction_ad_config_non_shared_params.reporting_timeout->is_positive()) {
+    PostReportResultCallbackToUserThread(
+        std::move(callback),
+        /*signals_for_winner=*/std::nullopt,
+        /*report_url=*/std::nullopt,
+        /*ad_beacon_map=*/{},
+        /*pa_requests=*/{}, base::TimeDelta(),
+        /*errors=*/{"reportResult() aborted due to zero timeout."});
+    return;
+  }
+
   AuctionV8Helper::FullIsolateScope isolate_scope(v8_helper_.get());
   v8::Isolate* isolate = v8_helper_->isolate();
 
@@ -1465,14 +1368,16 @@ void SellerWorklet::V8State::ReportResult(
   AuctionV8Logger v8_logger(v8_helper_.get(), context);
 
   v8::LocalVector<v8::Value> args(isolate);
-  std::vector<std::unique_ptr<DeprecatedUrlLazyFiller>>
-      deprecated_url_lazy_fillers;
+
+  context_recycler.EnsureAuctionConfigLazyFillers(
+      1 + auction_ad_config_non_shared_params.component_auctions.size());
   if (!AppendAuctionConfig(v8_helper_.get(), &v8_logger, context,
                            url::Origin::Create(decision_logic_url_),
                            decision_logic_url_, trusted_scoring_signals_url_,
                            experiment_group_id_,
                            auction_ad_config_non_shared_params,
-                           deprecated_url_lazy_fillers, &args)) {
+                           context_recycler.auction_config_lazy_fillers(),
+                           /*auction_config_lazy_filler_pos=*/0, &args)) {
     PostReportResultCallbackToUserThread(std::move(callback),
                                          /*signals_for_winner=*/std::nullopt,
                                          /*report_url=*/std::nullopt,
@@ -1485,10 +1390,9 @@ void SellerWorklet::V8State::ReportResult(
   v8::Local<v8::Object> browser_signals = v8::Object::New(isolate);
   gin::Dictionary browser_signals_dict(isolate, browser_signals);
 
-  DeprecatedUrlLazyFiller deprecated_render_url(
-      v8_helper_.get(), &v8_logger, &browser_signal_render_url,
-      "browserSignals.renderUrl is deprecated."
-      " Please use browserSignals.renderURL instead.");
+  context_recycler.AddSellerBrowserSignalsLazyFiller();
+  context_recycler.seller_browser_signals_lazy_filler()->FillInObject(
+      browser_signal_render_url, browser_signals);
 
   if (!browser_signals_dict.Set("topWindowHostname",
                                 top_window_origin_.host()) ||
@@ -1503,9 +1407,6 @@ void SellerWorklet::V8State::ReportResult(
            *browser_signal_buyer_and_seller_reporting_id)) ||
       !browser_signals_dict.Set("renderURL",
                                 browser_signal_render_url.spec()) ||
-      // TODO(crbug.com/1441988): Remove deprecated `renderUrl` alias.
-      !deprecated_render_url.AddDeprecatedUrlGetter(browser_signals,
-                                                    "renderUrl") ||
       !browser_signals_dict.Set("bid", browser_signal_bid) ||
       !browser_signals_dict.Set(
           "bidCurrency",
@@ -1583,8 +1484,11 @@ void SellerWorklet::V8State::ReportResult(
   v8::Local<v8::UnboundScript> unbound_worklet_script =
       worklet_script_.Get(isolate);
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("fledge", "report_result", trace_id);
+
   std::unique_ptr<AuctionV8Helper::TimeLimit> total_timeout =
-      v8_helper_->CreateTimeLimit(/*script_timeout=*/std::nullopt);
+      v8_helper_->CreateTimeLimit(
+          /*script_timeout=*/auction_ad_config_non_shared_params
+              .reporting_timeout);
   bool success =
       v8_helper_->RunScript(context, unbound_worklet_script, debug_id_.get(),
                             total_timeout.get(), errors_out);
@@ -1619,6 +1523,9 @@ void SellerWorklet::V8State::ReportResult(
           .ToLocal(&signals_for_winner_value);
 
   TRACE_EVENT_NESTABLE_ASYNC_END0("fledge", "report_result", trace_id);
+  base::TimeDelta elapsed = elapsed_timer.Elapsed();
+  base::UmaHistogramTimes("Ads.InterestGroup.Auction.ReportResultTime",
+                          elapsed);
 
   if (!success) {
     // Keep Private Aggregation API requests since `reportReport()` might use
@@ -1628,13 +1535,13 @@ void SellerWorklet::V8State::ReportResult(
         /*report_url=*/std::nullopt, /*ad_beacon_map=*/{},
         context_recycler.private_aggregation_bindings()
             ->TakePrivateAggregationRequests(),
-        elapsed_timer.Elapsed(), std::move(errors_out));
+        elapsed, std::move(errors_out));
     return;
   }
 
   // Consider lack of error but no return value type, or a return value that
   // can't be converted to JSON a valid result.
-  // TODO(https://crbug.com/1506576): is this the right thing to do on timeout?
+  // TODO(crbug.com/40947242): is this the right thing to do on timeout?
   std::string signals_for_winner;
   if (v8_helper_->ExtractJson(context, signals_for_winner_value,
                               &signals_for_winner) !=
@@ -1648,7 +1555,7 @@ void SellerWorklet::V8State::ReportResult(
       context_recycler.register_ad_beacon_bindings()->TakeAdBeaconMap(),
       context_recycler.private_aggregation_bindings()
           ->TakePrivateAggregationRequests(),
-      elapsed_timer.Elapsed(), std::move(errors_out));
+      elapsed, std::move(errors_out));
 }
 
 void SellerWorklet::V8State::ConnectDevToolsAgent(
@@ -1756,6 +1663,15 @@ void SellerWorklet::Start() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(user_sequence_checker_);
   DCHECK(!paused_);
 
+  WorkletLoader::AllowTrustedScoringSignalsCallback
+      on_got_cross_origin_signals_permissions;
+  if (trusted_signals_relation_ ==
+      SignalsOriginRelation::kUnknownPermissionCrossOriginSignals) {
+    on_got_cross_origin_signals_permissions = base::BindOnce(
+        &SellerWorklet::OnGotCrossOriginTrustedSignalsPermissions,
+        base::Unretained(this));
+  }
+
   base::UmaHistogramCounts100000(
       "Ads.InterestGroup.Net.RequestUrlSizeBytes.ScoringScriptJS",
       script_source_url_.spec().size());
@@ -1763,14 +1679,20 @@ void SellerWorklet::Start() {
       url_loader_factory_.get(), /*auction_network_events_handler=*/
       CreateNewAuctionNetworkEventsHandlerRemote(
           auction_network_events_handler_),
-      script_source_url_, v8_helper_, debug_id_,
+      script_source_url_, std::vector{v8_helper_}, std::vector{debug_id_},
+      std::move(on_got_cross_origin_signals_permissions),
       base::BindOnce(&SellerWorklet::OnDownloadComplete,
                      base::Unretained(this)));
 }
 
-void SellerWorklet::OnDownloadComplete(WorkletLoader::Result worklet_script,
-                                       std::optional<std::string> error_msg) {
+void SellerWorklet::OnDownloadComplete(
+    std::vector<WorkletLoader::Result> worklet_scripts,
+    std::optional<std::string> error_msg) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(user_sequence_checker_);
+
+  DCHECK_EQ(worklet_scripts.size(), 1u);
+  WorkletLoader::Result worklet_script = std::move(worklet_scripts[0]);
+
   base::UmaHistogramCounts10M(
       "Ads.InterestGroup.Net.ResponseSizeBytes.ScoringScriptJS",
       worklet_script.original_size_bytes());
@@ -1791,10 +1713,13 @@ void SellerWorklet::OnDownloadComplete(WorkletLoader::Result worklet_script,
   // ReportResult() callbacks.
   load_script_error_msg_ = std::move(error_msg);
 
-  v8_runner_->PostTask(FROM_HERE,
-                       base::BindOnce(&SellerWorklet::V8State::SetWorkletScript,
-                                      base::Unretained(v8_state_.get()),
-                                      std::move(worklet_script)));
+  DCHECK_NE(trusted_signals_relation_,
+            SignalsOriginRelation::kUnknownPermissionCrossOriginSignals);
+  v8_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&SellerWorklet::V8State::SetWorkletScript,
+                     base::Unretained(v8_state_.get()),
+                     std::move(worklet_script), trusted_signals_relation_));
   MaybeRecordCodeWait();
 
   for (auto score_ad_task = score_ad_tasks_.begin();
@@ -1821,6 +1746,39 @@ void SellerWorklet::MaybeRecordCodeWait() {
   for (auto& task : report_result_tasks_) {
     task.wait_code = now - task.trace_wait_deps_start;
   }
+}
+
+void SellerWorklet::OnGotCrossOriginTrustedSignalsPermissions(
+    std::vector<url::Origin> permit_origins) {
+  DCHECK_EQ(trusted_signals_relation_,
+            SignalsOriginRelation::kUnknownPermissionCrossOriginSignals);
+
+  for (const auto& permitted_origin : permit_origins) {
+    if (trusted_scoring_signals_origin_->IsSameOriginWith(permitted_origin)) {
+      // Cross-origin trusted signals fetch authorized, so let it start.
+      trusted_signals_relation_ =
+          SignalsOriginRelation::kPermittedCrossOriginSignals;
+      trusted_signals_request_manager_->Resume();
+      return;
+    }
+  }
+
+  // Trusted scoring signals fetch disallowed; remove them from the queue and
+  // proceed without them.
+  trusted_signals_relation_ =
+      SellerWorklet::SignalsOriginRelation::kForbiddenCrossOriginSignals;
+  for (auto& task : score_ad_tasks_) {
+    task.trusted_scoring_signals_request.reset();
+  }
+
+  // Also remove the `trusted_signals_request_manager_` so we don't try to
+  // fetch any more.
+  trusted_signals_request_manager_.reset();
+
+  // If we're here, we don't actually have to worry about kicking off scoreAd()
+  // execution since we only got the headers for the script; the body hasn't
+  // been handed to us yet.
+  DCHECK(!IsCodeReady());
 }
 
 void SellerWorklet::OnTrustedScoringSignalsDownloaded(
@@ -1915,6 +1873,22 @@ void SellerWorklet::ScoreAdIfReady(ScoreAdTaskList::iterator task) {
                    task->wait_direct_from_seller_signals.InMillisecondsF());
         }
       });
+
+  ScoreAdInput slowest_input = ScoreAdInput::kScoringScript;
+  base::TimeDelta slowest_input_time = task->wait_code;
+  if (task->wait_trusted_signals > task->wait_code) {
+    slowest_input = ScoreAdInput::kTrustedSignals;
+    slowest_input_time = task->wait_trusted_signals;
+  }
+  if (task->wait_direct_from_seller_signals > task->wait_trusted_signals) {
+    slowest_input = ScoreAdInput::kDirectFromSellerSignals;
+    slowest_input_time = task->wait_direct_from_seller_signals;
+  }
+  base::UmaHistogramEnumeration("Ads.InterestGroup.Auction.ScoreAdSlowestInput",
+                                slowest_input);
+  base::UmaHistogramTimes("Ads.InterestGroup.Auction.ScoreAdInputWaitTime",
+                          slowest_input_time);
+
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("fledge", "post_v8_task", task->trace_id);
 
   // Normally the PostTask below will eventually get `task` cleaned up once it
@@ -1943,9 +1917,11 @@ void SellerWorklet::ScoreAdIfReady(ScoreAdTaskList::iterator task) {
           std::move(task->browser_signal_render_url),
           std::move(task->browser_signal_ad_components),
           task->browser_signal_bidding_duration_msecs,
+          std::move(task->browser_signal_render_size),
           task->browser_signal_for_debugging_only_in_cooldown_or_lockout,
           std::move(task->seller_timeout), task->trace_id,
           base::ScopedClosureRunner(std::move(cleanup_score_ad_task)),
+          /*task_enqueued_time*/ base::TimeTicks::Now(),
           base::BindOnce(&SellerWorklet::DeliverScoreAdCallbackOnUserThread,
                          weak_ptr_factory_.GetWeakPtr(), task)));
 }

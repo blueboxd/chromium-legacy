@@ -404,7 +404,9 @@ bool AVCodecContextToAudioDecoderConfig(const AVCodecContext* codec_context,
 
     // TODO(dalecurtis): Just use the profile from the codec context if ffmpeg
     // ever starts supporting xHE-AAC.
-    if (codec_context->profile == FF_PROFILE_UNKNOWN) {
+    // FFmpeg provides the (defined_profile - 1) for AVCodecContext::profile
+    if (codec_context->profile == FF_PROFILE_UNKNOWN ||
+        codec_context->profile == mp4::AAC::kXHeAAcType - 1) {
       // Errors aren't fatal here, so just drop any MediaLog messages.
       NullMediaLog media_log;
       mp4::AAC aac_parser;
@@ -740,7 +742,7 @@ bool AVStreamToVideoDecoderConfig(const AVStream* stream,
           smpte_st_2086.luminance_min = av_q2d(mdcv->min_luminance);
         }
 
-        // TODO(https://crbug.com/1446302): Consider rejecting metadata that
+        // TODO(crbug.com/40268540): Consider rejecting metadata that
         // does not specify all values.
         if (mdcv->has_primaries || mdcv->has_luminance) {
           hdr_metadata.smpte_st_2086 = smpte_st_2086;

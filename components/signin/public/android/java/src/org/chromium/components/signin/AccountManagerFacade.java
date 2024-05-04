@@ -24,7 +24,7 @@ import java.util.List;
 
 /** Interface for {@link AccountManagerFacadeImpl}. */
 public interface AccountManagerFacade {
-    // TODO(crbug.com/1258563): consider refactoring this interface to use Promises.
+    // TODO(crbug.com/40201126): consider refactoring this interface to use Promises.
     /** Listener for whether the account is a child one. */
     interface ChildAccountStatusListener {
         /**
@@ -140,10 +140,14 @@ public interface AccountManagerFacade {
      *
      * @param account The {@link Account} to confirm the credentials for.
      * @param activity The {@link Activity} context to use for launching a new authenticator-defined
-     *                 sub-Activity to prompt the user to confirm the account's password.
+     *     sub-Activity to prompt the user to confirm the account's password.
      * @param callback The callback to indicate whether the user successfully confirmed their
-     *                 knowledge of the account's credentials.
+     *     knowledge of the account's credentials.
      */
     @AnyThread
     void confirmCredentials(Account account, Activity activity, Callback<Bundle> callback);
+
+    /** Whether fetching the list of accounts from the device eventually succeeded. */
+    // TODO(crbug.com/330304719): Handle this with exceptions rather than a boolean.
+    boolean didAccountFetchSucceed();
 }

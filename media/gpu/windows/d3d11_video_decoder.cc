@@ -891,7 +891,7 @@ bool D3D11VideoDecoder::OutputResult(const CodecPicture* picture,
   if (visible_rect.IsEmpty())
     visible_rect = config_.visible_rect();
 
-  // TODO(https://crbug.com/843150): Use aspect ratio from decoder (SPS) if
+  // TODO(crbug.com/41389060): Use aspect ratio from decoder (SPS) if
   // the config's aspect ratio isn't valid.
   gfx::Size natural_size = config_.aspect_ratio().GetNaturalSize(visible_rect);
 
@@ -942,6 +942,16 @@ bool D3D11VideoDecoder::OutputResult(const CodecPicture* picture,
   // the finch flag is enabled.  We may not choose to set ALLOW_OVERLAY if the
   // flag is off, however.
   frame->metadata().allow_overlay = true;
+  // The swapchain presenter currently only supports NV12 and P010 overlay,
+  // with BGRA only as fallback when DWM continuously fails to overlay submitted
+  // video. As a result, we should not allow overlay for non-NV12/P010 formats
+  // which may cause chroma downsampling when blitting into the back buffer.
+  // See https://crbugs.com/331679628 for more details.
+  if (!config_.is_encrypted()) {
+    frame->metadata().allow_overlay =
+        texture_selector_->OutputDXGIFormat() == DXGI_FORMAT_P010 ||
+        texture_selector_->OutputDXGIFormat() == DXGI_FORMAT_NV12;
+  }
   frame->metadata().power_efficient = true;
 
   frame->set_color_space(output_color_space);

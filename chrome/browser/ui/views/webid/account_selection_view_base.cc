@@ -9,16 +9,26 @@
 #include "chrome/browser/ui/views/webid/account_selection_bubble_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/image_fetcher/core/image_fetcher_impl.h"
+#include "components/vector_icons/vector_icons.h"
 #include "third_party/blink/public/mojom/webid/federated_auth_request.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/flex_layout.h"
+#include "ui/views/layout/flex_layout_view.h"
+#include "ui/views/style/typography.h"
 #include "ui/views/widget/widget_observer.h"
+#include "url/gurl.h"
 
 namespace {
+
+// safe_zone_diameter/icon_size as defined in
+// https://www.w3.org/TR/appmanifest/#icon-masks
+constexpr float kMaskableWebIconSafeZoneRatio = 0.8f;
+
 // Selects string for disclosure text based on passed-in `privacy_policy_url`
 // and `terms_of_service_url`.
 int SelectDisclosureTextResourceId(const GURL& privacy_policy_url,
@@ -33,11 +43,15 @@ int SelectDisclosureTextResourceId(const GURL& privacy_policy_url,
              ? IDS_ACCOUNT_SELECTION_DATA_SHARING_CONSENT_NO_TOS
              : IDS_ACCOUNT_SELECTION_DATA_SHARING_CONSENT;
 }
-}  // namespace
 
-// safe_zone_diameter/icon_size as defined in
-// https://www.w3.org/TR/appmanifest/#icon-masks
-constexpr float kMaskableWebIconSafeZoneRatio = 0.8f;
+gfx::ImageSkia CreateCircleCroppedImage(const gfx::ImageSkia& original_image,
+                                        int image_size) {
+  return gfx::CanvasImageSource::MakeImageSkia<CircleCroppedImageSkiaSource>(
+      original_image, original_image.width() * kMaskableWebIconSafeZoneRatio,
+      image_size);
+}
+
+}  // namespace
 
 constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
     net::DefineNetworkTrafficAnnotation("fedcm_account_profile_image_fetcher",
@@ -97,9 +111,14 @@ void CircleCroppedImageSkiaSource::Draw(gfx::Canvas* canvas) {
 }
 
 BrandIconImageView::BrandIconImageView(
-    base::OnceCallback<void(const GURL&, const gfx::ImageSkia&)> add_idp_image,
-    int image_size)
-    : add_idp_image_(std::move(add_idp_image)), image_size_(image_size) {}
+    base::OnceCallback<void(const GURL&, const gfx::ImageSkia&)> add_image,
+    int image_size,
+    bool should_circle_crop,
+    std::optional<SkColor> background_color)
+    : add_image_(std::move(add_image)),
+      image_size_(image_size),
+      should_circle_crop_(should_circle_crop),
+      background_color_(background_color) {}
 
 BrandIconImageView::~BrandIconImageView() = default;
 
@@ -115,6 +134,21 @@ void BrandIconImageView::FetchImage(
       std::move(params));
 }
 
+void BrandIconImageView::CropAndSetImage(const gfx::ImageSkia& original_image) {
+  constexpr int kBorderRadius = 10;
+  gfx::ImageSkia cropped_image =
+      should_circle_crop_
+          ? CreateCircleCroppedImage(original_image, image_size_)
+          : gfx::ImageSkiaOperations::CreateResizedImage(
+                original_image, skia::ImageOperations::RESIZE_BEST,
+                gfx::Size(image_size_, image_size_));
+  if (background_color_) {
+    cropped_image = gfx::ImageSkiaOperations::CreateImageWithCircleBackground(
+        kBorderRadius, *background_color_, cropped_image);
+  }
+  SetImage(ui::ImageModel::FromImageSkia(cropped_image));
+}
+
 void BrandIconImageView::OnImageFetched(
     const GURL& image_url,
     const gfx::Image& image,
@@ -123,13 +157,15 @@ void BrandIconImageView::OnImageFetched(
       image.Width() < AccountSelectionView::GetBrandIconMinimumSize()) {
     return;
   }
-  gfx::ImageSkia idp_image =
-      gfx::CanvasImageSource::MakeImageSkia<CircleCroppedImageSkiaSource>(
-          image.AsImageSkia(), image.Width() * kMaskableWebIconSafeZoneRatio,
-          image_size_);
-  SetImage(ui::ImageModel::FromImageSkia(idp_image));
-  CHECK(add_idp_image_);
-  std::move(add_idp_image_).Run(image_url, idp_image);
+  gfx::ImageSkia skia_image = image.AsImageSkia();
+  CropAndSetImage(skia_image);
+
+  // TODO(crbug.com/327509202): This stops the crashes but should fix to prevent
+  // this from crashing in the first place.
+  if (!add_image_) {
+    return;
+  }
+  std::move(add_image_).Run(image_url, skia_image);
 }
 
 BEGIN_METADATA(BrandIconImageView)
@@ -146,8 +182,9 @@ class AccountImageView : public views::ImageView {
   ~AccountImageView() override = default;
 
   // Fetch image and set it on AccountImageView.
-  void FetchImage(const content::IdentityRequestAccount& account,
-                  image_fetcher::ImageFetcher& image_fetcher) {
+  void FetchAccountImage(const content::IdentityRequestAccount& account,
+                         image_fetcher::ImageFetcher& image_fetcher,
+                         int image_size) {
     image_fetcher::ImageFetcherParams params(kTrafficAnnotation,
                                              kImageFetcherUmaClient);
 
@@ -157,12 +194,15 @@ class AccountImageView : public views::ImageView {
     image_fetcher.FetchImage(account.picture,
                              base::BindOnce(&AccountImageView::OnImageFetched,
                                             weak_ptr_factory_.GetWeakPtr(),
-                                            base::UTF8ToUTF16(account.name)),
+                                            base::UTF8ToUTF16(account.name),
+                                            &image_fetcher, image_size),
                              std::move(params));
   }
 
  private:
   void OnImageFetched(const std::u16string& account_name,
+                      image_fetcher::ImageFetcher* image_fetcher,
+                      int image_size,
                       const gfx::Image& image,
                       const image_fetcher::RequestMetadata& metadata) {
     gfx::ImageSkia avatar;
@@ -172,11 +212,11 @@ class AccountImageView : public views::ImageView {
         letter = base::i18n::ToUpper(account_name.substr(0, 1));
       }
       avatar = gfx::CanvasImageSource::MakeImageSkia<
-          LetterCircleCroppedImageSkiaSource>(letter, kDesiredAvatarSize);
+          LetterCircleCroppedImageSkiaSource>(letter, image_size);
     } else {
       avatar =
           gfx::CanvasImageSource::MakeImageSkia<CircleCroppedImageSkiaSource>(
-              image.AsImageSkia(), std::nullopt, kDesiredAvatarSize);
+              image.AsImageSkia(), std::nullopt, image_size);
     }
     SetImage(ui::ImageModel::FromImageSkia(avatar));
   }
@@ -202,58 +242,6 @@ AccountSelectionViewBase::AccountSelectionViewBase(
 AccountSelectionViewBase::AccountSelectionViewBase() = default;
 AccountSelectionViewBase::~AccountSelectionViewBase() {}
 
-int AccountSelectionViewBase::SelectSingleIdpTitleResourceId(
-    blink::mojom::RpContext rp_context) {
-  switch (rp_context) {
-    case blink::mojom::RpContext::kSignIn:
-      return IDS_ACCOUNT_SELECTION_SHEET_TITLE_EXPLICIT_SIGN_IN;
-    case blink::mojom::RpContext::kSignUp:
-      return IDS_ACCOUNT_SELECTION_SHEET_TITLE_EXPLICIT_SIGN_UP;
-    case blink::mojom::RpContext::kUse:
-      return IDS_ACCOUNT_SELECTION_SHEET_TITLE_EXPLICIT_USE;
-    case blink::mojom::RpContext::kContinue:
-      return IDS_ACCOUNT_SELECTION_SHEET_TITLE_EXPLICIT_CONTINUE;
-  }
-}
-
-// Returns the title to be shown in the dialog. This does not include the
-// subtitle. For screen reader purposes, GetAccessibleTitle() is used instead.
-std::u16string AccountSelectionViewBase::GetTitle(
-    const std::u16string& top_frame_for_display,
-    const std::optional<std::u16string>& iframe_for_display,
-    const std::optional<std::u16string>& idp_title,
-    blink::mojom::RpContext rp_context) {
-  std::u16string frame_in_title = iframe_for_display.has_value()
-                                      ? iframe_for_display.value()
-                                      : top_frame_for_display;
-  return idp_title.has_value()
-             ? l10n_util::GetStringFUTF16(
-                   SelectSingleIdpTitleResourceId(rp_context), frame_in_title,
-                   idp_title.value())
-             : l10n_util::GetStringFUTF16(
-                   IDS_MULTI_IDP_ACCOUNT_SELECTION_SHEET_TITLE_EXPLICIT,
-                   frame_in_title);
-}
-
-std::u16string AccountSelectionViewBase::GetSubtitle(
-    const std::u16string& top_frame_for_display) {
-  return l10n_util::GetStringFUTF16(IDS_ACCOUNT_SELECTION_SHEET_SUBTITLE,
-                                    top_frame_for_display);
-}
-
-// Returns the title combined with the subtitle for screen reader purposes.
-std::u16string AccountSelectionViewBase::GetAccessibleTitle(
-    const std::u16string& top_frame_for_display,
-    const std::optional<std::u16string>& iframe_for_display,
-    const std::optional<std::u16string>& idp_title,
-    blink::mojom::RpContext rp_context) {
-  std::u16string title = GetTitle(top_frame_for_display, iframe_for_display,
-                                  idp_title, rp_context);
-  return iframe_for_display.has_value()
-             ? title + u" " + GetSubtitle(top_frame_for_display)
-             : title;
-}
-
 void AccountSelectionViewBase::SetLabelProperties(views::Label* label) {
   label->SetMultiLine(true);
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
@@ -262,38 +250,121 @@ void AccountSelectionViewBase::SetLabelProperties(views::Label* label) {
       views::kFlexBehaviorKey,
       views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToZero,
                                views::MaximumFlexSizeRule::kUnbounded,
-                               /*adjust_height_for_width =*/true));
+                               /*adjust_height_for_width=*/true));
 }
 
 std::unique_ptr<views::View> AccountSelectionViewBase::CreateAccountRow(
     const content::IdentityRequestAccount& account,
     const IdentityProviderDisplayData& idp_display_data,
-    bool should_hover) {
-  auto image_view = std::make_unique<AccountImageView>();
-  image_view->SetImageSize({kDesiredAvatarSize, kDesiredAvatarSize});
-  image_view->FetchImage(account, *image_fetcher_);
+    bool should_hover,
+    bool should_include_idp,
+    bool is_modal_dialog,
+    int additional_vertical_padding) {
+  int avatar_size = is_modal_dialog ? kModalAvatarSize : kDesiredAvatarSize;
+  views::style::TextStyle account_name_style =
+      is_modal_dialog ? views::style::STYLE_BODY_3_MEDIUM
+                      : views::style::STYLE_PRIMARY;
+  views::style::TextStyle account_email_style =
+      is_modal_dialog ? views::style::STYLE_BODY_5
+                      : views::style::STYLE_SECONDARY;
+
+  std::unique_ptr<views::View> avatar_view;
+  auto account_image_view = std::make_unique<AccountImageView>();
+  account_image_view->SetImageSize({avatar_size, avatar_size});
+  CHECK(should_hover || !should_include_idp);
   if (should_hover) {
+    if (should_include_idp) {
+      account_image_view->FetchAccountImage(account, *image_fetcher_,
+                                            avatar_size);
+      // Introduce a border so that the IDP image is a bit past the account
+      // image.
+      account_image_view->SetBorder(views::CreateEmptyBorder(
+          gfx::Insets::TLBR(/*top=*/0, /*left=*/0, /*bottom=*/kIdpBadgeOffset,
+                            /*right=*/kIdpBadgeOffset)));
+      // Put `account_image_view` into a FillLayout `background_container`.
+      std::unique_ptr<views::View> background_container =
+          std::make_unique<views::View>();
+      background_container->SetUseDefaultFillLayout(true);
+      background_container->AddChildView(std::move(account_image_view));
+
+      // Put brand icon image view into a BoxLayout container.
+      std::unique_ptr<views::BoxLayoutView> icon_container =
+          std::make_unique<views::BoxLayoutView>();
+      icon_container->SetMainAxisAlignment(views::LayoutAlignment::kEnd);
+      icon_container->SetCrossAxisAlignment(views::LayoutAlignment::kEnd);
+
+      // `web_contents_` may be nullptr in tests.
+      SkColor background_color =
+          web_contents_ ? web_contents_->GetColorProvider().GetColor(
+                              ui::kColorDialogBackground)
+                        : SK_ColorWHITE;
+      std::unique_ptr<BrandIconImageView> brand_icon_image_view =
+          std::make_unique<BrandIconImageView>(
+              base::BindOnce(&AccountSelectionViewBase::AddIdpImage,
+                             weak_ptr_factory_.GetWeakPtr()),
+              kLargeAvatarBadgeSize, /*should_circle_crop=*/true,
+              background_color);
+      ConfigureBrandImageView(brand_icon_image_view.get(),
+                              idp_display_data.idp_metadata.brand_icon_url);
+
+      icon_container->AddChildView(std::move(brand_icon_image_view));
+
+      // Put BoxLayout container into FillLayout container to stack the views.
+      // This stacks the IDP icon on top of the background image.
+      background_container->AddChildView(std::move(icon_container));
+
+      avatar_view = std::move(background_container);
+    } else {
+      account_image_view->FetchAccountImage(account, *image_fetcher_,
+                                            avatar_size);
+      avatar_view = std::move(account_image_view);
+    }
+    std::unique_ptr<views::ImageView> arrow_icon_view = nullptr;
+    if (is_modal_dialog) {
+      constexpr int kArrowIconRightPadding = 8;
+      arrow_icon_view = std::make_unique<views::ImageView>();
+      arrow_icon_view->SetBorder(views::CreateEmptyBorder(
+          gfx::Insets::TLBR(/*top=*/0, /*left=*/0, /*bottom=*/0,
+                            /*right=*/kArrowIconRightPadding)));
+      arrow_icon_view->SetImage(ui::ImageModel::FromVectorIcon(
+          vector_icons::kSubmenuArrowIcon, ui::kColorIcon, kArrowIconSize));
+    }
+
     // We can pass crefs to OnAccountSelected because the `observer_` owns the
     // data.
+    std::u16string footer =
+        should_include_idp ? idp_display_data.idp_etld_plus_one : u"";
     auto row = std::make_unique<HoverButton>(
         base::BindRepeating(
             &AccountSelectionViewBase::Observer::OnAccountSelected,
             base::Unretained(observer_), std::cref(account),
             std::cref(idp_display_data)),
-        std::move(image_view), base::UTF8ToUTF16(account.name),
-        base::UTF8ToUTF16(account.email));
-    row->SetBorder(views::CreateEmptyBorder(
-        gfx::Insets::VH(/*vertical=*/0, /*horizontal=*/kLeftRightPadding)));
-    row->SetSubtitleTextStyle(views::style::CONTEXT_LABEL,
-                              views::style::STYLE_SECONDARY);
+        std::move(avatar_view),
+        /*title=*/base::UTF8ToUTF16(account.name),
+        /*subtitle=*/base::UTF8ToUTF16(account.email),
+        /*secondary_view=*/std::move(arrow_icon_view),
+        /*add_vertical_label_spacing=*/true, footer);
+    row->SetBorder(views::CreateEmptyBorder(gfx::Insets::VH(
+        /*vertical=*/additional_vertical_padding,
+        /*horizontal=*/is_modal_dialog ? kModalHorizontalSpacing
+                                       : kLeftRightPadding)));
+    row->SetTitleTextStyle(account_name_style, ui::kColorDialogBackground,
+                           /*color_id=*/std::nullopt);
+    row->SetSubtitleTextStyle(views::style::CONTEXT_LABEL, account_email_style);
+    if (should_include_idp) {
+      row->SetFooterTextStyle(views::style::CONTEXT_LABEL, account_email_style);
+    }
     return row;
   }
+  account_image_view->FetchAccountImage(account, *image_fetcher_, avatar_size);
   auto row = std::make_unique<views::View>();
   row->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kHorizontal,
-      gfx::Insets::VH(/*vertical=*/kVerticalSpacing, /*horizontal=*/0),
+      gfx::Insets::VH(
+          /*vertical=*/kVerticalSpacing + additional_vertical_padding,
+          /*horizontal=*/is_modal_dialog ? kModalHorizontalSpacing : 0),
       kLeftRightPadding));
-  row->AddChildView(std::move(image_view));
+  row->AddChildView(std::move(account_image_view));
   views::View* const text_column =
       row->AddChildView(std::make_unique<views::View>());
   text_column->SetLayoutManager(std::make_unique<views::BoxLayout>(
@@ -302,14 +373,15 @@ std::unique_ptr<views::View> AccountSelectionViewBase::CreateAccountRow(
   // Add account name.
   views::StyledLabel* const account_name =
       text_column->AddChildView(std::make_unique<views::StyledLabel>());
+  account_name->SetDefaultTextStyle(account_name_style);
   account_name->SetText(base::UTF8ToUTF16(account.name));
   account_name->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
 
   // Add account email.
-  views::Label* const account_email = text_column->AddChildView(
-      std::make_unique<views::Label>(base::UTF8ToUTF16(account.email),
-                                     views::style::CONTEXT_DIALOG_BODY_TEXT,
-                                     views::style::STYLE_SECONDARY));
+  views::Label* const account_email =
+      text_column->AddChildView(std::make_unique<views::Label>(
+          base::UTF8ToUTF16(account.email),
+          views::style::CONTEXT_DIALOG_BODY_TEXT, account_email_style));
   account_email->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
 
   return row;
@@ -317,30 +389,31 @@ std::unique_ptr<views::View> AccountSelectionViewBase::CreateAccountRow(
 
 void AccountSelectionViewBase::AddIdpImage(const GURL& image_url,
                                            const gfx::ImageSkia& image) {
-  idp_images_[image_url] = image;
+  brand_icon_images_[image_url] = image;
 }
 
-void AccountSelectionViewBase::ConfigureIdpBrandImageView(
+void AccountSelectionViewBase::ConfigureBrandImageView(
     BrandIconImageView* image_view,
-    const content::IdentityProviderMetadata& idp_metadata) {
+    const GURL& brand_icon_url) {
   // Show placeholder brand icon prior to brand icon being fetched so that
   // header text wrapping does not change when brand icon is fetched.
-  bool has_idp_icon = idp_metadata.brand_icon_url.is_valid();
-  image_view->SetVisible(has_idp_icon);
-  if (!has_idp_icon) {
+  bool has_icon = brand_icon_url.is_valid();
+  image_view->SetVisible(has_icon);
+  if (!has_icon) {
     return;
   }
 
-  auto it = idp_images_.find(idp_metadata.brand_icon_url);
-  if (it != idp_images_.end()) {
-    image_view->SetImage(ui::ImageModel::FromImageSkia(it->second));
+  auto it = brand_icon_images_.find(brand_icon_url);
+  if (it != brand_icon_images_.end()) {
+    image_view->CropAndSetImage(it->second);
     return;
   }
 
-  image_view->FetchImage(idp_metadata.brand_icon_url, *image_fetcher_);
+  image_view->FetchImage(brand_icon_url, *image_fetcher_);
 }
 
-std::unique_ptr<views::View> AccountSelectionViewBase::CreateDisclosureLabel(
+std::unique_ptr<views::StyledLabel>
+AccountSelectionViewBase::CreateDisclosureLabel(
     const IdentityProviderDisplayData& idp_display_data) {
   // It requires a StyledLabel so that we can add the links
   // to the privacy policy and terms of service URLs.

@@ -11,6 +11,11 @@ source_set("tab_switcher") {
     "tab_collection_drag_drop_handler.h",
     "tab_collection_drag_drop_metrics.h",
     "tab_collection_drag_drop_metrics.mm",
+  ]
+}
+
+source_set("items") {
+  sources = [
     "tab_group_item.h",
     "tab_group_item.mm",
     "tab_switcher_item.h",
@@ -20,10 +25,8 @@ source_set("tab_switcher") {
   ]
 
   deps = [
-    ":group_utils",
     "//base",
     "//components/favicon/ios",
-    "//components/tab_groups",
     "//ios/chrome/browser/shared/model/browser_state",
     "//ios/chrome/browser/shared/model/url",
     "//ios/chrome/browser/shared/model/web_state_list",
@@ -31,42 +34,43 @@ source_set("tab_switcher") {
     "//ios/chrome/browser/snapshots/model",
     "//ios/chrome/browser/tabs/model",
     "//ios/chrome/browser/ui/tab_switcher/tab_grid/grid:group_tab_info",
-    "//ios/chrome/common/ui/colors:colors",
     "//ios/web/public",
     "//url",
   ]
 }
 
-source_set("tab_utils") {
+source_set("utils") {
   sources = [
+    "item_utils.h",
+    "item_utils.mm",
+    "tab_group_utils.h",
+    "tab_group_utils.mm",
     "tab_utils.h",
     "tab_utils.mm",
   ]
 
   deps = [
-    ":tab_switcher",
+    ":items",
     "//base",
+    "//components/favicon/ios",
+    "//components/tab_groups",
     "//ios/chrome/browser/shared/model/browser",
     "//ios/chrome/browser/shared/model/browser_state",
     "//ios/chrome/browser/shared/model/url",
     "//ios/chrome/browser/shared/model/web_state_list",
+    "//ios/chrome/browser/shared/model/web_state_list:utils",
+    "//ios/chrome/browser/shared/ui/symbols",
+    "//ios/chrome/browser/snapshots/model",
     "//ios/chrome/browser/tabs/model",
-    "//ios/chrome/browser/tabs/model:features",
     "//ios/chrome/browser/ui/tab_switcher/tab_grid/grid:grid_item_identifier",
+    "//ios/chrome/browser/ui/tab_switcher/tab_grid/grid:group_tab_info",
     "//ios/chrome/browser/ui/tab_switcher/tab_grid/tab_context_menu:tab_item",
+    "//ios/chrome/common/ui/colors",
     "//ios/web/public",
   ]
-}
 
-source_set("group_utils") {
-  sources = [
-    "group_utils.h",
-    "group_utils.mm",
-  ]
-
-  deps = [
-    "//base",
-    "//components/tab_groups",
-    "//ios/chrome/common/ui/colors:colors",
+  allow_circular_includes_from = [
+    ":items",
+    "//ios/chrome/browser/ui/tab_switcher/tab_grid/grid:grid_item_identifier",
   ]
 }

@@ -8,6 +8,7 @@
 
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
+#include "ash/utility/forest_util.h"
 #include "ash/webui/help_app_ui/buildflags.h"
 #include "ash/webui/help_app_ui/help_app_manager.h"
 #include "ash/webui/help_app_ui/help_app_manager_factory.h"
@@ -88,6 +89,8 @@
 namespace ash {
 
 namespace {
+constexpr char kExploreUpdatesPageUrl[] =
+    "chrome://help-app/updates?launchSource=version-update";
 
 class HelpAppIntegrationTest : public SystemWebAppIntegrationTest {
  public:
@@ -147,6 +150,21 @@ class HelpAppIntegrationTestWithHelpAppOpensInsteadOfReleaseNotesNotification
  private:
   base::test::ScopedFeatureList scoped_feature_list_{
       features::kHelpAppOpensInsteadOfReleaseNotesNotification};
+};
+
+class HelpAppIntegrationTestWithBirchFeatureEnabled
+    : public HelpAppIntegrationTest {
+ public:
+  HelpAppIntegrationTestWithBirchFeatureEnabled() {
+    scoped_feature_list_.InitWithFeatures(
+        /*enabled_features=*/
+        {features::kHelpAppOpensInsteadOfReleaseNotesNotification,
+         features::kForestFeature},
+        /*disabled_features=*/{});
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 }  // namespace
@@ -348,9 +366,16 @@ IN_PROC_BROWSER_TEST_P(HelpAppAllProfilesIntegrationTest,
 IN_PROC_BROWSER_TEST_P(HelpAppIntegrationTest, HelpAppV2ReleaseNotesMetrics) {
   WaitForTestSystemAppInstall();
 
+  const GURL expected_url("chrome://help-app/updates");
+  content::TestNavigationObserver navigation_observer(expected_url);
+  navigation_observer.StartWatchingNewWebContents();
+
   base::UserActionTester user_action_tester;
   chrome::LaunchReleaseNotes(profile(), apps::LaunchSource::kFromOtherApp);
 #if BUILDFLAG(ENABLE_CROS_HELP_APP)
+  // If no navigation happens, then this test will time out due to the wait.
+  navigation_observer.Wait();
+
   EXPECT_EQ(1,
             user_action_tester.GetActionCount("ReleaseNotes.ShowReleaseNotes"));
 #else
@@ -409,6 +434,7 @@ IN_PROC_BROWSER_TEST_P(HelpAppIntegrationTest,
 // Test that the background page can trigger the release notes notification.
 IN_PROC_BROWSER_TEST_P(HelpAppIntegrationTest,
                        HelpAppV2ReleaseNotesNotificationFromBackground) {
+  ash::switches::SetIgnoreForestSecretKeyForTest(true);
   WaitForTestSystemAppInstall();
   content::WebContents* web_contents = LaunchApp(SystemWebAppType::HELP);
   auto display_service =
@@ -434,9 +460,15 @@ IN_PROC_BROWSER_TEST_P(HelpAppIntegrationTest,
   EXPECT_EQ(true,
             content::EvalJs(
                 SandboxedWebUiAppTestBase::GetAppFrame(web_contents), kScript));
-  EXPECT_EQ(profile()->GetPrefs()->GetInteger(
-                prefs::kReleaseNotesSuggestionChipTimesLeftToShow),
-            3);
+  if (IsForestFeatureEnabled()) {
+    EXPECT_EQ(profile()->GetPrefs()->GetInteger(
+                  prefs::kReleaseNotesSuggestionChipTimesLeftToShow),
+              0);
+  } else {
+    EXPECT_EQ(profile()->GetPrefs()->GetInteger(
+                  prefs::kReleaseNotesSuggestionChipTimesLeftToShow),
+              3);
+  }
 
   Browser* browser = chrome::FindBrowserWithTab(web_contents);
   // Close the web contents we just created to simulate what would happen in
@@ -446,13 +478,15 @@ IN_PROC_BROWSER_TEST_P(HelpAppIntegrationTest,
   web_contents->Close();
   // Wait until the browser with the web contents closes.
   ui_test_utils::WaitForBrowserToClose(browser);
-
   // Assert that the notification really is there.
   auto notifications = display_service->GetDisplayedNotificationsForType(
       NotificationHandler::Type::TRANSIENT);
-  ASSERT_EQ(1u, notifications.size());
-  ASSERT_EQ("show_release_notes_notification", notifications[0].id());
-
+  if (IsForestFeatureEnabled()) {
+    ASSERT_EQ(0u, notifications.size());
+  } else {
+    ASSERT_EQ(1u, notifications.size());
+    ASSERT_EQ("show_release_notes_notification", notifications[0].id());
+  }
   // Click on the notification.
   GURL expected_url = GURL("chrome://help-app/updates");
   content::TestNavigationObserver navigation_observer(expected_url);
@@ -460,23 +494,25 @@ IN_PROC_BROWSER_TEST_P(HelpAppIntegrationTest,
   display_service->SimulateClick(NotificationHandler::Type::TRANSIENT,
                                  "show_release_notes_notification",
                                  std::nullopt, std::nullopt);
-
 #if BUILDFLAG(ENABLE_CROS_HELP_APP)
-  EXPECT_NO_FATAL_FAILURE(navigation_observer.Wait());
-  EXPECT_EQ(expected_url, GetActiveWebContents()->GetVisibleURL());
+  if (!IsForestFeatureEnabled()) {
+    EXPECT_NO_FATAL_FAILURE(navigation_observer.Wait());
+    EXPECT_EQ(expected_url, GetActiveWebContents()->GetVisibleURL());
+  }
 #else
   // We just have the original browser. No new app opens.
   EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
 #endif
+  ash::switches::SetIgnoreForestSecretKeyForTest(false);
 }
 
 IN_PROC_BROWSER_TEST_P(
     HelpAppIntegrationTestWithHelpAppOpensInsteadOfReleaseNotesNotification,
     OpensHelpApp) {
+  ash::switches::SetIgnoreForestSecretKeyForTest(true);
   WaitForTestSystemAppInstall();
   base::HistogramTester histogram_tester;
-  GURL expected_trusted_frame_url =
-      GURL("chrome://help-app/updates?launchSource=version-update");
+  GURL expected_trusted_frame_url = GURL(kExploreUpdatesPageUrl);
   content::TestNavigationObserver navigation_observer(
       expected_trusted_frame_url);
   navigation_observer.StartWatchingNewWebContents();
@@ -497,14 +533,55 @@ IN_PROC_BROWSER_TEST_P(
                 prefs::kReleaseNotesSuggestionChipTimesLeftToShow),
             0);
 #if BUILDFLAG(ENABLE_CROS_HELP_APP)
-  EXPECT_NO_FATAL_FAILURE(navigation_observer.Wait());
-  EXPECT_EQ(expected_trusted_frame_url,
-            GetActiveWebContents()->GetVisibleURL());
-  histogram_tester.ExpectUniqueSample(
-      "Discover.Overall.AppLaunched",
-      apps::LaunchSource::kFromReleaseNotesNotification, 1);
+  if (!IsForestFeatureEnabled()) {
+    EXPECT_NO_FATAL_FAILURE(navigation_observer.Wait());
+    EXPECT_EQ(expected_trusted_frame_url,
+              GetActiveWebContents()->GetVisibleURL());
+    histogram_tester.ExpectUniqueSample(
+        "Discover.Overall.AppLaunched",
+        apps::LaunchSource::kFromReleaseNotesNotification, 1);
+  }
 #else
   // We just have the original browser. No new app opens.
+  EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
+  histogram_tester.ExpectUniqueSample(
+      "Discover.Overall.AppLaunched",
+      apps::LaunchSource::kFromReleaseNotesNotification, 0);
+#endif
+  ash::switches::SetIgnoreForestSecretKeyForTest(false);
+}
+
+IN_PROC_BROWSER_TEST_P(HelpAppIntegrationTestWithBirchFeatureEnabled,
+                       HelpAppRemainsClosed) {
+  WaitForTestSystemAppInstall();
+  base::HistogramTester histogram_tester;
+  GURL expected_trusted_frame_url = GURL(kExploreUpdatesPageUrl);
+  content::TestNavigationObserver navigation_observer(
+      expected_trusted_frame_url);
+  navigation_observer.StartWatchingNewWebContents();
+  auto display_service =
+      std::make_unique<NotificationDisplayServiceTester>(/*profile=*/nullptr);
+
+  profile()->GetPrefs()->SetInteger(
+      prefs::kHelpAppNotificationLastShownMilestone, 20);
+  std::make_unique<HelpAppNotificationController>(profile())
+      ->MaybeShowReleaseNotesNotification();
+
+  // The release notes notification should not appear.
+  auto notifications = display_service->GetDisplayedNotificationsForType(
+      NotificationHandler::Type::TRANSIENT);
+  EXPECT_EQ(0u, notifications.size());
+  // The release notes suggestion chip should not appear.
+  EXPECT_EQ(profile()->GetPrefs()->GetInteger(
+                prefs::kReleaseNotesSuggestionChipTimesLeftToShow),
+            0);
+#if BUILDFLAG(ENABLE_CROS_HELP_APP)
+  // No new app should open because of birch flag.
+  EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
+  histogram_tester.ExpectUniqueSample(
+      "Discover.Overall.AppLaunched",
+      apps::LaunchSource::kFromReleaseNotesNotification, 0);
+#else
   EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
   histogram_tester.ExpectUniqueSample(
       "Discover.Overall.AppLaunched",
@@ -556,7 +633,7 @@ IN_PROC_BROWSER_TEST_P(HelpAppIntegrationTest, HelpAppV2DirectNavigation) {
 //
 // Flaky on Linux Chromium OS ASan LSan Tests (1)
 //
-// TODO(1499768): Reenable it.
+// TODO(crbug.com/40940376): Reenable it.
 IN_PROC_BROWSER_TEST_P(HelpAppIntegrationTest,
                        DISABLED_HelpAppV2OpenFeedbackDialog) {
   WaitForTestSystemAppInstall();
@@ -1027,6 +1104,26 @@ IN_PROC_BROWSER_TEST_P(HelpAppIntegrationTest, HelpAppV2CanOpenAlmanacScheme) {
             apps::PackageId::FromString("web:test"));
 }
 
+IN_PROC_BROWSER_TEST_P(HelpAppIntegrationTest, HelpAppV2CanOpenCrosAppsScheme) {
+  WaitForTestSystemAppInstall();
+  content::WebContents* web_contents = LaunchApp(SystemWebAppType::HELP);
+
+  base::test::TestFuture<apps::PackageId> future;
+  apps::AppInstallServiceAsh::InstallAppCallbackForTesting() =
+      future.GetCallback();
+  constexpr char kScript[] = R"(
+    (() => {
+      location.href = 'cros-apps://install-app?package_id=web:test';
+      return true;
+    })();
+  )";
+  EXPECT_EQ(true,
+            content::EvalJs(
+                SandboxedWebUiAppTestBase::GetAppFrame(web_contents), kScript));
+  EXPECT_EQ(future.Get<apps::PackageId>(),
+            apps::PackageId::FromString("web:test"));
+}
+
 // Test that the Help App opens when Gesture help requested.
 IN_PROC_BROWSER_TEST_P(HelpAppAllProfilesIntegrationTest, HelpAppOpenGestures) {
   WaitForTestSystemAppInstall();
@@ -1127,4 +1224,7 @@ INSTANTIATE_SYSTEM_WEB_APP_MANAGER_TEST_SUITE_ALL_PROFILE_TYPES_P(
 
 INSTANTIATE_SYSTEM_WEB_APP_MANAGER_TEST_SUITE_REGULAR_PROFILE_P(
     HelpAppIntegrationTestWithHelpAppOpensInsteadOfReleaseNotesNotification);
+
+INSTANTIATE_SYSTEM_WEB_APP_MANAGER_TEST_SUITE_REGULAR_PROFILE_P(
+    HelpAppIntegrationTestWithBirchFeatureEnabled);
 }  // namespace ash

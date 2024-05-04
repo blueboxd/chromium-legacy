@@ -71,7 +71,7 @@ FileSystemObserver::FileSystemObserver(
                     execution_context_->GetTaskRunner(TaskType::kStorage));
 }
 
-ScriptPromise FileSystemObserver::observe(
+ScriptPromise<IDLUndefined> FileSystemObserver::observe(
     ScriptState* script_state,
     FileSystemHandle* handle,
     FileSystemObserverObserveOptions* options,
@@ -80,9 +80,9 @@ ScriptPromise FileSystemObserver::observe(
 
   // TODO(https://crbug.com/1489033): Add AllowStorageAccess checks.
 
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver<IDLUndefined>>(
       script_state, exception_state.GetContext());
-  ScriptPromise result = resolver->Promise();
+  auto result = resolver->Promise();
 
   host_remote_->Observe(
       handle->Transfer(), options->recursive(),
@@ -92,7 +92,7 @@ ScriptPromise FileSystemObserver::observe(
 }
 
 void FileSystemObserver::DidObserve(
-    ScriptPromiseResolver* resolver,
+    ScriptPromiseResolver<IDLUndefined>* resolver,
     mojom::blink::FileSystemAccessErrorPtr result,
     mojo::PendingReceiver<mojom::blink::FileSystemAccessObserver>
         observer_receiver) {

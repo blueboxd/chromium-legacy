@@ -794,7 +794,7 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostSitePerProcessTest,
   FrameTreeNode* root = contents->GetPrimaryFrameTree().root();
   RenderFrameHostImpl* root_frame_host = root->current_frame_host();
 
-  // TODO(crbug.com/1181150): Crash when we attempt to use a mock prompt here.
+  // TODO(crbug.com/40750695): Crash when we attempt to use a mock prompt here.
   // After the ticket is fixed, remove the shortcut of getting bounds and use
   // the `MockPermissionPromptFactory` instead.
   // Create a popup widget and wait for the RenderWidgetHost to be shown.
@@ -961,7 +961,7 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostFoldableCSSTest,
 
 // Tests that the renderer receives the root widget's viewport segments and
 // correctly exposes those via CSS.
-// TODO(crbug.com/1098549) Convert this to a WPT once emulation is available
+// TODO(crbug.com/40137084) Convert this to a WPT once emulation is available
 // via WebDriver.
 IN_PROC_BROWSER_TEST_F(RenderWidgetHostFoldableCSSTest,
                        FoldablesCSSWithOverrides) {
@@ -1191,8 +1191,8 @@ class RenderWidgetHostDelegatedInkMetadataTest
 
 // Confirm that using the |updateInkTrailStartPoint| JS API results in the
 // |request_points_for_delegated_ink_| flag being set on the RWHVB.
-// TODO(crbug.com/1344023). Flaky on Linux.
-// TODO(crbug.com/1479339): Failing on ChromesOS MSan.
+// TODO(crbug.com/40852704). Flaky on Linux.
+// TODO(crbug.com/40929902): Failing on ChromesOS MSan.
 #if BUILDFLAG(IS_LINUX) || (BUILDFLAG(IS_CHROMEOS) && defined(MEMORY_SANITIZER))
 #define MAYBE_FlagGetsSetFromRenderFrameMetadata \
   DISABLED_FlagGetsSetFromRenderFrameMetadata
@@ -1257,7 +1257,7 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostDelegatedInkMetadataTest,
 
 // If the DelegatedInkTrailPresenter creates a metadata that has the same
 // timestamp as the previous one, it does not set the metadata.
-// TODO(crbug.com/1344023). Flaky.
+// TODO(crbug.com/40852704). Flaky.
 IN_PROC_BROWSER_TEST_F(RenderWidgetHostDelegatedInkMetadataTest,
                        DISABLED_DuplicateMetadata) {
   ASSERT_TRUE(ExecJs(shell()->web_contents(), R"(

@@ -6,10 +6,14 @@
 
 #import <UIKit/UIKit.h>
 
+#import <optional>
+
+#import "base/feature_list.h"
 #import "components/feature_engagement/public/event_constants.h"
 #import "components/feature_engagement/public/tracker.h"
 #import "ios/chrome/app/application_delegate/app_state.h"
 #import "ios/chrome/browser/docking_promo/coordinator/docking_promo_mediator.h"
+#import "ios/chrome/browser/docking_promo/model/utils.h"
 #import "ios/chrome/browser/docking_promo/ui/docking_promo_metrics.h"
 #import "ios/chrome/browser/docking_promo/ui/docking_promo_view_controller.h"
 #import "ios/chrome/browser/feature_engagement/model/tracker_factory.h"
@@ -18,8 +22,10 @@
 #import "ios/chrome/browser/shared/coordinator/scene/scene_state.h"
 #import "ios/chrome/browser/shared/model/browser/browser.h"
 #import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
+#import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/ui/first_run/first_run_screen_delegate.h"
 #import "ios/chrome/browser/ui/promos_manager/promos_manager_ui_handler.h"
+#import "ios/chrome/browser/ui/start_surface/start_surface_util.h"
 #import "ios/chrome/common/ui/confirmation_alert/confirmation_alert_action_handler.h"
 
 @interface DockingPromoCoordinator () <ConfirmationAlertActionHandler,
@@ -76,16 +82,13 @@
 
   AppState* appState = self.browser->GetSceneState().appState;
 
-  base::TimeTicks lastTimeInForeground = appState.lastTimeInForeground.is_null()
-                                             ? base::TimeTicks::Now()
-                                             : appState.lastTimeInForeground;
-
-  base::TimeDelta timeSinceLastForeground =
-      lastTimeInForeground - base::TimeTicks::Now();
+  std::optional<base::TimeDelta> timeSinceLastForeground =
+      MinTimeSinceLastForeground(appState.foregroundScenes);
 
   self.mediator = [[DockingPromoMediator alloc]
         initWithPromosManager:promosManager
-      timeSinceLastForeground:timeSinceLastForeground];
+      timeSinceLastForeground:timeSinceLastForeground.value_or(
+                                  base::TimeDelta::Min())];
 
   if (_firstRun) {
     self.viewController = [[DockingPromoViewController alloc] init];

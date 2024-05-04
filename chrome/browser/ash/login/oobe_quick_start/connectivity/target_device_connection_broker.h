@@ -36,16 +36,18 @@ class TargetDeviceConnectionBroker {
   enum class FeatureSupportStatus {
     kUndetermined = 0,
     kNotSupported,
-    kSupported
+    kSupported,
+    kWaitingForAdapterToBecomePresent,  // When resuming after an update, the
+                                        // bluetooth adapter may not be present
+                                        // and powered immediately upon reboot
+                                        // when we initiate advertising.
+    kWaitingForAdapterToBecomePowered
   };
 
   enum class ConnectionClosedReason {
-    kComplete,
     kUserAborted,  // Based on user selections on target device, which are
                    // always informed by Chromebook UI.
     kAuthenticationFailed,
-    kConnectionLost,
-    kRequestTimedOut,
     kTargetDeviceUpdate,
     kResponseTimeout,
     kUnknownError,
@@ -234,6 +236,11 @@ std::ostream& operator<<(
     std::ostream& stream,
     const TargetDeviceConnectionBroker::ConnectionClosedReason&
         connection_closed_reason);
+
+std::ostream& operator<<(
+    std::ostream& stream,
+    const TargetDeviceConnectionBroker::FeatureSupportStatus&
+        feature_support_status);
 
 }  // namespace ash::quick_start
 

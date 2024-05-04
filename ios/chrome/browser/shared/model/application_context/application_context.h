@@ -165,7 +165,7 @@ class ApplicationContext {
   virtual BrowserPolicyConnectorIOS* GetBrowserPolicyConnector() = 0;
 
   // Returns the SingleSignOnService instance used by this application.
-  virtual id<SingleSignOnService> GetSSOService() = 0;
+  virtual id<SingleSignOnService> GetSingleSignOnService() = 0;
 
   // Returns the SystemIdentityManager instance used by this application.
   virtual SystemIdentityManager* GetSystemIdentityManager() = 0;

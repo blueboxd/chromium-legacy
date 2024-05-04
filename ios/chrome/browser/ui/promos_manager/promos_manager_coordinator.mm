@@ -20,7 +20,6 @@
 #import "components/feature_engagement/public/tracker.h"
 #import "components/sync/service/sync_service.h"
 #import "ios/chrome/app/tests_hook.h"
-#import "ios/chrome/browser/credential_provider_promo/model/features.h"
 #import "ios/chrome/browser/default_browser/model/utils.h"
 #import "ios/chrome/browser/docking_promo/ui/docking_promo_display_handler.h"
 #import "ios/chrome/browser/feature_engagement/model/tracker_factory.h"
@@ -43,7 +42,6 @@
 #import "ios/chrome/browser/ui/default_promo/made_for_ios_default_browser_promo_view_provider.h"
 #import "ios/chrome/browser/ui/default_promo/post_default_abandonment/features.h"
 #import "ios/chrome/browser/ui/default_promo/post_default_abandonment/post_default_abandonment_promo_provider.h"
-#import "ios/chrome/browser/ui/default_promo/post_restore/features.h"
 #import "ios/chrome/browser/ui/default_promo/post_restore/post_restore_default_browser_promo_provider.h"
 #import "ios/chrome/browser/ui/default_promo/promo_handler/default_browser_promo_display_handler.h"
 #import "ios/chrome/browser/ui/default_promo/promo_handler/default_browser_remind_me_later_promo_display_handler.h"
@@ -127,7 +125,7 @@
                                                credentialProviderPromoHandler
                        dockingPromoHandler:
                            (id<DockingPromoCommands>)dockingPromoHandler {
-  DCHECK(ShouldDisplayPromos());
+  DCHECK(ShouldPromoManagerDisplayPromos());
   if (self = [super initWithBaseViewController:viewController
                                        browser:browser]) {
     _credentialProviderPromoCommandHandler = credentialProviderPromoHandler;
@@ -189,6 +187,13 @@
 }
 
 - (void)displayPromoCallback:(BOOL)isFirstShownPromo {
+  // Check if UI is no longer available before proceeding. It is possible that
+  // while tracker is being initialized the UI can change and become not
+  // available.
+  if (!IsUIAvailableForPromo(self.browser->GetSceneState())) {
+    return;
+  }
+
   // If there's already a displayed promo, skip.
   if (_currentPromoData.has_value()) {
     return;
@@ -457,8 +462,8 @@
 
 // Invoked when a link in the disclaimer is tapped.
 - (void)didTapURLInDisclaimer:(NSURL*)URL {
-  // TODO(crbug.com/1363906): Complete `didTapURLInDisclaimer` to bring users to
-  // Settings page.
+  // TODO(crbug.com/40238885): Complete `didTapURLInDisclaimer` to bring users
+  // to Settings page.
 }
 
 #pragma mark - ConfirmationAlertActionHandler
@@ -611,13 +616,9 @@
   _alertProviderPromos[promos_manager::Promo::PostRestoreSignInAlert] =
       [[PostRestoreSignInProvider alloc] initForBrowser:self.browser];
 
-  // Post-restore default browser promo handler.
-  if (GetPostRestoreDefaultBrowserPromoType() ==
-      PostRestoreDefaultBrowserPromoType::kAlert) {
     _alertProviderPromos
         [promos_manager::Promo::PostRestoreDefaultBrowserAlert] =
             [[PostRestoreDefaultBrowserPromoProvider alloc] init];
-  }
 
   // Post-default browser abandonment promo handler.
   if (IsPostDefaultAbandonmentPromoEnabled()) {

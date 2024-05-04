@@ -106,7 +106,7 @@ suite('BasicPage', () => {
     }
   });
 
-  // TODO(crbug/1469277): Remove after SafetyHub launched.
+  // TODO(crbug.com/40277421): Remove after SafetyHub launched.
   test('safetyCheckVisibilityTest', function() {
     function querySafetyCheckSection() {
       return page.shadowRoot!.querySelector('#safetyCheckSettingsSection');
@@ -278,7 +278,8 @@ suite('BasicPage', () => {
   });
 });
 
-// TODO(crbug/1215630): Remove once the privacy guide promo has been removed.
+// TODO(crbug.com/40184479): Remove once the privacy guide promo has been
+// removed.
 suite('PrivacyGuidePromo', () => {
   let page: SettingsBasicPageElement;
   let settingsPrefs: SettingsPrefsElement;
@@ -538,7 +539,7 @@ suite('Performance', () => {
   });
 });
 
-// TODO(crbug/1469277): Remove after SafetyHub launched.
+// TODO(crbug.com/40277421): Remove after SafetyHub launched.
 suite('SafetyHubDisabled', () => {
   let page: SettingsBasicPageElement;
 

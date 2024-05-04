@@ -680,7 +680,6 @@ ANDROID_WATERFALL = """\
         },
         'os_type': 'android',
         'skip_merge_script': True,
-        'skip_output_links': True,
         'test_suites': {
           'gtest_tests': 'foo_tests',
         },
@@ -772,6 +771,20 @@ FOO_TEST_SUITE = """\
             'os': 'Linux',
           },
           'expiration': 120,
+        },
+      },
+    },
+  },
+}
+"""
+
+FOO_TEST_SUITE_ANDROID_SWARMING = """\
+{
+  'basic_suites': {
+    'foo_tests': {
+      'foo_test': {
+        'android_swarming': {
+          'shards': 100,
         },
       },
     },
@@ -2163,6 +2176,12 @@ class UnitTest(TestCase):
     fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
 
+  def test_android_swarming(self):
+    fbb = FakeBBGen(self.args, ANDROID_WATERFALL,
+                    FOO_TEST_SUITE_ANDROID_SWARMING, LUCI_MILO_CFG)
+    fbb.check_output_file_consistency(verbose=True)
+    self.assertFalse(fbb.printed_lines)
+
   def test_nonexistent_removal_raises(self):
     fbb = FakeBBGen(self.args,
                     FOO_GTESTS_WATERFALL,
@@ -2416,26 +2435,6 @@ FOO_LINUX_GTESTS_BUILDER_MIXIN_WATERFALL = """\
             'os': 'Linux',
           },
         },
-        'test_suites': {
-          'gtest_tests': 'foo_tests',
-        },
-      },
-    },
-  },
-]
-"""
-
-FOO_GTESTS_WATERFALL_MIXIN_BUILDER_REMOVE_MIXIN_WATERFALL = """\
-[
-  {
-    'mixins': ['waterfall_mixin'],
-    'project': 'chromium',
-    'bucket': 'ci',
-    'name': 'chromium.test',
-    'machines': {
-      'Fake Tester': {
-        'remove_mixins': ['waterfall_mixin'],
-        'swarming': {},
         'test_suites': {
           'gtest_tests': 'foo_tests',
         },
@@ -2970,15 +2969,6 @@ class MixinTests(TestCase):
     fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
 
-  def test_remove_mixin_builder_remove_waterfall(self):
-    fbb = FakeBBGen(self.args,
-                    FOO_GTESTS_WATERFALL_MIXIN_BUILDER_REMOVE_MIXIN_WATERFALL,
-                    FOO_TEST_SUITE,
-                    LUCI_MILO_CFG,
-                    mixins=SWARMING_MIXINS)
-    fbb.check_output_file_consistency(verbose=True)
-    self.assertFalse(fbb.printed_lines)
-
   def test_remove_mixin_test_remove_waterfall(self):
     fbb = FakeBBGen(self.args,
                     FOO_GTESTS_WATERFALL_MIXIN_WATERFALL,
@@ -3099,15 +3089,6 @@ TEST_QUERY_BOTS_OUTPUT = {
                     "device_type": "hammerhead",
                     "os": "Android",
                 },
-                "output_links": [{
-                    "link": [
-                        "https://luci-logdog.appspot.com/v/?s",
-                        "=android%2Fswarming%2Flogcats%2F",
-                        "${TASK_ID}%2F%2B%2Funified_logcats"
-                    ],
-                    "name":
-                    "shard #${SHARD_INDEX} logcats"
-                }]
             }
         }]
     },
@@ -3157,15 +3138,6 @@ TEST_QUERY_BOTS_TESTS_OUTPUT = {
                 "device_type": "hammerhead",
                 "os": "Android"
             },
-            "output_links": [{
-                "link": [
-                    "https://luci-logdog.appspot.com/v/?s",
-                    "=android%2Fswarming%2Flogcats%2F",
-                    "${TASK_ID}%2F%2B%2Funified_logcats"
-                ],
-                "name":
-                "shard #${SHARD_INDEX} logcats"
-            }]
         }
     }]
 }
@@ -3192,17 +3164,6 @@ TEST_QUERY_BOT_OUTPUT = {
                     "device_type": "hammerhead",
                     "os": "Android",
                 },
-                "output_links": [
-                    {
-                        "link": [
-                            "https://luci-logdog.appspot.com/v/?s",
-                            "=android%2Fswarming%2Flogcats%2F",
-                            "${TASK_ID}%2F%2B%2Funified_logcats"
-                        ],
-                        "name":
-                        "shard #${SHARD_INDEX} logcats",
-                    },
-                ],
             },
         },
     ],
@@ -4320,6 +4281,23 @@ EMPTY_SKYLAB_TEST_EXCEPTIONS = """\
 }
 """
 
+MATRIX_SKYLAB_WATERFALL_WITH_NO_CROS_BOARD = """\
+[
+  {
+    'project': 'chromium',
+    'bucket': 'ci',
+    'name': 'chromium.test',
+    'machines': {
+      'Fake Tester': {
+        'test_suites': {
+          'skylab_tests': 'cros_skylab_basic_x86',
+        },
+      },
+    },
+  },
+]
+"""
+
 MATRIX_SKYLAB_WATERFALL = """\
 [
   {
@@ -4331,6 +4309,8 @@ MATRIX_SKYLAB_WATERFALL = """\
         'test_suites': {
           'skylab_tests': 'cros_skylab_basic_x86',
         },
+        'cros_board': 'octopus',
+        'cros_dut_pool': 'chromium',
       },
     },
   },
@@ -4384,6 +4364,7 @@ SKYLAB_VARIANTS = """\
   'octopus-89': {
     'skylab': {
       'cros_board': 'octopus',
+      'cros_model': 'casta',
       'cros_chrome_version': '89.0.3234.0',
       'cros_img': 'octopus-release/R89-13655.0.0',
     },
@@ -4392,7 +4373,6 @@ SKYLAB_VARIANTS = """\
   },
   'octopus-89-with-autotest-name': {
     'skylab': {
-      'cros_board': 'octopus',
       'cros_chrome_version': '89.0.3234.0',
       'cros_img': 'octopus-release/R89-13655.0.0',
       'autotest_name': 'unique_autotest_name',
@@ -4402,7 +4382,6 @@ SKYLAB_VARIANTS = """\
   },
   'octopus-88': {
     'skylab': {
-      'cros_board': 'octopus',
       'cros_chrome_version': '88.0.2324.0',
       'cros_img': 'octopus-release/R88-13597.23.0',
     },
@@ -4704,6 +4683,18 @@ class MatrixCompositionTests(TestCase):
     # is not generated.
     fbb.check_input_file_consistency(verbose=True)
     fbb.check_output_file_consistency(verbose=True)
+    self.assertFalse(fbb.printed_lines)
+
+  def test_invalid_skylab_matrix_with_variants(self):
+    fbb = FakeBBGen(self.args,
+                    MATRIX_SKYLAB_WATERFALL_WITH_NO_CROS_BOARD,
+                    MATRIX_COMPOUND_SKYLAB_REF,
+                    LUCI_MILO_CFG,
+                    exceptions=EMPTY_SKYLAB_TEST_EXCEPTIONS,
+                    variants=SKYLAB_VARIANTS)
+    with self.assertRaisesRegex(generate_buildbot_json.BBGenErr,
+                                'skylab tests must specify cros_board.'):
+      fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
 
 

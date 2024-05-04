@@ -26,16 +26,16 @@
 
 namespace blink {
 namespace {
-WGPUExternalTextureRotation FromVideoRotation(media::VideoRotation rotation) {
+wgpu::ExternalTextureRotation FromVideoRotation(media::VideoRotation rotation) {
   switch (rotation) {
     case media::VIDEO_ROTATION_0:
-      return WGPUExternalTextureRotation_Rotate0Degrees;
+      return wgpu::ExternalTextureRotation::Rotate0Degrees;
     case media::VIDEO_ROTATION_90:
-      return WGPUExternalTextureRotation_Rotate90Degrees;
+      return wgpu::ExternalTextureRotation::Rotate90Degrees;
     case media::VIDEO_ROTATION_180:
-      return WGPUExternalTextureRotation_Rotate180Degrees;
+      return wgpu::ExternalTextureRotation::Rotate180Degrees;
     case media::VIDEO_ROTATION_270:
-      return WGPUExternalTextureRotation_Rotate270Degrees;
+      return wgpu::ExternalTextureRotation::Rotate270Degrees;
   }
   NOTREACHED();
 }
@@ -199,6 +199,18 @@ ExternalTexture CreateExternalTexture(
     media::PaintCanvasVideoRenderer* video_renderer) {
   DCHECK(media_video_frame);
 
+  // It should be very rare that a frame didn't get a valid colorspace through
+  // the guessing process:
+  // https://source.chromium.org/chromium/chromium/src/+/main:media/base/video_color_space.cc;l=69;drc=6c9cfff09be8397270b376a4e4407328694e97fa
+  // The historical rule for this was to use BT.601 for SD content and BT.709
+  // for HD content:
+  // https://source.chromium.org/chromium/chromium/src/+/main:media/ffmpeg/ffmpeg_common.cc;l=683;drc=1946212ac0100668f14eb9e2843bdd846e510a1e)
+  // We prefer always using BT.709 since SD content in practice is down-scaled
+  // HD content, not NTSC broadcast content.
+  if (!src_color_space.IsValid()) {
+    src_color_space = gfx::ColorSpace::CreateREC709();
+  }
+
   ExternalTexture external_texture = {};
 
   // TODO(crbug.com/1306753): Use SharedImageProducer and CompositeSharedImage
@@ -206,7 +218,7 @@ ExternalTexture CreateExternalTexture(
   bool device_support_zero_copy =
       device->adapter()->SupportsMultiPlanarFormats();
 
-  WGPUExternalTextureDescriptor external_texture_desc = {};
+  wgpu::ExternalTextureDescriptor external_texture_desc = {};
 
   // Set ExternalTexture visibleSize and visibleOrigin. 0-copy path
   // uses this metadata.
@@ -242,31 +254,26 @@ ExternalTexture CreateExternalTexture(
     scoped_refptr<WebGPUMailboxTexture> mailbox_texture =
         WebGPUMailboxTexture::FromVideoFrame(
             device->GetDawnControlClient(), device->GetHandle(),
-            WGPUTextureUsage::WGPUTextureUsage_TextureBinding,
-            media_video_frame);
+            wgpu::TextureUsage::TextureBinding, media_video_frame);
     if (!mailbox_texture) {
       return {};
     }
 
-    WGPUTextureViewDescriptor view_desc = {
-        .format = WGPUTextureFormat_R8Unorm,
-        .mipLevelCount = WGPU_MIP_LEVEL_COUNT_UNDEFINED,
-        .arrayLayerCount = WGPU_ARRAY_LAYER_COUNT_UNDEFINED,
-        .aspect = WGPUTextureAspect_Plane0Only};
-    WGPUTextureView plane0 = device->GetProcs().textureCreateView(
-        mailbox_texture->GetTexture(), &view_desc);
-    view_desc.format = WGPUTextureFormat_RG8Unorm;
-    view_desc.aspect = WGPUTextureAspect_Plane1Only;
-    WGPUTextureView plane1 = device->GetProcs().textureCreateView(
-        mailbox_texture->GetTexture(), &view_desc);
+    wgpu::TextureViewDescriptor view_desc = {
+        .format = wgpu::TextureFormat::R8Unorm,
+        .aspect = wgpu::TextureAspect::Plane0Only};
+    wgpu::TextureView plane0 =
+        mailbox_texture->GetTexture().CreateView(&view_desc);
+    view_desc.format = wgpu::TextureFormat::RG8Unorm;
+    view_desc.aspect = wgpu::TextureAspect::Plane1Only;
+    wgpu::TextureView plane1 =
+        mailbox_texture->GetTexture().CreateView(&view_desc);
 
     // Set Planes for ExternalTexture
     external_texture_desc.plane0 = plane0;
     external_texture_desc.plane1 = plane1;
 
     // Set color space transformation metas for ExternalTexture
-    // TODO(b/41486014): This doesn't handle color spaces which don't have a
-    // SkYUVColorSpace equivalent such as YCoCg/YCgCo.
     std::array<float, 12> yuvToRgbMatrix =
         GetYUVToRGBMatrix(src_color_space, media_video_frame->BitDepth());
     external_texture_desc.yuvToRgbConversionMatrix = yuvToRgbMatrix.data();
@@ -286,14 +293,7 @@ ExternalTexture CreateExternalTexture(
         color_space_conversion_constants.dst_transfer_constants.data();
 
     external_texture.wgpu_external_texture =
-        device->GetProcs().deviceCreateExternalTexture(device->GetHandle(),
-                                                       &external_texture_desc);
-
-    // The texture view will be referenced during external texture creation, so
-    // by calling release here we ensure this texture view will be destructed
-    // when the external texture is destructed.
-    device->GetProcs().textureViewRelease(plane0);
-    device->GetProcs().textureViewRelease(plane1);
+        device->GetHandle().CreateExternalTexture(&external_texture_desc);
 
     external_texture.mailbox_texture = std::move(mailbox_texture);
     external_texture.is_zero_copy = true;
@@ -315,13 +315,37 @@ ExternalTexture CreateExternalTexture(
   //   handle visible rect.
   external_texture_desc.visibleOrigin = {};
 
+  std::unique_ptr<media::PaintCanvasVideoRenderer> local_video_renderer;
+  if (!video_renderer) {
+    local_video_renderer = std::make_unique<media::PaintCanvasVideoRenderer>();
+    video_renderer = local_video_renderer.get();
+  }
+
+  // Using CopyVideoFrameToSharedImage() is an optional one copy upload path.
+  // However, the formats this path supports are quite limited. Check whether
+  // the current video frame could be uploaded through this one copy upload
+  // path. If not, fallback to DrawVideoFrameIntoResourceProvider().
+  // TODO(crbug.com/327270287): Expand CopyVideoFrameToSharedImage() to
+  // support all valid video frame formats and remove the draw path.
+  bool use_copy_to_shared_image =
+      video_renderer->CanUseCopyVideoFrameToSharedImage(*media_video_frame);
+
   // Get a recyclable resource for producing WebGPU-compatible shared images.
   // The recyclable resource's color space is the same as source color space
   // with the YUV to RGB transform stripped out since that's handled by the
   // PaintCanvasVideoRenderer.
-  // TODO(b/41486014): This doesn't handle color spaces which don't have a
-  // SkYUVColorSpace equivalent such as YCoCg/YCgCo.
   gfx::ColorSpace resource_color_space = src_color_space.GetAsRGB();
+
+  // Using DrawVideoFrameIntoResourceProvider() for uploading. Need to
+  // workaround issue crbug.com/1407112. It requires no color space
+  // conversion when drawing video frame to resource provider.
+  // Leverage Dawn to do the color space conversion.
+  // TODO(crbug.com/1407112): Don't use compatRgbColorSpace but the
+  // exact color space after fixing this issue.
+  if (!use_copy_to_shared_image) {
+    resource_color_space = media_video_frame->CompatRGBColorSpace();
+  }
+
   std::unique_ptr<RecyclableCanvasResource> recyclable_canvas_resource =
       device->GetDawnControlClient()->GetOrCreateCanvasResource(
           SkImageInfo::MakeN32Premul(visible_rect.width(),
@@ -339,15 +363,7 @@ ExternalTexture CreateExternalTexture(
   if (auto* context_provider = context_provider_wrapper->ContextProvider())
     raster_context_provider = context_provider->RasterContextProvider();
 
-  std::unique_ptr<media::PaintCanvasVideoRenderer> local_video_renderer;
-  if (!video_renderer) {
-    local_video_renderer = std::make_unique<media::PaintCanvasVideoRenderer>();
-    video_renderer = local_video_renderer.get();
-  }
-
-  // TODO(crbug.com/327270287): Expand CopyVideoFrameToSharedImage() ability to
-  // support all video frame valid formats. And remove draw path in that time.
-  if (media::IsYuvPlanar(media_video_frame->format())) {
+  if (use_copy_to_shared_image) {
     // We don't need to specify a sync token since both CanvasResourceProvider
     // and PaintCanvasVideoRenderer use the SharedGpuContext.
     gpu::MailboxHolder dst_mailbox(
@@ -363,9 +379,11 @@ ExternalTexture CreateExternalTexture(
         /*use_visible_rect=*/true);
   } else {
     const gfx::Rect dest_rect = media_video_frame->visible_rect();
+    // Delegate video transformation to Dawn.
     if (!DrawVideoFrameIntoResourceProvider(
             std::move(media_video_frame), resource_provider,
-            raster_context_provider, dest_rect, video_renderer)) {
+            raster_context_provider, dest_rect, video_renderer,
+            /* ignore_video_transformation */ true)) {
       return {};
     }
   }
@@ -373,17 +391,15 @@ ExternalTexture CreateExternalTexture(
   scoped_refptr<WebGPUMailboxTexture> mailbox_texture =
       WebGPUMailboxTexture::FromCanvasResource(
           device->GetDawnControlClient(), device->GetHandle(),
-          WGPUTextureUsage::WGPUTextureUsage_TextureBinding,
+          wgpu::TextureUsage::TextureBinding,
           std::move(recyclable_canvas_resource));
   if (!mailbox_texture) {
     return {};
   }
 
-  WGPUTextureViewDescriptor view_desc = {};
-  view_desc.arrayLayerCount = WGPU_ARRAY_LAYER_COUNT_UNDEFINED;
-  view_desc.mipLevelCount = WGPU_MIP_LEVEL_COUNT_UNDEFINED;
-  WGPUTextureView plane0 = device->GetProcs().textureCreateView(
-      mailbox_texture->GetTexture(), &view_desc);
+  wgpu::TextureViewDescriptor view_desc = {};
+  wgpu::TextureView plane0 =
+      mailbox_texture->GetTexture().CreateView(&view_desc);
 
   // Set plane for ExternalTexture
   external_texture_desc.plane0 = plane0;
@@ -404,13 +420,7 @@ ExternalTexture CreateExternalTexture(
       color_space_conversion_constants.dst_transfer_constants.data();
 
   external_texture.wgpu_external_texture =
-      device->GetProcs().deviceCreateExternalTexture(device->GetHandle(),
-                                                     &external_texture_desc);
-
-  // The texture view will be referenced during external texture creation, so by
-  // calling release here we ensure this texture view will be destructed when
-  // the external texture is destructed.
-  device->GetProcs().textureViewRelease(plane0);
+      device->GetHandle().CreateExternalTexture(&external_texture_desc);
   external_texture.mailbox_texture = std::move(mailbox_texture);
 
   return external_texture;

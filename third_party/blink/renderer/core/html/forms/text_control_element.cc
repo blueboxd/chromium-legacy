@@ -310,11 +310,6 @@ void TextControlElement::SetFocused(bool flag,
 }
 
 void TextControlElement::DispatchFormControlChangeEvent() {
-  if (UserHasEditedTheField()) {
-    // If the user has edited the field, then at this point we should also start
-    // matching :user-valid/:user-invalid.
-    SetUserHasEditedTheFieldAndBlurred();
-  }
   if (!value_before_first_user_edit_.IsNull() &&
       !EqualIgnoringNullity(value_before_first_user_edit_, Value())) {
     ClearValueBeforeFirstUserEdit();
@@ -508,11 +503,19 @@ bool TextControlElement::SetSelectionRange(
 
   // TODO(crbug.com/927646): The focused element should always be connected, but
   // we fail to ensure so in some cases. Fix it.
-  if (ShouldApplySelectionCache() || !isConnected())
+  if (ShouldApplySelectionCache() || !isConnected()) {
+    if (did_change) {
+      ScheduleSelectionchangeEvent();
+    }
     return did_change;
+  }
 
-  if (!frame || !inner_editor)
+  if (!frame || !inner_editor) {
+    if (did_change) {
+      ScheduleSelectionchangeEvent();
+    }
     return did_change;
+  }
 
   Position start_position = PositionForIndex(inner_editor, start);
   Position end_position =
@@ -809,6 +812,13 @@ void TextControlElement::ScheduleSelectEvent() {
   Event* event = Event::CreateBubble(event_type_names::kSelect);
   event->SetTarget(this);
   GetDocument().EnqueueAnimationFrameEvent(event);
+}
+
+void TextControlElement::ScheduleSelectionchangeEvent() {
+  if (RuntimeEnabledFeatures::DispatchSelectionchangeEventPerElementEnabled()) {
+    EnqueueEvent(*Event::CreateBubble(event_type_names::kSelectionchange),
+                 TaskType::kMiscPlatformAPI);
+  }
 }
 
 void TextControlElement::ParseAttribute(

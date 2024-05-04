@@ -7,10 +7,13 @@
 
 #include <optional>
 #include <stack>
+#include <string>
+#include <string_view>
 #include <vector>
 
 #include "base/base_export.h"
 #include "base/check.h"
+#include "base/features.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/raw_ref.h"
 #include "base/memory/scoped_refptr.h"
@@ -118,7 +121,7 @@ class BASE_EXPORT ThreadController {
 
   // Explicitly allow or disallow task execution. Implicitly disallowed when
   // entering a nested runloop.
-  virtual void SetTaskExecutionAllowed(bool allowed) = 0;
+  virtual void SetTaskExecutionAllowedInNativeNestedLoop(bool allowed) = 0;
 
   // Whether task execution is allowed or not.
   virtual bool IsTaskExecutionAllowed() const = 0;
@@ -142,13 +145,16 @@ class BASE_EXPORT ThreadController {
   virtual void DetachFromMessagePump() = 0;
 #endif
 
-  // Initializes the state of all the thread controller features. Must be
-  // invoked after FeatureList initialization. Set `record_sample_metadata` to
-  // always enable recording sample metadata in this class.
-  static void InitializeFeatures(bool record_sample_metadata);
+  // Initializes features for this class. See `base::features::Init()`.
+  static void InitializeFeatures(
+      features::EmitThreadControllerProfilerMetadata emit_profiler_metadata);
 
   // Enables TimeKeeper metrics. `thread_name` will be used as a suffix.
-  void EnableMessagePumpTimeKeeperMetrics(const char* thread_name);
+  // Setting `wall_time_based_metrics_enabled_for_testing` adds wall-time
+  // based metrics for this thread. It also also disables subsampling.
+  void EnableMessagePumpTimeKeeperMetrics(
+      const char* thread_name,
+      bool wall_time_based_metrics_enabled_for_testing);
 
   // Currently only overridden on ThreadControllerWithMessagePumpImpl.
   //
@@ -189,6 +195,9 @@ class BASE_EXPORT ThreadController {
   // thread-affine ThreadController methods. Without that, this lone annotation
   // would result in an inconsistent set of DCHECKs...
   raw_ptr<const TickClock> time_source_;  // Not owned.
+
+  // Whether or not wall-time based metrics are enabled.
+  bool wall_time_based_metrics_enabled_for_testing_;
 
   // Tracks the state of each run-level (main and nested ones) in its associated
   // ThreadController. It does so using two high-level principles:
@@ -268,7 +277,9 @@ class BASE_EXPORT ThreadController {
     // RunLevelTracker.
     void RecordScheduleWork();
 
-    void EnableTimeKeeperMetrics(const char* thread_name);
+    void EnableTimeKeeperMetrics(
+        const char* thread_name,
+        bool wall_time_based_metrics_for_testing_enabled);
 
     // Observes changes of state sent as trace-events so they can be tested.
     class TraceObserverForTesting {
@@ -284,12 +295,6 @@ class BASE_EXPORT ThreadController {
         TraceObserverForTesting* trace_observer_for_testing);
 
    private:
-#if BUILDFLAG(ENABLE_BASE_TRACING)
-    using TerminatingFlowLambda =
-        std::invoke_result<decltype(perfetto::TerminatingFlow::FromPointer),
-                           void*>::type;
-#endif
-
     // Keeps track of the time spent in various Phases (ignores idle), reports
     // via UMA to the corresponding phase every time one reaches >= 100ms of
     // cumulative time, resulting in a metric of relative time spent in each
@@ -300,7 +305,8 @@ class BASE_EXPORT ThreadController {
      public:
       explicit TimeKeeper(const RunLevelTracker& outer);
 
-      void EnableRecording(const char* thread_name);
+      void EnableRecording(const char* thread_name,
+                           bool wall_time_based_metrics_enabled_for_testing);
 
       // Records the start time of the first phase out-of-idle. The kScheduled
       // phase will be attributed the time before this point once its
@@ -320,7 +326,16 @@ class BASE_EXPORT ThreadController {
       // for it.
       void RecordEndOfPhase(Phase phase, LazyNow& lazy_now);
 
+      // If recording is enabled: If the `wakeup.flow` category is enabled,
+      // record a TerminatingFlow into the current "ThreadController Active"
+      // track event.
+      void MaybeEmitIncomingWakeupFlow(perfetto::EventContext& ctx);
+
       const std::string& thread_name() const { return thread_name_; }
+
+      bool wall_time_based_metrics_enabled_for_testing() const {
+        return wall_time_based_metrics_enabled_for_testing_;
+      }
 
      private:
       enum class ShouldRecordReqs {
@@ -345,6 +360,8 @@ class BASE_EXPORT ThreadController {
       static const char* PhaseToEventName(Phase phase);
 
       std::string thread_name_;
+      // Whether or not wall-time based metrics are reported.
+      bool wall_time_based_metrics_enabled_for_testing_ = false;
       // Cumulative time deltas for each phase, reported and reset when >=100ms.
       std::array<TimeDelta, Phase::kLastPhase + 1> deltas_ = {};
       // Set at the start of the first work item out-of-idle. Consumed from the
@@ -377,12 +394,7 @@ class BASE_EXPORT ThreadController {
       RunLevel(State initial_state,
                bool is_nested,
                TimeKeeper& time_keeper,
-               LazyNow& lazy_now
-#if BUILDFLAG(ENABLE_BASE_TRACING)
-               ,
-               TerminatingFlowLambda& terminating_flow_lambda
-#endif
-      );
+               LazyNow& lazy_now);
       ~RunLevel();
 
       // Move-constructible for STL compat. Flags `other.was_moved_` so it noops
@@ -402,6 +414,7 @@ class BASE_EXPORT ThreadController {
       }
 
      private:
+      void LogPercentageMetric(const char* name, int value);
       void LogPercentageMetric(const char* name,
                                int value,
                                base::TimeDelta interval_duration);
@@ -414,6 +427,10 @@ class BASE_EXPORT ThreadController {
       base::TimeTicks last_active_end_;
       base::TimeTicks last_active_start_;
       base::ThreadTicks last_active_threadtick_start_;
+      base::TimeDelta accumulated_idle_time_;
+      base::TimeDelta accumulated_active_time_;
+      base::TimeDelta accumulated_active_on_cpu_time_;
+      base::TimeDelta accumulated_active_off_cpu_time_;
       MetricsSubSampler metrics_sub_sampler_;
 
       State state_ = kIdle;
@@ -425,15 +442,15 @@ class BASE_EXPORT ThreadController {
       // TimeDelta() when not applicable.
       std::string GetSuffixForHistogram(TimeDelta duration);
 
+      std::string GetSuffixForCatchAllHistogram();
+      std::string_view GetThreadName();
+
       const raw_ref<TimeKeeper> time_keeper_;
       // Must be set shortly before ~RunLevel.
       raw_ptr<LazyNow> exit_lazy_now_ = nullptr;
 
       SampleMetadata thread_controller_sample_metadata_;
       size_t thread_controller_active_id_ = 0;
-#if BUILDFLAG(ENABLE_BASE_TRACING)
-      const raw_ref<TerminatingFlowLambda> terminating_wakeup_flow_lambda_;
-#endif
 
       // Toggles to true when used as RunLevel&& input to construct another
       // RunLevel. This RunLevel's destructor will then no-op.
@@ -453,11 +470,6 @@ class BASE_EXPORT ThreadController {
     };
 
     [[maybe_unused]] const raw_ref<const ThreadController> outer_;
-
-#if BUILDFLAG(ENABLE_BASE_TRACING)
-    TerminatingFlowLambda terminating_wakeup_lambda_{
-        perfetto::TerminatingFlow::FromPointer(this)};
-#endif
 
     std::stack<RunLevel, std::vector<RunLevel>> run_levels_
         GUARDED_BY_CONTEXT(outer_->associated_thread_->thread_checker);

@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_UPDATE_CLIENT_COMPONENT_H_
 #define COMPONENTS_UPDATE_CLIENT_COMPONENT_H_
 
+#include <cstdint>
 #include <map>
 #include <memory>
 #include <optional>
@@ -21,6 +22,7 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "base/version.h"
+#include "components/update_client/crx_cache.h"
 #include "components/update_client/crx_downloader.h"
 #include "components/update_client/protocol_parser.h"
 #include "components/update_client/update_client.h"
@@ -239,7 +241,8 @@ class Component {
     // State overrides.
     void DoHandle() override;
     bool CanTryDiffUpdate() const;
-    void CheckIfCacheContainsCrxComplete(bool crx_is_in_cache);
+    void GetNextCrxFromCacheComplete(const CrxCache::Result& result);
+    void CheckIfCacheContainsPreviousCrxComplete(bool crx_is_in_cache);
   };
 
   class StateUpToDate : public State {
@@ -378,7 +381,8 @@ class Component {
 
   // Returns true is the update payload for this component can be downloaded
   // by a downloader which can do bandwidth throttling on the client side.
-  bool CanDoBackgroundDownload() const;
+  // The decision may be predicated on the expected size of the download.
+  bool CanDoBackgroundDownload(int64_t size) const;
 
   void AppendEvent(base::Value::Dict event);
 
@@ -426,6 +430,10 @@ class Component {
   // The cryptographic hash values for the component payload.
   std::string hash_sha256_;
   std::string hashdiff_sha256_;
+
+  // The expected size of the download as reported by the update server.
+  int64_t size_ = -1;
+  int64_t sizediff_ = -1;
 
   // The from/to version and fingerprint values.
   base::Version previous_version_;

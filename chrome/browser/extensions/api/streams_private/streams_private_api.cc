@@ -21,7 +21,6 @@
 #include "pdf/buildflags.h"
 
 #if BUILDFLAG(ENABLE_PDF)
-#include "base/feature_list.h"
 #include "chrome/browser/pdf/pdf_viewer_stream_manager.h"
 #include "extensions/common/constants.h"
 #include "pdf/pdf_features.h"
@@ -78,8 +77,8 @@ void StreamsPrivateAPI::SendExecuteMimeTypeHandlerEvent(
   // indicate that a portal contents has no tab id. Unfortunately, this will
   // still be broken in subtle ways once the portal is activated (e.g. some
   // forms of zooming won't work).
-  // TODO(1042323): Present a coherent representation of a tab id for portal
-  // contents.
+  // TODO(crbug.com/40114809): Present a coherent representation of a tab id for
+  // portal contents.
   int tab_id = web_contents->GetOuterWebContents()
                    ? SessionID::InvalidValue().id()
                    : ExtensionTabUtil::GetTabId(web_contents);
@@ -89,7 +88,7 @@ void StreamsPrivateAPI::SendExecuteMimeTypeHandlerEvent(
                           std::move(transferrable_loader), original_url));
 
 #if BUILDFLAG(ENABLE_PDF)
-  if (base::FeatureList::IsEnabled(chrome_pdf::features::kPdfOopif) &&
+  if (chrome_pdf::features::IsOopifPdfEnabled() &&
       extension_id == extension_misc::kPdfExtensionId) {
     pdf::PdfViewerStreamManager::Create(web_contents);
     pdf::PdfViewerStreamManager::FromWebContents(web_contents)

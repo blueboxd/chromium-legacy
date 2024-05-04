@@ -35,7 +35,7 @@ void CheckThatOnlyFieldByIndexHasThisPossibleType(
   for (size_t i = 0; i < form_structure.field_count(); i++) {
     if (i == field_index) {
       EXPECT_THAT(form_structure.field(i)->possible_types(), ElementsAre(type));
-      EXPECT_EQ(mask, form_structure.field(i)->properties_mask);
+      EXPECT_EQ(mask, form_structure.field(i)->properties_mask());
     } else {
       EXPECT_THAT(form_structure.field(i)->possible_types(),
                   Not(Contains(type)));
@@ -103,8 +103,8 @@ TestAddressFillData GetElvisAddressFillData() {
       "Memphis",
       "Tennessee",
       "38116",
-      "United States",
-      "US",
+      "South Africa",
+      "ZA",
       base::FeatureList::IsEnabled(features::kAutofillDefaultToCityAndNumber)
           ? "2345678901"
           : "12345678901",
@@ -127,18 +127,6 @@ std::string MakeGuid(size_t last_digit) {
   return base::StringPrintf("00000000-0000-0000-0000-%012zu", last_digit);
 }
 
-// For tests, the observed_submission is hardcoded to true.
-void DeterminePossibleFieldTypesForUpload(
-    const std::vector<AutofillProfile>& profiles,
-    const std::vector<CreditCard>& credit_cards,
-    const std::u16string& last_unlocked_credit_card_cvc,
-    const std::string& app_locale,
-    FormStructure* form) {
-  DeterminePossibleFieldTypesForUpload(
-      profiles, credit_cards, last_unlocked_credit_card_cvc, app_locale,
-      /*observed_submission=*/true, form);
-}
-
 struct ProfileMatchingTypesTestCase {
   const char* input_value;   // The value to input in the field.
   FieldTypeSet field_types;  // The expected field types to be determined.
@@ -147,7 +135,25 @@ struct ProfileMatchingTypesTestCase {
 class ProfileMatchingTypesTest
     : public ::testing::Test,
       public ::testing::WithParamInterface<ProfileMatchingTypesTestCase> {
+ public:
+  ProfileMatchingTypesTest() {
+    features_.InitWithFeatures(
+        {features::kAutofillEnableSupportForLandmark,
+         features::kAutofillEnableSupportForBetweenStreets,
+         features::kAutofillEnableSupportForAdminLevel2,
+         features::kAutofillEnableSupportForApartmentNumbers,
+         features::kAutofillEnableSupportForAddressOverflow,
+         features::kAutofillEnableSupportForBetweenStreetsOrLandmark,
+         features::kAutofillEnableSupportForAddressOverflowAndLandmark,
+         features::kAutofillEnableDependentLocalityParsing,
+         features::kAutofillUseI18nAddressModel,
+         features::kAutofillUseBRAddressModel,
+         features::kAutofillUseMXAddressModel},
+        {});
+  }
+
  protected:
+  base::test::ScopedFeatureList features_;
   test::AutofillUnitTestEnvironment autofill_test_environment_;
 };
 
@@ -160,16 +166,15 @@ const ProfileMatchingTypesTestCase kProfileMatchingTypesTestCases[] = {
     {"Elvis Aaron Presley", {NAME_FULL}},
     {"theking@gmail.com", {EMAIL_ADDRESS}},
     {"RCA", {COMPANY_NAME}},
-    {"3734 Elvis Presley Blvd.",
-     {ADDRESS_HOME_LINE1, ADDRESS_HOME_STREET_LOCATION}},
+    {"3734 Elvis Presley Blvd.", {ADDRESS_HOME_LINE1}},
     {"3734", {ADDRESS_HOME_HOUSE_NUMBER}},
     {"Elvis Presley Blvd.", {ADDRESS_HOME_STREET_NAME}},
     {"Apt. 10", {ADDRESS_HOME_LINE2, ADDRESS_HOME_SUBPREMISE}},
     {"Memphis", {ADDRESS_HOME_CITY}},
     {"Tennessee", {ADDRESS_HOME_STATE}},
     {"38116", {ADDRESS_HOME_ZIP}},
-    {"USA", {ADDRESS_HOME_COUNTRY}},
-    {"United States", {ADDRESS_HOME_COUNTRY}},
+    {"ZA", {ADDRESS_HOME_COUNTRY}},
+    {"South Africa", {ADDRESS_HOME_COUNTRY}},
     {"12345678901", {PHONE_HOME_WHOLE_NUMBER}},
     {"+1 (234) 567-8901", {PHONE_HOME_WHOLE_NUMBER}},
     {"(234)567-8901", {PHONE_HOME_CITY_AND_NUMBER}},
@@ -216,13 +221,11 @@ const ProfileMatchingTypesTestCase kProfileMatchingTypesTestCases[] = {
 
     // Make sure fields that differ by case match.
     {"elvis ", {NAME_FIRST}},
-    {"UnItEd StAtEs", {ADDRESS_HOME_COUNTRY}},
+    {"SoUTh AfRiCa", {ADDRESS_HOME_COUNTRY}},
 
     // Make sure fields that differ by punctuation match.
-    {"3734 Elvis Presley Blvd",
-     {ADDRESS_HOME_LINE1, ADDRESS_HOME_STREET_LOCATION}},
-    {"3734, Elvis    Presley Blvd.",
-     {ADDRESS_HOME_LINE1, ADDRESS_HOME_STREET_LOCATION}},
+    {"3734 Elvis Presley Blvd", {ADDRESS_HOME_LINE1}},
+    {"3734, Elvis    Presley Blvd.", {ADDRESS_HOME_LINE1}},
 
     // Make sure that a state's full name and abbreviation match.
     {"TN", {ADDRESS_HOME_STATE}},     // Saved as "Tennessee" in profile.
@@ -307,105 +310,6 @@ TEST_P(ProfileMatchingTypesTest, DeterminePossibleFieldTypesForUpload) {
 INSTANTIATE_TEST_SUITE_P(DeterminePossibleFieldTypesForUploadTest,
                          ProfileMatchingTypesTest,
                          testing::ValuesIn(kProfileMatchingTypesTestCases));
-
-// TODO(crbug.com/1395740). Remove parameter, once
-// kAutofillVoteForSelectOptionValues has settled on stable.
-class DeterminePossibleFieldTypesForUploadOfSelectTest
-    : public ::testing::Test,
-      public ::testing::WithParamInterface<bool> {
- protected:
-  test::AutofillUnitTestEnvironment autofill_test_environment_;
-};
-
-void DoTestDeterminePossibleFieldTypesForUploadOfSelect(
-    bool enable_autofill_vote_for_select_option_values,
-    FormControlType field_type) {
-  base::test::ScopedFeatureList features;
-  features.InitWithFeatureState(features::kAutofillVoteForSelectOptionValues,
-                                enable_autofill_vote_for_select_option_values);
-
-  // Set up a profile and no credit cards.
-  std::vector<AutofillProfile> profiles = {
-      AutofillProfile(i18n_model_definition::kLegacyHierarchyCountryCode)};
-  TestAddressFillData profile_info_data = GetElvisAddressFillData();
-  profile_info_data.phone = "+1 (234) 567-8901";
-  profiles[0] = FillDataToAutofillProfile(profile_info_data);
-  profiles[0].set_guid(MakeGuid(1));
-  std::vector<CreditCard> credit_cards;
-
-  // Set up the form to be tested.
-  FormData form;
-  form.name = u"MyForm";
-  form.url = GURL("https://myform.com/form.html");
-  form.action = GURL("https://myform.com/submit.html");
-
-  // We want the "Memphis" in <option value="2">Memphis</option> to be
-  // recognized.
-  FormFieldData city_field = CreateTestSelectOrSelectListField(
-      "label", "name", /*value=*/"2", /*autocomplete=*/"",
-      /*values=*/{"1", "2", "3"},
-      /*contents=*/{"New York", "Memphis", "Gotham City"}, field_type);
-
-  // We want the +1 in <option value="US">USA (+1)</option> to be recognized
-  // as a phone country code. Despite the value "US", we don't want this to be
-  // recognized as a country field.
-  FormFieldData phone_country_code_field = CreateTestSelectOrSelectListField(
-      "label", "name", /*value=*/"US", /*autocomplete=*/"",
-      /*values=*/{"US", "DE"}, /*contents=*/{"USA (+1)", "Germany (+49)"},
-      field_type);
-
-  form.fields = {city_field, phone_country_code_field};
-
-  FormStructure form_structure(form);
-
-  // Validate expectations.
-  DeterminePossibleFieldTypesForUpload(profiles, credit_cards, std::u16string(),
-                                       "en-us", &form_structure);
-
-  ASSERT_EQ(2U, form_structure.field_count());
-  if (base::FeatureList::IsEnabled(
-          autofill::features::kAutofillVoteForSelectOptionValues)) {
-    EXPECT_EQ(form_structure.field(0)->possible_types(),
-              FieldTypeSet({ADDRESS_HOME_CITY}));
-    EXPECT_EQ(form_structure.field(1)->possible_types(),
-              FieldTypeSet({PHONE_HOME_COUNTRY_CODE}));
-  } else {
-    EXPECT_EQ(form_structure.field(0)->possible_types(),
-              FieldTypeSet({UNKNOWN_TYPE}));
-    EXPECT_EQ(form_structure.field(1)->possible_types(),
-              FieldTypeSet({ADDRESS_HOME_COUNTRY}));
-  }
-}
-
-// Tests that DeterminePossibleFieldTypesForUpload considers both the value
-// and the human readable part of an <option> element in a <select> element:
-// <option value="this is the value">this is the human readable part</option>
-//
-// In particular <option value="US">USA (+1)</option> is probably part of a
-// phone number country code.
-TEST_P(DeterminePossibleFieldTypesForUploadOfSelectTest,
-       DeterminePossibleFieldTypesForUploadOfSelect) {
-  DoTestDeterminePossibleFieldTypesForUploadOfSelect(
-      /*enable_autofill_vote_for_select_option_values=*/GetParam(),
-      FormControlType::kSelectOne);
-}
-
-// Tests that DeterminePossibleFieldTypesForUpload considers both the value
-// and the human readable part of an <option> element in a <selectlist> element:
-// <option value="this is the value">this is the human readable part</option>
-//
-// In particular <option value="US">USA (+1)</option> is probably part of a
-// phone number country code.
-TEST_P(DeterminePossibleFieldTypesForUploadOfSelectTest,
-       DeterminePossibleFieldTypesForUploadOfSelectList) {
-  DoTestDeterminePossibleFieldTypesForUploadOfSelect(
-      /*enable_autofill_vote_for_select_option_values=*/GetParam(),
-      FormControlType::kSelectList);
-}
-
-INSTANTIATE_TEST_SUITE_P(All,
-                         DeterminePossibleFieldTypesForUploadOfSelectTest,
-                         testing::Bool());
 
 class DeterminePossibleFieldTypesForUploadTest : public ::testing::Test {
  protected:

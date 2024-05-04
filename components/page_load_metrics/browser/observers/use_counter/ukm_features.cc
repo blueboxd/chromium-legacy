@@ -293,9 +293,6 @@ UseCounterMetricsRecorder::GetAllowedUkmFeatures() {
           WebFeature::kTopicsAPI_BrowsingTopics_Method,
           WebFeature::kHTMLFencedFrameElement,
           WebFeature::kAuthorizationCrossOrigin,
-          WebFeature::kServiceWorkerBypassFetchHandlerForMainResource,
-          WebFeature::
-              kServiceWorkerBypassFetchHandlerForMainResourceByOriginTrial,
           WebFeature::kCascadedCSSZoomNotEqualToOne,
           WebFeature::kV8Window_QueryLocalFonts_Method,
           WebFeature::kHiddenUntilFoundAttribute,
@@ -306,10 +303,6 @@ UseCounterMetricsRecorder::GetAllowedUkmFeatures() {
           WebFeature::kLinkRelPreloadAsFont,
           WebFeature::kURLPatternReliantOnImplicitURLComponentsInString,
           WebFeature::kURLPatternReliantOnLaterComponentFromBaseURL,
-          WebFeature::kWindowManagementPermissionDescriptorUsed,
-          WebFeature::kWindowManagementPermissionPolicyParsed,
-          WebFeature::kWindowPlacementPermissionDescriptorUsed,
-          WebFeature::kWindowPlacementPermissionPolicyParsed,
           WebFeature::kV8Window_GetScreenDetails_Method,
           WebFeature::kV8Window_ShowSaveFilePicker_Method,
           WebFeature::kFullscreenAllowedByWindowOpen,
@@ -398,6 +391,12 @@ UseCounterMetricsRecorder::GetAllowedUkmFeatures() {
               kStorageAccessAPI_requestStorageAccess_BeyondCookies_SharedWorker,
           WebFeature::
               kStorageAccessAPI_requestStorageAccess_BeyondCookies_SharedWorker_Use,
+          WebFeature::kServiceWorkerStaticRouter_AddRoutes,
+          WebFeature::kServiceWorkerStaticRouter_Evaluate,
+          WebFeature::kNavigatorCookieEnabledThirdParty,
+          WebFeature::kSimplifyLoadingTransparentPlaceholderImage,
+          WebFeature::kFedCmContinueOnResponse,
+          WebFeature::kSchedulingIsInputPending
       }));
   return *opt_in_features;
 }

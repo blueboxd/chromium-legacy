@@ -135,8 +135,8 @@ void NavigatorUAData::SetWoW64(bool wow64) {
   is_wow64_ = wow64;
 }
 
-void NavigatorUAData::SetFormFactor(Vector<String> form_factor) {
-  form_factor_ = std::move(form_factor);
+void NavigatorUAData::SetFormFactors(Vector<String> form_factors) {
+  form_factors_ = std::move(form_factors);
 }
 
 bool NavigatorUAData::mobile() const {
@@ -184,12 +184,11 @@ const String& NavigatorUAData::platform() const {
   return WTF::g_empty_string;
 }
 
-ScriptPromiseTyped<UADataValues> NavigatorUAData::getHighEntropyValues(
+ScriptPromise<UADataValues> NavigatorUAData::getHighEntropyValues(
     ScriptState* script_state,
     Vector<String>& hints) const {
   auto* resolver =
-      MakeGarbageCollected<ScriptPromiseResolverTyped<UADataValues>>(
-          script_state);
+      MakeGarbageCollected<ScriptPromiseResolver<UADataValues>>(script_state);
   auto promise = resolver->Promise();
   auto* execution_context =
       ExecutionContext::From(script_state);  // GetExecutionContext();
@@ -247,11 +246,11 @@ ScriptPromiseTyped<UADataValues> NavigatorUAData::getHighEntropyValues(
       values->setWow64(is_wow64_);
       MaybeRecordMetric(record_identifiability, hint, is_wow64_ ? "?1" : "?0",
                         execution_context);
-    } else if (hint == "formFactor") {
+    } else if (hint == "formFactors") {
       if (base::FeatureList::IsEnabled(
-              blink::features::kClientHintsFormFactor)) {
-        values->setFormFactor(form_factor_);
-        MaybeRecordMetric(record_identifiability, hint, form_factor_,
+              blink::features::kClientHintsFormFactors)) {
+        values->setFormFactors(form_factors_);
+        MaybeRecordMetric(record_identifiability, hint, form_factors_,
                           execution_context);
       }
     }
@@ -260,7 +259,7 @@ ScriptPromiseTyped<UADataValues> NavigatorUAData::getHighEntropyValues(
   execution_context->GetTaskRunner(TaskType::kPermission)
       ->PostTask(
           FROM_HERE,
-          WTF::BindOnce([](ScriptPromiseResolverTyped<UADataValues>* resolver,
+          WTF::BindOnce([](ScriptPromiseResolver<UADataValues>* resolver,
                            UADataValues* values) { resolver->Resolve(values); },
                         WrapPersistent(resolver), WrapPersistent(values)));
 

@@ -17,6 +17,7 @@
 #include "third_party/blink/renderer/core/html/anchor_element_metrics_sender.h"
 #include "third_party/blink/renderer/core/html/html_anchor_element.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
+#include "third_party/blink/renderer/core/html/html_image_element.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
@@ -29,6 +30,22 @@
 namespace blink {
 
 namespace {
+
+// Returns the document of the main frame of the frame tree containing `anchor`.
+// This could be null if `anchor` is in an out-of-process iframe.
+Document* GetTopDocument(const HTMLAnchorElement& anchor) {
+  LocalFrame* frame = anchor.GetDocument().GetFrame();
+  if (!frame) {
+    return nullptr;
+  }
+
+  LocalFrame* local_main_frame = DynamicTo<LocalFrame>(frame->Tree().Top());
+  if (!local_main_frame) {
+    return nullptr;
+  }
+
+  return local_main_frame->GetDocument();
+}
 
 // Whether the element is inside an iframe.
 bool IsInIFrame(const HTMLAnchorElement& anchor_element) {
@@ -153,20 +170,6 @@ bool HasTextSibling(const HTMLAnchorElement& anchor_element) {
 }
 
 }  // anonymous namespace
-
-Document* GetTopDocument(const HTMLAnchorElement& anchor) {
-  LocalFrame* frame = anchor.GetDocument().GetFrame();
-  if (!frame) {
-    return nullptr;
-  }
-
-  LocalFrame* local_main_frame = DynamicTo<LocalFrame>(frame->Tree().Top());
-  if (!local_main_frame) {
-    return nullptr;
-  }
-
-  return local_main_frame->GetDocument();
-}
 
 // Computes a unique ID for the anchor. We hash the pointer address of the
 // object. Note that this implementation can lead to collisions if an element is

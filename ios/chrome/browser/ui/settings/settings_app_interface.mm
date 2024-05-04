@@ -12,10 +12,13 @@
 #import "components/prefs/pref_member.h"
 #import "components/prefs/pref_service.h"
 #import "components/search_engines/prepopulated_engines.h"
+#import "components/search_engines/search_engine_choice/search_engine_choice_utils.h"
+#import "components/search_engines/template_url_prepopulate_data.h"
 #import "components/search_engines/template_url_service.h"
-#import "ios/chrome/app/main_controller.h"
 #import "ios/chrome/browser/content_settings/model/host_content_settings_map_factory.h"
+#import "ios/chrome/browser/search_engines/model/search_engine_choice_service_factory.h"
 #import "ios/chrome/browser/search_engines/model/template_url_service_factory.h"
+#import "ios/chrome/browser/shared/coordinator/scene/scene_state.h"
 #import "ios/chrome/browser/shared/model/browser/browser_provider.h"
 #import "ios/chrome/browser/shared/model/browser/browser_provider_interface.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
@@ -80,17 +83,20 @@ bool HostToLocalHostRewrite(GURL* url, web::BrowserState* browser_state) {
 }
 
 + (BOOL)settingsRegisteredKeyboardCommands {
-  // TODO(crbug.com/327328907): Avoid using
-  // mainController.browserProviderInterface.
+  SceneState* sceneState = chrome_test_util::GetForegroundActiveScene();
   UIViewController* viewController =
-      chrome_test_util::GetMainController()
-          .browserProviderInterface.mainBrowserProvider.viewController;
+      sceneState.browserProviderInterface.mainBrowserProvider.viewController;
   return viewController.presentedViewController.keyCommands != nil;
 }
 
-+ (void)overrideSearchEngineURL:(NSString*)searchEngineURL {
++ (void)overrideSearchEngineWithURL:(NSString*)searchEngineURL {
   TemplateURLData templateURLData;
-  templateURLData.SetURL(base::SysNSStringToUTF8(searchEngineURL));
+  templateURLData.SetShortName(u"testSearchEngine");
+  templateURLData.SetKeyword(u"testSearchEngine");
+  GURL searchableURL(base::SysNSStringToUTF8(searchEngineURL));
+  templateURLData.SetURL(searchableURL.possibly_invalid_spec());
+  templateURLData.favicon_url = TemplateURL::GenerateFaviconURL(searchableURL);
+  templateURLData.last_visited = base::Time::Now();
 
   auto defaultSearchProvider = std::make_unique<TemplateURL>(templateURLData);
   TemplateURL* defaultSearchProviderPtr = defaultSearchProvider.get();
@@ -103,12 +109,21 @@ bool HostToLocalHostRewrite(GURL* url, web::BrowserState* browser_state) {
 }
 
 + (void)resetSearchEngine {
+  ChromeBrowserState* browserState =
+      chrome_test_util::GetOriginalBrowserState();
+  PrefService* prefs = chrome_test_util::GetOriginalBrowserState()->GetPrefs();
   TemplateURLService* service =
-      ios::TemplateURLServiceFactory::GetForBrowserState(
-          chrome_test_util::GetOriginalBrowserState());
-
-  TemplateURL* templateURL = service->GetTemplateURLForHost("google.com");
-  service->SetUserSelectedDefaultSearchProvider(templateURL);
+      ios::TemplateURLServiceFactory::GetForBrowserState(browserState);
+  search_engines::SearchEngineChoiceService* searchEngineChoiceService =
+      ios::SearchEngineChoiceServiceFactory::GetForBrowserState(browserState);
+  std::unique_ptr<TemplateURLData> templateURLData =
+      TemplateURLPrepopulateData::GetPrepopulatedEngineFromFullList(
+          prefs, searchEngineChoiceService,
+          TemplateURLPrepopulateData::google.id);
+  auto templateURL = std::make_unique<TemplateURL>(*templateURLData.get());
+  service->SetUserSelectedDefaultSearchProvider(templateURL.get());
+  search_engines::WipeSearchEngineChoicePrefs(
+      *prefs, search_engines::WipeSearchEngineChoiceReason::kCommandLineFlag);
 }
 
 + (void)addURLRewriterForHosts:(NSArray<NSString*>*)hosts

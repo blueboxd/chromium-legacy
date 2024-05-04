@@ -10,6 +10,7 @@ import android.util.Pair;
 import androidx.annotation.Nullable;
 
 import org.jni_zero.JNINamespace;
+import org.jni_zero.JniType;
 import org.jni_zero.NativeMethods;
 
 import org.chromium.base.TraceEvent;
@@ -176,7 +177,7 @@ public class TaskRunnerImpl implements TaskRunner {
     }
 
     protected Boolean belongsToCurrentThreadInternal() {
-        // TODO(https://crbug.com/1026641): This function shouldn't be here, and should only be used
+        // TODO(crbug.com/40108370): This function shouldn't be here, and should only be used
         // by derived classes (eg. SingleThreadTaskRunner) until it is moved there, as TaskRunner
         // has no notion of belonging to a thread.
         assert !getClass().equals(TaskRunnerImpl.class);
@@ -303,7 +304,10 @@ public class TaskRunnerImpl implements TaskRunner {
         void destroy(long nativeTaskRunnerAndroid);
 
         void postDelayedTask(
-                long nativeTaskRunnerAndroid, Runnable task, long delay, String runnableClassName);
+                long nativeTaskRunnerAndroid,
+                Runnable task,
+                long delay,
+                @JniType("std::string") String runnableClassName);
 
         boolean belongsToCurrentThread(long nativeTaskRunnerAndroid);
     }

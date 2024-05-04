@@ -67,7 +67,7 @@ class NET_EXPORT ProxyChain {
   static ProxyChain Direct() { return ProxyChain(std::vector<ProxyServer>()); }
 
   // Creates a `ProxyChain` for use by the IP Protection feature. This is used
-  // for metrics collection and for special handling.  If not give, the
+  // for metrics collection and for special handling.  If not given, the
   // chain_id defaults to 0 which corresponds to an un-identified chain.
   static ProxyChain ForIpProtection(std::vector<ProxyServer> proxy_server_list,
                                     int chain_id = 0) {
@@ -86,6 +86,10 @@ class NET_EXPORT ProxyChain {
   // preceding proxies. The chain must have at least one proxy server. If it
   // only has one proxy server, then the resulting chain will be direct.
   std::pair<ProxyChain, const ProxyServer&> SplitLast() const;
+
+  // Return a prefix of this proxy chain, of the given length. This length must
+  // be less than or equal to the chain's length.
+  ProxyChain Prefix(size_t length) const;
 
   // Get the first ProxyServer in this chain, which must have at least one
   // server.
@@ -127,11 +131,19 @@ class NET_EXPORT ProxyChain {
                                           : false;
   }
 
+  template <class Predicate>
+  bool AnyProxy(Predicate p) const {
+    return proxy_server_list_.has_value() &&
+           std::any_of(proxy_server_list_->begin(), proxy_server_list_->end(),
+                       p);
+  }
+
   // Determines if HTTP GETs to the last proxy in the chain are allowed,
-  // instead of establishing a tunnel with CONNECT. This is currently not
-  // supported for multi-proxy chains.
+  // instead of establishing a tunnel with CONNECT. This is no longer supported
+  // for QUIC proxy chains and is not currently supported for multi-proxy
+  // chains.
   bool is_get_to_proxy_allowed() const {
-    return is_single_proxy() && First().is_http_like();
+    return is_single_proxy() && (First().is_http() || First().is_https());
   }
 
   // Returns true if a proxy server list is available.
@@ -178,11 +190,12 @@ class NET_EXPORT ProxyChain {
   // A negative value indicates this chain is not used for IP protection.
   int ip_protection_chain_id_ = kNotIpProtectionChainId;
 
-  // Returns true if this chain is valid. A chain is considered valid if (1) is
-  // a single valid proxy server. If single QUIC proxy, it must
-  // also be an IP protection proxy chain. (2) is multi-proxy and
-  // all servers are either HTTPS or QUIC. If QUIC servers, it must also
-  // be an IP protection proxy chain.
+  // Returns true if this chain is valid. A chain is considered valid if
+  //  (1) it is a single valid proxy server, or
+  //  (2) it is a chain of servers, composed of zero or more SCHEME_QUIC servers
+  //  followed by zero or more SCHEME_HTTPS servers.
+  // If any SCHEME_QUIC servers are included, then the chain must be for IP
+  // protection.
   bool IsValidInternal() const;
 };
 

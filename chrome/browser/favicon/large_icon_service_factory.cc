@@ -20,7 +20,7 @@
 #include "ui/gfx/favicon_size.h"
 
 #if BUILDFLAG(IS_ANDROID)
-#include "components/search_engines/search_engine_choice_utils.h"
+#include "components/search_engines/search_engine_choice/search_engine_choice_utils.h"
 #endif
 
 namespace {
@@ -68,7 +68,7 @@ LargeIconServiceFactory::LargeIconServiceFactory()
           "LargeIconService",
           ProfileSelections::Builder()
               .WithRegular(ProfileSelection::kRedirectedToOriginal)
-              // TODO(crbug.com/1418376): Check if this service is needed in
+              // TODO(crbug.com/40257657): Check if this service is needed in
               // Guest mode.
               .WithGuest(ProfileSelection::kRedirectedToOriginal)
               .Build()) {

@@ -50,7 +50,8 @@ class CompactTitleMessageView : public views::View {
   CompactTitleMessageView& operator=(const CompactTitleMessageView&) = delete;
   ~CompactTitleMessageView() override;
 
-  gfx::Size CalculatePreferredSize() const override;
+  gfx::Size CalculatePreferredSize(
+      const views::SizeBounds& /*available_size*/) const override;
   void Layout(PassKey) override;
 
   void set_title(const std::u16string& title);
@@ -93,8 +94,6 @@ class MESSAGE_CENTER_EXPORT NotificationViewBase
   NotificationViewBase(const NotificationViewBase&) = delete;
   NotificationViewBase& operator=(const NotificationViewBase&) = delete;
   ~NotificationViewBase() override;
-
-  void Activate();
 
   // MessageView:
   void OnFocus() override;
@@ -395,8 +394,6 @@ class MESSAGE_CENTER_EXPORT NotificationViewBase
   // Counter for view layouting, which is used during the CreateOrUpdate*
   // phases to keep track of the view ordering. See crbug.com/901045
   size_t left_content_count_;
-
-  std::unique_ptr<ui::EventHandler> click_activator_;
 
   base::TimeTicks last_mouse_pressed_timestamp_;
 

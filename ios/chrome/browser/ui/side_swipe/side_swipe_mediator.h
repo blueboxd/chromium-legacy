@@ -8,6 +8,7 @@
 #import <UIKit/UIKit.h>
 
 class FullscreenController;
+@protocol HelpCommands;
 @protocol SideSwipeToolbarInteracting;
 @protocol SideSwipeToolbarSnapshotProviding;
 @protocol TabStripHighlighting;
@@ -21,6 +22,8 @@ class Tracker;
 extern NSString* const kSideSwipeWillStartNotification;
 // Notification sent when the user finishes a side swipe (on tablet).
 extern NSString* const kSideSwipeDidStopNotification;
+
+enum class SwipeType { NONE, CHANGE_TAB, CHANGE_PAGE };
 
 @protocol SideSwipeMediatorDelegate
 @required
@@ -66,6 +69,9 @@ extern NSString* const kSideSwipeDidStopNotification;
 
 @property(nonatomic) feature_engagement::Tracker* engagementTracker;
 
+// Handler for in-product help tips.
+@property(nonatomic, weak) id<HelpCommands> helpHandler;
+
 // Initializer.
 - (instancetype)
     initWithFullscreenController:(FullscreenController*)fullscreenController
@@ -86,6 +92,10 @@ extern NSString* const kSideSwipeDidStopNotification;
 // Resets the swipeDelegate's contentView frame origin x position to zero if
 // there is an active swipe.
 - (void)resetContentView;
+
+// Performs an animation that simulates a swipe with `swipeType` in `direction`.
+- (void)animateSwipe:(SwipeType)swipeType
+         inDirection:(UISwipeGestureRecognizerDirection)direction;
 
 @end
 

@@ -12,12 +12,30 @@ ts_library("build_ts") {
   visibility = [
     ":build_bundle",
 
-    # TODO(crbug.com/1503223): Currently Limiting only to cr_elements for the
-    # initial experimentation phase, and some tests that need to refer to
-    # CrLitElement. Update when the migration enters its next phase.
+    # TODO(crbug.com/1503223): Currently limiting Lit usage to a small set of
+    # folders during the initial experimentation phase.
+    # - cr_elements/ and cr_components/
+    # - tests that need to refer to CrLitElement.
+    # - a few chrome/browser/resources/ folders  that hold small UIs.
+    # Update when the migration enters its next phase.
+    "//chrome/browser/resources/side_panel/customize_chrome:build_ts",
+    "//chrome/browser/resources/side_panel/reading_list:build_ts",
+    "//chrome/browser/resources/side_panel/shared:build_ts",
+    "//chrome/browser/resources/welcome:build_ts",
+    "//chrome/browser/resources/whats_new:build_ts",
+    "//chrome/test/data/webui/cr_components:build_ts",
     "//chrome/test/data/webui/cr_elements:build_ts",
     "//chrome/test/data/webui/extensions:build_ts",
     "//chrome/test/data/webui/history:build_ts",
+    "//chrome/test/data/webui/welcome:build_ts",
+    "//ui/webui/resources/cr_components/customize_color_scheme_mode:build_ts",
+    "//ui/webui/resources/cr_components/help_bubble:build_ts",
+    "//ui/webui/resources/cr_components/history_clusters:build_ts",
+    "//ui/webui/resources/cr_components/localized_link:build_ts",
+    "//ui/webui/resources/cr_components/managed_dialog:build_ts",
+    "//ui/webui/resources/cr_components/managed_footnote:build_ts",
+    "//ui/webui/resources/cr_components/most_visited:build_ts",
+    "//ui/webui/resources/cr_components/theme_color_picker:build_ts",
     "//ui/webui/resources/cr_elements:build_ts",
   ]
   composite = true

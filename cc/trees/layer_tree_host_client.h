@@ -15,11 +15,8 @@
 #include "cc/trees/paint_holding_commit_trigger.h"
 #include "cc/trees/paint_holding_reason.h"
 #include "cc/trees/property_tree.h"
+#include "components/viz/common/frame_timing_details.h"
 #include "ui/gfx/geometry/vector2d_f.h"
-
-namespace gfx {
-struct PresentationFeedback;
-}
 
 namespace viz {
 struct BeginFrameArgs;
@@ -180,11 +177,10 @@ class CC_EXPORT LayerTreeHostClient {
                          base::TimeTicks commit_start_time,
                          base::TimeTicks commit_finish_time) = 0;
   virtual void DidCommitAndDrawFrame(int source_frame_number) = 0;
-  virtual void DidReceiveCompositorFrameAck() = 0;
   virtual void DidCompletePageScaleAnimation(int source_frame_number) = 0;
   virtual void DidPresentCompositorFrame(
       uint32_t frame_token,
-      const gfx::PresentationFeedback& feedback) = 0;
+      const viz::FrameTimingDetails& frame_timing_details) = 0;
   // Mark the frame start and end time for UMA and UKM metrics that require
   // the time from the start of BeginMainFrame to the Commit, or early out.
   virtual void RecordStartOfFrameMetrics() = 0;
@@ -214,6 +210,15 @@ class CC_EXPORT LayerTreeHostClient {
   // Return a string that is the paused debugger message for the heads-up
   // display overlay.
   virtual std::string GetPausedDebuggerLocalizedMessage();
+
+  // This is an inaccurate signal that has been used to represent that content
+  // was displayed. This actually maps to the removal of backpressure by the
+  // GPU. This can be signalled when the GPU attempts to Draw; when a submitted
+  // frame, that has not drawn, is being replaced by a newer one; or merged with
+  // future OnBeginFrames.
+  //
+  // To determine when presentation occurred see `DidPresentCompositorFrame`.
+  virtual void DidReceiveCompositorFrameAckDeprecatedForCompositor() {}
 
  protected:
   virtual ~LayerTreeHostClient() = default;

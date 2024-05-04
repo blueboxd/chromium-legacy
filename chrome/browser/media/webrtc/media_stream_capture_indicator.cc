@@ -270,10 +270,11 @@ class MediaStreamCaptureIndicator::UIDelegate : public content::MediaStreamUI {
   void OnDeviceStoppedForSourceChange(
       const std::string& label,
       const content::DesktopMediaID& old_media_id,
-      const content::DesktopMediaID& new_media_id) override {
+      const content::DesktopMediaID& new_media_id,
+      bool captured_surface_control_active) override {
 #if BUILDFLAG(IS_CHROMEOS)
     policy::DlpContentManager::Get()->OnScreenShareSourceChanging(
-        label, old_media_id, new_media_id);
+        label, old_media_id, new_media_id, captured_surface_control_active);
 #endif
   }
 
@@ -346,7 +347,7 @@ void MediaStreamCaptureIndicator::WebContentsDeviceUsage::AddDevices(
     user_media_stop_callbacks_[stop_callback_id] = std::move(stop_callback);
   }
 
-  // TODO(crbug.com/1479984): Don't turn on this until related bugs are fixed.
+  // TODO(crbug.com/40071631): Don't turn on this until related bugs are fixed.
   // This may record the same stop_callback twice and lead to a crash if
   // called later on.
   // if (type == MediaType::kDisplayMedia) {

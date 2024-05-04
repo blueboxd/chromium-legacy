@@ -51,6 +51,8 @@ class CRYPTO_EXPORT API_AVAILABLE(macos(10.12.2)) AppleKeychainV2 {
   virtual base::apple::ScopedCFTypeRef<CFDictionaryRef> KeyCopyAttributes(
       SecKeyRef key);
 
+  // ItemAdd wraps the |SecItemAdd| function.
+  virtual OSStatus ItemAdd(CFDictionaryRef attributes, CFTypeRef* result);
   // ItemCopyMatching wraps the |SecItemCopyMatching| function.
   virtual OSStatus ItemCopyMatching(CFDictionaryRef query, CFTypeRef* result);
   // ItemDelete wraps the |SecItemDelete| function.
@@ -67,6 +69,9 @@ class CRYPTO_EXPORT API_AVAILABLE(macos(10.12.2)) AppleKeychainV2 {
       CFStringRef entitlement,
       CFErrorRef* error);
 #endif  // !BUILDFLAG(IS_IOS)
+
+  // LAContextCanEvaluatePolicy wraps LAContext's canEvaluatePolicy method.
+  virtual BOOL LAContextCanEvaluatePolicy(LAPolicy policy, NSError** error);
 
  protected:
   AppleKeychainV2();

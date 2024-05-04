@@ -21,6 +21,15 @@ EmptyDataSharingService::GetDataSharingNetworkLoader() {
   return nullptr;
 }
 
+base::WeakPtr<syncer::ModelTypeControllerDelegate>
+EmptyDataSharingService::GetCollaborationGroupControllerDelegate() {
+  return nullptr;
+}
+
+void EmptyDataSharingService::AddObserver(Observer* observer) {}
+
+void EmptyDataSharingService::RemoveObserver(Observer* observer) {}
+
 void EmptyDataSharingService::ReadAllGroups(
     base::OnceCallback<void(const GroupsDataSetOrFailureOutcome&)> callback) {}
 
@@ -38,12 +47,12 @@ void EmptyDataSharingService::DeleteGroup(
 
 void EmptyDataSharingService::InviteMember(
     const std::string& group_id,
-    const std::string& invitee_gaia_id,
+    const std::string& invitee_email,
     base::OnceCallback<void(PeopleGroupActionOutcome)> callback) {}
 
 void EmptyDataSharingService::RemoveMember(
     const std::string& group_id,
-    const std::string& member_gaia_id,
+    const std::string& member_email,
     base::OnceCallback<void(PeopleGroupActionOutcome)> callback) {}
 
 }  // namespace data_sharing

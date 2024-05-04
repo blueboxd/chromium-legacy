@@ -12,6 +12,7 @@
 #import <string>
 #import <vector>
 
+#import "base/location.h"
 #import "base/memory/raw_ptr.h"
 #import "base/memory/weak_ptr.h"
 #import "base/time/time.h"
@@ -113,6 +114,11 @@ LegacyBookmarkModel* GetBookmarkModelForNode(
 // bookmark storage.
 bool IsAccountBookmarkStorageOptedIn(syncer::SyncService* sync_service);
 
+// Returns true if the user opted-in and can use the account storage.
+// E.g. if the passphrase is missing, the storage may not be available.
+bool IsAccountBookmarkStorageAvailable(syncer::SyncService* sync_service,
+                                       LegacyBookmarkModel* account_model);
+
 // Updates `node`.
 // `folder` is the intended parent of `node`.
 // Returns a boolean signifying whether any change was performed.
@@ -129,7 +135,7 @@ bool UpdateBookmark(const bookmarks::BookmarkNode* node,
 // undo the performed action. Returns nil if there's nothing to undo.
 // Note: This function might invalidate `node` if `folder` and `node` belong to
 // different `BookmarkModel` instances.
-// TODO(crbug.com/1099901): Refactor to include position and replace two
+// TODO(crbug.com/40137712): Refactor to include position and replace two
 // functions below.
 MDCSnackbarMessage* UpdateBookmarkWithUndoToast(
     const bookmarks::BookmarkNode* node,
@@ -172,11 +178,13 @@ MDCSnackbarMessage* UpdateBookmarkPositionWithUndoToast(
 MDCSnackbarMessage* DeleteBookmarksWithUndoToast(
     const std::set<const bookmarks::BookmarkNode*>& bookmarks,
     const std::vector<LegacyBookmarkModel*>& bookmark_models,
-    ChromeBrowserState* browser_state);
+    ChromeBrowserState* browser_state,
+    const base::Location& location);
 
 // Deletes all nodes in `bookmarks`.
 void DeleteBookmarks(const std::set<const bookmarks::BookmarkNode*>& bookmarks,
-                     LegacyBookmarkModel* model);
+                     LegacyBookmarkModel* model,
+                     const base::Location& location);
 
 // Move all `bookmarks_to_move` to the given `folder`, and returns a snackbar
 // with an undo action. Returns nil if the operation wasn't successful or
@@ -228,8 +236,9 @@ std::vector<NodeVector::size_type> MissingNodesIndices(
     const NodeVector& vector2);
 
 // Creates bookmark path for `folderId` passed in. For eg: for folderId = 76,
-// Root node(0) --> MobileBookmarks (3) --> Test1(76) will be returned as [0, 3,
-// 76].
+// MobileBookmarks (3) --> Test1(76) will be returned as [3, 76], where the
+// first element always represents a permanent folder. Returns nullptr if the
+// folder is not found or is the root node.
 NSArray<NSNumber*>* CreateBookmarkPath(LegacyBookmarkModel* model,
                                        int64_t folder_id);
 

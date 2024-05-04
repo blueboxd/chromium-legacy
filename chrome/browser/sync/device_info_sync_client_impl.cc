@@ -37,8 +37,8 @@ DeviceInfoSyncClientImpl::~DeviceInfoSyncClientImpl() = default;
 std::string DeviceInfoSyncClientImpl::GetSigninScopedDeviceId() const {
 // Since the local sync backend is currently only supported on Windows, Mac and
 // Linux don't even check the pref on other os-es.
-// TODO(crbug.com/1052397): Reassess whether the next block needs to be included
-// in lacros-chrome once build flag switch of lacros-chrome is
+// TODO(crbug.com/40118868): Reassess whether the next block needs to be
+// included in lacros-chrome once build flag switch of lacros-chrome is
 // complete.
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || \
     (BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS))
@@ -54,7 +54,7 @@ std::string DeviceInfoSyncClientImpl::GetSigninScopedDeviceId() const {
 
 // syncer::DeviceInfoSyncClient:
 bool DeviceInfoSyncClientImpl::GetSendTabToSelfReceivingEnabled() const {
-  // TODO(crbug.com/1286405): Current logic allows to disable receiving tabs
+  // TODO(crbug.com/40210838): Current logic allows to disable receiving tabs
   // in Ash, while sending is still enabled - this seems to be the best solution
   // for Lacros-Primary. Once Lacros-Only is the only available option, this
   // should simply check whether SendTabToSelf datatype is enabled.

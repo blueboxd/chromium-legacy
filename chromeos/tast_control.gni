@@ -33,10 +33,6 @@ tast_disabled_tests_from_chrome_all = [
   # https://crbug.com/1379756
   "inputs.VirtualKeyboardHandwriting.floating",
 
-  # b/296821415
-  "ui.ChromeCrashLoggedIn.browser_crashpad",
-  "ui.ChromeCrashLoggedIn.browser_crashpad_mock_consent",
-
   # https://crbug.com/1282372
   "security.SELinuxFilesARC",
   "security.NetworkListenersARC",
@@ -99,6 +95,21 @@ tast_disabled_tests_from_chrome_all = [
   "inputs.VirtualKeyboardHandwriting.floating_lacros@jacuzzi",
   "inputs.VirtualKeyboardHandwriting.floating_lacros@octopus",
 
+  # b/314004675
+  "filemanager.DrivefsUI.fieldtrial_testing_config_on@reven-vmtest",
+  "filemanager.DrivefsUI.fieldtrial_testing_config_on@betty-pi-arc",
+  "filemanager.DrivefsUI.fieldtrial_testing_config_off@reven-vmtest",
+  "filemanager.DrivefsUI.fieldtrial_testing_config_off@betty-pi-arc",
+  "platform.Drivefs@reven-vmtest",
+  "platform.Drivefs@betty-pi-arc",
+
+  # b/331384750
+  "videoconferencing.TrayTriggersExtension@brya",
+  "videoconferencing.TrayTriggersExtension.lacros@brya",
+
+  # b/338111076
+  "crostini.AppAndroidStudio.bookworm_clamshell_stable@octopus",
+
   # READ COMMENT AT TOP BEFORE ADDING NEW TESTS HERE.
 ]
 
@@ -159,4 +170,12 @@ if (!is_official_build) {
   # b/324521903 temporary disabled until the test fixes
   tast_disabled_tests_from_chrome_all +=
       [ "secagentd.AuthenticationEvents.mainline@octopus" ]
+
+  # b/336365285 disabled until bug is fixed.
+  tast_disabled_tests_from_chrome_all +=
+      [ "secagentd.AuthenticationEvents.mainline@jacuzzi" ]
+
+  # b/274341001: By design, ui.ChromeCrashEarly.strict fails on non-official
+  # builds.
+  tast_disabled_tests_from_lacros_all += [ "ui.ChromeCrashEarly.strict_lacros" ]
 }

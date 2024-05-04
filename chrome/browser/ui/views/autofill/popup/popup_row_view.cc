@@ -15,7 +15,6 @@
 #include "base/functional/callback_forward.h"
 #include "base/memory/raw_ptr.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller.h"
-#include "chrome/browser/ui/user_education/scoped_new_badge_tracker.h"
 #include "chrome/browser/ui/views/autofill/popup/popup_cell_utils.h"
 #include "chrome/browser/ui/views/autofill/popup/popup_row_content_view.h"
 #include "chrome/browser/ui/views/autofill/popup/popup_row_factory_utils.h"
@@ -23,8 +22,8 @@
 #include "chrome/browser/ui/views/autofill/popup/popup_view_utils.h"
 #include "chrome/browser/ui/views/autofill/popup/popup_view_views.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
-#include "components/autofill/core/browser/ui/popup_item_ids.h"
 #include "components/autofill/core/browser/ui/suggestion.h"
+#include "components/autofill/core/browser/ui/suggestion_type.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/vector_icons/vector_icons.h"
@@ -45,14 +44,6 @@
 namespace autofill {
 
 namespace {
-
-// Returns the margin on the left and right of the row.
-int GetHorizontalMargin() {
-  return ShouldApplyNewAutofillPopupStyle()
-             ? ChromeLayoutProvider::Get()->GetDistanceMetric(
-                   DISTANCE_CONTENT_LIST_VERTICAL_SINGLE)
-             : 0;
-}
 
 // Utility event handler for mouse enter/exit and tap events.
 class EnterExitHandler : public ui::EventHandler {
@@ -76,7 +67,7 @@ constexpr int kExpandChildSuggestionsViewHorizontalPadding =
     (kExpandChildSuggestionsViewWidth - kExpandChildSuggestionsIconWidth) / 2;
 
 // Computes the position and set size of the suggestion at `suggestion_index` in
-// `controller`'s suggestions ignoring `PopupItemId::kSeparator`s.
+// `controller`'s suggestions ignoring `SuggestionType::kSeparator`s.
 // Returns a pair of numbers: <position, size>. The position value is 1-base.
 std::pair<int, int> ComputePositionInSet(
     base::WeakPtr<AutofillPopupController> controller,
@@ -86,8 +77,7 @@ std::pair<int, int> ComputePositionInSet(
   int set_size = 0;
   int set_index = suggestion_index + 1;
   for (int i = 0; i < controller->GetLineCount(); ++i) {
-    if (controller->GetSuggestionAt(i).popup_item_id !=
-        PopupItemId::kSeparator) {
+    if (controller->GetSuggestionAt(i).type != SuggestionType::kSeparator) {
       ++set_size;
       continue;
     }
@@ -104,9 +94,9 @@ std::u16string GetSuggestionA11yString(const Suggestion& suggestion,
       {popup_cell_utils::GetVoiceOverStringFromSuggestion(suggestion)});
 
   if (!suggestion.children.empty()) {
-    CHECK(IsExpandablePopupItemId(suggestion.popup_item_id));
+    CHECK(IsExpandableSuggestionType(suggestion.type));
 
-    if (suggestion.popup_item_id == PopupItemId::kAddressEntry &&
+    if (suggestion.type == SuggestionType::kAddressEntry &&
         add_call_to_action_if_expandable) {
       text.push_back(l10n_util::GetStringUTF16(
           IDS_AUTOFILL_EXPANDABLE_SUGGESTION_FILL_ADDRESS_A11Y_ADDON));
@@ -152,28 +142,10 @@ void EnterExitHandler::OnEvent(ui::Event* event) {
   }
 }
 
-PopupRowView::ScopedNewBadgeTrackerWithAcceptAction::
-    ScopedNewBadgeTrackerWithAcceptAction(
-        std::unique_ptr<ScopedNewBadgeTracker> tracker,
-        const char* action_name)
-    : tracker_(std::move(tracker)), action_name_(action_name) {
-  CHECK(tracker_);
-}
-
-PopupRowView::ScopedNewBadgeTrackerWithAcceptAction::
-    ~ScopedNewBadgeTrackerWithAcceptAction() = default;
-
-PopupRowView::ScopedNewBadgeTrackerWithAcceptAction::
-    ScopedNewBadgeTrackerWithAcceptAction(
-        ScopedNewBadgeTrackerWithAcceptAction&&) = default;
-
-PopupRowView::ScopedNewBadgeTrackerWithAcceptAction&
-PopupRowView::ScopedNewBadgeTrackerWithAcceptAction::operator=(
-    ScopedNewBadgeTrackerWithAcceptAction&&) = default;
-
-void PopupRowView::ScopedNewBadgeTrackerWithAcceptAction::
-    OnSuggestionAccepted() {
-  tracker_->ActionPerformed(action_name_);
+// static
+int PopupRowView::GetHorizontalMargin() {
+  return ChromeLayoutProvider::Get()->GetDistanceMetric(
+      DISTANCE_CONTENT_LIST_VERTICAL_SINGLE);
 }
 
 PopupRowView::PopupRowView(
@@ -246,9 +218,9 @@ PopupRowView::PopupRowView(
   content_view_->GetViewAccessibility().SetRole(
       ax::mojom::Role::kListBoxOption);
   content_view_->GetViewAccessibility().SetName(
-      GetSuggestionA11yString(
-          suggestion,
-          /*add_call_to_action_if_expandable=*/suggestion.is_acceptable),
+      GetSuggestionA11yString(suggestion,
+                              /*add_call_to_action_if_expandable=*/
+                              suggestion.is_acceptable),
       ax::mojom::NameFrom::kAttribute);
   auto [position, set_size] = ComputePositionInSet(controller_, line_number);
   content_view_->GetViewAccessibility().SetPosInSet(position);
@@ -268,7 +240,7 @@ PopupRowView::PopupRowView(
             gfx::Insets(kExpandChildSuggestionsViewHorizontalPadding)));
     expand_child_suggestions_view_->AddChildView(
         popup_cell_utils::ImageViewFromVectorIcon(
-            vector_icons::kSubmenuArrowChromeRefreshIcon,
+            popup_cell_utils::GetExpandableMenuIcon(suggestion.type),
             kExpandChildSuggestionsIconWidth));
     expand_child_suggestions_view_->AddObserver(this);
     control_event_handler_ = set_exit_enter_callbacks(
@@ -308,16 +280,16 @@ void PopupRowView::OnMouseReleased(const ui::MouseEvent& event) {
   }
 
   if (event.IsOnlyLeftMouseButton() &&
-      content_view_->HitTestPoint(event.location())) {
-    RunOnAccepted();
+      content_view_->HitTestPoint(event.location()) && controller_) {
+    controller_->AcceptSuggestion(line_number_);
   }
 }
 
 void PopupRowView::OnGestureEvent(ui::GestureEvent* event) {
   switch (event->type()) {
     case ui::ET_GESTURE_TAP:
-      if (content_view_->HitTestPoint(event->location())) {
-        RunOnAccepted();
+      if (content_view_->HitTestPoint(event->location()) && controller_) {
+        controller_->AcceptSuggestion(line_number_);
       }
       break;
     default:
@@ -432,26 +404,19 @@ bool PopupRowView::HandleKeyPressEvent(
   CHECK(GetSelectedCell());
 
   switch (event.windows_key_code) {
-    case ui::VKEY_RETURN:
-      if (*GetSelectedCell() == CellType::kContent && controller_) {
+    case ui::VKEY_RETURN: {
+      const bool kHasKeyModifierPressed =
+          event.GetModifiers() & blink::WebInputEvent::kKeyModifiers;
+      if (*GetSelectedCell() == CellType::kContent && controller_ &&
+          !kHasKeyModifierPressed) {
         controller_->AcceptSuggestion(line_number_);
         return true;
       }
       return false;
+    }
     default:
       return false;
   }
-}
-
-// TODO: Clean up.
-void PopupRowView::RunOnAccepted() {
-  if (!controller_) {
-    return;
-  }
-  if (new_badge_tracker_) {
-    new_badge_tracker_->OnSuggestionAccepted();
-  }
-  controller_->AcceptSuggestion(line_number_);
 }
 
 void PopupRowView::UpdateBackground() {

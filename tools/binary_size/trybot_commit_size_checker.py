@@ -99,7 +99,7 @@ class _SizeDelta(collections.namedtuple(
 
 # See https://crbug.com/1426694
 def _MaxSizeIncrease(author, subject):
-  if 'AFDO' in subject:
+  if 'AFDO' in subject or 'PGO Profile' in subject:
     return 1024 * 1024
   if 'Update V8' in subject:
     return 100 * 1024
@@ -142,8 +142,8 @@ def _CreateMethodCountDelta(symbols, max_increase):
   symbols = symbols.WhereIsOnDemand(False)
   method_symbols = symbols.WhereInSection(models.SECTION_DEX_METHOD)
   method_lines, net_method_added = _SymbolDiffHelper('Methods', method_symbols)
-  class_symbols = symbols.WhereInSection(
-      models.SECTION_DEX).WhereNameMatches('#').Inverted()
+  class_symbols = symbols.WhereInSection(models.SECTION_DEX).Filter(
+      lambda s: not s.IsStringLiteral() and '#' not in s.name)
   class_lines, _ = _SymbolDiffHelper('Classes', class_symbols)
   lines = []
   if class_lines:
@@ -277,26 +277,24 @@ def _CreateTestingSymbolsDeltas(before_mapping_paths, after_mapping_paths):
 def _GenerateBinarySizePluginDetails(metrics):
   binary_size_listings = []
   for delta, log_name in metrics:
-    # Only show the base module delta if it is significant.
-    if (log_name == _BASE_RESOURCE_SIZES_LOG and delta.IsAllowable()
-        and not delta.IsLargeImprovement()):
-      continue
+    # Give more friendly names to Normalized APK Size metrics.
+    name = delta.name
+    if log_name == _RESOURCE_SIZES_LOG:
+      # The Gerrit plugin looks for this name to put it in the summary.
+      name = 'Android Binary Size'
+    elif log_name == _RESOURCE_SIZES_64_LOG:
+      name = 'Android Binary Size (arm64 high end) (TrichromeLibrary64.apk)'
     listing = {
-        'name': delta.name,
+        'name': name,
         'delta': '{} {}'.format(_FormatNumber(delta.actual), delta.units),
         'limit': '{} {}'.format(_FormatNumber(delta.expected), delta.units),
         'log_name': log_name,
         'allowed': delta.IsAllowable(),
         'large_improvement': delta.IsLargeImprovement(),
     }
-    if log_name == _RESOURCE_SIZES_LOG:
-      listing['name'] = 'Android Binary Size (arm32)'
-    elif log_name == _RESOURCE_SIZES_64_LOG:
-      listing['name'] = 'Android Binary Size (high-end arm64)'
-    elif delta.actual == 0:
-      # The above two deltas are always shown, even if unchanged.
-      continue
-    binary_size_listings.append(listing)
+    # Always show the Normalized APK Size.
+    if log_name == _RESOURCE_SIZES_LOG or delta.actual != 0:
+      binary_size_listings.append(listing)
   binary_size_listings.sort(key=lambda x: x['name'])
 
   binary_size_extras = [
@@ -317,7 +315,7 @@ def _FormatNumber(number):
   return '{:+,}'.format(number)
 
 
-# TODO(https://crbug.com/1414410): If missing and file is x32y, return xy; else
+# TODO(crbug.com/40256106): If missing and file is x32y, return xy; else
 # return original filename. Basically allows comparing x_32 targets with x
 # targets built under 32bit target_cpu without failing the script due to
 # different file names. Remove once migration is complete.

@@ -140,6 +140,18 @@ PaintResult PaintLayerPainter::Paint(GraphicsContext& context,
       !paint_layer_.HasSelfPaintingLayerDescendant())
     return kFullyPainted;
 
+  std::optional<CheckAncestorPositionVisibilityScope>
+      check_position_visibility_scope;
+  if (RuntimeEnabledFeatures::CSSPositionVisibilityEnabled()) {
+    if (paint_layer_.InvisibleForPositionVisibility() ||
+        paint_layer_.HasAncestorInvisibleForPositionVisibility()) {
+      return kFullyPainted;
+    }
+    if (paint_layer_.GetLayoutObject().IsStackingContext()) {
+      check_position_visibility_scope.emplace(paint_layer_);
+    }
+  }
+
   // A paint layer should always have LocalBorderBoxProperties when it's ready
   // for paint.
   if (!object.FirstFragment().HasLocalBorderBoxProperties()) {
@@ -303,8 +315,7 @@ PaintResult PaintLayerPainter::Paint(GraphicsContext& context,
   if (should_paint_content && !selection_drag_image_only) {
     if (const auto* properties = object.FirstFragment().PaintProperties()) {
       if (properties->Mask()) {
-        if (RuntimeEnabledFeatures::CSSMaskingInteropEnabled() &&
-            object.IsSVGForeignObject()) {
+        if (object.IsSVGForeignObject()) {
           SVGMaskPainter::Paint(context, object, object);
         } else {
           PaintWithPhase(PaintPhase::kMask, context, paint_flags);
@@ -393,9 +404,10 @@ void PaintLayerPainter::PaintFragmentWithPhase(
       context.GetPaintController(), chunk_properties, paint_layer_,
       DisplayItem::PaintPhaseToDrawingType(phase));
 
-  PaintInfo paint_info(context, cull_rect, phase, paint_flags);
-  if (paint_layer_.GetLayoutObject().ChildPaintBlockedByDisplayLock())
-    paint_info.SetDescendantPaintingBlocked(true);
+  PaintInfo paint_info(
+      context, cull_rect, phase,
+      paint_layer_.GetLayoutObject().ChildPaintBlockedByDisplayLock(),
+      paint_flags);
 
   if (physical_fragment) {
     BoxFragmentPainter(*physical_fragment).Paint(paint_info);

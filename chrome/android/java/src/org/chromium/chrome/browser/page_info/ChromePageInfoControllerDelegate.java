@@ -4,11 +4,14 @@
 
 package org.chromium.chrome.browser.page_info;
 
+import static org.chromium.components.browser_ui.site_settings.AllSiteSettings.EXTRA_SEARCH;
+
 import android.app.Activity;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.ViewGroup;
 
@@ -24,7 +27,6 @@ import org.chromium.chrome.browser.compositor.bottombar.ephemeraltab.EphemeralTa
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.feedback.HelpAndFeedbackLauncher;
 import org.chromium.chrome.browser.feedback.HelpAndFeedbackLauncherImpl;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.merchant_viewer.PageInfoStoreInfoController;
 import org.chromium.chrome.browser.merchant_viewer.PageInfoStoreInfoController.StoreInfoActionHandler;
 import org.chromium.chrome.browser.offlinepages.OfflinePageItem;
@@ -44,6 +46,7 @@ import org.chromium.chrome.browser.tabmodel.TabCreator;
 import org.chromium.chrome.browser.ui.favicon.FaviconHelper;
 import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
 import org.chromium.components.browser_ui.settings.SettingsLauncher;
+import org.chromium.components.browser_ui.site_settings.AllSiteSettings;
 import org.chromium.components.browser_ui.site_settings.SiteSettingsCategory;
 import org.chromium.components.browser_ui.site_settings.SiteSettingsDelegate;
 import org.chromium.components.browser_ui.widget.TintedDrawable;
@@ -213,7 +216,7 @@ public class ChromePageInfoControllerDelegate extends PageInfoControllerDelegate
     @Override
     public void showCookieSettings() {
         SiteSettingsHelper.showCategorySettings(
-                mContext, mProfile, SiteSettingsCategory.Type.THIRD_PARTY_COOKIES);
+                mContext, SiteSettingsCategory.Type.THIRD_PARTY_COOKIES);
     }
 
     /** {@inheritDoc} */
@@ -221,6 +224,16 @@ public class ChromePageInfoControllerDelegate extends PageInfoControllerDelegate
     public void showTrackingProtectionSettings() {
         SettingsLauncher settingsLauncher = new SettingsLauncherImpl();
         settingsLauncher.launchSettingsActivity(mContext, TrackingProtectionSettings.class);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void showAllSettingsForRws(String rwsOwner) {
+        Bundle extras = new Bundle();
+        extras.putString(EXTRA_SEARCH, rwsOwner);
+
+        SettingsLauncher settingsLauncher = new SettingsLauncherImpl();
+        settingsLauncher.launchSettingsActivity(mContext, AllSiteSettings.class, extras);
     }
 
     @Override
@@ -360,8 +373,12 @@ public class ChromePageInfoControllerDelegate extends PageInfoControllerDelegate
 
     @Override
     public boolean showTrackingProtectionUI() {
-        return (UserPrefs.get(mProfile).getBoolean(Pref.TRACKING_PROTECTION3PCD_ENABLED)
-                || ChromeFeatureList.isEnabled(ChromeFeatureList.TRACKING_PROTECTION_3PCD));
+        return getSiteSettingsDelegate().shouldShowTrackingProtectionUI();
+    }
+
+    @Override
+    public boolean showTrackingProtectionLaunchUI() {
+        return getSiteSettingsDelegate().shouldShowTrackingProtectionLaunchUI();
     }
 
     @Override

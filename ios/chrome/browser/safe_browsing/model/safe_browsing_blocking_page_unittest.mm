@@ -36,7 +36,8 @@ const char kMalwareDecisionMetric[] = "interstitial.malware.decision";
 UnsafeResource CreateResource(web::WebState* web_state, const GURL& url) {
   UnsafeResource resource;
   resource.url = url;
-  resource.threat_type = safe_browsing::SB_THREAT_TYPE_URL_MALWARE;
+  resource.threat_type =
+      safe_browsing::SBThreatType::SB_THREAT_TYPE_URL_MALWARE;
   resource.weak_web_state = web_state->GetWeakPtr();
   resource.threat_source = safe_browsing::ThreatSource::LOCAL_PVER4;
   return resource;
@@ -67,7 +68,7 @@ class SafeBrowsingBlockingPageTest : public PlatformTest {
 
  protected:
   web::WebTaskEnvironment task_environment_{
-      web::WebTaskEnvironment::IO_MAINLOOP};
+      web::WebTaskEnvironment::MainThreadType::IO};
   std::unique_ptr<ChromeBrowserState> browser_state_;
   web::FakeWebState web_state_;
   raw_ptr<web::FakeNavigationManager> navigation_manager_ = nullptr;

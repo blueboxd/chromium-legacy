@@ -14,6 +14,7 @@
 #include "base/mac/mac_util.h"
 #include "base/no_destructor.h"
 #include "cc/paint/paint_shader.h"
+#include "ui/base/cocoa/defaults_utils.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/color/color_provider.h"
@@ -23,7 +24,7 @@
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/skia_conversions.h"
-#include "ui/native_theme/common_theme.h"
+#include "ui/native_theme/native_theme.h"
 #include "ui/native_theme/native_theme_aura.h"
 #include "ui/native_theme/native_theme_features.h"
 
@@ -169,6 +170,7 @@ void NativeThemeMac::Paint(cc::PaintCanvas* canvas,
                            const gfx::Rect& rect,
                            const ExtraParams& extra,
                            ColorScheme color_scheme,
+                           bool in_forced_colors,
                            const std::optional<SkColor>& accent_color) const {
   ColorScheme color_scheme_updated = color_scheme;
   if (color_scheme_updated == ColorScheme::kDefault) {
@@ -199,7 +201,7 @@ void NativeThemeMac::Paint(cc::PaintCanvas* canvas,
       break;
     default:
       NativeThemeBase::Paint(canvas, color_provider, part, state, rect, extra,
-                             color_scheme, accent_color);
+                             color_scheme, in_forced_colors, accent_color);
       break;
   }
 }
@@ -582,6 +584,13 @@ NativeThemeMac::NativeThemeMac(bool configure_web_instance,
 NativeThemeMac::~NativeThemeMac() {
   [NSNotificationCenter.defaultCenter
       removeObserver:display_accessibility_notification_token_];
+}
+
+std::optional<base::TimeDelta> NativeThemeMac::GetPlatformCaretBlinkInterval()
+    const {
+  // If there's insertion point flash rate info in NSUserDefaults, use the
+  // blink period derived from that.
+  return ui::TextInsertionCaretBlinkPeriodFromDefaults();
 }
 
 void NativeThemeMac::PaintSelectedMenuItem(

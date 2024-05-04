@@ -13,7 +13,6 @@
 #include "base/functional/callback_helpers.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/memory/weak_ptr.h"
 #include "base/ranges/algorithm.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
@@ -32,6 +31,7 @@
 #include "cc/layers/layer.h"
 #include "components/viz/test/test_context_provider.h"
 #include "media/base/decoder_buffer.h"
+#include "media/base/key_systems_impl.h"
 #include "media/base/media_content_type.h"
 #include "media/base/media_log.h"
 #include "media/base/media_observer.h"
@@ -58,7 +58,6 @@
 #include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/platform/media/web_media_player_builder.h"
 #include "third_party/blink/public/platform/media/web_media_player_delegate.h"
-#include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/public/platform/web_fullscreen_video_status.h"
 #include "third_party/blink/public/platform/web_media_player.h"
 #include "third_party/blink/public/platform/web_media_player_client.h"
@@ -127,8 +126,7 @@ MATCHER_P2(PlaybackRateChanged, old_rate_string, new_rate_string, "") {
                                   std::string(new_rate_string));
 }
 
-class MockMediaObserver : public media::MediaObserver,
-                          public base::SupportsWeakPtr<MockMediaObserver> {
+class MockMediaObserver : public media::MediaObserver {
  public:
   MOCK_METHOD1(OnBecameDominantVisibleContent, void(bool));
   MOCK_METHOD1(OnMetadataChanged, void(const media::PipelineMetadata&));
@@ -140,6 +138,13 @@ class MockMediaObserver : public media::MediaObserver,
   MOCK_METHOD0(OnFrozen, void());
   MOCK_METHOD1(OnDataSourceInitialized, void(const GURL&));
   MOCK_METHOD1(SetClient, void(media::MediaObserverClient*));
+
+  base::WeakPtr<MediaObserver> AsWeakPtr() {
+    return weak_ptr_factory_.GetWeakPtr();
+  }
+
+ private:
+  base::WeakPtrFactory<MediaObserver> weak_ptr_factory_{this};
 };
 
 class MockWebMediaPlayerClient : public WebMediaPlayerClient {
@@ -774,15 +779,15 @@ class WebMediaPlayerImplTest
     WebURLResponse response(kTestURL);
     response.SetHttpHeaderField(
         WebString::FromUTF8("Content-Length"),
-        WebString::FromUTF8(
-            is_streaming ? "-1" : base::NumberToString(data->data_size())));
-    response.SetExpectedContentLength(is_streaming ? -1 : data->data_size());
+        WebString::FromUTF8(is_streaming ? "-1"
+                                         : base::NumberToString(data->size())));
+    response.SetExpectedContentLength(is_streaming ? -1 : data->size());
     response.SetHttpStatusCode(200);
     client->DidReceiveResponse(response);
 
     // Copy over the file data.
     client->DidReceiveData(reinterpret_cast<const char*>(data->data()),
-                           static_cast<int>(data->data_size()));
+                           static_cast<int>(data->size()));
 
     // If we're pretending to be a streaming resource, don't complete the load;
     // otherwise the DataSource will not be marked as streaming.
@@ -849,9 +854,13 @@ class WebMediaPlayerImplTest
     auto test_origin = WebSecurityOrigin::CreateFromString(
         WebString::FromUTF8("https://test.origin"));
 
+    if (!key_systems_) {
+      key_systems_ =
+          std::make_unique<media::KeySystemsImpl>(base::NullCallback());
+    }
     base::RunLoop run_loop;
     WebContentDecryptionModuleImpl::Create(
-        &mock_cdm_factory_, test_origin, cdm_config,
+        &mock_cdm_factory_, key_systems_.get(), test_origin, cdm_config,
         WTF::BindOnce(&WebMediaPlayerImplTest::OnCdmCreated,
                       WTF::Unretained(this), run_loop.QuitClosure()));
     run_loop.Run();
@@ -897,6 +906,8 @@ class WebMediaPlayerImplTest
   // The client interface used by |wmpi_|.
   NiceMock<MockWebMediaPlayerClient> client_;
   MockWebMediaPlayerEncryptedMediaClient encrypted_client_;
+
+  std::unique_ptr<media::KeySystemsImpl> key_systems_;
 
   // Used to create the media::MockCdm to test encrypted playback.
   scoped_refptr<media::MockCdm> mock_cdm_ =
@@ -2495,7 +2506,7 @@ TEST_F(WebMediaPlayerImplTest, DISABLED_DemuxerOverride) {
       std::make_unique<NiceMock<media::MockDemuxer>>();
   StrictMock<media::MockDemuxerStream> stream(media::DemuxerStream::AUDIO);
   stream.set_audio_decoder_config(TestAudioConfig::Normal());
-  std::vector<vector_experimental_raw_ptr<media::DemuxerStream>> streams;
+  std::vector<media::DemuxerStream*> streams;
   streams.push_back(&stream);
 
   EXPECT_CALL(stream, SupportsConfigChanges()).WillRepeatedly(Return(false));

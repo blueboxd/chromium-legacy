@@ -12,8 +12,10 @@
 #include "base/functional/bind.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/observer_list.h"
 #include "base/strings/stringprintf.h"
+#include "base/time/time.h"
 #include "base/trace_event/memory_allocator_dump.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/process_memory_dump.h"
@@ -23,6 +25,7 @@
 #include "cc/tiles/software_image_decode_cache.h"
 #include "components/viz/common/resources/shared_image_format_utils.h"
 #include "gpu/GLES2/gl2extchromium.h"
+#include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/raster_interface.h"
 #include "gpu/command_buffer/common/capabilities.h"
 #include "gpu/command_buffer/common/shared_image_capabilities.h"
@@ -315,8 +318,7 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
     WillDrawInternal(true);
     RasterInterface()->WritePixels(
         GetBackingMailboxForOverwrite(kOrderingBarrier), x, y,
-        /*dst_plane_index=*/0, GetBackingTextureTarget(),
-        SkPixmap(orig_info, pixels, row_bytes));
+        GetBackingTextureTarget(), SkPixmap(orig_info, pixels, row_bytes));
 
     // If the overdraw optimization kicked in, we need to indicate that the
     // pixels do not need to be cleared, otherwise the subsequent
@@ -698,9 +700,9 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
     resource()->OnMemoryDump(pmd, path, GetSkImageInfo().bytesPerPixel());
 
     std::string cached_path = path + "/cached";
-    for (const auto& canvas_resource : canvas_resources()) {
-      auto* resource_pointer =
-          static_cast<CanvasResourceSharedImage*>(canvas_resource.get());
+    for (const auto& canvas_resource : CanvasResources()) {
+      auto* resource_pointer = static_cast<CanvasResourceSharedImage*>(
+          canvas_resource.resource.get());
       // In single buffered mode, `resource_` is not removed from
       // `canvas_resources_`.
       if (resource_pointer == resource()) {
@@ -912,9 +914,9 @@ class CanvasResourceProviderSwapChain final : public CanvasResourceProvider {
       return false;
 
     WillDraw();
-    RasterInterface()->WritePixels(
-        resource_->GetBackBufferMailbox(), x, y, /*dst_plane_index=*/0,
-        GetBackingTextureTarget(), SkPixmap(orig_info, pixels, row_bytes));
+    RasterInterface()->WritePixels(resource_->GetBackBufferMailbox(), x, y,
+                                   GetBackingTextureTarget(),
+                                   SkPixmap(orig_info, pixels, row_bytes));
     return true;
   }
 
@@ -1281,6 +1283,12 @@ BASE_FEATURE(kCanvas2DAutoFlushParams,
              "Canvas2DAutoFlushParams",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// When enabled, unused resources (ready to be recycled) are reclaimed after a
+// delay.
+BASE_FEATURE(kCanvas2DReclaimUnusedResources,
+             "Canvas2DReclaimUnusedResources",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // The following parameters attempt to reach a compromise between not flushing
 // too often, and not accumulating an unreasonable backlog. Flushing too
 // often will hurt performance due to overhead costs. Accumulating large
@@ -1387,6 +1395,33 @@ void CanvasResourceProvider::NotifyWillTransfer(
   // references to such a bitmap on the current thread must be released, which
   // means that DisplayItemLists that reference it must be flushed.
   GetFlushForImageListener()->NotifyFlushForImage(content_id);
+}
+
+bool CanvasResourceProvider::OverwriteImage(
+    const gpu::Mailbox& shared_image_mailbox,
+    const gfx::Rect& copy_rect,
+    bool unpack_flip_y,
+    bool unpack_premultiply_alpha,
+    const gpu::SyncToken& ready_sync_token,
+    gpu::SyncToken& completion_sync_token) {
+  gpu::raster::RasterInterface* raster = RasterInterface();
+  if (!raster) {
+    return false;
+  }
+  gpu::Mailbox dst_mailbox =
+      GetBackingMailboxForOverwrite(MailboxSyncMode::kOrderingBarrier);
+  if (dst_mailbox.IsZero()) {
+    return false;
+  }
+
+  raster->WaitSyncTokenCHROMIUM(ready_sync_token.GetConstData());
+  raster->CopySharedImage(shared_image_mailbox, dst_mailbox,
+                          GetBackingTextureTarget(), /*xoffset=*/0,
+                          /*yoffset=*/0, copy_rect.x(), copy_rect.y(),
+                          copy_rect.width(), copy_rect.height(), unpack_flip_y,
+                          unpack_premultiply_alpha);
+  raster->GenUnverifiedSyncTokenCHROMIUM(completion_sync_token.GetData());
+  return true;
 }
 
 void CanvasResourceProvider::EnsureSkiaCanvas() {
@@ -1698,14 +1733,16 @@ void CanvasResourceProvider::RecycleResource(
     scoped_refptr<CanvasResource>&& resource) {
   // We don't want to keep an arbitrary large number of canvases.
   if (canvas_resources_.size() >
-      static_cast<unsigned int>(kMaxRecycledCanvasResources))
+      static_cast<unsigned int>(kMaxRecycledCanvasResources)) {
     return;
+  }
 
   // Need to check HasOneRef() because if there are outstanding references to
   // the resource, it cannot be safely recycled.
   if (resource->HasOneRef() && resource_recycling_enabled_ &&
       !is_single_buffered_) {
-    canvas_resources_.push_back(std::move(resource));
+    RegisterUnusedResource(std::move(resource));
+    MaybePostUnusedResourcesReclaimTask();
   }
 }
 
@@ -1723,9 +1760,50 @@ void CanvasResourceProvider::OnDestroyResource() {
   --num_inflight_resources_;
 }
 
+void CanvasResourceProvider::RegisterUnusedResource(
+    scoped_refptr<CanvasResource>&& resource) {
+  canvas_resources_.emplace_back(base::TimeTicks::Now(), std::move(resource));
+}
+
+void CanvasResourceProvider::MaybePostUnusedResourcesReclaimTask() {
+  if (!base::FeatureList::IsEnabled(kCanvas2DReclaimUnusedResources)) {
+    return;
+  }
+
+  if (resource_recycling_enabled_ && !is_single_buffered_ &&
+      !unused_resources_reclaim_timer_.IsRunning() &&
+      !canvas_resources_.empty()) {
+    unused_resources_reclaim_timer_.Start(
+        FROM_HERE, kUnusedResourceExpirationTime,
+        base::BindOnce(&CanvasResourceProvider::ClearOldUnusedResources,
+                       base::Unretained(this)));
+  }
+}
+
+void CanvasResourceProvider::ClearOldUnusedResources() {
+  bool cleared_resources =
+      WTF::EraseIf(canvas_resources_, [](const UnusedResource& resource) {
+        return base::TimeTicks::Now() - resource.last_use >=
+               kUnusedResourceExpirationTime;
+      });
+  // May have destroyed resources above, make sure that it gets to the other
+  // side. SharedImage destruction (which may be triggered by the removal of
+  // canvas resources above) is a deferred message, we need to flush pending
+  // work to ensure that it is not merely queued, but is executed on the service
+  // side.
+  if (cleared_resources && ContextProviderWrapper()) {
+    if (gpu::ContextSupport* context_support =
+            ContextProviderWrapper()->ContextProvider()->ContextSupport()) {
+      context_support->FlushPendingWork();
+    }
+  }
+
+  MaybePostUnusedResourcesReclaimTask();
+}
+
 scoped_refptr<CanvasResource> CanvasResourceProvider::NewOrRecycledResource() {
   if (canvas_resources_.empty()) {
-    canvas_resources_.push_back(CreateResource());
+    RegisterUnusedResource(CreateResource());
     ++num_inflight_resources_;
     if (num_inflight_resources_ > max_inflight_resources_)
       max_inflight_resources_ = num_inflight_resources_;
@@ -1733,11 +1811,13 @@ scoped_refptr<CanvasResource> CanvasResourceProvider::NewOrRecycledResource() {
 
   if (IsSingleBuffered()) {
     DCHECK_EQ(canvas_resources_.size(), 1u);
-    return canvas_resources_.back();
+    return canvas_resources_.back().resource;
   }
 
-  scoped_refptr<CanvasResource> resource = std::move(canvas_resources_.back());
+  scoped_refptr<CanvasResource> resource =
+      std::move(canvas_resources_.back().resource);
   canvas_resources_.pop_back();
+  DCHECK(resource->HasOneRef());
   return resource;
 }
 
@@ -1753,7 +1833,7 @@ bool CanvasResourceProvider::ImportResource(
   if (!IsSingleBuffered() || !SupportsSingleBuffering())
     return false;
   canvas_resources_.clear();
-  canvas_resources_.push_back(std::move(resource));
+  RegisterUnusedResource(std::move(resource));
   return true;
 }
 
@@ -1764,7 +1844,7 @@ scoped_refptr<CanvasResource> CanvasResourceProvider::GetImportedResource()
   DCHECK_LE(canvas_resources_.size(), 1u);
   if (canvas_resources_.empty())
     return nullptr;
-  return canvas_resources_.back();
+  return canvas_resources_.back().resource;
 }
 
 void CanvasResourceProvider::RestoreBackBuffer(const cc::PaintImage& image) {
@@ -1800,7 +1880,7 @@ void CanvasResourceProvider::OnMemoryDump(
 
   for (const auto& resource : canvas_resources_) {
     // Don't report, to avoid double-counting.
-    if (resource->HasDetailedMemoryDumpProvider()) {
+    if (resource.resource->HasDetailedMemoryDumpProvider()) {
       return;
     }
   }

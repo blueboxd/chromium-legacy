@@ -22,6 +22,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_param_associator.h"
+#include "base/metrics/histogram_macros_local.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -45,6 +46,7 @@
 #include "chrome/grit/generated_resources.h"
 #import "chrome/services/mac_notifications/mac_notification_service_ns.h"
 #import "chrome/services/mac_notifications/mac_notification_service_un.h"
+#include "components/metrics/child_histogram_fetcher_impl.h"
 #include "components/remote_cocoa/app_shim/application_bridge.h"
 #include "components/remote_cocoa/app_shim/native_widget_ns_window_bridge.h"
 #include "components/remote_cocoa/common/application.mojom.h"
@@ -278,7 +280,8 @@ void AppShimController::PreInitFeatureState(
       std::move(feature_list),
       {"AppShimLaunchChromeSilently", "AppShimNotificationAttribution",
        "DcheckIsFatal", "MojoBindingsInlineSLS", "MojoInlineMessagePayloads",
-       "MojoIpcz", "MojoTaskPerMessage", "StandardCompliantHostCharacters",
+       "MojoIpcz", "MojoIpczMemV2", "MojoTaskPerMessage",
+       "StandardCompliantHostCharacters",
        "StandardCompliantNonSpecialSchemeURLParsing",
        "UseAdHocSigningForWebAppShims", "UseIDNA2008NonTransitional",
        "SonomaAccessibilityActivationRefinements"});
@@ -582,11 +585,12 @@ void AppShimController::SendBootstrapOnShimConnected(
   // automatically launch the app as well. So do a kRegisterOnly launch
   // instead.
   app_shim_info->launch_type =
-      (launched_by_notification_action_ ||
-       (base::CommandLine::ForCurrentProcess()->HasSwitch(
-            app_mode::kLaunchedByChromeProcessId) &&
-        !base::CommandLine::ForCurrentProcess()->HasSwitch(
-            app_mode::kIsNormalLaunch)))
+      launched_by_notification_action_
+          ? chrome::mojom::AppShimLaunchType::kNotificationAction
+      : (base::CommandLine::ForCurrentProcess()->HasSwitch(
+             app_mode::kLaunchedByChromeProcessId) &&
+         !base::CommandLine::ForCurrentProcess()->HasSwitch(
+             app_mode::kIsNormalLaunch))
           ? chrome::mojom::AppShimLaunchType::kRegisterOnly
           : chrome::mojom::AppShimLaunchType::kNormal;
   app_shim_info->files = launch_files_;
@@ -790,7 +794,7 @@ void AppShimController::BindNotificationService(
         handler) {
   CHECK(
       base::FeatureList::IsEnabled(features::kAppShimNotificationAttribution));
-  // TODO(https://crbug.com/938661): Once ad-hoc signed app shims become the
+  // TODO(crbug.com/40616749): Once ad-hoc signed app shims become the
   // default on supported platforms, change this to always use the
   // UNUserNotification API (and not support notification attribution on other
   // platforms at all).
@@ -815,7 +819,7 @@ void AppShimController::BindNotificationService(
     // be triggered before the browser process tries to connect to the
     // notification service.
     notification_service_un()->Bind(std::move(service));
-    // TODO(crbug.com/938661): Determine when to ask for permissions.
+    // TODO(crbug.com/40616749): Determine when to ask for permissions.
     notification_service_un()->RequestPermission(base::DoNothing());
   } else {
     notification_service_ =
@@ -921,5 +925,13 @@ NSMenu* AppShimController::GetApplicationDockMenu() {
 }
 
 void AppShimController::ApplicationWillTerminate() {
+  // Local histogram to let tests verify that histograms are emitted properly.
+  LOCAL_HISTOGRAM_BOOLEAN("AppShim.WillTerminate", true);
   host_->ApplicationWillTerminate();
+}
+
+void AppShimController::BindChildHistogramFetcherFactory(
+    mojo::PendingReceiver<metrics::mojom::ChildHistogramFetcherFactory>
+        receiver) {
+  metrics::ChildHistogramFetcherFactoryImpl::Create(std::move(receiver));
 }

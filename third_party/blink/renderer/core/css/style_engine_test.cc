@@ -1965,7 +1965,7 @@ TEST_F(StyleEngineTest, MediaQueriesChangeForcedColors) {
                 GetCSSPropertyColor()));
 
   ColorSchemeHelper color_scheme_helper(GetDocument());
-  color_scheme_helper.SetForcedColors(GetDocument(), ForcedColors::kActive);
+  color_scheme_helper.SetInForcedColors(/*in_forced_colors=*/true);
   UpdateAllLifecyclePhases();
   EXPECT_EQ(Color::FromRGB(0, 128, 0),
             GetDocument().body()->GetComputedStyle()->VisitedDependentColor(
@@ -1995,9 +1995,9 @@ TEST_F(StyleEngineTest, MediaQueriesChangeForcedColorsAndPreferredColorScheme) {
     <body></body>
   )HTML");
 
-  // ForcedColors = kNone, PreferredColorScheme = kLight
+  // InForcedColors = false, PreferredColorScheme = kLight
   ColorSchemeHelper color_scheme_helper(GetDocument());
-  color_scheme_helper.SetForcedColors(GetDocument(), ForcedColors::kNone);
+  color_scheme_helper.SetInForcedColors(/*in_forced_colors=*/false);
   color_scheme_helper.SetPreferredColorScheme(
       mojom::blink::PreferredColorScheme::kLight);
   UpdateAllLifecyclePhases();
@@ -2013,14 +2013,14 @@ TEST_F(StyleEngineTest, MediaQueriesChangeForcedColorsAndPreferredColorScheme) {
             GetDocument().body()->GetComputedStyle()->VisitedDependentColor(
                 GetCSSPropertyColor()));
 
-  // ForcedColors = kActive, PreferredColorScheme = kDark
-  color_scheme_helper.SetForcedColors(GetDocument(), ForcedColors::kActive);
+  // InForcedColors = true, PreferredColorScheme = kDark
+  color_scheme_helper.SetInForcedColors(/*in_forced_colors=*/true);
   UpdateAllLifecyclePhases();
   EXPECT_EQ(Color::FromRGB(255, 165, 0),
             GetDocument().body()->GetComputedStyle()->VisitedDependentColor(
                 GetCSSPropertyColor()));
 
-  // ForcedColors = kActive, PreferredColorScheme = kLight
+  // InForcedColors = true, PreferredColorScheme = kLight
   color_scheme_helper.SetPreferredColorScheme(
       mojom::blink::PreferredColorScheme::kLight);
   UpdateAllLifecyclePhases();
@@ -2904,7 +2904,7 @@ TEST_F(StyleEngineTest, ColorSchemeBaseBackgroundChange) {
   EXPECT_EQ(Color(0x12, 0x12, 0x12),
             GetDocument().View()->BaseBackgroundColor());
 
-  color_scheme_helper.SetForcedColors(GetDocument(), ForcedColors::kActive);
+  color_scheme_helper.SetInForcedColors(/*in_forced_colors=*/true);
   UpdateAllLifecyclePhases();
   mojom::blink::ColorScheme color_scheme = mojom::blink::ColorScheme::kLight;
   Color system_background_color = LayoutTheme::GetTheme().SystemColor(
@@ -3517,7 +3517,7 @@ TEST_F(StyleEngineTest, NoRevertUseCountForForcedColors) {
   EXPECT_EQ("rgb(255, 0, 0)", ComputedValue(elem, "color")->CssText());
 
   ColorSchemeHelper color_scheme_helper(GetDocument());
-  color_scheme_helper.SetForcedColors(GetDocument(), ForcedColors::kActive);
+  color_scheme_helper.SetInForcedColors(/*in_forced_colors=*/true);
   UpdateAllLifecyclePhases();
   EXPECT_EQ(ComputedValue(ref, "color")->CssText(),
             ComputedValue(elem, "color")->CssText());
@@ -3690,8 +3690,6 @@ TEST_F(StyleEngineTest, AtPropertyUseCount) {
 }
 
 TEST_F(StyleEngineTest, AtScopeUseCount) {
-  ScopedCSSScopeForTest scope_feature(true);
-
   GetDocument().body()->setInnerHTML(R"HTML(
     <style>
       body { --x: No @scope rule here; }
@@ -3709,20 +3707,6 @@ TEST_F(StyleEngineTest, AtScopeUseCount) {
   )HTML");
   UpdateAllLifecyclePhases();
   EXPECT_TRUE(GetDocument().IsUseCounted(WebFeature::kCSSAtRuleScope));
-}
-
-TEST_F(StyleEngineTest, AtScopeUseCountWithoutFeature) {
-  ScopedCSSScopeForTest scope_feature(false);
-
-  GetDocument().body()->setInnerHTML(R"HTML(
-    <style>
-      @scope (.a) {
-        body { --x:true; }
-      }
-    </style>
-  )HTML");
-  UpdateAllLifecyclePhases();
-  EXPECT_FALSE(GetDocument().IsUseCounted(WebFeature::kCSSAtRuleScope));
 }
 
 TEST_F(StyleEngineTest, RemoveDeclaredPropertiesEmptyRegistry) {
@@ -4289,14 +4273,14 @@ TEST_F(StyleEngineContainerQueryTest, UpdateStyleAndLayoutTreeForContainer) {
 
   unsigned start_count = GetStyleEngine().StyleForElementCount();
   GetStyleEngine().UpdateStyleAndLayoutTreeForContainer(
-      *container1, LogicalSize(200, 100), kLogicalAxisBoth);
+      *container1, LogicalSize(200, 100), kLogicalAxesBoth);
 
   // The first span.affected child and #container2
   EXPECT_EQ(2u, GetStyleEngine().StyleForElementCount() - start_count);
 
   start_count = GetStyleEngine().StyleForElementCount();
   GetStyleEngine().UpdateStyleAndLayoutTreeForContainer(
-      *container2, LogicalSize(200, 100), kLogicalAxisBoth);
+      *container2, LogicalSize(200, 100), kLogicalAxesBoth);
 
   // Three direct span.affected children, and the two display:none elements.
   EXPECT_EQ(6u, GetStyleEngine().StyleForElementCount() - start_count);
@@ -4353,7 +4337,7 @@ TEST_F(StyleEngineContainerQueryTest, ContainerQueriesContainmentNotApplying) {
   unsigned start_count = GetStyleEngine().StyleForElementCount();
 
   GetStyleEngine().UpdateStyleAndLayoutTreeForContainer(
-      *container, LogicalSize(200, 100), kLogicalAxisBoth);
+      *container, LogicalSize(200, 100), kLogicalAxesBoth);
 
   // Even though none of the inner containers are eligible for containment,
   // they are still containers for the purposes of evaluating container
@@ -4389,7 +4373,7 @@ TEST_F(StyleEngineContainerQueryTest, PseudoElementContainerQueryRecalc) {
 
   unsigned start_count = GetStyleEngine().StyleForElementCount();
   GetStyleEngine().UpdateStyleAndLayoutTreeForContainer(
-      *container, LogicalSize(200, 100), kLogicalAxisBoth);
+      *container, LogicalSize(200, 100), kLogicalAxesBoth);
 
   // The two ::before elements + #span.
   EXPECT_EQ(3u, GetStyleEngine().StyleForElementCount() - start_count);
@@ -4426,7 +4410,7 @@ TEST_F(StyleEngineContainerQueryTest, MarkStyleDirtyFromContainerRecalc) {
 
   unsigned start_count = GetStyleEngine().StyleForElementCount();
   GetStyleEngine().UpdateStyleAndLayoutTreeForContainer(
-      *container, LogicalSize(200, 100), kLogicalAxisBoth);
+      *container, LogicalSize(200, 100), kLogicalAxesBoth);
 
   // Input elements mark their InnerEditorElement() style-dirty when they are
   // recalculated. That means the UpdateStyleAndLayoutTreeForContainer() call
@@ -6622,9 +6606,6 @@ TEST_F(StyleEngineTest, BorderWidthsAreRecalculatedWhenZoomChanges) {
   // Tests that Border Widths are recalculated as expected
   // when Zoom and Device Scale Factor are changed.
 
-  ScopedSnapBorderWidthsBeforeLayoutForTest
-      enableSnapBorderWidthsBeforeLayoutForTest(true);
-
   frame_test_helpers::WebViewHelper web_view_helper;
   WebViewImpl* web_view_impl = web_view_helper.Initialize();
 
@@ -6728,52 +6709,10 @@ TEST_F(StyleEngineTest, BorderWidthsAreRecalculatedWhenZoomChanges) {
   checkBorderWidth(1.0f);
 }
 
-TEST_F(StyleEngineTest, AnimationDelayShorthandFlags) {
-  String css = "animation-delay:1s";
-  {
-    ScopedCSSAnimationDelayStartEndForTest enabled(false);
-    const CSSPropertyValueSet* set =
-        css_test_helpers::ParseDeclarationBlock(css);
-    ASSERT_TRUE(set);
-    EXPECT_EQ(1u, set->PropertyCount());
-    EXPECT_TRUE(set->HasProperty(CSSPropertyID::kAnimationDelay));
-  }
-  {
-    ScopedCSSAnimationDelayStartEndForTest enabled(true);
-    const CSSPropertyValueSet* set =
-        css_test_helpers::ParseDeclarationBlock(css);
-    ASSERT_TRUE(set);
-    EXPECT_EQ(2u, set->PropertyCount());
-    EXPECT_TRUE(set->HasProperty(CSSPropertyID::kAnimationDelayStart));
-    EXPECT_TRUE(set->HasProperty(CSSPropertyID::kAnimationDelayEnd));
-  }
-}
-
-TEST_F(StyleEngineTest, AnimationDelayStartEndFlags) {
-  String css = "animation-delay-start:1s;animation-delay-end:1s";
-  {
-    ScopedCSSAnimationDelayStartEndForTest enabled(false);
-    const CSSPropertyValueSet* set =
-        css_test_helpers::ParseDeclarationBlock(css);
-    ASSERT_TRUE(set);
-    EXPECT_EQ(0u, set->PropertyCount());
-  }
-  {
-    ScopedCSSAnimationDelayStartEndForTest enabled(true);
-    const CSSPropertyValueSet* set =
-        css_test_helpers::ParseDeclarationBlock(css);
-    ASSERT_TRUE(set);
-    EXPECT_EQ(2u, set->PropertyCount());
-    EXPECT_TRUE(set->HasProperty(CSSPropertyID::kAnimationDelayStart));
-    EXPECT_TRUE(set->HasProperty(CSSPropertyID::kAnimationDelayEnd));
-  }
-}
-
 TEST_F(StyleEngineTest, AnimationShorthandFlags) {
   String css = "animation: foo 1s";
   {
     ScopedScrollTimelineForTest scroll_timeline_enabled(false);
-    ScopedCSSAnimationDelayStartEndForTest start_end_enabled(false);
     ScopedScrollTimelineCurrentTimeForTest current_time_enabled(false);
     const CSSPropertyValueSet* set =
         css_test_helpers::ParseDeclarationBlock(css);
@@ -6790,7 +6729,6 @@ TEST_F(StyleEngineTest, AnimationShorthandFlags) {
   }
   {
     ScopedScrollTimelineForTest scroll_timeline_enabled(true);
-    ScopedCSSAnimationDelayStartEndForTest start_end_enabled(false);
     const CSSPropertyValueSet* set =
         css_test_helpers::ParseDeclarationBlock(css);
     ASSERT_TRUE(set);
@@ -6807,31 +6745,6 @@ TEST_F(StyleEngineTest, AnimationShorthandFlags) {
     EXPECT_TRUE(set->HasProperty(CSSPropertyID::kAnimationRangeStart));
     EXPECT_TRUE(set->HasProperty(CSSPropertyID::kAnimationRangeEnd));
   }
-  {
-    ScopedScrollTimelineForTest scroll_timeline_enabled(true);
-    ScopedCSSAnimationDelayStartEndForTest start_end_enabled(true);
-    const CSSPropertyValueSet* set =
-        css_test_helpers::ParseDeclarationBlock(css);
-    ASSERT_TRUE(set);
-    EXPECT_EQ(12u, set->PropertyCount());
-    EXPECT_TRUE(set->HasProperty(CSSPropertyID::kAnimationDuration));
-    EXPECT_TRUE(set->HasProperty(CSSPropertyID::kAnimationTimingFunction));
-    EXPECT_TRUE(set->HasProperty(CSSPropertyID::kAnimationDelayStart));
-    EXPECT_TRUE(set->HasProperty(CSSPropertyID::kAnimationDelayEnd));
-    EXPECT_TRUE(set->HasProperty(CSSPropertyID::kAnimationIterationCount));
-    EXPECT_TRUE(set->HasProperty(CSSPropertyID::kAnimationDirection));
-    EXPECT_TRUE(set->HasProperty(CSSPropertyID::kAnimationFillMode));
-    EXPECT_TRUE(set->HasProperty(CSSPropertyID::kAnimationPlayState));
-    EXPECT_TRUE(set->HasProperty(CSSPropertyID::kAnimationName));
-    EXPECT_TRUE(set->HasProperty(CSSPropertyID::kAnimationTimeline));
-    EXPECT_TRUE(set->HasProperty(CSSPropertyID::kAnimationRangeStart));
-    EXPECT_TRUE(set->HasProperty(CSSPropertyID::kAnimationRangeEnd));
-  }
-  // Note that the combination ScrollTimeline=false and
-  // CSSAnimationDelayStartEnd=true is not supported, via 'depends_on'
-  // in runtime_enabled_features.json5.
-  EXPECT_FALSE(!RuntimeEnabledFeatures::ScrollTimelineEnabled() &&
-               RuntimeEnabledFeatures::CSSAnimationDelayStartEndEnabled());
 }
 
 TEST_F(StyleEngineTest, InitialStyle_Recalc) {
@@ -7370,10 +7283,10 @@ TEST_F(StyleEngineTest,
   EXPECT_FALSE(IsUseCounted(WebFeature::kCSSBareDeclarationShift));
 }
 
-TEST_F(StyleEngineTest, EnsureAppRegionTriggersRelayout) {
+TEST_F(StyleEngineTest, EnsureDraggableRegionTriggersRelayout) {
   frame_test_helpers::WebViewHelper web_view_helper;
   WebViewImpl* web_view_impl = web_view_helper.Initialize();
-  web_view_impl->SetSupportsAppRegion(true);
+  web_view_impl->SetSupportsDraggableRegions(true);
   web_view_impl->MainFrameWidget()->UpdateAllLifecyclePhases(
       DocumentUpdateReason::kTest);
 
@@ -7397,28 +7310,28 @@ TEST_F(StyleEngineTest, EnsureAppRegionTriggersRelayout) {
 
   Element* drag_element = document->getElementById(AtomicString("drag-region"));
 
-  auto regions = document->AnnotatedRegions();
+  auto regions = document->DraggableRegions();
   auto* it =
       std::find_if(regions.begin(), regions.end(),
-                   [](blink::AnnotatedRegionValue s) { return s.draggable; });
+                   [](blink::DraggableRegionValue s) { return s.draggable; });
   EXPECT_EQ(it, regions.end()) << "There should be no drag regions";
 
   drag_element->classList().Add(AtomicString("drag"));
   web_view_impl->MainFrameWidget()->UpdateAllLifecyclePhases(
       DocumentUpdateReason::kTest);
 
-  regions = document->AnnotatedRegions();
+  regions = document->DraggableRegions();
   it = std::find_if(regions.begin(), regions.end(),
-                    [](blink::AnnotatedRegionValue s) { return s.draggable; });
+                    [](blink::DraggableRegionValue s) { return s.draggable; });
   EXPECT_NE(it, regions.end()) << "There should be one drag region";
 
   drag_element->classList().Add(AtomicString("no-drag"));
   web_view_impl->MainFrameWidget()->UpdateAllLifecyclePhases(
       DocumentUpdateReason::kTest);
 
-  regions = document->AnnotatedRegions();
+  regions = document->DraggableRegions();
   it = std::find_if(regions.begin(), regions.end(),
-                    [](blink::AnnotatedRegionValue s) { return s.draggable; });
+                    [](blink::DraggableRegionValue s) { return s.draggable; });
 
   EXPECT_EQ(it, regions.end()) << "There should be no drag regions";
 }
@@ -7426,7 +7339,7 @@ TEST_F(StyleEngineTest, EnsureAppRegionTriggersRelayout) {
 TEST_F(StyleEngineTest, ForcedColorsLightDark) {
   ScopedForcedColorsForTest scoped_feature(true);
   ColorSchemeHelper color_scheme_helper(GetDocument());
-  color_scheme_helper.SetForcedColors(GetDocument(), ForcedColors::kActive);
+  color_scheme_helper.SetInForcedColors(/*in_forced_colors=*/true);
   GetDocument().body()->setInnerHTML(R"HTML(
     <style>
       :root { color-scheme: light only; }

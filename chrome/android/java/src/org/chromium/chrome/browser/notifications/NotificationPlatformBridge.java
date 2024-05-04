@@ -28,6 +28,7 @@ import androidx.core.app.NotificationManagerCompat;
 import androidx.preference.PreferenceFragmentCompat;
 
 import org.jni_zero.CalledByNative;
+import org.jni_zero.JniType;
 import org.jni_zero.NativeMethods;
 
 import org.chromium.base.Callback;
@@ -48,8 +49,8 @@ import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
 import org.chromium.chrome.browser.usage_stats.UsageStatsService;
 import org.chromium.chrome.browser.webapps.ChromeWebApkHost;
 import org.chromium.chrome.browser.webapps.WebApkServiceClient;
-import org.chromium.components.browser_ui.notifications.NotificationManagerProxy;
-import org.chromium.components.browser_ui.notifications.NotificationManagerProxyImpl;
+import org.chromium.components.browser_ui.notifications.BaseNotificationManagerProxy;
+import org.chromium.components.browser_ui.notifications.BaseNotificationManagerProxyFactory;
 import org.chromium.components.browser_ui.notifications.NotificationMetadata;
 import org.chromium.components.browser_ui.notifications.NotificationWrapper;
 import org.chromium.components.browser_ui.notifications.PendingIntentProvider;
@@ -68,7 +69,6 @@ import org.chromium.webapk.lib.client.WebApkIdentityServiceClient;
 import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -94,16 +94,16 @@ public class NotificationPlatformBridge {
 
     // The duration after which the "provisionally unsubscribed" service notification is auto-closed
     // and the permission revocation commits.
-    // TODO(crbug.com/1521424): Fine tune this duration, and possibly turn it off for A11Y users.
+    // TODO(crbug.com/41494393): Fine tune this duration, and possibly turn it off for A11Y users.
     private static final long PROVISIONAL_UNSUBSCRIBE_DURATION_MS = 10 * 1000;
 
     private static NotificationPlatformBridge sInstance;
 
-    private static NotificationManagerProxy sNotificationManagerOverride;
+    private static BaseNotificationManagerProxy sNotificationManagerOverride;
 
     private final long mNativeNotificationPlatformBridge;
 
-    private final NotificationManagerProxy mNotificationManager;
+    private final BaseNotificationManagerProxy mNotificationManager;
 
     private long mLastNotificationClickMs;
 
@@ -182,7 +182,7 @@ public class NotificationPlatformBridge {
      * @param notificationManager The notification manager instance to use instead of the system's.
      */
     static void overrideNotificationManagerForTesting(
-            NotificationManagerProxy notificationManager) {
+            BaseNotificationManagerProxy notificationManager) {
         sNotificationManagerOverride = notificationManager;
     }
 
@@ -192,7 +192,7 @@ public class NotificationPlatformBridge {
         if (sNotificationManagerOverride != null) {
             mNotificationManager = sNotificationManagerOverride;
         } else {
-            mNotificationManager = new NotificationManagerProxyImpl(context);
+            mNotificationManager = BaseNotificationManagerProxyFactory.create(context);
         }
 
         // This set will be reset to empty if the application process is killed and then restarted.
@@ -503,7 +503,7 @@ public class NotificationPlatformBridge {
         }
 
         // This code parses the notification id that was generated in notification_id_generator.cc
-        // TODO(https://crbug.com/801164): Extract this to a separate class.
+        // TODO(crbug.com/41364310): Extract this to a separate class.
         String[] parts = tag.split(NotificationConstants.NOTIFICATION_TAG_SEPARATOR);
         assert parts.length >= 3;
         try {
@@ -575,40 +575,40 @@ public class NotificationPlatformBridge {
      * @param notificationId The id of the notification.
      * @param origin Full text of the origin, including the protocol, owning this notification.
      * @param scopeUrl The scope of the service worker registered by the site where the notification
-     *                 comes from.
+     *     comes from.
      * @param profileId Id of the profile that showed the notification.
      * @param profile The profile that showed the notification.
      * @param title Title to be displayed in the notification.
-     * @param body Message to be displayed in the notification. Will be trimmed to one line of
-     *             text by the Android notification system.
+     * @param body Message to be displayed in the notification. Will be trimmed to one line of text
+     *     by the Android notification system.
      * @param image Content image to be prominently displayed when the notification is expanded.
      * @param icon Icon to be displayed in the notification. Valid Bitmap icons will be scaled to
-     *             the platforms, whereas a default icon will be generated for invalid Bitmaps.
+     *     the platforms, whereas a default icon will be generated for invalid Bitmaps.
      * @param badge An image to represent the notification in the status bar. It is also displayed
-     *              inside the notification.
+     *     inside the notification.
      * @param vibrationPattern Vibration pattern following the Web Vibration syntax.
      * @param timestamp The timestamp of the event for which the notification is being shown.
      * @param renotify Whether the sound, vibration, and lights should be replayed if the
-     *                 notification is replacing another notification.
+     *     notification is replacing another notification.
      * @param silent Whether the default sound, vibration and lights should be suppressed.
      * @param actions Action buttons to display alongside the notification.
-     * @see <a href="https://developer.android.com/reference/android/app/Notification.html">
-     *     Android Notification API</a>
+     * @see <a href="https://developer.android.com/reference/android/app/Notification.html">Android
+     *     Notification API</a>
      */
     @CalledByNative
     private void displayNotification(
-            final String notificationId,
+            @JniType("std::string") final String notificationId,
             @NotificationType final int notificationType,
-            final String origin,
-            final String scopeUrl,
-            final String profileId,
+            @JniType("std::string") final String origin,
+            @JniType("std::string") final String scopeUrl,
+            @JniType("std::string") final String profileId,
             final Profile profile,
-            final String title,
-            final String body,
-            final Bitmap image,
-            final Bitmap icon,
-            final Bitmap badge,
-            final int[] vibrationPattern,
+            @JniType("std::u16string") final String title,
+            @JniType("std::u16string") final String body,
+            @JniType("SkBitmap") final Bitmap image,
+            @JniType("SkBitmap") final Bitmap icon,
+            @JniType("SkBitmap") final Bitmap badge,
+            @JniType("std::vector<int32_t>") final int[] vibrationPattern,
             final long timestamp,
             final boolean renotify,
             final boolean silent,
@@ -631,6 +631,7 @@ public class NotificationPlatformBridge {
                                                         profileId,
                                                         incognito,
                                                         webApkPackage),
+                                                profile,
                                                 vibrateEnabled,
                                                 title,
                                                 body,
@@ -660,6 +661,7 @@ public class NotificationPlatformBridge {
     /** Called after querying whether the browser backs the given WebAPK. */
     private void displayNotificationInternal(
             NotificationIdentifyingAttributes identifyingAttributes,
+            Profile profile,
             boolean vibrateEnabled,
             String title,
             String body,
@@ -752,7 +754,7 @@ public class NotificationPlatformBridge {
         // Either display the notification right away; or, if this kind of notification is currently
         // under suspension, store the notification's resources back into the NotificationDatabase.
         // Once the suspension is over, displayNotification() will be called again.
-        storeNotificationResourcesIfSuspended(identifyingAttributes, notification)
+        storeNotificationResourcesIfSuspended(identifyingAttributes, profile, notification)
                 .then(
                         (suspended) -> {
                             if (suspended) {
@@ -793,6 +795,7 @@ public class NotificationPlatformBridge {
 
     private Promise<Boolean> storeNotificationResourcesIfSuspended(
             NotificationIdentifyingAttributes identifyingAttributes,
+            Profile profile,
             NotificationWrapper notification) {
         if (identifyingAttributes.notificationType != NotificationType.WEB_PERSISTENT) {
             return Promise.fulfilled(false);
@@ -809,7 +812,7 @@ public class NotificationPlatformBridge {
         // Only native calls into this here code, so the native process must be running, which is
         // important if we end up lazily constructing `UsageStatsService` here, which uses JNI.
         assert BrowserStartupController.getInstance().isFullBrowserStarted();
-        return UsageStatsService.getInstance()
+        return UsageStatsService.getForProfile(profile)
                 .getSuspensionTracker()
                 .storeNotificationResourcesIfSuspended(notification);
     }
@@ -849,7 +852,7 @@ public class NotificationPlatformBridge {
                                         origin, SchemeDisplay.OMIT_HTTP_AND_HTTPS));
 
         if (shouldSetChannelId(forWebApk)) {
-            // TODO(crbug.com/773738): Channel ID should be retrieved from cache in native and
+            // TODO(crbug.com/40544272): Channel ID should be retrieved from cache in native and
             // passed through to here with other notification parameters.
             String channelId = SiteChannelsManager.getInstance().getChannelIdForOrigin(origin);
             notificationBuilder.setChannelId(channelId);
@@ -861,7 +864,7 @@ public class NotificationPlatformBridge {
         // notification will still "inherit" the original timeout. There is no way to specify "no
         // timeout" other than specifying a sufficiently long timeout instead (e.g. one week).
         //
-        // TODO(crbug.com/1521437): Find a more elegant solution to this problem.
+        // TODO(crbug.com/41494406): Find a more elegant solution to this problem.
         if (mNotificationIdsWithStaleTimeouts.contains(identifyingAttributes.notificationId)) {
             notificationBuilder.setTimeoutAfter(/* ms= */ 1000 * 3600 * 24 * 7);
             mNotificationIdsWithStaleTimeouts.remove(identifyingAttributes.notificationId);
@@ -940,7 +943,7 @@ public class NotificationPlatformBridge {
             notificationBuilder.setChannelId(channelId);
         }
 
-        // TODO(crbug.com/1521438): We are setting quite a few uncommon attributes here, consider
+        // TODO(crbug.com/41494407): We are setting quite a few uncommon attributes here, consider
         // just not using NotificationBuilderBase.
         notificationBuilder.setSuppressShowingLargeIcon(true);
         notificationBuilder.setTimeoutAfter(PROVISIONAL_UNSUBSCRIBE_DURATION_MS);
@@ -1030,7 +1033,7 @@ public class NotificationPlatformBridge {
         Context context = ContextUtils.getApplicationContext();
         Resources res = context.getResources();
 
-        // TODO(crbug.com/1519634): Double check if this icon is actually used on any Android
+        // TODO(crbug.com/41492613): Double check if this icon is actually used on any Android
         // versions and/or flavors.
         notificationBuilder.addSettingsAction(
                 /* iconId= */ 0,
@@ -1256,20 +1259,21 @@ public class NotificationPlatformBridge {
             return;
         }
 
-        // TODO(crbug.com/1521432): Verify if we can/need to use the correct profile here.
+        // TODO(crbug.com/41494401): Verify if we can/need to use the correct profile here.
         NotificationSuspender suspender =
                 new NotificationSuspender(ProfileManager.getLastUsedRegularProfile());
-        List<String> notificationIdsToCancel =
-                suspender.storeNotificationResourcesFromOrigins(
-                        Collections.singletonList(Uri.parse(identifyingAttributes.origin)));
-        NotificationUmaTracker.getInstance()
-                .recordSuspendedNotificationCountOnUnsubscribe(notificationIdsToCancel.size());
-
         mOriginsWithProvisionallyRevokedPermissions.add(identifyingAttributes.origin);
         displayProvisionallyUnsubscribedNotification(identifyingAttributes);
+        suspender.storeNotificationResourcesFromOrigins(
+                Collections.singletonList(Uri.parse(identifyingAttributes.origin)),
+                (notificationIdsToCancel) -> {
+                    NotificationUmaTracker.getInstance()
+                            .recordSuspendedNotificationCountOnUnsubscribe(
+                                    notificationIdsToCancel.size());
 
-        notificationIdsToCancel.remove(identifyingAttributes.notificationId);
-        suspender.cancelNotificationsWithIds(notificationIdsToCancel);
+                    notificationIdsToCancel.remove(identifyingAttributes.notificationId);
+                    suspender.cancelNotificationsWithIds(notificationIdsToCancel);
+                });
     }
 
     /**
@@ -1289,7 +1293,7 @@ public class NotificationPlatformBridge {
         mOriginsWithProvisionallyRevokedPermissions.remove(identifyingAttributes.origin);
         mNotificationIdsWithStaleTimeouts.add(identifyingAttributes.notificationId);
 
-        // TODO(crbug.com/1521432): Verify if we can/need to use the correct profile here.
+        // TODO(crbug.com/41494401): Verify if we can/need to use the correct profile here.
         NotificationSuspender suspender =
                 new NotificationSuspender(ProfileManager.getLastUsedRegularProfile());
         suspender.unsuspendNotificationsFromOrigins(
@@ -1334,39 +1338,39 @@ public class NotificationPlatformBridge {
         void onNotificationClicked(
                 long nativeNotificationPlatformBridgeAndroid,
                 NotificationPlatformBridge caller,
-                String notificationId,
+                @JniType("std::string") String notificationId,
                 @NotificationType int notificationType,
-                String origin,
-                String scopeUrl,
-                String profileId,
+                @JniType("std::string") String origin,
+                @JniType("std::string") String scopeUrl,
+                @JniType("std::string") String profileId,
                 boolean incognito,
-                String webApkPackage,
+                @JniType("std::string") String webApkPackage,
                 int actionIndex,
                 String reply);
 
         void onNotificationClosed(
                 long nativeNotificationPlatformBridgeAndroid,
                 NotificationPlatformBridge caller,
-                String notificationId,
+                @JniType("std::string") String notificationId,
                 @NotificationType int notificationType,
-                String origin,
-                String profileId,
+                @JniType("std::string") String origin,
+                @JniType("std::string") String profileId,
                 boolean incognito,
                 boolean byUser);
 
         void onNotificationDisablePermission(
                 long nativeNotificationPlatformBridgeAndroid,
                 NotificationPlatformBridge caller,
-                String notificationId,
+                @JniType("std::string") String notificationId,
                 @NotificationType int notificationType,
-                String origin,
-                String profileId,
+                @JniType("std::string") String origin,
+                @JniType("std::string") String profileId,
                 boolean incognito);
 
         void storeCachedWebApkPackageForNotificationId(
                 long nativeNotificationPlatformBridgeAndroid,
                 NotificationPlatformBridge caller,
-                String notificationId,
-                String webApkPackage);
+                @JniType("std::string") String notificationId,
+                @JniType("std::string") String webApkPackage);
     }
 }

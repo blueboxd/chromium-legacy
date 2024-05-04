@@ -195,6 +195,11 @@ class Dictionary(object):
     result = {'id': self.node.GetName(),
               'properties': properties,
               'type': 'object'}
+    # If this has the `ignoreAdditionalProperties` extended attribute, copy it
+    # into the resulting object with a value of True.
+    if self.node.GetProperty('ignoreAdditionalProperties'):
+      result['ignoreAdditionalProperties'] = True
+
     if self.node.GetProperty('nodoc'):
       result['nodoc'] = True
     elif self.node.GetProperty('inline_doc'):
@@ -221,8 +226,7 @@ class Member(object):
     if self.node.GetProperty('deprecated'):
       properties['deprecated'] = self.node.GetProperty('deprecated')
 
-    for property_name in ['allowAmbiguousOptionalArguments',
-                          'nodoc', 'nocompile', 'nodart',
+    for property_name in ['nodoc', 'nocompile', 'nodart',
                           'serializableFunction']:
       if self.node.GetProperty(property_name):
         properties[property_name] = True

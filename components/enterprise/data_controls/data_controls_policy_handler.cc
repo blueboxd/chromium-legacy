@@ -4,6 +4,8 @@
 
 #include "components/enterprise/data_controls/data_controls_policy_handler.h"
 
+#include "base/numerics/safe_conversions.h"
+#include "components/enterprise/data_controls/prefs.h"
 #include "components/enterprise/data_controls/rule.h"
 #include "components/prefs/pref_value_map.h"
 
@@ -15,7 +17,8 @@ DataControlsPolicyHandler::DataControlsPolicyHandler(const char* policy_name,
     : policy::CloudOnlyPolicyHandler(
           policy_name,
           schema.GetKnownProperty(policy_name),
-          policy::SchemaOnErrorStrategy::SCHEMA_ALLOW_UNKNOWN),
+          policy::SchemaOnErrorStrategy::
+              SCHEMA_ALLOW_UNKNOWN_AND_INVALID_LIST_ENTRY),
       pref_path_(pref_path) {}
 DataControlsPolicyHandler::~DataControlsPolicyHandler() = default;
 
@@ -26,11 +29,25 @@ void DataControlsPolicyHandler::ApplyPolicySettings(
     return;
   }
 
-  // It is safe to use `GetValueUnsafe()` as multiple policy types are handled.
-  const base::Value* value = policies.GetValueUnsafe(policy_name());
-  if (value) {
-    prefs->SetValue(pref_path_, value->Clone());
+  const policy::PolicyMap::Entry* policy = policies.Get(policy_name());
+  if (!policy) {
+    return;
   }
+
+  std::unique_ptr<base::Value> policy_value;
+  if (!CheckAndGetValue(policies, /*errors=*/nullptr, &policy_value) ||
+      !policy_value || !policy_value->is_list()) {
+    return;
+  }
+
+  policy_value->GetList().EraseIf([this](const base::Value& rule) {
+    return !Rule::ValidateRuleValue(policy_name(), rule.GetDict(),
+                                    /*error_path=*/{}, /*errors=*/nullptr);
+  });
+
+  // It is safe to use `GetValueUnsafe()` as multiple policy types are handled.
+  prefs->SetValue(pref_path_, policy_value->Clone());
+  prefs->SetInteger(kDataControlsRulesScopePref, policy->scope);
 }
 
 bool DataControlsPolicyHandler::CheckPolicySettings(
@@ -49,13 +66,13 @@ bool DataControlsPolicyHandler::CheckPolicySettings(
   DCHECK(value->is_list());
   const auto& rules_list = value->GetList();
 
-  bool valid = true;
   for (size_t i = 0; i < rules_list.size(); ++i) {
-    DCHECK(rules_list[i].is_dict());
-    valid &= Rule::ValidateRuleValue(policy_name(), rules_list[i].GetDict(),
-                                     {i}, errors);
+    if (rules_list[i].is_dict()) {
+      Rule::ValidateRuleValue(policy_name(), rules_list[i].GetDict(),
+                              {base::checked_cast<int>(i)}, errors);
+    }
   }
-  return valid;
+  return true;
 }
 
 }  // namespace data_controls

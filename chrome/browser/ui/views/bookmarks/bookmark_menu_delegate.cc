@@ -45,6 +45,7 @@
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/base/window_open_disposition_utils.h"
 #include "ui/color/color_id.h"
@@ -181,10 +182,7 @@ void BookmarkMenuDelegate::Init(views::MenuDelegate* real_delegate,
         !parent->GetSubmenu()->GetMenuItems().empty()) {
       parent->AppendSeparator();
       // Add a "Bookmarks" title.
-      if (features::IsChromeRefresh2023()) {
-        parent->AppendTitle(
-            l10n_util::GetStringUTF16(IDS_BOOKMARKS_LIST_TITLE));
-      }
+      parent->AppendTitle(l10n_util::GetStringUTF16(IDS_BOOKMARKS_LIST_TITLE));
     }
 
     if (show_managed)
@@ -260,6 +258,14 @@ void BookmarkMenuDelegate::ExecuteCommand(int id, int mouse_event_flags) {
 bool BookmarkMenuDelegate::ShouldExecuteCommandWithoutClosingMenu(
     int id,
     const ui::Event& event) {
+  if (!event.IsMouseEvent()) {
+    // Restore pre https://crrev.com/c/3820263 behavior, which started calling
+    // `ShouldExecuteCommandWithoutClosingMenu` for gesture events and caused
+    // https://crbug.com/1498716 regression.
+    // Gesture events will be handled via `MenuController::Accept()` -> ... ->
+    // `BookmarkMenuDelegate::ExecuteCommand()` instead (as it was before).
+    return false;
+  }
   if (id == IDC_SHOW_BOOKMARK_SIDE_PANEL) {
     return false;
   }

@@ -10,6 +10,7 @@
 #include "base/containers/enum_set.h"
 #include "base/containers/span.h"
 #include "components/cbor/values.h"
+#include "components/web_package/signed_web_bundles/ecdsa_p256_public_key.h"
 #include "components/web_package/signed_web_bundles/ed25519_public_key.h"
 
 namespace web_package {
@@ -21,7 +22,14 @@ namespace web_package {
 // `WebBundleBuilder` class to create signed web bundles.
 class WebBundleSigner {
  public:
-  enum class ErrorForTesting {
+  enum class IntegrityBlockErrorForTesting {
+    kMinValue = 0,
+    kInvalidIntegrityBlockStructure = kMinValue,
+    kInvalidVersion,
+    kMaxValue = kInvalidVersion
+  };
+
+  enum class IntegritySignatureErrorForTesting {
     kMinValue = 0,
     kInvalidSignatureLength = kMinValue,
     kInvalidPublicKeyLength,
@@ -29,29 +37,46 @@ class WebBundleSigner {
     kNoPublicKeySignatureStackEntryAttribute,
     kAdditionalSignatureStackEntryAttribute,
     kAdditionalSignatureStackEntryElement,
-    kInvalidIntegrityBlockStructure,
-    kInvalidVersion,
-    kMaxValue = kInvalidVersion
+    kWrongSignatureStackEntryAttributeNameLength,
+    kMaxValue = kWrongSignatureStackEntryAttributeNameLength
   };
 
-  using ErrorsForTesting = base::EnumSet<ErrorForTesting,
-                                         ErrorForTesting::kMinValue,
-                                         ErrorForTesting::kMaxValue>;
+  using IntegritySignatureErrorsForTesting =
+      base::EnumSet<IntegritySignatureErrorForTesting,
+                    IntegritySignatureErrorForTesting::kMinValue,
+                    IntegritySignatureErrorForTesting::kMaxValue>;
 
-  struct KeyPair {
-    static KeyPair CreateRandom(bool produce_invalid_signature = false);
+  using IntegrityBlockErrorsForTesting =
+      base::EnumSet<IntegrityBlockErrorForTesting,
+                    IntegrityBlockErrorForTesting::kMinValue,
+                    IntegrityBlockErrorForTesting::kMaxValue>;
 
-    KeyPair(
+  struct ErrorsForTesting {
+    ErrorsForTesting(IntegrityBlockErrorsForTesting integrity_block_errors,
+                     const std::vector<IntegritySignatureErrorsForTesting>&
+                         signatures_errors);
+    ErrorsForTesting(const ErrorsForTesting& other);
+    ErrorsForTesting& operator=(const ErrorsForTesting& other);
+    ~ErrorsForTesting();
+
+    IntegrityBlockErrorsForTesting integrity_block_errors;
+    std::vector<IntegritySignatureErrorsForTesting> signatures_errors;
+  };
+
+  struct Ed25519KeyPair {
+    static Ed25519KeyPair CreateRandom(bool produce_invalid_signature = false);
+
+    Ed25519KeyPair(
         base::span<const uint8_t, Ed25519PublicKey::kLength> public_key_bytes,
         base::span<const uint8_t, 64> private_key_bytes,
         bool produce_invalid_signature = false);
-    KeyPair(const KeyPair&);
-    KeyPair& operator=(const KeyPair&);
+    Ed25519KeyPair(const Ed25519KeyPair&);
+    Ed25519KeyPair& operator=(const Ed25519KeyPair&);
 
-    KeyPair(KeyPair&&) noexcept;
-    KeyPair& operator=(KeyPair&&) noexcept;
+    Ed25519KeyPair(Ed25519KeyPair&&) noexcept;
+    Ed25519KeyPair& operator=(Ed25519KeyPair&&) noexcept;
 
-    ~KeyPair();
+    ~Ed25519KeyPair();
 
     Ed25519PublicKey public_key;
     // We don't have a wrapper for private keys since they are only used in
@@ -60,15 +85,42 @@ class WebBundleSigner {
     bool produce_invalid_signature;
   };
 
+  struct EcdsaP256KeyPair {
+    static EcdsaP256KeyPair CreateRandom(
+        bool produce_invalid_signature = false);
+
+    EcdsaP256KeyPair(
+        base::span<const uint8_t, EcdsaP256PublicKey::kLength> public_key_bytes,
+        base::span<const uint8_t, 32> private_key_bytes,
+        bool produce_invalid_signature = false);
+
+    EcdsaP256KeyPair(const EcdsaP256KeyPair&);
+    EcdsaP256KeyPair& operator=(const EcdsaP256KeyPair&);
+
+    EcdsaP256KeyPair(EcdsaP256KeyPair&&) noexcept;
+    EcdsaP256KeyPair& operator=(EcdsaP256KeyPair&&) noexcept;
+
+    ~EcdsaP256KeyPair();
+
+    EcdsaP256PublicKey public_key;
+    // We don't have a wrapper for private keys since they are only used in
+    // tests.
+    std::array<uint8_t, 32> private_key;
+    bool produce_invalid_signature;
+  };
+
+  using KeyPair = absl::variant<Ed25519KeyPair, EcdsaP256KeyPair>;
+
   // Creates an integrity block with the given signature stack entries.
   static cbor::Value CreateIntegrityBlock(
       const cbor::Value::ArrayValue& signature_stack,
-      ErrorsForTesting errors_for_testing = {});
+      IntegrityBlockErrorsForTesting errors_for_testing = {});
 
   static cbor::Value CreateIntegrityBlockForBundle(
       base::span<const uint8_t> unsigned_bundle,
       const std::vector<KeyPair>& key_pairs,
-      ErrorsForTesting errors_for_testing = {});
+      ErrorsForTesting errors_for_testing = {/*integrity_block_errors=*/{},
+                                             /*signatures_errors=*/{}});
 
   // Signs an unsigned bundle with the given key pairs, in order. I.e. the first
   // key pair will sign the unsigned bundle, the second key pair will sign the
@@ -76,18 +128,8 @@ class WebBundleSigner {
   static std::vector<uint8_t> SignBundle(
       base::span<const uint8_t> unsigned_bundle,
       const std::vector<KeyPair>& key_pairs,
-      ErrorsForTesting errors_for_testing = {});
-
- private:
-  // Creates a signature stack entry for the given public key and signature.
-  static cbor::Value CreateSignatureStackEntry(
-      const Ed25519PublicKey& public_key,
-      std::vector<uint8_t> signature,
-      ErrorsForTesting errors_for_testing = {});
-
-  static cbor::Value CreateSignatureStackEntryAttributes(
-      std::vector<uint8_t> public_key,
-      ErrorsForTesting errors_for_testing = {});
+      ErrorsForTesting errors_for_testing = {/*integrity_block_errors=*/{},
+                                             /*signatures_errors=*/{}});
 };
 
 }  // namespace web_package

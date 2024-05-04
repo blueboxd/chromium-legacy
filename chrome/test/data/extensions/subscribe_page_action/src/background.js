@@ -25,7 +25,7 @@ chrome.extension.onMessage.addListener(function(request, sender) {
     var feeds = {};
     feeds[sender.tab.id] = input;
     chrome.storage.local.set(feeds, function() {
-      // TODO(crbug.com/1187361): i18n.getMessage() isn't implemented for
+      // TODO(crbug.com/40754267): i18n.getMessage() isn't implemented for
       // service worker-based extensions.
       const action_title = isServiceWorker ? "Click to subscribe..." :
             chrome.i18n.getMessage("rss_subscription_action_title");
@@ -47,7 +47,7 @@ chrome.extension.onMessage.addListener(function(request, sender) {
                  "history.go(-1); else window.close();"
         });
     var url = "subscribe.html?" + encodeURIComponent(request.href);
-    url = chrome.extension.getURL(url);
+    url = chrome.runtime.getURL(url);
     chrome.tabs.create({ url: url, index: sender.tab.index });
   }
 });

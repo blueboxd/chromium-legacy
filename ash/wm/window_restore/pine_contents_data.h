@@ -24,20 +24,35 @@ struct ASH_EXPORT PineContentsData {
   ~PineContentsData();
 
   struct AppInfo {
-    explicit AppInfo(const std::string& id);
+    explicit AppInfo(const std::string& id, const std::string& title);
     AppInfo(const std::string& app_id,
-            const std::u16string& tab_title,
-            const std::vector<GURL>& tab_urls);
+            const std::string& title,
+            const std::vector<GURL>& tab_urls,
+            const size_t tab_count,
+            uint64_t lacros_profile_id);
     AppInfo(const AppInfo&);
     ~AppInfo();
     // App id. Used to retrieve the app name and app icon from the app registry
     // cache.
     std::string app_id;
-    // Used for browser and PWAs. Shows a more descriptive title than "Chrome".
-    std::u16string tab_title;
+
+    // This title has two uses. If it is a browser, then it shows the active tab
+    // title, so that it is more descriptive than "Chrome". Otherwise, it shows
+    // a temporary title (last session's window title)  that will be overridden
+    // once we can fetch titles from the app service using `app_id`.
+    std::string title;
+
     // Used by browser only. Urls of up to 5 tabs including the active tab. Used
     // to retrieve favicons.
     std::vector<GURL> tab_urls;
+
+    // Used by browser only. The total number of tabs, including ones not listed
+    // in `tab_urls`.
+    size_t tab_count = 0u;
+
+    // Used by lacros-browser only. Used to fetch the favicon from the favicon
+    // service associated with this id.
+    uint64_t lacros_profile_id = 0;
   };
 
   using AppsInfos = std::vector<AppInfo>;

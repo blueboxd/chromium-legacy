@@ -75,28 +75,27 @@ bool CheckIOTensorByteSize(const ModelInfoPtr& model_info) {
 }
 
 void OnRemoteModelLoad(ExecutionContext* execution_context,
-                       ScriptPromiseResolver* resolver,
+                       ScriptPromiseResolver<MLModel>* resolver,
                        LoadModelResult result,
                        mojo::PendingRemote<Model> pending_remote,
                        ModelInfoPtr model_info) {
   switch (result) {
     case LoadModelResult::kUnknownError:
-      resolver->Reject(MakeGarbageCollected<DOMException>(
-          DOMExceptionCode::kUnknownError, "Unknown error."));
+      resolver->RejectWithDOMException(DOMExceptionCode::kUnknownError,
+                                       "Unknown error.");
       return;
     case LoadModelResult::kInvalidModel:
-      resolver->Reject(MakeGarbageCollected<DOMException>(
-          DOMExceptionCode::kDataError, "Invalid input model."));
+      resolver->RejectWithDOMException(DOMExceptionCode::kDataError,
+                                       "Invalid input model.");
       return;
     case LoadModelResult::kNotSupported:
-      resolver->Reject(MakeGarbageCollected<DOMException>(
-          DOMExceptionCode::kNotSupportedError, "Model can not be supported."));
+      resolver->RejectWithDOMException(DOMExceptionCode::kNotSupportedError,
+                                       "Model can not be supported.");
       return;
     case LoadModelResult::kOk:
       if (!CheckIOTensorByteSize(model_info)) {
-        resolver->Reject(MakeGarbageCollected<DOMException>(
-            DOMExceptionCode::kDataError,
-            "Invalid IO tensor buffer byte size."));
+        resolver->RejectWithDOMException(DOMExceptionCode::kDataError,
+                                         "Invalid IO tensor buffer byte size.");
         pending_remote.reset();
         return;
       }
@@ -150,18 +149,18 @@ MLModelLoader* MLModelLoader::Create(ScriptState* script_state,
 
 MLModelLoader::~MLModelLoader() = default;
 
-ScriptPromise MLModelLoader::load(ScriptState* script_state,
-                                  DOMArrayBuffer* buffer,
-                                  ExceptionState& exception_state) {
+ScriptPromise<MLModel> MLModelLoader::load(ScriptState* script_state,
+                                           DOMArrayBuffer* buffer,
+                                           ExceptionState& exception_state) {
   if (!script_state->ContextIsValid()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "Invalid script state");
-    return ScriptPromise();
+    return ScriptPromise<MLModel>();
   }
 
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver<MLModel>>(
       script_state, exception_state.GetContext());
-  ScriptPromise promise = resolver->Promise();
+  auto promise = resolver->Promise();
 
   auto* execution_context = ExecutionContext::From(script_state);
   Load(script_state, buffer,

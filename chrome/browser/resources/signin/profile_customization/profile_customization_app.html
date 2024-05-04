@@ -127,11 +127,6 @@
     margin: 4px auto 26px auto;
   }
 
-  #themeSelector {
-    --cr-customize-themes-grid-gap: 7px;
-    --cr-customize-themes-icon-size: 36px;
-  }
-
   cr-theme-color-picker {
     --cr-theme-color-padding: 6px;
     --cr-theme-color-picker-column-width: 50px;
@@ -180,12 +175,10 @@
   cr-profile-avatar-selector {
     --avatar-size: 72px;
     --avatar-spacing: 18px;
-    --avatar-grid-columns: 5;
     height: fit-content;
     padding-bottom: 12px;
     padding-inline-start: 16px;
     padding-top: 12px;
-    width: fit-content;
   }
 
   .select-avatar-header {
@@ -272,13 +265,7 @@
       </cr-input>
 
       <div id="pickThemeContainer">
-        <template is="dom-if" if="[[isChromeRefresh2023_]]">
-          <cr-theme-color-picker columns="6"></cr-theme-color-picker>
-        </template>
-        <template is="dom-if" if="[[!isChromeRefresh2023_]]">
-          <cr-customize-themes id="themeSelector">
-          </cr-customize-themes>
-        </template>
+        <cr-theme-color-picker columns="6"></cr-theme-color-picker>
       </div>
 
       <div class="action-container">
@@ -316,7 +303,7 @@
       </div>
       <div id="selectAvatarWrapper" class="custom-scrollbar">
         <cr-profile-avatar-selector avatars="[[availableIcons_]]"
-            selected-avatar="{{selectedAvatar_}}">
+            selected-avatar="{{selectedAvatar_}}" columns="5">
         </cr-profile-avatar-selector>
       </div>
       <div class="action-container">

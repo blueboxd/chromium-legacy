@@ -97,7 +97,7 @@ class PlatformSensorChromeOSOneChannelTest
 
     sensor_ = base::MakeRefCounted<PlatformSensorChromeOS>(
         kFakeDeviceId, type, provider_->GetSensorReadingBuffer(type),
-        provider_.get(),
+        provider_->AsWeakPtr(),
         base::BindOnce(
             &PlatformSensorChromeOSOneChannelTest::OnSensorDeviceDisconnect,
             base::Unretained(this)),
@@ -328,6 +328,7 @@ class PlatformSensorChromeOSAxesTest
         RoundGyroscopeReading(reading_xyz);
         break;
       case mojom::SensorType::MAGNETOMETER:
+        RoundMagnetometerReading(reading_xyz);
         break;
       default:
         LOG(FATAL) << "Invalid type: " << GetParam().first;

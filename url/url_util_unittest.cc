@@ -409,13 +409,10 @@ TEST_F(URLUtilTest, TestResolveRelativeWithNonStandardBase) {
     SCOPED_TRACE(testing::Message()
                  << "base: " << test.base << ", rel: " << test.rel);
 
-    Parsed base_parsed;
-    if (url::IsUsingStandardCompliantNonSpecialSchemeURLParsing()) {
-      ParseNonSpecialURL(test.base, strlen(test.base), &base_parsed);
-    } else {
-      ParsePathURL(test.base, strlen(test.base), /*trim_path_end=*/true,
-                   &base_parsed);
-    }
+    Parsed base_parsed =
+        url::IsUsingStandardCompliantNonSpecialSchemeURLParsing()
+            ? ParseNonSpecialURL(test.base)
+            : ParsePathURL(test.base, /*trim_path_end=*/true);
 
     std::string resolved;
     StdStringCanonOutput output(&resolved);
@@ -462,8 +459,7 @@ TEST_F(URLUtilTest, PotentiallyDanglingMarkup) {
 
   for (const auto& test : cases) {
     SCOPED_TRACE(::testing::Message() << test.base << ", " << test.rel);
-    Parsed base_parsed;
-    ParseStandardURL(test.base, strlen(test.base), &base_parsed);
+    Parsed base_parsed = ParseStandardURL(test.base);
 
     std::string resolved;
     StdStringCanonOutput output(&resolved);
@@ -736,13 +732,10 @@ class URLUtilTypedTest : public ::testing::TestWithParam<bool> {
     SCOPED_TRACE(testing::Message()
                  << "base: " << test.base << ", rel: " << test.rel);
 
-    Parsed base_parsed;
-    if (url::IsUsingStandardCompliantNonSpecialSchemeURLParsing()) {
-      ParseNonSpecialURL(test.base.data(), test.base.size(), &base_parsed);
-    } else {
-      ParsePathURL(test.base.data(), test.base.size(), /*trim_path_end=*/true,
-                   &base_parsed);
-    }
+    Parsed base_parsed =
+        url::IsUsingStandardCompliantNonSpecialSchemeURLParsing()
+            ? ParseNonSpecialURL(test.base)
+            : ParsePathURL(test.base, /*trim_path_end=*/true);
 
     std::string resolved;
     StdStringCanonOutput output(&resolved);
@@ -784,8 +777,7 @@ TEST_P(URLUtilTypedTest, TestNoRefComponent) {
     // We probably don't need to test with the flag enabled, however, including
     // a test with the flag enabled would be beneficial for comparison purposes,
     // at least until we enable the flag by default.
-    Parsed base_parsed;
-    ParseNonSpecialURL(base.data(), base.size(), &base_parsed);
+    Parsed base_parsed = ParseNonSpecialURL(base);
 
     std::string resolved;
     StdStringCanonOutput output(&resolved);
@@ -808,16 +800,13 @@ TEST_P(URLUtilTypedTest, TestNoRefComponent) {
     //
     // The hash-mark must be ignored when mailto: scheme is parsed,
     // even if the URL has a base and relative part.
-    Parsed base_parsed;
-    ParsePathURL(base.data(), base.size(), false, &base_parsed);
-
     std::string resolved;
     StdStringCanonOutput output(&resolved);
     Parsed resolved_parsed;
 
-    bool valid =
-        ResolveRelative(base.data(), base.size(), base_parsed, rel.data(),
-                        rel.size(), nullptr, &output, &resolved_parsed);
+    bool valid = ResolveRelative(
+        base.data(), base.size(), ParsePathURL(base, false), rel.data(),
+        rel.size(), nullptr, &output, &resolved_parsed);
     EXPECT_TRUE(valid);
     EXPECT_FALSE(resolved_parsed.ref.is_valid());
   }
@@ -856,7 +845,7 @@ TEST_P(URLUtilTypedTest, TestResolveRelativeWithNonSpecialBase) {
   // Test flag-dependent behaviors. Existing tests in
   // URLUtilTest::TestResolveRelativeWithNonStandardBase cover common cases.
   //
-  // TODO(crbug.com/1416006): Test common cases in this typed test too.
+  // TODO(crbug.com/40063064): Test common cases in this typed test too.
   if (use_standard_compliant_non_special_scheme_url_parsing_) {
     ResolveRelativeCase cases[] = {
         {"scheme://Authority", "path", "scheme://Authority/path"},

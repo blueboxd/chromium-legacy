@@ -157,7 +157,7 @@ std::unique_ptr<lottie::Animation> GetCheckmarkAnimation(
 
   std::unique_ptr<lottie::Animation> animation =
       std::make_unique<lottie::Animation>(
-          cc::SkottieWrapper::CreateSerializable(lottie_data.value()),
+          cc::SkottieWrapper::UnsafeCreateSerializable(lottie_data.value()),
           std::move(color_map));
 
   animation->SetPlaybackSpeed(kCheckmarkAnimationPlaybackSpeed);
@@ -499,8 +499,11 @@ int LoginAuthFactorsView::GetDefaultLabelId() const {
 }
 
 // views::View:
-gfx::Size LoginAuthFactorsView::CalculatePreferredSize() const {
-  gfx::Size size = views::View::CalculatePreferredSize();
+gfx::Size LoginAuthFactorsView::CalculatePreferredSize(
+    const views::SizeBounds& available_size) const {
+  views::SizeBounds content_available_size(available_size);
+  content_available_size.set_width(kAuthFactorsViewWidthDp);
+  gfx::Size size = views::View::CalculatePreferredSize(content_available_size);
   size.set_width(kAuthFactorsViewWidthDp);
   return size;
 }

@@ -10,13 +10,13 @@
 
 #include <stddef.h>
 
-#include "base/strings/string_piece.h"
+#include <string_view>
+
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/common/buildflags.h"
 #include "components/lens/buildflags.h"
-#include "components/supervised_user/core/common/buildflags.h"
 #include "content/public/common/url_constants.h"
 #include "media/media_buildflags.h"
 #include "printing/buildflags/buildflags.h"
@@ -55,12 +55,14 @@ extern const char kChromeUIComponentsHost[];
 extern const char kChromeUIComponentsUrl[];
 extern const char kChromeUIConflictsHost[];
 extern const char kChromeUIConstrainedHTMLTestURL[];
+extern const char kChromeUIContentSettingsURL[];
 extern const char kChromeUICookieSettingsURL[];
 extern const char kChromeUICrashHost[];
 extern const char kChromeUICrashesUrl[];
 extern const char kChromeUICrashesHost[];
 extern const char kChromeUICreditsHost[];
 extern const char kChromeUICreditsURL[];
+extern const char kChromeUIDataSharingInternalsHost[];
 extern const char kChromeUIDefaultHost[];
 extern const char kChromeUIDelayedHangUIHost[];
 extern const char kChromeUIDevToolsBlankPath[];
@@ -90,9 +92,7 @@ extern const char kChromeUIExtensionsHost[];
 extern const char kChromeUIExtensionsInternalsHost[];
 extern const char kChromeUIExtensionsInternalsURL[];
 extern const char kChromeUIExtensionsURL[];
-#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
 extern const char kChromeUIFamilyLinkUserInternalsHost[];
-#endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
 extern const char kChromeUIFaviconHost[];
 extern const char kChromeUIFaviconURL[];
 extern const char kChromeUIFavicon2Host[];
@@ -121,6 +121,8 @@ extern const char kChromeUIInterstitialURL[];
 extern const char kChromeUIKillHost[];
 extern const char kChromeUILauncherInternalsHost[];
 extern const char kChromeUILauncherInternalsURL[];
+extern const char kChromeUILensSearchBubbleHost[];
+extern const char kChromeUILensSearchBubbleURL[];
 extern const char kChromeUISensorInfoURL[];
 extern const char kChromeUISensorInfoHost[];
 extern const char kChromeUILocalStateHost[];
@@ -164,7 +166,6 @@ extern const char kChromeUIPasswordManagerInternalsHost[];
 extern const char kChromeUIPasswordManagerURL[];
 extern const char kChromeUIPasswordManagerCheckupURL[];
 extern const char kChromeUIPasswordManagerSettingsURL[];
-extern const char kChromeUIPerformanceSettingsURL[];
 extern const char kChromeUIPerformanceSidePanelHost[];
 extern const char kChromeUIPerformanceSidePanelURL[];
 extern const char kChromeUIPolicyHost[];
@@ -220,7 +221,6 @@ extern const char kChromeUISyncHost[];
 extern const char kChromeUISyncInternalsHost[];
 extern const char kChromeUISyncInternalsUrl[];
 extern const char kChromeUISystemInfoHost[];
-extern const char kChromeUIFeedbackSystemInfoUrl[];
 extern const char kChromeUITermsHost[];
 extern const char kChromeUITermsURL[];
 extern const char kChromeUIThemeHost[];
@@ -247,7 +247,7 @@ extern const char kChromeUIWhatsNewURL[];
 extern const char kChromeUIWebuiGalleryHost[];
 
 #if BUILDFLAG(IS_WIN)
-// TODO(crbug.com/1003960): Remove when issue is resolved.
+// TODO(crbug.com/40647483): Remove when issue is resolved.
 extern const char kChromeUIWelcomeWin10Host[];
 #endif  // BUILDFLAG(IS_WIN)
 
@@ -274,6 +274,7 @@ extern const char kChromeUIHistoryClustersSidePanelHost[];
 extern const char kChromeUIHistoryClustersSidePanelURL[];
 extern const char kChromeUILensHost[];
 extern const char kChromeUILensUntrustedURL[];
+extern const char kChromeUILensUntrustedSidePanelURL[];
 extern const char kChromeUIReadLaterHost[];
 extern const char kChromeUIReadLaterURL[];
 extern const char kChromeUIUntrustedCompanionSidePanelHost[];
@@ -404,7 +405,7 @@ extern const char kChromeUIVmUrl[];
 // Returns true if this web UI is part of the "system UI". Generally this is
 // UI that opens in a window (not a browser tab) and that on other operating
 // systems would be considered part of the OS or window manager.
-bool IsSystemWebUIHost(base::StringPiece host);
+bool IsSystemWebUIHost(std::string_view host);
 
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
@@ -447,13 +448,12 @@ extern const char kChromeUIConnectorsInternalsHost[];
 #endif
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
-    BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_FUCHSIA)
+    BUILDFLAG(IS_CHROMEOS)
 extern const char kChromeUIDiscardsHost[];
 extern const char kChromeUIDiscardsURL[];
 #endif
 
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
-    BUILDFLAG(IS_FUCHSIA)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
 extern const char kChromeUIWebAppSettingsURL[];
 extern const char kChromeUIWebAppSettingsHost[];
 #endif
@@ -472,9 +472,9 @@ extern const char kChromeUILinuxProxyConfigHost[];
 extern const char kChromeUISandboxHost[];
 #endif
 
-// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
+// TODO(crbug.com/40118868): Revisit the macro expression once build flag switch
 // of lacros-chrome is complete.
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_FUCHSIA) || \
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || \
     (BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS))
 extern const char kChromeUIBrowserSwitchHost[];
 extern const char kChromeUIBrowserSwitchURL[];
@@ -528,6 +528,7 @@ extern const char kFileSystemSettingsSubpage[];
 extern const char kOnDeviceSiteDataSubpage[];
 extern const char kCookieSettingsSubPage[];
 extern const char kExperimentalAISettingsSubPage[];
+extern const char kDefaultBrowserSubPage[];
 extern const char kDownloadsSubPage[];
 extern const char kHandlerSettingsSubPage[];
 extern const char kImportDataSubPage[];
@@ -558,8 +559,6 @@ extern const char kTriggeredResetProfileSettingsSubPage[];
 
 #if !BUILDFLAG(IS_ANDROID)
 extern const char kAdPrivacySubPagePath[];
-extern const char kPerformanceSubPagePath[];
-extern const char kPreloadingSubPagePath[];
 extern const char kTrackingProtectionSubPagePath[];
 extern const char kCookiesSubPagePath[];
 #endif

@@ -10,7 +10,8 @@
 
 #include <memory>
 
-#include "base/big_endian.h"
+#include "base/containers/span_reader.h"
+#include "base/containers/span_writer.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/functional/bind.h"
@@ -45,9 +46,9 @@ static std::vector<uint8_t> CreateFakeRtpPacketHeader(
   // Set extension length.
   size_t offset = kMinimumRtpHeaderLength +
                   (csrc_count & 0xf) * sizeof(uint32_t) + sizeof(uint16_t);
-  base::BigEndianWriter writer(packet_header);
+  auto writer = base::SpanWriter(base::span(packet_header));
   writer.Skip(offset);
-  writer.WriteU16(static_cast<uint16_t>(extension_header_count));
+  writer.WriteU16BigEndian(static_cast<uint16_t>(extension_header_count));
 
   return packet_header;
 }
@@ -181,9 +182,9 @@ class WebRtcRtpDumpWriterTest : public testing::Test {
                         uint16_t* packet_dump_length) {
     static const size_t kDumpHeaderLength = 8;
 
-    base::BigEndianReader reader(dump);
+    auto reader = base::SpanReader(dump);
 
-    if (!reader.ReadU16(packet_dump_length)) {
+    if (!reader.ReadU16BigEndian(*packet_dump_length)) {
       return false;
     }
     if (*packet_dump_length < kDumpHeaderLength + kMinimumRtpHeaderLength) {
@@ -197,7 +198,7 @@ class WebRtcRtpDumpWriterTest : public testing::Test {
     }
 
     uint16_t rtp_packet_length = 0;
-    if (!reader.ReadU16(&rtp_packet_length)) {
+    if (!reader.ReadU16BigEndian(rtp_packet_length)) {
       return false;
     }
     if (rtp_packet_length < kMinimumRtpHeaderLength)
@@ -208,17 +209,12 @@ class WebRtcRtpDumpWriterTest : public testing::Test {
       return false;
     }
 
-    return IsValidRtpHeader(reader.remaining_bytes().data(),
-                            *packet_dump_length - kDumpHeaderLength);
+    return IsValidRtpHeader(
+        reader.remaining_span().first(*packet_dump_length - kDumpHeaderLength));
   }
 
   // Returns true if the header is a valid RTP header.
-  bool IsValidRtpHeader(const uint8_t* header_data, size_t header_size) {
-    auto header =
-        // TODO(crbug.com/40284755): IsValidRtpHeader() should receive a span
-        // instead of constructing one here.
-        UNSAFE_BUFFERS(base::span(header_data, header_size));
-
+  bool IsValidRtpHeader(base::span<const uint8_t> header) {
     if ((header[0u] & 0xC0u) != 0x80u) {
       return false;
     }

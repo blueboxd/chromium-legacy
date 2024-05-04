@@ -49,7 +49,6 @@
 #include "chrome/browser/ash/net/delay_network_call.h"
 #include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
 #include "chrome/browser/ash/policy/enrollment/enrollment_config.h"
-#include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/ash/settings/device_settings_service.h"
 #include "chrome/browser/ash/system/device_disabling_manager.h"
 #include "chrome/browser/ash/system/input_device_settings.h"
@@ -80,7 +79,9 @@
 #include "chrome/grit/browser_resources.h"
 #include "chromeos/ash/components/audio/sounds.h"
 #include "chromeos/ash/components/dbus/session_manager/session_manager_client.h"
+#include "chromeos/ash/components/install_attributes/install_attributes.h"
 #include "chromeos/ash/components/login/login_state/login_state.h"
+#include "chromeos/ash/components/settings/cros_settings.h"
 #include "chromeos/ash/components/settings/cros_settings_names.h"
 #include "chromeos/ash/components/settings/cros_settings_provider.h"
 #include "chromeos/ash/components/settings/timezone_settings.h"
@@ -174,14 +175,11 @@ bool HasManagedDeviceSettings() {
 // Even if oobe is complete we may still want to show it, for example, if there
 // are no users registered then the user may want to enterprise enroll.
 bool IsOobeComplete() {
-  policy::BrowserPolicyConnectorAsh* connector =
-      g_browser_process->platform_part()->browser_policy_connector_ash();
-
   // Oobe is completed and we have a user or we are enterprise enrolled.
   return StartupUtils::IsOobeCompleted() &&
          ((!user_manager::UserManager::Get()->GetUsers().empty() &&
            !HasManagedDeviceSettings()) ||
-          connector->IsDeviceEnterpriseManaged());
+          ash::InstallAttributes::Get()->IsEnterpriseManaged());
 }
 
 // Returns true if signin (not oobe) should be displayed.
@@ -249,7 +247,7 @@ void ShowLoginWizardFinish(
     MaybeShutdownLoginDisplayHostWebUI();
   }
 
-  // TODO(crbug.com/781402): Move LoginDisplayHost creation out of
+  // TODO(crbug.com/41353468): Move LoginDisplayHost creation out of
   // LoginDisplayHostWebUI, it is not specific to a particular implementation.
 
   // Create the LoginDisplayHost. Use the views-based implementation only for
@@ -261,7 +259,7 @@ void ShowLoginWizardFinish(
   } else if (ShouldShowSigninScreen(first_screen)) {
     display_host = new LoginDisplayHostMojo(DisplayedScreen::SIGN_IN_SCREEN);
   } else if (first_screen == LacrosDataMigrationScreenView::kScreenId) {
-    // TODO(crbug.com/1178702): Once lacros is officially released,
+    // TODO(crbug.com/40169227): Once lacros is officially released,
     // `ShowLoginWizard()` will no longer be called with lacros screen id.
     // Instead simply call `SigninUI::StartBrowserDataMigration()` as part of
     // the login flow.
@@ -544,13 +542,6 @@ void LoginDisplayHostWebUI::OnFinalize() {
   }
 }
 
-void LoginDisplayHostWebUI::SetStatusAreaVisible(bool visible) {
-  status_area_saved_visibility_ = visible;
-  if (login_view_) {
-    login_view_->SetStatusAreaVisible(status_area_saved_visibility_);
-  }
-}
-
 void LoginDisplayHostWebUI::OnOobeConfigurationChanged() {
   waiting_for_configuration_ = false;
   OobeConfiguration::Get()->RemoveObserver(this);
@@ -654,7 +645,7 @@ void LoginDisplayHostWebUI::OnStartSignInScreen() {
       "ui", "WaitForScreenStateInitialize",
       TRACE_ID_WITH_SCOPE(kShowLoginWebUIid, TRACE_ID_GLOBAL(1)));
 
-  // TODO(crbug.com/784495): Make sure this is ported to views.
+  // TODO(crbug.com/40549648): Make sure this is ported to views.
   BootTimesRecorder::Get()->RecordCurrentStats(
       "login-wait-for-signin-state-initialize");
 }
@@ -825,20 +816,12 @@ void LoginDisplayHostWebUI::OnWidgetBoundsChanged(views::Widget* widget,
 void LoginDisplayHostWebUI::OnCurrentScreenChanged(OobeScreenId current_screen,
                                                    OobeScreenId new_screen) {
   if (current_screen == ash::OOBE_SCREEN_UNKNOWN) {
-    // TODO(crbug.com/1305245) - Remove once the issue is fixed.
-    LOG(WARNING) << "LoginDisplayHostWebUI::OnCurrentScreenChanged() "
-                    "NotifyLoginOrLockScreenVisible";
-
     // Notify that the OOBE page is ready and the first screen is shown. It
     // might happen that front-end part isn't fully initialized yet (when
     // `OobeLazyLoading` is enabled), so wait for it to happen before notifying.
     GetOobeUI()->IsJSReady(base::BindOnce(
         &session_manager::SessionManager::NotifyLoginOrLockScreenVisible,
         base::Unretained(session_manager::SessionManager::Get())));
-  } else {
-    // TODO(crbug.com/1305245) - Remove once the issue is fixed.
-    LOG(WARNING) << "LoginDisplayHostWebUI::OnCurrentScreenChanged() Not "
-                    "notifying LoginOrLockScreenVisible.";
   }
 }
 
@@ -919,7 +902,6 @@ void LoginDisplayHostWebUI::ShowWebUI() {
   VLOG(1) << "Login WebUI >> Show already initialized UI";
   login_window_->Show();
   login_view_->GetWebContents()->Focus();
-  login_view_->SetStatusAreaVisible(status_area_saved_visibility_);
   login_view_->OnPostponedShow();
 
   if (oobe_load_timer_.has_value()) {
@@ -954,8 +936,7 @@ void LoginDisplayHostWebUI::InitLoginWindowAndView() {
   login_window_ = new views::Widget;
   login_window_->Init(std::move(params));
 
-  login_view_ = new WebUILoginView(WebUILoginView::WebViewSettings(),
-                                   weak_factory_.GetWeakPtr());
+  login_view_ = new WebUILoginView(weak_factory_.GetWeakPtr());
   login_view_->Init();
 
   login_window_->SetVisibilityAnimationDuration(
@@ -1096,7 +1077,7 @@ void LoginDisplayHostWebUI::StartUserRecovery(const AccountId& account_id) {
 void LoginDisplayHostWebUI::UseAlternativeAuthentication(
     std::unique_ptr<UserContext> user_context,
     bool online_password_mismatch) {
-  NOTREACHED();
+  DUMP_WILL_BE_NOTREACHED_NORETURN();
 }
 
 void LoginDisplayHostWebUI::RunLocalAuthentication(
@@ -1203,17 +1184,12 @@ void ShowLoginWizard(OobeScreenId first_screen) {
   }
   session_manager::SessionManager::Get()->SetSessionState(session_state);
 
-  if (first_screen == AppLaunchSplashScreenView::kScreenId) {
-    auto app = KioskController::Get().GetAutoLaunchApp();
-    CHECK(app.has_value());
-
-    // Manages its own lifetime. See ShutdownDisplayHost().
-    auto* display_host = new LoginDisplayHostWebUI();
-    display_host->StartKiosk(app->id(), /*is_auto_launch=*/true);
-    return;
-  }
+  // Kiosk launch is handled inside `ChromeSessionManager` code.
+  CHECK(first_screen != AppLaunchSplashScreenView::kScreenId);
 
   // Check whether we need to execute OOBE flow.
+  // TODO(b/338302062): Determine whether we should wait on OOBE config
+  // retrieval before calling GetPrescribedEnrollmentConfig here.
   const policy::EnrollmentConfig enrollment_config =
       policy::EnrollmentConfig::GetPrescribedEnrollmentConfig();
   if (enrollment_config.should_enroll() &&

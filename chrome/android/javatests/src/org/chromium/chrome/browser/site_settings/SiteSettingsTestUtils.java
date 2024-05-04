@@ -61,13 +61,8 @@ public class SiteSettingsTestUtils {
                         () -> {
                             Context context =
                                     InstrumentationRegistry.getInstrumentation().getContext();
-                            var delegate =
-                                    new ChromeSiteSettingsDelegate(
-                                            context, ProfileManager.getLastUsedRegularProfile());
                             return context.getResources()
-                                    .getString(
-                                            ContentSettingsResources.getTitleForCategory(
-                                                    type, delegate));
+                                    .getString(ContentSettingsResources.getTitleForCategory(type));
                         });
         fragmentArgs.putString(SingleCategorySettings.EXTRA_TITLE, title);
         SettingsLauncher settingsLauncher = new SettingsLauncherImpl();
@@ -124,6 +119,22 @@ public class SiteSettingsTestUtils {
         Bundle fragmentArgs = new Bundle();
         fragmentArgs.putString(
                 AllSiteSettings.EXTRA_CATEGORY, SiteSettingsCategory.preferenceKey(type));
+        SettingsLauncher settingsLauncher = new SettingsLauncherImpl();
+        Intent intent =
+                settingsLauncher.createSettingsActivityIntent(
+                        ApplicationProvider.getApplicationContext(),
+                        AllSiteSettings.class.getName(),
+                        fragmentArgs);
+        return (SettingsActivity)
+                InstrumentationRegistry.getInstrumentation().startActivitySync(intent);
+    }
+
+    public static SettingsActivity startAllSitesSettingsForRws(
+            @SiteSettingsCategory.Type int type, String rwsPage) {
+        Bundle fragmentArgs = new Bundle();
+        fragmentArgs.putString(
+                AllSiteSettings.EXTRA_CATEGORY, SiteSettingsCategory.preferenceKey(type));
+        fragmentArgs.putString(AllSiteSettings.EXTRA_SEARCH, rwsPage);
         SettingsLauncher settingsLauncher = new SettingsLauncherImpl();
         Intent intent =
                 settingsLauncher.createSettingsActivityIntent(

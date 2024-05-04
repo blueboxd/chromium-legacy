@@ -4,9 +4,7 @@
 
 #import "ios/chrome/browser/ui/content_suggestions/set_up_list/set_up_list_show_more_item_view.h"
 
-#import "base/feature_list.h"
 #import "base/notreached.h"
-#import "components/sync/base/features.h"
 #import "ios/chrome/browser/ntp/model/set_up_list_item_type.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/shared/ui/elements/crossfade_label.h"
@@ -14,7 +12,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/set_up_list/set_up_list_item_icon.h"
 #import "ios/chrome/browser/ui/content_suggestions/set_up_list/set_up_list_item_view.h"
 #import "ios/chrome/browser/ui/content_suggestions/set_up_list/set_up_list_item_view_data.h"
-#import "ios/chrome/browser/ui/content_suggestions/set_up_list/set_up_list_view.h"
+#import "ios/chrome/browser/ui/content_suggestions/set_up_list/set_up_list_tap_delegate.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
 #import "ios/chrome/grit/ios_branded_strings.h"
@@ -125,22 +123,34 @@ NSAttributedString* Strikethrough(NSString* text) {
         [UIColor colorNamed:kGroupedPrimaryBackgroundColor];
     tryButton.titleLabel.font =
         CreateDynamicFont(UIFontTextStyleSubheadline, UIFontWeightSemibold);
-    [tryButton
-        setTitle:l10n_util::GetNSString(IDS_IOS_SET_UP_LIST_TRY_BUTTON_TEXT)
-        forState:UIControlStateNormal];
+    NSString* tryButtonTitle =
+        l10n_util::GetNSString(IDS_IOS_SET_UP_LIST_TRY_BUTTON_TEXT);
+    [tryButton setTitle:tryButtonTitle forState:UIControlStateNormal];
     [tryButton setTitleColor:[UIColor colorNamed:kBlueColor]
                     forState:UIControlStateNormal];
     [tryButton addTarget:self
                   action:@selector(tryTapped)
         forControlEvents:UIControlEventTouchUpInside];
+    NSString* itemTitle = [self titleText];
     tryButton.accessibilityIdentifier =
-        [NSString stringWithFormat:@"%@ Try Button", [self titleText]];
+        [NSString stringWithFormat:@"%@ Try Button", itemTitle];
+    tryButton.accessibilityLabel =
+        [NSString stringWithFormat:@"%@, %@", tryButtonTitle, itemTitle];
     tryButton.layer.cornerRadius = 15;
+    tryButton.pointerInteractionEnabled = YES;
     [NSLayoutConstraint activateConstraints:@[
       [tryButton.widthAnchor constraintEqualToConstant:kTryButtonWidth],
     ]];
     [contentStack addArrangedSubview:tryButton];
+    self.accessibilityHint = l10n_util::GetNSString(
+        IDS_IOS_SET_UP_LIST_TRY_BUTTON_ACCESSIBILITY_HINT);
+  } else {
+    self.accessibilityTraits |= UIAccessibilityTraitNotEnabled;
   }
+
+  self.isAccessibilityElement = YES;
+  self.accessibilityLabel =
+      [NSString stringWithFormat:@"%@, %@", title.text, description.text];
 }
 
 // Creates the title label.
@@ -162,12 +172,8 @@ NSAttributedString* Strikethrough(NSString* text) {
 - (NSString*)titleText {
   switch (_data.type) {
     case SetUpListItemType::kSignInSync:
-      return base::FeatureList::IsEnabled(
-                 syncer::kReplaceSyncPromosWithSignInPromos)
-                 ? l10n_util::GetNSString(
-                       IDS_IOS_CONSISTENCY_PROMO_DEFAULT_ACCOUNT_TITLE)
-                 : l10n_util::GetNSString(
-                       IDS_IOS_SET_UP_LIST_SIGN_IN_SYNC_TITLE);
+      return l10n_util::GetNSString(
+          IDS_IOS_CONSISTENCY_PROMO_DEFAULT_ACCOUNT_TITLE);
     case SetUpListItemType::kDefaultBrowser:
       return l10n_util::GetNSString(IDS_IOS_SET_UP_LIST_DEFAULT_BROWSER_TITLE);
     case SetUpListItemType::kAutofill:
@@ -181,7 +187,7 @@ NSAttributedString* Strikethrough(NSString* text) {
     case SetUpListItemType::kAllSet:
       return l10n_util::GetNSString(IDS_IOS_SET_UP_LIST_ALL_SET_TITLE);
     case SetUpListItemType::kFollow:
-      // TODO(crbug.com/1428070): Add a Follow item to the Set Up List.
+      // TODO(crbug.com/40262090): Add a Follow item to the Set Up List.
       NOTREACHED_NORETURN();
   }
 }
@@ -230,6 +236,16 @@ NSAttributedString* Strikethrough(NSString* text) {
 // Handles button tap.
 - (void)tryTapped {
   [self.tapDelegate didSelectSetUpListItem:_data.type];
+}
+
+#pragma mark - UIAccessibility
+
+- (BOOL)accessibilityActivate {
+  if (_data.complete) {
+    return NO;
+  }
+  [self tryTapped];
+  return YES;
 }
 
 @end

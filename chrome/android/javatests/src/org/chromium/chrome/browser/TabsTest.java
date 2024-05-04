@@ -35,16 +35,17 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.ApplicationTestUtils;
-import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.DisabledTest;
+import org.chromium.base.test.util.DoNotBatch;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
+import org.chromium.chrome.browser.hub.HubFieldTrial;
 import org.chromium.chrome.browser.layouts.LayoutTestUtils;
 import org.chromium.chrome.browser.layouts.LayoutType;
 import org.chromium.chrome.browser.layouts.animation.CompositorAnimationHandler;
@@ -57,6 +58,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.tabpersistence.TabStateDirectory;
 import org.chromium.chrome.browser.tabpersistence.TabStateFileManager;
+import org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.R;
@@ -86,7 +88,10 @@ import java.util.concurrent.atomic.AtomicReference;
 /** General Tab tests. */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
-@Batch(Batch.PER_CLASS)
+@DoNotBatch(
+        reason =
+                "https://crbug.com/1347598: Side effects are causing flakes in CI and failures"
+                    + " locally. Unbatched to isolate flakes before batching again.")
 public class TabsTest {
     @ClassRule
     public static ChromeTabbedActivityTestRule sActivityTestRule =
@@ -232,7 +237,9 @@ public class TabsTest {
         LayoutTestUtils.waitForLayout(
                 sActivityTestRule.getActivity().getLayoutManager(), LayoutType.TAB_SWITCHER);
 
-        onViewWaiting(withId(R.id.new_tab_view)).check(matches(isDisplayed())).perform(click());
+        int newTabButtonId =
+                HubFieldTrial.isHubEnabled() ? R.id.toolbar_action_button : R.id.new_tab_view;
+        onViewWaiting(withId(newTabButtonId)).check(matches(isDisplayed())).perform(click());
         LayoutTestUtils.waitForLayout(
                 sActivityTestRule.getActivity().getLayoutManager(), LayoutType.BROWSING);
 
@@ -319,6 +326,7 @@ public class TabsTest {
     @Test
     @MediumTest
     @Feature({"Android-TabSwitcher"})
+    @DisabledTest(message = "https://crbug.com/329064612")
     public void testHideKeyboardWhenOpeningWindow() throws Exception {
         // Open a new tab and click an editable node.
         ChromeTabUtils.fullyLoadUrlInNewTab(
@@ -472,7 +480,6 @@ public class TabsTest {
     @Test
     @MediumTest
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
-    @DisabledTest(message = "https://crbug.com/1347598")
     public void testQuickSwitchBetweenTabAndSwitcherMode() {
         final String[] urls = {
             getUrl("/chrome/test/data/android/navigate/one.html"),
@@ -485,16 +492,14 @@ public class TabsTest {
         }
 
         final int lastUrlIndex = urls.length - 1;
+        ChromeTabbedActivity cta = sActivityTestRule.getActivity();
 
         View button = sActivityTestRule.getActivity().findViewById(R.id.tab_switcher_button);
         Assert.assertNotNull("Could not find 'tab_switcher_button'", button);
 
         for (int i = 0; i < 15; i++) {
-            TouchCommon.singleClickView(button);
-
             // Wait for UI to show so the back press will apply to the switcher not the tab.
-            onViewWaiting(withId(org.chromium.chrome.test.R.id.tab_switcher_toolbar))
-                    .check(matches(isDisplayed()));
+            TabUiTestHelper.enterTabSwitcher(cta);
 
             // Switch back to the tab view from the tab-switcher mode.
             Espresso.pressBack();
@@ -560,8 +565,7 @@ public class TabsTest {
 
         Assert.assertEquals("Too many tabs at startup", 1, model.getCount());
 
-        TestThreadUtils.runOnUiThreadBlocking(
-                (Runnable) () -> model.closeTab(tab, false, false, true));
+        TestThreadUtils.runOnUiThreadBlocking((Runnable) () -> model.closeTab(tab, false, true));
 
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> {
@@ -646,7 +650,7 @@ public class TabsTest {
 
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> {
-                    model.closeTab(newTab, false, false, true);
+                    model.closeTab(newTab, false, true);
                 });
 
         Assert.assertEquals("oldTab should have been focused.", 1, focusListener.getTimesFocused());
@@ -777,7 +781,6 @@ public class TabsTest {
     @Test
     @MediumTest
     @Feature({"Android-TabSwitcher"})
-    @DisabledTest(message = "https://crbug.com/1347598")
     public void testLastClosedTabTriggersNotifyChangedCall() {
         final TabModel model =
                 sActivityTestRule.getActivity().getTabModelSelector().getCurrentModel();
@@ -798,8 +801,7 @@ public class TabsTest {
 
         Assert.assertEquals("Too many tabs at startup", 1, model.getCount());
 
-        TestThreadUtils.runOnUiThreadBlocking(
-                (Runnable) () -> model.closeTab(tab, false, false, true));
+        TestThreadUtils.runOnUiThreadBlocking((Runnable) () -> model.closeTab(tab, false, true));
 
         Assert.assertTrue("notifyChanged() was not called", mNotifyChangedCalled);
     }

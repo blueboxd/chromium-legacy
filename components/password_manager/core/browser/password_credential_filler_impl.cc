@@ -36,11 +36,11 @@ bool CalculateTriggerSubmission(SubmissionReadinessState submission_readiness) {
 // Returns a prediction whether the form that contains |username_element| and
 // |password_element| will be ready for submission after filling these two
 // elements.
-// TODO(crbug/1462532): This is a replication of the logic in
+// TODO(crbug.com/40274966): This is a replication of the logic in
 // password_autofill_agent.cc. Remove the logic in the agent when
 // PasswordSuggestionBottomSheetV2 is launched.
 SubmissionReadinessState CalculateSubmissionReadiness(
-    password_manager::SubmissionReadinessParams params) {
+    const password_manager::PasswordFillingParams& params) {
   if (!base::FeatureList::IsEnabled(
           password_manager::features::kPasswordSuggestionBottomSheetV2)) {
     return params.submission_readiness;
@@ -73,7 +73,8 @@ SubmissionReadinessState CalculateSubmissionReadiness(
     // block a form submission. Note: Don't use |check_status !=
     // kNotCheckable|, a radio button is considered a "checkable" element too,
     // but it should block a submission.
-    return field.form_control_type == autofill::FormControlType::kInputCheckbox;
+    return field.form_control_type() ==
+           autofill::FormControlType::kInputCheckbox;
   };
 
   for (size_t i = username_index + 1; i < password_index; ++i) {
@@ -95,7 +96,7 @@ SubmissionReadinessState CalculateSubmissionReadiness(
     }
 
     if (username_index != i && password_index != i &&
-        form_data.fields[i].value.empty()) {
+        form_data.fields[i].value().empty()) {
       return SubmissionReadinessState::kEmptyFields;
     }
     number_of_visible_elements++;
@@ -114,10 +115,10 @@ namespace password_manager {
 
 PasswordCredentialFillerImpl::PasswordCredentialFillerImpl(
     base::WeakPtr<PasswordManagerDriver> driver,
-    const SubmissionReadinessParams& submission_readiness_params)
+    const PasswordFillingParams& password_filling_params)
     : driver_(driver),
       submission_readiness_(
-          CalculateSubmissionReadiness(submission_readiness_params)),
+          CalculateSubmissionReadiness(password_filling_params)),
       trigger_submission_(CalculateTriggerSubmission(submission_readiness_)) {}
 
 PasswordCredentialFillerImpl::~PasswordCredentialFillerImpl() = default;
@@ -136,7 +137,7 @@ void PasswordCredentialFillerImpl::FillUsernameAndPassword(
   trigger_submission_ &= !username.empty();
 
   if (trigger_submission_) {
-    // TODO(crbug.com/1283004): As auto-submission has been launched, measuring
+    // TODO(crbug.com/40209736): As auto-submission has been launched, measuring
     // the time between filling by TTF and submisionn is not crucial. Remove
     // this call, the method itself and the metrics if we are not going to use
     // all that for new launches, e.g. crbug.com/1393043.
@@ -162,13 +163,13 @@ GURL PasswordCredentialFillerImpl::GetFrameUrl() const {
 }
 
 void PasswordCredentialFillerImpl::Dismiss(ToShowVirtualKeyboard should_show) {
-  // TODO(crbug/1462532): Remove this function once the feature is enabled.
+  // TODO(crbug.com/40274966): Remove this function once the feature is enabled.
   if (base::FeatureList::IsEnabled(
           features::kPasswordSuggestionBottomSheetV2) ||
       !driver_) {
     return;
   }
-  // TODO(crbug/1434278): Avoid using KeyboardReplacingSurfaceClosed.
+  // TODO(crbug.com/40264656): Avoid using KeyboardReplacingSurfaceClosed.
   driver_->KeyboardReplacingSurfaceClosed(should_show);
 }
 

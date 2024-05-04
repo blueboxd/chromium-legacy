@@ -73,7 +73,7 @@ void SupervisedUserPrefStoreFixture::OnInitializationCompleted(bool succeeded) {
 
 class SupervisedUserPrefStoreTest : public ::testing::Test {
  public:
-  SupervisedUserPrefStoreTest() {}
+  SupervisedUserPrefStoreTest() = default;
   void SetUp() override;
   void TearDown() override;
 
@@ -120,18 +120,10 @@ TEST_F(SupervisedUserPrefStoreTest, ConfigureSettings) {
 
   // kForceYouTubeRestrict defaults to 'moderate' for supervised users on
   // Android and ChromeOS only.
-#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS)
-  EXPECT_EQ(
-      fixture.changed_prefs()
-          ->FindIntByDottedPath(policy::policy_prefs::kForceYouTubeRestrict)
-          .value(),
-      safe_search_api::YOUTUBE_RESTRICT_MODERATE);
-#else
   EXPECT_FALSE(
       fixture.changed_prefs()
           ->FindIntByDottedPath(policy::policy_prefs::kForceYouTubeRestrict)
           .has_value());
-#endif
 
 #if BUILDFLAG(IS_ANDROID)
   EXPECT_THAT(fixture.changed_prefs()->FindBoolByDottedPath(

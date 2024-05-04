@@ -21,7 +21,6 @@
 #import "components/prefs/pref_service.h"
 #import "components/signin/public/base/signin_pref_names.h"
 #import "components/signin/public/identity_manager/account_info.h"
-#import "components/sync/base/features.h"
 #import "components/sync/base/user_selectable_type.h"
 #import "components/sync/service/local_data_description.h"
 #import "components/sync/service/sync_service.h"
@@ -243,9 +242,14 @@ bool IsABookmarkNodeSectionForIdentifier(
 - (void)generateTableViewDataForRootNode {
   BOOL showProfileSection =
       [self hasBookmarksOrFoldersInModel:_localOrSyncableBookmarkModel.get()];
+  // Whether the account part should be displayed, if possible.
+  BOOL shouldShowIfPossible =
+      [self hasBookmarksOrFoldersInModel:_accountBookmarkModel.get()] ||
+      showProfileSection;
   BOOL showAccountSection =
-      bookmark_utils_ios::IsAccountBookmarkStorageOptedIn(_syncService) &&
-      [self hasBookmarksOrFoldersInModel:_accountBookmarkModel.get()];
+      shouldShowIfPossible &&
+      bookmark_utils_ios::IsAccountBookmarkStorageAvailable(
+          _syncService, _accountBookmarkModel.get());
   if (showProfileSection) {
     [self
         generateTableViewDataForModel:_localOrSyncableBookmarkModel.get()
@@ -331,7 +335,8 @@ bool IsABookmarkNodeSectionForIdentifier(
   *query.word_phrase_query = base::SysNSStringToUTF16(searchText);
   // Total count of search result for both models.
   int totalSearchResultCount = 0;
-  if (bookmark_utils_ios::IsAccountBookmarkStorageOptedIn(self.syncService)) {
+  if (bookmark_utils_ios::IsAccountBookmarkStorageAvailable(
+          self.syncService, _accountBookmarkModel.get())) {
     totalSearchResultCount =
         [self populateNodeItemWithQuery:query
                           bookmarkModel:_accountBookmarkModel.get()
@@ -466,8 +471,13 @@ bool IsABookmarkNodeSectionForIdentifier(
       base::BindOnce(^(std::map<syncer::ModelType, syncer::LocalDataDescription>
                            description) {
         auto it = description.find(syncer::BOOKMARKS);
-        CHECK(it != description.end());
-        completion(it->second.item_count, std::move(user_email));
+        // GetLocalDataDescriptions() can return an empty result if data type is
+        // still in configuration, or has an error.
+        if (it != description.end()) {
+          completion(it->second.item_count, std::move(user_email));
+          return;
+        }
+        completion(0, std::move(user_email));
       }));
 }
 
@@ -521,12 +531,30 @@ bool IsABookmarkNodeSectionForIdentifier(
 #pragma mark - Properties
 
 - (LegacyBookmarkModel*)displayedBookmarkModel {
+  if (!self.displayedNode) {
+    return _localOrSyncableBookmarkModel.get();
+  }
   return bookmark_utils_ios::GetBookmarkModelForNode(
       self.displayedNode, _localOrSyncableBookmarkModel.get(),
       _accountBookmarkModel.get());
 }
 
 #pragma mark - BookmarkModelBridgeObserver
+
+- (void)bookmarkModelWillRemoveAllNodes:(const LegacyBookmarkModel*)model {
+  CHECK(model);
+  if (model == [self displayedBookmarkModel]) {
+    if (self.displayedNode && self.displayedNode->is_permanent_node()) {
+      // All Bookmarks home mediators will receive
+      // `bookmarkModelWillRemoveAllNodes:`. However, the navigation controller
+      // should be edited only once. In order to ensure a single Bookmarks home
+      // view controller request the navigation controller to change we call
+      // `displayRoot` a single time, in the permanent folder.
+      [self.consumer displayRoot];
+    }
+    self.displayedNode = nullptr;
+  }
+}
 
 // BookmarkModelBridgeObserver Callbacks
 // Instances of this class automatically observe the bookmark model.
@@ -593,8 +621,8 @@ bool IsABookmarkNodeSectionForIdentifier(
        willDeleteNode:(const bookmarks::BookmarkNode*)node
            fromFolder:(const bookmarks::BookmarkNode*)folder {
   DCHECK(node);
-  if (self.displayedNode && self.displayedNode->HasAncestor(node)) {
-    self.displayedNode = nullptr;
+  if (self.displayedNode == node) {
+    [self.consumer closeThisFolder];
   }
 }
 
@@ -607,7 +635,7 @@ bool IsABookmarkNodeSectionForIdentifier(
 
 // All non-permanent nodes have been removed.
 - (void)bookmarkModelRemovedAllNodes:(LegacyBookmarkModel*)model {
-  // TODO(crbug.com/695749) Check if this case is applicable in the new UI.
+  // TODO(crbug.com/40508042) Check if this case is applicable in the new UI.
 }
 
 - (void)bookmarkModel:(LegacyBookmarkModel*)model
@@ -693,7 +721,7 @@ bool IsABookmarkNodeSectionForIdentifier(
   if (!_browser.get()) {
     // If `_browser` has been removed, the mediator can be disconnected and the
     // event can be ignored. See http://crbug.com/1442174.
-    // TODO(crbug.com/1440937): This `if` is a workaround until this bug is
+    // TODO(crbug.com/40064261): This `if` is a workaround until this bug is
     // fixed. This if should be remove when the bug will be closed.
     [self disconnect];
     return;
@@ -766,6 +794,12 @@ bool IsABookmarkNodeSectionForIdentifier(
           syncer::UserSelectableType::kBookmarks) ||
       self.syncService->GetTransportState() ==
           syncer::SyncService::TransportState::PAUSED) {
+    return NO;
+  }
+  // Do not show for syncing users.
+  // TODO(crbug.com/40066949): Remove this after UNO phase 3. See
+  // ConsentLevel::kSync documentation for more details.
+  if (self.syncService->HasSyncConsent()) {
     return NO;
   }
   // Do not show if last syncing account is different from the current one.
@@ -888,22 +922,25 @@ bool IsABookmarkNodeSectionForIdentifier(
             hasBookmarksOrFoldersInModel:_localOrSyncableBookmarkModel.get()]) {
       return YES;
     }
-    return bookmark_utils_ios::IsAccountBookmarkStorageOptedIn(_syncService) &&
+    return bookmark_utils_ios::IsAccountBookmarkStorageAvailable(
+               _syncService, _accountBookmarkModel.get()) &&
            [self hasBookmarksOrFoldersInModel:_accountBookmarkModel.get()];
   }
   return self.displayedNode && !self.displayedNode->children().empty();
 }
 
-// Returns whether there are bookmark nodes in `model` that are added by users.
+// Returns whether there are bookmark nodes in `model`, excluding permanent
+// nodes themselves.
 - (BOOL)hasBookmarksOrFoldersInModel:(LegacyBookmarkModel*)model {
-  // The root node always has its permanent nodes. If all the permanent nodes
-  // are empty, we treat it as if the root itself is empty.
-  const auto& childrenOfRootNode = model->root_node()->children();
-  for (const auto& child : childrenOfRootNode) {
-    if (!child->children().empty()) {
-      return YES;
-    }
+  if (!model->HasNoUserCreatedBookmarksOrFolders()) {
+    return YES;
   }
+
+  // In addition to user-created bookmarks, there could be managed bookmarks.
+  if (model->managed_node() && !model->managed_node()->children().empty()) {
+    return YES;
+  }
+
   return NO;
 }
 
@@ -953,9 +990,8 @@ bool IsABookmarkNodeSectionForIdentifier(
 - (int)populateNodeItemWithQuery:(const bookmarks::QueryFields&)query
                    bookmarkModel:(LegacyBookmarkModel*)model
            displayCloudSlashIcon:(BOOL)displayCloudSlashIcon {
-  std::vector<const BookmarkNode*> nodes;
-  model->GetBookmarksMatchingProperties(query, kMaxBookmarksSearchResults,
-                                        &nodes);
+  std::vector<const BookmarkNode*> nodes =
+      model->GetBookmarksMatchingProperties(query, kMaxBookmarksSearchResults);
   for (const BookmarkNode* node : nodes) {
     BookmarksHomeNodeItem* nodeItem = [[BookmarksHomeNodeItem alloc]
         initWithType:BookmarksHomeItemTypeBookmark

@@ -11,6 +11,7 @@ import androidx.annotation.Nullable;
 
 import org.chromium.base.Callback;
 import org.chromium.components.browser_ui.settings.ManagedPreferenceDelegate;
+import org.chromium.components.browsing_data.content.BrowsingDataModel;
 import org.chromium.components.content_settings.ContentSettingsType;
 import org.chromium.components.embedder_support.util.Origin;
 import org.chromium.content_public.browser.BrowserContextHandle;
@@ -38,28 +39,47 @@ public interface SiteSettingsDelegate {
      *
      * @param faviconUrl The URL of the page to get the favicon for. If a favicon for the full URL
      *     can't be found, the favicon for its host will be used as a fallback.
-     * @param callback A callback that will be called with the favicon bitmap, or null if no
-     *     favicon could be found or generated.
+     * @param callback A callback that will be called with the favicon bitmap, or null if no favicon
+     *     could be found or generated.
      */
     void getFaviconImageForURL(GURL faviconUrl, Callback<Drawable> callback);
 
-    /** @return true if the given category type should be shown in the SiteSettings Fragment. */
+    /**
+     * @return true if the BrowsingDataModel Feature is enabled.
+     */
+    boolean isBrowsingDataModelFeatureEnabled();
+
+    /**
+     * @return true if the given category type should be shown in the SiteSettings Fragment.
+     */
     boolean isCategoryVisible(@SiteSettingsCategory.Type int type);
 
-    /** @return true if Incognito mode is enabled. */
+    /**
+     * @return true if Incognito mode is enabled.
+     */
     boolean isIncognitoModeEnabled();
 
-    /** @return true if the QuietNotificationPrompts Feature is enabled. */
+    /**
+     * @return true if the QuietNotificationPrompts Feature is enabled.
+     */
     boolean isQuietNotificationPromptsFeatureEnabled();
 
-    /** @return true if the PrivacySandboxFirstPartySetsUI Feature is enabled. */
+    boolean isPermissionDedicatedCpssSettingAndroidFeatureEnabled();
+
+    /**
+     * @return true if the PrivacySandboxFirstPartySetsUI Feature is enabled.
+     */
     boolean isPrivacySandboxFirstPartySetsUIFeatureEnabled();
 
-    /** @return The id of the notification channel associated with the given origin. */
-    // TODO(crbug.com/1069895): Remove this once WebLayer supports notifications.
+    /**
+     * @return The id of the notification channel associated with the given origin.
+     */
+    // TODO(crbug.com/40126121): Remove this once WebLayer supports notifications.
     String getChannelIdForOrigin(String origin);
 
-    /** @return The name of the app the settings are associated with. */
+    /**
+     * @return The name of the app the settings are associated with.
+     */
     String getAppName();
 
     /**
@@ -132,6 +152,11 @@ public interface SiteSettingsDelegate {
      */
     boolean shouldShowTrackingProtectionUI();
 
+    /**
+     * @return whether the 100% 3PCD Tracking Protection launch UI should be shown.
+     */
+    boolean shouldShowTrackingProtectionLaunchUI();
+
     /***
      * @return true if all third-party cookies are blocked when Tracking Protection is on.
      */
@@ -164,6 +189,20 @@ public interface SiteSettingsDelegate {
     /** Called when the view this delegate is assigned to gets destroyed. */
     void onDestroyView();
 
-    /** @return whether the Tracking Protection offboarding notice should be shown in the Settings. */
+    /**
+     * @return whether the Tracking Protection offboarding notice should be shown in the Settings.
+     */
     boolean shouldShowSettingsOffboardingNotice();
+
+    /**
+     * Builds a browsing data model for BrowserContext if not already built and runs the callback.
+     *
+     * @param callback Callback runs with the BrowsingDataModel object when the model is built.
+     */
+    void getBrowsingDataModel(Callback<BrowsingDataModel> callback);
+
+    /**
+     * @return whether the Privacy Sandbox Rws UI should be shown in the Settings.
+     */
+    boolean shouldShowPrivacySandboxRwsUi();
 }

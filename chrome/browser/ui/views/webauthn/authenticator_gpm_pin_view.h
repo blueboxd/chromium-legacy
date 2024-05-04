@@ -11,6 +11,10 @@
 #include "ui/views/controls/textfield/textfield_controller.h"
 #include "ui/views/view.h"
 
+namespace views {
+class ToggleImageButton;
+}  // namespace views
+
 // View showing a textfield for entering a numeric only GPM pin.
 class AuthenticatorGPMPinView : public views::View,
                                 public views::TextfieldController {
@@ -22,7 +26,10 @@ class AuthenticatorGPMPinView : public views::View,
     virtual void OnPinChanged(std::u16string pin) = 0;
   };
 
-  explicit AuthenticatorGPMPinView(Delegate* delegate, int pin_digits_count);
+  explicit AuthenticatorGPMPinView(int pin_digits_count,
+                                   bool ui_disabled,
+                                   const std::u16string& pin,
+                                   Delegate* delegate);
 
   AuthenticatorGPMPinView(const AuthenticatorGPMPinView&) = delete;
   AuthenticatorGPMPinView& operator=(const AuthenticatorGPMPinView&) = delete;
@@ -36,9 +43,14 @@ class AuthenticatorGPMPinView : public views::View,
   bool HandleKeyEvent(views::Textfield* sender,
                       const ui::KeyEvent& key_event) override;
 
+  void OnRevealButtonClicked();
+
   const raw_ptr<Delegate> delegate_;
   // Child view displaying textfield for the pin entry.
-  raw_ptr<PinTextfield> pin_textfield_;
+  raw_ptr<PinTextfield> pin_textfield_ = nullptr;
+  // Child view displaying toggle for revealing the pin.
+  raw_ptr<views::ToggleImageButton> reveal_button_ = nullptr;
+  bool pin_revealed_ = false;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_WEBAUTHN_AUTHENTICATOR_GPM_PIN_VIEW_H_

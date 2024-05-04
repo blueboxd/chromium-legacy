@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/html/canvas/html_canvas_element.h"
 #include "third_party/blink/renderer/core/html/html_frame_element_base.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
 #include "third_party/blink/renderer/core/input/input_device_capabilities.h"
@@ -222,8 +223,7 @@ void MouseEvent::SetCoordinatesFromWebPointerProperties(
 
   // TODO(crbug.com/982379): We need to merge the code path of raw movement
   // events and regular events so that we can remove the block below.
-  if (web_pointer_properties.is_raw_movement_event ||
-      !RuntimeEnabledFeatures::ConsolidatedMovementXYEnabled()) {
+  if (web_pointer_properties.is_raw_movement_event) {
     // TODO(nzolghadr): We need to scale movement attrinutes as well. But if we
     // do that here and round it to the int again it causes inconsistencies
     // between screenX/Y and cumulative movementX/Y.

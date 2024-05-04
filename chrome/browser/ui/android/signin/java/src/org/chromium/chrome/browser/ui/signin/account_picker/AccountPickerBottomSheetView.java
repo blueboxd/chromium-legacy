@@ -110,14 +110,18 @@ class AccountPickerBottomSheetView implements BottomSheetContent {
                 mViewFlipper.getChildAt(ViewState.NO_ACCOUNTS),
                 R.string.signin_add_account_to_device);
         setUpContinueButton(
-                mViewFlipper.getChildAt(ViewState.CONFIRM_MANAGEMENT),
-                R.string.policy_dialog_proceed);
+                mViewFlipper.getChildAt(ViewState.CONFIRM_MANAGEMENT), R.string.continue_button);
         setUpContinueButton(
                 mViewFlipper.getChildAt(ViewState.SIGNIN_GENERAL_ERROR),
                 R.string.signin_account_picker_general_error_button);
         setUpContinueButton(
                 mViewFlipper.getChildAt(ViewState.SIGNIN_AUTH_ERROR),
                 R.string.auth_error_card_button);
+
+        mViewFlipper
+                .getChildAt(ViewState.CONFIRM_MANAGEMENT)
+                .findViewById(R.id.confirm_management_cancel_button)
+                .setOnClickListener((View v) -> handleBackPress());
     }
 
     /** The account list view is visible when the account list is expanded. */
@@ -186,10 +190,23 @@ class AccountPickerBottomSheetView implements BottomSheetContent {
         for (int viewState : viewStates) {
             final View view = mViewFlipper.getChildAt(viewState);
             ((TextView) view.findViewById(R.id.account_picker_header_title)).setText(title);
-            ((TextViewWithLeading) view.findViewById(R.id.account_picker_header_subtitle))
-                    .setText(subtitle);
+
+            TextViewWithLeading subtitleView =
+                    ((TextViewWithLeading) view.findViewById(R.id.account_picker_header_subtitle));
+            if (subtitle == 0) {
+                subtitleView.setVisibility(View.GONE);
+            } else {
+                subtitleView.setText(subtitle);
+                subtitleView.setVisibility(View.VISIBLE);
+            }
         }
-        mDismissButton.setText(cancelButton);
+
+        if (cancelButton == 0) {
+            mDismissButton.setVisibility(View.GONE);
+        } else {
+            mDismissButton.setText(cancelButton);
+            mDismissButton.setVisibility(View.VISIBLE);
+        }
     }
 
     @Override

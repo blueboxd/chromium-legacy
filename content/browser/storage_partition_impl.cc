@@ -9,7 +9,6 @@
 #include <functional>
 #include <memory>
 #include <optional>
-#include <set>
 #include <utility>
 #include <vector>
 
@@ -23,6 +22,7 @@
 #include "base/functional/bind.h"
 #include "base/functional/callback_forward.h"
 #include "base/functional/callback_helpers.h"
+#include "base/functional/concurrent_closures.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
@@ -94,7 +94,6 @@
 #include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/browser/renderer_host/navigation_request.h"
 #include "content/browser/renderer_host/navigation_state_keep_alive.h"
-#include "content/browser/runtime_feature_state/runtime_feature_state_document_data.h"
 #include "content/browser/service_worker/service_worker_container_host.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/shared_storage/shared_storage_header_observer.h"
@@ -117,6 +116,7 @@
 #include "content/public/browser/permission_result.h"
 #include "content/public/browser/private_aggregation_data_model.h"
 #include "content/public/browser/private_network_device_delegate.h"
+#include "content/public/browser/runtime_feature_state/runtime_feature_state_document_data.h"
 #include "content/public/browser/service_process_host.h"
 #include "content/public/browser/session_storage_usage_info.h"
 #include "content/public/browser/shared_cors_origin_access_list.h"
@@ -351,23 +351,21 @@ void OnLocalStorageUsageInfo(
                 dom_storage_context, std::move(callback))
           : std::move(callback);
 
-  base::RepeatingClosure barrier =
-      base::BarrierClosure(infos.size(), std::move(done_callback));
+  base::ConcurrentClosures concurrent;
   for (const StorageUsageInfo& info : infos) {
     if (storage_key_matcher &&
         !storage_key_matcher.Run(info.storage_key,
                                  special_storage_policy.get())) {
-      barrier.Run();
       continue;
     }
 
     if (info.last_modified >= delete_begin &&
         info.last_modified <= delete_end) {
-      dom_storage_context->DeleteLocalStorage(info.storage_key, barrier);
-    } else {
-      barrier.Run();
+      dom_storage_context->DeleteLocalStorage(info.storage_key,
+                                              concurrent.CreateClosure());
     }
   }
+  std::move(concurrent).Done(std::move(done_callback));
 }
 
 void OnSessionStorageUsageInfo(
@@ -386,18 +384,16 @@ void OnSessionStorageUsageInfo(
                 dom_storage_context, std::move(callback))
           : std::move(callback);
 
-  base::RepeatingClosure barrier =
-      base::BarrierClosure(infos.size(), std::move(done_callback));
-
+  base::ConcurrentClosures concurrent;
   for (const SessionStorageUsageInfo& info : infos) {
     if (storage_key_matcher &&
         !storage_key_matcher.Run(info.storage_key,
                                  special_storage_policy.get())) {
-      barrier.Run();
       continue;
     }
-    dom_storage_context->DeleteSessionStorage(info, barrier);
+    dom_storage_context->DeleteSessionStorage(info, concurrent.CreateClosure());
   }
+  std::move(concurrent).Done(std::move(done_callback));
 }
 
 void ClearLocalStorageOnUIThread(
@@ -588,7 +584,6 @@ class SSLClientAuthDelegate : public SSLClientAuthHandler::Delegate {
       scoped_refptr<net::X509Certificate> cert,
       scoped_refptr<net::SSLPrivateKey> private_key) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    DCHECK((cert && private_key) || (!cert && !private_key));
 
     if (cert && private_key) {
       mojo::PendingRemote<network::mojom::SSLPrivateKey> ssl_private_key;
@@ -983,7 +978,8 @@ class StoragePartitionImpl::DataDeletionHelper {
     kGpuCache = 11,
     kPrivateAggregation = 12,
     kInterestGroups = 13,
-    kMaxValue = kInterestGroups,
+    kCdmStorage = 14,
+    kMaxValue = kCdmStorage,
   };
 
   base::OnceClosure CreateTaskCompletionClosure(TracingDataType data_type);
@@ -1265,7 +1261,43 @@ void StoragePartitionImpl::RegisterKeepAliveHandle(
     mojo::PendingReceiver<blink::mojom::NavigationStateKeepAliveHandle>
         receiver,
     std::unique_ptr<NavigationStateKeepAlive> handle) {
+  navigation_state_keep_alive_map_.erase(handle->frame_token());
+  navigation_state_keep_alive_map_.insert(
+      std::make_pair(handle->frame_token(), handle.get()));
+
   keep_alive_handles_receiver_set_.Add(std::move(handle), std::move(receiver));
+}
+
+void StoragePartitionImpl::RevokeNetworkForNoncesInNetworkContext(
+    const std::vector<base::UnguessableToken>& nonces,
+    network::mojom::NetworkContext::RevokeNetworkForNoncesCallback callback) {
+  GetNetworkContext()->RevokeNetworkForNonces(nonces, std::move(callback));
+
+  // Save nonces in `StoragePartitionImpl`. When there is a crash of
+  // `NetworkService`, the network revocation nonces of `NetworkContext` will be
+  // restored using this.
+  network_revocation_nonces_.insert(std::begin(nonces), std::end(nonces));
+}
+
+void StoragePartitionImpl::RemoveKeepAliveHandleFromMap(
+    blink::LocalFrameToken frame_token,
+    NavigationStateKeepAlive* keep_alive) {
+  // The NavigationStateKeepAlive associated with `frame_token` may have
+  // changed. Make sure the specified one is removed from the map.
+  auto it = navigation_state_keep_alive_map_.find(frame_token);
+  if (it != navigation_state_keep_alive_map_.end() &&
+      it->second == keep_alive) {
+    navigation_state_keep_alive_map_.erase(frame_token);
+  }
+}
+
+NavigationStateKeepAlive* StoragePartitionImpl::GetNavigationStateKeepAlive(
+    blink::LocalFrameToken frame_token) {
+  auto it = navigation_state_keep_alive_map_.find(frame_token);
+  if (it == navigation_state_keep_alive_map_.end()) {
+    return nullptr;
+  }
+  return it->second;
 }
 
 // static
@@ -1326,9 +1358,12 @@ void StoragePartitionImpl::Initialize(
   filesystem_context_ = CreateFileSystemContext(
       browser_context_, partition_path_, is_in_memory(), quota_manager_proxy);
 
+#if BUILDFLAG(IS_ANDROID)
+  // TODO(crbug.com/333756088): WebSQL is disabled everywhere except Android
+  // WebView.
   database_tracker_ = storage::DatabaseTracker::Create(
-      partition_path_, is_in_memory(),
-      browser_context_->GetSpecialStoragePolicy(), quota_manager_proxy);
+      partition_path_, is_in_memory(), quota_manager_proxy);
+#endif  // BUILDFLAG(IS_ANDROID)
 
   dom_storage_context_ = DOMStorageContextWrapper::Create(
       this, browser_context_->GetSpecialStoragePolicy());
@@ -1710,7 +1745,7 @@ StoragePartitionImpl::GetSharedStorageWorkletHostManager() {
 
 storage::mojom::IndexedDBControl& StoragePartitionImpl::GetIndexedDBControl() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  return *indexed_db_control_wrapper_.get();
+  return indexed_db_control_wrapper_->GetIndexedDBControl();
 }
 
 FileSystemAccessEntryFactory*
@@ -1990,7 +2025,7 @@ void StoragePartitionImpl::OnAuthRequired(
     // Use `window_id` if it is provided, because this request was sent by a
     // service worker; service workers use `window_id` to identify the frame
     // that sends the request since a worker is shared among multiple frames.
-    // TODO(https://crbug.com/1240483): Add a DCHECK here that process_id and
+    // TODO(crbug.com/40194275): Add a DCHECK here that process_id and
     // routing_id are invalid. It can't be added yet because somehow routing_id
     // is valid here.
     if (service_worker_context_->context()) {
@@ -2022,7 +2057,7 @@ void StoragePartitionImpl::OnAuthRequired(
           // by service worker. The navigation request can be nullptr if user
           // has closed the WebContents.
           // Overwrite the context; set `type` to kNavigationRequestContext.
-          // TODO(https://crbug.com/1239554): Optimize locating logic.
+          // TODO(crbug.com/40784852): Optimize locating logic.
           context =
               URLLoaderNetworkContext::CreateForNavigation(*ongoing_navigation);
         }
@@ -2057,7 +2092,7 @@ void StoragePartitionImpl::OnAuthRequired(
     // has been deleted. Treating this as an invalid process ID will cancel the
     // auth, which is the same outcome as if the ServiceWorker's process were
     // used.
-    // TODO(https://crbug.com/1322751): Update the ServiceWorker code to
+    // TODO(crbug.com/40224422): Update the ServiceWorker code to
     // recognize when the RenderFrameHost goes away and not use
     // CreateForRenderFrameHost above.
     if (context.navigation_or_document()) {
@@ -2164,7 +2199,7 @@ void StoragePartitionImpl::OnCertificateRequested(
     // Use `window_id` if it is provided, because this request was sent by a
     // service worker; service workers use `window_id` to identify the frame
     // that sends the request since a worker is shared among multiple frames.
-    // TODO(https://crbug.com/1240483): Add a DCHECK here that process_id and
+    // TODO(crbug.com/40194275): Add a DCHECK here that process_id and
     // routing_id are invalid. It can't be added yet because somehow routing_id
     // is valid here.
     if (service_worker_context_->context()) {
@@ -2184,7 +2219,7 @@ void StoragePartitionImpl::OnCertificateRequested(
                            base::PassKey<StoragePartitionImpl>())) {
           // This certification request is for an ongoing navigation.
           // Overwrite the context; set `type` to kNavigationRequestContext.
-          // TODO(https://crbug.com/1239554): Optimize locating logic.
+          // TODO(crbug.com/40784852): Optimize locating logic.
           context =
               URLLoaderNetworkContext::CreateForNavigation(*ongoing_navigation);
         } else {
@@ -2811,18 +2846,16 @@ void StoragePartitionImpl::DataDeletionHelper::ClearDataOnUIThread(
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
   if ((remove_mask_ & REMOVE_DATA_MASK_MEDIA_LICENSES) && cdm_storage_manager) {
-    if (!storage_key_origin_empty) {
-      cdm_storage_manager->DeleteDataForStorageKey(storage_key, begin, end,
-                                                   base::DoNothing());
+    auto cdm_deletion_callback = base::BindOnce(
+        base::IgnoreArgs<bool>(mojo::WrapCallbackWithDefaultInvokeIfNotRun(
+            CreateTaskCompletionClosure(TracingDataType::kCdmStorage))));
 
-    } else {
-      cdm_storage_manager->DeleteDataForTimeFrame(begin, end,
-                                                  base::DoNothing());
-    }
+    cdm_storage_manager->DeleteData(generic_filter, storage_key, begin, end,
+                                    std::move(cdm_deletion_callback));
   }
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
-  // TODO(crbug.com/1454512): Remove REMOVE_DATA_MASK_MEDIA_LICENSES from here
+  // TODO(crbug.com/40272342): Remove REMOVE_DATA_MASK_MEDIA_LICENSES from here
   // when MediaLicense is removed from Quota types.
   if (remove_mask_ & REMOVE_DATA_MASK_INDEXEDDB ||
       remove_mask_ & REMOVE_DATA_MASK_WEBSQL ||
@@ -2852,7 +2885,7 @@ void StoragePartitionImpl::DataDeletionHelper::ClearDataOnUIThread(
     // is specified. Therefore we ignore clearing session storage in this case.
     // TODO(lazyboy): Fix.
     if (storage_key_origin_empty) {
-      // TODO(crbug.com/960325): Sometimes SessionStorage fails to call its
+      // TODO(crbug.com/41457196): Sometimes SessionStorage fails to call its
       // callback. Figure out why.
       ClearSessionStorageOnUIThread(
           base::WrapRefCounted(dom_storage_context), storage_policy_ref,
@@ -2911,8 +2944,8 @@ void StoragePartitionImpl::DataDeletionHelper::ClearDataOnUIThread(
     // have information on the page/context that uses the public key origin,
     // therefore we don't check origins and instead just delete all rows in the
     // given time range.
-    // TODO(crbug.com/1284971): Consider fine-grained deletion of public keys.
-    // TODO(crbug.com/1286173): Consider adding aggregation service origins to
+    // TODO(crbug.com/40210305): Consider fine-grained deletion of public keys.
+    // TODO(crbug.com/40815455): Consider adding aggregation service origins to
     // `CookiesTreeModel`.
     aggregation_service->ClearData(
         begin, end, generic_filter,
@@ -3188,6 +3221,17 @@ StoragePartitionImpl::GetStorageServiceForTesting() {
   return GetStorageServiceRemote();
 }
 
+void StoragePartitionImpl::BindIndexedDB(
+    const storage::BucketLocator& bucket_locator,
+    mojo::PendingRemote<storage::mojom::IndexedDBClientStateChecker>
+        client_state_checker_remote,
+    const base::UnguessableToken& client_token,
+    mojo::PendingReceiver<blink::mojom::IDBFactory> receiver) {
+  indexed_db_control_wrapper_->BindIndexedDB(
+      bucket_locator, std::move(client_state_checker_remote), client_token,
+      std::move(receiver));
+}
+
 mojo::ReceiverId StoragePartitionImpl::BindDomStorage(
     int process_id,
     mojo::PendingReceiver<blink::mojom::DomStorage> receiver,
@@ -3359,6 +3403,15 @@ void StoragePartitionImpl::InitNetworkContext() {
       network_context_owner_->network_context.BindNewPipeAndPassReceiver(),
       std::move(context_params));
   DCHECK(network_context_owner_->network_context);
+
+  // Restore the saved network revocation nonces. This allows fenced frames'
+  // untrusted network access states to be persisted in case of a
+  // `NetworkService` crash.
+  std::vector<base::UnguessableToken> nonces(
+      std::begin(network_revocation_nonces_),
+      std::end(network_revocation_nonces_));
+  network_context_owner_->network_context->RevokeNetworkForNonces(
+      nonces, base::NullCallback());
 
   network_context_client_receiver_.reset();
   network_context_owner_->network_context->SetClient(

@@ -186,8 +186,8 @@ IN_PROC_BROWSER_TEST_F(ToolbarViewTest, BackButtonHoverThenClick) {
   EXPECT_FALSE(back_button->GetEnabled());
 }
 
-// TODO(crbug.com/1405449): The ui test utils do not seem to adequately simulate
-// mouse hovering on Mac.
+// TODO(crbug.com/40252318): The ui test utils do not seem to adequately
+// simulate mouse hovering on Mac.
 #if BUILDFLAG(IS_MAC)
 #define MAYBE_BackButtonHoverMetricsLogged DISABLED_BackButtonHoverMetricsLogged
 #else
@@ -241,7 +241,7 @@ IN_PROC_BROWSER_TEST_F(ToolbarViewTest,
   EXPECT_NE(nullptr, extensions_container);
 }
 
-// TODO(crbug.com/991596): Setup test profiles properly for CrOS.
+// TODO(crbug.com/41474891): Setup test profiles properly for CrOS.
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #define MAYBE_ExtensionsToolbarContainerForGuest \
   DISABLED_ExtensionsToolbarContainerForGuest
@@ -284,6 +284,11 @@ IN_PROC_BROWSER_TEST_F(ToolbarViewTest, BackButtonMenu) {
       MoveMouseTo(kToolbarBackButtonElementId), ClickMouse(ui_controls::RIGHT),
       Log("Logging to probe crbug.com/1489499. Waiting for back button menu."),
       WaitForShow(kToolbarBackButtonMenuElementId),
+#if BUILDFLAG(IS_MAC)
+      Log("Skipping remainder of test because native Mac context menus steal "
+          "the event loop making testing unreliable. See b/40074126 for full "
+          "description."));
+#else
       // Don't try to send an event to the menu before it's fully shown.
       FlushEvents(),
       // Dismiss the context menu by clicking on it.
@@ -292,4 +297,5 @@ IN_PROC_BROWSER_TEST_F(ToolbarViewTest, BackButtonMenu) {
       Log("Clicking mouse to dismiss."), ClickMouse(),
       Log("Waiting for menu to dismiss."),
       WaitForHide(kToolbarBackButtonMenuElementId), Log("Menu dismissed."));
+#endif
 }

@@ -29,9 +29,6 @@ rootWebArea
 ++++++++++inlineTextBox name='File: '
 ++++++++button name='File:: No file chosen' value='No file chosen'
 ++++++++++button invisible name='Choose File'
-++++++++++++staticText ignored invisible name='Choose File'
-++++++++++genericContainer ignored invisible
-++++++++++++staticText ignored invisible name='No file chosen'
 ++++++labelText
 ++++++++staticText name='Image: '
 ++++++++++inlineTextBox name='Image: '
@@ -50,7 +47,11 @@ rootWebArea
 ++++++++staticText name='Password: '
 ++++++++++inlineTextBox name='Password: '
 ++++++++textField editable protected name='Password:'
-++++++++++genericContainer editable
+++++++++++genericContainer ignored
+++++++++++++genericContainer ignored
+++++++++++++++genericContainer editable
+++++++++++++genericContainer ignored invisible
+++++++++++++++staticText ignored invisible name='Strong password'
 ++++++labelText ignored
 ++++++++staticText ignored name='Radio: '
 ++++++++radioButton name='Radio:' checkedState=false

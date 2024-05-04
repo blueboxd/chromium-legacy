@@ -192,7 +192,8 @@
       </div>
     </div>
     <div id="audioInputNoiseCancellationSubsection" class="settings-box"
-        hidden="[[!isNoiseCancellationSupported_]]">
+        hidden="[[!isNoiseCancellationSupported_]]"
+        on-click="onNoiseCancellationRowClicked_" actionable-row>
       <div id="audioInputNoiseCancellationLabel"
           class="settings-box-text start" aria-hidden="true">
         $i18n{audioInputNoiseCancellationTitle}
@@ -212,13 +213,21 @@
           checked="{{isAllowAGCEnabled}}">
       </cr-toggle>
     </div>
-    <settings-toggle-button
-        id="audioInputHfpMicSrToggle"
-        checked="{{isHfpMicSrEnabled}}"
-        label="$i18n{audioHfpMicSrTitle}"
-        sub-label="$i18n{audioHfpMicSrDescription}"
+    <div id="audioInputHfpMicSrSubsection" class="settings-box"
         hidden="[[!showHfpMicSr]]">
-    </settings-toggle-button>
+      <div id="audioInputHfpMicSrLabel"
+          class="settings-box-text start" aria-hidden="true">
+        $i18n{audioHfpMicSrTitle}
+        <div class="secondary">
+          $i18n{audioHfpMicSrDescription}
+        </div>
+      </div>
+      <cr-toggle id="audioInputHfpMicSrToggle"
+          checked="{{isHfpMicSrEnabled}}"
+          aria-labelledby="audioInputHfpMicSrLabel"
+          on-change="toggleHfpMicSrEnabled_">
+      </cr-toggle>
+    </div>
   </div>
 </div>
 
@@ -237,7 +246,8 @@
         deep-link-focus-id$="[[Setting.kChargingSounds]]"
         hidden$="[[powerSoundsHidden_]]">
     </settings-toggle-button>
-    <div class="settings-box start-padding continuation">
+    <div class="settings-box start-padding continuation"
+        on-click="onDeviceStartupSoundRowClicked_" actionable-row>
       <div id="deviceStartupSoundEnabledLabel"
           class="start settings-box-text">
         $i18n{deviceStartupSoundLabel}

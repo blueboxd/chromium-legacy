@@ -193,7 +193,8 @@ void PictureLayerImpl::AppendQuads(viz::CompositorRenderPass* render_pass,
       render_pass->CreateAndAppendSharedQuadState();
 
   if (raster_source_->IsSolidColor()) {
-    // TODO(979672): This is still hard-coded at 1.0. This has some history:
+    // TODO(crbug.com/41468388): This is still hard-coded at 1.0. This has some
+    // history:
     //  - for crbug.com/769319, the contents scale was allowed to change, to
     //    avoid blurring on high-dpi screens.
     //  - for crbug.com/796558, the max device scale was hard-coded back to 1.0
@@ -799,9 +800,10 @@ void PictureLayerImpl::UpdateRasterSource(
   // tilings that are going to disappear on the pending tree (if scale changed).
   // But that would also be more complicated, so we just do it here for now.
   //
-  // TODO(crbug.com/843787): If the LayerTreeFrameSink is lost, and we activate,
-  // this ends up running with the old LayerTreeFrameSink, or possibly with a
-  // null LayerTreeFrameSink, which can give incorrect results or maybe crash.
+  // TODO(crbug.com/41389434): If the LayerTreeFrameSink is lost, and we
+  // activate, this ends up running with the old LayerTreeFrameSink, or possibly
+  // with a null LayerTreeFrameSink, which can give incorrect results or maybe
+  // crash.
   if (pending_set) {
     tilings_->UpdateTilingsToCurrentRasterSourceForActivation(
         raster_source_, pending_set, invalidation_, MinimumContentsScale(),
@@ -1104,7 +1106,8 @@ void PictureLayerImpl::UpdateDirectlyCompositedImageFromRasterSource() {
   float new_default_raster_scale = 0;
   bool new_nearest_neighbor = false;
   if (const auto& info = raster_source_->directly_composited_image_info()) {
-    // TODO(crbug.com/1196414): Support 2D scales in directly composited images.
+    // TODO(crbug.com/40176440): Support 2D scales in directly composited
+    // images.
     new_default_raster_scale =
         GetPreferredRasterScale(info->default_raster_scale);
     new_nearest_neighbor = info->nearest_neighbor;
@@ -1502,7 +1505,8 @@ void PictureLayerImpl::AddLowResolutionTilingIfNeeded() {
 
 void PictureLayerImpl::RecalculateRasterScales() {
   if (IsDirectlyCompositedImage()) {
-    // TODO(crbug.com/1196414): Support 2D scales in directly composited images.
+    // TODO(crbug.com/40176440): Support 2D scales in directly composited
+    // images.
     float used_raster_scale = CalculateDirectlyCompositedImageRasterScale();
     directly_composited_image_default_raster_scale_changed_ = false;
     if (ShouldDirectlyCompositeImage(used_raster_scale)) {
@@ -2041,7 +2045,7 @@ PictureLayerImpl::InvalidateRegionForImages(
 
   invalidation_.Union(invalidation);
   tilings_->Invalidate(invalidation);
-  // TODO(crbug.com/303943): SetNeedsPushProperties() would be needed here if
+  // TODO(crbug.com/40335690): SetNeedsPushProperties() would be needed here if
   // PictureLayerImpl didn't always push properties every activation.
   return ImageInvalidationResult::kInvalidated;
 }

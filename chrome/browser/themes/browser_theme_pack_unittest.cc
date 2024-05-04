@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <memory>
+#include <string_view>
 
 #include "base/containers/flat_map.h"
 #include "base/files/scoped_temp_dir.h"
@@ -81,11 +82,11 @@ class BrowserThemePackTest : public ::testing::Test {
   // Builds the theme represented by an unpacked extension (located in
   // {DIR_TEST_DATA}/extensions/|theme_folder|).
   // The BrowserThemePack is returned in |pack|.
-  static void BuildTestExtensionTheme(const base::StringPiece theme_folder,
+  static void BuildTestExtensionTheme(std::string_view theme_folder,
                                       BrowserThemePack* pack);
 
   static base::FilePath GetTestExtensionThemePath(
-      base::StringPiece theme_folder);
+      std::string_view theme_folder);
   static base::FilePath GetStarGazingPath();
   static base::FilePath GetHiDpiThemePath();
 
@@ -241,7 +242,7 @@ void BrowserThemePackTest::BuildFromUnpackedExtension(
 
 // static
 void BrowserThemePackTest::BuildTestExtensionTheme(
-    const base::StringPiece theme_folder,
+    std::string_view theme_folder,
     BrowserThemePack* pack) {
   base::FilePath contrast_theme_path = GetTestExtensionThemePath(theme_folder);
   BuildFromUnpackedExtension(contrast_theme_path, pack);
@@ -249,7 +250,7 @@ void BrowserThemePackTest::BuildTestExtensionTheme(
 
 // static
 base::FilePath BrowserThemePackTest::GetTestExtensionThemePath(
-    base::StringPiece theme_folder) {
+    std::string_view theme_folder) {
   base::FilePath test_path;
   const bool result = base::PathService::Get(chrome::DIR_TEST_DATA, &test_path);
   DCHECK(result);
@@ -749,7 +750,6 @@ TEST_F(BrowserThemePackTest, TestCreateColorMixersOmniboxAllValues) {
                                 "omnibox_background": [120, 140, 160] })";
   LoadColorJSON(color_json);
   theme_pack().AddColorMixers(&provider, ui::ColorProviderKey());
-  provider.GenerateColorMap();
   EXPECT_EQ(SkColorSetRGB(0, 20, 40), provider.GetColor(kColorToolbar));
   EXPECT_EQ(SkColorSetRGB(60, 80, 100), provider.GetColor(kColorOmniboxText));
   EXPECT_EQ(SkColorSetRGB(120, 140, 160),

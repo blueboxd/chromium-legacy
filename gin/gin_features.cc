@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "gin/gin_features.h"
+
 #include "base/metrics/field_trial_params.h"
 
 namespace features {
@@ -107,6 +108,9 @@ BASE_FEATURE(kV8TurboshaftInstructionSelection,
 // Enables Maglev compiler. Note that this only sets the V8 flag when
 // manually overridden; otherwise it defers to whatever the V8 default is.
 BASE_FEATURE(kV8Maglev, "V8Maglev", base::FEATURE_ENABLED_BY_DEFAULT);
+BASE_FEATURE(kV8ConcurrentMaglevHighPriorityThreads,
+             "V8ConcurrentMaglevHighPriorityThreads",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kV8MemoryReducer,
              "V8MemoryReducer",
@@ -137,6 +141,11 @@ BASE_FEATURE(kV8SparkplugNeedsShortBuiltinCalls,
              "V8SparkplugNeedsShortBuiltinCalls",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Enables batch compilation for Sparkplug (baseline) compilation.
+BASE_FEATURE(kV8BaselineBatchCompilation,
+             "V8BaselineBatchCompilation",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 // Enables short builtin calls feature.
 BASE_FEATURE(kV8ShortBuiltinCalls,
              "V8ShortBuiltinCalls",
@@ -158,9 +167,9 @@ BASE_FEATURE(kV8SingleThreadedGCInBackground,
 // Use V8 efficiency mode for tiering decisions.
 BASE_FEATURE(kV8EfficiencyModeTiering,
              "V8EfficiencyModeTiering",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 const base::FeatureParam<int> kV8EfficiencyModeTieringDelayTurbofan{
-    &kV8EfficiencyModeTiering, "V8EfficiencyModeTieringDelayTurbofan", 0};
+    &kV8EfficiencyModeTiering, "V8EfficiencyModeTieringDelayTurbofan", 15000};
 
 // Enables slow histograms that provide detailed information at increased
 // runtime overheads.
@@ -171,6 +180,9 @@ BASE_FEATURE(kV8SlowHistograms,
 // separate feature flags to circumvent finch limitations.
 BASE_FEATURE(kV8SlowHistogramsCodeMemoryWriteProtection,
              "V8SlowHistogramsCodeMemoryWriteProtection",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kV8SlowHistogramsIntelJCCErratumMitigation,
+             "V8SlowHistogramsIntelJCCErratumMitigation",
              base::FEATURE_DISABLED_BY_DEFAULT);
 BASE_FEATURE(kV8SlowHistogramsSparkplug,
              "V8SlowHistogramsSparkplug",
@@ -196,6 +208,18 @@ BASE_FEATURE(kV8UseLibmTrigFunctions,
              "V8UseLibmTrigFunctions",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+BASE_FEATURE(kV8UseOriginalMessageForStackTrace,
+             "V8UseOriginalMessageForStackTrace",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kV8IdleGcOnContextDisposal,
+             "V8IdleGcOnContextDisposal",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kV8GCOptimizeSweepForMutator,
+             "V8GCOptimizeSweepForMutator",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 // Elide redundant TDZ hole checks in bytecode. This only sets the V8 flag when
 // manually overridden.
 BASE_FEATURE(kV8IgnitionElideRedundantTdzChecks,
@@ -212,24 +236,9 @@ BASE_FEATURE(kV8IntelJCCErratumMitigation,
 
 // JavaScript language features.
 
-// Enables the Symbols-as-WeakMap-keys proposal.
-BASE_FEATURE(kJavaScriptSymbolAsWeakMapKey,
-             "JavaScriptSymbolAsWeakMapKey",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Enables the Resizable ArrayBuffer proposal.
 BASE_FEATURE(kJavaScriptRabGsab,
              "JavaScriptRabGsab",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-// Enables the JavaScript RegExp Unicode set notation proposal.
-BASE_FEATURE(kJavaScriptRegExpUnicodeSets,
-             "JavaScriptRegExpUnicodeSets",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-// Enables the JSON.parse with source proposal.
-BASE_FEATURE(kJavaScriptJsonParseWithSource,
-             "JavaScriptJsonParseWithSource",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables the ArrayBuffer transfer proposal.

@@ -13,12 +13,14 @@
 #include "base/memory/raw_ptr.h"
 #include "base/scoped_multi_source_observation.h"
 #include "chrome/browser/ash/arc/input_overlay/actions/input_element.h"
+#include "chrome/browser/ash/arc/input_overlay/arc_input_overlay_metrics.h"
 #include "ui/aura/window_observer.h"
 #include "ui/compositor/property_change_reason.h"
 #include "ui/events/event.h"
 #include "ui/events/event_handler.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/views/widget/unique_widget_ptr.h"
 #include "ui/views/widget/widget_observer.h"
 
 namespace views {
@@ -97,9 +99,13 @@ class DisplayOverlayController : public ui::EventHandler,
 
   // Returns the size of active actions which include the deleted default
   // actions.
-  size_t GetActiveActionsSize();
+  size_t GetActiveActionsSize() const;
+  // Returns true if there is only one user added action.
+  bool HasSingleUserAddedAction() const;
   // Return true if action is not deleted.
-  bool IsActiveAction(Action* action);
+  bool IsActiveAction(Action* action) const;
+
+  MappingSource GetMappingSource() const;
 
   // For menu entry hover state:
   void SetMenuEntryHoverState(bool curr_hover_state);
@@ -124,6 +130,9 @@ class DisplayOverlayController : public ui::EventHandler,
   void AddActionHighlightWidget(Action* action);
   void RemoveActionHighlightWidget();
   void HideActionHighlightWidget();
+  // Hides the action highlight if the action highlight is anchored to
+  // `action`'s view.
+  void HideActionHighlightWidgetForAction(Action* action);
 
   // Update widget bounds if the view content is changed or the app window
   // bounds are changed.
@@ -131,6 +140,8 @@ class DisplayOverlayController : public ui::EventHandler,
   void UpdateInputMappingWidgetBounds();
   void UpdateEditingListWidgetBounds();
   void UpdateTargetWidgetBounds();
+
+  ActionViewListItem* GetEditingListItemForAction(Action* action);
 
   // ui::EventHandler:
   void OnMouseEvent(ui::MouseEvent* event) override;
@@ -241,6 +252,9 @@ class DisplayOverlayController : public ui::EventHandler,
   void RemoveInputMappingWidget();
   InputMappingView* GetInputMapping();
 
+  // Stacks input mapping at the bottom and under the game dashboard UIs.
+  void StackInputMappingAtBottomForViewMode();
+
   void AddEditingListWidget();
   void RemoveEditingListWidget();
   void SetEditingListVisibility(bool visible);
@@ -303,8 +317,8 @@ class DisplayOverlayController : public ui::EventHandler,
   std::unique_ptr<views::Widget> button_options_widget_;
   std::unique_ptr<views::Widget> target_widget_;
   std::unique_ptr<views::Widget> action_highlight_widget_;
-  raw_ptr<views::Widget> delete_edit_shortcut_widget_;
-  raw_ptr<views::Widget> rich_nudge_widget_;
+  views::UniqueWidgetPtr delete_edit_shortcut_widget_;
+  views::UniqueWidgetPtr rich_nudge_widget_;
 
   std::unique_ptr<FocusCycler> focus_cycler_;
 };

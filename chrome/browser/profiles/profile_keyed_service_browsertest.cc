@@ -22,7 +22,6 @@
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/optimization_guide/machine_learning_tflite_buildflags.h"
 #include "components/signin/public/base/signin_switches.h"
-#include "components/supervised_user/core/common/buildflags.h"
 #include "content/public/common/content_features.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"
@@ -162,7 +161,8 @@ TEST(ProfileKeyedService_DisplaySetDifferenceTest, MissingExpectedService) {
 // to, because other services depend on it, add a comment explaining why.
 // Example:
 //   // FooService is required because BarService depends on it.
-//   // TODO(crbug.com/12345): Stop creating BarService for the system profile.
+//   // TODO(crbug.com/40781525): Stop creating BarService for the system
+//   profile.
 class ProfileKeyedServiceBrowserTest : public InProcessBrowserTest {
  public:
   ProfileKeyedServiceBrowserTest() {
@@ -185,7 +185,6 @@ class ProfileKeyedServiceBrowserTest : public InProcessBrowserTest {
           switches::kEnableBoundSessionCredentials,
 #endif  // BUILDFLAG(IS_WIN)
           blink::features::kBrowsingTopics,
-          net::features::kTpcdMetadataGrants,
           net::features::kTpcdTrialSettings,
           net::features::kTopLevelTpcdTrialSettings,
 #if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
@@ -240,6 +239,7 @@ IN_PROC_BROWSER_TEST_F(ProfileKeyedServiceBrowserTest,
     "MediaNotificationService",
 #else
     "LiveCaptionController",
+    "LiveTranslateController",
 #endif // BUILDFLAG(IS_CHROMEOS_LACROS)
     "AlarmManager",
     "BackgroundContentsService",
@@ -311,7 +311,6 @@ IN_PROC_BROWSER_TEST_F(ProfileKeyedServiceBrowserTest,
 #if BUILDFLAG(IS_WIN)
     "UnexportableKeyService",
 #endif  // BUILDFLAG(IS_WIN)
-    "UpdaterService",
     "UsbDeviceManager",
     "UsbDeviceResourceManager",
     "sct_reporting::Factory"
@@ -395,11 +394,8 @@ IN_PROC_BROWSER_TEST_F(ProfileKeyedServiceBrowserTest,
     "BookmarksAPI",
     "BrailleDisplayPrivateAPI",
     "BrowsingTopicsService",
-#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
     "ChildAccountService",
-#endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
     "ChromeSigninClient",
-    "ClosedTabCacheService",
     "CommandService",
     "ContentIndexProvider",
     "ContentSettingsService",
@@ -409,6 +405,9 @@ IN_PROC_BROWSER_TEST_F(ProfileKeyedServiceBrowserTest,
     "DeveloperPrivateAPI",
     "DeviceInfoSyncService",
     "DownloadCoreService",
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
+    "EnterpriseManagementService",
+#endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
     "EventRouter",
     "ExtensionActionAPI",
     "ExtensionActionManager",
@@ -454,11 +453,12 @@ IN_PROC_BROWSER_TEST_F(ProfileKeyedServiceBrowserTest,
     "InstallVerifier",
     "InstanceIDProfileService",
     "InvalidationService",
+#if BUILDFLAG(IS_CHROMEOS)
+    "KcerFactory",
+#endif // BUILDFLAG(IS_CHROMEOS)
     "LanguageSettingsPrivateDelegate",
     "LazyBackgroundTaskQueue",
-#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
     "ListFamilyMembersService",
-#endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
     "LocalOrSyncableBookmarkSyncServiceFactory",
     "LoginUIServiceFactory",
     "MDnsAPI",
@@ -473,6 +473,9 @@ IN_PROC_BROWSER_TEST_F(ProfileKeyedServiceBrowserTest,
     "NavigationPredictorKeyedService",
     "NetworkingPrivateEventRouter",
     "NotificationDisplayService",
+#if BUILDFLAG(IS_CHROMEOS)
+    "NssServiceFactory",
+#endif // BUILDFLAG(IS_CHROMEOS)
     "OmniboxAPI",
 #if BUILDFLAG(BUILD_WITH_TFLITE_LIB)
     "OnDeviceTailModelService",
@@ -538,9 +541,7 @@ IN_PROC_BROWSER_TEST_F(ProfileKeyedServiceBrowserTest,
     "SocketManager",
     "StorageFrontend",
     "StorageNotificationService",
-#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
     "SupervisedUserService",
-#endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
     "SyncInvalidationsService",
     "SystemInfoAPI",
     "TCPServerSocketEventDispatcher",
@@ -558,7 +559,6 @@ IN_PROC_BROWSER_TEST_F(ProfileKeyedServiceBrowserTest,
     "TtsAPI",
     "UDPSocketEventDispatcher",
     "UkmBackgroundRecorderService",
-    "UpdaterService",
     "UsbDeviceManager",
     "UsbDeviceResourceManager",
     "UserCloudPolicyInvalidator",
@@ -569,6 +569,9 @@ IN_PROC_BROWSER_TEST_F(ProfileKeyedServiceBrowserTest,
     "WarningBadgeService",
     "WarningService",
     "WebAuthenticationProxyAPI",
+#if BUILDFLAG(IS_CHROMEOS)
+    "WebcamPrivateAPI",
+#endif
     "WebDataService",
     "WebNavigationAPI",
     "WebRequestAPI",

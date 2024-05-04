@@ -6,25 +6,23 @@
 
 #include <utility>
 
-#include "base/android/build_info.h"
-#include "base/android/jni_android.h"
-#include "base/android/jni_string.h"
-#include "base/android/locale_utils.h"
-#include "base/android/scoped_java_ref.h"
 #include "base/check_op.h"
+#include "base/feature_list.h"
 #include "base/functional/function_ref.h"
+#include "base/notimplemented.h"
 #include "base/notreached.h"
 #include "base/types/cxx23_to_underlying.h"
 #include "components/android_autofill/browser/android_autofill_manager.h"
-#include "components/android_autofill/browser/autofill_provider_android.h"
-#include "components/android_autofill/browser/jni_headers/AndroidAutofillClient_jni.h"
+#include "components/android_autofill/browser/android_autofill_provider.h"
+#include "components/autofill/content/browser/content_autofill_client.h"
 #include "components/autofill/core/browser/crowdsourcing/autofill_crowdsourcing_manager.h"
 #include "components/autofill/core/browser/payments/legal_message_line.h"
 #include "components/autofill/core/browser/ui/autofill_popup_delegate.h"
-#include "components/autofill/core/browser/ui/popup_item_ids.h"
 #include "components/autofill/core/browser/ui/suggestion.h"
+#include "components/autofill/core/browser/ui/suggestion_type.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/common/aliases.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/browser_context.h"
@@ -35,32 +33,27 @@
 #include "ui/android/view_android.h"
 #include "ui/gfx/geometry/rect_f.h"
 
-using base::android::AttachCurrentThread;
-using base::android::ConvertUTF16ToJavaString;
-using base::android::JavaParamRef;
-using base::android::JavaRef;
-using base::android::ScopedJavaLocalRef;
-using content::WebContents;
-
 namespace android_autofill {
 
 void AndroidAutofillClient::CreateForWebContents(
-    content::WebContents* contents,
-    base::FunctionRef<void(const JavaRef<jobject>&)> notify_client_created) {
+    content::WebContents* contents) {
   DCHECK(contents);
   if (!FromWebContents(contents)) {
-    contents->SetUserData(UserDataKey(),
-                          base::WrapUnique(new AndroidAutofillClient(
-                              contents, std::move(notify_client_created))));
+    contents->SetUserData(
+        UserDataKey(), base::WrapUnique(new AndroidAutofillClient(contents)));
   }
 }
 
+AndroidAutofillClient::AndroidAutofillClient(content::WebContents* web_contents)
+    : autofill::ContentAutofillClient(web_contents) {}
+
 AndroidAutofillClient::~AndroidAutofillClient() {
-  HideAutofillPopup(autofill::PopupHidingReason::kTabGone);
+  HideAutofillSuggestions(autofill::SuggestionHidingReason::kTabGone);
 }
 
-bool AndroidAutofillClient::IsOffTheRecord() {
-  return GetWebContents().GetBrowserContext()->IsOffTheRecord();
+bool AndroidAutofillClient::IsOffTheRecord() const {
+  auto* mutable_this = const_cast<AndroidAutofillClient*>(this);
+  return mutable_this->GetWebContents().GetBrowserContext()->IsOffTheRecord();
 }
 
 scoped_refptr<network::SharedURLLoaderFactory>
@@ -113,11 +106,6 @@ signin::IdentityManager* AndroidAutofillClient::GetIdentityManager() {
 }
 
 autofill::FormDataImporter* AndroidAutofillClient::GetFormDataImporter() {
-  return nullptr;
-}
-
-autofill::payments::PaymentsNetworkInterface*
-AndroidAutofillClient::GetPaymentsNetworkInterface() {
   return nullptr;
 }
 
@@ -209,44 +197,21 @@ bool AndroidAutofillClient::ShowTouchToFillCreditCard(
 
 void AndroidAutofillClient::HideTouchToFillCreditCard() {}
 
-void AndroidAutofillClient::ShowAutofillPopup(
+void AndroidAutofillClient::ShowAutofillSuggestions(
     const autofill::AutofillClient::PopupOpenArgs& open_args,
     base::WeakPtr<autofill::AutofillPopupDelegate> delegate) {
-  suggestions_ = open_args.suggestions;
-  delegate_ = delegate;
-
-  // Convert element_bounds to be in screen space.
-  gfx::Rect client_area = GetWebContents().GetContainerBounds();
-  gfx::RectF element_bounds_in_screen_space =
-      open_args.element_bounds + client_area.OffsetFromOrigin();
-
-  ShowAutofillPopupImpl(element_bounds_in_screen_space,
-                        open_args.text_direction == base::i18n::RIGHT_TO_LEFT,
-                        open_args.suggestions);
+  NOTIMPLEMENTED();
 }
 
-void AndroidAutofillClient::UpdateAutofillPopupDataListValues(
+void AndroidAutofillClient::UpdateAutofillDataListValues(
     base::span<const autofill::SelectOption> datalist) {
   // Leaving as an empty method since updating autofill popup window
   // dynamically does not seem to be a useful feature when delegating to Android
   // APIs.
 }
 
-std::vector<autofill::Suggestion> AndroidAutofillClient::GetPopupSuggestions()
-    const {
+void AndroidAutofillClient::PinAutofillSuggestions() {
   NOTIMPLEMENTED();
-  return {};
-}
-
-void AndroidAutofillClient::PinPopupView() {
-  NOTIMPLEMENTED();
-}
-
-autofill::AutofillClient::PopupOpenArgs
-AndroidAutofillClient::GetReopenPopupArgs(
-    autofill::AutofillSuggestionTriggerSource trigger_source) const {
-  NOTIMPLEMENTED();
-  return {};
 }
 
 void AndroidAutofillClient::UpdatePopup(
@@ -256,15 +221,9 @@ void AndroidAutofillClient::UpdatePopup(
   NOTIMPLEMENTED();
 }
 
-void AndroidAutofillClient::HideAutofillPopup(
-    autofill::PopupHidingReason reason) {
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
-  if (!obj) {
-    return;
-  }
-  delegate_.reset();
-  Java_AndroidAutofillClient_hideAutofillPopup(env, obj);
+void AndroidAutofillClient::HideAutofillSuggestions(
+    autofill::SuggestionHidingReason reason) {
+  // TODO(321950502): Analyze hiding the datalist popup here.
 }
 
 bool AndroidAutofillClient::IsAutocompleteEnabled() const {
@@ -314,83 +273,6 @@ AndroidAutofillClient::GetCurrentFormInteractionsFlowId() {
   return {};
 }
 
-void AndroidAutofillClient::Dismissed(JNIEnv* env,
-                                      const JavaParamRef<jobject>& obj) {
-  anchor_view_.Reset();
-}
-
-void AndroidAutofillClient::SuggestionSelected(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& object,
-    jint position) {
-  if (delegate_) {
-    delegate_->DidAcceptSuggestion(suggestions_[position], {.row = position});
-  }
-}
-
-AndroidAutofillClient::AndroidAutofillClient(
-    WebContents* contents,
-    base::FunctionRef<void(const JavaRef<jobject>&)> notify_client_created)
-    : autofill::ContentAutofillClient(contents) {
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> delegate(
-      Java_AndroidAutofillClient_create(env, reinterpret_cast<intptr_t>(this)));
-
-  notify_client_created(delegate);
-  java_ref_ = JavaObjectWeakGlobalRef(env, delegate);
-}
-
-// TODO(b/321950502): Remove if unused!
-void AndroidAutofillClient::ShowAutofillPopupImpl(
-    const gfx::RectF& element_bounds,
-    bool is_rtl,
-    const std::vector<autofill::Suggestion>& suggestions) {
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
-  if (!obj) {
-    return;
-  }
-
-  // We need an array of AutofillSuggestion.
-  size_t count = suggestions.size();
-
-  ScopedJavaLocalRef<jobjectArray> data_array =
-      Java_AndroidAutofillClient_createAutofillSuggestionArray(env, count);
-
-  for (size_t i = 0; i < count; ++i) {
-    ScopedJavaLocalRef<jstring> name =
-        ConvertUTF16ToJavaString(env, suggestions[i].main_text.value);
-    ScopedJavaLocalRef<jstring> label =
-        base::android::ConvertUTF8ToJavaString(env, std::string());
-    // For Android, we only show the primary/first label in the matrix.
-    if (!suggestions[i].labels.empty()) {
-      label = ConvertUTF16ToJavaString(env, suggestions[i].labels[0][0].value);
-    }
-
-    Java_AndroidAutofillClient_addToAutofillSuggestionArray(
-        env, data_array, i, name, label,
-        base::to_underlying(suggestions[i].popup_item_id));
-  }
-  ui::ViewAndroid* view_android = GetWebContents().GetNativeView();
-  if (!view_android) {
-    return;
-  }
-
-  const ScopedJavaLocalRef<jobject> current_view = anchor_view_.view();
-  if (!current_view) {
-    anchor_view_ = view_android->AcquireAnchorView();
-  }
-
-  const ScopedJavaLocalRef<jobject> view = anchor_view_.view();
-  if (!view) {
-    return;
-  }
-
-  view_android->SetAnchorRect(view, element_bounds);
-  Java_AndroidAutofillClient_showAutofillPopup(env, obj, view, is_rtl,
-                                               data_array);
-}
-
 content::WebContents& AndroidAutofillClient::GetWebContents() const {
   // While a const_cast is not ideal. The Autofill API uses const in various
   // spots and the content public API doesn't have const accessors. So the const
@@ -402,7 +284,7 @@ content::WebContents& AndroidAutofillClient::GetWebContents() const {
 std::unique_ptr<autofill::AutofillManager> AndroidAutofillClient::CreateManager(
     base::PassKey<autofill::ContentAutofillDriver> pass_key,
     autofill::ContentAutofillDriver& driver) {
-  return base::WrapUnique(new autofill::AndroidAutofillManager(&driver, this));
+  return base::WrapUnique(new autofill::AndroidAutofillManager(&driver));
 }
 
 }  // namespace android_autofill

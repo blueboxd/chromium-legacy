@@ -12,13 +12,16 @@
 #include "ash/capture_mode/capture_mode_observer.h"
 #include "ash/game_dashboard/game_dashboard_context.h"
 #include "ash/game_dashboard/game_dashboard_delegate.h"
+#include "ash/game_dashboard/game_dashboard_metrics.h"
 #include "ash/wm/overview/overview_observer.h"
 #include "base/scoped_multi_source_observation.h"
 #include "base/scoped_observation.h"
 #include "ui/aura/env.h"
 #include "ui/aura/env_observer.h"
 #include "ui/aura/window_observer.h"
+#include "ui/display/display_observer.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/wm/public/activation_change_observer.h"
 
 class PrefRegistrySimple;
 
@@ -27,13 +30,19 @@ class Window;
 class WindowTracker;
 }  // namespace aura
 
+namespace display {
+enum class TabletState;
+}  // namespace display
+
 namespace ash {
 
 // Controls the Game Dashboard behavior on supported windows.
 class ASH_EXPORT GameDashboardController : public aura::EnvObserver,
                                            public aura::WindowObserver,
                                            public CaptureModeObserver,
-                                           public OverviewObserver {
+                                           public display::DisplayObserver,
+                                           public OverviewObserver,
+                                           public wm::ActivationChangeObserver {
  public:
   explicit GameDashboardController(
       std::unique_ptr<GameDashboardDelegate> delegate);
@@ -77,6 +86,9 @@ class ASH_EXPORT GameDashboardController : public aura::EnvObserver,
   // Shows the compat mode resize toggle menu for the given `window`.
   void ShowResizeToggleMenu(aura::Window* window);
 
+  // Gets the UKM source id by `app_id`.
+  ukm::SourceId GetUkmSourceId(const std::string& app_id) const;
+
   // aura::EnvObserver:
   void OnWindowInitialized(aura::Window* new_window) override;
 
@@ -84,6 +96,8 @@ class ASH_EXPORT GameDashboardController : public aura::EnvObserver,
   void OnWindowPropertyChanged(aura::Window* window,
                                const void* key,
                                intptr_t old) override;
+  void OnWindowParentChanged(aura::Window* window,
+                             aura::Window* parent) override;
   void OnWindowBoundsChanged(aura::Window* window,
                              const gfx::Rect& old_bounds,
                              const gfx::Rect& new_bounds,
@@ -98,9 +112,17 @@ class ASH_EXPORT GameDashboardController : public aura::EnvObserver,
   void OnRecordedWindowChangingRoot(aura::Window* new_root) override;
   void OnRecordingStartAborted() override;
 
+  // display::DisplayObserver:
+  void OnDisplayTabletStateChanged(display::TabletState state) override;
+
   // OverviewObserver:
   void OnOverviewModeWillStart() override;
   void OnOverviewModeEnded() override;
+
+  // wm::ActivationChangeObserver:
+  void OnWindowActivated(wm::ActivationChangeObserver::ActivationReason reason,
+                         aura::Window* gained_active,
+                         aura::Window* lost_active) override;
 
  private:
   friend class GameDashboardControllerTest;
@@ -109,6 +131,12 @@ class ASH_EXPORT GameDashboardController : public aura::EnvObserver,
   enum class WindowGameState { kGame, kNotGame, kNotYetKnown };
 
   using GetWindowStateCallback = base::OnceCallback<void(WindowGameState)>;
+
+  // Creates a `GameDashboardContext` for the given `window` and
+  // adds it to `game_window_contexts_`, if `GameDashboardContext` doesn't
+  // exist, the given window is a game, the `window` is parented, and the
+  // `window` has a valid `WindowState`. Otherwise, no object is created.
+  void MaybeCreateGameDashboardContext(aura::Window* window);
 
   // Checks whether the given window is a game, and then calls
   // `RefreshWindowTracking`. If there's not enough information, it passes
@@ -128,6 +156,14 @@ class ASH_EXPORT GameDashboardController : public aura::EnvObserver,
   // Updates the Game Dashboard button state and toolbar for a game window.
   void RefreshForGameControlsFlags(aura::Window* window);
 
+  // Enables or disables feature entry partially depending on `enable`. In
+  // addition, it needs to check
+  // `game_dashboard_utils::ShouldEnableFeatures()`. It may close main menu
+  // by `main_menu_toggle_method` when disabling the features.
+  void MaybeEnableFeatures(
+      bool enable,
+      GameDashboardMainMenuToggleMethod main_menu_toggle_method);
+
   std::map<aura::Window*, std::unique_ptr<GameDashboardContext>>
       game_window_contexts_;
 
@@ -139,6 +175,8 @@ class ASH_EXPORT GameDashboardController : public aura::EnvObserver,
 
   base::ScopedMultiSourceObservation<aura::Window, aura::WindowObserver>
       window_observations_{this};
+
+  display::ScopedDisplayObserver display_observer_{this};
 
   // Represents the active `GameDashboardContext`. If
   // `active_recording_context_` is non-null, then `CaptureModeController` is

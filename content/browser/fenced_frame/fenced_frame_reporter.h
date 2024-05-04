@@ -44,12 +44,11 @@ class RenderFrameHostImpl;
 struct DestinationEnumEvent {
   std::string type;
   std::string data;
+  bool cross_origin_exposed;
 
   // The equal to operator is defined in order to enable comparison of
   // DestinationVariant.
-  bool operator==(const DestinationEnumEvent& other) const {
-    return std::tie(type, data) == std::tie(other.type, other.data);
-  }
+  bool operator==(const DestinationEnumEvent& other) const = default;
 };
 
 // An event to be sent to a custom url.
@@ -57,12 +56,11 @@ struct DestinationEnumEvent {
 // Macros are substituted using the `ReportingMacros`.
 struct DestinationURLEvent {
   GURL url;
+  bool cross_origin_exposed;
 
   // The equal to operator is defined in order to enable comparison of
   // DestinationVariant.
-  bool operator==(const DestinationURLEvent& other) const {
-    return url == other.url;
-  }
+  bool operator==(const DestinationURLEvent& other) const = default;
 };
 
 // An event to be sent to a preregistered url as the result of an automatic
@@ -74,9 +72,7 @@ struct AutomaticBeaconEvent {
 
   // The equal to operator is defined in order to enable comparison of
   // DestinationVariant.
-  bool operator==(const AutomaticBeaconEvent& other) const {
-    return std::tie(type, data) == std::tie(other.type, other.data);
-  }
+  bool operator==(const AutomaticBeaconEvent& other) const = default;
 };
 
 // Class that receives report events from fenced frames, and uses a
@@ -96,8 +92,8 @@ class CONTENT_EXPORT FencedFrameReporter
   using DestinationVariant = absl::
       variant<DestinationEnumEvent, DestinationURLEvent, AutomaticBeaconEvent>;
 
-  // TODO(crbug.com/1492125): Once the CL that stops repeating checks for fenced
-  // frame reporting beacons is landed, this observer will be extended to
+  // TODO(crbug.com/40285398): Once the CL that stops repeating checks for
+  // fenced frame reporting beacons is landed, this observer will be extended to
   // observe whether the beacon is eventually sent or not.
   class ObserverForTesting : public base::CheckedObserver {
    public:
@@ -212,7 +208,7 @@ class CONTENT_EXPORT FencedFrameReporter
   // be called with an empty ReportingMacros, so it can discard macro reports,
   // and provide errors messages for subsequent SendReporter().
   //
-  // TODO(https://crbug.com/1409133): Consider investing in outputting error to
+  // TODO(crbug.com/40253851): Consider investing in outputting error to
   // correct frame, if it still exists. `frame_tree_node_id` somewhat does this,
   // though it doesn't change across navigations, so could end up displaying an
   // error for a page a frame was previously displaying. There may be other
@@ -484,6 +480,11 @@ class CONTENT_EXPORT FencedFrameReporter
   PrivacySandboxInvokingAPI invoking_api_;
 
   base::ObserverList<ObserverForTesting> observers_;
+
+  // Tracks the number of beacons sent during the lifetime of the reporter.
+  // Logged as a histogram in the destructor.
+  unsigned int beacons_sent_same_origin_ = 0;
+  unsigned int beacons_sent_cross_origin_ = 0;
 };
 
 }  // namespace content

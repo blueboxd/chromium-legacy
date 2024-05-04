@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 import {SeaPenImageId} from './constants.js';
-import {MantaStatusCode, RecentSeaPenThumbnailData, SeaPenThumbnail} from './sea_pen.mojom-webui.js';
+import {MantaStatusCode, RecentSeaPenThumbnailData, SeaPenQuery, SeaPenThumbnail} from './sea_pen.mojom-webui.js';
 
 export interface SeaPenLoadingState {
   recentImageData: Record<SeaPenImageId, boolean>;
@@ -18,10 +18,12 @@ export interface SeaPenState {
   recentImageData: Record<SeaPenImageId, RecentSeaPenThumbnailData|null>;
   recentImages: SeaPenImageId[]|null;
   thumbnails: SeaPenThumbnail[]|null;
+  currentSeaPenQuery: SeaPenQuery|null;
   currentSelected: SeaPenImageId|null;
   pendingSelected: SeaPenImageId|SeaPenThumbnail|null;
   thumbnailResponseStatusCode: MantaStatusCode|null;
-  shouldShowSeaPenTermsOfServiceDialog: boolean;
+  shouldShowSeaPenIntroductionDialog: boolean;
+  error: string|null;
 }
 
 export function emptyState(): SeaPenState {
@@ -37,8 +39,10 @@ export function emptyState(): SeaPenState {
     recentImages: null,
     thumbnailResponseStatusCode: null,
     thumbnails: null,
+    currentSeaPenQuery: null,
     currentSelected: null,
     pendingSelected: null,
-    shouldShowSeaPenTermsOfServiceDialog: false,
+    shouldShowSeaPenIntroductionDialog: false,
+    error: null,
   };
 }

@@ -89,15 +89,31 @@ instead of "initial value".
 |     <shadow:root>
 |       "inserted value"
 |   <shadow:root>
-|     <slot>
-|       id="select-button"
-|       <div>
-|         aria-hidden="true"
-|         "initial value"
-|     <slot>
-|       id="select-datalist"
+|     <div>
+|       aria-hidden="true"
+|       "initial value"
 |     <slot>
 |       id="select-options"
+|     <slot>
+|       id="select-button"
+|       <button>
+|         pseudo="select-fallback-button"
+|         type="popover"
+|         shadow:pseudoId="select-fallback-button"
+|         <span>
+|           pseudo="select-fallback-button-text"
+|           shadow:pseudoId="select-fallback-button-text"
+|           "initial value"
+|         <div>
+|           pseudo="select-fallback-button-icon"
+|           shadow:pseudoId="select-fallback-button-icon"
+|     <slot>
+|       id="select-datalist"
+|       <datalist>
+|         pseudo="select-fallback-datalist"
+|         shadow:pseudoId="select-fallback-datalist"
+|         <slot>
+|           id="select-datalist-options"
 | "input.value: initial value"
 | "internals.suggestedValue(input): suggested value"
 | "input.selectionStart: 0"

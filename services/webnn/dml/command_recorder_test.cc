@@ -39,10 +39,11 @@ class WebNNCommandRecorderTest : public TestBase {
 
 void WebNNCommandRecorderTest::SetUp() {
   SKIP_TEST_IF(!UseGPUInTests());
-  ASSERT_TRUE(InitializeGLDisplay());
   Adapter::EnableDebugLayerForTesting();
   auto adapter_creation_result = Adapter::GetInstanceForTesting();
-  ASSERT_TRUE(adapter_creation_result.has_value());
+  // If the adapter creation result has no value, it's most likely because
+  // platform functions were not properly loaded.
+  SKIP_TEST_IF(!adapter_creation_result.has_value());
   adapter_ = std::move(adapter_creation_result.value());
 }
 
@@ -52,8 +53,8 @@ void WebNNCommandRecorderTest::Upload(CommandRecorder* command_recorder,
                                       ComPtr<ID3D12Resource> dst_resource) {
   // Copy the contents from source buffer to upload buffer.
   ComPtr<ID3D12Resource> upload_buffer;
-  ASSERT_HRESULT_SUCCEEDED(command_recorder->CreateUploadBuffer(
-      buffer_size, L"Upload_Buffer", upload_buffer));
+  ASSERT_HRESULT_SUCCEEDED(CreateUploadBuffer(
+      adapter_->d3d12_device(), buffer_size, L"Upload_Buffer", upload_buffer));
   void* upload_buffer_data = nullptr;
   ASSERT_HRESULT_SUCCEEDED(upload_buffer->Map(0, nullptr, &upload_buffer_data));
   memcpy(upload_buffer_data, src_buffer, buffer_size);
@@ -69,16 +70,16 @@ void WebNNCommandRecorderTest::Download(CommandRecorder* command_recorder,
                                         size_t buffer_size,
                                         ComPtr<ID3D12Resource> src_resource) {
   ComPtr<ID3D12Resource> readback_buffer;
-  ASSERT_HRESULT_SUCCEEDED(command_recorder->CreateReadbackBuffer(
-      buffer_size, L"Readback_Buffer", readback_buffer));
+  ASSERT_HRESULT_SUCCEEDED(CreateReadbackBuffer(adapter_->d3d12_device(),
+                                                buffer_size, L"Readback_Buffer",
+                                                readback_buffer));
   // Copy the result from output buffer to readback buffer.
   ReadbackBufferWithBarrier(command_recorder, readback_buffer,
                             std::move(src_resource), buffer_size);
 
   // Close, execute and wait for completion.
   ASSERT_HRESULT_SUCCEEDED(command_recorder->CloseAndExecute());
-  ASSERT_HRESULT_SUCCEEDED(
-      command_recorder->GetCommandQueue()->WaitSyncForTesting());
+  ASSERT_HRESULT_SUCCEEDED(adapter_->command_queue()->WaitSyncForTesting());
 
   // Release the resources referred by GPU execution.
   adapter_->command_queue()->ReleaseCompletedResources();
@@ -105,8 +106,7 @@ TEST_F(WebNNCommandRecorderTest, OpenCloseAndExecute) {
   ASSERT_NE(command_recorder.get(), nullptr);
   EXPECT_HRESULT_SUCCEEDED(command_recorder->Open());
   EXPECT_HRESULT_SUCCEEDED(command_recorder->CloseAndExecute());
-  EXPECT_HRESULT_SUCCEEDED(
-      command_recorder->GetCommandQueue()->WaitSyncForTesting());
+  EXPECT_HRESULT_SUCCEEDED(adapter_->command_queue()->WaitSyncForTesting());
 }
 
 TEST_F(WebNNCommandRecorderTest, CopyBufferRegionFromUploadToDefault) {
@@ -115,11 +115,13 @@ TEST_F(WebNNCommandRecorderTest, CopyBufferRegionFromUploadToDefault) {
                                                   adapter_->dml_device());
   ASSERT_NE(command_recorder.get(), nullptr);
   ComPtr<ID3D12Resource> upload_resource;
-  ASSERT_HRESULT_SUCCEEDED(command_recorder->CreateUploadBuffer(
-      kBufferSize, L"Upload_Buffer", upload_resource));
+  ASSERT_HRESULT_SUCCEEDED(CreateUploadBuffer(adapter_->d3d12_device(),
+                                              kBufferSize, L"Upload_Buffer",
+                                              upload_resource));
   ComPtr<ID3D12Resource> default_resource;
-  ASSERT_HRESULT_SUCCEEDED(command_recorder->CreateDefaultBuffer(
-      kBufferSize, L"Default_Buffer", default_resource));
+  ASSERT_HRESULT_SUCCEEDED(CreateDefaultBuffer(adapter_->d3d12_device(),
+                                               kBufferSize, L"Default_Buffer",
+                                               default_resource));
   EXPECT_HRESULT_SUCCEEDED(command_recorder->Open());
   D3D12_RESOURCE_BARRIER barriers[1];
   barriers[0] = CreateTransitionBarrier(default_resource.Get(),
@@ -130,8 +132,7 @@ TEST_F(WebNNCommandRecorderTest, CopyBufferRegionFromUploadToDefault) {
                                      std::move(upload_resource), 0,
                                      kBufferSize);
   EXPECT_HRESULT_SUCCEEDED(command_recorder->CloseAndExecute());
-  EXPECT_HRESULT_SUCCEEDED(
-      command_recorder->GetCommandQueue()->WaitSyncForTesting());
+  EXPECT_HRESULT_SUCCEEDED(adapter_->command_queue()->WaitSyncForTesting());
 }
 
 TEST_F(WebNNCommandRecorderTest, CopyBufferRegionFromDefaultToDefault) {
@@ -140,11 +141,13 @@ TEST_F(WebNNCommandRecorderTest, CopyBufferRegionFromDefaultToDefault) {
                                                   adapter_->dml_device());
   ASSERT_NE(command_recorder.get(), nullptr);
   ComPtr<ID3D12Resource> src_resource;
-  ASSERT_HRESULT_SUCCEEDED(command_recorder->CreateDefaultBuffer(
-      kBufferSize, L"Source_Default_Buffer", src_resource));
+  ASSERT_HRESULT_SUCCEEDED(
+      CreateDefaultBuffer(adapter_->d3d12_device(), kBufferSize,
+                          L"Source_Default_Buffer", src_resource));
   ComPtr<ID3D12Resource> dst_resource;
-  ASSERT_HRESULT_SUCCEEDED(command_recorder->CreateDefaultBuffer(
-      kBufferSize, L"Destination_Default_Buffer", dst_resource));
+  ASSERT_HRESULT_SUCCEEDED(
+      CreateDefaultBuffer(adapter_->d3d12_device(), kBufferSize,
+                          L"Destination_Default_Buffer", dst_resource));
   EXPECT_HRESULT_SUCCEEDED(command_recorder->Open());
   D3D12_RESOURCE_BARRIER barriers[2];
   barriers[0] = CreateTransitionBarrier(dst_resource.Get(),
@@ -157,8 +160,7 @@ TEST_F(WebNNCommandRecorderTest, CopyBufferRegionFromDefaultToDefault) {
   command_recorder->CopyBufferRegion(std::move(dst_resource), 0,
                                      std::move(src_resource), 0, kBufferSize);
   EXPECT_HRESULT_SUCCEEDED(command_recorder->CloseAndExecute());
-  EXPECT_HRESULT_SUCCEEDED(
-      command_recorder->GetCommandQueue()->WaitSyncForTesting());
+  EXPECT_HRESULT_SUCCEEDED(adapter_->command_queue()->WaitSyncForTesting());
 }
 
 TEST_F(WebNNCommandRecorderTest, CopyBufferRegionFromDefaultToReadback) {
@@ -167,11 +169,13 @@ TEST_F(WebNNCommandRecorderTest, CopyBufferRegionFromDefaultToReadback) {
                                                   adapter_->dml_device());
   ASSERT_NE(command_recorder.get(), nullptr);
   ComPtr<ID3D12Resource> default_resource;
-  ASSERT_HRESULT_SUCCEEDED(command_recorder->CreateDefaultBuffer(
-      kBufferSize, L"Default_Buffer", default_resource));
+  ASSERT_HRESULT_SUCCEEDED(CreateDefaultBuffer(adapter_->d3d12_device(),
+                                               kBufferSize, L"Default_Buffer",
+                                               default_resource));
   ComPtr<ID3D12Resource> readback_resource;
-  ASSERT_HRESULT_SUCCEEDED(command_recorder->CreateReadbackBuffer(
-      kBufferSize, L"Readback_Buffer", readback_resource));
+  ASSERT_HRESULT_SUCCEEDED(CreateReadbackBuffer(adapter_->d3d12_device(),
+                                                kBufferSize, L"Readback_Buffer",
+                                                readback_resource));
   EXPECT_HRESULT_SUCCEEDED(command_recorder->Open());
   D3D12_RESOURCE_BARRIER barriers[1];
   barriers[0] = CreateTransitionBarrier(default_resource.Get(),
@@ -182,8 +186,7 @@ TEST_F(WebNNCommandRecorderTest, CopyBufferRegionFromDefaultToReadback) {
                                      std::move(default_resource), 0,
                                      kBufferSize);
   EXPECT_HRESULT_SUCCEEDED(command_recorder->CloseAndExecute());
-  EXPECT_HRESULT_SUCCEEDED(
-      command_recorder->GetCommandQueue()->WaitSyncForTesting());
+  EXPECT_HRESULT_SUCCEEDED(adapter_->command_queue()->WaitSyncForTesting());
 }
 
 TEST_F(WebNNCommandRecorderTest, CopyBufferRegionBetweenCustomAndDefault) {
@@ -193,17 +196,20 @@ TEST_F(WebNNCommandRecorderTest, CopyBufferRegionBetweenCustomAndDefault) {
   auto command_recorder = CommandRecorder::Create(adapter_->command_queue(),
                                                   adapter_->dml_device());
   ASSERT_NE(command_recorder.get(), nullptr);
-  SKIP_TEST_IF(!command_recorder->IsUMA());
+  SKIP_TEST_IF(!adapter_->IsUMA());
 
   ComPtr<ID3D12Resource> src_resource;
-  ASSERT_HRESULT_SUCCEEDED(command_recorder->CreateCustomUploadBuffer(
-      kBufferSize, L"Source_Custom_Upload_Buffer", src_resource));
+  ASSERT_HRESULT_SUCCEEDED(
+      CreateCustomUploadBuffer(adapter_->d3d12_device(), kBufferSize,
+                               L"Source_Custom_Upload_Buffer", src_resource));
   ComPtr<ID3D12Resource> temp_resource;
-  ASSERT_HRESULT_SUCCEEDED(command_recorder->CreateDefaultBuffer(
-      kBufferSize, L"Destination_Default_Buffer", temp_resource));
+  ASSERT_HRESULT_SUCCEEDED(
+      CreateDefaultBuffer(adapter_->d3d12_device(), kBufferSize,
+                          L"Destination_Default_Buffer", temp_resource));
   ComPtr<ID3D12Resource> dst_resource;
-  ASSERT_HRESULT_SUCCEEDED(command_recorder->CreateCustomReadbackBuffer(
-      kBufferSize, L"Destination_Custom_Readback_Buffer", dst_resource));
+  ASSERT_HRESULT_SUCCEEDED(CreateCustomReadbackBuffer(
+      adapter_->d3d12_device(), kBufferSize,
+      L"Destination_Custom_Readback_Buffer", dst_resource));
   EXPECT_HRESULT_SUCCEEDED(command_recorder->Open());
   D3D12_RESOURCE_BARRIER barriers[2];
   barriers[0] = CreateTransitionBarrier(temp_resource.Get(),
@@ -225,8 +231,7 @@ TEST_F(WebNNCommandRecorderTest, CopyBufferRegionBetweenCustomAndDefault) {
   command_recorder->CopyBufferRegion(dst_resource, 0, temp_resource, 0,
                                      kBufferSize);
   EXPECT_HRESULT_SUCCEEDED(command_recorder->CloseAndExecute());
-  EXPECT_HRESULT_SUCCEEDED(
-      command_recorder->GetCommandQueue()->WaitSyncForTesting());
+  EXPECT_HRESULT_SUCCEEDED(adapter_->command_queue()->WaitSyncForTesting());
 }
 
 TEST_F(WebNNCommandRecorderTest, MultipleSubmissionsWithOneWait) {
@@ -237,11 +242,13 @@ TEST_F(WebNNCommandRecorderTest, MultipleSubmissionsWithOneWait) {
                                                   adapter_->dml_device());
   ASSERT_NE(command_recorder.get(), nullptr);
   ComPtr<ID3D12Resource> upload_resource;
-  ASSERT_HRESULT_SUCCEEDED(command_recorder->CreateUploadBuffer(
-      kBufferSize, L"Upload_Buffer", upload_resource));
+  ASSERT_HRESULT_SUCCEEDED(CreateUploadBuffer(adapter_->d3d12_device(),
+                                              kBufferSize, L"Upload_Buffer",
+                                              upload_resource));
   ComPtr<ID3D12Resource> default_resource;
-  ASSERT_HRESULT_SUCCEEDED(command_recorder->CreateDefaultBuffer(
-      kBufferSize, L"Default_Buffer", default_resource));
+  ASSERT_HRESULT_SUCCEEDED(CreateDefaultBuffer(adapter_->d3d12_device(),
+                                               kBufferSize, L"Default_Buffer",
+                                               default_resource));
   EXPECT_HRESULT_SUCCEEDED(command_recorder->Open());
   D3D12_RESOURCE_BARRIER barriers[1];
   barriers[0] = CreateTransitionBarrier(default_resource.Get(),
@@ -254,8 +261,9 @@ TEST_F(WebNNCommandRecorderTest, MultipleSubmissionsWithOneWait) {
 
   // Submit the command that copies data from default buffer to readback buffer.
   ComPtr<ID3D12Resource> readback_resource;
-  ASSERT_HRESULT_SUCCEEDED(command_recorder->CreateReadbackBuffer(
-      kBufferSize, L"Readback_Buffer", readback_resource));
+  ASSERT_HRESULT_SUCCEEDED(CreateReadbackBuffer(adapter_->d3d12_device(),
+                                                kBufferSize, L"Readback_Buffer",
+                                                readback_resource));
   EXPECT_HRESULT_SUCCEEDED(command_recorder->Open());
   barriers[0] = CreateTransitionBarrier(default_resource.Get(),
                                         D3D12_RESOURCE_STATE_COPY_DEST,
@@ -267,8 +275,7 @@ TEST_F(WebNNCommandRecorderTest, MultipleSubmissionsWithOneWait) {
   EXPECT_HRESULT_SUCCEEDED(command_recorder->CloseAndExecute());
 
   // Wait for GPU to complete the execution of both command lists.
-  EXPECT_HRESULT_SUCCEEDED(
-      command_recorder->GetCommandQueue()->WaitSyncForTesting());
+  EXPECT_HRESULT_SUCCEEDED(adapter_->command_queue()->WaitSyncForTesting());
 }
 
 TEST_F(WebNNCommandRecorderTest, InitializeAndExecuteReluOperator) {
@@ -307,15 +314,15 @@ TEST_F(WebNNCommandRecorderTest, InitializeAndExecuteReluOperator) {
   EXPECT_HRESULT_SUCCEEDED(command_recorder->InitializeOperator(
       compiled_operator.Get(), std::nullopt, std::nullopt));
   EXPECT_HRESULT_SUCCEEDED(command_recorder->CloseAndExecute());
-  EXPECT_HRESULT_SUCCEEDED(
-      command_recorder->GetCommandQueue()->WaitSyncForTesting());
+  EXPECT_HRESULT_SUCCEEDED(adapter_->command_queue()->WaitSyncForTesting());
   adapter_->command_queue()->ReleaseCompletedResources();
   EXPECT_HRESULT_SUCCEEDED(adapter_->dml_device()->GetDeviceRemovedReason());
   EXPECT_HRESULT_SUCCEEDED(adapter_->d3d12_device()->GetDeviceRemovedReason());
 
   // Create the descriptor heap for execution.
   ComPtr<ID3D12DescriptorHeap> descriptor_heap;
-  ASSERT_HRESULT_SUCCEEDED(command_recorder->CreateDescriptorHeap(
+  ASSERT_HRESULT_SUCCEEDED(CreateDescriptorHeap(
+      adapter_->d3d12_device(),
       compiled_operator->GetBindingProperties().RequiredDescriptorCount,
       L"Descriptor_Heap_For_Execution", descriptor_heap));
 
@@ -323,11 +330,13 @@ TEST_F(WebNNCommandRecorderTest, InitializeAndExecuteReluOperator) {
   // execution.
   const uint64_t buffer_size = input_tensor_desc.GetTotalTensorSizeInBytes();
   ComPtr<ID3D12Resource> input_buffer;
-  ASSERT_HRESULT_SUCCEEDED(command_recorder->CreateDefaultBuffer(
-      buffer_size, L"Input_Default_Buffer", input_buffer));
+  ASSERT_HRESULT_SUCCEEDED(
+      CreateDefaultBuffer(adapter_->d3d12_device(), buffer_size,
+                          L"Input_Default_Buffer", input_buffer));
   ComPtr<ID3D12Resource> output_buffer;
-  ASSERT_HRESULT_SUCCEEDED(command_recorder->CreateDefaultBuffer(
-      buffer_size, L"Output_Default_Buffer", output_buffer));
+  ASSERT_HRESULT_SUCCEEDED(
+      CreateDefaultBuffer(adapter_->d3d12_device(), buffer_size,
+                          L"Output_Default_Buffer", output_buffer));
 
   // Re-open the command recorder for recording operator execution commands.
   ASSERT_HRESULT_SUCCEEDED(command_recorder->Open());
@@ -369,7 +378,7 @@ TEST_F(WebNNCommandRecorderTest,
   auto command_recorder = CommandRecorder::Create(adapter_->command_queue(),
                                                   adapter_->dml_device());
   ASSERT_NE(command_recorder.get(), nullptr);
-  SKIP_TEST_IF(!command_recorder->IsUMA());
+  SKIP_TEST_IF(!adapter_->IsUMA());
 
   // Create a Relu operator.
   TensorDesc input_tensor_desc(DML_TENSOR_DATA_TYPE_FLOAT32, {1, 1, 2, 2});
@@ -402,25 +411,27 @@ TEST_F(WebNNCommandRecorderTest,
   EXPECT_HRESULT_SUCCEEDED(command_recorder->InitializeOperator(
       compiled_operator.Get(), std::nullopt, std::nullopt));
   EXPECT_HRESULT_SUCCEEDED(command_recorder->CloseAndExecute());
-  EXPECT_HRESULT_SUCCEEDED(
-      command_recorder->GetCommandQueue()->WaitSyncForTesting());
+  EXPECT_HRESULT_SUCCEEDED(adapter_->command_queue()->WaitSyncForTesting());
   adapter_->command_queue()->ReleaseCompletedResources();
   EXPECT_HRESULT_SUCCEEDED(adapter_->dml_device()->GetDeviceRemovedReason());
   EXPECT_HRESULT_SUCCEEDED(adapter_->d3d12_device()->GetDeviceRemovedReason());
 
   // Create the descriptor heap for execution.
   ComPtr<ID3D12DescriptorHeap> descriptor_heap;
-  ASSERT_HRESULT_SUCCEEDED(command_recorder->CreateDescriptorHeap(
+  ASSERT_HRESULT_SUCCEEDED(CreateDescriptorHeap(
+      adapter_->d3d12_device(),
       compiled_operator->GetBindingProperties().RequiredDescriptorCount,
       L"Descriptor_Heap_For_Execution", descriptor_heap));
 
   const uint64_t buffer_size = input_tensor_desc.GetTotalTensorSizeInBytes();
   ComPtr<ID3D12Resource> input_buffer;
-  ASSERT_HRESULT_SUCCEEDED(command_recorder->CreateCustomUploadBuffer(
-      buffer_size, L"Input_Custom_Upload_Buffer", input_buffer));
+  ASSERT_HRESULT_SUCCEEDED(
+      CreateCustomUploadBuffer(adapter_->d3d12_device(), buffer_size,
+                               L"Input_Custom_Upload_Buffer", input_buffer));
   ComPtr<ID3D12Resource> output_buffer;
-  ASSERT_HRESULT_SUCCEEDED(command_recorder->CreateCustomReadbackBuffer(
-      buffer_size, L"Output_Custom_Readback_Buffer", output_buffer));
+  ASSERT_HRESULT_SUCCEEDED(CreateCustomReadbackBuffer(
+      adapter_->d3d12_device(), buffer_size, L"Output_Custom_Readback_Buffer",
+      output_buffer));
   // Re-open the command recorder for recording operator execution commands.
   ASSERT_HRESULT_SUCCEEDED(command_recorder->Open());
 
@@ -448,8 +459,7 @@ TEST_F(WebNNCommandRecorderTest,
 
   // Close, execute and wait for completion.
   ASSERT_HRESULT_SUCCEEDED(command_recorder->CloseAndExecute());
-  ASSERT_HRESULT_SUCCEEDED(
-      command_recorder->GetCommandQueue()->WaitSyncForTesting());
+  ASSERT_HRESULT_SUCCEEDED(adapter_->command_queue()->WaitSyncForTesting());
 
   // Release the resources referred by GPU execution.
   adapter_->command_queue()->ReleaseCompletedResources();
@@ -505,15 +515,15 @@ TEST_F(WebNNCommandRecorderTest,
   EXPECT_HRESULT_SUCCEEDED(command_recorder->InitializeOperator(
       compiled_operator.Get(), std::nullopt, std::nullopt));
   EXPECT_HRESULT_SUCCEEDED(command_recorder->CloseAndExecute());
-  EXPECT_HRESULT_SUCCEEDED(
-      command_recorder->GetCommandQueue()->WaitSyncForTesting());
+  EXPECT_HRESULT_SUCCEEDED(adapter_->command_queue()->WaitSyncForTesting());
   adapter_->command_queue()->ReleaseCompletedResources();
   EXPECT_HRESULT_SUCCEEDED(adapter_->dml_device()->GetDeviceRemovedReason());
   EXPECT_HRESULT_SUCCEEDED(adapter_->d3d12_device()->GetDeviceRemovedReason());
 
   // Create the descriptor heap for execution.
   ComPtr<ID3D12DescriptorHeap> descriptor_heap;
-  ASSERT_HRESULT_SUCCEEDED(command_recorder->CreateDescriptorHeap(
+  ASSERT_HRESULT_SUCCEEDED(CreateDescriptorHeap(
+      adapter_->d3d12_device(),
       compiled_operator->GetBindingProperties().RequiredDescriptorCount,
       L"Descriptor_Heap_For_Execution", descriptor_heap));
 
@@ -521,11 +531,13 @@ TEST_F(WebNNCommandRecorderTest,
   // execution.
   const uint64_t buffer_size = input_tensor_desc.GetTotalTensorSizeInBytes();
   ComPtr<ID3D12Resource> input_buffer;
-  ASSERT_HRESULT_SUCCEEDED(command_recorder->CreateDefaultBuffer(
-      buffer_size, L"Input_Default_Buffer", input_buffer));
+  ASSERT_HRESULT_SUCCEEDED(
+      CreateDefaultBuffer(adapter_->d3d12_device(), buffer_size,
+                          L"Input_Default_Buffer", input_buffer));
   ComPtr<ID3D12Resource> output_buffer;
-  ASSERT_HRESULT_SUCCEEDED(command_recorder->CreateDefaultBuffer(
-      buffer_size, L"Output_Default_Buffer", output_buffer));
+  ASSERT_HRESULT_SUCCEEDED(
+      CreateDefaultBuffer(adapter_->d3d12_device(), buffer_size,
+                          L"Output_Default_Buffer", output_buffer));
 
   // Re-open the command recorder for recording operator execution commands.
   ASSERT_HRESULT_SUCCEEDED(command_recorder->Open());
@@ -541,8 +553,8 @@ TEST_F(WebNNCommandRecorderTest,
       {{.Type = DML_BINDING_TYPE_BUFFER, .Desc = &output_buffer_binding}});
 
   ComPtr<ID3D12Resource> upload_buffer;
-  ASSERT_HRESULT_SUCCEEDED(command_recorder->CreateUploadBuffer(
-      buffer_size, L"Upload_Buffer", upload_buffer));
+  ASSERT_HRESULT_SUCCEEDED(CreateUploadBuffer(
+      adapter_->d3d12_device(), buffer_size, L"Upload_Buffer", upload_buffer));
   // Copy the input data from upload buffer to input buffer.
   UploadBufferWithBarrier(command_recorder.get(), std::move(input_buffer),
                           upload_buffer, buffer_size);
@@ -553,8 +565,9 @@ TEST_F(WebNNCommandRecorderTest,
       output_bindings, std::nullopt, std::nullopt));
 
   ComPtr<ID3D12Resource> readback_buffer;
-  ASSERT_HRESULT_SUCCEEDED(command_recorder->CreateReadbackBuffer(
-      buffer_size, L"Readback_Buffer", readback_buffer));
+  ASSERT_HRESULT_SUCCEEDED(CreateReadbackBuffer(adapter_->d3d12_device(),
+                                                buffer_size, L"Readback_Buffer",
+                                                readback_buffer));
   // Copy the result from output buffer to readback buffer.
   ReadbackBufferWithBarrier(command_recorder.get(), readback_buffer,
                             std::move(output_buffer), buffer_size);
@@ -572,8 +585,7 @@ TEST_F(WebNNCommandRecorderTest,
   upload_buffer->Unmap(0, nullptr);
 
   ASSERT_HRESULT_SUCCEEDED(command_recorder->Execute());
-  ASSERT_HRESULT_SUCCEEDED(
-      command_recorder->GetCommandQueue()->WaitSyncForTesting());
+  ASSERT_HRESULT_SUCCEEDED(adapter_->command_queue()->WaitSyncForTesting());
 
   // Release the resources referred by GPU execution.
   adapter_->command_queue()->ReleaseCompletedResources();
@@ -597,8 +609,7 @@ TEST_F(WebNNCommandRecorderTest,
   memcpy(upload_buffer_data, input_data.data(), buffer_size);
   upload_buffer->Unmap(0, nullptr);
   ASSERT_HRESULT_SUCCEEDED(command_recorder->Execute());
-  ASSERT_HRESULT_SUCCEEDED(
-      command_recorder->GetCommandQueue()->WaitSyncForTesting());
+  ASSERT_HRESULT_SUCCEEDED(adapter_->command_queue()->WaitSyncForTesting());
 
   // Release the resources referred by GPU execution.
   adapter_->command_queue()->ReleaseCompletedResources();
@@ -651,8 +662,7 @@ TEST_F(WebNNCommandRecorderTest, ExecuteReluOperatorForMultipleBindings) {
   EXPECT_HRESULT_SUCCEEDED(command_recorder->InitializeOperator(
       compiled_operator.Get(), std::nullopt, std::nullopt));
   EXPECT_HRESULT_SUCCEEDED(command_recorder->CloseAndExecute());
-  EXPECT_HRESULT_SUCCEEDED(
-      command_recorder->GetCommandQueue()->WaitSyncForTesting());
+  EXPECT_HRESULT_SUCCEEDED(adapter_->command_queue()->WaitSyncForTesting());
   adapter_->command_queue()->ReleaseCompletedResources();
   EXPECT_HRESULT_SUCCEEDED(adapter_->dml_device()->GetDeviceRemovedReason());
   EXPECT_HRESULT_SUCCEEDED(adapter_->d3d12_device()->GetDeviceRemovedReason());
@@ -661,26 +671,30 @@ TEST_F(WebNNCommandRecorderTest, ExecuteReluOperatorForMultipleBindings) {
   ComPtr<ID3D12DescriptorHeap> descriptor_heaps[2];
   uint32_t num_descriptors =
       compiled_operator->GetBindingProperties().RequiredDescriptorCount;
-  ASSERT_HRESULT_SUCCEEDED(command_recorder->CreateDescriptorHeap(
-      num_descriptors, L"First_Descriptor_Heap_For_Execution",
-      descriptor_heaps[0]));
-  ASSERT_HRESULT_SUCCEEDED(command_recorder->CreateDescriptorHeap(
-      num_descriptors, L"Second_Descriptor_Heap_For_Execution",
-      descriptor_heaps[1]));
+  ASSERT_HRESULT_SUCCEEDED(CreateDescriptorHeap(
+      adapter_->d3d12_device(), num_descriptors,
+      L"First_Descriptor_Heap_For_Execution", descriptor_heaps[0]));
+  ASSERT_HRESULT_SUCCEEDED(CreateDescriptorHeap(
+      adapter_->d3d12_device(), num_descriptors,
+      L"Second_Descriptor_Heap_For_Execution", descriptor_heaps[1]));
 
   // Create input and output resources that will be bound for the two operator
   // executions.
   const uint64_t buffer_size = input_tensor_desc.GetTotalTensorSizeInBytes();
   ComPtr<ID3D12Resource> input_buffers[2];
-  ASSERT_HRESULT_SUCCEEDED(command_recorder->CreateDefaultBuffer(
-      buffer_size, L"First_Input_Default_Buffer", input_buffers[0]));
-  ASSERT_HRESULT_SUCCEEDED(command_recorder->CreateDefaultBuffer(
-      buffer_size, L"Second_Input_Default_Buffer", input_buffers[1]));
+  ASSERT_HRESULT_SUCCEEDED(
+      CreateDefaultBuffer(adapter_->d3d12_device(), buffer_size,
+                          L"First_Input_Default_Buffer", input_buffers[0]));
+  ASSERT_HRESULT_SUCCEEDED(
+      CreateDefaultBuffer(adapter_->d3d12_device(), buffer_size,
+                          L"Second_Input_Default_Buffer", input_buffers[1]));
   ComPtr<ID3D12Resource> output_buffers[2];
-  ASSERT_HRESULT_SUCCEEDED(command_recorder->CreateDefaultBuffer(
-      buffer_size, L"First_Output_Default_Buffer", output_buffers[0]));
-  ASSERT_HRESULT_SUCCEEDED(command_recorder->CreateDefaultBuffer(
-      buffer_size, L"Second_Output_Default_Buffer", output_buffers[1]));
+  ASSERT_HRESULT_SUCCEEDED(
+      CreateDefaultBuffer(adapter_->d3d12_device(), buffer_size,
+                          L"First_Output_Default_Buffer", output_buffers[0]));
+  ASSERT_HRESULT_SUCCEEDED(
+      CreateDefaultBuffer(adapter_->d3d12_device(), buffer_size,
+                          L"Second_Output_Default_Buffer", output_buffers[1]));
 
   // Create the input and output resources binding for operator executions.
   DML_BUFFER_BINDING input_buffer_bindings[2] = {
@@ -725,10 +739,12 @@ TEST_F(WebNNCommandRecorderTest, ExecuteReluOperatorForMultipleBindings) {
 
   // Download result from output resources.
   ComPtr<ID3D12Resource> readback_buffers[2];
-  ASSERT_HRESULT_SUCCEEDED(command_recorder->CreateReadbackBuffer(
-      buffer_size, L"First_Output_Readback_Buffer", readback_buffers[0]));
-  ASSERT_HRESULT_SUCCEEDED(command_recorder->CreateReadbackBuffer(
-      buffer_size, L"Second_Output_Readback_Buffer", readback_buffers[1]));
+  ASSERT_HRESULT_SUCCEEDED(CreateReadbackBuffer(
+      adapter_->d3d12_device(), buffer_size, L"First_Output_Readback_Buffer",
+      readback_buffers[0]));
+  ASSERT_HRESULT_SUCCEEDED(CreateReadbackBuffer(
+      adapter_->d3d12_device(), buffer_size, L"Second_Output_Readback_Buffer",
+      readback_buffers[1]));
 
   // Copy the result from output buffers to readback buffers.
   D3D12_RESOURCE_BARRIER barriers[1];
@@ -756,8 +772,7 @@ TEST_F(WebNNCommandRecorderTest, ExecuteReluOperatorForMultipleBindings) {
 
   // Close, execute and wait for completion.
   ASSERT_HRESULT_SUCCEEDED(command_recorder->CloseAndExecute());
-  ASSERT_HRESULT_SUCCEEDED(
-      command_recorder->GetCommandQueue()->WaitSyncForTesting());
+  ASSERT_HRESULT_SUCCEEDED(adapter_->command_queue()->WaitSyncForTesting());
 
   // Release the resources referred by GPU execution.
   adapter_->command_queue()->ReleaseCompletedResources();
@@ -835,8 +850,9 @@ TEST_F(WebNNCommandRecorderTest, InitializeAndExecuteConvolutionOperator) {
   auto command_recorder = CommandRecorder::Create(adapter_->command_queue(),
                                                   adapter_->dml_device());
   ASSERT_NE(command_recorder.get(), nullptr);
-  ASSERT_HRESULT_SUCCEEDED(command_recorder->CreateDefaultBuffer(
-      filter_buffer_size, L"Filter_Default_Buffer", filter_buffer));
+  ASSERT_HRESULT_SUCCEEDED(
+      CreateDefaultBuffer(adapter_->d3d12_device(), filter_buffer_size,
+                          L"Filter_Default_Buffer", filter_buffer));
 
   ASSERT_HRESULT_SUCCEEDED(command_recorder->Open());
 
@@ -872,8 +888,9 @@ TEST_F(WebNNCommandRecorderTest, InitializeAndExecuteConvolutionOperator) {
       execution_binding_properties.PersistentResourceSize;
   ASSERT_GT(persistent_buffer_size, 0u);
   ComPtr<ID3D12Resource> persistent_buffer;
-  ASSERT_HRESULT_SUCCEEDED(command_recorder->CreateDefaultBuffer(
-      persistent_buffer_size, L"Persistent_Default_Buffer", persistent_buffer));
+  ASSERT_HRESULT_SUCCEEDED(
+      CreateDefaultBuffer(adapter_->d3d12_device(), persistent_buffer_size,
+                          L"Persistent_Default_Buffer", persistent_buffer));
   DML_BUFFER_BINDING persistent_buffer_binding{
       .Buffer = persistent_buffer.Get(),
       .Offset = 0,
@@ -890,15 +907,15 @@ TEST_F(WebNNCommandRecorderTest, InitializeAndExecuteConvolutionOperator) {
       compiled_operator.Get(), input_buffer_array_binding_desc,
       persistent_buffer_binding_desc));
   EXPECT_HRESULT_SUCCEEDED(command_recorder->CloseAndExecute());
-  EXPECT_HRESULT_SUCCEEDED(
-      command_recorder->GetCommandQueue()->WaitSyncForTesting());
+  EXPECT_HRESULT_SUCCEEDED(adapter_->command_queue()->WaitSyncForTesting());
   adapter_->command_queue()->ReleaseCompletedResources();
   EXPECT_HRESULT_SUCCEEDED(adapter_->dml_device()->GetDeviceRemovedReason());
   EXPECT_HRESULT_SUCCEEDED(adapter_->d3d12_device()->GetDeviceRemovedReason());
 
   // Create the descriptor heap for operator execution.
   ComPtr<ID3D12DescriptorHeap> descriptor_heap;
-  ASSERT_HRESULT_SUCCEEDED(command_recorder->CreateDescriptorHeap(
+  ASSERT_HRESULT_SUCCEEDED(CreateDescriptorHeap(
+      adapter_->d3d12_device(),
       compiled_operator->GetBindingProperties().RequiredDescriptorCount,
       L"Descriptor_Heap_For_Execution", descriptor_heap));
 
@@ -907,13 +924,15 @@ TEST_F(WebNNCommandRecorderTest, InitializeAndExecuteConvolutionOperator) {
   const uint64_t input_buffer_size =
       input_tensor_desc.GetTotalTensorSizeInBytes();
   ComPtr<ID3D12Resource> input_buffer;
-  ASSERT_HRESULT_SUCCEEDED(command_recorder->CreateDefaultBuffer(
-      input_buffer_size, L"Input_Default_Buffer", input_buffer));
+  ASSERT_HRESULT_SUCCEEDED(
+      CreateDefaultBuffer(adapter_->d3d12_device(), input_buffer_size,
+                          L"Input_Default_Buffer", input_buffer));
   const uint64_t output_buffer_size =
       output_tensor_desc.GetTotalTensorSizeInBytes();
   ComPtr<ID3D12Resource> output_buffer;
-  ASSERT_HRESULT_SUCCEEDED(command_recorder->CreateDefaultBuffer(
-      output_buffer_size, L"Output_Default_Buffer", output_buffer));
+  ASSERT_HRESULT_SUCCEEDED(
+      CreateDefaultBuffer(adapter_->d3d12_device(), output_buffer_size,
+                          L"Output_Default_Buffer", output_buffer));
 
   // Re-open the command recorder for recording operator execution commands.
   ASSERT_HRESULT_SUCCEEDED(command_recorder->Open());
@@ -963,7 +982,7 @@ TEST_F(WebNNCommandRecorderTest,
   auto command_recorder = CommandRecorder::Create(adapter_->command_queue(),
                                                   adapter_->dml_device());
   ASSERT_NE(command_recorder.get(), nullptr);
-  SKIP_TEST_IF(!command_recorder->IsUMA());
+  SKIP_TEST_IF(!adapter_->IsUMA());
 
   // Create a Convolution operator.
   TensorDesc input_tensor_desc(DML_TENSOR_DATA_TYPE_FLOAT32, {1, 1, 3, 3});
@@ -1009,8 +1028,9 @@ TEST_F(WebNNCommandRecorderTest,
   const uint64_t filter_buffer_size =
       filter_tensor_desc.GetTotalTensorSizeInBytes();
   ComPtr<ID3D12Resource> filter_buffer;
-  ASSERT_HRESULT_SUCCEEDED(command_recorder->CreateCustomUploadBuffer(
-      filter_buffer_size, L"Filter_Custom_Upload_Buffer", filter_buffer));
+  ASSERT_HRESULT_SUCCEEDED(
+      CreateCustomUploadBuffer(adapter_->d3d12_device(), filter_buffer_size,
+                               L"Filter_Custom_Upload_Buffer", filter_buffer));
   // Copy weights to filter resource.
   std::vector<float> weights({0.5, 0.5, 0.5, 0.5});
   void* mapped_filter_buffer = nullptr;
@@ -1048,8 +1068,9 @@ TEST_F(WebNNCommandRecorderTest,
       execution_binding_properties.PersistentResourceSize;
   ASSERT_GT(persistent_buffer_size, 0u);
   ComPtr<ID3D12Resource> persistent_buffer;
-  ASSERT_HRESULT_SUCCEEDED(command_recorder->CreateDefaultBuffer(
-      persistent_buffer_size, L"Persistent_Default_Buffer", persistent_buffer));
+  ASSERT_HRESULT_SUCCEEDED(
+      CreateDefaultBuffer(adapter_->d3d12_device(), persistent_buffer_size,
+                          L"Persistent_Default_Buffer", persistent_buffer));
   DML_BUFFER_BINDING persistent_buffer_binding{
       .Buffer = persistent_buffer.Get(),
       .Offset = 0,
@@ -1066,15 +1087,15 @@ TEST_F(WebNNCommandRecorderTest,
       compiled_operator.Get(), input_buffer_array_binding_desc,
       persistent_buffer_binding_desc));
   EXPECT_HRESULT_SUCCEEDED(command_recorder->CloseAndExecute());
-  EXPECT_HRESULT_SUCCEEDED(
-      command_recorder->GetCommandQueue()->WaitSyncForTesting());
+  EXPECT_HRESULT_SUCCEEDED(adapter_->command_queue()->WaitSyncForTesting());
   adapter_->command_queue()->ReleaseCompletedResources();
   EXPECT_HRESULT_SUCCEEDED(adapter_->dml_device()->GetDeviceRemovedReason());
   EXPECT_HRESULT_SUCCEEDED(adapter_->d3d12_device()->GetDeviceRemovedReason());
 
   // Create the descriptor heap for operator execution.
   ComPtr<ID3D12DescriptorHeap> descriptor_heap;
-  ASSERT_HRESULT_SUCCEEDED(command_recorder->CreateDescriptorHeap(
+  ASSERT_HRESULT_SUCCEEDED(CreateDescriptorHeap(
+      adapter_->d3d12_device(),
       compiled_operator->GetBindingProperties().RequiredDescriptorCount,
       L"Descriptor_Heap_For_Execution", descriptor_heap));
 
@@ -1083,13 +1104,15 @@ TEST_F(WebNNCommandRecorderTest,
   const uint64_t input_buffer_size =
       input_tensor_desc.GetTotalTensorSizeInBytes();
   ComPtr<ID3D12Resource> input_buffer;
-  ASSERT_HRESULT_SUCCEEDED(command_recorder->CreateCustomUploadBuffer(
-      input_buffer_size, L"Input_Custom_Upload_Buffer", input_buffer));
+  ASSERT_HRESULT_SUCCEEDED(
+      CreateCustomUploadBuffer(adapter_->d3d12_device(), input_buffer_size,
+                               L"Input_Custom_Upload_Buffer", input_buffer));
   const uint64_t output_buffer_size =
       output_tensor_desc.GetTotalTensorSizeInBytes();
   ComPtr<ID3D12Resource> output_buffer;
-  ASSERT_HRESULT_SUCCEEDED(command_recorder->CreateCustomReadbackBuffer(
-      output_buffer_size, L"Output_Custom_Readback_Buffer", output_buffer));
+  ASSERT_HRESULT_SUCCEEDED(CreateCustomReadbackBuffer(
+      adapter_->d3d12_device(), output_buffer_size,
+      L"Output_Custom_Readback_Buffer", output_buffer));
 
   // Re-open the command recorder for recording operator execution commands.
   ASSERT_HRESULT_SUCCEEDED(command_recorder->Open());
@@ -1125,8 +1148,7 @@ TEST_F(WebNNCommandRecorderTest,
 
   // Close, execute and wait for completion.
   ASSERT_HRESULT_SUCCEEDED(command_recorder->CloseAndExecute());
-  ASSERT_HRESULT_SUCCEEDED(
-      command_recorder->GetCommandQueue()->WaitSyncForTesting());
+  ASSERT_HRESULT_SUCCEEDED(adapter_->command_queue()->WaitSyncForTesting());
 
   // Release the resources referred by GPU execution.
   adapter_->command_queue()->ReleaseCompletedResources();

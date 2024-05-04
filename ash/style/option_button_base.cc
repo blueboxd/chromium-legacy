@@ -61,10 +61,14 @@ void OptionButtonBase::SetLabelStyle(TypographyToken token) {
   TypographyProvider::Get()->StyleLabel(token, *label());
 }
 
-gfx::Size OptionButtonBase::CalculatePreferredSize() const {
-  int preferred_width = kIconSize + image_label_spacing_ +
-                        label()->GetPreferredSize().width() +
-                        GetInsets().width();
+gfx::Size OptionButtonBase::CalculatePreferredSize(
+    const views::SizeBounds& available_size) const {
+  int preferred_width =
+      kIconSize + image_label_spacing_ +
+      label()
+          ->GetPreferredSize(views::SizeBounds(label()->width(), {}))
+          .width() +
+      GetInsets().width();
   return gfx::Size(std::max(preferred_width, min_width_), kButtonHeight);
 }
 
@@ -90,7 +94,7 @@ void OptionButtonBase::Layout(PassKey) {
   views::Label* label = this->label();
   gfx::Size label_size(
       local_content_bounds.width() - image_label_spacing_ - kIconSize,
-      label->GetPreferredSize().height());
+      label->GetPreferredSize(views::SizeBounds(label->width(), {})).height());
 
   gfx::Point image_origin = local_content_bounds.origin();
   image_origin.Offset(0, (local_content_bounds.height() - kIconSize) / 2);
@@ -147,12 +151,8 @@ SkColor OptionButtonBase::GetIconImageColor() const {
 }
 
 void OptionButtonBase::UpdateTextColor() {
-  const auto* color_provider = GetColorProvider();
-  const SkColor text_color =
-      color_provider->GetColor(cros_tokens::kCrosSysOnSurface);
-  SetEnabledTextColors(text_color);
-  SetTextColor(ButtonState::STATE_DISABLED,
-               color_provider->GetColor(KColorAshTextDisabledColor));
+  SetEnabledTextColorIds(cros_tokens::kCrosSysOnSurface);
+  SetTextColorId(ButtonState::STATE_DISABLED, KColorAshTextDisabledColor);
 }
 
 BEGIN_METADATA(OptionButtonBase)

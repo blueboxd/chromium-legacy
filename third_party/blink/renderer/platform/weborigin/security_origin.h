@@ -420,7 +420,7 @@ class PLATFORM_EXPORT SecurityOrigin : public RefCounted<SecurityOrigin> {
   SecurityOrigin(NewUniqueOpaque, const SecurityOrigin* precursor_origin);
 
   // Create a tuple SecurityOrigin, with parameters via KURL
-  explicit SecurityOrigin(const KURL& url);
+  static scoped_refptr<SecurityOrigin> CreateInternal(const KURL& url);
 
   // Constructs a non-opaque tuple origin, analogously to
   // url::Origin::Origin(url::SchemeHostPort).

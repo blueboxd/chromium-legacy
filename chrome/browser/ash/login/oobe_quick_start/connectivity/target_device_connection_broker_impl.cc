@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/base64.h"
+#include "base/containers/contains.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
 #include "base/logging.h"
@@ -19,7 +20,7 @@
 #include "chrome/browser/ash/login/oobe_quick_start/connectivity/fast_pair_advertiser.h"
 #include "chrome/browser/ash/login/oobe_quick_start/connectivity/target_device_connection_broker.h"
 #include "chrome/browser/ash/nearby/quick_start_connectivity_service.h"
-#include "chrome/browser/nearby_sharing/public/cpp/nearby_connections_manager.h"
+#include "chromeos/ash/components/nearby/common/connections_manager/nearby_connections_manager.h"
 #include "chromeos/ash/components/quick_start/logging.h"
 #include "chromeos/ash/components/quick_start/quick_start_metrics.h"
 #include "device/bluetooth/bluetooth_adapter.h"
@@ -103,6 +104,60 @@ std::vector<uint8_t> Base64EncodeOmitPadding(
   return std::vector<uint8_t>(output.begin(), output.end());
 }
 
+std::optional<QuickStartMetrics::NearbyConnectionsAdvertisingErrorCode>
+MapConnectionsStatusToErrorCode(
+    NearbyConnectionsManager::ConnectionsStatus status) {
+  switch (status) {
+    case NearbyConnectionsManager::ConnectionsStatus::kSuccess:
+      return std::nullopt;
+    case NearbyConnectionsManager::ConnectionsStatus::kError:
+      return QuickStartMetrics::NearbyConnectionsAdvertisingErrorCode::kError;
+    case NearbyConnectionsManager::ConnectionsStatus::kOutOfOrderApiCall:
+      return QuickStartMetrics::NearbyConnectionsAdvertisingErrorCode::
+          kOutOfOrderApiCall;
+    case NearbyConnectionsManager::ConnectionsStatus::
+        kAlreadyHaveActiveStrategy:
+      return QuickStartMetrics::NearbyConnectionsAdvertisingErrorCode::
+          kAlreadyHaveActiveStrategy;
+    case NearbyConnectionsManager::ConnectionsStatus::kAlreadyAdvertising:
+      return QuickStartMetrics::NearbyConnectionsAdvertisingErrorCode::
+          kAlreadyAdvertising;
+    case NearbyConnectionsManager::ConnectionsStatus::kBluetoothError:
+      return QuickStartMetrics::NearbyConnectionsAdvertisingErrorCode::
+          kBluetoothError;
+    case NearbyConnectionsManager::ConnectionsStatus::kBleError:
+      return QuickStartMetrics::NearbyConnectionsAdvertisingErrorCode::
+          kBleError;
+    case NearbyConnectionsManager::ConnectionsStatus::kTimeout:
+      return QuickStartMetrics::NearbyConnectionsAdvertisingErrorCode::kTimeout;
+    case NearbyConnectionsManager::ConnectionsStatus::kUnknown:
+      return QuickStartMetrics::NearbyConnectionsAdvertisingErrorCode::kUnknown;
+    case NearbyConnectionsManager::ConnectionsStatus::kAlreadyDiscovering:
+      [[fallthrough]];
+    case NearbyConnectionsManager::ConnectionsStatus::kEndpointIOError:
+      [[fallthrough]];
+    case NearbyConnectionsManager::ConnectionsStatus::kEndpointUnknown:
+      [[fallthrough]];
+    case NearbyConnectionsManager::ConnectionsStatus::kConnectionRejected:
+      [[fallthrough]];
+    case NearbyConnectionsManager::ConnectionsStatus::
+        kAlreadyConnectedToEndpoint:
+      [[fallthrough]];
+    case NearbyConnectionsManager::ConnectionsStatus::kNotConnectedToEndpoint:
+      [[fallthrough]];
+    case NearbyConnectionsManager::ConnectionsStatus::kWifiLanError:
+      [[fallthrough]];
+    case NearbyConnectionsManager::ConnectionsStatus::kPayloadUnknown:
+      [[fallthrough]];
+    case NearbyConnectionsManager::ConnectionsStatus::kAlreadyListening:
+      [[fallthrough]];
+    case NearbyConnectionsManager::ConnectionsStatus::kReset:
+      [[fallthrough]];
+    case NearbyConnectionsManager::ConnectionsStatus::kNextValue:
+      return QuickStartMetrics::NearbyConnectionsAdvertisingErrorCode::kOther;
+  }
+}
+
 }  // namespace
 
 void TargetDeviceConnectionBrokerImpl::BluetoothAdapterFactoryWrapper::
@@ -134,14 +189,29 @@ TargetDeviceConnectionBrokerImpl::TargetDeviceConnectionBrokerImpl(
       quick_start_connectivity_service_(quick_start_connectivity_service),
       connection_factory_(std::move(connection_factory)) {
   GetBluetoothAdapter();
+  quick_start_metrics_ = std::make_unique<QuickStartMetrics>();
 }
 
-TargetDeviceConnectionBrokerImpl::~TargetDeviceConnectionBrokerImpl() {}
+TargetDeviceConnectionBrokerImpl::~TargetDeviceConnectionBrokerImpl() {
+  if (bluetooth_adapter_) {
+    bluetooth_adapter_->RemoveObserver(this);
+  }
+}
 
 TargetDeviceConnectionBrokerImpl::FeatureSupportStatus
 TargetDeviceConnectionBrokerImpl::GetFeatureSupportStatus() const {
   if (!bluetooth_adapter_) {
     return FeatureSupportStatus::kUndetermined;
+  }
+
+  if (session_context_->is_resume_after_update()) {
+    if (!bluetooth_adapter_->IsPresent()) {
+      return FeatureSupportStatus::kWaitingForAdapterToBecomePresent;
+    }
+
+    if (!bluetooth_adapter_->IsPowered()) {
+      return FeatureSupportStatus::kWaitingForAdapterToBecomePowered;
+    }
   }
 
   if (bluetooth_adapter_->IsPresent()) {
@@ -167,6 +237,7 @@ void TargetDeviceConnectionBrokerImpl::GetBluetoothAdapter() {
 void TargetDeviceConnectionBrokerImpl::OnGetBluetoothAdapter(
     scoped_refptr<device::BluetoothAdapter> adapter) {
   bluetooth_adapter_ = adapter;
+  bluetooth_adapter_->AddObserver(this);
   MaybeNotifyFeatureStatus();
 
   if (deferred_start_advertising_callback_) {
@@ -178,7 +249,16 @@ void TargetDeviceConnectionBrokerImpl::StartAdvertising(
     ConnectionLifecycleListener* listener,
     bool use_pin_authentication,
     ResultCallback on_start_advertising_callback) {
-  if (GetFeatureSupportStatus() == FeatureSupportStatus::kUndetermined) {
+  FeatureSupportStatus status = GetFeatureSupportStatus();
+  constexpr FeatureSupportStatus kStatusShouldDeferStartAdvertising[] = {
+      FeatureSupportStatus::kUndetermined,
+      FeatureSupportStatus::kWaitingForAdapterToBecomePresent,
+      FeatureSupportStatus::kWaitingForAdapterToBecomePowered};
+
+  if (base::Contains(kStatusShouldDeferStartAdvertising, status)) {
+    QS_LOG(INFO) << "Deferring Start Advertising callback because of feature "
+                    "suport status: "
+                 << status;
     deferred_start_advertising_callback_ = base::BindOnce(
         &TargetDeviceConnectionBroker::StartAdvertising,
         weak_ptr_factory_.GetWeakPtr(), listener, use_pin_authentication,
@@ -186,20 +266,21 @@ void TargetDeviceConnectionBrokerImpl::StartAdvertising(
     return;
   }
 
-  if (GetFeatureSupportStatus() == FeatureSupportStatus::kNotSupported) {
-    LOG(ERROR)
+  if (status == FeatureSupportStatus::kNotSupported) {
+    QS_LOG(ERROR)
         << __func__
         << " failed to start advertising because the feature is not supported.";
     std::move(on_start_advertising_callback).Run(/*success=*/false);
     return;
   }
 
-  DCHECK(GetFeatureSupportStatus() == FeatureSupportStatus::kSupported);
+  CHECK(status == FeatureSupportStatus::kSupported);
 
   if (!bluetooth_adapter_->IsPowered()) {
-    LOG(ERROR) << __func__
-               << " failed to start advertising because the bluetooth adapter "
-                  "is not powered.";
+    QS_LOG(ERROR)
+        << __func__
+        << " failed to start advertising because the bluetooth adapter "
+           "is not powered.";
     std::move(on_start_advertising_callback).Run(/*success=*/false);
     return;
   }
@@ -234,7 +315,7 @@ void TargetDeviceConnectionBrokerImpl::StartFastPairAdvertising(
       base::BindOnce(
           &TargetDeviceConnectionBrokerImpl::OnStartFastPairAdvertisingError,
           weak_ptr_factory_.GetWeakPtr(), std::move(failure_callback)),
-      session_context_->advertising_id(), use_pin_authentication_);
+      session_context_->advertising_id());
 }
 
 void TargetDeviceConnectionBrokerImpl::OnStartFastPairAdvertisingSuccess(
@@ -338,8 +419,9 @@ void TargetDeviceConnectionBrokerImpl::StartNearbyConnectionsAdvertising(
   // post-launch.
   quick_start_connectivity_service_->GetNearbyConnectionsManager()
       ->StartAdvertising(
-          GenerateEndpointInfo(), /*listener=*/this, PowerLevel::kHighPower,
-          DataUsage::kOffline,
+          GenerateEndpointInfo(), /*listener=*/this,
+          NearbyConnectionsManager::PowerLevel::kHighPower,
+          nearby_share::mojom::DataUsage::kOffline,
           base::BindOnce(&TargetDeviceConnectionBrokerImpl::
                              OnStartNearbyConnectionsAdvertising,
                          weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
@@ -370,6 +452,9 @@ void TargetDeviceConnectionBrokerImpl::OnStartNearbyConnectionsAdvertising(
                        weak_ptr_factory_.GetWeakPtr()));
   }
 
+  quick_start_metrics_->RecordNearbyConnectionsAdvertisementStarted(
+      success, MapConnectionsStatusToErrorCode(status));
+
   std::move(callback).Run(success);
 }
 
@@ -378,9 +463,16 @@ void TargetDeviceConnectionBrokerImpl::OnStopNearbyConnectionsAdvertising(
     NearbyConnectionsManager::ConnectionsStatus status) {
   QS_LOG(INFO) << "Nearby Connections Advertising stopped with status "
                << status;
-  if (status != NearbyConnectionsManager::ConnectionsStatus::kSuccess) {
+  bool success =
+      status == NearbyConnectionsManager::ConnectionsStatus::kSuccess;
+
+  if (!success) {
     QS_LOG(WARNING) << "Failed to stop Nearby Connections advertising";
   }
+
+  quick_start_metrics_->RecordNearbyConnectionsAdvertisementEnded(
+      success, MapConnectionsStatusToErrorCode(status));
+
   std::move(callback).Run();
 }
 
@@ -437,7 +529,7 @@ void TargetDeviceConnectionBrokerImpl::OnIncomingConnectionAccepted(
   if (use_pin_authentication_ && !session_context_->is_resume_after_update()) {
     QS_LOG(INFO) << "Pin authentication completed!";
     connection_->MarkConnectionAuthenticated(
-        Connection::AuthenticationMethod::kPin);
+        QuickStartMetrics::AuthenticationMethod::kPin);
   } else {
     QS_LOG(INFO) << "Initiating cryptographic handshake.";
     std::optional<std::string> auth_token =
@@ -462,8 +554,8 @@ void TargetDeviceConnectionBrokerImpl::OnHandshakeCompleted(bool success) {
   QS_LOG(INFO) << "Handshake succeeded!";
   connection_->MarkConnectionAuthenticated(
       session_context_->is_resume_after_update()
-          ? Connection::AuthenticationMethod::kResumeAfterUpdate
-          : Connection::AuthenticationMethod::kQR);
+          ? QuickStartMetrics::AuthenticationMethod::kResumeAfterUpdate
+          : QuickStartMetrics::AuthenticationMethod::kQRCode);
 }
 
 void TargetDeviceConnectionBrokerImpl::
@@ -477,5 +569,21 @@ void TargetDeviceConnectionBrokerImpl::
       &TargetDeviceConnectionBrokerImpl::StartFastPairAdvertising,
       weak_ptr_factory_.GetWeakPtr(), base::DoNothing());
   StopNearbyConnectionsAdvertising(std::move(start_fast_pair_advertising));
+}
+
+void TargetDeviceConnectionBrokerImpl::AdapterPresentChanged(
+    device::BluetoothAdapter* adapter,
+    bool present) {
+  if (present && deferred_start_advertising_callback_) {
+    std::move(deferred_start_advertising_callback_).Run();
+  }
+}
+
+void TargetDeviceConnectionBrokerImpl::AdapterPoweredChanged(
+    device::BluetoothAdapter* adapter,
+    bool powered) {
+  if (powered && deferred_start_advertising_callback_) {
+    std::move(deferred_start_advertising_callback_).Run();
+  }
 }
 }  // namespace ash::quick_start

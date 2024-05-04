@@ -4,6 +4,7 @@
 
 #include <set>
 #include <string>
+#include <string_view>
 
 #include "base/containers/contains.h"
 #include "base/files/file_path.h"
@@ -759,12 +760,7 @@ TEST_P(ChildProcessSecurityPolicyTest, SpecificFile) {
   EXPECT_FALSE(p->CanRequestURL(kRendererID, sensitive_url));
   EXPECT_TRUE(p->CanRedirectToURL(icon_url));
   EXPECT_TRUE(p->CanRedirectToURL(sensitive_url));
-  if (base::FeatureList::IsEnabled(
-          features::kRequestFileSetCheckedInCanRequestURL)) {
-    EXPECT_FALSE(p->CanCommitURL(kRendererID, icon_url));
-  } else {
-    EXPECT_TRUE(p->CanCommitURL(kRendererID, icon_url));
-  }
+  EXPECT_FALSE(p->CanCommitURL(kRendererID, icon_url));
   EXPECT_FALSE(p->CanCommitURL(kRendererID, sensitive_url));
 
   p->GrantCommitURL(kRendererID, icon_url);
@@ -1220,7 +1216,7 @@ TEST_P(ChildProcessSecurityPolicyTest, RemoveRace) {
 // removal process. It is intended to simulate pending tasks that could be
 // run on each thread during removal.
 //
-// TODO(crbug.com/1286533): Refactor the test to avoid calls to
+// TODO(crbug.com/40210893): Refactor the test to avoid calls to
 // CanAccessDataForOrigin on the IO thread, by checking for the presence of
 // security state instead.
 TEST_P(ChildProcessSecurityPolicyTest, RemoveRace_CanAccessDataForOrigin) {
@@ -1352,7 +1348,7 @@ TEST_P(ChildProcessSecurityPolicyTest, RemoveRace_CanAccessDataForOrigin) {
 // removal process. It is intended to simulate pending tasks that could be
 // run on each thread during removal.
 //
-// TODO(crbug.com/1286533): Refactor the test to avoid calls to
+// TODO(crbug.com/40210893): Refactor the test to avoid calls to
 // CanAccessDataForOrigin on the IO thread, by checking for the presence of
 // security state instead.
 TEST_P(ChildProcessSecurityPolicyTest, HandleExtendsSecurityStateLifetime) {
@@ -1697,6 +1693,72 @@ TEST_P(ChildProcessSecurityPolicyTest, CanAccessDataForOrigin_Origin) {
   // Verify invalid ID is rejected now that Remove() has completed.
   for (const auto& origin : all_origins)
     EXPECT_FALSE(p->CanAccessDataForOrigin(kRendererID, origin)) << origin;
+}
+
+TEST_P(ChildProcessSecurityPolicyTest, SandboxedProcessEnforcements) {
+  ChildProcessSecurityPolicyImpl* p =
+      ChildProcessSecurityPolicyImpl::GetInstance();
+
+  TestBrowserContext browser_context;
+  p->AddForTesting(kRendererID, &browser_context);
+
+  // Create a ProcessLock for a process-isolated sandboxed frame, and lock the
+  // kRendererID process to it.
+  UrlInfo sandboxed_url_info(
+      UrlInfoInit(GURL("https://foo.com")).WithSandbox(true));
+  scoped_refptr<SiteInstanceImpl> sandboxed_instance =
+      SiteInstanceImpl::CreateForUrlInfo(&browser_context, sandboxed_url_info,
+                                         /*is_guest=*/false,
+                                         /*is_fenced=*/false,
+                                         /*is_fixed_storage_partition=*/false);
+  p->LockProcess(sandboxed_instance->GetIsolationContext(), kRendererID,
+                 /*is_process_used=*/false,
+                 ProcessLock::FromSiteInfo(sandboxed_instance->GetSiteInfo()));
+
+  auto foo_origin = url::Origin::Create(GURL("https://foo.com"));
+  auto opaque_foo_origin = foo_origin.DeriveNewOpaqueOrigin();
+  auto bar_origin = url::Origin::Create(GURL("https://bar.com"));
+  auto opaque_bar_origin = bar_origin.DeriveNewOpaqueOrigin();
+
+  using AccessType = ChildProcessSecurityPolicyImpl::AccessType;
+
+  // A sandboxed process should be able to commit new URLs, as long as they
+  // have an opaque origin with a matching precursor.
+  EXPECT_TRUE(p->CanAccessOrigin(kRendererID, opaque_foo_origin,
+                                 AccessType::kCanCommitNewOrigin));
+  // TODO(crbug.com/325410297): Currently, non-opaque origins are allowed to
+  // commit. Fix this and flip the expectation to false.
+  EXPECT_TRUE(p->CanAccessOrigin(kRendererID, foo_origin,
+                                 AccessType::kCanCommitNewOrigin));
+  EXPECT_FALSE(p->CanAccessOrigin(kRendererID, bar_origin,
+                                  AccessType::kCanCommitNewOrigin));
+  EXPECT_FALSE(p->CanAccessOrigin(kRendererID, opaque_bar_origin,
+                                  AccessType::kCanCommitNewOrigin));
+
+  // A sandboxed process should not be able to access data for any origin.
+  EXPECT_FALSE(
+      p->CanAccessOrigin(kRendererID, opaque_foo_origin,
+                         AccessType::kCanAccessDataForCommittedOrigin));
+  EXPECT_FALSE(p->CanAccessOrigin(
+      kRendererID, foo_origin, AccessType::kCanAccessDataForCommittedOrigin));
+  EXPECT_FALSE(p->CanAccessOrigin(
+      kRendererID, bar_origin, AccessType::kCanAccessDataForCommittedOrigin));
+  EXPECT_FALSE(
+      p->CanAccessOrigin(kRendererID, opaque_bar_origin,
+                         AccessType::kCanAccessDataForCommittedOrigin));
+
+  // A sandboxed process should only be able to claim that it has an opaque
+  // origin.
+  EXPECT_TRUE(p->CanAccessOrigin(kRendererID, opaque_foo_origin,
+                                 AccessType::kHostsOrigin));
+  EXPECT_FALSE(
+      p->CanAccessOrigin(kRendererID, foo_origin, AccessType::kHostsOrigin));
+  EXPECT_FALSE(
+      p->CanAccessOrigin(kRendererID, bar_origin, AccessType::kHostsOrigin));
+  EXPECT_FALSE(p->CanAccessOrigin(kRendererID, opaque_bar_origin,
+                                  AccessType::kHostsOrigin));
+
+  p->Remove(kRendererID);
 }
 
 // Test the granting of origin permissions, and their interactions with
@@ -2442,14 +2504,14 @@ TEST_P(ChildProcessSecurityPolicyTest,
 }
 
 TEST_P(ChildProcessSecurityPolicyTest, IsolatedOriginPattern) {
-  const base::StringPiece etld1_wild("https://[*.]foo.com");
+  const std::string_view etld1_wild("https://[*.]foo.com");
   url::Origin etld1_wild_origin = url::Origin::Create(GURL("https://foo.com"));
   IsolatedOriginPattern p(etld1_wild);
   EXPECT_TRUE(p.isolate_all_subdomains());
   EXPECT_TRUE(p.is_valid());
   EXPECT_EQ(p.origin(), etld1_wild_origin);
 
-  const base::StringPiece etld2_wild("https://[*.]bar.foo.com");
+  const std::string_view etld2_wild("https://[*.]bar.foo.com");
   url::Origin etld2_wild_origin =
       url::Origin::Create(GURL("https://bar.foo.com"));
   bool result = p.Parse(etld2_wild);
@@ -2459,7 +2521,7 @@ TEST_P(ChildProcessSecurityPolicyTest, IsolatedOriginPattern) {
   EXPECT_EQ(p.origin(), etld2_wild_origin);
   EXPECT_FALSE(p.origin().opaque());
 
-  const base::StringPiece etld1("https://baz.com");
+  const std::string_view etld1("https://baz.com");
   url::Origin etld1_origin = url::Origin::Create(GURL("https://baz.com"));
   result = p.Parse(etld1);
   EXPECT_TRUE(result);
@@ -2468,35 +2530,35 @@ TEST_P(ChildProcessSecurityPolicyTest, IsolatedOriginPattern) {
   EXPECT_EQ(p.origin(), etld1_origin);
   EXPECT_FALSE(p.origin().opaque());
 
-  const base::StringPiece bad_scheme("ftp://foo.com");
+  const std::string_view bad_scheme("ftp://foo.com");
   result = p.Parse(bad_scheme);
   EXPECT_FALSE(result);
   EXPECT_FALSE(p.isolate_all_subdomains());
   EXPECT_FALSE(p.is_valid());
   EXPECT_TRUE(p.origin().opaque());
 
-  const base::StringPiece no_scheme_sep("httpsfoo.com");
+  const std::string_view no_scheme_sep("httpsfoo.com");
   result = p.Parse(no_scheme_sep);
   EXPECT_FALSE(result);
   EXPECT_FALSE(p.isolate_all_subdomains());
   EXPECT_FALSE(p.is_valid());
   EXPECT_TRUE(p.origin().opaque());
 
-  const base::StringPiece bad_registry("https://co.uk");
+  const std::string_view bad_registry("https://co.uk");
   result = p.Parse(bad_registry);
   EXPECT_FALSE(result);
   EXPECT_FALSE(p.isolate_all_subdomains());
   EXPECT_FALSE(p.is_valid());
   EXPECT_TRUE(p.origin().opaque());
 
-  const base::StringPiece trailing_dot("https://bar.com.");
+  const std::string_view trailing_dot("https://bar.com.");
   result = p.Parse(trailing_dot);
   EXPECT_FALSE(result);
   EXPECT_FALSE(p.isolate_all_subdomains());
   EXPECT_FALSE(p.is_valid());
   EXPECT_TRUE(p.origin().opaque());
 
-  const base::StringPiece ip_addr("https://10.20.30.40");
+  const std::string_view ip_addr("https://10.20.30.40");
   url::Origin ip_origin = url::Origin::Create(GURL("https://10.20.30.40"));
   result = p.Parse(ip_addr);
   EXPECT_TRUE(result);
@@ -2505,7 +2567,7 @@ TEST_P(ChildProcessSecurityPolicyTest, IsolatedOriginPattern) {
   EXPECT_TRUE(p.is_valid());
   EXPECT_EQ(p.origin(), ip_origin);
 
-  const base::StringPiece wild_ip_addr("https://[*.]10.20.30.40");
+  const std::string_view wild_ip_addr("https://[*.]10.20.30.40");
   result = p.Parse(wild_ip_addr);
   EXPECT_FALSE(result);
   EXPECT_FALSE(p.isolate_all_subdomains());

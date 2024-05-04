@@ -124,17 +124,12 @@ class AddressAutofillTable : public WebDatabaseTable {
       AutofillProfile::Source profile_source,
       std::vector<std::unique_ptr<AutofillProfile>>* profiles) const;
 
-  // Deletes all data from the local_addresses tables. Returns true if any data
-  // was deleted, false if not (so false means "commit not needed" rather than
-  // "error").
-  bool ClearAllLocalData();
-
   // Removes rows from local_addresses tables if they were created on or after
   // `delete_begin` and strictly before `delete_end`. Returns the list of
   // of deleted profiles in `profiles`. Return value is true if all rows were
   // successfully removed. Returns false on database error. In that case, the
   // output vector state is undefined, and may be partially filled.
-  // TODO(crbug.com/1135188): This function is solely used to remove browsing
+  // TODO(crbug.com/40151750): This function is solely used to remove browsing
   // data. Once explicit save dialogs are fully launched, it can be removed. For
   // this reason profiles in the `contact_info` table are not considered.
   bool RemoveAutofillDataModifiedBetween(

@@ -12,9 +12,11 @@
 namespace content {
 
 ClientMetadata::ClientMetadata(const GURL& terms_of_service_url,
-                               const GURL& privacy_policy_url)
+                               const GURL& privacy_policy_url,
+                               const GURL& brand_icon_url)
     : terms_of_service_url{terms_of_service_url},
-      privacy_policy_url(privacy_policy_url) {}
+      privacy_policy_url(privacy_policy_url),
+      brand_icon_url(brand_icon_url) {}
 ClientMetadata::ClientMetadata(const ClientMetadata& other) = default;
 ClientMetadata::~ClientMetadata() = default;
 
@@ -100,6 +102,17 @@ void IdentityRequestDialogController::ShowErrorDialog(
   }
 }
 
+void IdentityRequestDialogController::ShowLoadingDialog(
+    const std::string& top_frame_for_display,
+    const std::string& idp_for_display,
+    blink::mojom::RpContext rp_context,
+    blink::mojom::RpMode rp_mode,
+    DismissCallback dismiss_callback) {
+  if (!is_interception_enabled_) {
+    std::move(dismiss_callback).Run(DismissReason::kOther);
+  }
+}
+
 std::string IdentityRequestDialogController::GetTitle() const {
   return std::string();
 }
@@ -121,5 +134,11 @@ WebContents* IdentityRequestDialogController::ShowModalDialog(
 }
 
 void IdentityRequestDialogController::CloseModalDialog() {}
+
+void IdentityRequestDialogController::RequestIdPRegistrationPermision(
+    const url::Origin& origin,
+    base::OnceCallback<void(bool accepted)> callback) {
+  std::move(callback).Run(false);
+}
 
 }  // namespace content

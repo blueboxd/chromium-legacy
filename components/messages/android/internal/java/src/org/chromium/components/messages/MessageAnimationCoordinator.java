@@ -130,7 +130,7 @@ public class MessageAnimationCoordinator implements SwipeAnimationHandler {
         }
     }
 
-    // TODO(crbug.com/1200974): Compare current shown messages with last shown ones.
+    // TODO(crbug.com/40762119): Compare current shown messages with last shown ones.
     /**
      * cf: Current front message. cb: Current back message. nf: Next front message. nb: Next back
      * message. Null represents no view at that position. 1. If candidates and current displayed
@@ -263,7 +263,7 @@ public class MessageAnimationCoordinator implements SwipeAnimationHandler {
                     candidates.set(1, null);
                 }
             } else {
-                // TODO(crbug.com/1382275): simplify this into one step.
+                // TODO(crbug.com/40877229): simplify this into one step.
                 // Split the transition: [m1, null] -> [m2, null] into two steps:
                 // [m1, null] -> [null, null] -> [m2, null]
                 nextFront = nextBack = null;

@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/memory/raw_ptr.h"
-#include "base/threading/platform_thread.h"
 #include "chrome/renderer/accessibility/read_anything_app_model.h"
 
+#include "base/memory/raw_ptr.h"
+#include "base/threading/platform_thread.h"
 #include "chrome/test/base/chrome_render_view_test.h"
 #include "read_anything_app_model.h"
 #include "ui/accessibility/ax_enums.mojom-shared.h"
@@ -44,37 +44,8 @@ class ReadAnythingAppModelTest : public ChromeRenderViewTest {
     SetUpdateTreeID(&snapshot);
 
     AccessibilityEventReceived({snapshot});
-    SetActiveTreeId(tree_id_);
+    set_active_tree_id(tree_id_);
     Reset({});
-  }
-
-  ui::AXTreeID SetUpPdfTrees() {
-    SetIsPdf(GURL("http://www.google.com/foo/bar.pdf"));
-
-    // PDF set up required for formatting checks.
-    ui::AXTreeID pdf_iframe_tree_id = ui::AXTreeID::CreateNewAXTreeID();
-    ui::AXTreeID pdf_web_contents_tree_id = ui::AXTreeID::CreateNewAXTreeID();
-
-    // Send update for main web content with child tree (pdf web contents).
-    ui::AXTreeUpdate main_web_contents_update;
-    SetUpdateTreeID(&main_web_contents_update);
-    ui::AXNodeData node;
-    node.id = 1;
-    node.AddChildTreeId(pdf_web_contents_tree_id);
-    main_web_contents_update.nodes = {node};
-    AccessibilityEventReceived({main_web_contents_update});
-
-    // Send update for pdf web contents with child tree (iframe).
-    ui::AXTreeUpdate pdf_web_contents_update;
-    ui::AXNodeData pdf_node;
-    pdf_node.id = 1;
-    pdf_node.AddChildTreeId(pdf_iframe_tree_id);
-    pdf_web_contents_update.root_id = pdf_node.id;
-    pdf_web_contents_update.nodes = {pdf_node};
-    SetUpdateTreeID(&pdf_web_contents_update, pdf_web_contents_tree_id);
-    AccessibilityEventReceived({pdf_web_contents_update});
-
-    return pdf_iframe_tree_id;
   }
 
   void SetUpdateTreeID(ui::AXTreeUpdate* update) {
@@ -133,11 +104,13 @@ class ReadAnythingAppModelTest : public ChromeRenderViewTest {
   void AccessibilityEventReceived(
       const ui::AXTreeID& tree_id,
       const std::vector<ui::AXTreeUpdate>& updates) {
-    model_->AccessibilityEventReceived(tree_id, updates, {});
+    std::vector<ui::AXEvent> events;
+    model_->AccessibilityEventReceived(
+        tree_id, const_cast<std::vector<ui::AXTreeUpdate>&>(updates), events);
   }
 
-  void SetActiveTreeId(ui::AXTreeID tree_id) {
-    model_->SetActiveTreeId(tree_id);
+  void set_active_tree_id(ui::AXTreeID tree_id) {
+    model_->set_active_tree_id(tree_id);
   }
 
   void UnserializePendingUpdates(ui::AXTreeID tree_id) {
@@ -147,6 +120,8 @@ class ReadAnythingAppModelTest : public ChromeRenderViewTest {
   void ClearPendingUpdates() { model_->ClearPendingUpdates(); }
 
   std::string FontName() { return model_->font_name(); }
+
+  void SetFontName(std::string font) { model_->set_font_name(font); }
 
   float FontSize() { return model_->font_size(); }
 
@@ -237,8 +212,13 @@ class ReadAnythingAppModelTest : public ChromeRenderViewTest {
 
   void ResetTextSize() { model_->ResetTextSize(); }
 
-  std::string DefaultLanguageCode() { return model_->default_language_code(); }
+  std::string LanguageCode() { return model_->base_language_code(); }
   void SetLanguageCode(std::string code) {
+    model_->set_base_language_code(code);
+  }
+
+  std::string DefaultLanguageCode() { return model_->default_language_code(); }
+  void SetDefaultLanguageCode(std::string code) {
     model_->set_default_language_code(code);
   }
 
@@ -246,10 +226,7 @@ class ReadAnythingAppModelTest : public ChromeRenderViewTest {
     return model_->GetSupportedFonts();
   }
 
-  bool IsPDFFormatted() { return model_->IsPDFFormatted(); }
-  void SetIsPdf(const GURL& url) { return model_->SetIsPdf(url); }
-  bool IsPdf() { return model_->is_pdf(); }
-  ui::AXTreeID GetPDFWebContents() { return model_->GetPDFWebContents(); }
+  void set_is_pdf(bool is_pdf) { return model_->set_is_pdf(is_pdf); }
 
   void InitAXPosition(const ui::AXNodeID id) {
     model_->InitAXPositionWithNode(id);
@@ -274,6 +251,31 @@ class ReadAnythingAppModelTest : public ChromeRenderViewTest {
     return model_->GetNextSentence(text);
   }
 
+  size_t GetNextWord(const std::u16string& text) {
+    return model_->GetNextWord(text);
+  }
+
+  ui::AXNodeID GetNodeIdForCurrentSegmentIndex(int index) {
+    ui::AXNodeID id = model_->GetNodeIdForCurrentSegmentIndex(index);
+    return id;
+  }
+
+  int GetWordLength(int index) {
+    return model_->GetNextWordHighlightLength(index);
+  }
+
+  std::vector<ui::AXNodeID> GetCurrentText() {
+    return model_->GetCurrentText();
+  }
+
+  void MovePositionToNextGranularity() {
+    return model_->MovePositionToNextGranularity();
+  }
+
+  void MovePositionToPreviousGranularity() {
+    return model_->MovePositionToPreviousGranularity();
+  }
+
   int GetCurrentTextStartIndex(ui::AXNodeID id) {
     return model_->GetCurrentTextStartIndex(id);
   }
@@ -289,6 +291,14 @@ class ReadAnythingAppModelTest : public ChromeRenderViewTest {
   // not accessible by std::make_unique.
   raw_ptr<ReadAnythingAppModel> model_ = nullptr;
 };
+
+TEST_F(ReadAnythingAppModelTest, FontName) {
+  EXPECT_EQ(string_constants::kReadAnythingPlaceholderFontName, FontName());
+
+  std::string font_name = "Montserrat";
+  SetFontName(font_name);
+  EXPECT_EQ(font_name, FontName());
+}
 
 TEST_F(ReadAnythingAppModelTest, Theme) {
   std::string font_name = "Roboto";
@@ -360,12 +370,12 @@ TEST_F(ReadAnythingAppModelTest,
 
 TEST_F(ReadAnythingAppModelTest,
        IsNodeIgnoredForReadAnything_InaccessiblePDFPageNodes) {
-  ui::AXTreeID pdf_iframe_tree_id = SetUpPdfTrees();
+  set_is_pdf(true);
 
   // PDF OCR output contains kBanner and kContentInfo (each with a static text
   // node child) to mark page start/end.
   ui::AXTreeUpdate update;
-  SetUpdateTreeID(&update, pdf_iframe_tree_id);
+  SetUpdateTreeID(&update, tree_id_);
   ui::AXNodeData banner_node;
   banner_node.id = 2;
   banner_node.role = ax::mojom::Role::kBanner;
@@ -746,7 +756,7 @@ TEST_F(ReadAnythingAppModelTest, ChangeActiveTreeWithPendingUpdates_UnknownID) {
   EXPECT_EQ(2u, GetNumPendingUpdates(tree_id_));
 
   // Switch to a new active tree. Should not crash.
-  SetActiveTreeId(ui::AXTreeIDUnknown());
+  set_active_tree_id(ui::AXTreeIDUnknown());
 }
 
 TEST_F(ReadAnythingAppModelTest, DisplayNodeIdsContains_ContentNodes) {
@@ -1343,11 +1353,25 @@ TEST_F(ReadAnythingAppModelTest, ResetTextSize_ReturnsTextSizeToDefault) {
   ASSERT_EQ(FontSize(), kReadAnythingDefaultFontScale);
 }
 
-TEST_F(ReadAnythingAppModelTest,
-       SupportedFonts_SetDefaultLanguageCode_ReturnsCorrectCode) {
-  ASSERT_EQ(DefaultLanguageCode(), "en-US");
+TEST_F(ReadAnythingAppModelTest, LanguageCode_ReturnsCorrectCode) {
+  ASSERT_EQ(LanguageCode(), "en");
 
   SetLanguageCode("es");
+  ASSERT_EQ(LanguageCode(), "es");
+}
+
+TEST_F(ReadAnythingAppModelTest, DefaultLanguageCode_ReturnsCorrectCode) {
+  ASSERT_EQ(DefaultLanguageCode(), "en");
+
+  SetDefaultLanguageCode("es");
+  ASSERT_EQ(DefaultLanguageCode(), "es");
+
+  // The regular base language code isn't impacted.
+  ASSERT_EQ(LanguageCode(), "en");
+
+  // Setting the base language code doesn't impact the default language code.
+  SetLanguageCode("jp");
+  ASSERT_EQ(LanguageCode(), "jp");
   ASSERT_EQ(DefaultLanguageCode(), "es");
 }
 
@@ -1365,7 +1389,9 @@ TEST_F(ReadAnythingAppModelTest,
 
 TEST_F(ReadAnythingAppModelTest,
        SupportedFonts_BeforeLanguageSet_ReturnsDefaultFonts) {
-  std::vector<std::string> expectedFonts = {"Sans-serif", "Serif"};
+  std::vector<std::string> expectedFonts = {
+      "Poppins",     "Sans-serif",  "Serif",         "Comic Neue",
+      "Lexend Deca", "EB Garamond", "STIX Two Text", "Andika"};
   std::vector<std::string> fonts = GetSupportedFonts();
 
   EXPECT_EQ(fonts.size(), expectedFonts.size());
@@ -1375,9 +1401,9 @@ TEST_F(ReadAnythingAppModelTest,
 }
 
 TEST_F(ReadAnythingAppModelTest,
-       SupportedFonts_SetDefaultLanguageCode_ReturnsExpectedDefaultFonts) {
-  // English
-  SetLanguageCode("en");
+       SupportedFonts_SetLanguageCode_ReturnsExpectedDefaultFonts) {
+  // Spanish
+  SetLanguageCode("es");
   std::vector<std::string> expectedFonts = {
       "Poppins",     "Sans-serif",  "Serif",         "Comic Neue",
       "Lexend Deca", "EB Garamond", "STIX Two Text", "Andika"};
@@ -1410,86 +1436,8 @@ TEST_F(ReadAnythingAppModelTest,
   }
 }
 
-TEST_F(ReadAnythingAppModelTest, IsPdf) {
-  GURL webpage_url("http://images.google.com/foo.html");
-  SetIsPdf(webpage_url);
-  ASSERT_FALSE(IsPdf());
-
-  GURL pdf_url("http://www.google.com/foo/bar.pdf");
-  SetIsPdf(pdf_url);
-  ASSERT_TRUE(IsPdf());
-}
-
-TEST_F(ReadAnythingAppModelTest, ValidPDF) {
-  // Need to set is_pdf_ for DCHECK in GetPDFWebContents().
-  GURL pdf_url("http://www.google.com/foo/bar.pdf");
-  SetIsPdf(pdf_url);
-
-  ui::AXTreeID pdf_web_contents_tree_id = ui::AXTreeID::CreateNewAXTreeID();
-  ui::AXTreeID pdf_iframe_tree_id = ui::AXTreeID::CreateNewAXTreeID();
-
-  // Main web contents should have one child.
-  ui::AXTreeUpdate update;
-  ui::AXNodeData node;
-  node.id = 1;
-  node.AddChildTreeId(pdf_web_contents_tree_id);
-  update.nodes = {node};
-  SetUpdateTreeID(&update);
-  AccessibilityEventReceived({update});
-
-  // IsPDFFormatted() should return true if tree updates from the pdf web
-  // contents and/or the pdf iframe haven't been sent yet.
-  ASSERT_TRUE(IsPDFFormatted());
-
-  // Pdf web contents should have one child.
-  ui::AXNodeData root;
-  root.id = 1;
-  root.AddChildTreeId(pdf_iframe_tree_id);
-  update.root_id = root.id;
-  update.nodes = {root};
-  SetUpdateTreeID(&update, pdf_web_contents_tree_id);
-  AccessibilityEventReceived({update});
-
-  ASSERT_TRUE(IsPDFFormatted());
-
-  // Send pdf iframe tree to model.
-  ui::AXNodeData update_root;
-  update_root.id = 1;
-  update.root_id = update_root.id;
-  update.nodes = {update_root};
-  SetUpdateTreeID(&update, pdf_iframe_tree_id);
-  AccessibilityEventReceived({update});
-
-  ASSERT_TRUE(IsPDFFormatted());
-  EXPECT_EQ(pdf_web_contents_tree_id, GetPDFWebContents());
-}
-
-TEST_F(ReadAnythingAppModelTest, InvalidPDFFormat) {
-  // Main web contents should have one child, the pdf web contents.
-  ui::AXTreeID pdf_web_contents_tree_id = ui::AXTreeID::CreateNewAXTreeID();
-  ui::AXTreeUpdate update;
-  ui::AXNodeData node;
-  node.id = 1;
-  node.AddChildTreeId(pdf_web_contents_tree_id);
-  update.nodes = {node};
-  SetUpdateTreeID(&update);
-  AccessibilityEventReceived({update});
-
-  // This pdf web contents has no children, so this is an invalid PDF.
-  ui::AXTreeUpdate pdf_web_contents_update;
-  ui::AXNodeData empty_root;
-  empty_root.id = 1;
-  pdf_web_contents_update.root_id = empty_root.id;
-  pdf_web_contents_update.nodes = {empty_root};
-
-  SetUpdateTreeID(&pdf_web_contents_update, pdf_web_contents_tree_id);
-  AccessibilityEventReceived({pdf_web_contents_update});
-
-  ASSERT_FALSE(IsPDFFormatted());
-}
-
 TEST_F(ReadAnythingAppModelTest, PdfEvents_SetRequiresDistillation) {
-  SetIsPdf(GURL("http://www.google.com/foo/bar.pdf"));
+  set_is_pdf(true);
 
   ui::AXTreeUpdate initial_update;
   SetUpdateTreeID(&initial_update);
@@ -1541,7 +1489,7 @@ TEST_F(ReadAnythingAppModelTest, PdfEvents_SetRequiresDistillation) {
 }
 
 TEST_F(ReadAnythingAppModelTest, PdfEvents_DontSetRequiresDistillation) {
-  SetIsPdf(GURL("http://www.google.com/foo/bar.pdf"));
+  set_is_pdf(true);
 
   ui::AXTreeUpdate initial_update;
   SetUpdateTreeID(&initial_update);
@@ -1636,6 +1584,65 @@ TEST_F(ReadAnythingAppModelTest, GetNextSentence_ReturnsCorrectIndex) {
 TEST_F(ReadAnythingAppModelTest,
        GetNextSentence_OnlyOneSentence_ReturnsCorrectIndex) {
   const std::u16string sentence = u"Hello, this is a normal sentence.";
+
+  size_t index = GetNextSentence(sentence);
+  EXPECT_EQ(index, sentence.length());
+  EXPECT_EQ(sentence.substr(0, index), sentence);
+}
+
+TEST_F(ReadAnythingAppModelTest, GetNextWord_ReturnsCorrectIndex) {
+  const std::u16string first_word = u"onomatopoeia ";
+  const std::u16string second_word = u"party";
+
+  const std::u16string segment = first_word + second_word;
+  size_t index = GetNextWord(segment);
+  EXPECT_EQ(index, first_word.length());
+  EXPECT_EQ(segment.substr(0, index), first_word);
+}
+
+TEST_F(ReadAnythingAppModelTest, GetNextWord_OnlyOneWord_ReturnsCorrectIndex) {
+  const std::u16string word = u"Happiness";
+
+  size_t index = GetNextWord(word);
+  EXPECT_EQ(index, word.length());
+  EXPECT_EQ(word.substr(0, index), word);
+}
+
+TEST_F(ReadAnythingAppModelTest,
+       GetNextSentence_NotPDF_DoesNotFilterReturnCharacters) {
+  const std::u16string sentence =
+      u"Hello, this is\n a sentence \r with line breaks.";
+
+  size_t index = GetNextSentence(sentence);
+  EXPECT_EQ(index, sentence.find('\n') + 2);
+  EXPECT_EQ(sentence.substr(0, index), u"Hello, this is\n ");
+
+  std::u16string next_sentence = sentence.substr(index);
+  index = GetNextSentence(next_sentence);
+  EXPECT_EQ(index, next_sentence.find('\r') + 2);
+  EXPECT_EQ(next_sentence.substr(0, index), u"a sentence \r ");
+
+  next_sentence = next_sentence.substr(index);
+  index = GetNextSentence(next_sentence);
+  EXPECT_EQ(index, next_sentence.length());
+  EXPECT_EQ(next_sentence.substr(0, index), u"with line breaks.");
+}
+
+TEST_F(ReadAnythingAppModelTest, GetNextSentence_PDF_FiltersReturnCharacters) {
+  set_is_pdf(true);
+  const std::u16string sentence =
+      u"Hello, this is\n a sentence \r with line breaks.";
+
+  size_t index = GetNextSentence(sentence);
+  EXPECT_EQ(index, sentence.length());
+  EXPECT_EQ(sentence.substr(0, index), sentence);
+}
+
+TEST_F(ReadAnythingAppModelTest,
+       GetNextSentence_PDF_DoesNotFilterReturnCharactersAtEndOfSentence) {
+  set_is_pdf(true);
+  const std::u16string sentence =
+      u"Hello, this is a sentence with line breaks.\r\n";
 
   size_t index = GetNextSentence(sentence);
   EXPECT_EQ(index, sentence.length());
@@ -1837,4 +1844,254 @@ TEST_F(
   // should correctly return the next node in the tree.
   new_position = GetNextNodePosition(current_granularity);
   EXPECT_EQ(new_position->anchor_id(), static_text2.id);
+}
+
+TEST_F(ReadAnythingAppModelTest,
+       GetNodeIdForCurrentSegmentIndex_ReturnsCorrectNodes) {
+  std::u16string sentence1 = u"Never feel heavy ";
+  std::u16string sentence2 = u"or earthbound, ";
+  std::u16string sentence3 = u"no worries or doubts interfere.";
+  ui::AXTreeUpdate update;
+  SetUpdateTreeID(&update);
+  ui::AXNodeData static_text1;
+  static_text1.id = 2;
+  static_text1.role = ax::mojom::Role::kStaticText;
+  static_text1.SetNameChecked(sentence1);
+
+  ui::AXNodeData static_text2;
+  static_text2.id = 3;
+  static_text2.role = ax::mojom::Role::kStaticText;
+  static_text2.SetNameChecked(sentence2);
+
+  ui::AXNodeData static_text3;
+  static_text3.id = 4;
+  static_text3.role = ax::mojom::Role::kStaticText;
+  static_text3.SetNameChecked(sentence3);
+  update.nodes = {static_text1, static_text2, static_text3};
+  AccessibilityEventReceived({update});
+  ProcessDisplayNodes({static_text1.id, static_text2.id, static_text3.id});
+  InitAXPosition(update.nodes[0].id);
+
+  // Before there are any processed granularities,
+  // GetNodeIdForCurrentSegmentIndex should return an invalid id.
+  EXPECT_EQ(GetNodeIdForCurrentSegmentIndex(1), ui::kInvalidAXNodeID);
+
+  std::vector<ui::AXNodeID> node_ids = GetCurrentText();
+  EXPECT_EQ((int)node_ids.size(), 3);
+
+  // Spot check that indices 0->sentence1.length() map to the first node id.
+  EXPECT_EQ(GetNodeIdForCurrentSegmentIndex(0), static_text1.id);
+  EXPECT_EQ(GetNodeIdForCurrentSegmentIndex(7), static_text1.id);
+  EXPECT_EQ(GetNodeIdForCurrentSegmentIndex(sentence1.length()),
+            static_text1.id);
+
+  // Spot check that indices in sentence 2 map to the second node id.
+  EXPECT_EQ(GetNodeIdForCurrentSegmentIndex(sentence1.length() + 1),
+            static_text2.id);
+  EXPECT_EQ(GetNodeIdForCurrentSegmentIndex(26), static_text2.id);
+  EXPECT_EQ(
+      GetNodeIdForCurrentSegmentIndex(sentence1.length() + sentence2.length()),
+      static_text2.id);
+
+  // Spot check that indices in sentence 3 map to the third node id.
+  EXPECT_EQ(GetNodeIdForCurrentSegmentIndex(sentence1.length() +
+                                            sentence2.length() + 1),
+            static_text3.id);
+  EXPECT_EQ(GetNodeIdForCurrentSegmentIndex(40), static_text3.id);
+  EXPECT_EQ(GetNodeIdForCurrentSegmentIndex(
+                sentence1.length() + sentence2.length() + sentence3.length()),
+            static_text3.id);
+
+  // Out-of-bounds nodes return invalid.
+  EXPECT_EQ(
+      GetNodeIdForCurrentSegmentIndex(sentence1.length() + sentence2.length() +
+                                      sentence3.length() + 1),
+      ui::kInvalidAXNodeID);
+  EXPECT_EQ(GetNodeIdForCurrentSegmentIndex(535), ui::kInvalidAXNodeID);
+  EXPECT_EQ(GetNodeIdForCurrentSegmentIndex(-10), ui::kInvalidAXNodeID);
+}
+
+TEST_F(ReadAnythingAppModelTest,
+       GetNodeIdForCurrentSegmentIndex_AfterNext_ReturnsCorrectNodes) {
+  std::u16string sentence1 = u"Never feel heavy or earthbound. ";
+  std::u16string sentence2 = u"No worries or doubts ";
+  std::u16string sentence3 = u"interfere.";
+  ui::AXTreeUpdate update;
+  SetUpdateTreeID(&update);
+  ui::AXNodeData static_text1;
+  static_text1.id = 2;
+  static_text1.role = ax::mojom::Role::kStaticText;
+  static_text1.SetNameChecked(sentence1);
+
+  ui::AXNodeData static_text2;
+  static_text2.id = 3;
+  static_text2.role = ax::mojom::Role::kStaticText;
+  static_text2.SetNameChecked(sentence2);
+
+  ui::AXNodeData static_text3;
+  static_text3.id = 4;
+  static_text3.role = ax::mojom::Role::kStaticText;
+  static_text3.SetNameChecked(sentence3);
+  update.nodes = {static_text1, static_text2, static_text3};
+  AccessibilityEventReceived({update});
+  ProcessDisplayNodes({static_text1.id, static_text2.id, static_text3.id});
+  InitAXPosition(update.nodes[0].id);
+
+  // Before there are any processed granularities,
+  // GetNodeIdForCurrentSegmentIndex should return an invalid id.
+  EXPECT_EQ(GetNodeIdForCurrentSegmentIndex(1), ui::kInvalidAXNodeID);
+
+  std::vector<ui::AXNodeID> node_ids = GetCurrentText();
+  EXPECT_EQ((int)node_ids.size(), 1);
+
+  // Spot check that indices 0->sentence1.length() map to the first node id.
+  EXPECT_EQ(GetNodeIdForCurrentSegmentIndex(0), static_text1.id);
+  EXPECT_EQ(GetNodeIdForCurrentSegmentIndex(7), static_text1.id);
+  EXPECT_EQ(GetNodeIdForCurrentSegmentIndex(sentence1.length()),
+            static_text1.id);
+  EXPECT_EQ(GetNodeIdForCurrentSegmentIndex(sentence1.length() + 1),
+            ui::kInvalidAXNodeID);
+
+  // Move to the next granularity.
+  MovePositionToNextGranularity();
+  node_ids = GetCurrentText();
+  EXPECT_EQ((int)node_ids.size(), 2);
+
+  // Spot check that indices in sentence 2 map to the second node id.
+  EXPECT_EQ(GetNodeIdForCurrentSegmentIndex(0), static_text2.id);
+  EXPECT_EQ(GetNodeIdForCurrentSegmentIndex(7), static_text2.id);
+  EXPECT_EQ(GetNodeIdForCurrentSegmentIndex(sentence2.length()),
+            static_text2.id);
+
+  // Spot check that indices in sentence 3 map to the third node id.
+  EXPECT_EQ(GetNodeIdForCurrentSegmentIndex(sentence2.length() + 1),
+            static_text3.id);
+  EXPECT_EQ(GetNodeIdForCurrentSegmentIndex(27), static_text3.id);
+  EXPECT_EQ(
+      GetNodeIdForCurrentSegmentIndex(sentence2.length() + sentence3.length()),
+      static_text3.id);
+
+  // Out-of-bounds nodes return invalid.
+  EXPECT_EQ(GetNodeIdForCurrentSegmentIndex(sentence2.length() +
+                                            sentence3.length() + 1),
+            ui::kInvalidAXNodeID);
+}
+
+TEST_F(ReadAnythingAppModelTest,
+       GetNodeIdForCurrentSegmentIndex_AfterPrevious_ReturnsCorrectNodes) {
+  std::u16string sentence1 = u"There's nothing but you ";
+  std::u16string sentence2 = u"looking down on the view from up here. ";
+  std::u16string sentence3 = u"Stretch out with the wind behind you.";
+  ui::AXTreeUpdate update;
+  SetUpdateTreeID(&update);
+  ui::AXNodeData static_text1;
+  static_text1.id = 2;
+  static_text1.role = ax::mojom::Role::kStaticText;
+  static_text1.SetNameChecked(sentence1);
+
+  ui::AXNodeData static_text2;
+  static_text2.id = 3;
+  static_text2.role = ax::mojom::Role::kStaticText;
+  static_text2.SetNameChecked(sentence2);
+
+  ui::AXNodeData static_text3;
+  static_text3.id = 4;
+  static_text3.role = ax::mojom::Role::kStaticText;
+  static_text3.SetNameChecked(sentence3);
+  update.nodes = {static_text1, static_text2, static_text3};
+  AccessibilityEventReceived({update});
+  ProcessDisplayNodes({static_text1.id, static_text2.id, static_text3.id});
+  InitAXPosition(update.nodes[0].id);
+
+  // Before there are any processed granularities,
+  // GetNodeIdForCurrentSegmentIndex should return an invalid id.
+  EXPECT_EQ(GetNodeIdForCurrentSegmentIndex(1), ui::kInvalidAXNodeID);
+
+  std::vector<ui::AXNodeID> node_ids = GetCurrentText();
+  EXPECT_EQ((int)node_ids.size(), 2);
+
+  // Move forward.
+  MovePositionToNextGranularity();
+  node_ids = GetCurrentText();
+  EXPECT_EQ((int)node_ids.size(), 1);
+
+  // Spot check that indices 0->sentence3.length() map to the third node id.
+  EXPECT_EQ(GetNodeIdForCurrentSegmentIndex(0), static_text3.id);
+  EXPECT_EQ(GetNodeIdForCurrentSegmentIndex(7), static_text3.id);
+  EXPECT_EQ(GetNodeIdForCurrentSegmentIndex(sentence3.length()),
+            static_text3.id);
+
+  // Move backwards.
+  MovePositionToPreviousGranularity();
+  node_ids = GetCurrentText();
+  EXPECT_EQ((int)node_ids.size(), 2);
+
+  // Spot check that indices in sentence 1 map to the first node id.
+  EXPECT_EQ(GetNodeIdForCurrentSegmentIndex(0), static_text1.id);
+  EXPECT_EQ(GetNodeIdForCurrentSegmentIndex(6), static_text1.id);
+  EXPECT_EQ(GetNodeIdForCurrentSegmentIndex(sentence1.length()),
+            static_text1.id);
+
+  // Spot check that indices in sentence 2 map to the second node id.
+  EXPECT_EQ(GetNodeIdForCurrentSegmentIndex(sentence1.length() + 1),
+            static_text2.id);
+  EXPECT_EQ(GetNodeIdForCurrentSegmentIndex(27), static_text2.id);
+  EXPECT_EQ(
+      GetNodeIdForCurrentSegmentIndex(sentence1.length() + sentence2.length()),
+      static_text2.id);
+
+  // Out-of-bounds nodes return invalid.
+  EXPECT_EQ(GetNodeIdForCurrentSegmentIndex(sentence1.length() +
+                                            sentence2.length() + 1),
+            ui::kInvalidAXNodeID);
+}
+
+TEST_F(ReadAnythingAppModelTest,
+       GetNextWordHighlightLength_ReturnsCorrectLength) {
+  std::u16string word1 = u"Stretch ";
+  std::u16string word2 = u"out ";
+  std::u16string word3 = u"with ";
+  std::u16string word4 = u"the ";
+  std::u16string word5 = u"wind ";
+  std::u16string word6 = u"behind ";
+  std::u16string word7 = u"you.";
+  std::u16string sentence =
+      word1 + word2 + word3 + word4 + word5 + word6 + word7;
+  ui::AXTreeUpdate update;
+  SetUpdateTreeID(&update);
+  ui::AXNodeData static_text1;
+  static_text1.id = 2;
+  static_text1.role = ax::mojom::Role::kStaticText;
+  static_text1.SetNameChecked(sentence);
+
+  update.nodes = {static_text1};
+  AccessibilityEventReceived({update});
+  ProcessDisplayNodes({static_text1.id});
+  InitAXPosition(update.nodes[0].id);
+
+  // Before there are any processed granularities,
+  // GetNodeIdForCurrentSegmentIndex should return an invalid id.
+  EXPECT_EQ(GetNodeIdForCurrentSegmentIndex(1), ui::kInvalidAXNodeID);
+
+  std::vector<ui::AXNodeID> node_ids = GetCurrentText();
+  EXPECT_EQ((int)node_ids.size(), 1);
+
+  // Throughout first word.
+  EXPECT_EQ(GetWordLength(0), (int)word1.length());
+  EXPECT_EQ(GetWordLength(2), (int)word1.length() - 2);
+  EXPECT_EQ(GetWordLength((int)word1.length()) - 2, 2);
+
+  // Throughout third word.
+  int third_word_index = sentence.find(word3);
+  EXPECT_EQ(GetWordLength(third_word_index), (int)word3.length());
+  EXPECT_EQ(GetWordLength(third_word_index + 2), (int)word3.length() - 2);
+
+  int last_word_index = sentence.find(word7);
+  EXPECT_EQ(GetWordLength(last_word_index), (int)word7.length());
+  EXPECT_EQ(GetWordLength(last_word_index + 2), (int)word7.length() - 2);
+
+  // Boundary testing.
+  EXPECT_EQ(GetWordLength(-5), 0);
+  EXPECT_EQ(GetWordLength(sentence.length()), 0);
+  EXPECT_EQ(GetWordLength(sentence.length() + 1), 0);
 }

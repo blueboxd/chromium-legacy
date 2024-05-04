@@ -20,6 +20,7 @@
 #include "build/chromeos_buildflags.h"
 #include "components/cdm/renderer/external_clear_key_key_system_info.h"
 #include "content/public/renderer/key_system_support.h"
+#include "content/public/renderer/render_frame.h"
 #include "media/base/audio_codecs.h"
 #include "media/base/cdm_capability.h"
 #include "media/base/content_decryption_module.h"
@@ -487,7 +488,7 @@ void AddMediaFoundationClearKey(
   }
 
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
-  // TODO(crbug.com/1412485): Remove this hard-codeded supported codecs so that
+  // TODO(crbug.com/40890911): Remove this hard-codeded supported codecs so that
   // real hardware capabilities can be checked.
   key_systems->push_back(std::make_unique<ExternalClearKeyKeySystemInfo>(
       media::kMediaFoundationClearKeyKeySystem, std::vector<std::string>(),
@@ -589,10 +590,13 @@ void OnKeySystemSupportUpdated(
 
 }  // namespace
 
-void GetSupportedKeySystemsUpdates(bool can_persist_data,
-                                   media::GetSupportedKeySystemsCB cb) {
-  content::ObserveKeySystemSupportUpdate(base::BindRepeating(
-      &OnKeySystemSupportUpdated, can_persist_data, std::move(cb)));
+std::unique_ptr<media::KeySystemSupportRegistration>
+GetSupportedKeySystemsUpdates(content::RenderFrame* render_frame,
+                              bool can_persist_data,
+                              media::GetSupportedKeySystemsCB cb) {
+  return content::ObserveKeySystemSupportUpdate(
+      render_frame, base::BindRepeating(&OnKeySystemSupportUpdated,
+                                        can_persist_data, std::move(cb)));
 }
 
 }  // namespace cdm

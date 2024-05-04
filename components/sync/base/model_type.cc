@@ -135,9 +135,6 @@ const ModelTypeInfo kModelTypeInfoMap[] = {
     {USER_CONSENTS, "USER_CONSENT", "user_consent", "User Consents",
      sync_pb::EntitySpecifics::kUserConsentFieldNumber,
      ModelTypeForHistograms::kUserConsents},
-    {SEGMENTATION, "SEGMENTATION", "segmentation", "Segmentation",
-     sync_pb::EntitySpecifics::kSegmentationFieldNumber,
-     ModelTypeForHistograms::kSegmentation},
     {SEND_TAB_TO_SELF, "SEND_TAB_TO_SELF", "send_tab_to_self",
      "Send Tab To Self", sync_pb::EntitySpecifics::kSendTabToSelfFieldNumber,
      ModelTypeForHistograms::kSendTabToSelf},
@@ -210,6 +207,12 @@ const ModelTypeInfo kModelTypeInfoMap[] = {
     {PLUS_ADDRESS, "PLUS_ADDRESS", "plus_address", "Plus Address",
      sync_pb::EntitySpecifics::kPlusAddressFieldNumber,
      ModelTypeForHistograms::kPlusAddresses},
+    {COMPARE, "COMPARE", "compare", "Compare",
+     sync_pb::EntitySpecifics::kCompareFieldNumber,
+     ModelTypeForHistograms::kCompare},
+    {COOKIES, "COOKIE", "cookies", "Cookies",
+     sync_pb::EntitySpecifics::kCookieFieldNumber,
+     ModelTypeForHistograms::kCookies},
     // ---- Control Types ----
     {NIGORI, "NIGORI", "nigori", "Encryption Keys",
      sync_pb::EntitySpecifics::kNigoriFieldNumber,
@@ -219,9 +222,14 @@ const ModelTypeInfo kModelTypeInfoMap[] = {
 static_assert(std::size(kModelTypeInfoMap) == GetNumModelTypes(),
               "kModelTypeInfoMap should have GetNumModelTypes() elements");
 
-static_assert(51 == syncer::GetNumModelTypes(),
+static_assert(52 == syncer::GetNumModelTypes(),
               "When adding a new type, update enum SyncModelTypes in enums.xml "
               "and suffix SyncModelType in histograms.xml.");
+
+static_assert(52 == syncer::GetNumModelTypes(),
+              "When adding a new type, follow the integration checklist in "
+              "https://www.chromium.org/developers/design-documents/sync/"
+              "integration-checklist/");
 
 // kSpecificsFieldNumberToModelTypeMap must exactly match the kModelTypeInfoMap,
 // so its size must be syncer::GetNumModelTypes().
@@ -271,7 +279,6 @@ constexpr kSpecificsFieldNumberToModelTypeMap
         {sync_pb::EntitySpecifics::kReadingListFieldNumber, READING_LIST},
         {sync_pb::EntitySpecifics::kUserEventFieldNumber, USER_EVENTS},
         {sync_pb::EntitySpecifics::kUserConsentFieldNumber, USER_CONSENTS},
-        {sync_pb::EntitySpecifics::kSegmentationFieldNumber, SEGMENTATION},
         {sync_pb::EntitySpecifics::kSendTabToSelfFieldNumber, SEND_TAB_TO_SELF},
         {sync_pb::EntitySpecifics::kSecurityEventFieldNumber, SECURITY_EVENTS},
         {sync_pb::EntitySpecifics::kWifiConfigurationFieldNumber,
@@ -302,6 +309,8 @@ constexpr kSpecificsFieldNumberToModelTypeMap
         {sync_pb::EntitySpecifics::kCollaborationGroupFieldNumber,
          COLLABORATION_GROUP},
         {sync_pb::EntitySpecifics::kPlusAddressFieldNumber, PLUS_ADDRESS},
+        {sync_pb::EntitySpecifics::kCompareFieldNumber, COMPARE},
+        {sync_pb::EntitySpecifics::kCookieFieldNumber, COOKIES},
         // ---- Control Types ----
         {sync_pb::EntitySpecifics::kNigoriFieldNumber, NIGORI},
     });
@@ -437,9 +446,6 @@ void AddDefaultFieldValue(ModelType type, sync_pb::EntitySpecifics* specifics) {
     case CONTACT_INFO:
       specifics->mutable_contact_info();
       break;
-    case SEGMENTATION:
-      specifics->mutable_segmentation();
-      break;
     case SAVED_TAB_GROUP:
       specifics->mutable_saved_tab_group();
       break;
@@ -463,6 +469,12 @@ void AddDefaultFieldValue(ModelType type, sync_pb::EntitySpecifics* specifics) {
       break;
     case PLUS_ADDRESS:
       specifics->mutable_plus_address();
+      break;
+    case COMPARE:
+      specifics->mutable_compare();
+      break;
+    case COOKIES:
+      specifics->mutable_cookie();
       break;
   }
 }
@@ -492,7 +504,7 @@ void internal::GetModelTypeSetFromSpecificsFieldNumberListHelper(
 }
 
 ModelType GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics) {
-  static_assert(51 == syncer::GetNumModelTypes(),
+  static_assert(52 == syncer::GetNumModelTypes(),
                 "When adding new protocol types, the following type lookup "
                 "logic must be updated.");
   if (specifics.has_bookmark())
@@ -576,8 +588,6 @@ ModelType GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics) {
     return CONTACT_INFO;
   if (specifics.has_autofill_wallet_usage())
     return AUTOFILL_WALLET_USAGE;
-  if (specifics.has_segmentation())
-    return SEGMENTATION;
   if (specifics.has_saved_tab_group())
     return SAVED_TAB_GROUP;
   if (specifics.has_power_bookmark())
@@ -603,6 +613,12 @@ ModelType GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics) {
   if (specifics.has_plus_address()) {
     return PLUS_ADDRESS;
   }
+  if (specifics.has_compare()) {
+    return COMPARE;
+  }
+  if (specifics.has_cookie()) {
+    return COOKIES;
+  }
 
   // This client version doesn't understand |specifics|.
   DVLOG(1) << "Unknown datatype in sync proto.";
@@ -610,7 +626,7 @@ ModelType GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics) {
 }
 
 ModelTypeSet EncryptableUserTypes() {
-  static_assert(51 == syncer::GetNumModelTypes(),
+  static_assert(52 == syncer::GetNumModelTypes(),
                 "If adding an unencryptable type, remove from "
                 "encryptable_user_types below.");
   ModelTypeSet encryptable_user_types = UserTypes();

@@ -117,7 +117,12 @@ void SafeBrowsingServiceImpl::Initialize(
   UMA_HISTOGRAM_BOOLEAN(
       safe_browsing::kSafeBrowsingEnabledHistogramName,
       pref_change_registrar_->prefs()->GetBoolean(prefs::kSafeBrowsingEnabled));
+  // TODO(crbug.com/40886668): Deprecate SafeBrowsing.Pref.Enhanced.
   UMA_HISTOGRAM_BOOLEAN("SafeBrowsing.Pref.Enhanced",
+                        prefs->GetBoolean(prefs::kSafeBrowsingEnhanced));
+  // TODO(crbug.com/332512508): We will need to update the
+  // SafeBrowsing.Pref.Enhanced.RegularProfile metric to support multi-profile.
+  UMA_HISTOGRAM_BOOLEAN("SafeBrowsing.Pref.Enhanced.RegularProfile",
                         prefs->GetBoolean(prefs::kSafeBrowsingEnhanced));
   safe_browsing::RecordExtendedReportingMetrics(*prefs);
   UpdateSafeBrowsingEnabledState();
@@ -182,6 +187,116 @@ SafeBrowsingServiceImpl::CreateUrlChecker(
       hash_real_time_service ? hash_real_time_service->GetWeakPtr() : nullptr,
       hash_real_time_selection,
       /*is_async_check=*/false, SessionID::InvalidValue());
+}
+
+std::unique_ptr<safe_browsing::SafeBrowsingUrlCheckerImpl>
+SafeBrowsingServiceImpl::CreateAsyncChecker(
+    network::mojom::RequestDestination request_destination,
+    web::WebState* web_state,
+    SafeBrowsingClient* client) {
+  safe_browsing::RealTimeUrlLookupService* url_lookup_service =
+      client->GetRealTimeUrlLookupService();
+  bool can_perform_full_url_lookup =
+      url_lookup_service && url_lookup_service->CanPerformFullURLLookup();
+  scoped_refptr<safe_browsing::UrlCheckerDelegate> url_checker_delegate =
+      base::MakeRefCounted<UrlCheckerDelegateImpl>(safe_browsing_db_manager_,
+                                                   client->AsWeakPtr());
+  safe_browsing::HashRealTimeService* hash_real_time_service =
+      client->GetHashRealTimeService();
+
+  safe_browsing::hash_realtime_utils::HashRealTimeSelection
+      hash_real_time_selection =
+          safe_browsing::hash_realtime_utils::DetermineHashRealTimeSelection(
+              web_state->GetBrowserState()->IsOffTheRecord(),
+              pref_change_registrar_->prefs(),
+              safe_browsing::hash_realtime_utils::GetCountryCode(
+                  client->GetVariationsService()),
+              /*log_usage_histograms=*/true);
+
+  return std::make_unique<safe_browsing::SafeBrowsingUrlCheckerImpl>(
+      /*headers=*/net::HttpRequestHeaders(), /*load_flags=*/0,
+      request_destination, /*has_user_gesture=*/false, url_checker_delegate,
+      /*web_contents_getter=*/
+      base::RepeatingCallback<content::WebContents*()>(),
+      web_state->GetWeakPtr(),
+      /*render_process_id=*/
+      security_interstitials::UnsafeResource::kNoRenderProcessId,
+      /*render_frame_token=*/std::nullopt,
+      /*frame_tree_node_id=*/
+      security_interstitials::UnsafeResource::kNoFrameTreeNodeId,
+      /*navigation_id=*/std::nullopt, can_perform_full_url_lookup,
+      /*can_check_db=*/true, /*can_check_high_confidence_allowlist=*/true,
+      /*url_lookup_service_metric_suffix=*/"", web::GetUIThreadTaskRunner({}),
+      url_lookup_service ? url_lookup_service->GetWeakPtr() : nullptr,
+      hash_real_time_service ? hash_real_time_service->GetWeakPtr() : nullptr,
+      hash_real_time_selection,
+      /*is_async_check=*/true, SessionID::InvalidValue());
+}
+
+std::unique_ptr<safe_browsing::SafeBrowsingUrlCheckerImpl>
+SafeBrowsingServiceImpl::CreateSyncChecker(
+    network::mojom::RequestDestination request_destination,
+    web::WebState* web_state,
+    SafeBrowsingClient* client) {
+  scoped_refptr<safe_browsing::UrlCheckerDelegate> url_checker_delegate =
+      base::MakeRefCounted<UrlCheckerDelegateImpl>(safe_browsing_db_manager_,
+                                                   client->AsWeakPtr());
+
+  return std::make_unique<safe_browsing::SafeBrowsingUrlCheckerImpl>(
+      /*headers=*/net::HttpRequestHeaders(), /*load_flags=*/0,
+      request_destination, /*has_user_gesture=*/false, url_checker_delegate,
+      /*web_contents_getter=*/
+      base::RepeatingCallback<content::WebContents*()>(),
+      web_state->GetWeakPtr(),
+      /*render_process_id=*/
+      security_interstitials::UnsafeResource::kNoRenderProcessId,
+      /*render_frame_token=*/std::nullopt,
+      /*frame_tree_node_id=*/
+      security_interstitials::UnsafeResource::kNoFrameTreeNodeId,
+      /*navigation_id=*/std::nullopt, /*url_real_time_lookup_enabled=*/false,
+      /*can_check_db=*/true, /*can_check_high_confidence_allowlist=*/true,
+      /*url_lookup_service_metric_suffix=*/"", web::GetUIThreadTaskRunner({}),
+      /*url_lookup_service=*/nullptr,
+      /*hash_realtime_service=*/nullptr,
+      /*hash_realtime_selection=*/
+      safe_browsing::hash_realtime_utils::HashRealTimeSelection::kNone,
+      /*is_async_check=*/false, SessionID::InvalidValue());
+}
+
+// Checks if async check should be created.
+bool SafeBrowsingServiceImpl::ShouldCreateAsyncChecker(
+    web::WebState* web_state,
+    SafeBrowsingClient* client) {
+  if (!base::FeatureList::IsEnabled(
+          safe_browsing::kSafeBrowsingAsyncRealTimeCheck)) {
+    return false;
+  }
+
+  if (!web_state) {
+    return false;
+  }
+
+  safe_browsing::RealTimeUrlLookupService* url_lookup_service =
+      client->GetRealTimeUrlLookupService();
+  bool can_perform_full_url_lookup =
+      url_lookup_service && url_lookup_service->CanPerformFullURLLookup();
+
+  safe_browsing::hash_realtime_utils::HashRealTimeSelection
+      hash_real_time_selection =
+          safe_browsing::hash_realtime_utils::DetermineHashRealTimeSelection(
+              web_state->GetBrowserState()->IsOffTheRecord(),
+              pref_change_registrar_->prefs(),
+              safe_browsing::hash_realtime_utils::GetCountryCode(
+                  client->GetVariationsService()),
+              /*log_usage_histograms=*/true);
+
+  if (!can_perform_full_url_lookup &&
+      hash_real_time_selection ==
+          safe_browsing::hash_realtime_utils::HashRealTimeSelection::kNone) {
+    return false;
+  }
+
+  return true;
 }
 
 bool SafeBrowsingServiceImpl::CanCheckUrl(const GURL& url) const {

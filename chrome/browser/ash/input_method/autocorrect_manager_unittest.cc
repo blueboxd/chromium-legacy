@@ -13,6 +13,7 @@
 #include "chrome/browser/ash/input_method/autocorrect_prefs.h"
 #include "chrome/browser/ash/input_method/suggestion_enums.h"
 #include "chrome/browser/ash/input_method/ui/suggestion_details.h"
+#include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
@@ -757,8 +758,7 @@ TEST_F(AutocorrectManagerTest,
             gfx::Range());
 }
 
-TEST_F(AutocorrectManagerTest,
-       OnBlurClearsAutocorrectRange) {
+TEST_F(AutocorrectManagerTest, OnBlurClearsAutocorrectRange) {
   manager_.HandleAutocorrect(gfx::Range(1, 4), u"teh", u"the");
   manager_.OnBlur();
 
@@ -766,8 +766,7 @@ TEST_F(AutocorrectManagerTest,
             gfx::Range());
 }
 
-TEST_F(AutocorrectManagerTest,
-       OnFocusClearsAutocorrectRange) {
+TEST_F(AutocorrectManagerTest, OnFocusClearsAutocorrectRange) {
   manager_.HandleAutocorrect(gfx::Range(1, 4), u"teh", u"the");
   manager_.OnFocus(1);
 
@@ -844,8 +843,7 @@ TEST_F(AutocorrectManagerTest,
   manager_.OnSurroundingTextChanged(u"te ", gfx::Range(1));
 }
 
-TEST_F(AutocorrectManagerTest,
-       MovingCursorRetriesPrevFailedUndoWindowHide) {
+TEST_F(AutocorrectManagerTest, MovingCursorRetriesPrevFailedUndoWindowHide) {
   manager_.HandleAutocorrect(gfx::Range(0, 3), u"teh", u"the");
   manager_.OnSurroundingTextChanged(u"the ", gfx::Range(4));
 
@@ -3970,10 +3968,17 @@ TEST_F(AutocorrectManagerUkmMetricsTest, RecordsAppCompatUkmForExitField) {
           AutocorrectCompatibilitySummary::kUserExitedTextFieldWithUnderline));
 }
 
-TEST_F(AutocorrectManagerTest, FederatedLogging) {
+// TODO(b/319190264): Consider parameterizing these federated tests on UMA
+// consent status, pending outcome of FederatedClientManager unit testing
+// refactor.
+TEST_F(AutocorrectManagerTest, FederatedLoggingWhenUmaEnabled) {
   feature_list_.Reset();
   feature_list_.InitWithFeatures({features::kAutocorrectFederatedPhh},
                                  DisabledFeatures());
+  bool chrome_metrics_enabled = true;
+  ChromeMetricsServiceAccessor::SetMetricsAndCrashReportingForTesting(
+      &chrome_metrics_enabled);
+
   EXPECT_EQ(0, manager_.GetFederatedClientManagerForTest()
                    .get_num_successful_reports_for_test());
 
@@ -3981,6 +3986,26 @@ TEST_F(AutocorrectManagerTest, FederatedLogging) {
   // The handling of an autocorrection triggers a federated logging event.
   EXPECT_EQ(1, manager_.GetFederatedClientManagerForTest()
                    .get_num_successful_reports_for_test());
+  ChromeMetricsServiceAccessor::SetMetricsAndCrashReportingForTesting(nullptr);
+}
+
+TEST_F(AutocorrectManagerTest, NoFederatedLoggingWhenUmaDisabled) {
+  feature_list_.Reset();
+  feature_list_.InitWithFeatures({features::kAutocorrectFederatedPhh},
+                                 DisabledFeatures());
+  bool chrome_metrics_enabled = false;
+  ChromeMetricsServiceAccessor::SetMetricsAndCrashReportingForTesting(
+      &chrome_metrics_enabled);
+
+  EXPECT_EQ(0, manager_.GetFederatedClientManagerForTest()
+                   .get_num_successful_reports_for_test());
+
+  manager_.HandleAutocorrect(gfx::Range(0, 3), u"teh", u"the");
+  // No federated logging despite enabled feature flag, because Chrome metrics
+  // collection is disabled.
+  EXPECT_EQ(0, manager_.GetFederatedClientManagerForTest()
+                   .get_num_successful_reports_for_test());
+  ChromeMetricsServiceAccessor::SetMetricsAndCrashReportingForTesting(nullptr);
 }
 
 }  // namespace

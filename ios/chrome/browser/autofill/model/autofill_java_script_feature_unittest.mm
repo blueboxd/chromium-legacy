@@ -8,7 +8,6 @@
 
 #import "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
-#import "base/test/scoped_feature_list.h"
 #import "base/test/test_timeouts.h"
 #import "components/autofill/core/common/autofill_features.h"
 #import "components/autofill/ios/form_util/form_util_java_script_feature.h"
@@ -96,16 +95,6 @@ class AutofillJavaScriptFeatureTest : public PlatformTest {
       return main_frame != nullptr;
     }));
     ASSERT_TRUE(main_frame);
-
-    uint32_t next_available_id = 1;
-    autofill::FormUtilJavaScriptFeature::GetInstance()
-        ->SetUpForUniqueIDsWithInitialState(main_frame, next_available_id);
-
-    // Wait for `SetUpForUniqueIDsWithInitialState` to complete.
-    ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^bool {
-      return [ExecuteJavaScript(@"document[__gCrWeb.fill.ID_SYMBOL]")
-                 intValue] == static_cast<int>(next_available_id);
-    }));
   }
 
   web::WebFrame* main_web_frame() {

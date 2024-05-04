@@ -86,7 +86,7 @@ import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.services.SigninChecker;
 import org.chromium.chrome.browser.signin.services.SigninManager;
 import org.chromium.chrome.browser.signin.services.SigninManager.SignInCallback;
-import org.chromium.chrome.browser.ui.signin.fre.SigninFirstRunMediator.LoadPoint;
+import org.chromium.chrome.browser.ui.signin.fullscreen_signin.FullscreenSigninMediator.LoadPoint;
 import org.chromium.chrome.test.AutomotiveContextWrapperTestRule;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.chrome.test.R;
@@ -259,12 +259,16 @@ public class SigninFirstRunFragmentTest {
     @MediumTest
     @Restriction({DeviceRestriction.RESTRICTION_TYPE_NON_AUTO})
     public void testFragmentWhenRemovingChildAccountDynamically() {
-        mSigninTestRule.addAccount(
-                CHILD_ACCOUNT_EMAIL, CHILD_FULL_NAME, /* givenName= */ null, /* avatar= */ null);
+        CoreAccountInfo accountInfo =
+                mSigninTestRule.addAccount(
+                        CHILD_ACCOUNT_EMAIL,
+                        CHILD_FULL_NAME,
+                        /* givenName= */ null,
+                        /* avatar= */ null);
         launchActivityWithFragment();
         checkFragmentWithChildAccount(true, true);
 
-        mSigninTestRule.removeAccount(CHILD_ACCOUNT_EMAIL);
+        mSigninTestRule.removeAccount(accountInfo.getId());
 
         CriteriaHelper.pollUiThread(
                 () -> {
@@ -282,12 +286,14 @@ public class SigninFirstRunFragmentTest {
     @MediumTest
     @Restriction({DeviceRestriction.RESTRICTION_TYPE_NON_AUTO})
     public void testFragmentWhenDefaultAccountIsRemoved() {
-        mSigninTestRule.addAccount(TEST_EMAIL1, FULL_NAME1, GIVEN_NAME1, /* avatar= */ null);
+        CoreAccountInfo accountInfo1 =
+                mSigninTestRule.addAccount(
+                        TEST_EMAIL1, FULL_NAME1, GIVEN_NAME1, /* avatar= */ null);
         mSigninTestRule.addAccount(
                 TEST_EMAIL2, /* fullName= */ null, /* givenName= */ null, /* avatar= */ null);
         launchActivityWithFragment();
 
-        mSigninTestRule.removeAccount(TEST_EMAIL1);
+        mSigninTestRule.removeAccount(accountInfo1.getId());
 
         checkFragmentWithSelectedAccount(TEST_EMAIL2, /* fullName= */ null, /* givenName= */ null);
     }
@@ -296,7 +302,9 @@ public class SigninFirstRunFragmentTest {
     @MediumTest
     @Restriction({DeviceRestriction.RESTRICTION_TYPE_NON_AUTO})
     public void testRemovingAllAccountsDismissesAccountPickerDialog() {
-        mSigninTestRule.addAccount(TEST_EMAIL1, FULL_NAME1, GIVEN_NAME1, /* avatar= */ null);
+        CoreAccountInfo accountInfo =
+                mSigninTestRule.addAccount(
+                        TEST_EMAIL1, FULL_NAME1, GIVEN_NAME1, /* avatar= */ null);
         launchActivityWithFragment();
         checkFragmentWithSelectedAccount(TEST_EMAIL1, FULL_NAME1, GIVEN_NAME1);
         onView(withText(TEST_EMAIL1)).perform(click());
@@ -304,7 +312,7 @@ public class SigninFirstRunFragmentTest {
                 .inRoot(isDialog())
                 .check(matches(isDisplayed()));
 
-        mSigninTestRule.removeAccount(TEST_EMAIL1);
+        mSigninTestRule.removeAccount(accountInfo.getId());
 
         onView(withText(R.string.signin_account_picker_dialog_title)).check(doesNotExist());
         onView(withText(R.string.signin_add_account_to_device)).check(matches(isDisplayed()));
@@ -374,7 +382,7 @@ public class SigninFirstRunFragmentTest {
                                     .getSigninManager(ProfileManager.getLastUsedRegularProfile()))
                             .thenReturn(mSigninManagerMock);
                     // IdentityManager#getPrimaryAccountInfo() is called during this test flow by
-                    // SigninFirstRunMediator.
+                    // FullscreenSigninMediator.
                     when(IdentityServicesProvider.get()
                                     .getIdentityManager(ProfileManager.getLastUsedRegularProfile()))
                             .thenReturn(mIdentityManagerMock);
@@ -382,6 +390,9 @@ public class SigninFirstRunFragmentTest {
         doCallback(/* index= */ 2, (SignInCallback callback) -> callback.onSignInAborted())
                 .when(mSigninManagerMock)
                 .signin(eq(coreAccountInfo), anyInt(), any());
+        doCallback(/* index= */ 1, (Callback<Boolean> callback) -> callback.onResult(false))
+                .when(mSigninManagerMock)
+                .isAccountManaged(eq(coreAccountInfo), any());
         launchActivityWithFragment();
         checkFragmentWithSelectedAccount(TEST_EMAIL1, FULL_NAME1, GIVEN_NAME1);
 
@@ -393,7 +404,7 @@ public class SigninFirstRunFragmentTest {
 
         verify(mFirstRunPageDelegateMock).acceptTermsOfService(true);
         verify(mFirstRunPageDelegateMock, never()).advanceToNextPage();
-        // TODO(crbug/1248090): For now we enable the buttons again to not block the users from
+        // TODO(crbug.com/40790332): For now we enable the buttons again to not block the users from
         // continuing to the next page. Should show a dialog with the signin error.
         checkFragmentWithSelectedAccount(TEST_EMAIL1, FULL_NAME1, GIVEN_NAME1);
     }
@@ -708,7 +719,7 @@ public class SigninFirstRunFragmentTest {
                                     .getSigninManager(ProfileManager.getLastUsedRegularProfile()))
                             .thenReturn(mSigninManagerMock);
                     // IdentityManager#getPrimaryAccountInfo() is called during this test flow by
-                    // SigninFirstRunMediator.
+                    // FullscreenSigninMediator.
                     when(IdentityServicesProvider.get()
                                     .getIdentityManager(ProfileManager.getLastUsedRegularProfile()))
                             .thenReturn(mIdentityManagerMock);
@@ -854,7 +865,7 @@ public class SigninFirstRunFragmentTest {
                                     .getSigninManager(ProfileManager.getLastUsedRegularProfile()))
                             .thenReturn(mSigninManagerMock);
                     // IdentityManager#getPrimaryAccountInfo() is called during this test flow by
-                    // SigninFirstRunMediator.
+                    // FullscreenSigninMediator.
                     when(IdentityServicesProvider.get()
                                     .getIdentityManager(ProfileManager.getLastUsedRegularProfile()))
                             .thenReturn(mIdentityManagerMock);
@@ -903,21 +914,15 @@ public class SigninFirstRunFragmentTest {
 
         clickOnUmaDialogLinkAndWait();
 
-        onView(withText(R.string.signin_fre_uma_dialog_title))
-                .inRoot(isDialog())
-                .check(matches(isDisplayed()));
-        onView(withId(R.id.fre_uma_dialog_switch)).inRoot(isDialog()).check(matches(isDisplayed()));
+        onView(withText(R.string.signin_fre_uma_dialog_title)).check(matches(isDisplayed()));
+        onView(withId(R.id.fre_uma_dialog_switch)).check(matches(isDisplayed()));
         onView(withText(R.string.signin_fre_uma_dialog_first_section_header))
-                .inRoot(isDialog())
                 .check(matches(isDisplayed()));
         onView(withText(R.string.signin_fre_uma_dialog_first_section_body))
-                .inRoot(isDialog())
                 .check(matches(isDisplayed()));
         onView(withText(R.string.signin_fre_uma_dialog_second_section_header))
-                .inRoot(isDialog())
                 .check(matches(isDisplayed()));
         onView(withText(R.string.signin_fre_uma_dialog_second_section_body))
-                .inRoot(isDialog())
                 .check(matches(isDisplayed()));
         onView(withText(R.string.done)).check(matches(isDisplayed()));
     }
@@ -1064,7 +1069,7 @@ public class SigninFirstRunFragmentTest {
                 HistogramWatcher.newSingleRecordWatcher(
                         "MobileFre.SlowestLoadPoint", LoadPoint.POLICY_LOAD);
 
-        // TODO(https://crbug.com/1346258): Use OneshotSupplierImpl instead.
+        // TODO(crbug.com/40232416): Use OneshotSupplierImpl instead.
         when(mPolicyLoadListenerMock.get()).thenReturn(false);
         verify(mPolicyLoadListenerMock, atLeastOnce()).onAvailable(mCallbackCaptor.capture());
         TestThreadUtils.runOnUiThreadBlocking(
@@ -1116,7 +1121,7 @@ public class SigninFirstRunFragmentTest {
                 HistogramWatcher.newSingleRecordWatcher(
                         "MobileFre.SlowestLoadPoint", LoadPoint.CHILD_STATUS_LOAD);
 
-        // TODO(https://crbug.com/1346258): Use OneshotSupplierImpl instead.
+        // TODO(crbug.com/40232416): Use OneshotSupplierImpl instead.
         when(mChildAccountStatusListenerMock.get()).thenReturn(false);
         verify(mChildAccountStatusListenerMock, atLeastOnce())
                 .onAvailable(mCallbackCaptor.capture());
@@ -1148,7 +1153,7 @@ public class SigninFirstRunFragmentTest {
         slowestPointHistogram =
                 HistogramWatcher.newBuilder().expectNoRecords("MobileFre.SlowestLoadPoint").build();
 
-        // Changing the activity orientation will create SigninFirstRunCoordinator again and call
+        // Changing the activity orientation will create FullscreenSigninCoordinator again and call
         // SigninFirstRunFragment.notifyCoordinatorWhenNativePolicyAndChildStatusAreLoaded()
         ActivityTestUtils.rotateActivityToOrientation(
                 mActivityTestRule.getActivity(), Configuration.ORIENTATION_LANDSCAPE);
@@ -1447,7 +1452,10 @@ public class SigninFirstRunFragmentTest {
      */
     private void clickOnUmaDialogLinkAndWait() {
         onView(withId(R.id.signin_fre_footer)).perform(clickOnUmaDialogLink());
-        ViewUtils.onViewWaiting(withText(R.string.done)).check(matches(isDisplayed()));
+        ViewUtils.onViewWaiting(
+                        withText(R.string.done),
+                        true) // Sets dialog to be in focus. Needed for API 30+.
+                .check(matches(isDisplayed()));
     }
 
     private ViewAction clickOnUmaDialogLink() {

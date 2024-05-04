@@ -4,7 +4,6 @@
 
 #import "ios/chrome/browser/ui/settings/password/password_settings/password_settings_mediator.h"
 
-#import "base/test/scoped_feature_list.h"
 #import "base/test/task_environment.h"
 #import "components/affiliations/core/browser/fake_affiliation_service.h"
 #import "components/keyed_service/core/service_access_type.h"
@@ -13,7 +12,6 @@
 #import "components/password_manager/core/browser/ui/saved_passwords_presenter.h"
 #import "components/password_manager/core/common/password_manager_features.h"
 #import "components/signin/public/identity_manager/objc/identity_manager_observer_bridge.h"
-#import "components/sync/base/features.h"
 #import "components/sync/base/model_type.h"
 #import "components/sync/base/passphrase_enums.h"
 #import "components/sync/test/mock_sync_service.h"
@@ -48,7 +46,7 @@ void SetSyncStatus(SyncServiceForPasswordTests* sync_service,
   ON_CALL(*sync_service, GetActiveDataTypes())
       .WillByDefault(
           testing::Return(syncer::ModelTypeSet({syncer::PASSWORDS})));
-  ON_CALL(*(sync_service->GetMockUserSettings()), GetEncryptedDataTypes())
+  ON_CALL(*(sync_service->GetMockUserSettings()), GetAllEncryptedDataTypes())
       .WillByDefault(
           testing::Return(syncer::ModelTypeSet({syncer::PASSWORDS})));
   ON_CALL(*(sync_service->GetMockUserSettings()), GetPassphraseType())
@@ -157,12 +155,6 @@ TEST_F(PasswordSettingsMediatorTest,
 // passwords to account module.
 TEST_F(PasswordSettingsMediatorTest,
        SyncChangeTriggersBulkMovePasswordsToAccountChange) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures(
-      {password_manager::features::
-           kIOSPasswordSettingsBulkUploadLocalPasswords},
-      /*disabled_features=*/{});
-
   ASSERT_TRUE(
       [mediator_ conformsToProtocol:@protocol(SyncObserverModelBridge)]);
 

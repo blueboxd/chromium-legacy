@@ -15,6 +15,8 @@
 #include "ash/root_window_settings.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
+#include "ash/style/rounded_label_widget.h"
+#include "ash/utility/forest_util.h"
 #include "ash/wm/desks/desk.h"
 #include "ash/wm/desks/desks_util.h"
 #include "ash/wm/desks/legacy_desk_bar_view.h"
@@ -25,6 +27,7 @@
 #include "ash/wm/desks/templates/saved_desk_presenter.h"
 #include "ash/wm/desks/templates/saved_desk_util.h"
 #include "ash/wm/mru_window_tracker.h"
+#include "ash/wm/overview/birch/birch_bar_controller.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_delegate.h"
 #include "ash/wm/overview/overview_focus_cycler.h"
@@ -38,6 +41,7 @@
 #include "ash/wm/splitview/split_view_overview_session.h"
 #include "ash/wm/splitview/split_view_utils.h"
 #include "ash/wm/window_properties.h"
+#include "ash/wm/window_restore/pine_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "base/auto_reset.h"
@@ -199,6 +203,13 @@ void OverviewSession::Init(const aura::Window::Windows& windows,
         std::make_unique<SavedDeskDialogController>();
   }
 
+  // Create this before the birch bar widget.
+  if (IsForestFeatureEnabled()) {
+    birch_bar_controller_ = std::make_unique<BirchBarController>(
+        /*from_pine_service=*/enter_exit_overview_type_ ==
+        OverviewEnterExitType::kPine);
+  }
+
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   std::sort(root_windows.begin(), root_windows.end(),
             [](const aura::Window* a, const aura::Window* b) {
@@ -246,6 +257,12 @@ void OverviewSession::Init(const aura::Window::Windows& windows,
                                    OverviewTransition::kEnter);
   }
 
+  // TODO(http://b/326091611): In the case of dragging a window from the shelf
+  // with one window total, this will create the no windows widget. Then, we
+  // will be notified the drag has started and a drop target will be added,
+  // hiding the no windows widget. This all happens before the frame is
+  // presented so it looks ok from the users perspective, but we should avoid
+  // creating it in the first place.
   const bool is_continuous_enter =
       enter_exit_overview_type_ ==
       OverviewEnterExitType::kContinuousAnimationEnterOnScrollUpdate;
@@ -325,6 +342,10 @@ void OverviewSession::Shutdown() {
   // Resetting here will close any dialogs, and DCHECK anyone trying to open a
   // dialog past this point.
   saved_desk_dialog_controller_.reset();
+
+  // Resetting the birch bar controller before shutting down overview grids to
+  // avoid dangling pointers.
+  birch_bar_controller_.reset();
 
   // Stop observing screen metrics changes first to avoid auto-positioning
   // windows in response to work area changes from window activation.
@@ -633,7 +654,7 @@ void OverviewSession::InitiateDrag(OverviewItemBase* item,
   window_drag_controller_->InitiateDrag(location_in_screen);
 
   for (std::unique_ptr<OverviewGrid>& grid : grid_list_) {
-    grid->OnOverviewItemDragStarted(item);
+    grid->OnOverviewItemDragStarted();
     grid->UpdateSaveDeskButtons();
   }
 
@@ -1372,7 +1393,7 @@ void OverviewSession::OnKeyEvent(ui::KeyEvent* event) {
   // mode, when we snap an overview window to one side of the screen and then
   // open the app list to select an app to snap to the other side), in this case
   // we let the app list to handle the key event.
-  // TODO(crbug.com/952315): Explore better ways to handle this splitview +
+  // TODO(crbug.com/40622922): Explore better ways to handle this splitview +
   // overview + applist case.
   if (!display::Screen::GetScreen()->InTabletMode() &&
       Shell::Get()->app_list_controller()->IsVisible()) {
@@ -1567,7 +1588,9 @@ void OverviewSession::OnSplitViewStateChanged(
 
   // Entering or exiting splitview is unexpected behavior in a pine overview
   // session.
-  CHECK_NE(OverviewEnterExitType::kPine, enter_exit_overview_type_);
+  if (IsForestFeatureEnabled()) {
+    CHECK(!Shell::Get()->pine_controller()->pine_contents_data());
+  }
 
   UpdateNoWindowsWidgetOnEachGrid(/*animate=*/false,
                                   /*is_continuous_enter=*/false);
@@ -1592,9 +1615,11 @@ void OverviewSession::OnTabletModeChanged() {
     overview_grid->OnTabletModeChanged();
   }
 
-  DCHECK(saved_desk_util::ShouldShowSavedDesksButtons());
-  DCHECK(saved_desk_presenter_);
-  saved_desk_presenter_->UpdateUIForSavedDeskLibrary();
+  // `saved_desk_presenter_` could be null if we started overview during a guest
+  // session.
+  if (saved_desk_presenter_) {
+    saved_desk_presenter_->UpdateUIForSavedDeskLibrary();
+  }
 }
 
 void OverviewSession::Move(bool reverse) {

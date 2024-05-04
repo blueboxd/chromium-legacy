@@ -85,7 +85,8 @@ class BookmarkEditorView : public BookmarkEditor,
   bool IsDialogButtonEnabled(ui::DialogButton button) const override;
 
   // views::View:
-  gfx::Size CalculatePreferredSize() const override;
+  gfx::Size CalculatePreferredSize(
+      const views::SizeBounds& available_size) const override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
   // views::TreeViewController:
@@ -130,8 +131,10 @@ class BookmarkEditorView : public BookmarkEditor,
   void BookmarkNodeRemoved(const bookmarks::BookmarkNode* parent,
                            size_t index,
                            const bookmarks::BookmarkNode* node,
-                           const std::set<GURL>& removed_urls) override;
-  void BookmarkAllUserNodesRemoved(const std::set<GURL>& removed_urls) override;
+                           const std::set<GURL>& removed_urls,
+                           const base::Location& location) override;
+  void BookmarkAllUserNodesRemoved(const std::set<GURL>& removed_urls,
+                                   const base::Location& location) override;
   void BookmarkNodeChanged(const bookmarks::BookmarkNode* node) override {}
   void BookmarkNodeChildrenReordered(
       const bookmarks::BookmarkNode* node) override;

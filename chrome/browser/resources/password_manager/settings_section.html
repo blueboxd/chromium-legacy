@@ -128,16 +128,20 @@
     </cr-link-row>
   </template>
   <if expr="is_macosx">
-    <template is="dom-if" if="[[createPasskeysInICloudKeychainToggleVisible_]]"
-              restamp>
-      <pref-toggle-button id="createPasskeysInICloudKeychainRow" class="hr"
-          label="$i18n{createPasskeysInICloudKeychainLabel}"
-          sub-label="$i18n{createPasskeysInICloudKeychainSubLabel}"
-          on-click="onCreatePasskeysInICloudKeychainClick_"
-          pref="{{prefs.webauthn.create_in_icloud_keychain}}">
-      </pref-link-row>
-    </template>
+    <pref-toggle-button id="createPasskeysInICloudKeychainRow" class="hr"
+        label="$i18n{createPasskeysInICloudKeychainLabel}"
+        sub-label="$i18n{createPasskeysInICloudKeychainSubLabel}"
+        on-click="onCreatePasskeysInICloudKeychainClick_"
+        pref="{{prefs.webauthn.create_in_icloud_keychain}}">
+    </pref-toggle-button>
   </if>
+  <template is="dom-if" if="[[isPasswordManagerPinAvailable_]]" restamp>
+    <cr-link-row id="changePasswordManagerPinRow"
+        class="cr-row settings-cr-link-row"
+        label="Change Google Password Manager PIN (UNTRANSLATED)"
+        on-click="onChangePasswordManagerPinRowClick_">
+    </cr-link-row>
+  </template>
   <if expr="is_win or is_macosx">
     <template is="dom-if" if="[[hasPasskeys_]]" restamp>
       <cr-link-row id="managePasskeysRow" external
@@ -179,3 +183,6 @@
       trigger="[[getMovePasswordsDialogTrigger_()]]">
   </move-passwords-dialog>
 </template>
+<cr-toast id="toast" duration="5000">
+  <span id="toast-message">$i18n{passwordManagerPinChanged}</span>
+</cr-toast>

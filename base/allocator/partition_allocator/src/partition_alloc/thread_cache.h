@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_ALLOCATOR_PARTITION_ALLOCATOR_SRC_PARTITION_ALLOC_THREAD_CACHE_H_
-#define BASE_ALLOCATOR_PARTITION_ALLOCATOR_SRC_PARTITION_ALLOC_THREAD_CACHE_H_
+#ifndef PARTITION_ALLOC_THREAD_CACHE_H_
+#define PARTITION_ALLOC_THREAD_CACHE_H_
 
 #include <atomic>
 #include <cstdint>
@@ -11,7 +11,7 @@
 #include <memory>
 #include <optional>
 
-#include "build/build_config.h"
+#include "partition_alloc/build_config.h"
 #include "partition_alloc/lightweight_quarantine.h"
 #include "partition_alloc/partition_alloc-inl.h"
 #include "partition_alloc/partition_alloc_base/compiler_specific.h"
@@ -294,6 +294,9 @@ class PA_COMPONENT_EXPORT(PARTITION_ALLOC) ThreadCache {
   // Must be called without the partition locked, as this may allocate.
   static ThreadCache* Create(PartitionRoot* root);
 
+  const internal::PartitionFreelistDispatcher*
+  get_freelist_dispatcher_from_root();
+
   ~ThreadCache();
 
   // Disallow copy and move.
@@ -571,8 +574,16 @@ PA_ALWAYS_INLINE uintptr_t ThreadCache::GetFromCache(size_t bucket_index,
   // corruption, we know the bucket size that lead to the crash, helping to
   // narrow down the search for culprit. |bucket| was touched just now, so this
   // does not introduce another cache miss.
+  const internal::PartitionFreelistDispatcher* freelist_dispatcher =
+      get_freelist_dispatcher_from_root();
+#if BUILDFLAG(USE_FREELIST_DISPATCHER)
   internal::PartitionFreelistEntry* next =
-      entry->GetNextForThreadCache<true>(bucket.slot_size);
+      freelist_dispatcher->GetNextForThreadCacheTrue(entry, bucket.slot_size);
+#else
+  internal::PartitionFreelistEntry* next =
+      freelist_dispatcher->GetNextForThreadCache<true>(entry, bucket.slot_size);
+#endif  // BUILDFLAG(USE_FREELIST_DISPATCHER)
+
   PA_DCHECK(entry != next);
   bucket.count--;
   PA_DCHECK(bucket.count != 0 || !next);
@@ -611,12 +622,7 @@ PA_ALWAYS_INLINE void ThreadCache::PutInBucket(Bucket& bucket,
       internal::kPartitionCachelineSize == 64,
       "The computation below assumes that cache lines are 64 bytes long.");
   int distance_to_next_cacheline_in_16_bytes = 4 - ((slot_start >> 4) & 3);
-  // In the "previous slot" mode, this slot may have an in-slot metadata of the
-  // next, potentially allocated slot. Make sure we don't overwrite it.
-  // TODO(bartekn): Ok to overwrite in the "same slot" mode.
-  int slot_size_remaining_in_16_bytes =
-      (bucket.slot_size - internal::kInSlotMetadataBufferSize) / 16;
-
+  int slot_size_remaining_in_16_bytes = bucket.slot_size / 16;
   slot_size_remaining_in_16_bytes = std::min(
       slot_size_remaining_in_16_bytes, distance_to_next_cacheline_in_16_bytes);
 
@@ -627,7 +633,7 @@ PA_ALWAYS_INLINE void ThreadCache::PutInBucket(Bucket& bucket,
   void* slot_start_tagged = std::assume_aligned<internal::kAlignment>(
       internal::SlotStartAddr2Ptr(slot_start));
 #else
-  // TODO(crbug.com/1429450): std::assume_aligned introuces an additional
+  // TODO(crbug.com/40262684): std::assume_aligned introuces an additional
   // dependency: _libcpp_verbose_abort(const char*, ...).  It will cause
   // "undefined symbol" error when linking allocator_shim.dll.
   void* slot_start_tagged = internal::SlotStartAddr2Ptr(slot_start);
@@ -642,8 +648,9 @@ PA_ALWAYS_INLINE void ThreadCache::PutInBucket(Bucket& bucket,
 #endif  // PA_CONFIG(HAS_FREELIST_SHADOW_ENTRY) && defined(ARCH_CPU_X86_64) &&
         // BUILDFLAG(HAS_64_BIT_POINTERS)
 
-  auto* entry = internal::PartitionFreelistEntry::EmplaceAndInitForThreadCache(
-      slot_start, bucket.freelist_head);
+  auto* entry =
+      get_freelist_dispatcher_from_root()->EmplaceAndInitForThreadCache(
+          slot_start, bucket.freelist_head);
   bucket.freelist_head = entry;
   bucket.count++;
 }
@@ -660,4 +667,4 @@ PA_ALWAYS_INLINE void ThreadCache::RecordDeallocation(size_t size) {
 
 }  // namespace partition_alloc
 
-#endif  // BASE_ALLOCATOR_PARTITION_ALLOCATOR_SRC_PARTITION_ALLOC_THREAD_CACHE_H_
+#endif  // PARTITION_ALLOC_THREAD_CACHE_H_

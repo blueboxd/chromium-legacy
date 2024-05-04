@@ -50,6 +50,7 @@ import org.chromium.chrome.browser.sync.settings.SyncSettingsUtils;
 import org.chromium.chrome.browser.toolbar.adaptive.AdaptiveToolbarStatePredictor;
 import org.chromium.chrome.browser.tracing.settings.DeveloperSettings;
 import org.chromium.chrome.browser.ui.signin.SyncPromoController;
+import org.chromium.chrome.browser.ui.signin.account_picker.AccountPickerBottomSheetStrings;
 import org.chromium.components.autofill.AutofillFeatures;
 import org.chromium.components.browser_ui.settings.ChromeBasePreference;
 import org.chromium.components.browser_ui.settings.ManagedPreferenceDelegate;
@@ -83,6 +84,7 @@ public class MainSettings extends ChromeBaseSettingsFragment
     public static final String PREF_GOOGLE_SERVICES = "google_services";
     public static final String PREF_SEARCH_ENGINE = "search_engine";
     public static final String PREF_PASSWORDS = "passwords";
+    public static final String PREF_TABS = "tabs";
     public static final String PREF_HOMEPAGE = "homepage";
     public static final String PREF_HOME_MODULES_CONFIG = "home_modules_config";
     public static final String PREF_TOOLBAR_SHORTCUT = "toolbar_shortcut";
@@ -183,6 +185,8 @@ public class MainSettings extends ChromeBaseSettingsFragment
                 IdentityServicesProvider.get().getIdentityManager(getProfile());
 
         SyncPromoPreference syncPromoPreference = findPreference(PREF_SYNC_PROMO);
+        AccountPickerBottomSheetStrings bottomSheetStrings =
+                new AccountPickerBottomSheetStrings.Builder(R.string.sign_in_to_chrome).build();
         syncPromoPreference.initialize(
                 profileDataCache,
                 accountManagerFacade,
@@ -190,25 +194,20 @@ public class MainSettings extends ChromeBaseSettingsFragment
                 identityManager,
                 new SyncPromoController(
                         getProfile(),
+                        bottomSheetStrings,
                         SigninAccessPoint.SETTINGS,
                         SyncConsentActivityLauncherImpl.get(),
                         SigninAndHistoryOptInActivityLauncherImpl.get()));
 
         SignInPreference signInPreference = findPreference(PREF_SIGN_IN);
-        signInPreference.initialize(
-                profileDataCache,
-                accountManagerFacade,
-                UserPrefs.get(getProfile()),
-                SyncServiceFactory.getForProfile(getProfile()),
-                signinManager,
-                identityManager);
+        signInPreference.initialize(getProfile(), profileDataCache, accountManagerFacade);
 
         cachePreferences();
 
         updateAutofillPreferences();
         updatePlusAddressesPreference();
 
-        // TODO(crbug.com/1373451): Remove the passwords managed subtitle for local and UPM
+        // TODO(crbug.com/40242060): Remove the passwords managed subtitle for local and UPM
         // unenrolled users who can see it directly in the context of the setting.
         setManagedPreferenceDelegateForPreference(PREF_PASSWORDS);
         setManagedPreferenceDelegateForPreference(PREF_SEARCH_ENGINE);
@@ -246,7 +245,7 @@ public class MainSettings extends ChromeBaseSettingsFragment
             templateUrlService.load();
         }
 
-        new AdaptiveToolbarStatePredictor(null)
+        new AdaptiveToolbarStatePredictor(getProfile(), null)
                 .recomputeUiState(
                         uiState -> {
                             // We don't show the toolbar shortcut settings page if disabled from
@@ -298,8 +297,14 @@ public class MainSettings extends ChromeBaseSettingsFragment
         updateAutofillPreferences();
         updatePlusAddressesPreference();
 
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_GROUP_SYNC_ANDROID)) {
+            addPreferenceIfAbsent(PREF_TABS);
+        } else {
+            removePreferenceIfPresent(PREF_TABS);
+        }
+
         Preference homepagePref = addPreferenceIfAbsent(PREF_HOMEPAGE);
-        setOnOffSummary(homepagePref, HomepageManager.isHomepageEnabled());
+        setOnOffSummary(homepagePref, HomepageManager.getInstance().isHomepageEnabled());
 
         if (HomeModulesConfigManager.getInstance().hasModuleShownInSettings()) {
             addPreferenceIfAbsent(PREF_HOME_MODULES_CONFIG);
@@ -341,7 +346,14 @@ public class MainSettings extends ChromeBaseSettingsFragment
                         IdentityServicesProvider.get()
                                 .getIdentityManager(getProfile())
                                 .getPrimaryAccountInfo(ConsentLevel.SIGNIN));
-        boolean showManageSync = primaryAccountName != null;
+
+        SyncService syncService = SyncServiceFactory.getForProfile(getProfile());
+
+        boolean showManageSync =
+                primaryAccountName != null
+                        && (!ChromeFeatureList.isEnabled(
+                                        ChromeFeatureList.REPLACE_SYNC_PROMOS_WITH_SIGN_IN_PROMOS)
+                                || syncService.hasSyncConsent());
         mManageSync.setVisible(showManageSync);
         if (!showManageSync) return;
 
@@ -351,14 +363,14 @@ public class MainSettings extends ChromeBaseSettingsFragment
                                 .getPrimaryAccountInfo(ConsentLevel.SYNC)
                         != null;
 
-        SyncService syncService = SyncServiceFactory.getForProfile(getProfile());
+        mManageSync.setIcon(SyncSettingsUtils.getSyncStatusIcon(getActivity(), getProfile()));
+        mManageSync.setSummary(SyncSettingsUtils.getSyncStatusSummary(getActivity(), getProfile()));
 
-        mManageSync.setIcon(SyncSettingsUtils.getSyncStatusIcon(getActivity(), syncService));
-        mManageSync.setSummary(SyncSettingsUtils.getSyncStatusSummary(getActivity(), syncService));
         mManageSync.setOnPreferenceClickListener(
                 pref -> {
                     Context context = getContext();
-                    if (syncService.isSyncDisabledByEnterprisePolicy()) {
+                    if (SyncServiceFactory.getForProfile(getProfile())
+                            .isSyncDisabledByEnterprisePolicy()) {
                         SyncSettingsUtils.showSyncDisabledByAdministratorToast(context);
                     } else if (isSyncConsentAvailable) {
                         SettingsLauncher settingsLauncher = new SettingsLauncherImpl();
@@ -437,7 +449,7 @@ public class MainSettings extends ChromeBaseSettingsFragment
     }
 
     private void updatePlusAddressesPreference() {
-        // TODO(crbug.com/1467623): Replace with a static string once name is finalized.
+        // TODO(crbug.com/40276862): Replace with a static string once name is finalized.
         String title =
                 ChromeFeatureList.getFieldTrialParamByFeature(
                         ChromeFeatureList.PLUS_ADDRESSES_ENABLED, "settings-label");

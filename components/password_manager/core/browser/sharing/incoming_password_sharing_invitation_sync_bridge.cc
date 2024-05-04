@@ -8,6 +8,7 @@
 #include "base/uuid.h"
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/sharing/password_receiver_service.h"
+#include "components/sync/base/deletion_origin.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/model/in_memory_metadata_change_list.h"
 #include "components/sync/model/metadata_batch.h"
@@ -91,6 +92,7 @@ IncomingPasswordSharingInvitationSyncBridge::ApplyIncrementalSyncChanges(
     // After the invitation has been processed, delete it from the server, so
     // that no other client will process it.
     change_processor()->Delete(change->storage_key(),
+                               syncer::DeletionOrigin::Unspecified(),
                                metadata_change_list.get());
   }
 
@@ -99,7 +101,7 @@ IncomingPasswordSharingInvitationSyncBridge::ApplyIncrementalSyncChanges(
   return std::nullopt;
 }
 
-void IncomingPasswordSharingInvitationSyncBridge::GetData(
+void IncomingPasswordSharingInvitationSyncBridge::GetDataForCommit(
     StorageKeyList storage_keys,
     DataCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -113,7 +115,7 @@ void IncomingPasswordSharingInvitationSyncBridge::GetAllDataForDebugging(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // There is no data stored locally, return an empty result.
-  // TODO(crbug.com/1445868): return at least sync metadata if available. This
+  // TODO(crbug.com/40268334): return at least sync metadata if available. This
   // requires a storage key list.
   auto batch = std::make_unique<syncer::MutableDataBatch>();
   std::move(callback).Run(std::move(batch));

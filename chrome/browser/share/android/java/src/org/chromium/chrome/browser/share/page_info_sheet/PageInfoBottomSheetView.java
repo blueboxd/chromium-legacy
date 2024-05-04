@@ -7,23 +7,28 @@ package org.chromium.chrome.browser.share.page_info_sheet;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.View;
-import android.view.ViewGroup.LayoutParams;
 import android.widget.Button;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
+import androidx.constraintlayout.widget.ConstraintLayout;
 
 import org.chromium.chrome.R;
 import org.chromium.ui.widget.ChromeImageButton;
+import org.chromium.ui.widget.TextViewWithClickableSpans;
 
-class PageInfoBottomSheetView extends LinearLayout {
+class PageInfoBottomSheetView extends ConstraintLayout {
 
     TextView mTitleText;
     TextView mContentText;
+    TextViewWithClickableSpans mLearnMoreText;
     Button mAcceptButton;
     Button mCancelButton;
-    ChromeImageButton mRefreshButton;
+    ChromeImageButton mBackButton;
+    View mFeedbackDivider;
+    View mContentsContainer;
+    ChromeImageButton mPositiveFeedbackButton;
+    ChromeImageButton mNegativeFeedbackButton;
     View mLoadingIndicator;
 
     public PageInfoBottomSheetView(Context context, @Nullable AttributeSet attrs) {
@@ -38,10 +43,15 @@ class PageInfoBottomSheetView extends LinearLayout {
     protected void onFinishInflate() {
         super.onFinishInflate();
         mTitleText = findViewById(R.id.sheet_title);
-        mContentText = findViewById(R.id.sheet_content);
+        mContentText = findViewById(R.id.summary_text);
+        mLearnMoreText = findViewById(R.id.learn_more_text);
         mAcceptButton = findViewById(R.id.accept_button);
         mCancelButton = findViewById(R.id.cancel_button);
-        mRefreshButton = findViewById(R.id.refresh_button);
+        mBackButton = findViewById(R.id.back_button);
+        mFeedbackDivider = findViewById(R.id.feedback_divider);
+        mContentsContainer = findViewById(R.id.contents_container);
+        mPositiveFeedbackButton = findViewById(R.id.positive_feedback_button);
+        mNegativeFeedbackButton = findViewById(R.id.negative_feedback_button);
         mLoadingIndicator = findViewById(R.id.loading_indicator);
     }
 }

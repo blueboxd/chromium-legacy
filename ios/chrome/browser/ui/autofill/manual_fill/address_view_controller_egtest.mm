@@ -5,6 +5,8 @@
 #import "base/test/ios/wait_util.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/ui/autofill/autofill_app_interface.h"
+#import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_constants.h"
+#import "ios/chrome/common/ui/elements/form_input_accessory_view.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_actions.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
@@ -65,21 +67,35 @@ void OpenAddressManualFillView() {
       assertWithMatcher:grey_sufficientlyVisible()];
 }
 
+// Matcher for the expanded address manual fill view button.
+id<GREYMatcher> AddressManualFillViewButton() {
+  return grey_allOf(grey_accessibilityLabel(l10n_util::GetNSString(
+                        IDS_IOS_AUTOFILL_ADDRESS_AUTOFILL_DATA)),
+                    grey_ancestor(grey_accessibilityID(
+                        kFormInputAccessoryViewAccessibilityID)),
+                    nil);
+}
+
+// Matcher for the address tab in the manual fill view.
+id<GREYMatcher> AddressManualFillViewTab() {
+  return grey_allOf(
+      grey_accessibilityLabel(l10n_util::GetNSString(
+          IDS_IOS_EXPANDED_MANUAL_FILL_ADDRESS_TAB_ACCESSIBILITY_LABEL)),
+      grey_ancestor(
+          grey_accessibilityID(manual_fill::kExpandedManualFillHeaderViewID)),
+      nil);
+}
+
 // Opens the address manual fill view when there are no saved addresses and
 // verifies that the address view controller is visible afterwards. Only useful
 // when the `kIOSKeyboardAccessoryUpgrade` feature is enabled.
 void OpenAddressManualFillViewWithNoSavedAddresses() {
   // Tap the button to open the expanded manual fill view.
-  id<GREYMatcher> manual_fill_view_button = grey_accessibilityLabel(
-      l10n_util::GetNSString(IDS_IOS_AUTOFILL_ACCNAME_AUTOFILL_DATA));
-  [[EarlGrey selectElementWithMatcher:manual_fill_view_button]
+  [[EarlGrey selectElementWithMatcher:AddressManualFillViewButton()]
       performAction:grey_tap()];
 
   // Tap the address tab from the segmented control.
-  id<GREYMatcher> address_method_tab =
-      grey_accessibilityLabel(l10n_util::GetNSString(
-          IDS_IOS_EXPANDED_MANUAL_FILL_ADDRESS_TAB_ACCESSIBILITY_LABEL));
-  [[EarlGrey selectElementWithMatcher:address_method_tab]
+  [[EarlGrey selectElementWithMatcher:AddressManualFillViewTab()]
       performAction:grey_tap()];
 
   // Verify the address table view controller is visible.
@@ -128,7 +144,7 @@ void OpenAddressManualFillViewWithNoSavedAddresses() {
 }
 
 // Tests that the addresses view controller appears on screen.
-// TODO(crbug.com/1116043): Flaky on ios simulator.
+// TODO(crbug.com/40711697): Flaky on ios simulator.
 #if TARGET_IPHONE_SIMULATOR
 #define MAYBE_testAddressesViewControllerIsPresented \
   DISABLED_testAddressesViewControllerIsPresented
@@ -148,13 +164,6 @@ void OpenAddressManualFillViewWithNoSavedAddresses() {
 
 // Tests that the "Manage Addresses..." action works.
 - (void)testManageAddressesActionOpensAddressSettings {
-  // TODO(crbug.com/326405840): Adapt test once the "Manage Addresses..." action
-  // works with the Keyboard Accessory Upgrade feature.
-  if ([AutofillAppInterface isKeyboardAccessoryUpgradeEnabled]) {
-    EARL_GREY_TEST_SKIPPED(@"The Manage Addresses... action does not yet work "
-                           @"with the Keyboard Accessory Upgrade feature.");
-  }
-
   // Bring up the keyboard.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
       performAction:chrome_test_util::TapWebElementWithId(kFormElementName)];
@@ -176,13 +185,6 @@ void OpenAddressManualFillViewWithNoSavedAddresses() {
 // Tests that returning from "Manage Addresses..." leaves the icons and keyboard
 // in the right state.
 - (void)testAddressesStateAfterPresentingManageAddresses {
-  // TODO(crbug.com/326405840): Adapt test once the "Manage Addresses..." action
-  // works with the Keyboard Accessory Upgrade feature.
-  if ([AutofillAppInterface isKeyboardAccessoryUpgradeEnabled]) {
-    EARL_GREY_TEST_SKIPPED(@"The Manage Addresses... action does not yet work "
-                           @"with the Keyboard Accessory Upgrade feature.");
-  }
-
   // Bring up the keyboard.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
       performAction:chrome_test_util::TapWebElementWithId(kFormElementName)];
@@ -190,9 +192,13 @@ void OpenAddressManualFillViewWithNoSavedAddresses() {
   // Open the address manual fill view.
   OpenAddressManualFillView();
 
-  // Verify the status of the icon.
-  [[EarlGrey selectElementWithMatcher:ManualFallbackProfilesIconMatcher()]
-      assertWithMatcher:grey_not(grey_userInteractionEnabled())];
+  // Icons are not present when the Keyboard Accessory Upgrade feature is
+  // enabled.
+  if (![AutofillAppInterface isKeyboardAccessoryUpgradeEnabled]) {
+    // Verify the status of the icon.
+    [[EarlGrey selectElementWithMatcher:ManualFallbackProfilesIconMatcher()]
+        assertWithMatcher:grey_not(grey_userInteractionEnabled())];
+  }
 
   // Tap the "Manage Addresses..." action.
   [[EarlGrey selectElementWithMatcher:ManualFallbackProfilesTableViewMatcher()]
@@ -212,17 +218,31 @@ void OpenAddressManualFillViewWithNoSavedAddresses() {
   [[EarlGrey selectElementWithMatcher:SettingsProfileMatcher()]
       assertWithMatcher:grey_not(grey_sufficientlyVisible())];
 
-  // Verify the status of the icons.
-  [[EarlGrey selectElementWithMatcher:ManualFallbackFormSuggestionViewMatcher()]
-      performAction:grey_scrollToContentEdge(kGREYContentEdgeRight)];
-  [[EarlGrey selectElementWithMatcher:ManualFallbackProfilesIconMatcher()]
-      assertWithMatcher:grey_sufficientlyVisible()];
-  [[EarlGrey selectElementWithMatcher:ManualFallbackProfilesIconMatcher()]
-      assertWithMatcher:grey_userInteractionEnabled()];
-  [[EarlGrey selectElementWithMatcher:ManualFallbackKeyboardIconMatcher()]
-      assertWithMatcher:grey_not(grey_sufficientlyVisible())];
+  // TODO(crbug.com/332956674): Keyboard and keyboard accessory are not present
+  // on iOS 17.4+, remove version check once fixed.
+  if (@available(iOS 17.4, *)) {
+    // Skip verifications.
+  } else {
+    // Icons are not present when the Keyboard Accessory Upgrade feature is
+    // enabled.
+    if (![AutofillAppInterface isKeyboardAccessoryUpgradeEnabled]) {
+      // Verify the status of the icons.
+      [[EarlGrey
+          selectElementWithMatcher:ManualFallbackFormSuggestionViewMatcher()]
+          performAction:grey_scrollToContentEdge(kGREYContentEdgeRight)];
+      [[EarlGrey selectElementWithMatcher:ManualFallbackProfilesIconMatcher()]
+          assertWithMatcher:grey_sufficientlyVisible()];
+      [[EarlGrey selectElementWithMatcher:ManualFallbackProfilesIconMatcher()]
+          assertWithMatcher:grey_userInteractionEnabled()];
+      [[EarlGrey selectElementWithMatcher:ManualFallbackKeyboardIconMatcher()]
+          assertWithMatcher:grey_not(grey_sufficientlyVisible())];
+    }
 
-  // Verify the keyboard is not cover by the profiles view.
+    // Verify the keyboard is not covered by the profiles view.
+    GREYAssertTrue([EarlGrey isKeyboardShownWithError:nil],
+                   @"Keyboard should be shown");
+  }
+
   [[EarlGrey selectElementWithMatcher:ManualFallbackProfilesTableViewMatcher()]
       assertWithMatcher:grey_notVisible()];
 }

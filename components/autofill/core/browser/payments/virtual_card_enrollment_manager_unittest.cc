@@ -52,20 +52,14 @@ class VirtualCardEnrollmentManagerTest : public testing::Test {
   void SetUp() override {
     autofill_client_ = std::make_unique<TestAutofillClient>();
     autofill_client_->SetPrefs(test::PrefServiceForTesting());
-    personal_data_manager().Init(
-        /*profile_database=*/nullptr,
-        /*account_database=*/nullptr,
-        /*pref_service=*/autofill_client_->GetPrefs(),
-        /*local_state=*/autofill_client_->GetPrefs(),
-        /*identity_manager=*/nullptr,
-        /*history_service=*/nullptr,
-        /*sync_service=*/&sync_service_,
-        /*strike_database=*/nullptr,
-        /*image_fetcher=*/nullptr, /*shared_storage_handler=*/nullptr);
-    autofill_client_->set_test_payments_network_interface(
-        std::make_unique<payments::TestPaymentsNetworkInterface>(
-            autofill_client_->GetURLLoaderFactory(),
-            autofill_client_->GetIdentityManager(), &personal_data_manager()));
+    personal_data_manager().SetPrefService(autofill_client_->GetPrefs());
+    personal_data_manager().SetSyncServiceForTest(&sync_service_);
+    autofill_client_->GetPaymentsAutofillClient()
+        ->set_test_payments_network_interface(
+            std::make_unique<payments::TestPaymentsNetworkInterface>(
+                autofill_client_->GetURLLoaderFactory(),
+                autofill_client_->GetIdentityManager(),
+                &personal_data_manager()));
     autofill_client_->set_test_strike_database(
         std::make_unique<TestStrikeDatabase>());
     virtual_card_enrollment_manager_ =
@@ -83,8 +77,8 @@ class VirtualCardEnrollmentManagerTest : public testing::Test {
   }
 
   void SetValidCardArtImageForCard(const CreditCard& card) {
-    personal_data_manager().AddCardArtImage(card.card_art_url(),
-                                            gfx::test::CreateImage(40, 24));
+    personal_data_manager().test_payments_data_manager().AddCardArtImage(
+        card.card_art_url(), gfx::test::CreateImage(40, 24));
   }
 
   void SetNetworkImageInResourceBundle(ui::MockResourceBundleDelegate* delegate,
@@ -107,7 +101,9 @@ class VirtualCardEnrollmentManagerTest : public testing::Test {
       const TestLegalMessageLine& google_legal_message,
       const TestLegalMessageLine& issuer_legal_message,
       bool make_image_present) {
-    personal_data_manager().ClearCreditCardArtImages();
+    personal_data_manager()
+        .test_payments_data_manager()
+        .ClearCreditCardArtImages();
     SetUpCard();
     auto* state = virtual_card_enrollment_manager_
                       ->GetVirtualCardEnrollmentProcessState();
@@ -136,8 +132,10 @@ class VirtualCardEnrollmentManagerTest : public testing::Test {
     state->vcn_context_token = kTestVcnContextToken;
     SetUpCard();
     state->virtual_card_enrollment_fields.credit_card = *card_;
-    personal_data_manager().SetPaymentsCustomerData(
-        std::make_unique<PaymentsCustomerData>("123456"));
+    personal_data_manager()
+        .test_payments_data_manager()
+        .SetPaymentsCustomerData(
+            std::make_unique<PaymentsCustomerData>("123456"));
     EXPECT_FALSE(
         virtual_card_enrollment_manager_->ShouldBlockVirtualCardEnrollment(
             base::NumberToString(state->virtual_card_enrollment_fields
@@ -152,8 +150,8 @@ class VirtualCardEnrollmentManagerTest : public testing::Test {
 
  protected:
   payments::TestPaymentsNetworkInterface& payments_network_interface() {
-    return *static_cast<payments::TestPaymentsNetworkInterface*>(
-        autofill_client_->GetPaymentsNetworkInterface());
+    return *autofill_client_->GetPaymentsAutofillClient()
+                ->GetPaymentsNetworkInterface();
   }
   TestPersonalDataManager& personal_data_manager() {
     return *autofill_client_->GetPersonalDataManager();
@@ -182,7 +180,9 @@ TEST_F(VirtualCardEnrollmentManagerTest, InitVirtualCardEnroll) {
                    << " virtual_card_enrollment_source="
                    << static_cast<int>(virtual_card_enrollment_source)
                    << ", make_image_present=" << make_image_present);
-      personal_data_manager().ClearCreditCardArtImages();
+      personal_data_manager()
+          .test_payments_data_manager()
+          .ClearCreditCardArtImages();
       SetUpCard();
       auto* state = virtual_card_enrollment_manager_
                         ->GetVirtualCardEnrollmentProcessState();
@@ -219,7 +219,9 @@ TEST_F(VirtualCardEnrollmentManagerTest, InitVirtualCardEnroll) {
 
 TEST_F(VirtualCardEnrollmentManagerTest,
        InitVirtualCardEnroll_GetDetailsForEnrollmentResponseReceived) {
-  personal_data_manager().ClearCreditCardArtImages();
+  personal_data_manager()
+      .test_payments_data_manager()
+      .ClearCreditCardArtImages();
   SetUpCard();
   auto* state =
       virtual_card_enrollment_manager_->GetVirtualCardEnrollmentProcessState();
@@ -303,7 +305,7 @@ TEST_F(VirtualCardEnrollmentManagerTest, OnDidGetDetailsForEnrollResponse) {
        {VirtualCardEnrollmentSource::kUpstream,
         VirtualCardEnrollmentSource::kDownstream,
         VirtualCardEnrollmentSource::kSettingsPage}) {
-// TODO(crbug.com/1320938): Makes the following test
+// TODO(crbug.com/40223706): Makes the following test
 // PersonalDataManagerTest.AddUpdateRemoveCreditCards fail on iOS.
 // That other test fails when SetNetworkImageInResourceBundle is called here.
 #if BUILDFLAG(IS_IOS)
@@ -469,7 +471,7 @@ TEST_F(VirtualCardEnrollmentManagerTest, Enroll) {
   state->vcn_context_token = kTestVcnContextToken;
   SetUpCard();
   SetValidCardArtImageForCard(*card_);
-  personal_data_manager().SetPaymentsCustomerData(
+  personal_data_manager().test_payments_data_manager().SetPaymentsCustomerData(
       std::make_unique<PaymentsCustomerData>(/*customer_id=*/"123456"));
 
   for (VirtualCardEnrollmentSource virtual_card_enrollment_source :
@@ -545,7 +547,7 @@ TEST_F(VirtualCardEnrollmentManagerTest, Enroll) {
 
 TEST_F(VirtualCardEnrollmentManagerTest, Unenroll) {
   base::HistogramTester histogram_tester;
-  personal_data_manager().SetPaymentsCustomerData(
+  personal_data_manager().test_payments_data_manager().SetPaymentsCustomerData(
       std::make_unique<PaymentsCustomerData>(/*customer_id=*/"123456"));
   virtual_card_enrollment_manager_->SetPaymentsRpcResult(
       AutofillClient::PaymentsRpcResult::kNone);
@@ -798,7 +800,7 @@ TEST_F(VirtualCardEnrollmentManagerTest, VirtualCardEnrollmentFields_LastShow) {
   state->vcn_context_token = kTestVcnContextToken;
   SetUpCard();
   state->virtual_card_enrollment_fields.credit_card = *card_;
-  personal_data_manager().SetPaymentsCustomerData(
+  personal_data_manager().test_payments_data_manager().SetPaymentsCustomerData(
       std::make_unique<PaymentsCustomerData>("123456"));
 
   // Making sure there is no existing strike for the card.

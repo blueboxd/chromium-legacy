@@ -83,7 +83,7 @@ class MediaRouterDesktop : public MediaRouterBase, public mojom::MediaRouter {
                  MediaRouteResponseCallback callback,
                  base::TimeDelta timeout) final;
   void TerminateRoute(const MediaRoute::Id& route_id) final;
-  // TODO(https://crbug.com/1198580): Remove DetachRoute(), SendRouteMessage(),
+  // TODO(crbug.com/40177419): Remove DetachRoute(), SendRouteMessage(),
   // and SendRouteBinaryMessage().
   void DetachRoute(MediaRoute::Id route_id) final;
   void SendRouteMessage(const MediaRoute::Id& route_id,
@@ -118,7 +118,7 @@ class MediaRouterDesktop : public MediaRouterBase, public mojom::MediaRouter {
       PresentationConnectionMessageObserver* observer) final;
 
   // ::media_router::mojom::MediaRouter implementation:
-  // TODO(https://crbug.com/1198580): Remove RegisterMediaRouteProvider().
+  // TODO(crbug.com/40177419): Remove RegisterMediaRouteProvider().
   void RegisterMediaRouteProvider(mojom::MediaRouteProviderId provider_id,
                                   mojo::PendingRemote<mojom::MediaRouteProvider>
                                       media_route_provider_remote) final;
@@ -130,7 +130,7 @@ class MediaRouterDesktop : public MediaRouterBase, public mojom::MediaRouter {
   void ClearTopIssueForSink(const MediaSink::Id& sink_id) final;
   void OnRoutesUpdated(mojom::MediaRouteProviderId provider_id,
                        const std::vector<MediaRoute>& routes) final;
-  // TODO(https://crbug.com/1198580): Remove
+  // TODO(crbug.com/40177419): Remove
   // OnPresentationConnectionStateChanged(), OnPresentationConnectionClosed(),
   // and OnRouteMessagesReceived().
   void OnPresentationConnectionStateChanged(
@@ -466,7 +466,7 @@ class MediaRouterDesktop : public MediaRouterBase, public mojom::MediaRouter {
   DesktopMediaPickerController desktop_picker_;
 
   // Collects logs from the Media Router and the native Media Route Providers.
-  // TODO(crbug.com/1077138): Limit logging before Media Router usage.
+  // TODO(crbug.com/40129011): Limit logging before Media Router usage.
   LoggerImpl logger_;
 
   MediaRouterDebuggerImpl media_router_debugger_;

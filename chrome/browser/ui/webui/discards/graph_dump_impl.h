@@ -82,6 +82,10 @@ class DiscardsGraphDumpImpl : public discards::mojom::GraphDump,
   void OnURLChanged(const performance_manager::FrameNode* frame_node,
                     const GURL& previous_value) override;
   // Ignored.
+  void OnOriginChanged(
+      const performance_manager::FrameNode* frame_node,
+      const std::optional<url::Origin>& previous_value) override {}
+  // Ignored.
   void OnIsAdFrameChanged(
       const performance_manager::FrameNode* frame_node) override {}
   // Ignored.
@@ -179,10 +183,6 @@ class DiscardsGraphDumpImpl : public discards::mojom::GraphDump,
   void OnFaviconUpdated(
       const performance_manager::PageNode* page_node) override;
   // Ignored.
-  void OnFreezingVoteChanged(
-      const performance_manager::PageNode* page_node,
-      std::optional<performance_manager::freezing::FreezingVote>) override {}
-  // Ignored.
   void OnPageStateChanged(
       const performance_manager::PageNode* page_node,
       performance_manager::PageNode::PageState old_state) override {}
@@ -214,12 +214,18 @@ class DiscardsGraphDumpImpl : public discards::mojom::GraphDump,
       const performance_manager::WorkerNode* worker_node) override;
   void OnFinalResponseURLDetermined(
       const performance_manager::WorkerNode* worker_node) override;
+  void OnBeforeClientFrameAdded(
+      const performance_manager::WorkerNode* worker_node,
+      const performance_manager::FrameNode* client_frame_node) override;
   void OnClientFrameAdded(
       const performance_manager::WorkerNode* worker_node,
       const performance_manager::FrameNode* client_frame_node) override;
   void OnBeforeClientFrameRemoved(
       const performance_manager::WorkerNode* worker_node,
       const performance_manager::FrameNode* client_frame_node) override;
+  void OnBeforeClientWorkerAdded(
+      const performance_manager::WorkerNode* worker_node,
+      const performance_manager::WorkerNode* client_worker_node) override;
   void OnClientWorkerAdded(
       const performance_manager::WorkerNode* worker_node,
       const performance_manager::WorkerNode* client_worker_node) override;

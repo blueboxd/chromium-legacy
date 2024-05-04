@@ -88,7 +88,7 @@ class AccessibilityActionBrowserTest : public ContentBrowserTest {
     GURL html_data_url("data:text/html," +
                        base::EscapeQueryParamValue(html, false));
     EXPECT_TRUE(NavigateToURL(shell(), html_data_url));
-    // TODO(crbug.com/1337353): This should ASSERT_TRUE the result, but was
+    // TODO(crbug.com/40848306): This should ASSERT_TRUE the result, but was
     // causing flakes when doing so.
     std::ignore = waiter.WaitForNotification();
   }
@@ -204,6 +204,46 @@ IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest, DoDefaultAction) {
   BrowserAccessibility* focus = GetManager()->GetFocus();
   ASSERT_NE(nullptr, focus);
   EXPECT_EQ(target->GetId(), focus->GetId());
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest,
+                       DoDefaultActionOnObjectWithRole) {
+  LoadInitialAccessibilityTreeFromHtml(R"HTML(
+      <button>Click1</button>
+      <div role="link" tabindex=0>Click2</div>
+      <div role="link" tabindex=0>Click3</div>
+      <p>Initial text</p>
+      <script>
+        document.querySelector('button').addEventListener('click', () => {
+          document.querySelector('p').setAttribute('aria-label', 'Success1');
+        });
+        document.querySelectorAll('div')[0].addEventListener('click', () => {
+          document.querySelector('p').setAttribute('aria-label', 'Success2');
+        });
+        document.querySelectorAll('div')[1].addEventListener('click', () => {
+          document.querySelector('p').setAttribute('aria-label', 'Failure');
+        });
+      </script>
+      )HTML");
+
+  ui::AXActionData action_data;
+  action_data.action = ax::mojom::Action::kDoDefault;
+
+  AccessibilityNotificationWaiter waiter1(
+      shell()->web_contents(), ui::kAXModeComplete, ax::mojom::Event::kClicked);
+  action_data.target_role = ax::mojom::Role::kButton;
+  GetManager()->delegate()->AccessibilityPerformAction(action_data);
+  ASSERT_TRUE(waiter1.WaitForNotification());
+  WaitForAccessibilityTreeToContainNodeWithName(shell()->web_contents(),
+                                                "Success1");
+
+  AccessibilityNotificationWaiter waiter2(
+      shell()->web_contents(), ui::kAXModeComplete, ax::mojom::Event::kClicked);
+  action_data.target_role = ax::mojom::Role::kLink;
+  GetManager()->delegate()->AccessibilityPerformAction(action_data);
+  ASSERT_TRUE(waiter2.WaitForNotification());
+  WaitForAccessibilityTreeToContainNodeWithName(shell()->web_contents(),
+                                                "Success2");
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest, FocusAction) {
@@ -458,7 +498,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityCanvasActionBrowserTest,
                                           ui::kAXModeComplete,
                                           ax::mojom::Event::kImageFrameUpdated);
   GetManager()->GetImageData(*target, gfx::Size());
-  // TODO(crbug.com/1337353): This should ASSERT_TRUE the result, but was
+  // TODO(crbug.com/40848306): This should ASSERT_TRUE the result, but was
   // causing flakes when doing so.
   std::ignore = waiter2.WaitForNotification();
 
@@ -505,7 +545,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityCanvasActionBrowserTest,
                                           ui::kAXModeComplete,
                                           ax::mojom::Event::kImageFrameUpdated);
   GetManager()->GetImageData(*target, gfx::Size(4, 4));
-  // TODO(crbug.com/1337353): This should ASSERT_TRUE the result, but was
+  // TODO(crbug.com/40848306): This should ASSERT_TRUE the result, but was
   // causing flakes when doing so.
   std::ignore = waiter2.WaitForNotification();
 
@@ -1299,7 +1339,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest, StitchChildTree) {
   link->AccessibilityPerformAction(action_data);
   ASSERT_TRUE(waiter.WaitForNotification());
 
-  // TODO(crbug.com/1468416): Platform nodes are not yet supported in
+  // TODO(crbug.com/40924888): Platform nodes are not yet supported in
   // stitched child trees but will be after the AX Views project is completed.
   // For now, we compare with `ui::AXNode`s.
   const ui::AXNode* child_tree_root_node =
@@ -1352,7 +1392,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest, ClickSVG) {
 #endif  // !BUILDFLAG(IS_ANDROID)
 }
 
-// TODO(crbug.com/1476956) Disabled due to flakiness.
+// TODO(crbug.com/40928581) Disabled due to flakiness.
 IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest,
                        DISABLED_ClickAXNodeGeneratedFromCSSContent) {
   LoadInitialAccessibilityTreeFromHtml(R"HTML(

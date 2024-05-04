@@ -6,19 +6,19 @@
 #define CHROME_BROWSER_PASSWORD_MANAGER_ANDROID_PASSWORD_STORE_ANDROID_ACCOUNT_BACKEND_H_
 
 #include "chrome/browser/password_manager/android/password_store_android_backend.h"
+#include "chrome/browser/password_manager/android/password_sync_controller_delegate_android.h"
 #include "components/password_manager/core/browser/password_store/password_store_backend.h"
 #include "components/password_manager/core/browser/password_store/password_store_interface.h"
 
 namespace syncer {
+class ModelTypeControllerDelegate;
 class SyncService;
-class ProxyModelTypeControllerDelegate;
 }  // namespace syncer
 
 namespace password_manager {
 
 class AffiliatedMatchHelper;
-class AffiliationsPrefetcher;
-class PasswordSyncControllerDelegateAndroid;
+class PasswordAffiliationSourceAdapter;
 
 // This class processes passwords only from an account.
 class PasswordStoreAndroidAccountBackend : public PasswordStoreBackend,
@@ -28,7 +28,7 @@ class PasswordStoreAndroidAccountBackend : public PasswordStoreBackend,
   // or account password store.
   PasswordStoreAndroidAccountBackend(
       PrefService* prefs,
-      AffiliationsPrefetcher* affiliations_prefetcher,
+      PasswordAffiliationSourceAdapter* password_affiliation_adapter,
       password_manager::IsAccountStore is_account_store);
 
   PasswordStoreAndroidAccountBackend(
@@ -38,10 +38,10 @@ class PasswordStoreAndroidAccountBackend : public PasswordStoreBackend,
       std::unique_ptr<PasswordSyncControllerDelegateAndroid>
           sync_controller_delegate,
       PrefService* prefs,
-      AffiliationsPrefetcher* affiliations_prefetcher);
+      PasswordAffiliationSourceAdapter* password_affiliation_adapter);
   ~PasswordStoreAndroidAccountBackend() override;
 
-  // PasswordStoreAndroidBackend implementation
+  // PasswordStoreBackend implementation.
   void InitBackend(AffiliatedMatchHelper* affiliated_match_helper,
                    RemoteChangesReceived remote_form_changes_received,
                    base::RepeatingClosure sync_enabled_or_disabled_cb,
@@ -64,22 +64,25 @@ class PasswordStoreAndroidAccountBackend : public PasswordStoreBackend,
                      PasswordChangesOrErrorReply callback) override;
   void UpdateLoginAsync(const PasswordForm& form,
                         PasswordChangesOrErrorReply callback) override;
-  void RemoveLoginAsync(const PasswordForm& form,
+  void RemoveLoginAsync(const base::Location& location,
+                        const PasswordForm& form,
                         PasswordChangesOrErrorReply callback) override;
   void RemoveLoginsByURLAndTimeAsync(
+      const base::Location& location,
       const base::RepeatingCallback<bool(const GURL&)>& url_filter,
       base::Time delete_begin,
       base::Time delete_end,
       base::OnceCallback<void(bool)> sync_completion,
       PasswordChangesOrErrorReply callback) override;
   void RemoveLoginsCreatedBetweenAsync(
+      const base::Location& location,
       base::Time delete_begin,
       base::Time delete_end,
       PasswordChangesOrErrorReply callback) override;
   void DisableAutoSignInForOriginsAsync(
       const base::RepeatingCallback<bool(const GURL&)>& origin_filter,
       base::OnceClosure completion) override;
-  std::unique_ptr<syncer::ProxyModelTypeControllerDelegate>
+  std::unique_ptr<syncer::ModelTypeControllerDelegate>
   CreateSyncControllerDelegate() override;
   void OnSyncServiceInitialized(syncer::SyncService* sync_service) override;
   void RecordAddLoginAsyncCalledFromTheStore() override;
@@ -116,15 +119,17 @@ class PasswordStoreAndroidAccountBackend : public PasswordStoreBackend,
   // called.
   void SyncShutdown();
 
-  raw_ptr<AffiliationsPrefetcher> affiliations_prefetcher_ = nullptr;
+  const raw_ptr<PasswordAffiliationSourceAdapter> password_affiliation_adapter_;
   raw_ptr<AffiliatedMatchHelper> affiliated_match_helper_ = nullptr;
   raw_ptr<syncer::SyncService> sync_service_ = nullptr;
 
-  // Delegate to handle sync events.
+  // Legacy delegate to handle sync events.
   std::unique_ptr<PasswordSyncControllerDelegateAndroid>
       sync_controller_delegate_;
 
   bool should_disable_saving_due_to_error_ = false;
+
+  base::RepeatingClosure sync_enabled_or_disabled_cb_;
 
   base::WeakPtrFactory<PasswordStoreAndroidAccountBackend> weak_ptr_factory_{
       this};

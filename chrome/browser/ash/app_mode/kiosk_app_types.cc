@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ash/app_mode/kiosk_app_types.h"
 
-#include <algorithm>
 #include <optional>
 #include <ostream>
 #include <string>
@@ -70,6 +69,9 @@ KioskAppId::KioskAppId(std::string_view chrome_app_id,
 KioskAppId::KioskAppId(KioskAppType type, const AccountId& account_id)
     : type(type), account_id(account_id) {}
 KioskAppId::KioskAppId(const KioskAppId&) = default;
+KioskAppId::KioskAppId(KioskAppId&&) = default;
+KioskAppId& KioskAppId::operator=(const KioskAppId&) = default;
+KioskAppId& KioskAppId::operator=(KioskAppId&&) = default;
 KioskAppId::~KioskAppId() = default;
 
 std::ostream& operator<<(std::ostream& stream, const KioskAppId& id) {
@@ -79,6 +81,11 @@ std::ostream& operator<<(std::ostream& stream, const KioskAppId& id) {
     stream << ", app_id: " << id.app_id.value();
   }
   return stream << "}";
+}
+
+bool operator==(const KioskAppId& first, const KioskAppId& second) {
+  return (first.type == second.type) && (first.app_id == second.app_id) &&
+         (first.account_id == second.account_id);
 }
 
 }  // namespace ash

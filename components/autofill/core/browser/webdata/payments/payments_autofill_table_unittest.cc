@@ -184,6 +184,9 @@ TEST_F(PaymentsAutofillTableTest, MaskedServerIban) {
   std::vector<AutofillMetadata> outputs;
   ASSERT_TRUE(table_->GetServerIbansMetadata(outputs));
   ASSERT_FALSE(outputs.empty());
+  EXPECT_EQ(iban_0.use_date(), outputs[0].use_date);
+  EXPECT_EQ(iban_1.use_date(), outputs[1].use_date);
+  EXPECT_EQ(iban_2.use_date(), outputs[2].use_date);
 }
 
 // Test that masked IBANs can be added and loaded successfully without updating
@@ -322,29 +325,6 @@ TEST_F(PaymentsAutofillTableTest, AddCreditCardCvcWithFlagOff) {
   EXPECT_TRUE(table_->UpdateCreditCard(card));
   db_card = table_->GetCreditCard(card.guid());
   EXPECT_EQ(u"", db_card->cvc());
-}
-
-// Tests that verify ClearLocalPaymentMethodsData function working as expected.
-TEST_F(PaymentsAutofillTableTest, ClearLocalPaymentMethodsData) {
-  base::test::ScopedFeatureList features(
-      features::kAutofillEnableCvcStorageAndFilling);
-  CreditCard card = test::WithCvc(test::GetCreditCard());
-  EXPECT_TRUE(table_->AddCreditCard(card));
-  std::unique_ptr<CreditCard> db_card = table_->GetCreditCard(card.guid());
-  EXPECT_EQ(card.cvc(), db_card->cvc());
-  Iban iban = test::GetLocalIban();
-  EXPECT_TRUE(table_->AddLocalIban(iban));
-
-  // After calling ClearLocalPaymentMethodsData, the local_stored_cvc,
-  // credit_cards, and local_ibans tables should be empty.
-  table_->ClearLocalPaymentMethodsData();
-  EXPECT_FALSE(table_->GetCreditCard(card.guid()));
-  EXPECT_FALSE(table_->GetLocalIban(iban.guid()));
-  sql::Statement s(db_->GetSQLConnection()->GetUniqueStatement(
-      "SELECT guid FROM local_stored_cvc WHERE guid=?"));
-  s.BindString(0, card.guid());
-  ASSERT_TRUE(s.is_valid());
-  EXPECT_FALSE(s.Step());
 }
 
 // Tests that adding credit card with cvc, get credit card with cvc and update
@@ -567,23 +547,29 @@ TEST_F(PaymentsAutofillTableTest, ReconcileServerCvcs) {
   EXPECT_TRUE(table_->AddServerCvc(ServerCvc{3333, u"456", kArbitraryTime}));
   EXPECT_EQ(3U, table_->GetAllServerCvcs().size());
 
+  std::vector<std::unique_ptr<ServerCvc>> deleted_cvc_list =
+      table_->DeleteOrphanedServerCvcs();
+
   // After we reconcile server cvc, we should only see 2 cvcs in
   // server_stored_cvc table because obsolete cvc has been reconciled.
-  EXPECT_TRUE(table_->ReconcileServerCvcs());
+  // Additionally, `deleted_cvc_list` should contain the obsolete CVC..
   EXPECT_EQ(2U, table_->GetAllServerCvcs().size());
+  ASSERT_EQ(1uL, deleted_cvc_list.size());
+  EXPECT_EQ(3333, deleted_cvc_list[0]->instrument_id);
 }
 
-TEST_F(PaymentsAutofillTableTest, AddFullServerCreditCard) {
+TEST_F(PaymentsAutofillTableTest, AddServerCreditCardForTesting) {
   CreditCard credit_card;
-  credit_card.set_record_type(CreditCard::RecordType::kFullServerCard);
+  credit_card.set_record_type(CreditCard::RecordType::kMaskedServerCard);
   credit_card.set_server_id("server_id");
   credit_card.set_origin("https://www.example.com/");
   credit_card.SetRawInfo(CREDIT_CARD_NAME_FULL, u"Jack Torrance");
-  credit_card.SetRawInfo(CREDIT_CARD_NUMBER, u"1234567890123456");
+  credit_card.SetRawInfo(CREDIT_CARD_NUMBER, u"3456");
   credit_card.SetRawInfo(CREDIT_CARD_EXP_MONTH, u"04");
   credit_card.SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, u"2013");
+  credit_card.SetNetworkForMaskedCard(kVisaCard);
 
-  EXPECT_TRUE(table_->AddFullServerCreditCard(credit_card));
+  EXPECT_TRUE(table_->AddServerCreditCardForTesting(credit_card));
 
   std::vector<std::unique_ptr<CreditCard>> outputs;
   ASSERT_TRUE(table_->GetServerCreditCards(outputs));
@@ -1045,11 +1031,12 @@ TEST_F(PaymentsAutofillTableTest, AddUpdateServerCardMetadata) {
 
 TEST_F(PaymentsAutofillTableTest, UpdateServerCardMetadataDoesNotChangeData) {
   std::vector<CreditCard> inputs;
-  inputs.emplace_back(CreditCard::RecordType::kFullServerCard, "a123");
+  inputs.emplace_back(CreditCard::RecordType::kMaskedServerCard, "a123");
   inputs[0].SetRawInfo(CREDIT_CARD_NAME_FULL, u"Paul F. Tompkins");
   inputs[0].SetRawInfo(CREDIT_CARD_EXP_MONTH, u"1");
   inputs[0].SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, u"2020");
-  inputs[0].SetRawInfo(CREDIT_CARD_NUMBER, u"4111111111111111");
+  inputs[0].SetRawInfo(CREDIT_CARD_NUMBER, u"1111");
+  inputs[0].SetNetworkForMaskedCard(kVisaCard);
   test::SetServerCreditCards(table_.get(), inputs);
 
   std::vector<std::unique_ptr<CreditCard>> outputs;
@@ -1723,7 +1710,7 @@ TEST_F(PaymentsAutofillTableTest, AddInactiveCreditCardBenefit) {
   CreditCardMerchantBenefit inactive_benefit =
       test::GetActiveCreditCardMerchantBenefit();
   test_api(inactive_benefit).SetStartTime(AutofillClock::Now() + base::Days(1));
-  EXPECT_TRUE(inactive_benefit.IsValid());
+  EXPECT_TRUE(inactive_benefit.IsValidForWriteFromSync());
   input_benefits.push_back(std::move(inactive_benefit));
   EXPECT_TRUE(table_->SetCreditCardBenefits(input_benefits));
 
@@ -1739,13 +1726,13 @@ TEST_F(PaymentsAutofillTableTest, AddInvalidCreditCardBenefit) {
   // valid benefit.
   CreditCardFlatRateBenefit valid_benefit =
       test::GetActiveCreditCardFlatRateBenefit();
-  ASSERT_TRUE(valid_benefit.IsValid());
+  ASSERT_TRUE(valid_benefit.IsValidForWriteFromSync());
   CreditCardCategoryBenefit invalid_benefit =
       test::GetActiveCreditCardCategoryBenefit();
   test_api(invalid_benefit)
       .SetBenefitCategory(
           CreditCardCategoryBenefit::BenefitCategory::kUnknownBenefitCategory);
-  ASSERT_FALSE(invalid_benefit.IsValid());
+  ASSERT_FALSE(invalid_benefit.IsValidForWriteFromSync());
 
   CreditCardBenefitBase::BenefitId valid_input_benefit_id =
       valid_benefit.benefit_id();

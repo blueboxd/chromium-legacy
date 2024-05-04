@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/toolbar/toolbar_controller.h"
 
+#include <string_view>
+
 #include "base/functional/overloaded.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
@@ -165,7 +167,7 @@ std::vector<ToolbarController::ResponsiveElementInfo>
 ToolbarController::GetDefaultResponsiveElements(Browser* browser) {
   bool is_refresh = features::IsChromeRefresh2023();
   bool is_incognito = browser->profile()->IsIncognitoProfile();
-  // TODO(crbug.com/1445573): Fill in observed identifier.
+  // TODO(crbug.com/40912482): Fill in observed identifier.
   // Order matters because it should match overflow menu order top to bottom.
   std::vector<ToolbarController::ResponsiveElementInfo> elements = {
       {ToolbarController::ElementIdInfo{
@@ -256,7 +258,7 @@ std::string ToolbarController::GetActionNameFromElementIdentifier(
     absl::variant<ui::ElementIdentifier, actions::ActionId> identifier) {
   static const base::NoDestructor<
       base::flat_map<absl::variant<ui::ElementIdentifier, actions::ActionId>,
-                     base::StringPiece>>
+                     std::string_view>>
       identifier_to_action_name_map({
           {kToolbarAvatarButtonElementId, "AvatarButton"},
           {kToolbarChromeLabsButtonElementId, "ChromeLabsButton"},
@@ -282,6 +284,8 @@ std::string ToolbarController::GetActionNameFromElementIdentifier(
            "PinnedShowSearchCompanionSidePanelButton"},
           {kActionSidePanelShowPerformance, "ShowPerformanceSidePanelButton"},
           {kActionTaskManager, "PinnedTaskManagerButton"},
+          {kActionSidePanelShowLensOverlayResults,
+           "PinnedShowLensOverlayResultsSidePanelButton"},
       });
 
   const auto it = identifier_to_action_name_map->find(identifier);

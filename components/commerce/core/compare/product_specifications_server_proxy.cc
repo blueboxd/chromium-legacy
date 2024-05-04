@@ -6,6 +6,7 @@
 
 #include <optional>
 
+#include "base/command_line.h"
 #include "base/json/json_writer.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
@@ -25,6 +26,7 @@ namespace {
 const char kProductSpecificationsKey[] = "productSpecifications";
 const char kProductSpecificationSectionsKey[] = "productSpecificationSections";
 const char kProductSpecificationValuesKey[] = "productSpecificationValues";
+const char kProductIdsKey[] = "productIds";
 const char kKeyKey[] = "key";
 const char kTitleKey[] = "title";
 const char kTypeKey[] = "type";
@@ -34,6 +36,7 @@ const char kGPCKey[] = "gpcId";
 const char kMIDKey[] = "mid";
 const char kImageURLKey[] = "imageUrl";
 const char kDescriptionsKey[] = "descriptions";
+const char kSummaryKey[] = "summary";
 
 const char kGPCTypeName[] = "GLOBAL_PRODUCT_CLUSTER_ID";
 
@@ -72,26 +75,10 @@ constexpr net::NetworkTrafficAnnotationTag kShoppingListTrafficAnnotation =
             "feature based on things like country, locale, and whether the "
             "user is signed in. The request is only made after the user "
             "chooses to engage with the feature."
-          chrome_policy {
-            ProductSpecificationsEnabled {
-              policy_options {mode: MANDATORY}
-              ProductSpecificationsEnabled: false
-            }
-          }
+          chrome_policy {}
         })");
 
 }  // namespace
-
-ProductSpecifications::ProductSpecifications() = default;
-
-ProductSpecifications::ProductSpecifications(const ProductSpecifications&) =
-    default;
-ProductSpecifications::~ProductSpecifications() = default;
-
-ProductSpecifications::Product::Product() = default;
-ProductSpecifications::Product::Product(const ProductSpecifications::Product&) =
-    default;
-ProductSpecifications::Product::~Product() = default;
 
 ProductSpecificationsServerProxy::ProductSpecificationsServerProxy(
     AccountChecker* account_checker,
@@ -105,9 +92,8 @@ ProductSpecificationsServerProxy::~ProductSpecificationsServerProxy() = default;
 
 void ProductSpecificationsServerProxy::GetProductSpecificationsForClusterIds(
     std::vector<uint64_t> cluster_ids,
-    base::OnceCallback<void(std::vector<uint64_t>,
-                            std::optional<ProductSpecifications>)> callback) {
-  if (IsProductSpecificationsEnabled(account_checker_)) {
+    ProductSpecificationsCallback callback) {
+  if (!IsProductSpecificationsEnabled(account_checker_)) {
     std::move(callback).Run(cluster_ids, std::nullopt);
     return;
   }
@@ -119,9 +105,16 @@ void ProductSpecificationsServerProxy::GetProductSpecificationsForClusterIds(
     id_definition.Set(kIdentifierKey, base::NumberToString(id));
     product_id_list.Append(std::move(id_definition));
   }
+
+  base::Value::Dict json_dict;
+  json_dict.Set(kProductIdsKey, std::move(product_id_list));
   std::string post_data;
-  base::JSONWriter::Write(product_id_list, &post_data);
-  auto fetcher = CreateEndpointFetcher(GURL(), kGetHttpMethod, post_data);
+  base::JSONWriter::Write(json_dict, &post_data);
+
+  auto fetcher = CreateEndpointFetcher(
+      GURL(base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          kProductSpecificationsUrlKey)),
+      kPostHttpMethod, post_data);
 
   auto* const fetcher_ptr = fetcher.get();
   fetcher_ptr->Fetch(base::BindOnce(
@@ -259,6 +252,11 @@ ProductSpecificationsServerProxy::ProductSpecificationsFromJsonResponse(
     const std::string* image_url = spec.GetDict().FindString(kImageURLKey);
     if (image_url) {
       product.image_url = GURL(*image_url);
+    }
+
+    const std::string* summary = spec.GetDict().FindString(kSummaryKey);
+    if (summary) {
+      product.summary = *summary;
     }
 
     const base::Value::List* product_spec_values =

@@ -98,8 +98,9 @@ class SoftwareRendererTest : public testing::Test {
 
     // Makes a resource id that refers to the registered SharedBitmapId.
     return child_resource_provider_->ImportResource(
-        TransferableResource::MakeSoftware(shared_bitmap_id, gpu::SyncToken(),
-                                           size, SinglePlaneFormat::kRGBA_8888),
+        TransferableResource::MakeSoftwareSharedBitmap(
+            shared_bitmap_id, gpu::SyncToken(), size,
+            SinglePlaneFormat::kRGBA_8888),
         base::DoNothing());
   }
 
@@ -233,7 +234,7 @@ TEST_F(SoftwareRendererTest, DebugBorderDrawQuad) {
   quad_3->SetNew(shared_quad_state, rect_3, rect_3, SkColors::kYellow, false);
 
   // Test one non-opaque color.
-  // TODO(crbug.com/1308932): Colors clearly get transformed into ints at some
+  // TODO(crbug.com/40219248): Colors clearly get transformed into ints at some
   // point in the pipeline, so we need to use values n/255 for now.
   SkColor4f semi_transparent_white =
       SkColor4f{1.0f, 1.0f, 1.0f, 128.0 / 255.0f};

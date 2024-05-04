@@ -15,7 +15,6 @@
 #import "components/password_manager/core/browser/ui/credential_ui_entry.h"
 #import "components/password_manager/core/browser/ui/password_check_referrer.h"
 #import "components/strings/grit/components_strings.h"
-#import "components/sync/base/features.h"
 #import "components/sync/service/sync_service.h"
 #import "ios/chrome/browser/autofill/model/personal_data_manager_factory.h"
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
@@ -25,14 +24,13 @@
 #import "ios/chrome/browser/shared/public/commands/browser_commands.h"
 #import "ios/chrome/browser/shared/public/commands/browsing_data_commands.h"
 #import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
+#import "ios/chrome/browser/shared/public/commands/quick_delete_commands.h"
 #import "ios/chrome/browser/shared/public/commands/snackbar_commands.h"
 #import "ios/chrome/browser/shared/ui/symbols/chrome_icon.h"
 #import "ios/chrome/browser/shared/ui/table_view/table_view_utils.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/sync/model/enterprise_utils.h"
 #import "ios/chrome/browser/sync/model/sync_service_factory.h"
-#import "ios/chrome/browser/sync/model/sync_setup_service.h"
-#import "ios/chrome/browser/sync/model/sync_setup_service_factory.h"
 #import "ios/chrome/browser/tabs/model/inactive_tabs/features.h"
 #import "ios/chrome/browser/ui/keyboard/UIKeyCommand+Chrome.h"
 #import "ios/chrome/browser/ui/settings/autofill/autofill_credit_card_edit_table_view_controller.h"
@@ -40,6 +38,7 @@
 #import "ios/chrome/browser/ui/settings/autofill/autofill_profile_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/clear_browsing_data/clear_browsing_data_coordinator.h"
 #import "ios/chrome/browser/ui/settings/clear_browsing_data/clear_browsing_data_table_view_controller.h"
+#import "ios/chrome/browser/ui/settings/clear_browsing_data/features.h"
 #import "ios/chrome/browser/ui/settings/content_settings/content_settings_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/default_browser/default_browser_settings_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/google_services/google_services_settings_coordinator.h"
@@ -48,7 +47,6 @@
 #import "ios/chrome/browser/ui/settings/google_services/manage_accounts/accounts_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_constants.h"
 #import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_coordinator.h"
-#import "ios/chrome/browser/ui/settings/import_data_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/notifications/notifications_coordinator.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_coordinator.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_coordinator_delegate.h"
@@ -124,6 +122,8 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
 @property(nonatomic, strong)
     PasswordDetailsCoordinator* passwordDetailsCoordinator;
 
+// TODO(crbug.com/335387869): Delete this coordinator when Quick Delete is fully
+// launched. The coordinator for the clear browsing data screen.
 @property(nonatomic, strong)
     ClearBrowsingDataCoordinator* clearBrowsingDataCoordinator;
 
@@ -364,7 +364,8 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
       [[UserFeedbackConfiguration alloc] init];
   configuration.data = userFeedbackData;
   configuration.handler = applicationHandler;
-  configuration.singleSignOnService = GetApplicationContext()->GetSSOService();
+  configuration.singleSignOnService =
+      GetApplicationContext()->GetSingleSignOnService();
 
   UIViewController* controller =
       ios::provider::CreateUserFeedbackViewController(configuration);
@@ -383,32 +384,6 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
   // SettingsNavigationController.
   navigationController.overrideUserInterfaceStyle =
       controller.overrideUserInterfaceStyle;
-  return navigationController;
-}
-
-+ (instancetype)
-    importDataControllerForBrowser:(Browser*)browser
-                          delegate:
-                              (id<SettingsNavigationControllerDelegate>)delegate
-                importDataDelegate:
-                    (id<ImportDataControllerDelegate>)importDataDelegate
-                         fromEmail:(NSString*)fromEmail
-                           toEmail:(NSString*)toEmail {
-  UIViewController* controller =
-      [[ImportDataTableViewController alloc] initWithDelegate:importDataDelegate
-                                                    fromEmail:fromEmail
-                                                      toEmail:toEmail];
-
-  SettingsNavigationController* navigationController =
-      [[SettingsNavigationController alloc]
-          initWithRootViewController:controller
-                             browser:browser
-                            delegate:delegate];
-
-  // Make sure the cancel button is always present, as the Save Passwords screen
-  // isn't just shown from Settings.
-  [controller navigationItem].leftBarButtonItem =
-      [navigationController cancelButton];
   return navigationController;
 }
 
@@ -503,7 +478,8 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
                               delegate:
                                   (id<SettingsNavigationControllerDelegate>)
                                       delegate
-                          sourceForUMA:(DefaultBrowserPromoSource)source {
+                          sourceForUMA:
+                              (DefaultBrowserSettingsPageSource)source {
   DefaultBrowserSettingsTableViewController* controller =
       [[DefaultBrowserSettingsTableViewController alloc] init];
   SettingsNavigationController* navigationController =
@@ -522,6 +498,7 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
                                  delegate:
                                      (id<SettingsNavigationControllerDelegate>)
                                          delegate {
+  CHECK(!IsIosQuickDeleteEnabled());
   SettingsNavigationController* navigationController =
       [[SettingsNavigationController alloc]
           initWithRootViewController:nil
@@ -763,12 +740,10 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
   // users migrated to kSignin in phase 3. See ConsentLevel::kSync
   // documentation for details.
   SyncSettingsAccountState accountState =
-      (base::FeatureList::IsEnabled(
-           syncer::kReplaceSyncPromosWithSignInPromos) &&
-       !SyncServiceFactory::GetForBrowserState(self.browser->GetBrowserState())
-            ->HasSyncConsent())
-          ? SyncSettingsAccountState::kSignedIn
-          : SyncSettingsAccountState::kSyncing;
+      SyncServiceFactory::GetForBrowserState(self.browser->GetBrowserState())
+              ->HasSyncConsent()
+          ? SyncSettingsAccountState::kSyncing
+          : SyncSettingsAccountState::kSignedIn;
   self.manageSyncSettingsCoordinator = [[ManageSyncSettingsCoordinator alloc]
       initWithBaseNavigationController:self
                                browser:self.browser
@@ -856,7 +831,7 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
 - (void)showPasswordDetailsForCredential:
             (password_manager::CredentialUIEntry)credential
                         showCancelButton:(BOOL)showCancelButton {
-  // TODO(crbug.com/1464966): Switch back to DCHECK if the number of reports is
+  // TODO(crbug.com/40067451): Switch back to DCHECK if the number of reports is
   // low.
   DUMP_WILL_BE_CHECK(!self.passwordDetailsCoordinator);
   self.passwordDetailsCoordinator = [[PasswordDetailsCoordinator alloc]
@@ -1096,7 +1071,8 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
 
 #pragma mark - SettingsCommands
 
-// TODO(crbug.com/779791) : Do not pass `baseViewController` through dispatcher.
+// TODO(crbug.com/41352590) : Do not pass `baseViewController` through
+// dispatcher.
 - (void)showAccountsSettingsFromViewController:
             (UIViewController*)baseViewController
                           skipIfUINotAvailable:(BOOL)skipIfUINotAvailable {
@@ -1111,19 +1087,22 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
   self.accountsCoordinator = accountsCoordinator;
 }
 
-// TODO(crbug.com/779791) : Do not pass `baseViewController` through dispatcher.
+// TODO(crbug.com/41352590) : Do not pass `baseViewController` through
+// dispatcher.
 - (void)showGoogleServicesSettingsFromViewController:
     (UIViewController*)baseViewController {
   [self showGoogleServices];
 }
 
-// TODO(crbug.com/779791) : Do not pass `baseViewController` through dispatcher.
+// TODO(crbug.com/41352590) : Do not pass `baseViewController` through
+// dispatcher.
 - (void)showSyncSettingsFromViewController:
     (UIViewController*)baseViewController {
   [self showSyncServices];
 }
 
-// TODO(crbug.com/779791) : Do not pass `baseViewController` through dispatcher.
+// TODO(crbug.com/41352590) : Do not pass `baseViewController` through
+// dispatcher.
 - (void)showSyncPassphraseSettingsFromViewController:
     (UIViewController*)baseViewController {
   SyncEncryptionPassphraseTableViewController* controller =
@@ -1133,14 +1112,16 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
   [self pushViewController:controller animated:YES];
 }
 
-// TODO(crbug.com/779791) : Do not pass `baseViewController` through dispatcher.
+// TODO(crbug.com/41352590) : Do not pass `baseViewController` through
+// dispatcher.
 - (void)showSavedPasswordsSettingsFromViewController:
             (UIViewController*)baseViewController
                                     showCancelButton:(BOOL)showCancelButton {
   [self showSavedPasswordsAndShowCancelButton:showCancelButton];
 }
 
-// TODO(crbug.com/779791) : Do not pass `baseViewController` through dispatcher.
+// TODO(crbug.com/41352590) : Do not pass `baseViewController` through
+// dispatcher.
 - (void)showProfileSettingsFromViewController:
     (UIViewController*)baseViewController {
   AutofillProfileTableViewController* controller =
@@ -1174,7 +1155,8 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
 - (void)showDefaultBrowserSettingsFromViewController:
             (UIViewController*)baseViewController
                                         sourceForUMA:
-                                            (DefaultBrowserPromoSource)source {
+                                            (DefaultBrowserSettingsPageSource)
+                                                source {
   DefaultBrowserSettingsTableViewController* controller =
       [[DefaultBrowserSettingsTableViewController alloc] init];
   ConfigureHandlers(controller, _browser->GetCommandDispatcher());
@@ -1183,7 +1165,9 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
 }
 
 - (void)showClearBrowsingDataSettings {
+  CHECK(!IsIosQuickDeleteEnabled());
   [self stopClearBrowsingDataCoordinator];
+
   self.clearBrowsingDataCoordinator = [[ClearBrowsingDataCoordinator alloc]
       initWithBaseNavigationController:self
                                browser:self.browser];

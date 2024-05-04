@@ -37,6 +37,9 @@ drivefs::mojom::QueryParametersPtr CreateRecentlyModifiedQuery(
   query->modified_time = base::Time::Now() - max_recency;
   query->modified_time_operator =
       drivefs::mojom::QueryParameters::DateComparisonOperator::kGreaterThan;
+  query->viewed_time = base::Time::Now() - max_recency;
+  query->viewed_time_operator =
+      drivefs::mojom::QueryParameters::DateComparisonOperator::kGreaterThan;
   query->page_size = 15;
   query->query_source =
       drivefs::mojom::QueryParameters::QuerySource::kLocalOnly;
@@ -76,35 +79,50 @@ drivefs::mojom::QueryParametersPtr CreateSharedWithMeQuery() {
 
 FileSuggestData CreateFileSuggestionWithJustification(
     const base::FilePath& path,
-    app_list::JustificationType justification_type,
-    const base::Time& timestamp,
-    const drivefs::mojom::UserInfo* user_info) {
-  // Use secondary timestamp for files suggested because they were shared with
-  // the user, so they are ordered after suggestions for viewed/modified files.
-  const bool shared_with_me_suggestion =
-      justification_type == app_list::JustificationType::kShared;
-  std::optional<base::Time> primary_timestamp;
-  std::optional<base::Time> secondary_timestamp;
-  if (shared_with_me_suggestion) {
-    secondary_timestamp = timestamp;
-  } else {
-    primary_timestamp = timestamp;
+    const std::optional<base::Time>& modified_time,
+    const std::optional<base::Time>& viewed_time,
+    const std::optional<base::Time>& shared_time,
+    const std::optional<std::u16string>& justification_string,
+    const std::optional<std::string>& drive_file_id,
+    const std::optional<std::string>& icon_url) {
+  return FileSuggestData(
+      FileSuggestionType::kDriveFile, path, justification_string, modified_time,
+      viewed_time, shared_time,
+      /*new_score=*/std::nullopt, drive_file_id, /*icon_url=*/icon_url);
+}
+
+std::optional<std::u16string> CreateSuggestionStatusForNonSharedFile(
+    const drivefs::mojom::FileMetadata& file_metadata) {
+  const base::Time& modified_time = file_metadata.modification_time;
+  const base::Time& viewed_time = file_metadata.last_viewed_by_me_time;
+  if (viewed_time > modified_time) {
+    return app_list::GetJustificationString(
+        FileSuggestionJustificationType::kViewed, viewed_time, "");
   }
 
-  return FileSuggestData(
-      FileSuggestionType::kDriveFile, path,
-      app_list::GetJustificationString(
-          justification_type, timestamp,
-          user_info ? user_info->display_name : std::string()),
-      primary_timestamp, secondary_timestamp, /*new_score=*/std::nullopt);
+  // Last modification was by the user.
+  if (file_metadata.modified_by_me_time &&
+      !file_metadata.modified_by_me_time->is_null() &&
+      file_metadata.modified_by_me_time >= modified_time) {
+    return app_list::GetJustificationString(
+        FileSuggestionJustificationType::kModifiedByCurrentUser,
+        *file_metadata.modified_by_me_time, "");
+  }
+
+  const auto& user_info = file_metadata.last_modifying_user;
+  return app_list::GetJustificationString(
+      FileSuggestionJustificationType::kModified, modified_time,
+      user_info ? user_info->display_name : "");
 }
 
 std::optional<FileSuggestData> CreateFileSuggestion(
     const base::FilePath& path,
     const drivefs::mojom::FileMetadata& file_metadata,
     base::TimeDelta max_recency) {
-  const base::Time& modified_time = file_metadata.modification_time;
   const base::Time& viewed_time = file_metadata.last_viewed_by_me_time;
+  const base::Time modified_time =
+      file_metadata.modified_by_me_time.value_or(base::Time());
+  const std::string& icon_url = file_metadata.custom_icon_url;
 
   // If the file was shared with user, but not yet viewed by the user, surface
   // it as a shared file.
@@ -114,47 +132,46 @@ std::optional<FileSuggestData> CreateFileSuggestion(
     if ((base::Time::Now() - *shared_time).magnitude() > max_recency) {
       return std::nullopt;
     }
-
-    return CreateFileSuggestionWithJustification(
-        path, app_list::JustificationType::kShared, *shared_time,
-        features::IsShowSharingUserInLauncherContinueSectionEnabled()
-            ? file_metadata.sharing_user.get()
-            : nullptr);
+    std::string sharing_user_name;
+    if (features::IsShowSharingUserInLauncherContinueSectionEnabled()) {
+      const auto& user_info = file_metadata.sharing_user;
+      sharing_user_name = user_info ? user_info->display_name : "";
+    }
+    return {CreateFileSuggestionWithJustification(
+        path, /*modified_time=*/std::nullopt, /*viewed_time*/ std::nullopt,
+        *shared_time,
+        app_list::GetJustificationString(
+            FileSuggestionJustificationType::kShared, *shared_time,
+            sharing_user_name),
+        file_metadata.item_id, icon_url)};
   }
 
-  // Viewed by the user more recently than the last modification.
-  if (viewed_time > modified_time) {
-    if ((base::Time::Now() - viewed_time).magnitude() > max_recency) {
-      return std::nullopt;
-    }
-    return CreateFileSuggestionWithJustification(
-        path, app_list::JustificationType::kViewed, viewed_time,
-        /*user_info=*/nullptr);
+  if (viewed_time <= file_metadata.modification_time &&
+      (base::Time::Now() - file_metadata.modification_time).magnitude() <=
+          max_recency) {
+    base::UmaHistogramBoolean(
+        base::JoinString({kBaseHistogramName, "ModifyingUserMetadataPresent"},
+                         "."),
+        !!file_metadata.last_modifying_user);
   }
 
   if ((base::Time::Now() - modified_time).magnitude() > max_recency) {
-    return std::nullopt;
-  }
+    if ((base::Time::Now() - viewed_time).magnitude() > max_recency) {
+      return std::nullopt;
+    }
 
-  base::UmaHistogramBoolean(
-      base::JoinString({kBaseHistogramName, "ModifyingUserMetadataPresent"},
-                       "."),
-      !!file_metadata.last_modifying_user);
-
-  // Last modification was by the user.
-  if (file_metadata.modified_by_me_time &&
-      !file_metadata.modified_by_me_time->is_null() &&
-      file_metadata.modified_by_me_time >= modified_time) {
     return CreateFileSuggestionWithJustification(
-        path, app_list::JustificationType::kModifiedByCurrentUser,
-        *file_metadata.modified_by_me_time, /*user_info=*/nullptr);
+        path,
+        /*modified_time=*/std::nullopt, viewed_time,
+        /*shared_time=*/std::nullopt,
+        CreateSuggestionStatusForNonSharedFile(file_metadata),
+        file_metadata.item_id, icon_url);
   }
 
-  // Last modification was by either by another user, or the last modifying user
-  // information is not available.
   return CreateFileSuggestionWithJustification(
-      path, app_list::JustificationType::kModified, modified_time,
-      file_metadata.last_modifying_user.get());
+      path, modified_time, viewed_time, /*shared_time=*/std::nullopt,
+      CreateSuggestionStatusForNonSharedFile(file_metadata),
+      file_metadata.item_id, icon_url);
 }
 
 }  // namespace
@@ -195,6 +212,17 @@ void DriveRecentFileSuggestionProvider::GetSuggestFileData(
 
   drive::DriveIntegrationService* drive_service =
       drive::DriveIntegrationServiceFactory::FindForProfile(profile_);
+
+  // When drive service is disabled or mount fails, send back an empty list of
+  // results to avoid further waiting for file suggest data. Check
+  // `mount_failed` before checking `IsMounted` to catch the case where not only
+  // are we not mounted, but mounting has completely failed.
+  if (drive_service &&
+      (!drive_service->is_enabled() || drive_service->mount_failed())) {
+    std::move(callback).Run(
+        /*suggest_results=*/std::vector<FileSuggestData>());
+    return;
+  }
 
   // If there is not any available drive service, return early.
   if (!drive_service || !drive_service->IsMounted()) {
@@ -386,12 +414,20 @@ DriveRecentFileSuggestionProvider::GetSuggestionsFromLatestQueryResults() {
   }
 
   base::ranges::sort(results, [](const auto& lhs, const auto& rhs) {
-    if (lhs.timestamp == rhs.timestamp) {
-      return lhs.secondary_timestamp.value_or(base::Time()) >
-             rhs.secondary_timestamp.value_or(base::Time());
+    if ((lhs.modified_time || rhs.modified_time) &&
+        lhs.modified_time != rhs.modified_time) {
+      return lhs.modified_time.value_or(base::Time()) >
+             rhs.modified_time.value_or(base::Time());
     }
-    return lhs.timestamp.value_or(base::Time()) >
-           rhs.timestamp.value_or(base::Time());
+
+    if ((lhs.viewed_time || rhs.viewed_time) &&
+        lhs.viewed_time != rhs.viewed_time) {
+      return lhs.viewed_time.value_or(base::Time()) >
+             rhs.viewed_time.value_or(base::Time());
+    }
+
+    return lhs.shared_time.value_or(base::Time()) >
+           rhs.shared_time.value_or(base::Time());
   });
 
   return results;
@@ -419,7 +455,8 @@ void DriveRecentFileSuggestionProvider::OnRecentFilesSearchesCompleted() {
       results.size());
 
   for (size_t i = 0; i < results.size(); ++i) {
-    if (!results[i].timestamp) {
+    if (!results[i].modified_time && !results[i].viewed_time &&
+        results[i].shared_time) {
       base::UmaHistogramCounts100(
           base::JoinString({kBaseHistogramName, "FirstSharedSuggestionIndex"},
                            "."),

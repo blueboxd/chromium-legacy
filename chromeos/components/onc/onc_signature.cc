@@ -6,7 +6,6 @@
 
 #include "base/memory/raw_ptr_exclusion.h"
 #include "components/onc/onc_constants.h"
-
 using base::Value;
 
 namespace chromeos {
@@ -182,6 +181,8 @@ const OncFieldSignature third_party_vpn_fields[] = {
 
 const OncFieldSignature arc_vpn_fields[] = {
     {::onc::kRecommended, &kRecommendedSignature},
+    // Deprecated. Keeping the signature for ONC backward compatibility. See
+    // b/185202698 for details.
     {::onc::arc_vpn::kTunnelChrome, &kStringSignature},
     {nullptr}};
 
@@ -526,6 +527,8 @@ const OncValueSignature kGlobalNetworkConfigurationSignature = {
     base::Value::Type::DICT, global_network_configuration_fields, nullptr};
 const OncValueSignature kCertificateListSignature = {
     base::Value::Type::LIST, nullptr, &kCertificateSignature};
+const OncValueSignature kAdminApnListSignature = {
+    base::Value::Type::LIST, nullptr, &kCellularApnSignature};
 const OncValueSignature kNetworkConfigurationListSignature = {
     base::Value::Type::LIST, nullptr, &kNetworkConfigurationSignature};
 const OncValueSignature kToplevelConfigurationSignature = {

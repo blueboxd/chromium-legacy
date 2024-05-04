@@ -31,7 +31,7 @@ def running_unattended() -> bool:
     When running unattended, confirmation prompts and the like are suppressed.
     """
 
-    # TODO(crbug/1401387): Change to mixin based approach.
+    # TODO(crbug.com/40884247): Change to mixin based approach.
     return 'SWARMING_SERVER' in os.environ
 
 
@@ -114,7 +114,7 @@ def install_symbols(package_paths: Iterable[str],
                            symbol_file)
 
 
-# TODO(crbug.com/1279803): Until one can send files to the device when running
+# TODO(crbug.com/42050403): Until one can send files to the device when running
 # a test, filter files must be read from the test package.
 def map_filter_file_to_package_file(filter_file: str) -> str:
     """Returns the path to |filter_file| within the test component's package."""
@@ -125,7 +125,7 @@ def map_filter_file_to_package_file(filter_file: str) -> str:
     return '/pkg/' + filter_file[filter_file.index(_FILTER_DIR):]
 
 
-# TODO(crbug.com/1496426): Rename to get_product_version.
+# TODO(crbug.com/40938340): Rename to get_product_version.
 def get_sdk_hash(system_image_dir: str) -> Tuple[str, str]:
     """Read version of hash in pre-installed package directory.
     Returns:

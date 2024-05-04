@@ -9,7 +9,6 @@
 
 #include "base/dcheck_is_on.h"
 #include "base/memory/ptr_util.h"
-#include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "cc/layers/content_layer_client.h"
 #include "cc/layers/layer_collections.h"
@@ -25,11 +24,8 @@
 #include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
 #include "third_party/blink/renderer/platform/graphics/paint/transform_paint_property_node.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
-#include "third_party/blink/renderer/platform/wtf/vector.h"
-
-#if DCHECK_IS_ON()
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
-#endif
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace cc {
 class ViewTransitionRequest;
@@ -107,9 +103,8 @@ class SynthesizedClip : private cc::ContentLayerClient {
 // Owns a subtree of the compositor layer tree, and updates it in response to
 // changes in the paint artifact.
 class PLATFORM_EXPORT PaintArtifactCompositor final
-    : private PropertyTreeManagerClient {
-  USING_FAST_MALLOC(PaintArtifactCompositor);
-
+    : public GarbageCollected<PaintArtifactCompositor>,
+      private PropertyTreeManagerClient {
  public:
   PaintArtifactCompositor(
       base::WeakPtr<CompositorScrollCallbacks> scroll_callbacks);
@@ -117,15 +112,17 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
   PaintArtifactCompositor& operator=(const PaintArtifactCompositor&) = delete;
   ~PaintArtifactCompositor() override;
 
+  void Trace(Visitor* visitor) const { visitor->Trace(pending_layers_); }
+
   struct ViewportProperties {
-    raw_ptr<const TransformPaintPropertyNode> overscroll_elasticity_transform =
-        nullptr;
-    raw_ptr<const TransformPaintPropertyNode> page_scale = nullptr;
-    raw_ptr<const TransformPaintPropertyNode> inner_scroll_translation =
-        nullptr;
-    raw_ptr<const ClipPaintPropertyNode> outer_clip = nullptr;
-    raw_ptr<const TransformPaintPropertyNode> outer_scroll_translation =
-        nullptr;
+    STACK_ALLOCATED();
+
+   public:
+    const TransformPaintPropertyNode* overscroll_elasticity_transform = nullptr;
+    const TransformPaintPropertyNode* page_scale = nullptr;
+    const TransformPaintPropertyNode* inner_scroll_translation = nullptr;
+    const ClipPaintPropertyNode* outer_clip = nullptr;
+    const TransformPaintPropertyNode* outer_scroll_translation = nullptr;
   };
 
   // Updates the cc layer list and property trees to match those provided in
@@ -136,7 +133,7 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
   // nodes for noncomposited scrollers to complete the compositor's scroll
   // property tree.
   void Update(
-      scoped_refptr<const PaintArtifact> artifact,
+      const PaintArtifact& artifact,
       const ViewportProperties& viewport_properties,
       const Vector<const TransformPaintPropertyNode*>& scroll_translation_nodes,
       Vector<std::unique_ptr<cc::ViewTransitionRequest>> requests);
@@ -158,7 +155,7 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
   // This copies over the newly-painted PaintChunks to existing
   // |pending_layers_|, issues raster invalidations, and updates the existing
   // cc::Layer properties such as background color.
-  void UpdateRepaintedLayers(scoped_refptr<const PaintArtifact>);
+  void UpdateRepaintedLayers(const PaintArtifact&);
 
   bool DirectlyUpdateCompositedOpacityValue(const EffectPaintPropertyNode&);
   bool DirectlyUpdateScrollOffsetTransform(const TransformPaintPropertyNode&);
@@ -170,6 +167,8 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
   // transform node in DirectlyUpdateScrollOffsetTransform() or Update()).
   bool DirectlySetScrollOffset(CompositorElementId,
                                const gfx::PointF& scroll_offset);
+
+  void DropCompositorScrollDeltaNextCommit(CompositorElementId);
 
   uint32_t GetMainThreadScrollingReasons(const ScrollPaintPropertyNode&) const;
   // Returns true if the scroll node is currently composited in cc.
@@ -248,7 +247,7 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
 
   // Collects the PaintChunks into groups which will end up in the same
   // cc layer. This is the entry point of the layerization algorithm.
-  void CollectPendingLayers(scoped_refptr<const PaintArtifact>);
+  void CollectPendingLayers(const PaintArtifact&);
 
   // This is the internal recursion of CollectPendingLayers. This function
   // loops over the list of paint chunks, scoped by an isolated group
@@ -271,9 +270,9 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
   // time a paint property tree node is encountered that has direct compositing
   // reasons. This case will always start a new layer and can skip merge tests.
   // New values are added when transform nodes are first encountered.
-  void LayerizeGroup(scoped_refptr<const PaintArtifact>,
+  void LayerizeGroup(const PaintArtifact&,
                      const EffectPaintPropertyNode&,
-                     Vector<PaintChunk>::const_iterator& chunk_cursor,
+                     PaintChunks::const_iterator& chunk_cursor,
                      HashSet<const TransformPaintPropertyNode*>&
                          directly_composited_transforms,
                      bool force_draws_content);
@@ -300,7 +299,7 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
       const TransformPaintPropertyNode& scroll_translation) const final;
   bool ComputeNeedsCompositedScrolling(
       const PaintArtifact&,
-      Vector<PaintChunk>::const_iterator chunk_cursor) const;
+      PaintChunks::const_iterator chunk_cursor) const;
   PendingLayer::CompositingType ChunkCompositingType(const PaintArtifact&,
                                                      const PaintChunk&) const;
 
@@ -329,13 +328,12 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
 
   scoped_refptr<cc::Layer> root_layer_;
   struct SynthesizedClipEntry {
-    raw_ptr<const ClipPaintPropertyNode, DanglingUntriaged> key;
+    const ClipPaintPropertyNode* key = nullptr;
     std::unique_ptr<SynthesizedClip> synthesized_clip;
     bool in_use;
   };
   Vector<SynthesizedClipEntry> synthesized_clip_cache_;
 
-  using PendingLayers = Vector<PendingLayer, 0>;
   class OldPendingLayerMatcher;
   PendingLayers pending_layers_;
 

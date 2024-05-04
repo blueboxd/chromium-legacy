@@ -76,18 +76,19 @@ std::optional<std::u16string> GetPortalStateSubtext(
       [[fallthrough]];
     case PortalState::kOnline:
       return std::nullopt;
-    case PortalState::kPortalSuspected:
-      [[fallthrough]];
     case PortalState::kNoInternet:
       // Use 'no internet' for portal suspected and no internet states.
       return l10n_util::GetStringUTF16(
           IDS_ASH_STATUS_TRAY_NETWORK_STATUS_CONNECTED_NO_INTERNET);
-    case PortalState::kPortal:
+    case PortalState::kPortalSuspected:
       [[fallthrough]];
-    case PortalState::kProxyAuthRequired:
+    case PortalState::kPortal:
       // Use 'signin to network' for portal and proxy auth required states.
       return l10n_util::GetStringUTF16(
           IDS_ASH_STATUS_TRAY_NETWORK_STATUS_SIGNIN);
+    case PortalState::kDeprecatedProxyAuthRequired:
+      NOTREACHED();
+      return std::nullopt;
   }
 }
 

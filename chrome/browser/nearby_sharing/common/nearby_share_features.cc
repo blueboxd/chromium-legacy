@@ -32,14 +32,9 @@ BASE_FEATURE(kNearbySharingSelfShare,
              "NearbySharingSelfShare",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-// Enables use of WebRTC in Nearby Share.
-BASE_FEATURE(kNearbySharingWebRtc,
-             "NearbySharingWebRtc",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-// Enables use of WifiLan in Nearby Share.
-BASE_FEATURE(kNearbySharingWifiLan,
-             "NearbySharingWifiLan",
+// Enables contact restriction when not in high-visibility mode.
+BASE_FEATURE(kNearbySharingRestrictToContacts,
+             "NearbySharingRestrictToContacts",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 bool IsNameEnabled() {
@@ -48,6 +43,10 @@ bool IsNameEnabled() {
 
 bool IsSelfShareEnabled() {
   return base::FeatureList::IsEnabled(kNearbySharingSelfShare);
+}
+
+bool IsRestrictToContactsEnabled() {
+  return base::FeatureList::IsEnabled(kNearbySharingRestrictToContacts);
 }
 
 }  // namespace features

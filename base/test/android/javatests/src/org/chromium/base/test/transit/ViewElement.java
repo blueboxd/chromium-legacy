@@ -4,26 +4,38 @@
 
 package org.chromium.base.test.transit;
 
-import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static androidx.test.espresso.matcher.ViewMatchers.isDisplayingAtLeast;
 
+import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.Matchers.allOf;
 
 import android.view.View;
 
 import androidx.annotation.IntDef;
-import androidx.annotation.Nullable;
 import androidx.test.espresso.Espresso;
+import androidx.test.espresso.UiController;
 import androidx.test.espresso.ViewAction;
 import androidx.test.espresso.ViewInteraction;
 
 import org.hamcrest.Matcher;
 import org.hamcrest.StringDescription;
 
+import org.chromium.base.test.util.ViewPrinter;
+
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 /** An Element representing a view characteristic of a ConditionalState. */
 public class ViewElement {
+
+    /**
+     * Minimum percentage of the View that needs to be displayed for a ViewElement's enter
+     * Conditions to be considered fulfilled.
+     *
+     * <p>Matches Espresso's preconditions for ViewActions like click().
+     */
+    public static final int MIN_DISPLAYED_PERCENT = 90;
+
     @IntDef({Scope.CONDITIONAL_STATE_SCOPED, Scope.SHARED, Scope.UNSCOPED})
     @Retention(RetentionPolicy.SOURCE)
     @interface Scope {
@@ -35,6 +47,7 @@ public class ViewElement {
     private final Matcher<View> mViewMatcher;
     private final @Scope int mScope;
     private final String mId;
+    private final Options mOptions;
 
     /** Alias for {@link #sharedViewElement(Matcher)} as the default way to declare ViewElements. */
     public static ViewElement viewElement(Matcher<View> viewMatcher) {
@@ -42,11 +55,12 @@ public class ViewElement {
     }
 
     /**
-     * Version of {@link #sharedViewElement(Matcher, String)} using the Matcher |description| as
-     * |id|.
+     * Version of {@link #sharedViewElement(Matcher, Options)} using default Options.
+     *
+     * <p>This is a good default method to the declare ViewElements; when in doubt, use this.
      */
     public static ViewElement sharedViewElement(Matcher<View> viewMatcher) {
-        return new ViewElement(viewMatcher, Scope.SHARED, /* id= */ null);
+        return new ViewElement(viewMatcher, Scope.SHARED, Options.DEFAULT);
     }
 
     /**
@@ -57,19 +71,14 @@ public class ViewElement {
      * <p>Shared ViewElements add an EXIT condition that no View is matched unless transitioning to
      * a ConditionalState that declares a ViewElement with the same id (which usually means an equal
      * Matcher<View>).
-     *
-     * <p>This is a good default method to the declare ViewElements; when in doubt, use this.
      */
-    public static ViewElement sharedViewElement(Matcher<View> viewMatcher, String id) {
-        return new ViewElement(viewMatcher, Scope.SHARED, id);
+    public static ViewElement sharedViewElement(Matcher<View> viewMatcher, Options options) {
+        return new ViewElement(viewMatcher, Scope.SHARED, options);
     }
 
-    /**
-     * Version of {@link #scopedViewElement(Matcher, String)} using the Matcher |description| as
-     * |id|.
-     */
+    /** Version of {@link #scopedViewElement(Matcher, Options)} using default Options. */
     public static ViewElement scopedViewElement(Matcher<View> viewMatcher) {
-        return new ViewElement(viewMatcher, Scope.CONDITIONAL_STATE_SCOPED, /* id= */ null);
+        return new ViewElement(viewMatcher, Scope.CONDITIONAL_STATE_SCOPED, Options.DEFAULT);
     }
 
     /**
@@ -80,16 +89,13 @@ public class ViewElement {
      * <p>ConditionalState-scoped ViewElements are the most restrictive; they generate an EXIT
      * condition that no View is matched under any circumstances.
      */
-    public static ViewElement scopedViewElement(Matcher<View> viewMatcher, String id) {
-        return new ViewElement(viewMatcher, Scope.CONDITIONAL_STATE_SCOPED, id);
+    public static ViewElement scopedViewElement(Matcher<View> viewMatcher, Options options) {
+        return new ViewElement(viewMatcher, Scope.CONDITIONAL_STATE_SCOPED, options);
     }
 
-    /**
-     * Version of {@link #unscopedViewElement(Matcher, String)} using the Matcher |description| as
-     * |id|.
-     */
+    /** Version of {@link #unscopedViewElement(Matcher, Options)} using default Options. */
     public static ViewElement unscopedViewElement(Matcher<View> viewMatcher) {
-        return new ViewElement(viewMatcher, Scope.UNSCOPED, /* id= */ null);
+        return new ViewElement(viewMatcher, Scope.UNSCOPED, Options.DEFAULT);
     }
 
     /**
@@ -100,16 +106,17 @@ public class ViewElement {
      * <p>Unscoped ViewElements are the most permissive; they do not generate EXIT conditions,
      * therefore they may or may not be gone.
      */
-    public static ViewElement unscopedViewElement(Matcher<View> viewMatcher, String id) {
-        return new ViewElement(viewMatcher, Scope.UNSCOPED, id);
+    public static ViewElement unscopedViewElement(Matcher<View> viewMatcher, Options options) {
+        return new ViewElement(viewMatcher, Scope.UNSCOPED, options);
     }
 
-    private ViewElement(Matcher<View> viewMatcher, @Scope int scope, @Nullable String id) {
+    private ViewElement(Matcher<View> viewMatcher, @Scope int scope, Options options) {
         mViewMatcher = viewMatcher;
         mScope = scope;
 
-        if (id != null) {
-            mId = id;
+        if (options.mElementId != null) {
+            // Use a custom id instead of the Matcher description.
+            mId = options.mElementId;
         } else {
             // Capture the description as soon as possible to compare ViewElements added to
             // different
@@ -119,6 +126,8 @@ public class ViewElement {
             // https://crbug.com/41494895#comment7.
             mId = StringDescription.toString(mViewMatcher);
         }
+
+        mOptions = options;
     }
 
     String getId() {
@@ -141,7 +150,7 @@ public class ViewElement {
      * Start an Espresso interaction with a displayed View that matches this ViewElement's Matcher.
      */
     public ViewInteraction onView() {
-        return Espresso.onView(allOf(mViewMatcher, isDisplayed()));
+        return Espresso.onView(allOf(mViewMatcher, isDisplayingAtLeast(MIN_DISPLAYED_PERCENT)));
     }
 
     /**
@@ -149,5 +158,79 @@ public class ViewElement {
      */
     public ViewInteraction perform(ViewAction action) {
         return onView().perform(action);
+    }
+
+    /**
+     * @return the Options passed when declaring the ViewElement.
+     */
+    public Options getOptions() {
+        return mOptions;
+    }
+
+    /**
+     * @return an Options builder to customize the ViewElement further.
+     */
+    public static Options.Builder newOptions() {
+        return new Options().new Builder();
+    }
+
+    /**
+     * Print the whole View hierarchy that contains the View matched to this ViewElement.
+     *
+     * <p>For debugging.
+     */
+    public void printFromRoot() {
+        perform(
+                new ViewAction() {
+                    @Override
+                    public Matcher<View> getConstraints() {
+                        return instanceOf(View.class);
+                    }
+
+                    @Override
+                    public String getDescription() {
+                        return "print the View hierarchy for debugging";
+                    }
+
+                    @Override
+                    public void perform(UiController uiController, View view) {
+                        ViewPrinter.printView(view.getRootView());
+                    }
+                });
+    }
+
+    /** Extra options for declaring ViewElements. */
+    public static class Options {
+        static final Options DEFAULT = new Options();
+        protected boolean mExpectEnabled = true;
+        protected String mElementId;
+
+        protected Options() {}
+
+        public class Builder {
+            public Options build() {
+                return Options.this;
+            }
+
+            /** Use a custom Element id instead of the Matcher<View> description. */
+            public Builder elementId(String id) {
+                mElementId = id;
+                return this;
+            }
+
+            /**
+             * Expect the View to be disabled instead of enabled.
+             *
+             * <p>This is different than passing an isEnabled() Matcher.If the matcher was, for
+             * example |allOf(withId(ID), isEnabled())|, the exit condition would be considered
+             * fulfilled if the View became disabled. Meanwhile, using this option makes the exit
+             * condition only be considered fulfilled if no Views |withId(ID)|, enabled or not, were
+             * displayed.
+             */
+            public Builder expectDisabled() {
+                mExpectEnabled = false;
+                return this;
+            }
+        }
     }
 }

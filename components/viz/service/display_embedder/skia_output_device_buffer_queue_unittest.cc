@@ -70,7 +70,8 @@ namespace {
                                                                               \
    private:                                                                   \
     virtual void TestBodyOnGpu();                                             \
-    static ::testing::TestInfo* const test_info_ GTEST_ATTRIBUTE_UNUSED_;     \
+    GTEST_INTERNAL_ATTRIBUTE_MAYBE_UNUSED                                     \
+        static ::testing::TestInfo* const test_info_;                         \
   };                                                                          \
                                                                               \
   ::testing::TestInfo* const GTEST_TEST_CLASS_NAME_(test_suite_name,          \
@@ -182,6 +183,7 @@ class TestImageBackingFactory : public gpu::SharedImageBackingFactory {
       SkAlphaType alpha_type,
       uint32_t usage,
       std::string debug_label,
+      bool is_thread_safe,
       base::span<const uint8_t> pixel_data) override {
     auto result = std::make_unique<gpu::TestImageBacking>(
         mailbox, format, size, color_space, surface_origin, alpha_type, usage,

@@ -5,6 +5,7 @@
 #include "content/browser/web_package/signed_exchange_handler.h"
 
 #include <memory>
+#include <string_view>
 #include <utility>
 
 #include "base/functional/bind.h"
@@ -404,8 +405,8 @@ SignedExchangeHandler::ParseHeadersAndFetchCertificate() {
 
   DCHECK(version_.has_value());
 
-  base::StringPiece data(header_buf_->data(), header_read_buf_->size());
-  base::StringPiece signature_header_field = data.substr(
+  std::string_view data(header_buf_->data(), header_read_buf_->size());
+  std::string_view signature_header_field = data.substr(
       0, prologue_fallback_url_and_after_.signature_header_field_length());
   base::span<const uint8_t> cbor_header =
       base::as_bytes(base::make_span(data.substr(
@@ -428,7 +429,7 @@ SignedExchangeHandler::ParseHeadersAndFetchCertificate() {
   }
 
   const GURL cert_url = envelope_->signature().cert_url;
-  // TODO(https://crbug.com/819467): When we will support ed25519Key, |cert_url|
+  // TODO(crbug.com/40565993): When we will support ed25519Key, |cert_url|
   // may be empty.
   DCHECK(cert_url.is_valid());
 
@@ -755,7 +756,7 @@ void SignedExchangeHandler::OnGetCookies(
 
 void SignedExchangeHandler::CreateResponse(
     network::mojom::URLResponseHeadPtr response_head) {
-  // TODO(https://crbug.com/803774): Resource timing for signed exchange
+  // TODO(crbug.com/40558902): Resource timing for signed exchange
   // loading is not speced yet. https://github.com/WICG/webpackage/issues/156
   response_head->load_timing.request_start_time = base::Time::Now();
   base::TimeTicks now(base::TimeTicks::Now());
@@ -807,7 +808,8 @@ SignedExchangeHandler::CreateResponseBodyStream() {
   }
 
   // For now, we allow only mi-sha256-03 content encoding.
-  // TODO(crbug.com/934629): Handle other content codings, such as gzip and br.
+  // TODO(crbug.com/41442806): Handle other content codings, such as gzip and
+  // br.
   auto content_encoding_iter = headers.find("content-encoding");
   if (content_encoding_iter == headers.end()) {
     signed_exchange_utils::ReportErrorAndTraceEvent(

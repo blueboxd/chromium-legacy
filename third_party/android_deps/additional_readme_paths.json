@@ -48,11 +48,8 @@
     "libs/com_google_android_gms_play_services_instantapps",
     "libs/com_google_android_gms_play_services_location",
     "libs/com_google_android_gms_play_services_phenotype",
-    "libs/com_google_android_gms_play_services_places_placereport",
     "libs/com_google_android_gms_play_services_stats",
     "libs/com_google_android_gms_play_services_tasks",
-    "libs/com_google_android_gms_play_services_tflite_impl",
-    "libs/com_google_android_gms_play_services_tflite_java",
     "libs/com_google_android_gms_play_services_vision",
     "libs/com_google_android_gms_play_services_vision_common",
     "libs/com_google_android_material_material",
@@ -96,6 +93,8 @@
     "libs/com_googlecode_java_diff_utils_diffutils",
     "libs/com_squareup_javapoet",
     "libs/com_squareup_javawriter",
+    "libs/com_squareup_moshi_moshi",
+    "libs/com_squareup_moshi_moshi_adapters",
     "libs/com_squareup_okio_okio_jvm",
     "libs/com_squareup_wire_wire_runtime_jvm",
     "libs/io_github_java_diff_utils_java_diff_utils",
@@ -155,6 +154,5 @@
     "libs/org_robolectric_shadows_framework",
     "libs/org_robolectric_shadows_versioning",
     "libs/org_robolectric_utils",
-    "libs/org_robolectric_utils_reflector",
-    "libs/org_tensorflow_tensorflow_lite_api"
+    "libs/org_robolectric_utils_reflector"
 ]

@@ -308,8 +308,8 @@ class UpdateEngineClientImpl : public UpdateEngineClient {
   }
 
   void GetUpdateEngineStatus() {
-    // TODO(crbug.com/977320): Rename the method call back to GetStatus() after
-    // the interface changed.
+    // TODO(crbug.com/40633112): Rename the method call back to GetStatus()
+    // after the interface changed.
     dbus::MethodCall method_call(update_engine::kUpdateEngineInterface,
                                  update_engine::kGetStatusAdvanced);
     update_engine_proxy_->CallMethodWithErrorCallback(
@@ -464,6 +464,9 @@ class UpdateEngineClientImpl : public UpdateEngineClient {
     }
 
     VLOG(1) << "Eol date received: " << status.eol_date();
+    VLOG(1) << "Extended date received: " << status.extended_date();
+    VLOG(1) << "Extended opt in received: "
+            << status.extended_opt_in_required();
 
     EolInfo eol_info;
     if (status.eol_date() > 0) {

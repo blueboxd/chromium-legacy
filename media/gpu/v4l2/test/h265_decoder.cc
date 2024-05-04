@@ -1139,6 +1139,8 @@ bool H265Decoder::DecodePicture() {
     CreateCAPTUREQueue(kNumberOfBuffersInCaptureQueue);
   }
 
+  v4l2_ioctl_->WaitForRequestCompletion(OUTPUT_queue_);
+
   uint32_t CAPTURE_id;
   v4l2_ioctl_->DQBuf(CAPTURE_queue_, &CAPTURE_id);
 
@@ -1388,7 +1390,8 @@ VideoDecoder::Result H265Decoder::DecodeNextFrame(const int frame_number,
                                                   std::vector<uint8_t>& y_plane,
                                                   std::vector<uint8_t>& u_plane,
                                                   std::vector<uint8_t>& v_plane,
-                                                  gfx::Size& size) {
+                                                  gfx::Size& size,
+                                                  BitDepth& bit_depth) {
   if (!parser_) {
     parser_ = std::make_unique<H265Parser>();
     parser_->SetStream(data_stream_->data(), data_stream_->length());
@@ -1420,9 +1423,10 @@ VideoDecoder::Result H265Decoder::DecodeNextFrame(const int frame_number,
   scoped_refptr<MmappedBuffer> buffer =
       CAPTURE_queue_->GetBuffer(picture->capture_queue_buffer_id_);
 
-  ConvertToYUV(y_plane, u_plane, v_plane, OUTPUT_queue_->resolution(),
-               buffer->mmapped_planes(), CAPTURE_queue_->resolution(),
-               CAPTURE_queue_->fourcc());
+  bit_depth =
+      ConvertToYUV(y_plane, u_plane, v_plane, OUTPUT_queue_->resolution(),
+                   buffer->mmapped_planes(), CAPTURE_queue_->resolution(),
+                   CAPTURE_queue_->fourcc());
 
   frames_ready_to_be_outputted_.pop();
 

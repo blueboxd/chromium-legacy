@@ -19,6 +19,7 @@
 #include "chromeos/ash/components/drivefs/drivefs_http_client.h"
 #include "chromeos/ash/components/drivefs/drivefs_search.h"
 #include "chromeos/ash/components/drivefs/mojom/drivefs.mojom.h"
+#include "chromeos/ash/components/drivefs/mojom/notifications.mojom.h"
 #include "chromeos/components/drivefs/mojom/drivefs_native_messaging.mojom.h"
 #include "components/account_id/account_id.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
@@ -250,6 +251,14 @@ class DriveFsHost::MountState : public DriveFsSession {
     host_->delegate_->PersistMachineRootID(std::move(id));
   }
 
+  void OnNotificationReceived(
+      mojom::DriveFsNotificationPtr notification) override {
+    if (!ash::features::IsDriveFsMirroringEnabled()) {
+      return;
+    }
+    host_->delegate_->PersistNotification(std::move(notification));
+  }
+
   // Owns |this|.
   const raw_ptr<DriveFsHost> host_;
 
@@ -297,6 +306,10 @@ DriveFsHost::~DriveFsHost() {
     observer.OnHostDestroyed();
     observer.Reset();
   }
+
+  // Reset `mount_state_` manually to avoid accessing a partially-destructed
+  // `this` in ~MountState().
+  mount_state_.reset();
 }
 
 bool DriveFsHost::Mount() {

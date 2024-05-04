@@ -16,24 +16,14 @@ import org.chromium.chrome.browser.omnibox.UrlBarData;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.ui.searchactivityutils.SearchActivityPreferencesManager;
 import org.chromium.components.browser_ui.styles.ChromeColors;
-import org.chromium.components.metrics.OmniboxEventProtos.OmniboxEventProto.PageClassification;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.url.GURL;
 
 class SearchBoxDataProvider implements LocationBarDataProvider {
-    private final @ColorInt int mPrimaryColor;
-    private boolean mIsFromQuickActionSearchWidget;
+    private /* PageClassification */ int mPageClassification;
+    private @ColorInt int mPrimaryColor;
     private Tab mTab;
     private GURL mGurl;
-
-    /**
-     * @param context The {@link Context} for accessing colors.
-     * @param isFromQuickActionSearchWidget
-     */
-    SearchBoxDataProvider(Context context) {
-        mIsFromQuickActionSearchWidget = false;
-        mPrimaryColor = ChromeColors.getPrimaryBackgroundColor(context, isIncognito());
-    }
 
     /**
      * Called when native library is loaded and a tab has been initialized.
@@ -41,8 +31,19 @@ class SearchBoxDataProvider implements LocationBarDataProvider {
      * @param tab The tab to use.
      */
     public void onNativeLibraryReady(Tab tab) {
-        assert LibraryLoader.getInstance().isInitialized();
         mTab = tab;
+    }
+
+    /**
+     * Initialize this instance of the SearchBoxDataProvider.
+     *
+     * <p>Note: this is called only once during the lifetime of the SearchActivity, and is not
+     * invoked when SearchActivity receives a new Intent.
+     *
+     * @param context current context
+     */
+    /* package */ void initialize(Context context) {
+        mPrimaryColor = ChromeColors.getPrimaryBackgroundColor(context, isIncognito());
     }
 
     @Override
@@ -103,9 +104,9 @@ class SearchBoxDataProvider implements LocationBarDataProvider {
 
     @Override
     public GURL getCurrentGurl() {
-        if (mGurl == null) {
+        if (GURL.isEmptyOrInvalid(mGurl)) {
             assert LibraryLoader.getInstance().isInitialized();
-            mGurl = new GURL(SearchActivityPreferencesManager.getCurrent().searchEngineUrl);
+            mGurl = SearchActivityPreferencesManager.getCurrent().searchEngineUrl;
         }
 
         return mGurl;
@@ -123,11 +124,7 @@ class SearchBoxDataProvider implements LocationBarDataProvider {
 
     @Override
     public int getPageClassification(boolean isFocusedFromFakebox, boolean isPrefetch) {
-        if (mIsFromQuickActionSearchWidget) {
-            return PageClassification.ANDROID_SHORTCUTS_WIDGET_VALUE;
-        } else {
-            return PageClassification.ANDROID_SEARCH_WIDGET_VALUE;
-        }
+        return mPageClassification;
     }
 
     @Override
@@ -145,7 +142,11 @@ class SearchBoxDataProvider implements LocationBarDataProvider {
         return 0;
     }
 
-    void setIsFromQuickActionSearchWidget(boolean isFromQuickActionsWidget) {
-        mIsFromQuickActionSearchWidget = isFromQuickActionsWidget;
+    void setPageClassification(int pageClassification) {
+        mPageClassification = pageClassification;
+    }
+
+    void setCurrentUrl(GURL url) {
+        mGurl = url;
     }
 }

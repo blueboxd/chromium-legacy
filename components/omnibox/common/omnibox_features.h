@@ -18,7 +18,6 @@ BASE_DECLARE_FEATURE(kOmniboxRemoveSuggestionsFromClipboard);
 
 // Features that affect the "twiddle" step of AutocompleteController, e.g.,
 // deduping or `SortAndCull()`.
-BASE_DECLARE_FEATURE(kGroupingFrameworkForZPS);
 BASE_DECLARE_FEATURE(kGroupingFrameworkForNonZPS);
 BASE_DECLARE_FEATURE(kOmniboxDemoteByType);
 BASE_DECLARE_FEATURE(kPreferNonShortcutMatchesWhenDeduping);
@@ -46,7 +45,6 @@ BASE_DECLARE_FEATURE(kLocalHistoryZeroSuggestBeyondNTP);
 BASE_DECLARE_FEATURE(kNormalizeSearchSuggestions);
 BASE_DECLARE_FEATURE(kOmniboxOnClobberFocusTypeOnContent);
 BASE_DECLARE_FEATURE(kZeroSuggestInMemoryCaching);
-BASE_DECLARE_FEATURE(kZeroSuggestOnNTPForSignedOutUsers);
 BASE_DECLARE_FEATURE(kZeroSuggestPrefetching);
 BASE_DECLARE_FEATURE(kZeroSuggestPrefetchingOnSRP);
 BASE_DECLARE_FEATURE(kZeroSuggestPrefetchingOnWeb);
@@ -60,7 +58,7 @@ BASE_DECLARE_FEATURE(kOnDeviceHeadProviderKorean);
 BASE_DECLARE_FEATURE(kOnDeviceTailModel);
 
 // Provider-specific - These features change the behavior of specific providers.
-// TODO(crbug.com/1202964): Clean up feature flag used in staged roll-out of
+// TODO(crbug.com/40179316): Clean up feature flag used in staged roll-out of
 // various CLs related to the contents/description clean-up work.
 BASE_DECLARE_FEATURE(kStoreTitleInContentsAndUrlInDescription);
 
@@ -74,7 +72,6 @@ BASE_DECLARE_FEATURE(kDomainSuggestions);
 BASE_DECLARE_FEATURE(kPrefBasedDataCollectionConsentHelper);
 
 // Suggestions UI - these affect the UI or function of the suggestions popup.
-BASE_DECLARE_FEATURE(kAdaptiveSuggestionsCount);
 BASE_DECLARE_FEATURE(kClipboardSuggestionContentHidden);
 BASE_DECLARE_FEATURE(kSuppressClipboardSuggestionAfterFirstUsed);
 BASE_DECLARE_FEATURE(kCompanyEntityIconAdjustment);
@@ -85,13 +82,10 @@ enum class CompanyEntityIconAdjustmentGroup {
 };
 BASE_DECLARE_FEATURE(kCr2023ActionChips);
 BASE_DECLARE_FEATURE(kCr2023ActionChipsIcons);
-BASE_DECLARE_FEATURE(kSuggestionAnswersColorReverse);
 BASE_DECLARE_FEATURE(kMostVisitedTilesHorizontalRenderGroup);
 BASE_DECLARE_FEATURE(kRichAutocompletion);
 BASE_DECLARE_FEATURE(kNtpRealboxPedals);
-BASE_DECLARE_FEATURE(kOmniboxKeywordModeRefresh);
 BASE_DECLARE_FEATURE(kOmniboxMatchToolbarAndStatusBarColor);
-BASE_DECLARE_FEATURE(kSearchReadyOmniboxAllowQueryEdit);
 BASE_DECLARE_FEATURE(kSquareSuggestIcons);
 BASE_DECLARE_FEATURE(kUniformRowHeight);
 BASE_DECLARE_FEATURE(kWebUIOmniboxPopup);
@@ -135,12 +129,12 @@ BASE_DECLARE_FEATURE(kMlUrlScoring);
 BASE_DECLARE_FEATURE(kMlUrlSearchBlending);
 BASE_DECLARE_FEATURE(kUrlScoringModel);
 
-// Inspire Me - additional suggestions based on user's location and interests.
-BASE_DECLARE_FEATURE(kInspireMe);
-
 // Actions in Suggest - Action Chips for Entity Suggestions.
 // Data driven feature; flag helps tune behavior.
 BASE_DECLARE_FEATURE(kActionsInSuggest);
+
+// Animate appearance of suggestions list.
+BASE_DECLARE_FEATURE(kAnimateSuggestionsListAppearance);
 
 // Action Chips for Answer Suggestions.
 BASE_DECLARE_FEATURE(kOmniboxAnswerActions);
@@ -159,13 +153,18 @@ bool IsOmniboxCr23CustomizeGuardedFeatureEnabled(const base::Feature& feature);
 BASE_DECLARE_FEATURE(kOmniboxTouchDownTriggerForPrefetch);
 
 // Site search/Keyword mode related features.
-BASE_DECLARE_FEATURE(kSiteSearchSettingsPolicy);
 BASE_DECLARE_FEATURE(kPolicyIndicationForManagedDefaultSearch);
+BASE_DECLARE_FEATURE(kShowFeaturedEnterpriseSiteSearch);
+BASE_DECLARE_FEATURE(kSiteSearchSettingsPolicy);
 BASE_DECLARE_FEATURE(kStarterPackExpansion);
+BASE_DECLARE_FEATURE(kStarterPackIPH);
 
+// Search and Suggest requests and params.
 BASE_DECLARE_FEATURE(kAblateSearchProviderWarmup);
+BASE_DECLARE_FEATURE(kReportApplicationLanguageInSearchRequest);
 
 BASE_DECLARE_FEATURE(kOmniboxShortcutsAndroid);
+BASE_DECLARE_FEATURE(kOmniboxAsyncViewInflation);
 
 }  // namespace omnibox
 

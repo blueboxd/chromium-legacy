@@ -27,6 +27,8 @@ import org.chromium.chrome.browser.ui.appmenu.internal.R;
 import org.chromium.components.browser_ui.widget.textbubble.TextBubble;
 import org.chromium.ui.display.DisplayAndroidManager;
 import org.chromium.ui.modelutil.LayoutViewBuilder;
+import org.chromium.ui.modelutil.ListObservable;
+import org.chromium.ui.modelutil.ListObservable.ListObserver;
 import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
 import org.chromium.ui.modelutil.ModelListAdapter;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -54,13 +56,13 @@ class AppMenuHandlerImpl
     private final View mDecorView;
     private final ActivityLifecycleDispatcher mActivityLifecycleDispatcher;
     private final Supplier<Rect> mAppRect;
-
+    private ModelList mModelList;
+    private ListObserver<Void> mListObserver;
     private Callback<Integer> mTestOptionsItemSelectedListener;
 
     /**
-     * The resource id of the menu item to highlight when the menu next opens. A value of
-     * {@code null} means no item will be highlighted.  This value will be cleared after the menu is
-     * opened.
+     * The resource id of the menu item to highlight when the menu next opens. A value of {@code
+     * null} means no item will be highlighted. This value will be cleared after the menu is opened.
      */
     private Integer mHighlightMenuId;
 
@@ -101,6 +103,30 @@ class AppMenuHandlerImpl
 
         assert mHardwareButtonMenuAnchor != null
                 : "Using AppMenu requires to have menu_anchor_stub view";
+        mListObserver =
+                new ListObserver<Void>() {
+                    @Override
+                    public void onItemRangeInserted(ListObservable source, int index, int count) {
+                        assert mModelList != null && mAppMenu != null;
+                        updateModelForHighlightAndClick(
+                                mModelList,
+                                mHighlightMenuId,
+                                mAppMenu,
+                                /* startIndex= */ index,
+                                /* withAssertions= */ false);
+                    }
+
+                    @Override
+                    public void onItemRangeRemoved(ListObservable source, int index, int count) {
+                        assert mModelList != null;
+                        updateModelForHighlightAndClick(
+                                mModelList,
+                                mHighlightMenuId,
+                                mAppMenu,
+                                /* startIndex= */ index,
+                                /* withAssertions= */ false);
+                    }
+                };
     }
 
     /** Called when the containing activity is being destroyed. */
@@ -123,27 +149,33 @@ class AppMenuHandlerImpl
 
     @Override
     public void setMenuHighlight(Integer highlightItemId) {
+        boolean highlighting = highlightItemId != null;
+        setMenuHighlight(highlightItemId, highlighting);
+    }
+
+    @Override
+    public void setMenuHighlight(Integer highlightItemId, boolean shouldHighlightMenuButton) {
         if (mHighlightMenuId == null && highlightItemId == null) return;
         if (mHighlightMenuId != null && mHighlightMenuId.equals(highlightItemId)) return;
         mHighlightMenuId = highlightItemId;
-        boolean highlighting = mHighlightMenuId != null;
-        for (AppMenuObserver observer : mObservers) observer.onMenuHighlightChanged(highlighting);
+        for (AppMenuObserver observer : mObservers) {
+            observer.onMenuHighlightChanged(shouldHighlightMenuButton);
+        }
     }
 
     /**
      * Show the app menu.
-     * @param anchorView    Anchor view (usually a menu button) to be used for the popup, if null is
-     *                      passed then hardware menu button anchor will be used.
+     *
+     * @param anchorView Anchor view (usually a menu button) to be used for the popup, if null is
+     *     passed then hardware menu button anchor will be used.
      * @param startDragging Whether dragging is started. For example, if the app menu is showed by
-     *                      tapping on a button, this should be false. If it is showed by start
-     *                      dragging down on the menu button, this should be true. Note that if
-     *                      anchorView is null, this must be false since we no longer support
-     *                      hardware menu button dragging.
-     * @return              True, if the menu is shown, false, if menu is not shown, example
-     *                      reasons: the menu is not yet available to be shown, or the menu is
-     *                      already showing.
+     *     tapping on a button, this should be false. If it is showed by start dragging down on the
+     *     menu button, this should be true. Note that if anchorView is null, this must be false
+     *     since we no longer support hardware menu button dragging.
+     * @return True, if the menu is shown, false, if menu is not shown, example reasons: the menu is
+     *     not yet available to be shown, or the menu is already showing.
      */
-    // TODO(crbug.com/635567): Fix this properly.
+    // TODO(crbug.com/40479664): Fix this properly.
     @SuppressLint("ResourceType")
     boolean showAppMenu(View anchorView, boolean startDragging) {
         if (!shouldShowAppMenu() || isAppMenuShowing()) return false;
@@ -180,14 +212,14 @@ class AppMenuHandlerImpl
         List<CustomViewBinder> customViewBinders = mDelegate.getCustomViewBinders();
         Map<CustomViewBinder, Integer> customViewTypeOffsetMap =
                 populateCustomViewBinderOffsetMap(customViewBinders, AppMenuItemType.NUM_ENTRIES);
-        ModelList modelList =
+        mModelList =
                 mDelegate.getMenuItems(
                         ((id) -> {
                             return getCustomItemViewType(
                                     id, customViewBinders, customViewTypeOffsetMap);
                         }),
                         this);
-
+        mModelList.addObserver(mListObserver);
         ContextThemeWrapper wrapper =
                 new ContextThemeWrapper(mContext, R.style.OverflowMenuThemeOverlay);
 
@@ -200,9 +232,9 @@ class AppMenuHandlerImpl
             mAppMenu = new AppMenu(itemRowHeight, this, mContext.getResources());
             mAppMenuDragHelper = new AppMenuDragHelper(mContext, mAppMenu, itemRowHeight);
         }
-        setupModelForHighlightAndClick(modelList, mHighlightMenuId, mAppMenu);
-        ModelListAdapter adapter = new ModelListAdapter(modelList);
-        mAppMenu.updateMenu(modelList, adapter);
+        setupModelForHighlightAndClick(mModelList, mHighlightMenuId, mAppMenu);
+        ModelListAdapter adapter = new ModelListAdapter(mModelList);
+        mAppMenu.updateMenu(mModelList, adapter);
         registerViewBinders(
                 customViewBinders,
                 customViewTypeOffsetMap,
@@ -271,7 +303,12 @@ class AppMenuHandlerImpl
 
     @Override
     public void hideAppMenu() {
-        if (mAppMenu != null && mAppMenu.isShowing()) mAppMenu.dismiss();
+        if (mAppMenu != null && mAppMenu.isShowing()) {
+            mAppMenu.dismiss();
+            if (mModelList != null) {
+                mModelList.removeObserver(mListObserver);
+            }
+        }
     }
 
     @Override
@@ -424,16 +461,32 @@ class AppMenuHandlerImpl
 
     void setupModelForHighlightAndClick(
             ModelList modelList, Integer highlightedId, AppMenuClickHandler appMenuClickHandler) {
+        updateModelForHighlightAndClick(
+                modelList,
+                highlightedId,
+                appMenuClickHandler,
+                /* startIndex= */ 0,
+                /* withAssertions= */ true);
+    }
+
+    private void updateModelForHighlightAndClick(
+            ModelList modelList,
+            Integer highlightedId,
+            AppMenuClickHandler appMenuClickHandler,
+            int startIndex,
+            boolean withAssertions) {
         if (modelList == null) {
             return;
         }
 
-        for (int i = 0; i < modelList.size(); i++) {
+        for (int i = startIndex; i < modelList.size(); i++) {
             PropertyModel model = modelList.get(i).model;
-            // Not like other keys which is set by AppMenuPropertiesDelegateImpl, CLICK_HANDLER and
-            // HIGHLIGHTED should not be set yet.
-            assert model.get(AppMenuItemProperties.CLICK_HANDLER) == null;
-            assert !model.get(AppMenuItemProperties.HIGHLIGHTED);
+            if (withAssertions) {
+                // Not like other keys which is set by AppMenuPropertiesDelegateImpl, CLICK_HANDLER
+                // and HIGHLIGHTED should not be set yet.
+                assert model.get(AppMenuItemProperties.CLICK_HANDLER) == null;
+                assert !model.get(AppMenuItemProperties.HIGHLIGHTED);
+            }
             model.set(AppMenuItemProperties.CLICK_HANDLER, appMenuClickHandler);
             model.set(AppMenuItemProperties.POSITION, i);
 
@@ -490,5 +543,10 @@ class AppMenuHandlerImpl
     /** @param reporter A means of reporting an exception without crashing. */
     static void setExceptionReporter(Callback<Throwable> reporter) {
         AppMenu.setExceptionReporter(reporter);
+    }
+
+    @Nullable
+    ModelList getModelListForTesting() {
+        return mModelList;
     }
 }

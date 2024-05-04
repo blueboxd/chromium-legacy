@@ -107,8 +107,9 @@ suite('CategoriesTest', () => {
     await setInitialSettings(1);
 
     const eventPromise = eventToPromise('collection-select', categoriesElement);
-    const category = categoriesElement.shadowRoot!.querySelector(
-                         '.collection')! as HTMLButtonElement;
+    const category =
+        categoriesElement.shadowRoot!.querySelector<HTMLElement>('.collection');
+    assertTrue(!!category);
     category.click();
     const event = (await eventPromise) as CustomEvent<BackgroundCollection>;
     assertTrue(!!event);
@@ -152,20 +153,6 @@ suite('CategoriesTest', () => {
     assertEquals(1, handler.getCallCount('openChromeWebStore'));
   });
 
-  test('clicking chrome colors sends event', async () => {
-    document.documentElement.toggleAttribute('chrome-refresh-2023', false);
-    await setInitialSettings(1);
-    const eventPromise =
-        eventToPromise('chrome-colors-select', categoriesElement);
-    const chromeColorsTile =
-        categoriesElement.shadowRoot!.querySelector('#chromeColorsTile');
-    assertTrue(!!chromeColorsTile);
-
-    (chromeColorsTile as HTMLElement).click();
-    const event = await eventPromise;
-    assertTrue(!!event);
-  });
-
   test('checks selected category', async () => {
     await setInitialSettings(2);
 
@@ -180,21 +167,6 @@ suite('CategoriesTest', () => {
         categoriesElement.shadowRoot!.querySelectorAll('[checked]');
     assertEquals(1, checkedCategories.length);
     assertEquals(checkedCategories[0]!.parentElement!.id, 'classicChromeTile');
-    assertEquals(
-        checkedCategories[0]!.parentElement!.getAttribute('aria-current'),
-        'true');
-
-    // Set a theme with a color.
-    theme.foregroundColor = {value: 0xffff0000};
-    callbackRouterRemote.setTheme(theme);
-    await callbackRouterRemote.$.flushForTesting();
-    await waitAfterNextRender(categoriesElement);
-
-    // Check that chrome colors is selected.
-    checkedCategories =
-        categoriesElement.shadowRoot!.querySelectorAll('[checked]');
-    assertEquals(1, checkedCategories.length);
-    assertEquals(checkedCategories[0]!.parentElement!.id, 'chromeColorsTile');
     assertEquals(
         checkedCategories[0]!.parentElement!.getAttribute('aria-current'),
         'true');
@@ -260,9 +232,7 @@ suite('CategoriesTest', () => {
     );
   });
 
-  test('non-gm3 classic chrome tile shows correct image', async () => {
-    document.documentElement.toggleAttribute('chrome-refresh-2023', false);
-
+  test('classic chrome tile shows correct image', async () => {
     await setInitialSettings(0);
 
     assertEquals(
@@ -271,28 +241,6 @@ suite('CategoriesTest', () => {
             '#classicChromeTile #cornerNewTabPageTile #cornerNewTabPage')!.src,
         'chrome://customize-chrome-side-panel.top-chrome/icons/' +
             'corner_new_tab_page.svg');
-  });
-
-  test('gm3 classic chrome tile shows correct image', async () => {
-    document.documentElement.toggleAttribute('chrome-refresh-2023', true);
-
-    await setInitialSettings(0);
-
-    assertEquals(
-        $$<HTMLImageElement>(
-            categoriesElement,
-            '#classicChromeTile #cornerNewTabPageTile #cornerNewTabPage')!.src,
-        'chrome://customize-chrome-side-panel.top-chrome/icons/' +
-            'gm3_corner_new_tab_page.svg');
-  });
-
-  test('Hide chrome colors collection when GM3', async () => {
-    document.documentElement.toggleAttribute('chrome-refresh-2023', true);
-
-    await setInitialSettings(0);
-
-    assertTrue(
-        !categoriesElement.shadowRoot!.querySelector('#chromeColorsTile'));
   });
 
   [true, false].forEach((flagEnabled) => {

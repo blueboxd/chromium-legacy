@@ -19,6 +19,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabCreationState;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab.TabSelectionType;
+import org.chromium.chrome.browser.tab_ui.RecyclerViewPosition;
 import org.chromium.chrome.browser.tabmodel.TabModelFilter;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
@@ -133,13 +134,13 @@ class TabListEditorMediator
                     }
 
                     @Override
-                    public void willCloseTab(Tab tab, boolean animate, boolean didCloseAlone) {
+                    public void willCloseTab(Tab tab, boolean didCloseAlone) {
                         if (itemType != TabProperties.UiType.CLOSABLE) {
                             hide();
                         }
                     }
 
-                    // TODO(crbug.com/1504605): Revisit after adding the inactive tab model for
+                    // TODO(crbug.com/40945153): Revisit after adding the inactive tab model for
                     // using a custom click handler when selecting tabs.
                     @Override
                     public void didSelectTab(Tab tab, @TabSelectionType int type, int lastId) {

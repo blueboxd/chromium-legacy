@@ -6,21 +6,31 @@
 
 #include <stddef.h>
 
+#include <map>
+#include <memory>
+#include <optional>
+#include <string>
 #include <utility>
+#include <vector>
 
 #include "ash/constants/ash_paths.h"
 #include "ash/constants/ash_switches.h"
-#include "base/barrier_closure.h"
+#include "base/check.h"
+#include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/functional/bind.h"
+#include "base/location.h"
 #include "base/logging.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/path_service.h"
 #include "base/system/sys_info.h"
 #include "base/task/sequenced_task_runner.h"
+#include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "base/version.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_data.h"
@@ -29,35 +39,40 @@
 #include "chrome/browser/ash/app_mode/kiosk_cryptohome_remover.h"
 #include "chrome/browser/ash/app_mode/kiosk_external_updater.h"
 #include "chrome/browser/ash/app_mode/kiosk_system_session.h"
-#include "chrome/browser/ash/app_mode/pref_names.h"
+#include "chrome/browser/ash/extensions/external_cache.h"
 #include "chrome/browser/ash/extensions/external_cache_impl.h"
 #include "chrome/browser/ash/login/session/user_session_manager.h"
 #include "chrome/browser/ash/ownership/owner_settings_service_ash.h"
 #include "chrome/browser/ash/ownership/owner_settings_service_ash_factory.h"
 #include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
 #include "chrome/browser/ash/policy/core/device_local_account.h"
-#include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/app_mode/chrome_kiosk_app_installer.h"
+#include "chrome/browser/chromeos/app_mode/chrome_kiosk_external_loader_broker.h"
+#include "chrome/browser/chromeos/app_mode/kiosk_browser_session.h"
 #include "chrome/browser/extensions/external_loader.h"
 #include "chrome/browser/extensions/external_provider_impl.h"
-#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/extensions/extension_constants.h"
+#include "chromeos/ash/components/settings/cros_settings.h"
 #include "chromeos/ash/components/settings/cros_settings_names.h"
 #include "chromeos/crosapi/mojom/chrome_app_kiosk_service.mojom.h"
 #include "components/account_id/account_id.h"
 #include "components/ownership/owner_key_util.h"
+#include "components/policy/core/common/cloud/cloud_policy_constants.h"
+#include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/user_manager/known_user.h"
 #include "components/user_manager/user_manager.h"
 #include "extensions/browser/updater/extension_downloader_delegate.h"
+#include "extensions/common/extension_id.h"
 #include "extensions/common/extension_urls.h"
 #include "extensions/common/manifest_handlers/kiosk_mode_info.h"
+#include "kiosk_app_data_base.h"
+#include "net/base/backoff_entry.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/cros_system_api/switches/chrome_switches.h"
 
@@ -124,15 +139,6 @@ std::unique_ptr<chromeos::ExternalCache> CreateExternalCache(
       /*allow_scheduled_updates=*/true);
   cache->set_flush_on_put(true);
   return cache;
-}
-
-std::unique_ptr<KioskSystemSession> CreateKioskSystemSession(
-    Profile* profile,
-    const KioskAppId& app_id) {
-  if (g_test_overrides) {
-    return g_test_overrides->CreateKioskSystemSession();
-  }
-  return std::make_unique<KioskSystemSession>(profile, app_id);
 }
 
 base::Version GetPlatformVersion() {
@@ -264,31 +270,6 @@ void KioskChromeAppManager::SetExtensionDownloaderBackoffPolicy(
     return;
   }
   external_cache_->SetBackoffPolicy(backoff_policy);
-}
-
-void KioskChromeAppManager::InitKioskSystemSession(Profile* profile,
-                                                   const KioskAppId& app_id) {
-  LOG_IF(FATAL, kiosk_system_session_)
-      << "Kiosk system session is already initialized.";
-
-  base::CommandLine session_flags(base::CommandLine::NO_PROGRAM);
-  if (GetSwitchesForSessionRestore(app_id.app_id.value(), &session_flags)) {
-    base::CommandLine::StringVector flags;
-    // argv[0] is the program name `base::CommandLine::NO_PROGRAM`.
-    flags.assign(session_flags.argv().begin() + 1, session_flags.argv().end());
-
-    // Update user flags, but do not restart Chrome - the purpose of the flags
-    // set here is to be able to properly restore session if the session is
-    // restarted - e.g. due to crash. For example, this will ensure restarted
-    // app session restores auto-launched state.
-    UserSessionManager::GetInstance()->SetSwitchesForUser(
-        user_manager::UserManager::Get()->GetActiveUser()->GetAccountId(),
-        UserSessionManager::CommandLineSwitchesType::kPolicyAndKioskControl,
-        flags);
-  }
-
-  kiosk_system_session_ = CreateKioskSystemSession(profile, app_id);
-  NotifySessionInitialized();
 }
 
 bool KioskChromeAppManager::GetSwitchesForSessionRestore(
@@ -525,11 +506,10 @@ void KioskChromeAppManager::AddApp(const std::string& app_id,
       policy::GetDeviceLocalAccounts(CrosSettings::Get());
 
   // Don't insert the app if it's already in the list.
-  for (std::vector<policy::DeviceLocalAccount>::const_iterator it =
-           device_local_accounts.begin();
-       it != device_local_accounts.end(); ++it) {
-    if (it->type == policy::DeviceLocalAccount::TYPE_KIOSK_APP &&
-        it->kiosk_app_id == app_id) {
+  for (const auto& device_local_account : device_local_accounts) {
+    if (device_local_account.type ==
+            policy::DeviceLocalAccount::TYPE_KIOSK_APP &&
+        device_local_account.kiosk_app_id == app_id) {
       return;
     }
   }
@@ -667,6 +647,26 @@ KioskChromeAppManager::CreatePrimaryAppInstallData(
 
   return crosapi::mojom::AppInstallParams(id, *crx_file_location,
                                           *external_version, is_store_app_bool);
+}
+
+void KioskChromeAppManager::OnKioskSessionStarted(const KioskAppId& app_id) {
+  base::CommandLine session_flags(base::CommandLine::NO_PROGRAM);
+  if (GetSwitchesForSessionRestore(app_id.app_id.value(), &session_flags)) {
+    base::CommandLine::StringVector flags;
+    // argv[0] is the program name `base::CommandLine::NO_PROGRAM`.
+    flags.assign(session_flags.argv().begin() + 1, session_flags.argv().end());
+
+    // Update user flags, but do not restart Chrome - the purpose of the flags
+    // set here is to be able to properly restore session if the session is
+    // restarted - e.g. due to crash. For example, this will ensure restarted
+    // app session restores auto-launched state.
+    UserSessionManager::GetInstance()->SetSwitchesForUser(
+        user_manager::UserManager::Get()->GetActiveUser()->GetAccountId(),
+        UserSessionManager::CommandLineSwitchesType::kPolicyAndKioskControl,
+        flags);
+  }
+
+  NotifySessionInitialized();
 }
 
 void KioskChromeAppManager::UpdateExternalCache() {

@@ -41,7 +41,7 @@ function validateBid(bid) {
 }
 
 function validateAuctionConfig(auctionConfig) {
-  if (Object.keys(auctionConfig).length !== 15) {
+  if (Object.keys(auctionConfig).length !== 16) {
     throw 'Wrong number of auctionConfig fields ' +
         JSON.stringify(auctionConfig);
   }
@@ -71,7 +71,7 @@ function validateAuctionConfig(auctionConfig) {
         auctionConfig.trustedScoringSignalsUrl;
   }
 
-  // TODO(crbug.com/1186444): Consider validating URL fields like
+  // TODO(crbug.com/40172488): Consider validating URL fields like
   // auctionConfig.decisionLogicURL once we decide what to do about URL
   // normalization.
 
@@ -118,6 +118,9 @@ function validateAuctionConfig(auctionConfig) {
     throw 'Wrong perBuyerCumulativeTimeouts ' +
         JSON.stringify(auctionConfig.perBuyerCumulativeTimeouts);
   }
+
+  if (auctionConfig.reportingTimeout !== 2000)
+    throw 'Wrong reportingTimeout ' + auctionConfig.reportingTimeout;
 
   if (auctionConfig.perBuyerCurrencies[buyerAOrigin] !== 'USD' ||
       auctionConfig.perBuyerCurrencies[buyerBOrigin] !== 'CAD' ||

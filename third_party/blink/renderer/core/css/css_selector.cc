@@ -139,8 +139,6 @@ inline unsigned CSSSelector::SpecificityForOneSelector() const {
       return kIdSpecificity;
     case kPseudoClass:
       switch (GetPseudoType()) {
-        case kPseudoActiveViewTransition:
-          return (IdentList().empty() ? 1 : 2) * kClassLikeSpecificity;
         case kPseudoWhere:
           return 0;
         case kPseudoHost:
@@ -285,6 +283,10 @@ PseudoId CSSSelector::GetPseudoId(PseudoType type) {
       return kPseudoIdBackdrop;
     case kPseudoScrollbar:
       return kPseudoIdScrollbar;
+    case kPseudoScrollMarker:
+      return kPseudoIdScrollMarker;
+    case kPseudoScrollMarkers:
+      return kPseudoIdScrollMarkers;
     case kPseudoScrollbarButton:
       return kPseudoIdScrollbarButton;
     case kPseudoScrollbarCorner:
@@ -317,6 +319,7 @@ PseudoId CSSSelector::GetPseudoId(PseudoType type) {
       return kPseudoIdViewTransitionNew;
     case kPseudoActive:
     case kPseudoActiveViewTransition:
+    case kPseudoActiveViewTransitionType:
     case kPseudoAny:
     case kPseudoAnyLink:
     case kPseudoAutofill:
@@ -401,8 +404,10 @@ PseudoId CSSSelector::GetPseudoId(PseudoType type) {
     case kPseudoRightPage:
     case kPseudoRoot:
     case kPseudoScope:
-    case kPseudoSelectAuthorButton:
-    case kPseudoSelectAuthorDatalist:
+    case kPseudoSelectFallbackButton:
+    case kPseudoSelectFallbackButtonIcon:
+    case kPseudoSelectFallbackButtonText:
+    case kPseudoSelectFallbackDatalist:
     case kPseudoSelectorFragmentAnchor:
     case kPseudoSingleButton:
     case kPseudoSlotted:
@@ -464,9 +469,6 @@ const static NameToPseudoStruct kPseudoTypeWithoutArgumentsMap[] = {
     {"-internal-multi-select-focus", CSSSelector::kPseudoMultiSelectFocus},
     {"-internal-popover-in-top-layer", CSSSelector::kPseudoPopoverInTopLayer},
     {"-internal-relative-anchor", CSSSelector::kPseudoRelativeAnchor},
-    {"-internal-select-author-button", CSSSelector::kPseudoSelectAuthorButton},
-    {"-internal-select-author-datalist",
-     CSSSelector::kPseudoSelectAuthorDatalist},
     {"-internal-selector-fragment-anchor",
      CSSSelector::kPseudoSelectorFragmentAnchor},
     {"-internal-shadow-host-has-appearance",
@@ -490,6 +492,7 @@ const static NameToPseudoStruct kPseudoTypeWithoutArgumentsMap[] = {
     {"-webkit-scrollbar-track", CSSSelector::kPseudoScrollbarTrack},
     {"-webkit-scrollbar-track-piece", CSSSelector::kPseudoScrollbarTrackPiece},
     {"active", CSSSelector::kPseudoActive},
+    {"active-view-transition", CSSSelector::kPseudoActiveViewTransition},
     {"after", CSSSelector::kPseudoAfter},
     {"any-link", CSSSelector::kPseudoAnyLink},
     {"autofill", CSSSelector::kPseudoAutofill},
@@ -553,6 +556,14 @@ const static NameToPseudoStruct kPseudoTypeWithoutArgumentsMap[] = {
     {"right", CSSSelector::kPseudoRightPage},
     {"root", CSSSelector::kPseudoRoot},
     {"scope", CSSSelector::kPseudoScope},
+    {"scroll-marker", CSSSelector::kPseudoScrollMarker},
+    {"scroll-markers", CSSSelector::kPseudoScrollMarkers},
+    {"select-fallback-button", CSSSelector::kPseudoSelectFallbackButton},
+    {"select-fallback-button-icon",
+     CSSSelector::kPseudoSelectFallbackButtonIcon},
+    {"select-fallback-button-text",
+     CSSSelector::kPseudoSelectFallbackButtonText},
+    {"select-fallback-datalist", CSSSelector::kPseudoSelectFallbackDatalist},
     {"selection", CSSSelector::kPseudoSelection},
     {"single-button", CSSSelector::kPseudoSingleButton},
     {"spelling-error", CSSSelector::kPseudoSpellingError},
@@ -571,7 +582,8 @@ const static NameToPseudoStruct kPseudoTypeWithoutArgumentsMap[] = {
 
 const static NameToPseudoStruct kPseudoTypeWithArgumentsMap[] = {
     {"-webkit-any", CSSSelector::kPseudoAny},
-    {"active-view-transition", CSSSelector::kPseudoActiveViewTransition},
+    {"active-view-transition-type",
+     CSSSelector::kPseudoActiveViewTransitionType},
     {"cue", CSSSelector::kPseudoCue},
     {"dir", CSSSelector::kPseudoDir},
     {"has", CSSSelector::kPseudoHas},
@@ -654,15 +666,23 @@ CSSSelector::PseudoType CSSSelector::NameToPseudoType(
     return CSSSelector::kPseudoUnknown;
   }
 
-  if ((match->type == CSSSelector::kPseudoUserInvalid ||
-       match->type == CSSSelector::kPseudoUserValid) &&
-      !RuntimeEnabledFeatures::UserValidUserInvalidEnabled()) {
+  if ((match->type == CSSSelector::kPseudoScrollMarker ||
+       match->type == CSSSelector::kPseudoScrollMarkers) &&
+      !RuntimeEnabledFeatures::CSSPseudoScrollMarkersEnabled()) {
     return CSSSelector::kPseudoUnknown;
   }
 
   if ((match->type == CSSSelector::kPseudoOpen ||
        match->type == CSSSelector::kPseudoClosed) &&
       !RuntimeEnabledFeatures::CSSPseudoOpenClosedEnabled()) {
+    return CSSSelector::kPseudoUnknown;
+  }
+
+  if ((match->type == CSSSelector::kPseudoSelectFallbackButton ||
+       match->type == CSSSelector::kPseudoSelectFallbackButtonIcon ||
+       match->type == CSSSelector::kPseudoSelectFallbackButtonText ||
+       match->type == CSSSelector::kPseudoSelectFallbackDatalist) &&
+      !RuntimeEnabledFeatures::StylableSelectEnabled()) {
     return CSSSelector::kPseudoUnknown;
   }
 
@@ -753,6 +773,12 @@ void CSSSelector::UpdatePseudoType(const AtomicString& value,
     case kPseudoScrollbarThumb:
     case kPseudoScrollbarTrack:
     case kPseudoScrollbarTrackPiece:
+    case kPseudoScrollMarker:
+    case kPseudoScrollMarkers:
+    case kPseudoSelectFallbackButton:
+    case kPseudoSelectFallbackButtonIcon:
+    case kPseudoSelectFallbackButtonText:
+    case kPseudoSelectFallbackDatalist:
     case kPseudoSelection:
     case kPseudoWebKitCustomElement:
     case kPseudoSlotted:
@@ -791,6 +817,7 @@ void CSSSelector::UpdatePseudoType(const AtomicString& value,
     // For pseudo classes
     case kPseudoActive:
     case kPseudoActiveViewTransition:
+    case kPseudoActiveViewTransitionType:
     case kPseudoAny:
     case kPseudoAnyLink:
     case kPseudoAutofill:
@@ -861,8 +888,6 @@ void CSSSelector::UpdatePseudoType(const AtomicString& value,
     case kPseudoRequired:
     case kPseudoRoot:
     case kPseudoScope:
-    case kPseudoSelectAuthorButton:
-    case kPseudoSelectAuthorDatalist:
     case kPseudoSelectorFragmentAnchor:
     case kPseudoSingleButton:
     case kPseudoStart:
@@ -1034,27 +1059,24 @@ bool CSSSelector::SerializeSimpleSelector(StringBuilder& builder) const {
       case kPseudoWhere:
         break;
       case kPseudoParent:
-        DCHECK(!IsImplicit());
         builder.Append('&');
         break;
       case kPseudoRelativeAnchor:
         NOTREACHED();
         return false;
-      case kPseudoActiveViewTransition:
-        if (IdentList().empty()) {
-          builder.Append("(*)");
-        } else {
-          String separator = "(";
-          for (AtomicString type : IdentList()) {
-            builder.Append(separator);
-            if (separator == "(") {
-              separator = ", ";
-            }
-            SerializeIdentifier(type, builder);
+      case kPseudoActiveViewTransitionType: {
+        CHECK(!IdentList().empty());
+        String separator = "(";
+        for (AtomicString type : IdentList()) {
+          builder.Append(separator);
+          if (separator == "(") {
+            separator = ", ";
           }
-          builder.Append(')');
+          SerializeIdentifier(type, builder);
         }
+        builder.Append(')');
         break;
+      }
       default:
         break;
     }
@@ -1200,11 +1222,10 @@ String CSSSelector::SelectorText() const {
       next_compound = next_compound->NextSimpleSelector();
     }
 
-    // If we are combining with an implicit & or :scope, it is as if we
+    // If we are combining with an implicit :scope, it is as if we
     // used a relative combinator.
     if (!next_compound || (next_compound->Match() == kPseudoClass &&
-                           (next_compound->GetPseudoType() == kPseudoParent ||
-                            next_compound->GetPseudoType() == kPseudoScope) &&
+                           next_compound->GetPseudoType() == kPseudoScope &&
                            next_compound->IsImplicit())) {
       relation = ConvertRelationToRelative(relation);
     }
@@ -1424,7 +1445,11 @@ bool CSSSelector::IsTreeAbidingPseudoElement() const {
           GetPseudoType() == kPseudoMarker ||
           GetPseudoType() == kPseudoPlaceholder ||
           GetPseudoType() == kPseudoFileSelectorButton ||
-          GetPseudoType() == kPseudoBackdrop);
+          GetPseudoType() == kPseudoBackdrop ||
+          GetPseudoType() == kPseudoSelectFallbackButton ||
+          GetPseudoType() == kPseudoSelectFallbackButtonIcon ||
+          GetPseudoType() == kPseudoSelectFallbackButtonText ||
+          GetPseudoType() == kPseudoSelectFallbackDatalist);
 }
 
 bool CSSSelector::IsAllowedAfterPart() const {
@@ -1444,6 +1469,10 @@ bool CSSSelector::IsAllowedAfterPart() const {
     case kPseudoFileSelectorButton:
     case kPseudoFirstLine:
     case kPseudoFirstLetter:
+    case kPseudoSelectFallbackButton:
+    case kPseudoSelectFallbackButtonIcon:
+    case kPseudoSelectFallbackButtonText:
+    case kPseudoSelectFallbackDatalist:
     case kPseudoSelection:
     case kPseudoTargetText:
     case kPseudoHighlight:
@@ -1454,6 +1483,20 @@ bool CSSSelector::IsAllowedAfterPart() const {
     default:
       return false;
   }
+}
+
+bool CSSSelector::IsOrContainsHostPseudoClass() const {
+  if (IsHostPseudoClass()) {
+    return true;
+  }
+  // Accept selector lists like :is(:host, .foo).
+  for (const CSSSelector* sub_selector = SelectorListOrParent(); sub_selector;
+       sub_selector = CSSSelectorList::Next(*sub_selector)) {
+    if (sub_selector->IsOrContainsHostPseudoClass()) {
+      return true;
+    }
+  }
+  return false;
 }
 
 template <typename Functor>

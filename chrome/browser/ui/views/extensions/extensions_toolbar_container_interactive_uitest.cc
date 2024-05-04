@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include <string>
-#include "chrome/browser/ui/views/extensions/extensions_toolbar_container.h"
 
 #include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
@@ -16,16 +15,19 @@
 #include "chrome/browser/extensions/extension_action_runner.h"
 #include "chrome/browser/extensions/extension_context_menu_model.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/extension_util.h"
-#include "chrome/browser/extensions/scripting_permissions_modifier.h"
+#include "chrome/browser/extensions/permissions/scripting_permissions_modifier.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
 #include "chrome/browser/ui/views/extensions/extensions_menu_coordinator.h"
 #include "chrome/browser/ui/views/extensions/extensions_request_access_button.h"
 #include "chrome/browser/ui/views/extensions/extensions_toolbar_button.h"
+#include "chrome/browser/ui/views/extensions/extensions_toolbar_container.h"
 #include "chrome/browser/ui/views/extensions/extensions_toolbar_interactive_uitest.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/grit/generated_resources.h"
@@ -56,6 +58,9 @@
 #include "ui/views/widget/widget.h"
 
 namespace {
+
+using ScriptingPermissionsModifier = extensions::ScriptingPermissionsModifier;
+using PermissionsManager = extensions::PermissionsManager;
 
 constexpr char kInjectionSucceededMessage[] = "injection succeeded";
 
@@ -233,8 +238,16 @@ IN_PROC_BROWSER_TEST_F(ExtensionsToolbarContainerUITest,
 
 // Tests that clicking on a second extension action will close a first if its
 // popup was open.
+// TODO(crbug.com/332299695): Test failing on linux-lacros-tester-rel.
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#define MAYBE_ClickingOnASecondActionClosesTheFirst \
+  DISABLED_ClickingOnASecondActionClosesTheFirst
+#else
+#define MAYBE_ClickingOnASecondActionClosesTheFirst \
+  ClickingOnASecondActionClosesTheFirst
+#endif
 IN_PROC_BROWSER_TEST_F(ExtensionsToolbarContainerUITest,
-                       ClickingOnASecondActionClosesTheFirst) {
+                       MAYBE_ClickingOnASecondActionClosesTheFirst) {
   std::vector<extensions::TestExtensionDir> test_dirs;
   auto load_extension = [&](const char* extension_name) {
     constexpr char kManifestTemplate[] =
@@ -635,14 +648,18 @@ IN_PROC_BROWSER_TEST_F(IncognitoExtensionsToolbarContainerUITest,
 }
 
 class ExtensionsToolbarRuntimeHostPermissionsBrowserTest
-    : public ExtensionsToolbarContainerUITest {
+    : public ExtensionsToolbarContainerUITest,
+      public testing::WithParamInterface<bool> {
  public:
   enum class ContentScriptRunLocation {
     DOCUMENT_START,
     DOCUMENT_IDLE,
   };
 
-  ExtensionsToolbarRuntimeHostPermissionsBrowserTest() = default;
+  ExtensionsToolbarRuntimeHostPermissionsBrowserTest() {
+    scoped_feature_list_.InitWithFeatureState(
+        extensions_features::kExtensionsMenuAccessControl, GetParam());
+  }
   ExtensionsToolbarRuntimeHostPermissionsBrowserTest(
       const ExtensionsToolbarRuntimeHostPermissionsBrowserTest&) = delete;
   ExtensionsToolbarRuntimeHostPermissionsBrowserTest& operator=(
@@ -651,6 +668,7 @@ class ExtensionsToolbarRuntimeHostPermissionsBrowserTest
 
   void SetUpOnMainThread() override {
     ExtensionsToolbarContainerUITest::SetUpOnMainThread();
+
     host_resolver()->AddRule("*", "127.0.0.1");
     ASSERT_TRUE(embedded_test_server()->Start());
   }
@@ -707,23 +725,46 @@ class ExtensionsToolbarRuntimeHostPermissionsBrowserTest
   }
 
  private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
   extensions::TestExtensionDir extension_dir_;
   scoped_refptr<const extensions::Extension> extension_;
 };
 
+INSTANTIATE_TEST_SUITE_P(
+    ,
+    ExtensionsToolbarRuntimeHostPermissionsBrowserTest,
+    // False disables kExtensionsMenuAccessControl feature, true enables it.
+    testing::Bool(),
+    [](const testing::TestParamInfo<
+        ExtensionsToolbarRuntimeHostPermissionsBrowserTest::ParamType>& info) {
+      return info.param ? "ExtensionsMenuAccessControlFeatureEnabled"
+                        : "ExtensionsMenuAccessControlFeatureDisabled";
+    });
+
 // Tests page access modifications through the context menu which require a page
 // refresh.
-IN_PROC_BROWSER_TEST_F(ExtensionsToolbarRuntimeHostPermissionsBrowserTest,
+IN_PROC_BROWSER_TEST_P(ExtensionsToolbarRuntimeHostPermissionsBrowserTest,
                        ContextMenuPageAccess_RefreshRequired) {
   LoadAllUrlsExtension(ContentScriptRunLocation::DOCUMENT_START);
-  std::u16string tooltip_wants_access = base::JoinString(
-      {u"All Urls Extension",
-       l10n_util::GetStringUTF16(IDS_EXTENSIONS_WANTS_ACCESS_TO_SITE)},
-      u"\n");
-  std::u16string tooltip_has_access = base::JoinString(
-      {u"All Urls Extension",
-       l10n_util::GetStringUTF16(IDS_EXTENSIONS_HAS_ACCESS_TO_SITE)},
-      u"\n");
+
+  // When feature is enabled, tooltip is empty since a hover card is shown
+  // instead. Testing for the hover card is done separately.
+  bool feature_enabled = GetParam();
+  std::u16string tooltip_wants_access =
+      feature_enabled
+          ? std::u16string()
+          : base::JoinString({u"All Urls Extension",
+                              l10n_util::GetStringUTF16(
+                                  IDS_EXTENSIONS_WANTS_ACCESS_TO_SITE)},
+                             u"\n");
+  std::u16string tooltip_has_access =
+      feature_enabled
+          ? std::u16string()
+          : base::JoinString(
+                {u"All Urls Extension",
+                 l10n_util::GetStringUTF16(IDS_EXTENSIONS_HAS_ACCESS_TO_SITE)},
+                u"\n");
 
   ExtensionTestMessageListener injection_listener(kInjectionSucceededMessage);
   injection_listener.set_extension_id(extension()->id());
@@ -822,17 +863,27 @@ IN_PROC_BROWSER_TEST_F(ExtensionsToolbarRuntimeHostPermissionsBrowserTest,
 
 // Tests page access modifications through the context menu which don't require
 // a page refresh.
-IN_PROC_BROWSER_TEST_F(ExtensionsToolbarRuntimeHostPermissionsBrowserTest,
+IN_PROC_BROWSER_TEST_P(ExtensionsToolbarRuntimeHostPermissionsBrowserTest,
                        ContextMenuPageAccess_RefreshNotRequired) {
   LoadAllUrlsExtension(ContentScriptRunLocation::DOCUMENT_IDLE);
-  std::u16string tooltip_wants_access = base::JoinString(
-      {u"All Urls Extension",
-       l10n_util::GetStringUTF16(IDS_EXTENSIONS_WANTS_ACCESS_TO_SITE)},
-      u"\n");
-  std::u16string tooltip_has_access = base::JoinString(
-      {u"All Urls Extension",
-       l10n_util::GetStringUTF16(IDS_EXTENSIONS_HAS_ACCESS_TO_SITE)},
-      u"\n");
+
+  // When feature is enabled, tooltip is empty since a hover card is shown
+  // instead. Testing for the hover card is done separately.
+  bool feature_enabled = GetParam();
+  std::u16string tooltip_wants_access =
+      feature_enabled
+          ? std::u16string()
+          : base::JoinString({u"All Urls Extension",
+                              l10n_util::GetStringUTF16(
+                                  IDS_EXTENSIONS_WANTS_ACCESS_TO_SITE)},
+                             u"\n");
+  std::u16string tooltip_has_access =
+      feature_enabled
+          ? std::u16string()
+          : base::JoinString(
+                {u"All Urls Extension",
+                 l10n_util::GetStringUTF16(IDS_EXTENSIONS_HAS_ACCESS_TO_SITE)},
+                u"\n");
 
   ExtensionTestMessageListener injection_listener(kInjectionSucceededMessage);
   injection_listener.set_extension_id(extension()->id());
@@ -960,9 +1011,8 @@ INSTANTIATE_TEST_SUITE_P(
     });
 
 // Tests that when clicking the request access button (and a refresh should be
-// required to run blocked actions) it grants one time access to the extensions
-// listed. This also tests when that button is not clicked the one-time access
-// is granted, but blocked actions are not run until the page is reloaded.
+// required to run blocked actions) it grants one time site access to the
+// extensions listed. Blocked actions are only run if the refresh is accepted.
 IN_PROC_BROWSER_TEST_P(
     ExtensionsToolbarContainerFeatureUIReloadBubbleAcceptanceTest,
     ClickingRequestAccessButtonRunsAction_RefreshRequired) {
@@ -984,8 +1034,14 @@ IN_PROC_BROWSER_TEST_P(
   GURL url = embedded_test_server()->GetURL("example.com", "/title1.html");
   NavigateToUrl(url);
 
+  // Add site access requests for extensions A and B.
+  auto* web_contents = browser()->tab_strip_model()->GetActiveWebContents();
+  AddSiteAccessRequest(*extensionA, web_contents);
+  AddSiteAccessRequest(*extensionB, web_contents);
+  WaitForAnimation();
+
   // Verify request access button is visible because extensions A and B have
-  // pending site interaction.
+  // site access requests.
   extensions::SitePermissionsHelper permissions_helper(browser()->profile());
   auto* permissions_manager =
       extensions::PermissionsManager::Get(browser()->profile());
@@ -993,11 +1049,11 @@ IN_PROC_BROWSER_TEST_P(
   EXPECT_THAT(request_access_button()->GetExtensionIdsForTesting(),
               testing::ElementsAre(extensionA->id(), extensionB->id()));
 
-  EXPECT_EQ(permissions_helper.GetSiteInteraction(*extensionA, web_contents()),
+  EXPECT_EQ(permissions_helper.GetSiteInteraction(*extensionA, web_contents),
             SiteInteraction::kWithheld);
-  EXPECT_EQ(permissions_helper.GetSiteInteraction(*extensionB, web_contents()),
+  EXPECT_EQ(permissions_helper.GetSiteInteraction(*extensionB, web_contents),
             SiteInteraction::kWithheld);
-  EXPECT_EQ(permissions_helper.GetSiteInteraction(*extensionC, web_contents()),
+  EXPECT_EQ(permissions_helper.GetSiteInteraction(*extensionC, web_contents),
             SiteInteraction::kGranted);
   EXPECT_EQ(permissions_manager->GetUserSiteAccess(*extensionA, url),
             UserSiteAccess::kOnClick);
@@ -1013,7 +1069,7 @@ IN_PROC_BROWSER_TEST_P(
   // Click the request access button to grant one-time access. A reload page
   // dialog will appear since extension A needs a page reload to run its action.
   auto* action_runner =
-      extensions::ExtensionActionRunner::GetForWebContents(web_contents());
+      extensions::ExtensionActionRunner::GetForWebContents(web_contents);
   const bool kReloadBubbleAccepted = GetParam();
   action_runner->accept_bubble_for_testing(kReloadBubbleAccepted);
   ExtensionTestMessageListener script_injection_listener("injection succeeded");
@@ -1032,7 +1088,7 @@ IN_PROC_BROWSER_TEST_P(
     // button should be hidden, even without a reload, because the user granted
     // access to the extensions.
     EXPECT_FALSE(request_access_button()->GetVisible());
-    // TODO(crbug.com/1400812): Is there a way to confirm we didn't inject the
+    // TODO(crbug.com/40883928): Is there a way to confirm we didn't inject the
     // script besides reusing the
     // chrome/test/data/extensions/blocked_actions/content_scripts/ test
     // extension?
@@ -1041,11 +1097,11 @@ IN_PROC_BROWSER_TEST_P(
   // Extension A and B should have active site interaction, since their actions
   // ran, but keep the same user site access since this is a one-time access
   // grant.
-  EXPECT_EQ(permissions_helper.GetSiteInteraction(*extensionA, web_contents()),
+  EXPECT_EQ(permissions_helper.GetSiteInteraction(*extensionA, web_contents),
             SiteInteraction::kGranted);
-  EXPECT_EQ(permissions_helper.GetSiteInteraction(*extensionB, web_contents()),
+  EXPECT_EQ(permissions_helper.GetSiteInteraction(*extensionB, web_contents),
             SiteInteraction::kGranted);
-  EXPECT_EQ(permissions_helper.GetSiteInteraction(*extensionC, web_contents()),
+  EXPECT_EQ(permissions_helper.GetSiteInteraction(*extensionC, web_contents),
             SiteInteraction::kGranted);
   EXPECT_EQ(permissions_manager->GetUserSiteAccess(*extensionA, url),
             UserSiteAccess::kOnClick);
@@ -1060,23 +1116,16 @@ IN_PROC_BROWSER_TEST_P(
   NavigateToUrl(embedded_test_server()->GetURL("other.com", "/title1.html"));
   NavigateToUrl(url);
 
-  // Extension A and B should have pending access again and the request
-  // access button should be visible.
-  EXPECT_TRUE(request_access_button()->GetVisible());
-  EXPECT_THAT(request_access_button()->GetExtensionIdsForTesting(),
-              testing::ElementsAre(extensionA->id(), extensionB->id()));
-  EXPECT_EQ(permissions_helper.GetSiteInteraction(*extensionA, web_contents()),
+  // Extension A and B should have pending access again and the request access
+  // button should not be visible, since requests are reset on cross-origin
+  // navigation.
+  EXPECT_FALSE(request_access_button()->GetVisible());
+  EXPECT_EQ(permissions_helper.GetSiteInteraction(*extensionA, web_contents),
             SiteInteraction::kWithheld);
-  EXPECT_EQ(permissions_helper.GetSiteInteraction(*extensionB, web_contents()),
+  EXPECT_EQ(permissions_helper.GetSiteInteraction(*extensionB, web_contents),
             SiteInteraction::kWithheld);
-  EXPECT_EQ(permissions_helper.GetSiteInteraction(*extensionC, web_contents()),
+  EXPECT_EQ(permissions_helper.GetSiteInteraction(*extensionC, web_contents),
             SiteInteraction::kGranted);
-  EXPECT_EQ(permissions_manager->GetUserSiteAccess(*extensionA, url),
-            UserSiteAccess::kOnClick);
-  EXPECT_EQ(permissions_manager->GetUserSiteAccess(*extensionB, url),
-            UserSiteAccess::kOnClick);
-  EXPECT_EQ(permissions_manager->GetUserSiteAccess(*extensionC, url),
-            UserSiteAccess::kOnAllSites);
 }
 
 // Tests that the extension menu (puzzle piece menu) closes alongside the
@@ -1127,6 +1176,12 @@ IN_PROC_BROWSER_TEST_F(
   GURL url = embedded_test_server()->GetURL("example.com", "/title1.html");
   NavigateToUrl(url);
 
+  // Add site access requests for extensions A and B.
+  auto* web_contents = browser()->tab_strip_model()->GetActiveWebContents();
+  AddSiteAccessRequest(*extensionA, web_contents);
+  AddSiteAccessRequest(*extensionB, web_contents);
+  WaitForAnimation();
+
   // Verify request access button is visible because extensions A and B have
   // pending site interaction.
   EXPECT_TRUE(request_access_button()->GetVisible());
@@ -1135,11 +1190,11 @@ IN_PROC_BROWSER_TEST_F(
   extensions::SitePermissionsHelper permissions_helper(browser()->profile());
   auto* permissions_manager =
       extensions::PermissionsManager::Get(browser()->profile());
-  EXPECT_EQ(permissions_helper.GetSiteInteraction(*extensionA, web_contents()),
+  EXPECT_EQ(permissions_helper.GetSiteInteraction(*extensionA, web_contents),
             SiteInteraction::kWithheld);
-  EXPECT_EQ(permissions_helper.GetSiteInteraction(*extensionB, web_contents()),
+  EXPECT_EQ(permissions_helper.GetSiteInteraction(*extensionB, web_contents),
             SiteInteraction::kWithheld);
-  EXPECT_EQ(permissions_helper.GetSiteInteraction(*extensionC, web_contents()),
+  EXPECT_EQ(permissions_helper.GetSiteInteraction(*extensionC, web_contents),
             SiteInteraction::kGranted);
   EXPECT_EQ(permissions_manager->GetUserSiteAccess(*extensionA, url),
             UserSiteAccess::kOnClick);
@@ -1164,11 +1219,11 @@ IN_PROC_BROWSER_TEST_F(
   // ran, but keep the same site access since this is a one-time access grant.
   // The request access button should be hidden.
   EXPECT_FALSE(request_access_button()->GetVisible());
-  EXPECT_EQ(permissions_helper.GetSiteInteraction(*extensionA, web_contents()),
+  EXPECT_EQ(permissions_helper.GetSiteInteraction(*extensionA, web_contents),
             SiteInteraction::kGranted);
-  EXPECT_EQ(permissions_helper.GetSiteInteraction(*extensionB, web_contents()),
+  EXPECT_EQ(permissions_helper.GetSiteInteraction(*extensionB, web_contents),
             SiteInteraction::kGranted);
-  EXPECT_EQ(permissions_helper.GetSiteInteraction(*extensionC, web_contents()),
+  EXPECT_EQ(permissions_helper.GetSiteInteraction(*extensionC, web_contents),
             SiteInteraction::kGranted);
   EXPECT_EQ(permissions_manager->GetUserSiteAccess(*extensionA, url),
             UserSiteAccess::kOnClick);
@@ -1184,43 +1239,39 @@ IN_PROC_BROWSER_TEST_F(
   NavigateToUrl(url);
 
   // Extension A and B should have pending access again and the request access
-  // button should be visible.
-  EXPECT_TRUE(request_access_button()->GetVisible());
-  EXPECT_THAT(request_access_button()->GetExtensionIdsForTesting(),
-              testing::ElementsAre(extensionA->id(), extensionB->id()));
-  EXPECT_EQ(permissions_helper.GetSiteInteraction(*extensionA, web_contents()),
+  // button should not be visible, since requests are reset on cross-origin
+  // navigation.
+  EXPECT_FALSE(request_access_button()->GetVisible());
+  EXPECT_EQ(permissions_helper.GetSiteInteraction(*extensionA, web_contents),
             SiteInteraction::kWithheld);
-  EXPECT_EQ(permissions_helper.GetSiteInteraction(*extensionB, web_contents()),
+  EXPECT_EQ(permissions_helper.GetSiteInteraction(*extensionB, web_contents),
             SiteInteraction::kWithheld);
-  EXPECT_EQ(permissions_helper.GetSiteInteraction(*extensionC, web_contents()),
+  EXPECT_EQ(permissions_helper.GetSiteInteraction(*extensionC, web_contents),
             SiteInteraction::kGranted);
 }
 
 // Tests that when the user clicks on the request access button and immediately
 // navigates to a different site, the confirmation text is collapsed and the
 // button displays the extensions requesting access to the new site (if any).
-// TODO(crbug.com/1457026): Flaky on mac and win.
-#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
-#define MAYBE_ClickingRequestAccessButton_ConfirmationCollapsedOnNavigation \
-  DISABLED_ClickingRequestAccessButton_ConfirmationCollapsedOnNavigation
-#else
-#define MAYBE_ClickingRequestAccessButton_ConfirmationCollapsedOnNavigation \
-  ClickingRequestAccessButton_ConfirmationCollapsedOnNavigation
-#endif
+// TODO(crbug.com/40918196): Flaky due to button's confirmation text animation.
 IN_PROC_BROWSER_TEST_F(
     ExtensionsToolbarContainerFeatureUITest,
-    MAYBE_ClickingRequestAccessButton_ConfirmationCollapsedOnNavigation) {
+    DISABLED_ClickingRequestAccessButton_ConfirmationCollapsedOnNavigation) {
   auto extension = InstallExtensionWithHostPermissions(
       "Extension", "<all_urls>", "document_idle");
   extensions::ScriptingPermissionsModifier(profile(), extension)
       .SetWithholdHostPermissions(true);
 
-  // Navigate to a site where the extension has withheld access.
+  // Navigate to a site where the extension has withheld access and add a site
+  // access request for the extension.
   GURL url = embedded_test_server()->GetURL("example.com", "/title1.html");
   NavigateToUrl(url);
+  AddSiteAccessRequest(*extension,
+                       browser()->tab_strip_model()->GetActiveWebContents());
+  WaitForAnimation();
 
-  // Verify request access button is visible because extension is requesting
-  // site access.
+  // Verify request access button is visible because extension added a site
+  // access request.
   EXPECT_TRUE(request_access_button()->GetVisible());
   EXPECT_THAT(request_access_button()->GetExtensionIdsForTesting(),
               testing::ElementsAre(extension->id()));
@@ -1228,32 +1279,86 @@ IN_PROC_BROWSER_TEST_F(
   // Click the button to grant one-time access on example.com. Verify
   // confirmation message appears on the request access button.
   ClickButton(request_access_button());
+  WaitForAnimation();
   EXPECT_TRUE(request_access_button()->GetVisible());
   EXPECT_EQ(request_access_button()->GetText(),
             l10n_util::GetStringUTF16(
                 IDS_EXTENSIONS_REQUEST_ACCESS_BUTTON_DISMISSED_TEXT));
 
   // While the confirmation message is still visible, navigate to a site where
-  // the extension has withheld access. Verify the confirmation is not longer
-  // shown, and the button shows the extension requesting access.
+  // the extension has withheld access. Verify the button is not visible because
+  // there are no site access requests added and confirmation is gone.
   NavigateToUrl(embedded_test_server()->GetURL("other.com", "/title1.html"));
+  EXPECT_FALSE(request_access_button()->GetVisible());
+}
+
+// Verifies extensions can add site access requests on active and inactive tabs,
+// but the request access button only shows extensions's requests for the
+// current tab.
+IN_PROC_BROWSER_TEST_F(ExtensionsToolbarContainerFeatureUITest,
+                       SiteAccessRequestsForMultipleTabs) {
+  // Install two extensions and withhold their host permissions.
+  auto extensionA =
+      InstallExtensionWithHostPermissions("Extension A", "<all_urls>");
+  auto extensionB =
+      InstallExtensionWithHostPermissions("Extension B", "<all_urls>");
+  ScriptingPermissionsModifier(profile(), extensionA)
+      .SetWithholdHostPermissions(true);
+  ScriptingPermissionsModifier(profile(), extensionB)
+      .SetWithholdHostPermissions(true);
+
+  // Open two tabs.
+  int tab1_index = 0;
+  int tab2_index = 1;
+  content::WebContents* tab1_web_contents = chrome::AddAndReturnTabAt(
+      browser(), GURL("https://cero.com/"), tab1_index,
+      /*foreground=*/true);
+  content::WebContents* tab2_web_contents =
+      chrome::AddAndReturnTabAt(browser(), GURL("https://one.com/"), tab2_index,
+                                /*foreground=*/false);
+  int tab1_id = extensions::ExtensionTabUtil::GetTabId(tab1_web_contents);
+  int tab2_id = extensions::ExtensionTabUtil::GetTabId(tab2_web_contents);
+
+  // Activate the first tab. Verify request access button is not visible
+  // since no extension has added a request for such tab.
+  browser()->tab_strip_model()->ActivateTabAt(tab1_index);
+  EXPECT_FALSE(request_access_button()->GetVisible());
+
+  // Add a site access request for extension A on the (active) first tab. Verify
+  // extension A is visible on the request access button.
+  auto* permissions_manager = PermissionsManager::Get(browser()->profile());
+  permissions_manager->AddSiteAccessRequest(tab1_web_contents, tab1_id,
+                                            *extensionA);
   EXPECT_TRUE(request_access_button()->GetVisible());
   EXPECT_THAT(request_access_button()->GetExtensionIdsForTesting(),
-              testing::ElementsAre(extension->id()));
+              testing::ElementsAre(extensionA->id()));
 
-  // Click the button to grant one-time access on example.com. Verify
-  // confirmation message appears on the request access button.
-  ClickButton(request_access_button());
+  // Add a site access request for extension B on the (inactive) second tab.
+  // Verify only extension A is visible on the request access button.
+  permissions_manager->AddSiteAccessRequest(tab2_web_contents, tab2_id,
+                                            *extensionB);
   EXPECT_TRUE(request_access_button()->GetVisible());
-  EXPECT_EQ(request_access_button()->GetText(),
-            l10n_util::GetStringUTF16(
-                IDS_EXTENSIONS_REQUEST_ACCESS_BUTTON_DISMISSED_TEXT));
+  EXPECT_THAT(request_access_button()->GetExtensionIdsForTesting(),
+              testing::ElementsAre(extensionA->id()));
 
-  // While the confirmation message is still visible, navigate to a site where
-  // no extensions are allowed while the confirmation message is still visible.
-  // Verify the confirmation is not longer shown and the button is hidden.
-  NavigateToUrl(GURL("chrome://extensions"));
+  // Activate the second tab. Verify extension B is visible on the request
+  // access button.
+  browser()->tab_strip_model()->ActivateTabAt(tab2_index);
+  EXPECT_TRUE(request_access_button()->GetVisible());
+  EXPECT_THAT(request_access_button()->GetExtensionIdsForTesting(),
+              testing::ElementsAre(extensionB->id()));
+
+  // Remove site access request from the second tab. Verify request access
+  // button is no longer visible since no extension have a request for such tab.
+  permissions_manager->RemoveSiteAccessRequest(tab2_id, extensionB->id());
   EXPECT_FALSE(request_access_button()->GetVisible());
+
+  // Activate the first tab. Verify request access button is visible because
+  // Extension A request wasn't removed from that tab.
+  browser()->tab_strip_model()->ActivateTabAt(tab1_index);
+  EXPECT_TRUE(request_access_button()->GetVisible());
+  EXPECT_THAT(request_access_button()->GetExtensionIdsForTesting(),
+              testing::ElementsAre(extensionA->id()));
 }
 
 // Tests that the container has its visible children in the correct order when
@@ -1272,6 +1377,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionsToolbarContainerFeatureUITest,
   // Navigate to a site where extension A has withheld host permissions.
   GURL url = embedded_test_server()->GetURL("example.com", "/title1.html");
   NavigateToUrl(url);
+
+  // Add site access request for extension A. This should make the request
+  // access button visible.
+  auto* web_contents = browser()->tab_strip_model()->GetActiveWebContents();
+  AddSiteAccessRequest(*extensionA, web_contents);
 
   // Verify order of visible items in container:
   //   A | ExtensionsRequestAccessButton | ExtensionsToolbarButton

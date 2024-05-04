@@ -9,14 +9,20 @@
 
 #include <map>
 
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkColorSpace.h"
 #include "ui/display/types/display_snapshot.h"
 #include "ui/display/util/edid_parser.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/ozone/platform/drm/common/scoped_drm_types.h"
+#include "ui/ozone/platform/drm/gpu/fake_drm_device.h"
+#include "ui/ozone/platform/drm/gpu/fake_drm_device_generator.h"
 
 namespace ui {
+
+using ::testing::IsEmpty;
+using ::testing::UnorderedElementsAre;
 
 class DrmUtilTest : public testing::Test {};
 
@@ -262,6 +268,190 @@ TEST(PathBlobParser, ValidPathFormat) {
     drmModePropertyBlobRes blob{1, sizeof(valid), valid};
     EXPECT_EQ(expected, ParsePathBlob(blob));
   }
+}
+
+TEST(GetPossibleCrtcsBitmaskFromEncoders, MultipleCrtcsMultipleEncoders) {
+  std::unique_ptr<DrmDeviceGenerator> fake_device_generator =
+      std::make_unique<FakeDrmDeviceGenerator>();
+  scoped_refptr<DrmDevice> device = fake_device_generator->CreateDevice(
+      base::FilePath("/test/dri/card0"), base::ScopedFD(),
+      /*is_primary_device=*/true);
+  FakeDrmDevice* fake_drm = static_cast<FakeDrmDevice*>(device.get());
+
+  fake_drm->ResetStateWithAllProperties();
+  uint32_t first_encoder_id, second_encoder_id;
+  {
+    // Add 2 CRTCs
+    fake_drm->AddCrtc();
+    fake_drm->AddCrtc();
+
+    // Add 2 encoders
+    FakeDrmDevice::EncoderProperties& first_encoder = fake_drm->AddEncoder();
+    first_encoder.possible_crtcs = 0b10;
+    first_encoder_id = first_encoder.id;
+
+    FakeDrmDevice::EncoderProperties& second_encoder = fake_drm->AddEncoder();
+    second_encoder.possible_crtcs = 0b01;
+    second_encoder_id = second_encoder.id;
+
+    // Add 1 connector
+    FakeDrmDevice::ConnectorProperties& connector = fake_drm->AddConnector();
+    connector.connection = true;
+    connector.encoders =
+        std::vector<uint32_t>{first_encoder_id, second_encoder_id};
+  }
+
+  fake_drm->InitializeState(/*use_atomic*/ true);
+
+  EXPECT_EQ(GetPossibleCrtcsBitmaskFromEncoders(
+                *fake_drm, {first_encoder_id, second_encoder_id}),
+            0b11u);
+}
+
+TEST(GetPossibleCrtcsBitmaskFromEncoders, EmptyEncodersList) {
+  std::unique_ptr<DrmDeviceGenerator> fake_device_generator =
+      std::make_unique<FakeDrmDeviceGenerator>();
+  scoped_refptr<DrmDevice> device = fake_device_generator->CreateDevice(
+      base::FilePath("/test/dri/card0"), base::ScopedFD(),
+      /*is_primary_device=*/true);
+  FakeDrmDevice* fake_drm = static_cast<FakeDrmDevice*>(device.get());
+  fake_drm->ResetStateWithAllProperties();
+  {
+    fake_drm->AddCrtc();
+    FakeDrmDevice::EncoderProperties& first_encoder = fake_drm->AddEncoder();
+    first_encoder.possible_crtcs = 0b01;
+    uint32_t encoder_id = first_encoder.id;
+    FakeDrmDevice::ConnectorProperties& connector = fake_drm->AddConnector();
+    connector.connection = true;
+    connector.encoders = std::vector<uint32_t>{encoder_id};
+  }
+
+  fake_drm->InitializeState(/*use_atomic*/ true);
+
+  EXPECT_EQ(GetPossibleCrtcsBitmaskFromEncoders(*fake_drm, /*encoder_ids=*/{}),
+            0u);
+}
+
+TEST(GetPossibleCrtcsBitmaskFromEncoders, InvalidEncoderID) {
+  std::unique_ptr<DrmDeviceGenerator> fake_device_generator =
+      std::make_unique<FakeDrmDeviceGenerator>();
+  scoped_refptr<DrmDevice> device = fake_device_generator->CreateDevice(
+      base::FilePath("/test/dri/card0"), base::ScopedFD(),
+      /*is_primary_device=*/true);
+  FakeDrmDevice* fake_drm = static_cast<FakeDrmDevice*>(device.get());
+  fake_drm->ResetStateWithAllProperties();
+  {
+    fake_drm->AddCrtc();
+    FakeDrmDevice::EncoderProperties& first_encoder = fake_drm->AddEncoder();
+    first_encoder.possible_crtcs = 0b01;
+    uint32_t encoder_id = first_encoder.id;
+    FakeDrmDevice::ConnectorProperties& connector = fake_drm->AddConnector();
+    connector.connection = true;
+    connector.encoders = std::vector<uint32_t>{encoder_id};
+  }
+
+  fake_drm->InitializeState(/*use_atomic*/ true);
+
+  EXPECT_THAT(GetPossibleCrtcsBitmaskFromEncoders(*fake_drm,
+                                                  /*invalid encoder_ids=*/{1}),
+              0u);
+}
+
+TEST(GetPossibleCrtcIdsFromBitmask, ValidBitmask) {
+  std::unique_ptr<DrmDeviceGenerator> fake_device_generator =
+      std::make_unique<FakeDrmDeviceGenerator>();
+  scoped_refptr<DrmDevice> device = fake_device_generator->CreateDevice(
+      base::FilePath("/test/dri/card0"), base::ScopedFD(),
+      /*is_primary_device=*/true);
+  FakeDrmDevice* fake_drm = static_cast<FakeDrmDevice*>(device.get());
+
+  fake_drm->ResetStateWithAllProperties();
+  uint32_t crtc_1_id, crtc_2_id;
+  {
+    // Add 2 CRTCs
+    crtc_1_id = fake_drm->AddCrtc().id;
+    crtc_2_id = fake_drm->AddCrtc().id;
+
+    // Add 2 encoders
+    FakeDrmDevice::EncoderProperties& first_encoder = fake_drm->AddEncoder();
+    first_encoder.possible_crtcs = 0b10;
+    uint32_t first_encoder_id = first_encoder.id;
+
+    FakeDrmDevice::EncoderProperties& second_encoder = fake_drm->AddEncoder();
+    second_encoder.possible_crtcs = 0b01;
+    uint32_t second_encoder_id = second_encoder.id;
+
+    // Add 1 connector
+    FakeDrmDevice::ConnectorProperties& connector = fake_drm->AddConnector();
+    connector.connection = true;
+    connector.encoders =
+        std::vector<uint32_t>{first_encoder_id, second_encoder_id};
+  }
+
+  fake_drm->InitializeState(/*use_atomic*/ true);
+
+  EXPECT_THAT(GetPossibleCrtcIdsFromBitmask(*fake_drm, 0b11),
+              UnorderedElementsAre(crtc_1_id, crtc_2_id));
+}
+
+TEST(GetPossibleCrtcIdsFromBitmask, ZeroBitmask) {
+  std::unique_ptr<DrmDeviceGenerator> fake_device_generator =
+      std::make_unique<FakeDrmDeviceGenerator>();
+  scoped_refptr<DrmDevice> device = fake_device_generator->CreateDevice(
+      base::FilePath("/test/dri/card0"), base::ScopedFD(),
+      /*is_primary_device=*/true);
+  FakeDrmDevice* fake_drm = static_cast<FakeDrmDevice*>(device.get());
+
+  fake_drm->ResetStateWithAllProperties();
+  {
+    fake_drm->AddCrtc();
+
+    FakeDrmDevice::EncoderProperties& first_encoder = fake_drm->AddEncoder();
+    first_encoder.possible_crtcs = 0b01;
+    uint32_t first_encoder_id = first_encoder.id;
+
+    // Add 1 connector
+    FakeDrmDevice::ConnectorProperties& connector = fake_drm->AddConnector();
+    connector.connection = true;
+    connector.encoders = std::vector<uint32_t>{first_encoder_id};
+  }
+
+  fake_drm->InitializeState(/*use_atomic*/ true);
+
+  EXPECT_THAT(
+      GetPossibleCrtcIdsFromBitmask(*fake_drm, /*possible_crtcs_bitmask=*/0),
+      IsEmpty());
+}
+
+TEST(GetPossibleCrtcIdsFromBitmask, BitmaskTooLong) {
+  std::unique_ptr<DrmDeviceGenerator> fake_device_generator =
+      std::make_unique<FakeDrmDeviceGenerator>();
+  scoped_refptr<DrmDevice> device = fake_device_generator->CreateDevice(
+      base::FilePath("/test/dri/card0"), base::ScopedFD(),
+      /*is_primary_device=*/true);
+  FakeDrmDevice* fake_drm = static_cast<FakeDrmDevice*>(device.get());
+
+  fake_drm->ResetStateWithAllProperties();
+  uint32_t crtc_id;
+  {
+    crtc_id = fake_drm->AddCrtc().id;
+
+    FakeDrmDevice::EncoderProperties& first_encoder = fake_drm->AddEncoder();
+    first_encoder.possible_crtcs = 0b01;
+    uint32_t first_encoder_id = first_encoder.id;
+
+    // Add 1 connector
+    FakeDrmDevice::ConnectorProperties& connector = fake_drm->AddConnector();
+    connector.connection = true;
+    connector.encoders = std::vector<uint32_t>{first_encoder_id};
+  }
+
+  fake_drm->InitializeState(/*use_atomic*/ true);
+
+  // Recall that there was only 1 CRTC, but the bitmask has 4.
+  EXPECT_THAT(GetPossibleCrtcIdsFromBitmask(*fake_drm,
+                                            /*possible_crtcs_bitmask=*/0b1111),
+              UnorderedElementsAre(crtc_id));
 }
 
 }  // namespace ui

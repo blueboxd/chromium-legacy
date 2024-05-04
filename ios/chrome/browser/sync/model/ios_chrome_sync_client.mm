@@ -6,7 +6,6 @@
 
 #import <utility>
 
-#import "base/feature_list.h"
 #import "base/functional/bind.h"
 #import "base/logging.h"
 #import "components/autofill/core/browser/webdata/addresses/autofill_profile_sync_bridge.h"
@@ -26,10 +25,10 @@
 #import "components/password_manager/core/browser/password_store/password_store_interface.h"
 #import "components/password_manager/core/browser/sharing/password_receiver_service.h"
 #import "components/password_manager/core/browser/sharing/password_sender_service.h"
+#import "components/plus_addresses/webdata/plus_address_webdata_service.h"
 #import "components/reading_list/core/dual_reading_list_model.h"
 #import "components/reading_list/core/reading_list_model.h"
-#import "components/supervised_user/core/common/buildflags.h"
-#import "components/sync/base/features.h"
+#import "components/supervised_user/core/browser/supervised_user_settings_service.h"
 #import "components/sync/base/report_unrecoverable_error.h"
 #import "components/sync/base/sync_util.h"
 #import "components/sync/service/sync_api_component_factory.h"
@@ -38,9 +37,11 @@
 #import "components/sync_user_events/user_event_service.h"
 #import "components/trusted_vault/trusted_vault_service.h"
 #import "components/variations/service/google_groups_updater_service.h"
+#import "components/webauthn/core/browser/passkey_model.h"
 #import "ios/chrome/browser/bookmarks/model/account_bookmark_sync_service_factory.h"
 #import "ios/chrome/browser/bookmarks/model/local_or_syncable_bookmark_sync_service_factory.h"
 #import "ios/chrome/browser/consent_auditor/model/consent_auditor_factory.h"
+#import "ios/chrome/browser/data_sharing/model/data_sharing_service_factory.h"
 #import "ios/chrome/browser/dom_distiller/model/dom_distiller_service_factory.h"
 #import "ios/chrome/browser/favicon/model/favicon_service_factory.h"
 #import "ios/chrome/browser/history/model/history_service_factory.h"
@@ -55,6 +56,7 @@
 #import "ios/chrome/browser/shared/model/prefs/pref_names.h"
 #import "ios/chrome/browser/signin/model/chrome_account_manager_service_factory.h"
 #import "ios/chrome/browser/signin/model/identity_manager_factory.h"
+#import "ios/chrome/browser/supervised_user/model/supervised_user_settings_service_factory.h"
 #import "ios/chrome/browser/sync/model/device_info_sync_service_factory.h"
 #import "ios/chrome/browser/sync/model/ios_user_event_service_factory.h"
 #import "ios/chrome/browser/sync/model/model_type_store_service_factory.h"
@@ -62,16 +64,12 @@
 #import "ios/chrome/browser/sync/model/session_sync_service_factory.h"
 #import "ios/chrome/browser/sync/model/sync_invalidations_service_factory.h"
 #import "ios/chrome/browser/trusted_vault/model/ios_trusted_vault_service_factory.h"
+#import "ios/chrome/browser/webauthn/model/ios_passkey_model_factory.h"
 #import "ios/chrome/browser/webdata_services/model/web_data_service_factory.h"
 #import "ios/chrome/common/channel_info.h"
 #import "ios/web/public/thread/web_task_traits.h"
 #import "ios/web/public/thread/web_thread.h"
 #import "services/network/public/cpp/shared_url_loader_factory.h"
-
-#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-#import "components/supervised_user/core/browser/supervised_user_settings_service.h"
-#import "ios/chrome/browser/supervised_user/model/supervised_user_settings_service_factory.h"
-#endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
 
 IOSChromeSyncClient::IOSChromeSyncClient(ChromeBrowserState* browser_state)
     : browser_state_(browser_state) {
@@ -93,11 +91,9 @@ IOSChromeSyncClient::IOSChromeSyncClient(ChromeBrowserState* browser_state)
           browser_state_, ServiceAccessType::IMPLICIT_ACCESS);
 
   supervised_user::SupervisedUserSettingsService*
-      supervised_user_settings_service = nullptr;
-#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-  supervised_user_settings_service =
-      SupervisedUserSettingsServiceFactory::GetForBrowserState(browser_state);
-#endif
+      supervised_user_settings_service =
+          SupervisedUserSettingsServiceFactory::GetForBrowserState(
+              browser_state);
 
   sync_bookmarks::BookmarkSyncService* local_or_syncable_bookmark_sync_service =
       ios::LocalOrSyncableBookmarkSyncServiceFactory::GetForBrowserState(
@@ -114,7 +110,14 @@ IOSChromeSyncClient::IOSChromeSyncClient(ChromeBrowserState* browser_state)
           local_or_syncable_bookmark_sync_service,
           account_bookmark_sync_service,
           PowerBookmarkServiceFactory::GetForBrowserState(browser_state_),
-          supervised_user_settings_service);
+          supervised_user_settings_service,
+          ios::WebDataServiceFactory::GetPlusAddressWebDataForBrowserState(
+              browser_state_, ServiceAccessType::IMPLICIT_ACCESS),
+          /*TODO(crbug.com/330201909) implement for iOS
+             product_specifications_service= */
+          nullptr,
+          data_sharing::DataSharingServiceFactory::GetForBrowserState(
+              browser_state_));
 
   local_data_query_helper_ =
       std::make_unique<browser_sync::LocalDataQueryHelper>(
@@ -207,11 +210,11 @@ IOSChromeSyncClient::GetPasswordSenderService() {
       browser_state_);
 }
 
-syncer::DataTypeController::TypeVector
-IOSChromeSyncClient::CreateDataTypeControllers(
+syncer::ModelTypeController::TypeVector
+IOSChromeSyncClient::CreateModelTypeControllers(
     syncer::SyncService* sync_service) {
   // The iOS port does not have any platform-specific datatypes.
-  return component_factory_->CreateCommonDataTypeControllers(
+  return component_factory_->CreateCommonModelTypeControllers(
       /*disabled_types=*/{}, sync_service);
 }
 
@@ -240,6 +243,9 @@ IOSChromeSyncClient::GetControllerDelegateForModelType(syncer::ModelType type) {
     case syncer::USER_EVENTS:
       return IOSUserEventServiceFactory::GetForBrowserState(browser_state_)
           ->GetControllerDelegate();
+    case syncer::WEBAUTHN_CREDENTIAL:
+      return IOSPasskeyModelFactory::GetForBrowserState(browser_state_)
+          ->GetModelTypeControllerDelegate();
 
     // We don't exercise this function for certain datatypes, because their
     // controllers get the delegate elsewhere.
@@ -266,7 +272,6 @@ IOSChromeSyncClient::GetSyncApiComponentFactory() {
 }
 
 bool IOSChromeSyncClient::IsCustomPassphraseAllowed() {
-#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   supervised_user::SupervisedUserSettingsService*
       supervised_user_settings_service =
           SupervisedUserSettingsServiceFactory::GetForBrowserState(
@@ -274,7 +279,6 @@ bool IOSChromeSyncClient::IsCustomPassphraseAllowed() {
   if (supervised_user_settings_service) {
     return supervised_user_settings_service->IsCustomPassphraseAllowed();
   }
-#endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
   return true;
 }
 

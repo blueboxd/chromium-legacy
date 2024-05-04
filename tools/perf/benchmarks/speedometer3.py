@@ -96,22 +96,21 @@ class _Speedometer3(press._PressBenchmark):  # pylint: disable=protected-access
 
   @classmethod
   def AddBenchmarkCommandLineArgs(cls, parser):
-    parser.add_option('--suite',
-                      type="string",
-                      help="Only runs suites that match regex provided")
-    parser.add_option('--enable-rcs',
-                      '--rcs',
-                      action="store_true",
-                      help="Enables runtime call stats")
-    parser.add_option('--enable-details',
-                      '--details',
-                      action="store_true",
-                      help=("Enables detailed benchmark metrics "
-                            "(per line-item, iteration,...)"))
-    parser.add_option('--iteration-count',
-                      '--iterations',
-                      type="int",
-                      help="Override the default number of iterations")
+    parser.add_argument('--suite',
+                        help='Only runs suites that match regex provided')
+    parser.add_argument('--enable-rcs',
+                        '--rcs',
+                        action='store_true',
+                        help='Enables runtime call stats')
+    parser.add_argument('--enable-details',
+                        '--details',
+                        action='store_true',
+                        help=('Enables detailed benchmark metrics '
+                              '(per line-item, iteration,...)'))
+    parser.add_argument('--iteration-count',
+                        '--iterations',
+                        type=int,
+                        help='Override the default number of iterations')
 
   @classmethod
   def ProcessCommandLineArgs(cls, parser, args):
@@ -195,3 +194,20 @@ class Speedometer3NoMinorMS(Speedometer3):
 
   def SetExtraBrowserOptions(self, options):
     options.AppendExtraBrowserArgs('--js-flags=--no-minor-ms')
+
+
+@benchmark.Info(emails=['agarwaltushar@google.com', 'wnwen@google.com'],
+                component='Blink>JavaScript',
+                documentation_url='https://browserbench.org/Speedometer3.0')
+class Speedometer3Predictable(Speedometer3):
+  """The latest Speedometer3 benchmark with V8's `predictable` mode.
+
+  This should (hopefully) help reduce variance in the score.
+  """
+
+  @classmethod
+  def Name(cls):
+    return 'speedometer3-predictable'
+
+  def SetExtraBrowserOptions(self, options):
+    options.AppendExtraBrowserArgs('--js-flags=--predictable')

@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/debug/dump_without_crashing.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_id_helper.h"
 #include "cc/metrics/compositor_frame_reporter.h"
@@ -142,9 +143,9 @@ void CompositorFrameReportingController::WillBeginImplFrame(
   if (reporters_[PipelineStage::kBeginImplFrame]) {
     auto& reporter = reporters_[PipelineStage::kBeginImplFrame];
     DCHECK(reporter->did_finish_impl_frame());
-    // TODO(1144353): This is a speculative fix. This code should only be
-    // reached after the previous frame have been explicitly marked as 'did not
-    // produce frame', i.e. this code should have a DCHECK instead of a
+    // TODO(crbug.com/40728802): This is a speculative fix. This code should
+    // only be reached after the previous frame have been explicitly marked as
+    // 'did not produce frame', i.e. this code should have a DCHECK instead of a
     // conditional:
     //   DCHECK(reporter->did_not_produce_frame()).
     if (reporter->did_not_produce_frame()) {
@@ -186,9 +187,9 @@ void CompositorFrameReportingController::WillBeginMainFrame(
     auto active_trackers = active_trackers_;
     auto smooth_thread = GetSmoothThread();
     if (args.frame_id == last_started_compositor_frame_.args.frame_id) {
-      // TODO(1277547): Instead of replacing all current information with the
-      // older information from when the impl-frame started, merge the two sets
-      // of information that makes sense.
+      // TODO(crbug.com/40207819): Instead of replacing all current information
+      // with the older information from when the impl-frame started, merge the
+      // two sets of information that makes sense.
       scrolling_thread = last_started_compositor_frame_.scrolling_thread;
       active_trackers = last_started_compositor_frame_.active_trackers;
       smooth_thread = last_started_compositor_frame_.smooth_thread;
@@ -637,7 +638,7 @@ void CompositorFrameReportingController::DidPresentCompositorFrame(
 
     if (termination_status == FrameTerminationStatus::kPresentedFrame) {
       if (EventLatencyTracingRecorder::IsEventLatencyTracingEnabled()) {
-        // TODO(crbug.com/1334827): Consider using a separate container to
+        // TODO(crbug.com/40228308): Consider using a separate container to
         // differentiate event predictions with and without a main dispatch
         // stage.
         reporter->CalculateEventLatencyPrediction(

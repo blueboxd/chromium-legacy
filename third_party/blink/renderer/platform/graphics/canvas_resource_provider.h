@@ -5,12 +5,15 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_CANVAS_RESOURCE_PROVIDER_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_CANVAS_RESOURCE_PROVIDER_H_
 
+#include <algorithm>
 #include <memory>
 #include <optional>
 
 #include "base/feature_list.h"
 #include "base/memory/raw_ptr.h"
 #include "base/notreached.h"
+#include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "cc/paint/skia_paint_canvas.h"
 #include "cc/raster/playback_image_provider.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
@@ -34,6 +37,10 @@ class PaintCanvas;
 }  // namespace cc
 
 namespace gpu {
+
+struct Mailbox;
+struct SyncToken;
+
 namespace gles2 {
 
 class GLES2Interface;
@@ -50,6 +57,7 @@ class RasterInterface;
 namespace blink {
 
 PLATFORM_EXPORT BASE_DECLARE_FEATURE(kCanvas2DAutoFlushParams);
+PLATFORM_EXPORT BASE_DECLARE_FEATURE(kCanvas2DReclaimUnusedResources);
 
 class CanvasResourceDispatcher;
 class MemoryManagedPaintCanvas;
@@ -277,6 +285,38 @@ class PLATFORM_EXPORT CanvasResourceProvider
     return last_recording_;
   }
 
+  // Given the mailbox of a SharedImage, overwrites the current image (either
+  // completely or partially) with the passed-in SharedImage. Waits on
+  // `ready_sync_token` before copying; pass SyncToken() if no sync is required.
+  // Synthesizes a new sync token in `completion_sync_token` which will satisfy
+  // after the image copy completes. In practice, this API can be used to
+  // replace a resource with the contents of an AcceleratedStaticBitmapImage or
+  // with a WebGPUMailboxTexture.
+  bool OverwriteImage(const gpu::Mailbox& shared_image_mailbox,
+                      const gfx::Rect& copy_rect,
+                      bool unpack_flip_y,
+                      bool unpack_premultiply_alpha,
+                      const gpu::SyncToken& ready_sync_token,
+                      gpu::SyncToken& completion_sync_token);
+
+  struct UnusedResource {
+    UnusedResource(base::TimeTicks last_use,
+                   scoped_refptr<CanvasResource> resource)
+        : last_use(last_use), resource(std::move(resource)) {}
+    base::TimeTicks last_use;
+    scoped_refptr<CanvasResource> resource;
+  };
+
+  // Visible for testing; should be protected.
+  const WTF::Vector<UnusedResource>& CanvasResources() const {
+    return canvas_resources_;
+  }
+  bool unused_resources_reclaim_timer_is_running_for_testing() const {
+    return unused_resources_reclaim_timer_.IsRunning();
+  }
+  constexpr static base::TimeDelta kUnusedResourceExpirationTime =
+      base::Seconds(5);
+
  protected:
   class CanvasImageProvider;
 
@@ -334,10 +374,6 @@ class PLATFORM_EXPORT CanvasResourceProvider
   virtual void OnFlushForImage(cc::PaintImage::ContentId content_id);
   void OnMemoryDump(base::trace_event::ProcessMemoryDump*) override;
 
-  const WTF::Vector<scoped_refptr<CanvasResource>>& canvas_resources() const {
-    return canvas_resources_;
-  }
-
  private:
   friend class FlushForImageListener;
   virtual sk_sp<SkSurface> CreateSkSurface() const = 0;
@@ -362,6 +398,10 @@ class PLATFORM_EXPORT CanvasResourceProvider
   // Called after the recording was cleared from any draw ops it might have had.
   void RecordingCleared() override;
 
+  void RegisterUnusedResource(scoped_refptr<CanvasResource>&& resource);
+  void MaybePostUnusedResourcesReclaimTask();
+  void ClearOldUnusedResources();
+
   base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper_;
   base::WeakPtr<CanvasResourceDispatcher> resource_dispatcher_;
   // Note that `info_` should be const, but the relevant SkImageInfo
@@ -383,7 +423,8 @@ class PLATFORM_EXPORT CanvasResourceProvider
 
   // When and if |resource_recycling_enabled_| is false, |canvas_resources_|
   // will only hold one CanvasResource at most.
-  WTF::Vector<scoped_refptr<CanvasResource>> canvas_resources_;
+  WTF::Vector<UnusedResource> canvas_resources_;
+  base::OneShotTimer unused_resources_reclaim_timer_;
   bool resource_recycling_enabled_ = true;
   bool is_single_buffered_ = false;
   bool oopr_uses_dmsaa_ = false;

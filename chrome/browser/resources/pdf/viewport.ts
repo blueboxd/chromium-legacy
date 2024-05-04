@@ -14,7 +14,6 @@ import type {Gesture, PinchEventDetail} from './gesture_detector.js';
 import {GestureDetector} from './gesture_detector.js';
 import type {PdfPluginElement} from './internal_plugin.js';
 import {SwipeDetector, SwipeDirection} from './swipe_detector.js';
-import type {ViewportInterface} from './viewport_scroller.js';
 import type {ZoomManager} from './zoom_manager.js';
 import {InactiveZoomManager} from './zoom_manager.js';
 
@@ -91,8 +90,8 @@ type HtmlElementWithExtras = HTMLElement&{
   resizeCallback(): void,
 };
 
-// TODO(crbug.com/1276456): Would Viewport be better as a Polymer element?
-export class Viewport implements ViewportInterface {
+// TODO(crbug.com/40808900): Would Viewport be better as a Polymer element?
+export class Viewport {
   private window_: HTMLElement;
   private scrollContent_: ScrollContent;
   private defaultZoom_: number;
@@ -1586,7 +1585,7 @@ export class Viewport implements ViewportInterface {
    */
   handleNavigateToDestination(
       page: number, x: number|undefined, y: number|undefined, zoom: number) {
-    // TODO(crbug.com/1430193): Handle view parameters and fitting types.
+    // TODO(crbug.com/40262954): Handle view parameters and fitting types.
     if (zoom) {
       this.setZoom(zoom);
     }
@@ -1935,7 +1934,7 @@ class ScrollContent {
   syncScrollFromRemote(position: Point) {
     if (this.unackedScrollsToRemote_ > 0) {
       // Don't overwrite scroll position while scrolls-to-remote are pending.
-      // TODO(crbug.com/1246398): Don't need this if we make this synchronous
+      // TODO(crbug.com/40789211): Don't need this if we make this synchronous
       // again, by moving more logic to the plugin frame.
       return;
     }
@@ -2032,7 +2031,7 @@ class ScrollContent {
    */
   scrollTo(x: number, y: number, isSmooth: boolean = false) {
     if (this.plugin_) {
-      // TODO(crbug.com/1277228): Can get NaN if zoom calculations divide by 0.
+      // TODO(crbug.com/40809449): Can get NaN if zoom calculations divide by 0.
       x = Number.isNaN(x) ? 0 : x;
       y = Number.isNaN(y) ? 0 : y;
 

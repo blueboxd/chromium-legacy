@@ -11,7 +11,7 @@
 #include "base/i18n/rtl.h"
 #include "base/memory/raw_ptr.h"
 #include "base/test/mock_callback.h"
-#include "chrome/browser/autofill/mock_autofill_popup_controller.h"
+#include "chrome/browser/ui/autofill/mock_autofill_popup_controller.h"
 #include "chrome/browser/ui/views/autofill/popup/mock_accessibility_selection_delegate.h"
 #include "chrome/browser/ui/views/autofill/popup/mock_selection_delegate.h"
 #include "chrome/browser/ui/views/autofill/popup/popup_row_content_view.h"
@@ -19,8 +19,8 @@
 #include "chrome/browser/ui/views/autofill/popup/popup_view_utils.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/views/chrome_views_test_base.h"
-#include "components/autofill/core/browser/ui/popup_item_ids.h"
 #include "components/autofill/core/browser/ui/suggestion.h"
+#include "components/autofill/core/browser/ui/suggestion_type.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/input/native_web_keyboard_event.h"
 #include "content/public/test/test_renderer_host.h"
@@ -74,7 +74,7 @@ class PopupRowViewTest : public ChromeViewsTestBase {
 
   void ShowView(int line_number, bool has_control) {
     std::vector<Suggestion> suggestions(line_number + 1);
-    suggestions[line_number].popup_item_id = PopupItemId::kAddressEntry;
+    suggestions[line_number].type = SuggestionType::kAddressEntry;
     suggestions[line_number].main_text = Suggestion::Text(u"Suggestion");
     if (has_control) {
       suggestions[line_number].children = {Suggestion()};
@@ -87,7 +87,7 @@ class PopupRowViewTest : public ChromeViewsTestBase {
     ShowView(line_number);
   }
 
-  void ShowView(int line_number, std::vector<PopupItemId> suggestions) {
+  void ShowView(int line_number, std::vector<SuggestionType> suggestions) {
     mock_controller_.set_suggestions(suggestions);
     ShowView(line_number);
   }
@@ -123,10 +123,11 @@ class PopupRowViewTest : public ChromeViewsTestBase {
   }
 
   // Simulates the keyboard event and returns whether the event was handled.
-  bool SimulateKeyPress(int windows_key_code) {
+  bool SimulateKeyPress(int windows_key_code,
+                        int modifiers = blink::WebInputEvent::kNoModifiers) {
     content::NativeWebKeyboardEvent event(
-        blink::WebKeyboardEvent::Type::kRawKeyDown,
-        blink::WebInputEvent::kNoModifiers, ui::EventTimeForNow());
+        blink::WebKeyboardEvent::Type::kRawKeyDown, modifiers,
+        ui::EventTimeForNow());
     event.windows_key_code = windows_key_code;
     return row_view().HandleKeyPressEvent(event);
   }
@@ -322,6 +323,33 @@ TEST_F(PopupRowViewTest, ReturnKeyEventsAreHandled) {
   EXPECT_FALSE(SimulateKeyPress(ui::VKEY_RETURN));
 }
 
+class PopupRowSuggestionAcceptanceWithModifiers
+    : public PopupRowViewTest,
+      public ::testing::WithParamInterface</*modifiers*/ int> {};
+
+TEST_P(PopupRowSuggestionAcceptanceWithModifiers, All) {
+  ShowView(/*line_number=*/0, /*has_control=*/false);
+  row_view().SetSelectedCell(CellType::kContent);
+
+  EXPECT_CALL(controller(), AcceptSuggestion).Times(0);
+  EXPECT_FALSE(SimulateKeyPress(ui::VKEY_RETURN, GetParam()));
+}
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         PopupRowSuggestionAcceptanceWithModifiers,
+                         ::testing::ValuesIn(std::vector<int>{
+                             blink::WebInputEvent::kKeyModifiers,
+                             blink::WebInputEvent::kSymbolKey,
+                             blink::WebInputEvent::kFnKey,
+                             blink::WebInputEvent::kAltGrKey,
+                             blink::WebInputEvent::kMetaKey,
+                             blink::WebInputEvent::kAltKey,
+                             blink::WebInputEvent::kControlKey,
+                             blink::WebInputEvent::kShiftKey,
+                             blink::WebInputEvent::kControlKey |
+                                 blink::WebInputEvent::kShiftKey,
+                         }));
+
 TEST_F(PopupRowViewTest,
        ShouldIgnoreMouseObservedOutsideItemBoundsCheckIsFalse_IgnoreClick) {
   ShowView(/*line_number=*/0, /*has_control=*/false);
@@ -380,7 +408,7 @@ TEST_F(PopupRowViewTest, SelectSuggestionOnFocusedContent) {
 TEST_F(PopupRowViewTest, ContentViewA11yAttributes) {
   ShowView(/*line_number=*/0,
            {Suggestion("dummy_value", "dummy_label", Suggestion::Icon::kNoIcon,
-                       PopupItemId::kAddressEntry)});
+                       SuggestionType::kAddressEntry)});
 
   views::ViewAccessibility& accessibility =
       row_view().GetContentView().GetViewAccessibility();
@@ -397,7 +425,7 @@ TEST_F(PopupRowViewTest, ContentViewA11yAttributes) {
 
 struct PosInSetTestdata {
   // The popup item ids of the suggestions to be shown.
-  std::vector<PopupItemId> popup_item_ids;
+  std::vector<SuggestionType> types;
   // The index of the suggestion to be tested.
   int line_number;
   // The number of (non-separator) entries and the 1-indexed position of the
@@ -408,40 +436,38 @@ struct PosInSetTestdata {
 
 const PosInSetTestdata kPosInSetTestcases[] = {
     PosInSetTestdata{
-        .popup_item_ids = {PopupItemId::kAddressEntry,
-                           PopupItemId::kAddressEntry, PopupItemId::kSeparator,
-                           PopupItemId::kAutofillOptions},
+        .types = {SuggestionType::kAddressEntry, SuggestionType::kAddressEntry,
+                  SuggestionType::kSeparator, SuggestionType::kAutofillOptions},
         .line_number = 1,
         .set_size = 3,
         .set_index = 2,
     },
     PosInSetTestdata{
-        .popup_item_ids = {PopupItemId::kPasswordEntry,
-                           PopupItemId::kAccountStoragePasswordEntry,
-                           PopupItemId::kSeparator,
-                           PopupItemId::kAllSavedPasswordsEntry},
+        .types = {SuggestionType::kPasswordEntry,
+                  SuggestionType::kAccountStoragePasswordEntry,
+                  SuggestionType::kSeparator,
+                  SuggestionType::kAllSavedPasswordsEntry},
         .line_number = 0,
         .set_size = 3,
         .set_index = 1,
     },
     PosInSetTestdata{
-        .popup_item_ids = {PopupItemId::kAddressEntry,
-                           PopupItemId::kAddressEntry, PopupItemId::kSeparator,
-                           PopupItemId::kAutofillOptions},
+        .types = {SuggestionType::kAddressEntry, SuggestionType::kAddressEntry,
+                  SuggestionType::kSeparator, SuggestionType::kAutofillOptions},
         .line_number = 3,
         .set_size = 3,
         .set_index = 3,
     },
     PosInSetTestdata{
-        .popup_item_ids = {PopupItemId::kAutocompleteEntry,
-                           PopupItemId::kAutocompleteEntry,
-                           PopupItemId::kAutocompleteEntry},
+        .types = {SuggestionType::kAutocompleteEntry,
+                  SuggestionType::kAutocompleteEntry,
+                  SuggestionType::kAutocompleteEntry},
         .line_number = 1,
         .set_size = 3,
         .set_index = 2,
     },
     PosInSetTestdata{
-        .popup_item_ids = {PopupItemId::kCompose},
+        .types = {SuggestionType::kCompose},
         .line_number = 0,
         .set_size = 1,
         .set_index = 1,
@@ -454,7 +480,7 @@ class PopupRowPosInSetViewTest
 TEST_P(PopupRowPosInSetViewTest, All) {
   const PosInSetTestdata kTestdata = GetParam();
 
-  ShowView(kTestdata.line_number, kTestdata.popup_item_ids);
+  ShowView(kTestdata.line_number, kTestdata.types);
 
   ui::AXNodeData node_data;
   row_view().GetContentView().GetViewAccessibility().GetAccessibleNodeData(

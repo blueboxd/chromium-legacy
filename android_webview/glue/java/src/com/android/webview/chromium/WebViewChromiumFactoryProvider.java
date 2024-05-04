@@ -308,6 +308,12 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
                 ctx = ctx.createCredentialProtectedStorageContext();
             }
 
+            try (ScopedSysTraceEvent e2 =
+                    ScopedSysTraceEvent.scoped("WebViewChromiumFactoryProvider.initCommandLine")) {
+                // This may take ~20 ms only on userdebug devices.
+                CommandLineUtil.initCommandLine();
+            }
+
             // WebView needs to make sure to always use the wrapped application context.
             ctx = ClassLoaderContextWrapperFactory.get(ctx);
             ContextUtils.initApplicationContext(ctx);
@@ -342,27 +348,18 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
 
             AndroidXProcessGlobalConfig.extractConfigFromApp(application.getClassLoader());
 
-            try (ScopedSysTraceEvent e2 =
-                    ScopedSysTraceEvent.scoped("WebViewChromiumFactoryProvider.initCommandLine")) {
-                // This may take ~20 ms only on userdebug devices.
-                CommandLineUtil.initCommandLine();
-            }
-
             boolean multiProcess = webViewDelegate.isMultiProcessEnabled();
             if (multiProcess) {
                 CommandLine cl = CommandLine.getInstance();
                 cl.appendSwitch(AwSwitches.WEBVIEW_SANDBOXED_RENDERER);
             }
-            // Using concatenation rather than %s to allow values to be inlined by R8.
             Log.i(
                     TAG,
-                    "Loaded version="
-                            + VersionConstants.PRODUCT_VERSION
-                            + " minSdkVersion="
-                            + BuildConfig.MIN_SDK_VERSION
-                            + " isBundle="
-                            + ProductConfig.IS_BUNDLE
-                            + " multiprocess=%s packageId=%s",
+                    "version=%s (%s) minSdkVersion=%s isBundle=%s multiprocess=%s packageId=%s",
+                    VersionConstants.PRODUCT_VERSION,
+                    BuildConfig.VERSION_CODE,
+                    BuildConfig.MIN_SDK_VERSION,
+                    ProductConfig.IS_BUNDLE,
                     multiProcess,
                     packageId);
 
@@ -762,7 +759,8 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
     @Override
     public TracingController getTracingController() {
         synchronized (mAwInit.getLock()) {
-            mAwInit.ensureChromiumStartedLocked(true);
+            mAwInit.ensureChromiumStartedLocked(
+                    true, WebViewChromiumAwInit.CallSite.GET_TRACING_CONTROLLER);
             // ensureChromiumStartedLocked() can release the lock on first call while
             // waiting for startup. Hence check the mTracingController here to ensure
             // the singleton property.

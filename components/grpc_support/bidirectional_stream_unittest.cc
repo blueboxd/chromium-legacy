@@ -3,11 +3,11 @@
 // found in the LICENSE file.
 
 #include <stdint.h>
+
 #include <list>
 #include <map>
-#include <string>
-
 #include <memory>
+#include <string>
 
 #include "base/logging.h"
 #include "base/memory/raw_ptr.h"
@@ -40,28 +40,28 @@ class BidirectionalStreamTest : public ::testing::TestWithParam<bool> {
   BidirectionalStreamTest& operator=(const BidirectionalStreamTest&) = delete;
 
  protected:
+  BidirectionalStreamTest() = default;
+
   void SetUp() override {
     net::QuicSimpleTestServer::Start();
-    StartTestStreamEngine(net::QuicSimpleTestServer::GetPort());
+    test_stream_engine_getter_ =
+        TestStreamEngineGetter::Create(net::QuicSimpleTestServer::GetPort());
     quic_server_hello_url_ = net::QuicSimpleTestServer::GetHelloURL().spec();
   }
 
   void TearDown() override {
-    ShutdownTestStreamEngine();
+    test_stream_engine_getter_.reset();
     net::QuicSimpleTestServer::Shutdown();
   }
 
-  BidirectionalStreamTest() {}
-  ~BidirectionalStreamTest() override {}
-
-  stream_engine* engine() {
-    return GetTestStreamEngine(net::QuicSimpleTestServer::GetPort());
-  }
+  stream_engine* engine() { return test_stream_engine_getter_->Get(); }
 
   const char* test_hello_url() const { return quic_server_hello_url_.c_str(); }
 
  private:
   std::string quic_server_hello_url_;
+
+  std::unique_ptr<TestStreamEngineGetter> test_stream_engine_getter_;
 };
 
 class TestBidirectionalStreamCallback {
@@ -92,34 +92,28 @@ class TestBidirectionalStreamCallback {
     ~WriteData();
   };
 
-  raw_ptr<bidirectional_stream, AcrossTasksDanglingUntriaged> stream;
+  raw_ptr<bidirectional_stream, AcrossTasksDanglingUntriaged> stream = nullptr;
   base::WaitableEvent stream_done_event;
 
   // Test parameters.
   std::map<std::string, std::string> request_headers;
   std::list<std::unique_ptr<WriteData>> write_data;
   std::string expected_negotiated_protocol;
-  ResponseStep cancel_from_step;
-  size_t read_buffer_size;
+  ResponseStep cancel_from_step = NOTHING;
+  size_t read_buffer_size = 32768;
 
   // Test results.
-  ResponseStep response_step;
-  raw_ptr<char, AcrossTasksDanglingUntriaged> read_buffer;
+  ResponseStep response_step = NOTHING;
+  raw_ptr<char, AcrossTasksDanglingUntriaged> read_buffer = nullptr;
   std::map<std::string, std::string> response_headers;
   std::map<std::string, std::string> response_trailers;
   std::vector<std::string> read_data;
-  int net_error;
+  int net_error = 0;
 
   TestBidirectionalStreamCallback()
-      : stream(nullptr),
-        stream_done_event(base::WaitableEvent::ResetPolicy::MANUAL,
+      : stream_done_event(base::WaitableEvent::ResetPolicy::MANUAL,
                           base::WaitableEvent::InitialState::NOT_SIGNALED),
-        expected_negotiated_protocol("quic/1+spdy/3"),
-        cancel_from_step(NOTHING),
-        read_buffer_size(32768),
-        response_step(NOTHING),
-        read_buffer(nullptr),
-        net_error(0) {}
+        expected_negotiated_protocol("quic/1+spdy/3") {}
 
   ~TestBidirectionalStreamCallback() { delete[] read_buffer; }
 
@@ -628,7 +622,7 @@ TEST_P(BidirectionalStreamTest, ReadFailsBeforeRequestStarted) {
   bidirectional_stream_destroy(test.stream);
 }
 
-// TODO(https://crbug.com/880474): This test is flaky on fuchsia-x64 builder.
+// TODO(crbug.com/41411684): This test is flaky on fuchsia-x64 builder.
 #if BUILDFLAG(IS_FUCHSIA)
 #define MAYBE_StreamFailBeforeReadIsExecutedOnNetworkThread \
   DISABLED_StreamFailBeforeReadIsExecutedOnNetworkThread
@@ -710,7 +704,7 @@ TEST_P(BidirectionalStreamTest, StreamFailAfterStreamReadyCallback) {
   bidirectional_stream_destroy(test.stream);
 }
 
-// TODO(crbug.com/1457033): deflake this test.
+// TODO(crbug.com/40918200): deflake this test.
 TEST_P(BidirectionalStreamTest,
        DISABLED_StreamFailBeforeWriteIsExecutedOnNetworkThread) {
   class CustomTestBidirectionalStreamCallback

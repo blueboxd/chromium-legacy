@@ -140,14 +140,16 @@ const char* ProtoEnumToString(
 }
 
 const char* ProtoEnumToString(sync_pb::NigoriSpecifics::
-    AutoUpgradeDebugInfo::AutoUpgradeState auto_upgrade_state) {
+    AutoUpgradeDebugInfo::AutoUpgradeExperimentGroup
+        auto_upgrade_experiment_group) {
   ASSERT_ENUM_BOUNDS(sync_pb::NigoriSpecifics::AutoUpgradeDebugInfo,
-    AutoUpgradeState, STATE_UNSPECIFIED, VALIDATION);
+    AutoUpgradeExperimentGroup, AUTO_UPGRADE_EXPERIMENT_GROUP_UNSPECIFIED,
+        VALIDATION);
 
-  switch (auto_upgrade_state) {
+  switch (auto_upgrade_experiment_group) {
     ENUM_CASE(sync_pb::NigoriSpecifics::AutoUpgradeDebugInfo,
-        STATE_UNSPECIFIED);
-    ENUM_CASE(sync_pb::NigoriSpecifics::AutoUpgradeDebugInfo, AUTO_UPGRADED);
+        AUTO_UPGRADE_EXPERIMENT_GROUP_UNSPECIFIED);
+    ENUM_CASE(sync_pb::NigoriSpecifics::AutoUpgradeDebugInfo, TREATMENT);
     ENUM_CASE(sync_pb::NigoriSpecifics::AutoUpgradeDebugInfo, CONTROL);
     ENUM_CASE(sync_pb::NigoriSpecifics::AutoUpgradeDebugInfo, VALIDATION);
   }
@@ -249,29 +251,6 @@ const char* ProtoEnumToString(
     ENUM_CASE(sync_pb::SearchEngineSpecifics, ACTIVE_STATUS_UNSPECIFIED);
     ENUM_CASE(sync_pb::SearchEngineSpecifics, ACTIVE_STATUS_TRUE);
     ENUM_CASE(sync_pb::SearchEngineSpecifics, ACTIVE_STATUS_FALSE);
-  }
-  NOTREACHED();
-  return "";
-}
-
-const char* ProtoEnumToString(
-    sync_pb::SegmentationSpecifics::DeviceMetadata::PlatformType
-        platform_type) {
-  ASSERT_ENUM_BOUNDS(sync_pb::SegmentationSpecifics::DeviceMetadata,
-                     PlatformType, PLATFORM_TYPE_UNSPECIFIED,
-                     PLATFORM_CHROMEOS_LACROS);
-  switch (platform_type) {
-    ENUM_CASE(sync_pb::SegmentationSpecifics::DeviceMetadata,
-              PLATFORM_TYPE_UNSPECIFIED);
-    ENUM_CASE(sync_pb::SegmentationSpecifics::DeviceMetadata, PLATFORM_WINDOWS);
-    ENUM_CASE(sync_pb::SegmentationSpecifics::DeviceMetadata, PLATFORM_MAC);
-    ENUM_CASE(sync_pb::SegmentationSpecifics::DeviceMetadata, PLATFORM_LINUX);
-    ENUM_CASE(sync_pb::SegmentationSpecifics::DeviceMetadata,
-              PLATFORM_CHROMEOS_ASH);
-    ENUM_CASE(sync_pb::SegmentationSpecifics::DeviceMetadata, PLATFORM_ANDROID);
-    ENUM_CASE(sync_pb::SegmentationSpecifics::DeviceMetadata, PLATFORM_IOS);
-    ENUM_CASE(sync_pb::SegmentationSpecifics::DeviceMetadata,
-              PLATFORM_CHROMEOS_LACROS);
   }
   NOTREACHED();
   return "";
@@ -661,7 +640,7 @@ const char* ProtoEnumToString(
 const char* ProtoEnumToString(
     sync_pb::WalletMaskedCreditCard::WalletCardType wallet_card_type) {
   ASSERT_ENUM_BOUNDS(sync_pb::WalletMaskedCreditCard, WalletCardType, UNKNOWN,
-                     ELO);
+                     VERVE);
   switch (wallet_card_type) {
     ENUM_CASE(sync_pb::WalletMaskedCreditCard, UNKNOWN);
     ENUM_CASE(sync_pb::WalletMaskedCreditCard, AMEX);
@@ -674,6 +653,7 @@ const char* ProtoEnumToString(
     ENUM_CASE(sync_pb::WalletMaskedCreditCard, VISA);
     ENUM_CASE(sync_pb::WalletMaskedCreditCard, UNIONPAY);
     ENUM_CASE(sync_pb::WalletMaskedCreditCard, ELO);
+    ENUM_CASE(sync_pb::WalletMaskedCreditCard, VERVE);
   }
   NOTREACHED();
   return "";
@@ -956,6 +936,61 @@ const char* ProtoEnumToString(sync_pb::ModelTypeState::InitialSyncState state) {
     ENUM_CASE(sync_pb::ModelTypeState, INITIAL_SYNC_PARTIALLY_DONE);
     ENUM_CASE(sync_pb::ModelTypeState, INITIAL_SYNC_DONE);
     ENUM_CASE(sync_pb::ModelTypeState, INITIAL_SYNC_UNNECESSARY);
+  }
+  NOTREACHED();
+  return "";
+}
+
+const char* ProtoEnumToString(
+    sync_pb::CookieSpecifics::CookieSameSite site_restrictions) {
+  ASSERT_ENUM_BOUNDS(sync_pb::CookieSpecifics, CookieSameSite, UNSPECIFIED,
+                     STRICT_MODE);
+  switch (site_restrictions) {
+    ENUM_CASE(sync_pb::CookieSpecifics, UNSPECIFIED);
+    ENUM_CASE(sync_pb::CookieSpecifics, NO_RESTRICTION);
+    ENUM_CASE(sync_pb::CookieSpecifics, LAX_MODE);
+    ENUM_CASE(sync_pb::CookieSpecifics, STRICT_MODE);
+  }
+  NOTREACHED();
+  return "";
+}
+
+const char* ProtoEnumToString(
+    sync_pb::CookieSpecifics::CookiePriority priority) {
+  ASSERT_ENUM_BOUNDS(sync_pb::CookieSpecifics, CookiePriority,
+                     UNSPECIFIED_PRIORITY, HIGH);
+  switch (priority) {
+    ENUM_CASE(sync_pb::CookieSpecifics, UNSPECIFIED_PRIORITY);
+    ENUM_CASE(sync_pb::CookieSpecifics, LOW);
+    ENUM_CASE(sync_pb::CookieSpecifics, MEDIUM);
+    ENUM_CASE(sync_pb::CookieSpecifics, HIGH);
+  }
+  NOTREACHED();
+  return "";
+}
+
+const char* ProtoEnumToString(
+    sync_pb::CookieSpecifics::CookieSourceScheme source_scheme) {
+  ASSERT_ENUM_BOUNDS(sync_pb::CookieSpecifics, CookieSourceScheme, UNSET,
+                     SECURE);
+  switch (source_scheme) {
+    ENUM_CASE(sync_pb::CookieSpecifics, UNSET);
+    ENUM_CASE(sync_pb::CookieSpecifics, NON_SECURE);
+    ENUM_CASE(sync_pb::CookieSpecifics, SECURE);
+  }
+  NOTREACHED();
+  return "";
+}
+
+const char* ProtoEnumToString(
+    sync_pb::CookieSpecifics::CookieSourceType source_type) {
+  ASSERT_ENUM_BOUNDS(sync_pb::CookieSpecifics, CookieSourceType, UNKNOWN,
+                     OTHER);
+  switch (source_type) {
+    ENUM_CASE(sync_pb::CookieSpecifics, UNKNOWN);
+    ENUM_CASE(sync_pb::CookieSpecifics, HTTP);
+    ENUM_CASE(sync_pb::CookieSpecifics, SCRIPT);
+    ENUM_CASE(sync_pb::CookieSpecifics, OTHER);
   }
   NOTREACHED();
   return "";

@@ -18,6 +18,7 @@
 #include "net/http/http_util.h"
 #include "net/proxy_resolution/proxy_info.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
+#include "net/proxy_resolution/proxy_retry_info.h"
 #include "services/network/ip_protection/ip_protection_token_cache_manager_impl.h"
 #include "services/network/masked_domain_list/network_service_proxy_allow_list.h"
 #include "services/network/url_loader.h"
@@ -85,43 +86,53 @@ void IpProtectionProxyDelegate::OnResolveProxy(
                                             : net::SchemefulSite())
              << ") - " << message;
   };
-  // Note: We do not proxy requests if:
-  // - The allow list has not been populated.
-  // - The request doesn't match the allow list.
-  // - The token cache is not available.
-  // - The token cache does not have tokens.
-  // - No proxy list is available.
-  // - `kEnableIpProtection` is `false`.
-  // - `is_ip_protection_enabled_` is `false` (in other words, the user has
-  //   disabled IP Protection via user settings).
-  // - `kIpPrivacyDirectOnly` is `true`.
-  const ProtectionEligibility eligibility =
-      CheckEligibility(url, network_anonymization_key);
-  base::UmaHistogramEnumeration(
-      "NetworkService.IpProtection.RequestIsEligibleForProtection",
-      eligibility);
-  if (eligibility != ProtectionEligibility::kEligible) {
-    return;
-  }
-  result->set_is_mdl_match(true);
 
-  // TODO(https://crbug.com/40947771): Once the WebView traffic experiment is
-  // done and IpProtectionProxyDelegate is only created in cases where IP
-  // Protection should be used, remove this check.
-  if (!base::FeatureList::IsEnabled(net::features::kEnableIpProtectionProxy)) {
-    dvlog("ip protection proxy cannot be enabled");
-    return;
-  }
+  const std::string& always_proxy = net::features::kIpPrivacyAlwaysProxy.Get();
+  if (!always_proxy.empty()) {
+    if (url.host() != always_proxy) {
+      return;
+    }
+  } else {
+    // Note: We do not proxy requests if:
+    // - The allow list has not been populated.
+    // - The request doesn't match the allow list.
+    // - The token cache is not available.
+    // - The token cache does not have tokens.
+    // - No proxy list is available.
+    // - `kEnableIpProtection` is `false`.
+    // - `is_ip_protection_enabled_` is `false` (in other words, the user has
+    //   disabled IP Protection via user settings).
+    // - `kIpPrivacyDirectOnly` is `true`.
+    const ProtectionEligibility eligibility =
+        CheckEligibility(url, network_anonymization_key);
+    base::UmaHistogramEnumeration(
+        "NetworkService.IpProtection.RequestIsEligibleForProtection",
+        eligibility);
+    if (eligibility != ProtectionEligibility::kEligible) {
+      return;
+    }
+    result->set_is_mdl_match(true);
 
-  if (!is_ip_protection_enabled_) {
-    dvlog("ip protection proxy is not currently enabled");
-    return;
-  }
-  const bool available = CheckAvailability(url, network_anonymization_key);
-  base::UmaHistogramBoolean(
-      "NetworkService.IpProtection.ProtectionIsAvailableForRequest", available);
-  if (!available) {
-    return;
+    // TODO(https://crbug.com/40947771): Once the WebView traffic experiment is
+    // done and IpProtectionProxyDelegate is only created in cases where IP
+    // Protection should be used, remove this check.
+    if (!base::FeatureList::IsEnabled(
+            net::features::kEnableIpProtectionProxy)) {
+      dvlog("ip protection proxy cannot be enabled");
+      return;
+    }
+
+    if (!is_ip_protection_enabled_) {
+      dvlog("ip protection proxy is not currently enabled");
+      return;
+    }
+    const bool available = CheckAvailability(url, network_anonymization_key);
+    base::UmaHistogramBoolean(
+        "NetworkService.IpProtection.ProtectionIsAvailableForRequest",
+        available);
+    if (!available) {
+      return;
+    }
   }
 
   net::ProxyList proxy_list;
@@ -133,20 +144,30 @@ void IpProtectionProxyDelegate::OnResolveProxy(
       // chains.
       CHECK(proxy_chain.is_multi_proxy());
 
-      proxy_list.AddProxyChain(std::move(proxy_chain));
+      // For debugging..
+      if (net::features::kIpPrivacyUseSingleProxy.Get()) {
+        proxy_list.AddProxyChain(net::ProxyChain::ForIpProtection({
+            proxy_chain.GetProxyServer(0),
+        }));
+      } else {
+        proxy_list.AddProxyChain(std::move(proxy_chain));
+      }
     }
   }
-  // Final fallback is to DIRECT.
-  auto direct_proxy_chain = net::ProxyChain::Direct();
-  if (net::features::kIpPrivacyDirectOnly.Get()) {
-    // To enable measuring how much traffic would be proxied (for
-    // experimentation and planning purposes), mark the direct
-    // proxy chain as being for IP Protection when `kIpPrivacyDirectOnly` is
-    // true. When it is false, we only care about traffic that actually went
-    // through the IP Protection proxies, so don't set this flag.
-    direct_proxy_chain = net::ProxyChain::ForIpProtection({});
+
+  if (net::features::kIpPrivacyFallbackToDirect.Get()) {
+    // Final fallback is to DIRECT.
+    auto direct_proxy_chain = net::ProxyChain::Direct();
+    if (net::features::kIpPrivacyDirectOnly.Get()) {
+      // To enable measuring how much traffic would be proxied (for
+      // experimentation and planning purposes), mark the direct
+      // proxy chain as being for IP Protection when `kIpPrivacyDirectOnly` is
+      // true. When it is false, we only care about traffic that actually went
+      // through the IP Protection proxies, so don't set this flag.
+      direct_proxy_chain = net::ProxyChain::ForIpProtection({});
+    }
+    proxy_list.AddProxyChain(std::move(direct_proxy_chain));
   }
-  proxy_list.AddProxyChain(std::move(direct_proxy_chain));
 
   if (VLOG_IS_ON(3)) {
     dvlog(base::StrCat({"setting proxy list (before deprioritization) to ",
@@ -217,6 +238,36 @@ bool IpProtectionProxyDelegate::CheckAvailability(
   return true;
 }
 
+void IpProtectionProxyDelegate::OnSuccessfulRequestAfterFailures(
+    const net::ProxyRetryInfoMap& proxy_retry_info) {
+  if (!ipp_config_cache_) {
+    return;
+  }
+
+  // A request was successful, but one or more proxies failed. If _only_ QUIC
+  // proxies failed, then we assume this is because QUIC is not working on this
+  // network, and stop injecting QUIC proxies into the proxy list.
+  bool seen_quic = false;
+  for (const auto& chain_and_info : proxy_retry_info) {
+    const net::ProxyChain& proxy_chain = chain_and_info.first;
+    if (!proxy_chain.is_for_ip_protection()) {
+      continue;
+    }
+    const net::ProxyServer& proxy_server = proxy_chain.First();
+    if (proxy_server.is_quic()) {
+      seen_quic = true;
+    } else {
+      // A non-QUIC chain has failed.
+      return;
+    }
+  }
+
+  if (seen_quic) {
+    // Only QUIC chains failed.
+    ipp_config_cache_->QuicProxiesFailed();
+  }
+}
+
 void IpProtectionProxyDelegate::OnFallback(const net::ProxyChain& bad_chain,
                                            int net_error) {
   // If the bad proxy was an IP Protection proxy, refresh the list of IP
@@ -229,7 +280,7 @@ void IpProtectionProxyDelegate::OnFallback(const net::ProxyChain& bad_chain,
   }
 }
 
-void IpProtectionProxyDelegate::OnBeforeTunnelRequest(
+net::Error IpProtectionProxyDelegate::OnBeforeTunnelRequest(
     const net::ProxyChain& proxy_chain,
     size_t chain_index,
     net::HttpRequestHeaders* extra_headers) {
@@ -244,6 +295,7 @@ void IpProtectionProxyDelegate::OnBeforeTunnelRequest(
         vlog("adding proxyB PSK");
         extra_headers->SetHeader(net::HttpRequestHeaders::kProxyAuthorization,
                                  base::StrCat({"Preshared ", proxy_b_psk}));
+        return net::OK;
       }
     }
     std::optional<network::mojom::BlindSignedAuthTokenPtr> token =
@@ -256,10 +308,15 @@ void IpProtectionProxyDelegate::OnBeforeTunnelRequest(
                                std::move((*token)->token));
     } else {
       vlog("no token available");
+      // This is an unexpected circumstance, but does happen in the wild. Rather
+      // than send the request to the proxy, which will reply with an error,
+      // mark the connection as failed immediately.
+      return net::ERR_TUNNEL_CONNECTION_FAILED;
     }
   } else {
     vlog("not for IP protection");
   }
+  return net::OK;
 }
 
 net::Error IpProtectionProxyDelegate::OnTunnelHeadersReceived(
@@ -334,13 +391,13 @@ void IpProtectionProxyDelegate::VerifyIpProtectionConfigGetterForTesting(
 
 void IpProtectionProxyDelegate::SetIpProtectionEnabled(bool enabled) {
   is_ip_protection_enabled_ = enabled;
-  // TODO(https://crbug.com/1521138): Tear down all existing proxied
+  // TODO(crbug.com/41494110): Tear down all existing proxied
   // HTTP/SPDY/QUIC sessions if the settings goes from being enabled to being
   // disabled. For HTTP and SPDY we could just simulate an IP address change and
   // tear down all connections rather easily, but for QUIC it's more complicated
   // because with network change session migration the connections might still
   // persist. More investigation is needed here.
-  // TODO(https://crbug.com/1521138): Propagate this change to the config cache,
+  // TODO(crbug.com/41494110): Propagate this change to the config cache,
   // proxy list manager, and token cache manager to cancel further requests or
   // reschedule them. Note that as currently implemented, the token cache
   // manager will already stop requesting tokens soon after IP Protection is

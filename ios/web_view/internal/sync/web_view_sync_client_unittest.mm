@@ -18,7 +18,7 @@
 #import "components/prefs/testing_pref_service.h"
 #import "components/signin/public/identity_manager/identity_test_environment.h"
 #import "components/sync/base/model_type.h"
-#import "components/sync/service/data_type_controller.h"
+#import "components/sync/service/model_type_controller.h"
 #import "components/sync/test/test_model_type_store_service.h"
 #import "components/sync/test/test_sync_service.h"
 #import "components/sync_device_info/fake_device_info_sync_service.h"
@@ -82,21 +82,21 @@ class WebViewSyncClientTest : public PlatformTest {
 };
 
 // Verify enabled data types.
-TEST_F(WebViewSyncClientTest, CreateDataTypeControllers) {
+TEST_F(WebViewSyncClientTest, CreateModelTypeControllers) {
   syncer::TestSyncService sync_service;
-  syncer::DataTypeController::TypeVector data_type_controllers =
-      client_.CreateDataTypeControllers(&sync_service);
+  syncer::ModelTypeController::TypeVector model_type_controllers =
+      client_.CreateModelTypeControllers(&sync_service);
   syncer::ModelTypeSet allowed_types = {syncer::DEVICE_INFO,
                                         syncer::AUTOFILL,
                                         syncer::AUTOFILL_PROFILE,
                                         syncer::AUTOFILL_WALLET_DATA,
                                         syncer::AUTOFILL_WALLET_METADATA,
                                         syncer::PASSWORDS};
-  for (const auto& data_type_controller : data_type_controllers) {
-    ASSERT_TRUE(allowed_types.Has(data_type_controller->type()));
-    allowed_types.Remove(data_type_controller->type());
+  for (const auto& model_type_controller : model_type_controllers) {
+    ASSERT_TRUE(allowed_types.Has(model_type_controller->type()));
+    allowed_types.Remove(model_type_controller->type());
   }
-  EXPECT_TRUE(allowed_types.Empty());
+  EXPECT_TRUE(allowed_types.empty());
 }
 
 }  // namespace ios_web_view

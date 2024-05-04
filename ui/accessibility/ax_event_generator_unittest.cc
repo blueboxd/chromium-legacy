@@ -1132,6 +1132,10 @@ TEST(AXEventGeneratorTest, TextAttributeChanged) {
   initial_state.nodes[14].id = 15;
   initial_state.nodes[15].id = 16;
   initial_state.nodes[16].id = 17;
+  // Text attribute changes are only fired in richly editable areas.
+  for (int count = 1; count <= 16; ++count) {
+    initial_state.nodes[count].AddState(ax::mojom::State::kRichlyEditable);
+  }
 
   // To test changing the start and end of existing markers.
   initial_state.nodes[11].AddIntListAttribute(
@@ -1220,6 +1224,9 @@ TEST(AXEventGeneratorTest, ObjectAttributeChanged) {
   initial_state.nodes[0].child_ids = {2, 3};
   initial_state.nodes[1].id = 2;
   initial_state.nodes[2].id = 3;
+  // Text attribute changes are only fired in richly editable areas.
+  initial_state.nodes[1].AddState(ax::mojom::State::kRichlyEditable);
+  initial_state.nodes[2].AddState(ax::mojom::State::kRichlyEditable);
   AXTree tree(initial_state);
 
   AXEventGenerator event_generator(&tree);
@@ -1241,6 +1248,8 @@ TEST(AXEventGeneratorTest, ObjectAttributeChanged) {
                          3)));
 }
 
+// Note: we no longer fire OTHER_ATTRIBUTE_CHANGED for general attributes.
+// We only fire specific events.
 TEST(AXEventGeneratorTest, OtherAttributeChanged) {
   AXTreeUpdate initial_state;
   initial_state.root_id = 1;
@@ -1253,6 +1262,8 @@ TEST(AXEventGeneratorTest, OtherAttributeChanged) {
   initial_state.nodes[0].child_ids.push_back(6);
   initial_state.nodes[1].id = 2;
   initial_state.nodes[2].id = 3;
+  // Font size attribute changes are only fired in richly editable areas.
+  initial_state.nodes[3].AddState(ax::mojom::State::kRichlyEditable);
   initial_state.nodes[3].id = 4;
   initial_state.nodes[4].id = 5;
   initial_state.nodes[5].id = 6;
@@ -1279,9 +1290,7 @@ TEST(AXEventGeneratorTest, OtherAttributeChanged) {
       UnorderedElementsAre(
           HasEventAtNode(AXEventGenerator::Event::CONTROLS_CHANGED, 6),
           HasEventAtNode(AXEventGenerator::Event::LANGUAGE_CHANGED, 2),
-          HasEventAtNode(AXEventGenerator::Event::OTHER_ATTRIBUTE_CHANGED, 3),
           HasEventAtNode(AXEventGenerator::Event::TEXT_ATTRIBUTE_CHANGED, 4),
-          HasEventAtNode(AXEventGenerator::Event::OTHER_ATTRIBUTE_CHANGED, 5),
           HasEventAtNode(AXEventGenerator::Event::RELATED_NODE_CHANGED, 6)));
 }
 
@@ -1961,7 +1970,7 @@ TEST(AXEventGeneratorTest, StringPropertyChanges) {
       {ax::mojom::StringAttribute::kPlaceholder, "a", "b"},
   };
   for (auto&& attrib : attributes) {
-    initial_state.nodes.push_back({});
+    initial_state.nodes.emplace_back();
     initial_state.nodes.back().id = initial_state.nodes.size();
     initial_state.nodes.back().AddStringAttribute(attrib.id, attrib.old_value);
     initial_state.nodes[0].child_ids.push_back(initial_state.nodes.size());
@@ -1982,7 +1991,6 @@ TEST(AXEventGeneratorTest, StringPropertyChanges) {
       event_generator,
       UnorderedElementsAre(
           HasEventAtNode(AXEventGenerator::Event::ACCESS_KEY_CHANGED, 2),
-          HasEventAtNode(AXEventGenerator::Event::CLASS_NAME_CHANGED, 3),
           HasEventAtNode(AXEventGenerator::Event::KEY_SHORTCUTS_CHANGED, 4),
           HasEventAtNode(AXEventGenerator::Event::LANGUAGE_CHANGED, 5),
           HasEventAtNode(AXEventGenerator::Event::PLACEHOLDER_CHANGED, 6)));
@@ -2004,7 +2012,7 @@ TEST(AXEventGeneratorTest, IntPropertyChanges) {
       {ax::mojom::IntAttribute::kSetSize, 1, 2},
   };
   for (auto&& attrib : attributes) {
-    initial_state.nodes.push_back({});
+    initial_state.nodes.emplace_back();
     initial_state.nodes.back().id = initial_state.nodes.size();
     initial_state.nodes.back().AddIntAttribute(attrib.id, attrib.old_value);
     initial_state.nodes[0].child_ids.push_back(initial_state.nodes.size());
@@ -2044,7 +2052,7 @@ TEST(AXEventGeneratorTest, IntListPropertyChanges) {
       {ax::mojom::IntListAttribute::kLabelledbyIds, {1}, {2}},
   };
   for (auto&& attrib : attributes) {
-    initial_state.nodes.push_back({});
+    initial_state.nodes.emplace_back();
     initial_state.nodes.back().id = initial_state.nodes.size();
     initial_state.nodes.back().AddIntListAttribute(attrib.id, attrib.old_value);
     initial_state.nodes[0].child_ids.push_back(initial_state.nodes.size());

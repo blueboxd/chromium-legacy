@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/browser/renderer_host/navigation_request.h"
+
 #include <memory>
 
 #include "base/command_line.h"
@@ -18,15 +20,14 @@
 #include "content/browser/process_lock.h"
 #include "content/browser/renderer_host/debug_urls.h"
 #include "content/browser/renderer_host/navigation_controller_impl.h"
-#include "content/browser/renderer_host/navigation_request.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
-#include "content/browser/runtime_feature_state/runtime_feature_state_document_data.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/content_navigation_policy.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_throttle.h"
+#include "content/public/browser/runtime_feature_state/runtime_feature_state_document_data.h"
 #include "content/public/browser/site_isolation_policy.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -2730,7 +2731,7 @@ IN_PROC_BROWSER_TEST_F(NavigationRequestBrowserTest,
 
 // Check that iframe with embedded credentials are blocked.
 // See https://crbug.com/755892.
-// TODO(crbug.com/1262910): Enable the test again.
+// TODO(crbug.com/40799853): Enable the test again.
 IN_PROC_BROWSER_TEST_F(NavigationRequestBrowserTest,
                        DISABLED_BlockCredentialedSubresources) {
   const struct {
@@ -4237,6 +4238,72 @@ class NavigationRequestPrerenderBrowserTest
   std::unique_ptr<net::EmbeddedTestServer> https_server_;
   std::unique_ptr<test::PrerenderTestHelper> prerender_helper_;
 };
+
+// Make sure if a main frame page served with a COOP header attempts to navigate
+// itself to about:srcdoc that we handle it correctly.
+IN_PROC_BROWSER_TEST_F(NavigationRequestBrowserTest,
+                       CoopWithMainframeAboutSrcdocNavigation) {
+  std::unique_ptr<net::EmbeddedTestServer> https_server =
+      std::make_unique<net::EmbeddedTestServer>(
+          net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server->AddDefaultHandlers(GetTestDataFilePath());
+  https_server->SetSSLConfig(net::EmbeddedTestServer::CERT_TEST_NAMES);
+
+  ASSERT_TRUE(https_server->Start());
+
+  GURL url(https_server->GetURL("a.test",
+                                "/location_equals_about_srcdoc_script.html"));
+
+  // Navigate to a document that sets COOP and immediately navigates the
+  // mainframe to about:srcdoc.
+  TestNavigationObserver navigation_observer(shell()->web_contents());
+  // Since the redirect to about:srcdoc in the page's script is expected to
+  // fail, use EXPECT_FALSE here.
+  EXPECT_FALSE(NavigateToURL(shell(), url));
+  navigation_observer.Wait();
+
+  // Verify that the second navigation was attempted and failed.
+  EXPECT_FALSE(navigation_observer.last_navigation_succeeded());
+  EXPECT_EQ(net::ERR_INVALID_URL, navigation_observer.last_net_error_code());
+  EXPECT_EQ(GURL(url::kAboutSrcdocURL),
+            navigation_observer.last_navigation_url());
+}
+
+// Same as CoopWithMainframeAboutSrcdocNavigation above, except instead of a
+// single, redirected navigation, we get two distinct navigations in this case.
+IN_PROC_BROWSER_TEST_F(NavigationRequestBrowserTest,
+                       CoopWithMainframeAboutSrcdocNavigation2) {
+  std::unique_ptr<net::EmbeddedTestServer> https_server =
+      std::make_unique<net::EmbeddedTestServer>(
+          net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server->AddDefaultHandlers(GetTestDataFilePath());
+  https_server->SetSSLConfig(net::EmbeddedTestServer::CERT_TEST_NAMES);
+
+  ASSERT_TRUE(https_server->Start());
+
+  GURL url(https_server->GetURL("a.test",
+                                "/set-header?"
+                                "cross-origin-opener-policy: same-origin"));
+
+  // Navigate to a document that sets COOP.
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+  content::RenderFrameHostImpl* main_frame =
+      static_cast<content::RenderFrameHostImpl*>(
+          shell()->web_contents()->GetPrimaryMainFrame());
+  EXPECT_EQ(network::mojom::CrossOriginOpenerPolicyValue::kSameOrigin,
+            main_frame->cross_origin_opener_policy().value);
+
+  // Navigate main frame to about:srcdoc.
+  TestNavigationObserver navigation_observer(shell()->web_contents());
+  EXPECT_TRUE(ExecJs(main_frame, "location = 'about:srcdoc';"));
+  navigation_observer.Wait();
+
+  // Verify that the second navigation was attempted and failed.
+  EXPECT_FALSE(navigation_observer.last_navigation_succeeded());
+  EXPECT_EQ(net::ERR_INVALID_URL, navigation_observer.last_net_error_code());
+  EXPECT_EQ(GURL(url::kAboutSrcdocURL),
+            navigation_observer.last_navigation_url());
+}
 
 IN_PROC_BROWSER_TEST_F(NavigationRequestPrerenderBrowserTest,
                        CoopCoepCheckWithPrerender) {

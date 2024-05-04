@@ -53,7 +53,7 @@ class BuiltInBackendToAndroidBackendMigrator {
 
   // The type of operation triggered on backend during the migration. Used for
   // the metrics reporting.
-  enum class BackendOperation {
+  enum class BackendOperationForMigration {
     kAddLogin,
     kUpdateLogin,
     kRemoveLogin,
@@ -75,8 +75,7 @@ class BuiltInBackendToAndroidBackendMigrator {
       BuiltInBackendToAndroidBackendMigrator&&) = delete;
   ~BuiltInBackendToAndroidBackendMigrator();
 
-  // TODO: b/323880741 - Call explicitly required migration.
-  void StartAccountMigrationIfNecessary(bool should_attempt_upm_reenrollment);
+  void StartAccountMigrationIfNecessary(MigrationType type);
 
   // Starts migration from |built_in_backend| to |android_backend| if time from
   // last attempt is enough.
@@ -146,9 +145,10 @@ class BuiltInBackendToAndroidBackendMigrator {
   // If |changelist| is an empty changelist, migration is aborted by calling
   // MigrationFinished() indicating the migration is *not* successful.
   // Otherwise, |callback| is invoked.
-  void RunCallbackOrAbortMigration(base::OnceClosure callback,
-                                   BackendOperation backend_operation,
-                                   PasswordChangesOrError changelist);
+  void RunCallbackOrAbortMigration(
+      base::OnceClosure callback,
+      BackendOperationForMigration backend_operation,
+      PasswordChangesOrError changelist);
 
   // Reports metrics and deletes |metrics_reporter_|
   void MigrationFinished(bool is_success);
@@ -158,7 +158,7 @@ class BuiltInBackendToAndroidBackendMigrator {
   // |result_callback| is called with the |LoginsResult| containing valid forms
   // only or |PasswordStoreBackendError| if it contained in |logins_or_error|.
   // |logins_or_error| is modified in place.
-  void RemoveBlacklistedFormsWithValues(PasswordStoreBackend* backend,
+  void RemoveBlocklistedFormsWithValues(PasswordStoreBackend* backend,
                                         LoginsOrErrorReply result_callback,
                                         LoginsResultOrError logins_or_error);
 

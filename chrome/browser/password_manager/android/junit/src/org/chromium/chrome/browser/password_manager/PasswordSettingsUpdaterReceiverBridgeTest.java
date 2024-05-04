@@ -24,7 +24,6 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
-import org.chromium.base.metrics.UmaRecorderHolder;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.Features;
@@ -49,7 +48,6 @@ public class PasswordSettingsUpdaterReceiverBridgeTest {
 
     @Before
     public void setUp() {
-        UmaRecorderHolder.resetForTesting();
         MockitoAnnotations.initMocks(this);
         mJniMocker.mock(
                 PasswordSettingsUpdaterReceiverBridgeJni.TEST_HOOKS, mReceiverBridgeJniMock);
@@ -61,10 +59,14 @@ public class PasswordSettingsUpdaterReceiverBridgeTest {
         mReceiverBridge.onSettingValueFetched(
                 PasswordManagerSetting.OFFER_TO_SAVE_PASSWORDS,
                 Optional.of(true),
-                mMetricsRecorderMock);
+                mMetricsRecorderMock,
+                false);
         verify(mReceiverBridgeJniMock)
                 .onSettingValueFetched(
-                        sFakeNativePointer, PasswordManagerSetting.OFFER_TO_SAVE_PASSWORDS, true);
+                        sFakeNativePointer,
+                        PasswordManagerSetting.OFFER_TO_SAVE_PASSWORDS,
+                        true,
+                        false);
         verify(mMetricsRecorderMock).recordMetrics(isNull());
     }
 
@@ -73,10 +75,11 @@ public class PasswordSettingsUpdaterReceiverBridgeTest {
         mReceiverBridge.onSettingValueFetched(
                 PasswordManagerSetting.OFFER_TO_SAVE_PASSWORDS,
                 Optional.empty(),
-                mMetricsRecorderMock);
+                mMetricsRecorderMock,
+                false);
         verify(mReceiverBridgeJniMock)
                 .onSettingValueAbsent(
-                        sFakeNativePointer, PasswordManagerSetting.OFFER_TO_SAVE_PASSWORDS);
+                        sFakeNativePointer, PasswordManagerSetting.OFFER_TO_SAVE_PASSWORDS, false);
         verify(mMetricsRecorderMock).recordMetrics(isNull());
     }
 
@@ -86,24 +89,26 @@ public class PasswordSettingsUpdaterReceiverBridgeTest {
         mReceiverBridge.handleFetchingException(
                 PasswordManagerSetting.OFFER_TO_SAVE_PASSWORDS,
                 expectedException,
-                mMetricsRecorderMock);
+                mMetricsRecorderMock,
+                false);
 
         verify(mReceiverBridgeJniMock)
                 .onSettingFetchingError(
                         sFakeNativePointer,
                         PasswordManagerSetting.OFFER_TO_SAVE_PASSWORDS,
                         AndroidBackendErrorType.EXTERNAL_ERROR,
-                        CommonStatusCodes.NETWORK_ERROR);
+                        CommonStatusCodes.NETWORK_ERROR,
+                        false);
         verify(mMetricsRecorderMock).recordMetrics(expectedException);
     }
 
     @Test
     public void testOnSuccessfulSettingChangeCalled() {
         mReceiverBridge.onSettingValueSet(
-                PasswordManagerSetting.OFFER_TO_SAVE_PASSWORDS, mMetricsRecorderMock);
+                PasswordManagerSetting.OFFER_TO_SAVE_PASSWORDS, mMetricsRecorderMock, false);
         verify(mReceiverBridgeJniMock)
                 .onSuccessfulSettingChange(
-                        sFakeNativePointer, PasswordManagerSetting.OFFER_TO_SAVE_PASSWORDS);
+                        sFakeNativePointer, PasswordManagerSetting.OFFER_TO_SAVE_PASSWORDS, false);
         verify(mMetricsRecorderMock).recordMetrics(isNull());
     }
 
@@ -113,14 +118,16 @@ public class PasswordSettingsUpdaterReceiverBridgeTest {
         mReceiverBridge.handleSettingException(
                 PasswordManagerSetting.OFFER_TO_SAVE_PASSWORDS,
                 expectedException,
-                mMetricsRecorderMock);
+                mMetricsRecorderMock,
+                false);
 
         verify(mReceiverBridgeJniMock)
                 .onFailedSettingChange(
                         sFakeNativePointer,
                         PasswordManagerSetting.OFFER_TO_SAVE_PASSWORDS,
                         AndroidBackendErrorType.EXTERNAL_ERROR,
-                        CommonStatusCodes.NETWORK_ERROR);
+                        CommonStatusCodes.NETWORK_ERROR,
+                        false);
         verify(mMetricsRecorderMock).recordMetrics(expectedException);
     }
 
@@ -135,7 +142,8 @@ public class PasswordSettingsUpdaterReceiverBridgeTest {
         mReceiverBridge.handleFetchingException(
                 PasswordManagerSetting.OFFER_TO_SAVE_PASSWORDS,
                 expectedException,
-                mMetricsRecorderMock);
+                mMetricsRecorderMock,
+                false);
 
         verify(pendingIntentMock, never()).send();
         verify(mReceiverBridgeJniMock)
@@ -143,7 +151,8 @@ public class PasswordSettingsUpdaterReceiverBridgeTest {
                         sFakeNativePointer,
                         PasswordManagerSetting.OFFER_TO_SAVE_PASSWORDS,
                         AndroidBackendErrorType.EXTERNAL_ERROR,
-                        CommonStatusCodes.RESOLUTION_REQUIRED);
+                        CommonStatusCodes.RESOLUTION_REQUIRED,
+                        false);
         verify(mMetricsRecorderMock).recordMetrics(expectedException);
     }
 
@@ -158,7 +167,8 @@ public class PasswordSettingsUpdaterReceiverBridgeTest {
         mReceiverBridge.handleSettingException(
                 PasswordManagerSetting.OFFER_TO_SAVE_PASSWORDS,
                 expectedException,
-                mMetricsRecorderMock);
+                mMetricsRecorderMock,
+                false);
 
         verify(pendingIntentMock, never()).send();
         verify(mReceiverBridgeJniMock)
@@ -166,7 +176,8 @@ public class PasswordSettingsUpdaterReceiverBridgeTest {
                         sFakeNativePointer,
                         PasswordManagerSetting.OFFER_TO_SAVE_PASSWORDS,
                         AndroidBackendErrorType.EXTERNAL_ERROR,
-                        CommonStatusCodes.RESOLUTION_REQUIRED);
+                        CommonStatusCodes.RESOLUTION_REQUIRED,
+                        false);
         verify(mMetricsRecorderMock).recordMetrics(expectedException);
     }
 
@@ -185,7 +196,8 @@ public class PasswordSettingsUpdaterReceiverBridgeTest {
         mReceiverBridge.handleFetchingException(
                 PasswordManagerSetting.OFFER_TO_SAVE_PASSWORDS,
                 expectedException,
-                mMetricsRecorderMock);
+                mMetricsRecorderMock,
+                false);
 
         verify(pendingIntentMock, never()).send();
         verify(mReceiverBridgeJniMock, never())
@@ -193,7 +205,8 @@ public class PasswordSettingsUpdaterReceiverBridgeTest {
                         sFakeNativePointer,
                         PasswordManagerSetting.OFFER_TO_SAVE_PASSWORDS,
                         AndroidBackendErrorType.EXTERNAL_ERROR,
-                        CommonStatusCodes.RESOLUTION_REQUIRED);
+                        CommonStatusCodes.RESOLUTION_REQUIRED,
+                        false);
         verify(mMetricsRecorderMock).recordMetrics(expectedException);
     }
 
@@ -212,7 +225,8 @@ public class PasswordSettingsUpdaterReceiverBridgeTest {
         mReceiverBridge.handleSettingException(
                 PasswordManagerSetting.OFFER_TO_SAVE_PASSWORDS,
                 expectedException,
-                mMetricsRecorderMock);
+                mMetricsRecorderMock,
+                false);
 
         verify(pendingIntentMock, never()).send();
         verify(mReceiverBridgeJniMock, never())
@@ -220,7 +234,8 @@ public class PasswordSettingsUpdaterReceiverBridgeTest {
                         sFakeNativePointer,
                         PasswordManagerSetting.OFFER_TO_SAVE_PASSWORDS,
                         AndroidBackendErrorType.EXTERNAL_ERROR,
-                        CommonStatusCodes.RESOLUTION_REQUIRED);
+                        CommonStatusCodes.RESOLUTION_REQUIRED,
+                        false);
         verify(mMetricsRecorderMock).recordMetrics(expectedException);
     }
 }

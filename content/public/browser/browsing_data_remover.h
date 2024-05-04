@@ -59,8 +59,8 @@ class StoragePartitionConfig;
 //
 ////////////////////////////////////////////////////////////////////////////////
 //
-// TODO(crbug.com/668114): BrowsingDataRemover does not currently support plugin
-// data deletion. Use PluginDataRemover instead.
+// TODO(crbug.com/40495069): BrowsingDataRemover does not currently support
+// plugin data deletion. Use PluginDataRemover instead.
 class BrowsingDataRemover {
  public:
   // Mask used for Remove.
@@ -102,7 +102,7 @@ class BrowsingDataRemover {
   // AVOID_CLOSING_CONNECTIONS is a pseudo-datatype indicating that when
   // deleting COOKIES, BrowsingDataRemover should skip
   // storage backends whose deletion would cause closing network connections.
-  // TODO(crbug.com/798760): Remove when fixed.
+  // TODO(crbug.com/41363015): Remove when fixed.
   static constexpr DataType DATA_TYPE_AVOID_CLOSING_CONNECTIONS = 1 << 15;
 
   // Trust Token API (https://github.com/wicg/trust-token-api) persistent

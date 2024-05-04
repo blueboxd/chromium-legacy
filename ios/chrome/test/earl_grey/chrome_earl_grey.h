@@ -54,6 +54,9 @@ id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration);
 // Returns YES if running on an iPad.
 - (BOOL)isIPadIdiom;
 
+// Returns YES if running on an iPhone.
+- (BOOL)isIPhoneIdiom;
+
 // YES if the current interface language uses RTL layout.
 - (BOOL)isRTL;
 
@@ -80,6 +83,9 @@ id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration);
 // Takes a snapshot of memory usage by calling into the internal
 // framework (should only be used by performance tests)
 - (void)primesTakeMemorySnapshot:(NSString*)eventName;
+
+// Returns whether the bottom omnibox steady state feature is enabled.
+- (BOOL)isBottomOmniboxAvailable;
 
 #pragma mark - History Utilities (EG2)
 
@@ -526,7 +532,7 @@ id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration);
 // Signs the user out, clears the known accounts & browsing data, and wait for
 // the completion of those steps. Induces a GREYAssert if the operation fails or
 // timeouts.
-// TODO(crbug.com/1451733): When the browser data cleaning will always have an
+// TODO(crbug.com/40065405): When the browser data cleaning will always have an
 // acceptable delay, this method should be merged with
 // `signOutAndClearIdentities` and the whole sign-out operation completion
 // should always be ensured before executing next steps.
@@ -537,7 +543,7 @@ id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration);
 // the operation fails. This will block the UI with a spinner until all
 // identities are cleared. In order to interact with the UI again call
 // `WaitForActivityOverlayToDisappear()`.
-// TODO(crbug.com/1451733): When the browser data cleaning will always have an
+// TODO(crbug.com/40065405): When the browser data cleaning will always have an
 // acceptable delay, this method should be merged with
 // `signOutAndClearIdentitiesAndWaitForCompletion` and the whole sign-out
 // operation completion should always be ensured before executing next steps.
@@ -713,9 +719,6 @@ id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration);
 // Returns YES if DemographicMetricsReporting feature is enabled.
 - (BOOL)isDemographicMetricsReportingEnabled [[nodiscard]];
 
-// Returns YES if the ReplaceSyncPromosWithSignInPromos feature is enabled.
-- (BOOL)isReplaceSyncWithSigninEnabled [[nodiscard]];
-
 // Returns YES if the `launchSwitch` is found in host app launch switches.
 - (BOOL)appHasLaunchSwitch:(const std::string&)launchSwitch;
 
@@ -723,9 +726,6 @@ id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration);
 // system frameworks. Always returns YES if the app was not requested to run
 // with custom WebKit frameworks.
 - (BOOL)isCustomWebKitLoadedIfRequested [[nodiscard]];
-
-// Returns YES if error pages are displayed using loadSimulatedRequest.
-- (BOOL)isLoadSimulatedRequestAPIEnabled;
 
 // Returns whether the mobile version of the websites are requested by default.
 - (BOOL)isMobileModeByDefault [[nodiscard]];
@@ -743,8 +743,8 @@ id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration);
 // Returns whether the Web Channels feature is enabled.
 - (BOOL)isWebChannelsEnabled;
 
-// Returns whether the bottom omnibox steady state feature is enabled.
-- (BOOL)isBottomOmniboxSteadyStateEnabled;
+// Returns whether the Tab Group Sync feature is enabled.
+- (BOOL)isTabGroupSyncEnabled;
 
 // Returns whether the unfocused omnibox is at the bottom.
 - (BOOL)isUnfocusedOmniboxAtBottom;

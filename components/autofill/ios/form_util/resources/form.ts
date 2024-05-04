@@ -287,12 +287,12 @@ function getFormElementFromIdentifier(name: string): HTMLFormElement|null {
 }
 
 /**
- * Returns the form element from an unique form id.
+ * Returns the form element from an form renderer id.
  *
  * @param identifier An ID string obtained via getFormIdentifier.
  * @return The original form element, if it can be determined.
  */
-function getFormElementFromUniqueFormId(identifier: number): HTMLFormElement|
+function getFormElementFromRendererId(identifier: number): HTMLFormElement|
     null {
   if (identifier.toString() === RENDERER_ID_NOT_SET) {
     return null;
@@ -308,7 +308,7 @@ function getFormElementFromUniqueFormId(identifier: number): HTMLFormElement|
 /**
  * Returns whether the last `input` or `change` event on `element` was
  * triggered by a user action (was "trusted").
- * TODO(crbug.com/1501627): Match Blink's behavior so that only a 'reset' event
+ * TODO(crbug.com/40941928): Match Blink's behavior so that only a 'reset' event
  * makes an edited field unedited.
  */
 function fieldWasEditedByUser(element: Element) {
@@ -332,6 +332,6 @@ gCrWeb.form = {
   getFieldName,
   getFormIdentifier,
   getFormElementFromIdentifier,
-  getFormElementFromUniqueFormId,
+  getFormElementFromRendererId,
   fieldWasEditedByUser,
 };

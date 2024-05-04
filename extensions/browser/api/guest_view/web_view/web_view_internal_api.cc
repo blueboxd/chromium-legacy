@@ -27,6 +27,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/stop_find_action.h"
 #include "extensions/browser/extensions_browser_client.h"
+#include "extensions/browser/guest_view/web_view/controlled_frame_embedder_url_fetcher.h"
 #include "extensions/browser/guest_view/web_view/web_view_constants.h"
 #include "extensions/browser/guest_view/web_view/web_view_content_script_manager.h"
 #include "extensions/common/api/web_view_internal.h"
@@ -295,7 +296,8 @@ bool WebViewInternalExtensionFunction::PreRunValidation(std::string* error) {
   const auto& instance_id_value = args()[0];
   EXTENSION_FUNCTION_PRERUN_VALIDATE(instance_id_value.is_int());
   instance_id_ = instance_id_value.GetInt();
-  // TODO(780728): Remove crash key once the cause of the kill is known.
+  // TODO(crbug.com/41353094): Remove crash key once the cause of the kill is
+  // known.
   static crash_reporter::CrashKeyString<128> name_key("webview-function");
   crash_reporter::ScopedCrashKeyString name_key_scope(&name_key, name());
   if (!WebViewGuest::FromInstanceID(source_process_id(), instance_id_)) {
@@ -434,7 +436,8 @@ ExtensionFunction::ResponseAction WebViewInternalNavigateFunction::Run() {
       web_view_internal::Navigate::Params::Create(args());
   EXTENSION_FUNCTION_VALIDATE(params);
   std::string src = params->src;
-  GetGuest().NavigateGuest(src, true /* force_navigation */);
+  GetGuest().NavigateGuest(src, /*navigation_handle_callback=*/{},
+                           true /* force_navigation */);
   return RespondNow(NoArguments());
 }
 

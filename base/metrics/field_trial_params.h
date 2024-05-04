@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40284755): Remove this and spanify to fix the errors.
+#pragma allow_unsafe_buffers
+#endif
+
 #ifndef BASE_METRICS_FIELD_TRIAL_PARAMS_H_
 #define BASE_METRICS_FIELD_TRIAL_PARAMS_H_
 
@@ -143,7 +148,7 @@ struct FeatureParam {
 
 // Declares a string-valued parameter. Example:
 //
-//     constexpr FeatureParam<string> kAssistantName{
+//     constexpr FeatureParam<string> kAssistantName = {
 //         &kAssistantFeature, "assistant_name", "HAL"};
 //
 // If the feature is not enabled, the parameter is not set, or set to the empty
@@ -168,7 +173,7 @@ struct FeatureParam<std::string> {
 
 // Declares a double-valued parameter. Example:
 //
-//     constexpr FeatureParam<double> kAssistantTriggerThreshold{
+//     constexpr FeatureParam<double> kAssistantTriggerThreshold = {
 //         &kAssistantFeature, "trigger_threshold", 0.10};
 //
 // If the feature is not enabled, the parameter is not set, or set to an invalid
@@ -193,7 +198,7 @@ struct FeatureParam<double> {
 
 // Declares an int-valued parameter. Example:
 //
-//     constexpr FeatureParam<int> kAssistantParallelism{
+//     constexpr FeatureParam<int> kAssistantParallelism = {
 //         &kAssistantFeature, "parallelism", 4};
 //
 // If the feature is not enabled, the parameter is not set, or set to an invalid
@@ -218,7 +223,7 @@ struct FeatureParam<int> {
 
 // Declares a bool-valued parameter. Example:
 //
-//     constexpr FeatureParam<int> kAssistantIsHelpful{
+//     constexpr FeatureParam<int> kAssistantIsHelpful = {
 //         &kAssistantFeature, "is_helpful", true};
 //
 // If the feature is not enabled, the parameter is not set, or set to value
@@ -278,7 +283,7 @@ BASE_EXPORT void LogInvalidEnumValue(const Feature& feature,
 //         {SHAPE_CIRCLE, "circle"},
 //         {SHAPE_CYLINDER, "cylinder"},
 //         {SHAPE_PAPERCLIP, "paperclip"}};
-//     constexpr FeatureParam<ShapeEnum> kAssistantShapeParam{
+//     constexpr FeatureParam<ShapeEnum> kAssistantShapeParam = {
 //         &kAssistantFeature, "shape", SHAPE_CIRCLE, &kShapeParamOptions};
 //
 // With this declaration, the parameter may be set to "circle", "cylinder", or

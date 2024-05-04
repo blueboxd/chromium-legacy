@@ -46,8 +46,8 @@
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/single_field_form_fill_router.h"
 #include "components/autofill/core/browser/ui/fast_checkout_delegate.h"
-#include "components/autofill/core/browser/ui/popup_hiding_reasons.h"
-#include "components/autofill/core/browser/ui/popup_item_ids.h"
+#include "components/autofill/core/browser/ui/suggestion_hiding_reason.h"
+#include "components/autofill/core/browser/ui/suggestion_type.h"
 #include "components/autofill/core/browser/ui/touch_to_fill_delegate.h"
 #include "components/autofill/core/common/aliases.h"
 #include "components/autofill/core/common/dense_set.h"
@@ -71,7 +71,7 @@ class CreditCard;
 class CreditCardAccessManager;
 
 struct FormData;
-struct FormFieldData;
+class FormFieldData;
 struct SuggestionsContext;
 
 namespace autofill_metrics {
@@ -133,7 +133,6 @@ inline constexpr char kAutocompleteSuppressionByPlusAddressUma[] =
 class BrowserAutofillManager : public AutofillManager {
  public:
   BrowserAutofillManager(AutofillDriver* driver,
-                         AutofillClient* client,
                          const std::string& app_locale);
 
   BrowserAutofillManager(const BrowserAutofillManager&) = delete;
@@ -168,13 +167,13 @@ class BrowserAutofillManager : public AutofillManager {
 
   // Routes calls from external components to FillOrPreviewFieldImpl.
   // Virtual for testing.
-  // TODO(crbug.com/1331312): Replace FormFieldData parameter by FieldGlobalId.
+  // TODO(crbug.com/40227496): Replace FormFieldData parameter by FieldGlobalId.
   virtual void FillOrPreviewField(mojom::ActionPersistence action_persistence,
                                   mojom::FieldActionType action_type,
                                   const FormData& form,
                                   const FormFieldData& field,
                                   const std::u16string& value,
-                                  PopupItemId popup_item_id);
+                                  SuggestionType type);
 
   // Calls UndoAutofillImpl and logs metrics. Virtual for testing.
   virtual void UndoAutofill(mojom::ActionPersistence action_persistence,
@@ -182,13 +181,13 @@ class BrowserAutofillManager : public AutofillManager {
                             const FormFieldData& trigger_field);
   // Virtual for testing
   virtual void DidShowSuggestions(
-      base::span<const PopupItemId> shown_suggestions_types,
+      base::span<const SuggestionType> shown_suggestions_types,
       const FormData& form,
       const FormFieldData& field);
 
   // Fills or previews the profile form.
   // Assumes the form and field are valid.
-  // TODO(crbug.com/1330108): Clean up the API.
+  // TODO(crbug.com/40227071): Clean up the API.
   virtual void FillOrPreviewProfileForm(
       mojom::ActionPersistence action_persistence,
       const FormData& form,
@@ -197,7 +196,7 @@ class BrowserAutofillManager : public AutofillManager {
       const AutofillTriggerDetails& trigger_details);
 
   // Asks for authentication via CVC before filling with server card data.
-  // TODO(crbug.com/1330108): Clean up the API.
+  // TODO(crbug.com/40227071): Clean up the API.
   virtual void AuthenticateThenFillCreditCardForm(
       const FormData& form,
       const FormFieldData& field,
@@ -208,16 +207,17 @@ class BrowserAutofillManager : public AutofillManager {
   // from the database. Returns true if deletion is allowed.
   bool RemoveAutofillProfileOrCreditCard(Suggestion::BackendId backend_id);
 
-  // Remove the specified suggestion from single field filling. `popup_item_id`
-  // is the PopupItemId of the suggestion.
+  // Remove the specified suggestion from single field filling.
+  // `type` is the SuggestionType of the suggestion.
   void RemoveCurrentSingleFieldSuggestion(const std::u16string& name,
                                           const std::u16string& value,
-                                          PopupItemId popup_item_id);
+                                          SuggestionType type);
 
   // Invoked when the user selected |value| in a suggestions list from single
-  // field filling. `popup_item_id` is the PopupItemId of the suggestion.
+  // field filling. `type` is the SuggestionType of the
+  // suggestion.
   void OnSingleFieldSuggestionSelected(const std::u16string& value,
-                                       PopupItemId popup_item_id,
+                                       SuggestionType type,
                                        const FormData& form,
                                        const FormFieldData& field);
 
@@ -279,10 +279,10 @@ class BrowserAutofillManager : public AutofillManager {
   void OnHidePopupImpl() override;
   void OnSelectOrSelectListFieldOptionsDidChangeImpl(
       const FormData& form) override;
-  void OnJavaScriptChangedAutofilledValueImpl(
-      const FormData& form,
-      const FormFieldData& field,
-      const std::u16string& old_value) override;
+  void OnJavaScriptChangedAutofilledValueImpl(const FormData& form,
+                                              const FormFieldData& field,
+                                              const std::u16string& old_value,
+                                              bool formatting_only) override;
   void Reset() override;
 
   // Retrieves the four digit combinations from the DOM of the current web page
@@ -367,6 +367,23 @@ class BrowserAutofillManager : public AutofillManager {
     return *manual_fallback_logger_;
   }
 
+  // Attempts to show touch-to-fill with `suggestions` and falls back to showing
+  // the keyboard accessory/popup if that is not available. Called only for
+  // single field form filler suggestions.
+  // This callback will be triggered by running
+  // SingleFieldFormFiller::OnSuggestionsReturnedCallback.
+  // When `form_element_was_clicked` is true, it indicates that the form field
+  // has been clicked. `request_start_time` is the time when the user clicks on
+  // the form field, and `focused_field_type_group` specifies the type of field
+  // being focused.
+  void OnGetSingleFieldSuggestionsCallback(
+      bool form_element_was_clicked,
+      const FormData& form,
+      base::TimeTicks request_start_time,
+      FieldTypeGroup focused_field_type_group,
+      FieldGlobalId field_id,
+      const std::vector<Suggestion>& suggestions);
+
  protected:
   // Stores a `callback` for `form_signature`, possibly overriding an older
   // callback for `form_signature` or triggering a pending callback in case too
@@ -419,7 +436,6 @@ class BrowserAutofillManager : public AutofillManager {
   void OnBeforeProcessParsedForms() override;
   void OnFormProcessed(const FormData& form,
                        const FormStructure& form_structure) override;
-  void OnAfterProcessParsedForms(const DenseSet<FormType>& form_types) override;
 
  private:
   friend class BrowserAutofillManagerTestApi;
@@ -433,9 +449,9 @@ class BrowserAutofillManager : public AutofillManager {
   // Returns false if Autofill is disabled or if no Autofill data is available.
   bool RefreshDataModels();
 
-  // TODO(crbug.com/1249665): Move the functions to AutofillSuggestionGenerator.
-  // Gets the card referred to by the guid |unique_id|. Returns |nullptr| if
-  // card does not exist.
+  // TODO(crbug.com/40197696): Move the functions to
+  // AutofillSuggestionGenerator. Gets the card referred to by the guid
+  // |unique_id|. Returns |nullptr| if card does not exist.
   CreditCard* GetCreditCard(Suggestion::BackendId unique_id);
 
   // Gets the profile referred to by the guid |unique_id|. Returns |nullptr| if
@@ -504,9 +520,15 @@ class BrowserAutofillManager : public AutofillManager {
   // kLimitBeforeRefill after the filling and records metrics for this. This
   // method should be called after we learned that JavaScript modified an
   // autofilled field. It's responsible for assessing the nature of the
-  // modification.
-  void AnalyzeJavaScriptChangedAutofilledValue(const FormData& form,
-                                               const FormFieldData& field);
+  // modification. `cleared_value` is true if JS wiped the previous value, and
+  // `formatting_only` is true if JS only modified whitespaces, symbols and
+  // capitalization.
+  // TODO(b/40227496): Remove `cleared_value` when `field` starts containing
+  // the actual current value of the field.
+  void AnalyzeJavaScriptChangedAutofilledValue(const FormStructure& form,
+                                               AutofillField& field,
+                                               bool cleared_value,
+                                               bool formatting_only);
 
   // Replaces the contents of `suggestions` with available suggestions for
   // `field`. Which fields of the `form` are filled depends on the
@@ -595,15 +617,9 @@ class BrowserAutofillManager : public AutofillManager {
 
   // Have we logged whether Autofill is enabled for this page load?
   bool has_logged_autofill_enabled_ = false;
-  // Have we shown Autofill suggestions at least once?
-  bool did_show_suggestions_ = false;
   // Has the user manually edited at least one form field among the autofillable
   // ones?
   bool user_did_type_ = false;
-  // Has the user autofilled a form on this page?
-  bool user_did_autofill_ = false;
-  // Has the user edited a field that was previously autofilled?
-  bool user_did_edit_autofilled_field_ = false;
 
   // Does |this| have any parsed forms?
   bool has_parsed_forms_ = false;

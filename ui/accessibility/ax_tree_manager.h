@@ -41,6 +41,12 @@ class AX_EXPORT AXTreeManager : public AXTreeObserver {
   // in any AXTreeManager.
   static void SetFocusChangeCallbackForTesting(base::RepeatingClosure callback);
 
+  // Ensure that any accessibility fatal error crashes the renderer. Once this
+  // is turned on, it stays on all renderers, because at this point it is
+  // assumed that the user is a developer.
+  static void AlwaysFailFast() { is_fail_fast_mode_ = true; }
+  static bool IsFailFastMode() { return is_fail_fast_mode_; }
+
   // This default constructor does not create an empty accessibility tree. Call
   // `SetTree` if you need to manage a specific tree.
   AXTreeManager();
@@ -86,7 +92,7 @@ class AX_EXPORT AXTreeManager : public AXTreeObserver {
   }
 
   // Returns the tree id of the tree managed by this AXTreeManager.
-  AXTreeID GetTreeID() const {
+  const AXTreeID& GetTreeID() const {
     return ax_tree_ ? ax_tree_->GetAXTreeID() : ui::AXTreeIDUnknown();
   }
 
@@ -155,7 +161,7 @@ class AX_EXPORT AXTreeManager : public AXTreeObserver {
  protected:
   // This is only made protected to accommodate the `AtomicViewAXTreeManager`.
   // It should be made private once that class is removed.
-  // TODO(crbug.com/1468416): Make private.
+  // TODO(crbug.com/40924888): Make private.
   static AXTreeManagerMap& GetMap();
 
   virtual AXTreeManager* GetParentManager() const;
@@ -202,6 +208,9 @@ class AX_EXPORT AXTreeManager : public AXTreeObserver {
 
  private:
   friend class TestSingleAXTreeManager;
+
+  // A flag to ensure that accessibility fatal errors crash immediately.
+  static bool is_fail_fast_mode_;
 
   // Automatically stops observing notifications from the AXTree when this class
   // is destructed.

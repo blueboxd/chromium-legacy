@@ -9,7 +9,6 @@ import android.app.Instrumentation;
 import android.app.Instrumentation.ActivityMonitor;
 import android.content.Context;
 import android.content.Intent;
-import android.text.TextUtils;
 import android.util.Pair;
 import android.view.View;
 import android.widget.FrameLayout;
@@ -36,8 +35,7 @@ import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.locale.LocaleManagerDelegate;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
-import org.chromium.chrome.browser.searchwidget.SearchActivity.SearchActivityDelegate;
-import org.chromium.chrome.browser.ui.searchactivityutils.SearchActivityConstants;
+import org.chromium.chrome.browser.ui.searchactivityutils.SearchActivityClient;
 import org.chromium.chrome.browser.ui.searchactivityutils.SearchActivityPreferencesManager.SearchActivityPreferences;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.R;
@@ -52,13 +50,6 @@ import java.util.concurrent.ExecutionException;
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add(ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE)
 public class SearchWidgetProviderTest {
-    private static class TestSearchDelegate extends SearchActivityDelegate {
-        @Override
-        public boolean isActivityDisabledForTests() {
-            return true;
-        }
-    }
-
     private static final class TestDelegate
             extends SearchWidgetProvider.SearchWidgetProviderDelegate {
         public static final int[] ALL_IDS = {11684, 20170525};
@@ -106,7 +97,6 @@ public class SearchWidgetProviderTest {
     @Before
     public void setUp() {
         ChromeApplicationTestUtils.setUp(ApplicationProvider.getApplicationContext());
-        SearchActivity.setDelegateForTests(new TestSearchDelegate());
 
         mContext = new TestContext();
         mDelegate = new TestDelegate(mContext);
@@ -306,8 +296,8 @@ public class SearchWidgetProviderTest {
             // Check that the Activity was launched in the right mode.
             Intent intent = activity.getIntent();
             boolean microphoneState =
-                    TextUtils.equals(
-                            intent.getAction(), SearchActivityConstants.ACTION_START_VOICE_SEARCH);
+                    SearchActivityUtils.getIntentSearchType(intent)
+                            == SearchActivityClient.SearchType.VOICE;
             Assert.assertEquals(clickTarget == R.id.microphone_icon, microphoneState);
             boolean fromWidget =
                     IntentUtils.safeGetBooleanExtra(

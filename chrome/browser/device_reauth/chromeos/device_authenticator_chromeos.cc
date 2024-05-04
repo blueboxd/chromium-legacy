@@ -20,15 +20,15 @@ DeviceAuthenticatorChromeOS::DeviceAuthenticatorChromeOS(
 DeviceAuthenticatorChromeOS::~DeviceAuthenticatorChromeOS() = default;
 
 bool DeviceAuthenticatorChromeOS::CanAuthenticateWithBiometrics() {
-  // TODO(crbug.com/1440090): Add implementation of the biometric
+  // TODO(crbug.com/40265846): Add implementation of the biometric
   // authentication.
   NOTIMPLEMENTED();
   return false;
 }
 
 bool DeviceAuthenticatorChromeOS::CanAuthenticateWithBiometricOrScreenLock() {
-  // TODO(crbug.com/1440090): Add implementation of the biometric or screen lock
-  // authentication.
+  // TODO(crbug.com/40265846): Add implementation of the biometric or screen
+  // lock authentication.
   NOTIMPLEMENTED();
   return false;
 }
@@ -47,6 +47,7 @@ void DeviceAuthenticatorChromeOS::AuthenticateWithMessage(
   callback_ = std::move(callback);
 
   authenticator_->AuthenticateUser(
+      message,
       base::BindOnce(&DeviceAuthenticatorChromeOS::OnAuthenticationCompleted,
                      weak_ptr_factory_.GetWeakPtr()));
 }

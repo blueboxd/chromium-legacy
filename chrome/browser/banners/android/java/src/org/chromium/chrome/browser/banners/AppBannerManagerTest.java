@@ -4,37 +4,21 @@
 
 package org.chromium.chrome.browser.banners;
 
-import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
-import static androidx.test.espresso.matcher.ViewMatchers.assertThat;
-import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
-import static androidx.test.espresso.matcher.ViewMatchers.isRoot;
-import static androidx.test.espresso.matcher.ViewMatchers.withText;
-
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
-
-import static org.chromium.ui.test.util.ViewUtils.VIEW_NULL;
 
 import android.app.Activity;
 import android.app.Instrumentation;
 import android.app.Instrumentation.ActivityMonitor;
 import android.app.Instrumentation.ActivityResult;
-import android.content.Context;
-import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.text.TextUtils;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.test.core.app.ApplicationProvider;
-import androidx.test.espresso.ViewInteraction;
-import androidx.test.espresso.matcher.RootMatchers;
 import androidx.test.filters.MediumTest;
 import androidx.test.filters.SmallTest;
 import androidx.test.platform.app.InstrumentationRegistry;
@@ -42,7 +26,6 @@ import androidx.test.uiautomator.UiDevice;
 import androidx.test.uiautomator.UiObject;
 import androidx.test.uiautomator.UiSelector;
 
-import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Before;
@@ -54,33 +37,21 @@ import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 import org.mockito.quality.Strictness;
 
-import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskTraits;
-import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.Features.DisableFeatures;
-import org.chromium.base.test.util.Features.EnableFeatures;
-import org.chromium.base.test.util.PackageManagerWrapper;
-import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
 import org.chromium.chrome.browser.customtabs.CustomTabsIntentTestUtils;
-import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
-import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.profiles.ProfileManager;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.ui.appmenu.AppMenuCoordinator;
-import org.chromium.chrome.browser.ui.appmenu.AppMenuTestSupport;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeBrowserTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -90,14 +61,6 @@ import org.chromium.chrome.test.util.browser.TabLoadObserver;
 import org.chromium.chrome.test.util.browser.TabTitleObserver;
 import org.chromium.chrome.test.util.browser.webapps.WebappTestPage;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
-import org.chromium.components.feature_engagement.CppWrappedTestTracker;
-import org.chromium.components.feature_engagement.EventConstants;
-import org.chromium.components.feature_engagement.FeatureConstants;
-import org.chromium.components.messages.DismissReason;
-import org.chromium.components.messages.MessageDispatcher;
-import org.chromium.components.messages.MessageDispatcherProvider;
-import org.chromium.components.messages.MessageIdentifier;
-import org.chromium.components.messages.MessagesTestHelper;
 import org.chromium.components.site_engagement.SiteEngagementService;
 import org.chromium.components.webapps.AppBannerManager;
 import org.chromium.components.webapps.AppData;
@@ -109,12 +72,9 @@ import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TouchCommon;
 import org.chromium.content_public.common.ContentUrlConstants;
 import org.chromium.net.test.EmbeddedTestServer;
-import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
 import org.chromium.ui.modaldialog.ModalDialogProperties.ButtonType;
 import org.chromium.ui.modelutil.PropertyModel;
-import org.chromium.ui.test.util.DeviceRestriction;
-import org.chromium.ui.test.util.ViewUtils;
 import org.chromium.ui.widget.ButtonCompat;
 
 import java.util.Observer;
@@ -122,7 +82,6 @@ import java.util.Observer;
 /** Tests the app banners. */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
-@DisableFeatures({ChromeFeatureList.WEB_APP_AMBIENT_BADGE_SUPRESS_FIRST_VISIT})
 public class AppBannerManagerTest {
     @Rule
     public ChromeTabbedActivityTestRule mTabbedActivityTestRule =
@@ -134,9 +93,6 @@ public class AppBannerManagerTest {
     @Rule public ChromeBrowserTestRule mChromeBrowserTestRule = new ChromeBrowserTestRule();
 
     @Rule public MockitoRule mMockitoRule = MockitoJUnit.rule().strictness(Strictness.STRICT_STUBS);
-
-    // A callback that fires when the IPH system sends an event.
-    private final CallbackHelper mOnEventCallback = new CallbackHelper();
 
     // The ID of the last event received.
     private String mLastNotifyEvent;
@@ -212,7 +168,6 @@ public class AppBannerManagerTest {
     @Mock private PackageManager mPackageManager;
     private EmbeddedTestServer mTestServer;
     private UiDevice mUiDevice;
-    private CppWrappedTestTracker mTracker;
     private BottomSheetController mBottomSheetController;
 
     @Before
@@ -231,21 +186,6 @@ public class AppBannerManagerTest {
                     }
                 });
 
-        mTracker =
-                new CppWrappedTestTracker(FeatureConstants.PWA_INSTALL_AVAILABLE_FEATURE) {
-                    @Override
-                    public void notifyEvent(String event) {
-                        super.notifyEvent(event);
-                        mOnEventCallback.notifyCalled();
-                    }
-                };
-
-        ThreadUtils.runOnUiThreadBlocking(
-                () -> {
-                    Profile profile = ProfileManager.getLastUsedRegularProfile();
-                    TrackerFactory.setTestingFactory(profile, mTracker);
-                });
-
         mTabbedActivityTestRule.startMainActivityOnBlankPage();
         // Must be set after native has loaded.
         mDetailsDelegate = new MockAppDetailsDelegate();
@@ -257,6 +197,7 @@ public class AppBannerManagerTest {
 
         AppBannerManager.ignoreChromeChannelForTesting();
         AppBannerManager.setTotalEngagementForTesting(10);
+        AppBannerManager.setOverrideSegmentationResultForTesting(true);
         mTestServer =
                 EmbeddedTestServer.createAndStartServer(
                         ApplicationProvider.getApplicationContext());
@@ -326,36 +267,6 @@ public class AppBannerManagerTest {
                 });
     }
 
-    private void waitUntilAmbientBadgePromptAppears(
-            ChromeActivityTestRule<? extends ChromeActivity> rule) {
-            WindowAndroid windowAndroid = rule.getActivity().getWindowAndroid();
-        CriteriaHelper.pollUiThread(
-                () -> {
-                    Criteria.checkThat(
-                            MessagesTestHelper.getMessageCount(windowAndroid), Matchers.is(1));
-                    Criteria.checkThat(
-                            MessagesTestHelper.getMessageIdentifier(windowAndroid, 0),
-                            Matchers.is(MessageIdentifier.INSTALLABLE_AMBIENT_BADGE));
-                });
-    }
-
-    private void checkAmbientBadgePromptNotExist(
-            ChromeActivityTestRule<? extends ChromeActivity> rule) {
-            WindowAndroid windowAndroid = rule.getActivity().getWindowAndroid();
-            TestThreadUtils.runOnUiThreadBlocking(
-                    () ->
-                            Assert.assertEquals(
-                                    0, MessagesTestHelper.getMessageCount(windowAndroid)));
-    }
-
-    private void waitForBadgeStatus(Tab tab, int expectedValue) {
-        CriteriaHelper.pollUiThread(
-                () -> {
-                    return getAppBannerManager(tab.getWebContents()).getBadgeStatusForTesting()
-                            == expectedValue;
-                });
-    }
-
     private void waitUntilBottomSheetStatus(
             ChromeActivityTestRule<? extends ChromeActivity> rule,
             @BottomSheetController.SheetState int status) {
@@ -385,7 +296,6 @@ public class AppBannerManagerTest {
         resetEngagementForUrl(url, 10);
         rule.loadUrlInNewTab(ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
         navigateToUrlAndWaitForBannerManager(rule, url);
-        waitUntilAmbientBadgePromptAppears(rule);
 
         Tab tab = rule.getActivity().getActivityTab();
         tapAndWaitForModalBanner(tab);
@@ -406,7 +316,6 @@ public class AppBannerManagerTest {
         rule.loadUrlInNewTab(ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
         navigateToUrlAndWaitForBannerManager(rule, url);
         waitUntilAppDetailsRetrieved(rule, 1);
-        waitUntilAmbientBadgePromptAppears(rule);
         Assert.assertEquals(mDetailsDelegate.mReferrer, expectedReferrer);
 
         final ChromeActivity activity = rule.getActivity();
@@ -450,7 +359,6 @@ public class AppBannerManagerTest {
             waitUntilAppDetailsRetrieved(rule, 1);
         }
 
-        waitUntilAmbientBadgePromptAppears(rule);
         Tab tab = rule.getActivity().getActivityTab();
         tapAndWaitForModalBanner(tab);
 
@@ -490,37 +398,9 @@ public class AppBannerManagerTest {
                 });
     }
 
-    private void dismissAmbientBadgeMessage(ChromeActivityTestRule<? extends ChromeActivity> rule)
-            throws Exception {
-            WindowAndroid windowAndroid = rule.getActivity().getWindowAndroid();
-
-            MessageDispatcher dispatcher =
-                    TestThreadUtils.runOnUiThreadBlocking(
-                            () -> MessageDispatcherProvider.from(windowAndroid));
-            PropertyModel model =
-                    TestThreadUtils.runOnUiThreadBlocking(
-                            () ->
-                                    MessagesTestHelper.getCurrentMessage(
-                                            MessagesTestHelper.getEnqueuedMessages(
-                                                            dispatcher,
-                                                            MessageIdentifier
-                                                                    .INSTALLABLE_AMBIENT_BADGE)
-                                                    .get(0)));
-            TestThreadUtils.runOnUiThreadBlocking(
-                    () -> {
-                        dispatcher.dismissMessage(model, DismissReason.GESTURE);
-                    });
-            CriteriaHelper.pollUiThread(
-                    () ->
-                            Criteria.checkThat(
-                                    MessagesTestHelper.getMessageCount(windowAndroid),
-                                    Matchers.is(0)));
-    }
-
     @Test
     @SmallTest
     @Feature({"AppBanners"})
-    @CommandLineFlags.Add({"disable-features=" + FeatureConstants.PWA_INSTALL_AVAILABLE_FEATURE})
     public void testAppInstalledEventModalWebAppBannerBrowserTab() throws Exception {
         triggerModalWebAppBanner(
                 mTabbedActivityTestRule,
@@ -770,73 +650,6 @@ public class AppBannerManagerTest {
     }
 
     @Test
-    @MediumTest
-    @Feature({"AppBanners"})
-    @CommandLineFlags.Add({"bypass-installable-message-throttle-for-testing"})
-    public void testBlockedAmbientBadgeDoesNotAppearAgainForMonths() throws Exception {
-        // Visit a site that is a PWA. The ambient badge should show.
-        String webBannerUrl = WebappTestPage.getServiceWorkerUrl(mTestServer);
-        resetEngagementForUrl(webBannerUrl, 10);
-        Tab tab = mTabbedActivityTestRule.getActivity().getActivityTab();
-        new TabLoadObserver(tab).fullyLoadUrl(webBannerUrl);
-        waitUntilAmbientBadgePromptAppears(mTabbedActivityTestRule);
-
-        WindowAndroid windowAndroid = mTabbedActivityTestRule.getActivity().getWindowAndroid();
-
-        // Explicitly dismiss the ambient badge.
-        CriteriaHelper.pollUiThread(
-                () ->
-                        Criteria.checkThat(
-                                MessagesTestHelper.getMessageCount(windowAndroid), Matchers.is(1)));
-
-        MessageDispatcher dispatcher =
-                TestThreadUtils.runOnUiThreadBlocking(
-                        () -> MessageDispatcherProvider.from(windowAndroid));
-        PropertyModel model =
-                TestThreadUtils.runOnUiThreadBlocking(
-                        () ->
-                                MessagesTestHelper.getCurrentMessage(
-                                        MessagesTestHelper.getEnqueuedMessages(
-                                                        dispatcher,
-                                                        MessageIdentifier.INSTALLABLE_AMBIENT_BADGE)
-                                                .get(0)));
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> {
-                    dispatcher.dismissMessage(model, DismissReason.GESTURE);
-                });
-        CriteriaHelper.pollUiThread(
-                () ->
-                        Criteria.checkThat(
-                                MessagesTestHelper.getMessageCount(windowAndroid), Matchers.is(0)));
-
-        // Waiting two months shouldn't be long enough.
-        AppBannerManager.setTimeDeltaForTesting(61);
-        new TabLoadObserver(tab).fullyLoadUrl(webBannerUrl);
-        CriteriaHelper.pollUiThread(
-                () ->
-                        Criteria.checkThat(
-                                MessagesTestHelper.getMessageCount(windowAndroid), Matchers.is(0)));
-
-        AppBannerManager.setTimeDeltaForTesting(62);
-        new TabLoadObserver(tab).fullyLoadUrl(webBannerUrl);
-        CriteriaHelper.pollUiThread(
-                () ->
-                        Criteria.checkThat(
-                                MessagesTestHelper.getMessageCount(windowAndroid), Matchers.is(0)));
-
-        // Waiting three months should allow the ambient badge to reappear.
-        AppBannerManager.setTimeDeltaForTesting(91);
-        new TabLoadObserver(tab).fullyLoadUrl(webBannerUrl);
-        CriteriaHelper.pollUiThread(
-                () ->
-                        Criteria.checkThat(
-                                MessagesTestHelper.getMessageCount(windowAndroid), Matchers.is(1)));
-
-        Assert.assertEquals(
-                0, RecordHistogram.getHistogramTotalCountForTesting(INSTALL_PATH_HISTOGRAM_NAME));
-    }
-
-    @Test
     @SmallTest
     @Feature({"AppBanners"})
     public void testModalWebAppBannerTriggeredWithUnsupportedNativeApp() throws Exception {
@@ -915,7 +728,6 @@ public class AppBannerManagerTest {
     @Test
     @MediumTest
     @Feature({"AppBanners"})
-    @CommandLineFlags.Add("disable-features=" + FeatureConstants.PWA_INSTALL_AVAILABLE_FEATURE)
     public void testAppInstalledEventBottomSheet() throws Exception {
         triggerBottomSheet(
                 mTabbedActivityTestRule,
@@ -1070,111 +882,6 @@ public class AppBannerManagerTest {
     @Test
     @MediumTest
     @Feature({"AppBanners"})
-    @Restriction({DeviceRestriction.RESTRICTION_TYPE_NON_AUTO}) // add to home screen not supported.
-    @CommandLineFlags.Add({
-        "enable-features=" + FeatureConstants.PWA_INSTALL_AVAILABLE_FEATURE,
-        "disable-features=" + ChromeFeatureList.ADD_TO_HOMESCREEN_IPH
-    })
-    @DisabledTest(message = "crbug/327273599")
-    public void testInProductHelp() throws Exception {
-        // Visit a site that is a PWA. The ambient badge should show.
-        String webBannerUrl = WebappTestPage.getServiceWorkerUrl(mTestServer);
-        resetEngagementForUrl(webBannerUrl, 10);
-
-        Tab tab = mTabbedActivityTestRule.getActivity().getActivityTab();
-        new TabLoadObserver(tab).fullyLoadUrl(webBannerUrl);
-        waitUntilAmbientBadgePromptAppears(mTabbedActivityTestRule);
-        // Dismiss the message so it will not overlap with the IPH.
-        dismissAmbientBadgeMessage(mTabbedActivityTestRule);
-
-        waitForHelpBubble(withText(R.string.iph_pwa_install_available_text)).perform(click());
-        assertThat(mTracker.wasDismissed(), is(true));
-
-        int callCount = mOnEventCallback.getCallCount();
-
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> {
-                    AppMenuCoordinator coordinator =
-                            mTabbedActivityTestRule.getAppMenuCoordinator();
-                    AppMenuTestSupport.showAppMenu(coordinator, null, false);
-                    AppMenuTestSupport.callOnItemClick(coordinator, R.id.install_webapp_id);
-                });
-        mOnEventCallback.waitForCallback(callCount, 1);
-
-        assertThat(mTracker.getLastEvent(), is(EventConstants.PWA_INSTALL_MENU_SELECTED));
-
-        Assert.assertEquals(
-                0, RecordHistogram.getHistogramTotalCountForTesting(INSTALL_PATH_HISTOGRAM_NAME));
-    }
-
-    private ViewInteraction waitForHelpBubble(Matcher<View> matcher) {
-        View mainDecorView = mTabbedActivityTestRule.getActivity().getWindow().getDecorView();
-        return onView(isRoot())
-                .inRoot(RootMatchers.withDecorView(not(is(mainDecorView))))
-                .check(ViewUtils.isEventuallyVisible(matcher));
-    }
-
-    private void assertNoHelpBubble(Matcher<View> matcher) {
-        onView(isRoot())
-                .inRoot(RootMatchers.withDecorView(isDisplayed()))
-                .check(ViewUtils.withEventualExpectedViewState(matcher, VIEW_NULL));
-    }
-
-    @Test
-    @MediumTest
-    @Feature({"AppBanners"})
-    public void testInProductHelpSkipsHiddenWebContents() throws Exception {
-        String url =
-                WebappTestPage.getServiceWorkerUrlWithManifestAndAction(
-                        mTestServer,
-                        WEB_APP_MANIFEST_FOR_BOTTOM_SHEET_INSTALL,
-                        "call_stashed_prompt_on_click");
-
-        resetEngagementForUrl(url, 10);
-        mTabbedActivityTestRule.loadUrl(ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
-
-        // Create an extra tab so that there is a background tab.
-        ChromeTabUtils.newTabFromMenu(
-                InstrumentationRegistry.getInstrumentation(),
-                mTabbedActivityTestRule.getActivity(),
-                /* isIncognito= */ false,
-                /* waitForNtpLoad= */ true);
-
-        Tab backgroundTab = mTabbedActivityTestRule.getActivity().getCurrentTabModel().getTabAt(0);
-        Assert.assertTrue(backgroundTab != null);
-
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> {
-                    backgroundTab.loadUrl(new LoadUrlParams(url));
-                });
-
-        waitForAppBannerPipelineStatus(
-                backgroundTab, AppBannerManagerState.PENDING_PROMPT_NOT_CANCELED);
-
-        assertNoHelpBubble(withText(R.string.iph_pwa_install_available_text));
-    }
-
-    @Test
-    @MediumTest
-    @Feature({"AppBanners"})
-    public void testAmbientBadgeAppearWithServiceWorkerPage() throws Exception {
-        String webBannerUrl =
-                WebappTestPage.getServiceWorkerUrlWithAction(
-                        mTestServer, "call_stashed_prompt_on_click");
-        resetEngagementForUrl(webBannerUrl, 10);
-        navigateToUrlAndWaitForBannerManager(mTabbedActivityTestRule, webBannerUrl);
-
-        Tab tab = mTabbedActivityTestRule.getActivity().getActivityTab();
-        waitForBadgeStatus(tab, AmbientBadgeState.SHOWING);
-        waitUntilAmbientBadgePromptAppears(mTabbedActivityTestRule);
-
-        // Calls prompt() on the beforeinstallprompt event, we expect to see the modal banner.
-        tapAndWaitForModalBanner(tab);
-    }
-
-    @Test
-    @MediumTest
-    @Feature({"AppBanners"})
     public void testAppBannerDismissedAfterNavigation() throws Exception {
         String url =
                 WebappTestPage.getServiceWorkerUrlWithAction(
@@ -1183,7 +890,6 @@ public class AppBannerManagerTest {
 
         mTabbedActivityTestRule.loadUrlInNewTab(ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
         navigateToUrlAndWaitForBannerManager(mTabbedActivityTestRule, url);
-        waitUntilAmbientBadgePromptAppears(mTabbedActivityTestRule);
 
         Tab tab = mTabbedActivityTestRule.getActivity().getActivityTab();
         tapAndWaitForModalBanner(tab);
@@ -1191,106 +897,5 @@ public class AppBannerManagerTest {
         // Navigate and check that the dialog was dismissed.
         mTabbedActivityTestRule.loadUrl(ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
         waitUntilNoDialogsShowing(tab);
-    }
-
-    @Test
-    @SmallTest
-    @Feature({"AppBanners"})
-    public void testAmbientBadgeTriggeredWithListedRelatedApp() throws Exception {
-        // The ambient badge should show if there is play app in related applications list but
-        // preferred_related_applications is false.
-        String webBannerUrl =
-                WebappTestPage.getServiceWorkerUrlWithAction(
-                        mTestServer, "call_stashed_prompt_on_click");
-        resetEngagementForUrl(webBannerUrl, 10);
-        navigateToUrlAndWaitForBannerManager(mTabbedActivityTestRule, webBannerUrl);
-
-        waitUntilAmbientBadgePromptAppears(mTabbedActivityTestRule);
-
-        // Calls prompt() on the beforeinstallprompt event, we expect to see the modal banner.
-        Tab tab = mTabbedActivityTestRule.getActivity().getActivityTab();
-        tapAndWaitForModalBanner(tab);
-    }
-
-    private static class TestContext extends ContextWrapper {
-        public TestContext(Context baseContext) {
-            super(baseContext);
-        }
-
-        @Override
-        public PackageManager getPackageManager() {
-            return new PackageManagerWrapper(super.getPackageManager()) {
-                @Override
-                public PackageInfo getPackageInfo(String packageName, int flags)
-                        throws PackageManager.NameNotFoundException {
-                    if (TextUtils.equals(NATIVE_APP_PACKAGE_NAME, packageName)) {
-                        PackageInfo packageInfo = new PackageInfo();
-                        packageInfo.packageName = NATIVE_APP_PACKAGE_NAME;
-                        return packageInfo;
-                    }
-
-                    return TestContext.super.getPackageManager().getPackageInfo(packageName, flags);
-                }
-            };
-        }
-    }
-
-    @Test
-    @SmallTest
-    @Feature({"AppBanners"})
-    public void testAmbientBadgeDoesNotAppearWhenRelatedAppInstalled() throws Exception {
-        String url =
-                WebappTestPage.getServiceWorkerUrlWithManifestAndAction(
-                        mTestServer,
-                        WEB_APP_MANIFEST_WITH_RELATED_APP_LIST,
-                        "call_stashed_prompt_on_click");
-        resetEngagementForUrl(url, 10);
-
-        final Context contextToRestore = ContextUtils.getApplicationContext();
-        ContextUtils.initApplicationContextForTests(new TestContext(contextToRestore));
-
-        navigateToUrlAndWaitForBannerManager(mTabbedActivityTestRule, url);
-
-        assertAppBannerPipelineStatus(AppBannerManagerState.COMPLETE);
-
-        // The web app banner not show if a play app in related applications list is installed.
-        checkAmbientBadgePromptNotExist(mTabbedActivityTestRule);
-
-        ContextUtils.initApplicationContextForTests(contextToRestore);
-    }
-
-    @Test
-    @SmallTest
-    @Feature({"AppBanners"})
-    @EnableFeatures({ChromeFeatureList.WEB_APP_AMBIENT_BADGE_SUPRESS_FIRST_VISIT})
-    public void testAmbientBadgeSuppressedOnFirstVisit() throws Exception {
-        String url =
-                WebappTestPage.getServiceWorkerUrlWithAction(
-                        mTestServer, "call_stashed_prompt_on_click");
-        resetEngagementForUrl(url, 10);
-
-        navigateToUrlAndWaitForBannerManager(mTabbedActivityTestRule, url);
-
-        assertAppBannerPipelineStatus(AppBannerManagerState.PENDING_PROMPT_NOT_CANCELED);
-
-        Tab tab = mTabbedActivityTestRule.getActivity().getActivityTab();
-        waitForBadgeStatus(tab, AmbientBadgeState.PENDING_ENGAGEMENT);
-
-        // Advance 3 days and navigate to |url| again, ambient badge should show.
-        AppBannerManager.setTimeDeltaForTesting(3);
-        mTabbedActivityTestRule.loadUrl(ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
-        navigateToUrlAndWaitForBannerManager(mTabbedActivityTestRule, url);
-        waitForBadgeStatus(tab, AmbientBadgeState.SHOWING);
-        waitUntilAmbientBadgePromptAppears(mTabbedActivityTestRule);
-
-        // Advance 31 more days and navigate to |url| again, no ambient badge.
-        AppBannerManager.setTimeDeltaForTesting(35);
-        mTabbedActivityTestRule.loadUrl(ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
-        navigateToUrlAndWaitForBannerManager(mTabbedActivityTestRule, url);
-        waitForBadgeStatus(tab, AmbientBadgeState.PENDING_ENGAGEMENT);
-        checkAmbientBadgePromptNotExist(mTabbedActivityTestRule);
-
-        // Calls prompt() on the beforeinstallprompt event and wait for the banner.
-        tapAndWaitForModalBanner(tab);
     }
 }

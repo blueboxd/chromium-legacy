@@ -335,7 +335,8 @@ ui::Cursor DesignerExample::GrabHandle::GetCursor(const ui::MouseEvent& event) {
   }
 }
 
-gfx::Size DesignerExample::GrabHandle::CalculatePreferredSize() const {
+gfx::Size DesignerExample::GrabHandle::CalculatePreferredSize(
+    const SizeBounds& /*available_size*/) const {
   return gfx::Size(kGrabHandleSize, kGrabHandleSize);
 }
 
@@ -524,7 +525,7 @@ void DesignerExample::CreateExampleView(View* container) {
   designer_container_->SetFlexForView(designer_panel_, 75);
   class_registrations_ = GetClassRegistrations();
 
-  // TODO(crbug.com/1392538): Refactor such that the TableModel is not
+  // TODO(crbug.com/40247792): Refactor such that the TableModel is not
   // responsible for managing the lifetimes of views
   tracker_.SetView(inspector_);
 }

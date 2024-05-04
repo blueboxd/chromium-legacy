@@ -80,6 +80,10 @@ class TestFrameSinkManagerImpl : public mojom::FrameSinkManager {
                                  base::TimeDelta bucket_size) override {}
   void StopFrameCountingForTest(
       StopFrameCountingForTestCallback callback) override {}
+  void ClearUnclaimedViewTransitionResources(
+      const blink::ViewTransitionToken& transition_token) override {}
+  void HasUnclaimedViewTransitionResourcesForTest(
+      HasUnclaimedViewTransitionResourcesForTestCallback callback) override {}
 
   mojo::Receiver<mojom::FrameSinkManager> receiver_{this};
   mojo::Remote<mojom::FrameSinkManagerClient> client_;

@@ -40,6 +40,16 @@ class SyncSetupInProgressHandle;
 
 namespace settings {
 
+// Enum used to share the sign in state with the WebUI.
+// TODO(b/336510160): Look into integrating SYNC_PAUSED value.
+enum class SignedInState {
+  SignedOut = 0,
+  SignedIn = 1,
+  Syncing = 2,
+  SignedInPaused = 3,
+  WebOnlySignedIn = 4,
+};
+
 class PeopleHandler : public SettingsPageUIHandler,
                       public signin::IdentityManager::Observer,
                       public LoginUIService::LoginUI,
@@ -68,6 +78,7 @@ class PeopleHandler : public SettingsPageUIHandler,
  private:
   friend class PeopleHandlerTest;
   friend class PeopleHandlerSignoutTest;
+  friend class PeopleHandlerWithExplicitBrowserSigninTest;
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest,
                            DisplayConfigureWithEngineDisabledAndCancel);
   FRIEND_TEST_ALL_PREFIXES(
@@ -118,8 +129,7 @@ class PeopleHandler : public SettingsPageUIHandler,
                            DashboardClearWhileSettingsOpen_ConfirmSoon);
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest,
                            DashboardClearWhileSettingsOpen_ConfirmLater);
-  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerDiceUnifiedConsentTest,
-                           StoredAccountsList);
+  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerDiceTest, StoredAccountsList);
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerGuestModeTest, GetStoredAccountsList);
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, TurnOffSync);
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, GetStoredAccountsList);
@@ -128,6 +138,15 @@ class PeopleHandler : public SettingsPageUIHandler,
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerMainProfile, GetStoredAccountsList);
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerSecondaryProfile,
                            GetStoredAccountsList);
+  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerWithExplicitBrowserSigninTest,
+                           ChromeSigninUserChoice);
+  FRIEND_TEST_ALL_PREFIXES(
+      PeopleHandlerWithExplicitBrowserSigninTest,
+      ChromeSigninUserAvailableOnExplicitChromeSigninSignout);
+  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerWithExplicitBrowserSigninTest,
+                           ChromeSigninUserAvailableOnDiceSignin);
+  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerWebOnlySigninTest,
+                           ChromeSigninUserAvailableOnWebSignin);
 #if DCHECK_IS_ON()
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerMainProfile, DeleteProfileCrashes);
 #endif
@@ -145,6 +164,16 @@ class PeopleHandler : public SettingsPageUIHandler,
       const signin::PrimaryAccountChangeEvent& event) override;
   void OnExtendedAccountInfoUpdated(const AccountInfo& info) override;
   void OnExtendedAccountInfoRemoved(const AccountInfo& info) override;
+  void OnRefreshTokenUpdatedForAccount(
+      const CoreAccountInfo& account_info) override;
+  void OnAccountsInCookieUpdated(
+      const signin::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
+      const GoogleServiceAuthError& error) override;
+  void OnErrorStateOfRefreshTokenUpdatedForAccount(
+      const CoreAccountInfo& account_info,
+      const GoogleServiceAuthError& error,
+      signin_metrics::SourceForRefreshTokenOperation token_operation_source)
+      override;
 
   // syncer::SyncServiceObserver implementation.
   void OnStateChanged(syncer::SyncService* sync_service) override;
@@ -172,6 +201,10 @@ class PeopleHandler : public SettingsPageUIHandler,
   void HandleShowSyncSetupUI(const base::Value::List& args);
   void HandleSyncPrefsDispatch(const base::Value::List& args);
   void HandleTrustedVaultBannerStateDispatch(const base::Value::List& args);
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+  void HandleGetChromeSigninUserChoiceInfo(const base::Value::List& args);
+  void HandleSetChromeSigninUserChoice(const base::Value::List& args);
+#endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   void HandleAttemptUserExit(const base::Value::List& args);
@@ -182,6 +215,8 @@ class PeopleHandler : public SettingsPageUIHandler,
 #endif
 #if BUILDFLAG(ENABLE_DICE_SUPPORT) || BUILDFLAG(IS_CHROMEOS_LACROS)
   void HandleSignout(const base::Value::List& args);
+  void HandleTurnOffSync(bool delete_profile,
+                         bool is_clear_primary_account_allowed);
 #endif
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
   void HandlePauseSync(const base::Value::List& args);
@@ -203,6 +238,13 @@ class PeopleHandler : public SettingsPageUIHandler,
   void HandleStartSyncingWithEmail(const base::Value::List& args);
   base::Value::List GetStoredAccountsList();
 
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+  // Sends the updated chrome signin user choice info to UI.
+  void UpdateChromeSigninUserChoiceInfo();
+  // Constructs the information dictionary needed to be sent.
+  base::Value::Dict GetChromeSigninUserChoiceInfo();
+#endif
+
   // Pushes the updated sync prefs to JavaScript.
   void PushSyncPrefs();
 
@@ -210,6 +252,9 @@ class PeopleHandler : public SettingsPageUIHandler,
 
   // Sends the current sync status to the JavaScript WebUI code.
   void UpdateSyncStatus();
+
+  // Sends the computed stored accounts to the JavaScript WebUI code.
+  void UpdateStoredAccounts();
 
   // Suppresses any further signin promos, since the user has signed in once.
   void MarkFirstSetupComplete();

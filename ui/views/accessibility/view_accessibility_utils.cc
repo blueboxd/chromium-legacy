@@ -44,6 +44,10 @@ bool ViewAccessibilityUtils::IsFocusedChildWidget(Widget* widget,
 // static
 void ViewAccessibilityUtils::Merge(const ui::AXNodeData& source,
                                    ui::AXNodeData& destination) {
+  if (source.role != ax::mojom::Role::kUnknown) {
+    destination.role = source.role;
+  }
+
   for (const auto& attr : source.int_attributes) {
     destination.AddIntAttribute(attr.first, attr.second);
   }
@@ -64,11 +68,13 @@ void ViewAccessibilityUtils::Merge(const ui::AXNodeData& source,
     destination.AddStringListAttribute(attr.first, attr.second);
   }
 
-  // TODO(javiercon): Add checking for all the states, and add DCHECK for them
-  // as well. Do the same thing for the Restrictions.
-  if (source.HasState(ax::mojom::State::kIgnored)) {
-    destination.AddState(ax::mojom::State::kIgnored);
+  if (!source.relative_bounds.bounds.IsEmpty()) {
+    destination.relative_bounds.bounds = source.relative_bounds.bounds;
   }
+
+  destination.state |= source.state;
+
+  destination.actions |= source.actions;
 }
 
 #if DCHECK_IS_ON()

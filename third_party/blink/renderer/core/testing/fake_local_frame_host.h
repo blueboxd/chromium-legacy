@@ -177,10 +177,11 @@ class FakeLocalFrameHost : public mojom::blink::LocalFrameHost {
   void SendFencedFrameReportingBeacon(
       const WTF::String& event_data,
       const WTF::String& event_type,
-      const WTF::Vector<blink::FencedFrame::ReportingDestination>& destinations)
-      override;
+      const WTF::Vector<blink::FencedFrame::ReportingDestination>& destinations,
+      bool cross_origin_exposed) override;
   void SendFencedFrameReportingBeaconToCustomURL(
-      const blink::KURL& destination_url) override;
+      const blink::KURL& destination_url,
+      bool cross_origin_exposed) override;
   void SetFencedFrameAutomaticBeaconReportEventData(
       blink::mojom::AutomaticBeaconType event_type,
       const WTF::String& event_data,
@@ -189,6 +190,9 @@ class FakeLocalFrameHost : public mojom::blink::LocalFrameHost {
       bool cross_origin_exposed) override;
   void DisableUntrustedNetworkInFencedFrame(
       DisableUntrustedNetworkInFencedFrameCallback callback) override;
+  void ExemptUrlFromNetworkRevocationForTesting(
+      const blink::KURL& exempted_url,
+      ExemptUrlFromNetworkRevocationForTestingCallback callback) override;
   void SendLegacyTechEvent(
       const WTF::String& type,
       mojom::blink::LegacyTechEventCodeLocationPtr code_location) override;
@@ -215,6 +219,8 @@ class FakeLocalFrameHost : public mojom::blink::LocalFrameHost {
   void IssueKeepAliveHandle(
       mojo::PendingReceiver<mojom::blink::NavigationStateKeepAliveHandle>
           receiver) override;
+  void NotifyStorageAccessed(blink::mojom::StorageTypeAccessed storageType,
+                             bool blocked) override;
 
  private:
   void BindFrameHostReceiver(mojo::ScopedInterfaceEndpointHandle handle);

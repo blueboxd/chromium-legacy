@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/platform/fonts/symbols_iterator.h"
+#include "third_party/blink/renderer/platform/fonts/utf16_ragel_iterator.h"
+#include "third_party/blink/renderer/platform/text/character.h"
 
 #include <unicode/uchar.h>
 #include <unicode/uniset.h>
@@ -21,7 +23,7 @@ using emoji_text_iter_t = UTF16RagelIterator;
 SymbolsIterator::SymbolsIterator(const UChar* buffer, unsigned buffer_size)
     : cursor_(0), next_token_end_(0), next_token_emoji_(false) {
   if (buffer_size) {
-    buffer_iterator_ = UTF16RagelIterator(buffer, buffer_size, cursor_);
+    buffer_iterator_ = UTF16RagelIterator(buffer, buffer_size);
     next_token_end_ = cursor_ + (scan_emoji_presentation(buffer_iterator_,
                                                          buffer_iterator_.end(),
                                                          &next_token_emoji_) -
@@ -31,8 +33,9 @@ SymbolsIterator::SymbolsIterator(const UChar* buffer, unsigned buffer_size)
 
 bool SymbolsIterator::Consume(unsigned* symbols_limit,
                               FontFallbackPriority* font_fallback_priority) {
-  if (cursor_ >= buffer_iterator_.end().Cursor())
+  if (cursor_ >= buffer_iterator_.size()) {
     return false;
+  }
 
   bool current_token_emoji = false;
   do {
@@ -42,7 +45,15 @@ bool SymbolsIterator::Consume(unsigned* symbols_limit,
     if (cursor_ >= buffer_iterator_.end().Cursor())
       break;
 
+    if (!current_token_emoji &&
+        !Character::MaybeEmojiPresentation(buffer_iterator_.PeekCodepoint())) {
+      ++buffer_iterator_;
+      next_token_end_ = buffer_iterator_.Cursor();
+      continue;
+    }
+
     buffer_iterator_.SetCursor(cursor_);
+
     next_token_end_ = cursor_ + (scan_emoji_presentation(buffer_iterator_,
                                                          buffer_iterator_.end(),
                                                          &next_token_emoji_) -

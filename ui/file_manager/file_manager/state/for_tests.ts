@@ -72,7 +72,7 @@ export function updMetadata(store: Store, metadata: EntryMetadata[]) {
 
 /** Updates the directory content in the store. */
 export function updateContent(store: Store, entries: Entry[]) {
-  store.dispatch(updateDirectoryContent({entries}));
+  store.dispatch(updateDirectoryContent({entries, status: PropStatus.SUCCESS}));
 }
 
 /**
@@ -150,6 +150,11 @@ export function setUpFileManagerOnWindow() {
     taskController: {} as unknown as TaskController,
     dialogType: DialogType.FULL_PAGE,
     directoryModel: createFakeDirectoryModel(),
+    fileFilter: {
+      filter() {
+        return true;
+      },
+    },
     directoryTreeNamingController: {} as unknown as
         DirectoryTreeNamingController,
     getLastVisitedUrl() {

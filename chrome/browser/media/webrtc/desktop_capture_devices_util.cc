@@ -47,7 +47,7 @@ BASE_FEATURE(kSuppressLocalAudioPlaybackForSystemAudio,
 
 namespace {
 
-// TODO(crbug.com/1208868): Eliminate code duplication with
+// TODO(crbug.com/40181897): Eliminate code duplication with
 // capture_handle_manager.cc.
 media::mojom::CaptureHandlePtr CreateCaptureHandle(
     content::WebContents* capturer,
@@ -136,8 +136,7 @@ DesktopMediaIDToDisplayMediaInformation(
   media::mojom::CursorCaptureType cursor =
       media::mojom::CursorCaptureType::NEVER;
 #if defined(USE_AURA)
-  const bool uses_aura =
-      media_id.window_id != content::DesktopMediaID::kNullId ? true : false;
+  const bool uses_aura = media_id.window_id != content::DesktopMediaID::kNullId;
 #else
   const bool uses_aura = false;
 #endif  // defined(USE_AURA)
@@ -241,7 +240,7 @@ std::string DeviceName(content::WebContents* web_contents,
     return base::StrCat({prefix, content::kWebContentsCaptureScheme,
                          base::UnguessableToken::Create().ToString()});
   } else {
-    // TODO(crbug.com/1252682): MediaStreamTrack.label leaks internal state for
+    // TODO(crbug.com/40793276): MediaStreamTrack.label leaks internal state for
     // screen/window
     return base::StrCat({prefix, media_id.ToString()});
   }
@@ -258,6 +257,7 @@ std::unique_ptr<content::MediaStreamUI> GetDevicesForDesktopCapture(
     bool suppress_local_audio_playback,
     bool display_notification,
     const std::u16string& application_title,
+    bool captured_surface_control_active,
     blink::mojom::StreamDevices& out_devices) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -285,8 +285,8 @@ std::unique_ptr<content::MediaStreamUI> GetDevicesForDesktopCapture(
               kSuppressLocalAudioPlaybackForTabAudio)) {
         suppress_local_audio_playback = false;  // Surface-specific killswitch.
       }
-      // TODO(crbug/1378669): Deprecate disable_local_echo, support the same
-      // functionality based only on suppress_local_audio_playback.
+      // TODO(crbug.com/40244028): Deprecate disable_local_echo, support the
+      // same functionality based only on suppress_local_audio_playback.
       web_id.disable_local_echo =
           disable_local_echo || suppress_local_audio_playback;
       out_devices.audio_device = blink::MediaStreamDevice(
@@ -321,11 +321,12 @@ std::unique_ptr<content::MediaStreamUI> GetDevicesForDesktopCapture(
       const bool app_preferred_current_tab =
           request.video_type ==
           blink::mojom::MediaStreamType::DISPLAY_VIDEO_CAPTURE_THIS_TAB;
-      notification_ui = TabSharingUI::Create(
-          capturer_id, media_id, application_title,
-          /*favicons_used_for_switch_to_tab_button=*/false,
-          app_preferred_current_tab,
-          TabSharingInfoBarDelegate::TabShareType::CAPTURE);
+      notification_ui =
+          TabSharingUI::Create(capturer_id, media_id, application_title,
+                               /*favicons_used_for_switch_to_tab_button=*/false,
+                               app_preferred_current_tab,
+                               TabSharingInfoBarDelegate::TabShareType::CAPTURE,
+                               captured_surface_control_active);
     } else {
       notification_ui = ScreenCaptureNotificationUI::Create(
           GetNotificationText(application_title, capture_audio, media_id.type),

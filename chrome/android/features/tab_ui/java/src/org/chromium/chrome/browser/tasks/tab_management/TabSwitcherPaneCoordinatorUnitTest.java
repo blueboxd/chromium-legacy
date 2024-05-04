@@ -22,6 +22,7 @@ import static org.chromium.ui.test.util.MockitoHelper.doCallback;
 
 import android.app.Activity;
 import android.graphics.Bitmap;
+import android.view.ViewStub;
 import android.widget.FrameLayout;
 
 import androidx.test.ext.junit.rules.ActivityScenarioRule;
@@ -49,7 +50,6 @@ import org.chromium.base.test.util.Features.EnableFeatures;
 import org.chromium.base.test.util.HistogramWatcher;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
-import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
@@ -60,6 +60,9 @@ import org.chromium.chrome.browser.profiles.ProfileProvider;
 import org.chromium.chrome.browser.tab.MockTab;
 import org.chromium.chrome.browser.tab.TabCreationState;
 import org.chromium.chrome.browser.tab.TabLaunchType;
+import org.chromium.chrome.browser.tab_ui.TabContentManager;
+import org.chromium.chrome.browser.tab_ui.TabSwitcherCustomViewManager;
+import org.chromium.chrome.browser.tab_ui.TabThumbnailView;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabModelFilter;
 import org.chromium.chrome.browser.tasks.pseudotab.PseudoTab.TitleProvider;
@@ -71,6 +74,7 @@ import org.chromium.chrome.browser.ui.favicon.FaviconHelperJni;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.chrome.test.util.browser.tabmodel.MockTabModel;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.widget.gesture.BackPressHandler.BackPressResult;
 import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator;
 import org.chromium.components.feature_engagement.Tracker;
@@ -112,6 +116,7 @@ public class TabSwitcherPaneCoordinatorUnitTest {
     @Mock private Callback<Integer> mOnTabClickedCallback;
     @Mock private FaviconHelper.Natives mFaviconHelperJniMock;
     @Mock private Tracker mTracker;
+    @Mock private BottomSheetController mBottomSheetController;
 
     private final OneshotSupplierImpl<ProfileProvider> mProfileProviderSupplier =
             new OneshotSupplierImpl<>();
@@ -182,6 +187,7 @@ public class TabSwitcherPaneCoordinatorUnitTest {
                         mScrimCoordinator,
                         mSnackbarManager,
                         mModalDialogManager,
+                        mBottomSheetController,
                         mContainerView,
                         mResetHandler,
                         mIsVisibleSupplier,
@@ -194,6 +200,24 @@ public class TabSwitcherPaneCoordinatorUnitTest {
         mCoordinator.initWithNative();
 
         mIsVisibleSupplier.set(true);
+    }
+
+    DialogController showTabGridDialogWithTabs() {
+        ViewStub dialogStub = new ViewStub(mActivity);
+        mCoordinatorView.addView(dialogStub);
+        dialogStub.setId(R.id.tab_grid_dialog_stub);
+
+        DialogController controller = mCoordinator.getTabGridDialogControllerForTesting();
+        MockTab tab = MockTab.createAndInitialize(/* id= */ 1, mProfile);
+        tab.setIsInitialized(true);
+        int index = 0;
+        mTabModel.addTab(
+                tab, index, TabLaunchType.FROM_CHROME_UI, TabCreationState.LIVE_IN_FOREGROUND);
+        when(mTabModelFilter.indexOf(tab)).thenReturn(index);
+        when(mTabModelFilter.getTabAt(index)).thenReturn(tab);
+        controller.resetWithListOfTabs(Collections.singletonList(tab));
+
+        return controller;
     }
 
     @After
@@ -254,20 +278,13 @@ public class TabSwitcherPaneCoordinatorUnitTest {
     @DisableFeatures({ChromeFeatureList.DATA_SHARING_ANDROID})
     @EnableFeatures(ChromeFeatureList.TAB_GROUP_PARITY_ANDROID)
     public void testTabGridDialogVisibilitySupplier() {
+
         Supplier<Boolean> tabGridDialogVisibilitySupplier =
                 mCoordinator.getTabGridDialogVisibilitySupplier();
 
         assertFalse(tabGridDialogVisibilitySupplier.get());
 
-        DialogController controller = mCoordinator.getTabGridDialogControllerForTesting();
-        MockTab tab = MockTab.createAndInitialize(/* id= */ 1, mProfile);
-        tab.setIsInitialized(true);
-        int index = 0;
-        mTabModel.addTab(
-                tab, index, TabLaunchType.FROM_CHROME_UI, TabCreationState.LIVE_IN_FOREGROUND);
-        when(mTabModelFilter.indexOf(tab)).thenReturn(index);
-        when(mTabModelFilter.getTabAt(index)).thenReturn(tab);
-        controller.resetWithListOfTabs(Collections.singletonList(tab));
+        DialogController controller = showTabGridDialogWithTabs();
         assertTrue(tabGridDialogVisibilitySupplier.get());
 
         controller.hideDialog(false);
@@ -350,5 +367,20 @@ public class TabSwitcherPaneCoordinatorUnitTest {
         assertEquals(0, recyclerView.getAdapter().getItemCount());
         // Don't assert on the actual child count, robolectric isn't removing the child view for
         // some reason.
+    }
+
+    @Test
+    @SmallTest
+    @EnableFeatures({
+        ChromeFeatureList.TAB_GROUP_PARITY_ANDROID,
+        ChromeFeatureList.DATA_SHARING_ANDROID
+    })
+    public void testOpenInvitationModal() {
+        DialogController controller = showTabGridDialogWithTabs();
+
+        assertTrue(controller.isVisible());
+
+        mCoordinator.openInvitationModal("");
+        assertFalse(controller.isVisible());
     }
 }

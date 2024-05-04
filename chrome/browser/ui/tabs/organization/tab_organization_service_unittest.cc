@@ -361,6 +361,20 @@ TEST_F(TabOrganizationServiceTest, TabStripAddRemoveDestroysSession) {
   EXPECT_EQ(service()->GetSessionForBrowser(browser1), nullptr);
 }
 
+TEST_F(TabOrganizationServiceTest, TabGroupAddDestroysSession) {
+  Browser* browser1 = AddBrowser();
+  for (int i = 0; i < 4; i++) {
+    AddValidTabToBrowser(browser1, 0);
+  }
+
+  service()->CreateSessionForBrowser(browser1,
+                                     TabOrganizationEntryPoint::kNone);
+
+  browser1->tab_strip_model()->AddToNewGroup({1});
+
+  EXPECT_EQ(service()->GetSessionForBrowser(browser1), nullptr);
+}
+
 TEST_F(TabOrganizationServiceTest,
        RemoveAllTabsWhileMultiplePendingOrganizationsDoesntCrash) {
   // b/319272034
@@ -411,18 +425,14 @@ TEST_F(TabOrganizationServiceTest,
       std::make_unique<TabData>(model, model->GetWebContentsAt(0)));
   tab_datas_1.emplace_back(
       std::make_unique<TabData>(model, model->GetWebContentsAt(1)));
-  TabOrganization org_1 =
-      TabOrganization(std::move(tab_datas_1), names, 0u,
-                      TabOrganization::UserChoice::kNoChoice);
+  TabOrganization org_1 = TabOrganization(std::move(tab_datas_1), names);
 
   std::vector<std::unique_ptr<TabData>> tab_datas_2;
   tab_datas_2.emplace_back(
       std::make_unique<TabData>(model, model->GetWebContentsAt(0)));
   tab_datas_2.emplace_back(
       std::make_unique<TabData>(model, model->GetWebContentsAt(1)));
-  TabOrganization org_2 =
-      TabOrganization(std::move(tab_datas_2), names, 0u,
-                      TabOrganization::UserChoice::kNoChoice);
+  TabOrganization org_2 = TabOrganization(std::move(tab_datas_2), names);
 
   TestOrganizationObserver observer(&org_1, &org_2);
   org_1.AddObserver(&observer);

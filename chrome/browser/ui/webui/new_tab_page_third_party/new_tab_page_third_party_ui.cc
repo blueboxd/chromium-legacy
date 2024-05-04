@@ -64,7 +64,7 @@ void CreateAndAddNewTabPageThirdPartyUiHtmlSource(Profile* profile,
 
   const ui::ThemeProvider* theme_provider =
       webui::GetThemeProvider(web_contents);
-  // TODO(crbug.com/1299925): Always mock theme provider in tests so that
+  // TODO(crbug.com/40823895): Always mock theme provider in tests so that
   // `theme_provider` is never nullptr.
   if (theme_provider) {
     const ui::ColorProvider& color_provider = web_contents->GetColorProvider();
@@ -76,7 +76,7 @@ void CreateAndAddNewTabPageThirdPartyUiHtmlSource(Profile* profile,
                       color_utils::SkColorToRgbaString(GetThemeColor(
                           webui::GetNativeTheme(web_contents), color_provider,
                           kColorNewTabPageBackground)));
-    // TODO(crbug.com/1056758): don't get theme id from profile.
+    // TODO(crbug.com/40120448): don't get theme id from profile.
     source->AddString("themeId",
                       profile->GetPrefs()->GetString(prefs::kCurrentThemeID));
     source->AddString("hascustombackground",
@@ -102,15 +102,20 @@ void CreateAndAddNewTabPageThirdPartyUiHtmlSource(Profile* profile,
       base::FeatureList::IsEnabled(
           ntp_features::kNtpHandleMostVisitedNavigationExplicitly));
 
-  source->AddBoolean(
-      "prerenderEnabled",
-      base::FeatureList::IsEnabled(features::kNewTabPageTriggerForPrerender2));
   source->AddInteger(
       "prerenderStartTimeThreshold",
       features::kNewTabPagePrerenderStartDelayOnMouseHoverByMiliSeconds.Get());
   source->AddInteger(
       "preconnectStartTimeThreshold",
       features::kNewTabPagePreconnectStartDelayOnMouseHoverByMiliSeconds.Get());
+  source->AddBoolean(
+      "prerenderOnPressEnabled",
+      base::FeatureList::IsEnabled(features::kNewTabPageTriggerForPrerender2) &&
+          features::kPrerenderNewTabPageOnMousePressedTrigger.Get());
+  source->AddBoolean(
+      "prerenderOnHoverEnabled",
+      base::FeatureList::IsEnabled(features::kNewTabPageTriggerForPrerender2) &&
+          features::kPrerenderNewTabPageOnMouseHoverTrigger.Get());
 
   // Needed by <cr-most-visited> but not used in
   // chrome://new-tab-page-third-party/.

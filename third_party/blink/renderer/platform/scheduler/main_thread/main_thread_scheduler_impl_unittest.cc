@@ -269,42 +269,6 @@ enum class SimulateInputType {
   kGestureScrollEnd
 };
 
-void AnticipationTestTask(MainThreadSchedulerImpl* scheduler,
-                          SimulateInputType simulate_input,
-                          bool* is_anticipated_before,
-                          bool* is_anticipated_after) {
-  *is_anticipated_before = scheduler->IsHighPriorityWorkAnticipated();
-  switch (simulate_input) {
-    case SimulateInputType::kNone:
-      break;
-
-    case SimulateInputType::kTouchStart:
-      scheduler->DidHandleInputEventOnCompositorThread(
-          FakeTouchEvent(blink::WebInputEvent::Type::kTouchStart),
-          InputEventState::EVENT_CONSUMED_BY_COMPOSITOR);
-      break;
-
-    case SimulateInputType::kTouchEnd:
-      scheduler->DidHandleInputEventOnCompositorThread(
-          FakeInputEvent(blink::WebInputEvent::Type::kTouchEnd),
-          InputEventState::EVENT_CONSUMED_BY_COMPOSITOR);
-      break;
-
-    case SimulateInputType::kGestureScrollBegin:
-      scheduler->DidHandleInputEventOnCompositorThread(
-          FakeInputEvent(blink::WebInputEvent::Type::kGestureScrollBegin),
-          InputEventState::EVENT_CONSUMED_BY_COMPOSITOR);
-      break;
-
-    case SimulateInputType::kGestureScrollEnd:
-      scheduler->DidHandleInputEventOnCompositorThread(
-          FakeInputEvent(blink::WebInputEvent::Type::kGestureScrollEnd),
-          InputEventState::EVENT_CONSUMED_BY_COMPOSITOR);
-      break;
-  }
-  *is_anticipated_after = scheduler->IsHighPriorityWorkAnticipated();
-}
-
 class MockPageSchedulerImpl : public PageSchedulerImpl {
  public:
   explicit MockPageSchedulerImpl(MainThreadSchedulerImpl* main_thread_scheduler,
@@ -339,7 +303,6 @@ class MainThreadSchedulerImplForTest : public MainThreadSchedulerImpl {
   using MainThreadSchedulerImpl::CompositorTaskQueue;
   using MainThreadSchedulerImpl::ControlTaskQueue;
   using MainThreadSchedulerImpl::DefaultTaskQueue;
-  using MainThreadSchedulerImpl::EstimateLongestJankFreeTaskDuration;
   using MainThreadSchedulerImpl::OnIdlePeriodEnded;
   using MainThreadSchedulerImpl::OnIdlePeriodStarted;
   using MainThreadSchedulerImpl::OnPendingTasksChanged;
@@ -982,11 +945,6 @@ class MainThreadSchedulerImplTest : public testing::Test {
         MainThreadSchedulerImpl::kEndIdleWhenHiddenDelayMillis);
   }
 
-  static base::TimeDelta rails_response_time() {
-    return base::Milliseconds(
-        MainThreadSchedulerImpl::kRailsResponseTimeMillis);
-  }
-
   template <typename E>
   static void CallForEachEnumValue(E first,
                                    E last,
@@ -1243,7 +1201,6 @@ TEST_F(MainThreadSchedulerImplTest,
   Vector<String> run_order;
   PostTestTasks(&run_order, "L1 I1 D1 C1 D2 C2");
 
-  scheduler_->SetHasVisibleRenderWidgetWithTouchHandler(true);
   EnableIdleTasks();
   SimulateCompositorGestureStart(TouchEventPolicy::kSendTouchStart);
   base::RunLoop().RunUntilIdle();
@@ -1257,7 +1214,6 @@ TEST_F(MainThreadSchedulerImplTest,
   Vector<String> run_order;
   PostTestTasks(&run_order, "L1 I1 D1 C1 D2 C2");
 
-  scheduler_->SetHasVisibleRenderWidgetWithTouchHandler(true);
   EnableIdleTasks();
   SimulateMainThreadGestureWithoutScrollUpdates();
   base::RunLoop().RunUntilIdle();
@@ -1271,7 +1227,6 @@ TEST_F(MainThreadSchedulerImplTest,
   Vector<String> run_order;
   PostTestTasks(&run_order, "L1 I1 D1 C1 D2 C2");
 
-  scheduler_->SetHasVisibleRenderWidgetWithTouchHandler(true);
   EnableIdleTasks();
   SimulateMainThreadGestureWithoutPreventDefault();
   base::RunLoop().RunUntilIdle();
@@ -1326,7 +1281,6 @@ TEST_F(MainThreadSchedulerImplTest,
   Vector<String> run_order;
   PostTestTasks(&run_order, "L1 I1 D1 C1 D2 C2");
 
-  scheduler_->SetHasVisibleRenderWidgetWithTouchHandler(true);
   EnableIdleTasks();
   SimulateMainThreadGestureStart(
       TouchEventPolicy::kSendTouchStart,
@@ -1363,7 +1317,6 @@ TEST_F(MainThreadSchedulerImplTest,
   Vector<String> run_order;
   PostTestTasks(&run_order, "L1 I1 D1 C1 D2 C2");
 
-  scheduler_->SetHasVisibleRenderWidgetWithTouchHandler(true);
   EnableIdleTasks();
   scheduler_->DidHandleInputEventOnCompositorThread(
       FakeTouchEvent(blink::WebInputEvent::Type::kTouchStart),
@@ -1385,7 +1338,6 @@ TEST_F(
   Vector<String> run_order;
   PostTestTasks(&run_order, "L1 I1 D1 C1 D2 C2");
 
-  scheduler_->SetHasVisibleRenderWidgetWithTouchHandler(true);
   EnableIdleTasks();
   scheduler_->DidHandleInputEventOnCompositorThread(
       FakeTouchEvent(blink::WebInputEvent::Type::kTouchStart),
@@ -1404,7 +1356,6 @@ TEST_F(MainThreadSchedulerImplTest, TestCompositorPolicy_DidAnimateForInput) {
   Vector<String> run_order;
   PostTestTasks(&run_order, "I1 D1 C1 D2 C2");
 
-  scheduler_->SetHasVisibleRenderWidgetWithTouchHandler(true);
   scheduler_->DidAnimateForInputOnCompositorThread();
   // Note DidAnimateForInputOnCompositorThread does not by itself trigger a
   // policy update.
@@ -1419,7 +1370,6 @@ TEST_F(MainThreadSchedulerImplTest, TestCompositorPolicy_DidAnimateForInput) {
 TEST_F(MainThreadSchedulerImplTest, Navigation_ResetsTaskCostEstimations) {
   Vector<String> run_order;
 
-  scheduler_->SetHasVisibleRenderWidgetWithTouchHandler(true);
   SimulateExpensiveTasks(throttleable_task_runner_);
   DoMainFrame();
   // A navigation occurs which creates a new Document thus resetting the task
@@ -1912,74 +1862,6 @@ TEST_F(MainThreadSchedulerImplTest,
   EXPECT_THAT(run_order, testing::ElementsAre("L1"));
 }
 
-TEST_F(MainThreadSchedulerImplTest, TestIsHighPriorityWorkAnticipated) {
-  bool is_anticipated_before = false;
-  bool is_anticipated_after = false;
-
-  scheduler_->SetHaveSeenABlockingGestureForTesting(true);
-  default_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&AnticipationTestTask, scheduler_.get(),
-                                SimulateInputType::kNone,
-                                &is_anticipated_before, &is_anticipated_after));
-  base::RunLoop().RunUntilIdle();
-  // In its default state, without input receipt, the scheduler should indicate
-  // that no high-priority is anticipated.
-  EXPECT_FALSE(is_anticipated_before);
-  EXPECT_FALSE(is_anticipated_after);
-
-  default_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&AnticipationTestTask, scheduler_.get(),
-                                SimulateInputType::kTouchStart,
-                                &is_anticipated_before, &is_anticipated_after));
-  bool dummy;
-  default_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&AnticipationTestTask, scheduler_.get(),
-                                SimulateInputType::kTouchEnd, &dummy, &dummy));
-  default_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&AnticipationTestTask, scheduler_.get(),
-                     SimulateInputType::kGestureScrollBegin, &dummy, &dummy));
-  default_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&AnticipationTestTask, scheduler_.get(),
-                     SimulateInputType::kGestureScrollEnd, &dummy, &dummy));
-
-  base::RunLoop().RunUntilIdle();
-  // When input is received, the scheduler should indicate that high-priority
-  // work is anticipated.
-  EXPECT_FALSE(is_anticipated_before);
-  EXPECT_TRUE(is_anticipated_after);
-
-  test_task_runner_->AdvanceMockTickClock(
-      priority_escalation_after_input_duration() * 2);
-  default_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&AnticipationTestTask, scheduler_.get(),
-                                SimulateInputType::kNone,
-                                &is_anticipated_before, &is_anticipated_after));
-  base::RunLoop().RunUntilIdle();
-  // Without additional input, the scheduler should go into NONE
-  // use case but with scrolling expected where high-priority work is still
-  // anticipated.
-  EXPECT_EQ(UseCase::kNone, CurrentUseCase());
-  EXPECT_TRUE(BlockingInputExpectedSoon());
-  EXPECT_TRUE(is_anticipated_before);
-  EXPECT_TRUE(is_anticipated_after);
-
-  test_task_runner_->AdvanceMockTickClock(
-      subsequent_input_expected_after_input_duration() * 2);
-  default_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&AnticipationTestTask, scheduler_.get(),
-                                SimulateInputType::kNone,
-                                &is_anticipated_before, &is_anticipated_after));
-  base::RunLoop().RunUntilIdle();
-  // Eventually the scheduler should go into the default use case where
-  // high-priority work is no longer anticipated.
-  EXPECT_EQ(UseCase::kNone, CurrentUseCase());
-  EXPECT_FALSE(BlockingInputExpectedSoon());
-  EXPECT_FALSE(is_anticipated_before);
-  EXPECT_FALSE(is_anticipated_after);
-}
-
 TEST_F(MainThreadSchedulerImplTest, TestShouldYield) {
   bool should_yield_before = false;
   bool should_yield_after = false;
@@ -2191,22 +2073,18 @@ TEST_F(MainThreadSchedulerImplTest,
 
 TEST_F(MainThreadSchedulerImplTest, EnsureUpdatePolicyNotTriggeredTooOften) {
   EXPECT_EQ(0, scheduler_->update_policy_count_);
-  scheduler_->SetHasVisibleRenderWidgetWithTouchHandler(true);
+  ForceUpdatePolicyAndGetCurrentUseCase();
   EXPECT_EQ(1, scheduler_->update_policy_count_);
 
   SimulateCompositorGestureStart(TouchEventPolicy::kSendTouchStart);
 
-  // We expect the first call to IsHighPriorityWorkAnticipated to be called
+  // We expect the first call to ShouldYieldForHighPriorityWork to be called
   // after receiving an input event (but before the UpdateTask was processed) to
   // call UpdatePolicy.
   EXPECT_EQ(1, scheduler_->update_policy_count_);
-  scheduler_->IsHighPriorityWorkAnticipated();
+  scheduler_->ShouldYieldForHighPriorityWork();
   EXPECT_EQ(2, scheduler_->update_policy_count_);
   // Subsequent calls should not call UpdatePolicy.
-  scheduler_->IsHighPriorityWorkAnticipated();
-  scheduler_->IsHighPriorityWorkAnticipated();
-  scheduler_->IsHighPriorityWorkAnticipated();
-  scheduler_->ShouldYieldForHighPriorityWork();
   scheduler_->ShouldYieldForHighPriorityWork();
   scheduler_->ShouldYieldForHighPriorityWork();
   scheduler_->ShouldYieldForHighPriorityWork();
@@ -2234,7 +2112,7 @@ TEST_F(MainThreadSchedulerImplTest, EnsureUpdatePolicyNotTriggeredTooOften) {
   EXPECT_EQ(2, scheduler_->update_policy_count_);
 
   // We expect both the urgent and the delayed updates to run in addition to the
-  // earlier updated cause by IsHighPriorityWorkAnticipated, a final update
+  // earlier updated cause by ShouldYieldForHighPriorityWork, a final update
   // transitions from 'not_scrolling touchstart expected' to 'not_scrolling'.
   test_task_runner_->FastForwardUntilNoTasksRemain();
   EXPECT_THAT(scheduler_->use_cases_,
@@ -2541,122 +2419,6 @@ TEST_F(MainThreadSchedulerImplTest, ShutdownPreventsPostingOfNewTasks) {
   EXPECT_THAT(run_order, testing::ElementsAre());
 }
 
-TEST_F(MainThreadSchedulerImplTest,
-       EstimateLongestJankFreeTaskDuration_UseCase_NONE) {
-  EXPECT_EQ(UseCase::kNone, CurrentUseCase());
-  EXPECT_EQ(rails_response_time(),
-            scheduler_->EstimateLongestJankFreeTaskDuration());
-}
-
-TEST_F(MainThreadSchedulerImplTest,
-       EstimateLongestJankFreeTaskDuration_UseCase_kCompositorGesture) {
-  SimulateCompositorGestureStart(TouchEventPolicy::kDontSendTouchStart);
-  EXPECT_EQ(UseCase::kCompositorGesture,
-            ForceUpdatePolicyAndGetCurrentUseCase());
-  EXPECT_EQ(rails_response_time(),
-            scheduler_->EstimateLongestJankFreeTaskDuration());
-}
-
-TEST_P(
-    MainThreadSchedulerImplWithLoadingPhaseBufferTimeAfterFirstMeaningfulPaintTest,
-    EstimateLongestJankFreeTaskDuration_UseCase_EarlyLoading) {
-  ON_CALL(*page_scheduler_, IsWaitingForMainFrameContentfulPaint)
-      .WillByDefault(Return(true));
-  ON_CALL(*page_scheduler_, IsWaitingForMainFrameMeaningfulPaint)
-      .WillByDefault(Return(true));
-  ON_CALL(*page_scheduler_, IsMainFrameLoading).WillByDefault(Return(true));
-  scheduler_->DidStartProvisionalLoad(true);
-  EXPECT_EQ(UseCase::kEarlyLoading, ForceUpdatePolicyAndGetCurrentUseCase());
-  EXPECT_EQ(rails_response_time(),
-            scheduler_->EstimateLongestJankFreeTaskDuration());
-}
-
-TEST_P(
-    MainThreadSchedulerImplWithLoadingPhaseBufferTimeAfterFirstMeaningfulPaintTest,
-    EstimateLongestJankFreeTaskDuration_UseCase_Loading) {
-  ON_CALL(*page_scheduler_, IsWaitingForMainFrameContentfulPaint)
-      .WillByDefault(Return(false));
-  ON_CALL(*page_scheduler_, IsWaitingForMainFrameMeaningfulPaint)
-      .WillByDefault(Return(true));
-  ON_CALL(*page_scheduler_, IsMainFrameLoading).WillByDefault(Return(true));
-  scheduler_->OnMainFramePaint();
-  EXPECT_EQ(UseCase::kLoading, ForceUpdatePolicyAndGetCurrentUseCase());
-  EXPECT_EQ(rails_response_time(),
-            scheduler_->EstimateLongestJankFreeTaskDuration());
-}
-
-TEST_F(MainThreadSchedulerImplTest,
-       EstimateLongestJankFreeTaskDuration_UseCase_MAIN_THREAD_GESTURE) {
-  SimulateMainThreadGestureStart(
-      TouchEventPolicy::kSendTouchStart,
-      blink::WebInputEvent::Type::kGestureScrollUpdate);
-  viz::BeginFrameArgs begin_frame_args = viz::BeginFrameArgs::Create(
-      BEGINFRAME_FROM_HERE, 0, next_begin_frame_number_++, Now(),
-      base::TimeTicks(), base::Milliseconds(16), viz::BeginFrameArgs::NORMAL);
-  begin_frame_args.on_critical_path = false;
-  scheduler_->WillBeginFrame(begin_frame_args);
-
-  compositor_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&MainThreadSchedulerImplTest::
-                         SimulateMainThreadInputHandlingCompositorTask,
-                     base::Unretained(this), base::Milliseconds(5)));
-
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(UseCase::kMainThreadGesture, CurrentUseCase());
-
-  // 16ms frame - 5ms compositor work = 11ms for other stuff.
-  EXPECT_EQ(base::Milliseconds(11),
-            scheduler_->EstimateLongestJankFreeTaskDuration());
-}
-
-TEST_F(
-    MainThreadSchedulerImplTest,
-    EstimateLongestJankFreeTaskDuration_UseCase_MAIN_THREAD_CUSTOM_INPUT_HANDLING) {
-  viz::BeginFrameArgs begin_frame_args = viz::BeginFrameArgs::Create(
-      BEGINFRAME_FROM_HERE, 0, next_begin_frame_number_++, Now(),
-      base::TimeTicks(), base::Milliseconds(16), viz::BeginFrameArgs::NORMAL);
-  begin_frame_args.on_critical_path = false;
-  scheduler_->WillBeginFrame(begin_frame_args);
-
-  compositor_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&MainThreadSchedulerImplTest::
-                         SimulateMainThreadInputHandlingCompositorTask,
-                     base::Unretained(this), base::Milliseconds(5)));
-
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(UseCase::kMainThreadCustomInputHandling, CurrentUseCase());
-
-  // 16ms frame - 5ms compositor work = 11ms for other stuff.
-  EXPECT_EQ(base::Milliseconds(11),
-            scheduler_->EstimateLongestJankFreeTaskDuration());
-}
-
-TEST_F(MainThreadSchedulerImplTest,
-       EstimateLongestJankFreeTaskDuration_UseCase_SYNCHRONIZED_GESTURE) {
-  SimulateCompositorGestureStart(TouchEventPolicy::kDontSendTouchStart);
-
-  viz::BeginFrameArgs begin_frame_args = viz::BeginFrameArgs::Create(
-      BEGINFRAME_FROM_HERE, 0, next_begin_frame_number_++, Now(),
-      base::TimeTicks(), base::Milliseconds(16), viz::BeginFrameArgs::NORMAL);
-  begin_frame_args.on_critical_path = true;
-  scheduler_->WillBeginFrame(begin_frame_args);
-
-  compositor_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          &MainThreadSchedulerImplTest::SimulateMainThreadCompositorTask,
-          base::Unretained(this), base::Milliseconds(5)));
-
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(UseCase::kSynchronizedGesture, CurrentUseCase());
-
-  // 16ms frame - 5ms compositor work = 11ms for other stuff.
-  EXPECT_EQ(base::Milliseconds(11),
-            scheduler_->EstimateLongestJankFreeTaskDuration());
-}
-
 namespace {
 void SlowCountingTask(
     size_t* count,
@@ -2785,7 +2547,6 @@ TEST_F(MainThreadSchedulerImplTest, DenyLongIdleDuringTouchStart) {
 
 TEST_F(MainThreadSchedulerImplTest,
        TestCompositorPolicy_TouchStartDuringFling) {
-  scheduler_->SetHasVisibleRenderWidgetWithTouchHandler(true);
   scheduler_->DidAnimateForInputOnCompositorThread();
   // Note DidAnimateForInputOnCompositorThread does not by itself trigger a
   // policy update.

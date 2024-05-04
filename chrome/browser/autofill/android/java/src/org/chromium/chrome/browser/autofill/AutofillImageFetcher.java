@@ -8,6 +8,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 
 import org.jni_zero.CalledByNative;
+import org.jni_zero.JniType;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordHistogram;
@@ -41,10 +42,11 @@ public class AutofillImageFetcher {
 
     /**
      * Fetches images for the passed in URLs and stores them in cache.
+     *
      * @param urls The URLs to fetch the images.
      */
     @CalledByNative
-    void prefetchImages(GURL[] urls) {
+    void prefetchImages(@JniType("base::span<const GURL>") GURL[] urls) {
         Context context = ContextUtils.getApplicationContext();
 
         for (GURL url : urls) {
@@ -81,6 +83,7 @@ public class AutofillImageFetcher {
 
     /**
      * Fetches image for the given URL.
+     *
      * @param url The URL to fetch the image.
      */
     private void fetchImage(GURL url, CardIconSpecs cardIconSpecs) {
@@ -128,11 +131,27 @@ public class AutofillImageFetcher {
                                         .AUTOFILL_ENABLE_NEW_CARD_ART_AND_NETWORK_IMAGES)));
     }
 
+    /**
+     * Add an image to the in-memory cache of images.
+     *
+     * @param url The URL that should be used as the key for the cache.
+     * @param bitmap The actual image bitmap that should be cached.
+     * @param cardIconSpecs The {@link CardIconSpecs} for the bitmap. This is used for generating
+     *     the URL params.
+     */
+    public void addImageToCacheForTesting(GURL url, Bitmap bitmap, CardIconSpecs cardIconSpecs) {
+        GURL urlToCache =
+                AutofillUiUtils.getCreditCardIconUrlWithParams(
+                        url, cardIconSpecs.getWidth(), cardIconSpecs.getHeight());
+        mImagesCache.put(urlToCache.getSpec(), bitmap);
+    }
+
     Map<String, Bitmap> getCachedImagesForTesting() {
         return mImagesCache;
     }
 
-    void clearCachedImagesForTesting() {
+    /** Clears the in-memory cache of images. */
+    public void clearCachedImagesForTesting() {
         mImagesCache.clear();
     }
 }

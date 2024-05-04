@@ -12,6 +12,7 @@
 #include "components/attribution_reporting/registration_eligibility.mojom-blink-forward.h"
 #include "services/network/public/cpp/attribution_reporting_runtime_features.h"
 #include "services/network/public/mojom/attribution.mojom-forward.h"
+#include "services/network/public/mojom/referrer_policy.mojom-blink-forward.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/heap/forward.h"
@@ -34,7 +35,6 @@ class HTMLAnchorElement;
 class HTMLElement;
 class KURL;
 class LocalFrame;
-class Resource;
 class ResourceRequest;
 class ResourceResponse;
 class WebString;
@@ -58,15 +58,15 @@ class CORE_EXPORT AttributionSrcLoader
   // spaces and completing each token as a URL against the frame's document.
   // This method handles fetching each URL and notifying the browser process to
   // begin tracking it. It is a no-op if the frame is not attached.
-  void Register(const AtomicString& attribution_src, HTMLElement* element);
+  void Register(const AtomicString& attribution_src,
+                HTMLElement* element,
+                network::mojom::ReferrerPolicy);
 
   // Registers an attribution resource client for the given resource if
-  // the request is eligible for attribution registration. Safe to call multiple
-  // times for the same `resource`. Returns whether a registration was
-  // successful.
+  // the request is eligible for attribution registration.
+  // Returns whether a registration was successful.
   bool MaybeRegisterAttributionHeaders(const ResourceRequest& request,
-                                       const ResourceResponse& response,
-                                       const Resource* resource);
+                                       const ResourceResponse& response);
 
   // Splits `attribution_src` on spaces and completes each token as a URL
   // against the frame's document.
@@ -80,14 +80,16 @@ class CORE_EXPORT AttributionSrcLoader
       const KURL& navigation_url,
       const AtomicString& attribution_src,
       HTMLAnchorElement* element,
-      bool has_transient_user_activation);
+      bool has_transient_user_activation,
+      network::mojom::ReferrerPolicy);
 
   // Same as the above, but uses an already-tokenized attribution src for use
   // with `window.open`.
   [[nodiscard]] std::optional<Impression> RegisterNavigation(
       const KURL& navigation_url,
       const WebVector<WebString>& attribution_srcs,
-      bool has_transient_user_activation);
+      bool has_transient_user_activation,
+      network::mojom::ReferrerPolicy);
 
   // Returns true if `url` can be used as an attributionsrc: its scheme is HTTP
   // or HTTPS, its origin is potentially trustworthy, the document's permission
@@ -107,19 +109,26 @@ class CORE_EXPORT AttributionSrcLoader
 
   network::AttributionReportingRuntimeFeatures GetRuntimeFeatures() const;
 
+  // Records whether the permission policy allows for Attribution support to
+  // 'Conversions.AllowedByPermissionPolicy'.
+  static void RecordAttributionFeatureAllowed(bool enabled);
+
  private:
   class ResourceClient;
 
   Vector<KURL> ParseAttributionSrc(const AtomicString& attribution_src,
                                    HTMLElement*);
 
-  bool DoRegistration(const Vector<KURL>&, std::optional<AttributionSrcToken>);
+  bool DoRegistration(const Vector<KURL>&,
+                      std::optional<AttributionSrcToken>,
+                      network::mojom::ReferrerPolicy);
 
   [[nodiscard]] std::optional<Impression> RegisterNavigationInternal(
       const KURL& navigation_url,
       Vector<KURL> attribution_src_urls,
       HTMLAnchorElement*,
-      bool has_transient_user_activation);
+      bool has_transient_user_activation,
+      network::mojom::ReferrerPolicy);
 
   // Returns the reporting origin corresponding to `url` if its protocol is in
   // the HTTP family, its origin is potentially trustworthy, and attribution is
@@ -132,8 +141,8 @@ class CORE_EXPORT AttributionSrcLoader
                                bool log_issues = true);
 
   bool CreateAndSendRequests(Vector<KURL>,
-                             HTMLElement*,
-                             std::optional<AttributionSrcToken>);
+                             std::optional<AttributionSrcToken>,
+                             network::mojom::ReferrerPolicy);
 
   struct AttributionHeaders;
 
@@ -143,7 +152,8 @@ class CORE_EXPORT AttributionSrcLoader
       attribution_reporting::SuitableOrigin reporting_origin,
       const AttributionHeaders&,
       const Vector<network::TriggerVerification>&,
-      const attribution_reporting::RegistrationInfo&);
+      const attribution_reporting::RegistrationInfo&,
+      bool was_fetched_via_service_worker);
 
   const Member<LocalFrame> local_frame_;
 };

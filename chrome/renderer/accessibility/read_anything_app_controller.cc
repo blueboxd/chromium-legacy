@@ -19,13 +19,17 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/renderer/accessibility/ax_tree_distiller.h"
 #include "components/language/core/common/locale_util.h"
+#include "components/translate/core/common/translate_constants.h"
 #include "content/public/renderer/chrome_object_extensions_utils.h"
 #include "content/public/renderer/render_frame.h"
+#include "content/public/renderer/render_thread.h"
 #include "gin/converter.h"
 #include "gin/dictionary.h"
 #include "gin/handle.h"
 #include "gin/object_template_builder.h"
 #include "read_anything_app_controller.h"
+#include "services/metrics/public/cpp/mojo_ukm_recorder.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/scheduler/web_agent_group_scheduler.h"
 #include "third_party/blink/public/web/web_local_frame.h"
@@ -335,36 +339,6 @@ ui::AXTreeUpdate GetSnapshotFromV8SnapshotLite(
   return snapshot;
 }
 
-bool GetSelectable(const GURL& url) {
-  std::string full_url = url.spec();
-  for (std::string non_selectable_url :
-       string_constants::GetNonSelectableUrls()) {
-    if (re2::RE2::PartialMatch(full_url, non_selectable_url)) {
-      return false;
-    }
-  }
-
-  return true;
-}
-
-bool GetIsGoogleDocs(const GURL& url) {
-  // A Google Docs URL is in the form of "https://docs.google.com/document*" or
-  // "https://docs.sandbox.google.com/document*".
-  constexpr const char* kDocsURLDomain[] = {"docs.google.com",
-                                            "docs.sandbox.google.com"};
-  if (url.SchemeIsHTTPOrHTTPS()) {
-    for (const std::string& google_docs_url : kDocsURLDomain) {
-      if (url.DomainIs(google_docs_url) && url.has_path() &&
-          url.path().starts_with("/document") &&
-          !url.ExtractFileName().empty()) {
-        return true;
-      }
-    }
-  }
-
-  return false;
-}
-
 }  // namespace
 
 // static
@@ -409,9 +383,16 @@ ReadAnythingAppController::ReadAnythingAppController(
   distiller_ = std::make_unique<AXTreeDistiller>(
       base::BindRepeating(&ReadAnythingAppController::OnAXTreeDistilled,
                           weak_ptr_factory_.GetWeakPtr()));
+  // TODO(crbug.com/40915547): Use a global ukm recorder instance instead.
+  mojo::Remote<ukm::mojom::UkmRecorderFactory> factory;
+  content::RenderThread::Get()->BindHostReceiver(
+      factory.BindNewPipeAndPassReceiver());
+  ukm_recorder_ = ukm::MojoUkmRecorder::Create(*factory);
 }
 
-ReadAnythingAppController::~ReadAnythingAppController() = default;
+ReadAnythingAppController::~ReadAnythingAppController() {
+  RecordNumSelections();
+}
 
 void ReadAnythingAppController::AccessibilityEventReceived(
     const ui::AXTreeID& tree_id,
@@ -419,31 +400,23 @@ void ReadAnythingAppController::AccessibilityEventReceived(
     const std::vector<ui::AXEvent>& events) {
   // This updates the model, which may require us to start distillation based on
   // the `requires_distillation()` state below.
-  model_.AccessibilityEventReceived(tree_id, updates, events);
+  //
+  // Remove the const-ness of the data here so that subsequent methods can move
+  // the data.
+  model_.AccessibilityEventReceived(
+      tree_id, const_cast<std::vector<ui::AXTreeUpdate>&>(updates),
+      const_cast<std::vector<ui::AXEvent>&>(events));
+  // From this point onward, `updates` and `events` should not be accessed.
 
-  if (model_.is_pdf()) {
-    // Asumptions made about how the PDF contents are stored are incorrect.
-    // Display "RM can't show this page" screen.
-    if (!model_.IsPDFFormatted()) {
-      model_.SetActiveTreeSelectable(false);
-      ExecuteJavaScript("chrome.readingMode.showEmpty();");
-      return;
-    }
-    // PDFs are stored in a different web content than the main web contents.
-    // Enable a11y on it to get tree information from the PDF.
-    ui::AXTreeID pdf_web_contents = model_.GetPDFWebContents();
-    if (pdf_web_contents != ui::AXTreeIDUnknown() &&
-        !model_.ContainsTree(pdf_web_contents)) {
-      page_handler_->EnablePDFContentAccessibility(pdf_web_contents);
-    }
-  }
-
-  if (tree_id != model_.GetActiveTreeId()) {
+  if (tree_id != model_.active_tree_id()) {
     return;
   }
 
   if (model_.requires_distillation()) {
     Distill();
+    if (model_.is_empty() && IsGoogleDocs() && model_.page_finished_loading()) {
+      ExecuteJavaScript("chrome.readingMode.showEmpty();");
+    }
   }
 
   if (model_.image_to_update_node_id() != ui::kInvalidAXNodeID) {
@@ -459,7 +432,7 @@ void ReadAnythingAppController::AccessibilityEventReceived(
   }
 }
 
-void ReadAnythingAppController::ExecuteJavaScript(std::string script) {
+void ReadAnythingAppController::ExecuteJavaScript(const std::string& script) {
   content::RenderFrame* render_frame = GetRenderFrame();
   if (!render_frame) {
     return;
@@ -472,31 +445,38 @@ void ReadAnythingAppController::ExecuteJavaScript(std::string script) {
 void ReadAnythingAppController::OnActiveAXTreeIDChanged(
     const ui::AXTreeID& tree_id,
     ukm::SourceId ukm_source_id,
-    const GURL& url,
-    bool force_update_state) {
-  if (tree_id == model_.GetActiveTreeId() && !force_update_state) {
+    bool is_pdf) {
+  if (tree_id == model_.active_tree_id() && !is_pdf) {
     return;
   }
-  model_.SetActiveTreeId(tree_id);
-  model_.SetActiveUkmSourceId(ukm_source_id);
-  model_.SetActiveTreeSelectable(GetSelectable(url));
-  model_.SetIsPdf(url);
-  model_.set_is_google_docs(GetIsGoogleDocs(url));
+  RecordNumSelections();
+  model_.set_active_tree_id(tree_id);
+  model_.set_ukm_source_id(ukm_source_id);
+  model_.set_is_pdf(is_pdf);
   // Delete all pending updates on the formerly active AXTree.
-  // TODO(crbug.com/1266555): If distillation is in progress, cancel the
+  // TODO(crbug.com/40802192): If distillation is in progress, cancel the
   // distillation request.
   model_.ClearPendingUpdates();
   model_.set_requires_distillation(false);
+  model_.set_page_finished_loading(false);
 
   ExecuteJavaScript("chrome.readingMode.showLoading();");
 
   // When the UI first constructs, this function may be called before tree_id
   // has been added to the tree list in AccessibilityEventReceived. In that
   // case, do not distill.
-  if (model_.GetActiveTreeId() != ui::AXTreeIDUnknown() &&
-      model_.ContainsTree(model_.GetActiveTreeId())) {
+  if (model_.active_tree_id() != ui::AXTreeIDUnknown() &&
+      model_.ContainsTree(model_.active_tree_id())) {
     Distill();
   }
+}
+
+void ReadAnythingAppController::RecordNumSelections() {
+  ukm::builders::Accessibility_ReadAnything_EmptyState(
+      model_.ukm_source_id())
+      .SetTotalNumSelections(model_.num_selections())
+      .Record(ukm_recorder_.get());
+  model_.set_num_selections(0);
 }
 
 void ReadAnythingAppController::OnAXTreeDestroyed(const ui::AXTreeID& tree_id) {
@@ -523,10 +503,12 @@ void ReadAnythingAppController::Distill() {
 
   model_.set_requires_distillation(false);
 
-  ui::AXSerializableTree* tree = model_.GetTreeFromId(model_.GetActiveTreeId());
-  std::unique_ptr<ui::AXTreeSource<const ui::AXNode*>> tree_source(
-      tree->CreateTreeSource());
-  ui::AXTreeSerializer<const ui::AXNode*, std::vector<const ui::AXNode*>>
+  ui::AXSerializableTree* tree = model_.GetTreeFromId(model_.active_tree_id());
+  std::unique_ptr<
+      ui::AXTreeSource<const ui::AXNode*, ui::AXTreeData*, ui::AXNodeData>>
+      tree_source(tree->CreateTreeSource());
+  ui::AXTreeSerializer<const ui::AXNode*, std::vector<const ui::AXNode*>,
+                       ui::AXTreeUpdate*, ui::AXTreeData*, ui::AXNodeData>
       serializer(tree_source.get());
   ui::AXTreeUpdate snapshot;
   if (!tree->root()) {
@@ -534,7 +516,7 @@ void ReadAnythingAppController::Distill() {
   }
   CHECK(serializer.SerializeChanges(tree->root(), &snapshot));
   model_.SetDistillationInProgress(true);
-  distiller_->Distill(*tree, snapshot, model_.active_ukm_source_id());
+  distiller_->Distill(*tree, snapshot, model_.ukm_source_id());
 }
 
 void ReadAnythingAppController::OnAXTreeDistilled(
@@ -547,15 +529,15 @@ void ReadAnythingAppController::OnAXTreeDistilled(
 
   // Return early if any of the following scenarios occurred while waiting for
   // distillation to complete:
-  // 1. tree_id != model_.GetActiveTreeId(): The active tree was changed.
-  // 2. model_.GetActiveTreeId()== ui::AXTreeIDUnknown(): The active tree was
+  // 1. tree_id != model_.active_tree_id(): The active tree was changed.
+  // 2. model_.active_tree_id()== ui::AXTreeIDUnknown(): The active tree was
   // change to
   //    an unknown tree id.
   // 3. !model_.ContainsTree(tree_id): The distilled tree was destroyed.
   // 4. tree_id == ui::AXTreeIDUnknown(): The distiller sent back an unknown
   //    tree id which occurs when there was an error.
-  if (tree_id != model_.GetActiveTreeId() ||
-      model_.GetActiveTreeId() == ui::AXTreeIDUnknown() ||
+  if (tree_id != model_.active_tree_id() ||
+      model_.active_tree_id() == ui::AXTreeIDUnknown() ||
       !model_.ContainsTree(tree_id) || tree_id == ui::AXTreeIDUnknown()) {
     return;
   }
@@ -573,8 +555,11 @@ void ReadAnythingAppController::OnAXTreeDistilled(
   }
 
   if (model_.is_empty()) {
-    ExecuteJavaScript("chrome.readingMode.showEmpty();");
-    if (IsSelectable()) {
+    // For Google Docs, the initial AXTree may be empty while the document is
+    // loading. Therefore, to avoid displaying an empty side panel, wait for
+    // Google Docs to finish loading.
+    if (!IsGoogleDocs() || model_.page_finished_loading()) {
+      ExecuteJavaScript("chrome.readingMode.showEmpty();");
       base::UmaHistogramEnumeration(string_constants::kEmptyStateHistogramName,
                                     ReadAnythingEmptyState::kEmptyStateShown);
     }
@@ -583,7 +568,7 @@ void ReadAnythingAppController::OnAXTreeDistilled(
   // AXNode's language code is BCP 47. Only the base language is needed to
   // record the metric.
   std::string language =
-      model_.GetTreeFromId(model_.GetActiveTreeId())->root()->GetLanguage();
+      model_.GetTreeFromId(model_.active_tree_id())->root()->GetLanguage();
   if (!language.empty()) {
     base::UmaHistogramSparse(
         string_constants::kLanguageHistogramName,
@@ -596,6 +581,15 @@ void ReadAnythingAppController::OnAXTreeDistilled(
   model_.UnserializePendingUpdates(tree_id);
   if (model_.requires_distillation()) {
     Distill();
+  } else {
+    // Request a screenshot of the active page when no more distillations are
+    // required.
+    if (model_.page_finished_loading_for_data_collection()) {
+      // Send a snapshot request to its browser controller using `PaintPreview`
+      // to take a whole-page snapshot of the active web contents.
+      page_handler_->OnSnapshotRequested();
+      model_.set_page_finished_loading_for_data_collection(false);
+    }
   }
 }
 
@@ -637,7 +631,7 @@ void ReadAnythingAppController::OnThemeChanged(ReadAnythingThemePtr new_theme) {
 
   // Only redraw if there is an active tree.
   if (needs_redraw_for_links &&
-      model_.GetActiveTreeId() != ui::AXTreeIDUnknown()) {
+      model_.active_tree_id() != ui::AXTreeIDUnknown()) {
     ExecuteJavaScript("chrome.readingMode.updateLinks();");
   }
 }
@@ -651,15 +645,17 @@ void ReadAnythingAppController::OnSettingsRestoredFromPrefs(
     read_anything::mojom::Colors color,
     double speech_rate,
     base::Value::Dict voices,
+    base::Value::List languages_enabled_in_pref,
     read_anything::mojom::HighlightGranularity granularity) {
   bool needs_redraw_for_links = model_.links_enabled() != links_enabled;
-  model_.OnSettingsRestoredFromPrefs(line_spacing, letter_spacing, font,
-                                     font_size, links_enabled, color,
-                                     speech_rate, &voices, granularity);
+  model_.OnSettingsRestoredFromPrefs(
+      line_spacing, letter_spacing, font, font_size, links_enabled, color,
+      speech_rate, &voices,
+      &languages_enabled_in_pref, granularity);
   ExecuteJavaScript("chrome.readingMode.restoreSettingsFromPrefs();");
   // Only redraw if there is an active tree.
   if (needs_redraw_for_links &&
-      model_.GetActiveTreeId() != ui::AXTreeIDUnknown()) {
+      model_.active_tree_id() != ui::AXTreeIDUnknown()) {
     ExecuteJavaScript("chrome.readingMode.updateLinks();");
   }
 }
@@ -710,11 +706,19 @@ gin::ObjectTemplateBuilder ReadAnythingAppController::GetObjectTemplateBuilder(
       .SetProperty("speechRate", &ReadAnythingAppController::SpeechRate)
       .SetProperty("isWebUIToolbarVisible",
                    &ReadAnythingAppController::IsWebUIToolbarEnabled)
+      .SetProperty("isGoogleDocs", &ReadAnythingAppController::IsGoogleDocs)
       .SetProperty("isReadAloudEnabled",
                    &ReadAnythingAppController::IsReadAloudEnabled)
-      .SetProperty("isSelectable", &ReadAnythingAppController::IsSelectable)
-      .SetProperty("speechSynthesisLanguageCode",
+      .SetProperty("isChromeOsAsh", &ReadAnythingAppController::IsChromeOsAsh)
+      .SetProperty("isAutoVoiceSwitchingEnabled",
+                   &ReadAnythingAppController::IsAutoVoiceSwitchingEnabled)
+      .SetProperty(
+          "isAutomaticWordHighlightingEnabled",
+          &ReadAnythingAppController::IsAutomaticWordHighlightingEnabled)
+      .SetProperty("baseLanguageForSpeech",
                    &ReadAnythingAppController::GetLanguageCodeForSpeech)
+      .SetProperty("defaultLanguageForSpeech",
+                   &ReadAnythingAppController::GetDefaultLanguageCodeForSpeech)
       .SetMethod("getChildren", &ReadAnythingAppController::GetChildren)
       .SetMethod("getDataFontCss", &ReadAnythingAppController::GetDataFontCss)
       .SetMethod("getTextDirection",
@@ -727,7 +731,6 @@ gin::ObjectTemplateBuilder ReadAnythingAppController::GetObjectTemplateBuilder(
       .SetMethod("shouldBold", &ReadAnythingAppController::ShouldBold)
       .SetMethod("isOverline", &ReadAnythingAppController::IsOverline)
       .SetMethod("isLeafNode", &ReadAnythingAppController::IsLeafNode)
-      .SetMethod("isGoogleDocs", &ReadAnythingAppController::IsGoogleDocs)
       .SetMethod("onConnected", &ReadAnythingAppController::OnConnected)
       .SetMethod("onCopy", &ReadAnythingAppController::OnCopy)
       .SetMethod("onFontSizeChanged",
@@ -759,6 +762,10 @@ gin::ObjectTemplateBuilder ReadAnythingAppController::GetObjectTemplateBuilder(
                  &ReadAnythingAppController::OnSpeechRateChange)
       .SetMethod("getStoredVoice", &ReadAnythingAppController::GetStoredVoice)
       .SetMethod("onVoiceChange", &ReadAnythingAppController::OnVoiceChange)
+      .SetMethod("onLanguagePrefChange",
+                 &ReadAnythingAppController::OnLanguagePrefChange)
+      .SetMethod("getLanguagesEnabledInPref",
+                 &ReadAnythingAppController::GetLanguagesEnabledInPref)
       .SetMethod("turnedHighlightOn",
                  &ReadAnythingAppController::TurnedHighlightOn)
       .SetMethod("turnedHighlightOff",
@@ -797,11 +804,23 @@ gin::ObjectTemplateBuilder ReadAnythingAppController::GetObjectTemplateBuilder(
                  &ReadAnythingAppController::RequestImageDataUrl)
       .SetMethod("getImageDataUrl", &ReadAnythingAppController::GetImageDataUrl)
       .SetMethod("getDisplayNameForLocale",
-                 &ReadAnythingAppController::GetDisplayNameForLocale);
+                 &ReadAnythingAppController::GetDisplayNameForLocale)
+      .SetMethod("logMetric",
+                 &ReadAnythingAppController::LogUmaHistogramLongTimes)
+      .SetMethod("logSpeechError",
+                 &ReadAnythingAppController::LogSpeechErrorEvent)
+      .SetMethod("sendGetVoicePackInfoRequest",
+                 &ReadAnythingAppController::SendGetVoicePackInfoRequest)
+      .SetMethod("sendInstallVoicePackRequest",
+                 &ReadAnythingAppController::SendInstallVoicePackRequest)
+      .SetMethod("getNodeIdForCurrentSegmentIndex",
+                 &ReadAnythingAppController::GetNodeIdForCurrentSegmentIndex)
+      .SetMethod("getNextWordHighlightLength",
+                 &ReadAnythingAppController::GetNextWordHighlightLength);
 }
 
 ui::AXNodeID ReadAnythingAppController::RootId() const {
-  ui::AXSerializableTree* tree = model_.GetTreeFromId(model_.GetActiveTreeId());
+  ui::AXSerializableTree* tree = model_.GetTreeFromId(model_.active_tree_id());
   DCHECK(tree->root());
   return tree->root()->id();
 }
@@ -858,13 +877,23 @@ float ReadAnythingAppController::SpeechRate() const {
   return model_.speech_rate();
 }
 
-std::string ReadAnythingAppController::GetStoredVoice(
-    const std::string& lang) const {
+std::string ReadAnythingAppController::GetStoredVoice() const {
+  std::string lang = model_.base_language_code();
   if (model_.voices().contains(lang)) {
     return *model_.voices().FindString(lang);
   }
 
   return string_constants::kReadAnythingPlaceholderVoiceName;
+}
+
+std::vector<std::string> ReadAnythingAppController::GetLanguagesEnabledInPref()
+    const {
+  std::vector<std::string> languages_enabled_in_pref;
+
+  for (const base::Value& value : model_.languages_enabled_in_pref()) {
+    languages_enabled_in_pref.push_back(value.GetString());
+  }
+  return languages_enabled_in_pref;
 }
 
 int ReadAnythingAppController::HighlightGranularity() const {
@@ -984,11 +1013,31 @@ std::string ReadAnythingAppController::GetTextContent(
     ui::AXNodeID ax_node_id) const {
   ui::AXNode* ax_node = model_.GetAXNode(ax_node_id);
   DCHECK(ax_node);
-  if ((ax_node->GetTextContentUTF8()).empty() && IsGoogleDocs()) {
-    // For Google Docs, we distill text from the aria-labels of annotated
-    // canvas's rect elements. Therefore, we need to explicitly read the name
-    // attribute to get the text.
-    return GetNameAttributeText(ax_node);
+  // For Google Docs, because the content is rendered in canvas, we distill
+  // text from the "Annotated Canvas"
+  // (https://sites.google.com/corp/google.com/docs-canvas-migration/home)
+  // instead of the HTML.
+  if (IsGoogleDocs()) {
+    // With 'Annotated Canvas', text is stored within the aria-labels of SVG
+    // elements. To retrieve this text, we need to access the 'name' attribute
+    // of these elements.
+    if ((ax_node->GetTextContentUTF8()).empty()) {
+      std::string nodeText = GetNameAttributeText(ax_node);
+      if (!nodeText.empty()) {
+        // Add a space between the text of two annotated canvas elements.
+        // Otherwise, there is no space separating two lines of text.
+        return nodeText + " ";
+      }
+    } else {
+      // We ignore all text in the HTML. These text are either from comments or
+      // from off-screen divs that contain hidden information information that
+      // only is intended for screen readers and braille support. These are not
+      // actual text in the doc.
+      // TODO(b/324143642): Reading Mode handles Doc comments.
+      if (ax_node->GetRole() == ax::mojom::Role::kStaticText) {
+        return "";
+      }
+    }
   }
   return ax_node->GetTextContentUTF8();
 }
@@ -1024,8 +1073,8 @@ std::string ReadAnythingAppController::GetUrl(ui::AXNodeID ax_node_id) const {
   const char* url =
       ax_node->GetStringAttribute(ax::mojom::StringAttribute::kUrl).c_str();
 
-  // Prevent XSS from href attribute, which could be set to a script instead of
-  // a valid website.
+  // Prevent XSS from href attribute, which could be set to a script instead
+  // of a valid website.
   if (url::FindAndCompareScheme(url, static_cast<int>(strlen(url)), "http",
                                 nullptr) ||
       url::FindAndCompareScheme(url, static_cast<int>(strlen(url)), "https",
@@ -1033,6 +1082,52 @@ std::string ReadAnythingAppController::GetUrl(ui::AXNodeID ax_node_id) const {
     return url;
   }
   return "";
+}
+
+void ReadAnythingAppController::SendGetVoicePackInfoRequest(
+    const std::string& language) const {
+  page_handler_->GetVoicePackInfo(
+      language,
+      base::BindOnce(&ReadAnythingAppController::OnGetVoicePackInfoResponse,
+                     weak_ptr_factory_.GetSafeRef()));
+}
+
+void ReadAnythingAppController::OnGetVoicePackInfoResponse(
+    read_anything::mojom::VoicePackInfoPtr voice_pack_info) {
+  std::string status =
+      voice_pack_info->pack_state->is_installation_state()
+          ? base::ToString(
+                voice_pack_info->pack_state->get_installation_state())
+          : base::ToString(voice_pack_info->pack_state->get_error_code());
+
+  ExecuteJavaScript("chrome.readingMode.updateVoicePackStatus(\'" +
+                    voice_pack_info->language + "\', \'" + status + "\');");
+}
+
+void ReadAnythingAppController::SendInstallVoicePackRequest(
+    const std::string& language) const {
+  page_handler_->InstallVoicePack(
+      language,
+      base::BindOnce(&ReadAnythingAppController::OnInstallVoicePackResponse,
+                     weak_ptr_factory_.GetSafeRef()));
+}
+
+void ReadAnythingAppController::OnInstallVoicePackResponse(
+    read_anything::mojom::VoicePackInfoPtr voice_pack_info) {
+  // TODO (b/40927698) Investigate the fact that VoicePackManager doesn't return
+  // the expected pack_state. Even when a voice is unavailable and not
+  // installed, it responds "INSTALLED" in the InstallVoicePackCallback. So we
+  // probably need to rely on GetVoicePackInfo for the pack_state.
+
+  std::string status =
+      voice_pack_info->pack_state->is_installation_state()
+          ? base::ToString(
+                voice_pack_info->pack_state->get_installation_state())
+          : base::ToString(voice_pack_info->pack_state->get_error_code());
+
+  ExecuteJavaScript(
+      "chrome.readingMode.updateVoicePackStatusFromInstallResponse(\'" +
+      voice_pack_info->language + "\', \'" + status + "\');");
 }
 
 std::string ReadAnythingAppController::GetAltText(
@@ -1061,10 +1156,6 @@ bool ReadAnythingAppController::IsLeafNode(ui::AXNodeID ax_node_id) const {
   return ax_node->IsLeaf();
 }
 
-bool ReadAnythingAppController::IsSelectable() const {
-  return model_.active_tree_selectable();
-}
-
 bool ReadAnythingAppController::IsWebUIToolbarEnabled() const {
   return features::IsReadAnythingWebUIToolbarEnabled();
 }
@@ -1073,8 +1164,24 @@ bool ReadAnythingAppController::IsReadAloudEnabled() const {
   return features::IsReadAnythingReadAloudEnabled();
 }
 
+bool ReadAnythingAppController::IsChromeOsAsh() const {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  return true;
+#else
+  return false;
+#endif
+}
+
+bool ReadAnythingAppController::IsAutoVoiceSwitchingEnabled() const {
+  return features::IsReadAloudAutoVoiceSwitchingEnabled();
+}
+
+bool ReadAnythingAppController::IsAutomaticWordHighlightingEnabled() const {
+   return features::IsReadAnythingReadAloudAutomaticWordHighlightingEnabled();
+}
+
 bool ReadAnythingAppController::IsGoogleDocs() const {
-  return model_.is_docs();
+  return model_.IsDocs();
 }
 
 std::vector<std::string> ReadAnythingAppController::GetSupportedFonts() const {
@@ -1084,9 +1191,8 @@ std::vector<std::string> ReadAnythingAppController::GetSupportedFonts() const {
 void ReadAnythingAppController::RequestImageDataUrl(
     ui::AXNodeID node_id) const {
   if (features::IsReadAnythingImagesViaAlgorithmEnabled()) {
-    auto target_tree_id = model_.GetActiveTreeId();
+    auto target_tree_id = model_.active_tree_id();
     CHECK_NE(target_tree_id, ui::AXTreeIDUnknown());
-
     page_handler_->OnImageDataRequested(target_tree_id, node_id);
   }
 }
@@ -1116,14 +1222,19 @@ const std::string ReadAnythingAppController::GetDisplayNameForLocale(
   // Return an empty string to communicate there's no display name.
   if (!found_valid_result) {
     locale_result = std::string();
+  } else {
+    locale_result[0] = std::toupper(locale_result[0]);
   }
 
   return locale_result;
 }
 
 const std::string& ReadAnythingAppController::GetLanguageCodeForSpeech() const {
-  // TODO(crbug.com/1474951): Instead of returning the default browser language
-  // we should use the page language.
+  return model_.base_language_code();
+}
+
+const std::string& ReadAnythingAppController::GetDefaultLanguageCodeForSpeech()
+    const {
   return model_.default_language_code();
 }
 
@@ -1175,15 +1286,15 @@ void ReadAnythingAppController::OnScroll(bool on_selection) const {
 }
 
 void ReadAnythingAppController::OnLinkClicked(ui::AXNodeID ax_node_id) const {
-  DCHECK_NE(model_.GetActiveTreeId(), ui::AXTreeIDUnknown());
-  // Prevent link clicks while distillation is in progress, as it means that the
-  // tree may have changed in an unexpected way.
-  // TODO(crbug.com/1266555): Consider how to show this in a more user-friendly
-  // way.
+  DCHECK_NE(model_.active_tree_id(), ui::AXTreeIDUnknown());
+  // Prevent link clicks while distillation is in progress, as it means that
+  // the tree may have changed in an unexpected way.
+  // TODO(crbug.com/40802192): Consider how to show this in a more
+  // user-friendly way.
   if (model_.distillation_in_progress()) {
     return;
   }
-  page_handler_->OnLinkClicked(model_.GetActiveTreeId(), ax_node_id);
+  page_handler_->OnLinkClicked(model_.active_tree_id(), ax_node_id);
 }
 
 void ReadAnythingAppController::OnStandardLineSpacing() {
@@ -1237,6 +1348,7 @@ void ReadAnythingAppController::OnBlueTheme() {
 
 void ReadAnythingAppController::OnFontChange(const std::string& font) {
   page_handler_->OnFontChange(font);
+  model_.set_font_name(font);
 }
 
 void ReadAnythingAppController::OnSpeechRateChange(double rate) {
@@ -1245,7 +1357,18 @@ void ReadAnythingAppController::OnSpeechRateChange(double rate) {
 
 void ReadAnythingAppController::OnVoiceChange(const std::string& voice,
                                               const std::string& lang) {
-  page_handler_->OnVoiceChange(voice, lang);
+  // Store the given voice with the base language. If the user prefers a voice
+  // for a specific language, we should always use that voice, regardless of the
+  // more specific locale. e.g. if the user prefers the en-UK voice for English
+  // pages, use that voice even if the page is marked en-US.
+  std::string base_lang = std::string(language::ExtractBaseLanguage(lang));
+  page_handler_->OnVoiceChange(voice, base_lang);
+  model_.SetVoice(voice, base_lang);
+}
+
+void ReadAnythingAppController::OnLanguagePrefChange(const std::string& lang,
+                                                     bool enabled) {
+  page_handler_->OnLanguagePrefChange(lang, enabled);
 }
 
 void ReadAnythingAppController::TurnedHighlightOn() {
@@ -1285,11 +1408,11 @@ void ReadAnythingAppController::OnSelectionChange(ui::AXNodeID anchor_node_id,
                                                   int anchor_offset,
                                                   ui::AXNodeID focus_node_id,
                                                   int focus_offset) const {
-  DCHECK_NE(model_.GetActiveTreeId(), ui::AXTreeIDUnknown());
-  // Prevent link clicks while distillation is in progress, as it means that the
-  // tree may have changed in an unexpected way.
-  // TODO(crbug.com/1266555): Consider how to show this in a more user-friendly
-  // way.
+  DCHECK_NE(model_.active_tree_id(), ui::AXTreeIDUnknown());
+  // Prevent link clicks while distillation is in progress, as it means that
+  // the tree may have changed in an unexpected way.
+  // TODO(crbug.com/40802192): Consider how to show this in a more
+  // user-friendly way.
   if (model_.distillation_in_progress()) {
     return;
   }
@@ -1316,9 +1439,9 @@ void ReadAnythingAppController::OnSelectionChange(ui::AXNodeID anchor_node_id,
   // range of text to be selected, including non-text nodes. This can cause
   // inconsistencies in how the selection is handled. e.g. the focus node can
   // be before the anchor node and set to a non-text node, which can cause
-  // page_handler_->OnSelectionChange to be incorrectly triggered, resulting in
-  // a failing DCHECK. Therefore, return early if this happens.
-  // This check does not apply to pdfs.
+  // page_handler_->OnSelectionChange to be incorrectly triggered, resulting
+  // in a failing DCHECK. Therefore, return early if this happens. This check
+  // does not apply to pdfs.
   if (!model_.is_pdf() && (!focus_node->IsText() || !anchor_node->IsText())) {
     return;
   }
@@ -1334,7 +1457,7 @@ void ReadAnythingAppController::OnSelectionChange(ui::AXNodeID anchor_node_id,
     return;
   }
 
-  page_handler_->OnSelectionChange(model_.GetActiveTreeId(), anchor_node_id,
+  page_handler_->OnSelectionChange(model_.active_tree_id(), anchor_node_id,
                                    anchor_offset, focus_node_id, focus_offset);
 }
 
@@ -1342,7 +1465,7 @@ void ReadAnythingAppController::OnCollapseSelection() const {
   page_handler_->OnCollapseSelection();
 }
 void ReadAnythingAppController::InitAXPositionWithNode(
-    const ui::AXNodeID starting_node_id) {
+    const ui::AXNodeID& starting_node_id) {
   model_.InitAXPositionWithNode(starting_node_id);
 }
 
@@ -1366,7 +1489,7 @@ int ReadAnythingAppController::GetCurrentTextEndIndex(ui::AXNodeID node_id) {
   return model_.GetCurrentTextEndIndex(node_id);
 }
 
-// TODO(crbug.com/1266555): Change line_spacing and letter_spacing types from
+// TODO(crbug.com/40802192): Change line_spacing and letter_spacing types from
 // int to their corresponding enums.
 void ReadAnythingAppController::SetThemeForTesting(const std::string& font_name,
                                                    float font_size,
@@ -1386,15 +1509,26 @@ void ReadAnythingAppController::SetThemeForTesting(const std::string& font_name,
 
 void ReadAnythingAppController::SetLanguageForTesting(
     const std::string& language_code) {
-  SetDefaultLanguageCode(language_code);
+  SetLanguageCode(language_code);
 }
 
+void ReadAnythingAppController::SetLanguageCode(const std::string& code) {
+  std::string base_lang = std::string(language::ExtractBaseLanguage(code));
+  model_.set_base_language_code(base_lang);
+
+  ExecuteJavaScript("chrome.readingMode.languageChanged();");
+}
+
+// TODO(b/336596926): Use the default language code as a fallback when
+// we get a language-unavailable error.
 void ReadAnythingAppController::SetDefaultLanguageCode(
     const std::string& code) {
-  model_.set_default_language_code(code);
-
-  // Signal to the WebUI that the supported fonts may have changed.
-  ExecuteJavaScript("chrome.readingMode.updateFonts();");
+  std::string default_lang = std::string(language::ExtractBaseLanguage(code));
+  // If the default language code is empty, continue to use the default
+  // language code, as defined by ReadAnythingAppModel, currently 'en'
+  if (default_lang.length() > 0) {
+    model_.set_default_language_code(default_lang);
+  }
 }
 
 void ReadAnythingAppController::SetContentForTesting(
@@ -1413,7 +1547,7 @@ void ReadAnythingAppController::SetContentForTesting(
   selection_event.event_from = ax::mojom::EventFrom::kUser;
   AccessibilityEventReceived(snapshot.tree_data.tree_id, {snapshot}, {});
   OnActiveAXTreeIDChanged(snapshot.tree_data.tree_id, ukm::kInvalidSourceId,
-                          GURL(), false);
+                          false);
   OnAXTreeDistilled(snapshot.tree_data.tree_id, content_node_ids);
 
   // Trigger a selection event (for testing selections).
@@ -1467,4 +1601,48 @@ int ReadAnythingAppController::GetAccessibleBoundary(const std::u16string& text,
       shorter_string.length() - 1, ax::mojom::MoveDirection::kBackward,
       ax::mojom::TextAffinity::kDefaultValue);
   return word_ends;
+}
+
+ui::AXNodeID ReadAnythingAppController::GetNodeIdForCurrentSegmentIndex(
+    int index) {
+  return model_.GetNodeIdForCurrentSegmentIndex(index);
+}
+
+int ReadAnythingAppController::GetNextWordHighlightLength(int index) {
+  return model_.GetNextWordHighlightLength(index);
+}
+
+void ReadAnythingAppController::LogUmaHistogramLongTimes(int64_t time,
+                                                         std::string metric) {
+  base::UmaHistogramTimes(metric, base::Milliseconds(time));
+}
+
+void ReadAnythingAppController::LogSpeechErrorEvent(std::string error_code) {
+  std::optional<ReadAnythingSpeechError> error;
+  if (error_code == "text-too-long") {
+    error = ReadAnythingSpeechError::kTextTooLong;
+  } else if (error_code == "voice-unavailable") {
+    error = ReadAnythingSpeechError::kVoiceUnavailabe;
+  } else if (error_code == "language-unavailable") {
+    error = ReadAnythingSpeechError::kLanguageUnavailable;
+  } else if (error_code == "invalid-argument") {
+    error = ReadAnythingSpeechError::kInvalidArgument;
+  } else if (error_code == "synthesis-failed") {
+    error = ReadAnythingSpeechError::kSynthesisFailed;
+  } else if (error_code == "synthesis-unavailable") {
+    error = ReadAnythingSpeechError::kSynthesisUnvailable;
+  } else if (error_code == "audio-busy") {
+    error = ReadAnythingSpeechError::kAudioBusy;
+  } else if (error_code == "audio-hardware") {
+    error = ReadAnythingSpeechError::kAudioHardware;
+  } else if (error_code == "network") {
+    error = ReadAnythingSpeechError::kNetwork;
+  }
+
+  // There are more error code possibilities, but right now, we only care
+  // about tracking the above error codes.
+  if (error.has_value()) {
+    base::UmaHistogramEnumeration(
+        string_constants::kReadAnythingSpeechErrorHistogramName, error.value());
+  }
 }

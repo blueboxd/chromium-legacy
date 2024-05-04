@@ -13,6 +13,7 @@ import androidx.browser.customtabs.PostMessageBackend;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
+import org.chromium.base.TerminationStatus;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskTraits;
@@ -37,7 +38,7 @@ import org.chromium.url.GURL;
 public class PostMessageHandler implements OriginVerificationListener {
     private static final String TAG = "PostMessageHandler";
 
-    // TODO(crbug.com/1418044): This should get moved into androidx.browser.
+    // TODO(crbug.com/40257514): This should get moved into androidx.browser.
     private static final String POST_MESSAGE_ORIGIN =
             "androidx.browser.customtabs.POST_MESSAGE_ORIGIN";
 
@@ -111,7 +112,8 @@ public class PostMessageHandler implements OriginVerificationListener {
             }
 
             @Override
-            public void renderProcessGone() {
+            public void primaryMainFrameRenderProcessGone(
+                    @TerminationStatus int terminationStatus) {
                 disconnectChannel();
             }
 

@@ -6,7 +6,6 @@
 
 #include <type_traits>
 #include <utility>
-#include <vector>
 
 #include "base/containers/contains.h"
 #include "base/functional/bind.h"
@@ -25,7 +24,9 @@
 #include "content/public/browser/web_contents.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/permissions/permission_utils.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
+#include "url/origin.h"
 
 namespace performance_manager {
 
@@ -110,7 +111,7 @@ PerformanceManagerTabHelper::PerformanceManagerTabHelper(
       web_contents->GetBrowserContext()->UniqueId(),
       web_contents->GetVisibleURL(), initial_property_flags,
       web_contents->GetLastActiveTime(),
-      // TODO(crbug.com/1211368): Support MPArch fully!
+      // TODO(crbug.com/40182881): Support MPArch fully!
       PageNode::PageState::kActive);
   content::RenderFrameHost* main_rfh = web_contents->GetPrimaryMainFrame();
   DCHECK(main_rfh);
@@ -160,6 +161,9 @@ void PerformanceManagerTabHelper::TearDown() {
         web_contents());
   }
 
+  MaybeUnsubscribeFromNotificationPermissionStatusChange(
+      web_contents()->GetBrowserContext()->GetPermissionController());
+
   // Unsubscribe from the associated WebContents.
   Observe(nullptr);
 }
@@ -167,7 +171,7 @@ void PerformanceManagerTabHelper::TearDown() {
 PageNodeImpl* PerformanceManagerTabHelper::GetPageNodeForRenderFrameHost(
     content::RenderFrameHost* rfh) {
   DCHECK_NE(nullptr, rfh);
-  // TODO(crbug.com/1211368): Make this lookup the appropriate PageNode once
+  // TODO(crbug.com/40182881): Make this lookup the appropriate PageNode once
   // MPArch support is completed. For now, everything is artifically descended
   // from the primary page node. Add tests for this function at that point.
   auto* wc = content::WebContents::FromRenderFrameHost(rfh);
@@ -218,8 +222,8 @@ void PerformanceManagerTabHelper::RenderFrameCreated(
 
   // Create the frame node, and provide a callback that will run in the graph to
   // initialize it.
-  // TODO(crbug.com/1211368): Actually look up the appropriate page to wire this
-  // frame up to!
+  // TODO(crbug.com/40182881): Actually look up the appropriate page to wire
+  // this frame up to!
   std::unique_ptr<FrameNodeImpl> frame =
       PerformanceManagerImpl::CreateFrameNode(
           process_node, primary_page_node(), parent_frame_node,
@@ -228,12 +232,14 @@ void PerformanceManagerTabHelper::RenderFrameCreated(
           site_instance->GetBrowsingInstanceId(), site_instance->GetId(),
           render_frame_host->IsActive(),
           base::BindOnce(
-              [](const GURL& url, FrameNodeImpl* frame_node) {
+              [](GURL url, url::Origin origin, FrameNodeImpl* frame_node) {
                 if (!url.is_empty())
-                  frame_node->OnNavigationCommitted(url,
-                                                    /* same_document */ false);
+                  frame_node->OnNavigationCommitted(std::move(url),
+                                                    std::move(origin),
+                                                    /*same_document=*/false);
               },
-              render_frame_host->GetLastCommittedURL()));
+              render_frame_host->GetLastCommittedURL(),
+              render_frame_host->GetLastCommittedOrigin()));
 
   frames_[render_frame_host] = std::move(frame);
 }
@@ -299,7 +305,7 @@ void PerformanceManagerTabHelper::RenderFrameHostChanged(
                        if (old_frame) {
                          // Prerendering is a special case where
                          // old_frame->is_current() may be false.
-                         // TODO(https://crbug.com/1211368): assert that
+                         // TODO(crbug.com/40182881): assert that
                          // old_frame->is_current() or its PageState is
                          // kPrerendering.
                          old_frame->SetIsCurrent(false);
@@ -309,7 +315,7 @@ void PerformanceManagerTabHelper::RenderFrameHostChanged(
                          // The very first frame to be created is already
                          // current by default except in the special case of
                          // prerendering.
-                         // TODO(https://crbug.com/1211368): assert that
+                         // TODO(crbug.com/40182881): assert that
                          // old_frame is null or its PageState is kPrerendering.
                          new_frame->SetIsCurrent(true);
                        }
@@ -339,7 +345,7 @@ void PerformanceManagerTabHelper::OnFrameAudioStateChanged(
   auto frame_it = frames_.find(render_frame_host);
   // Ideally this would be a DCHECK, but it's possible to receive a notification
   // for an unknown frame.
-  // TODO(1499525): Figure out how.
+  // TODO(crbug.com/40940232): Figure out how.
   if (frame_it == frames_.end()) {
     // We should only ever see this for a frame transitioning to *not* audible.
     DCHECK(!is_audible);
@@ -409,10 +415,11 @@ void PerformanceManagerTabHelper::DidFinishNavigation(
   auto* frame_node = frame_it->second.get();
 
   // Notify the frame of the committed URL.
-  GURL url = navigation_handle->GetURL();
   PerformanceManagerImpl::CallOnGraphImpl(
       FROM_HERE, base::BindOnce(&FrameNodeImpl::OnNavigationCommitted,
-                                base::Unretained(frame_node), url,
+                                base::Unretained(frame_node),
+                                render_frame_host->GetLastCommittedURL(),
+                                render_frame_host->GetLastCommittedOrigin(),
                                 navigation_handle->IsSameDocument()));
 
   if (!navigation_handle->IsInPrimaryMainFrame())
@@ -421,22 +428,84 @@ void PerformanceManagerTabHelper::DidFinishNavigation(
   // Make sure the hierarchical structure is constructed before sending signal
   // to the performance manager.
   OnMainFrameNavigation(navigation_handle->GetNavigationId());
+
   PerformanceManagerImpl::CallOnGraphImpl(
       FROM_HERE,
-      base::BindOnce(
-          &PageNodeImpl::OnMainFrameNavigationCommitted,
-          base::Unretained(primary_page_node()),
-          navigation_handle->IsSameDocument(), navigation_committed_time,
-          navigation_handle->GetNavigationId(), url,
-          navigation_handle->GetWebContents()->GetContentsMimeType()));
+      base::BindOnce(&PageNodeImpl::OnMainFrameNavigationCommitted,
+                     base::Unretained(primary_page_node()),
+                     navigation_handle->IsSameDocument(),
+                     navigation_committed_time,
+                     navigation_handle->GetNavigationId(),
+                     render_frame_host->GetLastCommittedURL(),
+                     navigation_handle->GetWebContents()->GetContentsMimeType(),
+                     GetNotificationPermissionStatusAndObserveChanges()));
+}
+
+std::optional<blink::mojom::PermissionStatus> PerformanceManagerTabHelper::
+    GetNotificationPermissionStatusAndObserveChanges() {
+  // Don't get the content settings on android on each navigation because it may
+  // induce scroll jank. There are many same-document navigations while
+  // scrolling and getting the settings can invoke expensive platform APIs on
+  // Android. Moreover, this information is only used to decide if a tab should
+  // be discarded, which doesn't happen through Chrome code on that platform.
+#if BUILDFLAG(IS_ANDROID)
+  return std::nullopt;
+#else
+  content::PermissionController* permission_controller =
+      web_contents()->GetBrowserContext()->GetPermissionController();
+  if (!permission_controller) {
+    CHECK(permission_controller_subscription_id_.is_null());
+    return std::nullopt;
+  }
+
+  // Cancel previous change subscription.
+  MaybeUnsubscribeFromNotificationPermissionStatusChange(permission_controller);
+
+  // Create new change subscription.
+  permission_controller_subscription_id_ =
+      permission_controller->SubscribeToPermissionStatusChange(
+          blink::PermissionType::NOTIFICATIONS,
+          web_contents()->GetPrimaryMainFrame()->GetProcess(),
+          url::Origin::Create(web_contents()->GetLastCommittedURL()),
+          base::BindRepeating(&PerformanceManagerTabHelper::
+                                  OnNotificationPermissionStatusChange,
+                              // Unretained is safe because the subscription
+                              // is removed when `this` is deleted.
+                              base::Unretained(this)));
+
+  // Return current status.
+  return permission_controller->GetPermissionStatusForCurrentDocument(
+      blink::PermissionType::NOTIFICATIONS,
+      web_contents()->GetPrimaryMainFrame());
+#endif  // BUILDFLAG(IS_ANDROID)
+}
+
+void PerformanceManagerTabHelper::OnNotificationPermissionStatusChange(
+    blink::mojom::PermissionStatus permission_status) {
+  PerformanceManagerImpl::CallOnGraphImpl(
+      FROM_HERE,
+      base::BindOnce(&PageNodeImpl::OnNotificationPermissionStatusChange,
+                     base::Unretained(primary_page_node()), permission_status));
+}
+
+void PerformanceManagerTabHelper::
+    MaybeUnsubscribeFromNotificationPermissionStatusChange(
+        content::PermissionController* permission_controller) {
+  if (permission_controller_subscription_id_.is_null()) {
+    return;
+  }
+
+  CHECK(permission_controller);
+  permission_controller->UnsubscribeFromPermissionStatusChange(
+      permission_controller_subscription_id_);
 }
 
 void PerformanceManagerTabHelper::TitleWasSet(content::NavigationEntry* entry) {
   DCHECK(primary_page_);
 
-  // TODO(crbug.com/1418410): This logic belongs in the policy layer rather than
-  // here. If a page has no <title> element on first load, the first change of
-  // title will be ignored no matter much later it happens.
+  // TODO(crbug.com/40894717): This logic belongs in the policy layer rather
+  // than here. If a page has no <title> element on first load, the first change
+  // of title will be ignored no matter much later it happens.
   if (!primary_page_->first_time_title_set) {
     primary_page_->first_time_title_set = true;
     return;
@@ -503,9 +572,9 @@ void PerformanceManagerTabHelper::DidUpdateFaviconURL(
   if (!render_frame_host->IsActive())
     return;
 
-  // TODO(crbug.com/1418410): This logic belongs in the policy layer rather than
-  // here. If a page has no favicon on first load, the first change of favicon
-  // will be ignored no matter much later it happens.
+  // TODO(crbug.com/40894717): This logic belongs in the policy layer rather
+  // than here. If a page has no favicon on first load, the first change of
+  // favicon will be ignored no matter much later it happens.
   if (!primary_page_->first_time_favicon_set) {
     primary_page_->first_time_favicon_set = true;
     return;

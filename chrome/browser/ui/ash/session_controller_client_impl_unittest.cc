@@ -58,48 +58,6 @@ std::unique_ptr<KeyedService> CreateTestPolicyCertService(
       Profile::FromBrowserContext(context));
 }
 
-// A user manager that does not set profiles as loaded and notifies observers
-// when users being added to a session.
-class TestChromeUserManager : public ash::FakeChromeUserManager {
- public:
-  TestChromeUserManager() = default;
-
-  TestChromeUserManager(const TestChromeUserManager&) = delete;
-  TestChromeUserManager& operator=(const TestChromeUserManager&) = delete;
-
-  ~TestChromeUserManager() override = default;
-
-  // user_manager::UserManager:
-  void UserLoggedIn(const AccountId& account_id,
-                    const std::string& user_id_hash,
-                    bool browser_restart,
-                    bool is_child) override {
-    ash::FakeChromeUserManager::UserLoggedIn(account_id, user_id_hash,
-                                             browser_restart, is_child);
-    active_user_ = const_cast<user_manager::User*>(FindUser(account_id));
-    NotifyUserAddedToSession(active_user_, false);
-    NotifyOnLogin();
-  }
-
-  user_manager::UserList GetUnlockUsers() const override {
-    // Test case UserPrefsChange expects that the list of the unlock users
-    // depends on prefs::kAllowScreenLock.
-    user_manager::UserList unlock_users;
-    for (user_manager::User* user : users_) {
-      Profile* user_profile = ash::ProfileHelper::Get()->GetProfileByUser(user);
-      // Skip if user has a profile and kAllowScreenLock is set to false.
-      if (user_profile &&
-          !user_profile->GetPrefs()->GetBoolean(ash::prefs::kAllowScreenLock)) {
-        continue;
-      }
-
-      unlock_users.push_back(user);
-    }
-
-    return unlock_users;
-  }
-};
-
 }  // namespace
 
 class SessionControllerClientImplTest : public testing::Test {
@@ -117,17 +75,12 @@ class SessionControllerClientImplTest : public testing::Test {
     ash::LoginState::Initialize();
 
     // Initialize the UserManager singleton.
-    user_manager_.Reset(std::make_unique<TestChromeUserManager>());
-    controller_ =
-        std::make_unique<user_manager::MultiUserSignInPolicyController>(
-            TestingBrowserProcess::GetGlobal()->local_state(),
-            user_manager_.Get());
-    user_manager_->set_multi_user_sign_in_policy_controller(controller_.get());
+    user_manager_.Reset(std::make_unique<ash::FakeChromeUserManager>());
     // Initialize AssistantBrowserDelegate singleton.
     assistant_delegate_ = std::make_unique<AssistantBrowserDelegateImpl>();
 
     profile_manager_ = std::make_unique<TestingProfileManager>(
-        TestingBrowserProcess::GetGlobal());
+        TestingBrowserProcess::GetGlobal(), &local_state_);
     ASSERT_TRUE(profile_manager_->SetUp());
 
     browser_manager_ = std::make_unique<crosapi::FakeBrowserManager>();
@@ -154,8 +107,6 @@ class SessionControllerClientImplTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
 
     assistant_delegate_.reset();
-    user_manager_->set_multi_user_sign_in_policy_controller(nullptr);
-    controller_.reset();
     user_manager_.Reset();
 
     ash::LoginState::Shutdown();
@@ -183,7 +134,7 @@ class SessionControllerClientImplTest : public testing::Test {
         .GetUserEmail();
   }
 
-  TestChromeUserManager* user_manager() { return user_manager_.Get(); }
+  ash::FakeChromeUserManager* user_manager() { return user_manager_.Get(); }
 
   // Adds a regular user with a profile.
   TestingProfile* InitForMultiProfile() {
@@ -216,11 +167,12 @@ class SessionControllerClientImplTest : public testing::Test {
 
  private:
   // Sorted in the production initialization order.
+  ScopedTestingLocalState local_state_{TestingBrowserProcess::GetGlobal()};
   session_manager::SessionManager session_manager_;
   ash::SessionTerminationManager session_termination_manager_;
   content::BrowserTaskEnvironment task_environment_;
-  user_manager::TypedScopedUserManager<TestChromeUserManager> user_manager_;
-  std::unique_ptr<user_manager::MultiUserSignInPolicyController> controller_;
+  user_manager::TypedScopedUserManager<ash::FakeChromeUserManager>
+      user_manager_;
   std::unique_ptr<AssistantBrowserDelegateImpl> assistant_delegate_;
   std::unique_ptr<TestingProfileManager> profile_manager_;
   std::unique_ptr<crosapi::FakeBrowserManager> browser_manager_;

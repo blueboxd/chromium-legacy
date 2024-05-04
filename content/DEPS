@@ -24,6 +24,7 @@ include_rules = [
   # as autofill or extensions, and chrome implementation details such as
   # settings, packaging details, installation or crash reporting.
 
+  "+components/app_launch_prefetch",
   "+components/attribution_reporting",
   "+components/browsing_topics/common",
   "+components/memory_pressure",
@@ -131,5 +132,9 @@ specific_include_rules = {
     # content -> content/shell dependency is disallowed, except browser tests.
     "+content/shell/browser",
     "+content/shell/common",
+  ],
+  "content_(features|switches).h": [
+    # content -> tools dependency is disallowed, except buildflags for switches.
+    "+tools/v8_context_snapshot/buildflags.h",
   ],
 }

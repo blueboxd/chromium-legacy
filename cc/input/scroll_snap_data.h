@@ -196,7 +196,7 @@ class SnapSearchResult {
   // then this will be a position inside the range. In the covered case, the
   // result from FindClosestValidArea has a snap_offset_ equal to the
   // intended_position() of the SnapSelectionStrategy.
-  // TODO(crbug.com/1472410): With refactoring it may be possible to replace
+  // TODO(crbug.com/40278621): With refactoring it may be possible to replace
   // snap_offset_ and covered_range_ with a single range field with start == end
   // for "aligned" snap positions.
   float snap_offset_;
@@ -324,30 +324,6 @@ struct SnapPositionData {
   std::optional<gfx::RangeF> covered_range_y;
 };
 
-class CC_EXPORT SnappedTargetData {
- public:
-  SnappedTargetData();
-  SnappedTargetData(const SnappedTargetData&);
-  explicit SnappedTargetData(const std::set<ElementId>& ids);
-  ~SnappedTargetData();
-  const std::set<ElementId>& GetSnappedTargetIds() const {
-    return snapped_target_ids_;
-  }
-  void SetSnappedTargetIds(const std::set<ElementId>& ids) {
-    snapped_target_ids_ = std::move(ids);
-  }
-
- private:
-  // The set of snap areas an associated snap container was considered snapped
-  // to at the last snap position. While the snap computation logic picks only
-  // one snap target per axis, multiple areas might be at the same scroll offset
-  // and be considered snapped to so |snapped_target_ids_| will be a superset of
-  // |SnapContainerData::target_snap_area_element_ids_|.
-  // TODO(awogbemila): move SnapContainerData::target_snap_area_element_ids_
-  // into SnappedTargetData.
-  std::set<ElementId> snapped_target_ids_;
-};
-
 // Snap container is a scroll container that at least one snap area assigned to
 // it.  If the snap-type is not 'none', then it can be snapped to one of its
 // snap areas when a scroll happens.
@@ -377,7 +353,9 @@ class CC_EXPORT SnapContainerData {
            (other.proximity_range_ == proximity_range_) &&
            (other.snap_area_list_ == snap_area_list_) &&
            (other.target_snap_area_element_ids_ ==
-            target_snap_area_element_ids_);
+            target_snap_area_element_ids_) &&
+           (other.targeted_area_id_ == targeted_area_id_) &&
+           (other.has_horizontal_writing_mode_ == has_horizontal_writing_mode_);
   }
 
   bool operator!=(const SnapContainerData& other) const {
@@ -413,12 +391,12 @@ class CC_EXPORT SnapContainerData {
   }
   gfx::PointF proximity_range() const { return proximity_range_; }
 
-  static std::set<ElementId> FindSnappedTargetsAtScrollOffset(
-      const SnapContainerData* container_data,
-      const gfx::PointF& scroll_offset);
-
   void set_targeted_area_id(const std::optional<ElementId>& id) {
     targeted_area_id_ = id;
+  }
+
+  void set_has_horizontal_writing_mode(bool has_horizontal_writing_mode) {
+    has_horizontal_writing_mode_ = has_horizontal_writing_mode;
   }
 
  private:
@@ -508,6 +486,11 @@ class CC_EXPORT SnapContainerData {
       float cross_current_position,
       float cross_max_position) const;
 
+  SnapAxis SelectAxisToFollowForMutualVisibility(
+      const SnapSelectionStrategy&,
+      const SnapSearchResult& x_result,
+      const SnapSearchResult& y_result) const;
+
   // Specifies whether a scroll container is a scroll snap container, how
   // strictly it snaps, and which axes are considered.
   // See https://www.w3.org/TR/css-scroll-snap-1/#scroll-snap-type for details.
@@ -540,6 +523,10 @@ class CC_EXPORT SnapContainerData {
   // showing or hiding browser controls during a scroll gesture.  This is only
   // set while a call to FindSnapPosition is executing.
   double snapport_height_adjustment_ = 0;
+
+  // Whether or not the writing mode of this snap container is a horizontal
+  // writing mode.
+  bool has_horizontal_writing_mode_ = true;
 
   // This is the ElementId of the snap area (snapped to by this snap container)
   // that is targeted[1] or contains a targeted[1] element. It is std::nullopt

@@ -116,8 +116,7 @@ class ChromeAuthenticatorRequestDelegateTest
  public:
   ChromeAuthenticatorRequestDelegateTest() {
     scoped_feature_list_.InitWithFeatures(
-        {syncer::kSyncWebauthnCredentials, syncer::kSyncWebauthnCredentials,
-         device::kWebAuthnNewPasskeyUI},
+        {syncer::kSyncWebauthnCredentials, syncer::kSyncWebauthnCredentials},
         /*disabled_features=*/{});
   }
 
@@ -148,18 +147,18 @@ class TestAuthenticatorModelObserver final
   explicit TestAuthenticatorModelObserver(
       AuthenticatorRequestDialogModel* model)
       : model_(model) {
-    last_step_ = model_->current_step();
+    last_step_ = model_->step();
   }
   ~TestAuthenticatorModelObserver() override {
     if (model_) {
-      model_->RemoveObserver(this);
+      model_->observers.RemoveObserver(this);
     }
   }
 
   AuthenticatorRequestDialogModel::Step last_step() { return last_step_; }
 
   // AuthenticatorRequestDialogModel::Observer:
-  void OnStepTransition() override { last_step_ = model_->current_step(); }
+  void OnStepTransition() override { last_step_ = model_->step(); }
 
   void OnModelDestroyed(AuthenticatorRequestDialogModel* model) override {
     model_ = nullptr;
@@ -374,9 +373,10 @@ TEST_F(ChromeAuthenticatorRequestDelegateTest, CableConfiguration) {
   };
 
   for (const WinHybridExpectation windows_has_hybrid : {
-         kNoWinHybrid,
+           kNoWinHybrid,
 #if BUILDFLAG(IS_WIN)
-             kWinHybridPasskeySyncing, kWinHybridNoPasskeySyncing,
+           kWinHybridPasskeySyncing,
+           kWinHybridNoPasskeySyncing,
 #endif
        }) {
     unsigned test_case = 0;
@@ -407,7 +407,8 @@ TEST_F(ChromeAuthenticatorRequestDelegateTest, CableConfiguration) {
           content::AuthenticatorRequestClientDelegate::RequestSource::
               kWebAuthentication,
           test.request_type, test.resident_key_requirement,
-          device::UserVerificationRequirement::kRequired, test.extensions,
+          device::UserVerificationRequirement::kRequired,
+          /*user_name=*/std::nullopt, test.extensions,
           /*is_enclave_authenticator_available=*/false, &discovery_factory);
 
       switch (windows_has_hybrid == kWinHybridNoPasskeySyncing
@@ -423,7 +424,7 @@ TEST_F(ChromeAuthenticatorRequestDelegateTest, CableConfiguration) {
           EXPECT_FALSE(discovery_factory.qr_key.has_value());
           EXPECT_FALSE(discovery_factory.cable_data.empty());
           EXPECT_TRUE(discovery_factory.aoa_configured);
-          EXPECT_EQ(delegate.dialog_model()->cable_ui_type(),
+          EXPECT_EQ(delegate.dialog_model()->cable_ui_type,
                     AuthenticatorRequestDialogModel::CableUIType::CABLE_V1);
           break;
 
@@ -431,7 +432,7 @@ TEST_F(ChromeAuthenticatorRequestDelegateTest, CableConfiguration) {
           EXPECT_TRUE(discovery_factory.qr_key.has_value());
           EXPECT_FALSE(discovery_factory.cable_data.empty());
           EXPECT_TRUE(discovery_factory.aoa_configured);
-          EXPECT_EQ(delegate.dialog_model()->cable_ui_type(),
+          EXPECT_EQ(delegate.dialog_model()->cable_ui_type,
                     AuthenticatorRequestDialogModel::CableUIType::
                         CABLE_V2_SERVER_LINK);
           break;
@@ -440,7 +441,7 @@ TEST_F(ChromeAuthenticatorRequestDelegateTest, CableConfiguration) {
           EXPECT_TRUE(discovery_factory.qr_key.has_value());
           EXPECT_TRUE(discovery_factory.cable_data.empty());
           EXPECT_TRUE(discovery_factory.aoa_configured);
-          EXPECT_EQ(delegate.dialog_model()->cable_ui_type(),
+          EXPECT_EQ(delegate.dialog_model()->cable_ui_type,
                     AuthenticatorRequestDialogModel::CableUIType::
                         CABLE_V2_2ND_FACTOR);
           break;
@@ -469,7 +470,8 @@ TEST_F(ChromeAuthenticatorRequestDelegateTest, NoExtraDiscoveriesWithoutUI) {
             kWebAuthentication,
         device::FidoRequestType::kMakeCredential,
         device::ResidentKeyRequirement::kPreferred,
-        device::UserVerificationRequirement::kRequired, {},
+        device::UserVerificationRequirement::kRequired,
+        /*user_name=*/std::nullopt, {},
         /*is_enclave_authenticator_available=*/false, &discovery_factory);
 
     EXPECT_EQ(discovery_factory.qr_key.has_value(), !disable_ui);
@@ -497,11 +499,11 @@ TEST_F(ChromeAuthenticatorRequestDelegateTest, ConditionalUI) {
     delegate.SetRelyingPartyId(/*rp_id=*/"example.com");
     AuthenticatorRequestDialogModel* model = delegate.dialog_model();
     TestAuthenticatorModelObserver observer(model);
-    model->AddObserver(&observer);
+    model->observers.AddObserver(&observer);
     EXPECT_EQ(observer.last_step(),
               AuthenticatorRequestDialogModel::Step::kNotStarted);
     delegate.OnTransportAvailabilityEnumerated(
-        AuthenticatorRequestDialogModel::TransportAvailabilityInfo());
+        AuthenticatorRequestDialogController::TransportAvailabilityInfo());
     EXPECT_EQ(observer.last_step() ==
                   AuthenticatorRequestDialogModel::Step::kConditionalMediation,
               conditional_ui);
@@ -740,6 +742,7 @@ TEST_F(ChromeAuthenticatorRequestDelegateTest, GpmPasskeys) {
       device::FidoRequestType::kGetAssertion,
       /*resident_key_requirement=*/std::nullopt,
       device::UserVerificationRequirement::kRequired,
+      /*user_name=*/std::nullopt,
       /*pairings_from_extension=*/std::vector<device::CableDiscoveryData>(),
       /*is_enclave_authenticator_available=*/false, &discovery_factory);
 
@@ -761,7 +764,7 @@ TEST_F(ChromeAuthenticatorRequestDelegateTest, GpmPasskeys) {
   passkey_model->AddNewPasskeyForTesting(std::move(passkey));
   passkey_model->AddNewPasskeyForTesting(std::move(passkey_other_rp_id));
 
-  AuthenticatorRequestDialogModel::TransportAvailabilityInfo tai;
+  AuthenticatorRequestDialogController::TransportAvailabilityInfo tai;
   EXPECT_CALL(observer_, OnTransportAvailabilityEnumerated)
       .WillOnce([&tai](const auto* _, const auto* new_tai) {
         tai = std::move(*new_tai);
@@ -803,6 +806,7 @@ TEST_F(ChromeAuthenticatorRequestDelegateTest, GpmPasskeys_NoSyncPairedPhones) {
       device::FidoRequestType::kGetAssertion,
       /*resident_key_requirement=*/std::nullopt,
       device::UserVerificationRequirement::kRequired,
+      /*user_name=*/std::nullopt,
       /*pairings_from_extension=*/std::vector<device::CableDiscoveryData>(),
       /*is_enclave_authenticator_available=*/false, &discovery_factory);
 
@@ -817,7 +821,7 @@ TEST_F(ChromeAuthenticatorRequestDelegateTest, GpmPasskeys_NoSyncPairedPhones) {
   passkey.set_user_id(std::string({5, 6, 7, 8}));
   passkey_model->AddNewPasskeyForTesting(std::move(passkey));
 
-  AuthenticatorRequestDialogModel::TransportAvailabilityInfo tai;
+  AuthenticatorRequestDialogController::TransportAvailabilityInfo tai;
   EXPECT_CALL(observer_, OnTransportAvailabilityEnumerated)
       .WillOnce([&tai](const auto* _, const auto* new_tai) {
         tai = std::move(*new_tai);
@@ -857,6 +861,7 @@ TEST_F(ChromeAuthenticatorRequestDelegateTest, GpmPasskeys_ShadowedPasskeys) {
       device::FidoRequestType::kGetAssertion,
       /*resident_key_requirement=*/std::nullopt,
       device::UserVerificationRequirement::kRequired,
+      /*user_name=*/std::nullopt,
       /*pairings_from_extension=*/std::vector<device::CableDiscoveryData>(),
       /*is_enclave_authenticator_available=*/false, &discovery_factory);
 
@@ -879,7 +884,7 @@ TEST_F(ChromeAuthenticatorRequestDelegateTest, GpmPasskeys_ShadowedPasskeys) {
   passkey_model->AddNewPasskeyForTesting(std::move(passkey));
   passkey_model->AddNewPasskeyForTesting(std::move(shadowed_passkey));
 
-  AuthenticatorRequestDialogModel::TransportAvailabilityInfo tai;
+  AuthenticatorRequestDialogController::TransportAvailabilityInfo tai;
   EXPECT_CALL(observer_, OnTransportAvailabilityEnumerated)
       .WillOnce([&tai](const auto* _, const auto* new_tai) {
         tai = std::move(*new_tai);
@@ -1031,7 +1036,8 @@ TEST_F(ChromeAuthenticatorRequestDelegateTest,
 //
 // Ideally, this would also test the inverse case, i.e. that with
 // WEBAUTHN_API_VERSION_1 Chrome's own attestation prompt is shown. However,
-// there seems to be no good way to test AuthenticatorRequestDialogModel UI.
+// there seems to be no good way to test AuthenticatorRequestDialogController
+// UI.
 TEST_F(ChromeAuthenticatorRequestDelegateTest, ShouldPromptForAttestationWin) {
   ::device::FakeWinWebAuthnApi win_webauthn_api;
   win_webauthn_api.set_version(WEBAUTHN_API_VERSION_2);
@@ -1151,8 +1157,6 @@ class ChromeAuthenticatorRequestDelegatePrivateTest : public testing::Test {
   // A `BrowserTaskEnvironment` needs to be in-scope in order to create a
   // `TestingProfile`.
   content::BrowserTaskEnvironment task_environment_;
-  base::test::ScopedFeatureList scoped_feature_list_{
-      device::kWebAuthnICloudKeychain};
 };
 
 TEST_F(ChromeAuthenticatorRequestDelegatePrivateTest, DaysSinceDate) {

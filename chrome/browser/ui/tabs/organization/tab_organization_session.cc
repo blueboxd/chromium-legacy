@@ -247,13 +247,61 @@ void TabOrganizationSession::PopulateAndCreate(
 void TabOrganizationSession::PopulateOrganizations(
     TabOrganizationResponse* response) {
   feedback_id_ = response->feedback_id;
+  const std::optional<TabData::TabID> base_tab_id = request()->base_tab_id();
   // for each of the organizations, make sure that the TabData is valid for
   // grouping.
   for (TabOrganizationResponse::Organization& response_organization :
        response->organizations) {
+    // Don't include organizations that don't involve the base tab, if one
+    // exists.
+    const std::vector<TabData::TabID> tab_ids = response_organization.tab_ids;
+    if (base_tab_id.has_value() &&
+        std::find(tab_ids.begin(), tab_ids.end(), base_tab_id.value()) ==
+            tab_ids.end()) {
+      continue;
+    }
+
     std::vector<std::unique_ptr<TabData>> tab_datas_for_org;
 
-    for (const TabData::TabID& tab_id : response_organization.tab_ids) {
+    // Add grouped tabs
+    std::optional<tab_groups::TabGroupId> group_id;
+    if (response_organization.group_id.has_value()) {
+      TabStripModel* tab_strip_model =
+          request()->tab_datas()[0]->original_tab_strip_model();
+
+      // Replace group id with an id with a matching token, as determined by
+      // string equality. This is required because the token has been
+      // translated to a string and back as part of the TabOrganizationRequest,
+      // and is no longer the same object as the token referenced by the
+      // TabGroupId in the model.
+      std::vector<tab_groups::TabGroupId> all_group_ids =
+          tab_strip_model->group_model()->ListTabGroups();
+      const auto matching_id_iter = std::find_if(
+          all_group_ids.begin(), all_group_ids.end(),
+          [&](const tab_groups::TabGroupId& id) {
+            return response_organization.group_id.value().ToString() ==
+                   id.ToString();
+          });
+      if (matching_id_iter == all_group_ids.end()) {
+        // Do not include organizations which reference tab groups that no
+        // longer exist.
+        continue;
+      }
+      group_id = std::make_optional(*matching_id_iter);
+
+      TabGroupModel* tab_group_model = tab_strip_model->group_model();
+      TabGroup* group = tab_group_model->GetTabGroup(group_id.value());
+      const gfx::Range tab_indices = group->ListTabs();
+      for (size_t index = tab_indices.start(); index < tab_indices.end();
+           index++) {
+        tab_datas_for_org.emplace_back(std::make_unique<TabData>(
+            tab_strip_model, tab_strip_model->GetWebContentsAt(index)));
+      }
+    }
+    const int first_new_tab_index = tab_datas_for_org.size();
+
+    // Add ungrouped tabs
+    for (const TabData::TabID& tab_id : tab_ids) {
       // TODO for now we can't use the TabID directly, we instead need to use
       // the webcontents ptr to refer to the tab.
       const auto matching_tab = std::find_if(
@@ -285,8 +333,10 @@ void TabOrganizationSession::PopulateOrganizations(
 
     std::unique_ptr<TabOrganization> organization =
         std::make_unique<TabOrganization>(std::move(tab_datas_for_org),
-                                          std::move(names));
+                                          std::move(names),
+                                          first_new_tab_index);
 
+    organization->SetTabGroupId(group_id);
     response_organization.organization_id = organization->organization_id();
 
     organization->AddObserver(this);

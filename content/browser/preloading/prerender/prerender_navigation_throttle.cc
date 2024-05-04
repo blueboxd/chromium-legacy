@@ -199,7 +199,7 @@ PrerenderNavigationThrottle::WillStartOrRedirectRequest(bool is_redirection) {
       // cross-site to the initial prerendering URL.
       if (prerender_navigation_utils::IsCrossSite(
               navigation_url, initial_prerendering_origin)) {
-        // TODO(crbug.com/1456866): Remove this crash key when investigation is
+        // TODO(crbug.com/40918153): Remove this crash key when investigation is
         // completed.
         if (!is_redirection) {
           SCOPED_CRASH_KEY_BOOL("Bug1456866", "scheme",
@@ -228,7 +228,7 @@ PrerenderNavigationThrottle::WillStartOrRedirectRequest(bool is_redirection) {
     } else if (prerender_navigation_utils::IsCrossSite(
                    navigation_url,
                    prerender_host_->initiator_origin().value())) {
-      // TODO(crbug.com/1176054): Once cross-site prerendering is implemented,
+      // TODO(crbug.com/40168192): Once cross-site prerendering is implemented,
       // we'll need to enforce strict referrer policies
       // (https://wicg.github.io/nav-speculation/prefetch.html#list-of-sufficiently-strict-speculative-navigation-referrer-policies).
       //
@@ -331,7 +331,7 @@ PrerenderNavigationThrottle::WillProcessResponse() {
 
   std::optional<PrerenderFinalStatus> cancel_reason;
 
-  // TODO(crbug.com/1318739): Delay until activation instead of cancellation.
+  // TODO(crbug.com/40222993): Delay until activation instead of cancellation.
   if (navigation_handle()->IsDownload()) {
     // Disallow downloads during prerendering and cancel the prerender.
     cancel_reason = PrerenderFinalStatus::kDownload;
@@ -349,8 +349,8 @@ PrerenderNavigationThrottle::WillProcessResponse() {
 }
 
 bool PrerenderNavigationThrottle::IsInitialNavigation() const {
-  return prerender_host_->GetInitialNavigationId() ==
-         navigation_handle()->GetNavigationId();
+  return prerender_host_->IsInitialNavigation(
+      *NavigationRequest::From(navigation_handle()));
 }
 
 void PrerenderNavigationThrottle::CancelPrerendering(

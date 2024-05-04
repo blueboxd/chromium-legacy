@@ -13,7 +13,7 @@
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_sync_service.h"
-#include "chrome/browser/extensions/permissions_updater.h"
+#include "chrome/browser/extensions/permissions/permissions_updater.h"
 #include "chrome/browser/extensions/shared_module_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -284,7 +284,7 @@ base::Value::Dict GetExtensionInfo(const Extension* extension) {
 
   GURL icon = extensions::ExtensionIconSource::GetIconURL(
       extension, extension_misc::EXTENSION_ICON_SMALLISH,
-      ExtensionIconSet::MATCH_BIGGER,
+      ExtensionIconSet::Match::kBigger,
       false);  // Not grayscale.
   dict.Set("icon", icon.spec());
 

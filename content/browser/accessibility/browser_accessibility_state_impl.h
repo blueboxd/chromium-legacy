@@ -27,16 +27,16 @@ struct FocusedNodeDetails;
 // different for each platform.
 //
 // Screen Reader Detection
-// (1) On windows many screen reader detection mechinisms will give false
-// positives like relying on the SPI_GETSCREENREADER system parameter. In Chrome
-// we attempt to dynamically detect a MSAA client screen reader by calling
-// NotifiyWinEvent in NativeWidgetWin with a custom ID and wait to see if the ID
-// is requested by a subsequent call to WM_GETOBJECT.
-// (2) On mac we detect dynamically if VoiceOver is running.  We rely upon the
-// undocumented accessibility attribute @"AXEnhancedUserInterface" which is set
-// when VoiceOver is launched and unset when VoiceOver is closed.  This is an
-// improvement over reading defaults preference values (which has no callback
-// mechanism).
+// (1) On Windows, many screen reader detection mechanisms will give false
+//     positives, such as relying on the SPI_GETSCREENREADER system parameter.
+//     In Chrome, we attempt to dynamically detect a MSAA client screen reader
+//     by calling NotifyWinEvent in NativeWidgetWin with a custom ID and wait
+//     to see if the ID is requested by a subsequent call to WM_GETOBJECT.
+// (2) On macOS, we dynamically detect if VoiceOver is running by Key-Value
+//     Observing changes to the "voiceOverEnabled" property in NSWorkspace. We
+//     also monitor the undocumented accessibility attribute
+//     @"AXEnhancedUserInterface", which is set by other assistive
+//     technologies.
 class CONTENT_EXPORT BrowserAccessibilityStateImpl
     : public BrowserAccessibilityState,
       public ui::AXPlatform::Delegate {
@@ -80,7 +80,6 @@ class CONTENT_EXPORT BrowserAccessibilityStateImpl
   void AddOtherThreadHistogramCallback(base::OnceClosure callback) override;
   void UpdateUniqueUserHistograms() override;
   void UpdateHistogramsForTesting() override;
-  void SetCaretBrowsingState(bool enabled) override;
   void SetPerformanceFilteringAllowed(bool enabled) override;
   bool IsPerformanceFilteringAllowed() override;
   base::CallbackListSubscription RegisterFocusChangedCallback(
@@ -93,33 +92,20 @@ class CONTENT_EXPORT BrowserAccessibilityStateImpl
   std::unique_ptr<ScopedAccessibilityMode> CreateScopedModeForWebContents(
       WebContents* web_contents,
       ui::AXMode mode) override;
+  void SetAXModeChangeAllowed(bool allowed) override;
+  bool IsAXModeChangeAllowed() const override;
 
-  // Returns whether caret browsing is enabled for the most recently
-  // used profile.
-  bool IsCaretBrowsingEnabled() const;
 
   // ui::AXPlatform::Delegate:
   ui::AXMode GetProcessMode() override;
   void SetProcessMode(ui::AXMode new_mode) override;
+  void OnAccessibilityApiUsage() override;
 
   // The global accessibility mode is automatically enabled based on
   // usage of accessibility APIs. When we detect a significant amount
   // of user inputs within a certain time period, but no accessibility
   // API usage, we automatically disable accessibility.
   void OnUserInputEvent();
-  void OnAccessibilityApiUsage();
-
-  // Accessibility objects can have the "hot tracked" state set when
-  // the mouse is hovering over them, but this makes tests flaky because
-  // the test behaves differently when the mouse happens to be over an
-  // element.  This is a global switch to not use the "hot tracked" state
-  // in a test.
-  void set_disable_hot_tracking_for_testing(bool disable_hot_tracking) {
-    disable_hot_tracking_ = disable_hot_tracking;
-  }
-  bool disable_hot_tracking_for_testing() const {
-    return disable_hot_tracking_;
-  }
 
   // Calls InitBackgroundTasks with short delays for scheduled tasks,
   // and then calls the given completion callback when done.
@@ -127,9 +113,6 @@ class CONTENT_EXPORT BrowserAccessibilityStateImpl
 
   // Notifies listeners that the focused element changed inside a WebContents.
   void OnFocusChangedInPage(const FocusedNodeDetails& details);
-
-  // Do not allow further changes to the AXMode.
-  void DisallowAXModeChanges();
 
  protected:
   BrowserAccessibilityStateImpl();
@@ -179,17 +162,10 @@ class CONTENT_EXPORT BrowserAccessibilityStateImpl
   // Whether there is a pending task to run UpdateAccessibilityActivityTask.
   bool accessibility_update_task_pending_ = false;
 
-  // Whether changes to the AXMode are disallowed.
+  // Whether changes to the AXMode are allowed.
   // Changes are disallowed while running tests or when
   // --force-renderer-accessibility is used on the command line.
-  bool disallow_ax_mode_changes_ = false;
-
-  // Disable hot tracking, i.e. hover state - needed just to avoid flaky tests.
-  bool disable_hot_tracking_ = false;
-
-  // Keeps track of whether caret browsing is enabled for the most
-  // recently used profile.
-  bool caret_browsing_enabled_ = false;
+  bool allow_ax_mode_changes_ = true;
 
   // Keeps track of whether performance filtering is allowed for the device.
   // Default is true to defer to feature flag. Value may be set to false by

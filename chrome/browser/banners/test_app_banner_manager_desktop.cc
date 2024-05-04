@@ -14,9 +14,6 @@
 #include "base/task/single_thread_task_runner.h"
 #include "base/test/gmock_callback_support.h"
 #include "chrome/browser/webapps/webapps_client_desktop.h"
-#include "components/segmentation_platform/public/constants.h"
-#include "components/segmentation_platform/public/result.h"
-#include "components/segmentation_platform/public/testing/mock_segmentation_platform_service.h"
 #include "components/webapps/browser/banners/app_banner_manager.h"
 #include "components/webapps/browser/installable/installable_data.h"
 #include "components/webapps/browser/webapps_client.h"
@@ -132,16 +129,21 @@ TestAppBannerManagerDesktop::AsTestAppBannerManagerDesktopForTesting() {
   return this;
 }
 
-void TestAppBannerManagerDesktop::OnInstall(blink::mojom::DisplayMode display) {
-  AppBannerManager::OnInstall(display);
+void TestAppBannerManagerDesktop::OnInstall(
+    blink::mojom::DisplayMode display,
+    bool set_current_web_app_not_installable) {
+  AppBannerManager::OnInstall(display, set_current_web_app_not_installable);
   if (on_install_)
     std::move(on_install_).Run();
 }
 
 void TestAppBannerManagerDesktop::DidFinishCreatingWebApp(
+    const webapps::ManifestId& manifest_id,
+    base::WeakPtr<AppBannerManagerDesktop> is_navigation_current,
     const webapps::AppId& app_id,
     webapps::InstallResultCode code) {
-  AppBannerManagerDesktop::DidFinishCreatingWebApp(app_id, code);
+  AppBannerManagerDesktop::DidFinishCreatingWebApp(
+      manifest_id, is_navigation_current, app_id, code);
   OnFinished();
 }
 

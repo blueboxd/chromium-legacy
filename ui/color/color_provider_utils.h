@@ -6,11 +6,11 @@
 #define UI_COLOR_COLOR_PROVIDER_UTILS_H_
 
 #include <string>
+#include <string_view>
 
 #include "base/component_export.h"
 #include "base/containers/flat_map.h"
 #include "base/functional/callback.h"
-#include "base/strings/string_piece.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/color/color_id.h"
 #include "ui/color/color_id.mojom.h"
@@ -24,7 +24,7 @@ using RendererColorMap = base::flat_map<color::mojom::RendererColorId, SkColor>;
 class COMPONENT_EXPORT(COLOR) ColorProviderUtilsCallbacks {
  public:
   virtual ~ColorProviderUtilsCallbacks();
-  virtual bool ColorIdName(ColorId color_id, base::StringPiece* color_name) = 0;
+  virtual bool ColorIdName(ColorId color_id, std::string_view* color_name) = 0;
 };
 
 // The following functions convert various values to strings intended for
@@ -32,19 +32,19 @@ class COMPONENT_EXPORT(COLOR) ColorProviderUtilsCallbacks {
 // functions are called.
 
 // Converts the ColorMode.
-base::StringPiece COMPONENT_EXPORT(COLOR)
+std::string_view COMPONENT_EXPORT(COLOR)
     ColorModeName(ColorProviderKey::ColorMode color_mode);
 
 // Converts the ContrastMode.
-base::StringPiece COMPONENT_EXPORT(COLOR)
+std::string_view COMPONENT_EXPORT(COLOR)
     ContrastModeName(ColorProviderKey::ContrastMode contrast_mode);
 
 // Converts the ForcedColors.
-base::StringPiece COMPONENT_EXPORT(COLOR)
+std::string_view COMPONENT_EXPORT(COLOR)
     ForcedColorsName(ColorProviderKey::ForcedColors forced_colors);
 
 // Converts SystemTheme.
-base::StringPiece COMPONENT_EXPORT(COLOR)
+std::string_view COMPONENT_EXPORT(COLOR)
     SystemThemeName(ui::SystemTheme system_theme);
 
 // Converts ColorId.
@@ -93,11 +93,13 @@ ColorProvider COMPONENT_EXPORT(COLOR)
 ColorProvider COMPONENT_EXPORT(COLOR)
     CreateEmulatedForcedColorsColorProviderForTest();
 
-// Creates a default color provider for Blink Pages that are not associated with
-// a web view. This includes tests, dummy pages,  and non ordinary pages. These
-// scenarios do not use the normal machinery to establish color providers in the
-// renderer. The color mappings for this provider are derived from old Aura
-// colors for controls.
+// TODO(crbug.com/40779801): Enhance this function by incorporating platform
+// specific overrides, particularly for CSS system colors.
+// Creates a default fallback color provider for Blink Pages that are not
+// associated with a web view. This includes tests, dummy pages, and non
+// ordinary pages. These scenarios do not use the normal machinery to establish
+// color providers in the renderer. The color mappings for this provider are
+// derived from old Aura colors for controls.
 ColorProvider COMPONENT_EXPORT(COLOR)
     CreateDefaultColorProviderForBlink(bool dark_mode);
 
@@ -117,6 +119,11 @@ void COMPONENT_EXPORT(COLOR)
 void COMPONENT_EXPORT(COLOR)
     CompleteDefaultNonWebNativeRendererColorIdsDefinition(
         ui::ColorMixer& mixer);
+
+// Completes default color definitions for the CSS system colors.
+void COMPONENT_EXPORT(COLOR)
+    CompleteDefaultCssSystemColorDefinition(ui::ColorMixer& mixer,
+                                            bool dark_mode);
 
 // Returns a default set of color maps for tests and non ordinary pages. These
 // places do not use the normal machinery to establish a color provider in the

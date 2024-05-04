@@ -38,7 +38,7 @@ class TestOverlayStrategy : public OverlayProcessorStrategy {
       const OverlayProcessorInterface::FilterOperationsMap& render_pass_filters,
       const OverlayProcessorInterface::FilterOperationsMap&
           render_pass_backdrop_filters,
-      DisplayResourceProvider* resource_provider,
+      const DisplayResourceProvider* resource_provider,
       AggregatedRenderPassList* render_pass_list,
       SurfaceDamageRectList* surface_damage_rect_list,
       const PrimaryPlane* primary_plane,
@@ -50,7 +50,7 @@ class TestOverlayStrategy : public OverlayProcessorStrategy {
       const OverlayProcessorInterface::FilterOperationsMap& render_pass_filters,
       const OverlayProcessorInterface::FilterOperationsMap&
           render_pass_backdrop_filters,
-      DisplayResourceProvider* resource_provider,
+      const DisplayResourceProvider* resource_provider,
       AggregatedRenderPassList* render_pass_list,
       SurfaceDamageRectList* surface_damage_rect_list,
       const PrimaryPlane* primary_plane,
@@ -87,7 +87,7 @@ class OverlayProposedCandidateTest
   }
 
   ResourceId CreateResource(bool is_overlay_candidate) {
-    scoped_refptr<ContextProvider> child_context_provider =
+    scoped_refptr<RasterContextProvider> child_context_provider =
         TestContextProvider::Create();
 
     child_context_provider->BindToCurrentSequence();

@@ -11,6 +11,10 @@
 #include "ui/color/color_provider.h"
 #include "ui/color/color_recipe.h"
 
+#if !BUILDFLAG(IS_ANDROID)
+#include "components/performance_manager/public/features.h"
+#endif
+
 namespace {
 /* 70% opacity */
 constexpr SkAlpha kWebUiTabStripScrollbarThumbAlpha = 0.7 * 255;
@@ -25,7 +29,8 @@ void AddMaterialTabStripColorMixer(ui::ColorProvider* provider,
     return;
   }
 
-  // TODO(crbug.com/1399942): Validate final mappings for ChromeRefresh23 color.
+  // TODO(crbug.com/40883407): Validate final mappings for ChromeRefresh23
+  // color.
   ui::ColorMixer& mixer = provider->AddMixer();
   mixer[kColorTabBackgroundActiveFrameActive] = {ui::kColorSysBase};
   mixer[kColorTabBackgroundActiveFrameInactive] = {
@@ -55,8 +60,15 @@ void AddMaterialTabStripColorMixer(ui::ColorProvider* provider,
   mixer[kColorTabBackgroundSelectedHoverFrameInactive] = {
       ui::GetResultingPaintColor(ui::kColorSysStateHoverDimBlendProtection,
                                  kColorTabBackgroundSelectedFrameInactive)};
-  mixer[kColorTabDiscardRingFrameActive] = {ui::kColorSysOutline};
+#if !BUILDFLAG(IS_ANDROID)
+  if (base::FeatureList::IsEnabled(
+          performance_manager::features::kDiscardRingImprovements)) {
+    mixer[kColorTabDiscardRingFrameActive] = {ui::kColorSysStateInactiveRing};
+  } else {
+    mixer[kColorTabDiscardRingFrameActive] = {ui::kColorSysOutline};
+  }
   mixer[kColorTabDiscardRingFrameInactive] = {kColorTabDiscardRingFrameActive};
+#endif
   mixer[kColorTabForegroundActiveFrameActive] = {ui::kColorSysOnSurface};
   mixer[kColorTabForegroundActiveFrameInactive] = {
       kColorTabForegroundActiveFrameActive};

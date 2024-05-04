@@ -22,7 +22,6 @@
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/feedback/system_logs/about_system_logs_fetcher.h"
-#include "chrome/browser/feedback/system_logs/chrome_system_logs_fetcher.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/chrome_paths.h"
@@ -30,6 +29,8 @@
 #include "chrome/grit/about_sys_resources.h"
 #include "chrome/grit/about_sys_resources_map.h"
 #include "chrome/grit/generated_resources.h"
+#include "chrome/grit/key_value_pair_viewer_shared_resources.h"
+#include "chrome/grit/key_value_pair_viewer_shared_resources_map.h"
 #include "components/feedback/system_logs/system_logs_fetcher.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
@@ -59,9 +60,7 @@ void CreateAndAddSystemInfoUIDataSource(Profile* profile) {
       content::WebUIDataSource::CreateAndAdd(profile,
                                              chrome::kChromeUISystemInfoHost);
   static constexpr webui::LocalizedString kStrings[] = {
-      {"loading", IDS_FEEDBACK_SYSINFO_PAGE_LOADING},
-      {"aboutSysTitle", IDS_ABOUT_SYS_TITLE},
-      {"feedbackInfoTitle", IDS_FEEDBACK_SYSINFO_PAGE_TITLE},
+      {"title", IDS_ABOUT_SYS_TITLE},
       {"description", IDS_ABOUT_SYS_DESC},
       {"tableTitle", IDS_ABOUT_SYS_TABLE_TITLE},
       {"logFileTableTitle", IDS_ABOUT_SYS_LOG_FILE_TABLE_TITLE},
@@ -88,6 +87,9 @@ void CreateAndAddSystemInfoUIDataSource(Profile* profile) {
   webui::SetupWebUIDataSource(
       html_source, base::make_span(kAboutSysResources, kAboutSysResourcesSize),
       IDR_ABOUT_SYS_ABOUT_SYS_HTML);
+  html_source->AddResourcePaths(
+      base::make_span(kKeyValuePairViewerSharedResources,
+                      kKeyValuePairViewerSharedResourcesSize));
 }
 
 }  // namespace
@@ -109,7 +111,6 @@ class SystemInfoUIHandler : public WebUIMessageHandler {
   // Callbacks for SystemInfo request messages. This asynchronously requests
   // system info and eventually returns it to the front end.
   void HandleRequestSystemInfo(const base::Value::List& args);
-  void HandleRequestFeedbackSystemInfo(const base::Value::List& args);
 
   void OnSystemInfo(std::unique_ptr<SystemLogsResponse> sys_info);
 
@@ -143,11 +144,6 @@ void SystemInfoUIHandler::RegisterMessages() {
       base::BindRepeating(&SystemInfoUIHandler::HandleRequestSystemInfo,
                           base::Unretained(this)));
 
-  web_ui()->RegisterMessageCallback(
-      "requestFeedbackSystemInfo",
-      base::BindRepeating(&SystemInfoUIHandler::HandleRequestFeedbackSystemInfo,
-                          base::Unretained(this)));
-
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   web_ui()->RegisterMessageCallback(
       "isLacrosEnabled",
@@ -168,17 +164,6 @@ void SystemInfoUIHandler::HandleRequestSystemInfo(
 
   system_logs::SystemLogsFetcher* fetcher =
       system_logs::BuildAboutSystemLogsFetcher(web_ui());
-  fetcher->Fetch(base::BindOnce(&SystemInfoUIHandler::OnSystemInfo,
-                                weak_ptr_factory_.GetWeakPtr()));
-}
-
-void SystemInfoUIHandler::HandleRequestFeedbackSystemInfo(
-    const base::Value::List& args) {
-  AllowJavascript();
-  callback_id_ = args[0].GetString();
-
-  system_logs::SystemLogsFetcher* fetcher =
-      system_logs::BuildChromeSystemLogsFetcher(/*scrub_data=*/true);
   fetcher->Fetch(base::BindOnce(&SystemInfoUIHandler::OnSystemInfo,
                                 weak_ptr_factory_.GetWeakPtr()));
 }

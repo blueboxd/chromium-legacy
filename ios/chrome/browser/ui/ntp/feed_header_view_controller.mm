@@ -36,7 +36,7 @@ const CGFloat kHiddenFeedLabelFontSize = 16;
 // The width of the label for when the feed is hidden.
 const CGFloat kHiddenFeedLabelWidth = 250;
 // Insets for header menu button.
-const CGFloat kHeaderMenuButtonInset = 2;
+const CGFloat kHeaderManagementButtonInset = 2;
 // The height of the header container. The content is unaffected.
 const CGFloat kDiscoverFeedHeaderHeight = 40;
 const CGFloat kCustomSearchEngineLabelHeight = 18;
@@ -68,9 +68,9 @@ NSInteger kFeedSymbolPointSize = 17;
 // Title label element for the feed.
 @property(nonatomic, strong) UILabel* titleLabel;
 
-// Button for opening top-level feed menu.
+// Button for opening top-level feed management menu.
 // Redefined to not be readonly.
-@property(nonatomic, strong) UIButton* menuButton;
+@property(nonatomic, strong) UIButton* managementButton;
 
 // Button for sorting feed content. Only used for Following feed.
 @property(nonatomic, strong) UIButton* sortButton;
@@ -110,7 +110,7 @@ NSInteger kFeedSymbolPointSize = 17;
 
     // The menu button is created early so that it can be assigned a tap action
     // before the view loads.
-    _menuButton = [[UIButton alloc] init];
+    _managementButton = [[UIButton alloc] init];
   }
   return self;
 }
@@ -118,26 +118,33 @@ NSInteger kFeedSymbolPointSize = 17;
 - (void)viewDidLoad {
   [super viewDidLoad];
 
-  // Applies an opacity to the background. If ReduceTransparency is enabled,
-  // then this replaces the blur effect.
-  // With the Magic Stack enabled, the background color will
-  // be clear for continuity with the overall NTP gradient view.
-  self.view.backgroundColor = IsMagicStackEnabled()
-                                  ? [UIColor clearColor]
-                                  : [[UIColor colorNamed:kBackgroundColor]
-                                        colorWithAlphaComponent:0.95];
+  // The background color will be clear for continuity with the overall NTP
+  // gradient view.
+  self.view.backgroundColor = [UIColor clearColor];
+  self.view.maximumContentSizeCategory =
+      UIContentSizeCategoryAccessibilityMedium;
 
   self.container = [[UIView alloc] init];
 
   self.view.translatesAutoresizingMaskIntoConstraints = NO;
   self.container.translatesAutoresizingMaskIntoConstraints = NO;
 
-  [self configureMenuButton:self.menuButton];
+  [self configureManagementButton:self.managementButton];
   [self configureHeaderViews];
 
-  [self.container addSubview:self.menuButton];
   [self.view addSubview:self.container];
   [self applyHeaderConstraints];
+}
+
+- (void)viewWillLayoutSubviews {
+  [super viewWillLayoutSubviews];
+
+  if ([self.feedControlDelegate isFollowingFeedAvailable]) {
+    [self updateSegmentedControlFont:self.segmentedControl];
+  } else {
+    UIFont* font = [self fontForTitleLabel];
+    self.titleLabel.font = font;
+  }
 }
 
 #pragma mark - UITraitEnvironment
@@ -146,12 +153,7 @@ NSInteger kFeedSymbolPointSize = 17;
   [super traitCollectionDidChange:previousTraitCollection];
   if (previousTraitCollection.preferredContentSizeCategory !=
       self.traitCollection.preferredContentSizeCategory) {
-    if ([self.feedControlDelegate isFollowingFeedAvailable]) {
-      [self updateSegmentedControlFont:self.segmentedControl];
-    } else {
-      UIFont* font = [self fontForTitle];
-      self.titleLabel.font = font;
-    }
+    [self.view setNeedsLayout];
   }
 }
 
@@ -233,6 +235,9 @@ NSInteger kFeedSymbolPointSize = 17;
 }
 
 - (void)updateForFeedVisibilityChanged {
+  // When feed visibility changes, the menu content is recreated.
+  [self.feedMenuHandler configureManagementMenu:self.managementButton];
+
   if (![self.feedControlDelegate isFollowingFeedAvailable]) {
     [self.titleLabel setText:[self feedHeaderTitleText]];
     [self.titleLabel setNeedsDisplay];
@@ -254,6 +259,17 @@ NSInteger kFeedSymbolPointSize = 17;
   [self removeViewsForHiddenFeed];
   [self removeViewsForVisibleFeed];
   [self.titleLabel removeFromSuperview];
+
+  // The management button is different for the Following feed header, so it's
+  // recreated.
+  if (self.managementButton) {
+    [self.managementButton removeFromSuperview];
+    self.managementButton = nil;
+  }
+  self.managementButton = [[UIButton alloc] init];
+  [self configureManagementButton:self.managementButton];
+  [self.feedMenuHandler configureManagementMenu:self.managementButton];
+
   [self configureHeaderViews];
   [self applyHeaderConstraints];
 }
@@ -296,6 +312,7 @@ NSInteger kFeedSymbolPointSize = 17;
     self.titleLabel = [self createTitleLabel];
     [self.container addSubview:self.titleLabel];
   }
+  [self.feedMenuHandler configureManagementMenu:self.managementButton];
 }
 
 // Creates sort menu with its content and active sort type.
@@ -336,34 +353,41 @@ NSInteger kFeedSymbolPointSize = 17;
 }
 
 // Configures the feed header's menu button.
-- (void)configureMenuButton:(UIButton*)menuButton {
+- (void)configureManagementButton:(UIButton*)managementButton {
   UIButtonConfiguration* buttonConfiguration =
       [UIButtonConfiguration plainButtonConfiguration];
-  menuButton.translatesAutoresizingMaskIntoConstraints = NO;
-  menuButton.accessibilityIdentifier = kNTPFeedHeaderMenuButtonIdentifier;
-  menuButton.accessibilityLabel =
+
+  managementButton.translatesAutoresizingMaskIntoConstraints = NO;
+  managementButton.showsMenuAsPrimaryAction = YES;
+  [managementButton addTarget:self.feedMenuHandler
+                       action:@selector(configureManagementMenu:)
+             forControlEvents:UIControlEventTouchDown];
+
+  managementButton.accessibilityIdentifier =
+      kNTPFeedHeaderManagementButtonIdentifier;
+  managementButton.accessibilityLabel =
       l10n_util::GetNSString(IDS_IOS_DISCOVER_FEED_MENU_ACCESSIBILITY_LABEL);
+
   if ([self.feedControlDelegate isFollowingFeedAvailable]) {
     buttonConfiguration.image =
         DefaultSymbolTemplateWithPointSize(kMenuSymbol, kFeedSymbolPointSize);
     if (!IsFeedContainmentEnabled()) {
       buttonConfiguration.background.backgroundColor =
           [[UIColor colorNamed:kGrey200Color] colorWithAlphaComponent:0.8];
-      menuButton.layer.cornerRadius = kButtonSize / 2;
+      managementButton.layer.cornerRadius = kButtonSize / 2;
     }
-    menuButton.clipsToBounds = YES;
+    managementButton.clipsToBounds = YES;
   } else {
     UIImage* menuIcon = DefaultSymbolTemplateWithPointSize(
         kSettingsFilledSymbol, kFeedSymbolPointSize);
     buttonConfiguration.image = menuIcon;
     buttonConfiguration.baseForegroundColor =
         [UIColor colorNamed:kGrey600Color];
-    buttonConfiguration.imagePadding = kHeaderMenuButtonInset;
+    buttonConfiguration.imagePadding = kHeaderManagementButtonInset;
   }
-  menuButton.configuration = buttonConfiguration;
-  [menuButton addTarget:self
-                 action:@selector(didTouchMenuButton)
-       forControlEvents:UIControlEventTouchUpInside];
+
+  [self.container addSubview:managementButton];
+  managementButton.configuration = buttonConfiguration;
 }
 
 // Configures and returns the feed header's sorting button.
@@ -399,8 +423,8 @@ NSInteger kFeedSymbolPointSize = 17;
 - (UILabel*)createTitleLabel {
   UILabel* titleLabel = [[UILabel alloc] init];
   titleLabel.translatesAutoresizingMaskIntoConstraints = NO;
-  titleLabel.font = [self fontForTitle];
-  titleLabel.textColor = [UIColor colorNamed:kTextSecondaryColor];
+  titleLabel.font = [self fontForTitleLabel];
+  titleLabel.textColor = [UIColor colorNamed:kTextPrimaryColor];
   titleLabel.accessibilityIdentifier =
       ntp_home::DiscoverHeaderTitleAccessibilityID();
   titleLabel.text = [self feedHeaderTitleText];
@@ -434,8 +458,14 @@ NSInteger kFeedSymbolPointSize = 17;
   return segmentedControl;
 }
 
-- (UIFont*)fontForTitle {
-  return CreateDynamicFont(UIFontTextStyleSubheadline, UIFontWeightMedium);
+- (UIFont*)fontForTitleLabel {
+  return CreateDynamicFont(UIFontTextStyleFootnote, UIFontWeightSemibold,
+                           self.view);
+}
+
+- (UIFont*)fontForSegmentedControl {
+  return CreateDynamicFont(UIFontTextStyleSubheadline, UIFontWeightMedium,
+                           self.view);
 }
 
 // Configures and returns the dot indicating that there is new content in the
@@ -476,13 +506,15 @@ NSInteger kFeedSymbolPointSize = 17;
 // current dynamic sizing.
 - (void)updateSegmentedControlFont:(UISegmentedControl*)segmentedControl {
   NSDictionary* normalAttributes = [NSDictionary
-      dictionaryWithObjectsAndKeys:[self fontForTitle], NSFontAttributeName,
+      dictionaryWithObjectsAndKeys:[self fontForSegmentedControl],
+                                   NSFontAttributeName,
                                    [UIColor colorNamed:kTextSecondaryColor],
                                    NSForegroundColorAttributeName, nil];
   [segmentedControl setTitleTextAttributes:normalAttributes
                                   forState:UIControlStateNormal];
   NSDictionary* selectedAttributes = [NSDictionary
-      dictionaryWithObjectsAndKeys:[self fontForTitle], NSFontAttributeName,
+      dictionaryWithObjectsAndKeys:[self fontForSegmentedControl],
+                                   NSFontAttributeName,
                                    [UIColor colorNamed:kTextPrimaryColor],
                                    NSForegroundColorAttributeName, nil];
   [segmentedControl setTitleTextAttributes:selectedAttributes
@@ -538,14 +570,14 @@ NSInteger kFeedSymbolPointSize = 17;
     [self.container.centerXAnchor
         constraintEqualToAnchor:self.view.centerXAnchor],
     [self.container.widthAnchor constraintEqualToAnchor:self.view.widthAnchor],
-    [self.menuButton.trailingAnchor
+    [self.managementButton.trailingAnchor
         constraintEqualToAnchor:self.container.trailingAnchor
                        constant:-buttonMargin],
-    [self.menuButton.centerYAnchor
+    [self.managementButton.centerYAnchor
         constraintEqualToAnchor:self.container.centerYAnchor],
     // Set menu button size.
-    [self.menuButton.heightAnchor constraintEqualToConstant:kButtonSize],
-    [self.menuButton.widthAnchor constraintEqualToConstant:kButtonSize],
+    [self.managementButton.heightAnchor constraintEqualToConstant:kButtonSize],
+    [self.managementButton.widthAnchor constraintEqualToConstant:kButtonSize],
   ]];
 
   if ([self.feedControlDelegate isFollowingFeedAvailable]) {
@@ -612,7 +644,8 @@ NSInteger kFeedSymbolPointSize = 17;
           constraintEqualToAnchor:self.container.leadingAnchor
                          constant:titleMargin],
       [self.titleLabel.trailingAnchor
-          constraintLessThanOrEqualToAnchor:self.menuButton.leadingAnchor],
+          constraintLessThanOrEqualToAnchor:self.managementButton
+                                                .leadingAnchor],
       [self.titleLabel.centerYAnchor
           constraintEqualToAnchor:self.container.centerYAnchor],
     ]];
@@ -629,7 +662,7 @@ NSInteger kFeedSymbolPointSize = 17;
     [self.segmentedControl.centerYAnchor
         constraintEqualToAnchor:self.container.centerYAnchor],
     [self.segmentedControl.trailingAnchor
-        constraintLessThanOrEqualToAnchor:self.menuButton.leadingAnchor
+        constraintLessThanOrEqualToAnchor:self.managementButton.leadingAnchor
                                  constant:-kButtonHorizontalMargin],
     [self.segmentedControl.leadingAnchor
         constraintEqualToAnchor:self.sortButton.trailingAnchor
@@ -704,6 +737,7 @@ NSInteger kFeedSymbolPointSize = 17;
   if (!IsFollowUIUpdateEnabled()) {
     self.sortButton.menu = [self createSortMenu];
   }
+
   [self.container addSubview:self.sortButton];
 
   if (!UIAccessibilityIsReduceTransparencyEnabled()) {
@@ -819,16 +853,9 @@ NSInteger kFeedSymbolPointSize = 17;
 - (UIColor*)backgroundColorForBlurredState:(BOOL)blurred {
   if (blurred) {
     return [[UIColor colorNamed:kBackgroundColor] colorWithAlphaComponent:0.1];
-  } else if (IsMagicStackEnabled()) {
-    return [UIColor clearColor];
   } else {
-    return [[UIColor colorNamed:kBackgroundColor] colorWithAlphaComponent:0.95];
+    return [UIColor clearColor];
   }
-}
-
-// Opens the feed menu.
-- (void)didTouchMenuButton {
-  [self.feedMenuHandler openFeedMenuFromButton:self.menuButton];
 }
 
 @end

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <string>
+#include <string_view>
 #include <vector>
 
 #include "base/containers/to_vector.h"
@@ -28,6 +29,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/tab_helper.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
@@ -356,7 +358,7 @@ class OrbAndCorsExtensionBrowserTest : public OrbAndCorsExtensionTestBase {
     return browser()->tab_strip_model()->GetActiveWebContents();
   }
 
-  const Extension* InstallExtensionWithManifest(base::StringPiece manifest) {
+  const Extension* InstallExtensionWithManifest(std::string_view manifest) {
     dir_.WriteManifest(manifest);
     dir_.WriteFile(FILE_PATH_LITERAL("background_script.js"), "");
     dir_.WriteFile(FILE_PATH_LITERAL("page.html"), "");
@@ -1277,7 +1279,7 @@ class TrustTokenExtensionBrowserTest : public OrbAndCorsExtensionBrowserTest {
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
-// TODO(crbug.com/1315215): Have trust tokens handle the existence, or not, of
+// TODO(crbug.com/40221677): Have trust tokens handle the existence, or not, of
 // PrivacySandboxSettings3.
 IN_PROC_BROWSER_TEST_F(
     TrustTokenExtensionBrowserTest,
@@ -2920,7 +2922,7 @@ IN_PROC_BROWSER_TEST_F(OrbAndCorsExtensionBrowserTest,
       SCOPED_TRACE("Regular profile's background page");
       std::string fetch_result =
           FetchViaBackgroundPage(incognito_resource_url, extension, browser());
-      // TODO(https://crbug.com/1167262): Change to EXPECT_EQ after fixing the
+      // TODO(crbug.com/40742611): Change to EXPECT_EQ after fixing the
       // leak of permissions from incognito profile to regular profile.
       EXPECT_NE(kCorsErrorWhenFetching, fetch_result);
     }
@@ -2943,7 +2945,7 @@ IN_PROC_BROWSER_TEST_F(OrbAndCorsExtensionBrowserTest,
       SCOPED_TRACE("Regular profile's background page");
       std::string fetch_result =
           FetchViaBackgroundPage(incognito_resource_url, extension, browser());
-      // TODO(https://crbug.com/1167262): Change to EXPECT_EQ after fixing the
+      // TODO(crbug.com/40742611): Change to EXPECT_EQ after fixing the
       // leak of permissions from incognito profile to regular profile.
       EXPECT_NE(kCorsErrorWhenFetching, fetch_result);
     }

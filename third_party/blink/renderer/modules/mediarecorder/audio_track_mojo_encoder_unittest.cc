@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/containers/heap_array.h"
 #include "base/functional/bind.h"
 #include "base/notreached.h"
 #include "base/run_loop.h"
@@ -52,7 +53,7 @@ class TestAudioEncoder final : public media::mojom::AudioEncoder {
   void Encode(media::mojom::AudioBufferPtr /*buffer*/,
               EncodeCallback callback) override {
     constexpr size_t kDataSize = 38;
-    auto data = std::make_unique<uint8_t[]>(kDataSize);
+    auto data = base::HeapArray<uint8_t>::Uninit(kDataSize);
     const std::vector<uint8_t> description;
     client_->OnEncodedBufferReady(
         media::EncodedAudioBuffer(media::TestAudioParameters::Normal(),
@@ -90,6 +91,13 @@ class TestInterfaceFactory final : public media::mojom::InterfaceFactory {
           dst_video_decoder) override {
     NOTREACHED();
   }
+#if BUILDFLAG(ALLOW_OOP_VIDEO_DECODER)
+  void CreateStableVideoDecoder(
+      mojo::PendingReceiver<media::stable::mojom::StableVideoDecoder>
+          video_decoder) override {
+    NOTREACHED();
+  }
+#endif  // BUILDFLAG(ALLOW_OOP_VIDEO_DECODER)
   void CreateAudioDecoder(
       mojo::PendingReceiver<media::mojom::AudioDecoder> receiver) override {
     NOTREACHED();

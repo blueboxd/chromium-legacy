@@ -4,8 +4,15 @@
 
 #include "components/optimization_guide/core/model_execution/substitution.h"
 
+#include <cstdint>
+#include <initializer_list>
+
+#include "base/logging.h"
 #include "base/test/test.pb.h"
+#include "components/optimization_guide/core/model_execution/on_device_model_execution_proto_descriptors.h"
+#include "components/optimization_guide/proto/descriptors.pb.h"
 #include "components/optimization_guide/proto/features/compose.pb.h"
+#include "components/optimization_guide/proto/features/tab_organization.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -19,10 +26,16 @@ class SubstitutionTest : public testing::Test {
   ~SubstitutionTest() override = default;
 };
 
+void MkProtoField(proto::ProtoField* f, std::initializer_list<int32_t> tags) {
+  for (int32_t tag : tags) {
+    f->add_proto_descriptors()->set_tag_number(tag);
+  }
+}
+
 TEST_F(SubstitutionTest, RawString) {
   google::protobuf::RepeatedPtrField<proto::SubstitutedString> subs;
   auto* substitution = subs.Add();
-  substitution->set_string_template("hello this is a %s");
+  substitution->set_string_template("hello this is a %%%s%%");
   substitution->add_substitutions()->add_candidates()->set_raw_string("test");
 
   base::test::TestMessage request;
@@ -30,8 +43,21 @@ TEST_F(SubstitutionTest, RawString) {
   auto result = CreateSubstitutions(request, subs);
 
   ASSERT_TRUE(result.has_value());
-  EXPECT_EQ(result->input_string, "hello this is a test");
+  EXPECT_EQ(result->input_string, "hello this is a %test%");
   EXPECT_FALSE(result->should_ignore_input_context);
+}
+
+TEST_F(SubstitutionTest, BadTemplate) {
+  google::protobuf::RepeatedPtrField<proto::SubstitutedString> subs;
+  auto* substitution = subs.Add();
+  substitution->set_string_template("hello this is a %s%");
+  substitution->add_substitutions()->add_candidates()->set_raw_string("test");
+
+  base::test::TestMessage request;
+  request.set_test("some test");
+  auto result = CreateSubstitutions(request, subs);
+
+  ASSERT_FALSE(result.has_value());
 }
 
 TEST_F(SubstitutionTest, ProtoField) {
@@ -149,6 +175,45 @@ TEST_F(SubstitutionTest, Conditions) {
   ASSERT_TRUE(result.has_value());
   EXPECT_EQ(result->input_string,
             "hello this is a test: this is my input title");
+  EXPECT_FALSE(result->should_ignore_input_context);
+}
+
+TEST_F(SubstitutionTest, Repeated) {
+  google::protobuf::RepeatedPtrField<proto::SubstitutedString> subs;
+  {
+    auto* s1 = subs.Add();
+    s1->set_string_template("hello this is a test: %s");
+    auto* re = s1->add_substitutions()->add_candidates()->mutable_range_expr();
+    MkProtoField(re->mutable_proto_field(), {1});  // tabs
+    auto* s2 = re->mutable_expr();
+    s2->set_string_template("%s-%s ");
+    MkProtoField(
+        s2->add_substitutions()->add_candidates()->mutable_proto_field(),
+        {1});  // tab_id
+    MkProtoField(
+        s2->add_substitutions()->add_candidates()->mutable_proto_field(),
+        {2});  // title
+  }
+
+  proto::TabOrganizationRequest request;
+  {
+    auto* tabs = request.mutable_tabs();
+    {
+      auto* t1 = tabs->Add();
+      t1->set_title("tabone");
+      t1->set_tab_id(1);
+    }
+    {
+      auto* t1 = tabs->Add();
+      t1->set_title("tabtwo");
+      t1->set_tab_id(2);
+    }
+  }
+
+  auto result = CreateSubstitutions(request, subs);
+
+  ASSERT_TRUE(result.has_value());
+  EXPECT_EQ(result->input_string, "hello this is a test: 1-tabone 2-tabtwo ");
   EXPECT_FALSE(result->should_ignore_input_context);
 }
 

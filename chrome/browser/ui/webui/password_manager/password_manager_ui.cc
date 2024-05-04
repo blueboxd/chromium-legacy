@@ -140,6 +140,8 @@ content::WebUIDataSource* CreateAndAddPasswordsUIHTMLSource(
       {"checkupTitle", IDS_PASSWORD_MANAGER_UI_CHECKUP_TITLE},
       {"clearSearch", IDS_CLEAR_SEARCH},
       {"close", IDS_CLOSE},
+      {"closePromoCardButtonAriaLabel",
+       IDS_PASSWORD_MANAGER_UI_CLOSE_PROMO_CARD_BUTTON_ARIA_LABEL},
       {"compromisedPasswordsDescription",
        IDS_PASSWORD_MANAGER_UI_COMPROMISED_PASSWORDS_DESCRIPTION},
       {"compromisedPasswordsEmpty",
@@ -307,6 +309,8 @@ content::WebUIDataSource* CreateAndAddPasswordsUIHTMLSource(
        IDS_PASSWORD_MANAGER_UI_PASSKEY_DETAILS_CARD_DELETE_BUTTON_NO_USERNAME_ARIA_LABEL},
       {"passkeyManagementInfoLabel",
        IDS_PASSWORD_MANAGER_UI_PASSKEY_MANAGEMENT_INFO_LABEL},
+       {"passkeyManagementWithPinInfoLabel",
+       IDS_PASSWORD_MANAGER_UI_PASSKEY_MANAGEMENT_WITH_PIN_INFO_LABEL},
       {"passwordCopiedToClipboard",
        IDS_PASSWORD_MANAGER_UI_PASSWORD_COPIED_TO_CLIPBOARD},
       {"passwordDeleted", IDS_PASSWORD_MANAGER_UI_PASSWORD_DELETED},
@@ -324,13 +328,12 @@ content::WebUIDataSource* CreateAndAddPasswordsUIHTMLSource(
       {"passwordManager",
        IDS_PASSWORD_BUBBLES_PASSWORD_MANAGER_LINK_TEXT_SYNCED_TO_ACCOUNT},
       // Header for the page, always "Password Manager".
+      {"passwordManagerPinChanged", IDS_PASSWORD_MANAGER_PIN_CHANGED},
       {"passwordManagerString", IDS_PASSWORD_MANAGER_UI_TITLE},
       // Page title, branded. "Google Password Manager" or "Password Manager"
       // depending on the build.
       {"passwordManagerTitle",
        IDS_PASSWORD_BUBBLES_PASSWORD_MANAGER_LINK_TEXT_SAVING_ON_DEVICE},
-      {"passwordMovedToastMessage",
-       IDS_PASSWORD_MANAGER_UI_PASSWORD_MOVED_TOAST_MESSAGE},
       {"passwordNoteCharacterCount",
        IDS_PASSWORD_MANAGER_UI_NOTE_CHARACTER_COUNT},
       {"passwordNoteCharacterCountWarning",
@@ -341,6 +344,7 @@ content::WebUIDataSource* CreateAndAddPasswordsUIHTMLSource(
       {"phishedAndLeakedPassword",
        IDS_PASSWORD_MANAGER_UI_PASSWORD_PHISHED_AND_LEAKED},
       {"phishedPassword", IDS_PASSWORD_MANAGER_UI_PASSWORD_PHISHED},
+      {"promoCardAriaLabel", IDS_PASSWORD_MANAGER_UI_PROMO_CARD_ARIA_LABEL},
       {"removeBlockedAriaDescription",
        IDS_PASSWORD_MANAGER_UI_REMOVE_BLOCKED_SITE_ARIA_DESCRIPTION},
       {"reload", IDS_RELOAD},
@@ -468,11 +472,6 @@ content::WebUIDataSource* CreateAndAddPasswordsUIHTMLSource(
                      password_manager_util::
                          ShouldBiometricAuthenticationForFillingToggleBeVisible(
                              g_browser_process->local_state()));
-#endif
-#if BUILDFLAG(IS_MAC)
-  source->AddBoolean(
-      "createPasskeysInICloudKeychainToggleVisible",
-      base::FeatureList::IsEnabled(device::kWebAuthnICloudKeychain));
 #endif
 
   source->AddBoolean(
@@ -619,6 +618,9 @@ void AddPluralStrings(content::WebUI* web_ui) {
   plural_string_handler->AddLocalizedString(
       "deviceOnlyListItemAriaLabel",
       IDS_PASSWORD_MANAGER_UI_PASSWORD_LIST_ITEM_ARIA_LABEL);
+  plural_string_handler->AddLocalizedString(
+      "passwordsMovedToastMessage",
+      IDS_PASSWORD_MANAGER_UI_PASSWORD_MOVED_TOAST_MESSAGE);
   web_ui->AddMessageHandler(std::move(plural_string_handler));
 }
 
@@ -637,7 +639,7 @@ DEFINE_CLASS_CUSTOM_ELEMENT_EVENT_TYPE(PasswordManagerUI,
                                        kAddShortcutCustomEventId);
 
 PasswordManagerUI::PasswordManagerUI(content::WebUI* web_ui)
-    : ui::MojoBubbleWebUIController(web_ui, /*enable_chrome_send=*/true) {
+    : TopChromeWebUIController(web_ui, /*enable_chrome_send=*/true) {
   // Set up the chrome://password-manager/ source.
   Profile* profile = Profile::FromWebUI(web_ui);
   passwords_private_delegate_ =

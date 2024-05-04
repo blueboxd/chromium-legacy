@@ -6,16 +6,14 @@
 #include <memory>
 #include <sstream>
 #include <string>
+#include <string_view>
 #include <utility>
-
-#include "chrome/browser/subresource_filter/subresource_filter_browser_test_harness.h"
 
 #include "base/command_line.h"
 #include "base/functional/bind.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/pattern.h"
-#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -27,6 +25,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/safe_browsing/test_safe_browsing_database_helper.h"
 #include "chrome/browser/safe_browsing/test_safe_browsing_service.h"
+#include "chrome/browser/subresource_filter/subresource_filter_browser_test_harness.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -39,11 +38,11 @@
 #include "components/metrics/content/subprocess_metrics_provider.h"
 #include "components/safe_browsing/core/browser/db/v4_test_util.h"
 #include "components/security_interstitials/core/unsafe_resource.h"
-#include "components/subresource_filter/content/browser/async_document_subresource_filter.h"
-#include "components/subresource_filter/content/browser/async_document_subresource_filter_test_utils.h"
 #include "components/subresource_filter/content/browser/content_subresource_filter_throttle_manager.h"
-#include "components/subresource_filter/content/browser/ruleset_service.h"
 #include "components/subresource_filter/content/browser/test_ruleset_publisher.h"
+#include "components/subresource_filter/content/shared/browser/ruleset_service.h"
+#include "components/subresource_filter/core/browser/async_document_subresource_filter.h"
+#include "components/subresource_filter/core/browser/async_document_subresource_filter_test_utils.h"
 #include "components/subresource_filter/core/browser/subresource_filter_constants.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features_test_support.h"
@@ -88,7 +87,7 @@ namespace proto = url_pattern_index::proto;
 static constexpr const char kTestFrameSetPath[] =
     "/subresource_filter/frame_set.html";
 
-GURL GetURLWithFragment(const GURL& url, base::StringPiece fragment) {
+GURL GetURLWithFragment(const GURL& url, std::string_view fragment) {
   GURL::Replacements replacements;
   replacements.SetRefStr(fragment);
   return url.ReplaceComponents(replacements);
@@ -636,9 +635,11 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
   content::RenderProcessHostWatcher crash_observer(
       browser()->tab_strip_model()->GetActiveWebContents(),
       content::RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
-  browser()->OpenURL(content::OpenURLParams(
-      GURL(blink::kChromeUICrashURL), content::Referrer(),
-      WindowOpenDisposition::CURRENT_TAB, ui::PAGE_TRANSITION_TYPED, false));
+  browser()->OpenURL(content::OpenURLParams(GURL(blink::kChromeUICrashURL),
+                                            content::Referrer(),
+                                            WindowOpenDisposition::CURRENT_TAB,
+                                            ui::PAGE_TRANSITION_TYPED, false),
+                     /*navigation_handle_callback=*/{});
   crash_observer.Wait();
 }
 
@@ -1027,7 +1028,7 @@ void ExpectHistogramsAreRecordedForTestFrameSet(
 }  // namespace
 
 #if BUILDFLAG(IS_MAC)
-// TODO(crbug.com/1357773): Flaky on Mac.
+// TODO(crbug.com/40236757): Flaky on Mac.
 #define MAYBE_ExpectPerformanceHistogramsAreRecorded \
   DISABLED_ExpectPerformanceHistogramsAreRecorded
 #else
@@ -1293,7 +1294,7 @@ class AutomaticLazyLoadFrameBrowserTest
 
   void AddAdIframe(content::RenderFrameHost* render_frame_host,
                    const GURL& url) {
-    const base::StringPiece script = R"(
+    const std::string_view script = R"(
       createAdIframeWithSrc($1).onload = () => {childFrameLoadCount++;};
     )";
     EXPECT_TRUE(ExecJs(render_frame_host, content::JsReplace(script, url)));
@@ -1301,14 +1302,14 @@ class AutomaticLazyLoadFrameBrowserTest
 
   void AddLazyAdIframe(content::RenderFrameHost* render_frame_host,
                        const GURL& url) {
-    const base::StringPiece script = R"(
+    const std::string_view script = R"(
       createLazyAdIframeWithSrc($1).onload = () => {childFrameLoadCount++;};
     )";
     EXPECT_TRUE(ExecJs(render_frame_host, content::JsReplace(script, url)));
   }
 
   void AddIframe(content::RenderFrameHost* render_frame_host, const GURL& url) {
-    const base::StringPiece script = R"(
+    const std::string_view script = R"(
       const iframeElement = document.createElement("iframe");
       iframeElement.src = $1;
       iframeElement.onload = () => {childFrameLoadCount++;};
@@ -1319,7 +1320,7 @@ class AutomaticLazyLoadFrameBrowserTest
 
   void AddLazyIframe(content::RenderFrameHost* render_frame_host,
                      const GURL& url) {
-    const base::StringPiece script = R"(
+    const std::string_view script = R"(
       const iframeElement = document.createElement("iframe");
       iframeElement.src = $1;
       iframeElement.loading = 'lazy';

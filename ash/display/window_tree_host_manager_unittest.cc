@@ -486,8 +486,11 @@ TEST_F(WindowTreeHostManagerHistogramTest,
   const int kRepeatingDelay = 30;
   base::HistogramTester tester;
 
+  const int64_t internal_display_id =
+      display::test::DisplayManagerTestApi(display_manager())
+          .SetFirstDisplayAsInternalDisplay();
   display::ManagedDisplayInfo internal_display_info =
-      CreateDisplayInfo(123, gfx::Rect(0, 0, 800, 600));
+      CreateDisplayInfo(internal_display_id, gfx::Rect(0, 0, 800, 600));
   display::ManagedDisplayInfo external_display_info =
       CreateDisplayInfo(456, gfx::Rect(100, 200, 1024, 768));
   internal_display_info.set_device_dpi(kDefaultDeviceDPI);
@@ -500,30 +503,38 @@ TEST_F(WindowTreeHostManagerHistogramTest,
   display::test::DisplayManagerTestApi(display_manager())
       .SetFirstDisplayAsInternalDisplay();
 
+  // The expected external display effective dpi bucket is calculated by
+  // applying the recommended default scaling factor to the initial device DPI.
+  const int expected_external_display_effective_dpi_bucket = 94;
+
   // Do not emit right after initialization.
   VerifyActiveEffectiveDPIEmitted(tester, /*is_internal_display=*/true,
                                   /*bucket=*/kDefaultDeviceDPI, /*count=*/0);
-  VerifyActiveEffectiveDPIEmitted(tester, /*is_internal_display=*/false,
-                                  /*bucket=*/kDefaultDeviceDPI, /*count=*/0);
+  VerifyActiveEffectiveDPIEmitted(
+      tester, /*is_internal_display=*/false,
+      /*bucket=*/expected_external_display_effective_dpi_bucket, /*count=*/0);
 
   // Firstly emitted after half of delayed time.
   FastForwardBy(base::Minutes(kRepeatingDelay / 2 + 1));
   VerifyActiveEffectiveDPIEmitted(tester, /*is_internal_display=*/true,
                                   /*bucket=*/kDefaultDeviceDPI, /*count=*/1);
-  VerifyActiveEffectiveDPIEmitted(tester, /*is_internal_display=*/false,
-                                  /*bucket=*/kDefaultDeviceDPI, /*count=*/1);
+  VerifyActiveEffectiveDPIEmitted(
+      tester, /*is_internal_display=*/false,
+      /*bucket=*/expected_external_display_effective_dpi_bucket, /*count=*/1);
 
   // Emitted repeatedly after delayed time.
   FastForwardBy(base::Minutes(kRepeatingDelay - 2));
   VerifyActiveEffectiveDPIEmitted(tester, /*is_internal_display=*/true,
                                   /*bucket=*/kDefaultDeviceDPI, /*count=*/1);
-  VerifyActiveEffectiveDPIEmitted(tester, /*is_internal_display=*/false,
-                                  /*bucket=*/kDefaultDeviceDPI, /*count=*/1);
+  VerifyActiveEffectiveDPIEmitted(
+      tester, /*is_internal_display=*/false,
+      /*bucket=*/expected_external_display_effective_dpi_bucket, /*count=*/1);
   FastForwardBy(base::Minutes(2));
   VerifyActiveEffectiveDPIEmitted(tester, /*is_internal_display=*/true,
                                   /*bucket=*/kDefaultDeviceDPI, /*count=*/2);
-  VerifyActiveEffectiveDPIEmitted(tester, /*is_internal_display=*/false,
-                                  /*bucket=*/kDefaultDeviceDPI, /*count=*/2);
+  VerifyActiveEffectiveDPIEmitted(
+      tester, /*is_internal_display=*/false,
+      /*bucket=*/expected_external_display_effective_dpi_bucket, /*count=*/2);
 
   // Changing zoom factor will emit to a different bucket.
   internal_display_info.set_zoom_factor(kZoomFactor1);
@@ -548,9 +559,10 @@ TEST_F(WindowTreeHostManagerTest, SecondaryDisplayLayout) {
 
   TestObserver observer;
   UpdateDisplay("600x500,500x400");
-  EXPECT_EQ(1, observer.CountAndReset());  // resize and add
+  // only 1st display gets resized.
+  EXPECT_EQ(1, observer.CountAndReset());
   EXPECT_EQ(1, observer.GetBoundsChangedCountAndReset());
-  EXPECT_EQ(2, observer.GetWorkareaChangedCountAndReset());
+  EXPECT_EQ(1, observer.GetWorkareaChangedCountAndReset());
   EXPECT_EQ(0, observer.GetFocusChangedCountAndReset());
   EXPECT_EQ(0, observer.GetActivationChangedCountAndReset());
   gfx::Insets insets(5);

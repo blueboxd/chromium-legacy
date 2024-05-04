@@ -32,7 +32,6 @@
 namespace base {
 
 namespace {
-NSString* const kThreadPriorityForTestKey = @"CrThreadPriorityForTestKey";
 NSString* const kRealtimePeriodNsKey = @"CrRealtimePeriodNsKey";
 }  // namespace
 
@@ -96,8 +95,9 @@ BASE_FEATURE(kOptimizedRealtimeThreadingMac,
 #endif
 );
 
-const Feature kUserInteractiveCompositingMac{"UserInteractiveCompositingMac",
-                                             FEATURE_DISABLED_BY_DEFAULT};
+BASE_FEATURE(kUserInteractiveCompositingMac,
+             "UserInteractiveCompositingMac",
+             FEATURE_ENABLED_BY_DEFAULT);
 
 namespace {
 
@@ -153,18 +153,12 @@ std::atomic<TimeConstraints> g_time_constraints;
 }  // namespace
 
 // static
-void PlatformThreadApple::InitFeaturesPostFieldTrial() {
-  // A DCHECK is triggered on FeatureList initialization if the state of a
-  // feature has been checked before. To avoid triggering this DCHECK in unit
-  // tests that call this before initializing the FeatureList, only check the
-  // state of the feature if the FeatureList is initialized.
-  if (FeatureList::GetInstance()) {
-    g_time_constraints.store(TimeConstraints::ReadFromFeatureParams());
-    g_use_optimized_realtime_threading.store(
-        IsOptimizedRealtimeThreadingMacEnabled());
-    g_user_interactive_compositing.store(
-        FeatureList::IsEnabled(kUserInteractiveCompositingMac));
-  }
+void PlatformThreadApple::InitializeFeatures() {
+  g_time_constraints.store(TimeConstraints::ReadFromFeatureParams());
+  g_use_optimized_realtime_threading.store(
+      IsOptimizedRealtimeThreadingMacEnabled());
+  g_user_interactive_compositing.store(
+      FeatureList::IsEnabled(kUserInteractiveCompositingMac));
 }
 
 // static
@@ -296,6 +290,11 @@ void SetPriorityRealtimeAudio(TimeDelta realtime_period) {
 }  // anonymous namespace
 
 // static
+TimeDelta PlatformThreadApple::GetCurrentThreadRealtimePeriodForTest() {
+  return GetCurrentThreadRealtimePeriod();
+}
+
+// static
 bool PlatformThreadBase::CanChangeThreadType(ThreadType from, ThreadType to) {
   return true;
 }
@@ -306,10 +305,11 @@ void SetCurrentThreadTypeImpl(ThreadType thread_type,
                               MessagePumpType pump_type_hint) {
   // Changing the priority of the main thread causes performance
   // regressions. https://crbug.com/601270
-  // TODO(https://crbug.com/1280764): Remove this check. kCompositing is the
+  // TODO(crbug.com/40209052): Remove this check. kCompositing is the
   // default on Mac, so this check is counter intuitive.
   if ([[NSThread currentThread] isMainThread] &&
-      thread_type >= ThreadType::kCompositing) {
+      thread_type >= ThreadType::kCompositing &&
+      !g_user_interactive_compositing.load(std::memory_order_relaxed)) {
     DCHECK(thread_type == ThreadType::kDefault ||
            thread_type == ThreadType::kCompositing);
     return;
@@ -381,32 +381,36 @@ void SetCurrentThreadTypeImpl(ThreadType thread_type,
       break;
     }
     case ThreadType::kRealtimeAudio:
-      priority = ThreadPriorityForTest::kRealtimeAudio;
       SetPriorityRealtimeAudio(GetCurrentThreadRealtimePeriod());
       DCHECK_EQ([NSThread.currentThread threadPriority], 1.0);
       break;
   }
-
-  NSThread.currentThread.threadDictionary[kThreadPriorityForTestKey] =
-      @(static_cast<int>(priority));
 }
 
 }  // namespace internal
 
 // static
 ThreadPriorityForTest PlatformThreadBase::GetCurrentThreadPriorityForTest() {
-  NSNumber* priority = base::apple::ObjCCast<NSNumber>(
-      NSThread.currentThread.threadDictionary[kThreadPriorityForTestKey]);
-
-  if (!priority) {
-    return ThreadPriorityForTest::kNormal;
+  if ([NSThread.currentThread threadPriority] == 1.0) {
+    // Set to 1 for a non-fixed thread.)
+    return ThreadPriorityForTest::kRealtimeAudio;
   }
 
-  ThreadPriorityForTest thread_priority =
-      static_cast<ThreadPriorityForTest>(priority.intValue);
-  DCHECK_GE(thread_priority, ThreadPriorityForTest::kBackground);
-  DCHECK_LE(thread_priority, ThreadPriorityForTest::kMaxValue);
-  return thread_priority;
+  qos_class_t qos_class;
+  int relative_priority;
+  pthread_get_qos_class_np(pthread_self(), &qos_class, &relative_priority);
+  switch (qos_class) {
+    case QOS_CLASS_BACKGROUND:
+      return ThreadPriorityForTest::kBackground;
+    case QOS_CLASS_UTILITY:
+      return ThreadPriorityForTest::kUtility;
+    case QOS_CLASS_USER_INITIATED:
+      return ThreadPriorityForTest::kNormal;
+    case QOS_CLASS_USER_INTERACTIVE:
+      return ThreadPriorityForTest::kDisplay;
+    default:
+      return ThreadPriorityForTest::kNormal;
+  }
 }
 
 size_t GetDefaultThreadStackSize(const pthread_attr_t& attributes) {

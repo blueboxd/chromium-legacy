@@ -6,6 +6,7 @@
 #define COMPONENTS_DATA_SHARING_INTERNAL_EMPTY_DATA_SHARING_SERVICE_H_
 
 #include "components/data_sharing/public/data_sharing_service.h"
+#include "components/sync/model/model_type_sync_bridge.h"
 
 namespace data_sharing {
 
@@ -22,7 +23,11 @@ class EmptyDataSharingService : public DataSharingService {
 
   // DataSharingService implementation.
   bool IsEmptyService() override;
+  void AddObserver(Observer* observer) override;
+  void RemoveObserver(Observer* observer) override;
   DataSharingNetworkLoader* GetDataSharingNetworkLoader() override;
+  base::WeakPtr<syncer::ModelTypeControllerDelegate>
+  GetCollaborationGroupControllerDelegate() override;
   void ReadAllGroups(
       base::OnceCallback<void(const GroupsDataSetOrFailureOutcome&)> callback)
       override;
@@ -37,11 +42,11 @@ class EmptyDataSharingService : public DataSharingService {
       base::OnceCallback<void(PeopleGroupActionOutcome)> callback) override;
   void InviteMember(
       const std::string& group_id,
-      const std::string& invitee_gaia_id,
+      const std::string& invitee_email,
       base::OnceCallback<void(PeopleGroupActionOutcome)> callback) override;
   void RemoveMember(
       const std::string& group_id,
-      const std::string& member_gaia_id,
+      const std::string& member_email,
       base::OnceCallback<void(PeopleGroupActionOutcome)> callback) override;
 };
 

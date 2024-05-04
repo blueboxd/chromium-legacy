@@ -6,9 +6,12 @@
 #define CHROME_BROWSER_ANDROID_WEBAPK_WEBAPK_SYNC_SERVICE_H_
 
 #include "base/time/clock.h"
+#include "chrome/browser/android/webapk/pwa_restore_bottom_sheet_mediator.h"
 #include "chrome/browser/android/webapk/webapk_database_factory.h"
+#include "chrome/browser/android/webapk/webapk_restore_manager.h"
 #include "chrome/browser/android/webapk/webapk_sync_bridge.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/sync/protocol/web_apk_specifics.pb.h"
 
 class Profile;
 
@@ -35,13 +38,19 @@ class WebApkSyncService : public KeyedService {
   base::WeakPtr<syncer::ModelTypeControllerDelegate>
   GetModelTypeControllerDelegate();
 
-  void OnWebApkUsed(std::unique_ptr<sync_pb::WebApkSpecifics> app_specifics);
+  void OnWebApkUsed(std::unique_ptr<sync_pb::WebApkSpecifics> app_specifics,
+                    bool is_install);
   void OnWebApkUninstalled(const std::string& manifest_id);
   void RemoveOldWebAPKsFromSync(int64_t current_time_ms_since_unix_epoch);
+
+  void PrepareRestorableAppsInfo(
+      WebApkRestoreManager::RestorableAppsCallback result_callback) const;
+  WebApkRestoreManager* GetWebApkRestoreManager() const;
 
  private:
   std::unique_ptr<AbstractWebApkDatabaseFactory> database_factory_;
   std::unique_ptr<WebApkSyncBridge> sync_bridge_;
+  std::unique_ptr<WebApkRestoreManager> restore_manager_;
 };
 
 }  // namespace webapk

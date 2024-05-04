@@ -189,11 +189,28 @@ mojom("test_interfaces") {
     },
   ]
 
-  support_lazy_serialization = true
-
   # Validation tests require precise message content matching, so we avoid
   # scrambling message IDs for test interfaces.
   scramble_message_ids = false
+}
+
+mojom("test_interfaces_for_containers_of_optionals") {
+  testonly = true
+  generate_java = false
+  sources = [ "containers_of_nullable_types.mojom" ]
+  cpp_typemaps = [
+    {
+      types = [
+        {
+          mojom =
+              "mojo.test.containers_of_nullable_types.mojom.TypemappedStruct"
+          cpp = "::mojo::test::containers_of_nullable_types::NativeStruct"
+        },
+      ]
+      traits_headers = [ "//mojo/public/cpp/bindings/tests/containers_of_nullable_types_mojom_traits.h" ]
+      traits_sources = [ "//mojo/public/cpp/bindings/tests/containers_of_nullable_types_mojom_traits.cc" ]
+    },
+  ]
 }
 
 component("test_export_component") {
@@ -353,8 +370,6 @@ mojom("test_struct_traits_interfaces") {
           [ "//mojo/public/cpp/bindings/tests:struct_with_traits_impl" ]
     },
   ]
-
-  support_lazy_serialization = true
 }
 
 mojom("test_associated_interfaces") {

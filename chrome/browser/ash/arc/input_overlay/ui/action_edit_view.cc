@@ -122,8 +122,7 @@ ActionEditView::ActionEditView(DisplayOverlayController* controller,
   container
       ->AddColumn(/*h_align=*/views::LayoutAlignment::kStart,
                   /*v_align=*/
-                  for_editing_list ? views::LayoutAlignment::kCenter
-                                   : views::LayoutAlignment::kStart,
+                  views::LayoutAlignment::kCenter,
                   /*horizontal_resize=*/1.0f,
                   /*size_type=*/views::TableLayout::ColumnSize::kUsePreferred,
                   /*fixed_width=*/0, /*min_width=*/0)
@@ -168,10 +167,6 @@ ActionEditView::ActionEditView(DisplayOverlayController* controller,
 
 ActionEditView::~ActionEditView() = default;
 
-void ActionEditView::RemoveNewState() {
-  labels_view_->RemoveNewState();
-}
-
 void ActionEditView::OnActionInputBindingUpdated() {
   labels_view_->OnActionInputBindingUpdated();
   if (for_editing_list_) {
@@ -179,8 +174,16 @@ void ActionEditView::OnActionInputBindingUpdated() {
   }
 }
 
+void ActionEditView::RemoveNewState() {
+  labels_view_->RemoveNewState();
+}
+
 std::u16string ActionEditView::CalculateActionName() {
   return labels_view_->CalculateActionName();
+}
+
+void ActionEditView::PerformPulseAnimation() {
+  labels_view_->PerformPulseAnimationOnFirstLabel();
 }
 
 void ActionEditView::OnClicked() {
@@ -200,8 +203,8 @@ std::u16string ActionEditView::CalculateAccessibleLabel() const {
   // "Selected keys are w, a, s, d. Tap on the button to edit the control".
   return l10n_util::GetStringFUTF16(
       keys_string.find(',') == std::string::npos
-          ? IDS_INPUT_OVERLAY_EDITING_LIST_ITEM_BUTTON_A11Y_TEMPLATE
-          : IDS_INPUT_OVERLAY_EDITING_LIST_ITEM_BUTTON_A11Y_PLURAL_TEMPLATE,
+          ? IDS_INPUT_OVERLAY_EDITING_LIST_ITEM_BUTTON_CONTAINER_A11Y_TPL
+          : IDS_INPUT_OVERLAY_EDITING_LIST_ITEM_JOYSTICK_CONTAINER_A11Y_TPL,
       keys_string);
 }
 

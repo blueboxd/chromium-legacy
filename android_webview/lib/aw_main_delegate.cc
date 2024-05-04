@@ -160,18 +160,26 @@ std::optional<int> AwMainDelegate::BasicStartupComplete() {
       cl->AppendSwitch(switches::kWebViewDrawFunctorUsesVulkan);
 
 #ifdef V8_USE_EXTERNAL_STARTUP_DATA
-#if BUILDFLAG(USE_V8_CONTEXT_SNAPSHOT)
-    const gin::V8SnapshotFileType file_type =
-        gin::V8SnapshotFileType::kWithAdditionalContext;
-#else
-    const gin::V8SnapshotFileType file_type = gin::V8SnapshotFileType::kDefault;
-#endif
+#if !BUILDFLAG(USE_V8_CONTEXT_SNAPSHOT) || BUILDFLAG(INCLUDE_BOTH_V8_SNAPSHOTS)
     base::android::RegisterApkAssetWithFileDescriptorStore(
         content::kV8Snapshot32DataDescriptor,
-        gin::V8Initializer::GetSnapshotFilePath(true, file_type));
+        gin::V8Initializer::GetSnapshotFilePath(
+            true, gin::V8SnapshotFileType::kDefault));
     base::android::RegisterApkAssetWithFileDescriptorStore(
         content::kV8Snapshot64DataDescriptor,
-        gin::V8Initializer::GetSnapshotFilePath(false, file_type));
+        gin::V8Initializer::GetSnapshotFilePath(
+            false, gin::V8SnapshotFileType::kDefault));
+#endif
+#if BUILDFLAG(USE_V8_CONTEXT_SNAPSHOT)
+    base::android::RegisterApkAssetWithFileDescriptorStore(
+        content::kV8ContextSnapshot32DataDescriptor,
+        gin::V8Initializer::GetSnapshotFilePath(
+            true, gin::V8SnapshotFileType::kWithAdditionalContext));
+    base::android::RegisterApkAssetWithFileDescriptorStore(
+        content::kV8ContextSnapshot64DataDescriptor,
+        gin::V8Initializer::GetSnapshotFilePath(
+            false, gin::V8SnapshotFileType::kWithAdditionalContext));
+#endif
 #endif  // V8_USE_EXTERNAL_STARTUP_DATA
   }
 
@@ -180,7 +188,7 @@ std::optional<int> AwMainDelegate::BasicStartupComplete() {
   }
 
   {
-    // TODO(crbug.com/1453407): Consider to migrate all the following overrides
+    // TODO(crbug.com/40271903): Consider to migrate all the following overrides
     // to the new mechanism in android_webview/browser/aw_field_trials.cc.
     base::ScopedAddFeatureFlags features(cl);
 
@@ -397,7 +405,7 @@ void AwMainDelegate::InitializeMemorySystem(const bool is_browser_process) {
   // observers of PoissonAllocationSampler. Unfortunately, some potential
   // candidates are still linked and may sneak in through hidden paths.
   // Therefore, we include PoissonAllocationSampler unconditionally.
-  // TODO(crbug.com/1411454): Which observers of PoissonAllocationSampler are
+  // TODO(crbug.com/40062835): Which observers of PoissonAllocationSampler are
   // really in use on Android WebView? Can we add the sampler conditionally or
   // remove it completely?
   memory_system::Initializer()

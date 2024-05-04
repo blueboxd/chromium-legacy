@@ -9,6 +9,7 @@ import 'chrome://resources/ash/common/cr_elements/cr_action_menu/cr_action_menu.
 import {ApnDetailDialogMode, ApnEventData} from 'chrome://resources/ash/common/network/cellular_utils.js';
 import {MojoInterfaceProviderImpl} from 'chrome://resources/ash/common/network/mojo_interface_provider.js';
 import {OncMojo} from 'chrome://resources/ash/common/network/onc_mojo.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {ApnState, ApnType, CrosNetworkConfigRemote} from 'chrome://resources/mojo/chromeos/services/network_config/public/mojom/cros_network_config.mojom-webui.js';
 import {NetworkType, PortalState} from 'chrome://resources/mojo/chromeos/services/network_config/public/mojom/network_types.mojom-webui.js';
 import {assertEquals, assertTrue} from 'chrome://webui-test/chai_assert.js';
@@ -35,14 +36,17 @@ suite('ApnListItemTest', function() {
   setup(async function() {
     mojoApi_ = new FakeNetworkConfig();
     MojoInterfaceProviderImpl.getInstance().remote_ = mojoApi_;
+  });
+
+  async function init() {
     apnListItem = document.createElement('apn-list-item');
     apnListItem.apn = {
       accessPointName: 'apn1',
     };
     apnListItem.guid = 'cellular_guid';
     document.body.appendChild(apnListItem);
-    await flushTasks();
-  });
+    return flushTasks();
+  }
 
   function openThreeDotMenu() {
     const menuButton =
@@ -55,6 +59,7 @@ suite('ApnListItemTest', function() {
   }
 
   test('Check if APN list item exists', async function() {
+    await init();
     assertTrue(!!apnListItem);
     apnListItem.apn = {
       accessPointName: 'apn1',
@@ -77,6 +82,7 @@ suite('ApnListItemTest', function() {
   });
 
   test('Check if connected sublabel is shown', async function() {
+    await init();
     apnListItem.isConnected = false;
     await flushTasks();
 
@@ -100,11 +106,13 @@ suite('ApnListItemTest', function() {
   });
 
   test('Check if APN three dot menu shows', async function() {
+    await init();
     await openThreeDotMenu();
     assertTrue(apnListItem.$.dotsMenu.open);
   });
 
   test('Check disabled state.', async function() {
+    await init();
     apnListItem.apn = {
       state: ApnState.kDisabled,
       accessPointName: 'apn',
@@ -130,6 +138,7 @@ suite('ApnListItemTest', function() {
   });
 
   test('Check if three dot menu remove APN works', async function() {
+    await init();
     const guid = 'cellular_guid';
     await openThreeDotMenu();
     const getRemoveButton = () =>
@@ -142,7 +151,12 @@ suite('ApnListItemTest', function() {
     };
     await flushTasks();
     assertTrue(!!getRemoveButton());
+    assertFalse(!!getRemoveButton().disabled);
 
+    apnListItem.shouldDisallowApnModification = true;
+    assertTrue(!!getRemoveButton().disabled);
+
+    apnListItem.shouldDisallowApnModification = false;
     mojoApi_.setNetworkTypeEnabledState(NetworkType.kCellular, true);
     const props = OncMojo.getDefaultManagedProperties(
         NetworkType.kCellular, guid, 'cellular');
@@ -167,6 +181,7 @@ suite('ApnListItemTest', function() {
   });
 
   test('Check if three dot menu disable/enable APN works', async function() {
+    await init();
     const guid = 'cellular_guid';
     await openThreeDotMenu();
     const getEnableButton = () =>
@@ -196,7 +211,13 @@ suite('ApnListItemTest', function() {
     apnListItem.apn = disabledApn;
     await flushTasks();
     assertTrue(!!getEnableButton());
+    assertFalse(!!getEnableButton().disabled);
     assertFalse(!!getDisableButton());
+
+    apnListItem.shouldDisallowApnModification = true;
+    assertTrue(!!getEnableButton().disabled);
+
+    apnListItem.shouldDisallowApnModification = false;
     getEnableButton().click();
     await mojoApi_.whenCalled('modifyCustomApn');
     let managedProps = await mojoApi_.getManagedProperties(guid);
@@ -208,7 +229,13 @@ suite('ApnListItemTest', function() {
     apnListItem.apn = createApn(/*disabled=*/ false);
     await flushTasks();
     assertTrue(!!getDisableButton());
+    assertFalse(!!getDisableButton().disabled);
     assertFalse(!!getEnableButton());
+
+    apnListItem.shouldDisallowApnModification = true;
+    assertTrue(!!getDisableButton().disabled);
+
+    apnListItem.shouldDisallowApnModification = false;
     getDisableButton().click();
     await mojoApi_.whenCalled('modifyCustomApn');
     managedProps = await mojoApi_.getManagedProperties(guid);
@@ -218,50 +245,78 @@ suite('ApnListItemTest', function() {
     assertFalse(apnListItem.$.dotsMenu.open);
   });
 
-  test(
-      'Clicking APN details button triggers a show-apn-detail-dialog event ',
-      async function() {
-        apnListItem.apn = TEST_APN_EVENT_DATA.apn;
-        apnListItem.guid = TEST_APN_EVENT_DATA.guid;
+  [true, false].forEach(isApnRevampAndPoliciesEnabled => {
+    test(
+        `Clicking APN details button triggers a show-apn-detail-dialog event
+        when isApnRevampAndPoliciesEnabled is ${isApnRevampAndPoliciesEnabled}`,
+        async function() {
+          loadTimeData.overrideValues({
+            isApnRevampAndPoliciesEnabled,
+          });
+          await init();
+          apnListItem.apn = TEST_APN_EVENT_DATA.apn;
+          apnListItem.guid = TEST_APN_EVENT_DATA.guid;
 
-        const subLabel = apnListItem.shadowRoot.querySelector('#autoDetected');
-        assertTrue(!!subLabel);
-        assertFalse(subLabel.hasAttribute('hidden'));
-        assertEquals(apnListItem.i18n('apnAutoDetected'), subLabel.innerText);
+          const subLabel =
+              apnListItem.shadowRoot.querySelector('#autoDetected');
+          assertTrue(!!subLabel);
+          assertFalse(subLabel.hasAttribute('hidden'));
+          assertEquals(apnListItem.i18n('apnAutoDetected'), subLabel.innerText);
 
-        let apnDetailsClickedEvent =
-            eventToPromise('show-apn-detail-dialog', window);
-        assertTrue(!!apnListItem.$.detailsButton);
-        assertEquals(
-            apnListItem.i18n('apnMenuDetails'),
-            apnListItem.$.detailsButton.innerText.trim());
-        apnListItem.$.detailsButton.click();
-        let eventData = await apnDetailsClickedEvent;
+          let apnDetailsClickedEvent =
+              eventToPromise('show-apn-detail-dialog', window);
+          assertTrue(!!apnListItem.$.detailsButton);
+          assertEquals(
+              apnListItem.i18n('apnMenuDetails'),
+              apnListItem.$.detailsButton.innerText.trim());
+          apnListItem.$.detailsButton.click();
+          let eventData = await apnDetailsClickedEvent;
 
-        assertEquals(TEST_APN_EVENT_DATA.apn.name, eventData.detail.apn.name);
-        assertEquals(TEST_APN_EVENT_DATA.mode, eventData.detail.mode);
-        assertFalse(apnListItem.$.dotsMenu.open);
+          assertEquals(TEST_APN_EVENT_DATA.apn.name, eventData.detail.apn.name);
+          assertEquals(TEST_APN_EVENT_DATA.mode, eventData.detail.mode);
+          assertFalse(apnListItem.$.dotsMenu.open);
 
-        // Case: the apn list item is not auto detected
-        apnListItem.apn = {
-          name: TEST_APN_EVENT_DATA.apn.name,
-          id: '1',
-        };
-        assertTrue(subLabel.hasAttribute('hidden'));
-        assertEquals(
-            apnListItem.i18n('apnMenuEdit'),
-            apnListItem.$.detailsButton.innerText.trim());
+          // Case: the apn list item is not auto detected.
+          apnListItem.apn = {
+            name: TEST_APN_EVENT_DATA.apn.name,
+            id: '1',
+          };
+          assertTrue(subLabel.hasAttribute('hidden'));
+          assertEquals(
+              apnListItem.i18n('apnMenuEdit'),
+              apnListItem.$.detailsButton.innerText.trim());
 
-        apnDetailsClickedEvent =
-            eventToPromise('show-apn-detail-dialog', window);
-        apnListItem.$.detailsButton.click();
-        eventData = await apnDetailsClickedEvent;
-        assertEquals(TEST_APN_EVENT_DATA.apn.name, eventData.detail.apn.name);
-        assertEquals(ApnDetailDialogMode.EDIT, eventData.detail.mode);
-        assertFalse(apnListItem.$.dotsMenu.open);
-      });
+          apnDetailsClickedEvent =
+              eventToPromise('show-apn-detail-dialog', window);
+          apnListItem.$.detailsButton.click();
+          eventData = await apnDetailsClickedEvent;
+          assertEquals(TEST_APN_EVENT_DATA.apn.name, eventData.detail.apn.name);
+          assertEquals(ApnDetailDialogMode.EDIT, eventData.detail.mode);
+          assertFalse(apnListItem.$.dotsMenu.open);
+
+          if (isApnRevampAndPoliciesEnabled) {
+            // Case: APN modification is disallowed.
+            apnListItem.shouldDisallowApnModification = true;
+            await flushTasks();
+
+            assertEquals(
+                apnListItem.i18n('apnMenuDetails'),
+                apnListItem.$.detailsButton.innerText.trim());
+
+            apnDetailsClickedEvent =
+                eventToPromise('show-apn-detail-dialog', window);
+            apnListItem.$.detailsButton.click();
+            eventData = await apnDetailsClickedEvent;
+            assertEquals(
+                TEST_APN_EVENT_DATA.apn.name, eventData.detail.apn.name);
+            assertEquals(ApnDetailDialogMode.VIEW, eventData.detail.mode);
+            assertFalse(apnListItem.$.dotsMenu.open);
+          }
+        });
+  });
 
   test('Test if disable/remove warning event is fired.', async function() {
+    await init();
     const guid = 'cellular_guid';
     let promptShowEvent = eventToPromise('show-error-toast', window);
     await openThreeDotMenu();
@@ -308,6 +363,7 @@ suite('ApnListItemTest', function() {
   });
 
   test('Test if enable warning event is fired.', async function() {
+    await init();
     const guid = 'cellular_guid';
     const promptShowEvent = eventToPromise('show-error-toast', window);
     await openThreeDotMenu();
@@ -342,6 +398,7 @@ suite('ApnListItemTest', function() {
   });
 
   test('Item a11y', async function() {
+    await init();
     apnListItem.itemIndex = 0;
     apnListItem.listSize = 1;
 

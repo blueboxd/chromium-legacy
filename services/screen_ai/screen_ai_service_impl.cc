@@ -267,7 +267,7 @@ void ScreenAIService::InitializeOCRInternal(
   base::UmaHistogramBoolean("Accessibility.ScreenAI.OCR.Initialized",
                             init_successful);
 
-  // TODO(crbug.com/1443349): Add a separate initialization interface for
+  // TODO(crbug.com/40911117): Add a separate initialization interface for
   // layout extraction.
   if (features::IsLayoutExtractionEnabled()) {
     if (!library_->InitLayoutExtraction()) {
@@ -410,7 +410,7 @@ void ScreenAIService::PerformOcrAndReturnAXTreeUpdate(
   // that the annotation function was not successful.
   std::move(callback).Run(update);
 
-  // TODO(crbug.com/1434701): Send the AXTreeUpdate to the browser
+  // TODO(crbug.com/40904361): Send the AXTreeUpdate to the browser
   // side client for Backlight.
 }
 

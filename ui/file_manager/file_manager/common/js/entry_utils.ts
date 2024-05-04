@@ -188,9 +188,8 @@ export function sortEntries(
   if (entries.length === 0) {
     return [];
   }
-  // TODO: proper way to get directory model and volume manager.
-  const {directoryModel, volumeManager} = window.fileManager;
-  const fileFilter = directoryModel.getFileFilter();
+  // TODO: proper way to get file filter and volume manager.
+  const {fileFilter, volumeManager} = window.fileManager;
   // For entries under My Files we need to use a different sorting logic
   // because we need to make sure curtain files are always at the bottom.
   if (isMyFilesEntry(parentEntry)) {
@@ -301,8 +300,8 @@ export function isRecentRoot(entry: Entry|FilesAppEntry) {
  * Whether the `fileData` the is RECENT root.
  * NOTE: Drive shared with me and offline are marked as RECENT.
  */
-export function isRecentFileData(fileData: FileData): boolean {
-  return fileData.type === EntryType.RECENT;
+export function isRecentFileData(fileData: FileData|null|undefined): boolean {
+  return !!fileData && fileData.type === EntryType.RECENT;
 }
 
 /**
@@ -927,8 +926,9 @@ export function isGuestOs(type: VolumeType) {
  * native Entry type.
  */
 export function shouldSupportDriveSpecificIcons(fileData: FileData): boolean {
-  return (isEntryInsideMyDrive(fileData) && !isVolumeEntry(fileData.entry)) ||
-      (isEntryInsideComputers(fileData) &&
+  return (isEntryInsideMyDrive(fileData) && !!fileData.entry &&
+          !isVolumeEntry(fileData.entry)) ||
+      (isEntryInsideComputers(fileData) && !!fileData.entry &&
        !isGrandRootEntryInDrive(fileData.entry));
 }
 
@@ -942,14 +942,17 @@ export function getTreeItemEntry(treeItem: DirectoryItem|XfTreeItem|TreeItem|
     return null;
   }
 
+  if ('entry' in treeItem && treeItem.entry) {
+    return treeItem.entry;
+  }
+
   if (isNewDirectoryTreeEnabled()) {
     const item = treeItem as XfTreeItem;
     const state = getStore().getState();
     return getEntry(state, item.dataset['navigationKey']!);
   }
 
-  const item = treeItem as DirectoryItem;
-  return item.entry;
+  return null;
 }
 
 /**

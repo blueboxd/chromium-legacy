@@ -7,7 +7,8 @@
 namespace blink {
 
 PaintRecordBuilder::PaintRecordBuilder()
-    : paint_controller_(PaintController::kTransient),
+    : paint_controller_(
+          *MakeGarbageCollected<PaintController>(PaintController::kTransient)),
       context_(paint_controller_) {
   paint_controller_.UpdateCurrentPaintChunkProperties(
       PropertyTreeState::Root());
@@ -18,7 +19,9 @@ PaintRecordBuilder::PaintRecordBuilder(GraphicsContext& containing_context)
   context_.CopyConfigFrom(containing_context);
 }
 
-PaintRecordBuilder::~PaintRecordBuilder() = default;
+PaintRecordBuilder::~PaintRecordBuilder() {
+  paint_controller_.clear();
+}
 
 PaintRecord PaintRecordBuilder::EndRecording(
     const PropertyTreeState& replay_state) {

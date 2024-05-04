@@ -24,8 +24,9 @@ void LogInvalidReason(InvalidStudyReason reason) {
   base::UmaHistogramEnumeration("Variations.InvalidStudyReason", reason);
 }
 
-// TODO(crbug/946593): Use base::FeatureList::IsValidFeatureOrFieldTrialName
-// once WebRTC trials with "," in group names are removed.
+// TODO(crbug.com/41449497): Use
+// base::FeatureList::IsValidFeatureOrFieldTrialName once WebRTC trials with ","
+// in group names are removed.
 bool IsValidExperimentName(const std::string& name) {
   return base::IsStringASCII(name) &&
          name.find_first_of("<*") == std::string::npos;
@@ -232,42 +233,6 @@ bool ProcessedStudy::Init(const Study* study) {
   total_probability_ = total_probability;
   all_assignments_to_one_group_ = all_assignments_to_one_group;
   return true;
-}
-
-bool ProcessedStudy::AllowsHighEntropy() const {
-  // This should be kept in sync with the server-side layer validation
-  // code: go/chrome-variations-layer-validation
-  for (const auto& experiment : study_->experiment()) {
-    if (experiment.has_google_web_experiment_id() ||
-        experiment.has_google_web_trigger_experiment_id() ||
-        experiment.has_chrome_sync_experiment_id()) {
-      return false;
-    }
-  }
-  return true;
-}
-
-const base::FieldTrial::EntropyProvider&
-ProcessedStudy::SelectEntropyProviderForStudy(
-    const EntropyProviders& entropy_providers,
-    const VariationsLayers& layers) const {
-  if (!study_->has_consistency() ||
-      study_->consistency() != Study_Consistency_PERMANENT ||
-      // If all assignments are to a single group, no need to enable one time
-      // randomization (which is more expensive to compute), since the result
-      // will be the same.
-      all_assignments_to_one_group_) {
-    return entropy_providers.session_entropy();
-  }
-  if (entropy_providers.default_entropy_is_high_entropy() &&
-      AllowsHighEntropy()) {
-    // We can use the high entropy source to randomize this study, which will
-    // be uniform even if the study is conditioned on layer membership.
-    return entropy_providers.default_entropy();
-  }
-  if (study_->has_layer())
-    return layers.GetRemainderEntropy(study_->layer().layer_id());
-  return entropy_providers.low_entropy();
 }
 
 int ProcessedStudy::GetExperimentIndexByName(const std::string& name) const {

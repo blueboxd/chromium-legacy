@@ -87,7 +87,7 @@ CreateChromeSyncTrustedVaultClient(Profile* profile) {
   if (!lacros_service->IsAvailable<crosapi::mojom::TrustedVaultBackend>()) {
     // TrustedVault Crosapi is not available, fallback to standalone
     // implementation.
-    // TODO(crbug.com/1434667): this should be replaced CHECK() once it is not
+    // TODO(crbug.com/40264843): this should be replaced CHECK() once it is not
     // possible to have Ash-side TrustedVault Crosapi disabled (two milestones
     // after kChromeOSTrustedVaultClientShared is guaranteed to be enabled in
     // Ash).
@@ -166,7 +166,7 @@ TrustedVaultServiceFactory::TrustedVaultServiceFactory()
           "TrustedVaultService",
           ProfileSelections::Builder()
               .WithRegular(ProfileSelection::kOriginalOnly)
-              // TODO(crbug.com/1418376): Check if this service is needed in
+              // TODO(crbug.com/40257657): Check if this service is needed in
               // Guest mode. Currently it is required due to dependant services
               // (e.g. SyncService) that have similar TODO, if they stop being
               // used in Guest mode, this service could stop to be used as well.

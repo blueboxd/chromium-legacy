@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40284755): Remove this and spanify to fix the errors.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "base/sampling_heap_profiler/sampling_heap_profiler.h"
 
 #include <algorithm>
@@ -9,8 +14,6 @@
 #include <utility>
 
 #include "base/allocator/dispatcher/tls.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/shim/allocator_shim.h"
 #include "base/compiler_specific.h"
 #include "base/debug/stack_trace.h"
 #include "base/feature_list.h"
@@ -24,6 +27,8 @@
 #include "base/threading/thread_local_storage.h"
 #include "base/trace_event/heap_profiler_allocation_context_tracker.h"  // no-presubmit-check
 #include "build/build_config.h"
+#include "partition_alloc/partition_alloc.h"
+#include "partition_alloc/shim/allocator_shim.h"
 
 #if BUILDFLAG(IS_APPLE)
 #include <pthread.h>

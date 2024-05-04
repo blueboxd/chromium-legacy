@@ -46,7 +46,7 @@ class RulesetMatcherBase {
 
   // Returns a vector of RequestAction for all matching modifyHeaders rules
   // with priority greater than |min_priority| if specified.
-  // TODO(crbug.com/1141166): Add a version of this that matches modifyHeaders
+  // TODO(crbug.com/40727004): Add a version of this that matches modifyHeaders
   // rules based on response headers too.
   virtual std::vector<RequestAction> GetModifyHeadersActions(
       const RequestParams& params,
@@ -130,10 +130,9 @@ class RulesetMatcherBase {
   // std::nullopt if there is no corresponding matching rule. Only takes into
   // account the request |params| passed in. This doesn't take any account any
   // matching allowAllRequests rules for ancestor frames.
-  // TODO(crbug.com/1141166): Currently, this only examines allowAllRequest
-  // rules that are to be matched in onBeforeRequest.
   virtual std::optional<RequestAction> GetAllowAllRequestsAction(
-      const RequestParams& params) const = 0;
+      const RequestParams& params,
+      RulesetMatchingStage stage) const = 0;
 
   // Returns the ruleset's highest priority matching RequestAction for the
   // specified ruleset matching `stage`, or std::nullopt if the ruleset has no

@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <string_view>
+
 #include "base/command_line.h"
-#include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/platform_thread.h"
@@ -119,7 +120,7 @@ class ChromeWebPlatformSecurityMetricsBrowserTest : public policy::PolicyTest {
   // Fetch the |histogram|'s |bucket| in every renderer process until reaching,
   // but not exceeding, |expected_count|.
   template <typename T>
-  void CheckHistogramCount(base::StringPiece histogram,
+  void CheckHistogramCount(std::string_view histogram,
                            T bucket,
                            int expected_count) {
     while (true) {
@@ -141,7 +142,7 @@ class ChromeWebPlatformSecurityMetricsBrowserTest : public policy::PolicyTest {
         // SharedArrayBuffer is needed for these tests.
         features::kSharedArrayBuffer,
         // Some PNA worker feature relies on this.
-        // TODO(https://crbug.com/1430451): Remove this once PNA for workers
+        // TODO(crbug.com/40263073): Remove this once PNA for workers
         // metric logging doesn't rely on kPlzDedicatedWorker
         blink::features::kPlzDedicatedWorker,
     };
@@ -409,7 +410,7 @@ IN_PROC_BROWSER_TEST_F(ChromeWebPlatformSecurityMetricsBrowserTest,
                                                       "/private_network_access/"
                                                       "no-favicon.html")));
 
-  base::StringPiece kScriptTemplate = R"(
+  std::string_view kScriptTemplate = R"(
     (async () => {
       const worker = new Worker("/workers/fetcher_treat_as_public.js");
 
@@ -460,8 +461,16 @@ IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessWebSocketMetricBrowserTest,
 
 // When WebSocket is connected to the same ip address space, do not log a use
 // counter.
+// TODO(crbug.com/336429017): Flaky on Win.
+#if BUILDFLAG(IS_WIN)
+#define MAYBE_PrivateNetworkAccessWebSocketConnectedLocalToLocal \
+  DISABLED_PrivateNetworkAccessWebSocketConnectedLocalToLocal
+#else
+#define MAYBE_PrivateNetworkAccessWebSocketConnectedLocalToLocal \
+  PrivateNetworkAccessWebSocketConnectedLocalToLocal
+#endif
 IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessWebSocketMetricBrowserTest,
-                       PrivateNetworkAccessWebSocketConnectedLocalToLocal) {
+                       MAYBE_PrivateNetworkAccessWebSocketConnectedLocalToLocal) {
   // Launch a WebSocket server.
   ASSERT_TRUE(ws_server().Start());
 
@@ -485,7 +494,7 @@ IN_PROC_BROWSER_TEST_F(ChromeWebPlatformSecurityMetricsBrowserTest,
                                                       "/private_network_access/"
                                                       "no-favicon.html")));
 
-  base::StringPiece kScriptTemplate = R"(
+  std::string_view kScriptTemplate = R"(
     (async () => {
       const worker = await new Promise((resolve, reject) => {
         const worker =
@@ -2329,7 +2338,7 @@ IN_PROC_BROWSER_TEST_F(SameDocumentCrossOriginInitiatorTest, SameSite) {
   EXPECT_TRUE(content::ExecJs(
       web_contents(), "document.querySelector('iframe').src += '#foo';"));
   EXPECT_TRUE(content::WaitForLoadStop(web_contents()));
-  // TODO(https://crbug.com/1408429) It seems the initiator origin is wrong,
+  // TODO(crbug.com/40062719) It seems the initiator origin is wrong,
   // e.g. `child_url` instead of `parent_url`, causing the metrics not to be
   // recorded.
   CheckCounter(WebFeature::kSameDocumentCrossOriginInitiator, 0);
@@ -2492,7 +2501,7 @@ IN_PROC_BROWSER_TEST_F(ChromeWebPlatformSecurityMetricsBrowserTest,
   CheckCounter(WebFeature::kDanglingMarkupInTargetNotEndsWithNewLineOrGT, 0);
 }
 
-// TODO(https://crbug.com/1487325): Fix and reenable the test for Mac.
+// TODO(crbug.com/40283243): Fix and reenable the test for Mac.
 #if BUILDFLAG(IS_MAC)
 #define MAYBE_DanglingMarkupInTargetWithNewLineOrGreaterThan \
   DISABLED_DanglingMarkupInTargetWithNewLineOrGreaterThan
@@ -2737,7 +2746,7 @@ IN_PROC_BROWSER_TEST_P(ChromeWebPlatformSecurityMetricsBrowserPdfTest,
   EXPECT_EQ(expected, actual);
 }
 
-// TODO(crbug.com/1445746): Stop testing both modes after OOPIF PDF viewer
+// TODO(crbug.com/40268279): Stop testing both modes after OOPIF PDF viewer
 // launches.
 INSTANTIATE_FEATURE_OVERRIDE_TEST_SUITE(
     ChromeWebPlatformSecurityMetricsBrowserPdfTest);

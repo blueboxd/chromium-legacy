@@ -161,8 +161,8 @@ void CopyPreferenceFileForFirstRun(const InstallerState& installer_state,
   if (!base::CopyFile(prefs_source_path,
                       InitialPreferences::Path(installer_state.target_path(),
                                                /*for_read=*/false))) {
-    VLOG(1) << "Failed to copy initial preferences from:"
-            << prefs_source_path.value() << " gle: " << ::GetLastError();
+    VPLOG(1) << "Failed to copy initial preferences from \""
+             << prefs_source_path << "\"";
   }
 }
 
@@ -342,6 +342,11 @@ void CreateOrUpdateShortcuts(const base::FilePath& target,
                 &do_not_create_quick_launch_shortcut);
   prefs.GetBool(initial_preferences::kDoNotCreateTaskbarShortcut,
                 &do_not_create_taskbar_shortcut);
+
+  // Pinning to taskbar only makes sense for per-user shortcuts.
+  if (install_level != CURRENT_USER) {
+    do_not_create_taskbar_shortcut = true;
+  }
 
   // The default operation on update is to overwrite shortcuts with the
   // currently desired properties, but do so only for shortcuts that still
@@ -536,10 +541,15 @@ InstallStatus InstallOrUpdateProduct(const InstallParams& install_params,
     installer_state.SetStage(CREATING_SHORTCUTS);
     InstallShortcutOperation install_operation =
         INSTALL_SHORTCUT_REPLACE_EXISTING;
-    if (result == FIRST_INSTALL_SUCCESS || result == INSTALL_REPAIRED ||
+    if (result == FIRST_INSTALL_SUCCESS ||
         !original_state.GetProductState(installer_state.system_install())) {
-      // Always create the shortcuts on a new install, a repair install, and
-      // when the Chrome product is being added to the current install.
+      // Always create the shortcuts on a new install and when the Chrome
+      // product is being added to the current install.
+      install_operation = INSTALL_SHORTCUT_CREATE_ALL;
+    } else if (result == INSTALL_REPAIRED &&
+               InstallUtil::IsRunningAsInteractiveUser()) {
+      // If the install was a user initiated repair, create the shortcuts.
+      VLOG(1) << "User initiated repair, will create shortcuts.";
       install_operation = INSTALL_SHORTCUT_CREATE_ALL;
     }
     InstallShortcutLevel install_level =

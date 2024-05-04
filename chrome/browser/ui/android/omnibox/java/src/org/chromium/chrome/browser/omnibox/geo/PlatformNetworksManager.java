@@ -74,7 +74,7 @@ class PlatformNetworksManager {
 
     private static WifiInfo getWifiInfo(Context context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            // TODO(https://crbug.com/1181393): Look into taking a dependency on net/android and
+            // TODO(crbug.com/40750822): Look into taking a dependency on net/android and
             // extracting this logic there to a method that can be called from here.
             // On Android S+, need to use NetworkCapabilities to get the WifiInfo.
             ConnectivityManager connectivityManager =
@@ -394,7 +394,15 @@ class PlatformNetworksManager {
     private static void requestCellInfoUpdate(
             TelephonyManager telephonyManager, Callback<List<CellInfo>> callback) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            ApiHelperForQ.requestCellInfoUpdate(telephonyManager, callback);
+            try {
+                ApiHelperForQ.requestCellInfoUpdate(telephonyManager, callback);
+            } catch (IllegalStateException e) {
+                // TelephonyManager#requestCellInfoUpdate() throws IllegalStateException when
+                // Telephony is unavailable. It doesn't make sense to pass the call to the
+                // TelephonyManager#getAllCellInfo(), because given the same exact conditions it
+                // will return null, too.
+                callback.onResult(null);
+            }
             return;
         }
         callback.onResult(telephonyManager.getAllCellInfo());

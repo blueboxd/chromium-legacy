@@ -39,7 +39,8 @@ declare_args() {
 
   # If true, optimize for size.
   # Default to favoring speed over size for platforms not listed below.
-  optimize_for_size = !is_high_end_android && (is_android || is_castos)
+  optimize_for_size =
+      !is_high_end_android && (is_android || is_castos || is_fuchsia)
 }
 
 declare_args() {
@@ -78,6 +79,8 @@ declare_args() {
   # the default.  This is necessary to delay the evaluation of the default
   # value expression until after its input values such as use_gold have
   # been set, e.g. by a toolchain_args() block.
+  #
+  # TODO(crbug.com/333645515): Remove the placeholder value and set directly.
   use_debug_fission = "default"
 
   # Enables support for ThinLTO, which links 3x-10x faster than full LTO. See
@@ -94,9 +97,6 @@ declare_args() {
                   (is_ios && use_lld && !is_cronet_build) ||
                   (is_android && target_os != "chromeos") ||
                   (is_chromeos && is_chromeos_device)))
-
-  # If true, use Goma for ThinLTO code generation where applicable.
-  use_goma_thin_lto = false
 
   # Whether we're using a sample profile collected on an architecture different
   # than the one we're compiling for.
@@ -233,21 +233,14 @@ can_unwind_with_cfi_table = is_android && !is_component_build &&
                             !enable_frame_pointers && current_cpu == "arm"
 
 # Whether or not cfi table should be enabled on arm.
-# TODO(crbug.com/1090409): Replace can_unwind_with_cfi_table with this once
+# TODO(crbug.com/40133751): Replace can_unwind_with_cfi_table with this once
 # sampling profiler is enabled on android.
 enable_arm_cfi_table = is_android && !is_component_build && current_cpu == "arm"
 
 declare_args() {
   # Whether to use the gold linker from binutils instead of lld or bfd.
-  use_gold = !use_lld && !(is_castos &&
-                           (current_cpu == "arm" || current_cpu == "mipsel")) &&
-             (((is_linux || is_chromeos_lacros) &&
-               (current_cpu == "x64" || current_cpu == "x86" ||
-                current_cpu == "arm" || current_cpu == "arm64" ||
-                current_cpu == "mipsel" || current_cpu == "mips64el")) ||
-              (is_android && (current_cpu == "x86" || current_cpu == "x64" ||
-                              current_cpu == "arm" || current_cpu == "arm64" ||
-                              current_cpu == "riscv64")))
+  # TODO(crbug.com/333645515): Remove this variable.
+  use_gold = false
 }
 
 # Use relative paths for debug info. This is important to make the build
@@ -279,7 +272,7 @@ assert(
     "Invalid use_debug_fission.")
 if (use_debug_fission == "default") {
   use_debug_fission = is_debug && !is_android && !is_fuchsia && !is_apple &&
-                      !is_win && (use_gold || use_lld) && cc_wrapper == ""
+                      !is_win && use_lld && cc_wrapper == ""
 }
 
 # If it wasn't manually set, set to an appropriate default.
@@ -336,7 +329,7 @@ if (forbid_non_component_debug_builds) {
       "Can't do non-component debug builds at symbol_level=2 without use_debug_fission=true")
 }
 
-# TODO(crbug.com/1341436) For Windows, to assemble lzma_sdk's assembly files,
+# TODO(crbug.com/40230692) For Windows, to assemble lzma_sdk's assembly files,
 # ml64.exe needs to be utilized as llvm-ml cannot yet assemble it. Once llvm-ml
 # is able to assemble lzma_sdk assembly files, remove this.
 # LzmaDecOpt.asm only works on x64 and not x86.

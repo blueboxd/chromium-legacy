@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "content/web_test/browser/web_test_control_host.h"
+#include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/memory/raw_ptr.h"
 
 #include <stddef.h>
@@ -13,6 +15,7 @@
 #include <queue>
 #include <set>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -446,7 +449,7 @@ void WebTestResultPrinter::PrintEncodedBinaryData(
   *output_ << "Content-Transfer-Encoding: base64\n";
 
   std::string data_base64 = base::Base64Encode(
-      base::StringPiece(reinterpret_cast<const char*>(&data[0]), data.size()));
+      std::string_view(reinterpret_cast<const char*>(&data[0]), data.size()));
 
   *output_ << "Content-Length: " << data_base64.length() << "\n";
   output_->write(data_base64.c_str(), data_base64.length());
@@ -594,7 +597,7 @@ void WebTestControlHost::PrepareForWebTest(const TestInfo& test_info) {
     // This forces SetSize() not to early return which would otherwise happen
     // when we set the size to |window_size| which is the same as its current
     // size. See http://crbug.com/1011191 for more details.
-    // TODO(crbug.com/309760): This resize to half-size could go away if
+    // TODO(crbug.com/41067256): This resize to half-size could go away if
     // testRunner.useUnfortunateSynchronousResizeMode() goes away.
     main_window_->web_contents()->GetRenderWidgetHostView()->DisableAutoResize(
         gfx::Size());
@@ -624,9 +627,23 @@ void WebTestControlHost::PrepareForWebTest(const TestInfo& test_info) {
   HandleNewRenderFrameHost(main_window_->web_contents()->GetPrimaryMainFrame());
 
   if (is_devtools_protocol_test) {
+    std::string log;
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kInspectorProtocolLog)) {
+      base::FilePath log_path =
+          base::CommandLine::ForCurrentProcess()->GetSwitchValuePath(
+              switches::kInspectorProtocolLog);
+      base::ScopedAllowBlockingForTesting allow_blocking;
+      if (!base::ReadFileToString(log_path, &log)) {
+        printer_->AddErrorMessage(base::StringPrintf(
+            "FAIL: Failed to read the inspector-protocol-log file %s",
+            log_path.AsUTF8Unsafe().c_str()));
+      }
+    }
+
     devtools_protocol_test_bindings_ =
         std::make_unique<DevToolsProtocolTestBindings>(
-            main_window_->web_contents());
+            main_window_->web_contents(), log);
   }
 
   // We don't go down the normal system path of focusing RenderWidgetHostView
@@ -730,10 +747,12 @@ void WebTestControlHost::ResetBrowserAfterWebTest() {
   SetBluetoothManualChooser(false);
   SetDatabaseQuota(content::kDefaultDatabaseQuota);
 
+  ShellBrowserContext* browser_context =
+      ShellContentBrowserClient::Get()->browser_context();
+  browser_context->ResetFederatedPermissionContext();
+
   // Delete all cookies, Attribution Reporting data and Aggregation service data
   {
-    BrowserContext* browser_context =
-        ShellContentBrowserClient::Get()->browser_context();
     StoragePartition* storage_partition =
         browser_context->GetDefaultStoragePartition();
     storage_partition->GetCookieManagerForBrowserProcess()->DeleteCookies(
@@ -798,8 +817,10 @@ void WebTestControlHost::OverrideWebkitPrefs(
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kForceHighContrast)) {
+    prefs->in_forced_colors = true;
     prefs->preferred_contrast = blink::mojom::PreferredContrast::kMore;
   } else {
+    prefs->in_forced_colors = false;
     prefs->preferred_contrast = blink::mojom::PreferredContrast::kNoPreference;
   }
 }
@@ -1001,7 +1022,7 @@ bool WebTestControlHost::IsMainWindow(WebContents* web_contents) const {
 std::unique_ptr<BluetoothChooser> WebTestControlHost::RunBluetoothChooser(
     RenderFrameHost* frame,
     const BluetoothChooser::EventHandler& event_handler) {
-  // TODO(https://crbug.com/509038): Remove |bluetooth_chooser_factory_| once
+  // TODO(crbug.com/40426301): Remove |bluetooth_chooser_factory_| once
   // all of the Web Bluetooth tests are migrated to external/wpt/.
   if (bluetooth_chooser_factory_) {
     return bluetooth_chooser_factory_->RunBluetoothChooser(frame,
@@ -1665,9 +1686,11 @@ void WebTestControlHost::ClearAllDatabases() {
   scoped_refptr<storage::DatabaseTracker> db_tracker =
       base::WrapRefCounted(storage_partition->GetDatabaseTracker());
 
-  base::SequencedTaskRunner* task_runner = db_tracker->task_runner();
-  task_runner->PostTask(FROM_HERE, base::BindOnce(run_on_database_sequence,
-                                                  std::move(db_tracker)));
+  if (db_tracker) {
+    base::SequencedTaskRunner* task_runner = db_tracker->task_runner();
+    task_runner->PostTask(FROM_HERE, base::BindOnce(run_on_database_sequence,
+                                                    std::move(db_tracker)));
+  }
 }
 
 void WebTestControlHost::SimulateWebNotificationClick(

@@ -20,15 +20,22 @@ import org.chromium.chrome.browser.util.BrowserUiUtils.HostSurface;
 /** The utility class for magic stack. */
 public class HomeModulesMetricsUtils {
     @VisibleForTesting static final String HISTOGRAM_OS_PREFIX = "MagicStack.Clank.";
-    @VisibleForTesting static final String HISTOGRAM_MAGIC_STACK_MODULE_CLICK = ".Module.Click.";
+    @VisibleForTesting static final String HISTOGRAM_MAGIC_STACK_MODULE_CLICK = ".Module.Click";
+    @VisibleForTesting static final String HISTOGRAM_MAGIC_STACK_MODULE = ".Module.";
 
     @VisibleForTesting
-    static final String HISTOGRAM_MAGIC_STACK_MODULE_IMPRESSION = ".Module.TopImpression.";
+    static final String HISTOGRAM_MAGIC_STACK_MODULE_CLICK_WITH_POSITION = ".Click";
 
-    @VisibleForTesting static final String HISTOGRAM_CONTEXT_MENU_SHOWN = ".ContextMenu.Shown.";
+    @VisibleForTesting static final String HISTOGRAM_MAGIC_STACK_MODULE_BUILD = ".Build";
+    static final String HISTOGRAM_MAGIC_STACK_MODULE_IMPRESSION_WITH_POSITION = ".Impression";
 
     @VisibleForTesting
-    static final String HISTOGRAM_CONTEXT_MENU_REMOVE_MODULE = ".ContextMenu.RemoveModule.";
+    static final String HISTOGRAM_MAGIC_STACK_MODULE_IMPRESSION = ".Module.TopImpressionV2";
+
+    @VisibleForTesting static final String HISTOGRAM_CONTEXT_MENU_SHOWN = ".ContextMenu.ShownV2";
+
+    @VisibleForTesting
+    static final String HISTOGRAM_CONTEXT_MENU_REMOVE_MODULE = ".ContextMenu.RemoveModuleV2";
 
     @VisibleForTesting
     static final String HISTOGRAM_CONTEXT_MENU_OPEN_CUSTOMIZE_SETTINGS =
@@ -42,7 +49,7 @@ public class HomeModulesMetricsUtils {
             ".Module.FetchDataTimeoutDurationMs.";
 
     @VisibleForTesting
-    static final String HISTOGRAM_MODULE_FETCH_DATA_TIMEOUT_TYPE = ".Module.FetchDataTimeoutType.";
+    static final String HISTOGRAM_MODULE_FETCH_DATA_TIMEOUT_TYPE = ".Module.FetchDataTimeoutTypeV2";
 
     @VisibleForTesting
     static final String HISTOGRAM_MODULE_FETCH_DATA_FAILED_DURATION_MS =
@@ -73,7 +80,7 @@ public class HomeModulesMetricsUtils {
     @VisibleForTesting
     static final String HISTOGRAM_CONFIGURATION_TURN_OFF_MODULE = "Settings.TurnOffModule";
 
-    @VisibleForTesting static final String HISTOGRAM_MAGIC_STACK_MODULE_BUILD = ".Module.Build.";
+    private static final String FRESHNESS_INPUT_CONTEXT_SUFFIX = "_freshness";
 
     private static final String HOME_MODULES_SHOW_ALL_MODULES_PARAM = "show_all_modules";
     public static final BooleanCachedFieldTrialParameter HOME_MODULES_SHOW_ALL_MODULES =
@@ -81,6 +88,11 @@ public class HomeModulesMetricsUtils {
                     ChromeFeatureList.MAGIC_STACK_ANDROID,
                     HOME_MODULES_SHOW_ALL_MODULES_PARAM,
                     false);
+
+    private static final String HOME_MODULES_COMBINE_TABS_PARAM = "show_tabs_in_one_module";
+    public static final BooleanCachedFieldTrialParameter HOME_MODULES_COMBINE_TABS =
+            ChromeFeatureList.newBooleanCachedFieldTrialParameter(
+                    ChromeFeatureList.MAGIC_STACK_ANDROID, HOME_MODULES_COMBINE_TABS_PARAM, false);
 
     /**
      * Returns a string name of a module. Remember to update the variant ModuleType in
@@ -114,14 +126,26 @@ public class HomeModulesMetricsUtils {
         }
     }
 
+    /** Returns the freshness score key used by InputContext for the given module. */
+    static String getFreshnessInputContextString(@ModuleType int moduleType) {
+        return HomeModulesMetricsUtils.getModuleName(moduleType) + FRESHNESS_INPUT_CONTEXT_SUFFIX;
+    }
+
     /**
      * Records a module is shown.
      *
      * @param hostSurface The type of the host surface of the magic stack.
      * @param moduleType The type of module.
+     * @param modulePosition The position of the module on the recyclerview.
      */
-    public static void recordModuleShown(@HostSurface int hostSurface, @ModuleType int moduleType) {
+    public static void recordModuleShown(
+            @HostSurface int hostSurface, @ModuleType int moduleType, int modulePosition) {
         recordUma(hostSurface, moduleType, HISTOGRAM_MAGIC_STACK_MODULE_IMPRESSION);
+        recordUmaWithPosition(
+                hostSurface,
+                HISTOGRAM_MAGIC_STACK_MODULE_IMPRESSION_WITH_POSITION,
+                moduleType,
+                modulePosition);
     }
 
     /**
@@ -285,9 +309,14 @@ public class HomeModulesMetricsUtils {
      * @param moduleType The type of module.
      * @param modulePosition The position of the module which got clicked.
      */
-    public static void recordModuleClickedPosition(
+    public static void recordModuleClicked(
             @HostSurface int hostSurface, @ModuleType int moduleType, int modulePosition) {
-        recordUma(hostSurface, HISTOGRAM_MAGIC_STACK_MODULE_CLICK, moduleType, modulePosition);
+        recordUma(hostSurface, moduleType, HISTOGRAM_MAGIC_STACK_MODULE_CLICK);
+        recordUmaWithPosition(
+                hostSurface,
+                HISTOGRAM_MAGIC_STACK_MODULE_CLICK_WITH_POSITION,
+                moduleType,
+                modulePosition);
     }
 
     /**
@@ -300,7 +329,8 @@ public class HomeModulesMetricsUtils {
      */
     public static void recordModuleBuiltPosition(
             @HostSurface int hostSurface, @ModuleType int moduleType, int modulePosition) {
-        recordUma(hostSurface, HISTOGRAM_MAGIC_STACK_MODULE_BUILD, moduleType, modulePosition);
+        recordUmaWithPosition(
+                hostSurface, HISTOGRAM_MAGIC_STACK_MODULE_BUILD, moduleType, modulePosition);
     }
 
     /**
@@ -320,7 +350,7 @@ public class HomeModulesMetricsUtils {
                 HISTOGRAM_OS_PREFIX + umaName, moduleType, ModuleType.NUM_ENTRIES);
     }
 
-    private static void recordUma(
+    private static void recordUmaWithPosition(
             @HostSurface int hostSurface,
             String umaName,
             @ModuleType int moduleType,
@@ -329,12 +359,12 @@ public class HomeModulesMetricsUtils {
         StringBuilder builder = new StringBuilder();
         builder.append(HISTOGRAM_OS_PREFIX);
         builder.append(BrowserUiUtils.getHostName(hostSurface));
-        builder.append(umaName);
+        builder.append(HISTOGRAM_MAGIC_STACK_MODULE);
         builder.append(getModuleName(moduleType));
-        builder.append(".");
-        builder.append(modulePosition);
+        builder.append(umaName);
         String name = builder.toString();
-        RecordHistogram.recordCount1MHistogram(name, 1);
+        RecordHistogram.recordEnumeratedHistogram(
+                name, modulePosition, HomeModulesCoordinator.MAXIMUM_MODULE_SIZE);
     }
 
     private static void recordUma(

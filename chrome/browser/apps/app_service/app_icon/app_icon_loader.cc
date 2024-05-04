@@ -5,6 +5,7 @@
 #include "chrome/browser/apps/app_service/app_icon/app_icon_loader.h"
 
 #include <memory>
+#include <string_view>
 #include <utility>
 
 #include "base/containers/contains.h"
@@ -280,7 +281,7 @@ apps::IconValuePtr ApplyEffects(apps::IconEffects icon_effects,
   }
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   if (icon_effects & apps::IconEffects::kMdIconStyle) {
-    // TODO(crbug.com/826982): MD post-processing is not always applied: "See
+    // TODO(crbug.com/40569217): MD post-processing is not always applied: "See
     // legacy code:
     // https://cs.chromium.org/search/?q=ChromeAppIconLoader&type=cs In one
     // cases MD design is used in another not."
@@ -474,7 +475,7 @@ void AppIconLoader::LoadWebAppIcon(const std::string& web_app_id,
   // |icon_scale_for_compressed_response_| to apps::EncodeImageToPngBytes(). In
   // most cases AppIconLoader always uses the 1.0 intended icon scale
   // factor as an intermediate representation to be compressed and returned.
-  // TODO(crbug.com/1112737): Investigate how to unify it and set
+  // TODO(crbug.com/40709882): Investigate how to unify it and set
   // |icon_scale_for_compressed_response_| value in AppIconLoader()
   // constructor.
   icon_scale_for_compressed_response_ = icon_scale_;
@@ -645,7 +646,7 @@ void AppIconLoader::LoadIconFromResource(int icon_resource) {
       // For compressed icons with no |icon_effects|, serve the
       // already-compressed bytes.
       if (icon_effects_ == apps::IconEffects::kNone) {
-        base::StringPiece data =
+        std::string_view data =
             ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
                 icon_resource);
         CompleteWithCompressed(/*is_maskable_icon=*/false,

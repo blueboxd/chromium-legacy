@@ -69,7 +69,6 @@ class KeyboardUIFactory;
 namespace ui {
 class ContextFactory;
 class KeyboardCapability;
-class UserActivityDetector;
 class UserActivityPowerManagerNotifier;
 }  // namespace ui
 
@@ -180,14 +179,14 @@ class KeyboardBrightnessControlDelegate;
 class KeyboardControllerImpl;
 class KeyboardModifierMetricsRecorder;
 class LaserPointerController;
+class LocalAuthenticationRequestController;
 class LocaleUpdateControllerImpl;
 class LockStateController;
-class LogoutConfirmationController;
 class LoginScreenController;
 class LoginUnlockThroughputRecorder;
-class MediaNotificationProvider;
-class TabClusterUIController;
+class LogoutConfirmationController;
 class MediaControllerImpl;
+class MediaNotificationProvider;
 class MessageCenterAshImpl;
 class MessageCenterController;
 class MouseCursorEventFilter;
@@ -201,10 +200,8 @@ class NightLightControllerImpl;
 class OcclusionTrackerPauser;
 class OverviewController;
 class ParentAccessController;
-class LocalAuthenticationRequestController;
 class PartialMagnifierController;
 class PciePeripheralNotificationController;
-class UsbPeripheralNotificationController;
 class PeripheralBatteryListener;
 class PeripheralBatteryNotifier;
 class PersistentWindowController;
@@ -222,12 +219,15 @@ class ProjectingObserver;
 class ProjectorControllerImpl;
 class RapidKeySequenceRecorder;
 class RasterScaleController;
-class RgbKeyboardManager;
+class RefreshRateController;
 class ResizeShadowController;
 class ResolutionNotificationController;
+class RgbKeyboardManager;
 class RootWindowController;
 class SavedDeskController;
 class SavedDeskDelegate;
+class TabClusterUIController;
+class UsbPeripheralNotificationController;
 class ScreenLayoutObserver;
 class ScreenOrientationController;
 class ScreenPinningController;
@@ -394,7 +394,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   void OnDictationEnded();
 
   // DEPRECATED. Use display::Screen::GetScreen()->InTabletMode() instead.
-  // TODO(crbug.com/1502114): Remove this.
+  // TODO(crbug.com/40942452): Remove this.
   //
   // Returns whether the device is currently in tablet mode.
   bool IsInTabletMode() const;
@@ -508,6 +508,10 @@ class ASH_EXPORT Shell : public SessionObserver,
   }
 
   display::DisplayConfigurator* display_configurator();
+
+  RefreshRateController* refresh_rate_controller() {
+    return refresh_rate_controller_.get();
+  }
 
   DisplayColorManager* display_color_manager() {
     return display_color_manager_.get();
@@ -1135,7 +1139,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<views::corewm::TooltipController> tooltip_controller_;
   std::unique_ptr<PowerButtonController> power_button_controller_;
   std::unique_ptr<LockStateController> lock_state_controller_;
-  std::unique_ptr<ui::UserActivityDetector> user_activity_detector_;
   std::unique_ptr<VideoDetector> video_detector_;
   std::unique_ptr<WindowTreeHostManager> window_tree_host_manager_;
   std::unique_ptr<PersistentWindowController> persistent_window_controller_;
@@ -1195,6 +1198,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<ui::KeyboardCapability> keyboard_capability_;
   std::unique_ptr<DisplayColorManager> display_color_manager_;
   std::unique_ptr<DisplayErrorObserver> display_error_observer_;
+  std::unique_ptr<RefreshRateController> refresh_rate_controller_;
   std::unique_ptr<ProjectingObserver> projecting_observer_;
   std::unique_ptr<HotspotIconAnimation> hotspot_icon_animation_;
   std::unique_ptr<HotspotInfoCache> hotspot_info_cache_;

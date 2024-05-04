@@ -37,7 +37,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import org.chromium.base.StrictModeContext;
 import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
@@ -154,7 +153,7 @@ public class PageInfoAboutThisSiteTest {
                                     null)
                             .show(tab, ChromePageInfoHighlight.noHighlight());
                 });
-        onViewWaiting(allOf(withId(R.id.page_info_url_wrapper), isDisplayed()));
+        onViewWaiting(allOf(withId(R.id.page_info_url_wrapper), isDisplayed()), true);
     }
 
     private void dismissPageInfo() throws TimeoutException {
@@ -186,8 +185,7 @@ public class PageInfoAboutThisSiteTest {
     private @NonNull ViewAssertion renderView(String renderId) {
         return (v, noMatchException) -> {
             if (noMatchException != null) throw noMatchException;
-            // Allow disk writes and slow calls to render from UI thread.
-            try (StrictModeContext ignored = StrictModeContext.allowAllThreadPolicies()) {
+            try {
                 mRenderTestRule.render(v, renderId);
             } catch (IOException e) {
                 throw new RuntimeException(e);

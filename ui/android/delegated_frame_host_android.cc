@@ -51,7 +51,7 @@ scoped_refptr<cc::slim::SurfaceLayer> CreateSurfaceLayer(
 }
 
 // From content::VisibleTimeRequestTrigger::ConsumeAndMergeRequests
-// TODO(crbug.com/1263687): Use separate start time for each event.
+// TODO(crbug.com/40203057): Use separate start time for each event.
 blink::mojom::RecordContentToVisibleTimeRequestPtr ConsumeAndMergeRequests(
     blink::mojom::RecordContentToVisibleTimeRequestPtr request1,
     blink::mojom::RecordContentToVisibleTimeRequestPtr request2) {
@@ -153,6 +153,12 @@ void DelegatedFrameHostAndroid::CopyFromCompositingSurface(
                 std::move(callback).Run(scoped_bitmap.GetOutScopedBitmap());
               },
               std::move(callback), std::move(readback_ref)));
+  // The readback ref holds a reference to the compositor which must only be
+  // accessed on the current thread. Since the result callback can be dispatched
+  // on any thread by default, explicitly set the result task runner to the
+  // current thread.
+  request->set_result_task_runner(
+      base::SequencedTaskRunner::GetCurrentDefault());
 
   if (!src_subrect.IsEmpty())
     request->set_area(src_subrect);
@@ -189,7 +195,7 @@ void DelegatedFrameHostAndroid::EvictDelegatedFrame(
   // If we have a surface from before a navigation, evict it, regardless of
   // visibility state.
   //
-  // TODO(https://crbug.com/1459229): Investigate why guarding the invalid
+  // TODO(crbug.com/40919347): Investigate why guarding the invalid
   // `pre_navigation_local_surface_id_` for Android only.
   if (!pre_navigation_local_surface_id_.is_valid() &&
       (!HasSavedFrame() || frame_evictor_->visible())) {
@@ -210,9 +216,11 @@ void DelegatedFrameHostAndroid::EvictDelegatedFrame(
   client_->WasEvicted();
 }
 
-std::vector<viz::SurfaceId>
+viz::FrameEvictorClient::EvictIds
 DelegatedFrameHostAndroid::CollectSurfaceIdsForEviction() const {
-  return client_->CollectSurfaceIdsForEviction();
+  viz::FrameEvictorClient::EvictIds ids;
+  ids.embedded_ids = client_->CollectSurfaceIdsForEviction();
+  return ids;
 }
 
 viz::SurfaceId DelegatedFrameHostAndroid::GetCurrentSurfaceId() const {
@@ -500,7 +508,7 @@ void DelegatedFrameHostAndroid::TakeFallbackContentFrom(
   bfcache_fallback_ =
       viz::ParentLocalSurfaceIdAllocator::InvalidLocalSurfaceId();
 
-  // TODO(https://crbug.com/1471665): Investigate why on Android we use the
+  // TODO(crbug.com/40278354): Investigate why on Android we use the
   // primary ID unconditionally, which is different on `DelegatedFrameHost`.
   content_layer_->SetOldestAcceptableFallback(
       other->content_layer_->surface_id().ToSmallestId());

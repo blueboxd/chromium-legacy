@@ -6,6 +6,21 @@
 
 #include "base/check_op.h"
 #include "base/notreached.h"
+#include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
+#include "chromeos/constants/chromeos_features.h"
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/constants/ash_switches.h"
+#include "components/account_id/account_id.h"
+#include "components/user_manager/user.h"
+#include "components/user_manager/user_manager.h"
+#include "google_apis/gaia/gaia_auth_util.h"
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "chromeos/startup/browser_params_proxy.h"
+#endif
 
 namespace chromeos {
 
@@ -18,6 +33,29 @@ MahiManager* g_instance = nullptr;
 // static
 MahiManager* MahiManager::Get() {
   return g_instance;
+}
+
+// static
+bool MahiManager::IsSupportedWithCorrectFeatureKey() {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  if (!chromeos::features::IsMahiEnabled()) {
+    return false;
+  }
+
+  // Allow Google accounts to bypass the secret key check.
+  if (user_manager::UserManager::IsInitialized() &&
+      gaia::IsGoogleInternalAccountEmail(user_manager::UserManager::Get()
+                                             ->GetActiveUser()
+                                             ->GetAccountId()
+                                             .GetUserEmail())) {
+    return true;
+  }
+
+  return ash::switches::IsMahiSecretKeyMatched();
+#else
+  return chromeos::BrowserParamsProxy::Get()
+      ->IsMahiSupportedWithCorrectFeatureKey();
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
 
 MahiManager::MahiManager() {

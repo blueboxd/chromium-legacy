@@ -275,7 +275,7 @@ void RunFaviconCallbackAsync(favicon_base::FaviconResultsCallback callback,
   for (const gfx::ImageSkiaRep& image_rep : image_reps) {
     auto bitmap_data = base::MakeRefCounted<base::RefCountedBytes>();
     if (gfx::PNGCodec::EncodeBGRASkBitmap(image_rep.GetBitmap(), false,
-                                          &bitmap_data->data())) {
+                                          &bitmap_data->as_vector())) {
       favicon_base::FaviconRawBitmapResult bitmap_result;
       bitmap_result.bitmap_data = bitmap_data;
       bitmap_result.pixel_size = gfx::Size(image_rep.pixel_width(),
@@ -582,9 +582,8 @@ void ExtensionWebUI::GetFaviconForURL(
   for (float scale : favicon_scales) {
     int pixel_size = static_cast<int>(gfx::kFaviconSize * scale);
     extensions::ExtensionResource icon_resource =
-        extensions::IconsInfo::GetIconResource(extension,
-                                               pixel_size,
-                                               ExtensionIconSet::MATCH_BIGGER);
+        extensions::IconsInfo::GetIconResource(
+            extension, pixel_size, ExtensionIconSet::Match::kBigger);
 
     if (!icon_resource.empty()) {
       ui::ResourceScaleFactor resource_scale_factor =

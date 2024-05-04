@@ -81,8 +81,8 @@ class RenderAccessibilityManager;
 class CONTENT_EXPORT RenderAccessibilityImpl : public RenderAccessibility,
                                                public RenderFrameObserver {
  public:
-  // A call to AccessibilityModeChanged() is required after construction to
-  // start accessibility.
+  // A call to NotifyAccessibilityModeChange() is required after construction
+  // to start accessibility.
   RenderAccessibilityImpl(
       RenderAccessibilityManager* const render_accessibility_manager,
       RenderFrameImpl* const render_frame);
@@ -92,6 +92,7 @@ class CONTENT_EXPORT RenderAccessibilityImpl : public RenderAccessibility,
 
   ~RenderAccessibilityImpl() override;
 
+  void NotifyAccessibilityModeChange(const ui::AXMode& mode);
   ui::AXMode GetAccessibilityMode() { return accessibility_mode_; }
 
   // RenderAccessibility implementation.
@@ -104,7 +105,6 @@ class CONTENT_EXPORT RenderAccessibilityImpl : public RenderAccessibility,
   // RenderFrameObserver implementation.
   void DidCreateNewDocument() override;
   void DidCommitProvisionalLoad(ui::PageTransition transition) override;
-  void AccessibilityModeChanged(const ui::AXMode& mode) override;
 
   void HitTest(const gfx::Point& point,
                ax::mojom::Event event_to_fire,
@@ -131,7 +131,9 @@ class CONTENT_EXPORT RenderAccessibilityImpl : public RenderAccessibility,
     ax::mojom::Event event_type = ax::mojom::Event::kNone);
   // Called when it is safe to begin a serialization.
   // Returns true if a serialization occurs.
-  bool AXReadyCallback();
+  bool SendAccessibilitySerialization(std::vector<ui::AXTreeUpdate> updates,
+                                      std::vector<ui::AXEvent> events,
+                                      bool had_load_complete_messages);
 
   // Returns the main top-level document for this page, or NULL if there's
   // no view or frame.
@@ -163,12 +165,6 @@ class CONTENT_EXPORT RenderAccessibilityImpl : public RenderAccessibility,
     return ax_annotators_manager_.get();
   }
 
- protected:
-  // Check the entire accessibility tree to see if any nodes have
-  // changed location, by comparing their locations to the cached
-  // versions. If any have moved, send an IPC with the new locations.
-  void SendLocationChanges();
-
  private:
   // Called whenever the "ack" message is received for a serialization message
   // sent to the browser process, indicating it was received.
@@ -181,8 +177,6 @@ class CONTENT_EXPORT RenderAccessibilityImpl : public RenderAccessibility,
   void OnLoadInlineTextBoxes(const ui::AXActionTarget* target);
   void OnGetImageData(const ui::AXActionTarget* target,
                       const gfx::Size& max_size);
-  void AddPluginTreeToUpdate(ui::AXTreeUpdate* update,
-                             bool mark_plugin_subtree_dirty);
 
   // If the document is loaded, fire a load complete event.
   void FireLoadCompleteIfLoaded();
@@ -191,8 +185,8 @@ class CONTENT_EXPORT RenderAccessibilityImpl : public RenderAccessibility,
   void MarkAllAXObjectsDirty(ax::mojom::Role role,
                              ax::mojom::Action event_from_action);
 
-  // Ensure that AXReadyCallback() will be called at the next available
-  // opportunity, so that any dirty objects will be serialized soon.
+  // Ensure that SendAccessibilitySerialization() will be called at the next
+  // available opportunity, so that any dirty objects will be serialized soon.
   void ScheduleImmediateAXUpdate();
 
   // Returns the document for the active popup if any.

@@ -389,7 +389,7 @@ void PushMessagingManager::DidRequestPermissionInIncognito(
       blink::mojom::PushRegistrationStatus::INCOGNITO_PERMISSION_DENIED);
 }
 
-// TODO(crbug.com/1104215): Handle expiration_time that is passed from push
+// TODO(crbug.com/40139581): Handle expiration_time that is passed from push
 // service check if |expiration_time| is valid before saving it in |data| and
 // passing it back in SendSubscriptionSuccess.
 void PushMessagingManager::DidRegister(
@@ -402,7 +402,7 @@ void PushMessagingManager::DidRegister(
     blink::mojom::PushRegistrationStatus status) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  // TODO(crbug.com/646721): Handle the case where |push_subscription_id| and
+  // TODO(crbug.com/41275327): Handle the case where |push_subscription_id| and
   // |data.existing_subscription_id| are not the same. Right now we just
   // override the old subscription ID and encryption information.
   const bool subscription_changed =
@@ -419,8 +419,8 @@ void PushMessagingManager::DidRegister(
                   SUCCESS_NEW_SUBSCRIPTION_FROM_PUSH_SERVICE
             : blink::mojom::PushRegistrationStatus::SUCCESS_FROM_PUSH_SERVICE);
   } else {
-    // TODO(crbug.com/646721): for invalid |expiration_time| send a subscription
-    // error with a new PushRegistrationStatus
+    // TODO(crbug.com/41275327): for invalid |expiration_time| send a
+    // subscription error with a new PushRegistrationStatus
     SendSubscriptionError(std::move(data), status);
   }
 }
@@ -701,9 +701,10 @@ void PushMessagingManager::DidGetSubscription(
     case blink::ServiceWorkerStatusCode::kErrorInvalidArguments:
     case blink::ServiceWorkerStatusCode::kErrorStorageDisconnected:
     case blink::ServiceWorkerStatusCode::kErrorStorageDataCorrupted: {
-      NOTREACHED() << "Got unexpected error code: "
-                   << static_cast<uint32_t>(service_worker_status) << " "
-                   << blink::ServiceWorkerStatusToString(service_worker_status);
+      DUMP_WILL_BE_NOTREACHED_NORETURN()
+          << "Got unexpected error code: "
+          << static_cast<uint32_t>(service_worker_status) << " "
+          << blink::ServiceWorkerStatusToString(service_worker_status);
       get_status = blink::mojom::PushGetRegistrationStatus::STORAGE_ERROR;
       break;
     }

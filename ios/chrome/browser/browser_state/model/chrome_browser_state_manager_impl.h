@@ -9,13 +9,14 @@
 #include <memory>
 
 #include "base/files/file_path.h"
+#include "base/functional/callback_forward.h"
 #include "ios/chrome/browser/shared/model/browser_state/browser_state_info_cache.h"
+#include "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/shared/model/browser_state/chrome_browser_state_manager.h"
 
-class ChromeBrowserStateImpl;
-
 // ChromeBrowserStateManager implementation.
-class ChromeBrowserStateManagerImpl : public ios::ChromeBrowserStateManager {
+class ChromeBrowserStateManagerImpl : public ios::ChromeBrowserStateManager,
+                                      public ChromeBrowserState::Delegate {
  public:
   ChromeBrowserStateManagerImpl();
 
@@ -26,20 +27,41 @@ class ChromeBrowserStateManagerImpl : public ios::ChromeBrowserStateManager {
   ~ChromeBrowserStateManagerImpl() override;
 
   // ChromeBrowserStateManager:
-  ChromeBrowserState* GetLastUsedBrowserState() override;
+  ChromeBrowserState* GetLastUsedBrowserStateDeprecatedDoNotUse() override;
   ChromeBrowserState* GetBrowserState(const base::FilePath& path) override;
   BrowserStateInfoCache* GetBrowserStateInfoCache() override;
   std::vector<ChromeBrowserState*> GetLoadedBrowserStates() override;
   void LoadBrowserStates() override;
 
+  // ChromeBrowserState::Delegate:
+  void OnChromeBrowserStateCreationStarted(
+      ChromeBrowserState* browser_state,
+      ChromeBrowserState::CreationMode creation_mode) override;
+  void OnChromeBrowserStateCreationFinished(
+      ChromeBrowserState* browser_state,
+      ChromeBrowserState::CreationMode creation_mode,
+      bool is_new_browser_state,
+      bool success) override;
+
  private:
-  using ChromeBrowserStateImplPathMap =
-      std::map<base::FilePath, std::unique_ptr<ChromeBrowserStateImpl>>;
+  using ChromeBrowserStatePathMap =
+      std::map<base::FilePath, std::unique_ptr<ChromeBrowserState>>;
+
+  // Callback invoked with the BrowserState once its initialisation is done.
+  // May be invoked with nullptr if loading the BrowserState failed. Will be
+  // called on the calling sequence, but may be asynchronous.
+  using BrowserStateLoadedCallback =
+      base::OnceCallback<void(ChromeBrowserState*)>;
 
   // Get the path of the last used browser state, or if that's undefined, the
   // default browser state.
   base::FilePath GetLastUsedBrowserStateDir(
       const base::FilePath& user_data_dir);
+
+  // Load ChromeBrowserState at `path` and invoke `callback` when the load
+  // is complete.
+  void LoadBrowserState(const base::FilePath& path,
+                        BrowserStateLoadedCallback callback);
 
   // Final initialization of the browser state.
   void DoFinalInit(ChromeBrowserState* browser_state);
@@ -49,8 +71,8 @@ class ChromeBrowserStateManagerImpl : public ios::ChromeBrowserStateManager {
   // added yet.
   void AddBrowserStateToCache(ChromeBrowserState* browser_state);
 
-  // Holds the ChromeBrowserStateImpl instances that this instance has created.
-  ChromeBrowserStateImplPathMap browser_states_;
+  // Holds the ChromeBrowserState instances that this instance has created.
+  ChromeBrowserStatePathMap browser_states_;
   std::unique_ptr<BrowserStateInfoCache> browser_state_info_cache_;
 };
 

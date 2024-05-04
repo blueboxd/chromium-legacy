@@ -327,6 +327,12 @@ void DiscardsGraphDumpImpl::OnFinalResponseURLDetermined(
   SendWorkerNotification(worker_node, false);
 }
 
+void DiscardsGraphDumpImpl::OnBeforeClientFrameAdded(
+    const performance_manager::WorkerNode* worker_node,
+    const performance_manager::FrameNode* client_frame_node) {
+  // Nothing to do.
+}
+
 void DiscardsGraphDumpImpl::OnClientFrameAdded(
     const performance_manager::WorkerNode* worker_node,
     const performance_manager::FrameNode* client_frame_node) {
@@ -337,6 +343,12 @@ void DiscardsGraphDumpImpl::OnBeforeClientFrameRemoved(
     const performance_manager::WorkerNode* worker_node,
     const performance_manager::FrameNode* client_frame_node) {
   SendWorkerNotification(worker_node, false);
+}
+
+void DiscardsGraphDumpImpl::OnBeforeClientWorkerAdded(
+    const performance_manager::WorkerNode* worker_node,
+    const performance_manager::WorkerNode* client_worker_node) {
+  // Nothing to do.
 }
 
 void DiscardsGraphDumpImpl::OnClientWorkerAdded(
@@ -457,7 +469,7 @@ void DiscardsGraphDumpImpl::SendFrameNotification(
     const performance_manager::FrameNode* frame,
     bool created) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // TODO(https://crbug.com/1028117): Add more frame properties.
+  // TODO(crbug.com/40109021): Add more frame properties.
   discards::mojom::FrameInfoPtr frame_info = discards::mojom::FrameInfo::New();
 
   frame_info->id = GetNodeId(frame);
@@ -486,7 +498,7 @@ void DiscardsGraphDumpImpl::SendPageNotification(
     const performance_manager::PageNode* page_node,
     bool created) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // TODO(https://crbug.com/1028117): Add more page_node properties.
+  // TODO(crbug.com/40109021): Add more page_node properties.
   discards::mojom::PageInfoPtr page_info = discards::mojom::PageInfo::New();
 
   page_info->id = GetNodeId(page_node);
@@ -505,7 +517,7 @@ void DiscardsGraphDumpImpl::SendPageNotification(
 void DiscardsGraphDumpImpl::SendProcessNotification(
     const performance_manager::ProcessNode* process,
     bool created) {
-  // TODO(https://crbug.com/1028117): Add more process properties.
+  // TODO(crbug.com/40109021): Add more process properties.
   discards::mojom::ProcessInfoPtr process_info =
       discards::mojom::ProcessInfo::New();
 
@@ -525,7 +537,7 @@ void DiscardsGraphDumpImpl::SendProcessNotification(
 void DiscardsGraphDumpImpl::SendWorkerNotification(
     const performance_manager::WorkerNode* worker,
     bool created) {
-  // TODO(https://crbug.com/1028117): Add more process properties.
+  // TODO(crbug.com/40109021): Add more process properties.
   discards::mojom::WorkerInfoPtr worker_info =
       discards::mojom::WorkerInfo::New();
 

@@ -132,7 +132,8 @@ void WaitForOmniboxSuggestion(NSString* suggestion, int section, int row) {
 // button and asserts it doesn't commit the omnibox contents if the input is
 // canceled.
 - (void)testToolbarOmniboxHideKeyboard {
-  // TODO(crbug.com/642559): Enable the test for iPad when typing bug is fixed.
+  // TODO(crbug.com/41272886): Enable the test for iPad when typing bug is
+  // fixed.
   if ([ChromeEarlGrey isIPadIdiom]) {
     EARL_GREY_TEST_DISABLED(@"Disabled for iPad due to a simulator bug.");
   }
@@ -227,7 +228,7 @@ void WaitForOmniboxSuggestion(NSString* suggestion, int section, int row) {
 }
 
 // Verifies that copying and pasting a URL includes the hidden protocol prefix.
-// TODO(crbug.com/834345): Enable this test when long press on the steady
+// TODO(crbug.com/40572353): Enable this test when long press on the steady
 // location bar is supported.
 - (void)DISABLED_testCopyPasteURL {
   // Clear generalPasteboard before and after the test.
@@ -314,7 +315,7 @@ void WaitForOmniboxSuggestion(NSString* suggestion, int section, int row) {
   [ChromeEarlGrey loadURL:self.testServer->GetURL("/echo")];
 
   [ChromeEarlGreyUI focusOmniboxAndType:@"javascript:alert('JS Alert Text');"];
-  // TODO(crbug.com/1454516): Use simulatePhysicalKeyboardEvent until
+  // TODO(crbug.com/40916974): Use simulatePhysicalKeyboardEvent until
   // replaceText can properly handle \n.
   [ChromeEarlGrey simulatePhysicalKeyboardEvent:@"\n" flags:0];
 

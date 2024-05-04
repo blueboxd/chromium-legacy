@@ -132,6 +132,10 @@ void DedicatedWorkerHostFactoryImpl::CreateWorkerHostAndStartScriptLoad(
     mojo::PendingRemote<blink::mojom::BlobURLToken> blob_url_token,
     mojo::PendingRemote<blink::mojom::DedicatedWorkerHostFactoryClient> client,
     bool has_storage_access) {
+  TRACE_EVENT(
+      "loading",
+      "DedicatedWorkerHostFactoryImpl::CreateWorkerHostAndStartScriptLoad",
+      "script_url", script_url);
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!base::FeatureList::IsEnabled(blink::features::kPlzDedicatedWorker)) {
     mojo::ReportBadMessage("DWH_BROWSER_SCRIPT_FETCH_DISABLED");
@@ -164,7 +168,7 @@ void DedicatedWorkerHostFactoryImpl::CreateWorkerHostAndStartScriptLoad(
     }
   }
 
-  // TODO(https://crbug.com/1058759): Compare `creator_storage_key_.origin()` to
+  // TODO(crbug.com/40051700): Compare `creator_storage_key_.origin()` to
   // `script_url`, and report as bad message if that fails.
 
   mojo::PendingRemote<blink::mojom::DedicatedWorkerHost> pending_remote_host;

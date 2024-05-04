@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <set>
 #include <string>
 #include <utility>
@@ -78,6 +79,7 @@
 #include "chrome/browser/storage/durable_storage_permission_context.h"
 #include "chrome/browser/subresource_filter/subresource_filter_profile_context_factory.h"
 #include "chrome/browser/sync/sync_service_factory.h"
+#include "chrome/browser/tpcd/metadata/manager_factory.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/trusted_vault/trusted_vault_service_factory.h"
 #include "chrome/browser/webdata_services/web_data_service_factory.h"
@@ -92,9 +94,11 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "components/autofill/core/browser/address_data_manager.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
+#include "components/autofill/core/browser/payments_data_manager.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/personal_data_manager_test_utils.h"
 #include "components/autofill/core/browser/strike_databases/strike_database.h"
@@ -153,6 +157,10 @@
 #include "components/site_engagement/content/site_engagement_service.h"
 #include "components/site_isolation/pref_names.h"
 #include "components/sync/test/test_sync_service.h"
+#include "components/tpcd/metadata/browser/manager.h"
+#include "components/tpcd/metadata/browser/parser.h"
+#include "components/tpcd/metadata/browser/prefs.h"
+#include "components/tpcd/metadata/browser/test_support.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "content/public/browser/background_tracing_manager.h"
 #include "content/public/browser/browser_context.h"
@@ -168,6 +176,7 @@
 #include "content/public/test/mock_download_manager.h"
 #include "content/public/test/test_utils.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "net/base/features.h"
 #include "net/base/isolation_info.h"
 #include "net/base/network_anonymization_key.h"
 #include "net/cookies/canonical_cookie.h"
@@ -352,9 +361,8 @@ class RemoveCookieTester {
 
   void AddCookie() {
     base::RunLoop run_loop;
-    auto cookie = net::CanonicalCookie::Create(
-        cookie_url_, "A=1", base::Time::Now(), std::nullopt /* server_time */,
-        std::nullopt /* cookie_partition_key */);
+    auto cookie = net::CanonicalCookie::CreateForTesting(cookie_url_, "A=1",
+                                                         base::Time::Now());
     cookie_manager_->SetCanonicalCookie(
         *cookie, cookie_url_, net::CookieOptions::MakeAllInclusive(),
         base::BindLambdaForTesting([&](net::CookieAccessResult result) {
@@ -380,7 +388,7 @@ class RemoveSafeBrowsingCookieTester : public RemoveCookieTester {
  public:
   explicit RemoveSafeBrowsingCookieTester(Profile* profile)
       : browser_process_(TestingBrowserProcess::GetGlobal()) {
-    // TODO(crbug/925153): Port consumers of the |sb_service| to use the
+    // TODO(crbug.com/41437292): Port consumers of the |sb_service| to use the
     // interface in components/safe_browsing, and remove this cast.
     scoped_refptr<safe_browsing::SafeBrowsingService> sb_service =
         static_cast<safe_browsing::SafeBrowsingService*>(
@@ -754,6 +762,41 @@ class RemovePermissionPromptCountsTest {
   raw_ptr<permissions::PermissionDecisionAutoBlocker> autoblocker_;
 };
 
+class RemoveTpcdMetadataCohortsTester {
+ public:
+  explicit RemoveTpcdMetadataCohortsTester(TestingProfile* profile) {
+    det_generator_ = new tpcd::metadata::DeterministicGenerator();
+    tpcd::metadata::RegisterLocalStatePrefs(local_state_.registry());
+    manager_ = tpcd::metadata::ManagerFactory::GetForProfile(profile);
+    manager_->SetRandGeneratorForTesting(det_generator_);
+    manager_->SetPrefServiceForTesting(&local_state_);
+  }
+  ~RemoveTpcdMetadataCohortsTester() {
+    det_generator_ = nullptr;
+    manager_ = nullptr;
+  }
+
+  RemoveTpcdMetadataCohortsTester(const RemoveTpcdMetadataCohortsTester&) =
+      delete;
+  RemoveTpcdMetadataCohortsTester& operator=(
+      const RemoveTpcdMetadataCohortsTester&) = delete;
+
+  tpcd::metadata::Parser* GetParser() {
+    return tpcd::metadata::Parser::GetInstance();
+  }
+
+  tpcd::metadata::Manager* GetManager() { return manager_; }
+
+  tpcd::metadata::DeterministicGenerator* GetDetGenerator() {
+    return det_generator_;
+  }
+
+ private:
+  raw_ptr<tpcd::metadata::Manager> manager_;
+  raw_ptr<tpcd::metadata::DeterministicGenerator> det_generator_;
+  TestingPrefServiceSimple local_state_;
+};
+
 // Custom matcher to test the equivalence of two URL filters. Since those are
 // blackbox predicates, we can only approximate the equivalence by testing
 // whether the filter give the same answer for several URLs. This is currently
@@ -887,14 +930,20 @@ class RemoveAutofillTester {
 
   // Returns true if there is at least one address and one card.
   bool HasProfileAndCard() const {
-    return !personal_data_manager_->GetProfiles().empty() &&
-           !personal_data_manager_->GetCreditCards().empty();
+    return !personal_data_manager_->address_data_manager()
+                .GetProfiles()
+                .empty() &&
+           !personal_data_manager_->payments_data_manager()
+                .GetCreditCards()
+                .empty();
   }
 
   // Add one profile and one credit cards to the database.
   void AddProfileAndCard() {
-    personal_data_manager_->AddProfile(autofill::test::GetFullProfile());
-    personal_data_manager_->AddCreditCard(autofill::test::GetCreditCard());
+    personal_data_manager_->address_data_manager().AddProfile(
+        autofill::test::GetFullProfile());
+    personal_data_manager_->payments_data_manager().AddCreditCard(
+        autofill::test::GetCreditCard());
     autofill::PersonalDataChangedWaiter(*personal_data_manager_).Wait();
   }
 
@@ -1268,7 +1317,7 @@ class ChromeBrowsingDataRemoverDelegateTest : public testing::Test {
       password_manager::MockPasswordStoreInterface* store) {
     EXPECT_CALL(*store, RemoveLoginsByURLAndTime)
         .WillOnce(
-            testing::WithArgs<3, 4>([](auto callback, auto sync_callback) {
+            testing::WithArgs<4, 5>([](auto callback, auto sync_callback) {
               std::move(callback).Run();
               if (sync_callback) {
                 std::move(sync_callback).Run(false);
@@ -1279,10 +1328,10 @@ class ChromeBrowsingDataRemoverDelegateTest : public testing::Test {
   void ExpectRemoveLoginsByURLAndTimeWithFilter(
       password_manager::MockPasswordStoreInterface* store,
       base::RepeatingCallback<bool(const GURL&)> filter) {
-    EXPECT_CALL(*store, RemoveLoginsByURLAndTime(ProbablySameFilter(filter), _,
-                                                 _, _, _))
+    EXPECT_CALL(*store, RemoveLoginsByURLAndTime(_, ProbablySameFilter(filter),
+                                                 _, _, _, _))
         .WillOnce(
-            testing::WithArgs<3, 4>([](auto callback, auto sync_callback) {
+            testing::WithArgs<4, 5>([](auto callback, auto sync_callback) {
               std::move(callback).Run();
               if (sync_callback) {
                 std::move(sync_callback).Run(false);
@@ -1466,7 +1515,7 @@ class ChromeBrowsingDataRemoverDelegateWithPasswordsTest
   }
 };
 
-// TODO(crbug.com/812589): Disabled due to flakiness in cookie store
+// TODO(crbug.com/41370786): Disabled due to flakiness in cookie store
 //                         initialization.
 TEST_F(ChromeBrowsingDataRemoverDelegateTest,
        DISABLED_RemoveSafeBrowsingCookieForever) {
@@ -1485,7 +1534,7 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest,
   EXPECT_FALSE(tester.ContainsCookie());
 }
 
-// TODO(crbug.com/812589): Disabled due to flakiness in cookie store
+// TODO(crbug.com/41370786): Disabled due to flakiness in cookie store
 //                         initialization.
 TEST_F(ChromeBrowsingDataRemoverDelegateTest,
        DISABLED_RemoveSafeBrowsingCookieLastHour) {
@@ -1506,7 +1555,7 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest,
   EXPECT_TRUE(tester.ContainsCookie());
 }
 
-// TODO(crbug.com/812589): Disabled due to flakiness in cookie store
+// TODO(crbug.com/41370786): Disabled due to flakiness in cookie store
 //                         initialization.
 TEST_F(ChromeBrowsingDataRemoverDelegateTest,
        DISABLED_RemoveSafeBrowsingCookieForeverWithPredicate) {
@@ -2165,7 +2214,7 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest,
   // No crash means test passes.
 }
 
-// TODO(crbug.com/589586): Disabled, since history is not yet marked as
+// TODO(crbug.com/40458377): Disabled, since history is not yet marked as
 // a filterable datatype.
 TEST_F(ChromeBrowsingDataRemoverDelegateTest,
        DISABLED_TimeBasedHistoryRemoval) {
@@ -2470,7 +2519,7 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, DomainReliability_Beacons) {
   EXPECT_TRUE(tester.last_filter().is_null());
 }
 
-// TODO(crbug.com/589586): Disabled, since history is not yet marked as
+// TODO(crbug.com/40458377): Disabled, since history is not yet marked as
 // a filterable datatype.
 TEST_F(ChromeBrowsingDataRemoverDelegateTest,
        DISABLED_DomainReliability_Beacons_WithFilter) {
@@ -2595,7 +2644,7 @@ TEST_F(ChromeBrowsingDataRemoverDelegateWithPasswordsTest,
                                 constants::DATA_TYPE_HISTORY, false);
 }
 
-// TODO(crbug.com/589586): Disabled, since history is not yet marked as
+// TODO(crbug.com/40458377): Disabled, since history is not yet marked as
 // a filterable datatype.
 TEST_F(ChromeBrowsingDataRemoverDelegateWithPasswordsTest,
        DISABLED_RemovePasswordStatisticsByOrigin) {
@@ -2689,6 +2738,7 @@ TEST_F(ChromeBrowsingDataRemoverDelegateWithPasswordsTest,
   filter->SetCookiePartitionKeyCollection(net::CookiePartitionKeyCollection(
       net::CookiePartitionKey::FromURLForTesting(
           GURL("https://notcookie.com"))));
+  filter->SetPartitionedCookiesOnly(true);
   EXPECT_CALL(*profile_password_store(), DisableAutoSignInForOrigins).Times(0);
   BlockUntilOriginDataRemoved(base::Time(), base::Time::Max(),
                               content::BrowsingDataRemover::DATA_TYPE_COOKIES,
@@ -3707,7 +3757,7 @@ TEST_F(ChromeBrowsingDataRemoverDelegateWithReportingServiceTest,
                               GetMockReportingService().last_origin_filter())));
 }
 
-// TODO(crbug.com/589586): Disabled, since history is not yet marked as
+// TODO(crbug.com/40458377): Disabled, since history is not yet marked as
 // a filterable datatype.
 TEST_F(ChromeBrowsingDataRemoverDelegateWithReportingServiceTest,
        DISABLED_ReportingCache_WithFilter) {
@@ -3781,7 +3831,7 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, AllTypesAreGettingDeleted) {
       // Only policy provider sets exceptions for this type.
       ContentSettingsType::AUTO_SELECT_CERTIFICATE,
 
-      // TODO(710873): Make sure that these get fixed:
+      // TODO(crbug.com/41312665): Make sure that these get fixed:
       // Not deleted but should be deleted with history?
       ContentSettingsType::IMPORTANT_SITE_INFO,
   };
@@ -4023,9 +4073,9 @@ TEST_F(ChromeBrowsingDataRemoverDelegateWithAccountPasswordsTest,
   ON_CALL(*account_password_store(), DisableAutoSignInForOrigins)
       .WillByDefault(MoveArgToFuture<1>(&account_auto_signin_cb));
   ON_CALL(*profile_password_store(), RemoveLoginsByURLAndTime)
-      .WillByDefault(MoveArgToFuture<3>(&profile_remove_cb));
+      .WillByDefault(MoveArgToFuture<4>(&profile_remove_cb));
   ON_CALL(*account_password_store(), RemoveLoginsByURLAndTime)
-      .WillByDefault(WithArgs<3, 4>([&](auto remove_cb, auto sync_cb) {
+      .WillByDefault(WithArgs<4, 5>([&](auto remove_cb, auto sync_cb) {
         account_remove_cb.SetValue(std::move(remove_cb));
         account_sync_cb.SetValue(std::move(sync_cb));
       }));
@@ -4388,4 +4438,166 @@ TEST_F(ChromeBrowsingDataRemoverDelegateMediaDeviceSaltTest,
   EXPECT_NE(salt1c, salt1b);
   EXPECT_EQ(salt2c, salt2b);
   EXPECT_EQ(salt3c, salt3b);
+}
+
+class ChromeBrowsingDataRemoverDelegateTpcdMetadataTest
+    : public ChromeBrowsingDataRemoverDelegateTest {
+ public:
+  ChromeBrowsingDataRemoverDelegateTpcdMetadataTest() {
+    feature_list_.InitWithFeatures({net::features::kTpcdMetadataStagedRollback},
+                                   {});
+  }
+};
+
+TEST_F(ChromeBrowsingDataRemoverDelegateTpcdMetadataTest, ResetAllCohorts) {
+  auto tester = RemoveTpcdMetadataCohortsTester(GetProfile());
+
+  const std::string primary_pattern_spec = "https://example1.com";
+  const std::string primary_pattern_spec_2 = "https://example2.com";
+  const std::string secondary_pattern_spec = "https://example3.com";
+
+  // dtrp is arbitrary here, selected between (0,100).
+  const uint32_t dtrp = 10;
+  tpcd::metadata::Metadata metadata;
+  tpcd::metadata::helpers::AddEntryToMetadata(
+      metadata, primary_pattern_spec, secondary_pattern_spec,
+      tpcd::metadata::Parser::kSource1pDt, dtrp);
+  tpcd::metadata::helpers::AddEntryToMetadata(
+      metadata, primary_pattern_spec_2, secondary_pattern_spec,
+      tpcd::metadata::Parser::kSource1pDt, dtrp);
+
+  // Establish grant with deterministic cohorts.
+  {
+    // rand is set as-is here to guarantee GRACE_PERIOD_FORCED_ON.
+    uint32_t rand = dtrp + 1;
+    tester.GetDetGenerator()->set_rand(rand);
+
+    tester.GetParser()->ParseMetadata(metadata.SerializeAsString());
+
+    EXPECT_EQ(
+        tester.GetManager()
+            ->GetGrants()
+            .front()
+            .metadata.tpcd_metadata_cohort(),
+        content_settings::mojom::TpcdMetadataCohort::GRACE_PERIOD_FORCED_ON);
+    EXPECT_EQ(
+        tester.GetManager()->GetGrants().back().metadata.tpcd_metadata_cohort(),
+        content_settings::mojom::TpcdMetadataCohort::GRACE_PERIOD_FORCED_ON);
+  }
+
+  // Make sure the cohorts are persisted.
+  {
+    // rand is set as-is here to guarantee GRACE_PERIOD_FORCED_OFF.
+    uint32_t rand = dtrp;
+    tester.GetDetGenerator()->set_rand(rand);
+
+    tester.GetParser()->ParseMetadata(metadata.SerializeAsString());
+
+    EXPECT_EQ(
+        tester.GetManager()
+            ->GetGrants()
+            .front()
+            .metadata.tpcd_metadata_cohort(),
+        content_settings::mojom::TpcdMetadataCohort::GRACE_PERIOD_FORCED_ON);
+    EXPECT_EQ(
+        tester.GetManager()->GetGrants().back().metadata.tpcd_metadata_cohort(),
+        content_settings::mojom::TpcdMetadataCohort::GRACE_PERIOD_FORCED_ON);
+  }
+
+  // Apply deletion of cookies.
+  BlockUntilBrowsingDataRemoved(base::Time(), base::Time::Max(),
+                                content::BrowsingDataRemover::DATA_TYPE_COOKIES,
+                                false);
+
+  // Make sure the cohorts were reset.
+  {
+    EXPECT_EQ(
+        tester.GetManager()
+            ->GetGrants()
+            .front()
+            .metadata.tpcd_metadata_cohort(),
+        content_settings::mojom::TpcdMetadataCohort::GRACE_PERIOD_FORCED_OFF);
+    EXPECT_EQ(
+        tester.GetManager()->GetGrants().back().metadata.tpcd_metadata_cohort(),
+        content_settings::mojom::TpcdMetadataCohort::GRACE_PERIOD_FORCED_OFF);
+  }
+}
+
+TEST_F(ChromeBrowsingDataRemoverDelegateTpcdMetadataTest, ResetAllCohort_PreserveMode) {
+  auto tester = RemoveTpcdMetadataCohortsTester(GetProfile());
+
+  const std::string primary_pattern_spec = "https://example1.com";
+  const std::string primary_pattern_spec_2 = "https://example2.com";
+  const std::string secondary_pattern_spec = "https://example3.com";
+
+  // dtrp is arbitrary here, selected between (0,100).
+  const uint32_t dtrp = 10;
+  tpcd::metadata::Metadata metadata;
+  tpcd::metadata::helpers::AddEntryToMetadata(
+      metadata, primary_pattern_spec, secondary_pattern_spec,
+      tpcd::metadata::Parser::kSource1pDt, dtrp);
+  tpcd::metadata::helpers::AddEntryToMetadata(
+      metadata, primary_pattern_spec_2, secondary_pattern_spec,
+      tpcd::metadata::Parser::kSource1pDt, dtrp);
+
+  // Establish grant with deterministic cohorts.
+  {
+    // rand is set as-is here to guarantee GRACE_PERIOD_FORCED_ON.
+    uint32_t rand = dtrp + 1;
+    tester.GetDetGenerator()->set_rand(rand);
+
+    tester.GetParser()->ParseMetadata(metadata.SerializeAsString());
+
+    EXPECT_EQ(
+        tester.GetManager()
+            ->GetGrants()
+            .front()
+            .metadata.tpcd_metadata_cohort(),
+        content_settings::mojom::TpcdMetadataCohort::GRACE_PERIOD_FORCED_ON);
+    EXPECT_EQ(
+        tester.GetManager()->GetGrants().back().metadata.tpcd_metadata_cohort(),
+        content_settings::mojom::TpcdMetadataCohort::GRACE_PERIOD_FORCED_ON);
+  }
+
+  // Make sure the cohorts are persisted.
+  {
+    // rand is set as-is here to guarantee GRACE_PERIOD_FORCED_OFF.
+    uint32_t rand = dtrp;
+    tester.GetDetGenerator()->set_rand(rand);
+
+    tester.GetParser()->ParseMetadata(metadata.SerializeAsString());
+
+    EXPECT_EQ(
+        tester.GetManager()
+            ->GetGrants()
+            .front()
+            .metadata.tpcd_metadata_cohort(),
+        content_settings::mojom::TpcdMetadataCohort::GRACE_PERIOD_FORCED_ON);
+    EXPECT_EQ(
+        tester.GetManager()->GetGrants().back().metadata.tpcd_metadata_cohort(),
+        content_settings::mojom::TpcdMetadataCohort::GRACE_PERIOD_FORCED_ON);
+  }
+
+  // Apply deletion of cookies with preservation of select URL.
+  // NOTE: This is still expected to reset all cohorts.
+  std::unique_ptr<BrowsingDataFilterBuilder> filter(
+      BrowsingDataFilterBuilder::Create(
+          BrowsingDataFilterBuilder::Mode::kPreserve));
+  filter->AddRegisterableDomain(GURL(primary_pattern_spec).host());
+  BlockUntilOriginDataRemoved(base::Time(), base::Time::Max(),
+                              content::BrowsingDataRemover::DATA_TYPE_COOKIES,
+                              std::move(filter));
+
+  // Make sure both cohorts were reset.
+  {
+    EXPECT_EQ(
+        tester.GetManager()
+            ->GetGrants()
+            .front()
+            .metadata.tpcd_metadata_cohort(),
+        content_settings::mojom::TpcdMetadataCohort::GRACE_PERIOD_FORCED_OFF);
+    EXPECT_EQ(
+        tester.GetManager()->GetGrants().back().metadata.tpcd_metadata_cohort(),
+        content_settings::mojom::TpcdMetadataCohort::GRACE_PERIOD_FORCED_OFF);
+  }
 }

@@ -8,7 +8,7 @@ import {CrFeedbackOption} from '//resources/cr_elements/cr_feedback_buttons/cr_f
 import {loadTimeData} from '//resources/js/load_time_data.js';
 import type {ComposeAppElement, ComposeAppState} from 'chrome-untrusted://compose/app.js';
 import type {ComposeState} from 'chrome-untrusted://compose/compose.mojom-webui.js';
-import {CloseReason, Length, Tone, UserFeedback} from 'chrome-untrusted://compose/compose.mojom-webui.js';
+import { CloseReason, StyleModifier, UserFeedback } from 'chrome-untrusted://compose/compose.mojom-webui.js';
 import {ComposeApiProxyImpl} from 'chrome-untrusted://compose/compose_api_proxy.js';
 import {ComposeStatus} from 'chrome-untrusted://compose/compose_enums.mojom-webui.js';
 import {assertDeepEquals, assertEquals, assertFalse, assertStringContains, assertTrue} from 'chrome-untrusted://webui-test/chai_assert.js';
@@ -40,10 +40,17 @@ suite('ComposeApp', () => {
 
   function mockResponse(
       result: string = 'some response',
-      status: ComposeStatus = ComposeStatus.kOk,
-      onDeviceEvaluationUsed = false): Promise<void> {
-    testProxy.remote.responseReceived(
-        {status: status, undoAvailable: false, result, onDeviceEvaluationUsed});
+      status: ComposeStatus = ComposeStatus.kOk, onDeviceEvaluationUsed = false,
+      triggeredFromModifier = false): Promise<void> {
+    testProxy.remote.responseReceived({
+      status: status,
+      undoAvailable: false,
+      redoAvailable: false,
+      providedByUser: false,
+      result,
+      onDeviceEvaluationUsed,
+      triggeredFromModifier,
+    });
     return testProxy.remote.$.flushForTesting();
   }
 
@@ -159,7 +166,7 @@ suite('ComposeApp', () => {
     const args = await testProxy.whenCalled('rewrite');
     await mockResponse('Refreshed output.');
 
-    assertEquals(null, args);
+    assertEquals(StyleModifier.kRetry, args);
 
     // Verify UI has updated with refreshed results.
     assertFalse(isVisible(app.$.loading));
@@ -302,8 +309,11 @@ suite('ComposeApp', () => {
       response: {
         status: ComposeStatus.kOk,
         undoAvailable: false,
+        redoAvailable: false,
+        providedByUser: false,
         result: 'here is a result',
         onDeviceEvaluationUsed: false,
+        triggeredFromModifier: false,
       },
     });
     assertTrue(isVisible(appWithResult.$.resultContainer));
@@ -318,8 +328,11 @@ suite('ComposeApp', () => {
       response: {
         status: ComposeStatus.kOk,
         undoAvailable: true,
+        redoAvailable: false,
+        providedByUser: false,
         result: 'here is a result',
         onDeviceEvaluationUsed: false,
+        triggeredFromModifier: false,
       },
     });
     assertFalse(appWithUndo.$.undoButton.disabled);
@@ -341,8 +354,11 @@ suite('ComposeApp', () => {
       response: {
         status: ComposeStatus.kOk,
         undoAvailable: false,
+        redoAvailable: false,
+        providedByUser: false,
         result: 'here is a result',
         onDeviceEvaluationUsed: false,
+        triggeredFromModifier: false,
       },
     });
     assertTrue(isVisible(appWithResultAndLoading.$.loading));
@@ -359,8 +375,11 @@ suite('ComposeApp', () => {
       response: {
         status: ComposeStatus.kOk,
         undoAvailable: false,
+        redoAvailable: false,
+        providedByUser: false,
         result: 'here is a result',
         onDeviceEvaluationUsed: false,
+        triggeredFromModifier: false,
       },
     });
     assertTrue(isVisible(appEditingPrompt.$.editTextarea));
@@ -464,6 +483,48 @@ suite('ComposeApp', () => {
     assertEquals(CloseReason.kCloseButton, closeReason);
   });
 
+  test('GoBackFromError', async () => {
+    testProxy.setResponseBeforeError({
+      hasPendingRequest: false,
+      response: {
+        status: ComposeStatus.kOk,
+        undoAvailable: false,
+        redoAvailable: false,
+        providedByUser: false,
+        result: 'initial result text',
+        onDeviceEvaluationUsed: false,
+        triggeredFromModifier: false,
+      },
+      webuiState: JSON.stringify({
+        input: 'initial input',
+        selectedLength: Number(StyleModifier.kUnset),
+        selectedTone: Number(StyleModifier.kUnset),
+      }),
+      feedback: UserFeedback.kUserFeedbackPositive,
+    });
+
+    // Mock a filtered error response that enables the go back button.
+    mockInput('Initial input.');
+    app.$.submitButton.click();
+    const errorMessage = `filtered error message`;
+    loadTimeData.overrideValues({['errorFiltered']: errorMessage});
+    await mockResponse('', ComposeStatus.kFiltered, false, true);
+
+    assertTrue(isVisible(app.$.errorFooter));
+    assertStringContains(app.$.errorFooter.textContent!, errorMessage);
+    assertTrue(isVisible(app.$.errorGoBackButton));
+
+    app.$.errorGoBackButton.click();
+    await testProxy.whenCalled('recoverFromErrorState');
+    await flushTasks();
+
+    // UI is updated to the mocked last ok response.
+    assertEquals('initial input', app.$.textarea.value);
+    assertTrue(isVisible(app.$.resultContainer));
+    assertStringContains(
+        app.$.resultText.$.root.innerText, 'initial result text');
+  });
+
   test('ErrorFooterShowsMessage', async () => {
     async function testError(status: ComposeStatus, stringKey: string) {
       const errorMessage = `some error ${stringKey}`;
@@ -536,15 +597,6 @@ suite('ComposeApp', () => {
     await flushTasks();
     testProxy.resetResolver('compose');
 
-    // Mock changing length and tone to verify they are unset after editing
-    // the input.
-    app.$.lengthMenu.value = `${Length.kShorter}`;
-    app.$.lengthMenu.dispatchEvent(new CustomEvent('change'));
-    app.$.toneMenu.value = `${Tone.kCasual}`;
-    app.$.toneMenu.dispatchEvent(new CustomEvent('change'));
-    await flushTasks();
-    testProxy.resetResolver('compose');
-
     // Mock clicking edit in the textarea and verify new textarea shows.
     app.$.textarea.dispatchEvent(
         new CustomEvent('edit-click', {composed: true, bubbles: true}));
@@ -588,13 +640,13 @@ suite('ComposeApp', () => {
     assertEquals(
         2, app.$.lengthMenu.querySelectorAll('option:not([disabled])').length);
 
-    app.$.lengthMenu.value = `${Length.kShorter}`;
+    app.$.lengthMenu.value = `${StyleModifier.kShorter}`;
     app.$.lengthMenu.dispatchEvent(new CustomEvent('change'));
 
     const args = await testProxy.whenCalled('rewrite');
     await mockResponse();
 
-    assertEquals(Length.kShorter, args.length);
+    assertEquals(StyleModifier.kShorter, args);
 
     testProxy.resetResolver('rewrite');
 
@@ -602,13 +654,13 @@ suite('ComposeApp', () => {
     assertEquals(
         2, app.$.toneMenu.querySelectorAll('option:not([disabled])').length);
 
-    app.$.toneMenu.value = `${Tone.kCasual}`;
+    app.$.toneMenu.value = `${StyleModifier.kCasual}`;
     app.$.toneMenu.dispatchEvent(new CustomEvent('change'));
 
     const args2 = await testProxy.whenCalled('rewrite');
     await mockResponse();
 
-    assertEquals(Tone.kCasual, args2.tone);
+    assertEquals(StyleModifier.kCasual, args2);
   });
 
   test('Undo', async () => {
@@ -619,8 +671,11 @@ suite('ComposeApp', () => {
       response: {
         status: ComposeStatus.kOk,
         undoAvailable: true,
+        redoAvailable: false,
+        providedByUser: false,
         result: 'here is a result',
         onDeviceEvaluationUsed: false,
+        triggeredFromModifier: false,
       },
     });
     testProxy.setUndoResponse({
@@ -628,13 +683,16 @@ suite('ComposeApp', () => {
       response: {
         status: ComposeStatus.kOk,
         undoAvailable: false,
+        redoAvailable: false,
+        providedByUser: false,
         result: 'some undone result',
         onDeviceEvaluationUsed: false,
+        triggeredFromModifier: false,
       },
       webuiState: JSON.stringify({
         input: 'my old input',
-        selectedLength: Number(Length.kLonger),
-        selectedTone: Number(Tone.kCasual),
+        selectedLength: Number(StyleModifier.kLonger),
+        selectedTone: Number(StyleModifier.kCasual),
       }),
       feedback: UserFeedback.kUserFeedbackPositive,
     });
@@ -652,11 +710,67 @@ suite('ComposeApp', () => {
     assertTrue(isVisible(appWithUndo.$.resultContainer));
     assertStringContains(
         appWithUndo.$.resultText.$.root.innerText, 'some undone result');
-    assertEquals(Length.kLonger, Number(appWithUndo.$.lengthMenu.value));
-    assertEquals(Tone.kCasual, Number(appWithUndo.$.toneMenu.value));
+    assertEquals(
+      StyleModifier.kLonger, Number(appWithUndo.$.lengthMenu.value));
+    assertEquals(StyleModifier.kCasual, Number(appWithUndo.$.toneMenu.value));
     assertEquals(
         CrFeedbackOption.THUMBS_UP,
         appWithUndo.$.feedbackButtons.selectedOption);
+  });
+
+  test('Redo', async () => {
+    // Set up initial state to show redo button and mock a forward state to redo
+    // to.
+    document.body.innerHTML = window.trustedTypes!.emptyHTML;
+    testProxy.setOpenMetadata({}, {
+      hasPendingRequest: false,
+      response: {
+        status: ComposeStatus.kOk,
+        undoAvailable: false,
+        redoAvailable: true,
+        providedByUser: false,
+        result: 'here is a result',
+        onDeviceEvaluationUsed: false,
+        triggeredFromModifier: false,
+      },
+    });
+    testProxy.setRedoResponse({
+      hasPendingRequest: false,
+      response: {
+        status: ComposeStatus.kOk,
+        undoAvailable: false,
+        redoAvailable: false,
+        providedByUser: false,
+        result: 'some future result',
+        onDeviceEvaluationUsed: false,
+        triggeredFromModifier: false,
+      },
+      webuiState: JSON.stringify({
+        input: 'some future input',
+        selectedLength: Number(StyleModifier.kLonger),
+        selectedTone: Number(StyleModifier.kCasual),
+      }),
+      feedback: UserFeedback.kUserFeedbackPositive,
+    });
+    const appWithRedo = document.createElement('compose-app');
+    document.body.appendChild(appWithRedo);
+    await testProxy.whenCalled('requestInitialState');
+
+    // Click redo.
+    appWithRedo.$.redoButton.click();
+    await testProxy.whenCalled('redo');
+    await flushTasks();
+
+    // UI is updated.
+    assertEquals('some future input', appWithRedo.$.textarea.value);
+    assertTrue(isVisible(appWithRedo.$.resultContainer));
+    assertStringContains(
+        appWithRedo.$.resultText.$.root.innerText, 'some future result');
+    assertEquals(StyleModifier.kLonger, Number(appWithRedo.$.lengthMenu.value));
+    assertEquals(StyleModifier.kCasual, Number(appWithRedo.$.toneMenu.value));
+    assertEquals(
+        CrFeedbackOption.THUMBS_UP,
+        appWithRedo.$.feedbackButtons.selectedOption);
   });
 
   test('Feedback', async () => {
@@ -672,6 +786,10 @@ suite('ComposeApp', () => {
   });
 
   test('PartialResponseIsShown', async () => {
+    loadTimeData.overrideValues({
+      enableOnDeviceDogfoodFooter: true,
+    });
+
     // Make streaming work instantly.
     app.$.resultText.enableInstantStreamingForTesting();
 

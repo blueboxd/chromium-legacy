@@ -1,0 +1,43 @@
+<style>
+  :host {
+    --cr-realbox-min-width: 340px
+  }
+  #results {
+    border: none;
+     /* Viewport height minus the realbox height and margin. */
+    height: calc(100vh - 76px);
+    inset-inline-start: 0;
+     /*
+      * We need to offset by the realbox height and margin since we are in a
+      * fixed position.
+      */
+    inset-block-start: 76px;
+    position: fixed;
+    width: 100%;
+  }
+  #realboxContainer {
+    display: flex;
+    font-family: Roboto, Arial, sans-serif;
+    margin: 12px 8px;
+    position: fixed;
+    z-index: 1;  /* Searchbox should render in front of the results iframe. */
+    /* TODO(jdonnelly): Specify these in a color mixer. */
+    --color-realbox-background: #ffffffff;
+    --color-realbox-background-hovered: #ffffffff;
+    --color-realbox-border: #dadce0ff;
+    --color-realbox-foreground: #202124ff;
+    --color-realbox-placeholder:#5f6368ff;
+    --color-realbox-results-background: #ffffffff;
+    --color-realbox-results-background-hovered:#e9e9eaff;
+    --color-realbox-results-focus-indicator: #e9e9eaff;
+    --color-realbox-shadow: #20212451;
+  }
+</style>
+<div id="realboxContainer">
+  <cr-realbox id="realbox"></cr-realbox>
+</div>
+
+<iframe name="results" id="results"
+    allow="cross-origin-isolated; display-capture; geolocation; microphone;"
+    frameBorder="0">
+</iframe>

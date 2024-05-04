@@ -11,13 +11,13 @@
 #import "components/sync_preferences/testing_pref_service_syncable.h"
 #import "ios/chrome/browser/first_run/model/first_run.h"
 #import "ios/chrome/browser/safety_check/model/ios_chrome_safety_check_manager_constants.h"
+#import "ios/chrome/browser/shared/model/prefs/browser_prefs.h"
 #import "ios/chrome/browser/shared/model/prefs/pref_names.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_action_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/shortcuts_config.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_constants.h"
-#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_mediator_util.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_metrics_constants.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_metrics_recorder.h"
 #import "ios/chrome/browser/ui/content_suggestions/magic_stack/magic_stack_module_container.h"
@@ -27,10 +27,13 @@
 #import "ios/chrome/browser/ui/content_suggestions/set_up_list/set_up_list_config.h"
 #import "ios/chrome/browser/ui/content_suggestions/set_up_list/set_up_list_item_view_data.h"
 #import "ios/chrome/browser/ui/content_suggestions/tab_resumption/tab_resumption_item.h"
+#import "ios/chrome/browser/ui/ntp/metrics/home_metrics.h"
+#import "ios/chrome/test/testing_application_context.h"
 #import "ios/web/public/test/web_task_environment.h"
 #import "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #import "third_party/ocmock/gtest_support.h"
+#import "url/gurl.h"
 
 namespace {
 const char kURL[] = "https://chromium.org/";
@@ -39,6 +42,10 @@ const char kURL[] = "https://chromium.org/";
 class ContentSuggestionsViewControllerTest : public PlatformTest {
  public:
   ContentSuggestionsViewControllerTest() {
+    local_state_ = std::make_unique<TestingPrefServiceSimple>();
+    RegisterLocalStatePrefs(local_state_->registry());
+    TestingApplicationContext::GetGlobal()->SetLocalState(local_state_.get());
+
     view_controller_ = [[ContentSuggestionsViewController alloc] init];
     metrics_recorder_ = [[ContentSuggestionsMetricsRecorder alloc]
         initWithLocalState:&pref_service_];
@@ -52,6 +59,11 @@ class ContentSuggestionsViewControllerTest : public PlatformTest {
         -1);
     view_controller_.contentSuggestionsMetricsRecorder = metrics_recorder_;
     histogram_tester_ = std::make_unique<base::HistogramTester>();
+  }
+
+  void TearDown() override {
+    TestingApplicationContext::GetGlobal()->SetLocalState(nullptr);
+    local_state_.reset();
   }
 
   // Iterates a view's subviews recursively, calling the block with each one.
@@ -98,6 +110,7 @@ class ContentSuggestionsViewControllerTest : public PlatformTest {
   ContentSuggestionsViewController* view_controller_;
   id metrics_recorder_;
   std::unique_ptr<base::HistogramTester> histogram_tester_;
+  std::unique_ptr<TestingPrefServiceSimple> local_state_;
 };
 
 // Tests that the correct Magic Stack impression metrics are logged depending on
@@ -169,14 +182,6 @@ TEST_F(ContentSuggestionsViewControllerTest,
 // only after the initial view construction.
 TEST_F(ContentSuggestionsViewControllerTest,
        TestMagicStackTopImpressionMetricSegmentation) {
-  scoped_feature_list_.Reset();
-  scoped_feature_list_.InitWithFeaturesAndParameters(
-      {{segmentation_platform::features::kSegmentationPlatformFeature, {}},
-       {segmentation_platform::features::kSegmentationPlatformIosModuleRanker,
-        {{segmentation_platform::kDefaultModelEnabledParam, "true"}}},
-       {kMagicStack, {}}},
-      {});
-
   [view_controller_ setShortcutTilesConfig:ShortcutsConfigWithBookmark()];
   histogram_tester_->ExpectBucketCount(kMagicStackTopModuleImpressionHistogram,
                                        ContentSuggestionsModuleType::kShortcuts,
@@ -214,7 +219,7 @@ TEST_F(ContentSuggestionsViewControllerTest, TestInsertModuleIntoMagicStack) {
   // Most Visited should be inserted at index 0
   [view_controller_ setShortcutTilesConfig:ShortcutsConfigWithBookmark()];
   // Trigger -viewDidLoad for initial Magic Stack construction.
-  // TODO(crbug.com/1477476): This view get should ideally happen before
+  // TODO(crbug.com/40280314): This view get should ideally happen before
   // setShortcutTilesConfig: to ensure Shortcuts is inserted correctly as
   // well.
   [view_controller_ loadViewIfNeeded];
@@ -262,7 +267,7 @@ TEST_F(ContentSuggestionsViewControllerTest, TestUpdateMagicStackOrder) {
 
   [view_controller_ setShortcutTilesConfig:ShortcutsConfigWithBookmark()];
   // Trigger -viewDidLoad for initial Magic Stack construction.
-  // TODO(crbug.com/1477476): This view get should ideally happen before
+  // TODO(crbug.com/40280314): This view get should ideally happen before
   // setShortcutTilesConfig: to ensure Shortcuts is inserted correctly as
   // well.
   [view_controller_ loadViewIfNeeded];
@@ -397,14 +402,6 @@ TEST_F(ContentSuggestionsViewControllerTest,
 // Magic Stack order available yet, and that the placeholders are replaced with
 // the real modules once the Magic Stack order is received.
 TEST_F(ContentSuggestionsViewControllerTest, TestMagicStackPlaceholder) {
-  scoped_feature_list_.Reset();
-  scoped_feature_list_.InitWithFeaturesAndParameters(
-      {{segmentation_platform::features::kSegmentationPlatformFeature, {}},
-       {segmentation_platform::features::kSegmentationPlatformIosModuleRanker,
-        {{segmentation_platform::kDefaultModelEnabledParam, "true"}}},
-       {kMagicStack, {}}},
-      {});
-
   [view_controller_ setShortcutTilesConfig:ShortcutsConfigWithBookmark()];
 
   [view_controller_ loadViewIfNeeded];
@@ -445,7 +442,7 @@ TEST_F(ContentSuggestionsViewControllerTest,
   // Most Visited should be inserted at index 0
   [view_controller_ setShortcutTilesConfig:ShortcutsConfigWithBookmark()];
   // Trigger -viewDidLoad for initial Magic Stack construction.
-  // TODO(crbug.com/1477476): This view get should ideally happen before
+  // TODO(crbug.com/40280314): This view get should ideally happen before
   // setShortcutTilesConfig: to ensure Shortcuts is inserted correctly as
   // well.
   [view_controller_ loadViewIfNeeded];

@@ -70,6 +70,7 @@ struct RawPtrAndRefExclusionsOptions {
   FilterFile* paths_to_exclude;
   bool should_exclude_stack_allocated_records;
   chrome_checker::StackAllocatedPredicate* stack_allocated_predicate;
+  bool should_rewrite_non_string_literals;
 };
 
 AST_MATCHER(clang::Type, anyCharType) {
@@ -97,8 +98,9 @@ AST_POLYMORPHIC_MATCHER(isInThirdPartyLocation,
                         AST_POLYMORPHIC_SUPPORTED_TYPES(clang::Decl,
                                                         clang::Stmt,
                                                         clang::TypeLoc)) {
-  std::string filename = GetFilename(Finder->getASTContext().getSourceManager(),
-                                     getRepresentativeLocation(Node));
+  clang::SourceManager& sm = Finder->getASTContext().getSourceManager();
+  std::string filename = GetFilename(sm, getRepresentativeLocation(Node),
+                                     FilenameLocationType::kSpellingLoc);
 
   // Blink is part of the Chromium git repo, even though it contains
   // "third_party" in its path.
@@ -116,14 +118,16 @@ AST_POLYMORPHIC_MATCHER(isInThirdPartyLocation,
 }
 
 AST_MATCHER(clang::Stmt, isInStdBitCastHeader) {
-  std::string filename = GetFilename(Finder->getASTContext().getSourceManager(),
-                                     Node.getSourceRange().getBegin());
+  clang::SourceManager& sm = Finder->getASTContext().getSourceManager();
+  std::string filename = GetFilename(sm, Node.getSourceRange().getBegin(),
+                                     FilenameLocationType::kSpellingLoc);
   return filename.find("__bit/bit_cast.h") != std::string::npos;
 }
 
 AST_MATCHER(clang::Stmt, isInRawPtrCastHeader) {
-  std::string filename = GetFilename(Finder->getASTContext().getSourceManager(),
-                                     Node.getSourceRange().getBegin());
+  clang::SourceManager& sm = Finder->getASTContext().getSourceManager();
+  std::string filename = GetFilename(sm, Node.getSourceRange().getBegin(),
+                                     FilenameLocationType::kSpellingLoc);
   return filename.find(
              "base/allocator/partition_allocator/src/partition_alloc/pointers/"
              "raw_ptr_cast.h") != std::string::npos;
@@ -133,8 +137,9 @@ AST_POLYMORPHIC_MATCHER(isInGeneratedLocation,
                         AST_POLYMORPHIC_SUPPORTED_TYPES(clang::Decl,
                                                         clang::Stmt,
                                                         clang::TypeLoc)) {
-  std::string filename = GetFilename(Finder->getASTContext().getSourceManager(),
-                                     getRepresentativeLocation(Node));
+  clang::SourceManager& sm = Finder->getASTContext().getSourceManager();
+  std::string filename = GetFilename(sm, getRepresentativeLocation(Node),
+                                     FilenameLocationType::kSpellingLoc);
 
   return filename.find("/gen/") != std::string::npos ||
          filename.rfind("gen/", 0) == 0;
@@ -157,8 +162,9 @@ AST_POLYMORPHIC_MATCHER_P(isInLocationListedInFilterFile,
   if (loc.isInvalid()) {
     return false;
   }
+  clang::SourceManager& sm = Finder->getASTContext().getSourceManager();
   std::string file_path =
-      GetFilename(Finder->getASTContext().getSourceManager(), loc);
+      GetFilename(sm, loc, FilenameLocationType::kSpellingLoc);
   return Filter->ContainsSubstringOf(file_path);
 }
 
@@ -476,5 +482,36 @@ AST_MATCHER_P(clang::CastExpr,
   }
   return InnerMatcher.matches(*explicit_cast_expr, Finder, Builder);
 }
+
+// Matches the pointer types supported by the rewriters.
+// These exclude: function, member and array type pointers.
+clang::ast_matchers::internal::Matcher<clang::Type> supported_pointer_type();
+
+// Matches const char pointers.
+clang::ast_matchers::internal::Matcher<clang::Type> const_char_pointer_type();
+
+// These represent the common conditions to skip the rewrite for reference and
+// pointer decls. This includes decls that are:
+// - listed in the --exclude-fields cmdline param or located in paths
+//   matched by --exclude-paths cmdline param
+// - "implicit" (i.e. field decls that are not explicitly present in
+//   the source code)
+// - located in Extern C context, in generated code or annotated with
+// RAW_PTR_EXCLUSION
+// - located under third_party/ except under third_party/blink as Blink
+// is part of chromium git repo.
+//
+// Additionally, if |options.should_exclude_stack_allocated_records|,
+// - Pointer pointing to a STACK_ALLOCATED() object.
+// - Pointer that are a member of STACK_ALLOCATED() object.
+//    struct Foo {
+//      STACK_ALLOCATED();
+//      int*         ptr2; // isDeclaredInStackAllocated(...)
+//    }
+//    struct Bar {
+//      Foo*         ptr2; // hasDescendant(StackAllocatedQualType(...))
+//    }
+clang::ast_matchers::internal::Matcher<clang::NamedDecl> PtrAndRefExclusions(
+    const RawPtrAndRefExclusionsOptions& options);
 
 #endif  // TOOLS_CLANG_PLUGINS_RAWPTRHELPERS_H_

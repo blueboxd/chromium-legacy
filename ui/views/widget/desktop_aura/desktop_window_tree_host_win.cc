@@ -131,6 +131,11 @@ DesktopWindowTreeHostWin::DesktopWindowTreeHostWin(
 
 DesktopWindowTreeHostWin::~DesktopWindowTreeHostWin() {
   desktop_native_widget_aura_->OnDesktopWindowTreeHostDestroyed(this);
+  // Normally HandleDestroying() destroys the compositor (which is called
+  // from WM_DESTROY) but it appears in some situations we can get
+  // WM_NCDESTROY (which calls this function) without a WM_DESTROY. As a result
+  // DestroyCompositor() is called from both places.
+  DestroyCompositor();
   DestroyDispatcher();
 }
 
@@ -517,7 +522,11 @@ void DesktopWindowTreeHostWin::EndMoveLoop() {
 void DesktopWindowTreeHostWin::SetVisibilityChangedAnimationsEnabled(
     bool value) {
   message_handler_->SetVisibilityChangedAnimationsEnabled(value);
-  content_window()->SetProperty(aura::client::kAnimationsDisabledKey, !value);
+  if (desktop_native_widget_aura_->widget_type() !=
+          Widget::InitParams::TYPE_WINDOW ||
+      remove_standard_frame_) {
+    content_window()->SetProperty(aura::client::kAnimationsDisabledKey, !value);
+  }
 }
 
 std::unique_ptr<NonClientFrameView>
@@ -1088,7 +1097,7 @@ void DesktopWindowTreeHostWin::HandleTouchEvent(ui::TouchEvent* event) {
       FinishTouchDrag(screen_point);
     }
   }
-  // TODO(crbug.com/229301) Calling ::SetCursorPos for ui::ET_TOUCH_PRESSED
+  // TODO(crbug.com/40312079) Calling ::SetCursorPos for ui::ET_TOUCH_PRESSED
   // events here would fix web ui tab strip drags when the cursor is not over
   // the Chrome window - The TODO is to figure out if that's reasonable, since
   // it would change the cursor pos on every touch event. Or figure out if there

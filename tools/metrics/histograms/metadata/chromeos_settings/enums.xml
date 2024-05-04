@@ -26,6 +26,12 @@ chromium-metrics-reviews@google.com.
 
 <enums>
 
+<enum name="DisplayDefaultSettingsMeasurement">
+  <int value="0" label="NewDisplayConnected"/>
+  <int value="1" label="OverrideResolution"/>
+  <int value="2" label="OverrideScaling"/>
+</enum>
+
 <enum name="DisplaySettingsBoolean">
   <int value="0" label="Off"/>
   <int value="1" label="On"/>
@@ -228,6 +234,7 @@ chromium-metrics-reviews@google.com.
   <int value="609" label="Search: Quick Answers Definition"/>
   <int value="610" label="Search: Quick Answers Translation"/>
   <int value="611" label="Search: Quick Answers Unit Conversion"/>
+  <int value="612" label="Mahi: On/Off"/>
   <int value="700" label="Manage Android Preferences"/>
   <int value="701" label="Remove Play Store"/>
   <int value="702" label="Turn On Play Store"/>
@@ -343,6 +350,16 @@ chromium-metrics-reviews@google.com.
   <int value="1535" label="Color correction: Filter type"/>
   <int value="1536" label="Color correction: Filter amount"/>
   <int value="1537" label="Reduced Animations"/>
+  <int value="1538" label="Mouse Keys"/>
+  <int value="1539" label="Mouse Keys: Ctrl to pause"/>
+  <int value="1540" label="Mouse Keys: Disable in text fields"/>
+  <int value="1541" label="Mouse Keys: Acceleration"/>
+  <int value="1542" label="Mouse Keys: Max Speed"/>
+  <int value="1543" label="Mouse Keys: Left Handed"/>
+  <int value="1544" label="Caret blink rate"/>
+  <int value="1545" label="Magnifier follows select to speak words"/>
+  <int value="1546" label="PDF OCR"/>
+  <int value="1547" label="Enable overscroll to navigate"/>
   <int value="1600" label="Powerwash"/>
   <int value="1601" label="Sanitize ChromeOS"/>
   <int value="1700" label="Change Chrome Channel"/>
@@ -474,6 +491,7 @@ chromium-metrics-reviews@google.com.
   <int value="707" label="Arc Vm USB Preferences"/>
   <int value="708" label="Manage Isolated Web Apps"/>
   <int value="709" label="App Notifications Manager"/>
+  <int value="710" label="App Parental Controls"/>
   <int value="800" label="Crostini Details"/>
   <int value="801" label="Crostini Manage Shared Folders"/>
   <int value="802" label="Crostini Usb Preferences"/>
@@ -578,9 +596,11 @@ chromium-metrics-reviews@google.com.
   <int value="-1924511305" label="/help"/>
   <int value="-1820397898" label="/manageAccessibility"/>
   <int value="-1795544471" label="/languages/inputMethods"/>
+  <int value="-1736807228" label="/per-device-pointing-stick"/>
   <int value="-1589300908" label="/app-management/pluginVm/sharedPaths"/>
   <int value="-1569772500" label="/manageAccessibility/tts"/>
   <int value="-1484929503" label="/manageAccessibility/switchAccess"/>
+  <int value="-1415491238" label="/per-device-mouse"/>
   <int value="-1312744606" label="/knownNetworks"/>
   <int value="-1279337432" label="/power"/>
   <int value="-1206523744" label="/app-management/detail"/>
@@ -594,6 +614,7 @@ chromium-metrics-reviews@google.com.
   <int value="-916174295" label="/internet"/>
   <int value="-898481268" label="/multidevice/features"/>
   <int value="-842548379" label="/apps"/>
+  <int value="-789470488" label="/per-device-mouse/customizeButtons"/>
   <int value="-710357049" label="/bluetooth"/>
   <int value="-575518203" label="/manageAccessibility/faceGazeCursor"/>
   <int value="-570956986" label="/personalization"/>
@@ -603,6 +624,7 @@ chromium-metrics-reviews@google.com.
   <int value="-358922358" label="/textToSpeech/chromeVox"/>
   <int value="-319293467" label="/multidevice"/>
   <int value="-295702530" label="/smbShares"/>
+  <int value="-244630579" label="/per-device-keyboard"/>
   <int value="-237154443" label="/manageAccessibility/tts/googleTtsEngine"/>
   <int value="-230959653" label="/syncSetup"/>
   <int value="-189314307" label="/crostini/exportImport"/>
@@ -614,17 +636,20 @@ chromium-metrics-reviews@google.com.
   <int value="8530592" label="/syncSetup/advanced"/>
   <int value="16287984" label="/languages/details"/>
   <int value="48634426" label="/osReset"/>
+  <int value="66296091" label="/graphics-tablet/customizePenButtons"/>
   <int value="149495749" label="/osLanguages"/>
   <int value="223791833" label="/help/about"/>
   <int value="282161661" label="/osPeople"/>
   <int value="297583680" label="/device"/>
   <int value="309061570" label="/osPrivacy/accounts"/>
   <int value="334469894" label="/people"/>
+  <int value="373649997" label="/per-device-touchpad"/>
   <int value="383306038" label="/ambientMode"/>
   <int value="473528525" label="/audio"/>
   <int value="527386438" label="/osLanguages/languages"/>
   <int value="683177973" label="/cupsPrinters"/>
   <int value="754547746" label="/help/details"/>
+  <int value="862324688" label="/graphics-tablet"/>
   <int value="863669423" label="/textToSpeech"/>
   <int value="868952532" label="/pointer-overlay"/>
   <int value="996514470" label="/osSyncSetup"/>
@@ -641,8 +666,10 @@ chromium-metrics-reviews@google.com.
   <int value="1433770724" label="/osSearch"/>
   <int value="1462185522" label="/dateTime"/>
   <int value="1466297319" label="/bluetoothSavedDevices"/>
+  <int value="1524600491" label="/per-device-keyboard/remap-keys"/>
   <int value="1602314362" label="/storage"/>
   <int value="1611548266" label="/crostini/extraContainers"/>
+  <int value="1660140707" label="/graphics-tablet/customizeTabletButtons"/>
   <int value="1661964813" label="/reset"/>
   <int value="1693191706" label="/osPrivacy/lockScreen/fingerprint"/>
   <int value="1810385625" label="/crostini"/>

@@ -4,6 +4,8 @@
 
 #include "components/user_education/common/feature_promo_lifecycle.h"
 
+#include <string_view>
+
 #include "base/containers/contains.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -12,6 +14,7 @@
 #include "base/time/time.h"
 #include "components/user_education/common/feature_promo_data.h"
 #include "components/user_education/common/feature_promo_result.h"
+#include "components/user_education/common/feature_promo_specification.h"
 #include "components/user_education/common/feature_promo_storage_service.h"
 #include "components/user_education/common/help_bubble.h"
 #include "components/user_education/common/user_education_features.h"
@@ -33,6 +36,7 @@ class ScopedPromoData {
     storage_service_->SavePromoData(*iph_feature_, promo_data_);
   }
 
+  FeaturePromoData* get() { return &promo_data_; }
   FeaturePromoData* operator->() { return &promo_data_; }
 
  private:
@@ -45,22 +49,28 @@ class ScopedPromoData {
 
 FeaturePromoLifecycle::FeaturePromoLifecycle(
     FeaturePromoStorageService* storage_service,
-    const base::StringPiece& app_id,
+    std::string_view promo_key,
     const base::Feature* iph_feature,
     PromoType promo_type,
-    PromoSubtype promo_subtype)
+    PromoSubtype promo_subtype,
+    int num_rotating_entries = 0)
     : storage_service_(storage_service),
-      app_id_(app_id),
+      promo_key_(promo_key),
       iph_feature_(iph_feature),
       promo_type_(promo_type),
-      promo_subtype_(promo_subtype) {}
+      promo_subtype_(promo_subtype),
+      num_rotating_entries_(num_rotating_entries) {
+  CHECK_EQ(promo_type_ == PromoType::kRotating, num_rotating_entries_ > 0)
+      << "Number of rotating entries should be nonzero if and only if promo "
+         "type is rotating.";
+}
 
 FeaturePromoLifecycle::~FeaturePromoLifecycle() {
   MaybeEndPromo();
 }
 
 FeaturePromoResult FeaturePromoLifecycle::CanShow() const {
-  DCHECK(promo_subtype_ != PromoSubtype::kPerApp || !app_id_.empty());
+  DCHECK(promo_subtype_ != PromoSubtype::kKeyedNotice || !promo_key_.empty());
 
   const auto data = storage_service_->ReadPromoData(*iph_feature_);
   if (!data.has_value()) {
@@ -68,27 +78,45 @@ FeaturePromoResult FeaturePromoLifecycle::CanShow() const {
   }
 
   switch (promo_subtype_) {
-    case PromoSubtype::kNormal:
-      if (features::IsUserEducationV2() &&
-          data->show_count >= features::GetMaxPromoShowCount()) {
-        return FeaturePromoResult::kExceededMaxShowCount;
-      }
+    case PromoSubtype::kNormal: {
+      FeaturePromoResult result;
       switch (promo_type_) {
         case PromoType::kLegacy:
         case PromoType::kToast:
-          return data->is_dismissed ? FeaturePromoResult::kPermanentlyDismissed
-                                    : FeaturePromoResult::Success();
+          result = data->is_dismissed
+                       ? FeaturePromoResult::kPermanentlyDismissed
+                       : FeaturePromoResult::Success();
+          break;
         case PromoType::kCustomAction:
         case PromoType::kSnooze:
         case PromoType::kTutorial:
-          return CanShowSnoozePromo(*data);
+          result = CanShowSnoozePromo(*data);
+          break;
+        case PromoType::kRotating:
+          // Cache the next promo index for later.
+          MaybeCachePromoIndex(&*data);
+          // For now, rotating promos can continue to show indefinitely.
+          return FeaturePromoResult::Success();
         case PromoType::kUnspecified:
           NOTREACHED();
-          return FeaturePromoResult::kPermanentlyDismissed;
+          result = FeaturePromoResult::kPermanentlyDismissed;
+          break;
       }
-      break;
-    case PromoSubtype::kPerApp:
-      return base::Contains(data->shown_for_apps, app_id_)
+      // Even if the promo could show, it may have exceeded its maximum show
+      // count. This is always the last consideration since it is the least
+      // descriptive return value.
+      //
+      // Note that snoozes do not count towards the show cap; the cap only
+      // applies to showing when the IPH is neither dismissed nor snoozed.
+      if (result && features::IsUserEducationV2() &&
+          data->show_count - data->snooze_count >=
+              features::GetMaxPromoShowCount()) {
+        result = FeaturePromoResult::kExceededMaxShowCount;
+      }
+      return result;
+    }
+    case PromoSubtype::kKeyedNotice:
+      return base::Contains(data->shown_for_keys, promo_key_)
                  ? FeaturePromoResult::kPermanentlyDismissed
                  : FeaturePromoResult::Success();
     case PromoSubtype::kLegalNotice:
@@ -110,10 +138,25 @@ bool FeaturePromoLifecycle::CanSnooze() const {
       return !features::IsUserEducationV2() ||
              storage_service_->GetSnoozeCount(*iph_feature_) <
                  features::GetMaxSnoozeCount();
+    case PromoType::kRotating:
+      // TODO(dfried): Should snooze promos be allowed in rotating promos?
+      return true;
     case PromoType::kUnspecified:
       NOTREACHED();
       return false;
   }
+}
+
+int FeaturePromoLifecycle::GetPromoIndex() const {
+  CHECK_EQ(PromoType::kRotating, promo_type_);
+  MaybeCachePromoIndex(nullptr);
+  return *promo_index_;
+}
+
+void FeaturePromoLifecycle::SetPromoIndex(int new_index) {
+  CHECK_EQ(PromoType::kRotating, promo_type_);
+  CHECK_LT(new_index, num_rotating_entries_);
+  promo_index_ = new_index;
 }
 
 void FeaturePromoLifecycle::OnPromoShown(
@@ -235,13 +278,50 @@ base::Time FeaturePromoLifecycle::GetCurrentTime() const {
   return storage_service_->GetCurrentTime();
 }
 
+void FeaturePromoLifecycle::MaybeCachePromoIndex(
+    const FeaturePromoData* data) const {
+  if (promo_index_.has_value()) {
+    return;
+  }
+  if (data) {
+    promo_index_ = data->promo_index;
+  } else {
+    const auto new_data = storage_service_->ReadPromoData(*iph_feature_);
+    if (!new_data) {
+      promo_index_ = 0;
+      return;
+    }
+    promo_index_ = new_data->promo_index;
+  }
+
+  // If promo index was just read, it may exceed the number of entries; if this
+  // is the case, wrap back around to zero.
+  if (promo_index_ >= num_rotating_entries_) {
+    promo_index_ = 0;
+  }
+}
+
 void FeaturePromoLifecycle::MaybeWriteClosedPromoData(
     FeaturePromoClosedReason close_reason) {
-  if (is_demo() || wrote_close_data_) {
+  if (wrote_close_data_) {
     return;
   }
 
   wrote_close_data_ = true;
+
+  const bool is_rotating = promo_type_ == PromoType::kRotating;
+
+  if (is_demo()) {
+    // Increment promo index for rotating promos even in demo mode so that each
+    // promo in the rotation can be tested.
+    if (is_rotating) {
+      ScopedPromoData data(storage_service_, iph_feature_);
+      MaybeCachePromoIndex(data.get());
+      data->promo_index = GetPromoIndex() + 1;
+    }
+    // Don't write any other data for demo promos.
+    return;
+  }
 
   switch (close_reason) {
     case FeaturePromoClosedReason::kAction:
@@ -250,11 +330,16 @@ void FeaturePromoLifecycle::MaybeWriteClosedPromoData(
     case FeaturePromoClosedReason::kFeatureEngaged:
     case FeaturePromoClosedReason::kTimeout: {
       ScopedPromoData data(storage_service_, iph_feature_);
-      if (!app_id_.empty()) {
-        data->shown_for_apps.insert(app_id_);
+      if (!promo_key_.empty()) {
+        data->shown_for_keys.insert(promo_key_);
       }
-      data->is_dismissed = true;
       data->last_dismissed_by = close_reason;
+      if (is_rotating) {
+        MaybeCachePromoIndex(data.get());
+        data->promo_index = GetPromoIndex() + 1;
+      } else {
+        data->is_dismissed = true;
+      }
       break;
     }
 
@@ -262,6 +347,8 @@ void FeaturePromoLifecycle::MaybeWriteClosedPromoData(
       ScopedPromoData data(storage_service_, iph_feature_);
       ++data->snooze_count;
       data->last_snooze_time = GetCurrentTime();
+      // TODO(dfried): Should rotating promos that have been snoozed increment?
+      // Should snooze promos even be allowed in a rotating promo?
       break;
     }
 
@@ -285,17 +372,13 @@ void FeaturePromoLifecycle::RecordShown() {
   action_name.append(iph_feature_->name);
   base::RecordComputedAction(action_name);
 
-  // Record Promo type
-  UMA_HISTOGRAM_ENUMERATION("UserEducation.MessageShown.Type", promo_type_);
-  UMA_HISTOGRAM_ENUMERATION("UserEducation.MessageShown.Subtype",
-                            promo_subtype_);
   std::string type_action_name = "UserEducation.MessageShown.";
   switch (promo_subtype_) {
     case PromoSubtype::kNormal:
       break;
-    case PromoSubtype::kPerApp:
+    case PromoSubtype::kKeyedNotice:
       // Ends with a period.
-      type_action_name.append("PerApp.");
+      type_action_name.append("KeyedNotice.");
       break;
     case PromoSubtype::kLegalNotice:
       // Ends with a period.
@@ -306,6 +389,11 @@ void FeaturePromoLifecycle::RecordShown() {
       type_action_name.append("ActionableAlert.");
       break;
   }
+
+  UMA_HISTOGRAM_ENUMERATION("UserEducation.MessageShown.Subtype",
+                            promo_subtype_);
+
+  UMA_HISTOGRAM_ENUMERATION("UserEducation.MessageShown.Type", promo_type_);
   switch (promo_type_) {
     case PromoType::kLegacy:
       type_action_name.append("Legacy");
@@ -321,6 +409,19 @@ void FeaturePromoLifecycle::RecordShown() {
       break;
     case PromoType::kTutorial:
       type_action_name.append("Tutorial");
+      break;
+    case PromoType::kRotating:
+      // Want to track exactly which messages are being shown in a rotating
+      // promo. Because the suggested cap on exact linear histograms is 100, use
+      // that as the max allowed value.
+      //
+      // Note that the +1 is not an increment, but rather reflects that
+      // histograms are 1-indexed rather than 0-indexed. Therefore, the first
+      // promo is promo 1, not 0.
+      UMA_HISTOGRAM_EXACT_LINEAR(
+          "UserEducation.MessageShown.RotatingPromoIndex", GetPromoIndex() + 1,
+          100);
+      type_action_name.append("Rotating");
       break;
     case PromoType::kUnspecified:
       NOTREACHED();
@@ -377,7 +478,7 @@ void FeaturePromoLifecycle::MaybeRecordClosedReason(
   base::RecordComputedAction(action_name);
 
   // Record the histogram.
-  std::string histogram_name =
+  const std::string histogram_name =
       std::string("UserEducation.MessageAction.").append(iph_feature()->name);
   base::UmaHistogramEnumeration(
       histogram_name, static_cast<FeaturePromoClosedReason>(close_reason));

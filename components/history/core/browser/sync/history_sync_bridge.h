@@ -54,7 +54,8 @@ class HistorySyncBridge : public syncer::ModelTypeSyncBridge,
       syncer::EntityChangeList entity_changes) override;
   void ApplyDisableSyncChanges(std::unique_ptr<syncer::MetadataChangeList>
                                    delete_metadata_change_list) override;
-  void GetData(StorageKeyList storage_keys, DataCallback callback) override;
+  void GetDataForCommit(StorageKeyList storage_keys,
+                        DataCallback callback) override;
   void GetAllDataForDebugging(DataCallback callback) override;
   std::string GetClientTag(const syncer::EntityData& entity_data) override;
   std::string GetStorageKey(const syncer::EntityData& entity_data) override;
@@ -69,11 +70,11 @@ class HistorySyncBridge : public syncer::ModelTypeSyncBridge,
   void OnURLsModified(HistoryBackend* history_backend,
                       const URLRows& changed_urls,
                       bool is_from_expiration) override;
-  void OnURLsDeleted(HistoryBackend* history_backend,
-                     bool all_history,
-                     bool expired,
-                     const URLRows& deleted_rows,
-                     const std::set<GURL>& favicon_urls) override;
+  void OnHistoryDeletions(HistoryBackend* history_backend,
+                          bool all_history,
+                          bool expired,
+                          const URLRows& deleted_rows,
+                          const std::set<GURL>& favicon_urls) override;
   void OnVisitUpdated(const VisitRow& visit_row,
                       VisitUpdateReason reason) override;
   void OnVisitDeleted(const VisitRow& visit_row) override;
@@ -135,6 +136,8 @@ class HistorySyncBridge : public syncer::ModelTypeSyncBridge,
   // called after `change_processor()->IsTrackingMetadata()` returns true
   // (because before that, the cache GUID isn't known).
   std::string GetLocalCacheGuid() const;
+
+  void GetDataImpl(StorageKeyList storage_keys, DataCallback callback);
 
   // A non-owning pointer to the backend, which we're syncing local changes from
   // and sync changes to. Never null.

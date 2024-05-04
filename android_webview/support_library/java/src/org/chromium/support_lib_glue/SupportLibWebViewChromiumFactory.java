@@ -31,11 +31,11 @@ import java.util.List;
 import java.util.Set;
 
 /** Support library glue version of WebViewChromiumFactoryProvider. */
-class SupportLibWebViewChromiumFactory implements WebViewProviderFactoryBoundaryInterface {
+public class SupportLibWebViewChromiumFactory implements WebViewProviderFactoryBoundaryInterface {
     // SupportLibWebkitToCompatConverterAdapter
     private final InvocationHandler mCompatConverterAdapter;
     private final WebViewChromiumAwInit mAwInit;
-    private final String[] mWebViewSupportedFeatures =
+    private static final String[] sWebViewSupportedFeatures =
             new String[] {
                 Features.VISUAL_STATE_CALLBACK,
                 Features.OFF_SCREEN_PRERASTER,
@@ -93,7 +93,7 @@ class SupportLibWebViewChromiumFactory implements WebViewProviderFactoryBoundary
                 Features.ATTRIBUTION_BEHAVIOR,
                 Features.WEBVIEW_MEDIA_INTEGRITY_API_STATUS,
                 Features.MUTE_AUDIO,
-                Features.WEB_AUTHENTICATION + Features.DEV_SUFFIX,
+                Features.WEB_AUTHENTICATION,
                 // Add new features above. New features must include `+ Features.DEV_SUFFIX`
                 // when they're initially added (this can be removed in a future CL). The final
                 // feature should have a trailing comma for cleaner diffs.
@@ -439,7 +439,11 @@ class SupportLibWebViewChromiumFactory implements WebViewProviderFactoryBoundary
 
     @Override
     public String[] getSupportedFeatures() {
-        return mWebViewSupportedFeatures;
+        return sWebViewSupportedFeatures;
+    }
+
+    public static String[] getSupportedFeaturesForTesting() {
+        return sWebViewSupportedFeatures;
     }
 
     @Override

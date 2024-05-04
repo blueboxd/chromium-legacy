@@ -7,7 +7,9 @@
 #import "ios/chrome/browser/shared/model/browser/browser.h"
 #import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
 #import "ios/chrome/browser/shared/ui/table_view/table_view_utils.h"
+#import "ios/chrome/browser/ui/search_engine_choice/search_engine_choice_constants.h"
 #import "ios/chrome/browser/ui/search_engine_choice/search_engine_choice_learn_more/search_engine_choice_learn_more_view_controller.h"
+#import "ui/base/device_form_factor.h"
 
 @interface SearchEngineChoiceLearnMoreCoordinator () <
     UIAdaptivePresentationControllerDelegate,
@@ -21,17 +23,26 @@
 
 - (void)start {
   [super start];
-  _viewController = [[SearchEngineChoiceLearnMoreViewController alloc]
-      initWithStyle:ChromeTableViewStyle()];
+  _viewController = [[SearchEngineChoiceLearnMoreViewController alloc] init];
   _viewController.delegate = self;
   // Creates the navigation controller and presents.
   UINavigationController* navigationController = [[UINavigationController alloc]
       initWithRootViewController:_viewController];
   // Need to set `modalPresentationStyle` otherwise, UIKit ignores the value.
-  if (self.presentationFormSheet) {
+  if (self.forcePresentationFormSheet) {
     navigationController.modalPresentationStyle = UIModalPresentationFormSheet;
   } else {
-    navigationController.modalPresentationStyle = UIModalPresentationPageSheet;
+    ui::DeviceFormFactor deviceFormFactor = ui::GetDeviceFormFactor();
+    if (deviceFormFactor == ui::DEVICE_FORM_FACTOR_PHONE) {
+      navigationController.modalPresentationStyle =
+          UIModalPresentationPageSheet;
+    } else {
+      navigationController.modalPresentationStyle =
+          UIModalPresentationFormSheet;
+      navigationController.preferredContentSize =
+          CGSizeMake(kIPadSearchEngineChoiceScreenPreferredWidth,
+                     kIPadSearchEngineChoiceScreenPreferredHeight);
+    }
   }
   navigationController.presentationController.delegate = self;
   UISheetPresentationController* presentationController =
@@ -64,7 +75,7 @@
 
 - (void)learnMoreDone:
     (SearchEngineChoiceLearnMoreViewController*)viewController {
-  CHECK_EQ(_viewController, viewController, base::NotFatalUntil::M124);
+  CHECK_EQ(_viewController, viewController, base::NotFatalUntil::M127);
   __weak __typeof(self) weakSelf = self;
   [_viewController dismissViewControllerAnimated:YES
                                       completion:^() {

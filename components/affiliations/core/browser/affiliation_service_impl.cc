@@ -95,7 +95,7 @@ struct AffiliationServiceImpl::FetchInfo {
   base::OnceClosure callback;
 };
 
-// TODO(crbug.com/1246291): Create the backend task runner in Init and stop
+// TODO(crbug.com/40789139): Create the backend task runner in Init and stop
 // passing it in the constructor.
 AffiliationServiceImpl::AffiliationServiceImpl(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
@@ -142,6 +142,11 @@ void AffiliationServiceImpl::PrefetchChangePasswordURLs(
   }
   if (!facets.empty()) {
     auto fetcher = fetcher_factory_->CreateInstance(url_loader_factory_, this);
+    if (!fetcher) {
+      base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
+          FROM_HERE, std::move(callback));
+      return;
+    }
     fetcher->StartRequest(facets, kChangePasswordUrlRequestInfo);
     pending_fetches_.emplace_back(std::move(fetcher), tuple_origins,
                                   std::move(callback));
@@ -238,10 +243,6 @@ void AffiliationServiceImpl::KeepPrefetchForFacets(
                 std::move(facet_uris));
 }
 
-void AffiliationServiceImpl::TrimCacheForFacetURI(const FacetURI& facet_uri) {
-  PostToBackend(&AffiliationBackend::TrimCacheForFacetURI, facet_uri);
-}
-
 void AffiliationServiceImpl::TrimUnusedCache(std::vector<FacetURI> facet_uris) {
   PostToBackend(&AffiliationBackend::TrimUnusedCache, std::move(facet_uris));
 }
@@ -290,6 +291,11 @@ void AffiliationServiceImpl::UpdateAffiliationsAndBranding(
       base::BindOnce(&AffiliationBackend::UpdateAffiliationsAndBranding,
                      base::Unretained(backend_.get()), facets,
                      std::move(callback_in_main_sequence)));
+}
+
+void AffiliationServiceImpl::RegisterSource(
+    std::unique_ptr<AffiliationSource> source) {
+  prefetcher_.RegisterSource(std::move(source));
 }
 
 }  // namespace affiliations

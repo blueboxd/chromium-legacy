@@ -20,6 +20,29 @@
     <div role="gridcell">data</div>
   </div>
 </div>
+
+<input type="text" role="combobox" aria-activedescendant="treegrid4-row1">
+<div role="grid">
+    <div id="treegrid4-row1" role="row">
+        <div role="gridcell">data</div>
+    </div>
+</div>
+
+<input type="text" role="combobox" aria-controls="treegrid5" aria-activedescendant="treegrid5-row1">
+<div id="treegrid5" role="grid">
+    <div id="treegrid5-row1" role="row">
+        <div role="gridcell">data</div>
+    </div>
+</div>
+
+<input id="input6" type="text" role="combobox" aria-controls="treegrid6">
+<div id="treegrid6-container" role="none">
+    <div id="treegrid6" role="grid">
+        <div id="treegrid6-row1" role="row">
+            <div role="gridcell">data</div>
+        </div>
+    </div>
+</div>
 </body>
 
 <script>
@@ -42,4 +65,19 @@ test(function(t) {
     assert_equals(axRow.name, '');
 }, "The row's name must empty when the parent is not focusable and there is no other labelling markup (for performance reasons)");
 
+test(function(t) {
+    var axRow = axElementById("treegrid4-row1");
+    assert_equals(axRow.name, 'data');
+}, "The row's name must concatenate the children if a textfield controlling the grid has aria-activedescendant");
+
+test(function(t) {
+    var axRow = axElementById("treegrid5-row1");
+    assert_equals(axRow.name, 'data');
+}, "The row's name must concatenate the children if the grid has a previous sibling input with aria-activedescendant");
+
+test(function(t) {
+    document.getElementById('input6').setAttribute('aria-activedescendant', "treegrid6-row1");
+    var axRow = axElementById("treegrid6-row1");
+    assert_equals(axRow.name, 'data');
+}, "The row's name must concatenate the children if the grid has a previous unignored sibling input with a late-added aria-activedescendant");
 </script>

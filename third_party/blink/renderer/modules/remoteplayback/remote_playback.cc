@@ -142,7 +142,7 @@ ExecutionContext* RemotePlayback::GetExecutionContext() const {
   return ExecutionContextLifecycleObserver::GetExecutionContext();
 }
 
-ScriptPromiseTyped<IDLLong> RemotePlayback::watchAvailability(
+ScriptPromise<IDLLong> RemotePlayback::watchAvailability(
     ScriptState* script_state,
     V8RemotePlaybackAvailabilityCallback* callback,
     ExceptionState& exception_state) {
@@ -151,7 +151,7 @@ ScriptPromiseTyped<IDLLong> RemotePlayback::watchAvailability(
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidStateError,
         "disableRemotePlayback attribute is present.");
-    return ScriptPromiseTyped<IDLLong>();
+    return ScriptPromise<IDLLong>();
   }
 
   int id = WatchAvailabilityInternal(
@@ -160,7 +160,7 @@ ScriptPromiseTyped<IDLLong> RemotePlayback::watchAvailability(
     exception_state.ThrowDOMException(
         DOMExceptionCode::kNotSupportedError,
         "Availability monitoring is not supported on this device.");
-    return ScriptPromiseTyped<IDLLong>();
+    return ScriptPromise<IDLLong>();
   }
 
   // TODO(avayvod): Currently the availability is tracked for each media element
@@ -169,14 +169,14 @@ ScriptPromiseTyped<IDLLong> RemotePlayback::watchAvailability(
   // controls. If there are no default controls, we should also start tracking
   // availability on demand meaning the Promise returned by watchAvailability()
   // will be resolved asynchronously.
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolverTyped<IDLLong>>(
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver<IDLLong>>(
       script_state, exception_state.GetContext());
   auto promise = resolver->Promise();
   resolver->Resolve(id);
   return promise;
 }
 
-ScriptPromise RemotePlayback::cancelWatchAvailability(
+ScriptPromise<IDLUndefined> RemotePlayback::cancelWatchAvailability(
     ScriptState* script_state,
     int id,
     ExceptionState& exception_state) {
@@ -185,24 +185,20 @@ ScriptPromise RemotePlayback::cancelWatchAvailability(
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidStateError,
         "disableRemotePlayback attribute is present.");
-    return ScriptPromise();
+    return ScriptPromise<IDLUndefined>();
   }
 
   if (!CancelWatchAvailabilityInternal(id)) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kNotFoundError,
         "A callback with the given id is not found.");
-    return ScriptPromise();
+    return ScriptPromise<IDLUndefined>();
   }
 
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(
-      script_state, exception_state.GetContext());
-  ScriptPromise promise = resolver->Promise();
-  resolver->Resolve();
-  return promise;
+  return ToResolvedUndefinedPromise(script_state);
 }
 
-ScriptPromise RemotePlayback::cancelWatchAvailability(
+ScriptPromise<IDLUndefined> RemotePlayback::cancelWatchAvailability(
     ScriptState* script_state,
     ExceptionState& exception_state) {
   if (media_element_->FastHasAttribute(
@@ -210,41 +206,37 @@ ScriptPromise RemotePlayback::cancelWatchAvailability(
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidStateError,
         "disableRemotePlayback attribute is present.");
-    return ScriptPromise();
+    return ScriptPromise<IDLUndefined>();
   }
 
   availability_callbacks_.clear();
   StopListeningForAvailability();
-
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(
-      script_state, exception_state.GetContext());
-  ScriptPromise promise = resolver->Promise();
-  resolver->Resolve();
-  return promise;
+  return ToResolvedUndefinedPromise(script_state);
 }
 
-ScriptPromise RemotePlayback::prompt(ScriptState* script_state,
-                                     ExceptionState& exception_state) {
+ScriptPromise<IDLUndefined> RemotePlayback::prompt(
+    ScriptState* script_state,
+    ExceptionState& exception_state) {
   if (media_element_->FastHasAttribute(
           html_names::kDisableremoteplaybackAttr)) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidStateError,
         "disableRemotePlayback attribute is present.");
-    return ScriptPromise();
+    return ScriptPromise<IDLUndefined>();
   }
 
   if (prompt_promise_resolver_) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kOperationError,
         "A prompt is already being shown for this media element.");
-    return ScriptPromise();
+    return ScriptPromise<IDLUndefined>();
   }
 
   if (!media_element_->DomWindow()) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidAccessError,
         "RemotePlayback::prompt() does not work in a detached window.");
-    return ScriptPromise();
+    return ScriptPromise<IDLUndefined>();
   }
 
   if (!LocalFrame::HasTransientUserActivation(
@@ -252,32 +244,32 @@ ScriptPromise RemotePlayback::prompt(ScriptState* script_state,
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidAccessError,
         "RemotePlayback::prompt() requires user gesture.");
-    return ScriptPromise();
+    return ScriptPromise<IDLUndefined>();
   }
 
   if (!RuntimeEnabledFeatures::RemotePlaybackBackendEnabled()) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kNotSupportedError,
         "The RemotePlayback API is disabled on this platform.");
-    return ScriptPromise();
+    return ScriptPromise<IDLUndefined>();
   }
 
   if (availability_ == mojom::ScreenAvailability::UNAVAILABLE) {
     exception_state.ThrowDOMException(DOMExceptionCode::kNotFoundError,
                                       "No remote playback devices found.");
-    return ScriptPromise();
+    return ScriptPromise<IDLUndefined>();
   }
 
   if (availability_ == mojom::ScreenAvailability::SOURCE_NOT_SUPPORTED) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kNotSupportedError,
         "The currentSrc is not compatible with remote playback");
-    return ScriptPromise();
+    return ScriptPromise<IDLUndefined>();
   }
 
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver<IDLUndefined>>(
       script_state, exception_state.GetContext());
-  ScriptPromise promise = resolver->Promise();
+  auto promise = resolver->Promise();
   prompt_promise_resolver_ = resolver;
   PromptInternal();
   RemotePlaybackMetrics::RecordRemotePlaybackLocation(

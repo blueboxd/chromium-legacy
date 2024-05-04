@@ -18,7 +18,6 @@
 #include "third_party/blink/renderer/platform/allow_discouraged_type.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_types.h"
 #include "third_party/blink/renderer/platform/graphics/paint/effect_paint_property_node.h"
-#include "third_party/blink/renderer/platform/graphics/view_transition_element_id.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_map.h"
 #include "third_party/blink/renderer/platform/heap/heap_traits.h"
 #include "ui/gfx/geometry/transform.h"
@@ -75,8 +74,9 @@ class ViewTransitionStyleTracker
     gfx::Transform snapshot_matrix;
   };
 
-  explicit ViewTransitionStyleTracker(Document& document,
-                                      const viz::TransitionId& transition_id);
+  explicit ViewTransitionStyleTracker(
+      Document& document,
+      const blink::ViewTransitionToken& transition_token);
   ViewTransitionStyleTracker(Document& document, ViewTransitionState);
   ~ViewTransitionStyleTracker();
 
@@ -88,9 +88,11 @@ class ViewTransitionStyleTracker
                          const AtomicString& view_transition_name) const;
 
   // Indicate that capture was requested. This verifies that the combination of
-  // set elements and names is valid. Returns true if capture phase started, and
-  // false if the transition should be aborted.
-  bool Capture();
+  // set elements and names is valid. Returns true if capture phase started,
+  // and false if the transition should be aborted. If `snap_browser_controls`
+  // is set, browser controls will be forced to a fully shown state to ensure a
+  // consistent state for cross-document transitions.
+  bool Capture(bool snap_browser_controls);
 
   // Notifies when caching snapshots for elements in the old DOM finishes. This
   // is dispatched before script is notified to ensure this class releases any
@@ -110,10 +112,10 @@ class ViewTransitionStyleTracker
   // is initiated.
   void Abort();
 
-  void UpdateElementIndicesAndSnapshotId(
-      Element*,
-      ViewTransitionElementId&,
-      viz::ViewTransitionElementResourceId&) const;
+  // Returns the snapshot ID to identify the render pass based image produced by
+  // this Element. Returns an invalid ID if this element is not participating in
+  // the transition.
+  viz::ViewTransitionElementResourceId GetSnapshotId(const Element&) const;
 
   // Creates a PseudoElement for the corresponding |pseudo_id| and
   // |view_transition_name|. The |pseudo_id| must be a ::transition* element.
@@ -135,19 +137,6 @@ class ViewTransitionStyleTracker
   // Returns true if any of the pseudo elements are currently participating in
   // an animation.
   bool HasActiveAnimations() const;
-
-  // Updates an effect node with the given state. The return value is a result
-  // of updating the effect node.
-  PaintPropertyChangeType UpdateEffect(
-      const Element& element,
-      EffectPaintPropertyNode::State state,
-      const EffectPaintPropertyNodeOrAlias& current_effect);
-  PaintPropertyChangeType UpdateRootEffect(
-      EffectPaintPropertyNode::State state,
-      const EffectPaintPropertyNodeOrAlias& current_effect);
-
-  const EffectPaintPropertyNode* GetEffect(const Element& element) const;
-  const EffectPaintPropertyNode* GetRootEffect() const;
 
   // Updates a clip node with the given state. The return value is a result of
   // updating the clip node.
@@ -246,12 +235,9 @@ class ViewTransitionStyleTracker
     // Valid if there is an element in the new DOM generating a snapshot.
     viz::ViewTransitionElementResourceId new_snapshot_id;
 
-    // An effect used to represent the `target_element`'s contents, including
-    // any of element's own effects, in a pseudo element layer.
-    scoped_refptr<EffectPaintPropertyNode> effect_node;
-
     // A clip used to specify the subset of the `target_element`'s visual
     // overflow rect rendered into the element's snapshot.
+    // TODO(khushalsagar): Move this to ObjectPaintProperties.
     scoped_refptr<ClipPaintPropertyNode> clip_node;
 
     // Index to add to the view transition element id.
@@ -317,12 +303,14 @@ class ViewTransitionStyleTracker
 
   viz::ViewTransitionElementResourceId GenerateResourceId() const;
 
+  void SnapBrowserControlsToFullyShown();
+
   Member<Document> document_;
 
   // Indicates which step during the transition we're currently at.
   State state_ = State::kIdle;
 
-  const viz::TransitionId transition_id_;
+  const blink::ViewTransitionToken transition_token_;
 
   // Set if this style tracker was created by deserializing captured state
   // instead of running through the capture phase. This is done for transitions
@@ -348,11 +336,6 @@ class ViewTransitionStyleTracker
   // The device scale factor used for layout of the Document. This is kept in
   // sync with the Document during RunPostPrePaintSteps().
   float device_pixel_ratio_ = 0.f;
-
-  // The paint property node for the |documentElement|. This is generated if the
-  // element has a valid |view-transition-name| and ensures correct generation
-  // of its snapshot.
-  scoped_refptr<EffectPaintPropertyNode> root_effect_node_;
 
   // The dynamically generated UA stylesheet for default styles on
   // pseudo-elements.

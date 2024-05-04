@@ -312,8 +312,6 @@ ApplicationContextImpl::GetChromeBrowserStateManager() {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!chrome_browser_state_manager_) {
     chrome_browser_state_manager_.reset(new ChromeBrowserStateManagerImpl());
-    // Load last active browserStates.
-    chrome_browser_state_manager_->LoadBrowserStates();
   }
   return chrome_browser_state_manager_.get();
 }
@@ -472,7 +470,7 @@ BrowserPolicyConnectorIOS* ApplicationContextImpl::GetBrowserPolicyConnector() {
   return browser_policy_connector_.get();
 }
 
-id<SingleSignOnService> ApplicationContextImpl::GetSSOService() {
+id<SingleSignOnService> ApplicationContextImpl::GetSingleSignOnService() {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!single_sign_on_service_) {
     single_sign_on_service_ = ios::provider::CreateSSOService();
@@ -489,7 +487,7 @@ SystemIdentityManager* ApplicationContextImpl::GetSystemIdentityManager() {
     system_identity_manager_ = tests_hook::CreateSystemIdentityManager();
     if (!system_identity_manager_) {
       system_identity_manager_ =
-          ios::provider::CreateSystemIdentityManager(GetSSOService());
+          ios::provider::CreateSystemIdentityManager(GetSingleSignOnService());
     }
     DCHECK(system_identity_manager_);
   }

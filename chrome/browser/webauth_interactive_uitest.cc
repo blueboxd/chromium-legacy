@@ -58,9 +58,10 @@ class WebAuthFocusTest : public InProcessBrowserTest,
 
   // AuthenticatorRequestDialogModel::Observer:
   void OnStepTransition() override {
-    if (dialog_model_->current_step() !=
-        AuthenticatorRequestDialogModel::Step::kAttestationPermissionRequest)
+    if (dialog_model_->step() !=
+        AuthenticatorRequestDialogModel::Step::kAttestationPermissionRequest) {
       return;
+    }
 
     // Simulate accepting the permission request.
     dialog_model_->OnAttestationPermissionResponse(true);
@@ -75,7 +76,7 @@ class WebAuthFocusTest : public InProcessBrowserTest,
   bool permission_requested_;
 };
 
-// TODO(crbug.com/1222768): Disabled for being flaky.
+// TODO(crbug.com/40774271): Disabled for being flaky.
 IN_PROC_BROWSER_TEST_F(WebAuthFocusTest, DISABLED_Focus) {
   // Web Authentication requests will often trigger machine-wide indications,
   // such as a Security Key flashing for a touch. If background tabs were able
@@ -174,7 +175,7 @@ IN_PROC_BROWSER_TEST_F(WebAuthFocusTest, DISABLED_Focus) {
         dialog_model_ = AuthenticatorRequestScheduler::GetRequestDelegate(
                             initial_web_contents)
                             ->dialog_model();
-        dialog_model_->AddObserver(this);
+        dialog_model_->observers.AddObserver(this);
         return true;
       });
 

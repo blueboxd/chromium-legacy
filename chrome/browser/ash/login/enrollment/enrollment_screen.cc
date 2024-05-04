@@ -35,6 +35,7 @@
 #include "chrome/browser/ash/policy/enrollment/enrollment_config.h"
 #include "chrome/browser/ash/policy/enrollment/enrollment_requisition_manager.h"
 #include "chrome/browser/ash/policy/enrollment/enrollment_status.h"
+#include "chrome/browser/ash/policy/enrollment/flex_enrollment_token_provider.h"
 #include "chrome/browser/ash/policy/handlers/tpm_auto_update_mode_policy_handler.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
@@ -144,6 +145,12 @@ EnrollmentScreen::EnrollmentScreen(base::WeakPtr<EnrollmentScreenView> view,
       view_(std::move(view)),
       error_screen_(error_screen),
       exit_callback_(exit_callback),
+      tpm_updater_(base::BindRepeating([]() {
+        g_browser_process->platform_part()
+            ->browser_policy_connector_ash()
+            ->GetTPMAutoUpdateModePolicyHandler()
+            ->UpdateOnEnrollmentIfNeeded();
+      })),
       histogram_helper_(
           ErrorScreensHistogramHelper::ErrorParentScreen::kEnrollment) {
   retry_policy_.num_errors_to_ignore = 0;
@@ -178,7 +185,7 @@ void EnrollmentScreen::SetEnrollmentConfig(
       current_auth_ = AUTH_ATTESTATION;
       next_auth_ = AUTH_ATTESTATION;
       break;
-    case EnrollmentConfig::AUTH_MECHANISM_BEST_AVAILABLE:
+    case EnrollmentConfig::AUTH_MECHANISM_ATTESTATION_PREFERRED:
       if (TestForcesManualEnrollment()) {
         current_auth_ = AUTH_OAUTH;
         next_auth_ = AUTH_OAUTH;
@@ -189,6 +196,10 @@ void EnrollmentScreen::SetEnrollmentConfig(
                        ? AUTH_OAUTH
                        : AUTH_ATTESTATION;
       break;
+    case EnrollmentConfig::AUTH_MECHANISM_TOKEN_PREFERRED:
+      current_auth_ = AUTH_ENROLLMENT_TOKEN;
+      next_auth_ = AUTH_OAUTH;
+      break;
     default:
       NOTREACHED();
       break;
@@ -198,8 +209,7 @@ void EnrollmentScreen::SetEnrollmentConfig(
 
 void EnrollmentScreen::SetConfig() {
   config_ = enrollment_config_;
-  if (current_auth_ == AUTH_OAUTH &&
-      config_.is_mode_attestation_with_manual_fallback()) {
+  if (current_auth_ == AUTH_OAUTH && config_.is_mode_with_manual_fallback()) {
     config_.mode =
         policy::EnrollmentConfig::GetManualFallbackMode(config_.mode);
   } else if (current_auth_ == AUTH_ATTESTATION &&
@@ -208,12 +218,9 @@ void EnrollmentScreen::SetConfig() {
                        ? policy::EnrollmentConfig::MODE_ATTESTATION_LOCAL_FORCED
                        : policy::EnrollmentConfig::MODE_ATTESTATION;
   }
-  // TODO(crbug.com/1271134): Logging as "WARNING" to make sure it's preserved
+  // TODO(crbug.com/40805389): Logging as "WARNING" to make sure it's preserved
   // in the logs.
-  LOG(WARNING) << "EnrollmentScreen::SetConfig()"
-               << " config_.mode = " << static_cast<int>(config_.mode)
-               << ", config_.auth_mechanism = "
-               << static_cast<int>(config_.auth_mechanism);
+  LOG(WARNING) << "EnrollmentScreen::SetConfig() == " << config_;
   if (view_) {
     view_->SetEnrollmentConfig(config_);
   }
@@ -221,7 +228,8 @@ void EnrollmentScreen::SetConfig() {
 }
 
 bool EnrollmentScreen::AdvanceToNextAuth() {
-  if (current_auth_ != next_auth_ && current_auth_ == AUTH_ATTESTATION) {
+  if (current_auth_ != next_auth_ && (current_auth_ == AUTH_ATTESTATION ||
+                                      current_auth_ == AUTH_ENROLLMENT_TOKEN)) {
     LOG(WARNING) << "User stopped using auth: " << current_auth_
                  << ", current auth: " << next_auth_ << ".";
     current_auth_ = next_auth_;
@@ -265,7 +273,7 @@ void EnrollmentScreen::ShowSkipEnrollmentDialogue() {
 }
 
 bool EnrollmentScreen::MaybeSkip(WizardContext& context) {
-  // TODO(crbug.com/1271134): Logging as "WARNING" to make sure it's preserved
+  // TODO(crbug.com/40805389): Logging as "WARNING" to make sure it's preserved
   // in the logs.
   LOG(WARNING) << "EnrollmentScreen::MaybeSkip("
                << "config_.is_forced = " << config_.is_forced()
@@ -324,7 +332,7 @@ void EnrollmentScreen::UpdateFlowType() {
 }
 
 void EnrollmentScreen::ShowImpl() {
-  // TODO(crbug.com/1271134): Logging as "WARNING" to make sure it's preserved
+  // TODO(crbug.com/40805389): Logging as "WARNING" to make sure it's preserved
   // in the logs.
   LOG(WARNING) << "Show enrollment screen";
   histogram_helper_.OnScreenShow();
@@ -367,6 +375,9 @@ void EnrollmentScreen::ShowImpl() {
     case AUTH_ATTESTATION:
       AuthenticateUsingAttestation();
       break;
+    case AUTH_ENROLLMENT_TOKEN:
+      AuthenticateUsingEnrollmentToken();
+      break;
     default:
       NOTREACHED();
       break;
@@ -398,7 +409,7 @@ void EnrollmentScreen::OnTpmStatusResponse(
   }
   tpm_checked_ = true;
 
-  // TODO(crbug.com/1271134): Logging as "WARNING" to make sure it's preserved
+  // TODO(crbug.com/40805389): Logging as "WARNING" to make sure it's preserved
   // in the logs.
   LOG(WARNING) << "OnTpmStatusResponse: status=" << reply.status();
   switch (reply.status()) {
@@ -425,7 +436,7 @@ void EnrollmentScreen::CheckInstallAttributesState() {
   device_management::InstallAttributesState state =
       install_attributes_util::InstallAttributesGetStatus();
 
-  // TODO(crbug.com/1271134): Logging as "WARNING" to make sure it's preserved
+  // TODO(crbug.com/40805389): Logging as "WARNING" to make sure it's preserved
   // in the logs.
   LOG(WARNING) << "InstallAttributesState: state = " << static_cast<int>(state);
   if (state == device_management::InstallAttributesState::TPM_NOT_OWNED) {
@@ -472,10 +483,11 @@ void EnrollmentScreen::HideImpl() {
 }
 
 void EnrollmentScreen::AuthenticateUsingAttestation() {
-  // TODO(crbug.com/1271134): Logging as "WARNING" to make sure it's preserved
+  // TODO(crbug.com/40805389): Logging as "WARNING" to make sure it's preserved
   // in the logs.
   LOG(WARNING) << "Authenticating using attestation.";
   elapsed_timer_ = std::make_unique<base::ElapsedTimer>();
+  // TODO(b/333594657): Remove this flag check.
   if (features::IsAutoEnrollmentKioskInOobeEnabled()) {
     license_type_to_use_ = config_.license_type;
   }
@@ -485,6 +497,24 @@ void EnrollmentScreen::AuthenticateUsingAttestation() {
   }
   CreateEnrollmentLauncher();
   enrollment_launcher_->EnrollUsingAttestation();
+}
+
+void EnrollmentScreen::AuthenticateUsingEnrollmentToken() {
+  LOG(WARNING) << "Authenticating using enrollment token.";
+  elapsed_timer_ = std::make_unique<base::ElapsedTimer>();
+  // TODO(b/333594657): Remove this flag check.
+  // Although license type is copied over blindly here, later in
+  // enrollment_handler it's only propagated if the type is terminal (i.e.
+  // kiosk), as unset license type is treated as enterprise.
+  if (features::IsAutoEnrollmentKioskInOobeEnabled()) {
+    license_type_to_use_ = config_.license_type;
+  }
+
+  if (view_) {
+    view_->Show();
+  }
+  CreateEnrollmentLauncher();
+  enrollment_launcher_->EnrollUsingEnrollmentToken();
 }
 
 void EnrollmentScreen::OnLoginDone(const std::string& user,
@@ -585,7 +615,7 @@ void EnrollmentScreen::OnCancel() {
 void EnrollmentScreen::OnConfirmationClosed() {
   StartupUtils::MarkEulaAccepted();
 
-  // TODO(crbug.com/1271134): Logging as "WARNING" to make sure it's preserved
+  // TODO(crbug.com/40805389): Logging as "WARNING" to make sure it's preserved
   // in the logs.
   LOG(WARNING) << "Confirmation closed.";
   // The callback passed to ClearAuth is either called immediately or gets
@@ -602,6 +632,8 @@ void EnrollmentScreen::OnAuthError(const GoogleServiceAuthError& error) {
   }
 }
 
+// TODO(b/329271128): Handle errors specific to token-based registration once
+// they are defined and returned from the server.
 void EnrollmentScreen::OnEnrollmentError(policy::EnrollmentStatus status) {
   LOG(ERROR) << "Enrollment error: " << status.enrollment_code();
   RecordEnrollmentErrorMetrics();
@@ -636,7 +668,7 @@ void EnrollmentScreen::OnOtherError(EnrollmentLauncher::OtherError error) {
 }
 
 void EnrollmentScreen::OnDeviceEnrolled() {
-  // TODO(crbug.com/1271134): Logging as "WARNING" to make sure it's preserved
+  // TODO(crbug.com/40805389): Logging as "WARNING" to make sure it's preserved
   // in the logs.
   LOG(WARNING) << "Device enrolled.";
   enrollment_succeeded_ = true;
@@ -648,12 +680,7 @@ void EnrollmentScreen::OnDeviceEnrolled() {
 
   enrollment_launcher_->GetDeviceAttributeUpdatePermission();
 
-  // Evaluates device policy TPMFirmwareUpdateSettings and updates the TPM if
-  // the policy is set to auto-update vulnerable TPM firmware at enrollment.
-  g_browser_process->platform_part()
-      ->browser_policy_connector_ash()
-      ->GetTPMAutoUpdateModePolicyHandler()
-      ->UpdateOnEnrollmentIfNeeded();
+  tpm_updater_.Run();
 }
 
 void EnrollmentScreen::OnIdentifierEntered(const std::string& email) {
@@ -748,7 +775,7 @@ void EnrollmentScreen::ShowAttributePromptScreen() {
     auto* asset_id_value =
         context()->configuration.FindString(configuration::kEnrollmentAssetId);
     if (asset_id_value) {
-      // TODO(crbug.com/1271134): Logging as "WARNING" to make sure it's
+      // TODO(crbug.com/40805389): Logging as "WARNING" to make sure it's
       // preserved in the logs.
       LOG(WARNING) << "Using Asset ID from configuration " << *asset_id_value;
       asset_id = *asset_id_value;
@@ -814,7 +841,7 @@ void EnrollmentScreen::ShowSigninScreen() {
 
 void EnrollmentScreen::RecordEnrollmentErrorMetrics() {
   enrollment_failed_once_ = true;
-  //  TODO(crbug.com/896793): Have other metrics for each auth mechanism.
+  //  TODO(crbug.com/40598749): Have other metrics for each auth mechanism.
   if (elapsed_timer_ && current_auth_ == next_auth_) {
     UMA_ENROLLMENT_TIME(kMetricEnrollmentTimeFailure, elapsed_timer_);
   }

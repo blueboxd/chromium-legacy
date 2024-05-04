@@ -2,17 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "crypto/unexportable_key.h"
+
+#import <CoreFoundation/CoreFoundation.h>
+#import <CryptoTokenKit/CryptoTokenKit.h>
+#import <Foundation/Foundation.h>
+#include <LocalAuthentication/LocalAuthentication.h>
+#import <Security/Security.h>
+
 #include <algorithm>
 #include <iterator>
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
-
-#import <CoreFoundation/CoreFoundation.h>
-#import <CryptoTokenKit/CryptoTokenKit.h>
-#import <Foundation/Foundation.h>
-#import <Security/Security.h>
 
 #include "base/apple/bridging.h"
 #include "base/apple/foundation_util.h"
@@ -24,11 +27,12 @@
 #include "base/memory/scoped_policy.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "crypto/apple_keychain_util.h"
 #include "crypto/apple_keychain_v2.h"
 #include "crypto/features.h"
 #include "crypto/signature_verifier.h"
-#include "crypto/unexportable_key.h"
+#include "crypto/unexportable_key_mac.h"
 #include "third_party/boringssl/src/include/openssl/bn.h"
 #include "third_party/boringssl/src/include/openssl/bytestring.h"
 #include "third_party/boringssl/src/include/openssl/ec.h"
@@ -152,6 +156,8 @@ class UnexportableSigningKeyMac : public UnexportableSigningKey {
     return CFDataToVec(signature.get());
   }
 
+  SecKeyRef GetSecKeyRef() const override { return key_.get(); }
+
  private:
   // The wrapped key as returned by the Keychain API.
   const base::apple::ScopedCFTypeRef<SecKeyRef> key_;
@@ -165,140 +171,169 @@ class UnexportableSigningKeyMac : public UnexportableSigningKey {
   std::vector<uint8_t> public_key_spki_;
 };
 
-// UserVerifyingKeyProviderMac is an implementation of the
-// UserVerifyingKeyProvider interface on top of Apple's Secure Enclave. Callers
-// must provide a keychain access group when instantiating this class. This
-// means that the build must be codesigned for any of this to work.
-// https://developer.apple.com/documentation/bundleresources/entitlements/keychain-access-groups?language=objc
-//
-// Only NIST P-256 elliptic curves are supported.
-//
-// Unlike Windows keys, macOS will store key metadata locally. Callers are
-// responsible for deleting keys when they are no longer needed.
-// TODO(nsatragno): add facilities to remove keys.
-class UnexportableKeyProviderMac : public UnexportableKeyProvider {
- public:
-  explicit UnexportableKeyProviderMac(std::string keychain_access_group,
-                                      std::string application_tag)
-      : keychain_access_group_(
-            base::SysUTF8ToNSString(std::move(keychain_access_group))),
-        application_tag_(base::SysUTF8ToNSString(std::move(application_tag))) {}
-  ~UnexportableKeyProviderMac() override = default;
+}  // namespace
 
-  std::optional<SignatureVerifier::SignatureAlgorithm> SelectAlgorithm(
-      base::span<const SignatureVerifier::SignatureAlgorithm>
-          acceptable_algorithms) override {
-    return base::Contains(acceptable_algorithms,
-                          SignatureVerifier::ECDSA_SHA256)
-               ? std::make_optional(SignatureVerifier::ECDSA_SHA256)
-               : std::nullopt;
-  }
-
-  std::unique_ptr<UnexportableSigningKey> GenerateSigningKeySlowly(
-      base::span<const SignatureVerifier::SignatureAlgorithm>
-          acceptable_algorithms) override {
-    // The Secure Enclave only supports elliptic curve keys.
-    if (!SelectAlgorithm(acceptable_algorithms)) {
-      return nullptr;
-    }
-
-    // Generate the key pair.
-    base::apple::ScopedCFTypeRef<SecAccessControlRef> access(
-        SecAccessControlCreateWithFlags(
-            kCFAllocatorDefault,
-            kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly,
-            kSecAccessControlPrivateKeyUsage,
-            /*error=*/nil));
-
-    NSDictionary* key_attributes = @{
-      CFToNSPtrCast(kSecAttrIsPermanent) : @YES,
-      CFToNSPtrCast(kSecAttrAccessControl) : (__bridge id)access.get(),
-
-    };
-    NSDictionary* attributes = @{
-      CFToNSPtrCast(kSecUseDataProtectionKeychain) : @YES,
-      CFToNSPtrCast(kSecAttrKeyType) :
-          CFToNSPtrCast(kSecAttrKeyTypeECSECPrimeRandom),
-      CFToNSPtrCast(kSecAttrKeySizeInBits) : @256,
-      CFToNSPtrCast(kSecAttrTokenID) :
-          CFToNSPtrCast(kSecAttrTokenIDSecureEnclave),
-      CFToNSPtrCast(kSecPrivateKeyAttrs) : key_attributes,
-      CFToNSPtrCast(kSecAttrAccessGroup) : keychain_access_group_,
-      CFToNSPtrCast(kSecAttrLabel) : base::SysUTF8ToNSString(kAttrLabel),
-      CFToNSPtrCast(kSecAttrApplicationTag) : application_tag_,
-    };
-
-    base::apple::ScopedCFTypeRef<CFErrorRef> error;
-    base::apple::ScopedCFTypeRef<SecKeyRef> private_key(
-        AppleKeychainV2::GetInstance().KeyCreateRandomKey(
-            NSToCFPtrCast(attributes), error.InitializeInto()));
-    if (!private_key) {
-      LOG(ERROR) << "Could not create private key: " << error.get();
-      return nullptr;
-    }
-    base::apple::ScopedCFTypeRef<CFDictionaryRef> key_metadata =
-        AppleKeychainV2::GetInstance().KeyCopyAttributes(private_key.get());
-    return std::make_unique<UnexportableSigningKeyMac>(std::move(private_key),
-                                                       key_metadata.get());
-  }
-
-  std::unique_ptr<UnexportableSigningKey> FromWrappedSigningKeySlowly(
-      base::span<const uint8_t> wrapped_key) override {
-    base::apple::ScopedCFTypeRef<CFTypeRef> key_data;
-
-    NSDictionary* query = @{
-      CFToNSPtrCast(kSecClass) : CFToNSPtrCast(kSecClassKey),
-      CFToNSPtrCast(kSecAttrKeyType) :
-          CFToNSPtrCast(kSecAttrKeyTypeECSECPrimeRandom),
-      CFToNSPtrCast(kSecReturnRef) : @YES,
-      CFToNSPtrCast(kSecReturnAttributes) : @YES,
-      CFToNSPtrCast(kSecAttrAccessGroup) : keychain_access_group_,
-      CFToNSPtrCast(kSecAttrApplicationLabel) :
-          [NSData dataWithBytes:wrapped_key.data() length:wrapped_key.size()],
-    };
-    AppleKeychainV2::GetInstance().ItemCopyMatching(NSToCFPtrCast(query),
-                                                    key_data.InitializeInto());
-    CFDictionaryRef key_attributes =
-        base::apple::CFCast<CFDictionaryRef>(key_data.get());
-    if (!key_attributes) {
-      return nullptr;
-    }
-    base::apple::ScopedCFTypeRef<SecKeyRef> key(
-        base::apple::GetValueFromDictionary<SecKeyRef>(key_attributes,
-                                                       kSecValueRef),
-        base::scoped_policy::RETAIN);
-    return std::make_unique<UnexportableSigningKeyMac>(std::move(key),
-                                                       key_attributes);
-  }
-
-  bool DeleteSigningKey(base::span<const uint8_t> wrapped_key) override {
-    NSDictionary* query = @{
-      CFToNSPtrCast(kSecClass) : CFToNSPtrCast(kSecClassKey),
-      CFToNSPtrCast(kSecAttrKeyType) :
-          CFToNSPtrCast(kSecAttrKeyTypeECSECPrimeRandom),
-      CFToNSPtrCast(kSecAttrAccessGroup) : keychain_access_group_,
-      CFToNSPtrCast(kSecAttrApplicationLabel) :
-          [NSData dataWithBytes:wrapped_key.data() length:wrapped_key.size()],
-    };
-    OSStatus result =
-        AppleKeychainV2::GetInstance().ItemDelete(NSToCFPtrCast(query));
-    return result == errSecSuccess;
-  }
-
- private:
+struct UnexportableKeyProviderMac::ObjCStorage {
   NSString* __strong keychain_access_group_;
   NSString* __strong application_tag_;
 };
 
-}  // namespace
+UnexportableKeyProviderMac::UnexportableKeyProviderMac(Config config)
+    : access_control_(config.access_control),
+      objc_storage_(std::make_unique<ObjCStorage>()) {
+  objc_storage_->keychain_access_group_ =
+      base::SysUTF8ToNSString(std::move(config.keychain_access_group));
+  objc_storage_->application_tag_ =
+      base::SysUTF8ToNSString(std::move(config.application_tag));
+}
+UnexportableKeyProviderMac::~UnexportableKeyProviderMac() = default;
 
-std::unique_ptr<UnexportableKeyProvider> GetUnexportableKeyProviderMac(
-    std::string keychain_access_group,
-    std::string application_tag) {
+std::optional<SignatureVerifier::SignatureAlgorithm>
+UnexportableKeyProviderMac::SelectAlgorithm(
+    base::span<const SignatureVerifier::SignatureAlgorithm>
+        acceptable_algorithms) {
+  return base::Contains(acceptable_algorithms, SignatureVerifier::ECDSA_SHA256)
+             ? std::make_optional(SignatureVerifier::ECDSA_SHA256)
+             : std::nullopt;
+}
+
+std::unique_ptr<UnexportableSigningKey>
+UnexportableKeyProviderMac::GenerateSigningKeySlowly(
+    base::span<const SignatureVerifier::SignatureAlgorithm>
+        acceptable_algorithms) {
+  return GenerateSigningKeySlowly(acceptable_algorithms, /*lacontext=*/nil);
+}
+
+std::unique_ptr<UnexportableSigningKey>
+UnexportableKeyProviderMac::GenerateSigningKeySlowly(
+    base::span<const SignatureVerifier::SignatureAlgorithm>
+        acceptable_algorithms,
+    LAContext* lacontext) {
+  // The Secure Enclave only supports elliptic curve keys.
+  if (!SelectAlgorithm(acceptable_algorithms)) {
+    return nullptr;
+  }
+
+  // Generate the key pair.
+  SecAccessControlCreateFlags control_flags = kSecAccessControlPrivateKeyUsage;
+  switch (access_control_) {
+    case UnexportableKeyProvider::Config::AccessControl::kUserPresence:
+      control_flags |= kSecAccessControlUserPresence;
+      break;
+    case UnexportableKeyProvider::Config::AccessControl::kUserPresenceOrWatch:
+      control_flags |= kSecAccessControlOr | kSecAccessControlBiometryAny |
+                       kSecAccessControlDevicePasscode | kSecAccessControlWatch;
+      break;
+    case UnexportableKeyProvider::Config::AccessControl::kNone:
+      // No additional flag.
+      break;
+  }
+  base::apple::ScopedCFTypeRef<SecAccessControlRef> access(
+      SecAccessControlCreateWithFlags(
+          kCFAllocatorDefault, kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly,
+          control_flags,
+          /*error=*/nil));
+  CHECK(access);
+
+  NSMutableDictionary* key_attributes =
+      [NSMutableDictionary dictionaryWithDictionary:@{
+        CFToNSPtrCast(kSecAttrIsPermanent) : @YES,
+        CFToNSPtrCast(kSecAttrAccessControl) : (__bridge id)access.get(),
+      }];
+  if (lacontext) {
+    key_attributes[CFToNSPtrCast(kSecUseAuthenticationContext)] = lacontext;
+  }
+
+  NSDictionary* attributes = @{
+    CFToNSPtrCast(kSecUseDataProtectionKeychain) : @YES,
+    CFToNSPtrCast(kSecAttrKeyType) :
+        CFToNSPtrCast(kSecAttrKeyTypeECSECPrimeRandom),
+    CFToNSPtrCast(kSecAttrKeySizeInBits) : @256,
+    CFToNSPtrCast(kSecAttrTokenID) :
+        CFToNSPtrCast(kSecAttrTokenIDSecureEnclave),
+    CFToNSPtrCast(kSecPrivateKeyAttrs) : key_attributes,
+    CFToNSPtrCast(kSecAttrAccessGroup) : objc_storage_->keychain_access_group_,
+    CFToNSPtrCast(kSecAttrLabel) : base::SysUTF8ToNSString(kAttrLabel),
+    CFToNSPtrCast(kSecAttrApplicationTag) : objc_storage_->application_tag_,
+  };
+
+  base::apple::ScopedCFTypeRef<CFErrorRef> error;
+  base::apple::ScopedCFTypeRef<SecKeyRef> private_key(
+      AppleKeychainV2::GetInstance().KeyCreateRandomKey(
+          NSToCFPtrCast(attributes), error.InitializeInto()));
+  if (!private_key) {
+    LOG(ERROR) << "Could not create private key: " << error.get();
+    return nullptr;
+  }
+  base::apple::ScopedCFTypeRef<CFDictionaryRef> key_metadata =
+      AppleKeychainV2::GetInstance().KeyCopyAttributes(private_key.get());
+  return std::make_unique<UnexportableSigningKeyMac>(std::move(private_key),
+                                                     key_metadata.get());
+}
+
+std::unique_ptr<UnexportableSigningKey>
+UnexportableKeyProviderMac::FromWrappedSigningKeySlowly(
+    base::span<const uint8_t> wrapped_key) {
+  return FromWrappedSigningKeySlowly(wrapped_key, /*lacontext=*/nil);
+}
+
+std::unique_ptr<UnexportableSigningKey>
+UnexportableKeyProviderMac::FromWrappedSigningKeySlowly(
+    base::span<const uint8_t> wrapped_key,
+    LAContext* lacontext) {
+  base::apple::ScopedCFTypeRef<CFTypeRef> key_data;
+
+  NSMutableDictionary* query = [NSMutableDictionary dictionaryWithDictionary:@{
+    CFToNSPtrCast(kSecClass) : CFToNSPtrCast(kSecClassKey),
+    CFToNSPtrCast(kSecAttrKeyType) :
+        CFToNSPtrCast(kSecAttrKeyTypeECSECPrimeRandom),
+    CFToNSPtrCast(kSecReturnRef) : @YES,
+    CFToNSPtrCast(kSecReturnAttributes) : @YES,
+    CFToNSPtrCast(kSecAttrAccessGroup) : objc_storage_->keychain_access_group_,
+    CFToNSPtrCast(kSecAttrApplicationLabel) :
+        [NSData dataWithBytes:wrapped_key.data() length:wrapped_key.size()],
+  }];
+  if (lacontext) {
+    query[CFToNSPtrCast(kSecUseAuthenticationContext)] = lacontext;
+  }
+  AppleKeychainV2::GetInstance().ItemCopyMatching(NSToCFPtrCast(query),
+                                                  key_data.InitializeInto());
+  CFDictionaryRef key_attributes =
+      base::apple::CFCast<CFDictionaryRef>(key_data.get());
+  if (!key_attributes) {
+    return nullptr;
+  }
+  base::apple::ScopedCFTypeRef<SecKeyRef> key(
+      base::apple::GetValueFromDictionary<SecKeyRef>(key_attributes,
+                                                     kSecValueRef),
+      base::scoped_policy::RETAIN);
+  return std::make_unique<UnexportableSigningKeyMac>(std::move(key),
+                                                     key_attributes);
+}
+
+bool UnexportableKeyProviderMac::DeleteSigningKeySlowly(
+    base::span<const uint8_t> wrapped_key) {
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::WILL_BLOCK);
+  NSDictionary* query = @{
+    CFToNSPtrCast(kSecClass) : CFToNSPtrCast(kSecClassKey),
+    CFToNSPtrCast(kSecAttrKeyType) :
+        CFToNSPtrCast(kSecAttrKeyTypeECSECPrimeRandom),
+    CFToNSPtrCast(kSecAttrAccessGroup) : objc_storage_->keychain_access_group_,
+    CFToNSPtrCast(kSecAttrApplicationLabel) :
+        [NSData dataWithBytes:wrapped_key.data() length:wrapped_key.size()],
+  };
+  OSStatus result =
+      AppleKeychainV2::GetInstance().ItemDelete(NSToCFPtrCast(query));
+  return result == errSecSuccess;
+}
+
+std::unique_ptr<UnexportableKeyProviderMac> GetUnexportableKeyProviderMac(
+    UnexportableKeyProvider::Config config) {
   if (!base::FeatureList::IsEnabled(crypto::kEnableMacUnexportableKeys)) {
     return nullptr;
   }
-  CHECK(!keychain_access_group.empty())
+  CHECK(!config.keychain_access_group.empty())
       << "A keychain access group must be set when using unexportable keys on "
          "macOS";
   if (![AppleKeychainV2::GetInstance().GetTokenIDs()
@@ -308,15 +343,15 @@ std::unique_ptr<UnexportableKeyProvider> GetUnexportableKeyProviderMac(
   // Inspecting the binary for the entitlement is not available on iOS, assume
   // it is available.
 #if !BUILDFLAG(IS_IOS)
-  if (!ExecutableHasKeychainAccessGroupEntitlement(keychain_access_group)) {
+  if (!ExecutableHasKeychainAccessGroupEntitlement(
+          config.keychain_access_group)) {
     LOG(ERROR) << "Unexportable keys unavailable because keychain-access-group "
                   "entitlement missing or incorrect. Expected value: "
-               << keychain_access_group;
+               << config.keychain_access_group;
     return nullptr;
   }
 #endif  // !BUILDFLAG(IS_IOS)
-  return std::make_unique<UnexportableKeyProviderMac>(
-      std::move(keychain_access_group), std::move(application_tag));
+  return std::make_unique<UnexportableKeyProviderMac>(std::move(config));
 }
 
 }  // namespace crypto

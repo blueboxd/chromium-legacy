@@ -7,7 +7,6 @@
 #include <list>
 #include <utility>
 
-#include "base/feature_list.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
@@ -20,10 +19,6 @@
 namespace gpu {
 namespace {
 
-BASE_FEATURE(kCorrectFramebufferAttachmentComputationInGLTexture,
-             "CorrectFramebufferAttachmentComputationInGLTexture",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 constexpr uint32_t kWebGPUUsages =
     SHARED_IMAGE_USAGE_WEBGPU_READ | SHARED_IMAGE_USAGE_WEBGPU_WRITE |
     SHARED_IMAGE_USAGE_WEBGPU_SWAP_CHAIN_TEXTURE |
@@ -31,9 +26,10 @@ constexpr uint32_t kWebGPUUsages =
 
 constexpr uint32_t kSupportedUsage =
     SHARED_IMAGE_USAGE_GLES2_READ | SHARED_IMAGE_USAGE_GLES2_WRITE |
-    SHARED_IMAGE_USAGE_GLES2_FRAMEBUFFER_HINT |
+    SHARED_IMAGE_USAGE_GLES2_FOR_RASTER_ONLY |
     SHARED_IMAGE_USAGE_DISPLAY_WRITE | SHARED_IMAGE_USAGE_DISPLAY_READ |
     SHARED_IMAGE_USAGE_RASTER_READ | SHARED_IMAGE_USAGE_RASTER_WRITE |
+    SHARED_IMAGE_USAGE_RASTER_OVER_GLES2_ONLY |
     SHARED_IMAGE_USAGE_OOP_RASTERIZATION | SHARED_IMAGE_USAGE_SCANOUT |
     SHARED_IMAGE_USAGE_CONCURRENT_READ_WRITE |
     SHARED_IMAGE_USAGE_HIGH_PERFORMANCE_GPU | SHARED_IMAGE_USAGE_CPU_UPLOAD |
@@ -48,13 +44,13 @@ GLTextureImageBackingFactory::GLTextureImageBackingFactory(
     const GpuDriverBugWorkarounds& workarounds,
     const gles2::FeatureInfo* feature_info,
     gl::ProgressReporter* progress_reporter,
-    bool for_cpu_upload_usage)
+    bool supports_cpu_upload)
     : GLCommonImageBackingFactory(kSupportedUsage,
                                   gpu_preferences,
                                   workarounds,
                                   feature_info,
                                   progress_reporter),
-      for_cpu_upload_usage_(for_cpu_upload_usage),
+      supports_cpu_upload_(supports_cpu_upload),
       support_all_metal_usages_(false) {}
 
 GLTextureImageBackingFactory::~GLTextureImageBackingFactory() = default;
@@ -71,7 +67,7 @@ GLTextureImageBackingFactory::CreateSharedImage(
     uint32_t usage,
     std::string debug_label,
     bool is_thread_safe) {
-  DCHECK(!is_thread_safe);
+  CHECK(!is_thread_safe);
   return CreateSharedImageInternal(
       mailbox, format, surface_handle, size, color_space, surface_origin,
       alpha_type, usage, std::move(debug_label), base::span<const uint8_t>());
@@ -87,7 +83,9 @@ GLTextureImageBackingFactory::CreateSharedImage(
     SkAlphaType alpha_type,
     uint32_t usage,
     std::string debug_label,
+    bool is_thread_safe,
     base::span<const uint8_t> pixel_data) {
+  CHECK(!is_thread_safe);
   return CreateSharedImageInternal(mailbox, format, kNullSurfaceHandle, size,
                                    color_space, surface_origin, alpha_type,
                                    usage, std::move(debug_label), pixel_data);
@@ -146,19 +144,25 @@ bool GLTextureImageBackingFactory::IsSupported(
     return false;
   }
 
-  bool has_cpu_upload_usage = usage & SHARED_IMAGE_USAGE_CPU_UPLOAD;
-
-  if (for_cpu_upload_usage_ != has_cpu_upload_usage) {
-    return false;
-  }
-
-  if (has_cpu_upload_usage) {
-    if (!GLTextureImageBacking::SupportsPixelUploadWithFormat(format)) {
+  if (usage & SHARED_IMAGE_USAGE_CPU_UPLOAD) {
+    if (!supports_cpu_upload_ ||
+        !GLTextureImageBacking::SupportsPixelUploadWithFormat(format)) {
       return false;
     }
 
-    // Don't reject scanout usage for shared memory GMBs to match legacy
-    // behaviour from GLImageBackingFactory.
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_FUCHSIA)
+    // GLTextureImageBacking can't actually support scanout on any platform.
+    // Historically GLImageBacking did accept scanout usage for shared memory
+    // GpuMemoryBuffers which is still replied upon for the following:
+    // - Linux and Chrome OS on X11 have no real scanout support but clients add
+    //   the usage.
+    // - Windows can upload pixels directly from shared memory to a D3D swap
+    //   chain for overlays.
+    // TODO(kylechar): Stop allowing scanout usage here on all platforms.
+    if (usage & SHARED_IMAGE_USAGE_SCANOUT) {
+      return false;
+    }
+#endif
   } else {
     if (usage & SHARED_IMAGE_USAGE_SCANOUT) {
       return false;
@@ -171,11 +175,18 @@ bool GLTextureImageBackingFactory::IsSupported(
     if ((gl::GetGLImplementation() == gl::kGLImplementationEGLANGLE &&
          gl::GetANGLEImplementation() == gl::ANGLEImplementation::kMetal) ||
         emulate_using_angle_metal_for_testing_) {
-      constexpr uint32_t kMetalInvalidUsages =
-          SHARED_IMAGE_USAGE_DISPLAY_READ | SHARED_IMAGE_USAGE_SCANOUT |
-          SHARED_IMAGE_USAGE_GLES2_READ | SHARED_IMAGE_USAGE_GLES2_WRITE |
-          SHARED_IMAGE_USAGE_GLES2_FRAMEBUFFER_HINT;
-      if (usage & kMetalInvalidUsages) {
+      uint32_t metal_invalid_usages = SHARED_IMAGE_USAGE_DISPLAY_READ;
+
+      // GLES2 usage is in general not allowed, as WebGL might be on a different
+      // GPU than raster/composite. However, if the GLES2 usage is for
+      // raster-over-GLES2 only, it is by definition on the same GPU as
+      // raster/composite and thus allowable.
+      if (!(usage & SHARED_IMAGE_USAGE_GLES2_FOR_RASTER_ONLY)) {
+        metal_invalid_usages = metal_invalid_usages |
+                               SHARED_IMAGE_USAGE_GLES2_READ |
+                               SHARED_IMAGE_USAGE_GLES2_WRITE;
+      }
+      if (usage & metal_invalid_usages) {
         return false;
       }
     }
@@ -186,10 +197,17 @@ bool GLTextureImageBackingFactory::IsSupported(
   // this usages aren't actually relevant but WebGL still adds them so ignore.
   if (gr_context_type != GrContextType::kGL &&
       gr_context_type != GrContextType::kNone) {
-    constexpr uint32_t kUnsupportedUsages =
-        SHARED_IMAGE_USAGE_DISPLAY_READ | SHARED_IMAGE_USAGE_DISPLAY_WRITE |
-        SHARED_IMAGE_USAGE_RASTER_READ | SHARED_IMAGE_USAGE_RASTER_WRITE;
-    if (usage & kUnsupportedUsages) {
+    uint32_t unsupported_usages =
+        SHARED_IMAGE_USAGE_DISPLAY_READ | SHARED_IMAGE_USAGE_DISPLAY_WRITE;
+
+    // Raster usage is in general not allowed, as described above. However, if
+    // this SI is being used in the context of raster-over-GLES2 only, then
+    // raster is by definition using GL for the SI and thus allowable.
+    if (!(usage & SHARED_IMAGE_USAGE_RASTER_OVER_GLES2_ONLY)) {
+      unsupported_usages = unsupported_usages | SHARED_IMAGE_USAGE_RASTER_READ |
+                           SHARED_IMAGE_USAGE_RASTER_WRITE;
+    }
+    if (usage & unsupported_usages) {
       return false;
     }
   }
@@ -230,26 +248,13 @@ GLTextureImageBackingFactory::CreateSharedImageInternal(
     base::span<const uint8_t> pixel_data) {
   DCHECK(CanCreateTexture(format, size, pixel_data, GL_TEXTURE_2D));
 
-  bool for_framebuffer_attachment = false;
-  // NOTE: We are in the process of computing writes to GL without using
-  // GLES2_FRAMEBUFFER_HINT as part of eliminating the latter. Here we make the
-  // change guarded by a killswitch.
-  // TODO(b/41491709): Remove this killswitch post safe rollout.
-  if (base::FeatureList::IsEnabled(
-          kCorrectFramebufferAttachmentComputationInGLTexture)) {
-    // GLTextureImageBackingFactory supports raster and display usage only for
-    // Ganesh-GL, meaning that raster/display write usage implies GL writes
-    // within Skia.
-    for_framebuffer_attachment = usage & (SHARED_IMAGE_USAGE_GLES2_WRITE |
-                                          SHARED_IMAGE_USAGE_RASTER_WRITE |
-                                          SHARED_IMAGE_USAGE_DISPLAY_WRITE);
-  } else {
-    for_framebuffer_attachment =
-        (usage &
-         (SHARED_IMAGE_USAGE_RASTER_READ | SHARED_IMAGE_USAGE_RASTER_WRITE |
-          SHARED_IMAGE_USAGE_GLES2_FRAMEBUFFER_HINT)) != 0;
-  }
-
+  // GLTextureImageBackingFactory supports raster and display usage only for
+  // Ganesh-GL, meaning that raster/display write usage implies GL writes
+  // within Skia.
+  const bool for_framebuffer_attachment =
+      usage &
+      (SHARED_IMAGE_USAGE_GLES2_WRITE | SHARED_IMAGE_USAGE_RASTER_WRITE |
+       SHARED_IMAGE_USAGE_DISPLAY_WRITE);
   const bool framebuffer_attachment_angle =
       for_framebuffer_attachment && texture_usage_angle_;
 

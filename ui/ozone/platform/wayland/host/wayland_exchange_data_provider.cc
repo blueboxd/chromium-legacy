@@ -83,22 +83,28 @@ int MimeTypeToFormat(const std::string& mime_type) {
 template <typename StringType>
 StringType BytesTo(PlatformClipboard::Data bytes) {
   using ValueType = typename StringType::value_type;
-  if (bytes->size() % sizeof(ValueType) != 0U) {
+  const size_t bytes_size = bytes->size();
+  const size_t rounded_bytes_size =
+      bytes_size - (bytes_size % sizeof(ValueType));
+  if (bytes_size != rounded_bytes_size) {
     // This is suspicious.
     LOG(WARNING)
         << "Data is possibly truncated, or a wrong conversion is requested.";
   }
 
-  StringType result(bytes->front_as<ValueType>(),
-                    bytes->size() / sizeof(ValueType));
+  StringType result;
+  result.resize(rounded_bytes_size / sizeof(ValueType));
+  base::as_writable_byte_span(result).copy_from(
+      base::span(*bytes).first(rounded_bytes_size));
   return result;
 }
 
 void AddString(PlatformClipboard::Data data, OSExchangeDataProvider* provider) {
   DCHECK(provider);
 
-  if (data->data().empty())
+  if (data->as_vector().empty()) {
     return;
+  }
 
   provider->SetString(base::UTF8ToUTF16(BytesTo<std::string>(data)));
 }
@@ -106,8 +112,9 @@ void AddString(PlatformClipboard::Data data, OSExchangeDataProvider* provider) {
 void AddHtml(PlatformClipboard::Data data, OSExchangeDataProvider* provider) {
   DCHECK(provider);
 
-  if (data->data().empty())
+  if (data->as_vector().empty()) {
     return;
+  }
 
   provider->SetHtml(base::UTF8ToUTF16(BytesTo<std::string>(data)), GURL());
 }
@@ -167,8 +174,9 @@ void AddFileContents(const std::string& filename,
 void AddUrl(PlatformClipboard::Data data, OSExchangeDataProvider* provider) {
   DCHECK(provider);
 
-  if (data->data().empty())
+  if (data->as_vector().empty()) {
     return;
+  }
 
   std::u16string data_as_string16 = BytesTo<std::u16string>(data);
 
@@ -196,8 +204,9 @@ void AddUrl(PlatformClipboard::Data data, OSExchangeDataProvider* provider) {
 void AddSource(PlatformClipboard::Data data, OSExchangeDataProvider* provider) {
   DCHECK(provider);
 
-  if (data->data().empty())
+  if (data->as_vector().empty()) {
     return;
+  }
 
   std::string source_dte = BytesTo<std::string>(data);
   provider->SetSource(ConvertJsonToDataTransferEndpoint(source_dte));
@@ -240,11 +249,9 @@ std::vector<std::string> WaylandExchangeDataProvider::BuildMimeTypesList()
   }
 
   if (HasFileContents()) {
-    base::FilePath file_contents_filename;
-    std::string file_contents;
-    GetFileContents(&file_contents_filename, &file_contents);
+    std::optional<FileContentsInfo> file_contents = GetFileContents();
 
-    std::string filename = file_contents_filename.value();
+    std::string filename = file_contents->filename.value();
     base::ReplaceChars(filename, "\\", "\\\\", &filename);
     base::ReplaceChars(filename, "\"", "\\\"", &filename);
     const std::string mime_type =
@@ -264,7 +271,7 @@ std::vector<std::string> WaylandExchangeDataProvider::BuildMimeTypesList()
   return mime_types;
 }
 
-// TODO(crbug.com/1236708): Support custom formats/pickled data.
+// TODO(crbug.com/40192823): Support custom formats/pickled data.
 void WaylandExchangeDataProvider::AddData(PlatformClipboard::Data data,
                                           const std::string& mime_type) {
   DCHECK(data);
@@ -294,40 +301,35 @@ void WaylandExchangeDataProvider::AddData(PlatformClipboard::Data data,
   }
 }
 
-// TODO(crbug.com/1236708): Support custom formats/pickled data.
+// TODO(crbug.com/40192823): Support custom formats/pickled data.
 bool WaylandExchangeDataProvider::ExtractData(const std::string& mime_type,
                                               std::string* out_content) const {
   DCHECK(out_content);
   DCHECK(IsMimeTypeSupported(mime_type));
-  if (mime_type == ui::kMimeTypeMozillaURL && HasURL(kFilenameToURLPolicy)) {
-    GURL url;
-    std::u16string title;
-    GetURLAndTitle(kFilenameToURLPolicy, &url, &title);
-    out_content->append(url.spec());
+  if (std::optional<ui::OSExchangeData::UrlInfo> url_info;
+      mime_type == ui::kMimeTypeMozillaURL &&
+      (url_info = GetURLAndTitle(kFilenameToURLPolicy)).has_value()) {
+    out_content->append(url_info->url.spec());
     return true;
   }
   if ((mime_type == ui::kMimeTypeHTML || mime_type == ui::kMimeTypeHTMLUtf8) &&
       HasHtml()) {
-    std::u16string data;
-    GURL base_url;
-    GetHtml(&data, &base_url);
-    out_content->append(base::UTF16ToUTF8(data));
+    const std::optional<ui::OSExchangeData::HtmlInfo>& html_content = GetHtml();
+    out_content->append(base::UTF16ToUTF8(html_content->html));
     return true;
   }
   if (base::StartsWith(mime_type, ui::kMimeTypeOctetStream) &&
       HasFileContents()) {
-    base::FilePath filename;
-    std::string file_contents;
-    GetFileContents(&filename, &file_contents);
-    out_content->append(file_contents);
+    std::optional<FileContentsInfo> file_contents = GetFileContents();
+    out_content->append(file_contents->file_contents);
     return true;
   }
   if (mime_type == ui::kMimeTypeWebCustomData &&
       HasCustomFormat(ui::ClipboardFormatType::WebCustomDataType())) {
-    base::Pickle pickle;
-    GetPickledData(ui::ClipboardFormatType::WebCustomDataType(), &pickle);
-    *out_content = std::string(reinterpret_cast<const char*>(pickle.data()),
-                               pickle.size());
+    std::optional<base::Pickle> pickle =
+        GetPickledData(ui::ClipboardFormatType::WebCustomDataType());
+    *out_content = std::string(reinterpret_cast<const char*>(pickle->data()),
+                               pickle->size());
     return true;
   }
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -342,10 +344,8 @@ bool WaylandExchangeDataProvider::ExtractData(const std::string& mime_type,
   // condition otherwise, for data maps that contain both string and custom
   // data, for example, it may result in subtle issues, such as,
   // https://crbug.com/1271311.
-  if (HasString()) {
-    std::u16string data;
-    GetString(&data);
-    out_content->append(base::UTF16ToUTF8(data));
+  if (std::optional<std::u16string> data = GetString(); data.has_value()) {
+    out_content->append(base::UTF16ToUTF8(*data));
     return true;
   }
   return false;

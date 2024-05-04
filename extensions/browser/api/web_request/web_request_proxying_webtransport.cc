@@ -36,7 +36,7 @@ net::HttpRequestHeaders GetRequestHeaders() {
   //     loading case. Extension authors can use the "initiator" property to
   //     observe it.
   auto headers = net::HttpRequestHeaders();
-  // TODO(1240935): Share the code with
+  // TODO(crbug.com/40194454): Share the code with
   // DedicatedWebTransportHttp3Client::DoSendRequest.
   headers.SetHeader("sec-webtransport-http3-draft02", "1");
   return headers;
@@ -81,7 +81,7 @@ class WebTransportHandshakeProxy : public WebRequestAPI::Proxy,
                 &redirect_url_, &should_collapse_initiator);
     // It doesn't make sense to collapse WebTransport requests since they won't
     // be associated with a DOM element.
-    DCHECK(!should_collapse_initiator);
+    CHECK(!should_collapse_initiator);
 
     if (result == net::ERR_IO_PENDING)
       return;
@@ -156,6 +156,9 @@ class WebTransportHandshakeProxy : public WebRequestAPI::Proxy,
     pending_client_ = std::move(client);
     initial_stats_ = std::move(initial_stats);
     response_headers_ = response_headers;
+
+    bool should_collapse_initiator = false;
+
     // Since WebTransport doesn't support redirect, 'redirect_url' is ignored
     // even if extensions assigned it.
     const int result =
@@ -165,7 +168,12 @@ class WebTransportHandshakeProxy : public WebRequestAPI::Proxy,
                 base::BindOnce(
                     &WebTransportHandshakeProxy::OnHeadersReceivedCompleted,
                     base::Unretained(this)),
-                response_headers_.get(), &override_headers_, &redirect_url_);
+                response_headers_.get(), &override_headers_, &redirect_url_,
+                &should_collapse_initiator);
+
+    // It doesn't make sense to collapse WebTransport requests since they won't
+    // be associated with a DOM element.
+    CHECK(!should_collapse_initiator);
 
     if (result == net::ERR_IO_PENDING)
       return;
@@ -184,7 +192,7 @@ class WebTransportHandshakeProxy : public WebRequestAPI::Proxy,
     response.headers =
         override_headers_ ? override_headers_ : response_headers_;
     DCHECK(response.headers);
-    // TODO(1250090): Assign actual server IP 'response';
+    // TODO(crbug.com/40791652): Assign actual server IP 'response';
     response.remote_endpoint = net::IPEndPoint();
     // Web transport doesn't use the http cache.
     response.was_fetched_via_cache = false;

@@ -566,9 +566,9 @@ class LorgnetteManagerClientTest : public testing::Test {
   // called. When called, |mock_proxy_| will respond with |response|.
   void SetStartPreparedScanExpectation(dbus::Response* response) {
     start_prepared_scan_response_ = response;
-    EXPECT_CALL(*mock_proxy_.get(),
-                DoCallMethod(HasMember(lorgnette::kStartPreparedScanMethod),
-                             dbus::ObjectProxy::TIMEOUT_USE_DEFAULT, _))
+    EXPECT_CALL(
+        *mock_proxy_.get(),
+        DoCallMethod(HasMember(lorgnette::kStartPreparedScanMethod), _, _))
         .WillOnce(
             Invoke(this, &LorgnetteManagerClientTest::OnStartPreparedScan));
   }
@@ -588,8 +588,7 @@ class LorgnetteManagerClientTest : public testing::Test {
   void SetReadScanDataExpectation(dbus::Response* response) {
     read_scan_data_response_ = response;
     EXPECT_CALL(*mock_proxy_.get(),
-                DoCallMethod(HasMember(lorgnette::kReadScanDataMethod),
-                             dbus::ObjectProxy::TIMEOUT_USE_DEFAULT, _))
+                DoCallMethod(HasMember(lorgnette::kReadScanDataMethod), _, _))
         .WillOnce(Invoke(this, &LorgnetteManagerClientTest::OnReadScanData));
   }
 
@@ -947,6 +946,9 @@ class LorgnetteManagerClientTest : public testing::Test {
 
 // Test that the client can retrieve a list of scanners.
 TEST_F(LorgnetteManagerClientTest, ListScanners) {
+  base::test::ScopedFeatureList feature;
+  feature.InitAndDisableFeature(ash::features::kAsynchronousScannerDiscovery);
+
   std::unique_ptr<dbus::Response> response = dbus::Response::CreateEmpty();
   const lorgnette::ListScannersResponse kExpectedResponse =
       CreateListScannersResponse();
@@ -1112,6 +1114,9 @@ TEST_F(LorgnetteManagerClientTest, ListScannersAsyncEmptyClient) {
 // Test that the client handles a null response to a kListScannersMethod D-Bus
 // call.
 TEST_F(LorgnetteManagerClientTest, NullResponseToListScanners) {
+  base::test::ScopedFeatureList feature;
+  feature.InitAndDisableFeature(ash::features::kAsynchronousScannerDiscovery);
+
   SetListScannersExpectation(nullptr);
 
   base::RunLoop run_loop;
@@ -1131,6 +1136,9 @@ TEST_F(LorgnetteManagerClientTest, NullResponseToListScanners) {
 // Test that the client handles a response to a kListScannersMethod D-Bus call
 // without a valid proto.
 TEST_F(LorgnetteManagerClientTest, EmptyResponseToListScanners) {
+  base::test::ScopedFeatureList feature;
+  feature.InitAndDisableFeature(ash::features::kAsynchronousScannerDiscovery);
+
   std::unique_ptr<dbus::Response> response = dbus::Response::CreateEmpty();
   SetListScannersExpectation(response.get());
 

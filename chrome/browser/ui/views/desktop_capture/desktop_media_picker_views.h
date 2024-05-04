@@ -21,7 +21,6 @@
 #include "ui/views/window/dialog_delegate.h"
 
 namespace views {
-class Checkbox;
 class TabbedPane;
 class MdTextButton;
 }  // namespace views
@@ -29,11 +28,10 @@ class MdTextButton;
 class DesktopMediaPickerViews;
 
 BASE_DECLARE_FEATURE(kShareThisTabDialog);
-BASE_DECLARE_FEATURE(kDisplayMediaPickerRedesign);
 
 // Dialog view used for DesktopMediaPickerViews.
 //
-// TODO(crbug.com/987001): Consider renaming this class.
+// TODO(crbug.com/40637301): Consider renaming this class.
 class DesktopMediaPickerDialogView : public views::DialogDelegateView,
                                      public views::TabbedPaneListener {
   METADATA_HEADER(DesktopMediaPickerDialogView, views::DialogDelegateView)
@@ -70,7 +68,8 @@ class DesktopMediaPickerDialogView : public views::DialogDelegateView,
   void TabSelectedAt(int index) override;
 
   // views::DialogDelegateView:
-  gfx::Size CalculatePreferredSize() const override;
+  gfx::Size CalculatePreferredSize(
+      const views::SizeBounds& /*available_size*/) const override;
   std::u16string GetWindowTitle() const override;
   bool IsDialogButtonEnabled(ui::DialogButton button) const override;
   views::View* GetInitiallyFocusedView() override;
@@ -111,8 +110,6 @@ class DesktopMediaPickerDialogView : public views::DialogDelegateView,
   void StoreAudioCheckboxState();
   void RemoveCurrentPaneUI();
   void MaybeCreateReselectButtonForPane(const DisplaySurfaceCategory& category);
-  void MaybeCreateAudioCheckboxForPane(const DisplaySurfaceCategory& category);
-  void MaybeSetAudioCheckboxMaxSize();
 
   std::u16string GetLabelForAudioToggle(
       const DisplaySurfaceCategory& category) const;
@@ -170,8 +167,6 @@ class DesktopMediaPickerDialogView : public views::DialogDelegateView,
 
   raw_ptr<views::Label> description_label_ = nullptr;
 
-  raw_ptr<views::Checkbox> audio_share_checkbox_ = nullptr;
-
   raw_ptr<views::MdTextButton> reselect_button_ = nullptr;
 
   raw_ptr<views::TabbedPane> tabbed_pane_ = nullptr;
@@ -188,7 +183,7 @@ class DesktopMediaPickerDialogView : public views::DialogDelegateView,
 
 // Implementation of DesktopMediaPicker for Views.
 //
-// TODO(crbug.com/987001): Rename this class.  Consider merging with
+// TODO(crbug.com/40637301): Rename this class.  Consider merging with
 // DesktopMediaPickerController and naming the merged class just
 // DesktopMediaPicker.
 class DesktopMediaPickerViews : public DesktopMediaPicker {

@@ -128,28 +128,46 @@
   <message name="IDS_OS_SETTINGS_TAG_CELLULAR_RENAME_PROFILE_ALT1" desc="Text for search result item which, when clicked, navigates the user to the Cellular eSIM network settings, with a menu containing a button to rename the currently-connected eSIM Cellular network. Alternate phrase for: 'Rename eSIM Cellular network">
     Rename eSIM profile
   </message>
-  <message name="IDS_OS_SETTINGS_TAG_INSTANT_MOBILE_NETWORKS" desc="Text for search result item which, when clicked, navigates the user to Instant Tethering settings (allows Chromebook to use mobile connection from phone). Alternate phrase for: 'Hotspot'">
+  <message name="IDS_OS_SETTINGS_TAG_INSTANT_MOBILE_NETWORKS" desc="Text for search result item which, when clicked, navigates the user to Instant hotspot settings (allows Chromebook to use mobile connection from phone). Alternate phrase for: 'Hotspot'">
     Mobile networks
   </message>
-  <message name="IDS_OS_SETTINGS_TAG_INSTANT_MOBILE_NETWORKS_ALT1" desc="Text for search result item which, when clicked, navigates the user to Instant Tethering settings (allows Chromebook to use mobile connection from phone). Alternate phrase for: 'Mobile networks'">
+  <message name="IDS_OS_SETTINGS_TAG_INSTANT_MOBILE_NETWORKS_ALT1" desc="Text for search result item which, when clicked, navigates the user to Instant hotspot settings (allows Chromebook to use mobile connection from phone). Alternate phrase for: 'Mobile networks'">
     Instant hotspot
   </message>
-  <message name="IDS_OS_SETTINGS_TAG_INSTANT_TETHERING_TURN_OFF" desc="Text for search result item which, when clicked, navigates the user to Instant Tethering settings (allows Chromebook to use mobile connection from phone), with a toggle to turn off the feature. Alternate phrase for: 'Disable Instant Tethering'">
+  <message name="IDS_OS_SETTINGS_TAG_INSTANT_TETHERING_TURN_OFF" desc="Text for search result item which, when clicked, navigates the user to Instant hotspot settings (allows Chromebook to use mobile connection from phone), with a toggle to turn off the feature. Alternate phrase for: 'Disable Instant hotspot'">
+    Turn off Instant hotspot
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_INSTANT_TETHERING_TURN_OFF_ALT1" desc="Text for search result item which, when clicked, navigates the user to Instant hotspot settings (allows Chromebook to use mobile connection from phone), with a toggle to turn off the feature. Alternate phrase for: 'Turn off Instant hotspot'">
+    Disable Instant hotspot
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_INSTANT_TETHERING_TURN_OFF_LEGACY" desc="Text for search result item which, when clicked, navigates the user to Instant Tethering settings (allows Chromebook to use mobile connection from phone), with a toggle to turn off the feature. Alternate phrase for: 'Disable Instant Tethering'">
     Turn off Instant Tethering
   </message>
-  <message name="IDS_OS_SETTINGS_TAG_INSTANT_TETHERING_TURN_OFF_ALT1" desc="Text for search result item which, when clicked, navigates the user to Instant Tethering settings (allows Chromebook to use mobile connection from phone), with a toggle to turn off the feature. Alternate phrase for: 'Turn off Instant Tethering'">
+  <message name="IDS_OS_SETTINGS_TAG_INSTANT_TETHERING_TURN_OFF_ALT1_LEGACY" desc="Text for search result item which, when clicked, navigates the user to Instant Tethering settings (allows Chromebook to use mobile connection from phone), with a toggle to turn off the feature. Alternate phrase for: 'Turn off Instant Tethering'">
     Disable Instant Tethering
   </message>
-  <message name="IDS_OS_SETTINGS_TAG_INSTANT_TETHERING_TURN_ON" desc="Text for search result item which, when clicked, navigates the user to Instant Tethering settings (allows Chromebook to use mobile connection from phone), with a toggle to turn on the feature. Alternate phrase for: 'Enable Instant Tethering'">
+  <message name="IDS_OS_SETTINGS_TAG_INSTANT_TETHERING_TURN_ON" desc="Text for search result item which, when clicked, navigates the user to Instant hotspot settings (allows Chromebook to use mobile connection from phone), with a toggle to turn on the feature. Alternate phrase for: 'Enable Instant hotspot'">
+    Turn on Instant hotspot
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_INSTANT_TETHERING_TURN_ON_ALT1" desc="Text for search result item which, when clicked, navigates the user to Instant hotspot settings (allows Chromebook to use mobile connection from phone), with a toggle to turn on the feature. Alternate phrase for: 'Turn on Instant hotspot'">
+    Enable Instant hotspot
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_INSTANT_TETHERING_TURN_ON_LEGACY" desc="Text for search result item which, when clicked, navigates the user to Instant Tethering settings (allows Chromebook to use mobile connection from phone), with a toggle to turn on the feature. Alternate phrase for: 'Enable Instant Tethering'">
     Turn on Instant Tethering
   </message>
-  <message name="IDS_OS_SETTINGS_TAG_INSTANT_TETHERING_TURN_ON_ALT1" desc="Text for search result item which, when clicked, navigates the user to Instant Tethering settings (allows Chromebook to use mobile connection from phone), with a toggle to turn on the feature. Alternate phrase for: 'Turn on Instant Tethering'">
+  <message name="IDS_OS_SETTINGS_TAG_INSTANT_TETHERING_TURN_ON_ALT1_LEGACY" desc="Text for search result item which, when clicked, navigates the user to Instant Tethering settings (allows Chromebook to use mobile connection from phone), with a toggle to turn on the feature. Alternate phrase for: 'Turn on Instant Tethering'">
     Enable Instant Tethering
   </message>
-  <message name="IDS_OS_SETTINGS_TAG_INSTANT_TETHERING" desc="Text for search result item which, when clicked, navigates the user to Instant Tethering settings, which lists properties about the currently-connected Instant Tethering network. Alternate phrase for: 'Disconnect Instant Tethering network', 'Configure Wi-Fi'">
+  <message name="IDS_OS_SETTINGS_TAG_INSTANT_TETHERING" desc="Text for search result item which, when clicked, navigates the user to Instant hotspot settings, which lists properties about the currently-connected Instant hotspot network. Alternate phrase for: 'Disconnect Instant hotspot network', 'Configure Wi-Fi'">
+    Instant hotspot
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_INSTANT_TETHERING_LEGACY" desc="Text for search result item which, when clicked, navigates the user to Instant Tethering settings, which lists properties about the currently-connected Instant Tethering network. Alternate phrase for: 'Disconnect Instant Tethering network', 'Configure Wi-Fi'">
     Instant Tethering
   </message>
-  <message name="IDS_OS_SETTINGS_TAG_INSTANT_TETHERING_DISCONNECT" desc="Text for search result item which, when clicked, navigates the user to Instant Tethering settings, with a button to disconnect from the currently-connected Instant Tethering network. Alternate phrase for: 'Configure Wi-Fi'">
+  <message name="IDS_OS_SETTINGS_TAG_INSTANT_TETHERING_DISCONNECT" desc="Text for search result item which, when clicked, navigates the user to Instant hotspot settings, with a button to disconnect from the currently-connected Instant hotspot network. Alternate phrase for: 'Configure Wi-Fi'">
+    Disconnect Instant hotspot network
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_INSTANT_TETHERING_DISCONNECT_LEGACY" desc="Text for search result item which, when clicked, navigates the user to Instant Tethering settings, with a button to disconnect from the currently-connected Instant Tethering network. Alternate phrase for: 'Configure Wi-Fi'">
     Disconnect Instant Tethering network
   </message>
   <message name="IDS_OS_SETTINGS_TAG_VPN" desc="Text for search result item which, when clicked, navigates the user to VPN settings.">
@@ -786,6 +804,9 @@
   </message>
 
   <!-- Personalization section. -->
+  <message name="IDS_OS_SETTINGS_TAG_WALLPAPER_AND_STYLE" desc="Text for search result item which, when clicked, navigates the user to the Wallpaper and style section.">
+    Wallpaper and style
+  </message>
   <message name="IDS_OS_SETTINGS_TAG_CHANGE_DEVICE_ACCOUNT_IMAGE" desc="Text for search result item which, when clicked, navigates the user to the settings page page where they can change their device account image (visible on log-in screen). Alternate phrase for: 'Sign-in image', 'Login image', 'Profile picture', 'Profile image'">
     Change device account image
   </message>
@@ -1050,6 +1071,9 @@
   <!-- Privacy section. -->
   <message name="IDS_OS_SETTINGS_TAG_SECURITY_AND_PRIVACY" desc="Text for search result item which, when clicked, navigates the user to the Security and Privacy section.">
     Security and Privacy
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_PRIVACY_AND_SECURITY" desc="Text for search result item which, when clicked, navigates the user to the Privacy and security section.">
+    Privacy and security
   </message>
   <message name="IDS_OS_SETTINGS_TAG_PRIVACY_VERIFIED_ACCESS" desc="Text for search result item which, when clicked, navigates the user to privacy settings, with a toggle to enable/disable verified access.">
     Verified access
@@ -1348,6 +1372,9 @@
   <message name="IDS_OS_SETTINGS_TAG_A11Y_FULLSCREEN_MAGNIFIER_FOCUS_FOLLOWING" desc="Text for search result item which, when clicked, navigates the user to accessibility settings, with a toggle to enable/disable full-screen magnification keyboard focus-following.">
     Magnifier follows keyboard focus
   </message>
+  <message name="IDS_OS_SETTINGS_TAG_A11Y_MAGNIFIER_SELECT_TO_SPEAK_FOLLOWING" desc="Text for search result item which, when clicked, navigates the user to accessibility settings, with a toggle to enable/disable full-screen or docked magnification select to speak highlight following.">
+    Magnifier follows the word being read by select-to-speak
+  </message>
   <message name="IDS_OS_SETTINGS_TAG_A11Y_DOCKED_MAGNIFIER" desc="Text for search result item which, when clicked, navigates the user to accessibility settings, with a toggle to enable/disable docked screen magnification.">
     Docked magnifier
   </message>
@@ -1484,6 +1511,12 @@
   <message name="IDS_OS_SETTINGS_TAG_A11Y_SWITCH_ACCESS_AUTO_SCAN_KEYBOARD" desc="Text for search result item which, when clicked, navigates the user to accessibility switch access settings, with a slider to set the auto-scan repeat rate.">
     Switch access keyboard auto-scan
   </message>
+  <message name="IDS_OS_SETTINGS_TAG_A11Y_OVERSCROLL_ENABLED" desc="Text for search result item which, when clicked, navigates the user to an accessibility setting to turn on or off overscroll navigation.">
+    Swipe to navigate between pages
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_A11Y_OVERSCROLL_ENABLED_ALT1" desc="Text for search result item which, when clicked, navigates the user to an accessibility setting to turn on or off overscroll navigation.">
+    Overscroll to navigate between pages
+  </message>
   <message name="IDS_OS_SETTINGS_TAG_A11Y_LABELS_FROM_GOOGLE" desc="Text for search result item which, when clicked, navigates the user to accessibility settings, with a toggle to enable/disable getting image descriptions from Google.">
     Get image descriptions from Google
   </message>
@@ -1504,6 +1537,12 @@
   </message>
   <message name="IDS_OS_SETTINGS_TAG_A11Y_COLOR_CORRECTION_ALT5" desc="Text for search result item which, when clicked, navigates the user to the accessibility settings, with a toggle to enable/disable color correction. One common type of color vision deficiency that can be helped by color correction is tritanopia, and color correction filters include a tritanopia filter.">
     Tritanomaly
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_A11Y_PDF_OCR" desc="Text for search result item which, when clicked, navigates the user to accessibility settings, with a toggle to enable/disable PDF OCR.">
+    PDF OCR
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_A11Y_PDF_OCR_ALT1" desc="Text for search result item which, when clicked, navigates the user to accessibility settings, with a toggle to enable/disable PDF OCR. Alternate phrase for: 'PDF OCR'">
+    Extract text from PDF
   </message>
 
   <!-- Reset section. -->
@@ -1596,5 +1635,10 @@
   </message>
   <message name="IDS_OS_SETTINGS_TAG_MULTITASKING_SNAP_WINDOW_ALT4" desc="Text for search result item which, when clicked, navigates the user to Multitasking settings, with a toggle to enable/disable snap window suggestions. Alternate phrase for 'Split screen window suggestion', 'Split screen set up', 'Dock window', 'Snap window'">
     Split screen overview
+  </message>
+
+  <!-- System preferences section. -->
+  <message name="IDS_OS_SETTINGS_TAG_SYSTEM_PREFERENCES" desc="Text for search result item which, when clicked, navigates the user to the System preferences section.">
+    System preferences
   </message>
 </grit-part>

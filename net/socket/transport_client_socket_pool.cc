@@ -4,6 +4,7 @@
 
 #include "net/socket/transport_client_socket_pool.h"
 
+#include <string_view>
 #include <utility>
 
 #include "base/auto_reset.h"
@@ -370,7 +371,7 @@ int TransportClientSocketPool::RequestSockets(
 
   // Currently we don't handle preconnect errors. So this method returns OK even
   // if failed to preconnect.
-  // TODO(crbug.com/1330235): Consider support error handlings when needed.
+  // TODO(crbug.com/40843081): Consider support error handlings when needed.
   if (pending_connect_job_count == 0)
     return OK;
   for (int i = 0; i < num_sockets - pending_connect_job_count; ++i) {
@@ -829,7 +830,7 @@ void TransportClientSocketPool::OnSSLConfigChanged(
   CheckForStalledSocketGroups();
 }
 
-// TODO(crbug.com/1206799): Get `server` as SchemeHostPort?
+// TODO(crbug.com/40181080): Get `server` as SchemeHostPort?
 void TransportClientSocketPool::OnSSLConfigForServersChanged(
     const base::flat_set<HostPortPair>& servers) {
   // Current time value. Retrieving it once at the function start rather than
@@ -1019,7 +1020,7 @@ void TransportClientSocketPool::ReleaseSocket(
   group->DecrementActiveSocketCount();
 
   bool can_resuse_socket = false;
-  base::StringPiece not_reusable_reason;
+  std::string_view not_reusable_reason;
   if (!socket->IsConnectedAndIdle()) {
     if (!socket->IsConnected()) {
       not_reusable_reason = kClosedConnectionReturnedToPool;
@@ -1591,7 +1592,7 @@ void TransportClientSocketPool::Group::OnBackupJobTimerFired(
   // connection - the timeout they used is tuned for that, and tests expect that
   // behavior.
   //
-  // TODO(https://crbug.com/929814): Replace both this and the
+  // TODO(crbug.com/41440018): Replace both this and the
   // LOAD_STATE_RESOLVING_HOST check with a callback. Use the
   // LOAD_STATE_RESOLVING_HOST callback to start the timer (And invoke the
   // OnHostResolved callback of any pending requests), and the

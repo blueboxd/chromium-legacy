@@ -44,6 +44,7 @@
 #include "chrome/browser/ash/login/test/oobe_screen_exit_waiter.h"
 #include "chrome/browser/ash/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/ash/login/test/oobe_screens_utils.h"
+#include "chrome/browser/ash/login/test/scoped_policy_update.h"
 #include "chrome/browser/ash/login/test/test_predicate_waiter.h"
 #include "chrome/browser/ash/login/ui/login_display_host.h"
 #include "chrome/browser/ash/login/wizard_controller.h"
@@ -55,6 +56,7 @@
 #include "chrome/browser/extensions/api/quick_unlock_private/quick_unlock_private_api.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/webui/ash/login/ai_intro_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/app_downloading_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/assistant_optin_flow_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/choobe_screen_handler.h"
@@ -71,6 +73,7 @@
 #include "chrome/browser/ui/webui/ash/login/theme_selection_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/touchpad_scroll_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/tpm_error_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/tuna_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/user_creation_screen_handler.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/fake_gaia_mixin.h"
@@ -282,6 +285,28 @@ void HandleAppDownloadingScreen() {
 
   OobeScreenExitWaiter(AppDownloadingScreenView::kScreenId).Wait();
   LOG(INFO) << "OobeInteractiveUITest: 'app-downloading' screen done.";
+}
+
+// Waits for AiIntroScreen to be shown and clicks next to go to the next screen.
+void HandleAiIntroScreen() {
+  OobeScreenWaiter(AiIntroScreenView::kScreenId).Wait();
+  LOG(INFO) << "OobeInteractiveUITest: Switched to 'ai-intro' screen.";
+
+  test::OobeJS().TapOnPathAsync({"ai-intro", "nextButton"});
+
+  OobeScreenExitWaiter(AiIntroScreenView::kScreenId).Wait();
+  LOG(INFO) << "OobeInteractiveUITest: 'ai-intro' screen done.";
+}
+
+// Waits for TunaScreen to be shown and clicks next to go to the next screen.
+void HandleTunaScreen() {
+  OobeScreenWaiter(TunaScreenView::kScreenId).Wait();
+  LOG(INFO) << "OobeInteractiveUITest: Switched to 'tuna' screen.";
+
+  test::OobeJS().TapOnPathAsync({"tuna", "nextButton"});
+
+  OobeScreenExitWaiter(TunaScreenView::kScreenId).Wait();
+  LOG(INFO) << "OobeInteractiveUITest: 'tuna' screen done.";
 }
 
 // Waits for AssistantOptInFlowScreen to be shown, skips the opt-in, and waits
@@ -496,8 +521,9 @@ class NativeWindowVisibilityObserver : public aura::WindowObserver {
   }
 
   void OnWindowVisibilityChanged(aura::Window* window, bool visible) override {
-    if (visible)
+    if (visible) {
       was_visible_ = visible;
+    }
   }
 
   bool was_visible() { return was_visible_; }
@@ -530,13 +556,15 @@ class NativeWindowVisibilityBrowserMainExtraParts
   // ChromeBrowserMainExtraParts:
   void PostProfileInit(Profile* profile, bool is_initial_profile) override {
     // The setup below is intended to run for only the initial profile.
-    if (!is_initial_profile)
+    if (!is_initial_profile) {
       return;
+    }
 
     gfx::NativeWindow window =
         LoginDisplayHost::default_host()->GetNativeWindow();
-    if (window)
+    if (window) {
       observer_->Observe(window);
+    }
   }
 
  private:
@@ -568,7 +596,10 @@ class OobeEndToEndTestSetupMixin : public InProcessBrowserTestMixin {
     std::tie(params_.is_tablet, params_.is_quick_unlock_enabled,
              params_.hide_shelf_controls_in_tablet_mode, params_.arc_state) =
         parameters;
-    std::vector<base::test::FeatureRef> enabled_features;
+    std::vector<base::test::FeatureRef> enabled_features = {
+        ash::features::kFeatureManagementOobeAiIntro,
+        ash::features::kFeatureManagementOobeTuna,
+    };
     std::vector<base::test::FeatureRef> disabled_features;
     if (params_.hide_shelf_controls_in_tablet_mode) {
       enabled_features.push_back(features::kHideShelfControlsInTabletMode);
@@ -627,8 +658,9 @@ class OobeEndToEndTestSetupMixin : public InProcessBrowserTestMixin {
   }
 
   void SetUpOnMainThread() override {
-    if (params_.is_tablet)
+    if (params_.is_tablet) {
       ShellTestApi().SetTabletModeEnabledForTest(true);
+    }
 
     if (params_.arc_state != ArcState::kNotAvailable) {
       // Init ArcSessionManager for testing.
@@ -690,8 +722,9 @@ class OobeInteractiveUITest : public OobeBaseTest,
   }
 
   void WaitForLoginDisplayHostShutdown() {
-    if (!LoginDisplayHost::default_host())
+    if (!LoginDisplayHost::default_host()) {
       return;
+    }
 
     LOG(INFO) << "OobeInteractiveUITest: Waiting for LoginDisplayHost to "
                  "shut down.";
@@ -795,6 +828,14 @@ void OobeInteractiveUITest::PerformSessionSignInSteps() {
     HandleAppDownloadingScreen();
   }
 
+  if (ash::features::IsOobeAiIntroEnabled()) {
+    HandleAiIntroScreen();
+  }
+
+  if (ash::features::IsOobeTunaEnabled()) {
+    HandleTunaScreen();
+  }
+
   if (!features::IsOobeSkipAssistantEnabled()) {
     HandleAssistantOptInScreen();
   }
@@ -830,8 +871,10 @@ void OobeInteractiveUITest::SimpleEndToEnd() {
 
 // Disabled on *San bots since they time out.
 // crbug.com/1260131: SimpleEndToEnd is flaky on builder "linux-chromeos-dbg"
+// crbug.com/337379954: SimpleEndToEnd is excessively flaky on
+// linux-chromeos-chrome.
 #if defined(MEMORY_SANITIZER) || defined(ADDRESS_SANITIZER) || \
-    defined(LEAK_SANITIZER) || !defined(NDEBUG)
+    defined(LEAK_SANITIZER) || !defined(NDEBUG) || BUILDFLAG(IS_CHROMEOS_ASH)
 #define MAYBE_SimpleEndToEnd DISABLED_SimpleEndToEnd
 #else
 #define MAYBE_SimpleEndToEnd SimpleEndToEnd
@@ -918,8 +961,9 @@ void OobeZeroTouchInteractiveUITest::ZeroTouchEndToEnd() {
 
 // crbug.com/997987. Disabled on MSAN since they time out.
 // crbug.com/1055853: EndToEnd is flaky on Linux Chromium OS ASan LSan
+// crbug.com/337379954: EndToEnd is excessively flaky on linux-chromeos-chrome.
 #if defined(MEMORY_SANITIZER) || defined(ADDRESS_SANITIZER) || \
-    defined(LEAK_SANITIZER) || !defined(NDEBUG)
+    defined(LEAK_SANITIZER) || !defined(NDEBUG) || BUILDFLAG(IS_CHROMEOS_ASH)
 #define MAYBE_EndToEnd DISABLED_EndToEnd
 #else
 #define MAYBE_EndToEnd EndToEnd
@@ -1109,16 +1153,10 @@ class EphemeralUserOobeTest : public OobeBaseTest,
       &mixin_host_, DeviceStateMixin::State::OOBE_COMPLETED_CLOUD_ENROLLED};
 };
 
-// TODO(crbug.com/1396268): Flaky on Linux Chrome OS ASan LSan and dbg.
-// Re-enable this test.
-#if BUILDFLAG(IS_CHROMEOS) && (defined(ADDRESS_SANITIZER) || !defined(NDEBUG))
-#define MAYBE_RegularEphemeralUser DISABLED_RegularEphemeralUser
-#else
-#define MAYBE_RegularEphemeralUser RegularEphemeralUser
-#endif
+// TODO(crbug.com/40882667): Flaky. Re-enable this test.
 // In this test we login as a regular user, which means it is not affilated
 // with the domain of the device. Thus we still need a consent from user.
-IN_PROC_BROWSER_TEST_P(EphemeralUserOobeTest, MAYBE_RegularEphemeralUser) {
+IN_PROC_BROWSER_TEST_P(EphemeralUserOobeTest, DISABLED_RegularEphemeralUser) {
   LoginDisplayHost::default_host()->GetWizardContext()->is_branded_build = true;
 
   WaitForGaiaSignInScreen();
@@ -1135,6 +1173,14 @@ IN_PROC_BROWSER_TEST_P(EphemeralUserOobeTest, MAYBE_RegularEphemeralUser) {
   if (test_setup()->arc_state() != ArcState::kNotAvailable) {
     HandleRecommendAppsScreen();
     HandleAppDownloadingScreen();
+  }
+
+  if (ash::features::IsOobeAiIntroEnabled()) {
+    HandleAiIntroScreen();
+  }
+
+  if (ash::features::IsOobeTunaEnabled()) {
+    HandleTunaScreen();
   }
 
   HandleThemeSelectionScreen();

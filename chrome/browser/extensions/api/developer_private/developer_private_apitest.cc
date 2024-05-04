@@ -15,6 +15,7 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_paths.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -147,8 +148,8 @@ IN_PROC_BROWSER_TEST_F(DeveloperPrivateApiTest, InspectEmbeddedOptionsPage) {
   EXPECT_TRUE(DevToolsWindow::GetInstanceForInspectedWebContents(wc));
 }
 
-// TODO(https://crbug.com/1457154): Test is flaky on MSan builders.
-// TODO(crbug.com/1484659): Disabled on ASAN due to leak caused by renderer gin
+// TODO(crbug.com/40273479): Test is flaky on MSan builders.
+// TODO(crbug.com/40282331): Disabled on ASAN due to leak caused by renderer gin
 // objects which are intended to be leaked.
 #if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER)
 #define MAYBE_InspectInactiveServiceWorkerBackground \
@@ -274,7 +275,7 @@ IN_PROC_BROWSER_TEST_F(DeveloperPrivateApiTest,
   EXPECT_TRUE(DevToolsWindow::FindDevToolsWindow(service_worker_host.get()));
 }
 
-// TODO(crbug.com/1395713): The test is flaky on MSAN and Linux. Re-enable it.
+// TODO(crbug.com/40882269): The test is flaky on MSAN and Linux. Re-enable it.
 #if defined(MEMORY_SANITIZER) || BUILDFLAG(IS_LINUX)
 #define MAYBE_InspectSplitModeServiceWorkerBackgrounds \
   DISABLED_InspectSplitModeServiceWorkerBackgrounds

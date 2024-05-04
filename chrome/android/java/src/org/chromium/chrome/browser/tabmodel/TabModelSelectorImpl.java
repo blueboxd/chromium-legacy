@@ -10,7 +10,6 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.supplier.OneshotSupplier;
-import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.flags.ActivityType;
 import org.chromium.chrome.browser.ntp.RecentlyClosedBridge;
 import org.chromium.chrome.browser.profiles.ProfileProvider;
@@ -21,7 +20,9 @@ import org.chromium.chrome.browser.tab.TabHidingType;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab.TabLoadIfNeededCaller;
 import org.chromium.chrome.browser.tab.TabSelectionType;
+import org.chromium.chrome.browser.tab_ui.TabContentManager;
 import org.chromium.chrome.browser.tabmodel.NextTabPolicy.NextTabPolicySupplier;
+import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.url.GURL;
 
@@ -124,7 +125,8 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
                         mNextTabPolicySupplier,
                         mAsyncTabParamsManager,
                         this,
-                        mIsUndoSupported);
+                        mIsUndoSupported,
+                        /* trackInNativeModelList= */ true);
         regularTabCreator.setTabModel(normalModel, mOrderController);
 
         IncognitoTabModel incognitoModel =
@@ -184,7 +186,18 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
             @Override
             public void onActivityAttachmentChanged(Tab tab, @Nullable WindowAndroid window) {
                 if (window == null && !isReparentingInProgress()) {
-                    getModel(tab.isIncognito()).removeTab(tab);
+                    TabModel tabModel = getModel(tab.isIncognito());
+
+                    // Do not currently support moving grouped tabs.
+                    TabGroupModelFilter filter =
+                            (TabGroupModelFilter)
+                                    getTabModelFilterProvider()
+                                            .getTabModelFilter(tab.isIncognito());
+                    if (filter.isTabInTabGroup(tab)) {
+                        filter.moveTabOutOfGroup(tab.getId());
+                    }
+
+                    tabModel.removeTab(tab);
                 }
             }
 

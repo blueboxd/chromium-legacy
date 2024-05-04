@@ -23,11 +23,12 @@
 
 namespace blink {
 
+class ComputedStyle;
 class CSSNumericLiteralValue;
 class CSSStyleValue;
 class CSSValue;
-class ComputedStyle;
 class FontFamily;
+class InsetArea;
 class StyleColor;
 class StyleIntrinsicLength;
 class StylePropertyShorthand;
@@ -60,15 +61,14 @@ class CORE_EXPORT ComputedStyleUtils {
                                             bool* is_current_color);
   static CSSValue* ZoomAdjustedPixelValueForLength(const Length&,
                                                    const ComputedStyle&);
-  static const CSSValue* BackgroundImageOrWebkitMaskImage(
-      const ComputedStyle&,
-      bool allow_visited_style,
-      const FillLayer&,
-      CSSValuePhase value_phase);
+  static const CSSValue* BackgroundImageOrMaskImage(const ComputedStyle&,
+                                                    bool allow_visited_style,
+                                                    const FillLayer&,
+                                                    CSSValuePhase value_phase);
   static const CSSValue* ValueForFillSize(const FillSize&,
                                           const ComputedStyle&);
-  static const CSSValue* BackgroundImageOrWebkitMaskSize(const ComputedStyle&,
-                                                         const FillLayer&);
+  static const CSSValue* BackgroundImageOrMaskSize(const ComputedStyle&,
+                                                   const FillLayer&);
   static const CSSValueList* CreatePositionListForLayer(const CSSProperty&,
                                                         const FillLayer&,
                                                         const ComputedStyle&);
@@ -86,10 +86,9 @@ class CORE_EXPORT ComputedStyleUtils {
       const LayoutObject*,
       bool allow_visited_style,
       CSSValuePhase value_phase);
-  static const CSSValue* BackgroundPositionOrWebkitMaskPosition(
-      const CSSProperty&,
-      const ComputedStyle&,
-      const FillLayer*);
+  static const CSSValue* BackgroundPositionOrMaskPosition(const CSSProperty&,
+                                                          const ComputedStyle&,
+                                                          const FillLayer*);
   static const CSSValue* BackgroundPositionXOrWebkitMaskPositionX(
       const ComputedStyle&,
       const FillLayer*);
@@ -165,8 +164,7 @@ class CORE_EXPORT ComputedStyleUtils {
                                       bool will_change_contents,
                                       bool will_change_scroll_position);
 
-  static CSSValue* ValueForAnimationDelayStart(const Timing::Delay& delay);
-  static CSSValue* ValueForAnimationDelayEnd(const Timing::Delay& delay);
+  static CSSValue* ValueForAnimationDelay(const Timing::Delay& delay);
   static CSSValue* ValueForAnimationDirection(Timing::PlaybackDirection);
   static CSSValue* ValueForAnimationDuration(const std::optional<double>&,
                                              bool resolve_auto_to_zero);
@@ -183,8 +181,7 @@ class CORE_EXPORT ComputedStyleUtils {
       const scoped_refptr<TimingFunction>&);
   static CSSValue* ValueForAnimationTimeline(const StyleTimeline&);
 
-  static CSSValue* ValueForAnimationDelayStartList(const CSSTimingData*);
-  static CSSValue* ValueForAnimationDelayEndList(const CSSTimingData*);
+  static CSSValue* ValueForAnimationDelayList(const CSSTimingData*);
   static CSSValue* ValueForAnimationDirectionList(const CSSAnimationData*);
   static CSSValue* ValueForAnimationDurationList(const CSSAnimationData*,
                                                  CSSValuePhase phase);
@@ -256,9 +253,7 @@ class CORE_EXPORT ComputedStyleUtils {
   static CSSValueList* ValueForBorderRadiusShorthand(const ComputedStyle&);
   static CSSValue* StrokeDashArrayToCSSValueList(const SVGDashArray&,
                                                  const ComputedStyle&);
-  static CSSValue* ValueForSVGPaint(const SVGPaint&,
-                                    const ComputedStyle&,
-                                    CSSValuePhase);
+  static CSSValue* ValueForSVGPaint(const SVGPaint&, const ComputedStyle&);
   static CSSValue* ValueForSVGResource(const StyleSVGResource*);
   static CSSValue* ValueForShadowData(const ShadowData&,
                                       const ComputedStyle&,
@@ -269,8 +264,7 @@ class CORE_EXPORT ComputedStyleUtils {
                                       bool use_spread,
                                       CSSValuePhase);
   static CSSValue* ValueForFilter(const ComputedStyle&,
-                                  const FilterOperations&,
-                                  CSSValuePhase);
+                                  const FilterOperations&);
   static CSSValue* ValueForScrollSnapType(const cc::ScrollSnapType&,
                                           const ComputedStyle&);
   static CSSValue* ValueForScrollSnapAlign(const cc::ScrollSnapAlign&,
@@ -352,7 +346,7 @@ class CORE_EXPORT ComputedStyleUtils {
                                            const StyleIntrinsicLength&);
   static CSSValue* ValueForScrollStart(const ComputedStyle&,
                                        const ScrollStartData&);
-  static CSSValue* ValueForPositionTryOptions(const blink::PositionTryOptions*);
+  static CSSValue* ValueForInsetArea(const blink::InsetArea&);
   static std::unique_ptr<CrossThreadStyleValue>
   CrossThreadStyleValueFromCSSStyleValue(CSSStyleValue* style_value);
 

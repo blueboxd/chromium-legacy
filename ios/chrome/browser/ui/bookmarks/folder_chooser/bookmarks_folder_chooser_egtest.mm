@@ -11,7 +11,6 @@
 #import "base/strings/sys_string_conversions.h"
 #import "base/strings/utf_string_conversions.h"
 #import "components/strings/grit/components_strings.h"
-#import "components/sync/base/features.h"
 #import "ios/chrome/browser/bookmarks/model/bookmark_model_type.h"
 #import "ios/chrome/browser/signin/model/fake_system_identity.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey.h"
@@ -36,12 +35,11 @@ using chrome_test_util::BookmarksSaveEditFolderButton;
 using chrome_test_util::ButtonWithAccessibilityLabelId;
 using chrome_test_util::ContextBarCenterButtonWithLabel;
 using chrome_test_util::ContextBarLeadingButtonWithLabel;
+using chrome_test_util::KindOfTest;
 using chrome_test_util::OmniboxText;
 using chrome_test_util::ScrollToTop;
 using chrome_test_util::TabGridEditButton;
 using chrome_test_util::TappableBookmarkNodeWithLabel;
-
-enum class KindOfTest { kSignedOut, kLocal, kAccount };
 
 BookmarkModelType kindOfTestToStorageType(KindOfTest kind) {
   switch (kind) {
@@ -88,22 +86,20 @@ BookmarkModelType kindOfTestToStorageType(KindOfTest kind) {
 #pragma mark - BookmarksFolderChooser Tests
 
 // Tests that new folder is created under `Mobile Bookmarks` by default.
-// TODO(crbug.com/1442459): Add this test after support is available.
+// TODO(crbug.com/40266964): Add this test after support is available.
 // - (void)testCreateNewAccountFolderDefaultDestination {}
 
 // Tests that new folder is created under `Mobile Bookmarks` by default.
-// TODO(crbug.com/326425036): Figure out why Chrome crash with this test.
-- (void)DISABLED_testCreateNewLocalOrSyncableFolderDefaultDestinationSignedOut {
-  [SigninEarlGrey signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]];
+- (void)testCreateNewLocalOrSyncableFolderDefaultDestinationSignedOut {
   [self util_testCreateNewLocalOrSyncableFolderDefaultDestination:
             KindOfTest::kSignedOut];
 }
 - (void)testCreateNewLocalOrSyncableFolderDefaultDestinationLocal {
+  [SigninEarlGrey signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]];
   [self util_testCreateNewLocalOrSyncableFolderDefaultDestination:KindOfTest::
                                                                       kLocal];
 }
-// TODO(crbug.com/326425036): Figure out why Chrome crash with this test.
-- (void)DISABLED_testCreateNewLocalOrSyncableFolderDefaultDestinationAccount {
+- (void)testCreateNewLocalOrSyncableFolderDefaultDestinationAccount {
   [SigninEarlGrey signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]];
   [self util_testCreateNewLocalOrSyncableFolderDefaultDestination:KindOfTest::
                                                                       kAccount];
@@ -113,7 +109,7 @@ BookmarkModelType kindOfTestToStorageType(KindOfTest kind) {
   [BookmarkEarlGrey
       setupStandardBookmarksInStorage:kindOfTestToStorageType(kindOfTest)];
   [BookmarkEarlGreyUI openBookmarks];
-  [BookmarkEarlGreyUI openMobileBookmarks];
+  [BookmarkEarlGreyUI openMobileBookmarks:kindOfTest];
 
   // Open `Folder 3` nested in `Folder 1->Folder 2`.
   [[EarlGrey
@@ -136,22 +132,23 @@ BookmarkModelType kindOfTestToStorageType(KindOfTest kind) {
       performAction:grey_tap()];
 
   // Verify default parent folder is 'Mobile Bookmarks'.
-  [[EarlGrey selectElementWithMatcher:grey_allOf(grey_accessibilityID(
-                                                     @"Change Folder"),
-                                                 grey_accessibilityLabel(
+  [BookmarkEarlGreyUI assertChangeFolderIsCorrectlySet:@"Mobile Bookmarks"
+                                            kindOfTest:kindOfTest];
 
-                                                     @"Mobile Bookmarks"),
-                                                 nil)]
-      assertWithMatcher:grey_sufficientlyVisible()];
+  // Close folder editor.
+  [[EarlGrey selectElementWithMatcher:BookmarksSaveEditFolderButton()]
+      performAction:grey_tap()];
+  // Close bookmarks
+  [[EarlGrey selectElementWithMatcher:BookmarksHomeDoneButton()]
+      performAction:grey_tap()];
 }
 
 // Tests moving bookmarks into a new folder created in the moving process.
-// TODO(crbug.com/326425036): Figure out why this test is flaky with this test.
-- (void)DISABLED_testCreateNewFolderWhileMovingBookmarksSignedOut {
-  [SigninEarlGrey signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]];
+- (void)testCreateNewFolderWhileMovingBookmarksSignedOut {
   [self util_testCreateNewFolderWhileMovingBookmarks:KindOfTest::kSignedOut];
 }
 - (void)testCreateNewFolderWhileMovingBookmarksLocal {
+  [SigninEarlGrey signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]];
   [self util_testCreateNewFolderWhileMovingBookmarks:KindOfTest::kLocal];
 }
 - (void)testCreateNewFolderWhileMovingBookmarksAccount {
@@ -162,7 +159,7 @@ BookmarkModelType kindOfTestToStorageType(KindOfTest kind) {
   [BookmarkEarlGrey
       setupStandardBookmarksInStorage:kindOfTestToStorageType(kindOfTest)];
   [BookmarkEarlGreyUI openBookmarks];
-  [BookmarkEarlGreyUI openMobileBookmarks];
+  [BookmarkEarlGreyUI openMobileBookmarks:kindOfTest];
 
   // Change to edit mode
   [[EarlGrey
@@ -200,18 +197,11 @@ BookmarkModelType kindOfTestToStorageType(KindOfTest kind) {
       renameBookmarkFolderWithFolderTitle:@"Title For New Folder"];
 
   // Verify current parent folder (Change Folder) is Bookmarks folder.
-  NSString* label = (kindOfTest == KindOfTest::kSignedOut)
-                        ? @"Mobile Bookmarks. Only on this device."
-                        : @"Mobile Bookmarks";
-  [[EarlGrey
-      selectElementWithMatcher:grey_allOf(
-                                   grey_accessibilityID(@"Change Folder"),
-                                   grey_accessibilityLabel(label), nil)]
-      assertWithMatcher:grey_sufficientlyVisible()];
+  [BookmarkEarlGreyUI assertChangeFolderIsCorrectlySet:@"Mobile Bookmarks"
+                                            kindOfTest:kindOfTest];
 
   // Choose new parent folder (Change Folder).
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Change Folder")]
-      performAction:grey_tap()];
+  [BookmarkEarlGreyUI openFolderPicker];
 
   // Verify folder picker UI is displayed.
   [[EarlGrey
@@ -239,14 +229,8 @@ BookmarkModelType kindOfTestToStorageType(KindOfTest kind) {
       assertWithMatcher:grey_notVisible()];
 
   // Verify picked parent folder (Change Folder) is Folder 2.
-  label = (kindOfTest == KindOfTest::kSignedOut)
-              ? @"Folder 2. Only on this device."
-              : @"Folder 2";
-  [[EarlGrey
-      selectElementWithMatcher:grey_allOf(
-                                   grey_accessibilityID(@"Change Folder"),
-                                   grey_accessibilityLabel(label), nil)]
-      assertWithMatcher:grey_sufficientlyVisible()];
+  [BookmarkEarlGreyUI assertChangeFolderIsCorrectlySet:@"Folder 2"
+                                            kindOfTest:kindOfTest];
 
   // Tap Done to close bookmark move flow.
   [[EarlGrey selectElementWithMatcher:BookmarksSaveEditFolderButton()]
@@ -278,13 +262,14 @@ BookmarkModelType kindOfTestToStorageType(KindOfTest kind) {
 }
 
 - (void)testCantDeleteFolderBeingEditedSignedOut {
-  [SigninEarlGrey signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]];
   [self util_testCantDeleteFolderBeingEdited:KindOfTest::kSignedOut];
 }
 - (void)testCantDeleteFolderBeingEditedLocal {
+  [SigninEarlGrey signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]];
   [self util_testCantDeleteFolderBeingEdited:KindOfTest::kLocal];
 }
-- (void)testCantDeleteFolderBeingEditedAccount {
+// TODO(crbug.com/326425036): New folder can’t be renamed in account model.
+- (void)DISABLED_testCantDeleteFolderBeingEditedAccount {
   [SigninEarlGrey signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]];
   [self util_testCantDeleteFolderBeingEdited:KindOfTest::kAccount];
 }
@@ -292,7 +277,7 @@ BookmarkModelType kindOfTestToStorageType(KindOfTest kind) {
   [BookmarkEarlGrey
       setupStandardBookmarksInStorage:kindOfTestToStorageType(kindOfTest)];
   [BookmarkEarlGreyUI openBookmarks];
-  [BookmarkEarlGreyUI openMobileBookmarks];
+  [BookmarkEarlGreyUI openMobileBookmarks:kindOfTest];
 
   // Create a new folder and type "New Folder 1" without pressing return.
   NSString* newFolderTitle = @"New Folder";
@@ -312,22 +297,26 @@ BookmarkModelType kindOfTestToStorageType(KindOfTest kind) {
 }
 
 - (void)testNavigateAwayFromFolderBeingEditedSignedOut {
-  [SigninEarlGrey signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]];
   [self util_testNavigateAwayFromFolderBeingEdited:KindOfTest::kSignedOut];
 }
+
 - (void)testNavigateAwayFromFolderBeingEditedLocal {
+  [SigninEarlGrey signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]];
   [self util_testNavigateAwayFromFolderBeingEdited:KindOfTest::kLocal];
 }
-- (void)testNavigateAwayFromFolderBeingEditedAccount {
+
+// TODO(crbug.com/337774320) Test is flaky on ios-fieldtrial-rel.
+- (void)DISABLED_testNavigateAwayFromFolderBeingEditedAccount {
   [SigninEarlGrey signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]];
   [self util_testNavigateAwayFromFolderBeingEdited:KindOfTest::kAccount];
 }
+
 - (void)util_testNavigateAwayFromFolderBeingEdited:(KindOfTest)kindOfTest {
   [BookmarkEarlGrey
       setupBookmarksWhichExceedsScreenHeightInStorage:kindOfTestToStorageType(
                                                           kindOfTest)];
   [BookmarkEarlGreyUI openBookmarks];
-  [BookmarkEarlGreyUI openMobileBookmarks];
+  [BookmarkEarlGreyUI openMobileBookmarks:kindOfTest];
 
   // Verify bottom URL is not visible before scrolling to bottom (make sure
   // setupBookmarksWhichExceedsScreenHeight works as expected).
@@ -361,10 +350,10 @@ BookmarkModelType kindOfTestToStorageType(KindOfTest kind) {
 }
 
 - (void)testDeleteSingleFolderNodeSignedOut {
-  [SigninEarlGrey signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]];
   [self util_testDeleteSingleFolderNode:KindOfTest::kSignedOut];
 }
 - (void)testDeleteSingleFolderNodeLocal {
+  [SigninEarlGrey signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]];
   [self util_testDeleteSingleFolderNode:KindOfTest::kLocal];
 }
 - (void)testDeleteSingleFolderNodeAccount {
@@ -375,7 +364,7 @@ BookmarkModelType kindOfTestToStorageType(KindOfTest kind) {
   [BookmarkEarlGrey
       setupStandardBookmarksInStorage:kindOfTestToStorageType(kindOfTest)];
   [BookmarkEarlGreyUI openBookmarks];
-  [BookmarkEarlGreyUI openMobileBookmarks];
+  [BookmarkEarlGreyUI openMobileBookmarks:kindOfTest];
 
   // Change to edit mode
   [[EarlGrey
@@ -413,8 +402,7 @@ BookmarkModelType kindOfTestToStorageType(KindOfTest kind) {
 - (void)testSwipeDownToDismissFromEditSignedOut {
   [self util_testSwipeDownToDismissFromEditFolder:KindOfTest::kSignedOut];
 }
-- (void)testSwipeDownToDismissFromEditFolderSignedOut {
-  [SigninEarlGrey signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]];
+- (void)testSwipeDownToDismissFromEditFolderLocal {
   [SigninEarlGrey signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]];
   [self util_testSwipeDownToDismissFromEditFolder:KindOfTest::kLocal];
 }
@@ -426,7 +414,7 @@ BookmarkModelType kindOfTestToStorageType(KindOfTest kind) {
   [BookmarkEarlGrey
       setupStandardBookmarksInStorage:kindOfTestToStorageType(kindOfTest)];
   [BookmarkEarlGreyUI openBookmarks];
-  [BookmarkEarlGreyUI openMobileBookmarks];
+  [BookmarkEarlGreyUI openMobileBookmarks:kindOfTest];
 
   // Invoke Move through long press.
   [[EarlGrey
@@ -459,10 +447,10 @@ BookmarkModelType kindOfTestToStorageType(KindOfTest kind) {
 // Test when current navigating folder is deleted in background, empty
 // background should be shown with context bar buttons disabled.
 - (void)testWhenCurrentFolderDeletedInBackgroundSignedOut {
-  [SigninEarlGrey signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]];
   [self util_testWhenCurrentFolderDeletedInBackground:KindOfTest::kSignedOut];
 }
 - (void)testWhenCurrentFolderDeletedInBackgroundLocal {
+  [SigninEarlGrey signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]];
   [self util_testWhenCurrentFolderDeletedInBackground:KindOfTest::kLocal];
 }
 - (void)testWhenCurrentFolderDeletedInBackgroundAccount {
@@ -473,7 +461,7 @@ BookmarkModelType kindOfTestToStorageType(KindOfTest kind) {
   [BookmarkEarlGrey
       setupStandardBookmarksInStorage:kindOfTestToStorageType(kindOfTest)];
   [BookmarkEarlGreyUI openBookmarks];
-  [BookmarkEarlGreyUI openMobileBookmarks];
+  [BookmarkEarlGreyUI openMobileBookmarks:kindOfTest];
 
   // Enter Folder 1
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1")]
@@ -497,28 +485,10 @@ BookmarkModelType kindOfTestToStorageType(KindOfTest kind) {
       removeBookmarkWithTitle:@"Folder 1"
                     inStorage:kindOfTestToStorageType(kindOfTest)];
 
-  // Verify edit mode is close automatically (context bar switched back to
+  // Verify edit mode is closed automatically (context bar switched back to
   // default state) and both select and new folder button are disabled.
-  [BookmarkEarlGreyUI verifyContextBarInDefaultStateWithSelectEnabled:NO
-                                                     newFolderEnabled:NO];
-
-  // Verify the empty background appears.
-  [BookmarkEarlGreyUI verifyEmptyBackgroundAppears];
-
-  // Come back to Folder 1 (which is also deleted).
-  [[EarlGrey selectElementWithMatcher:BookmarksNavigationBarBackButton()]
-      performAction:grey_tap()];
-
-  // Verify both select and new folder button are disabled.
-  [BookmarkEarlGreyUI verifyContextBarInDefaultStateWithSelectEnabled:NO
-                                                     newFolderEnabled:NO];
-
-  // Verify the empty background appears.
-  [BookmarkEarlGreyUI verifyEmptyBackgroundAppears];
-
-  // Come back to Mobile Bookmarks.
-  [[EarlGrey selectElementWithMatcher:BookmarksNavigationBarBackButton()]
-      performAction:grey_tap()];
+  [BookmarkEarlGreyUI verifyContextBarInDefaultStateWithSelectEnabled:YES
+                                                     newFolderEnabled:YES];
 
   // Ensure Folder 1.1 is seen, that means it successfully comes back to Mobile
   // Bookmarks.
@@ -540,7 +510,7 @@ BookmarkModelType kindOfTestToStorageType(KindOfTest kind) {
   [BookmarkEarlGrey
       setupStandardBookmarksInStorage:kindOfTestToStorageType(kindOfTest)];
   [BookmarkEarlGreyUI openBookmarks];
-  [BookmarkEarlGreyUI openMobileBookmarks];
+  [BookmarkEarlGreyUI openMobileBookmarks:kindOfTest];
 
   [[EarlGrey
       selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Folder 1")]
@@ -559,7 +529,7 @@ BookmarkModelType kindOfTestToStorageType(KindOfTest kind) {
 
   // Long press on Mobile Bookmarks.
   [[EarlGrey selectElementWithMatcher:TappableBookmarkNodeWithLabel(
-                                          @"Mobile Bookmarks")]
+                                          @"Mobile Bookmarks", kindOfTest)]
       performAction:grey_longPress()];
 
   // We cannot locate new context menus any way, therefore we'll use the
@@ -573,8 +543,7 @@ BookmarkModelType kindOfTestToStorageType(KindOfTest kind) {
 - (void)testEditFunctionalityOnSingleSignedOut {
   [self util_testEditFunctionalityOnSingleFolder:KindOfTest::kSignedOut];
 }
-// TODO(crbug.com/326425036): Figure out why Chrome crash with this test.
-- (void)DISABLED_testEditFunctionalityOnSingleFolderLocal {
+- (void)testEditFunctionalityOnSingleFolderLocal {
   [SigninEarlGrey signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]];
   [self util_testEditFunctionalityOnSingleFolder:KindOfTest::kLocal];
 }
@@ -587,7 +556,7 @@ BookmarkModelType kindOfTestToStorageType(KindOfTest kind) {
   [BookmarkEarlGrey
       setupStandardBookmarksInStorage:kindOfTestToStorageType(kindOfTest)];
   [BookmarkEarlGreyUI openBookmarks];
-  [BookmarkEarlGreyUI openMobileBookmarks];
+  [BookmarkEarlGreyUI openMobileBookmarks:kindOfTest];
 
   // 1. Edit the folder title at edit page.
 
@@ -642,7 +611,7 @@ BookmarkModelType kindOfTestToStorageType(KindOfTest kind) {
                   openEditor:kBookmarkFolderEditViewContainerIdentifier
            setParentFolderTo:@"Folder 1.1"
                         from:@"Mobile Bookmarks"
-            onlyOnThisDevice:kindOfTest == KindOfTest::kLocal];
+                  kindOfTest:kindOfTest];
 
   // Verify edit mode remains.
   [BookmarkEarlGreyUI verifyContextBarInEditMode];
@@ -727,27 +696,148 @@ BookmarkModelType kindOfTestToStorageType(KindOfTest kind) {
 
   // Verify we enter the new folder. (instead of selecting it in edit mode).
   [BookmarkEarlGreyUI verifyEmptyBackgroundAppears];
+  // Close bookmarks
+  [[EarlGrey selectElementWithMatcher:BookmarksHomeDoneButton()]
+      performAction:grey_tap()];
+}
+
+// Verify undoing a move.
+- (void)testMoveAndUndoSignedOut {
+  [self util_testMoveAndUndoFromModel:KindOfTest::kSignedOut
+                              toModel:KindOfTest::kSignedOut];
+}
+- (void)testMoveAndUndoLocal {
+  [SigninEarlGrey signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]];
+  [self util_testMoveAndUndoFromModel:KindOfTest::kLocal
+                              toModel:KindOfTest::kLocal];
+}
+- (void)testMoveAndUndoAccount {
+  [SigninEarlGrey signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]];
+  [self util_testMoveAndUndoFromModel:KindOfTest::kAccount
+                              toModel:KindOfTest::kAccount];
+}
+// TODO(crbug.com/326425036): Moving the bookmarks fails in test but not when
+// reproduced manually.
+- (void)DISABLED_testMoveAndUndoLocalToAccount {
+  [SigninEarlGrey signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]];
+  [self util_testMoveAndUndoFromModel:KindOfTest::kLocal
+                              toModel:KindOfTest::kAccount];
+}
+- (void)testMoveAndUndoAccountToLocal {
+  [SigninEarlGrey signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]];
+  [self util_testMoveAndUndoFromModel:KindOfTest::kAccount
+                              toModel:KindOfTest::kLocal];
+}
+- (void)util_testMoveAndUndoFromModel:(KindOfTest)sourceKind
+                              toModel:(KindOfTest)destinationKind {
+  [BookmarkEarlGrey
+      setupStandardBookmarksInStorage:kindOfTestToStorageType(sourceKind)];
+  if (sourceKind != destinationKind) {
+    [BookmarkEarlGrey setupStandardBookmarksInStorage:kindOfTestToStorageType(
+                                                          destinationKind)];
+  }
+  // Move to Mobile Bookmarks > Folder 1
+  [BookmarkEarlGreyUI openBookmarks];
+  [BookmarkEarlGreyUI openMobileBookmarks:sourceKind];
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Folder 1")]
+      performAction:grey_tap()];
+
+  // Invoke Move through long press.
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Folder 2")]
+      performAction:grey_longPress()];
+
+  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
+                                          IDS_IOS_BOOKMARK_CONTEXT_MENU_MOVE)]
+      performAction:grey_tap()];
+
+  // Select Mobile Bookmarks as new parent folder for "Title For New Folder".
+  [[EarlGrey
+      selectElementWithMatcher:
+          grey_accessibilityID(kBookmarkFolderPickerViewContainerIdentifier)]
+      assertWithMatcher:grey_sufficientlyVisible()];
+  [[[EarlGrey selectElementWithMatcher:TappableBookmarkNodeWithLabel(
+                                           @"Folder 1.1", destinationKind)]
+         usingSearchAction:grey_scrollInDirection(kGREYDirectionDown, 200)
+      onElementWithMatcher:grey_accessibilityID(
+                               kBookmarkFolderPickerViewContainerIdentifier)]
+      performAction:grey_tap()];
+
+  // Verify folder picker is dismissed.
+  [[EarlGrey
+      selectElementWithMatcher:
+          grey_accessibilityID(kBookmarkFolderPickerViewContainerIdentifier)]
+      assertWithMatcher:grey_notVisible()];
+
+  // Verify folder is in destination and not in source.
+  [BookmarkEarlGrey verifyChildCount:1
+                    inFolderWithName:@"Folder 1.1"
+                           inStorage:kindOfTestToStorageType(destinationKind)];
+  [BookmarkEarlGrey verifyChildCount:0
+                    inFolderWithName:@"Folder 1"
+                           inStorage:kindOfTestToStorageType(sourceKind)];
+
+  [[EarlGrey
+      selectElementWithMatcher:grey_allOf(grey_accessibilityID(@"Folder 2"),
+                                          grey_sufficientlyVisible(), nil)]
+      assertWithMatcher:grey_nil()];
+
+  // Press undo
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Undo")]
+      performAction:grey_tap()];
+  // Verify folder is in source and not in destination.
+  [BookmarkEarlGrey verifyChildCount:0
+                    inFolderWithName:@"Folder 1.1"
+                           inStorage:kindOfTestToStorageType(destinationKind)];
+  [BookmarkEarlGrey verifyChildCount:1
+                    inFolderWithName:@"Folder 1"
+                           inStorage:kindOfTestToStorageType(sourceKind)];
+
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 2")]
+      assertWithMatcher:grey_sufficientlyVisible()];
+  // Close bookmarks
+  [[EarlGrey selectElementWithMatcher:BookmarksHomeDoneButton()]
+      performAction:grey_tap()];
 }
 
 // Verify Move functionality on single folder through long press.
-- (void)testMoveFunctionalityOnSingleSignedOut {
-  [self util_testMoveFunctionalityOnSingleFolder:KindOfTest::kSignedOut];
+- (void)testMoveFunctionalityOnSingleFolderSignedOut {
+  [self
+      util_testMoveFunctionalityOnSingleFolderFromModel:KindOfTest::kSignedOut
+                                                toModel:KindOfTest::kSignedOut];
 }
-// TODO(crbug.com/326425036): Figure out why Chrome crash with this test.
-- (void)DISABLED_testMoveFunctionalityOnSingleFolderLocal {
+- (void)testMoveFunctionalityOnSingleFolderLocal {
   [SigninEarlGrey signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]];
-  [self util_testMoveFunctionalityOnSingleFolder:KindOfTest::kLocal];
+  [self util_testMoveFunctionalityOnSingleFolderFromModel:KindOfTest::kLocal
+                                                  toModel:KindOfTest::kLocal];
 }
-// TODO(crbug.com/326425036): Figure out why Chrome crash with this test.
-- (void)DISABLED_testMoveFunctionalityOnSingleFolderAccount {
+- (void)testMoveFunctionalityOnSingleFolderAccount {
   [SigninEarlGrey signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]];
-  [self util_testMoveFunctionalityOnSingleFolder:KindOfTest::kAccount];
+  [self util_testMoveFunctionalityOnSingleFolderFromModel:KindOfTest::kAccount
+                                                  toModel:KindOfTest::kAccount];
 }
-- (void)util_testMoveFunctionalityOnSingleFolder:(KindOfTest)kindOfTest {
+- (void)testMoveFunctionalityOnSingleFolderLocalToAccount {
+  [SigninEarlGrey signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]];
+  [self util_testMoveFunctionalityOnSingleFolderFromModel:KindOfTest::kLocal
+                                                  toModel:KindOfTest::kAccount];
+}
+- (void)testMoveFunctionalityOnSingleFolderAccountToLocal {
+  [SigninEarlGrey signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]];
+  [self util_testMoveFunctionalityOnSingleFolderFromModel:KindOfTest::kAccount
+                                                  toModel:KindOfTest::kLocal];
+}
+- (void)util_testMoveFunctionalityOnSingleFolderFromModel:(KindOfTest)sourceKind
+                                                  toModel:(KindOfTest)
+                                                              destinationKind {
   [BookmarkEarlGrey
-      setupStandardBookmarksInStorage:kindOfTestToStorageType(kindOfTest)];
+      setupStandardBookmarksInStorage:kindOfTestToStorageType(sourceKind)];
+  if (sourceKind != destinationKind) {
+    [BookmarkEarlGrey setupStandardBookmarksInStorage:kindOfTestToStorageType(
+                                                          destinationKind)];
+  }
   [BookmarkEarlGreyUI openBookmarks];
-  [BookmarkEarlGreyUI openMobileBookmarks];
+  [BookmarkEarlGreyUI openMobileBookmarks:sourceKind];
 
   // Invoke Move through long press.
   [[EarlGrey
@@ -761,25 +851,20 @@ BookmarkModelType kindOfTestToStorageType(KindOfTest kind) {
   // Choose to move the bookmark folder - "Folder 1" into a new folder.
   [[EarlGrey selectElementWithMatcher:
                  grey_accessibilityID(
-                     [self getCreateNewFolderCellIdentifier:kindOfTest])]
+                     [self getCreateNewFolderCellIdentifier:destinationKind])]
       performAction:grey_tap()];
 
   // Enter custom new folder name.
-  [BookmarkEarlGreyUI
-      renameBookmarkFolderWithFolderTitle:@"Title For New Folder"];
+  NSString* newFolderTitle = @"Title For New Folder";
+  [BookmarkEarlGreyUI renameBookmarkFolderWithFolderTitle:newFolderTitle];
 
   // Verify current parent folder for "Title For New Folder" folder is "Mobile
   // Bookmarks" folder.
-  [[EarlGrey
-      selectElementWithMatcher:grey_allOf(
-                                   grey_accessibilityID(@"Change Folder"),
-                                   grey_accessibilityLabel(@"Mobile Bookmarks"),
-                                   nil)]
-      assertWithMatcher:grey_sufficientlyVisible()];
+  [BookmarkEarlGreyUI assertChangeFolderIsCorrectlySet:@"Mobile Bookmarks"
+                                            kindOfTest:destinationKind];
 
   // Choose new parent folder for "Title For New Folder" folder.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Change Folder")]
-      performAction:grey_tap()];
+  [BookmarkEarlGreyUI openFolderPicker];
 
   // Verify folder picker UI is displayed.
   [[EarlGrey
@@ -790,11 +875,11 @@ BookmarkModelType kindOfTestToStorageType(KindOfTest kind) {
   // Verify Folder 2 only has one item.
   [BookmarkEarlGrey verifyChildCount:1
                     inFolderWithName:@"Folder 2"
-                           inStorage:kindOfTestToStorageType(kindOfTest)];
+                           inStorage:kindOfTestToStorageType(destinationKind)];
 
   // Select Folder 2 as new parent folder for "Title For New Folder".
-  [[EarlGrey
-      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Folder 2")]
+  [[EarlGrey selectElementWithMatcher:TappableBookmarkNodeWithLabel(
+                                          @"Folder 2", destinationKind)]
       performAction:grey_tap()];
 
   // Verify folder picker is dismissed and folder creator is now visible.
@@ -808,12 +893,8 @@ BookmarkModelType kindOfTestToStorageType(KindOfTest kind) {
       assertWithMatcher:grey_notVisible()];
 
   // Verify picked parent folder is Folder 2.
-  [[EarlGrey
-      selectElementWithMatcher:grey_allOf(
-                                   grey_accessibilityID(@"Change Folder"),
-                                   grey_accessibilityLabel(@"Folder 2"), nil)]
-      assertWithMatcher:grey_sufficientlyVisible()];
-
+  [BookmarkEarlGreyUI assertChangeFolderIsCorrectlySet:@"Folder 2"
+                                            kindOfTest:destinationKind];
   // Tap Done to close bookmark move flow.
   [[EarlGrey selectElementWithMatcher:BookmarksSaveEditFolderButton()]
       performAction:grey_tap()];
@@ -824,12 +905,19 @@ BookmarkModelType kindOfTestToStorageType(KindOfTest kind) {
   // Verify new folder "Title For New Folder" has been created under Folder 2.
   [BookmarkEarlGrey verifyChildCount:2
                     inFolderWithName:@"Folder 2"
-                           inStorage:kindOfTestToStorageType(kindOfTest)];
+                           inStorage:kindOfTestToStorageType(destinationKind)];
 
   // Verify new folder "Title For New Folder" has one bookmark folder.
   [BookmarkEarlGrey verifyChildCount:1
                     inFolderWithName:@"Title For New Folder"
-                           inStorage:kindOfTestToStorageType(kindOfTest)];
+                           inStorage:kindOfTestToStorageType(destinationKind)];
+
+  if (destinationKind != sourceKind) {
+    [[EarlGrey selectElementWithMatcher:BookmarksNavigationBarBackButton()]
+        performAction:grey_tap()];
+
+    [BookmarkEarlGreyUI openMobileBookmarks:destinationKind];
+  }
 
   // Drill down to where "Folder 1.1" has been moved and assert it's presence.
   [[EarlGrey
@@ -849,13 +937,11 @@ BookmarkModelType kindOfTestToStorageType(KindOfTest kind) {
 - (void)testMoveFunctionalityOnMultipleSignedOut {
   [self util_testMoveFunctionalityOnMultipleFolder:KindOfTest::kSignedOut];
 }
-// TODO(crbug.com/326425036): Figure out why Chrome crash with this test.
-- (void)DISABLED_testMoveFunctionalityOnMultipleFolderLocal {
+- (void)testMoveFunctionalityOnMultipleFolderLocal {
   [SigninEarlGrey signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]];
   [self util_testMoveFunctionalityOnMultipleFolder:KindOfTest::kLocal];
 }
-// TODO(crbug.com/326425036): Figure out why Chrome crash with this test.
-- (void)DISABLED_testMoveFunctionalityOnMultipleFolderAccount {
+- (void)testMoveFunctionalityOnMultipleFolderAccount {
   [SigninEarlGrey signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]];
   [self util_testMoveFunctionalityOnMultipleFolder:KindOfTest::kAccount];
 }
@@ -863,7 +949,7 @@ BookmarkModelType kindOfTestToStorageType(KindOfTest kind) {
   [BookmarkEarlGrey
       setupStandardBookmarksInStorage:kindOfTestToStorageType(kindOfTest)];
   [BookmarkEarlGreyUI openBookmarks];
-  [BookmarkEarlGreyUI openMobileBookmarks];
+  [BookmarkEarlGreyUI openMobileBookmarks:kindOfTest];
 
   // Change to edit mode, using context menu.
   [[EarlGrey
@@ -901,23 +987,8 @@ BookmarkModelType kindOfTestToStorageType(KindOfTest kind) {
 
   // Verify current parent folder for "Title For New Folder" folder is "Mobile
   // Bookmarks" folder.
-  NSString* label;
-  switch (kindOfTest) {
-    case KindOfTest::kLocal:
-      label = @"Mobile Bookmarks. Only on this device.";
-      break;
-    case KindOfTest::kSignedOut:
-      label = @"Mobile Bookmarks";
-      break;
-    case KindOfTest::kAccount:
-      label = @"Mobile Bookmarks in your Google Account, foo1@gmail.com";
-      break;
-  }
-  [[EarlGrey
-      selectElementWithMatcher:grey_allOf(
-                                   grey_accessibilityID(@"Change Folder"),
-                                   grey_accessibilityLabel(label), nil)]
-      assertWithMatcher:grey_sufficientlyVisible()];
+  [BookmarkEarlGreyUI assertChangeFolderIsCorrectlySet:@"Mobile Bookmarks"
+                                            kindOfTest:kindOfTest];
 
   // Tap Done to close bookmark move flow.
   [[EarlGrey selectElementWithMatcher:BookmarksSaveEditFolderButton()]
@@ -946,13 +1017,17 @@ BookmarkModelType kindOfTestToStorageType(KindOfTest kind) {
       assertWithMatcher:grey_sufficientlyVisible()];
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1")]
       assertWithMatcher:grey_sufficientlyVisible()];
+
+  // Close bookmarks
+  [[EarlGrey selectElementWithMatcher:BookmarksHomeDoneButton()]
+      performAction:grey_tap()];
 }
 
 - (void)testContextBarForSingleFolderSelectionSignedOut {
-  [SigninEarlGrey signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]];
   [self util_testContextBarForSingleFolderSelection:KindOfTest::kSignedOut];
 }
 - (void)testContextBarForSingleFolderSelectionLocal {
+  [SigninEarlGrey signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]];
   [self util_testContextBarForSingleFolderSelection:KindOfTest::kLocal];
 }
 - (void)testContextBarForSingleFolderSelectionAccount {
@@ -963,7 +1038,7 @@ BookmarkModelType kindOfTestToStorageType(KindOfTest kind) {
   [BookmarkEarlGrey
       setupStandardBookmarksInStorage:kindOfTestToStorageType(kindOfTest)];
   [BookmarkEarlGreyUI openBookmarks];
-  [BookmarkEarlGreyUI openMobileBookmarks];
+  [BookmarkEarlGreyUI openMobileBookmarks:kindOfTest];
 
   // Change to edit mode
   [[EarlGrey
@@ -998,10 +1073,10 @@ BookmarkModelType kindOfTestToStorageType(KindOfTest kind) {
 }
 
 - (void)testContextMenuForMultipleFolderSelectionSignedOut {
-  [SigninEarlGrey signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]];
   [self util_testContextMenuForMultipleFolderSelection:KindOfTest::kSignedOut];
 }
 - (void)testContextMenuForMultipleFolderSelectionLocal {
+  [SigninEarlGrey signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]];
   [self util_testContextMenuForMultipleFolderSelection:KindOfTest::kLocal];
 }
 - (void)testContextMenuForMultipleFolderSelectionAccount {
@@ -1012,7 +1087,7 @@ BookmarkModelType kindOfTestToStorageType(KindOfTest kind) {
   [BookmarkEarlGrey
       setupStandardBookmarksInStorage:kindOfTestToStorageType(kindOfTest)];
   [BookmarkEarlGreyUI openBookmarks];
-  [BookmarkEarlGreyUI openMobileBookmarks];
+  [BookmarkEarlGreyUI openMobileBookmarks:kindOfTest];
 
   // Change to edit mode
   [[EarlGrey
@@ -1064,7 +1139,7 @@ BookmarkModelType kindOfTestToStorageType(KindOfTest kind) {
   [BookmarkEarlGrey
       setupStandardBookmarksInStorage:kindOfTestToStorageType(kindOfTest)];
   [BookmarkEarlGreyUI openBookmarks];
-  [BookmarkEarlGreyUI openMobileBookmarks];
+  [BookmarkEarlGreyUI openMobileBookmarks:kindOfTest];
 
   // Invoke Edit through long press.
   [[EarlGrey
@@ -1075,8 +1150,7 @@ BookmarkModelType kindOfTestToStorageType(KindOfTest kind) {
       performAction:grey_tap()];
 
   // Tap the Folder button.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Change Folder")]
-      performAction:grey_tap()];
+  [BookmarkEarlGreyUI openFolderPicker];
 
   // Create a new folder.
   [BookmarkEarlGreyUI addFolderWithName:@"Sticky Folder"
@@ -1168,10 +1242,10 @@ BookmarkModelType kindOfTestToStorageType(KindOfTest kind) {
 // Tests the new folder name is committed when name editing is interrupted by
 // navigating away.
 - (void)testNewFolderNameCommittedOnNavigatingAwaySignedOut {
-  [SigninEarlGrey signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]];
   [self util_testNewFolderNameCommittedOnNavigatingAway:KindOfTest::kSignedOut];
 }
 - (void)testNewFolderNameCommittedOnNavigatingAwayLocal {
+  [SigninEarlGrey signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]];
   [self util_testNewFolderNameCommittedOnNavigatingAway:KindOfTest::kLocal];
 }
 - (void)testNewFolderNameCommittedOnNavigatingAwayAccount {
@@ -1182,7 +1256,7 @@ BookmarkModelType kindOfTestToStorageType(KindOfTest kind) {
   [BookmarkEarlGrey
       setupStandardBookmarksInStorage:kindOfTestToStorageType(kindOfTest)];
   [BookmarkEarlGreyUI openBookmarks];
-  [BookmarkEarlGreyUI openMobileBookmarks];
+  [BookmarkEarlGreyUI openMobileBookmarks:kindOfTest];
 
   // Create a new folder and type "New Folder 1" without pressing return.
   NSString* newFolderTitle = @"New Folder 1";
@@ -1194,7 +1268,7 @@ BookmarkModelType kindOfTestToStorageType(KindOfTest kind) {
       performAction:grey_tap()];
 
   // Come back to Mobile Bookmarks.
-  [BookmarkEarlGreyUI openMobileBookmarks];
+  [BookmarkEarlGreyUI openMobileBookmarks:kindOfTest];
 
   // Verify folder name "New Folder 1" was committed.
   [BookmarkEarlGreyUI verifyFolderCreatedWithTitle:newFolderTitle];
@@ -1254,13 +1328,13 @@ BookmarkModelType kindOfTestToStorageType(KindOfTest kind) {
 // Tests the creation of new folders by tapping on 'New Folder' button of the
 // context bar.
 - (void)testCreateNewFolderWithContextBarSignedOut {
-  [SigninEarlGrey signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]];
   [self util_testCreateNewFolderWithContextBar:KindOfTest::kSignedOut];
 }
 - (void)testCreateNewFolderWithContextBarLocal {
+  [SigninEarlGrey signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]];
   [self util_testCreateNewFolderWithContextBar:KindOfTest::kLocal];
 }
-// TODO(crbug.com/326425036): Figure out why this test is flaky with this test.
+// TODO(crbug.com/326425036): New folder can’t be renamed in account model.
 - (void)DISABLE_testCreateNewFolderWithContextBarAccount {
   [SigninEarlGrey signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]];
   [self util_testCreateNewFolderWithContextBar:KindOfTest::kAccount];
@@ -1269,7 +1343,7 @@ BookmarkModelType kindOfTestToStorageType(KindOfTest kind) {
   [BookmarkEarlGrey
       setupStandardBookmarksInStorage:kindOfTestToStorageType(kindOfTest)];
   [BookmarkEarlGreyUI openBookmarks];
-  [BookmarkEarlGreyUI openMobileBookmarks];
+  [BookmarkEarlGreyUI openMobileBookmarks:kindOfTest];
 
   // Create a new folder and name it "New Folder 1".
   NSString* newFolderTitle = @"New Folder 1";
@@ -1290,6 +1364,10 @@ BookmarkModelType kindOfTestToStorageType(KindOfTest kind) {
   // Verify context bar does not change after editing folder name.
   [BookmarkEarlGreyUI verifyContextBarInDefaultStateWithSelectEnabled:YES
                                                      newFolderEnabled:YES];
+
+  // Close bookmarks
+  [[EarlGrey selectElementWithMatcher:BookmarksHomeDoneButton()]
+      performAction:grey_tap()];
 }
 
 // Test the creation of a bookmark and new folder (by tapping on the star).
@@ -1302,9 +1380,7 @@ BookmarkModelType kindOfTestToStorageType(KindOfTest kind) {
                         BookmarkModelType::kLocalOrSyncable];
   [self util_testAddBookmarkInNewFolder:KindOfTest::kLocal];
 }
-// TODO(crbug.com/326425036): Figure out why this test fails on
-// ios-fieldtrial-rel.
-- (void)DISABLED_testAddBookmarkInNewFolderAccount {
+- (void)testAddBookmarkInNewFolderAccount {
   [SigninEarlGrey signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]];
   [self util_testAddBookmarkInNewFolder:KindOfTest::kAccount];
 }
@@ -1364,16 +1440,11 @@ BookmarkModelType kindOfTestToStorageType(KindOfTest kind) {
                                           kBookmarkEditViewContainerIdentifier)]
       assertWithMatcher:grey_notNil()];
 
-  NSString* change_label = @"Mobile Bookmarks";
-  [[EarlGrey
-      selectElementWithMatcher:grey_allOf(
-                                   grey_accessibilityID(@"Change Folder"),
-                                   grey_accessibilityLabel(change_label), nil)]
-      assertWithMatcher:grey_notNil()];
+  [BookmarkEarlGreyUI assertChangeFolderIsCorrectlySet:@"Mobile Bookmarks"
+                                            kindOfTest:kindOfTest];
 
   // Tap the Folder button.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Change Folder")]
-      performAction:grey_tap()];
+  [BookmarkEarlGreyUI openFolderPicker];
 
   // Create a new folder with default name.
   [BookmarkEarlGreyUI addFolderWithName:nil
@@ -1387,6 +1458,30 @@ BookmarkModelType kindOfTestToStorageType(KindOfTest kind) {
   [BookmarkEarlGrey
       verifyExistenceOfFolderWithTitle:@"New Folder"
                              inStorage:kindOfTestToStorageType(kindOfTest)];
+  // Tap the Done button.
+  [[EarlGrey selectElementWithMatcher:BookmarksSaveEditDoneButton()]
+      performAction:grey_tap()];
+}
+
+// Regression test for crbug.com/330345514
+// Checks that Chrome does not crash when the user sign-out while in an account
+// bookmark folder.
+- (void)testSignOutInRecursiveBookmarkAccount {
+  [SigninEarlGrey signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]];
+  [BookmarkEarlGrey setupStandardBookmarksInStorage:kindOfTestToStorageType(
+                                                        KindOfTest::kAccount)];
+  [BookmarkEarlGreyUI openBookmarks];
+  [BookmarkEarlGreyUI openMobileBookmarks:KindOfTest::kAccount];
+
+  // Open `Folder 3` nested in `Folder 1->Folder 2`.
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Folder 1")]
+      performAction:grey_tap()];
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Folder 2")]
+      performAction:grey_tap()];
+  [SigninEarlGrey signOut];
+  [BookmarkEarlGreyUI verifyEmptyBackgroundAppears];
 }
 
 @end

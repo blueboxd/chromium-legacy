@@ -11,6 +11,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/task/sequenced_task_runner.h"
 #include "chrome/browser/password_manager/android/built_in_backend_to_android_backend_migrator.h"
+#include "components/password_manager/core/browser/features/password_features.h"
+#include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_store/split_stores_and_local_upm.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
@@ -20,13 +22,8 @@
 
 namespace password_manager {
 
-namespace {
-
-// Time in seconds by which the passwords migration from the built-in backend to
-// the Android backend is delayed.
-constexpr int kMigrationToAndroidBackendDelay = 30;
-
-}  // namespace
+using password_manager::features::
+    GetLocalPasswordsMigrationToAndroidBackendDelay;
 
 PasswordStoreBackendMigrationDecorator::PasswordStoreBackendMigrationDecorator(
     std::unique_ptr<PasswordStoreBackend> built_in_backend,
@@ -72,12 +69,15 @@ void PasswordStoreBackendMigrationDecorator::InitBackend(
 
   // Post delayed task to start migration of local passwords to avoid extra load
   // on start-up.
+
+  metrics_util::LogLocalPwdMigrationProgressState(
+      metrics_util::LocalPwdMigrationProgressState::kScheduled);
   base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&BuiltInBackendToAndroidBackendMigrator::
                          StartMigrationOfLocalPasswords,
                      migrator_->GetWeakPtr()),
-      base::Seconds(kMigrationToAndroidBackendDelay));
+      base::Seconds(GetLocalPasswordsMigrationToAndroidBackendDelay()));
 }
 
 void PasswordStoreBackendMigrationDecorator::Shutdown(
@@ -155,39 +155,42 @@ void PasswordStoreBackendMigrationDecorator::UpdateLoginAsync(
 }
 
 void PasswordStoreBackendMigrationDecorator::RemoveLoginAsync(
+    const base::Location& location,
     const PasswordForm& form,
     PasswordChangesOrErrorReply callback) {
-  active_backend()->RemoveLoginAsync(form, std::move(callback));
+  active_backend()->RemoveLoginAsync(location, form, std::move(callback));
   if (UsesSplitStoresAndUPMForLocal(prefs_)) {
-    built_in_backend_->RemoveLoginAsync(form, base::DoNothing());
+    built_in_backend_->RemoveLoginAsync(location, form, base::DoNothing());
   }
 }
 
 void PasswordStoreBackendMigrationDecorator::RemoveLoginsByURLAndTimeAsync(
+    const base::Location& location,
     const base::RepeatingCallback<bool(const GURL&)>& url_filter,
     base::Time delete_begin,
     base::Time delete_end,
     base::OnceCallback<void(bool)> sync_completion,
     PasswordChangesOrErrorReply callback) {
   active_backend()->RemoveLoginsByURLAndTimeAsync(
-      url_filter, delete_begin, delete_end, std::move(sync_completion),
-      std::move(callback));
+      location, url_filter, delete_begin, delete_end,
+      std::move(sync_completion), std::move(callback));
   if (UsesSplitStoresAndUPMForLocal(prefs_)) {
     built_in_backend_->RemoveLoginsByURLAndTimeAsync(
-        url_filter, delete_begin, delete_end, base::NullCallback(),
+        location, url_filter, delete_begin, delete_end, base::NullCallback(),
         base::DoNothing());
   }
 }
 
 void PasswordStoreBackendMigrationDecorator::RemoveLoginsCreatedBetweenAsync(
+    const base::Location& location,
     base::Time delete_begin,
     base::Time delete_end,
     PasswordChangesOrErrorReply callback) {
-  active_backend()->RemoveLoginsCreatedBetweenAsync(delete_begin, delete_end,
-                                                    std::move(callback));
+  active_backend()->RemoveLoginsCreatedBetweenAsync(
+      location, delete_begin, delete_end, std::move(callback));
   if (UsesSplitStoresAndUPMForLocal(prefs_)) {
-    built_in_backend_->RemoveLoginsCreatedBetweenAsync(delete_begin, delete_end,
-                                                       base::DoNothing());
+    built_in_backend_->RemoveLoginsCreatedBetweenAsync(
+        location, delete_begin, delete_end, base::DoNothing());
   }
 }
 
@@ -203,16 +206,8 @@ PasswordStoreBackendMigrationDecorator::GetSmartBubbleStatsStore() {
   return nullptr;
 }
 
-std::unique_ptr<syncer::ProxyModelTypeControllerDelegate>
+std::unique_ptr<syncer::ModelTypeControllerDelegate>
 PasswordStoreBackendMigrationDecorator::CreateSyncControllerDelegate() {
-  if (base::FeatureList::IsEnabled(
-          features::kUnifiedPasswordManagerSyncUsingAndroidBackendOnly)) {
-    // The android backend (PasswordStoreAndroidBackend) creates a controller
-    // delegate that prevents sync from actually communicating with the sync
-    // server using the built in SyncEngine.
-    return android_backend_->CreateSyncControllerDelegate();
-  }
-
   return built_in_backend_->CreateSyncControllerDelegate();
 }
 

@@ -22,12 +22,12 @@
 #include "base/types/expected_macros.h"
 #include "chrome/browser/enterprise/browser_management/management_service_factory.h"
 #include "chrome/browser/policy/messaging_layer/proto/synced/log_upload_event.pb.h"
-#include "chrome/browser/policy/messaging_layer/upload/encrypted_reporting_client.h"
 #include "chrome/browser/policy/messaging_layer/upload/event_upload_size_controller.h"
 #include "chrome/browser/policy/messaging_layer/upload/file_upload_job.h"
 #include "chrome/browser/policy/messaging_layer/upload/record_upload_request_builder.h"
 #include "chrome/browser/policy/messaging_layer/upload/server_uploader.h"
 #include "chrome/browser/policy/messaging_layer/util/reporting_server_connector.h"
+#include "chrome/browser/policy/messaging_layer/util/upload_declarations.h"
 #include "chrome/browser/policy/messaging_layer/util/upload_response_parser.h"
 #include "components/reporting/proto/synced/configuration_file.pb.h"
 #include "components/reporting/proto/synced/upload_tracker.pb.h"
@@ -41,9 +41,6 @@
 
 namespace reporting {
 namespace {
-
-constexpr char kUmaRecordProcessedByServer[] =
-    "Browser.ERP.RecordProcessedByServer";
 
 // Processes LOG_UPLOAD event.
 void ProcessFileUpload(
@@ -121,8 +118,10 @@ class RecordHandlerImpl::ReportUploader
       ScopedReservation scoped_reservation,
       base::RepeatingCallback<FileUploadJob::Delegate::SmartPtr()>
           delegate_factory,
+      UploadEnqueuedCallback enqueued_cb,
       CompletionCallback upload_complete_cb,
       EncryptionKeyAttachedCallback encryption_key_attached_cb,
+      ConfigFileAttachedCallback config_file_attached_cb,
       scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner);
 
  private:
@@ -132,24 +131,16 @@ class RecordHandlerImpl::ReportUploader
   void OnCompletion(const CompletionResponse& result) override;
 
   void StartUpload();
-  void LogNumRecordsInUpload(size_t num_records);
   void ResumeUpload(size_t next_record);
   void UploadRequest(size_t next_record);
-  void OnUploadComplete(StatusOr<base::Value::Dict> response);
+  void OnUploadComplete(StatusOr<UploadResponseParser> response_result);
   void Complete(CompletionResponse result);
 
-  // Returns a gap record if it is necessary. Expects the contents of the
-  // failedUploadedRecord field in the response:
-  // {
-  //   "sequencingId": 1234
-  //   "generationId": 4321
-  //   "priority": 3
-  //   "generationGuid": "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx"
-  // }
   bool need_encryption_key_ GUARDED_BY_CONTEXT(sequence_checker_);
   int config_file_version_ GUARDED_BY_CONTEXT(sequence_checker_);
   std::vector<EncryptedRecord> records_ GUARDED_BY_CONTEXT(sequence_checker_);
   ScopedReservation scoped_reservation_ GUARDED_BY_CONTEXT(sequence_checker_);
+  UploadEnqueuedCallback enqueued_cb_ GUARDED_BY_CONTEXT(sequence_checker_);
 
   // File upload delegate factory.
   const base::RepeatingCallback<FileUploadJob::Delegate::SmartPtr()>
@@ -157,6 +148,10 @@ class RecordHandlerImpl::ReportUploader
 
   // Encryption key delivery callback.
   EncryptionKeyAttachedCallback encryption_key_attached_cb_
+      GUARDED_BY_CONTEXT(sequence_checker_);
+
+  // Configuration file delivery callback.
+  ConfigFileAttachedCallback config_file_attached_cb_
       GUARDED_BY_CONTEXT(sequence_checker_);
 
   // Set to |true| if force_confirm flag is present. |false| by default.
@@ -172,8 +167,10 @@ RecordHandlerImpl::ReportUploader::ReportUploader(
     ScopedReservation scoped_reservation,
     base::RepeatingCallback<FileUploadJob::Delegate::SmartPtr()>
         delegate_factory,
+    UploadEnqueuedCallback enqueued_cb,
     CompletionCallback completion_cb,
     EncryptionKeyAttachedCallback encryption_key_attached_cb,
+    ConfigFileAttachedCallback config_file_attached_cb,
     scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner)
     : TaskRunnerContext<CompletionResponse>(std::move(completion_cb),
                                             sequenced_task_runner),
@@ -181,8 +178,10 @@ RecordHandlerImpl::ReportUploader::ReportUploader(
       config_file_version_(config_file_version),
       records_(std::move(records)),
       scoped_reservation_(std::move(scoped_reservation)),
+      enqueued_cb_(std::move(enqueued_cb)),
       delegate_factory_(delegate_factory),
-      encryption_key_attached_cb_(std::move(encryption_key_attached_cb)) {
+      encryption_key_attached_cb_(std::move(encryption_key_attached_cb)),
+      config_file_attached_cb_(std::move(config_file_attached_cb)) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
@@ -194,10 +193,12 @@ void RecordHandlerImpl::ReportUploader::OnStart() {
     Status empty_records =
         Status(error::INVALID_ARGUMENT, "records_ was empty");
     LOG(ERROR) << empty_records;
+    if (enqueued_cb_) {
+      std::move(enqueued_cb_).Run(base::unexpected(empty_records));
+    }
     Complete(base::unexpected(std::move(empty_records)));
     return;
   }
-
   StartUpload();
 }
 
@@ -213,34 +214,7 @@ void RecordHandlerImpl::ReportUploader::StartUpload() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CHECK(!records_.empty() || need_encryption_key_);
 
-  // Log size of non-empty uploads. Key-request uploads have no records.
-  if (!records_.empty()) {
-    Schedule(&RecordHandlerImpl::ReportUploader::LogNumRecordsInUpload,
-             base::Unretained(this), records_.size());
-  }
-
   ResumeUpload(/*next_record=*/0);
-}
-
-void RecordHandlerImpl::ReportUploader::LogNumRecordsInUpload(
-    size_t num_records) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-#if BUILDFLAG(IS_CHROMEOS)
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (policy::ManagementServiceFactory::GetForPlatform()
-          ->HasManagementAuthority(
-              policy::EnterpriseManagementAuthority::CLOUD_DOMAIN)) {
-    // This is a managed device, so log the upload as such.
-    base::UmaHistogramCounts1000(
-        "Browser.ERP.RecordsPerUploadFromManagedDevice", num_records);
-  } else {
-    base::UmaHistogramCounts1000(
-        "Browser.ERP.RecordsPerUploadFromUnmanagedDevice", num_records);
-  }
-#else
-  base::UmaHistogramCounts1000(
-      "Browser.ERP.RecordsPerUploadFromNonChromeosDevice", num_records);
-#endif  // BUILDFLAG(IS_CHROMEOS)
 }
 
 void RecordHandlerImpl::ReportUploader::ResumeUpload(size_t next_record) {
@@ -296,25 +270,22 @@ void RecordHandlerImpl::ReportUploader::UploadRequest(size_t next_record) {
       base::BindOnce(&ReportingServerConnector::UploadEncryptedReport,
                      need_encryption_key_, config_file_version_,
                      std::move(records_), std::move(scoped_reservation_),
-                     std::move(response_cb)));
+                     std::move(enqueued_cb_), std::move(response_cb)));
 }
 
 void RecordHandlerImpl::ReportUploader::OnUploadComplete(
-    StatusOr<base::Value::Dict> response) {
+    StatusOr<UploadResponseParser> response_result) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CHECK(records_.empty()) << "All records have to had been processed";
   // Release reservation right away, since we no londer need to keep
   // `base::Value::Dict request` it was referring to.
   scoped_reservation_.Reduce(0uL);
 
-  if (!response.has_value()) {
-    Complete(base::unexpected(response.error()));
+  if (!response_result.has_value()) {
+    Complete(base::unexpected(response_result.error()));
     return;
   }
-
-  UploadResponseParser response_parser(
-      EncryptedReportingClient::GenerationGuidIsRequired(),
-      std::move(response.value()));
+  const auto& response_parser = response_result.value();
 
   // Handle forceConfirm flag, if present.
   const auto force_confirm_flag = response_parser.force_confirm_flag();
@@ -338,40 +309,28 @@ void RecordHandlerImpl::ReportUploader::OnUploadComplete(
   // The server attaches the configuration file if it was requested
   // by the client. Adding a check to make sure to only process it if the
   // feature is enabled on the client side.
+#if BUILDFLAG(IS_CHROMEOS)
   if (base::FeatureList::IsEnabled(kShouldRequestConfigurationFile)) {
     auto config_file_result = response_parser.config_file();
     if (config_file_result.has_value()) {
-      // TODO(b/289117140): Call the callback when it is in place.
+      config_file_attached_cb_.Run(std::move(config_file_result.value()));
     } else {
       base::UmaHistogramEnumeration("Browser.ERP.ConfigFileParsingError",
                                     config_file_result.error().code(),
                                     error::Code::MAX_VALUE);
     }
   }
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
   // Check if a record was unprocessable on the server.
   StatusOr<EncryptedRecord> failed_uploaded_record =
       response_parser.gap_record_for_permanent_failure();
   if (failed_uploaded_record.has_value()) {
-    // The record we uploaded previously was unprocessable by the server,
-    // if the record was after the current |highest_sequence_information_|
-    // we should return a gap record. A gap record consists of an
-    // EncryptedRecord with just SequenceInformation. The server will
-    // report success for the gap record and
-    // |highest_sequence_information_| will be updated in the next
-    // response. In the future there may be recoverable |failureStatus|,
-    // but for now all the device can do is delete the record.
-    base::UmaHistogramBoolean(kUmaRecordProcessedByServer, false);
-
-    // Unless confirmation is flagged as `force`, upload the gap record.
-    if (!force_confirm_flag) {
-      records_.push_back(std::move(failed_uploaded_record.value()));
-      // Do not request encryption key again, even if the original failed - the
-      // key should still been delivered.
-      need_encryption_key_ = false;
-      StartUpload();
-      return;
-    }
+    // Do not request encryption key again, even if the original failed - the
+    // key should still been delivered.
+    need_encryption_key_ = false;
+    StartUpload();
+    return;
   }
 
   // If failed upload is returned but is not parseable or does not match the
@@ -390,7 +349,6 @@ void RecordHandlerImpl::ReportUploader::OnUploadComplete(
   }
 
   // Generate and return the highest_sequence_information.
-  base::UmaHistogramBoolean(kUmaRecordProcessedByServer, true);
   Complete(SuccessfulUploadResponse{
       .sequence_information =
           std::move(last_successfully_uploaded_record_sequence_info.value()),
@@ -417,12 +375,14 @@ void RecordHandlerImpl::HandleRecords(
     int config_file_version,
     std::vector<EncryptedRecord> records,
     ScopedReservation scoped_reservation,
+    UploadEnqueuedCallback enqueued_cb,
     CompletionCallback upload_complete_cb,
-    EncryptionKeyAttachedCallback encryption_key_attached_cb) {
+    EncryptionKeyAttachedCallback encryption_key_attached_cb,
+    ConfigFileAttachedCallback config_file_attached_cb) {
   Start<RecordHandlerImpl::ReportUploader>(
       need_encryption_key, config_file_version, std::move(records),
-      std::move(scoped_reservation), delegate_factory_,
+      std::move(scoped_reservation), delegate_factory_, std::move(enqueued_cb),
       std::move(upload_complete_cb), std::move(encryption_key_attached_cb),
-      sequenced_task_runner_);
+      std::move(config_file_attached_cb), sequenced_task_runner_);
 }
 }  // namespace reporting

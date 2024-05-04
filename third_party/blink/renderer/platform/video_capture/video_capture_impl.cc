@@ -98,8 +98,9 @@ struct VideoCaptureImpl::BufferContext
         InitializeFromReadOnlyShmemRegion(
             std::move(buffer_handle->get_read_only_shmem_region()));
         break;
-      case VideoFrameBufferHandleType::kMailboxHandles:
-        InitializeFromMailbox(std::move(buffer_handle->get_mailbox_handles()));
+      case VideoFrameBufferHandleType::kSharedImageHandles:
+        InitializeFromSharedImage(
+            std::move(buffer_handle->get_shared_image_handles()));
         break;
       case VideoFrameBufferHandleType::kGpuMemoryBufferHandle:
 #if !BUILDFLAG(IS_APPLE) && !BUILDFLAG(IS_WIN)
@@ -124,8 +125,14 @@ struct VideoCaptureImpl::BufferContext
   const base::ReadOnlySharedMemoryRegion* read_only_shmem_region() const {
     return &read_only_shmem_region_;
   }
-  const Vector<gpu::MailboxHolder>& mailbox_holders() const {
-    return mailbox_holders_;
+  const Vector<scoped_refptr<gpu::ClientSharedImage>>& shared_images() const {
+    return shared_images_;
+  }
+  const gpu::SyncToken& shared_image_sync_token() const {
+    return shared_image_sync_token_;
+  }
+  uint32_t shared_image_texture_target() const {
+    return shared_image_texture_target_;
   }
   media::GpuVideoAcceleratorFactories* gpu_factories() const {
     return gpu_factories_;
@@ -208,11 +215,22 @@ struct VideoCaptureImpl::BufferContext
     read_only_shmem_region_ = std::move(region);
   }
 
-  void InitializeFromMailbox(
-      media::mojom::blink::MailboxBufferHandleSetPtr mailbox_handles) {
-    DCHECK_EQ(media::VideoFrame::kMaxPlanes,
-              mailbox_handles->mailbox_holder.size());
-    mailbox_holders_ = std::move(mailbox_handles->mailbox_holder);
+  void InitializeFromSharedImage(
+      media::mojom::blink::SharedImageBufferHandleSetPtr shared_image_handles) {
+    DCHECK_GE(media::VideoFrame::kMaxPlanes,
+              shared_image_handles->shared_images.size());
+    for (wtf_size_t i = 0; i < media::VideoFrame::kMaxPlanes; ++i) {
+      if (i < shared_image_handles->shared_images.size()) {
+        scoped_refptr<gpu::ClientSharedImage> shared_image =
+            gpu::ClientSharedImage::ImportUnowned(
+                shared_image_handles->shared_images[i]);
+        shared_images_.emplace_back(shared_image);
+      } else {
+        shared_images_.emplace_back(nullptr);
+      }
+    }
+    shared_image_sync_token_ = shared_image_handles->sync_token;
+    shared_image_texture_target_ = shared_image_handles->texture_target;
   }
 
   void InitializeFromGpuMemoryBufferHandle(
@@ -257,8 +275,10 @@ struct VideoCaptureImpl::BufferContext
   const uint8_t* data_ = nullptr;
   size_t data_size_ = 0;
 
-  // Only valid for |buffer_type_ == MAILBOX_HANDLES|.
-  Vector<gpu::MailboxHolder> mailbox_holders_;
+  // Only valid for |buffer_type_ == SHARED_IMAGE_HANDLES|.
+  Vector<scoped_refptr<gpu::ClientSharedImage>> shared_images_;
+  gpu::SyncToken shared_image_sync_token_;
+  uint32_t shared_image_texture_target_;
 
   // The following is for |buffer_type == GPU_MEMORY_BUFFER_HANDLE|.
 
@@ -366,17 +386,20 @@ VideoCaptureImpl::CreateVideoFrameInitData(
       video_frame_init_data.frame_or_buffer = frame;
       break;
     }
-    case VideoFrameBufferHandleType::kMailboxHandles: {
-      gpu::MailboxHolder mailbox_holder_array[media::VideoFrame::kMaxPlanes];
-      CHECK_EQ(media::VideoFrame::kMaxPlanes,
-               buffer_context->mailbox_holders().size());
-      for (int i = 0; i < media::VideoFrame::kMaxPlanes; i++) {
-        mailbox_holder_array[i] = buffer_context->mailbox_holders()[i];
+    case VideoFrameBufferHandleType::kSharedImageHandles: {
+      scoped_refptr<gpu::ClientSharedImage>
+          shared_images[media::VideoFrame::kMaxPlanes];
+      CHECK_GE(media::VideoFrame::kMaxPlanes,
+               buffer_context->shared_images().size());
+      for (wtf_size_t i = 0; i < buffer_context->shared_images().size(); i++) {
+        shared_images[i] = buffer_context->shared_images()[i];
       }
       video_frame_init_data.frame_or_buffer =
-          media::VideoFrame::WrapNativeTextures(
+          media::VideoFrame::WrapSharedImages(
               video_frame_init_data.ready_buffer->info->pixel_format,
-              mailbox_holder_array, media::VideoFrame::ReleaseMailboxCB(),
+              shared_images, buffer_context->shared_image_sync_token(),
+              buffer_context->shared_image_texture_target(),
+              media::VideoFrame::ReleaseMailboxCB(),
               gfx::Size(video_frame_init_data.ready_buffer->info->coded_size),
               gfx::Rect(video_frame_init_data.ready_buffer->info->visible_rect),
               video_frame_init_data.ready_buffer->info->visible_rect.size(),
@@ -562,11 +585,8 @@ bool VideoCaptureImpl::BindVideoFrameOnMediaTaskRunner(
       video_frame_init_data.buffer_context->gpu_factories()
           ->VideoFrameOutputFormat(
               video_frame_init_data.ready_buffer->info->pixel_format);
-  DCHECK(
-      output_format ==
-          media::GpuVideoAcceleratorFactories::OutputFormat::NV12_SINGLE_GMB ||
-      output_format ==
-          media::GpuVideoAcceleratorFactories::OutputFormat::NV12_DUAL_GMB);
+  DCHECK(output_format ==
+         media::GpuVideoAcceleratorFactories::OutputFormat::NV12_SINGLE_GMB);
 
   std::vector<gfx::BufferPlane> planes;
 
@@ -677,17 +697,18 @@ bool VideoCaptureImpl::BindVideoFrameOnMediaTaskRunner(
 
   const unsigned texture_target =
 #if BUILDFLAG(IS_LINUX)
-      // Explicitly set GL_TEXTURE_EXTERNAL_OES as the
+      // Explicitly set GL_TEXTURE_EXTERNAL_OES if necessary:
       // `media::VideoFrame::RequiresExternalSampler()` requires it for NV12
-      // format, while `ClientSharedImage::GetTextureTarget()` will return
-      // GL_TEXTURE_2D.
-      // TODO(crbug.com/41494843): Eliminate this client-side check under the
-      // killswitch that switches ClientSharedImage::GetTextureTarget() to
-      // return GL_TEXTURE_EXTERNAL_OES if the ClientSI prefers external
-      // sampling or is legacy multiplanar, since at that point it will be
-      // redundant.
-      (video_frame_init_data.ready_buffer->info->pixel_format ==
-       media::PIXEL_FORMAT_NV12)
+      // format, while `ClientSharedImage::GetTextureTarget(BufferUsage,
+      // BufferFormat)` will return GL_TEXTURE_2D if it is not backed by
+      // ClientSharedImage::GetTextureTarget() (which by design handles this
+      // case correctly).
+      // TODO(crbug.com/41494843): Eliminate this client-side check post-rollout
+      // of ClientSharedImage::GetTextureTarget().
+      (!base::FeatureList::IsEnabled(
+           gpu::kUseUniversalGetTextureTargetFunction) &&
+       (video_frame_init_data.ready_buffer->info->pixel_format ==
+        media::PIXEL_FORMAT_NV12))
           ? GL_TEXTURE_EXTERNAL_OES
           :
 #endif

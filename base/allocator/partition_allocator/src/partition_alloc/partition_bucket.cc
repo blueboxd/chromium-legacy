@@ -9,8 +9,8 @@
 #include <cstdint>
 #include <tuple>
 
-#include "build/build_config.h"
 #include "partition_alloc/address_pool_manager.h"
+#include "partition_alloc/build_config.h"
 #include "partition_alloc/freeslot_bitmap.h"
 #include "partition_alloc/freeslot_bitmap_constants.h"
 #include "partition_alloc/oom.h"
@@ -31,6 +31,7 @@
 #include "partition_alloc/partition_alloc_constants.h"
 #include "partition_alloc/partition_alloc_forward.h"
 #include "partition_alloc/partition_direct_map_extent.h"
+#include "partition_alloc/partition_freelist_entry.h"
 #include "partition_alloc/partition_oom.h"
 #include "partition_alloc/partition_page.h"
 #include "partition_alloc/partition_root.h"
@@ -444,7 +445,9 @@ SlotSpanMetadata* PartitionDirectMap(PartitionRoot* root,
       return nullptr;
     }
 
-    auto* next_entry = PartitionFreelistEntry::EmplaceAndInitNull(slot_start);
+    auto* next_entry =
+        root->get_freelist_dispatcher()->EmplaceAndInitNull(slot_start);
+
     page_metadata->slot_span_metadata.SetFreelistHead(next_entry);
 
     map_extent = &direct_map_metadata->direct_map_extent;
@@ -966,13 +969,16 @@ PartitionBucket::ProvisionMoreSlotsAndAllocOne(PartitionRoot* root,
       root->IsMemoryTaggingEnabled() && slot_size <= kMaxMemoryTaggingSize;
   if (PA_LIKELY(use_tagging)) {
     // Ensure the MTE-tag of the memory pointed by |return_slot| is unguessable.
-    TagMemoryRangeRandomly(return_slot, root->TagSizeForSlot(slot_size));
+    TagMemoryRangeRandomly(return_slot, slot_size);
   }
 #endif  // BUILDFLAG(HAS_MEMORY_TAGGING)
   // Add all slots that fit within so far committed pages to the free list.
   PartitionFreelistEntry* prev_entry = nullptr;
   uintptr_t next_slot_end = next_slot + slot_size;
   size_t free_list_entries_added = 0;
+
+  const auto* freelist_dispatcher = root->get_freelist_dispatcher();
+
   while (next_slot_end <= commit_end) {
     void* next_slot_ptr;
 #if BUILDFLAG(HAS_MEMORY_TAGGING)
@@ -980,8 +986,7 @@ PartitionBucket::ProvisionMoreSlotsAndAllocOne(PartitionRoot* root,
       // Ensure the MTE-tag of the memory pointed by other provisioned slot is
       // unguessable. They will be returned to the app as is, and the MTE-tag
       // will only change upon calling Free().
-      next_slot_ptr =
-          TagMemoryRangeRandomly(next_slot, root->TagSizeForSlot(slot_size));
+      next_slot_ptr = TagMemoryRangeRandomly(next_slot, slot_size);
     } else {
       // No MTE-tagging for larger slots, just cast.
       next_slot_ptr = reinterpret_cast<void*>(next_slot);
@@ -989,14 +994,16 @@ PartitionBucket::ProvisionMoreSlotsAndAllocOne(PartitionRoot* root,
 #else  // BUILDFLAG(HAS_MEMORY_TAGGING)
     next_slot_ptr = reinterpret_cast<void*>(next_slot);
 #endif
-    auto* entry = PartitionFreelistEntry::EmplaceAndInitNull(next_slot_ptr);
+
+    auto* entry = freelist_dispatcher->EmplaceAndInitNull(next_slot_ptr);
+
     if (!slot_span->get_freelist_head()) {
       PA_DCHECK(!prev_entry);
       PA_DCHECK(!free_list_entries_added);
       slot_span->SetFreelistHead(entry);
     } else {
       PA_DCHECK(free_list_entries_added);
-      prev_entry->SetNext(entry);
+      freelist_dispatcher->SetNext(prev_entry, entry);
     }
 #if BUILDFLAG(USE_FREESLOT_BITMAP)
     FreeSlotBitmapMarkSlotAsFree(next_slot);
@@ -1021,7 +1028,8 @@ PartitionBucket::ProvisionMoreSlotsAndAllocOne(PartitionRoot* root,
   // is large), meaning that |slot_span->freelist_head| can be nullptr.
   if (slot_span->get_freelist_head()) {
     PA_DCHECK(free_list_entries_added);
-    slot_span->get_freelist_head()->CheckFreeList(slot_size);
+    freelist_dispatcher->CheckFreeList(slot_span->get_freelist_head(),
+                                       slot_size);
   }
 #endif
 
@@ -1452,13 +1460,14 @@ uintptr_t PartitionBucket::SlowPathAlloc(PartitionRoot* root,
   // If we found an active slot span with free slots, or an empty slot span, we
   // have a usable freelist head.
   if (PA_LIKELY(new_slot_span->get_freelist_head() != nullptr)) {
+    const PartitionFreelistDispatcher* freelist_dispatcher =
+        root->get_freelist_dispatcher();
     PartitionFreelistEntry* entry =
-        new_slot_span->PopForAlloc(new_bucket->slot_size);
-
+        new_slot_span->PopForAlloc(new_bucket->slot_size, freelist_dispatcher);
     // We may have set *is_already_zeroed to true above, make sure that the
     // freelist entry doesn't contain data. Either way, it wouldn't be a good
     // idea to let users see our internal data.
-    uintptr_t slot_start = entry->ClearForAllocation();
+    uintptr_t slot_start = freelist_dispatcher->ClearForAllocation(entry);
     return slot_start;
   }
 

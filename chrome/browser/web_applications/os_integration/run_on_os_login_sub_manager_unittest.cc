@@ -3,12 +3,12 @@
 // found in the LICENSE file.
 
 #include <memory>
+#include <string_view>
 #include <utility>
 
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/memory/raw_ptr.h"
-#include "base/strings/string_piece.h"
 #include "base/test/gmock_expected_support.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_future.h"
@@ -46,11 +46,6 @@ class RunOnOsLoginSubManagerTestBase : public WebAppTest {
 
   void SetUp() override {
     WebAppTest::SetUp();
-    {
-      base::ScopedAllowBlockingForTesting allow_blocking;
-      test_override_ =
-          OsIntegrationTestOverrideImpl::OverrideForTesting(base::GetHomeDir());
-    }
     provider_ = FakeWebAppProvider::Get(profile());
 
     auto file_handler_manager =
@@ -61,7 +56,7 @@ class RunOnOsLoginSubManagerTestBase : public WebAppTest {
         profile(), file_handler_manager.get(), protocol_handler_manager.get());
     auto os_integration_manager = std::make_unique<OsIntegrationManager>(
         profile(), std::move(shortcut_manager), std::move(file_handler_manager),
-        std::move(protocol_handler_manager), /*url_handler_manager=*/nullptr);
+        std::move(protocol_handler_manager));
 
     provider_->SetOsIntegrationManager(std::move(os_integration_manager));
     test::AwaitStartWebAppProviderAndSubsystems(profile());
@@ -69,19 +64,12 @@ class RunOnOsLoginSubManagerTestBase : public WebAppTest {
 
   void TearDown() override {
     test::UninstallAllWebApps(profile());
-    {
-      // Blocking required due to file operations in the shortcut override
-      // destructor.
-      base::ScopedAllowBlockingForTesting allow_blocking;
-      test_override_.reset();
-    }
     WebAppTest::TearDown();
   }
 
   webapps::AppId InstallWebApp() {
     std::unique_ptr<WebAppInstallInfo> info =
-        std::make_unique<WebAppInstallInfo>();
-    info->start_url = kWebAppUrl;
+        WebAppInstallInfo::CreateWithStartUrlForTesting(kWebAppUrl);
     info->title = u"Test App";
     info->user_display_mode = web_app::mojom::UserDisplayMode::kStandalone;
     base::test::TestFuture<const webapps::AppId&, webapps::InstallResultCode>
@@ -102,7 +90,7 @@ class RunOnOsLoginSubManagerTestBase : public WebAppTest {
     return result.Get<webapps::AppId>();
   }
 
-  void SetWebAppSettingsListPref(const base::StringPiece pref) {
+  void SetWebAppSettingsListPref(const std::string_view pref) {
     ASSERT_OK_AND_ASSIGN(
         auto result,
         base::JSONReader::ReadAndReturnValueWithError(
@@ -117,8 +105,6 @@ class RunOnOsLoginSubManagerTestBase : public WebAppTest {
 
  private:
   raw_ptr<FakeWebAppProvider, DanglingUntriaged> provider_ = nullptr;
-  std::unique_ptr<OsIntegrationTestOverrideImpl::BlockingRegistration>
-      test_override_;
 };
 
 // Configure tests only.
@@ -393,16 +379,16 @@ TEST_F(RunOnOsLoginSubManagerExecuteTest, UnregisterRunOnOsLogin) {
 
   auto state = registrar().GetAppCurrentOsIntegrationState(app_id);
   ASSERT_TRUE(state.has_value());
-    if (IsRunOnOsLoginExecuteEnabled()) {
-      ASSERT_TRUE(OsIntegrationTestOverrideImpl::Get()->IsRunOnOsLoginEnabled(
-          profile(), app_id, app_name));
-    }
+  if (IsRunOnOsLoginExecuteEnabled()) {
+    EXPECT_TRUE(OsIntegrationTestOverrideImpl::Get()->IsRunOnOsLoginEnabled(
+        profile(), app_id, app_name));
+  }
 
   test::UninstallAllWebApps(profile());
-    if (IsRunOnOsLoginExecuteEnabled()) {
-      ASSERT_FALSE(OsIntegrationTestOverrideImpl::Get()->IsRunOnOsLoginEnabled(
-          profile(), app_id, app_name));
-    }
+  if (IsRunOnOsLoginExecuteEnabled()) {
+    EXPECT_FALSE(OsIntegrationTestOverrideImpl::Get()->IsRunOnOsLoginEnabled(
+        profile(), app_id, app_name));
+  }
 }
 
 TEST_F(RunOnOsLoginSubManagerExecuteTest, ForceUnregisterAppInRegistry) {
@@ -417,7 +403,7 @@ TEST_F(RunOnOsLoginSubManagerExecuteTest, ForceUnregisterAppInRegistry) {
   auto state = registrar().GetAppCurrentOsIntegrationState(app_id);
   ASSERT_TRUE(state.has_value());
   if (IsRunOnOsLoginExecuteEnabled()) {
-    ASSERT_TRUE(OsIntegrationTestOverrideImpl::Get()->IsRunOnOsLoginEnabled(
+    EXPECT_TRUE(OsIntegrationTestOverrideImpl::Get()->IsRunOnOsLoginEnabled(
         profile(), app_id, app_name));
   }
 
@@ -426,7 +412,7 @@ TEST_F(RunOnOsLoginSubManagerExecuteTest, ForceUnregisterAppInRegistry) {
   test::SynchronizeOsIntegration(profile(), app_id, options);
 
   if (IsRunOnOsLoginExecuteEnabled()) {
-    ASSERT_FALSE(OsIntegrationTestOverrideImpl::Get()->IsRunOnOsLoginEnabled(
+    EXPECT_FALSE(OsIntegrationTestOverrideImpl::Get()->IsRunOnOsLoginEnabled(
         profile(), app_id, app_name));
   }
 }
@@ -447,26 +433,21 @@ TEST_F(RunOnOsLoginSubManagerExecuteTest, ForceUnregisterAppNotInRegistry) {
         profile(), app_id, app_name));
   }
 
-  std::optional<OsIntegrationManager::ScopedSuppressForTesting> scoped_supress =
-      std::nullopt;
-  scoped_supress.emplace();
   test::UninstallAllWebApps(profile());
-  // Run on OS Login should still be registered with the OS.
   if (IsRunOnOsLoginExecuteEnabled()) {
-    ASSERT_TRUE(OsIntegrationTestOverrideImpl::Get()->IsRunOnOsLoginEnabled(
+    EXPECT_FALSE(OsIntegrationTestOverrideImpl::Get()->IsRunOnOsLoginEnabled(
         profile(), app_id, app_name));
   }
   EXPECT_FALSE(provider().registrar_unsafe().IsInstalled(app_id));
 
+  // This should have no affect.
   SynchronizeOsOptions options;
   options.force_unregister_os_integration = true;
   test::SynchronizeOsIntegration(profile(), app_id, options);
-
   if (IsRunOnOsLoginExecuteEnabled()) {
-    ASSERT_FALSE(OsIntegrationTestOverrideImpl::Get()->IsRunOnOsLoginEnabled(
+    EXPECT_FALSE(OsIntegrationTestOverrideImpl::Get()->IsRunOnOsLoginEnabled(
         profile(), app_id, app_name));
   }
-  scoped_supress.reset();
 }
 
 }  // namespace

@@ -36,7 +36,6 @@ class CONTENT_EXPORT BrowsingDataFilterBuilderImpl
   void SetCookiePartitionKeyCollection(
       const net::CookiePartitionKeyCollection& cookie_partition_key_collection)
       override;
-  bool IsCrossSiteClearSiteDataForCookies() const override;
   void SetStorageKey(
       const std::optional<blink::StorageKey>& storage_key) override;
   bool HasStorageKey() const override;
@@ -44,7 +43,8 @@ class CONTENT_EXPORT BrowsingDataFilterBuilderImpl
       const blink::StorageKey& other_key) const override;
   bool MatchesAllOriginsAndDomains() override;
   bool MatchesNothing() override;
-  void SetPartitionedStateAllowedOnly(bool value) override;
+  void SetPartitionedCookiesOnly(bool value) override;
+  bool PartitionedCookiesOnly() const override;
   void SetStoragePartitionConfig(
       const StoragePartitionConfig& storage_partition_config) override;
   std::optional<StoragePartitionConfig> GetStoragePartitionConfig() override;
@@ -58,11 +58,16 @@ class CONTENT_EXPORT BrowsingDataFilterBuilderImpl
   Mode GetMode() override;
   std::unique_ptr<BrowsingDataFilterBuilder> Copy() override;
 
+  OriginMatchingMode GetOriginModeForTesting() const;
+
   // The origins targeted by the filter.
   const std::set<url::Origin>& GetOrigins() const;
 
   // The domains targeted by the filter.
   const std::set<std::string>& GetRegisterableDomains() const;
+
+  const net::CookiePartitionKeyCollection&
+  GetCookiePartitionKeyCollectionForTesting() const;
 
  private:
   bool IsEqual(const BrowsingDataFilterBuilder& other) const override;
@@ -75,7 +80,7 @@ class CONTENT_EXPORT BrowsingDataFilterBuilderImpl
   net::CookiePartitionKeyCollection cookie_partition_key_collection_ =
       net::CookiePartitionKeyCollection::ContainsAll();
   std::optional<blink::StorageKey> storage_key_ = std::nullopt;
-  bool partitioned_state_only_ = false;
+  bool partitioned_cookies_only_ = false;
   std::optional<StoragePartitionConfig> storage_partition_config_ =
       std::nullopt;
 };

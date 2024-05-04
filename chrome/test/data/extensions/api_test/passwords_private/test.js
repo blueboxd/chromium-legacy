@@ -737,6 +737,22 @@ var availableTests = [
     chrome.test.assertNoLastError();
     chrome.test.succeed();
   },
+
+  function changePasswordManagerPin() {
+    chrome.passwordsPrivate.changePasswordManagerPin(success => {
+      chrome.test.assertFalse(success);
+      chrome.test.assertNoLastError();
+      chrome.test.succeed();
+    });
+  },
+  function isPasswordManagerPinAvailable() {
+    var callback = function(available) {
+      chrome.test.assertFalse(available);
+      chrome.test.succeed();
+    };
+
+    chrome.passwordsPrivate.isPasswordManagerPinAvailable(callback);
+  }
 ];
 
 var testToRun = window.location.search.substring(1);

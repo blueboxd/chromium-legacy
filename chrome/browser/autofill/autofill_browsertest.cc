@@ -36,6 +36,8 @@
 #include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/autofill/content/browser/test_autofill_manager_injector.h"
+#include "components/autofill/core/browser/address_data_manager.h"
+#include "components/autofill/core/browser/address_data_manager_test_api.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/browser_autofill_manager.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
@@ -95,8 +97,8 @@ class AutofillTest : public InProcessBrowserTest {
  protected:
   class TestAutofillManager : public BrowserAutofillManager {
    public:
-    TestAutofillManager(ContentAutofillDriver* driver, AutofillClient* client)
-        : BrowserAutofillManager(driver, client, "en-US") {}
+    explicit TestAutofillManager(ContentAutofillDriver* driver)
+        : BrowserAutofillManager(driver, "en-US") {}
 
     [[nodiscard]] testing::AssertionResult WaitForFormsSeen(
         int min_num_awaited_calls) {
@@ -137,7 +139,7 @@ class AutofillTest : public InProcessBrowserTest {
         ->DriverForFrame(web_contents()->GetPrimaryMainFrame())
         ->GetAutofillManager()
         .client()
-        .HideAutofillPopup(PopupHidingReason::kTabGone);
+        .HideAutofillSuggestions(SuggestionHidingReason::kTabGone);
     test::ReenableSystemServices();
     InProcessBrowserTest::TearDownOnMainThread();
   }
@@ -184,7 +186,8 @@ class AutofillTest : public InProcessBrowserTest {
     ASSERT_TRUE(
         autofill_manager_injector_[web_contents()]->WaitForFormsSeen(1));
     // Shortcut explicit save prompts and automatically accept.
-    personal_data_manager()->set_auto_accept_address_imports_for_testing(true);
+    test_api(personal_data_manager()->address_data_manager())
+        .set_auto_accept_address_imports(true);
     TestAutofillManagerWaiter waiter(*autofill_manager(),
                                      {AutofillManagerEvent::kFormSubmitted});
     ASSERT_TRUE(
@@ -290,7 +293,8 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, AggregatesMinValidProfile) {
   data["ADDRESS_HOME_ZIP"] = "94043";
   FillFormAndSubmit("duplicate_profiles_test.html", data);
 
-  ASSERT_EQ(1u, personal_data_manager()->GetProfiles().size());
+  ASSERT_EQ(
+      1u, personal_data_manager()->address_data_manager().GetProfiles().size());
 }
 
 // Different Javascript to submit the form.
@@ -307,7 +311,8 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, AggregatesMinValidProfileDifferentJS) {
   FillFormAndSubmitWithHandler("duplicate_profiles_test.html", data, submit,
                                false);
 
-  ASSERT_EQ(1u, personal_data_manager()->GetProfiles().size());
+  ASSERT_EQ(
+      1u, personal_data_manager()->address_data_manager().GetProfiles().size());
 }
 
 // Form submitted via JavaScript, the user's personal data is updated even
@@ -329,12 +334,17 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, ProfilesAggregatedWithSubmitHandler) {
                                false);
 
   // The BrowserAutofillManager will update the user's profile.
-  EXPECT_EQ(1u, personal_data_manager()->GetProfiles().size());
+  EXPECT_EQ(
+      1u, personal_data_manager()->address_data_manager().GetProfiles().size());
 
-  EXPECT_EQ(u"Bob",
-            personal_data_manager()->GetProfiles()[0]->GetRawInfo(NAME_FIRST));
-  EXPECT_EQ(u"Smith",
-            personal_data_manager()->GetProfiles()[0]->GetRawInfo(NAME_LAST));
+  EXPECT_EQ(u"Bob", personal_data_manager()
+                        ->address_data_manager()
+                        .GetProfiles()[0]
+                        ->GetRawInfo(NAME_FIRST));
+  EXPECT_EQ(u"Smith", personal_data_manager()
+                          ->address_data_manager()
+                          .GetProfiles()[0]
+                          ->GetRawInfo(NAME_LAST));
 }
 
 // Test Autofill does not aggregate profiles with no address info.
@@ -350,7 +360,8 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, ProfilesNotAggregatedWithNoAddress) {
   data["PHONE_HOME_WHOLE_NUMBER"] = "650-555-4567";
   FillFormAndSubmit("duplicate_profiles_test.html", data);
 
-  ASSERT_TRUE(personal_data_manager()->GetProfiles().empty());
+  ASSERT_TRUE(
+      personal_data_manager()->address_data_manager().GetProfiles().empty());
 }
 
 // Test Autofill does not aggregate profiles with an invalid email.
@@ -367,7 +378,8 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, ProfilesNotAggregatedWithInvalidEmail) {
   data["PHONE_HOME_WHOLE_NUMBER"] = "408-871-4567";
   FillFormAndSubmit("duplicate_profiles_test.html", data);
 
-  ASSERT_TRUE(personal_data_manager()->GetProfiles().empty());
+  ASSERT_TRUE(
+      personal_data_manager()->address_data_manager().GetProfiles().empty());
 }
 
 // Tests that the profile is saved if the phone number is valid in the selected
@@ -417,7 +429,7 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, ProfileSavedWithValidCountryPhone) {
 
   std::vector<std::u16string> actual_phone_numbers;
   for (const AutofillProfile* profile :
-       personal_data_manager()->GetProfiles()) {
+       personal_data_manager()->address_data_manager().GetProfiles()) {
     actual_phone_numbers.push_back(
         profile->GetInfo(PHONE_HOME_WHOLE_NUMBER, "en-US"));
   }
@@ -447,7 +459,7 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, AppendCountryCodeForAggregatedPhones) {
 
   std::vector<std::u16string> actual_phone_numbers;
   for (const AutofillProfile* profile :
-       personal_data_manager()->GetProfiles()) {
+       personal_data_manager()->address_data_manager().GetProfiles()) {
     actual_phone_numbers.push_back(
         profile->GetRawInfo(PHONE_HOME_WHOLE_NUMBER));
   }
@@ -521,10 +533,14 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, UsePlusSignForInternationalNumber) {
     FillFormAndSubmit("autofill_test_form.html", profile);
   }
 
-  ASSERT_EQ(4u, personal_data_manager()->GetProfiles().size());
+  ASSERT_EQ(
+      4u, personal_data_manager()->address_data_manager().GetProfiles().size());
 
-  for (size_t i = 0; i < personal_data_manager()->GetProfiles().size(); ++i) {
-    AutofillProfile* profile = personal_data_manager()->GetProfiles()[i];
+  for (size_t i = 0;
+       i < personal_data_manager()->address_data_manager().GetProfiles().size();
+       ++i) {
+    AutofillProfile* profile =
+        personal_data_manager()->address_data_manager().GetProfiles()[i];
     std::string expectation;
     std::string name = UTF16ToASCII(profile->GetRawInfo(NAME_FIRST));
 
@@ -555,7 +571,8 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, ProfileWithEmailInOtherFieldNotSaved) {
   data["PHONE_HOME_WHOLE_NUMBER"] = "408-871-4567";
   FillFormAndSubmit("duplicate_profiles_test.html", data);
 
-  ASSERT_EQ(0u, personal_data_manager()->GetProfiles().size());
+  ASSERT_EQ(
+      0u, personal_data_manager()->address_data_manager().GetProfiles().size());
 }
 
 // Test that profiles merge for aggregated data with same address.
@@ -568,7 +585,8 @@ IN_PROC_BROWSER_TEST_F(AutofillTest,
                        DISABLED_MergeAggregatedProfilesWithSameAddress) {
   AggregateProfilesIntoAutofillPrefs("dataset_same_address.txt");
 
-  ASSERT_EQ(3u, personal_data_manager()->GetProfiles().size());
+  ASSERT_EQ(
+      3u, personal_data_manager()->address_data_manager().GetProfiles().size());
 }
 
 // Test profiles are not merged without minimum address values.
@@ -578,7 +596,8 @@ IN_PROC_BROWSER_TEST_F(AutofillTest,
 IN_PROC_BROWSER_TEST_F(AutofillTest, ProfilesNotMergedWhenNoMinAddressData) {
   AggregateProfilesIntoAutofillPrefs("dataset_no_address.txt");
 
-  ASSERT_EQ(0u, personal_data_manager()->GetProfiles().size());
+  ASSERT_EQ(
+      0u, personal_data_manager()->address_data_manager().GetProfiles().size());
 }
 
 // Test Autofill ability to merge duplicate profiles and throw away junk.
@@ -591,8 +610,10 @@ IN_PROC_BROWSER_TEST_F(AutofillTest,
   int num_of_profiles =
       AggregateProfilesIntoAutofillPrefs("dataset_duplicated_profiles.txt");
 
-  ASSERT_GT(num_of_profiles,
-            static_cast<int>(personal_data_manager()->GetProfiles().size()));
+  ASSERT_GT(num_of_profiles, static_cast<int>(personal_data_manager()
+                                                  ->address_data_manager()
+                                                  .GetProfiles()
+                                                  .size()));
 }
 
 IN_PROC_BROWSER_TEST_F(AutofillTest, DynamicForm_DiscoverRemovedFormFields) {
@@ -687,7 +708,8 @@ IN_PROC_BROWSER_TEST_F(AutofillAccessibilityTest,
   data["ADDRESS_HOME_COUNTRY"] = "United States";
   data["PHONE_HOME_WHOLE_NUMBER"] = "408-871-4567";
   FillFormAndSubmit("duplicate_profiles_test.html", data);
-  ASSERT_EQ(1u, personal_data_manager()->GetProfiles().size());
+  ASSERT_EQ(
+      1u, personal_data_manager()->address_data_manager().GetProfiles().size());
 
   // Reload page.
   content::AccessibilityNotificationWaiter layout_waiter_two(
@@ -754,7 +776,8 @@ IN_PROC_BROWSER_TEST_F(AutofillAccessibilityTest,
   FillFormAndSubmit("duplicate_profiles_test.html", data);
   // Since we didn't fill the entire form, we should not have increased the
   // number of autofill profiles.
-  ASSERT_EQ(0u, personal_data_manager()->GetProfiles().size());
+  ASSERT_EQ(
+      0u, personal_data_manager()->address_data_manager().GetProfiles().size());
 
   // Reload page.
   content::AccessibilityNotificationWaiter layout_waiter_two(
@@ -784,8 +807,8 @@ class AutofillTestPrerendering : public InProcessBrowserTest {
  protected:
   class MockAutofillManager : public BrowserAutofillManager {
    public:
-    MockAutofillManager(ContentAutofillDriver* driver, AutofillClient* client)
-        : BrowserAutofillManager(driver, client, "en-US") {
+    explicit MockAutofillManager(ContentAutofillDriver* driver)
+        : BrowserAutofillManager(driver, "en-US") {
       // We need to set these expectations immediately to catch any premature
       // calls while prerendering.
       if (driver->render_frame_host()->GetLifecycleState() ==
@@ -906,8 +929,8 @@ class AutofillTestFormSubmission : public InProcessBrowserTest {
  protected:
   class MockAutofillManager : public BrowserAutofillManager {
    public:
-    MockAutofillManager(ContentAutofillDriver* driver, AutofillClient* client)
-        : BrowserAutofillManager(driver, client, "en-US") {}
+    explicit MockAutofillManager(ContentAutofillDriver* driver)
+        : BrowserAutofillManager(driver, "en-US") {}
     MOCK_METHOD(void,
                 OnFormSubmittedImpl,
                 (const FormData&, bool, mojom::SubmissionSource),

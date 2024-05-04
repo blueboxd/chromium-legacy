@@ -51,6 +51,7 @@
 #include "components/download/public/common/download_stats.h"
 #include "components/download/public/common/download_target_info.h"
 #include "components/download/public/common/mock_download_item.h"
+#include "components/enterprise/buildflags/buildflags.h"
 #include "components/policy/core/common/policy_pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/buildflags.h"
@@ -71,8 +72,13 @@
 #include "url/origin.h"
 
 #if BUILDFLAG(FULL_SAFE_BROWSING)
+#include "chrome/browser/policy/dm_token_utils.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_service.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_util.h"
+#include "chrome/browser/safe_browsing/test_safe_browsing_service.h"
+#include "components/safe_browsing/core/common/features.h"
+#include "components/safe_browsing/core/common/proto/csd.pb.h"
+#include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #endif
 
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -87,6 +93,10 @@
 #include "components/infobars/core/infobar_delegate.h"
 #include "components/infobars/core/infobar_manager.h"
 #endif
+
+#if BUILDFLAG(ENTERPRISE_CLOUD_CONTENT_ANALYSIS)
+#include "chrome/browser/enterprise/connectors/test/deep_scanning_test_utils.h"
+#endif  // BUILDFLAG(ENTERPRISE_CLOUD_CONTENT_ANALYSIS)
 
 using download::DownloadItem;
 using download::DownloadPathReservationTracker;
@@ -105,6 +115,7 @@ using ::testing::ReturnPointee;
 using ::testing::ReturnRef;
 using ::testing::ReturnRefOfCopy;
 using ::testing::SetArgPointee;
+using ::testing::StrictMock;
 using ::testing::WithArg;
 using url::Origin;
 
@@ -1061,7 +1072,7 @@ TEST_F(ChromeDownloadManagerDelegateTest,
       download::DownloadItem::InsecureDownloadStatus::SAFE);
 }
 
-// Verify that downloads initiated by a non-unique hostname aren't blocked, but
+// Verify that downloads initiated by a non-unique hostname are blocked and
 // we record that the download was from a non-unique source.
 TEST_F(ChromeDownloadManagerDelegateTest,
        BlockedAsActiveContent_NonUniqueInitiator) {
@@ -1069,16 +1080,11 @@ TEST_F(ChromeDownloadManagerDelegateTest,
   const GURL kFinalUrl("https://example.org/xyz.foo");
   const auto kInitiator = Origin::Create(GURL("http://10.0.0.1"));
 
-  base::test::ScopedFeatureList feature_list;
   base::HistogramTester histograms;
 
   std::unique_ptr<download::MockDownloadItem> download_item =
       PrepareDownloadItemForInsecureBlocking(kFinalUrl, kInitiator,
                                              kRedirectUrl);
-
-  // If insecure download warnings are enabled, they block this download so
-  // disable it to avoid that.
-  feature_list.InitAndDisableFeature(features::kInsecureDownloadWarnings);
 
 #if BUILDFLAG(ENABLE_PLUGINS)
   // DownloadTargetDeterminer looks for plugin handlers if there's an
@@ -1090,7 +1096,7 @@ TEST_F(ChromeDownloadManagerDelegateTest,
       DetermineDownloadTarget(download_item.get());
   EXPECT_EQ(download::DOWNLOAD_INTERRUPT_REASON_NONE,
             target_info.interrupt_reason);
-  EXPECT_EQ(download::DownloadItem::InsecureDownloadStatus::SAFE,
+  EXPECT_EQ(download::DownloadItem::InsecureDownloadStatus::BLOCK,
             target_info.insecure_download_status);
   histograms.ExpectUniqueSample(
       kInsecureDownloadHistogramName,
@@ -1613,9 +1619,6 @@ TEST_F(ChromeDownloadManagerDelegateTest, InsecureDownloadsBlocked) {
   // is tested in another test.
   pref_service()->SetBoolean(prefs::kHttpsOnlyModeEnabled, false);
 
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kInsecureDownloadWarnings);
-
   for (const auto& test_case : kTestCases) {
     std::unique_ptr<download::MockDownloadItem> download_item =
         PrepareDownloadItemForInsecureBlocking(test_case.download_url,
@@ -1643,9 +1646,6 @@ TEST_F(ChromeDownloadManagerDelegateTest,
   pref_service()->SetBoolean(prefs::kHttpsOnlyModeEnabled, true);
 
   base::HistogramTester histograms;
-
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kInsecureDownloadWarnings);
 
   std::unique_ptr<download::MockDownloadItem> download_item =
       PrepareDownloadItemForInsecureBlocking(kFinalUrl, kInitiator,
@@ -1689,8 +1689,6 @@ TEST_F(ChromeDownloadManagerDelegateTest,
       .WillByDefault(ReturnRefOfCopy(kSecureOrigin.GetURL()));
   ON_CALL(*download_item, GetDownloadSource())
       .WillByDefault(Return(download::DownloadSource::CONTEXT_MENU));
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kInsecureDownloadWarnings);
 
   download::DownloadTargetInfo target_info =
       DetermineDownloadTarget(download_item.get());
@@ -1827,11 +1825,9 @@ TEST_F(ChromeDownloadManagerDelegateTest, ScheduleCancelForEphemeralWarning) {
 
   // Cancel should not be called until threshold is reached
   EXPECT_CALL(*download_item, Cancel(false)).Times(0);
-  task_environment()->AdvanceClock(base::Minutes(59));
-  base::RunLoop().RunUntilIdle();
+  task_environment()->FastForwardBy(base::Minutes(59));
   EXPECT_CALL(*download_item, Cancel(false)).Times(1);
-  task_environment()->AdvanceClock(base::Hours(1));
-  task_environment()->RunUntilIdle();
+  task_environment()->FastForwardBy(base::Hours(1));
 }
 
 TEST_F(ChromeDownloadManagerDelegateTest,
@@ -1845,8 +1841,7 @@ TEST_F(ChromeDownloadManagerDelegateTest,
 
   // Cancel should not be called until threshold is reached
   EXPECT_CALL(*download_item, Cancel(false)).Times(0);
-  task_environment()->AdvanceClock(base::Hours(1));
-  base::RunLoop().RunUntilIdle();
+  task_environment()->FastForwardBy(base::Hours(1));
 }
 #endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
@@ -1887,6 +1882,8 @@ TEST_F(ChromeDownloadManagerDelegateTest, CancelAllEphemeralWarnings) {
 #if BUILDFLAG(FULL_SAFE_BROWSING)
 namespace {
 
+using ReportType = safe_browsing::ClientSafeBrowsingReportRequest::ReportType;
+
 struct SafeBrowsingTestParameters {
   download::DownloadDangerType initial_danger_type;
   DownloadFileType::DangerLevel initial_danger_level;
@@ -1908,26 +1905,112 @@ class TestDownloadProtectionService
       base::optional_ref<const std::string> password) override {
     std::move(callback).Run(MockCheckClientDownload());
   }
+
+  bool MaybeCheckClientDownload(
+      download::DownloadItem* item,
+      safe_browsing::CheckDownloadRepeatingCallback callback) override {
+    std::move(callback).Run(MockCheckClientDownload());
+    return true;
+  }
+
   MOCK_METHOD0(MockCheckClientDownload, safe_browsing::DownloadCheckResult());
+};
+
+class FakeSafeBrowsingService : public safe_browsing::TestSafeBrowsingService {
+ public:
+  FakeSafeBrowsingService() = default;
+  FakeSafeBrowsingService(const FakeSafeBrowsingService&) = delete;
+  FakeSafeBrowsingService& operator=(const FakeSafeBrowsingService&) = delete;
+
+  bool SendDownloadReport(
+      download::DownloadItem* download,
+      ReportType report_type,
+      bool did_proceed,
+      std::optional<bool> show_download_in_folder) override {
+    actual_sent_report_type_ = report_type;
+    actual_sent_did_proceed_ = did_proceed;
+    return true;
+  }
+
+  bool PersistDownloadReportAndSendOnNextStartup(
+      download::DownloadItem* download,
+      ReportType report_type,
+      bool did_proceed,
+      std::optional<bool> show_download_in_folder) override {
+    actual_persisted_report_type_ = report_type;
+    actual_persisted_did_proceed_ = did_proceed;
+    return true;
+  }
+
+  std::optional<ReportType> GetActualSentReportType() {
+    return actual_sent_report_type_;
+  }
+
+  std::optional<bool> GetActualSentDidProceedValue() {
+    return actual_sent_did_proceed_;
+  }
+
+  std::optional<ReportType> GetActualPersistedReportType() {
+    return actual_persisted_report_type_;
+  }
+
+  std::optional<bool> GetActualPersistedDidProceedValue() {
+    return actual_persisted_did_proceed_;
+  }
+
+ protected:
+  ~FakeSafeBrowsingService() override = default;
+
+ private:
+  std::optional<ReportType> actual_sent_report_type_;
+  std::optional<ReportType> actual_persisted_report_type_;
+  std::optional<bool> actual_sent_did_proceed_;
+  std::optional<bool> actual_persisted_did_proceed_;
 };
 
 class ChromeDownloadManagerDelegateTestWithSafeBrowsing
     : public ChromeDownloadManagerDelegateTest,
       public ::testing::WithParamInterface<SafeBrowsingTestParameters> {
  public:
+  ChromeDownloadManagerDelegateTestWithSafeBrowsing() {
+    feature_list_.InitAndEnableFeature(
+        safe_browsing::kDownloadReportWithoutUserDecision);
+  }
+
   void SetUp() override;
   void TearDown() override;
   TestDownloadProtectionService* download_protection_service() {
     return test_download_protection_service_.get();
   }
 
+  FakeSafeBrowsingService* safe_browsing_service() { return sb_service_.get(); }
+
+ protected:
+  std::unique_ptr<download::MockDownloadItem>
+  SetUpDangerousDownloadItemForCanceledReport() {
+    std::unique_ptr<download::MockDownloadItem> download_item =
+        CreateActiveDownloadItem(0);
+    ON_CALL(*download_item, GetDangerType())
+        .WillByDefault(Return(download::DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST));
+    ON_CALL(*download_item, IsDangerous()).WillByDefault(Return(true));
+    safe_browsing::DownloadProtectionService::SetDownloadProtectionData(
+        download_item.get(), "token",
+        safe_browsing::ClientDownloadResponse::DANGEROUS_HOST,
+        safe_browsing::ClientDownloadResponse::TailoredVerdict());
+    return download_item;
+  }
+
  private:
   std::unique_ptr<TestDownloadProtectionService>
       test_download_protection_service_;
+  scoped_refptr<FakeSafeBrowsingService> sb_service_;
+  base::test::ScopedFeatureList feature_list_;
 };
 
 void ChromeDownloadManagerDelegateTestWithSafeBrowsing::SetUp() {
   ChromeDownloadManagerDelegateTest::SetUp();
+  sb_service_ = base::MakeRefCounted<StrictMock<FakeSafeBrowsingService>>();
+  TestingBrowserProcess::GetGlobal()->SetSafeBrowsingService(sb_service_.get());
   test_download_protection_service_ =
       std::make_unique<::testing::StrictMock<TestDownloadProtectionService>>();
   ON_CALL(*delegate(), GetDownloadProtectionService())
@@ -1936,6 +2019,8 @@ void ChromeDownloadManagerDelegateTestWithSafeBrowsing::SetUp() {
 
 void ChromeDownloadManagerDelegateTestWithSafeBrowsing::TearDown() {
   test_download_protection_service_.reset();
+  sb_service_ = nullptr;
+  TestingBrowserProcess::GetGlobal()->SetSafeBrowsingService(nullptr);
   ChromeDownloadManagerDelegateTest::TearDown();
 }
 
@@ -2209,6 +2294,87 @@ TEST_P(ChromeDownloadManagerDelegateTestWithSafeBrowsing,
                                                  run_loop.QuitClosure()));
 }
 
+// Auto cancel is only available on platforms with download bubble.
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
+TEST_F(ChromeDownloadManagerDelegateTestWithSafeBrowsing,
+       AutoCanceledReport_Sent) {
+  safe_browsing::SetSafeBrowsingState(
+      profile()->GetPrefs(),
+      safe_browsing::SafeBrowsingState::ENHANCED_PROTECTION);
+  std::unique_ptr<download::MockDownloadItem> download_item =
+      SetUpDangerousDownloadItemForCanceledReport();
+
+  delegate()->ScheduleCancelForEphemeralWarning(download_item->GetGuid());
+  EXPECT_CALL(*download_item, Cancel(false)).Times(1);
+  task_environment()->FastForwardBy(base::Hours(1));
+
+  EXPECT_EQ(safe_browsing::ClientSafeBrowsingReportRequest::
+                DANGEROUS_DOWNLOAD_AUTO_DELETED,
+            safe_browsing_service()->GetActualSentReportType().value());
+  EXPECT_FALSE(safe_browsing_service()->GetActualSentDidProceedValue().value());
+  EXPECT_FALSE(
+      safe_browsing_service()->GetActualPersistedReportType().has_value());
+  EXPECT_FALSE(
+      safe_browsing_service()->GetActualPersistedDidProceedValue().has_value());
+}
+
+TEST_F(ChromeDownloadManagerDelegateTestWithSafeBrowsing,
+       AutoCanceledReport_NotSentStandardProtection) {
+  safe_browsing::SetSafeBrowsingState(
+      profile()->GetPrefs(),
+      safe_browsing::SafeBrowsingState::STANDARD_PROTECTION);
+  std::unique_ptr<download::MockDownloadItem> download_item =
+      SetUpDangerousDownloadItemForCanceledReport();
+
+  delegate()->ScheduleCancelForEphemeralWarning(download_item->GetGuid());
+  EXPECT_CALL(*download_item, Cancel(false)).Times(1);
+  task_environment()->FastForwardBy(base::Hours(1));
+
+  EXPECT_FALSE(safe_browsing_service()->GetActualSentReportType().has_value());
+  EXPECT_FALSE(
+      safe_browsing_service()->GetActualSentDidProceedValue().has_value());
+}
+
+TEST_F(ChromeDownloadManagerDelegateTestWithSafeBrowsing,
+       AutoCanceledReport_NotSentNotDangerous) {
+  safe_browsing::SetSafeBrowsingState(
+      profile()->GetPrefs(),
+      safe_browsing::SafeBrowsingState::ENHANCED_PROTECTION);
+  std::unique_ptr<download::MockDownloadItem> download_item =
+      SetUpDangerousDownloadItemForCanceledReport();
+  ON_CALL(*download_item, GetDangerType())
+      .WillByDefault(Return(download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS));
+
+  delegate()->ScheduleCancelForEphemeralWarning(download_item->GetGuid());
+  EXPECT_CALL(*download_item, Cancel(false)).Times(0);
+  task_environment()->FastForwardBy(base::Hours(1));
+
+  EXPECT_FALSE(safe_browsing_service()->GetActualSentReportType().has_value());
+  EXPECT_FALSE(
+      safe_browsing_service()->GetActualSentDidProceedValue().has_value());
+}
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
+
+TEST_F(ChromeDownloadManagerDelegateTestWithSafeBrowsing,
+       CanceledReportAtShutdown_Persisted) {
+  safe_browsing::SetSafeBrowsingState(
+      profile()->GetPrefs(),
+      safe_browsing::SafeBrowsingState::ENHANCED_PROTECTION);
+  std::unique_ptr<download::MockDownloadItem> download_item =
+      SetUpDangerousDownloadItemForCanceledReport();
+
+  delegate()->OnDownloadCanceledAtShutdown(download_item.get());
+
+  EXPECT_EQ(safe_browsing::ClientSafeBrowsingReportRequest::
+                DANGEROUS_DOWNLOAD_PROFILE_CLOSED,
+            safe_browsing_service()->GetActualPersistedReportType().value());
+  EXPECT_FALSE(
+      safe_browsing_service()->GetActualPersistedDidProceedValue().value());
+  EXPECT_FALSE(safe_browsing_service()->GetActualSentReportType().has_value());
+  EXPECT_FALSE(
+      safe_browsing_service()->GetActualSentDidProceedValue().has_value());
+}
+
 TEST_F(ChromeDownloadManagerDelegateTestWithSafeBrowsing,
        TrustedSourcesPolicyNotTrusted) {
   GURL download_url("http://untrusted.com/best-download-ever.exe");
@@ -2231,8 +2397,8 @@ TEST_F(ChromeDownloadManagerDelegateTestWithSafeBrowsing,
   run_loop.Run();
 }
 
+// TODO(crbug.com/41328715) Add a Windows version of this test.
 #if !BUILDFLAG(IS_WIN)
-// TODO(crbug.com/739204) Add a Windows version of this test.
 TEST_F(ChromeDownloadManagerDelegateTestWithSafeBrowsing,
        TrustedSourcesPolicyTrusted) {
   base::CommandLine* command_line(base::CommandLine::ForCurrentProcess());
@@ -2250,6 +2416,48 @@ TEST_F(ChromeDownloadManagerDelegateTestWithSafeBrowsing,
   EXPECT_CALL(*delegate(), GetDownloadProtectionService()).Times(0);
   EXPECT_TRUE(delegate()->ShouldCompleteDownload(download_item.get(),
                                                  base::OnceClosure()));
+}
+
+TEST_F(ChromeDownloadManagerDelegateTestWithSafeBrowsing,
+       TrustedSourcesDontExemptEnterpriseScans) {
+  base::CommandLine* command_line(base::CommandLine::ForCurrentProcess());
+  DCHECK(command_line);
+  command_line->AppendSwitchASCII(switches::kTrustedDownloadSources,
+                                  "trusted.com");
+
+  policy::SetDMTokenForTesting(policy::DMToken::CreateValidToken("dm_token"));
+  enterprise_connectors::test::SetAnalysisConnector(
+      pref_service(), enterprise_connectors::FILE_DOWNLOADED,
+      R"({
+        "service_provider": "google",
+        "enable": [
+          {
+            "url_list": ["*"],
+            "tags": ["malware"]
+          }
+        ],
+        "block_until_verdict": 1
+      })");
+
+  GURL download_url("http://trusted.com/best-download-ever.exe");
+  pref_service()->SetBoolean(prefs::kSafeBrowsingForTrustedSourcesEnabled,
+                             false);
+  std::unique_ptr<download::MockDownloadItem> download_item =
+      CreateActiveDownloadItem(0);
+  EXPECT_CALL(*download_item, GetURL()).WillRepeatedly(ReturnRef(download_url));
+  EXPECT_CALL(*download_item, RequireSafetyChecks())
+      .WillRepeatedly(Return(true));
+  EXPECT_CALL(*delegate(), GetDownloadProtectionService());
+  EXPECT_CALL(*download_protection_service(), MockCheckClientDownload())
+      .WillOnce(Return(safe_browsing::DownloadCheckResult::SAFE));
+  EXPECT_CALL(*download_item, GetDangerType())
+      .WillRepeatedly(Return(download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS));
+
+  base::RunLoop run_loop;
+  ASSERT_FALSE(delegate()->ShouldCompleteDownload(download_item.get(),
+                                                  run_loop.QuitClosure()));
+  run_loop.Run();
+  policy::SetDMTokenForTesting(policy::DMToken::CreateEmptyToken());
 }
 #endif  // !BUILDFLAG(IS_WIN)
 #endif  // FULL_SAFE_BROWSING

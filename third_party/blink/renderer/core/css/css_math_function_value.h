@@ -11,6 +11,9 @@
 
 namespace blink {
 
+class TryTacticTransform;
+class WritingDirectionMode;
+
 // Numeric values that involve math functions (calc(), min(), max(), etc). This
 // is the equivalence of CSS Typed OM's |CSSMathValue| in the |CSSValue| class
 // hierarchy.
@@ -96,11 +99,41 @@ class CORE_EXPORT CSSMathFunctionValue : public CSSPrimitiveValue {
   bool Equals(const CSSMathFunctionValue& other) const;
 
   bool HasComparisons() const { return expression_->HasComparisons(); }
-  bool InvolvesAnchorQueries() const {
-    return expression_->InvolvesAnchorQueries();
+
+  // True if this value has anchor() or anchor-size() somewhere within
+  // the math expression (regardless of the validity of those functions).
+  //
+  // https://drafts.csswg.org/css-anchor-position-1/#anchor-pos
+  // https://drafts.csswg.org/css-anchor-position-1/#anchor-size-fn
+  bool HasAnchorFunctions() const { return expression_->HasAnchorFunctions(); }
+
+  // Checks if any anchor() or anchor-size() functions, when evaluated, would
+  // cause the declaration holding this value to become invalid at
+  // computed-value time.
+  //
+  // https://drafts.csswg.org/css-anchor-position-1/#anchor-valid
+  // https://drafts.csswg.org/css-anchor-position-1/#anchor-size-valid
+  bool HasInvalidAnchorFunctions(
+      const CSSLengthResolver& length_resolver) const {
+    return expression_->HasInvalidAnchorFunctions(length_resolver);
   }
 
   const CSSValue& PopulateWithTreeScope(const TreeScope*) const;
+
+  // Rewrite this function according to the specified TryTacticTransform,
+  // e.g. anchor(left) -> anchor(right). If this function is not affected
+  // by the transform, returns `this`.
+  //
+  // LogicalAxis determines how to interpret the values that don't
+  // intrinsically indicate the axis: start, end, self-start, self-end.
+  // For LogicalAxis::kInline, any start (etc) within this value is
+  // interpreted to mean 'inline-start', and similarly for kBlock.
+  //
+  // See also TryTacticTransform.
+  const CSSMathFunctionValue* TransformAnchors(
+      LogicalAxis,
+      const TryTacticTransform&,
+      const WritingDirectionMode&) const;
 
   void TraceAfterDispatch(blink::Visitor* visitor) const;
 

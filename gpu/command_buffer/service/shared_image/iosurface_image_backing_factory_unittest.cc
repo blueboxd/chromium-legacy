@@ -65,7 +65,12 @@ class IOSurfaceImageBackingFactoryTest : public SharedImageTestBase {
 
     backing_factory_ = std::make_unique<IOSurfaceImageBackingFactory>(
         context_state_->gr_context_type(), context_state_->GetMaxTextureSize(),
-        context_state_->feature_info(), /*progress_reporter=*/nullptr);
+        context_state_->feature_info(), /*progress_reporter=*/nullptr,
+#if BUILDFLAG(IS_MAC)
+        GetMacOSSpecificTextureTargetForCurrentGLImplementation());
+#else
+        GL_TEXTURE_2D);
+#endif
   }
 
  protected:
@@ -134,7 +139,12 @@ TEST_F(IOSurfaceImageBackingFactoryTest, GL_SkiaGL) {
   EXPECT_TRUE(backing);
   backing->SetCleared();
 
-  GLenum expected_target = gpu::GetPlatformSpecificTextureTarget();
+  GLenum expected_target =
+#if BUILDFLAG(IS_MAC)
+      GetMacOSSpecificTextureTargetForCurrentGLImplementation();
+#else
+      GL_TEXTURE_2D;
+#endif
   std::unique_ptr<SharedImageRepresentationFactoryRef> factory_ref =
       shared_image_manager_.Register(std::move(backing), &memory_type_tracker_);
 
@@ -440,7 +450,12 @@ TEST_P(IOSurfaceImageBackingFactoryDawnTest, GL_Dawn_Skia_UnclearTexture) {
     auto gl_representation =
         shared_image_representation_factory_.ProduceGLTexturePassthrough(
             factory_ref->mailbox());
-    GLenum expected_target = GetPlatformSpecificTextureTarget();
+    GLenum expected_target =
+#if BUILDFLAG(IS_MAC)
+        GetMacOSSpecificTextureTargetForCurrentGLImplementation();
+#else
+        GL_TEXTURE_2D;
+#endif
     EXPECT_TRUE(gl_representation);
     EXPECT_EQ(expected_target,
               gl_representation->GetTexturePassthrough()->target());
@@ -744,7 +759,12 @@ class IOSurfaceImageBackingFactoryParameterizedTestBase
 
     backing_factory_ = std::make_unique<IOSurfaceImageBackingFactory>(
         context_state_->gr_context_type(), context_state_->GetMaxTextureSize(),
-        context_state_->feature_info(), &progress_reporter_);
+        context_state_->feature_info(), &progress_reporter_,
+#if BUILDFLAG(IS_MAC)
+        GetMacOSSpecificTextureTargetForCurrentGLImplementation());
+#else
+        GL_TEXTURE_2D);
+#endif
   }
 
   viz::SharedImageFormat get_format() { return std::get<0>(GetParam()); }
@@ -966,7 +986,7 @@ TEST_P(IOSurfaceImageBackingFactoryScanoutTest, InitialData) {
 
   auto backing = backing_factory_->CreateSharedImage(
       mailbox, format, size, color_space, surface_origin, alpha_type, usage,
-      "TestLabel", initial_data);
+      "TestLabel", /*is_thread_safe=*/false, initial_data);
   ::testing::Mock::VerifyAndClearExpectations(&progress_reporter_);
   if (!should_succeed) {
     EXPECT_FALSE(backing);
@@ -979,7 +999,12 @@ TEST_P(IOSurfaceImageBackingFactoryScanoutTest, InitialData) {
   std::unique_ptr<SharedImageRepresentationFactoryRef> shared_image =
       shared_image_manager_.Register(std::move(backing), &memory_type_tracker_);
   EXPECT_TRUE(shared_image);
-  GLenum expected_target = gpu::GetPlatformSpecificTextureTarget();
+  GLenum expected_target =
+#if BUILDFLAG(IS_MAC)
+      GetMacOSSpecificTextureTargetForCurrentGLImplementation();
+#else
+      GL_TEXTURE_2D;
+#endif
 
   if (get_gr_context_type() == GrContextType::kGL) {
     // First, validate a GLTexturePassthroughImageRepresentation.
@@ -1039,7 +1064,7 @@ TEST_P(IOSurfaceImageBackingFactoryScanoutTest, InitialDataImage) {
   std::vector<uint8_t> initial_data(256 * 256 * 4);
   auto backing = backing_factory_->CreateSharedImage(
       mailbox, format, size, color_space, surface_origin, alpha_type, usage,
-      "TestLabel", initial_data);
+      "TestLabel", /*is_thread_safe=*/false, initial_data);
   if (!should_succeed) {
     EXPECT_FALSE(backing);
     return;
@@ -1103,11 +1128,11 @@ TEST_P(IOSurfaceImageBackingFactoryScanoutTest, InitialDataWrongSize) {
   std::vector<uint8_t> initial_data_large(256 * 512 * 4);
   auto backing = backing_factory_->CreateSharedImage(
       mailbox, format, size, color_space, surface_origin, alpha_type, usage,
-      "TestLabel", initial_data_small);
+      "TestLabel", /*is_thread_safe=*/false, initial_data_small);
   EXPECT_FALSE(backing);
   backing = backing_factory_->CreateSharedImage(
       mailbox, format, size, color_space, surface_origin, alpha_type, usage,
-      "TestLabel", initial_data_large);
+      "TestLabel", /*is_thread_safe=*/false, initial_data_large);
   EXPECT_FALSE(backing);
 }
 
@@ -1141,7 +1166,7 @@ TEST_P(IOSurfaceImageBackingFactoryScanoutTest,
   std::vector<uint8_t> initial_data(256 * 256 * 4);
   auto backing = backing_factory_->CreateSharedImage(
       mailbox, format, size, color_space, surface_origin, alpha_type, usage,
-      "TestLabel", initial_data);
+      "TestLabel", /*is_thread_safe=*/false, initial_data);
   EXPECT_FALSE(backing);
 }
 
@@ -1354,7 +1379,7 @@ TEST_P(IOSurfaceImageBackingFactoryGMBTest, Basic) {
         SharedImageRepresentation::AllowUnclearedAccess::kYes);
     ASSERT_TRUE(dawn_scoped_access);
 
-    // TODO(crbug.com/1442381): Check for TextureViews for multiplanar formats.
+    // TODO(crbug.com/40266937): Check for TextureViews for multiplanar formats.
     wgpu::Texture texture(dawn_scoped_access->texture());
     ASSERT_TRUE(texture);
     EXPECT_EQ(size.width(), static_cast<int>(texture.GetWidth()));
@@ -1405,7 +1430,7 @@ TEST_P(IOSurfaceImageBackingFactoryGMBTest, Basic) {
   // formats as read-only for now. See
   // GrRecordingContext::colorTypeSupportedAsSurface() for all unsupported
   // types.
-  // TODO(crbug.com/1442381): Check supported formats for graphite and update.
+  // TODO(crbug.com/40266937): Check supported formats for graphite and update.
   if (format == viz::SinglePlaneFormat::kBGRA_1010102 ||
       format == viz::MultiPlaneFormat::kP010) {
     return;

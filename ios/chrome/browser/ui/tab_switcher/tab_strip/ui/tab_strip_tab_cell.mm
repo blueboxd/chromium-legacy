@@ -9,9 +9,12 @@
 #import "base/metrics/user_metrics.h"
 #import "base/metrics/user_metrics_action.h"
 #import "base/notreached.h"
+#import "base/strings/string_number_conversions.h"
 #import "ios/chrome/browser/shared/ui/symbols/symbols.h"
 #import "ios/chrome/browser/shared/ui/util/image/image_util.h"
 #import "ios/chrome/browser/shared/ui/util/rtl_geometry.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_strip/ui/swift_constants_for_objective_c.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_strip/ui/tab_strip_group_stroke_view.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/elements/gradient_view.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
@@ -26,16 +29,13 @@ const CGFloat kCloseButtonSize = 16;
 // The alpha of the close button background color.
 const CGFloat kCloseButtonBackgroundAlpha = 0.2;
 
-// Size of the decoration corner when the cell is selected.
+// Size of the decoration corner and corner radius when the cell is selected.
 const CGFloat kCornerSize = 16;
 
 // Threshold width for collapsing the cell and hiding the close button.
 const CGFloat kCollapsedWidthThreshold = 150;
 
 // Separator constraints.
-const CGFloat kSeparatorWidth = 2;
-const CGFloat kSeparatorCornerRadius = 1;
-const CGFloat kSeparatorHeight = 18;
 const CGFloat kSeparatorHorizontalInset = 2;
 const CGFloat kSeparatorGradientWidth = 4;
 
@@ -43,16 +43,12 @@ const CGFloat kSeparatorGradientWidth = 4;
 const CGFloat kFaviconLeadingMargin = 10;
 const CGFloat kCloseButtonMargin = 10;
 const CGFloat kTitleInset = 10;
-const CGFloat kFontSize = 14;
 const CGFloat kFaviconSize = 16;
 const CGFloat kTitleGradientWidth = 16;
 const CGFloat kContentViewBottomInset = 4;
 
 // Selected border background view constants.
 const CGFloat kSelectedBorderBackgroundViewWidth = 8;
-
-// Z-Index of the selected cell.
-const NSInteger kSelectedZIndex = 10;
 
 // Returns the default favicon image.
 UIImage* DefaultFavicon() {
@@ -69,6 +65,10 @@ UIImage* DefaultFavicon() {
   GradientView* _titleGradientView;
   UIImageView* _faviconView;
 
+  // Group stroke views and constraints.
+  TabStripGroupStrokeView* _groupStrokeView;
+  NSLayoutConstraint* _groupStrokeViewWidthConstraint;
+
   // Decoration views, visible when the cell is selected.
   UIView* _leftTailView;
   UIView* _rightTailView;
@@ -81,8 +81,8 @@ UIImage* DefaultFavicon() {
   UIView* _trailingSeparatorGradientView;
 
   // Background views displayed when the selected cell in on an edge.
-  UIView* _leftSelectedBorderBackgroundView;
-  UIView* _rightSelectedBorderBackgroundView;
+  UIView* _leadingSelectedBorderBackgroundView;
+  UIView* _trailingSelectedBorderBackgroundView;
 
   // Wether the decoration layers have been updated.
   BOOL _decorationLayersUpdated;
@@ -90,13 +90,20 @@ UIImage* DefaultFavicon() {
   // Circular spinner that shows the loading state of the tab.
   MDCActivityIndicator* _activityIndicator;
 
-  // Title label's trailing constraints.
+  // Title container's trailing constraints.
   NSLayoutConstraint* _titleContainerCollapsedTrailingConstraint;
   NSLayoutConstraint* _titleContainerTrailingConstraint;
+  // Title label's alignment constraints.
+  NSLayoutConstraint* _titleLabelLeadingConstraint;
+  NSLayoutConstraint* _titleLabelTrailingConstraint;
 
   // Gradient view's constraints.
   NSLayoutConstraint* _titleGradientViewLeadingConstraint;
   NSLayoutConstraint* _titleGradientViewTrailingConstraint;
+
+  // Stroke view's constraints.
+  NSLayoutConstraint* _groupStrokeViewBottomConstraint;
+  NSLayoutConstraint* _groupStrokeViewBottomSelectedConstraint;
 
   // Separator height constraints.
   NSArray<NSLayoutConstraint*>* _separatorHeightConstraints;
@@ -104,6 +111,10 @@ UIImage* DefaultFavicon() {
 
   // whether the view is hovered.
   BOOL _hovered;
+
+  // View used to provide accessibility labels/values while letting the close
+  // button selectable by VoiceOver.
+  UIView* _accessibilityContainerView;
 }
 
 - (instancetype)initWithFrame:(CGRect)frame {
@@ -127,29 +138,35 @@ UIImage* DefaultFavicon() {
     contentView.layer.cornerRadius = kCornerSize;
     contentView.translatesAutoresizingMaskIntoConstraints = NO;
 
+    _accessibilityContainerView = [[UIView alloc] init];
+    _accessibilityContainerView.isAccessibilityElement = YES;
+    _accessibilityContainerView.translatesAutoresizingMaskIntoConstraints = NO;
+    [contentView addSubview:_accessibilityContainerView];
+    AddSameConstraints(contentView, _accessibilityContainerView);
+
     // Needed for the drop animation.
     self.layer.cornerRadius = kCornerSize;
     self.backgroundColor = [UIColor colorNamed:kGroupedPrimaryBackgroundColor];
 
     _faviconView = [self createFaviconView];
-    [contentView addSubview:_faviconView];
+    [_accessibilityContainerView addSubview:_faviconView];
 
     _activityIndicator = [self createActivityIndicatior];
-    [contentView addSubview:_activityIndicator];
+    [_accessibilityContainerView addSubview:_activityIndicator];
 
     _closeButton = [self createCloseButton];
     [contentView addSubview:_closeButton];
 
     _titleContainer = [self createTitleContainer];
-    [contentView addSubview:_titleContainer];
+    [_accessibilityContainerView addSubview:_titleContainer];
 
-    _leftSelectedBorderBackgroundView =
+    _leadingSelectedBorderBackgroundView =
         [self createSelectedBorderBackgroundView];
-    [self addSubview:_leftSelectedBorderBackgroundView];
+    [self addSubview:_leadingSelectedBorderBackgroundView];
 
-    _rightSelectedBorderBackgroundView =
+    _trailingSelectedBorderBackgroundView =
         [self createSelectedBorderBackgroundView];
-    [self addSubview:_rightSelectedBorderBackgroundView];
+    [self addSubview:_trailingSelectedBorderBackgroundView];
 
     _leftTailView = [self createDecorationView];
     [self addSubview:_leftTailView];
@@ -172,21 +189,16 @@ UIImage* DefaultFavicon() {
     _trailingSeparatorGradientView = [self createGradientView];
     [self addSubview:_trailingSeparatorGradientView];
 
+    _groupStrokeView = [[TabStripGroupStrokeView alloc] init];
+    [self addSubview:_groupStrokeView];
+
     [self setupConstraints];
     [self setupDecorationLayers];
+    [self updateGroupStroke];
 
     self.selected = NO;
   }
   return self;
-}
-
-- (void)setTitle:(NSString*)title {
-  self.accessibilityLabel = title;
-
-  NSTextAlignment titleTextAligment = DetermineBestAlignmentForText(title);
-  _titleLabel.text = [title copy];
-  _titleLabel.textAlignment = titleTextAligment;
-  [self updateTitleGradientViewConstraints];
 }
 
 - (void)setFaviconImage:(UIImage*)image {
@@ -196,6 +208,8 @@ UIImage* DefaultFavicon() {
     _faviconView.image = image;
   }
 }
+
+#pragma mark - TabStripCell
 
 - (UIDragPreviewParameters*)dragPreviewParameters {
   UIBezierPath* visiblePath =
@@ -207,6 +221,31 @@ UIImage* DefaultFavicon() {
 }
 
 #pragma mark - Setters
+
+- (void)setTitle:(NSString*)title {
+  [super setTitle:title];
+  _accessibilityContainerView.accessibilityLabel = title;
+  NSTextAlignment titleTextAligment = DetermineBestAlignmentForText(title);
+  _titleLabel.text = [title copy];
+  _titleLabel.textAlignment = titleTextAligment;
+  [self updateTitleConstraints];
+}
+
+- (void)setGroupStrokeColor:(UIColor*)color {
+  if (_groupStrokeView.backgroundColor == color) {
+    return;
+  }
+  _groupStrokeView.backgroundColor = color;
+  [self updateGroupStroke];
+}
+
+- (void)setIsLastTabInGroup:(BOOL)isLastTabInGroup {
+  if (_isLastTabInGroup == isLastTabInGroup) {
+    return;
+  }
+  _isLastTabInGroup = isLastTabInGroup;
+  [self updateGroupStroke];
+}
 
 - (void)setLoading:(BOOL)loading {
   if (_loading == loading) {
@@ -247,29 +286,32 @@ UIImage* DefaultFavicon() {
   _trailingSeparatorGradientView.hidden = trailingSeparatorGradientViewHidden;
 }
 
-- (void)setLeftSelectedBorderBackgroundViewHidden:
-    (BOOL)leftSelectedBorderBackgroundViewHidden {
-  _leftSelectedBorderBackgroundViewHidden =
-      leftSelectedBorderBackgroundViewHidden;
-  _leftSelectedBorderBackgroundView.hidden =
-      leftSelectedBorderBackgroundViewHidden;
+- (void)setLeadingSelectedBorderBackgroundViewHidden:
+    (BOOL)leadingSelectedBorderBackgroundViewHidden {
+  _leadingSelectedBorderBackgroundViewHidden =
+      leadingSelectedBorderBackgroundViewHidden;
+  _leadingSelectedBorderBackgroundView.hidden =
+      leadingSelectedBorderBackgroundViewHidden;
 }
 
-- (void)setRightSelectedBorderBackgroundViewHidden:
-    (BOOL)rightSelectedBorderBackgroundViewHidden {
-  _rightSelectedBorderBackgroundViewHidden =
-      rightSelectedBorderBackgroundViewHidden;
-  _rightSelectedBorderBackgroundView.hidden =
-      rightSelectedBorderBackgroundViewHidden;
+- (void)setTrailingSelectedBorderBackgroundViewHidden:
+    (BOOL)trailingSelectedBorderBackgroundViewHidden {
+  _trailingSelectedBorderBackgroundViewHidden =
+      trailingSelectedBorderBackgroundViewHidden;
+  _trailingSelectedBorderBackgroundView.hidden =
+      trailingSelectedBorderBackgroundViewHidden;
 }
 
 - (void)setSelected:(BOOL)selected {
+  BOOL oldSelected = self.selected;
   [super setSelected:selected];
 
   if (selected) {
-    self.accessibilityTraits |= UIAccessibilityTraitSelected;
+    _accessibilityContainerView.accessibilityTraits |=
+        UIAccessibilityTraitSelected;
   } else {
-    self.accessibilityTraits &= ~UIAccessibilityTraitSelected;
+    _accessibilityContainerView.accessibilityTraits &=
+        ~UIAccessibilityTraitSelected;
   }
 
   if (selected) {
@@ -284,16 +326,19 @@ UIImage* DefaultFavicon() {
   [self updateColors];
 
   // Make the selected cell on top of other cells.
-  self.layer.zPosition = selected ? kSelectedZIndex : 0;
+  self.layer.zPosition = selected ? TabStripTabItemConstants.selectedZIndex : 0;
 
   // Update decoration views visibility.
   _leftTailView.hidden = !selected;
   _rightTailView.hidden = !selected;
   _bottomTailView.hidden = !selected;
-  [self setLeftSelectedBorderBackgroundViewHidden:YES];
-  [self setRightSelectedBorderBackgroundViewHidden:YES];
+  [self setLeadingSelectedBorderBackgroundViewHidden:YES];
+  [self setTrailingSelectedBorderBackgroundViewHidden:YES];
 
   [self updateCollapsedState];
+  if (oldSelected != self.selected) {
+    [self updateGroupStroke];
+  }
 }
 
 - (void)setSeparatorsHeight:(CGFloat)height {
@@ -312,6 +357,36 @@ UIImage* DefaultFavicon() {
   [NSLayoutConstraint activateConstraints:_separatorHeightConstraints];
 }
 
+- (void)setTabIndex:(NSInteger)tabIndex {
+  if (_tabIndex == tabIndex) {
+    return;
+  }
+  _tabIndex = tabIndex;
+  [self updateAccessibilityValue];
+}
+
+- (void)setNumberOfTabs:(NSInteger)numberOfTabs {
+  if (_numberOfTabs == numberOfTabs) {
+    return;
+  }
+  _numberOfTabs = numberOfTabs;
+  [self updateAccessibilityValue];
+}
+
+- (void)setIntersectsLeftEdge:(BOOL)intersectsLeftEdge {
+  if (super.intersectsLeftEdge != intersectsLeftEdge) {
+    super.intersectsLeftEdge = intersectsLeftEdge;
+    [self updateGroupStroke];
+  }
+}
+
+- (void)setIntersectsRightEdge:(BOOL)intersectsRightEdge {
+  if (super.intersectsRightEdge != intersectsRightEdge) {
+    super.intersectsRightEdge = intersectsRightEdge;
+    [self updateGroupStroke];
+  }
+}
+
 #pragma mark - UICollectionViewCell
 
 - (void)applyLayoutAttributes:
@@ -323,9 +398,21 @@ UIImage* DefaultFavicon() {
 
 - (void)prepareForReuse {
   [super prepareForReuse];
-  _titleLabel.text = nil;
   self.selected = NO;
   [self setFaviconImage:nil];
+  self.item = nil;
+  self.numberOfTabs = 0;
+  self.tabIndex = 0;
+  _accessibilityContainerView.accessibilityValue = nil;
+  self.loading = NO;
+  self.leadingSeparatorHidden = NO;
+  self.trailingSeparatorHidden = NO;
+  self.leadingSeparatorGradientViewHidden = NO;
+  self.trailingSeparatorGradientViewHidden = NO;
+  self.leadingSelectedBorderBackgroundViewHidden = NO;
+  self.trailingSelectedBorderBackgroundViewHidden = NO;
+  self.isFirstTabInGroup = NO;
+  self.isLastTabInGroup = NO;
 }
 
 - (void)setHighlighted:(BOOL)highlighted {
@@ -346,12 +433,6 @@ UIImage* DefaultFavicon() {
 }
 
 #pragma mark - UIAccessibility
-
-- (BOOL)isAccessibilityElement {
-  // This makes the whole cell tappable in VoiceOver rather than the individual
-  // title and close button.
-  return YES;
-}
 
 - (NSArray*)accessibilityCustomActions {
   return @[ [[UIAccessibilityCustomAction alloc]
@@ -476,7 +557,7 @@ UIImage* DefaultFavicon() {
 }
 
 // Updates the `_titleGradientView` horizontal constraints.
-- (void)updateTitleGradientViewConstraints {
+- (void)updateTitleConstraints {
   NSTextAlignment titleTextAligment = _titleLabel.textAlignment;
 
   // To avoid breaking the layout, always disable the active constraint first.
@@ -485,22 +566,117 @@ UIImage* DefaultFavicon() {
       [_titleGradientView setTransform:CGAffineTransformMakeScale(1, 1)];
       _titleGradientViewTrailingConstraint.active = NO;
       _titleGradientViewLeadingConstraint.active = YES;
+      _titleLabelLeadingConstraint.active = NO;
+      _titleLabelTrailingConstraint.active = YES;
     } else {
       [_titleGradientView setTransform:CGAffineTransformMakeScale(-1, 1)];
       _titleGradientViewLeadingConstraint.active = NO;
       _titleGradientViewTrailingConstraint.active = YES;
+      _titleLabelTrailingConstraint.active = NO;
+      _titleLabelLeadingConstraint.active = YES;
     }
   } else {
     if (titleTextAligment == NSTextAlignmentLeft) {
       [_titleGradientView setTransform:CGAffineTransformMakeScale(1, 1)];
       _titleGradientViewLeadingConstraint.active = NO;
       _titleGradientViewTrailingConstraint.active = YES;
+      _titleLabelTrailingConstraint.active = NO;
+      _titleLabelLeadingConstraint.active = YES;
     } else {
       [_titleGradientView setTransform:CGAffineTransformMakeScale(-1, 1)];
       _titleGradientViewTrailingConstraint.active = NO;
       _titleGradientViewLeadingConstraint.active = YES;
+      _titleLabelLeadingConstraint.active = NO;
+      _titleLabelTrailingConstraint.active = YES;
     }
   }
+}
+
+// Updates the `_groupStrokeView` horizontal constraints.
+- (void)updateGroupStroke {
+  if (!_groupStrokeView.backgroundColor) {
+    _groupStrokeView.hidden = YES;
+    return;
+  }
+  _groupStrokeView.hidden = NO;
+
+  const CGFloat lineWidth =
+      TabStripCollectionViewConstants.groupStrokeLineWidth;
+  if (self.selected) {
+    _groupStrokeViewBottomConstraint.active = NO;
+    _groupStrokeViewBottomSelectedConstraint.active = YES;
+    _groupStrokeViewWidthConstraint.constant = -2 * kCornerSize;
+  } else {
+    _groupStrokeViewBottomSelectedConstraint.active = NO;
+    _groupStrokeViewBottomConstraint.active = YES;
+    _groupStrokeViewWidthConstraint.constant = -2 * lineWidth;
+  }
+
+  UIBezierPath* path = [UIBezierPath bezierPath];
+  CGPoint leftPoint = CGPointZero;
+  [path moveToPoint:leftPoint];
+  if (self.selected) {
+    leftPoint.y += kCornerSize + lineWidth / 2;
+    [path addArcWithCenter:leftPoint
+                    radius:kCornerSize + lineWidth / 2
+                startAngle:M_PI + M_PI_2
+                  endAngle:M_PI
+                 clockwise:NO];
+    leftPoint.x -= kCornerSize + lineWidth / 2;
+    leftPoint.y += self.frame.size.height - kCornerSize * 2;
+    [path addLineToPoint:leftPoint];
+    leftPoint.x -= kCornerSize - lineWidth / 2;
+    [path addArcWithCenter:leftPoint
+                    radius:kCornerSize - lineWidth / 2
+                startAngle:0
+                  endAngle:M_PI_2
+                 clockwise:YES];
+    leftPoint.y += kCornerSize - lineWidth / 2;
+    leftPoint.x -= lineWidth;
+    [path addLineToPoint:leftPoint];
+  }
+
+  UIBezierPath* leftPath = [path copy];
+  if (!self.selected) {
+    leftPoint.x -= lineWidth;
+    if (!self.intersectsRightEdge) {
+      leftPoint.x -= TabStripTabItemConstants.horizontalSpacing;
+      leftPoint.x -= lineWidth;
+    }
+    [leftPath addLineToPoint:leftPoint];
+  }
+  if (self.intersectsLeftEdge) {
+    leftPoint.x -= TabStripCollectionViewConstants.groupStrokeExtension;
+    [leftPath addLineToPoint:leftPoint];
+  }
+  leftPoint.y += lineWidth / 2;
+  [leftPath addArcWithCenter:leftPoint
+                      radius:lineWidth / 2
+                  startAngle:M_PI + M_PI_2
+                    endAngle:M_PI
+                   clockwise:NO];
+  [_groupStrokeView setLeadingPath:leftPath.CGPath];
+
+  // The right path starts like the left path, but flipped horizontally.
+  [path applyTransform:CGAffineTransformMakeScale(-1, 1)];
+  CGPoint rightPoint = path.currentPoint;
+  if (!self.isLastTabInGroup && !self.selected) {
+    rightPoint.x += lineWidth;
+    rightPoint.x += TabStripTabItemConstants.horizontalSpacing;
+    rightPoint.x += lineWidth;
+    [path addLineToPoint:rightPoint];
+  }
+  if (self.intersectsRightEdge) {
+    rightPoint.x += TabStripCollectionViewConstants.groupStrokeExtension;
+    [path addLineToPoint:rightPoint];
+  }
+    rightPoint.y += lineWidth / 2;
+    [path addArcWithCenter:rightPoint
+                    radius:lineWidth / 2
+                startAngle:M_PI + M_PI_2
+                  endAngle:0
+                 clockwise:YES];
+  [_groupStrokeView setTrailingPath:path.CGPath];
 }
 
 // Sets the cell constraints.
@@ -554,6 +730,10 @@ UIImage* DefaultFavicon() {
                      constant:-kTitleInset];
   _titleContainerCollapsedTrailingConstraint.priority =
       UILayoutPriorityDefaultLow;
+  _titleLabelLeadingConstraint = [_titleLabel.leadingAnchor
+      constraintEqualToAnchor:_titleContainer.leadingAnchor];
+  _titleLabelTrailingConstraint = [_titleLabel.trailingAnchor
+      constraintEqualToAnchor:_titleContainer.trailingAnchor];
   [NSLayoutConstraint activateConstraints:@[
     [_titleContainer.leadingAnchor
         constraintEqualToAnchor:leadingImageGuide.trailingAnchor
@@ -563,9 +743,7 @@ UIImage* DefaultFavicon() {
         constraintEqualToAnchor:contentView.heightAnchor],
     [_titleContainer.centerYAnchor
         constraintEqualToAnchor:contentView.centerYAnchor],
-
-    [_titleLabel.leadingAnchor
-        constraintEqualToAnchor:_titleContainer.leadingAnchor],
+    _titleLabelLeadingConstraint,
     [_titleLabel.centerYAnchor
         constraintEqualToAnchor:_titleContainer.centerYAnchor],
   ]];
@@ -585,26 +763,25 @@ UIImage* DefaultFavicon() {
         constraintEqualToAnchor:_titleContainer.centerYAnchor],
   ]];
 
-
-  /// `_leftSelectedBorderBackgroundView` and
-  /// `_rightSelectedBorderBackgroundView constraints.
+  /// `_leadingSelectedBorderBackgroundView` and
+  /// `_trailingSelectedBorderBackgroundView constraints.
   [NSLayoutConstraint activateConstraints:@[
-    [_leftSelectedBorderBackgroundView.rightAnchor
-        constraintEqualToAnchor:contentView.leftAnchor],
-    [_leftSelectedBorderBackgroundView.widthAnchor
+    [_leadingSelectedBorderBackgroundView.trailingAnchor
+        constraintEqualToAnchor:contentView.leadingAnchor],
+    [_leadingSelectedBorderBackgroundView.widthAnchor
         constraintEqualToConstant:kSelectedBorderBackgroundViewWidth],
-    [_leftSelectedBorderBackgroundView.heightAnchor
+    [_leadingSelectedBorderBackgroundView.heightAnchor
         constraintEqualToAnchor:contentView.heightAnchor],
-    [_leftSelectedBorderBackgroundView.centerYAnchor
+    [_leadingSelectedBorderBackgroundView.centerYAnchor
         constraintEqualToAnchor:contentView.centerYAnchor],
 
-    [_rightSelectedBorderBackgroundView.leftAnchor
-        constraintEqualToAnchor:contentView.rightAnchor],
-    [_rightSelectedBorderBackgroundView.widthAnchor
+    [_trailingSelectedBorderBackgroundView.leadingAnchor
+        constraintEqualToAnchor:contentView.trailingAnchor],
+    [_trailingSelectedBorderBackgroundView.widthAnchor
         constraintEqualToConstant:kSelectedBorderBackgroundViewWidth],
-    [_rightSelectedBorderBackgroundView.heightAnchor
+    [_trailingSelectedBorderBackgroundView.heightAnchor
         constraintEqualToAnchor:contentView.heightAnchor],
-    [_rightSelectedBorderBackgroundView.centerYAnchor
+    [_trailingSelectedBorderBackgroundView.centerYAnchor
         constraintEqualToAnchor:contentView.centerYAnchor],
   ]];
 
@@ -634,7 +811,8 @@ UIImage* DefaultFavicon() {
         constraintEqualToAnchor:contentView.leadingAnchor
                        constant:-kSeparatorHorizontalInset],
     [_leadingSeparatorView.widthAnchor
-        constraintEqualToConstant:kSeparatorWidth],
+        constraintEqualToConstant:TabStripStaticSeparatorConstants
+                                      .separatorWidth],
     [_leadingSeparatorView.centerYAnchor
         constraintEqualToAnchor:contentView.centerYAnchor],
   ]];
@@ -645,12 +823,14 @@ UIImage* DefaultFavicon() {
         constraintEqualToAnchor:contentView.trailingAnchor
                        constant:kSeparatorHorizontalInset],
     [_trailingSeparatorView.widthAnchor
-        constraintEqualToConstant:kSeparatorWidth],
+        constraintEqualToConstant:TabStripStaticSeparatorConstants
+                                      .separatorWidth],
     [_trailingSeparatorView.centerYAnchor
         constraintEqualToAnchor:contentView.centerYAnchor],
   ]];
 
-  [self setSeparatorsHeight:kSeparatorHeight];
+  [self setSeparatorsHeight:TabStripStaticSeparatorConstants
+                                .regularSeparatorHeight];
 
   /// `_leadingSeparatorGradientView` constraints.
   [NSLayoutConstraint activateConstraints:@[
@@ -675,6 +855,17 @@ UIImage* DefaultFavicon() {
     [_trailingSeparatorGradientView.centerYAnchor
         constraintEqualToAnchor:contentView.centerYAnchor],
   ]];
+
+  /// `_groupStrokeView` constraints.
+  _groupStrokeViewBottomConstraint =
+      [_groupStrokeView.bottomAnchor constraintEqualToAnchor:self.bottomAnchor];
+  _groupStrokeViewBottomConstraint.active = YES;
+  _groupStrokeViewBottomSelectedConstraint =
+      [_groupStrokeView.bottomAnchor constraintEqualToAnchor:self.topAnchor];
+  _groupStrokeViewWidthConstraint =
+      [_groupStrokeView.widthAnchor constraintEqualToAnchor:self.widthAnchor];
+  _groupStrokeViewWidthConstraint.active = YES;
+  AddSameCenterXConstraint(_groupStrokeView, self);
 }
 
 // Selector registered to the close button.
@@ -718,7 +909,7 @@ UIImage* DefaultFavicon() {
 - (UILabel*)createTitleLabel {
   UILabel* titleLabel = [[UILabel alloc] init];
   titleLabel.translatesAutoresizingMaskIntoConstraints = NO;
-  titleLabel.font = [UIFont systemFontOfSize:kFontSize
+  titleLabel.font = [UIFont systemFontOfSize:TabStripTabItemConstants.fontSize
                                       weight:UIFontWeightMedium];
   titleLabel.textColor = [UIColor colorNamed:kTextPrimaryColor];
   titleLabel.adjustsFontForContentSizeCategory = YES;
@@ -778,7 +969,8 @@ UIImage* DefaultFavicon() {
   separatorView.backgroundColor =
       [UIColor colorNamed:kGroupedPrimaryBackgroundColor];
   separatorView.translatesAutoresizingMaskIntoConstraints = NO;
-  separatorView.layer.cornerRadius = kSeparatorCornerRadius;
+  separatorView.layer.cornerRadius =
+      TabStripStaticSeparatorConstants.separatorCornerRadius;
   separatorView.layer.masksToBounds = YES;
 
   UIView* backgroundView = [[UIView alloc] init];
@@ -797,6 +989,15 @@ UIImage* DefaultFavicon() {
   backgroundView.translatesAutoresizingMaskIntoConstraints = NO;
   backgroundView.hidden = YES;
   return backgroundView;
+}
+
+- (void)updateAccessibilityValue {
+  // Use the accessibility Value as there is a pause when using the
+  // accessibility hint.
+  _accessibilityContainerView.accessibilityValue =
+      l10n_util::GetNSStringF(IDS_IOS_TAB_STRIP_TAB_CELL_VOICE_OVER_VALUE,
+                              base::NumberToString16(self.tabIndex),
+                              base::NumberToString16(self.numberOfTabs));
 }
 
 @end

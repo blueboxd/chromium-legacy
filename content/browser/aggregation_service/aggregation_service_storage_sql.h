@@ -9,12 +9,12 @@
 
 #include <optional>
 #include <set>
+#include <string_view>
 #include <vector>
 
 #include "base/files/file_path.h"
 #include "base/memory/raw_ref.h"
 #include "base/sequence_checker.h"
-#include "base/strings/string_piece.h"
 #include "base/thread_annotations.h"
 #include "base/time/time.h"
 #include "content/browser/aggregation_service/aggregation_service.h"
@@ -48,7 +48,7 @@ struct PublicKeyset;
 // Instances may be constructed on any sequence but must be accessed and
 // destroyed on the same sequence.
 
-// TODO(crbug.com/1232608): Support public key protocol versioning.
+// TODO(crbug.com/40191198): Support public key protocol versioning.
 class CONTENT_EXPORT AggregationServiceStorageSql
     : public AggregationServiceStorage {
  public:
@@ -122,8 +122,11 @@ class CONTENT_EXPORT AggregationServiceStorageSql
     // The database exists but is not open yet.
     kDeferringOpen,
     // The database initialization failed, or the db suffered from an
-    // unrecoverable error.
+    // unrecoverable, but potentially transient, error.
     kClosed,
+    // The database initialization failed, or the db suffered from a
+    // catastrophic failure.
+    kClosedDueToCatastrophicError,
   };
 
   enum class DbCreationPolicy {
@@ -177,7 +180,7 @@ class CONTENT_EXPORT AggregationServiceStorageSql
 
   // Whether the reporting origin has space for an extra report to be stored,
   // i.e. has not reached the `max_stored_requests_per_reporting_origin_` limit.
-  bool ReportingOriginHasCapacity(base::StringPiece serialized_reporting_origin)
+  bool ReportingOriginHasCapacity(std::string_view serialized_reporting_origin)
       VALID_CONTEXT_REQUIRED(sequence_checker_);
 
   // Initializes the database if necessary, and returns whether the database is

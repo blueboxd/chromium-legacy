@@ -111,8 +111,6 @@ enum ModelType {
   USER_EVENTS,
   // Commit only user consents.
   USER_CONSENTS,
-  // Segmentation data.
-  SEGMENTATION,
   // Tabs sent between devices.
   SEND_TAB_TO_SELF,
   // Commit only security events.
@@ -123,13 +121,13 @@ enum ModelType {
   WEB_APPS,
   // A WebAPK object.
   WEB_APKS,
-  // OS-specific preferences (a.k.a. "OS settings"). Chrome OS only.
+  // OS-specific preferences (a.k.a. "OS settings"). ChromeOS only.
   OS_PREFERENCES,
-  // Synced before other user types. Never encrypted. Chrome OS only.
+  // Synced before other user types. Never encrypted. ChromeOS only.
   OS_PRIORITY_PREFERENCES,
   // Commit only sharing message object.
   SHARING_MESSAGE,
-  // A workspace desk saved by user. Chrome OS only.
+  // A workspace desk saved by user. ChromeOS only.
   WORKSPACE_DESK,
   // Synced history. An entity roughly corresponds to a navigation.
   HISTORY,
@@ -138,7 +136,7 @@ enum ModelType {
   // Contact information from the Google Address Storage.
   CONTACT_INFO,
   // A tab group saved by a user. Currently only supported on desktop platforms
-  // (Linux, Mac, Windows, ChromeOS).
+  // (Linux, Mac, Windows, ChromeOS) and Android.
   SAVED_TAB_GROUP,
 
   // Power bookmarks are features associated with bookmarks(i.e. notes, price
@@ -164,7 +162,13 @@ enum ModelType {
   // Read-only on the client.
   PLUS_ADDRESS,
 
-  LAST_USER_MODEL_TYPE = PLUS_ADDRESS,
+  // Product comparison groups.
+  COMPARE,
+
+  // Browser cookies, ChromeOS only.
+  COOKIES,
+
+  LAST_USER_MODEL_TYPE = COOKIES,
 
   // ---- Control Types ----
   // An object representing a set of Nigori keys.
@@ -191,6 +195,7 @@ constexpr int GetNumModelTypes() {
 // numeric values should never be reused. When you add a new entry or when you
 // deprecate an existing one, also update SyncModelTypes in enums.xml and
 // SyncModelType suffix in histograms.xml.
+// LINT.IfChange(SyncModelTypes)
 enum class ModelTypeForHistograms {
   kUnspecified = 0,
   // kTopLevelFolder = 1,
@@ -247,7 +252,7 @@ enum class ModelTypeForHistograms {
   kPrintersAuthorizationServers = 52,
   kContactInfo = 53,
   kAutofillWalletUsage = 54,
-  kSegmentation = 55,
+  // kDeprecatedSegmentation = 55,
   kSavedTabGroups = 56,
   kPowerBookmark = 57,
   kWebAuthnCredentials = 58,
@@ -258,8 +263,11 @@ enum class ModelTypeForHistograms {
   kSharedTabGroupData = 63,
   kCollaborationGroup = 64,
   kPlusAddresses = 65,
-  kMaxValue = kPlusAddresses,
+  kCompare = 66,
+  kCookies = 67,
+  kMaxValue = kCookies,
 };
+// LINT.ThenChange(/tools/metrics/histograms/metadata/sync/enums.xml:SyncModelTypes)
 
 // Used to mark the type of EntitySpecifics that has no actual data.
 void AddDefaultFieldValue(ModelType type, sync_pb::EntitySpecifics* specifics);
@@ -299,7 +307,7 @@ constexpr ModelTypeSet AlwaysEncryptedUserTypes() {
   // If you add a new model type here that is conceptually different from a
   // password, make sure you audit UI code that refers to these types as
   // passwords, e.g. consumers of IsEncryptEverythingEnabled().
-  return {AUTOFILL_WALLET_CREDENTIAL, PASSWORDS, WIFI_CONFIGURATIONS};
+  return {AUTOFILL_WALLET_CREDENTIAL, PASSWORDS, WIFI_CONFIGURATIONS, COOKIES};
 }
 
 // This is the subset of UserTypes() that have priority over other types. These
@@ -373,6 +381,21 @@ constexpr ModelTypeSet CommitOnlyTypes() {
 // possible).
 constexpr ModelTypeSet ApplyUpdatesImmediatelyTypes() {
   return {HISTORY};
+}
+
+// Types for which `collaboration_id` field in SyncEntity should be provided.
+// These types also support `gc_directive` for collaborations to track active
+// collaboratons.
+constexpr ModelTypeSet SharedTypes() {
+  return {SHARED_TAB_GROUP_DATA};
+}
+
+// Types triggering a warning when the user signs out and the types have
+// unsynced data. The warning offers the user to either save the data locally or
+// abort sign-out, depending on the platform.
+constexpr ModelTypeSet TypesRequiringUnsyncedDataCheckOnSignout() {
+  return {syncer::BOOKMARKS, syncer::READING_LIST, syncer::PASSWORDS,
+          syncer::CONTACT_INFO};
 }
 
 // User types that can be encrypted, which is a subset of UserTypes() and a

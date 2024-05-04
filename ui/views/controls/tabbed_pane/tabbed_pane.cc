@@ -71,7 +71,7 @@ TabbedPaneTab::TabbedPaneTab(TabbedPane* tabbed_pane,
 
   // Use leaf so that name is spoken by screen reader without exposing the
   // children.
-  GetViewAccessibility().OverrideIsLeaf(true);
+  GetViewAccessibility().SetIsLeaf(true);
 
   OnStateChanged();
 }
@@ -130,11 +130,13 @@ void TabbedPaneTab::OnGestureEvent(ui::GestureEvent* event) {
   event->SetHandled();
 }
 
-gfx::Size TabbedPaneTab::CalculatePreferredSize() const {
+gfx::Size TabbedPaneTab::CalculatePreferredSize(
+    const SizeBounds& available_size) const {
   int width = preferred_title_width_ + GetInsets().width();
   if (tabbed_pane_->GetStyle() == TabbedPane::TabStripStyle::kHighlight &&
-      tabbed_pane_->GetOrientation() == TabbedPane::Orientation::kVertical)
+      tabbed_pane_->GetOrientation() == TabbedPane::Orientation::kVertical) {
     width = std::max(width, 192);
+  }
   return gfx::Size(width, 32);
 }
 
@@ -143,7 +145,7 @@ int TabbedPaneTab::GetHeightForWidth(int w) const {
   // LayoutManager::GetPreferredHeightForWidth by default, but this is not
   // consistent with the fixed height desired by CalculatePreferredSize, so we
   // override it and call it manually.
-  return CalculatePreferredSize().height();
+  return CalculatePreferredSize(SizeBounds(w, {})).height();
 }
 
 void TabbedPaneTab::GetAccessibleNodeData(ui::AXNodeData* data) {
@@ -281,10 +283,10 @@ void TabbedPaneTab::UpdatePreferredTitleWidth() {
   // and reserve that amount of space.
   const State old_state = state_;
   SetState(State::kActive);
-  preferred_title_width_ = title_->GetPreferredSize().width();
+  preferred_title_width_ = title_->GetPreferredSize({}).width();
   SetState(State::kInactive);
   preferred_title_width_ =
-      std::max(preferred_title_width_, title_->GetPreferredSize().width());
+      std::max(preferred_title_width_, title_->GetPreferredSize({}).width());
   SetState(old_state);
 }
 
@@ -406,18 +408,20 @@ TabbedPane::TabStripStyle TabbedPaneTabStrip::GetStyle() const {
   return style_;
 }
 
-gfx::Size TabbedPaneTabStrip::CalculatePreferredSize() const {
+gfx::Size TabbedPaneTabStrip::CalculatePreferredSize(
+    const SizeBounds& available_size) const {
   // In horizontal mode, use the preferred size as determined by the largest
   // child or the minimum size necessary to display the tab titles, whichever is
   // larger.
   if (GetOrientation() == TabbedPane::Orientation::kHorizontal) {
-    return GetLayoutManager()->GetPreferredSize(this);
+    return GetLayoutManager()->GetPreferredSize(this, available_size);
   }
 
   // In vertical mode, Tabstrips don't require any minimum space along their
   // main axis, and can shrink all the way to zero size.  Only the cross axis
   // thickness matters.
-  const gfx::Size size = GetLayoutManager()->GetPreferredSize(this);
+  const gfx::Size size =
+      GetLayoutManager()->GetPreferredSize(this, available_size);
   return gfx::Size(size.width(), 0);
 }
 

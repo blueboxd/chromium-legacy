@@ -254,7 +254,7 @@ void OmniboxViewIOS::OnInlineAutocompleteTextMaybeChanged(
 
   NSAttributedString* as = [[NSMutableAttributedString alloc]
       initWithString:base::SysUTF16ToNSString(display_text)];
-  // TODO(crbug.com/1062446): This `user_text_length` calculation  isn't
+  // TODO(crbug.com/40122891): This `user_text_length` calculation  isn't
   //  accurate when there's prefix autocompletion. This should be addressed
   //  before we experiment with prefix autocompletion on iOS.
   size_t user_text_length = display_text.size() - inline_autocompletion.size();
@@ -262,7 +262,9 @@ void OmniboxViewIOS::OnInlineAutocompleteTextMaybeChanged(
 }
 
 void OmniboxViewIOS::SetAdditionalText(const std::u16string& text) {
-  if (!IsRichAutocompletionEnabled()) {
+  if (!IsRichAutocompletionEnabled() ||
+      IsRichAutocompletionEnabled(
+          RichAutocompletionImplementation::kNoAdditionalText)) {
     return;
   }
 
@@ -322,7 +324,7 @@ void OmniboxViewIOS::GetSelectionBounds(std::u16string::size_type* start,
   if ([field_ isFirstResponder]) {
     NSRange selected_range = [field_ selectedNSRange];
     *start = selected_range.location;
-    *end = selected_range.location + selected_range.length;
+    *end = selected_range.location + field_.autocompleteText.length;
   } else {
     *start = *end = 0;
   }
@@ -525,7 +527,7 @@ void OmniboxViewIOS::OnDidChange(bool processing_user_event) {
   if (!processing_user_event && !proceed_without_user_event)
     return;
 
-  // TODO(crbug.com/564599): OnAfterPossibleChange() now takes an argument. It
+  // TODO(crbug.com/41225237): OnAfterPossibleChange() now takes an argument. It
   // use to not take an argument and was defaulting to false, so as it is
   // unclear what the correct value is, using what was that before seems
   // consistent.
@@ -644,6 +646,18 @@ void OmniboxViewIOS::OnDeleteBackward() {
   }
 }
 
+void OmniboxViewIOS::OnAcceptAutocomplete() {
+  current_selection_ = [field_ selectedNSRange];
+  OnDidChange(/*processing_user_event=*/true);
+}
+
+void OmniboxViewIOS::OnRemoveAdditionalText() {
+  if (model()) {
+    model()->UpdateInput(/*has_selected_text=*/false,
+                         /*prevent_inline_autocomplete=*/true);
+  }
+}
+
 void OmniboxViewIOS::ClearText() {
   // Ensure omnibox is first responder. This will bring up the keyboard so the
   // user can start typing a new query.
@@ -723,6 +737,12 @@ void OmniboxViewIOS::OnSelectedMatchForAppending(const std::u16string& str) {
   // trigger that manually.
   [field_ sendActionsForControlEvents:UIControlEventEditingChanged];
   this->FocusOmnibox();
+  if (base::FeatureList::IsEnabled(kIOSNewOmniboxImplementation)) {
+    if (@available(iOS 17, *)) {
+      // Set the caret pos to the end of the text (crbug.com/331622199).
+      this->SetCaretPos(str.length());
+    }
+  }
 }
 
 void OmniboxViewIOS::OnSelectedMatchForOpening(

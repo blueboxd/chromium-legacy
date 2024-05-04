@@ -7,6 +7,7 @@
 #import "base/memory/raw_ptr.h"
 #import "base/strings/sys_string_conversions.h"
 #import "components/autofill/ios/form_util/form_activity_params.h"
+#import "components/feature_engagement/public/tracker.h"
 #import "components/image_fetcher/core/image_fetcher_impl.h"
 #import "components/image_fetcher/ios/ios_image_decoder_impl.h"
 #import "components/password_manager/core/browser/features/password_features.h"
@@ -49,8 +50,6 @@ namespace {
 const char kImageFetcherUmaClient[] = "PasswordBottomSheet";
 const CGFloat kProfileImageSize = 80.0;
 
-using PasswordSuggestionBottomSheetExitReason::kDismissal;
-using PasswordSuggestionBottomSheetExitReason::kUsePasswordSuggestion;
 using ReauthenticationEvent::kAttempt;
 using ReauthenticationEvent::kFailure;
 using ReauthenticationEvent::kMissingPasscode;
@@ -117,14 +116,6 @@ int PrimaryActionStringIdFromSuggestion(FormSuggestion* suggestion) {
   // via the password sharing feature. Empty otherwise.
   NSMutableArray<UIImage*>* _senderImages;
 
-  // Whether the field that triggered the bottom sheet will need to refocus when
-  // the bottom sheet is dismissed. Default is true.
-  bool _needsRefocus;
-
-  // Whether the user has chosen to use one of the proposed suggestions to fill
-  // the fields. Default is false.
-  bool _suggestionSelected;
-
   // FaviconLoader is a keyed service that uses LargeIconService to retrieve
   // favicon images.
   raw_ptr<FaviconLoader> _faviconLoader;
@@ -137,28 +128,30 @@ int PrimaryActionStringIdFromSuggestion(FormSuggestion* suggestion) {
 
   // Fetches profile pictures.
   std::unique_ptr<image_fetcher::ImageFetcher> _imageFetcher;
+
+  // Feature engagement tracker for notifying promo events.
+  raw_ptr<feature_engagement::Tracker> _engagementTracker;
 }
 
 @synthesize defaultGlobeIconAttributes = _defaultGlobeIconAttributes;
 
-- (instancetype)initWithWebStateList:(WebStateList*)webStateList
-                       faviconLoader:(FaviconLoader*)faviconLoader
-                         prefService:(PrefService*)prefService
-                              params:(const autofill::FormActivityParams&)params
-                        reauthModule:(id<ReauthenticationProtocol>)reauthModule
-                                 URL:(const GURL&)URL
-                profilePasswordStore:
-                    (scoped_refptr<password_manager::PasswordStoreInterface>)
-                        profilePasswordStore
-                accountPasswordStore:
-                    (scoped_refptr<password_manager::PasswordStoreInterface>)
-                        accountPasswordStore
-              sharedURLLoaderFactory:
-                  (scoped_refptr<network::SharedURLLoaderFactory>)
-                      sharedURLLoaderFactory {
+- (instancetype)
+      initWithWebStateList:(WebStateList*)webStateList
+             faviconLoader:(FaviconLoader*)faviconLoader
+               prefService:(PrefService*)prefService
+                    params:(const autofill::FormActivityParams&)params
+              reauthModule:(id<ReauthenticationProtocol>)reauthModule
+                       URL:(const GURL&)URL
+      profilePasswordStore:
+          (scoped_refptr<password_manager::PasswordStoreInterface>)
+              profilePasswordStore
+      accountPasswordStore:
+          (scoped_refptr<password_manager::PasswordStoreInterface>)
+              accountPasswordStore
+    sharedURLLoaderFactory:
+        (scoped_refptr<network::SharedURLLoaderFactory>)sharedURLLoaderFactory
+         engagementTracker:(feature_engagement::Tracker*)engagementTracker {
   if (self = [super init]) {
-    _needsRefocus = true;
-    _suggestionSelected = false;
     _faviconLoader = faviconLoader;
     _prefService = prefService;
     _reauthenticationModule = reauthModule;
@@ -199,11 +192,13 @@ int PrimaryActionStringIdFromSuggestion(FormSuggestion* suggestion) {
                 NSArray<FormSuggestion*>* suggestions,
                 id<FormInputSuggestionsProvider> formInputSuggestionsProvider) {
               weakSelf.suggestions = suggestions;
-              [weakSelf fetchCredentialsForForm:params.unique_form_id
+              [weakSelf fetchCredentialsForForm:params.form_renderer_id
                                        webState:activeWebState
                                      webFrameId:params.frame_id];
             }];
     }
+
+    _engagementTracker = engagementTracker;
   }
   return self;
 }
@@ -294,24 +289,22 @@ int PrimaryActionStringIdFromSuggestion(FormSuggestion* suggestion) {
 
 #pragma mark - PasswordSuggestionBottomSheetDelegate
 
-- (void)didSelectSuggestion:(NSInteger)row {
-  DCHECK(row >= 0);
-
-  FormSuggestion* suggestion = [self.suggestions objectAtIndex:row];
-
-  [self logExitReason:kUsePasswordSuggestion];
+- (void)didSelectSuggestion:(FormSuggestion*)suggestion
+                 completion:(ProceduralBlock)completion {
   [self logReauthEvent:kAttempt];
   [self markSharedPasswordNotificationsDisplayed];
 
   if (!suggestion.requiresReauth) {
     [self logReauthEvent:kSuccess];
     [self selectSuggestion:suggestion];
+    completion();
     return;
   }
   if ([_reauthenticationModule canAttemptReauth]) {
     __weak __typeof(self) weakSelf = self;
     auto completionHandler = ^(ReauthenticationResult result) {
       [weakSelf selectSuggestion:suggestion reauthenticationResult:result];
+      completion();
     };
 
     NSString* reason = l10n_util::GetNSString(IDS_IOS_AUTOFILL_REAUTH_REASON);
@@ -322,17 +315,17 @@ int PrimaryActionStringIdFromSuggestion(FormSuggestion* suggestion) {
   } else {
     [self logReauthEvent:kMissingPasscode];
     [self selectSuggestion:suggestion];
+    completion();
   }
 }
 
 - (void)dismiss {
-  if (_needsRefocus && _webStateList) {
-    if (!_suggestionSelected) {
-      [self logExitReason:kDismissal];
-      [self incrementDismissCount];
-      [self markSharedPasswordNotificationsDisplayed];
-    }
+  [self incrementDismissCount];
+  [self markSharedPasswordNotificationsDisplayed];
+}
 
+- (void)disableBottomSheet {
+  if (_webStateList) {
     web::WebState* activeWebState = _webStateList->GetActiveWebState();
     if (!activeWebState) {
       return;
@@ -344,17 +337,8 @@ int PrimaryActionStringIdFromSuggestion(FormSuggestion* suggestion) {
       return;
     }
 
-    tabHelper->DetachPasswordListenersForAllFrames(_needsRefocus);
-    [self disconnect];
+    tabHelper->DetachPasswordListenersForAllFrames();
   }
-}
-
-- (void)disableRefocus {
-  _needsRefocus = false;
-}
-
-- (void)willSelectSuggestion {
-  _suggestionSelected = true;
 }
 
 - (NSString*)usernameAtRow:(NSInteger)row {
@@ -418,13 +402,12 @@ int PrimaryActionStringIdFromSuggestion(FormSuggestion* suggestion) {
 #pragma mark - Private
 
 - (void)onWebStateChange {
-  _needsRefocus = false;
   [self.consumer dismiss];
 }
 
 // Perform suggestion selection
 - (void)selectSuggestion:(FormSuggestion*)suggestion {
-  default_browser::NotifyPasswordAutofillSuggestionUsed();
+  default_browser::NotifyPasswordAutofillSuggestionUsed(_engagementTracker);
   [self.suggestionsProvider didSelectSuggestion:suggestion];
   [self disconnect];
 }

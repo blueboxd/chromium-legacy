@@ -28,7 +28,7 @@ class DisconnectTetheringOperation : public MessageTransferOperation {
   class Factory {
    public:
     static std::unique_ptr<DisconnectTetheringOperation> Create(
-        multidevice::RemoteDeviceRef device_to_connect,
+        const TetherHost& tether_host,
         device_sync::DeviceSyncClient* device_sync_client,
         secure_channel::SecureChannelClient* secure_channel_client);
 
@@ -37,7 +37,7 @@ class DisconnectTetheringOperation : public MessageTransferOperation {
    protected:
     virtual ~Factory();
     virtual std::unique_ptr<DisconnectTetheringOperation> CreateInstance(
-        multidevice::RemoteDeviceRef device_to_connect,
+        const TetherHost& tether_host,
         device_sync::DeviceSyncClient* device_sync_client,
         secure_channel::SecureChannelClient* secure_channel_client) = 0;
 
@@ -65,15 +65,14 @@ class DisconnectTetheringOperation : public MessageTransferOperation {
 
  protected:
   DisconnectTetheringOperation(
-      multidevice::RemoteDeviceRef device_to_connect,
+      const TetherHost& tether_host,
       device_sync::DeviceSyncClient* device_sync_client,
       secure_channel::SecureChannelClient* secure_channel_client);
 
   void NotifyObserversOperationFinished(bool success);
 
   // MessageTransferOperation:
-  void OnDeviceAuthenticated(
-      multidevice::RemoteDeviceRef remote_device) override;
+  void OnDeviceAuthenticated() override;
   void OnOperationFinished() override;
   MessageType GetMessageTypeForConnection() override;
   void OnMessageSent(int sequence_number) override;
@@ -88,7 +87,6 @@ class DisconnectTetheringOperation : public MessageTransferOperation {
   void SetClockForTest(base::Clock* clock_for_test);
 
   base::ObserverList<Observer>::Unchecked observer_list_;
-  multidevice::RemoteDeviceRef remote_device_;
   int disconnect_message_sequence_number_ = -1;
   bool has_sent_message_;
 

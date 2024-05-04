@@ -1632,8 +1632,7 @@ void CSSAnimations::CalculateAnimationUpdate(
 
   if (animation_data &&
       (style_builder.Display() != EDisplay::kNone ||
-       (RuntimeEnabledFeatures::CSSDisplayAnimationEnabled() && old_style &&
-        old_style->Display() != EDisplay::kNone))) {
+       (old_style && old_style->Display() != EDisplay::kNone))) {
     const Vector<AtomicString>& name_list = animation_data->NameList();
     for (wtf_size_t i = 0; i < name_list.size(); ++i) {
       AtomicString name = name_list[i];
@@ -1897,17 +1896,6 @@ void UpdateAnimationFlagsForEffect(const AnimationEffect& effect,
   }
 }
 
-void SetCompositablePaintAnimationChangedIfAffected(
-    const AnimationEffect& effect,
-    ComputedStyleBuilder& builder) {
-  if ((RuntimeEnabledFeatures::CompositeBGColorAnimationEnabled() &&
-       AffectsBackgroundColor(effect)) ||
-      (RuntimeEnabledFeatures::CompositeClipPathAnimationEnabled() &&
-       AffectsClipPath(effect))) {
-    builder.SetCompositablePaintAnimationChanged(true);
-  }
-}
-
 // Called for animations that are newly created or updated.
 void UpdateAnimationFlagsForInertEffect(const InertEffect& effect,
                                         ComputedStyleBuilder& builder) {
@@ -1915,10 +1903,6 @@ void UpdateAnimationFlagsForInertEffect(const InertEffect& effect,
     return;
 
   UpdateAnimationFlagsForEffect(effect, builder);
-
-  // We defensively assume that any update to an existing animation
-  // would result in CompositorPending()==true.
-  SetCompositablePaintAnimationChangedIfAffected(effect, builder);
 }
 
 // Called for existing animations that are not modified in this update.
@@ -1931,19 +1915,6 @@ void UpdateAnimationFlagsForAnimation(const Animation& animation,
   }
 
   UpdateAnimationFlagsForEffect(effect, builder);
-
-  if (animation.CalculateAnimationPlayState() != Animation::kIdle &&
-      animation.CompositorPending()) {
-    // If something about the animation changed since the last frame (e.g. the
-    // effect was modified), we may need to repaint. We use the
-    // CompositorPending flag to detect such changes, and conditionally set
-    // the CompositablePaintAnimationChanged on ComputedStyle which ultimately
-    // invalidates paint.
-    //
-    // See ComputedStyle::UpdatePropertySpecificDifferences for how this flag
-    // is used.
-    SetCompositablePaintAnimationChangedIfAffected(effect, builder);
-  }
 }
 
 }  // namespace
@@ -1982,15 +1953,6 @@ void CSSAnimations::UpdateAnimationFlags(Element& animating_element,
       // style once the timing of effect is ready to use.
       // https://crbug.com/814851.
       UpdateAnimationFlagsForEffect(*entry->GetEffect(), builder);
-    }
-
-    // All Animations in this list will get SetCompositorPending(true)
-    // during MaybeApplyPendingUpdate.
-    for (const Animation* animation : update.UpdatedCompositorKeyframes()) {
-      if (!is_suppressed(*animation)) {
-        SetCompositablePaintAnimationChangedIfAffected(*animation->effect(),
-                                                       builder);
-      }
     }
 
     EffectStack& effect_stack = element_animations->GetEffectStack();
@@ -2398,11 +2360,11 @@ void CSSAnimations::CalculateTransitionUpdateForPropertyHandle(
   // transition, then don't start a transition.
   if (discrete_interpolation &&
       behavior != CSSTransitionData::TransitionBehavior::kAllowDiscrete) {
+    state.update.UnstartTransition(property);
     return;
   }
 
   if (!start || !end) {
-    DCHECK(RuntimeEnabledFeatures::CSSTransitionDiscreteEnabled());
     const Document& document = state.animating_element.GetDocument();
     const CSSValue* start_css_value =
         AnimationUtils::KeyframeValueFromComputedStyle(
@@ -2576,11 +2538,6 @@ void CSSAnimations::CalculateTransitionUpdateForStandardProperty(
                                            writing_direction.GetWritingMode());
     PropertyHandle property_handle = PropertyHandle(property);
 
-    if (!RuntimeEnabledFeatures::CSSTransitionDiscreteEnabled() &&
-        !animate_all && !property.IsInterpolable()) {
-      continue;
-    }
-
     CalculateTransitionUpdateForPropertyHandle(
         state, transition_property.property_type, property_handle,
         transition_index, animate_all);
@@ -2654,6 +2611,9 @@ void CSSAnimations::CalculateTransitionUpdate(
             transition_data->PropertyList()[transition_index];
         if (transition_property.unresolved_property == CSSPropertyID::kAll) {
           any_transition_had_transition_all = true;
+          // We don't need to build listed_properties (which is expensive for
+          // 'all').
+          state.listed_properties = nullptr;
         }
         CalculateTransitionUpdateForProperty(
             state, transition_property, transition_index, writing_direction);
@@ -3160,14 +3120,10 @@ bool CSSAnimations::IsAnimationAffectingProperty(const CSSProperty& property) {
   }
 
   switch (property.PropertyID()) {
-    case CSSPropertyID::kAlternativeAnimationDelay:
-    case CSSPropertyID::kAlternativeAnimationWithDelayStartEnd:
     case CSSPropertyID::kAlternativeAnimationWithTimeline:
     case CSSPropertyID::kAnimation:
     case CSSPropertyID::kAnimationComposition:
     case CSSPropertyID::kAnimationDelay:
-    case CSSPropertyID::kAnimationDelayEnd:
-    case CSSPropertyID::kAnimationDelayStart:
     case CSSPropertyID::kAnimationDirection:
     case CSSPropertyID::kAnimationDuration:
     case CSSPropertyID::kAnimationFillMode:
@@ -3202,9 +3158,6 @@ bool CSSAnimations::IsAnimationAffectingProperty(const CSSProperty& property) {
     case CSSPropertyID::kWillChange:
     case CSSPropertyID::kWritingMode:
       return true;
-    case CSSPropertyID::kDisplay:
-    case CSSPropertyID::kContentVisibility:
-      return !RuntimeEnabledFeatures::CSSDisplayAnimationEnabled();
     default:
       return false;
   }

@@ -56,6 +56,7 @@ import org.robolectric.shadows.ShadowLooper;
 
 import org.chromium.base.Callback;
 import org.chromium.base.UserDataHost;
+import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.task.TaskTraits;
 import org.chromium.base.task.test.ShadowPostTask;
 import org.chromium.base.test.BaseRobolectricTestRunner;
@@ -81,7 +82,9 @@ import org.chromium.chrome.browser.toolbar.top.CaptureReadinessResult;
 import org.chromium.chrome.browser.toolbar.top.NavigationPopup.HistoryDelegate;
 import org.chromium.chrome.browser.toolbar.top.ToolbarSnapshotDifference;
 import org.chromium.chrome.browser.toolbar.top.ToolbarTablet.OfflineDownloader;
+import org.chromium.chrome.browser.user_education.UserEducationHelper;
 import org.chromium.components.content_settings.CookieBlocking3pcdStatus;
+import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.content_public.common.ContentUrlConstants;
 import org.chromium.ui.base.TestActivity;
 import org.chromium.ui.base.WindowAndroid;
@@ -119,6 +122,8 @@ public class CustomTabToolbarUnitTest {
     @Mock HistoryDelegate mHistoryDelegate;
     @Mock BooleanSupplier mPartnerHomepageEnabledSupplier;
     @Mock OfflineDownloader mOfflineDownloader;
+    @Mock UserEducationHelper mUserEducationHelper;
+    @Mock Tracker mTracker;
     @Mock Tab mTab;
     @Mock Callback<Integer> mContainerVisibilityChangeObserver;
     @Mock View mParentView;
@@ -153,13 +158,17 @@ public class CustomTabToolbarUnitTest {
                 (CustomTabToolbar)
                         LayoutInflater.from(mActivity)
                                 .inflate(R.layout.custom_tabs_toolbar, null, false);
+        ObservableSupplierImpl<Tracker> trackerSupplier = new ObservableSupplierImpl<>();
+        trackerSupplier.set(mTracker);
         mToolbar.initialize(
                 mToolbarDataProvider,
                 mTabController,
                 mMenuButtonCoordinator,
                 mHistoryDelegate,
                 mPartnerHomepageEnabledSupplier,
-                mOfflineDownloader);
+                mOfflineDownloader,
+                mUserEducationHelper,
+                trackerSupplier);
 
         when(mFeatureOverridesManager.isFeatureEnabled(anyString())).thenReturn(null);
         mToolbar.setFeatureOverridesManager(mFeatureOverridesManager);
@@ -339,7 +348,6 @@ public class CustomTabToolbarUnitTest {
     }
 
     @Test
-    @EnableFeatures({ChromeFeatureList.CCT_RESIZABLE_SIDE_SHEET})
     public void testMaximizeButton() {
         assertFalse(mToolbar.isMaximizeButtonEnabledForTesting());
         mToolbar.initSideSheetMaximizeButton(/* maximizedOnInit= */ false, () -> true);
@@ -478,7 +486,6 @@ public class CustomTabToolbarUnitTest {
     }
 
     @Test
-    @EnableFeatures({ChromeFeatureList.CCT_RESIZABLE_SIDE_SHEET})
     public void testHandleStrategy_ClickCloseListener() {
         var strategy1 = new SimpleHandleStrategy(r -> {});
         mToolbar.setHandleStrategy(strategy1);
@@ -532,25 +539,6 @@ public class CustomTabToolbarUnitTest {
 
     @Test
     public void
-            testCookieControlsIcon_trackingProtectionsEnabled_cookieBlockingEnabled_displaysReminderIPH() {
-        verify(mAnimationDelegate, never()).updateSecurityButton(anyInt());
-
-        mLocationBar.onHighlightCookieControl(true);
-        mLocationBar.onStatusChanged(
-                /* controls_visible= */ true,
-                /* protections_on= */ true,
-                /* enforcement= */ 0,
-                CookieBlocking3pcdStatus.LIMITED,
-                /* expiration= */ 0);
-
-        // Should show only the reminder IPH.
-        mLocationBar.onPageLoadStopped();
-        verify(mPageInfoIPHController, never()).showCookieControlsIPH(anyInt(), anyInt());
-        verify(mPageInfoIPHController, times(1)).showCookieControlsReminderIPH(anyInt(), anyInt());
-    }
-
-    @Test
-    public void
             testCookieControlsIcon_trackingProtectionsEnabled_cookieBlockingDisabled_doesNotDisplayIPH() {
         verify(mAnimationDelegate, never()).updateSecurityButton(anyInt());
 
@@ -565,7 +553,6 @@ public class CustomTabToolbarUnitTest {
         // None of the IPHs should be shown.
         mLocationBar.onPageLoadStopped();
         verify(mPageInfoIPHController, never()).showCookieControlsIPH(anyInt(), anyInt());
-        verify(mPageInfoIPHController, never()).showCookieControlsReminderIPH(anyInt(), anyInt());
     }
 
     @Test
@@ -584,7 +571,6 @@ public class CustomTabToolbarUnitTest {
         // Should show only the Cookie controls IPH.
         mLocationBar.onPageLoadStopped();
         verify(mPageInfoIPHController, times(1)).showCookieControlsIPH(anyInt(), anyInt());
-        verify(mPageInfoIPHController, never()).showCookieControlsReminderIPH(anyInt(), anyInt());
     }
 
     private void assertUrlAndTitleVisible(boolean titleVisible, boolean urlVisible) {

@@ -8,7 +8,7 @@
 namespace autofill {
 class CreditCard;
 }  // namespace autofill
-enum class DefaultBrowserPromoSource;
+enum class DefaultBrowserSettingsPageSource;
 namespace password_manager {
 struct CredentialUIEntry;
 enum class PasswordCheckReferrer;
@@ -16,7 +16,7 @@ enum class PasswordCheckReferrer;
 
 @protocol SettingsCommands
 
-// TODO(crbug.com/779791) : Do not pass baseViewController through dispatcher.
+// TODO(crbug.com/41352590) : Do not pass baseViewController through dispatcher.
 // Shows the accounts settings UI, presenting from `baseViewController`. If
 // `baseViewController` is nil BVC will be used as presenterViewController.
 // `skipIfUINotAvailable` if YES, this command will be ignored when the tab
@@ -25,19 +25,19 @@ enum class PasswordCheckReferrer;
             (UIViewController*)baseViewController
                           skipIfUINotAvailable:(BOOL)skipIfUINotAvailable;
 
-// TODO(crbug.com/779791) : Do not pass baseViewController through dispatcher.
+// TODO(crbug.com/41352590) : Do not pass baseViewController through dispatcher.
 // Shows the Google services settings UI, presenting from `baseViewController`.
 // If `baseViewController` is nil BVC will be used as presenterViewController.
 - (void)showGoogleServicesSettingsFromViewController:
     (UIViewController*)baseViewController;
 
-// TODO(crbug.com/779791) : Do not pass baseViewController through dispatcher.
+// TODO(crbug.com/41352590) : Do not pass baseViewController through dispatcher.
 // Shows the Sync settings UI, presenting from `baseViewController`.
 // If `baseViewController` is nil BVC will be used as presenterViewController.
 - (void)showSyncSettingsFromViewController:
     (UIViewController*)baseViewController;
 
-// TODO(crbug.com/779791) : Do not pass baseViewController through dispatcher.
+// TODO(crbug.com/41352590) : Do not pass baseViewController through dispatcher.
 // Shows the sync encryption passphrase UI, presenting from
 // `baseViewController`.
 - (void)showSyncPassphraseSettingsFromViewController:
@@ -72,7 +72,8 @@ enum class PasswordCheckReferrer;
 - (void)showDefaultBrowserSettingsFromViewController:
             (UIViewController*)baseViewController
                                         sourceForUMA:
-                                            (DefaultBrowserPromoSource)source;
+                                            (DefaultBrowserSettingsPageSource)
+                                                source;
 
 // Shows the settings page allowing the user to clear their browsing data.
 - (void)showClearBrowsingDataSettings;

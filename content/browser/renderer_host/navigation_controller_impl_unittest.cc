@@ -448,7 +448,7 @@ TEST_F(NavigationControllerTest, GoToOffset) {
   if (IsBackForwardCacheEnabled()) {
     // The `navigation_entry_committed_counter_` checks below currently fail on
     // the linux-bfcache-rel bot with bfcache enabled, so return early.
-    // TODO(https://crbug.com/1232883): re-enable this test.
+    // TODO(crbug.com/40780539): re-enable this test.
     return;
   }
 
@@ -3765,7 +3765,7 @@ TEST_F(NavigationControllerTest, HistoryNavigate) {
   main_test_rfh()->GoToEntryAtOffset(120, false,
                                      std::nullopt);  // Out of bounds.
   EXPECT_EQ(-1, controller.GetPendingEntryIndex());
-  // TODO(https://crbug.com/1232883): Figure out why HasNavigationRequest() is
+  // TODO(crbug.com/40780539): Figure out why HasNavigationRequest() is
   // true when back/forward cache is enabled.
   EXPECT_EQ(IsBackForwardCacheEnabled(), HasNavigationRequest());
 }
@@ -3792,7 +3792,7 @@ TEST_F(NavigationControllerTest, PruneAllButLastCommittedForFirst) {
     // The PruneAllButLastCommitted() call below currently DCHECKS on the
     // linux-bfcache-rel bot with back/forward cache enabled because
     // CanPruneAllButLastCommitted() returns false, so just return early here.
-    // TODO(https://crbug.com/1232883): Figure out why the DCHECK happened and
+    // TODO(crbug.com/40780539): Figure out why the DCHECK happened and
     // re-enable this test.
     return;
   }
@@ -4596,8 +4596,9 @@ TEST_F(NavigationControllerTest, NavigateToNavigationApiKey_KeyForWrongFrame) {
 class FakeLocalFrameWithDisposedEntries : public content::FakeLocalFrame {
  public:
   explicit FakeLocalFrameWithDisposedEntries(RenderFrameHost* host) {
-    Init(static_cast<TestRenderFrameHost*>(host)
-             ->GetRemoteAssociatedInterfaces());
+    auto* test_host = static_cast<TestRenderFrameHost*>(host);
+    test_host->ResetLocalFrame();
+    Init(test_host->GetRemoteAssociatedInterfaces());
   }
 
   const std::vector<std::string>& disposed_keys() const {

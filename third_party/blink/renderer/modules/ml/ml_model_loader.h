@@ -21,8 +21,9 @@ class DOMArrayBuffer;
 class ExceptionState;
 class ExecutionContext;
 class MLContext;
+class MLModel;
 class ScriptState;
-class ScriptPromiseResolver;
+class ScriptPromiseResolverBase;
 
 class MODULES_EXPORT MLModelLoader final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
@@ -41,9 +42,9 @@ class MODULES_EXPORT MLModelLoader final : public ScriptWrappable {
   ~MLModelLoader() override;
 
   // IDL Interface:
-  ScriptPromise load(ScriptState* script_state,
-                     DOMArrayBuffer* buffer,
-                     ExceptionState& exception_state);
+  ScriptPromise<MLModel> load(ScriptState* script_state,
+                              DOMArrayBuffer* buffer,
+                              ExceptionState& exception_state);
 
   void Trace(Visitor* visitor) const override;
 

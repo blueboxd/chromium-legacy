@@ -5,11 +5,12 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <string_view>
 
 #include "base/check_deref.h"
+#include "base/functional/callback_helpers.h"
 #include "base/run_loop.h"
 #include "base/strings/strcat.h"
-#include "base/strings/string_piece.h"
 #include "base/test/bind.h"
 #include "base/test/test_future.h"
 #include "base/time/time.h"
@@ -21,7 +22,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/web_applications/test/isolated_web_app_test_utils.h"
-#include "chrome/browser/ui/web_applications/web_app_controller_browsertest.h"
+#include "chrome/browser/ui/web_applications/web_app_browsertest_base.h"
 #include "chrome/browser/web_applications/commands/web_app_uninstall_command.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_url_info.h"
 #include "chrome/browser/web_applications/isolated_web_apps/remove_isolated_web_app_data.h"
@@ -118,15 +119,15 @@ class IsolatedWebAppBrowsingDataTest : public IsolatedWebAppBrowserTestHarness {
   }
 
   void SetLocalStorageValue(const content::ToRenderFrameHost& target,
-                            const base::StringPiece& key,
-                            const base::StringPiece& value) {
+                            std::string_view key,
+                            std::string_view value) {
     EXPECT_TRUE(
         ExecJs(target,
                content::JsReplace("localStorage.setItem($1, $2)", key, value)));
   }
 
   std::string GetLocalStorageValue(const content::ToRenderFrameHost& target,
-                                   const base::StringPiece& key) {
+                                   std::string_view key) {
     return EvalJs(target, content::JsReplace("localStorage.getItem($1)", key))
         .ExtractString();
   }
@@ -238,10 +239,11 @@ class IsolatedWebAppBrowsingDataClearingTest
     run_loop.Run();
 
     browsing_data_remover->SetWouldCompleteCallbackForTesting(
-        base::DoNothing());
+        base::NullCallback());
   }
 
   void ClearTimeRangedData(browsing_data::TimePeriod time_period) {
+    const GURL kClearDataUrl("chrome://settings/clearBrowserData");
     base::RunLoop run_loop;
 
     auto* browsing_data_remover = profile()->GetBrowsingDataRemover();
@@ -253,8 +255,13 @@ class IsolatedWebAppBrowsingDataClearingTest
           std::move(callback).Run();
         }));
 
-    content::RenderFrameHost* rfh = ui_test_utils::NavigateToURL(
-        browser(), GURL("chrome://settings/clearBrowserData"));
+    content::RenderFrameHost* rfh = browser()
+                                        ->tab_strip_model()
+                                        ->GetActiveWebContents()
+                                        ->GetPrimaryMainFrame();
+    if (rfh->GetLastCommittedURL() != kClearDataUrl) {
+      rfh = ui_test_utils::NavigateToURL(browser(), kClearDataUrl);
+    }
 
     for (auto& handler : *rfh->GetWebUI()->GetHandlersForTesting()) {
       handler->AllowJavascriptForTesting();
@@ -276,6 +283,8 @@ class IsolatedWebAppBrowsingDataClearingTest
         rfh->GetLastCommittedURL(), "clearBrowsingData", std::move(list_args));
 
     run_loop.Run();
+    browsing_data_remover->SetWouldCompleteCallbackForTesting(
+        base::NullCallback());
   }
 
   void ClearAllTimeData() {
@@ -330,9 +339,9 @@ class IsolatedWebAppBrowsingDataClearingTest
     storage_partition->GetNetworkContext()->GetCookieManager(
         cookie_manager.BindNewPipeAndPassReceiver());
 
-    auto cookie_obj = net::CanonicalCookie::Create(url, cookie_line, time,
-                                                   /*server_time=*/std::nullopt,
-                                                   cookie_partition_key);
+    auto cookie_obj = net::CanonicalCookie::CreateForTesting(
+        url, cookie_line, time,
+        /*server_time=*/std::nullopt, cookie_partition_key);
 
     base::test::TestFuture<net::CookieAccessResult> future;
     cookie_manager->SetCanonicalCookie(*cookie_obj, url,
@@ -688,7 +697,7 @@ IN_PROC_BROWSER_TEST_F(IsolatedWebAppBrowsingDataClearingTest,
       url_info1.GetStoragePartitionConfigForControlledFrame(
           profile(), "partition_name_1", /*in_memory=*/true)};
 
-  // Set cookies for: Now, 3 days ago, 10 days ago.
+  // Set cookies for: 3 days ago, 10 days ago.
   const std::vector<TestCookie> cookietest_cases{
       {base::Time::Now() - base::Days(3), "b=1"},
       {base::Time::Now() - base::Days(10), "c=2"}};

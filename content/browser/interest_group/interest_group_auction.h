@@ -490,6 +490,9 @@ class CONTENT_EXPORT InterestGroupAuction
 
   ~InterestGroupAuction() override;
 
+  // The time when this InterestGroupAuction was created; used for UMA.
+  base::TimeTicks creation_time() { return creation_time_; }
+
   // Starts loading the interest groups that can participate in an auction.
   //
   // Both seller and buyer origins are filtered by
@@ -927,6 +930,10 @@ class CONTENT_EXPORT InterestGroupAuction
   // are ready.
   void ScoreQueuedBidsIfReady();
 
+  void HandleUpdateIfOlderThan(
+      const blink::InterestGroup& interest_group,
+      std::optional<base::TimeDelta> update_if_older_than);
+
   // Performs errors handling when an error is encountered while decoding an
   // additional bid. The caller of this should return immediately after calling
   // this function.
@@ -1004,7 +1011,8 @@ class CONTENT_EXPORT InterestGroupAuction
           component_auction_modified_bid_params,
       std::optional<double> bid_in_seller_currency,
       const std::optional<GURL>& debug_loss_report_url,
-      const std::optional<GURL>& debug_win_report_url);
+      const std::optional<GURL>& debug_win_report_url,
+      const PrivateAggregationRequests& pa_requests);
 
   // auction_worklet::mojom::ScoreAdClient implementation:
   void OnScoreAdComplete(
@@ -1124,8 +1132,8 @@ class CONTENT_EXPORT InterestGroupAuction
   //
   // Returns true iff a report was issued.
   //
-  // TODO(crbug.com/1416621): Consider pre-aggregating metrics before sending to
-  // the server.
+  // TODO(crbug.com/40256945): Consider pre-aggregating metrics before sending
+  // to the server.
   bool ReportPaBuyersValueIfAllowed(
       const blink::InterestGroup& interest_group,
       blink::SellerCapabilities capability,

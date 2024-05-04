@@ -128,6 +128,13 @@ base::WeakPtr<Kcer> KcerFactory::GetKcer(Profile* profile) {
 }
 
 // static
+void KcerFactory::RecordPkcs12CertDualWritten() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  CHECK(g_kcer_factory);
+  g_kcer_factory->RecordPkcs12CertDualWrittenImpl();
+}
+
+// static
 bool KcerFactory::IsHighLevelChapsClientInitialized() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   CHECK(g_kcer_factory);
@@ -168,18 +175,7 @@ KcerFactory::~KcerFactory() = default;
 
 // static
 void KcerFactory::Shutdown() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (!g_kcer_factory) {
-    return;
-  }
-
-  if (g_kcer_factory->session_chaps_client_) {
-    // `session_chaps_client_` is initialized in
-    // EnsureHighLevelChapsClientInitialized and should be shut down in Ash and
-    // Lacros before its dependencies.
-    g_kcer_factory->session_chaps_client_->Shutdown();
-  }
-  g_kcer_factory->did_shutdown_ = true;
+  // TODO(miersh): Delete this method.
 }
 
 // static
@@ -230,12 +226,11 @@ base::WeakPtr<Kcer> KcerFactory::GetKcerImpl(Profile* profile) {
 
 bool KcerFactory::ServiceIsCreatedWithBrowserContext() const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  // TODO(miersh): This should be set to true because Kcer for the primary
-  // context needs to be created as soon as possible. It is used by the
-  // components through kcer::ExtraInstance::GetDefaultKcer() and on consumer
-  // devices to determine whether the current user is the owner. It's disabled
-  // for now because Kcer is not used anywhere yet.
-  return false;
+  // This should be true because Kcer for the primary context needs to be
+  // created as soon as possible. It is used by the components through
+  // kcer::ExtraInstance::GetDefaultKcer() and on consumer devices to determine
+  // whether the current user is the owner.
+  return true;
 }
 
 std::unique_ptr<KeyedService>
@@ -259,7 +254,7 @@ KcerFactory::BuildServiceInstanceForBrowserContext(
       base::BindOnce(&KcerFactory::StartInitializingKcerInstance,
                      base::Unretained(const_cast<KcerFactory*>(this)),
                      new_kcer->GetWeakPtr(),
-                     // TODO(https://crbug.com/1380714): Remove
+                     // TODO(crbug.com/40061562): Remove
                      // `UnsafeDanglingUntriaged`
                      base::UnsafeDanglingUntriaged(context)));
 

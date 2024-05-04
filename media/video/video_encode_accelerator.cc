@@ -8,6 +8,7 @@
 
 #include "base/functional/callback.h"
 #include "base/ranges/algorithm.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -37,16 +38,41 @@ BitstreamBufferMetadata::BitstreamBufferMetadata(size_t payload_size_bytes,
     : payload_size_bytes(payload_size_bytes),
       key_frame(key_frame),
       timestamp(timestamp) {}
+BitstreamBufferMetadata::~BitstreamBufferMetadata() = default;
 
-bool BitstreamBufferMetadata::dropped_frame() const {
-  return payload_size_bytes == 0;
+// static
+BitstreamBufferMetadata BitstreamBufferMetadata::CreateForDropFrame(
+    base::TimeDelta ts,
+    uint8_t sid,
+    bool end_of_picture) {
+  BitstreamBufferMetadata metadata(0, false, ts);
+  metadata.drop = DropFrameMetadata{
+      .spatial_idx = sid,
+      .end_of_picture = end_of_picture,
+  };
+
+  return metadata;
 }
 
-BitstreamBufferMetadata::~BitstreamBufferMetadata() = default;
+bool BitstreamBufferMetadata::end_of_picture() const {
+  if (vp9) {
+    return vp9->end_of_picture;
+  }
+  if (drop) {
+    return drop->end_of_picture;
+  }
+  return true;
+}
+bool BitstreamBufferMetadata::dropped_frame() const {
+  return drop.has_value();
+}
 
 std::optional<uint8_t> BitstreamBufferMetadata::spatial_idx() const {
   if (vp9) {
     return vp9->spatial_idx;
+  }
+  if (drop) {
+    return drop->spatial_idx;
   }
   return std::nullopt;
 }
@@ -132,6 +158,9 @@ std::string VideoEncodeAccelerator::Config::AsHumanReadableString() const {
       str += "no-preference";
       break;
   }
+
+  str += base::StringPrintf(", drop_frame_thresh_percentage: %hhu",
+                            drop_frame_thresh_percentage);
 
   if (spatial_layers.empty())
     return str;
@@ -219,7 +248,7 @@ bool VideoEncodeAccelerator::IsFlushSupported() {
 
 bool VideoEncodeAccelerator::IsGpuFrameResizeSupported() {
 #if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_WIN)
-  // TODO(crbug.com/1166889) Add proper method overrides in
+  // TODO(crbug.com/40164413) Add proper method overrides in
   // MojoVideoEncodeAccelerator and other subclasses that might return true.
   return true;
 #else
@@ -279,9 +308,8 @@ bool operator==(const BitstreamBufferMetadata& l,
                 const BitstreamBufferMetadata& r) {
   return l.payload_size_bytes == r.payload_size_bytes &&
          l.key_frame == r.key_frame && l.timestamp == r.timestamp &&
-         l.end_of_picture == r.end_of_picture && l.vp8 == r.vp8 &&
-         l.vp9 == r.vp9 && l.h264 == r.h264 && l.av1 == r.av1 &&
-         l.h265 == r.h265;
+         l.vp8 == r.vp8 && l.vp9 == r.vp9 && l.h264 == r.h264 &&
+         l.av1 == r.av1 && l.h265 == r.h265;
 }
 
 bool operator==(const VideoEncodeAccelerator::Config::SpatialLayer& l,

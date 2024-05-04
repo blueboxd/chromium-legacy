@@ -8,7 +8,7 @@
 #include <string>
 
 #include "chrome/browser/extensions/extension_context_menu_model.h"
-#include "chrome/browser/extensions/site_permissions_helper.h"
+#include "chrome/browser/extensions/permissions/site_permissions_helper.h"
 #include "chrome/browser/ui/extensions/extension_popup_types.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_hover_card_types.h"
 #include "ui/base/models/image_model.h"
@@ -134,11 +134,6 @@ class ToolbarActionViewController {
 
   // Returns whether there is currently a popup visible.
   virtual bool IsShowingPopup() const = 0;
-
-  // Returns whether the action should show site access requests in the toolbar
-  // for `web_contents`;
-  virtual bool ShouldShowSiteAccessRequestInToolbar(
-      content::WebContents* web_contents) const = 0;
 
   // Hides the current popup, if one is visible.
   virtual void HidePopup() = 0;

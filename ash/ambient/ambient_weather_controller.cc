@@ -129,9 +129,12 @@ void AmbientWeatherController::FetchWeather() {
   Shell::Get()
       ->ambient_controller()
       ->ambient_backend_controller()
-      ->FetchWeather(base::BindOnce(
-          &AmbientWeatherController::StartDownloadingWeatherConditionIcon,
-          weak_factory_.GetWeakPtr()));
+      ->FetchWeather(
+          /*weather_client_id=*/std::nullopt,
+          /*prefer_alpha_endpoint=*/false,
+          base::BindOnce(
+              &AmbientWeatherController::StartDownloadingWeatherConditionIcon,
+              weak_factory_.GetWeakPtr()));
 }
 
 void AmbientWeatherController::StartDownloadingWeatherConditionIcon(

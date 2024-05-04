@@ -285,11 +285,6 @@ targets.binaries.windowed_test_launcher(
 )
 
 targets.binaries.console_test_launcher(
-    name = "cast_display_settings_unittests",
-    label = "//chromecast/ui/display_settings:cast_display_settings_unittests",
-)
-
-targets.binaries.console_test_launcher(
     name = "cast_runner_browsertests",
     label = "//fuchsia_web/runners:cast_runner_browsertests",
 )
@@ -302,6 +297,13 @@ targets.binaries.console_test_launcher(
 targets.binaries.console_test_launcher(
     name = "cast_runner_unittests",
     label = "//fuchsia_web/runners:cast_runner_unittests",
+)
+
+# TODO(crbug.com/41489655): Remove unneeded cast_* suites.
+
+targets.binaries.console_test_launcher(
+    name = "cast_display_settings_unittests",
+    label = "//chromecast/ui/display_settings:cast_display_settings_unittests",
 )
 
 targets.binaries.console_test_launcher(
@@ -383,6 +385,14 @@ targets.binaries.generated_script(
     ],
 )
 
+targets.binaries.generated_script(
+    name = "cq_medium_tast_tests",
+    label = "//chromeos:cq_medium_tast_tests",
+    args = [
+        "--logs-dir=${ISOLATED_OUTDIR}",
+    ],
+)
+
 targets.binaries.console_test_launcher(
     name = "chrome_elf_unittests",
     label = "//chrome/chrome_elf:chrome_elf_unittests",
@@ -423,7 +433,7 @@ targets.binaries.console_test_launcher(
     label = "//chrome/android:chrome_public_smoke_test",
 )
 
-# TODO(crbug.com/1238057): Rename to chrome_public_integration_test_apk
+# TODO(crbug.com/40193330): Rename to chrome_public_integration_test_apk
 targets.binaries.console_test_launcher(
     name = "chrome_public_test_apk",
     label = "//chrome/android:chrome_public_test_apk",
@@ -502,22 +512,6 @@ targets.binaries.windowed_test_launcher(
 targets.binaries.generated_script(
     name = "chrome_wpt_tests",
     label = "//:chrome_wpt_tests",
-    results_handler = "layout tests",
-    args = [
-        "--results-directory",
-        "${ISOLATED_OUTDIR}",
-    ],
-    merge = targets.merge(
-        script = "//third_party/blink/tools/merge_web_test_results.py",
-        args = [
-            "--verbose",
-        ],
-    ),
-)
-
-targets.binaries.generated_script(
-    name = "content_shell_wpt",
-    label = "//:content_shell_wpt",
     results_handler = "layout tests",
     args = [
         "--results-directory",
@@ -820,6 +814,22 @@ targets.binaries.windowed_test_launcher(
 targets.binaries.console_test_launcher(
     name = "fake_libva_driver_unittest",
     label = "//media/gpu/vaapi/test/fake_libva_driver:fake_libva_driver_unittest",
+)
+
+targets.binaries.generated_script(
+    name = "headless_shell_wpt",
+    label = "//:headless_shell_wpt",
+    results_handler = "layout tests",
+    args = [
+        "--results-directory",
+        "${ISOLATED_OUTDIR}",
+    ],
+    merge = targets.merge(
+        script = "//third_party/blink/tools/merge_web_test_results.py",
+        args = [
+            "--verbose",
+        ],
+    ),
 )
 
 targets.binaries.console_test_launcher(
@@ -1202,8 +1212,8 @@ targets.binaries.console_test_launcher(
 )
 
 targets.binaries.console_test_launcher(
-    name = "test_sample_jni_apk",
-    label = "//third_party/jni_zero/sample:test_sample_jni_apk",
+    name = "jni_zero_sample_apk_test",
+    label = "//third_party/jni_zero/sample:jni_zero_sample_apk_test",
 )
 
 targets.binaries.generated_script(
@@ -1323,6 +1333,11 @@ targets.binaries.console_test_launcher(
 targets.binaries.windowed_test_launcher(
     name = "notification_helper_unittests",
     label = "//chrome/notification_helper:notification_helper_unittests",
+)
+
+targets.binaries.generated_script(
+    name = "ondevice_quality_tests",
+    label = "//components/optimization_guide/internal/testing:ondevice_quality_tests",
 )
 
 targets.binaries.generated_script(

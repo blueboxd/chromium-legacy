@@ -40,11 +40,20 @@
 // action.
 - (void)locationBarVisitCopyLinkTapped;
 
+// Notifies the delegate about a tap on the Search Copied Text context menu
+// action.
+- (void)locationBarSearchCopiedTextTapped;
+
 // Starts a reverse image search for the image currently in the pasteboard.
 - (void)searchCopiedImage;
 
 // Starts a Lens search for the image currently in the pasteboard.
 - (void)lensCopiedImage;
+
+// Displays/hides the contextual panel entrypoint view. If `display` is NO, the
+// view will always be hidden. However, if it is YES, it will only be unhidden
+// if it should currently be displayed.
+- (void)displayContextualPanelEntrypointView:(BOOL)display;
 
 @end
 
@@ -97,6 +106,11 @@
 // view of this view controller is initialized. This must only be called once.
 - (void)setBadgeView:(UIView*)badgeView;
 
+// Sets the Contextual Panel Entrypoint view to display different entrypoint
+// UIs. This must be called only once and set before the view of this view
+// controller is initialized.
+- (void)setContextualPanelEntrypointView:(UIView*)contextualPanelEntrypointView;
+
 // Switches between the two states of the location bar:
 // - editing state, with the textfield;
 // - non-editing state, with location icon and text.
@@ -116,6 +130,15 @@
 - (void)updateForNTP:(BOOL)isNTP;
 // Sets `enabled` of the share button.
 - (void)setShareButtonEnabled:(BOOL)enabled;
+
+// Whether the location bar is currently in a state where the large Contextual
+// Panel entrypoint can be shown (i.e. it is not hidden).
+- (BOOL)canShowLargeContextualPanelEntrypoint;
+
+// Sets the location label of the location bar centered relative to the content
+// around it when centered is passed as YES. Otherwise, resets it to the
+// "absolute" center.
+- (void)setLocationBarLabelCenteredBetweenContent:(BOOL)centered;
 
 @end
 

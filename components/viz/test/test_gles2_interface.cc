@@ -375,19 +375,6 @@ void TestGLES2Interface::GetQueryObjectuivEXT(GLuint id,
   }
 }
 
-void TestGLES2Interface::ProduceTextureDirectCHROMIUM(GLuint texture,
-                                                      GLbyte* mailbox) {
-  gpu::Mailbox gpu_mailbox = gpu::Mailbox::GenerateLegacyMailboxForTesting();
-  memcpy(mailbox, gpu_mailbox.name, sizeof(gpu_mailbox.name));
-}
-
-GLuint TestGLES2Interface::CreateAndConsumeTextureCHROMIUM(
-    const GLbyte* mailbox) {
-  GLuint texture_id;
-  GenTextures(1, &texture_id);
-  return texture_id;
-}
-
 GLuint TestGLES2Interface::CreateAndTexStorage2DSharedImageCHROMIUM(
     const GLbyte* mailbox) {
   GLuint texture_id;

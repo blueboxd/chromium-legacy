@@ -20,10 +20,12 @@
 namespace gwp_asan {
 namespace internal {
 
+std::optional<AllocatorSettings> GetAllocatorSettingsImpl(
+    const base::Feature& feature,
+    bool boost_sampling);
 std::optional<AllocatorSettings> GetAllocatorSettings(
     const base::Feature& feature,
-    bool boost_sampling,
-    const char* process_type);
+    bool boost_sampling);
 
 namespace {
 
@@ -33,6 +35,9 @@ BASE_FEATURE(kTestFeature1,
              base::FEATURE_ENABLED_BY_DEFAULT);
 BASE_FEATURE(kTestFeature2,
              "GwpAsanTestFeature2",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+BASE_FEATURE(kTestFeature3,
+             "GwpAsanTestFeature3",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Tries to enable hooking with the given process sampling parameters
@@ -49,8 +54,8 @@ size_t processSamplingTest(const char* process_sampling,
 
   size_t enabled = 0;
   for (size_t i = 0; i < kLoopIterations; i++) {
-    if (GetAllocatorSettings(kTestFeature1, process_sampling_boost != nullptr,
-                             "")) {
+    if (GetAllocatorSettings(kTestFeature1,
+                             process_sampling_boost != nullptr)) {
       enabled++;
     }
   }
@@ -74,7 +79,7 @@ std::set<size_t> allocationSamplingTest(
 
   std::set<size_t> frequencies;
   for (size_t i = 0; i < kLoopIterations; i++) {
-    if (auto settings = GetAllocatorSettings(kTestFeature2, false, "")) {
+    if (auto settings = GetAllocatorSettings(kTestFeature2, false)) {
       frequencies.insert(settings->sampling_frequency);
     }
   }
@@ -110,6 +115,28 @@ TEST(GwpAsanTest, AllocationSamplingWorks) {
     EXPECT_GE(freq, 1000U);
     EXPECT_LE(freq, 64000U);
   }
+}
+
+TEST(GwpAsanTest, GetDefaultAllocatorSettings) {
+  std::map<std::string, std::string> empty_parameters;
+  base::test::ScopedFeatureList scoped_feature;
+  scoped_feature.InitAndEnableFeatureWithParameters(kTestFeature3,
+                                                    empty_parameters);
+
+  const auto settings = GetAllocatorSettingsImpl(kTestFeature3, false);
+  EXPECT_TRUE(settings.has_value());
+}
+
+TEST(GwpAsanTest, GetOutOfRangeAllocatorSettings) {
+  std::map<std::string, std::string> bad_parameters;
+  // Exceeds `MaxMetadata`, forcing failure.
+  bad_parameters["MaxAllocations"] = "9999";
+  base::test::ScopedFeatureList scoped_feature;
+  scoped_feature.InitAndEnableFeatureWithParameters(kTestFeature3,
+                                                    bad_parameters);
+
+  const auto settings = GetAllocatorSettingsImpl(kTestFeature3, false);
+  EXPECT_FALSE(settings.has_value());
 }
 
 }  // namespace internal

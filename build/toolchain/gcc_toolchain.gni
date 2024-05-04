@@ -219,9 +219,6 @@ template("single_gcc_toolchain") {
                (!defined(invoker.needs_gomacc_path_arg) ||
                 !invoker.needs_gomacc_path_arg)) {
       compiler_prefix = "${goma_path} "
-      if (use_goma_rust) {
-        rust_compiler_prefix = compiler_prefix
-      }
     } else {
       compiler_prefix = "${toolchain_cc_wrapper} "
 
@@ -238,14 +235,6 @@ template("single_gcc_toolchain") {
       }
       link_prefix = "${rbe_bin_dir}/rewrapper -cfg=${toolchain_rbe_link_cfg_file} -exec_root=${rbe_exec_root} "
       not_needed([ "goma_path" ])
-    } else if (use_goma_thin_lto && toolchain_uses_goma && use_thin_lto) {
-      # remote_ld.py uses autoninja in an attempt to set a reasonable
-      # number of jobs, but this results in too low a value on
-      # Chrome OS builders. So we pass in an explicit value.
-      link_prefix =
-          "\"$python_path\" " +
-          rebase_path("//tools/clang/scripts/remote_ld.py", root_build_dir) +
-          " --wrapper ${goma_path} --jobs 200 --ar-path ${invoker.ar} -- "
     } else {
       link_prefix = ""
       not_needed([ "goma_path" ])
@@ -886,8 +875,7 @@ template("gcc_toolchain") {
 # be specified by the invoker, and optionally toolprefix if it's a
 # cross-compile case. Note that for a cross-compile case this toolchain
 # requires a config to pass the appropriate -target option, or else it will
-# actually just be doing a native compile. The invoker can optionally override
-# use_gold too.
+# actually just be doing a native compile.
 template("clang_toolchain") {
   gcc_toolchain(target_name) {
     _path = "$clang_base_path/bin"

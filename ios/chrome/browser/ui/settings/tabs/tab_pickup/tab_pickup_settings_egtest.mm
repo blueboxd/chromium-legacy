@@ -7,7 +7,6 @@
 #import "build/branding_buildflags.h"
 #import "components/policy/policy_constants.h"
 #import "components/signin/public/base/signin_pref_names.h"
-#import "components/sync/base/features.h"
 #import "ios/chrome/browser/policy/model/policy_earl_grey_utils.h"
 #import "ios/chrome/browser/signin/model/fake_system_identity.h"
 #import "ios/chrome/browser/tabs/model/tab_pickup/features.h"
@@ -34,15 +33,6 @@ namespace {
 
 // Timeout in seconds to wait for asynchronous sync operations.
 constexpr base::TimeDelta kSyncOperationTimeout = base::Seconds(10);
-
-// Sign in and sync using a fake identity.
-void SignInAndSync() {
-  FakeSystemIdentity* fake_identity = [FakeSystemIdentity fakeIdentity1];
-  [SigninEarlGrey addFakeIdentity:fake_identity];
-  [SigninEarlGreyUI signinWithFakeIdentity:fake_identity enableSync:YES];
-  [ChromeEarlGrey
-      waitForSyncTransportStateActiveWithTimeout:kSyncOperationTimeout];
-}
 
 // Opens tabs settings.
 void OpenTabsSettings() {
@@ -88,24 +78,16 @@ id<GREYMatcher> TabPickupSettingsSwitchItem(bool is_toggled_on, bool enabled) {
 - (AppLaunchConfiguration)appConfigurationForTestCase {
   AppLaunchConfiguration config;
   config.features_enabled.push_back(kTabPickupThreshold);
-
-  if ([self isRunningTest:@selector(testTabPickupSettingsSynced)]) {
-    // With kReplaceSyncPromosWithSignInPromos enabled, Sync can't be enabled
-    // anymore.
-    config.features_disabled.push_back(
-        syncer::kReplaceSyncPromosWithSignInPromos);
-  }
-
   return config;
 }
 
-- (void)setUp {
-  [super setUp];
-}
-
-// Ensures that the tab pickup settings are correctly working when synced.
-- (void)testTabPickupSettingsSynced {
-  SignInAndSync();
+// Ensures that the tab pickup settings are correctly working when history/tab
+// sync is enabled.
+- (void)testTabPickupSettingsWhenHistorySyncEnabled {
+  [SigninEarlGreyUI signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]
+                         enableHistorySync:YES];
+  [ChromeEarlGrey
+      waitForSyncTransportStateActiveWithTimeout:kSyncOperationTimeout];
 
   OpenTabsSettings();
   [[EarlGrey selectElementWithMatcher:TabsSettingsTabPickupDetailText(true)]
@@ -120,8 +102,9 @@ id<GREYMatcher> TabPickupSettingsSwitchItem(bool is_toggled_on, bool enabled) {
       assertWithMatcher:grey_sufficientlyVisible()];
 }
 
-// Ensures that the tab pickup settings are correctly working when not synced.
-- (void)testTabPickupSettingsNotSynced {
+// Ensures that the tab pickup settings are correctly working when the user
+// is signed out.
+- (void)testTabPickupSettingsWhenSignedOut {
   OpenTabsSettings();
   [[EarlGrey selectElementWithMatcher:TabsSettingsTabPickupDetailText(false)]
       assertWithMatcher:grey_sufficientlyVisible()];

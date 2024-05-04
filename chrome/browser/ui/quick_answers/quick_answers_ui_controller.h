@@ -13,12 +13,18 @@
 #include "chrome/browser/ui/quick_answers/ui/rich_answers_view.h"
 #include "chrome/browser/ui/quick_answers/ui/user_consent_view.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/views/view_tracker.h"
+#include "ui/views/view_utils.h"
 #include "ui/views/widget/unique_widget_ptr.h"
 #include "ui/views/widget/widget.h"
 
 class Profile;
 class QuickAnswersView;
 class QuickAnswersControllerImpl;
+
+namespace chromeos {
+class ReadWriteCardsUiController;
+}  // namespace chromeos
 
 namespace quick_answers {
 class RichAnswersView;
@@ -38,7 +44,6 @@ class QuickAnswersUiController {
 
   // Constructs/resets the Quick Answers card view.
   void CreateQuickAnswersView(Profile* profile,
-                              const gfx::Rect& anchor_bounds,
                               const std::string& title,
                               const std::string& query,
                               bool is_internal);
@@ -55,17 +60,13 @@ class QuickAnswersUiController {
 
   void OnRetryLabelPressed();
 
-  // |bounds| is the bound of context menu.
   void RenderQuickAnswersViewWithResult(
-      const gfx::Rect& bounds,
       const quick_answers::QuickAnswer& quick_answer);
 
   void SetActiveQuery(Profile* profile, const std::string& query);
 
   // Show retry option in the quick answers view.
   void ShowRetry();
-
-  void UpdateQuickAnswersBounds(const gfx::Rect& anchor_bounds);
 
   // Creates a view for asking the user for consent about the Quick Answers
   // feature vertically aligned to the anchor.
@@ -101,16 +102,20 @@ class QuickAnswersUiController {
   // showing.
   bool IsShowingRichAnswersView() const;
 
+  // Gets the controller that is used to show the widget containing quick
+  // answers views.
+  chromeos::ReadWriteCardsUiController& GetReadWriteCardsUiController() const;
+
   quick_answers::QuickAnswersView* quick_answers_view() {
-    return static_cast<quick_answers::QuickAnswersView*>(
-        quick_answers_widget_->GetContentsView());
+    return views::AsViewClass<quick_answers::QuickAnswersView>(
+        quick_answers_view_.view());
   }
   quick_answers::UserConsentView* user_consent_view() {
-    return static_cast<quick_answers::UserConsentView*>(
-        user_consent_widget_->GetContentsView());
+    return views::AsViewClass<quick_answers::UserConsentView>(
+        user_consent_view_.view());
   }
   quick_answers::RichAnswersView* rich_answers_view() {
-    return static_cast<quick_answers::RichAnswersView*>(
+    return views::AsViewClass<quick_answers::RichAnswersView>(
         rich_answers_widget_->GetContentsView());
   }
 
@@ -121,9 +126,10 @@ class QuickAnswersUiController {
   raw_ptr<QuickAnswersControllerImpl> controller_ = nullptr;
 
   // Widget pointers for quick answers related views.
-  views::UniqueWidgetPtr quick_answers_widget_;
-  views::UniqueWidgetPtr user_consent_widget_;
   views::UniqueWidgetPtr rich_answers_widget_;
+
+  views::ViewTracker user_consent_view_;
+  views::ViewTracker quick_answers_view_;
 
   raw_ptr<Profile> profile_ = nullptr;
   std::string query_;

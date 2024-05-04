@@ -51,11 +51,11 @@ build_webui("build") {
   ]
   ts_deps = [
     "//third_party/polymer/v3_0:library",
-    "//ui/webui/resources/cr_components/customize_themes:build_ts",
     "//ui/webui/resources/cr_elements:build_ts",
     "//ui/webui/resources/js:build_ts",
   ]
 
+  webui_context_type = "trusted"
   optimize = optimize_webui
   if (optimize) {
     optimize_webui_host = "profile-picker"

@@ -84,7 +84,7 @@ namespace {
 
 const char kBodyData[] = "Body data";
 const size_t kBodyDataSize = std::size(kBodyData);
-const base::StringPiece kBodyDataStringPiece(kBodyData, kBodyDataSize);
+const std::string_view kBodyDataStringPiece(kBodyData, kBodyDataSize);
 
 static base::TimeDelta g_time_delta;
 static base::TimeTicks g_time_now;
@@ -807,7 +807,8 @@ TEST_F(SpdySessionTest, GoAwayWhileDraining) {
     out += goaway.size();
     ASSERT_EQ(out, joint_size);
   }
-  spdy::SpdySerializedFrame joint_frames(buffer.get(), joint_size, false);
+  spdy::SpdySerializedFrame joint_frames(
+      spdy::test::MakeSerializedFrame(buffer.get(), joint_size));
 
   MockRead reads[] = {
       CreateMockRead(resp, 1), CreateMockRead(joint_frames, 2),
@@ -2860,9 +2861,9 @@ TEST_F(SpdySessionTest, ReadDataWithoutYielding) {
 
   spdy::SpdySerializedFrame partial_data_frame(
       spdy_util_.ConstructSpdyDataFrame(
-          1, base::StringPiece(payload_data, kPayloadSize), /*fin=*/false));
+          1, std::string_view(payload_data, kPayloadSize), /*fin=*/false));
   spdy::SpdySerializedFrame finish_data_frame(spdy_util_.ConstructSpdyDataFrame(
-      1, base::StringPiece(payload_data, kPayloadSize - 1), /*fin=*/true));
+      1, std::string_view(payload_data, kPayloadSize - 1), /*fin=*/true));
 
   spdy::SpdySerializedFrame resp1(
       spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
@@ -3074,7 +3075,7 @@ TEST_F(SpdySessionTest, TestYieldingDuringReadData) {
 
   spdy::SpdySerializedFrame partial_data_frame(
       spdy_util_.ConstructSpdyDataFrame(
-          1, base::StringPiece(payload_data, kPayloadSize), /*fin=*/false));
+          1, std::string_view(payload_data, kPayloadSize), /*fin=*/false));
   spdy::SpdySerializedFrame finish_data_frame(
       spdy_util_.ConstructSpdyDataFrame(1, "h", /*fin=*/true));
 
@@ -3175,10 +3176,10 @@ TEST_F(SpdySessionTest, TestYieldingDuringAsyncReadData) {
   test_stream2.GetBytes(twok_payload_data, kTwoKPayloadSize);
 
   spdy::SpdySerializedFrame eightk_data_frame(spdy_util_.ConstructSpdyDataFrame(
-      1, base::StringPiece(eightk_payload_data, kEightKPayloadSize),
+      1, std::string_view(eightk_payload_data, kEightKPayloadSize),
       /*fin=*/false));
   spdy::SpdySerializedFrame twok_data_frame(spdy_util_.ConstructSpdyDataFrame(
-      1, base::StringPiece(twok_payload_data, kTwoKPayloadSize),
+      1, std::string_view(twok_payload_data, kTwoKPayloadSize),
       /*fin=*/false));
   spdy::SpdySerializedFrame finish_data_frame(
       spdy_util_.ConstructSpdyDataFrame(1, "h", /*fin=*/true));
@@ -4148,7 +4149,7 @@ TEST_F(SpdySessionTest, StreamFlowControlTooMuchDataTwoDataFrames) {
 class DropReceivedDataDelegate : public test::StreamDelegateSendImmediate {
  public:
   DropReceivedDataDelegate(const base::WeakPtr<SpdyStream>& stream,
-                           base::StringPiece data)
+                           std::string_view data)
       : StreamDelegateSendImmediate(stream, data) {}
 
   ~DropReceivedDataDelegate() override = default;
@@ -4972,7 +4973,7 @@ TEST_F(SpdySessionTest, BrokenConnectionDetectionMultipleRequests) {
 class StreamClosingDelegate : public test::StreamDelegateWithBody {
  public:
   StreamClosingDelegate(const base::WeakPtr<SpdyStream>& stream,
-                        base::StringPiece data)
+                        std::string_view data)
       : StreamDelegateWithBody(stream, data) {}
 
   ~StreamClosingDelegate() override = default;
@@ -5425,10 +5426,9 @@ TEST_F(SpdySessionTest, GreaseFrameTypeAfterSettings) {
           {type, flags, payload});
 
   // Connection preface.
-  spdy::SpdySerializedFrame preface(
+  spdy::SpdySerializedFrame preface(spdy::test::MakeSerializedFrame(
       const_cast<char*>(spdy::kHttp2ConnectionHeaderPrefix),
-      spdy::kHttp2ConnectionHeaderPrefixSize,
-      /* owns_buffer = */ false);
+      spdy::kHttp2ConnectionHeaderPrefixSize));
 
   // Initial SETTINGS frame.
   spdy::SettingsMap expected_settings;
@@ -5450,9 +5450,8 @@ TEST_F(SpdySessionTest, GreaseFrameTypeAfterSettings) {
       0x00, 0x00, 0x00, 0x00,  // stream ID
       'f',  'o',  'o'          // payload
   };
-  spdy::SpdySerializedFrame grease(reinterpret_cast<char*>(kRawFrameData),
-                                   std::size(kRawFrameData),
-                                   /* owns_buffer = */ false);
+  spdy::SpdySerializedFrame grease(spdy::test::MakeSerializedFrame(
+      reinterpret_cast<char*>(kRawFrameData), std::size(kRawFrameData)));
 
   MockWrite writes[] = {CreateMockWrite(combined_frame, 0),
                         CreateMockWrite(grease, 1)};
@@ -5545,10 +5544,9 @@ class SendInitialSettingsOnNewSpdySessionTest : public SpdySessionTest {
   void RunInitialSettingsTest(const spdy::SettingsMap expected_settings) {
     MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING)};
 
-    spdy::SpdySerializedFrame preface(
+    spdy::SpdySerializedFrame preface(spdy::test::MakeSerializedFrame(
         const_cast<char*>(spdy::kHttp2ConnectionHeaderPrefix),
-        spdy::kHttp2ConnectionHeaderPrefixSize,
-        /* owns_buffer = */ false);
+        spdy::kHttp2ConnectionHeaderPrefixSize));
     spdy::SpdySerializedFrame settings_frame(
         spdy_util_.ConstructSpdySettings(expected_settings));
 

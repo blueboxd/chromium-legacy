@@ -464,7 +464,7 @@ TEST_F(ServiceWorkerContextTest, Observer_ControlleeEvents) {
   blink::mojom::ServiceWorkerRegistrationOptions options;
   options.scope = scope;
 
-  auto registration = base::MakeRefCounted<ServiceWorkerRegistration>(
+  auto registration = ServiceWorkerRegistration::Create(
       options, key, 1l /* dummy registration id */, context()->AsWeakPtr(),
       blink::mojom::AncestorFrameType::kNormalFrame);
 
@@ -521,7 +521,7 @@ TEST_F(ServiceWorkerContextTest, VersionActivatedObserver) {
   blink::mojom::ServiceWorkerRegistrationOptions options;
   options.scope = scope;
 
-  auto registration = base::MakeRefCounted<ServiceWorkerRegistration>(
+  auto registration = ServiceWorkerRegistration::Create(
       options, key, 1l /* dummy registration id */, context()->AsWeakPtr(),
       blink::mojom::AncestorFrameType::kNormalFrame);
 
@@ -553,7 +553,7 @@ TEST_F(ServiceWorkerContextTest, VersionRedundantObserver) {
   blink::mojom::ServiceWorkerRegistrationOptions options;
   options.scope = scope;
 
-  auto registration = base::MakeRefCounted<ServiceWorkerRegistration>(
+  auto registration = ServiceWorkerRegistration::Create(
       options, key, 1l /* dummy registration id */, context()->AsWeakPtr(),
       blink::mojom::AncestorFrameType::kNormalFrame);
 
@@ -1155,7 +1155,7 @@ TEST_F(ServiceWorkerContextTest, ContainerHostIterator) {
   const blink::StorageKey key_other = blink::StorageKey::CreateFirstParty(
       url::Origin::Create(registration_opt.scope));
   scoped_refptr<ServiceWorkerRegistration> registration =
-      base::MakeRefCounted<ServiceWorkerRegistration>(
+      ServiceWorkerRegistration::Create(
           registration_opt, key_other, 1L /* registration_id */,
           helper_->context()->AsWeakPtr(),
           blink::mojom::AncestorFrameType::kNormalFrame);
@@ -1170,7 +1170,7 @@ TEST_F(ServiceWorkerContextTest, ContainerHostIterator) {
   // ServiceWorkerHost creates ServiceWorkerContainerHost for a service worker
   // execution context.
   std::unique_ptr<ServiceWorkerHost> worker_host4 = CreateServiceWorkerHost(
-      kRenderProcessId2, true /* is_parent_frame_secure */, version.get(),
+      kRenderProcessId2, true /* is_parent_frame_secure */, *version,
       context()->AsWeakPtr(), &remote_endpoints.back());
 
   ASSERT_TRUE(container_host1);
@@ -1180,11 +1180,11 @@ TEST_F(ServiceWorkerContextTest, ContainerHostIterator) {
 
   // Iterate over the client container hosts that belong to kOrigin1.
   std::set<ServiceWorkerContainerHost*> results;
-  for (auto it = context()->GetClientContainerHostIterator(
+  for (auto it = context()->GetServiceWorkerClients(
            kKey1, true /* include_reserved_clients */,
            false /* include_back_forward_cached_clients */);
-       !it->IsAtEnd(); it->Advance()) {
-    results.insert(it->GetContainerHost());
+       !it.IsAtEnd(); ++it) {
+    results.insert(&*it);
   }
   EXPECT_EQ(2u, results.size());
   EXPECT_TRUE(base::Contains(results, container_host1.get()));
@@ -1193,11 +1193,11 @@ TEST_F(ServiceWorkerContextTest, ContainerHostIterator) {
   // Iterate over the container hosts that belong to kOrigin2. This should not
   // include worker_host4->container_host() as it's not for controllee.
   results.clear();
-  for (auto it = context()->GetClientContainerHostIterator(
+  for (auto it = context()->GetServiceWorkerClients(
            kKey2, true /* include_reserved_clients */,
            false /* include_back_forward_cached_clients */);
-       !it->IsAtEnd(); it->Advance()) {
-    results.insert(it->GetContainerHost());
+       !it.IsAtEnd(); ++it) {
+    results.insert(&*it);
   }
   EXPECT_EQ(1u, results.size());
   EXPECT_TRUE(base::Contains(results, container_host2.get()));

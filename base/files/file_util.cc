@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40284755): Remove this and spanify to fix the errors.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "base/files/file_util.h"
 
 #include "base/task/sequenced_task_runner.h"
@@ -20,12 +25,14 @@
 
 #include "base/bit_cast.h"
 #include "base/check_op.h"
+#include "base/containers/contains.h"
 #include "base/containers/span.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/functional/function_ref.h"
 #include "base/notreached.h"
 #include "base/posix/eintr_wrapper.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -406,7 +413,7 @@ bool TouchFile(const FilePath& path,
     flags |= File::FLAG_WIN_BACKUP_SEMANTICS;
 #elif BUILDFLAG(IS_FUCHSIA)
   // On Fuchsia, we need O_RDONLY for directories, or O_WRONLY for files.
-  // TODO(https://crbug.com/947802): Find a cleaner workaround for this.
+  // TODO(crbug.com/40620916): Find a cleaner workaround for this.
   flags |= (DirectoryExists(path) ? File::FLAG_READ : File::FLAG_WRITE);
 #endif
 
@@ -441,6 +448,11 @@ bool TruncateFile(FILE* file) {
   return true;
 }
 
+std::optional<uint64_t> ReadFile(const FilePath& filename,
+                                 span<uint8_t> buffer) {
+  return ReadFile(filename, base::as_writable_chars(buffer));
+}
+
 int ReadFile(const FilePath& filename, char* data, int max_size) {
   if (max_size < 0) {
     return -1;
@@ -464,28 +476,29 @@ bool WriteFile(const FilePath& filename, StringPiece data) {
   return WriteFile(filename, data.data(), size) == size;
 }
 
-int GetUniquePathNumber(const FilePath& path) {
-  DCHECK(!path.empty());
-  if (!PathExists(path))
-    return 0;
-
-  std::string number;
-  for (int count = 1; count <= kMaxUniqueFiles; ++count) {
-    StringAppendF(&number, " (%d)", count);
-    if (!PathExists(path.InsertBeforeExtensionASCII(number)))
-      return count;
-    number.clear();
-  }
-
-  return -1;
+FilePath GetUniquePath(const FilePath& path) {
+  return GetUniquePathWithSuffixFormat(path, " (%d)");
 }
 
-FilePath GetUniquePath(const FilePath& path) {
+FilePath GetUniquePathWithSuffixFormat(const FilePath& path,
+                                       cstring_view suffix_format) {
   DCHECK(!path.empty());
-  const int uniquifier = GetUniquePathNumber(path);
-  if (uniquifier > 0)
-    return path.InsertBeforeExtensionASCII(StringPrintf(" (%d)", uniquifier));
-  return uniquifier == 0 ? path : FilePath();
+  DCHECK_EQ(base::ranges::count(suffix_format, '%'), 1);
+  DCHECK(base::Contains(suffix_format, "%d"));
+
+  if (!PathExists(path)) {
+    return path;
+  }
+  std::string number;
+  for (int count = 1; count <= kMaxUniqueFiles; ++count) {
+    StringAppendF(&number, suffix_format.c_str(), count);
+    FilePath candidate_path = path.InsertBeforeExtensionASCII(number);
+    if (!PathExists(candidate_path)) {
+      return candidate_path;
+    }
+    number.clear();
+  }
+  return FilePath();
 }
 
 }  // namespace base

@@ -280,9 +280,16 @@ TEST_F(OmniboxResultViewTest, AccessibleNodeData) {
 }
 
 TEST_F(OmniboxResultViewTest, StarterPackMatch) {
-  base::test::ScopedFeatureList features(omnibox::kOmniboxKeywordModeRefresh);
   AutocompleteMatch match(nullptr, 1350, false,
                           AutocompleteMatchType::STARTER_PACK);
   result_view()->SetMatch(match);
   // No assertions necessary; just exercising code paths for starter pack match.
+}
+
+TEST_F(OmniboxResultViewTest, FeaturedEnterpriseSearchMatch) {
+  AutocompleteMatch match(nullptr, 1350, false,
+                          AutocompleteMatchType::FEATURED_ENTERPRISE_SEARCH);
+  result_view()->SetMatch(match);
+  // No assertions necessary; just exercising code paths for featured Enterprise
+  // search match.
 }

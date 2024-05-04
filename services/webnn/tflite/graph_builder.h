@@ -23,6 +23,8 @@
 
 namespace webnn::tflite {
 
+namespace internal {
+
 // Methods which take a generic numerical type as input (e.g. uint32_t) and
 // expect to serialize the data as a TFLite tensor (e.g.
 // ::tflite::TensorType_UINT32) may use the `IsSupportedTensorType` concept to
@@ -33,12 +35,14 @@ concept IsAnyOf = (std::same_as<T, U> || ...);
 template <typename T>
 concept IsSupportedTensorType = IsAnyOf<T, float, int32_t, uint32_t>;
 
+}  // namespace internal
+
 // This class converts WebNN graph to tflite model and persist into FlatBuffer.
 // The schema_generated.h file defines the format for each data structure to
 // serialize.
 //
 // The instances of the class may not be allocated on the heap, but as a member
-// variable of a non-stack-allocated and be single-use per conversion.
+// variable of a non-stack-allocated class and be single-use per conversion.
 class GraphBuilder final {
   STACK_ALLOCATED();
 
@@ -90,14 +94,19 @@ class GraphBuilder final {
   // Serializes `buffer` as a tensor with the given `dimensions` and `type `to
   // the flat buffer and returns the index in `tensors_` if it's successful.
   template <typename DataType>
-    requires IsSupportedTensorType<DataType>
+    requires internal::IsSupportedTensorType<DataType>
   int32_t SerializeTensorWithBuffer(base::span<const DataType> buffer,
                                     base::span<const int32_t> dimensions);
+
+  // Serializes temporary tensor for casting the data type of input operand or
+  // decomposing WebNN operation that isn't supported in TFLite schema.
+  int32_t SerializeTemporaryTensor(base::span<const int32_t> dimensions,
+                                   ::tflite::TensorType tensor_type);
 
   uint32_t GetOperatorCodeIndex(::tflite::BuiltinOperator code);
 
   // Returns the Operand corresponding to an `operand_id` from `graph_info_`.
-  // Will craash if `graph_info_` does not contain `operand_id`.
+  // Will crash if `graph_info_` does not contain `operand_id`.
   const mojom::Operand& GetOperand(uint64_t operand_id) const;
 
   // Operation serialization helpers for operations not directly declared in the
@@ -108,39 +117,96 @@ class GraphBuilder final {
   // `builtin_options`, or neither.
   OperatorOffset SerializeUnaryOperation(
       ::tflite::BuiltinOperator code,
-      uint64_t input_operand_id,
-      uint64_t output_operand_id,
+      int32_t input_tensor_index,
+      int32_t output_tensor_index,
       ::tflite::BuiltinOptions builtin_options_type =
           ::tflite::BuiltinOptions_NONE,
       flatbuffers::Offset<void> builtin_options = 0);
-  OperatorOffset SerializeCastOperation(uint64_t input_operand_id,
-                                        uint64_t output_operand_id);
+  OperatorOffset SerializeCastOperation(
+      int32_t input_tensor_index,
+      ::tflite::TensorType input_tensor_type,
+      int32_t output_tensor_index,
+      ::tflite::TensorType output_tensor_type);
+
+  // A helper function is used by WebNN binary operation direct or emulated
+  // implementation.
+  OperatorOffset SerializeBinaryOperation(::tflite::BuiltinOperator code,
+                                          int32_t lhs_tensor_index,
+                                          int32_t rhs_tensor_index,
+                                          int32_t output_tensor_index);
+
+  // This function is called by `SerializeTranspose` to serialize WebNN
+  // transpose operator or used to insert a tempary operator to transpose
+  // different layout.
+  OperatorOffset SerializeTransposeOperation(
+      int32_t input_tensor_index,
+      int32_t output_tensor_index,
+      base::span<const uint32_t> permutation);
+
+  // Insert a tempary pad operation if the `paddings` can't be converted to
+  // tflite padding mode.
+  base::expected<int32_t, std::string> InsertPadOperation(
+      const mojom::Operand& input_operand,
+      int32_t input_tensor_index,
+      base::span<const uint32_t> paddings);
+
+  // Insert a tempary transpose operation for input operand with calling
+  // `SerializeTransposeOperation`.
+  int32_t InsertTransposeOperation(const mojom::Operand& input_operand,
+                                   int32_t input_tensor_index,
+                                   base::span<const uint32_t> permutation);
 
   // Serialize functions for members of the mojom::Operation union. Keep these
   // functions in the same order as in webnn_graph.mojom.
+  base::expected<OperatorOffset, std::string> SerializeArgMinMax(
+      const mojom::ArgMinMax& arg_min_max);
   base::expected<OperatorOffset, std::string> SerializeClamp(
       const mojom::Clamp& clamp);
+  base::expected<OperatorOffset, std::string> SerializeConv2d(
+      const mojom::Conv2d& conv2d);
   OperatorOffset SerializeConcat(const mojom::Concat& concat);
-  base::expected<OperatorOffset, std::string> SerializeElementWiseBinary(
-      const mojom::ElementWiseBinary& op);
+  OperatorOffset SerializeElementWiseBinary(const mojom::ElementWiseBinary& op);
   base::expected<OperatorOffset, std::string> SerializeElementWiseUnary(
       const mojom::ElementWiseUnary& op);
   base::expected<OperatorOffset, std::string> SerializeElu(
       const mojom::Elu& elu);
+  base::expected<OperatorOffset, std::string> SerializeGather(
+      const mojom::Gather& gather);
+  base::expected<OperatorOffset, std::string> SerializeGemm(
+      const mojom::Gemm& gemm);
   OperatorOffset SerializeHardSwish(const mojom::HardSwish& hard_swish);
   OperatorOffset SerializeLeakyRelu(const mojom::LeakyRelu& leaky_relu);
+  OperatorOffset SerializeLinear(const mojom::Linear& linear);
+  OperatorOffset SerializeLogicalNot(
+      const mojom::ElementWiseUnary& logical_not);
+  OperatorOffset SerializeMatmul(const mojom::Matmul& matmul);
   base::expected<OperatorOffset, std::string> SerializePad(
       const mojom::Pad& pad);
+  base::expected<OperatorOffset, std::string> SerializePool2d(
+      const mojom::Pool2d& pool2d);
+  base::expected<OperatorOffset, std::string> SerializePrelu(
+      const mojom::Prelu& prelu);
+  base::expected<OperatorOffset, std::string> SerializeReduce(
+      const mojom::Reduce& reduce);
   OperatorOffset SerializeRelu(const mojom::Relu& relu);
+  base::expected<OperatorOffset, std::string> SerializeResample2d(
+      const mojom::Resample2d& resample2d);
   base::expected<OperatorOffset, std::string> SerializeReshape(
-      const mojom::Reshape& reshape);
+      uint64_t input_operand_id,
+      uint64_t output_operand_id);
   OperatorOffset SerializeSigmoid(const mojom::Sigmoid& sigmoid);
+  base::expected<OperatorOffset, std::string> SerializeSlice(
+      const mojom::Slice& slice);
   OperatorOffset SerializeSoftmax(const mojom::Softmax& softmax);
+  base::expected<OperatorOffset, std::string> SerializeSplit(
+      const mojom::Split& split);
+  OperatorOffset SerializeTan(const mojom::ElementWiseUnary& tan);
+  OperatorOffset SerializeTanh(const mojom::Tanh& tanh);
   OperatorOffset SerializeTranspose(const mojom::Transpose& transpose);
+  OperatorOffset SerializeWhere(const mojom::Where& where);
 
-  // There are no further methods should be called on this class after this
-  // function because the buffer of `buffer_` is now owned by the detached
-  // buffer.
+  // No further methods may be called on this class after calling this method
+  // because the buffer of `buffer_` is now owned by the detached buffer.
   flatbuffers::DetachedBuffer FinishAndTakeFlatBuffer(
       base::span<const uint64_t> input_operands,
       base::span<const uint64_t> output_operands);

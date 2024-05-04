@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.download.dialogs;
 
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
+import static androidx.test.espresso.matcher.RootMatchers.isDialog;
 import static androidx.test.espresso.matcher.ViewMatchers.Visibility.GONE;
 import static androidx.test.espresso.matcher.ViewMatchers.Visibility.VISIBLE;
 import static androidx.test.espresso.matcher.ViewMatchers.withEffectiveVisibility;
@@ -40,7 +41,7 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.R;
 import org.chromium.components.browser_ui.modaldialog.AppModalPresenter;
-import org.chromium.components.browser_ui.modaldialog.ModalDialogTestUtils;
+import org.chromium.components.browser_ui.modaldialog.ModalDialogView;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 
@@ -77,7 +78,7 @@ public class DownloadDialogIncognitoTest {
                                                 ModalDialogManager.ModalDialogType.APP);
                                     });
                 });
-        ModalDialogTestUtils.overrideEnableButtonTapProtection(false);
+        ModalDialogView.disableButtonTapProtectionForTesting();
     }
 
     @Test
@@ -91,7 +92,7 @@ public class DownloadDialogIncognitoTest {
         waitForWarningVisibilityToBe(VISIBLE);
 
         // Dismiss the dialog and verify the callback is called with false.
-        onView(withId(R.id.negative_button)).perform(ViewActions.click());
+        onView(withId(R.id.negative_button)).inRoot(isDialog()).perform(ViewActions.click());
         verify(mResultCallback).onResult(false);
     }
 
@@ -117,7 +118,7 @@ public class DownloadDialogIncognitoTest {
         waitForWarningVisibilityToBe(VISIBLE);
 
         // Accept the dialog and verify the callback is called with true.
-        onView(withId(R.id.positive_button)).perform(ViewActions.click());
+        onView(withId(R.id.positive_button)).inRoot(isDialog()).perform(ViewActions.click());
         verify(mResultCallback).onResult(true);
     }
 
@@ -131,7 +132,7 @@ public class DownloadDialogIncognitoTest {
         waitForWarningVisibilityToBe(GONE);
 
         // Dismiss the dialog and verify the callback is called with false.
-        onView(withId(R.id.negative_button)).perform(ViewActions.click());
+        onView(withId(R.id.negative_button)).inRoot(isDialog()).perform(ViewActions.click());
         verify(mResultCallback).onResult(false);
     }
 
@@ -145,7 +146,7 @@ public class DownloadDialogIncognitoTest {
         waitForWarningVisibilityToBe(GONE);
 
         // Dismiss the dialog and verify the callback is called with false.
-        onView(withId(R.id.negative_button)).perform(ViewActions.click());
+        onView(withId(R.id.negative_button)).inRoot(isDialog()).perform(ViewActions.click());
         verify(mResultCallback).onResult(false);
     }
 
@@ -199,7 +200,7 @@ public class DownloadDialogIncognitoTest {
         CriteriaHelper.pollInstrumentationThread(
                 () -> {
                     try {
-                        onView(withId(R.id.message_paragraph_2))
+                        onView(withId(R.id.message_paragraph_2)).inRoot(isDialog())
                                 .check(matches(withEffectiveVisibility(visibility)));
                     } catch (NoMatchingViewException | AssertionError e) {
                         throw new CriteriaNotSatisfiedException(

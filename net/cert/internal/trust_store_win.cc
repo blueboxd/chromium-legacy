@@ -271,8 +271,6 @@ class TrustStoreWin::Impl {
     cert_issuer_blob.pbData = const_cast<uint8_t*>(issuer_span.data());
 
     PCCERT_CONTEXT cert_from_store = nullptr;
-    // TODO(https://crbug.com/1239270): figure out if this is thread-safe or if
-    // we need locking here
     while ((cert_from_store = CertFindCertificateInStore(
                 all_certs_store_.get(), X509_ASN_ENCODING, 0,
                 CERT_FIND_SUBJECT_NAME, &cert_issuer_blob, cert_from_store))) {
@@ -314,8 +312,6 @@ class TrustStoreWin::Impl {
       }
     }
 
-    // TODO(https://crbug.com/1239270): figure out if this is thread-safe or if
-    // we need locking here
     while ((cert_from_store = CertFindCertificateInStore(
                 root_cert_store_.get(), X509_ASN_ENCODING, 0,
                 CERT_FIND_SHA1_HASH, &cert_hash_blob, cert_from_store))) {
@@ -325,40 +321,30 @@ class TrustStoreWin::Impl {
         // If we find at least one version of the cert that is trusted for TLS
         // Server Auth, we will trust the cert.
         if (IsCertTrustedForServerAuth(cert_from_store)) {
-          if (base::FeatureList::IsEnabled(
-                  features::kTrustStoreTrustedLeafSupport)) {
-            // Certificates in the Roots store may be used as either trust
-            // anchors or trusted leafs (if self-signed).
-            return bssl::CertificateTrust::ForTrustAnchorOrLeaf()
-                .WithEnforceAnchorExpiry()
-                .WithEnforceAnchorConstraints(
-                    IsLocalAnchorConstraintsEnforcementEnabled())
-                .WithRequireLeafSelfSigned();
-          } else {
-            return bssl::CertificateTrust::ForTrustAnchor()
-                .WithEnforceAnchorExpiry()
-                .WithEnforceAnchorConstraints(
-                    IsLocalAnchorConstraintsEnforcementEnabled());
-          }
+          // Certificates in the Roots store may be used as either trust
+          // anchors or trusted leafs (if self-signed).
+          return bssl::CertificateTrust::ForTrustAnchorOrLeaf()
+              .WithEnforceAnchorExpiry()
+              .WithEnforceAnchorConstraints(
+                  IsLocalAnchorConstraintsEnforcementEnabled())
+              .WithRequireLeafSelfSigned();
         }
       }
     }
 
-    if (base::FeatureList::IsEnabled(features::kTrustStoreTrustedLeafSupport)) {
-      while ((cert_from_store = CertFindCertificateInStore(
-                  trusted_people_cert_store_.get(), X509_ASN_ENCODING, 0,
-                  CERT_FIND_SHA1_HASH, &cert_hash_blob, cert_from_store))) {
-        base::span<const uint8_t> cert_from_store_span = base::make_span(
-            cert_from_store->pbCertEncoded, cert_from_store->cbCertEncoded);
-        if (base::ranges::equal(cert_span, cert_from_store_span)) {
-          // If we find at least one version of the cert that is trusted for TLS
-          // Server Auth, we will trust the cert.
-          if (IsCertTrustedForServerAuth(cert_from_store)) {
-            // Certificates in the Trusted People store may be trusted leafs (if
-            // self-signed).
-            return bssl::CertificateTrust::ForTrustedLeaf()
-                .WithRequireLeafSelfSigned();
-          }
+    while ((cert_from_store = CertFindCertificateInStore(
+                trusted_people_cert_store_.get(), X509_ASN_ENCODING, 0,
+                CERT_FIND_SHA1_HASH, &cert_hash_blob, cert_from_store))) {
+      base::span<const uint8_t> cert_from_store_span = base::make_span(
+          cert_from_store->pbCertEncoded, cert_from_store->cbCertEncoded);
+      if (base::ranges::equal(cert_span, cert_from_store_span)) {
+        // If we find at least one version of the cert that is trusted for TLS
+        // Server Auth, we will trust the cert.
+        if (IsCertTrustedForServerAuth(cert_from_store)) {
+          // Certificates in the Trusted People store may be trusted leafs (if
+          // self-signed).
+          return bssl::CertificateTrust::ForTrustedLeaf()
+              .WithRequireLeafSelfSigned();
         }
       }
     }
@@ -394,7 +380,7 @@ class TrustStoreWin::Impl {
   crypto::ScopedHCERTSTORE disallowed_cert_store_;
 };
 
-// TODO(https://crbug.com/1239268): support CTLs.
+// TODO(crbug.com/40784681): support CTLs.
 TrustStoreWin::TrustStoreWin() = default;
 
 void TrustStoreWin::InitializeStores() {

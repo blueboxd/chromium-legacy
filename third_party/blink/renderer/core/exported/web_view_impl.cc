@@ -56,10 +56,10 @@
 #include "third_party/blink/public/common/web_preferences/web_preferences.h"
 #include "third_party/blink/public/mojom/frame/frame_replication_state.mojom-blink.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-blink.h"
+#include "third_party/blink/public/mojom/page/draggable_region.mojom-blink.h"
 #include "third_party/blink/public/mojom/window_features/window_features.mojom-blink.h"
 #include "third_party/blink/public/platform/interface_registry.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/public/platform/web_media_player.h"
 #include "third_party/blink/public/platform/web_network_state_notifier.h"
 #include "third_party/blink/public/platform/web_runtime_features.h"
@@ -1792,6 +1792,8 @@ void WebView::ApplyWebPreferences(const web_pref::WebPreferences& prefs,
 
   settings->SetLazyLoadEnabled(prefs.lazy_load_enabled);
   settings->SetInForcedColors(prefs.in_forced_colors);
+  settings->SetBrowserPreferredColorScheme(
+      prefs.browser_preferred_color_scheme);
   settings->SetPreferredColorScheme(prefs.preferred_color_scheme);
   settings->SetPreferredContrast(prefs.preferred_contrast);
 
@@ -3309,7 +3311,12 @@ void WebViewImpl::SetPageBaseBackgroundColor(std::optional<SkColor> color) {
 
 void WebViewImpl::UpdateColorProviders(
     const ColorProviderColorMaps& color_provider_colors) {
-  page_->UpdateColorProviders(color_provider_colors);
+  bool color_providers_did_change =
+      page_->UpdateColorProviders(color_provider_colors);
+  if (color_providers_did_change) {
+    Page::PlatformColorsChanged();
+    Page::ColorSchemeChanged();
+  }
 }
 
 void WebViewImpl::SetBaseBackgroundColorOverrideTransparent(
@@ -4011,25 +4018,47 @@ bool WebViewImpl::IsFencedFrameRoot() const {
   return GetPage()->IsMainFrameFencedFrameRoot();
 }
 
-void WebViewImpl::SetSupportsAppRegion(bool supports_app_region) {
-  supports_app_region_ = supports_app_region;
+void WebViewImpl::SetSupportsDraggableRegions(bool supports_draggable_regions) {
+  supports_draggable_regions_ = supports_draggable_regions;
   if (!MainFrameImpl() || !MainFrameImpl()->GetFrame()) {
     return;
   }
 
   LocalFrame* local_frame = MainFrameImpl()->GetFrame();
 
-  if (supports_app_region_) {
-    local_frame->View()->UpdateDocumentAnnotatedRegions();
+  if (supports_draggable_regions_) {
+    local_frame->View()->UpdateDocumentDraggableRegions();
   } else {
-    local_frame->GetDocument()->SetAnnotatedRegions(
-        Vector<AnnotatedRegionValue>());
-    local_frame->Client()->AnnotatedRegionsChanged();
+    local_frame->GetDocument()->SetDraggableRegions(
+        Vector<DraggableRegionValue>());
+    chrome_client_->DraggableRegionsChanged();
   }
 }
 
-bool WebViewImpl::SupportsAppRegion() {
-  return supports_app_region_;
+bool WebViewImpl::SupportsDraggableRegions() {
+  return supports_draggable_regions_;
+}
+
+void WebViewImpl::DraggableRegionsChanged() {
+  WebVector<WebDraggableRegion> web_regions =
+      MainFrameImpl()->GetDocument().DraggableRegions();
+
+  // If |supports_draggable_regions_| is false, the web view should only send
+  // empty regions to reset a previously set draggable regions.
+  DCHECK(supports_draggable_regions_ || web_regions.empty());
+
+  auto regions = Vector<mojom::blink::DraggableRegionPtr>();
+  for (WebDraggableRegion& web_region : web_regions) {
+    auto converted_bounds =
+        MainFrame()->ToWebLocalFrame()->FrameWidget()->BlinkSpaceToEnclosedDIPs(
+            web_region.bounds);
+
+    auto region = mojom::blink::DraggableRegion::New(converted_bounds,
+                                                     web_region.draggable);
+    regions.emplace_back(std::move(region));
+  }
+
+  local_main_frame_host_remote_->DraggableRegionsChanged(std::move(regions));
 }
 
 void WebViewImpl::MojoDisconnected() {

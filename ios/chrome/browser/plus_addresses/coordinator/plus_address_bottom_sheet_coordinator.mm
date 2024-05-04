@@ -17,6 +17,7 @@
 #import "ios/chrome/browser/shared/public/commands/browser_coordinator_commands.h"
 #import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
 #import "ios/chrome/browser/url_loading/model/url_loading_browser_agent.h"
+
 namespace {
 constexpr CGFloat kHalfSheetCornerRadius = 20;
 }  // namespace
@@ -37,7 +38,7 @@ constexpr CGFloat kHalfSheetCornerRadius = 20;
       PlusAddressServiceFactory::GetForBrowserState(browserState);
   web::WebState* activeWebState =
       self.browser->GetWebStateList()->GetActiveWebState();
-  // TODO(crbug.com/1467623): Move this to the mediator to reduce model
+  // TODO(crbug.com/40276862): Move this to the mediator to reduce model
   // dependencies in this class.
   AutofillBottomSheetTabHelper* bottomSheetTabHelper =
       AutofillBottomSheetTabHelper::FromWebState(activeWebState);

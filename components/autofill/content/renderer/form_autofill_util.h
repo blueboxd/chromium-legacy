@@ -48,7 +48,7 @@ class RenderFrame;
 namespace autofill {
 
 struct FormData;
-struct FormFieldData;
+class FormFieldData;
 
 class FieldDataManager;
 
@@ -181,13 +181,13 @@ bool IsCheckableElement(const blink::WebFormControlElement& element);
 
 // Returns true if |element| is one of the input element types that can be
 // autofilled. {Text, Radiobutton, Checkbox}.
-// TODO(crbug.com/1007974): IsAutofillableInputElement() are currently used
+// TODO(crbug.com/40100455): IsAutofillableInputElement() are currently used
 // inconsistently. Investigate where these checks are necessary.
 bool IsAutofillableInputElement(const blink::WebInputElement& element);
 
 // Returns true if |element| is one of the element types that can be autofilled.
 // {Text, Radiobutton, Checkbox, Select, TextArea}.
-// TODO(crbug.com/1007974): IsAutofillableElement() are currently used
+// TODO(crbug.com/40100455): IsAutofillableElement() are currently used
 // inconsistently. Investigate where these checks are necessary.
 bool IsAutofillableElement(const blink::WebFormControlElement& element);
 
@@ -224,7 +224,7 @@ bool IsWebElementFocusableForAutofill(const blink::WebElement& element);
 //
 // Exposed for testing purposes.
 //
-// TODO(crbug.com/1335257): Can input fields or iframes actually overflow?
+// TODO(crbug.com/40846971): Can input fields or iframes actually overflow?
 bool IsWebElementVisible(const blink::WebElement& element);
 
 // Returns the maximum length value that Autofill may fill into the field. There
@@ -342,7 +342,7 @@ std::optional<FormData> FindFormForContentEditable(
 // `initiating_element` is the element that initiated the autofill process.
 // Returns a list of pairs of the filled elements and their autofill state
 // prior to the filling.
-std::vector<std::pair<FieldRef, blink::WebAutofillState>> ApplyFormAction(
+std::vector<std::pair<FieldRef, blink::WebAutofillState>> ApplyFieldsAction(
     const blink::WebDocument& document,
     base::span<const FormFieldData::FillData> fields,
     mojom::FormActionType action_type,
@@ -354,7 +354,6 @@ std::vector<std::pair<FieldRef, blink::WebAutofillState>> ApplyFormAction(
 // `old_autofill_state` is the previous state of the field that initiated the
 // preview.
 void ClearPreviewedElements(
-    mojom::FormActionType action_type,
     base::span<std::pair<blink::WebFormControlElement, blink::WebAutofillState>>
         previewed_elements,
     const blink::WebFormControlElement& initiating_element);
@@ -403,11 +402,26 @@ std::u16string FindChildTextWithIgnoreList(
     const blink::WebNode& node,
     const std::set<blink::WebNode>& divs_to_skip);
 
+struct InferredLabel {
+  // Returns an `InferredLabel` if `label` contains at least one character that
+  // is neither whitespace nor "*:-–()" (or "*:" if
+  // kAutofillConsiderPhoneNumberSeparatorsValidLabels is enabled).
+  static std::optional<InferredLabel> BuildIfValid(
+      std::u16string label,
+      FormFieldData::LabelSource source);
+
+  std::u16string label;
+  FormFieldData::LabelSource source = FormFieldData::LabelSource::kUnknown;
+
+ private:
+  InferredLabel(std::u16string label, FormFieldData::LabelSource source);
+};
+
 // Infers corresponding label for `element` from surrounding context in the DOM,
 // e.g. the contents of the preceding <p> tag or text element. Returns an empty
 // string if it could not find a label for `element`.
-std::u16string InferLabelForElement(const blink::WebFormControlElement& element,
-                                    FormFieldData::LabelSource& label_source);
+std::optional<InferredLabel> InferLabelForElement(
+    const blink::WebFormControlElement& element);
 
 // Returns the form element by unique renderer id. Returns the null element if
 // there is no form with the |form_renderer_id|.

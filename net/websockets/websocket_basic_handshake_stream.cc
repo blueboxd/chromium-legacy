@@ -8,6 +8,7 @@
 
 #include <array>
 #include <set>
+#include <string_view>
 #include <type_traits>
 #include <utility>
 
@@ -60,7 +61,7 @@ struct NetErrorDetails;
 
 namespace {
 
-const char kConnectionErrorStatusLine[] = "HTTP/1.1 503 Connection Error";
+constexpr char kConnectionErrorStatusLine[] = "HTTP/1.1 503 Connection Error";
 
 }  // namespace
 
@@ -83,7 +84,7 @@ std::string GenerateHandshakeChallenge() {
 }
 
 GetHeaderResult GetSingleHeaderValue(const HttpResponseHeaders* headers,
-                                     base::StringPiece name,
+                                     std::string_view name,
                                      std::string* value) {
   size_t iter = 0;
   size_t num_values = 0;
@@ -312,6 +313,7 @@ void WebSocketBasicHandshakeStream::Close(bool not_reusable) {
   StreamSocket* socket = state_.connection()->socket();
   if (socket)
     socket->Disconnect();
+  parser()->OnConnectionClose();
   state_.connection()->Reset();
 }
 
@@ -356,15 +358,6 @@ void WebSocketBasicHandshakeStream::GetSSLInfo(SSLInfo* ssl_info) {
       !state_.connection()->socket()->GetSSLInfo(ssl_info)) {
     ssl_info->Reset();
   }
-}
-
-void WebSocketBasicHandshakeStream::GetSSLCertRequestInfo(
-    SSLCertRequestInfo* cert_request_info) {
-  if (!state_.connection()->socket()) {
-    cert_request_info->Reset();
-    return;
-  }
-  parser()->GetSSLCertRequestInfo(cert_request_info);
 }
 
 int WebSocketBasicHandshakeStream::GetRemoteEndpoint(IPEndPoint* endpoint) {
@@ -415,7 +408,7 @@ const std::set<std::string>& WebSocketBasicHandshakeStream::GetDnsAliases()
   return state_.GetDnsAliases();
 }
 
-base::StringPiece WebSocketBasicHandshakeStream::GetAcceptChViaAlps() const {
+std::string_view WebSocketBasicHandshakeStream::GetAcceptChViaAlps() const {
   return {};
 }
 

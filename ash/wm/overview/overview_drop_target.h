@@ -48,17 +48,19 @@ class OverviewDropTarget : public OverviewItemBase {
   void EnsureVisible() override;
   std::vector<OverviewFocusableView*> GetFocusableViews() const override;
   views::View* GetBackDropView() const override;
+  bool ShouldHaveShadow() const override;
   void UpdateRoundedCornersAndShadow() override;
   void SetOpacity(float opacity) override;
   float GetOpacity() const override;
   void PrepareForOverview() override;
+  void SetShouldUseSpawnAnimation(bool value) override;
   void OnStartingAnimationComplete() override;
   void HideForSavedDeskLibrary(bool animate) override;
   void RevertHideForSavedDeskLibrary(bool animate) override;
   void CloseWindows() override;
   void Restack() override;
   void StartDrag() override;
-  void OnOverviewItemDragStarted(OverviewItemBase* item) override;
+  void OnOverviewItemDragStarted() override;
   void OnOverviewItemDragEnded(bool snap) override;
   void OnOverviewItemContinuousScroll(const gfx::Transform& target_transform,
                                       float scroll_ratio) override;

@@ -7,7 +7,6 @@
 
 #include <stdint.h>
 
-#include <optional>
 #include <string>
 
 #include "components/autofill/core/browser/field_types.h"
@@ -17,7 +16,7 @@ namespace autofill {
 class AddressNormalizer;
 class AutofillProfile;
 class AutofillType;
-struct FormFieldData;
+class FormFieldData;
 
 // Returns the appropriate `profile` value based on `field_type` to fill
 // into `field_data`, as well as the field type used to retrieve that value.
@@ -34,7 +33,7 @@ std::pair<std::u16string, FieldType> GetFillingValueAndTypeForProfile(
 // Returns the phone number value for the given `field_max_length`. The
 // returned value might be `number`, or `city_and_number`, or could possibly
 // be a meaningful subset `number`, if that's appropriate for the field.
-// TODO(crbug.com/1495294): Move to anonymous namespace in source file.
+// TODO(crbug.com/40286472): Move to anonymous namespace in source file.
 std::u16string GetPhoneNumberValueForInput(
     uint64_t field_max_length,
     const std::u16string& number,

@@ -7,7 +7,7 @@
       }
 
       #clearBrowsingDataDialog {
-        --border-top-color: var(--paper-grey-300);
+        --border-top-color: var(--google-grey-300);
         --cr-dialog-top-container-min-height: 42px;
         --cr-dialog-body-border-top: 1px solid var(--border-top-color);
       }
@@ -36,7 +36,7 @@
       }
 
       #clearBrowsingDataDialog [slot=footer] {
-        background: var(--paper-grey-50);
+        background: var(--google-grey-50);
         border-top: none;
         padding: 0;
       }
@@ -79,6 +79,15 @@
       .time-range-select {
         margin-inline-start: 12px;
       }
+
+      .dropdown-error::part(select) {
+        border-color: var(--settings-error-color);
+        color: var(--settings-error-color);
+      }
+
+      .dropdown-error::part(select):focus {
+        outline-color: var(--settings-error-color);
+    }
 
       [slot=title] .secondary {
         font-size: calc(13 / 15 * 100%);
@@ -163,15 +172,17 @@
                     class="time-range-select"
                     label="$i18n{clearTimeRange}"
                     pref="{{prefs.browser.clear_data.time_period_basic}}"
-                    menu-options="[[clearFromOptions_]]">
+                    menu-options="[[clearFromOptions_]]"
+                    on-settings-control-change="onTimePeriodChanged_">
                 </settings-dropdown-menu>
               </template>
               <template is="dom-if" if="[[enableCbdTimeframeRequired_]]">
-                <settings-dropdown-menu id="clearFromBasic" no-set-pref
+                <settings-dropdown-menu id="clearFromBasic" required no-set-pref
                     class="time-range-select"
                     label="$i18n{clearTimeRange}"
                     pref="{{prefs.browser.clear_data.time_period_v2_basic}}"
-                    menu-options="[[clearFromOptionsV2_]]">
+                    menu-options="[[clearFromOptionsV2_]]"
+                    on-settings-control-change="onTimePeriodChanged_">
                 </settings-dropdown-menu>
               </template>
             </div>
@@ -241,16 +252,17 @@
                     class="time-range-select"
                     label="$i18n{clearTimeRange}"
                     pref="{{prefs.browser.clear_data.time_period}}"
-                    menu-options="[[clearFromOptions_]]">
+                    menu-options="[[clearFromOptions_]]"
+                    on-settings-control-change="onTimePeriodChanged_">
                 </settings-dropdown-menu>
               </template>
               <template is="dom-if" if="[[enableCbdTimeframeRequired_]]">
-                <settings-dropdown-menu id="clearFrom" no-set-pref
+                <settings-dropdown-menu id="clearFrom" required no-set-pref
                     class="time-range-select"
                     label="$i18n{clearTimeRange}"
                     pref="{{prefs.browser.clear_data.time_period_v2}}"
-                    menu-options="[[clearFromOptionsV2_]]">
-                </settings-dropdown-menu>
+                    menu-options="[[clearFromOptionsV2_]]"
+                    on-settings-control-change="onTimePeriodChanged_">
               </template>
             </div>
             <settings-checkbox id="browsingCheckbox"
@@ -328,7 +340,7 @@
         </div>
       </div>
       <template is="dom-if"
-          if="[[shouldShowFooter_(isSignedIn_, syncStatus.signedIn)]]"
+          if="[[shouldShowFooter_(isSignedIn_, syncStatus.signedInState)]]"
           restamp>
         <div slot="footer">
           <settings-sync-account-control sync-status="[[syncStatus]]"
@@ -337,11 +349,13 @@
           <div class="divider"></div>
           <div id="footer-description" on-click="onSyncDescriptionLinkClicked_">
             <span id="signin-info"
-                hidden="[[!showSigninInfo_(isSignedIn_, syncStatus.signedIn)]]">
+                hidden="[[!showSigninInfo_(isSignedIn_,
+                    syncStatus.signedInState)]]">
               $i18nRaw{clearBrowsingDataSignedIn}
             </span>
             <span id="sync-info"
-                hidden="[[!showSyncInfo_(isSignedIn_, syncStatus.signedIn)]]">
+                hidden="[[!showSyncInfo_(isSignedIn_,
+                    syncStatus.signedInState)]]">
               $i18nRaw{clearBrowsingDataWithSync}
             </span>
             <span id="sync-paused-info" hidden="[[!isSyncPaused_]]">

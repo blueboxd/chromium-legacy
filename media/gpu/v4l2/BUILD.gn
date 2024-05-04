@@ -226,13 +226,14 @@ executable("v4l2_stateless_decoder") {
 
 test("v4l2_unittest") {
   testonly = true
-  sources = [ "test/v4l2_unittest.cc" ]
+  sources = [ "v4l2_unittest.cc" ]
 
   deps = [
     ":v4l2",
     "//base/test:test_support",
     "//build/config/linux/libdrm",
     "//media:test_support",
+    "//media/gpu/chromeos:chromeos",
     "//testing/gtest",
     "//ui/gfx/linux:gbm",
   ]

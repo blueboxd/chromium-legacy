@@ -4,10 +4,11 @@
 
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 
+#include <string_view>
+
 #include "base/feature_list.h"
 #include "base/functional/bind.h"
 #include "base/strings/escape.h"
-#include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -46,6 +47,7 @@
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/mojom/page/draggable_region.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/models/image_model.h"
 #include "ui/color/color_id.h"
@@ -100,6 +102,9 @@ Browser* AppBrowserController::FindForWebApp(const Profile& profile,
   for (auto it = browser_list->begin_browsers_ordered_by_activation();
        it != browser_list->end_browsers_ordered_by_activation(); ++it) {
     Browser* browser = *it;
+    if (browser->IsAttemptingToCloseBrowser() || browser->IsBrowserClosing()) {
+      continue;
+    }
     if (browser->type() == Browser::TYPE_POPUP)
       continue;
     if (browser->profile() != &profile)
@@ -161,7 +166,7 @@ bool AppBrowserController::ShouldShowCustomTabBar() const {
     return false;
 
   GURL start_url = GetAppStartUrl();
-  base::StringPiece start_url_scheme = start_url.scheme_piece();
+  std::string_view start_url_scheme = start_url.scheme_piece();
 
   bool is_internal_start_url_scheme =
       start_url_scheme == extensions::kExtensionScheme ||
@@ -318,6 +323,9 @@ bool AppBrowserController::IsPreventCloseEnabled() const {
 bool AppBrowserController::HasProfileMenuButton() const {
   return false;
 }
+bool AppBrowserController::IsProfileMenuButtonVisible() const {
+  return false;
+}
 #endif  // !BUILDFLAG(IS_CHROMEOS)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -399,7 +407,7 @@ void AppBrowserController::PrimaryPageChanged(content::Page& page) {
   // or Borderless mode.
   if (AppUsesWindowControlsOverlay() || AppUsesBorderlessMode()) {
     content::RenderFrameHost& host = page.GetMainDocument();
-    UpdateSupportsAppRegion(/*supports_app_region=*/true, &host);
+    UpdateSupportsDraggableRegions(/*supports_draggable_regions=*/true, &host);
   }
 }
 
@@ -620,7 +628,7 @@ void AppBrowserController::OnReceivedInitialURL() {
   if (!chrome::SavedBoundsAreContentBounds(browser()))
     return;
 
-  // TODO(crbug.com/964825): Correctly set the window size at creation time.
+  // TODO(crbug.com/41459774): Correctly set the window size at creation time.
   // This is currently not possible because the current url is not easily known
   // at popup construction time.
   browser()->window()->SetContentsSize(browser()->override_bounds().size());
@@ -636,7 +644,7 @@ void AppBrowserController::OnTabInserted(content::WebContents* contents) {
   // app window.
   if (AppUsesWindowControlsOverlay() || AppUsesBorderlessMode()) {
     content::RenderFrameHost* host = contents->GetPrimaryMainFrame();
-    UpdateSupportsAppRegion(/*supports_app_region=*/true, host);
+    UpdateSupportsDraggableRegions(/*supports_draggable_regions=*/true, host);
   }
 }
 
@@ -644,7 +652,7 @@ void AppBrowserController::OnTabRemoved(content::WebContents* contents) {
   // Stop collecting draggable app regions when the web contents is removed
   // since it may be reparented to a tab in the browser.
   content::RenderFrameHost* host = contents->GetPrimaryMainFrame();
-  UpdateSupportsAppRegion(/*supports_app_region=*/false, host);
+  UpdateSupportsDraggableRegions(/*supports_draggable_regions=*/false, host);
 }
 
 ui::ImageModel AppBrowserController::GetFallbackAppIcon() const {
@@ -668,8 +676,26 @@ ui::ImageModel AppBrowserController::GetFallbackAppIcon() const {
       gfx::ImageSkia::CreateFrom1xBitmap(bitmap));
 }
 
-void AppBrowserController::UpdateDraggableRegion(const SkRegion& region) {
-  draggable_region_ = region;
+void AppBrowserController::DraggableRegionsChanged(
+    const std::vector<blink::mojom::DraggableRegionPtr>& regions,
+    content::WebContents* contents) {
+  content::WebContents* active_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  if (contents != active_contents) {
+    return;
+  }
+
+  SkRegion sk_region;
+  for (const blink::mojom::DraggableRegionPtr& region : regions) {
+    sk_region.op(
+        SkIRect::MakeLTRB(region->bounds.x(), region->bounds.y(),
+                          region->bounds.x() + region->bounds.width(),
+                          region->bounds.y() + region->bounds.height()),
+        region->draggable ? SkRegion::kUnion_Op : SkRegion::kDifference_Op);
+  }
+
+  draggable_region_ = sk_region;
 
   if (on_draggable_region_set_for_testing_)
     std::move(on_draggable_region_set_for_testing_).Run();
@@ -690,7 +716,7 @@ void AppBrowserController::MaybeSetInitialUrlOnReparentTab() {
 void AppBrowserController::UpdateThemePack() {
   std::optional<SkColor> theme_color = GetThemeColor();
 
-  // TODO(crbug.com/1053823): Add tests for theme properties being set in this
+  // TODO(crbug.com/40119262): Add tests for theme properties being set in this
   // branch.
   std::optional<SkColor> background_color = GetBackgroundColor();
   if (theme_color == last_theme_color_ &&
@@ -749,8 +775,8 @@ void AppBrowserController::SetInitialURL(const GURL& initial_url) {
   OnReceivedInitialURL();
 }
 
-void AppBrowserController::UpdateSupportsAppRegion(
-    bool supports_app_region,
+void AppBrowserController::UpdateSupportsDraggableRegions(
+    bool supports_draggable_regions,
     content::RenderFrameHost* host) {
   CHECK(host);
 
@@ -761,7 +787,7 @@ void AppBrowserController::UpdateSupportsAppRegion(
 
   mojo::AssociatedRemote<chrome::mojom::ChromeRenderFrame> client;
   host->GetRemoteAssociatedInterfaces()->GetInterface(&client);
-  client->SetSupportsAppRegion(supports_app_region);
+  client->SetSupportsDraggableRegions(supports_draggable_regions);
 }
 
 }  // namespace web_app

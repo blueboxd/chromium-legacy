@@ -82,6 +82,8 @@ class CORE_EXPORT AXObjectCache : public GarbageCollected<AXObjectCache> {
   virtual void Thaw() = 0;
   virtual bool IsFrozen() const = 0;
 
+  virtual void SetSerializationResetToken(uint32_t token) = 0;
+
   // Ensure that accessibility is clean and up-to-date for both the main and
   // popup document. Ensures layout is clean as well.
   virtual void UpdateAXForAllDocuments() = 0;
@@ -97,7 +99,6 @@ class CORE_EXPORT AXObjectCache : public GarbageCollected<AXObjectCache> {
   virtual void ListboxActiveIndexChanged(HTMLSelectElement*) = 0;
   virtual void SetMenuListOptionsBounds(HTMLSelectElement*,
                                         const WTF::Vector<gfx::Rect>&) = 0;
-  virtual void LocationChanged(const LayoutObject*) = 0;
   virtual void ImageLoaded(const LayoutObject*) = 0;
 
   // Removes AXObject backed by passed-in object, if there is one.
@@ -148,7 +149,6 @@ class CORE_EXPORT AXObjectCache : public GarbageCollected<AXObjectCache> {
   virtual void DidHideMenuListPopup(LayoutObject*) = 0;
   virtual void HandleLoadStart(Document*) = 0;
   virtual void HandleLoadComplete(Document*) = 0;
-  virtual void HandleLayoutComplete(Document*) = 0;
   virtual void HandleClicked(Node*) = 0;
   virtual void HandleValidationMessageVisibilityChanged(Node* form_control) = 0;
   virtual void HandleEventListenerAdded(Node& node,
@@ -189,10 +189,6 @@ class CORE_EXPORT AXObjectCache : public GarbageCollected<AXObjectCache> {
 
   virtual void HandleScrolledToAnchor(const Node* anchor_node) = 0;
 
-  // Called when the frame rect changes, which can sometimes happen
-  // without producing any layout or other notifications.
-  virtual void HandleFrameRectsChanged(Document&) = 0;
-
   // Called when a layout object's bounding box may have changed.
   virtual void InvalidateBoundingBox(const LayoutObject*) = 0;
 
@@ -202,6 +198,8 @@ class CORE_EXPORT AXObjectCache : public GarbageCollected<AXObjectCache> {
   virtual void OnTouchAccessibilityHover(const gfx::Point&) = 0;
 
   virtual AXObject* ObjectFromAXID(AXID) const = 0;
+
+  virtual AXObject* FirstObjectWithRole(ax::mojom::blink::Role role) = 0;
 
   virtual AXObject* Root() = 0;
 
@@ -218,8 +216,6 @@ class CORE_EXPORT AXObjectCache : public GarbageCollected<AXObjectCache> {
 
   // Returns true if there are any pending updates that need processing.
   virtual bool IsDirty() = 0;
-
-  virtual void SerializeLocationChanges(uint32_t reset_token) = 0;
 
   // Serialize entire tree, returning true if successful.
   virtual bool SerializeEntireTree(
@@ -245,25 +241,6 @@ class CORE_EXPORT AXObjectCache : public GarbageCollected<AXObjectCache> {
 
   virtual void MarkElementDirty(const Node*) = 0;
 
-  // Notifies that an AXObject is dirty and its state needs
-  // to be serialized again. If |subtree| is true, the entire subtree is
-  // dirty.
-  // |event_from| and |event_from_action| annotate this node change with info
-  // about the event which caused the change. For example, an event from a user
-  // or an event from a focus action.
-  virtual void AddDirtyObjectToSerializationQueue(
-      AXObject* obj,
-      ax::mojom::blink::EventFrom event_from,
-      ax::mojom::blink::Action event_from_action,
-      const std::vector<ui::AXEventIntent>& event_intents) = 0;
-
-  virtual void SerializeDirtyObjectsAndEvents(
-      std::vector<ui::AXTreeUpdate>& updates,
-      std::vector<ui::AXEvent>& events,
-      bool& had_end_of_test_event,
-      bool& had_load_complete_messages,
-      bool& need_to_send_location_changes) = 0;
-
   // Returns a vector of the images found in |updates|.
   virtual void GetImagesToAnnotate(ui::AXTreeUpdate& updates,
                                    std::vector<ui::AXNodeData*>&) = 0;
@@ -275,8 +252,9 @@ class CORE_EXPORT AXObjectCache : public GarbageCollected<AXObjectCache> {
   // Ensure that a call to ProcessDeferredAccessibilityEvents() will occur soon.
   virtual void ScheduleAXUpdate() const = 0;
 
-  // Ensure that a call to RenderAccessibilityImpl::AXReadyCallback() will occur
-  // as soon as possible.
+  // Ensure that a call to
+  // RenderAccessibilityImpl::SendAccessibilitySerialization() will occur as
+  // soon as possible.
   virtual void ScheduleImmediateSerialization() = 0;
 
   // Add an event to the queue of events to be processed as well as mark as

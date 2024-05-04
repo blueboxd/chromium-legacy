@@ -96,13 +96,45 @@
             role-description="$i18n{subpageArrowRoleDescription}"></cr-link-row>
       </div>
 
-<if expr="use_nss_certs">
+<if expr="is_chromeos">
       <template is="dom-if" route-path="/certificates">
         <settings-subpage
             associated-control="[[$$('#securityLinkRow')]]"
             page-title="$i18n{manageCertificates}">
           <certificate-manager></certificate-manager>
         </settings-subpage>
+      </template>
+</if>
+
+<if expr="not is_chromeos and use_nss_certs">
+      <template is="dom-if" route-path="/certificates">
+        <settings-subpage
+            associated-control="[[$$('#securityLinkRow')]]"
+            page-title="$i18n{manageCertificates}">
+<if expr="chrome_root_store_cert_management_ui">
+          <template is="dom-if" if="[[!enableCertManagementUIV2_]]">
+            <certificate-manager></certificate-manager>
+          </template>
+          <template is="dom-if" if="[[enableCertManagementUIV2_]]">
+            <certificate-manager-v2></certificate-manager-v2>
+          </template>
+</if>
+<if expr="not chrome_root_store_cert_management_ui">
+          <certificate-manager></certificate-manager>
+</if>
+        </settings-subpage>
+      </template>
+</if>
+
+<if expr="not use_nss_certs and chrome_root_store_cert_management_ui">
+      <template is="dom-if" if="[[enableCertManagementUIV2_]]">
+        <template is="dom-if" route-path="/certificates">
+          <settings-subpage
+              associated-control="[[$$('#securityLinkRow')]]"
+              page-title="$i18n{manageCertificates}">
+            <certificate-manager-v2></certificate-manager-v2>
+          </settings-subpage>
+        </template>
       </template>
 </if>
 
@@ -162,9 +194,10 @@
 
       <template is="dom-if" if="[[enableSafetyHub_]]">
         <template is="dom-if" route-path="/safetyCheck">
-          <!-- TODO(crbug.com/1443466): Make the page searchable.-->
+          <!-- TODO(crbug.com/40267370): Make the page searchable.-->
           <settings-subpage id="safetyHub" page-title="$i18n{safetyHub}"
-              class="multi-card" no-search>
+              class="multi-card" no-search
+              learn-more-url="$i18n{safetyHubHelpCenterURL}">
             <settings-safety-hub-page>
             </settings-safety-hub-page>
           </settings-subpage>
@@ -478,7 +511,7 @@
           <div class="content-settings-header secondary">
             $i18n{siteSettingsLocationDescription}
           </div>
-          <div class="radio-group">
+          <div id="locationRadioGroup" class="radio-group">
             <template is="dom-if" if="[[!showDedicatedCpssSetting_]]">
               <settings-category-default-radio-group
                   category="[[contentSettingsTypesEnum_.GEOLOCATION]]"
@@ -1198,7 +1231,7 @@
           <div class="content-settings-header secondary">
             $i18n{siteSettingsArDescription}
           </div>
-          <!-- TODO(crbug.com/1196900): Fix redesign string when available.-->
+          <!-- TODO(crbug.com/40176677): Fix redesign string when available.-->
           <settings-category-default-radio-group
               category="[[contentSettingsTypesEnum_.AR]]"
               allow-option-label="$i18n{siteSettingsArAsk}"
@@ -1342,8 +1375,35 @@
           </settings-subpage>
        </template>
       </template>
+      <template is="dom-if" if="[[capturedSurfaceControlEnabled_]]">
+        <template is="dom-if" route-path="/content/capturedSurfaceControl" no-search>
+          <settings-subpage page-title="$i18n{siteSettingsCapturedSurfaceControl}"
+              search-label="$i18n{siteSettingsAllSitesSearch}"
+              search-term="{{searchFilter_}}">
+            <div class="content-settings-header secondary">
+              $i18n{siteSettingsCapturedSurfaceControlDescription}
+            </div>
+            <settings-category-default-radio-group
+                category="[[contentSettingsTypesEnum_.CAPTURED_SURFACE_CONTROL]]"
+                allow-option-label=
+                    "$i18n{siteSettingsCapturedSurfaceControlAllowed}"
+                allow-option-icon="settings:touchpad-mouse"
+                block-option-label="$i18n{siteSettingsCapturedSurfaceControlBlocked}"
+                block-option-icon="settings:touchpad-mouse-off">
+            </settings-category-default-radio-group>
+            <category-setting-exceptions
+                category="[[contentSettingsTypesEnum_.CAPTURED_SURFACE_CONTROL]]"
+                allow-header=
+                    "$i18n{siteSettingsCapturedSurfaceControlAllowedExceptions}"
+                block-header=
+                    "$i18n{siteSettingsCapturedSurfaceControlBlockedExceptions}"
+                search-filter="[[searchFilter_]]">
+            </category-setting-exceptions>
+          </settings-subpage>
+       </template>
+      </template>
       <template is="dom-if" if="[[enableAutomaticFullscreenContentSetting_]]">
-        <template is="dom-if" route-path="/content/automaticFullscreen"
+        <template is="dom-if" route-path="/content/automaticFullScreen"
             no-search>
           <settings-subpage
               page-title="$i18n{siteSettingsCategoryAutomaticFullscreen}"
@@ -1352,15 +1412,64 @@
             <div class="content-settings-header secondary">
               $i18n{siteSettingsAutomaticFullscreenDescription}
             </div>
-            <div id="automaticFullscreenBlock" class="cr-row first secondary">
-              $i18n{siteSettingsAutomaticFullscreenBlock}
-            </div>
             <category-setting-exceptions read-only-list
                 category="[[contentSettingsTypesEnum_.AUTOMATIC_FULLSCREEN]]"
                 allow-header=
                     "$i18n{siteSettingsAutomaticFullscreenAllowedExceptions}"
                 block-header=
                     "$i18n{siteSettingsAutomaticFullscreenBlockedExceptions}"
+                    search-filter="[[searchFilter_]]">
+            </category-setting-exceptions>
+          </settings-subpage>
+        </template>
+      </template>
+      <template is="dom-if" if="[[enableKeyboardAndPointerLockPrompt_]]">
+        <template is="dom-if" route-path="/content/keyboardLock" no-search>
+          <settings-subpage page-title="$i18n{siteSettingsKeyboardLock}"
+              search-label="$i18n{siteSettingsAllSitesSearch}"
+              search-term="{{searchFilter_}}">
+            <div class="content-settings-header secondary">
+              $i18n{siteSettingsKeyboardLockDescription}
+            </div>
+            <settings-category-default-radio-group
+                category="[[contentSettingsTypesEnum_.KEYBOARD_LOCK]]"
+                allow-option-label=
+                    "$i18n{siteSettingsKeyboardLockAllowed}"
+                allow-option-icon="settings20:keyboard-lock"
+                block-option-label="$i18n{siteSettingsKeyboardLockBlocked}"
+                block-option-icon="settings20:keyboard-lock-off">
+            </settings-category-default-radio-group>
+            <category-setting-exceptions
+                category="[[contentSettingsTypesEnum_.KEYBOARD_LOCK]]"
+                allow-header=
+                    "$i18n{siteSettingsKeyboardLockAllowedExceptions}"
+                block-header=
+                    "$i18n{siteSettingsKeyboardLockBlockedExceptions}"
+                search-filter="[[searchFilter_]]">
+            </category-setting-exceptions>
+          </settings-subpage>
+        </template>
+        <template is="dom-if" route-path="/content/pointerLock" no-search>
+          <settings-subpage page-title="$i18n{siteSettingsPointerLock}"
+              search-label="$i18n{siteSettingsAllSitesSearch}"
+              search-term="{{searchFilter_}}">
+            <div class="content-settings-header secondary">
+              $i18n{siteSettingsPointerLockDescription}
+            </div>
+            <settings-category-default-radio-group
+                category="[[contentSettingsTypesEnum_.POINTER_LOCK]]"
+                allow-option-label=
+                    "$i18n{siteSettingsPointerLockAllowed}"
+                allow-option-icon="settings20:pointer-lock"
+                block-option-label="$i18n{siteSettingsPointerLockBlocked}"
+                block-option-icon="settings20:pointer-lock-off">
+            </settings-category-default-radio-group>
+            <category-setting-exceptions
+                category="[[contentSettingsTypesEnum_.POINTER_LOCK]]"
+                allow-header=
+                    "$i18n{siteSettingsPointerLockAllowedExceptions}"
+                block-header=
+                    "$i18n{siteSettingsPointerLockBlockedExceptions}"
                 search-filter="[[searchFilter_]]">
             </category-setting-exceptions>
           </settings-subpage>

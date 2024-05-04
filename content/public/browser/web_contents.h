@@ -49,7 +49,7 @@
 #include "third_party/perfetto/include/perfetto/tracing/traced_value_forward.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_mode.h"
-#include "ui/accessibility/ax_node.h"
+#include "ui/accessibility/platform/inspect/ax_api_type.h"
 #include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
 #include "ui/color/color_provider_key.h"
 #include "ui/display/types/display_constants.h"
@@ -70,6 +70,7 @@ namespace blink {
 namespace web_pref {
 struct WebPreferences;
 }
+class WebInputEvent;
 struct UserAgentOverride;
 struct RendererPreferences;
 }  // namespace blink
@@ -91,6 +92,7 @@ class InterfaceProvider;
 namespace ui {
 struct AXPropertyFilter;
 struct AXTreeUpdate;
+class AXNode;
 class ColorProvider;
 class ColorProviderSource;
 }
@@ -607,6 +609,10 @@ class WebContents : public PageNavigator,
       bool internal,
       std::vector<ui::AXPropertyFilter> property_filters) = 0;
 
+  virtual std::string DumpAccessibilityTree(
+      ui::AXApiType::Type api_type,
+      std::vector<ui::AXPropertyFilter> property_filters) = 0;
+
   // A callback that takes a string which contains accessibility event
   // information.
   using AccessibilityEventCallback =
@@ -622,6 +628,10 @@ class WebContents : public PageNavigator,
       bool start_recording,
       std::optional<AccessibilityEventCallback> callback) = 0;
 
+  virtual void RecordAccessibilityEvents(
+      ui::AXApiType::Type api_type,
+      bool start_recording,
+      std::optional<AccessibilityEventCallback> callback) = 0;
   // Tab navigation state ------------------------------------------------------
 
   // Returns the current navigation properties, which if a navigation is
@@ -665,6 +675,10 @@ class WebContents : public PageNavigator,
   // Returns whether this WebContents is waiting for a first-response for the
   // main resource of the page.
   virtual bool IsWaitingForResponse() = 0;
+
+  // Returns whether this WebContents's primary frame tree node is navigating,
+  // i.e. it has an associated NavigationRequest.
+  virtual bool HasUncommittedNavigationInPrimaryMainFrame() = 0;
 
   // Returns the current load state and the URL associated with it.
   // The load state is only updated while IsLoading() is true.
@@ -829,7 +843,7 @@ class WebContents : public PageNavigator,
   // Sets the visibility of the WebContents' view and notifies the WebContents
   // observers about Visibility change. Call UpdateWebContentsVisibility instead
   // of WasShown() if you are setting Visibility to VISIBLE for the first time.
-  // TODO(crbug.com/1444248): Make updating Visibility more robust.
+  // TODO(crbug.com/40911760): Make updating Visibility more robust.
   virtual void UpdateWebContentsVisibility(Visibility visibility) = 0;
 
   // This function checks *all* frames in this WebContents (not just the main
@@ -900,7 +914,7 @@ class WebContents : public PageNavigator,
   //
   // Always returns a non-null value.
   //
-  // TODO(crbug.com/1498410): Consider replacing this with
+  // TODO(crbug.com/40939539): Consider replacing this with
   // GuestViewBase::GetTopLevelWebContents, since that is now the only case
   // where this would return a contents other than |this|.
   virtual WebContents* GetResponsibleWebContents() = 0;
@@ -1059,7 +1073,7 @@ class WebContents : public PageNavigator,
   // A resulting |file_size| of -1 represents a failure. Any other value
   // represents the size of the successfully generated file.
   //
-  // TODO(https://crbug.com/915966): GenerateMHTML will eventually be removed
+  // TODO(crbug.com/40606905): GenerateMHTML will eventually be removed
   // and GenerateMHTMLWithResult will be renamed to GenerateMHTML to replace it.
   // Both GenerateMHTML and GenerateMHTMLWithResult perform the same operation.
   // however, GenerateMHTMLWithResult provides a struct as output, that contains
@@ -1359,7 +1373,7 @@ class WebContents : public PageNavigator,
   // since the last navigation.
   virtual bool CompletedFirstVisuallyNonEmptyPaint() = 0;
 
-  // TODO(https://crbug.com/826293): This is a simple mitigation to validate
+  // TODO(crbug.com/41379215): This is a simple mitigation to validate
   // that an action that requires a user gesture actually has one in the
   // trustworthy browser process, rather than relying on the untrustworthy
   // renderer. This should be eventually merged into and accounted for in the
@@ -1367,9 +1381,17 @@ class WebContents : public PageNavigator,
   virtual bool HasRecentInteraction() = 0;
 
   // Causes the WebContents to ignore input events for at least as long as the
-  // token exists.  In the event of multiple calls, input events will be ignored
+  // token exists. In the event of multiple calls, input events will be ignored
   // until all tokens have been destroyed.
-  [[nodiscard]] virtual ScopedIgnoreInputEvents IgnoreInputEvents() = 0;
+  // If WebInputEventAuditCallback is given, it can audits WebInputEvent based
+  // input events and ignore only events that the callback returns false for the
+  // event. Other kind of events, such as focus event or ui::Events will be
+  // always ignored without asking the callback. The given callback will be
+  // invoked only while the returned ScopedIgnoreInputEvents alives.
+  using WebInputEventAuditCallback =
+      base::RepeatingCallback<bool(const blink::WebInputEvent&)>;
+  [[nodiscard]] virtual ScopedIgnoreInputEvents IgnoreInputEvents(
+      std::optional<WebInputEventAuditCallback> audit_callback) = 0;
 
   // Returns the group id for all audio streams that correspond to a single
   // WebContents. This can be used to determine if a AudioOutputStream was
@@ -1467,9 +1489,9 @@ class WebContents : public PageNavigator,
       ui::PageTransition page_transition,
       PreloadingHoldbackStatus holdback_status_override,
       PreloadingAttempt* preloading_attempt,
-      base::RepeatingCallback<bool(const GURL&)> url_match_predicate = {},
+      base::RepeatingCallback<bool(const GURL&)> url_match_predicate,
       base::RepeatingCallback<void(NavigationHandle&)>
-          prerender_navigation_handle_callback = {}) = 0;
+          prerender_navigation_handle_callback) = 0;
 
   // May be called when the embedder believes that it is likely that the user
   // will perform a back navigation due to the trigger indicated by `predictor`
@@ -1491,7 +1513,7 @@ class WebContents : public PageNavigator,
 
   // Tag `WebContents` with its owner. Used purely for debugging purposes so it
   // does not need to be exhaustive or perfectly correct.
-  // TODO(crbug.com/1407197): Remove after bug is fixed.
+  // TODO(crbug.com/40062641): Remove after bug is fixed.
   virtual void SetOwnerLocationForDebug(
       std::optional<base::Location> owner_location) = 0;
 

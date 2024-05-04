@@ -22,7 +22,7 @@
 #include "chrome/grit/search_engine_choice_resources_map.h"
 #include "chrome/grit/signin_resources.h"
 #include "components/search_engines/search_engine_choice/search_engine_choice_service.h"
-#include "components/search_engines/search_engine_choice_utils.h"
+#include "components/search_engines/search_engine_choice/search_engine_choice_utils.h"
 #include "components/search_engines/template_url.h"
 #include "components/signin/public/base/signin_switches.h"
 #include "components/strings/grit/components_branded_strings.h"
@@ -35,7 +35,7 @@ std::string GetChoiceListJSON(Profile& profile) {
   base::Value::List choice_value_list;
   SearchEngineChoiceDialogService* search_engine_choice_dialog_service =
       SearchEngineChoiceDialogServiceFactory::GetForProfile(&profile);
-  const std::vector<std::unique_ptr<TemplateURL>> choices =
+  const TemplateURL::TemplateURLVector choices =
       search_engine_choice_dialog_service->GetSearchEngines();
 
   for (const auto& choice : choices) {
@@ -52,6 +52,7 @@ std::string GetChoiceListJSON(Profile& profile) {
     choice_value.Set("url", choice->url());
     choice_value.Set("marketingSnippet",
                      search_engines::GetMarketingSnippetString(choice->data()));
+    choice_value.Set("showMarketingSnippet", false);
     choice_value_list.Append(std::move(choice_value));
   }
   std::string json_choice_list;
@@ -91,11 +92,11 @@ SearchEngineChoiceUI::SearchEngineChoiceUI(content::WebUI* web_ui)
   source->AddLocalizedString(
       "infoDialogThirdParagraph",
       IDS_SEARCH_ENGINE_CHOICE_INFO_DIALOG_BODY_THIRD_PARAGRAPH);
+  source->AddLocalizedString("choiceListA11yLabel",
+                             IDS_SEARCH_ENGINE_CHOICE_LIST_A11Y_LABEL);
   source->AddLocalizedString("infoDialogButtonText", IDS_CLOSE);
   source->AddLocalizedString("productLogoAltText",
                              IDS_SHORT_PRODUCT_LOGO_ALT_TEXT);
-  source->AddLocalizedString("chevronA11yLabel",
-                             IDS_SEARCH_ENGINE_CHOICE_CHEVRON_A11Y_LABEL);
   source->AddLocalizedString("moreButtonText",
                              IDS_SEARCH_ENGINE_CHOICE_MORE_BUTTON);
   source->AddResourcePath("images/left_illustration.svg",

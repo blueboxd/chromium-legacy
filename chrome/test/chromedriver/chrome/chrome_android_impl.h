@@ -31,11 +31,15 @@ class ChromeAndroidImpl : public ChromeImpl {
   std::string GetOperatingSystemName() override;
 
   // Overridden from ChromeImpl:
+  Status MaximizeWindow(const std::string& target_id) override;
+  Status MinimizeWindow(const std::string& target_id) override;
+  Status FullScreenWindow(const std::string& target_id) override;
   bool HasTouchScreen() const override;
   Status QuitImpl() override;
 
  protected:
-  Status GetWindow(const std::string& target_id, Window* window) override;
+  Status GetWindow(const std::string& target_id,
+                   internal::Window& window) override;
 
  private:
   std::unique_ptr<Device> device_;

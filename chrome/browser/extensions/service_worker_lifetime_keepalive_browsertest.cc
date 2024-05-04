@@ -100,79 +100,7 @@ size_t GetExternalRequestCountForWorker(content::BrowserContext& context,
 
 }  // namespace
 
-// Observer for an extension service worker to start and stop.
-class TestServiceWorkerContextObserver
-    : public content::ServiceWorkerContextObserver {
- public:
-  TestServiceWorkerContextObserver(content::ServiceWorkerContext* context,
-                                   const ExtensionId& extension_id)
-      : context_(context),
-        extension_url_(Extension::GetBaseURLFromExtensionId(extension_id)) {
-    scoped_observation_.Observe(context);
-  }
-
-  TestServiceWorkerContextObserver(const TestServiceWorkerContextObserver&) =
-      delete;
-  TestServiceWorkerContextObserver& operator=(
-      const TestServiceWorkerContextObserver&) = delete;
-
-  ~TestServiceWorkerContextObserver() override = default;
-
-  // Sets the ID of an already-running worker. This is handy so this observer
-  // can be instantiated after the extension has already started.
-  // NOTE: If we move this class somewhere more central, we could streamline
-  // this a bit by having it check for the state of the worker during
-  // construction.
-  void SetRunningId(int64_t version_id) { running_version_id_ = version_id; }
-
-  void WaitForWorkerStart() {
-    started_run_loop_.Run();
-    EXPECT_TRUE(running_version_id_.has_value());
-  }
-
-  void WaitForWorkerStop() {
-    // OnVersionStoppedRunning() might have already cleared running_version_id_.
-    if (running_version_id_.has_value()) {
-      stopped_run_loop_.Run();
-    }
-  }
-
-  int64_t GetServiceWorkerVersionId() { return running_version_id_.value(); }
-
- private:
-  // ServiceWorkerContextObserver:
-  void OnVersionStartedRunning(
-      int64_t version_id,
-      const content::ServiceWorkerRunningInfo& running_info) override {
-    if (running_info.scope != extension_url_) {
-      return;
-    }
-
-    running_version_id_ = version_id;
-    started_run_loop_.Quit();
-  }
-
-  void OnVersionStoppedRunning(int64_t version_id) override {
-    if (running_version_id_ == version_id) {
-      stopped_run_loop_.Quit();
-    }
-    running_version_id_ = std::nullopt;
-  }
-
-  void OnDestruct(content::ServiceWorkerContext* context) override {
-    DCHECK(scoped_observation_.IsObserving());
-    scoped_observation_.Reset();
-  }
-
-  base::RunLoop stopped_run_loop_;
-  base::RunLoop started_run_loop_;
-  std::optional<int64_t> running_version_id_;
-  base::ScopedObservation<content::ServiceWorkerContext,
-                          content::ServiceWorkerContextObserver>
-      scoped_observation_{this};
-  raw_ptr<content::ServiceWorkerContext> context_ = nullptr;
-  GURL extension_url_;
-};
+using service_worker_test_utils::TestServiceWorkerContextObserver;
 
 class ServiceWorkerLifetimeKeepaliveBrowsertest : public ExtensionApiTest {
  public:
@@ -230,7 +158,8 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerLifetimeKeepaliveBrowsertest,
   TestServiceWorkerContextObserver sw_observer_receiver_extension(
       context, kTestReceiverExtensionId);
   LoadExtension(test_data_dir_.AppendASCII(kTestReceiverExtensionRelativePath));
-  sw_observer_receiver_extension.WaitForWorkerStart();
+  const int64_t service_worker_receiver_id =
+      sw_observer_receiver_extension.WaitForWorkerStarted();
 
   ExtensionTestMessageListener connect_listener(
       kPersistentPortConnectedMessage);
@@ -239,31 +168,27 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerLifetimeKeepaliveBrowsertest,
   TestServiceWorkerContextObserver sw_observer_opener_extension(
       context, kTestOpenerExtensionId);
   LoadExtension(test_data_dir_.AppendASCII(kTestOpenerExtensionRelativePath));
-  sw_observer_opener_extension.WaitForWorkerStart();
+  const int64_t service_worker_opener_id =
+      sw_observer_opener_extension.WaitForWorkerStarted();
 
   ASSERT_TRUE(connect_listener.WaitUntilSatisfied());
-
-  int64_t service_worker_receiver_id =
-      sw_observer_receiver_extension.GetServiceWorkerVersionId();
-  int64_t service_worker_opener_id =
-      sw_observer_opener_extension.GetServiceWorkerVersionId();
 
   // Advance clock and check that the receiver service worker stopped.
   content::AdvanceClockAfterRequestTimeout(context, service_worker_receiver_id,
                                            &tick_clock_receiver_);
   TriggerTimeoutAndCheckStopped(context, service_worker_receiver_id);
-  sw_observer_receiver_extension.WaitForWorkerStop();
+  sw_observer_receiver_extension.WaitForWorkerStopped();
 
   // Advance clock and check that the opener service worker stopped.
   content::AdvanceClockAfterRequestTimeout(context, service_worker_opener_id,
                                            &tick_clock_opener_);
   TriggerTimeoutAndCheckStopped(context, service_worker_opener_id);
-  sw_observer_opener_extension.WaitForWorkerStop();
+  sw_observer_opener_extension.WaitForWorkerStopped();
 }
 
 // Tests that the service workers will not stop if both extensions are
 // allowlisted via policy and the port is not closed.
-// TODO(https://crbug.com/1454339): Flakes on ChromeOS.
+// TODO(crbug.com/40272276): Flakes on ChromeOS.
 #if BUILDFLAG(IS_CHROMEOS)
 #define MAYBE_ServiceWorkersDoNotTimeOutWithPolicy \
   DISABLED_ServiceWorkersDoNotTimeOutWithPolicy
@@ -287,7 +212,8 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerLifetimeKeepaliveBrowsertest,
       context, kTestReceiverExtensionId);
   const Extension* receiver_extension = LoadExtension(
       test_data_dir_.AppendASCII(kTestReceiverExtensionRelativePath));
-  sw_observer_receiver_extension.WaitForWorkerStart();
+  const int64_t service_worker_receiver_id =
+      sw_observer_receiver_extension.WaitForWorkerStarted();
 
   ExtensionTestMessageListener connect_listener(
       kPersistentPortConnectedMessage);
@@ -297,14 +223,10 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerLifetimeKeepaliveBrowsertest,
       context, kTestOpenerExtensionId);
   const Extension* opener_extension = LoadExtension(
       test_data_dir_.AppendASCII(kTestOpenerExtensionRelativePath));
-  sw_observer_opener_extension.WaitForWorkerStart();
+  const int64_t service_worker_opener_id =
+      sw_observer_opener_extension.WaitForWorkerStarted();
 
   ASSERT_TRUE(connect_listener.WaitUntilSatisfied());
-
-  int64_t service_worker_receiver_id =
-      sw_observer_receiver_extension.GetServiceWorkerVersionId();
-  int64_t service_worker_opener_id =
-      sw_observer_opener_extension.GetServiceWorkerVersionId();
 
   // Advance clock and check that the receiver service worker did not stop.
   content::AdvanceClockAfterRequestTimeout(context, service_worker_receiver_id,
@@ -347,7 +269,8 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerLifetimeKeepaliveBrowsertest,
   TestServiceWorkerContextObserver sw_observer_receiver_extension(
       context, kTestReceiverExtensionId);
   LoadExtension(test_data_dir_.AppendASCII(kTestReceiverExtensionRelativePath));
-  sw_observer_receiver_extension.WaitForWorkerStart();
+  const int64_t service_worker_receiver_id =
+      sw_observer_receiver_extension.WaitForWorkerStarted();
 
   ExtensionTestMessageListener connect_listener(
       kPersistentPortConnectedMessage);
@@ -356,14 +279,10 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerLifetimeKeepaliveBrowsertest,
   TestServiceWorkerContextObserver sw_observer_opener_extension(
       context, kTestOpenerExtensionId);
   LoadExtension(test_data_dir_.AppendASCII(kTestOpenerExtensionRelativePath));
-  sw_observer_opener_extension.WaitForWorkerStart();
+  const int64_t service_worker_opener_id =
+      sw_observer_opener_extension.WaitForWorkerStarted();
 
   ASSERT_TRUE(connect_listener.WaitUntilSatisfied());
-
-  int64_t service_worker_receiver_id =
-      sw_observer_receiver_extension.GetServiceWorkerVersionId();
-  int64_t service_worker_opener_id =
-      sw_observer_opener_extension.GetServiceWorkerVersionId();
 
   ExtensionTestMessageListener disconnect_listener(
       kPersistentPortDisconnectedMessage);
@@ -376,7 +295,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerLifetimeKeepaliveBrowsertest,
 
   // Wait for the receiver SW to be closed in order for the port to be
   // disconnected and the opener SW losing extended lifetime.
-  sw_observer_receiver_extension.WaitForWorkerStop();
+  sw_observer_receiver_extension.WaitForWorkerStopped();
 
   // Wait for port to close in the opener extension.
   ASSERT_TRUE(disconnect_listener.WaitUntilSatisfied());
@@ -385,7 +304,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerLifetimeKeepaliveBrowsertest,
   content::AdvanceClockAfterRequestTimeout(context, service_worker_opener_id,
                                            &tick_clock_opener_);
   TriggerTimeoutAndCheckStopped(context, service_worker_opener_id);
-  sw_observer_opener_extension.WaitForWorkerStop();
+  sw_observer_opener_extension.WaitForWorkerStopped();
 }
 
 // Tests that the service workers will stop if both extensions are allowlisted
@@ -405,7 +324,8 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerLifetimeKeepaliveBrowsertest,
   TestServiceWorkerContextObserver sw_observer_receiver_extension(
       context, kTestReceiverExtensionId);
   LoadExtension(test_data_dir_.AppendASCII(kTestReceiverExtensionRelativePath));
-  sw_observer_receiver_extension.WaitForWorkerStart();
+  const int64_t service_worker_receiver_id =
+      sw_observer_receiver_extension.WaitForWorkerStarted();
 
   ExtensionTestMessageListener connect_listener(
       kPersistentPortConnectedMessage);
@@ -414,14 +334,10 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerLifetimeKeepaliveBrowsertest,
   TestServiceWorkerContextObserver sw_observer_opener_extension(
       context, kTestOpenerExtensionId);
   LoadExtension(test_data_dir_.AppendASCII(kTestOpenerExtensionRelativePath));
-  sw_observer_opener_extension.WaitForWorkerStart();
+  const int64_t service_worker_opener_id =
+      sw_observer_opener_extension.WaitForWorkerStarted();
 
   ASSERT_TRUE(connect_listener.WaitUntilSatisfied());
-
-  int64_t service_worker_receiver_id =
-      sw_observer_receiver_extension.GetServiceWorkerVersionId();
-  int64_t service_worker_opener_id =
-      sw_observer_opener_extension.GetServiceWorkerVersionId();
 
   ExtensionTestMessageListener disconnect_listener(
       kPersistentPortDisconnectedMessage);
@@ -444,13 +360,13 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerLifetimeKeepaliveBrowsertest,
   TriggerTimeoutAndCheckStopped(context, service_worker_receiver_id);
 
   // Wait for the receiver SW to be closed.
-  sw_observer_receiver_extension.WaitForWorkerStop();
+  sw_observer_receiver_extension.WaitForWorkerStopped();
 
   // Advance clock and check that the opener service worker stopped.
   content::AdvanceClockAfterRequestTimeout(context, service_worker_opener_id,
                                            &tick_clock_opener_);
   TriggerTimeoutAndCheckStopped(context, service_worker_opener_id);
-  sw_observer_opener_extension.WaitForWorkerStop();
+  sw_observer_opener_extension.WaitForWorkerStopped();
 }
 
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
@@ -472,14 +388,12 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerLifetimeKeepaliveBrowsertest,
   test_dir.WriteFile(FILE_PATH_LITERAL("background.js"), "// blank");
 
   // Load up the extension and wait for the worker to start.
-  service_worker_test_utils::TestRegistrationObserver registration_observer(
-      profile());
+  TestServiceWorkerContextObserver registration_observer(profile());
   const Extension* extension = LoadExtension(test_dir.UnpackedPath());
   // We explicitly wait for the worker to be activated. Otherwise, the
   // activation event might still be running when we advance the timer, causing
   // the worker to be killed for the activation event timing out.
-  registration_observer.WaitForWorkerActivated();
-  int64_t version_id = registration_observer.GetServiceWorkerVersionId();
+  int64_t version_id = registration_observer.WaitForWorkerActivated();
 
   // Inject a script that will trigger chrome.permissions.request() and then
   // return. When permissions.request() resolves, it will send a message.
@@ -546,14 +460,12 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerLifetimeKeepaliveBrowsertest,
   test_dir.WriteFile(FILE_PATH_LITERAL("background.js"), "// blank");
 
   // Load up the extension and wait for the worker to start.
-  service_worker_test_utils::TestRegistrationObserver registration_observer(
-      profile());
+  TestServiceWorkerContextObserver registration_observer(profile());
   const Extension* extension = LoadExtension(test_dir.UnpackedPath());
   // We explicitly wait for the worker to be activated. Otherwise, the
   // activation event might still be running when we advance the timer, causing
   // the worker to be killed for the activation event timing out.
-  registration_observer.WaitForWorkerActivated();
-  int64_t version_id = registration_observer.GetServiceWorkerVersionId();
+  int64_t version_id = registration_observer.WaitForWorkerActivated();
 
   // Inject a trivial script that will call test.sendMessage(). This is a handy
   // API because, by indicating the test will reply, we control when the
@@ -577,7 +489,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerLifetimeKeepaliveBrowsertest,
                                            &tick_clock_opener_);
   TriggerTimeoutAndCheckStopped(context, version_id);
   // Wait for the worker to fully stop.
-  context_observer.WaitForWorkerStop();
+  context_observer.WaitForWorkerStopped();
 
   // Reply to the extension (even though the worker is gone). This triggers
   // the completion of the extension function, which would otherwise try to
@@ -623,15 +535,13 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerLifetimeKeepaliveBrowsertest,
   test_dir.WriteFile(FILE_PATH_LITERAL("background.js"), kBackgroundJs);
 
   // Load up the extension and wait for the worker to start.
-  service_worker_test_utils::TestRegistrationObserver registration_observer(
-      profile());
+  TestServiceWorkerContextObserver registration_observer(profile());
   const Extension* extension = LoadExtension(test_dir.UnpackedPath());
   ASSERT_TRUE(extension);
   // We explicitly wait for the worker to be activated. Otherwise, the
   // activation event might still be running when we advance the timer, causing
   // the worker to be killed for the activation event timing out.
-  registration_observer.WaitForWorkerActivated();
-  int64_t version_id = registration_observer.GetServiceWorkerVersionId();
+  int64_t version_id = registration_observer.WaitForWorkerActivated();
 
   // Open a new tab for the extension to attach a debugger to.
   const GURL example_com =
@@ -800,12 +710,16 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerLifetimeKeepaliveBrowsertest,
       LoadExtension(test_dir.UnpackedPath(), {.allow_in_incognito = true});
   ASSERT_TRUE(extension);
 
+  Profile* incognito_profile =
+      profile()->GetPrimaryOTRProfile(/*create_if_needed=*/true);
+  TestServiceWorkerContextObserver registration_observer(incognito_profile);
   // Open example.com/simple.html in an incognito window. The content script
   // will inject.
   ExtensionTestMessageListener content_script_listener("content script ready");
   Browser* incognito_browser = OpenURLOffTheRecord(
       profile(), embedded_test_server()->GetURL("example.com", "/simple.html"));
   ASSERT_TRUE(content_script_listener.WaitUntilSatisfied());
+  registration_observer.WaitForWorkerActivated();
   content::WebContents* incognito_tab =
       incognito_browser->tab_strip_model()->GetActiveWebContents();
   int tab_id = ExtensionTabUtil::GetTabId(incognito_tab);
@@ -819,7 +733,6 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerLifetimeKeepaliveBrowsertest,
            chrome.tabs.sendMessage(%d, 'hello', () => {});
          })();)";
 
-  Profile* incognito_profile = incognito_browser->profile();
   base::Value script_result = BackgroundScriptExecutor::ExecuteScript(
       incognito_profile, extension->id(),
       base::StringPrintf(kOpenMessagePipe, tab_id),
@@ -849,7 +762,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerLifetimeKeepaliveBrowsertest,
   //   tab asynchronously, the keepalive is guaranteed to have resolved.
   //   (Otherwise, it could potentially be racy).
   // Thus, at the end, we have two remaining keepalives.
-  // TODO(crbug.com/1514471): Ideally, there would only be one -- we shouldn't
+  // TODO(crbug.com/41487026): Ideally, there would only be one -- we shouldn't
   // add keepalives for the service worker due to a tab's message port.
 
   EXPECT_THAT(
@@ -931,17 +844,20 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerLifetimeKeepaliveBrowsertest,
       listener_extension_dir.UnpackedPath(), {.allow_in_incognito = true});
   ASSERT_TRUE(listener_extension);
 
+  Profile* incognito_profile =
+      profile()->GetPrimaryOTRProfile(/*create_if_needed=*/true);
+  TestServiceWorkerContextObserver registration_observer(incognito_profile);
   // Open a new tab in incognito. This spawns the new process for the split mode
   // extensions.
   Browser* incognito_browser = OpenURLOffTheRecord(
       profile(), embedded_test_server()->GetURL("example.com", "/simple.html"));
+  registration_observer.WaitForWorkerActivated();
 
   // Send a message from one extension to the other, opening a message pipe.
   // Since the listener extension never responds, the message pipe will
   // remain open. The listener then sends the script result 'success' when it
   // receives the message.
   static constexpr char kOpenMessagePipe[] = R"(openMessagePipe('%s');)";
-  Profile* incognito_profile = incognito_browser->profile();
   base::Value script_result = BackgroundScriptExecutor::ExecuteScript(
       incognito_profile, opener_extension->id(),
       base::StringPrintf(kOpenMessagePipe, listener_extension->id().c_str()),

@@ -169,9 +169,9 @@ class OOPVideoDecoderSupportedConfigsManager {
     // a) We didn't try to get the supported configurations before initializing
     //    OOPVideoDecoder instances. This should be impossible as higher layers
     //    should guarantee that we know the supported configurations before
-    //    creating MojoVideoDecoderService instances (and therefore
-    //    OOPVideoDecoder instances). See, e.g., the logic in
-    //    InterfaceFactoryImpl::CreateVideoDecoder().
+    //    creating OOPVideoDecoder instances. See the logic in
+    //    InterfaceFactoryImpl::CreateVideoDecoder() (for regular OOP-VD) and in
+    //    MojoStableVideoDecoder::Initialize() (for GTFO OOP-VD).
     //
     // b) We did try to get the supported configurations but an error occurred.
     //    This case reduces to no supported configurations in which case, a
@@ -242,6 +242,19 @@ class OOPVideoDecoderSupportedConfigsManager {
         base::SequencedTaskRunner::GetCurrentDefault());
   }
 
+  void ResetForTesting() {
+    base::AutoLock lock(lock_);
+    oop_video_decoder_.reset();
+    disconnected_ = false;
+    configs_.reset();
+    decoder_type_.reset();
+    interface_version_.reset();
+    config_retry_count_ = 0u;
+    while (!waiting_callbacks_.empty()) {
+      waiting_callbacks_.pop();
+    }
+  }
+
  private:
   friend class base::NoDestructor<OOPVideoDecoderSupportedConfigsManager>;
 
@@ -265,16 +278,38 @@ class OOPVideoDecoderSupportedConfigsManager {
     MaybeNotifyWaitingCallbacks();
   }
 
+  void GetSupportedConfigs() {
+    base::AutoLock lock(lock_);
+    if (!disconnected_) {
+      oop_video_decoder_->GetSupportedConfigs(base::BindOnce(
+          &OOPVideoDecoderSupportedConfigsManager::OnGetSupportedConfigs,
+          base::Unretained(this)));
+    }
+  }
+
   void OnGetSupportedConfigs(const SupportedVideoDecoderConfigs& configs,
                              VideoDecoderType decoder_type) {
     base::AutoLock lock(lock_);
     DCHECK(!configs_);
     DCHECK(!decoder_type_);
     CHECK(!disconnected_);
-
+    constexpr uint32_t kMaxConfigRetries = 20;
     if (decoder_type == VideoDecoderType::kVda ||
         decoder_type == VideoDecoderType::kVaapi ||
         decoder_type == VideoDecoderType::kV4L2) {
+      if (configs.empty() && config_retry_count_ < kMaxConfigRetries) {
+        // TODO(b/328092014): Redo this to not use a hacky delay.
+        VLOGF(1) << "OOPVD failed getting configs, retry after delay";
+        config_retry_count_++;
+        base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
+            FROM_HERE,
+            base::BindOnce(
+                &OOPVideoDecoderSupportedConfigsManager::GetSupportedConfigs,
+                base::Unretained(this)),
+            base::Milliseconds(250));
+
+        return;
+      }
       configs_ = configs;
       decoder_type_ = decoder_type;
     } else {
@@ -337,6 +372,7 @@ class OOPVideoDecoderSupportedConfigsManager {
   std::optional<SupportedVideoDecoderConfigs> configs_ GUARDED_BY(lock_);
   std::optional<VideoDecoderType> decoder_type_ GUARDED_BY(lock_);
   std::optional<uint32_t> interface_version_ GUARDED_BY(lock_);
+  uint32_t config_retry_count_ GUARDED_BY(lock_) = 0;
 
   // This tracks everything that's needed to call a callback passed to
   // NotifySupportKnown() that had to be queued because there was a query in
@@ -390,6 +426,12 @@ void OOPVideoDecoder::NotifySupportKnown(
 std::optional<SupportedVideoDecoderConfigs>
 OOPVideoDecoder::GetSupportedConfigs() {
   return OOPVideoDecoderSupportedConfigsManager::Instance().Get();
+}
+
+// static
+void OOPVideoDecoder::ResetGlobalStateForTesting() {
+  OOPVideoDecoderSupportedConfigsManager::Instance()
+      .ResetForTesting();  // IN-TEST
 }
 
 OOPVideoDecoder::OOPVideoDecoder(
@@ -548,6 +590,11 @@ void OOPVideoDecoder::OnInitializeDone(const DecoderStatus& status,
 
   CHECK(!has_error_);
 
+  if (max_decode_requests <= 0) {
+    Stop();
+    return;
+  }
+
   const VideoDecoderType expected_decoder_type =
       OOPVideoDecoderSupportedConfigsManager::Instance().GetDecoderType();
 
@@ -557,6 +604,9 @@ void OOPVideoDecoder::OnInitializeDone(const DecoderStatus& status,
     Stop();
     return;
   }
+
+  needs_bitstream_conversion_ = needs_bitstream_conversion;
+  max_decode_requests_ = max_decode_requests;
   remote_decoder_type_ = decoder_type;
 
   if (OOPVideoDecoderSupportedConfigsManager::Instance()
@@ -604,7 +654,11 @@ void OOPVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
     return;
   }
 
+  // If we change |buffer| to have a fake timestamp, we'll need to restore the
+  // original timestamp in case higher layers rely on that timestamp. The
+  // |buffer_timestamp_restorer| ensures that happens before Decode() returns.
   CHECK(buffer);
+  base::ScopedClosureRunner buffer_timestamp_restorer;
   if (!buffer->end_of_stream()) {
     const base::TimeDelta next_fake_timestamp =
         current_fake_timestamp_ + base::Microseconds(1u);
@@ -619,6 +673,12 @@ void OOPVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
         fake_timestamp_to_real_timestamp_cache_.end());
     fake_timestamp_to_real_timestamp_cache_.Put(current_fake_timestamp_,
                                                 buffer->timestamp());
+    buffer_timestamp_restorer.ReplaceClosure(base::BindOnce(
+        [](scoped_refptr<DecoderBuffer> decoder_buffer,
+           base::TimeDelta original_timestamp) {
+          decoder_buffer->set_timestamp(original_timestamp);
+        },
+        buffer, buffer->timestamp()));
     buffer->set_timestamp(current_fake_timestamp_);
   }
 
@@ -836,7 +896,10 @@ void OOPVideoDecoder::ApplyResolutionChange() {
 }
 
 bool OOPVideoDecoder::NeedsBitstreamConversion() const {
-  NOTREACHED_NORETURN();
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  CHECK(!has_error_);
+  CHECK_NE(remote_decoder_type_, VideoDecoderType::kUnknown);
+  return needs_bitstream_conversion_;
 }
 
 bool OOPVideoDecoder::CanReadWithoutStalling() const {
@@ -859,7 +922,10 @@ bool OOPVideoDecoder::CanReadWithoutStalling() const {
 }
 
 int OOPVideoDecoder::GetMaxDecodeRequests() const {
-  NOTREACHED_NORETURN();
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  CHECK(!has_error_);
+  CHECK_NE(remote_decoder_type_, VideoDecoderType::kUnknown);
+  return base::strict_cast<int>(max_decode_requests_);
 }
 
 VideoDecoderType OOPVideoDecoder::GetDecoderType() const {

@@ -54,7 +54,7 @@ NSArray* multitaskingTests() {
     @"testContextMenuOpenInNewTab",     // ContextMenuTestCase
     @"testContextMenuOpenInNewWindow",  // ContextMenuTestCase
     @"testSwitchToMain",                // CookiesTestCase
-    // TODO(crbug.com/1422238) Re-enable this flaky test on multitasking.
+    // TODO(crbug.com/40896793) Re-enable this flaky test on multitasking.
     // @"testSwitchToIncognito",              // CookiesTestCase
     @"testFindDefaultFormAssistControls",  // FormInputTestCase
     @"testTabDeletion",                    // TabUsageRecorderTestCase
@@ -64,7 +64,7 @@ NSArray* multitaskingTests() {
     @"testSignInPopUpAccountOnSyncSettings",   // AccountCollectionsTestCase
     @"testAutofillProfileEditing",             // AutofillSettingsTestCase
     @"testAccessibilityOfBlockPopupSettings",  // BlockPopupsTestCase
-    // TODO(crbug.com/1485297): Failing on ios-simulator-full-configs.
+    // TODO(crbug.com/40282512): Failing on ios-simulator-full-configs.
     // @"testClearCookies",                       // SettingsTestCase
     @"testAccessibilityOfTranslateSettings",  // TranslateUITestCase
 
@@ -72,14 +72,14 @@ NSArray* multitaskingTests() {
     @"testActivityServiceControllerPrintAfterRedirectionToUnprintablePage",
     // ActivityServiceControllerTestCase
     @"testDismissOnDestroy",  // AlertCoordinatorTestCase
-    // TODO(crbug.com/1475206): Re-enable this test.
+    // TODO(crbug.com/40927812): Re-enable this test.
     // @"testAddRemoveBookmark",       // BookmarksTestCase
     @"testJavaScriptInOmnibox",        // BrowserViewControllerTestCase
     @"testChooseCastReceiverChooser",  // CastReceiverTestCase
     @"testErrorPage",                  // ErrorPageTestCase
     @"testFindInPage",                 // FindInPageTestCase
     @"testDismissFirstRun",            // FirstRunTestCase
-    // TODO(crbug.com/872788) Failing after move to Xcode 10.
+    // TODO(crbug.com/41407180) Failing after move to Xcode 10.
     // @"testLongPDFScroll",                         // FullscreenTestCase
     @"testDeleteHistory",                         // HistoryUITestCase
     @"testInfobarsDismissOnNavigate",             // InfobarTestCase
@@ -103,7 +103,7 @@ NSArray* multitaskingTests() {
   ]];
 
   if (base::ios::IsRunningOnIOS17OrLater()) {
-    // TODO(crbug.com/1469233): Test is failing on iOS17.
+    // TODO(crbug.com/40925281): Test is failing on iOS17.
     [tests removeObject:@"testQRScannerUIIsShown"];
   }
   return tests;
@@ -157,9 +157,8 @@ void ResetAuthentication() {
 // Sets up mock authentication.
 + (void)enableMockAuthentication;
 
-// Returns a NSArray of test names in this class that contain the prefix
-// "FLAKY_".
-+ (NSArray*)flakyTestNames;
+// Returns a NSArray of test names in this class that contain the given prefix
++ (NSArray*)testNamesWithPrefix:(NSString*)prefix;
 
 // Returns a NSArray of test names in this class for multitasking test suite.
 + (NSArray*)multitaskingTestNames;
@@ -175,10 +174,13 @@ void ResetAuthentication() {
   NSString* targetName = [NSBundle mainBundle].infoDictionary[@"CFBundleName"];
   if ([targetName hasSuffix:kFlakyEarlGreyTestTargetSuffix]) {
     // Only run FLAKY_ tests for flaky test suites.
-    return [self flakyTestNames];
+    return [self testNamesWithPrefix:@"FLAKY"];
   } else if ([targetName isEqualToString:kMultitaskingEarlGreyTestTargetName]) {
     // Only run white listed tests for the multitasking test suite.
     return [self multitaskingTestNames];
+  } else if ([[NSProcessInfo.processInfo.environment
+                 objectForKey:@"RUN_DISABLED_EARL_GREY_TESTS"] boolValue]) {
+    return [self testNamesWithPrefix:@"DISABLED"];
   } else {
     return [super testInvocations];
   }
@@ -378,24 +380,23 @@ void ResetAuthentication() {
   [ChromeEarlGrey setUpFakeSyncServer];
 }
 
-+ (NSArray*)flakyTestNames {
-  const char kFlakyTestPrefix[] = "FLAKY";
++ (NSArray*)testNamesWithPrefix:(NSString*)prefix {
   unsigned int count = 0;
   Method* methods = class_copyMethodList(self, &count);
-  NSMutableArray* flakyTestNames = [NSMutableArray array];
+  NSMutableArray* testNames = [NSMutableArray array];
   for (unsigned int i = 0; i < count; i++) {
     SEL selector = method_getName(methods[i]);
-    if (base::StartsWith(sel_getName(selector), kFlakyTestPrefix)) {
+    if (base::StartsWith(sel_getName(selector), prefix.UTF8String)) {
       NSMethodSignature* methodSignature =
           [self instanceMethodSignatureForSelector:selector];
       NSInvocation* invocation =
           [NSInvocation invocationWithMethodSignature:methodSignature];
       invocation.selector = selector;
-      [flakyTestNames addObject:invocation];
+      [testNames addObject:invocation];
     }
   }
   free(methods);
-  return flakyTestNames;
+  return testNames;
 }
 
 + (NSArray*)multitaskingTestNames {

@@ -36,7 +36,6 @@ import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.Features;
 import org.chromium.base.test.util.JniMocker;
-import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.flags.ActivityType;
 import org.chromium.chrome.browser.homepage.HomepageManager;
 import org.chromium.chrome.browser.price_tracking.PriceTrackingFeatures;
@@ -46,6 +45,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabCreationState;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab.TabSelectionType;
+import org.chromium.chrome.browser.tab_ui.TabContentManager;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -101,7 +101,8 @@ public class UndoTabModelUnitTest {
         PriceTrackingFeatures.setPriceTrackingEnabledForTesting(false);
 
         mJniMocker.mock(TabModelJniBridgeJni.TEST_HOOKS, mTabModelJniBridge);
-        when(mTabModelJniBridge.init(any(), any(), anyInt())).thenReturn(FAKE_NATIVE_ADDRESS);
+        when(mTabModelJniBridge.init(any(), any(), anyInt(), anyBoolean()))
+                .thenReturn(FAKE_NATIVE_ADDRESS);
 
         when(mTabModelDelegate.isReparentingInProgress()).thenReturn(false);
 
@@ -121,9 +122,9 @@ public class UndoTabModelUnitTest {
         TabModelOrderControllerImpl orderController =
                 new TabModelOrderControllerImpl(mTabModelSelector);
         TabModel tabModel;
-        final boolean supportsUndo = !isIncognito;
+        final boolean supportUndo = !isIncognito;
         if (isIncognito) {
-            // TODO(crbug.com/1318046): Consider using an incognito tab model.
+            // TODO(crbug.com/40222755): Consider using an incognito tab model.
             tabModel =
                     new TabModelImpl(
                             mIncognitoProfile,
@@ -135,7 +136,8 @@ public class UndoTabModelUnitTest {
                             () -> NextTabPolicy.HIERARCHICAL,
                             realAsyncTabParamsManager,
                             mTabModelDelegate,
-                            supportsUndo);
+                            supportUndo,
+                            /* trackInNativeModelList= */ true);
             when(mTabModelSelector.getModel(true)).thenReturn(tabModel);
         } else {
             tabModel =
@@ -149,7 +151,8 @@ public class UndoTabModelUnitTest {
                             () -> NextTabPolicy.HIERARCHICAL,
                             realAsyncTabParamsManager,
                             mTabModelDelegate,
-                            supportsUndo);
+                            supportUndo,
+                            /* trackInNativeModelList= */ true);
             when(mTabModelSelector.getModel(false)).thenReturn(tabModel);
         }
         // Assume the model is the current and active model.
@@ -232,7 +235,7 @@ public class UndoTabModelUnitTest {
                 });
 
         // Take action.
-        model.closeTab(tab, true, false, undoable);
+        model.closeTab(tab, false, undoable);
 
         boolean didMakePending = undoable && model.supportsPendingClosures();
 

@@ -63,23 +63,6 @@ struct Config {
   // reverse chronologically, but the clusters within batches will be resorted.
   bool sort_clusters_within_batch_for_query = false;
 
-  // The `kJourneysLabels` feature and child params.
-
-  // Whether to assign labels to clusters from the hostnames of the cluster.
-  // Does nothing if `should_label_clusters` is false. Note that since every
-  // cluster has a hostname, this flag in conjunction with
-  // `should_label_clusters` will give every cluster a label.
-  bool labels_from_hostnames = true;
-
-  // Whether to assign labels to clusters from the Entities of the cluster.
-  // Does nothing if `should_label_clusters` is false.
-  bool labels_from_entities = false;
-
-  // Whether to assign labels to clusters from the entities associated with
-  // search visits within a cluster if there are multiple search visits for the
-  // cluster.
-  bool labels_from_search_visit_entities = false;
-
   // The `kJourneysImages` feature and child params.
 
   // Whether to attempt to provide images for eligible Journeys.
@@ -88,33 +71,8 @@ struct Config {
   // Whether the image covers the whole icon container.
   bool images_cover = true;
 
-  // The `kPersistedClusters` feature and child params.
-
-  // If enabled, updating clusters will persist the results to the history DB
-  // and accessing clusters will retrieve them from the history DB. If disabled,
-  // updating clusters is a no-op and accessing clusters will generate and
-  // return new clusters without persisting them.
-  bool persist_clusters_in_history_db = true;
-
-  // No effect if `persist_clusters_in_history_db` is disabled. Determines how
-  // soon to update clusters after startup in minutes. E.g., by default, will
-  // update clusters 5 minutes after startup.
-  int persist_clusters_in_history_db_after_startup_delay_minutes = 1;
-
-  // No effect if `persist_clusters_in_history_db` is disabled. Determines how
-  // often to update clusters in minutes. E.g., by default, will update clusters
-  // every 1 hour.
+  // Determines the minimum period to update clusters in minutes.
   int persist_clusters_in_history_db_period_minutes = 1;
-
-  // No effect if `persist_clusters_in_history_db` is disabled. If disabled,
-  // persistence occurs on a timer (see the above 2 params). If enabled, will
-  // instead occur on query like refreshing the keyword cache does. This may
-  // help bound the number of persistence requests. If enabled, will continue to
-  // also be capped to at most 1 request per
-  // `persist_clusters_in_history_db_period_minutes`, but
-  // `persist_clusters_in_history_db_after_startup_delay_minutes` will be
-  // unused.
-  bool persist_on_query = true;
 
   // Hard cap on max clusters to fetch after exhausting unclustered visits and
   // fetching persisted clusters for the get most recent flow. Doesn't affect
@@ -341,9 +299,6 @@ struct Config {
   // should only be set to true via command line.
   bool should_show_all_clusters_unconditionally_on_prominent_ui_surfaces =
       false;
-
-  // Whether to include synced visits in clusters.
-  bool include_synced_visits = false;
 
   // Whether keyword caches should be written to and read from prefs.
   bool persist_caches_to_prefs = true;

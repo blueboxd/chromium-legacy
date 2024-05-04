@@ -136,6 +136,11 @@ mojom::ExecutionWorld UserScriptInjector::GetExecutionWorld() const {
   return script_->execution_world();
 }
 
+const std::optional<std::string>& UserScriptInjector::GetExecutionWorldId()
+    const {
+  return script_->world_id();
+}
+
 blink::mojom::WantResultOption UserScriptInjector::ExpectsResults() const {
   return blink::mojom::WantResultOption::kNoResult;
 }

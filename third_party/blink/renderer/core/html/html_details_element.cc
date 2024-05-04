@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/core/dom/slot_assignment.h"
 #include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
+#include "third_party/blink/renderer/core/html/forms/html_form_control_element.h"
 #include "third_party/blink/renderer/core/html/html_div_element.h"
 #include "third_party/blink/renderer/core/html/html_slot_element.h"
 #include "third_party/blink/renderer/core/html/html_style_element.h"
@@ -130,13 +131,10 @@ Element* HTMLDetailsElement::FindMainSummary() const {
   if (HTMLSummaryElement* summary =
           Traversal<HTMLSummaryElement>::FirstChild(*this))
     return summary;
-
-  auto* element = UserAgentShadowRoot()->firstChild();
-  CHECK(!element || IsA<HTMLSlotElement>(element));
-  HTMLSlotElement* slot = To<HTMLSlotElement>(element);
-  DCHECK(slot->firstChild());
-  CHECK(IsA<HTMLSummaryElement>(*slot->firstChild()));
-  return To<Element>(slot->firstChild());
+  HTMLSlotElement& slot =
+      To<HTMLSlotElement>(*UserAgentShadowRoot()->firstChild());
+  CHECK(IsA<HTMLSummaryElement>(*slot.firstChild()));
+  return To<Element>(slot.firstChild());
 }
 
 void HTMLDetailsElement::ManuallyAssignSlots() {
@@ -316,6 +314,7 @@ bool HTMLDetailsElement::IsInteractiveContent() const {
 
 // static
 bool HTMLDetailsElement::ExpandDetailsAncestors(const Node& node) {
+  CHECK(&node);
   // Since setting the open attribute fires mutation events which could mess
   // with the FlatTreeTraversal iterator, we should first iterate details
   // elements to open and then open them all.
@@ -349,35 +348,40 @@ bool HTMLDetailsElement::ExpandDetailsAncestors(const Node& node) {
   return details_to_open.size();
 }
 
+bool HTMLDetailsElement::IsValidInvokeAction(HTMLElement& invoker,
+                                             InvokeAction action) {
+  bool parent_is_valid = HTMLElement::IsValidInvokeAction(invoker, action);
+  if (!RuntimeEnabledFeatures::HTMLInvokeActionsV2Enabled()) {
+    return parent_is_valid;
+  }
+  return parent_is_valid || action == InvokeAction::kToggle ||
+         action == InvokeAction::kOpen || action == InvokeAction::kClose;
+}
+
 bool HTMLDetailsElement::HandleInvokeInternal(HTMLElement& invoker,
-                                              AtomicString& action) {
+                                              InvokeAction action) {
+  CHECK(IsValidInvokeAction(invoker, action));
+
   if (HTMLElement::HandleInvokeInternal(invoker, action)) {
     return true;
   }
 
-  if (!RuntimeEnabledFeatures::HTMLInvokeActionsV2Enabled()) {
-    return false;
-  }
-
-  if (!(action.empty() || EqualIgnoringASCIICase(action, keywords::kToggle) ||
-        EqualIgnoringASCIICase(action, keywords::kClose) ||
-        EqualIgnoringASCIICase(action, keywords::kOpen))) {
-    return false;
-  }
-
-  if (action.empty() || EqualIgnoringASCIICase(action, keywords::kToggle)) {
+  if (action == InvokeAction::kAuto || action == InvokeAction::kToggle) {
     ToggleOpen();
-  } else if (EqualIgnoringASCIICase(action, keywords::kClose)) {
+    return true;
+  } else if (action == InvokeAction::kClose) {
     if (is_open_) {
       setAttribute(html_names::kOpenAttr, g_null_atom);
     }
-  } else {
+    return true;
+  } else if (action == InvokeAction::kOpen) {
     if (!is_open_) {
       setAttribute(html_names::kOpenAttr, g_empty_atom);
     }
+    return true;
   }
 
-  return true;
+  return false;
 }
 
 }  // namespace blink

@@ -34,7 +34,6 @@ class ScreenAIServiceRouter : public KeyedService,
     kOCR,
   };
 
-  ScreenAIServiceRouter();
   ScreenAIServiceRouter(const ScreenAIServiceRouter&) = delete;
   ScreenAIServiceRouter& operator=(const ScreenAIServiceRouter&) = delete;
   ~ScreenAIServiceRouter() override;
@@ -60,6 +59,9 @@ class ScreenAIServiceRouter : public KeyedService,
   bool IsConnectionBoundForTesting(Service service);
 
  private:
+  friend class ScreenAIServiceRouterFactory;
+
+  ScreenAIServiceRouter();
   // Initialzies the `service` if it's not already done.
   void InitializeServiceIfNeeded(Service service);
 

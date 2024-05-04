@@ -14,6 +14,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "chrome/browser/ash/shimless_rma/chrome_shimless_rma_delegate.h"
 #include "chrome/browser/bluetooth/bluetooth_chooser_context_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
@@ -71,12 +72,10 @@
 #include "chrome/browser/android/resource_mapper.h"
 #include "chrome/browser/android/search_permissions/search_permissions_service.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
-#include "chrome/browser/permissions/notification_blocked_message_delegate_android.h"
+#include "chrome/browser/permissions/permission_blocked_message_delegate_android.h"
 #include "chrome/browser/permissions/permission_infobar_delegate_android.h"
-#include "chrome/browser/permissions/permission_update_infobar_delegate_android.h"
 #include "chrome/browser/permissions/permission_update_message_controller_android.h"
 #include "components/infobars/content/content_infobar_manager.h"
-#include "components/messages/android/messages_feature.h"
 #include "components/permissions/permission_request_manager.h"
 #else
 #include "chrome/browser/ui/browser.h"
@@ -85,8 +84,10 @@
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/constants/ash_features.h"
 #include "chrome/browser/ash/app_mode/web_app/web_kiosk_app_data.h"
 #include "chrome/browser/ash/app_mode/web_app/web_kiosk_app_manager.h"
+#include "chromeos/ash/components/browser_context_helper/browser_context_types.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #endif
@@ -106,8 +107,11 @@ bool ShouldUseQuietUI(content::WebContents* web_contents,
                       ContentSettingsType type) {
   auto* manager =
       permissions::PermissionRequestManager::FromWebContents(web_contents);
-  return type == ContentSettingsType::NOTIFICATIONS &&
-         manager->ShouldCurrentRequestUseQuietUI();
+  if (type != ContentSettingsType::NOTIFICATIONS &&
+      type != ContentSettingsType::GEOLOCATION) {
+    return false;
+  }
+  return manager->ShouldCurrentRequestUseQuietUI();
 }
 #endif
 
@@ -444,7 +448,8 @@ std::optional<bool> ChromePermissionsClient::HasPreviouslyAutoRevokedPermission(
                                                                      origin);
 }
 
-std::optional<url::Origin> ChromePermissionsClient::GetAutoApprovalOrigin() {
+std::optional<url::Origin> ChromePermissionsClient::GetAutoApprovalOrigin(
+    content::BrowserContext* browser_context) {
   // In web kiosk mode, all permission requests are auto-approved for the origin
   // of the main app.
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -457,6 +462,14 @@ std::optional<url::Origin> ChromePermissionsClient::GetAutoApprovalOrigin() {
         ash::WebKioskAppManager::Get()->GetAppByAccountId(account_id);
     DCHECK(app_data);
     return url::Origin::Create(app_data->install_url());
+  }
+
+  // In Shimless RMA mode, permission requests are auto-approved during runtime
+  // since the app has requested all permissions during install time.
+  if (ash::features::IsShimlessRMA3pDiagnosticsAllowPermissionPolicyEnabled() &&
+      ash::IsShimlessRmaAppBrowserContext(browser_context)) {
+    return ash::shimless_rma::DiagnosticsAppProfileHelperDelegate::
+        GetInstalledDiagnosticsAppOrigin();
   }
 #elif BUILDFLAG(IS_CHROMEOS_LACROS)
   if (profiles::IsWebKioskSession()) {
@@ -555,9 +568,9 @@ ChromePermissionsClient::MaybeCreateMessageUI(
     base::WeakPtr<permissions::PermissionPromptAndroid> prompt) {
   if (ShouldUseQuietUI(web_contents, type)) {
     auto delegate =
-        std::make_unique<NotificationBlockedMessageDelegate::Delegate>(
+        std::make_unique<PermissionBlockedMessageDelegate::Delegate>(
             std::move(prompt));
-    return std::make_unique<NotificationBlockedMessageDelegate>(
+    return std::make_unique<PermissionBlockedMessageDelegate>(
         web_contents, std::move(delegate));
   }
 
@@ -571,17 +584,11 @@ void ChromePermissionsClient::RepromptForAndroidPermissions(
     const std::vector<std::string>& required_permissions,
     const std::vector<std::string>& optional_permissions,
     PermissionsUpdatedCallback callback) {
-  if (messages::IsPermissionUpdateMessagesUiEnabled()) {
     PermissionUpdateMessageController::CreateForWebContents(web_contents);
     PermissionUpdateMessageController::FromWebContents(web_contents)
         ->ShowMessage(content_settings_types, filtered_content_settings_types,
                       required_permissions, optional_permissions,
                       std::move(callback));
-  } else {
-    PermissionUpdateInfoBarDelegate::Create(
-        web_contents, content_settings_types, filtered_content_settings_types,
-        required_permissions, optional_permissions, std::move(callback));
-  }
 }
 
 int ChromePermissionsClient::MapToJavaDrawableId(int resource_id) {

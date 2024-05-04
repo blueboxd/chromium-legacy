@@ -63,7 +63,7 @@ std::unique_ptr<KeyedService> FakeWebAppProvider::BuildDefault(
   // Do not call default production StartImpl if in TestingProfile.
   provider->SetStartSystemOnStart(false);
 
-  // TODO(crbug.com/973324): Consider calling `CreateFakeSubsystems` in the
+  // TODO(crbug.com/41464466): Consider calling `CreateFakeSubsystems` in the
   // constructor instead.
   provider->CreateFakeSubsystems();
   provider->ConnectSubsystems();
@@ -96,6 +96,20 @@ void FakeWebAppProvider::SetSynchronizePreinstalledAppsOnStartup(
     bool synchronize_on_startup) {
   CheckNotStartedAndDisconnect();
   synchronize_preinstalled_app_on_startup_ = synchronize_on_startup;
+}
+
+void FakeWebAppProvider::UseRealOsIntegrationManager() {
+  CheckNotStartedAndDisconnect();
+  auto file_handler_manager =
+      std::make_unique<WebAppFileHandlerManager>(profile_);
+  auto protocol_handler_manager =
+      std::make_unique<WebAppProtocolHandlerManager>(profile_);
+  auto shortcut_manager = std::make_unique<WebAppShortcutManager>(
+      profile_, file_handler_manager.get(), protocol_handler_manager.get());
+
+  SetOsIntegrationManager(std::make_unique<OsIntegrationManager>(
+      profile_, std::move(shortcut_manager), std::move(file_handler_manager),
+      std::move(protocol_handler_manager)));
 }
 
 void FakeWebAppProvider::SetEnableAutomaticIwaUpdates(
@@ -287,8 +301,7 @@ void FakeWebAppProvider::CreateFakeSubsystems() {
   SetOsIntegrationManager(std::make_unique<FakeOsIntegrationManager>(
       profile_, /*app_shortcut_manager=*/nullptr,
       /*file_handler_manager=*/nullptr,
-      /*protocol_handler_manager=*/nullptr,
-      /*url_handler_manager=*/nullptr));
+      /*protocol_handler_manager=*/nullptr));
 
   SetSyncBridge(std::make_unique<WebAppSyncBridge>(
       &GetRegistrarMutable(), processor().CreateForwardingProcessor()));

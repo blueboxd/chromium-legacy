@@ -24,6 +24,9 @@
 #include "ui/views/style/platform_style.h"
 #include "ui/views/view_class_properties.h"
 
+DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(PermissionDashboardView,
+                                      kDashboardElementId);
+
 namespace {
 
 // Distance drawn under the indicator chip.
@@ -84,6 +87,8 @@ class IndicatorDividerBackground : public views::Background {
 }  // namespace
 
 PermissionDashboardView::PermissionDashboardView() {
+  SetProperty(views::kElementIdentifierKey, kDashboardElementId);
+
   SetVisible(false);
 
   SetLayoutManager(std::make_unique<views::BoxLayout>(
@@ -144,7 +149,8 @@ void PermissionDashboardView::UpdateDividerViewVisibility() {
   chip_divider_view_->SetVisible(is_visible);
 }
 
-gfx::Size PermissionDashboardView::CalculatePreferredSize() const {
+gfx::Size PermissionDashboardView::CalculatePreferredSize(
+    const views::SizeBounds& available_size) const {
   if (!secondary_chip_->GetVisible() && !anchored_chip_->GetVisible()) {
     return gfx::Size();
   }

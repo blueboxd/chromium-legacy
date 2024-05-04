@@ -11,8 +11,8 @@
 #include <string>
 #include <vector>
 
-#include "build/build_config.h"
 #include "partition_alloc/address_space_randomization.h"
+#include "partition_alloc/build_config.h"
 #include "partition_alloc/page_allocator_constants.h"
 #include "partition_alloc/partition_alloc_base/cpu.h"
 #include "partition_alloc/partition_alloc_base/logging.h"
@@ -140,7 +140,7 @@ TEST(PartitionAllocPageAllocatorTest, AllocFailure) {
   EXPECT_FALSE(ReserveAddressSpace(EasyAllocSize()));
 }
 
-// TODO(crbug.com/765801): Test failed on chromium.win/Win10 Tests x64.
+// TODO(crbug.com/41344946): Test failed on chromium.win/Win10 Tests x64.
 #if BUILDFLAG(IS_WIN) && defined(ARCH_CPU_64_BITS)
 #define MAYBE_ReserveAddressSpace DISABLED_ReserveAddressSpace
 #else
@@ -454,8 +454,8 @@ TEST(PartitionAllocPageAllocatorTest, InaccessiblePages) {
   FreePages(buffer, PageAllocationGranularity());
 }
 
-// TODO(crbug.com/1291888): Understand why we can't read from Read-Execute pages
-// on iOS.
+// TODO(crbug.com/40212918): Understand why we can't read from Read-Execute
+// pages on iOS.
 #if BUILDFLAG(IS_IOS)
 #define MAYBE_ReadExecutePages DISABLED_ReadExecutePages
 #else
@@ -653,7 +653,7 @@ TEST(PartitionAllocPageAllocatorTest, AllocInaccessibleWillJitLater) {
 }
 
 #if BUILDFLAG(IS_IOS) || BUILDFLAG(IS_MAC)
-// TODO(crbug.com/1452151): Fix test to GTEST_SKIP() if MAP_JIT is in-use,
+// TODO(crbug.com/40916148): Fix test to GTEST_SKIP() if MAP_JIT is in-use,
 // or to be run otherwise, since kReadWriteExecute is used in some other
 // configurations.
 #define MAYBE_AllocReadWriteExecute DISABLED_AllocReadWriteExecute

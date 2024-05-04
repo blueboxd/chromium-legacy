@@ -390,9 +390,7 @@ int NetworkServiceNetworkDelegate::HandleClearSiteDataHeader(
 
   url_loader_network_observer->OnClearSiteData(
       request->url(), header_value, request->load_flags(),
-      net::CookiePartitionKey::FromNetworkIsolationKey(
-          request->isolation_info().network_isolation_key()),
-      partitioned_state_allowed_only,
+      request->cookie_partition_key(), partitioned_state_allowed_only,
       base::BindOnce(&NetworkServiceNetworkDelegate::FinishedClearSiteData,
                      weak_ptr_factory_.GetWeakPtr(), request->GetWeakPtr(),
                      std::move(callback)));
@@ -418,7 +416,7 @@ void NetworkServiceNetworkDelegate::ForwardProxyErrors(int net_error) {
   if (!proxy_error_client_)
     return;
 
-  // TODO(https://crbug.com/876848): Provide justification for the currently
+  // TODO(crbug.com/41409550): Provide justification for the currently
   // enumerated errors.
   switch (net_error) {
     case net::ERR_PROXY_AUTH_UNSUPPORTED:

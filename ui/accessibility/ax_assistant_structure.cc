@@ -334,7 +334,7 @@ void WalkAXTreeDepthFirst(const AXNode* node,
   std::string class_name =
       node->GetStringAttribute(ax::mojom::StringAttribute::kClassName);
   if (!class_name.empty())
-    result->html_attributes.push_back({"class", class_name});
+    result->html_attributes.emplace_back("class", class_name);
 
   for (auto iter = node->UnignoredChildrenBegin();
        iter != node->UnignoredChildrenEnd(); ++iter) {
@@ -442,7 +442,6 @@ const char* AXRoleToAndroidClassName(ax::mojom::Role role, bool has_parent) {
     case ax::mojom::Role::kList:
     case ax::mojom::Role::kListBox:
     case ax::mojom::Role::kDescriptionList:
-    case ax::mojom::Role::kDirectory:
       return kAXListViewClassname;
     case ax::mojom::Role::kDialog:
       return kAXDialogClassname;
@@ -454,6 +453,7 @@ const char* AXRoleToAndroidClassName(ax::mojom::Role role, bool has_parent) {
       return kAXMenuItemClassname;
     case ax::mojom::Role::kStaticText:
       return kAXTextViewClassname;
+    case ax::mojom::Role::kDirectoryDeprecated:
     case ax::mojom::Role::kPreDeprecated:
       NOTREACHED_NORETURN();
     default:

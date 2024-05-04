@@ -593,6 +593,8 @@ class AvdConfig:
                                         check_return=True)
 
       if snapshot:
+        logging.info('Wait additional 60 secs before saving snapshot for AVD')
+        time.sleep(60)
         instance.SaveSnapshot()
 
       instance.Stop()
@@ -1009,6 +1011,13 @@ class _AvdInstance:
           self.GetSnapshotName(),
       ]
 
+      avd_type = self._avd_name.split('_')[1]
+      logging.info('Emulator Type: %s', avd_type)
+
+      if avd_type == 'car':
+        logging.info('Auto emulator will start slow')
+        is_slow_start = True
+
       if wipe_data:
         emulator_cmd.append('-wipe-data')
       if disk_size:
@@ -1033,7 +1042,7 @@ class _AvdInstance:
         self._debug_tags.add('time')
         emulator_cmd.extend(['-debug', ','.join(self._debug_tags)])
         if 'kernel' in self._debug_tags or 'all' in self._debug_tags:
-          # TODO(crbug.com/1404176): newer API levels need "-virtio-console"
+          # TODO(crbug.com/40885864): newer API levels need "-virtio-console"
           # as well to print kernel log.
           emulator_cmd.append('-show-kernel')
 
@@ -1175,7 +1184,7 @@ class _AvdInstance:
     return self._emulator_device
 
 
-# TODO(crbug.com/1275767): Refactor it to a dict-based approach.
+# TODO(crbug.com/40207212): Refactor it to a dict-based approach.
 def _EnsureSystemSettings(device):
   set_long_press_timeout_cmd = [
       'settings', 'put', 'secure', 'long_press_timeout', _LONG_PRESS_TIMEOUT
@@ -1193,7 +1202,7 @@ def _EnsureSystemSettings(device):
   else:
     logging.warning('long_press_timeout is not set correctly')
 
-  # TODO(crbug.com/1488458): Move the date sync function to device_utils.py
+  # TODO(crbug.com/40283631): Move the date sync function to device_utils.py
   if device.IsUserBuild():
     logging.warning('Cannot sync the device date on "user" build')
     return
@@ -1222,7 +1231,7 @@ def _EnsureSystemSettings(device):
 
 def _EnableNetwork(device):
   logging.info('Enable the network on the emulator.')
-  # TODO(https://crbug.com/1486376): Remove airplane_mode once all AVD
+  # TODO(crbug.com/40282869): Remove airplane_mode once all AVD
   # are rolled to svc-based version.
   device.RunShellCommand(
       ['settings', 'put', 'global', 'airplane_mode_on', '0'], as_root=True)

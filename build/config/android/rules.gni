@@ -2,39 +2,23 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# Do not add any imports to non-//build directories here.
-# Some projects (e.g. V8) do not have non-build directories DEPS'ed in.
-import("//build/config/android/config.gni")
+import("//build/config/android/abi.gni")
 import("//build/config/android/copy_ex.gni")
 import("//build/config/clang/clang.gni")
-import("//build/config/compiler/compiler.gni")
-import("//build/config/coverage/coverage.gni")
-import("//build/config/profiling/profiling.gni")
-import("//build/config/python.gni")
 import("//build/config/sanitizers/sanitizers.gni")
-import("//build/config/zip.gni")
-import("//build/toolchain/toolchain.gni")
+import("//build_overrides/build.gni")
+
 assert(
     is_android || is_robolectric,
     "current_toolchain=$current_toolchain default_toolchain=$default_toolchain")
 
-if (target_cpu == "arm") {
-  _sanitizer_arch = "arm"
-} else if (target_cpu == "arm64") {
-  _sanitizer_arch = "aarch64"
-} else if (target_cpu == "x86") {
-  _sanitizer_arch = "i686"
-} else if (target_cpu == "riscv64") {
-  _sanitizer_arch = "riscv64"
-}
-
 _sanitizer_runtimes = []
 if (use_cfi_diag || is_ubsan || is_ubsan_security || is_ubsan_vptr) {
-  _sanitizer_runtimes = [ "$clang_base_path/lib/clang/$clang_version/lib/linux/libclang_rt.ubsan_standalone-$_sanitizer_arch-android.so" ]
+  _sanitizer_runtimes += [ "$clang_base_path/lib/clang/$clang_version/lib/linux/libclang_rt.ubsan_standalone-$sanitizer_arch-android.so" ]
 }
-
-_BUNDLETOOL_JAR_PATH =
-    "//third_party/android_build_tools/bundletool/bundletool.jar"
+if (is_asan) {
+  _sanitizer_runtimes += [ "$clang_base_path/lib/clang/$clang_version/lib/linux/libclang_rt.asan-$sanitizer_arch-android.so" ]
+}
 
 # Creates a dist directory for a native executable.
 #
@@ -121,9 +105,18 @@ template("create_native_executable_dist") {
   }
 }
 
-# non-robolectric things
-if (enable_java_templates && is_android) {
+if (!is_robolectric && enable_java_templates) {
+  import("//build/config/android/config.gni")
   import("//build/config/android/internal_rules.gni")
+  import("//build/config/compiler/compiler.gni")
+  import("//build/config/coverage/coverage.gni")
+  import("//build/config/profiling/profiling.gni")
+  import("//build/config/python.gni")
+  import("//build/config/zip.gni")
+  import("//build/toolchain/toolchain.gni")
+
+  _BUNDLETOOL_JAR_PATH =
+      "//third_party/android_build_tools/bundletool/bundletool.jar"
 
   # Declare a target for c-preprocessor-generated java files
   #
@@ -1447,7 +1440,7 @@ if (enable_java_templates && is_android) {
   #     output = "$root_build_dir/MyLibrary.jar"
   #   }
   template("dist_jar") {
-    # TODO(crbug.com/1042017): Remove.
+    # TODO(crbug.com/40114668): Remove.
     not_needed(invoker, [ "no_build_hooks" ])
     forward_variables_from(invoker, TESTONLY_AND_VISIBILITY)
     _use_interface_jars =
@@ -1891,6 +1884,7 @@ if (enable_java_templates && is_android) {
   #   use_final_fields: True to use final fields. When false, all other
   #       variables must not be set.
   #   min_sdk_version: Value for MIN_SDK_VERSION.
+  #   version_code: Value for VERSION_CODE.
   #   bundles_supported: Whether or not this target can be treated as a bundle.
   #   resources_version_variable:
   #   is_incremental_install:
@@ -1932,9 +1926,8 @@ if (enable_java_templates && is_android) {
       if (invoker.use_final_fields) {
         forward_variables_from(invoker, [ "deps" ])
         defines += [ "USE_FINAL" ]
-        if (defined(invoker.min_sdk_version)) {
-          defines += [ "_MIN_SDK_VERSION=${invoker.min_sdk_version}" ]
-        }
+        defines += [ "_MIN_SDK_VERSION=${invoker.min_sdk_version}" ]
+        defines += [ "_VERSION_CODE=${invoker.version_code}" ]
         if (defined(invoker.resources_version_variable)) {
           defines += [
             "_RESOURCES_VERSION_VARIABLE=${invoker.resources_version_variable}",
@@ -2108,16 +2101,17 @@ if (enable_java_templates && is_android) {
     if (defined(invoker.min_sdk_version)) {
       _min_sdk_version = invoker.min_sdk_version
     }
+    if (is_asan && _min_sdk_version < min_supported_sdk_version) {
+      _min_sdk_version = min_supported_sdk_version
+    }
     if (defined(invoker.target_sdk_version)) {
       _target_sdk_version = invoker.target_sdk_version
     }
 
     _is_bundle_module =
         defined(invoker.is_bundle_module) && invoker.is_bundle_module
-    if (_is_bundle_module) {
-      _is_base_module =
-          defined(invoker.is_base_module) && invoker.is_base_module
-    }
+    _is_base_module = !_is_bundle_module || (defined(invoker.is_base_module) &&
+                                             invoker.is_base_module)
 
     _omit_dex = defined(invoker.omit_dex) && invoker.omit_dex
 
@@ -2136,7 +2130,7 @@ if (enable_java_templates && is_android) {
     }
 
     # Non-base bundle modules create only proto resources.
-    if (!_is_bundle_module || _is_base_module) {
+    if (_is_base_module) {
       _arsc_resources_path = "$target_out_dir/$target_name.ap_"
     }
     if (_is_bundle_module) {
@@ -2260,10 +2254,11 @@ if (enable_java_templates && is_android) {
 
     _uses_static_library = defined(invoker.static_library_provider)
 
-    # TODO(crbug.com/864142): Allow incremental installs of bundle modules.
-    _incremental_apk = !_is_bundle_module &&
-                       !(defined(invoker.never_incremental) &&
-                         invoker.never_incremental) && incremental_install
+    # TODO(crbug.com/40585188): Allow incremental installs of bundle modules.
+    _incremental_apk =
+        !_is_bundle_module &&
+        !(defined(invoker.never_incremental) && invoker.never_incremental) &&
+        incremental_install && _min_sdk_version >= default_min_sdk_version
     if (_incremental_apk) {
       _target_dir_name = get_label_info(target_name, "dir")
       _incremental_install_json_path = "$root_out_dir/gen.runtime/$_target_dir_name/$target_name.incremental.json"
@@ -2437,7 +2432,7 @@ if (enable_java_templates && is_android) {
       }
 
       # Bundle modules have to reference resources from the base module.
-      if (!_is_bundle_module || _is_base_module) {
+      if (_is_base_module) {
         arsc_output = _arsc_resources_path
       }
 
@@ -2541,8 +2536,7 @@ if (enable_java_templates && is_android) {
       _generate_native_libraries_java = invoker.generate_native_libraries_java
     } else {
       _generate_native_libraries_java =
-          (!_is_bundle_module || _is_base_module) && !_omit_dex &&
-          !defined(invoker.apk_under_test)
+          _is_base_module && !_omit_dex && !defined(invoker.apk_under_test)
     }
     if (_generate_native_libraries_java) {
       write_native_libraries_java("${_template_name}__native_libraries") {
@@ -2587,9 +2581,16 @@ if (enable_java_templates && is_android) {
     if (defined(invoker.loadable_modules)) {
       _loadable_modules = invoker.loadable_modules
     }
-
-    if (_native_libs_deps != []) {
-      _loadable_modules += _sanitizer_runtimes
+    _sanitizer_loadable_modules = []
+    _sanitizer_deps = []
+    if (_is_base_module && _native_libs_deps != [] && !_uses_static_library) {
+      _sanitizer_loadable_modules += _sanitizer_runtimes
+    }
+    if (is_asan && _is_base_module &&
+        (_uses_static_library || _native_libs_deps != [])) {
+      _sanitizer_loadable_modules +=
+          [ "$root_gen_dir/build/android/generate_wrap_sh/wrap.sh" ]
+      _sanitizer_deps += [ "//build/android:generate_wrap_sh" ]
     }
 
     _assertions_implicitly_enabled = defined(invoker.custom_assertion_handler)
@@ -2603,11 +2604,7 @@ if (enable_java_templates && is_android) {
     }
     if (_generate_buildconfig_java) {
       generate_build_config_srcjar("${_template_name}__build_config_srcjar") {
-        forward_variables_from(invoker,
-                               [
-                                 "min_sdk_version",
-                                 "isolated_splits_enabled",
-                               ])
+        forward_variables_from(invoker, [ "isolated_splits_enabled" ])
         _bundles_supported = _is_bundle_module
         if (defined(invoker.bundles_supported)) {
           _bundles_supported = invoker.bundles_supported
@@ -2616,6 +2613,8 @@ if (enable_java_templates && is_android) {
         use_final_fields = true
         assertions_implicitly_enabled = _assertions_implicitly_enabled
         is_incremental_install = _incremental_apk
+        version_code = _version_code
+        min_sdk_version = _min_sdk_version
         write_clang_profiling_data =
             use_clang_coverage && _generate_native_libraries_java
         if (defined(invoker.build_config_include_product_version_resource) &&
@@ -2740,7 +2739,11 @@ if (enable_java_templates && is_android) {
             _secondary_abi_shared_library_list_file
       }
 
-      loadable_modules = _loadable_modules
+      if (!defined(deps)) {
+        deps = []
+      }
+      deps += _sanitizer_deps
+      loadable_modules = _loadable_modules + _sanitizer_loadable_modules
 
       if (defined(_allowlist_r_txt_path) && _is_bundle_module) {
         # Used to write the file path to the target's .build_config.json only.
@@ -2949,7 +2952,7 @@ if (enable_java_templates && is_android) {
 
         # Need full deps rather than _non_java_deps, because loadable_modules
         # may include .so files extracted by __unpack_aar targets.
-        deps = _invoker_deps + [ ":$_build_config_target" ]
+        deps = _invoker_deps + _sanitizer_deps + [ ":$_build_config_target" ]
         if (defined(invoker.asset_deps)) {
           deps += invoker.asset_deps
         }
@@ -2968,15 +2971,19 @@ if (enable_java_templates && is_android) {
           # should be clearly named/labeled "incremental".
           output_apk_path = _incremental_apk_path
 
+          loadable_modules = _sanitizer_loadable_modules
+
           # All native libraries are side-loaded, so use a placeholder to force
           # the proper bitness for the app.
           _has_native_libs =
-              defined(_native_libs_filearg) || _loadable_modules != []
-          if (_has_native_libs && !defined(native_lib_placeholders)) {
+              defined(_native_libs_filearg) || _loadable_modules != [] ||
+              _sanitizer_loadable_modules != []
+          if (_has_native_libs && loadable_modules == [] &&
+              !defined(native_lib_placeholders)) {
             native_lib_placeholders = [ "libfix.crbug.384638.so" ]
           }
         } else {
-          loadable_modules = _loadable_modules
+          loadable_modules = _loadable_modules + _sanitizer_loadable_modules
           deps += _all_native_libs_deps + [
                     ":$_compile_resources_target",
                     ":$_merge_manifest_target",
@@ -3216,7 +3223,7 @@ if (enable_java_templates && is_android) {
   #     ]
   #   }
   template("android_apk") {
-    # TODO(crbug.com/1042017): Remove.
+    # TODO(crbug.com/40114668): Remove.
     not_needed(invoker, [ "no_build_hooks" ])
     android_apk_or_module(target_name) {
       forward_variables_from(
@@ -3808,7 +3815,7 @@ if (enable_java_templates && is_android) {
       testonly = true
       create_apk_script = false
 
-      # TODO(crbug.com/1099849): Figure out why angle tests fail to launch
+      # TODO(crbug.com/40702672): Figure out why angle tests fail to launch
       #     with newer target_sdk_version.
       if (!defined(invoker.target_sdk_version) && _use_native_activity) {
         target_sdk_version = 24
@@ -4460,10 +4467,6 @@ if (enable_java_templates && is_android) {
   #
   #    static_library_provider: Specifies a single target that this target will
   #      use as a static library APK.
-  #      Additionally, when allotting libraries to be packaged into modules, the
-  #      libraries packaged into the static library will be accounted for to
-  #      avoid library duplication. Effectively, the static library will be
-  #      treated as the parent of the base module.
   #
   #    expected_libs_and_assets: Verify the list of included native libraries
   #      and assets is consistent with the given expectation file.
@@ -4507,6 +4510,9 @@ if (enable_java_templates && is_android) {
     _min_sdk_version = default_min_sdk_version
     if (defined(invoker.min_sdk_version)) {
       _min_sdk_version = invoker.min_sdk_version
+    }
+    if (is_asan && _min_sdk_version < min_supported_sdk_version) {
+      _min_sdk_version = min_supported_sdk_version
     }
 
     _bundle_base_path = "$root_build_dir/apks"
@@ -4582,57 +4588,6 @@ if (enable_java_templates && is_android) {
       _module_targets += [ _module.module_target ]
       _module_java_targets += [ "${_module.module_target}__java" ]
       _module_build_configs += [ _module.build_config ]
-    }
-
-    if (_uses_static_library) {
-      _lib_proxy_module = {
-        name = "lib"
-      }
-      _static_library_target_name =
-          get_label_info(invoker.static_library_provider, "name")
-      _static_library_gen_dir =
-          get_label_info(invoker.static_library_provider, "target_gen_dir")
-      _lib_proxy_module.build_config = "$_static_library_gen_dir/$_static_library_target_name.build_config.json"
-      _lib_proxy_module.build_config_target =
-          "${invoker.static_library_provider}$build_config_target_suffix"
-    }
-
-    # Allot native libraries to modules they should be packaged into. This is
-    # necessary since all libraries that are depended on by multiple modules
-    # have to go into base or the static shared library if it exists.
-    # TODO(crbug.com/1021565): It would be nice if this lived outside the
-    # android_app_bundle template and the static shared library would pull in
-    # the libs as allotted by this step.
-    _native_libraries_config =
-        "$target_gen_dir/$_target_name.native_libraries_config"
-    _native_libraries_config_target = "${_target_name}__allot_native_libraries"
-    allot_native_libraries(_native_libraries_config_target) {
-      modules = _modules
-      native_libraries_filearg_keys = [
-        "native:libraries",
-        "native:loadable_modules",
-      ]
-      output = _native_libraries_config
-      if (_uses_static_library) {
-        modules += [ _lib_proxy_module ]
-      }
-    }
-    if (defined(android_app_secondary_abi)) {
-      _secondary_abi_native_libraries_config =
-          "$target_gen_dir/$_target_name.secondary_abi_native_libraries_config"
-      _secondary_abi_native_libraries_config_target =
-          "${_target_name}__allot_secondary_abi_native_libraries"
-      allot_native_libraries(_secondary_abi_native_libraries_config_target) {
-        modules = _modules
-        native_libraries_filearg_keys = [
-          "native:secondary_abi_libraries",
-          "native:secondary_abi_loadable_modules",
-        ]
-        output = _secondary_abi_native_libraries_config
-        if (_uses_static_library) {
-          modules += [ _lib_proxy_module ]
-        }
-      }
     }
 
     # Used to expose the module Java targets of the bundle.
@@ -4846,7 +4801,6 @@ if (enable_java_templates && is_android) {
         min_sdk_version = _min_sdk_version
         build_config = _module_build_config
         module_zip_path = _module_zip_path
-        native_libraries_config = _native_libraries_config
         if (!_proguard_enabled) {
           dex_path = _dex_path
           # dex_path is read from the build_config in the proguard case.
@@ -4861,25 +4815,13 @@ if (enable_java_templates && is_android) {
                                  ])
           top_target_name = _target_name
           build_config_target = _module_build_config_target
-          native_libraries_config_target = ":$_native_libraries_config_target"
-          if (defined(android_app_secondary_abi)) {
-            secondary_abi_native_libraries_config_target =
-                ":$_secondary_abi_native_libraries_config_target"
-          }
         }
 
         deps = [
-          ":$_native_libraries_config_target",
           _dex_target_for_module,
           _module_build_config_target,
           _module_target,
         ]
-
-        if (defined(android_app_secondary_abi)) {
-          secondary_abi_native_libraries_config =
-              _secondary_abi_native_libraries_config
-          deps += [ ":$_secondary_abi_native_libraries_config_target" ]
-        }
 
         if (_enable_art_profile_optimizations && _include_baseline_profile) {
           # extra_assets is a list of ["{src_path}:{dst_path}"]
@@ -5289,34 +5231,34 @@ if (enable_java_templates && is_android) {
       outputs = [ _output_path ]
     }
   }
-}
 
-# Generate an Android resources target that contains localized strings
-# describing the current locale used by the Android framework to display
-# UI strings. These are used by
-# org.chromium.chrome.browser.ChromeLocalizationUtils.
-#
-# Variables:
-#    ui_locales: List of Chromium locale names to generate resources for.
-#
-template("generate_ui_locale_resources") {
-  _generating_target_name = "${target_name}__generate"
-  _rebased_output_zip_path = rebase_path(target_gen_dir, root_gen_dir)
-  _output_zip = "${root_out_dir}/resource_zips/${_rebased_output_zip_path}/" +
-                "${target_name}.zip"
+  # Generate an Android resources target that contains localized strings
+  # describing the current locale used by the Android framework to display
+  # UI strings. These are used by
+  # org.chromium.chrome.browser.ChromeLocalizationUtils.
+  #
+  # Variables:
+  #    ui_locales: List of Chromium locale names to generate resources for.
+  #
+  template("generate_ui_locale_resources") {
+    _generating_target_name = "${target_name}__generate"
+    _rebased_output_zip_path = rebase_path(target_gen_dir, root_gen_dir)
+    _output_zip = "${root_out_dir}/resource_zips/${_rebased_output_zip_path}/" +
+                  "${target_name}.zip"
 
-  action_with_pydeps(_generating_target_name) {
-    script = "//build/android/gyp/create_ui_locale_resources.py"
-    outputs = [ _output_zip ]
-    args = [
-      "--locale-list=${invoker.ui_locales}",
-      "--output-zip",
-      rebase_path(_output_zip, root_build_dir),
-    ]
-  }
+    action_with_pydeps(_generating_target_name) {
+      script = "//build/android/gyp/create_ui_locale_resources.py"
+      outputs = [ _output_zip ]
+      args = [
+        "--locale-list=${invoker.ui_locales}",
+        "--output-zip",
+        rebase_path(_output_zip, root_build_dir),
+      ]
+    }
 
-  android_generated_resources(target_name) {
-    generating_target = ":$_generating_target_name"
-    generated_resources_zip = _output_zip
+    android_generated_resources(target_name) {
+      generating_target = ":$_generating_target_name"
+      generated_resources_zip = _output_zip
+    }
   }
 }

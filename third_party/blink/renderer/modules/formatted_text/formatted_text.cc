@@ -41,7 +41,7 @@ FormattedText::FormattedText(ExecutionContext* execution_context) {
       document->GetStyleResolver().CreateComputedStyleBuilder();
   builder.SetDisplay(EDisplay::kBlock);
   block_ = LayoutBlockFlow::CreateAnonymous(document, builder.TakeStyle());
-  block_->SetIsLayoutNGObjectForFormattedText(true);
+  block_->SetIsDetachedNonDomRoot(true);
 }
 
 void FormattedText::Dispose() {
@@ -200,7 +200,8 @@ PaintRecord FormattedText::PaintFormattedText(Document& document,
   bounds = gfx::RectF{block_->VisualOverflowRect()};
   PaintRecordBuilder paint_record_builder;
   PaintInfo paint_info(paint_record_builder.Context(), CullRect::Infinite(),
-                       PaintPhase::kForeground);
+                       PaintPhase::kForeground,
+                       block_->ChildPaintBlockedByDisplayLock());
   BoxFragmentPainter(fragment).PaintObject(
       paint_info, PhysicalOffset(LayoutUnit(x), LayoutUnit(y)));
   return paint_record_builder.EndRecording();

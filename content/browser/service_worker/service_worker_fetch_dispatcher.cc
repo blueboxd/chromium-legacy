@@ -57,7 +57,7 @@ namespace content {
 
 namespace {
 
-// TODO(crbug.com/1446228): When this is enabled, the browser will schedule
+// TODO(crbug.com/40268507): When this is enabled, the browser will schedule
 // ServiceWorkerFetchDispatcher::ResponseCallback in a high priority task queue.
 BASE_FEATURE(kServiceWorkerFetchResponseCallbackUseHighPriority,
              "ServiceWorkerFetchResponseCallbackUseHighPriority",
@@ -338,6 +338,7 @@ CreateNetworkFactoryForNavigationPreload(FrameTreeNode& frame_tree_node,
       partition.browser_context(), frame_tree_node.current_frame_host(),
       frame_tree_node.current_frame_host()->GetProcess()->GetID(),
       ContentBrowserClient::URLLoaderFactoryType::kNavigation, url::Origin(),
+      net::IsolationInfo(),
       frame_tree_node.navigation_request()->GetNavigationId(),
       ukm::SourceIdObj::FromInt64(
           frame_tree_node.navigation_request()->GetNextPageUkmSourceId()),
@@ -865,7 +866,7 @@ scoped_refptr<network::SharedURLLoaderFactory>
 ServiceWorkerFetchDispatcher::CreateNetworkURLLoaderFactory(
     scoped_refptr<ServiceWorkerContextWrapper> context_wrapper,
     int frame_tree_node_id) {
-  // TODO(crbug.com/1424235): Require the caller to pass in a FrameTreeNode
+  // TODO(crbug.com/40260328): Require the caller to pass in a FrameTreeNode
   // directly, or figure out why it's OK for it to be null.
   // TODO(falken): Can `navigation_request` check be a DCHECK now that the
   // caller does not post a task to this function?

@@ -43,7 +43,7 @@ public class MockWebContents implements WebContents {
     private GURL mLastCommittedUrl;
 
     @Override
-    public void initialize(
+    public void setDelegates(
             String productVersion,
             ViewAndroidDelegate viewDelegate,
             ViewEventSink.InternalAccessDelegate accessDelegate,
@@ -161,6 +161,11 @@ public class MockWebContents implements WebContents {
     }
 
     @Override
+    public boolean hasUncommittedNavigationInPrimaryMainFrame() {
+        return false;
+    }
+
+    @Override
     public void dispatchBeforeUnload(boolean autoCancel) {}
 
     @Override
@@ -261,6 +266,11 @@ public class MockWebContents implements WebContents {
 
     @Override
     public int getThemeColor() {
+        return 0;
+    }
+
+    @Override
+    public int getBackgroundColor() {
         return 0;
     }
 

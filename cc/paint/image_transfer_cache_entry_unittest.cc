@@ -87,7 +87,7 @@ bool CheckImageIsSolidColor(const sk_sp<SkImage>& image,
       image, expected_color, SkIRect::MakeWH(image->width(), image->height()));
 }
 
-// TODO(crbug.com/1442381): Implement test with Skia Graphite backend.
+// TODO(crbug.com/40266937): Implement test with Skia Graphite backend.
 class ImageTransferCacheEntryTest
     : public testing::TestWithParam<SkYUVAInfo::PlaneConfig> {
  public:
@@ -192,7 +192,7 @@ class ImageTransferCacheEntryTest
     }
     DCHECK_EQ(width, allocated_texture.width());
     DCHECK_EQ(height, allocated_texture.height());
-    DCHECK(!allocated_texture.hasMipMaps());
+    DCHECK(!allocated_texture.hasMipmaps());
     DCHECK(allocated_texture_info.fTarget == GL_TEXTURE_2D);
     *released = false;
     return SkImages::BorrowTextureFrom(

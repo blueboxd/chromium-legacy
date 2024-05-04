@@ -248,7 +248,7 @@ def GPUParallelJobs(test_config, tester_name, tester_config):
   # These bots can't handle parallel tests. See crbug.com/1353938.
   # The load can also negatively impact WebGL tests, so reduce the number of
   # jobs there.
-  # TODO(crbug.com/1349828): Try removing the Windows/Intel special casing once
+  # TODO(crbug.com/40233910): Try removing the Windows/Intel special casing once
   # we swap which machines we're using.
   is_webgpu_cts = test_name.startswith('webgpu_cts') or test_config.get(
       'telemetry_test_name') == 'webgpu_cts'
@@ -303,7 +303,12 @@ def GPUTelemetryNoRootForUnrootedDevices(test_config, _, tester_config):
   if os_type != 'android':
     return []
 
-  unrooted_devices = {'a13', 'a23'}
+  unrooted_devices = {
+      'a13',
+      'a23',
+      'dm1q',  # Samsung S23.
+      'devonn',  # Motorola Moto G Power 5G.
+  }
   dimensions = test_config.get('swarming', {}).get('dimensions')
   assert dimensions is not None
   device_type = dimensions.get('device_type')

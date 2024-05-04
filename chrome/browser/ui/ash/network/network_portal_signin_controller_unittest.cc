@@ -104,10 +104,9 @@ class NetworkPortalSigninControllerTest : public testing::TestWithParam<bool> {
   ~NetworkPortalSigninControllerTest() override = default;
 
   void SetUp() override {
-    if (CaptivePortalPopupWindowEnabled()) {
-      feature_list_.InitAndEnableFeature(
-          chromeos::features::kCaptivePortalPopupWindow);
-    }
+    feature_list_.InitWithFeatureState(
+        chromeos::features::kCaptivePortalPopupWindow,
+        CaptivePortalPopupWindowEnabled());
 
     network_helper_ = std::make_unique<NetworkHandlerTestHelper>();
     controller_ = std::make_unique<TestSigninController>();
@@ -118,7 +117,7 @@ class NetworkPortalSigninControllerTest : public testing::TestWithParam<bool> {
     task_environment_.RunUntilIdle();
 
     // Initialize ProfileHelper.
-    // TODO(crbug.com/1325210): Migrate it into BrowserContextHelper.
+    // TODO(crbug.com/40225390): Migrate it into BrowserContextHelper.
     ProfileHelper::Get();
 
     // Set ethernet to idle.
@@ -209,17 +208,6 @@ class NetworkPortalSigninControllerTest : public testing::TestWithParam<bool> {
     base::RunLoop().RunUntilIdle();
   }
 
-  void SetNetworkProxyAuthRequired() {
-    GetPrefs()->SetBoolean(::proxy_config::prefs::kUseSharedProxies, true);
-    proxy_config::SetProxyConfigForNetwork(
-        ProxyConfigDictionary(ProxyConfigDictionary::CreateAutoDetect()),
-        GetDefaultNetwork());
-    base::RunLoop().RunUntilIdle();
-    NetworkHandler::Get()->network_state_handler()->SetNetworkChromePortalState(
-        GetDefaultNetwork().path(),
-        NetworkState::PortalState::kProxyAuthRequired);
-  }
-
   void ShowSignin(
       NetworkPortalSigninController::SigninSource source =
           NetworkPortalSigninController::SigninSource::kNotification) {
@@ -268,15 +256,6 @@ TEST_P(NetworkPortalSigninControllerTest, KioskMode) {
   std::string expected_url = SetProbeUrl(kTestPortalUrl);
   ShowSignin();
   EXPECT_TRUE(IsWindowForSigninDefault(expected_url));
-}
-
-TEST_P(NetworkPortalSigninControllerTest, ProxyAuthRequired) {
-  SimulateLogin();
-  std::string expected_url = SetProbeUrl(kTestPortalUrl);
-  SetNetworkProxyAuthRequired();
-  ShowSignin();
-  EXPECT_EQ(controller_->tab_url(), expected_url);
-  EXPECT_FALSE(controller_->incognito());
 }
 
 TEST_P(NetworkPortalSigninControllerTest, AuthenticationIgnoresProxyTrue) {

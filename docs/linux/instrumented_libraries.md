@@ -64,19 +64,25 @@ Enter the chroot and install the necessary packages:
 ```shell
 schroot -c focal_amd64 -u root --directory /home/dev/chromium/src
 apt update
-apt install lsb-release sudo python pkg-config libgtk2.0-bin libdrm-dev nih-dbus-tool help2man
+apt upgrade
+apt install lsb-release sudo python pkg-config libgtk2.0-bin libdrm-dev help2man git fakeroot gyp
 ```
 
 Install library packages:
 
 ```shell
-third_party/instrumented_libraries/focal/scripts/install-build-deps.sh
+third_party/instrumented_libs/focal/scripts/install-build-deps.sh
 ```
 
 Change to a non-root user:
 ```shell
 exit
 schroot -c focal_amd64 -u `whoami` --directory /home/dev/chromium/src
+```
+
+On your host, mount `/dev/shm/`.  Replace `*` with the actual path if you have multiple chroots.
+```shell
+sudo mount --bind /dev/shm /run/schroot/mount/focal_amd64-*/dev/shm
 ```
 
 Add `depot_tools` to your `PATH`. For example, I have it in `~/dev/depot_tools`,
@@ -90,7 +96,7 @@ Now we're ready to build the libraries. A clean build takes a little over 8
 minutes on a 72-thread machine.
 
 ```shell
-third_party/instrumented_libraries/scripts/build_and_package.py --parallel -j $(nproc) all focal
+third_party/instrumented_libs/scripts/build_and_package.py --parallel -j $(nproc) all focal
 ```
 
 ## Uploading the libraries
@@ -104,10 +110,10 @@ to request access.
 exit
 
 # Move files into place.
-mv *.tgz third_party/instrumented_libraries/binaries
+mv *.tgz third_party/instrumented_libs/binaries
 
 # Upload.
-upload_to_google_storage.py -b chromium-instrumented-libraries third_party/instrumented_libraries/binaries/msan*.tgz
+upload_to_google_storage.py -b chromium-instrumented-libraries third_party/instrumented_libs/binaries/msan*.tgz
 ```
 
 ## Testing and uploading a CL
@@ -121,4 +127,28 @@ the MSAN bot will run on the CQ:
 
 ```
 CQ_INCLUDE_TRYBOTS=luci.chromium.try:linux_chromium_msan_rel_ng
+```
+
+## Cleaning up chroots
+
+This can be useful for restarting from scratch with a new chroot, e.g. to
+validate the build instructions above.
+
+```shell
+sudo rm /etc/schroot/chroot.d/focal_amd64.conf
+sudo rm -rf /srv/chroot/focal_amd64
+```
+
+If `rm` complains about active mount points, list the active chroot session(s):
+```shell
+schroot --list --all-sessions
+```
+Which should print something like:
+```
+session:focal_amd64-714a3c01-9dbf-4c98-81c1-90ab8c4c61fe
+```
+
+Then shutdown the chroot session with:
+```shell
+schroot -e -c focal_amd64-714a3c01-9dbf-4c98-81c1-90ab8c4c61fe
 ```

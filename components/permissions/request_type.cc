@@ -45,6 +45,8 @@ int GetIconIdAndroid(RequestType type) {
       return IDR_ANDROID_INFOBAR_FOLDER;
     case RequestType::kGeolocation:
       return IDR_ANDROID_INFOBAR_GEOLOCATION;
+    case RequestType::kIdentityProvider:
+      return IDR_ANDROID_INFOBAR_IDENTITY_PROVIDER;
     case RequestType::kIdleDetection:
       return IDR_ANDROID_INFOBAR_IDLE_DETECTION;
     case RequestType::kMicStream:
@@ -96,6 +98,8 @@ const gfx::VectorIcon& GetIconIdDesktop(RequestType type) {
     case RequestType::kIdleDetection:
       return cr23 ? vector_icons::kDevicesChromeRefreshIcon
                   : vector_icons::kDevicesIcon;
+    case RequestType::kKeyboardLock:
+      return vector_icons::kKeyboardLockIcon;
     case RequestType::kLocalFonts:
       return cr23 ? vector_icons::kFontDownloadChromeRefreshIcon
                   : vector_icons::kFontDownloadIcon;
@@ -111,6 +115,8 @@ const gfx::VectorIcon& GetIconIdDesktop(RequestType type) {
     case RequestType::kNotifications:
       return cr23 ? vector_icons::kNotificationsChromeRefreshIcon
                   : vector_icons::kNotificationsIcon;
+    case RequestType::kPointerLock:
+      return vector_icons::kPointerLockIcon;
 #if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_WIN)
     case RequestType::kProtectedMediaIdentifier:
       // This icon is provided by ChromePermissionsClient::GetOverrideIconId.
@@ -121,7 +127,7 @@ const gfx::VectorIcon& GetIconIdDesktop(RequestType type) {
       return vector_icons::kProtocolHandlerIcon;
 #if BUILDFLAG(IS_CHROMEOS)
     case RequestType::kSmartCard:
-      // TODO(crbug.com/1503624): Use a proper smart card icon.
+      // TODO(crbug.com/40944087): Use a proper smart card icon.
       return cr23 ? vector_icons::kDevicesChromeRefreshIcon
                   : vector_icons::kDevicesIcon;
 #endif
@@ -136,6 +142,9 @@ const gfx::VectorIcon& GetIconIdDesktop(RequestType type) {
       return cr23 ? vector_icons::kSelectWindowChromeRefreshIcon
                   : vector_icons::kSelectWindowIcon;
     case RequestType::kFileSystemAccess:
+      return vector_icons::kFolderIcon;
+    case RequestType::kIdentityProvider:
+      // TODO(crbug.com/40252825): provide a dedicated icon.
       return vector_icons::kFolderIcon;
   }
   NOTREACHED();
@@ -174,6 +183,9 @@ const gfx::VectorIcon& GetBlockedIconIdDesktop(RequestType type) {
                   : vector_icons::kMidiOffIcon;
     case RequestType::kStorageAccess:
       return vector_icons::kStorageAccessOffIcon;
+    case RequestType::kIdentityProvider:
+      // TODO(crbug.com/40252825): use a dedicated icon
+      return gfx::kNoneIcon;
     default:
       NOTREACHED();
   }
@@ -213,12 +225,20 @@ std::optional<RequestType> ContentSettingsTypeToRequestTypeIfExists(
       return RequestType::kGeolocation;
     case ContentSettingsType::IDLE_DETECTION:
       return RequestType::kIdleDetection;
+#if !BUILDFLAG(IS_ANDROID)
+    case ContentSettingsType::KEYBOARD_LOCK:
+      return RequestType::kKeyboardLock;
+#endif
     case ContentSettingsType::MEDIASTREAM_MIC:
       return RequestType::kMicStream;
     case ContentSettingsType::MIDI_SYSEX:
       return RequestType::kMidiSysex;
     case ContentSettingsType::NOTIFICATIONS:
       return RequestType::kNotifications;
+#if !BUILDFLAG(IS_ANDROID)
+    case ContentSettingsType::POINTER_LOCK:
+      return RequestType::kPointerLock;
+#endif
 #if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_WIN)
     case ContentSettingsType::PROTECTED_MEDIA_IDENTIFIER:
       return RequestType::kProtectedMediaIdentifier;
@@ -249,6 +269,8 @@ std::optional<RequestType> ContentSettingsTypeToRequestTypeIfExists(
     case ContentSettingsType::WEB_PRINTING:
       return RequestType::kWebPrinting;
 #endif
+    case ContentSettingsType::FEDERATED_IDENTITY_API:
+      return RequestType::kIdentityProvider;
     default:
       return std::nullopt;
   }
@@ -289,6 +311,10 @@ std::optional<ContentSettingsType> RequestTypeToContentSettingsType(
       return ContentSettingsType::GEOLOCATION;
     case RequestType::kIdleDetection:
       return ContentSettingsType::IDLE_DETECTION;
+#if !BUILDFLAG(IS_ANDROID)
+    case RequestType::kKeyboardLock:
+      return ContentSettingsType::KEYBOARD_LOCK;
+#endif
     case RequestType::kMicStream:
       return ContentSettingsType::MEDIASTREAM_MIC;
     case RequestType::kMidiSysex:
@@ -299,6 +325,10 @@ std::optional<ContentSettingsType> RequestTypeToContentSettingsType(
 #endif
     case RequestType::kNotifications:
       return ContentSettingsType::NOTIFICATIONS;
+#if !BUILDFLAG(IS_ANDROID)
+    case RequestType::kPointerLock:
+      return ContentSettingsType::POINTER_LOCK;
+#endif
 #if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_WIN)
     case RequestType::kProtectedMediaIdentifier:
       return ContentSettingsType::PROTECTED_MEDIA_IDENTIFIER;
@@ -389,6 +419,8 @@ const char* PermissionKeyForRequestType(permissions::RequestType request_type) {
     case permissions::RequestType::kIdleDetection:
       return "idle_detection";
 #if !BUILDFLAG(IS_ANDROID)
+    case permissions::RequestType::kKeyboardLock:
+      return "keyboard_lock";
     case permissions::RequestType::kLocalFonts:
       return "local_fonts";
 #endif
@@ -404,6 +436,10 @@ const char* PermissionKeyForRequestType(permissions::RequestType request_type) {
 #endif
     case permissions::RequestType::kNotifications:
       return "notifications";
+#if !BUILDFLAG(IS_ANDROID)
+    case permissions::RequestType::kPointerLock:
+      return "pointer_lock";
+#endif
 #if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_WIN)
     case permissions::RequestType::kProtectedMediaIdentifier:
       return "protected_media_identifier";
@@ -428,13 +464,10 @@ const char* PermissionKeyForRequestType(permissions::RequestType request_type) {
 #endif
 #if !BUILDFLAG(IS_ANDROID)
     case permissions::RequestType::kWindowManagement:
-      if (base::FeatureList::IsEnabled(
-              features::kWindowPlacementPermissionAlias)) {
-        return "window_placement";
-      } else {
-        return "window_management";
-      }
+      return "window_management";
 #endif
+    case permissions::RequestType::kIdentityProvider:
+      return "identity_provider";
   }
 
   return nullptr;

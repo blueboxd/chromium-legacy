@@ -66,12 +66,9 @@ DesktopMediaListView::DesktopMediaListView(
     DesktopMediaSourceViewStyle generic_style,
     DesktopMediaSourceViewStyle single_style,
     const std::u16string& accessible_name)
-    : item_spacing_(
-          base::FeatureList::IsEnabled(kDisplayMediaPickerRedesign) ? 4 : 0),
-      horizontal_margins_(
-          base::FeatureList::IsEnabled(kDisplayMediaPickerRedesign) ? 16 : 0),
-      vertical_margins_(
-          base::FeatureList::IsEnabled(kDisplayMediaPickerRedesign) ? 16 : 0),
+    : item_spacing_(4),
+      horizontal_margins_(16),
+      vertical_margins_(16),
       controller_(controller),
       single_style_(single_style),
       generic_style_(generic_style),
@@ -86,7 +83,8 @@ void DesktopMediaListView::OnSelectionChanged() {
   controller_->OnSourceSelectionChanged();
 }
 
-gfx::Size DesktopMediaListView::CalculatePreferredSize() const {
+gfx::Size DesktopMediaListView::CalculatePreferredSize(
+    const views::SizeBounds& /*available_size*/) const {
   const int total_rows =
       (static_cast<int>(children().size()) + active_style_->columns - 1) /
       active_style_->columns;

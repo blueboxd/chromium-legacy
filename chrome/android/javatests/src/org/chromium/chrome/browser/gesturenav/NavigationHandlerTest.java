@@ -177,19 +177,41 @@ public class NavigationHandlerTest {
                 HistogramWatcher.newBuilder()
                         .expectBooleanRecordTimes("Navigation.DuringGesture.NavStarted", false, 2)
                         .expectBooleanRecordTimes(
+                                "Navigation.DuringGesture.NavStarted.3ButtonMode", false, 2)
+                        .expectBooleanRecordTimes(
                                 "Navigation.OnGestureStart.NavigationInProgress", false, 2)
+                        .expectBooleanRecordTimes(
+                                "Navigation.OnGestureStart.NavigationInProgress.3ButtonMode",
+                                false,
+                                2)
                         .build();
         mActivityTestRule.loadUrl(UrlConstants.NTP_URL);
         mActivityTestRule.loadUrl(UrlConstants.RECENT_TABS_URL);
         assertNavigateOnSwipeFrom(LEFT_EDGE, UrlConstants.NTP_URL);
         assertNavigateOnSwipeFrom(RIGHT_EDGE, UrlConstants.RECENT_TABS_URL);
         histogramWatcher.assertExpected("Wrong histogram recording");
+
+        histogramWatcher =
+                HistogramWatcher.newBuilder()
+                        .expectNoRecords("Navigation.DuringGesture.NavStarted")
+                        .expectNoRecords("Navigation.DuringGesture.NavStarted.3ButtonMode")
+                        .expectNoRecords("Navigation.OnGestureStart.NavigationInProgress")
+                        .expectNoRecords(
+                                "Navigation.OnGestureStart.NavigationInProgress.3ButtonMode")
+                        .build();
+        mActivityTestRule.loadUrl(UrlConstants.NTP_URL);
+        mActivityTestRule.loadUrl(UrlConstants.RECENT_TABS_URL);
+        TestThreadUtils.runOnUiThreadBlocking(
+                mActivityTestRule.getActivity().getOnBackPressedDispatcher()::onBackPressed);
+        TestThreadUtils.runOnUiThreadBlocking(
+                mActivityTestRule.getActivity().getOnBackPressedDispatcher()::onBackPressed);
+        histogramWatcher.assertExpected("Should not record when back is not triggered by swipe");
     }
 
     @Test
     @SmallTest
     public void testSwipeNavigateOnRenderedPage() {
-        // TODO(crbug.com/1426201): Write a test variation running with
+        // TODO(crbug.com/40899221): Write a test variation running with
         //     ChromeFeatureList.BACK_FORWARD_TRANSITIONS enabled when the feature is completed.
         mTestServer =
                 EmbeddedTestServer.createAndStartServer(

@@ -734,8 +734,9 @@ void Color::ConvertToColorSpace(ColorSpace destination_color_space,
             gfx::SRGBToHSL(param0_, param1_, param2_);
       }
 
-      // Hue component is powerless for fully transparent colors.
-      if (IsFullyTransparent()) {
+      // Hue component is powerless for fully transparent or achromatic (s==0)
+      // colors.
+      if (IsFullyTransparent() || param1_ == 0) {
         param0_is_none_ = true;
       }
 
@@ -763,8 +764,8 @@ void Color::ConvertToColorSpace(ColorSpace destination_color_space,
             gfx::SRGBToHWB(param0_, param1_, param2_);
       }
 
-      // Hue component is powerless for fully transparent colors.
-      if (IsFullyTransparent()) {
+      // Hue component is powerless for fully transparent or achromatic colors.
+      if (IsFullyTransparent() || param1_ + param2_ >= 1) {
         param0_is_none_ = true;
       }
 
@@ -793,30 +794,6 @@ bool Color::IsBakedGamutMappingEnabled() {
 }
 
 SkColor4f Color::ToSkColor4fInternal(bool gamut_map_oklab_oklch) const {
-  // Used value of an lab/lch color with lightness outside of the range
-  // (0, 100) maps to black/white respectively.
-  // The same is true for oklab/oklch, except the range is (0, 1).
-  // See: https://github.com/w3c/csswg-drafts/issues/8794
-  if (IsLightnessFirstComponent(color_space_) && !param0_is_none_) {
-    float upper_bound = 100.0;
-    if (color_space_ == ColorSpace::kOklab ||
-        color_space_ == ColorSpace::kOklch) {
-      upper_bound = 1.0;
-    }
-
-    if (IsBakedGamutMappingEnabled() && (color_space_ == ColorSpace::kOklab ||
-                                         color_space_ == ColorSpace::kOklch)) {
-      // Disable this behavior for oklab and oklch in the baked gamut mapping
-      // prototype.
-    } else {
-      if (param0_ >= upper_bound) {
-        return SkColor4f{1.f, 1.f, 1.f, alpha_};
-      }
-      if (param0_ <= 0.0) {
-        return SkColor4f{0.f, 0.f, 0.f, alpha_};
-      }
-    }
-  }
   switch (color_space_) {
     case ColorSpace::kSRGB:
       return SkColor4f{param0_, param1_, param2_, alpha_};
@@ -1387,12 +1364,17 @@ String Color::SerializeInterpolationSpace(
     case Color::ColorSpace::kNone:
       result.Append("none");
       break;
-    // These are not yet implemented as interpolation spaces.
     case ColorSpace::kDisplayP3:
+      result.Append("display-p3");
+      break;
     case ColorSpace::kA98RGB:
+      result.Append("a98-rgb");
+      break;
     case ColorSpace::kProPhotoRGB:
+      result.Append("prophoto-rgb");
+      break;
     case ColorSpace::kRec2020:
-      NOTREACHED();
+      result.Append("rec2020");
       break;
   }
 

@@ -4,26 +4,30 @@
 
 #include "components/plus_addresses/plus_address_http_client_impl.h"
 
+#include <concepts>
+#include <memory>
 #include <optional>
+#include <string>
+#include <utility>
 
 #include "base/functional/bind.h"
-#include "base/json/json_writer.h"
 #include "base/functional/callback.h"
+#include "base/json/json_writer.h"
 #include "base/sequence_checker.h"
 #include "base/strings/strcat.h"
 #include "components/plus_addresses/features.h"
 #include "components/plus_addresses/plus_address_metrics.h"
-#include "components/plus_addresses/plus_address_parser.h"
+#include "components/plus_addresses/plus_address_parsing_utils.h"
 #include "components/plus_addresses/plus_address_types.h"
 #include "components/signin/public/base/consent_level.h"
+#include "components/signin/public/identity_manager/access_token_info.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/primary_account_access_token_fetcher.h"
 #include "components/signin/public/identity_manager/scope_set.h"
+#include "google_apis/gaia/google_service_auth_error.h"
 #include "net/http/http_status_code.h"
 #include "services/data_decoder/public/cpp/data_decoder.h"
-#include "components/signin/public/identity_manager/access_token_info.h"
 #include "services/network/public/cpp/resource_request.h"
-#include "google_apis/gaia/google_service_auth_error.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
@@ -35,6 +39,8 @@ namespace plus_addresses {
 namespace {
 
 constexpr base::TimeDelta kRequestTimeout = base::Seconds(5);
+constexpr auto kSignoutError =
+    PlusAddressRequestError(PlusAddressRequestErrorType::kUserSignedOut);
 
 // See docs/network_traffic_annotations.md for reference.
 // TODO(b/295556954): Update the description and trigger fields when possible.
@@ -143,6 +149,55 @@ std::optional<int> GetResponseCode(network::SimpleURLLoader* loader) {
              : std::optional<int>();
 }
 
+// Helper wrapper around a `base::OnceCallback` that runs the `callback` with
+// argument `arg_on_destroy` if the callback is destroyed and has not been run
+// at that point in time.
+template <typename T>
+class RunOnDestroyHelper final {
+ public:
+  using Callback = base::OnceCallback<void(const T&)>;
+
+  RunOnDestroyHelper(Callback callback, T arg_on_destroy)
+      : callback_(std::move(callback)),
+        arg_on_destroy_(std::move(arg_on_destroy)) {}
+
+  RunOnDestroyHelper(const RunOnDestroyHelper&) = delete;
+  RunOnDestroyHelper(RunOnDestroyHelper&&) = default;
+  RunOnDestroyHelper& operator=(const RunOnDestroyHelper&) = delete;
+  RunOnDestroyHelper& operator=(RunOnDestroyHelper&&) = default;
+
+  ~RunOnDestroyHelper() {
+    if (callback_) {
+      std::move(callback_).Run(arg_on_destroy_);
+    }
+  }
+
+  void Run(const T& arg) && {
+    std::move(callback_).Run(arg);
+    callback_.Reset();
+  }
+
+ private:
+  Callback callback_;
+  T arg_on_destroy_;
+};
+
+// Given a `base::OnceCallback<void(const T&)>` `callback`, it returns another
+// `base::OnceCallback` of the same signature with the property that the
+// returned callback is run with argument `arg_on_destroy` on its destruction if
+// it has not been run before.
+template <typename T, typename V>
+  requires(std::constructible_from<T, V>)
+base::OnceCallback<void(const T&)> WrapAsAutorunCallback(
+    base::OnceCallback<void(const T&)> callback,
+    V arg_on_destroy) {
+  return base::BindOnce(
+      [](RunOnDestroyHelper<T> helper, const T& profile) {
+        std::move(helper).Run(profile);
+      },
+      RunOnDestroyHelper<T>(std::move(callback), std::move(arg_on_destroy)));
+}
+
 }  // namespace
 
 PlusAddressHttpClientImpl::PlusAddressHttpClientImpl(
@@ -157,13 +212,16 @@ PlusAddressHttpClientImpl::~PlusAddressHttpClientImpl() = default;
 
 void PlusAddressHttpClientImpl::ReservePlusAddress(
     const url::Origin& origin,
+    bool refresh,
     PlusAddressRequestCallback on_completed) {
   if (!server_url_) {
     return;
   }
-  GetAuthToken(base::BindOnce(&PlusAddressHttpClientImpl::ReservePlusAddressInternal,
-                              base::Unretained(this), origin,
-                              std::move(on_completed)));
+  GetAuthToken(
+      base::BindOnce(&PlusAddressHttpClientImpl::ReservePlusAddressInternal,
+                     base::Unretained(this), origin, refresh,
+                     WrapAsAutorunCallback(std::move(on_completed),
+                                           base::unexpected(kSignoutError))));
 }
 
 void PlusAddressHttpClientImpl::ConfirmPlusAddress(
@@ -173,9 +231,11 @@ void PlusAddressHttpClientImpl::ConfirmPlusAddress(
   if (!server_url_) {
     return;
   }
-  GetAuthToken(base::BindOnce(&PlusAddressHttpClientImpl::ConfirmPlusAddressInternal,
-                              base::Unretained(this), origin, plus_address,
-                              std::move(on_completed)));
+  GetAuthToken(
+      base::BindOnce(&PlusAddressHttpClientImpl::ConfirmPlusAddressInternal,
+                     base::Unretained(this), origin, plus_address,
+                     WrapAsAutorunCallback(std::move(on_completed),
+                                           base::unexpected(kSignoutError))));
 }
 
 void PlusAddressHttpClientImpl::GetAllPlusAddresses(
@@ -183,12 +243,24 @@ void PlusAddressHttpClientImpl::GetAllPlusAddresses(
   if (!server_url_) {
     return;
   }
-  GetAuthToken(base::BindOnce(&PlusAddressHttpClientImpl::GetAllPlusAddressesInternal,
-                              base::Unretained(this), std::move(on_completed)));
+  GetAuthToken(
+      base::BindOnce(&PlusAddressHttpClientImpl::GetAllPlusAddressesInternal,
+                     base::Unretained(this),
+                     WrapAsAutorunCallback(std::move(on_completed),
+                                           base::unexpected(kSignoutError))));
+}
+
+void PlusAddressHttpClientImpl::Reset() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  access_token_fetcher_.reset();
+  pending_callbacks_ = {};
+  loaders_for_creation_.clear();
+  loader_for_sync_.reset();
 }
 
 void PlusAddressHttpClientImpl::ReservePlusAddressInternal(
     const url::Origin& origin,
+    bool refresh,
     PlusAddressRequestCallback on_completed,
     std::optional<std::string> auth_token) {
   if (!auth_token.has_value()) {
@@ -208,6 +280,7 @@ void PlusAddressHttpClientImpl::ReservePlusAddressInternal(
 
   base::Value::Dict payload;
   payload.Set("facet", origin.Serialize());
+  payload.Set("refresh_email_address", refresh);
   std::string request_body;
   bool wrote_payload = base::JSONWriter::Write(payload, &request_body);
   DCHECK(wrote_payload);
@@ -334,7 +407,7 @@ void PlusAddressHttpClientImpl::OnReserveOrConfirmPlusAddressComplete(
   // Parse the response & return it via callback.
   data_decoder::DataDecoder::ParseJsonIsolated(
       *response,
-      base::BindOnce(&PlusAddressParser::ParsePlusProfileFromV1Create)
+      base::BindOnce(&ParsePlusProfileFromV1Create)
           .Then(base::BindOnce(
               [](PlusAddressRequestCallback callback,
                  std::optional<PlusProfile> result) {
@@ -375,7 +448,7 @@ void PlusAddressHttpClientImpl::OnGetAllPlusAddressesComplete(
   // Parse the response & return it via callback.
   data_decoder::DataDecoder::ParseJsonIsolated(
       *response,
-      base::BindOnce(&PlusAddressParser::ParsePlusAddressMapFromV1List)
+      base::BindOnce(&ParsePlusAddressMapFromV1List)
           .Then(base::BindOnce(
               [](PlusAddressMapRequestCallback callback,
                  std::optional<PlusAddressMap> result) {

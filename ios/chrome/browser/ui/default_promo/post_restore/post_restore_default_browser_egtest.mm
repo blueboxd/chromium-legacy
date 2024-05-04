@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #import "base/time/time.h"
-#import "ios/chrome/browser/ui/default_promo/post_restore/features.h"
 #import "ios/chrome/grit/ios_branded_strings.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
@@ -49,8 +48,6 @@ id<GREYMatcher> SecondaryActionMatcher() {
 
 - (AppLaunchConfiguration)appConfigurationForTestCase {
   AppLaunchConfiguration config;
-  config.additional_args.push_back(
-      "--enable-features=" + std::string(kPostRestoreDefaultBrowserPromo.name));
   config.additional_args.push_back("-enable-promo-manager-fullscreen-promos");
   // Override trigger requirements to force the promo to appear.
   config.additional_args.push_back("-NextPromoForDisplayOverride");
@@ -83,7 +80,7 @@ id<GREYMatcher> SecondaryActionMatcher() {
 #pragma mark - Tests
 
 // Verifies that the secondary action button opens dismisses the promo.
-// TODO(crbug.com/1477791): re-enable once test is no longer flaky.
+// TODO(crbug.com/40929054): re-enable once test is no longer flaky.
 - (void)DISABLED_testDismiss {
   [ChromeEarlGrey waitForUIElementToAppearWithMatcher:TitleMatcher()
                                               timeout:kPromoAppearanceTimeout];

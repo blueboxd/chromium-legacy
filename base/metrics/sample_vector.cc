@@ -5,6 +5,7 @@
 #include "base/metrics/sample_vector.h"
 
 #include <ostream>
+#include <string_view>
 
 #include "base/check_op.h"
 #include "base/compiler_specific.h"
@@ -360,7 +361,7 @@ bool SampleVectorBase::AddSubtractImpl(SampleCountIterator* iter,
     if (min != bucket_ranges_->range(dest_index) ||
         max != bucket_ranges_->range(dest_index + 1)) {
 #if !BUILDFLAG(IS_NACL)
-      // TODO(crbug/1432981): Remove these. They are used to investigate
+      // TODO(crbug.com/40064026): Remove these. They are used to investigate
       // unexpected failures.
       SCOPED_CRASH_KEY_NUMBER("SampleVector", "min", min);
       SCOPED_CRASH_KEY_NUMBER("SampleVector", "max", max);
@@ -517,7 +518,7 @@ bool SampleVector::MountExistingCountsStorage() const {
   return counts().has_value();
 }
 
-std::string SampleVector::GetAsciiHeader(StringPiece histogram_name,
+std::string SampleVector::GetAsciiHeader(std::string_view histogram_name,
                                          int32_t flags) const {
   Count sample_count = TotalCount();
   std::string output;

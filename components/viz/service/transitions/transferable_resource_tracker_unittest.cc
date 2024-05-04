@@ -21,10 +21,9 @@ namespace {
 std::unique_ptr<SurfaceSavedFrame> CreateFrameWithResult() {
   CompositorFrameTransitionDirective::SharedElement element;
   auto directive = CompositorFrameTransitionDirective::CreateSave(
-      NavigationId::Null(), 1, {element});
-  auto frame = std::make_unique<SurfaceSavedFrame>(
-      std::move(directive),
-      base::BindRepeating([](const CompositorFrameTransitionDirective&) {}));
+      blink::ViewTransitionToken(), /*maybe_cross_frame_sink=*/false, 1,
+      {element});
+  auto frame = SurfaceSavedFrame::CreateForTesting(std::move(directive));
   frame->CompleteSavedFrameForTesting();
   return frame;
 }
@@ -34,7 +33,7 @@ std::unique_ptr<SurfaceSavedFrame> CreateFrameWithResult() {
 class TransferableResourceTrackerTest : public testing::Test {
  public:
   void SetNextId(TransferableResourceTracker* tracker, uint32_t id) {
-    tracker->id_tracker_.set_next_id_for_test(id);
+    tracker->id_tracker_->set_next_id_for_test(id);
   }
 
   // Returns if there is a SharedBitmap in SharedBitmapManager for |resource|.
@@ -47,10 +46,11 @@ class TransferableResourceTrackerTest : public testing::Test {
 
  protected:
   ServerSharedBitmapManager shared_bitmap_manager_;
+  ReservedResourceIdTracker id_tracker_;
 };
 
 TEST_F(TransferableResourceTrackerTest, IdInRange) {
-  TransferableResourceTracker tracker(&shared_bitmap_manager_);
+  TransferableResourceTracker tracker(&shared_bitmap_manager_, &id_tracker_);
 
   auto frame1 = tracker.ImportResources(CreateFrameWithResult());
   ASSERT_EQ(frame1.shared.size(), 1u);
@@ -72,7 +72,7 @@ TEST_F(TransferableResourceTrackerTest, IdInRange) {
   tracker.RefResource(resource2->resource.id);
   tracker.ReturnFrame(frame2);
   EXPECT_TRUE(HasBitmapResource(resource2->resource));
-  tracker.UnrefResource(resource2->resource.id, 1);
+  tracker.UnrefResource(resource2->resource.id, 1, gpu::SyncToken());
   EXPECT_FALSE(HasBitmapResource(resource2->resource));
 }
 
@@ -81,7 +81,7 @@ TEST_F(TransferableResourceTrackerTest, ExhaustedIdLoops) {
                              uint32_t>::value,
                 "The test only makes sense if ResourceId is uint32_t");
   uint32_t next_id = std::numeric_limits<uint32_t>::max() - 3u;
-  TransferableResourceTracker tracker(&shared_bitmap_manager_);
+  TransferableResourceTracker tracker(&shared_bitmap_manager_, &id_tracker_);
   SetNextId(&tracker, next_id);
 
   ResourceId last_id = kInvalidResourceId;
@@ -104,18 +104,18 @@ TEST_F(TransferableResourceTrackerTest, ExhaustedIdLoops) {
 }
 
 TEST_F(TransferableResourceTrackerTest, UnrefWithCount) {
-  TransferableResourceTracker tracker(&shared_bitmap_manager_);
+  TransferableResourceTracker tracker(&shared_bitmap_manager_, &id_tracker_);
   auto frame = tracker.ImportResources(CreateFrameWithResult());
   ASSERT_EQ(frame.shared.size(), 1u);
   const auto& resource = frame.shared.at(0);
   for (int i = 0; i < 1000; ++i)
     tracker.RefResource(resource->resource.id);
   ASSERT_FALSE(tracker.is_empty());
-  tracker.UnrefResource(resource->resource.id, 1);
+  tracker.UnrefResource(resource->resource.id, 1, gpu::SyncToken());
   EXPECT_FALSE(tracker.is_empty());
-  tracker.UnrefResource(resource->resource.id, 1);
+  tracker.UnrefResource(resource->resource.id, 1, gpu::SyncToken());
   EXPECT_FALSE(tracker.is_empty());
-  tracker.UnrefResource(resource->resource.id, 999);
+  tracker.UnrefResource(resource->resource.id, 999, gpu::SyncToken());
   EXPECT_TRUE(tracker.is_empty());
 }
 
@@ -124,7 +124,7 @@ TEST_F(TransferableResourceTrackerTest,
   static_assert(std::is_same<decltype(kInvalidResourceId.GetUnsafeValue()),
                              uint32_t>::value,
                 "The test only makes sense if ResourceId is uint32_t");
-  TransferableResourceTracker tracker(&shared_bitmap_manager_);
+  TransferableResourceTracker tracker(&shared_bitmap_manager_, &id_tracker_);
 
   auto reserved = tracker.ImportResources(CreateFrameWithResult());
   ASSERT_EQ(reserved.shared.size(), 1u);

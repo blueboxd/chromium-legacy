@@ -59,7 +59,8 @@ class TabDragWithScrollManager {
   // Handles dragging tabs while the tabs are attached. `just_attached` should
   // be true iff this is the first call to MoveAttached after attaching. This
   // also starts a scroll session if needed.
-  // TODO(crbug.com/1378679): Make this an observer of the scroll_session class.
+  // TODO(crbug.com/40875136): Make this an observer of the scroll_session
+  // class.
   virtual void MoveAttached(const gfx::Point& point_in_screen,
                             bool just_attached) = 0;
   // Returns a rect starting from the origin of the first dragged tab
@@ -107,10 +108,11 @@ class TabDragController : public views::WidgetObserver,
   // TabDragController, it's generally not possible to make strong guarantees
   // about what can and cannot happen in various cases - code defensively.
   //
-  // TODO(1509581): Return this from *all* methods which may end the drag. In
-  // particular this will require reconciliation with `DragBrowserResultType`
-  // returned by `DragBrowserToNewTabStrip`. Currently the following public
-  // methods may end the drag and destroy `this` but do not return a Liveness:
+  // TODO(crbug.com/41482188): Return this from *all* methods which may end the
+  // drag. In particular this will require reconciliation with
+  // `DragBrowserResultType` returned by `DragBrowserToNewTabStrip`. Currently
+  // the following public methods may end the drag and destroy `this` but do not
+  // return a Liveness:
   // - TabWasAdded
   // - OnTabWillBeRemoved
   // - Drag

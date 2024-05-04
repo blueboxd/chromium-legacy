@@ -144,6 +144,10 @@ class ASH_EXPORT CaptureModeController
   // `AudioCaptureAllowed` policy.
   bool IsAudioCaptureDisabledByPolicy() const;
 
+  // Returns true if the folder to save captures is enforced by
+  // `ScreenCaptureLocation` policy and can't be changed.
+  bool IsCustomFolderManagedByPolicy() const;
+
   // Returns true if there's an active video recording that is recording audio.
   bool IsAudioRecordingInProgress() const;
 
@@ -220,6 +224,8 @@ class ASH_EXPORT CaptureModeController
   // This can only be called when user is logged in.
   void SetCustomCaptureFolder(const base::FilePath& path);
 
+  // Returns the currently saved custom folder even if it's not being currently
+  // used.
   base::FilePath GetCustomCaptureFolder() const;
 
   // Returns the folder in which all taken screenshots and videos will be saved.
@@ -287,6 +293,10 @@ class ASH_EXPORT CaptureModeController
   // otherwise.
   bool IsLinuxFilesPath(const base::FilePath& path) const;
 
+  // Returns true if the given `path` is the root folder of OneDrive, false
+  // otherwise.
+  bool IsRootOneDriveFilesPath(const base::FilePath& path) const;
+
   // Returns the current parent window for the on-capture-surface widgets such
   // as `CaptureModeCameraController::camera_preview_widget_` and
   // `CaptureModeDemoToolsController::key_combo_widget_`.
@@ -305,6 +315,13 @@ class ASH_EXPORT CaptureModeController
   // Updates the video conference manager and panel with the current state of
   // screen recording and whether camera or audio are being recorded.
   void MaybeUpdateVcPanel();
+
+  // Checks if there are any content currently on the screen that are restricted
+  // by DLP. `callback` will be triggered by the DLP manager with `proceed` set
+  // to true if screen capture is allowed to continue, or set to false if it
+  // should not continue.
+  void CheckScreenCaptureDlpRestrictions(
+      OnCaptureModeDlpRestrictionChecked callback);
 
   // recording::mojom::RecordingServiceClient:
   void OnRecordingEnded(recording::mojom::RecordingStatus status,
@@ -684,6 +701,8 @@ class ASH_EXPORT CaptureModeController
   OnFileDeletedCallback on_file_deleted_callback_for_test_;
 
   base::OnceClosure on_countdown_finished_callback_for_test_;
+
+  base::OnceClosure on_video_recording_started_callback_for_test_;
 
   // Timers used to schedule recording of the number of screenshots taken.
   base::RepeatingTimer num_screenshots_taken_in_last_day_scheduler_;

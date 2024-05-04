@@ -40,6 +40,10 @@ namespace blink {
 
 static constexpr base::TimeDelta kAnimationFrameDelay = base::Hertz(60);
 
+bool IsolatedSVGChromeClient::IsIsolatedSVGChromeClient() const {
+  return true;
+}
+
 SVGImageChromeClient::SVGImageChromeClient(SVGImage* image)
     : image_(image),
       timeline_state_(kRunning) {}
@@ -52,19 +56,16 @@ void SVGImageChromeClient::InitAnimationTimer(
       &SVGImageChromeClient::AnimationTimerFired);
 }
 
-bool SVGImageChromeClient::IsSVGImageChromeClient() const {
-  return true;
-}
-
 void SVGImageChromeClient::ChromeDestroyed() {
   image_ = nullptr;
 }
 
 void SVGImageChromeClient::InvalidateContainer() {
-  // If image_->page_ is null, we're being destructed, so don't fire
+  // If image_->document_host_ is null, we're being destructed, so don't fire
   // |Changed()| in that case.
-  if (image_ && image_->GetImageObserver() && image_->page_)
+  if (image_ && image_->GetImageObserver() && image_->document_host_) {
     image_->GetImageObserver()->Changed(image_);
+  }
 }
 
 void SVGImageChromeClient::SuspendAnimation() {

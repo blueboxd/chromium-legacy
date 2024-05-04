@@ -9,10 +9,15 @@
 #include "ash/public/cpp/input_device_settings_controller.h"
 #include "ash/public/mojom/input_device_settings.mojom-forward.h"
 #include "ash/public/mojom/input_device_settings.mojom.h"
+#include "ash/rgb_keyboard/rgb_keyboard_manager.h"
+#include "ash/shell.h"
+#include "ash/system/keyboard_brightness_control_delegate.h"
 #include "base/containers/flat_set.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/ranges/algorithm.h"
 #include "chrome/browser/ui/webui/ash/settings/pages/device/input_device_settings/input_device_settings_provider.mojom-forward.h"
 #include "chrome/grit/generated_resources.h"
+#include "chromeos/dbus/power_manager/backlight.pb.h"
 #include "content/public/browser/web_contents.h"
 #include "mojo/public/cpp/bindings/clone_traits.h"
 #include "mojo/public/cpp/bindings/struct_ptr.h"
@@ -26,6 +31,8 @@ namespace {
 
 using ActionTypeVariant =
     absl::variant<AcceleratorAction, ::ash::mojom::StaticShortcutAction>;
+
+constexpr double kDefaultKeyboardBrightness = 40.0;
 
 // Used to represent a constant version of the mojom::ActionChoice struct.
 struct ActionChoice {
@@ -139,6 +146,19 @@ std::vector<T> SanitizeAndSortDeviceList(std::vector<T> devices) {
 }  // namespace
 
 InputDeviceSettingsProvider::InputDeviceSettingsProvider() {
+  if (Shell::HasInstance()) {
+    shell_observation_.Observe(ash::Shell::Get());
+  }
+
+  if (Shell::HasInstance() &&
+      Shell::Get()->keyboard_brightness_control_delegate()) {
+    keyboard_brightness_control_delegate_ =
+        Shell::Get()->keyboard_brightness_control_delegate();
+  } else {
+    LOG(WARNING) << "InputDeviceSettingsProvider: Shell not available, did not "
+                    "save KeyboardBrightnessControlDelegate.";
+  }
+
   auto* controller = InputDeviceSettingsController::Get();
   if (!controller) {
     return;
@@ -147,23 +167,38 @@ InputDeviceSettingsProvider::InputDeviceSettingsProvider() {
   if (features::IsInputDeviceSettingsSplitEnabled()) {
     controller->AddObserver(this);
   }
+
+  if (features::IsKeyboardBacklightControlInSettingsEnabled()) {
+    chromeos::PowerManagerClient* power_manager_client =
+        chromeos::PowerManagerClient::Get();
+    if (power_manager_client) {
+      // power_manager_client may be NULL in unittests.
+      power_manager_client->AddObserver(this);
+    }
+  }
 }
 
 InputDeviceSettingsProvider::~InputDeviceSettingsProvider() {
   auto* controller = InputDeviceSettingsController::Get();
-  if (!controller) {
-    return;
-  }
 
-  if (features::IsPeripheralCustomizationEnabled()) {
+  if (features::IsPeripheralCustomizationEnabled() && controller) {
     controller->StopObservingButtons();
     if (widget_) {
       widget_->RemoveObserver(this);
     }
   }
 
-  if (features::IsInputDeviceSettingsSplitEnabled()) {
+  if (features::IsInputDeviceSettingsSplitEnabled() && controller) {
     controller->RemoveObserver(this);
+  }
+
+  if (features::IsKeyboardBacklightControlInSettingsEnabled()) {
+    chromeos::PowerManagerClient* power_manager_client =
+        chromeos::PowerManagerClient::Get();
+    if (power_manager_client) {
+      // power_manager_client may be NULL in unittests.
+      power_manager_client->RemoveObserver(this);
+    }
   }
 }
 
@@ -203,6 +238,14 @@ void InputDeviceSettingsProvider::HandleObserving() {
   }
 }
 
+void InputDeviceSettingsProvider::KeyboardBrightnessChanged(
+    const power_manager::BacklightBrightnessChange& change) {
+  if (keyboard_brightness_observer_.is_bound()) {
+    keyboard_brightness_observer_->OnKeyboardBrightnessChanged(
+        change.percent());
+  }
+}
+
 void InputDeviceSettingsProvider::OnWidgetVisibilityChanged(
     views::Widget* widget,
     bool visible) {
@@ -222,6 +265,12 @@ void InputDeviceSettingsProvider::OnWidgetDestroyed(views::Widget* widget) {
   // settings app window.
   observing_paused_ = true;
   InputDeviceSettingsController::Get()->StopObservingButtons();
+}
+
+void InputDeviceSettingsProvider::OnShellDestroying() {
+  // Set `KeyboardBrightnessControlDelegate` to null when shell destroys.
+  keyboard_brightness_control_delegate_ = nullptr;
+  shell_observation_.Reset();
 }
 
 void InputDeviceSettingsProvider::StartObserving(uint32_t device_id) {
@@ -310,6 +359,35 @@ void InputDeviceSettingsProvider::SetGraphicsTabletSettings(
   }
 }
 
+void InputDeviceSettingsProvider::SetKeyboardBrightness(double percent) {
+  DCHECK(features::IsKeyboardBacklightControlInSettingsEnabled());
+  if (!keyboard_brightness_control_delegate_) {
+    LOG(ERROR) << "InputDeviceSettingsProvider: BrightnessControlDelegate not "
+                  "available when setting keyboard brightness.";
+    return;
+  }
+  keyboard_brightness_control_delegate_->HandleSetKeyboardBrightness(
+      percent, /*gradual=*/true);
+}
+
+void InputDeviceSettingsProvider::SetKeyboardAmbientLightSensorEnabled(
+    bool enabled) {
+  DCHECK(features::IsKeyboardBacklightControlInSettingsEnabled());
+  if (!keyboard_brightness_control_delegate_) {
+    LOG(ERROR) << "InputDeviceSettingsProvider: BrightnessControlDelegate not "
+                  "available when setting keyboard ambient light sensor.";
+    return;
+  }
+  keyboard_brightness_control_delegate_
+      ->HandleSetKeyboardAmbientLightSensorEnabled(enabled);
+}
+
+void InputDeviceSettingsProvider::OnReceiveKeyboardBrightness(
+    std::optional<double> brightness_percent) {
+  keyboard_brightness_observer_->OnKeyboardBrightnessChanged(
+      brightness_percent.value_or(kDefaultKeyboardBrightness));
+}
+
 void InputDeviceSettingsProvider::ObserveKeyboardSettings(
     mojo::PendingRemote<mojom::KeyboardSettingsObserver> observer) {
   DCHECK(features::IsInputDeviceSettingsSplitEnabled());
@@ -370,6 +448,18 @@ void InputDeviceSettingsProvider::ObserveButtonPresses(
     mojo::PendingRemote<mojom::ButtonPressObserver> observer) {
   DCHECK(features::IsPeripheralCustomizationEnabled());
   button_press_observers_.Add(std::move(observer));
+}
+
+void InputDeviceSettingsProvider::ObserveKeyboardBrightness(
+    mojo::PendingRemote<mojom::KeyboardBrightnessObserver> observer) {
+  DCHECK(features::IsKeyboardBacklightControlInSettingsEnabled());
+  keyboard_brightness_observer_.reset();
+  keyboard_brightness_observer_.Bind(std::move(observer));
+
+  // Get the initial keyboard brightness when first register the observer.
+  keyboard_brightness_control_delegate_->HandleGetKeyboardBrightness(
+      base::BindOnce(&InputDeviceSettingsProvider::OnReceiveKeyboardBrightness,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void InputDeviceSettingsProvider::OnCustomizableMouseButtonPressed(
@@ -588,6 +678,55 @@ void InputDeviceSettingsProvider::HasLauncherButton(
   }
 
   std::move(callback).Run(/*has_launcher_button=*/false);
+}
+
+void InputDeviceSettingsProvider::OnReceiveHasKeyboardBacklight(
+    HasKeyboardBacklightCallback callback,
+    std::optional<bool> has_keyboard_backlight) {
+  std::move(callback).Run(has_keyboard_backlight.value_or(false));
+}
+
+void InputDeviceSettingsProvider::OnReceiveHasAmbientLightSensor(
+    HasAmbientLightSensorCallback callback,
+    std::optional<bool> has_ambient_light_sensor) {
+  std::move(callback).Run(has_ambient_light_sensor.value_or(false));
+}
+
+void InputDeviceSettingsProvider::HasKeyboardBacklight(
+    HasKeyboardBacklightCallback callback) {
+  DCHECK(features::IsKeyboardBacklightControlInSettingsEnabled());
+  chromeos::PowerManagerClient::Get()->HasKeyboardBacklight(base::BindOnce(
+      &InputDeviceSettingsProvider::OnReceiveHasKeyboardBacklight,
+      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void InputDeviceSettingsProvider::HasAmbientLightSensor(
+    HasAmbientLightSensorCallback callback) {
+  DCHECK(features::IsKeyboardBacklightControlInSettingsEnabled());
+  chromeos::PowerManagerClient::Get()->HasAmbientLightSensor(base::BindOnce(
+      &InputDeviceSettingsProvider::OnReceiveHasAmbientLightSensor,
+      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void InputDeviceSettingsProvider::IsRgbKeyboardSupported(
+    IsRgbKeyboardSupportedCallback callback) {
+  DCHECK(features::IsKeyboardBacklightControlInSettingsEnabled());
+  std::move(callback).Run(
+      Shell::Get()->rgb_keyboard_manager()->IsRgbKeyboardSupported());
+}
+
+void InputDeviceSettingsProvider::RecordKeyboardColorLinkClicked() {
+  DCHECK(features::IsKeyboardBacklightControlInSettingsEnabled());
+  base::UmaHistogramBoolean(
+      "ChromeOS.Settings.Device.Keyboard.ColorLinkClicked", true);
+}
+
+void InputDeviceSettingsProvider::RecordKeyboardBrightnessChangeFromSlider(
+    double percent) {
+  DCHECK(features::IsKeyboardBacklightControlInSettingsEnabled());
+  DCHECK(0 <= percent && percent <= 100);
+  base::UmaHistogramPercentage(
+      "ChromeOS.Settings.Device.Keyboard.BrightnessSliderAdjusted", percent);
 }
 
 }  // namespace ash::settings

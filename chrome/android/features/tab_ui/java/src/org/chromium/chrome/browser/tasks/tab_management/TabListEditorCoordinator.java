@@ -22,9 +22,11 @@ import org.chromium.base.TraceEvent;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
-import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab_ui.RecyclerViewPosition;
+import org.chromium.chrome.browser.tab_ui.TabContentManager;
+import org.chromium.chrome.browser.tab_ui.ThumbnailProvider;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelFilter;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
@@ -50,11 +52,13 @@ import java.util.List;
 class TabListEditorCoordinator {
     static final String COMPONENT_NAME = "TabListEditor";
 
-    // TODO(977271): Unify similar interfaces in other components that used the TabListCoordinator.
+    // TODO(crbug.com/41467140): Unify similar interfaces in other components that used the
+    // TabListCoordinator.
     /** Interface for resetting the selectable tab grid. */
     interface ResetHandler {
         /**
          * Handles the reset event.
+         *
          * @param tabs List of {@link Tab}s to reset.
          * @param preSelectedCount First {@code preSelectedCount} {@code tabs} are pre-selected.
          * @param recyclerViewPosition The state to preserve scroll position of the recycler view.
@@ -288,7 +292,7 @@ class TabListEditorCoordinator {
                             mTabListCoordinator.softCleanup();
                         }
                     };
-            // TODO(crbug.com/1393679): Refactor SnackbarManager to support multiple overridden
+            // TODO(crbug.com/40881091): Refactor SnackbarManager to support multiple overridden
             // parentViews in a stack to avoid contention and using new snackbar managers.
             mTabListEditorMediator =
                     new TabListEditorMediator(

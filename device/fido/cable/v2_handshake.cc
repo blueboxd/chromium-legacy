@@ -12,12 +12,12 @@
 #include <type_traits>
 
 #include "base/base64url.h"
+#include "base/numerics/byte_conversions.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/numerics/safe_math.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "base/sys_byteorder.h"
 #include "components/cbor/reader.h"
 #include "components/cbor/values.h"
 #include "components/cbor/writer.h"
@@ -49,15 +49,14 @@ namespace {
 // will ever reach.
 constexpr uint32_t kMaxSequence = (1 << 24) - 1;
 
-bool ConstructNonce(uint32_t counter, base::span<uint8_t, 12> out_nonce) {
+bool ConstructNonce(uint32_t counter, base::span<uint8_t, 12u> out_nonce) {
   if (counter > kMaxSequence) {
     return false;
   }
 
-  std::fill(out_nonce.begin(), out_nonce.end(), 0);
-  counter = base::ByteSwap(counter);
-  memcpy(out_nonce.data() + out_nonce.size() - sizeof(counter), &counter,
-         sizeof(counter));
+  auto [zeros, counter_span] = out_nonce.split_at<12u - 4u>();
+  std::ranges::fill(zeros, uint8_t{0});
+  counter_span.copy_from(base::numerics::U32ToBigEndian(counter));
   return true;
 }
 
@@ -900,8 +899,8 @@ std::vector<uint8_t> HandshakeInitiator::BuildInitialMessage() {
 
 HandshakeResult HandshakeInitiator::ProcessResponse(
     base::span<const uint8_t> response) {
-  if (response.size() < kP256X962Length) {
-    FIDO_LOG(DEBUG) << "Handshake response truncated (" << response.size()
+  if (response.size() != kResponseSize) {
+    FIDO_LOG(DEBUG) << "Handshake response wrong size (" << response.size()
                     << " bytes)";
     return std::nullopt;
   }

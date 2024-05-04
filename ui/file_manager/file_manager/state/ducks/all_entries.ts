@@ -7,7 +7,7 @@ import {assert} from 'chrome://resources/js/assert.js';
 import type {EntryLocation} from '../../background/js/entry_location_impl.js';
 import type {VolumeInfo} from '../../background/js/volume_info.js';
 import {getParentEntry} from '../../common/js/api.js';
-import {canHaveSubDirectories, isDirectoryEntry, isDriveRootEntryList, isEntryScannable, isEntrySupportUiChildren, isFakeEntryInDrive, isGrandRootEntryInDrive, isInsideDrive, isVolumeEntry, isVolumeFileData, readEntries, shouldSupportDriveSpecificIcons, sortEntries, supportsUiChildren} from '../../common/js/entry_utils.js';
+import {canHaveSubDirectories, isDirectoryEntry, isDriveRootEntryList, isEntryScannable, isEntrySupportUiChildren, isFakeEntryInDrive, isGrandRootEntryInDrive, isInsideDrive, isVolumeEntry, isVolumeFileData, readEntries, shouldSupportDriveSpecificIcons, sortEntries, supportsUiChildren, urlToEntry} from '../../common/js/entry_utils.js';
 import {getIcon} from '../../common/js/file_type.js';
 import type {FilesAppDirEntry, FilesAppEntry, VolumeEntry} from '../../common/js/files_app_entry_types.js';
 import {EntryList} from '../../common/js/files_app_entry_types.js';
@@ -20,7 +20,7 @@ import type {MetadataItem} from '../../foreground/js/metadata/metadata_item.js';
 import type {ActionsProducerGen} from '../../lib/actions_producer.js';
 import {isDebugStoreEnabled, Slice} from '../../lib/base_store.js';
 import {keepLatest, keyedKeepLatest} from '../../lib/concurrency_models.js';
-import {type CurrentDirectory, EntryType, type FileData, type State, type Volume, type VolumeMap} from '../../state/state.js';
+import {type CurrentDirectory, EntryType, type FileData, type MaterializedView, type State, type Volume, type VolumeMap} from '../../state/state.js';
 import type {FileKey} from '../file_key.js';
 import {getEntry, getFileData, getStore, getVolume} from '../store.js';
 
@@ -108,6 +108,10 @@ function clearCachedEntriesReducer(state: State): State {
     }
   }
 
+  for (const view of state.materializedViews) {
+    entriesToKeep.add(view.key);
+  }
+
   const isDebugStore = isDebugStoreEnabled();
   for (const key of Object.keys(entries)) {
     if (entriesToKeep.has(key)) {
@@ -128,7 +132,10 @@ function clearCachedEntriesReducer(state: State): State {
  */
 function scheduleClearCachedEntries() {
   if (clearCachedEntriesRequestId === 0) {
-    clearCachedEntriesRequestId = requestIdleCallback(startClearCache);
+    // For unittest force to run at least at 50ms to avoid flakiness on slow
+    // bots (msan).
+    const options = window.IN_TEST ? {timeout: 50} : {};
+    clearCachedEntriesRequestId = requestIdleCallback(startClearCache, options);
   }
 }
 
@@ -249,6 +256,28 @@ function isVolumeSlowToScan(volume?: Volume|VolumeInfo|null): boolean {
       volume.volumeType === VolumeType.SMB;
 }
 
+function convertViewToFileData(view: MaterializedView): FileData {
+  const metadata: MetadataItem = {};
+  const fileData: FileData = {
+    key: view.key,
+    fullPath: new URL(view.key).pathname,
+    icon: view.icon,
+    type: EntryType.MATERIALIZED_VIEW,
+    isDirectory: true,
+    label: view.label,
+    volumeId: null,
+    rootType: null,
+    metadata,
+    expanded: false,
+    disabled: false,
+    isRootEntry: view.isRoot,
+    canExpand: true,
+    isEjectable: false,
+    children: [],
+  };
+  return fileData;
+}
+
 /**
  * Converts the entry to the Store representation of an Entry: FileData.
  */
@@ -305,6 +334,55 @@ export function convertEntryToFileData(entry: Entry|FilesAppEntry): FileData {
   // avoid scanning to determine if it has sub-directories.
   fileData.canExpand = isVolumeSlowToScan(volumeInfo);
   return fileData;
+}
+
+function appendView(state: State, view: MaterializedView) {
+  const allEntries = state.allEntries || {};
+  const key = view.key;
+  const fileData = convertViewToFileData(view)!;
+  const existingFileData: Partial<FileData> = allEntries[key] || {};
+
+  allEntries[key] = {
+    ...fileData,
+    expanded: existingFileData.expanded ?? fileData.expanded,
+    isEjectable: existingFileData.isEjectable ?? fileData.isEjectable,
+    canExpand: existingFileData.canExpand ?? fileData.canExpand,
+    // Keep children to prevent sudden removal of the children items on the UI.
+    children: existingFileData.children ?? fileData.children,
+    key,
+  };
+
+  state.allEntries = allEntries;
+}
+
+/**
+ * Converts an EntryData object from FileManagerPrivate API to the store
+ * representation of an Entry: FileData.
+ */
+export async function convertEntryDataToFileData(
+    entryData: chrome.fileManagerPrivate.EntryData): Promise<FileData> {
+  const nativeEntry = await urlToEntry(entryData.entryUrl);
+  // TODO(b/328564447): This function should only rely on `entryData`, so
+  // gradually update the returned FileData to only use fields from `entryData`.
+  const nativeEntryFileData = convertEntryToFileData(nativeEntry);
+  return {
+    key: entryData.entryUrl,
+    fullPath: nativeEntryFileData.fullPath,
+    entry: nativeEntry,
+    icon: nativeEntryFileData.icon,
+    label: nativeEntryFileData.label,
+    volumeId: nativeEntryFileData.volumeId,
+    rootType: nativeEntryFileData.rootType,
+    metadata: nativeEntryFileData.metadata,
+    isDirectory: nativeEntryFileData.isDirectory,
+    type: EntryType.FS_API,
+    isRootEntry: nativeEntryFileData.isRootEntry,
+    isEjectable: false,
+    canExpand: nativeEntryFileData.canExpand,
+    children: [],
+    expanded: false,
+    disabled: nativeEntryFileData.disabled,
+  };
 }
 
 /**
@@ -373,6 +451,15 @@ export function cacheEntries(
     appendEntry(currentState, entry);
   }
 }
+
+export function cacheMaterializedViews(
+    currentState: State, views: MaterializedView[]) {
+  scheduleClearCachedEntries();
+  for (const entry of views) {
+    appendView(currentState, entry);
+  }
+}
+
 
 function getEntryType(entry: Entry|FilesAppEntry): EntryType {
   // Entries from FilesAppEntry have the `typeName` property.
@@ -464,13 +551,21 @@ function findVolumeByType(volumes: VolumeMap, volumeType: VolumeType): Volume|
 
 /**
  * Returns the MyFiles entry and volume, the entry can either be a fake one
- * (EntryList) or a real one (VolumeEntry) depends on if the MyFiles volume is
- * mounted or not.
+ * (EntryList) or a real one (VolumeEntry) depending on if the MyFiles volume is
+ * mounted or not, and returns null if local files are disabled by policy.
  * Note: it will create a fake EntryList in the store if there's no
- * MyFiles entry in the store (e.g. no EntryList and no VolumeEntry).
+ * MyFiles entry in the store (e.g. no EntryList and no VolumeEntry), but local
+ * files are enabled.
  */
 export function getMyFiles(state: State):
-    {myFilesVolume: null|Volume, myFilesEntry: VolumeEntry|EntryList} {
+    {myFilesVolume: null|Volume, myFilesEntry: null|VolumeEntry|EntryList} {
+  if (state.preferences?.localUserFilesAllowed === false) {
+    return {
+      myFilesEntry: null,
+      myFilesVolume: null,
+    };
+  }
+
   const {volumes} = state;
   const myFilesVolume = findVolumeByType(volumes, VolumeType.DOWNLOADS);
   const myFilesVolumeEntry = myFilesVolume ?
@@ -554,6 +649,7 @@ export async function*
   const childEntriesToReadDeeper: Array<Entry|FilesAppEntry> = [];
   const entry = fileData.entry;
   if (fileKey === driveRootEntryListKey) {
+    assert(entry);
     if (!isDriveRootEntryList(entry)) {
       console.warn(
           `ERROR: ${fileKey} didn't return a EntryList from the Store`);
@@ -771,7 +867,7 @@ async function*
       childEntry.isDirectory && fileFilter.filter(childEntry);
   // The entry has UIChildren but has no FileData.children, we know it can be
   // expanded.
-  if (supportsUiChildren(fileData)) {
+  if (supportsUiChildren(fileData) && fileData.entry) {
     const entry = fileData.entry;
     assert(isEntrySupportUiChildren(entry));
     const uiChildrenDirectories =

@@ -22,6 +22,8 @@ ci.defaults.set(
     reclient_jobs = reclient.jobs.DEFAULT,
     service_account = ci.gpu.SERVICE_ACCOUNT,
     shadow_service_account = ci.gpu.SHADOW_SERVICE_ACCOUNT,
+    siso_enabled = True,
+    siso_remote_jobs = reclient.jobs.DEFAULT,
 )
 
 consoles.console_view(
@@ -76,6 +78,7 @@ ci.gpu.linux_builder(
         short_name = "x64",
     ),
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
+    siso_remote_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
 )
 
 ci.gpu.linux_builder(
@@ -116,6 +119,7 @@ ci.gpu.linux_builder(
     # ),
     list_view = "chromium.gpu.experimental",
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
+    siso_remote_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
 )
 
 ci.gpu.linux_builder(
@@ -154,6 +158,7 @@ ci.gpu.linux_builder(
         short_name = "x64",
     ),
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
+    siso_remote_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
 )
 
 ci.gpu.linux_builder(
@@ -190,6 +195,7 @@ ci.gpu.linux_builder(
         short_name = "x64",
     ),
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
+    siso_remote_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
 )
 
 ci.gpu.linux_builder(
@@ -228,6 +234,7 @@ ci.gpu.linux_builder(
     # ),
     list_view = "chromium.gpu.experimental",
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
+    siso_remote_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
 )
 
 ci.gpu.mac_builder(
@@ -305,6 +312,7 @@ ci.gpu.windows_builder(
         short_name = "x86",
     ),
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CI,
+    siso_remote_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
 )
 
 ci.gpu.windows_builder(
@@ -343,6 +351,7 @@ ci.gpu.windows_builder(
         short_name = "x64",
     ),
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CI,
+    siso_remote_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
 )
 
 ci.gpu.windows_builder(
@@ -382,6 +391,7 @@ ci.gpu.windows_builder(
         short_name = "x86",
     ),
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CI,
+    siso_remote_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
 )
 
 ci.gpu.windows_builder(
@@ -418,6 +428,7 @@ ci.gpu.windows_builder(
         short_name = "x64",
     ),
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CI,
+    siso_remote_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
 )
 
 ci.gpu.windows_builder(
@@ -455,4 +466,5 @@ ci.gpu.windows_builder(
         short_name = "x86",
     ),
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CI,
+    siso_remote_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
 )

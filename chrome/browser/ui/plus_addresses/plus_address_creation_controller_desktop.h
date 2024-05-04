@@ -17,6 +17,7 @@ namespace plus_addresses {
 
 class PlusAddressCreationDialogDelegate;
 class PlusAddressCreationView;
+class PlusAddressService;
 
 class PlusAddressCreationControllerDesktop
     : public PlusAddressCreationController,
@@ -28,6 +29,7 @@ class PlusAddressCreationControllerDesktop
   // PlusAddressCreationController implementation:
   void OfferCreation(const url::Origin& main_frame_origin,
                      PlusAddressCallback callback) override;
+  void OnRefreshClicked() override;
   void OnConfirmed() override;
   void OnCanceled() override;
   void OnDialogDestroyed() override;
@@ -36,8 +38,8 @@ class PlusAddressCreationControllerDesktop
   PlusAddressCreationView* get_view_for_testing();
   // A mechanism to avoid view entanglements, reducing the need for view
   // mocking, etc., while still allowing tests of specific business logic.
-  // TODO(crbug.com/1467623): Add more end-to-end coverage as the modal behavior
-  // comes fully online.
+  // TODO(crbug.com/40276862): Add more end-to-end coverage as the modal
+  // behavior comes fully online.
   void set_suppress_ui_for_testing(bool should_suppress);
   // Used to validate storage and clearing of `maybe_plus_profile_`.
   std::optional<PlusProfile> get_plus_profile_for_testing();
@@ -51,6 +53,8 @@ class PlusAddressCreationControllerDesktop
       content::WebContents* web_contents);
   friend class content::WebContentsUserData<
       PlusAddressCreationControllerDesktop>;
+
+  PlusAddressService* GetPlusAddressService();
 
   // Populates `plus_profile_` with `maybe_plus_profile` if it's not an error.
   void OnPlusAddressReserved(const PlusProfileOrError& maybe_plus_profile);

@@ -77,7 +77,7 @@ import java.util.concurrent.ExecutionException;
     ChromeFeatureList.ANDROID_IMPROVED_BOOKMARKS,
     SyncFeatureMap.ENABLE_BOOKMARK_FOLDERS_FOR_ACCOUNT_STORAGE
 })
-// TODO(crbug.com/1168590): Once SyncTestRule supports batching, investigate batching this suite.
+// TODO(crbug.com/40743432): Once SyncTestRule supports batching, investigate batching this suite.
 @DoNotBatch(reason = "SyncTestRule doesn't support batching.")
 public class BookmarkSaveFlowTest {
     @Rule public final SyncTestRule mSyncTestRule = new SyncTestRule();
@@ -411,7 +411,7 @@ public class BookmarkSaveFlowTest {
                     return null;
                 });
         ClickUtils.clickButton(mActivity.findViewById(R.id.bookmark_select_folder));
-        onView(withText(mActivity.getResources().getString(R.string.bookmark_choose_folder)))
+        onView(withText(mActivity.getResources().getString(R.string.bookmark_item_move)))
                 .check(matches(isDisplayed()));
 
         // Dismiss the activity.

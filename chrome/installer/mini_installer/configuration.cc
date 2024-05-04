@@ -4,10 +4,11 @@
 
 #include "chrome/installer/mini_installer/configuration.h"
 
-#include <shellapi.h>  // NOLINT
+#include <windows.h>
+
+#include <shellapi.h>
 #include <stddef.h>
 #include <stdlib.h>
-#include <windows.h>
 
 #include "build/branding_buildflags.h"
 #include "chrome/installer/mini_installer/appid.h"

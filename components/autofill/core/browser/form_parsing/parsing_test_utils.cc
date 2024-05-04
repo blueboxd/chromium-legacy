@@ -8,6 +8,14 @@
 
 namespace autofill {
 
+namespace {
+void UpdateRanks(std::vector<std::unique_ptr<AutofillField>>& fields) {
+  for (size_t i = 0; i < fields.size(); ++i) {
+    fields[i]->set_rank(i);
+  }
+}
+}  // namespace
+
 std::vector<PatternProviderFeatureState> PatternProviderFeatureState::All() {
   return {
     {.enable = false, .active_source = nullptr},
@@ -57,11 +65,11 @@ void FormFieldParserTestBase::AddFormFieldDataWithLength(
     int max_length,
     FieldType expected_type) {
   FormFieldData field_data;
-  field_data.form_control_type = control_type;
-  field_data.name = base::UTF8ToUTF16(name);
-  field_data.label = base::UTF8ToUTF16(label);
-  field_data.max_length = max_length;
-  field_data.renderer_id = MakeFieldRendererId();
+  field_data.set_form_control_type(control_type);
+  field_data.set_name(base::UTF8ToUTF16(name));
+  field_data.set_label(base::UTF8ToUTF16(label));
+  field_data.set_max_length(max_length);
+  field_data.set_renderer_id(MakeFieldRendererId());
   fields_.push_back(std::make_unique<AutofillField>(field_data));
   expected_classifications_.insert(
       std::make_pair(field_data.global_id(), expected_type));
@@ -74,7 +82,7 @@ void FormFieldParserTestBase::AddSelectOneFormFieldData(
     FieldType expected_type) {
   AddFormFieldData(FormControlType::kSelectOne, name, label, expected_type);
   FormFieldData* field_data = fields_.back().get();
-  field_data->options = options;
+  field_data->set_options(options);
 }
 
 // Convenience wrapper for text control elements.
@@ -92,6 +100,7 @@ void FormFieldParserTestBase::ClassifyAndVerify(
     ParseResult parse_result,
     const GeoIpCountryCode& client_country,
     const LanguageCode& page_language) {
+  UpdateRanks(fields_);
   AutofillScanner scanner(fields_);
   ParsingContext context(client_country, page_language,
                          *GetActivePatternSource());
@@ -111,6 +120,7 @@ void FormFieldParserTestBase::ClassifyAndVerify(
 void FormFieldParserTestBase::ClassifyAndVerifyWithMultipleParses(
     const GeoIpCountryCode& client_country,
     const LanguageCode& page_language) {
+  UpdateRanks(fields_);
   ParsingContext context(client_country, page_language,
                          *GetActivePatternSource());
   AutofillScanner scanner(fields_);

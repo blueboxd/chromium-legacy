@@ -36,10 +36,14 @@ class MockPasswordStoreInterface : public PasswordStoreInterface {
               UpdateLoginWithPrimaryKey,
               (const PasswordForm&, const PasswordForm&, base::OnceClosure),
               (override));
-  MOCK_METHOD(void, RemoveLogin, (const PasswordForm&), (override));
+  MOCK_METHOD(void,
+              RemoveLogin,
+              (const base::Location&, const PasswordForm&),
+              (override));
   MOCK_METHOD(void,
               RemoveLoginsByURLAndTime,
-              (const base::RepeatingCallback<bool(const GURL&)>&,
+              (const base::Location&,
+               const base::RepeatingCallback<bool(const GURL&)>&,
                base::Time,
                base::Time,
                base::OnceClosure,
@@ -47,7 +51,10 @@ class MockPasswordStoreInterface : public PasswordStoreInterface {
               (override));
   MOCK_METHOD(void,
               RemoveLoginsCreatedBetween,
-              (base::Time, base::Time, base::OnceCallback<void(bool)>),
+              (const base::Location&,
+               base::Time,
+               base::Time,
+               base::OnceCallback<void(bool)>),
               (override));
   MOCK_METHOD(void,
               DisableAutoSignInForOrigins,
@@ -77,7 +84,7 @@ class MockPasswordStoreInterface : public PasswordStoreInterface {
   MOCK_METHOD(void, AddObserver, (Observer*), (override));
   MOCK_METHOD(void, RemoveObserver, (Observer*), (override));
   MOCK_METHOD(SmartBubbleStatsStore*, GetSmartBubbleStatsStore, (), (override));
-  MOCK_METHOD(std::unique_ptr<syncer::ProxyModelTypeControllerDelegate>,
+  MOCK_METHOD(std::unique_ptr<syncer::ModelTypeControllerDelegate>,
               CreateSyncControllerDelegate,
               (),
               (override));

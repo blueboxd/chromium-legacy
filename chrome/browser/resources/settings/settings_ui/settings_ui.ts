@@ -16,14 +16,13 @@ import 'chrome://resources/cr_elements/cr_toolbar/cr_toolbar_search_field.js';
 import 'chrome://resources/cr_elements/cr_page_host_style.css.js';
 import 'chrome://resources/cr_elements/icons.html.js';
 import 'chrome://resources/cr_elements/cr_shared_vars.css.js';
-import 'chrome://resources/polymer/v3_0/paper-styles/color.js';
 import '../icons.html.js';
 import '../settings_main/settings_main.js';
 import '../settings_menu/settings_menu.js';
 import '../settings_shared.css.js';
 import '../settings_vars.css.js';
 
-import type {SettingsPrefsElement} from 'chrome://resources/cr_components/settings_prefs/prefs.js';
+import type {SettingsPrefsElement} from '/shared/settings/prefs/prefs.js';
 import {CrContainerShadowMixin} from 'chrome://resources/cr_elements/cr_container_shadow_mixin.js';
 import type {CrDrawerElement} from 'chrome://resources/cr_elements/cr_drawer/cr_drawer.js';
 import type {CrToolbarElement} from 'chrome://resources/cr_elements/cr_toolbar/cr_toolbar.js';

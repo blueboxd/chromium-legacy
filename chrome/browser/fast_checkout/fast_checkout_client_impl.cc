@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/fast_checkout/fast_checkout_client_impl.h"
+
 #include <cmath>
 
 #include "base/containers/flat_set.h"
@@ -21,6 +22,7 @@
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/payments/credit_card_cvc_authenticator.h"
+#include "components/autofill/core/browser/payments/payments_autofill_client.h"
 #include "components/autofill/core/browser/ui/fast_checkout_enums.h"
 #include "components/autofill/core/common/dense_set.h"
 #include "components/autofill/core/common/mojom/autofill_types.mojom-shared.h"
@@ -202,8 +204,8 @@ bool FastCheckoutClientImpl::TryToStart(
   ShowFastCheckoutUI();
 
   fast_checkout_ui_state_ = FastCheckoutUIState::kIsShowing;
-  autofill_client_->HideAutofillPopup(
-      autofill::PopupHidingReason::kOverlappingWithFastCheckoutSurface);
+  autofill_client_->HideAutofillSuggestions(
+      autofill::SuggestionHidingReason::kOverlappingWithFastCheckoutSurface);
 
   return true;
 }
@@ -433,15 +435,15 @@ void FastCheckoutClientImpl::TryToFillForms() {
         if (autofill::CreditCard::IsLocalCard(credit_card)) {
           FillCreditCardForm(*form, *field, *credit_card, u"");
         } else {
-          autofill::CreditCardCvcAuthenticator* cvc_authenticator =
-              autofill_client_->GetCvcAuthenticator();
-          DCHECK(cvc_authenticator);
+          autofill::CreditCardCvcAuthenticator& cvc_authenticator =
+              autofill_client_->GetPaymentsAutofillClient()
+                  ->GetCvcAuthenticator();
           credit_card_form_global_id_ = form_global_id;
-          cvc_authenticator->GetFullCardRequest()->GetFullCard(
+          cvc_authenticator.GetFullCardRequest()->GetFullCard(
               *credit_card,
               autofill::AutofillClient::UnmaskCardReason::kAutofill,
               weak_ptr_factory_.GetWeakPtr(),
-              cvc_authenticator->GetAsFullCardRequestUIDelegate(),
+              cvc_authenticator.GetAsFullCardRequestUIDelegate(),
               autofill_client_->GetLastCommittedPrimaryMainFrameOrigin());
         }
       }
@@ -469,8 +471,9 @@ void FastCheckoutClientImpl::FillCreditCardForm(
 autofill::AutofillProfile*
 FastCheckoutClientImpl::GetSelectedAutofillProfile() {
   autofill::AutofillProfile* autofill_profile =
-      personal_data_helper_->GetPersonalDataManager()->GetProfileByGUID(
-          selected_autofill_profile_guid_.value());
+      personal_data_helper_->GetPersonalDataManager()
+          ->address_data_manager()
+          .GetProfileByGUID(selected_autofill_profile_guid_.value());
   if (!autofill_profile) {
     OnRunComplete(FastCheckoutRunOutcome::kAutofillProfileDeleted);
   }

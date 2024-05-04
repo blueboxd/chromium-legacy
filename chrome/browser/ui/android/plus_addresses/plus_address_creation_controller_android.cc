@@ -6,6 +6,7 @@
 
 #include <optional>
 
+#include "base/notimplemented.h"
 #include "chrome/browser/plus_addresses/plus_address_service_factory.h"
 #include "chrome/browser/ui/android/plus_addresses/plus_address_creation_view_android.h"
 #include "components/plus_addresses/plus_address_metrics.h"
@@ -37,7 +38,7 @@ void PlusAddressCreationControllerAndroid::OfferCreation(
       PlusAddressServiceFactory::GetForBrowserContext(
           GetWebContents().GetBrowserContext());
   if (!plus_address_service) {
-    // TODO(crbug.com/1467623): Verify expected behavior in this case and the
+    // TODO(crbug.com/40276862): Verify expected behavior in this case and the
     // missing email case below.
     return;
   }
@@ -62,6 +63,10 @@ void PlusAddressCreationControllerAndroid::OfferCreation(
       base::BindOnce(
           &PlusAddressCreationControllerAndroid::OnPlusAddressReserved,
           GetWeakPtr()));
+}
+
+void PlusAddressCreationControllerAndroid::OnRefreshClicked() {
+  NOTIMPLEMENTED();
 }
 
 void PlusAddressCreationControllerAndroid::OnConfirmed() {

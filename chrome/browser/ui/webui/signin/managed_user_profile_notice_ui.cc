@@ -11,8 +11,9 @@
 #include "base/functional/callback_helpers.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "chrome/browser/enterprise/profile_management/profile_management_features.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/signin_features.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/webui/signin/managed_user_profile_notice_handler.h"
 #include "chrome/browser/ui/webui/signin/signin_utils.h"
 #include "chrome/browser/ui/webui/webui_util.h"
@@ -37,6 +38,10 @@ ManagedUserProfileNoticeUI::ManagedUserProfileNoticeUI(content::WebUI* web_ui)
       chrome::kChromeUIManagedUserProfileNoticeHost);
 
   static constexpr webui::ResourcePath kResources[] = {
+      {"legacy_managed_user_profile_notice_app.js",
+       IDR_SIGNIN_MANAGED_USER_PROFILE_NOTICE_LEGACY_MANAGED_USER_PROFILE_NOTICE_APP_JS},
+      {"legacy_managed_user_profile_notice_app.html.js",
+       IDR_SIGNIN_MANAGED_USER_PROFILE_NOTICE_LEGACY_MANAGED_USER_PROFILE_NOTICE_APP_HTML_JS},
       {"managed_user_profile_notice_app.js",
        IDR_SIGNIN_MANAGED_USER_PROFILE_NOTICE_MANAGED_USER_PROFILE_NOTICE_APP_JS},
       {"managed_user_profile_notice_app.html.js",
@@ -73,6 +78,20 @@ ManagedUserProfileNoticeUI::ManagedUserProfileNoticeUI(content::WebUI* web_ui)
                              IDS_WELCOME_SIGNIN_VIEW_SIGNIN);
   source->AddLocalizedString("linkDataText",
                              IDS_ENTERPRISE_PROFILE_WELCOME_LINK_DATA_CHECKBOX);
+
+  source->AddLocalizedString("profileInformationTitle",
+                             IDS_ENTERPRISE_WELCOME_PROFILE_INFORMATION_TITLE);
+  source->AddLocalizedString(
+      "profileInformationDetails",
+      IDS_ENTERPRISE_WELCOME_PROFILE_INFORMATION_DETAILS);
+  source->AddLocalizedString("deviceInformationTitle",
+                             IDS_ENTERPRISE_WELCOME_DEVICE_INFORMATION_TITLE);
+  source->AddLocalizedString("deviceInformationDetails",
+                             IDS_ENTERPRISE_WELCOME_DEVICE_INFORMATION_DETAILS);
+
+  source->AddBoolean("useUpdatedUi",
+                     base::FeatureList::IsEnabled(
+                         features::kEnterpriseUpdatedProfileCreationScreen));
   source->AddBoolean("showLinkDataCheckbox", false);
   source->AddBoolean("isModalDialog", false);
   webui::SetupChromeRefresh2023(source);
@@ -92,9 +111,9 @@ void ManagedUserProfileNoticeUI::Initialize(
       account_info, std::move(proceed_callback));
   handler_ = handler.get();
 
+  base::Value::Dict update_data;
   if (type ==
       ManagedUserProfileNoticeUI::ScreenType::kEnterpriseAccountCreation) {
-    base::Value::Dict update_data;
     update_data.Set("isModalDialog", true);
 
     int title_id = profile_creation_required_by_policy
@@ -104,11 +123,25 @@ void ManagedUserProfileNoticeUI::Initialize(
                     l10n_util::GetStringUTF16(title_id));
 
     update_data.Set("showLinkDataCheckbox", show_link_data_option);
+  } else if (type == ManagedUserProfileNoticeUI::ScreenType::kEnterpriseOIDC) {
+    update_data.Set("isModalDialog", true);
+    update_data.Set("enterpriseProfileWelcomeTitle",
+                    l10n_util::GetStringUTF16(
+                        IDS_ENTERPRISE_WELCOME_PROFILE_REQUIRED_TITLE));
 
-    content::WebUIDataSource::Update(
-        Profile::FromWebUI(web_ui()),
-        chrome::kChromeUIManagedUserProfileNoticeHost, std::move(update_data));
+    update_data.Set("showLinkDataCheckbox", false);
+#if !BUILDFLAG(IS_CHROMEOS)
+    update_data.Set(
+        "useUpdatedUi",
+        base::FeatureList::IsEnabled(
+            features::kEnterpriseUpdatedProfileCreationScreen) ||
+            base::FeatureList::IsEnabled(
+                profile_management::features::kOidcAuthProfileManagement));
+#endif
   }
+  content::WebUIDataSource::Update(
+      Profile::FromWebUI(web_ui()),
+      chrome::kChromeUIManagedUserProfileNoticeHost, std::move(update_data));
 
   web_ui()->AddMessageHandler(std::move(handler));
 }

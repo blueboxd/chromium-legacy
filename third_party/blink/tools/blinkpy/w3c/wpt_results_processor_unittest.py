@@ -6,6 +6,7 @@ import base64
 import json
 import re
 import textwrap
+import typing
 from unittest import mock
 
 from blinkpy.common.host_mock import MockHost as BlinkMockHost
@@ -15,6 +16,7 @@ from blinkpy.web_tests.port.factory_mock import MockPortFactory
 from blinkpy.w3c.wpt_results_processor import (
     EventProcessingError,
     StreamShutdown,
+    TestType,
     WPTResultsProcessor,
 )
 
@@ -28,6 +30,7 @@ class WPTResultsProcessorTest(LoggingTestCase):
         self.path_finder = PathFinder(self.fs)
         port = self.host.port_factory.get('test-linux-trusty')
         port.set_option_default('manifest_update', False)
+        port.set_option_default('test_types', typing.get_args(TestType))
 
         # Create a testing manifest containing any test files that we
         # might interact with.
@@ -54,6 +57,12 @@ class WPTResultsProcessorTest(LoggingTestCase):
                             'b8db5972284d1ac6bbda0da81621d9bca5d04ee7',
                             ['variant.html?foo=bar/abc', {}],
                             ['variant.html?foo=baz', {}],
+                        ],
+                    },
+                    'wdspec': {
+                        'test.py': [
+                            '61acc923e8eb3f6883d09bb4bfa220d7f757bbb8',
+                            [None, {}]
                         ],
                     },
                 },
@@ -269,9 +278,9 @@ class WPTResultsProcessorTest(LoggingTestCase):
         self.assertFalse(ok.unexpected)
         self.assertEqual(
             ok.artifacts, {
-                'stderr': [
+                'crash_log': [
                     self.fs.join('layout-test-results', 'retry_1', 'external',
-                                 'wpt', 'variant_foo=bar_abc-stderr.txt'),
+                                 'wpt', 'variant_foo=bar_abc-crash-log.txt'),
                 ],
             })
         fail_summary = report_mock.call_args_list[0].kwargs['html_summary']
@@ -449,11 +458,13 @@ class WPTResultsProcessorTest(LoggingTestCase):
                     expected='PASS')
         self._event(action='process_output',
                     command='chromedriver',
-                    data='Log this line')
+                    data='Log this line',
+                    process='101')
         self._event(action='test_end',
                     test='/timeout.html',
                     status='TIMEOUT',
-                    expected='OK')
+                    expected='OK',
+                    extra={'browser_pid': 101})
 
         result = self.processor.sink.report_individual_test_result.call_args.kwargs[
             'result']
@@ -464,16 +475,16 @@ class WPTResultsProcessorTest(LoggingTestCase):
         # Timeouts and crashes shouldn't output `{actual,expected}_*` artifacts.
         self.assertEqual(
             result.artifacts, {
-                'crash_log': [
+                'stderr': [
                     self.fs.join('layout-test-results', 'external', 'wpt',
-                                 'timeout-crash-log.txt'),
+                                 'timeout-stderr.txt'),
                 ],
             })
         self.assertEqual(
             self.fs.read_text_file(
                 self.fs.join('/mock-checkout', 'out', 'Default',
                              'layout-test-results', 'external', 'wpt',
-                             'timeout-crash-log.txt')), 'Log this line\n')
+                             'timeout-stderr.txt')), 'Log this line\n')
 
     def test_report_expected_timeout_with_unexpected_fails(self):
         self.fs.write_text_file(
@@ -633,7 +644,7 @@ class WPTResultsProcessorTest(LoggingTestCase):
                              'layout-test-results', 'external', 'wpt',
                              'variant_foo=baz-actual.txt')))
 
-    def test_extract_text_reset_results(self):
+    def test_extract_text_reset_results_testharness(self):
         self.processor.reset_results = True
         with self.fs.patch_builtins():
             self._event(action='test_start', test='/variant.html?foo=baz')
@@ -651,6 +662,28 @@ class WPTResultsProcessorTest(LoggingTestCase):
                     'variant_foo=baz-expected.txt')),
             textwrap.dedent("""\
                 This is a testharness.js-based test.
+                All subtests passed and are omitted for brevity.
+                See https://chromium.googlesource.com/chromium/src/+/HEAD/docs/testing/writing_web_tests.md#Text-Test-Baselines for details.
+                Harness: the test ran to completion.
+                """))
+
+    def test_extract_text_reset_results_wdspec(self):
+        self.processor.reset_results = True
+        with self.fs.patch_builtins():
+            self._event(action='test_start', test='/test.py')
+            self._event(action='test_status',
+                        test='/test.py',
+                        subtest='passing subtest',
+                        status='PASS')
+            self._event(action='test_end', test='/test.py', status='OK')
+        self.assertEqual(
+            self.fs.read_text_file(
+                self.path_finder.path_from_web_tests('platform',
+                                                     'test-linux-trusty',
+                                                     'external', 'wpt',
+                                                     'test-expected.txt')),
+            textwrap.dedent("""\
+                This is a wdspec test.
                 All subtests passed and are omitted for brevity.
                 See https://chromium.googlesource.com/chromium/src/+/HEAD/docs/testing/writing_web_tests.md#Text-Test-Baselines for details.
                 Harness: the test ran to completion.
@@ -765,43 +798,112 @@ class WPTResultsProcessorTest(LoggingTestCase):
                     self.fs.join('/mock-checkout', 'out', 'Default',
                                  'layout-test-results', filename)))
 
-    def test_extract_logs(self):
+    def test_extract_logs_interleaved(self):
+        self.processor.browser_outputs.capacity = 2
         self._event(action='process_output',
-                    command='content_shell --run-web-tests',
-                    data='[ERROR] Log this line')
+                    command='chromedriver --port=101',
+                    data='Running test.html',
+                    process='101')
         self._event(action='process_output',
                     command='git rev-parse HEAD',
-                    data='[ERROR] Do not log this line')
+                    data='Do not log; unrelated executable',
+                    process='99999')
         self._event(action='test_start', test='/test.html')
-        self._event(
-            action='test_status',
-            test='/test.html',
-            status='PASS',
-            # The Greek letter pi, which 'cp1252' cannot represent.
-            subtest='subtest with Unicode \u03c0',
-            message='assert_eq(a, b)')
+        self._event(action='test_start', test='/timeout.html')
+        self._event(action='process_output',
+                    command='chromedriver --port=101',
+                    data='cp1252 cannot represent \u03c0, the Greek letter',
+                    process='101')
+        self._event(action='process_output',
+                    command='chromedriver --port=202',
+                    data='Running timeout.html',
+                    process='202')
         self._event(action='test_end',
                     test='/test.html',
                     status='OK',
-                    message='Test ran to completion.')
+                    message='Remote-end stacktrace:\n\n#0 0xffff <unknown>\n',
+                    extra={'browser_pid': 101})
+        self._event(action='test_end',
+                    test='/timeout.html',
+                    status='TIMEOUT',
+                    extra={'browser_pid': 202})
+        self._event(action='process_output',
+                    command='chromedriver --port=101',
+                    data='Do not log; this event occurs after `test_end`',
+                    process='101')
 
-        self.assertEqual(
-            self.fs.read_text_file(
-                self.fs.join('/mock-checkout', 'out', 'Default',
-                             'layout-test-results', 'external', 'wpt',
-                             'test-stderr.txt')),
-            textwrap.dedent("""\
-                Harness: Test ran to completion.
-                subtest with Unicode \u03c0: assert_eq(a, b)
-                """))
         self.assertEqual(
             self.fs.read_text_file(
                 self.fs.join('/mock-checkout', 'out', 'Default',
                              'layout-test-results', 'external', 'wpt',
                              'test-crash-log.txt')),
             textwrap.dedent("""\
-                [ERROR] Log this line
+                Remote-end stacktrace:
+
+                #0 0xffff <unknown>
                 """))
+        self.assertEqual(
+            self.fs.read_text_file(
+                self.fs.join('/mock-checkout', 'out', 'Default',
+                             'layout-test-results', 'external', 'wpt',
+                             'test-stderr.txt')),
+            textwrap.dedent("""\
+                Running test.html
+                cp1252 cannot represent \u03c0, the Greek letter
+                """))
+        self.assertEqual(
+            self.fs.read_text_file(
+                self.fs.join('/mock-checkout', 'out', 'Default',
+                             'layout-test-results', 'external', 'wpt',
+                             'timeout-stderr.txt')),
+            textwrap.dedent("""\
+                Running timeout.html
+                """))
+
+    def test_extract_command(self):
+        self._event(action='test_start', test='/test.html')
+        self._event(
+            action='process_output',
+            command='chromedriver',
+            data=('[INFO] Launching chrome: /path/to/chrome --headless=new '
+                  '--host-resolver-rules=MAP * ^NOTFOUND --switch data:,'),
+            process='101')
+        self._event(action='test_end',
+                    test='/test.html',
+                    status='OK',
+                    extra={'browser_pid': 101})
+        self._event(action='test_start', test='/timeout.html')
+        self._event(action='test_end',
+                    test='/timeout.html',
+                    status='OK',
+                    extra={'browser_pid': 101})
+        self._event(action='test_start', test='/reftest.html')
+        self._event(action='test_end',
+                    test='/reftest.html',
+                    status='PASS',
+                    extra={'browser_pid': 202})
+
+        self.assertEqual(
+            self.fs.read_text_file(
+                self.fs.join('/mock-checkout', 'out', 'Default',
+                             'layout-test-results', 'external', 'wpt',
+                             'test-command.txt')),
+            "/path/to/chrome '--host-resolver-rules=MAP * ^NOTFOUND' --switch "
+            'http://web-platform.test:8001/test.html')
+        self.assertEqual(
+            self.fs.read_text_file(
+                self.fs.join('/mock-checkout', 'out', 'Default',
+                             'layout-test-results', 'external', 'wpt',
+                             'timeout-command.txt')),
+            "/path/to/chrome '--host-resolver-rules=MAP * ^NOTFOUND' --switch "
+            'http://web-platform.test:8001/timeout.html',
+            'Command should be copied from the previous test.')
+        self.assertFalse(
+            self.fs.exists(
+                self.fs.join('/mock-checkout', 'out', 'Default',
+                             'layout-test-results', 'external', 'wpt',
+                             'reftest-command.txt')),
+            'Command has not been observed for this browser yet.')
 
     def test_unknown_event(self):
         self._event(action='unknown', time=1000)
@@ -893,8 +995,11 @@ class WPTResultsProcessorTest(LoggingTestCase):
                             test='/test.html',
                             status='FAIL',
                             expected='PASS',
-                            subtest='subtest',
-                            message='assert_eq(a, b)')
+                            subtest='subtest')
+                self._event(action='process_output',
+                            process='101',
+                            command='chromedriver --port=101',
+                            data='[101:101:INFO] This is Chrome version 125')
                 self._event(action='test_end',
                             test='/test.html',
                             status='OK',
@@ -902,7 +1007,9 @@ class WPTResultsProcessorTest(LoggingTestCase):
                                 'reftest_screenshots': [{
                                     'url': '/test.html',
                                     'screenshot': 'abcd',
-                                }]
+                                }],
+                                'browser_pid':
+                                101,
                             })
                 self._event(action='test_start', test='/reftest.html')
                 self._event(action='test_end',

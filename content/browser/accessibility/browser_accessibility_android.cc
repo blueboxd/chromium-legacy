@@ -11,6 +11,7 @@
 #include "base/functional/bind.h"
 #include "base/i18n/break_iterator.h"
 #include "base/lazy_instance.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -81,8 +82,7 @@ constexpr int kMinimumCharacterCountForInvalid = 7;
 std::unique_ptr<BrowserAccessibility> BrowserAccessibility::Create(
     BrowserAccessibilityManager* manager,
     ui::AXNode* node) {
-  return std::unique_ptr<BrowserAccessibilityAndroid>(
-      new BrowserAccessibilityAndroid(manager, node));
+  return base::WrapUnique(new BrowserAccessibilityAndroid(manager, node));
 }
 
 using UniqueIdMap = std::unordered_map<int32_t, BrowserAccessibilityAndroid*>;
@@ -563,6 +563,12 @@ bool BrowserAccessibilityAndroid::IsLeaf() const {
   if (ui::IsLink(GetRole()))
     return false;
 
+  // For Android only, tab-panels are never leaves. We do this to temporarily
+  // get around the gap for aria-labelledby in the Android API. See b/241526393.
+  if (GetRole() == ax::mojom::Role::kTabPanel) {
+    return false;
+  }
+
   BrowserAccessibilityManagerAndroid* manager_android =
       static_cast<BrowserAccessibilityManagerAndroid*>(manager());
   if (manager_android->prune_tree_for_screen_reader()) {
@@ -653,6 +659,10 @@ std::u16string BrowserAccessibilityAndroid::GetBrailleRoleDescription() const {
 
 std::u16string BrowserAccessibilityAndroid::GetTextContentUTF16() const {
   return GetSubstringTextContentUTF16(std::nullopt);
+}
+
+int BrowserAccessibilityAndroid::GetTextContentLengthUTF16() const {
+  return GetTextContentUTF16().length();
 }
 
 std::u16string BrowserAccessibilityAndroid::GetSubstringTextContentUTF16(
@@ -840,7 +850,7 @@ std::u16string BrowserAccessibilityAndroid::GetStateDescription() const {
 
   // For multiselectable state, generate a state description. We do not set a
   // state description for pop up/<select> to prevent double utterances.
-  // TODO(crbug.com/1362834): Consider whether other combobox roles should be
+  // TODO(crbug.com/40864556): Consider whether other combobox roles should be
   // accounted for.
   if (IsMultiselectable() && GetRole() != ax::mojom::Role::kPopUpButton &&
       GetRole() != ax::mojom::Role::kComboBoxSelect) {
@@ -1179,6 +1189,7 @@ std::u16string BrowserAccessibilityAndroid::GetRoleDescription() const {
     case ax::mojom::Role::kForm:
     case ax::mojom::Role::kHeaderAsNonLandmark:
     case ax::mojom::Role::kRowGroup:
+    case ax::mojom::Role::kSectionWithoutName:
     case ax::mojom::Role::kStrong:
     case ax::mojom::Role::kSubscript:
     case ax::mojom::Role::kSuperscript:

@@ -238,17 +238,6 @@ void AppendStringToBuffer(std::vector<uint8_t>* data,
   memcpy(data->data() + old_size.ValueOrDie(), str, len);
 }
 
-void AssignGLRectangle(GLint rectangle[4],
-                       GLint x,
-                       GLint y,
-                       GLint width,
-                       GLint height) {
-  rectangle[0] = x;
-  rectangle[1] = y;
-  rectangle[2] = width;
-  rectangle[3] = height;
-}
-
 // In order to minimize the amount of data copied, the command buffer client
 // unpack pixels before sending the glTex[Sub]Image[2|3]D calls. The only
 // parameter it doesn't handle is the alignment. Resetting the unpack state is
@@ -477,16 +466,13 @@ error::Error GLES2DecoderPassthroughImpl::DoBindFramebuffer(
   }
 
   // Update tracking of the bound framebuffer
-  bool draw_framebuffer_changed = false;
   switch (target) {
     case GL_FRAMEBUFFER_EXT:
-      draw_framebuffer_changed = true;
       bound_draw_framebuffer_ = framebuffer;
       bound_read_framebuffer_ = framebuffer;
       break;
 
     case GL_DRAW_FRAMEBUFFER:
-      draw_framebuffer_changed = true;
       bound_draw_framebuffer_ = framebuffer;
       break;
 
@@ -497,13 +483,6 @@ error::Error GLES2DecoderPassthroughImpl::DoBindFramebuffer(
     default:
       NOTREACHED();
       break;
-  }
-
-  // Resync the surface offset if the draw framebuffer has changed to or from
-  // the default framebuffer
-  if (draw_framebuffer_changed && bound_draw_framebuffer_ != framebuffer &&
-      (bound_draw_framebuffer_ == 0 || framebuffer == 0)) {
-    ApplySurfaceDrawOffset();
   }
 
   return error::kNoError;
@@ -1042,9 +1021,6 @@ error::Error GLES2DecoderPassthroughImpl::DoDeleteFramebuffers(
         api()->glBindFramebufferEXTFn(
             GL_DRAW_FRAMEBUFFER, emulated_back_buffer_->framebuffer_service_id);
       }
-
-      // Update the surface offset if the bound draw framebuffer is deleted
-      ApplySurfaceDrawOffset();
     }
     if (framebuffer == bound_read_framebuffer_) {
       bound_read_framebuffer_ = 0;
@@ -3005,19 +2981,7 @@ error::Error GLES2DecoderPassthroughImpl::DoScissor(GLint x,
                                                     GLint y,
                                                     GLsizei width,
                                                     GLsizei height) {
-  CheckErrorCallbackState();
-
-  gfx::Vector2d scissor_offset = GetSurfaceDrawOffset();
-  api()->glScissorFn(x + scissor_offset.x(), y + scissor_offset.y(), width,
-                     height);
-
-  if (CheckErrorCallbackState()) {
-    // Skip any state tracking updates if an error was generated
-    return error::kNoError;
-  }
-
-  AssignGLRectangle(scissor_, x, y, width, height);
-
+  api()->glScissorFn(x, y, width, height);
   return error::kNoError;
 }
 
@@ -3692,20 +3656,7 @@ error::Error GLES2DecoderPassthroughImpl::DoViewport(GLint x,
                                                      GLint y,
                                                      GLsizei width,
                                                      GLsizei height) {
-  CheckErrorCallbackState();
-
-  gfx::Vector2d viewport_offset = GetSurfaceDrawOffset();
-  api()->glViewportFn(x + viewport_offset.x(), y + viewport_offset.y(), width,
-                      height);
-
-  if (CheckErrorCallbackState()) {
-    // Skip any state tracking updates if an error was generated. Viewport may
-    // have been out of bounds.
-    return error::kNoError;
-  }
-
-  AssignGLRectangle(viewport_, x, y, width, height);
-
+  api()->glViewportFn(x, y, width, height);
   return error::kNoError;
 }
 
@@ -4825,53 +4776,6 @@ error::Error GLES2DecoderPassthroughImpl::DoVertexAttribDivisorANGLE(
     GLuint index,
     GLuint divisor) {
   api()->glVertexAttribDivisorANGLEFn(index, divisor);
-  return error::kNoError;
-}
-
-error::Error GLES2DecoderPassthroughImpl::DoProduceTextureDirectCHROMIUM(
-    GLuint texture_client_id,
-    const volatile GLbyte* mailbox) {
-  scoped_refptr<TexturePassthrough> texture;
-  if (!resources_->texture_object_map.GetServiceID(texture_client_id,
-                                                   &texture) ||
-      texture == nullptr) {
-    InsertError(GL_INVALID_OPERATION, "Unknown texture.");
-    return error::kNoError;
-  }
-
-  const Mailbox& mb = Mailbox::FromVolatile(
-      *reinterpret_cast<const volatile Mailbox*>(mailbox));
-  mailbox_manager_->ProduceTexture(mb, texture.get());
-  return error::kNoError;
-}
-
-error::Error GLES2DecoderPassthroughImpl::DoCreateAndConsumeTextureINTERNAL(
-    GLuint texture_client_id,
-    const volatile GLbyte* mailbox) {
-  if (!texture_client_id ||
-      resources_->texture_id_map.HasClientID(texture_client_id)) {
-    return error::kInvalidArguments;
-  }
-
-  const Mailbox& mb = Mailbox::FromVolatile(
-      *reinterpret_cast<const volatile Mailbox*>(mailbox));
-  scoped_refptr<TexturePassthrough> texture = TexturePassthrough::CheckedCast(
-      group_->mailbox_manager()->ConsumeTexture(mb));
-  if (texture == nullptr) {
-    // Create texture to handle invalid mailbox (see http://crbug.com/472465 and
-    // http://crbug.com/851878).
-    DoGenTextures(1, &texture_client_id);
-    InsertError(GL_INVALID_OPERATION, "Invalid mailbox name.");
-    return error::kNoError;
-  }
-
-  // Update id mappings
-  resources_->texture_id_map.RemoveClientID(texture_client_id);
-  resources_->texture_id_map.SetIDMapping(texture_client_id,
-                                          texture->service_id());
-  resources_->texture_object_map.RemoveClientID(texture_client_id);
-  resources_->texture_object_map.SetIDMapping(texture_client_id, texture);
-
   return error::kNoError;
 }
 

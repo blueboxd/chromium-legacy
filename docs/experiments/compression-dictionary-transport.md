@@ -74,7 +74,7 @@ fetching resources. This may negatively affect Chrome's loading performance.
 Therefore, we are conducting experiments to ensure that this does not cause
 regressions before rolling it out to all users.
 
-TODO(crbug.com/1413922): When we enable the backend for all Chrome, remove this
+TODO(crbug.com/40255884): When we enable the backend for all Chrome, remove this
 section.
 
 ## Feature detection
@@ -155,15 +155,19 @@ Shared Zstandard can be enabled/disabled from
 ## Supported HTTP protocol
 
 From Chrome 121, Chrome may not use stored shared dictionares when the
-connection is using HTTP/1 for non-localhost requests. Also Chrome may not use
-shared dictionares when the HTTPS connection's certificate is not rooted by a
-well known root CA (eg: using a user installed root certificate). This is for
-an investigation for an issue that some network appliances are interfering with
-HTTPS traffic by inspecting encrypted responses but failing to properly decode
-the shared dictionary encoded content.
+connection is using HTTP/1 for non-localhost requests. From Chrome 125, Chrome
+may not use stored shared dictionares when the connection is using HTTP/2 for
+non-localhost requests.
+Also Chrome may not use shared dictionares when the HTTPS connection's
+certificate is not rooted by a well known root CA (eg: using a user installed
+root certificate). This is for an investigation for an issue that some network
+appliances are interfering with HTTPS traffic by inspecting encrypted responses
+but failing to properly decode the shared dictionary encoded content.
 
 If you want to use shared dictionaries with HTTP/1, please enable
-[chrome://flags/#enable-compression-dictionary-transport-over-http1][over-http1-flag].
+[chrome://flags/#enable-compression-dictionary-transport-allow-http1][allow-http1-flag].
+If you want to use shared dictionaries with HTTP/2, please enable
+[chrome://flags/#enable-compression-dictionary-transport-allow-http2][allow-http2-flag].
 Also if you want to use shared dictionaries over the HTTPS connection which
 certificate is not rooted by a well known root CA, please disable
 [chrome://flags/#enable-compression-dictionary-transport-require-known-root-cert][require-known-root-ca-flag].

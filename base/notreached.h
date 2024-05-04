@@ -10,7 +10,7 @@
 #include "base/dcheck_is_on.h"
 #include "base/logging_buildflags.h"
 
-// TODO(crbug.com/1520664): Remove once NOTIMPLEMENTED() call sites include
+// TODO(crbug.com/41493641): Remove once NOTIMPLEMENTED() call sites include
 // base/notimplemented.h.
 #include "base/notimplemented.h"
 
@@ -22,10 +22,11 @@ namespace logging {
 // starts crashing in M120. See base/check.h.
 //
 // Under the kNotReachedIsFatal experiment all NOTREACHED() without a milestone
-// argument are fatal. Outside the experiment they dump without crashing. As of
-// 2023-06-06 this experiment is disabled everywhere.
+// argument are fatal. As of 2024-03-19 this experiment is 50/50 enabled on M124
+// Canary and Dev with intent to roll out to stable in M124 absent any blocking
+// issues that come up.
 //
-// TODO(crbug.com/851128): After kNotReachedIsFatal is universally rolled out
+// TODO(crbug.com/40580068): After kNotReachedIsFatal is universally rolled out
 // then move callers without a non-fatal milestone argument to
 // NOTREACHED_NORETURN(). Then rename the [[noreturn]] version back to
 // NOTREACHED().
@@ -45,8 +46,8 @@ namespace logging {
 
 // NOTREACHED_NORETURN() annotates paths that are supposed to be unreachable.
 // They crash if they are ever hit.
-// TODO(crbug.com/851128): Rename back to NOTREACHED() once there are no callers
-// of the old non-CHECK-fatal macro.
+// TODO(crbug.com/40580068): Rename back to NOTREACHED() once there are no
+// callers of the old non-CHECK-fatal macro.
 #if CHECK_WILL_STREAM()
 #define NOTREACHED_NORETURN() ::logging::NotReachedNoreturnError()
 #else

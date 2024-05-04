@@ -134,7 +134,7 @@ void PaymentRequestDialogView::ShowProcessingSpinner() {
   throbber_->Start();
   throbber_overlay_->SetVisible(true);
   throbber_overlay_->GetViewAccessibility().SetIsIgnored(false);
-  throbber_overlay_->GetViewAccessibility().OverrideIsLeaf(false);
+  throbber_overlay_->GetViewAccessibility().SetIsLeaf(false);
   if (observer_for_testing_)
     observer_for_testing_->OnProcessingSpinnerShown();
 }
@@ -415,14 +415,14 @@ void PaymentRequestDialogView::EditorViewUpdated() {
 
 void PaymentRequestDialogView::HideProcessingSpinner() {
   throbber_->Stop();
-  // TODO(crbug.com/1418659): Instead of setting the throbber to invisible, can
+  // TODO(crbug.com/40894873): Instead of setting the throbber to invisible, can
   // we destroy and remove it from the view when it's not being used?
   throbber_overlay_->SetVisible(false);
   // Screen readers do not ignore invisible elements, so force the screen
   // reader to skip the invisible throbber by making it an ignored leaf node in
   // the accessibility tree.
   throbber_overlay_->GetViewAccessibility().SetIsIgnored(true);
-  throbber_overlay_->GetViewAccessibility().OverrideIsLeaf(true);
+  throbber_overlay_->GetViewAccessibility().SetIsLeaf(true);
   if (observer_for_testing_)
     observer_for_testing_->OnProcessingSpinnerHidden();
 }
@@ -531,7 +531,8 @@ void PaymentRequestDialogView::SetupSpinnerOverlay() {
       l10n_util::GetStringUTF16(IDS_PAYMENTS_PROCESSING_MESSAGE)));
 }
 
-gfx::Size PaymentRequestDialogView::CalculatePreferredSize() const {
+gfx::Size PaymentRequestDialogView::CalculatePreferredSize(
+    const views::SizeBounds& /*available_size*/) const {
   if (is_showing_large_payment_handler_window_) {
     return gfx::Size(GetActualDialogWidth(),
                      GetActualPaymentHandlerDialogHeight());

@@ -72,6 +72,7 @@ std::string GetStorageKeyFromVisitRow(const VisitRow& row) {
 
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
+// LINT.IfChange(SyncHistoryDatabaseError)
 enum class SyncHistoryDatabaseError {
   kApplyIncrementalSyncChangesAddSyncedVisit = 0,
   kApplyIncrementalSyncChangesWriteMetadata = 1,
@@ -84,6 +85,7 @@ enum class SyncHistoryDatabaseError {
   kGetAllDataReadMetadata = 7,
   kMaxValue = kGetAllDataReadMetadata
 };
+// LINT.ThenChange(/tools/metrics/histograms/metadata/sync/enums.xml:SyncHistoryDatabaseError)
 
 void RecordDatabaseError(SyncHistoryDatabaseError error) {
   DLOG(ERROR) << "SyncHistoryBridge database error: "
@@ -480,6 +482,7 @@ bool SpecificsContainsOnlyValidURLs(
 
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
+// LINT.IfChange(SyncHistorySpecificsError)
 enum class SpecificsError {
   kMissingRequiredFields = 0,
   kTooOld = 1,
@@ -487,6 +490,7 @@ enum class SpecificsError {
   kUnwantedURL = 3,
   kMaxValue = kUnwantedURL
 };
+// LINT.ThenChange(/tools/metrics/histograms/metadata/sync/enums.xml:SyncHistorySpecificsError)
 
 // Checks the given `specifics` for validity, i.e. whether it passes some basic
 // validation checks, and returns the appropriate error if it doesn't.
@@ -669,8 +673,13 @@ void HistorySyncBridge::ApplyDisableSyncChanges(
       std::move(delete_metadata_change_list));
 }
 
-void HistorySyncBridge::GetData(StorageKeyList storage_keys,
-                                DataCallback callback) {
+void HistorySyncBridge::GetDataForCommit(StorageKeyList storage_keys,
+                                         DataCallback callback) {
+  GetDataImpl(storage_keys, std::move(callback));
+}
+
+void HistorySyncBridge::GetDataImpl(StorageKeyList storage_keys,
+                                    DataCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   auto batch = std::make_unique<syncer::MutableDataBatch>();
@@ -726,7 +735,7 @@ void HistorySyncBridge::GetAllDataForDebugging(DataCallback callback) {
   for (const auto& [storage_key, metadata] : metadata_batch->GetAllMetadata()) {
     storage_keys.push_back(storage_key);
   }
-  GetData(std::move(storage_keys), std::move(callback));
+  GetDataImpl(std::move(storage_keys), std::move(callback));
 }
 
 std::string HistorySyncBridge::GetClientTag(
@@ -810,11 +819,11 @@ void HistorySyncBridge::OnURLsModified(HistoryBackend* history_backend,
   }
 }
 
-void HistorySyncBridge::OnURLsDeleted(HistoryBackend* history_backend,
-                                      bool all_history,
-                                      bool expired,
-                                      const URLRows& deleted_rows,
-                                      const std::set<GURL>& favicon_urls) {
+void HistorySyncBridge::OnHistoryDeletions(HistoryBackend* history_backend,
+                                           bool all_history,
+                                           bool expired,
+                                           const URLRows& deleted_rows,
+                                           const std::set<GURL>& favicon_urls) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // If individual URLs get deleted, we're notified about their removed visits
@@ -1163,7 +1172,7 @@ bool HistorySyncBridge::UpdateEntityInBackend(
     const sync_pb::HistorySpecifics& specifics) {
   // Only try updating the final visit in a chain - earlier visits (i.e.
   // redirects) can't get updated anyway.
-  // TODO(crbug.com/1318028): Verify whether only updating the chain end
+  // TODO(crbug.com/40059424): Verify whether only updating the chain end
   // is indeed sufficient.
   int index = specifics.redirect_entries_size() - 1;
   VisitRow final_visit_row = MakeVisitRow(specifics, index);

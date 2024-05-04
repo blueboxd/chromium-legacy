@@ -8,6 +8,7 @@
 
 #include <memory>
 #include <string>
+#include <string_view>
 #include <utility>
 
 #include "base/check.h"
@@ -23,7 +24,7 @@ namespace autofill {
 
 namespace {
 
-base::span<const MatchPatternRef> GetMatchPatterns(base::StringPiece name,
+base::span<const MatchPatternRef> GetMatchPatterns(std::string_view name,
                                                    ParsingContext& context) {
   return GetMatchPatterns(name, context.page_language, context.pattern_source);
 }
@@ -99,6 +100,9 @@ constexpr MatchParams kOverflowMatchType =
     kDefaultMatchParamsWith<FormControlType::kTextArea,
                             FormControlType::kInputSearch>;
 constexpr MatchParams kOverflowAndLandmarkMatchType =
+    kDefaultMatchParamsWith<FormControlType::kTextArea,
+                            FormControlType::kInputSearch>;
+constexpr MatchParams kHouseNumberAndAptMatchType =
     kDefaultMatchParamsWith<FormControlType::kTextArea,
                             FormControlType::kInputSearch>;
 
@@ -204,7 +208,7 @@ std::unique_ptr<FormFieldParser> AddressFieldParser::Parse(
       address_field->between_streets_line_2_ || address_field->admin_level2_ ||
       address_field->between_streets_or_landmark_ ||
       address_field->overflow_and_landmark_ || address_field->overflow_ ||
-      address_field->street_location_) {
+      address_field->street_location_ || address_field->house_number_and_apt_) {
     // Don't slurp non-labeled fields at the end into the address.
     if (has_trailing_non_labeled_fields)
       scanner->RewindTo(begin_trailing_non_labeled_fields);
@@ -298,6 +302,8 @@ void AddressFieldParser::AddClassifications(
                     kBaseAddressParserScore, field_candidates);
   AddClassification(overflow_, ADDRESS_HOME_OVERFLOW, kBaseAddressParserScore,
                     field_candidates);
+  AddClassification(house_number_and_apt_, ADDRESS_HOME_HOUSE_NUMBER_AND_APT,
+                    kBaseAddressParserScore, field_candidates);
 }
 
 bool AddressFieldParser::ParseCompany(ParsingContext& context,
@@ -377,6 +383,7 @@ bool AddressFieldParser::ParseAddressFieldSequence(ParsingContext& context,
   AutofillField* old_zip = zip_;
   AutofillField* old_zip4 = zip4_;
   AutofillField* old_apartment_number = apartment_number_;
+  AutofillField* old_house_number_and_apt_ = house_number_and_apt_;
 
   AddressCountryCode country_code(context.client_country.value());
 
@@ -385,7 +392,7 @@ bool AddressFieldParser::ParseAddressFieldSequence(ParsingContext& context,
     // a street location typically contains strings that match the regular
     // expressions for a street name as well.
     if (!street_location_ &&
-        // TODO(crbug.com/1474308) Find a better way to gate street location
+        // TODO(crbug.com/40279279) Find a better way to gate street location
         // support. This is easy to confuse with with an address line 1 field.
         // This is currently allowlisted for MX which prefers pairs of
         // street location and address overflow fields.
@@ -398,7 +405,7 @@ bool AddressFieldParser::ParseAddressFieldSequence(ParsingContext& context,
       continue;
     }
 
-    // TODO(crbug.com/1474308) Factor out these ParseFieldSpecifics into
+    // TODO(crbug.com/40279279) Factor out these ParseFieldSpecifics into
     // ParseStreetName and similar functions.
     if (!street_name_ && !street_location_ &&
         ParseFieldSpecifics(
@@ -450,6 +457,10 @@ bool AddressFieldParser::ParseAddressFieldSequence(ParsingContext& context,
       continue;
     }
 
+    if (ParseFieldSpecificsForHouseNumberAndApt(context, scanner)) {
+      continue;
+    }
+
     if (!house_number_ && !street_location_ &&
         ParseFieldSpecifics(
             context, scanner, kHouseNumberRe,
@@ -459,7 +470,7 @@ bool AddressFieldParser::ParseAddressFieldSequence(ParsingContext& context,
       continue;
     }
 
-    // TODO(crbug.com/1153715): Remove finch guard once launched.
+    // TODO(crbug.com/40734406): Remove finch guard once launched.
     if (base::FeatureList::IsEnabled(
             features::kAutofillEnableSupportForApartmentNumbers) &&
         !apartment_number_ &&
@@ -531,6 +542,7 @@ bool AddressFieldParser::ParseAddressFieldSequence(ParsingContext& context,
   zip_ = old_zip;
   zip4_ = old_zip4;
   apartment_number_ = old_apartment_number;
+  house_number_and_apt_ = old_house_number_and_apt_;
 
   scanner->RewindTo(saved_cursor_position);
   return false;
@@ -578,7 +590,7 @@ bool AddressFieldParser::ParseAddressLines(ParsingContext& context,
   base::span<const MatchPatternRef> address_line1_patterns =
       GetMatchPatterns("ADDRESS_LINE_1", context);
 
-  // TODO(crbug.com/1121990): Remove duplicate calls when launching
+  // TODO(crbug.com/40146444): Remove duplicate calls when launching
   // AutofillParsingPatternProvider. The old code calls ParseFieldSpecifics()
   // for two different patterns, |pattern| and |label_pattern|. The new code
   // handles both patterns at once in the |address_line1_patterns|.
@@ -986,7 +998,7 @@ AddressFieldParser::ParseNameAndLabelForDependentLocality(
   const bool is_enabled_dependent_locality_parsing =
       base::FeatureList::IsEnabled(
           features::kAutofillEnableDependentLocalityParsing);
-  // TODO(crbug.com/1157405) Remove feature check when launched.
+  // TODO(crbug.com/40160818) Remove feature check when launched.
   if (dependent_locality_ || !is_enabled_dependent_locality_parsing)
     return RESULT_MATCH_NONE;
 
@@ -1084,7 +1096,7 @@ AddressFieldParser::ParseNameAndLabelForOverflowAndLandmark(
     ParsingContext& context,
     AutofillScanner* scanner) {
   AddressCountryCode country_code(context.client_country.value());
-  //  TODO(crbug.com/1441904) Remove feature check when launched.
+  //  TODO(crbug.com/40266693) Remove feature check when launched.
   if (overflow_and_landmark_ || overflow_ ||
       !base::FeatureList::IsEnabled(
           features::kAutofillEnableSupportForAddressOverflowAndLandmark) ||
@@ -1106,7 +1118,7 @@ AddressFieldParser::ParseNameLabelResult
 AddressFieldParser::ParseNameAndLabelForOverflow(ParsingContext& context,
                                                  AutofillScanner* scanner) {
   AddressCountryCode country_code(context.client_country.value());
-  // TODO(crbug.com/1441904) Remove feature check when launched.
+  // TODO(crbug.com/40266693) Remove feature check when launched.
   if (overflow_and_landmark_ || overflow_ ||
       !base::FeatureList::IsEnabled(
           features::kAutofillEnableSupportForAddressOverflow) ||
@@ -1126,7 +1138,7 @@ AddressFieldParser::ParseNameLabelResult
 AddressFieldParser::ParseNameAndLabelForLandmark(ParsingContext& context,
                                                  AutofillScanner* scanner) {
   AddressCountryCode country_code(context.client_country.value());
-  // TODO(crbug.com/1441904) Remove feature check when launched.
+  // TODO(crbug.com/40266693) Remove feature check when launched.
   if (landmark_ ||
       !base::FeatureList::IsEnabled(
           features::kAutofillEnableSupportForLandmark) ||
@@ -1147,7 +1159,7 @@ AddressFieldParser::ParseNameAndLabelForBetweenStreets(
     ParsingContext& context,
     AutofillScanner* scanner) {
   AddressCountryCode country_code(context.client_country.value());
-  // TODO(crbug.com/1441904) Remove feature check when launched.
+  // TODO(crbug.com/40266693) Remove feature check when launched.
   if (between_streets_ || between_streets_line_1_ ||
       !base::FeatureList::IsEnabled(
           features::kAutofillEnableSupportForBetweenStreets) ||
@@ -1168,7 +1180,7 @@ AddressFieldParser::ParseNameAndLabelForBetweenStreetsLines12(
     ParsingContext& context,
     AutofillScanner* scanner) {
   AddressCountryCode country_code(context.client_country.value());
-  // TODO(crbug.com/1441904) Remove feature check when launched.
+  // TODO(crbug.com/40266693) Remove feature check when launched.
   if (between_streets_line_2_ ||
       !base::FeatureList::IsEnabled(
           features::kAutofillEnableSupportForBetweenStreets) ||
@@ -1202,7 +1214,7 @@ AddressFieldParser::ParseNameLabelResult
 AddressFieldParser::ParseNameAndLabelForAdminLevel2(ParsingContext& context,
                                                     AutofillScanner* scanner) {
   AddressCountryCode country_code(context.client_country.value());
-  // TODO(crbug.com/1441904) Remove feature check when launched.
+  // TODO(crbug.com/40266693) Remove feature check when launched.
   if (admin_level2_ ||
       !base::FeatureList::IsEnabled(
           features::kAutofillEnableSupportForAdminLevel2) ||
@@ -1218,6 +1230,25 @@ AddressFieldParser::ParseNameAndLabelForAdminLevel2(ParsingContext& context,
       admin_level2_patterns, &admin_level2_, "kAdminLevel2Re");
 }
 
+bool AddressFieldParser::ParseFieldSpecificsForHouseNumberAndApt(
+    ParsingContext& context,
+    AutofillScanner* scanner) {
+  AddressCountryCode country_code(context.client_country.value());
+  if (house_number_and_apt_ || house_number_ || apartment_number_ ||
+      !i18n_model_definition::IsTypeEnabledForCountry(
+          ADDRESS_HOME_HOUSE_NUMBER_AND_APT, country_code)) {
+    return RESULT_MATCH_NONE;
+  }
+
+  base::span<const MatchPatternRef> house_number_and_apt_patterns =
+      GetMatchPatterns("ADDRESS_HOME_HOUSE_NUMBER_AND_APT", context);
+  auto result = ParseFieldSpecifics(
+      context, scanner, kHouseNumberAndAptRe, kHouseNumberAndAptMatchType,
+      house_number_and_apt_patterns, &house_number_and_apt_,
+      "kHouseNumberAndAptRe");
+  return result;
+}
+
 bool AddressFieldParser::PossiblyAStructuredAddressForm() const {
   // Record success if the house number and at least one of the other
   // fields were found because that indicates a structured address form.
@@ -1225,6 +1256,10 @@ bool AddressFieldParser::PossiblyAStructuredAddressForm() const {
       (street_name_ || zip_ || overflow_ || overflow_and_landmark_ ||
        between_streets_or_landmark_ || apartment_number_ || between_streets_ ||
        between_streets_line_1_ || between_streets_line_2_)) {
+    return true;
+  }
+
+  if (street_name_ && house_number_and_apt_) {
     return true;
   }
 

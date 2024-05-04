@@ -104,13 +104,12 @@ void TextureLayer::SetTransferableResourceInternal(
     const viz::TransferableResource& resource,
     viz::ReleaseCallback release_callback,
     bool requires_commit) {
-  DCHECK(resource.mailbox_holder.mailbox.IsZero() ||
-         !resource_holder_.Read(*this) ||
+  DCHECK(resource.is_empty() || !resource_holder_.Read(*this) ||
          resource != resource_holder_.Read(*this)->resource());
-  DCHECK_EQ(resource.mailbox_holder.mailbox.IsZero(), !release_callback);
+  DCHECK_EQ(resource.is_empty(), !release_callback);
 
-  // If we never commited the mailbox, we need to release it here.
-  if (!resource.mailbox_holder.mailbox.IsZero()) {
+  // If we never committed the resource, we need to release it here.
+  if (!resource.is_empty()) {
     resource_holder_.Write(*this) = TransferableResourceHolder::Create(
         resource, std::move(release_callback));
   } else {
@@ -169,9 +168,24 @@ bool TextureLayer::HasDrawableContent() const {
 }
 
 bool TextureLayer::RequiresSetNeedsDisplayOnHdrHeadroomChange() const {
-  // TODO(https://crbug.com/1450807): Only return true if the contents of the
-  // video are HDR.
-  return true;
+  if (!resource_holder_.Read(*this)) {
+    return false;
+  }
+
+  // If the HDR headroom is changed, then tonemapped resources will need to
+  // re-draw.
+  const auto& resource = resource_holder_.Read(*this)->resource();
+  if (resource.color_space.IsToneMappedByDefault()) {
+    return true;
+  }
+
+  // Extended range content also needs to be re-composited to limit itself to
+  // the new headroom.
+  if (resource.hdr_metadata.extended_range.has_value()) {
+    return true;
+  }
+
+  return false;
 }
 
 bool TextureLayer::Update() {
@@ -287,7 +301,7 @@ TextureLayer::TransferableResourceHolder::TransferableResourceHolder(
     viz::ReleaseCallback release_callback)
     : resource_(resource),
       release_callback_(std::move(release_callback)),
-      sync_token_(resource.mailbox_holder.sync_token) {}
+      sync_token_(resource.sync_token()) {}
 
 TextureLayer::TransferableResourceHolder::~TransferableResourceHolder() {
   if (release_callback_) {

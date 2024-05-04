@@ -29,9 +29,6 @@ _EXCLUSIONS = [
     # Chrome external extensions config file.
     re.compile(r'.*external_extensions\.json'),
 
-    # Exists just to test the compile, not to be run.
-    re.compile(r'.*jni_generator_tests'),
-
     # v8's blobs and icu data get packaged into APKs.
     re.compile(r'.*snapshot_blob.*\.bin'),
     re.compile(r'.*icudtl\.bin'),
@@ -142,7 +139,7 @@ def GetDataDependencies(runtime_deps_path):
       os.path.abspath(os.path.join(output_directory, r))
       for r in rel_host_files]
   filtered_abs_host_files = _FilterDataDeps(abs_host_files)
-  # TODO(crbug.com/752610): Filter out host executables, and investigate
+  # TODO(crbug.com/40533647): Filter out host executables, and investigate
   # whether other files could be filtered as well.
   return [(f, DevicePathComponentsFor(f, output_directory))
           for f in filtered_abs_host_files]

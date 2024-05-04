@@ -1,13 +1,17 @@
-<style include="cr-hidden-style sp-shared-style">
-  :host-context([chrome-refresh-2023]) #empty-state-container {
+<style include="cr-shared-style cr-hidden-style sp-shared-style">
+  #empty-state-container {
+    background: var(--background-color);
     border-radius: 12px;
+    height: 100%;
+    margin: 0 8px;
+    min-width: var(--container-min-width);
+    overflow: hidden;
+    padding: 20px;
+    margin-bottom: var(--sp-card-block-padding);
   }
+
   .sp-scroller {
     display: block;
-  }
-  :host-context([chrome-refresh-2023]) #empty-state-container {
-    margin: 0 8px;
-    padding: 20px 0;
   }
 
   #toolbar-container {
@@ -19,14 +23,17 @@
     width: 100%;
     display: flex;
     flex-direction: column;
+    overflow-x: var(--app-overflow-x);
   }
 
   #container-parent {
     background: var(--background-color);
     height: 100%;
+    margin-bottom: var(--sp-card-block-padding);
+    min-width: var(--container-min-width);
   }
 
-  :host-context([chrome-refresh-2023]) .sp-scroller::-webkit-scrollbar-track {
+  .sp-scroller::-webkit-scrollbar-track {
     margin-top: 6px;
     margin-bottom: 6px;
   }
@@ -52,30 +59,30 @@
     /* max-width should match line width limit in read_anything_constants.h. */
     max-width: 60ch;
     margin: 0 auto;
+    overflow-wrap: break-word;
   }
+
   a:link {
     color: var(--link-color);
   }
+
   a:visited {
     color: var(--visited-link-color);
   }
-  #empty-state-container {
-    background: var(--background-color);
-    height: 100%;
-    padding: 20px;
-  }
+
   sp-empty-state {
-    display: flex;
     margin: 0 auto 16px auto;
-    width: fit-content;
   }
+
   ::selection {
     background: var(--selection-color);
     color: var(--selection-text-color);
   }
+
   .current-read-highlight {
     background-color: var(--current-highlight-bg-color);
   }
+
   .previous-read-highlight {
     color: var(--previous-highlight-color);
     background-color: transparent;
@@ -85,17 +92,36 @@
     max-width: 100%;
   }
 
+  #toast {
+    bottom: 0;
+    left: 0;
+  }
+
+  #toastTitle {
+    display:inline-block;
+    font-size: 1em;
+  }
+
+  #toastMessage {
+    display:inline-block;
+    font-size: 0.8em;
+  }
+
 </style>
 <div id="flexParent" on-keydown="onKeyDown_">
   <div id="toolbar-container" hidden="[[!isWebUIToolbarVisible_]]">
     <read-anything-toolbar
       paused="[[speechPlayingState.paused]]"
-      has-content="[[hasContent_]]"
+      is-read-aloud-playable=
+      "[[isReadAloudPlayable(hasContent_, speechEngineLoaded)]]"
       selected-voice="[[selectedVoice]]"
+      enabled-languages-in-pref="[[enabledLanguagesInPref]]"
+      voice-pack-install-status="[[voicePackInstallStatus]]"
       available-voices="[[availableVoices]]"
       preview-voice-playing="[[previewVoicePlaying]]"
       locale-to-display-name="[[localeToDisplayName]]"
       on-select-voice="onSelectVoice_"
+      on-voice-language-toggle="onVoiceLanguageToggle_"
       on-preview-voice="onPreviewVoice_"
       on-voice-menu-close="onVoiceMenuClose_"
       on-play-pause-click="onPlayPauseClick_"
@@ -104,7 +130,13 @@
       on-rate-change="onSpeechRateChange_"
       on-next-granularity-click="playNextGranularity_"
       on-previous-granularity-click="playPreviousGranularity_"
+      on-links-toggle="updateContent"
+      on-letter-spacing-change="onLetterSpacingChange_"
+      on-theme-change="onThemeChange_"
+      on-line-spacing-change="onLineSpacingChange_"
       on-highlight-toggle="onHighlightToggle_"
+      on-reset-toolbar="onResetToolbar_"
+      on-toolbar-overflow="onToolbarOverflow_"
       id="toolbar">
     </read-anything-toolbar>
   </div>
@@ -123,3 +155,12 @@
     </sp-empty-state>
   </div>
 </div>
+
+<cr-toast id="toast" duration="5000">
+  <div id="toastDiv">
+    <span id="toastTitle">
+      [[getLanguageDownloadedTitle_(lastDownloadedLang_)]]
+    </span>
+    <span id="toastMessage">$i18n{readingModeVoiceDownloadedMessage}</span>
+  </div>
+</cr-toast>

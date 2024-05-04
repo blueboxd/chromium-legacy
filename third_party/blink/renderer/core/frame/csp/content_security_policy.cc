@@ -133,6 +133,54 @@ int32_t HashAlgorithmsUsed(
   return hash_algorithms_used;
 }
 
+// 3. If request’s destination is "fencedframe", and this directive’s value does
+//    not contain either "https:", "https://*:*", or "*", return "Blocked".
+// https://wicg.github.io/fenced-frame/#csp-algorithms
+bool AllowOpaqueFencedFrames(
+    const network::mojom::blink::CSPSourcePtr& source) {
+  if (source->scheme != url::kHttpsScheme) {
+    return false;
+  }
+
+  // "https:" is allowed.
+  if (source->host.empty() && !source->is_host_wildcard) {
+    return true;
+  }
+
+  // "https://*:*" is allowed.
+  if (source->is_host_wildcard && source->is_port_wildcard) {
+    return true;
+  }
+
+  // "https://*" is not allowed as it could leak data about ports.
+
+  return false;
+}
+
+// Returns true if the CSP for the document loading the fenced frame allows all
+// HTTPS origins for "fenced-frame-src".
+bool AllowOpaqueFencedFrames(
+    const network::mojom::blink::ContentSecurityPolicyPtr& policy) {
+  CSPOperativeDirective directive = CSPDirectiveListOperativeDirective(
+      *policy, network::mojom::CSPDirectiveName::FencedFrameSrc);
+  if (directive.type == network::mojom::CSPDirectiveName::Unknown) {
+    return true;
+  }
+
+  // "*" is allowed.
+  if (directive.source_list->allow_star) {
+    return true;
+  }
+
+  for (const auto& source : directive.source_list->sources) {
+    if (AllowOpaqueFencedFrames(source)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 }  // namespace
 
 bool ContentSecurityPolicy::IsNonceableElement(const Element* element) {
@@ -331,6 +379,31 @@ void ContentSecurityPolicy::AddPolicies(
       LogToConsole(message);
 
     policies_.push_back(std::move(policy));
+  }
+
+  // Reevaluate whether the composite set of enforced policies are "strict"
+  // after these new policies have been added. Since additional policies can
+  // only tighten the composite policy, we only need to check this if the policy
+  // isn't already "strict".
+  if (!enforces_strict_policy_) {
+    const bool is_object_restriction_reasonable =
+        base::ranges::any_of(policies_, [](const auto& policy) {
+          return !CSPDirectiveListIsReportOnly(*policy) &&
+                 CSPDirectiveListIsObjectRestrictionReasonable(*policy);
+        });
+    const bool is_base_restriction_reasonable =
+        base::ranges::any_of(policies_, [](const auto& policy) {
+          return !CSPDirectiveListIsReportOnly(*policy) &&
+                 CSPDirectiveListIsBaseRestrictionReasonable(*policy);
+        });
+    const bool is_script_restriction_reasonable =
+        base::ranges::any_of(policies_, [](const auto& policy) {
+          return !CSPDirectiveListIsReportOnly(*policy) &&
+                 CSPDirectiveListIsScriptRestrictionReasonable(*policy);
+        });
+    enforces_strict_policy_ = is_object_restriction_reasonable &&
+                              is_base_restriction_reasonable &&
+                              is_script_restriction_reasonable;
   }
 
   // If this ContentSecurityPolicy is not bound to a delegate yet, return. The
@@ -1329,15 +1402,6 @@ bool ContentSecurityPolicy::ExperimentalFeaturesEnabled() const {
       ExperimentalContentSecurityPolicyFeaturesEnabled();
 }
 
-bool ContentSecurityPolicy::IsStrictPolicyEnforced() const {
-  return base::ranges::any_of(policies_, [](const auto& policy) {
-    return !CSPDirectiveListIsReportOnly(*policy) &&
-           CSPDirectiveListIsObjectRestrictionReasonable(*policy) &&
-           CSPDirectiveListIsBaseRestrictionReasonable(*policy) &&
-           CSPDirectiveListIsScriptRestrictionReasonable(*policy);
-  });
-}
-
 bool ContentSecurityPolicy::RequiresTrustedTypes() const {
   return base::ranges::any_of(policies_, [](const auto& policy) {
     return !CSPDirectiveListIsReportOnly(*policy) &&
@@ -1540,6 +1604,24 @@ bool ContentSecurityPolicy::HasPolicyFromSource(
       return true;
   }
   return false;
+}
+
+bool ContentSecurityPolicy::AllowFencedFrameOpaqueURL() const {
+  for (const auto& policy : GetParsedPolicies()) {
+    if (!AllowOpaqueFencedFrames(policy)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+bool ContentSecurityPolicy::HasEnforceFrameAncestorsDirectives() {
+  return base::ranges::any_of(policies_, [](const auto& csp) {
+    return csp->header->type ==
+               network::mojom::ContentSecurityPolicyType::kEnforce &&
+           csp->directives.Contains(
+               network::mojom::CSPDirectiveName::FrameAncestors);
+  });
 }
 
 void ContentSecurityPolicy::Count(WebFeature feature) const {

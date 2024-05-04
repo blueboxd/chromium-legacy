@@ -24,6 +24,7 @@ import {
   LidState,
   LidStateMonitorCallbackRouter,
   Rotation,
+  ScreenLockedMonitorCallbackRouter,
   ScreenState,
   ScreenStateMonitorCallbackRouter,
   StorageMonitorCallbackRouter,
@@ -235,6 +236,11 @@ export abstract class ChromeHelper {
       Promise<LidState>;
 
   abstract getEventsSender(): Promise<EventsSenderRemote>;
+
+  abstract initScreenLockedMonitor(onChange: (isScreenLocked: boolean) => void):
+      Promise<boolean>;
+
+  abstract renderPdfAsImage(pdf: Blob): Promise<Blob>;
 
   /**
    * Creates a new instance of ChromeHelper if it is not set. Returns the
@@ -491,5 +497,23 @@ class ChromeHelperImpl extends ChromeHelper {
   override async getEventsSender(): Promise<EventsSenderRemote> {
     const {eventsSender} = await this.remote.getEventsSender();
     return wrapEndpoint(eventsSender);
+  }
+
+  override async initScreenLockedMonitor(
+      onChange: (isScreenLocked: boolean) => void): Promise<boolean> {
+    const monitorCallbackRouter =
+        wrapEndpoint(new ScreenLockedMonitorCallbackRouter());
+    monitorCallbackRouter.update.addListener(onChange);
+
+    const {isScreenLocked} = await this.remote.setScreenLockedMonitor(
+        monitorCallbackRouter.$.bindNewPipeAndPassRemote());
+    return isScreenLocked;
+  }
+
+  override async renderPdfAsImage(pdf: Blob): Promise<Blob> {
+    const buffer = new Uint8Array(await pdf.arrayBuffer());
+    const numArray = castToNumberArray(buffer);
+    const {jpegData} = await this.remote.renderPdfAsJpeg(numArray);
+    return new Blob([new Uint8Array(jpegData)], {type: MimeType.JPEG});
   }
 }

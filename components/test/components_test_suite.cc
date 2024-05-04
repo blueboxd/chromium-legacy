@@ -43,7 +43,7 @@ namespace {
 // to extensions and chrome/common.
 const char* const kNonWildcardDomainNonPortSchemes[] = {
     "chrome-extension", "chrome-search", "chrome", "chrome-untrusted",
-    "devtools"};
+    "devtools", "isolated-app"};
 
 class ComponentsTestSuite : public base::TestSuite {
  public:
@@ -57,11 +57,12 @@ class ComponentsTestSuite : public base::TestSuite {
 
     // These schemes need to be added globally to pass tests of
     // autocomplete_input_unittest.cc and content_settings_pattern*
-    // TODO(https://crbug.com/1047702): Move this scheme initialization into the
+    // TODO(crbug.com/40116981): Move this scheme initialization into the
     //    individual tests that need these schemes.
     url::AddStandardScheme("chrome-extension", url::SCHEME_WITH_HOST);
     url::AddStandardScheme("chrome-search", url::SCHEME_WITH_HOST);
     url::AddStandardScheme("chrome-distiller", url::SCHEME_WITH_HOST);
+    url::AddStandardScheme("isolated-app", url::SCHEME_WITH_HOST);
 
 #if BUILDFLAG(USE_BLINK)
     gl::GLSurfaceTestSupport::InitializeOneOff();

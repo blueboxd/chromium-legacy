@@ -19,6 +19,11 @@ fuzzer_test("empty_fuzzer") {
   additional_configs = [ "//testing/libfuzzer:no_clusterfuzz" ]
 }
 
+fuzzer_test("string_compare_fuzzer") {
+  sources = [ "string_compare_fuzzer.cc" ]
+  additional_configs = [ "//testing/libfuzzer:no_clusterfuzz" ]
+}
+
 fuzzer_test("courgette_fuzzer") {
   sources = [ "courgette_fuzzer.cc" ]
   deps = [
@@ -199,23 +204,35 @@ if (v8_enable_webassembly) {
     max_len = 500
   }
 
+  v8_fuzzer("wasm_compile_all_fuzzer") {
+    max_len = 500
+  }
+
   v8_fuzzer("wasm_compile_fuzzer") {
+    max_len = 500
+  }
+
+  v8_fuzzer("wasm_compile_simd_fuzzer") {
+    max_len = 500
+  }
+
+  v8_fuzzer("wasm_compile_wasmgc_fuzzer") {
     max_len = 500
   }
 
   v8_fuzzer("wasm_fuzzer") {
     max_len = 500
-    seed_corpus = "//v8/test/fuzzer/wasm_corpus/"
+    seed_corpus = "//testing/libfuzzer/fuzzers/wasm_corpus/"
   }
 
   v8_fuzzer("wasm_async_fuzzer") {
     max_len = 500
-    seed_corpus = "//v8/test/fuzzer/wasm_corpus/"
+    seed_corpus = "//testing/libfuzzer/fuzzers/wasm_corpus/"
   }
 
   v8_fuzzer("wasm_streaming_fuzzer") {
     max_len = 500
-    seed_corpus = "//v8/test/fuzzer/wasm_corpus/"
+    seed_corpus = "//testing/libfuzzer/fuzzers/wasm_corpus/"
   }
 
   v8_fuzzer("wasm_init_expr_fuzzer") {
@@ -457,7 +474,6 @@ if (!is_win) {
       ":command_buffer_lpm_fuzzer_proto",
       "//base",
       "//base/test:test_support",
-      "//base/third_party/dynamic_annotations",
       "//build:chromeos_buildflags",
       "//components/viz/common:shared_image_format",
       "//components/viz/test:test_support",  # TODO: huge; is there something
@@ -497,7 +513,7 @@ if (!is_win) {
 
     if (use_dawn) {
       deps += [
-        "//third_party/dawn/src/dawn:cpp",
+        "//third_party/dawn/include/dawn:cpp_headers",
         "//third_party/dawn/src/dawn:proc",
         "//third_party/dawn/src/dawn/native",
       ]

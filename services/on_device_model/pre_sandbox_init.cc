@@ -21,6 +21,12 @@
 #include "third_party/dawn/include/dawn/webgpu_cpp.h"         // nogncheck
 #endif
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chromeos/ash/components/dbus/dbus_thread_manager.h"  // nogncheck
+#include "chromeos/ash/components/dbus/dlcservice/dlcservice_client.h"  // nogncheck
+#include "chromeos/dbus/init/initialize_dbus_client.h"  // nogncheck
+#endif
+
 namespace on_device_model {
 
 namespace {
@@ -92,10 +98,20 @@ bool OnDeviceModelService::PreSandboxInit() {
         props.adapterType == wgpu::AdapterType::DiscreteGPU) {
       const wgpu::DeviceDescriptor descriptor;
       wgpu::Device device{adapter.CreateDevice(&descriptor)};
-      device.Destroy();
+      if (device) {
+        device.Destroy();
+      }
     }
   }
 #endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // On ChromeOS, we use the DLC service to download the model, and the DLC
+  // service requires the D-Bus.
+  ash::DBusThreadManager::Initialize();
+  dbus::Bus* bus = ash::DBusThreadManager::Get()->GetSystemBus();
+  chromeos::InitializeDBusClient<ash::DlcserviceClient>(bus);
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   return true;
 }
@@ -113,5 +129,14 @@ void OnDeviceModelService::AddSandboxLinuxOptions(
   }
 }
 #endif
+
+// static
+bool OnDeviceModelService::Shutdown() {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  ash::DlcserviceClient::Shutdown();
+  ash::DBusThreadManager::Shutdown();
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+  return true;
+}
 
 }  // namespace on_device_model

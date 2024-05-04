@@ -16,8 +16,9 @@
               "builder_group": "chromium.fuzz",
               "clusterfuzz_archive": {
                 "archive_name_prefix": "asan",
+                "archive_subdir": "media",
                 "gs_acl": "public-read",
-                "gs_bucket": "chrome-test-builds/media"
+                "gs_bucket": "chromium-browser-asan"
               },
               "execution_mode": "COMPILE_AND_TEST",
               "legacy_chromium_config": {
@@ -57,6 +58,16 @@
     "jobs": 250,
     "metrics_project": "chromium-reclient-metrics",
     "scandeps_server": true
+  },
+  "$build/siso": {
+    "configs": [
+      "builder"
+    ],
+    "enable_cloud_profiler": true,
+    "enable_cloud_trace": true,
+    "experiments": [],
+    "project": "rbe-chromium-trusted",
+    "remote_jobs": 250
   },
   "$recipe_engine/resultdb/test_presentation": {
     "column_keys": [],

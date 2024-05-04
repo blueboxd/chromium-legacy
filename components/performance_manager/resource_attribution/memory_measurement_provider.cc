@@ -12,6 +12,7 @@
 #include "base/functional/callback.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
+#include "components/performance_manager/public/features.h"
 #include "components/performance_manager/public/graph/frame_node.h"
 #include "components/performance_manager/public/graph/graph.h"
 #include "components/performance_manager/public/graph/page_node.h"
@@ -21,8 +22,30 @@
 #include "components/performance_manager/resource_attribution/node_data_describers.h"
 #include "components/performance_manager/resource_attribution/performance_manager_aliases.h"
 #include "components/performance_manager/resource_attribution/worker_client_pages.h"
+#include "url/gurl.h"
+#include "url/origin.h"
 
 namespace resource_attribution {
+
+namespace {
+
+using performance_manager::features::kResourceAttributionIncludeOrigins;
+
+template <typename FrameOrWorkerNode>
+std::optional<OriginInPageContext> OriginInPageContextForNode(
+    const FrameOrWorkerNode* node,
+    const PageNode* page_node) {
+  if (!base::FeatureList::IsEnabled(kResourceAttributionIncludeOrigins)) {
+    return std::nullopt;
+  }
+  const std::optional<url::Origin> origin = node->GetOrigin();
+  if (!origin.has_value()) {
+    return std::nullopt;
+  }
+  return OriginInPageContext(origin.value(), page_node->GetResourceContext());
+}
+
+}  // namespace
 
 MemoryMeasurementProvider::MemoryMeasurementProvider(Graph* graph)
     : graph_(graph) {
@@ -117,6 +140,12 @@ void MemoryMeasurementProvider::OnMemorySummary(
           CHECK(inserted);
           accumulate_summary(f->GetPageNode()->GetResourceContext(), summary,
                              MeasurementAlgorithm::kSum);
+          std::optional<OriginInPageContext> origin_in_page_context =
+              OriginInPageContextForNode(f, f->GetPageNode());
+          if (origin_in_page_context.has_value()) {
+            accumulate_summary(origin_in_page_context.value(), summary,
+                               MeasurementAlgorithm::kSum);
+          }
         },
         [&](const WorkerNode* w, MemorySummaryMeasurement summary) {
           bool inserted = accumulate_summary(w->GetResourceContext(), summary,
@@ -125,6 +154,12 @@ void MemoryMeasurementProvider::OnMemorySummary(
           for (const PageNode* page_node : GetWorkerClientPages(w)) {
             accumulate_summary(page_node->GetResourceContext(), summary,
                                MeasurementAlgorithm::kSum);
+            std::optional<OriginInPageContext> origin_in_page_context =
+                OriginInPageContextForNode(w, page_node);
+            if (origin_in_page_context.has_value()) {
+              accumulate_summary(origin_in_page_context.value(), summary,
+                                 MeasurementAlgorithm::kSum);
+            }
           }
         });
   }

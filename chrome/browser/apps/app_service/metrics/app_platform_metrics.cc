@@ -6,27 +6,26 @@
 
 #include <memory>
 #include <set>
+#include <string_view>
 
 #include "base/check_deref.h"
 #include "base/containers/fixed_flat_set.h"
 #include "base/json/values_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "base/unguessable_token.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
-#include "chrome/browser/apps/app_service/extension_apps_utils.h"
 #include "chrome/browser/apps/app_service/metrics/app_platform_metrics_utils.h"
 #include "chrome/browser/apps/app_service/metrics/app_service_metrics.h"
 #include "chrome/browser/ash/borealis/borealis_util.h"
+#include "chrome/browser/ash/crosapi/browser_util.h"
 #include "chrome/browser/ash/guest_os/guest_os_registry_service.h"
 #include "chrome/browser/ash/guest_os/guest_os_registry_service_factory.h"
 #include "chrome/browser/ash/guest_os/guest_os_shelf_utils.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/web_applications/web_app_utils.h"
 #include "chromeos/components/mgs/managed_guest_session_utils.h"
 #include "components/app_constants/constants.h"
 #include "components/prefs/pref_service.h"
@@ -55,17 +54,6 @@ constexpr char kAppsActivatedCountHistogramPrefix[] = "Apps.ActivatedCount.";
 constexpr char kAppsUsageTimeHistogramPrefix[] = "Apps.UsageTime.";
 constexpr char kAppsUsageTimeHistogramPrefixV2[] = "Apps.UsageTimeV2.";
 
-constexpr char kInstallReasonUnknownHistogram[] = "Unknown";
-constexpr char kInstallReasonSystemHistogram[] = "System";
-constexpr char kInstallReasonPolicyHistogram[] = "Policy";
-constexpr char kInstallReasonOemHistogram[] = "Oem";
-constexpr char kInstallReasonPreloadHistogram[] = "Preload";
-constexpr char kInstallReasonSyncHistogram[] = "Sync";
-constexpr char kInstallReasonUserHistogram[] = "User";
-constexpr char kInstallReasonSubAppHistogram[] = "SubApp";
-constexpr char kInstallReasonKioskHistogram[] = "Kiosk";
-constexpr char kInstallReasonCommandLineHistogram[] = "CommandLine";
-
 constexpr base::TimeDelta kMaxDuration = base::Days(1);
 
 constexpr auto kAppTypeNameSet = base::MakeFixedFlatSet<apps::AppTypeName>({
@@ -86,31 +74,6 @@ constexpr auto kAppTypeNameSet = base::MakeFixedFlatSet<apps::AppTypeName>({
     apps::AppTypeName::kStandaloneBrowserWebApp,
     apps::AppTypeName::kBruschetta,
 });
-
-std::string GetInstallReason(apps::InstallReason install_reason) {
-  switch (install_reason) {
-    case apps::InstallReason::kUnknown:
-      return kInstallReasonUnknownHistogram;
-    case apps::InstallReason::kSystem:
-      return kInstallReasonSystemHistogram;
-    case apps::InstallReason::kPolicy:
-      return kInstallReasonPolicyHistogram;
-    case apps::InstallReason::kOem:
-      return kInstallReasonOemHistogram;
-    case apps::InstallReason::kDefault:
-      return kInstallReasonPreloadHistogram;
-    case apps::InstallReason::kSync:
-      return kInstallReasonSyncHistogram;
-    case apps::InstallReason::kUser:
-      return kInstallReasonUserHistogram;
-    case apps::InstallReason::kSubApp:
-      return kInstallReasonSubAppHistogram;
-    case apps::InstallReason::kKiosk:
-      return kInstallReasonKioskHistogram;
-    case apps::InstallReason::kCommandLine:
-      return kInstallReasonCommandLineHistogram;
-  }
-}
 
 // Returns AppTypeNameV2 used for app running metrics.
 apps::AppTypeNameV2 GetAppTypeNameV2(Profile* profile,
@@ -141,7 +104,7 @@ apps::AppTypeNameV2 GetAppTypeNameV2(Profile* profile,
         return apps::AppTypeNameV2::kStandaloneBrowserWebAppTab;
       } else if (app_type_name == apps::AppTypeName::kSystemWeb) {
         return apps::AppTypeNameV2::kSystemWeb;
-      } else if (web_app::IsWebAppsCrosapiEnabled()) {
+      } else if (crosapi::browser_util::IsLacrosEnabled()) {
         return apps::AppTypeNameV2::kStandaloneBrowserWebAppWindow;
       } else {
         return apps::AppTypeNameV2::kWebWindow;
@@ -197,7 +160,7 @@ apps::AppTypeNameV2 GetAppTypeNameV2(Profile* profile,
         return apps::AppTypeNameV2::kStandaloneBrowserWebAppTab;
       } else if (app_type_name == apps::AppTypeName::kSystemWeb) {
         return apps::AppTypeNameV2::kSystemWeb;
-      } else if (web_app::IsWebAppsCrosapiEnabled()) {
+      } else if (crosapi::browser_util::IsLacrosEnabled()) {
         return apps::AppTypeNameV2::kStandaloneBrowserWebAppWindow;
       } else {
         return apps::AppTypeNameV2::kWebWindow;
@@ -1250,6 +1213,13 @@ void AppPlatformMetrics::RecordAppsUsageTimeUkm() {
             .Record(ukm::UkmRecorder::Get());
       }
 
+      // UMA for Mall app.
+      if (AppIdToName(it.second.app_id) == DefaultAppName::kMall) {
+        base::UmaHistogramCustomTimes("Apps.AppDiscovery.MallUsageTime",
+                                      it.second.running_time, base::Seconds(1),
+                                      base::Hours(2), 100);
+      }
+
       // Also reset time in the pref store now that we have reported this data.
       ClearAppsUsageTimeForInstance(it.first.ToString());
     }
@@ -1423,7 +1393,7 @@ void AppPlatformMetrics::CleanUpAppsUsageInfoInPrefStore() {
 }
 
 void AppPlatformMetrics::ClearAppsUsageTimeForInstance(
-    const base::StringPiece& instance_id) {
+    std::string_view instance_id) {
   ScopedDictPrefUpdate usage_time_pref_update(profile_->GetPrefs(),
                                               kAppUsageTime);
   auto* instance_dict =

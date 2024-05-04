@@ -81,7 +81,7 @@ bool DownloadPathIsDangerous(const base::FilePath& download_path) {
   }
 #endif
 
-#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_FUCHSIA)
+#if BUILDFLAG(IS_ANDROID)
   // Neither Fuchsia nor Android have a desktop dir.
   return false;
 #else
@@ -558,7 +558,7 @@ base::FilePath DownloadPrefs::SanitizeDownloadTargetPath(
     return path;
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
-  // TODO(https://crbug.com/1148848): Sort out path sanitization for Lacros.
+  // TODO(crbug.com/40731523): Sort out path sanitization for Lacros.
   // This will require refactoring the ash-only code below so it can be shared.
   base::FilePath migrated_drive_path;
   if (download_dir_util::ExpandDrivePolicyVariable(profile_, path,

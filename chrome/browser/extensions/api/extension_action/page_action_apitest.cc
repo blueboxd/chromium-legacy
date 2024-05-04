@@ -46,7 +46,7 @@ class PageActionApiTest : public ExtensionApiTest,
     ExtensionAction* extension_action =
         ExtensionActionManager::Get(browser()->profile())
             ->GetExtensionAction(extension);
-    return extension_action->action_type() == ActionInfo::TYPE_PAGE
+    return extension_action->action_type() == ActionInfo::Type::kPage
                ? extension_action
                : nullptr;
   }
@@ -57,7 +57,7 @@ INSTANTIATE_TEST_SUITE_P(PersistentBackground,
                          ::testing::Values(ContextType::kPersistentBackground));
 INSTANTIATE_TEST_SUITE_P(ServiceWorker,
                          PageActionApiTest,
-                         ::testing::Values(ContextType::kServiceWorker));
+                         ::testing::Values(ContextType::kServiceWorkerMV2));
 
 IN_PROC_BROWSER_TEST_P(PageActionApiTest, Basic) {
   ASSERT_TRUE(embedded_test_server()->Start());

@@ -6,6 +6,7 @@
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/web_ui_mocha_browser_test.h"
 #include "components/history_clusters/core/features.h"
+#include "components/history_embeddings/history_embeddings_features.h"
 #include "content/public/test/browser_test.h"
 
 class HistoryUIBrowserTest : public WebUIMochaBrowserTest {
@@ -57,6 +58,10 @@ IN_PROC_BROWSER_TEST_F(HistoryTest, SearchedLabel) {
   RunTest("history/searched_label_test.js", "mocha.run()");
 }
 
+IN_PROC_BROWSER_TEST_F(HistoryTest, HistoryEmbeddingsPromo) {
+  RunTest("history/history_embeddings_promo_test.js", "mocha.run()");
+}
+
 class HistoryListTest : public HistoryUIBrowserTest {
  protected:
   void RunTestCase(const std::string& testCase) {
@@ -66,6 +71,10 @@ class HistoryListTest : public HistoryUIBrowserTest {
                            testCase.c_str()));
   }
 };
+
+IN_PROC_BROWSER_TEST_F(HistoryListTest, IsEmpty) {
+  RunTestCase("IsEmpty");
+}
 
 IN_PROC_BROWSER_TEST_F(HistoryListTest, DeletingSingleItem) {
   RunTestCase("DeletingSingleItem");
@@ -142,4 +151,24 @@ IN_PROC_BROWSER_TEST_F(HistoryListTest, ClickingFileUrlSendsMessageToChrome) {
 IN_PROC_BROWSER_TEST_F(HistoryListTest,
                        DeleteHistoryResultsInQueryHistoryEvent) {
   RunTestCase("DeleteHistoryResultsInQueryHistoryEvent");
+}
+
+IN_PROC_BROWSER_TEST_F(HistoryListTest, SetsScrollTarget) {
+  RunTestCase("SetsScrollTarget");
+}
+
+class HistoryWithHistoryEmbeddingsTest : public WebUIMochaBrowserTest {
+ protected:
+  HistoryWithHistoryEmbeddingsTest() {
+    scoped_feature_list_.InitAndEnableFeature(
+        history_embeddings::kHistoryEmbeddings);
+    set_test_loader_host(chrome::kChromeUIHistoryHost);
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(HistoryWithHistoryEmbeddingsTest, App) {
+  RunTest("history/history_app_test.js", "mocha.run()");
 }

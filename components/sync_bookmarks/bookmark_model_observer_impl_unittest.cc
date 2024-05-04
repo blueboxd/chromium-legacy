@@ -14,9 +14,11 @@
 #include "base/functional/callback_helpers.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/mock_callback.h"
+#include "base/test/scoped_feature_list.h"
 #include "components/bookmarks/common/bookmark_metrics.h"
 #include "components/bookmarks/test/test_bookmark_client.h"
 #include "components/favicon_base/favicon_types.h"
+#include "components/sync/base/features.h"
 #include "components/sync/base/time.h"
 #include "components/sync/base/unique_position.h"
 #include "components/sync/protocol/bookmark_specifics.pb.h"
@@ -39,6 +41,7 @@ namespace sync_bookmarks {
 
 namespace {
 
+using testing::AtLeast;
 using testing::ElementsAre;
 using testing::Eq;
 using testing::IsEmpty;
@@ -110,12 +113,14 @@ class TestBookmarkClientWithUndo : public bookmarks::TestBookmarkClient {
   const raw_ptr<BookmarkUndoService> undo_service_;
 };
 
-class BookmarkModelObserverImplTest : public testing::Test {
+class BookmarkModelObserverImplTest
+    : public testing::TestWithParam<TestBookmarkModelView::ViewType> {
  public:
   BookmarkModelObserverImplTest()
       : bookmark_tracker_(
             SyncedBookmarkTracker::CreateEmpty(sync_pb::ModelTypeState())),
         bookmark_model_(
+            GetParam(),
             std::make_unique<TestBookmarkClientWithUndo>(&undo_service_)),
         observer_(&bookmark_model_,
                   nudge_for_commit_closure_.Get(),
@@ -123,6 +128,7 @@ class BookmarkModelObserverImplTest : public testing::Test {
                   bookmark_tracker_.get()) {
     undo_service_.StartObservingBookmarkModel(
         bookmark_model_.underlying_model());
+    bookmark_model_.EnsurePermanentNodesExist();
     AddPermanentFoldersToTracker(&bookmark_model_, bookmark_tracker_.get());
     bookmark_model_.AddObserver(&observer_);
   }
@@ -191,6 +197,8 @@ class BookmarkModelObserverImplTest : public testing::Test {
   UndoManager* undo_manager() { return undo_service_.undo_manager(); }
 
  private:
+  base::test::ScopedFeatureList features_{
+      syncer::kEnableBookmarkFoldersForAccountStorage};
   NiceMock<base::MockCallback<base::RepeatingClosure>>
       nudge_for_commit_closure_;
   std::unique_ptr<SyncedBookmarkTracker> bookmark_tracker_;
@@ -199,7 +207,7 @@ class BookmarkModelObserverImplTest : public testing::Test {
   BookmarkModelObserverImpl observer_;
 };
 
-TEST_F(BookmarkModelObserverImplTest,
+TEST_P(BookmarkModelObserverImplTest,
        BookmarkAddedShouldPutInTheTrackerAndNudgeForCommit) {
   const std::string kTitle = "title";
   const std::string kUrl = "http://www.url.com";
@@ -221,7 +229,7 @@ TEST_F(BookmarkModelObserverImplTest,
               Eq(bookmark_node->uuid().AsLowercaseString()));
 }
 
-TEST_F(BookmarkModelObserverImplTest,
+TEST_P(BookmarkModelObserverImplTest,
        BookmarkChangedShouldUpdateTheTrackerAndNudgeForCommit) {
   const std::string kTitle1 = "title1";
   const std::string kUrl1 = "http://www.url1.com";
@@ -270,7 +278,7 @@ TEST_F(BookmarkModelObserverImplTest,
                                                         "value");
 }
 
-TEST_F(BookmarkModelObserverImplTest,
+TEST_P(BookmarkModelObserverImplTest,
        BookmarkMovedShouldUpdateTheTrackerAndNudgeForCommit) {
   // Build this structure:
   // bookmark_bar
@@ -308,11 +316,12 @@ TEST_F(BookmarkModelObserverImplTest,
   EXPECT_TRUE(PositionOf(bookmark1_node).LessThan(PositionOf(folder1_node)));
 }
 
-TEST_F(BookmarkModelObserverImplTest,
+TEST_P(BookmarkModelObserverImplTest,
        BookmarkMovedThatBecameUnsyncableShouldIssueTombstone) {
   auto client = std::make_unique<bookmarks::TestBookmarkClient>();
   bookmarks::BookmarkNode* managed_node = client->EnableManagedNode();
-  TestBookmarkModelView model(std::move(client));
+  TestBookmarkModelView model(GetParam(), std::move(client));
+  model.EnsurePermanentNodesExist();
 
   // Build this structure:
   // bookmark_bar
@@ -371,11 +380,12 @@ TEST_F(BookmarkModelObserverImplTest,
   model.RemoveObserver(&observer);
 }
 
-TEST_F(BookmarkModelObserverImplTest,
+TEST_P(BookmarkModelObserverImplTest,
        BookmarkMovedThatBecameSyncableShouldIssueCreation) {
   auto client = std::make_unique<bookmarks::TestBookmarkClient>();
   bookmarks::BookmarkNode* managed_node = client->EnableManagedNode();
-  TestBookmarkModelView model(std::move(client));
+  TestBookmarkModelView model(GetParam(), std::move(client));
+  model.EnsurePermanentNodesExist();
 
   // Add one managed folder, which is considered unsyncable.
   const bookmarks::BookmarkNode* folder_node = model.AddFolder(
@@ -424,7 +434,108 @@ TEST_F(BookmarkModelObserverImplTest,
   model.RemoveObserver(&observer);
 }
 
-TEST_F(BookmarkModelObserverImplTest,
+TEST_P(BookmarkModelObserverImplTest,
+       BookmarkFolderMovedWithChildrenThatBecameSyncableShouldIssueCreations) {
+  auto client = std::make_unique<bookmarks::TestBookmarkClient>();
+  bookmarks::BookmarkNode* managed_node = client->EnableManagedNode();
+  TestBookmarkModelView model(GetParam(), std::move(client));
+  model.EnsurePermanentNodesExist();
+
+  // Add one managed folder, which is considered unsyncable.
+  const bookmarks::BookmarkNode* folder_node = model.AddFolder(
+      /*parent=*/managed_node, /*index=*/0, u"folder1");
+
+  // Add two children to the unsyncable folder.
+  const bookmarks::BookmarkNode* bookmark1_node = model.AddURL(
+      /*parent=*/folder_node, /*index=*/0, u"bookmark1",
+      GURL("http://url1.com"));
+  const bookmarks::BookmarkNode* bookmark2_node = model.AddURL(
+      /*parent=*/folder_node, /*index=*/1, u"bookmark2",
+      GURL("http://url2.com"));
+
+  const syncer::ClientTagHash folder_client_tag_hash =
+      SyncedBookmarkTracker::GetClientTagHashFromUuid(folder_node->uuid());
+  const syncer::ClientTagHash bookmark1_client_tag_hash =
+      SyncedBookmarkTracker::GetClientTagHashFromUuid(bookmark1_node->uuid());
+  const syncer::ClientTagHash bookmark2_client_tag_hash =
+      SyncedBookmarkTracker::GetClientTagHashFromUuid(bookmark2_node->uuid());
+
+  // Build a tracker that already tracks all syncable nodes (i.e. permanent
+  // nodes only).
+  std::unique_ptr<SyncedBookmarkTracker> bookmark_tracker =
+      SyncedBookmarkTracker::CreateEmpty(sync_pb::ModelTypeState());
+  AddPermanentFoldersToTracker(&model, bookmark_tracker.get());
+
+  BookmarkModelObserverImpl observer(
+      &model, nudge_for_commit_closure()->Get(),
+      /*on_bookmark_model_being_deleted_closure=*/base::DoNothing(),
+      bookmark_tracker.get());
+  model.AddObserver(&observer);
+
+  ASSERT_FALSE(model.IsNodeSyncable(folder_node));
+  ASSERT_FALSE(model.IsNodeSyncable(bookmark1_node));
+  ASSERT_FALSE(model.IsNodeSyncable(bookmark2_node));
+  ASSERT_THAT(bookmark_tracker->GetEntityForBookmarkNode(folder_node),
+              IsNull());
+  ASSERT_THAT(bookmark_tracker->GetEntityForBookmarkNode(bookmark1_node),
+              IsNull());
+  ASSERT_THAT(bookmark_tracker->GetEntityForBookmarkNode(bookmark2_node),
+              IsNull());
+  ASSERT_THAT(
+      bookmark_tracker->GetEntityForClientTagHash(folder_client_tag_hash),
+      IsNull());
+  ASSERT_THAT(
+      bookmark_tracker->GetEntityForClientTagHash(bookmark1_client_tag_hash),
+      IsNull());
+  ASSERT_THAT(
+      bookmark_tracker->GetEntityForClientTagHash(bookmark2_client_tag_hash),
+      IsNull());
+  ASSERT_THAT(bookmark_tracker->TrackedEntitiesCountForTest(), 3U);
+
+  // Mimic the folder becoming syncable by moving it from the managed node to
+  // the bookmark bar. This isn't very realistic but is good enough for
+  // unit-testing.
+  EXPECT_CALL(*nudge_for_commit_closure(), Run()).Times(AtLeast(1));
+  model.Move(folder_node, model.bookmark_bar_node(), /*index=*/0);
+  ASSERT_TRUE(model.IsNodeSyncable(folder_node));
+  ASSERT_TRUE(model.IsNodeSyncable(bookmark1_node));
+  ASSERT_TRUE(model.IsNodeSyncable(bookmark2_node));
+
+  EXPECT_THAT(bookmark_tracker->TrackedEntitiesCountForTest(), 6U);
+
+  const SyncedBookmarkTrackerEntity* folder_entity =
+      bookmark_tracker->GetEntityForClientTagHash(folder_client_tag_hash);
+  ASSERT_THAT(folder_entity, NotNull());
+  EXPECT_THAT(bookmark_tracker->GetEntityForBookmarkNode(folder_node),
+              Eq(folder_entity));
+
+  const SyncedBookmarkTrackerEntity* bookmark1_entity =
+      bookmark_tracker->GetEntityForClientTagHash(bookmark1_client_tag_hash);
+  ASSERT_THAT(bookmark1_entity, NotNull());
+  EXPECT_THAT(bookmark_tracker->GetEntityForBookmarkNode(bookmark1_node),
+              Eq(bookmark1_entity));
+
+  const SyncedBookmarkTrackerEntity* bookmark2_entity =
+      bookmark_tracker->GetEntityForClientTagHash(bookmark2_client_tag_hash);
+  ASSERT_THAT(bookmark2_entity, NotNull());
+  EXPECT_THAT(bookmark_tracker->GetEntityForBookmarkNode(bookmark2_node),
+              Eq(bookmark2_entity));
+
+  // Three pending creations should be tracked.
+  EXPECT_TRUE(folder_entity->IsUnsynced());
+  EXPECT_FALSE(folder_entity->metadata().is_deleted());
+  EXPECT_THAT(folder_entity->bookmark_node(), Eq(folder_node));
+  EXPECT_TRUE(bookmark1_entity->IsUnsynced());
+  EXPECT_FALSE(bookmark1_entity->metadata().is_deleted());
+  EXPECT_THAT(bookmark1_entity->bookmark_node(), Eq(bookmark1_node));
+  EXPECT_TRUE(bookmark2_entity->IsUnsynced());
+  EXPECT_FALSE(bookmark2_entity->metadata().is_deleted());
+  EXPECT_THAT(bookmark2_entity->bookmark_node(), Eq(bookmark2_node));
+
+  model.RemoveObserver(&observer);
+}
+
+TEST_P(BookmarkModelObserverImplTest,
        ReorderChildrenShouldUpdateTheTrackerAndNudgeForCommit) {
   std::vector<const bookmarks::BookmarkNode*> nodes =
       GenerateBookmarkNodes(/*num_bookmarks=*/4);
@@ -447,7 +558,7 @@ TEST_F(BookmarkModelObserverImplTest,
   EXPECT_THAT(bookmark_tracker()->GetEntitiesWithLocalChanges(), SizeIs(2));
 }
 
-TEST_F(BookmarkModelObserverImplTest,
+TEST_P(BookmarkModelObserverImplTest,
        ShouldReorderChildrenAndUpdateOnlyMovedToRightBookmark) {
   std::vector<const bookmarks::BookmarkNode*> nodes =
       GenerateBookmarkNodes(/*num_bookmarks=*/4);
@@ -471,7 +582,7 @@ TEST_F(BookmarkModelObserverImplTest,
               UnorderedElementsAre(HasBookmarkNode(nodes[0])));
 }
 
-TEST_F(BookmarkModelObserverImplTest,
+TEST_P(BookmarkModelObserverImplTest,
        ShouldReorderChildrenAndUpdateOnlyMovedToLeftBookmark) {
   std::vector<const bookmarks::BookmarkNode*> nodes =
       GenerateBookmarkNodes(/*num_bookmarks=*/4);
@@ -495,7 +606,7 @@ TEST_F(BookmarkModelObserverImplTest,
               UnorderedElementsAre(HasBookmarkNode(nodes[3])));
 }
 
-TEST_F(BookmarkModelObserverImplTest,
+TEST_P(BookmarkModelObserverImplTest,
        ShouldReorderWhenBookmarkMovedToLastPosition) {
   std::vector<const bookmarks::BookmarkNode*> nodes =
       GenerateBookmarkNodes(/*num_bookmarks=*/4);
@@ -519,7 +630,7 @@ TEST_F(BookmarkModelObserverImplTest,
               UnorderedElementsAre(HasBookmarkNode(nodes[0])));
 }
 
-TEST_F(BookmarkModelObserverImplTest,
+TEST_P(BookmarkModelObserverImplTest,
        ShouldReorderWhenBookmarkMovedToFirstPosition) {
   std::vector<const bookmarks::BookmarkNode*> nodes =
       GenerateBookmarkNodes(/*num_bookmarks=*/4);
@@ -543,7 +654,7 @@ TEST_F(BookmarkModelObserverImplTest,
               UnorderedElementsAre(HasBookmarkNode(nodes[3])));
 }
 
-TEST_F(BookmarkModelObserverImplTest, ShouldReorderWhenAllBookmarksReversed) {
+TEST_P(BookmarkModelObserverImplTest, ShouldReorderWhenAllBookmarksReversed) {
   // In this case almost all the bookmarks should be updated apart from only one
   // bookmark.
   std::vector<const bookmarks::BookmarkNode*> nodes =
@@ -569,7 +680,7 @@ TEST_F(BookmarkModelObserverImplTest, ShouldReorderWhenAllBookmarksReversed) {
   EXPECT_THAT(bookmark_tracker()->GetEntitiesWithLocalChanges(), SizeIs(3));
 }
 
-TEST_F(BookmarkModelObserverImplTest,
+TEST_P(BookmarkModelObserverImplTest,
        ShouldNotReorderIfAllBookmarksStillOrdered) {
   std::vector<const bookmarks::BookmarkNode*> nodes =
       GenerateBookmarkNodes(/*num_bookmarks=*/4);
@@ -587,7 +698,7 @@ TEST_F(BookmarkModelObserverImplTest,
   EXPECT_THAT(bookmark_tracker()->GetEntitiesWithLocalChanges(), IsEmpty());
 }
 
-TEST_F(BookmarkModelObserverImplTest,
+TEST_P(BookmarkModelObserverImplTest,
        BookmarkRemovalShouldUpdateTheTrackerAndNudgeForCommit) {
   // Build this structure:
   // bookmark_bar
@@ -639,7 +750,7 @@ TEST_F(BookmarkModelObserverImplTest,
       bookmark3_entity->metadata().server_id();
   // Delete folder2.
   EXPECT_CALL(*nudge_for_commit_closure(), Run());
-  bookmark_model()->Remove(folder2_node);
+  bookmark_model()->Remove(folder2_node, FROM_HERE);
 
   // folder2, bookmark2, and bookmark3 should be marked deleted.
   EXPECT_TRUE(bookmark_tracker()
@@ -669,7 +780,7 @@ TEST_F(BookmarkModelObserverImplTest,
   EXPECT_TRUE(bookmark_tracker()->GetEntityForBookmarkNode(bookmark1_node));
 }
 
-TEST_F(BookmarkModelObserverImplTest,
+TEST_P(BookmarkModelObserverImplTest,
        BookmarkCreationAndRemovalShouldRequireTwoCommitResponsesBeforeRemoval) {
   const bookmarks::BookmarkNode* bookmark_bar_node =
       bookmark_model()->bookmark_bar_node();
@@ -686,7 +797,7 @@ TEST_F(BookmarkModelObserverImplTest,
   bookmark_tracker()->MarkCommitMayHaveStarted(entity);
 
   // Remove the folder.
-  bookmark_model()->Remove(folder_node);
+  bookmark_model()->Remove(folder_node, FROM_HERE);
 
   // Simulate a commit response for the first commit request (the creation).
   // Don't simulate change in id for simplicity.
@@ -708,7 +819,7 @@ TEST_F(BookmarkModelObserverImplTest,
   EXPECT_THAT(bookmark_tracker()->TrackedEntitiesCountForTest(), 3U);
 }
 
-TEST_F(BookmarkModelObserverImplTest,
+TEST_P(BookmarkModelObserverImplTest,
        BookmarkCreationAndRemovalBeforeCommitRequestShouldBeRemovedDirectly) {
   const bookmarks::BookmarkNode* bookmark_bar_node =
       bookmark_model()->bookmark_bar_node();
@@ -724,13 +835,13 @@ TEST_F(BookmarkModelObserverImplTest,
   ASSERT_THAT(bookmark_tracker()->GetEntitiesWithLocalChanges().size(), 1U);
 
   // Remove the folder.
-  bookmark_model()->Remove(folder_node);
+  bookmark_model()->Remove(folder_node, FROM_HERE);
 
   // Entity should have been dropped.
   EXPECT_THAT(bookmark_tracker()->TrackedEntitiesCountForTest(), 3U);
 }
 
-TEST_F(BookmarkModelObserverImplTest, ShouldPositionSiblings) {
+TEST_P(BookmarkModelObserverImplTest, ShouldPositionSiblings) {
   const std::string kTitle = "title";
   const std::string kUrl = "http://www.url.com";
 
@@ -773,10 +884,11 @@ TEST_F(BookmarkModelObserverImplTest, ShouldPositionSiblings) {
   EXPECT_TRUE(PositionOf(bookmark_node3).LessThan(PositionOf(bookmark_node2)));
 }
 
-TEST_F(BookmarkModelObserverImplTest, ShouldNotSyncUnsyncableBookmarks) {
+TEST_P(BookmarkModelObserverImplTest, ShouldNotSyncUnsyncableBookmarks) {
   auto client = std::make_unique<bookmarks::TestBookmarkClient>();
   bookmarks::BookmarkNode* managed_node = client->EnableManagedNode();
-  TestBookmarkModelView model(std::move(client));
+  TestBookmarkModelView model(GetParam(), std::move(client));
+  model.EnsurePermanentNodesExist();
 
   std::unique_ptr<SyncedBookmarkTracker> bookmark_tracker =
       SyncedBookmarkTracker::CreateEmpty(sync_pb::ModelTypeState());
@@ -807,14 +919,14 @@ TEST_F(BookmarkModelObserverImplTest, ShouldNotSyncUnsyncableBookmarks) {
   EXPECT_CALL(*nudge_for_commit_closure(), Run()).Times(0);
   // In the TestBookmarkClient, descendants of managed nodes shouldn't be
   // synced.
-  model.Remove(unsyncable_node);
+  model.Remove(unsyncable_node, FROM_HERE);
 
   // Only permanent folders should be tracked.
   EXPECT_THAT(bookmark_tracker->TrackedEntitiesCountForTest(), 3U);
   model.RemoveObserver(&observer);
 }
 
-TEST_F(BookmarkModelObserverImplTest, ShouldAddChildrenInArbitraryOrder) {
+TEST_P(BookmarkModelObserverImplTest, ShouldAddChildrenInArbitraryOrder) {
   std::unique_ptr<SyncedBookmarkTracker> bookmark_tracker =
       SyncedBookmarkTracker::CreateEmpty(sync_pb::ModelTypeState());
   AddPermanentFoldersToTracker(bookmark_model(), bookmark_tracker.get());
@@ -861,7 +973,7 @@ TEST_F(BookmarkModelObserverImplTest, ShouldAddChildrenInArbitraryOrder) {
   EXPECT_TRUE(PositionOf(nodes[3]).LessThan(PositionOf(nodes[4])));
 }
 
-TEST_F(BookmarkModelObserverImplTest,
+TEST_P(BookmarkModelObserverImplTest,
        ShouldCallOnBookmarkModelBeingDeletedClosure) {
   std::unique_ptr<SyncedBookmarkTracker> bookmark_tracker =
       SyncedBookmarkTracker::CreateEmpty(sync_pb::ModelTypeState());
@@ -879,7 +991,7 @@ TEST_F(BookmarkModelObserverImplTest,
   observer.BookmarkModelBeingDeleted();
 }
 
-TEST_F(BookmarkModelObserverImplTest, ShouldNotIssueCommitUponFaviconLoad) {
+TEST_P(BookmarkModelObserverImplTest, ShouldNotIssueCommitUponFaviconLoad) {
   const GURL kBookmarkUrl("http://www.url.com");
   const GURL kIconUrl("http://www.url.com/favicon.ico");
   const SkColor kColor = SK_ColorRED;
@@ -923,7 +1035,7 @@ TEST_F(BookmarkModelObserverImplTest, ShouldNotIssueCommitUponFaviconLoad) {
   EXPECT_THAT(bookmark_tracker()->GetEntitiesWithLocalChanges(), IsEmpty());
 }
 
-TEST_F(BookmarkModelObserverImplTest, ShouldCommitLocalFaviconChange) {
+TEST_P(BookmarkModelObserverImplTest, ShouldCommitLocalFaviconChange) {
   const GURL kBookmarkUrl("http://www.url.com");
   const GURL kInitialIconUrl("http://www.url.com/initial.ico");
   const GURL kFinalIconUrl("http://www.url.com/final.ico");
@@ -966,7 +1078,7 @@ TEST_F(BookmarkModelObserverImplTest, ShouldCommitLocalFaviconChange) {
               ElementsAre(HasBookmarkNode(bookmark_node)));
 }
 
-TEST_F(BookmarkModelObserverImplTest,
+TEST_P(BookmarkModelObserverImplTest,
        ShouldNudgeForCommitOnFaviconLoadAfterRestart) {
   const GURL kBookmarkUrl("http://www.url.com");
   const GURL kIconUrl("http://www.url.com/favicon.ico");
@@ -1016,7 +1128,7 @@ TEST_F(BookmarkModelObserverImplTest,
       kBookmarkUrl, kIconUrl, CreateTestImage(SK_ColorRED)));
 }
 
-TEST_F(BookmarkModelObserverImplTest,
+TEST_P(BookmarkModelObserverImplTest,
        ShouldAddRestoredBookmarkWhenTombstoneCommitMayHaveStarted) {
   const bookmarks::BookmarkNode* bookmark_bar_node =
       bookmark_model()->bookmark_bar_node();
@@ -1033,7 +1145,7 @@ TEST_F(BookmarkModelObserverImplTest,
   ASSERT_FALSE(folder_entity->IsUnsynced());
 
   // Now delete the entity and restore it with the same bookmark node.
-  bookmark_model()->Remove(folder);
+  bookmark_model()->Remove(folder, FROM_HERE);
 
   // The removed bookmark must be saved in the undo service.
   ASSERT_GE(undo_manager()->undo_count(), 1u);
@@ -1062,7 +1174,7 @@ TEST_F(BookmarkModelObserverImplTest,
 }
 
 // Tests that the bookmark entity will be committed if its favicon is deleted.
-TEST_F(BookmarkModelObserverImplTest, ShouldCommitOnDeleteFavicon) {
+TEST_P(BookmarkModelObserverImplTest, ShouldCommitOnDeleteFavicon) {
   const GURL kBookmarkUrl("http://www.url.com");
   const GURL kIconUrl("http://www.url.com/favicon.ico");
 
@@ -1093,6 +1205,12 @@ TEST_F(BookmarkModelObserverImplTest, ShouldCommitOnDeleteFavicon) {
 
   EXPECT_TRUE(entity->IsUnsynced());
 }
+
+INSTANTIATE_TEST_SUITE_P(
+    ViewType,
+    BookmarkModelObserverImplTest,
+    testing::Values(TestBookmarkModelView::ViewType::kLocalOrSyncableNodes,
+                    TestBookmarkModelView::ViewType::kAccountNodes));
 
 }  // namespace
 

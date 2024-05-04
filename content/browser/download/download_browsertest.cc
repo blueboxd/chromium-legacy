@@ -336,6 +336,7 @@ class DownloadFileWithDelayFactory : public download::DownloadFileFactory {
       const base::FilePath& default_download_directory,
       std::unique_ptr<download::InputStream> stream,
       uint32_t download_id,
+      const base::FilePath& duplicate_download_file_path,
       base::WeakPtr<download::DownloadDestinationObserver> observer) override;
 
   void AddRenameCallback(base::OnceClosure callback);
@@ -411,6 +412,7 @@ download::DownloadFile* DownloadFileWithDelayFactory::CreateFile(
     const base::FilePath& default_download_directory,
     std::unique_ptr<download::InputStream> stream,
     uint32_t download_id,
+    const base::FilePath& duplicate_download_file_path,
     base::WeakPtr<download::DownloadDestinationObserver> observer) {
   return new DownloadFileWithDelay(
       std::move(save_info), default_download_directory, std::move(stream),
@@ -507,6 +509,7 @@ class CountingDownloadFileFactory : public download::DownloadFileFactory {
       const base::FilePath& default_downloads_directory,
       std::unique_ptr<download::InputStream> stream,
       uint32_t download_id,
+      const base::FilePath& duplicate_download_file_path,
       base::WeakPtr<download::DownloadDestinationObserver> observer) override {
     return new CountingDownloadFile(std::move(save_info),
                                     default_downloads_directory,
@@ -574,6 +577,7 @@ class ErrorInjectionDownloadFileFactory : public download::DownloadFileFactory {
       const base::FilePath& default_download_directory,
       std::unique_ptr<download::InputStream> stream,
       uint32_t download_id,
+      const base::FilePath& duplicate_download_file_path,
       base::WeakPtr<download::DownloadDestinationObserver> observer) override {
     ErrorInjectionDownloadFile* download_file = new ErrorInjectionDownloadFile(
         std::move(save_info), default_download_directory, std::move(stream),
@@ -3957,7 +3961,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
 
 // A file type that Blink can handle should not be downloaded if there are cross
 // origin redirects in the middle of the redirect chain.
-// TODO(https://crbug.com/1009913): Fix flakes on various bots and re-enable
+// TODO(crbug.com/40650833): Fix flakes on various bots and re-enable
 // this test.
 IN_PROC_BROWSER_TEST_F(DownloadContentTest,
                        DISABLED_DownloadAttributeSameOriginRedirectNavigation) {

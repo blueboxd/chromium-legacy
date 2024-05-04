@@ -611,7 +611,7 @@ void NativeWidgetAura::SetBoundsInternal(const gfx::Rect& bounds,
                                          std::optional<int64_t> display_id) {
   display::Display dst_display;
   auto* screen = display::Screen::GetScreen();
-  // TODO(crbug.com/1480073): Call SetBoundsInScreen directly.
+  // TODO(crbug.com/40281188): Call SetBoundsInScreen directly.
   if (!display_id ||
       !screen->GetDisplayWithDisplayId(display_id.value(), &dst_display)) {
     dst_display = screen->GetDisplayMatching(bounds);
@@ -682,9 +682,10 @@ void NativeWidgetAura::SetShape(std::unique_ptr<Widget::ShapeRects> shape) {
 void NativeWidgetAura::Close() {
   // |window_| may already be deleted by parent window. This can happen
   // when this widget is child widget or has transient parent
-  // and ownership is WIDGET_OWNS_NATIVE_WIDGET.
+  // and ownership is WIDGET_OWNS_NATIVE_WIDGET or CLIENT_OWNS_WIDGET.
   DCHECK(window_ ||
-         ownership_ == Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET);
+         ownership_ == Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET ||
+         ownership_ == Widget::InitParams::CLIENT_OWNS_WIDGET);
   if (window_) {
     Hide();
     window_->SetProperty(aura::client::kModalKey, ui::MODAL_TYPE_NONE);
@@ -861,7 +862,7 @@ void NativeWidgetAura::SetAspectRatio(const gfx::SizeF& aspect_ratio,
   if (window_) {
     // aura::client::kAspectRatio is owned, which allows for passing by value.
     window_->SetProperty(aura::client::kAspectRatio, aspect_ratio);
-    // TODO(crbug.com/1407629): send `excluded_margin`.
+    // TODO(crbug.com/40887946): send `excluded_margin`.
   }
 }
 
@@ -877,6 +878,12 @@ void NativeWidgetAura::RunShellDrag(View* view,
                                     ui::mojom::DragEventSource source) {
   if (window_)
     views::RunShellDrag(window_, std::move(data), location, operation, source);
+}
+
+void NativeWidgetAura::CancelShellDrag(View* view) {
+  if (window_) {
+    views::CancelShellDrag(window_);
+  }
 }
 
 void NativeWidgetAura::SchedulePaintInRect(const gfx::Rect& rect) {

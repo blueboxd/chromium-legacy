@@ -9,14 +9,16 @@
 #include "chrome/browser/commerce/shopping_service_factory.h"
 #include "chrome/browser/feature_engagement/tracker_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/theme_source.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/webui_url_constants.h"
-#include "chrome/grit/commerce_resources.h"
-#include "chrome/grit/commerce_resources_map.h"
+#include "chrome/grit/commerce_product_specifications_resources.h"
+#include "chrome/grit/commerce_product_specifications_resources_map.h"
 #include "components/commerce/core/commerce_constants.h"
 #include "components/commerce/core/commerce_feature_list.h"
 #include "components/commerce/core/shopping_service.h"
 #include "components/commerce/core/webui/shopping_service_handler.h"
+#include "components/strings/grit/components_strings.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
@@ -35,6 +37,8 @@ ProductSpecificationsUI::ProductSpecificationsUI(content::WebUI* web_ui)
           kProductSpecifications, kProductSpecificationsRegionLaunched)) {
     return;
   }
+  // Add ThemeSource to serve chrome logo.
+  content::URLDataSource::Add(profile, std::make_unique<ThemeSource>(profile));
 
   // Set up the chrome://compare source.
   content::WebUIDataSource* source = content::WebUIDataSource::CreateAndAdd(
@@ -42,12 +46,30 @@ ProductSpecificationsUI::ProductSpecificationsUI(content::WebUI* web_ui)
 
   // Add required resources.
   webui::SetupWebUIDataSource(
-      source, base::make_span(kCommerceResources, kCommerceResourcesSize),
-      IDR_COMMERCE_PRODUCT_SPECIFICATIONS_HTML);
+      source,
+      base::make_span(kCommerceProductSpecificationsResources,
+                      kCommerceProductSpecificationsResourcesSize),
+      IDR_COMMERCE_PRODUCT_SPECIFICATIONS_PRODUCT_SPECIFICATIONS_HTML);
+
+  static constexpr webui::LocalizedString kLocalizedStrings[] = {
+      {"emptyProductSelector",
+       IDS_PRODUCT_SPECIFICATIONS_EMPTY_PRODUCT_SELECTOR},
+      {"emptyStateTitle", IDS_PRODUCT_SPECIFICATIONS_EMPTY_STATE_TITLE},
+      {"emptyStateDescription",
+       IDS_PRODUCT_SPECIFICATIONS_EMPTY_STATE_TITLE_DESCRIPTION},
+  };
+  source->AddLocalizedStrings(kLocalizedStrings);
 
   source->AddString("message", "Some example content...");
-  source->AddString("pageTitle", "Compare");
+  source->AddString("pageTitle", "Product Specifications");
+  source->AddString("categoryTitle", "Product category being compared...");
   source->AddString("summaryTitle", "Summary");
+
+  static constexpr webui::LocalizedString kStrings[] = {
+      {"openTabsSectionTitle", IDS_PRODUCT_SPECIFICATIONS_OPEN_TABS_SECTION},
+  };
+
+  source->AddLocalizedStrings(kStrings);
 }
 
 void ProductSpecificationsUI::BindInterface(
@@ -78,8 +100,7 @@ void ProductSpecificationsUI::CreateShoppingServiceHandler(
   shopping_service_handler_ =
       std::make_unique<commerce::ShoppingServiceHandler>(
           std::move(page), std::move(receiver), bookmark_model,
-          shopping_service, profile->GetPrefs(), tracker,
-          g_browser_process->GetApplicationLocale(), nullptr);
+          shopping_service, profile->GetPrefs(), tracker, nullptr);
 }
 
 ProductSpecificationsUI::~ProductSpecificationsUI() = default;

@@ -9,6 +9,9 @@
 #include "base/strings/string_piece.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/webid/account_selection_view.h"
+#include "chrome/browser/webid/identity_provider_permission_request.h"
+#include "components/permissions/permission_request_manager.h"
+#include "third_party/blink/public/mojom/webid/federated_auth_request.mojom-shared.h"
 
 IdentityDialogController::IdentityDialogController(
     content::WebContents* rp_web_contents)
@@ -39,6 +42,7 @@ void IdentityDialogController::ShowAccountsDialog(
   on_login_ = std::move(on_add_account);
   on_dismiss_ = std::move(dismiss_callback);
   on_accounts_displayed_ = std::move(accounts_displayed_callback);
+  rp_mode_ = rp_mode;
   if (!account_view_)
     account_view_ = AccountSelectionView::Create(this);
   account_view_->Show(top_frame_for_display, iframe_for_display,
@@ -90,30 +94,49 @@ void IdentityDialogController::ShowErrorDialog(
                                  idp_metadata, error);
 }
 
+void IdentityDialogController::ShowLoadingDialog(
+    const std::string& top_frame_for_display,
+    const std::string& idp_for_display,
+    blink::mojom::RpContext rp_context,
+    blink::mojom::RpMode rp_mode,
+    DismissCallback dismiss_callback) {
+  on_dismiss_ = std::move(dismiss_callback);
+  if (!account_view_) {
+    account_view_ = AccountSelectionView::Create(this);
+  }
+
+  account_view_->ShowLoadingDialog(top_frame_for_display, idp_for_display,
+                                   rp_context, rp_mode);
+}
+
 void IdentityDialogController::OnLoginToIdP(const GURL& idp_config_url,
                                             const GURL& idp_login_url) {
-  std::move(on_login_).Run(idp_config_url, idp_login_url);
+  CHECK(on_login_);
+  on_login_.Run(idp_config_url, idp_login_url);
 }
 
 void IdentityDialogController::OnMoreDetails() {
+  CHECK(on_more_details_);
   std::move(on_more_details_).Run();
 }
 
 void IdentityDialogController::OnAccountsDisplayed() {
+  CHECK(on_accounts_displayed_);
   std::move(on_accounts_displayed_).Run();
-}
-
-std::string IdentityDialogController::GetTitle() const {
-  return account_view_->GetTitle();
-}
-
-std::optional<std::string> IdentityDialogController::GetSubtitle() const {
-  return account_view_->GetSubtitle();
 }
 
 void IdentityDialogController::OnAccountSelected(const GURL& idp_config_url,
                                                  const Account& account) {
-  on_dismiss_.Reset();
+  CHECK(on_account_selection_);
+
+  // We only allow dismiss after account selection on button flows and not on
+  // widget flows.
+  // TODO(crbug.com/335886093): Figure out whether users can cancel after
+  // selecting an account on button flow modal.
+  if (rp_mode_ == blink::mojom::RpMode::kWidget) {
+    on_dismiss_.Reset();
+  }
+
   std::move(on_account_selection_)
       .Run(idp_config_url, account.id,
            account.login_state ==
@@ -123,10 +146,20 @@ void IdentityDialogController::OnAccountSelected(const GURL& idp_config_url,
 void IdentityDialogController::OnDismiss(DismissReason dismiss_reason) {
   // |OnDismiss| can be called after |OnAccountSelected| which sets the callback
   // to null.
-  if (on_dismiss_) {
-    on_account_selection_.Reset();
-    std::move(on_dismiss_).Run(dismiss_reason);
+  if (!on_dismiss_) {
+    return;
   }
+
+  on_account_selection_.Reset();
+  std::move(on_dismiss_).Run(dismiss_reason);
+}
+
+std::string IdentityDialogController::GetTitle() const {
+  return account_view_->GetTitle();
+}
+
+std::optional<std::string> IdentityDialogController::GetSubtitle() const {
+  return account_view_->GetSubtitle();
 }
 
 gfx::NativeView IdentityDialogController::GetNativeView() {
@@ -165,4 +198,22 @@ void IdentityDialogController::CloseModalDialog() {
 #endif  // BUILDFLAG(IS_ANDROID)
   CHECK(account_view_);
   account_view_->CloseModalDialog();
+}
+
+void IdentityDialogController::RequestIdPRegistrationPermision(
+    const url::Origin& origin,
+    base::OnceCallback<void(bool accepted)> callback) {
+  permissions::PermissionRequestManager* permission_request_manager =
+      permissions::PermissionRequestManager::FromWebContents(rp_web_contents_);
+
+  auto* request =
+      new IdentityProviderPermissionRequest(origin, std::move(callback));
+
+  permission_request_manager->AddRequest(
+      rp_web_contents_->GetPrimaryMainFrame(), request);
+}
+
+void IdentityDialogController::SetAccountSelectionViewForTesting(
+    std::unique_ptr<AccountSelectionView> account_view) {
+  account_view_ = std::move(account_view);
 }

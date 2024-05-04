@@ -18,7 +18,7 @@
 #include "base/test/task_environment.h"
 #include "base/test/test_simple_task_runner.h"
 #include "components/affiliations/core/browser/affiliation_backend.h"
-#include "components/affiliations/core/browser/affiliation_fetcher_base.h"
+#include "components/affiliations/core/browser/affiliation_fetcher_interface.h"
 #include "components/affiliations/core/browser/affiliation_service_impl.h"
 #include "components/affiliations/core/browser/fake_affiliation_api.h"
 #include "components/affiliations/core/browser/mock_affiliation_consumer.h"
@@ -339,6 +339,19 @@ TEST_F(AffiliationServiceImplTest, OnMalformedResponseResetsFetcher) {
   EXPECT_CALL(callback, Run());
   static_cast<AffiliationFetcherDelegate*>(service())->OnMalformedResponse(
       raw_mock_fetcher);
+}
+
+TEST_F(AffiliationServiceImplTest,
+       PrefetchChangePasswordURLsWhenFetcherNotCreated) {
+  base::MockOnceClosure completion_callback;
+
+  EXPECT_CALL(mock_fetcher_factory(), CreateInstance).WillOnce(Return(nullptr));
+
+  service()->PrefetchChangePasswordURLs({GURL(k1ExampleURL)},
+                                        completion_callback.Get());
+
+  EXPECT_CALL(completion_callback, Run);
+  RunUntilIdle();
 }
 
 TEST_F(AffiliationServiceImplTest,

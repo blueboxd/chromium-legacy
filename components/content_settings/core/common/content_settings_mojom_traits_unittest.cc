@@ -9,6 +9,7 @@
 #include "components/content_settings/core/common/content_settings.mojom-shared.h"
 #include "components/content_settings/core/common/content_settings.mojom.h"
 #include "components/content_settings/core/common/content_settings_constraints.h"
+#include "components/content_settings/core/common/content_settings_enums.mojom-shared.h"
 #include "components/content_settings/core/common/content_settings_metadata.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
@@ -75,6 +76,8 @@ TEST(ContentSettingsTraitsTest, Roundtrips_RuleMetadata) {
       content_settings::mojom::SessionModel::USER_SESSION);
   original.set_tpcd_metadata_rule_source(
       content_settings::mojom::TpcdMetadataRuleSource::SOURCE_TEST);
+  original.set_tpcd_metadata_cohort(
+      content_settings::mojom::TpcdMetadataCohort::GRACE_PERIOD_FORCED_OFF);
 
   content_settings::RuleMetaData round_tripped;
 
@@ -108,25 +111,10 @@ TEST(ContentSettingsTraitsTest, Roundtrips_RendererContentSettingRules) {
   RendererContentSettingRules original;
 
   ContentSettingPatternSource source;
-  source.primary_pattern =
-      ContentSettingsPattern::FromString("https://image.com:*");
-  original.image_rules = {source};
-
-  source.primary_pattern =
-      ContentSettingsPattern::FromString("https://script.com:*");
-  original.script_rules = {source};
-
-  source.primary_pattern =
-      ContentSettingsPattern::FromString("https://popup-redirect.com:*");
-  original.popup_redirect_rules = {source};
 
   source.primary_pattern =
       ContentSettingsPattern::FromString("https://mixed-content.com:*");
   original.mixed_content_rules = {source};
-
-  source.primary_pattern =
-      ContentSettingsPattern::FromString("https://auto-dark-content.com:*");
-  original.auto_dark_content_rules = {source};
 
   RendererContentSettingRules round_tripped;
 

@@ -35,8 +35,8 @@
 #endif
 
 #if BUILDFLAG(IS_WIN)
+#include "base/win/scoped_handle.h"
 #include "base/win/windows_types.h"
-#include "content/public/common/prefetch_type_win.h"
 #include "sandbox/win/src/sandbox_types.h"
 #else
 #include "content/public/browser/posix_file_descriptor_info.h"
@@ -94,6 +94,7 @@ class LaunchResult;
 class ProcessStorageBase {
  public:
   virtual ~ProcessStorageBase() = default;
+  virtual void ReleaseProcess() = 0;
 };
 #endif
 
@@ -158,12 +159,6 @@ class ChildProcessLauncherHelper
   // Returns the list of files that should be mapped in the child process.
   // Platform specific.
   std::unique_ptr<FileMappedForLaunch> GetFilesToMap();
-
-#if BUILDFLAG(IS_WIN)
-  // Returns the Prefetch string for the process type on the OS in use.
-  static std::string_view GetPrefetchSwitch(
-      const AppLaunchPrefetchType prefetch_type);
-#endif
 
   // Returns true if the process will be launched using base::LaunchOptions.
   // If false, all of the base::LaunchOptions* below will be nullptr.
@@ -232,7 +227,13 @@ class ChildProcessLauncherHelper
       ChildProcessLauncherHelper::Process process);
 
 #if BUILDFLAG(IS_IOS)
-  void OnChildProcessStarted(std::unique_ptr<LaunchResult> launch_result);
+  void OnChildProcessStarted(pid_t process_id,
+                             std::unique_ptr<LaunchResult> launch_result);
+  void ClearProcessStorage();
+
+#if defined(__OBJC__)
+  NSObject* GetProcess();
+#endif
 #endif
 
 #if BUILDFLAG(IS_ANDROID)
@@ -292,6 +293,10 @@ class ChildProcessLauncherHelper
   std::unique_ptr<SandboxedProcessLauncherDelegate> delegate_;
   base::WeakPtr<ChildProcessLauncher> child_process_launcher_;
 
+#if BUILDFLAG(IS_CHROMEOS)
+  std::optional<base::ProcessId> process_id_ = std::nullopt;
+#endif  // BUILDFLAG(IS_CHROMEOS)
+
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
   // The priority of the process. The state is stored to avoid changing the
   // setting repeatedly.
@@ -339,6 +344,11 @@ class ChildProcessLauncherHelper
 
 #if BUILDFLAG(IS_FUCHSIA)
   std::unique_ptr<sandbox::policy::SandboxPolicyFuchsia> sandbox_policy_;
+#endif
+
+#if BUILDFLAG(IS_WIN)
+  // Only valid if the host process has logging enabled.
+  base::win::ScopedHandle log_handle_;
 #endif
 
   // Histogram shared memory region metadata.

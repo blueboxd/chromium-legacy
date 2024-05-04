@@ -70,7 +70,6 @@ class TabGroupEditorBubbleView : public views::BubbleDialogDelegateView {
                            const tab_groups::TabGroupId& group,
                            views::View* anchor_view,
                            std::optional<gfx::Rect> anchor_rect,
-                           TabGroupHeader* header_view,
                            bool stop_context_menu_propagation);
   ~TabGroupEditorBubbleView() override;
 
@@ -80,11 +79,27 @@ class TabGroupEditorBubbleView : public views::BubbleDialogDelegateView {
 
   void OnSaveTogglePressed();
   void NewTabInGroupPressed();
-  void UngroupPressed(TabGroupHeader* header_view);
+  void UngroupPressed();
   void CloseGroupPressed();
+  void DeleteGroupPressed();
   void MoveGroupToNewWindowPressed();
 
+  // If the saved tab group service exists, this method disconnects the group
+  // from the saved tab group so that actions can be performed on the group
+  // without updating the saved group. If the service doesnt exist, it does
+  // nothing.
+  void MaybeDisconnectSavedGroup();
+
+  // Closes all of the tabs in the tab group in the tabstrip. If the tab group
+  // Is the only thing in the tabstrip, adds a new tab first so that the window
+  // isn't closed.
+  void DeleteGroupFromTabstrip();
+
   void OnBubbleClose();
+
+  // the implementation of the ungroup command. This method is static so that
+  // it can be called from dialogs as a callback.
+  static void Ungroup(const Browser* browser, tab_groups::TabGroupId group);
 
   const raw_ptr<const Browser> browser_;
   const tab_groups::TabGroupId group_;
@@ -128,6 +143,16 @@ class TabGroupEditorBubbleView : public views::BubbleDialogDelegateView {
   };
 
   raw_ptr<TitleField> title_field_;
+
+  class Footer : public views::View {
+    METADATA_HEADER(Footer, views::View)
+   public:
+    explicit Footer(const Browser* browser_);
+    ~Footer() override = default;
+
+    static void OpenLearnMorePage(const Browser* browser_);
+  };
+  raw_ptr<Footer> footer_;
 
   Colors colors_;
   raw_ptr<ColorPickerView> color_selector_;

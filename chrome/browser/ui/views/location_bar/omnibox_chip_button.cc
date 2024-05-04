@@ -94,10 +94,15 @@ void OmniboxChipButton::ResetAnimation(double value) {
   OnAnimationValueMaybeChanged();
 }
 
-gfx::Size OmniboxChipButton::CalculatePreferredSize() const {
+// TODO(crbug.com/40232718): Respect `available_size`.
+gfx::Size OmniboxChipButton::CalculatePreferredSize(
+    const views::SizeBounds& available_size) const {
   const int fixed_width = GetIconSize() + GetInsets().width();
-  const int collapsable_width = label()->GetPreferredSize().width() +
-                                kChipImagePadding + kExtraRightPadding;
+  const int collapsable_width =
+      label()
+          ->GetPreferredSize(views::SizeBounds(label()->width(), {}))
+          .width() +
+      kChipImagePadding + kExtraRightPadding;
 
   const int width =
       base_width_ +

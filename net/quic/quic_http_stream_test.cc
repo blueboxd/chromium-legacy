@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <string_view>
 #include <utility>
 
 #include "base/functional/bind.h"
@@ -21,6 +22,7 @@
 #include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
 #include "net/base/chunked_upload_data_stream.h"
+#include "net/base/connection_endpoint_metadata.h"
 #include "net/base/elements_upload_data_stream.h"
 #include "net/base/features.h"
 #include "net/base/load_flags.h"
@@ -133,8 +135,8 @@ std::vector<TestParams> GetTestParams() {
 // key-value pairs has exactly one entry with |key| and that entry has value
 // |expected_value|.
 bool CheckHeader(const base::Value::Dict& params,
-                 base::StringPiece key,
-                 base::StringPiece expected_value) {
+                 std::string_view key,
+                 std::string_view expected_value) {
   const base::Value::List* headers = params.FindList("headers");
   if (!headers) {
     return false;
@@ -429,10 +431,11 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<TestParams>,
             kQuicYieldAfterDurationMilliseconds),
         /*cert_verify_flags=*/0, quic::test::DefaultQuicConfig(),
         std::make_unique<TestQuicCryptoClientConfigHandle>(&crypto_config_),
-        dns_start, dns_end, base::DefaultTickClock::GetInstance(),
+        "CONNECTION_UNKNOWN", dns_start, dns_end,
+        base::DefaultTickClock::GetInstance(),
         base::SingleThreadTaskRunner::GetCurrentDefault().get(),
-        /*socket_performance_watcher=*/nullptr, HostResolverEndpointResult(),
-        NetLog::Get());
+        /*socket_performance_watcher=*/nullptr, ConnectionEndpointMetadata(),
+        /*report_ecn=*/true, NetLogWithSource::Make(NetLogSourceType::NONE));
     session_->Initialize();
 
     // Blackhole QPACK decoder stream instead of constructing mock writes.

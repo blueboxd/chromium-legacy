@@ -29,7 +29,6 @@
 #include "chrome/browser/component_updater/pki_metadata_component_installer.h"
 #include "chrome/browser/net/chrome_mojo_proxy_resolver_factory.h"
 #include "chrome/browser/net/convert_explicitly_allowed_network_ports_pref.h"
-#include "chrome/browser/net/network_annotation_monitor.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/ssl/sct_reporting_service.h"
 #include "chrome/browser/ssl/ssl_config_service_manager.h"
@@ -86,13 +85,17 @@
 #include "third_party/blink/public/common/features.h"
 #include "url/gurl.h"
 
+#if BUILDFLAG(IS_CHROMEOS)
+#include "chrome/browser/net/network_annotation_monitor.h"
+#endif  // BUILDFLAG(IS_CHROMEOS)
+
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ash/net/dhcp_wpad_url_client.h"
 #include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
-// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
+// TODO(crbug.com/40118868): Revisit the macro expression once build flag switch
 // of lacros-chrome is complete.
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
 #include "chrome/common/chrome_paths_internal.h"
@@ -105,7 +108,6 @@
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 #if BUILDFLAG(IS_WIN)
-#include "chrome/browser/browser_features.h"
 #include "chrome/browser/net/chrome_mojo_proxy_resolver_win.h"
 #endif  // BUILDFLAG(IS_WIN)
 
@@ -495,7 +497,7 @@ SystemNetworkContextManager* SystemNetworkContextManager::GetInstance() {
     // CreateInstance() to initialize |g_system_network_context_manager|.
     content::GetNetworkService();
 
-    // TODO(crbug.com/981057): There should be a DCHECK() here to make sure
+    // TODO(crbug.com/40634772): There should be a DCHECK() here to make sure
     // |g_system_network_context_manager| has been created, but that is not
     // true in many unit tests.
   }
@@ -601,8 +603,8 @@ SystemNetworkContextManager::SystemNetworkContextManager(
           base::Unretained(this)));
 
 #if BUILDFLAG(CHROME_ROOT_STORE_OPTIONAL)
-  // TODO(crbug.com/1501418): If this call is removed, clank crashes on startup.
-  // Not sure why.
+  // TODO(crbug.com/40941700): If this call is removed, clank crashes on
+  // startup. Not sure why.
   content::GetCertVerifierServiceFactory()->SetUseChromeRootStore(
       true, base::DoNothing());
 #endif
@@ -817,6 +819,7 @@ void SystemNetworkContextManager::OnNetworkServiceCreated(
 
   UpdateIPv6ReachabilityOverrideEnabled();
 
+#if BUILDFLAG(IS_CHROMEOS)
   if (base::FeatureList::IsEnabled(features::kNetworkAnnotationMonitoring)) {
     // Create NetworkAnnotationMonitor.
     if (!network_annotation_monitor_) {
@@ -829,6 +832,7 @@ void SystemNetworkContextManager::OnNetworkServiceCreated(
     network_service->SetNetworkAnnotationMonitor(
         network_annotation_monitor_->GetClient());
   }
+#endif  // BUILDFLAG(IS_CHROMEOS)
 }
 
 void SystemNetworkContextManager::DisableQuic() {
@@ -840,14 +844,12 @@ void SystemNetworkContextManager::DisableQuic() {
   content::GetNetworkService()->DisableQuic();
 }
 
-#if BUILDFLAG(IS_WIN)
 void SystemNetworkContextManager::
     AddCookieEncryptionManagerToNetworkContextParams(
         network::mojom::NetworkContextParams* network_context_params) {
   network_context_params->cookie_encryption_provider =
       cookie_encryption_provider_.BindNewRemote();
 }
-#endif  // BUILDFLAG(IS_WIN)
 
 void SystemNetworkContextManager::AddSSLConfigToNetworkContextParams(
     network::mojom::NetworkContextParams* network_context_params) {
@@ -994,11 +996,13 @@ void SystemNetworkContextManager::FlushNetworkInterfaceForTesting() {
     url_loader_factory_.FlushForTesting();
 }
 
+#if BUILDFLAG(IS_CHROMEOS)
 void SystemNetworkContextManager::FlushNetworkAnnotationMonitorForTesting() {
   if (network_annotation_monitor_) {
     network_annotation_monitor_->FlushForTesting();  // IN-TEST
   }
 }
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
 network::mojom::HttpAuthStaticParamsPtr
 SystemNetworkContextManager::GetHttpAuthStaticParamsForTesting() {

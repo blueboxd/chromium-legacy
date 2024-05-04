@@ -102,8 +102,8 @@ std::unique_ptr<views::FlexLayoutView> CreateLabelWithCheckIcon(
   label_with_icon->AddChildView(std::move(icon));
 
   auto spacer = std::make_unique<views::View>();
-  spacer->SetPreferredSize(
-      gfx::Size(autofill::PopupBaseView::GetHorizontalPadding(), /*height=*/1));
+  spacer->SetPreferredSize(gfx::Size(
+      autofill::PopupBaseView::ArrowHorizontalMargin(), /*height=*/1));
   label_with_icon->AddChildView(std::move(spacer));
 
   label_with_icon->AddChildView(
@@ -159,7 +159,7 @@ class EditPasswordRow : public views::FlexLayoutView {
 
     auto spacer = std::make_unique<views::View>();
     spacer->SetPreferredSize(gfx::Size(
-        autofill::PopupBaseView::GetHorizontalPadding(), /*height=*/1));
+        autofill::PopupBaseView::ArrowHorizontalMargin(), /*height=*/1));
     AddChildView(std::move(spacer));
 
     AddChildView(std::make_unique<views::Label>(
@@ -225,7 +225,7 @@ std::unique_ptr<views::View> CreatePasswordLabelWithIcon() {
       std::make_unique<views::ImageView>(ui::ImageModel::FromVectorIcon(
           GooglePasswordManagerVectorIcon(), ui::kColorIcon, kIconSize)));
 
-  AddSpacerWithSize(autofill::PopupBaseView::GetHorizontalPadding(),
+  AddSpacerWithSize(autofill::PopupBaseView::ArrowHorizontalMargin(),
                     /*resize=*/false, view.get());
 
   auto* label = view->AddChildView(std::make_unique<views::Label>(
@@ -268,10 +268,10 @@ class NudgePasswordButtons : public views::View {
         cancel_button_label);
     cancel_button->SetAccessibleRole(ax::mojom::Role::kListBoxOption);
     cancel_button->SetAccessibleName(cancel_button_label);
-    cancel_button->SetAccessibleDescription(help_text);
+    cancel_button->GetViewAccessibility().SetDescription(help_text);
     cancel_button_ = AddChildView(std::move(cancel_button));
 
-    AddSpacerWithSize(autofill::PopupBaseView::GetHorizontalPadding(),
+    AddSpacerWithSize(autofill::PopupBaseView::ArrowHorizontalMargin(),
                       /*resize=*/false, this);
 
     const std::u16string accept_button_label =
@@ -284,7 +284,7 @@ class NudgePasswordButtons : public views::View {
     accept_button->SetAccessibleRole(ax::mojom::Role::kListBoxOption);
     accept_button->SetAccessibleName(
         base::JoinString({accept_button_label, controller_->password()}, u" "));
-    accept_button->SetAccessibleDescription(help_text);
+    accept_button->GetViewAccessibility().SetDescription(help_text);
     accept_button_ = AddChildView(std::move(accept_button));
 
     // Set up custom focus predicates for buttons as the default ones check if
@@ -317,7 +317,7 @@ class NudgePasswordButtons : public views::View {
  private:
   void CancelButtonPressed() {
     if (controller_) {
-      controller_->Hide(autofill::PopupHidingReason::kUserAborted);
+      controller_->Hide(autofill::SuggestionHidingReason::kUserAborted);
     }
   }
   void AcceptButtonPressed() {
@@ -450,7 +450,7 @@ void PasswordGenerationPopupViewViews::GeneratedPasswordBox::Init(
   AddChildView(
       std::make_unique<views::ImageView>(ui::ImageModel::FromVectorIcon(
           GooglePasswordManagerVectorIcon(), ui::kColorIcon, kIconSize)));
-  AddSpacerWithSize(PopupBaseView::GetHorizontalPadding(),
+  AddSpacerWithSize(PopupBaseView::ArrowHorizontalMargin(),
                     /*resize=*/false, this);
 
   suggestion_label_ = AddChildView(std::make_unique<views::Label>(
@@ -622,7 +622,7 @@ void PasswordGenerationPopupViewViews::CreateLayoutAndChildren() {
   const int kVerticalPadding =
       provider->GetDistanceMetric(DISTANCE_TOAST_LABEL_VERTICAL);
   const int kHorizontalMargin =
-      provider->GetDistanceMetric(DISTANCE_UNRELATED_CONTROL_HORIZONTAL);
+      provider->GetDistanceMetric(views::DISTANCE_UNRELATED_CONTROL_HORIZONTAL);
 
   if (controller_->ShouldShowNudgePassword()) {
     auto nudge_password_view = CreateNudgePasswordView(controller_);
@@ -682,7 +682,7 @@ void PasswordGenerationPopupViewViews::CreateLayoutAndChildren() {
 
 void PasswordGenerationPopupViewViews::GetAccessibleNodeData(
     ui::AXNodeData* node_data) {
-  // TODO(crbug.com/1404297): kListBox is used for the same reason as in
+  // TODO(crbug.com/40885943): kListBox is used for the same reason as in
   // `autofill::PopupViewViews`. See crrev.com/c/2545285 for details.
   // Consider using a more appropriate role (e.g. kMenuListPopup or similar).
   node_data->role = ax::mojom::Role::kListBox;
@@ -696,18 +696,22 @@ void PasswordGenerationPopupViewViews::GetAccessibleNodeData(
   node_data->AddState(ax::mojom::State::kExpanded);
 }
 
-gfx::Size PasswordGenerationPopupViewViews::CalculatePreferredSize() const {
+gfx::Size PasswordGenerationPopupViewViews::CalculatePreferredSize(
+    const views::SizeBounds& available_size) const {
   if (controller_->ShouldShowNudgePassword()) {
-    int width = std::min(views::View::CalculatePreferredSize().width(),
-                         kPasswordGenerationMaxWidth);
-    return gfx::Size(width, GetHeightForWidth(width));
+    int width =
+        std::min(views::View::CalculatePreferredSize(available_size).width(),
+                 kPasswordGenerationMaxWidth);
+    return gfx::Size(
+        width, GetLayoutManager()->GetPreferredHeightForWidth(this, width));
   }
 
   int width =
       std::max(password_view_->GetPreferredSize().width(),
                gfx::ToEnclosingRect(controller_->element_bounds()).width());
   width = std::min(width, kPasswordGenerationMaxWidth);
-  return gfx::Size(width, GetHeightForWidth(width));
+  return gfx::Size(width,
+                   GetLayoutManager()->GetPreferredHeightForWidth(this, width));
 }
 
 PasswordGenerationPopupView* PasswordGenerationPopupView::Create(

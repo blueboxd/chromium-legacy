@@ -48,12 +48,12 @@ class FullscreenControllerObserver : public base::CheckedObserver {
                                      FullscreenAnimator* animator) {}
 
   // Invoked before the FullscreenController service is shut down.
-  // TODO(crbug.com/1046022): Rename to FullscreenControllerDestroyed.
+  // TODO(crbug.com/40670578): Rename to FullscreenControllerDestroyed.
   virtual void FullscreenControllerWillShutDown(
       FullscreenController* controller) {}
 
   // Invoked when `controller` needs to resize its horizontal insets.
-  // TODO(crbug.com/1114054) remove after fixing multiwindow resizing issue.
+  // TODO(crbug.com/40143738) remove after fixing multiwindow resizing issue.
   virtual void ResizeHorizontalInsets(FullscreenController* controller) {}
 };
 

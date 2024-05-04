@@ -417,7 +417,7 @@ void DestroyPrerenderingWebState(std::unique_ptr<web::WebState> web_state) {
           transition:(ui::PageTransition)transition
      currentWebState:(web::WebState*)currentWebState
          immediately:(BOOL)immediately {
-  // TODO(crbug.com/754050): If CanPrerenderURL() returns false, should we
+  // TODO(crbug.com/40534385): If CanPrerenderURL() returns false, should we
   // cancel any scheduled prerender requests?
   if (!self.enabled || !CanPrerenderURL(url)) {
     return;
@@ -636,9 +636,9 @@ void DestroyPrerenderingWebState(std::unique_ptr<web::WebState> web_state) {
 #pragma mark - PreloadCancelling
 
 - (void)schedulePrerenderCancel {
-  // TODO(crbug.com/228550): Instead of cancelling the prerender, should we mark
-  // it as failed instead?  That way, subsequent prerender requests for the same
-  // URL will not kick off new prerenders.
+  // TODO(crbug.com/41005198): Instead of cancelling the prerender, should we
+  // mark it as failed instead?  That way, subsequent prerender requests for the
+  // same URL will not kick off new prerenders.
   [self removeScheduledPrerenderRequests];
   [self performSelector:@selector(cancelPrerender) withObject:nil afterDelay:0];
 }
@@ -671,7 +671,7 @@ void DestroyPrerenderingWebState(std::unique_ptr<web::WebState> web_state) {
   web::WebState* webStateToReplace = _webStateToReplace.get();
   _webStateToReplace.reset();
 
-  // TODO(crbug.com/1140583): The correct way is to always get the
+  // TODO(crbug.com/40726702): The correct way is to always get the
   // webStateToReplace from the delegate. however this is not possible because
   // there is only one delegate per browser state.
   if (!webStateToReplace) {
@@ -717,7 +717,7 @@ void DestroyPrerenderingWebState(std::unique_ptr<web::WebState> web_state) {
   _webState->GetNavigationManager()->LoadURLWithParams(loadParams);
 
   // LoadIfNecessary is needed because the view is not created (but needed) when
-  // loading the page. TODO(crbug.com/705819): Remove this call.
+  // loading the page. TODO(crbug.com/41309809): Remove this call.
   _webState->GetNavigationManager()->LoadIfNecessary();
 
   self.startTime = base::TimeTicks::Now();

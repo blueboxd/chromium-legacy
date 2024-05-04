@@ -13,14 +13,20 @@
 #include "base/scoped_observation.h"
 #include "components/bookmarks/browser/base_bookmark_model_observer.h"
 #include "components/bookmarks/browser/bookmark_model.h"
+#include "components/commerce/core/product_specifications/product_specifications_set.h"
 #include "components/commerce/core/subscriptions/subscriptions_manager.h"
 #include "components/commerce/core/subscriptions/subscriptions_observer.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "ui/webui/resources/cr_components/commerce/shopping_service.mojom.h"
 
 class PrefService;
+
+namespace base {
+class Uuid;
+}
 
 namespace bookmarks {
 class BookmarkNode;
@@ -33,12 +39,12 @@ namespace commerce {
 
 class ShoppingService;
 struct PriceInsightsInfo;
-struct ProductInfo;
 
-class ShoppingServiceHandler :
-        public shopping_service::mojom::ShoppingServiceHandler,
-        public SubscriptionsObserver,
-        public bookmarks::BaseBookmarkModelObserver {
+class ShoppingServiceHandler
+    : public shopping_service::mojom::ShoppingServiceHandler,
+      public SubscriptionsObserver,
+      public bookmarks::BaseBookmarkModelObserver,
+      public ProductSpecificationsSet::Observer {
  public:
   // Handles platform specific tasks.
   class Delegate {
@@ -60,6 +66,8 @@ class ShoppingServiceHandler :
     virtual void ShowBookmarkEditorForCurrentUrl() = 0;
 
     virtual void ShowFeedback() = 0;
+
+    virtual ukm::SourceId GetCurrentTabUkmSourceId() = 0;
   };
 
   ShoppingServiceHandler(
@@ -70,7 +78,6 @@ class ShoppingServiceHandler :
       ShoppingService* shopping_service,
       PrefService* prefs,
       feature_engagement::Tracker* tracker,
-      const std::string& locale,
       std::unique_ptr<Delegate> delegate);
   ShoppingServiceHandler(const ShoppingServiceHandler&) = delete;
   ShoppingServiceHandler& operator=(const ShoppingServiceHandler&) = delete;
@@ -85,8 +92,16 @@ class ShoppingServiceHandler :
   void UntrackPriceForBookmark(int64_t bookmark_id) override;
   void GetProductInfoForCurrentUrl(
       GetProductInfoForCurrentUrlCallback callback) override;
+  void GetProductInfoForUrl(const GURL& url,
+                            GetProductInfoForUrlCallback callback) override;
   void GetPriceInsightsInfoForCurrentUrl(
       GetPriceInsightsInfoForCurrentUrlCallback callback) override;
+  void GetProductSpecificationsForUrls(
+      const std::vector<::GURL>& urls,
+      GetProductSpecificationsForUrlsCallback callback) override;
+  void GetUrlInfosForOpenTabs(GetUrlInfosForOpenTabsCallback callback) override;
+  void GetUrlInfosForRecentlyViewedTabs(
+      GetUrlInfosForRecentlyViewedTabsCallback callback) override;
   void ShowInsightsSidePanelUI() override;
   void IsShoppingListEligible(IsShoppingListEligibleCallback callback) override;
   void GetShoppingCollectionBookmarkFolderId(
@@ -99,6 +114,13 @@ class ShoppingServiceHandler :
       GetParentBookmarkFolderNameForCurrentUrlCallback callback) override;
   void ShowBookmarkEditorForCurrentUrl() override;
   void ShowFeedback() override;
+  void GetAllProductSpecificationsSets(
+      GetAllProductSpecificationsSetsCallback callback) override;
+  void AddProductSpecificationsSet(
+      const std::string& name,
+      const std::vector<GURL>& urls,
+      AddProductSpecificationsSetCallback callback) override;
+  void DeleteProductSpecificationsSet(const base::Uuid& uuid) override;
 
   // SubscriptionsObserver
   void OnSubscribe(const CommerceSubscription& subscription,
@@ -112,6 +134,15 @@ class ShoppingServiceHandler :
                          size_t old_index,
                          const bookmarks::BookmarkNode* new_parent,
                          size_t new_index) override;
+
+  // ProductSpecificationsSet::Observer
+  void OnProductSpecificationsSetAdded(
+      const ProductSpecificationsSet& set) override;
+
+  void OnProductSpecificationsSetUpdate(
+      const ProductSpecificationsSet& set) override;
+
+  void OnProductSpecificationsSetRemoved(const base::Uuid& uuid) override;
 
   static std::vector<shopping_service::mojom::BookmarkProductInfoPtr>
   BookmarkListToMojoList(
@@ -132,11 +163,6 @@ class ShoppingServiceHandler :
   void HandleSubscriptionChange(const CommerceSubscription& sub,
                                 bool is_tracking);
 
-  void OnFetchProductInfoForCurrentUrl(
-      GetProductInfoForCurrentUrlCallback callback,
-      const GURL& url,
-      const std::optional<const ProductInfo>& info);
-
   void OnFetchPriceInsightsInfoForCurrentUrl(
       GetPriceInsightsInfoForCurrentUrlCallback callback,
       const GURL& url,
@@ -155,7 +181,7 @@ class ShoppingServiceHandler :
   raw_ptr<ShoppingService> shopping_service_;
   raw_ptr<PrefService, DanglingUntriaged> pref_service_;
   raw_ptr<feature_engagement::Tracker> tracker_;
-  const std::string locale_;
+  std::string locale_;
   std::unique_ptr<Delegate> delegate_;
   // Automatically remove this observer from its host when destroyed.
   base::ScopedObservation<ShoppingService, SubscriptionsObserver>
@@ -163,6 +189,9 @@ class ShoppingServiceHandler :
   base::ScopedObservation<bookmarks::BookmarkModel,
                           bookmarks::BookmarkModelObserver>
       scoped_bookmark_model_observation_{this};
+  base::ScopedObservation<ProductSpecificationsService,
+                          ProductSpecificationsSet::Observer>
+      scoped_product_spec_observer_{this};
 
   base::WeakPtrFactory<ShoppingServiceHandler> weak_ptr_factory_{this};
 };

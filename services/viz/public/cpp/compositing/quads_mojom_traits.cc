@@ -174,9 +174,6 @@ bool StructTraits<viz::mojom::TextureQuadStateDataView, viz::DrawQuad>::Read(
   quad->overlay_priority_hint = overlay_priority_hint;
   if (!data.ReadBackgroundColor(&quad->background_color))
     return false;
-  base::span<float> vertex_opacity_array(quad->vertex_opacity);
-  if (!data.ReadVertexOpacity(&vertex_opacity_array))
-    return false;
 
   quad->y_flipped = data.y_flipped();
   quad->nearest_neighbor = data.nearest_neighbor();
@@ -262,8 +259,6 @@ bool StructTraits<viz::mojom::YUVVideoQuadStateDataView, viz::DrawQuad>::Read(
       quad->resources.ids[viz::YUVVideoDrawQuad::kAPlaneResourceIdIndex] ? 4
                                                                          : 3;
 
-  quad->resource_offset = data.resource_offset();
-  quad->resource_multiplier = data.resource_multiplier();
   quad->bits_per_channel = data.bits_per_channel();
   if (quad->bits_per_channel < viz::YUVVideoDrawQuad::kMinBitsPerChannel) {
     viz::SetDeserializationCrashKeyString("Bits per channel too small");

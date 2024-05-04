@@ -16,7 +16,7 @@ rootWebArea
 ++++++definition
 ++++++contentDeletion
 ++++++dialog
-++++++directory
+++++++list
 ++++++document
 ++++++emphasis
 ++++++feed
@@ -36,8 +36,8 @@ rootWebArea
 ++++++genericContainer
 ++++++link expanded
 ++++++list
+++++++++listItem
 ++++++listBox expanded
-++++++listItem
 ++++++log
 ++++++main
 ++++++marquee

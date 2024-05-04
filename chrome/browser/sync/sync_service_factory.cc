@@ -14,7 +14,9 @@
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/commerce/product_specifications/product_specifications_service_factory.h"
 #include "chrome/browser/consent_auditor/consent_auditor_factory.h"
+#include "chrome/browser/data_sharing/data_sharing_service_factory.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/gcm/gcm_profile_service_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -34,6 +36,8 @@
 #include "chrome/browser/signin/about_signin_internals_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/spellchecker/spellcheck_factory.h"
+#include "chrome/browser/supervised_user/supervised_user_service_factory.h"
+#include "chrome/browser/supervised_user/supervised_user_settings_service_factory.h"
 #include "chrome/browser/sync/account_bookmark_sync_service_factory.h"
 #include "chrome/browser/sync/chrome_sync_client.h"
 #include "chrome/browser/sync/device_info_sync_service_factory.h"
@@ -53,7 +57,6 @@
 #include "chrome/common/channel_info.h"
 #include "components/password_manager/core/browser/sharing/password_receiver_service.h"
 #include "components/send_tab_to_self/send_tab_to_self_sync_service.h"
-#include "components/supervised_user/core/common/buildflags.h"
 #include "components/sync/base/command_line_switches.h"
 #include "components/sync/base/features.h"
 #include "components/sync/service/sync_service_impl.h"
@@ -70,11 +73,6 @@
 #include "extensions/browser/extensions_browser_client.h"
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
-#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-#include "chrome/browser/supervised_user/supervised_user_service_factory.h"
-#include "chrome/browser/supervised_user/supervised_user_settings_service_factory.h"
-#endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
-
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ash/app_list/app_list_syncable_service_factory.h"
 #include "chrome/browser/ash/printing/oauth2/authorization_zones_manager_factory.h"
@@ -86,6 +84,8 @@
 #if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC) || \
     BUILDFLAG(IS_WIN)
 #include "chrome/browser/ui/tabs/saved_tab_groups/saved_tab_group_service_factory.h"
+#elif BUILDFLAG(IS_ANDROID)
+#include "chrome/browser/tab_group_sync/tab_group_sync_service_factory.h"
 #endif  // BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC) ||
         // BUILDFLAG(IS_WIN)
 
@@ -93,12 +93,15 @@
 #include "chrome/browser/webauthn/passkey_model_factory.h"
 #else  // !BUILDFLAG(IS_ANDROID)
 #include "base/android/scoped_java_ref.h"
-#include "chrome/browser/profiles/profile_android.h"
-#include "chrome/browser/sync/android/jni_headers/SyncServiceFactory_jni.h"
 #endif  // BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(IS_ANDROID)
 #include "chrome/browser/android/webapk/webapk_sync_service_factory.h"
+#endif  // BUILDFLAG(IS_ANDROID)
+
+// Must come after other includes, because FromJniType() uses Profile.
+#if BUILDFLAG(IS_ANDROID)
+#include "chrome/browser/sync/android/jni_headers/SyncServiceFactory_jni.h"
 #endif  // BUILDFLAG(IS_ANDROID)
 
 namespace {
@@ -127,7 +130,7 @@ std::unique_ptr<KeyedService> BuildSyncService(
   bool local_sync_backend_enabled = false;
 // Only check the local sync backend pref on the supported platforms of
 // Windows, Mac and Linux.
-// TODO(crbug.com/1052397): Reassess whether the following block needs to be
+// TODO(crbug.com/40118868): Reassess whether the following block needs to be
 // included in lacros-chrome once build flag switch of lacros-chrome is
 // complete.
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || \
@@ -247,6 +250,7 @@ SyncServiceFactory::SyncServiceFactory()
   DependsOn(browser_sync::UserEventServiceFactory::GetInstance());
   DependsOn(ConsentAuditorFactory::GetInstance());
   DependsOn(DeviceInfoSyncServiceFactory::GetInstance());
+  DependsOn(data_sharing::DataSharingServiceFactory::GetInstance());
   DependsOn(FaviconServiceFactory::GetInstance());
   DependsOn(gcm::GCMProfileServiceFactory::GetInstance());
   // Sync needs this service to still be present when the sync engine is
@@ -261,11 +265,14 @@ SyncServiceFactory::SyncServiceFactory()
 #endif  // !BUILDFLAG(IS_ANDROID)
   DependsOn(PasswordReceiverServiceFactory::GetInstance());
   DependsOn(PasswordSenderServiceFactory::GetInstance());
+  DependsOn(commerce::ProductSpecificationsServiceFactory::GetInstance());
   DependsOn(ProfilePasswordStoreFactory::GetInstance());
   DependsOn(PowerBookmarkServiceFactory::GetInstance());
 #if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC) || \
     BUILDFLAG(IS_WIN)
   DependsOn(tab_groups::SavedTabGroupServiceFactory::GetInstance());
+#elif BUILDFLAG(IS_ANDROID)
+  DependsOn(tab_groups::TabGroupSyncServiceFactory::GetInstance());
 #endif  // BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC) ||
         // BUILDFLAG(IS_WIN)
   DependsOn(SecurityEventRecorderFactory::GetInstance());
@@ -273,9 +280,7 @@ SyncServiceFactory::SyncServiceFactory()
   DependsOn(SharingMessageBridgeFactory::GetInstance());
   DependsOn(SpellcheckServiceFactory::GetInstance());
   DependsOn(SyncInvalidationsServiceFactory::GetInstance());
-#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   DependsOn(SupervisedUserSettingsServiceFactory::GetInstance());
-#endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
   DependsOn(SessionSyncServiceFactory::GetInstance());
   DependsOn(TemplateURLServiceFactory::GetInstance());
 #if !BUILDFLAG(IS_ANDROID)
@@ -361,10 +366,7 @@ SyncServiceFactory::GetDefaultFactory() {
 
 #if BUILDFLAG(IS_ANDROID)
 static base::android::ScopedJavaLocalRef<jobject>
-JNI_SyncServiceFactory_GetForProfile(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& java_profile) {
-  Profile* profile = ProfileAndroid::FromProfileAndroid(java_profile);
+JNI_SyncServiceFactory_GetForProfile(JNIEnv* env, Profile* profile) {
   DCHECK(profile);
 
   syncer::SyncService* sync_service =

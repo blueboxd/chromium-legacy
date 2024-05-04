@@ -50,15 +50,16 @@ class ReadWriteCardObserver : public RenderViewContextMenuObserver {
 
   void OnFetchControllers(
       const content::ContextMenuParams& params,
-      const gfx::Rect& bounds_in_screen,
       std::vector<base::WeakPtr<chromeos::ReadWriteCardController>>
           controllers);
 
   // The interface to add a context-menu item and update it.
   raw_ptr<RenderViewContextMenuProxy, DanglingUntriaged> proxy_;
 
-  // Profile that is associated with the source WebContents.
-  const raw_ptr<Profile> profile_;
+  // Dangling on lacros_chrome_browsertests during:
+  // AutofillContextMenuManagerFeedbackUILacrosBrowserTest
+  // .CloseTabWhileUIIsOpenShouldNotCrash
+  const raw_ptr<Profile, DanglingUntriaged> profile_;
 
   gfx::Rect bounds_in_screen_;
 

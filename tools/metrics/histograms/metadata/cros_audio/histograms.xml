@@ -22,6 +22,50 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histograms>
 
+<histogram name="ChromeOS.AudioSelection" enum="AudioSelectionEvents"
+    expires_after="2025-03-31">
+  <owner>zhangwenyu@google.com</owner>
+  <owner>cros-peripherals@google.com</owner>
+  <summary>
+    Recorded when audio selection events described in AudioSelectionEvents
+    happen. For example, the system switches or does not switch active audio
+    device after the device is added or removed, the user overrides the system
+    switching or not switching decision, etc. The user-override metrics are only
+    recorded if they occur within the first hour after the system decision was
+    made. Do not record if there is no alternative available audio device.
+  </summary>
+</histogram>
+
+<histogram name="ChromeOS.AudioSelection.ExceptionRulesMet"
+    enum="AudioSelectionExceptionRules" expires_after="2025-03-31">
+  <owner>zhangwenyu@google.com</owner>
+  <owner>cros-peripherals@google.com</owner>
+  <summary>
+    Recorded when audio selection exception rules are met. Exception rules are
+    detailed in enum AudioSelectionExceptionRules.
+  </summary>
+</histogram>
+
+<histogram
+    name="ChromeOS.AudioSelection.{AudioType}.ConsecutiveDevicesChangeTimeElapsed.{ChangeType}"
+    units="seconds" expires_after="2025-02-25">
+  <owner>zhangwenyu@google.com</owner>
+  <owner>cros-peripherals@google.com</owner>
+  <summary>
+    Recorded when {AudioType} audio devices have changed, including
+    {ChangeType}. Record the time elaspsed between two consecutive devices
+    change event.
+  </summary>
+  <token key="AudioType">
+    <variant name="Input" summary="input"/>
+    <variant name="Output" summary="output"/>
+  </token>
+  <token key="ChangeType">
+    <variant name="Add" summary="devices added"/>
+    <variant name="Any" summary="devices added/removed and devices changed"/>
+  </token>
+</histogram>
+
 <histogram name="ChromeOS.AudioSelection.{AudioType}.SystemSwitchAudio"
     enum="BooleanSwitched" expires_after="2024-09-01">
   <owner>zhangwenyu@google.com</owner>
@@ -34,6 +78,25 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
   <token key="AudioType">
     <variant name="Input" summary="input"/>
     <variant name="Output" summary="output"/>
+  </token>
+</histogram>
+
+<histogram
+    name="ChromeOS.AudioSelection.{AudioType}.SystemSwitchAudio.{IsChromeRestarts}"
+    enum="BooleanSwitched" expires_after="2025-02-25">
+  <owner>zhangwenyu@google.com</owner>
+  <owner>cros-peripherals@google.com</owner>
+  <summary>
+    Similar to ChromeOS.AudioSelection.{AudioType}.SystemSwitchAudio but only
+    recorded in cases of {IsChromeRestarts}.
+  </summary>
+  <token key="AudioType">
+    <variant name="Input" summary="input"/>
+    <variant name="Output" summary="output"/>
+  </token>
+  <token key="IsChromeRestarts">
+    <variant name="ChromeRestarts" summary="chrome restarts"/>
+    <variant name="NonChromeRestarts" summary="non chrome restarts"/>
   </token>
 </histogram>
 
@@ -58,6 +121,30 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram
+    name="ChromeOS.AudioSelection.{AudioType}.System{SwitchDecision}Audio.AudioDeviceCount.{IsChromeRestarts}"
+    units="counts" expires_after="2025-02-25">
+  <owner>zhangwenyu@google.com</owner>
+  <owner>cros-peripherals@google.com</owner>
+  <summary>
+    Similar to
+    ChromeOS.AudioSelection.{AudioType}.System{SwitchDecision}Audio.AudioDeviceCount
+    but only recorded in cases of {IsChromeRestarts}.
+  </summary>
+  <token key="AudioType">
+    <variant name="Input" summary="input"/>
+    <variant name="Output" summary="output"/>
+  </token>
+  <token key="SwitchDecision">
+    <variant name="NotSwitch" summary="not switching"/>
+    <variant name="Switch" summary="switching"/>
+  </token>
+  <token key="IsChromeRestarts">
+    <variant name="ChromeRestarts" summary="chrome restarts"/>
+    <variant name="NonChromeRestarts" summary="non chrome restarts"/>
+  </token>
+</histogram>
+
+<histogram
     name="ChromeOS.AudioSelection.{AudioType}.System{SwitchDecision}Audio.AudioDeviceSet"
     units="counts" expires_after="2025-02-25">
   <owner>zhangwenyu@google.com</owner>
@@ -74,6 +161,30 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
   <token key="SwitchDecision">
     <variant name="NotSwitch" summary="not switching"/>
     <variant name="Switch" summary="switching"/>
+  </token>
+</histogram>
+
+<histogram
+    name="ChromeOS.AudioSelection.{AudioType}.System{SwitchDecision}Audio.AudioDeviceSet.{IsChromeRestarts}"
+    units="counts" expires_after="2025-02-25">
+  <owner>zhangwenyu@google.com</owner>
+  <owner>cros-peripherals@google.com</owner>
+  <summary>
+    Similar to
+    ChromeOS.AudioSelection.{AudioType}.System{SwitchDecision}Audio.AudioDeviceSet
+    but only recorded in cases of {IsChromeRestarts}.
+  </summary>
+  <token key="AudioType">
+    <variant name="Input" summary="input"/>
+    <variant name="Output" summary="output"/>
+  </token>
+  <token key="SwitchDecision">
+    <variant name="NotSwitch" summary="not switching"/>
+    <variant name="Switch" summary="switching"/>
+  </token>
+  <token key="IsChromeRestarts">
+    <variant name="ChromeRestarts" summary="chrome restarts"/>
+    <variant name="NonChromeRestarts" summary="non chrome restarts"/>
   </token>
 </histogram>
 
@@ -99,6 +210,30 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram
+    name="ChromeOS.AudioSelection.{AudioType}.System{SwitchDecision}Audio.BeforeAndAfterAudioDeviceSet.{IsChromeRestarts}"
+    units="counts" expires_after="2025-02-25">
+  <owner>zhangwenyu@google.com</owner>
+  <owner>cros-peripherals@google.com</owner>
+  <summary>
+    Similar to
+    ChromeOS.AudioSelection.{AudioType}.System{SwitchDecision}Audio.BeforeAndAfterAudioDeviceSet
+    but only recorded in cases of {IsChromeRestarts}.
+  </summary>
+  <token key="AudioType">
+    <variant name="Input" summary="input"/>
+    <variant name="Output" summary="output"/>
+  </token>
+  <token key="SwitchDecision">
+    <variant name="NotSwitch" summary="not switching"/>
+    <variant name="Switch" summary="switching"/>
+  </token>
+  <token key="IsChromeRestarts">
+    <variant name="ChromeRestarts" summary="chrome restarts"/>
+    <variant name="NonChromeRestarts" summary="non chrome restarts"/>
+  </token>
+</histogram>
+
+<histogram
     name="ChromeOS.AudioSelection.{AudioType}.UserOverrideSystem{SwitchDecision}TimeElapsed"
     units="minutes" expires_after="2024-09-01">
   <owner>zhangwenyu@google.com</owner>
@@ -117,6 +252,30 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
   <token key="SwitchDecision">
     <variant name="NotSwitch" summary="not switching"/>
     <variant name="Switch" summary="switching"/>
+  </token>
+</histogram>
+
+<histogram
+    name="ChromeOS.AudioSelection.{AudioType}.UserOverrideSystem{SwitchDecision}TimeElapsed.{IsChromeRestarts}"
+    units="minutes" expires_after="2025-02-25">
+  <owner>zhangwenyu@google.com</owner>
+  <owner>cros-peripherals@google.com</owner>
+  <summary>
+    Similar to
+    ChromeOS.AudioSelection.{AudioType}.UserOverrideSystem{SwitchDecision}TimeElapsed
+    but only recorded in cases of {IsChromeRestarts}.
+  </summary>
+  <token key="AudioType">
+    <variant name="Input" summary="input"/>
+    <variant name="Output" summary="output"/>
+  </token>
+  <token key="SwitchDecision">
+    <variant name="NotSwitch" summary="not switching"/>
+    <variant name="Switch" summary="switching"/>
+  </token>
+  <token key="IsChromeRestarts">
+    <variant name="ChromeRestarts" summary="chrome restarts"/>
+    <variant name="NonChromeRestarts" summary="non chrome restarts"/>
   </token>
 </histogram>
 

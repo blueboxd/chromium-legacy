@@ -13,7 +13,7 @@
 #include "base/bit_cast.h"
 #include "base/containers/span.h"
 #include "base/json/values_util.h"
-#include "base/memory/raw_ptr.h"
+#include "base/memory/raw_ptr_exclusion.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/values.h"
@@ -513,8 +513,7 @@ sk_sp<cc::PaintFilter> PaintFilterFromString(const std::string& encoded) {
   // constraints explicitly disable serializing images using the transfer cache
   // and serialization of PaintRecords.
   std::vector<uint8_t> scratch_buffer;
-  cc::PaintOp::DeserializeOptions options(nullptr, nullptr, nullptr,
-                                          &scratch_buffer, false, nullptr);
+  cc::PaintOp::DeserializeOptions options{.scratch_buffer = scratch_buffer};
   cc::PaintOpReader reader(buffer.data(), buffer.size(), options,
                            /*enable_security_constraints=*/true);
   sk_sp<cc::PaintFilter> filter;
@@ -747,7 +746,6 @@ const char* ColorSpaceMatrixIdToString(gfx::ColorSpace::MatrixID id) {
     MATCH_ENUM_CASE(MatrixID, SMPTE240M)
     MATCH_ENUM_CASE(MatrixID, YCOCG)
     MATCH_ENUM_CASE(MatrixID, BT2020_NCL)
-    MATCH_ENUM_CASE(MatrixID, BT2020_CL)
     MATCH_ENUM_CASE(MatrixID, YDZDX)
     MATCH_ENUM_CASE(MatrixID, GBR)
   }
@@ -827,7 +825,6 @@ uint8_t StringToColorSpaceMatrixId(const std::string& token) {
   MATCH_ENUM_CASE(MatrixID, SMPTE240M)
   MATCH_ENUM_CASE(MatrixID, YCOCG)
   MATCH_ENUM_CASE(MatrixID, BT2020_NCL)
-  MATCH_ENUM_CASE(MatrixID, BT2020_CL)
   MATCH_ENUM_CASE(MatrixID, YDZDX)
   MATCH_ENUM_CASE(MatrixID, GBR)
   return -1;
@@ -1100,7 +1097,8 @@ struct DrawQuadCommon {
   gfx::Rect rect;
   gfx::Rect visible_rect;
   bool needs_blending = false;
-  raw_ptr<const SharedQuadState> shared_quad_state = nullptr;
+  // RAW_PTR_EXCLUSION: Performance reasons (based on analysis of speedometer3).
+  RAW_PTR_EXCLUSION const SharedQuadState* shared_quad_state = nullptr;
   DrawQuad::Resources resources;
 };
 
@@ -1249,7 +1247,11 @@ void TextureDrawQuadToDict(const TextureDrawQuad* draw_quad,
   dict->Set("uv_top_left", PointFToDict(draw_quad->uv_top_left));
   dict->Set("uv_bottom_right", PointFToDict(draw_quad->uv_bottom_right));
   dict->Set("background_color", SkColor4fToDict(draw_quad->background_color));
-  dict->Set("vertex_opacity", FloatArrayToList(draw_quad->vertex_opacity));
+  // TODO(crbug.com/40942150): Update
+  // "components/test/data/viz/render_pass_data/" to reflect the deprecation of
+  // vertex opacity.
+  float vertex_opacity[4] = {1.f, 1.0f, 1.0f, 1.f};
+  dict->Set("vertex_opacity", FloatArrayToList(vertex_opacity));
   dict->Set("y_flipped", draw_quad->y_flipped);
   dict->Set("nearest_neighbor", draw_quad->nearest_neighbor);
   dict->Set("secure_output_only", draw_quad->secure_output_only);
@@ -1285,8 +1287,6 @@ void YUVVideoDrawQuadToDict(const YUVVideoDrawQuad* draw_quad,
   dict->Set("uv_tex_coord_rect", RectFToDict(draw_quad->uv_tex_coord_rect()));
   dict->Set("ya_tex_size", SizeToDict(draw_quad->ya_tex_size()));
   dict->Set("uv_tex_size", SizeToDict(draw_quad->uv_tex_size()));
-  dict->Set("resource_offset", draw_quad->resource_offset);
-  dict->Set("resource_multiplier", draw_quad->resource_multiplier);
   dict->Set("bits_per_channel", static_cast<int>(draw_quad->bits_per_channel));
   dict->Set("video_color_space",
             ColorSpaceToDict(draw_quad->video_color_space));
@@ -1467,6 +1467,9 @@ bool TextureDrawQuadFromDict(const base::Value::Dict& dict,
       dict.FindBool("premultiplied_alpha");
   const base::Value::Dict* uv_top_left = dict.FindDict("uv_top_left");
   const base::Value::Dict* uv_bottom_right = dict.FindDict("uv_bottom_right");
+  // TODO(crbug.com/40942150): Update
+  // "components/test/data/viz/render_pass_data/" to reflect the deprecation of
+  // vertex opacity.
   const base::Value::List* vertex_opacity = dict.FindList("vertex_opacity");
   const base::Value::Dict* damage_rect = dict.FindDict("damage_rect");
   std::optional<bool> y_flipped = dict.FindBool("y_flipped");
@@ -1496,9 +1499,7 @@ bool TextureDrawQuadFromDict(const base::Value::Dict& dict,
       !ColorFromDict(dict, "background_color", &t_background_color)) {
     return false;
   }
-  float t_vertex_opacity[4];
-  if (!FloatArrayFromList(*vertex_opacity, 4u, t_vertex_opacity))
-    return false;
+
   const size_t kIndex = TextureDrawQuad::kResourceIdIndex;
   ResourceId resource_id = common.resources.ids[kIndex];
   draw_quad->SetAll(
@@ -1508,7 +1509,6 @@ bool TextureDrawQuadFromDict(const base::Value::Dict& dict,
       t_background_color, y_flipped.value(), nearest_neighbor.value(),
       secure_output_only.value(),
       static_cast<gfx::ProtectedVideoType>(protected_video_type_index));
-  draw_quad->set_vertex_opacity(t_vertex_opacity);
 
   draw_quad->is_stream_video = dict.FindBool("is_stream_video").value_or(false);
 
@@ -1557,9 +1557,6 @@ bool YUVVideoDrawQuadFromDict(const base::Value::Dict& dict,
   const base::Value::Dict* ya_tex_size = dict.FindDict("ya_tex_size");
   const base::Value::Dict* uv_tex_size = dict.FindDict("uv_tex_size");
   const base::Value::Dict* damage_rect = dict.FindDict("damage_rect");
-  std::optional<double> resource_offset = dict.FindDouble("resource_offset");
-  std::optional<double> resource_multiplier =
-      dict.FindDouble("resource_multiplier");
   std::optional<int> bits_per_channel = dict.FindInt("bits_per_channel");
   const base::Value::Dict* video_color_space =
       dict.FindDict("video_color_space");
@@ -1567,8 +1564,8 @@ bool YUVVideoDrawQuadFromDict(const base::Value::Dict& dict,
       dict.FindString("protected_video_type");
 
   if (!ya_tex_coord_rect || !uv_tex_coord_rect || !ya_tex_size ||
-      !uv_tex_size || !resource_offset || !resource_multiplier ||
-      !bits_per_channel || !video_color_space || !protected_video_type) {
+      !uv_tex_size || !bits_per_channel || !video_color_space ||
+      !protected_video_type) {
     return false;
   }
   gfx::RectF t_ya_tex_coord_rect, t_uv_tex_coord_rect;
@@ -1614,8 +1611,6 @@ bool YUVVideoDrawQuadFromDict(const base::Value::Dict& dict,
       common.needs_blending, coded_size, video_visible_rect, uv_sample_size,
       y_plane_resource_id, u_plane_resource_id, v_plane_resource_id,
       a_plane_resource_id, t_video_color_space,
-      static_cast<float>(resource_offset.value()),
-      static_cast<float>(resource_multiplier.value()),
       static_cast<uint32_t>(bits_per_channel.value()),
       static_cast<gfx::ProtectedVideoType>(protected_video_type_index),
       gfx::HDRMetadata());

@@ -11,6 +11,7 @@ import androidx.annotation.VisibleForTesting;
 import org.jni_zero.CalledByNative;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.device_lock.DeviceLockActivityLauncherImpl;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
@@ -56,7 +57,9 @@ final class SigninBridge {
                     accountPickerDelegate,
                     accountPickerBottomSheetStrings,
                     deviceLockActivityLauncher,
-                    accountPickerLaunchMode);
+                    accountPickerLaunchMode,
+                    /* isWebSignin= */ true,
+                    SigninAccessPoint.WEB_SIGNIN);
         }
     }
 
@@ -138,12 +141,18 @@ final class SigninBridge {
             // bottom sheet.
             return;
         }
+        AccountPickerBottomSheetStrings strings =
+                new AccountPickerBottomSheetStrings.Builder(
+                                R.string.signin_account_picker_dialog_title)
+                        .setSubtitleStringId(R.string.signin_account_picker_bottom_sheet_subtitle)
+                        .setDismissButtonStringId(R.string.signin_account_picker_dismiss_button)
+                        .build();
 
         factory.create(
                 windowAndroid,
                 bottomSheetController,
                 new WebSigninAccountPickerDelegate(tab, new WebSigninBridge.Factory(), continueUrl),
-                new AccountPickerBottomSheetStrings() {},
+                strings,
                 DeviceLockActivityLauncherImpl.get(),
                 AccountPickerLaunchMode.DEFAULT);
     }

@@ -8,6 +8,7 @@
 
 #include "components/performance_manager/public/graph/worker_node.h"
 #include "components/performance_manager/test_support/graph_test_harness.h"
+#include "url/origin.h"
 
 namespace performance_manager {
 
@@ -90,7 +91,7 @@ TEST_F(ProcessHostedContentTypesAggregatorTest, MainFrameAndChildFrame) {
 
   // Create a main frame in a first process.
   auto process_node_1 = CreateNode<ProcessNodeImpl>();
-  EXPECT_TRUE(process_node_1->GetHostedContentTypes().Empty());
+  EXPECT_TRUE(process_node_1->GetHostedContentTypes().empty());
   auto main_frame_node =
       CreateFrameNodeAutoId(process_node_1.get(), page_node.get());
 
@@ -103,7 +104,7 @@ TEST_F(ProcessHostedContentTypesAggregatorTest, MainFrameAndChildFrame) {
 
   // Create a child frame node in another process.
   auto process_node_2 = CreateNode<ProcessNodeImpl>();
-  EXPECT_TRUE(process_node_2->GetHostedContentTypes().Empty());
+  EXPECT_TRUE(process_node_2->GetHostedContentTypes().empty());
   auto child_frame_node = CreateFrameNodeAutoId(
       process_node_2.get(), page_node.get(), main_frame_node.get());
 
@@ -146,7 +147,8 @@ TEST_F(ProcessHostedContentTypesAggregatorTest, AdFrame) {
   auto process_node = CreateNode<ProcessNodeImpl>();
   auto ad_frame_node = CreateFrameNodeAutoId(
       process_node.get(), page_node.get(), main_frame_node.get());
-  ad_frame_node->OnNavigationCommitted(GURL("https://example.com"),
+  const GURL kUrl("https://example.com");
+  ad_frame_node->OnNavigationCommitted(kUrl, url::Origin::Create(kUrl),
                                        /* same_document=*/false);
   ad_frame_node->SetIsAdFrame(true);
 

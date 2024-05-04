@@ -34,7 +34,6 @@
 #include "third_party/blink/renderer/core/css/container_query.h"
 #include "third_party/blink/renderer/core/css/container_query_evaluator.h"
 #include "third_party/blink/renderer/core/css/css_resolution_units.h"
-#include "third_party/blink/renderer/core/css/out_of_flow_data.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/layout_tree_builder_traversal.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
@@ -47,14 +46,23 @@ namespace blink {
 
 namespace {
 
-std::optional<double> FindSizeForContainerAxis(PhysicalAxes requested_axis,
-                                               Element* context_element) {
-  DCHECK(requested_axis == kPhysicalAxisHorizontal ||
-         requested_axis == kPhysicalAxisVertical);
+std::optional<double> FindSizeForContainerAxis(
+    PhysicalAxes requested_axis,
+    Element* context_element,
+    const ScopedCSSName* container_name = nullptr) {
+  DCHECK(requested_axis == kPhysicalAxesHorizontal ||
+         requested_axis == kPhysicalAxesVertical);
 
-  ContainerSelector selector(requested_axis);
-  const TreeScope* tree_scope =
-      context_element ? &context_element->GetTreeScope() : nullptr;
+  ContainerSelector selector;
+  const TreeScope* tree_scope = nullptr;
+  if (container_name) {
+    selector = ContainerSelector(container_name->GetName(), requested_axis,
+                                 kLogicalAxesNone);
+    tree_scope = container_name->GetTreeScope();
+  } else {
+    selector = ContainerSelector(requested_axis);
+    tree_scope = context_element ? &context_element->GetTreeScope() : nullptr;
+  }
 
   for (Element* container = ContainerQueryEvaluator::FindContainer(
            context_element, selector, tree_scope);
@@ -64,7 +72,7 @@ std::optional<double> FindSizeForContainerAxis(PhysicalAxes requested_axis,
     ContainerQueryEvaluator& evaluator =
         container->EnsureContainerQueryEvaluator();
     evaluator.SetReferencedByUnit();
-    std::optional<double> size = requested_axis == kPhysicalAxisHorizontal
+    std::optional<double> size = requested_axis == kPhysicalAxesHorizontal
                                      ? evaluator.Width()
                                      : evaluator.Height();
     if (!size.has_value()) {
@@ -248,14 +256,24 @@ bool CSSToLengthConversionData::ContainerSizes::SizesEqual(
 }
 
 std::optional<double> CSSToLengthConversionData::ContainerSizes::Width() const {
-  CacheSizeIfNeeded(PhysicalAxes(kPhysicalAxisHorizontal), cached_width_);
+  CacheSizeIfNeeded(PhysicalAxes(kPhysicalAxesHorizontal), cached_width_);
   return cached_width_;
 }
 
 std::optional<double> CSSToLengthConversionData::ContainerSizes::Height()
     const {
-  CacheSizeIfNeeded(PhysicalAxes(kPhysicalAxisVertical), cached_height_);
+  CacheSizeIfNeeded(PhysicalAxes(kPhysicalAxesVertical), cached_height_);
   return cached_height_;
+}
+
+std::optional<double> CSSToLengthConversionData::ContainerSizes::Width(
+    const ScopedCSSName& container_name) const {
+  return FindNamedSize(container_name, PhysicalAxes(kPhysicalAxesHorizontal));
+}
+
+std::optional<double> CSSToLengthConversionData::ContainerSizes::Height(
+    const ScopedCSSName& container_name) const {
+  return FindNamedSize(container_name, PhysicalAxes(kPhysicalAxesVertical));
 }
 
 void CSSToLengthConversionData::ContainerSizes::CacheSizeIfNeeded(
@@ -268,15 +286,20 @@ void CSSToLengthConversionData::ContainerSizes::CacheSizeIfNeeded(
   cache = FindSizeForContainerAxis(requested_axis, context_element_);
 }
 
-CSSToLengthConversionData::AnchorData::AnchorData(Element* anchored,
-                                                  AnchorEvaluator* evaluator)
-    : evaluator_(evaluator) {
-  if (!evaluator_ && anchored) {
-    if (OutOfFlowData* out_of_flow_data = anchored->GetOutOfFlowData()) {
-      evaluator_ = &out_of_flow_data->GetAnchorResults();
-    }
-  }
+std::optional<double> CSSToLengthConversionData::ContainerSizes::FindNamedSize(
+    const ScopedCSSName& container_name,
+    PhysicalAxes requested_axis) const {
+  return FindSizeForContainerAxis(requested_axis, context_element_,
+                                  &container_name);
 }
+
+CSSToLengthConversionData::AnchorData::AnchorData(
+    AnchorEvaluator* evaluator,
+    const ScopedCSSName* position_anchor,
+    const std::optional<InsetAreaOffsets>& inset_area_offsets)
+    : evaluator_(evaluator),
+      position_anchor_(position_anchor),
+      inset_area_offsets_(inset_area_offsets) {}
 
 CSSToLengthConversionData::CSSToLengthConversionData(
     WritingMode writing_mode,
@@ -448,6 +471,19 @@ double CSSToLengthConversionData::ContainerWidth() const {
 double CSSToLengthConversionData::ContainerHeight() const {
   SetFlag(Flag::kContainerRelative);
   return container_sizes_.Height().value_or(SmallViewportHeight());
+}
+
+double CSSToLengthConversionData::ContainerWidth(
+    const ScopedCSSName& container_name) const {
+  SetFlag(Flag::kContainerRelative);
+  return container_sizes_.Width(container_name).value_or(SmallViewportWidth());
+}
+
+double CSSToLengthConversionData::ContainerHeight(
+    const ScopedCSSName& container_name) const {
+  SetFlag(Flag::kContainerRelative);
+  return container_sizes_.Height(container_name)
+      .value_or(SmallViewportHeight());
 }
 
 WritingMode CSSToLengthConversionData::GetWritingMode() const {

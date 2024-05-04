@@ -10,13 +10,11 @@
 
 #import "base/functional/callback_helpers.h"
 #import "base/memory/raw_ptr.h"
-#import "base/test/scoped_feature_list.h"
 #import "base/version.h"
 #import "components/pref_registry/pref_registry_syncable.h"
 #import "components/signin/public/base/signin_metrics.h"
 #import "components/signin/public/base/signin_pref_names.h"
 #import "components/signin/public/base/signin_switches.h"
-#import "components/sync/base/features.h"
 #import "components/sync/base/pref_names.h"
 #import "components/sync/service/sync_service.h"
 #import "components/sync/service/sync_user_settings.h"
@@ -35,7 +33,6 @@
 #import "ios/chrome/browser/signin/model/fake_system_identity_manager.h"
 #import "ios/chrome/browser/signin/model/signin_util.h"
 #import "ios/chrome/browser/sync/model/sync_service_factory.h"
-#import "ios/chrome/browser/ui/authentication/signin/user_signin/user_signin_constants.h"
 #import "ios/chrome/test/ios_chrome_scoped_testing_local_state.h"
 #import "ios/web/public/test/web_task_environment.h"
 #import "testing/gtest/include/gtest/gtest.h"
@@ -294,10 +291,6 @@ TEST_F(SigninUtilsTest, TestWillNotShowIfDisabledByPolicy) {
 
 // Should show if the user is signed-in without history opt-in.
 TEST_F(SigninUtilsTest, TestWillShowIfSignedInWithoutHistoryOptIn) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      syncer::kReplaceSyncPromosWithSignInPromos);
-
   FakeSystemIdentity* identity =
       [FakeSystemIdentity identityWithEmail:@"foo1@gmail.com"
                                      gaiaID:@"foo1ID"
@@ -319,10 +312,6 @@ TEST_F(SigninUtilsTest, TestWillShowIfSignedInWithoutHistoryOptIn) {
 
 // Should not show if the user is signed-in with history opt-in.
 TEST_F(SigninUtilsTest, TestWillNotShowIfSignedInWithHistoryOptIn) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      syncer::kReplaceSyncPromosWithSignInPromos);
-
   FakeSystemIdentity* identity =
       [FakeSystemIdentity identityWithEmail:@"foo1@gmail.com"
                                      gaiaID:@"foo1ID"
@@ -402,29 +391,6 @@ TEST_F(SigninUtilsTest,
 
   chrome_browser_state_->GetPrefs()->ClearPref(
       syncer::prefs::internal::kSyncInitialSyncFeatureSetupComplete);
-}
-
-// Regression test for crbug.com/1248042.
-// signin::GetPrimaryIdentitySigninState for a syncing user who has not
-// completed the sync setup (due to a crash while in advanced settings) should
-// return the signed-in, sync disabled state.
-TEST_F(SigninUtilsTest, TestGetPrimaryIdentitySigninStateSyncGranted) {
-  FakeSystemIdentity* identity =
-      [FakeSystemIdentity identityWithEmail:@"foo1@gmail.com"
-                                     gaiaID:@"foo1ID"
-                                       name:@"Fake Foo 1"];
-  fake_system_identity_manager()->AddIdentity(identity);
-  AuthenticationService* authentication_service =
-      AuthenticationServiceFactory::GetForBrowserState(
-          chrome_browser_state_.get());
-  authentication_service->SignIn(
-      identity, signin_metrics::AccessPoint::ACCESS_POINT_SIGNIN_PROMO);
-  authentication_service->GrantSyncConsent(
-      identity, signin_metrics::AccessPoint::ACCESS_POINT_SIGNIN_PROMO);
-
-  IdentitySigninState state =
-      signin::GetPrimaryIdentitySigninState(chrome_browser_state_.get());
-  EXPECT_EQ(IdentitySigninStateSignedInWithSyncDisabled, state);
 }
 
 }  // namespace

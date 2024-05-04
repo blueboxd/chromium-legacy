@@ -378,7 +378,7 @@ bool GuestViewBase::ZoomPropagatesFromEmbedderToGuest() const {
 }
 
 content::NavigationController& GuestViewBase::GetController() {
-  // TODO(crbug/1261928): Migrate the implementation for MPArch.
+  // TODO(crbug.com/40202416): Migrate the implementation for MPArch.
   return web_contents()->GetController();
 }
 
@@ -449,7 +449,7 @@ void GuestViewBase::AttachToOuterWebContentsFrame(
     GuestViewMessageHandler::AttachToEmbedderFrameCallback
         attachment_callback) {
   // Stop tracking the old embedder's zoom level.
-  // TODO(crbug.com/533069): We should assert that we're not tracking the
+  // TODO(crbug.com/40436245): We should assert that we're not tracking the
   // embedder at this point, since guest reattachment is no longer possible.
   StopTrackingEmbedderZoomLevel();
 
@@ -554,7 +554,7 @@ void GuestViewBase::WebContentsDestroyed() {
 
 void GuestViewBase::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
-  // TODO(crbug.com/1261928): Due to the use of inner WebContents, a
+  // TODO(crbug.com/40202416): Due to the use of inner WebContents, a
   // GuestViewBase's main frame is considered primary. This will no
   // longer be the case once we migrate guest views to MPArch.
   if (!navigation_handle->IsInPrimaryMainFrame() ||
@@ -574,13 +574,12 @@ void GuestViewBase::ActivateContents(WebContents* web_contents) {
 }
 
 void GuestViewBase::ContentsMouseEvent(WebContents* source,
-                                       bool motion,
-                                       bool exited) {
+                                       const ui::Event& event) {
   if (!attached() || !embedder_web_contents()->GetDelegate())
     return;
 
   embedder_web_contents()->GetDelegate()->ContentsMouseEvent(
-      embedder_web_contents(), motion, exited);
+      embedder_web_contents(), event);
 }
 
 void GuestViewBase::ContentsZoomChange(bool zoom_in) {
@@ -906,7 +905,7 @@ bool GuestViewBase::IsPermissionRequestable(ContentSettingsType type) const {
 }
 
 content::RenderFrameHost* GuestViewBase::GetGuestMainFrame() const {
-  // TODO(crbug/1261928): Migrate the implementation for MPArch.
+  // TODO(crbug.com/40202416): Migrate the implementation for MPArch.
   return web_contents()->GetPrimaryMainFrame();
 }
 

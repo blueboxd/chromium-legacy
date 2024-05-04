@@ -52,6 +52,11 @@ class CONTENT_EXPORT DigitalIdentityRequestImpl
       RenderFrameHost&,
       mojo::PendingReceiver<blink::mojom::DigitalIdentityRequest>);
 
+  // Called after fetching the user's identity. Shows an interstitial if needed.
+  void ShowInterstitialIfNeeded(
+      const std::string& response,
+      DigitalIdentityProvider::RequestStatusForMetrics status_for_metrics);
+
   // Infers one of [kError, kSuccess] for RequestDigitalIdentityStatus based on
   // `status_for_metrics`.
   void CompleteRequest(

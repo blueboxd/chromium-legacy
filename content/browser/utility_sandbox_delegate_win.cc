@@ -14,6 +14,7 @@
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
 #include "content/utility/sandbox_delegate_data.mojom.h"
 #include "printing/buildflags/buildflags.h"
+#include "sandbox/policy/features.h"
 #include "sandbox/policy/mojom/sandbox.mojom.h"
 #include "sandbox/policy/win/sandbox_win.h"
 #include "sandbox/win/src/app_container.h"
@@ -118,10 +119,6 @@ bool PrintBackendInitializeConfig(sandbox::TargetConfig* config) {
 }
 #endif
 
-std::string UtilityAppContainerId(base::CommandLine& cmd_line) {
-  return base::WideToUTF8(cmd_line.GetProgram().value());
-}
-
 bool IconReaderInitializeConfig(sandbox::TargetConfig* config) {
   DCHECK(!config->IsConfigured());
 
@@ -177,7 +174,7 @@ bool XrCompositingInitializeConfig(sandbox::TargetConfig* config,
                                    base::CommandLine& cmd_line,
                                    sandbox::mojom::Sandbox sandbox_type) {
   DCHECK(!config->IsConfigured());
-  // TODO(https://crbug.com/881919): Try to harden the XR Compositor
+  // TODO(crbug.com/41412553): Try to harden the XR Compositor
   // sandbox to use mitigations and restrict the token.
 
   // Unprotected token/job.
@@ -201,7 +198,8 @@ bool XrCompositingInitializeConfig(sandbox::TargetConfig* config,
   if (result != sandbox::SBOX_ALL_OK)
     return false;
 
-  std::string appcontainer_id = UtilityAppContainerId(cmd_line);
+  std::string appcontainer_id =
+      GetContentClient()->browser()->GetAppContainerId();
   result = sandbox::policy::SandboxWin::AddAppContainerProfileToConfig(
       cmd_line, sandbox_type, appcontainer_id, config);
   if (result != sandbox::SBOX_ALL_OK)
@@ -229,23 +227,18 @@ bool ScreenAIInitializeConfig(sandbox::TargetConfig* config,
 }
 #endif  // BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
 
-// If preload-libraries or pinuser32 is required, adds delegate blob for
-// utility_main() to access before lockdown is initialized.
+// Adds preload-libraries to the delegate blob for utility_main() to access
+// before lockdown is initialized.
 void AddDelegateData(sandbox::TargetPolicy* policy,
-                     bool pin_user32,
                      std::vector<base::FilePath>& preload_libraries) {
-  if (!pin_user32 && preload_libraries.empty()) {
+  if (preload_libraries.empty()) {
     return;
   }
   auto sandbox_config = content::mojom::sandbox::UtilityConfig::New();
-  if (pin_user32) {
-    sandbox_config->pin_user32 = true;
+  for (const auto& library_path : preload_libraries) {
+    sandbox_config->preload_libraries.push_back(library_path);
   }
-  if (!preload_libraries.empty()) {
-    for (const auto& library_path : preload_libraries) {
-      sandbox_config->preload_libraries.push_back(library_path);
-    }
-  }
+
   std::vector<uint8_t> blob =
       content::mojom::sandbox::UtilityConfig::Serialize(&sandbox_config);
   policy->AddDelegateData(blob);
@@ -266,8 +259,17 @@ bool UtilitySandboxedProcessLauncherDelegate::GetAppContainerId(
     case sandbox::mojom::Sandbox::kOnDeviceModelExecution:
     case sandbox::mojom::Sandbox::kWindowsSystemProxyResolver:
     case sandbox::mojom::Sandbox::kXrCompositing:
-      *appcontainer_id = UtilityAppContainerId(cmd_line_);
+      *appcontainer_id = GetContentClient()->browser()->GetAppContainerId();
       return true;
+#if BUILDFLAG(ENABLE_PRINTING)
+    case sandbox::mojom::Sandbox::kPrintCompositor:
+      if (base::FeatureList::IsEnabled(
+              sandbox::policy::features::kPrintCompositorLPAC)) {
+        *appcontainer_id = GetContentClient()->browser()->GetAppContainerId();
+        return true;
+      }
+      return false;
+#endif
     default:
       return false;
   }
@@ -291,6 +293,14 @@ bool UtilitySandboxedProcessLauncherDelegate::DisableDefaultPolicy() {
     case sandbox::mojom::Sandbox::kOnDeviceModelExecution:
       // An LPAC policy is used for on-device model execution.
       return true;
+#if BUILDFLAG(ENABLE_PRINTING)
+    case sandbox::mojom::Sandbox::kPrintCompositor:
+      // Default policy is disabled for Print Compositor to allow the
+      // application of specific LPAC sandbox policies, when that feature is
+      // enabled.
+      return base::FeatureList::IsEnabled(
+          sandbox::policy::features::kPrintCompositorLPAC);
+#endif
     case sandbox::mojom::Sandbox::kWindowsSystemProxyResolver:
       // Default policy is disabled for Windows System Proxy Resolver process to
       // allow the application of specific LPAC sandbox policies.
@@ -399,6 +409,19 @@ bool UtilitySandboxedProcessLauncherDelegate::InitializeConfig(
   }
 #endif
 
+#if BUILDFLAG(ENABLE_PRINTING)
+  if (sandbox_type_ == sandbox::mojom::Sandbox::kPrintCompositor &&
+      base::FeatureList::IsEnabled(
+          sandbox::policy::features::kPrintCompositorLPAC)) {
+    // LPAC sandbox is enabled, so do not use a restricted token.
+    auto result = config->SetTokenLevel(sandbox::USER_UNPROTECTED,
+                                        sandbox::USER_UNPROTECTED);
+    if (result != sandbox::SBOX_ALL_OK) {
+      return false;
+    }
+  }
+#endif
+
   return GetContentClient()->browser()->PreSpawnChild(
       config, sandbox_type_,
       ContentBrowserClient::ChildSpawnFlags::kChildSpawnFlagNone);
@@ -413,7 +436,7 @@ bool UtilitySandboxedProcessLauncherDelegate::ShouldUnsandboxedRunInJob() {
 }
 
 bool UtilitySandboxedProcessLauncherDelegate::CetCompatible() {
-  // TODO(1268074) can remove once v8 is cet-compatible.
+  // TODO(crbug.com/40803284) can remove once v8 is cet-compatible.
   if (sandbox_type_ == sandbox::mojom::Sandbox::kServiceWithJit)
     return false;
   auto utility_sub_type =
@@ -432,7 +455,7 @@ bool UtilitySandboxedProcessLauncherDelegate::AllowWindowsFontsDir() {
 
 bool UtilitySandboxedProcessLauncherDelegate::PreSpawnTarget(
     sandbox::TargetPolicy* policy) {
-  AddDelegateData(policy, pin_user32_, preload_libraries_);
+  AddDelegateData(policy, preload_libraries_);
   return SandboxedProcessLauncherDelegate::PreSpawnTarget(policy);
 }
 }  // namespace content

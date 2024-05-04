@@ -110,8 +110,8 @@ class DraggedNodeImageBuilder {
 
     gfx::Rect absolute_bounding_box =
         dragged_layout_object->AbsoluteBoundingBoxRectIncludingDescendants();
-    // TODO(chrishtr): consider using the root frame's visible rect instead
-    // of the local frame, to avoid over-clipping.
+    // TODO(crbug.com/331320415): consider using the root frame's visible rect
+    // instead of the local frame, to avoid over-clipping.
     gfx::Rect visible_rect(gfx::Point(),
                            layer->GetLayoutObject().GetFrameView()->Size());
     // If the absolute bounding box is large enough to be possibly a memory
@@ -288,14 +288,10 @@ void DataTransfer::clearData(const String& type) {
     return;
   }
   if (type.IsNull()) {
-    if (RuntimeEnabledFeatures::DataTransferClearStringItemsEnabled()) {
-      // As per spec
-      // https://html.spec.whatwg.org/multipage/dnd.html#dom-datatransfer-cleardata,
-      // `clearData()` doesn't remove `kFileKind` objects from `item_list_`.
-      data_object_->ClearStringItems();
-    } else {
-      data_object_->ClearAll();
-    }
+    // As per spec
+    // https://html.spec.whatwg.org/multipage/dnd.html#dom-datatransfer-cleardata,
+    // `clearData()` doesn't remove `kFileKind` objects from `item_list_`.
+    data_object_->ClearStringItems();
   } else {
     data_object_->ClearData(NormalizeType(type));
   }
@@ -570,8 +566,7 @@ bool DataTransfer::CanWriteData() const {
 }
 
 bool DataTransfer::CanSetDragImage() const {
-  return policy_ == DataTransferAccessPolicy::kImageWritable ||
-         policy_ == DataTransferAccessPolicy::kWritable;
+  return policy_ == DataTransferAccessPolicy::kWritable;
 }
 
 DragOperationsMask DataTransfer::SourceOperation() const {
@@ -598,10 +593,10 @@ void DataTransfer::SetDestinationOperation(ui::mojom::blink::DragOperation op) {
 }
 
 DataTransferItemList* DataTransfer::items() {
-  // TODO: According to the spec, we are supposed to return the same collection
-  // of items each time. We now return a wrapper that always wraps the *same*
-  // set of items, so JS shouldn't be able to tell, but we probably still want
-  // to fix this.
+  // TODO(crbug.com/331320416): According to the spec, we are supposed to
+  // return the same collection of items each time. We now return a wrapper
+  // that always wraps the *same* set of items, so JS shouldn't be able to
+  // tell, but we probably still want to fix this.
   return MakeGarbageCollected<DataTransferItemList>(this, data_object_);
 }
 

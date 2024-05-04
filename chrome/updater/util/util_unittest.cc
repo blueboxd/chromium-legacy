@@ -25,8 +25,8 @@
 #include "base/test/task_environment.h"
 #include "chrome/updater/constants.h"
 #include "chrome/updater/tag.h"
-#include "chrome/updater/test_scope.h"
-#include "chrome/updater/util/unit_test_util.h"
+#include "chrome/updater/test/test_scope.h"
+#include "chrome/updater/test/unit_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace updater {
@@ -40,7 +40,6 @@ class UtilTagArgsTest : public ::testing::TestWithParam<UtilTagArgsTestCase> {};
 INSTANTIATE_TEST_SUITE_P(UtilTagArgsTestCases,
                          UtilTagArgsTest,
                          ::testing::ValuesIn(std::vector<UtilTagArgsTestCase>{
-                             {kTagSwitch},
                              {kInstallSwitch},
                              {kHandoffSwitch},
                          }));
@@ -108,7 +107,7 @@ TEST(Util, WriteInstallerDataToTempFile) {
 
 TEST(Util, GetCrashDatabasePath) {
   std::optional<base::FilePath> crash_database_path(
-      GetCrashDatabasePath(GetTestScope()));
+      GetCrashDatabasePath(GetUpdaterScopeForTesting()));
   ASSERT_TRUE(crash_database_path);
   EXPECT_EQ(crash_database_path->BaseName().value(),
             FILE_PATH_LITERAL("Crashpad"));
@@ -116,7 +115,7 @@ TEST(Util, GetCrashDatabasePath) {
 
 TEST(Util, GetCrxDiffCacheDirectory) {
   std::optional<base::FilePath> diff_cache_directory(
-      GetCrxDiffCacheDirectory(GetTestScope()));
+      GetCrxDiffCacheDirectory(GetUpdaterScopeForTesting()));
   ASSERT_TRUE(diff_cache_directory);
   EXPECT_EQ(diff_cache_directory->BaseName().value(),
             FILE_PATH_LITERAL("crx_cache"));

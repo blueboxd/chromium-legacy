@@ -24,6 +24,7 @@ import androidx.annotation.StringRes;
 import androidx.annotation.VisibleForTesting;
 import androidx.appcompat.app.AlertDialog;
 import androidx.preference.Preference;
+import androidx.preference.PreferenceCategory;
 import androidx.preference.PreferenceScreen;
 
 import org.chromium.base.Callback;
@@ -318,8 +319,7 @@ public class SingleWebsiteSettings extends BaseSiteSettingsFragment
             displaySitePermissions();
         } else if (extraSiteAddress != null && extraSite == null) {
             WebsitePermissionsFetcher fetcher =
-                    new WebsitePermissionsFetcher(
-                            getSiteSettingsDelegate().getBrowserContextHandle());
+                    new WebsitePermissionsFetcher(getSiteSettingsDelegate());
             fetcher.fetchAllPreferences(
                     new SingleWebsitePermissionsPopulator((WebsiteAddress) extraSiteAddress));
         } else {
@@ -353,9 +353,7 @@ public class SingleWebsiteSettings extends BaseSiteSettingsFragment
                                     DeleteBrowsingDataAction.MAX_VALUE);
 
                             SiteDataCleaner.clearData(
-                                    getSiteSettingsDelegate().getBrowserContextHandle(),
-                                    mSite,
-                                    mDataClearedCallback);
+                                    getSiteSettingsDelegate(), mSite, mDataClearedCallback);
                         }
                     };
             ClearWebsiteStorageDialog dialogFragment =
@@ -471,7 +469,7 @@ public class SingleWebsiteSettings extends BaseSiteSettingsFragment
                 }
             }
 
-            // TODO(crbug.com/763982): Deal with this TODO colony.
+            // TODO(crbug.com/40539464): Deal with this TODO colony.
             // TODO(mvanouwerkerk): Make the various info types share a common interface that
             // supports reading the origin or host.
             // TODO(lshang): Merge in CookieException? It will use patterns.
@@ -490,12 +488,12 @@ public class SingleWebsiteSettings extends BaseSiteSettingsFragment
             @ContentSettingsType.EnumType int contentSettingsType,
             @ContentSettingValues @Nullable Integer value) {
         return ContentSettingsResources.getContentSettingsIcon(
-                getContext(), contentSettingsType, value, getSiteSettingsDelegate());
+                getContext(), contentSettingsType, value);
     }
 
     /**
-     * Updates the permissions displayed in the UI by fetching them from mSite.
-     * Must only be called once mSite is set.
+     * Updates the permissions displayed in the UI by fetching them from mSite. Must only be called
+     * once mSite is set.
      */
     private void displaySitePermissions() {
         if (getPreferenceScreen() != null) {
@@ -686,7 +684,8 @@ public class SingleWebsiteSettings extends BaseSiteSettingsFragment
             if (value == null
                     || (value != ContentSettingValues.ALLOW
                             && value != ContentSettingValues.BLOCK)) {
-                // TODO(crbug.com/735110): Figure out if this is the correct thing to do, for values
+                // TODO(crbug.com/40526685): Figure out if this is the correct thing to do, for
+                // values
                 // that are non-null, but not ALLOW or BLOCK either. (In
                 // setupContentSettingsPreference we treat non-ALLOW settings as BLOCK, but here we
                 // are simply not adding it.)
@@ -871,8 +870,7 @@ public class SingleWebsiteSettings extends BaseSiteSettingsFragment
                         getContentSettingsIcon(
                                 info.getContentSettingType(), info.getContentSetting()));
                 preference.setTitle(
-                        ContentSettingsResources.getTitle(
-                                info.getContentSettingType(), getSiteSettingsDelegate()));
+                        ContentSettingsResources.getTitle(info.getContentSettingType()));
                 var pattern = WebsiteAddress.create(info.getPrimaryPattern());
                 preference.setSummary(
                         getEmbeddedPermissionSummary(pattern.getHost(), info.getContentSetting()));
@@ -938,8 +936,8 @@ public class SingleWebsiteSettings extends BaseSiteSettingsFragment
     }
 
     private void setupRelatedSitesPreferences() {
-        var relatedSitesHeader = findPreference(PREF_RELATED_SITES_HEADER);
-        TextMessagePreference relatedSitesText = findPreference(PREF_RELATED_SITES);
+        PreferenceCategory relatedSitesHeader = findPreference(PREF_RELATED_SITES_HEADER);
+        TextMessagePreference relatedSitesText = new TextMessagePreference(getContext(), null);
         boolean shouldRelatedSitesPrefBeVisible =
                 getSiteSettingsDelegate().isPrivacySandboxFirstPartySetsUIFeatureEnabled()
                         && getSiteSettingsDelegate().isFirstPartySetsDataAccessEnabled()
@@ -966,6 +964,21 @@ public class SingleWebsiteSettings extends BaseSiteSettingsFragment
                                     .isPartOfManagedFirstPartySet(mSite.getAddress().getOrigin());
                         }
                     });
+            relatedSitesHeader.addPreference(relatedSitesText);
+
+            if (getSiteSettingsDelegate().shouldShowPrivacySandboxRwsUi()) {
+                relatedSitesHeader.removeAll();
+                relatedSitesHeader.addPreference(relatedSitesText);
+                for (Website site : mSite.getFPSCookieInfo().getMembers()) {
+                    WebsiteRowPreference preference =
+                            new RwsRowPreference(
+                                    relatedSitesHeader.getContext(),
+                                    getSiteSettingsDelegate(),
+                                    site,
+                                    getActivity().getLayoutInflater());
+                    relatedSitesHeader.addPreference(preference);
+                }
+            }
         }
     }
 
@@ -1080,8 +1093,7 @@ public class SingleWebsiteSettings extends BaseSiteSettingsFragment
             Preference preference, @ContentSettingValues @Nullable Integer value) {
         @ContentSettingsType.EnumType
         int contentType = getContentSettingsTypeFromPreferenceKey(preference.getKey());
-        int titleResourceId =
-                ContentSettingsResources.getTitle(contentType, getSiteSettingsDelegate());
+        int titleResourceId = ContentSettingsResources.getTitle(contentType);
 
         if (titleResourceId != 0) {
             preference.setTitle(titleResourceId);
@@ -1241,7 +1253,7 @@ public class SingleWebsiteSettings extends BaseSiteSettingsFragment
         if (mPreferenceMap == null) {
             mPreferenceMap = new HashMap<>();
             for (@ContentSettingsType.EnumType int type = 0;
-                    type < ContentSettingsType.NUM_TYPES;
+                    type <= ContentSettingsType.MAX_VALUE;
                     type++) {
                 String key = getPreferenceKey(type);
                 if (key != null) {
@@ -1315,7 +1327,7 @@ public class SingleWebsiteSettings extends BaseSiteSettingsFragment
         // for its logic. This class should maintain its own data model, and only update the screen
         // after a change is made.
         for (@ContentSettingsType.EnumType int type = 0;
-                type < ContentSettingsType.NUM_TYPES;
+                type <= ContentSettingsType.MAX_VALUE;
                 type++) {
             String key = getPreferenceKey(type);
             if (key != null) {
@@ -1336,8 +1348,7 @@ public class SingleWebsiteSettings extends BaseSiteSettingsFragment
 
         SiteDataCleaner.resetPermissions(
                 getSiteSettingsDelegate().getBrowserContextHandle(), mSite);
-        SiteDataCleaner.clearData(
-                getSiteSettingsDelegate().getBrowserContextHandle(), mSite, mDataClearedCallback);
+        SiteDataCleaner.clearData(getSiteSettingsDelegate(), mSite, mDataClearedCallback);
 
         RecordHistogram.recordEnumeratedHistogram(
                 "Privacy.DeleteBrowsingData.Action",

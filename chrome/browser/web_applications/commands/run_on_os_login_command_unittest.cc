@@ -44,8 +44,7 @@ class RunOnOsLoginCommandTest : public WebAppTest {
     WebAppTest::SetUp();
     {
       base::ScopedAllowBlockingForTesting allow_blocking;
-      test_override_ =
-          OsIntegrationTestOverrideImpl::OverrideForTesting(base::GetHomeDir());
+      test_override_ = OsIntegrationTestOverrideImpl::OverrideForTesting();
     }
     provider_ = FakeWebAppProvider::Get(profile());
 
@@ -57,7 +56,7 @@ class RunOnOsLoginCommandTest : public WebAppTest {
         profile(), file_handler_manager.get(), protocol_handler_manager.get());
     auto os_integration_manager = std::make_unique<OsIntegrationManager>(
         profile(), std::move(shortcut_manager), std::move(file_handler_manager),
-        std::move(protocol_handler_manager), /*url_handler_manager=*/nullptr);
+        std::move(protocol_handler_manager));
 
     provider_->SetOsIntegrationManager(std::move(os_integration_manager));
     test::AwaitStartWebAppProviderAndSubsystems(profile());
@@ -94,8 +93,7 @@ class RunOnOsLoginCommandTest : public WebAppTest {
 
   webapps::AppId InstallNonLocallyInstalledApp(const GURL url) {
     std::unique_ptr<WebAppInstallInfo> info =
-        std::make_unique<WebAppInstallInfo>();
-    info->start_url = url;
+        WebAppInstallInfo::CreateWithStartUrlForTesting(url);
     info->title = u"Test App";
     info->user_display_mode = mojom::UserDisplayMode::kStandalone;
     base::test::TestFuture<const webapps::AppId&, webapps::InstallResultCode>

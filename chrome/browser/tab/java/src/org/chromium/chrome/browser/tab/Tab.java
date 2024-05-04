@@ -149,8 +149,8 @@ public interface Tab extends TabLifecycle {
     GURL getUrl();
 
     /**
-     * @return Original url of the tab without any Chrome feature modifications applied
-     *         (e.g. reader mode).
+     * @return Original url of the tab without any Chrome feature modifications applied (e.g. reader
+     *     mode).
      */
     GURL getOriginalUrl();
 
@@ -197,6 +197,11 @@ public interface Tab extends TabLifecycle {
     int getThemeColor();
 
     /**
+     * @return The background color for the current webpage.
+     */
+    int getBackgroundColor();
+
+    /**
      * @return {@code true} if the theme color from contents is valid and can be used for theming.
      */
     boolean isThemingAllowed();
@@ -241,9 +246,22 @@ public interface Tab extends TabLifecycle {
     LoadUrlResult loadUrl(LoadUrlParams params);
 
     /**
-     * Loads the tab if it's not loaded (e.g. because it was killed in background).
-     * This will trigger a regular load for tabs with pending lazy first load (tabs opened in
-     * background on low-memory devices).
+     * Freezes the tabs and stores the URL in the tab's WebContentsState. If the tab is already
+     * frozen this method still appends the navigation entry, but skips the process of freezing the
+     * tab.
+     *
+     * @param params Parameters describing the url load. Note that it is important to set correct
+     *     page transition as it is used for ranking URLs in the history so the omnibox can report
+     *     suggestions correctly.
+     * @param title The title of the tab to use on UI surfaces before it is navigated to.
+     */
+    void freezeAndAppendPendingNavigation(LoadUrlParams params, @Nullable String title);
+
+    /**
+     * Loads the tab if it's not loaded (e.g. because it was killed in background). This will
+     * trigger a regular load for tabs with pending lazy first load (tabs opened in background on
+     * low-memory devices).
+     *
      * @param caller The caller of this method.
      * @return true iff the Tab handled the request.
      */
@@ -270,11 +288,6 @@ public interface Tab extends TabLifecycle {
      * @return true iff the tab is loading and an interstitial page is not showing.
      */
     boolean isLoading();
-
-    /**
-     * @return true iff a navigation in primary main frame is in progress.
-     */
-    boolean isNavigationInPrimaryMainFrameInProgress();
 
     /**
      * @return true iff the tab is performing a restore page load.
@@ -318,7 +331,7 @@ public interface Tab extends TabLifecycle {
      */
     int getParentId();
 
-    // TODO(crbug/1524345): deprecate RootId once TabGroupId has finished replacing it.
+    // TODO(crbug.com/41497290): deprecate RootId once TabGroupId has finished replacing it.
     /**
      * Returns the root identifier for the {@link Tab}. This method will be replaced by {@link
      * getTabGroupId()} as part of https://crbug.com/1523745.

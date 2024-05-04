@@ -20,13 +20,6 @@
 #include "ipc/ipc_sender.h"
 #include "mojo/public/cpp/bindings/generic_pending_receiver.h"
 
-// TODO(crbug.com/1328879): Remove this when fixing the bug.
-#if BUILDFLAG(IS_CASTOS) || BUILDFLAG(IS_CAST_ANDROID)
-#include <string>
-
-#include "mojo/public/cpp/system/message_pipe.h"
-#endif
-
 namespace base {
 #if BUILDFLAG(CLANG_PROFILING_INSIDE_SANDBOX)
 class File;
@@ -87,6 +80,18 @@ class CONTENT_EXPORT ChildProcessHost : public IPC::Sender {
       ChildProcessHostDelegate* delegate,
       IpcMode ipc_mode);
 
+  // Returns a unique ID to identify a child process. Used by both child
+  // processes that are derived from ChildProcessHost, but also used to generate
+  // IDs for RenderProcessHost as well as embedded specific child processes.
+  // This ensures that IDs are unique for all different types of child
+  // processes.
+  //
+  // This function is threadsafe since RenderProcessHost is on the UI thread,
+  // but normally this will be used on the IO thread.
+  //
+  // This will never return kInvalidUniqueID.
+  static int GenerateChildProcessUniqueId();
+
   // These flags may be passed to GetChildPath in order to alter its behavior,
   // causing it to return a child path more suited to a specific task.
   enum {
@@ -116,7 +121,7 @@ class CONTENT_EXPORT ChildProcessHost : public IPC::Sender {
 
     // Starts a child process with the macOS entitlement that allows unsigned
     // executable memory.
-    // TODO(https://crbug.com/985816): Change this to use MAP_JIT and the
+    // TODO(crbug.com/40636855): Change this to use MAP_JIT and the
     // allow-jit entitlement instead.
     CHILD_GPU,
 
@@ -193,15 +198,6 @@ class CONTENT_EXPORT ChildProcessHost : public IPC::Sender {
   // directory once they log in.
   virtual void ReinitializeLogging(uint32_t logging_dest,
                                    base::ScopedFD log_file_descriptor) = 0;
-#endif
-
-// TODO(crbug.com/1328879): Remove this method when fixing the bug.
-#if BUILDFLAG(IS_CASTOS) || BUILDFLAG(IS_CAST_ANDROID)
-  // Instructs the child process to run an instance of the named service. This
-  // is DEPRECATED and should never be used.
-  virtual void RunServiceDeprecated(
-      const std::string& service_name,
-      mojo::ScopedMessagePipeHandle service_pipe) = 0;
 #endif
 
 #if BUILDFLAG(CLANG_PROFILING_INSIDE_SANDBOX)

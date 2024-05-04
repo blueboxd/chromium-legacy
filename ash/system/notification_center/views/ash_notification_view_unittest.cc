@@ -168,9 +168,8 @@ class MockAshNotificationDragDropDelegate
       if (data->HasHtml()) {
         HandleHtmlData();
       } else {
-        std::vector<ui::FileInfo> files;
-        data->GetFilenames(&files);
-        HandleFilePathData(files[0].path);
+        std::optional<std::vector<ui::FileInfo>> files = data->GetFilenames();
+        HandleFilePathData(files.value()[0].path);
       }
     }
   }
@@ -308,7 +307,7 @@ class AshNotificationViewTestBase : public AshTestBase,
   // a particular view.
   void CheckSmoothnessRecorded(base::HistogramTester& histograms,
                                views::View* view,
-                               const char* animation_histogram_name,
+                               const std::string& animation_histogram_name,
                                int data_point_count = 1) {
     ui::Compositor* compositor = view->layer()->GetCompositor();
 
@@ -571,8 +570,7 @@ TEST_F(AshNotificationViewTest, GroupedNotificationStartsCollapsed) {
   // Grouped notification should start collapsed.
   EXPECT_FALSE(notification_view()->IsExpanded());
   EXPECT_TRUE(GetHeaderRow(notification_view())->GetVisible());
-  EXPECT_TRUE(
-      GetExpandButton(notification_view())->label_for_test()->GetVisible());
+  EXPECT_TRUE(GetExpandButton(notification_view())->label()->GetVisible());
 }
 
 TEST_F(AshNotificationViewTest, GroupedNotificationCounterVisibility) {
@@ -582,8 +580,7 @@ TEST_F(AshNotificationViewTest, GroupedNotificationCounterVisibility) {
       notification_view(),
       message_center_style::kMaxGroupedNotificationsInCollapsedState + 1);
 
-  EXPECT_TRUE(
-      GetExpandButton(notification_view())->label_for_test()->GetVisible());
+  EXPECT_TRUE(GetExpandButton(notification_view())->label()->GetVisible());
 
   auto* child_view = GetFirstGroupedChildNotificationView(notification_view());
   EXPECT_TRUE(GetCollapsedSummaryView(child_view)->GetVisible());
@@ -605,8 +602,7 @@ TEST_F(AshNotificationViewTest, GroupedNotificationExpandState) {
   // timestamp invisible and the child notifications should now have the main
   // view visible instead of the summary.
   notification_view()->SetExpanded(true);
-  EXPECT_FALSE(
-      GetExpandButton(notification_view())->label_for_test()->GetVisible());
+  EXPECT_FALSE(GetExpandButton(notification_view())->label()->GetVisible());
   EXPECT_FALSE(GetTimestamp(notification_view())->GetVisible());
   EXPECT_FALSE(GetCollapsedSummaryView(child_view)->GetVisible());
   EXPECT_TRUE(GetMainView(child_view)->GetVisible());
@@ -884,7 +880,7 @@ TEST_F(AshNotificationViewTest, ExpandCollapseAnimationsRecordSmoothness) {
       "Ash.NotificationView.ActionsRow.FadeIn.AnimationSmoothness");
 }
 
-// TODO(crbug.com/1522231): Re-enable this test
+// TODO(crbug.com/41495194): Re-enable this test
 TEST_F(AshNotificationViewTest, ImageExpandCollapseAnimationsRecordSmoothness) {
   // Enable animations.
   ui::ScopedAnimationDurationScaleMode duration(
@@ -972,6 +968,8 @@ TEST_F(AshNotificationViewTest, GroupExpandCollapseAnimationsRecordSmoothness) {
   notification_view->ToggleExpand();
   EXPECT_TRUE(notification_view->IsExpanded());
 
+  auto* const expand_button = GetExpandButton(notification_view);
+
   // All the animations of views in expanded state should be performed and
   // recorded here.
   CheckSmoothnessRecorded(
@@ -984,11 +982,13 @@ TEST_F(AshNotificationViewTest, GroupExpandCollapseAnimationsRecordSmoothness) {
       GetMainView(GetFirstGroupedChildNotificationView(notification_view)),
       "Ash.NotificationView.MainView.FadeIn.AnimationSmoothness");
   CheckSmoothnessRecorded(
-      histograms_expanded, GetExpandButton(notification_view)->label_for_test(),
-      "Ash.NotificationView.ExpandButtonLabel.FadeOut.AnimationSmoothness");
+      histograms_expanded, expand_button->label(),
+      expand_button->GetAnimationHistogramName(
+          AshNotificationExpandButton::AnimationType::kFadeOutLabel));
   CheckSmoothnessRecorded(
-      histograms_expanded, GetExpandButton(notification_view),
-      "Ash.NotificationView.ExpandButton.BoundsChange.AnimationSmoothness");
+      histograms_expanded, expand_button,
+      expand_button->GetAnimationHistogramName(
+          AshNotificationExpandButton::AnimationType::kBoundsChange));
 
   base::HistogramTester histograms_collapsed;
   notification_view->ToggleExpand();
@@ -1006,13 +1006,13 @@ TEST_F(AshNotificationViewTest, GroupExpandCollapseAnimationsRecordSmoothness) {
           GetFirstGroupedChildNotificationView(notification_view)),
       "Ash.NotificationView.CollapsedSummaryView.FadeIn.AnimationSmoothness");
   CheckSmoothnessRecorded(
-      histograms_collapsed,
-      GetExpandButton(notification_view)->label_for_test(),
-      "Ash.NotificationView.ExpandButtonLabel.FadeIn.AnimationSmoothness");
+      histograms_collapsed, expand_button->label(),
+      expand_button->GetAnimationHistogramName(
+          AshNotificationExpandButton::AnimationType::kFadeInLabel));
   CheckSmoothnessRecorded(
-      histograms_collapsed,
-      GetExpandButton(notification_view)->label_for_test(),
-      "Ash.NotificationView.ExpandButton.BoundsChange.AnimationSmoothness");
+      histograms_collapsed, expand_button->label(),
+      expand_button->GetAnimationHistogramName(
+          AshNotificationExpandButton::AnimationType::kBoundsChange));
 }
 
 TEST_F(AshNotificationViewTest, SingleToGroupAnimationsRecordSmoothness) {
@@ -1040,7 +1040,7 @@ TEST_F(AshNotificationViewTest, SingleToGroupAnimationsRecordSmoothness) {
       histograms, GetGroupedNotificationsContainer(notification_view),
       "Ash.NotificationView.ConvertSingleToGroup.FadeIn.AnimationSmoothness");
   CheckSmoothnessRecorded(
-      histograms, GetExpandButton(notification_view)->label_for_test(),
+      histograms, GetExpandButton(notification_view)->label(),
       "Ash.NotificationView.ExpandButton.ConvertSingleToGroup."
       "FadeIn.AnimationSmoothness");
   CheckSmoothnessRecorded(

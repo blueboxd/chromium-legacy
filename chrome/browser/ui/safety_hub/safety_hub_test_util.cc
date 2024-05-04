@@ -8,11 +8,13 @@
 
 #include "base/run_loop.h"
 #include "base/test/run_until.h"
+#include "chrome/browser/ui/safety_hub/password_status_check_service_factory.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/crx_file/id_util.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension_builder.h"
+#include "extensions/common/manifest_constants.h"
 #include "extensions/common/mojom/manifest.mojom-shared.h"
 
 namespace {
@@ -34,32 +36,6 @@ class TestObserver : public SafetyHubService::Observer {
  private:
   base::RepeatingClosure callback_;
 };
-
-void AddExtension(const std::string& name,
-                  extensions::mojom::ManifestLocation location,
-                  Profile* profile) {
-  const std::string kId = crx_file::id_util::GenerateId(name);
-  scoped_refptr<const extensions::Extension> extension =
-      extensions::ExtensionBuilder(name)
-          .SetManifestKey("host_permissions",
-                          base::Value::List().Append(kAllHostsPermission))
-          .SetLocation(location)
-          .SetID(kId)
-          .Build();
-  extensions::ExtensionPrefs::Get(profile)->OnExtensionInstalled(
-      extension.get(), extensions::Extension::State::ENABLED,
-      syncer::StringOrdinal(), "");
-  extensions::ExtensionRegistry::Get(profile)->AddEnabled(extension);
-}
-
-void RemoveExtension(const std::string& name,
-                     extensions::mojom::ManifestLocation location,
-                     Profile* profile) {
-  const std::string kId = crx_file::id_util::GenerateId(name);
-  extensions::ExtensionPrefs::Get(profile)->OnExtensionUninstalled(
-      kId, location, false);
-  extensions::ExtensionRegistry::Get(profile)->RemoveEnabled(kId);
-}
 
 // These `cws_info` variables are used to test the various states that an
 // extension could be in. Is a trigger due to the malware violation.
@@ -102,14 +78,6 @@ static extensions::CWSInfoService::CWSInfo cws_info_no_trigger{
     extensions::CWSInfoService::CWSViolationType::kNone,
     false,
     false};
-// Is not a trigger: malware but not present.
-static extensions::CWSInfoService::CWSInfo cws_info_no_data{
-    false,
-    false,
-    base::Time::Now(),
-    extensions::CWSInfoService::CWSViolationType::kMalware,
-    false,
-    false};
 
 }  // namespace
 
@@ -145,20 +113,51 @@ void UpdatePasswordCheckServiceAsync(
   }));
 }
 
+void RunUntilPasswordCheckCompleted(Profile* profile) {
+  PasswordStatusCheckService* service =
+      PasswordStatusCheckServiceFactory::GetForProfile(profile);
+  ASSERT_TRUE(base::test::RunUntil([&]() {
+    return !service->IsUpdateRunning() && !service->IsInfrastructureReady();
+  }));
+}
+
 std::unique_ptr<testing::NiceMock<MockCWSInfoService>> GetMockCWSInfoService(
-    Profile* profile) {
+    Profile* profile,
+    bool with_calls) {
   // Ensure that the mock CWSInfo service returns the needed information.
   std::unique_ptr<testing::NiceMock<MockCWSInfoService>> mock_cws_info_service(
       new testing::NiceMock<MockCWSInfoService>(profile));
-  EXPECT_CALL(*mock_cws_info_service, GetCWSInfo)
-      .Times(6)
-      .WillOnce(testing::Return(cws_info_malware))
-      .WillOnce(testing::Return(cws_info_policy))
-      .WillOnce(testing::Return(cws_info_unpublished))
-      .WillOnce(testing::Return(cws_info_multi))
-      .WillOnce(testing::Return(cws_info_no_data))
-      .WillOnce(testing::Return(cws_info_no_trigger));
+  if (with_calls) {
+    EXPECT_CALL(*mock_cws_info_service, GetCWSInfo)
+        .Times(7)
+        .WillOnce(testing::Return(cws_info_malware))
+        .WillOnce(testing::Return(cws_info_policy))
+        .WillOnce(testing::Return(cws_info_unpublished))
+        .WillOnce(testing::Return(cws_info_multi))
+        .WillOnce(testing::Return(std::nullopt))
+        .WillOnce(testing::Return(std::nullopt))
+        .WillOnce(testing::Return(cws_info_no_trigger));
+  }
   return mock_cws_info_service;
+}
+
+void AddExtension(const std::string& name,
+                  extensions::mojom::ManifestLocation location,
+                  Profile* profile,
+                  std::string update_url) {
+  const std::string kId = crx_file::id_util::GenerateId(name);
+  scoped_refptr<const extensions::Extension> extension =
+      extensions::ExtensionBuilder(name)
+          .SetManifestKey("host_permissions",
+                          base::Value::List().Append(kAllHostsPermission))
+          .SetManifestKey(extensions::manifest_keys::kUpdateURL, update_url)
+          .SetLocation(location)
+          .SetID(kId)
+          .Build();
+  extensions::ExtensionPrefs::Get(profile)->OnExtensionInstalled(
+      extension.get(), extensions::Extension::State::ENABLED,
+      syncer::StringOrdinal(), "");
+  extensions::ExtensionRegistry::Get(profile)->AddEnabled(extension);
 }
 
 void CreateMockExtensions(Profile* profile) {
@@ -168,9 +167,11 @@ void CreateMockExtensions(Profile* profile) {
   AddExtension("TestExtension4", ManifestLocation::kInternal, profile);
   AddExtension("TestExtension5", ManifestLocation::kInternal, profile);
   AddExtension("TestExtension6", ManifestLocation::kInternal, profile);
+  AddExtension("TestExtension7", ManifestLocation::kInternal, profile,
+               "https://example.com");
   // Extensions installed by policies will be ignored by Safety Hub. So
   // extension 7 will not trigger the handler.
-  AddExtension("TestExtension7", ManifestLocation::kExternalPolicyDownload,
+  AddExtension("TestExtension8", ManifestLocation::kExternalPolicyDownload,
                profile);
 }
 
@@ -181,7 +182,8 @@ void CleanAllMockExtensions(Profile* profile) {
   RemoveExtension("TestExtension4", ManifestLocation::kInternal, profile);
   RemoveExtension("TestExtension5", ManifestLocation::kInternal, profile);
   RemoveExtension("TestExtension6", ManifestLocation::kInternal, profile);
-  RemoveExtension("TestExtension7", ManifestLocation::kExternalPolicyDownload,
+  RemoveExtension("TestExtension7", ManifestLocation::kInternal, profile);
+  RemoveExtension("TestExtension8", ManifestLocation::kExternalPolicyDownload,
                   profile);
 
   // Check that all extensions were successfully uninstalled.
@@ -190,6 +192,31 @@ void CleanAllMockExtensions(Profile* profile) {
           ->GenerateInstalledExtensionsSet(
               extensions::ExtensionRegistry::ENABLED);
   EXPECT_TRUE(extensions.empty());
+}
+
+extensions::CWSInfoService::CWSInfo GetCWSInfoNoTrigger() {
+  return extensions::CWSInfoService::CWSInfo{
+      true,
+      false,
+      base::Time::Now(),
+      extensions::CWSInfoService::CWSViolationType::kNone,
+      false,
+      false};
+}
+
+void RemoveExtension(const std::string& name,
+                     extensions::mojom::ManifestLocation location,
+                     Profile* profile) {
+  const std::string kId = crx_file::id_util::GenerateId(name);
+  extensions::ExtensionPrefs::Get(profile)->OnExtensionUninstalled(
+      kId, location, false);
+  extensions::ExtensionRegistry::Get(profile)->RemoveEnabled(kId);
+}
+
+void AcknowledgeSafetyCheckExtensions(const std::string& name,
+                                      Profile* profile) {
+  extensions::ExtensionPrefs::Get(profile)->UpdateExtensionPref(
+      name, "ack_safety_check_warning", base::Value(true));
 }
 
 }  // namespace safety_hub_test_util

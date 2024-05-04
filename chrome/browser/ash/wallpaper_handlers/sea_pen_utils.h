@@ -23,11 +23,8 @@ namespace wallpaper_handlers {
 gfx::Size GetLargestDisplaySizeLandscape();
 
 // Helper function to validate the Manta API output data.
-bool IsValidOutput(manta::proto::OutputData output,
+bool IsValidOutput(const manta::proto::OutputData& output,
                    const std::string_view source);
-
-bool IsValidTemplateQuery(
-    const ash::personalization_app::mojom::SeaPenTemplateQueryPtr& query);
 
 // Common helper function between `FetchThumbnails` and `FetchWallpaper`.
 manta::proto::Request CreateMantaRequest(
@@ -36,6 +33,10 @@ manta::proto::Request CreateMantaRequest(
     int num_outputs,
     const gfx::Size& size,
     manta::proto::FeatureName feature_name);
+
+std::string GetFeedbackText(
+    const ash::personalization_app::mojom::SeaPenTemplateQueryPtr& query,
+    const ash::personalization_app::mojom::SeaPenFeedbackMetadataPtr& metadata);
 
 }  // namespace wallpaper_handlers
 

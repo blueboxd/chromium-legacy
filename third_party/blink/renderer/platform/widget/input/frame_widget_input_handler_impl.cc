@@ -13,7 +13,6 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "third_party/blink/public/mojom/input/handwriting_gesture_result.mojom-blink.h"
-#include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/renderer/platform/widget/frame_widget.h"
 #include "third_party/blink/renderer/platform/widget/input/ime_event_guard.h"
 #include "third_party/blink/renderer/platform/widget/input/main_thread_event_queue.h"
@@ -191,6 +190,21 @@ void FrameWidgetInputHandlerImpl::HandleStylusWritingGestureAction(
       main_thread_frame_widget_input_handler_, std::move(gesture_data),
       std::move(callback)));
 }
+
+#if BUILDFLAG(IS_ANDROID)
+void FrameWidgetInputHandlerImpl::PassImeRenderWidgetHost(
+    mojo::PendingRemote<mojom::blink::ImeRenderWidgetHost> pending_remote) {
+  RunOnMainThread(base::BindOnce(
+      [](base::WeakPtr<mojom::blink::FrameWidgetInputHandler> handler,
+         mojo::PendingRemote<mojom::blink::ImeRenderWidgetHost>
+             pending_remote) {
+        if (handler) {
+          handler->PassImeRenderWidgetHost(std::move(pending_remote));
+        }
+      },
+      main_thread_frame_widget_input_handler_, std::move(pending_remote)));
+}
+#endif
 
 void FrameWidgetInputHandlerImpl::ExecuteEditCommand(const String& command,
                                                      const String& value) {

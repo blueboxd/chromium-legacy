@@ -34,12 +34,19 @@ class FakeMahiWebContentsManager : public MahiWebContentsManager {
     return focused_web_content_state_;
   }
 
+  void set_focused_web_content_is_distillable(bool value) {
+    focused_web_content_state_.is_distillable.emplace(value);
+  }
+
   WebContentState requested_web_content_state() {
     return requested_web_content_state_;
   }
 
   void RequestContentFromPage(const base::UnguessableToken& page_id,
                               GetContentCallback callback);
+
+  bool GetPrefValue() const override;
+  void SetPrefForTesting(bool pref_state) { pref_state_ = pref_state; }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   void SetMahiBrowserDelegateForTesting(
@@ -48,6 +55,8 @@ class FakeMahiWebContentsManager : public MahiWebContentsManager {
   void BindMahiBrowserDelegateForTesting(
       mojo::PendingRemote<crosapi::mojom::MahiBrowserDelegate> pending_remote);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+ private:
+  bool pref_state_ = true;
 };
 
 }  // namespace mahi

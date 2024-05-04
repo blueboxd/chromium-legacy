@@ -16,6 +16,7 @@
 #include "chrome/browser/extensions/extension_action_runner.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -530,7 +531,7 @@ IN_PROC_BROWSER_TEST_F(ErrorConsoleBrowserTest, BadExtensionPage) {
 
 // Test that extension errors that go to chrome.runtime.lastError are caught
 // and reported by the ErrorConsole.
-// TODO(crbug.com/1181558) Flaky on many builders.
+// TODO(crbug.com/40750922) Flaky on many builders.
 IN_PROC_BROWSER_TEST_F(ErrorConsoleBrowserTest, DISABLED_CatchesLastError) {
   const Extension* extension = nullptr;
   LoadExtensionAndCheckErrors(

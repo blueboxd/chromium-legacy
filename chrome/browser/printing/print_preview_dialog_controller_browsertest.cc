@@ -147,7 +147,7 @@ class PrintPreviewDialogControllerBrowserTest : public InProcessBrowserTest {
 
 // Test to verify that when a initiator navigates, we can create a new preview
 // dialog for the new tab contents.
-// TODO(crbug.com/1403898): Test is flaky on Mac
+// TODO(crbug.com/40251696): Test is flaky on Mac
 #if BUILDFLAG(IS_MAC)
 #define MAYBE_NavigateFromInitiatorTab DISABLED_NavigateFromInitiatorTab
 #else
@@ -188,7 +188,7 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewDialogControllerBrowserTest,
 
 // Test to verify that after reloading the initiator, it creates a new print
 // preview dialog.
-// TODO(crbug.com/1403898): Test is flaky on Mac
+// TODO(crbug.com/40251696): Test is flaky on Mac
 #if BUILDFLAG(IS_MAC)
 #define MAYBE_ReloadInitiatorTab DISABLED_ReloadInitiatorTab
 #else
@@ -232,7 +232,7 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewDialogControllerBrowserTest,
 
 // Test to verify that after print preview works even when the PDF plugin is
 // disabled for webpages.
-// TODO(crbug.com/1401532): Flaky on Mac12 Test.
+// TODO(crbug.com/40884297): Flaky on Mac12 Test.
 #if BUILDFLAG(IS_MAC)
 #define MAYBE_PdfPluginDisabled DISABLED_PdfPluginDisabled
 #else
@@ -306,7 +306,7 @@ GetTrackedTags() {
 
 }  // namespace
 
-// TODO(crbug.com/1385142): Flaky on macos12 builds.
+// TODO(crbug.com/40879071): Flaky on macos12 builds.
 #if BUILDFLAG(IS_MAC)
 #define MAYBE_TaskManagementTest DISABLED_TaskManagementTest
 #else
@@ -360,11 +360,16 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewDialogControllerBrowserTest,
 IN_PROC_BROWSER_TEST_F(PrintPreviewDialogControllerBrowserTest,
                        PrintPreviewPdfAccessibility) {
   content::ScopedAccessibilityModeOverride mode_override(ui::kAXModeComplete);
-  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(),
-                                           GURL("data:text/html,HelloWorld")));
+  // Put a DIV after the text we're going to search for. The last node in the
+  // tree will not have a newline appended, but all the others will. Avoid
+  // making assumptions about whether it's the last node or not. There may be
+  // nodes for headers and footers following the document contents.
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), GURL("data:text/html,HelloWorld<div>next</div>")));
   PrintPreview();
   WebContents* preview_dialog = GetPrintPreviewDialog();
-  WaitForAccessibilityTreeToContainNodeWithName(preview_dialog, "HelloWorld");
+  WaitForAccessibilityTreeToContainNodeWithName(preview_dialog,
+                                                "HelloWorld\r\n");
 
   PrintPreviewDone();
 }

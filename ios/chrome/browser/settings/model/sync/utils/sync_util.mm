@@ -4,13 +4,11 @@
 
 #import "ios/chrome/browser/settings/model/sync/utils/sync_util.h"
 
-#import "base/feature_list.h"
 #import "base/metrics/histogram_macros.h"
 #import "base/notreached.h"
 #import "components/infobars/core/infobar_manager.h"
 #import "components/signin/public/identity_manager/identity_manager.h"
 #import "components/strings/grit/components_strings.h"
-#import "components/sync/base/features.h"
 #import "components/sync/service/sync_service.h"
 #import "ios/chrome/browser/infobars/model/infobar_manager_impl.h"
 #import "ios/chrome/browser/settings/model/sync/utils/account_error_ui_info.h"
@@ -35,6 +33,7 @@ namespace {
 // as a ratio of the number of active sync users.
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
+// LINT.IfChange(SyncErrorInfobarTypes)
 enum InfobarSyncError : uint8_t {
   SYNC_SIGN_IN_NEEDS_UPDATE = 1,
   // DEPRECATED. No longer recorded.
@@ -46,6 +45,7 @@ enum InfobarSyncError : uint8_t {
   SYNC_TRUSTED_VAULT_RECOVERABILITY_DEGRADED = 7,
   kMaxValue = SYNC_TRUSTED_VAULT_RECOVERABILITY_DEGRADED,
 };
+// LINT.ThenChange(/tools/metrics/histograms/metadata/sync/enums.xml:SyncErrorInfobarTypes)
 
 // Returns true if the identity error info bar should be used instead of the
 // Sync error info bar. Returns false for the case where Sync-the-feature is

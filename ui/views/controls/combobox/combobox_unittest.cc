@@ -5,6 +5,7 @@
 #include "ui/views/controls/combobox/combobox.h"
 
 #include <memory>
+#include <optional>
 #include <set>
 #include <string>
 #include <utility>
@@ -23,6 +24,7 @@
 #include "ui/base/models/combobox_model.h"
 #include "ui/base/models/combobox_model_observer.h"
 #include "ui/base/models/menu_model.h"
+#include "ui/base/models/simple_combobox_model.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/event_utils.h"
@@ -31,6 +33,7 @@
 #include "ui/events/test/event_generator.h"
 #include "ui/events/types/event_type.h"
 #include "ui/gfx/text_utils.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/style/platform_style.h"
 #include "ui/views/style/typography_provider.h"
 #include "ui/views/test/ax_event_counter.h"
@@ -876,9 +879,9 @@ TEST_F(ComboboxTest, MenuModel) {
 
 // Verifies SetTooltipTextAndAccessibleName will call NotifyAccessibilityEvent.
 TEST_F(ComboboxTest, SetTooltipTextNotifiesAccessibilityEvent) {
+  test::AXEventCounter counter(AXEventManager::Get());
   InitCombobox(nullptr);
   std::u16string test_tooltip_text = u"Test Tooltip Text";
-  test::AXEventCounter counter(AXEventManager::Get());
   EXPECT_EQ(0, counter.GetCount(ax::mojom::Event::kTextChanged));
 
   // `SetTooltipTextAndAccessibleName` does two things:
@@ -894,7 +897,7 @@ TEST_F(ComboboxTest, SetTooltipTextNotifiesAccessibilityEvent) {
                                 ax::mojom::Role::kComboBoxSelect));
   EXPECT_EQ(test_tooltip_text, combobox()->GetAccessibleName());
   ui::AXNodeData data;
-  combobox()->GetAccessibleNodeData(&data);
+  combobox()->GetViewAccessibility().GetAccessibleNodeData(&data);
   const std::string& name =
       data.GetStringAttribute(ax::mojom::StringAttribute::kName);
   EXPECT_EQ(test_tooltip_text, ASCIIToUTF16(name));
@@ -910,6 +913,13 @@ TEST_F(ComboboxTest, NoCrashWhenComboboxOutlivesModel) {
 }
 
 namespace {
+
+std::string GetComboboxA11yValue(Combobox* combobox) {
+  const std::optional<size_t>& selected_index = combobox->GetSelectedIndex();
+  return selected_index ? base::UTF16ToUTF8(combobox->GetModel()->GetItemAt(
+                              selected_index.value()))
+                        : std::string();
+}
 
 using ComboboxDefaultTest = ViewsTestBase;
 
@@ -1011,6 +1021,46 @@ TEST_F(ComboboxDefaultTest, SetOwnedModelOverwriteOwned) {
     ASSERT_FALSE(destroyed_second);
   }
   EXPECT_TRUE(destroyed_second);
+}
+
+TEST_F(ComboboxDefaultTest, InteractionWithEmptyModel) {
+  ui::AXNodeData node_data;
+
+  // Empty model.
+  // Verify `GetAccessibleNodeData()` doesn't crash when interacting with empty
+  // model.
+  auto simple_model = std::make_unique<ui::SimpleComboboxModel>(
+      std::vector<ui::SimpleComboboxModel::Item>());
+  auto combobox = std::make_unique<Combobox>(simple_model.get());
+
+  IgnoreMissingWidgetForTestingScopedSetter ignore_missing_widget(
+      combobox->GetViewAccessibility());
+
+  combobox->GetViewAccessibility().GetAccessibleNodeData(&node_data);
+  EXPECT_EQ(0u, combobox->GetModel()->GetItemCount());
+  EXPECT_EQ(std::nullopt, combobox->GetSelectedIndex());
+  EXPECT_EQ(GetComboboxA11yValue(combobox.get()),
+            node_data.GetStringAttribute(ax::mojom::StringAttribute::kValue));
+
+  // Non-empty model.
+  node_data = ui::AXNodeData();
+  simple_model->UpdateItemList({ui::SimpleComboboxModel::Item(u"item")});
+  combobox->GetViewAccessibility().GetAccessibleNodeData(&node_data);
+  EXPECT_EQ(1u, combobox->GetModel()->GetItemCount());
+  EXPECT_EQ(0u, combobox->GetSelectedIndex());
+  EXPECT_EQ(GetComboboxA11yValue(combobox.get()),
+            node_data.GetStringAttribute(ax::mojom::StringAttribute::kValue));
+
+  // Empty model.
+  // Verify `OnComboboxModelChanged()` doesn't crash when interacting with empty
+  // model.
+  node_data = ui::AXNodeData();
+  simple_model->UpdateItemList({});
+  combobox->GetViewAccessibility().GetAccessibleNodeData(&node_data);
+  EXPECT_EQ(0u, combobox->GetModel()->GetItemCount());
+  EXPECT_EQ(std::nullopt, combobox->GetSelectedIndex());
+  EXPECT_EQ(GetComboboxA11yValue(combobox.get()),
+            node_data.GetStringAttribute(ax::mojom::StringAttribute::kValue));
 }
 
 }  // namespace views

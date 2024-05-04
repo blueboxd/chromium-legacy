@@ -236,7 +236,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
     //   GetCharacteristic(s)
     //   GetDescriptor(s)
     //
-    // TODO(710352): Remove Service, Characteristic, & Descriptor Added/Removed.
+    // TODO(crbug.com/41312390): Remove Service, Characteristic, & Descriptor
+    // Added/Removed.
 
     // See "Deprecated GATT Added/Removed Events NOTE" above.
     //
@@ -261,8 +262,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
     virtual void GattServicesDiscovered(BluetoothAdapter* adapter,
                                         BluetoothDevice* device) {}
 
-    // TODO(782494): Deprecated & not functional on all platforms. Use
-    // GattServicesDiscovered.
+    // TODO(crbug.com/41354033): Deprecated & not functional on all platforms.
+    // Use GattServicesDiscovered.
     //
     // Called when all characteristic and descriptor discovery procedures are
     // known to be completed for the GATT service |service|. This method will be
@@ -448,7 +449,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
 
   // Set the human-readable name of the adapter to |name|. On success,
   // |callback| will be called. On failure, |error_callback| will be called.
-  // TODO(crbug.com/1117654): Implement a mechanism to request this resource
+  // TODO(crbug.com/40145221): Implement a mechanism to request this resource
   // before being able to use it.
   virtual void SetName(const std::string& name,
                        base::OnceClosure callback,
@@ -519,7 +520,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
   // being connected by Chromium, into |devices_|. This method is useful since
   // a discovery session cannot find devices that are already connected to the
   // computer.
-  // TODO(crbug.com/653032): Needs to be implemented for Android and Windows.
+  // TODO(crbug.com/40487754): Needs to be implemented for Android and Windows.
   virtual std::unordered_map<BluetoothDevice*, BluetoothDevice::UUIDSet>
   RetrieveGattConnectedDevicesWithDiscoveryFilter(
       const BluetoothDiscoveryFilter& discovery_filter);

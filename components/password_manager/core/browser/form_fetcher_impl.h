@@ -68,6 +68,11 @@ class FormFetcherImpl : public FormFetcher,
       const override;
   std::optional<PasswordStoreBackendError> GetAccountStoreBackendError()
       const override;
+  bool WereGroupedCredentialsAvailable() const override;
+
+  inline void set_filter_grouped_credentials(bool filter_grouped_credentials) {
+    filter_grouped_credentials_ = filter_grouped_credentials;
+  }
 
  protected:
   // Actually finds best matches and notifies consumers.
@@ -143,6 +148,11 @@ class FormFetcherImpl : public FormFetcher,
   bool is_blocklisted_in_profile_store_ = false;
   bool is_blocklisted_in_account_store_ = false;
 
+  // Defines if the grouped (weakly affiliated) credentials should be filtered
+  // out from the password forms returned by any password store queried by this
+  // form fetcher.
+  bool filter_grouped_credentials_ = true;
+
   int wait_counter_ = 0;
   std::vector<std::unique_ptr<PasswordForm>> partial_results_;
 
@@ -157,6 +167,10 @@ class FormFetcherImpl : public FormFetcher,
   // PasswordStore.
   std::optional<PasswordStoreBackendError> profile_store_backend_error_;
   std::optional<PasswordStoreBackendError> account_store_backend_error_;
+
+  // Stores information whether grouped credentials were available, but were
+  // filtered out.
+  bool were_grouped_credentials_availible_ = false;
 
   base::WeakPtrFactory<FormFetcherImpl> weak_ptr_factory_{this};
 };

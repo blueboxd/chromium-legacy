@@ -52,7 +52,12 @@ class VcBackgroundUISeaPenProviderImpl
 
   void GetRecentSeaPenImageThumbnailInternal(
       uint32_t id,
-      personalization_app::DecodeImageCallback callback) override;
+      SeaPenWallpaperManager::GetImageAndMetadataCallback callback) override;
+
+  void ShouldShowSeaPenIntroductionDialogInternal(
+      ShouldShowSeaPenIntroductionDialogCallback callback) override;
+
+  void HandleSeaPenIntroductionDialogClosedInternal() override;
 
   void OnFetchWallpaperDoneInternal(
       const SeaPenImage& sea_pen_image,

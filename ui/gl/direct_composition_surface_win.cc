@@ -63,9 +63,7 @@ bool DirectCompositionSurfaceWin::Initialize(GLSurfaceFormat format) {
 
   child_window_.Initialize();
 
-  if (!layer_tree_->Initialize(window(), d3d11_device_)) {
-    return false;
-  }
+  layer_tree_->Initialize(window(), d3d11_device_);
 
   if (!root_surface_->Initialize(GLSurfaceFormat()))
     return false;
@@ -130,8 +128,29 @@ gfx::SwapResult DirectCompositionSurfaceWin::SwapBuffers(
   if (!success)
     return gfx::SwapResult::SWAP_FAILED;
 
-  if (!layer_tree_->CommitAndClearPendingOverlays(root_surface_.get()))
+  Microsoft::WRL::ComPtr<IUnknown> root_visual_content;
+  if (root_surface_->swap_chain()) {
+    root_visual_content = root_surface_->swap_chain();
+  } else {
+    root_visual_content = root_surface_->dcomp_surface();
+  }
+
+  if (root_visual_content) {
+    // Add a placeholder overlay for the root surface, at a z-order of 0.
+    auto root_params = std::make_unique<DCLayerOverlayParams>();
+    root_params->z_order = 0;
+    root_params->overlay_image = std::make_optional<DCLayerOverlayImage>(
+        root_surface_->GetSize(), std::move(root_visual_content),
+        root_surface_->dcomp_surface_serial());
+    root_params->content_rect = gfx::RectF(root_params->overlay_image->size());
+    root_params->quad_rect = gfx::Rect(root_params->overlay_image->size());
+    ScheduleDCLayer(std::move(root_params));
+  }
+
+  if (!layer_tree_->CommitAndClearPendingOverlays(
+          std::move(pending_overlays_))) {
     return gfx::SwapResult::SWAP_FAILED;
+  }
 
   return gfx::SwapResult::SWAP_ACK;
 }
@@ -164,9 +183,9 @@ void DirectCompositionSurfaceWin::OnVSync(base::TimeTicks vsync_time,
                      weak_factory_.GetWeakPtr(), vsync_time, interval));
 }
 
-bool DirectCompositionSurfaceWin::ScheduleDCLayer(
+void DirectCompositionSurfaceWin::ScheduleDCLayer(
     std::unique_ptr<DCLayerOverlayParams> params) {
-  return layer_tree_->ScheduleDCLayer(std::move(params));
+  pending_overlays_.push_back(std::move(params));
 }
 
 void DirectCompositionSurfaceWin::SetFrameRate(float frame_rate) {
@@ -196,12 +215,6 @@ bool DirectCompositionSurfaceWin::OnMakeCurrent(GLContext* context) {
 
 bool DirectCompositionSurfaceWin::SupportsDCLayers() const {
   return true;
-}
-
-bool DirectCompositionSurfaceWin::SupportsProtectedVideo() const {
-  // TODO(magchen): Check the gpu driver date (or a function) which we know this
-  // new support is enabled.
-  return DirectCompositionOverlaysSupported();
 }
 
 bool DirectCompositionSurfaceWin::SetDrawRectangle(const gfx::Rect& rect) {

@@ -71,6 +71,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #else
+#include "chrome/browser/flags/android/chrome_feature_list.h"
 #include "chrome/browser/flags/android/chrome_session_state.h"
 #include "chrome/browser/ui/android/tab_model/tab_model.h"
 #include "chrome/browser/ui/android/tab_model/tab_model_list.h"
@@ -354,6 +355,7 @@ class UkmBrowserTest : public UkmBrowserTestBase {
     // would need to remove the pre-existing TabModel and add a new one.
     // Having an empty TabModelList allows us to simply add the appropriate
     // TabModel.
+    EXPECT_EQ(1U, TabModelList::models().size());
     TabModelList::RemoveTabModel(TabModelList::models()[0]);
     EXPECT_EQ(0U, TabModelList::models().size());
   }
@@ -466,8 +468,7 @@ class UkmBrowserTestWithDemographics
 
 // Make sure that UKM is disabled while an incognito window is open.
 // Keep in sync with testRegularPlusIncognito in ios/chrome/browser/metrics/
-// ukm_egtest.mm and with RegularPlusIncognitoCheck in
-// weblayer/browser/ukm_browsertest.cc.
+// ukm_egtest.mm.
 IN_PROC_BROWSER_TEST_F(UkmBrowserTest, RegularPlusIncognitoCheck) {
   ukm::UkmTestHelper ukm_test_helper(GetUkmService());
   MetricsConsentOverride metrics_consent(true);
@@ -510,8 +511,7 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, RegularPlusIncognitoCheck) {
 
 // Make sure opening a real window after Incognito doesn't enable UKM.
 // Keep in sync with testIncognitoPlusRegular in ios/chrome/browser/metrics/
-// ukm_egtest.mm and with IncognitoPlusRegularCheck in
-// weblayer/browser/ukm_browsertest.cc.
+// ukm_egtest.mm.
 IN_PROC_BROWSER_TEST_F(UkmBrowserTest, IncognitoPlusRegularCheck) {
   ukm::UkmTestHelper ukm_test_helper(GetUkmService());
   MetricsConsentOverride metrics_consent(true);
@@ -617,7 +617,7 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, OpenNonSyncCheck) {
   EXPECT_FALSE(ukm_test_helper.IsRecordingEnabled());
 
   CloseBrowserSynchronously(nonsync_browser);
-  // TODO(crbug/746076): UKM doesn't actually get re-enabled yet.
+  // TODO(crbug.com/40530708): UKM doesn't actually get re-enabled yet.
   // EXPECT_TRUE(ukm_test_helper.IsRecordingEnabled());
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
   // Client ID should not have been reset.
@@ -700,7 +700,7 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, LogProtoData) {
 }
 #endif  // !BUILDFLAG(IS_ANDROID)
 
-// TODO(crbug/1016118): Add the remaining test cases.
+// TODO(crbug.com/40103988): Add the remaining test cases.
 // Keep this test in sync with testUKMDemographicsReportingWithFeatureEnabled
 // and testUKMDemographicsReportingWithFeatureDisabled in
 // ios/chrome/browser/metrics/demographics_egtest.mm.

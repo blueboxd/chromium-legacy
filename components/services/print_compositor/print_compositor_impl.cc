@@ -21,17 +21,19 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "printing/common/metafile_utils.h"
+#include "printing/mojom/print.mojom.h"
 #include "skia/ext/font_utils.h"
 #include "third_party/blink/public/platform/web_image_generator.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkDocument.h"
 #include "third_party/skia/include/core/SkGraphics.h"
 #include "third_party/skia/include/core/SkSerialProcs.h"
-#include "third_party/skia/src/utils/SkMultiPictureDocument.h"
+#include "third_party/skia/include/docs/SkMultiPictureDocument.h"
 #include "ui/accessibility/ax_tree_update.h"
 
 #if BUILDFLAG(IS_WIN)
 #include "content/public/child/dwrite_font_proxy_init_win.h"
+#include "printing/backend/win_helper.h"  // nogncheck
 #elif BUILDFLAG(IS_APPLE)
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/skia/include/core/SkFontMgr.h"
@@ -43,6 +45,29 @@ using MojoDiscardableSharedMemoryManager =
     discardable_memory::mojom::DiscardableSharedMemoryManager;
 
 namespace printing {
+
+namespace {
+
+sk_sp<SkDocument> MakeDocument(
+    const std::string& creator,
+    const std::string& title,
+    ui::AXTreeUpdate* accessibility_tree,
+    mojom::GenerateDocumentOutline generate_document_outline,
+    mojom::PrintCompositor::DocumentType document_type,
+    SkWStream& stream) {
+#if BUILDFLAG(IS_WIN)
+  if (document_type == mojom::PrintCompositor::DocumentType::kXPS) {
+    return MakeXpsDocument(&stream);
+  }
+#endif
+  CHECK_EQ(document_type, mojom::PrintCompositor::DocumentType::kPDF);
+  return MakePdfDocument(
+      creator, title,
+      accessibility_tree ? *accessibility_tree : ui::AXTreeUpdate(),
+      generate_document_outline, &stream);
+}
+
+}  // namespace
 
 PrintCompositorImpl::PrintCompositorImpl(
     mojo::PendingReceiver<mojom::PrintCompositor> receiver,
@@ -184,6 +209,11 @@ void PrintCompositorImpl::PrepareToCompositeDocument(
     mojom::PrintCompositor::DocumentType document_type,
     mojom::PrintCompositor::PrepareToCompositeDocumentCallback callback) {
   DCHECK(!docinfo_);
+#if BUILDFLAG(IS_WIN)
+  if (document_type == mojom::PrintCompositor::DocumentType::kXPS) {
+    xps_initializer_ = std::make_unique<ScopedXPSInitializer>();
+  }
+#endif
   docinfo_ = std::make_unique<DocumentInfo>(document_type);
   std::move(callback).Run(mojom::PrintCompositor::Status::kSuccess);
 }
@@ -197,9 +227,9 @@ void PrintCompositorImpl::FinishDocumentComposition(
   docinfo_->callback = std::move(callback);
 
   if (!docinfo_->doc) {
-    docinfo_->doc = MakePdfDocument(creator_, title_, accessibility_tree_,
-                                    GeneratePdfDocumentOutline::kNone,
-                                    &docinfo_->compositor_stream);
+    docinfo_->doc = MakeDocument(
+        creator_, title_, &accessibility_tree_, generate_document_outline_,
+        docinfo_->document_type, docinfo_->compositor_stream);
   }
 
   HandleDocumentCompletionRequest();
@@ -349,7 +379,7 @@ mojom::PrintCompositor::Status PrintCompositorImpl::CompositePages(
 
   // Read in content and convert it into pdf.
   SkMemoryStream stream(serialized_content.data(), serialized_content.size());
-  int page_count = SkMultiPictureDocumentReadPageCount(&stream);
+  int page_count = SkMultiPictureDocument::ReadPageCount(&stream);
   if (!page_count) {
     DLOG(ERROR) << "CompositePages: No page is read.";
     return mojom::PrintCompositor::Status::kContentFormatError;
@@ -357,7 +387,8 @@ mojom::PrintCompositor::Status PrintCompositorImpl::CompositePages(
 
   std::vector<SkDocumentPage> pages(page_count);
   SkDeserialProcs procs = DeserializationProcs(&subframes, &typefaces_);
-  if (!SkMultiPictureDocumentRead(&stream, pages.data(), page_count, &procs)) {
+  if (!SkMultiPictureDocument::Read(&stream, pages.data(), page_count,
+                                    &procs)) {
     DLOG(ERROR) << "CompositePages: Page reading failed.";
     return mojom::PrintCompositor::Status::kContentFormatError;
   }
@@ -366,9 +397,9 @@ mojom::PrintCompositor::Status PrintCompositorImpl::CompositePages(
   // document composition is not in effect, i.e. when handling
   // CompositeDocumentToPdf() call.
   SkDynamicMemoryWStream wstream;
-  sk_sp<SkDocument> doc = MakePdfDocument(
-      creator_, title_, docinfo_ ? ui::AXTreeUpdate() : accessibility_tree_,
-      GeneratePdfDocumentOutline::kNone, &wstream);
+  sk_sp<SkDocument> doc =
+      MakeDocument(creator_, title_, docinfo_ ? nullptr : &accessibility_tree_,
+                   generate_document_outline_, document_type, wstream);
 
   for (const auto& page : pages) {
     TRACE_EVENT0("print", "PrintCompositorImpl::CompositePages draw page");
@@ -378,11 +409,9 @@ mojom::PrintCompositor::Status PrintCompositorImpl::CompositePages(
     if (docinfo_) {
       // Create full document if needed.
       if (!docinfo_->doc) {
-        // TODO(crbug.com/1008222) Make use of `document_type` parameter once
-        // `MakeXpsDocument()` is available.
-        docinfo_->doc = MakePdfDocument(creator_, title_, accessibility_tree_,
-                                        GeneratePdfDocumentOutline::kNone,
-                                        &docinfo_->compositor_stream);
+        docinfo_->doc = MakeDocument(
+            creator_, title_, &accessibility_tree_, generate_document_outline_,
+            docinfo_->document_type, docinfo_->compositor_stream);
       }
 
       // Collect this page into full document.
@@ -485,7 +514,7 @@ PrintCompositorImpl::FrameContentInfo::FrameContentInfo() = default;
 
 PrintCompositorImpl::FrameContentInfo::~FrameContentInfo() = default;
 
-// TODO(crbug.com/1008222) Make use of `document_type` parameter once
+// TODO(crbug.com/40100562) Make use of `document_type` parameter once
 // `MakeXpsDocument()` is available.
 PrintCompositorImpl::DocumentInfo::DocumentInfo(
     mojom::PrintCompositor::DocumentType document_type)
@@ -505,6 +534,11 @@ PrintCompositorImpl::RequestInfo::RequestInfo(
       callback(std::move(callback)) {}
 
 PrintCompositorImpl::RequestInfo::~RequestInfo() = default;
+
+void PrintCompositorImpl::SetGenerateDocumentOutline(
+    mojom::GenerateDocumentOutline generate_document_outline) {
+  generate_document_outline_ = generate_document_outline;
+}
 
 void PrintCompositorImpl::SetTitle(const std::string& title) {
   title_ = title;

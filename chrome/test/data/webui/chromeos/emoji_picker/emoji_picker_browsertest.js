@@ -36,7 +36,7 @@ var EmojiPickerMainTest = class extends EmojiPickerBrowserTest {
 };
 
 
-// TODO(https://crbug.com/1179762): Re-enable once flakiness is fixed.
+// TODO(crbug.com/40749899): Re-enable once flakiness is fixed.
 TEST_F('EmojiPickerMainTest', 'DISABLED_All', function() {
   mocha.run();
 });
@@ -275,5 +275,17 @@ var EmojiPickerScrollTest = class extends PolymerTest {
 };
 
 TEST_F('EmojiPickerScrollTest', 'All', function() {
+  mocha.run();
+});
+
+var EmojiPickerLoadTest = class extends PolymerTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://emoji-picker/test_loader.html?module=' +
+        'chromeos/emoji_picker/emoji_picker_load_test.js';
+  }
+};
+
+TEST_F('EmojiPickerLoadTest', 'All', function() {
   mocha.run();
 });

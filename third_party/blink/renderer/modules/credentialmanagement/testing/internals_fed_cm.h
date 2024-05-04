@@ -19,17 +19,18 @@ class InternalsFedCm {
   STATIC_ONLY(InternalsFedCm);
 
  public:
-  static ScriptPromiseTyped<IDLString> getFedCmDialogType(ScriptState*,
-                                                          Internals&);
-  static ScriptPromiseTyped<IDLString> getFedCmTitle(ScriptState*, Internals&);
-  static ScriptPromise selectFedCmAccount(ScriptState*,
-                                          Internals&,
-                                          int account_index,
-                                          ExceptionState&);
-  static ScriptPromise dismissFedCmDialog(ScriptState*, Internals&);
-  static ScriptPromise clickFedCmDialogButton(ScriptState*,
-                                              Internals&,
-                                              const V8DialogButton& button);
+  static ScriptPromise<IDLString> getFedCmDialogType(ScriptState*, Internals&);
+  static ScriptPromise<IDLString> getFedCmTitle(ScriptState*, Internals&);
+  static ScriptPromise<IDLUndefined> selectFedCmAccount(ScriptState*,
+                                                        Internals&,
+                                                        int account_index,
+                                                        ExceptionState&);
+  static ScriptPromise<IDLUndefined> dismissFedCmDialog(ScriptState*,
+                                                        Internals&);
+  static ScriptPromise<IDLUndefined> clickFedCmDialogButton(
+      ScriptState*,
+      Internals&,
+      const V8DialogButton& button);
 };
 
 }  // namespace blink

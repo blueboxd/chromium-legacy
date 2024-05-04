@@ -80,6 +80,7 @@ class ClientNativePixmapFactoryDmabuf : public ClientNativePixmapFactory {
       case gfx::BufferUsage::SCANOUT_FRONT_RENDERING: {
         if (!CanFitImageForSizeAndFormat(
                 handle, size, format, /*assume_single_memory_object=*/false)) {
+          DLOG(ERROR) << "Failed to verify the size and format of the handle.";
           return nullptr;
         }
 
@@ -122,6 +123,7 @@ class ClientNativePixmapFactoryDmabuf : public ClientNativePixmapFactory {
       case gfx::BufferUsage::GPU_READ:
       case gfx::BufferUsage::SCANOUT:
       case gfx::BufferUsage::SCANOUT_VDA_WRITE:
+      case gfx::BufferUsage::PROTECTED_SCANOUT:
       case gfx::BufferUsage::PROTECTED_SCANOUT_VDA_WRITE:
         return base::WrapUnique(
             new ClientNativePixmapOpaque(std::move(handle)));

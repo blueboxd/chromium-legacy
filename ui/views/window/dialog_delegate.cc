@@ -17,6 +17,7 @@
 #include "ui/accessibility/ax_role_properties.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/base/ui_base_types.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/bubble/bubble_border.h"
@@ -34,6 +35,29 @@
 namespace views {
 
 namespace {
+
+// Class that ensures that dialogs are logically "parented" to their parent for
+// various purposes, including testing, theming, and Tutorials.
+class DialogWidget : public Widget {
+ public:
+  DialogWidget() = default;
+  ~DialogWidget() override = default;
+
+  // Widget:
+  Widget* GetPrimaryWindowWidget() override {
+    // Dialogs are usually parented to another window, so that window should be
+    // the primary window. Only fall back to default Widget behavior if there is
+    // no parent.
+    return parent() ? parent()->GetPrimaryWindowWidget()
+                    : Widget::GetPrimaryWindowWidget();
+  }
+
+  // TODO(dfried): Possibly also fix the following (possibly in Widget) so they
+  // don't have to be overridden in bubble_dialog_delegate_view.cc:
+  //  - GetCustomTheme()
+  //  - GetNativeTheme()
+  //  - GetColorProvider()
+};
 
 bool HasCallback(
     const absl::variant<base::OnceClosure, base::RepeatingCallback<bool()>>&
@@ -61,7 +85,7 @@ DialogDelegate::DialogDelegate() {
 Widget* DialogDelegate::CreateDialogWidget(WidgetDelegate* delegate,
                                            gfx::NativeWindow context,
                                            gfx::NativeView parent) {
-  views::Widget* widget = new views::Widget;
+  views::Widget* widget = new DialogWidget;
   views::Widget::InitParams params =
       GetDialogWidgetInitParams(delegate, context, parent, gfx::Rect());
   widget->Init(std::move(params));
@@ -346,7 +370,7 @@ views::View* DialogDelegate::GetFootnoteViewForTesting() const {
   // CreateDialogFrameView above always uses BubbleFrameView. There are
   // subclasses that override CreateDialogFrameView, but none of them override
   // it to create anything other than a BubbleFrameView.
-  // TODO(https://crbug.com/1011446): Make CreateDialogFrameView final, then
+  // TODO(crbug.com/40101916): Make CreateDialogFrameView final, then
   // remove this DCHECK.
   DCHECK(IsViewClass<BubbleFrameView>(frame));
   return static_cast<BubbleFrameView*>(frame)->GetFootnoteView();
@@ -437,8 +461,8 @@ void DialogDelegate::SetWidgetOwnsNativeWidget() {
   widget_owns_native_widget_ = true;
 }
 
-std::unique_ptr<View> DialogDelegate::DisownExtraView() {
-  return std::move(extra_view_);
+std::optional<std::unique_ptr<View>> DialogDelegate::DisownExtraView() {
+  return std::exchange(extra_view_, std::nullopt);
 }
 
 bool DialogDelegate::Close() {
@@ -490,7 +514,7 @@ ax::mojom::Role DialogDelegate::GetAccessibleWindowRole() {
 
 int DialogDelegate::GetCornerRadius() const {
 #if BUILDFLAG(IS_MAC)
-  // TODO(crbug.com/1116680): On Mac MODAL_TYPE_WINDOW is implemented using
+  // TODO(crbug.com/40144839): On Mac MODAL_TYPE_WINDOW is implemented using
   // sheets which causes visual artifacts when corner radius is increased for
   // modal types. Remove this after this issue has been addressed.
   if (GetModalType() == ui::MODAL_TYPE_WINDOW)

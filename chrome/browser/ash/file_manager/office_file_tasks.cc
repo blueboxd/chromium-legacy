@@ -19,6 +19,7 @@
 #include "chrome/browser/ash/drive/file_system_util.h"
 #include "chrome/browser/ash/file_manager/app_id.h"
 #include "chrome/browser/ash/file_manager/file_tasks.h"
+#include "chrome/browser/ash/file_manager/virtual_file_tasks.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/ash/cloud_upload/cloud_open_metrics.h"
 #include "chrome/browser/ui/webui/ash/cloud_upload/cloud_upload_dialog.h"
@@ -63,14 +64,9 @@ constexpr auto kExtensionToOfficeOpenExtensionsEnum =
          {".xlsm", OfficeOpenExtensions::kXlsm},
          {".xlsx", OfficeOpenExtensions::kXlsx}});
 
-// Returns True if the `app_id` belongs to Files app either extension or SWA.
-inline bool IsFilesAppId(const std::string& app_id) {
-  return app_id == kFileManagerAppId || app_id == kFileManagerSwaAppId;
-}
-
 OfficeOpenExtensions GetOfficeOpenExtension(const storage::FileSystemURL& url) {
   const std::string extension = base::ToLowerASCII(url.path().FinalExtension());
-  auto* itr = kExtensionToOfficeOpenExtensionsEnum.find(extension);
+  auto itr = kExtensionToOfficeOpenExtensionsEnum.find(extension);
   if (itr != kExtensionToOfficeOpenExtensionsEnum.end()) {
     return itr->second;
   }
@@ -398,7 +394,21 @@ void OnDialogChoiceReceived(
   } else if (!choice.value().empty()) {
     LOG(ERROR) << "Unhandled response: " << choice.value();
   } else {
+    // Always map an empty user response to a Cancel user response.
+    // This can occur when the user logs out of the session. However,
+    // since there could be other unknown causes, leave a log.
     LOG(ERROR) << "Empty user response";
+    if (IsWebDriveOfficeTask(task)) {
+      LogGoogleDriveMetricsAfterFallback(
+          fallback_reason,
+          ash::cloud_upload::OfficeTaskResult::kCancelledAtFallback,
+          std::move(cloud_open_metrics));
+    } else if (IsOpenInOfficeTask(task)) {
+      LogOneDriveMetricsAfterFallback(
+          fallback_reason,
+          ash::cloud_upload::OfficeTaskResult::kCancelledAtFallback,
+          std::move(cloud_open_metrics));
+    }
   }
 }
 
@@ -420,10 +430,14 @@ bool GetUserFallbackChoice(
     return false;
   }
 
-  const std::string parsed_action_id = ParseFilesAppActionId(task.action_id);
+  std::string task_title;
+  VirtualTask* virtual_task = FindVirtualTask(task);
+  if (virtual_task) {
+    task_title = virtual_task->title();
+  }
 
   return ash::office_fallback::OfficeFallbackDialog::Show(
-      first_url, fallback_reason, parsed_action_id, std::move(callback));
+      first_url, fallback_reason, task_title, std::move(callback));
 }
 
 bool IsWebDriveOfficeTask(const TaskDescriptor& task) {
@@ -432,12 +446,12 @@ bool IsWebDriveOfficeTask(const TaskDescriptor& task) {
       action_id == kActionIdWebDriveOfficeWord ||
       action_id == kActionIdWebDriveOfficeExcel ||
       action_id == kActionIdWebDriveOfficePowerPoint;
-  return IsFilesAppId(task.app_id) && is_web_drive_office_action_id;
+  return IsVirtualTask(task) && is_web_drive_office_action_id;
 }
 
 bool IsOpenInOfficeTask(const TaskDescriptor& task) {
   const std::string action_id = ParseFilesAppActionId(task.action_id);
-  return IsFilesAppId(task.app_id) && action_id == kActionIdOpenInOffice;
+  return IsVirtualTask(task) && action_id == kActionIdOpenInOffice;
 }
 
 bool IsQuickOfficeInstalled(Profile* profile) {
@@ -465,6 +479,20 @@ bool IsOfficeFile(const base::FilePath& path) {
   for (const std::set<std::string>& group : groups) {
     for (const std::string& extension : group) {
       if (path.MatchesExtension(extension)) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+bool IsOfficeFileMimeType(const std::string& mime_type) {
+  std::vector<std::set<std::string>> groups = {
+      WordGroupMimeTypes(), ExcelGroupMimeTypes(), PowerPointGroupMimeTypes()};
+
+  for (const std::set<std::string>& group : groups) {
+    for (const std::string& office_mime_type : group) {
+      if (mime_type == office_mime_type) {
         return true;
       }
     }

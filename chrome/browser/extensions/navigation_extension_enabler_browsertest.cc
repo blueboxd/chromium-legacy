@@ -11,6 +11,8 @@
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/navigation_extension_enabler.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/site_isolation_policy.h"
@@ -220,7 +222,7 @@ IN_PROC_BROWSER_TEST_F(DisableExtensionBrowserTest,
   // The SiteInstance of the disabled extension frame should be different from
   // the SiteInstance of the enabled extension subframe. It should reference the
   // invalid extension ID or the error page URL.
-  // TODO(crbug.com/1234637): remove the exceptions for Mac and Windows below
+  // TODO(crbug.com/40192071): remove the exceptions for Mac and Windows below
   // once renderer-process shutdown delay causing `extension_site_instance` to
   // be reused is addressed (see
   // RendererProcessHostImpl::ShouldDelayProcessShutdown() for details).

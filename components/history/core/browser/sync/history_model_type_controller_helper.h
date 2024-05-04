@@ -8,7 +8,7 @@
 #include "base/memory/raw_ptr.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/service/data_type_controller.h"
+#include "components/sync/service/model_type_controller.h"
 
 class PrefService;
 
@@ -21,7 +21,7 @@ namespace history {
 // Helper class for implementing history-related ModelTypeControllers. It
 // implements the pref/policy kSavingBrowserHistoryDisabled: It calls
 // SyncService::DataTypePreconditionChanged() when the pref changes.
-// DataTypeControllers using this helper must call its GetPreconditionState().
+// ModelTypeControllers using this helper must call its GetPreconditionState().
 class HistoryModelTypeControllerHelper {
  public:
   HistoryModelTypeControllerHelper(syncer::ModelType model_type,
@@ -35,8 +35,8 @@ class HistoryModelTypeControllerHelper {
 
   ~HistoryModelTypeControllerHelper();
 
-  // Must be called from DataTypeController::GetPreconditionState().
-  syncer::DataTypeController::PreconditionState GetPreconditionState() const;
+  // Must be called from ModelTypeController::GetPreconditionState().
+  syncer::ModelTypeController::PreconditionState GetPreconditionState() const;
 
   syncer::SyncService* sync_service() const { return sync_service_; }
 

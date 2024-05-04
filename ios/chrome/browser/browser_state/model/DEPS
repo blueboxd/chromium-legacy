@@ -1,4 +1,5 @@
 include_rules = [
+  "+components/page_content_annotations/core",
   "+ios/chrome/browser/affiliations/model",
   "+ios/chrome/browser/sync/model",
   "+ios/chrome/browser/bookmarks/model",
@@ -17,10 +18,10 @@ include_rules = [
 ]
 
 specific_include_rules = {
-  # TODO(crbug.com/1294160): Remove this dependency.
+  # TODO(crbug.com/40820398): Remove this dependency.
   "^browser_state_keyed_service_factories.mm": [
     "+ios/chrome/browser",
     "-ios/chrome/browser/ui",
-    "+ios/chrome/browser/ui/voice/text_to_speech_playback_controller_factory.h",
+    "+ios/chrome/browser/voice/ui_bundled/text_to_speech_playback_controller_factory.h",
   ],
 }

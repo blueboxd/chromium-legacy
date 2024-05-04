@@ -21,7 +21,7 @@ struct PreviousWin {
   // seconds, to reduce time resolution of cross-site information provided to an
   // untrusted service.
   //
-  // TODO(https://crbug.com/1207135): Decide what to do when wins are
+  // TODO(crbug.com/40765411): Decide what to do when wins are
   // "in the future" due to clock changes.
   mojo_base.mojom.Time time;
 
@@ -163,10 +163,13 @@ struct PrioritySignalsDouble {
 };
 
 // Which field identifying the ad is passed to reportWin()
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
 enum ReportingIdField {
-  kInterestGroupName,
-  kBuyerReportingId,
-  kBuyerAndSellerReportingId,
+  kNone = 0,
+  kInterestGroupName = 1,
+  kBuyerReportingId = 2,
+  kBuyerAndSellerReportingId = 3,
 };
 
 // Represents the time between BidderWorklet::BeginGenerateBid and each of the
@@ -222,9 +225,14 @@ interface GenerateBidClient {
   //
   //  `trusted_signals_fetch_latency` The amount of time taken fetching trusted
   //  bidding signals. If no trusted signals were fetched, returns a 0 duration.
+  //
+  //  `update_if_older_than` If present, indicates that the interest group
+  //  should potentially be updated even if its last update was less than 24
+  //  hours ago, if the last update was less recent than `update_if_older_than`.
   OnBiddingSignalsReceived(
       map<string, double> priority_vector,
-      mojo_base.mojom.TimeDelta trusted_signals_fetch_latency) => ();
+      mojo_base.mojom.TimeDelta trusted_signals_fetch_latency,
+      mojo_base.mojom.TimeDelta? update_if_older_than) => ();
 
   // Invoked once GenerateBid completes, either having successfully generated
   // bids, or having failed to generate one for any reason.
@@ -266,7 +274,7 @@ interface GenerateBidClient {
   //  the interest group's priorityOverrides map. Null values mean to delete the
   //  corresponding value, if present. Values with keys not in the map are
   //  preserved.
-  //  TODO(https://crbug.com/657632): Update to use `double?` type if/when
+  //  TODO(crbug.com/40489779): Update to use `double?` type if/when
   //  that's supported as a value in a Mojo map.
   //
   // `pa_requests` The various requests made to the Private Aggregation API.
@@ -571,6 +579,10 @@ interface BidderWorklet {
   //  if this worklet is running as part of a component (nested) Auction.
   //  Null, otherwise.
   //
+  // `browser_signal_reporting_timeout`. The value restricts the runtime of
+  //  reportWin() script. Any timeout higher than 5s will be clamped to 5s
+  //  before passed in.
+  //
   // `bidding_signals_data_version` The value of the Data-Version header served
   //  with the trusted bidding signals.
   //
@@ -623,6 +635,7 @@ interface BidderWorklet {
       uint8 browser_signal_recency,
       url.mojom.Origin browser_signal_seller_origin,
       url.mojom.Origin? browser_signal_top_level_seller_origin,
+      mojo_base.mojom.TimeDelta? browser_signal_reporting_timeout,
       uint32? bidding_signals_data_version,
       uint64 trace_id) => (
           url.mojom.Url? report_url,

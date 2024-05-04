@@ -7,6 +7,8 @@
 
 #include "components/autofill/core/browser/autofill_suggestion_generator.h"
 #include "components/autofill/core/browser/field_types.h"
+#include "components/autofill/core/browser/metrics/payments/card_metadata_metrics.h"
+#include "components/autofill/core/common/aliases.h"
 #include "components/autofill/core/common/form_field_data.h"
 
 namespace autofill {
@@ -19,12 +21,16 @@ class AutofillSuggestionGeneratorTestApi {
       : suggestion_generator_(suggestion_generator) {}
 
   std::vector<raw_ptr<const AutofillProfile, VectorExperimental>>
-  GetProfilesToSuggest(FieldType trigger_field_type,
-                       const std::u16string& field_contents,
-                       bool field_is_autofilled,
-                       const FieldTypeSet& field_types) {
+  GetProfilesToSuggest(
+      FieldType trigger_field_type,
+      const std::u16string& field_contents,
+      bool field_is_autofilled,
+      const FieldTypeSet& field_types,
+      AutofillSuggestionTriggerSource trigger_source =
+          AutofillSuggestionTriggerSource::kFormControlElementClicked) {
     return suggestion_generator_->GetProfilesToSuggest(
-        trigger_field_type, field_contents, field_is_autofilled, field_types);
+        trigger_field_type, field_contents, field_is_autofilled, field_types,
+        trigger_source);
   }
 
   std::vector<CreditCard> GetOrderedCardsToSuggest(
@@ -44,11 +50,10 @@ class AutofillSuggestionGeneratorTestApi {
       const FieldTypeSet& field_types,
       std::optional<FieldTypeSet> last_targeted_fields,
       FieldType trigger_field_type,
-      uint64_t trigger_field_max_length,
-      const std::set<std::string>& previously_hidden_profiles_guid = {}) {
+      uint64_t trigger_field_max_length) {
     return suggestion_generator_->CreateSuggestionsFromProfiles(
         profiles, field_types, last_targeted_fields, trigger_field_type,
-        trigger_field_max_length, previously_hidden_profiles_guid);
+        trigger_field_max_length);
   }
 
   Suggestion CreateCreditCardSuggestion(
@@ -57,9 +62,22 @@ class AutofillSuggestionGeneratorTestApi {
       bool virtual_card_option,
       bool card_linked_offer_available,
       url::Origin origin = url::Origin()) const {
+    autofill_metrics::CardMetadataLoggingContext metadata_logging_context;
     return suggestion_generator_->CreateCreditCardSuggestion(
         credit_card, trigger_field_type, virtual_card_option,
-        card_linked_offer_available, origin);
+        card_linked_offer_available, metadata_logging_context);
+  }
+
+  Suggestion CreateCreditCardSuggestionWithMetadataContext(
+      const CreditCard& credit_card,
+      FieldType trigger_field_type,
+      bool virtual_card_option,
+      bool card_linked_offer_available,
+      autofill_metrics::CardMetadataLoggingContext& metadata_logging_context,
+      url::Origin origin = url::Origin()) const {
+    return suggestion_generator_->CreateCreditCardSuggestion(
+        credit_card, trigger_field_type, virtual_card_option,
+        card_linked_offer_available, metadata_logging_context);
   }
 
   // TODO(b/326950201): Remove and use GetOrderedCardsToSuggest instead.

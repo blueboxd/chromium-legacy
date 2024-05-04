@@ -10,6 +10,7 @@
 
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
+#include "ash/constants/ash_switches.h"
 #include "ash/events/event_rewriter_controller_impl.h"
 #include "ash/public/cpp/ash_prefs.h"
 #include "ash/public/mojom/input_device_settings.mojom.h"
@@ -17,6 +18,7 @@
 #include "ash/shell.h"
 #include "ash/system/input_device_settings/input_device_settings_controller_impl.h"
 #include "ash/system/input_device_settings/input_device_settings_defaults.h"
+#include "ash/system/input_device_settings/input_device_settings_metadata.h"
 #include "ash/system/input_device_settings/input_device_settings_pref_names.h"
 #include "ash/system/input_device_settings/input_device_settings_utils.h"
 #include "ash/system/input_device_settings/pref_handlers/graphics_tablet_pref_handler_impl.h"
@@ -39,8 +41,13 @@
 #include "components/prefs/pref_service.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/user_manager/known_user.h"
+#include "device/bluetooth/bluetooth_adapter_factory.h"
+#include "device/bluetooth/bluetooth_device.h"
+#include "device/bluetooth/test/mock_bluetooth_adapter.h"
+#include "device/bluetooth/test/mock_bluetooth_device.h"
 #include "device/udev_linux/fake_udev_loader.h"
 #include "mojo/public/cpp/bindings/clone_traits.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/events/ash/keyboard_capability.h"
@@ -170,6 +177,38 @@ const ui::InputDevice kSampleKeyboardMouseCombo(7,
                                                 /*vendor=*/0x046d,
                                                 /*product=*/0xc548,
                                                 /*version=*/0x0009);
+const ui::InputDevice kSampleUnCustomizableGraphicsTablet(
+    27,
+    ui::INPUT_DEVICE_USB,
+    "kSampleGraphicsTablet",
+    /*phys=*/"",
+    /*sys_path=*/base::FilePath(),
+    /*vendor=*/0xeeee,
+    /*product=*/0xeeee,
+    /*version=*/0x0006);
+const ui::InputDevice kSamplekWacomOnePenTabletS(28,
+                                                 ui::INPUT_DEVICE_USB,
+                                                 "kSamplekWacomOnePenTabletS",
+                                                 /*phys=*/"",
+                                                 /*sys_path=*/base::FilePath(),
+                                                 /*vendor=*/0x0531,
+                                                 /*product=*/0x0100,
+                                                 /*version=*/0x0006);
+const ui::KeyboardDevice kSampleKeychronKeyboard(29,
+                                                 ui::INPUT_DEVICE_USB,
+                                                 "kSampleKeychronKeyboard",
+                                                 /*phys=*/"",
+                                                 /*sys_path=*/base::FilePath(),
+                                                 /*vendor=*/0x3434,
+                                                 /*product=*/0x0311,
+                                                 /*version=*/0);
+
+const ui::KeyboardDevice kSampleSplitModifierKeyboard(
+    21,
+    ui::INPUT_DEVICE_INTERNAL,
+    "kSampleSplitModifierKeyboard",
+    /*has_assistant_key=*/true,
+    /*has_function_key=*/true);
 
 constexpr char kUserEmail1[] = "example1@abc.com";
 constexpr char kUserEmail2[] = "joy@abc.com";
@@ -185,6 +224,8 @@ const AccountId account_id_3 =
 constexpr char kKbdTopRowPropertyName[] = "CROS_KEYBOARD_TOP_ROW_LAYOUT";
 constexpr char kKbdTopRowLayout1Tag[] = "1";
 constexpr char kKbdTopRowLayout2Tag[] = "2";
+constexpr char kBluetoothDeviceName[] = "Bluetooth Device";
+constexpr char kBluetoothDevicePublicAddress[] = "01:23:45:67:89:AB";
 
 class FakeDeviceManager {
  public:
@@ -297,6 +338,11 @@ class FakeKeyboardPrefHandler : public KeyboardPrefHandler {
       const mojom::Keyboard& keyboard) override {}
 
   void UpdateDefaultNonChromeOSKeyboardSettings(
+      PrefService* pref_service,
+      const mojom::KeyboardPolicies& keyboard_policies,
+      const mojom::Keyboard& keyboard) override {}
+
+  void UpdateDefaultSplitModifierKeyboardSettings(
       PrefService* pref_service,
       const mojom::KeyboardPolicies& keyboard_policies,
       const mojom::Keyboard& keyboard) override {}
@@ -450,13 +496,18 @@ class InputDeviceSettingsControllerTest : public NoSessionAshTestBase {
 
   // testing::Test:
   void SetUp() override {
+    mock_adapter_ =
+        base::MakeRefCounted<testing::NiceMock<device::MockBluetoothAdapter>>();
+    device::BluetoothAdapterFactory::SetAdapterForTesting(mock_adapter_);
+    ON_CALL(*mock_adapter_, IsPowered).WillByDefault(testing::Return(true));
+    ON_CALL(*mock_adapter_, IsPresent).WillByDefault(testing::Return(true));
     task_runner_ = base::MakeRefCounted<base::TestSimpleTaskRunner>();
 
     scoped_feature_list_.InitWithFeatures(
         {features::kPeripheralCustomization,
          features::kInputDeviceSettingsSplit,
          features::kAltClickAndSixPackCustomization,
-         features::kPeripheralNotification,
+         features::kPeripheralNotification, features::kWelcomeExperience,
          ::features::kSupportF11AndF12KeyShortcuts},
         {});
     NoSessionAshTestBase::SetUp();
@@ -537,6 +588,27 @@ class InputDeviceSettingsControllerTest : public NoSessionAshTestBase {
     session_controller->SetSessionState(session_manager::SessionState::ACTIVE);
   }
 
+  std::unique_ptr<device::MockBluetoothDevice> SetupMockBluetoothDevice(
+      uint32_t vendor_id,
+      uint32_t product_id,
+      const char* device_name,
+      const char* device_address) {
+    std::unique_ptr<device::MockBluetoothDevice> mock_device =
+        std::make_unique<testing::NiceMock<device::MockBluetoothDevice>>(
+            mock_adapter_.get(), /*bluetooth_class=*/0, device_name,
+            device_address,
+            /*initially_paired=*/true, /*connected=*/true);
+    mock_device->SetBatteryInfo(device::BluetoothDevice::BatteryInfo(
+        device::BluetoothDevice::BatteryType::kDefault, 66));
+    ON_CALL(*mock_device, GetDeviceType)
+        .WillByDefault(testing::Return(device::BluetoothDeviceType::KEYBOARD));
+    ON_CALL(*mock_device, GetVendorID)
+        .WillByDefault(testing::Return(vendor_id));
+    ON_CALL(*mock_device, GetProductID)
+        .WillByDefault(testing::Return(product_id));
+    return mock_device;
+  }
+
  protected:
   std::unique_ptr<InputDeviceSettingsControllerImpl> controller_;
   std::unique_ptr<FakeDeviceManager> fake_device_manager_;
@@ -553,6 +625,7 @@ class InputDeviceSettingsControllerTest : public NoSessionAshTestBase {
   // whether or not to sign in within the SetUp() function. Configured to sign
   // in by default.
   bool should_sign_in_ = true;
+  scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>> mock_adapter_;
 };
 
 TEST_F(InputDeviceSettingsControllerTest, KeyboardAddingOne) {
@@ -829,6 +902,17 @@ TEST_F(InputDeviceSettingsControllerTest, KeyboardSettingsAreValid) {
 
   EXPECT_EQ(observer_->num_keyboards_settings_updated(), 0u);
   EXPECT_EQ(keyboard_pref_handler_->num_keyboard_settings_updated(), 0u);
+
+  const mojom::KeyboardSettingsPtr new_settings = CreateNewKeyboardSettings();
+  // Function key is not a modifier key so alt key can't be remapped to function
+  // key.
+  new_settings->modifier_remappings[ui::mojom::ModifierKey::kAlt] =
+      ui::mojom::ModifierKey::kFunction;
+  controller_->SetKeyboardSettings((DeviceId)kSampleKeyboardInternal.id,
+                                   new_settings.Clone());
+
+  EXPECT_EQ(observer_->num_keyboards_settings_updated(), 0u);
+  EXPECT_EQ(keyboard_pref_handler_->num_keyboard_settings_updated(), 0u);
 }
 
 TEST_F(InputDeviceSettingsControllerTest, FkeySettingsAreValid) {
@@ -848,6 +932,28 @@ TEST_F(InputDeviceSettingsControllerTest, FkeySettingsAreValid) {
                                    usb_kb_settings.Clone());
   EXPECT_EQ(observer_->num_keyboards_settings_updated(), 0u);
   EXPECT_EQ(keyboard_pref_handler_->num_keyboard_settings_updated(), 0u);
+}
+
+TEST_F(InputDeviceSettingsControllerTest,
+       UpdateSplitModifierKeyboardDefaultSettings) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kModifierSplit);
+  auto ignore_modifier_split_secret_key =
+      ash::switches::SetIgnoreModifierSplitSecretKeyForTest();
+
+  fake_device_manager_->AddFakeKeyboard(kSampleSplitModifierKeyboard,
+                                        kKbdTopRowLayout1Tag);
+
+  const mojom::KeyboardSettingsPtr usb_kb_settings =
+      mojom::KeyboardSettings::New();
+  usb_kb_settings->modifier_remappings[ui::mojom::ModifierKey::kFunction] =
+      ui::mojom::ModifierKey::kAlt;
+  controller_->SetKeyboardSettings((DeviceId)kSampleSplitModifierKeyboard.id,
+                                   usb_kb_settings.Clone());
+
+  EXPECT_EQ(observer_->num_keyboards_settings_updated(), 1u);
+  EXPECT_EQ(keyboard_pref_handler_->num_keyboard_settings_updated(), 1u);
+  fake_device_manager_->RemoveAllDevices();
 }
 
 TEST_F(InputDeviceSettingsControllerTest, GraphicsTabletSettingsAreValid) {
@@ -1110,6 +1216,44 @@ TEST_F(InputDeviceSettingsControllerTest, RecordsMetricsSettings) {
   histogram_tester.ExpectTotalCount(
       "ChromeOS.Settings.Device.Touchpad.Internal.AccelerationEnabled.Changed",
       /*expected_count=*/1u);
+}
+
+TEST_F(InputDeviceSettingsControllerTest, RecordsMetadataMetrics) {
+  base::HistogramTester histogram_tester;
+  ui::DeviceDataManagerTestApi().SetKeyboardDevices(
+      {kSampleKeyboardInternal, kSampleKeychronKeyboard});
+  ui::DeviceDataManagerTestApi().SetGraphicsTabletDevices(
+      {kSampleGraphicsTablet, kSampleUnCustomizableGraphicsTablet,
+       kSamplekWacomOnePenTabletS});
+  ui::DeviceDataManagerTestApi().SetMouseDevices(
+      {kSampleMouseUsb, kSampleCustomizableMouse, kSampleUncustomizableMouse});
+  // Two input device settings controllers publish this metric at the same time,
+  // so we expect 2 times the number of metadata tiers for all devices.
+  histogram_tester.ExpectBucketCount(
+      "ChromeOS.Inputs.GraphicsTablet.MetadataTier", MetadataTier::kNoMetadata,
+      /*expected_count=*/2u);
+  histogram_tester.ExpectBucketCount(
+      "ChromeOS.Inputs.GraphicsTablet.MetadataTier", MetadataTier::kNoMetadata,
+      /*expected_count=*/2u);
+  histogram_tester.ExpectBucketCount(
+      "ChromeOS.Inputs.GraphicsTablet.MetadataTier",
+      MetadataTier::kHasButtonConfig,
+      /*expected_count=*/2u);
+  histogram_tester.ExpectBucketCount("ChromeOS.Inputs.Mouse.MetadataTier",
+                                     MetadataTier::kNoMetadata,
+                                     /*expected_count=*/2u);
+  histogram_tester.ExpectBucketCount("ChromeOS.Inputs.Mouse.MetadataTier",
+                                     MetadataTier::kNoMetadata,
+                                     /*expected_count=*/2u);
+  histogram_tester.ExpectBucketCount("ChromeOS.Inputs.Mouse.MetadataTier",
+                                     MetadataTier::kHasButtonConfig,
+                                     /*expected_count=*/2u);
+  histogram_tester.ExpectBucketCount("ChromeOS.Inputs.Keyboard.MetadataTier",
+                                     MetadataTier::kNoMetadata,
+                                     /*expected_count=*/2u);
+  histogram_tester.ExpectBucketCount("ChromeOS.Inputs.Keyboard.MetadataTier",
+                                     MetadataTier::kNoMetadata,
+                                     /*expected_count=*/2u);
 }
 
 TEST_F(InputDeviceSettingsControllerTest, GetGeneralizedTopRowAreFKeys) {
@@ -1624,6 +1768,72 @@ TEST_F(InputDeviceSettingsControllerNoSignInTest,
       controller_->GetGraphicsTablet(kSampleGraphicsTablet.id);
   ASSERT_TRUE(graphics_tablet);
   ASSERT_TRUE(graphics_tablet->settings);
+}
+
+TEST_F(InputDeviceSettingsControllerTest, BatteryInfoAddedForBluetoothDevices) {
+  uint32_t test_vendor_id = 0x1111;
+  uint32_t test_product_id = 0x1112;
+  auto mock_device = SetupMockBluetoothDevice(test_vendor_id, test_product_id,
+                                              kBluetoothDeviceName,
+                                              kBluetoothDevicePublicAddress);
+  mock_device->SetBatteryInfo(device::BluetoothDevice::BatteryInfo(
+      device::BluetoothDevice::BatteryType::kDefault, 66,
+      device::BluetoothDevice::BatteryInfo::ChargeState::kDischarging));
+  std::vector<raw_ptr<const device::BluetoothDevice, VectorExperimental>>
+      devices;
+  devices.push_back(mock_device.get());
+  ON_CALL(*mock_adapter_, GetDevices).WillByDefault(testing::Return(devices));
+  ui::KeyboardDevice bluetooth_keyboard = kSampleKeyboardBluetooth;
+  bluetooth_keyboard.product_id = test_product_id;
+  bluetooth_keyboard.vendor_id = test_vendor_id;
+  ui::DeviceDataManagerTestApi().SetKeyboardDevices({bluetooth_keyboard});
+  auto* keyboard = controller_->GetKeyboard(bluetooth_keyboard.id);
+  ASSERT_TRUE(keyboard);
+  ASSERT_TRUE(keyboard->battery_info);
+  ASSERT_EQ(mojom::ChargeState::kDischarging,
+            keyboard->battery_info->charge_state);
+  ASSERT_EQ(66, keyboard->battery_info->battery_percentage);
+}
+
+TEST_F(InputDeviceSettingsControllerTest, BatteryInfoUpdates) {
+  // Create mock BT device for testing.
+  uint32_t test_vendor_id = 0x1111;
+  uint32_t test_product_id = 0x1112;
+  auto mock_device = SetupMockBluetoothDevice(test_vendor_id, test_product_id,
+                                              kBluetoothDeviceName,
+                                              kBluetoothDevicePublicAddress);
+  std::vector<raw_ptr<const device::BluetoothDevice, VectorExperimental>>
+      devices;
+  devices.push_back(mock_device.get());
+  ON_CALL(*mock_adapter_, GetDevices).WillByDefault(testing::Return(devices));
+
+  // Set initial battery info for BT device.
+  mock_device->SetBatteryInfo(device::BluetoothDevice::BatteryInfo(
+      device::BluetoothDevice::BatteryType::kDefault, 66));
+  ui::KeyboardDevice bluetooth_keyboard = kSampleKeyboardBluetooth;
+  bluetooth_keyboard.product_id = test_product_id;
+  bluetooth_keyboard.vendor_id = test_vendor_id;
+  ui::DeviceDataManagerTestApi().SetKeyboardDevices({bluetooth_keyboard});
+
+  // Keyboard populated with initial battery info.
+  auto* keyboard = controller_->GetKeyboard(bluetooth_keyboard.id);
+  ASSERT_EQ(66, keyboard->battery_info->battery_percentage);
+  auto bt_address_map =
+      controller_->GetBluetoothAddressToDeviceIdMapForTesting();
+  // BT address map should contain an entry for the connected keyboard.
+  ASSERT_EQ(1u, bt_address_map.size());
+
+  // Battery percentage change should trigger a call to `DeviceBatteryChanged`.
+  mock_device->SetBatteryInfo(device::BluetoothDevice::BatteryInfo(
+      device::BluetoothDevice::BatteryType::kDefault, 65));
+  keyboard = controller_->GetKeyboard(bluetooth_keyboard.id);
+  ASSERT_EQ(65, keyboard->battery_info->battery_percentage);
+
+  // Disconnecting the bluetooth device should remove the corresponding
+  // entry from the bluetooth address map.
+  ui::DeviceDataManagerTestApi().SetKeyboardDevices({});
+  bt_address_map = controller_->GetBluetoothAddressToDeviceIdMapForTesting();
+  ASSERT_EQ(0u, bt_address_map.size());
 }
 
 }  // namespace ash

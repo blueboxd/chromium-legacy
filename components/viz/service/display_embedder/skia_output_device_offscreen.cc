@@ -8,6 +8,7 @@
 
 #include "components/viz/common/resources/shared_image_format_utils.h"
 #include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
+#include "gpu/command_buffer/service/service_utils.h"
 #include "gpu/command_buffer/service/shared_image/shared_image_format_service_utils.h"
 #include "gpu/command_buffer/service/skia_utils.h"
 #include "third_party/skia/include/core/SkSurface.h"
@@ -40,7 +41,7 @@ SkiaOutputDeviceOffscreen::SkiaOutputDeviceOffscreen(
   // Some Vulkan drivers do not support kRGB_888x_SkColorType. Always use
   // kRGBA/BGRA_8888_SkColorType instead and initialize surface to opaque as
   // necessary.
-  // TODO(https://crbug.com/1108406): use the right color types base on GPU
+  // TODO(crbug.com/40141277): use the right color types base on GPU
   // capabilities.
   capabilities_.sk_color_types[static_cast<int>(gfx::BufferFormat::RGBA_8888)] =
       kRGBA_8888_SkColorType;
@@ -95,12 +96,13 @@ void SkiaOutputDeviceOffscreen::EnsureBackbuffer() {
         sk_color_type_, GrRenderable::kYes);
 #if BUILDFLAG(IS_MAC)
     DCHECK_EQ(context_state_->gr_context_type(), gpu::GrContextType::kGL);
-    // Because SkiaOutputSurface may use IOSurface, we also need using
-    // GL_TEXTURE_RECTANGLE_ARB here, otherwise the validateSurface
-    // will fail because of the textureType mismatch
+    // Because SkiaOutputSurface may use IOSurface, we need to ensure that we
+    // are using the correct texture target for IOSurfaces (which depends on the
+    // GL implementation). Otherwise the validateSurface will fail because of
+    // the textureType mismatch.
     backend_format = GrBackendFormats::MakeGL(
         GrBackendFormats::AsGLFormatEnum(backend_format),
-        gpu::GetPlatformSpecificTextureTarget());
+        gpu::GetMacOSSpecificTextureTargetForCurrentGLImplementation());
 #endif
     DCHECK(backend_format.isValid())
         << "GrBackendFormat is invalid for color_type: " << sk_color_type_;

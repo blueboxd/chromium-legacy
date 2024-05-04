@@ -53,6 +53,8 @@
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/test_autofill_driver.h"
+#include "components/autofill/core/browser/ui/suggestion_hiding_reason.h"
+#include "components/autofill/core/browser/ui/suggestion_type.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/custom_handlers/protocol_handler_registry.h"
 #include "components/lens/buildflags.h"
@@ -177,7 +179,9 @@ class TestNavigationDelegate : public content::WebContentsDelegate {
 
   content::WebContents* OpenURLFromTab(
       content::WebContents* source,
-      const content::OpenURLParams& params) override {
+      const content::OpenURLParams& params,
+      base::OnceCallback<void(content::NavigationHandle&)>
+          navigation_handle_callback) override {
     last_navigation_params_ = params;
     return nullptr;
   }
@@ -1150,10 +1154,10 @@ TEST_F(RenderViewContextMenuPrefsTest,
   EXPECT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_SEARCHWEBFORNEWTAB));
 }
 
-class RenderViewContextMenuHideAutofillPopupTest
+class RenderViewContextMenuHideAutofillSuggestionsTest
     : public RenderViewContextMenuPrefsTest {
  public:
-  RenderViewContextMenuHideAutofillPopupTest() = default;
+  RenderViewContextMenuHideAutofillSuggestionsTest() = default;
 
  protected:
   autofill::TestContentAutofillClient* autofill_client() {
@@ -1168,7 +1172,8 @@ class RenderViewContextMenuHideAutofillPopupTest
 };
 
 // Always hide the autofill popup when the context menu opens.
-TEST_F(RenderViewContextMenuHideAutofillPopupTest, HideAutofillPopup) {
+TEST_F(RenderViewContextMenuHideAutofillSuggestionsTest,
+       HideAutofillSuggestions) {
   NavigateAndCommit(GURL("http://www.foo.com/"));
   content::ContextMenuParams params = CreateParams(MenuItem::EDITABLE);
   params.form_control_type = blink::mojom::FormControlType::kInputText;
@@ -1176,14 +1181,14 @@ TEST_F(RenderViewContextMenuHideAutofillPopupTest, HideAutofillPopup) {
       *web_contents()->GetPrimaryMainFrame(), params);
 
   const autofill::AutofillClient::PopupOpenArgs args;
-  autofill_client()->ShowAutofillPopup(args, /*delegate=*/nullptr);
+  autofill_client()->ShowAutofillSuggestions(args, /*delegate=*/nullptr);
   EXPECT_TRUE(autofill_client()->IsShowingAutofillPopup());
 
   menu->Init();
 
   EXPECT_FALSE(autofill_client()->IsShowingAutofillPopup());
   EXPECT_EQ(autofill_client()->popup_hiding_reason(),
-            autofill::PopupHidingReason::kContextMenuOpened);
+            autofill::SuggestionHidingReason::kContextMenuOpened);
 }
 
 // Verify that the Lens Image Search menu item is disabled on non-image content

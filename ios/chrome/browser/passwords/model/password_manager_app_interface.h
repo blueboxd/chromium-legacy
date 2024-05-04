@@ -28,14 +28,10 @@
                                password:(NSString*)password;
 
 // Clears any credentials that were stored during a test run.
-+ (void)clearCredentials;
++ (bool)clearCredentials;
 
 // Returns the number of stored credentials.
 + (int)storedCredentialsCount;
-
-// Sets the pref recording whether the one-time account storage notice was
-// shown. Used to either suppress or force the notice to appear in tests.
-+ (void)setAccountStorageNoticeShown:(BOOL)shown;
 
 @end
 

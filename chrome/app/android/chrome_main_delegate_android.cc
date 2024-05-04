@@ -51,7 +51,7 @@ void ChromeMainDelegateAndroid::PreSandboxStartup() {
   // On some platforms pthreads can malloc internally to access higher-numbered
   // TLS slots, which can cause reentry in the heap profiler. (See the comment
   // on ReentryGuard::InitTLSSlot().)
-  // TODO(https://crbug.com/1411454): Clean up other paths that call this Init()
+  // TODO(crbug.com/40062835): Clean up other paths that call this Init()
   // function, which are now redundant.
   base::PoissonAllocationSampler::Init();
 
@@ -63,7 +63,7 @@ void ChromeMainDelegateAndroid::SecureDataDirectory() {
   // By default, Android creates the directory accessible by others.
   // We'd like to tighten security and make it accessible only by
   // the browser process.
-  // TODO(crbug.com/832388): Remove this once minsdk >= 21,
+  // TODO(crbug.com/41382891): Remove this once minsdk >= 21,
   // at which point this will be handled by PathUtils.java.
   base::FilePath data_path;
   bool ok = base::PathService::Get(base::DIR_ANDROID_APP_DATA, &data_path);
@@ -100,7 +100,7 @@ ChromeMainDelegateAndroid::RunProcess(
     if (!process_start_time.is_null()) {
       startup_metric_utils::GetCommon().RecordStartupProcessCreationTime(
           process_start_time);
-      // TODO(crbug.com/1127482): Perf bots should add support for measuring
+      // TODO(crbug.com/40719075): Perf bots should add support for measuring
       // Startup.LoadTime.ProcessCreateToApplicationStart, then the
       // kUseProcessStartTimeForMetrics feature can be removed.
       if (base::FeatureList::IsEnabled(kUseProcessStartTimeForMetrics))

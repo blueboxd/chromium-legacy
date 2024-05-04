@@ -6,9 +6,9 @@
 #define UI_ACCESSIBILITY_PLATFORM_AX_PLATFORM_NODE_WIN_H_
 
 #include <objbase.h>
+
 #include <oleacc.h>
 #include <oleauto.h>
-#include <uiautomation.h>
 #include <wrl/client.h>
 
 #include <array>
@@ -29,6 +29,8 @@
 #include "ui/accessibility/platform/ichromeaccessible.h"
 #include "ui/accessibility/platform/sequence_affine_com_object_root_win.h"
 #include "ui/gfx/range/range.h"
+
+#include <uiautomation.h>
 
 // This nonstandard GUID is taken directly from the Mozilla sources
 // (https://searchfox.org/mozilla-central/source/accessible/windows/msaa/ServiceProvider.cpp#60).
@@ -311,6 +313,25 @@ enum {
   SCOPED_UMA_HISTOGRAM_TIMER_MICROS(                     \
       "Accessibility.Performance.WinAPIs." #enum_value)
 
+#define StringForSource_WebContents "WebContents."
+#define StringForSource_Views "Views."
+
+#define WIN_ACCESSIBILITY_SOURCE_API_PERF_HISTOGRAM(api_enum)                  \
+  if (GetDelegate() && GetDelegate()->node()) {                                \
+    if (!GetDelegate()->node()->IsView()) {                                    \
+      SCOPED_UMA_HISTOGRAM_TIMER_MICROS(                                       \
+          "Accessibility.Performance."                                         \
+          "WinAPIs." StringForSource_WebContents #api_enum);                   \
+    } else {                                                                   \
+      SCOPED_UMA_HISTOGRAM_TIMER_MICROS(                                       \
+          "Accessibility.Performance."                                         \
+          "WinAPIs." StringForSource_Views #api_enum);                         \
+    }                                                                          \
+  } else {                                                                     \
+    SCOPED_UMA_HISTOGRAM_TIMER_MICROS(                                         \
+        "Accessibility.Performance.WinAPIs." StringForSource_Views #api_enum); \
+  }
+
 //
 // Macros to use at the top of any AXPlatformNodeWin (or derived class) method
 // that implements a UIA COM interface. The error code UIA_E_ELEMENTNOTAVAILABLE
@@ -473,12 +494,12 @@ class COMPONENT_EXPORT(AX_PLATFORM) __declspec(
   ULONG InternalAddRef();
   ULONG InternalRelease();
 
-  // Invoked when the instance's refcount rises above 1. This generally means
-  // that a reference to an interface pointer is being handed out to an
-  // accessibility consumer.
+  // Invoked when the instance is first referenced. This generally means that a
+  // reference to an interface pointer is being handed out to an accessibility
+  // consumer.
   virtual void OnReferenced();
 
-  // Invoked when the instance's refcount drops to 1. This generally means that
+  // Invoked when the instance is fully dereferenced. This generally means that
   // an accessibility consumer has released its last reference to the instance.
   virtual void OnDereferenced();
 
@@ -1349,12 +1370,6 @@ class COMPONENT_EXPORT(AX_PLATFORM) __declspec(
   void StateToUIAAriaProperty(std::vector<std::wstring>& properties,
                               ax::mojom::State state,
                               const char* uia_aria_property);
-
-  // If the Html attribute |html_attribute_name| is present, add its value as a
-  // UIA AriaProperties Property with the name |uia_aria_property|.
-  void HtmlAttributeToUIAAriaProperty(std::vector<std::wstring>& properties,
-                                      const char* html_attribute_name,
-                                      const char* uia_aria_property);
 
   // If the IntList attribute |attribute| is present, return an array
   // of automation elements referenced by the ids in the

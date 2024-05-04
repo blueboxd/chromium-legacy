@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_ALLOCATOR_PARTITION_ALLOCATOR_SRC_PARTITION_ALLOC_PARTITION_ALLOC_BASE_APPLE_MACH_LOGGING_H_
-#define BASE_ALLOCATOR_PARTITION_ALLOCATOR_SRC_PARTITION_ALLOC_PARTITION_ALLOC_BASE_APPLE_MACH_LOGGING_H_
+#ifndef PARTITION_ALLOC_PARTITION_ALLOC_BASE_APPLE_MACH_LOGGING_H_
+#define PARTITION_ALLOC_PARTITION_ALLOC_BASE_APPLE_MACH_LOGGING_H_
 
 #include <mach/mach.h>
 
-#include "build/build_config.h"
+#include "partition_alloc/build_config.h"
 #include "partition_alloc/partition_alloc_base/component_export.h"
 #include "partition_alloc/partition_alloc_base/debug/debugging_buildflags.h"
 #include "partition_alloc/partition_alloc_base/logging.h"
@@ -96,4 +96,4 @@ class PA_COMPONENT_EXPORT(PARTITION_ALLOC_BASE) MachLogMessage
                  BUILDFLAG(PA_DCHECK_IS_ON) && !(condition)) \
       << "Check failed: " #condition << ". "
 
-#endif  // BASE_ALLOCATOR_PARTITION_ALLOCATOR_SRC_PARTITION_ALLOC_PARTITION_ALLOC_BASE_APPLE_MACH_LOGGING_H_
+#endif  // PARTITION_ALLOC_PARTITION_ALLOC_BASE_APPLE_MACH_LOGGING_H_

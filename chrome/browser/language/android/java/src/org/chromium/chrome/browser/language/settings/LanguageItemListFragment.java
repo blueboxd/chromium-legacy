@@ -23,6 +23,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.RecyclerView.ViewHolder;
 
 import org.chromium.chrome.browser.language.R;
+import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.settings.ProfileDependentSetting;
 import org.chromium.components.browser_ui.settings.FragmentSettingsLauncher;
 import org.chromium.components.browser_ui.settings.SettingsLauncher;
 import org.chromium.components.browser_ui.settings.SettingsUtils;
@@ -41,7 +43,7 @@ import java.util.Collection;
  * to populate the LanguageItem list and provide callbacks for adding and removing items.
  */
 public abstract class LanguageItemListFragment extends Fragment
-        implements FragmentSettingsLauncher {
+        implements FragmentSettingsLauncher, ProfileDependentSetting {
     // Request code for returning from Select Language Fragment
     private static final int REQUEST_CODE_SELECT_LANGUAGE = 1;
 
@@ -58,8 +60,8 @@ public abstract class LanguageItemListFragment extends Fragment
     }
 
     private class ListAdapter extends LanguageListBaseAdapter {
-        ListAdapter(Context context) {
-            super(context);
+        ListAdapter(Context context, Profile profile) {
+            super(context, profile);
         }
 
         @Override
@@ -94,6 +96,7 @@ public abstract class LanguageItemListFragment extends Fragment
     }
 
     private SettingsLauncher mSettingsLauncher;
+    private Profile mProfile;
     private ListAdapter mAdapter;
     private ListDelegate mListDelegate;
 
@@ -119,7 +122,7 @@ public abstract class LanguageItemListFragment extends Fragment
         mRecyclerView.addItemDecoration(
                 new DividerItemDecoration(activity, layoutManager.getOrientation()));
 
-        mAdapter = new ListAdapter(activity);
+        mAdapter = new ListAdapter(activity, mProfile);
         mRecyclerView.setAdapter(mAdapter);
         mAdapter.onDataUpdated();
         ScrollView scrollView = inflatedView.findViewById(R.id.scroll_view);
@@ -165,6 +168,16 @@ public abstract class LanguageItemListFragment extends Fragment
     @Override
     public void setSettingsLauncher(SettingsLauncher settingsLauncher) {
         mSettingsLauncher = settingsLauncher;
+    }
+
+    @Override
+    public void setProfile(Profile profile) {
+        mProfile = profile;
+    }
+
+    /** Return the {@link Profile} associated with this language item. */
+    public Profile getProfile() {
+        return mProfile;
     }
 
     /**

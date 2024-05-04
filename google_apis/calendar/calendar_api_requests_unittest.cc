@@ -27,6 +27,8 @@ namespace calendar {
 
 namespace {
 const char kTestCalendarColorId[] = "5";
+const char kTestPrimaryCalendarColorId[] = "14";
+const char kTestPrimaryCalendarSummary[] = "test1@google.com";
 const char kTestUserAgent[] = "test-user-agent";
 }
 
@@ -110,11 +112,14 @@ TEST_F(CalendarApiRequestsTest, GetCalendarListRequest) {
   EXPECT_EQ(
       "/calendar/v3/users/me/calendarList"
       "?maxResults=250"
-      "&fields=etag%2Ckind%2Citems(id%2CcolorId%2Cselected%2Cprimary)",
+      "&fields=etag%2Ckind%2Citems"
+      "(kind%2Cid%2Csummary%2CcolorId%2Cselected%2Cprimary)",
       http_request_.relative_url);
 
   ASSERT_TRUE(calendars.get());
   EXPECT_EQ("calendar#calendarList", calendars->kind());
+  EXPECT_EQ(kTestPrimaryCalendarSummary, calendars->items()[0]->summary());
+  EXPECT_EQ(kTestPrimaryCalendarColorId, calendars->items()[0]->color_id());
   EXPECT_EQ(true, calendars->items()[0]->selected());
   EXPECT_EQ(true, calendars->items()[0]->primary());
 }
@@ -167,11 +172,14 @@ TEST_F(CalendarApiRequestsTest, GetEventListRequest) {
   base::Time::Exploded exploded;
   events->items()[0]->start_time().date_time().LocalExplode(&exploded);
   EXPECT_EQ(exploded.month, 11);
+  // Verifies that events containing a colorId do not have their color IDs
+  // replaced by calendar_color_id.
   EXPECT_EQ(events->items()[0]->color_id(), "3");
   EXPECT_EQ(events->items()[1]->color_id(), "3");
   // Verifies that an event without a colorId in the response yields an event
-  // object with a color ID equal to calendar_color_id.
-  EXPECT_EQ(events->items()[2]->color_id(), kTestCalendarColorId);
+  // object with a color ID equal to calendar_color_id (prepended by a marker).
+  EXPECT_EQ(events->items()[2]->color_id(),
+            calendar::kInjectedColorIdPrefix + kTestCalendarColorId);
 }
 
 // Tests that CalendarApiEventsRequest can generate the correct url and get the
@@ -268,7 +276,7 @@ TEST_F(CalendarApiRequestsTest, GetEventListRequestWithAttachments) {
       "%2ChtmlLink%2Cattendees(responseStatus%2Cself)%2CattendeesOmitted"
       "%2CconferenceData(conferenceId%2CentryPoints(entryPointType%2Curi))"
       "%2Ccreator(self)"
-      "%2Cattachments(title%2CfileUrl%2CiconLink))",
+      "%2Cattachments(title%2CfileUrl%2CiconLink%2CfileId))",
       http_request_.relative_url);
 }
 

@@ -79,7 +79,7 @@ bool FilterOperationSupported(const cc::FilterOperation& operation) {
 }
 
 gfx::CALayerResult FromRenderPassQuad(
-    DisplayResourceProvider* resource_provider,
+    const DisplayResourceProvider* resource_provider,
     const AggregatedRenderPassDrawQuad* quad,
     const base::flat_map<AggregatedRenderPassId, cc::FilterOperations*>&
         render_pass_filters,
@@ -103,13 +103,13 @@ gfx::CALayerResult FromRenderPassQuad(
     }
   }
 
-  // TODO(crbug.com/1215491): support not 2d axis aligned clipping.
+  // TODO(crbug.com/40769959): support not 2d axis aligned clipping.
   if (shared_quad_state->clip_rect &&
       !shared_quad_state->quad_to_target_transform.Preserves2dAxisAlignment()) {
     return gfx::kCALayerFailedQuadClipping;
   }
 
-  // TODO(crbug.com/1215491): support not 2d axis aligned mask.
+  // TODO(crbug.com/40769959): support not 2d axis aligned mask.
   if (!shared_quad_state->mask_filter_info.IsEmpty() &&
       !shared_quad_state->quad_to_target_transform.Preserves2dAxisAlignment()) {
     return gfx::kCALayerFailedRenderPassPassMask;
@@ -139,9 +139,10 @@ gfx::CALayerResult FromSolidColorDrawQuad(const SolidColorDrawQuad* quad,
   return gfx::kCALayerSuccess;
 }
 
-gfx::CALayerResult FromTextureQuad(DisplayResourceProvider* resource_provider,
-                                   const TextureDrawQuad* quad,
-                                   OverlayCandidate* ca_layer_overlay) {
+gfx::CALayerResult FromTextureQuad(
+    const DisplayResourceProvider* resource_provider,
+    const TextureDrawQuad* quad,
+    OverlayCandidate* ca_layer_overlay) {
   ResourceId resource_id = quad->resource_id();
   if (!resource_provider->IsOverlayCandidate(resource_id))
     return gfx::kCALayerFailedTextureNotCandidate;
@@ -159,11 +160,6 @@ gfx::CALayerResult FromTextureQuad(DisplayResourceProvider* resource_provider,
   ca_layer_overlay->uv_rect =
       BoundingRect(quad->uv_top_left, quad->uv_bottom_right);
   ca_layer_overlay->color = quad->background_color;
-  for (int i = 1; i < 4; ++i) {
-    if (quad->vertex_opacity[i] != quad->vertex_opacity[0])
-      return gfx::kCALayerFailedDifferentVertexOpacities;
-  }
-  ca_layer_overlay->opacity *= quad->vertex_opacity[0];
   ca_layer_overlay->nearest_neighbor_filter = quad->nearest_neighbor;
   ca_layer_overlay->hdr_metadata =
       resource_provider->GetHDRMetadata(resource_id);
@@ -172,13 +168,14 @@ gfx::CALayerResult FromTextureQuad(DisplayResourceProvider* resource_provider,
   return gfx::kCALayerSuccess;
 }
 
-gfx::CALayerResult FromYUVVideoQuad(DisplayResourceProvider* resource_provider,
-                                    const YUVVideoDrawQuad* quad,
-                                    OverlayCandidate* ca_layer_overlay,
-                                    bool& video_with_odd_width_out,
-                                    bool& video_with_odd_height_out,
-                                    bool& video_with_odd_x_out,
-                                    bool& video_with_odd_y_out) {
+gfx::CALayerResult FromYUVVideoQuad(
+    const DisplayResourceProvider* resource_provider,
+    const YUVVideoDrawQuad* quad,
+    OverlayCandidate* ca_layer_overlay,
+    bool& video_with_odd_width_out,
+    bool& video_with_odd_height_out,
+    bool& video_with_odd_x_out,
+    bool& video_with_odd_y_out) {
   // For YUVVideoDrawQuads, the Y and UV planes alias the same underlying
   // IOSurface. Ensure all planes are overlays and have the same contents
   // rect. Then use the Y plane as the resource for the overlay.
@@ -236,9 +233,10 @@ gfx::CALayerResult FromYUVVideoQuad(DisplayResourceProvider* resource_provider,
   return gfx::kCALayerSuccess;
 }
 
-gfx::CALayerResult FromTileQuad(DisplayResourceProvider* resource_provider,
-                                const TileDrawQuad* quad,
-                                OverlayCandidate* ca_layer_overlay) {
+gfx::CALayerResult FromTileQuad(
+    const DisplayResourceProvider* resource_provider,
+    const TileDrawQuad* quad,
+    OverlayCandidate* ca_layer_overlay) {
   ResourceId resource_id = quad->resource_id();
   if (!resource_provider->IsOverlayCandidate(resource_id))
     return gfx::kCALayerFailedTileNotCandidate;
@@ -253,7 +251,7 @@ gfx::CALayerResult FromTileQuad(DisplayResourceProvider* resource_provider,
 class CALayerOverlayProcessorInternal {
  public:
   gfx::CALayerResult FromDrawQuad(
-      DisplayResourceProvider* resource_provider,
+      const DisplayResourceProvider* resource_provider,
       const gfx::RectF& display_rect,
       const DrawQuad* quad,
       const base::flat_map<AggregatedRenderPassId, cc::FilterOperations*>&
@@ -421,7 +419,7 @@ bool CALayerOverlayProcessor::AreClipSettingsValid(
 }
 
 void CALayerOverlayProcessor::PutForcedOverlayContentIntoUnderlays(
-    DisplayResourceProvider* resource_provider,
+    const DisplayResourceProvider* resource_provider,
     AggregatedRenderPass* render_pass,
     const gfx::RectF& display_rect,
     QuadList* quad_list,
@@ -482,7 +480,7 @@ void CALayerOverlayProcessor::PutForcedOverlayContentIntoUnderlays(
 
 bool CALayerOverlayProcessor::ProcessForCALayerOverlays(
     AggregatedRenderPass* render_pass,
-    DisplayResourceProvider* resource_provider,
+    const DisplayResourceProvider* resource_provider,
     const gfx::RectF& display_rect,
     const base::flat_map<AggregatedRenderPassId, cc::FilterOperations*>&
         render_pass_filters,
@@ -569,7 +567,7 @@ bool CALayerOverlayProcessor::ProcessForCALayerOverlays(
 
 bool CALayerOverlayProcessor::PutQuadInSeparateOverlay(
     QuadList::Iterator at,
-    DisplayResourceProvider* resource_provider,
+    const DisplayResourceProvider* resource_provider,
     AggregatedRenderPass* render_pass,
     const gfx::RectF& display_rect,
     const DrawQuad* quad,

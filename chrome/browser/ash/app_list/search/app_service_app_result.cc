@@ -63,12 +63,12 @@ AppServiceAppResult::AppServiceAppResult(Profile* profile,
   switch (app_type_) {
     case apps::AppType::kBuiltIn:
       set_id(app_id);
-      // TODO(crbug.com/826982): Is this SetResultType call necessary?? Does
+      // TODO(crbug.com/40569217): Is this SetResultType call necessary?? Does
       // anyone care about the kInternalApp vs kInstalledApp distinction?
       SetResultType(ResultType::kInternalApp);
       break;
     case apps::AppType::kChromeApp:
-      // TODO(crbug.com/826982): why do we pass the URL and not the app_id??
+      // TODO(crbug.com/40569217): why do we pass the URL and not the app_id??
       // Can we replace this by the simpler "set_id(app_id)", and therefore
       // pull that out of the switch?
       set_id(extensions::Extension::GetBaseURLFromExtensionId(app_id).spec());
@@ -133,7 +133,7 @@ void AppServiceAppResult::Launch(int event_flags,
   // apps, Crostini apps treat activations as a launch. The app can decide
   // whether to show a new window or focus an existing window as it sees fit.
   //
-  // TODO(crbug.com/1026730): Move this special case to ExtensionApps,
+  // TODO(crbug.com/40659878): Move this special case to ExtensionApps,
   // when AppService Instance feature is done.
   bool is_active_app = false;
   proxy->AppRegistryCache().ForOneApp(

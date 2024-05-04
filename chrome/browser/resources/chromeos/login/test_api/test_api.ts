@@ -133,11 +133,6 @@ class HidDetectionScreenTester extends ScreenElementApi {
     this.nextButton = new PolymerElementApi(this, '#hid-continue-button');
   }
 
-  // Must be called to enable the next button
-  emulateDevicesConnected(): void {
-    chrome.send('OobeTestApi.emulateDevicesForTesting');
-  }
-
   touchscreenDetected(): boolean {
     // Touchscreen entire row is only visible when touchscreen is detected.
     const touchscreenRow =
@@ -346,6 +341,24 @@ class FingerprintScreenTester extends ScreenElementApi {
   }
   override shouldSkip(): boolean {
     return !loadTimeData.getBoolean('testapi_isFingerprintSupported');
+  }
+}
+
+class AiIntroScreenTester extends ScreenElementApi {
+  constructor() {
+    super('ai-intro');
+  }
+  override shouldSkip(): boolean {
+    return loadTimeData.getBoolean('testapi_shouldSkipAiIntro');
+  }
+}
+
+class TunaScreenTester extends ScreenElementApi {
+  constructor() {
+    super('tuna');
+  }
+  override shouldSkip(): boolean {
+    return loadTimeData.getBoolean('testapi_shouldSkipTuna');
   }
 }
 
@@ -1081,6 +1094,7 @@ class LocalPasswordSetupScreenTester extends ScreenElementApi {
         this.confirmInput.isVisible();
   }
 
+  // TODO (b/329361749): remove this code after crrev.com/c/5381081 landed.
   enterPassword(password: string): void {
     this.firstInput.typeInto(password);
     afterNextRender(assert(this.element()), () => {
@@ -1090,6 +1104,18 @@ class LocalPasswordSetupScreenTester extends ScreenElementApi {
         this.nextButton.click();
       });
     });
+  }
+
+  enterPasswordToFirstInput(password: string): void {
+    this.firstInput.typeInto(password);
+  }
+
+  enterPasswordToConfirmInput(password: string): void {
+    this.confirmInput.typeInto(password);
+  }
+
+  isNextButtonEnabled(): boolean {
+    return this.nextButton !== undefined && this.nextButton.isEnabled();
   }
 }
 
@@ -1120,13 +1146,23 @@ class PasswordFactorSuccessScreenTester extends ScreenElementApi {
 }
 
 class GaiaInfoScreenTester extends ScreenElementApi {
+  private manualCredentialsButton: PolymerElementApi;
+
   constructor() {
     super('gaia-info');
     this.nextButton = new PolymerElementApi(this, '#nextButton');
+    this.manualCredentialsButton = new PolymerElementApi(this, '#manualButton');
   }
 
   override shouldSkip(): boolean {
     return loadTimeData.getBoolean('testapi_shouldSkipGaiaInfoScreen');
+  }
+
+  /**
+   * Select option to manually enter Google credentials.
+   */
+  selectManualCredentials(): void {
+    this.manualCredentialsButton.click();
   }
 }
 
@@ -1365,6 +1401,8 @@ class HwDataCollectionScreenTester extends ScreenElementApi {
 
 export class OobeApiProvider {
   private screens: Record<string, ScreenElementApi>;
+  private metricsClientID: string;
+
   private loginWithPin: (username: string, pin: string) => void;
   private advanceToScreen: (screen: string) => void;
   private skipToLoginForTesting: () => void;
@@ -1381,6 +1419,10 @@ export class OobeApiProvider {
   private getOobeActiveDialogSubtitleText: () => string;
   private getOobeActiveDialogContentText: () => string;
 
+  private requestMetricsClientID: () => void;
+  private isMetricsClientIdAvailable: () => boolean;
+  private getMetricsClientID: () => string;
+
   constructor() {
     this.screens = {
       HIDDetectionScreen: new HidDetectionScreenTester(),
@@ -1393,6 +1435,8 @@ export class OobeApiProvider {
       SyncScreen: new SyncScreenTester(),
       PasswordSelectionScreen: new PasswordSelectionScreenTester(),
       FingerprintScreen: new FingerprintScreenTester(),
+      AiIntroScreen: new AiIntroScreenTester(),
+      TunaScreen: new TunaScreenTester(),
       AssistantScreen: new AssistantScreenTester(),
       MarketingOptInScreen: new MarketingOptInScreenTester(),
       ConfirmSamlPasswordScreen: new ConfirmSamlPasswordScreenTester(),
@@ -1447,11 +1491,16 @@ export class OobeApiProvider {
     };
 
     this.getCurrentScreenName = function(): string {
-      return Oobe.getInstance().currentScreen.id.trim();
+      const currentScreen = Oobe.getInstance().currentScreen;
+      return currentScreen ? currentScreen.id.trim() : 'none';
     };
 
     this.getCurrentScreenStep = function(): string {
-      const step = Oobe.getInstance().currentScreen.getAttribute('multistep');
+      const currentScreen = Oobe.getInstance().currentScreen;
+      if (currentScreen === null) {
+        return 'none';
+      }
+      const step = currentScreen.getAttribute('multistep');
       if (step === null) {
         return 'default';
       }
@@ -1463,7 +1512,7 @@ export class OobeApiProvider {
      */
     this.getOobeActiveDialog = function(): HTMLElement|null {
       const adaptiveDialogs =
-          Oobe.getInstance().currentScreen.shadowRoot?.querySelectorAll(
+          Oobe.getInstance().currentScreen?.shadowRoot?.querySelectorAll(
               'oobe-adaptive-dialog');
       if (adaptiveDialogs) {
         for (const dialog of adaptiveDialogs) {
@@ -1480,7 +1529,7 @@ export class OobeApiProvider {
       // In this case we can try to fetch all loading dialogs attached to the
       // current screen and check their internal adaptive dialogs.
       const loadingDialogs =
-          Oobe.getInstance().currentScreen.shadowRoot?.querySelectorAll(
+          Oobe.getInstance().currentScreen?.shadowRoot?.querySelectorAll(
               'oobe-loading-dialog');
       if (loadingDialogs) {
         for (const dialog of loadingDialogs) {
@@ -1575,5 +1624,34 @@ export class OobeApiProvider {
     this.getOobeActiveDialogContentText = function(): string {
       return this.combineTextOfAdaptiveDialogSlots('content');
     };
+
+    this.isMetricsClientIdAvailable = function(): boolean {
+      return this.metricsClientID !== '';
+    };
+
+    this.requestMetricsClientID = function(): void {
+      sendWithPromise('OobeTestApi.getMetricsClientID')
+          .then(clientID => this.onMetricsClientIdReceived(clientID));
+    };
+
+    this.getMetricsClientID = function(): string {
+      assert(
+          this.isMetricsClientIdAvailable(),
+          '`getMetricsClientID()` should only be called after ' +
+              '`requestMetricsClientID()` is called, and ' +
+              '`isMetricsClientIdAvailable()` starts returning true');
+
+      const id = this.metricsClientID;
+
+      // Reset `this.metricsClientID` when it is consumed to force
+      // the next caller to call first this.requestMetricsClientID().
+      this.metricsClientID = '';
+
+      return id;
+    };
+  }
+
+  onMetricsClientIdReceived(clientID: string): void {
+    this.metricsClientID = clientID;
   }
 }

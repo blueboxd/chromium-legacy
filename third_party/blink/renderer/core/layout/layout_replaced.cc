@@ -94,8 +94,9 @@ void LayoutReplaced::StyleDidChange(StyleDifference diff,
 
   // Replaced elements can have border-radius clips without clipping overflow;
   // the overflow clipping case is already covered in LayoutBox::StyleDidChange
-  if (old_style && !old_style->RadiiEqual(StyleRef()))
+  if (old_style && !old_style->BorderRadiusEqual(StyleRef())) {
     SetNeedsPaintPropertyUpdate();
+  }
 
   bool had_style = !!old_style;
   float old_zoom = had_style ? old_style->EffectiveZoom()
@@ -117,16 +118,6 @@ void LayoutReplaced::StyleDidChange(StyleDifference diff,
     constexpr bool kDiscardDuplicates = true;
     GetDocument().AddConsoleMessage(console_message, kDiscardDuplicates);
   }
-}
-
-void LayoutReplaced::UpdateLayout() {
-  NOT_DESTROYED();
-  DCHECK(NeedsLayout());
-
-  ClearScrollableOverflow();
-  ClearSelfNeedsScrollableOverflowRecalc();
-  ClearChildNeedsScrollableOverflowRecalc();
-  ClearNeedsLayout();
 }
 
 void LayoutReplaced::IntrinsicSizeChanged() {
@@ -189,8 +180,13 @@ void LayoutReplaced::RecalcVisualOverflow() {
 
 std::optional<gfx::SizeF>
 LayoutReplaced::ComputeObjectViewBoxSizeForIntrinsicSizing() const {
-  if (IntrinsicWidthOverride() || IntrinsicHeightOverride())
-    return std::nullopt;
+  // TODO(crbug.com/335003884): Investigate if this first branch is
+  // actually doing anything and maybe clean that up too
+  if (!RuntimeEnabledFeatures::NoIntrinsicSizeOverrideEnabled()) {
+    if (IntrinsicWidthOverride() || IntrinsicHeightOverride()) {
+      return std::nullopt;
+    }
+  }
 
   if (auto view_box = ComputeObjectViewBoxRect())
     return static_cast<gfx::SizeF>(view_box->size);
@@ -374,11 +370,6 @@ PhysicalRect LayoutReplaced::ReplacedContentRectFrom(
     const PhysicalRect& base_content_rect) const {
   NOT_DESTROYED();
   return ComputeReplacedContentRect(base_content_rect);
-}
-
-PhysicalRect LayoutReplaced::PhysicalContentBoxRectFromNG() const {
-  NOT_DESTROYED();
-  return new_content_rect_ ? *new_content_rect_ : PhysicalContentBoxRect();
 }
 
 PhysicalRect LayoutReplaced::PreSnappedRectForPersistentSizing(

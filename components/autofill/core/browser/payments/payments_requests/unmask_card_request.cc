@@ -13,6 +13,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "components/autofill/core/browser/payments/autofill_error_dialog_context.h"
+#include "components/autofill/core/browser/payments/autofill_payments_feature_availability.h"
 #include "components/autofill/core/browser/payments/card_unmask_challenge_option.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/strings/grit/components_strings.h"
@@ -198,8 +199,7 @@ CardUnmaskChallengeOption ParseCardUnmaskChallengeOption(
   // challenge option, and return it.
   else if ((defined_challenge_option =
                 challenge_option.FindDict("redirect_challenge_option")) &&
-           base::FeatureList::IsEnabled(
-               features::kAutofillEnableVcn3dsAuthentication)) {
+           IsVcn3dsEnabled()) {
     ParseAs3dsChallengeOption(defined_challenge_option,
                               &parsed_challenge_option);
   }
@@ -213,9 +213,9 @@ CardUnmaskChallengeOption ParseCardUnmaskChallengeOption(
 UnmaskCardRequest::UnmaskCardRequest(
     const PaymentsNetworkInterface::UnmaskRequestDetails& request_details,
     const bool full_sync_enabled,
-    base::OnceCallback<void(AutofillClient::PaymentsRpcResult,
-                            PaymentsNetworkInterface::UnmaskResponseDetails&)>
-        callback)
+    base::OnceCallback<
+        void(AutofillClient::PaymentsRpcResult,
+             const PaymentsNetworkInterface::UnmaskResponseDetails&)> callback)
     : request_details_(request_details),
       full_sync_enabled_(full_sync_enabled),
       callback_(std::move(callback)) {

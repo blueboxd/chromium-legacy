@@ -37,6 +37,14 @@ void TabGroupTabCollection::CloseTab(TabModel* tab_model) {
   impl_->CloseTab(tab_model);
 }
 
+tabs::TabModel* TabGroupTabCollection::GetTabAtIndex(size_t index) const {
+  return impl_->GetTabAtIndex(index);
+}
+
+bool TabGroupTabCollection::ContainsTab(TabModel* tab_model) const {
+  return impl_->ContainsTab(tab_model);
+}
+
 bool TabGroupTabCollection::ContainsTabRecursive(TabModel* tab_model) const {
   return impl_->ContainsTab(tab_model);
 }
@@ -47,7 +55,7 @@ bool TabGroupTabCollection::ContainsCollection(
 }
 
 std::optional<size_t> TabGroupTabCollection::GetIndexOfTabRecursive(
-    TabModel* tab_model) const {
+    const TabModel* tab_model) const {
   return impl_->GetIndexOfTab(tab_model);
 }
 
@@ -58,6 +66,10 @@ std::optional<size_t> TabGroupTabCollection::GetIndexOfCollection(
 
 std::unique_ptr<TabModel> TabGroupTabCollection::MaybeRemoveTab(
     TabModel* tab_model) {
+  if (!ContainsTab(tab_model)) {
+    return nullptr;
+  }
+
   std::unique_ptr<TabModel> removed_tab_model = impl_->RemoveTab(tab_model);
   removed_tab_model->set_group(/*group=*/std::nullopt);
   removed_tab_model->OnReparented(nullptr, GetPassKey());

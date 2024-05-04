@@ -4,6 +4,8 @@
 
 #include "media/filters/demuxer_manager.h"
 
+#include <string_view>
+
 #include "base/feature_list.h"
 #include "base/functional/callback.h"
 #include "base/metrics/histogram_functions.h"
@@ -49,7 +51,7 @@ enum class MimeType {
   kMaxValue = kTextVtt,  // For UMA histograms.
 };
 
-MimeType TranslateMimeTypeToHistogramEnum(const base::StringPiece& mime_type) {
+MimeType TranslateMimeTypeToHistogramEnum(const std::string_view mime_type) {
   constexpr auto kCaseInsensitive = base::CompareCase::INSENSITIVE_ASCII;
   if (base::StartsWith(mime_type, "application/dash+xml", kCaseInsensitive)) {
     return MimeType::kApplicationDashXml;
@@ -198,6 +200,7 @@ void DemuxerManager::FreeResourcesAfterMediaThreadWait(base::OnceClosure cb) {
   // The demuxer and data source must be freed on the main thread, but we have
   // to make sure nothing is using them on the media thread first. So we have
   // to post to the media thread and back.
+  data_source_info_ = nullptr;
   media_task_runner_->PostTask(
       FROM_HERE,
       base::BindPostTaskToCurrentDefault(base::BindOnce(
@@ -313,7 +316,7 @@ std::optional<double> DemuxerManager::GetDemuxerDuration() {
   // TimeDelta with potentially reduced precision (limited to Microseconds).
   // ChunkDemuxer returns the full-precision user-specified double. This ensures
   // users can "get" the exact duration they "set".
-  // TODO(crbug/1377053) Get rid of this static cast.
+  // TODO(crbug.com/40243452) Get rid of this static cast.
   return static_cast<ChunkDemuxer*>(demuxer_.get())->GetDuration();
 }
 
@@ -371,7 +374,7 @@ PipelineStatus DemuxerManager::CreateDemuxer(
     bool needs_first_frame,
     DemuxerManager::DemuxerCreatedCB on_demuxer_created,
     base::flat_map<std::string, std::string> headers) {
-  // TODO(crbug/1377053) return a better error
+  // TODO(crbug.com/40243452) return a better error
   if (!client_) {
     return DEMUXER_ERROR_COULD_NOT_OPEN;
   }
@@ -386,7 +389,9 @@ PipelineStatus DemuxerManager::CreateDemuxer(
   if (hls_fallback_ == HlsFallbackImplementation::kBuiltinHlsPlayer ||
       (base::FeatureList::IsEnabled(kBuiltInHlsPlayer) &&
        loaded_url_.path_piece().ends_with(".m3u8"))) {
-    SetDemuxer(CreateHlsDemuxer());
+    std::unique_ptr<Demuxer> demuxer;
+    std::tie(data_source_info_, demuxer) = CreateHlsDemuxer();
+    SetDemuxer(std::move(demuxer));
     return std::move(on_demuxer_created)
         .Run(demuxer_.get(), suspended_mode, /*is_streaming=*/false,
              /*is_static=*/false);
@@ -410,7 +415,7 @@ PipelineStatus DemuxerManager::CreateDemuxer(
   bool is_static = true;
 
   if (demuxer_override_) {
-    // TODO(https://crbug.com/1076267): Should everything else after this block
+    // TODO(crbug.com/40128583): Should everything else after this block
     // run in the demuxer override case?
     SetDemuxer(std::move(demuxer_override_));
   } else if (!load_media_source) {
@@ -455,6 +460,7 @@ DataSource* DemuxerManager::GetDataSourceForTesting() const {
 
 void DemuxerManager::SetDataSource(std::unique_ptr<DataSource> data_source) {
   data_source_ = std::move(data_source);
+  data_source_info_ = data_source_.get();
 }
 
 void DemuxerManager::OnBufferingHaveEnough(bool enough) {
@@ -476,7 +482,7 @@ void DemuxerManager::StopAndResetClient() {
 }
 
 int64_t DemuxerManager::GetDataSourceMemoryUsage() {
-  return data_source_ ? data_source_->GetMemoryUsage() : 0;
+  return data_source_info_ ? data_source_info_->GetMemoryUsage() : 0;
 }
 
 void DemuxerManager::OnDataSourcePlaybackRateChange(double rate, bool paused) {
@@ -490,18 +496,26 @@ void DemuxerManager::OnDataSourcePlaybackRateChange(double rate, bool paused) {
 }
 
 bool DemuxerManager::WouldTaintOrigin() const {
-  if (hls_fallback_ != HlsFallbackImplementation::kNone) {
-    // HLS manifests might pull segments from a different origin. We can't know
-    // for sure, so we conservatively say yes here.
-    // TODO (crbug/1266991) We will be able to know for sure with the builtin
-    // player, when that's implemented.
-    return true;
+  switch (hls_fallback_) {
+    case HlsFallbackImplementation::kMediaPlayer: {
+      // HLS manifests might pull segments from a different origin. We can't
+      // know for sure, so we conservatively say yes here.
+      return true;
+    }
+    case HlsFallbackImplementation::kBuiltinHlsPlayer: {
+      CHECK(data_source_info_);
+      // TODO(crbug/40057824): return data_source_info_->WouldTaintOrigin();
+      // For now, we should continue to assume that tainting is always true with
+      // HLS content.
+      return true;
+    }
+    case HlsFallbackImplementation::kNone: {
+      // TODO(crbug.com/40243452): The default |false| value might have to be
+      // re-considered for MediaPlayerRenderer, but for now, leave behavior the
+      // same as it was.
+      return data_source_info_ ? data_source_info_->WouldTaintOrigin() : false;
+    }
   }
-
-  // TODO(crbug/1377053): The default |false| value might have to be
-  // re-considered for MediaPlayerRenderer, but for now, leave behavior the
-  // same as it was.
-  return data_source_ ? data_source_->WouldTaintOrigin() : false;
 }
 
 bool DemuxerManager::HasDataSource() const {
@@ -528,7 +542,7 @@ bool DemuxerManager::DataSourceFullyBuffered() const {
 }
 
 bool DemuxerManager::IsStreaming() const {
-  return (data_source_ && data_source_->IsStreaming()) ||
+  return (data_source_info_ && data_source_info_->IsStreaming()) ||
          (demuxer_ && !demuxer_->IsSeekable());
 }
 
@@ -542,15 +556,15 @@ bool DemuxerManager::PassedDataSourceTimingAllowOriginCheck() const {
   // info, such as DNS lookup time, are not relevant as the media data is far
   // removed from the network itself at this point, and so that info cannot be
   // revealed via the MediaSource or WebMediaPlayer that's using MSE.
-  // TODO(1266991): Ensure that this returns the correct value for HLS media,
-  // based on the TAO checks performed on those resources.
+  // TODO(crbug.com/40057824): Ensure that this returns the correct value for
+  // HLS media, based on the TAO checks performed on those resources.
   return data_source_ ? data_source_->PassedTimingAllowOriginCheck() : true;
 }
 
 bool DemuxerManager::IsLiveContent() const {
   // Manifest demuxer reports true live content accurately, while all other
-  // demuxers do not. TODO(crbug/1266991): Consider making IsSeekable return
-  // an enum class with vod/semi-live/true-live states.
+  // demuxers do not. TODO(crbug.com/40057824): Consider making IsSeekable
+  // return an enum class with vod/semi-live/true-live states.
   if (GetDemuxerType() == DemuxerType::kManifestDemuxer) {
     return !demuxer_->IsSeekable();
   }
@@ -591,15 +605,22 @@ std::unique_ptr<Demuxer> DemuxerManager::CreateFFmpegDemuxer() {
 #endif  // BUILDFLAG(ENABLE_FFMPEG)
 
 #if BUILDFLAG(ENABLE_HLS_DEMUXER)
-std::unique_ptr<Demuxer> DemuxerManager::CreateHlsDemuxer() {
+std::tuple<raw_ptr<DataSourceInfo>, std::unique_ptr<Demuxer>>
+DemuxerManager::CreateHlsDemuxer() {
+  bool would_taint_origin =
+      data_source_info_ ? data_source_info_->WouldTaintOrigin() : false;
   auto engine = std::make_unique<HlsManifestDemuxerEngine>(
-      client_->GetHlsDataSourceProvider(), media_task_runner_, loaded_url_,
-      media_log_.get());
-  return std::make_unique<ManifestDemuxer>(
-      media_task_runner_,
-      base::BindPostTaskToCurrentDefault(base::BindRepeating(
-          &DemuxerManager::DemuxerRequestsSeek, weak_factory_.GetWeakPtr())),
-      std::move(engine), media_log_.get());
+      client_->GetHlsDataSourceProvider(), media_task_runner_,
+      would_taint_origin, loaded_url_, media_log_.get());
+  raw_ptr<DataSourceInfo> datasource_info = engine.get();
+  return std::make_tuple(
+      datasource_info,
+      std::make_unique<ManifestDemuxer>(
+          media_task_runner_,
+          base::BindPostTaskToCurrentDefault(
+              base::BindRepeating(&DemuxerManager::DemuxerRequestsSeek,
+                                  weak_factory_.GetWeakPtr())),
+          std::move(engine), media_log_.get()));
 }
 #endif
 
@@ -666,7 +687,7 @@ void DemuxerManager::OnMemoryPressure(
   // `this` via this->demuxer_. Note the destruction of `demuxer_` is done
   // from ~WMPI by first hopping to `media_task_runner_` to prevent race with
   // this task.
-  // TODO(crbug/1377053) Get rid of this static cast.
+  // TODO(crbug.com/40243452) Get rid of this static cast.
   media_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(
@@ -678,7 +699,7 @@ void DemuxerManager::OnMemoryPressure(
 void DemuxerManager::OnChunkDemuxerOpened() {
   CHECK(demuxer_);
   CHECK(demuxer_->GetDemuxerType() == DemuxerType::kChunkDemuxer);
-  // TODO(crbug/1377053) Get rid of this static cast.
+  // TODO(crbug.com/40243452) Get rid of this static cast.
   if (client_) {
     client_->OnChunkDemuxerOpened(static_cast<ChunkDemuxer*>(demuxer_.get()));
   }

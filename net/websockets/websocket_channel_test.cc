@@ -11,6 +11,7 @@
 #include <iostream>
 #include <iterator>
 #include <string>
+#include <string_view>
 #include <tuple>
 #include <utility>
 #include <vector>
@@ -24,7 +25,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/ranges/algorithm.h"
 #include "base/run_loop.h"
-#include "base/strings/string_piece.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "net/base/auth.h"
@@ -85,7 +85,7 @@ std::ostream& operator<<(std::ostream& os, const WebSocketFrame& frame) {
   os << "{" << frame.header << ", ";
   if (frame.payload) {
     return os << "\""
-              << base::StringPiece(frame.payload, frame.header.payload_length)
+              << std::string_view(frame.payload, frame.header.payload_length)
               << "\"}";
   }
   return os << "NULL}";
@@ -131,24 +131,25 @@ using ::testing::StrictMock;
 
 // A selection of characters that have traditionally been mangled in some
 // environment or other, for testing 8-bit cleanliness.
-const char kBinaryBlob[] = {'\n',   '\r',    // BACKWARDS CRNL
-                            '\0',            // nul
-                            '\x7F',          // DEL
-                            '\x80', '\xFF',  // NOT VALID UTF-8
-                            '\x1A',          // Control-Z, EOF on DOS
-                            '\x03',          // Control-C
-                            '\x04',          // EOT, special for Unix terms
-                            '\x1B',          // ESC, often special
-                            '\b',            // backspace
-                            '\'',            // single-quote, special in PHP
+constexpr char kBinaryBlob[] = {
+    '\n',   '\r',    // BACKWARDS CRNL
+    '\0',            // nul
+    '\x7F',          // DEL
+    '\x80', '\xFF',  // NOT VALID UTF-8
+    '\x1A',          // Control-Z, EOF on DOS
+    '\x03',          // Control-C
+    '\x04',          // EOT, special for Unix terms
+    '\x1B',          // ESC, often special
+    '\b',            // backspace
+    '\'',            // single-quote, special in PHP
 };
-const size_t kBinaryBlobSize = std::size(kBinaryBlob);
+constexpr size_t kBinaryBlobSize = std::size(kBinaryBlob);
 
-const int kVeryBigTimeoutMillis = 60 * 60 * 24 * 1000;
+constexpr int kVeryBigTimeoutMillis = 60 * 60 * 24 * 1000;
 
 // TestTimeouts::tiny_timeout() is 100ms! I could run halfway around the world
 // in that time! I would like my tests to run a bit quicker.
-const int kVeryTinyTimeoutMillis = 1;
+constexpr int kVeryTinyTimeoutMillis = 1;
 
 using ChannelState = WebSocketChannel::ChannelState;
 constexpr ChannelState CHANNEL_ALIVE = WebSocketChannel::CHANNEL_ALIVE;
@@ -783,14 +784,14 @@ struct WebSocketStreamCreationCallbackArgumentSaver {
   std::unique_ptr<WebSocketStream::ConnectDelegate> connect_delegate;
 };
 
-std::vector<char> AsVector(base::StringPiece s) {
+std::vector<char> AsVector(std::string_view s) {
   return std::vector<char>(s.begin(), s.end());
 }
 
-// Converts a base::StringPiece to a IOBuffer. For test purposes, it is
+// Converts a std::string_view to a IOBuffer. For test purposes, it is
 // convenient to be able to specify data as a string, but the
 // WebSocketEventInterface requires the IOBuffer type.
-scoped_refptr<IOBuffer> AsIOBuffer(base::StringPiece s) {
+scoped_refptr<IOBuffer> AsIOBuffer(std::string_view s) {
   auto buffer = base::MakeRefCounted<IOBufferWithSize>(s.size());
   base::ranges::copy(s, buffer->data());
   return buffer;

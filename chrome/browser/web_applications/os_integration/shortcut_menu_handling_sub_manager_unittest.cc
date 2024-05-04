@@ -55,8 +55,7 @@ class ShortcutMenuHandlingSubManagerTestBase : public WebAppTest {
     WebAppTest::SetUp();
     {
       base::ScopedAllowBlockingForTesting allow_blocking;
-      test_override_ =
-          OsIntegrationTestOverrideImpl::OverrideForTesting(base::GetHomeDir());
+      test_override_ = OsIntegrationTestOverrideImpl::OverrideForTesting();
     }
 
     provider_ = FakeWebAppProvider::Get(profile());
@@ -69,7 +68,7 @@ class ShortcutMenuHandlingSubManagerTestBase : public WebAppTest {
         profile(), file_handler_manager.get(), protocol_handler_manager.get());
     auto os_integration_manager = std::make_unique<OsIntegrationManager>(
         profile(), std::move(shortcut_manager), std::move(file_handler_manager),
-        std::move(protocol_handler_manager), /*url_handler_manager=*/nullptr);
+        std::move(protocol_handler_manager));
 
     provider_->SetOsIntegrationManager(std::move(os_integration_manager));
     test::AwaitStartWebAppProviderAndSubsystems(profile());
@@ -154,8 +153,7 @@ class ShortcutMenuHandlingSubManagerTestBase : public WebAppTest {
   webapps::AppId InstallWebAppWithShortcutMenuIcons(
       ShortcutsMenuIconBitmaps shortcuts_menu_icons) {
     std::unique_ptr<WebAppInstallInfo> info =
-        std::make_unique<WebAppInstallInfo>();
-    info->start_url = kWebAppUrl;
+        WebAppInstallInfo::CreateWithStartUrlForTesting(kWebAppUrl);
     info->title = u"Test App";
     info->user_display_mode = web_app::mojom::UserDisplayMode::kStandalone;
     info->shortcuts_menu_icon_bitmaps = shortcuts_menu_icons;
@@ -645,32 +643,16 @@ TEST_F(ShortcutMenuHandlingSubManagerExecuteTest,
       OsIntegrationTestOverrideImpl::Get()->AreShortcutsMenuRegistered());
 #endif  // BUILDFLAG(IS_WIN)
 
-  std::optional<OsIntegrationManager::ScopedSuppressForTesting> scoped_supress =
-      std::nullopt;
-  scoped_supress.emplace();
   test::UninstallAllWebApps(profile());
-  // Shortcuts menu should should still be registered with the OS.
-#if BUILDFLAG(IS_WIN)
-  ASSERT_TRUE(
-      OsIntegrationTestOverrideImpl::Get()->AreShortcutsMenuRegistered());
-#else
   ASSERT_FALSE(
       OsIntegrationTestOverrideImpl::Get()->AreShortcutsMenuRegistered());
-#endif  // BUILDFLAG(IS_WIN)
   EXPECT_FALSE(provider().registrar_unsafe().IsInstalled(app_id));
 
   SynchronizeOsOptions options;
   options.force_unregister_os_integration = true;
   test::SynchronizeOsIntegration(profile(), app_id, options);
-
-#if BUILDFLAG(IS_WIN)
   ASSERT_FALSE(
       OsIntegrationTestOverrideImpl::Get()->AreShortcutsMenuRegistered());
-#else
-  ASSERT_FALSE(
-      OsIntegrationTestOverrideImpl::Get()->AreShortcutsMenuRegistered());
-#endif  // BUILDFLAG(IS_WIN)
-  scoped_supress.reset();
 }
 
 }  // namespace

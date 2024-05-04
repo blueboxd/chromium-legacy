@@ -19,9 +19,14 @@
 #include "ui/gfx/canvas.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/focus_ring.h"
+#include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/view_utils.h"
+
+namespace {
+constexpr int kCornerRadius = 8;
+}
 
 using content::DesktopMediaID;
 
@@ -34,15 +39,13 @@ DesktopMediaSourceViewStyle::DesktopMediaSourceViewStyle(
     const gfx::Rect& icon_rect,
     const gfx::Rect& label_rect,
     gfx::HorizontalAlignment text_alignment,
-    const gfx::Rect& image_rect,
-    int focus_rectangle_inset)
+    const gfx::Rect& image_rect)
     : columns(columns),
       item_size(item_size),
       icon_rect(icon_rect),
       label_rect(label_rect),
       text_alignment(text_alignment),
-      image_rect(image_rect),
-      focus_rectangle_inset(focus_rectangle_inset) {}
+      image_rect(image_rect) {}
 
 DesktopMediaSourceView::DesktopMediaSourceView(
     DesktopMediaListView* parent,
@@ -52,17 +55,19 @@ DesktopMediaSourceView::DesktopMediaSourceView(
       source_id_(source_id),
       selected_(false) {
   icon_view_ = AddChildView(std::make_unique<views::ImageView>());
-  image_view_ =
-      AddChildView(base::FeatureList::IsEnabled(kDisplayMediaPickerRedesign) &&
-                           features::IsChromeRefresh2023()
-                       ? std::make_unique<RoundedCornerImageView>()
-                       : std::make_unique<views::ImageView>());
+  image_view_ = AddChildView(features::IsChromeRefresh2023()
+                                 ? std::make_unique<RoundedCornerImageView>()
+                                 : std::make_unique<views::ImageView>());
   label_ = AddChildView(std::make_unique<views::Label>());
   icon_view_->SetCanProcessEventsWithinSubtree(false);
   image_view_->SetCanProcessEventsWithinSubtree(false);
   SetFocusBehavior(FocusBehavior::ALWAYS);
   SetStyle(style);
   views::FocusRing::Install(this);
+  if (features::IsChromeRefresh2023()) {
+    views::InstallRoundRectHighlightPathGenerator(this, gfx::Insets(),
+                                                  kCornerRadius);
+  }
 }
 
 DesktopMediaSourceView::~DesktopMediaSourceView() {}
@@ -97,10 +102,10 @@ void DesktopMediaSourceView::SetSelected(bool selected) {
       }
     }
 
-    if (base::FeatureList::IsEnabled(kDisplayMediaPickerRedesign) &&
-        features::IsChromeRefresh2023()) {
+    if (features::IsChromeRefresh2023()) {
       SetBackground(views::CreateRoundedRectBackground(
-          GetColorProvider()->GetColor(ui::kColorSysTonalContainer), 8));
+          GetColorProvider()->GetColor(ui::kColorSysTonalContainer),
+          kCornerRadius));
     } else {
       image_view_->SetBackground(views::CreateSolidBackground(
           GetColorProvider()->GetColor(ui::kColorMenuItemBackgroundSelected)));
@@ -109,8 +114,7 @@ void DesktopMediaSourceView::SetSelected(bool selected) {
                                                    gfx::Font::Weight::BOLD));
     parent_->OnSelectionChanged();
   } else {
-    if (base::FeatureList::IsEnabled(kDisplayMediaPickerRedesign) &&
-        features::IsChromeRefresh2023()) {
+    if (features::IsChromeRefresh2023()) {
       SetBackground(nullptr);
     } else {
       image_view_->SetBackground(nullptr);

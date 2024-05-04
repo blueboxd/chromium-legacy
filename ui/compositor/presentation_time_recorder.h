@@ -8,7 +8,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
 #include "ui/compositor/compositor.h"
 
@@ -34,7 +33,7 @@ class COMPOSITOR_EXPORT PresentationTimeRecorder {
     void OnCompositingDidCommit(ui::Compositor* compositor);
     void OnPresented(int count,
                      base::TimeTicks requested_time,
-                     base::TimeTicks presentation_timestamp);
+                     const viz::FrameTimingDetails& frame_timing_details);
 
    private:
     raw_ptr<PresentationTimeRecorder> recorder_;

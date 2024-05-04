@@ -19,9 +19,13 @@
 #include "content/public/browser/web_ui_message_handler.h"
 #include "content/public/browser/webui_config.h"
 #include "ui/accessibility/ax_mode.h"
+#include "ui/accessibility/platform/inspect/ax_api_type.h"
+
+namespace ui {
+struct AXUpdatesAndEvents;
+}
 
 namespace content {
-struct AXEventNotificationDetails;
 class ScopedAccessibilityMode;
 class WebContents;
 }  // namespace content
@@ -56,7 +60,7 @@ class AccessibilityUIObserver : public content::WebContentsObserver {
   ~AccessibilityUIObserver() override;
 
   void AccessibilityEventReceived(
-      const content::AXEventNotificationDetails& details) override;
+      const ui::AXUpdatesAndEvents& details) override;
 
  private:
   raw_ptr<std::vector<std::string>> event_logs_;
@@ -85,6 +89,8 @@ class AccessibilityUIMessageHandler : public content::WebUIMessageHandler {
 
   void ToggleAccessibilityForWebContents(const base::Value::List& args);
   void SetGlobalFlag(const base::Value::List& args);
+  void SetGlobalString(const base::Value::List& args);
+
   void GetRequestTypeAndFilters(const base::Value::Dict& data,
                                 std::string& request_type,
                                 std::string& allow,
@@ -96,6 +102,10 @@ class AccessibilityUIMessageHandler : public content::WebUIMessageHandler {
   void RequestAccessibilityEvents(const base::Value::List& args);
   void Callback(const std::string&);
   void StopRecording(content::WebContents* web_contents);
+
+  // Returns the user-set API type. or the platform's default recording type if
+  // the user-set type is not supported.
+  ui::AXApiType::Type GetRecordingApiType();
 
   // A ScopedAccessibilityMode for a page hosted in a WebContents.
   struct PageAccessibilityMode {

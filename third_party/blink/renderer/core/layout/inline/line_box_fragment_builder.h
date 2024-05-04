@@ -21,6 +21,7 @@ namespace blink {
 
 class ComputedStyle;
 class InlineBreakToken;
+class LogicalLineContainer;
 class LogicalLineItems;
 
 class CORE_EXPORT LineBoxFragmentBuilder final : public FragmentBuilder {
@@ -73,6 +74,9 @@ class CORE_EXPORT LineBoxFragmentBuilder final : public FragmentBuilder {
 
   const FontHeight& Metrics() const { return metrics_; }
   void SetMetrics(const FontHeight& metrics) { metrics_ = metrics; }
+  void SetIntrinsicMetrics(const FontHeight& intrinsic_metrics) {
+    intrinsic_metrics_ = intrinsic_metrics;
+  }
 
   void SetBaseDirection(TextDirection direction) {
     base_direction_ = direction;
@@ -87,7 +91,7 @@ class CORE_EXPORT LineBoxFragmentBuilder final : public FragmentBuilder {
   // Propagate data in |ChildList| without adding them to this builder. When
   // adding children as fragment items, they appear in the container, but there
   // are some data that should be propagated through line box fragments.
-  void PropagateChildrenData(LogicalLineItems&);
+  void PropagateChildrenData(LogicalLineContainer& container);
 
   void SetClearanceAfterLine(LayoutUnit clearance) {
     clearance_after_line_ = clearance;
@@ -97,9 +101,12 @@ class CORE_EXPORT LineBoxFragmentBuilder final : public FragmentBuilder {
   const LayoutResult* ToLineBoxFragment();
 
  private:
+  void PropagateChildrenDataFromLineItems(LogicalLineItems& children);
+
   std::optional<LayoutUnit> line_box_bfc_block_offset_;
   LayoutUnit annotation_block_offset_adjustment_;
   FontHeight metrics_ = FontHeight::Empty();
+  FontHeight intrinsic_metrics_ = FontHeight::Empty();
   LayoutUnit hang_inline_size_;
   LayoutUnit clearance_after_line_;
   PhysicalLineBoxFragment::LineBoxType line_box_type_;

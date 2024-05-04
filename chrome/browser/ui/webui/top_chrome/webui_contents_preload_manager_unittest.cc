@@ -6,12 +6,15 @@
 
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/ui/ui_features.h"
+#include "chrome/browser/ui/webui/top_chrome/top_chrome_web_ui_controller.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/memory_pressure/fake_memory_pressure_monitor.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/browser_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using MakeContentsResult = WebUIContentsPreloadManager::MakeContentsResult;
 
 class WebUIContentsPreloadManagerTest : public ChromeRenderViewHostTestHarness {
  public:
@@ -54,9 +57,10 @@ TEST_F(WebUIContentsPreloadManagerTest, NoPreloadUnderHeavyMemoryPressure) {
 TEST_F(WebUIContentsPreloadManagerTest, MakeContentsReturnsNonNull) {
   std::unique_ptr<content::BrowserContext> browser_context =
       std::make_unique<TestingProfile>();
+  MakeContentsResult result = preload_manager()->MakeContents(
+      GURL("about:blank"), browser_context.get());
   std::unique_ptr<content::WebContents> web_contents =
-      preload_manager()->MakeContents(GURL("about:blank"),
-                                      browser_context.get());
+      std::move(result.web_contents);
   EXPECT_NE(web_contents, nullptr);
 }
 
@@ -98,9 +102,10 @@ TEST_F(WebUIContentsPreloadManagerTest,
 
   std::unique_ptr<content::BrowserContext> second_browser_context =
       std::make_unique<TestingProfile>();
+  MakeContentsResult result = preload_manager()->MakeContents(
+      GURL("about:blank"), second_browser_context.get());
   std::unique_ptr<content::WebContents> made_web_contents =
-      preload_manager()->MakeContents(GURL("about:blank"),
-                                      second_browser_context.get());
+      std::move(result.web_contents);
 
   EXPECT_NE(pre_warmup_web_contents, made_web_contents.get());
 }
@@ -113,9 +118,11 @@ TEST_F(WebUIContentsPreloadManagerTest,
   content::WebContents* pre_warmup_web_contents =
       preload_manager()->preloaded_web_contents();
 
+  MakeContentsResult result = preload_manager()->MakeContents(
+      GURL("about:blank"), browser_context.get());
+
   std::unique_ptr<content::WebContents> made_web_contents =
-      preload_manager()->MakeContents(GURL("about:blank"),
-                                      browser_context.get());
+      std::move(result.web_contents);
 
   EXPECT_EQ(pre_warmup_web_contents, made_web_contents.get());
 }
@@ -150,8 +157,11 @@ TEST_F(WebUIContentsPreloadManagerTest, MakeContentsNavigation) {
         preload_manager()->preloaded_web_contents();
     EXPECT_EQ(preloaded_web_contents->GetURL(), preloaded_url);
 
-    std::unique_ptr<content::WebContents> web_contents =
+    MakeContentsResult result =
         preload_manager()->MakeContents(preloaded_url, browser_context.get());
+    std::unique_ptr<content::WebContents> web_contents =
+        std::move(result.web_contents);
+
     EXPECT_EQ(web_contents.get(), preloaded_web_contents);
   }
 
@@ -163,10 +173,58 @@ TEST_F(WebUIContentsPreloadManagerTest, MakeContentsNavigation) {
     content::WebContents* preloaded_web_contents =
         preload_manager()->preloaded_web_contents();
 
-    std::unique_ptr<content::WebContents> web_contents =
+    MakeContentsResult result =
         preload_manager()->MakeContents(different_url, browser_context.get());
+
+    std::unique_ptr<content::WebContents> web_contents =
+        std::move(result.web_contents);
     // WebContents is reused and navigated to the given URL.
     EXPECT_EQ(web_contents.get(), preloaded_web_contents);
     EXPECT_EQ(web_contents->GetURL(), different_url);
   }
+}
+
+// Test that MakeContentsResult::is_ready_to_show is initially false, and it
+// becomes true after the preloaded WebUI calls
+// TopChromeWebUIController::Embedder::ShowUI().
+TEST_F(WebUIContentsPreloadManagerTest, IsReadyToShow) {
+  std::unique_ptr<content::BrowserContext> browser_context =
+      std::make_unique<TestingProfile>();
+  preload_manager()->PreloadForBrowserContextForTesting(browser_context.get());
+  GURL preloaded_url = preload_manager()->GetPreloadedURLForTesting();
+
+  // `is_ready_to_show` should be initially false.
+  MakeContentsResult result =
+      preload_manager()->MakeContents(preloaded_url, browser_context.get());
+  EXPECT_NE(result.web_contents, nullptr);
+  EXPECT_FALSE(result.is_ready_to_show);
+
+  content::WebContents* preloaded_web_contents =
+      preload_manager()->preloaded_web_contents();
+  ASSERT_NE(preloaded_web_contents, nullptr);
+
+  // Simulate the WebUI calls into ShowUI().
+  auto* webui_controller = static_cast<TopChromeWebUIController*>(
+      preloaded_web_contents->GetWebUI()->GetController());
+  ASSERT_NE(webui_controller, nullptr);
+  webui_controller->embedder()->ShowUI();
+
+  // `is_ready_to_show` should be true after ShowUI() call.
+  result =
+      preload_manager()->MakeContents(preloaded_url, browser_context.get());
+  EXPECT_TRUE(result.is_ready_to_show);
+}
+
+// Regression test for crbug.com/329954901.
+TEST_F(WebUIContentsPreloadManagerTest, MakeContentsThenWarmupShouldNotCrash) {
+  std::unique_ptr<content::BrowserContext> browser_context =
+      std::make_unique<TestingProfile>();
+  std::unique_ptr<content::BrowserContext> browser_context2 =
+      std::make_unique<TestingProfile>();
+  const GURL preloaded_url = preload_manager()->GetPreloadedURLForTesting();
+
+  MakeContentsResult result =
+      preload_manager()->MakeContents(preloaded_url, browser_context.get());
+  // Preload for a different browser context.
+  preload_manager()->PreloadForBrowserContextForTesting(browser_context2.get());
 }

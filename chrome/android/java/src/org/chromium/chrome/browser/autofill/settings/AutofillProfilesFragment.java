@@ -21,7 +21,6 @@ import androidx.preference.Preference;
 import androidx.preference.PreferenceScreen;
 
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.base.StrictModeContext;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.AutofillAddress;
 import org.chromium.chrome.browser.autofill.AutofillEditorBase;
@@ -183,9 +182,7 @@ public class AutofillProfilesFragment extends ChromeBaseSettingsFragment
             }
             Bundle args = pref.getExtras();
             args.putString(AutofillEditorBase.AUTOFILL_GUID, profile.getGUID());
-            try (StrictModeContext ignored = StrictModeContext.allowDiskWrites()) {
-                getPreferenceScreen().addPreference(pref);
-            }
+            getPreferenceScreen().addPreference(pref);
         }
 
         // Add 'Add address' button. Tap of it brings up address editor which allows users type in
@@ -202,9 +199,7 @@ public class AutofillProfilesFragment extends ChromeBaseSettingsFragment
             pref.setTitle(R.string.autofill_create_profile);
             pref.setKey(PREF_NEW_PROFILE); // For testing.
 
-            try (StrictModeContext ignored = StrictModeContext.allowDiskWrites()) {
-                getPreferenceScreen().addPreference(pref);
-            }
+            getPreferenceScreen().addPreference(pref);
         }
     }
 
@@ -270,12 +265,13 @@ public class AutofillProfilesFragment extends ChromeBaseSettingsFragment
         if (guid == null) {
             return null;
         }
-        AutofillProfile profile =
-                PersonalDataManagerFactory.getForProfile(getProfile()).getProfile(guid);
+        PersonalDataManager personalDataManager =
+                PersonalDataManagerFactory.getForProfile(getProfile());
+        AutofillProfile profile = personalDataManager.getProfile(guid);
         if (profile == null) {
             return null;
         }
-        return new AutofillAddress(getActivity(), profile);
+        return new AutofillAddress(getActivity(), profile, personalDataManager);
     }
 
     private boolean shouldShowLocalProfileIcon(AutofillProfile profile) {

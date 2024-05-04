@@ -202,7 +202,8 @@ const base::TimeDelta kCloseLensViewTimeout = base::Seconds(10);
   const bool isIncognito = browserState->IsOffTheRecord();
   LensConfiguration* configuration = [[LensConfiguration alloc] init];
   configuration.isIncognito = isIncognito;
-  configuration.ssoService = GetApplicationContext()->GetSSOService();
+  configuration.singleSignOnService =
+      GetApplicationContext()->GetSingleSignOnService();
   configuration.entrypoint = entrypoint;
 
   // Mark IPHs as completed.
@@ -244,7 +245,7 @@ const base::TimeDelta kCloseLensViewTimeout = base::Seconds(10);
   UIViewController* viewController =
       [lensController inputSelectionViewController];
 
-  // TODO(crbug.com/1353430): the returned UIViewController
+  // TODO(crbug.com/40235185): the returned UIViewController
   // must not be nil, remove this check once the internal
   // implementation of the method is complete.
   if (!viewController) {
@@ -470,6 +471,17 @@ const base::TimeDelta kCloseLensViewTimeout = base::Seconds(10);
       !base::FeatureList::IsEnabled(kDisableLensCamera) &&
       ui::GetDeviceFormFactor() != ui::DEVICE_FORM_FACTOR_TABLET;
   [sharedDefaults setBool:enableLensInWidget forKey:enableLensInWidgetKey];
+
+  // If the Lens entrypoint is shown, determine whether to show the color or
+  // monochrome icons.
+  NSString* enableColorLensAndVoiceIconsInHomeScreenWidgetKey =
+      base::SysUTF8ToNSString(
+          app_group::kChromeAppGroupEnableColorLensAndVoiceIconsInWidget);
+  const bool enableColorLensAndVoiceIconsInHomeScreenWidget =
+      base::FeatureList::IsEnabled(
+          kEnableColorLensAndVoiceIconsInHomeScreenWidget);
+  [sharedDefaults setBool:enableColorLensAndVoiceIconsInHomeScreenWidget
+                   forKey:enableColorLensAndVoiceIconsInHomeScreenWidgetKey];
 }
 
 // Sets the app shortcut item for either the QR code scanner or Lens.

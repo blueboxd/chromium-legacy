@@ -21,7 +21,6 @@ import type {SerializedKeyEvent} from './pdf_scripting_api.js';
 import {LoadState} from './pdf_scripting_api.js';
 import type {DocumentDimensionsMessageData} from './pdf_viewer_utils.js';
 import {Viewport} from './viewport.js';
-import {ViewportScroller} from './viewport_scroller.js';
 import {ZoomManager} from './zoom_manager.js';
 
 /** @return Width of a scrollbar in pixels */
@@ -63,7 +62,6 @@ export abstract class PdfViewerBaseElement extends PolymerElement {
   showErrorDialog: boolean;
   protected strings?: {[key: string]: string};
   protected tracker: EventTracker = new EventTracker();
-  protected viewportScroller: ViewportScroller|null = null;
   private delayedScriptingMessages_: MessageEvent[] = [];
   private initialLoadComplete_: boolean = false;
   private loaded_: PromiseResolver<void>|null = null;
@@ -231,10 +229,6 @@ export abstract class PdfViewerBaseElement extends PolymerElement {
     this.browserApi!.addZoomEventListener(
         (zoom: number) => this.zoomManager_!.onBrowserZoomChange(zoom));
 
-    // TODO(crbug.com/1278476): Don't need this after Pepper plugin goes away.
-    this.viewportScroller =
-        new ViewportScroller(this.viewport_, this.plugin_, window);
-
     // Request translated strings.
     chrome.resourcesPrivate.getStrings(
         chrome.resourcesPrivate.Component.PDF,
@@ -322,7 +316,7 @@ export abstract class PdfViewerBaseElement extends PolymerElement {
    * @return Whether the message was handled.
    */
   handleScriptingMessage(message: MessageEvent): boolean {
-    // TODO(crbug.com/1228987): Remove this message handler when a permanent
+    // TODO(crbug.com/40189769): Remove this message handler when a permanent
     // postMessage() bridge is implemented for the viewer.
     if (message.data.type === 'connect') {
       const token: string = message.data.token;
@@ -514,7 +508,7 @@ export abstract class PdfViewerBaseElement extends PolymerElement {
       try {
         this.parentWindow_!.postMessage(message, targetOrigin);
       } catch (ok) {
-        // TODO(crbug.com/1004425): targetOrigin probably was rejected, such as
+        // TODO(crbug.com/40647731): targetOrigin probably was rejected, such as
         // a "data:" URL. This shouldn't cause this method to throw, though.
       }
     }

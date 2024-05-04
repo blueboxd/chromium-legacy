@@ -8,14 +8,14 @@ import './horizontal_carousel.js';
 import './search_query.js';
 import './shared_vars.css.js';
 import './url_visit.js';
-import 'chrome://resources/cr_elements/cr_icons.css.js';
-import 'chrome://resources/polymer/v3_0/iron-collapse/iron-collapse.js';
-import 'chrome://resources/cr_elements/cr_auto_img/cr_auto_img.js';
+import '//resources/cr_elements/cr_icons.css.js';
+import '//resources/cr_elements/cr_auto_img/cr_auto_img.js';
 
-import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
-import {assert} from 'chrome://resources/js/assert.js';
-import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
-import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {HistoryResultType} from '//resources/cr_components/history/constants.js';
+import {I18nMixin} from '//resources/cr_elements/i18n_mixin.js';
+import {assert} from '//resources/js/assert.js';
+import {loadTimeData} from '//resources/js/load_time_data.js';
+import {PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {BrowserProxyImpl} from './browser_proxy.js';
 import {getTemplate} from './cluster.html.js';
@@ -186,9 +186,18 @@ class HistoryClusterElement extends HistoryClusterElementBase {
         ClusterAction.kVisitClicked, this.index);
 
     const visit = event.detail;
+    const visitIndex = this.getVisitIndex_(visit);
     MetricsProxyImpl.getInstance().recordVisitAction(
-        VisitAction.kClicked, this.getVisitIndex_(visit),
-        MetricsProxyImpl.getVisitType(visit));
+        VisitAction.kClicked, visitIndex, MetricsProxyImpl.getVisitType(visit));
+
+    this.dispatchEvent(new CustomEvent('record-history-link-click', {
+      bubbles: true,
+      composed: true,
+      detail: {
+        resultType: HistoryResultType.GROUPED,
+        index: visitIndex,
+      },
+    }));
   }
 
   private onOpenAllVisits_() {

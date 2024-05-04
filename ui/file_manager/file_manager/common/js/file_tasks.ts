@@ -97,12 +97,6 @@ export function annotateTasks(
     const {appId, taskType, actionId} = task.descriptor;
     const parsedActionId = parseActionId(actionId);
 
-    // Skip internal Files app's handlers.
-    if (isFilesAppId(appId) &&
-        (parsedActionId === 'select' || parsedActionId === 'open')) {
-      continue;
-    }
-
     // Tweak images, titles of internal tasks.
     const annotateTask: AnnotatedTask = {...task, iconType: ''};
     if (isFilesAppId(appId) && (taskType === 'app' || taskType === 'web')) {
@@ -127,20 +121,16 @@ export function annotateTasks(
         annotateTask.title = str('TASK_OPEN_GSLIDES');
       } else if (parsedActionId === 'open-web-drive-office-word') {
         annotateTask.iconType = 'gdoc';
-        annotateTask.title = str('TASK_OPEN_GDOC');
       } else if (parsedActionId === 'open-web-drive-office-excel') {
         annotateTask.iconType = 'gsheet';
-        annotateTask.title = str('TASK_OPEN_GSHEET');
       } else if (parsedActionId === 'upload-office-to-drive') {
         annotateTask.iconType = 'generic';
         annotateTask.title = 'Upload to Drive';
       } else if (parsedActionId === 'open-web-drive-office-powerpoint') {
         annotateTask.iconType = 'gslides';
-        annotateTask.title = str('TASK_OPEN_GSLIDES');
       } else if (parsedActionId === 'open-in-office') {
         annotateTask.iconUrl =
             toFilesAppURL('foreground/images/files/ui/ms365.svg').toString();
-        annotateTask.title = str('TASK_OPEN_MICROSOFT_365');
       } else if (parsedActionId === 'install-linux-package') {
         annotateTask.iconType = 'crostini';
         annotateTask.title = str('TASK_INSTALL_LINUX_PACKAGE');

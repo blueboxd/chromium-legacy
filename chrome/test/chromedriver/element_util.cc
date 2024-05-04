@@ -366,21 +366,23 @@ Status FindElementCommon(int interval_ms,
       arguments.Append(CreateElement(*root_element_id));
   }
 
-  base::TimeTicks start_time = base::TimeTicks::Now();
-  int context_retry = 0;
+  Timeout timeout(session->implicit_wait);
   while (true) {
     std::unique_ptr<base::Value> temp;
     Status status = web_view->CallFunction(
         session->GetCurrentFrameId(), script, arguments, &temp);
 
-    // A NoSuchExecutionContext error can occur due to transition from
-    // in-process iFrame to OOPIF. Retry a couple of times.
-    if (status.IsError() &&
-        (status.code() != kNoSuchExecutionContext || ++context_retry > 2)) {
+    // If navigation is detected during the WebView::CallFunction call the error
+    // code will be kNoSuchExecutionContext. We will wait and retry again until
+    // the timout.
+    if (status.IsError() && status.code() != kNoSuchExecutionContext) {
+      if (status.code() == kJavaScriptError) {
+        status = Status{kInvalidSelector, status};
+      }
       return status;
     }
 
-    if (temp && !temp->is_none()) {
+    if (status.IsOk() && temp && !temp->is_none()) {
       if (only_one) {
         *value = std::move(temp);
         return Status(kOk);
@@ -393,7 +395,7 @@ Status FindElementCommon(int interval_ms,
       }
     }
 
-    if (base::TimeTicks::Now() - start_time >= session->implicit_wait) {
+    if (timeout.IsExpired()) {
       if (only_one) {
         return Status(kNoSuchElement,
                       "Unable to locate element: {\"method\":\"" + *strategy +
@@ -743,7 +745,8 @@ Status SetOptionElementSelected(Session* session,
                                 WebView* web_view,
                                 const std::string& element_id,
                                 bool selected) {
-  // TODO(171034): need to fix throwing error if an alert is triggered.
+  // TODO(crbug.com/40299291): need to fix throwing error if an alert is
+  // triggered.
   base::Value::List args;
   args.Append(CreateElement(element_id));
   args.Append(selected);

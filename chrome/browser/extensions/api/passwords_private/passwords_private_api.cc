@@ -280,7 +280,7 @@ ResponseAction PasswordsPrivateSharePasswordFunction::Run() {
     return RespondNow(Error(kNoDelegateError));
   }
 
-  // TODO(crbug/1445526): Respond with an error if arguments are not valid
+  // TODO(crbug.com/40268194): Respond with an error if arguments are not valid
   // (password doesn't exist, auth validity expired, recipient doesn't have
   // public key or user_id).
 
@@ -648,6 +648,34 @@ ResponseAction PasswordsPrivateShowAddShortcutDialogFunction::Run() {
 
   GetDelegate(browser_context())->ShowAddShortcutDialog(GetSenderWebContents());
   return RespondNow(NoArguments());
+}
+
+// PasswordsPrivateChangePasswordManagerPinFunction
+ResponseAction PasswordsPrivateChangePasswordManagerPinFunction::Run() {
+  if (auto delegate = GetDelegate(browser_context())) {
+    delegate->ChangePasswordManagerPin(
+        GetSenderWebContents(),
+        base::BindOnce(&PasswordsPrivateChangePasswordManagerPinFunction::
+                           OnPinChangeCompleted,
+                       this));
+    return did_respond() ? AlreadyResponded() : RespondLater();
+  }
+
+  return RespondNow(Error(kNoDelegateError));
+}
+
+void PasswordsPrivateChangePasswordManagerPinFunction::OnPinChangeCompleted(
+    bool success) {
+  Respond(WithArguments(success));
+}
+
+ResponseAction PasswordsPrivateIsPasswordManagerPinAvailableFunction::Run() {
+  if (auto delegate = GetDelegate(browser_context())) {
+    return RespondNow(WithArguments(
+        delegate->IsPasswordManagerPinAvailable(GetSenderWebContents())));
+  }
+
+  return RespondNow(Error(kNoDelegateError));
 }
 
 }  // namespace extensions

@@ -38,7 +38,7 @@
 namespace winhttp {
 namespace {
 
-// TODO(crbug.com/1164512) - implement a way to express priority for
+// TODO(crbug.com/40163568) - implement a way to express priority for
 // foreground/background network fetches.
 constexpr base::TaskTraits kTaskTraits = {
     base::MayBlock(), base::TaskPriority::USER_VISIBLE,
@@ -486,8 +486,8 @@ void __stdcall NetworkFetcher::WinHttpStatusCallback(HINTERNET handle,
                                                      DWORD status,
                                                      void* info,
                                                      DWORD info_len) {
-  DUMP_WILL_BE_CHECK(handle);
-  DUMP_WILL_BE_CHECK(context);
+  CHECK(handle);
+  CHECK(context);
 
   base::StringPiece status_string;
   std::wstring info_string;
@@ -500,7 +500,8 @@ void __stdcall NetworkFetcher::WinHttpStatusCallback(HINTERNET handle,
       break;
     case WINHTTP_CALLBACK_STATUS_RESOLVING_NAME:
       status_string = "resolving";
-      info_string.assign(static_cast<wchar_t*>(info), info_len);  // host.
+      CHECK(info);
+      info_string = static_cast<const wchar_t*>(info);  // host.
       VLOG(1) << "hostname: " << info_string;
       break;
     case WINHTTP_CALLBACK_STATUS_NAME_RESOLVED:
@@ -508,7 +509,8 @@ void __stdcall NetworkFetcher::WinHttpStatusCallback(HINTERNET handle,
       break;
     case WINHTTP_CALLBACK_STATUS_CONNECTING_TO_SERVER:
       status_string = "connecting";
-      info_string.assign(static_cast<wchar_t*>(info), info_len);  // IP.
+      CHECK(info);
+      info_string = static_cast<const wchar_t*>(info);  // IP.
       VLOG(1) << "ip: " << info_string;
       break;
     case WINHTTP_CALLBACK_STATUS_CONNECTED_TO_SERVER:
@@ -538,8 +540,8 @@ void __stdcall NetworkFetcher::WinHttpStatusCallback(HINTERNET handle,
       break;
     case WINHTTP_CALLBACK_STATUS_DATA_AVAILABLE:
       status_string = "data available";
-      DUMP_WILL_BE_CHECK(info);
-      DUMP_WILL_BE_CHECK(info_len == sizeof(uint32_t));
+      CHECK(info);
+      CHECK_EQ(info_len, sizeof(uint32_t));
       info_string = base::NumberToWString(*static_cast<uint32_t*>(info));
       break;
     case WINHTTP_CALLBACK_STATUS_HEADERS_AVAILABLE:
@@ -560,8 +562,8 @@ void __stdcall NetworkFetcher::WinHttpStatusCallback(HINTERNET handle,
       break;
     case WINHTTP_CALLBACK_STATUS_SECURE_FAILURE:
       status_string = "https failure";
-      DUMP_WILL_BE_CHECK(info);
-      DUMP_WILL_BE_CHECK(info_len == sizeof(uint32_t));
+      CHECK(info);
+      CHECK_EQ(info_len, sizeof(uint32_t));
       info_string = base::ASCIIToWide(
           base::StringPrintf("%#x", *static_cast<uint32_t*>(info)));
       break;
@@ -598,12 +600,12 @@ void __stdcall NetworkFetcher::WinHttpStatusCallback(HINTERNET handle,
           base::BindOnce(&NetworkFetcher::HeadersAvailable, network_fetcher);
       break;
     case WINHTTP_CALLBACK_STATUS_READ_COMPLETE:
-      DUMP_WILL_BE_CHECK(info == &network_fetcher->read_buffer_.front());
+      CHECK_EQ(info, &network_fetcher->read_buffer_.front());
       callback = base::BindOnce(&NetworkFetcher::ReadDataComplete,
                                 network_fetcher, size_t{info_len});
       break;
     case WINHTTP_CALLBACK_STATUS_REQUEST_ERROR:
-      DUMP_WILL_BE_CHECK(info);
+      CHECK(info);
       callback = base::BindOnce(
           &NetworkFetcher::RequestError, network_fetcher,
           static_cast<const WINHTTP_ASYNC_RESULT*>(info)->dwError);

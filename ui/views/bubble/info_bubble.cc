@@ -53,7 +53,10 @@ class InfoBubbleFrame : public BubbleFrameView {
 InfoBubble::InfoBubble(View* anchor,
                        BubbleBorder::Arrow arrow,
                        const std::u16string& message)
-    : BubbleDialogDelegateView(anchor, arrow) {
+    : BubbleDialogDelegateView(anchor,
+                               arrow,
+                               views::BubbleBorder::DIALOG_SHADOW,
+                               true) {
   DialogDelegate::SetButtons(ui::DIALOG_BUTTON_NONE);
 
   set_margins(LayoutProvider::Get()->GetInsetsMetric(
@@ -97,14 +100,16 @@ std::unique_ptr<NonClientFrameView> InfoBubble::CreateNonClientFrameView(
   return frame;
 }
 
-gfx::Size InfoBubble::CalculatePreferredSize() const {
+gfx::Size InfoBubble::CalculatePreferredSize(
+    const SizeBounds& available_size) const {
   if (preferred_width_ == 0)
-    return BubbleDialogDelegateView::CalculatePreferredSize();
+    return BubbleDialogDelegateView::CalculatePreferredSize(available_size);
 
   int pref_width = preferred_width_;
   pref_width -= frame_->GetInsets().width();
   pref_width -= 2 * kBubbleBorderVisibleWidth;
-  return gfx::Size(pref_width, GetHeightForWidth(pref_width));
+  return gfx::Size(pref_width, GetLayoutManager()->GetPreferredHeightForWidth(
+                                   this, pref_width));
 }
 
 void InfoBubble::OnWidgetBoundsChanged(Widget* widget,
@@ -121,7 +126,6 @@ void InfoBubble::UpdatePosition() {
 
   if (anchor_widget()->IsVisible() &&
       !GetAnchorView()->GetVisibleBounds().IsEmpty()) {
-    SizeToContents();
     widget->SetVisibilityChangedAnimationsEnabled(true);
     widget->ShowInactive();
   } else {

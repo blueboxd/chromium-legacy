@@ -93,6 +93,7 @@ bool GpuMemoryBufferSupport::IsNativeGpuMemoryBufferConfigurationSupported(
              format == gfx::BufferFormat::YUVA_420_TRIPLANAR ||
              format == gfx::BufferFormat::P010;
     case gfx::BufferUsage::SCANOUT_VDA_WRITE:
+    case gfx::BufferUsage::PROTECTED_SCANOUT:
     case gfx::BufferUsage::PROTECTED_SCANOUT_VDA_WRITE:
     case gfx::BufferUsage::SCANOUT_CAMERA_READ_WRITE:
     case gfx::BufferUsage::CAMERA_AND_CPU_READ_WRITE:
@@ -114,6 +115,7 @@ bool GpuMemoryBufferSupport::IsNativeGpuMemoryBufferConfigurationSupported(
     case gfx::BufferUsage::SCANOUT_CPU_READ_WRITE:
     case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE:
     case gfx::BufferUsage::SCANOUT_VDA_WRITE:
+    case gfx::BufferUsage::PROTECTED_SCANOUT:
     case gfx::BufferUsage::PROTECTED_SCANOUT_VDA_WRITE:
     case gfx::BufferUsage::SCANOUT_CAMERA_READ_WRITE:
     case gfx::BufferUsage::CAMERA_AND_CPU_READ_WRITE:
@@ -132,10 +134,13 @@ bool GpuMemoryBufferSupport::IsNativeGpuMemoryBufferConfigurationSupported(
     case gfx::BufferUsage::GPU_READ:
     case gfx::BufferUsage::SCANOUT:
       return format == gfx::BufferFormat::RGBA_8888 ||
-             format == gfx::BufferFormat::RGBX_8888;
+             format == gfx::BufferFormat::RGBX_8888 ||
+             format == gfx::BufferFormat::BGRA_8888 ||
+             format == gfx::BufferFormat::BGRX_8888;
     case gfx::BufferUsage::SCANOUT_CPU_READ_WRITE:
     case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE:
     case gfx::BufferUsage::SCANOUT_VDA_WRITE:
+    case gfx::BufferUsage::PROTECTED_SCANOUT:
     case gfx::BufferUsage::PROTECTED_SCANOUT_VDA_WRITE:
     case gfx::BufferUsage::SCANOUT_CAMERA_READ_WRITE:
     case gfx::BufferUsage::CAMERA_AND_CPU_READ_WRITE:
@@ -186,6 +191,7 @@ GpuMemoryBufferSupport::GetNativeGpuMemoryBufferConfigurations() {
       gfx::BufferUsage::CAMERA_AND_CPU_READ_WRITE,
       gfx::BufferUsage::SCANOUT_CPU_READ_WRITE,
       gfx::BufferUsage::SCANOUT_VDA_WRITE,
+      gfx::BufferUsage::PROTECTED_SCANOUT,
       gfx::BufferUsage::PROTECTED_SCANOUT_VDA_WRITE,
       gfx::BufferUsage::GPU_READ_CPU_READ_WRITE,
       gfx::BufferUsage::SCANOUT_VEA_CPU_READ,
@@ -210,8 +216,9 @@ bool GpuMemoryBufferSupport::IsConfigurationSupportedForTest(
     gfx::GpuMemoryBufferType type,
     gfx::BufferFormat format,
     gfx::BufferUsage usage) {
-  if (type == GetNativeGpuMemoryBufferType())
+  if (type == GetNativeGpuMemoryBufferType()) {
     return IsNativeGpuMemoryBufferConfigurationSupported(format, usage);
+  }
 
   if (type == gfx::SHARED_MEMORY_BUFFER) {
     return GpuMemoryBufferImplSharedMemory::IsConfigurationSupported(format,

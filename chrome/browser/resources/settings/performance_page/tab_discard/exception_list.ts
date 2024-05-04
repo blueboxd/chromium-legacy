@@ -6,16 +6,16 @@ import 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.js';
 import 'chrome://resources/cr_elements/cr_button/cr_button.js';
 import 'chrome://resources/cr_elements/cr_expand_button/cr_expand_button.js';
 import 'chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.js';
+import 'chrome://resources/cr_elements/cr_tooltip/cr_tooltip.js';
 import 'chrome://resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
 import 'chrome://resources/polymer/v3_0/iron-collapse/iron-collapse.js';
-import 'chrome://resources/polymer/v3_0/paper-tooltip/paper-tooltip.js';
 import '../../settings_shared.css.js';
 import './exception_edit_dialog.js';
 import './exception_entry.js';
 import './exception_tabbed_add_dialog.js';
 
-import type {PrefsMixinInterface} from 'chrome://resources/cr_components/settings_prefs/prefs_mixin.js';
-import {PrefsMixin} from 'chrome://resources/cr_components/settings_prefs/prefs_mixin.js';
+import type {PrefsMixinInterface} from '/shared/settings/prefs/prefs_mixin.js';
+import {PrefsMixin} from '/shared/settings/prefs/prefs_mixin.js';
 import type {CrActionMenuElement} from 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.js';
 import type {CrButtonElement} from 'chrome://resources/cr_elements/cr_button/cr_button.js';
 import type {CrExpandButtonElement} from 'chrome://resources/cr_elements/cr_expand_button/cr_expand_button.js';
@@ -24,7 +24,7 @@ import type {ListPropertyUpdateMixinInterface} from 'chrome://resources/cr_eleme
 import {ListPropertyUpdateMixin} from 'chrome://resources/cr_elements/list_property_update_mixin.js';
 import {assert} from 'chrome://resources/js/assert.js';
 import type {IronCollapseElement} from 'chrome://resources/polymer/v3_0/iron-collapse/iron-collapse.js';
-import type {PaperTooltipElement} from 'chrome://resources/polymer/v3_0/paper-tooltip/paper-tooltip.js';
+import type {CrTooltipElement} from 'chrome://resources/cr_elements/cr_tooltip/cr_tooltip.js';
 import type {DomRepeat} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
@@ -48,7 +48,7 @@ export interface ExceptionListElement {
     overflowList: DomRepeat,
     menu: CrLazyRenderElement<CrActionMenuElement>,
     noSitesAdded: HTMLElement,
-    tooltip: PaperTooltipElement,
+    tooltip: CrTooltipElement,
   };
 }
 

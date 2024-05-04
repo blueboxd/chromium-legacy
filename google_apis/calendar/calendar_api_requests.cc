@@ -26,11 +26,15 @@ namespace calendar {
 namespace {
 
 // For events without an event color, fill the colorId field with the color ID
-// provided.
+// provided by the calendar.
 void FillEmptyColorFields(EventList* events, const std::string& color) {
   for (auto& event : events->items()) {
     if (event->color_id().empty()) {
-      event->set_color_id(color);
+      // Events and calendars have some shared color IDs associated with
+      // different colors. Here we prepend the injected ID with a marker
+      // to indicate that the color ID does not represent an original event
+      // color.
+      event->set_color_id(kInjectedColorIdPrefix + color);
     }
   }
 }
@@ -53,13 +57,13 @@ constexpr int kMaxCalendars = 250;
 // As a short term solution increasing the number of events per page to the
 // maximum allowed number (2500 / 30 = 80+ events per day should be more than
 // enough).
-// TODO(crbug.com/1359388): Implement pagination using `nextPageToken` from the
+// TODO(crbug.com/40862361): Implement pagination using `nextPageToken` from the
 // response.
 constexpr int kMaxResults = 2500;
 
 // Requested fields to be returned in the CalendarList result.
 constexpr char kCalendarListFields[] =
-    "etag,kind,items(id,colorId,selected,primary)";
+    "etag,kind,items(kind,id,summary,colorId,selected,primary)";
 
 // Requested fields to be returned in the Event list result.
 std::string GetCalendarEventListFields(bool include_attachments) {
@@ -69,7 +73,8 @@ std::string GetCalendarEventListFields(bool include_attachments) {
        "attendees(responseStatus,self),attendeesOmitted,"
        "conferenceData(conferenceId,entryPoints(entryPointType,uri)),"
        "creator(self)",
-       include_attachments ? ",attachments(title,fileUrl,iconLink)" : "", ")"});
+       include_attachments ? ",attachments(title,fileUrl,iconLink,fileId)" : "",
+       ")"});
 }
 
 }  // namespace
@@ -201,7 +206,7 @@ CalendarApiEventsRequest::CalendarApiEventsRequest(
       url_generator_(url_generator),
       start_time_(start_time),
       end_time_(end_time),
-      calendar_id_(kPrimaryCalendarID) {
+      calendar_id_(kPrimaryCalendarId) {
   CHECK(!callback_.is_null());
 }
 

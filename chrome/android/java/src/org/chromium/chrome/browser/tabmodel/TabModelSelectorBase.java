@@ -16,11 +16,11 @@ import org.chromium.base.ResettersForTesting;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.supplier.TransitiveObservableSupplier;
-import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabCreationState;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab.TabSelectionType;
+import org.chromium.chrome.browser.tab_ui.TabContentManager;
 import org.chromium.content_public.browser.LoadUrlParams;
 
 import java.util.ArrayList;
@@ -172,7 +172,8 @@ public abstract class TabModelSelectorBase
 
     @Override
     public Tab getCurrentTab() {
-        // TODO(crbug/1499464): Migrate this to use mCurrentTabSupplier.get(). Presently, a large
+        // TODO(crbug.com/40287823): Migrate this to use mCurrentTabSupplier.get(). Presently, a
+        // large
         // number of tests depend on using this from a non-UI thread.
         return TabModelUtils.getCurrentTab(getCurrentModel());
     }

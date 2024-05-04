@@ -226,7 +226,9 @@ class VIEWS_EXPORT ScrollView : public View, public ScrollBarController {
       ScrollViewCallback callback);
 
   // View overrides:
-  gfx::Size CalculatePreferredSize() const override;
+  gfx::Size CalculatePreferredSize(
+      const SizeBounds& available_size) const override;
+
   int GetHeightForWidth(int width) const override;
   void Layout(PassKey) override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;
@@ -330,14 +332,14 @@ class VIEWS_EXPORT ScrollView : public View, public ScrollBarController {
   // The current contents and its viewport. |contents_| is contained in
   // |contents_viewport_|.
   // Can dangle in practice during out-of-order view tree destruction.
-  // TODO(https://crbug.com/1477838): fix that.
+  // TODO(crbug.com/40280409): fix that.
   raw_ptr<View, DisableDanglingPtrDetection> contents_ = nullptr;
   raw_ptr<Viewport> contents_viewport_ = nullptr;
 
   // The current header and its viewport. |header_| is contained in
   // |header_viewport_|.
   // Can dangle in practice during out-of-order view tree destruction.
-  // TODO(https://crbug.com/1477838): fix that.
+  // TODO(crbug.com/40280409): fix that.
   raw_ptr<View, DisableDanglingPtrDetection> header_ = nullptr;
   raw_ptr<Viewport> header_viewport_ = nullptr;
 
@@ -351,7 +353,7 @@ class VIEWS_EXPORT ScrollView : public View, public ScrollBarController {
   std::unique_ptr<View> corner_view_;
 
   // Hidden content indicators
-  // TODO(https://crbug.com/1166949): Use preferred width/height instead of
+  // TODO(crbug.com/40742414): Use preferred width/height instead of
   // thickness members.
   std::unique_ptr<View> more_content_left_ = std::make_unique<Separator>();
   int more_content_left_thickness_ = Separator::kThickness;

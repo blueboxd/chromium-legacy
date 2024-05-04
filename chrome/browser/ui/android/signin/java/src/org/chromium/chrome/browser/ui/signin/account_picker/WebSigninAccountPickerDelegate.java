@@ -15,7 +15,6 @@ import org.chromium.chrome.browser.signin.services.SigninManager;
 import org.chromium.chrome.browser.signin.services.SigninMetricsUtils;
 import org.chromium.chrome.browser.signin.services.WebSigninBridge;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.ui.signin.account_picker.AccountPickerBottomSheetCoordinator.EntryPoint;
 import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.signin.base.GoogleServiceAuthError;
 import org.chromium.components.signin.base.GoogleServiceAuthError.State;
@@ -52,11 +51,28 @@ public class WebSigninAccountPickerDelegate implements AccountPickerDelegate {
         mIdentityManager = IdentityServicesProvider.get().getIdentityManager(mProfile);
     }
 
+    /** Implements {@link AccountPickerDelegate}. */
     @Override
     public void onAccountPickerDestroy() {
         destroyWebSigninBridge();
     }
 
+    /** Implements {@link AccountPickerDelegate}. */
+    @Override
+    public boolean canHandleAddAccount() {
+        return false;
+    }
+
+    /** Implements {@link AccountPickerDelegate}. */
+    @Override
+    public void addAccount() {
+        // TODO(b/326019991): Remove this exception along with the delegate implementation once
+        // all bottom sheet entry points will be started from `SigninAndHistoryOptInActivity`.
+        throw new UnsupportedOperationException(
+                "WebSigninAccountPickerDelegate.addAccount() should never be called.");
+    }
+
+    /** Implements {@link AccountPickerDelegate}. */
     @Override
     public void signIn(CoreAccountInfo accountInfo, AccountPickerBottomSheetMediator mediator) {
         if (mIdentityManager.hasPrimaryAccount(ConsentLevel.SIGNIN)) {
@@ -88,24 +104,22 @@ public class WebSigninAccountPickerDelegate implements AccountPickerDelegate {
                 });
     }
 
+    /** Implements {@link AccountPickerDelegate}. */
     @Override
     public void isAccountManaged(CoreAccountInfo accountInfo, Callback<Boolean> callback) {
         mSigninManager.isAccountManaged(accountInfo, callback);
     }
 
+    /** Implements {@link AccountPickerDelegate}. */
     @Override
     public void setUserAcceptedAccountManagement(boolean confirmed) {
         mSigninManager.setUserAcceptedAccountManagement(confirmed);
     }
 
+    /** Implements {@link AccountPickerDelegate}. */
     @Override
     public String extractDomainName(String accountEmail) {
         return mSigninManager.extractDomainName(accountEmail);
-    }
-
-    @Override
-    public @EntryPoint int getEntryPoint() {
-        return EntryPoint.WEB_SIGNIN;
     }
 
     private WebSigninBridge.Listener createWebSigninBridgeListener(

@@ -19,8 +19,12 @@ class LegacyRunnerTests(unittest.TestCase):
 
   class AsyncMock(mock.MagicMock):
 
-    async def __call__(self, *args, **kwargs):
-      return super(mock.MagicMock, self).__call__(*args, **kwargs)
+    def __init__(self, *args, **kwargs):
+      super().__init__(*args, **kwargs)
+      self.returncode = 0
+
+    async def wait(self):
+      pass
 
   def setUp(self):
     self.tmp_dir = pathlib.Path(tempfile.mkdtemp())
@@ -62,21 +66,30 @@ class LegacyRunnerTests(unittest.TestCase):
                                  False, False)
     with mock.patch('asyncio.create_subprocess_exec',
                     return_value=self.subp_mock):
-      # Missing json file
+      # Passing run.
+      self.subp_mock.returncode = 0
+      with open(self.tmp_dir.joinpath('out.json'), 'w') as f:
+        json.dump({}, f)
       _, error_msg = runner.run_recipe()
       self.assertIsNone(error_msg)
+
+      # Missing json file
+      self.subp_mock.returncode = 1
+      _, error_msg = runner.run_recipe()
+      self.assertEqual(error_msg, 'Build/test failure')
 
       # Broken json
       with open(self.tmp_dir.joinpath('out.json'), 'w') as f:
         f.write('this-is-not-json')
       _, error_msg = runner.run_recipe()
-      self.assertIsNone(error_msg)
+      self.assertEqual(error_msg, 'Build/test failure')
 
-      # Actual json
+      # Actual json. It'll get printed to the terminal, so all that run_recipe()
+      # returns is a generic failure message.
       with open(self.tmp_dir.joinpath('out.json'), 'w') as f:
         json.dump({'failure': {'humanReason': 'it exploded'}}, f)
       _, error_msg = runner.run_recipe()
-      self.assertEqual(error_msg, 'it exploded')
+      self.assertEqual(error_msg, 'Build/test failure')
 
   def testReruns(self):
     runner = recipe.LegacyRunner(self.tmp_dir, {}, 'some-bucket',
@@ -87,14 +100,14 @@ class LegacyRunnerTests(unittest.TestCase):
       # Input "n" to the first re-run prompt.
       self.mock_input.return_value = 'n'
       with open(self.tmp_dir.joinpath('rerun_props.json'), 'w') as f:
-        json.dump({'some-new-prop': 'some-val'}, f)
+        json.dump([['y', {'some-new-prop': 'some-val'}], ['n', {}]], f)
       _, error_msg = runner.run_recipe()
       self.assertEqual(error_msg, 'User-aborted due to warning')
 
       # Input "y" to too many re-runs.
       self.mock_input.return_value = 'y'
       with open(self.tmp_dir.joinpath('rerun_props.json'), 'w') as f:
-        json.dump({'some-new-prop': 'some-val'}, f)
+        json.dump([['y', {'some-new-prop': 'some-val'}], ['n', {}]], f)
       _, error_msg = runner.run_recipe()
       self.assertEqual(error_msg, 'Exceeded too many recipe re-runs')
 
@@ -105,7 +118,7 @@ class LegacyRunnerTests(unittest.TestCase):
       self.addCleanup(shutil.rmtree, second_tmp_dir)
       self.mock_input.return_value = 'y'
       with open(first_tmp_dir.joinpath('rerun_props.json'), 'w') as f:
-        json.dump({'some-new-prop': 'some-val'}, f)
+        json.dump([['y', {'some-new-prop': 'some-val'}], ['n', {}]], f)
       self.mock_tempdir.side_effect = [first_tmp_dir, second_tmp_dir]
       _, error_msg = runner.run_recipe()
       self.assertIsNone(error_msg)
@@ -124,7 +137,7 @@ class LegacyRunnerTests(unittest.TestCase):
       second_tmp_dir = pathlib.Path(tempfile.mkdtemp())
       self.addCleanup(shutil.rmtree, second_tmp_dir)
       with open(first_tmp_dir.joinpath('rerun_props.json'), 'w') as f:
-        json.dump({'some-new-prop': 'some-val'}, f)
+        json.dump([['y', {'some-new-prop': 'some-val'}], ['n', {}]], f)
       self.mock_tempdir.side_effect = [first_tmp_dir, second_tmp_dir]
       _, error_msg = runner.run_recipe()
       self.assertIsNone(error_msg)

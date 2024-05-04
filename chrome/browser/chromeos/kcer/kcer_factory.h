@@ -66,14 +66,7 @@ class KcerFactory : public ProfileKeyedServiceFactory {
       base::OnceCallback<void(base::WeakPtr<internal::KcerToken>,
                               base::WeakPtr<internal::KcerToken>)>;
 
-  // Returns whether HighLevelChapsClient was initialized. The method is mostly
-  // needed just for testing.
-  static bool IsHighLevelChapsClientInitialized();
-
-  // Should be called on shutdown to avoid dangling pointers.
-  static void Shutdown();
-
- protected:
+  // Public for Pkcs12Migrator unit tests.
   struct KcerService : public KeyedService {
     explicit KcerService(std::unique_ptr<internal::KcerImpl> kcer_instance);
     ~KcerService() override;
@@ -81,6 +74,19 @@ class KcerFactory : public ProfileKeyedServiceFactory {
     std::unique_ptr<internal::KcerImpl> kcer;
   };
 
+  // Returns whether HighLevelChapsClient was initialized. The method is mostly
+  // needed just for testing.
+  static bool IsHighLevelChapsClientInitialized();
+
+  // Creates an entry in user preferences in Ash that a PKCS#12 file was
+  // dual-written. This will be used in case a rollback for the related
+  // experiment is needed.
+  static void RecordPkcs12CertDualWritten();
+
+  // Should be called on shutdown to avoid dangling pointers.
+  static void Shutdown();
+
+ protected:
   KcerFactory();
   ~KcerFactory() override;
 
@@ -108,6 +114,9 @@ class KcerFactory : public ProfileKeyedServiceFactory {
   // Initializes `high_level_chaps_client_` when necessary. Returns true if
   // `high_level_chaps_client_` is initialized.
   virtual bool EnsureHighLevelChapsClientInitialized() = 0;
+  // Implements RecordPkcs12CertDualWritten(). Ash needs to write into the
+  // preferences of the active user. Lacros needs to send a notification to Ash.
+  virtual void RecordPkcs12CertDualWrittenImpl() = 0;
 
   // Initializes each token for `kcer_service` with `user_token_id` and
   // `device_token_id` respectively, initializes `kcer_service` with the tokens.
@@ -124,10 +133,6 @@ class KcerFactory : public ProfileKeyedServiceFactory {
   // Returns whether the Kcer-without-NSS experiment is enabled.
   bool UseKcerWithoutNss() const;
 
-  // Indicates whether the shutdown already happened. Mostly useful in short
-  // tests where Shutdown() can be called before the initialization finishes, in
-  // which case the initialization should be stopped.
-  bool did_shutdown_ = false;
   // Used by `high_level_chaps_client_` and must outlive it.
   std::unique_ptr<SessionChapsClient> session_chaps_client_;
   // Used by tokens in `chaps_tokens_ui_` (to communicate with Chaps) and must

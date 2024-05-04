@@ -43,18 +43,36 @@ int64_t IntersectionObservation::ComputeIntersection(
   DCHECK(Observer());
   cached_rects_.min_scroll_delta_to_update -=
       accumulated_scroll_delta_since_last_update;
+
+  // If we're processing post-layout deliveries only and we don't have a
+  // post-layout delivery observer, then return early. Likewise, return if we
+  // need to compute non-post-layout-delivery observations but the observer
+  // behavior is post-layout.
+  bool post_layout_delivery_only = compute_flags & kPostLayoutDeliveryOnly;
+  bool is_post_layout_delivery_observer =
+      Observer()->GetDeliveryBehavior() ==
+      IntersectionObserver::kDeliverDuringPostLayoutSteps;
+  if (post_layout_delivery_only != is_post_layout_delivery_observer) {
+    return 0;
+  }
+
+  bool has_pending_update = needs_update_;
   if (compute_flags &
       (observer_->RootIsImplicit() ? kImplicitRootObserversNeedUpdate
                                    : kExplicitRootObserversNeedUpdate)) {
     needs_update_ = true;
   }
-  if (!ShouldCompute(compute_flags))
+
+  if (!ShouldCompute(compute_flags)) {
     return 0;
+  }
+
   if (!monotonic_time.has_value())
     monotonic_time = base::DefaultTickClock::GetInstance()->NowTicks();
   DOMHighResTimeStamp timestamp = observer_->GetTimeStamp(*monotonic_time);
-  if (MaybeDelayAndReschedule(compute_flags, timestamp))
+  if (MaybeDelayAndReschedule(compute_flags, timestamp)) {
     return 0;
+  }
 
 #if CHECK_SKIPPED_UPDATE_ON_SCROLL()
   std::optional<IntersectionGeometry::CachedRects> cached_rects_backup;
@@ -65,16 +83,13 @@ int64_t IntersectionObservation::ComputeIntersection(
     enum UpdateType {
       kNoUpdate = 0,
       kScrollOnly = 1,
-      kCachedRectInvalid = 2,
+      kCachedRectInvalid_Unused = 2,
       kFullUpdate = 3,
       kMaxValue = 3,
     };
     UpdateType update_type = kNoUpdate;
-    if (accumulated_scroll_delta_since_last_update.x() >=
-        std::numeric_limits<float>::max()) {
+    if (has_pending_update || !(compute_flags & kScrollAndVisibilityOnly)) {
       update_type = kFullUpdate;
-    } else if (!cached_rects_.valid) {
-      update_type = kCachedRectInvalid;
     } else if (cached_rects_.min_scroll_delta_to_update.x() <= 0 ||
                cached_rects_.min_scroll_delta_to_update.y() <= 0) {
       update_type = kScrollOnly;
@@ -107,9 +122,30 @@ int64_t IntersectionObservation::ComputeIntersection(
 #if CHECK_SKIPPED_UPDATE_ON_SCROLL()
   if (cached_rects_backup) {
     // A skipped update on scroll should generate the same result.
-    CHECK_EQ(last_threshold_index_, geometry.ThresholdIndex())
-        << "Previous: " << cached_rects_backup->ToString()
-        << "\nNew: " << cached_rects_.ToString();
+    if (last_threshold_index_ != geometry.ThresholdIndex()) {
+      SCOPED_CRASH_KEY_STRING1024("IO", "Old",
+                                  cached_rects_backup->ToString().Utf8());
+      SCOPED_CRASH_KEY_STRING1024("IO", "New", cached_rects_.ToString().Utf8());
+      SCOPED_CRASH_KEY_STRING1024("IO", "Old-clip",
+                                  cached_rects_backup->clip_tree.Utf8());
+      SCOPED_CRASH_KEY_STRING1024("IO", "New-clip",
+                                  cached_rects_.clip_tree.Utf8());
+      SCOPED_CRASH_KEY_STRING1024("IO", "Old-transform",
+                                  cached_rects_backup->transform_tree.Utf8());
+      SCOPED_CRASH_KEY_STRING1024("IO", "New-transform",
+                                  cached_rects_.transform_tree.Utf8());
+      SCOPED_CRASH_KEY_STRING1024("IO", "Old-scroll",
+                                  cached_rects_backup->scroll_tree.Utf8());
+      SCOPED_CRASH_KEY_STRING1024("IO", "New-scroll",
+                                  cached_rects_.scroll_tree.Utf8());
+      auto* controller =
+          Target()->GetDocument().GetIntersectionObserverController();
+      SCOPED_CRASH_KEY_STRING256(
+          "IO", "debug",
+          controller ? controller->DebugInfo().Utf8() : "no controller");
+      CHECK_EQ(last_threshold_index_, geometry.ThresholdIndex())
+          << observer_->root();
+    }
     CHECK_EQ(last_is_visible_, geometry.IsVisible());
     cached_rects_ = cached_rects_backup.value();
     return 0;
@@ -159,38 +195,34 @@ void IntersectionObservation::Trace(Visitor* visitor) const {
   visitor->Trace(target_);
 }
 
-bool IntersectionObservation::CanUseCachedRectsForTesting() const {
+bool IntersectionObservation::CanUseCachedRectsForTesting(
+    bool scroll_and_visibility_only) const {
   // This is to avoid the side effects of IntersectionGeometry.
   IntersectionGeometry::CachedRects cached_rects_copy = cached_rects_;
 
   std::optional<IntersectionGeometry::RootGeometry> root_geometry;
-  IntersectionGeometry geometry(observer_->root(), *target_,
-                                /* root_margin */ {},
-                                /* thresholds */ {0},
-                                /* target_margin */ {},
-                                /* scroll_margin */ {},
-                                /* flags */ 0, root_geometry,
-                                &cached_rects_copy);
+  IntersectionGeometry geometry(
+      observer_->root(), *target_,
+      /* root_margin */ {},
+      /* thresholds */ {0},
+      /* target_margin */ {},
+      /* scroll_margin */ {},
+      scroll_and_visibility_only
+          ? IntersectionGeometry::kScrollAndVisibilityOnly
+          : 0,
+      root_geometry, &cached_rects_copy);
 
   return geometry.CanUseCachedRectsForTesting();
 }
 
 bool IntersectionObservation::ShouldCompute(unsigned flags) const {
   if (!target_ || !observer_->RootIsValid() ||
-      !observer_->GetExecutionContext())
+      !observer_->GetExecutionContext()) {
     return false;
-  // If we're processing post-layout deliveries only and we don't have a
-  // post-layout delivery observer, then return early. Likewise, return if we
-  // need to compute non-post-layout-delivery observations but the observer
-  // behavior is post-layout.
-  bool post_layout_delivery_only = flags & kPostLayoutDeliveryOnly;
-  bool is_post_layout_delivery_observer =
-      Observer()->GetDeliveryBehavior() ==
-      IntersectionObserver::kDeliverDuringPostLayoutSteps;
-  if (post_layout_delivery_only != is_post_layout_delivery_observer)
+  }
+  if (!needs_update_) {
     return false;
-  if (!needs_update_)
-    return false;
+  }
   if (target_->isConnected() && target_->GetDocument().GetFrame() &&
       Observer()->trackVisibility()) {
     mojom::blink::FrameOcclusionState occlusion_state =
@@ -236,6 +268,9 @@ unsigned IntersectionObservation::GetIntersectionGeometryFlags(
     // TODO(wangxianzhu): Let internal clients decide whether to respect
     // filters.
     geometry_flags |= IntersectionGeometry::kRespectFilters;
+  }
+  if (compute_flags & kScrollAndVisibilityOnly) {
+    geometry_flags |= IntersectionGeometry::kScrollAndVisibilityOnly;
   }
   return geometry_flags;
 }

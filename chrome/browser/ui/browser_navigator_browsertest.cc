@@ -813,7 +813,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, SwitchToTabCorrectWindow) {
                            false));
 }
 
-// TODO(crbug/1272155): Reactivate the test.
+// TODO(crbug.com/40806044): Reactivate the test.
 #if !BUILDFLAG(IS_CHROMEOS_LACROS)
 // This test verifies that "switch to tab" prefers the latest used browser,
 // if multiple exist.
@@ -1432,7 +1432,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
             browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
 }
 
-// TODO(1024166): Timing out on linux-chromeos-dbg.
+// TODO(crbug.com/40107334): Timing out on linux-chromeos-dbg.
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #define MAYBE_NavigateFromBlankToOptionsInSameTab \
   DISABLED_NavigateFromBlankToOptionsInSameTab
@@ -1457,7 +1457,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
             browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
 }
 
-// TODO(1024166): Timing out on linux-chromeos-dbg.
+// TODO(crbug.com/40107334): Timing out on linux-chromeos-dbg.
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #define MAYBE_NavigateFromNTPToOptionsInSameTab \
   DISABLED_NavigateFromNTPToOptionsInSameTab
@@ -1531,8 +1531,8 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
             browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
 }
 
-// TODO(crbug.com/1171245): This is disabled for Mac OS due to flakiness.
-// TODO(1024166): Timing out on linux-chromeos-dbg.
+// TODO(crbug.com/40166082): This is disabled for Mac OS due to flakiness.
+// TODO(crbug.com/40107334): Timing out on linux-chromeos-dbg.
 #if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_MAC)
 #define MAYBE_NavigateFromNTPToOptionsPageInSameTab \
   DISABLED_NavigateFromNTPToOptionsPageInSameTab
@@ -1656,7 +1656,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
             browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
 }
 
-// TODO(1024166): Timing out on linux-chromeos-dbg.
+// TODO(crbug.com/40107334): Timing out on linux-chromeos-dbg.
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #define MAYBE_CloseSingletonTab DISABLED_CloseSingletonTab
 #else
@@ -1898,7 +1898,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, MainFrameNavigationUIData) {
   }
 }
 
-// TODO(crbug/1272155): Reactivate the test.
+// TODO(crbug.com/40806044): Reactivate the test.
 #if !BUILDFLAG(IS_CHROMEOS_LACROS)
 // Test that subframe navigations generate a NavigationUIData with no
 // disposition.
@@ -1965,6 +1965,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   // Should not re-use the browser.
   EXPECT_NE(browser(), params.browser);
   EXPECT_TRUE(params.browser->is_type_picture_in_picture());
+  EXPECT_EQ(params.browser->app_name(), std::string());
 
   // The window should have respected the initial aspect ratio.
   const gfx::Rect override_bounds = params.browser->override_bounds();
@@ -2058,6 +2059,36 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   EXPECT_TRUE(tab->GetLastCommittedURL().IsAboutBlank());
   params.source_contents = tab;
   EXPECT_EQ(nullptr, Navigate(&params));
+}
+
+IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
+                       Disposition_PictureInPicture_OpenFromWebApp) {
+  // Create the params for the PiP request that looks like it's from an app.
+  auto pip_options = blink::mojom::PictureInPictureWindowOptions::New();
+
+  // The WebContents holds the parameters from the PiP request.
+  WebContents::CreateParams web_contents_params(browser()->profile());
+  web_contents_params.picture_in_picture_options = *pip_options;
+
+  // Opening a picture in picture window should create a new browser.
+  NavigateParams params = MakeNavigateParams(browser());
+  params.disposition = WindowOpenDisposition::NEW_PICTURE_IN_PICTURE;
+  params.app_id = "extensionappid";
+
+  // Navigate to https:// page
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  ASSERT_TRUE(https_server.Start());
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+  const GURL url = https_server.GetURL("/simple.html");
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
+
+  params.source_contents = tab;
+  params.contents_to_insert = WebContents::Create(web_contents_params);
+  Navigate(&params);
+
+  // Should be PiP, with an app name.
+  EXPECT_TRUE(params.browser->is_type_picture_in_picture());
+  EXPECT_NE(params.browser->app_name(), std::string());
 }
 
 #if !BUILDFLAG(IS_CHROMEOS_ASH)

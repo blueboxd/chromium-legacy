@@ -52,8 +52,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 // Used to create and show the actions users can execute when they tap on a row
 // in the tableView. These actions are displayed as a pop-up.
-// TODO(crbug.com/1489457): Remove available guard when min deployment target is
-// bumped to iOS 16.0.
+// TODO(crbug.com/40284033): Remove available guard when min deployment target
+// is bumped to iOS 16.0.
 @property(nonatomic, strong)
     UIEditMenuInteraction* interactionMenu API_AVAILABLE(ios(16));
 
@@ -66,11 +66,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [self configureNavigationBar];
   [self loadModel];
 
-  if (base::FeatureList::IsEnabled(kEnableUIEditMenuInteraction)) {
-    if (@available(iOS 16.0, *)) {
-      _interactionMenu = [[UIEditMenuInteraction alloc] initWithDelegate:self];
-      [self.tableView addInteraction:self.interactionMenu];
-    }
+  if (@available(iOS 16.0, *)) {
+    _interactionMenu = [[UIEditMenuInteraction alloc] initWithDelegate:self];
+    [self.tableView addInteraction:self.interactionMenu];
   }
 }
 
@@ -127,16 +125,13 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (void)tableView:(UITableView*)tableView
     didSelectRowAtIndexPath:(NSIndexPath*)indexPath {
   self.indexPathOfSelectedRow = indexPath;
-  if (base::FeatureList::IsEnabled(kEnableUIEditMenuInteraction) &&
-      base::ios::IsRunningOnIOS16OrLater()) {
-    if (@available(iOS 16.0, *)) {
-      CGRect row = [tableView rectForRowAtIndexPath:indexPath];
-      CGPoint editMenuLocation = CGPointMake(CGRectGetMidX(row), row.origin.y);
-      UIEditMenuConfiguration* configuration = [UIEditMenuConfiguration
-          configurationWithIdentifier:nil
-                          sourcePoint:editMenuLocation];
-      [self.interactionMenu presentEditMenuWithConfiguration:configuration];
-    }
+  if (@available(iOS 16.0, *)) {
+    CGRect row = [tableView rectForRowAtIndexPath:indexPath];
+    CGPoint editMenuLocation = CGPointMake(CGRectGetMidX(row), row.origin.y);
+    UIEditMenuConfiguration* configuration =
+        [UIEditMenuConfiguration configurationWithIdentifier:nil
+                                                 sourcePoint:editMenuLocation];
+    [self.interactionMenu presentEditMenuWithConfiguration:configuration];
   }
 #if !defined(__IPHONE_16_0) || __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_16_0
   else {
@@ -307,7 +302,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }
 
 - (void)updateFollowedWebSites {
-  // TODO(crbug.com/1430863): implement a timeout feature.
+  // TODO(crbug.com/40263268): implement a timeout feature.
 
   // Remove the spinner.
   [self stopLoadingIndicatorWithCompletion:nil];
@@ -336,8 +331,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 #pragma mark - UIEditMenuInteractionDelegate
 
-// TODO(crbug.com/1489457): Remove available guard when min deployment target is
-// bumped to iOS 16.0.
+// TODO(crbug.com/40284033): Remove available guard when min deployment target
+// is bumped to iOS 16.0.
 - (UIMenu*)editMenuInteraction:(UIEditMenuInteraction*)interaction
           menuForConfiguration:(UIEditMenuConfiguration*)configuration
               suggestedActions:(NSArray<UIMenuElement*>*)suggestedActions

@@ -11,6 +11,7 @@
 #include <algorithm>
 #include <memory>
 #include <string>
+#include <string_view>
 
 #include "base/check_op.h"
 #include "base/feature_list.h"
@@ -192,7 +193,7 @@ void AppendCharEvent(const WebInputEvent& event,
 
   // Make a separate InputEventData for each Unicode character in the input.
   for (base::i18n::UTF16CharIterator iter(
-           base::StringPiece16(key_event.text, utf16_char_count));
+           std::u16string_view(key_event.text, utf16_char_count));
        !iter.end(); iter.Advance()) {
     InputEventData result = GetEventWithCommonFieldsAndType(event);
     result.event_modifiers = ConvertEventModifiers(key_event.GetModifiers());
@@ -330,7 +331,7 @@ WebTouchPoint CreateWebTouchPoint(const PP_TouchPoint& pp_pt,
   pt.pointer_type = blink::WebPointerProperties::PointerType::kTouch;
   pt.id = pp_pt.id;
   pt.SetPositionInWidget(pp_pt.position.x, pp_pt.position.y);
-  // TODO(crbug.com/93902): Add screen coordinate calculation.
+  // TODO(crbug.com/40616919): Add screen coordinate calculation.
   pt.SetPositionInScreen(0, 0);
   pt.force = pp_pt.pressure;
   pt.radius_x = pp_pt.radius.x;

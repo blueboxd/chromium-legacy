@@ -88,6 +88,9 @@ class TestResponseAdapter : public signin::ResponseAdapter,
     // Pretend the request came from the same origin.
     return url::Origin::Create(GetUrl());
   }
+  const url::Origin* GetRequestTopFrameOrigin() const override {
+    return &request_top_frame_origin_;
+  }
   const net::HttpResponseHeaders* GetHeaders() const override {
     return headers_.get();
   }
@@ -108,6 +111,7 @@ class TestResponseAdapter : public signin::ResponseAdapter,
 
  private:
   bool is_outermost_main_frame_;
+  const url::Origin request_top_frame_origin_{url::Origin::Create(GetUrl())};
   scoped_refptr<net::HttpResponseHeaders> headers_;
 };
 
@@ -180,7 +184,9 @@ TEST_F(ChromeSigninHelperTest, FixAccountConsistencyRequestHeader) {
   scoped_refptr<content_settings::CookieSettings> cookie_settings =
       new content_settings::CookieSettings(
           settings_map.get(), &prefs,
-          /*tracking_protection_settings=*/nullptr, false);
+          /*tracking_protection_settings=*/nullptr, /*is_incognito=*/false,
+          content_settings::CookieSettings::NoFedCmSharingPermissionsCallback(),
+          /*tpcd_metadata_manager=*/nullptr);
 
   {
     // Non-elligible request, no header.

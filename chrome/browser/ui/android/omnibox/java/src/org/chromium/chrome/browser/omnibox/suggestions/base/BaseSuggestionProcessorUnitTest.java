@@ -34,7 +34,6 @@ import org.chromium.base.test.util.Features.DisableFeatures;
 import org.chromium.base.test.util.Features.EnableFeatures;
 import org.chromium.base.test.util.HistogramWatcher;
 import org.chromium.base.test.util.UserActionTester;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.omnibox.OmniboxMetrics;
 import org.chromium.chrome.browser.omnibox.R;
 import org.chromium.chrome.browser.omnibox.styles.OmniboxDrawableState;
@@ -42,11 +41,14 @@ import org.chromium.chrome.browser.omnibox.styles.OmniboxImageSupplier;
 import org.chromium.chrome.browser.omnibox.suggestions.SuggestionHost;
 import org.chromium.components.omnibox.AutocompleteMatch;
 import org.chromium.components.omnibox.AutocompleteMatchBuilder;
+import org.chromium.components.omnibox.OmniboxFeatureList;
 import org.chromium.components.omnibox.OmniboxSuggestionType;
 import org.chromium.components.omnibox.suggestions.OmniboxSuggestionUiType;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.url.GURL;
 import org.chromium.url.JUnitTestGURLs;
+
+import java.util.Optional;
 
 /** Tests for {@link BaseSuggestionViewProcessor}. */
 @RunWith(BaseRobolectricTestRunner.class)
@@ -60,7 +62,7 @@ public class BaseSuggestionProcessorUnitTest {
         public TestBaseSuggestionProcessor(
                 Context context,
                 SuggestionHost suggestionHost,
-                OmniboxImageSupplier imageSupplier) {
+                Optional<OmniboxImageSupplier> imageSupplier) {
             super(context, suggestionHost, imageSupplier);
             mContext = context;
         }
@@ -104,7 +106,9 @@ public class BaseSuggestionProcessorUnitTest {
     @Before
     public void setUp() {
         mContext = ContextUtils.getApplicationContext();
-        mProcessor = new TestBaseSuggestionProcessor(mContext, mSuggestionHost, mImageSupplier);
+        mProcessor =
+                new TestBaseSuggestionProcessor(
+                        mContext, mSuggestionHost, Optional.of(mImageSupplier));
     }
 
     /** Create Suggestion for test. */
@@ -146,7 +150,7 @@ public class BaseSuggestionProcessorUnitTest {
     }
 
     @Test
-    @DisableFeatures({ChromeFeatureList.OMNIBOX_TOUCH_DOWN_TRIGGER_FOR_PREFETCH})
+    @DisableFeatures({OmniboxFeatureList.OMNIBOX_TOUCH_DOWN_TRIGGER_FOR_PREFETCH})
     public void touchDownForPrefetch_featureDisabled() {
         createSuggestion(OmniboxSuggestionType.URL_WHAT_YOU_TYPED, true, TEST_URL);
 
@@ -155,7 +159,7 @@ public class BaseSuggestionProcessorUnitTest {
     }
 
     @Test
-    @EnableFeatures({ChromeFeatureList.OMNIBOX_TOUCH_DOWN_TRIGGER_FOR_PREFETCH})
+    @EnableFeatures({OmniboxFeatureList.OMNIBOX_TOUCH_DOWN_TRIGGER_FOR_PREFETCH})
     public void touchDownForPrefetch_featureEnabled() {
         createSuggestion(OmniboxSuggestionType.URL_WHAT_YOU_TYPED, true, TEST_URL);
 
@@ -175,7 +179,7 @@ public class BaseSuggestionProcessorUnitTest {
     }
 
     @Test
-    @EnableFeatures({ChromeFeatureList.OMNIBOX_TOUCH_DOWN_TRIGGER_FOR_PREFETCH})
+    @EnableFeatures({OmniboxFeatureList.OMNIBOX_TOUCH_DOWN_TRIGGER_FOR_PREFETCH})
     public void touchDownForPrefetch_nonSearchSuggestion() {
         // The touch down listener is only added for search suggestions.
         createSuggestion(OmniboxSuggestionType.URL_WHAT_YOU_TYPED, false, TEST_URL);

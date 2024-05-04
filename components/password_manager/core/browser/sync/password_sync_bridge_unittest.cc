@@ -12,6 +12,7 @@
 #include "base/feature_list.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
+#include "base/location.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -427,6 +428,11 @@ class PasswordSyncBridgeTest : public testing::Test {
 
     ON_CALL(mock_processor_, GetPossiblyTrimmedRemoteSpecifics)
         .WillByDefault(ReturnRef(sync_pb::EntitySpecifics::default_instance()));
+    ON_CALL(mock_processor_, ReportError)
+        .WillByDefault([this](const syncer::ModelError& error) {
+          ON_CALL(mock_processor_, GetError())
+              .WillByDefault(testing::Return(error));
+        });
   }
 
   void RecreateBridge(syncer::WipeModelUponSyncDisabledBehavior
@@ -446,8 +452,9 @@ class PasswordSyncBridgeTest : public testing::Test {
     // PasswordStoreSync about the new changes even if they are initiated by the
     // bridge itself.
     ON_CALL(mock_password_store_sync_, NotifyCredentialsChanged)
-        .WillByDefault(
-            Invoke(bridge(), &PasswordSyncBridge::ActOnPasswordStoreChanges));
+        .WillByDefault([this](const PasswordStoreChangeList& changes) {
+          bridge()->ActOnPasswordStoreChanges(FROM_HERE, changes);
+        });
   }
 
   // Creates an EntityData around a copy of the given specifics.
@@ -538,9 +545,9 @@ TEST_F(PasswordSyncBridgeTest, ShouldForwardLocalChangesToTheProcessor) {
               Put("2", EntityDataHasSignonRealm(kSignonRealm2),
                   IsSyncMetadataStoreChangeListWithStore(store)));
   EXPECT_CALL(mock_processor(),
-              Delete("3", IsSyncMetadataStoreChangeListWithStore(store)));
+              Delete("3", _, IsSyncMetadataStoreChangeListWithStore(store)));
 
-  bridge()->ActOnPasswordStoreChanges(changes);
+  bridge()->ActOnPasswordStoreChanges(FROM_HERE, changes);
 }
 
 TEST_F(PasswordSyncBridgeTest,
@@ -558,7 +565,7 @@ TEST_F(PasswordSyncBridgeTest,
   EXPECT_CALL(mock_processor(), Put).Times(0);
   EXPECT_CALL(mock_processor(), Delete).Times(0);
 
-  bridge()->ActOnPasswordStoreChanges(changes);
+  bridge()->ActOnPasswordStoreChanges(FROM_HERE, changes);
 }
 
 TEST_F(PasswordSyncBridgeTest, ShouldApplyEmptySyncChangesWithoutError) {
@@ -1562,7 +1569,7 @@ TEST_F(PasswordSyncBridgeTest, ShouldPutSecurityIssuesOnLoginChange) {
       mock_processor(),
       Put(kPrimaryKeyStr1, EntityDataHasSecurityIssueTypes(kIssuesTypes), _));
 
-  bridge()->ActOnPasswordStoreChanges(changes);
+  bridge()->ActOnPasswordStoreChanges(FROM_HERE, changes);
 }
 
 TEST_F(PasswordSyncBridgeTest, ShouldAddLocalSecurityIssuesDuringInitialMerge) {
@@ -2055,6 +2062,40 @@ TEST_F(PasswordSyncBridgeTest,
   EXPECT_CALL(*mock_password_store_sync(), DeleteAndRecreateDatabaseFile)
       .Times(0);
   bridge()->ApplyDisableSyncChanges(bridge()->CreateMetadataChangeList());
+}
+
+TEST_F(PasswordSyncBridgeTest, ShouldIgnoreDuplicateClientTagsInLocalStorage) {
+  const int kPrimaryKey1 = 1000;
+  const int kPrimaryKey2 = 1001;
+  const PasswordForm form1 = MakePasswordForm(kSignonRealm1, kPrimaryKey1);
+  const PasswordForm form2 = MakePasswordForm(kSignonRealm1, kPrimaryKey2);
+
+  fake_db()->AddLoginWithPrimaryKey(form1);
+  fake_db()->AddLoginWithPrimaryKey(form2);
+
+  // The two local passwords share the same client tag hash.
+  ASSERT_EQ(SpecificsToEntity(
+                SpecificsFromPassword(form1, sync_pb::PasswordSpecificsData()))
+                .client_tag_hash,
+            SpecificsToEntity(
+                SpecificsFromPassword(form2, sync_pb::PasswordSpecificsData()))
+                .client_tag_hash);
+
+  const sync_pb::PasswordSpecifics specifics =
+      CreateSpecificsWithSignonRealm(kSignonRealm1);
+
+  syncer::EntityChangeList entity_change_list;
+  entity_change_list.push_back(syncer::EntityChange::CreateAdd(
+      /*storage_key=*/"", SpecificsToEntity(specifics)));
+
+  // UpdateStorageKey() should be called for exactly one of them, but not the
+  // other.
+  EXPECT_CALL(mock_processor(), UpdateStorageKey(_, _, _));
+  EXPECT_CALL(mock_processor(), Put).Times(0);
+
+  std::optional<syncer::ModelError> error = bridge()->MergeFullSyncData(
+      bridge()->CreateMetadataChangeList(), std::move(entity_change_list));
+  EXPECT_FALSE(error);
 }
 
 }  // namespace password_manager

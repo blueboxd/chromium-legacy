@@ -280,6 +280,15 @@ MojoResult MojoSerializeMessageIpcz(
   return MOJO_RESULT_INVALID_ARGUMENT;
 }
 
+MojoResult MojoReserveMessageCapacityIpcz(MojoMessageHandle message,
+                                          uint32_t payload_buffer_size,
+                                          uint32_t* buffer_size) {
+  if (auto* m = ipcz_driver::MojoMessage::FromHandle(message)) {
+    return m->ReserveCapacity(payload_buffer_size, buffer_size);
+  }
+  return MOJO_RESULT_INVALID_ARGUMENT;
+}
+
 MojoResult MojoAppendMessageDataIpcz(
     MojoMessageHandle message,
     uint32_t additional_payload_size,
@@ -894,7 +903,8 @@ MojoSystemThunks2 g_mojo_ipcz_thunks = {
     MojoSetQuotaIpcz,
     MojoQueryQuotaIpcz,
     MojoShutdownIpcz,
-    MojoSetDefaultProcessErrorHandlerIpcz};
+    MojoSetDefaultProcessErrorHandlerIpcz,
+    MojoReserveMessageCapacityIpcz};
 
 }  // namespace
 

@@ -32,8 +32,9 @@
 #include "third_party/blink/renderer/core/layout/intrinsic_sizing_info.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
-#include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_masker.h"
+#include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_container.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_text.h"
+#include "third_party/blink/renderer/core/layout/svg/svg_layout_info.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_layout_support.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_resources.h"
 #include "third_party/blink/renderer/core/layout/svg/transform_helper.h"
@@ -53,9 +54,7 @@ namespace blink {
 
 LayoutSVGRoot::LayoutSVGRoot(SVGElement* node)
     : LayoutReplaced(node),
-      is_layout_size_changed_(false),
-      did_screen_scale_factor_change_(false),
-      needs_boundaries_or_transform_update_(true),
+      needs_transform_update_(true),
       has_non_isolated_blending_descendants_(false),
       has_non_isolated_blending_descendants_dirty_(false) {}
 
@@ -147,11 +146,14 @@ double LayoutSVGRoot::LogicalSizeScaleFactorForPercentageLengths() const {
   return GetFrame()->GetChromeClient().UserZoomFactor();
 }
 
-void LayoutSVGRoot::UpdateLayout() {
+void LayoutSVGRoot::LayoutRoot(const PhysicalRect& content_rect) {
   NOT_DESTROYED();
   DCHECK(NeedsLayout());
 
-  PhysicalSize old_content_size = PhysicalContentBoxRect().size;
+  base::AutoReset<const PhysicalSize*> reset(&new_content_size_,
+                                             &content_rect.size, nullptr);
+
+  const PhysicalSize old_content_size = PhysicalContentBoxSize();
 
   // Whether we have a self-painting layer depends on whether there are
   // compositing descendants (see: |HasCompositingDescendants()| which is called
@@ -174,36 +176,30 @@ void LayoutSVGRoot::UpdateLayout() {
   //
   // Which means that |transformChange| will notice a change to the scale from
   // any of these.
-  SVGTransformChange transform_change = BuildLocalToBorderBoxTransform();
+  SVGTransformChange transform_change =
+      BuildLocalToBorderBoxTransform(content_rect);
 
   // The scale factor from the local-to-border-box transform is all that our
   // scale-dependent descendants care about.
-  did_screen_scale_factor_change_ =
+  const bool screen_scale_factor_changed =
       transform_change == SVGTransformChange::kFull;
 
   // selfNeedsLayout() will cover changes to one (or more) of viewBox,
   // current{Scale,Translate}, decorations and 'overflow'.
   const bool viewport_may_have_changed =
-      SelfNeedsFullLayout() ||
-      old_content_size != PhysicalContentBoxRectFromNG().size;
-  is_layout_size_changed_ = viewport_may_have_changed;
+      SelfNeedsFullLayout() || old_content_size != content_rect.size;
 
-  SVGContainerLayoutInfo layout_info;
-  layout_info.scale_factor_changed = did_screen_scale_factor_change_;
-  layout_info.viewport_changed = is_layout_size_changed_;
+  SVGLayoutInfo layout_info;
+  layout_info.scale_factor_changed = screen_scale_factor_changed;
+  layout_info.viewport_changed = viewport_may_have_changed;
 
-  content_.Layout(layout_info);
+  const SVGLayoutResult content_result = content_.Layout(layout_info);
 
-  if (needs_boundaries_or_transform_update_) {
-    if (UpdateCachedBoundaries()) {
-      // Boundaries affects the mask clip. (Other resources handled elsewhere.)
-      SetNeedsPaintPropertyUpdate();
-    }
-    needs_boundaries_or_transform_update_ = false;
+  // Boundaries affects the mask clip. (Other resources handled elsewhere.)
+  if (content_result.bounds_changed) {
+    SetNeedsPaintPropertyUpdate();
   }
-
-  ClearSelfNeedsScrollableOverflowRecalc();
-  ClearScrollableOverflow();
+  needs_transform_update_ = false;
 
   // The scale of one or more of the SVG elements may have changed, content
   // (the entire SVG) could have moved or new content may have been exposed, so
@@ -215,14 +211,11 @@ void LayoutSVGRoot::UpdateLayout() {
     if (Layer())
       Layer()->SetNeedsCompositingInputsUpdate();
   }
-
-  ClearNeedsLayout();
 }
 
 void LayoutSVGRoot::RecalcVisualOverflow() {
   NOT_DESTROYED();
   LayoutReplaced::RecalcVisualOverflow();
-  UpdateCachedBoundaries();
   if (!ClipsToContentBox())
     AddContentsVisualOverflow(ComputeContentsVisualOverflow());
 }
@@ -297,10 +290,6 @@ void LayoutSVGRoot::StyleDidChange(StyleDifference diff,
                                    const ComputedStyle* old_style) {
   NOT_DESTROYED();
   LayoutReplaced::StyleDidChange(diff, old_style);
-
-  if (diff.NeedsFullLayout()) {
-    SetNeedsBoundariesUpdate();
-  }
 
   if (old_style && StyleChangeAffectsIntrinsicSize(*old_style))
     IntrinsicSizingInfoChanged();
@@ -425,13 +414,13 @@ PositionWithAffinity LayoutSVGRoot::PositionForPoint(
 
 // LayoutBox methods will expect coordinates w/o any transforms in coordinates
 // relative to our borderBox origin.  This method gives us exactly that.
-SVGTransformChange LayoutSVGRoot::BuildLocalToBorderBoxTransform() {
+SVGTransformChange LayoutSVGRoot::BuildLocalToBorderBoxTransform(
+    const PhysicalRect& content_rect) {
   NOT_DESTROYED();
   SVGTransformChangeDetector change_detector(local_to_border_box_transform_);
   auto* svg = To<SVGSVGElement>(GetNode());
   DCHECK(svg);
   float scale = StyleRef().EffectiveZoom();
-  PhysicalRect content_rect = PhysicalContentBoxRectFromNG();
   gfx::SizeF content_size(content_rect.size.width / scale,
                           content_rect.size.height / scale);
   local_to_border_box_transform_ = svg->ViewBoxToViewTransform(content_size);
@@ -458,7 +447,8 @@ gfx::RectF LayoutSVGRoot::ViewBoxRect() const {
 }
 
 gfx::SizeF LayoutSVGRoot::ViewportSize() const {
-  const PhysicalSize& viewport_size = PhysicalContentBoxRectFromNG().size;
+  const PhysicalSize& viewport_size =
+      new_content_size_ ? *new_content_size_ : PhysicalContentBoxSize();
   const float zoom = StyleRef().EffectiveZoom();
   return gfx::SizeF(viewport_size.width / zoom, viewport_size.height / zoom);
 }
@@ -472,12 +462,6 @@ void LayoutSVGRoot::MapLocalToAncestor(const LayoutBoxModelObject* ancestor,
                                        MapCoordinatesFlags mode) const {
   NOT_DESTROYED();
   LayoutReplaced::MapLocalToAncestor(ancestor, transform_state, mode);
-}
-
-bool LayoutSVGRoot::UpdateCachedBoundaries() {
-  NOT_DESTROYED();
-  bool ignore;
-  return content_.UpdateBoundingBoxes(/* object_bounding_box_valid */ ignore);
 }
 
 bool LayoutSVGRoot::HitTestChildren(HitTestResult& result,

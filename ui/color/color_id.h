@@ -8,6 +8,7 @@
 #include "base/check_op.h"
 #include "build/build_config.h"
 #include "build/buildflag.h"
+#include "build/chromeos_buildflags.h"
 
 // clang-format off
 #define CROSS_PLATFORM_COLOR_IDS \
@@ -194,6 +195,7 @@
   E_CPONLY(kColorSysStateHeaderHover) \
   E_CPONLY(kColorSysStateHeaderHoverInactive) \
   E_CPONLY(kColorSysStateHeaderSelect) \
+  E_CPONLY(kColorSysStateInactiveRing) \
   /* Effects. */ \
   E_CPONLY(kColorSysShadow) \
   /* AI. */ \
@@ -240,9 +242,10 @@
   \
   /* Further UI element colors */ \
   E_CPONLY(kColorAppMenuProfileRowBackground) \
-  E_CPONLY(kColorAppMenuProfileRowBackgroundHovered) \
   E_CPONLY(kColorAppMenuProfileRowChipBackground) \
   E_CPONLY(kColorAppMenuProfileRowChipHovered) \
+  E_CPONLY(kColorAppMenuRowBackgroundHovered) \
+  E_CPONLY(kColorAppMenuUpgradeRowBackground) \
   E_CPONLY(kColorAvatarHeaderArt) \
   E_CPONLY(kColorAvatarIconGuest) \
   E_CPONLY(kColorAvatarIconIncognito) \
@@ -392,17 +395,9 @@
   E_CPONLY(kColorNotificationInputForeground) \
   E_CPONLY(kColorNotificationInputPlaceholderForeground) \
   E_CPONLY(kColorOverlayScrollbarFill) \
-  E_CPONLY(kColorOverlayScrollbarFillDark) \
-  E_CPONLY(kColorOverlayScrollbarFillLight) \
   E_CPONLY(kColorOverlayScrollbarFillHovered) \
-  E_CPONLY(kColorOverlayScrollbarFillHoveredDark) \
-  E_CPONLY(kColorOverlayScrollbarFillHoveredLight) \
   E_CPONLY(kColorOverlayScrollbarStroke) \
-  E_CPONLY(kColorOverlayScrollbarStrokeDark) \
-  E_CPONLY(kColorOverlayScrollbarStrokeLight) \
   E_CPONLY(kColorOverlayScrollbarStrokeHovered) \
-  E_CPONLY(kColorOverlayScrollbarStrokeHoveredDark) \
-  E_CPONLY(kColorOverlayScrollbarStrokeHoveredLight) \
   E_CPONLY(kColorProgressBar) \
   E_CPONLY(kColorProgressBarBackground) \
   E_CPONLY(kColorProgressBarPaused) \
@@ -557,8 +552,30 @@
   E_CPONLY(kColorWebNativeControlSliderPressed) \
   E_CPONLY(kColorWindowBackground)
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#define CHROMEOS_ASH_COLOR_IDS \
+  /* Colors for illustrations */ \
+  E_CPONLY(kColorNativeColor1) \
+  E_CPONLY(kColorNativeColor1Shade1) \
+  E_CPONLY(kColorNativeColor1Shade2) \
+  E_CPONLY(kColorNativeColor2) \
+  E_CPONLY(kColorNativeColor3) \
+  E_CPONLY(kColorNativeColor4) \
+  E_CPONLY(kColorNativeColor5) \
+  E_CPONLY(kColorNativeColor6) \
+  E_CPONLY(kColorNativeBaseColor) \
+  E_CPONLY(kColorNativeSecondaryColor) \
+  E_CPONLY(kColorNativeOnPrimaryContainerColor) \
+  E_CPONLY(kColorNativeAnalogColor) \
+  E_CPONLY(kColorNativeMutedColor) \
+  E_CPONLY(kColorNativeComplementColor) \
+  E_CPONLY(kColorNativeOnGradientColor)
+#elif BUILDFLAG(IS_CHROMEOS_LACROS)
+#define CHROMEOS_ASH_COLOR_IDS
+#endif
 #if BUILDFLAG(IS_CHROMEOS)
 #define PLATFORM_SPECIFIC_COLOR_IDS \
+  CHROMEOS_ASH_COLOR_IDS \
   /* NOTE: Nearly all of the following CrOS color ids will need to be re- */ \
   /* evaluated once CrOS fully supports the color pipeline. */ \
   E_CPONLY(kColorAshActionLabelFocusRingEdit) \
@@ -601,16 +618,8 @@
   E_CPONLY(kColorCrosSystemHighlightBorder) \
   E_CPONLY(kColorCrosSystemHighlightBorder1) \
   \
-  E_CPONLY(kColorNativeColor1) \
-  E_CPONLY(kColorNativeColor1Shade1) \
-  E_CPONLY(kColorNativeColor1Shade2) \
-  E_CPONLY(kColorNativeColor2) \
-  E_CPONLY(kColorNativeColor3) \
-  E_CPONLY(kColorNativeColor4) \
-  E_CPONLY(kColorNativeColor5) \
-  E_CPONLY(kColorNativeColor6) \
-  E_CPONLY(kColorNativeBaseColor) \
-  E_CPONLY(kColorNativeSecondaryColor)
+  E_CPONLY(kColorCrosSysPositive) \
+  E_CPONLY(kColorCrosSysComplementVariant)
 #elif BUILDFLAG(IS_LINUX)
 #define PLATFORM_SPECIFIC_COLOR_IDS \
   E_CPONLY(kColorNativeButtonBorder)\

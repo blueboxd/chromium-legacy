@@ -11,8 +11,8 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
-#include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
+#include "content/common/input/render_input_router.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "ui/events/blink/blink_event_util.h"
 
@@ -52,7 +52,7 @@ RenderWidgetTargetResult::RenderWidgetTargetResult(
     const RenderWidgetTargetResult&) = default;
 
 RenderWidgetTargetResult::RenderWidgetTargetResult(
-    RenderWidgetHostViewBase* in_view,
+    RenderWidgetHostViewInput* in_view,
     bool in_should_query_view,
     std::optional<gfx::PointF> in_location,
     bool in_latched_target)
@@ -64,7 +64,7 @@ RenderWidgetTargetResult::RenderWidgetTargetResult(
 RenderWidgetTargetResult::~RenderWidgetTargetResult() = default;
 
 RenderWidgetTargeter::TargetingRequest::TargetingRequest(
-    base::WeakPtr<RenderWidgetHostViewBase> root_view,
+    base::WeakPtr<RenderWidgetHostViewInput> root_view,
     const blink::WebInputEvent& event,
     const ui::LatencyInfo& latency) {
   this->root_view = std::move(root_view);
@@ -74,7 +74,7 @@ RenderWidgetTargeter::TargetingRequest::TargetingRequest(
 }
 
 RenderWidgetTargeter::TargetingRequest::TargetingRequest(
-    base::WeakPtr<RenderWidgetHostViewBase> root_view,
+    base::WeakPtr<RenderWidgetHostViewInput> root_view,
     const gfx::PointF& location,
     RenderWidgetHostAtPointCallback callback) {
   this->root_view = std::move(root_view);
@@ -91,10 +91,11 @@ operator=(TargetingRequest&&) = default;
 RenderWidgetTargeter::TargetingRequest::~TargetingRequest() = default;
 
 void RenderWidgetTargeter::TargetingRequest::RunCallback(
-    RenderWidgetHostViewBase* target,
+    RenderWidgetHostViewInput* target,
     std::optional<gfx::PointF> point) {
   if (!callback.is_null()) {
-    std::move(callback).Run(target ? target->GetWeakPtr() : nullptr, point);
+    std::move(callback).Run(target ? target->GetInputWeakPtr() : nullptr,
+                            point);
   }
 }
 
@@ -117,7 +118,7 @@ blink::WebInputEvent* RenderWidgetTargeter::TargetingRequest::GetEvent() {
   return event.get();
 }
 
-RenderWidgetHostViewBase* RenderWidgetTargeter::TargetingRequest::GetRootView()
+RenderWidgetHostViewInput* RenderWidgetTargeter::TargetingRequest::GetRootView()
     const {
   return root_view.get();
 }
@@ -141,7 +142,7 @@ RenderWidgetTargeter::RenderWidgetTargeter(Delegate* delegate)
 RenderWidgetTargeter::~RenderWidgetTargeter() = default;
 
 void RenderWidgetTargeter::FindTargetAndDispatch(
-    RenderWidgetHostViewBase* root_view,
+    RenderWidgetHostViewInput* root_view,
     const blink::WebInputEvent& event,
     const ui::LatencyInfo& latency) {
   DCHECK(blink::WebInputEvent::IsMouseEventType(event.GetType()) ||
@@ -159,16 +160,17 @@ void RenderWidgetTargeter::FindTargetAndDispatch(
       return;
   }
 
-  TargetingRequest request(root_view->GetWeakPtr(), event, latency);
+  TargetingRequest request(root_view->GetInputWeakPtr(), event, latency);
 
   ResolveTargetingRequest(std::move(request));
 }
 
 void RenderWidgetTargeter::FindTargetAndCallback(
-    RenderWidgetHostViewBase* root_view,
+    RenderWidgetHostViewInput* root_view,
     const gfx::PointF& point,
     RenderWidgetHostAtPointCallback callback) {
-  TargetingRequest request(root_view->GetWeakPtr(), point, std::move(callback));
+  TargetingRequest request(root_view->GetInputWeakPtr(), point,
+                           std::move(callback));
 
   ResolveTargetingRequest(std::move(request));
 }
@@ -204,7 +206,7 @@ void RenderWidgetTargeter::ResolveTargetingRequest(TargetingRequest request) {
     result = delegate_->FindTargetSynchronouslyAtPoint(request_target,
                                                        request_target_location);
   }
-  RenderWidgetHostViewBase* target = result.view;
+  RenderWidgetHostViewInput* target = result.view;
   if (!is_autoscroll_in_progress_ && result.should_query_view) {
     TRACE_EVENT_WITH_FLOW2(
         "viz,benchmark", "Event.Pipeline", TRACE_ID_GLOBAL(trace_id_),
@@ -226,7 +228,8 @@ void RenderWidgetTargeter::ResolveTargetingRequest(TargetingRequest request) {
   }
 }
 
-void RenderWidgetTargeter::ViewWillBeDestroyed(RenderWidgetHostViewBase* view) {
+void RenderWidgetTargeter::ViewWillBeDestroyed(
+    RenderWidgetHostViewInput* view) {
   unresponsive_views_.erase(view);
 
   if (is_autoscroll_in_progress_ && middle_click_result_.view == view) {
@@ -248,12 +251,13 @@ void RenderWidgetTargeter::SetIsAutoScrollInProgress(
 }
 
 void RenderWidgetTargeter::QueryClient(
-    RenderWidgetHostViewBase* target,
+    RenderWidgetHostViewInput* target,
     const gfx::PointF& target_location,
-    RenderWidgetHostViewBase* last_request_target,
+    RenderWidgetHostViewInput* last_request_target,
     const gfx::PointF& last_target_location,
     TargetingRequest request) {
-  auto& target_client = target->host()->input_target_client();
+  auto& target_client =
+      target->GetViewRenderInputRouter()->input_target_client();
   // |target_client| may not be set yet for this |target| on Mac, need to
   // understand why this happens. https://crbug.com/859492.
   // We do not verify hit testing result under this circumstance.
@@ -268,15 +272,18 @@ void RenderWidgetTargeter::QueryClient(
 
   async_hit_test_timeout_.Start(
       FROM_HERE, async_hit_test_timeout_delay_,
-      base::BindOnce(
-          &RenderWidgetTargeter::AsyncHitTestTimedOut,
-          weak_ptr_factory_.GetWeakPtr(), target->GetWeakPtr(), target_location,
-          last_request_target ? last_request_target->GetWeakPtr() : nullptr,
-          last_target_location));
+      base::BindOnce(&RenderWidgetTargeter::AsyncHitTestTimedOut,
+                     weak_ptr_factory_.GetWeakPtr(), target->GetInputWeakPtr(),
+                     target_location,
+                     last_request_target
+                         ? last_request_target->GetInputWeakPtr()
+                         : nullptr,
+                     last_target_location));
 
-  target_client.set_disconnect_handler(base::BindOnce(
-      &RenderWidgetTargeter::OnInputTargetDisconnect,
-      weak_ptr_factory_.GetWeakPtr(), target->GetWeakPtr(), target_location));
+  target_client.set_disconnect_handler(
+      base::BindOnce(&RenderWidgetTargeter::OnInputTargetDisconnect,
+                     weak_ptr_factory_.GetWeakPtr(), target->GetInputWeakPtr(),
+                     target_location));
 
   TRACE_EVENT_WITH_FLOW2(
       "viz,benchmark", "Event.Pipeline", TRACE_ID_GLOBAL(trace_id_),
@@ -286,7 +293,7 @@ void RenderWidgetTargeter::QueryClient(
   target_client->FrameSinkIdAt(
       target_location, trace_id_,
       base::BindOnce(&RenderWidgetTargeter::FoundFrameSinkId,
-                     weak_ptr_factory_.GetWeakPtr(), target->GetWeakPtr(),
+                     weak_ptr_factory_.GetWeakPtr(), target->GetInputWeakPtr(),
                      ++last_request_id_, target_location));
 }
 
@@ -312,7 +319,7 @@ void RenderWidgetTargeter::FlushEventQueue() {
 }
 
 void RenderWidgetTargeter::FoundFrameSinkId(
-    base::WeakPtr<RenderWidgetHostViewBase> target,
+    base::WeakPtr<RenderWidgetHostViewInput> target,
     uint32_t request_id,
     const gfx::PointF& target_location,
     const viz::FrameSinkId& frame_sink_id,
@@ -335,8 +342,9 @@ void RenderWidgetTargeter::FoundFrameSinkId(
 
   request_in_flight_.reset();
   async_hit_test_timeout_.Stop();
-  target->host()->input_target_client().set_disconnect_handler(
-      base::OnceClosure());
+  target->GetViewRenderInputRouter()
+      ->input_target_client()
+      .set_disconnect_handler(base::OnceClosure());
 
   auto* view = delegate_->FindViewFromFrameSinkId(frame_sink_id);
   if (!view) {
@@ -369,14 +377,16 @@ void RenderWidgetTargeter::FoundFrameSinkId(
 }
 
 void RenderWidgetTargeter::FoundTarget(
-    RenderWidgetHostViewBase* target,
+    RenderWidgetHostViewInput* target,
     const std::optional<gfx::PointF>& target_location,
     TargetingRequest* request) {
   DCHECK(request);
   // RenderWidgetHostViewMac can be deleted asynchronously, in which case the
   // View will be valid but there will no longer be a RenderWidgetHostImpl.
-  if (!request->GetRootView() || !request->GetRootView()->GetRenderWidgetHost())
+  if (!request->GetRootView() ||
+      !request->GetRootView()->GetViewRenderInputRouter()) {
     return;
+  }
 
   if (request->IsWebInputEventRequest()) {
     delegate_->DispatchEventToTarget(request->GetRootView(), target,
@@ -390,9 +400,9 @@ void RenderWidgetTargeter::FoundTarget(
 }
 
 void RenderWidgetTargeter::AsyncHitTestTimedOut(
-    base::WeakPtr<RenderWidgetHostViewBase> current_request_target,
+    base::WeakPtr<RenderWidgetHostViewInput> current_request_target,
     const gfx::PointF& current_target_location,
-    base::WeakPtr<RenderWidgetHostViewBase> last_request_target,
+    base::WeakPtr<RenderWidgetHostViewInput> last_request_target,
     const gfx::PointF& last_target_location) {
   DCHECK(request_in_flight_);
 
@@ -407,7 +417,7 @@ void RenderWidgetTargeter::AsyncHitTestTimedOut(
     unresponsive_views_.insert(current_request_target.get());
 
     // Reset disconnect handler for view.
-    current_request_target->host()
+    current_request_target->GetViewRenderInputRouter()
         ->input_target_client()
         .set_disconnect_handler(base::OnceClosure());
   }
@@ -424,7 +434,7 @@ void RenderWidgetTargeter::AsyncHitTestTimedOut(
 }
 
 void RenderWidgetTargeter::OnInputTargetDisconnect(
-    base::WeakPtr<RenderWidgetHostViewBase> target,
+    base::WeakPtr<RenderWidgetHostViewInput> target,
     const gfx::PointF& location) {
   if (!async_hit_test_timeout_.IsRunning())
     return;

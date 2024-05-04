@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40284755): Remove this and spanify to fix the errors.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "base/profiler/native_unwinder_android.h"
 
 #include <sys/mman.h>
@@ -132,7 +137,7 @@ std::vector<Frame> CaptureScenario(
   return sample;
 }
 
-// TODO(https://crbug.com/1147315): After fix, re-enable on all ASAN bots.
+// TODO(crbug.com/40156557): After fix, re-enable on all ASAN bots.
 #if defined(ADDRESS_SANITIZER)
 #define MAYBE_PlainFunction DISABLED_PlainFunction
 #else
@@ -175,7 +180,7 @@ TEST(NativeUnwinderAndroidTest, MAYBE_PlainFunction) {
                                scenario.GetOuterFunctionAddressRange()});
 }
 
-// TODO(https://crbug.com/1147315): After fix, re-enable on all ASAN bots.
+// TODO(crbug.com/40156557): After fix, re-enable on all ASAN bots.
 #if defined(ADDRESS_SANITIZER)
 #define MAYBE_Alloca DISABLED_Alloca
 #else
@@ -220,7 +225,7 @@ TEST(NativeUnwinderAndroidTest, MAYBE_Alloca) {
                                scenario.GetOuterFunctionAddressRange()});
 }
 
-// TODO(https://crbug.com/1147315): After fix, re-enable on all ASAN bots.
+// TODO(crbug.com/40156557): After fix, re-enable on all ASAN bots.
 #if defined(ADDRESS_SANITIZER)
 #define MAYBE_OtherLibrary DISABLED_OtherLibrary
 #else
@@ -301,7 +306,7 @@ TEST(NativeUnwinderAndroidTest, ExcludeOtherLibrary) {
 
 // Check that unwinding can be resumed after an incomplete unwind.
 #if defined(ADDRESS_SANITIZER)
-// TODO(https://crbug.com/1147315): Fix, re-enable.
+// TODO(crbug.com/40156557): Fix, re-enable.
 #define MAYBE_ResumeUnwinding DISABLED_ResumeUnwinding
 #else
 #define MAYBE_ResumeUnwinding ResumeUnwinding

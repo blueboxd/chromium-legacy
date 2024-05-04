@@ -37,7 +37,14 @@ BASE_FEATURE(kUseHDRTransferFunction,
 BASE_FEATURE(kEnableExternalDisplayHDR10Mode,
              "EnableExternalDisplayHDR10Mode",
              base::FEATURE_DISABLED_BY_DEFAULT);
+#endif
 
+#if BUILDFLAG(IS_CHROMEOS)
+// Feature to control if the CTM is dynamically set to the primary transform
+// from plane color space to output color space.
+BASE_FEATURE(kCtmColorManagement,
+             "CtmColorManagement",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
 
 // This features allows listing all display modes of external displays in the
@@ -97,20 +104,6 @@ BASE_FEATURE(kTiledDisplaySupport,
 bool IsTiledDisplaySupportEnabled() {
   return base::FeatureList::IsEnabled(kTiledDisplaySupport);
 }
-
-#if BUILDFLAG(IS_IOS)
-
-// A kill-switch that guards refactoring ScreenIos to stop calling
-// into deprecated methods on UIScreen.
-BASE_FEATURE(kScreenIosRefactor,
-             "ScreenIosRefactor",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-bool IsScreenIosRefactorEnabled() {
-  return base::FeatureList::IsEnabled(kScreenIosRefactor);
-}
-
-#endif
 
 }  // namespace features
 }  // namespace display

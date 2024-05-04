@@ -54,20 +54,21 @@ void LoginTextfield::OnFocus() {
       std::nullopt});
 }
 
-gfx::Size LoginTextfield::CalculatePreferredSize() const {
+gfx::Size LoginTextfield::CalculatePreferredSize(
+    const views::SizeBounds& available_size) const {
   return gfx::Size(kPasswordTotalWidthDp, kIconSizeDp);
 }
 
 void LoginTextfield::OnStateChanged(
-    const AuthFactorStore::State::PasswordViewState& password_view_state) {
-  SetReadOnly(!password_view_state.is_factor_enabled_);
-  SetCursorEnabled(password_view_state.is_factor_enabled_);
+    const AuthFactorStore::State::LoginTextfieldState& login_textfield_state) {
+  SetReadOnly(login_textfield_state.is_read_only);
+  SetCursorEnabled(!login_textfield_state.is_read_only);
 
-  SetTextInputType(password_view_state.is_password_visible_
+  SetTextInputType(login_textfield_state.is_password_visible_
                        ? ui::TEXT_INPUT_TYPE_NULL
                        : ui::TEXT_INPUT_TYPE_PASSWORD);
 
-  if (auto new_text = base::UTF8ToUTF16(password_view_state.password_);
+  if (auto new_text = base::UTF8ToUTF16(login_textfield_state.password_);
       new_text != GetText()) {
     SetText(new_text);
   }

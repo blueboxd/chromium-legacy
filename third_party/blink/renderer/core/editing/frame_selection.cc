@@ -77,6 +77,7 @@
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/input/context_menu_allowed_scope.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
+#include "third_party/blink/renderer/core/layout/geometry/box_strut.h"
 #include "third_party/blink/renderer/core/layout/hit_test_request.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
@@ -357,11 +358,31 @@ void FrameSelection::DidSetSelectionDeprecated(
   NotifyAccessibilityForSelectionChange();
   NotifyCompositorForSelectionChange();
   NotifyEventHandlerForSelectionChange();
-  // The task source should be kDOMManipulation, but the spec doesn't say
-  // anything about this.
-  frame_->DomWindow()->EnqueueDocumentEvent(
-      *Event::Create(event_type_names::kSelectionchange),
-      TaskType::kMiscPlatformAPI);
+
+  // Dispatch selectionchange events per element based on the new spec:
+  // https://w3c.github.io/selection-api/#selectionchange-event
+  if (RuntimeEnabledFeatures::DispatchSelectionchangeEventPerElementEnabled()) {
+    TextControlElement* text_control =
+        EnclosingTextControl(GetSelectionInDOMTree().Anchor());
+    if (text_control) {
+      text_control->EnqueueEvent(
+          *Event::CreateBubble(event_type_names::kSelectionchange),
+          TaskType::kMiscPlatformAPI);
+    } else {
+      frame_->DomWindow()->EnqueueDocumentEvent(
+          *Event::Create(event_type_names::kSelectionchange),
+          TaskType::kMiscPlatformAPI);
+    }
+  }
+  // When DispatchSelectionchangeEventPerElement is disabled, fall back to old
+  // path.
+  else {
+    // The task source should be kDOMManipulation, but the spec doesn't say
+    // anything about this.
+    frame_->DomWindow()->EnqueueDocumentEvent(
+        *Event::Create(event_type_names::kSelectionchange),
+        TaskType::kMiscPlatformAPI);
+  }
 }
 
 void FrameSelection::SetSelectionForAccessibility(
@@ -762,7 +783,8 @@ static Node* NonBoundaryShadowTreeRootNode(const Position& position) {
              : nullptr;
 }
 
-void FrameSelection::SelectAll(SetSelectionBy set_selection_by) {
+void FrameSelection::SelectAll(SetSelectionBy set_selection_by,
+                               bool canonicalize_selection) {
   if (auto* select_element =
           DynamicTo<HTMLSelectElement>(GetDocument().FocusedElement())) {
     if (select_element->CanSelectAll()) {
@@ -814,13 +836,20 @@ void FrameSelection::SelectAll(SetSelectionBy set_selection_by) {
       return;
   }
 
-  // TODO(editing-dev): Should we pass in set_selection_by?
-  SetSelection(SelectionInDOMTree::Builder().SelectAllChildren(*root).Build(),
+  const SelectionInDOMTree& dom_selection =
+      SelectionInDOMTree::Builder().SelectAllChildren(*root).Build();
+  if (canonicalize_selection) {
+    GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kEditing);
+  }
+  SetSelection(canonicalize_selection
+                   ? CreateVisibleSelection(dom_selection).AsSelection()
+                   : dom_selection,
                SetSelectionOptions::Builder()
                    .SetShouldCloseTyping(true)
                    .SetShouldClearTypingStyle(true)
                    .SetShouldShowHandle(IsHandleVisible())
                    .Build());
+
   SelectFrameElementInParentIfFullySelected();
   // TODO(editing-dev): Should we pass in set_selection_by?
   NotifyTextControlOfSelectionChange(SetSelectionBy::kUser);
@@ -832,7 +861,7 @@ void FrameSelection::SelectAll(SetSelectionBy set_selection_by) {
 }
 
 void FrameSelection::SelectAll() {
-  SelectAll(SetSelectionBy::kSystem);
+  SelectAll(SetSelectionBy::kSystem, false);
 }
 
 // Implementation of |SVGTextControlElement::selectSubString()|

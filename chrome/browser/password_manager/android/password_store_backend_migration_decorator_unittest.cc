@@ -8,9 +8,13 @@
 #include "base/functional/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
 #include "base/task/sequenced_task_runner.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_mock_time_task_runner.h"
+#include "base/time/time.h"
+#include "components/password_manager/core/browser/features/password_features.h"
+#include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/password_store/mock_password_store_backend.h"
 #include "components/password_manager/core/browser/password_store/password_store.h"
@@ -99,6 +103,12 @@ class PasswordStoreBackendMigrationDecoratorTest : public testing::Test {
     task_env_.FastForwardUntilNoTasksRemain();
   }
 
+  void FastForwardBy(base::TimeDelta delta) { task_env_.FastForwardBy(delta); }
+
+  int GetPendingMainThreadTaskCount() {
+    return task_env_.GetPendingMainThreadTaskCount();
+  }
+
  private:
   base::test::SingleThreadTaskEnvironment task_env_{
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
@@ -109,6 +119,26 @@ class PasswordStoreBackendMigrationDecoratorTest : public testing::Test {
   std::unique_ptr<PasswordStoreBackendMigrationDecorator>
       backend_migration_decorator_;
 };
+
+TEST_F(PasswordStoreBackendMigrationDecoratorTest,
+       RecordsSchedulingOfLocalPwdMigration) {
+  base::HistogramTester histogram_tester;
+  prefs().SetInteger(
+      prefs::kPasswordsUseUPMLocalAndSeparateStores,
+      static_cast<int>(
+          prefs::UseUpmLocalAndSeparateStoresState::kOffAndMigrationPending));
+  backend_migration_decorator()->InitBackend(
+      /*affiliated_match_helper=*/nullptr,
+      /*remote_form_changes_received=*/base::DoNothing(),
+      /*sync_enabled_or_disabled_cb=*/base::DoNothing(),
+      /*completion=*/base::DoNothing());
+  // Migration should be scheduled.
+  ASSERT_EQ(1, GetPendingMainThreadTaskCount());
+  histogram_tester.ExpectUniqueSample(
+      "PasswordManager.UnifiedPasswordManager.MigrationForLocalUsers."
+      "ProgressState",
+      metrics_util::LocalPwdMigrationProgressState::kScheduled, 1);
+}
 
 TEST_F(PasswordStoreBackendMigrationDecoratorTest, GetAllLoginsAsync) {
   EXPECT_CALL(built_in_backend(), GetAllLoginsAsync);
@@ -300,10 +330,10 @@ TEST_F(PasswordStoreBackendMigrationDecoratorTest,
 }
 
 TEST_F(PasswordStoreBackendMigrationDecoratorTest, RemoveLoginAsync) {
-  EXPECT_CALL(built_in_backend(), RemoveLoginAsync(CreateTestForm(), _));
+  EXPECT_CALL(built_in_backend(), RemoveLoginAsync(_, CreateTestForm(), _));
   EXPECT_CALL(android_backend(), RemoveLoginAsync).Times(0);
 
-  backend_migration_decorator()->RemoveLoginAsync(CreateTestForm(),
+  backend_migration_decorator()->RemoveLoginAsync(FROM_HERE, CreateTestForm(),
                                                   base::DoNothing());
 }
 
@@ -314,10 +344,10 @@ TEST_F(PasswordStoreBackendMigrationDecoratorTest,
       prefs::kPasswordsUseUPMLocalAndSeparateStores,
       static_cast<int>(prefs::UseUpmLocalAndSeparateStoresState::kOn));
 
-  EXPECT_CALL(built_in_backend(), RemoveLoginAsync(CreateTestForm(), _));
-  EXPECT_CALL(android_backend(), RemoveLoginAsync(CreateTestForm(), _));
+  EXPECT_CALL(built_in_backend(), RemoveLoginAsync(_, CreateTestForm(), _));
+  EXPECT_CALL(android_backend(), RemoveLoginAsync(_, CreateTestForm(), _));
 
-  backend_migration_decorator()->RemoveLoginAsync(CreateTestForm(),
+  backend_migration_decorator()->RemoveLoginAsync(FROM_HERE, CreateTestForm(),
                                                   base::DoNothing());
 }
 
@@ -329,13 +359,13 @@ TEST_F(PasswordStoreBackendMigrationDecoratorTest,
   base::Time delete_end = base::Time::FromTimeT(2000);
 
   EXPECT_CALL(built_in_backend(),
-              RemoveLoginsByURLAndTimeAsync(url_filter, delete_begin,
+              RemoveLoginsByURLAndTimeAsync(_, url_filter, delete_begin,
                                             delete_end, _, _));
   EXPECT_CALL(android_backend(), RemoveLoginsByURLAndTimeAsync).Times(0);
 
   backend_migration_decorator()->RemoveLoginsByURLAndTimeAsync(
-      url_filter, delete_begin, delete_end, base::OnceCallback<void(bool)>(),
-      base::DoNothing());
+      FROM_HERE, url_filter, delete_begin, delete_end,
+      base::OnceCallback<void(bool)>(), base::DoNothing());
 }
 
 TEST_F(PasswordStoreBackendMigrationDecoratorTest,
@@ -350,15 +380,15 @@ TEST_F(PasswordStoreBackendMigrationDecoratorTest,
   base::Time delete_begin = base::Time::FromTimeT(1000);
   base::Time delete_end = base::Time::FromTimeT(2000);
   EXPECT_CALL(built_in_backend(),
-              RemoveLoginsByURLAndTimeAsync(url_filter, delete_begin,
+              RemoveLoginsByURLAndTimeAsync(_, url_filter, delete_begin,
                                             delete_end, _, _));
   EXPECT_CALL(android_backend(),
-              RemoveLoginsByURLAndTimeAsync(url_filter, delete_begin,
+              RemoveLoginsByURLAndTimeAsync(_, url_filter, delete_begin,
                                             delete_end, _, _));
 
   backend_migration_decorator()->RemoveLoginsByURLAndTimeAsync(
-      url_filter, delete_begin, delete_end, base::OnceCallback<void(bool)>(),
-      base::DoNothing());
+      FROM_HERE, url_filter, delete_begin, delete_end,
+      base::OnceCallback<void(bool)>(), base::DoNothing());
 }
 
 TEST_F(PasswordStoreBackendMigrationDecoratorTest,
@@ -367,11 +397,11 @@ TEST_F(PasswordStoreBackendMigrationDecoratorTest,
   base::Time delete_end = base::Time::FromTimeT(2000);
 
   EXPECT_CALL(built_in_backend(),
-              RemoveLoginsCreatedBetweenAsync(delete_begin, delete_end, _));
+              RemoveLoginsCreatedBetweenAsync(_, delete_begin, delete_end, _));
   EXPECT_CALL(android_backend(), RemoveLoginsCreatedBetweenAsync).Times(0);
 
   backend_migration_decorator()->RemoveLoginsCreatedBetweenAsync(
-      delete_begin, delete_end, base::DoNothing());
+      FROM_HERE, delete_begin, delete_end, base::DoNothing());
 }
 
 TEST_F(PasswordStoreBackendMigrationDecoratorTest,
@@ -384,12 +414,12 @@ TEST_F(PasswordStoreBackendMigrationDecoratorTest,
   base::Time delete_begin = base::Time::FromTimeT(1000);
   base::Time delete_end = base::Time::FromTimeT(2000);
   EXPECT_CALL(built_in_backend(),
-              RemoveLoginsCreatedBetweenAsync(delete_begin, delete_end, _));
+              RemoveLoginsCreatedBetweenAsync(_, delete_begin, delete_end, _));
   EXPECT_CALL(android_backend(),
-              RemoveLoginsCreatedBetweenAsync(delete_begin, delete_end, _));
+              RemoveLoginsCreatedBetweenAsync(_, delete_begin, delete_end, _));
 
   backend_migration_decorator()->RemoveLoginsCreatedBetweenAsync(
-      delete_begin, delete_end, base::DoNothing());
+      FROM_HERE, delete_begin, delete_end, base::DoNothing());
 }
 
 TEST_F(PasswordStoreBackendMigrationDecoratorTest,
@@ -513,6 +543,27 @@ TEST_F(PasswordStoreBackendMigrationDecoratorTest,
 
   EXPECT_CALL(completion_callback, Run(true));
   std::move(captured_android_backend_reply).Run(true);
+}
+
+TEST_F(PasswordStoreBackendMigrationDecoratorTest,
+       MigrationIsStartedWithDelayAfterInit) {
+  prefs().SetInteger(
+      prefs::kPasswordsUseUPMLocalAndSeparateStores,
+      static_cast<int>(
+          prefs::UseUpmLocalAndSeparateStoresState::kOffAndMigrationPending));
+
+  backend_migration_decorator()->InitBackend(
+      nullptr, /* remote_form_changes_received= */ base::DoNothing(),
+      /* sync_enabled_or_disabled_cb= */ base::DoNothing(),
+      /* completion= */ base::DoNothing());
+  // Migration should be scheduled.
+  EXPECT_EQ(1, GetPendingMainThreadTaskCount());
+
+  FastForwardBy(
+      base::Seconds(password_manager::features::
+                        GetLocalPasswordsMigrationToAndroidBackendDelay()));
+  // Migration should be started by now.
+  EXPECT_EQ(0, GetPendingMainThreadTaskCount());
 }
 
 }  // namespace password_manager

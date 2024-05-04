@@ -123,6 +123,9 @@ class BASE_EXPORT SysInfo {
   // For macOS, a useful reference of the resulting strings returned by this
   // function and their corresponding hardware can be found at
   // https://everymac.com/systems/by_capability/mac-specs-by-machine-model-machine-id.html
+  //
+  // For iOS, corresponding hardware can be found at
+  // https://deviceatlas.com/resources/clientside/ios-hardware-identification
   static std::string HardwareModelName();
 
 #if BUILDFLAG(IS_MAC)
@@ -270,6 +273,10 @@ class BASE_EXPORT SysInfo {
   // For example, iOS beta releases have the same version number but different
   // build number strings.
   static std::string GetIOSBuildNumber();
+
+  // Overrides the hardware model name. The overridden value is used instead of
+  // `StringSysctl({CTL_HW, HW_MACHINE})`. `name` should not be empty.
+  static void OverrideHardwareModelName(std::string name);
 #endif  // BUILDFLAG(IS_IOS)
 
   // Returns true for low-end devices that may require extreme tradeoffs,

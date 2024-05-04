@@ -14,6 +14,7 @@
 #import "ios/chrome/browser/ui/omnibox/omnibox_app_interface.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_constants.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_earl_grey.h"
+#import "ios/chrome/browser/ui/omnibox/omnibox_test_util.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_ui_features.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_accessibility_identifier_constants.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
@@ -127,16 +128,9 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 
 - (AppLaunchConfiguration)appConfigurationForTestCase {
   AppLaunchConfiguration config = [super appConfigurationForTestCase];
-  auto bundledConfig = std::string("OmniboxBundledExperimentV1");
-  config.additional_args.push_back("--enable-features=" + bundledConfig + "<" +
-                                   bundledConfig);
-  config.additional_args.push_back("--force-fieldtrials=" + bundledConfig +
-                                   "/Test");
 
   // Disable AutocompleteProvider types: TYPE_SEARCH and TYPE_ON_DEVICE_HEAD.
-  config.additional_args.push_back(
-      "--force-fieldtrial-params=" + bundledConfig +
-      ".Test:" + "DisableProviders" + "/" + "1056");
+  omnibox::DisableAutocompleteProviders(config, 1056);
 
   return config;
 }
@@ -157,7 +151,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 }
 
 // Test inline autocomplete of legacy text field implementation.
-// TODO(crbug.com/1445722): Re-enable when fixed.
+// TODO(crbug.com/40912598): Re-enable when fixed.
 - (void)DISABLED_testLegacyInlineAutocompleteSuggestion {
   // Skip if new text field implementation is enabled.
   if (base::FeatureList::IsEnabled(kIOSNewOmniboxImplementation)) {
@@ -331,13 +325,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
       assertWithMatcher:grey_nil()];
 }
 
-// TODO(b/325112257): Test fails on device.
-#if !TARGET_IPHONE_SIMULATOR
-#define MAYBE_testCloseNTPWhenSwitching DISABLED_testCloseNTPWhenSwitching
-#else
-#define MAYBE_testCloseNTPWhenSwitching testCloseNTPWhenSwitching
-#endif
-- (void)MAYBE_testCloseNTPWhenSwitching {
+- (void)testCloseNTPWhenSwitching {
   // Open the first page.
   [ChromeEarlGrey loadURL:_URL1];
   [ChromeEarlGrey waitForWebStateContainingText:kPage1];
@@ -361,15 +349,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   [ChromeEarlGrey waitForMainTabCount:1];
 }
 
-// TODO(b/325112257): Test fails on device.
-#if !TARGET_IPHONE_SIMULATOR
-#define MAYBE_testDontCloseNTPWhenSwitchingWithForwardHistory \
-  DISABLED_testDontCloseNTPWhenSwitchingWithForwardHistory
-#else
-#define MAYBE_testDontCloseNTPWhenSwitchingWithForwardHistory \
-  testDontCloseNTPWhenSwitchingWithForwardHistory
-#endif
-- (void)MAYBE_testDontCloseNTPWhenSwitchingWithForwardHistory {
+- (void)testDontCloseNTPWhenSwitchingWithForwardHistory {
   // Open the first page.
   [ChromeEarlGrey loadURL:_URL1];
   [ChromeEarlGrey waitForWebStateContainingText:kPage1];
@@ -436,13 +416,8 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 
 // Tests that having multiple suggestions with corresponding opened tabs display
 // multiple buttons.
-// TODO(b/325112257): Test fails on device.
-#if !TARGET_IPHONE_SIMULATOR
-#define MAYBE_testMultiplePageOpened DISABLED_testMultiplePageOpened
-#else
-#define MAYBE_testMultiplePageOpened testMultiplePageOpened
-#endif
-- (void)MAYBE_testMultiplePageOpened {
+
+- (void)testMultiplePageOpened {
   // Open the first page.
   [ChromeEarlGrey loadURL:_URL1];
   [ChromeEarlGrey waitForWebStateContainingText:kPage1];
@@ -478,15 +453,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 // Test that on iPhones, when the popup is scrolled, the keyboard is dismissed
 // but the omnibox is still expanded and the suggestions are visible.
 // Test with flag kEnableSuggestionsScrollingOnIPad disabled.
-// TODO(b/325112257): Test fails on device.
-#if !TARGET_IPHONE_SIMULATOR
-#define MAYBE_testScrollingDismissesKeyboardOnPhones \
-  DISABLED_testScrollingDismissesKeyboardOnPhones
-#else
-#define MAYBE_testScrollingDismissesKeyboardOnPhones \
-  testScrollingDismissesKeyboardOnPhones
-#endif
-- (void)MAYBE_testScrollingDismissesKeyboardOnPhones {
+- (void)testScrollingDismissesKeyboardOnPhones {
   [[AppLaunchManager sharedManager]
       ensureAppLaunchedWithFeaturesEnabled:{}
                                   disabled:{kEnableSuggestionsScrollingOnIPad}
@@ -534,14 +501,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 // Test when the popup is scrolled, the keyboard is dismissed
 // but the omnibox is still expanded and the suggestions are visible.
 // Test with flag kEnableSuggestionsScrollingOnIPad enabled.
-// TODO(b/325112257): Test fails on device.
-#if !TARGET_IPHONE_SIMULATOR
-#define MAYBE_testScrollingDismissesKeyboard \
-  DISABLED_testScrollingDismissesKeyboard
-#else
-#define MAYBE_testScrollingDismissesKeyboard testScrollingDismissesKeyboard
-#endif
-- (void)MAYBE_testScrollingDismissesKeyboard {
+- (void)testScrollingDismissesKeyboard {
   [[AppLaunchManager sharedManager]
       ensureAppLaunchedWithFeaturesEnabled:{kEnableSuggestionsScrollingOnIPad}
                                   disabled:{}
@@ -737,7 +697,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 
 // Tests that leading image in omnibox changes based on the suggestion
 // highlighted.
-// TODO(crbug.com/1455347): Test is flaky on both device and simulator.
+// TODO(crbug.com/40917341): Test is flaky on both device and simulator.
 - (void)DISABLED_testOmniboxLeadingImage {
   // Start a server to be able to navigate to a web page.
   self.testServer->RegisterRequestHandler(

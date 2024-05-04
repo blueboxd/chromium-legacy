@@ -19,6 +19,7 @@
 #include "third_party/blink/renderer/core/layout/inline/initial_letter_utils.h"
 #include "third_party/blink/renderer/core/layout/inline/inline_break_token.h"
 #include "third_party/blink/renderer/core/layout/inline/inline_item.h"
+#include "third_party/blink/renderer/core/layout/inline/inline_item_result_ruby_column.h"
 #include "third_party/blink/renderer/core/layout/inline/inline_items_builder.h"
 #include "third_party/blink/renderer/core/layout/inline/inline_layout_algorithm.h"
 #include "third_party/blink/renderer/core/layout/inline/inline_text_auto_space.h"
@@ -934,6 +935,7 @@ bool InlineNode::SetTextWithOffset(LayoutText* layout_text,
     return false;
   }
   layout_text->SetTextInternal(new_text);
+  layout_text->ClearHasNoControlItems();
   layout_text->ClearHasVariableLengthTransform();
 
   InlineNode node(editor.GetLayoutBlockFlow());
@@ -960,8 +962,10 @@ const InlineNodeData& InlineNode::EnsureData() const {
 }
 
 const OffsetMapping* InlineNode::ComputeOffsetMappingIfNeeded() const {
+#if DCHECK_IS_ON()
   DCHECK(!GetLayoutBlockFlow()->GetDocument().NeedsLayoutTreeUpdate() ||
-         GetLayoutBlockFlow()->IsLayoutNGObjectForFormattedText());
+         GetLayoutBlockFlow()->IsDetachedNonDomRoot());
+#endif
 
   InlineNodeData* data = MutableData();
   if (!data->offset_mapping) {
@@ -974,9 +978,11 @@ const OffsetMapping* InlineNode::ComputeOffsetMappingIfNeeded() const {
 
 void InlineNode::ComputeOffsetMapping(LayoutBlockFlow* layout_block_flow,
                                       InlineNodeData* data) {
+#if DCHECK_IS_ON()
   DCHECK(!data->offset_mapping);
   DCHECK(!layout_block_flow->GetDocument().NeedsLayoutTreeUpdate() ||
-         layout_block_flow->IsLayoutNGObjectForFormattedText());
+         layout_block_flow->IsDetachedNonDomRoot());
+#endif
 
   const SvgTextChunkOffsets* chunk_offsets = nullptr;
   if (data->svg_node_data_ && data->svg_node_data_->chunk_offsets.size() > 0)
@@ -1179,7 +1185,7 @@ void InlineNode::SegmentScriptRuns(InlineNodeData* data,
   RunSegmenter segmenter(text_content.Characters16(), text_content.length(),
                          FontOrientation::kHorizontal);
 
-  RunSegmenter::RunSegmenterRange range = RunSegmenter::NullRange();
+  RunSegmenter::RunSegmenterRange range;
   bool consumed = segmenter.Consume(&range);
   DCHECK(consumed);
   if (range.end == text_content.length()) {
@@ -1793,6 +1799,7 @@ static LayoutUnit ComputeContentSize(InlineNode node,
     const LineBreaker::MaxSizeCache& max_size_cache;
     FloatsMaxSize* floats;
     bool is_after_break = true;
+    wtf_size_t annotation_nesting_level = 0;
 
     explicit MaxSizeFromMinSize(const InlineItemsData& items_data,
                                 const LineBreaker::MaxSizeCache& max_size_cache,
@@ -1808,7 +1815,14 @@ static LayoutUnit ComputeContentSize(InlineNode node,
     void AddTextUntil(const InlineItem* end) {
       DCHECK(end);
       for (; next_item != end; ++next_item) {
-        if (next_item->Type() == InlineItem::kText && next_item->Length()) {
+        if (next_item->Type() == InlineItem::kOpenTag &&
+            next_item->GetLayoutObject()->IsInlineRubyText()) {
+          ++annotation_nesting_level;
+        } else if (next_item->Type() == InlineItem::kCloseTag &&
+                   next_item->GetLayoutObject()->IsInlineRubyText()) {
+          --annotation_nesting_level;
+        } else if (next_item->Type() == InlineItem::kText &&
+                   next_item->Length() && annotation_nesting_level == 0) {
           DCHECK(next_item->TextShapeResult());
           const ShapeResult& shape_result = *next_item->TextShapeResult();
           position += shape_result.SnappedWidth().ClampNegativeToZero();
@@ -1854,6 +1868,17 @@ static LayoutUnit ComputeContentSize(InlineNode node,
         is_after_break = false;
       }
 
+      ComputeFromMinSizeInternal(line_info);
+
+      // Compute the forced break after all results were handled, because
+      // when close tags appear after a forced break, they are included in
+      // the line, and they may have inline sizes. crbug.com/991320.
+      if (line_info.HasForcedBreak()) {
+        ForceLineBreak(line_info);
+      }
+    }
+
+    void ComputeFromMinSizeInternal(const LineInfo& line_info) {
       for (const InlineItemResult& result : line_info.Results()) {
         const InlineItem& item = *result.item;
         if (item.Type() == InlineItem::kText) {
@@ -1889,13 +1914,12 @@ static LayoutUnit ComputeContentSize(InlineNode node,
             continue;
           }
         }
+        if (item.Type() == InlineItem::kOpenRubyColumn && result.ruby_column) {
+          ComputeFromMinSizeInternal(result.ruby_column->base_line);
+          continue;
+        }
         position += result.inline_size;
       }
-      // Compute the forced break after all results were handled, because
-      // when close tags appear after a forced break, they are included in
-      // the line, and they may have inline sizes. crbug.com/991320.
-      if (line_info.HasForcedBreak())
-        ForceLineBreak(line_info);
     }
   };
 
@@ -1970,7 +1994,8 @@ static LayoutUnit ComputeContentSize(InlineNode node,
           // `box-decoration-break: clone` clones box decorations to each
           // fragment (line) that we cannot compute max-content from
           // min-content.
-          !line_breaker.HasClonedBoxDecorations();
+          !line_breaker.HasClonedBoxDecorations() &&
+          !line_info.MayHaveRubyOverhang();
       if (can_compute_max_size_from_min_size)
         max_size_from_min_size.ComputeFromMinSize(line_info);
     } else {

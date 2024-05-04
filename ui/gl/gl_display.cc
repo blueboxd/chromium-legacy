@@ -17,6 +17,7 @@
 #include "base/notreached.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
+#include "base/synchronization/atomic_flag.h"
 #include "base/system/sys_info.h"
 #include "build/build_config.h"
 #include "ui/base/ozone_buildflags.h"
@@ -141,19 +142,9 @@ namespace gl {
 
 namespace {
 
-void AdjustAngleFeaturesFromChromeFeatures(
-    std::vector<std::string>& enabled_angle_features,
-    std::vector<std::string>& disabled_angle_features) {
-#if BUILDFLAG(IS_MAC)
-  if (base::FeatureList::IsEnabled(features::kWriteMetalShaderCacheToDisk)) {
-    disabled_angle_features.push_back("enableParallelMtlLibraryCompilation");
-    enabled_angle_features.push_back("compileMetalShaders");
-    enabled_angle_features.push_back("disableProgramCaching");
-  }
-  if (base::FeatureList::IsEnabled(features::kUseBuiltInMetalShaderCache)) {
-    enabled_angle_features.push_back("loadMetalShadersFromBlobCache");
-  }
-#endif
+base::AtomicFlag* GetANGLEDebugLayerFlag() {
+  static base::AtomicFlag* const flag = new base::AtomicFlag();
+  return flag;
 }
 
 std::vector<const char*> GetAttribArrayFromStringVector(
@@ -164,14 +155,6 @@ std::vector<const char*> GetAttribArrayFromStringVector(
   }
   attribs.push_back(nullptr);
   return attribs;
-}
-
-std::vector<std::string> GetStringVectorFromCommandLine(
-    const base::CommandLine* command_line,
-    const char switch_name[]) {
-  std::string command_string = command_line->GetSwitchValueASCII(switch_name);
-  return base::SplitString(command_string, ", ;", base::TRIM_WHITESPACE,
-                           base::SPLIT_WANT_NONEMPTY);
 }
 
 EGLDisplay GetPlatformANGLEDisplay(
@@ -251,9 +234,8 @@ EGLDisplay GetPlatformANGLEDisplay(
   }
 
   display_attribs.push_back(EGL_PLATFORM_ANGLE_DEBUG_LAYERS_ENABLED_ANGLE);
-  display_attribs.push_back(
-      base::FeatureList::IsEnabled(features::kANGLEDebugLayer) ? EGL_TRUE
-                                                               : EGL_FALSE);
+  display_attribs.push_back(GetANGLEDebugLayerFlag()->IsSet() ? EGL_TRUE
+                                                              : EGL_FALSE);
 
   display_attribs.push_back(EGL_NONE);
 
@@ -648,6 +630,11 @@ GLDisplayEGL* GLDisplayEGL::GetDisplayForCurrentContext() {
   return context ? context->GetGLDisplayEGL() : nullptr;
 }
 
+// static
+void GLDisplayEGL::EnableANGLEDebugLayer() {
+  GetANGLEDebugLayerFlag()->Set();
+}
+
 bool GLDisplayEGL::IsEGLSurfacelessContextSupported() {
   return egl_surfaceless_context_supported_;
 }
@@ -737,17 +724,11 @@ bool GLDisplayEGL::InitializeDisplay(bool supports_angle,
     SetEglDebugMessageControl();
   }
 
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-
-  std::vector<std::string> enabled_angle_features =
-      GetStringVectorFromCommandLine(command_line,
-                                     switches::kEnableANGLEFeatures);
-  std::vector<std::string> disabled_angle_features =
-      GetStringVectorFromCommandLine(command_line,
-                                     switches::kDisableANGLEFeatures);
-
-  AdjustAngleFeaturesFromChromeFeatures(enabled_angle_features,
-                                        disabled_angle_features);
+  std::vector<std::string> enabled_angle_features;
+  std::vector<std::string> disabled_angle_features;
+  features::GetANGLEFeaturesFromCommandLineAndFinch(
+      base::CommandLine::ForCurrentProcess(), enabled_angle_features,
+      disabled_angle_features);
 
   for (size_t disp_index = 0; disp_index < init_displays.size(); ++disp_index) {
     DisplayType display_type = init_displays[disp_index];
@@ -879,7 +860,7 @@ void GLDisplayEGL::InitializeCommon(bool for_testing) {
   // a useless wrapper function. See crbug.com/775707 for details. In short, if
   // the symbol is present and we're on Android N or newer and we are not on
   // Android emulator, assume that it's usable even if the extension wasn't
-  // reported. TODO(https://crbug.com/1086781): Once this is fixed at the
+  // reported. TODO(crbug.com/40132708): Once this is fixed at the
   // Android level, update the heuristic to trust the reported extension from
   // that version onward.
   egl_android_native_fence_sync_supported_ =

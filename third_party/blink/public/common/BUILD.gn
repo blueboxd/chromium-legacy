@@ -84,6 +84,7 @@ buildflag_header("buildflags") {
   header = "buildflags.h"
   flags = [
     "RTC_USE_H264=$rtc_use_h264",
+    "RTC_USE_H265=$rtc_use_h265",
     "ENABLE_RUST_CRASH=$enable_rust_crash",
     "USE_FONTATIONS_BACKEND=$use_typeface_fontations",
   ]
@@ -187,6 +188,7 @@ source_set("headers") {
     "interest_group/auction_config.h",
     "interest_group/auction_config_mojom_traits.h",
     "interest_group/auction_server_request_flags.h",
+    "interest_group/devtools_serialization.h",
     "interest_group/interest_group.h",
     "interest_group/interest_group_mojom_traits.h",
     "interest_group/seller_capabilities.h",

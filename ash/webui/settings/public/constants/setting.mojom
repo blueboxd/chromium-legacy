@@ -176,6 +176,7 @@ enum Setting {
   kQuickAnswersDefinition = 609,
   kQuickAnswersTranslation = 610,
   kQuickAnswersUnitConversion = 611,
+  kMahiOnOff = 612,
 
   // Apps section.
   kManageAndroidPreferences = 700,
@@ -244,7 +245,7 @@ enum Setting {
   kSpellCheckOnOff = 1207,
   // Note: Value 1208 was for deprecated kShowPredictiveWriting.
   // Do not reuse.
-  // TODO(crbug/1058552): Add [Deprecated] attribute once implemented.
+  // TODO(crbug.com/40121199): Add [Deprecated] attribute once implemented.
   kShowPKAutoCorrection = 1209,
   kShowVKAutoCorrection = 1210,
   kShowDiacritic = 1211,
@@ -313,6 +314,16 @@ enum Setting {
   kColorCorrectionFilterType = 1535,
   kColorCorrectionFilterAmount = 1536,
   kReducedAnimationsEnabled = 1537,
+  kMouseKeysEnabled = 1538,
+  kMouseKeysShortcutToPauseEnabled = 1539,
+  kMouseKeysDisableInTextFields = 1540,
+  kMouseKeysAcceleration = 1541,
+  kMouseKeysMaxSpeed = 1542,
+  kMouseKeysDominantHand = 1543,
+  kCaretBlinkInterval = 1544,
+  kAccessibilityMagnifierFollowsSts = 1545,
+  kPdfOcrOnOff = 1546,
+  kOverscrollEnabled = 1547,
 
   // Reset section.
   kPowerwash = 1600,

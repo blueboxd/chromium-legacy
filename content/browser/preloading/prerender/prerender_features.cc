@@ -26,7 +26,7 @@ BASE_FEATURE(kPrerender2NewLimitAndScheduler,
 // race conditions between visibility change and activation start on a prerender
 // WebContents. Note that this issue does not happen on browser_tests, so this
 // could be specific to WPT setup.
-// TODO(crbug.com/1399709): Allow activation in background by default.
+// TODO(crbug.com/40249964): Allow activation in background by default.
 BASE_FEATURE(kPrerender2AllowActivationInBackground,
              "Prerender2AllowActivationInBackground",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -40,5 +40,12 @@ BASE_FEATURE(kPrerender2EmbedderBlockedHosts,
              base::FEATURE_ENABLED_BY_DEFAULT);
 const base::FeatureParam<std::string> kPrerender2EmbedderBlockedHostsParam{
     &kPrerender2EmbedderBlockedHosts, "embedder_blocked_hosts", ""};
+
+// Prerender2 support for No-Vary-Search header. Enables prerender matching
+// at navigation time using non-exact URL matching based on the prerender
+// No-Vary-Search header.
+BASE_FEATURE(kPrerender2NoVarySearch,
+             "Prerender2NoVarySearch",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 }  // namespace features

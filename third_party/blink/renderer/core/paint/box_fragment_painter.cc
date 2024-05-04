@@ -749,14 +749,10 @@ void BoxFragmentPainter::PaintLineBoxes(const PaintInfo& paint_info,
   // overflow, in which case check with |LocalRect()|. For 2, check with
   // |ScrollableOverflow()|, but this can be approximiated with
   // |ContentsInkOverflow()|.
-  // TODO(crbug.com/829028): Column boxes do not have |ContentsInkOverflow| atm,
-  // hence skip the optimization. If we were to have it, this should be enabled.
-  // Otherwise, if we're ok with the perf, we can remove this TODO.
-  if (box_fragment_.IsCSSBox()) {
-    PhysicalRect content_ink_rect = box_fragment_.LocalRect();
-    content_ink_rect.Unite(box_fragment_.ContentsInkOverflowRect());
-    if (!paint_info.IntersectsCullRect(content_ink_rect, paint_offset))
-      return;
+  PhysicalRect content_ink_rect = box_fragment_.LocalRect();
+  content_ink_rect.Unite(box_fragment_.ContentsInkOverflowRect());
+  if (!paint_info.IntersectsCullRect(content_ink_rect, paint_offset)) {
+    return;
   }
 
   DCHECK(items_);
@@ -1552,8 +1548,16 @@ void BoxFragmentPainter::PaintInlineItems(const PaintInfo& paint_info,
         cursor->MoveToNextSkippingChildren();
         break;
       case FragmentItem::kLine:
-        NOTREACHED();
-        cursor->MoveToNext();
+        // Nested kLine items are used for ruby annotations.
+        if (RuntimeEnabledFeatures::RubyLineBreakableEnabled()) {
+          InlineCursor line_box_cursor = cursor->CursorForDescendants();
+          PaintInlineItems(paint_info, paint_offset, parent_offset,
+                           &line_box_cursor);
+          cursor->MoveToNextSkippingChildren();
+        } else {
+          NOTREACHED();
+          cursor->MoveToNext();
+        }
         break;
       case FragmentItem::kInvalid:
         NOTREACHED_NORETURN();
@@ -1818,7 +1822,8 @@ void BoxFragmentPainter::PaintTextClipMask(const PaintInfo& paint_info,
                                            const PhysicalOffset& paint_offset,
                                            bool object_has_multiple_boxes) {
   PaintInfo mask_paint_info(paint_info.context, CullRect(mask_rect),
-                            PaintPhase::kTextClip);
+                            PaintPhase::kTextClip,
+                            paint_info.DescendantPaintingBlocked());
   if (!object_has_multiple_boxes) {
     PaintObject(mask_paint_info, paint_offset);
     return;
@@ -2452,12 +2457,20 @@ bool BoxFragmentPainter::HitTestItemsChildren(
         return true;
     } else if (item->Type() == FragmentItem::kLine) {
       const PhysicalLineBoxFragment* child_fragment = item->LineBoxFragment();
-      DCHECK(child_fragment);
-      const PhysicalOffset child_offset =
-          hit_test.inline_root_offset + item->OffsetInContainerFragment();
-      if (HitTestLineBoxFragment(hit_test, *child_fragment, cursor,
-                                 child_offset))
-        return true;
+      if (child_fragment) {  // Top-level kLine items.
+        const PhysicalOffset child_offset =
+            hit_test.inline_root_offset + item->OffsetInContainerFragment();
+        if (HitTestLineBoxFragment(hit_test, *child_fragment, cursor,
+                                   child_offset)) {
+          return true;
+        }
+      } else {  // Nested kLine items for ruby annotations.
+        DCHECK(RuntimeEnabledFeatures::RubyLineBreakableEnabled());
+        if (HitTestItemsChildren(hit_test, container,
+                                 cursor.CursorForDescendants())) {
+          return true;
+        }
+      }
     } else if (item->Type() == FragmentItem::kBox) {
       if (HitTestChildBoxItem(hit_test, container, *item, cursor))
         return true;
@@ -2587,9 +2600,9 @@ bool BoxFragmentPainter::HitTestFloatingChildItems(
       DCHECK(item->GetLayoutObject()->IsLayoutInline());
     } else if (item->Type() == FragmentItem::kLine) {
       const PhysicalLineBoxFragment* child_line = item->LineBoxFragment();
-      DCHECK(child_line);
-      if (!child_line->HasFloatingDescendantsForPaint())
+      if (child_line && !child_line->HasFloatingDescendantsForPaint()) {
         continue;
+      }
     } else {
       continue;
     }

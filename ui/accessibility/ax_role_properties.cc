@@ -85,7 +85,7 @@ bool IsButton(const ax::mojom::Role role) {
   // Role::kToggleButton.
   // https://www.w3.org/TR/wai-aria-1.1/#button
   return role == ax::mojom::Role::kButton ||
-         // TODO(crbug.com/1362834): Treat kComboBoxSelect like a combobox.
+         // TODO(crbug.com/40864556): Treat kComboBoxSelect like a combobox.
          // When removing this, update ChromeVox's AutomationPredicate wherever
          // it's looking at isButton.
          role == ax::mojom::Role::kComboBoxSelect ||
@@ -162,7 +162,7 @@ bool IsCheckBox(const ax::mojom::Role role) {
 }
 
 bool IsComboBox(const ax::mojom::Role role) {
-  // TODO(crbug.com/1362834): Treat kComboBoxSelect like a combobox.
+  // TODO(crbug.com/40864556): Treat kComboBoxSelect like a combobox.
   switch (role) {
     case ax::mojom::Role::kComboBoxMenuButton:
     case ax::mojom::Role::kComboBoxGrouping:
@@ -179,6 +179,7 @@ bool IsComboBoxContainer(const ax::mojom::Role role) {
     case ax::mojom::Role::kGrid:
     case ax::mojom::Role::kListBox:
     case ax::mojom::Role::kTree:
+    case ax::mojom::Role::kTreeGrid:
       return true;
     default:
       return false;
@@ -443,7 +444,6 @@ bool IsLink(const ax::mojom::Role role) {
 bool IsList(const ax::mojom::Role role) {
   switch (role) {
     case ax::mojom::Role::kDescriptionList:
-    case ax::mojom::Role::kDirectory:
     case ax::mojom::Role::kDocBibliography:
     case ax::mojom::Role::kList:
     case ax::mojom::Role::kListBox:
@@ -628,7 +628,6 @@ bool IsSection(const ax::mojom::Role role) {
     case ax::mojom::Role::kCell:
     case ax::mojom::Role::kColumnHeader:  // Subclass of kCell.
     case ax::mojom::Role::kDefinition:
-    case ax::mojom::Role::kDirectory:  // Subclass of kList.
     case ax::mojom::Role::kFeed:       // Subclass of kList.
     case ax::mojom::Role::kFigure:
     case ax::mojom::Role::kGrid:  // Subclass of kTable.
@@ -732,7 +731,6 @@ bool IsSetLike(const ax::mojom::Role role) {
   switch (role) {
     case ax::mojom::Role::kComboBoxSelect:
     case ax::mojom::Role::kDescriptionList:
-    case ax::mojom::Role::kDirectory:
     case ax::mojom::Role::kDocBibliography:
     case ax::mojom::Role::kFeed:
     case ax::mojom::Role::kGroup:
@@ -845,7 +843,6 @@ bool IsTableLike(const ax::mojom::Role role) {
   switch (role) {
     case ax::mojom::Role::kGrid:
     case ax::mojom::Role::kDescriptionList:
-    case ax::mojom::Role::kDirectory:
     case ax::mojom::Role::kList:
     case ax::mojom::Role::kListBox:
     case ax::mojom::Role::kListGrid:
@@ -924,7 +921,6 @@ bool IsUIAEmbeddedObject(ax::mojom::Role role) {
     case ax::mojom::Role::kDate:
     case ax::mojom::Role::kDateTime:
     case ax::mojom::Role::kDescriptionList:
-    case ax::mojom::Role::kDirectory:
     case ax::mojom::Role::kDisclosureTriangle:
     case ax::mojom::Role::kDisclosureTriangleGrouped:
     case ax::mojom::Role::kDocBackLink:
@@ -1018,7 +1014,6 @@ bool ShouldHaveReadonlyStateByDefault(const ax::mojom::Role role) {
     case ax::mojom::Role::kArticle:
     case ax::mojom::Role::kDefinition:
     case ax::mojom::Role::kDescriptionList:
-    case ax::mojom::Role::kDirectory:
     case ax::mojom::Role::kDocument:
     case ax::mojom::Role::kGraphicsDocument:
     case ax::mojom::Role::kImage:

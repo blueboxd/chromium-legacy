@@ -6,6 +6,7 @@
 
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "components/autofill/core/browser/address_data_manager.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/metrics/autofill_metrics_test_base.h"
 #include "components/autofill/core/common/autofill_features.h"
@@ -41,8 +42,8 @@ class AutocompleteUnrecognizedFallbackEventLoggerTest
 TEST_F(AutocompleteUnrecognizedFallbackEventLoggerTest,
        FillAfterSuggestion_NotFilled) {
   FormData form = test::CreateTestAddressFormData();
-  form.fields[0].parsed_autocomplete =
-      AutocompleteParsingResult{.field_type = HtmlFieldType::kUnrecognized};
+  form.fields[0].set_parsed_autocomplete(
+      AutocompleteParsingResult{.field_type = HtmlFieldType::kUnrecognized});
   SeeForm(form);
   ShowSuggestions(form);
 
@@ -61,13 +62,13 @@ TEST_F(AutocompleteUnrecognizedFallbackEventLoggerTest,
 TEST_F(AutocompleteUnrecognizedFallbackEventLoggerTest,
        FillAfterSuggestion_Filled) {
   FormData form = test::CreateTestAddressFormData();
-  form.fields[0].parsed_autocomplete =
-      AutocompleteParsingResult{.field_type = HtmlFieldType::kUnrecognized};
+  form.fields[0].set_parsed_autocomplete(
+      AutocompleteParsingResult{.field_type = HtmlFieldType::kUnrecognized});
   ShowSuggestions(form);
   // Fill the suggestion.
   autofill_manager().FillOrPreviewProfileForm(
       mojom::ActionPersistence::kFill, form, form.fields[0],
-      *personal_data().GetProfileByGUID(kTestProfileId),
+      *personal_data().address_data_manager().GetProfileByGUID(kTestProfileId),
       {.trigger_source = AutofillTriggerSource::kPopup});
 
   base::HistogramTester histogram_tester;
@@ -92,12 +93,12 @@ TEST_F(AutocompleteUnrecognizedFallbackEventLoggerTest,
   // Dynamically change the autocomplete attribute before accepting the
   // suggestion. This causes `OnDidFillFormFillingSuggestion()` to be called,
   // even though `OnDidShowSuggestions()` was never called.
-  form.fields[0].parsed_autocomplete =
-      AutocompleteParsingResult{.field_type = HtmlFieldType::kUnrecognized};
+  form.fields[0].set_parsed_autocomplete(
+      AutocompleteParsingResult{.field_type = HtmlFieldType::kUnrecognized});
   SeeForm(form);
   autofill_manager().FillOrPreviewProfileForm(
       mojom::ActionPersistence::kFill, form, form.fields[0],
-      *personal_data().GetProfileByGUID(kTestProfileId),
+      *personal_data().address_data_manager().GetProfileByGUID(kTestProfileId),
       {.trigger_source = AutofillTriggerSource::kPopup});
 
   base::HistogramTester histogram_tester;

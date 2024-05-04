@@ -15,7 +15,6 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/path_service.h"
-#include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "sandbox/linux/syscall_broker/broker_command.h"
 #include "sandbox/linux/syscall_broker/broker_file_permission.h"
@@ -190,7 +189,7 @@ bool AudioPreSandboxHook(sandbox::policy::SandboxLinux::Options options) {
                                }),
                                GetAudioFilePermissions(), options);
 
-  // TODO(https://crbug.com/850878) enable namespace sandbox. Currently, if
+  // TODO(crbug.com/40579955) enable namespace sandbox. Currently, if
   // enabled, connect() on pulse native socket fails with ENOENT (called from
   // pa_context_connect).
 

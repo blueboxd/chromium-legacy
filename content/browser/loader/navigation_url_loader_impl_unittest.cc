@@ -192,7 +192,7 @@ class NavigationURLLoaderImplTest : public testing::Test {
 
   void SetUp() override {
     scoped_feature_list_.InitAndEnableFeature(
-        blink::features::kClientHintsFormFactor);
+        blink::features::kClientHintsFormFactors);
     // Do not create TestNavigationURLLoaderFactory as this tests creates
     // NavigationURLLoaders explicitly and TestNavigationURLLoaderFactory
     // interferes with that.
@@ -594,7 +594,7 @@ TEST_F(NavigationURLLoaderImplTest, NavigationTimeoutTest) {
 
 // Like NavigationTimeoutTest but the navigation initially results in a redirect
 // before hanging, to test a slightly more complicated navigation.
-// TODO(crbug.com/1271228): Flaky on Linux.
+// TODO(crbug.com/40805451): Flaky on Linux.
 #if BUILDFLAG(IS_LINUX)
 #define MAYBE_NavigationTimeoutRedirectTest \
   DISABLED_NavigationTimeoutRedirectTest

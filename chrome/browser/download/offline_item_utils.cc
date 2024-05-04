@@ -123,6 +123,7 @@ OfflineItem OfflineItemUtils::CreateOfflineItem(const std::string& name_space,
   item.original_url = download_item->GetOriginalUrl();
   item.is_off_the_record = off_the_record;
   item.referrer_url = download_item->GetReferrerUrl();
+  item.has_user_gesture = download_item->HasUserGesture();
 
   item.is_resumable = download_item->CanResume();
   item.allow_metered = download_item->AllowMetered();
@@ -171,7 +172,7 @@ OfflineItem OfflineItemUtils::CreateOfflineItem(const std::string& name_space,
       NOTREACHED();
   }
 
-  // TODO(crbug.com/857549): Set pending_state correctly.
+  // TODO(crbug.com/40582846): Set pending_state correctly.
   item.pending_state = item.state == OfflineItemState::PENDING
                            ? PendingState::PENDING_NETWORK
                            : PendingState::NOT_PENDING;

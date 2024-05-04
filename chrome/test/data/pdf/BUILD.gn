@@ -46,7 +46,6 @@ build_webui_tests("build") {
     "viewer_thumbnail_bar_test.ts",
     "viewer_thumbnail_test.ts",
     "viewer_toolbar_test.ts",
-    "viewport_scroller_test.ts",
     "viewport_test.ts",
     "whitespace_title_test.ts",
     "zoom_manager_test.ts",
@@ -58,6 +57,17 @@ build_webui_tests("build") {
       "annotations_toolbar_test.ts",
       "viewer_toolbar_dropdown_test.ts",
     ]
+  }
+
+  if (enable_pdf_ink2) {
+    files += [
+      "ink2_test.ts",
+      "ink2_viewer_toolbar_test.ts",
+    ]
+
+    if (!is_chromeos_ash) {
+      files += [ "ink2_disabled_test.ts" ]
+    }
   }
 
   if (enable_screen_ai_service) {

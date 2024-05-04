@@ -456,10 +456,16 @@ void BrowserViewLayout::Layout(views::View* browser_view) {
   }
 }
 
+gfx::Size BrowserViewLayout::GetPreferredSize(
+    const views::View* host,
+    const views::SizeBounds& available_size) const {
+  return gfx::Size();
+}
+
 // Return the preferred size which is the size required to give each
 // children their respective preferred size.
 gfx::Size BrowserViewLayout::GetPreferredSize(const views::View* host) const {
-  return gfx::Size();
+  return GetPreferredSize(host, {});
 }
 
 std::vector<raw_ptr<views::View, VectorExperimental>>
@@ -692,9 +698,7 @@ void BrowserViewLayout::LayoutSidePanelView(
     gfx::Rect& contents_container_bounds) {
   const bool side_panel_visible = side_panel && side_panel->GetVisible();
   // Update side panel rounded corner visibility to match side panel visibility.
-  if (side_panel_rounded_corner_) {
-    SetViewVisibility(side_panel_rounded_corner_, side_panel_visible);
-  }
+  SetViewVisibility(side_panel_rounded_corner_, side_panel_visible);
 
   if (left_aligned_side_panel_separator_) {
     const bool side_panel_visible_on_left =
@@ -736,9 +740,13 @@ void BrowserViewLayout::LayoutSidePanelView(
                contents_container_bounds.width() - GetMinWebContentsWidth() -
                    side_panel_separator->GetPreferredSize().width()));
 
+  double side_panel_visible_width =
+      side_panel_bounds.width() *
+      views::AsViewClass<SidePanel>(unified_side_panel_)->GetAnimationValue();
+
   // Shrink container bounds to fit the side panel.
   contents_container_bounds.set_width(
-      contents_container_bounds.width() - side_panel_bounds.width() -
+      contents_container_bounds.width() - side_panel_visible_width -
       side_panel_separator->GetPreferredSize().width());
 
   // In LTR, the point (0,0) represents the top left of the browser.
@@ -752,8 +760,10 @@ void BrowserViewLayout::LayoutSidePanelView(
     // to the ui direction, move `contents_container_bounds` after the side
     // panel. Also leave space for the separator.
     contents_container_bounds.set_x(
-        side_panel_bounds.width() +
+        side_panel_visible_width +
         side_panel_separator->GetPreferredSize().width());
+    side_panel_bounds.set_x(side_panel_bounds.x() - (side_panel_bounds.width() -
+                                                     side_panel_visible_width));
   } else {
     // When the side panel should appear after the main content area relative to
     // the ui direction, move `side_panel_bounds` after the main content area.
@@ -782,23 +792,21 @@ void BrowserViewLayout::LayoutSidePanelView(
 
   // Adjust the side panel rounded corner bounds based on the side panel bounds
   // calculated above.
-  if (side_panel_rounded_corner_) {
-    const float corner_radius =
-        side_panel_rounded_corner_->GetLayoutProvider()->GetCornerRadiusMetric(
-            views::ShapeContextTokens::kSidePanelPageContentRadius);
-    if (is_container_after_side_panel) {
-      side_panel_rounded_corner_->SetBounds(
-          side_panel_bounds.right(),
-          side_panel_bounds.y() - views::Separator::kThickness,
-          corner_radius + views::Separator::kThickness,
-          corner_radius + views::Separator::kThickness);
-    } else {
-      side_panel_rounded_corner_->SetBounds(
-          side_panel_bounds.x() - corner_radius - views::Separator::kThickness,
-          side_panel_bounds.y() - views::Separator::kThickness,
-          corner_radius + views::Separator::kThickness,
-          corner_radius + views::Separator::kThickness);
-    }
+  const float corner_radius =
+      side_panel_rounded_corner_->GetLayoutProvider()->GetCornerRadiusMetric(
+          views::ShapeContextTokens::kSidePanelPageContentRadius);
+  if (is_container_after_side_panel) {
+    side_panel_rounded_corner_->SetBounds(
+        side_panel_bounds.right(),
+        side_panel_bounds.y() - views::Separator::kThickness,
+        corner_radius + views::Separator::kThickness,
+        corner_radius + views::Separator::kThickness);
+  } else {
+    side_panel_rounded_corner_->SetBounds(
+        side_panel_bounds.x() - corner_radius - views::Separator::kThickness,
+        side_panel_bounds.y() - views::Separator::kThickness,
+        corner_radius + views::Separator::kThickness,
+        corner_radius + views::Separator::kThickness);
   }
 }
 

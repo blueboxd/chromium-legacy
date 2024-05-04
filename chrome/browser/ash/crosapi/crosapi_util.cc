@@ -19,6 +19,7 @@
 #include "chrome/browser/apps/app_service/extension_apps_utils.h"
 #include "chrome/browser/ash/crosapi/browser_util.h"
 #include "chrome/browser/ash/crosapi/browser_version_service_ash.h"
+#include "chrome/browser/ash/crosapi/environment_provider.h"
 #include "chrome/browser/ash/crosapi/field_trial_service_ash.h"
 #include "chrome/browser/ash/crosapi/hosted_app_util.h"
 #include "chrome/browser/ash/crosapi/idle_service_ash.h"
@@ -30,7 +31,6 @@
 #include "chrome/browser/ash/policy/core/device_local_account_policy_service.h"
 #include "chrome/browser/ash/policy/core/user_cloud_policy_manager_ash.h"
 #include "chrome/browser/ash/policy/handlers/device_name_policy_handler.h"
-#include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/ash/settings/device_settings_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
@@ -46,11 +46,14 @@
 #include "chromeos/ash/components/browser_context_helper/browser_context_helper.h"
 #include "chromeos/ash/components/browser_context_helper/browser_context_types.h"
 #include "chromeos/ash/components/install_attributes/install_attributes.h"
+#include "chromeos/ash/components/settings/cros_settings.h"
 #include "chromeos/ash/components/settings/cros_settings_names.h"
 #include "chromeos/ash/components/settings/cros_settings_provider.h"
 #include "chromeos/ash/components/system/statistics_provider.h"
 #include "chromeos/components/cdm_factory_daemon/mojom/browser_cdm_factory.mojom.h"
 #include "chromeos/components/in_session_auth/mojom/in_session_auth.mojom.h"
+#include "chromeos/components/mahi/public/cpp/mahi_manager.h"
+#include "chromeos/components/mgs/managed_guest_session_utils.h"
 #include "chromeos/components/payments/mojom/payment_app.mojom.h"
 #include "chromeos/components/remote_apps/mojom/remote_apps.mojom.h"
 #include "chromeos/components/sensors/mojom/cros_sensor_service.mojom.h"
@@ -64,6 +67,7 @@
 #include "chromeos/crosapi/mojom/authentication.mojom.h"
 #include "chromeos/crosapi/mojom/automation.mojom.h"
 #include "chromeos/crosapi/mojom/browser_app_instance_registry.mojom.h"
+#include "chromeos/crosapi/mojom/browser_service.mojom.h"
 #include "chromeos/crosapi/mojom/cert_database.mojom.h"
 #include "chromeos/crosapi/mojom/cert_provisioning.mojom.h"
 #include "chromeos/crosapi/mojom/chaps_service.mojom.h"
@@ -72,7 +76,6 @@
 #include "chromeos/crosapi/mojom/clipboard_history.mojom.h"
 #include "chromeos/crosapi/mojom/content_protection.mojom.h"
 #include "chromeos/crosapi/mojom/cros_display_config.mojom.h"
-#include "chromeos/crosapi/mojom/crosapi.mojom.h"
 #include "chromeos/crosapi/mojom/debug_interface.mojom.h"
 #include "chromeos/crosapi/mojom/desk.mojom.h"
 #include "chromeos/crosapi/mojom/desk_profiles.mojom.h"
@@ -101,6 +104,7 @@
 #include "chromeos/crosapi/mojom/file_system_provider.mojom.h"
 #include "chromeos/crosapi/mojom/firewall_hole.mojom.h"
 #include "chromeos/crosapi/mojom/force_installed_tracker.mojom.h"
+#include "chromeos/crosapi/mojom/full_restore.mojom.h"
 #include "chromeos/crosapi/mojom/fullscreen_controller.mojom.h"
 #include "chromeos/crosapi/mojom/geolocation.mojom.h"
 #include "chromeos/crosapi/mojom/guest_os_sk_forwarder.mojom.h"
@@ -144,6 +148,7 @@
 #include "chromeos/crosapi/mojom/smart_reader.mojom.h"
 #include "chromeos/crosapi/mojom/speech_recognition.mojom.h"
 #include "chromeos/crosapi/mojom/structured_metrics_service.mojom.h"
+#include "chromeos/crosapi/mojom/suggestion_service.mojom.h"
 #include "chromeos/crosapi/mojom/sync.mojom.h"
 #include "chromeos/crosapi/mojom/system_display.mojom.h"
 #include "chromeos/crosapi/mojom/task_manager.mojom.h"
@@ -169,12 +174,16 @@
 #include "chromeos/services/machine_learning/public/mojom/machine_learning_service.mojom.h"
 #include "chromeos/startup/startup.h"
 #include "chromeos/version/version_loader.h"
+#include "components/account_id/account_id.h"
+#include "components/account_manager_core/account.h"
 #include "components/account_manager_core/account_manager_util.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_service.h"
 #include "components/metrics_services_manager/metrics_services_manager.h"
+#include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/cloud_policy_core.h"
 #include "components/policy/core/common/cloud/cloud_policy_manager.h"
+#include "components/policy/core/common/cloud/cloud_policy_refresh_scheduler.h"
 #include "components/policy/core/common/cloud/component_cloud_policy_service.h"
 #include "components/policy/core/common/values_util.h"
 #include "components/policy/policy_constants.h"
@@ -207,27 +216,52 @@ namespace browser_util {
 
 namespace {
 
-// Capability to support reloading the lacros browser on receiving a
-// notification that the browser component was successfully updated.
-constexpr char kBrowserManagerReloadBrowserCapability[] = "crbug/1237235";
-// Capability to support shared_storage in prefs.
-constexpr char kSharedStoragePrefsCapability[] = "b/231890240";
-// Capability to register observers for extension controlled prefs via the
-// prefs api.
-constexpr char kExtensionControlledPrefObserversCapability[] = "crbug/1334985";
-// Capability to pass testing ash extension keeplist data via ash
-// commandline switch.
-constexpr char kAshExtensionKeeplistCmdlineSwitchCapability[] = "crbug/1409199";
-// Capability to accept a package ID for installation without a parsing bug.
-// Once Ash and Lacros are both past M124, then we can remove this capability.
-constexpr char kAshAppInstallServicePackageIdFix[] = "b/304680258";
-// Bug fix to launch tabbed web app windows in new windows when requested.
-// We can remove this capability once Ash and Lacros are both past M122.
-constexpr char kAshShelfNewWindowFix[] = "crbug/1490336";
-// Support feedback dialog ai flow.
-// TODO(crbug/1501057): Remove this capability once Ash and Lacros are both past
-// M123.
-constexpr char kAshFeedbackFlowAi[] = "crbug/1501057";
+constexpr std::string_view kAshCapabilities[] = {
+    // Capability to support reloading the lacros browser on receiving a
+    // notification that the browser component was successfully updated.
+    "crbug/1237235",
+
+    // Capability to support shared_storage in prefs.
+    "b/231890240",
+
+    // Capability to register observers for extension controlled prefs via the
+    // prefs api.
+    "crbug/1334985",
+
+    // Capability to pass testing ash extension keeplist data via ash
+    // commandline switch.
+    "crbug/1409199",
+
+    // Capability to accept a package ID for installation without a parsing bug.
+    // Once Ash and Lacros are both past M124, then we can remove this
+    // capability.
+    "b/304680258",
+
+    // Bug fix to launch tabbed web app windows in new windows when requested.
+    // We can remove this capability once Ash and Lacros are both past M122.
+    "crbug/1490336",
+
+    // Support feedback dialog ai flow.
+    // TODO(crbug.com/40941303): Remove this capability once Ash and Lacros are
+    // both
+    // past M123.
+    "crbug/1501057",
+
+    // Support opening installed apps when requesting installation in
+    // AppInstallServiceAsh.
+    // TODO(b/326167458): Remove this capability once Ash and Lacros are both
+    // past M127.
+    "b/326167458",
+
+    // Support showing the Ash-driven App Install Dialog when requesting
+    // installation in AppInstallServiceAsh.
+    // TODO(b/331715712): Remove this capability once Ash and Lacros are both
+    // past M128.
+    "b/331715712"
+
+    // Entries added to this list must record the current milestone + 3 with a
+    // TODO for removal.
+};
 
 policy::UserCloudPolicyManagerAsh* GetUserCloudPolicyManager(
     const user_manager::User& user) {
@@ -382,7 +416,7 @@ constexpr InterfaceVersionEntry MakeInterfaceVersionEntry() {
   return {T::Uuid_, T::Version_};
 }
 
-static_assert(crosapi::mojom::Crosapi::Version_ == 133,
+static_assert(crosapi::mojom::Crosapi::Version_ == 136,
               "If you add a new crosapi, please add it to "
               "kInterfaceVersionEntries below.");
 
@@ -444,6 +478,7 @@ constexpr InterfaceVersionEntry kInterfaceVersionEntries[] = {
     MakeInterfaceVersionEntry<crosapi::mojom::FileSystemProviderService>(),
     MakeInterfaceVersionEntry<crosapi::mojom::FirewallHoleServiceDeprecated>(),
     MakeInterfaceVersionEntry<crosapi::mojom::ForceInstalledTracker>(),
+    MakeInterfaceVersionEntry<crosapi::mojom::FullRestore>(),
     MakeInterfaceVersionEntry<crosapi::mojom::FullscreenController>(),
     MakeInterfaceVersionEntry<crosapi::mojom::GeolocationService>(),
     MakeInterfaceVersionEntry<crosapi::mojom::HoldingSpaceService>(),
@@ -492,11 +527,13 @@ constexpr InterfaceVersionEntry kInterfaceVersionEntries[] = {
     MakeInterfaceVersionEntry<crosapi::mojom::ScreenAIDownloader>(),
     MakeInterfaceVersionEntry<crosapi::mojom::ScreenManager>(),
     MakeInterfaceVersionEntry<crosapi::mojom::SearchControllerRegistry>(),
+    MakeInterfaceVersionEntry<crosapi::mojom::SearchControllerFactory>(),
     MakeInterfaceVersionEntry<crosapi::mojom::SelectFile>(),
     MakeInterfaceVersionEntry<crosapi::mojom::Sharesheet>(),
     MakeInterfaceVersionEntry<crosapi::mojom::SmartReaderClient>(),
     MakeInterfaceVersionEntry<crosapi::mojom::SpeechRecognition>(),
     MakeInterfaceVersionEntry<crosapi::mojom::StructuredMetricsService>(),
+    MakeInterfaceVersionEntry<crosapi::mojom::SuggestionService>(),
     MakeInterfaceVersionEntry<crosapi::mojom::SnapshotCapturer>(),
     MakeInterfaceVersionEntry<crosapi::mojom::SyncService>(),
     MakeInterfaceVersionEntry<crosapi::mojom::SystemDisplayDeprecated>(),
@@ -568,29 +605,122 @@ crosapi::mojom::BrowserInitParams::DeviceType ConvertDeviceType(
 }
 
 crosapi::mojom::BrowserInitParams::LacrosSelection GetLacrosSelection(
-    std::optional<browser_util::LacrosSelection> selection) {
+    std::optional<ash::standalone_browser::LacrosSelection> selection) {
   if (!selection.has_value()) {
     return crosapi::mojom::BrowserInitParams::LacrosSelection::kUnspecified;
   }
 
   switch (selection.value()) {
-    case browser_util::LacrosSelection::kRootfs:
+    case ash::standalone_browser::LacrosSelection::kRootfs:
       return crosapi::mojom::BrowserInitParams::LacrosSelection::kRootfs;
-    case browser_util::LacrosSelection::kStateful:
+    case ash::standalone_browser::LacrosSelection::kStateful:
       return crosapi::mojom::BrowserInitParams::LacrosSelection::kStateful;
-    case browser_util::LacrosSelection::kDeployedLocally:
+    case ash::standalone_browser::LacrosSelection::kDeployedLocally:
       return crosapi::mojom::BrowserInitParams::LacrosSelection::kUnspecified;
   }
 }
 
+mojom::SessionType GetSessionType() {
+  const user_manager::User* const user =
+      user_manager::UserManager::Get()->GetPrimaryUser();
+  switch (user->GetType()) {
+    case user_manager::UserType::kRegular:
+      return mojom::SessionType::kRegularSession;
+    case user_manager::UserType::kChild:
+      return mojom::SessionType::kChildSession;
+    case user_manager::UserType::kGuest:
+      return mojom::SessionType::kGuestSession;
+    case user_manager::UserType::kPublicAccount:
+      return mojom::SessionType::kPublicSession;
+    case user_manager::UserType::kKioskApp:
+      return mojom::SessionType::kAppKioskSession;
+    case user_manager::UserType::kArcKioskApp:
+      LOG(WARNING) << "Starting as ARC Kiosk App session.";
+      return mojom::SessionType::kRegularSession;
+    case user_manager::UserType::kWebKioskApp:
+      return mojom::SessionType::kWebKioskSession;
+  }
+}
+
+mojom::DeviceMode GetDeviceMode() {
+  policy::DeviceMode mode = ash::InstallAttributes::Get()->GetMode();
+  switch (mode) {
+    case policy::DEVICE_MODE_PENDING:
+      // "Pending" is an internal detail of InstallAttributes and doesn't need
+      // its own mojom value.
+      return mojom::DeviceMode::kNotSet;
+    case policy::DEVICE_MODE_NOT_SET:
+      return mojom::DeviceMode::kNotSet;
+    case policy::DEVICE_MODE_CONSUMER:
+      return mojom::DeviceMode::kConsumer;
+    case policy::DEVICE_MODE_ENTERPRISE:
+      return mojom::DeviceMode::kEnterprise;
+    case policy::DEPRECATED_DEVICE_MODE_LEGACY_RETAIL_MODE:
+      return mojom::DeviceMode::kLegacyRetailMode;
+    case policy::DEVICE_MODE_CONSUMER_KIOSK_AUTOLAUNCH:
+      return mojom::DeviceMode::kConsumerKioskAutolaunch;
+    case policy::DEVICE_MODE_DEMO:
+      return mojom::DeviceMode::kDemo;
+  }
+}
+
+// Returns the account used to sign into the device. May be a Gaia account or a
+// Microsoft Active Directory account.
+// Returns a `nullopt` for Guest Sessions, Managed Guest Sessions,
+// Demo Mode, and Kiosks.
+std::optional<account_manager::Account> GetDeviceAccount() {
+  // Lacros doesn't support Multi-Login. Get the Primary User.
+  const user_manager::User* user =
+      user_manager::UserManager::Get()->GetPrimaryUser();
+  if (!user) {
+    return std::nullopt;
+  }
+
+  const AccountId& account_id = user->GetAccountId();
+  switch (account_id.GetAccountType()) {
+    case AccountType::ACTIVE_DIRECTORY:
+      return std::make_optional(account_manager::Account{
+          account_manager::AccountKey{
+              account_id.GetObjGuid(),
+              account_manager::AccountType::kActiveDirectory},
+          user->GetDisplayEmail()});
+    case AccountType::GOOGLE:
+      return std::make_optional(account_manager::Account{
+          account_manager::AccountKey{account_id.GetGaiaId(),
+                                      account_manager::AccountType::kGaia},
+          user->GetDisplayEmail()});
+    case AccountType::UNKNOWN:
+      return std::nullopt;
+  }
+}
+
+base::Time GetLastPolicyFetchAttemptTimestamp() {
+  const user_manager::User* user =
+      user_manager::UserManager::Get()->GetPrimaryUser();
+  if (!user) {
+    return base::Time();
+  }
+
+  policy::CloudPolicyCore* core = GetCloudPolicyCoreForUser(*user);
+  if (!core) {
+    return base::Time();
+  }
+
+  return core->refresh_scheduler() ? core->refresh_scheduler()->last_refresh()
+                                   : base::Time();
+}
+
 }  // namespace
 
-base::flat_map<base::Token, uint32_t> GetInterfaceVersions() {
-  base::flat_map<base::Token, uint32_t> versions;
-  for (const auto& entry : kInterfaceVersionEntries) {
-    versions.emplace(entry.uuid, entry.version);
-  }
-  return versions;
+const base::flat_map<base::Token, uint32_t>& GetInterfaceVersions() {
+  static base::NoDestructor<base::flat_map<base::Token, uint32_t>> versions([] {
+    base::flat_map<base::Token, uint32_t> versions;
+    for (const auto& entry : kInterfaceVersionEntries) {
+      versions.emplace(entry.uuid, entry.version);
+    }
+    return versions;
+  }());
+  return *versions;
 }
 
 InitialBrowserAction::InitialBrowserAction(
@@ -605,9 +735,8 @@ InitialBrowserAction::~InitialBrowserAction() = default;
 
 void InjectBrowserInitParams(
     mojom::BrowserInitParams* params,
-    EnvironmentProvider* environment_provider,
     bool is_keep_alive_enabled,
-    std::optional<browser_util::LacrosSelection> lacros_selection) {
+    std::optional<ash::standalone_browser::LacrosSelection> lacros_selection) {
   params->crosapi_version = crosapi::mojom::Crosapi::Version_;
   params->deprecated_ash_metrics_enabled_has_value = true;
   PrefService* local_state = g_browser_process->local_state();
@@ -618,10 +747,10 @@ void InjectBrowserInitParams(
           ? mojom::MetricsReportingManaged::kManaged
           : mojom::MetricsReportingManaged::kNotManaged;
 
-  params->device_mode = environment_provider->GetDeviceMode();
+  params->device_mode = GetDeviceMode();
   params->interface_versions = GetInterfaceVersions();
 
-  // TODO(crbug.com/1093194): This should be updated to a new value when
+  // TODO(crbug.com/40134922): This should be updated to a new value when
   // the long term fix is made in ash-chrome, atomically.
   params->exo_ime_support =
       crosapi::mojom::ExoImeSupport::kConsumedByImeWorkaround;
@@ -634,7 +763,7 @@ void InjectBrowserInitParams(
   // Syncing the randomization seed ensures that the group membership of the
   // limited entropy synthetic trial will be the same between Ash Chrome and
   // Lacros.
-  // TODO(crbug.com/1508150): Remove after completing the trial.
+  // TODO(crbug.com/40948861): Remove after completing the trial.
   variations::LimitedEntropySyntheticTrial limited_entropy_synthetic_trial(
       local_state);
   params->limited_entropy_synthetic_trial_seed =
@@ -719,16 +848,8 @@ void InjectBrowserInitParams(
   params->accepted_internal_ash_urls =
       ChromeWebUIControllerFactory::GetInstance()->GetListOfAcceptableURLs();
 
-  std::vector<std::string> ash_capabilities = {
-      kBrowserManagerReloadBrowserCapability,
-      kSharedStoragePrefsCapability,
-      kExtensionControlledPrefObserversCapability,
-      kAshExtensionKeeplistCmdlineSwitchCapability,
-      kAshAppInstallServicePackageIdFix,
-      kAshShelfNewWindowFix,
-      kAshFeedbackFlowAi,
-  };
-  params->ash_capabilities = {std::move(ash_capabilities)};
+  params->ash_capabilities = {
+      {std::begin(kAshCapabilities), std::end(kAshCapabilities)}};
 
   params->lacros_selection = GetLacrosSelection(lacros_selection);
 
@@ -746,6 +867,7 @@ void InjectBrowserInitParams(
   params->is_floss_available = floss::features::IsFlossAvailable();
   params->is_floss_availability_check_needed =
       floss::features::IsFlossAvailabilityCheckNeeded();
+  params->is_llprivacy_available = floss::features::IsLLPrivacyAvailable();
 
   params->is_cloud_gaming_device =
       chromeos::features::IsCloudGamingDeviceEnabled();
@@ -810,20 +932,37 @@ void InjectBrowserInitParams(
 
   params->is_file_system_provider_cloud_file_system_enabled =
       chromeos::features::IsFileSystemProviderCloudFileSystemEnabled();
+
+  params->is_cros_web_app_install_dialog_enabled =
+      chromeos::features::IsCrosWebAppInstallDialogEnabled();
+
+  params->is_orca_enabled = chromeos::features::IsOrcaEnabled();
+
+  params->is_orca_use_l10n_strings_enabled =
+      chromeos::features::IsOrcaUseL10nStringsEnabled();
+
+  params->is_cros_mall_enabled = chromeos::features::IsCrosMallEnabled();
+
+  params->is_mahi_enabled = chromeos::features::IsMahiEnabled();
+
+  params->is_container_app_preinstall_enabled =
+      chromeos::features::IsContainerAppPreinstallEnabled();
+
+  params->is_file_system_provider_content_cache_enabled =
+      chromeos::features::IsFileSystemProviderContentCacheEnabled();
 }
 
 template <typename BrowserParams>
 void InjectBrowserPostLoginParams(BrowserParams* params,
-                                  EnvironmentProvider* environment_provider,
                                   InitialBrowserAction initial_browser_action) {
   static_assert(std::is_same<mojom::BrowserInitParams, BrowserParams>() ||
                 std::is_same<mojom::BrowserPostLoginParams, BrowserParams>());
 
-  params->session_type = environment_provider->GetSessionType();
-  params->default_paths = environment_provider->GetDefaultPaths();
+  params->session_type = GetSessionType();
+  params->default_paths = EnvironmentProvider::Get()->GetDefaultPaths();
 
   const std::optional<account_manager::Account> maybe_device_account =
-      environment_provider->GetDeviceAccount();
+      GetDeviceAccount();
   if (maybe_device_account) {
     params->device_account =
         account_manager::ToMojoAccount(maybe_device_account.value());
@@ -834,7 +973,7 @@ void InjectBrowserPostLoginParams(BrowserParams* params,
           ProfileManager::GetPrimaryUserProfile());
   params->device_account_policy = GetDeviceAccountPolicy();
   params->last_policy_fetch_attempt_timestamp =
-      environment_provider->GetLastPolicyFetchAttemptTimestamp().ToTimeT();
+      GetLastPolicyFetchAttemptTimestamp().ToTimeT();
 
   params->initial_browser_action = initial_browser_action.action;
 
@@ -847,52 +986,50 @@ void InjectBrowserPostLoginParams(BrowserParams* params,
   params->is_current_user_ephemeral = IsCurrentUserEphemeral();
   params->enable_lacros_tts_support =
       tts_crosapi_util::ShouldEnableLacrosTtsSupport();
+
+  params->is_mahi_supported_with_correct_feature_key =
+      chromeos::MahiManager::IsSupportedWithCorrectFeatureKey();
 }
 
 mojom::BrowserInitParamsPtr GetBrowserInitParams(
-    EnvironmentProvider* environment_provider,
     InitialBrowserAction initial_browser_action,
     bool is_keep_alive_enabled,
-    std::optional<browser_util::LacrosSelection> lacros_selection,
+    std::optional<ash::standalone_browser::LacrosSelection> lacros_selection,
     bool include_post_login_params) {
   mojom::BrowserInitParamsPtr params = mojom::BrowserInitParams::New();
-  InjectBrowserInitParams(params.get(), environment_provider,
-                          is_keep_alive_enabled, lacros_selection);
+  InjectBrowserInitParams(params.get(), is_keep_alive_enabled,
+                          lacros_selection);
   if (include_post_login_params) {
-    InjectBrowserPostLoginParams(params.get(), environment_provider,
+    InjectBrowserPostLoginParams(params.get(),
                                  std::move(initial_browser_action));
   }
   return params;
 }
 
 mojom::BrowserPostLoginParamsPtr GetBrowserPostLoginParams(
-    EnvironmentProvider* environment_provider,
     InitialBrowserAction initial_browser_action) {
   mojom::BrowserPostLoginParamsPtr params =
       mojom::BrowserPostLoginParams::New();
-  InjectBrowserPostLoginParams(params.get(), environment_provider,
-                               std::move(initial_browser_action));
+  InjectBrowserPostLoginParams(params.get(), std::move(initial_browser_action));
   return params;
 }
 
 base::ScopedFD CreateStartupData(
-    EnvironmentProvider* environment_provider,
     InitialBrowserAction initial_browser_action,
     bool is_keep_alive_enabled,
-    std::optional<LacrosSelection> lacros_selection,
+    std::optional<ash::standalone_browser::LacrosSelection> lacros_selection,
     bool include_post_login_params) {
   const auto& data = GetBrowserInitParams(
-      environment_provider, std::move(initial_browser_action),
-      is_keep_alive_enabled, lacros_selection, include_post_login_params);
+      std::move(initial_browser_action), is_keep_alive_enabled,
+      lacros_selection, include_post_login_params);
 
   return chromeos::CreateMemFDFromBrowserInitParams(data);
 }
 
 bool WritePostLoginData(base::PlatformFile fd,
-                        EnvironmentProvider* environment_provider,
                         InitialBrowserAction initial_browser_action) {
-  const auto& data = GetBrowserPostLoginParams(
-      environment_provider, std::move(initial_browser_action));
+  const auto& data =
+      GetBrowserPostLoginParams(std::move(initial_browser_action));
 
   std::vector<uint8_t> serialized =
       crosapi::mojom::BrowserPostLoginParams::Serialize(&data);
@@ -929,6 +1066,7 @@ mojom::DeviceSettingsPtr GetDeviceSettings() {
   result->attestation_for_content_protection_enabled = MojoOptionalBool::kUnset;
   result->device_restricted_managed_guest_session_enabled =
       MojoOptionalBool::kUnset;
+  result->device_extensions_system_log_enabled = MojoOptionalBool::kUnset;
   if (ash::CrosSettings::IsInitialized()) {
     // It's expected that the CrosSettings values are trusted. The only
     // theoretical exception is when device ownership is taken on consumer
@@ -1018,6 +1156,14 @@ mojom::DeviceSettingsPtr GetDeviceSettings() {
                                                 ? MojoOptionalBool::kTrue
                                                 : MojoOptionalBool::kFalse;
       }
+
+      bool device_extensions_system_log_enabled = false;
+      if (cros_settings->GetBoolean(ash::kDeviceExtensionsSystemLogEnabled,
+                                    &device_extensions_system_log_enabled)) {
+        result->device_extensions_system_log_enabled =
+            device_extensions_system_log_enabled ? MojoOptionalBool::kTrue
+                                                 : MojoOptionalBool::kFalse;
+      }
     } else {
       LOG(WARNING) << "Unexpected crossettings trusted values status: "
                    << trusted_result;
@@ -1081,6 +1227,10 @@ policy::ComponentCloudPolicyService* GetComponentCloudPolicyServiceForUser(
     case user_manager::UserType::kArcKioskApp:
       return nullptr;
   }
+}
+
+base::span<const std::string_view> GetAshCapabilities() {
+  return kAshCapabilities;
 }
 
 }  // namespace browser_util

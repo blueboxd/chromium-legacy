@@ -61,6 +61,11 @@ bool IsLoggingEnabled() {
   return diagnostics::DiagnosticsLogController::IsInitialized();
 }
 
+bool IsSplitModifierKeyboard(int device_id) {
+  return Shell::Get()->keyboard_capability()->HasFunctionKey(device_id) &&
+         Shell::Get()->keyboard_capability()->HasRightAltKey(device_id);
+}
+
 }  // namespace
 
 // Escape should be able to close the dialog as long as shortcuts are not
@@ -154,7 +159,8 @@ void InputDataProvider::GetConnectedDevices(
   bool has_internal_keyboard = false;
   for (const ui::KeyboardDevice& keyboard :
        ui::DeviceDataManager::GetInstance()->GetKeyboardDevices()) {
-    if (keyboard.type == ui::InputDeviceType::INPUT_DEVICE_INTERNAL) {
+    if (keyboard.type == ui::InputDeviceType::INPUT_DEVICE_INTERNAL &&
+        !IsSplitModifierKeyboard(keyboard.id)) {
       has_internal_keyboard = true;
       break;
     }
@@ -585,6 +591,11 @@ void InputDataProvider::AddKeyboard(const InputDeviceInformation* device_info) {
       keyboard_helper_.ConstructKeyboard(device_info, aux_data.get());
   const bool is_internal_keyboard =
       keyboard->connection_type == mojom::ConnectionType::kInternal;
+  // Don't add keyboard if internal keyboard is a split modifier keyboard.
+  if (is_internal_keyboard &&
+      IsSplitModifierKeyboard(device_info->input_device.id)) {
+    return;
+  }
   if (!features::IsExternalKeyboardInDiagnosticsAppEnabled() &&
       !is_internal_keyboard) {
     return;

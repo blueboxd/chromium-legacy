@@ -155,7 +155,8 @@ class OmniboxEditModel {
   std::u16string GetPermanentDisplayText() const;
 
   // Sets the user_text_ to |text|. Also enters user-input-in-progress mode.
-  void SetUserText(const std::u16string& text);
+  // Virtual for testing.
+  virtual void SetUserText(const std::u16string& text);
 
   // If the omnibox is currently displaying elided text, this method will
   // restore the full URL into the user text. After unelision, this selects-all,
@@ -307,6 +308,13 @@ class OmniboxEditModel {
   // entering keyword mode on a match somewhere down the list.
   bool OnSpacePressed();
 
+  // Checks for special input conditions to accelerate keyword mode entry
+  // for starter pack '@' keywords. Returns true if keyword mode was
+  // entered; returns false if feature is disabled or special input
+  // conditions were not detected, in which case this is a no-op.
+  bool MaybeAccelerateKeywordSelection(const std::u16string& input_text,
+                                       char16_t ch);
+
   // Called when any relevant data changes.  This rolls together several
   // separate pieces of data into one call so we can update all the UI
   // efficiently. Specifically, it's invoked for temporary text, autocompletion,
@@ -367,9 +375,6 @@ class OmniboxEditModel {
   // Reverts the edit box from a temporary text back to the original user text.
   // Also resets the popup to the initial state.
   void RevertTemporaryTextAndPopup();
-
-  // Returns whether to prevent elision of the display URL.
-  bool ShouldPreventElision() const;
 
   // Returns true if the destination URL of the match is bookmarked.
   bool IsStarredMatch(const AutocompleteMatch& match) const;

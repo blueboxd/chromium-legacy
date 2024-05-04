@@ -4,22 +4,22 @@
 
 #include "third_party/blink/renderer/modules/webgpu/gpu_device_lost_info.h"
 
-#include "base/notreached.h"
-
 namespace blink {
 
-GPUDeviceLostInfo::GPUDeviceLostInfo(const WGPUDeviceLostReason reason,
+GPUDeviceLostInfo::GPUDeviceLostInfo(const wgpu::DeviceLostReason reason,
                                      const String& message) {
   switch (reason) {
-    case WGPUDeviceLostReason_Undefined:
+    case wgpu::DeviceLostReason::Unknown:
+    case wgpu::DeviceLostReason::InstanceDropped:
+    case wgpu::DeviceLostReason::FailedCreation:
       reason_ = "unknown";
       break;
-    case WGPUDeviceLostReason_Destroyed:
+    case wgpu::DeviceLostReason::Destroyed:
       reason_ = "destroyed";
       break;
     default:
-      // If this is hit, Dawn gave us a reason we haven't implemented here yet.
-      NOTREACHED();
+      // this case handles the old Undefined enum case.
+      // TODO(crbug.com/dawn/2139): Remove this after removing enum from Dawn
       reason_ = "unknown";
       break;
   }

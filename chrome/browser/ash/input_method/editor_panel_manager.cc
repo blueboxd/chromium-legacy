@@ -7,6 +7,7 @@
 #include <string_view>
 #include <utility>
 
+#include "ash/constants/ash_features.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
 #include "base/notreached.h"
@@ -34,6 +35,8 @@ crosapi::mojom::EditorPanelPresetQueryCategory ToEditorPanelQueryCategory(
       return crosapi::mojom::EditorPanelPresetQueryCategory::kFormalize;
     case orca::mojom::PresetTextQueryType::kEmojify:
       return crosapi::mojom::EditorPanelPresetQueryCategory::kEmojify;
+    case orca::mojom::PresetTextQueryType::kProofread:
+      return crosapi::mojom::EditorPanelPresetQueryCategory::kProofread;
   }
 }
 
@@ -76,7 +79,7 @@ void EditorPanelManager::BindReceiver(
 void EditorPanelManager::BindEditorClient() {
   if (!editor_client_remote_.is_bound()) {
     delegate_->BindEditorClient(
-      editor_client_remote_.BindNewPipeAndPassReceiver());
+        editor_client_remote_.BindNewPipeAndPassReceiver());
 
     editor_client_remote_.reset_on_disconnect();
   }
@@ -84,6 +87,14 @@ void EditorPanelManager::BindEditorClient() {
 
 void EditorPanelManager::GetEditorPanelContext(
     GetEditorPanelContextCallback callback) {
+  // Force fetching and updating the input context.
+  // TODO: b:332605855 - Remove this hack after input context is fetched within
+  // GetEditorPanelMode / GetEditorMode.
+  if (base::FeatureList::IsEnabled(
+          ash::features::kOrcaForceFetchContextOnGetEditorPanelContext)) {
+    delegate_->FetchAndUpdateInputContext();
+  }
+
   // Cache the current text context, so that any input fields that are part of
   // the editor panel do not interfere with the context.
   delegate_->CacheContext();
@@ -105,8 +116,7 @@ void EditorPanelManager::GetEditorPanelContext(
   }
 }
 
-void EditorPanelManager::OnPromoCardDismissed() {
-}
+void EditorPanelManager::OnPromoCardDismissed() {}
 
 void EditorPanelManager::OnPromoCardDeclined() {
   delegate_->OnPromoCardDeclined();
@@ -149,8 +159,7 @@ bool EditorPanelManager::IsEditorMenuVisible() const {
   return is_editor_menu_visible_;
 }
 
-void EditorPanelManager::LogEditorMode(
-    crosapi::mojom::EditorPanelMode mode) {
+void EditorPanelManager::LogEditorMode(crosapi::mojom::EditorPanelMode mode) {
   EditorOpportunityMode opportunity_mode =
       delegate_->GetEditorOpportunityMode();
   EditorMetricsRecorder* logger = delegate_->GetMetricsRecorder();

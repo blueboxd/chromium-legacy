@@ -213,9 +213,9 @@ base::TimeDelta ChunkDemuxerStream::GetBufferedDuration() const {
   return stream_->GetBufferedDuration();
 }
 
-size_t ChunkDemuxerStream::GetBufferedSize() const {
+size_t ChunkDemuxerStream::GetMemoryUsage() const {
   base::AutoLock auto_lock(lock_);
-  return stream_->GetBufferedSize();
+  return stream_->GetMemoryUsage();
 }
 
 void ChunkDemuxerStream::OnStartOfCodedFrameGroup(DecodeTimestamp start_dts,
@@ -558,10 +558,9 @@ base::Time ChunkDemuxer::GetTimelineOffset() const {
   return timeline_offset_;
 }
 
-std::vector<raw_ptr<DemuxerStream, VectorExperimental>>
-ChunkDemuxer::GetAllStreams() {
+std::vector<DemuxerStream*> ChunkDemuxer::GetAllStreams() {
   base::AutoLock auto_lock(lock_);
-  std::vector<raw_ptr<DemuxerStream, VectorExperimental>> result;
+  std::vector<DemuxerStream*> result;
   // Put enabled streams at the beginning of the list so that
   // MediaResource::GetFirstStream returns the enabled stream if there is one.
   // TODO(servolk): Revisit this after media track switching is supported.
@@ -593,9 +592,9 @@ int64_t ChunkDemuxer::GetMemoryUsage() const {
   base::AutoLock auto_lock(lock_);
   int64_t mem = 0;
   for (const auto& s : audio_streams_)
-    mem += s->GetBufferedSize();
+    mem += s->GetMemoryUsage();
   for (const auto& s : video_streams_)
-    mem += s->GetBufferedSize();
+    mem += s->GetMemoryUsage();
   return mem;
 }
 
@@ -1027,7 +1026,7 @@ bool ChunkDemuxer::AppendToParseBuffer(const std::string& id,
         // then caller would instead tell app QuotaExceededErr synchronous with
         // the app's appendBuffer() call, instead of async decode error during
         // async parse.
-        // TODO(crbug.com/1379160): Instrument this path to see if it can be
+        // TODO(crbug.com/40244241): Instrument this path to see if it can be
         // changed to just NOTREACHED() << state_.
         return true;
     }

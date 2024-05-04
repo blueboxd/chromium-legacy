@@ -25,7 +25,6 @@
 #include "gpu/config/gpu_info.h"
 #include "media/capture/video/video_capture_feedback.h"
 #include "media/cast/cast_environment.h"
-#include "media/cast/net/cast_transport_defines.h"
 #include "media/mojo/mojom/video_encode_accelerator.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -112,7 +111,7 @@ class COMPONENT_EXPORT(MIRRORING_SERVICE) OpenscreenSessionHost final
       const openscreen::cast::SenderSession* session,
       openscreen::cast::RemotingCapabilities capabilities) override;
   void OnError(const openscreen::cast::SenderSession* session,
-               openscreen::Error error) override;
+               const openscreen::Error& error) override;
 
   // RtpStreamClient overrides.
   void OnError(const std::string& message) override;
@@ -341,7 +340,7 @@ class COMPONENT_EXPORT(MIRRORING_SERVICE) OpenscreenSessionHost final
   std::unique_ptr<OpenscreenStatsClient> stats_client_;
 
   // Used in callbacks executed on task runners, such as by RtpStream.
-  // TODO(https://crbug.com/1363503): determine if weak pointers can be removed.
+  // TODO(crbug.com/40238714): determine if weak pointers can be removed.
   base::WeakPtrFactory<OpenscreenSessionHost> weak_factory_{this};
 };
 

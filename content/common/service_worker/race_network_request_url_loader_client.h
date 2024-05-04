@@ -141,7 +141,7 @@ class CONTENT_EXPORT ServiceWorkerRaceNetworkRequestURLLoaderClient
   // handler doesn't dispatch the corresponding fetch request. In that case the
   // pipe may be stacked. So this method provides a way to just consume data.
   //
-  // TODO(crbug.com/1472634): Consider migrating this to CancelWriteData().
+  // TODO(crbug.com/40278676): Consider migrating this to CancelWriteData().
   void DrainData(mojo::ScopedDataPipeConsumerHandle source);
 
   // Close the corresponding data pipe based on |commit_responsibility|, and
@@ -197,10 +197,10 @@ class CONTENT_EXPORT ServiceWorkerRaceNetworkRequestURLLoaderClient
   // commit process. And when the data transfer is finished, this complete the
   // commit process.
   //
-  // TODO(crbug.com/1420517) Add more UMAs to measure how long time to take this
-  // process, and there could be the case if the response is not returned due to
-  // the long fetch handler execution. and test case the mechanism to wait for
-  // the fetch handler
+  // TODO(crbug.com/40258805) Add more UMAs to measure how long time to take
+  // this process, and there could be the case if the response is not returned
+  // due to the long fetch handler execution. and test case the mechanism to
+  // wait for the fetch handler
   void TwoPhaseWrite(MojoResult result, const mojo::HandleSignalsState& state);
   // Writes data in RaceNetworkRequestReadBufferManager into the data
   // pipe producer that handles for both the race network request and the fetch

@@ -73,16 +73,16 @@ BASE_FEATURE(kWebViewDisplayCutout,
              "WebViewDisplayCutout",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-// Fake empty component to measure component updater performance impact on
-// WebView clients.
-BASE_FEATURE(kWebViewEmptyComponentLoaderPolicy,
-             "WebViewEmptyComponentLoaderPolicy",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 // Enable the WebView Media Integrity API.
 // This feature requires `kWebViewInjectPlatformJsApis` to be enabled as well.
 BASE_FEATURE(kWebViewMediaIntegrityApi,
              "WebViewMediaIntegrityApi",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enable the WebView Media Integrity API as a Blink extension.
+// This feature requires `kWebViewMediaIntegrityApi` to be disabled.
+BASE_FEATURE(kWebViewMediaIntegrityApiBlinkExtension,
+             "WebViewMediaIntegrityApiBlinkExtension",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // When enabled, passive mixed content (Audio/Video/Image subresources loaded
@@ -110,11 +110,6 @@ BASE_FEATURE(kWebViewExtraHeadersSameOriginOnly,
 BASE_FEATURE(kWebViewJavaJsBridgeMojo,
              "WebViewJavaJsBridgeMojo",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Field trial feature for controlling support of Origin Trials on WebView.
-BASE_FEATURE(kWebViewOriginTrials,
-             "WebViewOriginTrials",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Whether to record size of the embedding app's data directory to the UMA
 // histogram Android.WebView.AppDataDirectorySize.
@@ -182,7 +177,7 @@ BASE_FEATURE(kWebViewPropagateNetworkChangeSignals,
 // Provide the unreduced product version from the AwContentBrowserClient API,
 // regardless of the user agent reduction policy.
 BASE_FEATURE(kWebViewUnreducedProductVersion,
-             "WebViewUnreducedPrductVersion",
+             "WebViewUnreducedProductVersion",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enable raster in wide color gamut for apps that use webview in a wide color
@@ -192,7 +187,7 @@ BASE_FEATURE(kWebViewWideColorGamutSupport,
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Control the default behaviour for the XRequestedWith header.
-// TODO(crbug.com/1493963): enable by default after M120 branch point.
+// TODO(crbug.com/40286009): enable by default after M120 branch point.
 BASE_FEATURE(kWebViewXRequestedWithHeaderControl,
              "WebViewXRequestedWithHeaderControl",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -208,7 +203,7 @@ const base::FeatureParam<int> kWebViewXRequestedWithHeaderMode{
 // the manifest.
 BASE_FEATURE(kWebViewXRequestedWithHeaderManifestAllowList,
              "WebViewXRequestedWithHeaderManifestAllowList",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // This enables image drage out for Webview.
 BASE_FEATURE(kWebViewImageDrag,
@@ -218,12 +213,6 @@ BASE_FEATURE(kWebViewImageDrag,
 // Enables injection of platform-specific JavaScript APIs.
 BASE_FEATURE(kWebViewInjectPlatformJsApis,
              "WebViewInjectPlatformJsApis",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-// This enables uploading UMA data with a higher frequency.
-// This Feature is checked and used in downstream internal code.
-BASE_FEATURE(kWebViewUmaUploadQualityOfServiceSetToDefault,
-             "WebViewUmaUploadQualityOfServiceSetToDefault",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Whether to use initial network state during initialization to speed up
@@ -236,6 +225,26 @@ BASE_FEATURE(kWebViewUseInitialNetworkStateAtStartup,
 BASE_FEATURE(kWebViewZoomKeyboardShortcuts,
              "WebViewZoomKeyboardShortcuts",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+// This enables reducing webview user-agent android version and device model.
+BASE_FEATURE(kWebViewReduceUAAndroidVersionDeviceModel,
+             "WebViewReduceUAAndroidVersionDeviceModel",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// This enables WebView crashes.
+BASE_FEATURE(kWebViewEnableCrash,
+             "WebViewEnableCrash",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Enables the built-in DNS resolver (Async DNS) on WebView.
+BASE_FEATURE(kWebViewAsyncDns,
+             "WebViewAsyncDns",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Preloads expensive classes during WebView startup.
+BASE_FEATURE(kWebViewPreloadClasses,
+             "WebViewPreloadClasses",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 }  // namespace features
 }  // namespace android_webview

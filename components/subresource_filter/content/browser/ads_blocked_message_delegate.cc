@@ -67,7 +67,7 @@ void AdsBlockedMessageDelegate::ShowMessage() {
       &AdsBlockedMessageDelegate::HandleMessageManageClicked,
       base::Unretained(this)));
 
-  // TODO(crbug.com/1223078): On rare occasions, such as the moment when
+  // TODO(crbug.com/40774444): On rare occasions, such as the moment when
   // activity is being recreated or destroyed, ads blocked message will not be
   // displayed.
   message_dispatcher_bridge->EnqueueMessage(
@@ -128,10 +128,12 @@ void AdsBlockedMessageDelegate::HandleDialogLearnMoreClicked() {
   reprompt_required_ = true;
   subresource_filter::ContentSubresourceFilterThrottleManager::LogAction(
       subresource_filter::SubresourceFilterAction::kClickedLearnMore);
-  web_contents()->OpenURL(content::OpenURLParams(
-      GURL(subresource_filter::kLearnMoreLink), content::Referrer(),
-      WindowOpenDisposition::NEW_FOREGROUND_TAB, ui::PAGE_TRANSITION_LINK,
-      false));
+  web_contents()->OpenURL(
+      content::OpenURLParams(GURL(subresource_filter::kLearnMoreLink),
+                             content::Referrer(),
+                             WindowOpenDisposition::NEW_FOREGROUND_TAB,
+                             ui::PAGE_TRANSITION_LINK, false),
+      /*navigation_handle_callback=*/{});
 }
 
 void AdsBlockedMessageDelegate::HandleDialogDismissed() {

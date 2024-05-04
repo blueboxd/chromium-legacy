@@ -30,7 +30,7 @@ import org.chromium.chrome.browser.browserservices.intents.BrowserServicesIntent
 import org.chromium.chrome.browser.browserservices.intents.BrowserServicesIntentDataProvider.CustomTabsUiType;
 import org.chromium.chrome.browser.browserservices.ui.controller.Verifier;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.history.HistoryManager;
 import org.chromium.chrome.browser.multiwindow.MultiWindowModeStateDispatcher;
 import org.chromium.chrome.browser.readaloud.ReadAloudController;
 import org.chromium.chrome.browser.readaloud.ReadAloudFeatures;
@@ -158,7 +158,7 @@ public class CustomTabAppMenuPropertiesDelegate extends AppMenuPropertiesDelegat
             boolean requestDesktopSiteVisible = true;
             boolean tryAddingReadAloud = ReadAloudFeatures.isEnabledForOverflowMenuInCCT();
             boolean historyItemVisible = true;
-            if (!ChromeFeatureList.sAppSpecificHistory.isEnabled() || !mHasClientPackage) {
+            if (!HistoryManager.isAppSpecificHistoryEnabled() || !mHasClientPackage) {
                 historyItemVisible = false;
             }
 
@@ -217,12 +217,13 @@ public class CustomTabAppMenuPropertiesDelegate extends AppMenuPropertiesDelegat
                 tryAddingReadAloud = false;
             }
 
-            boolean isChromeScheme =
+            boolean isNativePage =
                     url.getScheme().equals(UrlConstants.CHROME_SCHEME)
-                            || url.getScheme().equals(UrlConstants.CHROME_NATIVE_SCHEME);
+                            || url.getScheme().equals(UrlConstants.CHROME_NATIVE_SCHEME)
+                            || currentTab.isNativePage();
             boolean isFileScheme = url.getScheme().equals(UrlConstants.FILE_SCHEME);
             boolean isContentScheme = url.getScheme().equals(UrlConstants.CONTENT_SCHEME);
-            if (isChromeScheme || isFileScheme || isContentScheme || url.isEmpty()) {
+            if (isNativePage || isFileScheme || isContentScheme || url.isEmpty()) {
                 addToHomeScreenVisible = false;
             }
 
@@ -288,7 +289,7 @@ public class CustomTabAppMenuPropertiesDelegate extends AppMenuPropertiesDelegat
             }
 
             updateRequestDesktopSiteMenuItem(
-                    menu, currentTab, requestDesktopSiteVisible, isChromeScheme);
+                    menu, currentTab, requestDesktopSiteVisible, isNativePage);
             prepareAddToHomescreenMenuItem(menu, currentTab, addToHomeScreenVisible);
         }
     }

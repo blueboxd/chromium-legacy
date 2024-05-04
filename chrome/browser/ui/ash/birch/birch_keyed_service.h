@@ -16,11 +16,12 @@ class Profile;
 
 namespace ash {
 
-class Shell;
 class BirchCalendarProvider;
 class BirchFileSuggestProvider;
 class BirchRecentTabsProvider;
 class BirchReleaseNotesProvider;
+class RefreshTokenWaiter;
+class Shell;
 
 // A keyed service which is used to manage data providers for the birch feature.
 // Fetched data will be sent to the `BirchModel` to be stored.
@@ -49,12 +50,16 @@ class BirchKeyedService : public KeyedService,
   BirchDataProvider* GetFileSuggestProvider() override;
   BirchDataProvider* GetRecentTabsProvider() override;
   BirchDataProvider* GetReleaseNotesProvider() override;
+  void WaitForRefreshTokens(base::OnceClosure callback) override;
+  base::FilePath GetRemovedItemsFilePath() override;
 
  private:
   void ShutdownBirch();
 
   // Whether shutdown of BirchKeyedService has already begun.
   bool is_shutdown_ = false;
+
+  raw_ptr<Profile> profile_;
 
   std::unique_ptr<BirchCalendarProvider> calendar_provider_;
 
@@ -65,6 +70,8 @@ class BirchKeyedService : public KeyedService,
   std::unique_ptr<BirchReleaseNotesProvider> release_notes_provider_;
 
   base::ScopedObservation<Shell, ShellObserver> shell_observation_{this};
+
+  std::unique_ptr<RefreshTokenWaiter> refresh_token_waiter_;
 };
 
 }  // namespace ash

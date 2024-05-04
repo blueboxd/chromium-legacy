@@ -20,7 +20,7 @@ namespace autofill::autofill_metrics {
 // `observed_submission` indicates whether this method is called as a result of
 // observing a submission event (otherwise, it may be that an upload was
 // triggered after a form was unfocused or a navigation occurred).
-// TODO(crbug.com/1007974): More than quality metrics are logged. Consider
+// TODO(crbug.com/40100455): More than quality metrics are logged. Consider
 // renaming or splitting the function.
 void LogQualityMetrics(
     const FormStructure& form_structure,
@@ -28,9 +28,7 @@ void LogQualityMetrics(
     const base::TimeTicks& interaction_time,
     const base::TimeTicks& submission_time,
     AutofillMetrics::FormInteractionsUkmLogger* form_interactions_ukm_logger,
-    bool did_show_suggestions,
-    bool observed_submission,
-    const FormInteractionCounts& form_interaction_counts);
+    bool observed_submission);
 
 // Log the quality of the heuristics and server predictions for the
 // `form_structure` structure, if autocomplete attributes are present on the
@@ -40,10 +38,11 @@ void LogQualityMetricsBasedOnAutocomplete(
     AutofillMetrics::FormInteractionsUkmLogger* form_interactions_ukm_logger);
 
 // Returns the `FormGroupFillingStats` corresponding to the fields in
-// `form_structure`. This method does not log to UMA but only returns the
-// statistics of a submitted form. `FormGroupFillingStats` is UMA logged in
-// `LogQualityMetrics()`.
-autofill_metrics::FormGroupFillingStats GetAddressFormFillingStats(
+// `form_structure` that match `form_type`. This method does not log to UMA but
+// only returns the statistics of a submitted form. `FormGroupFillingStats` is
+// UMA logged in `LogQualityMetrics()`.
+autofill_metrics::FormGroupFillingStats GetFormFillingStatsForFormType(
+    FormType form_type,
     const FormStructure& form_structure);
 
 }  // namespace autofill::autofill_metrics

@@ -732,8 +732,7 @@ bool PepperGraphics2DHost::PrepareTransferableResource(
         shared_image->GetTextureTarget(gfx::BufferUsage::SCANOUT);
 
     ri->WritePixels(shared_image->mailbox(), /*dst_x_offset=*/0,
-                    /*dst_y_offset=*/0,
-                    /*dst_plane_index=*/0, texture_target,
+                    /*dst_y_offset=*/0, texture_target,
                     SkPixmap(src_info, src, src_info.minRowBytes()));
 
     gpu::SyncToken out_sync_token;
@@ -782,7 +781,7 @@ bool PepperGraphics2DHost::PrepareTransferableResource(
              pixel_image_size, viz::SinglePlaneFormat::kRGBA_8888));
   image_data_->Unmap();
 
-  *transferable_resource = viz::TransferableResource::MakeSoftware(
+  *transferable_resource = viz::TransferableResource::MakeSoftwareSharedBitmap(
       shared_bitmap->id(), gpu::SyncToken(), pixel_image_size,
       viz::SinglePlaneFormat::kRGBA_8888,
       viz::TransferableResource::ResourceSource::kPepperGraphics2D);

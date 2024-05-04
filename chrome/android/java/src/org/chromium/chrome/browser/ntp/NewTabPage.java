@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.ntp;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.Point;
 import android.graphics.Rect;
@@ -41,8 +40,6 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.app.feed.FeedActionDelegateImpl;
 import org.chromium.chrome.browser.bookmarks.BookmarkModel;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
-import org.chromium.chrome.browser.compositor.layouts.content.InvalidationAwareThumbnailProvider;
-import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.feed.FeedActionDelegate;
 import org.chromium.chrome.browser.feed.FeedReliabilityLogger;
@@ -58,7 +55,6 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.LifecycleObserver;
 import org.chromium.chrome.browser.lifecycle.PauseResumeWithNativeObserver;
-import org.chromium.chrome.browser.logo.LogoUtils;
 import org.chromium.chrome.browser.magic_stack.HomeModulesConfigManager;
 import org.chromium.chrome.browser.magic_stack.HomeModulesCoordinator;
 import org.chromium.chrome.browser.magic_stack.ModuleDelegateHost;
@@ -66,7 +62,6 @@ import org.chromium.chrome.browser.magic_stack.ModuleRegistry;
 import org.chromium.chrome.browser.native_page.ContextMenuManager;
 import org.chromium.chrome.browser.omnibox.OmniboxFocusReason;
 import org.chromium.chrome.browser.omnibox.OmniboxStub;
-import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteControllerProvider;
 import org.chromium.chrome.browser.omnibox.voice.VoiceRecognitionHandler;
 import org.chromium.chrome.browser.privacy.settings.PrivacyPreferencesManagerImpl;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -75,6 +70,7 @@ import org.chromium.chrome.browser.search_resumption.SearchResumptionModuleCoord
 import org.chromium.chrome.browser.search_resumption.SearchResumptionModuleUtils;
 import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
 import org.chromium.chrome.browser.share.ShareDelegate;
+import org.chromium.chrome.browser.single_tab.SingleTabSwitcherCoordinator;
 import org.chromium.chrome.browser.suggestions.SuggestionsMetrics;
 import org.chromium.chrome.browser.suggestions.SuggestionsNavigationDelegate;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegateImpl;
@@ -87,6 +83,8 @@ import org.chromium.chrome.browser.tab.TabHidingType;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tab.TabSelectionType;
+import org.chromium.chrome.browser.tab_ui.InvalidationAwareThumbnailProvider;
+import org.chromium.chrome.browser.tab_ui.TabContentManager;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
@@ -100,7 +98,6 @@ import org.chromium.chrome.browser.util.BrowserUiUtils;
 import org.chromium.chrome.browser.util.BrowserUiUtils.HostSurface;
 import org.chromium.chrome.browser.xsurface.feed.FeedLaunchReliabilityLogger.SurfaceType;
 import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
-import org.chromium.chrome.features.tasks.SingleTabSwitcherCoordinator;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.components.browser_ui.styles.SemanticColorUtils;
@@ -190,6 +187,7 @@ public class NewTabPage
     private boolean mSnapshotSingleTabCardChanged;
     private final boolean mIsSurfacePolishEnabled;
     private final boolean mIsSurfacePolishOmniboxColorEnabled;
+    private final boolean mIsSurfacePolishLessBrandSpaceEnabled;
     private final boolean mIsInNightMode;
     @Nullable private final OneshotSupplier<ModuleRegistry> mModuleRegistrySupplier;
 
@@ -311,8 +309,8 @@ public class NewTabPage
     }
 
     /**
-     * Extends {@link TileGroupDelegateImpl} to add metrics logging that is specific to
-     * {@link NewTabPage}.
+     * Extends {@link TileGroupDelegateImpl} to add metrics logging that is specific to {@link
+     * NewTabPage}.
      */
     private class NewTabPageTileGroupDelegate extends TileGroupDelegateImpl {
         private NewTabPageTileGroupDelegate(
@@ -433,6 +431,9 @@ public class NewTabPage
         mIsSurfacePolishOmniboxColorEnabled =
                 mIsSurfacePolishEnabled
                         && StartSurfaceConfiguration.SURFACE_POLISH_OMNIBOX_COLOR.getValue();
+        mIsSurfacePolishLessBrandSpaceEnabled =
+                mIsSurfacePolishEnabled
+                        && StartSurfaceConfiguration.SURFACE_POLISH_LESS_BRAND_SPACE.getValue();
         if (mIsSurfacePolishEnabled) {
             mBackgroundColor =
                     ChromeColors.getSurfaceColor(
@@ -508,15 +509,13 @@ public class NewTabPage
         // For example, the user changes theme when a NTP is showing, which leads to the recreation
         // of the ChromeTabbedActivity and showing the NTP as the last visited Tab.
         if (mTabModelSelector.isTabStateInitialized()) {
-            mayCreateSearchResumptionModule(
-                    profile, AutocompleteControllerProvider.from(windowAndroid));
+            mayCreateSearchResumptionModule(profile);
         } else {
             mTabModelSelector.addObserver(
                     new TabModelSelectorObserver() {
                         @Override
                         public void onTabStateInitialized() {
-                            mayCreateSearchResumptionModule(
-                                    profile, AutocompleteControllerProvider.from(windowAndroid));
+                            mayCreateSearchResumptionModule(profile);
                             mTabModelSelector.removeObserver(this);
                         }
                     });
@@ -562,11 +561,11 @@ public class NewTabPage
                 mFeedSurfaceProvider.getUiConfig(),
                 lifecycleDispatcher,
                 uma,
-                mTab.isIncognito(),
+                mTab.getProfile(),
                 windowAndroid,
-                isNtpAsHomeSurfaceOnTablet(),
                 mIsSurfacePolishEnabled,
                 mIsSurfacePolishOmniboxColorEnabled,
+                mIsSurfacePolishLessBrandSpaceEnabled,
                 mIsTablet,
                 mTabStripHeightSupplier);
 
@@ -577,6 +576,7 @@ public class NewTabPage
 
     /**
      * Create and initialize the main view contained in this NewTabPage.
+     *
      * @param activity The activity used to initialize the view.
      * @param windowAndroid Provides the current active tab.
      * @param snackbarManager {@link SnackbarManager} object.
@@ -626,7 +626,6 @@ public class NewTabPage
                         isInNightMode,
                         this,
                         profile,
-                        /* isPlaceholderShownInitially= */ false,
                         mBottomSheetController,
                         shareDelegateSupplier,
                         /* externalScrollableContainerDelegate= */ null,
@@ -716,17 +715,13 @@ public class NewTabPage
             layoutParams.bottomMargin = bottomMargin;
             view.setLayoutParams(layoutParams);
         }
-
-        // Apply the height of the top toolbar as the margin to the top of the N logo.
-        mNewTabPageLayout.setSearchProviderTopMargin(getLogoMargin(true));
-        mNewTabPageLayout.setSearchProviderBottomMargin(getLogoMargin(false));
     }
 
     // TODO(sinansahin): This is the same as {@link ToolbarManager#getToolbarExtraYOffset}. So, we
     // should look into sharing the logic.
     /**
      * @return The height that is included in the top controls but not in the toolbar or the tab
-     *         strip.
+     *     strip.
      */
     private int getToolbarExtraYOffset() {
         return mBrowserControlsStateProvider.getTopControlsHeight()
@@ -734,7 +729,9 @@ public class NewTabPage
                 - mTabStripHeightSupplier.get();
     }
 
-    /** @return The view container for the new tab layout. */
+    /**
+     * @return The view container for the new tab layout.
+     */
     @VisibleForTesting
     public NewTabPageLayout getNewTabPageLayout() {
         return mNewTabPageLayout;
@@ -760,7 +757,7 @@ public class NewTabPage
         updateSearchProviderHasLogo();
         setSearchProviderInfoOnView(
                 mSearchProviderHasLogo, mTemplateUrlService.isDefaultSearchEngineGoogle());
-        // TODO(https://crbug.com/1329288): Remove this call when the Feed position experiment is
+        // TODO(crbug.com/40226731): Remove this call when the Feed position experiment is
         // cleaned up.
         updateMargins();
     }
@@ -921,13 +918,13 @@ public class NewTabPage
     /**
      * Returns an arbitrary int value stored in the last committed navigation entry. If some step
      * fails then the default is returned instead.
+     *
      * @param key The string previously used to tag this piece of data.
      * @param tab A tab that is used to access the NavigationController and the NavigationEntry
-     *            extras.
+     *     extras.
      * @param defaultValue The value to return if lookup or parsing is unsuccessful.
      * @return The value for the given key.
-     *
-     * TODO(https://crbug.com/941581): Refactor this to be reusable across NativePage components.
+     *     <p>TODO(crbug.com/40618119): Refactor this to be reusable across NativePage components.
      */
     private static int getIntFromNavigationEntry(String key, Tab tab, int defaultValue) {
         if (tab.getWebContents() == null) return defaultValue;
@@ -948,12 +945,12 @@ public class NewTabPage
     /**
      * Returns an arbitrary string value stored in the last committed navigation entry. If the look
      * up fails, an empty string is returned.
+     *
      * @param tab A tab that is used to access the NavigationController and the NavigationEntry
-     *            extras.
+     *     extras.
      * @param key The string previously used to tag this piece of data.
      * @return The value previously stored with the given key.
-     *
-     * TODO(https://crbug.com/941581): Refactor this to be reusable across NativePage components.
+     *     <p>TODO(crbug.com/40618119): Refactor this to be reusable across NativePage components.
      */
     public static String getStringFromNavigationEntry(Tab tab, String key) {
         if (tab.getWebContents() == null) return "";
@@ -1139,64 +1136,13 @@ public class NewTabPage
         return mTabObserver;
     }
 
-    /**
-     * @param isTopMargin True to return the top margin; False to return bottom margin.
-     * @return The top margin or bottom margin of the logo.
-     */
-    // TODO(https://crbug.com/1329288): Remove this method when the Feed position experiment is
-    // cleaned up.
-    private int getLogoMargin(boolean isTopMargin) {
-        if (FeedPositionUtils.isFeedPullUpEnabled() && mSearchProviderHasLogo) return 0;
-
-        return isTopMargin ? getLogoTopMargin() : getLogoBottomMargin();
-    }
-
-    private int getLogoTopMargin() {
-        Resources resources = mNewTabPageLayout.getResources();
-        if (mIsSurfacePolishEnabled && mSearchProviderHasLogo) {
-            if (StartSurfaceConfiguration.SURFACE_POLISH_LESS_BRAND_SPACE.getValue()
-                    && !mIsTablet) {
-                return LogoUtils.getTopMarginPolishedSmall(resources);
-
-            } else {
-                return LogoUtils.getTopMarginPolished(resources);
-            }
-        }
-
-        if (isNtpAsHomeSurfaceOnTablet() && mSearchProviderHasLogo) {
-            return resources.getDimensionPixelSize(R.dimen.ntp_logo_vertical_top_margin_tablet);
-        }
-
-        return resources.getDimensionPixelSize(R.dimen.ntp_logo_margin_top);
-    }
-
-    private int getLogoBottomMargin() {
-        Resources resources = mNewTabPageLayout.getResources();
-        if (mIsSurfacePolishEnabled && mSearchProviderHasLogo) {
-            if (StartSurfaceConfiguration.SURFACE_POLISH_LESS_BRAND_SPACE.getValue()
-                    && !mIsTablet) {
-                return LogoUtils.getBottomMarginPolishedSmall(resources);
-            } else {
-                return LogoUtils.getBottomMarginPolished(resources);
-            }
-        }
-
-        if (isNtpAsHomeSurfaceOnTablet() && mSearchProviderHasLogo) {
-            return resources.getDimensionPixelSize(R.dimen.ntp_logo_vertical_bottom_margin_tablet);
-        }
-
-        return resources.getDimensionPixelSize(R.dimen.ntp_logo_margin_bottom);
-    }
-
-    private void mayCreateSearchResumptionModule(
-            Profile profile, AutocompleteControllerProvider provider) {
+    private void mayCreateSearchResumptionModule(Profile profile) {
         // The module is disabled on tablets.
         if (mIsTablet) return;
 
         mSearchResumptionModuleCoordinator =
                 SearchResumptionModuleUtils.mayCreateSearchResumptionModule(
                         mNewTabPageLayout,
-                        provider,
                         mTabModelSelector.getCurrentModel(),
                         mTab,
                         profile,
@@ -1205,8 +1151,9 @@ public class NewTabPage
 
     /**
      * Shows the home surface UI on this NTP.
-     * TODO(crbug.com/1430906): Investigate better solution to show Home surface UI on NTP upon
+     * TODO(crbug.com/40263286): Investigate better solution to show Home surface UI on NTP upon
      * creation.
+     * to show Home surface UI on NTP upon creation.
      */
     public void showHomeSurfaceUi(Tab mostRecentTab) {
         if (mSingleTabSwitcherCoordinator == null) {
@@ -1359,14 +1306,6 @@ public class NewTabPage
 
     public boolean getSnapshotSingleTabCardChangedForTesting() {
         return mSnapshotSingleTabCardChanged;
-    }
-
-    /**
-     * Returns whether Chrome is running on tablet with NTP as home surface enabled. Returns false
-     * if Chrome is running on phone.
-     */
-    private boolean isNtpAsHomeSurfaceOnTablet() {
-        return mIsNtpAsHomeSurfaceEnabled && mIsTablet;
     }
 
     @Override

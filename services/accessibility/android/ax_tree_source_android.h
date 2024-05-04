@@ -30,11 +30,16 @@ class AXTreeSourceAndroidTest;
 
 using AXTreeAndroidSerializer = ui::AXTreeSerializer<
     AccessibilityInfoDataWrapper*,
-    std::vector<raw_ptr<AccessibilityInfoDataWrapper, VectorExperimental>>>;
+    std::vector<raw_ptr<AccessibilityInfoDataWrapper, VectorExperimental>>,
+    ui::AXTreeUpdate*,
+    ui::AXTreeData*,
+    ui::AXNodeData>;
 
 // This class represents the accessibility tree from the focused ARC window.
 class AXTreeSourceAndroid
-    : public ui::AXTreeSource<AccessibilityInfoDataWrapper*>,
+    : public ui::AXTreeSource<AccessibilityInfoDataWrapper*,
+                              ui::AXTreeData*,
+                              ui::AXNodeData>,
       public ui::AXActionHandler {
  public:
   class Delegate {

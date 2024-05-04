@@ -24,7 +24,7 @@ namespace net {
 // exclusion, where cookie inclusion is represented by the absence of any
 // exclusion reasons. Also marks whether a cookie should be warned about, e.g.
 // for deprecation or intervention reasons.
-// TODO(crbug.com/1310444): Improve serialization validation comments.
+// TODO(crbug.com/40219875): Improve serialization validation comments.
 class NET_EXPORT CookieInclusionStatus {
  public:
   // Types of reasons why a cookie might be excluded.
@@ -62,7 +62,7 @@ class NET_EXPORT CookieInclusionStatus {
 
     // Cookie was malformed and could not be stored, due to problem(s) while
     // parsing.
-    // TODO(crbug.com/1228815): Use more specific reasons for parsing errors.
+    // TODO(crbug.com/40189703): Use more specific reasons for parsing errors.
     EXCLUDE_FAILURE_TO_STORE = 10,
     // Attempted to set a cookie from a scheme that does not support cookies.
     EXCLUDE_NONCOOKIEABLE_SCHEME = 11,
@@ -403,7 +403,7 @@ class NET_EXPORT CookieInclusionStatus {
 
   // Validates mojo data, since mojo does not support bitsets. ExemptionReason
   // is omitted intendedly.
-  // TODO(crbug.com/1310444): Improve serialization validation comments
+  // TODO(crbug.com/40219875): Improve serialization validation comments
   // and check for mutually exclusive values.
   static bool ValidateExclusionAndWarningFromWire(uint32_t exclusion_reasons,
                                                   uint32_t warning_reasons);
@@ -417,11 +417,9 @@ class NET_EXPORT CookieInclusionStatus {
       ExemptionReason exemption = ExemptionReason::kNone,
       bool use_literal = false);
 
-  // Returns true if the cookie was excluded because of user preferences.
-  // HasOnlyExclusionReason(EXCLUDE_USER_PREFERENCES) will not return true for
-  // third-party cookies blocked in sites in the same First-Party Set. See
-  // https://crbug.com/1366868.
-  bool ExcludedByUserPreferences() const;
+  // Returns true if the cookie was excluded because of user preferences or
+  // 3PCD.
+  bool ExcludedByUserPreferencesOrTPCD() const;
 
   void ResetForTesting() {
     exclusion_reasons_.reset();

@@ -40,9 +40,9 @@
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
 #if BUILDFLAG(IS_WIN)
-#include "base/win/base_win_buildflags.h"
-
 #include <windows.h>
+
+#include "base/win/base_win_buildflags.h"
 #endif
 
 namespace {
@@ -183,7 +183,7 @@ MULTIPROCESS_TEST_MAIN(SleepyChildProcess) {
   return 0;
 }
 
-// TODO(https://crbug.com/726484): Enable these tests on Fuchsia when
+// TODO(crbug.com/42050607): Enable these tests on Fuchsia when
 // CreationTime() is implemented.
 TEST_F(ProcessTest, CreationTimeCurrentProcess) {
   // The current process creation time should be less than or equal to the
@@ -509,7 +509,7 @@ MULTIPROCESS_TEST_MAIN(ProcessThreadBackgroundingMain) {
   PlatformThreadHandle handle1, handle2, handle3;
   FunctionTestThread thread1, thread2, thread3;
   base::test::ScopedFeatureList scoped_feature_list(kSetThreadBgForBgProcess);
-  PlatformThreadChromeOS::InitFeaturesPostFieldTrial();
+  PlatformThreadChromeOS::InitializeFeatures();
   PlatformThread::SetCurrentThreadType(ThreadType::kCompositing);
 
   // Register signal handler to be notified to create threads after backgrounding.
@@ -556,7 +556,7 @@ TEST_F(ProcessTest, ProcessThreadBackgrounding) {
   }
 
   base::test::ScopedFeatureList scoped_feature_list(kSetThreadBgForBgProcess);
-  PlatformThreadChromeOS::InitFeaturesPostFieldTrial();
+  PlatformThreadChromeOS::InitializeFeatures();
 
   // Register signal handlers to be notified of events in child process.
   signal(SIGUSR1, sig_prebg_threads_created_handler);
@@ -601,7 +601,7 @@ MULTIPROCESS_TEST_MAIN(ProcessRTAudioBgMain) {
   PlatformThreadHandle handle1;
   RTAudioFunctionTestThread thread1;
   base::test::ScopedFeatureList scoped_feature_list(kSetThreadBgForBgProcess);
-  PlatformThreadChromeOS::InitFeaturesPostFieldTrial();
+  PlatformThreadChromeOS::InitializeFeatures();
   PlatformThread::SetCurrentThreadType(ThreadType::kRealtimeAudio);
 
   if (!PlatformThread::Create(0, &thread1, &handle1)) {
@@ -625,7 +625,7 @@ TEST_F(ProcessTest, ProcessRTAudioBg) {
   }
 
   base::test::ScopedFeatureList scoped_feature_list(kSetThreadBgForBgProcess);
-  PlatformThreadChromeOS::InitFeaturesPostFieldTrial();
+  PlatformThreadChromeOS::InitializeFeatures();
 
   // Register signal handler to check if RT thread was created by child process.
   signal(SIGUSR1, sig_audio_rt_threads_created_handler);
@@ -665,7 +665,7 @@ MULTIPROCESS_TEST_MAIN(ProcessRTDisplayBgMain) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
       {kSetThreadBgForBgProcess, kSetRtForDisplayThreads}, {});
-  PlatformThreadChromeOS::InitFeaturesPostFieldTrial();
+  PlatformThreadChromeOS::InitializeFeatures();
 
   PlatformThread::SetCurrentThreadType(ThreadType::kCompositing);
 
@@ -692,7 +692,7 @@ TEST_F(ProcessTest, ProcessRTDisplayBg) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
       {kSetThreadBgForBgProcess, kSetRtForDisplayThreads}, {});
-  PlatformThreadChromeOS::InitFeaturesPostFieldTrial();
+  PlatformThreadChromeOS::InitializeFeatures();
 
   // Register signal handler to check if RT thread was created by child process.
   signal(SIGUSR1, sig_display_rt_threads_created_handler);

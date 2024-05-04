@@ -28,10 +28,6 @@ class PaintWorkletLayerPainter;
 class ProxyImpl;
 class RenderFrameMetadataObserver;
 
-namespace devtools_instrumentation {
-struct ScopedCommitTrace;
-}
-
 // This class aggregates all interactions that the impl side of the compositor
 // needs to have with the main side.
 // The class is created and lives on the main thread.
@@ -54,7 +50,6 @@ class CC_EXPORT ProxyMain : public Proxy {
     COMMIT_PIPELINE_STAGE,
   };
 
-  void DidReceiveCompositorFrameAck();
   void BeginMainFrameNotExpectedSoon();
   void BeginMainFrameNotExpectedUntil(base::TimeTicks time);
   void DidCommitAndDrawFrame(int source_frame_number);
@@ -69,9 +64,9 @@ class CC_EXPORT ProxyMain : public Proxy {
       uint32_t frame_token,
       std::vector<PresentationTimeCallbackBuffer::Callback>
           presentation_callbacks,
-      std::vector<PresentationTimeCallbackBuffer::SuccessfulCallback>
+      std::vector<PresentationTimeCallbackBuffer::SuccessfulCallbackWithDetails>
           successful_presentation_callbacks,
-      const gfx::PresentationFeedback& feedback);
+      const viz::FrameTimingDetails& frame_timing_details);
   void NotifyThroughputTrackerResults(CustomTrackerResults results);
   void DidObserveFirstScrollDelay(int source_frame_number,
                                   base::TimeDelta first_scroll_delay,
@@ -179,10 +174,6 @@ class CC_EXPORT ProxyMain : public Proxy {
 
   // Only used when defer_commits_ is active and must be set in such cases.
   base::TimeTicks commits_restart_time_;
-
-  // TODO(paint-dev): It is not clear how to best show the interlacing of main
-  // thread tasks with commit (non-blocking commit) (crbug.com/1277952).
-  std::unique_ptr<devtools_instrumentation::ScopedCommitTrace> commit_trace_;
 
   // ProxyImpl is created and destroyed on the impl thread, and should only be
   // accessed on the impl thread.

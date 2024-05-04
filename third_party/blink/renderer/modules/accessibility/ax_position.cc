@@ -13,7 +13,8 @@
 #include "third_party/blink/renderer/core/editing/position_with_affinity.h"
 #include "third_party/blink/renderer/core/layout/inline/inline_node.h"
 #include "third_party/blink/renderer/core/layout/inline/offset_mapping.h"
-#include "third_party/blink/renderer/modules/accessibility/ax_layout_object.h"
+#include "third_party/blink/renderer/core/layout/list/list_marker.h"
+#include "third_party/blink/renderer/modules/accessibility/ax_node_object.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_object.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_object_cache_impl.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
@@ -24,7 +25,7 @@ namespace blink {
 const AXPosition AXPosition::CreatePositionBeforeObject(
     const AXObject& child,
     const AXPositionAdjustmentBehavior adjustment_behavior) {
-  if (child.IsDetached() || !child.AccessibilityIsIncludedInTree())
+  if (child.IsDetached() || !child.IsIncludedInTree())
     return {};
 
   // If |child| is a text object, but not a text control, make behavior the same
@@ -53,7 +54,7 @@ const AXPosition AXPosition::CreatePositionBeforeObject(
 const AXPosition AXPosition::CreatePositionAfterObject(
     const AXObject& child,
     const AXPositionAdjustmentBehavior adjustment_behavior) {
-  if (child.IsDetached() || !child.AccessibilityIsIncludedInTree())
+  if (child.IsDetached() || !child.IsIncludedInTree())
     return {};
 
   // If |child| is a text object, but not a text control, make behavior the same
@@ -100,7 +101,7 @@ const AXPosition AXPosition::CreateFirstPositionInObject(
   // invalid position, because child count is not always accurate for such
   // objects.
   const AXObject* unignored_container =
-      !container.AccessibilityIsIncludedInTree()
+      !container.IsIncludedInTree()
           ? container.ParentObjectIncludedInTree()
           : &container;
   DCHECK(unignored_container);
@@ -135,7 +136,7 @@ const AXPosition AXPosition::CreateLastPositionInObject(
   // invalid position, because child count is not always accurate for such
   // objects.
   const AXObject* unignored_container =
-      !container.AccessibilityIsIncludedInTree()
+      !container.IsIncludedInTree()
           ? container.ParentObjectIncludedInTree()
           : &container;
   DCHECK(unignored_container);
@@ -195,7 +196,7 @@ const AXPosition AXPosition::FromPosition(
     return {};
 
   if (container_node->IsTextNode()) {
-    if (!container->AccessibilityIsIncludedInTree()) {
+    if (!container->IsIncludedInTree()) {
       // Find the closest DOM sibling that is unignored in the accessibility
       // tree.
       switch (adjustment_behavior) {
@@ -291,7 +292,7 @@ const AXPosition AXPosition::FromPosition(
   }
 
   DCHECK(container_node->IsContainerNode());
-  if (!container->AccessibilityIsIncludedInTree()) {
+  if (!container->IsIncludedInTree()) {
     container = container->ParentObjectIncludedInTree();
     if (!container)
       return {};
@@ -314,7 +315,7 @@ const AXPosition AXPosition::FromPosition(
       // |ax_child| might be nullptr because not all DOM nodes can have AX
       // objects. For example, the "head" element has no corresponding AX
       // object.
-      if (!ax_child || !ax_child->AccessibilityIsIncludedInTree()) {
+      if (!ax_child || !ax_child->IsIncludedInTree()) {
         // Find the closest DOM sibling that is present and unignored in the
         // accessibility tree.
         switch (adjustment_behavior) {
@@ -689,14 +690,14 @@ const AXPosition AXPosition::AsUnignoredPosition(
   // Case 1.
   // Neither text positions nor "after children" positions have a |child|
   // object.
-  if (!container->AccessibilityIsIncludedInTree() && child) {
+  if (!container->IsIncludedInTree() && child) {
     // |CreatePositionBeforeObject| already finds the unignored parent before
     // creating the new position, so we don't need to replicate the logic here.
     return CreatePositionBeforeObject(*child, adjustment_behavior);
   }
 
   // Cases 2 and 3.
-  if (!container->AccessibilityIsIncludedInTree()) {
+  if (!container->IsIncludedInTree()) {
     // Case 2.
     if (IsTextPosition()) {
       if (!container->ParentObjectIncludedInTree())
@@ -727,7 +728,7 @@ const AXPosition AXPosition::AsUnignoredPosition(
   }
 
   // Case 4.
-  if (child && !child->AccessibilityIsIncludedInTree()) {
+  if (child && !child->IsIncludedInTree()) {
     switch (adjustment_behavior) {
       case AXPositionAdjustmentBehavior::kMoveRight:
         return CreateLastPositionInObject(*container);
@@ -800,11 +801,16 @@ const AXPosition AXPosition::AsValidDOMPosition(
   if (container->GetNode() && !container->GetNode()->IsMarkerPseudoElement())
     return *this;
 
-  DCHECK(IsA<AXLayoutObject>(container))
+  LayoutObject* container_layout_object = container->GetLayoutObject();
+  DCHECK(container_layout_object)
       << "Non virtual and non mock AX objects that are not associated to a DOM "
          "node should have an associated layout object.";
-  const Node* container_node =
-      To<AXLayoutObject>(container)->GetNodeOrContainingBlockNode();
+  const Node* container_node = container->GetNode();
+  if (auto* list_marker = ListMarker::Get(container_layout_object)) {
+    // Return the originating list item node.
+    container_node = list_marker->ListItem(*container_layout_object)->GetNode();
+  }
+
   DCHECK(container_node) << "All anonymous layout objects and list markers "
                             "should have a containing block element.";
   DCHECK(!container->IsDetached());
@@ -1001,13 +1007,13 @@ String AXPosition::ToString() const {
   StringBuilder builder;
   if (IsTextPosition()) {
     builder.Append("AX text position in ");
-    builder.Append(container_object_->ToString());
+    builder.Append(container_object_->ToString(/*verbose*/false));
     builder.AppendFormat(", %d", TextOffset());
     return builder.ToString();
   }
 
   builder.Append("AX object anchored position in ");
-  builder.Append(container_object_->ToString());
+  builder.Append(container_object_->ToString(/*verbose*/false));
   builder.AppendFormat(", %d", ChildIndex());
   return builder.ToString();
 }
@@ -1070,7 +1076,7 @@ const AXObject* AXPosition::FindNeighboringUnignoredObject(
       while ((next_node = NodeTraversal::NextIncludingPseudo(*next_node,
                                                              container_node))) {
         const AXObject* next_object = ax_object_cache_impl->Get(next_node);
-        if (next_object && next_object->AccessibilityIsIncludedInTree())
+        if (next_object && next_object->IsIncludedInTree())
           return next_object;
       }
       return nullptr;
@@ -1088,7 +1094,7 @@ const AXObject* AXPosition::FindNeighboringUnignoredObject(
              previous_node != container_node) {
         const AXObject* previous_object =
             ax_object_cache_impl->Get(previous_node);
-        if (previous_object && previous_object->AccessibilityIsIncludedInTree())
+        if (previous_object && previous_object->IsIncludedInTree())
           return previous_object;
       }
       return nullptr;

@@ -39,7 +39,6 @@ import org.chromium.chrome.browser.ChromeInactivityTracker;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.back_press.BackPressManager;
-import org.chromium.chrome.browser.feed.FeedFeatures;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.homepage.HomepageManager;
 import org.chromium.chrome.browser.homepage.HomepagePolicyManager;
@@ -52,9 +51,6 @@ import org.chromium.chrome.browser.new_tab_url.DseNewTabUrlManager;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.ChromeSharedPreferences;
-import org.chromium.chrome.browser.preferences.Pref;
-import org.chromium.chrome.browser.preferences.PrefChangeRegistrar;
-import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.profiles.ProfileManager;
 import org.chromium.chrome.browser.segmentation_platform.SegmentationPlatformServiceFactory;
 import org.chromium.chrome.browser.tab.Tab;
@@ -70,7 +66,6 @@ import org.chromium.chrome.browser.ui.native_page.NativePage;
 import org.chromium.chrome.browser.util.BrowserUiUtils;
 import org.chromium.chrome.browser.util.BrowserUiUtils.HostSurface;
 import org.chromium.chrome.browser.util.BrowserUiUtils.ModuleTypeOnStartAndNtp;
-import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
 import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
 import org.chromium.chrome.features.start_surface.StartSurfaceState;
 import org.chromium.chrome.features.start_surface.StartSurfaceUserData;
@@ -81,7 +76,6 @@ import org.chromium.components.segmentation_platform.ClassificationResult;
 import org.chromium.components.segmentation_platform.PredictionOptions;
 import org.chromium.components.segmentation_platform.SegmentationPlatformService;
 import org.chromium.components.segmentation_platform.prediction_status.PredictionStatus;
-import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.common.ResourceRequestBody;
 import org.chromium.ui.base.DeviceFormFactor;
@@ -90,6 +84,7 @@ import org.chromium.url.GURL;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.Locale;
 
 /**
  * This is a utility class for managing features related to returning to Chrome after haven't used
@@ -519,13 +514,14 @@ public final class ReturnToChromeUtil {
 
     /**
      * Returns whether to use Chrome's homepage. This function doesn't distinguish whether to show
-     * NTP or Start though. If checking whether to show Start as homepage, use
-     * {@link ReturnToChromeUtil#shouldShowStartSurfaceAsTheHomePage(Context)} instead.
+     * NTP or Start though. If checking whether to show Start as homepage, use {@link
+     * ReturnToChromeUtil#shouldShowStartSurfaceAsTheHomePage(Context)} instead.
      */
     @VisibleForTesting
     public static boolean useChromeHomepage() {
-        GURL homePageGurl = HomepageManager.getHomepageGurl();
-        return HomepageManager.isHomepageEnabled()
+        HomepageManager homepageManager = HomepageManager.getInstance();
+        GURL homePageGurl = homepageManager.getHomepageGurl();
+        return homepageManager.isHomepageEnabled()
                 && ((HomepagePolicyManager.isInitializedWithNative()
                                 || sSkipInitializationCheckForTesting)
                         && (homePageGurl.isEmpty() || UrlUtilities.isNtpUrl(homePageGurl)));
@@ -550,34 +546,18 @@ public final class ReturnToChromeUtil {
     }
 
     /**
-     * Returns whether Start Surface is enabled in the given context.
-     * This includes checks of:
-     * 1) whether home page is enabled and whether it is Chrome' home page url;
-     * 2) whether Start surface is enabled with current accessibility settings;
-     * 3) whether it is on phone.
+     * Returns whether Start Surface is enabled in the given context. This includes checks of: 1)
+     * whether home page is enabled; 2) whether it is on phone; 3) whether show NTP at start up is
+     * not enabled.
+     *
      * @param context The activity context.
      */
     public static boolean isStartSurfaceEnabled(Context context) {
-        // When creating initial tab, i.e. cold start without restored tabs, we should only show
-        // StartSurface as the HomePage if Single Pane is enabled, HomePage is not customized, not
-        // on tablet, accessibility is not enabled or the tab group continuation feature is enabled.
         return (!ChromeFeatureList.sShowNtpAtStartupAndroid.isEnabled())
                 && (!DseNewTabUrlManager.isNewTabSearchEngineUrlAndroidEnabled()
                         || DseNewTabUrlManager.isDefaultSearchEngineGoogle())
                 && StartSurfaceConfiguration.isStartSurfaceFlagEnabled()
-                && !shouldHideStartSurfaceWithAccessibilityOn(context)
                 && !DeviceFormFactor.isNonMultiDisplayContextOnTablet(context);
-    }
-
-    /**
-     * Returns whether start surface should be hidden when accessibility is enabled. If it's true,
-     * NTP is shown as homepage. Also, when time threshold is reached, grid tab switcher or overview
-     * list layout is shown instead of start surface.
-     */
-    public static boolean shouldHideStartSurfaceWithAccessibilityOn(Context context) {
-        // TODO(crbug.com/1127732): Move this method back to StartSurfaceConfiguration.
-        return ChromeAccessibilityUtil.get().isAccessibilityEnabled()
-                && !(ChromeFeatureList.sStartSurfaceWithAccessibility.isEnabled());
     }
 
     /**
@@ -750,11 +730,15 @@ public final class ReturnToChromeUtil {
                             boolean isTabExpected =
                                     TextUtils.equals(lastActiveTabUrl, tab.getUrl().getSpec());
                             assert isTabExpected
-                                    : "The URL of first Tab restored doesn't match the URL of the"
-                                            + " last active Tab read from the Tab state metadata"
-                                            + " file! Existing Tab count = %d"
-                                            + tabModelSelector.getModel(false).getCount()
-                                            + ".";
+                                    : String.format(
+                                            Locale.ENGLISH,
+                                            "The URL of first Tab restored doesn't match the URL of"
+                                                + " the last active Tab read from the Tab state"
+                                                + " metadata file! Existing Tab count = %d. Last"
+                                                + " active tab = %s. First tab = %s.",
+                                            tabModelSelector.getModel(false).getCount(),
+                                            lastActiveTabUrl,
+                                            tab.getUrl().getSpec());
                             if (!isTabExpected) {
                                 return;
                             }
@@ -891,32 +875,6 @@ public final class ReturnToChromeUtil {
                         == ActiveTabState.NTP);
     }
 
-    /**
-     * Add an observer to keep {@link ChromePreferenceKeys#FEED_ARTICLES_LIST_VISIBLE} consistent
-     * with {@link Pref#ARTICLES_LIST_VISIBLE}.
-     */
-    public static void addFeedVisibilityObserver() {
-        updateFeedVisibility();
-        PrefChangeRegistrar prefChangeRegistrar = new PrefChangeRegistrar();
-        prefChangeRegistrar.addObserver(
-                Pref.ARTICLES_LIST_VISIBLE, ReturnToChromeUtil::updateFeedVisibility);
-    }
-
-    private static void updateFeedVisibility() {
-        Profile profile = ProfileManager.getLastUsedRegularProfile();
-        ChromeSharedPreferences.getInstance()
-                .writeBoolean(
-                        ChromePreferenceKeys.FEED_ARTICLES_LIST_VISIBLE,
-                        FeedFeatures.isFeedEnabled(profile)
-                                && UserPrefs.get(profile).getBoolean(Pref.ARTICLES_LIST_VISIBLE));
-    }
-
-    /** Returns whether the Feed articles are visible. */
-    public static boolean getFeedArticlesVisibility() {
-        return ChromeSharedPreferences.getInstance()
-                .readBoolean(ChromePreferenceKeys.FEED_ARTICLES_LIST_VISIBLE, true);
-    }
-
     /** Returns whether to move logo out of toolbar from Start surface. */
     public static boolean moveDownLogo() {
         return ChromeFeatureList.sSurfacePolish.isEnabled()
@@ -973,6 +931,8 @@ public final class ReturnToChromeUtil {
     }
 
     public static boolean isScrollableMvtEnabled(Context context) {
+        // TODO(b/331667743): Clean up the flag for scrollable mvt while cleaning up surface polish
+        // code.
         boolean isSurfacePolishEnabled = ChromeFeatureList.sSurfacePolish.isEnabled();
         if (!DeviceFormFactor.isNonMultiDisplayContextOnTablet(context)) {
             // On phones, parameter SURFACE_POLISH_SCROLLABLE_MVT is checked when feature flag
@@ -987,8 +947,7 @@ public final class ReturnToChromeUtil {
         // enabled.
         return isSurfacePolishEnabled
                 ? true
-                : ChromeFeatureList.isEnabled(ChromeFeatureList.SHOW_SCROLLABLE_MVT_ON_NTP_ANDROID)
-                        && ChromeFeatureList.sStartSurfaceOnTablet.isEnabled();
+                : ChromeFeatureList.isEnabled(ChromeFeatureList.SHOW_SCROLLABLE_MVT_ON_NTP_ANDROID);
     }
 
     /**
@@ -1047,7 +1006,7 @@ public final class ReturnToChromeUtil {
         }
     }
 
-    // TODO(https://crbug.com/1450578): Removes this histogram once we understand the root cause of
+    // TODO(crbug.com/40270227): Removes this histogram once we understand the root cause of
     // the crash.
     private static void recordFailToShowHomeSurfaceReasonUma(
             @FailToShowHomeSurfaceReason int reason) {

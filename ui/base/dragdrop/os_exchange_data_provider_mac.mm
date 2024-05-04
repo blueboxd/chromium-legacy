@@ -6,8 +6,11 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include <optional>
+
 #include "base/apple/foundation_util.h"
 #include "base/check_op.h"
+#include "base/containers/span.h"
 #include "base/memory/ptr_util.h"
 #include "base/notreached.h"
 #include "base/pickle.h"
@@ -223,12 +226,10 @@ void OSExchangeDataProviderMac::SetPickledData(
   [GetPasteboard() setData:ns_data forType:format.ToNSString()];
 }
 
-bool OSExchangeDataProviderMac::GetString(std::u16string* data) const {
-  DCHECK(data);
+std::optional<std::u16string> OSExchangeDataProviderMac::GetString() const {
   NSString* item = [GetPasteboard() stringForType:NSPasteboardTypeString];
   if (item) {
-    *data = base::SysNSStringToUTF16(item);
-    return true;
+    return base::SysNSStringToUTF16(item);
   }
 
   // There was no NSString, check for an NSURL.
@@ -240,7 +241,7 @@ bool OSExchangeDataProviderMac::GetString(std::u16string* data) const {
     *data = base::UTF8ToUTF16(url.spec());
   }
 
-  return result;
+  return std::nullopt;
 }
 
 bool OSExchangeDataProviderMac::GetURLAndTitle(FilenameToURLPolicy policy,
@@ -299,29 +300,24 @@ bool OSExchangeDataProviderMac::GetFilenames(
   return true;
 }
 
-bool OSExchangeDataProviderMac::GetPickledData(
-    const ClipboardFormatType& format,
-    base::Pickle* data) const {
-  DCHECK(data);
+std::optional<base::Pickle> OSExchangeDataProviderMac::GetPickledData(
+    const ClipboardFormatType& format) const {
   NSData* ns_data = [GetPasteboard() dataForType:format.ToNSString()];
   if (!ns_data) {
     return false;
   }
 
-  *data =
-      base::Pickle(static_cast<const char*>([ns_data bytes]), [ns_data length]);
-  return true;
+  base::span<const uint8_t> data_span(
+      reinterpret_cast<const uint8_t*>(ns_data.bytes), ns_data.length);
+  return base::Pickle::WithData(data_span);
 }
 
 bool OSExchangeDataProviderMac::HasString() const {
-  std::u16string string;
-  return GetString(&string);
+  return GetString().has_value();
 }
 
 bool OSExchangeDataProviderMac::HasURL(FilenameToURLPolicy policy) const {
-  GURL url;
-  std::u16string title;
-  return GetURLAndTitle(policy, &url, &title);
+  return GetURLAndTitle(policy).has_value();
 }
 
 bool OSExchangeDataProviderMac::HasFile() const {
@@ -339,11 +335,10 @@ void OSExchangeDataProviderMac::SetFileContents(
   NOTIMPLEMENTED();
 }
 
-bool OSExchangeDataProviderMac::GetFileContents(
-    base::FilePath* filename,
-    std::string* file_contents) const {
+std::optional<OSExchangeDataProvider::FileContentsInfo>
+OSExchangeDataProviderMac::GetFileContents() const {
   NOTIMPLEMENTED();
-  return false;
+  return std::nullopt;
 }
 
 bool OSExchangeDataProviderMac::HasFileContents() const {

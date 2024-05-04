@@ -37,6 +37,7 @@ import org.chromium.chrome.browser.browserservices.intents.WebApkExtras;
 import org.chromium.chrome.browser.browserservices.intents.WebappExtras;
 import org.chromium.chrome.browser.browserservices.intents.WebappInfo;
 import org.chromium.chrome.browser.browsing_data.UrlFilters;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.webapps.WebappRegistry.GetWebApkSpecificsImplSetWebappInfoForTesting;
 import org.chromium.chrome.test.util.browser.webapps.WebApkIntentDataProviderBuilder;
 import org.chromium.components.sync.protocol.WebApkSpecifics;
@@ -98,13 +99,17 @@ public class WebappRegistryTest {
 
     private static class TestWebApkSyncServiceJni implements WebApkSyncService.Natives {
         @Override
-        public void onWebApkUsed(byte[] webApkSpecifics) {}
+        public void onWebApkUsed(byte[] webApkSpecifics, boolean isInstall) {}
 
         @Override
         public void onWebApkUninstalled(String manifestId) {}
 
         @Override
         public void removeOldWebAPKsFromSync(long currentTimeMsSinceUnixEpoch) {}
+
+        @Override
+        public void fetchRestorableApps(
+                Profile profile, WebApkSyncService.PwaRestorableListCallback callback) {}
     }
 
     @Before

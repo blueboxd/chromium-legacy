@@ -14,7 +14,6 @@
 #include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/command_buffer/service/context_state.h"
 #include "gpu/command_buffer/service/feature_info.h"
-#include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/ref_counted_lock.h"
 #include "gpu/command_buffer/service/scheduler.h"
 #include "gpu/command_buffer/service/scheduler_task_runner.h"
@@ -101,9 +100,11 @@ StreamTexture::StreamTexture(
     mojo::PendingAssociatedReceiver<mojom::StreamTexture> receiver,
     scoped_refptr<SharedContextState> context_state)
     : RefCountedLockHelperDrDc(CreateDrDcLockIfNeeded()),
-      texture_owner_(TextureOwner::Create(GetTextureOwnerMode(),
-                                          context_state,
-                                          GetDrDcLock())),
+      texture_owner_(
+          TextureOwner::Create(GetTextureOwnerMode(),
+                               context_state,
+                               GetDrDcLock(),
+                               TextureOwnerCodecType::kStreamTexture)),
       has_pending_frame_(false),
       channel_(channel),
       route_id_(route_id),

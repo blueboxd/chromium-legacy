@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <string_view>
 #include <vector>
 
 #import "ios/web/public/web_client.h"
@@ -29,7 +30,7 @@ class ChromeWebClient : public web::WebClient {
   bool IsAppSpecificURL(const GURL& url) const override;
   std::string GetUserAgent(web::UserAgentType type) const override;
   std::u16string GetLocalizedString(int message_id) const override;
-  base::StringPiece GetDataResource(
+  std::string_view GetDataResource(
       int resource_id,
       ui::ResourceScaleFactor scale_factor) const override;
   base::RefCountedMemory* GetDataResourceBytes(int resource_id) const override;
@@ -61,8 +62,6 @@ class ChromeWebClient : public web::WebClient {
       web::WebState* web_state) const override;
   bool IsPointingToSameDocument(const GURL& url1,
                                 const GURL& url2) const override;
-  bool IsMixedContentAutoupgradeEnabled(
-      web::BrowserState* browser_state) const override;
   bool IsBrowserLockdownModeEnabled(web::BrowserState* browser_state) override;
   void SetOSLockdownModeEnabled(web::BrowserState* browser_state,
                                 bool enabled) override;

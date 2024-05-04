@@ -18,7 +18,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/web_applications/test/isolated_web_app_test_utils.h"
 #include "chrome/browser/web_applications/isolated_web_apps/install_isolated_web_app_command.h"
-#include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_location.h"
+#include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_install_source.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_trust_checker.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_url_info.h"
 #include "chrome/browser/web_applications/isolated_web_apps/test/test_signed_web_bundle_builder.h"
@@ -64,8 +64,7 @@ std::u16string MessagesAsString(
   return text;
 }
 
-class IsolatedWebAppURLLoaderFactoryBrowserTest
-    : public WebAppControllerBrowserTest {
+class IsolatedWebAppURLLoaderFactoryBrowserTest : public WebAppBrowserTestBase {
  public:
   IsolatedWebAppURLLoaderFactoryBrowserTest() {
     scoped_feature_list_.InitAndEnableFeature(features::kIsolatedWebApps);
@@ -74,7 +73,7 @@ class IsolatedWebAppURLLoaderFactoryBrowserTest
  protected:
   void TearDown() override {
     SetTrustedWebBundleIdsForTesting({});
-    WebAppControllerBrowserTest::TearDown();
+    WebAppBrowserTestBase::TearDown();
   }
 
   void TrustWebBundleId() {
@@ -120,7 +119,10 @@ class IsolatedWebAppURLLoaderFactoryBrowserTest
                                           InstallIsolatedWebAppCommandError>>
         future;
     provider().scheduler().InstallIsolatedWebApp(
-        url_info_, InstalledBundle{.path = bundle_path},
+        url_info_,
+        IsolatedWebAppInstallSource::FromGraphicalInstaller(
+            IwaSourceBundleProdModeWithFileOp(
+                bundle_path, IwaSourceBundleProdFileOp::kCopy)),
         /*expected_version=*/std::nullopt, /*optional_keep_alive=*/nullptr,
         /*optional_profile_keep_alive=*/nullptr, future.GetCallback());
     return future.Take();
@@ -128,8 +130,8 @@ class IsolatedWebAppURLLoaderFactoryBrowserTest
 
   base::FilePath SignAndWriteBundleToDisk(
       const std::vector<uint8_t>& unsigned_bundle) {
-    web_package::WebBundleSigner::KeyPair key_pair(kTestPublicKey,
-                                                   kTestPrivateKey);
+    web_package::WebBundleSigner::Ed25519KeyPair key_pair(kTestPublicKey,
+                                                          kTestPrivateKey);
     auto signed_bundle =
         web_package::WebBundleSigner::SignBundle(unsigned_bundle, {key_pair});
     return WriteBundleToDisk(signed_bundle);
@@ -418,7 +420,10 @@ IN_PROC_BROWSER_TEST_F(IsolatedWebAppURLLoaderFactoryBrowserTest,
       future;
   provider().scheduler().InstallIsolatedWebApp(
       IsolatedWebAppUrlInfo::CreateFromSignedWebBundleId(bundle.id),
-      InstalledBundle{.path = bundle_path}, base::Version("1.0.0"),
+      IsolatedWebAppInstallSource::FromGraphicalInstaller(
+          IwaSourceBundleProdModeWithFileOp(bundle_path,
+                                            IwaSourceBundleProdFileOp::kCopy)),
+      base::Version("1.0.0"),
       /*optional_keep_alive=*/nullptr, /*optional_profile_keep_alive=*/nullptr,
       future.GetCallback());
   EXPECT_THAT(future.Take(), HasValue());

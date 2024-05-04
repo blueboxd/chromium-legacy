@@ -42,7 +42,7 @@ const char kPageLoadInternalSoftNavigationFromStartInvalidTiming[] =
 // should not be renumbered and the numeric values should not be reused. These
 // entries should be kept in sync with the definition in
 // tools/metrics/histograms/enums.xml
-// TODO(crbug.com/1489583): Remove the code here and related code once the bug
+// TODO(crbug.com/40074158): Remove the code here and related code once the bug
 // is resolved.
 enum class SoftNavigationFromStartInvalidTimingReasons {
   kSoftNavStartTimeIsZeroAndLtNavStart = 0,
@@ -80,8 +80,9 @@ class MetricsRenderFrameObserver : public content::RenderFrameObserver,
   // RenderFrameObserver implementation
   void DidChangePerformanceTiming() override;
   void DidObserveUserInteraction(base::TimeTicks max_event_start,
-                                 base::TimeTicks max_event_end,
                                  base::TimeTicks max_event_queued_main_thread,
+                                 base::TimeTicks max_event_commit_finish,
+                                 base::TimeTicks max_event_end,
                                  blink::UserInteractionType interaction_type,
                                  uint64_t interaction_offset) override;
   void DidChangeCpuTiming(base::TimeDelta time) override;

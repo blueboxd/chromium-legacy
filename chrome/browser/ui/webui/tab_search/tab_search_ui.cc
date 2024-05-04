@@ -17,7 +17,6 @@
 #include "chrome/browser/ui/webui/tab_search/tab_search_prefs.h"
 #include "chrome/browser/ui/webui/tab_search/tab_search_sync_handler.h"
 #include "chrome/browser/ui/webui/webui_util.h"
-#include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/tab_search_resources.h"
 #include "chrome/grit/tab_search_resources_map.h"
@@ -33,8 +32,8 @@
 #include "ui/webui/color_change_listener/color_change_handler.h"
 
 TabSearchUI::TabSearchUI(content::WebUI* web_ui)
-    : ui::MojoBubbleWebUIController(web_ui,
-                                    true /* Needed for webui browser tests */),
+    : TopChromeWebUIController(web_ui,
+                               true /* Needed for webui browser tests */),
       webui_load_timer_(web_ui->GetWebContents(),
                         "Tabs.TabSearch.WebUI.LoadDocumentTime",
                         "Tabs.TabSearch.WebUI.LoadCompletedTime") {
@@ -72,21 +71,16 @@ TabSearchUI::TabSearchUI(content::WebUI* web_ui)
       {"tabCount", IDS_TAB_SEARCH_TAB_COUNT},
       {"tabSearchTabName", IDS_TAB_SEARCH_TAB_NAME},
       // Tab organization UI strings
+      {"clearAriaLabel", IDS_TAB_ORGANIZATION_CLEAR_ARIA_LABEL},
+      {"clearSuggestions", IDS_TAB_ORGANIZATION_CLEAR_SUGGESTIONS},
       {"createGroup", IDS_TAB_ORGANIZATION_CREATE_GROUP},
       {"createGroups", IDS_TAB_ORGANIZATION_CREATE_GROUPS},
       {"dismiss", IDS_TAB_ORGANIZATION_DISMISS},
-      {"failureBodyGenericPreLink",
-       IDS_TAB_ORGANIZATION_FAILURE_BODY_GENERIC_PRE_LINK},
-      {"failureBodyGroupingPreLink",
-       IDS_TAB_ORGANIZATION_FAILURE_BODY_GROUPING_PRE_LINK},
-      {"failureBodyGenericLink",
-       IDS_TAB_ORGANIZATION_FAILURE_BODY_GENERIC_LINK},
-      {"failureBodyGroupingLink",
-       IDS_TAB_ORGANIZATION_FAILURE_BODY_GROUPING_LINK},
-      {"failureBodyGenericPostLink",
-       IDS_TAB_ORGANIZATION_FAILURE_BODY_GENERIC_POST_LINK},
-      {"failureBodyGroupingPostLink",
-       IDS_TAB_ORGANIZATION_FAILURE_BODY_GROUPING_POST_LINK},
+      {"editAriaLabel", IDS_TAB_ORGANIZATION_EDIT_ARIA_LABEL},
+      {"failureBodyGeneric",
+       IDS_TAB_ORGANIZATION_FAILURE_BODY_GENERIC},
+      {"failureBodyGrouping",
+       IDS_TAB_ORGANIZATION_FAILURE_BODY_GROUPING},
       {"failureTitleGeneric", IDS_TAB_ORGANIZATION_FAILURE_TITLE_GENERIC},
       {"failureTitleGrouping", IDS_TAB_ORGANIZATION_FAILURE_TITLE_GROUPING},
       {"inProgressTitle", IDS_TAB_ORGANIZATION_IN_PROGRESS_TITLE},
@@ -94,6 +88,7 @@ TabSearchUI::TabSearchUI(content::WebUI* web_ui)
       {"learnMore", IDS_TAB_ORGANIZATION_LEARN_MORE},
       {"learnMoreAriaLabel", IDS_TAB_ORGANIZATION_LEARN_MORE_ARIA_LABEL},
       {"learnMoreDisclaimer", IDS_TAB_ORGANIZATION_DISCLAIMER},
+      {"newTabs", IDS_TAB_ORGANIZATION_NEW_TABS},
       {"notStartedBody", IDS_TAB_ORGANIZATION_NOT_STARTED_BODY},
       {"notStartedBodyFRE", IDS_TAB_ORGANIZATION_NOT_STARTED_BODY_FRE},
       {"notStartedBodyLinkFRE", IDS_TAB_ORGANIZATION_NOT_STARTED_BODY_LINK_FRE},
@@ -125,7 +120,7 @@ TabSearchUI::TabSearchUI(content::WebUI* web_ui)
        IDS_TAB_ORGANIZATION_NOT_STARTED_BUTTON_UNSYNCED_HISTORY_ARIA_LABEL},
       {"notStartedTitle", IDS_TAB_ORGANIZATION_NOT_STARTED_TITLE},
       {"notStartedTitleFRE", IDS_TAB_ORGANIZATION_NOT_STARTED_TITLE_FRE},
-      {"clearSuggestions", IDS_TAB_ORGANIZATION_CLEAR_SUGGESTIONS},
+      {"rejectAriaLabel", IDS_TAB_ORGANIZATION_REJECT_ARIA_LABEL},
       {"successTitle", IDS_TAB_ORGANIZATION_SUCCESS_TITLE},
       {"successTitleSingle", IDS_TAB_ORGANIZATION_SUCCESS_TITLE_SINGLE},
       {"successTitleMulti", IDS_TAB_ORGANIZATION_SUCCESS_TITLE_MULTI},
@@ -148,10 +143,6 @@ TabSearchUI::TabSearchUI(content::WebUI* web_ui)
   // Add the configuration parameters for fuzzy search.
   source->AddBoolean("useFuzzySearch", base::FeatureList::IsEnabled(
                                            features::kTabSearchFuzzySearch));
-
-  source->AddBoolean(
-      "useMetricsReporter",
-      base::FeatureList::IsEnabled(features::kTabSearchUseMetricsReporter));
 
   source->AddBoolean("searchIgnoreLocation",
                      features::kTabSearchSearchIgnoreLocation.Get());
@@ -188,6 +179,9 @@ TabSearchUI::TabSearchUI(content::WebUI* web_ui)
   source->AddBoolean(
       "multiTabOrganizationEnabled",
       base::FeatureList::IsEnabled(features::kMultiTabOrganization));
+  source->AddBoolean(
+      "tabReorganizationDividerEnabled",
+      base::FeatureList::IsEnabled(features::kTabReorganizationDivider));
 
   source->AddInteger("tabIndex", TabIndex());
   source->AddBoolean("showTabOrganizationFRE", ShowTabOrganizationFRE());

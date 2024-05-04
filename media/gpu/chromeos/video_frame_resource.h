@@ -35,7 +35,7 @@ class VideoFrameResource : public FrameResource {
   uint8_t* GetWritableVisibleData(size_t plane) override;
   size_t NumDmabufFds() const override;
   int GetDmabufFd(size_t i) const override;
-  scoped_refptr<gfx::NativePixmapDmaBuf> CreateNativePixmapDmaBuf()
+  scoped_refptr<const gfx::NativePixmapDmaBuf> GetNativePixmapDmaBuf()
       const override;
   gfx::GpuMemoryBufferHandle CreateGpuMemoryBufferHandle() const override;
   gfx::GpuMemoryBuffer* GetGpuMemoryBuffer() const override;
@@ -48,9 +48,6 @@ class VideoFrameResource : public FrameResource {
   const gfx::Size& coded_size() const override;
   const gfx::Rect& visible_rect() const override;
   const gfx::Size& natural_size() const override;
-  const std::optional<gpu::VulkanYCbCrInfo>& ycbcr_info() const override;
-  void set_ycbcr_info(
-      const std::optional<gpu::VulkanYCbCrInfo>& ycbcr_info) override;
   const VideoFrameMetadata& metadata() const override;
   VideoFrameMetadata& metadata() override;
   void set_metadata(const VideoFrameMetadata& metadata) override;

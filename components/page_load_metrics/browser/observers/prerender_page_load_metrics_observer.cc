@@ -6,6 +6,7 @@
 
 #include "base/metrics/histogram_functions.h"
 #include "components/page_load_metrics/browser/metrics_web_contents_observer.h"
+#include "components/page_load_metrics/browser/navigation_handle_user_data.h"
 #include "components/page_load_metrics/browser/observers/core/largest_contentful_paint_handler.h"
 #include "components/page_load_metrics/browser/page_load_metrics_util.h"
 #include "content/public/browser/navigation_handle.h"
@@ -81,7 +82,7 @@ page_load_metrics::PageLoadMetricsObserver::ObservePolicy
 PrerenderPageLoadMetricsObserver::OnFencedFramesStart(
     content::NavigationHandle* navigation_handle,
     const GURL& currently_committed_url) {
-  // TODO(https://crbug.com/1335481): Prerendering pages embedding FencedFrames
+  // TODO(crbug.com/40228553): Prerendering pages embedding FencedFrames
   // are not supported. So, this class doesn't need forwarding.
   DCHECK(!navigation_handle->IsInPrerenderedMainFrame());
   return STOP_OBSERVING;
@@ -95,7 +96,7 @@ PrerenderPageLoadMetricsObserver::OnPrerenderStart(
       internal::kPageLoadPrerenderObserverEvent,
       internal::PageLoadPrerenderObserverEvent::kOnPrerenderStart);
 
-  // TODO(https://crbug.com/1335481): Prerendering pages embedding FencedFrames
+  // TODO(crbug.com/40228553): Prerendering pages embedding FencedFrames
   // are not supported.
   DCHECK(navigation_handle->GetNavigatingFrameType() !=
          content::FrameType::kFencedFrameRoot);
@@ -137,10 +138,21 @@ void PrerenderPageLoadMetricsObserver::DidActivatePrerenderedPage(
         main_frame_resource_has_no_store_.value() ? 1 : 0);
   }
 
+  auto prerender_trigger_type =
+      page_load_metrics::NavigationHandleUserData::InitiatorLocation::kOther;
+  auto* navigation_userdata =
+      page_load_metrics::NavigationHandleUserData::GetForNavigationHandle(
+          *navigation_handle);
+  if (navigation_userdata) {
+    prerender_trigger_type = navigation_userdata->navigation_type();
+  }
+
   builder.SetWasPrerendered(true)
       .SetTiming_NavigationToActivation(
           navigation_to_activation.InMilliseconds())
-      .SetNavigation_PageTransition(navigation_handle->GetPageTransition());
+      .SetNavigation_PageTransition(navigation_handle->GetPageTransition())
+      .SetNavigation_InitiatorLocation(
+          static_cast<int>(prerender_trigger_type));
   builder.Record(ukm::UkmRecorder::Get());
 }
 
@@ -288,7 +300,7 @@ void PrerenderPageLoadMetricsObserver::RecordSessionEndHistograms(
   }
 
   // Record metrics only when a prerendered page is successfully activated.
-  // TODO(crbug.com/1364013): add tests to make sure that CLS and INP metrics
+  // TODO(crbug.com/40238929): add tests to make sure that CLS and INP metrics
   // are not recorded when prerendering is canceled.
   if (GetDelegate().GetPrerenderingState() ==
       page_load_metrics::PrerenderingState::kActivated) {

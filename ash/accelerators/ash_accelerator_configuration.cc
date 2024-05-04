@@ -157,9 +157,17 @@ std::vector<ash::AcceleratorData> GetDefaultAccelerators() {
   }
 
   if (ash::features::IsPickerUpdateEnabled()) {
-    AppendAcceleratorData(
-        accelerators, base::make_span(ash::kTogglePickerAcceleratorData,
-                                      ash::kTogglePickerAcceleratorDataLength));
+    if (ash::features::IsPickerFlipEnabled()) {
+      AppendAcceleratorData(
+          accelerators,
+          base::make_span(ash::kTogglePickerFlipAcceleratorData,
+                          ash::kTogglePickerFlipAcceleratorDataLength));
+    } else {
+      AppendAcceleratorData(
+          accelerators,
+          base::make_span(ash::kTogglePickerAcceleratorData,
+                          ash::kTogglePickerAcceleratorDataLength));
+    }
   }
 
   // Debug accelerators.
@@ -503,6 +511,21 @@ AcceleratorConfigResult AshAcceleratorConfiguration::DoRemoveAccelerator(
 
   // Remove accelerator from reverse lookup map.
   accelerator_to_id_.Erase(accelerator);
+
+  // Also remove accelerators in the reverse key_state.
+  ui::Accelerator accelerator_reverse_state(accelerator);
+  accelerator_reverse_state.set_key_state(
+      accelerator.key_state() == ui::Accelerator::KeyState::PRESSED
+          ? ui::Accelerator::KeyState::RELEASED
+          : ui::Accelerator::KeyState::PRESSED);
+
+  const AcceleratorAction* reverse_key_state_id =
+      accelerator_to_id_.Find(accelerator_reverse_state);
+
+  if (reverse_key_state_id && *reverse_key_state_id == action_id) {
+    std::erase(found_accelerators_iter->second, accelerator_reverse_state);
+    accelerator_to_id_.Erase(accelerator_reverse_state);
+  }
 
   // Store the final state of `action_id`.
   if (save_override) {

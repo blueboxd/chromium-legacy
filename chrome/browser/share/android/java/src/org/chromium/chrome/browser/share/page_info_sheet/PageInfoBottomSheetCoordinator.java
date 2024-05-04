@@ -26,13 +26,19 @@ public class PageInfoBottomSheetCoordinator {
     /** Interface that callers should use to provide page info and receive user events. */
     public static interface Delegate {
         /** Called by bottom sheet when user clicks the accept button. */
-        default void onAccept() {}
+        void onAccept();
 
         /** Called by bottom sheet when user clicks the cancel button. */
-        default void onCancel() {}
+        void onCancel();
 
-        /** Called by bottom sheet when user clicks the refresh button. */
-        default void onRefresh() {}
+        /** Called by bottom sheet when user clicks the learn more button. */
+        void onLearnMore();
+
+        /** Called by bottom sheet when user clicks the positive feedback button. */
+        void onPositiveFeedback();
+
+        /** Called by bottom sheet when user clicks the negative feedback button. */
+        void onNegativeFeedback();
 
         /** Returns the supplier of current page info contents. */
         ObservableSupplier<PageInfoContents> getContentSupplier();

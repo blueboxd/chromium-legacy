@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include "base/containers/to_vector.h"
 #include "base/test/gtest_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest-death-test.h"
@@ -46,7 +47,7 @@ class EnumSetDeathTest : public ::testing::Test {};
 TEST_F(EnumSetTest, ClassConstants) {
   EXPECT_EQ(TestEnum::TEST_MIN, TestEnumSet::kMinValue);
   EXPECT_EQ(TestEnum::TEST_MAX, TestEnumSet::kMaxValue);
-  EXPECT_EQ(static_cast<size_t>(5), TestEnumSet::kValueCount);
+  EXPECT_EQ(5u, TestEnumSet::kValueCount);
 }
 
 // Use static_assert to check that functions we expect to be compile time
@@ -67,8 +68,8 @@ TEST_F(EnumSetTest, ConstexprsAreValid) {
 
 TEST_F(EnumSetTest, DefaultConstructor) {
   const TestEnumSet enums;
-  EXPECT_TRUE(enums.Empty());
-  EXPECT_EQ(static_cast<size_t>(0), enums.Size());
+  EXPECT_TRUE(enums.empty());
+  EXPECT_EQ(0u, enums.size());
   EXPECT_FALSE(enums.Has(TestEnum::TEST_1));
   EXPECT_FALSE(enums.Has(TestEnum::TEST_2));
   EXPECT_FALSE(enums.Has(TestEnum::TEST_3));
@@ -78,8 +79,8 @@ TEST_F(EnumSetTest, DefaultConstructor) {
 
 TEST_F(EnumSetTest, OneArgConstructor) {
   const TestEnumSet enums = {TestEnum::TEST_4};
-  EXPECT_FALSE(enums.Empty());
-  EXPECT_EQ(static_cast<size_t>(1), enums.Size());
+  EXPECT_FALSE(enums.empty());
+  EXPECT_EQ(1u, enums.size());
   EXPECT_FALSE(enums.Has(TestEnum::TEST_1));
   EXPECT_FALSE(enums.Has(TestEnum::TEST_2));
   EXPECT_FALSE(enums.Has(TestEnum::TEST_3));
@@ -94,8 +95,8 @@ TEST_F(EnumSetTest, OneArgConstructorSize) {
 
 TEST_F(EnumSetTest, TwoArgConstructor) {
   const TestEnumSet enums = {TestEnum::TEST_4, TestEnum::TEST_2};
-  EXPECT_FALSE(enums.Empty());
-  EXPECT_EQ(static_cast<size_t>(2), enums.Size());
+  EXPECT_FALSE(enums.empty());
+  EXPECT_EQ(2u, enums.size());
   EXPECT_FALSE(enums.Has(TestEnum::TEST_1));
   EXPECT_TRUE(enums.Has(TestEnum::TEST_2));
   EXPECT_FALSE(enums.Has(TestEnum::TEST_3));
@@ -106,8 +107,8 @@ TEST_F(EnumSetTest, TwoArgConstructor) {
 TEST_F(EnumSetTest, ThreeArgConstructor) {
   const TestEnumSet enums = {TestEnum::TEST_4, TestEnum::TEST_2,
                              TestEnum::TEST_1};
-  EXPECT_FALSE(enums.Empty());
-  EXPECT_EQ(static_cast<size_t>(3), enums.Size());
+  EXPECT_FALSE(enums.empty());
+  EXPECT_EQ(3u, enums.size());
   EXPECT_TRUE(enums.Has(TestEnum::TEST_1));
   EXPECT_TRUE(enums.Has(TestEnum::TEST_2));
   EXPECT_FALSE(enums.Has(TestEnum::TEST_3));
@@ -124,8 +125,8 @@ TEST_F(EnumSetTest, DuplicatesInConstructor) {
 
 TEST_F(EnumSetTest, All) {
   const TestEnumSet enums(TestEnumSet::All());
-  EXPECT_FALSE(enums.Empty());
-  EXPECT_EQ(static_cast<size_t>(5), enums.Size());
+  EXPECT_FALSE(enums.empty());
+  EXPECT_EQ(5u, enums.size());
   EXPECT_TRUE(enums.Has(TestEnum::TEST_1));
   EXPECT_TRUE(enums.Has(TestEnum::TEST_2));
   EXPECT_TRUE(enums.Has(TestEnum::TEST_3));
@@ -135,8 +136,8 @@ TEST_F(EnumSetTest, All) {
 
 TEST_F(EnumSetTest, AllExtreme) {
   const TestEnumExtremeSet enums(TestEnumExtremeSet::All());
-  EXPECT_FALSE(enums.Empty());
-  EXPECT_EQ(static_cast<size_t>(64), enums.Size());
+  EXPECT_FALSE(enums.empty());
+  EXPECT_EQ(64u, enums.size());
   EXPECT_TRUE(enums.Has(TestEnumExtreme::TEST_0));
   EXPECT_TRUE(enums.Has(TestEnumExtreme::TEST_63));
   EXPECT_FALSE(enums.Has(TestEnumExtreme::TEST_64_OUT_OF_BOUNDS));
@@ -197,7 +198,7 @@ TEST_F(EnumSetTest, Remove) {
   EXPECT_EQ(TestEnumSet({TestEnum::TEST_5}), enums);
   enums.Remove(TestEnum::TEST_5);
   enums.Remove(TestEnum::TEST_6_OUT_OF_BOUNDS);
-  EXPECT_TRUE(enums.Empty());
+  EXPECT_TRUE(enums.empty());
 }
 
 TEST_F(EnumSetTest, RemoveAll) {
@@ -209,15 +210,15 @@ TEST_F(EnumSetTest, RemoveAll) {
 TEST_F(EnumSetTest, Clear) {
   TestEnumSet enums = {TestEnum::TEST_4, TestEnum::TEST_5};
   enums.Clear();
-  EXPECT_TRUE(enums.Empty());
+  EXPECT_TRUE(enums.empty());
 }
 
 TEST_F(EnumSetTest, Set) {
   TestEnumSet enums;
-  EXPECT_TRUE(enums.Empty());
+  EXPECT_TRUE(enums.empty());
 
   enums.PutOrRemove(TestEnum::TEST_3, false);
-  EXPECT_TRUE(enums.Empty());
+  EXPECT_TRUE(enums.empty());
 
   enums.PutOrRemove(TestEnum::TEST_4, true);
   EXPECT_EQ(enums, TestEnumSet({TestEnum::TEST_4}));
@@ -480,9 +481,9 @@ TEST_F(EnumSetTest, SparseEnum) {
   TestEnumSparseSet sparse;
   sparse.Put(TestEnumSparse::TEST_MIN);
   sparse.Put(TestEnumSparse::TEST_MAX);
-  EXPECT_EQ(sparse.Size(), 2u);
+  EXPECT_EQ(sparse.size(), 2u);
 
-  EXPECT_EQ(TestEnumSparseSet::All().Size(), 100u);
+  EXPECT_EQ(TestEnumSparseSet::All().size(), 100u);
 }
 
 TEST_F(EnumSetTest, SparseEnumSmall) {
@@ -498,13 +499,13 @@ TEST_F(EnumSetTest, SparseEnumSmall) {
   TestEnumSparseSet sparse;
   sparse.Put(TestEnumSparse::TEST_MIN);
   sparse.Put(TestEnumSparse::TEST_MAX);
-  EXPECT_EQ(sparse.Size(), 2u);
+  EXPECT_EQ(sparse.size(), 2u);
 
   // This may seem a little surprising! There are only 3 distinct values in
   // TestEnumSparse, so why does TestEnumSparseSet think it has 60 of them? This
   // is an artifact of EnumSet's design, as it has no way of knowing which
   // values between the min and max are actually named in the enum's definition.
-  EXPECT_EQ(TestEnumSparseSet::All().Size(), 60u);
+  EXPECT_EQ(TestEnumSparseSet::All().size(), 60u);
 }
 
 TEST_F(EnumSetDeathTest, CrashesOnOutOfRange) {
@@ -566,9 +567,9 @@ TEST_F(EnumSetDeathTest, EnumWithOnlyNegatives) {
 
 TEST_F(EnumSetDeathTest, VariadicConstructorCrashesOnOutOfRange) {
   // Constructor should crash given out-of-range values.
-  EXPECT_CHECK_DEATH(TestEnumSet({TestEnum::TEST_BELOW_MIN}).Empty());
-  EXPECT_CHECK_DEATH(TestEnumSet({TestEnum::TEST_BELOW_MIN_NEGATIVE}).Empty());
-  EXPECT_CHECK_DEATH(TestEnumSet({TestEnum::TEST_6_OUT_OF_BOUNDS}).Empty());
+  EXPECT_CHECK_DEATH(TestEnumSet({TestEnum::TEST_BELOW_MIN}).empty());
+  EXPECT_CHECK_DEATH(TestEnumSet({TestEnum::TEST_BELOW_MIN_NEGATIVE}).empty());
+  EXPECT_CHECK_DEATH(TestEnumSet({TestEnum::TEST_6_OUT_OF_BOUNDS}).empty());
 }
 
 TEST_F(EnumSetDeathTest, FromRangeCrashesOnBadInputs) {
@@ -622,9 +623,25 @@ TEST_F(EnumSetDeathTest, PutRangeCrashesOnBadInputs) {
       TestEnumSet().PutRange(TestEnum::TEST_2, TestEnum::TEST_1));
 }
 
+TEST_F(EnumSetTest, ToStringEmpty) {
+  const TestEnumSet enums;
+  EXPECT_THAT(enums.ToString(), testing::Eq("00000"));
+}
+
 TEST_F(EnumSetTest, ToString) {
   const TestEnumSet enums = {TestEnum::TEST_4};
   EXPECT_THAT(enums.ToString(), testing::Eq("01000"));
+}
+
+TEST_F(EnumSetTest, ToVectorEmpty) {
+  const TestEnumSet enums;
+  EXPECT_TRUE(ToVector(enums).empty());
+}
+
+TEST_F(EnumSetTest, ToVector) {
+  const TestEnumSet enums = {TestEnum::TEST_2, TestEnum::TEST_4};
+  EXPECT_THAT(ToVector(enums),
+              testing::ElementsAre(TestEnum::TEST_2, TestEnum::TEST_4));
 }
 
 }  // namespace

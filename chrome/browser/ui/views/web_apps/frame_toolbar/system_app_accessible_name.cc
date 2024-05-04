@@ -14,14 +14,15 @@
 #include "ui/views/view.h"
 
 SystemAppAccessibleName::SystemAppAccessibleName(const std::u16string& app_name)
-    // TODO(crbug.com/1275657): Clean up the empty string (or remove this class)
-    // after reaching a consensus with UX on button search behavior.
+    // TODO(crbug.com/40808413): Clean up the empty string (or remove this
+    // class) after reaching a consensus with UX on button search behavior.
     : views::Label(u" ",
                    ChromeTextContext::CONTEXT_DIALOG_BODY_TEXT_SMALL,
                    views::style::STYLE_PRIMARY),
       app_name_(app_name) {
   SetEnabledColor(SK_ColorTRANSPARENT);
   SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
+  SetAccessibilityProperties(ax::mojom::Role::kApplication, app_name_);
 }
 
 SystemAppAccessibleName::~SystemAppAccessibleName() = default;

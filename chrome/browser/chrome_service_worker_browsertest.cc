@@ -6,6 +6,7 @@
 // embedder.
 
 #include <optional>
+#include <string_view>
 
 #include "base/command_line.h"
 #include "base/files/file_util.h"
@@ -126,7 +127,7 @@ class ChromeServiceWorkerTest : public InProcessBrowserTest {
   ~ChromeServiceWorkerTest() override {}
 
   void WriteFile(const base::FilePath::StringType& filename,
-                 base::StringPiece contents) {
+                 std::string_view contents) {
     base::ScopedAllowBlockingForTesting allow_blocking;
     EXPECT_TRUE(base::WriteFile(service_worker_dir_.GetPath().Append(filename),
                                 contents));
@@ -323,9 +324,8 @@ IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerTest,
       kInstallAndWaitForActivatedPageWithModuleScript);
 }
 
-// TODO(crbug.com/1395715): The test is flaky. Re-enable it.
-#if BUILDFLAG(IS_FUCHSIA) || BUILDFLAG(IS_LINUX) || \
-    BUILDFLAG(IS_CHROMEOS_LACROS)
+// TODO(crbug.com/40882270): The test is flaky. Re-enable it.
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
 #define MAYBE_SubresourceCountUKM DISABLED_SubresourceCountUKM
 #else
 #define MAYBE_SubresourceCountUKM SubresourceCountUKM
@@ -450,8 +450,8 @@ IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerTest, MAYBE_SubresourceCountUKM) {
       entries[0], ukm::builders::ServiceWorker_OnLoad::kImageHandledName, 0);
 }
 
-// TODO(crbug.com/1395715): The test is flaky. Re-enable it.
-#if BUILDFLAG(IS_FUCHSIA)
+// TODO(crbug.com/40882270): The test is flaky. Re-enable it.
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
 #define MAYBE_SubresourceCountUMA DISABLED_SubresourceCountUMA
 #else
 #define MAYBE_SubresourceCountUMA SubresourceCountUMA
@@ -1089,7 +1089,7 @@ class StaticWebUIController : public content::WebUIController {
 
 class TestWebUIConfig : public content::WebUIConfig {
  public:
-  explicit TestWebUIConfig(base::StringPiece scheme, base::StringPiece host)
+  explicit TestWebUIConfig(std::string_view scheme, std::string_view host)
       : content::WebUIConfig(scheme, host) {
     data_source_key_ = this->host();
     if (this->scheme() == "chrome-untrusted") {

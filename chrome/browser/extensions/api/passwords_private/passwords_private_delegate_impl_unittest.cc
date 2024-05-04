@@ -48,6 +48,7 @@
 #include "chrome/browser/web_applications/web_app_id_constants.h"
 #include "chrome/browser/web_applications/web_contents/web_contents_manager.h"
 #include "chrome/browser/webapps/webapps_client_desktop.h"
+#include "chrome/browser/webauthn/change_pin_controller.h"
 #include "chrome/browser/webauthn/passkey_model_factory.h"
 #include "chrome/common/extensions/api/passwords_private.h"
 #include "chrome/test/base/test_browser_window.h"
@@ -159,6 +160,15 @@ class MockPasswordManagerPorter : public PasswordManagerPorterInterface {
                ImportResultsCallback results_callback),
               (override));
   MOCK_METHOD(void, ResetImporter, (bool delete_file), (override));
+};
+
+class MockChangePinController : public ChangePinController {
+ public:
+  MOCK_METHOD(bool, IsChangePinFlowAvailable, (), (override));
+  MOCK_METHOD(void,
+              StartChangePin,
+              (base::OnceCallback<void(bool)>),
+              (override));
 };
 
 class FakePasswordManagerPorter : public PasswordManagerPorterInterface {
@@ -412,6 +422,7 @@ class PasswordsPrivateDelegateImplTest : public WebAppTest {
   scoped_refptr<TestPasswordStore> profile_store_;
   scoped_refptr<TestPasswordStore> account_store_;
   raw_ptr<ui::TestClipboard, DanglingUntriaged> test_clipboard_;
+  MockChangePinController change_pin_controller_;
 
  private:
   base::HistogramTester histogram_tester_;
@@ -444,6 +455,7 @@ void PasswordsPrivateDelegateImplTest::SetUp() {
                                          -> std::unique_ptr<KeyedService> {
         return std::make_unique<password_manager::MockPasswordSenderService>();
       }));
+  ChangePinController::set_instance_for_testing(&change_pin_controller_);
 }
 
 void PasswordsPrivateDelegateImplTest::SetUpPasswordStores(
@@ -1034,7 +1046,7 @@ TEST_F(PasswordsPrivateDelegateImplTest, TestCopyPasswordCallbackResult) {
 }
 
 TEST_F(PasswordsPrivateDelegateImplTest,
-       TestShouldReauthForOptInIfImplicitSignin) {
+       TestShouldNotReauthForOptInIfExplicitSigninUIEnabled) {
   base::test::ScopedFeatureList scoped_feature_list(
       switches::kExplicitBrowserSigninUIOnDesktop);
   profile()->GetPrefs()->SetBoolean(prefs::kExplicitBrowserSignin, false);
@@ -1047,32 +1059,15 @@ TEST_F(PasswordsPrivateDelegateImplTest,
 
   EXPECT_CALL(*client,
               TriggerReauthForPrimaryAccount(
-                  signin_metrics::ReauthAccessPoint::kPasswordSettings, _));
+                  signin_metrics::ReauthAccessPoint::kPasswordSettings, _))
+      .Times(0);
 
   auto delegate = CreateDelegate();
   delegate->SetAccountStorageOptIn(true, web_contents.get());
-}
 
-TEST_F(PasswordsPrivateDelegateImplTest,
-       TestShouldNotReauthForOptInIfExplicitSignin) {
-  base::test::ScopedFeatureList scoped_feature_list(
-      switches::kExplicitBrowserSigninUIOnDesktop);
   profile()->GetPrefs()->SetBoolean(prefs::kExplicitBrowserSignin, true);
 
-  std::unique_ptr<content::WebContents> web_contents = CreateWebContents();
-  auto* client =
-      MockPasswordManagerClient::CreateForWebContentsAndGet(web_contents.get());
-  ON_CALL(*(client->GetPasswordFeatureManager()), IsOptedInForAccountStorage)
-      .WillByDefault(Return(false));
-
-  // Optin without reauth when the signin is explicit.
-  EXPECT_CALL(*client,
-              TriggerReauthForPrimaryAccount(
-                  signin_metrics::ReauthAccessPoint::kPasswordSettings, _))
-      .Times(0);
-  EXPECT_CALL(*(client->GetPasswordFeatureManager()), OptInToAccountStorage);
-
-  auto delegate = CreateDelegate();
+  // Implicit and explicit sign-ins are treated alike.
   delegate->SetAccountStorageOptIn(true, web_contents.get());
 }
 
@@ -1498,7 +1493,9 @@ TEST_F(PasswordsPrivateDelegateImplTest,
   EXPECT_TRUE(profile()->GetPrefs()->GetBoolean(
       password_manager::prefs::kBiometricAuthenticationBeforeFilling));
 }
+#endif
 
+#if BUILDFLAG(IS_MAC)
 // Checks if authentication is triggered.
 TEST_F(PasswordsPrivateDelegateImplTest,
        SwitchBiometricAuthBeforeFillingCancelsLastTry) {
@@ -1518,10 +1515,31 @@ TEST_F(PasswordsPrivateDelegateImplTest,
   // Invoking authentication again will cancel previous request.
   EXPECT_CALL(*biometric_authenticator_ptr, Cancel);
   ExpectAuthentication(delegate, /*successful=*/true);
-
   delegate->SwitchBiometricAuthBeforeFillingState(web_contents.get());
 }
+#endif
 
+#if BUILDFLAG(IS_WIN)
+// Checks if authentication is triggered.
+TEST_F(PasswordsPrivateDelegateImplTest,
+       SwitchBiometricAuthBeforeFillingDoesntCancelLastTry) {
+  std::unique_ptr<content::WebContents> web_contents = CreateWebContents();
+
+  auto biometric_authenticator =
+      std::make_unique<device_reauth::MockDeviceAuthenticator>();
+  auto* biometric_authenticator_ptr = biometric_authenticator.get();
+
+  auto delegate = CreateDelegate();
+  EXPECT_CALL(*biometric_authenticator_ptr, AuthenticateWithMessage);
+  delegate->SetDeviceAuthenticatorForTesting(
+      std::move(biometric_authenticator));
+
+  delegate->SwitchBiometricAuthBeforeFillingState(web_contents.get());
+
+  // Invoking authentication again should not cancel previous request.
+  EXPECT_CALL(*biometric_authenticator_ptr, Cancel).Times(0);
+  delegate->SwitchBiometricAuthBeforeFillingState(web_contents.get());
+}
 #endif
 
 // TODO(http://crbug.com/1455574) Re-enable.
@@ -1847,6 +1865,16 @@ TEST_F(PasswordsPrivateDelegateImplTest, ShareNonExistentPassword) {
   delegate->SharePassword(/*id=*/100, recipients);
 }
 
+TEST_F(PasswordsPrivateDelegateImplTest, IsChangePinFlowAvailable) {
+  auto delegate = CreateDelegate();
+  std::unique_ptr<content::WebContents> web_contents = CreateWebContents();
+
+  EXPECT_CALL(change_pin_controller_, IsChangePinFlowAvailable)
+      .WillOnce(Return(true));
+
+  EXPECT_TRUE(delegate->IsPasswordManagerPinAvailable(web_contents.get()));
+}
+
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_CHROMEOS)
 class PasswordsPrivateDelegateImplMockTaskEnvironmentTest
     : public testing::Test {
@@ -1921,7 +1949,7 @@ TEST_F(PasswordsPrivateDelegateImplMockTaskEnvironmentTest,
   delegate->RequestCredentialsDetails({0}, callback.Get(), web_contents_ptr);
 
   histogram_tester().ExpectUniqueTimeSample(
-      "PasswordManager.Settings.AuthenticationTime", base::Seconds(10), 1);
+      "PasswordManager.Settings.AuthenticationTime2", base::Seconds(10), 1);
 }
 
 TEST_F(PasswordsPrivateDelegateImplMockTaskEnvironmentTest,
@@ -1952,6 +1980,7 @@ TEST_F(PasswordsPrivateDelegateImplMockTaskEnvironmentTest,
   std::move(auth_result_callback).Run(true);
 }
 
+#if !BUILDFLAG(IS_WIN)
 TEST_F(PasswordsPrivateDelegateImplMockTaskEnvironmentTest,
        DestroyingDelegateWhileExportOngoing) {
   content::WebContents* web_contents_ptr =
@@ -1976,8 +2005,8 @@ TEST_F(PasswordsPrivateDelegateImplMockTaskEnvironmentTest,
   EXPECT_CALL(*biometric_authenticator_ptr, Cancel);
   delegate.reset();
 }
-
-#endif
+#endif  // !BUILDFLAG(IS_WIN)
+#endif  // BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_CHROMEOS)
 
 class PasswordsPrivateDelegateImplFetchFamilyMembersTest
     : public PasswordsPrivateDelegateImplTest {

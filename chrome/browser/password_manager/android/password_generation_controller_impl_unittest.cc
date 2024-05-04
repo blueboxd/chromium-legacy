@@ -175,7 +175,7 @@ class PasswordGenerationControllerTest
         std::make_unique<ContentPasswordManagerDriver>(
             main_rfh(), test_pwd_manager_client_.get());
 
-    // TODO(crbug.com/969051): Remove once kAutofillKeyboardAccessory is
+    // TODO(crbug.com/41462048): Remove once kAutofillKeyboardAccessory is
     // enabled.
     password_autofill_manager_ =
         std::make_unique<password_manager::PasswordAutofillManager>(
@@ -380,7 +380,7 @@ TEST_F(PasswordGenerationControllerTest,
 
 TEST_F(PasswordGenerationControllerTest,
        SetActiveFrameOnAutomaticGenerationAvailable) {
-  // TODO(crbug.com/1421753): Refactor PasswordGenerationController so that
+  // TODO(crbug.com/40259397): Refactor PasswordGenerationController so that
   // OnAccessoryActionAvailabilityChanged would be called only once. Right now
   // it's called twice: the first call resets the manual filling controller
   // status and the second one sets it according to the focused input.

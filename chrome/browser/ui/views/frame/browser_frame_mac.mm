@@ -218,22 +218,6 @@ void BrowserFrameMac::ValidateUserInterfaceItem(
           !media_router::MediaRouterEnabled(browser->profile());
       break;
     }
-    case IDC_DISTILL_PAGE: {
-      // Enable the reader mode option if the page is a distilled page
-      // or if the page is distillable.
-      content::WebContents* web_contents =
-          browser->tab_strip_model()->GetActiveWebContents();
-      std::optional<dom_distiller::DistillabilityResult> distillability =
-          dom_distiller::GetLatestResult(web_contents);
-      bool distillable =
-          distillability && distillability.value().is_distillable;
-      bool is_distilled = dom_distiller::url_utils::IsDistilledPage(
-          web_contents->GetLastCommittedURL());
-      result->new_title.emplace(l10n_util::GetStringUTF16(
-          is_distilled ? IDS_EXIT_DISTILLED_PAGE : IDS_DISTILL_PAGE));
-      result->enable = distillable || is_distilled;
-      break;
-    }
     default:
       break;
   }
@@ -361,7 +345,15 @@ void BrowserFrameMac::PopulateCreateWindowParams(
                        NSWindowStyleMaskMiniaturizable |
                        NSWindowStyleMaskResizable;
 
-  if (browser_view_->GetIsNormalType() || browser_view_->GetIsWebAppType()) {
+  if (browser_view_->GetIsPictureInPictureType()) {
+    // Picture in Picture windows, even if they are part of a web app, draw
+    // their own title bar and decorations.  Note that `GetIsWebAppType()` might
+    // also be true here, so it's important that this check is first.
+    params->window_class = remote_cocoa::mojom::WindowClass::kFrameless;
+    params->style_mask = NSWindowStyleMaskFullSizeContentView |
+                         NSWindowStyleMaskTitled | NSWindowStyleMaskResizable;
+  } else if (browser_view_->GetIsNormalType() ||
+             browser_view_->GetIsWebAppType()) {
     params->window_class = remote_cocoa::mojom::WindowClass::kBrowser;
     params->style_mask |= NSWindowStyleMaskFullSizeContentView;
 
@@ -371,10 +363,6 @@ void BrowserFrameMac::PopulateCreateWindowParams(
     // Hosted apps draw their own window title.
     if (browser_view_->GetIsWebAppType())
       params->window_title_hidden = true;
-  } else if (browser_view_->GetIsPictureInPictureType()) {
-    params->window_class = remote_cocoa::mojom::WindowClass::kFrameless;
-    params->style_mask = NSWindowStyleMaskFullSizeContentView |
-                         NSWindowStyleMaskTitled | NSWindowStyleMaskResizable;
   } else {
     params->window_class = remote_cocoa::mojom::WindowClass::kDefault;
   }

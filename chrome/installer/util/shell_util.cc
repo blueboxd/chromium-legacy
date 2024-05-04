@@ -10,9 +10,11 @@
 #include "chrome/installer/util/shell_util.h"
 
 #include <objbase.h>
+
+#include <shobjidl.h>
+
 #include <shellapi.h>
 #include <shlobj.h>
-#include <shobjidl.h>
 #include <wrl/client.h>
 
 #include <algorithm>
@@ -124,7 +126,7 @@ std::wstring GetBrowserProgId(const std::wstring& suffix) {
       base::StrCat({install_static::GetBrowserProgIdPrefix(), suffix}), suffix);
 }
 
-// TODO(https://crbug.com/414141): Add method to get the PDF viewer's ProgId,
+// TODO(crbug.com/40384442): Add method to get the PDF viewer's ProgId,
 // which will also require LegalizeNewProgId.
 
 // Returns the browser's application name. This application name will be
@@ -2507,7 +2509,7 @@ bool ShellUtil::DeleteFileAssociations(const std::wstring& app_prog_id) {
   const std::vector<std::wstring> file_handler_prog_ids =
       ShellUtil::GetFileHandlerProgIdsForAppId(app_prog_id);
 
-  // TODO(crbug.com/1247824): This can be replaced with DeleteApplicationClass
+  // TODO(crbug.com/40197012): This can be replaced with DeleteApplicationClass
   // once currently installed web apps have been upgraded to use per-file
   // handler ProgIds. Those web apps were only installed in Origin Trials so
   // this is just best effort.

@@ -52,10 +52,12 @@
 #include "third_party/blink/renderer/core/css/style_image_cache.h"
 #include "third_party/blink/renderer/core/css/style_invalidation_root.h"
 #include "third_party/blink/renderer/core/css/style_recalc_root.h"
+#include "third_party/blink/renderer/core/css/try_value_flips.h"
 #include "third_party/blink/renderer/core/css/vision_deficiency.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/layout/geometry/axis.h"
+#include "third_party/blink/renderer/core/style/position_try_options.h"
 #include "third_party/blink/renderer/platform/bindings/name_client.h"
 #include "third_party/blink/renderer/platform/fonts/font_selector_client.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
@@ -613,12 +615,14 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   // after all.
   void UpdateStyleForNonEligibleContainer(Element& container);
   // Updates the style of `element`, and descendants if needed.
-  // The provided `try_set` represents the declaration block from a
-  // @position-try rule.
+  // The provided `try_set` represents the declaration block from
+  // a @position-try rule. The specified TryTacticList will cause
+  // CSSFlipRevertValues to appear in the try-tactics layer (see
+  // OutOfFlowData::try_tactics_set_).
   void UpdateStyleForOutOfFlow(Element& element,
                                const CSSPropertyValueSet* try_set,
+                               const TryTacticList&,
                                AnchorEvaluator*);
-  StyleRulePositionFallback* GetPositionFallbackRule(const ScopedCSSName&);
   StyleRulePositionTry* GetPositionTryRule(const ScopedCSSName&);
   void RecalcStyle();
 
@@ -633,12 +637,17 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   bool InPositionTryStyleRecalc() const {
     return in_position_try_style_recalc_;
   }
-  // If we are in a container query style recalc, return the container element,
-  // otherwise return nullptr.
-  Element* GetContainerForContainerStyleRecalc() const {
-    // The To<Element>() should not fail because the style_recalc_root_ is set
-    // to the container element when doing a container query style recalc.
-    if (InContainerQueryStyleRecalc()) {
+  // Get the root element of an interleaving recalc, if any. This function will
+  // return nullptr if the interleaving root is a PseudoElement, because such
+  // elements can't be recalc roots.
+  //
+  // See StyleEngine::UpdateStyleAndLayoutTreeForContainer.
+  // See StyleEngine::UpdateStyleForOutOfFlow.
+  Element* GetInterleavingRecalcRoot() const {
+    if (InContainerQueryStyleRecalc() || InPositionTryStyleRecalc()) {
+      // During interleaved style recalc, the recalc root is either set
+      // to the interleaving root (always an Element), or nullptr (if it's
+      // a PseudoElement).
       return To<Element>(style_recalc_root_.GetRootNode());
     }
     return nullptr;
@@ -1073,6 +1082,10 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   // Cached because it can be expensive to compute anew for each element.
   // You must call UpdateViewportSize() once before resolving style.
   CSSToLengthConversionData::ViewportSize viewport_size_;
+
+  // Stores various "flip sets" used to implement <try-tactic> from
+  // CSS Anchor Positioning.
+  TryValueFlips try_value_flips_;
 };
 
 void PossiblyScheduleNthPseudoInvalidations(Node& node);

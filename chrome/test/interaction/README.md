@@ -169,6 +169,7 @@ Verbs fall into a number of different categories:
     - `NavigateWebContents()` [Browser]
     - `WaitForWebContentsReady()` [Browser]
     - `WaitForWebContentsNavigation()` [Browser]
+    - `WaitForWebContentsPainted()` [Browser]
     - `FocusWebContents()` [Browser]
     - `WaitForStateChange()` [Browser]
 - **Javascript** verbs execute javascript in an
@@ -204,6 +205,8 @@ Verbs fall into a number of different categories:
      build, environment, or platform. See
      [Handling Incompatibilities](#handling-incompatibilities) for more
      information and best practices.
+   - `Screenshot()` and `ScreenshotSurface()` take Skia Gold screenshots of a
+     particular element or window.
 
 Example with mouse input:
 ```cpp
@@ -726,9 +729,9 @@ RunTestSequence(
 );
 ```
 
-For `PollElement()` and `PollView()`, the state value is an `absl::optional` and
+For `PollElement()` and `PollView()`, the state value is an `std::optional` and
 if the element or view is not present in the target context the value will be
-`absl::nullopt`.
+`std::nullopt`.
 
 Be aware that for transient or short-lived states, the correct value might be
 missed between polls, so polling should only be used for states that should

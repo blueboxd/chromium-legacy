@@ -48,9 +48,13 @@ namespace gfx {
 class Size;
 }  // namespace gfx
 
-namespace ui::mojom {
+namespace ui {
+struct AXUpdatesAndEvents;
+struct AXLocationChanges;
+namespace mojom {
 enum class VirtualKeyboardMode;
-}  // namespace ui::mojom
+}  // namespace mojom
+}  // namespace ui
 
 namespace network::mojom {
 class SharedDictionaryAccessDetails;
@@ -67,8 +71,6 @@ class RenderViewHost;
 class RenderWidgetHost;
 class Page;
 class WebContents;
-struct AXEventNotificationDetails;
-struct AXLocationChangeNotificationDetails;
 struct CookieAccessDetails;
 struct EntryChangedDetails;
 struct FocusedNodeDetails;
@@ -226,6 +228,16 @@ class CONTENT_EXPORT WebContentsObserver : public base::CheckedObserver {
   // 2. The top-level frame is navigated cross-document.
   virtual void OnCaptureHandleConfigUpdate(
       const blink::mojom::CaptureHandleConfig& config) {}
+
+  // This method is invoked when a write-access Captured Surface Control API is
+  // successfully invoked by a tab-capturing Web application. These include:
+  // * CaptureController.sendWheel()
+  // * CaptureController.setZoomLevel()
+  //
+  // Observing this occurrence allows us to update the UX accordingly; for
+  // example, show the user an indicator that the capturing tab is being
+  // controlled by the capturing tab.
+  virtual void OnCapturedSurfaceControl() {}
 
   // This method is invoked when the `blink::WebView` of the current
   // RenderViewHost is ready, e.g. because we recreated it after a crash.
@@ -496,6 +508,14 @@ class CONTENT_EXPORT WebContentsObserver : public base::CheckedObserver {
       NavigationHandle* navigation_handle,
       const network::mojom::SharedDictionaryAccessDetails& details) {}
 
+  // Called when the renderer requests access to storage.
+  // Observers will be notified about the type of storage access requested
+  // as well as whether access was blocked or not.
+  virtual void NotifyStorageAccessed(
+      RenderFrameHost* render_frame_host,
+      blink::mojom::StorageTypeAccessed storage_type,
+      bool blocked) {}
+
   // This method is invoked when a new non-pending navigation entry is created.
   // This corresponds to one NavigationController entry being created
   // (in the case of new navigations) or renavigated to (for back/forward
@@ -742,6 +762,10 @@ class CONTENT_EXPORT WebContentsObserver : public base::CheckedObserver {
 
   // Invoked when the beforeunload handler fires. |proceed| is set to true if
   // the beforeunload can safely proceed, otherwise it should be interrupted.
+  //
+  // Note: this is used to observe when the window/tab is being closed, or a
+  // GuestView is being attached to the current frame, and NOT used to observe
+  // the BeforeUnload events triggered by navigations.
   virtual void BeforeUnloadFired(bool proceed) {}
 
   // Invoked when a user cancels a before unload dialog.
@@ -754,9 +778,9 @@ class CONTENT_EXPORT WebContentsObserver : public base::CheckedObserver {
   // from a render frame, but only when the accessibility mode has the
   // ui::AXMode::kWebContents flag set.
   virtual void AccessibilityEventReceived(
-      const AXEventNotificationDetails& details) {}
+      const ui::AXUpdatesAndEvents& details) {}
   virtual void AccessibilityLocationChangesReceived(
-      const std::vector<AXLocationChangeNotificationDetails>& details) {}
+      const std::vector<ui::AXLocationChanges>& details) {}
 
   // Invoked when theme color is changed.
   virtual void DidChangeThemeColor() {}
@@ -888,6 +912,12 @@ class CONTENT_EXPORT WebContentsObserver : public base::CheckedObserver {
   // before its `WasDiscarded` is set to true and before it's attached to a tab
   // strip.
   virtual void AboutToBeDiscarded(WebContents* new_contents) {}
+
+  // Called when WebContents received a request to lock the keyboard.
+  virtual void KeyboardLockRequested() {}
+
+  // Called when WebContents received a request to lock the pointer.
+  virtual void PointerLockRequested() {}
 
   WebContents* web_contents() const;
 

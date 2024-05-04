@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_ALLOCATOR_PARTITION_ALLOCATOR_SRC_PARTITION_ALLOC_STARSCAN_PCSCAN_INTERNAL_H_
-#define BASE_ALLOCATOR_PARTITION_ALLOCATOR_SRC_PARTITION_ALLOC_STARSCAN_PCSCAN_INTERNAL_H_
+#ifndef PARTITION_ALLOC_STARSCAN_PCSCAN_INTERNAL_H_
+#define PARTITION_ALLOC_STARSCAN_PCSCAN_INTERNAL_H_
 
 #include <array>
 #include <functional>
@@ -91,11 +91,6 @@ class PCScanInternal final {
   void EnableImmediateFreeing() { immediate_freeing_enabled_ = true; }
   bool IsImmediateFreeingEnabled() const { return immediate_freeing_enabled_; }
 
-  void NotifyThreadCreated(void* stack_top);
-  void NotifyThreadDestroyed();
-
-  void* GetCurrentThreadStackTop() const;
-
   bool WriteProtectionEnabled() const;
   void ProtectPages(uintptr_t begin, size_t size);
   void UnprotectPages(uintptr_t begin, size_t size);
@@ -111,14 +106,6 @@ class PCScanInternal final {
   friend internal::base::NoDestructor<PCScanInternal>;
   friend class StarScanSnapshot;
 
-  using StackTops = std::unordered_map<
-      internal::base::PlatformThreadId,
-      void*,
-      std::hash<internal::base::PlatformThreadId>,
-      std::equal_to<>,
-      internal::InternalAllocator<
-          std::pair<const internal::base::PlatformThreadId, void*>>>;
-
   PCScanInternal();
 
   TaskHandle current_task_;
@@ -129,10 +116,6 @@ class PCScanInternal final {
   mutable std::mutex roots_mutex_;
 
   bool stack_scanning_enabled_{false};
-  // TLS emulation of stack tops. Since this is guaranteed to go through
-  // non-quarantinable partition, using it from safepoints is safe.
-  StackTops stack_tops_;
-  mutable std::mutex stack_tops_mutex_;
 
   bool immediate_freeing_enabled_{false};
 
@@ -147,4 +130,4 @@ class PCScanInternal final {
 
 }  // namespace partition_alloc::internal
 
-#endif  // BASE_ALLOCATOR_PARTITION_ALLOCATOR_SRC_PARTITION_ALLOC_STARSCAN_PCSCAN_INTERNAL_H_
+#endif  // PARTITION_ALLOC_STARSCAN_PCSCAN_INTERNAL_H_

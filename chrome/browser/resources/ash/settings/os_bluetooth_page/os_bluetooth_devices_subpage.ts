@@ -11,6 +11,7 @@ import '../settings_shared.css.js';
 import './os_paired_bluetooth_list.js';
 import './settings_fast_pair_toggle.js';
 
+import {PrefsMixin} from '/shared/settings/prefs/prefs_mixin.js';
 import {BluetoothUiSurface, recordBluetoothUiSurfaceMetrics} from 'chrome://resources/ash/common/bluetooth/bluetooth_metrics_utils.js';
 import {getBluetoothConfig} from 'chrome://resources/ash/common/bluetooth/cros_bluetooth_config.js';
 import {getHidPreservingController} from 'chrome://resources/ash/common/bluetooth/hid_preserving_bluetooth_state_controller.js';
@@ -18,7 +19,6 @@ import {HidWarningDialogSource} from 'chrome://resources/ash/common/bluetooth/hi
 import {getInstance as getAnnouncerInstance} from 'chrome://resources/ash/common/cr_elements/cr_a11y_announcer/cr_a11y_announcer.js';
 import {I18nMixin} from 'chrome://resources/ash/common/cr_elements/i18n_mixin.js';
 import {WebUiListenerMixin} from 'chrome://resources/ash/common/cr_elements/web_ui_listener_mixin.js';
-import {PrefsMixin} from 'chrome://resources/cr_components/settings_prefs/prefs_mixin.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {BluetoothSystemProperties, BluetoothSystemState, DeviceConnectionState, PairedBluetoothDeviceProperties} from 'chrome://resources/mojo/chromeos/ash/services/bluetooth_config/public/mojom/cros_bluetooth_config.mojom-webui.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -102,6 +102,38 @@ export class SettingsBluetoothDevicesSubpageElement extends
         },
         readOnly: true,
       },
+
+      isFastPairSoftwareScanningSupportEnabled_: {
+        type: Boolean,
+        readOnly: true,
+        value() {
+          return loadTimeData.getBoolean(
+              'isFastPairSoftwareScanningSupportEnabled');
+        },
+      },
+
+      // Consistent with enum `SoftwareScanningStatus` in
+      // scanning_enabled_provider.h.
+      menuOptions_: {
+        type: Array,
+        readOnly: true,
+        value() {
+          return [
+            {name: 'Never', value: 0},
+            {name: 'Only when charging', value: 2},
+          ];
+        },
+      },
+
+      isBatterySaverActive_: {
+        type: Boolean,
+        value: false,
+      },
+
+      isHardwareOffloadingSupported_: {
+        type: Boolean,
+        value: false,
+      },
     };
   }
 
@@ -111,9 +143,13 @@ export class SettingsBluetoothDevicesSubpageElement extends
   private isBluetoothToggleOn_: boolean;
   private isFastPairSupportedByDevice_: boolean;
   private lastSelectedDeviceId_: string|null;
+  private readonly menuOptions_: string[];
   private savedDevicesSublabel_: string;
   private unconnectedDevices_: PairedBluetoothDeviceProperties[];
   private isBluetoothDisconnectWarningEnabled_: boolean;
+  private readonly isFastPairSoftwareScanningSupportEnabled_: boolean;
+  private isBatterySaverActive_: boolean;
+  private isHardwareOffloadingSupported_: boolean;
 
   constructor() {
     super();
@@ -136,6 +172,24 @@ export class SettingsBluetoothDevicesSubpageElement extends
             this.isFastPairSupportedByDevice_ = isSupported;
           });
       this.browserProxy_.requestFastPairDeviceSupport();
+    }
+
+    if (loadTimeData.getBoolean('isFastPairSoftwareScanningSupportEnabled')) {
+      // Listen for changes in Battery Saver status.
+      this.addWebUiListener(
+          'fast-pair-software-scanning-battery-saver-status',
+          (isBatterySaverActive: boolean) => {
+            this.isBatterySaverActive_ = isBatterySaverActive;
+          });
+      this.browserProxy_.requestBatterySaverStatus();
+
+      // Listen for changes in Hardware Offloading Support status.
+      this.addWebUiListener(
+          'fast-pair-software-scanning-hardware-offloading-status',
+          (isHardwareOffloadingSupported: boolean) => {
+            this.isHardwareOffloadingSupported_ = isHardwareOffloadingSupported;
+          });
+      this.browserProxy_.requestHardwareOffloadingSupportStatus();
     }
   }
 

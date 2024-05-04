@@ -59,6 +59,22 @@ class DownloadUIModel {
     kMaxValue = kSuspiciousArchive
   };
 
+  // Represents the UI pattern used for the download, based on its danger type.
+  // This should be consistent across the download bubble and
+  // chrome://downloads, wherever download warnings are displayed.
+  enum class DangerUiPattern {
+    // The download has no warning and no error conditions.
+    kNormal,
+    // The download has a warning with a red "dangerous" icon and red text.
+    kDangerous,
+    // The download has a warning with a gray "warning" icon and gray text.
+    // Includes "unverified" and insecure.
+    kSuspicious,
+    // Some other combination of warning colors/icons, including the "download
+    // off" icon for an error or cancellation.
+    kOther,
+  };
+
   // Abstract base class for building StatusText
   class StatusTextBuilderBase {
    public:
@@ -319,6 +335,16 @@ class DownloadUIModel {
   // ShouldPreferOpeningInBrowser().
   virtual void OpenUsingPlatformHandler();
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // Returns the Media App action (open or edit) we should show for the item if
+  // one should be shown.
+  virtual std::optional<DownloadCommands::Command> MaybeGetMediaAppAction()
+      const;
+
+  // Open the download using the media app ('Gallery').
+  virtual void OpenUsingMediaApp();
+#endif
+
   // Whether the download was removed and this is currently being undone.
   virtual bool IsBeingRevived() const;
 
@@ -455,6 +481,10 @@ class DownloadUIModel {
   // Returns the type of tailored warning. Returns kNoTailoredWarning if this
   // download shouldn't trigger a tailored warning.
   virtual TailoredWarningType GetTailoredWarningType() const;
+
+  // Returns the UI pattern to be used for the download, e.g. dangerous or
+  // suspicious. Returns kNoWarning if the download has no warning.
+  virtual DangerUiPattern GetDangerUiPattern() const;
 
   // Ephemeral warnings are ones that are quickly removed from the bubble if the
   // user has not acted on them, and later deleted altogether. Is this that kind

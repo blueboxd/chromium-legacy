@@ -10,6 +10,7 @@ version specified in //tools/clang/scripts/update.py.
 '''
 
 import argparse
+import glob
 import os
 import re
 import shutil
@@ -34,7 +35,7 @@ sys.path.append(
 # In the case that a Rust roll fails and you want to roll Clang alone, reset
 # this back to its previous value _AND_ set `OVERRIDE_CLANG_REVISION` below
 # to the `CLANG_REVISION` that was in place before the roll.
-RUST_REVISION = '7168c13579a550f2c47f7eea22f5e226a436cd00'
+RUST_REVISION = '31e6e8c6c5b6ce62656c922c7384d3376018c980'
 RUST_SUB_REVISION = 1
 
 # If not None, this overrides the `CLANG_REVISION` in
@@ -56,7 +57,7 @@ CRUBIT_SUB_REVISION = 1
 # Hash of src/stage0.json, which itself contains the stage0 toolchain hashes.
 # We trust the Rust build system checks, but to ensure it is not tampered with
 # itself check the hash.
-STAGE0_JSON_SHA256 = '5dd57024d78304079f2e5a6ea8900181c821a1bb394ed01cbfa80af7199ae5fa'
+STAGE0_JSON_SHA256 = '4c02260e8961a1ecd9823906a84dd8c663a22e5c91dd4647f0ea55c9109beccb'
 
 THIS_DIR = os.path.abspath(os.path.dirname(__file__))
 CHROMIUM_DIR = os.path.abspath(os.path.join(THIS_DIR, '..', '..'))
@@ -126,8 +127,13 @@ def main():
     # downloading the toolchain if it hasn't changed, it also leads to multiple
     # versions of the same rustlibs. build/rust/std/find_std_rlibs.py chokes in
     # this case.
+    # .*_is_first_class_gcs file is created by first class GCS deps when rust
+    # hooks are migrated to be first class deps. In case we need to go back to
+    # using a hook, this file will indicate that the previous download was
+    # from the first class dep and the dir needs to be cleared.
     if os.path.exists(RUST_TOOLCHAIN_OUT_DIR):
-        if version == GetStampVersion():
+        if version == GetStampVersion() and not glob.glob(
+                os.path.join(RUST_TOOLCHAIN_OUT_DIR, '.*_is_first_class_gcs')):
             return 0
 
     if os.path.exists(RUST_TOOLCHAIN_OUT_DIR):

@@ -254,6 +254,15 @@ inline CSSIdentifierValue::CSSIdentifierValue(ControlPart e)
     : CSSValue(kIdentifierClass) {
   switch (e) {
     case kNoControlPart:
+    // Non standard appearance values that are not listed as
+    // compat-auto must be rendered as none.
+    // https://drafts.csswg.org/css-ui/#appearance-switching
+    case kMediaSliderPart:
+    case kMediaSliderThumbPart:
+    case kMediaVolumeSliderPart:
+    case kMediaVolumeSliderThumbPart:
+    case kSliderThumbHorizontalPart:
+    case kSliderThumbVerticalPart:
       value_id_ = CSSValueID::kNone;
       break;
     case kAutoPart:
@@ -280,18 +289,6 @@ inline CSSIdentifierValue::CSSIdentifierValue(ControlPart e)
     case kListboxPart:
       value_id_ = CSSValueID::kListbox;
       break;
-    case kMediaSliderPart:
-      value_id_ = CSSValueID::kMediaSlider;
-      break;
-    case kMediaSliderThumbPart:
-      value_id_ = CSSValueID::kMediaSliderthumb;
-      break;
-    case kMediaVolumeSliderPart:
-      value_id_ = CSSValueID::kMediaVolumeSlider;
-      break;
-    case kMediaVolumeSliderThumbPart:
-      value_id_ = CSSValueID::kMediaVolumeSliderthumb;
-      break;
     case kMediaControlPart:
       value_id_ = CSSValueID::kInternalMediaControl;
       break;
@@ -313,12 +310,6 @@ inline CSSIdentifierValue::CSSIdentifierValue(ControlPart e)
     case kSliderVerticalPart:
       value_id_ = CSSValueID::kSliderVertical;
       break;
-    case kSliderThumbHorizontalPart:
-      value_id_ = CSSValueID::kSliderthumbHorizontal;
-      break;
-    case kSliderThumbVerticalPart:
-      value_id_ = CSSValueID::kSliderthumbVertical;
-      break;
     case kSearchFieldPart:
       value_id_ = CSSValueID::kSearchfield;
       break;
@@ -331,9 +322,9 @@ inline CSSIdentifierValue::CSSIdentifierValue(ControlPart e)
     case kTextAreaPart:
       value_id_ = CSSValueID::kTextarea;
       break;
-    case kBikeshedPart:
+    case kBaseSelectPart:
       CHECK(RuntimeEnabledFeatures::StylableSelectEnabled());
-      value_id_ = CSSValueID::kBikeshed;
+      value_id_ = CSSValueID::kBaseSelect;
       break;
   }
 }
@@ -359,14 +350,6 @@ inline ControlPart CSSIdentifierValue::ConvertTo() const {
       return kInnerSpinButtonPart;
     case CSSValueID::kListbox:
       return kListboxPart;
-    case CSSValueID::kMediaSlider:
-      return kMediaSliderPart;
-    case CSSValueID::kMediaSliderthumb:
-      return kMediaSliderThumbPart;
-    case CSSValueID::kMediaVolumeSlider:
-      return kMediaVolumeSliderPart;
-    case CSSValueID::kMediaVolumeSliderthumb:
-      return kMediaVolumeSliderThumbPart;
     case CSSValueID::kInternalMediaControl:
       return kMediaControlPart;
     case CSSValueID::kMenulist:
@@ -381,10 +364,6 @@ inline ControlPart CSSIdentifierValue::ConvertTo() const {
       return kSliderHorizontalPart;
     case CSSValueID::kSliderVertical:
       return kSliderVerticalPart;
-    case CSSValueID::kSliderthumbHorizontal:
-      return kSliderThumbHorizontalPart;
-    case CSSValueID::kSliderthumbVertical:
-      return kSliderThumbVerticalPart;
     case CSSValueID::kSearchfield:
       return kSearchFieldPart;
     case CSSValueID::kSearchfieldCancelButton:
@@ -393,8 +372,8 @@ inline ControlPart CSSIdentifierValue::ConvertTo() const {
       return kTextFieldPart;
     case CSSValueID::kTextarea:
       return kTextAreaPart;
-    case CSSValueID::kBikeshed:
-      return kBikeshedPart;
+    case CSSValueID::kBaseSelect:
+      return kBaseSelectPart;
     default:
       NOTREACHED();
       return kNoControlPart;
@@ -1059,6 +1038,48 @@ inline FontSmoothingMode CSSIdentifierValue::ConvertTo() const {
 
   NOTREACHED();
   return kAutoSmoothing;
+}
+
+template <>
+inline CSSIdentifierValue::CSSIdentifierValue(
+    FontDescription::FontVariantEmoji variant_emoji)
+    : CSSValue(kIdentifierClass) {
+  switch (variant_emoji) {
+    case FontDescription::kNormalVariantEmoji:
+      value_id_ = CSSValueID::kNormal;
+      return;
+    case FontDescription::kTextVariantEmoji:
+      value_id_ = CSSValueID::kText;
+      return;
+    case FontDescription::kEmojiVariantEmoji:
+      value_id_ = CSSValueID::kEmoji;
+      return;
+    case FontDescription::kUnicodeVariantEmoji:
+      value_id_ = CSSValueID::kUnicode;
+      return;
+  }
+
+  NOTREACHED();
+  value_id_ = CSSValueID::kNormal;
+}
+
+template <>
+inline FontDescription::FontVariantEmoji CSSIdentifierValue::ConvertTo() const {
+  switch (value_id_) {
+    case CSSValueID::kNormal:
+      return FontDescription::kNormalVariantEmoji;
+    case CSSValueID::kText:
+      return FontDescription::kTextVariantEmoji;
+    case CSSValueID::kEmoji:
+      return FontDescription::kEmojiVariantEmoji;
+    case CSSValueID::kUnicode:
+      return FontDescription::kUnicodeVariantEmoji;
+    default:
+      break;
+  }
+
+  NOTREACHED();
+  return FontDescription::kNormalVariantEmoji;
 }
 
 template <>
@@ -2139,7 +2160,7 @@ inline CSSIdentifierValue::CSSIdentifierValue(InsetAreaRegion region)
       value_id_ = CSSValueID::kNone;
       break;
     case InsetAreaRegion::kAll:
-      value_id_ = CSSValueID::kAll;
+      value_id_ = CSSValueID::kSpanAll;
       break;
     case InsetAreaRegion::kCenter:
       value_id_ = CSSValueID::kCenter;
@@ -2155,6 +2176,30 @@ inline CSSIdentifierValue::CSSIdentifierValue(InsetAreaRegion region)
       break;
     case InsetAreaRegion::kSelfEnd:
       value_id_ = CSSValueID::kSelfEnd;
+      break;
+    case InsetAreaRegion::kInlineStart:
+      value_id_ = CSSValueID::kInlineStart;
+      break;
+    case InsetAreaRegion::kInlineEnd:
+      value_id_ = CSSValueID::kInlineEnd;
+      break;
+    case InsetAreaRegion::kSelfInlineStart:
+      value_id_ = CSSValueID::kSelfInlineStart;
+      break;
+    case InsetAreaRegion::kSelfInlineEnd:
+      value_id_ = CSSValueID::kSelfInlineEnd;
+      break;
+    case InsetAreaRegion::kBlockStart:
+      value_id_ = CSSValueID::kBlockStart;
+      break;
+    case InsetAreaRegion::kBlockEnd:
+      value_id_ = CSSValueID::kBlockEnd;
+      break;
+    case InsetAreaRegion::kSelfBlockStart:
+      value_id_ = CSSValueID::kSelfBlockStart;
+      break;
+    case InsetAreaRegion::kSelfBlockEnd:
+      value_id_ = CSSValueID::kSelfBlockEnd;
       break;
     case InsetAreaRegion::kTop:
       value_id_ = CSSValueID::kTop;
@@ -2200,7 +2245,7 @@ inline InsetAreaRegion CSSIdentifierValue::ConvertTo() const {
   switch (GetValueID()) {
     case CSSValueID::kNone:
       return InsetAreaRegion::kNone;
-    case CSSValueID::kAll:
+    case CSSValueID::kSpanAll:
       return InsetAreaRegion::kAll;
     case CSSValueID::kCenter:
       return InsetAreaRegion::kCenter;
@@ -2212,6 +2257,22 @@ inline InsetAreaRegion CSSIdentifierValue::ConvertTo() const {
       return InsetAreaRegion::kSelfStart;
     case CSSValueID::kSelfEnd:
       return InsetAreaRegion::kSelfEnd;
+    case CSSValueID::kInlineStart:
+      return InsetAreaRegion::kInlineStart;
+    case CSSValueID::kInlineEnd:
+      return InsetAreaRegion::kInlineEnd;
+    case CSSValueID::kSelfInlineStart:
+      return InsetAreaRegion::kSelfInlineStart;
+    case CSSValueID::kSelfInlineEnd:
+      return InsetAreaRegion::kSelfInlineEnd;
+    case CSSValueID::kBlockStart:
+      return InsetAreaRegion::kBlockStart;
+    case CSSValueID::kBlockEnd:
+      return InsetAreaRegion::kBlockEnd;
+    case CSSValueID::kSelfBlockStart:
+      return InsetAreaRegion::kSelfBlockStart;
+    case CSSValueID::kSelfBlockEnd:
+      return InsetAreaRegion::kSelfBlockEnd;
     case CSSValueID::kTop:
       return InsetAreaRegion::kTop;
     case CSSValueID::kBottom:
@@ -2240,6 +2301,39 @@ inline InsetAreaRegion CSSIdentifierValue::ConvertTo() const {
       NOTREACHED();
       return InsetAreaRegion::kNone;
   };
+}
+
+template <>
+inline CSSIdentifierValue::CSSIdentifierValue(PositionVisibility visibility)
+    : CSSValue(kIdentifierClass) {
+  switch (visibility) {
+    case PositionVisibility::kAlways:
+      value_id_ = CSSValueID::kAlways;
+      break;
+    // TODO(crbug.com/332933527): Support kAnchorsValid.
+    case PositionVisibility::kAnchorsVisible:
+      value_id_ = CSSValueID::kAnchorsVisible;
+      break;
+    case PositionVisibility::kNoOverflow:
+      value_id_ = CSSValueID::kNoOverflow;
+      break;
+  }
+}
+
+template <>
+inline PositionVisibility CSSIdentifierValue::ConvertTo() const {
+  switch (GetValueID()) {
+    case CSSValueID::kAlways:
+      return PositionVisibility::kAlways;
+    // TODO(crbug.com/332933527): Support kAnchorsValid.
+    case CSSValueID::kAnchorsVisible:
+      return PositionVisibility::kAnchorsVisible;
+    case CSSValueID::kNoOverflow:
+      return PositionVisibility::kNoOverflow;
+    default:
+      NOTREACHED();
+      return PositionVisibility::kAlways;
+  }
 }
 
 }  // namespace blink

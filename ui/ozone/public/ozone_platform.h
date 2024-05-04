@@ -204,14 +204,17 @@ class COMPONENT_EXPORT(OZONE) OzonePlatform {
 
     // Wayland only: determines whether clip rects can be delegated via the
     // wayland protocol when some quads are out of window.
-    // TODO(crbug.com/1470024): The flag is currently disabled by default since
+    // TODO(crbug.com/40277728): The flag is currently disabled by default since
     // there is a bug. Set this flag to enabled in GPU process when the
     // remaining issues are resolved.
     bool supports_out_of_window_clip_rect = false;
 
-    // Whether wayland server has the fix that applies transformations in the
-    // correct order.
+    // Wayland only: whether wayland server has the fix that applies
+    // transformations in the correct order.
     bool has_transformation_fix = false;
+
+    // Wayland only: whether bubble widgets can use platform objects.
+    bool supports_subwindows_as_accelerated_widgets = false;
   };
 
   // Corresponds to chrome_browser_main_extra_parts.h.
@@ -309,7 +312,7 @@ class COMPONENT_EXPORT(OZONE) OzonePlatform {
                                              gfx::BufferUsage usage) const;
 
   // Whether the platform supports compositing windows with transparency.
-  virtual bool IsWindowCompositingSupported() const;
+  virtual bool IsWindowCompositingSupported() const = 0;
 
   // Returns whether a custom frame should be used for windows.
   // The default behaviour is returning what is suggested by the

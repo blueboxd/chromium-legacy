@@ -348,6 +348,7 @@ void BrowserAccessibilityManagerAuraLinux::FireGeneratedEvent(
     // Currently unused events on this platform.
     case ui::AXEventGenerator::Event::NONE:
     case ui::AXEventGenerator::Event::ACCESS_KEY_CHANGED:
+    case ui::AXEventGenerator::Event::ARIA_NOTIFICATIONS_POSTED:
     case ui::AXEventGenerator::Event::ATOMIC_CHANGED:
     case ui::AXEventGenerator::Event::AUTO_COMPLETE_CHANGED:
     case ui::AXEventGenerator::Event::AUTOFILL_AVAILABILITY_CHANGED:
@@ -355,15 +356,12 @@ void BrowserAccessibilityManagerAuraLinux::FireGeneratedEvent(
     case ui::AXEventGenerator::Event::CHECKED_STATE_DESCRIPTION_CHANGED:
     case ui::AXEventGenerator::Event::CHILDREN_CHANGED:
     case ui::AXEventGenerator::Event::CONTROLS_CHANGED:
-    case ui::AXEventGenerator::Event::CLASS_NAME_CHANGED:
     case ui::AXEventGenerator::Event::DETAILS_CHANGED:
     case ui::AXEventGenerator::Event::DESCRIBED_BY_CHANGED:
-    case ui::AXEventGenerator::Event::DROPEFFECT_CHANGED:
     case ui::AXEventGenerator::Event::EDITABLE_TEXT_CHANGED:
     case ui::AXEventGenerator::Event::FOCUS_CHANGED:
     case ui::AXEventGenerator::Event::FLOW_FROM_CHANGED:
     case ui::AXEventGenerator::Event::FLOW_TO_CHANGED:
-    case ui::AXEventGenerator::Event::GRABBED_CHANGED:
     case ui::AXEventGenerator::Event::HASPOPUP_CHANGED:
     case ui::AXEventGenerator::Event::HIERARCHICAL_LEVEL_CHANGED:
     case ui::AXEventGenerator::Event::IGNORED_CHANGED:
@@ -381,7 +379,6 @@ void BrowserAccessibilityManagerAuraLinux::FireGeneratedEvent(
     case ui::AXEventGenerator::Event::MULTISELECTABLE_STATE_CHANGED:
     case ui::AXEventGenerator::Event::OBJECT_ATTRIBUTE_CHANGED:
     case ui::AXEventGenerator::Event::ORIENTATION_CHANGED:
-    case ui::AXEventGenerator::Event::OTHER_ATTRIBUTE_CHANGED:
     case ui::AXEventGenerator::Event::PLACEHOLDER_CHANGED:
     case ui::AXEventGenerator::Event::PORTAL_ACTIVATED:
     case ui::AXEventGenerator::Event::POSITION_IN_SET_CHANGED:

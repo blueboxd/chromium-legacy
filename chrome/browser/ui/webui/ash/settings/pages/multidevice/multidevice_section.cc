@@ -549,6 +549,8 @@ void MultiDeviceSection::AddLoadTimeData(
        IDS_SETTINGS_MULTIDEVICE_NOTIFICATION_ACCESS_PROHIBITED_TOOLTIP},
       {"multideviceItemDisabledByPhoneAdminTooltip",
        IDS_SETTINGS_MULTIDEVICE_ITEM_DISABLED_BY_PHONE_ADMIN_TOOLTIP},
+      {"multideviceInstantHotspotItemTitle",
+       IDS_SETTINGS_MULTIDEVICE_INSTANT_HOTSPOT},
       {"multideviceInstantTetheringItemTitle",
        IDS_SETTINGS_MULTIDEVICE_INSTANT_TETHERING},
       {"multideviceInstantTetheringItemSummary",
@@ -782,6 +784,10 @@ void MultiDeviceSection::AddLoadTimeData(
         l10n_util::GetStringUTF16(
             IDS_SETTINGS_MULTIDEVICE_PHONE_HUB_APPS_SECTION_TITLE));
   }
+
+  html_source->AddBoolean(
+      "isFastPairSoftwareScanningSupportEnabled",
+      ash::features::IsFastPairSoftwareScanningSupportEnabled());
 }
 
 void MultiDeviceSection::AddHandlers(content::WebUI* web_ui) {

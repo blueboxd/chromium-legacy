@@ -36,7 +36,7 @@
 namespace viz {
 namespace {
 
-// TODO(crbug.com/1094361): Clean up the feature in M117.
+// TODO(crbug.com/40699456): Clean up the feature in M117.
 BASE_FEATURE(kAsyncGpuLatencyReporting,
              "AsyncGpuLatencyReporting",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -137,7 +137,7 @@ SkiaOutputDevice::SkiaOutputDevice(
     capabilities_.max_texture_size = gr_context->maxTextureSize();
   } else {
     CHECK(graphite_context_);
-    // TODO(crbug.com/1434131): Determine correct texture/render_target size
+    // TODO(crbug.com/40264581): Determine correct texture/render_target size
     // once Graphite exposes it.
     capabilities_.max_render_target_size = 8192;
     capabilities_.max_texture_size = 8192;
@@ -176,15 +176,6 @@ void SkiaOutputDevice::Submit(bool sync_cpu, base::OnceClosure callback) {
 bool SkiaOutputDevice::EnsureMinNumberOfBuffers(size_t n) {
   NOTREACHED();
   return false;
-}
-
-bool SkiaOutputDevice::SetDrawRectangle(const gfx::Rect& draw_rectangle) {
-  NOTREACHED();
-  return false;
-}
-
-void SkiaOutputDevice::SetEnableDCLayers(bool enable) {
-  NOTREACHED();
 }
 
 bool SkiaOutputDevice::IsPrimaryPlaneOverlay() const {

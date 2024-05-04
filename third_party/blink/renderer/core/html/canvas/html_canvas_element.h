@@ -75,8 +75,6 @@ class
 typedef CanvasRenderingContext2DOrWebGLRenderingContextOrWebGL2RenderingContextOrImageBitmapRenderingContextOrGPUCanvasContext
     RenderingContext;
 
-CORE_EXPORT BASE_DECLARE_FEATURE(kStartCanvasWithAccelerationDisabled);
-
 // This contains the information of HTML Canvas Element,
 // There are four different types of rendering context this HTML Canvas can own.
 // It can be a 3D Context (WebGL or WebGL2), 2D Context,
@@ -233,7 +231,7 @@ class CORE_EXPORT HTMLCanvasElement final
 
   // ImageBitmapSource implementation
   gfx::Size BitmapSourceSize() const override;
-  ScriptPromiseTyped<ImageBitmap> CreateImageBitmap(
+  ScriptPromise<ImageBitmap> CreateImageBitmap(
       ScriptState*,
       std::optional<gfx::Rect> crop_rect,
       const ImageBitmapOptions*,
@@ -357,15 +355,13 @@ class CORE_EXPORT HTMLCanvasElement final
 
   void SetSurfaceSize(gfx::Size);
 
+  bool SizeChangesAreAllowed(ExceptionState& exception_state);
+
   bool PaintsIntoCanvasBuffer() const;
 
   String ToDataURLInternal(const String& mime_type,
                            const double& quality,
                            SourceDrawingBuffer) const;
-
-  // Returns true if the canvas' context type is inherited from
-  // ImageBitmapRenderingContextBase.
-  bool HasImageBitmapContext() const;
 
   // Returns the transparent image resource for this canvas.
   scoped_refptr<StaticBitmapImage> GetTransparentImage();

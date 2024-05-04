@@ -132,8 +132,16 @@ public abstract class BrowserServicesIntentDataProvider {
     }
 
     /**
-     * @return The resource id for enter animation, which is used in
-     *         {@link Activity#overridePendingTransition(int, int)}.
+     * @return The package name of the client app provided via identity sharing API introduced in
+     *     Android U.
+     */
+    public @Nullable String getClientPackageNameIdentitySharing() {
+        return null;
+    }
+
+    /**
+     * @return The resource id for enter animation, which is used in {@link
+     *     Activity#overridePendingTransition(int, int)}.
      */
     public int getAnimationEnterRes() {
         return 0;
@@ -234,8 +242,15 @@ public abstract class BrowserServicesIntentDataProvider {
     }
 
     /**
+     * @return The list of params representing the custom buttons on the Google Bottom Bar.
+     */
+    public List<CustomButtonParams> getCustomButtonsOnGoogleBottomBar() {
+        return Collections.emptyList();
+    }
+
+    /**
      * @return The {@link RemoteViews} to show on the bottom bar, or null if the extra is not
-     *         specified.
+     *     specified.
      */
     public @Nullable RemoteViews getBottomBarRemoteViews() {
         return null;
@@ -584,5 +599,10 @@ public abstract class BrowserServicesIntentDataProvider {
     /** Return the default position. */
     public int getSideSheetPosition() {
         return ACTIVITY_SIDE_SHEET_POSITION_END;
+    }
+
+    /** Return whether calling package should be allowed to present an interactive Omnibox. */
+    public boolean isInteractiveOmniboxAllowed() {
+        return false;
     }
 }

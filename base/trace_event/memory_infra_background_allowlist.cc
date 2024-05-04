@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40284755): Remove this and spanify to fix the errors.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "base/trace_event/memory_infra_background_allowlist.h"
 
 #include <string.h>
@@ -9,10 +14,10 @@
 #include <string>
 #include <string_view>
 
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_buildflags.h"
 #include "base/containers/fixed_flat_set.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
+#include "partition_alloc/partition_alloc_buildflags.h"
 #include "third_party/abseil-cpp/absl/strings/ascii.h"
 
 #if BUILDFLAG(IS_ANDROID)
@@ -186,10 +191,14 @@ constexpr auto kAllocatorDumpNameAllowlist =
         "leveldatabase/memenv_0x?",
         "malloc",
         "malloc/allocated_objects",
+#if PA_BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
+        "malloc/extreme_lud",
+#endif
         "malloc/metadata_fragmentation_caches",
-#if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
+#if PA_BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
         "malloc/partitions",
         "malloc/partitions/allocator",
+        "malloc/partitions/allocator/scheduler_loop_quarantine",
         "malloc/partitions/allocator/thread_cache",
         "malloc/partitions/allocator/thread_cache/main_thread",
         "malloc/partitions/aligned",
@@ -198,7 +207,7 @@ constexpr auto kAllocatorDumpNameAllowlist =
         "malloc/partitions/nonquarantinable",
         "malloc/sys_malloc",
         "malloc/win_heap",
-#endif
+#endif  // PA_BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
         "media/webmediaplayer/audio/player_0x?",
         "media/webmediaplayer/data_source/player_0x?",
         "media/webmediaplayer/demuxer/player_0x?",
@@ -232,7 +241,7 @@ constexpr auto kAllocatorDumpNameAllowlist =
         "partition_alloc/partitions/array_buffer",
         "partition_alloc/partitions/buffer",
         "partition_alloc/partitions/fast_malloc",
-#if !BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
+#if !PA_BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
         "partition_alloc/partitions/fast_malloc/thread_cache",
         "partition_alloc/partitions/fast_malloc/thread_cache/main_thread",
 #endif

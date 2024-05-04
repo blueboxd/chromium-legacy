@@ -21,7 +21,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/startup/first_run_service.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
-#include "chrome/browser/ui/web_applications/web_app_controller_browsertest.h"
+#include "chrome/browser/ui/web_applications/web_app_browsertest_base.h"
 #include "chrome/browser/ui/web_applications/web_app_run_on_os_login_notification.h"
 #include "chrome/browser/web_applications/policy/web_app_policy_constants.h"
 #include "chrome/browser/web_applications/policy/web_app_policy_manager.h"
@@ -78,7 +78,7 @@ class MockNetworkConnectionTracker : public network::NetworkConnectionTracker {
 };
 
 class WebAppRunOnOsLoginManagerBrowserTest
-    : public WebAppControllerBrowserTest,
+    : public WebAppBrowserTestBase,
       public NotificationDisplayService::Observer {
  public:
   WebAppRunOnOsLoginManagerBrowserTest()
@@ -87,18 +87,13 @@ class WebAppRunOnOsLoginManagerBrowserTest
         skip_run_on_os_login_startup_(std::make_unique<base::AutoReset<bool>>(
             WebAppRunOnOsLoginManager::SkipStartupForTesting())),
         skip_preinstalled_web_app_startup_(
-            PreinstalledWebAppManager::SkipStartupForTesting()) {
-    scoped_feature_list_.InitWithFeatures(
-        /*enabled_features=*/{features::kDesktopPWAsEnforceWebAppSettingsPolicy,
-                              features::kDesktopPWAsRunOnOsLogin},
-        /*disabled_features=*/{});
-  }
+            PreinstalledWebAppManager::SkipStartupForTesting()) {}
 
   void SetUpOnMainThread() override {
     notification_tester_ = std::make_unique<NotificationDisplayServiceTester>(
         /*profile=*/profile());
     mock_tracker_ = std::make_unique<MockNetworkConnectionTracker>();
-    WebAppControllerBrowserTest::SetUpOnMainThread();
+    WebAppBrowserTestBase::SetUpOnMainThread();
     content::SetNetworkConnectionTrackerForTesting(
         /*network_connection_tracker=*/nullptr);
     content::SetNetworkConnectionTrackerForTesting(mock_tracker_.get());
@@ -196,7 +191,8 @@ class WebAppRunOnOsLoginManagerBrowserTest
   base::AutoReset<bool> skip_preinstalled_web_app_startup_;
   std::unique_ptr<NotificationDisplayServiceTester> notification_tester_;
   base::test::TestFuture<void> completed_future_;
-  base::test::ScopedFeatureList scoped_feature_list_;
+  base::test::ScopedFeatureList scoped_feature_list_{
+      features::kDesktopPWAsRunOnOsLogin};
   base::ScopedObservation<NotificationDisplayService,
                           WebAppRunOnOsLoginManagerBrowserTest>
       notification_observation_{this};

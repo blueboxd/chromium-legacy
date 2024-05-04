@@ -41,8 +41,9 @@ class AccountSelectionModalView : public views::DialogDelegateView,
   // AccountSelectionViewBase:
   void InitDialogWidget() override;
 
-  void ShowMultiAccountPicker(const std::vector<IdentityProviderDisplayData>&
-                                  idp_display_data_list) override;
+  void ShowMultiAccountPicker(
+      const std::vector<IdentityProviderDisplayData>& idp_display_data_list,
+      bool show_back_button) override;
 
   void ShowVerifyingSheet(const content::IdentityRequestAccount& account,
                           const IdentityProviderDisplayData& idp_display_data,
@@ -74,10 +75,20 @@ class AccountSelectionModalView : public views::DialogDelegateView,
       const content::IdentityRequestAccount& account,
       const IdentityProviderDisplayData& idp_display_data) override;
 
+  void ShowSingleReturningAccountDialog(
+      const std::vector<IdentityProviderDisplayData>& idp_data_list) override;
+
+  void ShowLoadingDialog() override;
+
   void CloseDialog() override;
 
   std::string GetDialogTitle() const override;
   std::optional<std::string> GetDialogSubtitle() const override;
+
+  // views::DialogDelegateView:
+  views::View* GetInitiallyFocusedView() override;
+
+  std::u16string GetQueuedAnnouncementForTesting();
 
  private:
   // Returns a View for header of an account chooser. It contains text to prompt
@@ -93,41 +104,79 @@ class AccountSelectionModalView : public views::DialogDelegateView,
       const IdentityProviderDisplayData& idp_display_data,
       const content::IdentityRequestAccount& account,
       bool should_hover,
-      bool show_disclosure_label);
+      bool show_disclosure_label,
+      bool show_separator,
+      int additional_row_vertical_padding);
 
   // Returns a View for multiple account chooser. It contains the info for each
   // account in a button, so the user can pick an account.
   std::unique_ptr<views::View> CreateMultipleAccountChooser(
       const std::vector<IdentityProviderDisplayData>& idp_display_data_list);
 
-  // Returns a View for header of a request permission dialog. It contains text
-  // to prompt the user to confirm a sign in to an RP with an account from an
-  // IDP.
-  std::unique_ptr<views::View> CreateRequestPermissionHeader(
-      const content::IdentityProviderMetadata& idp_metadata);
+  // Returns a View for an account row that acts as a placeholder.
+  std::unique_ptr<views::View> CreatePlaceholderAccountRow();
 
-  // Returns a View for a row of custom buttons. A cancel button is always shown
-  // and a confirm button is shown if `confirm_callback` is specified.
+  // Returns a View for a row of custom buttons. A cancel button is always
+  // shown. A continue button, use other account button and/or back button is
+  // shown if `continue_callback`, `use_other_account_callback` and/or
+  // `back_callback` is specified respectively. If `use_other_account_callback`
+  // is specified, `back_callback` should NOT be specified and vice versa.
   std::unique_ptr<views::View> CreateButtonRow(
-      std::optional<views::Button::PressedCallback> continue_callback);
+      std::optional<views::Button::PressedCallback> continue_callback,
+      std::optional<views::Button::PressedCallback> use_other_account_callback,
+      std::optional<views::Button::PressedCallback> back_callback);
+
+  // Returns a View containing the image of the icon fetched from
+  // `brand_icon_url`. If the image cannot be fetched, a globe icon is returned
+  // instead.
+  std::unique_ptr<views::View> CreateBrandIconImageView(
+      const GURL& brand_icon_url);
+
+  // Adds a progress bar at the top of the modal dialog.
+  void AddProgressBar();
 
   // Resizes the modal dialog to the size of its contents.
   void UpdateModalPositionAndTitle();
 
-  // View containing the modal dialog header.
+  // Removes all child views and dangling pointers.
+  void RemoveNonHeaderChildViews();
+
+  // View containing the header.
   raw_ptr<views::View> header_view_ = nullptr;
 
-  // View containing the modal dialog button row.
-  raw_ptr<views::View> button_row_ = nullptr;
+  // View containing the use other account button.
+  raw_ptr<views::View> use_other_account_button_ = nullptr;
 
-  // View containing the modal dialog account chooser.
+  // View containing the back button.
+  raw_ptr<views::View> back_button_ = nullptr;
+
+  // View containing the continue button.
+  raw_ptr<views::View> continue_button_ = nullptr;
+
+  // View containing the cancel button.
+  raw_ptr<views::View> cancel_button_ = nullptr;
+
+  // View containing the account chooser.
   raw_ptr<views::View> account_chooser_ = nullptr;
 
-  // View containing the modal dialog title.
+  // View containing the title.
   raw_ptr<views::Label> title_label_ = nullptr;
 
-  // View containing the modal dialog cancel button.
-  raw_ptr<views::MdTextButton> cancel_button_ = nullptr;
+  // View containing the body.
+  raw_ptr<views::Label> body_label_ = nullptr;
+
+  // View containing the brand icon image.
+  raw_ptr<BrandIconImageView> brand_icon_ = nullptr;
+
+  // Whether a progress bar is present.
+  bool has_progress_bar_{false};
+
+  // Whether the title has been announced for accessibility.
+  bool has_announced_title_{false};
+
+  // The announcement that should be made upon view focus, if screen reader is
+  // turned on.
+  std::u16string queued_announcement_;
 
   // The title for the modal dialog.
   std::u16string title_;

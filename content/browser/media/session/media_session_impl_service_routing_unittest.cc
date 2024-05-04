@@ -90,6 +90,10 @@ class MockMediaSessionPlayerObserver : public MediaSessionPlayerObserver {
     return false;
   }
 
+  bool HasSufficientlyVisibleVideo(int player_id) const override {
+    return false;
+  }
+
   bool HasAudio(int player_id) const override {
     return audio_video_state_ == MediaAudioVideoState::kAudioOnly ||
            audio_video_state_ == MediaAudioVideoState::kAudioVideo;
@@ -99,6 +103,8 @@ class MockMediaSessionPlayerObserver : public MediaSessionPlayerObserver {
     return audio_video_state_ == MediaAudioVideoState::kVideoOnly ||
            audio_video_state_ == MediaAudioVideoState::kAudioVideo;
   }
+
+  bool IsPaused(int player_id) const override { return false; }
 
   std::string GetAudioOutputSinkId(int player_id) const override { return ""; }
 
@@ -138,6 +144,8 @@ class MediaSessionImplServiceRoutingTest
     actions_.insert(MediaSessionAction::kStop);
     actions_.insert(MediaSessionAction::kSeekTo);
     actions_.insert(MediaSessionAction::kScrubTo);
+    actions_.insert(MediaSessionAction::kSeekForward);
+    actions_.insert(MediaSessionAction::kSeekBackward);
   }
 
   ~MediaSessionImplServiceRoutingTest() override = default;

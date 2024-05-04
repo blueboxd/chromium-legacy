@@ -50,14 +50,6 @@ void WebAXContext::ResetSerializer() {
   private_->GetAXObjectCache().ResetSerializer();
 }
 
-void WebAXContext::SerializeLocationChanges(uint32_t reset_token) const {
-  if (!HasActiveDocument()) {
-    return;
-  }
-  ScopedFreezeAXCache freeze(private_->GetAXObjectCache());
-  private_->GetAXObjectCache().SerializeLocationChanges(reset_token);
-}
-
 bool WebAXContext::SerializeEntireTree(
     size_t max_node_count,
     base::TimeDelta timeout,
@@ -72,20 +64,6 @@ bool WebAXContext::SerializeEntireTree(
   ScopedFreezeAXCache freeze(private_->GetAXObjectCache());
   return private_->GetAXObjectCache().SerializeEntireTree(
       max_node_count, timeout, response, out_error);
-}
-
-void WebAXContext::SerializeDirtyObjectsAndEvents(
-    std::vector<ui::AXTreeUpdate>& updates,
-    std::vector<ui::AXEvent>& events,
-    bool& had_end_of_test_event,
-    bool& had_load_complete_messages,
-    bool& need_to_send_location_changes) {
-  CHECK(HasActiveDocument());
-
-  ScopedFreezeAXCache freeze(private_->GetAXObjectCache());
-  private_->GetAXObjectCache().SerializeDirtyObjectsAndEvents(
-      updates, events, had_end_of_test_event, had_load_complete_messages,
-      need_to_send_location_changes);
 }
 
 void WebAXContext::GetImagesToAnnotate(ui::AXTreeUpdate& updates,
@@ -164,5 +142,9 @@ void WebAXContext::FireLoadCompleteIfLoaded() {
   if (!private_->HasActiveDocument())
     return;
   return private_->GetDocument()->DispatchHandleLoadComplete();
+}
+
+void WebAXContext::SetSerializationResetToken(uint32_t reset_token) const {
+  private_->GetAXObjectCache().SetSerializationResetToken(reset_token);
 }
 }  // namespace blink

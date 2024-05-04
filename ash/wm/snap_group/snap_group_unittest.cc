@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/wm/snap_group/snap_group.h"
+
 #include <algorithm>
 #include <memory>
 #include <vector>
@@ -14,17 +16,23 @@
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/public/cpp/accelerators.h"
+#include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/test/shell_test_api.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
+#include "ash/shelf/shelf.h"
+#include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
+#include "ash/shell_delegate.h"
 #include "ash/style/close_button.h"
 #include "ash/style/system_toast_style.h"
 #include "ash/system/toast/toast_manager_impl.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_util.h"
+#include "ash/test_shell_delegate.h"
 #include "ash/wm/desks/desks_controller.h"
+#include "ash/wm/desks/desks_test_api.h"
 #include "ash/wm/desks/desks_test_util.h"
 #include "ash/wm/desks/desks_util.h"
 #include "ash/wm/desks/legacy_desk_bar_view.h"
@@ -37,15 +45,18 @@
 #include "ash/wm/overview/overview_group_item.h"
 #include "ash/wm/overview/overview_item.h"
 #include "ash/wm/overview/overview_item_view.h"
+#include "ash/wm/overview/overview_metrics.h"
 #include "ash/wm/overview/overview_session.h"
 #include "ash/wm/overview/overview_test_base.h"
 #include "ash/wm/overview/overview_test_util.h"
 #include "ash/wm/overview/overview_utils.h"
 #include "ash/wm/overview/overview_window_drag_controller.h"
 #include "ash/wm/overview/scoped_overview_transform_window.h"
-#include "ash/wm/snap_group/snap_group.h"
+#include "ash/wm/snap_group/snap_group_constants.h"
 #include "ash/wm/snap_group/snap_group_controller.h"
+#include "ash/wm/snap_group/snap_group_metrics.h"
 #include "ash/wm/splitview/faster_split_view.h"
+#include "ash/wm/splitview/layout_divider_controller.h"
 #include "ash/wm/splitview/split_view_constants.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/splitview/split_view_divider.h"
@@ -54,6 +65,7 @@
 #include "ash/wm/splitview/split_view_utils.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
+#include "ash/wm/test/test_non_client_frame_view_ash.h"
 #include "ash/wm/window_cycle/window_cycle_controller.h"
 #include "ash/wm/window_cycle/window_cycle_list.h"
 #include "ash/wm/window_cycle/window_cycle_view.h"
@@ -69,25 +81,33 @@
 #include "ash/wm/workspace_controller_test_api.h"
 #include "base/check_op.h"
 #include "base/run_loop.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "chromeos/ui/base/window_state_type.h"
 #include "chromeos/ui/frame/caption_buttons/snap_controller.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
 #include "ui/base/hit_test.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
+#include "ui/display/manager/display_manager.h"
 #include "ui/display/test/display_manager_test_api.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/keycodes/keyboard_codes_posix.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/vector2d.h"
+#include "ui/views/test/test_widget_observer.h"
+#include "ui/views/test/views_test_utils.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/window_modality_controller.h"
 #include "ui/wm/core/window_util.h"
 #include "ui/wm/public/window_move_client.h"
@@ -96,10 +116,9 @@ namespace ash {
 
 namespace {
 
-using ::chromeos::WindowStateType;
-
+using chromeos::WindowStateType;
+using testing::ElementsAre;
 using ui::mojom::CursorType;
-
 using WindowCyclingDirection = WindowCycleController::WindowCyclingDirection;
 
 SplitViewController* split_view_controller() {
@@ -110,13 +129,29 @@ SplitViewDivider* split_view_divider() {
   return split_view_controller()->split_view_divider();
 }
 
+SplitViewDivider* snap_group_divider() {
+  auto* top_snap_group = SnapGroupController::Get()->GetTopmostSnapGroup();
+  return top_snap_group ? top_snap_group->snap_group_divider() : nullptr;
+}
+
 gfx::Rect split_view_divider_bounds_in_screen() {
   return split_view_divider()->GetDividerBoundsInScreen(
       /*is_dragging=*/false);
 }
 
+gfx::Rect snap_group_divider_bounds_in_screen() {
+  return snap_group_divider()->GetDividerBoundsInScreen(
+      /*is_dragging=*/false);
+}
+
 const gfx::Rect work_area_bounds() {
   return display::Screen::GetScreen()->GetPrimaryDisplay().work_area();
+}
+
+const gfx::Rect GetWorkAreaBoundsForWindow(aura::Window* window) {
+  return display::Screen::GetScreen()
+      ->GetDisplayNearestWindow(window)
+      .work_area();
 }
 
 void SwitchToTabletMode() {
@@ -129,12 +164,10 @@ void ExitTabletMode() {
   TabletModeControllerTestApi().LeaveTabletMode();
 }
 
-gfx::Rect GetOverviewGridBounds() {
+gfx::Rect GetOverviewGridBounds(aura::Window* root_window) {
   OverviewSession* overview_session = GetOverviewSession();
-  return overview_session
-             ? OverviewGridTestApi(overview_session->grid_list()[0].get())
-                   .bounds()
-             : gfx::Rect();
+  return overview_session ? OverviewGridTestApi(root_window).bounds()
+                          : gfx::Rect();
 }
 
 void SnapOneTestWindow(
@@ -168,10 +201,10 @@ SplitViewOverviewSession* VerifySplitViewOverviewSession(
   SplitViewOverviewSession* split_view_overview_session =
       RootWindowController::ForWindow(window)->split_view_overview_session();
   EXPECT_TRUE(split_view_overview_session);
-  gfx::Rect expected_grid_bounds = work_area_bounds();
+  gfx::Rect expected_grid_bounds = GetWorkAreaBoundsForWindow(window);
   expected_grid_bounds.Subtract(window->GetBoundsInScreen());
 
-  if (split_view_divider()->divider_widget()) {
+  if (split_view_divider() && split_view_divider()->divider_widget()) {
     expected_grid_bounds.Subtract(split_view_divider_bounds_in_screen());
   }
 
@@ -189,11 +222,13 @@ SplitViewOverviewSession* VerifySplitViewOverviewSession(
         std::max(expected_grid_bounds.height(), min_length));
   }
 
+  auto* root_window = window->GetRootWindow();
   if (!Shell::Get()->IsInTabletMode()) {
-    EXPECT_EQ(expected_grid_bounds, GetOverviewGridBounds());
+    EXPECT_EQ(expected_grid_bounds, GetOverviewGridBounds(root_window));
   }
 
-  EXPECT_TRUE(expected_grid_bounds.Contains(GetOverviewGridBounds()));
+  EXPECT_TRUE(
+      expected_grid_bounds.Contains(GetOverviewGridBounds(root_window)));
 
   if (!Shell::Get()->IsInTabletMode() && faster_split_screen_setup) {
     auto* overview_grid = GetOverviewGridForRoot(window->GetRootWindow());
@@ -257,18 +292,55 @@ void DragGroupItemToPoint(OverviewItemBase* item,
   }
 }
 
-// Returns true if the union bounds of `w1`, `w2` and the split view
-// divider (if exists) equal to the bounds of the work area and false
-// otherwise.
-bool UnionBoundsEqualToWorkAreaBounds(aura::Window* w1, aura::Window* w2) {
+// Gets a point to drag `window` by the header.
+gfx::Point GetDragPoint(aura::Window* window) {
+  auto* frame = NonClientFrameViewAsh::Get(window);
+  views::test::RunScheduledLayout(frame);
+  return frame->GetHeaderView()->GetBoundsInScreen().CenterPoint();
+}
+
+// Verifies that the union bounds of `w1`, `w2` and the divider are equal to
+// the bounds of the work area with no overlap.
+void UnionBoundsEqualToWorkAreaBounds(aura::Window* w1,
+                                      aura::Window* w2,
+                                      SplitViewDivider* divider) {
+  gfx::Rect w1_bounds(w1->GetTargetBounds());
+  wm::ConvertRectToScreen(w1->GetRootWindow(), &w1_bounds);
+  gfx::Rect w2_bounds(w2->GetTargetBounds());
+  wm::ConvertRectToScreen(w2->GetRootWindow(), &w2_bounds);
+
+  const auto divider_bounds =
+      divider->GetDividerBoundsInScreen(/*is_dragging=*/false);
+  EXPECT_FALSE(w1_bounds.IsEmpty());
+  EXPECT_FALSE(w2_bounds.IsEmpty());
+  EXPECT_FALSE(divider_bounds.IsEmpty());
+
   gfx::Rect union_bounds;
-  union_bounds.Union(w1->GetBoundsInScreen());
-  union_bounds.Union(w2->GetBoundsInScreen());
-  const auto divider_bounds = split_view_divider()->divider_widget()
-                                  ? split_view_divider_bounds_in_screen()
-                                  : gfx::Rect();
+  union_bounds.Union(w1_bounds);
+  union_bounds.Union(w2_bounds);
+  EXPECT_FALSE(w1_bounds.Contains(divider_bounds));
+  EXPECT_FALSE(w2_bounds.Contains(divider_bounds));
+  if (IsLayoutHorizontal(w1)) {
+    EXPECT_EQ(w1_bounds.right(), divider_bounds.x());
+    EXPECT_EQ(w2_bounds.x(), divider_bounds.right());
+  } else {
+    EXPECT_EQ(w1_bounds.bottom(), divider_bounds.y());
+    EXPECT_EQ(w2_bounds.y(), divider_bounds.bottom());
+  }
+
   union_bounds.Union(divider_bounds);
-  return union_bounds == work_area_bounds();
+  EXPECT_EQ(
+      display::Screen::GetScreen()->GetDisplayNearestWindow(w1).work_area(),
+      union_bounds);
+}
+
+// Verifies the windows and divider of `snap_group` are on `display_id`.
+void VerifySnapGroupOnDisplay(SnapGroup* snap_group, const int64_t display_id) {
+  aura::Window* root = snap_group->window1()->GetRootWindow();
+  EXPECT_EQ(root, snap_group->window2()->GetRootWindow());
+  EXPECT_EQ(root, snap_group->snap_group_divider()->GetRootWindow());
+  EXPECT_EQ(display_id,
+            display::Screen::GetScreen()->GetDisplayNearestWindow(root).id());
 }
 
 }  // namespace
@@ -339,13 +411,13 @@ TEST_F(FasterSplitScreenTest, Basic) {
   EXPECT_FALSE(overview_controller->InOverviewSession());
 
   // Create a new `w3` and snap it to the left. Test it doesn't start overview.
-  std::unique_ptr<aura::Window> w3(CreateTestWindow());
+  std::unique_ptr<aura::Window> w3(CreateAppWindow());
   SnapOneTestWindow(w3.get(), WindowStateType::kPrimarySnapped,
                     chromeos::kDefaultSnapRatio);
   EXPECT_FALSE(overview_controller->InOverviewSession());
 
   // Create a new `w4` and snap it to the right. Test it doesn't start overview.
-  std::unique_ptr<aura::Window> w4(CreateTestWindow());
+  std::unique_ptr<aura::Window> w4(CreateAppWindow());
   SnapOneTestWindow(w4.get(), WindowStateType::kSecondarySnapped,
                     chromeos::kDefaultSnapRatio);
   EXPECT_FALSE(overview_controller->InOverviewSession());
@@ -444,11 +516,8 @@ TEST_F(FasterSplitScreenTest, EndSplitViewOverviewSession) {
   VerifySplitViewOverviewSession(w1.get());
 
   // Drag `w1` out of split view. Test it ends overview.
-  const gfx::Rect window_bounds(w1->GetBoundsInScreen());
-  const gfx::Point drag_point(window_bounds.CenterPoint().x(),
-                              window_bounds.y() + 10);
   auto* event_generator = GetEventGenerator();
-  event_generator->set_current_screen_location(drag_point);
+  event_generator->set_current_screen_location(GetDragPoint(w1.get()));
   event_generator->DragMouseBy(10, 10);
   EXPECT_FALSE(Shell::Get()->overview_controller()->InOverviewSession());
 
@@ -506,18 +575,13 @@ TEST_F(FasterSplitScreenTest, ResizeSplitViewOverviewAndWindow) {
 // Tests that drag to snap window -> resize window -> snap window again restores
 // to the default snap ratio. Regression test for b/315039407.
 TEST_F(FasterSplitScreenTest, ResizeThenDragToSnap) {
-  auto get_drag_point = [](aura::Window* window) -> gfx::Point {
-    const gfx::Rect window_bounds = window->GetBoundsInScreen();
-    return {window_bounds.CenterPoint().x(), window_bounds.y() + 10};
-  };
-
   // Create `w2` first, as `w1` will be created on top and we want to drag it.
   std::unique_ptr<aura::Window> w2(CreateAppWindow());
   std::unique_ptr<aura::Window> w1(CreateAppWindow());
 
   // Drag to snap `w1` to 1/2.
   auto* event_generator = GetEventGenerator();
-  event_generator->set_current_screen_location(get_drag_point(w1.get()));
+  event_generator->set_current_screen_location(GetDragPoint(w1.get()));
   event_generator->DragMouseTo(0, 100);
   WindowState* window_state = WindowState::Get(w1.get());
   EXPECT_EQ(WindowStateType::kPrimarySnapped, window_state->GetStateType());
@@ -533,14 +597,14 @@ TEST_F(FasterSplitScreenTest, ResizeThenDragToSnap) {
   EXPECT_NE(snapped_bounds, w1->GetBoundsInScreen());
 
   // Drag `w1` to unsnap and skip overview pairing.
-  event_generator->set_current_screen_location(get_drag_point(w1.get()));
+  event_generator->set_current_screen_location(GetDragPoint(w1.get()));
   event_generator->DragMouseBy(10, 10);
   EXPECT_FALSE(IsInOverviewSession());
   EXPECT_EQ(WindowStateType::kNormal, window_state->GetStateType());
   EXPECT_NE(snapped_bounds, w1->GetBoundsInScreen());
 
   // Drag to snap `w1` again. Test it snaps to 1/2.
-  event_generator->set_current_screen_location(get_drag_point(w1.get()));
+  event_generator->set_current_screen_location(GetDragPoint(w1.get()));
   event_generator->DragMouseTo(0, 100);
   EXPECT_EQ(snapped_bounds, w1->GetBoundsInScreen());
 
@@ -551,7 +615,7 @@ TEST_F(FasterSplitScreenTest, ResizeThenDragToSnap) {
   EXPECT_NE(snapped_bounds, w1->GetBoundsInScreen());
 
   // Drag to snap `w2`. Test it snaps to 1/2.
-  event_generator->set_current_screen_location(get_drag_point(w2.get()));
+  event_generator->set_current_screen_location(GetDragPoint(w2.get()));
   event_generator->DragMouseTo(0, 100);
   EXPECT_EQ(WindowStateType::kPrimarySnapped,
             WindowState::Get(w2.get())->GetStateType());
@@ -579,7 +643,7 @@ TEST_F(FasterSplitScreenTest, ResizeAndAutoSnap) {
 
   gfx::Rect expected_grid_bounds(work_area_bounds());
   expected_grid_bounds.Subtract(w1->GetBoundsInScreen());
-  EXPECT_EQ(expected_grid_bounds, GetOverviewGridBounds());
+  EXPECT_EQ(expected_grid_bounds, GetOverviewGridBounds(w1->GetRootWindow()));
 
   // Create a window and test that it auto snaps.
   std::unique_ptr<aura::Window> w3(CreateAppWindow());
@@ -742,8 +806,8 @@ TEST_F(FasterSplitScreenTest, SkipPairingWhenActivatingTheSnappedWindow) {
 }
 
 TEST_F(FasterSplitScreenTest, SkipPairingOnKeyEvent) {
-  std::unique_ptr<aura::Window> w1(CreateTestWindow());
-  std::unique_ptr<aura::Window> w2(CreateTestWindow());
+  std::unique_ptr<aura::Window> w1(CreateAppWindow());
+  std::unique_ptr<aura::Window> w2(CreateAppWindow());
 
   SnapOneTestWindow(w1.get(), WindowStateType::kPrimarySnapped,
                     chromeos::kDefaultSnapRatio);
@@ -777,12 +841,9 @@ TEST_F(FasterSplitScreenTest, SkipPairingToast) {
 
   auto* overview_grid = GetOverviewGridForRoot(w1->GetRootWindow());
   ASSERT_TRUE(overview_grid);
-  auto* faster_splitview_widget = overview_grid->faster_splitview_widget();
-  ASSERT_TRUE(faster_splitview_widget);
-  auto* toast_view = views::AsViewClass<SystemToastStyle>(
-      faster_splitview_widget->GetContentsView()->children()[0]);
-  ASSERT_TRUE(toast_view);
-  LeftClickOn(toast_view->dismiss_button());
+  auto* faster_split_view = overview_grid->GetFasterSplitView();
+  ASSERT_TRUE(faster_split_view);
+  LeftClickOn(faster_split_view->GetDismissButton());
 
   EXPECT_FALSE(OverviewController::Get()->InOverviewSession());
 }
@@ -1226,19 +1287,22 @@ TEST_F(FasterSplitScreenTest, KeyboardAndWorkAreaBoundsChanges) {
   auto* keyboard_controller = keyboard::KeyboardUIController::Get();
   keyboard_controller->ShowKeyboard(true);
   VerifySplitViewOverviewSession(window1.get());
+  auto* root_window = window1->GetRootWindow();
   EXPECT_EQ(chromeos::WindowStateType::kPrimarySnapped,
             WindowState::Get(window1.get())->GetStateType());
-  auto* overview_grid = GetOverviewGridForRoot(window1->GetRootWindow());
-  EXPECT_TRUE(GetOverviewGridBounds().Contains(
-      overview_grid->GetFasterSplitView()->GetBoundsInScreen()));
+  auto* overview_grid = GetOverviewGridForRoot(root_window);
+  EXPECT_TRUE(
+      GetOverviewGridBounds(root_window)
+          .Contains(overview_grid->GetFasterSplitView()->GetBoundsInScreen()));
 
   // Hide the virtual keyboard. Test we refresh the grid and widget bounds.
   keyboard_controller->HideKeyboardByUser();
   VerifySplitViewOverviewSession(window1.get());
   EXPECT_EQ(chromeos::WindowStateType::kPrimarySnapped,
             WindowState::Get(window1.get())->GetStateType());
-  EXPECT_TRUE(GetOverviewGridBounds().Contains(
-      overview_grid->GetFasterSplitView()->GetBoundsInScreen()));
+  EXPECT_TRUE(
+      GetOverviewGridBounds(root_window)
+          .Contains(overview_grid->GetFasterSplitView()->GetBoundsInScreen()));
 
   // Show the docked magnifier, which ends overview.
   auto* docked_magnifier_controller =
@@ -1339,8 +1403,8 @@ TEST_F(FasterSplitScreenTest, ClamshellTabletTransitionOneSnappedWindow) {
 }
 
 TEST_F(FasterSplitScreenTest, ClamshellTabletTransitionTwoSnappedWindows) {
-  std::unique_ptr<aura::Window> w1(CreateTestWindow());
-  std::unique_ptr<aura::Window> w2(CreateTestWindow());
+  std::unique_ptr<aura::Window> w1(CreateAppWindow());
+  std::unique_ptr<aura::Window> w2(CreateAppWindow());
   SnapOneTestWindow(w1.get(), WindowStateType::kPrimarySnapped,
                     chromeos::kDefaultSnapRatio);
   // Select the second window from overview to snap it.
@@ -1353,7 +1417,7 @@ TEST_F(FasterSplitScreenTest, ClamshellTabletTransitionTwoSnappedWindows) {
   EXPECT_EQ(2u, observed_windows.size());
   // TODO(b/312229933): Determine whether the order of `observed_windows_`
   // matters.
-  EXPECT_TRUE(UnionBoundsEqualToWorkAreaBounds(w1.get(), w2.get()));
+  UnionBoundsEqualToWorkAreaBounds(w1.get(), w2.get(), split_view_divider());
 
   TabletModeControllerTestApi().LeaveTabletMode();
 }
@@ -1417,7 +1481,7 @@ TEST_F(FasterSplitScreenTest, NoCrashWhenDoubleTapAfterTransition) {
   SwitchToTabletMode();
   EXPECT_TRUE(split_view_divider()->divider_widget());
 
-  // Double tap on the divider-> This will start a drag and notify
+  // Double tap on the divider. This will start a drag and notify
   // SplitViewOverviewSession.
   const gfx::Point divider_center =
       split_view_divider()
@@ -1428,8 +1492,8 @@ TEST_F(FasterSplitScreenTest, NoCrashWhenDoubleTapAfterTransition) {
 }
 
 TEST_F(FasterSplitScreenTest, BasicTabKeyNavigation) {
-  std::unique_ptr<aura::Window> window2(CreateTestWindow());
-  std::unique_ptr<aura::Window> window1(CreateTestWindow());
+  std::unique_ptr<aura::Window> window2(CreateAppWindow());
+  std::unique_ptr<aura::Window> window1(CreateAppWindow());
 
   const WindowSnapWMEvent snap_event(WM_EVENT_SNAP_PRIMARY,
                                      WindowSnapActionSource::kTest);
@@ -1448,7 +1512,7 @@ TEST_F(FasterSplitScreenTest, BasicTabKeyNavigation) {
   // Tab to the toast dismiss button.
   PressAndReleaseKey(ui::VKEY_TAB);
   ASSERT_TRUE(IsInOverviewSession());
-  EXPECT_EQ(grid->GetFasterSplitView()->toast()->dismiss_button(),
+  EXPECT_EQ(grid->GetFasterSplitView()->GetDismissButton(),
             focus_cycler->focused_view()->GetView());
 
   // Tab to the settings button.
@@ -1464,7 +1528,7 @@ TEST_F(FasterSplitScreenTest, BasicTabKeyNavigation) {
   auto* event_generator = GetEventGenerator();
   event_generator->PressKeyAndModifierKeys(ui::VKEY_TAB, ui::EF_SHIFT_DOWN);
   ASSERT_TRUE(IsInOverviewSession());
-  EXPECT_EQ(grid->GetFasterSplitView()->toast()->dismiss_button(),
+  EXPECT_EQ(grid->GetFasterSplitView()->GetDismissButton(),
             focus_cycler->focused_view()->GetView());
 
   // Shift + Tab reverse tabs to the overview item.
@@ -1477,52 +1541,67 @@ TEST_F(FasterSplitScreenTest, BasicTabKeyNavigation) {
 TEST_F(FasterSplitScreenTest, TabbingChromevox) {
   Shell::Get()->accessibility_controller()->spoken_feedback().SetEnabled(true);
 
-  std::unique_ptr<aura::Window> window2(CreateTestWindow());
-  std::unique_ptr<aura::Window> window1(CreateTestWindow());
+  std::unique_ptr<aura::Window> window2(CreateAppWindow());
+  std::unique_ptr<aura::Window> window1(CreateAppWindow());
 
   const WindowSnapWMEvent snap_event(WM_EVENT_SNAP_PRIMARY,
                                      WindowSnapActionSource::kTest);
-  WindowState::Get(window1.get())->OnWMEvent(&snap_event);
-  ASSERT_TRUE(OverviewController::Get()->InOverviewSession());
-
-  // Note we use `PressKeyAndModifierKeys()` to send modifier and key separately
-  // to simulate real user input.
-
-  // Search + Right moves to the first overview item.
   auto* event_generator = GetEventGenerator();
-  event_generator->PressKeyAndModifierKeys(ui::VKEY_RIGHT, ui::EF_COMMAND_DOWN);
-  const std::vector<std::unique_ptr<OverviewItemBase>>& overview_windows =
-      GetOverviewItemsForRoot(0);
-  EXPECT_EQ(overview_windows[0]->GetWindow(), GetOverviewFocusedWindow());
 
-  // Search + Right moves to the dismiss button.
-  event_generator->PressKeyAndModifierKeys(ui::VKEY_RIGHT, ui::EF_COMMAND_DOWN);
-  OverviewGrid* grid = GetOverviewSession()->grid_list()[0].get();
-  OverviewFocusCycler* focus_cycler = GetOverviewSession()->focus_cycler();
-  EXPECT_EQ(grid->GetFasterSplitView()->toast()->dismiss_button(),
-            focus_cycler->focused_view()->GetView());
+  enum class TestCase { kDismissButton, kSettingsButton };
+  const auto kTestCases = {TestCase::kDismissButton, TestCase::kSettingsButton};
 
-  // Search + Right moves to the settings button.
-  event_generator->PressKeyAndModifierKeys(ui::VKEY_RIGHT, ui::EF_COMMAND_DOWN);
-  EXPECT_EQ(grid->GetFasterSplitView()->settings_button(),
-            focus_cycler->focused_view());
+  for (auto test_case : kTestCases) {
+    WindowState::Get(window1.get())->OnWMEvent(&snap_event);
+    ASSERT_TRUE(OverviewController::Get()->InOverviewSession());
 
-  // Search + Left moves back to the dismiss button.
-  event_generator->PressKeyAndModifierKeys(ui::VKEY_LEFT, ui::EF_COMMAND_DOWN);
-  EXPECT_EQ(grid->GetFasterSplitView()->toast()->dismiss_button(),
-            focus_cycler->focused_view()->GetView());
+    // Note we use `PressKeyAndModifierKeys()` to send modifier and key
+    // separately to simulate real user input.
 
-  // Search + Space activates the dismiss button.
-  event_generator->PressKeyAndModifierKeys(ui::VKEY_SPACE, ui::EF_COMMAND_DOWN);
-  EXPECT_FALSE(IsInOverviewSession());
+    // Search + Right moves to the first overview item.
+    event_generator->PressKeyAndModifierKeys(ui::VKEY_RIGHT,
+                                             ui::EF_COMMAND_DOWN);
+    const std::vector<std::unique_ptr<OverviewItemBase>>& overview_windows =
+        GetOverviewItemsForRoot(0);
+    EXPECT_EQ(overview_windows[0]->GetWindow(), GetOverviewFocusedWindow());
 
-  // TODO(sophiewen): `TestShellDelegate::OpenMultitaskingSettings()` can't open
-  // the settings page so we wouldn't end overview. See how we can test this.
+    // Search + Right moves to the dismiss button.
+    event_generator->PressKeyAndModifierKeys(ui::VKEY_RIGHT,
+                                             ui::EF_COMMAND_DOWN);
+    OverviewGrid* grid = GetOverviewSession()->grid_list()[0].get();
+    OverviewFocusCycler* focus_cycler = GetOverviewSession()->focus_cycler();
+    EXPECT_EQ(grid->GetFasterSplitView()->GetDismissButton(),
+              focus_cycler->focused_view()->GetView());
+
+    // Search + Right moves to the settings button.
+    event_generator->PressKeyAndModifierKeys(ui::VKEY_RIGHT,
+                                             ui::EF_COMMAND_DOWN);
+    EXPECT_EQ(grid->GetFasterSplitView()->settings_button(),
+              focus_cycler->focused_view());
+
+    if (test_case == TestCase::kSettingsButton) {
+      // Search + Space activates the settings button.
+      event_generator->PressKeyAndModifierKeys(ui::VKEY_SPACE,
+                                               ui::EF_COMMAND_DOWN);
+      EXPECT_FALSE(IsInOverviewSession());
+    } else {
+      // Search + Left moves back to the dismiss button.
+      event_generator->PressKeyAndModifierKeys(ui::VKEY_LEFT,
+                                               ui::EF_COMMAND_DOWN);
+      EXPECT_EQ(grid->GetFasterSplitView()->GetDismissButton(),
+                focus_cycler->focused_view()->GetView());
+
+      // Search + Space activates the dismiss button.
+      event_generator->PressKeyAndModifierKeys(ui::VKEY_SPACE,
+                                               ui::EF_COMMAND_DOWN);
+      EXPECT_FALSE(IsInOverviewSession());
+    }
+  }
 }
 
 TEST_F(FasterSplitScreenTest, AccessibilityFocusAnnotator) {
-  auto window1 = CreateTestWindow(gfx::Rect(100, 100));
-  auto window0 = CreateTestWindow(gfx::Rect(100, 100));
+  auto window1 = CreateAppWindow(gfx::Rect(100, 100));
+  auto window0 = CreateAppWindow(gfx::Rect(100, 100));
 
   // Snap `window0`, so it is excluded from the overview list.
   SnapOneTestWindow(window0.get(), WindowStateType::kPrimarySnapped,
@@ -1870,6 +1949,47 @@ TEST_F(FasterSplitScreenTest, NoCrashWhenDraggingSnappedWindowToEdge) {
   EXPECT_TRUE(WindowState::Get(window1.get())->is_dragged());
 }
 
+TEST_F(FasterSplitScreenTest, RecordWindowIndexAndCount) {
+  // Start partial overview with 1 window in overview.
+  std::unique_ptr<aura::Window> w1(CreateAppWindow());
+  std::unique_ptr<aura::Window> w2(CreateAppWindow());
+  SnapOneTestWindow(w1.get(), WindowStateType::kPrimarySnapped,
+                    chromeos::kDefaultSnapRatio);
+  // Select `w2` which is the only window.
+  ClickOverviewItem(GetEventGenerator(), w2.get());
+  histogram_tester_.ExpectBucketCount(kPartialOverviewSelectedWindowIndex,
+                                      /*index=*/0,
+                                      /*expected_count=*/1);
+  histogram_tester_.ExpectBucketCount(kPartialOverviewWindowListSize,
+                                      /*size=*/1, /*expected_count=*/1);
+  MaximizeToClearTheSession(w2.get());
+
+  // Start partial overview with 2 windows in overview.
+  std::unique_ptr<aura::Window> w3(CreateAppWindow());
+  SnapOneTestWindow(w1.get(), WindowStateType::kPrimarySnapped,
+                    chromeos::kDefaultSnapRatio);
+  // Select `w2` which is the 2nd mru window.
+  ClickOverviewItem(GetEventGenerator(), w2.get());
+  histogram_tester_.ExpectBucketCount(kPartialOverviewSelectedWindowIndex,
+                                      /*index=*/1,
+                                      /*expected_count=*/1);
+  histogram_tester_.ExpectBucketCount(kPartialOverviewWindowListSize,
+                                      /*size=*/2, /*expected_count=*/1);
+  MaximizeToClearTheSession(w2.get());
+
+  // Start partial overview with 3 windows in overview.
+  std::unique_ptr<aura::Window> w4(CreateAppWindow());
+  SnapOneTestWindow(w1.get(), WindowStateType::kPrimarySnapped,
+                    chromeos::kDefaultSnapRatio);
+  // Select `w3` which is the 3rd mru window.
+  ClickOverviewItem(GetEventGenerator(), w3.get());
+  histogram_tester_.ExpectBucketCount(kPartialOverviewSelectedWindowIndex,
+                                      /*index=*/2,
+                                      /*expected_count=*/1);
+  histogram_tester_.ExpectBucketCount(kPartialOverviewWindowListSize,
+                                      /*size=*/3, /*expected_count=*/1);
+}
+
 // -----------------------------------------------------------------------------
 // SnapGroupTest:
 
@@ -1892,35 +2012,29 @@ class SnapGroupTest : public FasterSplitScreenTest {
     WindowCycleList::SetDisableInitialDelayForTesting(true);
   }
 
-  void SnapOneTestWindow(aura::Window* window, WindowStateType state_type) {
-    UpdateDisplay("800x600");
-    WindowState* window_state = WindowState::Get(window);
-    const WindowSnapWMEvent snap_type(
-        state_type == WindowStateType::kPrimarySnapped
-            ? WM_EVENT_SNAP_PRIMARY
-            : WM_EVENT_SNAP_SECONDARY,
-        /*snap_action_source=*/WindowSnapActionSource::kTest);
-    window_state->OnWMEvent(&snap_type);
-    EXPECT_EQ(state_type, window_state->GetStateType());
-  }
-
   void SnapTwoTestWindows(aura::Window* window1,
                           aura::Window* window2,
                           bool horizontal = true) {
     CHECK_NE(window1, window2);
     // Snap `window1` to trigger the overview session shown on the other side of
     // the screen.
-    SnapOneTestWindow(
-        window1,
-        /*state_type=*/chromeos::WindowStateType::kPrimarySnapped);
+    SnapOneTestWindow(window1,
+                      /*state_type=*/chromeos::WindowStateType::kPrimarySnapped,
+                      chromeos::kDefaultSnapRatio);
     WaitForOverviewEntered();
     VerifySplitViewOverviewSession(window1);
 
-    // When the first window is snapped, it takes exactly half the width.
-    gfx::Rect expected_bounds(work_area_bounds());
-    gfx::Rect left_bounds, right_bounds;
-    expected_bounds.SplitVertically(&left_bounds, &right_bounds);
-    EXPECT_EQ(left_bounds, window1->GetBoundsInScreen());
+    // Snapping the first window makes it fill half the screen, either
+    // vertically or horizontally (based on orientation).
+    gfx::Rect work_area(GetWorkAreaBoundsForWindow(window1));
+    gfx::Rect primary_bounds, secondary_bounds;
+    if (horizontal) {
+      work_area.SplitVertically(primary_bounds, secondary_bounds);
+    } else {
+      work_area.SplitHorizontally(primary_bounds, secondary_bounds);
+    }
+
+    EXPECT_EQ(primary_bounds, window1->GetBoundsInScreen());
 
     // The `window2` gets selected in the overview will be snapped to the
     // non-occupied snap position and the overview session will end.
@@ -1936,23 +2050,42 @@ class SnapGroupTest : public FasterSplitScreenTest {
     ASSERT_TRUE(snap_group_controller);
     EXPECT_TRUE(snap_group_controller->AreWindowsInSnapGroup(window1, window2));
 
-    // The split view divider will show on two windows snapped.
-    EXPECT_TRUE(split_view_divider()->divider_widget());
-
+    // The snap group divider will show on two windows snapped.
+    EXPECT_TRUE(snap_group_divider()->divider_widget());
     EXPECT_EQ(chromeos::kDefaultSnapRatio,
               *WindowState::Get(window1)->snap_ratio());
     EXPECT_EQ(chromeos::kDefaultSnapRatio,
               *WindowState::Get(window2)->snap_ratio());
 
-    // Now that two windows are snapped, the divider is between them.
-    gfx::Rect divider_bounds(
-        split_view_divider()->GetDividerBoundsInScreen(/*is_dragging=*/false));
-    left_bounds.set_width(left_bounds.width() - divider_bounds.width() / 2);
-    right_bounds.set_x(right_bounds.x() + divider_bounds.width() / 2);
-    right_bounds.set_width(right_bounds.width() - divider_bounds.width() / 2);
+    gfx::Rect divider_bounds(snap_group_divider_bounds_in_screen());
+    EXPECT_EQ(work_area.CenterPoint().x(), divider_bounds.CenterPoint().x());
+    UnionBoundsEqualToWorkAreaBounds(window1, window2, snap_group_divider());
 
-    EXPECT_EQ(left_bounds.width(), window1->GetBoundsInScreen().width());
-    EXPECT_EQ(right_bounds.width(), window2->GetBoundsInScreen().width());
+    if (horizontal) {
+      primary_bounds.set_width(primary_bounds.width() -
+                               divider_bounds.width() / 2);
+      secondary_bounds.set_x(secondary_bounds.x() + divider_bounds.width() / 2);
+      secondary_bounds.set_width(secondary_bounds.width() -
+                                 divider_bounds.width() / 2);
+      EXPECT_EQ(primary_bounds.width(), window1->GetBoundsInScreen().width());
+      EXPECT_EQ(secondary_bounds.width(), window2->GetBoundsInScreen().width());
+      EXPECT_EQ(primary_bounds.width() + secondary_bounds.width() +
+                    divider_bounds.width(),
+                work_area.width());
+    } else {
+      primary_bounds.set_height(primary_bounds.height() -
+                                divider_bounds.height() / 2);
+      secondary_bounds.set_y(secondary_bounds.y() +
+                             divider_bounds.height() / 2);
+      secondary_bounds.set_height(secondary_bounds.height() -
+                                  divider_bounds.height() / 2);
+      EXPECT_EQ(primary_bounds.height(), window1->GetBoundsInScreen().height());
+      EXPECT_EQ(secondary_bounds.height(),
+                window2->GetBoundsInScreen().height());
+      EXPECT_EQ(primary_bounds.height() + secondary_bounds.height() +
+                    divider_bounds.height(),
+                work_area.height());
+    }
   }
 
   void CompleteWindowCycling() {
@@ -1974,7 +2107,7 @@ class SnapGroupTest : public FasterSplitScreenTest {
   // TODO(michelefan): Consider put this test util in a base class or test file.
   std::unique_ptr<aura::Window> CreateTestWindowWithAppID(
       std::string app_id_key) {
-    std::unique_ptr<aura::Window> window = CreateTestWindow();
+    std::unique_ptr<aura::Window> window = CreateAppWindow();
     window->SetProperty(kAppIDKey, std::move(app_id_key));
     return window;
   }
@@ -1982,9 +2115,19 @@ class SnapGroupTest : public FasterSplitScreenTest {
   std::unique_ptr<aura::Window> CreateTransientChildWindow(
       aura::Window* transient_parent,
       gfx::Rect child_window_bounds) {
-    auto child = CreateTestWindow(child_window_bounds);
+    auto child = CreateAppWindow(child_window_bounds);
     wm::AddTransientChild(transient_parent, child.get());
     return child;
+  }
+
+  std::unique_ptr<aura::Window> CreateAppWindowWithMinSize(gfx::Size min_size) {
+    std::unique_ptr<aura::Window> window =
+        CreateAppWindow(gfx::Rect(800, 600), AppType::SYSTEM_APP,
+                        kShellWindowId_Invalid, new TestWidgetDelegateAsh);
+    auto* custom_frame = static_cast<TestNonClientFrameViewAsh*>(
+        NonClientFrameViewAsh::Get(window.get()));
+    custom_frame->SetMinimumSize(min_size);
+    return window;
   }
 
  private:
@@ -2000,9 +2143,9 @@ TEST_F(SnapGroupTest, AddAndRemoveSnapGroupTest) {
   EXPECT_EQ(snap_groups.size(), 0u);
   EXPECT_EQ(window_to_snap_group_map.size(), 0u);
 
-  std::unique_ptr<aura::Window> w1(CreateTestWindow());
-  std::unique_ptr<aura::Window> w2(CreateTestWindow());
-  std::unique_ptr<aura::Window> w3(CreateTestWindow());
+  std::unique_ptr<aura::Window> w1(CreateAppWindow());
+  std::unique_ptr<aura::Window> w2(CreateAppWindow());
+  std::unique_ptr<aura::Window> w3(CreateAppWindow());
 
   SnapTwoTestWindows(w1.get(), w2.get());
   EXPECT_TRUE(snap_group_controller->AreWindowsInSnapGroup(w1.get(), w2.get()));
@@ -2023,11 +2166,251 @@ TEST_F(SnapGroupTest, AddAndRemoveSnapGroupTest) {
   ASSERT_TRUE(window_to_snap_group_map.empty());
 }
 
+// Verify that when there is no gap between the edges of the windows and the
+// divider in a Snap Group in landscape. See the regression at
+// http://b/333618907.
+TEST_F(SnapGroupTest, NoGapAfterSnapGroupCreationInLandscape) {
+  ui::ScopedAnimationDurationScaleMode animation_scale(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+
+  UpdateDisplay("1366x768");
+
+  // The minimum size of the window is set to a value between 1/3 and 1/2 of the
+  // work area's width to simulate the browser window CUJ.
+  const gfx::Size window_minimum_size = gfx::Size(500, 0);
+
+  aura::test::TestWindowDelegate delegate1;
+  std::unique_ptr<aura::Window> w1(CreateTestWindowInShellWithDelegate(
+      &delegate1, /*id=*/-1, gfx::Rect(800, 600)));
+  delegate1.set_minimum_size(window_minimum_size);
+  aura::test::TestWindowDelegate delegate2;
+  std::unique_ptr<aura::Window> w2(CreateTestWindowInShellWithDelegate(
+      &delegate2, /*id=*/-1, gfx::Rect(500, 0, 800, 600)));
+  delegate2.set_minimum_size(window_minimum_size);
+
+  SnapOneTestWindow(w1.get(), WindowStateType::kPrimarySnapped,
+                    chromeos::kTwoThirdSnapRatio);
+  WaitForOverviewEntered();
+  VerifySplitViewOverviewSession(w1.get());
+  ClickOverviewItem(GetEventGenerator(), w2.get());
+  EXPECT_EQ(chromeos::WindowStateType::kSecondarySnapped,
+            WindowState::Get(w2.get())->GetStateType());
+  WaitForOverviewExitAnimation();
+
+  EXPECT_TRUE(snap_group_divider());
+  UnionBoundsEqualToWorkAreaBounds(w1.get(), w2.get(), snap_group_divider());
+}
+
+// Verify that when there is no gap between the edges of the windows and the
+// divider in a Snap Group in portrait. See the regression at
+// http://b/335323278.
+TEST_F(SnapGroupTest, NoGapAfterSnapGroupCreationInPortrait) {
+  ui::ScopedAnimationDurationScaleMode animation_scale(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+
+  UpdateDisplay("768x1366");
+
+  // The minimum size of the window is set to a value between 1/3 and 1/2 of the
+  // work area's height to simulate the browser window CUJ.
+  const gfx::Size window_minimum_size = gfx::Size(0, 500);
+
+  aura::test::TestWindowDelegate delegate1;
+  std::unique_ptr<aura::Window> w1(CreateTestWindowInShellWithDelegate(
+      &delegate1, /*id=*/-1, gfx::Rect(800, 600)));
+  delegate1.set_minimum_size(window_minimum_size);
+  aura::test::TestWindowDelegate delegate2;
+  std::unique_ptr<aura::Window> w2(CreateTestWindowInShellWithDelegate(
+      &delegate2, /*id=*/-1, gfx::Rect(500, 0, 800, 600)));
+  delegate2.set_minimum_size(window_minimum_size);
+
+  SnapOneTestWindow(w1.get(), WindowStateType::kPrimarySnapped,
+                    chromeos::kTwoThirdSnapRatio);
+  WaitForOverviewEntered();
+  VerifySplitViewOverviewSession(w1.get());
+  ClickOverviewItem(GetEventGenerator(), w2.get());
+  EXPECT_EQ(chromeos::WindowStateType::kSecondarySnapped,
+            WindowState::Get(w2.get())->GetStateType());
+  WaitForOverviewExitAnimation();
+
+  EXPECT_TRUE(snap_group_divider());
+  UnionBoundsEqualToWorkAreaBounds(w1.get(), w2.get(), snap_group_divider());
+}
+
+// Tests that the shelf's corners are rounded by default. Upon Snap Group
+// creation,  the shelf's corners become sharp. When the Snap Group breaks, the
+// shelf returns to its default state with rounded corners.
+TEST_F(SnapGroupTest, ShelfBehavior) {
+  ShelfLayoutManager* shelf_layout_manager =
+      AshTestBase::GetPrimaryShelf()->shelf_layout_manager();
+  ASSERT_EQ(ShelfBackgroundType::kDefaultBg,
+            shelf_layout_manager->shelf_background_type());
+
+  std::unique_ptr<aura::Window> w1(CreateAppWindow());
+  std::unique_ptr<aura::Window> w2(CreateAppWindow());
+  SnapTwoTestWindows(w1.get(), w2.get());
+  SnapGroupController* snap_group_controller = SnapGroupController::Get();
+  ASSERT_TRUE(snap_group_controller->AreWindowsInSnapGroup(w1.get(), w2.get()));
+
+  // Test that Shelf will be updated to have sharp rounded corners.
+  EXPECT_EQ(ShelfBackgroundType::kMaximized,
+            shelf_layout_manager->shelf_background_type());
+
+  // Drag `w1` out to break the group.
+  auto* event_generator = GetEventGenerator();
+  event_generator->MoveMouseTo(w1->GetBoundsInScreen().top_center());
+  aura::test::TestWindowDelegate().set_window_component(HTCAPTION);
+  event_generator->PressLeftButton();
+  event_generator->MoveMouseBy(50, 200);
+  EXPECT_TRUE(WindowState::Get(w1.get())->is_dragged());
+  event_generator->ReleaseLeftButton();
+
+  // Verify that Shelf restores its default background type with rounded
+  // corners.
+  EXPECT_EQ(ShelfBackgroundType::kDefaultBg,
+            shelf_layout_manager->shelf_background_type());
+}
+
+// Test that dragging a snapped window's caption hides the divider and that the
+// snap group will be removed on drag complete.
+TEST_F(SnapGroupTest, DragSnappedWindowExitPointTest) {
+  std::unique_ptr<aura::Window> w1(CreateAppWindow());
+  std::unique_ptr<aura::Window> w2(CreateAppWindow());
+  SnapTwoTestWindows(w1.get(), w2.get());
+  SnapGroupController* snap_group_controller = SnapGroupController::Get();
+  ASSERT_TRUE(snap_group_controller->AreWindowsInSnapGroup(w1.get(), w2.get()));
+
+  aura::test::TestWindowDelegate test_window_delegate;
+
+  // Test dragging a snapped window out by mouse to exit the group.
+  auto* event_generator = GetEventGenerator();
+  event_generator->MoveMouseTo(w1->GetBoundsInScreen().top_center());
+  test_window_delegate.set_window_component(HTCAPTION);
+  event_generator->PressLeftButton();
+  event_generator->MoveMouseBy(50, 200);
+  EXPECT_TRUE(WindowState::Get(w1.get())->is_dragged());
+  EXPECT_FALSE(snap_group_divider());
+
+  event_generator->ReleaseLeftButton();
+  EXPECT_FALSE(
+      snap_group_controller->AreWindowsInSnapGroup(w1.get(), w2.get()));
+
+  MaximizeToClearTheSession(w2.get());
+  SnapTwoTestWindows(w1.get(), w2.get());
+  ASSERT_TRUE(snap_group_controller->AreWindowsInSnapGroup(w1.get(), w2.get()));
+
+  // Test dragging a snapped window out by touch to exit the group.
+  event_generator->MoveTouch(w1->GetBoundsInScreen().top_center());
+  test_window_delegate.set_window_component(HTCAPTION);
+  event_generator->PressTouch();
+  event_generator->MoveTouchBy(50, 200);
+  EXPECT_TRUE(WindowState::Get(w1.get())->is_dragged());
+  EXPECT_FALSE(snap_group_divider());
+
+  event_generator->ReleaseTouch();
+  EXPECT_FALSE(
+      snap_group_controller->AreWindowsInSnapGroup(w1.get(), w2.get()));
+}
+
+// Tests that dragging a window within a Snap Group to the same snap position
+// will break the existing Snap Group. See regression at http://b/335311879.
+TEST_F(SnapGroupTest, DragSnappedWindowToSnapWithDifferentSnapRatio) {
+  UpdateDisplay("1200x900");
+
+  std::unique_ptr<aura::Window> w1(CreateAppWindow());
+  std::unique_ptr<aura::Window> w2(CreateAppWindow());
+  SnapOneTestWindow(w1.get(),
+                    /*state_type=*/chromeos::WindowStateType::kPrimarySnapped,
+                    chromeos::kTwoThirdSnapRatio);
+  ASSERT_TRUE(IsInOverviewSession());
+  ClickOverviewItem(GetEventGenerator(), w2.get());
+
+  SnapGroupController* snap_group_controller = SnapGroupController::Get();
+  ASSERT_TRUE(snap_group_controller->AreWindowsInSnapGroup(w1.get(), w2.get()));
+
+  aura::test::TestWindowDelegate test_window_delegate;
+
+  // Drag a snapped window out by mouse to exit the group.
+  auto* event_generator = GetEventGenerator();
+  event_generator->MoveMouseTo(w2->GetBoundsInScreen().top_center());
+  test_window_delegate.set_window_component(HTCAPTION);
+  event_generator->PressLeftButton();
+  event_generator->MoveMouseBy(50, 200);
+  EXPECT_TRUE(WindowState::Get(w2.get())->is_dragged());
+  // The existing Snap Group will break.
+  EXPECT_FALSE(
+      snap_group_controller->AreWindowsInSnapGroup(w1.get(), w2.get()));
+
+  // Drag to re-snap `w2` to the same snap position but with
+  // `chromeos::kDefaultSnapRatio`.
+  event_generator->MoveMouseTo(gfx::Point(1250, 0));
+  event_generator->ReleaseLeftButton();
+  EXPECT_EQ(WindowStateType::kSecondarySnapped,
+            WindowState::Get(w2.get())->GetStateType());
+
+  // Two windows remain not in a Snap Group.
+  EXPECT_FALSE(
+      snap_group_controller->AreWindowsInSnapGroup(w1.get(), w2.get()));
+}
+
+// Tests that when snapping the snapped window to the opposite side, partial
+// overview will be triggered and that the snap group will be removed.
+TEST_F(SnapGroupTest, SnapToTheOppositeSideToExit) {
+  std::unique_ptr<aura::Window> w1(CreateAppWindow());
+  std::unique_ptr<aura::Window> w2(CreateAppWindow());
+  SnapTwoTestWindows(w1.get(), w2.get());
+  SnapGroupController* snap_group_controller = SnapGroupController::Get();
+  ASSERT_TRUE(snap_group_controller->AreWindowsInSnapGroup(w1.get(), w2.get()));
+
+  // Snap the current primary window as the secondary window, partial overview
+  // will be triggered.
+  SnapOneTestWindow(w1.get(),
+                    /*state_type=*/WindowStateType::kSecondarySnapped,
+                    chromeos::kDefaultSnapRatio);
+  EXPECT_TRUE(OverviewController::Get()->InOverviewSession());
+  EXPECT_FALSE(
+      snap_group_controller->AreWindowsInSnapGroup(w1.get(), w2.get()));
+
+  // Select the other window in overview to re-form a snap group.
+  ClickOverviewItem(GetEventGenerator(), w2.get());
+  EXPECT_TRUE(snap_group_controller->AreWindowsInSnapGroup(w1.get(), w2.get()));
+}
+
+// Tests to verify that dragging a window out of a snap group breaks the group
+// and removes the divider.
+TEST_F(SnapGroupTest, DragWindowOutToBreakSnapGroup) {
+  std::unique_ptr<aura::Window> w1(CreateAppWindow());
+  std::unique_ptr<aura::Window> w2(CreateAppWindow());
+  SnapTwoTestWindows(w1.get(), w2.get(), /*horizontal=*/true);
+  SnapGroupController* snap_group_controller = SnapGroupController::Get();
+  EXPECT_TRUE(snap_group_controller->AreWindowsInSnapGroup(w1.get(), w2.get()));
+  EXPECT_TRUE(snap_group_divider());
+
+  auto* event_generator = GetEventGenerator();
+  event_generator->set_current_screen_location(GetDragPoint(w2.get()));
+  event_generator->DragMouseTo(work_area_bounds().CenterPoint());
+  EXPECT_FALSE(snap_group_divider());
+  EXPECT_FALSE(
+      snap_group_controller->AreWindowsInSnapGroup(w1.get(), w2.get()));
+}
+
+// Test that maximizing a snapped window breaks the snap group.
+TEST_F(SnapGroupTest, MaximizeSnappedWindowExitPointTest) {
+  std::unique_ptr<aura::Window> w1(CreateAppWindow());
+  std::unique_ptr<aura::Window> w2(CreateAppWindow());
+  SnapTwoTestWindows(w1.get(), w2.get());
+  SnapGroupController* snap_group_controller = SnapGroupController::Get();
+  ASSERT_TRUE(snap_group_controller->AreWindowsInSnapGroup(w1.get(), w2.get()));
+
+  WindowState::Get(w2.get())->Maximize();
+  EXPECT_FALSE(
+      snap_group_controller->AreWindowsInSnapGroup(w1.get(), w2.get()));
+}
+
 // Tests that the corresponding snap group will be removed when one of the
 // windows in the snap group gets destroyed.
 TEST_F(SnapGroupTest, WindowDestroyTest) {
-  std::unique_ptr<aura::Window> w1(CreateTestWindow());
-  std::unique_ptr<aura::Window> w2(CreateTestWindow());
+  std::unique_ptr<aura::Window> w1(CreateAppWindow());
+  std::unique_ptr<aura::Window> w2(CreateAppWindow());
   SnapTwoTestWindows(w1.get(), w2.get());
   SnapGroupController* snap_group_controller = SnapGroupController::Get();
   ASSERT_TRUE(snap_group_controller->AreWindowsInSnapGroup(w1.get(), w2.get()));
@@ -2049,9 +2432,9 @@ TEST_F(SnapGroupTest, WindowDestroyTest) {
 // activated window i.e. the two windows in the snap group will be placed on
 // top.
 TEST_F(SnapGroupTest, WindowStackingOrderTest) {
-  std::unique_ptr<aura::Window> w1(CreateTestWindow());
-  std::unique_ptr<aura::Window> w2(CreateTestWindow());
-  std::unique_ptr<aura::Window> w3(CreateTestWindow());
+  std::unique_ptr<aura::Window> w1(CreateAppWindow());
+  std::unique_ptr<aura::Window> w2(CreateAppWindow());
+  std::unique_ptr<aura::Window> w3(CreateAppWindow());
 
   SnapTwoTestWindows(w1.get(), w2.get());
   ASSERT_TRUE(
@@ -2064,90 +2447,34 @@ TEST_F(SnapGroupTest, WindowStackingOrderTest) {
 
   MruWindowTracker::WindowList window_list =
       Shell::Get()->mru_window_tracker()->BuildMruWindowList(kActiveDesk);
-  EXPECT_EQ(std::vector<vector_experimental_raw_ptr<aura::Window>>(
-                {w1.get(), w3.get(), w2.get()}),
-            window_list);
+  EXPECT_EQ(window_list, aura::WindowTracker::WindowList({
+                             w1.get(),
+                             w3.get(),
+                             w2.get(),
+                         }));
 
   // `w3` is stacked below `w2` even though the activation order of `w3` is
   // before `w2`.
   EXPECT_TRUE(window_util::IsStackedBelow(w3.get(), w2.get()));
 }
 
-// Tests that on one window snapped in clamshell mode, the overview will be
-// shown on the other side of the screen. When activating a window in overview,
-// the window gets activated will be auto-snapped and the overview session will
-// end. Close one window will end the split view mode.
-TEST_F(SnapGroupTest, ClamshellSplitViewBasicFunctionalities) {
-  std::unique_ptr<aura::Window> w1(CreateTestWindow());
-  std::unique_ptr<aura::Window> w2(CreateTestWindow());
-  SnapTwoTestWindows(w1.get(), w2.get());
-  w1.reset();
-  EXPECT_FALSE(split_view_controller()->InSplitViewMode());
-}
-
 // Tests that when there is one snapped window and overview open, creating a new
 // window, i.e. by clicking the shelf icon, will auto-snap it.
-// TODO(michelefan): Re-enable this test after the divider refactor work is
-// done.
-TEST_F(SnapGroupTest, DISABLED_AutoSnapNewWindow) {
+TEST_F(SnapGroupTest, AutoSnapNewWindow) {
   // Snap `w1` to start split view overview session.
   std::unique_ptr<aura::Window> w1(CreateAppWindow());
+  std::unique_ptr<aura::Window> w2(CreateAppWindow());
   SnapOneTestWindow(w1.get(),
-                    /*state_type=*/WindowStateType::kPrimarySnapped);
+                    /*state_type=*/WindowStateType::kPrimarySnapped,
+                    chromeos::kDefaultSnapRatio);
   VerifySplitViewOverviewSession(w1.get());
 
-  // Create a new `w2`. Test it auto-snaps and forms a snap group with `w1`.
-  std::unique_ptr<aura::Window> w2(CreateAppWindow());
-  EXPECT_EQ(WindowStateType::kSecondarySnapped,
-            WindowState::Get(w2.get())->GetStateType());
-  EXPECT_TRUE(
-      SnapGroupController::Get()->AreWindowsInSnapGroup(w1.get(), w2.get()));
-
-  // Create a new `w3` and snap it on top of `w1` and `w2`'s group. Test it
-  // starts overview.
+  // Create a new `w3`. Test it auto-snaps and forms a snap group with `w1`.
   std::unique_ptr<aura::Window> w3(CreateAppWindow());
-  SnapOneTestWindow(w3.get(),
-                    /*state_type=*/WindowStateType::kPrimarySnapped);
-  EXPECT_TRUE(OverviewController::Get()->InOverviewSession());
+  EXPECT_EQ(WindowStateType::kSecondarySnapped,
+            WindowState::Get(w3.get())->GetStateType());
   EXPECT_TRUE(
-      RootWindowController::ForWindow(w3.get())->split_view_overview_session());
-
-  // TODO(b/296935443): Currently SplitViewController calculates the snap bounds
-  // based on `split_view_divider_`, which may be created for the snap group
-  // underneath `w3`'s split view overview session, so we won't verify
-  // overview is exactly the remaining work area of `w3` yet.
-  EXPECT_TRUE(
-      SnapGroupController::Get()->AreWindowsInSnapGroup(w1.get(), w2.get()));
-}
-
-// TODO(b/326481241): Currently it's not possible to swap windows since
-// `SplitViewController` still manages the windows and updates the bounds in a
-// `SnapGroup`. This will just check that double tap still works after
-// conversion.
-TEST_F(SnapGroupTest, DoubleTapDivider) {
-  std::unique_ptr<aura::Window> w1(CreateTestWindow());
-  std::unique_ptr<aura::Window> w2(CreateTestWindow());
-  SnapTwoTestWindows(w1.get(), w2.get());
-  auto* snap_group = SnapGroupController::Get()->GetTopmostSnapGroup();
-  EXPECT_TRUE(snap_group);
-  auto* new_primary_window = snap_group->window1();
-  auto* new_secondary_window = snap_group->window2();
-
-  // Switch to tablet mode. Test that double tap on the divider swaps the
-  // windows.
-  SwitchToTabletMode();
-  EXPECT_EQ(new_primary_window, split_view_controller()->primary_window());
-  EXPECT_EQ(new_secondary_window, split_view_controller()->secondary_window());
-  EXPECT_TRUE(split_view_controller()->split_view_divider()->divider_widget());
-  const gfx::Point divider_center =
-      split_view_controller()
-          ->split_view_divider()
-          ->GetDividerBoundsInScreen(/*is_dragging=*/false)
-          .CenterPoint();
-  GetEventGenerator()->GestureTapAt(divider_center);
-  GetEventGenerator()->GestureTapAt(divider_center);
-  EXPECT_EQ(new_secondary_window, split_view_controller()->primary_window());
-  EXPECT_EQ(new_primary_window, split_view_controller()->secondary_window());
+      SnapGroupController::Get()->AreWindowsInSnapGroup(w1.get(), w3.get()));
 }
 
 TEST_F(SnapGroupTest, DontAutoSnapNewWindowOutsideSplitViewOverview) {
@@ -2162,57 +2489,28 @@ TEST_F(SnapGroupTest, DontAutoSnapNewWindowOutsideSplitViewOverview) {
 
   // Open a third window. Test it does *not* snap.
   std::unique_ptr<aura::Window> w3(CreateAppWindow());
+  EXPECT_FALSE(OverviewController::Get()->InOverviewSession());
   EXPECT_FALSE(WindowState::Get(w3.get())->IsSnapped());
   EXPECT_TRUE(
       SnapGroupController::Get()->AreWindowsInSnapGroup(w1.get(), w2.get()));
-  EXPECT_TRUE(split_view_divider()->divider_widget());
-}
-
-// Tests that removing a display during split view overview session doesn't
-// crash.
-TEST_F(SnapGroupTest, RemoveDisplay) {
-  UpdateDisplay("800x600,801+0-800x600");
-  display::test::DisplayManagerTestApi display_manager_test(display_manager());
-
-  // Snap `window` on the second display to start split view overview session.
-  std::unique_ptr<aura::Window> window1(
-      CreateTestWindowInShellWithBounds(gfx::Rect(900, 0, 100, 100)));
-  std::unique_ptr<aura::Window> window2(
-      CreateTestWindowInShellWithBounds(gfx::Rect(1000, 0, 100, 100)));
-  WindowState* window_state = WindowState::Get(window1.get());
-  const WindowSnapWMEvent snap_type(
-      WM_EVENT_SNAP_PRIMARY,
-      /*snap_action_source=*/WindowSnapActionSource::kTest);
-  window_state->OnWMEvent(&snap_type);
-  ASSERT_EQ(display_manager_test.GetSecondaryDisplay().id(),
-            display::Screen::GetScreen()
-                ->GetDisplayNearestWindow(window1.get())
-                .id());
-  EXPECT_EQ(WindowStateType::kPrimarySnapped, window_state->GetStateType());
-  EXPECT_TRUE(OverviewController::Get()->InOverviewSession());
-  EXPECT_TRUE(RootWindowController::ForWindow(window1.get())
-                  ->split_view_overview_session());
-
-  // Disconnect the second display. Test no crash.
-  UpdateDisplay("800x600");
-  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(snap_group_divider()->divider_widget());
 }
 
 // Tests the snap ratio is updated correctly when resizing the windows in a snap
-// group with the split view divider->
+// group with the split view divider.
 TEST_F(SnapGroupTest, SnapRatioTest) {
-  std::unique_ptr<aura::Window> w1(CreateTestWindow());
-  std::unique_ptr<aura::Window> w2(CreateTestWindow());
+  std::unique_ptr<aura::Window> w1(CreateAppWindow());
+  std::unique_ptr<aura::Window> w2(CreateAppWindow());
   SnapTwoTestWindows(w1.get(), w2.get());
 
   const gfx::Point hover_location =
-      split_view_divider_bounds_in_screen().CenterPoint();
-  split_view_divider()->StartResizeWithDivider(hover_location);
+      snap_group_divider_bounds_in_screen().CenterPoint();
+  snap_group_divider()->StartResizeWithDivider(hover_location);
   const auto end_point =
       hover_location + gfx::Vector2d(-work_area_bounds().width() / 6, 0);
-  split_view_divider()->ResizeWithDivider(end_point);
-  split_view_divider()->EndResizeWithDivider(end_point);
-  EXPECT_TRUE(split_view_controller()->InSplitViewMode());
+  snap_group_divider()->ResizeWithDivider(end_point);
+  snap_group_divider()->EndResizeWithDivider(end_point);
+  EXPECT_FALSE(split_view_controller()->InSplitViewMode());
   EXPECT_NEAR(chromeos::kOneThirdSnapRatio,
               WindowState::Get(w1.get())->snap_ratio().value(),
               /*abs_error=*/0.1);
@@ -2222,21 +2520,22 @@ TEST_F(SnapGroupTest, SnapRatioTest) {
 }
 
 // Tests that the windows in a snap group can be resized to an arbitrary
-// location with the split view divider->
+// location with the split view divider if neither of the windows has the
+// minimum size constraints.
 TEST_F(SnapGroupTest, ResizeWithSplitViewDividerToArbitraryLocations) {
-  std::unique_ptr<aura::Window> w1(CreateTestWindow());
-  std::unique_ptr<aura::Window> w2(CreateTestWindow());
+  std::unique_ptr<aura::Window> w1(CreateAppWindow());
+  std::unique_ptr<aura::Window> w2(CreateAppWindow());
   SnapTwoTestWindows(w1.get(), w2.get());
   for (const int distance_delta : {-10, 6, -15}) {
     const auto w1_cached_bounds = w1.get()->GetBoundsInScreen();
     const auto w2_cached_bounds = w2.get()->GetBoundsInScreen();
 
     const gfx::Point hover_location =
-        split_view_divider_bounds_in_screen().CenterPoint();
-    split_view_divider()->StartResizeWithDivider(hover_location);
-    split_view_divider()->ResizeWithDivider(hover_location +
+        snap_group_divider_bounds_in_screen().CenterPoint();
+    snap_group_divider()->StartResizeWithDivider(hover_location);
+    snap_group_divider()->ResizeWithDivider(hover_location +
                                             gfx::Vector2d(distance_delta, 0));
-    EXPECT_TRUE(split_view_controller()->InSplitViewMode());
+    EXPECT_FALSE(split_view_controller()->InSplitViewMode());
 
     // TODO(michelefan): Consolidate the bounds update / calculation with the
     // existence of divider between clamshell and tablet mode. Change
@@ -2253,46 +2552,36 @@ TEST_F(SnapGroupTest, ResizeWithSplitViewDividerToArbitraryLocations) {
   }
 }
 
-// Tests that when snapping a snapped window to the same snapped state, the
-// overview session will not be triggered. The Overview session will be
-// triggered when the snapped window is being snapped to the other snapped
-// state.
-TEST_F(SnapGroupTest, TwoWindowsSnappedTest) {
-  std::unique_ptr<aura::Window> w1(CreateTestWindow());
-  std::unique_ptr<aura::Window> w2(CreateTestWindow());
-  SnapTwoTestWindows(w1.get(), w2.get());
+// Tests that the divider resizing respects the window's minimum size
+// constraints.
+TEST_F(SnapGroupTest, RespectWindowMinimumSizeWhileResizingWithDivider) {
+  UpdateDisplay("1200x900");
 
-  // Snap the primary window again as the primary window, the overview session
-  // won't be triggered.
-  SnapOneTestWindow(w1.get(),
-                    /*state_type=*/WindowStateType::kPrimarySnapped);
-  EXPECT_FALSE(OverviewController::Get()->InOverviewSession());
-  auto* snap_group_controller = SnapGroupController::Get();
-  EXPECT_TRUE(snap_group_controller->AreWindowsInSnapGroup(w1.get(), w2.get()));
+  aura::test::TestWindowDelegate delegate1;
+  std::unique_ptr<aura::Window> window1(CreateTestWindowInShellWithDelegate(
+      &delegate1, /*id=*/-1, gfx::Rect(600, 500)));
+  delegate1.set_minimum_size(gfx::Size(300, 600));
 
-  // Snap the current primary window as the secondary window, the overview
-  // session will be triggered.
-  SnapOneTestWindow(w1.get(),
-                    /*state_type=*/WindowStateType::kSecondarySnapped);
-  EXPECT_TRUE(OverviewController::Get()->InOverviewSession());
-  EXPECT_FALSE(
-      snap_group_controller->AreWindowsInSnapGroup(w1.get(), w2.get()));
+  std::unique_ptr<aura::Window> window2(CreateAppWindow());
+  SnapTwoTestWindows(window1.get(), window2.get());
 
-  // Select the other window in overview to form a snap group and exit overview.
-  ClickOverviewItem(GetEventGenerator(), w2.get());
-  WaitForOverviewExitAnimation();
-}
+  // The divider position updates while dragging, if it doesn't go below the
+  // window's minimum size.
+  snap_group_divider()->StartResizeWithDivider(
+      snap_group_divider_bounds_in_screen().CenterPoint());
+  snap_group_divider()->ResizeWithDivider(gfx::Point(400, 200));
+  EXPECT_GT(snap_group_divider()->divider_position(), 300);
+  snap_group_divider()->EndResizeWithDivider(gfx::Point(400, 200));
+  EXPECT_GT(snap_group_divider()->divider_position(), 300);
 
-// Tests that there is no crash when work area changed after snapping two
-// windows. Docked mananifier is used as an example to trigger the work area
-// change.
-TEST_F(SnapGroupTest, WorkAreaChangeTest) {
-  std::unique_ptr<aura::Window> w1(CreateTestWindow());
-  std::unique_ptr<aura::Window> w2(CreateTestWindow());
-  SnapTwoTestWindows(w1.get(), w2.get());
-  auto* docked_mangnifier_controller =
-      Shell::Get()->docked_magnifier_controller();
-  docked_mangnifier_controller->SetEnabled(/*enabled=*/true);
+  // Attempt to drag the divider below the window's minimum size. Verify it
+  // stops at the minimum.
+  snap_group_divider()->StartResizeWithDivider(
+      snap_group_divider_bounds_in_screen().CenterPoint());
+  snap_group_divider()->ResizeWithDivider(gfx::Point(200, 200));
+  EXPECT_EQ(snap_group_divider()->divider_position(), 300);
+  snap_group_divider()->EndResizeWithDivider(gfx::Point(200, 200));
+  EXPECT_EQ(snap_group_divider()->divider_position(), 300);
 }
 
 // Tests that a snap group and the split view divider will be will be
@@ -2308,40 +2597,191 @@ TEST_F(SnapGroupTest, AutomaticallyCreateGroupOnTwoWindowsSnappedInClamshell) {
   EXPECT_TRUE(snap_groups.empty());
   EXPECT_TRUE(window_to_snap_group_map.empty());
 
-  std::unique_ptr<aura::Window> w1(CreateTestWindow());
-  std::unique_ptr<aura::Window> w2(CreateTestWindow());
+  std::unique_ptr<aura::Window> w1(CreateAppWindow());
+  std::unique_ptr<aura::Window> w2(CreateAppWindow());
   SnapTwoTestWindows(w1.get(), w2.get());
   EXPECT_EQ(snap_groups.size(), 1u);
   EXPECT_EQ(window_to_snap_group_map.size(), 2u);
 
-  std::unique_ptr<aura::Window> w3(CreateTestWindow());
+  std::unique_ptr<aura::Window> w3(CreateAppWindow());
   wm::ActivateWindow(w2.get());
   EXPECT_TRUE(window_util::IsStackedBelow(w3.get(), w1.get()));
 
   w1.reset();
-  EXPECT_FALSE(split_view_divider()->divider_widget());
+  EXPECT_FALSE(snap_group_divider());
   EXPECT_TRUE(snap_groups.empty());
   EXPECT_TRUE(window_to_snap_group_map.empty());
+}
+
+// Tests we correctly end split view if partial overview is skipped and another
+// window is snapped. Regression test for http://b/333600706.
+TEST_F(SnapGroupTest, EndSplitView) {
+  // Snap `w1` to start partial overview.
+  std::unique_ptr<aura::Window> w1(CreateAppWindow());
+  std::unique_ptr<aura::Window> w2(CreateAppWindow());
+  SnapOneTestWindow(w1.get(), WindowStateType::kPrimarySnapped,
+                    chromeos::kDefaultSnapRatio);
+  OverviewController* overview_controller = OverviewController::Get();
+  EXPECT_TRUE(overview_controller->InOverviewSession());
+  EXPECT_TRUE(split_view_controller()->primary_window());
+  // Skip partial overview.
+  PressAndReleaseKey(ui::VKEY_ESCAPE, ui::EF_NONE);
+  // Test we cleared the observed window.
+  EXPECT_FALSE(split_view_controller()->primary_window());
+  EXPECT_FALSE(overview_controller->InOverviewSession());
+
+  // Drag to snap `w2` to the opposite side.
+  wm::ActivateWindow(w2.get());
+  auto* event_generator = GetEventGenerator();
+  event_generator->set_current_screen_location(GetDragPoint(w2.get()));
+  event_generator->DragMouseTo(work_area_bounds().right_center());
+  EXPECT_EQ(WindowStateType::kSecondarySnapped,
+            WindowState::Get(w2.get())->GetStateType());
+  // Test we cleared the observed window.
+  EXPECT_FALSE(split_view_controller()->secondary_window());
+  EXPECT_FALSE(overview_controller->InOverviewSession());
+
+  // Activate `w1`. Test we don't create a snap group.
+  wm::ActivateWindow(w1.get());
+}
+
+// Tests that when the auto-snapped window has minimum size that doesn't fit the
+// work area, we adjust the divider and window bounds.
+TEST_F(SnapGroupTest, AutoSnapWindowWithMinimumSize) {
+  // Test with both the bottom and side shelf.
+  for (const auto& shelf_alignment :
+       {ShelfAlignment::kBottom, ShelfAlignment::kLeft}) {
+    SCOPED_TRACE(base::StringPrintf("Shelf alignment = %d",
+                                    static_cast<int>(shelf_alignment)));
+    GetPrimaryShelf()->SetAlignment(shelf_alignment);
+    // Create `w2` so it doesn't fit on the other side of `w1`.
+    std::unique_ptr<aura::Window> w1(CreateAppWindow());
+    aura::test::TestWindowDelegate delegate2;
+    std::unique_ptr<aura::Window> w2(CreateTestWindowInShellWithDelegate(
+        &delegate2, /*id=*/0, gfx::Rect(800, 600)));
+    const gfx::Rect work_area(work_area_bounds());
+    delegate2.set_minimum_size(
+        gfx::Size(work_area.width() * 0.4f, work_area.height()));
+
+    // Snap `w1` to start partial overview.
+    SnapOneTestWindow(w1.get(), WindowStateType::kPrimarySnapped,
+                      chromeos::kTwoThirdSnapRatio);
+    EXPECT_TRUE(OverviewController::Get()->InOverviewSession());
+
+    // Select `w2` to be auto-snapped.
+    ClickOverviewItem(GetEventGenerator(), w2.get());
+    EXPECT_TRUE(
+        SnapGroupController::Get()->AreWindowsInSnapGroup(w1.get(), w2.get()));
+    auto* snap_group =
+        SnapGroupController::Get()->GetSnapGroupForGivenWindow(w1.get());
+
+    // Expect `w2` is snapped at its minimum width and `w1` and the divider are
+    // adjusted to fit.
+    EXPECT_NEAR(work_area.width() * 0.4f, w2->GetBoundsInScreen().width(), 1);
+    UnionBoundsEqualToWorkAreaBounds(w1.get(), w2.get(),
+                                     snap_group->snap_group_divider());
+  }
+}
+
+// Tests that when both windows have minimum sizes, we don't create a snap
+// group.
+TEST_F(SnapGroupTest, AutoSnapBothWindowsWithMinimumSizes) {
+  // Test with both the bottom and side shelf.
+  for (const auto& shelf_alignment :
+       {ShelfAlignment::kBottom, ShelfAlignment::kLeft}) {
+    SCOPED_TRACE(base::StringPrintf("Shelf alignment = %d",
+                                    static_cast<int>(shelf_alignment)));
+    GetPrimaryShelf()->SetAlignment(shelf_alignment);
+    // Create `w1` and `w2` both with minimum size 0.6f.
+    aura::test::TestWindowDelegate delegate1;
+    aura::test::TestWindowDelegate delegate2;
+    std::unique_ptr<aura::Window> w1(CreateTestWindowInShellWithDelegate(
+        &delegate1, /*id=*/-1, gfx::Rect(800, 600)));
+    std::unique_ptr<aura::Window> w2(CreateTestWindowInShellWithDelegate(
+        &delegate2, /*id=*/0, gfx::Rect(800, 600)));
+    const gfx::Rect work_area(work_area_bounds());
+    const int min_width = work_area.width() * 0.6f;
+    delegate1.set_minimum_size(gfx::Size(min_width, work_area.height()));
+    delegate2.set_minimum_size(gfx::Size(min_width, work_area.height()));
+
+    // Snap `w1` to 2/3.
+    SnapOneTestWindow(w1.get(), WindowStateType::kPrimarySnapped,
+                      chromeos::kTwoThirdSnapRatio);
+    const gfx::Rect w1_bounds = w1->GetBoundsInScreen();
+    EXPECT_TRUE(OverviewController::Get()->InOverviewSession());
+
+    // Select `w2` to be auto-snapped. Since it tries to snap to 0.6f, but `w1`
+    // can't fit in the other side, we don't create a group.
+    ClickOverviewItem(GetEventGenerator(), w2.get());
+    EXPECT_NEAR(min_width, w2->GetBoundsInScreen().width(), 1);
+    EXPECT_EQ(w1_bounds.width(), w1->GetBoundsInScreen().width());
+    EXPECT_FALSE(
+        SnapGroupController::Get()->AreWindowsInSnapGroup(w1.get(), w2.get()));
+  }
+}
+
+// -----------------------------------------------------------------------------
+// SnapGroupDividerTest:
+
+using SnapGroupDividerTest = SnapGroupTest;
+
+// Tests that the divider starts with a thin default width
+// (`kSplitviewDividerShortSideLength`) in landscape mode, expands to
+// `kSplitviewDividerEnlargedShortSideLength` on mouse hover or drag, and
+// returns to its default thin width on mouse exit.
+TEST_F(SnapGroupDividerTest, HoverToEnlargeDivider) {
+  std::unique_ptr<aura::Window> w1(CreateAppWindow());
+  std::unique_ptr<aura::Window> w2(CreateAppWindow());
+  SnapTwoTestWindows(w1.get(), w2.get());
+
+  SplitViewDivider* divider = snap_group_divider();
+  auto* divider_widget = divider->divider_widget();
+  ASSERT_TRUE(divider_widget);
+
+  const auto divider_bounds_before_hover =
+      divider_widget->GetWindowBoundsInScreen();
+  EXPECT_EQ(kSplitviewDividerShortSideLength,
+            divider_bounds_before_hover.width());
+
+  auto* event_generator = GetEventGenerator();
+
+  // Shift the hover point so that it is not right on the divider handler view
+  // to trigger hover to enlarge.
+  const auto delta_vector = gfx::Vector2d(0, -10);
+  const gfx::Point hover_point =
+      divider_bounds_before_hover.CenterPoint() + delta_vector;
+  event_generator->MoveMouseTo(hover_point);
+  EXPECT_EQ(kSplitviewDividerEnlargedShortSideLength,
+            divider_widget->GetWindowBoundsInScreen().width());
+
+  event_generator->MoveMouseBy(10, 0);
+  EXPECT_EQ(kSplitviewDividerEnlargedShortSideLength,
+            divider_widget->GetWindowBoundsInScreen().width());
+
+  event_generator->MoveMouseTo(gfx::Point(0, 0));
+  EXPECT_EQ(kSplitviewDividerShortSideLength,
+            divider_widget->GetWindowBoundsInScreen().width());
 }
 
 // Tests that the split view divider will be stacked on top of both windows in
 // the snap group and that on a third window activated the split view divider
 // will be stacked below the newly activated window.
-TEST_F(SnapGroupTest, DividerStackingOrderTest) {
-  std::unique_ptr<aura::Window> w1(CreateTestWindow());
-  std::unique_ptr<aura::Window> w2(CreateTestWindow());
+TEST_F(SnapGroupDividerTest, DividerStackingOrderTest) {
+  std::unique_ptr<aura::Window> w1(CreateAppWindow());
+  std::unique_ptr<aura::Window> w2(CreateAppWindow());
   SnapTwoTestWindows(w1.get(), w2.get());
   wm::ActivateWindow(w1.get());
 
-  SplitViewDivider* divider = split_view_divider();
+  SplitViewDivider* divider = snap_group_divider();
   auto* divider_widget = divider->divider_widget();
+  ASSERT_TRUE(divider_widget);
   aura::Window* divider_window = divider_widget->GetNativeWindow();
   EXPECT_TRUE(window_util::IsStackedBelow(w2.get(), w1.get()));
   EXPECT_TRUE(window_util::IsStackedBelow(w1.get(), divider_window));
   EXPECT_TRUE(window_util::IsStackedBelow(w2.get(), divider_window));
 
   std::unique_ptr<aura::Window> w3(
-      CreateTestWindow(gfx::Rect(100, 200, 300, 400)));
+      CreateAppWindow(gfx::Rect(100, 200, 300, 400)));
   EXPECT_TRUE(window_util::IsStackedBelow(divider_window, w3.get()));
   EXPECT_TRUE(window_util::IsStackedBelow(w1.get(), divider_window));
   EXPECT_TRUE(window_util::IsStackedBelow(w2.get(), w1.get()));
@@ -2354,13 +2794,13 @@ TEST_F(SnapGroupTest, DividerStackingOrderTest) {
 
 // Tests that divider will be closely tied to the windows in a snap group, which
 // will also apply on transient window added.
-TEST_F(SnapGroupTest, DividerStackingOrderWithTransientWindow) {
-  std::unique_ptr<aura::Window> w1(CreateTestWindow());
-  std::unique_ptr<aura::Window> w2(CreateTestWindow());
+TEST_F(SnapGroupDividerTest, DividerStackingOrderWithTransientWindow) {
+  std::unique_ptr<aura::Window> w1(CreateAppWindow());
+  std::unique_ptr<aura::Window> w2(CreateAppWindow());
   SnapTwoTestWindows(w1.get(), w2.get());
   wm::ActivateWindow(w1.get());
 
-  SplitViewDivider* divider = split_view_divider();
+  SplitViewDivider* divider = snap_group_divider();
   auto* divider_widget = divider->divider_widget();
   ASSERT_TRUE(divider_widget);
   aura::Window* divider_window = divider_widget->GetNativeWindow();
@@ -2378,12 +2818,12 @@ TEST_F(SnapGroupTest, DividerStackingOrderWithTransientWindow) {
 // Tests the overall stacking order with two transient windows each of which
 // belongs to a window in snap group is expected. The tests is to verify the
 // transient windows issue showed in http://b/297448600#comment2.
-TEST_F(SnapGroupTest, DividerStackingOrderWithTwoTransientWindows) {
-  std::unique_ptr<aura::Window> w1(CreateTestWindow());
-  std::unique_ptr<aura::Window> w2(CreateTestWindow());
+TEST_F(SnapGroupDividerTest, DividerStackingOrderWithTwoTransientWindows) {
+  std::unique_ptr<aura::Window> w1(CreateAppWindow());
+  std::unique_ptr<aura::Window> w2(CreateAppWindow());
   SnapTwoTestWindows(w1.get(), w2.get());
 
-  SplitViewDivider* divider = split_view_divider();
+  SplitViewDivider* divider = snap_group_divider();
   auto* divider_widget = divider->divider_widget();
   ASSERT_TRUE(divider_widget);
   aura::Window* divider_window = divider_widget->GetNativeWindow();
@@ -2422,24 +2862,446 @@ TEST_F(SnapGroupTest, DividerStackingOrderWithTwoTransientWindows) {
 }
 
 // Tests that the union bounds of the primary window, secondary window in a snap
-// group and the split view divider will be equal to the work area bounds both
+// group and the snap group divider will be equal to the work area bounds both
 // in horizontal and vertical split view mode.
-TEST_F(SnapGroupTest, SplitViewDividerBoundsTest) {
-  for (const auto is_display_horizontal_layout : {true, false}) {
-    // Need to explicitly create two windows otherwise to snap a snapped window
-    // on the same position won't trigger the overview session.
-    std::unique_ptr<aura::Window> w1(CreateTestWindow());
-    std::unique_ptr<aura::Window> w2(CreateTestWindow());
-    SnapTwoTestWindows(w1.get(), w2.get(), is_display_horizontal_layout);
-    EXPECT_TRUE(UnionBoundsEqualToWorkAreaBounds(w1.get(), w2.get()));
+TEST_F(SnapGroupDividerTest, SnapGroupDividerBoundsTest) {
+  std::unique_ptr<aura::Window> w1(CreateAppWindow());
+  std::unique_ptr<aura::Window> w2(CreateAppWindow());
+  for (const auto is_horizontal : {true, false}) {
+    if (is_horizontal) {
+      UpdateDisplay("900x600");
+    } else {
+      UpdateDisplay("600x900");
+    }
+
+    ASSERT_EQ(IsLayoutHorizontal(w1.get()), is_horizontal);
+
+    SnapTwoTestWindows(w1.get(), w2.get(), is_horizontal);
+    UnionBoundsEqualToWorkAreaBounds(w1.get(), w2.get(), snap_group_divider());
+
+    MaximizeToClearTheSession(w1.get());
+    MaximizeToClearTheSession(w2.get());
+    ASSERT_FALSE(
+        SnapGroupController::Get()->GetSnapGroupForGivenWindow(w1.get()));
   }
 }
 
-TEST_F(SnapGroupTest, OverviewEnterExitBasic) {
+// Tests that window and divider boundaries adjust correctly with shelf
+// auto-hide behavior change.
+TEST_F(SnapGroupDividerTest,
+       SnapGroupDividerBoundsWithShelfAutoHideBehaviorChange) {
+  std::unique_ptr<aura::Window> w1(CreateAppWindow());
+  std::unique_ptr<aura::Window> w2(CreateAppWindow());
+  SnapTwoTestWindows(w1.get(), w2.get());
+
+  SplitViewDivider* divider = snap_group_divider();
+  auto* divider_widget = divider->divider_widget();
+  ASSERT_TRUE(divider_widget);
+
+  Shelf* shelf = GetPrimaryShelf();
+  ASSERT_EQ(shelf->auto_hide_behavior(), ShelfAutoHideBehavior::kNever);
+
+  shelf->SetAutoHideBehavior(ShelfAutoHideBehavior::kAlways);
+  EXPECT_EQ(divider_widget->GetWindowBoundsInScreen().height(),
+            work_area_bounds().height());
+  UnionBoundsEqualToWorkAreaBounds(w1.get(), w2.get(), divider);
+}
+
+// Tests that snapped windows and divider bounds adjust correctly when shelf
+// alignment changes.
+TEST_F(SnapGroupDividerTest, SnapGroupDividerBoundsWithShelfAlignmentChange) {
+  std::unique_ptr<aura::Window> w1(CreateAppWindow());
+  std::unique_ptr<aura::Window> w2(CreateAppWindow());
+  SnapTwoTestWindows(w1.get(), w2.get());
+
+  SplitViewDivider* divider = snap_group_divider();
+  auto* divider_widget = divider->divider_widget();
+  ASSERT_TRUE(divider_widget);
+
+  Shelf* shelf = GetPrimaryShelf();
+  ASSERT_EQ(shelf->alignment(), ShelfAlignment::kBottom);
+  for (auto alignment : {ShelfAlignment::kLeft, ShelfAlignment::kRight,
+                         ShelfAlignment::kBottom}) {
+    shelf->SetAlignment(alignment);
+    const gfx::Rect divider_bounds = divider_widget->GetWindowBoundsInScreen();
+    EXPECT_EQ(divider_bounds.x(), w1->GetBoundsInScreen().right());
+    EXPECT_EQ(divider_bounds.right(), w2->GetBoundsInScreen().x());
+    UnionBoundsEqualToWorkAreaBounds(w1.get(), w2.get(), divider);
+  }
+}
+
+TEST_F(SnapGroupDividerTest, FeedbackButtonTest) {
+  std::unique_ptr<aura::Window> w1(CreateAppWindow());
+  std::unique_ptr<aura::Window> w2(CreateAppWindow());
+  SnapTwoTestWindows(w1.get(), w2.get(), /*horizontal=*/true);
+
+  SplitViewDividerView* divider_view =
+      snap_group_divider()->divider_view_for_testing();
+  auto* feedback_button = divider_view->feedback_button_for_testing();
+  EXPECT_TRUE(feedback_button);
+
+  // Verify that the feedback button is insivible by default.
+  EXPECT_FALSE(feedback_button->GetVisible());
+
+  // Test that the feedback button becomes visible upon hover on the divider.
+  gfx::Point hover_location =
+      snap_group_divider_bounds_in_screen().CenterPoint();
+  hover_location.Offset(0, -10);
+
+  auto* event_generator = GetEventGenerator();
+  event_generator->MoveMouseTo(hover_location);
+  EXPECT_TRUE(feedback_button->GetVisible());
+
+  // Test that the feedback button will be invisible when drag starts.
+  event_generator->PressLeftButton();
+  event_generator->MoveMouseBy(10, 0);
+  EXPECT_FALSE(feedback_button->GetVisible());
+
+  // Test that the feedback button will be visible again when drag ends.
+  event_generator->ReleaseLeftButton();
+  EXPECT_TRUE(feedback_button->GetVisible());
+
+  // Test that open feedback dialog callback will be triggered.
+  event_generator->MoveMouseTo(
+      feedback_button->GetBoundsInScreen().CenterPoint());
+  event_generator->ClickLeftButton();
+  EXPECT_EQ(1, static_cast<TestShellDelegate*>(Shell::Get()->shell_delegate())
+                   ->open_feedback_dialog_call_count());
+}
+
+// Tests that the cursor type gets updated to be resize cursor on mouse hovering
+// on the split view divider excluding the feedback button.
+TEST_F(SnapGroupDividerTest, CursorUpdateTest) {
+  std::unique_ptr<aura::Window> w1(CreateAppWindow());
+  std::unique_ptr<aura::Window> w2(CreateAppWindow());
+  SnapTwoTestWindows(w1.get(), w2.get(), /*horizontal=*/true);
+  auto* divider = snap_group_divider();
+  ASSERT_TRUE(divider->divider_widget());
+
+  auto divider_bounds = snap_group_divider_bounds_in_screen();
+  auto outside_point = divider_bounds.CenterPoint();
+  outside_point.Offset(-kSplitviewDividerShortSideLength * 5, 0);
+  EXPECT_FALSE(divider_bounds.Contains(outside_point));
+
+  auto* cursor_manager = Shell::Get()->cursor_manager();
+  cursor_manager->SetCursor(CursorType::kPointer);
+
+  // Test that the default cursor type when mouse is not hovered over the split
+  // view divider.
+  auto* event_generator = GetEventGenerator();
+  event_generator->MoveMouseTo(outside_point);
+  EXPECT_TRUE(cursor_manager->IsCursorVisible());
+  EXPECT_FALSE(cursor_manager->IsCursorLocked());
+  EXPECT_EQ(CursorType::kNull, cursor_manager->GetCursor().type());
+
+  // Test that the cursor changed to resize cursor while hovering over the split
+  // view divider.
+  const auto delta_vector = gfx::Vector2d(0, -10);
+  const gfx::Point cached_hover_point =
+      divider_bounds.CenterPoint() + delta_vector;
+  event_generator->MoveMouseTo(cached_hover_point);
+  EXPECT_EQ(CursorType::kColumnResize, cursor_manager->GetCursor().type());
+
+  // Test that after resizing, the cursor type is still the resize cursor.
+  event_generator->PressLeftButton();
+  const auto move_vector = gfx::Vector2d(20, 0);
+  event_generator->MoveMouseTo(cached_hover_point + move_vector);
+  event_generator->ReleaseLeftButton();
+  EXPECT_EQ(CursorType::kColumnResize, cursor_manager->GetCursor().type());
+  EXPECT_EQ(snap_group_divider_bounds_in_screen().CenterPoint() + delta_vector,
+            cached_hover_point + move_vector);
+
+  // Test that when hovering over the feedback button, the cursor type changed
+  // back to the default type.
+  SplitViewDividerView* divider_view =
+      snap_group_divider()->divider_view_for_testing();
+  auto* feedback_button = divider_view->feedback_button_for_testing();
+  EXPECT_TRUE(feedback_button);
+  event_generator->MoveMouseTo(divider_view->feedback_button_for_testing()
+                                   ->GetBoundsInScreen()
+                                   .CenterPoint());
+  EXPECT_EQ(CursorType::kNull, cursor_manager->GetCursor().type());
+}
+
+//  Tests that the cursor updates correctly after snap to replace. See
+//  regression at http://b/331240308
+TEST_F(SnapGroupDividerTest, CursorUpdateAfterSnapToReplace) {
+  std::unique_ptr<aura::Window> w1(CreateAppWindow());
+  std::unique_ptr<aura::Window> w2(CreateAppWindow());
+  SnapTwoTestWindows(w1.get(), w2.get(), /*horizontal=*/true);
+  SnapGroupController* snap_group_controller = SnapGroupController::Get();
+  ASSERT_TRUE(snap_group_controller->AreWindowsInSnapGroup(w1.get(), w2.get()));
+
+  // Snapping `w3` on top of the snap group and expect the successful
+  // snap-to-replace.
+  std::unique_ptr<aura::Window> w3(CreateAppWindow());
+  SnapOneTestWindow(w3.get(), WindowStateType::kPrimarySnapped,
+                    chromeos::kDefaultSnapRatio);
+  EXPECT_TRUE(snap_group_controller->AreWindowsInSnapGroup(w3.get(), w2.get()));
+  EXPECT_FALSE(
+      snap_group_controller->AreWindowsInSnapGroup(w1.get(), w2.get()));
+
+  ASSERT_TRUE(snap_group_divider()->divider_widget());
+
+  auto divider_bounds = snap_group_divider_bounds_in_screen();
+  auto outside_point = snap_group_divider_bounds_in_screen().CenterPoint();
+  outside_point.Offset(-kSplitviewDividerShortSideLength * 5, 0);
+  EXPECT_FALSE(divider_bounds.Contains(outside_point));
+
+  auto* cursor_manager = Shell::Get()->cursor_manager();
+  cursor_manager->SetCursor(CursorType::kPointer);
+
+  // Test that the default cursor type when mouse is not hovered over the split
+  // view divider.
+  auto* event_generator = GetEventGenerator();
+  event_generator->MoveMouseTo(outside_point);
+  EXPECT_TRUE(cursor_manager->IsCursorVisible());
+  EXPECT_FALSE(cursor_manager->IsCursorLocked());
+  EXPECT_EQ(CursorType::kNull, cursor_manager->GetCursor().type());
+
+  // Test that the cursor changed to resize cursor while hovering over the split
+  // view divider.
+  const auto delta_vector = gfx::Vector2d(0, -10);
+  const gfx::Point cached_hover_point =
+      divider_bounds.CenterPoint() + delta_vector;
+  event_generator->MoveMouseTo(cached_hover_point);
+  EXPECT_EQ(CursorType::kColumnResize, cursor_manager->GetCursor().type());
+
+  // Test that after resizing, the cursor type is still the resize cursor.
+  event_generator->PressLeftButton();
+  const auto move_vector = gfx::Vector2d(20, 0);
+  event_generator->MoveMouseTo(cached_hover_point + move_vector);
+  event_generator->ReleaseLeftButton();
+  EXPECT_EQ(CursorType::kColumnResize, cursor_manager->GetCursor().type());
+  EXPECT_EQ(snap_group_divider_bounds_in_screen().CenterPoint() + delta_vector,
+            cached_hover_point + move_vector);
+
+  // Test that when hovering over the feedback button, the cursor type changed
+  // back to the default type.
+  SplitViewDividerView* divider_view =
+      snap_group_divider()->divider_view_for_testing();
+  auto* feedback_button = divider_view->feedback_button_for_testing();
+  EXPECT_TRUE(feedback_button);
+  event_generator->MoveMouseTo(divider_view->feedback_button_for_testing()
+                                   ->GetBoundsInScreen()
+                                   .CenterPoint());
+  EXPECT_EQ(CursorType::kNull, cursor_manager->GetCursor().type());
+}
+
+// Verify that the cursor changes to `kColumnResize` when hovering over the
+// divider handler view in landscape.
+TEST_F(SnapGroupDividerTest, CursorUpdateOnHandlerViewInLandscape) {
+  UpdateDisplay("900x600");
+
+  std::unique_ptr<aura::Window> w1(CreateAppWindow());
+  std::unique_ptr<aura::Window> w2(CreateAppWindow());
+  SnapTwoTestWindows(w1.get(), w2.get(), /*horizontal=*/true);
+  auto* divider = snap_group_divider();
+  ASSERT_TRUE(divider->divider_widget());
+
+  auto divider_bounds = snap_group_divider_bounds_in_screen();
+
+  auto* cursor_manager = Shell::Get()->cursor_manager();
+  const auto center_point = divider_bounds.CenterPoint();
+
+  auto* event_generator = GetEventGenerator();
+  event_generator->MoveMouseTo(center_point);
+  EXPECT_TRUE(cursor_manager->IsCursorVisible());
+  EXPECT_EQ(CursorType::kColumnResize, cursor_manager->GetCursor().type());
+
+  event_generator->MoveMouseTo(center_point + gfx::Vector2d(0, 20));
+  EXPECT_EQ(CursorType::kColumnResize, cursor_manager->GetCursor().type());
+}
+
+// Verify that the cursor changes to `kRowResize` when hovering over the divider
+// handler view in portrait.
+TEST_F(SnapGroupDividerTest, CursorUpdateOnHandlerViewInPortrait) {
+  UpdateDisplay("600x900");
+
+  std::unique_ptr<aura::Window> w1(CreateAppWindow());
+  std::unique_ptr<aura::Window> w2(CreateAppWindow());
+  SnapTwoTestWindows(w1.get(), w2.get(), /*horizontal=*/false);
+  auto* divider = snap_group_divider();
+  ASSERT_TRUE(divider->divider_widget());
+
+  auto divider_bounds = snap_group_divider_bounds_in_screen();
+
+  auto* cursor_manager = Shell::Get()->cursor_manager();
+  const auto center_point = divider_bounds.CenterPoint();
+
+  auto* event_generator = GetEventGenerator();
+  event_generator->MoveMouseTo(center_point);
+  EXPECT_TRUE(cursor_manager->IsCursorVisible());
+  EXPECT_EQ(CursorType::kRowResize, cursor_manager->GetCursor().type());
+
+  event_generator->MoveMouseTo(center_point + gfx::Vector2d(20, 0));
+  EXPECT_EQ(CursorType::kRowResize, cursor_manager->GetCursor().type());
+}
+
+// Tests that the hit area of the snap group divider can be outside of its
+// bounds with the extra insets whose value is `kSplitViewDividerExtraInset`.
+TEST_F(SnapGroupDividerTest, SnapGroupDividerEnlargedHitArea) {
+  std::unique_ptr<aura::Window> w1(CreateAppWindow());
+  std::unique_ptr<aura::Window> w2(CreateAppWindow());
+  SnapTwoTestWindows(w1.get(), w2.get(), /*horizontal=*/true);
+
+  const gfx::Point cached_divider_center_point =
+      snap_group_divider_bounds_in_screen().CenterPoint();
+  auto* event_generator = GetEventGenerator();
+  gfx::Point hover_location =
+      cached_divider_center_point -
+      gfx::Vector2d(kSplitviewDividerShortSideLength / 2 +
+                        kSplitViewDividerExtraInset / 2,
+                    0);
+  event_generator->MoveMouseTo(hover_location);
+  event_generator->PressLeftButton();
+  const auto move_vector = -gfx::Vector2d(50, 0);
+  event_generator->MoveMouseTo(hover_location + move_vector);
+  event_generator->ReleaseLeftButton();
+  EXPECT_FALSE(split_view_controller()->InSplitViewMode());
+  EXPECT_EQ(hover_location + move_vector,
+            snap_group_divider_bounds_in_screen().CenterPoint());
+}
+
+// TODO(b/326481241): Currently it's not possible to swap windows since
+// `SplitViewController` still manages the windows and updates the bounds in a
+// `SnapGroup`. This will just check that double tap still works after
+// conversion.
+TEST_F(SnapGroupTest, DoubleTapDividerInTablet) {
+  std::unique_ptr<aura::Window> w1(CreateAppWindow());
+  std::unique_ptr<aura::Window> w2(CreateAppWindow());
+  SnapTwoTestWindows(w1.get(), w2.get());
+  auto* snap_group = SnapGroupController::Get()->GetTopmostSnapGroup();
+  EXPECT_TRUE(snap_group);
+  auto* new_primary_window = snap_group->window1();
+  auto* new_secondary_window = snap_group->window2();
+
+  // Switch to tablet mode. Test that double tap on the divider swaps the
+  // windows.
+  SwitchToTabletMode();
+  EXPECT_EQ(new_primary_window, split_view_controller()->primary_window());
+  EXPECT_EQ(new_secondary_window, split_view_controller()->secondary_window());
+  EXPECT_TRUE(split_view_divider()->divider_widget());
+  const gfx::Point divider_center =
+      split_view_divider()
+          ->GetDividerBoundsInScreen(/*is_dragging=*/false)
+          .CenterPoint();
+  GetEventGenerator()->GestureTapAt(divider_center);
+  GetEventGenerator()->GestureTapAt(divider_center);
+  EXPECT_EQ(new_secondary_window, split_view_controller()->primary_window());
+  EXPECT_EQ(new_primary_window, split_view_controller()->secondary_window());
+}
+
+// Tests to verify that when a window is dragged out of a snap group and onto
+// another display, it snaps correctly with accurate bounds on the destination
+// display. See regression at http://b/331663949.
+TEST_F(SnapGroupTest, DragWindowOutOfSnapGroupToAnotherDisplay) {
+  UpdateDisplay("800x700,801+0-800x700,1602+0-800x700");
+  display::DisplayManager* display_manager = Shell::Get()->display_manager();
+  const auto& displays = display_manager->active_display_list();
+  ASSERT_EQ(3U, displays.size());
+
+  std::unique_ptr<aura::Window> w1(CreateAppWindow());
+  std::unique_ptr<aura::Window> w2(CreateAppWindow());
+  SnapTwoTestWindows(w1.get(), w2.get(), /*horizontal=*/true);
+
+  const gfx::PointF point_in_display2(802, 0);
+  EXPECT_FALSE(
+      displays[0].bounds().Contains(gfx::ToRoundedPoint(point_in_display2)));
+  EXPECT_TRUE(
+      displays[1].bounds().Contains(gfx::ToRoundedPoint(point_in_display2)));
+
+  auto* event_generator = GetEventGenerator();
+  event_generator->set_current_screen_location(GetDragPoint(w2.get()));
+  event_generator->DragMouseTo(gfx::ToRoundedPoint(point_in_display2));
+
+  ASSERT_FALSE(
+      SnapGroupController::Get()->AreWindowsInSnapGroup(w1.get(), w2.get()));
+
+  display::Screen* screen = display::Screen::GetScreen();
+  EXPECT_EQ(displays[1].id(), screen->GetDisplayNearestWindow(w2.get()).id());
+  EXPECT_EQ(chromeos::WindowStateType::kPrimarySnapped,
+            WindowState::Get(w2.get())->GetStateType());
+
+  gfx::Rect display1_left_half, display1_right_half;
+  displays[1].work_area().SplitVertically(display1_left_half,
+                                          display1_right_half);
+
+  EXPECT_EQ(display1_left_half, w2->GetBoundsInScreen());
+}
+
+// Tests that when the cursor is moved significantly past the window sizes
+// then moved the other direction, we don't update bounds.
+TEST_F(SnapGroupDividerTest, ResizeCursor) {
+  const int min_width = 300;
+  std::unique_ptr<aura::Window> w1(
+      CreateAppWindowWithMinSize(gfx::Size(min_width, min_width)));
+  std::unique_ptr<aura::Window> w2(CreateAppWindow());
+  SnapTwoTestWindows(w1.get(), w2.get(), /*horizontal=*/true);
+  auto* snap_group_divider = SnapGroupController::Get()
+                                 ->GetSnapGroupForGivenWindow(w1.get())
+                                 ->snap_group_divider();
+  for (const auto& display_specs : {"800x600", "600x800"}) {
+    UpdateDisplay(display_specs);
+    const auto display = display::Screen::GetScreen()->GetPrimaryDisplay();
+    // Press and move the mouse left without releasing, past `w1`'s min width.
+    // Test we don't update bounds beyond `w1`'s min width.
+    auto* event_generator = GetEventGenerator();
+    const gfx::Point divider_point(
+        snap_group_divider->GetDividerBoundsInScreen(/*is_dragging=*/false)
+            .CenterPoint());
+    event_generator->set_current_screen_location(divider_point);
+    event_generator->PressLeftButton();
+    const bool horizontal = IsLayoutHorizontal(display);
+    gfx::Point resize_point1 = horizontal ? gfx::Point(10, divider_point.y())
+                                          : gfx::Point(divider_point.x(), 10);
+    event_generator->MoveMouseTo(resize_point1, /*count=*/2);
+    ASSERT_TRUE(snap_group_divider->is_resizing_with_divider());
+    EXPECT_EQ(min_width, GetWindowLength(w1.get(), horizontal));
+    UnionBoundsEqualToWorkAreaBounds(w1.get(), w2.get(), snap_group_divider);
+
+    // Move the mouse right but still beyond `w1`'s min width. Test we don't
+    // update bounds yet.
+    const gfx::Point resize_point2 = horizontal
+                                         ? gfx::Point(150, divider_point.y())
+                                         : gfx::Point(divider_point.x(), 150);
+    event_generator->MoveMouseTo(resize_point2, /*count=*/2);
+    EXPECT_EQ(min_width, GetWindowLength(w1.get(), horizontal));
+    UnionBoundsEqualToWorkAreaBounds(w1.get(), w2.get(), snap_group_divider);
+
+    // Move the mouse over `w1`'s min width. Test we update bounds now.
+    const gfx::Point resize_point3 =
+        horizontal ? gfx::Point(min_width, divider_point.y())
+                   : gfx::Point(divider_point.x(), min_width);
+    event_generator->MoveMouseTo(resize_point3,
+                                 /*count=*/2);
+    EXPECT_EQ(min_width, GetWindowLength(w1.get(), horizontal));
+    UnionBoundsEqualToWorkAreaBounds(w1.get(), w2.get(), snap_group_divider);
+
+    // Move the mouse past `w1`'s min width. Test we update bounds now.
+    const gfx::Point resize_point4 = horizontal
+                                         ? gfx::Point(600, divider_point.y())
+                                         : gfx::Point(divider_point.x(), 600);
+    event_generator->MoveMouseTo(resize_point4,
+                                 /*count=*/2);
+    EXPECT_EQ(600,
+              horizontal
+                  ? snap_group_divider_bounds_in_screen().CenterPoint().x()
+                  : snap_group_divider_bounds_in_screen().CenterPoint().y());
+    UnionBoundsEqualToWorkAreaBounds(w1.get(), w2.get(), snap_group_divider);
+    event_generator->ReleaseLeftButton();
+  }
+}
+
+// -----------------------------------------------------------------------------
+// SnapGroupOverviewTest:
+using SnapGroupOverviewTest = SnapGroupTest;
+
+TEST_F(SnapGroupOverviewTest, OverviewEnterExitBasic) {
   UpdateDisplay("800x600");
 
-  std::unique_ptr<aura::Window> w1(CreateTestWindow());
-  std::unique_ptr<aura::Window> w2(CreateTestWindow());
+  std::unique_ptr<aura::Window> w1(CreateAppWindow());
+  std::unique_ptr<aura::Window> w2(CreateAppWindow());
   SnapTwoTestWindows(w1.get(), w2.get(), /*horizontal=*/true);
 
   // Verify that full overview session is expected when starting overview from
@@ -2448,15 +3310,15 @@ TEST_F(SnapGroupTest, OverviewEnterExitBasic) {
   overview_controller->StartOverview(OverviewStartAction::kTests);
   WaitForOverviewEnterAnimation();
   EXPECT_TRUE(overview_controller->overview_session());
-  EXPECT_EQ(GetOverviewGridBounds(), work_area_bounds());
-  EXPECT_FALSE(split_view_divider()->divider_widget());
+  EXPECT_EQ(GetOverviewGridBounds(w1->GetRootWindow()), work_area_bounds());
+  EXPECT_FALSE(snap_group_divider()->divider_widget()->IsVisible());
   EXPECT_EQ(WindowStateType::kPrimarySnapped,
             WindowState::Get(w1.get())->GetStateType());
   EXPECT_EQ(WindowStateType::kSecondarySnapped,
             WindowState::Get(w2.get())->GetStateType());
 
   // Verify that the snap group is restored with two windows snapped and that
-  // the split view divider becomes available on overview exit.
+  // the snap group divider becomes available on overview exit.
   ToggleOverview();
   EXPECT_FALSE(overview_controller->overview_session());
   SnapGroupController* snap_group_controller = SnapGroupController::Get();
@@ -2465,23 +3327,25 @@ TEST_F(SnapGroupTest, OverviewEnterExitBasic) {
             WindowState::Get(w1.get())->GetStateType());
   EXPECT_EQ(WindowStateType::kSecondarySnapped,
             WindowState::Get(w2.get())->GetStateType());
-  EXPECT_TRUE(split_view_divider()->divider_widget());
+  EXPECT_TRUE(snap_group_divider()->divider_widget());
+  UnionBoundsEqualToWorkAreaBounds(w1.get(), w2.get(), snap_group_divider());
 }
 
 // Tests that partial overview is shown on the other side of the screen on one
 // window snapped.
-TEST_F(SnapGroupTest, PartialOverview) {
+TEST_F(SnapGroupOverviewTest, PartialOverview) {
   UpdateDisplay("800x600");
-  std::unique_ptr<aura::Window> w1(CreateTestWindow());
-  std::unique_ptr<aura::Window> w2(CreateTestWindow());
+  std::unique_ptr<aura::Window> w1(CreateAppWindow());
+  std::unique_ptr<aura::Window> w2(CreateAppWindow());
 
+  auto* root_window = w1->GetRootWindow();
   for (const auto& snap_state :
        {WindowStateType::kPrimarySnapped, WindowStateType::kSecondarySnapped}) {
-    SnapOneTestWindow(w1.get(), snap_state);
+    SnapOneTestWindow(w1.get(), snap_state, chromeos::kDefaultSnapRatio);
     WaitForOverviewEnterAnimation();
     EXPECT_TRUE(OverviewController::Get()->overview_session());
-    EXPECT_NE(GetOverviewGridBounds(), work_area_bounds());
-    EXPECT_NEAR(GetOverviewGridBounds().width(),
+    EXPECT_NE(GetOverviewGridBounds(root_window), work_area_bounds());
+    EXPECT_NEAR(GetOverviewGridBounds(root_window).width(),
                 work_area_bounds().width() / 2.f,
                 kSplitviewDividerShortSideLength / 2.f);
   }
@@ -2489,7 +3353,7 @@ TEST_F(SnapGroupTest, PartialOverview) {
 
 // Tests that the group item will be created properly and that the snap group
 // will be represented as one group item in overview.
-TEST_F(SnapGroupTest, OverviewGroupItemCreationBasic) {
+TEST_F(SnapGroupOverviewTest, OverviewGroupItemCreationBasic) {
   std::unique_ptr<aura::Window> w1(CreateAppWindow());
   std::unique_ptr<aura::Window> w2(CreateAppWindow());
   std::unique_ptr<aura::Window> w3(CreateAppWindow());
@@ -2506,11 +3370,45 @@ TEST_F(SnapGroupTest, OverviewGroupItemCreationBasic) {
   EXPECT_EQ(overview_grid->window_list().size(), 2u);
 }
 
+// Verifies that the divider doesn't appear precipitously before the exit
+// animation of the two windows in overview mode is complete, guaranteeing a
+// seamless transition. See regression at http://b/333465871.
+TEST_F(SnapGroupOverviewTest, DividerExitOverviewAnimation) {
+  ui::ScopedAnimationDurationScaleMode animation_scale(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+
+  std::unique_ptr<aura::Window> w1(CreateAppWindow());
+  std::unique_ptr<aura::Window> w2(CreateAppWindow());
+  SnapTwoTestWindows(w1.get(), w2.get());
+  SplitViewDivider* divider = snap_group_divider();
+  ASSERT_TRUE(divider);
+  auto* divider_widget = divider->divider_widget();
+  ASSERT_TRUE(divider_widget);
+  ASSERT_TRUE(divider_widget->IsVisible());
+
+  OverviewController* overview_controller = OverviewController::Get();
+  overview_controller->StartOverview(OverviewStartAction::kOverviewButton);
+  WaitForOverviewEntered();
+  EXPECT_TRUE(divider_widget);
+  EXPECT_FALSE(divider_widget->IsVisible());
+
+  SendKeyUntilOverviewItemIsFocused(ui::VKEY_TAB);
+  SendKey(ui::VKEY_RETURN, GetEventGenerator(), 0);
+
+  // Verify that `divider_widget` remains invisible until overview exit
+  // animation is complete.
+  EXPECT_TRUE(divider_widget);
+  EXPECT_FALSE(divider_widget->IsVisible());
+  WaitForOverviewExitAnimation();
+  EXPECT_TRUE(divider_widget);
+  EXPECT_TRUE(divider_widget->IsVisible());
+}
+
 // Tests that if one of the windows in a snap group gets destroyed in overview,
 // the overview group item will only host the other window. If both of the
 // windows get destroyed, the corresponding overview group item will be removed
 // from the overview grid.
-TEST_F(SnapGroupTest, WindowDestructionInOverview) {
+TEST_F(SnapGroupOverviewTest, WindowDestructionInOverview) {
   std::unique_ptr<aura::Window> w1(CreateAppWindow());
   std::unique_ptr<aura::Window> w2(CreateAppWindow());
   std::unique_ptr<aura::Window> w3(CreateAppWindow());
@@ -2542,7 +3440,7 @@ TEST_F(SnapGroupTest, WindowDestructionInOverview) {
 // Tests that the rounded corners of the remaining item in the snap group on
 // window destruction will be refreshed so that the exposed corners will be
 // rounded corners.
-TEST_F(SnapGroupTest, RefreshVisualsOnWindowDestructionInOverview) {
+TEST_F(SnapGroupOverviewTest, RefreshVisualsOnWindowDestructionInOverview) {
   std::unique_ptr<aura::Window> w1(CreateAppWindow());
   std::unique_ptr<aura::Window> w2(CreateAppWindow());
   std::unique_ptr<aura::Window> w3(CreateAppWindow());
@@ -2579,12 +3477,14 @@ TEST_F(SnapGroupTest, RefreshVisualsOnWindowDestructionInOverview) {
 // Tests that when one of the window in snap group gets destroyed in overview,
 // the other window will restore its bounds properly when been activated to exit
 // overview.
-TEST_F(SnapGroupTest, RemainingWindowBoundsRestoreAfterDestructionInOverview) {
+TEST_F(SnapGroupOverviewTest,
+       RemainingWindowBoundsRestoreAfterDestructionInOverview) {
   std::unique_ptr<aura::Window> w1(CreateAppWindow());
   std::unique_ptr<aura::Window> w2(CreateAppWindow());
   std::unique_ptr<aura::Window> w3(CreateAppWindow());
   SnapTwoTestWindows(w1.get(), w2.get());
-  ASSERT_TRUE(split_view_divider()->divider_widget());
+  ASSERT_TRUE(snap_group_divider()->divider_widget());
+  // Note here `w1` would have been shrunk for the divider width.
   const gfx::Size w1_size_before_overview = w1->GetBoundsInScreen().size();
 
   OverviewController* overview_controller = OverviewController::Get();
@@ -2606,14 +3506,15 @@ TEST_F(SnapGroupTest, RemainingWindowBoundsRestoreAfterDestructionInOverview) {
 
   ClickOverviewItem(GetEventGenerator(), w1.get());
   EXPECT_FALSE(overview_controller->InOverviewSession());
+  EXPECT_FALSE(
+      SnapGroupController::Get()->GetSnapGroupForGivenWindow(w1.get()));
   const gfx::Size w1_size_after_overview = w1->GetBoundsInScreen().size();
 
-  // Verify that the size of `w1` on overview exit is equal to that of before
-  // entering overview plus `kSplitviewDividerShortSideLength / 2`.
+  // Verify that w1 is restored to its pre-overview bounds and any
+  // divider-related margin adjustments have been reverted.
   EXPECT_EQ(
-      w1_size_before_overview.width() + kSplitviewDividerShortSideLength / 2,
+      w1_size_before_overview.width() + kSplitviewDividerShortSideLength / 2.f,
       w1_size_after_overview.width());
-  EXPECT_EQ(w1_size_before_overview.height(), w1_size_after_overview.height());
 
   // Verify that the transform is identity.
   EXPECT_TRUE(w1->transform().IsIdentity());
@@ -2621,7 +3522,7 @@ TEST_F(SnapGroupTest, RemainingWindowBoundsRestoreAfterDestructionInOverview) {
 
 // Tests that the individual items within the same group will be hosted by the
 // same overview group item.
-TEST_F(SnapGroupTest, OverviewItemTest) {
+TEST_F(SnapGroupOverviewTest, OverviewItemTest) {
   std::unique_ptr<aura::Window> w1(CreateAppWindow());
   std::unique_ptr<aura::Window> w2(CreateAppWindow());
   SnapTwoTestWindows(w1.get(), w2.get());
@@ -2637,19 +3538,19 @@ TEST_F(SnapGroupTest, OverviewItemTest) {
 
 // Tests that the size of the `OverviewItem`s hosted by the `OverviewGroupItem`
 // will correspond to the actual window layout.
-TEST_F(SnapGroupTest, ReflectSnapRatioInOverviewGroupItem) {
+TEST_F(SnapGroupOverviewTest, ReflectSnapRatioInOverviewGroupItem) {
   std::unique_ptr<aura::Window> w1(CreateAppWindow());
   std::unique_ptr<aura::Window> w2(CreateAppWindow());
   SnapTwoTestWindows(w1.get(), w2.get());
-  ASSERT_TRUE(split_view_divider()->divider_widget());
+  ASSERT_TRUE(snap_group_divider()->divider_widget());
   const gfx::Point hover_location =
-      split_view_divider_bounds_in_screen().CenterPoint();
-  split_view_divider()->StartResizeWithDivider(hover_location);
+      snap_group_divider_bounds_in_screen().CenterPoint();
+  snap_group_divider()->StartResizeWithDivider(hover_location);
   const gfx::Vector2d drag_delta(-work_area_bounds().width() / 6, 0);
   const auto end_point = hover_location + drag_delta;
-  split_view_divider()->ResizeWithDivider(end_point);
-  split_view_divider()->EndResizeWithDivider(end_point);
-  EXPECT_TRUE(split_view_controller()->InSplitViewMode());
+  snap_group_divider()->ResizeWithDivider(end_point);
+  snap_group_divider()->EndResizeWithDivider(end_point);
+  EXPECT_FALSE(split_view_controller()->InSplitViewMode());
   EXPECT_NEAR(chromeos::kOneThirdSnapRatio,
               WindowState::Get(w1.get())->snap_ratio().value(),
               /*abs_error=*/0.01);
@@ -2672,18 +3573,63 @@ TEST_F(SnapGroupTest, ReflectSnapRatioInOverviewGroupItem) {
 
   // Since `w1` is roughly half the width of `w2`, verify that `item1_bounds` is
   // also half the width of `item2_bounds`.
-  const gfx::Rect item1_bounds =
-      overview_items[0]->item_widget()->GetWindowBoundsInScreen();
-  const gfx::Rect item2_bounds =
-      overview_items[1]->item_widget()->GetWindowBoundsInScreen();
+  const gfx::RectF item1_bounds = overview_items[0]->target_bounds();
+  const gfx::RectF item2_bounds = overview_items[1]->target_bounds();
   const float size_ratio =
       static_cast<float>(item1_bounds.width()) / item2_bounds.width();
-  EXPECT_NEAR(size_ratio, 0.5, /*abs_error=*/0.01);
+  EXPECT_NEAR(size_ratio, 0.5, /*abs_error=*/0.05);
+}
+
+// Tests that snap group restores to its original snap ratio after on Overview
+// exit.
+TEST_F(SnapGroupOverviewTest, RestoreSnapRatioOnOverviewExit) {
+  std::unique_ptr<aura::Window> w1(CreateAppWindow());
+  std::unique_ptr<aura::Window> w2(CreateAppWindow());
+  SnapTwoTestWindows(w1.get(), w2.get());
+  ASSERT_TRUE(snap_group_divider()->divider_widget());
+
+  // Drag the divider between the snapped windows to get the 1/3 and 2/3 split
+  // screen.
+  const gfx::Point hover_location =
+      snap_group_divider_bounds_in_screen().CenterPoint();
+  snap_group_divider()->StartResizeWithDivider(hover_location);
+  const gfx::Vector2d drag_delta(-work_area_bounds().width() / 6, 0);
+  const auto end_point = hover_location + drag_delta;
+  snap_group_divider()->ResizeWithDivider(end_point);
+  snap_group_divider()->EndResizeWithDivider(end_point);
+
+  WindowState* w1_window_state = WindowState::Get(w1.get());
+  WindowState* w2_window_state = WindowState::Get(w2.get());
+
+  auto w1_snap_ratio_before = w1_window_state->snap_ratio();
+  ASSERT_TRUE(w1_snap_ratio_before.has_value());
+  auto w2_snap_ratio_before = w2_window_state->snap_ratio();
+  ASSERT_TRUE(w2_snap_ratio_before.has_value());
+  EXPECT_NEAR(chromeos::kOneThirdSnapRatio, *w1_snap_ratio_before,
+              /*abs_error=*/0.01);
+  EXPECT_NEAR(chromeos::kTwoThirdSnapRatio, *w2_snap_ratio_before,
+              /*abs_error=*/0.01);
+
+  ToggleOverview();
+  ASSERT_TRUE(IsInOverviewSession());
+
+  ToggleOverview();
+  ASSERT_FALSE(IsInOverviewSession());
+
+  // Both of the windows restored to their original snap ratio on Overview exit.
+  auto w1_snap_ratio_after = w1_window_state->snap_ratio();
+  ASSERT_TRUE(w1_snap_ratio_after.has_value());
+  auto w2_snap_ratio_after = w2_window_state->snap_ratio();
+  ASSERT_TRUE(w2_snap_ratio_after.has_value());
+  EXPECT_NEAR(chromeos::kOneThirdSnapRatio, *w1_snap_ratio_after,
+              /*abs_error=*/0.01);
+  EXPECT_NEAR(chromeos::kTwoThirdSnapRatio, *w2_snap_ratio_after,
+              /*abs_error=*/0.01);
 }
 
 // Tests the individual close functionality of the `OverviewGroupItem` by
 // clicking on the close button of each overview item.
-TEST_F(SnapGroupTest, CloseIndividualWindowByCloseButton) {
+TEST_F(SnapGroupOverviewTest, CloseIndividualWindowByCloseButton) {
   ScopedOverviewTransformWindow::SetImmediateCloseForTests(/*immediate=*/true);
   std::unique_ptr<aura::Window> w0(CreateAppWindow());
   std::unique_ptr<aura::Window> w1(CreateAppWindow());
@@ -2735,7 +3681,7 @@ TEST_F(SnapGroupTest, CloseIndividualWindowByCloseButton) {
 // with `Ctrl + W`.
 // TODO(michelefan@): Re-purpose this test. Currently disabled due to product
 // decision change.
-TEST_F(SnapGroupTest, DISABLED_CtrlPlusWToCloseFocusedGroupInOverview) {
+TEST_F(SnapGroupOverviewTest, DISABLED_CtrlPlusWToCloseFocusedGroupInOverview) {
   // Explicitly enable immediate close so that we can directly close the
   // window(s) without waiting the delayed task to be completed in
   // `ScopedOverviewTransformWindow::Close()`.
@@ -2767,7 +3713,8 @@ TEST_F(SnapGroupTest, DISABLED_CtrlPlusWToCloseFocusedGroupInOverview) {
 
 // Tests that the minimized windows in a snap group will be shown as a single
 // group item in overview.
-TEST_F(SnapGroupTest, MinimizedSnapGroupInOverview) {
+// Disabled due to product decision change.
+TEST_F(SnapGroupOverviewTest, DISABLED_MinimizedSnapGroupInOverview) {
   std::unique_ptr<aura::Window> w1(CreateAppWindow());
   std::unique_ptr<aura::Window> w2(CreateAppWindow());
   SnapTwoTestWindows(w1.get(), w2.get());
@@ -2786,7 +3733,7 @@ TEST_F(SnapGroupTest, MinimizedSnapGroupInOverview) {
 
 // Tests that the bounds on the overview group item as well as the individual
 // overview item hosted by the group item will be set correctly.
-TEST_F(SnapGroupTest, OverviewItemBoundsTest) {
+TEST_F(SnapGroupOverviewTest, OverviewItemBoundsTest) {
   std::unique_ptr<aura::Window> w1(CreateAppWindow());
   std::unique_ptr<aura::Window> w2(CreateAppWindow());
   SnapTwoTestWindows(w1.get(), w2.get());
@@ -2813,8 +3760,8 @@ TEST_F(SnapGroupTest, OverviewItemBoundsTest) {
 }
 
 // Tests the rounded corners will be applied to the exposed corners of the
-// overview group item.
-TEST_F(SnapGroupTest, OverviewGroupItemRoundedCorners) {
+// overview group item in horizontal wndow layout.
+TEST_F(SnapGroupOverviewTest, OverviewGroupItemRoundedCornersInHorizontal) {
   std::unique_ptr<aura::Window> window0 = CreateAppWindow();
   std::unique_ptr<aura::Window> window1 = CreateAppWindow();
   std::unique_ptr<aura::Window> window2 = CreateAppWindow(gfx::Rect(100, 100));
@@ -2837,8 +3784,35 @@ TEST_F(SnapGroupTest, OverviewGroupItemRoundedCorners) {
 }
 
 // Tests the rounded corners will be applied to the exposed corners of the
+// overview group item in vertical wndow layout.
+TEST_F(SnapGroupOverviewTest, OverviewGroupItemRoundedCornersInVertical) {
+  UpdateDisplay("600x900");
+  std::unique_ptr<aura::Window> window0 = CreateAppWindow();
+  std::unique_ptr<aura::Window> window1 = CreateAppWindow();
+  std::unique_ptr<aura::Window> window2 = CreateAppWindow(gfx::Rect(100, 100));
+  SnapTwoTestWindows(window0.get(), window1.get(), /*horizontal=*/false);
+
+  OverviewController* overview_controller = OverviewController::Get();
+  overview_controller->StartOverview(OverviewStartAction::kTests,
+                                     OverviewEnterExitType::kImmediateEnter);
+  ASSERT_TRUE(overview_controller->InOverviewSession());
+
+  const auto* overview_grid =
+      GetOverviewGridForRoot(Shell::GetPrimaryRootWindow());
+  ASSERT_TRUE(overview_grid);
+  const auto& window_list = overview_grid->window_list();
+  ASSERT_EQ(window_list.size(), 2u);
+  for (const auto& overview_item : window_list) {
+    EXPECT_EQ(overview_item->GetRoundedCorners(),
+              gfx::RoundedCornersF(kWindowMiniViewCornerRadius));
+  }
+}
+
+// Tests the rounded corners will be applied to the exposed corners of the
 // overview group item if the corresponding snap group is minimized.
-TEST_F(SnapGroupTest, MinimizedSnapGroupRoundedCornersInOverview) {
+// Disabled due to product decision change.
+TEST_F(SnapGroupOverviewTest,
+       DISABLED_MinimizedSnapGroupRoundedCornersInOverview) {
   std::unique_ptr<aura::Window> w0(CreateAppWindow());
   std::unique_ptr<aura::Window> w1(CreateAppWindow());
   std::unique_ptr<aura::Window> w2(CreateAppWindow(gfx::Rect(100, 100)));
@@ -2864,7 +3838,7 @@ TEST_F(SnapGroupTest, MinimizedSnapGroupRoundedCornersInOverview) {
 
 // Tests that the shadow for the group item in overview will be applied on the
 // group-level.
-TEST_F(SnapGroupTest, OverviewGroupItemShadow) {
+TEST_F(SnapGroupOverviewTest, OverviewGroupItemShadow) {
   std::unique_ptr<aura::Window> w0(CreateAppWindow());
   std::unique_ptr<aura::Window> w1(CreateAppWindow());
   std::unique_ptr<aura::Window> w2(CreateAppWindow(gfx::Rect(100, 100)));
@@ -2897,10 +3871,22 @@ TEST_F(SnapGroupTest, OverviewGroupItemShadow) {
 // Tests that when one of the windows in the snap group gets destroyed in
 // overview the shadow contents bounds on the remaining item get updated
 // correctly.
-TEST_F(SnapGroupTest, CorrectShadowBoundsOnRemainingItemInOverview) {
+TEST_F(SnapGroupOverviewTest, CorrectShadowBoundsOnRemainingItemInOverview) {
   std::unique_ptr<aura::Window> w0(CreateAppWindow());
   std::unique_ptr<aura::Window> w1(CreateAppWindow());
   SnapTwoTestWindows(w0.get(), w1.get());
+
+  // Create more windows to ensure the position of the `OverviewGroupItem` needs
+  // to be updated during the Overview grid re-layout since the Overview grid
+  // layout is left-aligned.
+  std::unique_ptr<aura::Window> w2(
+      CreateAppWindow(gfx::Rect(100, 100, 200, 100)));
+  std::unique_ptr<aura::Window> w3(
+      CreateAppWindow(gfx::Rect(200, 200, 100, 200)));
+  std::unique_ptr<aura::Window> w4(
+      CreateAppWindow(gfx::Rect(100, 200, 200, 300)));
+  std::unique_ptr<aura::Window> w5(
+      CreateAppWindow(gfx::Rect(200, 100, 300, 200)));
 
   OverviewController* overview_controller = Shell::Get()->overview_controller();
   overview_controller->StartOverview(OverviewStartAction::kTests,
@@ -2910,71 +3896,34 @@ TEST_F(SnapGroupTest, CorrectShadowBoundsOnRemainingItemInOverview) {
       GetOverviewGridForRoot(Shell::GetPrimaryRootWindow());
   ASSERT_TRUE(overview_grid);
   const auto& window_list = overview_grid->window_list();
-  ASSERT_EQ(window_list.size(), 1u);
+  ASSERT_EQ(window_list.size(), 5u);
+
+  OverviewGroupItem* overview_group_item =
+      static_cast<OverviewGroupItem*>(window_list[4].get());
+  const auto& overview_items =
+      overview_group_item->overview_items_for_testing();
+  ASSERT_EQ(overview_items.size(), 2u);
 
   w0.reset();
-  EXPECT_EQ(window_list.size(), 1u);
+  EXPECT_EQ(window_list.size(), 5u);
+  EXPECT_EQ(overview_items.size(), 1u);
 
-  // Verify that the shadow bounds will be refreshed to fit with the remaining
+  // Verify that the group-level shadow will be reset and the window-level
+  // shadow bounds of the remaining item is refreshed to fit with the remaining
   // item.
-  auto& overview_item = window_list[0];
-  const auto shadow_content_bounds =
-      overview_item->get_shadow_content_bounds_for_testing();
-  EXPECT_EQ(shadow_content_bounds.size(),
-            gfx::ToRoundedSize(overview_item->target_bounds().size()));
-}
+  auto* group_shadow = overview_group_item->shadow_for_testing();
+  EXPECT_FALSE(group_shadow);
 
-// Tests the basic functionality of focus cycling in overview through tabbing,
-// the overview group item will be focused and activated as a group
-TEST_F(SnapGroupTest, DISABLED_OverviewGroupItemFocusCycling) {
-  std::unique_ptr<aura::Window> window0 = CreateAppWindow();
-  std::unique_ptr<aura::Window> window1 = CreateAppWindow();
-  std::unique_ptr<aura::Window> window2 = CreateAppWindow(gfx::Rect(100, 100));
-  SnapTwoTestWindows(window0.get(), window1.get());
-  EXPECT_TRUE(window_util::IsStackedBelow(window0.get(), window1.get()));
-
-  OverviewController* overview_controller = OverviewController::Get();
-  overview_controller->StartOverview(OverviewStartAction::kTests,
-                                     OverviewEnterExitType::kImmediateEnter);
-  ASSERT_TRUE(overview_controller->InOverviewSession());
-
-  const auto* overview_grid =
-      GetOverviewGridForRoot(Shell::GetPrimaryRootWindow());
-  ASSERT_TRUE(overview_grid);
-  const auto& window_list = overview_grid->window_list();
-  ASSERT_EQ(window_list.size(), 2u);
-
-  // Overview items to be cycled:
-  // [window0, window1], window2
-  SendKeyUntilOverviewItemIsFocused(ui::VKEY_TAB);
-  auto* event_generator = GetEventGenerator();
-  SendKey(ui::VKEY_TAB, event_generator, ui::EF_NONE, /*count=*/2);
-  SendKey(ui::VKEY_RETURN, event_generator);
-  EXPECT_FALSE(overview_controller->InOverviewSession());
-  MruWindowTracker* mru_window_tracker = Shell::Get()->mru_window_tracker();
-  aura::Window* top_most_window = window_util::GetTopMostWindow(
-      mru_window_tracker->BuildMruWindowList(DesksMruType::kActiveDesk));
-  EXPECT_EQ(top_most_window, window2.get());
-
-  overview_controller->StartOverview(OverviewStartAction::kTests,
-                                     OverviewEnterExitType::kImmediateEnter);
-  EXPECT_TRUE(overview_controller->InOverviewSession());
-
-  // Overview items to be cycled:
-  // window2, [window0, window1]
-  SendKeyUntilOverviewItemIsFocused(ui::VKEY_TAB);
-  SendKey(ui::VKEY_TAB, event_generator, ui::EF_NONE, /*count=*/2);
-  SendKey(ui::VKEY_RETURN, event_generator);
-  EXPECT_FALSE(overview_controller->InOverviewSession());
-  top_most_window = window_util::GetTopMostWindow(
-      mru_window_tracker->BuildMruWindowList(DesksMruType::kActiveDesk));
-  EXPECT_EQ(top_most_window, window1.get());
+  auto* window1_shadow = overview_items[0]->shadow_for_testing();
+  ASSERT_TRUE(window1_shadow);
+  EXPECT_EQ(gfx::ToRoundedSize(overview_group_item->target_bounds().size()),
+            window1_shadow->GetContentBounds().size());
 }
 
 // Tests the basic functionality of activating a group item in overview with
 // mouse or touch. Overview will exit upon mouse/touch release and the overview
 // item that directly handles the event will be activated.
-TEST_F(SnapGroupTest, GroupItemActivation) {
+TEST_F(SnapGroupOverviewTest, GroupItemActivation) {
   std::unique_ptr<aura::Window> window0 = CreateAppWindow();
   std::unique_ptr<aura::Window> window1 = CreateAppWindow();
   SnapTwoTestWindows(window0.get(), window1.get());
@@ -2989,10 +3938,10 @@ TEST_F(SnapGroupTest, GroupItemActivation) {
     gfx::Vector2d offset;
     raw_ptr<aura::Window> expected_activated_window;
   } kTestCases[]{
-      {false, gfx::Vector2d(-5, -5), window0.get()},
-      {true, gfx::Vector2d(-5, -5), window0.get()},
-      {false, gfx::Vector2d(5, 5), window1.get()},
-      {true, gfx::Vector2d(5, 5), window1.get()},
+      {false, gfx::Vector2d(-10, 0), window0.get()},
+      {true, gfx::Vector2d(-10, 0), window0.get()},
+      {false, gfx::Vector2d(10, 0), window1.get()},
+      {true, gfx::Vector2d(10, 0), window1.get()},
   };
 
   OverviewController* overview_controller = OverviewController::Get();
@@ -3034,7 +3983,7 @@ TEST_F(SnapGroupTest, GroupItemActivation) {
 // Tests the basic drag and drop functionality for overview group item with both
 // mouse and touch events. The group item will be dropped to its original
 // position before drag started.
-TEST_F(SnapGroupTest, DragAndDropBasic) {
+TEST_F(SnapGroupOverviewTest, DragAndDropBasic) {
   // Explicitly create another desk so that the virtual desk bar won't expand
   // from zero-state to expanded-state when dragging starts.
   auto* desks_controller = DesksController::Get();
@@ -3085,7 +4034,7 @@ TEST_F(SnapGroupTest, DragAndDropBasic) {
 
 // Tests that the bounds of the drop target for `OverviewGroupItem` will match
 // that of the corresponding item which the drop target is a placeholder for.
-TEST_F(SnapGroupTest, DropTargetBoundsForGroupItem) {
+TEST_F(SnapGroupOverviewTest, DropTargetBoundsForGroupItem) {
   auto* desks_controller = DesksController::Get();
   desks_controller->NewDesk(DesksCreationRemovalSource::kButton);
   ASSERT_EQ(2u, desks_controller->desks().size());
@@ -3120,11 +4069,11 @@ TEST_F(SnapGroupTest, DropTargetBoundsForGroupItem) {
     EXPECT_TRUE(overview_controller->InOverviewSession());
 
     auto* drop_target = overview_grid->drop_target();
-    EXPECT_TRUE(drop_target);
+    ASSERT_TRUE(drop_target);
 
     // Verify that the bounds of the `drop_target` will be the same as the
     // `target_bounds_before_dragging`.
-    EXPECT_EQ(gfx::RectF(drop_target->item_widget()->GetWindowBoundsInScreen()),
+    EXPECT_EQ(gfx::RectF(drop_target->target_bounds()),
               target_bounds_before_dragging);
     if (by_touch) {
       event_generator->ReleaseTouch();
@@ -3136,7 +4085,7 @@ TEST_F(SnapGroupTest, DropTargetBoundsForGroupItem) {
 
 // Tests the stacking order of the overview group item should be above other
 // overview items while being dragged.
-TEST_F(SnapGroupTest, StackingOrderWhileDraggingInOverview) {
+TEST_F(SnapGroupOverviewTest, StackingOrderWhileDraggingInOverview) {
   auto* desks_controller = DesksController::Get();
   desks_controller->NewDesk(DesksCreationRemovalSource::kButton);
   ASSERT_EQ(2u, desks_controller->desks().size());
@@ -3196,10 +4145,59 @@ TEST_F(SnapGroupTest, StackingOrderWhileDraggingInOverview) {
   EXPECT_TRUE(overview_controller->InOverviewSession());
 }
 
+// Verify that when dragging the group item, the close buttons of the individual
+// items within the group are disabled with opacity set to 0, and their opacity
+// is restored once the drag ends.
+TEST_F(SnapGroupOverviewTest, HideCloseButtonsOnDragStart) {
+  std::unique_ptr<aura::Window> window0 = CreateAppWindow();
+  auto* window_widget0 = views::Widget::GetWidgetForNativeView(window0.get());
+  views::test::TestWidgetObserver observer0(window_widget0);
+  std::unique_ptr<aura::Window> window1 = CreateAppWindow();
+  SnapTwoTestWindows(window0.get(), window1.get());
+
+  OverviewController* overview_controller = OverviewController::Get();
+  overview_controller->StartOverview(OverviewStartAction::kTests,
+                                     OverviewEnterExitType::kImmediateEnter);
+  ASSERT_TRUE(overview_controller->InOverviewSession());
+
+  OverviewGroupItem* overview_group_item =
+      static_cast<OverviewGroupItem*>(GetOverviewItemForWindow(window0.get()));
+  ASSERT_TRUE(overview_group_item);
+
+  const auto& overview_items =
+      overview_group_item->overview_items_for_testing();
+  ASSERT_EQ(2u, overview_items.size());
+
+  auto* event_generator = GetEventGenerator();
+
+  // On drag starts, the close buttons of the individual items are disabled and
+  // their opacity is set to 0.
+  DragGroupItemToPoint(
+      overview_group_item,
+      Shell::GetPrimaryRootWindow()->GetBoundsInScreen().CenterPoint(),
+      event_generator, /*by_touch_gestures=*/false, /*drop=*/false);
+  for (const auto& item : overview_items) {
+    auto* close_button = item->overview_item_view()->close_button();
+    ASSERT_TRUE(item->overview_item_view()->close_button());
+    EXPECT_EQ(close_button->layer()->GetTargetOpacity(), 0.f);
+    EXPECT_FALSE(close_button->GetEnabled());
+  }
+
+  // On the drag and drop completes, the close buttons of the individual items
+  // restore to their default state.
+  event_generator->ReleaseLeftButton();
+  for (const auto& item : overview_items) {
+    auto* close_button = item->overview_item_view()->close_button();
+    ASSERT_TRUE(item->overview_item_view()->close_button());
+    EXPECT_EQ(close_button->layer()->GetTargetOpacity(), 1.f);
+    EXPECT_TRUE(close_button->GetEnabled());
+  }
+}
+
 // Tests that `OverviewGroupItem` is not snappable in overview when there are
 // two windows hosted by it however when one of the windows gets destroyed in
 // overview, the remaining item becomes snappable.
-TEST_F(SnapGroupTest, GroupItemSnapBehaviorInOverview) {
+TEST_F(SnapGroupOverviewTest, GroupItemSnapBehaviorInOverview) {
   auto* desks_controller = DesksController::Get();
   desks_controller->NewDesk(DesksCreationRemovalSource::kButton);
   ASSERT_EQ(2u, desks_controller->desks().size());
@@ -3247,11 +4245,67 @@ TEST_F(SnapGroupTest, GroupItemSnapBehaviorInOverview) {
             WindowStateType::kPrimarySnapped);
 }
 
+TEST_F(SnapGroupOverviewTest, SkipPairingInOverviewWhenClickingEmptyArea) {
+  std::unique_ptr<aura::Window> w1(CreateAppWindow());
+  std::unique_ptr<aura::Window> w2(CreateAppWindow());
+
+  SnapOneTestWindow(w1.get(), WindowStateType::kPrimarySnapped,
+                    chromeos::kDefaultSnapRatio);
+  WaitForOverviewEnterAnimation();
+  OverviewController* overview_controller = OverviewController::Get();
+  EXPECT_TRUE(overview_controller->InOverviewSession());
+  EXPECT_EQ(WindowState::Get(w1.get())->GetStateType(),
+            WindowStateType::kPrimarySnapped);
+  ASSERT_EQ(1u, GetOverviewSession()->grid_list().size());
+
+  auto* w2_overview_item = GetOverviewItemForWindow(w2.get());
+  EXPECT_TRUE(w2_overview_item);
+  const gfx::Point outside_point =
+      gfx::ToRoundedPoint(
+          w2_overview_item->GetTransformedBounds().bottom_right()) +
+      gfx::Vector2d(20, 20);
+
+  // Verify that clicking on an empty area in overview will exit the paring.
+  auto* event_generator = GetEventGenerator();
+  event_generator->MoveMouseTo(outside_point);
+  event_generator->ClickLeftButton();
+  EXPECT_FALSE(overview_controller->InOverviewSession());
+  EXPECT_EQ(WindowState::Get(w1.get())->GetStateType(),
+            WindowStateType::kPrimarySnapped);
+  EXPECT_FALSE(
+      SnapGroupController::Get()->AreWindowsInSnapGroup(w1.get(), w2.get()));
+}
+
+TEST_F(SnapGroupOverviewTest, SkipPairingInOverviewWithEscapeKey) {
+  std::unique_ptr<aura::Window> w1(CreateAppWindow());
+  std::unique_ptr<aura::Window> w2(CreateAppWindow());
+
+  SnapOneTestWindow(w1.get(), WindowStateType::kPrimarySnapped,
+                    chromeos::kDefaultSnapRatio);
+  OverviewController* overview_controller = OverviewController::Get();
+  EXPECT_TRUE(overview_controller->InOverviewSession());
+  EXPECT_TRUE(GetOverviewSession()->IsWindowInOverview(w2.get()));
+  EXPECT_EQ(WindowState::Get(w1.get())->GetStateType(),
+            WindowStateType::kPrimarySnapped);
+  ASSERT_EQ(1u, GetOverviewSession()->grid_list().size());
+
+  GetEventGenerator()->PressAndReleaseKey(ui::VKEY_ESCAPE, ui::EF_NONE);
+  EXPECT_FALSE(overview_controller->InOverviewSession());
+  EXPECT_EQ(WindowState::Get(w1.get())->GetStateType(),
+            WindowStateType::kPrimarySnapped);
+  EXPECT_FALSE(
+      SnapGroupController::Get()->AreWindowsInSnapGroup(w1.get(), w2.get()));
+}
+
+// -----------------------------------------------------------------------------
+// SnapGroupDesksTest:
+using SnapGroupDesksTest = SnapGroupTest;
+
 // Tests that the two windows contained in the overview group item will be moved
 // from the original desk to another desk on drag complete and that the two
 // windows will still be in a snap group. The divider will show up in the
 // destination desk on target desk activated.
-TEST_F(SnapGroupTest, DragOverviewGroupItemToAnotherDesk) {
+TEST_F(SnapGroupDesksTest, DragOverviewGroupItemToAnotherDesk) {
   auto* desks_controller = DesksController::Get();
   desks_controller->NewDesk(DesksCreationRemovalSource::kButton);
   ASSERT_EQ(2u, desks_controller->desks().size());
@@ -3295,16 +4349,16 @@ TEST_F(SnapGroupTest, DragOverviewGroupItemToAnotherDesk) {
   EXPECT_TRUE(SnapGroupController::Get()->AreWindowsInSnapGroup(window0.get(),
                                                                 window1.get()));
   ActivateDesk(desk1);
-  EXPECT_TRUE(split_view_divider()->divider_widget());
+  EXPECT_TRUE(snap_group_divider()->divider_widget());
   EXPECT_EQ(desks_util::GetDeskForContext(
-                split_view_divider()->divider_widget()->GetNativeWindow()),
+                snap_group_divider()->divider_widget()->GetNativeWindow()),
             desk1);
 }
 
 // Verify that there will be no crash when dragging the group item with the
 // existence of bubble widget to another desk in overview. See the crash at
 // http://b/311255082.
-TEST_F(SnapGroupTest,
+TEST_F(SnapGroupDesksTest,
        NoCrashWhenDraggingOverviewGroupItemWithBubbleToAnotherDesk) {
   auto* desks_controller = DesksController::Get();
   desks_controller->NewDesk(DesksCreationRemovalSource::kButton);
@@ -3375,157 +4429,547 @@ TEST_F(SnapGroupTest,
       SnapGroupController::Get()->AreWindowsInSnapGroup(w0.get(), w1.get()));
 }
 
-// Tests that the hit area of the split view divider can be outside of its
-// bounds with the extra insets whose value is `kSplitViewDividerExtraInset`.
-TEST_F(SnapGroupTest, SplitViewDividerEnlargedHitArea) {
-  std::unique_ptr<aura::Window> w1(CreateTestWindow());
-  std::unique_ptr<aura::Window> w2(CreateTestWindow());
-  SnapTwoTestWindows(w1.get(), w2.get(), /*horizontal=*/true);
+// Test: Dragging an `OverviewGroupItem` between desk containers (both
+// containing `OverviewGroupItem`)
+//  - Verify that an `OverviewGroupItem` can be dragged from one desk container
+//  to another when both containers already have `OverviewGroupItem` present.
+//  - Ensure no crashes occur during the process.
+//  - Confirm that the OverviewGroupItem is reparented to the new desk
+//  container.
+// See http://b/333613078 for more details about the crash.
+TEST_F(SnapGroupDesksTest, DragOverviewGroupItemToAnotherDeskWithSnapGroup) {
+  auto* desks_controller = DesksController::Get();
+  desks_controller->NewDesk(DesksCreationRemovalSource::kButton);
+  ASSERT_EQ(2u, desks_controller->desks().size());
+  const Desk* desk0 = desks_controller->GetDeskAtIndex(0);
+  const Desk* desk1 = desks_controller->GetDeskAtIndex(1);
 
-  const gfx::Point cached_divider_center_point =
-      split_view_divider_bounds_in_screen().CenterPoint();
-  auto* event_generator = GetEventGenerator();
-  gfx::Point hover_location =
-      cached_divider_center_point -
-      gfx::Vector2d(kSplitviewDividerShortSideLength / 2 +
-                        kSplitViewDividerExtraInset / 2,
-                    0);
-  event_generator->MoveMouseTo(hover_location);
-  event_generator->PressLeftButton();
-  const auto move_vector = -gfx::Vector2d(50, 0);
-  event_generator->MoveMouseTo(hover_location + move_vector);
-  event_generator->ReleaseLeftButton();
-  EXPECT_TRUE(split_view_controller()->InSplitViewMode());
-  EXPECT_EQ(split_view_divider_bounds_in_screen().CenterPoint(),
-            cached_divider_center_point + move_vector);
+  std::unique_ptr<aura::Window> w0(CreateAppWindow(gfx::Rect(0, 0, 300, 300)));
+  std::unique_ptr<aura::Window> w1(
+      CreateAppWindow(gfx::Rect(500, 20, 200, 200)));
+  SnapTwoTestWindows(w0.get(), w1.get());
+  ASSERT_EQ(desks_util::GetDeskForContext(w0.get()), desk0);
+  ASSERT_EQ(desks_util::GetDeskForContext(w1.get()), desk0);
+
+  ActivateDesk(desk1);
+  std::unique_ptr<aura::Window> w2(CreateAppWindow(gfx::Rect(0, 0, 100, 100)));
+  std::unique_ptr<aura::Window> w3(
+      CreateAppWindow(gfx::Rect(200, 20, 100, 200)));
+  SnapTwoTestWindows(w2.get(), w3.get());
+  ASSERT_EQ(desks_util::GetDeskForContext(w2.get()), desk1);
+  ASSERT_EQ(desks_util::GetDeskForContext(w3.get()), desk1);
+
+  OverviewController* overview_controller = OverviewController::Get();
+  overview_controller->StartOverview(OverviewStartAction::kOverviewButton);
+  ASSERT_TRUE(overview_controller->InOverviewSession());
+
+  auto* overview_grid = GetOverviewGridForRoot(Shell::GetPrimaryRootWindow());
+  ASSERT_TRUE(overview_grid);
+  const auto* desks_bar_view = overview_grid->desks_bar_view();
+  ASSERT_TRUE(desks_bar_view);
+  const auto& mini_views = desks_bar_view->mini_views();
+  ASSERT_EQ(mini_views.size(), 2u);
+
+  // Test that both windows contained in the overview group item will be moved
+  // to the `desk0` and no crash on activating `desk0`.
+  DragGroupItemToPoint(
+      overview_controller->overview_session()->GetOverviewItemForWindow(
+          w3.get()),
+      mini_views[0]->GetBoundsInScreen().CenterPoint(), GetEventGenerator(),
+      /*by_touch_gestures=*/false,
+      /*drop=*/true);
+  EXPECT_TRUE(overview_controller->InOverviewSession());
+  EXPECT_EQ(desks_util::GetDeskForContext(w2.get()), desk0);
+  EXPECT_EQ(desks_util::GetDeskForContext(w3.get()), desk0);
+  EXPECT_TRUE(
+      SnapGroupController::Get()->AreWindowsInSnapGroup(w0.get(), w1.get()));
+  EXPECT_TRUE(
+      SnapGroupController::Get()->AreWindowsInSnapGroup(w2.get(), w3.get()));
+  ActivateDesk(desk0);
 }
 
-// Tests that by toggling the keyboard shortcut 'Search + Shift + G', the two
-// snapped windows can be grouped or ungrouped.
-TEST_F(SnapGroupTest, UseShortcutToGroupUnGroupWindows) {
+// Tests that if one of the windows parent container change in snap group, the
+// other window will follow and get moved to the same target desk container. To
+// simulate the CUJ, `Search + Shift + [ or ]` is used in the test to trigger
+// moving active window to the left / right desk
+TEST_F(SnapGroupDesksTest, WindowDeskContainerChange) {
+  auto* desks_controller = DesksController::Get();
+  desks_controller->NewDesk(DesksCreationRemovalSource::kButton);
+  ASSERT_EQ(2u, desks_controller->desks().size());
+  const Desk* desk0 = desks_controller->GetDeskAtIndex(0);
+  const Desk* desk1 = desks_controller->GetDeskAtIndex(1);
+  ASSERT_TRUE(desk0->is_active());
+
+  std::unique_ptr<aura::Window> w0(CreateAppWindow());
   std::unique_ptr<aura::Window> w1(CreateAppWindow());
+  SnapTwoTestWindows(w0.get(), w1.get());
+  SnapGroup* snap_group =
+      SnapGroupController::Get()->GetSnapGroupForGivenWindow(w0.get());
+  ASSERT_TRUE(snap_group);
+  ASSERT_EQ(desks_util::GetDeskForContext(w0.get()), desk0);
+  ASSERT_EQ(desks_util::GetDeskForContext(w1.get()), desk0);
+
+  // Use `Search + Shift + ]` to move `w0` and `w1` to `desk1`.
+  PressAndReleaseKey(ui::VKEY_OEM_6, ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN);
+  EXPECT_EQ(desks_util::GetDeskForContext(w0.get()), desk1);
+  EXPECT_EQ(desks_util::GetDeskForContext(w1.get()), desk1);
+
+  ActivateDesk(desk1);
+
+  // Use `Search + Shift + [` to move `w0` and `w1` to `desk0`
+  PressAndReleaseKey(ui::VKEY_OEM_4, ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN);
+  EXPECT_EQ(desks_util::GetDeskForContext(w0.get()), desk0);
+  EXPECT_EQ(desks_util::GetDeskForContext(w1.get()), desk0);
+}
+
+// Tests that switching desks in Overview mode with a Snap Group using a
+// keyboard shortcut does not end the Overview session. Also verify that
+// returning to the original desk where the Snap Group belongs does not re-snap
+// the windows. See regression at http://b/334221711.
+TEST_F(SnapGroupDesksTest, DeskSwitchingInOverview) {
+  auto* desks_controller = DesksController::Get();
+  desks_controller->NewDesk(DesksCreationRemovalSource::kButton);
+  ASSERT_EQ(2u, desks_controller->desks().size());
+  const Desk* desk0 = desks_controller->GetDeskAtIndex(0);
+  const Desk* desk1 = desks_controller->GetDeskAtIndex(1);
+  ASSERT_TRUE(desk0->is_active());
+
+  std::unique_ptr<aura::Window> w0(CreateAppWindow());
+  std::unique_ptr<aura::Window> w1(CreateAppWindow());
+  SnapTwoTestWindows(w0.get(), w1.get());
+  SnapGroup* snap_group =
+      SnapGroupController::Get()->GetSnapGroupForGivenWindow(w0.get());
+  ASSERT_TRUE(snap_group);
+  ASSERT_EQ(desks_util::GetDeskForContext(w0.get()), desk0);
+  ASSERT_EQ(desks_util::GetDeskForContext(w1.get()), desk0);
+
+  OverviewController* overview_controller = OverviewController::Get();
+  overview_controller->StartOverview(OverviewStartAction::kOverviewButton);
+  ASSERT_TRUE(IsInOverviewSession());
+
+  // Use `Search + ]` to switch to `desk1`.
+  PressAndReleaseKey(ui::VKEY_OEM_6, ui::EF_COMMAND_DOWN);
+  DeskSwitchAnimationWaiter().Wait();
+  ASSERT_TRUE(IsInOverviewSession());
+  EXPECT_TRUE(desk1->is_active());
+
+  // Use `Search + [` to switch to `desk0`.
+  PressAndReleaseKey(ui::VKEY_OEM_4, ui::EF_COMMAND_DOWN);
+  DeskSwitchAnimationWaiter().Wait();
+  ASSERT_TRUE(IsInOverviewSession());
+  EXPECT_TRUE(desk0->is_active());
+
+  auto* overview_group_item = GetOverviewItemForWindow(w0.get());
+  ASSERT_TRUE(overview_group_item);
+
+  // Activate the group item and verify the union bounds.
+  SendKeyUntilOverviewItemIsFocused(ui::VKEY_TAB);
+  PressAndReleaseKey(ui::VKEY_RETURN);
+  UnionBoundsEqualToWorkAreaBounds(w0.get(), w1.get(), snap_group_divider());
+}
+
+TEST_F(SnapGroupDesksTest, DeskSwitchingWithKeyboardShortcut) {
+  auto* desks_controller = DesksController::Get();
+  desks_controller->NewDesk(DesksCreationRemovalSource::kButton);
+  ASSERT_EQ(2u, desks_controller->desks().size());
+  const Desk* desk0 = desks_controller->GetDeskAtIndex(0);
+  const Desk* desk1 = desks_controller->GetDeskAtIndex(1);
+  ASSERT_TRUE(desk0->is_active());
+  ASSERT_FALSE(desk1->is_active());
+
+  std::unique_ptr<aura::Window> w0(CreateAppWindow());
+  std::unique_ptr<aura::Window> w1(CreateAppWindow());
+  SnapTwoTestWindows(w0.get(), w1.get());
+  SnapGroup* snap_group =
+      SnapGroupController::Get()->GetSnapGroupForGivenWindow(w0.get());
+  ASSERT_TRUE(snap_group);
+  ASSERT_EQ(desks_util::GetDeskForContext(w0.get()), desk0);
+  ASSERT_EQ(desks_util::GetDeskForContext(w1.get()), desk0);
+
+  // Use `Search + ]` to switch to `desk1`, `w0` and `w1` will remain on `desk0`
+  // with `TargetVisibility()` equals to true.
+  PressAndReleaseKey(ui::VKEY_OEM_6, ui::EF_COMMAND_DOWN);
+  EXPECT_EQ(desks_util::GetDeskForContext(w0.get()), desk0);
+  EXPECT_EQ(desks_util::GetDeskForContext(w1.get()), desk0);
+  EXPECT_TRUE(w0->TargetVisibility());
+  EXPECT_TRUE(w1->TargetVisibility());
+
+  // Use `Search + [` to switch back to `desk0`, `w0` and `w1` will remain on
+  // `desk0` with `TargetVisibility()` equals to true.
+  PressAndReleaseKey(ui::VKEY_OEM_4, ui::EF_COMMAND_DOWN);
+  EXPECT_EQ(desks_util::GetDeskForContext(w0.get()), desk0);
+  EXPECT_EQ(desks_util::GetDeskForContext(w1.get()), desk0);
+  EXPECT_TRUE(w0->TargetVisibility());
+  EXPECT_TRUE(w1->TargetVisibility());
+}
+
+// Tests that after a Snap Group is resized and then moved to a different desk,
+// the relative positions of the snapped windows within the group remain
+// unchanged. See the regression details at http://b/335303673.
+TEST_F(SnapGroupDesksTest, ResizeThenMoveGroupToAnotherDesk) {
+  auto* desks_controller = DesksController::Get();
+  desks_controller->NewDesk(DesksCreationRemovalSource::kButton);
+  ASSERT_EQ(2u, desks_controller->desks().size());
+  const Desk* desk0 = desks_controller->GetDeskAtIndex(0);
+  const Desk* desk1 = desks_controller->GetDeskAtIndex(1);
+  ASSERT_TRUE(desk0->is_active());
+  ASSERT_FALSE(desk1->is_active());
+
+  std::unique_ptr<aura::Window> w0(CreateAppWindow());
+  std::unique_ptr<aura::Window> w1(CreateAppWindow());
+  SnapTwoTestWindows(w0.get(), w1.get());
+  SnapGroup* snap_group =
+      SnapGroupController::Get()->GetSnapGroupForGivenWindow(w0.get());
+  ASSERT_TRUE(snap_group);
+  ASSERT_EQ(desks_util::GetDeskForContext(w0.get()), desk0);
+  ASSERT_EQ(desks_util::GetDeskForContext(w1.get()), desk0);
+
+  auto* divider = snap_group_divider();
+  ASSERT_TRUE(divider);
+  auto* divider_widget = divider->divider_widget();
+  ASSERT_TRUE(divider_widget);
+
+  auto* event_generator = GetEventGenerator();
+  event_generator->MoveMouseTo(
+      divider_widget->GetWindowBoundsInScreen().CenterPoint());
+
+  event_generator->DragMouseBy(100, 0);
+  const gfx::Rect cached_w0_bounds(w0->GetBoundsInScreen());
+  const gfx::Rect cached_w1_bounds(w1->GetBoundsInScreen());
+
+  OverviewController* overview_controller = Shell::Get()->overview_controller();
+  overview_controller->StartOverview(OverviewStartAction::kTests);
+  ASSERT_TRUE(overview_controller->InOverviewSession());
+
+  auto* overview_grid = GetOverviewGridForRoot(w0->GetRootWindow());
+  ASSERT_TRUE(overview_grid);
+  const auto& window_list = overview_grid->window_list();
+  ASSERT_EQ(window_list.size(), 1u);
+  const auto* desks_bar_view = overview_grid->desks_bar_view();
+  ASSERT_TRUE(desks_bar_view);
+  const auto& mini_views = desks_bar_view->mini_views();
+  ASSERT_EQ(mini_views.size(), 2u);
+
+  DragGroupItemToPoint(
+      overview_controller->overview_session()->GetOverviewItemForWindow(
+          w0.get()),
+      mini_views[1]->GetBoundsInScreen().CenterPoint(), event_generator,
+      /*by_touch_gestures=*/false,
+      /*drop=*/true);
+
+  EXPECT_TRUE(overview_controller->InOverviewSession());
+  ASSERT_EQ(desks_util::GetDeskForContext(w0.get()), desk1);
+  ASSERT_EQ(desks_util::GetDeskForContext(w1.get()), desk1);
+
+  EXPECT_TRUE(
+      SnapGroupController::Get()->AreWindowsInSnapGroup(w0.get(), w1.get()));
+  ActivateDesk(desk1);
+  ASSERT_TRUE(divider_widget);
+  EXPECT_EQ(desks_util::GetDeskForContext(divider_widget->GetNativeWindow()),
+            desk1);
+
+  EXPECT_EQ(cached_w0_bounds, w0->GetBoundsInScreen());
+  EXPECT_EQ(cached_w1_bounds, w1->GetBoundsInScreen());
+  UnionBoundsEqualToWorkAreaBounds(w0.get(), w1.get(), divider);
+}
+
+// Tests that pressing the 'Close All' button closes both windows in a Snap
+// Group.
+TEST_F(SnapGroupDesksTest, CloseAll) {
+  auto* desks_controller = DesksController::Get();
+  desks_controller->NewDesk(DesksCreationRemovalSource::kButton);
+  ASSERT_EQ(2u, desks_controller->desks().size());
+  const Desk* desk0 = desks_controller->GetDeskAtIndex(0);
+  ASSERT_TRUE(desk0->is_active());
+
+  std::unique_ptr<aura::Window> w0(CreateAppWindow());
+  std::unique_ptr<aura::Window> w1(CreateAppWindow());
+  SnapTwoTestWindows(w0.get(), w1.get());
+  SnapGroup* snap_group =
+      SnapGroupController::Get()->GetSnapGroupForGivenWindow(w0.get());
+  ASSERT_TRUE(snap_group);
+  ASSERT_EQ(desks_util::GetDeskForContext(w0.get()), desk0);
+  ASSERT_EQ(desks_util::GetDeskForContext(w1.get()), desk0);
+
+  ToggleOverview();
+  ASSERT_TRUE(IsInOverviewSession());
+
+  auto* window_widget0 = views::Widget::GetWidgetForNativeView(w0.get());
+  views::test::TestWidgetObserver observer0(window_widget0);
+  auto* window_widget1 = views::Widget::GetWidgetForNativeView(w1.get());
+  views::test::TestWidgetObserver observer1(window_widget1);
+
+  // Pre-release ownership of `w0` and `w1` using `release()`. This is crucial
+  // to avoid double-freeing memory. When unique_ptr goes out of scope, its
+  // destructor will attempt to deallocate the owned memory. Since CloseAll will
+  // already handle the window destruction, leaving the unique_ptrs to manage
+  // the memory would lead to a second deallocation attempt on the same address,
+  // resulting in crash.
+  w0.release();
+  w1.release();
+
+  RemoveDesk(desk0, DeskCloseType::kCloseAllWindows);
+  EXPECT_EQ(1u, desks_controller->desks().size());
+
+  // Widget closure is asynchronous and may not finish immediately. For
+  // guaranteed completion, run the current thread's RunLoop until idle (See
+  // `NativeWidgetAura::Close()` for details).
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(observer0.widget_closed());
+  EXPECT_TRUE(observer1.widget_closed());
+}
+
+// Verifies Snap Group behavior during desk removal and undo: windows become
+// invisible during removal, and clicking 'Undo' restores them to their original
+// desk.
+TEST_F(SnapGroupDesksTest, DeskRemovalAndUndo) {
+  auto* desks_controller = DesksController::Get();
+  desks_controller->NewDesk(DesksCreationRemovalSource::kButton);
+  ASSERT_EQ(2u, desks_controller->desks().size());
+  const Desk* desk0 = desks_controller->GetDeskAtIndex(0);
+  const Desk* desk1 = desks_controller->GetDeskAtIndex(1);
+  ASSERT_TRUE(desk0->is_active());
+  ASSERT_FALSE(desk1->is_active());
+
+  std::unique_ptr<aura::Window> w0(CreateAppWindow());
+  std::unique_ptr<aura::Window> w1(CreateAppWindow());
+  SnapTwoTestWindows(w0.get(), w1.get());
+  SnapGroup* snap_group =
+      SnapGroupController::Get()->GetSnapGroupForGivenWindow(w0.get());
+  ASSERT_TRUE(snap_group);
+  ASSERT_EQ(desk0, desks_util::GetDeskForContext(w0.get()));
+  ASSERT_EQ(desk0, desks_util::GetDeskForContext(w1.get()));
+
+  ToggleOverview();
+  ASSERT_TRUE(IsInOverviewSession());
+  RemoveDesk(desk0, DeskCloseType::kCloseAllWindowsAndWait);
+  ASSERT_TRUE(desk0->is_desk_being_removed());
+  // `w0` and `w1` will remain invisible while the desk is being removed.
+  EXPECT_FALSE(w0->IsVisible());
+  EXPECT_FALSE(w1->IsVisible());
+
+  // Restoring desk0 will also restore the visibility of `w0` and `w1`.
+  views::LabelButton* dismiss_button =
+      DesksTestApi::GetCloseAllUndoToastDismissButton();
+  ASSERT_TRUE(dismiss_button);
+  LeftClickOn(dismiss_button);
+  EXPECT_TRUE(w0->IsVisible());
+  EXPECT_TRUE(w1->IsVisible());
+  EXPECT_EQ(desk0, desks_util::GetDeskForContext(w0.get()));
+  EXPECT_EQ(desk0, desks_util::GetDeskForContext(w1.get()));
+}
+
+// Tests that when an active desk is removed by keyboard shortcut `Search +
+// Shift + -`, the Snap Group will be moved to the next available desk. The
+// divider widget is visible when not in overview mode, and hidden when in
+// overview mode. See the bug at http://b/335300918.
+TEST_F(SnapGroupDesksTest, DeskRemovalAndEnterOverview) {
+  auto* desks_controller = DesksController::Get();
+  desks_controller->NewDesk(DesksCreationRemovalSource::kButton);
+  ASSERT_EQ(2u, desks_controller->desks().size());
+  const Desk* desk0 = desks_controller->GetDeskAtIndex(0);
+  const Desk* desk1 = desks_controller->GetDeskAtIndex(1);
+  ASSERT_TRUE(desk0->is_active());
+  ASSERT_FALSE(desk1->is_active());
+
+  std::unique_ptr<aura::Window> w0(CreateAppWindow());
+  std::unique_ptr<aura::Window> w1(CreateAppWindow());
+  SnapTwoTestWindows(w0.get(), w1.get());
+  SnapGroup* snap_group =
+      SnapGroupController::Get()->GetSnapGroupForGivenWindow(w0.get());
+  ASSERT_TRUE(snap_group);
+  ASSERT_EQ(desk0, desks_util::GetDeskForContext(w0.get()));
+  ASSERT_EQ(desk0, desks_util::GetDeskForContext(w1.get()));
+
+  // Use `Search + Shift + -` to remove `desk0`.
+  DeskSwitchAnimationWaiter waiter;
+  PressAndReleaseKey(ui::VKEY_OEM_MINUS,
+                     ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN);
+  waiter.Wait();
+
+  // Verify that both `w0` and `w1` will be moved to `desk1`.
+  EXPECT_TRUE(desk1->is_active());
+  EXPECT_EQ(1u, desks_controller->desks().size());
+  EXPECT_EQ(desk1, desks_util::GetDeskForContext(w0.get()));
+  EXPECT_EQ(desk1, desks_util::GetDeskForContext(w1.get()));
+  EXPECT_TRUE(snap_group);
+  auto* divider = snap_group->snap_group_divider();
+  auto* divider_widget = divider->divider_widget();
+  EXPECT_TRUE(divider_widget);
+  EXPECT_TRUE(divider_widget->IsVisible());
+  UnionBoundsEqualToWorkAreaBounds(w0.get(), w1.get(), divider);
+
+  // Verify that the divider is invisible in Overview.
+  ToggleOverview();
+  ASSERT_TRUE(IsInOverviewSession());
+  EXPECT_FALSE(divider_widget->IsVisible());
+
+  // Verify that the divider is visible again on Overview exit.
+  ToggleOverview();
+  ASSERT_FALSE(IsInOverviewSession());
+  EXPECT_TRUE(divider_widget->IsVisible());
+  UnionBoundsEqualToWorkAreaBounds(w0.get(), w1.get(), divider);
+}
+
+// Tests that the desk removal with only one active desk by keyboard shortcut
+// `Search + Shift + -` will not be successful, the Snap Group will remain on
+// the active desk.
+TEST_F(SnapGroupDesksTest, DeskRemovalWithOneAciveDesk) {
+  auto* desks_controller = DesksController::Get();
+  ASSERT_EQ(1u, desks_controller->desks().size());
+  const Desk* desk0 = desks_controller->GetDeskAtIndex(0);
+
+  std::unique_ptr<aura::Window> w0(CreateAppWindow());
+  std::unique_ptr<aura::Window> w1(CreateAppWindow());
+  SnapTwoTestWindows(w0.get(), w1.get());
+  SnapGroup* snap_group =
+      SnapGroupController::Get()->GetSnapGroupForGivenWindow(w0.get());
+  ASSERT_TRUE(snap_group);
+  ASSERT_EQ(desk0, desks_util::GetDeskForContext(w0.get()));
+  ASSERT_EQ(desk0, desks_util::GetDeskForContext(w1.get()));
+
+  // Use `Search + Shift + -` to attempt to remove `desk0`.
+  PressAndReleaseKey(ui::VKEY_OEM_MINUS,
+                     ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN);
+
+  // Verify that both `w0` and `w1` will still be on `desk0`.
+  EXPECT_EQ(1u, desks_controller->desks().size());
+  EXPECT_EQ(desk0, desks_util::GetDeskForContext(w0.get()));
+  EXPECT_EQ(desk0, desks_util::GetDeskForContext(w1.get()));
+  EXPECT_TRUE(snap_group);
+  auto* divider = snap_group->snap_group_divider();
+  auto* divider_widget = divider->divider_widget();
+  EXPECT_TRUE(divider_widget);
+  EXPECT_TRUE(divider_widget->IsVisible());
+  UnionBoundsEqualToWorkAreaBounds(w0.get(), w1.get(), divider);
+}
+
+// Test that merging a desk with a Snap Group into another desk doesn't cause
+// crash and correctly moves all windows to the destination desk.
+TEST_F(SnapGroupDesksTest, DesksMerge) {
+  auto* desks_controller = DesksController::Get();
+  desks_controller->NewDesk(DesksCreationRemovalSource::kButton);
+  ASSERT_EQ(2u, desks_controller->desks().size());
+  const Desk* desk0 = desks_controller->GetDeskAtIndex(0);
+  const Desk* desk1 = desks_controller->GetDeskAtIndex(1);
+  ActivateDesk(desk1);
+  ASSERT_TRUE(desk1->is_active());
+  ASSERT_FALSE(desk0->is_active());
+
+  std::unique_ptr<aura::Window> w0(CreateAppWindow());
+  std::unique_ptr<aura::Window> w1(CreateAppWindow());
+  SnapTwoTestWindows(w0.get(), w1.get());
+  SnapGroup* snap_group =
+      SnapGroupController::Get()->GetSnapGroupForGivenWindow(w0.get());
+  ASSERT_TRUE(snap_group);
+  ASSERT_EQ(desk1, desks_util::GetDeskForContext(w0.get()));
+  ASSERT_EQ(desk1, desks_util::GetDeskForContext(w1.get()));
+
+  ToggleOverview();
+  ASSERT_TRUE(IsInOverviewSession());
+
+  // Merge `desk1` into `desk0`.
+  RemoveDesk(desk1, DeskCloseType::kCombineDesks);
+
+  // Verify that windows in the Snap Group are properly moved to the new desk.
+  EXPECT_EQ(1u, desks_controller->desks().size());
+  ASSERT_EQ(desk0, desks_util::GetDeskForContext(w0.get()));
+  ASSERT_EQ(desk0, desks_util::GetDeskForContext(w1.get()));
+}
+
+// Tests that create one Snap Group per desk and then switching between desks,
+// the windows in the Snap Group remain visible. See regression at
+// http://b/335477702.
+TEST_F(SnapGroupDesksTest, OneSnapGroupOnEachDesk) {
+  auto* desks_controller = DesksController::Get();
+  desks_controller->NewDesk(DesksCreationRemovalSource::kButton);
+  ASSERT_EQ(2u, desks_controller->desks().size());
+  const Desk* desk0 = desks_controller->GetDeskAtIndex(0);
+  const Desk* desk1 = desks_controller->GetDeskAtIndex(1);
+  ASSERT_TRUE(desk0->is_active());
+  ASSERT_FALSE(desk1->is_active());
+
+  // Create `snap_group0` on `desk0`.
+  std::unique_ptr<aura::Window> w0(CreateAppWindow());
+  std::unique_ptr<aura::Window> w1(CreateAppWindow());
+  SnapTwoTestWindows(w0.get(), w1.get());
+  SnapGroup* snap_group0 =
+      SnapGroupController::Get()->GetSnapGroupForGivenWindow(w0.get());
+  ASSERT_TRUE(snap_group0);
+  ASSERT_EQ(desk0, desks_util::GetDeskForContext(w0.get()));
+  ASSERT_EQ(desk0, desks_util::GetDeskForContext(w1.get()));
+
+  ActivateDesk(desk1);
+  ASSERT_TRUE(desk1->is_active());
+  ASSERT_FALSE(desk0->is_active());
+
+  // Create `snap_group1` on `desk1`.
   std::unique_ptr<aura::Window> w2(CreateAppWindow());
-  SnapTwoTestWindows(w1.get(), w2.get(), /*horizontal=*/true);
-  SnapGroupController* snap_group_controller = SnapGroupController::Get();
-  EXPECT_TRUE(snap_group_controller->AreWindowsInSnapGroup(w1.get(), w2.get()));
+  std::unique_ptr<aura::Window> w3(CreateAppWindow());
+  SnapTwoTestWindows(w2.get(), w3.get());
+  SnapGroup* snap_group1 =
+      SnapGroupController::Get()->GetSnapGroupForGivenWindow(w0.get());
+  ASSERT_TRUE(snap_group1);
+  ASSERT_EQ(desk1, desks_util::GetDeskForContext(w2.get()));
+  ASSERT_EQ(desk1, desks_util::GetDeskForContext(w3.get()));
 
-  // Press the shortcut and the windows will be ungrouped.
-  auto* event_generator = GetEventGenerator();
-  event_generator->PressAndReleaseKey(ui::VKEY_G,
-                                      ui::EF_SHIFT_DOWN | ui::EF_COMMAND_DOWN);
-  EXPECT_FALSE(
-      snap_group_controller->AreWindowsInSnapGroup(w1.get(), w2.get()));
+  // Activate `desk0` and verify that both windows in `snap_group0` are visible.
+  ActivateDesk(desk0);
+  EXPECT_TRUE(w0->IsVisible());
+  EXPECT_TRUE(w1->IsVisible());
 
-  // Press the shortcut again and the windows will be grouped.
-  event_generator->PressAndReleaseKey(ui::VKEY_G,
-                                      ui::EF_SHIFT_DOWN | ui::EF_COMMAND_DOWN);
-  EXPECT_TRUE(snap_group_controller->AreWindowsInSnapGroup(w1.get(), w2.get()));
-  EXPECT_TRUE(split_view_divider()->divider_widget());
+  // Activate `desk1` and verify that both windows in `snap_group1` are visible.
+  ActivateDesk(desk1);
+  EXPECT_TRUE(w2->IsVisible());
+  EXPECT_TRUE(w3->IsVisible());
 }
 
-// Tests that the windows in snap group can be toggled between been minimized
-// and restored with the keyboard shortcut 'Search + Shift + D', the windows
-// will be remained in a snap group through these operations.
-TEST_F(SnapGroupTest, UseShortcutToMinimizeWindows) {
-  std::unique_ptr<aura::Window> w1(CreateTestWindow());
-  std::unique_ptr<aura::Window> w2(CreateTestWindow());
-  SnapTwoTestWindows(w1.get(), w2.get(), /*horizontal=*/true);
+// Verify that existing snap groups are hidden in partial overview mode only if
+// they are located on the currently active desktop.
+TEST_F(SnapGroupDesksTest, OnlyHideSnapGroupOnActiveDesk) {
+  auto* desks_controller = DesksController::Get();
+  desks_controller->NewDesk(DesksCreationRemovalSource::kButton);
+  ASSERT_EQ(2u, desks_controller->desks().size());
+  const Desk* desk0 = desks_controller->GetDeskAtIndex(0);
+  const Desk* desk1 = desks_controller->GetDeskAtIndex(1);
+  ASSERT_TRUE(desk0->is_active());
+  ASSERT_FALSE(desk1->is_active());
 
-  SnapGroupController* snap_group_controller = SnapGroupController::Get();
-  // Press the shortcut first time and the windows will be minimized.
-  auto* event_generator = GetEventGenerator();
-  event_generator->PressAndReleaseKey(ui::VKEY_D,
-                                      ui::EF_SHIFT_DOWN | ui::EF_COMMAND_DOWN);
-  EXPECT_TRUE(WindowState::Get(w1.get())->IsMinimized());
-  EXPECT_TRUE(WindowState::Get(w2.get())->IsMinimized());
-  EXPECT_TRUE(snap_group_controller->AreWindowsInSnapGroup(w1.get(), w2.get()));
+  // Create `snap_group0` on `desk0`.
+  std::unique_ptr<aura::Window> w0(CreateAppWindow());
+  std::unique_ptr<aura::Window> w1(CreateAppWindow());
+  SnapTwoTestWindows(w0.get(), w1.get());
+  SnapGroup* snap_group0 =
+      SnapGroupController::Get()->GetSnapGroupForGivenWindow(w0.get());
+  ASSERT_TRUE(snap_group0);
+  ASSERT_EQ(desk0, desks_util::GetDeskForContext(w0.get()));
+  ASSERT_EQ(desk0, desks_util::GetDeskForContext(w1.get()));
 
-  // Press the shortcut again and the windows will be unminimized.
-  event_generator->PressAndReleaseKey(ui::VKEY_D,
-                                      ui::EF_SHIFT_DOWN | ui::EF_COMMAND_DOWN);
-  EXPECT_FALSE(WindowState::Get(w1.get())->IsMinimized());
-  EXPECT_FALSE(WindowState::Get(w2.get())->IsMinimized());
-  EXPECT_TRUE(snap_group_controller->AreWindowsInSnapGroup(w1.get(), w2.get()));
-  EXPECT_TRUE(split_view_divider()->divider_widget());
+  // Activate `desk1` and start partial Overview on `desk1`.
+  ActivateDesk(desk1);
+  ASSERT_TRUE(desk1->is_active());
+  ASSERT_FALSE(desk0->is_active());
+
+  std::unique_ptr<aura::Window> w2(CreateAppWindow());
+  std::unique_ptr<aura::Window> w3(CreateAppWindow());
+  SnapOneTestWindow(w2.get(), WindowStateType::kPrimarySnapped,
+                    chromeos::kTwoThirdSnapRatio);
+  VerifySplitViewOverviewSession(w2.get());
+
+  // Verify that the target visibility of `w0` and `w1` are not affected.
+  EXPECT_TRUE(w0->TargetVisibility());
+  EXPECT_TRUE(w1->TargetVisibility());
 }
 
-TEST_F(SnapGroupTest, SkipPairingInOverviewWhenClickingEmptyArea) {
-  std::unique_ptr<aura::Window> w1(CreateTestWindow());
-  std::unique_ptr<aura::Window> w2(CreateTestWindow());
+// -----------------------------------------------------------------------------
+// SnapGroupWindowCycleTest:
 
-  SnapOneTestWindow(w1.get(), WindowStateType::kPrimarySnapped);
-  WaitForOverviewEnterAnimation();
-  OverviewController* overview_controller = OverviewController::Get();
-  EXPECT_TRUE(overview_controller->InOverviewSession());
-  EXPECT_EQ(WindowState::Get(w1.get())->GetStateType(),
-            WindowStateType::kPrimarySnapped);
-  ASSERT_EQ(1u, GetOverviewSession()->grid_list().size());
-
-  auto* w2_overview_item = GetOverviewItemForWindow(w2.get());
-  EXPECT_TRUE(w2_overview_item);
-  const gfx::Point outside_point =
-      gfx::ToRoundedPoint(
-          w2_overview_item->GetTransformedBounds().bottom_right()) +
-      gfx::Vector2d(20, 20);
-
-  // Verify that clicking on an empty area in overview will exit the paring.
-  auto* event_generator = GetEventGenerator();
-  event_generator->MoveMouseTo(outside_point);
-  event_generator->ClickLeftButton();
-  EXPECT_FALSE(overview_controller->InOverviewSession());
-  EXPECT_EQ(WindowState::Get(w1.get())->GetStateType(),
-            WindowStateType::kPrimarySnapped);
-  EXPECT_FALSE(
-      SnapGroupController::Get()->AreWindowsInSnapGroup(w1.get(), w2.get()));
-}
-
-TEST_F(SnapGroupTest, SkipPairingInOverviewWithEscapeKey) {
-  std::unique_ptr<aura::Window> w1(CreateTestWindow());
-  std::unique_ptr<aura::Window> w2(CreateTestWindow());
-
-  SnapOneTestWindow(w1.get(), WindowStateType::kPrimarySnapped);
-  OverviewController* overview_controller = OverviewController::Get();
-  EXPECT_TRUE(overview_controller->InOverviewSession());
-  EXPECT_TRUE(GetOverviewSession()->IsWindowInOverview(w2.get()));
-  EXPECT_EQ(WindowState::Get(w1.get())->GetStateType(),
-            WindowStateType::kPrimarySnapped);
-  ASSERT_EQ(1u, GetOverviewSession()->grid_list().size());
-
-  GetEventGenerator()->PressAndReleaseKey(ui::VKEY_ESCAPE, ui::EF_NONE);
-  EXPECT_FALSE(overview_controller->InOverviewSession());
-  EXPECT_EQ(WindowState::Get(w1.get())->GetStateType(),
-            WindowStateType::kPrimarySnapped);
-  EXPECT_FALSE(
-      SnapGroupController::Get()->AreWindowsInSnapGroup(w1.get(), w2.get()));
-}
-
-// Tests that when disallowing showing overview in clamshell with `kSnapGroup`
-// enabled, the overview will not show on one window snapped. The overview will
-// show when re-enabling showing overview.
-TEST_F(SnapGroupTest, SnapWithoutShowingOverview) {
-  SnapGroupController* snap_group_controller = SnapGroupController::Get();
-  snap_group_controller->set_can_enter_overview_for_testing(
-      /*can_enter_overview=*/false);
-
-  std::unique_ptr<aura::Window> w1(CreateTestWindow());
-  std::unique_ptr<aura::Window> w2(CreateTestWindow());
-  std::unique_ptr<aura::Window> w3(CreateTestWindow());
-  SnapOneTestWindow(w1.get(), WindowStateType::kPrimarySnapped);
-  EXPECT_FALSE(OverviewController::Get()->InOverviewSession());
-  SnapOneTestWindow(w2.get(), WindowStateType::kSecondarySnapped);
-  EXPECT_FALSE(OverviewController::Get()->InOverviewSession());
-  w2.reset();
-
-  snap_group_controller->set_can_enter_overview_for_testing(
-      /*can_enter_overview=*/true);
-  SnapOneTestWindow(w1.get(), WindowStateType::kSecondarySnapped);
-  EXPECT_TRUE(OverviewController::Get()->InOverviewSession());
-}
+using SnapGroupWindowCycleTest = SnapGroupTest;
 
 // Tests that the window list is reordered when there is snap group. The two
 // windows will be adjacent with each other with primary snapped window put
 // before secondary snapped window.
-TEST_F(SnapGroupTest, WindowReorderInAltTab) {
+TEST_F(SnapGroupWindowCycleTest, WindowReorderInAltTab) {
   std::unique_ptr<aura::Window> window0(CreateTestWindowInShellWithId(0));
   std::unique_ptr<aura::Window> window1(CreateTestWindowInShellWithId(1));
   std::unique_ptr<aura::Window> window2(CreateTestWindowInShellWithId(2));
@@ -3564,7 +5008,7 @@ TEST_F(SnapGroupTest, WindowReorderInAltTab) {
 // Tests that the number of views to be cycled through inside the mirror
 // container view of window cycle view will be the number of free-form windows
 // plus snap groups.
-TEST_F(SnapGroupTest, WindowCycleViewTest) {
+TEST_F(SnapGroupWindowCycleTest, WindowCycleViewTest) {
   std::unique_ptr<aura::Window> window0(CreateTestWindowInShellWithId(0));
   std::unique_ptr<aura::Window> window1(CreateTestWindowInShellWithId(1));
   std::unique_ptr<aura::Window> window2(CreateTestWindowInShellWithId(2));
@@ -3587,7 +5031,7 @@ TEST_F(SnapGroupTest, WindowCycleViewTest) {
 // the window list with Alt + Tab, there will be no crash. The corresponding
 // child mini view hosted by the group container view will be destroyed, the
 // group container view will host the other child mini view.
-TEST_F(SnapGroupTest, WindowInSnapGroupDestructionInAltTab) {
+TEST_F(SnapGroupWindowCycleTest, WindowInSnapGroupDestructionInAltTab) {
   std::unique_ptr<aura::Window> window0(CreateTestWindowInShellWithId(0));
   std::unique_ptr<aura::Window> window1(CreateTestWindowInShellWithId(1));
   std::unique_ptr<aura::Window> window2(CreateTestWindowInShellWithId(2));
@@ -3625,7 +5069,7 @@ TEST_F(SnapGroupTest, WindowInSnapGroupDestructionInAltTab) {
 // Tests and verifies the steps it takes to focus on a window cycle item by
 // tabbing and reverse tabbing. The focused item will be activated upon
 // completion of window cycling.
-TEST_F(SnapGroupTest, SteppingInWindowCycleView) {
+TEST_F(SnapGroupWindowCycleTest, SteppingInWindowCycleView) {
   std::unique_ptr<aura::Window> window3 =
       CreateAppWindow(gfx::Rect(300, 300), AppType::CHROME_APP);
   std::unique_ptr<aura::Window> window2 =
@@ -3668,7 +5112,7 @@ TEST_F(SnapGroupTest, SteppingInWindowCycleView) {
 // Tests that the exposed rounded corners of the cycling items are rounded
 // corners. The visuals will be refreshed on window destruction that belongs to
 // a snap group.
-TEST_F(SnapGroupTest, WindowCycleItemRoundedCorners) {
+TEST_F(SnapGroupWindowCycleTest, WindowCycleItemRoundedCorners) {
   std::unique_ptr<aura::Window> window0 =
       CreateAppWindow(gfx::Rect(100, 200), AppType::BROWSER);
   std::unique_ptr<aura::Window> window1 =
@@ -3704,11 +5148,36 @@ TEST_F(SnapGroupTest, WindowCycleItemRoundedCorners) {
   CompleteWindowCycling();
 }
 
+TEST_F(SnapGroupWindowCycleTest, WindowCycleItemRoundedCornersInPortait) {
+  UpdateDisplay("600x900");
+
+  std::unique_ptr<aura::Window> window0 =
+      CreateAppWindow(gfx::Rect(100, 200), AppType::BROWSER);
+  std::unique_ptr<aura::Window> window1 =
+      CreateAppWindow(gfx::Rect(200, 300), AppType::BROWSER);
+  std::unique_ptr<aura::Window> window2 =
+      CreateAppWindow(gfx::Rect(300, 400), AppType::BROWSER);
+  SnapTwoTestWindows(window0.get(), window1.get(), /*horizontal=*/false);
+
+  WindowCycleController* window_cycle_controller =
+      Shell::Get()->window_cycle_controller();
+  CycleWindow(WindowCyclingDirection::kForward, /*steps=*/3);
+  EXPECT_TRUE(window_cycle_controller->IsCycling());
+  const auto* window_cycle_list = window_cycle_controller->window_cycle_list();
+  const auto* cycle_view = window_cycle_list->cycle_view();
+  auto& cycle_item_views = cycle_view->cycle_views_for_testing();
+  ASSERT_EQ(cycle_item_views.size(), 2u);
+  for (ash::WindowMiniViewBase* cycle_item_view : cycle_item_views) {
+    EXPECT_EQ(cycle_item_view->GetRoundedCorners(),
+              gfx::RoundedCornersF(kWindowMiniViewCornerRadius));
+  }
+}
+
 // Tests that two windows in a snap group is allowed to be shown as group item
 // view only if both of them belong to the same app as the mru window. If only
 // one window belongs to the app, the representation of the window will be shown
 // as the individual window cycle item view.
-TEST_F(SnapGroupTest, SameAppWindowCycle) {
+TEST_F(SnapGroupWindowCycleTest, SameAppWindowCycle) {
   struct app_id_pair {
     const char* trace_message;
     const std::string app_id_2;
@@ -3764,7 +5233,7 @@ TEST_F(SnapGroupTest, SameAppWindowCycle) {
 // Tests and verifies that if one of the window in a snap group gets destroyed
 // while doing same app window cycling the corresponding window cycle item view
 // will be properly removed and re-configured with no crash.
-TEST_F(SnapGroupTest, WindowDestructionDuringSameAppWindowCycle) {
+TEST_F(SnapGroupWindowCycleTest, WindowDestructionDuringSameAppWindowCycle) {
   std::unique_ptr<aura::Window> w0(CreateTestWindowWithAppID(std::string("A")));
   std::unique_ptr<aura::Window> w1(CreateTestWindowWithAppID(std::string("A")));
   std::unique_ptr<aura::Window> w2(CreateTestWindowWithAppID(std::string("A")));
@@ -3796,7 +5265,7 @@ TEST_F(SnapGroupTest, WindowDestructionDuringSameAppWindowCycle) {
 // mru window will depend on the mru window between the two windows in the snap
 // group, since the windows are reordered so that it reflects the actual window
 // layout.
-TEST_F(SnapGroupTest, MruWindowForSameApp) {
+TEST_F(SnapGroupWindowCycleTest, MruWindowForSameApp) {
   // Generate 5 windows with 3 of them from app A and 2 of them from app B.
   std::unique_ptr<aura::Window> w0(CreateTestWindowWithAppID(std::string("A")));
   std::unique_ptr<aura::Window> w1(CreateTestWindowWithAppID(std::string("B")));
@@ -3825,11 +5294,16 @@ TEST_F(SnapGroupTest, MruWindowForSameApp) {
   CompleteWindowCycling();
 }
 
+// -----------------------------------------------------------------------------
+// SnapGroupTabletConversionTest:
+
+using SnapGroupTabletConversionTest = SnapGroupTest;
+
 // Tests that after creating a snap group in clamshell, transition to tablet
 // mode won't crash (b/288179725).
-TEST_F(SnapGroupTest, NoCrashWhenRemovingGroupInTabletMode) {
-  std::unique_ptr<aura::Window> w1(CreateTestWindow());
-  std::unique_ptr<aura::Window> w2(CreateTestWindow());
+TEST_F(SnapGroupTabletConversionTest, NoCrashWhenRemovingGroupInTabletMode) {
+  std::unique_ptr<aura::Window> w1(CreateAppWindow());
+  std::unique_ptr<aura::Window> w2(CreateAppWindow());
   SnapTwoTestWindows(w1.get(), w2.get(), /*horizontal=*/true);
 
   SwitchToTabletMode();
@@ -3847,43 +5321,54 @@ TEST_F(SnapGroupTest, NoCrashWhenRemovingGroupInTabletMode) {
 // Tests that one snap group in clamshell will be converted to windows in tablet
 // split view. When converted back to clamshell, the snap group will be
 // restored.
-TEST_F(SnapGroupTest, ClamshellTabletTransitionWithOneSnapGroup) {
+TEST_F(SnapGroupTabletConversionTest,
+       ClamshellTabletTransitionWithOneSnapGroup) {
   std::unique_ptr<aura::Window> window1(CreateTestWindowInShellWithId(0));
   std::unique_ptr<aura::Window> window2(CreateTestWindowInShellWithId(1));
   SnapTwoTestWindows(window1.get(), window2.get(), /*horizontal=*/true);
-  EXPECT_TRUE(split_view_divider()->divider_widget());
+  EXPECT_TRUE(snap_group_divider()->divider_widget());
+  UnionBoundsEqualToWorkAreaBounds(window1.get(), window2.get(),
+                                   snap_group_divider());
 
   SwitchToTabletMode();
+  EXPECT_FALSE(snap_group_divider());
   EXPECT_TRUE(split_view_divider()->divider_widget());
-  auto observed_windows = split_view_divider()->observed_windows();
-  EXPECT_EQ(window1.get(), observed_windows.front());
-  EXPECT_EQ(window2.get(), observed_windows.back());
-
-  EXPECT_EQ(chromeos::kDefaultSnapRatio,
-            *WindowState::Get(window1.get())->snap_ratio());
-  EXPECT_EQ(chromeos::kDefaultSnapRatio,
-            *WindowState::Get(window2.get())->snap_ratio());
+  // The snap group is removed in tablet mode.
+  auto* snap_group_controller = SnapGroupController::Get();
+  EXPECT_FALSE(
+      snap_group_controller->GetSnapGroupForGivenWindow(window1.get()));
+  EXPECT_EQ(window1.get(), split_view_controller()->primary_window());
+  EXPECT_EQ(window2.get(), split_view_controller()->secondary_window());
+  UnionBoundsEqualToWorkAreaBounds(window1.get(), window2.get(),
+                                   split_view_divider());
+  EXPECT_NEAR(chromeos::kDefaultSnapRatio,
+              *WindowState::Get(window1.get())->snap_ratio(), 0.05);
+  EXPECT_NEAR(chromeos::kDefaultSnapRatio,
+              *WindowState::Get(window2.get())->snap_ratio(), 0.05);
 
   ExitTabletMode();
   EXPECT_TRUE(SnapGroupController::Get()->AreWindowsInSnapGroup(window1.get(),
                                                                 window2.get()));
-  EXPECT_EQ(chromeos::kDefaultSnapRatio,
-            *WindowState::Get(window1.get())->snap_ratio());
-  EXPECT_EQ(chromeos::kDefaultSnapRatio,
-            *WindowState::Get(window2.get())->snap_ratio());
-  EXPECT_TRUE(split_view_divider()->divider_widget());
+  EXPECT_NEAR(chromeos::kDefaultSnapRatio,
+              *WindowState::Get(window1.get())->snap_ratio(), 0.05);
+  EXPECT_NEAR(chromeos::kDefaultSnapRatio,
+              *WindowState::Get(window2.get())->snap_ratio(), 0.05);
+  UnionBoundsEqualToWorkAreaBounds(window1.get(), window2.get(),
+                                   snap_group_divider());
+  EXPECT_TRUE(snap_group_divider()->divider_widget());
 }
 
 // Tests that when converting to tablet mode with split view divider at an
 // arbitrary location, the bounds of the two windows and the divider will be
 // updated such that the snap ratio of the layout is one of the fixed snap
 // ratios.
-TEST_F(SnapGroupTest, ClamshellTabletTransitionGetClosestFixedRatio) {
+TEST_F(SnapGroupTabletConversionTest,
+       ClamshellTabletTransitionGetClosestFixedRatio) {
   UpdateDisplay("900x600");
   std::unique_ptr<aura::Window> window1(CreateTestWindowInShellWithId(0));
   std::unique_ptr<aura::Window> window2(CreateTestWindowInShellWithId(1));
   SnapTwoTestWindows(window1.get(), window2.get(), /*horizontal=*/true);
-  ASSERT_TRUE(split_view_divider()->divider_widget());
+  ASSERT_TRUE(snap_group_divider()->divider_widget());
   EXPECT_EQ(*WindowState::Get(window1.get())->snap_ratio(),
             chromeos::kDefaultSnapRatio);
 
@@ -3916,15 +5401,14 @@ TEST_F(SnapGroupTest, ClamshellTabletTransitionGetClosestFixedRatio) {
               desks_util::GetActiveDeskContainerId()));
   for (const auto test_case : kTestCases) {
     event_generator->set_current_screen_location(
-        split_view_divider_bounds_in_screen().CenterPoint());
+        snap_group_divider_bounds_in_screen().CenterPoint());
     event_generator->DragMouseBy(test_case.distance_delta, 0);
-    split_view_divider()->EndResizeWithDivider(
+    snap_group_divider()->EndResizeWithDivider(
         event_generator->current_screen_location());
     SwitchToTabletMode();
+    EXPECT_TRUE(split_view_divider() && !snap_group_divider());
     const auto current_divider_position =
-        split_view_divider()
-            ->GetDividerBoundsInScreen(/*is_dragging=*/false)
-            .x();
+        split_view_divider_bounds_in_screen().x();
 
     // We need to take into consideration of the variation introduced by the
     // divider shorter side length when calculating using snap ratio, i.e.
@@ -3944,47 +5428,993 @@ TEST_F(SnapGroupTest, ClamshellTabletTransitionGetClosestFixedRatio) {
   }
 }
 
-// Tests that the cursor type gets updated to be resize cursor on mouse hovering
-// on the split view divider->
-TEST_F(SnapGroupTest, CursorUpdateTest) {
-  std::unique_ptr<aura::Window> w1(CreateTestWindow());
-  std::unique_ptr<aura::Window> w2(CreateTestWindow());
+// -----------------------------------------------------------------------------
+// SnapGroupMultipleSnapGroupsTest:
+
+using SnapGroupMultipleSnapGroupsTest = SnapGroupTest;
+
+// Tests the basic functionalities of multiple snap groups.
+TEST_F(SnapGroupMultipleSnapGroupsTest, MultipleSnapGroups) {
+  // Create the 1st snap group.
+  std::unique_ptr<aura::Window> w1(CreateAppWindow());
+  std::unique_ptr<aura::Window> w2(CreateAppWindow());
   SnapTwoTestWindows(w1.get(), w2.get(), /*horizontal=*/true);
-  auto* divider = split_view_divider();
+  auto* snap_group_controller = SnapGroupController::Get();
+  EXPECT_TRUE(snap_group_controller->AreWindowsInSnapGroup(w1.get(), w2.get()));
+  auto* snap_group1 =
+      snap_group_controller->GetSnapGroupForGivenWindow(w2.get());
+  auto* snap_group_divider1 = snap_group1->snap_group_divider();
+
+  // Create a new window (w3) and maximize it. This will temporarily clear any
+  // visible snapped windows, allowing the second snap group to be initialized.
+  std::unique_ptr<aura::Window> w3(CreateAppWindow(gfx::Rect(0, 0, 800, 600)));
+
+  // Create a 2nd group using a different snap ratio from `group1`.
+  std::unique_ptr<aura::Window> w4(CreateAppWindow());
+  std::unique_ptr<aura::Window> w5(CreateAppWindow());
+  ash::SnapOneTestWindow(w4.get(), WindowStateType::kPrimarySnapped,
+                         chromeos::kTwoThirdSnapRatio);
+  ClickOverviewItem(GetEventGenerator(), w5.get());
+  EXPECT_TRUE(snap_group_controller->AreWindowsInSnapGroup(w4.get(), w5.get()));
+  auto* snap_group2 =
+      snap_group_controller->GetSnapGroupForGivenWindow(w4.get());
+  auto* snap_group_divider2 = snap_group2->snap_group_divider();
+  EXPECT_EQ(2u, snap_group_controller->snap_groups_for_testing().size());
+  EXPECT_NE(snap_group_divider1, snap_group_divider2);
+  aura::Window* divider1_window =
+      snap_group_divider1->divider_widget()->GetNativeWindow();
+  aura::Window* divider2_window =
+      snap_group_divider2->divider_widget()->GetNativeWindow();
+
+  // Spin the run loop to wait for the divider widgets to be closed and re-shown
+  // during the 2nd snap group creation session. See
+  // `SnapGroupController::OnOverviewModeStarting|EndingAnimationComplete()`.
+  base::RunLoop().RunUntilIdle();
+
+  // Ensure each snap group divider is directly attached to its associated
+  // windows. Verify the stacking order is correct inside each group and across
+  // different groups.
+  auto* desk_container = desks_util::GetActiveDeskContainerForRoot(
+      Shell::Get()->GetPrimaryRootWindow());
+  EXPECT_THAT(desk_container->children(),
+              ElementsAre(/*group_1*/ w1.get(), w2.get(), divider1_window,
+                          /*maximized_window*/ w3.get(), /*group_2*/ w4.get(),
+                          w5.get(), divider2_window));
+}
+
+// Tests that the snap group can be recalled with its original bounds with
+// multiple snap groups.
+TEST_F(SnapGroupMultipleSnapGroupsTest, MultipleSnapGroupsRecall) {
+  UpdateDisplay("900x600");
+  auto* desks_controller = DesksController::Get();
+  desks_controller->NewDesk(DesksCreationRemovalSource::kButton);
+
+  std::unique_ptr<aura::Window> w1(CreateAppWindow());
+  std::unique_ptr<aura::Window> w2(CreateAppWindow());
+
+  // Create the 1st snap group with 2/3 and 1/3 snap ratio.
+  SnapOneTestWindow(w1.get(),
+                    /*state_type=*/chromeos::WindowStateType::kPrimarySnapped,
+                    chromeos::kTwoThirdSnapRatio);
+  ASSERT_TRUE(IsInOverviewSession());
+  ClickOverviewItem(GetEventGenerator(), w2.get());
+  auto* snap_group_controller = SnapGroupController::Get();
+  EXPECT_TRUE(snap_group_controller->AreWindowsInSnapGroup(w1.get(), w2.get()));
+  SnapGroup* snap_group1 =
+      snap_group_controller->GetSnapGroupForGivenWindow(w1.get());
+  SplitViewDivider* snap_group_divider1 = snap_group1->snap_group_divider();
+  const int divider_position1 = snap_group_divider1->divider_position();
+
+  // Create a new window (w0) and maximize it. This will temporarily clear any
+  // visible snapped windows, allowing the second snap group to be initialized.
+  std::unique_ptr<aura::Window> w3(CreateAppWindow(gfx::Rect(0, 0, 800, 600)));
+
+  // Create the 2nd group. Test the 2nd group's divider is at 1/2.
+  std::unique_ptr<aura::Window> w4(CreateAppWindow());
+  std::unique_ptr<aura::Window> w5(CreateAppWindow());
+  SnapTwoTestWindows(w4.get(), w5.get(), /*horizontal=*/true);
+  EXPECT_TRUE(snap_group_controller->AreWindowsInSnapGroup(w4.get(), w5.get()));
+  auto* snap_group2 =
+      snap_group_controller->GetSnapGroupForGivenWindow(w4.get());
+  auto* snap_group_divider2 = snap_group2->snap_group_divider();
+  EXPECT_EQ(work_area_bounds().width() * chromeos::kDefaultSnapRatio -
+                kSplitviewDividerShortSideLength / 2,
+            snap_group_divider2->divider_position());
+
+  // Activate `w2` to simulate selecting the window from the shelf. Test we
+  // restore `w1`'s group.
+  wm::ActivateWindow(w2.get());
+  EXPECT_EQ(2u, snap_group_controller->snap_groups_for_testing().size());
+  EXPECT_EQ(snap_group1, snap_group_controller->GetTopmostSnapGroup());
+
+  // Spin the run loop to wait for the divider widgets to be closed and re-shown
+  // during the 2nd snap group creation session. See
+  // `SnapGroupController::OnOverviewModeStarting|EndingAnimationComplete()`.
+  base::RunLoop().RunUntilIdle();
+
+  // Verify the stacking order from bottom to top. The order for each group is:
+  // {2nd_mru_window, mru_window, divider}, with `w0` on the bottom.
+  auto* desk_container = desks_util::GetActiveDeskContainerForRoot(
+      Shell::Get()->GetPrimaryRootWindow());
+  aura::Window* divider1 =
+      snap_group_divider1->divider_widget()->GetNativeWindow();
+  aura::Window* divider2 =
+      snap_group_divider2->divider_widget()->GetNativeWindow();
+  EXPECT_THAT(desk_container->children(),
+              ElementsAre(/*maximized_window*/ w3.get(), /*group_2*/ w4.get(),
+                          w5.get(), divider2,
+                          /*group_1*/ w1.get(), w2.get(), divider1));
+
+  // Verify the bounds of the 1st group are restored.
+  EXPECT_EQ(divider_position1, snap_group_divider1->divider_position());
+  EXPECT_EQ(divider_position1, w1->GetBoundsInScreen().width());
+  EXPECT_EQ(divider_position1 + kSplitviewDividerShortSideLength,
+            w2->GetBoundsInScreen().x());
+}
+
+// Tests that the snap groups will be hidden with two snapped window invisible
+// in partial Overview. The visibility of the two snapped windows in snap group
+// will be restored on overview ended. It only applies to partial Overview, the
+// snap group will still be visible in full Overview.
+TEST_F(SnapGroupMultipleSnapGroupsTest, DoNotShowSnapGroupsInPartialOverview) {
+  std::unique_ptr<aura::Window> w1(CreateAppWindow());
+  std::unique_ptr<aura::Window> w2(CreateAppWindow());
+  SnapTwoTestWindows(w1.get(), w2.get());
+
+  std::unique_ptr<aura::Window> w3(
+      CreateAppWindow(gfx::Rect(200, 200, 200, 200)));
+
+  // Snap `w4` to start the partial Overview and verify that the snap group will
+  // not show.
+  std::unique_ptr<aura::Window> w4(CreateAppWindow());
+  SnapOneTestWindow(w4.get(), WindowStateType::kSecondarySnapped,
+                    chromeos::kOneThirdSnapRatio);
+  ASSERT_TRUE(IsInOverviewSession());
+
+  auto* root_window = Shell::GetPrimaryRootWindow();
+  const auto* overview_grid = GetOverviewGridForRoot(root_window);
+  ASSERT_TRUE(overview_grid);
+  EXPECT_EQ(overview_grid->window_list().size(), 1u);
+  EXPECT_FALSE(w1->IsVisible());
+  EXPECT_FALSE(w2->IsVisible());
+
+  // The visibility of the snapped windows in a snap group will be restored on
+  // Overview exit.
+  OverviewController::Get()->EndOverview(OverviewEndAction::kKeyEscapeOrBack);
+  EXPECT_TRUE(w1->IsVisible());
+  EXPECT_TRUE(w2->IsVisible());
+  EXPECT_TRUE(
+      SnapGroupController::Get()->AreWindowsInSnapGroup(w1.get(), w2.get()));
+
+  // Start full Overview and verify that snap group will show.
+  OverviewController::Get()->StartOverview(
+      OverviewStartAction::kOverviewButton);
+  ASSERT_TRUE(IsInOverviewSession());
+  overview_grid = GetOverviewGridForRoot(root_window);
+  ASSERT_TRUE(overview_grid);
+  EXPECT_EQ(overview_grid->window_list().size(), 3u);
+  EXPECT_TRUE(w1->IsVisible());
+  EXPECT_TRUE(w2->IsVisible());
+}
+
+// -----------------------------------------------------------------------------
+// SnapGroupSnapToReplaceTest:
+
+using SnapGroupSnapToReplaceTest = SnapGroupTest;
+
+// Tests that when dragging a window to 'snap replace' a visible window in a
+// snap group, the original window is replaced and a new snap group is created.
+TEST_F(SnapGroupSnapToReplaceTest, SnapToReplaceBasic) {
+  std::unique_ptr<aura::Window> w1(CreateAppWindow());
+  std::unique_ptr<aura::Window> w2(CreateAppWindow());
+  SnapTwoTestWindows(w1.get(), w2.get());
+  ASSERT_FALSE(split_view_controller()->InSplitViewMode());
+  SnapGroupController* snap_group_controller = SnapGroupController::Get();
+  ASSERT_TRUE(snap_group_controller->AreWindowsInSnapGroup(w1.get(), w2.get()));
+
+  std::unique_ptr<aura::Window> w3(CreateAppWindow());
+  SnapOneTestWindow(w3.get(), WindowStateType::kPrimarySnapped,
+                    chromeos::kDefaultSnapRatio);
+  EXPECT_TRUE(snap_group_controller->AreWindowsInSnapGroup(w3.get(), w2.get()));
+  EXPECT_FALSE(
+      snap_group_controller->AreWindowsInSnapGroup(w1.get(), w2.get()));
+
+  // Verify that split view remains inactive to avoid split view specific
+  // behaviors such as auto-snap or showing cannot snap toast.
+  EXPECT_FALSE(split_view_controller()->InSplitViewMode());
+}
+
+// Tests if the window being snapped to replace has a min size which is smaller
+// than size calculated from the target snap ratio, it will be snapped at its
+// min size instead.
+TEST_F(SnapGroupSnapToReplaceTest, WindowWithMinimumSize) {
+  std::unique_ptr<aura::Window> w1(CreateAppWindow());
+  std::unique_ptr<aura::Window> w2(CreateAppWindow());
+  SnapTwoTestWindows(w1.get(), w2.get());
+  SnapGroupController* snap_group_controller = SnapGroupController::Get();
+  ASSERT_TRUE(snap_group_controller->AreWindowsInSnapGroup(w1.get(), w2.get()));
+
+  // Create a new `w3` with min size > 0.5f.
+  const gfx::Size min_size(work_area_bounds().width() * 0.6f, 0);
+  std::unique_ptr<aura::Window> w3 = CreateAppWindowWithMinSize(min_size);
+
+  // Snap to replace `w3` on top of the group.
+  auto* event_generator = GetEventGenerator();
+  event_generator->set_current_screen_location(GetDragPoint(w3.get()));
+  event_generator->DragMouseTo(0, 100);
+  EXPECT_EQ(WindowStateType::kPrimarySnapped,
+            WindowState::Get(w3.get())->GetStateType());
+
+  // Test `w3` snaps at its min size and the group bounds are updated.
+  EXPECT_TRUE(snap_group_controller->AreWindowsInSnapGroup(w3.get(), w2.get()));
+  EXPECT_FALSE(
+      snap_group_controller->AreWindowsInSnapGroup(w1.get(), w2.get()));
+  EXPECT_EQ(min_size.width(), w3->GetBoundsInScreen().width());
+  UnionBoundsEqualToWorkAreaBounds(w3.get(), w2.get(), snap_group_divider());
+}
+
+// Test that if both the window being snapped to replace and the opposite window
+// in the group to replace have min sizes that can't fit, we don't allow snap to
+// replace.
+TEST_F(SnapGroupSnapToReplaceTest, BothWindowsMinimumSizes) {
+  // Create a snap group where `w2` has min size 0.45f.
+  const int work_area_length = work_area_bounds().width();
+  std::unique_ptr<aura::Window> w1(CreateAppWindow());
+  std::unique_ptr<aura::Window> w2(
+      CreateAppWindowWithMinSize(gfx::Size(work_area_length * 0.45f, 0)));
+  SnapTwoTestWindows(w1.get(), w2.get());
+  SnapGroupController* snap_group_controller = SnapGroupController::Get();
+  ASSERT_TRUE(snap_group_controller->AreWindowsInSnapGroup(w1.get(), w2.get()));
+
+  // Create `w3` with min size 0.6f.
+  std::unique_ptr<aura::Window> w3(
+      CreateAppWindowWithMinSize(gfx::Size(work_area_length * 0.6f, 0)));
+
+  // Snap to replace `w3` over `w1`. Since `w3` and `w2` would not fit, test we
+  // don't replace `w1` in the group.
+  auto* event_generator = GetEventGenerator();
+  event_generator->set_current_screen_location(GetDragPoint(w3.get()));
+  event_generator->DragMouseTo(0, 100);
+  EXPECT_EQ(WindowStateType::kPrimarySnapped,
+            WindowState::Get(w3.get())->GetStateType());
+  EXPECT_TRUE(w2->GetBoundsInScreen().Intersects(w3->GetBoundsInScreen()));
+  EXPECT_FALSE(
+      snap_group_controller->AreWindowsInSnapGroup(w2.get(), w3.get()));
+  EXPECT_TRUE(snap_group_controller->AreWindowsInSnapGroup(w1.get(), w2.get()));
+}
+
+// Tests that if a third window is snapped via any method except the window
+// layout menu, it should allow 'snap to replace' regardless of snap ratio
+// difference, the previous snap group's layout will be preserved.
+TEST_F(SnapGroupSnapToReplaceTest,
+       SnapToReplaceWithNonWindowLayoutSnapActionSource) {
+  std::unique_ptr<aura::Window> w1(CreateAppWindow());
+  std::unique_ptr<aura::Window> w2(CreateAppWindow());
+  SnapTwoTestWindows(w1.get(), w2.get());
+  SnapGroupController* snap_group_controller = SnapGroupController::Get();
+  ASSERT_TRUE(snap_group_controller->AreWindowsInSnapGroup(w1.get(), w2.get()));
+  const gfx::Rect w1_bounds(w1->GetBoundsInScreen());
+  const gfx::Rect w2_bounds(w2->GetBoundsInScreen());
+
+  std::unique_ptr<aura::Window> w3(CreateAppWindow());
+  const float w3_snap_ratio = 0.2;
+  SnapOneTestWindow(w3.get(), WindowStateType::kPrimarySnapped, w3_snap_ratio,
+                    WindowSnapActionSource::kDragWindowToEdgeToSnap);
+  EXPECT_GT(std::abs(w3_snap_ratio - chromeos::kDefaultSnapRatio),
+            kSnapToReplaceRatioDiffThreshold);
+  EXPECT_TRUE(snap_group_controller->AreWindowsInSnapGroup(w3.get(), w2.get()));
+  EXPECT_FALSE(
+      snap_group_controller->AreWindowsInSnapGroup(w1.get(), w2.get()));
+  EXPECT_EQ(w3->GetBoundsInScreen(), w1_bounds);
+  EXPECT_EQ(w2->GetBoundsInScreen(), w2_bounds);
+}
+
+// Test that the snap ratio difference is calculated before snap-to-replace when
+// snapping from window layout menu. If it's below the threshold, the
+// snap-to-replace action will occur. If not, we'll start a new faster
+// split-screen session. The previous snap ratio will be preserved after window
+// replacement within a snap group.
+TEST_F(SnapGroupSnapToReplaceTest, SnapToReplaceWithRatioMargin) {
+  std::unique_ptr<aura::Window> w1(CreateAppWindow());
+  std::unique_ptr<aura::Window> w2(CreateAppWindow());
+  SnapTwoTestWindows(w1.get(), w2.get());
+  SnapGroupController* snap_group_controller = SnapGroupController::Get();
+  ASSERT_TRUE(snap_group_controller->AreWindowsInSnapGroup(w1.get(), w2.get()));
+
+  const float w1_snap_ratio = *WindowState::Get(w1.get())->snap_ratio();
+  EXPECT_EQ(w1_snap_ratio, chromeos::kDefaultSnapRatio);
+  EXPECT_EQ(*WindowState::Get(w1.get())->snap_ratio(),
+            chromeos::kDefaultSnapRatio);
+
+  // Snap the new window `w3` with `chromeos::kDefaultSnapRatio` snap ratio from
+  // window layout menu. Since the difference between
+  // `chromeos::kDefaultSnapRatio` and `w1_snap_ratio` is less than
+  // `kSnapToReplaceRatioDiffThreshold`, replace w1 with w3. Maintain the
+  // previous snap ratio in the snap group formed by `w1` and `w2`.
+  std::unique_ptr<aura::Window> w3(CreateAppWindow());
+  SnapOneTestWindow(w3.get(), WindowStateType::kPrimarySnapped,
+                    chromeos::kDefaultSnapRatio,
+                    WindowSnapActionSource::kSnapByWindowLayoutMenu);
+  EXPECT_LT(std::abs(w1_snap_ratio - chromeos::kDefaultSnapRatio),
+            kSnapToReplaceRatioDiffThreshold);
+
+  EXPECT_TRUE(snap_group_controller->AreWindowsInSnapGroup(w3.get(), w2.get()));
+  EXPECT_FALSE(
+      snap_group_controller->AreWindowsInSnapGroup(w1.get(), w2.get()));
+  EXPECT_EQ(*WindowState::Get(w3.get())->snap_ratio(),
+            chromeos::kDefaultSnapRatio);
+  EXPECT_EQ(*WindowState::Get(w2.get())->snap_ratio(),
+            chromeos::kDefaultSnapRatio);
+
+  // Snap the new window `w4` with `chromeos::kOneThirdSnapRatio` ratio. Since
+  // the difference between `w4_snap_event_snap_ratio` and snap ratio of `w3` is
+  // greater than `kSnapToReplaceRatioDiffThreshold`, we will start a new faster
+  // split-screen session.
+  std::unique_ptr<aura::Window> w4(CreateAppWindow());
+  SnapOneTestWindow(w4.get(), WindowStateType::kPrimarySnapped,
+                    chromeos::kOneThirdSnapRatio,
+                    WindowSnapActionSource::kSnapByWindowLayoutMenu);
+  EXPECT_GT(std::abs(*WindowState::Get(w3.get())->snap_ratio() -
+                     chromeos::kOneThirdSnapRatio),
+            kSnapToReplaceRatioDiffThreshold);
+  EXPECT_FALSE(
+      snap_group_controller->AreWindowsInSnapGroup(w4.get(), w2.get()));
+  EXPECT_FALSE(
+      snap_group_controller->AreWindowsInSnapGroup(w4.get(), w3.get()));
+}
+
+// Tests that when dragging another window to snap in Overview with the
+// existence of snap group. The to-be-snapped window will not replace the window
+// in the snap group. See http://b/333603509 for more details.
+TEST_F(SnapGroupSnapToReplaceTest, DoNotSnapToReplaceSnapGroupInOverview) {
+  std::unique_ptr<aura::Window> w0(
+      CreateAppWindow(gfx::Rect(10, 10, 200, 100)));
+
+  std::unique_ptr<aura::Window> w1(CreateAppWindow());
+  std::unique_ptr<aura::Window> w2(CreateAppWindow());
+  SnapTwoTestWindows(w1.get(), w2.get());
+  ASSERT_FALSE(split_view_controller()->InSplitViewMode());
+  SnapGroupController* snap_group_controller = SnapGroupController::Get();
+  ASSERT_TRUE(snap_group_controller->AreWindowsInSnapGroup(w1.get(), w2.get()));
+
+  OverviewController* overview_controller = OverviewController::Get();
+  overview_controller->StartOverview(OverviewStartAction::kOverviewButton);
+  auto* overview_item0 = GetOverviewItemForWindow(w0.get());
+  auto* event_generator = GetEventGenerator();
+  event_generator->set_current_screen_location(
+      gfx::ToRoundedPoint(overview_item0->target_bounds().CenterPoint()));
+  event_generator->PressLeftButton();
+  event_generator->MoveMouseTo(gfx::Point(0, 0));
+  event_generator->ReleaseLeftButton();
+  EXPECT_EQ(WindowState::Get(w0.get())->GetStateType(),
+            chromeos::WindowStateType::kPrimarySnapped);
+
+  EXPECT_TRUE(snap_group_controller->AreWindowsInSnapGroup(w1.get(), w2.get()));
+  EXPECT_FALSE(
+      snap_group_controller->AreWindowsInSnapGroup(w0.get(), w1.get()));
+  EXPECT_FALSE(
+      snap_group_controller->AreWindowsInSnapGroup(w0.get(), w2.get()));
+}
+
+// -----------------------------------------------------------------------------
+// SnapGroupDisplayMetricsTest:
+
+using SnapGroupDisplayMetricsTest = SnapGroupTest;
+
+// Tests that snapped window and divider widget bounds scale dynamically with
+// display changes, preserving their relative snap ratio.
+TEST_F(SnapGroupDisplayMetricsTest, DisplayScaleChange) {
+  std::unique_ptr<aura::Window> w1(CreateAppWindow());
+  std::unique_ptr<aura::Window> w2(CreateAppWindow());
+  SnapTwoTestWindows(w1.get(), w2.get());
+  const float w1_snap_ratio = *WindowState::Get(w1.get())->snap_ratio();
+  const float w2_snap_ratio = *WindowState::Get(w2.get())->snap_ratio();
+
+  SplitViewDivider* divider = snap_group_divider();
   ASSERT_TRUE(divider->divider_widget());
 
-  auto divider_bounds = split_view_divider_bounds_in_screen();
-  auto outside_point = split_view_divider_bounds_in_screen().CenterPoint();
-  outside_point.Offset(-kSplitviewDividerShortSideLength * 5, 0);
-  EXPECT_FALSE(divider_bounds.Contains(outside_point));
+  display::DisplayManager* display_manager = Shell::Get()->display_manager();
+  const auto display_id = WindowTreeHostManager::GetPrimaryDisplayId();
 
-  auto* cursor_manager = Shell::Get()->cursor_manager();
-  cursor_manager->SetCursor(CursorType::kPointer);
+  for (const bool zoom_in : {true, true, true, true, false, false, false}) {
+    display_manager->ZoomDisplay(display_id, zoom_in);
+    EXPECT_NEAR(w1_snap_ratio, *WindowState::Get(w1.get())->snap_ratio(), 0.01);
+    EXPECT_NEAR(w2_snap_ratio, *WindowState::Get(w2.get())->snap_ratio(), 0.01);
+    UnionBoundsEqualToWorkAreaBounds(w1.get(), w2.get(), divider);
+  }
+}
 
-  // Test that the default cursor type when mouse is not hovered over the split
-  // view divider->
+// Tests that when rotating display, the bounds of the snapped windows and
+// divider will be adjusted properly.
+TEST_F(SnapGroupDisplayMetricsTest, DisplayRotation) {
+  std::unique_ptr<aura::Window> w1(CreateAppWindow());
+  std::unique_ptr<aura::Window> w2(CreateAppWindow());
+  SnapTwoTestWindows(w1.get(), w2.get());
+  SplitViewDivider* divider = snap_group_divider();
+  ASSERT_TRUE(divider->divider_widget());
+
+  auto* display_manager = Shell::Get()->display_manager();
+  for (auto rotation :
+       {display::Display::ROTATE_270, display::Display::ROTATE_0}) {
+    SCOPED_TRACE(
+        base::StringPrintf("Screen rotation = %d", static_cast<int>(rotation)));
+    display_manager->SetDisplayRotation(
+        WindowTreeHostManager::GetPrimaryDisplayId(), rotation,
+        display::Display::RotationSource::USER);
+    UnionBoundsEqualToWorkAreaBounds(w1.get(), w2.get(), divider);
+  }
+}
+
+// Tests no crash when scaling up the work area. Regression test for
+// http://b/331991853.
+TEST_F(SnapGroupDisplayMetricsTest, ScaleUpWorkArea) {
+  UpdateDisplay("800x600");
+
+  // Set the min width so that the windows fit in `zoom_factor_1` but not
+  // `zoom_factor_2`.
+  const gfx::Size min_size(370, 0);
+  std::unique_ptr<aura::Window> w1(CreateAppWindowWithMinSize(min_size));
+  std::unique_ptr<aura::Window> w2(CreateAppWindowWithMinSize(min_size));
+
+  SnapTwoTestWindows(w1.get(), w2.get());
+  auto* snap_group_controller = SnapGroupController::Get();
+  EXPECT_TRUE(snap_group_controller->AreWindowsInSnapGroup(w1.get(), w2.get()));
+  UnionBoundsEqualToWorkAreaBounds(w1.get(), w2.get(), snap_group_divider());
+
+  // Zoom in once. Test we update the group bounds.
+  PressAndReleaseKey(ui::VKEY_OEM_PLUS,
+                     ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN);
+  const int64_t primary_id =
+      display::Screen::GetScreen()->GetPrimaryDisplay().id();
+  const float zoom_factor_1 = 1.05f;
+  ASSERT_EQ(zoom_factor_1,
+            display_manager()->GetDisplayInfo(primary_id).zoom_factor());
+  ASSERT_FALSE(w1->GetBoundsInScreen().Intersects(w2->GetBoundsInScreen()));
+  UnionBoundsEqualToWorkAreaBounds(w1.get(), w2.get(), snap_group_divider());
+
+  // Zoom in again. Since the windows no longer fit, test we break the group.
+  PressAndReleaseKey(ui::VKEY_OEM_PLUS,
+                     ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN);
+  const float zoom_factor_2 = 1.1f;
+  ASSERT_EQ(zoom_factor_2,
+            display_manager()->GetDisplayInfo(primary_id).zoom_factor());
+  ASSERT_TRUE(w1->GetBoundsInScreen().Intersects(w2->GetBoundsInScreen()));
+  EXPECT_FALSE(
+      snap_group_controller->AreWindowsInSnapGroup(w1.get(), w2.get()));
+}
+
+// Tests that there is no crash when work area changed after snapping two
+// windows. Docked mananifier is used as an example to trigger the work area
+// change.
+TEST_F(SnapGroupDisplayMetricsTest, DockedMagnifier) {
+  std::unique_ptr<aura::Window> w1(CreateAppWindow());
+  std::unique_ptr<aura::Window> w2(CreateAppWindow());
+  SnapTwoTestWindows(w1.get(), w2.get());
+  auto* docked_mangnifier_controller =
+      Shell::Get()->docked_magnifier_controller();
+  docked_mangnifier_controller->SetEnabled(/*enabled=*/true);
+}
+
+// Tests verifying virtual keyboard activation/deactivation which triggers work
+// area change works properly with Snap Group.
+TEST_F(SnapGroupDisplayMetricsTest, VirtualKeyboard) {
+  std::unique_ptr<aura::Window> w1(CreateAppWindow());
+  std::unique_ptr<aura::Window> w2(CreateAppWindow());
+  SnapTwoTestWindows(w1.get(), w2.get());
+
+  SetVirtualKeyboardEnabled(/*enabled=*/true);
+  auto* keyboard_controller = keyboard::KeyboardUIController::Get();
+  keyboard_controller->ShowKeyboard(true);
+  UnionBoundsEqualToWorkAreaBounds(w1.get(), w2.get(), snap_group_divider());
+
+  keyboard_controller->HideKeyboardByUser();
+  UnionBoundsEqualToWorkAreaBounds(w1.get(), w2.get(), snap_group_divider());
+}
+
+// Tests verifying ChromeVox activation/deactivation which triggers work area
+// change works properly with Snap Group.
+TEST_F(SnapGroupDisplayMetricsTest, ChromeVox) {
+  std::unique_ptr<aura::Window> w1(CreateAppWindow());
+  std::unique_ptr<aura::Window> w2(CreateAppWindow());
+  SnapTwoTestWindows(w1.get(), w2.get());
+
+  auto* a11y_controller = Shell::Get()->accessibility_controller();
+  PressAndReleaseKey(ui::VKEY_Z, ui::EF_ALT_DOWN | ui::EF_CONTROL_DOWN);
+  EXPECT_TRUE(a11y_controller->spoken_feedback().enabled());
+  UnionBoundsEqualToWorkAreaBounds(w1.get(), w2.get(), snap_group_divider());
+
+  PressAndReleaseKey(ui::VKEY_Z, ui::EF_ALT_DOWN | ui::EF_CONTROL_DOWN);
+
+  EXPECT_FALSE(a11y_controller->spoken_feedback().enabled());
+  UnionBoundsEqualToWorkAreaBounds(w1.get(), w2.get(), snap_group_divider());
+}
+
+// -----------------------------------------------------------------------------
+// SnapGroupMultiDisplayTest:
+
+using SnapGroupMultiDisplayTest = SnapGroupTest;
+
+// Tests that snapping two windows on an external display now works as expected,
+// with both windows and the divider fully visible on the external display. This
+// addresses the previous issue where the snapped window would be off-screen.
+TEST_F(SnapGroupMultiDisplayTest, SnapGroupCreationOnExternalDisplay) {
+  UpdateDisplay("800x700,801+0-800x700");
+  display::DisplayManager* display_manager = Shell::Get()->display_manager();
+  const auto& displays = display_manager->active_display_list();
+  ASSERT_EQ(2U, displays.size());
+
+  // Create Snap Group on display #2.
+  std::unique_ptr<aura::Window> w1(
+      CreateAppWindow(gfx::Rect(900, 0, 200, 100)));
+  std::unique_ptr<aura::Window> w2(
+      CreateAppWindow(gfx::Rect(1000, 50, 100, 200)));
+  SnapTwoTestWindows(w1.get(), w2.get(), /*horizontal=*/true);
+
+  // Verify that both windows and divider are visible on display #2.
+  display::Screen* screen = display::Screen::GetScreen();
+  EXPECT_EQ(displays[1].id(), screen->GetDisplayNearestWindow(w1.get()).id());
+  EXPECT_EQ(displays[1].id(), screen->GetDisplayNearestWindow(w2.get()).id());
+  EXPECT_EQ(displays[1].id(),
+            screen
+                ->GetDisplayNearestWindow(
+                    snap_group_divider()->divider_widget()->GetNativeWindow())
+                .id());
+}
+
+TEST_F(SnapGroupMultiDisplayTest, NoGapAfterSnapGroupCreation) {
+  ui::ScopedAnimationDurationScaleMode animation_scale(
+      ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
+
+  UpdateDisplay("1366x768,1367+0-1366x768");
+  const gfx::Size window_minimum_size = gfx::Size(500, 0);
+
+  for (const int window_x_origin : {0, 1367}) {
+    SCOPED_TRACE(base::StringPrintf("window origin = %d", window_x_origin));
+
+    aura::test::TestWindowDelegate delegate1;
+    std::unique_ptr<aura::Window> w1(CreateTestWindowInShellWithDelegate(
+        &delegate1, /*id=*/-1, gfx::Rect(window_x_origin, 0, 800, 600)));
+    delegate1.set_minimum_size(window_minimum_size);
+    aura::test::TestWindowDelegate delegate2;
+    std::unique_ptr<aura::Window> w2(CreateTestWindowInShellWithDelegate(
+        &delegate2, /*id=*/-1, gfx::Rect(window_x_origin + 500, 0, 800, 600)));
+    delegate2.set_minimum_size(window_minimum_size);
+
+    SnapOneTestWindow(w1.get(), WindowStateType::kPrimarySnapped,
+                      chromeos::kTwoThirdSnapRatio);
+    WaitForOverviewEntered();
+
+    ClickOverviewItem(GetEventGenerator(), w2.get());
+    EXPECT_EQ(chromeos::WindowStateType::kSecondarySnapped,
+              WindowState::Get(w2.get())->GetStateType());
+    WaitForOverviewExitAnimation();
+
+    EXPECT_TRUE(snap_group_divider());
+    UnionBoundsEqualToWorkAreaBounds(w1.get(), w2.get(), snap_group_divider());
+  }
+}
+
+// Tests that removing a display during split view overview session doesn't
+// crash.
+TEST_F(SnapGroupMultiDisplayTest, RemoveDisplay) {
+  UpdateDisplay("800x600,801+0-800x600");
+  display::test::DisplayManagerTestApi display_manager_test(display_manager());
+
+  // Snap `window` on the second display to start split view overview session.
+  std::unique_ptr<aura::Window> window1(
+      CreateTestWindowInShellWithBounds(gfx::Rect(900, 0, 100, 100)));
+  std::unique_ptr<aura::Window> window2(
+      CreateTestWindowInShellWithBounds(gfx::Rect(1000, 0, 100, 100)));
+  WindowState* window_state = WindowState::Get(window1.get());
+  const WindowSnapWMEvent snap_type(
+      WM_EVENT_SNAP_PRIMARY,
+      /*snap_action_source=*/WindowSnapActionSource::kTest);
+  window_state->OnWMEvent(&snap_type);
+  ASSERT_EQ(display_manager_test.GetSecondaryDisplay().id(),
+            display::Screen::GetScreen()
+                ->GetDisplayNearestWindow(window1.get())
+                .id());
+  EXPECT_EQ(WindowStateType::kPrimarySnapped, window_state->GetStateType());
+  EXPECT_TRUE(OverviewController::Get()->InOverviewSession());
+  EXPECT_TRUE(RootWindowController::ForWindow(window1.get())
+                  ->split_view_overview_session());
+
+  // Disconnect the second display. Test no crash.
+  UpdateDisplay("800x600");
+  base::RunLoop().RunUntilIdle();
+}
+
+// Tests to verify that when a window is dragged out of a snap group and onto
+// another display, it snaps correctly with accurate bounds on the destination
+// display. See regression at http://b/331663949.
+TEST_F(SnapGroupMultiDisplayTest, DragWindowOutOfSnapGroupToAnotherDisplay) {
+  UpdateDisplay("800x700,801+0-800x700,1602+0-800x700");
+  display::DisplayManager* display_manager = Shell::Get()->display_manager();
+  const auto& displays = display_manager->active_display_list();
+  ASSERT_EQ(3U, displays.size());
+
+  std::unique_ptr<aura::Window> w1(CreateAppWindow());
+  std::unique_ptr<aura::Window> w2(CreateAppWindow());
+  SnapTwoTestWindows(w1.get(), w2.get(), /*horizontal=*/true);
+
+  const gfx::Point point_in_display2(802, 0);
+  ASSERT_FALSE(displays[0].bounds().Contains(point_in_display2));
+  ASSERT_TRUE(displays[1].bounds().Contains(point_in_display2));
+
   auto* event_generator = GetEventGenerator();
-  event_generator->MoveMouseTo(outside_point);
-  EXPECT_TRUE(cursor_manager->IsCursorVisible());
-  EXPECT_FALSE(cursor_manager->IsCursorLocked());
-  EXPECT_EQ(CursorType::kNull, cursor_manager->GetCursor().type());
+  event_generator->set_current_screen_location(GetDragPoint(w2.get()));
+  event_generator->DragMouseTo(point_in_display2);
 
-  // Test that the cursor changed to resize cursor while hovering over the split
-  // view divider->
-  const auto delta_vector = gfx::Vector2d(0, -10);
-  const gfx::Point cached_hover_point =
-      divider_bounds.CenterPoint() + delta_vector;
-  event_generator->MoveMouseTo(cached_hover_point);
-  EXPECT_EQ(CursorType::kColumnResize, cursor_manager->GetCursor().type());
+  ASSERT_FALSE(
+      SnapGroupController::Get()->AreWindowsInSnapGroup(w1.get(), w2.get()));
 
-  // Test that after resizing, the cursor type is still the resize cursor.
+  display::Screen* screen = display::Screen::GetScreen();
+  EXPECT_EQ(displays[1].id(), screen->GetDisplayNearestWindow(w2.get()).id());
+  EXPECT_EQ(chromeos::WindowStateType::kPrimarySnapped,
+            WindowState::Get(w2.get())->GetStateType());
+
+  gfx::Rect display1_left_half, display1_right_half;
+  displays[1].work_area().SplitVertically(display1_left_half,
+                                          display1_right_half);
+
+  EXPECT_EQ(display1_left_half, w2->GetBoundsInScreen());
+}
+
+// Test that Search+Alt+M moves the snap group between displays.
+TEST_F(SnapGroupMultiDisplayTest, MoveSnapGroupBetweenDisplays) {
+  UpdateDisplay("800x600,1000x600");
+
+  // Snap `w1` and `w2` on display 1.
+  std::unique_ptr<aura::Window> w1(
+      CreateTestWindowInShellWithBounds(gfx::Rect(0, 0, 100, 100)));
+  std::unique_ptr<aura::Window> w2(
+      CreateTestWindowInShellWithBounds(gfx::Rect(0, 0, 100, 100)));
+  SnapTwoTestWindows(w1.get(), w2.get());
+  auto* snap_group_divider = SnapGroupController::Get()
+                                 ->GetSnapGroupForGivenWindow(w1.get())
+                                 ->snap_group_divider();
+  const int64_t primary_id =
+      display::Screen::GetScreen()->GetPrimaryDisplay().id();
+  display::Screen* screen = display::Screen::GetScreen();
+  ASSERT_EQ(primary_id, screen->GetDisplayNearestWindow(w1.get()).id());
+  ASSERT_EQ(primary_id, screen->GetDisplayNearestWindow(w2.get()).id());
+
+  // Activate `w1`, then press Search+Alt+M to move it to display 2.
+  wm::ActivateWindow(w1.get());
+  PressAndReleaseKey(ui::VKEY_M, ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN);
+  const int64_t secondary_id =
+      display::test::DisplayManagerTestApi(display_manager())
+          .GetSecondaryDisplay()
+          .id();
+  ASSERT_EQ(secondary_id, screen->GetDisplayNearestWindow(w1.get()).id());
+  EXPECT_EQ(secondary_id, screen->GetDisplayNearestWindow(w2.get()).id());
+  aura::Window* divider_window =
+      snap_group_divider->divider_widget()->GetNativeWindow();
+  EXPECT_EQ(secondary_id, screen->GetDisplayNearestWindow(divider_window).id());
+
+  auto* desk_container = desks_util::GetActiveDeskContainerForRoot(
+      Shell::Get()->GetRootWindowForDisplayId(secondary_id));
+
+  MruWindowTracker* mru_window_tracker = Shell::Get()->mru_window_tracker();
+  aura::Window* mru_window = window_util::GetTopMostWindow(
+      mru_window_tracker->BuildMruWindowList(DesksMruType::kActiveDesk));
+
+  // `w1` will be the mru window. With the window stacking fixed by
+  // `window_util::FixWindowStackingAccordingToGlobalMru()`, the `w2` that gets
+  // moved after will be stacked above `w1`.
+  EXPECT_EQ(mru_window, w1.get());
+  EXPECT_THAT(desk_container->children(),
+              ElementsAre(w2.get(), w1.get(), divider_window));
+
+  UnionBoundsEqualToWorkAreaBounds(w1.get(), w2.get(), snap_group_divider);
+}
+
+// Tests that moving an `OverviewGroupItem` between displays correctly
+// relocates the group item and its windows without crashing, while maintaining
+// divider widget invisibility during the overview session.
+TEST_F(SnapGroupMultiDisplayTest, MoveSnapGroupBetweenDisplaysInOverview) {
+  UpdateDisplay("800x700,801+0-800x700,1602+0-800x700");
+  display::DisplayManager* display_manager = Shell::Get()->display_manager();
+  const auto& displays = display_manager->active_display_list();
+  ASSERT_EQ(3U, displays.size());
+
+  const gfx::Point point_in_display2(900, 100);
+  EXPECT_FALSE(displays[0].bounds().Contains(point_in_display2));
+  EXPECT_TRUE(displays[1].bounds().Contains(point_in_display2));
+  EXPECT_FALSE(displays[2].bounds().Contains(point_in_display2));
+
+  const gfx::Point point_in_display3(1700, 200);
+  EXPECT_FALSE(displays[0].bounds().Contains(point_in_display3));
+  EXPECT_FALSE(displays[1].bounds().Contains(point_in_display3));
+  EXPECT_TRUE(displays[2].bounds().Contains(point_in_display3));
+
+  std::unique_ptr<aura::Window> w1(CreateAppWindow());
+  std::unique_ptr<aura::Window> w2(CreateAppWindow());
+  SnapTwoTestWindows(w1.get(), w2.get(), /*horizontal=*/true);
+  auto* divider = snap_group_divider();
+  ASSERT_TRUE(divider);
+  auto* divider_widget = divider->divider_widget();
+  ASSERT_TRUE(divider_widget);
+  ASSERT_TRUE(divider_widget->IsVisible());
+
+  struct {
+    gfx::Point drop_location;
+    int display_index;
+  } kTestCases[]{
+      {point_in_display2, 1}, {point_in_display3, 2}, {gfx::Point(0, 0), 0}};
+
+  OverviewController* overview_controller = OverviewController::Get();
+  auto* event_generator = GetEventGenerator();
+  for (const auto test_case : kTestCases) {
+    SCOPED_TRACE("\nDrop location: " + test_case.drop_location.ToString() +
+                 ";\n" + "Destination display index: " +
+                 base::NumberToString(test_case.display_index) + ".");
+    overview_controller->StartOverview(OverviewStartAction::kOverviewButton);
+    EXPECT_FALSE(divider_widget->IsVisible());
+
+    auto* overview_group_item = GetOverviewItemForWindow(w1.get());
+    DragGroupItemToPoint(overview_group_item, test_case.drop_location,
+                         event_generator,
+                         /*by_touch_gestures=*/false, /*drop=*/true);
+    EXPECT_FALSE(divider_widget->IsVisible());
+
+    display::Screen* screen = display::Screen::GetScreen();
+    EXPECT_EQ(displays[test_case.display_index].id(),
+              screen->GetDisplayNearestWindow(w1.get()).id());
+    EXPECT_EQ(displays[test_case.display_index].id(),
+              screen->GetDisplayNearestWindow(w2.get()).id());
+
+    SendKeyUntilOverviewItemIsFocused(ui::VKEY_TAB);
+    event_generator->PressKey(ui::VKEY_RETURN, /*flags=*/0);
+
+    EXPECT_TRUE(divider_widget->IsVisible());
+  }
+}
+
+// Tests that when moving snap group to another display with snap group, the
+// windows will be moved to the destination display properly.
+TEST_F(SnapGroupMultiDisplayTest, MoveSnapGroupToAnotherDisplayWithSnapGroup) {
+  UpdateDisplay("800x700,801+0-800x700");
+  display::DisplayManager* display_manager = Shell::Get()->display_manager();
+  const auto& displays = display_manager->active_display_list();
+  ASSERT_EQ(2U, displays.size());
+
+  const gfx::Point point_in_display1(100, 10);
+  EXPECT_TRUE(displays[0].bounds().Contains(point_in_display1));
+  EXPECT_FALSE(displays[1].bounds().Contains(point_in_display1));
+
+  const gfx::Point point_in_display2(1000, 100);
+  EXPECT_FALSE(displays[0].bounds().Contains(point_in_display2));
+  EXPECT_TRUE(displays[1].bounds().Contains(point_in_display2));
+
+  // Create Snap Group #1 on display #1.
+  std::unique_ptr<aura::Window> w1(CreateAppWindow(gfx::Rect(0, 0, 200, 100)));
+  std::unique_ptr<aura::Window> w2(
+      CreateAppWindow(gfx::Rect(50, 50, 100, 200)));
+  SnapTwoTestWindows(w1.get(), w2.get(), /*horizontal=*/true);
+  auto* snap_group_controller = SnapGroupController::Get();
+  VerifySnapGroupOnDisplay(
+      snap_group_controller->GetSnapGroupForGivenWindow(w1.get()),
+      displays[0].id());
+
+  // Create Snap Group #2 on display #2.
+  std::unique_ptr<aura::Window> w3(
+      CreateAppWindow(gfx::Rect(900, 0, 200, 100)));
+  std::unique_ptr<aura::Window> w4(
+      CreateAppWindow(gfx::Rect(1000, 50, 100, 200)));
+  SnapTwoTestWindows(w3.get(), w4.get(), /*horizontal=*/true);
+  VerifySnapGroupOnDisplay(
+      snap_group_controller->GetSnapGroupForGivenWindow(w3.get()),
+      displays[1].id());
+
+  OverviewController* overview_controller = OverviewController::Get();
+  overview_controller->StartOverview(OverviewStartAction::kOverviewButton);
+  ASSERT_TRUE(overview_controller->InOverviewSession());
+
+  // Move Snap Group #2 to display #1 and move Snap Group #1 to display #2.
+  auto* event_generator = GetEventGenerator();
+  DragGroupItemToPoint(GetOverviewItemForWindow(w3.get()), point_in_display1,
+                       event_generator,
+                       /*by_touch_gestures=*/false, /*drop=*/true);
+  DragGroupItemToPoint(GetOverviewItemForWindow(w1.get()), point_in_display2,
+                       event_generator,
+                       /*by_touch_gestures=*/false, /*drop=*/true);
+
+  // Verify that the windows are moved to the destination display properly.
+  display::Screen* screen = display::Screen::GetScreen();
+  EXPECT_EQ(displays[0].id(), screen->GetDisplayNearestWindow(w3.get()).id());
+  EXPECT_EQ(displays[0].id(), screen->GetDisplayNearestWindow(w4.get()).id());
+  EXPECT_EQ(displays[1].id(), screen->GetDisplayNearestWindow(w1.get()).id());
+  EXPECT_EQ(displays[1].id(), screen->GetDisplayNearestWindow(w2.get()).id());
+}
+
+// Tests that mirrored mode works correctly.
+TEST_F(SnapGroupMultiDisplayTest, MirroredMode) {
+  UpdateDisplay("800x700,801+0-800x700");
+  display::DisplayManager* display_manager = Shell::Get()->display_manager();
+  const auto& displays = display_manager->active_display_list();
+  ASSERT_EQ(2U, displays.size());
+  const int64_t primary_id = displays[0].id();
+  const int64_t secondary_id = displays[1].id();
+
+  // Create Snap Group #1 on display #1.
+  std::unique_ptr<aura::Window> w1(CreateAppWindow(gfx::Rect(0, 0, 200, 100)));
+  std::unique_ptr<aura::Window> w2(
+      CreateAppWindow(gfx::Rect(50, 50, 100, 200)));
+  SnapTwoTestWindows(w1.get(), w2.get(), /*horizontal=*/true);
+  auto* snap_group_controller = SnapGroupController::Get();
+  auto* group1 = snap_group_controller->GetSnapGroupForGivenWindow(w1.get());
+  VerifySnapGroupOnDisplay(group1, primary_id);
+
+  // Create Snap Group #2 on display #2.
+  std::unique_ptr<aura::Window> w3(
+      CreateAppWindow(gfx::Rect(900, 0, 200, 100)));
+  std::unique_ptr<aura::Window> w4(
+      CreateAppWindow(gfx::Rect(1000, 50, 100, 200)));
+  SnapTwoTestWindows(w3.get(), w4.get(), /*horizontal=*/true);
+  auto* group2 = snap_group_controller->GetSnapGroupForGivenWindow(w3.get());
+  VerifySnapGroupOnDisplay(group2, secondary_id);
+
+  // Enter mirrored mode.
+  display_manager->SetMirrorMode(display::MirrorMode::kNormal, std::nullopt);
+  ASSERT_EQ(1U, displays.size());
+  VerifySnapGroupOnDisplay(group1, primary_id);
+  VerifySnapGroupOnDisplay(group2, primary_id);
+
+  // Exit mirrored mode.
+  display_manager->SetMirrorMode(display::MirrorMode::kOff, std::nullopt);
+  ASSERT_EQ(2U, displays.size());
+
+  // TODO(b/325331792): Verify the group is restored to its display. Currently
+  // we just verify the group bounds are visible and on-screen.
+  UnionBoundsEqualToWorkAreaBounds(w1.get(), w2.get(),
+                                   group1->snap_group_divider());
+  UnionBoundsEqualToWorkAreaBounds(w3.get(), w4.get(),
+                                   group2->snap_group_divider());
+}
+
+// Tests drag to snap across a landscape and portrait display.
+TEST_F(SnapGroupMultiDisplayTest, LandscapeAndPortrait) {
+  UpdateDisplay("800x600,600x800");
+  // Set `w1` on the bottom half of the display since we need to drag a vertical
+  // movement > kSnapTriggerVerticalMoveThreshold in order to snap to top. See
+  // `WorkspaceWindowResizer::Drag()`.
+  std::unique_ptr<aura::Window> w1(
+      CreateAppWindow(gfx::Rect(0, 400, 200, 200)));
+  std::unique_ptr<aura::Window> w2(
+      CreateAppWindow(gfx::Rect(800, 0, 200, 200)));
+
+  // Drag to snap `w1` to primary on display 2.
+  wm::ActivateWindow(w1.get());
+  auto* event_generator = GetEventGenerator();
+  event_generator->set_current_screen_location(GetDragPoint(w1.get()));
+  const display::Display display2 =
+      display::test::DisplayManagerTestApi(display_manager())
+          .GetSecondaryDisplay();
+  ASSERT_FALSE(IsLayoutHorizontal(display2));
+  const gfx::Rect work_area2 = display2.work_area();
+  event_generator->DragMouseTo(work_area2.top_center());
+  gfx::Rect top_half, bottom_half;
+  work_area2.SplitHorizontally(top_half, bottom_half);
+  EXPECT_EQ(chromeos::WindowStateType::kPrimarySnapped,
+            WindowState::Get(w1.get())->GetStateType());
+  EXPECT_EQ(top_half, w1->GetBoundsInScreen());
+
+  // Select `w2` to be auto-snapped.
+  ClickOverviewItem(event_generator, w2.get());
+  EXPECT_EQ(chromeos::WindowStateType::kSecondarySnapped,
+            WindowState::Get(w2.get())->GetStateType());
+  EXPECT_TRUE(
+      SnapGroupController::Get()->AreWindowsInSnapGroup(w1.get(), w2.get()));
+
+  // Expect the divider is horizontal.
+  const gfx::Rect divider_bounds(
+      work_area2.x(),
+      work_area2.CenterPoint().y() - kSplitviewDividerShortSideLength / 2,
+      work_area2.width(), kSplitviewDividerShortSideLength);
+  EXPECT_EQ(divider_bounds, snap_group_divider_bounds_in_screen());
+  UnionBoundsEqualToWorkAreaBounds(w1.get(), w2.get(), snap_group_divider());
+}
+
+// Tests that the snap group bounds are updated for removing and adding the
+// primary display. Regression test for http://b/335313098.
+TEST_F(SnapGroupMultiDisplayTest, AddRemovePrimaryDisplay) {
+  UpdateDisplay("800x700,801+0-800x700");
+  const int64_t primary_id = WindowTreeHostManager::GetPrimaryDisplayId();
+  const int64_t secondary_id =
+      display::test::DisplayManagerTestApi(display_manager())
+          .GetSecondaryDisplay()
+          .id();
+
+  // Create Snap Group #1 on display #1.
+  std::unique_ptr<aura::Window> w1(CreateAppWindow(gfx::Rect(0, 0, 200, 100)));
+  std::unique_ptr<aura::Window> w2(
+      CreateAppWindow(gfx::Rect(50, 50, 100, 200)));
+  SnapTwoTestWindows(w1.get(), w2.get(), /*horizontal=*/true);
+  auto* snap_group_controller = SnapGroupController::Get();
+  auto* group1 = snap_group_controller->GetSnapGroupForGivenWindow(w1.get());
+  VerifySnapGroupOnDisplay(group1, primary_id);
+
+  // Create Snap Group #2 on display #2.
+  std::unique_ptr<aura::Window> w3(
+      CreateAppWindow(gfx::Rect(801, 0, 200, 100)));
+  std::unique_ptr<aura::Window> w4(
+      CreateAppWindow(gfx::Rect(810, 50, 100, 200)));
+  SnapTwoTestWindows(w3.get(), w4.get(), /*horizontal=*/true);
+  auto* group2 = snap_group_controller->GetSnapGroupForGivenWindow(w3.get());
+  VerifySnapGroupOnDisplay(group2, secondary_id);
+
+  // Disconnect primary display.
+  display::ManagedDisplayInfo primary_info =
+      display_manager()->GetDisplayInfo(primary_id);
+  display::ManagedDisplayInfo secondary_info =
+      display_manager()->GetDisplayInfo(secondary_id);
+  std::vector<display::ManagedDisplayInfo> display_info_list;
+  display_info_list.push_back(secondary_info);
+  display_manager()->OnNativeDisplaysChanged(display_info_list);
+  const auto& displays = display_manager()->active_display_list();
+  ASSERT_EQ(1U, displays.size());
+  ASSERT_EQ(WindowTreeHostManager::GetPrimaryDisplayId(), secondary_id);
+  UnionBoundsEqualToWorkAreaBounds(w1.get(), w2.get(),
+                                   group1->snap_group_divider());
+  UnionBoundsEqualToWorkAreaBounds(w3.get(), w4.get(),
+                                   group2->snap_group_divider());
+
+  // Reconnect primary display.
+  display_info_list.push_back(primary_info);
+  display_manager()->OnNativeDisplaysChanged(display_info_list);
+  ASSERT_EQ(2U, displays.size());
+  ASSERT_EQ(WindowTreeHostManager::GetPrimaryDisplayId(), primary_id);
+  UnionBoundsEqualToWorkAreaBounds(w1.get(), w2.get(),
+                                   group1->snap_group_divider());
+  UnionBoundsEqualToWorkAreaBounds(w3.get(), w4.get(),
+                                   group2->snap_group_divider());
+}
+
+// Tests that resizing via the cursor between displays works correctly.
+TEST_F(SnapGroupDividerTest, ResizeCursorBetweenDisplays) {
+  UpdateDisplay("800x700,801+0-800x700");
+  const int min_width = 300;
+  std::unique_ptr<aura::Window> w1(
+      CreateAppWindowWithMinSize(gfx::Size(min_width, 0)));
+  std::unique_ptr<aura::Window> w2(
+      CreateAppWindowWithMinSize(gfx::Size(min_width, 0)));
+  SnapTwoTestWindows(w1.get(), w2.get(), /*horizontal=*/true);
+  auto* snap_group =
+      SnapGroupController::Get()->GetSnapGroupForGivenWindow(w1.get());
+  auto* snap_group_divider = snap_group->snap_group_divider();
+
+  // Press and move the mouse right, within `w1` and `w2` min widths. Test we
+  // update bounds.
+  auto* event_generator = GetEventGenerator();
+  const gfx::Point divider_point(
+      snap_group_divider->GetDividerBoundsInScreen(/*is_dragging=*/false)
+          .CenterPoint());
+  event_generator->set_current_screen_location(divider_point);
   event_generator->PressLeftButton();
-  const auto move_vector = gfx::Vector2d(20, 0);
-  event_generator->MoveMouseTo(cached_hover_point + move_vector);
+  event_generator->MoveMouseTo(gfx::Point(350, divider_point.y()), /*count=*/2);
+  ASSERT_TRUE(snap_group_divider->is_resizing_with_divider());
+  EXPECT_EQ(350, snap_group_divider_bounds_in_screen().CenterPoint().x());
+  UnionBoundsEqualToWorkAreaBounds(w1.get(), w2.get(), snap_group_divider);
+
+  // Move the mouse right, past `w2`'s min width and onto display #2. Test we
+  // don't move beyond `w2`'s min width.
+  event_generator->MoveMouseTo(gfx::Point(810, divider_point.y()), /*count=*/2);
+  EXPECT_EQ(min_width, w2->GetBoundsInScreen().width());
+  UnionBoundsEqualToWorkAreaBounds(w1.get(), w2.get(), snap_group_divider);
+
+  // Move the mouse left, back onto display #1 but still beyond `w2`'s min
+  // width. Test we don't move beyond `w2`'s min width.
+  event_generator->MoveMouseTo(gfx::Point(799, divider_point.y()),
+                               /*count=*/2);
+  EXPECT_EQ(min_width, w2->GetBoundsInScreen().width());
+  UnionBoundsEqualToWorkAreaBounds(w1.get(), w2.get(), snap_group_divider);
+
+  // Move the mouse left, back within range. Test we update bounds now.
+  event_generator->MoveMouseTo(gfx::Point(350, divider_point.y()), /*count=*/2);
+  EXPECT_EQ(350, snap_group_divider_bounds_in_screen().CenterPoint().x());
+  UnionBoundsEqualToWorkAreaBounds(w1.get(), w2.get(), snap_group_divider);
   event_generator->ReleaseLeftButton();
-  EXPECT_EQ(CursorType::kColumnResize, cursor_manager->GetCursor().type());
-  EXPECT_EQ(split_view_divider_bounds_in_screen().CenterPoint() + delta_vector,
-            cached_hover_point + move_vector);
 }
 
 // -----------------------------------------------------------------------------

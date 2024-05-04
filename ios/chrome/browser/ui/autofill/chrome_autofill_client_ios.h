@@ -23,9 +23,8 @@
 #include "components/autofill/core/browser/strike_databases/strike_database.h"
 #include "components/autofill/core/browser/ui/payments/card_expiration_date_fix_flow_controller_impl.h"
 #include "components/autofill/core/browser/ui/payments/card_name_fix_flow_controller_impl.h"
-#include "components/autofill/core/browser/ui/payments/card_unmask_prompt_controller_impl.h"
 #include "components/autofill/core/browser/ui/payments/card_unmask_prompt_options.h"
-#include "components/autofill/core/browser/ui/popup_item_ids.h"
+#include "components/autofill/core/browser/ui/suggestion_type.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #import "components/autofill/ios/browser/autofill_client_ios_bridge.h"
 #include "components/infobars/core/infobar_manager.h"
@@ -33,6 +32,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/sync/service/sync_service.h"
 #include "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/ui/autofill/ios_chrome_payments_autofill_client.h"
 
 @protocol AutofillCommands;
 @class UIViewController;
@@ -43,11 +43,7 @@ class WebState;
 
 namespace autofill {
 
-struct AutofillErrorDialogContext;
-
-namespace payments {
-class IOSChromePaymentsAutofillClient;
-}
+class CardUnmaskAuthenticationSelectionDialogControllerImpl;
 
 // Chrome iOS implementation of AutofillClient.
 class ChromeAutofillClientIOS : public AutofillClient {
@@ -64,6 +60,7 @@ class ChromeAutofillClientIOS : public AutofillClient {
 
   // Sets a weak reference to the view controller used to present UI.
   void SetBaseViewController(UIViewController* base_view_controller);
+  UIViewController* base_view_controller() { return base_view_controller_; }
 
   void set_commands_handler(id<AutofillCommands> commands_handler) {
     commands_handler_ = commands_handler;
@@ -72,21 +69,19 @@ class ChromeAutofillClientIOS : public AutofillClient {
 
   // AutofillClient:
   version_info::Channel GetChannel() const override;
-  bool IsOffTheRecord() override;
+  bool IsOffTheRecord() const override;
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
   AutofillCrowdsourcingManager* GetCrowdsourcingManager() override;
   PersonalDataManager* GetPersonalDataManager() override;
   AutocompleteHistoryManager* GetAutocompleteHistoryManager() override;
-  CreditCardCvcAuthenticator* GetCvcAuthenticator() override;
-  CreditCardOtpAuthenticator* GetOtpAuthenticator() override;
   CreditCardRiskBasedAuthenticator* GetRiskBasedAuthenticator() override;
   PrefService* GetPrefs() override;
   const PrefService* GetPrefs() const override;
   syncer::SyncService* GetSyncService() override;
   signin::IdentityManager* GetIdentityManager() override;
   FormDataImporter* GetFormDataImporter() override;
-  payments::PaymentsAutofillClient* GetPaymentsAutofillClient() override;
-  payments::PaymentsNetworkInterface* GetPaymentsNetworkInterface() override;
+  payments::IOSChromePaymentsAutofillClient* GetPaymentsAutofillClient()
+      override;
   StrikeDatabase* GetStrikeDatabase() override;
   ukm::UkmRecorder* GetUkmRecorder() override;
   ukm::SourceId GetUkmSourceId() override;
@@ -98,11 +93,12 @@ class ChromeAutofillClientIOS : public AutofillClient {
   translate::TranslateDriver* GetTranslateDriver() override;
   GeoIpCountryCode GetVariationConfigCountryCode() const override;
   void ShowAutofillSettings(FillingProduct main_filling_product) override;
-  void ShowUnmaskPrompt(
-      const CreditCard& card,
-      const CardUnmaskPromptOptions& card_unmask_prompt_options,
-      base::WeakPtr<CardUnmaskDelegate> delegate) override;
-  void OnUnmaskVerificationResult(PaymentsRpcResult result) override;
+  void ShowUnmaskAuthenticatorSelectionDialog(
+      const std::vector<CardUnmaskChallengeOption>& challenge_options,
+      base::OnceCallback<void(const std::string&)>
+          confirm_unmask_challenge_option_callback,
+      base::OnceClosure cancel_unmasking_closure) override;
+  void DismissUnmaskAuthenticatorSelectionDialog(bool server_success) override;
   payments::MandatoryReauthManager* GetOrCreatePaymentsMandatoryReauthManager()
       override;
   void ConfirmAccountNameFixFlow(
@@ -139,20 +135,16 @@ class ChromeAutofillClientIOS : public AutofillClient {
       base::WeakPtr<TouchToFillDelegate> delegate,
       base::span<const CreditCard> cards_to_suggest) override;
   void HideTouchToFillCreditCard() override;
-  void ShowAutofillPopup(
+  void ShowAutofillSuggestions(
       const PopupOpenArgs& open_args,
       base::WeakPtr<AutofillPopupDelegate> delegate) override;
-  void UpdateAutofillPopupDataListValues(
+  void UpdateAutofillDataListValues(
       base::span<const autofill::SelectOption> datalist) override;
-  std::vector<Suggestion> GetPopupSuggestions() const override;
-  void PinPopupView() override;
-  PopupOpenArgs GetReopenPopupArgs(
-      AutofillSuggestionTriggerSource trigger_source) const override;
+  void PinAutofillSuggestions() override;
   void UpdatePopup(const std::vector<Suggestion>& suggestions,
                    FillingProduct main_filling_product,
                    AutofillSuggestionTriggerSource trigger_source) override;
-  void HideAutofillPopup(PopupHidingReason reason) override;
-  void ShowAutofillErrorDialog(AutofillErrorDialogContext context) override;
+  void HideAutofillSuggestions(SuggestionHidingReason reason) override;
   bool IsAutocompleteEnabled() const override;
   bool IsPasswordManagerEnabled() override;
   void DidFillOrPreviewForm(mojom::ActionPersistence action_persistence,
@@ -171,7 +163,6 @@ class ChromeAutofillClientIOS : public AutofillClient {
                                 PlusAddressCallback callback) override;
   std::unique_ptr<device_reauth::DeviceAuthenticator> GetDeviceAuthenticator()
       override;
-  VirtualCardEnrollmentManager* GetVirtualCardEnrollmentManager() override;
   void ShowVirtualCardEnrollDialog(
       const VirtualCardEnrollmentFields& virtual_card_enrollment_fields,
       base::OnceClosure accept_virtual_card_callback,
@@ -193,20 +184,17 @@ class ChromeAutofillClientIOS : public AutofillClient {
   raw_ptr<signin::IdentityManager> identity_manager_;
   std::unique_ptr<payments::IOSChromePaymentsAutofillClient>
       payments_autofill_client_;
-  std::unique_ptr<payments::PaymentsNetworkInterface>
-      payments_network_interface_;
-  std::unique_ptr<CreditCardCvcAuthenticator> cvc_authenticator_;
-  std::unique_ptr<CreditCardOtpAuthenticator> otp_authenticator_;
   std::unique_ptr<FormDataImporter> form_data_importer_;
   scoped_refptr<AutofillWebDataService> autofill_web_data_service_;
   raw_ptr<infobars::InfoBarManager> infobar_manager_;
-  CardUnmaskPromptControllerImpl unmask_controller_;
   std::unique_ptr<LogManager> log_manager_;
   CardNameFixFlowControllerImpl card_name_fix_flow_controller_;
   CardExpirationDateFixFlowControllerImpl
       card_expiration_date_fix_flow_controller_;
   std::unique_ptr<payments::MandatoryReauthManager> payments_reauth_manager_;
   std::unique_ptr<CreditCardRiskBasedAuthenticator> risk_based_authenticator_;
+  base::WeakPtr<autofill::CardUnmaskAuthenticationSelectionDialogControllerImpl>
+      card_unmask_authentication_selection_controller_;
 
   // A weak reference to the view controller used to present UI.
   __weak UIViewController* base_view_controller_;

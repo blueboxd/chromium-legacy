@@ -4,10 +4,13 @@
 
 package org.chromium.chrome.browser.tasks.tab_management;
 
+import android.content.Context;
 import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.InsetDrawable;
+import android.graphics.drawable.LayerDrawable;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -21,13 +24,19 @@ import androidx.core.view.ViewCompat;
 import androidx.core.widget.ImageViewCompat;
 import androidx.vectordrawable.graphics.drawable.AnimatedVectorDrawableCompat;
 
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.tab_ui.TabListFaviconProvider;
+import org.chromium.chrome.browser.tab_ui.TabUiThemeUtils;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
 
 /** {@link org.chromium.ui.modelutil.SimpleRecyclerViewMcp.ViewBinder} for tab List. */
 class TabListViewBinder {
-    // TODO(1023557): Merge with TabGridViewBinder for shared properties.
+    private static final int INVALID_COLOR_ID = -1;
+    private static final int TAB_GROUP_ICON_COLOR_LEVEL = 1;
+
+    // TODO(crbug.com/40107066): Merge with TabGridViewBinder for shared properties.
     private static void bindListTab(
             PropertyModel model, ViewGroup view, @Nullable PropertyKey propertyKey) {
         if (TabProperties.TITLE == propertyKey) {
@@ -64,6 +73,8 @@ class TabListViewBinder {
         } else if (TabProperties.URL_DOMAIN == propertyKey) {
             String domain = model.get(TabProperties.URL_DOMAIN);
             ((TextView) view.findViewById(R.id.description)).setText(domain);
+        } else if (TabProperties.TAB_GROUP_COLOR_ID == propertyKey) {
+            setTabGroupColorIcon(view, model);
         }
     }
 
@@ -99,15 +110,15 @@ class TabListViewBinder {
                             model.get(TabProperties.TAB_SELECTED_LISTENER).run(tabId);
                         });
             }
-        } else if (TabProperties.TAB_CLOSED_LISTENER == propertyKey) {
-            if (model.get(TabProperties.TAB_CLOSED_LISTENER) == null) {
+        } else if (TabProperties.TAB_ACTION_BUTTON_LISTENER == propertyKey) {
+            if (model.get(TabProperties.TAB_ACTION_BUTTON_LISTENER) == null) {
                 view.findViewById(R.id.end_button).setOnClickListener(null);
             } else {
                 view.findViewById(R.id.end_button)
                         .setOnClickListener(
                                 v -> {
                                     int tabId = model.get(TabProperties.TAB_ID);
-                                    model.get(TabProperties.TAB_CLOSED_LISTENER).run(tabId);
+                                    model.get(TabProperties.TAB_ACTION_BUTTON_LISTENER).run(tabId);
                                 });
             }
         }
@@ -115,23 +126,25 @@ class TabListViewBinder {
 
     /**
      * Bind color updates.
-     * @param view The root view of the item.
+     *
+     * @param view The root view of the item (either Selectable/ClosableTabListView).
      * @param isIncognito Whether the model is in incognito mode.
      * @param isSelected Whether the item is selected.
      */
     private static void updateColors(ViewGroup view, boolean isIncognito, boolean isSelected) {
-        // TODO(crbug.com/1455397): isSelected is ignored as the selected row is only outlined not
+        // TODO(crbug.com/40272756): isSelected is ignored as the selected row is only outlined not
         // colored so it should use the unselected color. This will be addressed in a fixit.
 
+        // Shared by both classes, from tab_list_card_item.
         View cardView = view.findViewById(R.id.content_view);
         cardView.getBackground().mutate();
         final @ColorInt int backgroundColor =
-                TabUiThemeProvider.getCardViewBackgroundColor(
+                TabUiThemeUtils.getCardViewBackgroundColor(
                         view.getContext(), isIncognito, /* isSelected= */ false);
         ViewCompat.setBackgroundTintList(cardView, ColorStateList.valueOf(backgroundColor));
 
         final @ColorInt int textColor =
-                TabUiThemeProvider.getTitleTextColor(
+                TabUiThemeUtils.getTitleTextColor(
                         view.getContext(), isIncognito, /* isSelected= */ false);
         TextView titleView = (TextView) view.findViewById(R.id.title);
         TextView descriptionView = (TextView) view.findViewById(R.id.description);
@@ -144,7 +157,7 @@ class TabListViewBinder {
         }
         faviconView.getBackground().mutate();
         final @ColorInt int faviconBackgroundColor =
-                TabUiThemeProvider.getMiniThumbnailPlaceholderColor(
+                TabUiThemeUtils.getMiniThumbnailPlaceholderColor(
                         view.getContext(), isIncognito, /* isSelected= */ false);
         ViewCompat.setBackgroundTintList(
                 faviconView, ColorStateList.valueOf(faviconBackgroundColor));
@@ -164,7 +177,7 @@ class TabListViewBinder {
         final int defaultLevel = view.getResources().getInteger(R.integer.list_item_level_default);
         final int selectedLevel =
                 view.getResources().getInteger(R.integer.list_item_level_selected);
-        SelectableTabGridView selectableTabListView = view.findViewById(R.id.content_view);
+        SelectableTabListView selectableTabListView = (SelectableTabListView) view;
 
         if (TabProperties.SELECTABLE_TAB_CLICKED_LISTENER == propertyKey) {
             View.OnClickListener onClickListener =
@@ -213,5 +226,48 @@ class TabListViewBinder {
     private static void setFavicon(View view, Drawable favicon) {
         ImageView faviconView = (ImageView) view.findViewById(R.id.start_icon);
         faviconView.setImageDrawable(favicon);
+    }
+
+    private static void setTabGroupColorIcon(ViewGroup view, PropertyModel model) {
+        ImageView colorIconView = (ImageView) view.findViewById(R.id.icon);
+
+        if (ChromeFeatureList.sTabGroupParityAndroid.isEnabled()) {
+            colorIconView.setVisibility(View.VISIBLE);
+
+            // If the tab is a single tab item, a tab that is part of a group but shown in the
+            // TabGridDialogView list representation, or an invalid case, do not set/show.
+            if (model.get(TabProperties.TAB_GROUP_COLOR_ID) == INVALID_COLOR_ID) {
+                colorIconView.setVisibility(View.GONE);
+                return;
+            }
+
+            Context context = view.getContext();
+            final @ColorInt int color =
+                    ColorPickerUtils.getTabGroupColorPickerItemColor(
+                            context,
+                            model.get(TabProperties.TAB_GROUP_COLOR_ID),
+                            model.get(TabProperties.IS_INCOGNITO));
+
+            // If the icon already exists, just apply the color to the existing drawable.
+            LayerDrawable bgDrawable = (LayerDrawable) colorIconView.getBackground();
+            if (bgDrawable == null) {
+                LayerDrawable tabGroupColorIcon =
+                        (LayerDrawable)
+                                ResourcesCompat.getDrawable(
+                                        context.getResources(),
+                                        R.drawable.tab_group_color_icon,
+                                        context.getTheme());
+                ((GradientDrawable) tabGroupColorIcon.getDrawable(TAB_GROUP_ICON_COLOR_LEVEL))
+                        .setColor(color);
+                colorIconView.setBackground(tabGroupColorIcon);
+            } else {
+                bgDrawable.mutate();
+                ((GradientDrawable) bgDrawable.getDrawable(TAB_GROUP_ICON_COLOR_LEVEL))
+                        .setColor(color);
+            }
+
+        } else {
+            colorIconView.setVisibility(View.GONE);
+        }
     }
 }

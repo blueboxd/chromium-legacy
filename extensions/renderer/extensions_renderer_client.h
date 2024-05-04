@@ -28,6 +28,10 @@ class ExtensionsRendererClient {
   ExtensionsRendererClient();
   virtual ~ExtensionsRendererClient();
 
+  // Notifies that the main render thread has started. Used to finalize any
+  // setup. Mirrors the ContentRendererClient method of the same name.
+  virtual void RenderThreadStarted() = 0;
+
   // Returns true if the current render process was launched incognito.
   virtual bool IsIncognitoProcess() const = 0;
 
@@ -64,7 +68,8 @@ class ExtensionsRendererClient {
   static void Set(ExtensionsRendererClient* client);
 
  protected:
-  std::vector<std::unique_ptr<ExtensionsRendererAPIProvider>> api_providers_;
+  std::vector<std::unique_ptr<const ExtensionsRendererAPIProvider>>
+      api_providers_;
 };
 
 }  // namespace extensions

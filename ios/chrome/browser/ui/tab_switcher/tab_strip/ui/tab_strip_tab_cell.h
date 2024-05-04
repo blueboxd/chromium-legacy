@@ -5,6 +5,8 @@
 #ifndef IOS_CHROME_BROWSER_UI_TAB_SWITCHER_TAB_STRIP_UI_TAB_STRIP_TAB_CELL_H_
 #define IOS_CHROME_BROWSER_UI_TAB_SWITCHER_TAB_STRIP_UI_TAB_STRIP_TAB_CELL_H_
 
+#import "ios/chrome/browser/ui/tab_switcher/tab_strip/ui/tab_strip_cell.h"
+
 #import <UIKit/UIKit.h>
 
 @class TabStripTabCell;
@@ -15,9 +17,9 @@
 - (void)closeButtonTappedForCell:(TabStripTabCell*)cell;
 @end
 
-// UICollectionViewCell that contains a Tab title with a leading imageView
-// and a close tab button.
-@interface TabStripTabCell : UICollectionViewCell <UIPointerInteractionDelegate>
+// TabStripCell that contains a Tab title with a leading imageView and a close
+// tab button.
+@interface TabStripTabCell : TabStripCell <UIPointerInteractionDelegate>
 
 // Delegate to inform the TabStrip on the cell.
 @property(nonatomic, weak) id<TabStripTabCellDelegate> delegate;
@@ -38,13 +40,26 @@
 @property(nonatomic, assign) BOOL trailingSeparatorGradientViewHidden;
 
 // Whether the left background view of the selected cell is hidden.
-@property(nonatomic, assign) BOOL leftSelectedBorderBackgroundViewHidden;
+@property(nonatomic, assign) BOOL leadingSelectedBorderBackgroundViewHidden;
 
 // Whether the right background view of the selected cell is hidden.
-@property(nonatomic, assign) BOOL rightSelectedBorderBackgroundViewHidden;
+@property(nonatomic, assign) BOOL trailingSelectedBorderBackgroundViewHidden;
 
-// Preview parameters of the cell when dragged.
-@property(nonatomic, readonly) UIDragPreviewParameters* dragPreviewParameters;
+// Whether the cell is the first of its group. Default value is NO.
+@property(nonatomic, assign) BOOL isFirstTabInGroup;
+
+// Whether the cell is the last of its group. Default value is NO.
+@property(nonatomic, assign) BOOL isLastTabInGroup;
+
+// The item associated with this cell. Passed as an opaque NSObject to use the
+// isEqual method on it.
+@property(nonatomic, weak) NSObject* item;
+
+// Used to know the position of the tab and the total number of tabs. This is
+// used by VoiceOver to let the user know the position of the tab and should not
+// be used elsewhere.
+@property(nonatomic, assign) NSInteger tabIndex;
+@property(nonatomic, assign) NSInteger numberOfTabs;
 
 // Sets the title of the cell.
 - (void)setTitle:(NSString*)title;

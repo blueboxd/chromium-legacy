@@ -38,7 +38,7 @@ api::scripts_internal::SerializedUserScript SerializeUserScript(
     serialized_script.css.emplace();
     serialized_script.css->reserve(user_script.css_scripts().size());
     for (const auto& css_script : user_script.css_scripts()) {
-      // TODO(https://crbug.com/1385165): Handle `code`.
+      // TODO(crbug.com/40061759): Handle `code`.
       api::scripts_internal::ScriptSource source;
       source.file = css_script->relative_path().AsUTF8Unsafe();
       serialized_script.css->push_back(std::move(source));
@@ -134,6 +134,9 @@ api::scripts_internal::SerializedUserScript SerializeUserScript(
   serialized_script.world =
       ConvertExecutionWorldForAPI(user_script.execution_world());
 
+  // `worldId`.
+  serialized_script.world_id = user_script.world_id();
+
   return serialized_script;
 }
 
@@ -220,6 +223,9 @@ std::unique_ptr<UserScript> ParseSerializedUserScript(
   // `world`.
   user_script->set_execution_world(
       ConvertExecutionWorld(serialized_script.world));
+
+  // `worldId`.
+  user_script->set_world_id(serialized_script.world_id);
 
   // Post-parse validation (these rely on multiple fields).
   if (!script_parsing::ValidateMatchOriginAsFallback(

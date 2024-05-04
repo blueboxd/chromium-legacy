@@ -8,14 +8,20 @@
 #include <map>
 #include <memory>
 #include <optional>
+#include <variant>
 
 #include "base/files/file_path.h"
 #include "base/functional/callback.h"
 #include "chromeos/ash/components/growth/action_performer.h"
+#include "chromeos/ash/components/growth/campaigns_constants.h"
 
 namespace base {
 class Version;
-}
+}  // namespace base
+
+namespace signin {
+class IdentityManager;
+}  // namespace signin
 
 namespace growth {
 
@@ -53,11 +59,21 @@ class CampaignsManagerClient {
 
   // Get the implementations for the various Actions on the growth
   // framework.
-  virtual ActionMap GetCampaignsActions() const = 0;
+  // TODO: b/330930157 - Rename to BuildCampaignsActions.
+  virtual ActionMap GetCampaignsActions() = 0;
 
   // Register sythetical trial for current session.
   virtual void RegisterSyntheticFieldTrial(std::optional<int> study_id,
                                            int campaign_id) const = 0;
+
+  // Proxy to Feature Engagement methods.
+  virtual void ClearConfig(
+      const std::map<std::string, std::string>& params) = 0;
+  virtual void NotifyEvent(const std::string& event) = 0;
+  virtual bool WouldTriggerHelpUI(
+      const std::map<std::string, std::string>& params) = 0;
+  // Returns the IdentityManager for the active user profile.
+  virtual signin::IdentityManager* GetIdentityManager() const = 0;
 };
 
 }  // namespace growth

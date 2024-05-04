@@ -4,25 +4,21 @@
 
 #include "components/web_package/signed_web_bundles/signed_web_bundle_signature_stack_entry.h"
 
-#include "components/web_package/mojom/web_bundle_parser.mojom.h"
-
 namespace web_package {
 
 SignedWebBundleSignatureStackEntry::SignedWebBundleSignatureStackEntry(
     const std::vector<uint8_t>& complete_entry_cbor,
     const std::vector<uint8_t>& attributes_cbor,
-    const Ed25519PublicKey& public_key,
-    const Ed25519Signature& signature)
+    SignedWebBundleSignatureInfo signature_info)
     : complete_entry_cbor_(complete_entry_cbor),
       attributes_cbor_(attributes_cbor),
-      public_key_(public_key),
-      signature_(signature) {}
+      signature_info_(std::move(signature_info)) {}
 
 bool SignedWebBundleSignatureStackEntry::operator==(
     const SignedWebBundleSignatureStackEntry& other) const {
   return complete_entry_cbor_ == other.complete_entry_cbor_ &&
          attributes_cbor_ == other.attributes_cbor_ &&
-         public_key_ == other.public_key_ && signature_ == other.signature_;
+         signature_info_ == other.signature_info_;
 }
 
 bool SignedWebBundleSignatureStackEntry::operator!=(

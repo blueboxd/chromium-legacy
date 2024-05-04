@@ -6,6 +6,7 @@
 
 #include "base/check.h"
 #include "base/metrics/histogram_functions.h"
+#include "components/optimization_guide/core/model_execution/feature_keys.h"
 #include "components/optimization_guide/core/model_quality/model_quality_util.h"
 namespace optimization_guide {
 
@@ -23,10 +24,9 @@ ModelQualityLogEntry::~ModelQualityLogEntry() {
   // chrome is closed.
   bool uploaded_on_destruction = false;
   if (model_quality_uploader_service_ && log_ai_data_request_) {
-    proto::ModelExecutionFeature feature =
-        GetModelExecutionFeature(log_ai_data_request_->feature_case());
+    auto key = GetModelExecutionFeature(log_ai_data_request_->feature_case());
 
-    if (model_quality_uploader_service_->CanUploadLogs(feature)) {
+    if (key && model_quality_uploader_service_->CanUploadLogs(*key)) {
       // Set the system profile proto before upload. We do that here as we need
       // to access the API on //chrome.
       model_quality_uploader_service_->SetSystemProfileProto(

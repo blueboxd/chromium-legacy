@@ -33,6 +33,7 @@
 #include "third_party/blink/renderer/core/layout/layout_replaced.h"
 #include "third_party/blink/renderer/core/layout/pointer_events_hit_rules.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_container.h"
+#include "third_party/blink/renderer/core/layout/svg/svg_layout_info.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_resources.h"
 #include "third_party/blink/renderer/core/layout/svg/transform_helper.h"
 #include "third_party/blink/renderer/core/layout/svg/transformed_hit_test_location.h"
@@ -89,6 +90,8 @@ gfx::SizeF LayoutSVGImage::CalculateObjectSize() const {
   const SVGViewportResolver viewport_resolver(*this);
   gfx::Vector2dF style_size = VectorForLengthPair(
       StyleRef().Width(), StyleRef().Height(), viewport_resolver, StyleRef());
+  // TODO(https://crbug.com/313072): This needs a bit of work to support
+  // intrinsic keywords, calc-size(), etc. values for width and height.
   bool width_is_auto = style_size.x() < 0 || StyleRef().Width().IsAuto();
   bool height_is_auto = style_size.y() < 0 || StyleRef().Height().IsAuto();
   if (!width_is_auto && !height_is_auto)
@@ -145,29 +148,32 @@ bool LayoutSVGImage::UpdateBoundingBox() {
   return old_object_bounding_box != object_bounding_box_;
 }
 
-void LayoutSVGImage::UpdateLayout() {
+SVGLayoutResult LayoutSVGImage::UpdateSVGLayout(
+    const SVGLayoutInfo& layout_info) {
   NOT_DESTROYED();
   DCHECK(NeedsLayout());
 
   const bool bbox_changed = UpdateBoundingBox();
-  bool update_parent_boundaries = false;
+
+  SVGLayoutResult result;
   if (bbox_changed) {
-    update_parent_boundaries = true;
+    result.bounds_changed = true;
   }
-  if (UpdateAfterLayout(bbox_changed)) {
-    update_parent_boundaries = true;
+  if (UpdateAfterSVGLayout(layout_info, bbox_changed)) {
+    result.bounds_changed = true;
   }
 
-  // If our bounds changed, notify the parents.
-  if (update_parent_boundaries) {
-    LayoutSVGModelObject::SetNeedsBoundariesUpdate();
+  if (result.bounds_changed) {
+    DeprecatedInvalidateIntersectionObserverCachedRects();
   }
 
   DCHECK(!needs_transform_update_);
   ClearNeedsLayout();
+  return result;
 }
 
-bool LayoutSVGImage::UpdateAfterLayout(bool bbox_changed) {
+bool LayoutSVGImage::UpdateAfterSVGLayout(const SVGLayoutInfo& layout_info,
+                                          bool bbox_changed) {
   if (auto* svg_image_element = DynamicTo<SVGImageElement>(GetElement())) {
     media_element_parser_helpers::CheckUnsizedMediaViolation(
         this, svg_image_element->IsDefaultIntrinsicSize());
@@ -180,7 +186,8 @@ bool LayoutSVGImage::UpdateAfterLayout(bool bbox_changed) {
       SVGResourceInvalidator(*this).InvalidateEffects();
   }
   if (!needs_transform_update_ && transform_uses_reference_box_) {
-    needs_transform_update_ = CheckForImplicitTransformChange(bbox_changed);
+    needs_transform_update_ =
+        CheckForImplicitTransformChange(layout_info, bbox_changed);
     if (needs_transform_update_)
       SetNeedsPaintPropertyUpdate();
   }

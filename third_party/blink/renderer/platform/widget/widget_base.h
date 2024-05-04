@@ -124,7 +124,7 @@ class PLATFORM_EXPORT WidgetBase
 
   void AddPresentationCallback(
       uint32_t frame_token,
-      base::OnceCallback<void(base::TimeTicks)> callback);
+      base::OnceCallback<void(const viz::FrameTimingDetails&)> callback);
 
 #if BUILDFLAG(IS_APPLE)
   void AddCoreAnimationErrorCodeCallback(
@@ -136,6 +136,11 @@ class PLATFORM_EXPORT WidgetBase
   void GetWidgetInputHandler(
       mojo::PendingReceiver<mojom::blink::WidgetInputHandler> request,
       mojo::PendingRemote<mojom::blink::WidgetInputHandlerHost> host) override;
+  void ShowContextMenu(ui::mojom::blink::MenuSourceType source_type,
+                       const gfx::Point& location) override;
+  void BindInputTargetClient(
+      mojo::PendingReceiver<viz::mojom::blink::InputTargetClient> host)
+      override;
 
   // mojom::blink::Widget overrides:
   void ForceRedraw(mojom::blink::Widget::ForceRedrawCallback callback) override;

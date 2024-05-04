@@ -117,6 +117,40 @@ void PopulateDownloadWarningActions(download::DownloadItem* download,
       "SafeBrowsing.ClientSafeBrowsingReport.DownloadWarningActionSize",
       report->download_warning_actions_size());
 }
+
+std::unique_ptr<ClientSafeBrowsingReportRequest> CreateDownloadReport(
+    download::DownloadItem* download,
+    ClientSafeBrowsingReportRequest::ReportType report_type,
+    bool did_proceed,
+    std::optional<bool> show_download_in_folder) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  Profile* profile = Profile::FromBrowserContext(
+      content::DownloadItemUtils::GetBrowserContext(download));
+  auto report = std::make_unique<ClientSafeBrowsingReportRequest>();
+  report->set_type(report_type);
+  report->set_download_verdict(
+      DownloadProtectionService::GetDownloadProtectionVerdict(download));
+  report->set_url(download->GetURL().spec());
+  report->set_did_proceed(did_proceed);
+  if (show_download_in_folder.has_value()) {
+    report->set_show_download_in_folder(show_download_in_folder.value());
+  }
+  std::string token = DownloadProtectionService::GetDownloadPingToken(download);
+  if (!token.empty()) {
+    report->set_token(std::move(token));
+  }
+  if (IsExtendedReportingEnabled(*profile->GetPrefs())) {
+    PopulateDownloadWarningActions(download, report.get());
+    base::Time warning_first_shown_time =
+        DownloadItemWarningData::WarningFirstShownTime(download);
+    if (!warning_first_shown_time.is_null() &&
+        base::FeatureList::IsEnabled(kDownloadReportWithoutUserDecision)) {
+      report->set_warning_shown_timestamp_msec(
+          warning_first_shown_time.InMillisecondsSinceUnixEpoch());
+    }
+  }
+  return report;
+}
 #endif
 
 void OnGotCookies(
@@ -243,6 +277,10 @@ scoped_refptr<network::SharedURLLoaderFactory>
 SafeBrowsingService::GetURLLoaderFactory(
     content::BrowserContext* browser_context) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (url_loader_factory_for_testing_) {
+    return url_loader_factory_for_testing_;
+  }
+
   NetworkContextService* service =
       NetworkContextServiceFactory::GetForBrowserContext(browser_context);
   if (!service) {
@@ -498,27 +536,32 @@ bool SafeBrowsingService::SendDownloadReport(
     bool did_proceed,
     std::optional<bool> show_download_in_folder) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  auto report = CreateDownloadReport(download, report_type, did_proceed,
+                                     show_download_in_folder);
   Profile* profile = Profile::FromBrowserContext(
       content::DownloadItemUtils::GetBrowserContext(download));
-  auto report = std::make_unique<ClientSafeBrowsingReportRequest>();
-  report->set_type(report_type);
-  report->set_download_verdict(
-      DownloadProtectionService::GetDownloadProtectionVerdict(download));
-  report->set_url(download->GetURL().spec());
-  report->set_did_proceed(did_proceed);
-  if (show_download_in_folder) {
-    report->set_show_download_in_folder(show_download_in_folder.value());
-  }
-  std::string token = DownloadProtectionService::GetDownloadPingToken(download);
-  if (!token.empty()) {
-    report->set_token(token);
-  }
-  if (IsExtendedReportingEnabled(*profile->GetPrefs())) {
-    PopulateDownloadWarningActions(download, report.get());
-  }
   return ChromePingManagerFactory::GetForBrowserContext(profile)
              ->ReportThreatDetails(std::move(report)) ==
          PingManager::ReportThreatDetailsResult::SUCCESS;
+}
+
+bool SafeBrowsingService::PersistDownloadReportAndSendOnNextStartup(
+    download::DownloadItem* download,
+    ClientSafeBrowsingReportRequest::ReportType report_type,
+    bool did_proceed,
+    std::optional<bool> show_download_in_folder) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  auto report = CreateDownloadReport(download, report_type, did_proceed,
+                                     show_download_in_folder);
+  Profile* profile = Profile::FromBrowserContext(
+      content::DownloadItemUtils::GetBrowserContext(download));
+  PingManager::PersistThreatDetailsResult result =
+      ChromePingManagerFactory::GetForBrowserContext(profile)
+          ->PersistThreatDetailsAndReportOnNextStartup(std::move(report));
+  base::UmaHistogramEnumeration(
+      "SafeBrowsing.ClientSafeBrowsingReport.PersistDownloadReportResult",
+      result);
+  return result == PingManager::PersistThreatDetailsResult::kPersistTaskPosted;
 }
 
 bool SafeBrowsingService::SendPhishyInteractionsReport(
@@ -663,7 +706,7 @@ bool SafeBrowsingService::IsURLAllowlisted(
   resource.url = url;
   resource.original_url = url;
   resource.is_subresource = false;
-  resource.threat_type = SB_THREAT_TYPE_URL_PHISHING;
+  resource.threat_type = SBThreatType::SB_THREAT_TYPE_URL_PHISHING;
   const content::GlobalRenderFrameHostId primary_main_frame_id =
       primary_main_frame->GetGlobalId();
   resource.render_process_id = primary_main_frame_id.child_id;
@@ -675,8 +718,9 @@ bool SafeBrowsingService::IsURLAllowlisted(
 // don't leak it.
 class SafeBrowsingServiceFactoryImpl : public SafeBrowsingServiceFactory {
  public:
-  // TODO(crbug/925153): Once callers of this function are no longer downcasting
-  // it to the SafeBrowsingService, we can make this a scoped_refptr.
+  // TODO(crbug.com/41437292): Once callers of this function are no longer
+  // downcasting it to the SafeBrowsingService, we can make this a
+  // scoped_refptr.
   SafeBrowsingServiceInterface* CreateSafeBrowsingService() override {
     return new SafeBrowsingService();
   }

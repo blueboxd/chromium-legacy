@@ -4,6 +4,8 @@
 
 #import "ios/web/web_state/web_state_impl_realized_web_state.h"
 
+#import <string_view>
+
 #import "base/check.h"
 #import "base/compiler_specific.h"
 #import "base/functional/bind.h"
@@ -75,7 +77,7 @@ class WebStateImpl::RealizedWebState::PendingSession {
   // The WebStateStorage is only needed to implement SerializeToProto() while
   // the navigation history restoration is in progress for the legacy session
   // serialization logic.
-  // TODO(crbug.com/1383087): Remove it once the feature has launched.
+  // TODO(crbug.com/40245950): Remove it once the feature has launched.
   const proto::WebStateStorage storage_;
   const std::u16string page_title_;
   const GURL page_visible_url_;
@@ -387,7 +389,7 @@ bool WebStateImpl::RealizedWebState::HasWebUI() const {
 
 void WebStateImpl::RealizedWebState::HandleWebUIMessage(
     const GURL& source_url,
-    base::StringPiece message,
+    std::string_view message,
     const base::Value::List& args) {
   if (!HasWebUI()) {
     return;

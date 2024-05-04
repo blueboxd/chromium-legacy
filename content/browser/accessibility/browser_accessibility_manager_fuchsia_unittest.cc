@@ -10,22 +10,21 @@
 #include "content/browser/accessibility/browser_accessibility.h"
 #include "content/browser/accessibility/browser_accessibility_fuchsia.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
-#include "content/browser/accessibility/test_browser_accessibility_delegate.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/mojom/render_accessibility.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/ax_node_id_forward.h"
 #include "ui/accessibility/platform/ax_platform_tree_manager.h"
 #include "ui/accessibility/platform/ax_platform_tree_manager_delegate.h"
 #include "ui/accessibility/platform/fuchsia/accessibility_bridge_fuchsia.h"
 #include "ui/accessibility/platform/fuchsia/accessibility_bridge_fuchsia_registry.h"
+#include "ui/accessibility/platform/test_ax_platform_tree_manager_delegate.h"
 
 namespace content {
 namespace {
 
 class MockBrowserAccessibilityDelegate
-    : public TestBrowserAccessibilityDelegate {
+    : public ui::TestAXPlatformTreeManagerDelegate {
  public:
   void AccessibilityPerformAction(const ui::AXActionData& data) override {
     last_action_data_ = data;
@@ -175,7 +174,8 @@ TEST_F(BrowserAccessibilityManagerFuchsiaTest, TestEmitNodeUpdates) {
               static_cast<uint32_t>(node_1->GetFuchsiaNodeID()));
 
     const auto& node_deletions = mock_accessibility_bridge_->node_deletions();
-    EXPECT_TRUE(node_deletions.empty());
+    // The initial empty document root is the only node that was deleted.
+    EXPECT_EQ(node_deletions.size(), 1u);
   }
 
   // Send another update for node 1, and verify that it was passed to the
@@ -228,7 +228,8 @@ TEST_F(BrowserAccessibilityManagerFuchsiaTest, TestDeleteNodes) {
   // Verify that no deletions were received.
   {
     const auto& node_deletions = mock_accessibility_bridge_->node_deletions();
-    EXPECT_TRUE(node_deletions.empty());
+    // Only the initial empty document root has been deleted.
+    EXPECT_EQ(node_deletions.size(), 1u);
   }
 
   // Get the fuchsia IDs for nodes 1 and 2 before they are deleted.
@@ -251,8 +252,9 @@ TEST_F(BrowserAccessibilityManagerFuchsiaTest, TestDeleteNodes) {
   // Verify that the accessibility bridge received a deletion for node 2.
   {
     const auto& node_deletions = mock_accessibility_bridge_->node_deletions();
-    ASSERT_EQ(node_deletions.size(), 1u);
-    EXPECT_EQ(node_deletions[0], static_cast<uint32_t>(node_2_fuchsia_id));
+    // The initial empty document root has also been deleted, ignore that.
+    ASSERT_EQ(node_deletions.size(), 2u);
+    EXPECT_EQ(node_deletions[1], static_cast<uint32_t>(node_2_fuchsia_id));
   }
 
   // Destroy manager. Doing so should force the remainder of the tree to be
@@ -262,8 +264,10 @@ TEST_F(BrowserAccessibilityManagerFuchsiaTest, TestDeleteNodes) {
   // Verify that the accessibility bridge received a deletion for node 1.
   {
     const auto& node_deletions = mock_accessibility_bridge_->node_deletions();
-    ASSERT_EQ(node_deletions.size(), 2u);
-    EXPECT_EQ(node_deletions[1], node_1_fuchsia_id);
+    // The initial empty document root has also been deleted, ignore that as
+    // well as the previous node that had been deleted.
+    ASSERT_EQ(node_deletions.size(), 3u);
+    EXPECT_EQ(node_deletions[2], node_1_fuchsia_id);
   }
 }
 
@@ -288,11 +292,15 @@ TEST_F(BrowserAccessibilityManagerFuchsiaTest, TestLocationChange) {
   }
 
   // Send location update for node 2.
-  std::vector<blink::mojom::LocationChangesPtr> changes;
+  std::vector<ui::AXLocationChanges> changes;
   ui::AXRelativeBounds relative_bounds;
   relative_bounds.bounds =
       gfx::RectF(/*x=*/1, /*y=*/2, /*width=*/3, /*height=*/4);
-  changes.push_back(blink::mojom::LocationChanges::New(2, relative_bounds));
+  ui::AXLocationChanges change;
+  change.id = 2;
+  change.ax_tree_id = tree_id;
+  change.new_location = relative_bounds;
+  changes.push_back(change);
   manager_->OnLocationChanges(std::move(changes));
 
   {
@@ -348,7 +356,7 @@ TEST_F(BrowserAccessibilityManagerFuchsiaTest, TestFocusChange) {
   // Set focus to node 1, and check that the focus was updated from null to
   // node 1.
   {
-    AXEventNotificationDetails event;
+    ui::AXUpdatesAndEvents event;
     ui::AXTreeUpdate updated_state;
     updated_state.tree_data.tree_id = tree_id;
     updated_state.has_tree_data = true;
@@ -373,7 +381,7 @@ TEST_F(BrowserAccessibilityManagerFuchsiaTest, TestFocusChange) {
   // Set focus to node 2, and check that focus was updated from node 1 to node
   // 2.
   {
-    AXEventNotificationDetails event;
+    ui::AXUpdatesAndEvents event;
     ui::AXTreeUpdate updated_state;
     updated_state.tree_data.tree_id = tree_id;
     updated_state.has_tree_data = true;

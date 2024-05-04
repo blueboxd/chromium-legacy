@@ -4,6 +4,7 @@
 
 #include "services/image_annotation/annotator.h"
 
+#include <string_view>
 #include <tuple>
 #include <utility>
 #include <vector>
@@ -537,7 +538,7 @@ void Annotator::AnnotateImage(
   local_processors_.insert(
       {request_key, &request_info_list.back().image_processor});
 
-  // TODO(crbug.com/916420): first query the public result cache by URL to
+  // TODO(crbug.com/41432508): first query the public result cache by URL to
   // improve latency.
 
   request_info_list.back().image_processor->GetJpgImageData(base::BindOnce(
@@ -585,10 +586,10 @@ std::string Annotator::FormatJsonRequest(
   for (std::deque<ServerRequestInfo>::iterator it = begin; it != end; ++it) {
     // Re-encode image bytes into base64, which can be represented in JSON.
     std::string base64_data = base::Base64Encode(
-        base::StringPiece(reinterpret_cast<const char*>(it->image_bytes.data()),
-                          it->image_bytes.size()));
+        std::string_view(reinterpret_cast<const char*>(it->image_bytes.data()),
+                         it->image_bytes.size()));
 
-    // TODO(crbug.com/916420): accept and propagate page language info to
+    // TODO(crbug.com/41432508): accept and propagate page language info to
     //                         improve OCR accuracy.
     base::Value::Dict ocr_engine_params;
     ocr_engine_params.Set("ocrParameters", base::Value::Dict());
@@ -854,7 +855,7 @@ void Annotator::ProcessResults(
                                    : ClientResult::kFailed;
 
     // Notify clients of success or failure.
-    // TODO(crbug.com/916420): explore server retry strategies.
+    // TODO(crbug.com/41432508): explore server retry strategies.
     for (auto& info : request_info_it->second) {
       std::move(info.callback).Run(image_result.Clone());
       ReportClientResult(client_result);

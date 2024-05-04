@@ -15,7 +15,7 @@
 #include "chrome/browser/favicon/favicon_utils.h"
 #include "chrome/browser/feature_engagement/tracker_factory.h"
 #include "chrome/browser/image_fetcher/image_fetcher_service_factory.h"
-#include "chrome/browser/image_service/image_service_factory.h"
+#include "chrome/browser/page_image_service/image_service_factory.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_key.h"
@@ -35,6 +35,7 @@
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/bookmarks/common/bookmark_metrics.h"
 #include "components/commerce/core/commerce_feature_list.h"
+#include "components/commerce/core/metrics/metrics_utils.h"
 #include "components/commerce/core/price_tracking_utils.h"
 #include "components/commerce/core/shopping_service.h"
 #include "components/feature_engagement/public/feature_constants.h"
@@ -139,16 +140,15 @@ base::OnceCallback<void()> CreatePriceTrackingEmailCallback(
   }
 
   base::OnceCallback<void()> show_dialog_callback = base::BindOnce(
-      [](content::WebContents* web_contents, Profile* profile,
+      [](base::WeakPtr<content::WebContents> web_contents, Profile* profile,
          views::View* anchor) {
         if (!web_contents || !profile || !anchor) {
           return;
         }
-        PriceTrackingEmailDialogCoordinator(anchor).Show(web_contents, profile,
-                                                         base::DoNothing());
+        PriceTrackingEmailDialogCoordinator(anchor).Show(
+            web_contents.get(), profile, base::DoNothing());
       },
-      // TODO(crbug.com/1380714): Remove `UnsafeDanglingUntriaged`
-      base::UnsafeDanglingUntriaged(web_contents), profile, anchor_view);
+      web_contents->GetWeakPtr(), profile, anchor_view);
 
   return base::BindOnce(
       [](Profile* profile, const bookmarks::BookmarkNode* node,
@@ -239,7 +239,8 @@ class BookmarkBubbleView::BookmarkBubbleDelegate
     const bookmarks::BookmarkNode* node =
         model->GetMostRecentlyAddedUserNodeForURL(url_);
     if (node)
-      model->Remove(node, bookmarks::metrics::BookmarkEditSource::kUser);
+      model->Remove(node, bookmarks::metrics::BookmarkEditSource::kUser,
+                    FROM_HERE);
 
     return true;
   }
@@ -428,9 +429,7 @@ void BookmarkBubbleView::ShowBubble(
                               base::Unretained(bubble_delegate)),
           ui::DialogModel::Button::Params()
               .SetLabel(secondary_button_label)
-              .SetStyle(features::IsChromeRefresh2023()
-                            ? ui::ButtonStyle::kTonal
-                            : ui::ButtonStyle::kDefault)
+              .SetStyle(ui::ButtonStyle::kTonal)
               .AddAccelerator(ui::Accelerator(ui::VKEY_R, ui::EF_ALT_DOWN))
               .SetId(kBookmarkSecondaryButtonId));
 
@@ -492,6 +491,16 @@ void BookmarkBubbleView::ShowBubble(
                                                 product_info.value()),
             views::BubbleDialogModelHost::FieldType::kControl),
         kPriceTrackingBookmarkViewElementId);
+
+    // When a user clicks to open bookmark bubble for a product page that is
+    // neither price tracked nor bookmarked, user will track the price of the
+    // product, and we'll record the UKM for this event.
+    // TODO(b/331277578): Move the track-by-default logic here.
+    if (!is_price_tracked && !already_bookmarked) {
+      commerce::metrics::RecordShoppingActionUKM(
+          web_contents->GetPrimaryMainFrame()->GetPageUkmSourceId(),
+          commerce::metrics::ShoppingAction::kPriceTracked);
+    }
   }
 
   // views:: land below, there's no agnostic reference to arrow / anchors /

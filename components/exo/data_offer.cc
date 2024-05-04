@@ -4,6 +4,7 @@
 
 #include "components/exo/data_offer.h"
 
+#include <iterator>
 #include <memory>
 #include <utility>
 #include <vector>
@@ -251,15 +252,21 @@ void DataOffer::SetDropData(DataExchangeDelegate* data_exchange_delegate,
   // We accept the filenames pickle from FilesApp, or
   // OSExchangeData::GetFilenames().
   std::vector<ui::FileInfo> filenames;
-  base::Pickle pickle;
-  if (data.GetPickledData(ui::ClipboardFormatType::WebCustomDataType(),
-                          &pickle)) {
+  if (std::optional<base::Pickle> pickle =
+          data.GetPickledData(ui::ClipboardFormatType::WebCustomDataType());
+      pickle.has_value()) {
     filenames = data_exchange_delegate->ParseFileSystemSources(data.GetSource(),
-                                                               pickle);
+                                                               pickle.value());
   }
+
   if (filenames.empty() && data.HasFile()) {
-    data.GetFilenames(&filenames);
+    if (std::optional<std::vector<ui::FileInfo>> file_info =
+            data.GetFilenames();
+        file_info.has_value()) {
+      std::ranges::move(file_info.value(), std::back_inserter(filenames));
+    }
   }
+
   if (!filenames.empty()) {
     data_callbacks_.emplace(
         uri_list_mime_type,
@@ -270,23 +277,23 @@ void DataOffer::SetDropData(DataExchangeDelegate* data_exchange_delegate,
     return;
   }
 
-  if (data.GetPickledData(GetClipboardFormatType(), &pickle) &&
-      data_exchange_delegate->HasUrlsInPickle(pickle)) {
+  if (std::optional<base::Pickle> pickle =
+          data.GetPickledData(GetClipboardFormatType());
+      pickle.has_value() &&
+      data_exchange_delegate->HasUrlsInPickle(pickle.value())) {
     data_callbacks_.emplace(
         uri_list_mime_type,
         base::BindOnce(&SecurityDelegate::SendPickle,
                        base::Unretained(delegate_->GetSecurityDelegate()),
-                       endpoint_type, pickle));
+                       endpoint_type, pickle.value()));
     delegate_->OnOffer(uri_list_mime_type);
     return;
   }
 
-  base::FilePath file_contents_filename;
-  std::string file_contents;
-  if (data.provider().HasFileContents() &&
-      data.provider().GetFileContents(&file_contents_filename,
-                                      &file_contents)) {
-    std::string filename = file_contents_filename.value();
+  if (std::optional<ui::OSExchangeDataProvider::FileContentsInfo>
+          file_contents = data.provider().GetFileContents();
+      file_contents.has_value()) {
+    std::string filename = file_contents->filename.value();
     base::ReplaceChars(filename, "\\", "\\\\", &filename);
     base::ReplaceChars(filename, "\"", "\\\"", &filename);
     const std::string mime_type =
@@ -296,21 +303,22 @@ void DataOffer::SetDropData(DataExchangeDelegate* data_exchange_delegate,
            DataOffer::SendDataCallback callback) {
           std::move(callback).Run(std::move(contents));
         },
-        base::MakeRefCounted<base::RefCountedString>(std::move(file_contents)));
+        base::MakeRefCounted<base::RefCountedString>(
+            std::move(file_contents->file_contents)));
 
     data_callbacks_.emplace(mime_type, std::move(callback));
     delegate_->OnOffer(mime_type);
   }
 
-  std::u16string string_content;
-  if (data.HasString() && data.GetString(&string_content)) {
+  if (std::optional<std::u16string> string_content = data.GetString();
+      string_content.has_value()) {
     const std::string utf8_mime_type = std::string(ui::kMimeTypeTextUtf8);
     data_callbacks_.emplace(
-        utf8_mime_type, AsyncEncodeAsRefCountedString(string_content, kUTF8));
+        utf8_mime_type, AsyncEncodeAsRefCountedString(*string_content, kUTF8));
     delegate_->OnOffer(utf8_mime_type);
     const std::string utf16_mime_type = std::string(kTextMimeTypeUtf16);
-    data_callbacks_.emplace(
-        utf16_mime_type, AsyncEncodeAsRefCountedString(string_content, kUTF16));
+    data_callbacks_.emplace(utf16_mime_type, AsyncEncodeAsRefCountedString(
+                                                 *string_content, kUTF16));
     delegate_->OnOffer(utf16_mime_type);
     const std::string text_plain_mime_type = std::string(ui::kMimeTypeText);
     // The MIME type standard says that new text/ subtypes should default to a
@@ -318,22 +326,23 @@ void DataOffer::SetDropData(DataExchangeDelegate* data_exchange_delegate,
     // the default. Nonetheless, we use UTF8 here because it is a superset of
     // ASCII and the defacto standard text encoding.
     data_callbacks_.emplace(text_plain_mime_type, AsyncEncodeAsRefCountedString(
-                                                      string_content, kUTF8));
+                                                      *string_content, kUTF8));
     delegate_->OnOffer(text_plain_mime_type);
   }
 
-  std::u16string html_content;
-  GURL url_content;
-  if (data.HasHtml() && data.GetHtml(&html_content, &url_content)) {
+  if (std::optional<ui::OSExchangeData::HtmlInfo> html_content = data.GetHtml();
+      html_content.has_value()) {
     const std::string utf8_html_mime_type = std::string(ui::kMimeTypeHTMLUtf8);
-    data_callbacks_.emplace(utf8_html_mime_type,
-                            AsyncEncodeAsRefCountedString(html_content, kUTF8));
+    data_callbacks_.emplace(
+        utf8_html_mime_type,
+        AsyncEncodeAsRefCountedString(html_content->html, kUTF8));
     delegate_->OnOffer(utf8_html_mime_type);
 
     const std::string utf16_html_mime_type =
         std::string(kTextHtmlMimeTypeUtf16);
-    data_callbacks_.emplace(utf16_html_mime_type, AsyncEncodeAsRefCountedString(
-                                                      html_content, kUTF16));
+    data_callbacks_.emplace(
+        utf16_html_mime_type,
+        AsyncEncodeAsRefCountedString(html_content->html, kUTF16));
     delegate_->OnOffer(utf16_html_mime_type);
   }
 }

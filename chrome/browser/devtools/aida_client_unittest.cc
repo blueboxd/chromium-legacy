@@ -8,9 +8,14 @@
 #include <utility>
 
 #include "base/functional/bind.h"
+#include "base/memory/raw_ptr.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "build/branding_buildflags.h"
+#include "chrome/browser/browser_features.h"
 #include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/signin/public/identity_manager/account_capabilities_test_mutator.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"
@@ -35,9 +40,24 @@ class AidaClientTest : public testing::Test {
         identity_test_env_(identity_test_env_adaptor_->identity_test_env()) {
     content::GetNetworkService();
     content::RunAllPendingInMessageLoop(content::BrowserThread::IO);
+  }
 
-    identity_test_env_->MakePrimaryAccountAvailable(
+  void SetUp() override {
+    profile_->GetPrefs()->SetInteger(prefs::kDevToolsGenAiSettings, 0);
+    feature_list_.InitWithFeatures(
+        /*enabled_features=*/{::features::kDevToolsConsoleInsights,
+                              ::features::
+                                  kDevToolsConsoleInsightsSettingVisible},
+        /*disabled_features=*/{});
+
+    auto account_info = identity_test_env_->MakePrimaryAccountAvailable(
         kEmail, signin::ConsentLevel::kSync);
+    AccountCapabilitiesTestMutator mutator(&account_info.capabilities);
+    mutator.set_can_use_devtools_generative_ai_features(true);
+    signin::UpdateAccountInfoForAccount(identity_test_env_->identity_manager(),
+                                        account_info);
+    task_environment_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
  protected:
@@ -46,8 +66,9 @@ class AidaClientTest : public testing::Test {
   std::unique_ptr<TestingProfile> profile_;
   std::unique_ptr<IdentityTestEnvironmentProfileAdaptor>
       identity_test_env_adaptor_;
-  signin::IdentityTestEnvironment* identity_test_env_;
+  raw_ptr<signin::IdentityTestEnvironment> identity_test_env_;
   base::HistogramTester histogram_tester_;
+  base::test::ScopedFeatureList feature_list_;
 };
 
 class Delegate {
@@ -110,6 +131,59 @@ TEST_F(AidaClientTest, FailsIfNotAuthorized) {
       absl::get<std::string>(delegate.response_));
 }
 
+TEST_F(AidaClientTest, NotAvailableIfFeatureDisabled) {
+  auto blocked_reason = AidaClient::CanUseAida(profile_.get());
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  EXPECT_FALSE(blocked_reason.blocked);
+  EXPECT_FALSE(blocked_reason.blocked_by_feature_flag);
+#else
+  EXPECT_TRUE(blocked_reason.blocked);
+  EXPECT_TRUE(blocked_reason.blocked_by_feature_flag);
+#endif
+  EXPECT_FALSE(blocked_reason.blocked_by_age);
+  EXPECT_FALSE(blocked_reason.blocked_by_enterprise_policy);
+  EXPECT_FALSE(blocked_reason.blocked_by_geo);
+  feature_list_.Reset();
+  feature_list_.InitAndDisableFeature(::features::kDevToolsConsoleInsights);
+  blocked_reason = AidaClient::CanUseAida(profile_.get());
+  EXPECT_TRUE(blocked_reason.blocked);
+  EXPECT_TRUE(blocked_reason.blocked_by_feature_flag);
+  EXPECT_FALSE(blocked_reason.blocked_by_age);
+  EXPECT_FALSE(blocked_reason.blocked_by_enterprise_policy);
+  EXPECT_FALSE(blocked_reason.blocked_by_geo);
+}
+
+TEST_F(AidaClientTest, NotAvailableIfCapabilityFalse) {
+  auto blocked_reason = AidaClient::CanUseAida(profile_.get());
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  EXPECT_FALSE(blocked_reason.blocked);
+  EXPECT_FALSE(blocked_reason.blocked_by_feature_flag);
+#else
+  EXPECT_TRUE(blocked_reason.blocked);
+  EXPECT_TRUE(blocked_reason.blocked_by_feature_flag);
+#endif
+  EXPECT_FALSE(blocked_reason.blocked_by_age);
+  EXPECT_FALSE(blocked_reason.blocked_by_enterprise_policy);
+  EXPECT_FALSE(blocked_reason.blocked_by_geo);
+  auto account_info = identity_test_env_->identity_manager()
+                          ->FindExtendedAccountInfoByEmailAddress(kEmail);
+  AccountCapabilitiesTestMutator mutator(&account_info.capabilities);
+  mutator.set_can_use_devtools_generative_ai_features(false);
+  signin::UpdateAccountInfoForAccount(identity_test_env_->identity_manager(),
+                                      account_info);
+  blocked_reason = AidaClient::CanUseAida(profile_.get());
+  EXPECT_TRUE(blocked_reason.blocked);
+  EXPECT_FALSE(blocked_reason.blocked_by_enterprise_policy);
+  EXPECT_FALSE(blocked_reason.blocked_by_geo);
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  EXPECT_FALSE(blocked_reason.blocked_by_feature_flag);
+  EXPECT_TRUE(blocked_reason.blocked_by_age);
+#else
+  EXPECT_TRUE(blocked_reason.blocked_by_feature_flag);
+  EXPECT_FALSE(blocked_reason.blocked_by_age);
+#endif
+}
+
 TEST_F(AidaClientTest, Succeeds) {
   base::RunLoop run_loop;
   Delegate delegate;
@@ -125,7 +199,7 @@ TEST_F(AidaClientTest, Succeeds) {
           std::string() /*id_token*/, signin::ScopeSet{kScope});
   run_loop.Run();
 
-  EXPECT_EQ(kEndpointUrl, delegate.url_);
+  EXPECT_EQ(kEndpointUrlWithPath, delegate.url_);
 }
 
 TEST_F(AidaClientTest, ReusesOAuthToken) {

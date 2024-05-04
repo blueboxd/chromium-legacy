@@ -15,16 +15,21 @@
 #import "base/functional/callback.h"
 #import "base/metrics/histogram_functions.h"
 #import "base/strings/sys_string_conversions.h"
+#import "base/strings/utf_string_conversions.h"
 #import "components/sessions/core/session_id.h"
 #import "components/sessions/core/session_id_generator.h"
 #import "ios/chrome/browser/sessions/features.h"
 #import "ios/chrome/browser/sessions/proto/storage.pb.h"
+#import "ios/chrome/browser/sessions/proto/tab_group.pb.h"
 #import "ios/chrome/browser/sessions/session_constants.h"
+#import "ios/chrome/browser/sessions/session_tab_group.h"
 #import "ios/chrome/browser/sessions/session_window_ios.h"
+#import "ios/chrome/browser/sessions/tab_group_util.h"
 #import "ios/chrome/browser/shared/model/url/chrome_url_constants.h"
 #import "ios/chrome/browser/shared/model/web_state_list/order_controller.h"
 #import "ios/chrome/browser/shared/model/web_state_list/order_controller_source_from_web_state_list.h"
 #import "ios/chrome/browser/shared/model/web_state_list/removing_indexes.h"
+#import "ios/chrome/browser/shared/model/web_state_list/tab_group.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_opener.h"
 #import "ios/web/public/navigation/navigation_manager.h"
@@ -32,6 +37,8 @@
 #import "ios/web/public/session/crw_session_user_data.h"
 #import "ios/web/public/session/serializable_user_data_manager.h"
 #import "ios/web/public/web_state.h"
+
+using tab_group_util::DeserializedGroup;
 
 namespace {
 
@@ -130,6 +137,12 @@ class Deserializer {
 
   // Creates and return the WebState at `index`.
   virtual std::unique_ptr<web::WebState> RestoreTabAt(int index) const = 0;
+
+  // Returns the total number of tab groups in the serialized state.
+  virtual int GetTabGroupsCount() const = 0;
+
+  // Returns the deserisalized tab group at `index`.
+  virtual DeserializedGroup GetDeserializedGroupAt(int index) const = 0;
 };
 
 // An implementation of Deserializer used to restore from legacy storage.
@@ -144,6 +157,8 @@ class DeserializeFromSessionWindow : public Deserializer {
   int GetRestoredPinnedTabsCount() const override;
   OpenerReference GetOpenerForTabAt(int index) const override;
   std::unique_ptr<web::WebState> RestoreTabAt(int index) const override;
+  int GetTabGroupsCount() const override;
+  DeserializedGroup GetDeserializedGroupAt(int index) const override;
 
  private:
   SessionWindowIOS* const session_window_;
@@ -215,6 +230,17 @@ std::unique_ptr<web::WebState> DeserializeFromSessionWindow::RestoreTabAt(
   return factory_.Run(session_window_.sessions[index]);
 }
 
+int DeserializeFromSessionWindow::GetTabGroupsCount() const {
+  return session_window_.tabGroups.count;
+}
+
+DeserializedGroup DeserializeFromSessionWindow::GetDeserializedGroupAt(
+    int index) const {
+  DCHECK_GE(index, 0);
+  DCHECK_LT(index, static_cast<int>(session_window_.tabGroups.count));
+  return tab_group_util::FromSerializedValue(session_window_.tabGroups[index]);
+}
+
 // An implementation of Deserializer used to restore from optimized storage.
 class DeserializeFromProto : public Deserializer {
  public:
@@ -227,6 +253,8 @@ class DeserializeFromProto : public Deserializer {
   int GetRestoredPinnedTabsCount() const override;
   OpenerReference GetOpenerForTabAt(int index) const override;
   std::unique_ptr<web::WebState> RestoreTabAt(int index) const override;
+  int GetTabGroupsCount() const override;
+  DeserializedGroup GetDeserializedGroupAt(int index) const override;
 
  private:
   ios::proto::WebStateListStorage const storage_;
@@ -277,11 +305,21 @@ std::unique_ptr<web::WebState> DeserializeFromProto::RestoreTabAt(
       item_storage.metadata());
 }
 
+int DeserializeFromProto::GetTabGroupsCount() const {
+  return storage_.groups_size();
+}
+
+DeserializedGroup DeserializeFromProto::GetDeserializedGroupAt(
+    int index) const {
+  return tab_group_util::FromSerializedValue(storage_.groups(index));
+}
+
 // Helper function that deserialize into a WebStateList using a deserializer.
 // Used by the two implementation of `DeserializeWebStateList(...)`.
 std::vector<web::WebState*> DeserializeWebStateListInternal(
     WebStateList* web_state_list,
     bool enable_pinned_web_states,
+    bool enable_tab_groups,
     const Deserializer& deserializer) {
   DCHECK(web_state_list);
   DCHECK(web_state_list->empty());
@@ -361,6 +399,25 @@ std::vector<web::WebState*> DeserializeWebStateListInternal(
         index, WebStateOpener(opener, ref.navigation_index));
   }
 
+  // Deserialize and create tab groups.
+  if (enable_tab_groups) {
+    const int tab_group_count = deserializer.GetTabGroupsCount();
+    for (int i = 0; i < tab_group_count; ++i) {
+      DeserializedGroup group = deserializer.GetDeserializedGroupAt(i);
+      if (group.range_start < restored_pinned_tabs_count ||
+          group.range_start > restored_tabs_count) {
+        continue;
+      }
+      if (group.range_count <= 0 ||
+          group.range_start + group.range_count > restored_tabs_count) {
+        continue;
+      }
+      web_state_list->CreateGroup(
+          TabGroupRange(group.range_start, group.range_count).AsSet(),
+          group.visual_data);
+    }
+  }
+
   return restored_web_states;
 }
 
@@ -427,7 +484,26 @@ SessionWindowIOS* SerializeWebStateList(const WebStateList* web_state_list) {
                                  ? static_cast<NSUInteger>(active_index)
                                  : static_cast<NSUInteger>(NSNotFound);
 
+  NSMutableArray<SessionTabGroup*>* serialized_groups =
+      [[NSMutableArray alloc] init];
+  for (const TabGroup* group : web_state_list->GetGroups()) {
+    const TabGroupRange initial_range = group->range();
+    const TabGroupRange final_range =
+        removing_indexes.RangeAfterRemoval(initial_range);
+    if (final_range.valid()) {
+      SessionTabGroup* serialized_group = [[SessionTabGroup alloc]
+          initWithRangeStart:final_range.range_begin()
+                  rangeCount:final_range.count()
+                       title:base::SysUTF16ToNSString(
+                                 group->visual_data().title())
+                     colorId:static_cast<NSInteger>(
+                                 group->visual_data().color())];
+      [serialized_groups addObject:serialized_group];
+    }
+  }
+
   return [[SessionWindowIOS alloc] initWithSessions:[serialized_session copy]
+                                          tabGroups:[serialized_groups copy]
                                       selectedIndex:selectedIndex];
 }
 
@@ -480,6 +556,23 @@ void SerializeWebStateList(const WebStateList& web_state_list,
     opener_storage.set_navigation_index(opener.navigation_index);
   }
 
+  for (const TabGroup* group : web_state_list.GetGroups()) {
+    const TabGroupRange initial_range = group->range();
+    const TabGroupRange final_range =
+        removing_indexes.RangeAfterRemoval(initial_range);
+    if (final_range.valid()) {
+      ios::proto::TabGroupStorage& group_storage = *storage.add_groups();
+      ios::proto::RangeIndex& range = *group_storage.mutable_range();
+
+      range.set_start(final_range.range_begin());
+      range.set_count(final_range.count());
+
+      group_storage.set_title(base::UTF16ToUTF8(group->visual_data().title()));
+      group_storage.set_color(
+          tab_group_util::ColorForStorage(group->visual_data().color()));
+    }
+  }
+
   DCHECK_LE(removed_pinned_tabs_count, pinned_tabs_count);
   storage.set_pinned_item_count(pinned_tabs_count - removed_pinned_tabs_count);
 
@@ -496,9 +589,10 @@ std::vector<web::WebState*> DeserializeWebStateList(
     WebStateList* web_state_list,
     SessionWindowIOS* session_window,
     bool enable_pinned_web_states,
+    bool enable_tab_groups,
     const WebStateFactory& factory) {
   return DeserializeWebStateListInternal(
-      web_state_list, enable_pinned_web_states,
+      web_state_list, enable_pinned_web_states, enable_tab_groups,
       DeserializeFromSessionWindow(session_window, factory));
 }
 
@@ -506,8 +600,9 @@ std::vector<web::WebState*> DeserializeWebStateList(
     WebStateList* web_state_list,
     ios::proto::WebStateListStorage storage,
     bool enable_pinned_web_states,
+    bool enable_tab_groups,
     const WebStateFactoryFromProto& factory) {
   return DeserializeWebStateListInternal(
-      web_state_list, enable_pinned_web_states,
+      web_state_list, enable_pinned_web_states, enable_tab_groups,
       DeserializeFromProto(std::move(storage), factory));
 }

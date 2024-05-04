@@ -5,24 +5,38 @@
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/tab_groups/tab_group_coordinator.h"
 
 #import "base/check.h"
+#import "base/metrics/user_metrics.h"
+#import "ios/chrome/browser/iph_for_new_chrome_user/model/tab_based_iph_browser_agent.h"
 #import "ios/chrome/browser/shared/model/browser/browser.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/shared/model/web_state_list/tab_group.h"
 #import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
-#import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/base_grid_view_controller.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/tab_groups/tab_group_grid_view_controller.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/tab_groups/tab_group_mediator.h"
-#import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/tab_groups/tab_group_transition_delegate.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/tab_groups/tab_group_positioner.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/tab_groups/tab_group_view_controller.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/tab_groups/tab_groups_commands.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_context_menu/tab_context_menu_helper.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_idle_status_handler.h"
+#import "ios/web/public/web_state_id.h"
+
+namespace {
+constexpr CGFloat kTabGroupPresentationDuration = 0.3;
+constexpr CGFloat kTabGroupDismissalDuration = 0.25;
+constexpr CGFloat kTabGroupBackgroundElementDurationFactor = 0.75;
+}  // namespace
+
+@interface TabGroupCoordinator () <GridViewControllerDelegate>
+@end
 
 @implementation TabGroupCoordinator {
   // Mediator for tab groups.
   TabGroupMediator* _mediator;
   // View controller for tab groups.
   TabGroupViewController* _viewController;
-  // Transition delegate for the animation to show/hide a Tab Group.
-  TabGroupTransitionDelegate* _transitionDelegate;
+  // Context Menu helper for the tabs.
+  TabContextMenuHelper* _tabContextMenuHelper;
   // Tab group to display.
   const TabGroup* _tabGroup;
 }
@@ -32,19 +46,24 @@
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
                                    browser:(Browser*)browser
                                   tabGroup:(const TabGroup*)tabGroup {
-  CHECK(base::FeatureList::IsEnabled(kTabGroupsInGrid))
+  CHECK(IsTabGroupInGridEnabled())
       << "You should not be able to create a tab group coordinator outside the "
          "Tab Groups experiment.";
   CHECK(tabGroup) << "You need to pass a tab group in order to display it.";
   self = [super initWithBaseViewController:viewController browser:browser];
   if (self) {
     _tabGroup = tabGroup;
+    _animatedPresentation = YES;
   }
   return self;
 }
 
 - (UIViewController*)viewController {
   return _viewController;
+}
+
+- (void)stopChildCoordinators {
+  [_viewController.gridViewController dismissModals];
 }
 
 #pragma mark - ChromeCoordinator
@@ -57,30 +76,236 @@
            lightTheme:!self.browser->GetBrowserState()->IsOffTheRecord()
              tabGroup:_tabGroup];
 
+  _viewController.gridViewController.delegate = self;
+
   _mediator = [[TabGroupMediator alloc]
       initWithWebStateList:self.browser->GetWebStateList()
+                  tabGroup:_tabGroup->GetWeakPtr()
                   consumer:_viewController
               gridConsumer:_viewController.gridViewController];
   _mediator.browser = self.browser;
+  _mediator.tabGroupsHandler = handler;
+  _mediator.tabBasedIPHBrowserAgent =
+      TabBasedIPHBrowserAgent::FromBrowser(self.browser);
+  _mediator.tabGridIdleStatusHandler = self.tabGridIdleStatusHandler;
+
+  _tabContextMenuHelper = [[TabContextMenuHelper alloc]
+        initWithBrowserState:self.browser->GetBrowserState()
+      tabContextMenuDelegate:self.tabContextMenuDelegate];
 
   _viewController.mutator = _mediator;
   _viewController.gridViewController.mutator = _mediator;
+  _viewController.gridViewController.menuProvider = _tabContextMenuHelper;
+  _viewController.gridViewController.dragDropHandler = _mediator;
 
-  _viewController.modalPresentationStyle = UIModalPresentationCustom;
-  _transitionDelegate = [[TabGroupTransitionDelegate alloc]
-      initWithTabGroupViewController:_viewController];
-  _viewController.transitioningDelegate = _transitionDelegate;
-  [self.baseViewController presentViewController:_viewController
-                                        animated:YES
-                                      completion:nil];
+  [self displayViewControllerAnimated:self.animatedPresentation];
 }
 
 - (void)stop {
   _mediator = nil;
+  _tabContextMenuHelper = nil;
 
-  // TODO(crbug.com/1501837): Make the hide tab group animation.
-  [_viewController dismissViewControllerAnimated:YES completion:nil];
+  [self hideViewControllerAnimated:YES];
+
   _viewController = nil;
+}
+
+#pragma mark - Animation helpers
+
+- (void)displayViewControllerAnimated:(BOOL)animated {
+  CHECK(_viewController);
+
+  [self.baseViewController addChildViewController:_viewController];
+
+  UIView* viewAbove = [self.tabGroupPositioner viewAboveTabGroup];
+  _viewController.view.frame = self.baseViewController.view.bounds;
+  if (viewAbove && viewAbove.superview) {
+    [self.baseViewController.view insertSubview:_viewController.view
+                                   belowSubview:viewAbove];
+  } else {
+    [self.baseViewController.view addSubview:_viewController.view];
+  }
+  [_viewController fadeBlurIn];
+  [_viewController didMoveToParentViewController:self.baseViewController];
+
+  if (!animated) {
+    [_viewController contentWillAppearAnimated:NO];
+    return;
+  }
+
+  __weak TabGroupViewController* viewController = _viewController;
+
+  [_viewController prepareForPresentation];
+
+  CGFloat nonGridElementDuration =
+      kTabGroupPresentationDuration * kTabGroupBackgroundElementDurationFactor;
+  CGFloat topElementDelay =
+      kTabGroupPresentationDuration - nonGridElementDuration;
+
+  [UIView animateWithDuration:nonGridElementDuration
+                        delay:topElementDelay
+                      options:UIViewAnimationCurveEaseOut
+                   animations:^{
+                     [viewController animateTopElementsPresentation];
+                   }
+                   completion:nil];
+
+  [UIView animateWithDuration:nonGridElementDuration
+                        delay:0
+                      options:UIViewAnimationCurveEaseIn
+                   animations:^{
+                     [viewController fadeBlurIn];
+                   }
+                   completion:nil];
+
+  [UIView animateWithDuration:kTabGroupPresentationDuration
+                        delay:0
+                      options:UIViewAnimationCurveEaseInOut
+                   animations:^{
+                     [viewController animateGridPresentation];
+                   }
+                   completion:nil];
+}
+
+- (void)hideViewControllerAnimated:(BOOL)animated {
+  __weak TabGroupViewController* viewController = _viewController;
+
+  auto completion = ^void {
+    [viewController willMoveToParentViewController:nil];
+    [viewController.view removeFromSuperview];
+    [viewController removeFromParentViewController];
+  };
+
+  if (!animated) {
+    completion();
+  }
+
+  [UIView animateWithDuration:kTabGroupDismissalDuration
+      delay:0
+      options:UIViewAnimationCurveEaseInOut
+      animations:^{
+        [viewController animateDismissal];
+      }
+      completion:^(BOOL finished) {
+        completion();
+      }];
+
+  CGFloat backgroundDuration =
+      kTabGroupDismissalDuration * kTabGroupBackgroundElementDurationFactor;
+  [UIView animateWithDuration:backgroundDuration
+                        delay:0
+                      options:UIViewAnimationCurveEaseOut
+                   animations:^{
+                     [viewController fadeBlurOut];
+                   }
+                   completion:nil];
+}
+
+#pragma mark - GridViewControllerDelegate
+
+- (void)gridViewController:(BaseGridViewController*)gridViewController
+       didSelectItemWithID:(web::WebStateID)itemID {
+  BOOL incognito = self.browser->GetBrowserState()->IsOffTheRecord();
+  if ([_mediator isItemWithIDSelected:itemID]) {
+    if (incognito) {
+      base::RecordAction(base::UserMetricsAction(
+          "MobileTabGridIncognitoTabGroupOpenCurrentTab"));
+    } else {
+      base::RecordAction(base::UserMetricsAction(
+          "MobileTabGridRegularTabGroupOpenCurrentTab"));
+    }
+  } else {
+    if (incognito) {
+      base::RecordAction(
+          base::UserMetricsAction("MobileTabIncognitoGridTabGroupOpenTab"));
+    } else {
+      base::RecordAction(
+          base::UserMetricsAction("MobileTabRegularGridTabGroupOpenTab"));
+    }
+    [_mediator selectItemWithID:itemID
+                         pinned:NO
+         isFirstActionOnTabGrid:[self.tabGridIdleStatusHandler status]];
+  }
+
+  id<TabGroupsCommands> handler = HandlerForProtocol(
+      self.browser->GetCommandDispatcher(), TabGroupsCommands);
+
+  [self.tabGridIdleStatusHandler
+      tabGridDidPerformAction:TabGridActionType::kInPageAction];
+  [handler showActiveTab];
+}
+
+- (void)gridViewController:(BaseGridViewController*)gridViewController
+            didSelectGroup:(const TabGroup*)group {
+  NOTREACHED_NORETURN();
+}
+
+// TODO(crbug.com/40273478): Remove once inactive tabs do not depends on it
+// anymore.
+- (void)gridViewController:(BaseGridViewController*)gridViewController
+        didCloseItemWithID:(web::WebStateID)itemID {
+  NOTREACHED_NORETURN();
+}
+
+- (void)gridViewControllerDidMoveItem:
+    (BaseGridViewController*)gridViewController {
+  // No-op.
+}
+
+- (void)gridViewController:(BaseGridViewController*)gridViewController
+        didChangeItemCount:(NSUInteger)count {
+  // No-op.
+}
+
+- (void)gridViewController:(BaseGridViewController*)gridViewController
+       didRemoveItemWIthID:(web::WebStateID)itemID {
+  // No-op.
+}
+
+- (void)gridViewControllerDragSessionWillBeginForTab:
+    (BaseGridViewController*)gridViewController {
+  // No-op.
+}
+
+- (void)gridViewControllerDragSessionWillBeginForTabGroup:
+    (BaseGridViewController*)gridViewController {
+  // No-op.
+}
+
+- (void)gridViewControllerDragSessionDidEnd:
+    (BaseGridViewController*)gridViewController {
+  // No-op.
+}
+
+- (void)gridViewControllerScrollViewDidScroll:
+    (BaseGridViewController*)gridViewController {
+  // No-op.
+}
+
+- (void)gridViewControllerDropAnimationWillBegin:
+    (BaseGridViewController*)gridViewController {
+  // No-op.
+}
+
+- (void)gridViewControllerDropAnimationDidEnd:
+    (BaseGridViewController*)gridViewController {
+  // No-op.
+}
+
+- (void)didTapInactiveTabsButtonInGridViewController:
+    (BaseGridViewController*)gridViewController {
+  NOTREACHED_NORETURN();
+}
+
+- (void)didTapInactiveTabsSettingsLinkInGridViewController:
+    (BaseGridViewController*)gridViewController {
+  NOTREACHED_NORETURN();
+}
+
+- (void)gridViewController:(BaseGridViewController*)gridViewController
+    didRequestContextMenuForItemWithID:(web::WebStateID)itemID {
+  [self.tabGridIdleStatusHandler
+      tabGridDidPerformAction:TabGridActionType::kInPageAction];
 }
 
 @end

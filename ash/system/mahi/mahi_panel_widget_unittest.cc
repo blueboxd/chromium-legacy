@@ -8,7 +8,9 @@
 #include "ash/system/mahi/fake_mahi_manager.h"
 #include "ash/system/mahi/mahi_constants.h"
 #include "ash/test/ash_test_base.h"
+#include "base/test/scoped_feature_list.h"
 #include "chromeos/components/mahi/public/cpp/mahi_manager.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "ui/aura/window.h"
 #include "ui/display/display.h"
 #include "ui/gfx/geometry/rect.h"
@@ -16,16 +18,20 @@
 #include "ui/views/widget/widget.h"
 
 namespace ash {
+
 namespace {
 
-constexpr int kPanelDefaultWidth = 340;
-constexpr int kPanelDefaultHeight = 450;
+constexpr int kPanelDefaultWidth = 360;
+constexpr int kPanelDefaultHeight = 492;
 constexpr int kPanelBoundsShelfPadding = 8;
+
+}  // namespace
 
 class MahiPanelWidgetTest : public AshTestBase {
  public:
   // AshTestBase:
   void SetUp() override {
+    scoped_feature_list_.InitAndEnableFeature(chromeos::features::kMahi);
     AshTestBase::SetUp();
 
     fake_mahi_manager_ = std::make_unique<FakeMahiManager>();
@@ -41,6 +47,7 @@ class MahiPanelWidgetTest : public AshTestBase {
   }
 
  private:
+  base::test::ScopedFeatureList scoped_feature_list_;
   std::unique_ptr<FakeMahiManager> fake_mahi_manager_;
   std::unique_ptr<chromeos::ScopedMahiManagerSetter> scoped_setter_;
 };
@@ -89,5 +96,4 @@ TEST_F(MahiPanelWidgetTest, WidgetBoundsWithRefreshBanner) {
                               mahi_constants::kRefreshBannerStackDepth);
 }
 
-}  // namespace
 }  // namespace ash

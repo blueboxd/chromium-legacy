@@ -19,16 +19,23 @@ class FontDescription;
 class FontFallbackList;
 class SimpleFontData;
 
-class FontFallbackIterator {
+class PLATFORM_EXPORT FontFallbackIterator {
   STACK_ALLOCATED();
 
  public:
+  using HintCharList = Vector<UChar32, 16>;
+
   FontFallbackIterator(const FontDescription&,
                        FontFallbackList*,
                        FontFallbackPriority);
   FontFallbackIterator(FontFallbackIterator&&) = default;
   FontFallbackIterator(const FontFallbackIterator&) = delete;
   FontFallbackIterator& operator=(const FontFallbackIterator&) = delete;
+
+  bool operator==(const FontFallbackIterator& other) const;
+  bool operator!=(const FontFallbackIterator& other) const {
+    return !(*this == other);
+  }
 
   bool HasNext() const { return fallback_stage_ != kOutOfLuck; }
   // Returns whether the next call to Next() needs a full hint list, or whether
@@ -42,20 +49,22 @@ class FontFallbackIterator {
   // Some system fallback APIs (Windows, Android) require a character, or a
   // portion of the string to be passed.  On Mac and Linux, we get a list of
   // fonts without passing in characters.
-  FontDataForRangeSet* Next(const Vector<UChar32>& hint_list);
+  FontDataForRangeSet* Next(const HintCharList& hint_list);
+
+  void Reset();
 
  private:
-  bool RangeSetContributesForHint(const Vector<UChar32>& hint_list,
+  bool RangeSetContributesForHint(const HintCharList& hint_list,
                                   const FontDataForRangeSet*);
   bool AlreadyLoadingRangeForHintChar(UChar32 hint_char);
   void WillUseRange(const AtomicString& family, const FontDataForRangeSet&);
 
   FontDataForRangeSet* UniqueOrNext(FontDataForRangeSet* candidate,
-                                    const Vector<UChar32>& hint_list);
+                                    const HintCharList& hint_list);
 
   const SimpleFontData* FallbackPriorityFont(UChar32 hint);
   const SimpleFontData* UniqueSystemFontForHintList(
-      const Vector<UChar32>& hint_list);
+      const HintCharList& hint_list);
 
   const FontDescription& font_description_;
   FontFallbackList* font_fallback_list_;

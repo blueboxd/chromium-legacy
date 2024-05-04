@@ -6,8 +6,7 @@
         "timestamp": "0",
         "registration_request": {
           "context_origin": "https://source.test",
-          "attribution_src_url": "https://reporter.test/register-source",
-          "source_type": "navigation"
+          "Attribution-Reporting-Eligible": "navigation-source"
         },
         "responses": [
           {
@@ -23,8 +22,7 @@
         "timestamp": "1",
         "registration_request": {
           "context_origin": "https://source.test",
-          "attribution_src_url": "https://reporter.test/register-source",
-          "source_type": "navigation"
+          "Attribution-Reporting-Eligible": "navigation-source"
         },
         "responses": [
           {
@@ -39,10 +37,6 @@
     ]
   },
   "output": {
-    "unparsable_registrations": [
-      {"time": "0", "type": "source"},
-      {"time": "1", "type": "source"}
-    ],
     "reports": [ {
       "payload": [ {
          "body": {

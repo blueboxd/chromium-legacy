@@ -498,9 +498,8 @@ void FrameTree::CreateProxiesForSiteInstance(
         source_new_browsing_context_state) {
   SiteInstanceGroup* group = site_instance->group();
 
-  // Will be instantiated and passed to `CreateRenderFrameProxy()` when
-  // `kConsolidatedIPCForProxyCreation` is enabled to batch create proxies
-  // for child frames.
+  // Will be instantiated with the root proxy later and passed to
+  // `CreateRenderFrameProxy()` to batch create proxies for child frames.
   std::unique_ptr<BatchedProxyIPCSender> batched_proxy_ipc_sender;
 
   if (!source || !source->IsMainFrame()) {
@@ -522,7 +521,7 @@ void FrameTree::CreateProxiesForSiteInstance(
           source ? source->parent()->GetMainFrame()->browsing_context_state()
                  : root()->current_frame_host()->browsing_context_state();
 
-      // TODO(https://crbug.com/1393697): Batch main frame proxy creation and
+      // TODO(crbug.com/40248300): Batch main frame proxy creation and
       // pass an instance of `BatchedProxyIPCSender` here instead of nullptr.
       root()->render_manager()->CreateRenderFrameProxy(
           site_instance, root_browsing_context_state,
@@ -536,16 +535,12 @@ void FrameTree::CreateProxiesForSiteInstance(
       // not exist here, which means we have not seen this `SiteInstance`
       // before, so we instantiate `batched_proxy_ipc_sender` to consolidate
       // IPCs for proxy creation.
-      bool should_consolidate_ipcs = base::FeatureList::IsEnabled(
-          features::kConsolidatedIPCForProxyCreation);
-      if (should_consolidate_ipcs) {
-        base::SafeRef<RenderFrameProxyHost> root_proxy =
-            root_browsing_context_state
-                ->GetRenderFrameProxyHost(site_instance->group())
-                ->GetSafeRef();
-        batched_proxy_ipc_sender =
-            std::make_unique<BatchedProxyIPCSender>(std::move(root_proxy));
-      }
+      base::SafeRef<RenderFrameProxyHost> root_proxy =
+          root_browsing_context_state
+              ->GetRenderFrameProxyHost(site_instance->group())
+              ->GetSafeRef();
+      batched_proxy_ipc_sender =
+          std::make_unique<BatchedProxyIPCSender>(std::move(root_proxy));
     }
   }
 
@@ -951,7 +946,7 @@ void FrameTree::Shutdown() {
   if (!root_manager->current_frame_host()) {
     // The page has been transferred out during an activation. There is little
     // left to do.
-    // TODO(https://crbug.com/1199693): If we decide that pending delete RFHs
+    // TODO(crbug.com/40177949): If we decide that pending delete RFHs
     // need to be moved along during activation replace this line with a DCHECK
     // that there are no pending delete instances.
     root_manager->ClearRFHsPendingShutdown();
@@ -965,7 +960,7 @@ void FrameTree::Shutdown() {
     // Delete all RFHs pending shutdown, which will lead the corresponding RVHs
     // to be shutdown and be deleted as well.
     node->render_manager()->ClearRFHsPendingShutdown();
-    // TODO(https://crbug.com/1199676): Ban WebUI instance in Prerender pages.
+    // TODO(crbug.com/40177939): Ban WebUI instance in Prerender pages.
     node->render_manager()->ClearWebUIInstances();
   }
 

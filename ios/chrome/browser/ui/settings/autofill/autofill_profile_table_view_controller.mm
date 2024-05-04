@@ -12,6 +12,7 @@
 #import "base/metrics/user_metrics_action.h"
 #import "base/strings/sys_string_conversions.h"
 #import "base/strings/utf_string_conversions.h"
+#import "components/autofill/core/browser/address_data_manager.h"
 #import "components/autofill/core/browser/personal_data_manager.h"
 #import "components/autofill/core/browser/profile_requirement_utils.h"
 #import "components/autofill/core/common/autofill_features.h"
@@ -20,7 +21,6 @@
 #import "components/password_manager/core/common/password_manager_features.h"
 #import "components/prefs/pref_service.h"
 #import "components/strings/grit/components_strings.h"
-#import "components/sync/base/features.h"
 #import "components/sync/service/sync_user_settings.h"
 #import "ios/chrome/browser/autofill/model/personal_data_manager_factory.h"
 #import "ios/chrome/browser/net/model/crurl.h"
@@ -42,8 +42,8 @@
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/signin/model/authentication_service.h"
 #import "ios/chrome/browser/signin/model/authentication_service_factory.h"
-#import "ios/chrome/browser/ui/settings/autofill/autofill_constants.h"
 #import "ios/chrome/browser/ui/settings/autofill/autofill_profile_edit_coordinator.h"
+#import "ios/chrome/browser/ui/settings/autofill/autofill_settings_constants.h"
 #import "ios/chrome/browser/ui/settings/autofill/cells/autofill_address_profile_source.h"
 #import "ios/chrome/browser/ui/settings/autofill/cells/autofill_profile_item.h"
 #import "ios/chrome/browser/ui/settings/elements/enterprise_info_popover_view_controller.h"
@@ -180,7 +180,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
   TableViewModel* model = self.tableViewModel;
   const std::vector<autofill::AutofillProfile*> autofillProfiles =
-      _personalDataManager->GetProfilesForSettings();
+      _personalDataManager->address_data_manager().GetProfilesForSettings();
   if (!autofillProfiles.empty()) {
     [model addSectionWithIdentifier:SectionIdentifierProfiles];
     [model setHeader:[self profileSectionHeader]
@@ -269,8 +269,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }
 
 - (BOOL)localProfilesExist {
-  return !_settingsAreDismissed &&
-         !_personalDataManager->GetProfilesForSettings().empty();
+  return !_settingsAreDismissed && !_personalDataManager->address_data_manager()
+                                        .GetProfilesForSettings()
+                                        .empty();
 }
 
 #pragma mark - SettingsControllerProtocol
@@ -365,7 +366,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
       [self.tableViewModel itemAtIndexPath:indexPath]);
   [self
       showAddressProfileDetailsPageForProfile:_personalDataManager
-                                                  ->GetProfileByGUID(item.GUID)
+                                                  ->address_data_manager()
+                                                  .GetProfileByGUID(item.GUID)
                    withMigrateToAccountButton:item.showMigrateToAccountButton];
   [self.tableView deselectRowAtIndexPath:indexPath animated:YES];
 }
@@ -541,7 +543,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
       authenticationService->GetPrimaryIdentity(signin::ConsentLevel::kSignin);
   if (identity) {
     self.userEmail = identity.userEmail;
-    self.syncEnabled = _personalDataManager->IsSyncFeatureEnabledForAutofill();
+    self.syncEnabled = _personalDataManager->address_data_manager()
+                           .IsSyncFeatureEnabledForAutofill();
   }
 }
 
@@ -702,7 +705,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
               profileCount)
                 action:^{
                   [weakSelf willDeleteItemsAtIndexPaths:indexPaths];
-                  // TODO(crbug.com/650390) Generalize removing empty sections
+                  // TODO(crbug.com/41277594) Generalize removing empty sections
                   [weakSelf removeSectionIfEmptyForSectionWithIdentifier:
                                 SectionIdentifierProfiles];
                   [weakSelf dismissDeletionSheet];
@@ -767,8 +770,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (BOOL)shouldShowCloudOffIconForProfile:
     (const autofill::AutofillProfile&)profile {
   return IsEligibleForMigrationToAccount(*_personalDataManager, profile) &&
-         base::FeatureList::IsEnabled(
-             syncer::kSyncEnableContactInfoDataTypeInTransportMode) &&
          self.userEmail != nil;
 }
 

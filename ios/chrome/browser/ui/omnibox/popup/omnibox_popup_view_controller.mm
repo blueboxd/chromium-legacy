@@ -17,7 +17,6 @@
 #import "ios/chrome/browser/shared/ui/util/keyboard_observer_helper.h"
 #import "ios/chrome/browser/shared/ui/util/layout_guide_names.h"
 #import "ios/chrome/browser/shared/ui/util/rtl_geometry.h"
-#import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/shared/ui/util/util_swift.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_tile_layout_util.h"
 #import "ios/chrome/browser/ui/favicon/favicon_attributes_provider.h"
@@ -38,6 +37,7 @@
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
 #import "ios/chrome/common/ui/util/device_util.h"
+#import "ios/chrome/common/ui/util/ui_util.h"
 #import "ui/base/device_form_factor.h"
 
 namespace {
@@ -180,7 +180,7 @@ BOOL ShouldDismissKeyboardOnScroll() {
 }
 
 - (void)loadView {
-  // TODO(crbug.com/1365374): Check why largeIconService not available in
+  // TODO(crbug.com/40866206): Check why largeIconService not available in
   // incognito.
   if (self.largeIconService) {
     _carouselAttributeProvider = [[FaviconAttributesProvider alloc]
@@ -566,6 +566,10 @@ BOOL ShouldDismissKeyboardOnScroll() {
     path = [NSIndexPath indexPathForRow:path.row - 1 inSection:path.section];
   }
 
+  [self.tableView scrollToRowAtIndexPath:path
+                        atScrollPosition:UITableViewScrollPositionTop
+                                animated:NO];
+
   self.highlightedIndexPath = path;
 }
 
@@ -604,6 +608,10 @@ BOOL ShouldDismissKeyboardOnScroll() {
   } else {
     path = [NSIndexPath indexPathForRow:path.row + 1 inSection:path.section];
   }
+
+  [self.tableView scrollToRowAtIndexPath:path
+                        atScrollPosition:UITableViewScrollPositionBottom
+                                animated:NO];
 
   // There is a row below, move highlight there.
   self.highlightedIndexPath = path;
@@ -1081,13 +1089,13 @@ BOOL ShouldDismissKeyboardOnScroll() {
 #pragma mark - UIScrollViewDelegate
 
 - (void)scrollViewDidScroll:(UIScrollView*)scrollView {
-  // TODO(crbug.com/733650): Default to the dragging check once it's been tested
-  // on trunk.
+  // TODO(crbug.com/41325585): Default to the dragging check once it's been
+  // tested on trunk.
   if (!scrollView.dragging)
     return;
 
-  // TODO(crbug.com/911534): The following call chain ultimately just dismisses
-  // the keyboard, but involves many layers of plumbing, and should be
+  // TODO(crbug.com/40604984): The following call chain ultimately just
+  // dismisses the keyboard, but involves many layers of plumbing, and should be
   // refactored.
   if (self.forwardsScrollEvents)
     [self.delegate autocompleteResultConsumerDidScroll:self];
@@ -1214,7 +1222,7 @@ BOOL ShouldDismissKeyboardOnScroll() {
   return carouselItems;
 }
 
-// TODO(crbug.com/1365374): Move to a mediator.
+// TODO(crbug.com/40866206): Move to a mediator.
 - (void)fetchFaviconForCarouselItem:(CarouselItem*)carouselItem {
   __weak OmniboxPopupCarouselCell* weakCell = self.carouselCell;
   __weak CarouselItem* weakItem = carouselItem;

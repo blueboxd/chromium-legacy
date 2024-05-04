@@ -628,8 +628,8 @@
     </summary>
     <metric name="Status" type="int">
       <summary>
-        Value from CrashReporterStatus enum, indicating the final result of the
-        collection attempt.
+        Value from CrashCollectionStatus enum, indicating the final result of
+        the collection attempt.
       </summary>
     </metric>
     <metric name="Collector" type="int">
@@ -921,7 +921,7 @@
     <metric name="apn_source" type="int">
       <summary>
         Indicates the source of the APN. Options are: MODB == 0 , UI == 1,
-        MODEM == 2.
+        MODEM == 2, ADMIN == 4.
         </summary>
     </metric>
     <metric name="tech_used" type="int">
@@ -2682,7 +2682,7 @@
   </event>
 </project>
 
-<project name="TestProjectTwo">
+<project name="TestProjectTwo" cros_events="true">
   <owner>tby@chromium.org</owner>
   <id>none</id>
   <summary>

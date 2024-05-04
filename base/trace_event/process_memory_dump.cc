@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40284755): Remove this and spanify to fix the errors.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "base/trace_event/process_memory_dump.h"
 
 #include <errno.h>
@@ -136,7 +141,7 @@ std::optional<size_t> ProcessMemoryDump::CountResidentBytes(
     for (size_t i = 0; i < page_count; i++)
       resident_page_count += vec[i].VirtualAttributes.Valid;
 #elif BUILDFLAG(IS_FUCHSIA)
-    // TODO(crbug.com/851760): Implement counting resident bytes.
+    // TODO(crbug.com/42050620): Implement counting resident bytes.
     // For now, log and avoid unused variable warnings.
     NOTIMPLEMENTED_LOG_ONCE();
     std::ignore = chunk_start;
@@ -441,7 +446,7 @@ void ProcessMemoryDump::SerializeAllocatorDumpsInto(
 
     memory_edge->set_source_id(edge.source.ToUint64());
     memory_edge->set_target_id(edge.target.ToUint64());
-    // TODO(crbug.com/1333557): Fix .proto and remove this cast.
+    // TODO(crbug.com/40845742): Fix .proto and remove this cast.
     memory_edge->set_importance(static_cast<uint32_t>(edge.importance));
   }
 }

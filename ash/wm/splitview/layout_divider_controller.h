@@ -20,17 +20,27 @@ namespace ash {
 // performant resizing.
 class LayoutDividerController {
  public:
+  // Returns the root window for the layout.
+  virtual aura::Window* GetRootWindow() = 0;
+
   // Resizing functions used when resizing via the divider, where
   // `location_in_screen` is the location of the event that started this resize
   // and will be used to calculate the divider position.
   virtual void StartResizeWithDivider(const gfx::Point& location_in_screen) = 0;
   virtual void UpdateResizeWithDivider(
       const gfx::Point& location_in_screen) = 0;
-  virtual void EndResizeWithDivider(const gfx::Point& location_in_screen) = 0;
+
+  // Returns true if the delegate is finished with resizing and can hand back
+  // resizing work to `SplitViewDivider`, otherwise returns false, e.g. if the
+  // divider is performing a snap animation.
+  virtual bool EndResizeWithDivider(const gfx::Point& location_in_screen) = 0;
 
   // Called when the divider is about to end resizing by finishing window
   // resizing and cleaning up drag details.
   virtual void OnResizeEnding() = 0;
+
+  // Called when the divider has finished cleaning up window resizing.
+  virtual void OnResizeEnded() = 0;
 
   // Swaps the window(s). If in tablet mode, it is triggered by `kDoubleTap`
   // with only one window snapped, the window will be snapped to the other
@@ -45,16 +55,14 @@ class LayoutDividerController {
   virtual gfx::Rect GetSnappedWindowBoundsInScreen(
       SnapPosition snap_position,
       aura::Window* window_for_minimum_size,
-      float snap_ratio) const = 0;
+      float snap_ratio,
+      bool account_for_divider_width) const = 0;
 
   // `window` should be `primary_window_` or `secondary_window_` of this
   // delegate, and this function returns `SnapPosition::kPrimary` or
   // `SnapPosition::kSecondary` accordingly.
   virtual SnapPosition GetPositionOfSnappedWindow(
       const aura::Window* window) const = 0;
-
-  // Returns the windows associated with this delegate.
-  virtual aura::Window::Windows GetLayoutWindows() const = 0;
 
  protected:
   virtual ~LayoutDividerController() = default;

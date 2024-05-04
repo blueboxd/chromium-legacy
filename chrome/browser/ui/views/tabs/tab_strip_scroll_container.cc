@@ -46,11 +46,12 @@ SkColor4f GetShadowColor(TabStrip* tab_strip) {
 // Define a custom FlexRule for |scroll_view_|. Equivalent to using a
 // (kScaleToMinimum, kPreferred) flex specification on the tabstrip itself,
 // bypassing the ScrollView.
-// TODO(1132488): Make ScrollView take on TabStrip's preferred size instead.
+// TODO(crbug.com/40721975): Make ScrollView take on TabStrip's preferred size
+// instead.
 gfx::Size TabScrollContainerFlexRule(const views::View* tab_strip,
                                      const views::View* view,
                                      const views::SizeBounds& size_bounds) {
-  const gfx::Size preferred_size = tab_strip->GetPreferredSize();
+  const gfx::Size preferred_size = tab_strip->GetPreferredSize(size_bounds);
   const int minimum_width = tab_strip->GetMinimumSize().width();
   const int width = std::max(
       minimum_width, size_bounds.width().min_of(preferred_size.width()));
@@ -99,7 +100,7 @@ TabStripScrollContainer::TabStripScrollContainer(
   SetLayoutManager(std::make_unique<views::FillLayout>())
       ->SetMinimumSizeEnabled(true);
 
-  // TODO(https://crbug.com/1132488): ScrollView doesn't propagate changes to
+  // TODO(crbug.com/40721975): ScrollView doesn't propagate changes to
   // the TabStrip's preferred size; observe that manually.
   tab_strip->View::AddObserver(this);
   tab_strip->SetAvailableWidthCallback(
@@ -244,7 +245,7 @@ void TabStripScrollContainer::ScrollTowardsTrailingTab() {
 void TabStripScrollContainer::FrameColorsChanged() {
   SkColor foreground_enabled_color =
       tab_strip_->GetTabForegroundColor(TabActive::kInactive);
-  // TODO(crbug.com/1385859): Get a disabled color that is lighter
+  // TODO(crbug.com/40879445): Get a disabled color that is lighter
   // and changes with the frame background color
   SkColor foreground_disabled_color =
       GetColorProvider()->GetColor(kColorTabForegroundInactiveFrameInactive);

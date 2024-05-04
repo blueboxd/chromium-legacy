@@ -29,6 +29,15 @@ chromium-metrics-reviews@google.com.
 
 <histograms>
 
+<variants name="ProtoFetcherRequestType">
+  <variant name="FamilyLinkUser.ClassifyUrlRequest"
+      summary="Kids Management API::ClassifyUrl"/>
+  <variant name="FamilyLinkUser.CreatePermissionRequest"
+      summary="Kids Management API::CreatePermissionRequest"/>
+  <variant name="Signin.ListFamilyMembersRequest"
+      summary="Kids Management API::ListMembers"/>
+</variants>
+
 <histogram name="AddSupervisionDialog.Enrollment"
     enum="AddSupervisionEnrollment" expires_after="2024-09-01">
   <owner>courtneywong@chromium.org</owner>
@@ -239,144 +248,29 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="FamilyLinkUser.ClassifyUrlRequest.HttpStatusOrNetError"
-    enum="CombinedHttpResponseAndNetErrorCode" expires_after="2024-09-01">
-  <owner>tju@google.com</owner>
+<histogram name="FamilyLinkUser.FamilyInfoLogSource.FetchLatency" units="ms"
+    expires_after="2024-12-12">
+  <owner>ljjlee@google.com</owner>
+  <owner>fernandex@google.com</owner>
   <owner>chrome-kids-eng@google.com</owner>
   <summary>
-    The status of the net or http communication in calls to Kids Management
-    API::ClassifyURL. This is recorded for each request to the Kids Management
-    API.
+    The time spent waiting for the Kids Management API::ListMembers fetch done
+    as part of populating the FamilyInfoLogSource in feedback reports. This is
+    recorded for every fetch on either getting a response from the fetcher or
+    timing out (whichever happens first).
   </summary>
 </histogram>
 
-<histogram name="FamilyLinkUser.ClassifyUrlRequest.Latency" units="ms"
-    expires_after="2024-07-28">
-  <owner>tju@google.com</owner>
+<histogram name="FamilyLinkUser.FamilyInfoLogSource.FetchStatus"
+    enum="FamilyInfoLogSourceFetchStatus" expires_after="2024-12-12">
+  <owner>ljjlee@google.com</owner>
+  <owner>fernandex@google.com</owner>
   <owner>chrome-kids-eng@google.com</owner>
   <summary>
-    Tracks the latency in calls to Kids Management API::ClassifyURL. It includes
-    both the actual RPC call and the time spent in requesting access token.
-
-    Googlers only: See go/chrome-kids-backend-monitoring for backend-related
-    metrics.
+    The result of the Kids Management API::ListMembers fetch done as part of
+    populating the FamilyInfoLogSource in feedback reports. This is output for
+    every fetch on either getting a response from the fetcher or timing out.
   </summary>
-</histogram>
-
-<histogram name="FamilyLinkUser.ClassifyUrlRequest.Status"
-    enum="SupervisedUserProtoFetcherStatus" expires_after="2024-07-28">
-  <owner>tju@google.com</owner>
-  <owner>chrome-kids-eng@google.com</owner>
-  <summary>
-    The status of the fetch in calls to Kids Management API::ClassifyURL.
-  </summary>
-</histogram>
-
-<histogram
-    name="FamilyLinkUser.ClassifyUrlRequest.{AuthErrorState}.AccessTokenLatency"
-    units="ms" expires_after="2023-11-01">
-  <owner>tju@google.com</owner>
-  <owner>chrome-kids-eng@google.com</owner>
-  <summary>
-    Latency of the access token fetching before making calls to Kids Management
-    API::ClassifyURL. Currenlty only successful authentication is counted.
-  </summary>
-  <token key="AuthErrorState">
-    <variant name="NONE"/>
-  </token>
-</histogram>
-
-<histogram
-    name="FamilyLinkUser.ClassifyUrlRequest.{HttpStatusOrNetError}.ApiLatency"
-    units="ms" expires_after="2023-11-01">
-  <owner>tju@google.com</owner>
-  <owner>chrome-kids-eng@google.com</owner>
-  <summary>
-    Latency of the calls in calls to Kids Management API::ClassifyURL that
-    resulted with &quot;{HttpStatusOrNetError}&quot; status. Currently only
-    succesful communication with API is recorded.
-  </summary>
-  <token key="HttpStatusOrNetError">
-    <variant name="HTTP_OK"/>
-  </token>
-</histogram>
-
-<histogram name="FamilyLinkUser.ClassifyUrlRequest.{Status}.Latency" units="ms"
-    expires_after="2024-08-04">
-  <owner>tju@google.com</owner>
-  <owner>chrome-kids-eng@google.com</owner>
-  <summary>
-    Latency of the calls in calls to Kids Management API::ClassifyURL that
-    resulted with &quot;{Status}&quot; status. It includes both the actual RPC
-    call and the time spent in requesting access token.
-  </summary>
-  <token key="Status">
-    <variant name="AuthError"/>
-    <variant name="DataError"
-        summary="contract error (data in the response missing despite
-                 succesful parsing)"/>
-    <variant name="HttpStatusOrNetError"/>
-    <variant name="NoError"/>
-    <variant name="ParseError"/>
-  </token>
-</histogram>
-
-<histogram name="FamilyLinkUser.CreatePermissionRequest.HttpStatusOrNetError"
-    enum="CombinedHttpResponseAndNetErrorCode" expires_after="2023-11-01">
-  <owner>tju@google.com</owner>
-  <owner>anthie@google.com</owner>
-  <owner>chrome-kids-eng@google.com</owner>
-  <summary>
-    The status of the net or http communication in calls to Kids Management
-    API::CreatePermissionRequest. This is recorded for each request to the Kids
-    Management API.
-  </summary>
-</histogram>
-
-<histogram name="FamilyLinkUser.CreatePermissionRequest.Latency" units="ms"
-    expires_after="2023-11-01">
-  <owner>tju@google.com</owner>
-  <owner>anthie@google.com</owner>
-  <owner>chrome-kids-eng@google.com</owner>
-  <summary>
-    Tracks the latency in calls to Kids Management API::CreatePermissionRequest.
-    It includes both the actual RPC call and the time spent in requesting access
-    token. Googlers only: See go/chrome-kids-backend-monitoring for
-    backend-related metrics.
-  </summary>
-</histogram>
-
-<histogram name="FamilyLinkUser.CreatePermissionRequest.Status"
-    enum="SupervisedUserProtoFetcherStatus" expires_after="2024-09-01">
-  <owner>tju@google.com</owner>
-  <owner>anthie@google.com</owner>
-  <owner>chrome-kids-eng@google.com</owner>
-  <summary>
-    The status of the fetch in calls to Kids Management
-    API::CreatePermissionRequest.
-  </summary>
-</histogram>
-
-<histogram name="FamilyLinkUser.CreatePermissionRequest.{Status}.Latency"
-    units="ms" expires_after="2023-11-01">
-  <owner>tju@google.com</owner>
-  <owner>anthie@google.com</owner>
-  <owner>chrome-kids-eng@google.com</owner>
-  <summary>
-    Latency of the calls in calls to Kids Management
-    API::CreatePermissionRequest that resulted with &quot;{Status}&quot; status.
-    It includes both the actual RPC call and the time spent in requesting access
-    token.
-  </summary>
-  <token key="Status">
-    <variant name="AuthError"/>
-    <variant name="DataError"
-        summary="contract error (data in the response missing despite
-                 succesful parsing)"/>
-    <variant name="HttpStatusOrNetError"/>
-    <variant name="NoError"/>
-    <variant name="ParseError"/>
-  </token>
 </histogram>
 
 <histogram name="FamilyLinkUser.LocalWebApprovalCompleteRequestTotalDuration"
@@ -504,7 +398,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FamilyUser.ManagedSiteList.SubdomainConflictType"
-    enum="FamilyLinkFilteringSubdomainConflictType" expires_after="2024-07-14">
+    enum="FamilyLinkFilteringSubdomainConflictType" expires_after="2024-09-15">
   <owner>anthie@google.com</owner>
   <owner>chrome-kids-eng@google.com</owner>
   <owner>cros-families-eng@google.com</owner>
@@ -573,7 +467,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FamilyUser.SessionEngagement.Weekday" units="Hour of day"
-    expires_after="2024-06-30">
+    expires_after="2024-09-15">
   <owner>agawronska@chromium.org</owner>
   <owner>cros-families-eng@google.com</owner>
   <summary>
@@ -584,7 +478,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FamilyUser.SessionEngagement.Weekend" units="Hour of day"
-    expires_after="2024-06-30">
+    expires_after="2024-09-15">
   <owner>agawronska@chromium.org</owner>
   <owner>cros-families-eng@google.com</owner>
   <summary>
@@ -623,7 +517,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FamilyUser.WebFilterType.PerRecord"
-    enum="FamilyLinkWebFilterType" expires_after="2024-06-30">
+    enum="FamilyLinkWebFilterType" expires_after="2024-09-15">
   <owner>fernandex@chromium.org</owner>
   <owner>agawronska@chromium.org</owner>
   <owner>chrome-kids-eng@google.com</owner>
@@ -901,6 +795,99 @@ chromium-metrics-reviews@google.com.
   <summary>
     The event that triggered status report for supervised account.
   </summary>
+</histogram>
+
+<histogram name="{RequestType}.AuthError" enum="GoogleServiceAuthError"
+    expires_after="2024-09-01">
+  <owner>ljjlee@google.com</owner>
+  <owner>chrome-kids-eng@google.com</owner>
+  <summary>
+    The detailed reason for AuthError failures. Recorded for each request to the
+    API where {RequestType}.Status is AuthError.
+  </summary>
+  <token key="RequestType" variants="ProtoFetcherRequestType"/>
+</histogram>
+
+<histogram name="{RequestType}.HttpStatusOrNetError"
+    enum="CombinedHttpResponseAndNetErrorCode" expires_after="2024-09-01">
+  <owner>tju@google.com</owner>
+  <owner>chrome-kids-eng@google.com</owner>
+  <summary>
+    The status of the net or HTTP communication in calls to {RequestType}. This
+    is recorded for each request to the {RequestType}.
+  </summary>
+  <token key="RequestType" variants="ProtoFetcherRequestType"/>
+</histogram>
+
+<histogram name="{RequestType}.Latency" units="ms" expires_after="2024-09-29">
+  <owner>tju@google.com</owner>
+  <owner>chrome-kids-eng@google.com</owner>
+  <summary>
+    Tracks the latency in calls to {RequestType}. It includes both the actual
+    RPC call and the time spent in requesting access token.
+
+    Googlers only: See go/chrome-kids-backend-monitoring for backend-related
+    metrics.
+  </summary>
+  <token key="RequestType" variants="ProtoFetcherRequestType"/>
+</histogram>
+
+<histogram name="{RequestType}.Status" enum="SupervisedUserProtoFetcherStatus"
+    expires_after="2024-09-29">
+  <owner>tju@google.com</owner>
+  <owner>chrome-kids-eng@google.com</owner>
+  <summary>The status of the fetch in calls to {RequestType}.</summary>
+  <token key="RequestType" variants="ProtoFetcherRequestType"/>
+</histogram>
+
+<histogram name="{RequestType}.{AuthErrorState}.AccessTokenLatency" units="ms"
+    expires_after="2023-11-01">
+  <owner>tju@google.com</owner>
+  <owner>chrome-kids-eng@google.com</owner>
+  <summary>
+    Latency of the access token fetching before calls to {RequestType}.
+    Currently only successful authentication is counted.
+  </summary>
+  <token key="RequestType" variants="ProtoFetcherRequestType"/>
+  <token key="AuthErrorState">
+    <variant name="NONE"/>
+  </token>
+</histogram>
+
+<histogram name="{RequestType}.{HttpStatusOrNetError}.ApiLatency" units="ms"
+    expires_after="2023-11-01">
+  <owner>tju@google.com</owner>
+  <owner>chrome-kids-eng@google.com</owner>
+  <summary>
+    Latency of the calls to {RequestType} that resulted in
+    &quot;{HttpStatusOrNetError}&quot; status. Currently only succesful
+    communication is recorded.
+  </summary>
+  <token key="RequestType" variants="ProtoFetcherRequestType"/>
+  <token key="HttpStatusOrNetError">
+    <variant name="HTTP_OK"/>
+  </token>
+</histogram>
+
+<histogram name="{RequestType}.{Status}.Latency" units="ms"
+    expires_after="2024-10-06">
+  <owner>tju@google.com</owner>
+  <owner>chrome-kids-eng@google.com</owner>
+  <summary>
+    Latency of the calls to {RequestType} that resulted in &quot;{Status}&quot;
+    status. It includes both the actual RPC call and the time spent in
+    requesting access token.
+  </summary>
+  <token key="RequestType" variants="ProtoFetcherRequestType"/>
+  <token key="Status">
+    <variant name="AuthError"/>
+    <variant name="DataError"
+        summary="contract error (data in the response missing despite
+                 succesful parsing)"/>
+    <variant name="HttpStatusOrNetError"/>
+    <variant name="NoError"/>
+    <variant name="ParseError"/>
+  </token>
 </histogram>
 
 </histograms>

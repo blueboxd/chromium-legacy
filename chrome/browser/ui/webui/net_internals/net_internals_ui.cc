@@ -479,7 +479,7 @@ void NetInternalsMessageHandler::OnResolveHostDone(
       IPEndpointsToBaseList(resolved_addresses->endpoints());
   result.Set("resolved_addresses", std::move(resolved_addresses_list));
 
-  // TODO(crbug.com/1416410): Rename `endpoint_results_with_metadata` in the
+  // TODO(crbug.com/40256843): Rename `endpoint_results_with_metadata` in the
   // Mojo API to `alternative_endpoints`, to match the terminology used in the
   // specification.
   base::Value::List alternative_endpoints_list =
@@ -516,6 +516,7 @@ void NetInternalsMessageHandler::OnGetSharedDictionaryInfoDone(
     dict.Set("match_dest", GetMatchDestList(item->match_dest));
     dict.Set("id", item->id);
     dict.Set("dictionary_url", item->dictionary_url.spec());
+    dict.Set("last_fetch_time", base::TimeFormatHTTP(item->last_fetch_time));
     dict.Set("response_time", base::TimeFormatHTTP(item->response_time));
     dict.Set("expiration", base::NumberToString(item->expiration.InSeconds()));
     dict.Set("last_used_time", base::TimeFormatHTTP(item->last_used_time));

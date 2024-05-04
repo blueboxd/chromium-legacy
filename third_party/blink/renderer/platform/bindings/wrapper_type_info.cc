@@ -57,4 +57,11 @@ v8::Local<v8::Template> WrapperTypeInfo::GetV8ClassTemplate(
   return v8_template;
 }
 
+const WrapperTypeInfo* ToWrapperTypeInfo(v8::Local<v8::Object> wrapper) {
+  const auto* wrappable = ToScriptWrappable(wrapper->GetIsolate(), wrapper);
+  // It's either us or legacy embedders
+  DCHECK(!wrappable || !WrapperTypeInfo::HasLegacyInternalFieldsSet(wrapper));
+  return wrappable ? wrappable->GetWrapperTypeInfo() : nullptr;
+}
+
 }  // namespace blink

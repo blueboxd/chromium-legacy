@@ -22,11 +22,13 @@ import org.chromium.build.annotations.UsedByReflection;
 import org.chromium.net.BidirectionalStream;
 import org.chromium.net.EffectiveConnectionType;
 import org.chromium.net.ExperimentalBidirectionalStream;
+import org.chromium.net.ExperimentalUrlRequest;
 import org.chromium.net.NetworkQualityRttListener;
 import org.chromium.net.NetworkQualityThroughputListener;
 import org.chromium.net.RequestContextConfigOptions;
 import org.chromium.net.RequestFinishedInfo;
 import org.chromium.net.RttThroughputValues;
+import org.chromium.net.UploadDataProvider;
 import org.chromium.net.UrlRequest;
 import org.chromium.net.impl.CronetLogger.CronetVersion;
 import org.chromium.net.urlconnection.CronetHttpURLConnection;
@@ -268,17 +270,12 @@ public class CronetUrlRequestContext extends CronetEngineBase {
                 throw new NullPointerException("Context Adapter creation failed.");
             }
         }
-        mLogger =
-                CronetLoggerFactory.createLogger(
-                        builder.getContext(), CronetEngineBuilderImpl.getCronetSource());
+        mLogger = CronetLoggerFactory.createLogger(builder.getContext(), builder.getCronetSource());
         mLogId = mLogger.generateId();
         var builderLoggerInfo = builder.toLoggerInfo();
         try {
             mLogger.logCronetEngineCreation(
-                    getLogId(),
-                    builderLoggerInfo,
-                    buildCronetVersion(),
-                    CronetEngineBuilderImpl.getCronetSource());
+                    getLogId(), builderLoggerInfo, buildCronetVersion(), builder.getCronetSource());
         } catch (RuntimeException e) {
             // Handle any issue gracefully, we should never crash due failures while logging.
             Log.i(LOG_TAG, "Error while trying to log CronetEngine creation: ", e);
@@ -369,8 +366,16 @@ public class CronetUrlRequestContext extends CronetEngineBase {
         return urlRequestContextConfig;
     }
 
+    @VisibleForTesting
+    public static final String OVERRIDE_NETWORK_THREAD_PRIORITY_FLAG_NAME =
+            "Cronet_override_network_thread_priority";
+
     private static RequestContextConfigOptions createRequestContextConfigOptions(
             CronetEngineBuilderImpl engineBuilder) {
+        var networkThreadPriorityFlagValue =
+                CronetLibraryLoader.getHttpFlags()
+                        .flags()
+                        .get(OVERRIDE_NETWORK_THREAD_PRIORITY_FLAG_NAME);
         RequestContextConfigOptions.Builder resultBuilder =
                 RequestContextConfigOptions.newBuilder()
                         .setQuicEnabled(engineBuilder.quicEnabled())
@@ -385,7 +390,10 @@ public class CronetUrlRequestContext extends CronetEngineBase {
                         .setBypassPublicKeyPinningForLocalTrustAnchors(
                                 engineBuilder.publicKeyPinningBypassForLocalTrustAnchorsEnabled())
                         .setNetworkThreadPriority(
-                                engineBuilder.threadPriority(Process.THREAD_PRIORITY_BACKGROUND));
+                                networkThreadPriorityFlagValue != null
+                                        ? (int) networkThreadPriorityFlagValue.getIntValue()
+                                        : engineBuilder.threadPriority(
+                                                Process.THREAD_PRIORITY_BACKGROUND));
 
         if (engineBuilder.getUserAgent() != null) {
             resultBuilder.setUserAgent(engineBuilder.getUserAgent());
@@ -413,7 +421,7 @@ public class CronetUrlRequestContext extends CronetEngineBase {
     }
 
     @Override
-    public UrlRequestBase createRequest(
+    public ExperimentalUrlRequest createRequest(
             String url,
             UrlRequest.Callback callback,
             Executor executor,
@@ -428,7 +436,11 @@ public class CronetUrlRequestContext extends CronetEngineBase {
             int trafficStatsUid,
             RequestFinishedInfo.Listener requestFinishedListener,
             int idempotency,
-            long networkHandle) {
+            long networkHandle,
+            String method,
+            ArrayList<Map.Entry<String, String>> requestHeaders,
+            UploadDataProvider uploadDataProvider,
+            Executor uploadDataProviderExecutor) {
         // if this request is not bound to network, use the network bound to the engine.
         if (networkHandle == DEFAULT_NETWORK_HANDLE) {
             networkHandle = mNetworkHandle;
@@ -451,7 +463,11 @@ public class CronetUrlRequestContext extends CronetEngineBase {
                     trafficStatsUid,
                     requestFinishedListener,
                     idempotency,
-                    networkHandle);
+                    networkHandle,
+                    method,
+                    requestHeaders,
+                    uploadDataProvider,
+                    uploadDataProviderExecutor);
         }
     }
 

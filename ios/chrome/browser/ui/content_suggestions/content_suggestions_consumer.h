@@ -8,7 +8,6 @@
 #import "base/ios/block_types.h"
 
 enum class ContentSuggestionsModuleType;
-@class ContentSuggestionsReturnToRecentTabItem;
 @class ContentSuggestionsWhatsNewItem;
 @class MostVisitedTilesConfig;
 @class SafetyCheckState;
@@ -40,19 +39,6 @@ struct MagicStackOrderChange {
 // UIViewController.
 @protocol ContentSuggestionsConsumer
 
-// Indicates to the consumer to present the Return to Recent Tab tile with
-// `config`.
-- (void)showReturnToRecentTabTileWithConfig:
-    (ContentSuggestionsReturnToRecentTabItem*)config;
-
-// Indicates to the consumer to update the Return to Recent Tab tile with
-// `config`.
-- (void)updateReturnToRecentTabTileWithConfig:
-    (ContentSuggestionsReturnToRecentTabItem*)config;
-
-// Indicates to the consumer to hide the Return to Recent Tab tile.
-- (void)hideReturnToRecentTabTile;
-
 // Indicates to the consumer the current Most Visited tiles to show with
 // `config`.
 - (void)setMostVisitedTilesConfig:(MostVisitedTilesConfig*)config;
@@ -66,7 +52,7 @@ struct MagicStackOrderChange {
 
 // Indicates to the consumer to update the Magic Stack module order for a given
 // module `type` with the latest `status` change.
-// TODO(crbug.com/1477962) Also pass the view configs through this API instead
+// TODO(crbug.com/40280443) Also pass the view configs through this API instead
 // of having to call the feature-specific calls in this protocol.
 - (void)updateMagicStackOrder:(MagicStackOrderChange)change;
 
@@ -77,13 +63,7 @@ struct MagicStackOrderChange {
 
 // Indicates to the consumer to display the SetUpList - a list of
 // tasks that a new user may want to complete.
-- (void)showSetUpListWithItems:(NSArray<SetUpListItemViewData*>*)items;
 - (void)showSetUpListModuleWithConfigs:(NSArray<SetUpListConfig*>*)configs;
-
-// Marks a Set Up List item complete with an animation and updated appearance.
-// Calls the `completion` block when the animation is finished.
-- (void)markSetUpListItemComplete:(SetUpListItemType)type
-                       completion:(ProceduralBlock)completion;
 
 // Hides the Set Up List, if it is currently visible. The given `animations`
 // block will be called as part of the animation that hides the Set Up list, to

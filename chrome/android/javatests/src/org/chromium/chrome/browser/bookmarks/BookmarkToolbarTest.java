@@ -19,9 +19,11 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
-import androidx.test.espresso.core.deps.guava.primitives.Ints;
+import androidx.test.annotation.UiThreadTest;
 import androidx.test.filters.SmallTest;
 import androidx.test.platform.app.InstrumentationRegistry;
+
+import com.google.common.primitives.Ints;
 
 import org.junit.After;
 import org.junit.Before;
@@ -35,7 +37,6 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
-import org.chromium.base.test.UiThreadTest;
 import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Features;
@@ -126,6 +127,7 @@ public class BookmarkToolbarTest extends BlankUiTestActivityTestCase {
                                     .getLayoutInflater()
                                     .inflate(R.layout.bookmark_toolbar, mContentView, true)
                                     .findViewById(R.id.bookmark_toolbar);
+                    mBookmarkToolbar.setSortMenuIds(BookmarkToolbarMediator.SORT_MENU_IDS);
 
                     when(mBookmarkModel.getRootFolderId()).thenReturn(BOOKMARK_ID_ROOT);
 
@@ -287,16 +289,6 @@ public class BookmarkToolbarTest extends BlankUiTestActivityTestCase {
     @Test
     @SmallTest
     @UiThreadTest
-    public void onNavigationBack_searching() {
-        initializeNormal();
-        mBookmarkToolbar.setBookmarkUiMode(BookmarkUiMode.SEARCHING);
-        mBookmarkToolbar.onNavigationBack();
-        assertFalse(mBookmarkToolbar.isSearching());
-    }
-
-    @Test
-    @SmallTest
-    @UiThreadTest
     public void testOnMenuItemClick_closeMenu() {
         initializeNormal();
 
@@ -444,29 +436,6 @@ public class BookmarkToolbarTest extends BlankUiTestActivityTestCase {
                 R.id.selection_mode_delete_menu_id,
                 R.id.selection_open_in_new_tab_id,
                 R.id.selection_open_in_incognito_tab_id);
-    }
-
-    @Test
-    @SmallTest
-    @UiThreadTest
-    public void testOnSelectionStateChange_selectedThenNot_searching() {
-        initializeNormal();
-        mBookmarkToolbar.setBookmarkUiMode(BookmarkUiMode.SEARCHING);
-        assertTrue(mBookmarkToolbar.isSearching());
-
-        when(mSelectionDelegate.isSelectionEnabled()).thenReturn(true);
-        mBookmarkToolbar.onSelectionStateChange(Collections.singletonList(BOOKMARK_ID_ONE));
-        verifySelectionMenuVisibility();
-
-        when(mSelectionDelegate.isSelectionEnabled()).thenReturn(false);
-        mBookmarkToolbar.onSelectionStateChange(Collections.emptyList());
-        verifySelectionMenuVisibility(
-                R.id.selection_mode_edit_menu_id,
-                R.id.selection_mode_move_menu_id,
-                R.id.selection_mode_delete_menu_id,
-                R.id.selection_open_in_new_tab_id,
-                R.id.selection_open_in_incognito_tab_id);
-        assertTrue(mBookmarkToolbar.isSearching());
     }
 
     @Test

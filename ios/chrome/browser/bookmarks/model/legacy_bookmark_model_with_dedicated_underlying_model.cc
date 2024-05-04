@@ -9,11 +9,14 @@
 #include "base/check.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
+#include "components/bookmarks/managed/managed_bookmark_service.h"
 
 LegacyBookmarkModelWithDedicatedUnderlyingModel::
     LegacyBookmarkModelWithDedicatedUnderlyingModel(
-        std::unique_ptr<bookmarks::BookmarkModel> underlying_model)
-    : underlying_model_(std::move(underlying_model)) {
+        std::unique_ptr<bookmarks::BookmarkModel> underlying_model,
+        bookmarks::ManagedBookmarkService* managed_bookmark_service)
+    : underlying_model_(std::move(underlying_model)),
+      managed_bookmark_service_(managed_bookmark_service) {
   CHECK(underlying_model_);
 }
 
@@ -43,6 +46,12 @@ LegacyBookmarkModelWithDedicatedUnderlyingModel::other_node() const {
 const bookmarks::BookmarkNode*
 LegacyBookmarkModelWithDedicatedUnderlyingModel::mobile_node() const {
   return underlying_model()->mobile_node();
+}
+
+const bookmarks::BookmarkNode*
+LegacyBookmarkModelWithDedicatedUnderlyingModel::managed_node() const {
+  return managed_bookmark_service_ ? managed_bookmark_service_->managed_node()
+                                   : nullptr;
 }
 
 bool LegacyBookmarkModelWithDedicatedUnderlyingModel::IsBookmarked(
@@ -88,18 +97,34 @@ bool LegacyBookmarkModelWithDedicatedUnderlyingModel::HasBookmarks() const {
   return underlying_model()->HasBookmarks();
 }
 
-void LegacyBookmarkModelWithDedicatedUnderlyingModel::
-    GetBookmarksMatchingProperties(
-        const bookmarks::QueryFields& query,
-        size_t max_count,
-        std::vector<const bookmarks::BookmarkNode*>* nodes) {
-  bookmarks::GetBookmarksMatchingProperties(underlying_model(), query,
-                                            max_count, nodes);
+std::vector<const bookmarks::BookmarkNode*>
+LegacyBookmarkModelWithDedicatedUnderlyingModel::GetBookmarksMatchingProperties(
+    const bookmarks::QueryFields& query,
+    size_t max_count) {
+  return bookmarks::GetBookmarksMatchingProperties(underlying_model(), query,
+                                                   max_count);
 }
 
 const bookmarks::BookmarkNode*
 LegacyBookmarkModelWithDedicatedUnderlyingModel::GetNodeById(int64_t id) {
   return bookmarks::GetBookmarkNodeByID(underlying_model(), id);
+}
+
+bool LegacyBookmarkModelWithDedicatedUnderlyingModel::IsNodePartOfModel(
+    const bookmarks::BookmarkNode* node) const {
+  return node && node->HasAncestor(underlying_model_->root_node());
+}
+
+const bookmarks::BookmarkNode* LegacyBookmarkModelWithDedicatedUnderlyingModel::
+    MoveToOtherModelPossiblyWithNewNodeIdsAndUuids(
+        const bookmarks::BookmarkNode* node,
+        LegacyBookmarkModel* dest_model,
+        const bookmarks::BookmarkNode* dest_parent) {
+  return underlying_model()->MoveToOtherModelWithNewNodeIdsAndUuids(
+      node,
+      static_cast<LegacyBookmarkModelWithDedicatedUnderlyingModel*>(dest_model)
+          ->underlying_model(),
+      dest_parent);
 }
 
 base::WeakPtr<LegacyBookmarkModel>

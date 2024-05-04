@@ -7,8 +7,11 @@
 #include <vector>
 
 #include "ash/public/cpp/arc_game_controls_flag.h"
+#include "base/test/metrics/histogram_tester.h"
+#include "chrome/browser/ash/arc/input_overlay/arc_input_overlay_metrics.h"
 #include "chrome/browser/ash/arc/input_overlay/test/game_controls_test_base.h"
 #include "chrome/browser/ash/arc/input_overlay/test/overlay_view_test_base.h"
+#include "chrome/browser/ash/arc/input_overlay/test/test_utils.h"
 #include "chrome/browser/ash/arc/input_overlay/touch_injector.h"
 #include "chrome/browser/ash/arc/input_overlay/ui/button_options_menu.h"
 #include "chrome/browser/ash/arc/input_overlay/ui/delete_edit_shortcut.h"
@@ -222,13 +225,16 @@ TEST_F(EditModeDisplayOverlayControllerTest, TestFocusCycler) {
   // These UIs are never destroyed or re-created before finishing the test.
   auto* editing_list = GetEditingList();
   auto* editing_list_widget = editing_list->GetWidget();
-  auto* input_mapping_widget = input_mapping_view_->GetWidget();
-  CheckAccessibilityTree(
-      std::vector<views::Widget*>{editing_list_widget, input_mapping_widget});
+
+  // Editing list should be activated after the Game Dashboard (GD) main menu
+  // closed. This is to simulate the reality since there is no GD main menu in
+  // the test.
+  editing_list_widget->Activate();
 
   // Case 1: in edit mode default view. The tab focus will cycle between the
   // editing list and input mapping. Press key tab to the last element of the
   // editing list.
+  DCHECK(editing_list_widget->IsActive());
   PressTabKeyToFirstOrLastElement(editing_list, /*reverse=*/false);
   auto* list_focus_manager = editing_list->GetFocusManager();
   EXPECT_TRUE(list_focus_manager->GetFocusedView());
@@ -265,9 +271,6 @@ TEST_F(EditModeDisplayOverlayControllerTest, TestFocusCycler) {
       /*button_options_visible=*/true, /*delete_edit_menu_visible=*/false);
 
   auto* button_options_menu = GetButtonOptionsMenu();
-  auto* button_options_widget = button_options_menu->GetWidget();
-  CheckAccessibilityTree(
-      std::vector<views::Widget*>{button_options_widget, input_mapping_widget});
 
   auto* options_focus_manager = button_options_menu->GetFocusManager();
   EXPECT_FALSE(mapping_focus_manager->GetFocusedView());
@@ -290,9 +293,6 @@ TEST_F(EditModeDisplayOverlayControllerTest, TestFocusCycler) {
       /*input_mapping_visible=*/true, /*editing_list_visible=*/true,
       /*button_options_visible=*/false, /*delete_edit_menu_visible=*/false);
 
-  CheckAccessibilityTree(
-      std::vector<views::Widget*>{editing_list_widget, input_mapping_widget});
-
   // Case 3: show delete-edit menu. The tab focus cycles among the delete-edit
   // menu, editing list and input mapping.
   HoverAtActionViewListItem(/*index=*/1u);
@@ -301,9 +301,6 @@ TEST_F(EditModeDisplayOverlayControllerTest, TestFocusCycler) {
       /*button_options_visible=*/false, /*delete_edit_menu_visible=*/true);
 
   auto* delete_edit_shortcut = GetDeleteEditShortcut();
-  auto* delete_edit_widget = delete_edit_shortcut->GetWidget();
-  CheckAccessibilityTree(std::vector<views::Widget*>{
-      editing_list_widget, delete_edit_widget, input_mapping_widget});
 
   auto* delete_edit_focus_manager = delete_edit_shortcut->GetFocusManager();
   EXPECT_FALSE(mapping_focus_manager->GetFocusedView());
@@ -319,6 +316,105 @@ TEST_F(EditModeDisplayOverlayControllerTest, TestFocusCycler) {
   EXPECT_TRUE(mapping_focus_manager->GetFocusedView());
   EXPECT_FALSE(list_focus_manager->GetFocusedView());
   EXPECT_FALSE(delete_edit_focus_manager->GetFocusedView());
+}
+
+// Verifies that the views keep open when entering and exiting fullscreen.
+TEST_F(EditModeDisplayOverlayControllerTest, TestEnterExitFullscreen) {
+  auto* widget =
+      views::Widget::GetWidgetForNativeWindow(touch_injector_->window());
+
+  // 1. Enter and exit fullscreen with editing list.
+  CheckWidgetsVisible(
+      /*input_mapping_visible=*/true, /*editing_list_visible=*/true,
+      /*button_options_visible=*/false, /*delete_edit_menu_visible=*/false);
+  widget->SetFullscreen(true);
+  EXPECT_TRUE(widget->IsFullscreen());
+  CheckWidgetsVisible(
+      /*input_mapping_visible=*/true, /*editing_list_visible=*/true,
+      /*button_options_visible=*/false, /*delete_edit_menu_visible=*/false);
+  widget->SetFullscreen(false);
+  EXPECT_FALSE(widget->IsFullscreen());
+  CheckWidgetsVisible(
+      /*input_mapping_visible=*/true, /*editing_list_visible=*/true,
+      /*button_options_visible=*/false, /*delete_edit_menu_visible=*/false);
+
+  // 2. Enter and exit fullscreen in button placement mode.
+  PressAddButton();
+  EXPECT_TRUE(GetTargetView());
+  widget->SetFullscreen(true);
+  EXPECT_TRUE(widget->IsFullscreen());
+  EXPECT_TRUE(GetTargetView());
+  widget->SetFullscreen(false);
+  EXPECT_FALSE(widget->IsFullscreen());
+  EXPECT_TRUE(GetTargetView());
+  // Exit button placement mode.
+  GetEventGenerator()->PressAndReleaseKey(ui::VKEY_ESCAPE, ui::EF_NONE);
+
+  // 3. Enter and exit fullscreen mode with bottom options menu.
+  ShowButtonOptionsMenu(tap_action_);
+  CheckWidgetsVisible(
+      /*input_mapping_visible=*/true, /*editing_list_visible=*/false,
+      /*button_options_visible=*/true, /*delete_edit_menu_visible=*/false);
+  widget->SetFullscreen(true);
+  EXPECT_TRUE(widget->IsFullscreen());
+  CheckWidgetsVisible(
+      /*input_mapping_visible=*/true, /*editing_list_visible=*/false,
+      /*button_options_visible=*/true, /*delete_edit_menu_visible=*/false);
+  widget->SetFullscreen(false);
+  EXPECT_FALSE(widget->IsFullscreen());
+  CheckWidgetsVisible(
+      /*input_mapping_visible=*/true, /*editing_list_visible=*/false,
+      /*button_options_visible=*/true, /*delete_edit_menu_visible=*/false);
+}
+
+TEST_F(EditModeDisplayOverlayControllerTest, TestDeleteEditMenu) {
+  HoverAtActionViewListItem(/*index=*/1u);
+  CheckWidgetsVisible(
+      /*input_mapping_visible=*/true, /*editing_list_visible=*/true,
+      /*button_options_visible=*/false, /*delete_edit_menu_visible=*/true);
+
+  // Close the delete-edit menu inexplicitly.
+  GetEventGenerator()->PressAndReleaseKey(ui::VKEY_ESCAPE, ui::EF_NONE);
+  // Delete-edit menu is closed asynchronously.
+  base::RunLoop().RunUntilIdle();
+  CheckWidgetsVisible(
+      /*input_mapping_visible=*/true, /*editing_list_visible=*/true,
+      /*button_options_visible=*/false, /*delete_edit_menu_visible=*/false);
+}
+
+TEST_F(EditModeDisplayOverlayControllerTest, TestHistograms) {
+  base::HistogramTester histograms;
+
+  // Check button options histograms.
+  const std::string button_options_histogram_name =
+      BuildGameControlsHistogramName(
+          kButtonOptionsMenuFunctionTriggeredHistogram);
+  std::map<ButtonOptionsMenuFunction, int>
+      expected_button_options_histogram_values;
+
+  ShowButtonOptionsMenu(tap_action_);
+  PressDoneButtonOnButtonOptionsMenu();
+  MapIncreaseValueByOne(expected_button_options_histogram_values,
+                        ButtonOptionsMenuFunction::kDone);
+  VerifyHistogramValues(histograms, button_options_histogram_name,
+                        expected_button_options_histogram_values);
+
+  ShowButtonOptionsMenu(move_action_);
+  PressDeleteButtonOnButtonOptionsMenu();
+  MapIncreaseValueByOne(expected_button_options_histogram_values,
+                        ButtonOptionsMenuFunction::kDelete);
+  VerifyHistogramValues(histograms, button_options_histogram_name,
+                        expected_button_options_histogram_values);
+
+  // Check editing list histograms.
+  const std::string editing_list_histogram_name =
+      BuildGameControlsHistogramName(kEditingListFunctionTriggeredHistogram);
+  std::map<EditingListFunction, int> expected_editing_list_histogram_values;
+  PressDoneButton();
+  MapIncreaseValueByOne(expected_editing_list_histogram_values,
+                        EditingListFunction::kDone);
+  VerifyHistogramValues(histograms, editing_list_histogram_name,
+                        expected_editing_list_histogram_values);
 }
 
 }  // namespace arc::input_overlay

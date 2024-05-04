@@ -2,9 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40284755): Remove this and spanify to fix the errors.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "base/debug/dwarf_line_no.h"
 
-#include "base/allocator/partition_allocator/src/partition_alloc/pointers/raw_ref.h"
+#include "partition_alloc/pointers/raw_ref.h"
 
 #ifdef USE_SYMBOLIZE
 #include <algorithm>
@@ -16,9 +21,9 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "base/allocator/partition_allocator/src/partition_alloc/pointers/raw_ptr.h"
 #include "base/debug/buffered_dwarf_reader.h"
 #include "base/third_party/symbolize/symbolize.h"
+#include "partition_alloc/pointers/raw_ptr.h"
 
 namespace base {
 namespace debug {
@@ -1337,7 +1342,7 @@ void GetDwarfCompileUnitOffsets(const void* const* trace,
       continue;
     }
 
-    // TODO(https://crbug.com/1335630): Consider exposing the end address so a
+    // TODO(crbug.com/40228616): Consider exposing the end address so a
     // range of frames can be bulk-populated. This was originally implemented,
     // but line number symbolization is currently broken by default (and also
     // broken in sandboxed processes). The various issues will be addressed

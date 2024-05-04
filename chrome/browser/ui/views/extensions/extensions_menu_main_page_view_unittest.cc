@@ -10,11 +10,11 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/user_action_tester.h"
 #include "chrome/app/vector_icons/vector_icons.h"
-#include "chrome/browser/extensions/active_tab_permission_granter.h"
 #include "chrome/browser/extensions/chrome_test_extension_loader.h"
 #include "chrome/browser/extensions/extension_action_runner.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/site_permissions_helper.h"
+#include "chrome/browser/extensions/permissions/active_tab_permission_granter.h"
+#include "chrome/browser/extensions/permissions/site_permissions_helper.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/ui/color/chrome_color_id.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
@@ -36,7 +36,6 @@
 #include "extensions/test/permissions_manager_waiter.h"
 #include "extensions/test/test_extension_dir.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/gfx/image/image_unittest_util.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/vector_icons.h"
@@ -227,23 +226,24 @@ TEST_F(ExtensionsMenuMainPageViewUnitTest, NoSiteAccessRequested) {
 
   // When site setting is set to "customize by extension" (default):
   //   - site access toggle is hidden.
-  //   - site permissions button is visible, disabled, has no icon and has
-  //   "none" text.
+  //   - site permissions button is visible, disabled, and has the corresponding
+  //     strings.
   EXPECT_EQ(GetUserSiteSetting(url),
             PermissionsManager::UserSiteSetting::kCustomizeByExtension);
   EXPECT_FALSE(menu_item->site_access_toggle_for_testing()->GetVisible());
   EXPECT_TRUE(menu_item->site_permissions_button_for_testing()->GetVisible());
   EXPECT_FALSE(menu_item->site_permissions_button_for_testing()->GetEnabled());
-  EXPECT_FALSE(
-      menu_item->site_permissions_button_icon_for_testing()->GetVisible());
+  EXPECT_EQ(menu_item->site_permissions_button_for_testing()->GetText(),
+            u"No access needed");
+  EXPECT_EQ(menu_item->site_permissions_button_for_testing()->GetTooltipText(),
+            std::u16string());
   EXPECT_EQ(
-      menu_item->site_permissions_button_for_testing()->title()->GetText(),
-      l10n_util::GetStringUTF16(
-          IDS_EXTENSIONS_MENU_MAIN_PAGE_EXTENSION_SITE_ACCESS_NONE));
+      menu_item->site_permissions_button_for_testing()->GetAccessibleName(),
+      u"No access needed");
 
-  // when site setting is set to "block all extensions":
-  //   - site access toggle is hidden
-  //   - site permissions button is hidden
+  // When site setting is set to "block all extensions":
+  //   - site access toggle is hidden.
+  //   - site permissions button is hidden.
   UpdateUserSiteSetting(
       PermissionsManager::UserSiteSetting::kBlockAllExtensions, url);
   EXPECT_FALSE(menu_item->site_access_toggle_for_testing()->GetVisible());
@@ -265,19 +265,20 @@ TEST_F(ExtensionsMenuMainPageViewUnitTest,
 
   // When site setting is set to "customize by extension" (default):
   //   - site access toggle is hidden.
-  //   - site permissions button is visible, disabled, has no icon and has
-  //     "none" text.
+  //   - site permissions button is visible, disabled and has the corresponding
+  //     strings.
   EXPECT_EQ(GetUserSiteSetting(url),
             PermissionsManager::UserSiteSetting::kCustomizeByExtension);
   EXPECT_FALSE(menu_item->site_access_toggle_for_testing()->GetVisible());
   EXPECT_TRUE(menu_item->site_permissions_button_for_testing()->GetVisible());
   EXPECT_FALSE(menu_item->site_permissions_button_for_testing()->GetEnabled());
-  EXPECT_FALSE(
-      menu_item->site_permissions_button_icon_for_testing()->GetVisible());
+  EXPECT_EQ(menu_item->site_permissions_button_for_testing()->GetText(),
+            u"No access needed");
+  EXPECT_EQ(menu_item->site_permissions_button_for_testing()->GetTooltipText(),
+            u"Installed by your administrator");
   EXPECT_EQ(
-      menu_item->site_permissions_button_for_testing()->title()->GetText(),
-      l10n_util::GetStringUTF16(
-          IDS_EXTENSIONS_MENU_MAIN_PAGE_EXTENSION_SITE_ACCESS_NONE));
+      menu_item->site_permissions_button_for_testing()->GetAccessibleName(),
+      u"No access needed. Installed by your administrator");
 
   // When site setting is set to "block all extensions":
   //   - site access toggle is hidden
@@ -305,8 +306,7 @@ TEST_F(ExtensionsMenuMainPageViewUnitTest,
   // By default, site setting is set to "customize by extension" (default) and
   // extension has granted "on site" access:
   //   - site access toggle is visible and on.
-  //   - site permissions button is visible, enabled, with icon and has "on
-  //     site" text.
+  //   - site permissions button is visible, enabled and has "on site" text.
   ASSERT_EQ(GetUserSiteSetting(url),
             PermissionsManager::UserSiteSetting::kCustomizeByExtension);
   ASSERT_EQ(GetUserSiteAccess(*extension, url),
@@ -315,18 +315,15 @@ TEST_F(ExtensionsMenuMainPageViewUnitTest,
   EXPECT_TRUE(menu_item->site_access_toggle_for_testing()->GetIsOn());
   EXPECT_TRUE(menu_item->site_permissions_button_for_testing()->GetVisible());
   EXPECT_TRUE(menu_item->site_permissions_button_for_testing()->GetEnabled());
-  EXPECT_TRUE(
-      menu_item->site_permissions_button_icon_for_testing()->GetVisible());
-  EXPECT_EQ(
-      menu_item->site_permissions_button_for_testing()->title()->GetText(),
-      l10n_util::GetStringUTF16(
-          IDS_EXTENSIONS_MENU_MAIN_PAGE_EXTENSION_SITE_ACCESS_ON_SITE));
+  EXPECT_EQ(menu_item->site_permissions_button_for_testing()->GetText(),
+            l10n_util::GetStringUTF16(
+                IDS_EXTENSIONS_MENU_MAIN_PAGE_EXTENSION_SITE_ACCESS_ON_SITE));
 
   // When site access is toggled OFF:
   //   - extension site access is "on click".
   //   - site access toggle is visible and off.
-  //   - site permissions button is visible, enabled, with icon and has "on
-  //     click" text.
+  //   - site permissions button is visible, enabled and has the corresponding
+  //     strings.
   ClickSiteAccessToggle(menu_item);
   EXPECT_EQ(GetUserSiteAccess(*extension, url),
             PermissionsManager::UserSiteAccess::kOnClick);
@@ -334,19 +331,20 @@ TEST_F(ExtensionsMenuMainPageViewUnitTest,
   EXPECT_FALSE(menu_item->site_access_toggle_for_testing()->GetIsOn());
   EXPECT_TRUE(menu_item->site_permissions_button_for_testing()->GetVisible());
   EXPECT_TRUE(menu_item->site_permissions_button_for_testing()->GetEnabled());
-  EXPECT_TRUE(
-      menu_item->site_permissions_button_icon_for_testing()->GetVisible());
+  EXPECT_EQ(menu_item->site_permissions_button_for_testing()->GetText(),
+            u"Ask on every visit");
+  EXPECT_EQ(menu_item->site_permissions_button_for_testing()->GetTooltipText(),
+            u"Change site permissions");
   EXPECT_EQ(
-      menu_item->site_permissions_button_for_testing()->title()->GetText(),
-      l10n_util::GetStringUTF16(
-          IDS_EXTENSIONS_MENU_MAIN_PAGE_EXTENSION_SITE_ACCESS_ON_CLICK));
+      menu_item->site_permissions_button_for_testing()->GetAccessibleName(),
+      u"Ask on every visit. Select to change site permissions");
 
   // When site access is toggled ON:
   //   - extension site access is "on site", since that was the previous
   //     granted site access state.
   //   - site access toggle is visible and on.
-  //   - site permissions button is visible, enabled, with icon and has "on
-  //     site" text.
+  //   - site permissions button is visible, enabled and has the corresponding
+  //     strings.
   ClickSiteAccessToggle(menu_item);
   EXPECT_EQ(GetUserSiteAccess(*extension, url),
             PermissionsManager::UserSiteAccess::kOnSite);
@@ -354,12 +352,13 @@ TEST_F(ExtensionsMenuMainPageViewUnitTest,
   EXPECT_TRUE(menu_item->site_access_toggle_for_testing()->GetIsOn());
   EXPECT_TRUE(menu_item->site_permissions_button_for_testing()->GetVisible());
   EXPECT_TRUE(menu_item->site_permissions_button_for_testing()->GetEnabled());
-  EXPECT_TRUE(
-      menu_item->site_permissions_button_icon_for_testing()->GetVisible());
+  EXPECT_EQ(menu_item->site_permissions_button_for_testing()->GetText(),
+            u"Always on this site");
+  EXPECT_EQ(menu_item->site_permissions_button_for_testing()->GetTooltipText(),
+            u"Change site permissions");
   EXPECT_EQ(
-      menu_item->site_permissions_button_for_testing()->title()->GetText(),
-      l10n_util::GetStringUTF16(
-          IDS_EXTENSIONS_MENU_MAIN_PAGE_EXTENSION_SITE_ACCESS_ON_SITE));
+      menu_item->site_permissions_button_for_testing()->GetAccessibleName(),
+      u"Always on this site. Select to change site permissions");
 }
 
 // Verifies the site access toggle and site permissions button properties when
@@ -379,8 +378,8 @@ TEST_F(ExtensionsMenuMainPageViewUnitTest,
   // By default, site setting is set to "customize by extension" (default) and
   // extension has granted "on all sites" access:
   //   - site access toggle is visible and on.
-  //   - site permissions button is visible, enabled, with icon and has "on
-  //     all sites" text.
+  //   - site permissions button is visible, enabled and has the corresponding
+  //     strings.
   ASSERT_EQ(GetUserSiteSetting(url),
             PermissionsManager::UserSiteSetting::kCustomizeByExtension);
   ASSERT_EQ(GetUserSiteAccess(*extension, url),
@@ -389,18 +388,19 @@ TEST_F(ExtensionsMenuMainPageViewUnitTest,
   EXPECT_TRUE(menu_item->site_access_toggle_for_testing()->GetIsOn());
   EXPECT_TRUE(menu_item->site_permissions_button_for_testing()->GetVisible());
   EXPECT_TRUE(menu_item->site_permissions_button_for_testing()->GetEnabled());
-  EXPECT_TRUE(
-      menu_item->site_permissions_button_icon_for_testing()->GetVisible());
+  EXPECT_EQ(menu_item->site_permissions_button_for_testing()->GetText(),
+            u"Always on all sites");
+  EXPECT_EQ(menu_item->site_permissions_button_for_testing()->GetTooltipText(),
+            u"Change site permissions");
   EXPECT_EQ(
-      menu_item->site_permissions_button_for_testing()->title()->GetText(),
-      l10n_util::GetStringUTF16(
-          IDS_EXTENSIONS_MENU_MAIN_PAGE_EXTENSION_SITE_ACCESS_ON_ALL_SITES));
+      menu_item->site_permissions_button_for_testing()->GetAccessibleName(),
+      u"Always on all sites. Select to change site permissions");
 
   // When site access is toggled OFF:
   //   - extension site access is changed to "on click".
   //   - site access toggle is visible and off.
-  //   - site permissions button is visible, enabled, with icon and has "on
-  //     click" text.
+  //   - site permissions button is visible, enabled and has the corresponding
+  //     strings.
   ClickSiteAccessToggle(menu_item);
   EXPECT_EQ(GetUserSiteAccess(*extension, url),
             PermissionsManager::UserSiteAccess::kOnClick);
@@ -408,19 +408,20 @@ TEST_F(ExtensionsMenuMainPageViewUnitTest,
   EXPECT_FALSE(menu_item->site_access_toggle_for_testing()->GetIsOn());
   EXPECT_TRUE(menu_item->site_permissions_button_for_testing()->GetVisible());
   EXPECT_TRUE(menu_item->site_permissions_button_for_testing()->GetEnabled());
-  EXPECT_TRUE(
-      menu_item->site_permissions_button_icon_for_testing()->GetVisible());
+  EXPECT_EQ(menu_item->site_permissions_button_for_testing()->GetText(),
+            u"Ask on every visit");
+  EXPECT_EQ(menu_item->site_permissions_button_for_testing()->GetTooltipText(),
+            u"Change site permissions");
   EXPECT_EQ(
-      menu_item->site_permissions_button_for_testing()->title()->GetText(),
-      l10n_util::GetStringUTF16(
-          IDS_EXTENSIONS_MENU_MAIN_PAGE_EXTENSION_SITE_ACCESS_ON_CLICK));
+      menu_item->site_permissions_button_for_testing()->GetAccessibleName(),
+      u"Ask on every visit. Select to change site permissions");
 
   // When site access is toggled ON:
   //   - extension site access is "on all sites", since that was the previous
   //     granted site access state.
   //   - site access toggle is visible and on.
-  //   - site permissions button is visible, enabled, with icon and has "on
-  //     site" text.
+  //   - site permissions button is visible, enabled and has the corresponding
+  //     strings.
   ClickSiteAccessToggle(menu_item);
   EXPECT_EQ(GetUserSiteAccess(*extension, url),
             PermissionsManager::UserSiteAccess::kOnAllSites);
@@ -428,12 +429,13 @@ TEST_F(ExtensionsMenuMainPageViewUnitTest,
   EXPECT_TRUE(menu_item->site_access_toggle_for_testing()->GetIsOn());
   EXPECT_TRUE(menu_item->site_permissions_button_for_testing()->GetVisible());
   EXPECT_TRUE(menu_item->site_permissions_button_for_testing()->GetEnabled());
-  EXPECT_TRUE(
-      menu_item->site_permissions_button_icon_for_testing()->GetVisible());
+  EXPECT_EQ(menu_item->site_permissions_button_for_testing()->GetText(),
+            u"Always on all sites");
+  EXPECT_EQ(menu_item->site_permissions_button_for_testing()->GetTooltipText(),
+            u"Change site permissions");
   EXPECT_EQ(
-      menu_item->site_permissions_button_for_testing()->title()->GetText(),
-      l10n_util::GetStringUTF16(
-          IDS_EXTENSIONS_MENU_MAIN_PAGE_EXTENSION_SITE_ACCESS_ON_ALL_SITES));
+      menu_item->site_permissions_button_for_testing()->GetAccessibleName(),
+      u"Always on all sites. Select to change site permissions");
 }
 
 // Verifies the site access toggle and site permissions button properties for an
@@ -453,8 +455,8 @@ TEST_F(ExtensionsMenuMainPageViewUnitTest,
   // When site setting is set to "customize by extension" and extension site
   // permissions are granted "on all sites" (default):
   //   - site access toggle is visible and on.
-  //   - site permissions button is visible, enabled, with icon and has "on all
-  //     sites" text.
+  //   - site permissions button is visible, enabled, and has "on all sites"
+  //   text.
   ASSERT_EQ(GetUserSiteSetting(url),
             PermissionsManager::UserSiteSetting::kCustomizeByExtension);
   ASSERT_EQ(GetUserSiteAccess(*extension, url),
@@ -463,30 +465,24 @@ TEST_F(ExtensionsMenuMainPageViewUnitTest,
   EXPECT_TRUE(menu_item->site_access_toggle_for_testing()->GetIsOn());
   EXPECT_TRUE(menu_item->site_permissions_button_for_testing()->GetVisible());
   EXPECT_TRUE(menu_item->site_permissions_button_for_testing()->GetEnabled());
-  EXPECT_TRUE(
-      menu_item->site_permissions_button_icon_for_testing()->GetVisible());
   EXPECT_EQ(
-      menu_item->site_permissions_button_for_testing()->title()->GetText(),
+      menu_item->site_permissions_button_for_testing()->GetText(),
       l10n_util::GetStringUTF16(
           IDS_EXTENSIONS_MENU_MAIN_PAGE_EXTENSION_SITE_ACCESS_ON_ALL_SITES));
 
   // When site setting is set to "customize by extension" and extension site
   // permissions are withheld.
   //   - site access toggle is visible and off
-  //   - site permissions button is visible, enabled, with icon and has "on
-  //     click" text.
+  //   - site permissions button is visible, enabled and has "on click" text.
   WithholdHostPermissions(extension.get());
   LayoutMenuIfNecessary();
   EXPECT_TRUE(menu_item->site_access_toggle_for_testing()->GetVisible());
   EXPECT_FALSE(menu_item->site_access_toggle_for_testing()->GetIsOn());
   EXPECT_TRUE(menu_item->site_permissions_button_for_testing()->GetVisible());
   EXPECT_TRUE(menu_item->site_permissions_button_for_testing()->GetEnabled());
-  EXPECT_TRUE(
-      menu_item->site_permissions_button_icon_for_testing()->GetVisible());
-  EXPECT_EQ(
-      menu_item->site_permissions_button_for_testing()->title()->GetText(),
-      l10n_util::GetStringUTF16(
-          IDS_EXTENSIONS_MENU_MAIN_PAGE_EXTENSION_SITE_ACCESS_ON_CLICK));
+  EXPECT_EQ(menu_item->site_permissions_button_for_testing()->GetText(),
+            l10n_util::GetStringUTF16(
+                IDS_EXTENSIONS_MENU_MAIN_PAGE_EXTENSION_SITE_ACCESS_ON_CLICK));
 
   // When site setting is set to "block all extensions":
   //   - site access toggle is hidden.
@@ -522,7 +518,7 @@ TEST_F(
             PermissionsManager::UserSiteAccess::kOnAllSites);
   EXPECT_TRUE(menu_item->site_access_toggle_for_testing()->GetIsOn());
   EXPECT_EQ(
-      menu_item->site_permissions_button_for_testing()->title()->GetText(),
+      menu_item->site_permissions_button_for_testing()->GetText(),
       l10n_util::GetStringUTF16(
           IDS_EXTENSIONS_MENU_MAIN_PAGE_EXTENSION_SITE_ACCESS_ON_ALL_SITES));
 
@@ -534,10 +530,9 @@ TEST_F(
                        PermissionsManager::UserSiteAccess::kOnClick);
   LayoutMenuIfNecessary();
   EXPECT_FALSE(menu_item->site_access_toggle_for_testing()->GetIsOn());
-  EXPECT_EQ(
-      menu_item->site_permissions_button_for_testing()->title()->GetText(),
-      l10n_util::GetStringUTF16(
-          IDS_EXTENSIONS_MENU_MAIN_PAGE_EXTENSION_SITE_ACCESS_ON_CLICK));
+  EXPECT_EQ(menu_item->site_permissions_button_for_testing()->GetText(),
+            l10n_util::GetStringUTF16(
+                IDS_EXTENSIONS_MENU_MAIN_PAGE_EXTENSION_SITE_ACCESS_ON_CLICK));
 
   // Toggle extension site access ON:
   //   - site access toggle is on
@@ -546,7 +541,7 @@ TEST_F(
   ClickSiteAccessToggle(menu_item);
   EXPECT_TRUE(menu_item->site_access_toggle_for_testing()->GetIsOn());
   EXPECT_EQ(
-      menu_item->site_permissions_button_for_testing()->title()->GetText(),
+      menu_item->site_permissions_button_for_testing()->GetText(),
       l10n_util::GetStringUTF16(
           IDS_EXTENSIONS_MENU_MAIN_PAGE_EXTENSION_SITE_ACCESS_ON_ALL_SITES));
 }
@@ -569,8 +564,8 @@ TEST_F(ExtensionsMenuMainPageViewUnitTest,
   // all sites" access (default):
   //   - site access toggle is hidden, because extension has site access but
   //     user cannot withheld it.
-  //   - site permissions button is visible, disabled, has no icon and has "on
-  //     all sites".
+  //   - site permissions button is visible, disabled and has the corresponding
+  //     strings.
   ASSERT_EQ(GetUserSiteSetting(url),
             PermissionsManager::UserSiteSetting::kCustomizeByExtension);
   ASSERT_EQ(GetUserSiteAccess(*extension, url),
@@ -578,18 +573,19 @@ TEST_F(ExtensionsMenuMainPageViewUnitTest,
   EXPECT_FALSE(menu_item->site_access_toggle_for_testing()->GetVisible());
   EXPECT_TRUE(menu_item->site_permissions_button_for_testing()->GetVisible());
   EXPECT_FALSE(menu_item->site_permissions_button_for_testing()->GetEnabled());
+  EXPECT_EQ(menu_item->site_permissions_button_for_testing()->GetText(),
+            u"Always on all sites");
+  EXPECT_EQ(menu_item->site_permissions_button_for_testing()->GetTooltipText(),
+            u"Installed by your administrator");
   EXPECT_EQ(
-      menu_item->site_permissions_button_for_testing()->title()->GetText(),
-      l10n_util::GetStringUTF16(
-          IDS_EXTENSIONS_MENU_MAIN_PAGE_EXTENSION_SITE_ACCESS_ON_ALL_SITES));
-  EXPECT_FALSE(
-      menu_item->site_permissions_button_icon_for_testing()->GetVisible());
+      menu_item->site_permissions_button_for_testing()->GetAccessibleName(),
+      u"Always on all sites. Installed by your administrator");
 
   // When site setting is set to "block all extensions":
   //   - extension site access is still "on all sites".
   //   - site access toggle is hidden.
-  //   - site permissions button is visible, disabled, has no icon and has "on
-  //     all sites" text.
+  //   - site permissions button is visible, disabled and has the corresponding
+  //     strings
   // Note: Policy-installed extension can still run on the site even if the
   // user blocked all extensions because enterprise-installed extensions take
   // priority over user settings. Therefore, the button is visible (so the
@@ -602,17 +598,18 @@ TEST_F(ExtensionsMenuMainPageViewUnitTest,
   EXPECT_FALSE(menu_item->site_access_toggle_for_testing()->GetVisible());
   EXPECT_TRUE(menu_item->site_permissions_button_for_testing()->GetVisible());
   EXPECT_FALSE(menu_item->site_permissions_button_for_testing()->GetEnabled());
+  EXPECT_EQ(menu_item->site_permissions_button_for_testing()->GetText(),
+            u"Always on all sites");
+  EXPECT_EQ(menu_item->site_permissions_button_for_testing()->GetTooltipText(),
+            u"Installed by your administrator");
   EXPECT_EQ(
-      menu_item->site_permissions_button_for_testing()->title()->GetText(),
-      l10n_util::GetStringUTF16(
-          IDS_EXTENSIONS_MENU_MAIN_PAGE_EXTENSION_SITE_ACCESS_ON_ALL_SITES));
-  EXPECT_FALSE(
-      menu_item->site_permissions_button_icon_for_testing()->GetVisible());
+      menu_item->site_permissions_button_for_testing()->GetAccessibleName(),
+      u"Always on all sites. Installed by your administrator");
 }
 
 // Verifies the site access toggle and site permissions button properties when
 // toggling site access for an extension that only requests active tab.
-// TODO(crbug.com/1445397): Flaky on various builders.
+// TODO(crbug.com/40268140): Flaky on various builders.
 TEST_F(ExtensionsMenuMainPageViewUnitTest,
        DISABLED_ActiveTabRequested_ToggleSiteAccess) {
   auto extension = InstallExtensionWithPermissions("Extension", {"activeTab"});
@@ -626,8 +623,7 @@ TEST_F(ExtensionsMenuMainPageViewUnitTest,
   // By default, site setting is set to "customize by extension" (default) and
   // extension has not active tab granted.
   //   - site access toggle is visible and off.
-  //   - site permissions button is visible, enabled, with icon and has "on
-  //     click" text.
+  //   - site permissions button is visible, enabled and has "on click" text.
   ASSERT_EQ(GetUserSiteSetting(url),
             PermissionsManager::UserSiteSetting::kCustomizeByExtension);
   ASSERT_EQ(GetUserSiteAccess(*extension, url),
@@ -636,20 +632,16 @@ TEST_F(ExtensionsMenuMainPageViewUnitTest,
   EXPECT_FALSE(menu_item->site_access_toggle_for_testing()->GetIsOn());
   EXPECT_TRUE(menu_item->site_permissions_button_for_testing()->GetVisible());
   EXPECT_TRUE(menu_item->site_permissions_button_for_testing()->GetEnabled());
-  EXPECT_TRUE(
-      menu_item->site_permissions_button_icon_for_testing()->GetVisible());
-  EXPECT_EQ(
-      menu_item->site_permissions_button_for_testing()->title()->GetText(),
-      l10n_util::GetStringUTF16(
-          IDS_EXTENSIONS_MENU_MAIN_PAGE_EXTENSION_SITE_ACCESS_ON_CLICK));
+  EXPECT_EQ(menu_item->site_permissions_button_for_testing()->GetText(),
+            l10n_util::GetStringUTF16(
+                IDS_EXTENSIONS_MENU_MAIN_PAGE_EXTENSION_SITE_ACCESS_ON_CLICK));
 
   // When site access toggle is toggled ON:
   //   - extension site access is "on click". Since extension only requested
   //     active tab, toggling site access on grants tab permissions but doesn't
   //     change the user site access.
   //   - site access toggle is visible and on.
-  //   - site permissions button is visible, enabled, with icon and has "on
-  //     click" text.
+  //   - site permissions button is visible, enabled and has "on click" text.
   ClickSiteAccessToggle(menu_item, /*active_tab_only=*/true);
   EXPECT_EQ(GetUserSiteAccess(*extension, url),
             PermissionsManager::UserSiteAccess::kOnClick);
@@ -657,18 +649,14 @@ TEST_F(ExtensionsMenuMainPageViewUnitTest,
   EXPECT_TRUE(menu_item->site_access_toggle_for_testing()->GetIsOn());
   EXPECT_TRUE(menu_item->site_permissions_button_for_testing()->GetVisible());
   EXPECT_TRUE(menu_item->site_permissions_button_for_testing()->GetEnabled());
-  EXPECT_TRUE(
-      menu_item->site_permissions_button_icon_for_testing()->GetVisible());
-  EXPECT_EQ(
-      menu_item->site_permissions_button_for_testing()->title()->GetText(),
-      l10n_util::GetStringUTF16(
-          IDS_EXTENSIONS_MENU_MAIN_PAGE_EXTENSION_SITE_ACCESS_ON_CLICK));
+  EXPECT_EQ(menu_item->site_permissions_button_for_testing()->GetText(),
+            l10n_util::GetStringUTF16(
+                IDS_EXTENSIONS_MENU_MAIN_PAGE_EXTENSION_SITE_ACCESS_ON_CLICK));
 
   // When site access toggle is toggled OFF:
   //   - extension site access is "on click".
   //   - site access toggle is visible and off.
-  //   - site permissions button is visible, enabled, with icon and has "on
-  //     click" text.
+  //   - site permissions button is visible, enabled and has "on click" text.
   EXPECT_EQ(GetUserSiteAccess(*extension, url),
             PermissionsManager::UserSiteAccess::kOnClick);
   ClickSiteAccessToggle(menu_item, /*active_tab_only=*/true);
@@ -676,12 +664,9 @@ TEST_F(ExtensionsMenuMainPageViewUnitTest,
   EXPECT_FALSE(menu_item->site_access_toggle_for_testing()->GetIsOn());
   EXPECT_TRUE(menu_item->site_permissions_button_for_testing()->GetVisible());
   EXPECT_TRUE(menu_item->site_permissions_button_for_testing()->GetEnabled());
-  EXPECT_TRUE(
-      menu_item->site_permissions_button_icon_for_testing()->GetVisible());
-  EXPECT_EQ(
-      menu_item->site_permissions_button_for_testing()->title()->GetText(),
-      l10n_util::GetStringUTF16(
-          IDS_EXTENSIONS_MENU_MAIN_PAGE_EXTENSION_SITE_ACCESS_ON_CLICK));
+  EXPECT_EQ(menu_item->site_permissions_button_for_testing()->GetText(),
+            l10n_util::GetStringUTF16(
+                IDS_EXTENSIONS_MENU_MAIN_PAGE_EXTENSION_SITE_ACCESS_ON_CLICK));
 }
 
 // Verifies the site access toggle and site permissions button properties when
@@ -703,8 +688,7 @@ TEST_F(ExtensionsMenuMainPageViewUnitTest,
   //   - site interaction is "active tab".
   //   - site access is "on click".
   //   - site access toggle is visible and off.
-  //   - site permissions button is visible, enabled, with icon and has "on
-  //     click" text.
+  //   - site permissions button is visible, enabled, and has "on click" text.
   EXPECT_EQ(GetSiteInteraction(*extension, web_contents),
             SitePermissionsHelper::SiteInteraction::kActiveTab);
   EXPECT_EQ(GetUserSiteAccess(*extension, url),
@@ -713,12 +697,9 @@ TEST_F(ExtensionsMenuMainPageViewUnitTest,
   EXPECT_FALSE(menu_item->site_access_toggle_for_testing()->GetIsOn());
   EXPECT_TRUE(menu_item->site_permissions_button_for_testing()->GetVisible());
   EXPECT_TRUE(menu_item->site_permissions_button_for_testing()->GetEnabled());
-  EXPECT_TRUE(
-      menu_item->site_permissions_button_icon_for_testing()->GetVisible());
-  EXPECT_EQ(
-      menu_item->site_permissions_button_for_testing()->title()->GetText(),
-      l10n_util::GetStringUTF16(
-          IDS_EXTENSIONS_MENU_MAIN_PAGE_EXTENSION_SITE_ACCESS_ON_CLICK));
+  EXPECT_EQ(menu_item->site_permissions_button_for_testing()->GetText(),
+            l10n_util::GetStringUTF16(
+                IDS_EXTENSIONS_MENU_MAIN_PAGE_EXTENSION_SITE_ACCESS_ON_CLICK));
 
   auto* action_runner =
       extensions::ExtensionActionRunner::GetForWebContents(web_contents);
@@ -730,8 +711,7 @@ TEST_F(ExtensionsMenuMainPageViewUnitTest,
   //   - site access is "on click" since granting tab permissions doesn't change
   //   site access.
   //   - site access toggle is visible and on.
-  //   - site permissions button is visible, enabled, with icon and has "on
-  //     click" text.
+  //   - site permissions button is visible, enabled, and has "on click" text.
   action_runner->GrantTabPermissions({extension.get()});
   EXPECT_EQ(GetSiteInteraction(*extension, web_contents),
             SitePermissionsHelper::SiteInteraction::kGranted);
@@ -741,19 +721,15 @@ TEST_F(ExtensionsMenuMainPageViewUnitTest,
   EXPECT_TRUE(menu_item->site_access_toggle_for_testing()->GetIsOn());
   EXPECT_TRUE(menu_item->site_permissions_button_for_testing()->GetVisible());
   EXPECT_TRUE(menu_item->site_permissions_button_for_testing()->GetEnabled());
-  EXPECT_TRUE(
-      menu_item->site_permissions_button_icon_for_testing()->GetVisible());
-  EXPECT_EQ(
-      menu_item->site_permissions_button_for_testing()->title()->GetText(),
-      l10n_util::GetStringUTF16(
-          IDS_EXTENSIONS_MENU_MAIN_PAGE_EXTENSION_SITE_ACCESS_ON_CLICK));
+  EXPECT_EQ(menu_item->site_permissions_button_for_testing()->GetText(),
+            l10n_util::GetStringUTF16(
+                IDS_EXTENSIONS_MENU_MAIN_PAGE_EXTENSION_SITE_ACCESS_ON_CLICK));
 
   // When extension is toggled OFF:
   //   - site interaction is "active tab".
   //   - site access is "on click".
   //   - site access toggle is visible and off.
-  //   - site permissions button is visible, enabled, with icon and has "on
-  //     click" text.
+  //   - site permissions button is visible, enabled, and has "on click" text.
   ClickSiteAccessToggle(menu_item, /*active_tab_only=*/true);
   EXPECT_EQ(GetSiteInteraction(*extension, web_contents),
             SitePermissionsHelper::SiteInteraction::kActiveTab);
@@ -763,12 +739,9 @@ TEST_F(ExtensionsMenuMainPageViewUnitTest,
   EXPECT_FALSE(menu_item->site_access_toggle_for_testing()->GetIsOn());
   EXPECT_TRUE(menu_item->site_permissions_button_for_testing()->GetVisible());
   EXPECT_TRUE(menu_item->site_permissions_button_for_testing()->GetEnabled());
-  EXPECT_TRUE(
-      menu_item->site_permissions_button_icon_for_testing()->GetVisible());
-  EXPECT_EQ(
-      menu_item->site_permissions_button_for_testing()->title()->GetText(),
-      l10n_util::GetStringUTF16(
-          IDS_EXTENSIONS_MENU_MAIN_PAGE_EXTENSION_SITE_ACCESS_ON_CLICK));
+  EXPECT_EQ(menu_item->site_permissions_button_for_testing()->GetText(),
+            l10n_util::GetStringUTF16(
+                IDS_EXTENSIONS_MENU_MAIN_PAGE_EXTENSION_SITE_ACCESS_ON_CLICK));
 }
 
 // Verifies the site access toggle and site permissions button properties for an
@@ -786,25 +759,21 @@ TEST_F(ExtensionsMenuMainPageViewUnitTest, ActiveTabRequested_DynamicUpdates) {
   // When site setting is set to "customize by extension" (default) and active
   // tab is not granted:
   //   - site access toggle is visible and off.
-  //   - site permissions button is visible, enabled, with icon and has "on
-  //     click" text.
+  //   - site permissions button is visible, enabled, and has "on click" text.
   ASSERT_EQ(GetUserSiteSetting(url),
             PermissionsManager::UserSiteSetting::kCustomizeByExtension);
   EXPECT_TRUE(menu_item->site_access_toggle_for_testing()->GetVisible());
   EXPECT_FALSE(menu_item->site_access_toggle_for_testing()->GetIsOn());
   EXPECT_TRUE(menu_item->site_permissions_button_for_testing()->GetVisible());
   EXPECT_TRUE(menu_item->site_permissions_button_for_testing()->GetEnabled());
-  EXPECT_TRUE(
-      menu_item->site_permissions_button_icon_for_testing()->GetVisible());
-  EXPECT_EQ(
-      menu_item->site_permissions_button_for_testing()->title()->GetText(),
-      l10n_util::GetStringUTF16(
-          IDS_EXTENSIONS_MENU_MAIN_PAGE_EXTENSION_SITE_ACCESS_ON_CLICK));
+  EXPECT_EQ(menu_item->site_permissions_button_for_testing()->GetText(),
+            l10n_util::GetStringUTF16(
+                IDS_EXTENSIONS_MENU_MAIN_PAGE_EXTENSION_SITE_ACCESS_ON_CLICK));
 
   // When site setting is set to "customize by extension" active tab is granted:
   //   - site access toggle is visible and on.
-  //   - site permissions button is visible, enabled, with icon and has "on
-  //     click" text. Since extension only requested active tab, toggling site
+  //   - site permissions button is visible, enabled, and has "on click" text.
+  //   Since extension only requested active tab, toggling site
   //     access on grants tab permissions but doesn't change the user site
   //     access.
   extensions::ActiveTabPermissionGranter* active_tab_permission_granter =
@@ -815,18 +784,14 @@ TEST_F(ExtensionsMenuMainPageViewUnitTest, ActiveTabRequested_DynamicUpdates) {
   active_tab_permission_granter->GrantIfRequested(extension.get());
   EXPECT_TRUE(menu_item->site_permissions_button_for_testing()->GetVisible());
   EXPECT_TRUE(menu_item->site_permissions_button_for_testing()->GetEnabled());
-  EXPECT_TRUE(
-      menu_item->site_permissions_button_icon_for_testing()->GetVisible());
-  EXPECT_EQ(
-      menu_item->site_permissions_button_for_testing()->title()->GetText(),
-      l10n_util::GetStringUTF16(
-          IDS_EXTENSIONS_MENU_MAIN_PAGE_EXTENSION_SITE_ACCESS_ON_CLICK));
+  EXPECT_EQ(menu_item->site_permissions_button_for_testing()->GetText(),
+            l10n_util::GetStringUTF16(
+                IDS_EXTENSIONS_MENU_MAIN_PAGE_EXTENSION_SITE_ACCESS_ON_CLICK));
 
   // Navigating to the same url after navigating to other url should remove tab
   // permissions. Therefore:
   //   - site access toggle is visible and off.
-  //   - site permissions button is visible, enabled, with icon and has "on
-  //     click" text.
+  //   - site permissions button is visible, enabled, and has "on click" text.
   // Note: refreshing the page doesn't revoke tab permissions, thus we
   // need to re navigate to the url.
   web_contents_tester()->NavigateAndCommit(GURL("http://other-url.com"));
@@ -835,12 +800,9 @@ TEST_F(ExtensionsMenuMainPageViewUnitTest, ActiveTabRequested_DynamicUpdates) {
   EXPECT_FALSE(menu_item->site_access_toggle_for_testing()->GetIsOn());
   EXPECT_TRUE(menu_item->site_permissions_button_for_testing()->GetVisible());
   EXPECT_TRUE(menu_item->site_permissions_button_for_testing()->GetEnabled());
-  EXPECT_TRUE(
-      menu_item->site_permissions_button_icon_for_testing()->GetVisible());
-  EXPECT_EQ(
-      menu_item->site_permissions_button_for_testing()->title()->GetText(),
-      l10n_util::GetStringUTF16(
-          IDS_EXTENSIONS_MENU_MAIN_PAGE_EXTENSION_SITE_ACCESS_ON_CLICK));
+  EXPECT_EQ(menu_item->site_permissions_button_for_testing()->GetText(),
+            l10n_util::GetStringUTF16(
+                IDS_EXTENSIONS_MENU_MAIN_PAGE_EXTENSION_SITE_ACCESS_ON_CLICK));
 
   // When site setting is set to "block all extensions":
   //   - site access toggle is hidden.
@@ -864,14 +826,12 @@ TEST_F(ExtensionsMenuMainPageViewUnitTest,
   ShowMenu();
   ExtensionMenuItemView* menu_item = GetOnlyMenuItem();
 
-  // Button is visible, enabled and has an icon when site setting is set to
-  // "customize by extension" (default setting).
+  // Button is visible and enabled when site setting is set to "customize by
+  // extension" (default setting).
   EXPECT_EQ(GetUserSiteSetting(url),
             PermissionsManager::UserSiteSetting::kCustomizeByExtension);
   EXPECT_TRUE(menu_item->site_permissions_button_for_testing()->GetVisible());
   EXPECT_TRUE(menu_item->site_permissions_button_for_testing()->GetEnabled());
-  EXPECT_TRUE(
-      menu_item->site_permissions_button_icon_for_testing()->GetVisible());
 
   // Clicking on an extension's site permission enabled button should open
   // its site permission page in the menu.
@@ -927,6 +887,84 @@ TEST_F(ExtensionsMenuMainPageViewUnitTest,
   }
 }
 
+// Tests that the extensions menu is dynamically updated when there is a
+// navigation while the menu is opened.
+TEST_F(ExtensionsMenuMainPageViewUnitTest, NavigationWhenMainPageIsOpen) {
+  auto extension_A =
+      InstallExtensionWithHostPermissions("Extension A", {"<all_urls>"});
+  auto extension_B = InstallExtensionWithHostPermissions(
+      "Extension B", {"*://www.other.com/"});
+
+  web_contents_tester()->NavigateAndCommit(GURL("http://www.site.com"));
+
+  // Withhold extension A's host permissions and add a site access
+  // request.
+  WithholdHostPermissions(extension_A.get());
+  AddSiteAccessRequest(*extension_A,
+                       browser()->tab_strip_model()->GetActiveWebContents());
+
+  ShowMenu();
+
+  // Retrieve menu views for testing.
+  ExtensionMenuItemView* extension_A_item = menu_items()[0];
+  ExtensionMenuItemView* extension_b_item = menu_items()[1];
+  ASSERT_EQ(extension_A_item->primary_action_button_for_testing()
+                ->label_text_for_testing(),
+            u"Extension A");
+  ASSERT_EQ(extension_b_item->primary_action_button_for_testing()
+                ->label_text_for_testing(),
+            u"Extension B");
+  views::View* requests_access_container =
+      main_page()->GetRequestsAccessContainerForTesting();
+
+  // Verify subheader text has the current site, request access section shows
+  // extension A request and extension items have the site access text based on
+  // their access.
+  ASSERT_EQ(main_page()->GetSubheaderSubtitleTextForTesting(), u"site.com");
+  EXPECT_TRUE(requests_access_container->GetVisible());
+  EXPECT_THAT(GetExtensionsInRequestAccessSection(),
+              testing::ElementsAre(extension_A->id()));
+  EXPECT_EQ(extension_A_item->site_permissions_button_for_testing()->GetText(),
+            l10n_util::GetStringUTF16(
+                IDS_EXTENSIONS_MENU_MAIN_PAGE_EXTENSION_SITE_ACCESS_ON_CLICK));
+  EXPECT_EQ(extension_b_item->site_permissions_button_for_testing()->GetText(),
+            l10n_util::GetStringUTF16(
+                IDS_EXTENSIONS_MENU_MAIN_PAGE_EXTENSION_SITE_ACCESS_NONE));
+
+  // Navigate to a same-origin site.
+  web_contents_tester()->NavigateAndCommit(GURL(("http://www.site.com/path")));
+  LayoutMenuIfNecessary();
+
+  // Verify subheader text has the new site, request access section still shows
+  // the extension A request and extension items have the same site access text.
+  ASSERT_EQ(main_page()->GetSubheaderSubtitleTextForTesting(), u"site.com");
+  EXPECT_TRUE(requests_access_container->GetVisible());
+  EXPECT_THAT(GetExtensionsInRequestAccessSection(),
+              testing::ElementsAre(extension_A->id()));
+  EXPECT_EQ(extension_A_item->site_permissions_button_for_testing()->GetText(),
+            l10n_util::GetStringUTF16(
+                IDS_EXTENSIONS_MENU_MAIN_PAGE_EXTENSION_SITE_ACCESS_ON_CLICK));
+  EXPECT_EQ(extension_b_item->site_permissions_button_for_testing()->GetText(),
+            l10n_util::GetStringUTF16(
+                IDS_EXTENSIONS_MENU_MAIN_PAGE_EXTENSION_SITE_ACCESS_NONE));
+
+  // Navigate to a cross-origin site.
+  web_contents_tester()->NavigateAndCommit(GURL(("http://www.other.com")));
+  LayoutMenuIfNecessary();
+
+  // Verify subheader text has the new site, request access section is not
+  // visible (requests are reset on cross-origin navigations) and extension
+  // items updated their site access text based on their access.
+  ASSERT_EQ(main_page()->GetSubheaderSubtitleTextForTesting(), u"other.com");
+  EXPECT_FALSE(requests_access_container->GetVisible());
+  EXPECT_EQ(extension_A_item->site_permissions_button_for_testing()->GetText(),
+            l10n_util::GetStringUTF16(
+                IDS_EXTENSIONS_MENU_MAIN_PAGE_EXTENSION_SITE_ACCESS_ON_CLICK));
+  EXPECT_EQ(extension_b_item->site_permissions_button_for_testing()->GetText(),
+            l10n_util::GetStringUTF16(
+                IDS_EXTENSIONS_MENU_MAIN_PAGE_EXTENSION_SITE_ACCESS_ON_SITE));
+}
+
 // Verifies the pin button appears on the menu item, in place of context menu
 // button when state is normal, when an extension is pinned.
 TEST_F(ExtensionsMenuMainPageViewUnitTest, PinnedExtensions) {
@@ -942,10 +980,9 @@ TEST_F(ExtensionsMenuMainPageViewUnitTest, PinnedExtensions) {
   auto pin_icon = gfx::Image(gfx::CreateVectorIcon(
       views::kPinIcon,
       color_provider->GetColor(kColorExtensionMenuPinButtonIcon)));
-  auto three_dot_icon = gfx::Image(gfx::CreateVectorIcon(
-      features::IsChromeRefresh2023() ? kBrowserToolsChromeRefreshIcon
-                                      : kBrowserToolsIcon,
-      color_provider->GetColor(kColorExtensionMenuIcon)));
+  auto three_dot_icon = gfx::Image(
+      gfx::CreateVectorIcon(kBrowserToolsChromeRefreshIcon,
+                            color_provider->GetColor(kColorExtensionMenuIcon)));
 
   // Verify context menu button has three dot icon for all button states.
   EXPECT_TRUE(gfx::test::AreImagesEqual(
@@ -1015,10 +1052,10 @@ TEST_F(ExtensionsMenuMainPageViewUnitTest, DisableAndEnableExtension) {
 
 // Tests that when an extension is reloaded it remains visible in the extensions
 // menu.
-// TODO(crbug.com/1390952): Verify context menu button shows the correct icon as
-// pinned state is also preserved when a reload happens. Add this functionality
-// when showing pin icon instead of context menu when extension is pinned is
-// added.
+// TODO(crbug.com/40879945): Verify context menu button shows the correct icon
+// as pinned state is also preserved when a reload happens. Add this
+// functionality when showing pin icon instead of context menu when extension is
+// pinned is added.
 TEST_F(ExtensionsMenuMainPageViewUnitTest, ReloadExtension) {
   // The extension must have a manifest to be reloaded.
   extensions::TestExtensionDir extension_directory;
@@ -1133,11 +1170,13 @@ TEST_F(ExtensionsMenuMainPageViewUnitTest, PolicyBlockedSite) {
       extensions::util::GetBrowserContextId(browser()->profile()),
       default_blocked_hosts, default_allowed_hosts);
 
-  // Install extensions requesting host permissions.
+  // Install extensions requesting host permissions or activeTab.
   auto extension =
       InstallExtensionWithHostPermissions("Extension", {"<all_urls>"});
+  auto activeTab_extension =
+      InstallExtensionWithPermissions("Extension: activeTab", {"activeTab"});
   auto enterprise_extension =
-      InstallEnterpriseExtension("Enterprise extension",
+      InstallEnterpriseExtension("Extension: enterprise",
                                  /*host_permissions=*/{"<all_urls>"});
 
   // Allow enterprise extension access to policy-blocked site.
@@ -1153,50 +1192,63 @@ TEST_F(ExtensionsMenuMainPageViewUnitTest, PolicyBlockedSite) {
   web_contents_tester()->NavigateAndCommit(policy_blocked_url);
 
   ShowMenu();
-  ASSERT_EQ(menu_items().size(), 2u);
+  ASSERT_EQ(menu_items().size(), 3u);
 
   // Verify site setting toggle is not visible, since no extension can customize
   // a policy-blocked site.
   EXPECT_FALSE(main_page()->GetSiteSettingsToggleForTesting()->GetVisible());
 
   // Retrieve menu items.
-  ExtensionMenuItemView* enterprise_extension_item = menu_items()[0];
-  ExtensionMenuItemView* extension_item = menu_items()[1];
-  ASSERT_EQ(enterprise_extension_item->primary_action_button_for_testing()
-                ->label_text_for_testing(),
-            u"Enterprise extension");
+  ExtensionMenuItemView* extension_item = menu_items()[0];
+  ExtensionMenuItemView* activeTab_extension_item = menu_items()[1];
+  ExtensionMenuItemView* enterprise_extension_item = menu_items()[2];
   ASSERT_EQ(extension_item->primary_action_button_for_testing()
                 ->label_text_for_testing(),
             u"Extension");
+  ASSERT_EQ(activeTab_extension_item->primary_action_button_for_testing()
+                ->label_text_for_testing(),
+            u"Extension: activeTab");
+  ASSERT_EQ(enterprise_extension_item->primary_action_button_for_testing()
+                ->label_text_for_testing(),
+            u"Extension: enterprise");
 
-  // Verify both extensions':
+  // Verify all extensions':
   //   - site access toggle is hidden, since site access cannot be changed
   //   - site permissions button is visible and disabled. We leave them visible
   //     because enterprise extensions can still have access to the site, but
   //     disabled because site access cannot be changed.
   EXPECT_FALSE(extension_item->site_access_toggle_for_testing()->GetVisible());
+  EXPECT_FALSE(
+      activeTab_extension_item->site_access_toggle_for_testing()->GetVisible());
   EXPECT_FALSE(enterprise_extension_item->site_access_toggle_for_testing()
                    ->GetVisible());
   EXPECT_TRUE(
       extension_item->site_permissions_button_for_testing()->GetVisible());
+  EXPECT_TRUE(activeTab_extension_item->site_permissions_button_for_testing()
+                  ->GetVisible());
   EXPECT_TRUE(enterprise_extension_item->site_permissions_button_for_testing()
                   ->GetVisible());
   EXPECT_FALSE(
       extension_item->site_permissions_button_for_testing()->GetEnabled());
+  EXPECT_FALSE(activeTab_extension_item->site_permissions_button_for_testing()
+                   ->GetEnabled());
   EXPECT_FALSE(enterprise_extension_item->site_permissions_button_for_testing()
                    ->GetEnabled());
 
   // Verify site permission button text for:
-  //   - extension is "none", since site is blocked by policy
+  //   - extension and activeTab extension is "none", since site is blocked by
+  //   policy
   //   - enterprise extension is "on all sites", since site is allowed to the
   //     extension by policy.
-  EXPECT_EQ(
-      extension_item->site_permissions_button_for_testing()->title()->GetText(),
-      l10n_util::GetStringUTF16(
-          IDS_EXTENSIONS_MENU_MAIN_PAGE_EXTENSION_SITE_ACCESS_NONE));
+  EXPECT_EQ(extension_item->site_permissions_button_for_testing()->GetText(),
+            l10n_util::GetStringUTF16(
+                IDS_EXTENSIONS_MENU_MAIN_PAGE_EXTENSION_SITE_ACCESS_NONE));
+  EXPECT_EQ(activeTab_extension_item->site_permissions_button_for_testing()
+                ->GetText(),
+            l10n_util::GetStringUTF16(
+                IDS_EXTENSIONS_MENU_MAIN_PAGE_EXTENSION_SITE_ACCESS_NONE));
   EXPECT_EQ(
       enterprise_extension_item->site_permissions_button_for_testing()
-          ->title()
           ->GetText(),
       l10n_util::GetStringUTF16(
           IDS_EXTENSIONS_MENU_MAIN_PAGE_EXTENSION_SITE_ACCESS_ON_ALL_SITES));
@@ -1337,40 +1389,9 @@ TEST_F(ExtensionsMenuMainPageViewUnitTest,
   EXPECT_TRUE(text_container->children()[1]->GetVisible());
 }
 
-// Tests that all the containers in the message section are hidden when the user
-// can customize the extensions site access but no extension is requesting site
-// access.
-TEST_F(ExtensionsMenuMainPageViewUnitTest,
-       MessageSection_UserCustomizedAccess_NoExtensions) {
-  // Install extensions that cannot request site access in the menu because
-  // they don't request host permissions, or because they are granted host
-  // permissions by enterprise.
-  InstallExtensionWithHostPermissions("Extension", {});
-  InstallEnterpriseExtension("Enterprise extension",
-                             /*host_permissions=*/{"<all_urls>"});
-
-  const GURL url("http://www.example.com");
-  web_contents_tester()->NavigateAndCommit(url);
-
-  ShowMenu();
-  views::View* text_container = main_page()->GetTextContainerForTesting();
-  views::View* reload_container = main_page()->GetReloadContainerForTesting();
-  views::View* requests_access_container =
-      main_page()->GetRequestsAccessContainerForTesting();
-
-  // Message section is hidden (all containers are not visible) when user can
-  // customize the site access of each extension, but no extension is requesting
-  // site access.
-  ASSERT_EQ(GetUserSiteSetting(url),
-            PermissionsManager::UserSiteSetting::kCustomizeByExtension);
-  EXPECT_FALSE(text_container->GetVisible());
-  EXPECT_FALSE(reload_container->GetVisible());
-  EXPECT_FALSE(requests_access_container->GetVisible());
-}
-
 // Test that the message section only displays the requests access container
 // when the user can customize the extensions site access and at least 1+
-// extensios are requesting site access.
+// extensios added a site access request.
 TEST_F(ExtensionsMenuMainPageViewUnitTest,
        MessageSection_UserCustomizedAccess_Extensions) {
   // Install two extension that requests host permissions.
@@ -1381,6 +1402,8 @@ TEST_F(ExtensionsMenuMainPageViewUnitTest,
 
   const GURL url("http://www.example.com");
   web_contents_tester()->NavigateAndCommit(url);
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
 
   // By default, user can customize the site access of each extension and site
   // access will be granted
@@ -1399,9 +1422,17 @@ TEST_F(ExtensionsMenuMainPageViewUnitTest,
   EXPECT_FALSE(reload_container->GetVisible());
   EXPECT_FALSE(requests_access_container->GetVisible());
 
-  // Message section shows request access container with extension A
-  // when its site access is withheld.
+  // Message section is hidden (all containers are not visible) when extensions
+  // with withheld access hasn't added a site access request.
   WithholdHostPermissions(extension_A.get());
+  WithholdHostPermissions(extension_B.get());
+  EXPECT_FALSE(text_container->GetVisible());
+  EXPECT_FALSE(reload_container->GetVisible());
+  EXPECT_FALSE(requests_access_container->GetVisible());
+
+  // Message section shows request access container with extension A when
+  // extension A added a site access request.
+  AddSiteAccessRequest(*extension_A, web_contents);
   LayoutMenuIfNecessary();
   EXPECT_FALSE(text_container->GetVisible());
   EXPECT_FALSE(reload_container->GetVisible());
@@ -1409,15 +1440,68 @@ TEST_F(ExtensionsMenuMainPageViewUnitTest,
   EXPECT_THAT(GetExtensionsInRequestAccessSection(),
               testing::ElementsAre(extension_A->id()));
 
-  // Message section shows requests access container with extension A if its
-  // site access is still withheld when any other extension is updated.
-  // Extension B is not included because it has granted site access.
-  UpdateUserSiteAccess(*extension_B.get(),
-                       browser()->tab_strip_model()->GetActiveWebContents(),
-                       extensions::PermissionsManager::UserSiteAccess::kOnSite);
+  // Message section shows request access container with extension A and B when
+  // both extensions added site access requests.
+  AddSiteAccessRequest(*extension_B, web_contents);
   LayoutMenuIfNecessary();
   EXPECT_FALSE(text_container->GetVisible());
   EXPECT_FALSE(reload_container->GetVisible());
+  EXPECT_TRUE(requests_access_container->GetVisible());
+  EXPECT_THAT(GetExtensionsInRequestAccessSection(),
+              testing::ElementsAre(extension_A->id(), extension_B->id()));
+
+  // Message section shows request access container with extension B when
+  // extension A removed its site access request.
+  RemoveSiteAccessRequest(*extension_A, web_contents);
+  LayoutMenuIfNecessary();
+  EXPECT_FALSE(text_container->GetVisible());
+  EXPECT_FALSE(reload_container->GetVisible());
+  EXPECT_TRUE(requests_access_container->GetVisible());
+  EXPECT_THAT(GetExtensionsInRequestAccessSection(),
+              testing::ElementsAre(extension_B->id()));
+
+  // Message section is hidden (all containers are not visible) when extension B
+  // removed its site access request.
+  RemoveSiteAccessRequest(*extension_B, web_contents);
+  EXPECT_FALSE(text_container->GetVisible());
+  EXPECT_FALSE(reload_container->GetVisible());
+  EXPECT_FALSE(requests_access_container->GetVisible());
+}
+
+// Tests that an extension's requests access container removes an extension's
+// request when the extension is granted site access.
+TEST_F(ExtensionsMenuMainPageViewUnitTest,
+       MessageSection_UserCustomizedAccess_ExtensionGrantedSiteAccess) {
+  // Install two extension that requests host permissions.
+  auto extension_A = InstallExtensionWithHostPermissions(
+      "Extension A", {"*://www.example.com/*"});
+  auto extension_B =
+      InstallExtensionWithHostPermissions("Extension B", {"<all_urls>"});
+  WithholdHostPermissions(extension_A.get());
+  WithholdHostPermissions(extension_B.get());
+
+  const GURL url("http://www.example.com");
+  web_contents_tester()->NavigateAndCommit(url);
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  ShowMenu();
+  views::View* requests_access_container =
+      main_page()->GetRequestsAccessContainerForTesting();
+
+  // Add site access requests for both extensions and verify they are both
+  // visible on the request access container.
+  AddSiteAccessRequest(*extension_A, web_contents);
+  AddSiteAccessRequest(*extension_B, web_contents);
+  EXPECT_TRUE(requests_access_container->GetVisible());
+  EXPECT_THAT(GetExtensionsInRequestAccessSection(),
+              testing::ElementsAre(extension_A->id(), extension_B->id()));
+
+  // Grant site access to extension B and verify request access container only
+  // has extension A, since extension's B request was removed once the extension
+  // gained access to the site.
+  UpdateUserSiteAccess(*extension_B, web_contents,
+                       PermissionsManager::UserSiteAccess::kOnSite);
   EXPECT_TRUE(requests_access_container->GetVisible());
   EXPECT_THAT(GetExtensionsInRequestAccessSection(),
               testing::ElementsAre(extension_A->id()));
@@ -1429,8 +1513,11 @@ TEST_F(ExtensionsMenuMainPageViewUnitTest,
       InstallExtensionWithHostPermissions("Extension", {"<all_urls>"});
   WithholdHostPermissions(extension.get());
 
+  // Navigate to a site and add a site access request for the extension.
   const GURL url("http://www.example.com");
   web_contents_tester()->NavigateAndCommit(url);
+  AddSiteAccessRequest(*extension,
+                       browser()->tab_strip_model()->GetActiveWebContents());
 
   ShowMenu();
   views::View* requests_access_container =
@@ -1441,7 +1528,7 @@ TEST_F(ExtensionsMenuMainPageViewUnitTest,
   base::UserActionTester user_action_tester;
   auto* permissions = PermissionsManager::Get(profile());
 
-  // When extension is requesting site access:
+  // When extension added a site access request:
   //   - message section (menu) includes extension and is visible.
   //   - request access button (toolbar) includes extension.
   //   - action has not been run.
@@ -1487,12 +1574,15 @@ TEST_F(ExtensionsMenuMainPageViewUnitTest,
       InstallExtensionWithHostPermissions("Extension", {"<all_urls>"});
   WithholdHostPermissions(extension.get());
 
+  // Navigate to a site and add a site access request for the extension.
   const GURL url("http://www.example.com");
   web_contents_tester()->NavigateAndCommit(url);
+  AddSiteAccessRequest(*extension,
+                       browser()->tab_strip_model()->GetActiveWebContents());
 
   ShowMenu();
 
-  // When extension is requesting site access:
+  // When extension added a site access request:
   //   - message section (menu) includes extension and is visible.
   //   - request access button (toolbar) includes extension.
   EXPECT_TRUE(
@@ -1529,14 +1619,57 @@ TEST_F(ExtensionsMenuMainPageViewUnitTest,
   web_contents_tester()->NavigateAndCommit(GURL("http://other-url.com"));
   web_contents_tester()->NavigateAndCommit(url);
 
-  // Navigating to the same url should show again the extension requesting
-  // access, since dismiss is only one time tab permission:
-  //   - message section (menu) includes extension and is visible.
-  //   - request access button (toolbar) includes extension.
-  EXPECT_TRUE(
+  // Navigating to the same url should not show again the request, since
+  // requests are reset on cross-origin navigation.
+  //   - message section (menu) does not include extension and is hidden
+  //   - request access button (toolbar) does not include extension.
+  EXPECT_FALSE(
       main_page()->GetRequestsAccessContainerForTesting()->GetVisible());
+  EXPECT_TRUE(GetExtensionsInRequestAccessSection().empty());
+  EXPECT_TRUE(GetExtensionsInRequestAccessButton().empty());
+}
+
+// Tests that the message section displays an extension with a site access
+// request even if it is not allowed to show requests on the toolbar (extensions
+// menu is not considered part of the toolbar for this).
+TEST_F(ExtensionsMenuMainPageViewUnitTest,
+       MessageSection_UserCustomizedAccess_RequestNotAllowedOnToolbar) {
+  auto extension =
+      InstallExtensionWithHostPermissions("Extension", {"<all_urls>"});
+  WithholdHostPermissions(extension.get());
+
+  // Navigate to a site and add a site access request for the extension.
+  const GURL url("http://www.example.com");
+  web_contents_tester()->NavigateAndCommit(url);
+  AddSiteAccessRequest(*extension,
+                       browser()->tab_strip_model()->GetActiveWebContents());
+
+  // By default, user can customize the site access of each extension and site
+  // access will be granted
+  ASSERT_EQ(GetUserSiteSetting(url),
+            PermissionsManager::UserSiteSetting::kCustomizeByExtension);
+
+  ShowMenu();
+  views::View* text_container = main_page()->GetTextContainerForTesting();
+  views::View* reload_container = main_page()->GetReloadContainerForTesting();
+  views::View* requests_access_container =
+      main_page()->GetRequestsAccessContainerForTesting();
+
+  // Message section shows request access container with extension.
+  LayoutMenuIfNecessary();
+  EXPECT_FALSE(text_container->GetVisible());
+  EXPECT_FALSE(reload_container->GetVisible());
+  EXPECT_TRUE(requests_access_container->GetVisible());
   EXPECT_THAT(GetExtensionsInRequestAccessSection(),
               testing::ElementsAre(extension->id()));
-  EXPECT_THAT(GetExtensionsInRequestAccessButton(),
+
+  // Message section shows request access container with extension even if
+  // requests are not allowed in the toolbar.
+  SitePermissionsHelper(profile()).SetShowAccessRequestsInToolbar(
+      extension->id(), false);
+  EXPECT_FALSE(text_container->GetVisible());
+  EXPECT_FALSE(reload_container->GetVisible());
+  EXPECT_TRUE(requests_access_container->GetVisible());
+  EXPECT_THAT(GetExtensionsInRequestAccessSection(),
               testing::ElementsAre(extension->id()));
 }

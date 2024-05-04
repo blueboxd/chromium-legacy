@@ -15,7 +15,6 @@ class Credential;
 class CredentialCreationOptions;
 class CredentialRequestOptions;
 class ExceptionState;
-class ScriptPromise;
 class ScriptState;
 
 class MODULES_EXPORT CredentialsContainer : public ScriptWrappable {
@@ -25,14 +24,14 @@ class MODULES_EXPORT CredentialsContainer : public ScriptWrappable {
   ~CredentialsContainer() override = default;
 
   // credentials_container.idl
-  virtual ScriptPromiseTyped<IDLNullable<Credential>>
+  virtual ScriptPromise<IDLNullable<Credential>>
   get(ScriptState*, const CredentialRequestOptions*, ExceptionState&) = 0;
-  virtual ScriptPromiseTyped<Credential> store(ScriptState*,
-                                               Credential*,
-                                               ExceptionState&) = 0;
-  virtual ScriptPromiseTyped<IDLNullable<Credential>>
+  virtual ScriptPromise<Credential> store(ScriptState*,
+                                          Credential*,
+                                          ExceptionState&) = 0;
+  virtual ScriptPromise<IDLNullable<Credential>>
   create(ScriptState*, const CredentialCreationOptions*, ExceptionState&) = 0;
-  virtual ScriptPromise preventSilentAccess(ScriptState*) = 0;
+  virtual ScriptPromise<IDLUndefined> preventSilentAccess(ScriptState*) = 0;
 
   void Trace(Visitor*) const override;
 };

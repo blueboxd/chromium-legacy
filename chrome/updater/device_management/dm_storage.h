@@ -64,6 +64,7 @@ class TokenServiceInterface {
 //   3) DM policies.
 class DMStorage : public base::RefCountedThreadSafe<DMStorage> {
  public:
+  static constexpr size_t kMaxDmTokenLength = 4096;
 #if BUILDFLAG(IS_WIN)
   explicit DMStorage(const base::FilePath& policy_cache_root);
 #else
@@ -152,6 +153,9 @@ class DMStorage : public base::RefCountedThreadSafe<DMStorage> {
   //  "google/machine-level-omaha").
   //
   bool PersistPolicies(const DMPolicyMap& policy_map) const;
+
+  // Removes all the cached policies, including the cached policy info.
+  bool RemoveAllPolicies() const;
 
   // Creates a CachedPolicyInfo object and populates it with the public key
   // information loaded from file |policy_cache_root_|\CachedPolicyInfo.

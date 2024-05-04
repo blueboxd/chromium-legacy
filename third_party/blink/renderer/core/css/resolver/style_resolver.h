@@ -28,7 +28,6 @@
 #include "third_party/blink/renderer/core/animation/property_handle.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/color_scheme_flags.h"
-#include "third_party/blink/renderer/core/css/css_position_fallback_rule.h"
 #include "third_party/blink/renderer/core/css/css_position_try_rule.h"
 #include "third_party/blink/renderer/core/css/element_rule_collector.h"
 #include "third_party/blink/renderer/core/css/resolver/matched_properties_cache.h"
@@ -224,10 +223,6 @@ class CORE_EXPORT StyleResolver final : public GarbageCollected<StyleResolver> {
       const ComputedStyle& base_style,
       ActiveInterpolationsMap& transition_interpolations);
 
-  StyleRulePositionFallback* ResolvePositionFallbackRule(
-      const TreeScope* tree_scope,
-      AtomicString position_fallback_name);
-  const ComputedStyle* ResolvePositionFallbackStyle(Element&, unsigned index);
   StyleRulePositionTry* ResolvePositionTryRule(const TreeScope* tree_scope,
                                                AtomicString position_try_name);
 
@@ -293,7 +288,7 @@ class CORE_EXPORT StyleResolver final : public GarbageCollected<StyleResolver> {
                             ElementRuleCollector&,
                             bool for_shadow_pseudo = false);
   void MatchPseudoPartRulesForUAHost(const Element&, ElementRuleCollector&);
-  void MatchPositionTryRules(const Element&, ElementRuleCollector&);
+  void MatchPositionTryRules(ElementRuleCollector&);
   void MatchAuthorRules(const Element&,
                         ElementRuleCollector&);
   void MatchAllRules(StyleResolverState&,
@@ -348,6 +343,7 @@ class CORE_EXPORT StyleResolver final : public GarbageCollected<StyleResolver> {
                                   CacheSuccess cache_success);
 
   bool ApplyAnimatedStyle(StyleResolverState&, StyleCascade&);
+  void ApplyAnchorData(StyleResolverState&);
 
   void ApplyCallbackSelectors(StyleResolverState&);
   void ApplyDocumentRulesSelectors(StyleResolverState&, ContainerNode* scope);

@@ -27,7 +27,6 @@
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/models/image_model.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/color/color_provider.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
@@ -125,30 +124,20 @@ class MdIPHBubbleButton : public views::MdTextButton {
       : MdTextButton(std::move(callback), text),
         delegate_(delegate),
         is_default_button_(is_default_button) {
-    GetViewAccessibility().OverrideIsLeaf(true);
+    GetViewAccessibility().SetIsLeaf(true);
 
-    if (features::IsChromeRefresh2023()) {
-      views::FocusRing::Get(this)->SetColorId(
-          delegate_->GetHelpBubbleForegroundColorId());
+    views::FocusRing::Get(this)->SetColorId(
+        delegate_->GetHelpBubbleForegroundColorId());
 
-      // The default behavior in 2023 refresh is for MD buttons is to have the
-      // alpha baked into the color, but we currently don't have that yet, so
-      // switch back to using the old default alpha blending mode.
-      auto* const ink_drop = views::InkDrop::Get(this);
-      ink_drop->SetBaseColorId(
-          is_default_button_
-              ? delegate_->GetHelpBubbleDefaultButtonForegroundColorId()
-              : delegate_->GetHelpBubbleForegroundColorId());
-      ink_drop->SetHighlightOpacity(std::nullopt);
-    } else {
-      // Prominent style gives a button hover highlight.
-      SetStyle(ui::ButtonStyle::kProminent);
-      // Focus ring rendering varies significantly between pre- and post-refresh
-      // Chrome. The pre-refresh tactic of setting the focus color to background
-      // is actually a hack; the post-refresh approach is more "correct".
-      views::FocusRing::Get(this)->SetColorId(
-          delegate_->GetHelpBubbleBackgroundColorId());
-    }
+    // The default behavior in 2023 refresh is for MD buttons is to have the
+    // alpha baked into the color, but we currently don't have that yet, so
+    // switch back to using the old default alpha blending mode.
+    auto* const ink_drop = views::InkDrop::Get(this);
+    ink_drop->SetBaseColorId(
+        is_default_button_
+            ? delegate_->GetHelpBubbleDefaultButtonForegroundColorId()
+            : delegate_->GetHelpBubbleForegroundColorId());
+    ink_drop->SetHighlightOpacity(std::nullopt);
   }
   MdIPHBubbleButton(const MdIPHBubbleButton&) = delete;
   MdIPHBubbleButton& operator=(const MdIPHBubbleButton&) = delete;
@@ -187,7 +176,7 @@ class MdIPHBubbleButton : public views::MdTextButton {
             : delegate_->GetHelpBubbleForegroundColorId());
     SetEnabledTextColors(foreground_color);
 
-    // TODO(crbug/1112244): Temporary fix for Mac. Bubble shouldn't be in
+    // TODO(crbug.com/40709599): Temporary fix for Mac. Bubble shouldn't be in
     // inactive style when the bubble loses focus.
     SetTextColor(ButtonState::STATE_DISABLED, foreground_color);
   }
@@ -259,7 +248,8 @@ class DotView : public views::View {
   ~DotView() override = default;
 
   // views::View:
-  gfx::Size CalculatePreferredSize() const override {
+  gfx::Size CalculatePreferredSize(
+      const views::SizeBounds& available_size) const override {
     gfx::Size size = size_;
     const gfx::Insets* const insets = GetProperty(views::kInternalPaddingKey);
     size.Enlarge(insets->width(), insets->height());
@@ -513,14 +503,12 @@ HelpBubbleView::HelpBubbleView(const HelpBubbleDelegate* delegate,
           // STANDARD_SHADOW.
           views::BubbleBorder::STANDARD_SHADOW
 #else
-          // On other platforms, all shadows are Views-drawn, which means we
-          // can revert back to the (slightly better-looking) default
-          // DIALOG_SHADOW following the 2023 refresh. The old pre-refresh
-          // value is preserved just for consistency.
-          features::IsChromeRefresh2023() ? views::BubbleBorder::DIALOG_SHADOW
-                                          : views::BubbleBorder::STANDARD_SHADOW
+          // On other platforms, all shadows are Views-drawn; use the (slightly
+          // better-looking) default DIALOG_SHADOW.
+          views::BubbleBorder::DIALOG_SHADOW
 #endif
-          ),
+          ,
+          true),
       delegate_(delegate) {
   if (anchor.rect.has_value()) {
     SetForceAnchorRect(anchor.rect.value());
@@ -578,9 +566,9 @@ HelpBubbleView::HelpBubbleView(const HelpBubbleDelegate* delegate,
   // Add progress indicator (optional) and its container.
   if (params.progress) {
     DCHECK(params.progress->second);
-    // TODO(crbug.com/1197208): surface progress information in a11y tree
+    // TODO(crbug.com/40176811): surface progress information in a11y tree
     for (int i = 0; i < params.progress->second; ++i) {
-      // TODO(crbug.com/1197208): formalize dot size
+      // TODO(crbug.com/40176811): formalize dot size
       progress_container->AddChildView(std::make_unique<DotView>(
           delegate, gfx::Size(8, 8), i < params.progress->first));
     }
@@ -716,9 +704,7 @@ HelpBubbleView::HelpBubbleView(const HelpBubbleDelegate* delegate,
       views::DISTANCE_RELATED_CONTROL_VERTICAL);
 
   // The insets from the bubble border to the text inside.
-  const gfx::Insets contents_insets = features::IsChromeRefresh2023()
-                                          ? gfx::Insets(20)
-                                          : gfx::Insets::VH(16, 20);
+  const gfx::Insets contents_insets = gfx::Insets(20);
 
   // Create primary layout (vertical).
   SetLayoutManager(std::make_unique<views::FlexLayout>())
@@ -731,7 +717,7 @@ HelpBubbleView::HelpBubbleView(const HelpBubbleDelegate* delegate,
       .SetIgnoreDefaultMainAxisMargins(true);
 
   // Set up top row container layout.
-  const int kCloseButtonHeight = features::IsChromeRefresh2023() ? 20 : 24;
+  const int kCloseButtonHeight = 20;
   auto& progress_layout =
       progress_container
           ->SetLayoutManager(std::make_unique<views::FlexLayout>())
@@ -863,18 +849,13 @@ HelpBubbleView::HelpBubbleView(const HelpBubbleDelegate* delegate,
   // have to change it afterwards:
   set_adjust_if_offscreen(true);
   auto* const frame_view = GetBubbleFrameView();
-  if (!features::IsChromeRefresh2023()) {
-    frame_view->SetCornerRadius(
-        views::LayoutProvider::Get()->GetCornerRadiusMetric(
-            views::Emphasis::kHigh));
-  }
   frame_view->SetDisplayVisibleArrow(anchor.show_arrow &&
                                      params.arrow != HelpBubbleArrow::kNone);
 
   // If the anchor view is not a MenuItemView and the primary window
   // widget is not the anchor widget, do not use the window anchor bounds.
   if (!GetAnchorAsMenuItem(this) &&
-      widget->GetPrimaryWindowWidget() != widget) {
+      anchor_widget()->GetPrimaryWindowWidget() != anchor_widget()) {
     frame_view->set_use_anchor_window_bounds(false);
   }
 
@@ -883,7 +864,9 @@ HelpBubbleView::HelpBubbleView(const HelpBubbleDelegate* delegate,
   // b/303069420).
   frame_view->bubble_border()->set_draw_border_stroke(false);
 
-  SizeToContents();
+  // TODO(crbug.com/41493925) Remove this InvalidateLayout() once the border
+  // invalidate itself when it changes.
+  InvalidateLayout();
 
   // Most help bubbles with buttons take focus when they show.
   bool show_active =
@@ -958,7 +941,7 @@ void HelpBubbleView::OnThemeChanged() {
       color_provider->GetColor(delegate_->GetHelpBubbleForegroundColorId());
   if (icon_view_) {
     icon_view_->SetBackground(views::CreateRoundedRectBackground(
-        foreground_color, icon_view_->GetPreferredSize().height() / 2));
+        foreground_color, icon_view_->GetPreferredSize({}).height() / 2));
   }
 
   for (views::Label* label : labels_) {
@@ -967,13 +950,16 @@ void HelpBubbleView::OnThemeChanged() {
   }
 }
 
-gfx::Size HelpBubbleView::CalculatePreferredSize() const {
+gfx::Size HelpBubbleView::CalculatePreferredSize(
+    const views::SizeBounds& available_size) const {
   const gfx::Size layout_manager_preferred_size =
-      View::CalculatePreferredSize();
+      View::CalculatePreferredSize(available_size);
 
   // Wrap if the width is larger than |kBubbleMaxWidthDip|.
   if (layout_manager_preferred_size.width() > kBubbleMaxWidthDip) {
-    return gfx::Size(kBubbleMaxWidthDip, GetHeightForWidth(kBubbleMaxWidthDip));
+    return gfx::Size(kBubbleMaxWidthDip,
+                     GetLayoutManager()->GetPreferredHeightForWidth(
+                         this, kBubbleMaxWidthDip));
   }
 
   if (layout_manager_preferred_size.width() < kBubbleMinWidthDip) {
@@ -1026,7 +1012,9 @@ void HelpBubbleView::OnBeforeBubbleWidgetInit(views::Widget::InitParams* params,
   // issues in Weston, the windowing environment used on chrome's Wayland
   // testbots:
   // https://gitlab.freedesktop.org/wayland/weston/-/issues/669
-  params->requires_accelerated_widget = (GetAnchorAsMenuItem(this) != nullptr);
+  if (GetAnchorAsMenuItem(this) != nullptr) {
+    params->use_accelerated_widget_override = true;
+  }
 #endif
 }
 

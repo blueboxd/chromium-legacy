@@ -9,9 +9,11 @@
 #import "base/functional/bind.h"
 #import "base/location.h"
 #import "base/time/time.h"
+#import "base/values.h"
 #import "components/password_manager/core/browser/leak_detection/leak_detection_request_utils.h"
 #import "components/password_manager/core/browser/ui/credential_ui_entry.h"
 #import "components/prefs/pref_service.h"
+#import "components/prefs/scoped_user_pref_update.h"
 #import "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #import "components/version_info/version_info.h"
 #import "ios/chrome/browser/omaha/model/omaha_service.h"
@@ -121,6 +123,12 @@ void IOSChromeSafetyCheckManager::RestorePreviousSafetyCheckState() {
     SetSafeBrowsingCheckState(safe_browsing_check_state.value());
   }
 
+  password_manager::InsecurePasswordCounts insecure_password_counts =
+      DictToInsecurePasswordCounts(local_pref_service_->GetDict(
+          prefs::kIosSafetyCheckManagerInsecurePasswordCounts));
+  insecure_password_counts_ = insecure_password_counts;
+  previous_insecure_password_counts_ = insecure_password_counts;
+
   std::optional<PasswordSafetyCheckState> password_check_state =
       PasswordSafetyCheckStateForName(local_pref_service_->GetString(
           prefs::kIosSafetyCheckManagerPasswordCheckResult));
@@ -153,6 +161,8 @@ void IOSChromeSafetyCheckManager::StartPasswordCheck() {
 
   previous_password_check_state_ = password_check_state_;
 
+  previous_insecure_password_counts_ = insecure_password_counts_;
+
   password_check_manager_->StartPasswordCheck(
       password_manager::LeakDetectionInitiator::kIosProactivePasswordCheckup);
 
@@ -170,6 +180,8 @@ void IOSChromeSafetyCheckManager::StopPasswordCheck() {
   if (password_check_state_ != PasswordSafetyCheckState::kRunning) {
     return;
   }
+
+  SetInsecurePasswordCounts(previous_insecure_password_counts_);
 
   SetPasswordCheckState(previous_password_check_state_);
 
@@ -236,6 +248,12 @@ PasswordSafetyCheckState IOSChromeSafetyCheckManager::GetPasswordCheckState()
   return password_check_state_;
 }
 
+password_manager::InsecurePasswordCounts
+IOSChromeSafetyCheckManager::GetInsecurePasswordCounts() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return insecure_password_counts_;
+}
+
 UpdateChromeSafetyCheckState
 IOSChromeSafetyCheckManager::GetUpdateChromeCheckState() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -265,7 +283,7 @@ std::string IOSChromeSafetyCheckManager::GetChromeAppNextVersion() const {
   return next_version_;
 }
 
-// TODO(crbug.com/1462786): Add UMA logs related to the Safe Browsing check.
+// TODO(crbug.com/40922030): Add UMA logs related to the Safe Browsing check.
 void IOSChromeSafetyCheckManager::SetSafeBrowsingCheckState(
     SafeBrowsingSafetyCheckState state) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -277,7 +295,11 @@ void IOSChromeSafetyCheckManager::SetSafeBrowsingCheckState(
   safe_browsing_check_state_ = state;
 
   // The safe browsing state changed, log a freshness signal for Safety Check.
-  RecordModuleFreshnessSignal(ContentSuggestionsModuleType::kSafetyCheck);
+  bool should_log_freshness = state != SafeBrowsingSafetyCheckState::kDefault;
+
+  if (should_log_freshness) {
+    RecordModuleFreshnessSignal(ContentSuggestionsModuleType::kSafetyCheck);
+  }
 
   local_pref_service_->SetString(
       prefs::kIosSafetyCheckManagerSafeBrowsingCheckResult,
@@ -288,7 +310,7 @@ void IOSChromeSafetyCheckManager::SetSafeBrowsingCheckState(
   }
 }
 
-// TODO(crbug.com/1462786): Add UMA logs related to the Password check.
+// TODO(crbug.com/40922030): Add UMA logs related to the Password check.
 void IOSChromeSafetyCheckManager::ConvertAndSetPasswordCheckState(
     PasswordCheckState state) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -302,13 +324,19 @@ void IOSChromeSafetyCheckManager::ConvertAndSetPasswordCheckState(
   const std::vector<password_manager::CredentialUIEntry> insecure_credentials =
       password_check_manager_->GetInsecureCredentials();
 
+  password_manager::InsecurePasswordCounts counts =
+      password_manager::CountInsecurePasswordsPerInsecureType(
+          insecure_credentials);
+
+  SetInsecurePasswordCounts(counts);
+
   PasswordSafetyCheckState check_state = CalculatePasswordSafetyCheckState(
       state, insecure_credentials, password_check_state_);
 
   SetPasswordCheckState(check_state);
 }
 
-// TODO(crbug.com/1462786): Add UMA logs related to the Password check.
+// TODO(crbug.com/40922030): Add UMA logs related to the Password check.
 void IOSChromeSafetyCheckManager::RefreshOutdatedPasswordCheckState() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -323,13 +351,19 @@ void IOSChromeSafetyCheckManager::RefreshOutdatedPasswordCheckState() {
   const std::vector<password_manager::CredentialUIEntry> insecure_credentials =
       password_check_manager_->GetInsecureCredentials();
 
+  password_manager::InsecurePasswordCounts counts =
+      password_manager::CountInsecurePasswordsPerInsecureType(
+          insecure_credentials);
+
+  SetInsecurePasswordCounts(counts);
+
   PasswordSafetyCheckState check_state = CalculatePasswordSafetyCheckState(
       state, insecure_credentials, password_check_state_);
 
   SetPasswordCheckState(check_state);
 }
 
-// TODO(crbug.com/1462786): Add UMA logs related to the Password check.
+// TODO(crbug.com/40922030): Add UMA logs related to the Password check.
 void IOSChromeSafetyCheckManager::SetPasswordCheckState(
     PasswordSafetyCheckState state) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -340,10 +374,15 @@ void IOSChromeSafetyCheckManager::SetPasswordCheckState(
 
   // Only log that there was a freshness signal if the new state has a different
   // end result (a password issue, safe).
-  if (state == PasswordSafetyCheckState::kUnmutedCompromisedPasswords ||
-      state == PasswordSafetyCheckState::kReusedPasswords ||
-      state == PasswordSafetyCheckState::kWeakPasswords ||
-      state == PasswordSafetyCheckState::kSafe) {
+  bool should_log_freshness =
+      state != PasswordSafetyCheckState::kDefault &&
+      state != previous_password_check_state_ &&
+      (state == PasswordSafetyCheckState::kUnmutedCompromisedPasswords ||
+       state == PasswordSafetyCheckState::kReusedPasswords ||
+       state == PasswordSafetyCheckState::kWeakPasswords ||
+       state == PasswordSafetyCheckState::kSafe);
+
+  if (should_log_freshness) {
     RecordModuleFreshnessSignal(ContentSuggestionsModuleType::kSafetyCheck);
   }
 
@@ -360,7 +399,30 @@ void IOSChromeSafetyCheckManager::SetPasswordCheckState(
   RefreshSafetyCheckRunningState();
 }
 
-// TODO(crbug.com/1462786): Add UMA logs related to the Update Chrome check.
+void IOSChromeSafetyCheckManager::SetInsecurePasswordCounts(
+    password_manager::InsecurePasswordCounts counts) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (ignore_password_check_changes_) {
+    return;
+  }
+
+  insecure_password_counts_ = counts;
+
+  ScopedDictPrefUpdate insecure_password_counts_update(
+      local_pref_service_, prefs::kIosSafetyCheckManagerInsecurePasswordCounts);
+
+  insecure_password_counts_update->Set(kSafetyCheckCompromisedPasswordsCountKey,
+                                       counts.compromised_count);
+  insecure_password_counts_update->Set(kSafetyCheckDismissedPasswordsCountKey,
+                                       counts.dismissed_count);
+  insecure_password_counts_update->Set(kSafetyCheckReusedPasswordsCountKey,
+                                       counts.reused_count);
+  insecure_password_counts_update->Set(kSafetyCheckWeakPasswordsCountKey,
+                                       counts.weak_count);
+}
+
+// TODO(crbug.com/40922030): Add UMA logs related to the Update Chrome check.
 void IOSChromeSafetyCheckManager::SetUpdateChromeCheckState(
     UpdateChromeSafetyCheckState state) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -371,8 +433,13 @@ void IOSChromeSafetyCheckManager::SetUpdateChromeCheckState(
 
   // Only log that there was a freshness signal if the new state has a different
   // end result (out of date, up to date).
-  if (state == UpdateChromeSafetyCheckState::kOutOfDate ||
-      state == UpdateChromeSafetyCheckState::kUpToDate) {
+  bool should_log_freshness =
+      state != UpdateChromeSafetyCheckState::kDefault &&
+      state != previous_update_chrome_check_state_ &&
+      (state == UpdateChromeSafetyCheckState::kOutOfDate ||
+       state == UpdateChromeSafetyCheckState::kUpToDate);
+
+  if (should_log_freshness) {
     RecordModuleFreshnessSignal(ContentSuggestionsModuleType::kSafetyCheck);
   }
 
@@ -388,7 +455,7 @@ void IOSChromeSafetyCheckManager::SetUpdateChromeCheckState(
   RefreshSafetyCheckRunningState();
 }
 
-// TODO(crbug.com/1462786): Add UMA logs related to the Update Chrome check.
+// TODO(crbug.com/40922030): Add UMA logs related to the Update Chrome check.
 void IOSChromeSafetyCheckManager::SetUpdateChromeDetails(
     GURL upgrade_url,
     std::string next_version) {
@@ -402,7 +469,7 @@ void IOSChromeSafetyCheckManager::SetUpdateChromeDetails(
   next_version_ = next_version;
 }
 
-// TODO(crbug.com/1462786): Add UMA logs related to the Safe Browsing check.
+// TODO(crbug.com/40922030): Add UMA logs related to the Safe Browsing check.
 void IOSChromeSafetyCheckManager::UpdateSafeBrowsingCheckState() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -415,7 +482,7 @@ void IOSChromeSafetyCheckManager::UpdateSafeBrowsingCheckState() {
   }
 }
 
-// TODO(crbug.com/1462786): Add UMA logs related to the Update Chrome check.
+// TODO(crbug.com/40922030): Add UMA logs related to the Update Chrome check.
 void IOSChromeSafetyCheckManager::StartOmahaCheck() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -480,7 +547,7 @@ void IOSChromeSafetyCheckManager::HandleOmahaResponse(
   }
 }
 
-// TODO(crbug.com/1462786): Add UMA logs related to the Update Chrome check.
+// TODO(crbug.com/40922030): Add UMA logs related to the Update Chrome check.
 void IOSChromeSafetyCheckManager::HandleOmahaError() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -558,6 +625,11 @@ IOSChromeSafetyCheckManager::GetRunningCheckStateForTesting() const {
 void IOSChromeSafetyCheckManager::SetPasswordCheckStateForTesting(
     PasswordSafetyCheckState state) {
   SetPasswordCheckState(state);
+}
+
+void IOSChromeSafetyCheckManager::SetInsecurePasswordCountsForTesting(
+    password_manager::InsecurePasswordCounts counts) {
+  SetInsecurePasswordCounts(counts);
 }
 
 void IOSChromeSafetyCheckManager::InsecureCredentialsChangedForTesting() {

@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_COMMERCE_CORE_FLAG_DESCRIPTIONS_H_
 #define COMPONENTS_COMMERCE_CORE_FLAG_DESCRIPTIONS_H_
 
+#include "build/build_config.h"
+
 namespace commerce::flag_descriptions {
 
 extern const char kCommerceLocalPDPDetectionName[];
@@ -22,6 +24,9 @@ extern const char kPriceTrackingIconColorsDescription[];
 extern const char kProductSpecificationsName[];
 extern const char kProductSpecificationsDescription[];
 
+extern const char kProductSpecificationsSyncName[];
+extern const char kProductSpecificationsSyncDescription[];
+
 extern const char kShoppingIconColorVariantName[];
 extern const char kShoppingIconColorVariantDescription[];
 
@@ -36,6 +41,11 @@ extern const char kParcelTrackingTestDataDescription[];
 
 extern const char kPriceInsightsName[];
 extern const char kPriceInsightsDescription[];
+
+#if BUILDFLAG(IS_IOS)
+extern const char kPriceInsightsIosName[];
+extern const char kPriceInsightsIosDescription[];
+#endif
 
 extern const char kShoppingPageTypesName[];
 extern const char kShoppingPageTypesDescription[];

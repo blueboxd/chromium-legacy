@@ -23,9 +23,9 @@
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/field_trial_params.h"
 #include "cc/slim/layer.h"
-#include "chrome/android/chrome_jni_headers/TabContentManager_jni.h"
 #include "chrome/browser/android/compositor/layer/thumbnail_layer.h"
 #include "chrome/browser/android/tab_android.h"
+#include "chrome/browser/tab_ui/android/jni_headers/TabContentManager_jni.h"
 #include "chrome/browser/thumbnail/cc/thumbnail.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
@@ -313,8 +313,8 @@ void TabContentManager::CacheTabWithBitmap(JNIEnv* env,
 void TabContentManager::InvalidateIfChanged(JNIEnv* env,
                                             jint tab_id,
                                             const JavaParamRef<jobject>& jurl) {
-  std::unique_ptr<GURL> url = url::GURLAndroid::ToNativeGURL(env, jurl);
-  thumbnail_cache_->InvalidateThumbnailIfChanged(tab_id, *url);
+  GURL url = url::GURLAndroid::ToNativeGURL(env, jurl);
+  thumbnail_cache_->InvalidateThumbnailIfChanged(tab_id, url);
 }
 
 void TabContentManager::UpdateVisibleIds(

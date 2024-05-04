@@ -28,7 +28,6 @@
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/signin/account_reconcilor_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/signin/signin_features.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/signin_util.h"
 #include "chrome/browser/sync/sync_service_factory.h"
@@ -45,7 +44,7 @@
 #include "components/keyed_service/core/keyed_service_shutdown_notifier.h"
 #include "components/policy/core/common/management/management_service.h"
 #include "components/prefs/pref_service.h"
-#include "components/search_engines/search_engine_choice_utils.h"
+#include "components/search_engines/search_engine_choice/search_engine_choice_utils.h"
 #include "components/signin/core/browser/account_reconcilor.h"
 #include "components/signin/public/base/signin_metrics.h"
 #include "components/signin/public/base/signin_pref_names.h"
@@ -175,7 +174,7 @@ void TurnSyncOnHelper::Delegate::ShowLoginErrorForBrowser(
     const SigninUIError& error,
     Browser* browser) {
   if (!browser) {
-    // TODO(crbug.com/1374315): Make sure we do something or log an error if
+    // TODO(crbug.com/40242414): Make sure we do something or log an error if
     // opening a browser window was not possible.
     return;
   }
@@ -528,7 +527,7 @@ void TurnSyncOnHelper::SigninAndShowSyncConfirmationUI() {
     // Take a SyncSetupInProgressHandle, so that the UI code can use
     // IsFirstSyncSetupInProgress() as a way to know if there is a signin in
     // progress.
-    // TODO(https://crbug.com/811211): Remove this handle.
+    // TODO(crbug.com/41369996): Remove this handle.
     sync_blocker_ = sync_service->GetSetupInProgressHandle();
     sync_service->SetSyncFeatureRequested();
 
@@ -622,7 +621,7 @@ void TurnSyncOnHelper::ShowSyncConfirmationUI() {
     return;
   }
 
-  // TODO(crbug.com/1398463): Once we stop completing the Sync opt-in when it's
+  // TODO(crbug.com/40249681): Once we stop completing the Sync opt-in when it's
   // disabled, we also should stop recording opt-in start events.
   signin_metrics::LogSyncOptInStarted(signin_access_point_);
 

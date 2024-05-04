@@ -13,6 +13,7 @@
 #include "chrome/browser/sync/test/integration/sync_service_impl_harness.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/sync/test/integration/updated_progress_marker_checker.h"
+#include "components/autofill/core/browser/address_data_manager.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/webdata/addresses/contact_info_sync_util.h"
 #include "components/signin/public/base/signin_switches.h"
@@ -25,6 +26,7 @@
 #include "components/sync/protocol/entity_specifics.pb.h"
 #include "components/sync/test/fake_server.h"
 #include "content/public/test/browser_test.h"
+#include "google_apis/gaia/google_service_auth_error.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -35,8 +37,8 @@
 namespace {
 
 using autofill::AutofillProfile;
+using contact_info_helper::AddressDataManagerProfileChecker;
 using contact_info_helper::BuildTestAccountProfile;
-using contact_info_helper::PersonalDataManagerProfileChecker;
 using testing::IsEmpty;
 using testing::UnorderedElementsAre;
 
@@ -149,15 +151,16 @@ IN_PROC_BROWSER_TEST_F(SingleClientContactInfoSyncTest, DownloadInitialData) {
   const AutofillProfile kProfile = BuildTestAccountProfile();
   AddSpecificsToServer(AsContactInfoSpecifics(kProfile), GetFakeServer());
   ASSERT_TRUE(SetupSync());
-  EXPECT_TRUE(PersonalDataManagerProfileChecker(GetPersonalDataManager(),
-                                                UnorderedElementsAre(kProfile))
+  EXPECT_TRUE(AddressDataManagerProfileChecker(
+                  &GetPersonalDataManager()->address_data_manager(),
+                  UnorderedElementsAre(kProfile))
                   .Wait());
 }
 
 IN_PROC_BROWSER_TEST_F(SingleClientContactInfoSyncTest, UploadProfile) {
   const AutofillProfile kProfile = BuildTestAccountProfile();
   ASSERT_TRUE(SetupSync());
-  GetPersonalDataManager()->AddProfile(kProfile);
+  GetPersonalDataManager()->address_data_manager().AddProfile(kProfile);
   EXPECT_TRUE(FakeServerSpecificsChecker(
                   UnorderedElementsAre(
                       AsContactInfoSpecifics(kProfile).SerializeAsString()))
@@ -184,17 +187,17 @@ IN_PROC_BROWSER_TEST_F(SingleClientContactInfoSyncTest, FinalizeAfterImport) {
   ASSERT_TRUE(SetupSync());
   // Expect that the PersonalDataManager receives the `finalized_profile`. The
   // finalization step happen when reading the profile from AutofillTable.
-  EXPECT_TRUE(
-      PersonalDataManagerProfileChecker(GetPersonalDataManager(),
-                                        UnorderedElementsAre(finalized_profile))
-          .Wait());
+  EXPECT_TRUE(AddressDataManagerProfileChecker(
+                  &GetPersonalDataManager()->address_data_manager(),
+                  UnorderedElementsAre(finalized_profile))
+                  .Wait());
 
   // Expect that the finalized profile is not propagated back to the server.
   // Since the PersonalDatamanager is operating on a single thread, this is
   // verified by adding a dummy profile. It will only reach the server after any
   // already pending changes.
   const AutofillProfile kDummyProfile = BuildTestAccountProfile();
-  GetPersonalDataManager()->AddProfile(kDummyProfile);
+  GetPersonalDataManager()->address_data_manager().AddProfile(kDummyProfile);
   EXPECT_TRUE(
       FakeServerSpecificsChecker(
           UnorderedElementsAre(
@@ -209,13 +212,14 @@ IN_PROC_BROWSER_TEST_F(SingleClientContactInfoSyncTest, ClearOnSignout) {
   const AutofillProfile kProfile = BuildTestAccountProfile();
   AddSpecificsToServer(AsContactInfoSpecifics(kProfile), GetFakeServer());
   ASSERT_TRUE(SetupSync());
-  ASSERT_TRUE(PersonalDataManagerProfileChecker(GetPersonalDataManager(),
-                                                UnorderedElementsAre(kProfile))
+  ASSERT_TRUE(AddressDataManagerProfileChecker(
+                  &GetPersonalDataManager()->address_data_manager(),
+                  UnorderedElementsAre(kProfile))
                   .Wait());
   GetClient(0)->SignOutPrimaryAccount();
-  EXPECT_TRUE(
-      PersonalDataManagerProfileChecker(GetPersonalDataManager(), IsEmpty())
-          .Wait());
+  EXPECT_TRUE(AddressDataManagerProfileChecker(
+                  &GetPersonalDataManager()->address_data_manager(), IsEmpty())
+                  .Wait());
 }
 #endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
@@ -283,19 +287,68 @@ IN_PROC_BROWSER_TEST_F(SingleClientContactInfoTransportSyncTest,
   ASSERT_TRUE(GetClient(0)->AwaitSyncTransportActive());
   EXPECT_TRUE(
       GetSyncService(0)->GetActiveDataTypes().Has(syncer::CONTACT_INFO));
-  EXPECT_TRUE(PersonalDataManagerProfileChecker(GetPersonalDataManager(),
-                                                UnorderedElementsAre(profile))
+  EXPECT_TRUE(AddressDataManagerProfileChecker(
+                  &GetPersonalDataManager()->address_data_manager(),
+                  UnorderedElementsAre(profile))
                   .Wait());
   // ChromeOS doesn't have the concept of sign-out.
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
   GetClient(0)->SignOutPrimaryAccount();
-  EXPECT_TRUE(
-      PersonalDataManagerProfileChecker(GetPersonalDataManager(), IsEmpty())
-          .Wait());
+  EXPECT_TRUE(AddressDataManagerProfileChecker(
+                  &GetPersonalDataManager()->address_data_manager(), IsEmpty())
+                  .Wait());
 #endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 }
 
 #if !BUILDFLAG(IS_ANDROID)
+// Account storage is not enabled when the user is in auth error.
+IN_PROC_BROWSER_TEST_F(SingleClientContactInfoTransportSyncTest,
+                       AuthErrorState) {
+  // Setup transport mode.
+  const AutofillProfile kProfile = BuildTestAccountProfile();
+  ASSERT_TRUE(SetupClients());
+  ASSERT_TRUE(GetClient(0)->SignInPrimaryAccount());
+  ASSERT_TRUE(GetClient(0)->AwaitSyncTransportActive());
+  EXPECT_TRUE(
+      GetSyncService(0)->GetActiveDataTypes().Has(syncer::CONTACT_INFO));
+
+  // Trigger auth error, sync stops.
+  signin::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(GetProfile(0));
+  signin::UpdatePersistentErrorOfRefreshTokenForAccount(
+      identity_manager,
+      identity_manager->GetPrimaryAccountId(signin::ConsentLevel::kSignin),
+      GoogleServiceAuthError(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
+  ASSERT_TRUE(
+      identity_manager->HasPrimaryAccount(signin::ConsentLevel::kSignin));
+  EXPECT_TRUE(ContactInfoActiveChecker(GetSyncService(0),
+                                       /*expect_active=*/false)
+                  .Wait());
+
+  EXPECT_FALSE(GetPersonalDataManager()
+                   ->address_data_manager()
+                   .IsEligibleForAddressAccountStorage());
+  EXPECT_FALSE(GetPersonalDataManager()
+                   ->address_data_manager()
+                   .IsAutofillSyncToggleAvailable());
+  GetPersonalDataManager()->address_data_manager().AddProfile(kProfile);
+
+  // Fix the authentication error, sync is available again.
+  signin::UpdatePersistentErrorOfRefreshTokenForAccount(
+      identity_manager,
+      identity_manager->GetPrimaryAccountId(signin::ConsentLevel::kSignin),
+      GoogleServiceAuthError::AuthErrorNone());
+  EXPECT_TRUE(ContactInfoActiveChecker(GetSyncService(0),
+                                       /*expect_active=*/true)
+                  .Wait());
+  EXPECT_TRUE(GetPersonalDataManager()
+                  ->address_data_manager()
+                  .IsEligibleForAddressAccountStorage());
+  EXPECT_TRUE(GetPersonalDataManager()
+                  ->address_data_manager()
+                  .IsAutofillSyncToggleAvailable());
+}
+
 IN_PROC_BROWSER_TEST_F(SingleClientContactInfoSyncTest,
                        PreservesUnsupportedFieldsDataOnCommits) {
   // Create an unsupported field with an unused tag.
@@ -332,7 +385,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientContactInfoSyncTest,
   // Apply a change to the profile.
   profile.SetRawInfoWithVerificationStatus(
       autofill::NAME_FULL, u"New Name", autofill::VerificationStatus::kParsed);
-  GetPersonalDataManager()->UpdateProfile(profile);
+  GetPersonalDataManager()->address_data_manager().UpdateProfile(profile);
 
   autofill::AutofillProfile profile2(
       autofill::i18n_model_definition::kLegacyHierarchyCountryCode);
@@ -343,7 +396,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientContactInfoSyncTest,
 
   // Add an obsolete profile to make sure that the server has received the
   // update.
-  GetPersonalDataManager()->AddProfile(profile2);
+  GetPersonalDataManager()->address_data_manager().AddProfile(profile2);
 
   ASSERT_TRUE(ServerCountMatchStatusChecker(syncer::CONTACT_INFO, 2).Wait());
   // Verifies that the profile with `profile.guid()` has preserved
@@ -389,8 +442,27 @@ IN_PROC_BROWSER_TEST_F(SingleClientContactInfoManagedAccountTest,
       GetSyncService(0)->GetActiveDataTypes().Has(syncer::CONTACT_INFO));
 }
 
-// TODO(crbug.com/1435411): Enable this test on Android.
-IN_PROC_BROWSER_TEST_F(SingleClientContactInfoSyncTest,
+// Tests the behavior for accounts under parental supervision, depending on
+// whether `kSyncEnableContactInfoDataTypeForChildUsers` is enabled.
+class SingleClientContactInfoChildAccountTest
+    : public SingleClientContactInfoSyncTest,
+      public testing::WithParamInterface<bool> {
+ public:
+  SingleClientContactInfoChildAccountTest() {
+    feature_.InitWithFeatureState(
+        syncer::kSyncEnableContactInfoDataTypeForChildUsers, GetParam());
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_;
+};
+
+INSTANTIATE_TEST_SUITE_P(,
+                         SingleClientContactInfoChildAccountTest,
+                         testing::Bool());
+
+// TODO(crbug.com/40265115): Enable this test on Android.
+IN_PROC_BROWSER_TEST_P(SingleClientContactInfoChildAccountTest,
                        DisableForChildAccounts) {
   ASSERT_TRUE(SetupClients());
   // Sign in with a child account.
@@ -404,8 +476,9 @@ IN_PROC_BROWSER_TEST_F(SingleClientContactInfoSyncTest,
   signin::UpdateAccountInfoForAccount(identity_manager, account);
   ASSERT_TRUE(SetupSync());
 
-  EXPECT_FALSE(
-      GetSyncService(0)->GetActiveDataTypes().Has(syncer::CONTACT_INFO));
+  EXPECT_EQ(GetSyncService(0)->GetActiveDataTypes().Has(syncer::CONTACT_INFO),
+            base::FeatureList::IsEnabled(
+                syncer::kSyncEnableContactInfoDataTypeForChildUsers));
 
   // "Graduate" the account.
   mutator.set_is_subject_to_parental_controls(false);

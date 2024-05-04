@@ -6,6 +6,7 @@
 
 #import <UIKit/UIKit.h>
 #import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
+
 #import <memory>
 
 #import "base/debug/dump_without_crashing.h"
@@ -25,7 +26,7 @@
 #import "ios/chrome/browser/commerce/model/shopping_persisted_data_tab_helper.h"
 #import "ios/chrome/browser/default_browser/model/utils.h"
 #import "ios/chrome/browser/drag_and_drop/model/drag_item_util.h"
-#import "ios/chrome/browser/main/model/browser_util.h"
+#import "ios/chrome/browser/iph_for_new_chrome_user/model/tab_based_iph_browser_agent.h"
 #import "ios/chrome/browser/policy/model/policy_util.h"
 #import "ios/chrome/browser/reading_list/model/reading_list_browser_agent.h"
 #import "ios/chrome/browser/shared/coordinator/scene/scene_state.h"
@@ -35,20 +36,23 @@
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/shared/model/url/chrome_url_constants.h"
 #import "ios/chrome/browser/shared/model/url/url_util.h"
+#import "ios/chrome/browser/shared/model/web_state_list/browser_util.h"
+#import "ios/chrome/browser/shared/model/web_state_list/tab_group.h"
+#import "ios/chrome/browser/shared/model/web_state_list/tab_group_utils.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
-#import "ios/chrome/browser/shared/model/web_state_list/web_state_list_observer_bridge.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_opener.h"
+#import "ios/chrome/browser/shared/public/commands/application_commands.h"
 #import "ios/chrome/browser/shared/public/commands/bookmarks_commands.h"
 #import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
 #import "ios/chrome/browser/shared/public/commands/reading_list_add_command.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/shared/public/features/system_flags.h"
 #import "ios/chrome/browser/shared/ui/util/url_with_title.h"
+#import "ios/chrome/browser/snapshots/model/model_swift.h"
 #import "ios/chrome/browser/snapshots/model/snapshot_browser_agent.h"
-#import "ios/chrome/browser/snapshots/model/snapshot_storage.h"
-#import "ios/chrome/browser/snapshots/model/snapshot_storage_observer.h"
+#import "ios/chrome/browser/snapshots/model/snapshot_id_wrapper.h"
+#import "ios/chrome/browser/snapshots/model/snapshot_storage_wrapper.h"
 #import "ios/chrome/browser/snapshots/model/snapshot_tab_helper.h"
-#import "ios/chrome/browser/tabs/model/features.h"
 #import "ios/chrome/browser/tabs_search/model/tabs_search_service.h"
 #import "ios/chrome/browser/tabs_search/model/tabs_search_service_factory.h"
 #import "ios/chrome/browser/ui/menu/action_factory.h"
@@ -59,11 +63,14 @@
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_mediator_delegate.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_toolbars_mutator.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_utils.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/selected_grid_items.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/tab_groups/tab_groups_commands.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_context_menu/tab_item.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_idle_status_handler.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_metrics.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/toolbars/tab_grid_toolbars_configuration.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/toolbars/tab_grid_toolbars_main_tab_grid_delegate.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_group_item.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_utils.h"
 #import "ios/chrome/browser/ui/tab_switcher/web_state_tab_switcher_item.h"
 #import "ios/web/public/navigation/navigation_manager.h"
@@ -101,8 +108,8 @@ Browser* GetBrowserForTabWithId(BrowserList* browser_list,
                                     ? browser_list->AllIncognitoBrowsers()
                                     : browser_list->AllRegularBrowsers();
   for (Browser* browser : browsers) {
-    WebStateList* webStateList = browser->GetWebStateList();
-    int index = GetWebStateIndex(webStateList,
+    WebStateList* web_state_list = browser->GetWebStateList();
+    int index = GetWebStateIndex(web_state_list,
                                  WebStateSearchCriteria{
                                      .identifier = identifier,
                                      .pinned_state = PinnedState::kNonPinned,
@@ -114,16 +121,9 @@ Browser* GetBrowserForTabWithId(BrowserList* browser_list,
   return nullptr;
 }
 
-// Returns the identifier of the currently active unpinned tab.
-web::WebStateID GetActiveNonPinnedTabID(WebStateList* web_state_list) {
-  return GetActiveWebStateIdentifier(web_state_list, PinnedState::kNonPinned);
-}
-
 }  // namespace
 
-@interface BaseGridMediator () <CRWWebStateObserver,
-                                SnapshotStorageObserver,
-                                WebStateListObserving>
+@interface BaseGridMediator () <CRWWebStateObserver, SnapshotStorageObserver>
 // The browser state from the browser.
 @property(nonatomic, readonly) ChromeBrowserState* browserState;
 
@@ -150,9 +150,7 @@ web::WebStateID GetActiveNonPinnedTabID(WebStateList* web_state_list) {
   TabGridMode _currentMode;
 
   // Items selected for editing.
-  std::set<web::WebStateID> _selectedEditingItemIDs;
-  // Items selected for editing which are shareable outside of the app.
-  std::set<web::WebStateID> _selectedSharableEditingItemIDs;
+  SelectedGridItems* _selectedEditingItems;
 }
 
 - (instancetype)init {
@@ -201,6 +199,8 @@ web::WebStateID GetActiveNonPinnedTabID(WebStateList* web_state_list) {
   if (_webStateList) {
     _scopedWebStateListObservation->AddObservation(_webStateList);
     [self addWebStateObservations];
+    _selectedEditingItems =
+        [[SelectedGridItems alloc] initWithWebStateList:_webStateList];
 
     if (self.webStateList->count() > 0) {
       [self populateConsumerItems];
@@ -217,8 +217,7 @@ web::WebStateID GetActiveNonPinnedTabID(WebStateList* web_state_list) {
   if (_currentMode != mode && (_currentMode == TabGridModeSelection ||
                                _currentMode == TabGridModeSearch)) {
     // Clear selections.
-    _selectedEditingItemIDs.clear();
-    _selectedSharableEditingItemIDs.clear();
+    [_selectedEditingItems removeAllItems];
   }
   _currentMode = mode;
   [self configureToolbarsButtons];
@@ -255,9 +254,10 @@ web::WebStateID GetActiveNonPinnedTabID(WebStateList* web_state_list) {
 
 - (void)configureButtonsInSelectionMode:
     (TabGridToolbarsConfiguration*)configuration {
-  NSUInteger selectedItemsCount = _selectedEditingItemIDs.size();
+  NSUInteger selectedItemsCount = _selectedEditingItems.tabsCount;
   NSUInteger selectedShareableItemsCount =
-      _selectedSharableEditingItemIDs.size();
+      _selectedEditingItems.sharableTabsCount;
+
   BOOL allItemsSelected =
       static_cast<int>(selectedItemsCount) ==
       (self.webStateList->count() - self.webStateList->pinned_tabs_count());
@@ -267,12 +267,151 @@ web::WebStateID GetActiveNonPinnedTabID(WebStateList* web_state_list) {
   configuration.doneButton = YES;
   configuration.closeSelectedTabsButton = selectedItemsCount > 0;
   configuration.shareButton = selectedShareableItemsCount > 0;
-  configuration.addToButton = selectedShareableItemsCount > 0;
+  if (IsTabGroupInGridEnabled()) {
+    configuration.addToButton = selectedItemsCount > 0;
+  } else {
+    configuration.addToButton = selectedShareableItemsCount > 0;
+  }
   configuration.selectedItemsCount = selectedItemsCount;
 
   configuration.addToButtonMenu =
-      [UIMenu menuWithChildren:[self addToButtonMenuElementsForItems:
-                                         _selectedSharableEditingItemIDs]];
+      [UIMenu menuWithChildren:[self addToButtonMenuElements]];
+}
+
+- (void)displayActiveTab {
+  NOTREACHED_NORETURN() << "Should be implemented in a subclass.";
+}
+
+- (void)populateConsumerItems {
+  if (!self.webStateList) {
+    return;
+  }
+  [self.consumer populateItems:CreateItems(self.webStateList)
+        selectedItemIdentifier:[self activeIdentifier]];
+}
+
+- (GridItemIdentifier*)activeIdentifier {
+  WebStateList* webStateList = self.webStateList;
+  if (!webStateList) {
+    return nil;
+  }
+
+  int webStateIndex = webStateList->active_index();
+  if (webStateIndex == WebStateList::kInvalidIndex) {
+    return nil;
+  }
+
+  if (IsTabGroupInGridEnabled()) {
+    const TabGroup* group = webStateList->GetGroupOfWebStateAt(webStateIndex);
+    if (group) {
+      return [GridItemIdentifier groupIdentifier:group
+                                withWebStateList:webStateList];
+    }
+  }
+
+  return [GridItemIdentifier
+      tabIdentifier:webStateList->GetWebStateAt(webStateIndex)];
+}
+
+- (void)addWebStateObservations {
+  int firstIndex =
+      IsPinnedTabsEnabled() ? self.webStateList->pinned_tabs_count() : 0;
+  for (int i = firstIndex; i < self.webStateList->count(); i++) {
+    web::WebState* webState = self.webStateList->GetWebStateAt(i);
+    [self addObservationForWebState:webState];
+  }
+}
+
+- (void)addObservationForWebState:(web::WebState*)webState {
+  _scopedWebStateObservation->AddObservation(webState);
+}
+
+- (void)removeObservationForWebState:(web::WebState*)webState {
+  _scopedWebStateObservation->RemoveObservation(webState);
+}
+
+- (void)insertNewWebStateAtIndex:(int)index withURL:(const GURL&)newTabURL {
+  // The incognito mediator's Browser is briefly set to nil after the last
+  // incognito tab is closed.  This occurs because the incognito BrowserState
+  // needs to be destroyed to correctly clear incognito browsing data.  Don't
+  // attempt to create a new WebState with a nil BrowserState.
+  if (!self.browser) {
+    return;
+  }
+
+  // There are some circumstances where a new tab insertion can be erroniously
+  // triggered while another web state list mutation is happening. To ensure
+  // those bugs don't become crashes, check that the web state list is OK to
+  // mutate.
+  if (self.webStateList->IsMutating()) {
+    // Shouldn't have happened!
+    DCHECK(false) << "Reentrant web state insertion!";
+    return;
+  }
+
+  DCHECK(self.browserState);
+  web::WebState::CreateParams params(self.browserState);
+  std::unique_ptr<web::WebState> webState = web::WebState::Create(params);
+
+  web::NavigationManager::WebLoadParams loadParams(newTabURL);
+  loadParams.transition_type = ui::PAGE_TRANSITION_TYPED;
+  webState->GetNavigationManager()->LoadURLWithParams(loadParams);
+
+  self.webStateList->InsertWebState(
+      std::move(webState),
+      WebStateList::InsertionParams::AtIndex(index).Activate());
+}
+
+- (void)insertItem:(GridItemIdentifier*)item
+    beforeWebStateIndex:(int)nextWebStateIndex {
+  WebStateList* webStateList = self.webStateList;
+  GridItemIdentifier* nextItemIdentifier;
+  if (webStateList->ContainsIndex(nextWebStateIndex)) {
+    const TabGroup* group =
+        webStateList->GetGroupOfWebStateAt(nextWebStateIndex);
+    if (group) {
+      nextItemIdentifier = [GridItemIdentifier groupIdentifier:group
+                                              withWebStateList:webStateList];
+    } else {
+      nextItemIdentifier = [GridItemIdentifier
+          tabIdentifier:self.webStateList->GetWebStateAt(nextWebStateIndex)];
+    }
+  }
+  [self.consumer insertItem:item
+                beforeItemID:nextItemIdentifier
+      selectedItemIdentifier:[self activeIdentifier]];
+}
+
+- (void)moveItem:(GridItemIdentifier*)item
+    beforeWebStateIndex:(int)nextWebStateIndex {
+  GridItemIdentifier* nextItem = nil;
+  if (self.webStateList->ContainsIndex(nextWebStateIndex)) {
+    const TabGroup* group =
+        self.webStateList->GetGroupOfWebStateAt(nextWebStateIndex);
+    if (group) {
+      nextItem = [GridItemIdentifier groupIdentifier:group
+                                    withWebStateList:self.webStateList];
+    } else {
+      nextItem = [GridItemIdentifier
+          tabIdentifier:self.webStateList->GetWebStateAt(nextWebStateIndex)];
+    }
+  }
+
+  [self.consumer moveItem:item beforeItem:nextItem];
+}
+
+- (void)updateConsumerItemForWebState:(web::WebState*)webState {
+  WebStateList* webStateList = self.webStateList;
+  int index = webStateList->GetIndexOfWebState(webState);
+  const TabGroup* group = webStateList->GetGroupOfWebStateAt(index);
+  GridItemIdentifier* item;
+  if (group) {
+    item = [GridItemIdentifier groupIdentifier:group
+                              withWebStateList:webStateList];
+  } else {
+    item = [GridItemIdentifier tabIdentifier:webState];
+  }
+  [self.consumer replaceItem:item withReplacementItem:item];
 }
 
 #pragma mark - WebStateListObserving
@@ -285,20 +424,25 @@ web::WebStateID GetActiveNonPinnedTabID(WebStateList* web_state_list) {
     return;
   }
 
-  web::WebState* detachedWebState = detachChange.detached_web_state();
-  // If the WebState is pinned and it is not in the consumer's items list,
-  // consumer will filter it out in the method's implementation.
-  [self.consumer removeItemWithID:detachedWebState->GetUniqueIdentifier()
-                   selectedItemID:GetActiveNonPinnedTabID(webStateList)];
+  if (!detachChange.group()) {
+    // Get the identifier to remove.
+    web::WebState* detachedWebState = detachChange.detached_web_state();
+    GridItemIdentifier* identifierToRemove =
+        [GridItemIdentifier tabIdentifier:detachedWebState];
 
-  [self removeFromSelectionItemID:detachedWebState->GetUniqueIdentifier()];
+    // If the WebState is pinned and it is not in the consumer's items list,
+    // consumer will filter it out in the method's implementation.
+    [self.consumer removeItemWithIdentifier:identifierToRemove
+                     selectedItemIdentifier:[self activeIdentifier]];
+    [self removeFromSelectionItemID:identifierToRemove];
+  }
 
   // The pinned WebState could be detached only in case it was displayed in
   // the Tab Search and was closed from the context menu. In such a case
   // there were no observation added for it. Therefore, there is no need to
   // remove one.
   if (![self isPinnedWebState:detachChange.detached_from_index()]) {
-    _scopedWebStateObservation->RemoveObservation(detachedWebState);
+    [self removeObservationForWebState:detachChange.detached_web_state()];
   }
 }
 
@@ -315,33 +459,117 @@ web::WebStateID GetActiveNonPinnedTabID(WebStateList* web_state_list) {
       const WebStateListChangeStatusOnly& selectionOnlyChange =
           change.As<WebStateListChangeStatusOnly>();
       if (selectionOnlyChange.pinned_state_changed()) {
-        [self changePinnedStateForWebState:selectionOnlyChange.web_state()
-                                   atIndex:selectionOnlyChange.index()];
+        [self
+            changePinnedStateForWebState:selectionOnlyChange.web_state()
+                                 atIndex:selectionOnlyChange.index()
+                            updatedGroup:selectionOnlyChange.old_group()
+                                             ? selectionOnlyChange.old_group()
+                                             : selectionOnlyChange.new_group()];
+        break;
+      }
+      const TabGroup* oldGroup = selectionOnlyChange.old_group();
+      const TabGroup* newGroup = selectionOnlyChange.new_group();
+
+      if (oldGroup != newGroup) {
+        // There is a change of group.
+        if (oldGroup == nullptr) {
+          // The tab was ungrouped and is moving to a group.
+          web::WebState* currentWebState =
+              _webStateList->GetWebStateAt(selectionOnlyChange.index());
+
+          GridItemIdentifier* tabIdentifierToAddToGroup =
+              [GridItemIdentifier tabIdentifier:currentWebState];
+
+          [self.consumer removeItemWithIdentifier:tabIdentifierToAddToGroup
+                           selectedItemIdentifier:[self activeIdentifier]];
+        } else {
+          // The tab left a group.
+          GridItemIdentifier* oldGroupIdentifier =
+              [GridItemIdentifier groupIdentifier:oldGroup
+                                 withWebStateList:_webStateList];
+          [self.consumer replaceItem:oldGroupIdentifier
+                 withReplacementItem:oldGroupIdentifier];
+        }
+
+        if (newGroup) {
+          // The tab joined a group.
+          GridItemIdentifier* newGroupIdentifier =
+              [GridItemIdentifier groupIdentifier:newGroup
+                                 withWebStateList:_webStateList];
+
+          [self.consumer replaceItem:newGroupIdentifier
+                 withReplacementItem:newGroupIdentifier];
+        } else {
+          // The tab is now ungrouped.
+          int webStateIndex = selectionOnlyChange.index();
+          web::WebState* currentWebState =
+              _webStateList->GetWebStateAt(webStateIndex);
+
+          [self insertItem:[GridItemIdentifier tabIdentifier:currentWebState]
+              beforeWebStateIndex:webStateIndex + 1];
+        }
         break;
       }
       // The activation is handled after this switch statement.
       break;
     }
-    case WebStateListChange::Type::kDetach:
-      // Do nothing when a WebState is detached.
+    case WebStateListChange::Type::kDetach: {
+      const WebStateListChangeDetach& detachChange =
+          change.As<WebStateListChangeDetach>();
+      if (detachChange.group()) {
+        [self updateCellGroup:detachChange.group()];
+      }
+      // Do not manage other case scenarios as this is already handled in
+      // `-willChangeWebStateList:change:status:` function.
       break;
+    }
     case WebStateListChange::Type::kMove: {
       const WebStateListChangeMove& moveChange =
           change.As<WebStateListChangeMove>();
-      if (![self isPinnedWebState:moveChange.moved_to_index()]) {
+
+      if (moveChange.pinned_state_changed()) {
+        // The pinned state can be updated when a tab is moved.
+        [self changePinnedStateForWebState:moveChange.moved_web_state()
+                                   atIndex:moveChange.moved_to_index()
+                              updatedGroup:moveChange.old_group()
+                                               ? moveChange.old_group()
+                                               : moveChange.new_group()];
+      } else if (![self isPinnedWebState:moveChange.moved_to_index()]) {
         // BaseGridMediator handles only non pinned tabs because pinned tabs are
         // handled in PinnedTabsMediator.
-        NSUInteger itemIndex =
-            [self itemIndexFromWebStateListIndex:moveChange.moved_to_index()];
-        [self.consumer
-            moveItemWithID:moveChange.moved_web_state()->GetUniqueIdentifier()
-                   toIndex:itemIndex];
-      }
-
-      // The pinned state can be updated when a tab is moved.
-      if (moveChange.pinned_state_changed()) {
-        [self changePinnedStateForWebState:moveChange.moved_web_state()
-                                   atIndex:moveChange.moved_to_index()];
+        if (moveChange.old_group() == moveChange.new_group()) {
+          // No group update.
+          if (moveChange.old_group()) {
+            // The cell moved inside its group, update the group.
+            [self updateCellGroup:moveChange.old_group()];
+          } else {
+            // The cell is not in a group, move it.
+            [self moveItem:[GridItemIdentifier
+                               tabIdentifier:moveChange.moved_web_state()]
+                beforeWebStateIndex:moveChange.moved_to_index() + 1];
+          }
+        } else {
+          // The group has changed.
+          if (moveChange.old_group()) {
+            // The cell left a group.
+            [self updateCellGroup:moveChange.old_group()];
+          } else {
+            // The cell wasn't in a group, remove it from the grid.
+            [self.consumer removeItemWithIdentifier:
+                               [GridItemIdentifier
+                                   tabIdentifier:moveChange.moved_web_state()]
+                             selectedItemIdentifier:[self activeIdentifier]];
+          }
+          if (moveChange.new_group()) {
+            // The cell joined a group.
+            [self updateCellGroup:moveChange.new_group()];
+          } else {
+            // The cell was removed from its group, add it to the grid.
+            web::WebState* movedWebState = moveChange.moved_web_state();
+            [self insertItem:[GridItemIdentifier tabIdentifier:movedWebState]
+                beforeWebStateIndex:moveChange.moved_to_index() + 1];
+          }
+        }
       }
       break;
     }
@@ -353,48 +581,84 @@ web::WebStateID GetActiveNonPinnedTabID(WebStateList* web_state_list) {
       }
       web::WebState* replacedWebState = replaceChange.replaced_web_state();
       web::WebState* insertedWebState = replaceChange.inserted_web_state();
-      TabSwitcherItem* oldItem =
-          [[WebStateTabSwitcherItem alloc] initWithWebState:replacedWebState];
-      TabSwitcherItem* newItem =
-          [[WebStateTabSwitcherItem alloc] initWithWebState:insertedWebState];
-      [self.consumer replaceItem:[GridItemIdentifier tabIdentifier:oldItem]
-             withReplacementItem:[GridItemIdentifier tabIdentifier:newItem]];
+      [self.consumer replaceItem:[GridItemIdentifier
+                                     tabIdentifier:replacedWebState]
+             withReplacementItem:[GridItemIdentifier
+                                     tabIdentifier:insertedWebState]];
 
-      _scopedWebStateObservation->RemoveObservation(replacedWebState);
-      _scopedWebStateObservation->AddObservation(insertedWebState);
+      [self removeObservationForWebState:replacedWebState];
+      [self addObservationForWebState:insertedWebState];
       break;
     }
     case WebStateListChange::Type::kInsert: {
       const WebStateListChangeInsert& insertChange =
           change.As<WebStateListChangeInsert>();
       if ([self isPinnedWebState:insertChange.index()]) {
-        [self.consumer selectItemWithID:GetActiveNonPinnedTabID(webStateList)];
+        [self.consumer selectItemWithIdentifier:[self activeIdentifier]];
         break;
       }
-      web::WebState* insertedWebState = insertChange.inserted_web_state();
-      TabSwitcherItem* item =
-          [[WebStateTabSwitcherItem alloc] initWithWebState:insertedWebState];
-      NSUInteger itemIndex =
-          [self itemIndexFromWebStateListIndex:insertChange.index()];
-      [self.consumer insertItem:[GridItemIdentifier tabIdentifier:item]
-                        atIndex:itemIndex
-                 selectedItemID:GetActiveNonPinnedTabID(webStateList)];
 
-      _scopedWebStateObservation->AddObservation(insertedWebState);
+      if (insertChange.group()) {
+        [self updateCellGroup:insertChange.group()];
+      } else {
+        web::WebState* insertedWebState = insertChange.inserted_web_state();
+        [self insertItem:[GridItemIdentifier tabIdentifier:insertedWebState]
+            beforeWebStateIndex:insertChange.index() + 1];
+      }
+      [self addObservationForWebState:insertChange.inserted_web_state()];
+      break;
+    }
+    case WebStateListChange::Type::kGroupCreate: {
+      const WebStateListChangeGroupCreate& groupCreateChange =
+          change.As<WebStateListChangeGroupCreate>();
+
+      const TabGroup* currentGroup = groupCreateChange.created_group();
+      GridItemIdentifier* groupItemIdentifier =
+          [GridItemIdentifier groupIdentifier:currentGroup
+                             withWebStateList:webStateList];
+      CHECK(groupItemIdentifier.tabGroupItem.tabGroup);
+      [self insertItem:groupItemIdentifier
+          beforeWebStateIndex:groupItemIdentifier.tabGroupItem.tabGroup->range()
+                                  .range_end() +
+                              1];
+      break;
+    }
+    case WebStateListChange::Type::kGroupVisualDataUpdate: {
+      const WebStateListChangeGroupVisualDataUpdate& visualDataChange =
+          change.As<WebStateListChangeGroupVisualDataUpdate>();
+      GridItemIdentifier* groupItemIdentifier =
+          [GridItemIdentifier groupIdentifier:visualDataChange.updated_group()
+                             withWebStateList:webStateList];
+      [self.consumer replaceItem:groupItemIdentifier
+             withReplacementItem:groupItemIdentifier];
+
+      break;
+    }
+    case WebStateListChange::Type::kGroupMove: {
+      const WebStateListChangeGroupMove& groupMoveChange =
+          change.As<WebStateListChangeGroupMove>();
+      [self moveItem:[GridItemIdentifier
+                          groupIdentifier:groupMoveChange.moved_group()
+                         withWebStateList:webStateList]
+          beforeWebStateIndex:groupMoveChange.moved_to_range().range_end()];
+      break;
+    }
+    case WebStateListChange::Type::kGroupDelete: {
+      const WebStateListChangeGroupDelete& groupDeleteChange =
+          change.As<WebStateListChangeGroupDelete>();
+
+      GridItemIdentifier* groupItemIdentifier =
+          [GridItemIdentifier groupIdentifier:groupDeleteChange.deleted_group()
+                             withWebStateList:_webStateList];
+      [_selectedEditingItems removeItem:groupItemIdentifier];
+      [self.consumer removeItemWithIdentifier:groupItemIdentifier
+                       selectedItemIdentifier:[self activeIdentifier]];
       break;
     }
   }
   [self updateToolbarAfterNumberOfItemsChanged];
   if (status.active_web_state_change()) {
-    // If the selected index changes as a result of the last webstate being
-    // detached, the active index will be kInvalidIndex.
-    if (webStateList->active_index() == WebStateList::kInvalidIndex) {
-      [self.consumer selectItemWithID:web::WebStateID()];
-      return;
-    }
-
-    [self.consumer
-        selectItemWithID:status.new_active_web_state->GetUniqueIdentifier()];
+    [self.consumer selectItemWithIdentifier:[self activeIdentifier]];
   }
 }
 
@@ -405,6 +669,9 @@ web::WebStateID GetActiveNonPinnedTabID(WebStateList* web_state_list) {
 
 - (void)webStateListBatchOperationEnded:(WebStateList*)webStateList {
   DCHECK_EQ(_webStateList, webStateList);
+
+  // Clear selections.
+  [_selectedEditingItems removeAllItems];
 
   [self addWebStateObservations];
   [self populateConsumerItems];
@@ -425,24 +692,17 @@ web::WebStateID GetActiveNonPinnedTabID(WebStateList* web_state_list) {
   [self updateConsumerItemForWebState:webState];
 }
 
-- (void)updateConsumerItemForWebState:(web::WebState*)webState {
-  GridItemIdentifier* item =
-      [GridItemIdentifier tabIdentifier:[[WebStateTabSwitcherItem alloc]
-                                            initWithWebState:webState]];
-  [self.consumer replaceItem:item withReplacementItem:item];
-}
-
 #pragma mark - SnapshotStorageObserver
 
-- (void)snapshotStorage:(SnapshotStorage*)snapshotStorage
-    didUpdateSnapshotForID:(SnapshotID)snapshotID {
+- (void)didUpdateSnapshotStorageWithSnapshotID:(SnapshotIDWrapper*)snapshotID {
   web::WebState* webState = nullptr;
-  for (int i = self.webStateList->pinned_tabs_count();
-       i < self.webStateList->count(); i++) {
+  WebStateList* webStateList = self.webStateList;
+  for (int i = webStateList->pinned_tabs_count(); i < webStateList->count();
+       i++) {
     SnapshotTabHelper* snapshotTabHelper =
-        SnapshotTabHelper::FromWebState(self.webStateList->GetWebStateAt(i));
-    if (snapshotID == snapshotTabHelper->GetSnapshotID()) {
-      webState = self.webStateList->GetWebStateAt(i);
+        SnapshotTabHelper::FromWebState(webStateList->GetWebStateAt(i));
+    if (snapshotID.snapshot_id == snapshotTabHelper->GetSnapshotID()) {
+      webState = webStateList->GetWebStateAt(i);
       break;
     }
   }
@@ -450,66 +710,39 @@ web::WebStateID GetActiveNonPinnedTabID(WebStateList* web_state_list) {
     // It is possible to observe an updated snapshot for a WebState before
     // observing that the WebState has been added to the WebStateList. It is the
     // consumer's responsibility to ignore any updates before inserts.
-    GridItemIdentifier* item =
-        [GridItemIdentifier tabIdentifier:[[WebStateTabSwitcherItem alloc]
-                                              initWithWebState:webState]];
-    [self.consumer replaceItem:item withReplacementItem:item];
+    [self updateConsumerItemForWebState:webState];
   }
 }
 
 #pragma mark - GridCommands
 
 - (BOOL)addNewItem {
+  // The incognito mediator's Browser is briefly set to nil after the last
+  // incognito tab is closed.
+  if (!self.browser) {
+    return NO;
+  }
+
   if (self.browserState &&
       !IsAddNewTabAllowedByPolicy(self.browserState->GetPrefs(),
                                   self.browserState->IsOffTheRecord())) {
     return NO;
   }
 
-  NSUInteger itemIndex =
-      [self itemIndexFromWebStateListIndex:self.webStateList->count()];
-  [self insertNewItemAtIndex:itemIndex];
+  [self insertNewWebStateAtIndex:self.webStateList->count()
+                         withURL:GURL(kChromeUINewTabURL)];
   return YES;
 }
 
-- (void)insertNewItemAtIndex:(NSUInteger)index {
-  [self insertNewItemAtIndex:index withURL:GURL(kChromeUINewTabURL)];
-}
-
-- (void)moveItemWithID:(web::WebStateID)itemID
-               toIndex:(NSUInteger)destinationIndex {
-  int sourceIndex = GetWebStateIndex(
-      self.webStateList, WebStateSearchCriteria{
-                             .identifier = itemID,
-                         });
-  if (sourceIndex != WebStateList::kInvalidIndex) {
-    int destinationWebStateListIndex =
-        [self webStateListIndexFromItemIndex:destinationIndex];
-    self.webStateList->MoveWebStateAt(sourceIndex,
-                                      destinationWebStateListIndex);
-  }
-}
-
-- (void)selectItemWithID:(web::WebStateID)itemID pinned:(BOOL)pinned {
+- (void)selectItemWithID:(web::WebStateID)itemID
+                    pinned:(BOOL)pinned
+    isFirstActionOnTabGrid:(BOOL)isFirstActionOnTabGrid {
   WebStateSearchCriteria searchCriteria{
       .identifier = itemID,
       .pinned_state = pinned ? PinnedState::kPinned : PinnedState::kNonPinned,
   };
 
   int index = GetWebStateIndex(self.webStateList, searchCriteria);
-  // TODO(crbug.com/1501837): Adapt the condition to open a tab group UI only
-  // when `itemID` match a group.
-  if (base::FeatureList::IsEnabled(kTabGroupsInGrid)) {
-    // TODO(crbug.com/1501837): This should be move in the function (when
-    // available) which handle when a user tab on a group cell. This should also
-    // get the real group and not create one.
-    tab_groups::TabGroupVisualData temporaryVisualData(
-        u"To remove", tab_groups::TabGroupColorId::kCyan);
-    [self.dispatcher showTabGroup:self.webStateList->CreateGroup(
-                                      {index}, temporaryVisualData)];
-    return;
-  }
-
   WebStateList* itemWebStateList = self.webStateList;
   if (index == WebStateList::kInvalidIndex) {
     if (pinned) {
@@ -572,15 +805,27 @@ web::WebStateID GetActiveNonPinnedTabID(WebStateList* web_state_list) {
   // possible that this method (-selectItemWithID:) is being called as part of
   // a WebStateListObserver callback, in which case even a no-op activation
   // will cause a CHECK().
-  if (index == itemWebStateList->active_index()) {
-    // In search mode the consumer doesn't have any information about the
-    // selected item. So even if the active webstate is the same as the one that
-    // is being selected, make sure that the consumer update its selected item.
-    [self.consumer selectItemWithID:itemID];
+  if (selectedWebState == itemWebStateList->GetActiveWebState()) {
+    // In search mode, the consumer doesn't have any information about the
+    // selected item. So even if the active WebState is the same as the one that
+    // is being selected, make sure that the consumer updates its selected item.
+    [self.consumer
+        selectItemWithIdentifier:[GridItemIdentifier
+                                     tabIdentifier:selectedWebState]];
     return;
   } else {
     base::RecordAction(
         base::UserMetricsAction("MobileTabGridMoveToExistingTab"));
+    if (isFirstActionOnTabGrid) {
+      int activeWebStateIndex = itemWebStateList->active_index();
+      BOOL adjacentTabSelected =
+          std::abs(index - activeWebStateIndex) == 1 &&
+          index != WebStateList::kInvalidIndex &&
+          activeWebStateIndex != WebStateList::kInvalidIndex;
+      if (adjacentTabSelected) {
+        self.tabBasedIPHBrowserAgent->NotifySwitchToAdjacentTabFromTabGrid();
+      }
+    }
   }
 
   // Avoid a reentrant activation. This is a fix for crbug.com/1134663, although
@@ -591,6 +836,60 @@ web::WebStateID GetActiveNonPinnedTabID(WebStateList* web_state_list) {
 
   // It should be safe to activate here.
   itemWebStateList->ActivateWebStateAt(index);
+}
+
+- (void)selectTabGroup:(const TabGroup*)tabGroup {
+  WebStateList* webStateList = self.webStateList;
+
+  if (webStateList->ContainsGroup(tabGroup)) {
+    [self.dispatcher showTabGroup:tabGroup];
+    return;
+  }
+
+  BOOL incognito = self.browserState->IsOffTheRecord();
+  // If this is a search result, it may contain items from other windows or
+  // from the inactive browser - check other windows before giving up.
+  BrowserList* browserList =
+      BrowserListFactory::GetForBrowserState(self.browserState);
+  Browser* browser = GetBrowserForGroup(browserList, tabGroup, incognito);
+
+  if (!browser) {
+    return;
+  }
+
+  base::RecordAction(
+      base::UserMetricsAction("MobileTabGridOpenSearchResultInAnotherWindow"));
+
+  SceneState* targetSceneState = browser->GetSceneState();
+  SceneState* currentSceneState = self.browser->GetSceneState();
+
+  UISceneActivationRequestOptions* options =
+      [[UISceneActivationRequestOptions alloc] init];
+  options.requestingScene = currentSceneState.scene;
+
+  [[UIApplication sharedApplication]
+      requestSceneSessionActivation:targetSceneState.scene.session
+                       userActivity:nil
+                            options:options
+                       errorHandler:^(NSError* error) {
+                         LOG(ERROR) << base::SysNSStringToUTF8(
+                             error.localizedDescription);
+                         NOTREACHED();
+                       }];
+
+  if (!targetSceneState.UIEnabled) {
+    return;
+  }
+
+  id<ApplicationCommands> applicationHandler =
+      HandlerForProtocol(browser->GetCommandDispatcher(), ApplicationCommands);
+  TabGridOpeningMode openingMode =
+      incognito ? TabGridOpeningMode::kIncognito : TabGridOpeningMode::kRegular;
+  [applicationHandler displayTabGridInMode:openingMode];
+
+  id<TabGroupsCommands> tabGroupsHandler =
+      HandlerForProtocol(browser->GetCommandDispatcher(), TabGroupsCommands);
+  [tabGroupsHandler showTabGroup:tabGroup];
 }
 
 - (BOOL)isItemWithIDSelected:(web::WebStateID)itemID {
@@ -607,7 +906,8 @@ web::WebStateID GetActiveNonPinnedTabID(WebStateList* web_state_list) {
 }
 
 - (void)closeItemWithID:(web::WebStateID)itemID {
-  [self.gridConsumer setPageIdleStatus:NO];
+  [self.tabGridIdleStatusHandler
+      tabGridDidPerformAction:TabGridActionType::kInPageAction];
   int index = GetWebStateIndex(self.webStateList,
                                WebStateSearchCriteria{
                                    .identifier = itemID,
@@ -617,11 +917,18 @@ web::WebStateID GetActiveNonPinnedTabID(WebStateList* web_state_list) {
     return;
   }
 
+  TabSwitcherItem* itemToRemove =
+      [[TabSwitcherItem alloc] initWithIdentifier:itemID];
+
+  GridItemIdentifier* identifierToRemove =
+      [[GridItemIdentifier alloc] initWithTabItem:itemToRemove];
+
   // `index` is `WebStateList::kInvalidIndex`, so `itemID` should be a search
   // result from a different window. Since this item is not from the current
   // browser, no UI updates will be sent to the current grid. Notify the current
   // grid consumer about the change.
-  [self.consumer removeItemWithID:itemID selectedItemID:web::WebStateID()];
+  [self.consumer removeItemWithIdentifier:identifierToRemove
+                   selectedItemIdentifier:nil];
   base::RecordAction(
       base::UserMetricsAction("MobileTabGridSearchCloseTabFromAnotherWindow"));
 
@@ -658,8 +965,9 @@ web::WebStateID GetActiveNonPinnedTabID(WebStateList* web_state_list) {
           WebStateSearchCriteria{.identifier = itemID,
                                  .pinned_state = PinnedState::kNonPinned});
       if (index != WebStateList::kInvalidIndex) {
-        _selectedEditingItemIDs.erase(itemID);
-        _selectedSharableEditingItemIDs.erase(itemID);
+        GridItemIdentifier* identifierToRemove = [GridItemIdentifier
+            tabIdentifier:webStateList->GetWebStateAt(index)];
+        [_selectedEditingItems removeItem:identifierToRemove];
         webStateList->CloseWebStateAt(index, WebStateList::CLOSE_USER_ACTION);
       }
     }
@@ -675,6 +983,14 @@ web::WebStateID GetActiveNonPinnedTabID(WebStateList* web_state_list) {
           "MobileTabGridSelectionCloseAllIncognitoTabsConfirmed"));
     }
   }
+}
+
+- (void)closeTabGroup:(const TabGroup*)group {
+  [self closeTabsAndDeleteGroup:group];
+}
+
+- (void)ungroupTabGroup:(const TabGroup*)group {
+  [self deleteGroup:group];
 }
 
 - (void)closeAllItems {
@@ -693,58 +1009,6 @@ web::WebStateID GetActiveNonPinnedTabID(WebStateList* web_state_list) {
   NOTREACHED_NORETURN() << "Should be implemented in a subclass.";
 }
 
-- (NSArray<UIMenuElement*>*)addToButtonMenuElementsForItems:
-    (const std::set<web::WebStateID>&)itemIDs {
-  if (!self.browser) {
-    return nil;
-  }
-
-  NSMutableArray<UIMenuElement*>* actions = [[NSMutableArray alloc] init];
-
-  ActionFactory* actionFactory = [[ActionFactory alloc]
-      initWithScenario:kMenuScenarioHistogramTabGridAddTo];
-
-  __weak BaseGridMediator* weakSelf = self;
-
-  // Copy the set of items, so that the following block can use it.
-  std::set<web::WebStateID> itemIDsCopy = itemIDs;
-  UIAction* bookmarkAction = [actionFactory actionToBookmarkWithBlock:^{
-    [weakSelf addItemsWithIDsToBookmarks:itemIDsCopy];
-  }];
-  // Bookmarking can be disabled from prefs (from an enterprise policy),
-  // if that's the case grey out the option in the menu.
-  BOOL isEditBookmarksEnabled =
-      self.browser->GetBrowserState()->GetPrefs()->GetBoolean(
-          bookmarks::prefs::kEditBookmarksEnabled);
-  if (!isEditBookmarksEnabled) {
-    bookmarkAction.attributes = UIMenuElementAttributesDisabled;
-  }
-
-  if (base::FeatureList::IsEnabled(kTabGroupsInGrid)) {
-    ProceduralBlock createTabGroupActionBlock = ^{
-      BOOL incognito = [weakSelf isIncognitoBrowser];
-      [weakSelf.delegate showTabGroupCreationWithWithIdentifiers:itemIDsCopy
-                                                       incognito:incognito];
-    };
-    UIAction* addToNewTabGroupAction = [actionFactory
-        actionToAddTabsToNewGroupWithTabsNumber:itemIDs.size()
-                                          block:createTabGroupActionBlock];
-    [actions addObject:[UIMenu menuWithTitle:@""
-                                       image:nil
-                                  identifier:nil
-                                     options:UIMenuOptionsDisplayInline
-                                    children:@[ addToNewTabGroupAction ]]];
-  }
-
-  [actions addObject:[actionFactory actionToAddToReadingListWithBlock:^{
-             [weakSelf addItemsWithIDsToReadingList:itemIDsCopy];
-           }]];
-
-  [actions addObject:bookmarkAction];
-
-  return actions;
-}
-
 - (void)searchItemsWithText:(NSString*)searchText {
   TabsSearchService* searchService =
       TabsSearchServiceFactory::GetForBrowserState(self.browserState);
@@ -757,10 +1021,22 @@ web::WebStateID GetActiveNonPinnedTabID(WebStateList* web_state_list) {
         NSMutableArray* remainingItems = [[NSMutableArray alloc] init];
         for (const TabsSearchService::TabsSearchBrowserResults& browserResults :
              results) {
+          if (IsTabGroupInGridEnabled()) {
+            for (const TabGroup* group : browserResults.tab_groups) {
+              GridItemIdentifier* item = [GridItemIdentifier
+                   groupIdentifier:group
+                  withWebStateList:browserResults.browser->GetWebStateList()];
+              if (browserResults.browser == self.browser) {
+                [currentBrowserItems addObject:item];
+              } else {
+                [remainingItems addObject:item];
+              }
+            }
+          }
+
           for (web::WebState* webState : browserResults.web_states) {
-            GridItemIdentifier* item = [GridItemIdentifier
-                tabIdentifier:[[WebStateTabSwitcherItem alloc]
-                                  initWithWebState:webState]];
+            GridItemIdentifier* item =
+                [GridItemIdentifier tabIdentifier:webState];
 
             if (browserResults.browser == self.browser) {
               [currentBrowserItems addObject:item];
@@ -779,7 +1055,8 @@ web::WebStateID GetActiveNonPinnedTabID(WebStateList* web_state_list) {
         } else {
           allItems = currentBrowserItems;
         }
-        [self.consumer populateItems:allItems selectedItemID:web::WebStateID()];
+
+        [self.consumer populateItems:allItems selectedItemIdentifier:nil];
       }));
 }
 
@@ -798,61 +1075,52 @@ web::WebStateID GetActiveNonPinnedTabID(WebStateList* web_state_list) {
                                 }));
 }
 
-#pragma mark GridCommands helpers
-
-- (void)insertNewItemAtIndex:(NSUInteger)index withURL:(const GURL&)newTabURL {
-  // The incognito mediator's Browser is briefly set to nil after the last
-  // incognito tab is closed.  This occurs because the incognito BrowserState
-  // needs to be destroyed to correctly clear incognito browsing data.  Don't
-  // attempt to create a new WebState with a nil BrowserState.
-  if (!self.browser) {
-    return;
-  }
-
-  // There are some circumstances where a new tab insertion can be erroniously
-  // triggered while another web state list mutation is happening. To ensure
-  // those bugs don't become crashes, check that the web state list is OK to
-  // mutate.
-  if (self.webStateList->IsMutating()) {
-    // Shouldn't have happened!
-    DCHECK(false) << "Reentrant web state insertion!";
-    return;
-  }
-
-  DCHECK(self.browserState);
-  web::WebState::CreateParams params(self.browserState);
-  std::unique_ptr<web::WebState> webState = web::WebState::Create(params);
-
-  web::NavigationManager::WebLoadParams loadParams(newTabURL);
-  loadParams.transition_type = ui::PAGE_TRANSITION_TYPED;
-  webState->GetNavigationManager()->LoadURLWithParams(loadParams);
-
-  int webStateListIndex = [self webStateListIndexFromItemIndex:index];
-
-  self.webStateList->InsertWebState(
-      std::move(webState),
-      WebStateList::InsertionParams::AtIndex(webStateListIndex).Activate());
-}
-
 #pragma mark - TabCollectionDragDropHandler
 
 - (NSArray<UIDragItem*>*)allSelectedDragItems {
   NSMutableArray<UIDragItem*>* dragItems = [[NSMutableArray alloc] init];
-  for (web::WebStateID itemID : _selectedEditingItemIDs) {
-    UIDragItem* dragItem = [self dragItemForItemWithID:itemID];
-    if (dragItem) {
-      [dragItems addObject:dragItem];
+  for (GridItemIdentifier* itemID in _selectedEditingItems.itemsIdentifiers) {
+    switch (itemID.type) {
+      case GridItemType::Tab: {
+        UIDragItem* dragItem =
+            [self dragItemForItemWithID:itemID.tabSwitcherItem.identifier];
+        if (dragItem) {
+          [dragItems addObject:dragItem];
+        }
+        break;
+      }
+      case GridItemType::Group: {
+        UIDragItem* dragItem =
+            [self dragItemForTabGroupItem:itemID.tabGroupItem];
+        if (dragItem) {
+          [dragItems addObject:dragItem];
+        }
+        break;
+      }
+      case GridItemType::SuggestedActions:
+        // Suggested actions items are not dragable and not stored in
+        // `_selectedEditingItems`.
+        NOTREACHED_NORETURN();
     }
   }
   return dragItems;
+}
+
+- (UIDragItem*)dragItemForTabGroupItem:(TabGroupItem*)tabGroupItem {
+  return CreateTabGroupDragItem(tabGroupItem.tabGroup,
+                                self.browserState->IsOffTheRecord());
 }
 
 - (UIDragItem*)dragItemForItem:(TabSwitcherItem*)item {
   return [self dragItemForItemWithID:item.identifier];
 }
 
-- (void)dragWillBeginForItem:(TabSwitcherItem*)item {
+- (void)dragWillBeginForTabSwitcherItem:(TabSwitcherItem*)item {
   _dragItemID = item.identifier;
+}
+
+- (void)dragWillBeginForTabGroupItem:(TabSwitcherItem*)item {
+  NOTREACHED();
 }
 
 - (void)dragSessionDidEnd {
@@ -863,7 +1131,8 @@ web::WebStateID GetActiveNonPinnedTabID(WebStateList* web_state_list) {
   [self configureToolbarsButtons];
 }
 
-- (UIDropOperation)dropOperationForDropSession:(id<UIDropSession>)session {
+- (UIDropOperation)dropOperationForDropSession:(id<UIDropSession>)session
+                                       toIndex:(NSUInteger)destinationIndex {
   UIDragItem* dragItem = session.localDragSession.items.firstObject;
 
   // Tab move operations only originate from Chrome so a local object is used.
@@ -881,10 +1150,25 @@ web::WebStateID GetActiveNonPinnedTabID(WebStateList* web_state_list) {
                          }) == WebStateList::kInvalidIndex) {
       return UIDropOperationCancel;
     }
+    // TODO(crbug.com/333502177) : Fix this when implementing multi profiles.
     if (self.browserState->IsOffTheRecord() == tabInfo.incognito) {
       return UIDropOperationMove;
     }
 
+    // Tabs of different profiles (regular/incognito) cannot be dropped.
+    return UIDropOperationForbidden;
+  }
+  if ([dragItem.localObject isKindOfClass:[TabGroupInfo class]]) {
+    TabGroupInfo* tabGroupInfo =
+        static_cast<TabGroupInfo*>(dragItem.localObject);
+    // TODO(crbug.com/333502177) : Fix this when implementing multi profiles.
+    if (self.browserState->IsOffTheRecord() == tabGroupInfo.incognito) {
+      if (self.currentMode == TabGridModeGroup) {
+        // Can't drop a group in a group.
+        return UIDropOperationForbidden;
+      }
+      return UIDropOperationMove;
+    }
     // Tabs of different profiles (regular/incognito) cannot be dropped.
     return UIDropOperationForbidden;
   }
@@ -908,6 +1192,7 @@ web::WebStateID GetActiveNonPinnedTabID(WebStateList* web_state_list) {
 - (void)dropItem:(UIDragItem*)dragItem
                toIndex:(NSUInteger)destinationIndex
     fromSameCollection:(BOOL)fromSameCollection {
+
   // Tab move operations only originate from Chrome so a local object is used.
   // Local objects allow synchronous drops, whereas NSItemProvider only allows
   // asynchronous drops.
@@ -925,7 +1210,10 @@ web::WebStateID GetActiveNonPinnedTabID(WebStateList* web_state_list) {
         // Move tab across Browsers.
         base::UmaHistogramEnumeration(kUmaGridViewDragOrigin,
                                       DragItemOrigin::kOtherBrwoser);
-        MoveTabToBrowser(tabInfo.tabID, self.browser, destinationIndex);
+        int destinationWebStateIndex = WebStateIndexFromGridDropItemIndex(
+            self.webStateList, destinationIndex);
+
+        MoveTabToBrowser(tabInfo.tabID, self.browser, destinationWebStateIndex);
         return;
       }
       base::UmaHistogramEnumeration(kUmaGridViewDragOrigin,
@@ -936,15 +1224,53 @@ web::WebStateID GetActiveNonPinnedTabID(WebStateList* web_state_list) {
     }
 
     // Reorder tab within same grid.
-    [self moveItemWithID:tabInfo.tabID toIndex:destinationIndex];
+    int sourceIndex =
+        GetWebStateIndex(self.webStateList, WebStateSearchCriteria{
+                                                .identifier = tabInfo.tabID,
+                                            });
+    if (sourceIndex != WebStateList::kInvalidIndex) {
+      int destinationWebStateIndex = WebStateIndexFromGridDropItemIndex(
+          self.webStateList, destinationIndex, sourceIndex);
+      self.webStateList->MoveWebStateAt(sourceIndex, destinationWebStateIndex);
+    }
     return;
+  }
+
+  if ([dragItem.localObject isKindOfClass:[TabGroupInfo class]]) {
+    TabGroupInfo* tabGroupInfo =
+        static_cast<TabGroupInfo*>(dragItem.localObject);
+    // Early return if the group has been closed during the drag an drop.
+    if (!tabGroupInfo.tabGroup) {
+      return;
+    }
+    if (fromSameCollection) {
+      base::UmaHistogramEnumeration(kUmaGridViewGroupDragOrigin,
+                                    DragItemOrigin::kSameCollection);
+      CHECK(tabGroupInfo.tabGroup);
+      int sourceIndex = tabGroupInfo.tabGroup->range().range_begin();
+      int nextWebStateIndex = WebStateIndexAfterGridDropItemIndex(
+          self.webStateList, destinationIndex, sourceIndex);
+      self.webStateList->MoveGroup(tabGroupInfo.tabGroup, nextWebStateIndex);
+      return;
+    } else {
+      base::UmaHistogramEnumeration(kUmaGridViewGroupDragOrigin,
+                                    DragItemOrigin::kOtherBrwoser);
+    }
+
+    int destinationWebStateIndex = WebStateIndexAfterGridDropItemIndex(
+        self.webStateList, destinationIndex);
+    MoveTabGroupToBrowser(tabGroupInfo.tabGroup, self.browser,
+                          destinationWebStateIndex);
   }
   base::UmaHistogramEnumeration(kUmaGridViewDragOrigin, DragItemOrigin::kOther);
 
   // Handle URLs from within Chrome synchronously using a local object.
   if ([dragItem.localObject isKindOfClass:[URLInfo class]]) {
     URLInfo* droppedURL = static_cast<URLInfo*>(dragItem.localObject);
-    [self insertNewItemAtIndex:destinationIndex withURL:droppedURL.URL];
+    int destinationWebStateIndex =
+        WebStateIndexFromGridDropItemIndex(self.webStateList, destinationIndex);
+    [self insertNewWebStateAtIndex:destinationWebStateIndex
+                           withURL:droppedURL.URL];
     return;
   }
 }
@@ -958,13 +1284,15 @@ web::WebStateID GetActiveNonPinnedTabID(WebStateList* web_state_list) {
     return;
   }
 
+  int destinationWebStateIndex =
+      WebStateIndexFromGridDropItemIndex(self.webStateList, destinationIndex);
   auto loadHandler =
       ^(__kindof id<NSItemProviderReading> providedItem, NSError* error) {
         dispatch_async(dispatch_get_main_queue(), ^{
           [placeholderContext deletePlaceholder];
           NSURL* droppedURL = static_cast<NSURL*>(providedItem);
-          [self insertNewItemAtIndex:destinationIndex
-                             withURL:net::GURLWithNSURL(droppedURL)];
+          [self insertNewWebStateAtIndex:destinationWebStateIndex
+                                 withURL:net::GURLWithNSURL(droppedURL)];
         });
       };
   [itemProvider loadObjectOfClass:[NSURL class] completionHandler:loadHandler];
@@ -972,27 +1300,8 @@ web::WebStateID GetActiveNonPinnedTabID(WebStateList* web_state_list) {
 
 #pragma mark - Private
 
-// Calls `-populateItems:selectedItemID:` on the consumer.
-- (void)populateConsumerItems {
-  if (!self.webStateList) {
-    return;
-  }
-  [self.consumer populateItems:CreateItems(self.webStateList)
-                selectedItemID:GetActiveNonPinnedTabID(self.webStateList)];
-}
-
-// Adds an observations to every non-pinned WebState.
-- (void)addWebStateObservations {
-  int firstIndex =
-      IsPinnedTabsEnabled() ? self.webStateList->pinned_tabs_count() : 0;
-  for (int i = firstIndex; i < self.webStateList->count(); i++) {
-    web::WebState* webState = self.webStateList->GetWebStateAt(i);
-    _scopedWebStateObservation->AddObservation(webState);
-  }
-}
-
-// Returns a SnapshotStorage for the current browser.
-- (SnapshotStorage*)snapshotStorage {
+// Returns a SnapshotStorageWrapper for the current browser.
+- (SnapshotStorageWrapper*)snapshotStorage {
   if (!self.browser) {
     return nil;
   }
@@ -1048,54 +1357,28 @@ web::WebStateID GetActiveNonPinnedTabID(WebStateList* web_state_list) {
   return URLs;
 }
 
-// Converts the WebStateList indexes to the collection view's item indexes by
-// shifting indexes by the number of pinned WebStates.
-- (NSUInteger)itemIndexFromWebStateListIndex:(int)index {
-  if (!IsPinnedTabsEnabled()) {
-    return index;
-  }
-
-  // If WebStateList's index is invalid or it's inside of pinned WebStates
-  // range return invalid index.
-  if (index == WebStateList::kInvalidIndex ||
-      index < self.webStateList->pinned_tabs_count()) {
-    return NSNotFound;
-  }
-
-  return index - self.webStateList->pinned_tabs_count();
-}
-
-// Converts the collection view's item indexes to the WebStateList indexes by
-// shifting indexes by the number of pinned WebStates.
-- (int)webStateListIndexFromItemIndex:(NSUInteger)index {
-  if (!IsPinnedTabsEnabled()) {
-    return index;
-  }
-
-  if (index == NSNotFound) {
-    return WebStateList::kInvalidIndex;
-  }
-
-  return index + self.webStateList->pinned_tabs_count();
-}
-
 // Inserts/removes a non pinned item to/from the collection.
 - (void)changePinnedStateForWebState:(web::WebState*)webState
-                             atIndex:(int)index {
+                             atIndex:(int)index
+                        updatedGroup:(const TabGroup*)group {
   if ([self isPinnedWebState:index]) {
-    [self.consumer removeItemWithID:webState->GetUniqueIdentifier()
-                     selectedItemID:GetActiveNonPinnedTabID(self.webStateList)];
-
-    _scopedWebStateObservation->RemoveObservation(webState);
+    if (group) {
+      [self updateCellGroup:group];
+    } else {
+      GridItemIdentifier* identifierToRemove =
+          [GridItemIdentifier tabIdentifier:webState];
+      [self.consumer removeItemWithIdentifier:identifierToRemove
+                       selectedItemIdentifier:[self activeIdentifier]];
+    }
+    [self removeObservationForWebState:webState];
   } else {
-    TabSwitcherItem* item =
-        [[WebStateTabSwitcherItem alloc] initWithWebState:webState];
-    NSUInteger itemIndex = [self itemIndexFromWebStateListIndex:index];
-    [self.consumer insertItem:[GridItemIdentifier tabIdentifier:item]
-                      atIndex:itemIndex
-               selectedItemID:GetActiveNonPinnedTabID(self.webStateList)];
-
-    _scopedWebStateObservation->AddObservation(webState);
+    if (group) {
+      [self updateCellGroup:group];
+    } else {
+      [self insertItem:[GridItemIdentifier tabIdentifier:webState]
+          beforeWebStateIndex:index + 1];
+    }
+    [self addObservationForWebState:webState];
   }
 }
 
@@ -1118,17 +1401,6 @@ web::WebStateID GetActiveNonPinnedTabID(WebStateList* web_state_list) {
   }
 }
 
-// Returns YES if the provided webState can be shared.
-- (BOOL)isItemWithIDShareable:(web::WebStateID)itemID {
-  web::WebState* webState = GetWebState(
-      self.webStateList, WebStateSearchCriteria{
-                             .identifier = itemID,
-                             .pinned_state = PinnedState::kNonPinned,
-                         });
-  const GURL& URL = webState->GetVisibleURL();
-  return URL.is_valid() && URL.SchemeIsHTTPOrHTTPS();
-}
-
 // Returns a drag item for the given `itemID`.
 - (UIDragItem*)dragItemForItemWithID:(web::WebStateID)itemID {
   web::WebState* webState = GetWebState(
@@ -1139,8 +1411,155 @@ web::WebStateID GetActiveNonPinnedTabID(WebStateList* web_state_list) {
   return CreateTabDragItem(webState);
 }
 
-- (BOOL)isIncognitoBrowser {
-  return static_cast<BOOL>(self.browserState->IsOffTheRecord());
+// Returns the menu to display when the Add To button is selected for `items`.
+- (NSArray<UIMenuElement*>*)addToButtonMenuElements {
+  if (!self.browser) {
+    return nil;
+  }
+
+  NSMutableArray<UIMenuElement*>* actions = [[NSMutableArray alloc] init];
+
+  ActionFactory* actionFactory = [[ActionFactory alloc]
+      initWithScenario:kMenuScenarioHistogramTabGridAddTo];
+
+  __weak BaseGridMediator* weakSelf = self;
+
+  if (IsTabGroupInGridEnabled()) {
+    auto addToGroupBlock = ^(const TabGroup* group) {
+      [weakSelf addSelectedElementsToGroup:group];
+    };
+    UIMenuElement* addToGroup = [actionFactory
+        menuToAddTabToGroupWithGroups:GetAllGroupsForBrowserState(_browserState)
+                         numberOfTabs:_selectedEditingItems.tabsCount
+                                block:addToGroupBlock];
+    [actions addObject:[UIMenu menuWithTitle:@""
+                                       image:nil
+                                  identifier:nil
+                                     options:UIMenuOptionsDisplayInline
+                                    children:@[ addToGroup ]]];
+  }
+
+  // Copy the set of items, so that the following block can use it.
+  std::set<web::WebStateID> shareableTabsCopy =
+      [_selectedEditingItems sharableTabs];
+
+  UIAction* addToReadingListAction =
+      [actionFactory actionToAddToReadingListWithBlock:^{
+        [weakSelf addItemsWithIDsToReadingList:shareableTabsCopy];
+      }];
+
+  UIAction* bookmarkAction = [actionFactory actionToBookmarkWithBlock:^{
+    [weakSelf addItemsWithIDsToBookmarks:shareableTabsCopy];
+  }];
+  // Bookmarking can be disabled from prefs (from an enterprise policy),
+  // if that's the case grey out the option in the menu.
+  BOOL isEditBookmarksEnabled =
+      self.browser->GetBrowserState()->GetPrefs()->GetBoolean(
+          bookmarks::prefs::kEditBookmarksEnabled);
+  if (!isEditBookmarksEnabled) {
+    bookmarkAction.attributes = UIMenuElementAttributesDisabled;
+  }
+  if (shareableTabsCopy.size() == 0) {
+    addToReadingListAction.attributes = UIMenuElementAttributesDisabled;
+    bookmarkAction.attributes = UIMenuElementAttributesDisabled;
+  }
+
+  [actions addObject:addToReadingListAction];
+  [actions addObject:bookmarkAction];
+
+  return actions;
+}
+
+// Adds all the current selected elements to `group`. Pass nullptr to add to a
+// new group.
+- (void)addSelectedElementsToGroup:(const TabGroup*)group {
+  std::set<web::WebStateID> selectedTabs = [_selectedEditingItems allTabs];
+  if (group == nullptr) {
+    [self.dispatcher showTabGroupCreationForTabs:selectedTabs];
+  } else {
+    WebStateList::ScopedBatchOperation lock =
+        self.webStateList->StartBatchOperation();
+    for (web::WebStateID webStateID : selectedTabs) {
+      MoveTabToGroup(webStateID, group, _browserState);
+    }
+  }
+}
+
+// Closes all the tabs (webStates) in a given `group` and deletes the `group`
+// from the `webStateList`.
+- (void)closeTabsAndDeleteGroup:(const TabGroup*)group {
+  [self.tabGridIdleStatusHandler
+      tabGridDidPerformAction:TabGridActionType::kInPageAction];
+  if (_webStateList->ContainsGroup(group)) {
+    // Using `CloseAllWebStatesInGroup` will result in calling the web state
+    // list observers which will take care of updating the consumer.
+    CloseAllWebStatesInGroup(*_webStateList, group,
+                             WebStateList::CLOSE_USER_ACTION);
+    return;
+  }
+
+  // `group` is not in the set of groups of the `_webStateList`, so `group`
+  // should be a search result from a different window. Since this item is not
+  // from the current browser, no UI updates will be sent to the current grid.
+  // Notify the current grid consumer about the change.
+  GridItemIdentifier* identifierToRemove =
+      [GridItemIdentifier groupIdentifier:group withWebStateList:_webStateList];
+  [self.consumer removeItemWithIdentifier:identifierToRemove
+                   selectedItemIdentifier:nil];
+
+  BrowserList* browserList =
+      BrowserListFactory::GetForBrowserState(self.browserState);
+  Browser* browser = GetBrowserForGroup(browserList, group,
+                                        self.browserState->IsOffTheRecord());
+
+  // If this group is still associated with another browser, remove it from the
+  // associated web state list.
+  if (browser) {
+    WebStateList* groupWebStateList = browser->GetWebStateList();
+    CloseAllWebStatesInGroup(*groupWebStateList, group,
+                             WebStateList::CLOSE_USER_ACTION);
+  }
+}
+
+// Deletes the group only while keeping the web states of the group in the
+// `_webStateList`.
+- (void)deleteGroup:(const TabGroup*)group {
+  if (_webStateList->ContainsGroup(group)) {
+    // Calling `DeleteGroup` will result in sending a `kGroupDelete` change to
+    // the observers which will take of updating the consumer.
+    _webStateList->DeleteGroup(group);
+    return;
+  }
+
+  // `group` is not in the set of groups of the `_webStateList`, so `group`
+  // should be a search result from a different window. Since this item is not
+  // from the current browser, no UI updates will be sent to the current grid.
+  // Notify the current grid consumer about the change.
+  GridItemIdentifier* identifierToRemove =
+      [GridItemIdentifier groupIdentifier:group withWebStateList:_webStateList];
+  [self.consumer removeItemWithIdentifier:identifierToRemove
+                   selectedItemIdentifier:nil];
+
+  BrowserList* browserList =
+      BrowserListFactory::GetForBrowserState(self.browserState);
+  Browser* browser = GetBrowserForGroup(browserList, group,
+                                        self.browserState->IsOffTheRecord());
+
+  // If this group is still associated with another browser, remove it from the
+  // associated web state list.
+  if (browser) {
+    WebStateList* groupWebStateList = browser->GetWebStateList();
+    groupWebStateList->DeleteGroup(group);
+  }
+}
+
+// Updates the cell of the given `group`.
+- (void)updateCellGroup:(const TabGroup*)group {
+  GridItemIdentifier* groupIdentifier =
+      [GridItemIdentifier groupIdentifier:group
+                         withWebStateList:self.webStateList];
+  [self.consumer replaceItem:groupIdentifier
+         withReplacementItem:groupIdentifier];
 }
 
 #pragma mark - TabGridPageMutator
@@ -1176,22 +1595,20 @@ web::WebStateID GetActiveNonPinnedTabID(WebStateList* web_state_list) {
 }
 
 - (void)selectAllButtonTapped:(id)sender {
-  NSUInteger selectedItemsCount = _selectedEditingItemIDs.size();
+  NSUInteger selectedItemsCount = _selectedEditingItems.tabsCount;
   BOOL allItemsSelected =
       static_cast<int>(selectedItemsCount) ==
       (self.webStateList->count() - self.webStateList->pinned_tabs_count());
 
   // Deselect all items if they are all already selected.
   if (allItemsSelected) {
-    _selectedEditingItemIDs.clear();
-    _selectedSharableEditingItemIDs.clear();
+    [_selectedEditingItems removeAllItems];
     base::RecordAction(
         base::UserMetricsAction("MobileTabGridSelectionDeselectAll"));
   } else {
-    int firstIndex = self.webStateList->pinned_tabs_count();
-    for (int i = firstIndex; i < self.webStateList->count(); i++) {
-      web::WebState* webState = self.webStateList->GetWebStateAt(i);
-      [self addToSelectionItemID:webState->GetUniqueIdentifier()];
+    NSArray<GridItemIdentifier*>* identifiers = CreateItems(self.webStateList);
+    for (GridItemIdentifier* identifier in identifiers) {
+      [self addToSelectionItemID:identifier];
     }
     base::RecordAction(
         base::UserMetricsAction("MobileTabGridSelectionSelectAll"));
@@ -1213,32 +1630,43 @@ web::WebStateID GetActiveNonPinnedTabID(WebStateList* web_state_list) {
 - (void)closeSelectedTabs:(id)sender {
   [self.delegate dismissPopovers];
 
+  std::set<web::WebStateID> selectedIDs;
+  for (GridItemIdentifier* identifier in _selectedEditingItems
+           .itemsIdentifiers) {
+    switch (identifier.type) {
+      case GridItemType::Tab:
+        selectedIDs.insert(identifier.tabSwitcherItem.identifier);
+        break;
+      case GridItemType::Group: {
+        CHECK(identifier.tabGroupItem.tabGroup);
+        const TabGroupRange groupRange =
+            identifier.tabGroupItem.tabGroup->range();
+        for (int index : groupRange) {
+          web::WebState* webState = self.webStateList->GetWebStateAt(index);
+          selectedIDs.insert(webState->GetUniqueIdentifier());
+        }
+        break;
+      }
+      case GridItemType::SuggestedActions:
+        NOTREACHED_NORETURN();
+    }
+  }
   [self.delegate
       showCloseItemsConfirmationActionSheetWithBaseGridMediator:self
-                                                        itemIDs:
-                                                            _selectedEditingItemIDs
+                                                        itemIDs:selectedIDs
                                                          anchor:sender];
 }
 
 - (void)shareSelectedTabs:(id)sender {
   [self.delegate dismissPopovers];
 
-  NSMutableArray<URLWithTitle*>* URLs = [[NSMutableArray alloc] init];
-  for (const web::WebStateID itemID : _selectedSharableEditingItemIDs) {
-    TabItem* item = GetTabItem(self.webStateList,
-                               WebStateSearchCriteria{
-                                   .identifier = itemID,
-                                   .pinned_state = PinnedState::kNonPinned,
-                               });
-    URLWithTitle* URL = [[URLWithTitle alloc] initWithURL:item.URL
-                                                    title:item.title];
-    [URLs addObject:URL];
-  }
   base::RecordAction(
       base::UserMetricsAction("MobileTabGridSelectionShareTabs"));
   base::UmaHistogramCounts100("IOS.TabGrid.Selection.ShareTabs",
-                              _selectedSharableEditingItemIDs.size());
-  [self.delegate baseGridMediator:self shareURLs:URLs anchor:sender];
+                              _selectedEditingItems.sharableTabsCount);
+  [self.delegate baseGridMediator:self
+                        shareURLs:[_selectedEditingItems selectedTabsURLs]
+                           anchor:sender];
 }
 
 - (void)selectTabsButtonTapped:(id)sender {
@@ -1249,7 +1677,8 @@ web::WebStateID GetActiveNonPinnedTabID(WebStateList* web_state_list) {
 
 #pragma mark - GridViewControllerMutator
 
-- (void)userTappedOnItemID:(web::WebStateID)itemID {
+- (void)userTappedOnItemID:(GridItemIdentifier*)itemID {
+  CHECK(itemID.type == GridItemType::Group || itemID.type == GridItemType::Tab);
   if (self.currentMode == TabGridModeSelection) {
     if ([self isItemSelected:itemID]) {
       [self removeFromSelectionItemID:itemID];
@@ -1259,35 +1688,46 @@ web::WebStateID GetActiveNonPinnedTabID(WebStateList* web_state_list) {
   }
 }
 
-- (void)addToSelectionItemID:(web::WebStateID)itemID {
+- (void)addToSelectionItemID:(GridItemIdentifier*)itemID {
+  CHECK(itemID.type == GridItemType::Tab || itemID.type == GridItemType::Group);
   if (self.currentMode != TabGridModeSelection) {
     base::debug::DumpWithoutCrashing();
     return;
   }
-  _selectedEditingItemIDs.insert(itemID);
-  if ([self isItemWithIDShareable:itemID]) {
-    _selectedSharableEditingItemIDs.insert(itemID);
-  }
+  [_selectedEditingItems addItem:itemID];
   [self configureToolbarsButtons];
 }
 
-- (void)removeFromSelectionItemID:(web::WebStateID)itemID {
+- (void)removeFromSelectionItemID:(GridItemIdentifier*)itemID {
+  CHECK(itemID.type == GridItemType::Tab || itemID.type == GridItemType::Group);
   if (self.currentMode != TabGridModeSelection) {
     return;
   }
-  _selectedEditingItemIDs.erase(itemID);
-  _selectedSharableEditingItemIDs.erase(itemID);
+
+  [_selectedEditingItems removeItem:itemID];
   [self configureToolbarsButtons];
 }
 
-- (void)closeItemID:(web::WebStateID)itemID {
-  [self closeItemWithID:itemID];
+- (void)closeItemWithIdentifier:(GridItemIdentifier*)identifier {
+  switch (identifier.type) {
+    case GridItemType::Tab:
+      [self closeItemWithID:identifier.tabSwitcherItem.identifier];
+      break;
+    case GridItemType::Group: {
+      const TabGroup* group = identifier.tabGroupItem.tabGroup;
+      [self closeTabsAndDeleteGroup:group];
+      break;
+    }
+    case GridItemType::SuggestedActions:
+      NOTREACHED();
+      break;
+  }
 }
 
 #pragma mark - BaseGridMediatorItemProvider
 
-- (BOOL)isItemSelected:(web::WebStateID)itemID {
-  return _selectedEditingItemIDs.contains(itemID);
+- (BOOL)isItemSelected:(GridItemIdentifier*)itemID {
+  return [_selectedEditingItems containItem:itemID];
 }
 
 @end

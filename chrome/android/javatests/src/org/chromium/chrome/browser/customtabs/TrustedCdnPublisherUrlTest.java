@@ -16,6 +16,7 @@ import android.app.Instrumentation;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.ColorStateList;
+import android.content.res.Resources;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.VectorDrawable;
 import android.util.Pair;
@@ -174,7 +175,6 @@ public class TrustedCdnPublisherUrlTest {
     @SmallTest
     @Feature({"UiCatalogue"})
     @OverrideTrustedCdn
-    @DisabledTest(message = "crbug.com/1487332")
     public void testHttps() throws Exception {
         runTrustedCdnPublisherUrlTest(
                 "https://www.example.com/test",
@@ -288,7 +288,6 @@ public class TrustedCdnPublisherUrlTest {
     @SmallTest
     @Feature({"UiCatalogue"})
     @OverrideTrustedCdn
-    @DisabledTest(message = "Disabled for flakiness! See http://crbug.com/847341")
     public void testReparent() throws Exception {
         GURL publisherUrl = new GURL("https://example.com/test");
         runTrustedCdnPublisherUrlTest(
@@ -338,8 +337,6 @@ public class TrustedCdnPublisherUrlTest {
                     UrlBar urlBar = newActivity.findViewById(R.id.url_bar);
                     Criteria.checkThat(urlBar.getText().toString(), Matchers.is(expectedUrl));
                 });
-
-        verifySecurityIcon(getDefaultSecurityIcon());
     }
 
     @Test
@@ -471,10 +468,11 @@ public class TrustedCdnPublisherUrlTest {
                 CustomTabToolbar toolbar =
                         mCustomTabActivityTestRule.getActivity().findViewById(R.id.toolbar);
                 CustomTabLocationBar locationBar = (CustomTabLocationBar) toolbar.getLocationBar();
-                Assert.assertEquals(locationBar.getSecurityIconResourceForTesting(),
-                                    expectedSecurityIcon);
-            }
-            else {
+                Resources res = mCustomTabActivityTestRule.getActivity().getResources();
+                Assert.assertEquals(
+                        res.getResourceName(expectedSecurityIcon),
+                        res.getResourceName(locationBar.getSecurityIconResourceForTesting()));
+            } else {
                 ColorStateList colorStateList =
                         AppCompatResources.getColorStateList(
                                 ApplicationProvider.getApplicationContext(),

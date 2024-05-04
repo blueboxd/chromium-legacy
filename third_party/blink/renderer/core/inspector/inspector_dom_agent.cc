@@ -224,6 +224,10 @@ protocol::DOM::PseudoType InspectorDOMAgent::ProtocolPseudoElementType(
       return protocol::DOM::PseudoTypeEnum::ScrollbarTrackPiece;
     case kPseudoIdScrollbarCorner:
       return protocol::DOM::PseudoTypeEnum::ScrollbarCorner;
+    case kPseudoIdScrollMarker:
+      return protocol::DOM::PseudoTypeEnum::ScrollMarker;
+    case kPseudoIdScrollMarkers:
+      return protocol::DOM::PseudoTypeEnum::ScrollMarkers;
     case kPseudoIdResizer:
       return protocol::DOM::PseudoTypeEnum::Resizer;
     case kPseudoIdInputListButton:
@@ -1641,29 +1645,29 @@ protocol::Response InspectorDOMAgent::getContainerForNode(
   if (!response.IsSuccess())
     return response;
 
-  PhysicalAxes physical = kPhysicalAxisNone;
+  PhysicalAxes physical = kPhysicalAxesNone;
   // TODO(crbug.com/1378237): Need to keep the broken behavior of querying the
   // inline-axis by default to avoid even worse behavior before devtools-
-  // frontend catches up. Change value here to kLogicalAxisNone.
-  LogicalAxes logical = kLogicalAxisInline;
+  // frontend catches up. Change value here to kLogicalAxesNone.
+  LogicalAxes logical = kLogicalAxesInline;
 
   if (physical_axes.has_value()) {
     if (physical_axes.value() == protocol::DOM::PhysicalAxesEnum::Horizontal) {
-      physical = kPhysicalAxisHorizontal;
+      physical = kPhysicalAxesHorizontal;
     } else if (physical_axes.value() ==
                protocol::DOM::PhysicalAxesEnum::Vertical) {
-      physical = kPhysicalAxisVertical;
+      physical = kPhysicalAxesVertical;
     } else if (physical_axes.value() == protocol::DOM::PhysicalAxesEnum::Both) {
-      physical = kPhysicalAxisBoth;
+      physical = kPhysicalAxesBoth;
     }
   }
   if (logical_axes.has_value()) {
     if (logical_axes.value() == protocol::DOM::LogicalAxesEnum::Inline) {
-      logical = kLogicalAxisInline;
+      logical = kLogicalAxesInline;
     } else if (logical_axes.value() == protocol::DOM::LogicalAxesEnum::Block) {
-      logical = kLogicalAxisBlock;
+      logical = kLogicalAxesBlock;
     } else if (logical_axes.value() == protocol::DOM::LogicalAxesEnum::Both) {
-      logical = kLogicalAxisBoth;
+      logical = kLogicalAxesBoth;
     }
   }
 
@@ -1697,6 +1701,30 @@ protocol::Response InspectorDOMAgent::getQueryingDescendantsForContainer(
     (*node_ids)->push_back(id);
   }
 
+  return protocol::Response::Success();
+}
+
+protocol::Response InspectorDOMAgent::getElementByRelation(
+    int node_id,
+    const String& relation,
+    int* related_element_id) {
+  *related_element_id = 0;
+  Node* node = nullptr;
+  protocol::Response response = AssertNode(node_id, node);
+  if (!response.IsSuccess()) {
+    return response;
+  }
+
+  Element* element = nullptr;
+  if (relation == protocol::DOM::GetElementByRelation::RelationEnum::PopoverTarget) {
+      if (auto* invoker = DynamicTo<HTMLFormControlElement>(node)) {
+        element = invoker->popoverTargetElement().popover;
+      }
+  }
+
+  if (element) {
+    *related_element_id = PushNodePathToFrontend(element);
+  }
   return protocol::Response::Success();
 }
 

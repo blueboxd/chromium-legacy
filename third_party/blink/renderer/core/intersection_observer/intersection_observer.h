@@ -5,6 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_INTERSECTION_OBSERVER_INTERSECTION_OBSERVER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_INTERSECTION_OBSERVER_INTERSECTION_OBSERVER_H_
 
+#include <optional>
+
 #include "base/functional/callback.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -90,9 +92,11 @@ class CORE_EXPORT IntersectionObserver final
   // when the margin is applied to the target.
   enum MarginTarget { kApplyMarginToRoot, kApplyMarginToTarget };
 
-  static IntersectionObserver* Create(const IntersectionObserverInit*,
-                                      IntersectionObserverDelegate&,
-                                      ExceptionState& = ASSERT_NO_EXCEPTION);
+  static IntersectionObserver* Create(
+      const IntersectionObserverInit*,
+      IntersectionObserverDelegate&,
+      std::optional<LocalFrameUkmAggregator::MetricId> ukm_metric_id,
+      ExceptionState& = ASSERT_NO_EXCEPTION);
   static IntersectionObserver* Create(ScriptState*,
                                       V8IntersectionObserverCallback*,
                                       const IntersectionObserverInit*,
@@ -102,6 +106,7 @@ class CORE_EXPORT IntersectionObserver final
     STACK_ALLOCATED();
 
    public:
+    Node* root;
     Vector<Length> margin;
     MarginTarget margin_target = kApplyMarginToRoot;
     Vector<Length> scroll_margin;
@@ -123,17 +128,17 @@ class CORE_EXPORT IntersectionObserver final
   };
 
   // Creates an IntersectionObserver that monitors changes to the intersection
-  // between its target element relative to its implicit root and notifies via
-  // the given |callback|.
+  // and notifies via the given |callback|.
   static IntersectionObserver* Create(
       const Document& document,
       EventCallback callback,
-      LocalFrameUkmAggregator::MetricId ukm_metric_id,
+      std::optional<LocalFrameUkmAggregator::MetricId> ukm_metric_id,
       Params&& params);
 
-  IntersectionObserver(IntersectionObserverDelegate& delegate,
-                       Node* root,
-                       Params&& params);
+  IntersectionObserver(
+      IntersectionObserverDelegate& delegate,
+      std::optional<LocalFrameUkmAggregator::MetricId> ukm_metric_id,
+      Params&& params);
 
   // API methods.
   void observe(Element*, ExceptionState& = ASSERT_NO_EXCEPTION);
@@ -185,7 +190,11 @@ class CORE_EXPORT IntersectionObserver final
   gfx::Vector2dF MinScrollDeltaToUpdate() const;
 
   bool IsInternal() const;
-  LocalFrameUkmAggregator::MetricId GetUkmMetricId() const;
+  // The metric id for tracking update time via UpdateTime metrics, or null for
+  // internal intersection observers without explicit metrics.
+  std::optional<LocalFrameUkmAggregator::MetricId> GetUkmMetricId() const {
+    return ukm_metric_id_;
+  }
 
   void ReportUpdates(IntersectionObservation&);
   DeliveryBehavior GetDeliveryBehavior() const;
@@ -216,6 +225,9 @@ class CORE_EXPORT IntersectionObserver final
   void ProcessCustomWeakness(const LivenessBroker&);
 
   const Member<IntersectionObserverDelegate> delegate_;
+
+  // See: `GetUkmMetricId()`.
+  const std::optional<LocalFrameUkmAggregator::MetricId> ukm_metric_id_;
 
   // We use UntracedMember<> here to do custom weak processing.
   UntracedMember<Node> root_;

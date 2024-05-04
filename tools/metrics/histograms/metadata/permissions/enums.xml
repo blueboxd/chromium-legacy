@@ -26,6 +26,12 @@ chromium-metrics-reviews@google.com.
 
 <enums>
 
+<enum name="ActivityIndicatorState">
+  <int value="0" label="In use"/>
+  <int value="1" label="Blocked on the site level"/>
+  <int value="2" label="Blocked on the system level"/>
+</enum>
+
 <enum name="AutoDSEPermissionRevertTransition">
   <int value="0" label="NO_DECISION_ASK"/>
   <int value="1" label="PRESERVE_ALLOW"/>
@@ -80,6 +86,17 @@ chromium-metrics-reviews@google.com.
   <int value="3" label="Expired in the background due to non-usage"/>
   <int value="4" label="Expired after maximum lifetime"/>
   <int value="5" label="Expired because the device was suspended"/>
+</enum>
+
+<enum name="OsScreen">
+  <int value="0" label="OS_PROMPT"/>
+  <int value="1" label="OS_SYSTEM_SETTINGS"/>
+</enum>
+
+<enum name="OsScreenAction">
+  <int value="0" label="SystemSettings"/>
+  <int value="1" label="DismissXButton"/>
+  <int value="2" label="DismissScrim"/>
 </enum>
 
 <enum name="PageInfoDialogAccessType">
@@ -137,6 +154,18 @@ chromium-metrics-reviews@google.com.
   <int value="1" label="HARDCODED_FALLBACK"/>
 </enum>
 
+<enum name="PermissionPromptDismissMethod">
+  <int value="0" label="Unspecified"/>
+  <int value="1" label="Back navigation"/>
+  <int value="2" label="Touching outside the scrim"/>
+  <int value="3"
+      label="Autodismissed due to dequeuing a prompt after the user
+             backgrounds the browser and cleanup has happened."/>
+  <int value="4"
+      label="Autodismissed after prompt was accepted but OS permission was
+             denied"/>
+</enum>
+
 <enum name="PermissionRequestIgnoredReason">
   <summary>
     Breaks down reasons for permission requests being categorized as ignored.
@@ -152,7 +181,7 @@ chromium-metrics-reviews@google.com.
 
 <enum name="PermissionRequestType">
   <int value="0" label="PERMISSION_BUBBLE_UNKNOWN"/>
-  <int value="1" label="PERMISSION_BUBBLE_MULTIPLE"/>
+  <int value="1" label="PERMISSION_BUBBLE_MULTIPLE_AUDIO_AND_VIDEO_CAPTURE"/>
   <int value="2" label="PERMISSION_BUBBLE_UNUSED_PERMISSION"/>
   <int value="3" label="PERMISSION_BUBBLE_QUOTA"/>
   <int value="4" label="PERMISSION_BUBBLE_DOWNLOAD"/>
@@ -183,6 +212,10 @@ chromium-metrics-reviews@google.com.
   <int value="33" label="CAPTURED_SURFACE_CONTROL"/>
   <int value="34" label="PERMISSION_SMART_CARD"/>
   <int value="35" label="PERMISSION_WEB_PRINTING"/>
+  <int value="36" label="PERMISSION_IDENTITY_PROVIDER"/>
+  <int value="37" label="PERMISSION_KEYBOARD_LOCK"/>
+  <int value="38" label="PERMISSION_POINTER_LOCK"/>
+  <int value="39" label="MULTIPLE_KEYBOARD_AND_POINTER_LOCK"/>
 </enum>
 
 <enum name="PermissionSourceUI">

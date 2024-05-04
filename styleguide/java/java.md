@@ -52,14 +52,14 @@ Avoid adding messages to exceptions that do not aid in debugging. For example:
 
 ```java
 try {
-  somethingThatThrowsIOException();
+    somethingThatThrowsIOException();
 } catch (IOException e) {
-  // Bad - message does not tell you more than the stack trace does:
-  throw new RuntimeException("Failed to parse a file.", e);
-  // Good - conveys that this block failed along with the "caused by" exception.
-  throw new RuntimeException(e);
-  // Good - adds useful information.
-  throw new RuntimeException(String.format("Failed to parse %s", fileName), e);
+    // Bad - message does not tell you more than the stack trace does:
+    throw new RuntimeException("Failed to parse a file.", e);
+    // Good - conveys that this block failed along with the "caused by" exception.
+    throw new RuntimeException(e);
+    // Good - adds useful information.
+    throw new RuntimeException(String.format("Failed to parse %s", fileName), e);
 }
 ```
 
@@ -97,8 +97,8 @@ import org.chromium.build.BuildConfig;
 ...
 
 if (BuildConfig.ENABLE_ASSERTS) {
-  // Any code here will be stripped in release builds by R8.
-  ...
+    // Any code here will be stripped in release builds by R8.
+    ...
 }
 ```
 
@@ -272,7 +272,7 @@ Values of `Integer` type are also supported, which allows using a sentinel
 
 * TODO should follow chromium convention. Examples:
   * `TODO(username): Some sentence here.`
-  * `TODO(crbug.com/123456): Even better to use a bug for context.`
+  * `TODO(crbug.com/40192027): Even better to use a bug for context.`
 
 ### Parameter Comments
 
@@ -307,7 +307,7 @@ or
 
 ```java
 if (someConditional) {
-  return false;
+    return false;
 }
 ```
 
@@ -315,7 +315,7 @@ Do NOT do:
 
 ```java
 if (someConditional)
-  return false;
+    return false;
 ```
 
 ### Import Order

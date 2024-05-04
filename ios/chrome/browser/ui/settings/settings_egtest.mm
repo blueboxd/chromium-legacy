@@ -12,7 +12,6 @@
 #import "base/strings/sys_string_conversions.h"
 #import "build/branding_buildflags.h"
 #import "components/strings/grit/components_strings.h"
-#import "components/sync/base/features.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/signin/model/test_constants.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_constants.h"
@@ -66,22 +65,6 @@ id<GREYMatcher> ClearBrowsingDataCell() {
 
 @implementation SettingsTestCase
 
-- (AppLaunchConfiguration)appConfigurationForTestCase {
-  AppLaunchConfiguration config;
-  if ([self isRunningTest:@selector
-            (testSettingsKeyboardCommandsIfSyncToSigninDisabled)]) {
-    config.features_disabled.push_back(
-        syncer::kReplaceSyncPromosWithSignInPromos);
-  }
-  if ([self isRunningTest:@selector
-            (testSettingsKeyboardCommandsIfSyncToSigninEnabled)]) {
-    config.features_enabled.push_back(kConsistencyNewAccountInterface);
-    config.features_enabled.push_back(
-        syncer::kReplaceSyncPromosWithSignInPromos);
-  }
-  return config;
-}
-
 - (void)tearDown {
   // It is possible for a test to fail with a menu visible, which can cause
   // future tests to fail.
@@ -120,9 +103,9 @@ id<GREYMatcher> ClearBrowsingDataCell() {
 
   // Before returning, make sure that the top of the Clear Browsing Data
   // settings screen is visible to match the state at the start of the method.
-  // TODO(crbug.com/973708): On iOS 13 the settings menu appears as a card that
-  // can be dismissed with a downward swipe.  This make it difficult to use a
-  // gesture to return to the top of the Clear Browsing Data screen, so scroll
+  // TODO(crbug.com/40631911): On iOS 13 the settings menu appears as a card
+  // that can be dismissed with a downward swipe.  This make it difficult to use
+  // a gesture to return to the top of the Clear Browsing Data screen, so scroll
   // programatically instead. Remove this custom action if we switch back to a
   // fullscreen presentation.
   [[EarlGrey selectElementWithMatcher:ClearBrowsingDataView()]
@@ -330,45 +313,8 @@ id<GREYMatcher> ClearBrowsingDataCell() {
 }
 
 // Verifies that the Settings UI registers keyboard commands when presented, but
-// not when it itself presents something. kReplaceSyncPromosWithSignInPromos is
-// disabled.
-- (void)testSettingsKeyboardCommandsIfSyncToSigninDisabled {
-  [ChromeEarlGreyUI openSettingsMenu];
-  [[EarlGrey selectElementWithMatcher:SettingsCollectionView()]
-      assertWithMatcher:grey_notNil()];
-
-  // Verify that the Settings register keyboard commands.
-  GREYAssertTrue([SettingsAppInterface settingsRegisteredKeyboardCommands],
-                 @"Settings should register key commands when presented.");
-
-  // Present the Sign-in UI.
-  id<GREYMatcher> matcher =
-      grey_allOf(SettingsSignInRowMatcher(), grey_sufficientlyVisible(), nil);
-  [[EarlGrey selectElementWithMatcher:matcher] performAction:grey_tap()];
-  // Wait for UI to finish loading the Sign-in screen.
-  [ChromeEarlGreyUI waitForAppToIdle];
-
-  // Verify that the Settings register keyboard commands.
-  GREYAssertFalse([SettingsAppInterface settingsRegisteredKeyboardCommands],
-                  @"Settings should not register key commands when presented.");
-
-  // Cancel the sign-in operation.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          kSkipSigninAccessibilityIdentifier)]
-      performAction:grey_tap()];
-
-  // Wait for UI to finish closing the Sign-in screen.
-  [ChromeEarlGreyUI waitForAppToIdle];
-
-  // Verify that the Settings register keyboard commands.
-  GREYAssertTrue([SettingsAppInterface settingsRegisteredKeyboardCommands],
-                 @"Settings should register key commands when presented.");
-}
-
-// Verifies that the Settings UI registers keyboard commands when presented, but
-// not when it itself presents something. kReplaceSyncPromosWithSignInPromos and
-// kConsistencyNewAccountInterface are enabled.
-- (void)testSettingsKeyboardCommandsIfSyncToSigninEnabled {
+// not when it itself presents something.
+- (void)testSettingsKeyboardCommands {
   [ChromeEarlGreyUI openSettingsMenu];
   [[EarlGrey selectElementWithMatcher:SettingsCollectionView()]
       assertWithMatcher:grey_notNil()];

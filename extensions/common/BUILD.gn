@@ -103,6 +103,7 @@ mojom("mojom") {
     "//extensions/common/api:mojom",
     "//mojo/public/mojom/base",
     "//services/accessibility/public/mojom:automation",
+    "//third_party/blink/public/mojom:mojom_core",
     "//ui/gfx/geometry/mojom",
     "//url/mojom:url_mojom_gurl",
   ]
@@ -202,7 +203,10 @@ mojom("mojom") {
           [ "//extensions/common/mojom/message_port_mojom_traits.cc" ]
     },
   ]
-  overridden_deps = [ "//content/public/common:interfaces" ]
+  overridden_deps = [
+    "//content/public/common:interfaces",
+    "//third_party/blink/public/mojom:mojom_core",
+  ]
 
   component_deps = [ "//content/public/common" ]
 }
@@ -266,6 +270,8 @@ static_library("common") {
     "context_data.h",
     "cors_util.cc",
     "cors_util.h",
+    "crash_keys.cc",
+    "crash_keys.h",
     "csp_validator.cc",
     "csp_validator.h",
     "dom_action_types.h",
@@ -489,8 +495,11 @@ static_library("common") {
     "//base",
     "//build:branding_buildflags",
     "//build:chromeos_buildflags",
+    "//components/crash/core/common",
     "//components/crx_file",
     "//components/nacl/common:buildflags",
+    "//components/safe_browsing/core/common",
+    "//components/safe_browsing/core/common/hashprefix_realtime:hash_realtime_utils",
     "//components/url_formatter",
     "//components/url_matcher",
     "//components/version_info",
@@ -592,6 +601,7 @@ source_set("unit_tests") {
     "api/sockets/sockets_manifest_permission_unittest.cc",
     "command_unittest.cc",
     "component_extension_url_pattern_unittest.cc",
+    "crash_keys_unittest.cc",
     "csp_validator_unittest.cc",
     "error_utils_unittest.cc",
     "event_filter_unittest.cc",

@@ -7,6 +7,7 @@
 #include "base/base64.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/metrics/user_action_tester.h"
+#include "components/autofill/core/browser/address_data_manager.h"
 #include "components/autofill/core/browser/autofill_form_test_utils.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/browser_autofill_manager_test_api.h"
@@ -185,7 +186,7 @@ TEST_F(QualityMetricsTest, LoggedCorrecltyForRationalizationOk) {
        // RATIONALIZATION_OK because it's a type mismatch.
        CreateTestFormField("Phone3", "phone3", "Elvis Aaron Presley",
                            FormControlType::kInputText)});
-  form.fields[2].is_autofilled = true;
+  form.fields[2].set_is_autofilled(true);
 
   std::vector<FieldType> heuristic_types = {NAME_FULL,
                                             ADDRESS_HOME_LINE1,
@@ -233,7 +234,7 @@ TEST_F(QualityMetricsTest, LoggedCorrecltyForRationalizationGood) {
        // RATIONALIZATION_GOOD because it's empty.
        CreateTestFormField("Phone1", "phone1", "",
                            FormControlType::kInputText)});
-  form.fields[2].is_autofilled = true;
+  form.fields[2].set_is_autofilled(true);
 
   std::vector<FieldType> field_types = {NAME_FULL, ADDRESS_HOME_LINE1,
                                         PHONE_HOME_CITY_AND_NUMBER,
@@ -274,7 +275,7 @@ TEST_F(QualityMetricsTest, LoggedCorrecltyForRationalizationBad) {
       CreateTestFormField("Phone1", "phone1", "2345678901",
                           FormControlType::kInputText),
   });
-  form.fields[2].is_autofilled = true;
+  form.fields[2].set_is_autofilled(true);
 
   std::vector<FieldType> heuristic_types = {NAME_FULL, ADDRESS_HOME_LINE1,
                                             PHONE_HOME_CITY_AND_NUMBER,
@@ -324,7 +325,7 @@ TEST_F(QualityMetricsTest, LoggedCorrecltyForOnlyFillWhenFocusedField) {
        // FALSE_NEGATIVE_MISMATCH + RATIONALIZATION_OK
        CreateTestFormField("Phone3", "phone3", "Elvis Aaron Presley",
                            FormControlType::kInputText)});
-  form.fields[2].is_autofilled = true;
+  form.fields[2].set_is_autofilled(true);
 
   std::vector<FieldType> heuristic_types = {NAME_FULL,
                                             ADDRESS_HOME_LINE1,
@@ -714,8 +715,8 @@ TEST_F(QualityMetricsTest, NoSubmission) {
                            FormControlType::kSelectOne),
        CreateTestFormField("Phone", "phone", "2345678901",
                            FormControlType::kInputTelephone)});
-  form.fields.front().is_autofilled = true;
-  form.fields.back().is_autofilled = true;
+  form.fields.front().set_is_autofilled(true);
+  form.fields.back().set_is_autofilled(true);
 
   std::vector<FieldType> heuristic_types = {
       NAME_FULL,         PHONE_HOME_NUMBER, NAME_FULL,
@@ -893,7 +894,7 @@ TEST_F(QualityMetricsTest, BasedOnAutocomplete) {
 // metric is emitted correctly.
 TEST_F(QualityMetricsTest, InferredLabelSourceAtSubmissionMetric) {
   const AutofillProfile& profile =
-      *personal_data().GetProfileByGUID(kTestProfileId);
+      *personal_data().address_data_manager().GetProfileByGUID(kTestProfileId);
 
   // Create a form and fill the `name_field` and `country_field` with values
   // from the `profile`, ensuring that they have a possible type. The
@@ -902,15 +903,16 @@ TEST_F(QualityMetricsTest, InferredLabelSourceAtSubmissionMetric) {
   // The `FormFieldData::label_source` of the fields is set manually, since
   // this test doesn't run label inference.
   FormFieldData name_field;
-  name_field.value = profile.GetInfo(NAME_FULL, personal_data().app_locale());
-  name_field.label_source = FormFieldData::LabelSource::kUnknown;
+  name_field.set_value(
+      profile.GetInfo(NAME_FULL, personal_data().app_locale()));
+  name_field.set_label_source(FormFieldData::LabelSource::kUnknown);
   FormFieldData street_field;
-  street_field.value = u"unknown";
-  street_field.label_source = FormFieldData::LabelSource::kForId;
+  street_field.set_value(u"unknown");
+  street_field.set_label_source(FormFieldData::LabelSource::kForId);
   FormFieldData country_field;
-  country_field.value =
-      profile.GetInfo(ADDRESS_HOME_COUNTRY, personal_data().app_locale());
-  country_field.label_source = FormFieldData::LabelSource::kLabelTag;
+  country_field.set_value(
+      profile.GetInfo(ADDRESS_HOME_COUNTRY, personal_data().app_locale()));
+  country_field.set_label_source(FormFieldData::LabelSource::kLabelTag);
   const FormData form = CreateForm({name_field, street_field, country_field});
   autofill_manager().AddSeenForm(
       form, {NAME_FIRST, ADDRESS_HOME_LINE1, ADDRESS_HOME_COUNTRY});
@@ -921,8 +923,8 @@ TEST_F(QualityMetricsTest, InferredLabelSourceAtSubmissionMetric) {
   SubmitForm(form);
   EXPECT_THAT(histogram_tester.GetAllSamples(
                   "Autofill.LabelInference.InferredLabelSource.AtSubmission2"),
-              BucketsAre(Bucket(name_field.label_source, 1),
-                         Bucket(country_field.label_source, 1)));
+              BucketsAre(Bucket(name_field.label_source(), 1),
+                         Bucket(country_field.label_source(), 1)));
 }
 
 // Tests that precision metric is recorded for email field predictions.
@@ -957,7 +959,7 @@ TEST_F(QualityMetricsTest, EmailPredictionCorrectnessPrecisionMetric) {
   // email).
   {
     base::HistogramTester histogram_tester;
-    form.fields[2].value = u"notemailtext";
+    form.fields[2].set_value(u"notemailtext");
     FillTestProfile(form);
     SubmitForm(form);
 
@@ -968,7 +970,7 @@ TEST_F(QualityMetricsTest, EmailPredictionCorrectnessPrecisionMetric) {
   // Check that the metric is not recorded for empty values.
   {
     base::HistogramTester histogram_tester;
-    form.fields[2].value = u"";
+    form.fields[2].set_value(u"");
     FillTestProfile(form);
     SubmitForm(form);
     histogram_tester.ExpectTotalCount(precision_histogram, 0);
@@ -1021,7 +1023,7 @@ TEST_F(QualityMetricsTest, EmailPredictionCorrectnessRecallMetric) {
   // Check that the metric is not recorded for empty values.
   {
     base::HistogramTester histogram_tester;
-    form.fields[2].value = u"";
+    form.fields[2].set_value(u"");
     FillTestProfile(form);
     SubmitForm(form);
     histogram_tester.ExpectTotalCount(precision_histogram, 0);

@@ -13,7 +13,6 @@
 #include "base/component_export.h"
 #include "base/files/file_path.h"
 #include "base/time/time.h"
-#include "components/optimization_guide/core/page_content_annotation_type.h"
 #include "components/optimization_guide/proto/models.pb.h"
 
 namespace optimization_guide {
@@ -61,20 +60,6 @@ COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
 extern const char kModelValidate[];
 COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
 extern const char kModelExecutionValidate[];
-COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
-extern const char kPageContentAnnotationsLoggingEnabled[];
-COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
-extern const char kPageContentAnnotationsValidationStartupDelaySeconds[];
-COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
-extern const char kPageContentAnnotationsValidationBatchSizeOverride[];
-COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
-extern const char kPageContentAnnotationsValidationPageEntities[];
-COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
-extern const char kPageContentAnnotationsValidationContentVisibility[];
-COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
-extern const char kPageContentAnnotationsValidationTextEmbedding[];
-COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
-extern const char kPageContentAnnotationsValidationWriteToFile[];
 COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
 extern const char kModelQualityServiceURL[];
 COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
@@ -166,36 +151,6 @@ std::optional<base::FilePath> GetOnDeviceValidationWriteToFile();
 // Returns true if debug logs are enabled for the optimization guide.
 COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
 bool IsDebugLogsEnabled();
-
-// Returns true if page content annotations input should be logged.
-COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
-bool ShouldLogPageContentAnnotationsInput();
-
-// Returns the delay to use for page content annotations validation, if given
-// and valid on the command line.
-COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
-std::optional<base::TimeDelta> PageContentAnnotationsValidationStartupDelay();
-
-// Returns the size of the batch to use for page content annotations validation,
-// if given and valid on the command line.
-COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
-std::optional<size_t> PageContentAnnotationsValidationBatchSize();
-
-// Whether the result of page content annotations validation should be sent to
-// the console. True when any one of the corresponding command line flags is
-// enabled.
-COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
-bool LogPageContentAnnotationsValidationToConsole();
-
-// Returns a set on inputs to run the validation on for the given |type|,
-// using comma separated input from the command line.
-COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
-std::optional<std::vector<std::string>>
-PageContentAnnotationsValidationInputForType(AnnotationType type);
-
-// Returns the file path to write page content annotation validation results to.
-COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
-std::optional<base::FilePath> PageContentAnnotationsValidationWriteToFile();
 
 }  // namespace switches
 }  // namespace optimization_guide

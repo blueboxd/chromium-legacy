@@ -12,6 +12,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/supports_user_data.h"
+#include "components/autofill/core/browser/data_model/credit_card_benefit.h"
 #include "components/autofill/core/browser/webdata/autofill_change.h"
 #include "components/sync/model/metadata_change_list.h"
 #include "components/sync/model/model_error.h"
@@ -98,6 +99,11 @@ class AutofillWalletSyncBridge : public base::SupportsUserData::Data,
   bool SetWalletCards(std::vector<CreditCard> wallet_cards,
                       bool notify_webdata_backend);
 
+  // Sets `card_benefits` to this client and returns whether any change has
+  // been applied (i.e., whether `card_benefits` was different from the local
+  // data).
+  bool SetCardBenefits(std::vector<CreditCardBenefit> card_benefits);
+
   // Sets `wallet_ibans` to this client and returns whether any change has been
   // applied (i.e., whether `wallet_ibans` was different from local data). If
   // `notify_webdata_backend` is true, it also notifies via WebDataBackend about
@@ -128,6 +134,12 @@ class AutofillWalletSyncBridge : public base::SupportsUserData::Data,
   void LogVirtualCardMetadataChanges(
       const std::vector<std::unique_ptr<CreditCard>>& old_data,
       const std::vector<CreditCard>& new_data);
+
+  // Get the list of CVCs whose corresponding card has been deleted from
+  // pay.google.com. When the list of CVCs is retrieved, they are deleted from
+  // the local db. A deletion flow to the Chrome Sync server will also be
+  // triggered.
+  void ReconcileServerCvcForWalletCards();
 
   // AutofillProfileSyncBridge is owned by |web_data_backend_| through
   // SupportsUserData, so it's guaranteed to outlive |this|.

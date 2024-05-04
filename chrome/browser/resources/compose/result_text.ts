@@ -7,6 +7,7 @@ import './strings.m.js';
 import '//resources/cr_elements/cr_shared_vars.css.js';
 import '//resources/cr_elements/cr_icon_button/cr_icon_button.js';
 
+import {loadTimeData} from '//resources/js/load_time_data.js';
 import {PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {getTemplate} from './result_text.html.js';
@@ -14,6 +15,7 @@ import {WordStreamer} from './word_streamer.js';
 
 export interface ComposeResultTextElement {
   $: {
+    resultText: HTMLElement,
     partialResultText: HTMLElement,
     root: HTMLElement,
   };
@@ -76,6 +78,10 @@ export class ComposeResultTextElement extends PolymerElement {
         type: String,
         readOnly: true,
       },
+      editingEnabled_: {
+        type: Boolean,
+        reflectToAttribute: true,
+      },
     };
   }
 
@@ -91,13 +97,18 @@ export class ComposeResultTextElement extends PolymerElement {
   private wordStreamer_: WordStreamer;
   private displayedChunks_: StreamChunk[] = [];
   private displayedFullText_: string = '';
+  private editingEnabled_: boolean;
+  private initialText_: string = '';
 
   constructor() {
     super();
     this.wordStreamer_ = new WordStreamer(this.setStreamedWords_.bind(this));
+    this.editingEnabled_ = loadTimeData.getBoolean('enableRefinedUi');
   }
 
   updateInputs() {
+    this.$.resultText.innerText = this.textInput.text;
+
     if (this.textInput.streamingEnabled) {
       this.isOutputComplete = false;
       this.wordStreamer_.setText(
@@ -119,6 +130,48 @@ export class ComposeResultTextElement extends PolymerElement {
     this.wordStreamer_.setMsPerTickForTesting(0);
     this.wordStreamer_.setMsWaitBeforeCompleteForTesting(0);
     this.wordStreamer_.setCharsPerTickForTesting(5);
+  }
+
+  private onFocusIn_() {
+    this.dispatchEvent(new CustomEvent(
+        'set-result-focus', {bubbles: true, composed: true, detail: true}));
+
+    this.initialText_ = this.textInput.text;
+  }
+
+  private onFocusOut_() {
+    this.dispatchEvent(new CustomEvent(
+        'set-result-focus', {bubbles: true, composed: true, detail: false}));
+
+    const currentText = this.$.resultText.innerText;
+    if (currentText === '') {
+      // We disallow the user from saving or using empty text. Instead, replace
+      // it with the starting state of the text before it was edited.
+      this.$.resultText.innerText = this.initialText_;
+      return;
+    }
+    // Only dispatch event if the text has changed from its initial state.
+    if (this.editingEnabled_ && currentText !== this.initialText_) {
+      this.dispatchEvent(new CustomEvent(
+          'result-edit',
+          {bubbles: true, composed: true, detail: this.$.root.innerText}));
+    }
+  }
+
+  private canEdit_() {
+    if (this.editingEnabled_) {
+      return 'plaintext-only';
+    } else {
+      return 'false';
+    }
+  }
+
+  private partialTextCanEdit_() {
+    if (this.editingEnabled_ && this.hasOutput && this.isOutputComplete) {
+      return 'plaintext-only';
+    } else {
+      return 'false';
+    }
   }
 
   private hasOutput_(): boolean {

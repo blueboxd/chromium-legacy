@@ -687,8 +687,8 @@ void ArcInputOverlayManager::ResetForPendingTouchInjector(
   // If `window` is destroyed, it will be removed from `loading_data_window_` by
   // OnWindowDestroying(). So it is safe to call Window class functions after
   // checking `loading_data_window_`.
-  if ((IsGameDashboardFlagOn() || IsBeta()) &&
-      loading_data_windows_.contains(window) && !window->is_destroying()) {
+  if (IsBeta() && loading_data_windows_.contains(window) &&
+      !window->is_destroying()) {
     // GIO status is known here and GIO is not available.
     window->SetProperty(ash::kArcGameControlsFlagsKey,
                         ash::ArcGameControlsFlag::kKnown);
@@ -744,12 +744,32 @@ aura::Window* ArcInputOverlayManager::GetAnchorWindow(aura::Window* window) {
     return window;
   }
 
+  // Check whether `window` is a bubble dialog window.
   auto* bubble_anchor_window = GetGameBubbleDialogAnchorWindow(window);
   auto* pending_window = bubble_anchor_window ? bubble_anchor_window : window;
 
-  // Check whether `pending_window` is a transient sibling window.
+  // There are two types of the transient sibling window:
+  // - window A: the transient sibling window of the main game window, such as
+  // input mapping.
+  // - window B: the transient sibling window of the window A, such as editing
+  // list and button options menu.
+
+  // Check whether `pending_window` is a transient sibling window (window A or
+  // window B) if `transient_parent` is not nullptr.
   auto* transient_parent = wm::GetTransientParent(pending_window);
-  return transient_parent ? transient_parent : window;
+
+  if (transient_parent) {
+    // `pending_window` is window A or B. Check whether `pending_window` is the
+    // transient window (window B) of window A (such as input mapping) if
+    // `transient_parent_parent` is not nullptr.
+    if (auto* transient_parent_parent =
+            wm::GetTransientParent(transient_parent)) {
+      // `pending_window` is window B.
+      return transient_parent_parent;
+    }
+    return transient_parent;
+  }
+  return window;
 }
 
 }  // namespace arc::input_overlay

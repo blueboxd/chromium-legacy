@@ -197,7 +197,7 @@ class TestLocalFrameExternalPopupClient : public FakeLocalFrameHost {
   gfx::Rect bounds_;
 };
 
-class ExternalPopupMenuTest : public testing::Test {
+class ExternalPopupMenuTest : public PageTestBase {
  public:
   ExternalPopupMenuTest() : base_url_("http://www.test.com") {}
 
@@ -248,7 +248,6 @@ class ExternalPopupMenuTest : public testing::Test {
   WebLocalFrameImpl* MainFrame() const { return helper_.LocalMainFrame(); }
 
  private:
-  test::TaskEnvironment task_environment_;
   TestLocalFrameExternalPopupClient frame_host_;
   frame_test_helpers::TestWebFrameClient web_frame_client_;
   std::string base_url_;
@@ -341,7 +340,7 @@ TEST_F(ExternalPopupMenuTest, DidAcceptIndex) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(select->PopupIsVisible());
-  ASSERT_EQ("2", select->InnerElement().innerText().Utf8());
+  ASSERT_EQ("2", select->InnerElementForAppearanceAuto().innerText().Utf8());
   EXPECT_EQ(2, select->selectedIndex());
 }
 
@@ -364,7 +363,7 @@ TEST_F(ExternalPopupMenuTest, DidAcceptIndices) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(select->PopupIsVisible());
-  EXPECT_EQ("2", select->InnerElement().innerText());
+  EXPECT_EQ("2", select->InnerElementForAppearanceAuto().innerText());
   EXPECT_EQ(2, select->selectedIndex());
 }
 
@@ -515,6 +514,30 @@ TEST_F(ExternalPopupMenuTest, RemoveFrameOnChange) {
   // the page.
   select->SelectOptionByPopup(1);
   // The test passes if the test didn't crash and ASAN didn't complain.
+}
+
+// <datalist> normally has display:none which would prevent the <option>s from
+// being included in menu_items, but an additional UA style rule undoes the
+// display:none in this case.
+TEST_F(ExternalPopupMenuTest, OptionsInAuthorDatalist) {
+  RegisterMockedURLLoad("select_with_datalist.html");
+  LoadFrame("select_with_datalist.html");
+
+  Document& document = *MainFrame()->GetFrame()->GetDocument();
+  auto* select = To<HTMLSelectElement>(document.getElementById(AtomicString("select")));
+  document.UpdateStyleAndLayout(DocumentUpdateReason::kTest);
+  select->ShowPopup();
+
+  int32_t item_height;
+  double font_size;
+  int32_t selected_item;
+  Vector<mojom::blink::MenuItemPtr> menu_items;
+  bool right_aligned;
+  bool allow_multiple_selection;
+  ExternalPopupMenu::GetPopupMenuInfo(
+      *select, &item_height, &font_size, &selected_item, &menu_items,
+      &right_aligned, &allow_multiple_selection);
+  EXPECT_EQ(2u, menu_items.size());
 }
 
 }  // namespace blink

@@ -584,7 +584,7 @@ IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, AssistantStateUpdateAfterShow) {
                                      1);
 }
 
-// TODO(crbug.com/1513726): Flaky on ChromeOS.
+// TODO(crbug.com/41486294): Flaky on ChromeOS.
 IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest,
                        DISABLED_RetryOnWebviewLoadFail) {
   auto force_lib_assistant_enabled =
@@ -655,7 +655,7 @@ IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, RejectValueProp) {
                                      1);
 }
 
-// TODO(crbug.com/1454755): Flaky on ChromeOS.
+// TODO(crbug.com/40917081): Flaky on ChromeOS.
 #if BUILDFLAG(IS_CHROMEOS)
 #define MAYBE_SkipShowingValueProp DISABLED_SkipShowingValueProp
 #else

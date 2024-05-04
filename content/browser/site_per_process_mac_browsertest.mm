@@ -257,7 +257,7 @@ id MockGestureEvent(NSEventType type,
 void SendMacTouchpadPinchSequenceWithExpectedTarget(
     RenderWidgetHostViewBase* root_view,
     const gfx::Point& gesture_point,
-    RenderWidgetHostViewBase*& router_touchpad_gesture_target,
+    RenderWidgetHostViewInput*& router_touchpad_gesture_target,
     RenderWidgetHostViewBase* expected_target) {
   auto* root_view_mac = static_cast<RenderWidgetHostViewMac*>(root_view);
   RenderWidgetHostViewCocoa* cocoa_view = root_view_mac->GetInProcessNSView();
@@ -322,14 +322,14 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessMacBrowserTest,
   gfx::Point main_frame_point(25, 575);
   gfx::Point child_center(150, 450);
 
-  // TODO(848050): If we send multiple touchpad pinch sequences to separate
-  // views and the timing of the acks are such that the begin ack of the second
-  // sequence arrives in the root before the end ack of the first sequence, we
-  // would produce an invalid gesture event sequence. For now, we wait for the
-  // root to receive the end ack before sending a pinch sequence to a different
-  // view. The root view should preserve validity of input event sequences
-  // when processing acks from multiple views, so that waiting here is not
-  // necessary.
+  // TODO(crbug.com/40578618): If we send multiple touchpad pinch sequences to
+  // separate views and the timing of the acks are such that the begin ack of
+  // the second sequence arrives in the root before the end ack of the first
+  // sequence, we would produce an invalid gesture event sequence. For now, we
+  // wait for the root to receive the end ack before sending a pinch sequence to
+  // a different view. The root view should preserve validity of input event
+  // sequences when processing acks from multiple views, so that waiting here is
+  // not necessary.
   InputEventAckWaiter pinch_end_observer(
       rwhv_parent->GetRenderWidgetHost(),
       base::BindRepeating([](blink::mojom::InputEventResultSource,

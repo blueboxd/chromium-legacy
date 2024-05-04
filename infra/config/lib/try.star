@@ -20,7 +20,7 @@ to set the default value. Can also be accessed through `try_.defaults`.
 load("./args.star", "args")
 load("./branches.star", "branches")
 load("./builders.star", "builders", "os")
-load("./orchestrator.star", "register_compilator", "register_orchestrator")
+load("./orchestrator.star", "SOURCELESS_BUILDER_CACHE_NAME", "register_compilator", "register_orchestrator")
 load("//project.star", "settings")
 
 def default_location_filters(builder_name = None):
@@ -85,7 +85,7 @@ def location_filters_without_defaults(tryjob_builder_proto):
 # with a builder cache.
 SOURCELESS_BUILDER_CACHES = [
     swarming.cache(
-        name = "unused_builder_cache",
+        name = SOURCELESS_BUILDER_CACHE_NAME,
         path = "builder",
         wait_for_warm_cache = None,
     ),
@@ -94,7 +94,7 @@ SOURCELESS_BUILDER_CACHES = [
 defaults = args.defaults(
     extends = builders.defaults,
     check_for_flakiness = True,
-    # TODO(crbug/1456545) - Once we've migrated to the ResultDB-based solution
+    # TODO(crbug.com/40273153) - Once we've migrated to the ResultDB-based solution
     # this should be deprecated in favor for the original check_for_flakiness
     # argument.
     check_for_flakiness_with_resultdb = True,
@@ -107,8 +107,8 @@ defaults = args.defaults(
     # argument, if the more-specific default has not been set it will fall back
     # to the standard default.
     compilator_cores = args.DEFAULT,
-    compilator_reclient_jobs = args.DEFAULT,
     orchestrator_cores = args.DEFAULT,
+    orchestrator_siso_remote_jobs = args.DEFAULT,
 )
 
 def tryjob(
@@ -199,7 +199,7 @@ def try_builder(
       check_for_flakiness - If True, it checks for new tests in a given try
         build and reruns them multiple times to ensure that they are not
         flaky.
-      # TODO(crbug/1456545) - Once we've migrated to the ResultDB-based solution
+      # TODO(crbug.com/40273153) - Once we've migrated to the ResultDB-based solution
       # this should be deprecated in favor for the original check_for_flakiness
       # argument.
       check_for_flakiness_with_resultdb - If True, it checks for new tests in a
@@ -233,10 +233,10 @@ def try_builder(
 
     experiments = experiments or {}
 
-    # TODO(crbug.com/1346781): Remove when the experiment is the default.
+    # TODO(crbug.com/40232671): Remove when the experiment is the default.
     experiments.setdefault("chromium_swarming.expose_merge_script_failures", 100)
 
-    # TODO(crbug.com/1466962): Remove when the experiment is the default.
+    # TODO(crbug.com/40276579): Remove when the experiment is the default.
     experiments.setdefault("swarming.prpc.cli", 100)
 
     merged_resultdb_bigquery_exports = [
@@ -248,8 +248,9 @@ def try_builder(
             predicate = resultdb.test_result_predicate(
                 # Only match the telemetry_gpu_integration_test target and its
                 # Fuchsia and Android variants that have a suffix added to the
-                # end. Those are caught with [^/]*.
-                test_id_regexp = "ninja://chrome/test:telemetry_gpu_integration_test[^/]*/.+",
+                # end. Those are caught with [^/]*. The Fuchsia version is in
+                # //content/test since Fuchsia cannot depend on //chrome.
+                test_id_regexp = "ninja://(chrome|content)/test:telemetry_gpu_integration_test[^/]*/.+",
             ),
         ),
         resultdb.export_test_results(
@@ -293,7 +294,7 @@ def try_builder(
         cq_reason = "required" if not tryjob.location_filters else "path-based"
         properties["cq"] = cq_reason
 
-        # TODO(crbug/1456545) - Once we've migrated to the ResultDB-based solution
+        # TODO(crbug.com/40273153) - Once we've migrated to the ResultDB-based solution
         # check_for_flakiness_with_resultdb should be deprecated in favor for the
         # original check_for_flakiness argument.
         check_for_flakiness = defaults.get_value(
@@ -392,6 +393,9 @@ def _orchestrator_builder(
         * cores: The orchestrator_cores module-level default.
         * executable: "recipe:chromium/orchestrator"
         * os: os.LINUX_DEFAULT
+        * reclient_instance: The orchestrator_reclient_instance module-level
+          default. (The reclient property is forwarded on to the compilator at
+          run-time).
         * service_account: "chromium-orchestrator@chops-service-accounts.iam.gserviceaccount.com"
         * ssd: None
     """
@@ -399,7 +403,7 @@ def _orchestrator_builder(
     if not builder_group:
         fail("builder_group must be specified")
 
-    # TODO(crbug/1287228): Make this the default once all CQ builders are
+    # TODO(crbug.com/40211151): Make this the default once all CQ builders are
     # migrated to be srcless
     if use_orchestrator_pool:
         kwargs.setdefault("pool", "luci.chromium.try.orchestrator")
@@ -414,10 +418,11 @@ def _orchestrator_builder(
     kwargs.setdefault("cores", defaults.orchestrator_cores.get())
     kwargs.setdefault("executable", "recipe:chromium/orchestrator")
 
-    kwargs.setdefault("reclient_instance", None)
     kwargs.setdefault("os", os.LINUX_DEFAULT)
     kwargs.setdefault("service_account", "chromium-orchestrator@chops-service-accounts.iam.gserviceaccount.com")
     kwargs.setdefault("ssd", None)
+
+    kwargs.setdefault("siso_remote_jobs", defaults.orchestrator_siso_remote_jobs.get())
 
     ret = try_.builder(name = name, **kwargs)
     if ret:
@@ -445,10 +450,12 @@ def _compilator_builder(*, name, **kwargs):
     Args:
       name: The name of the compilator.
       **kwargs: Additional kwargs to be forwarded to try_.builder.
+        With the exception of builder_group, kwargs that would normally cause
+        properties to be set will result in an error. Properties should instead
+        be configured on the orchestrator.
         The following kwargs will have defaults applied if not set:
         * builderless: True on branches, False on main
         * cores: The compilator_cores module-level default.
-        * reclient_jobs: The compilator_reclient_jobs module-level default.
         * executable: "recipe:chromium/compilator"
         * ssd: True
     """
@@ -459,8 +466,11 @@ def _compilator_builder(*, name, **kwargs):
     kwargs.setdefault("builderless", not settings.is_main)
     kwargs.setdefault("cores", defaults.compilator_cores.get())
     kwargs.setdefault("executable", "recipe:chromium/compilator")
-    kwargs.setdefault("reclient_jobs", defaults.compilator_reclient_jobs.get())
     kwargs.setdefault("ssd", True)
+
+    kwargs["reclient_instance"] = None
+    kwargs["siso_enabled"] = False
+    kwargs["test_presentation"] = resultdb.test_presentation()
 
     ret = try_.builder(name = name, **kwargs)
     if ret:

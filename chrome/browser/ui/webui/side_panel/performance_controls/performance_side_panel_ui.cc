@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/side_panel/performance_controls/performance_side_panel_ui.h"
 
 #include <string>
+#include <string_view>
 #include <utility>
 
 #include "base/check_op.h"
@@ -28,7 +29,7 @@
 
 PerformanceSidePanelUI::PerformanceSidePanelUI(content::WebUI* web_ui,
                                                const GURL& url)
-    : ui::MojoBubbleWebUIController(web_ui, true) {
+    : TopChromeWebUIController(web_ui, true) {
   Profile* const profile = Profile::FromWebUI(web_ui);
   content::WebUIDataSource* source = content::WebUIDataSource::CreateAndAdd(
       profile, chrome::kChromeUIPerformanceSidePanelHost);
@@ -60,7 +61,7 @@ PerformanceSidePanelUI::PerformanceSidePanelUI(content::WebUI* web_ui,
   url::Component key, value;
   while (url::ExtractQueryKeyValue(url.query_piece(), &query, &key, &value)) {
     if (url.query_piece().substr(key.begin, key.len) == "notifications") {
-      base::StringPiece value_str =
+      std::string_view value_str =
           url.query_piece().substr(value.begin, value.len);
       source->AddString("sidePanelNotifications", std::string{value_str});
     }

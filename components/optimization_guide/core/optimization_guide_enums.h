@@ -126,24 +126,6 @@ enum class PredictionModelDownloadStatus {
   kMaxValue = kFailedInvalidAdditionalFile,
 };
 
-// The status for the page content annotations being stored.
-//
-// Keep in sync with OptimizationGuidePageContentAnnotationsStorageStatus in
-// enums.xml.
-enum PageContentAnnotationsStorageStatus {
-  kUnknown = 0,
-  // The content annotations were requested to be stored in the History Service.
-  kSuccess = 1,
-  // There were no visits for the URL found in the History Service.
-  kNoVisitsForUrl = 2,
-  // The specific visit that we wanted to annotate could not be found in the
-  // History Service.
-  kSpecificVisitForUrlNotFound = 3,
-
-  // Add new values above this line.
-  kMaxValue = kSpecificVisitForUrlNotFound,
-};
-
 // Different events of the prediction model delivery lifecycle for an
 // OptimizationTarget.
 // Keep in sync with OptimizationGuideModelDeliveryEvent in enums.xml.
@@ -323,15 +305,16 @@ enum class ModelQualityLogsUploadStatus {
   kLoggingNotEnabled = 2,
   // Upload was not successful because of network error.
   kNetError = 3,
-  // Upload is disabled due to user's metrics consent.
-  kNoMetricsConsent = 4,
+  // Upload is disabled due to metrics reporting being disabled in
+  // chrome://settings.
+  kMetricsReportingDisabled = 4,
   // Upload is disabled due to enterprise policy.
   kDisabledDueToEnterprisePolicy = 5,
 
   // Insert new values before this line.
   // This enum must remain synchronized with the enum
   // |OptimizationGuideModelQualityLogsUploadStatus| in
-  // tools/metrics/histograms/enums.xml.
+  // tools/metrics/histograms/metadata/optimization/enums.xml.
   kMaxValue = kDisabledDueToEnterprisePolicy,
 };
 

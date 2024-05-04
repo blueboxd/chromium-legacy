@@ -10,10 +10,13 @@
 #include <limits>
 #include <memory>
 #include <optional>
+#include <string_view>
 #include <utility>
 
 #include "base/containers/contains.h"
 #include "base/containers/fixed_flat_set.h"
+#include "base/containers/heap_array.h"
+#include "base/containers/span.h"
 #include "base/files/file.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/metrics/histogram_macros.h"
@@ -172,30 +175,29 @@ BrowserThemePack::PersistentID GetPersistentIDByIDR(int idr) {
 
 // Returns true if the scales in |input| match those in |expected|.
 // The order must match as the index is used in determining the raw id.
-bool InputScalesValid(const base::StringPiece& input,
-                      const std::vector<ui::ResourceScaleFactor>& expected) {
-  if (input.size() != expected.size() * sizeof(float))
+bool InputScalesValid(std::string_view input,
+                      base::span<ui::ResourceScaleFactor> expected) {
+  if (input.size() != expected.size() * sizeof(float)) {
     return false;
-  std::unique_ptr<float[]> scales(new float[expected.size()]);
-  // Do a memcpy to avoid misaligned memory access.
-  memcpy(scales.get(), input.data(), input.size());
+  }
+  auto scales = base::HeapArray<float>::WithSize(expected.size());
+  base::as_writable_byte_span(scales).copy_from(base::as_byte_span(input));
   for (size_t index = 0; index < expected.size(); ++index) {
-    if (scales[index] != ui::GetScaleForResourceScaleFactor(expected[index]))
+    if (scales[index] != ui::GetScaleForResourceScaleFactor(expected[index])) {
       return false;
+    }
   }
   return true;
 }
 
 // Returns |scale_factors| as a string to be written to disk.
 std::string GetResourceScaleFactorsAsString(
-    const std::vector<ui::ResourceScaleFactor>& scale_factors) {
-  std::unique_ptr<float[]> scales(new float[scale_factors.size()]);
-  for (size_t i = 0; i < scale_factors.size(); ++i)
+    base::span<const ui::ResourceScaleFactor> scale_factors) {
+  auto scales = base::HeapArray<float>::WithSize(scale_factors.size());
+  for (size_t i = 0; i < scale_factors.size(); ++i) {
     scales[i] = ui::GetScaleForResourceScaleFactor(scale_factors[i]);
-  std::string out_string = std::string(
-      reinterpret_cast<const char*>(scales.get()),
-      scale_factors.size() * sizeof(float));
-  return out_string;
+  }
+  return std::string(base::as_string_view(base::as_byte_span(scales)));
 }
 
 struct StringToIntTable {
@@ -435,9 +437,8 @@ class ThemeImagePngSource : public gfx::ImageSkiaSource {
     PngMap::const_iterator exact_png_it = png_map_.find(scale_factor);
     if (exact_png_it != png_map_.end()) {
       SkBitmap bitmap;
-      if (!gfx::PNGCodec::Decode(exact_png_it->second->front(),
-                                 exact_png_it->second->size(),
-                                 &bitmap)) {
+      if (!gfx::PNGCodec::Decode(exact_png_it->second->data(),
+                                 exact_png_it->second->size(), &bitmap)) {
         NOTREACHED();
         return gfx::ImageSkiaRep();
       }
@@ -467,7 +468,7 @@ class ThemeImagePngSource : public gfx::ImageSkiaSource {
         bitmap_map_.find(available_scale_factor);
     if (available_bitmap_it == bitmap_map_.end()) {
       SkBitmap available_bitmap;
-      if (!gfx::PNGCodec::Decode(available_png_it->second->front(),
+      if (!gfx::PNGCodec::Decode(available_png_it->second->data(),
                                  available_png_it->second->size(),
                                  &available_bitmap)) {
         NOTREACHED();
@@ -759,7 +760,7 @@ scoped_refptr<BrowserThemePack> BrowserThemePack::BuildFromDataPack(
     return nullptr;
   }
 
-  std::optional<base::StringPiece> pointer =
+  std::optional<std::string_view> pointer =
       data_pack->GetStringPiece(kHeaderID);
   if (!pointer) {
     return nullptr;
@@ -916,17 +917,17 @@ bool BrowserThemePack::WriteToDisk(const base::FilePath& path) const {
   // Add resources for each of the property arrays.
   RawDataForWriting resources;
   resources[kHeaderID] =
-      base::StringPiece(reinterpret_cast<const char*>(header_.get()),
-                        sizeof(BrowserThemePackHeader));
+      std::string_view(reinterpret_cast<const char*>(header_.get()),
+                       sizeof(BrowserThemePackHeader));
   resources[kTintsID] =
-      base::StringPiece(reinterpret_cast<const char*>(tints_.get()),
-                        sizeof(TintEntry[kTintTableLength]));
+      std::string_view(reinterpret_cast<const char*>(tints_.get()),
+                       sizeof(TintEntry[kTintTableLength]));
   resources[kColorsID] =
-      base::StringPiece(reinterpret_cast<const char*>(colors_.get()),
-                        sizeof(ColorPair[kColorsArrayLength]));
-  resources[kDisplayPropertiesID] = base::StringPiece(
-      reinterpret_cast<const char*>(display_properties_.get()),
-      sizeof(DisplayPropertyPair[kDisplayPropertiesSize]));
+      std::string_view(reinterpret_cast<const char*>(colors_.get()),
+                       sizeof(ColorPair[kColorsArrayLength]));
+  resources[kDisplayPropertiesID] =
+      std::string_view(reinterpret_cast<const char*>(display_properties_.get()),
+                       sizeof(DisplayPropertyPair[kDisplayPropertiesSize]));
 
   int source_count = 1;
   SourceImage* end = source_images_;
@@ -934,11 +935,11 @@ bool BrowserThemePack::WriteToDisk(const base::FilePath& path) const {
     source_count++;
   }
   resources[kSourceImagesID] =
-      base::StringPiece(reinterpret_cast<const char*>(source_images_.get()),
-                        source_count * sizeof(*source_images_));
+      std::string_view(reinterpret_cast<const char*>(source_images_.get()),
+                       source_count * sizeof(*source_images_));
 
   // Store results of GetResourceScaleFactorsAsString() in std::string as
-  // base::StringPiece does not copy data in constructor.
+  // std::string_view does not copy data in constructor.
   std::string scale_factors_string =
       GetResourceScaleFactorsAsString(scale_factors_);
   resources[kScaleFactorsID] = scale_factors_string;
@@ -1544,7 +1545,7 @@ bool BrowserThemePack::LoadRawBitmapsTo(
           image_memory_[raw_id] = raw_data;
         } else {
           SkBitmap bitmap;
-          if (gfx::PNGCodec::Decode(raw_data->front(), raw_data->size(),
+          if (gfx::PNGCodec::Decode(raw_data->data(), raw_data->size(),
                                     &bitmap)) {
             image_skia.AddRepresentation(gfx::ImageSkiaRep(
                 bitmap, ui::GetScaleForResourceScaleFactor(scale_factor)));
@@ -1777,7 +1778,7 @@ void BrowserThemePack::GenerateWindowControlButtonColor(ImageCache* images) {
   if (bg_img_it != images->end())
     bg_image = bg_img_it->second.AsImageSkia();
 
-  SkColor button_bg_color;
+  SkColor button_bg_color = SK_ColorTRANSPARENT;
   SkAlpha button_bg_alpha = SK_AlphaTRANSPARENT;
   if (GetColor(TP::COLOR_CONTROL_BUTTON_BACKGROUND, &button_bg_color))
     button_bg_alpha = SkColorGetA(button_bg_color);
@@ -1981,9 +1982,8 @@ void BrowserThemePack::MergeImageCaches(
 
 void BrowserThemePack::AddRawImagesTo(const RawImages& images,
                                       RawDataForWriting* out) const {
-  for (auto it = images.begin(); it != images.end(); ++it) {
-    (*out)[it->first] = base::StringPiece(
-        it->second->front_as<char>(), it->second->size());
+  for (const auto& pair : images) {
+    (*out)[pair.first] = base::as_string_view(*pair.second);
   }
 }
 
@@ -2074,8 +2074,7 @@ void BrowserThemePack::GenerateRawImageForAllSupportedScales(
   int available_raw_id = GetRawIDByPersistentID(prs_id, available_scale_factor);
   RawImages::const_iterator it = image_memory_.find(available_raw_id);
   SkBitmap available_bitmap;
-  if (!gfx::PNGCodec::Decode(it->second->front(),
-                             it->second->size(),
+  if (!gfx::PNGCodec::Decode(it->second->data(), it->second->size(),
                              &available_bitmap)) {
     NOTREACHED() << "Unable to decode theme image for prs_id=" << prs_id
                  << " for scale_factor=" << available_scale_factor;

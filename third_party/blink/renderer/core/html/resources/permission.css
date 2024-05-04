@@ -11,12 +11,16 @@
 
 permission {
   background-color:#efefef;
+  box-sizing: border-box !important;
   border-radius: 3px;
   color: #000000;
   display: inline-block;
+  font-weight: normal;
+  font-style: normal;
   height: 1.2em;
   outline: solid 1px #767676;
   width: 188px;
+  word-spacing: normal;
  }
 
 permission:granted {
@@ -24,18 +28,21 @@ permission:granted {
 }
 
 permission::-internal-permission-text {
-  display: inherit;
-  font-family: Arial, Helvetica, sans-serif !important;
+  align-items: center;
+  display: flex;
+  font-family: Arial, Helvetica, sans-serif;
   font-size: inherit;
-  font-style: normal;
-  font-weight: 400;
+  font-style: inherit;
+  font-weight: inherit;
   height: 100%;
-  hyphenate-character: auto !important;
-  line-height: inherit;
+  hyphenate-character: auto;
+  line-height: normal;
+  margin: auto;
+  min-height: inherit;
   outline: none;
-  user-select:none !important;
-  vertical-align: inherit;
-  white-space:nowrap !important;
-  word-wrap: normal !important;
-  width: 100%;
+  user-select:none;
+  white-space:nowrap;
+  width: fit-content;
+  word-wrap: normal;
+  word-spacing: inherit;
 }

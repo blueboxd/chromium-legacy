@@ -35,6 +35,7 @@ from .protocol import (BaseProtocolPart,
                        RPHRegistrationsProtocolPart,
                        FedCMProtocolPart,
                        VirtualSensorProtocolPart,
+                       DevicePostureProtocolPart,
                        merge_dicts)
 
 from webdriver.client import Session
@@ -431,6 +432,16 @@ class WebDriverVirtualSensorPart(VirtualSensorProtocolPart):
     def get_virtual_sensor_information(self, sensor_type):
         return self.webdriver.send_session_command("GET", "sensor/%s" % sensor_type)
 
+class WebDriverDevicePostureProtocolPart(DevicePostureProtocolPart):
+    def setup(self):
+        self.webdriver = self.parent.webdriver
+
+    def set_device_posture(self, posture):
+        body = {"posture": posture}
+        return self.webdriver.send_session_command("POST", "deviceposture", body)
+
+    def clear_device_posture(self):
+        return self.webdriver.send_session_command("DELETE", "deviceposture")
 
 class WebDriverProtocol(Protocol):
     implements = [WebDriverBaseProtocolPart,
@@ -450,7 +461,8 @@ class WebDriverProtocol(Protocol):
                   WebDriverRPHRegistrationsProtocolPart,
                   WebDriverFedCMProtocolPart,
                   WebDriverDebugProtocolPart,
-                  WebDriverVirtualSensorPart]
+                  WebDriverVirtualSensorPart,
+                  WebDriverDevicePostureProtocolPart]
 
     def __init__(self, executor, browser, capabilities, **kwargs):
         super().__init__(executor, browser)
@@ -527,7 +539,9 @@ class WebDriverRun(TimedRunner):
             self.result = True, self.func(self.protocol, self.url, self.timeout)
         except (error.TimeoutException, error.ScriptTimeoutException):
             self.result = False, ("EXTERNAL-TIMEOUT", None)
-        except (socket.timeout, error.UnknownErrorException):
+        except socket.timeout:
+            # Checking if the browser is alive below is likely to hang, so mark
+            # this case as a CRASH unconditionally.
             self.result = False, ("CRASH", None)
         except Exception as e:
             if (isinstance(e, error.WebDriverException) and
@@ -536,11 +550,12 @@ class WebDriverRun(TimedRunner):
                 # workaround for https://bugs.chromium.org/p/chromedriver/issues/detail?id=2001
                 self.result = False, ("EXTERNAL-TIMEOUT", None)
             else:
+                status = "INTERNAL-ERROR" if self.protocol.is_alive() else "CRASH"
                 message = str(getattr(e, "message", ""))
                 if message:
                     message += "\n"
                 message += traceback.format_exc()
-                self.result = False, ("INTERNAL-ERROR", message)
+                self.result = False, (status, message)
         finally:
             self.result_flag.set()
 

@@ -127,18 +127,10 @@ void LegacyLongPressAndDragTabInTabStrip(NSString* moving_tab_identifier,
 
 @implementation PrerenderTestCase
 
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-#define MAYBE_testLegacyOpenTabInTabStripBeforePrerenderedTab \
-  DISABLED_testLegacyOpenTabInTabStripBeforePrerenderedTab
-#else
-#define MAYBE_testLegacyOpenTabInTabStripBeforePrerenderedTab \
-  testLegacyOpenTabInTabStripBeforePrerenderedTab
-#endif
-
 - (AppLaunchConfiguration)appConfigurationForTestCase {
   AppLaunchConfiguration config;
   if ([self isRunningTest:@selector
-            (MAYBE_testLegacyOpenTabInTabStripBeforePrerenderedTab)] ||
+            (FLAKY_testLegacyOpenTabInTabStripBeforePrerenderedTab)] ||
       [self isRunningTest:@selector(FLAKY_testMovePrerenderedTabInTabStrip)]) {
     config.features_disabled.push_back(kModernTabStrip);
   } else {
@@ -169,7 +161,7 @@ void LegacyLongPressAndDragTabInTabStrip(NSString* moving_tab_identifier,
   [ChromeEarlGrey
       waitForSufficientlyVisibleElementWithMatcher:chrome_test_util::Omnibox()];
 
-  // TODO(crbug.com/1454516): Use simulatePhysicalKeyboardEvent until
+  // TODO(crbug.com/40916974): Use simulatePhysicalKeyboardEvent until
   // replaceText can properly handle \n.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
       performAction:grey_replaceText(pageString)];
@@ -182,9 +174,9 @@ void LegacyLongPressAndDragTabInTabStrip(NSString* moving_tab_identifier,
 #pragma mark - Tests
 
 // Test that tapping the prerendered suggestions opens it.
-// TODO(crbug.com/1315304): Reenable.
+// TODO(crbug.com/40833424): Reenable.
 - (void)DISABLED_testTapPrerenderSuggestions {
-  // TODO(crbug.com/793306): Re-enable the test on iPad once the alternate
+  // TODO(crbug.com/40553918): Re-enable the test on iPad once the alternate
   // letters problem is fixed.
   if ([ChromeEarlGrey isIPadIdiom]) {
     EARL_GREY_TEST_DISABLED(
@@ -235,7 +227,7 @@ void LegacyLongPressAndDragTabInTabStrip(NSString* moving_tab_identifier,
 
 // Tests that tapping the prerendered suggestions keeps the UserAgent of the
 // previous page.
-// TODO(crbug.com/1110890): Test is flaky.
+// TODO(crbug.com/40708867): Test is flaky.
 - (void)DISABLED_testUserAgentTypeInPreviousLoad {
   [self addURLToHistory];
   const GURL pageURL = self.testServer->GetURL(kPageURL);
@@ -356,8 +348,9 @@ void LegacyLongPressAndDragTabInTabStrip(NSString* moving_tab_identifier,
 // Regression test for crbug.com/1482622. Tests that a pre-rendered tab doesn't
 // lead to an incorrect data source, as can be seen after opening a new tab in
 // the background before the pre-rendered tab.
-// TODO(crbug.com/1487677): Test fails on official builds.
-- (void)MAYBE_testLegacyOpenTabInTabStripBeforePrerenderedTab {
+// TODO(crbug.com/40073670): Test fails on official builds.
+// TODO(crbug.com/332961713): Test is Flaky on iOS17+ devices.
+- (void)FLAKY_testLegacyOpenTabInTabStripBeforePrerenderedTab {
   if (![ChromeEarlGrey isIPadIdiom]) {
     EARL_GREY_TEST_SKIPPED(
         @"Skipped for iPhone. The test makes use of the tab strip.");
@@ -422,7 +415,9 @@ void LegacyLongPressAndDragTabInTabStrip(NSString* moving_tab_identifier,
   [ChromeEarlGrey waitForMainTabCount:3];
 }
 
-- (void)testOpenTabInTabStripBeforePrerenderedTab {
+// TODO(crbug.com/334874066): This test is flaky on ios-tests and
+// ios-dcheck-tests.
+- (void)DISABLED_testOpenTabInTabStripBeforePrerenderedTab {
   if (![ChromeEarlGrey isIPadIdiom]) {
     EARL_GREY_TEST_SKIPPED(
         @"Skipped for iPhone. The test makes use of the tab strip.");
@@ -445,10 +440,9 @@ void LegacyLongPressAndDragTabInTabStrip(NSString* moving_tab_identifier,
   [ChromeEarlGrey waitForWebStateContainingText:kMobileSiteLabel];
 
   // Type the beginning of the address to have the autocomplete suggestion.
-  [ChromeEarlGreyUI focusOmnibox];
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
-      performAction:grey_replaceText(
-                        [pageString substringToIndex:[pageString length] - 6])];
+  NSString* beginningOfAddress =
+      [pageString substringToIndex:pageString.length - 6];
+  [ChromeEarlGreyUI focusOmniboxAndType:beginningOfAddress];
 
   // Wait until prerender request reaches the server.
   bool prerendered = WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{

@@ -131,7 +131,7 @@ class MultipleProfileDeletionObserver
     MaybeQuit();
   }
 
-  // TODO(https://crbug.com/704601): remove this code when bug is fixed.
+  // TODO(crbug.com/41309128): remove this code when bug is fixed.
   void OnBrowsingDataRemoverWouldComplete(
       base::OnceClosure continue_to_completion) {
     std::move(continue_to_completion).Run();
@@ -290,7 +290,7 @@ class ProfileManagerBrowserTest : public ProfileManagerBrowserTestBase,
 
 // CrOS multi-profiles implementation is too different for these tests.
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
-// TODO(crbug.com/1290803): Test failed on Mac.
+// TODO(crbug.com/40818380): Test failed on Mac.
 #if BUILDFLAG(IS_MAC)
 #define MAYBE_DeleteSingletonProfile DISABLED_DeleteSingletonProfile
 #else
@@ -732,7 +732,7 @@ IN_PROC_BROWSER_TEST_P(ProfileManagerBrowserTest, EphemeralProfile) {
   EXPECT_EQ(initial_profile_count, storage.GetNumberOfProfiles());
 
 // The following check is flaky on Windows.
-// TODO(https://crbug.com/1191455): re-enable this check when the profile
+// TODO(crbug.com/40756611): re-enable this check when the profile
 // directory deletion works more reliably on Windows.
 #if !BUILDFLAG(IS_WIN)
   if (base::FeatureList::IsEnabled(features::kDestroyProfileOnBrowserClose)) {
@@ -973,13 +973,13 @@ class ChildProfileTransitionBrowserTest
     const bool is_pre_test = content::IsPreTest();
 
     if (transition == TransitionType::kChildToRegular) {
-      return is_pre_test ? true : false;
-    } else if (transition == TransitionType::kRegularToChild) {
-      return is_pre_test ? false : true;
-    } else {
-      NOTREACHED();
-      return false;
+      return is_pre_test;
     }
+    if (transition == TransitionType::kRegularToChild) {
+      return !is_pre_test;
+    }
+    NOTREACHED();
+    return false;
   }
 
   const ProfileAttributesEntry* GetProfileAttributesEntry(

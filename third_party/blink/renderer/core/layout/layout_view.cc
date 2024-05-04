@@ -130,10 +130,6 @@ LayoutView::LayoutView(ContainerNode* document)
       GetDocument()) {
     SetIsEffectiveRootScroller(true);
   }
-
-  // This flag is normally set when an object is inserted into the tree, but
-  // this doesn't happen for LayoutView, since it's the root.
-  SetMightTraversePhysicalFragments(true);
 }
 
 LayoutView::~LayoutView() = default;
@@ -732,7 +728,7 @@ PhysicalSize LayoutView::PageAreaSize(wtf_size_t page_index,
       std::max(.0f, description.size.height() -
                         (description.margin_top + description.margin_bottom)));
 
-  page_size.Scale(page_scale_factor_);
+  page_size.Scale(pagination_scale_factor_);
 
   // Round up to the nearest integer. Although layout itself could have handled
   // subpixels just fine, the paint code cannot without bleeding across page
@@ -826,7 +822,7 @@ void LayoutView::InvalidateSvgRootsWithRelativeLengthDescendents() {
   }
 }
 
-void LayoutView::UpdateLayout() {
+void LayoutView::LayoutRoot() {
   NOT_DESTROYED();
   if (ShouldUsePrintingLayout()) {
     intrinsic_logical_widths_ = LogicalWidth();

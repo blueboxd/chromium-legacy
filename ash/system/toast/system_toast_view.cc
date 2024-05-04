@@ -10,7 +10,7 @@
 #include "ash/accessibility/scoped_a11y_override_window_setter.h"
 #include "ash/public/cpp/ash_view_ids.h"
 #include "ash/public/cpp/style/color_provider.h"
-#include "ash/public/cpp/system/toast_data.h"
+#include "ash/shell.h"
 #include "ash/style/ash_color_id.h"
 #include "ash/style/pill_button.h"
 #include "ash/style/system_shadow.h"
@@ -33,7 +33,7 @@ namespace {
 constexpr gfx::Insets kToastInteriorMargin = gfx::Insets::VH(8, 16);
 constexpr gfx::Insets kMultilineToastInteriorMargin = gfx::Insets::VH(8, 24);
 constexpr gfx::Insets kToastWithButtonInteriorMargin =
-    gfx::Insets::TLBR(2, 16, 2, 0);
+    gfx::Insets::TLBR(2, 16, 2, 2);
 constexpr gfx::Insets kMultilineToastWithButtonInteriorMargin =
     gfx::Insets::TLBR(8, 24, 8, 12);
 
@@ -41,10 +41,16 @@ constexpr gfx::Insets kMultilineToastWithButtonInteriorMargin =
 constexpr int kToastLabelMaxWidth = 512;
 constexpr int kToastLeadingIconSize = 20;
 constexpr int kToastLeadingIconPaddingWidth = 14;
+constexpr int kDismissButtonFocusRingHaloInset = 1;
 
 }  // namespace
 
-SystemToastView::SystemToastView(const ToastData& toast_data) {
+SystemToastView::SystemToastView(const std::u16string& text,
+                                 const std::u16string& dismiss_text,
+                                 base::RepeatingClosure dismiss_callback,
+                                 const gfx::VectorIcon* leading_icon)
+    : scoped_a11y_overrider_(
+          std::make_unique<ScopedA11yOverrideWindowSetter>()) {
   // Paint to layer so the background can be transparent.
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
@@ -54,15 +60,14 @@ SystemToastView::SystemToastView(const ToastData& toast_data) {
   SetOrientation(views::LayoutOrientation::kHorizontal);
   SetCrossAxisAlignment(views::LayoutAlignment::kCenter);
 
-  if (!toast_data.leading_icon->is_empty()) {
-    AddChildView(
-        views::Builder<views::ImageView>()
-            .SetID(VIEW_ID_TOAST_IMAGE_VIEW)
-            .SetPreferredSize(
-                gfx::Size(kToastLeadingIconSize, kToastLeadingIconSize))
-            .SetImage(ui::ImageModel::FromVectorIcon(
-                *toast_data.leading_icon, cros_tokens::kCrosSysOnSurface))
-            .Build());
+  if (!leading_icon->is_empty()) {
+    AddChildView(views::Builder<views::ImageView>()
+                     .SetID(VIEW_ID_TOAST_IMAGE_VIEW)
+                     .SetPreferredSize(gfx::Size(kToastLeadingIconSize,
+                                                 kToastLeadingIconSize))
+                     .SetImage(ui::ImageModel::FromVectorIcon(
+                         *leading_icon, cros_tokens::kCrosSysOnSurface))
+                     .Build());
 
     auto* icon_padding = AddChildView(std::make_unique<views::View>());
     icon_padding->SetPreferredSize(
@@ -72,8 +77,8 @@ SystemToastView::SystemToastView(const ToastData& toast_data) {
   auto* label = AddChildView(
       views::Builder<views::Label>()
           .SetID(VIEW_ID_TOAST_LABEL)
-          .SetText(toast_data.text)
-          .SetTooltipText(toast_data.text)
+          .SetText(text)
+          .SetTooltipText(text)
           .SetHorizontalAlignment(gfx::ALIGN_LEFT)
           .SetEnabledColorId(cros_tokens::kCrosSysOnSurface)
           .SetAutoColorReadabilityEnabled(false)
@@ -81,24 +86,39 @@ SystemToastView::SystemToastView(const ToastData& toast_data) {
           .SetFontList(TypographyProvider::Get()->ResolveTypographyToken(
               TypographyToken::kCrosBody2))
           .SetMultiLine(true)
+          .SetMaximumWidth(kToastLabelMaxWidth)
           .SetMaxLines(2)
           .Build());
 
-  const bool has_button = !toast_data.dismiss_text.empty();
+  const bool has_button = !dismiss_text.empty();
   if (has_button) {
     AddChildView(
         views::Builder<PillButton>()
+            .CopyAddressTo(&dismiss_button_)
             .SetID(VIEW_ID_TOAST_BUTTON)
-            .SetCallback(std::move(toast_data.dismiss_callback))
-            .SetText(toast_data.dismiss_text)
-            .SetTooltipText(toast_data.dismiss_text)
+            .SetCallback(std::move(dismiss_callback))
+            .SetText(dismiss_text)
+            .SetTooltipText(dismiss_text)
             .SetPillButtonType(PillButton::Type::kAccentFloatingWithoutIcon)
-            .SetFocusBehavior(views::View::FocusBehavior::ACCESSIBLE_ONLY)
+            .SetFocusBehavior(views::View::FocusBehavior::ALWAYS)
             .Build());
+
+    // The button's focus ring predicate is overridden since it's not directly
+    // focus accessible by tab traversal. The `is_dismiss_button_highlighted_`
+    // member variable is set through `ToggleButtonA11yFocus`.
+    auto* button_focus_ring = views::FocusRing::Get(dismiss_button_);
+    button_focus_ring->SetHaloInset(kDismissButtonFocusRingHaloInset);
+    button_focus_ring->SetOutsetFocusRingDisabled(true);
+    button_focus_ring->SetHasFocusPredicate(base::BindRepeating(
+        [](const SystemToastView* toast_view, const views::View* view) {
+          return toast_view->is_dismiss_button_highlighted_;
+        },
+        base::Unretained(this)));
+    button_focus_ring->SetVisible(false);
   }
 
-  label->SetMaximumWidth(kToastLabelMaxWidth);
-  label->SetPreferredSize(label->GetPreferredSize());
+  // Need to size label to get the required number of lines.
+  label->SizeToPreferredSize();
   SetInteriorMargin(label->GetRequiredLines() > 1
                         ? has_button ? kMultilineToastWithButtonInteriorMargin
                                      : kMultilineToastInteriorMargin
@@ -119,6 +139,25 @@ SystemToastView::SystemToastView(const ToastData& toast_data) {
 }
 
 SystemToastView::~SystemToastView() = default;
+
+void SystemToastView::ToggleButtonA11yFocus() {
+  if (!dismiss_button_) {
+    return;
+  }
+
+  // `is_dismiss_button_highlighted_` indicates the desired focus state.
+  is_dismiss_button_highlighted_ = !is_dismiss_button_highlighted_;
+  if (is_dismiss_button_highlighted_) {
+    scoped_a11y_overrider_->MaybeUpdateA11yOverrideWindow(
+        dismiss_button_->GetWidget()->GetNativeWindow());
+    dismiss_button_->NotifyAccessibilityEvent(ax::mojom::Event::kSelection,
+                                              true);
+  }
+
+  auto* button_focus_ring = views::FocusRing::Get(dismiss_button_);
+  button_focus_ring->SetVisible(is_dismiss_button_highlighted_);
+  button_focus_ring->SchedulePaint();
+}
 
 void SystemToastView::AddedToWidget() {
   shadow_->ObserveColorProviderSource(GetWidget());

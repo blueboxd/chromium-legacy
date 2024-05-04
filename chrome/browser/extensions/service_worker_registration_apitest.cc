@@ -3,7 +3,10 @@
 // found in the LICENSE file.
 
 #include "base/test/test_future.h"
+#include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_apitest.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/storage_partition.h"
@@ -11,8 +14,11 @@
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/browser/background_script_executor.h"
 #include "extensions/browser/extension_util.h"
+#include "extensions/browser/process_manager.h"
+#include "extensions/browser/script_executor.h"
 #include "extensions/browser/script_result_queue.h"
 #include "extensions/browser/service_worker/service_worker_task_queue.h"
+#include "extensions/browser/service_worker/service_worker_test_utils.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/mojom/manifest.mojom.h"
 #include "extensions/test/extension_background_page_waiter.h"
@@ -22,32 +28,7 @@
 
 namespace extensions {
 
-// A helper class to wait for the service worker context to be initialized.
-class WorkerInitializedWaiter : public ServiceWorkerTaskQueue::TestObserver {
- public:
-  explicit WorkerInitializedWaiter(ExtensionId extension_id)
-      : extension_id_(std::move(extension_id)) {
-    ServiceWorkerTaskQueue::SetObserverForTest(this);
-  }
-
-  ~WorkerInitializedWaiter() override {
-    ServiceWorkerTaskQueue::SetObserverForTest(nullptr);
-  }
-
-  void WaitForWorkerContextInitialized() { run_loop_.Run(); }
-
- private:
-  // ServiceWorkerTaskQueue::TestObserver:
-  void DidInitializeServiceWorkerContext(
-      const ExtensionId& extension_id) override {
-    if (extension_id == extension_id_) {
-      run_loop_.Quit();
-    }
-  }
-
-  const ExtensionId extension_id_;
-  base::RunLoop run_loop_;
-};
+using service_worker_test_utils::TestServiceWorkerTaskQueueObserver;
 
 // Tests related to the registration state of extension background service
 // workers.
@@ -296,7 +277,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerRegistrationApiTest,
         installer_done_future
             .GetCallback<const std::optional<CrxInstallError>&>());
 
-    WorkerInitializedWaiter worker_waiter(id);
+    TestServiceWorkerTaskQueueObserver worker_waiter;
 
     crx_installer->InstallCrx(crx_v2);
 
@@ -304,7 +285,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerRegistrationApiTest,
     // to be initialized.
     std::optional<CrxInstallError> install_error = installer_done_future.Get();
     ASSERT_FALSE(install_error.has_value()) << install_error->message();
-    worker_waiter.WaitForWorkerContextInitialized();
+    worker_waiter.WaitForWorkerContextInitialized(id);
   }
 
   // Grab the new version of the extension (the old one was replaced and is
@@ -394,7 +375,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerRegistrationApiTest,
 
 // Tests that the service worker is properly unregistered when the extension is
 // disabled or uninstalled.
-// TODO(crbug.com/1446468): Flaky on multiple platforms.
+// TODO(crbug.com/40268625): Flaky on multiple platforms.
 IN_PROC_BROWSER_TEST_F(
     ServiceWorkerRegistrationApiTest,
     DISABLED_DisablingOrUninstallingAnExtensionUnregistersTheServiceWorker) {

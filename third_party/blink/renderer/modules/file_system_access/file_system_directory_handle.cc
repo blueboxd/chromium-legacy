@@ -132,8 +132,7 @@ FileSystemDirectoryHandle::FileSystemDirectoryHandle(
   DCHECK(mojo_ptr_.is_bound());
 }
 
-ScriptPromiseTyped<FileSystemFileHandle>
-FileSystemDirectoryHandle::getFileHandle(
+ScriptPromise<FileSystemFileHandle> FileSystemDirectoryHandle::getFileHandle(
     ScriptState* script_state,
     const String& name,
     const FileSystemGetFileOptions* options,
@@ -141,11 +140,11 @@ FileSystemDirectoryHandle::getFileHandle(
   if (!mojo_ptr_.is_bound()) {
     // TODO(crbug.com/1293949): Add an error message.
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError, "");
-    return ScriptPromiseTyped<FileSystemFileHandle>();
+    return ScriptPromise<FileSystemFileHandle>();
   }
 
   auto* resolver =
-      MakeGarbageCollected<ScriptPromiseResolverTyped<FileSystemFileHandle>>(
+      MakeGarbageCollected<ScriptPromiseResolver<FileSystemFileHandle>>(
           script_state, exception_state.GetContext());
   auto result = resolver->Promise();
 
@@ -153,7 +152,7 @@ FileSystemDirectoryHandle::getFileHandle(
       name, options->create(),
       WTF::BindOnce(
           [](FileSystemDirectoryHandle*,
-             ScriptPromiseResolverTyped<FileSystemFileHandle>* resolver,
+             ScriptPromiseResolver<FileSystemFileHandle>* resolver,
              const String& name, FileSystemAccessErrorPtr result,
              mojo::PendingRemote<mojom::blink::FileSystemAccessFileHandle>
                  handle) {
@@ -175,7 +174,7 @@ FileSystemDirectoryHandle::getFileHandle(
   return result;
 }
 
-ScriptPromiseTyped<FileSystemDirectoryHandle>
+ScriptPromise<FileSystemDirectoryHandle>
 FileSystemDirectoryHandle::getDirectoryHandle(
     ScriptState* script_state,
     const String& name,
@@ -184,19 +183,19 @@ FileSystemDirectoryHandle::getDirectoryHandle(
   if (!mojo_ptr_.is_bound()) {
     // TODO(crbug.com/1293949): Add an error message.
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError, "");
-    return ScriptPromiseTyped<FileSystemDirectoryHandle>();
+    return ScriptPromise<FileSystemDirectoryHandle>();
   }
 
-  auto* resolver = MakeGarbageCollected<
-      ScriptPromiseResolverTyped<FileSystemDirectoryHandle>>(
-      script_state, exception_state.GetContext());
+  auto* resolver =
+      MakeGarbageCollected<ScriptPromiseResolver<FileSystemDirectoryHandle>>(
+          script_state, exception_state.GetContext());
   auto result = resolver->Promise();
 
   mojo_ptr_->GetDirectory(
       name, options->create(),
       WTF::BindOnce(
           [](FileSystemDirectoryHandle*,
-             ScriptPromiseResolverTyped<FileSystemDirectoryHandle>* resolver,
+             ScriptPromiseResolver<FileSystemDirectoryHandle>* resolver,
              const String& name, FileSystemAccessErrorPtr result,
              mojo::PendingRemote<mojom::blink::FileSystemAccessDirectoryHandle>
                  handle) {
@@ -218,7 +217,7 @@ FileSystemDirectoryHandle::getDirectoryHandle(
   return result;
 }
 
-ScriptPromise FileSystemDirectoryHandle::removeEntry(
+ScriptPromise<IDLUndefined> FileSystemDirectoryHandle::removeEntry(
     ScriptState* script_state,
     const String& name,
     const FileSystemRemoveOptions* options,
@@ -226,39 +225,41 @@ ScriptPromise FileSystemDirectoryHandle::removeEntry(
   if (!mojo_ptr_.is_bound()) {
     // TODO(crbug.com/1293949): Add an error message.
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError, "");
-    return ScriptPromise();
+    return ScriptPromise<IDLUndefined>();
   }
 
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver<IDLUndefined>>(
       script_state, exception_state.GetContext());
-  ScriptPromise result = resolver->Promise();
+  auto result = resolver->Promise();
 
-  mojo_ptr_->RemoveEntry(
-      name, options->recursive(),
-      WTF::BindOnce(
-          [](FileSystemDirectoryHandle*, ScriptPromiseResolver* resolver,
-             FileSystemAccessErrorPtr result) {
-            // Keep `this` alive so the handle will not be garbage-collected
-            // before the promise is resolved.
-            file_system_access_error::ResolveOrReject(resolver, *result);
-          },
-          WrapPersistent(this), WrapPersistent(resolver)));
+  mojo_ptr_->RemoveEntry(name, options->recursive(),
+                         WTF::BindOnce(
+                             [](FileSystemDirectoryHandle*,
+                                ScriptPromiseResolver<IDLUndefined>* resolver,
+                                FileSystemAccessErrorPtr result) {
+                               // Keep `this` alive so the handle will not be
+                               // garbage-collected before the promise is
+                               // resolved.
+                               file_system_access_error::ResolveOrReject(
+                                   resolver, *result);
+                             },
+                             WrapPersistent(this), WrapPersistent(resolver)));
 
   return result;
 }
 
-ScriptPromiseTyped<IDLNullable<IDLSequence<IDLUSVString>>>
+ScriptPromise<IDLNullable<IDLSequence<IDLUSVString>>>
 FileSystemDirectoryHandle::resolve(ScriptState* script_state,
                                    FileSystemHandle* possible_child,
                                    ExceptionState& exception_state) {
   if (!mojo_ptr_.is_bound()) {
     // TODO(crbug.com/1293949): Add an error message.
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError, "");
-    return ScriptPromiseTyped<IDLNullable<IDLSequence<IDLUSVString>>>();
+    return ScriptPromise<IDLNullable<IDLSequence<IDLUSVString>>>();
   }
 
   auto* resolver = MakeGarbageCollected<
-      ScriptPromiseResolverTyped<IDLNullable<IDLSequence<IDLUSVString>>>>(
+      ScriptPromiseResolver<IDLNullable<IDLSequence<IDLUSVString>>>>(
       script_state, exception_state.GetContext());
   auto result = resolver->Promise();
 
@@ -266,7 +267,7 @@ FileSystemDirectoryHandle::resolve(ScriptState* script_state,
       possible_child->Transfer(),
       WTF::BindOnce(
           [](FileSystemDirectoryHandle*,
-             ScriptPromiseResolverTyped<IDLNullable<IDLSequence<IDLUSVString>>>*
+             ScriptPromiseResolver<IDLNullable<IDLSequence<IDLUSVString>>>*
                  resolver,
              FileSystemAccessErrorPtr result,
              const std::optional<Vector<String>>& path) {

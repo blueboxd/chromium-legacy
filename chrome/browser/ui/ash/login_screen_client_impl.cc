@@ -29,7 +29,6 @@
 #include "chrome/browser/ash/login/ui/login_display_host.h"
 #include "chrome/browser/ash/login/ui/login_display_host_webui.h"
 #include "chrome/browser/ash/login/ui/user_adding_screen.h"
-#include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/ui/ash/wallpaper_controller_client_impl.h"
@@ -37,6 +36,8 @@
 #include "chrome/browser/ui/webui/ash/lock_screen_reauth/lock_screen_reauth_dialogs.h"
 #include "chrome/browser/ui/webui/ash/login/l10n_util.h"
 #include "chrome/common/webui_url_constants.h"
+#include "chromeos/ash/components/install_attributes/install_attributes.h"
+#include "chromeos/ash/components/settings/cros_settings.h"
 #include "chromeos/ash/components/settings/cros_settings_provider.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/user_names.h"
@@ -357,16 +358,15 @@ void LoginScreenClientImpl::LoginAsGuest() {
 }
 
 void LoginScreenClientImpl::ShowGuestTosScreen() {
-  // Guet ToS screen is only shown if EULA was not already accepted.
-  if (ash::StartupUtils::IsEulaAccepted()) {
+  // EULA is already accepted on enterprise managed devices.
+  // Unmanaged guests on managed devices should login directly without seeing
+  // the ToS screen. Managed guest sessions are handled separately.
+  if (ash::InstallAttributes::Get()->IsEnterpriseManaged()) {
     LoginAsGuest();
     return;
   }
 
-  DCHECK(!ash::ScreenLocker::default_screen_locker());
-  if (ash::LoginDisplayHost::default_host()) {
-    ash::LoginDisplayHost::default_host()->ShowGuestTosScreen();
-  }
+  ash::LoginDisplayHost::default_host()->ShowGuestTosScreen();
 }
 
 void LoginScreenClientImpl::OnMaxIncorrectPasswordAttempted(

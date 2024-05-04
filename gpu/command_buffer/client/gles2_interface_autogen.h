@@ -809,8 +809,6 @@ virtual void DrawElementsInstancedBaseVertexBaseInstanceANGLE(
     GLint basevertex,
     GLuint baseinstance) = 0;
 virtual void VertexAttribDivisorANGLE(GLuint index, GLuint divisor) = 0;
-virtual void ProduceTextureDirectCHROMIUM(GLuint texture, GLbyte* mailbox) = 0;
-virtual GLuint CreateAndConsumeTextureCHROMIUM(const GLbyte* mailbox) = 0;
 virtual void BindUniformLocationCHROMIUM(GLuint program,
                                          GLint location,
                                          const char* name) = 0;
@@ -904,19 +902,19 @@ virtual void CopySharedImageToTextureINTERNAL(GLuint texture,
                                               GLsizei height,
                                               GLboolean flip_y,
                                               const GLbyte* src_mailbox) = 0;
-virtual void ReadbackARGBImagePixelsINTERNAL(const GLbyte* mailbox,
-                                             const void* dst_color_space,
-                                             GLuint dst_color_space_size,
-                                             GLuint dst_size,
-                                             GLuint dst_width,
-                                             GLuint dst_height,
-                                             GLuint dst_color_type,
-                                             GLuint dst_alpha_type,
-                                             GLuint dst_row_bytes,
-                                             GLint src_x,
-                                             GLint src_y,
-                                             GLint plane_index,
-                                             void* pixels) = 0;
+virtual GLboolean ReadbackARGBImagePixelsINTERNAL(const GLbyte* mailbox,
+                                                  const void* dst_color_space,
+                                                  GLuint dst_color_space_size,
+                                                  GLuint dst_size,
+                                                  GLuint dst_width,
+                                                  GLuint dst_height,
+                                                  GLuint dst_color_type,
+                                                  GLuint dst_alpha_type,
+                                                  GLuint dst_row_bytes,
+                                                  GLint src_x,
+                                                  GLint src_y,
+                                                  GLint plane_index,
+                                                  void* pixels) = 0;
 virtual void WritePixelsYUVINTERNAL(const GLbyte* mailbox,
                                     GLuint src_size_plane1,
                                     GLuint src_size_plane2,

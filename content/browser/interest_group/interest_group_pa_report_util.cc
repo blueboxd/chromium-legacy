@@ -17,6 +17,7 @@
 #include "base/check_op.h"
 #include "base/containers/flat_map.h"
 #include "base/feature_list.h"
+#include "base/not_fatal_until.h"
 #include "base/notreached.h"
 #include "base/numerics/clamped_math.h"
 #include "components/aggregation_service/aggregation_coordinator_utils.h"
@@ -28,7 +29,7 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/abseil-cpp/absl/numeric/int128.h"
 #include "third_party/blink/public/common/features.h"
-#include "third_party/blink/public/mojom/private_aggregation/aggregatable_report.mojom.h"
+#include "third_party/blink/public/mojom/aggregation_service/aggregatable_report.mojom.h"
 #include "third_party/blink/public/mojom/private_aggregation/private_aggregation_host.mojom.h"
 #include "url/origin.h"
 #include "url/url_constants.h"
@@ -70,7 +71,7 @@ std::optional<double> GetBaseValue(
       }
       return std::nullopt;
   }
-  NOTREACHED();
+  NOTREACHED(base::NotFatalUntil::M128);
   return std::nullopt;
 }
 
@@ -93,7 +94,7 @@ std::optional<absl::uint128> CalculateBucket(
   double scaled_base_value = base.value() * bucket_obj->scale;
 
   // Returns std::nullopt if scaled_base_value is NaN.
-  // TODO(crbug.com/1410339): Throw a bad message if scale is NaN or infinity.
+  // TODO(crbug.com/40254312): Throw a bad message if scale is NaN or infinity.
   if (std::isnan(scaled_base_value)) {
     return std::nullopt;
   }
@@ -151,7 +152,7 @@ std::optional<int32_t> CalculateValue(
 
   double scaled_base_value = base.value() * value_obj->scale;
   // Returns std::nullopt if the product of base and scale is NaN.
-  // TODO(crbug.com/1410339): Throw a bad message if scale is NaN or infinity.
+  // TODO(crbug.com/40254312): Throw a bad message if scale is NaN or infinity.
   if (std::isnan(scaled_base_value)) {
     return std::nullopt;
   }
@@ -208,7 +209,7 @@ CalculateContributionBucketAndValue(
       // this, but the worklet process may be compromised. Since it has no
       // effect on the result of the auction, we just clamp it to 0 instead of
       // terminate the auction.
-      // TODO(crbug.com/1410534): Report a bad mojom message when int value is
+      // TODO(crbug.com/40254406): Report a bad mojom message when int value is
       // negative.
       value = 0;
     }
@@ -225,8 +226,9 @@ CalculateContributionBucketAndValue(
     value = value_opt.value();
   }
 
-  return blink::mojom::AggregatableReportHistogramContribution::New(bucket,
-                                                                    value);
+  // TODO(crbug.com/330744610): Allow filtering ID to be set.
+  return blink::mojom::AggregatableReportHistogramContribution::New(
+      bucket, value, /*filtering_id=*/std::nullopt);
 }
 
 }  // namespace
@@ -255,9 +257,9 @@ FillInPrivateAggregationRequest(
     const std::optional<auction_worklet::mojom::RejectReason> reject_reason,
     const PrivateAggregationTimings& timings,
     bool is_winner) {
-  DCHECK(request);
+  CHECK(request, base::NotFatalUntil::M128);
   if (request->contribution->is_histogram_contribution()) {
-    // TODO(crbug.com/1410534): Report a bad mojom message when contribution's
+    // TODO(crbug.com/40254406): Report a bad mojom message when contribution's
     // value is negative. The worklet code should prevent that, but the worklet
     // process may be compromised.
     PrivateAggregationRequestWithEventType request_with_event_type(
@@ -270,7 +272,7 @@ FillInPrivateAggregationRequest(
 
   // The mojom API declaration should ensure `contribution` being a
   // for-event contribution if not a histogram contribution.
-  DCHECK(contribution->is_for_event_contribution());
+  CHECK(contribution->is_for_event_contribution(), base::NotFatalUntil::M128);
   const std::string event_type =
       contribution->get_for_event_contribution()->event_type;
   std::optional<std::string> final_event_type = std::nullopt;

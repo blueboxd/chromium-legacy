@@ -75,7 +75,8 @@ public class SafeBrowsingFragment extends PrivacyGuideBasePage
     }
 
     private void initialRadioButtonConfig() {
-        @SafeBrowsingState int safeBrowsingState = PrivacyGuideUtils.getSafeBrowsingState();
+        @SafeBrowsingState
+        int safeBrowsingState = PrivacyGuideUtils.getSafeBrowsingState(getProfile());
         switch (safeBrowsingState) {
             case (SafeBrowsingState.ENHANCED_PROTECTION):
                 mEnhancedProtection.setChecked(true);
@@ -128,13 +129,14 @@ public class SafeBrowsingFragment extends PrivacyGuideBasePage
 
     @Override
     public void onCheckedChanged(RadioGroup radioGroup, int clickedButtonId) {
+        SafeBrowsingBridge safeBrowsingBridge = new SafeBrowsingBridge(getProfile());
         if (clickedButtonId == R.id.enhanced_option) {
-            SafeBrowsingBridge.setSafeBrowsingState(SafeBrowsingState.ENHANCED_PROTECTION);
+            safeBrowsingBridge.setSafeBrowsingState(SafeBrowsingState.ENHANCED_PROTECTION);
             PrivacyGuideMetricsDelegate.recordMetricsOnSafeBrowsingChange(
                     SafeBrowsingState.ENHANCED_PROTECTION);
         } else if (clickedButtonId == R.id.standard_option
                 || clickedButtonId == R.id.standard_option_friendlier) {
-            SafeBrowsingBridge.setSafeBrowsingState(SafeBrowsingState.STANDARD_PROTECTION);
+            safeBrowsingBridge.setSafeBrowsingState(SafeBrowsingState.STANDARD_PROTECTION);
             PrivacyGuideMetricsDelegate.recordMetricsOnSafeBrowsingChange(
                     SafeBrowsingState.STANDARD_PROTECTION);
         } else {
@@ -154,7 +156,7 @@ public class SafeBrowsingFragment extends PrivacyGuideBasePage
             mBottomSheetView =
                     new PrivacyGuideBottomSheetView(sheetContent, this::closeBottomSheet);
         }
-        // TODO(crbug.com/1287979): Re-enable animation once bug is fixed
+        // TODO(crbug.com/40211402): Re-enable animation once bug is fixed
         if (mBottomSheetController != null) {
             mBottomSheetController.requestShowContent(mBottomSheetView, false);
         }

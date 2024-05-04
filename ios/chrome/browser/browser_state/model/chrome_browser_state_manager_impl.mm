@@ -5,15 +5,17 @@
 #import "ios/chrome/browser/browser_state/model/chrome_browser_state_manager_impl.h"
 
 #import <stdint.h>
+
 #import <utility>
 
+#import "base/check_deref.h"
 #import "base/files/file_enumerator.h"
 #import "base/files/file_path.h"
 #import "base/functional/bind.h"
+#import "base/functional/callback.h"
 #import "base/metrics/histogram_macros.h"
 #import "base/path_service.h"
 #import "base/strings/utf_string_conversions.h"
-#import "base/task/sequenced_task_runner.h"
 #import "base/task/thread_pool.h"
 #import "base/threading/scoped_blocking_call.h"
 #import "components/optimization_guide/core/optimization_guide_features.h"
@@ -32,6 +34,7 @@
 #import "ios/chrome/browser/shared/model/browser_state/browser_state_info_cache.h"
 #import "ios/chrome/browser/shared/model/paths/paths.h"
 #import "ios/chrome/browser/shared/model/prefs/pref_names.h"
+#import "ios/chrome/browser/shared/public/features/system_flags.h"
 #import "ios/chrome/browser/signin/model/account_consistency_service_factory.h"
 #import "ios/chrome/browser/signin/model/account_reconcilor_factory.h"
 #import "ios/chrome/browser/signin/model/identity_manager_factory.h"
@@ -113,7 +116,8 @@ ChromeBrowserStateManagerImpl::ChromeBrowserStateManagerImpl() {}
 
 ChromeBrowserStateManagerImpl::~ChromeBrowserStateManagerImpl() {}
 
-ChromeBrowserState* ChromeBrowserStateManagerImpl::GetLastUsedBrowserState() {
+ChromeBrowserState*
+ChromeBrowserStateManagerImpl::GetLastUsedBrowserStateDeprecatedDoNotUse() {
   return GetBrowserState(GetLastUsedBrowserStateDir(GetUserDataDir()));
 }
 
@@ -126,25 +130,7 @@ ChromeBrowserState* ChromeBrowserStateManagerImpl::GetBrowserState(
     return iter->second.get();
   }
 
-  // Get sequenced task runner for making sure that file operations of
-  // this profile are executed in expected order (what was previously assured by
-  // the FILE thread).
-  scoped_refptr<base::SequencedTaskRunner> io_task_runner =
-      base::ThreadPool::CreateSequencedTaskRunner(
-          {base::TaskShutdownBehavior::BLOCK_SHUTDOWN, base::MayBlock()});
-
-  std::unique_ptr<ChromeBrowserStateImpl> browser_state_impl(
-      new ChromeBrowserStateImpl(path, io_task_runner));
-  DCHECK(!browser_state_impl->IsOffTheRecord());
-
-  std::pair<ChromeBrowserStateImplPathMap::iterator, bool> insert_result =
-      browser_states_.insert(
-          std::make_pair(path, std::move(browser_state_impl)));
-  DCHECK(insert_result.second);
-  DCHECK(insert_result.first != browser_states_.end());
-
-  DoFinalInit(insert_result.first->second.get());
-  return insert_result.first->second.get();
+  return nullptr;
 }
 
 base::FilePath ChromeBrowserStateManagerImpl::GetLastUsedBrowserStateDir(
@@ -164,8 +150,8 @@ base::FilePath ChromeBrowserStateManagerImpl::GetLastUsedBrowserStateDir(
 BrowserStateInfoCache*
 ChromeBrowserStateManagerImpl::GetBrowserStateInfoCache() {
   if (!browser_state_info_cache_) {
-    browser_state_info_cache_.reset(new BrowserStateInfoCache(
-        GetApplicationContext()->GetLocalState(), GetUserDataDir()));
+    browser_state_info_cache_ = std::make_unique<BrowserStateInfoCache>(
+        GetApplicationContext()->GetLocalState(), GetUserDataDir());
   }
   return browser_state_info_cache_.get();
 }
@@ -181,22 +167,69 @@ ChromeBrowserStateManagerImpl::GetLoadedBrowserStates() {
 
 void ChromeBrowserStateManagerImpl::LoadBrowserStates() {
   PrefService* local_state = GetApplicationContext()->GetLocalState();
-  DCHECK(local_state);
-  base::Value::List last_active_browser_states =
-      local_state->GetList(prefs::kBrowserStatesLastActive).Clone();
+  const base::Value::List& last_active_browser_states =
+      CHECK_DEREF(local_state).GetList(prefs::kBrowserStatesLastActive);
+
+  std::set<std::string> last_active_browser_states_set;
+  for (const base::Value& browser_state_id : last_active_browser_states) {
+    if (browser_state_id.is_string()) {
+      last_active_browser_states_set.insert(browser_state_id.GetString());
+    }
+  }
 
   // If there is no last active browser state load the default one.
-  if (last_active_browser_states.size() == 0) {
-    last_active_browser_states.Append(kIOSChromeInitialBrowserState);
+  if (last_active_browser_states_set.size() == 0) {
+    last_active_browser_states_set.insert(kIOSChromeInitialBrowserState);
   }
 
-  for (const base::Value& browser_state_dir : last_active_browser_states) {
-    if (!browser_state_dir.is_string()) {
-      continue;
+  // Create and load test profiles if experiment enabling Switch Profile
+  // developer UI is enabled.
+  std::optional<int> load_test_profiles =
+      experimental_flags::DisplaySwitchProfile();
+  if (load_test_profiles.has_value()) {
+    for (int i = 0; i < load_test_profiles; i++) {
+      last_active_browser_states_set.insert("TestProfile" +
+                                            base::NumberToString(i + 1));
     }
-    GetBrowserState(
-        GetUserDataDir().AppendASCII(browser_state_dir.GetString()));
   }
+
+  for (std::string browser_state_dir : last_active_browser_states_set) {
+    LoadBrowserState(GetUserDataDir().AppendASCII(browser_state_dir),
+                     base::DoNothing());
+  }
+}
+
+void ChromeBrowserStateManagerImpl::OnChromeBrowserStateCreationStarted(
+    ChromeBrowserState* browser_state,
+    ChromeBrowserState::CreationMode creation_mode) {
+  DCHECK(browser_state);
+}
+
+void ChromeBrowserStateManagerImpl::OnChromeBrowserStateCreationFinished(
+    ChromeBrowserState* browser_state,
+    ChromeBrowserState::CreationMode creation_mode,
+    bool is_new_browser_state,
+    bool success) {
+  DCHECK(browser_state);
+  DCHECK(success);
+}
+
+void ChromeBrowserStateManagerImpl::LoadBrowserState(
+    const base::FilePath& path,
+    BrowserStateLoadedCallback callback) {
+  DCHECK(!base::Contains(browser_states_, path));
+
+  auto [iter, inserted] = browser_states_.insert(std::make_pair(
+      path, ChromeBrowserState::CreateBrowserState(
+                path, ChromeBrowserState::CreationMode::kSynchronous, this)));
+  DCHECK(inserted);
+  DCHECK(iter != browser_states_.end());
+
+  ChromeBrowserState* browser_state = iter->second.get();
+  DCHECK(!browser_state->IsOffTheRecord());
+
+  DoFinalInit(browser_state);
+  std::move(callback).Run(browser_state);
 }
 
 void ChromeBrowserStateManagerImpl::DoFinalInit(
@@ -251,18 +284,15 @@ void ChromeBrowserStateManagerImpl::DoFinalInitForServices(
 void ChromeBrowserStateManagerImpl::AddBrowserStateToCache(
     ChromeBrowserState* browser_state) {
   DCHECK(!browser_state->IsOffTheRecord());
-  BrowserStateInfoCache* cache = GetBrowserStateInfoCache();
-  if (browser_state->GetStatePath().DirName() != cache->GetUserDataDir()) {
-    return;
-  }
-
+  DCHECK_EQ(browser_state->GetStatePath().DirName(), GetUserDataDir());
   signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForBrowserState(browser_state);
-  CoreAccountInfo account_info =
+  const CoreAccountInfo account_info =
       identity_manager->GetPrimaryAccountInfo(signin::ConsentLevel::kSignin);
-  std::u16string username = base::UTF8ToUTF16(account_info.email);
+  const std::u16string username = base::UTF8ToUTF16(account_info.email);
 
-  size_t browser_state_index =
+  BrowserStateInfoCache* cache = GetBrowserStateInfoCache();
+  const size_t browser_state_index =
       cache->GetIndexOfBrowserStateWithPath(browser_state->GetStatePath());
   if (browser_state_index != std::string::npos) {
     // The BrowserStateInfoCache's info must match the IdentityManager.

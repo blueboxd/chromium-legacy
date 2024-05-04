@@ -39,6 +39,16 @@ class MockReadAnythingUntrustedPageHandler
   MockReadAnythingUntrustedPageHandler() = default;
 
   MOCK_METHOD(void,
+              GetVoicePackInfo,
+              (const std::string& language,
+               GetVoicePackInfoCallback mojo_callback),
+              (override));
+  MOCK_METHOD(void,
+              InstallVoicePack,
+              (const std::string& language,
+               InstallVoicePackCallback mojo_callback),
+              (override));
+  MOCK_METHOD(void,
               OnLinkClicked,
               (const ui::AXTreeID& target_tree_id, ui::AXNodeID target_node_id),
               (override));
@@ -51,11 +61,8 @@ class MockReadAnythingUntrustedPageHandler
                int focus_offset),
               (override));
   MOCK_METHOD(void, OnCollapseSelection, (), (override));
+  MOCK_METHOD(void, OnSnapshotRequested, (), (override));
   MOCK_METHOD(void, OnCopy, (), (override));
-  MOCK_METHOD(void,
-              EnablePDFContentAccessibility,
-              (const ui::AXTreeID& ax_tree_id),
-              (override));
   MOCK_METHOD(void,
               OnLineSpaceChange,
               (read_anything::mojom::LineSpacing line_spacing),
@@ -71,6 +78,10 @@ class MockReadAnythingUntrustedPageHandler
   MOCK_METHOD(void,
               OnVoiceChange,
               (const std::string& voice, const std::string& lang),
+              (override));
+  MOCK_METHOD(void,
+              OnLanguagePrefChange,
+              (const std::string& lang, bool enabled),
               (override));
   MOCK_METHOD(void,
               OnColorChange,
@@ -154,35 +165,9 @@ class ReadAnythingAppControllerTest : public ChromeRenderViewTest {
     Mock::VerifyAndClearExpectations(distiller_);
   }
 
-  ui::AXTreeID SetUpPdfTrees() {
+  void SetIsPdf() {
     // Call OnActiveAXTreeIDChanged() to set is_pdf_ state.
-    GURL pdf_url("http://www.google.com/foo/bar.pdf");
-    OnActiveAXTreeIDChanged(tree_id_, pdf_url, true);
-
-    // PDF set up required for formatting checks.
-    ui::AXTreeID pdf_iframe_tree_id = ui::AXTreeID::CreateNewAXTreeID();
-    ui::AXTreeID pdf_web_contents_tree_id = ui::AXTreeID::CreateNewAXTreeID();
-
-    // Send update for main web content with child tree (pdf web contents).
-    ui::AXTreeUpdate main_web_contents_update;
-    SetUpdateTreeID(&main_web_contents_update);
-    ui::AXNodeData node;
-    node.id = 1;
-    node.AddChildTreeId(pdf_web_contents_tree_id);
-    main_web_contents_update.nodes = {node};
-    AccessibilityEventReceived({main_web_contents_update});
-
-    // Send update for pdf web contents with child tree (iframe).
-    ui::AXTreeUpdate pdf_web_contents_update;
-    ui::AXNodeData pdf_node;
-    pdf_node.id = 1;
-    pdf_node.AddChildTreeId(pdf_iframe_tree_id);
-    pdf_web_contents_update.nodes = {pdf_node};
-    pdf_web_contents_update.root_id = pdf_node.id;
-    SetUpdateTreeID(&pdf_web_contents_update, pdf_web_contents_tree_id);
-    AccessibilityEventReceived({pdf_web_contents_update});
-
-    return pdf_iframe_tree_id;
+    OnActiveAXTreeIDChanged(tree_id_, true /* is_pdf */);
   }
 
   void SetUpdateTreeID(ui::AXTreeUpdate* update) {
@@ -229,15 +214,10 @@ class ReadAnythingAppControllerTest : public ChromeRenderViewTest {
     controller_->model_.SetDistillationInProgress(in_progress);
   }
 
-  void OnActiveAXTreeIDChanged(const ui::AXTreeID& tree_id) {
-    OnActiveAXTreeIDChanged(tree_id, GURL());
-  }
-
   void OnActiveAXTreeIDChanged(const ui::AXTreeID& tree_id,
-                               const GURL& url,
-                               bool force_update_state = false) {
-    controller_->OnActiveAXTreeIDChanged(tree_id, ukm::kInvalidSourceId, url,
-                                         force_update_state);
+                               bool is_pdf = false) {
+    controller_->OnActiveAXTreeIDChanged(tree_id, ukm::kInvalidSourceId,
+                                         is_pdf);
   }
 
   void OnAXTreeDistilled(const std::vector<ui::AXNodeID>& content_node_ids) {
@@ -316,8 +296,6 @@ class ReadAnythingAppControllerTest : public ChromeRenderViewTest {
 
   float LetterSpacing() { return controller_->LetterSpacing(); }
 
-  bool isSelectable() { return controller_->IsSelectable(); }
-
   void OnFontSizeReset() { controller_->OnFontSizeReset(); }
 
   void OnLinksEnabledToggled() { controller_->OnLinksEnabledToggled(); }
@@ -334,6 +312,16 @@ class ReadAnythingAppControllerTest : public ChromeRenderViewTest {
                                       std::string display_locale) {
     return controller_->GetDisplayNameForLocale(locale, display_locale);
   }
+
+  void OnFontChange(const std::string& font) {
+    controller_->OnFontChange(font);
+  }
+
+  void OnVoiceChange(const std::string& voice, const std::string& lang) {
+    controller_->OnVoiceChange(voice, lang);
+  }
+
+  std::string GetStoredVoice() { return controller_->GetStoredVoice(); }
 
   std::string GetDataFontCss(ui::AXNodeID ax_node_id) {
     return controller_->GetDataFontCss(ax_node_id);
@@ -369,7 +357,15 @@ class ReadAnythingAppControllerTest : public ChromeRenderViewTest {
 
   bool IsGoogleDocs() { return controller_->IsGoogleDocs(); }
 
+  bool IsUrlInformationSet(ui::AXTreeID tree_id) {
+    return controller_->model_.GetTreesForTesting()
+        ->at(tree_id)
+        ->is_url_information_set;
+  }
+
   bool IsReadAloudEnabled() { return controller_->IsReadAloudEnabled(); }
+
+  bool IsWebUIToolbarEnabled() { return controller_->IsWebUIToolbarEnabled(); }
 
   bool IsLeafNode(ui::AXNodeID ax_node_id) {
     return controller_->IsLeafNode(ax_node_id);
@@ -401,7 +397,7 @@ class ReadAnythingAppControllerTest : public ChromeRenderViewTest {
     return controller_->model_.ContainsTree(tree_id);
   }
 
-  ui::AXTreeID ActiveTreeId() { return controller_->model_.GetActiveTreeId(); }
+  ui::AXTreeID active_tree_id() { return controller_->model_.active_tree_id(); }
 
   std::string LanguageCodeForSpeech() {
     return controller_->GetLanguageCodeForSpeech();
@@ -431,6 +427,77 @@ TEST_F(ReadAnythingAppControllerTest, IsReadAloudEnabled) {
 
   scoped_feature_list_.InitAndEnableFeature(features::kReadAnythingReadAloud);
   EXPECT_TRUE(IsReadAloudEnabled());
+}
+
+TEST_F(ReadAnythingAppControllerTest, OnFontChange_UpdatesFont) {
+  std::string expected_font = "Roboto";
+
+  OnFontChange(expected_font);
+
+  EXPECT_CALL(page_handler_, OnFontChange(expected_font)).Times(1);
+  ASSERT_EQ(FontName(), expected_font);
+}
+
+TEST_F(ReadAnythingAppControllerTest, GetStoredVoice_NoVoices_ReturnsEmpty) {
+  ASSERT_EQ(GetStoredVoice(), "");
+}
+
+TEST_F(ReadAnythingAppControllerTest,
+       GetStoredVoice_CurrentBaseLangStored_ReturnsExpectedVoice) {
+  std::string base_lang = "fr";
+  std::string expected_voice_name = "French voice 1";
+
+  OnVoiceChange(expected_voice_name, base_lang);
+  SetLanguageCode(base_lang);
+
+  EXPECT_CALL(page_handler_, OnVoiceChange).Times(1);
+  ASSERT_EQ(GetStoredVoice(), expected_voice_name);
+}
+
+TEST_F(ReadAnythingAppControllerTest,
+       GetStoredVoice_CurrentFullLangStored_ReturnsExpectedVoice) {
+  std::string full_lang = "en-UK";
+  std::string expected_voice_name = "British voice 45";
+
+  OnVoiceChange(expected_voice_name, full_lang);
+  SetLanguageCode(full_lang);
+
+  EXPECT_CALL(page_handler_, OnVoiceChange).Times(1);
+  ASSERT_EQ(GetStoredVoice(), expected_voice_name);
+}
+
+TEST_F(
+    ReadAnythingAppControllerTest,
+    GetStoredVoice_BaseLangStoredButCurrentLangIsFull_ReturnsStoredBaseLang) {
+  std::string base_lang = "zh";
+  std::string full_lang = "zh-TW";
+  std::string expected_voice_name = "Chinese voice";
+
+  OnVoiceChange(expected_voice_name, base_lang);
+  SetLanguageCode(full_lang);
+
+  EXPECT_CALL(page_handler_, OnVoiceChange).Times(1);
+  ASSERT_EQ(GetStoredVoice(), expected_voice_name);
+}
+
+TEST_F(ReadAnythingAppControllerTest,
+       GetStoredVoice_CurrentLangNotStored_ReturnsEmpty) {
+  std::string current_lang = "de-DE";
+  std::string stored_lang = "it-IT";
+
+  OnVoiceChange("Italian voice 3", stored_lang);
+  SetLanguageCode(current_lang);
+
+  EXPECT_CALL(page_handler_, OnVoiceChange).Times(1);
+  ASSERT_EQ(GetStoredVoice(), "");
+}
+
+TEST_F(ReadAnythingAppControllerTest, IsWebUIToolbarEnabled) {
+  EXPECT_FALSE(IsWebUIToolbarEnabled());
+
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kReadAnythingWebUIToolbar);
+  EXPECT_TRUE(IsWebUIToolbarEnabled());
 }
 
 TEST_F(ReadAnythingAppControllerTest, Theme) {
@@ -613,16 +680,19 @@ TEST_F(ReadAnythingAppControllerTest, GetHtmlTag_SvgReturnsDivIfGoogleDocs) {
 
   ui::AXNodeData root;
   root.id = 1;
+  root.AddStringAttribute(
+      ax::mojom::StringAttribute::kUrl,
+      "https://docs.google.com/document/d/"
+      "1t6x1PQaQWjE8wb9iyYmFaoK1XAEgsl8G1Hx3rzfpoKA/"
+      "edit?ouid=103677288878638916900&usp=docs_home&ths=true");
   root.child_ids = {node.id};
   update.nodes = {root, node};
   update.root_id = root.id;
 
   AccessibilityEventReceived({update});
+  EXPECT_TRUE(IsUrlInformationSet(id_1));
   OnAXTreeDistilled({});
-  OnActiveAXTreeIDChanged(
-      id_1, GURL("https://docs.google.com/document/d/"
-                 "1t6x1PQaQWjE8wb9iyYmFaoK1XAEgsl8G1Hx3rzfpoKA/"
-                 "edit?ouid=103677288878638916900&usp=docs_home&ths=true"));
+  OnActiveAXTreeIDChanged(id_1);
   EXPECT_TRUE(IsGoogleDocs());
   EXPECT_EQ(div, GetHtmlTag(2));
 }
@@ -646,15 +716,18 @@ TEST_F(ReadAnythingAppControllerTest,
   ui::AXNodeData root;
   root.role = ax::mojom::Role::kParagraph;
   root.id = 1;
+  root.AddStringAttribute(
+      ax::mojom::StringAttribute::kUrl,
+      "https://docs.google.com/document/d/"
+      "1t6x1PQaQWjE8wb9iyYmFaoK1XAEgsl8G1Hx3rzfpoKA/"
+      "edit?ouid=103677288878638916900&usp=docs_home&ths=true");
   root.child_ids = {paragraph_node.id, svg_node.id};
   update.root_id = root.id;
   update.nodes = {root, paragraph_node, svg_node};
   AccessibilityEventReceived({update});
+  EXPECT_TRUE(IsUrlInformationSet(id_1));
   OnAXTreeDistilled({});
-  OnActiveAXTreeIDChanged(
-      id_1, GURL("https://docs.google.com/document/d/"
-                 "1t6x1PQaQWjE8wb9iyYmFaoK1XAEgsl8G1Hx3rzfpoKA/"
-                 "edit?ouid=103677288878638916900&usp=docs_home&ths=true"));
+  OnActiveAXTreeIDChanged(id_1);
   EXPECT_TRUE(IsGoogleDocs());
   EXPECT_EQ("", GetHtmlTag(1));
   EXPECT_EQ(p, GetHtmlTag(2));
@@ -673,7 +746,7 @@ TEST_F(ReadAnythingAppControllerTest,
   ui::AXNodeData node2;
   node2.id = 3;
   node2.role = ax::mojom::Role::kHeading;
-  node2.html_attributes.emplace_back("aria-level", "3");
+  node2.AddIntAttribute(ax::mojom::IntAttribute::kHierarchicalLevel, 3);
 
   ui::AXNodeData node3;
   node3.id = 4;
@@ -684,18 +757,17 @@ TEST_F(ReadAnythingAppControllerTest,
 }
 
 TEST_F(ReadAnythingAppControllerTest, GetHtmlTag_PDF) {
-  ui::AXTreeID pdf_iframe_tree_id = SetUpPdfTrees();
-
   // Send pdf iframe update with html tags to test.
+  SetIsPdf();
   ui::AXTreeUpdate update;
-  SetUpdateTreeID(&update, pdf_iframe_tree_id);
+  SetUpdateTreeID(&update, tree_id_);
   ui::AXNodeData node1;
   node1.id = 2;
   node1.AddStringAttribute(ax::mojom::StringAttribute::kHtmlTag, "h1");
   ui::AXNodeData node2;
   node2.id = 3;
   node2.role = ax::mojom::Role::kHeading;
-  node2.html_attributes.emplace_back("aria-level", "2");
+  node2.AddIntAttribute(ax::mojom::IntAttribute::kHierarchicalLevel, 2);
 
   ui::AXNodeData root;
   root.id = 1;
@@ -706,20 +778,19 @@ TEST_F(ReadAnythingAppControllerTest, GetHtmlTag_PDF) {
   AccessibilityEventReceived({update});
 
   OnAXTreeDistilled({});
-  EXPECT_CALL(page_handler_, EnablePDFContentAccessibility).Times(1);
   EXPECT_EQ("span", GetHtmlTag(1));
   EXPECT_EQ("h1", GetHtmlTag(2));
   EXPECT_EQ("h2", GetHtmlTag(3));
 }
 
 TEST_F(ReadAnythingAppControllerTest, GetHtmlTag_IncorrectlyFormattedPDF) {
-  ui::AXTreeID pdf_iframe_tree_id = SetUpPdfTrees();
+  SetIsPdf();
 
-  // Send pdf iframe update with html tags to test. Two headings next to each
+  // Send pdf update with html tags to test. Two headings next to each
   // other should be spans. A heading that's too long should be turned into a
   // paragraph.
   ui::AXTreeUpdate update;
-  SetUpdateTreeID(&update, pdf_iframe_tree_id);
+  SetUpdateTreeID(&update, tree_id_);
   ui::AXNodeData heading_node1;
   heading_node1.id = 2;
   heading_node1.role = ax::mojom::Role::kHeading;
@@ -753,7 +824,6 @@ TEST_F(ReadAnythingAppControllerTest, GetHtmlTag_IncorrectlyFormattedPDF) {
   AccessibilityEventReceived({update});
 
   OnAXTreeDistilled({});
-  EXPECT_CALL(page_handler_, EnablePDFContentAccessibility).Times(1);
   EXPECT_EQ("span", GetHtmlTag(2));
   EXPECT_EQ("span", GetHtmlTag(3));
   EXPECT_EQ("a", GetHtmlTag(4));
@@ -761,11 +831,11 @@ TEST_F(ReadAnythingAppControllerTest, GetHtmlTag_IncorrectlyFormattedPDF) {
 }
 
 TEST_F(ReadAnythingAppControllerTest, GetHtmlTag_InaccessiblePDF) {
-  ui::AXTreeID pdf_iframe_tree_id = SetUpPdfTrees();
+  SetIsPdf();
 
   // Send pdf iframe update with html tags to test.
   ui::AXTreeUpdate update;
-  SetUpdateTreeID(&update, pdf_iframe_tree_id);
+  SetUpdateTreeID(&update, tree_id_);
   ui::AXNodeData node;
   node.id = 2;
   node.role = ax::mojom::Role::kContentInfo;
@@ -781,7 +851,6 @@ TEST_F(ReadAnythingAppControllerTest, GetHtmlTag_InaccessiblePDF) {
   AccessibilityEventReceived({update});
 
   OnAXTreeDistilled({});
-  EXPECT_CALL(page_handler_, EnablePDFContentAccessibility).Times(1);
   EXPECT_EQ("br", GetHtmlTag(2));
 }
 
@@ -924,6 +993,44 @@ TEST_F(ReadAnythingAppControllerTest, GetTextContent_WithSelection) {
 }
 
 TEST_F(ReadAnythingAppControllerTest,
+       GetTextContent_IgoreStaticTextIfGoogleDocs) {
+  std::string text_content = "Hello";
+  std::string more_text_content = "world";
+  ui::AXTreeUpdate update;
+  ui::AXTreeID id_1 = ui::AXTreeID::CreateNewAXTreeID();
+  SetUpdateTreeID(&update, id_1);
+  ui::AXNodeData node1;
+  node1.id = 2;
+  node1.role = ax::mojom::Role::kStaticText;
+  node1.SetNameChecked(text_content);
+
+  ui::AXNodeData node2;
+  node2.id = 3;
+  node2.role = ax::mojom::Role::kStaticText;
+  node2.SetNameExplicitlyEmpty();
+
+  ui::AXNodeData root;
+  root.id = 1;
+  root.AddStringAttribute(
+      ax::mojom::StringAttribute::kUrl,
+      "https://docs.google.com/document/d/"
+      "1t6x1PQaQWjE8wb9iyYmFaoK1XAEgsl8G1Hx3rzfpoKA/"
+      "edit?ouid=103677288878638916900&usp=docs_home&ths=true");
+  root.child_ids = {node1.id, node2.id};
+  root.role = ax::mojom::Role::kParagraph;
+  update.root_id = root.id;
+  update.nodes = {root, node1, node2};
+
+  AccessibilityEventReceived({update});
+  EXPECT_TRUE(IsUrlInformationSet(id_1));
+  OnAXTreeDistilled({});
+  OnActiveAXTreeIDChanged(id_1);
+  EXPECT_TRUE(IsGoogleDocs());
+  EXPECT_EQ("", GetTextContent(2));
+  EXPECT_EQ("", GetTextContent(3));
+}
+
+TEST_F(ReadAnythingAppControllerTest,
        GetTextContent_UseNameAttributeTextIfGoogleDocs) {
   std::string text_content = "Hello";
   std::string more_text_content = "world";
@@ -940,21 +1047,24 @@ TEST_F(ReadAnythingAppControllerTest,
                            more_text_content);
   ui::AXNodeData root;
   root.id = 1;
+  root.AddStringAttribute(
+      ax::mojom::StringAttribute::kUrl,
+      "https://docs.google.com/document/d/"
+      "1t6x1PQaQWjE8wb9iyYmFaoK1XAEgsl8G1Hx3rzfpoKA/"
+      "edit?ouid=103677288878638916900&usp=docs_home&ths=true");
   root.child_ids = {node1.id, node2.id};
   root.role = ax::mojom::Role::kParagraph;
   update.root_id = root.id;
   update.nodes = {root, node1, node2};
 
   AccessibilityEventReceived({update});
+  EXPECT_TRUE(IsUrlInformationSet(id_1));
   OnAXTreeDistilled({});
-  OnActiveAXTreeIDChanged(
-      id_1, GURL("https://docs.google.com/document/d/"
-                 "1t6x1PQaQWjE8wb9iyYmFaoK1XAEgsl8G1Hx3rzfpoKA/"
-                 "edit?ouid=103677288878638916900&usp=docs_home&ths=true"));
+  OnActiveAXTreeIDChanged(id_1);
   EXPECT_TRUE(IsGoogleDocs());
-  EXPECT_EQ("Hello world", GetTextContent(1));
-  EXPECT_EQ(text_content, GetTextContent(2));
-  EXPECT_EQ(more_text_content, GetTextContent(3));
+  EXPECT_EQ("Hello world ", GetTextContent(1));
+  EXPECT_EQ(text_content + " ", GetTextContent(2));
+  EXPECT_EQ(more_text_content + " ", GetTextContent(3));
 }
 
 TEST_F(ReadAnythingAppControllerTest,
@@ -975,14 +1085,17 @@ TEST_F(ReadAnythingAppControllerTest,
 
   ui::AXNodeData root;
   root.id = 1;
+  root.AddStringAttribute(ax::mojom::StringAttribute::kUrl,
+                          "https://www.google.com/");
   root.child_ids = {node1.id, node2.id};
   root.role = ax::mojom::Role::kParagraph;
   update.root_id = root.id;
   update.nodes = {root, node1, node2};
 
   AccessibilityEventReceived({update});
+  EXPECT_TRUE(IsUrlInformationSet(id_1));
   OnAXTreeDistilled({});
-  OnActiveAXTreeIDChanged(id_1, GURL("https://www.google.com/"));
+  OnActiveAXTreeIDChanged(id_1);
   EXPECT_FALSE(IsGoogleDocs());
   EXPECT_EQ("", GetTextContent(1));
   EXPECT_EQ("", GetTextContent(2));
@@ -991,7 +1104,7 @@ TEST_F(ReadAnythingAppControllerTest,
 
 TEST_F(ReadAnythingAppControllerTest, GetDisplayNameForLocale) {
   EXPECT_EQ(GetDisplayNameForLocale("en-US", "en"), "English (United States)");
-  EXPECT_EQ(GetDisplayNameForLocale("en-US", "es"), "inglés (Estados Unidos)");
+  EXPECT_EQ(GetDisplayNameForLocale("en-US", "es"), "Inglés (Estados Unidos)");
   EXPECT_EQ(GetDisplayNameForLocale("en-US", "en-US"),
             "English (United States)");
   EXPECT_EQ(GetDisplayNameForLocale("en-UK", "en"), "English (United Kingdom)");
@@ -1119,18 +1232,6 @@ TEST_F(ReadAnythingAppControllerTest, IsLeafNode) {
   EXPECT_EQ(true, IsLeafNode(2));
   EXPECT_EQ(true, IsLeafNode(3));
   EXPECT_EQ(true, IsLeafNode(4));
-}
-
-TEST_F(ReadAnythingAppControllerTest, IsGoogleDocs) {
-  ui::AXTreeID id_1 = ui::AXTreeID::CreateNewAXTreeID();
-  OnActiveAXTreeIDChanged(id_1, GURL("www.google.com"));
-  EXPECT_FALSE(IsGoogleDocs());
-
-  OnActiveAXTreeIDChanged(
-      tree_id_, GURL("https://docs.google.com/document/d/"
-                     "1t6x1PQaQWjE8wb9iyYmFaoK1XAEgsl8G1Hx3rzfpoKA/"
-                     "edit?ouid=103677288878638916900&usp=docs_home&ths=true"));
-  EXPECT_TRUE(IsGoogleDocs());
 }
 
 TEST_F(ReadAnythingAppControllerTest, IsNodeIgnoredForReadAnything) {
@@ -1371,38 +1472,43 @@ TEST_F(ReadAnythingAppControllerTest, OnActiveAXTreeIDChanged) {
   Mock::VerifyAndClearExpectations(distiller_);
 }
 
-TEST_F(ReadAnythingAppControllerTest,
-       OnActiveAXTreeIDChanged_DocsLabeledNotSelectable) {
+TEST_F(ReadAnythingAppControllerTest, IsGoogleDocs) {
   ui::AXTreeUpdate update;
   ui::AXTreeID id_1 = ui::AXTreeID::CreateNewAXTreeID();
   SetUpdateTreeID(&update, id_1);
   update.root_id = 1;
+
   ui::AXNodeData node;
   node.id = 1;
+  node.AddStringAttribute(ax::mojom::StringAttribute::kUrl, "www.google.com");
   update.nodes = {node};
   AccessibilityEventReceived({update});
+  EXPECT_TRUE(IsUrlInformationSet(id_1));
   OnAXTreeDistilled({1});
 
   EXPECT_CALL(*distiller_, Distill).Times(1);
-  OnActiveAXTreeIDChanged(id_1, GURL("www.google.com"));
-  EXPECT_TRUE(isSelectable());
+  OnActiveAXTreeIDChanged(id_1);
+  EXPECT_FALSE(IsGoogleDocs());
   Mock::VerifyAndClearExpectations(distiller_);
 
   ui::AXTreeUpdate update_1;
   SetUpdateTreeID(&update_1, tree_id_);
   ui::AXNodeData root;
   root.id = 1;
+  root.AddStringAttribute(
+      ax::mojom::StringAttribute::kUrl,
+      "https://docs.google.com/document/d/"
+      "1t6x1PQaQWjE8wb9iyYmFaoK1XAEgsl8G1Hx3rzfpoKA/"
+      "edit?ouid=103677288878638916900&usp=docs_home&ths=true");
   update_1.root_id = root.id;
   update_1.nodes = {root};
   AccessibilityEventReceived({update_1});
+  EXPECT_TRUE(IsUrlInformationSet(tree_id_));
   OnAXTreeDistilled({1});
 
   EXPECT_CALL(*distiller_, Distill).Times(1);
-  OnActiveAXTreeIDChanged(
-      tree_id_, GURL("https://docs.google.com/document/d/"
-                     "1t6x1PQaQWjE8wb9iyYmFaoK1XAEgsl8G1Hx3rzfpoKA/"
-                     "edit?ouid=103677288878638916900&usp=docs_home&ths=true"));
-  EXPECT_FALSE(isSelectable());
+  OnActiveAXTreeIDChanged(tree_id_);
+  EXPECT_TRUE(IsGoogleDocs());
   Mock::VerifyAndClearExpectations(distiller_);
 }
 
@@ -1699,9 +1805,9 @@ TEST_F(ReadAnythingAppControllerTest,
   // Calling OnActiveAXTreeID updates the active AXTreeID.
   ui::AXTreeID tree_id_2 = ui::AXTreeID::CreateNewAXTreeID();
   EXPECT_CALL(*distiller_, Distill).Times(0);
-  ASSERT_EQ(tree_id_, ActiveTreeId());
+  ASSERT_EQ(tree_id_, active_tree_id());
   OnActiveAXTreeIDChanged(tree_id_2);
-  ASSERT_EQ(tree_id_2, ActiveTreeId());
+  ASSERT_EQ(tree_id_2, active_tree_id());
   Mock::VerifyAndClearExpectations(distiller_);
 }
 
@@ -2113,36 +2219,12 @@ TEST_F(ReadAnythingAppControllerTest,
        GetLanguageCodeForSpeech_ReturnsCorrectLanguageCode) {
   SetLanguageCode("es");
   ASSERT_EQ(LanguageCodeForSpeech(), "es");
-}
 
-TEST_F(ReadAnythingAppControllerTest, AccessibilityEventReceived_PDFHandling) {
-  // Call OnActiveAXTreeIDChanged() to set is_pdf_ state.
-  GURL pdf_url("http://www.google.com/foo/bar.pdf");
-  OnActiveAXTreeIDChanged(tree_id_, pdf_url, true);
+  SetLanguageCode("en-UK");
+  ASSERT_EQ(LanguageCodeForSpeech(), "en");
 
-  // Send update for main web contentes.
-  ui::AXTreeID pdf_web_contents_tree_id = ui::AXTreeID::CreateNewAXTreeID();
-  ui::AXTreeUpdate update;
-  SetUpdateTreeID(&update);
-  ui::AXNodeData node;
-  node.id = 1;
-  node.AddChildTreeId(pdf_web_contents_tree_id);
-  update.nodes = {node};
-  AccessibilityEventReceived({update});
-
-  // Send update for pdf web contents.
-  ui::AXTreeUpdate pdf_web_contents_update;
-  ui::AXNodeData pdfNode;
-  pdfNode.id = 1;
-  pdf_web_contents_update.root_id = pdfNode.id;
-  pdf_web_contents_update.nodes = {pdfNode};
-  SetUpdateTreeID(&pdf_web_contents_update, pdf_web_contents_tree_id);
-  AccessibilityEventReceived({pdf_web_contents_update});
-
-  EXPECT_CALL(page_handler_,
-              EnablePDFContentAccessibility(pdf_web_contents_tree_id))
-      .Times(1);
-  Mock::VerifyAndClearExpectations(distiller_);
+  SetLanguageCode("zh-CN");
+  ASSERT_EQ(LanguageCodeForSpeech(), "zh");
 }
 
 TEST_F(ReadAnythingAppControllerTest,
@@ -2186,7 +2268,7 @@ TEST_F(ReadAnythingAppControllerTest,
   EXPECT_EQ((int)GetCurrentText().size(), 1);
 }
 TEST_F(ReadAnythingAppControllerTest, GetCurrentText_ReturnsExpectedNodes) {
-  // TODO(crbug.com/1474951): Investigate if we can improve in scenarios when
+  // TODO(crbug.com/40927698): Investigate if we can improve in scenarios when
   // there's not a space between sentences.
   std::u16string sentence1 = u"This is a sentence. ";
   std::u16string sentence2 = u"This is another sentence. ";

@@ -15,7 +15,6 @@
 #include "chrome/browser/navigation_predictor/navigation_predictor.h"
 #include "chrome/browser/navigation_predictor/navigation_predictor_keyed_service.h"
 #include "chrome/browser/navigation_predictor/navigation_predictor_keyed_service_factory.h"
-#include "chrome/browser/preloading/prefetch/no_state_prefetch/no_state_prefetch_manager_factory.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/subresource_filter/subresource_filter_browser_test_harness.h"
 #include "chrome/browser/ui/browser.h"
@@ -51,6 +50,7 @@ class NavigationPredictorBrowserTest
     // Report all anchors to avoid non-deterministic behavior.
     std::map<std::string, std::string> params;
     params["random_anchor_sampling_period"] = "1";
+    params["traffic_client_enabled_percent"] = "100";
 
     feature_list_.InitAndEnableFeatureWithParameters(
         blink::features::kNavigationPredictor, params);
@@ -438,7 +438,7 @@ IN_PROC_BROWSER_TEST_P(NavigationPredictorSiteIsolationBrowserTest,
 // parent is cross-origin.
 IN_PROC_BROWSER_TEST_P(NavigationPredictorSiteIsolationBrowserTest,
                        PageWithSameOriginIframeInCrossOriginIframe) {
-  // TODO(https://crbug.com/1519846): Flaky timeouts on linux rel and cros rel.
+  // TODO(crbug.com/41492823): Flaky timeouts on linux rel and cros rel.
 #if (BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)) && defined(NDEBUG)
   if (SiteIsolationEnabled()) {
     GTEST_SKIP() << "Flaky. https://crbug.com/1519846";

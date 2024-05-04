@@ -198,7 +198,7 @@ chromium-metrics-reviews@google.com.
       label="Custom property contains different value types in keyframe
              animation"/>
   <int value="17" label="Scroll timeline source is not composited"/>
-  <int value="18" label="Compositor property animations have no effect"/>
+  <int value="18" label="Animation has no visible change"/>
   <int value="19" label="Animation affects an !important property"/>
   <int value="20"
       label="Target SVG element uses an individual transform property"/>
@@ -236,6 +236,13 @@ chromium-metrics-reviews@google.com.
   <int value="2" label="kErrorNoCredential"/>
   <int value="3" label="kErrorUserDeclined"/>
   <int value="4" label="kErrorAborted"/>
+</enum>
+
+<enum name="FedCmAccountChooserResult">
+  <int value="0" label="Account row clicked"/>
+  <int value="1" label="Cancel button clicked"/>
+  <int value="2" label="Use other account button clicked"/>
+  <int value="3" label="Tab or window is closed or refreshed"/>
 </enum>
 
 <enum name="FedCmAccountsResponseInvalidReason">

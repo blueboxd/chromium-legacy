@@ -43,7 +43,7 @@ class SyncUserSettingsImpl : public SyncUserSettings {
   ~SyncUserSettingsImpl() override;
 
   ModelTypeSet GetPreferredDataTypes() const;
-  bool IsEncryptedDatatypeEnabled() const;
+  bool IsEncryptedDatatypePreferred() const;
   // The encryption bootstrap token is used for explicit passphrase users
   // (usually custom passphrase) and represents a user-entered passphrase.
   std::string GetEncryptionBootstrapToken() const;
@@ -68,6 +68,8 @@ class SyncUserSettingsImpl : public SyncUserSettings {
   UserSelectableTypeSet GetSelectedTypes() const override;
   bool IsTypeManagedByPolicy(UserSelectableType type) const override;
   bool IsTypeManagedByCustodian(UserSelectableType type) const override;
+  SyncUserSettings::UserSelectableTypePrefState GetTypePrefStateForAccount(
+      UserSelectableType type) const override;
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
   int GetNumberOfAccountsWithPasswordsSelected() const override;
 #endif
@@ -76,9 +78,6 @@ class SyncUserSettingsImpl : public SyncUserSettings {
   void SetSelectedType(UserSelectableType type, bool is_type_on) override;
   void KeepAccountSettingsPrefsOnlyForUsers(
       const std::vector<signin::GaiaIdHash>& available_gaia_ids) override;
-#if BUILDFLAG(IS_IOS)
-  void SetBookmarksAndReadingListAccountStorageOptIn(bool value) override;
-#endif  // BUILDFLAG(IS_IOS)
   UserSelectableTypeSet GetRegisteredSelectableTypes() const override;
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   bool IsSyncFeatureDisabledViaDashboard() const override;
@@ -94,7 +93,7 @@ class SyncUserSettingsImpl : public SyncUserSettings {
 #endif
   bool IsCustomPassphraseAllowed() const override;
   bool IsEncryptEverythingEnabled() const override;
-  ModelTypeSet GetEncryptedDataTypes() const override;
+  ModelTypeSet GetAllEncryptedDataTypes() const override;
   bool IsPassphraseRequired() const override;
   bool IsPassphraseRequiredForPreferredDataTypes() const override;
   bool IsPassphrasePromptMutedForCurrentProductVersion() const override;

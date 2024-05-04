@@ -16,7 +16,6 @@ class DirectoryPickerOptions;
 class ExceptionState;
 class FileSystemDirectoryHandle;
 class FileSystemFileHandle;
-class FileSystemHandle;
 class LocalDOMWindow;
 class ScriptState;
 
@@ -24,17 +23,17 @@ class GlobalFileSystemAccess {
   STATIC_ONLY(GlobalFileSystemAccess);
 
  public:
-  static ScriptPromiseTyped<IDLSequence<FileSystemHandle>> showOpenFilePicker(
+  static ScriptPromise<IDLSequence<FileSystemFileHandle>> showOpenFilePicker(
       ScriptState*,
       LocalDOMWindow&,
       const OpenFilePickerOptions*,
       ExceptionState&);
-  static ScriptPromiseTyped<FileSystemFileHandle> showSaveFilePicker(
+  static ScriptPromise<FileSystemFileHandle> showSaveFilePicker(
       ScriptState*,
       LocalDOMWindow&,
       const SaveFilePickerOptions*,
       ExceptionState&);
-  static ScriptPromiseTyped<FileSystemDirectoryHandle> showDirectoryPicker(
+  static ScriptPromise<FileSystemDirectoryHandle> showDirectoryPicker(
       ScriptState*,
       LocalDOMWindow&,
       const DirectoryPickerOptions*,

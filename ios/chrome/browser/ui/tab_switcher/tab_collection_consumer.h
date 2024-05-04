@@ -24,25 +24,28 @@ class WebStateID;
 // `selectedItemID` that is not the identifier of any current items.
 
 // Tells the consumer to replace its current set of items with `items` and
-// update the selected item ID to be `selectedItemID`. It's an error to pass
-// an `items` array containing items without unique IDs.
+// update the selected item to be `selectedItem`. It's an error to pass an
+// `items` array containing items without unique IDs.
 - (void)populateItems:(NSArray<GridItemIdentifier*>*)items
-       selectedItemID:(web::WebStateID)selectedItemID;
+    selectedItemIdentifier:(GridItemIdentifier*)selectedItemIdentifier;
 
-// Tells the consumer to insert `item` at `index` and update the selected item
-// ID to be `selectedItemID`. It's an error if `item`'s ID duplicates an
-// ID already passed to the consumer (and not yet removed).
+// Tells the consumer to insert `item` before the given `nextItemIdentifier` and
+// update the selected item identifier to be `selectedItemIdentifier`. It's an
+// error if `item`'s duplicates an item already passed to the consumer (and not
+// yet removed). `nextItemIdentifier` can be nul, `item` will be append to the
+// end of the section.
 - (void)insertItem:(GridItemIdentifier*)item
-           atIndex:(NSUInteger)index
-    selectedItemID:(web::WebStateID)selectedItemID;
+              beforeItemID:(GridItemIdentifier*)nextItemIdentifier
+    selectedItemIdentifier:(GridItemIdentifier*)selectedItemIdentifier;
 
-// Tells the consumer to remove the item with ID `removedItemID` and update the
-// selected item ID to be `selectedItemID`.
-- (void)removeItemWithID:(web::WebStateID)removedItemID
-          selectedItemID:(web::WebStateID)selectedItemID;
+// Tells the consumer to remove the item with identifier `removedItem` and
+// update the selected item identifier to be `selectedItemIdentifier`.
+- (void)removeItemWithIdentifier:(GridItemIdentifier*)removedItem
+          selectedItemIdentifier:(GridItemIdentifier*)selectedItemIdentifier;
 
-// Tells the consumer to update the selected item ID to be `selectedItemID`.
-- (void)selectItemWithID:(web::WebStateID)selectedItemID;
+// Tells the consumer to update the selected item identifier to be
+// `selectedItemIdentifier`.
+- (void)selectItemWithIdentifier:(GridItemIdentifier*)selectedItemIdentifier;
 
 // Tells the consumer to replace the GridItemIdentifier `item` with
 // `replacementItem`. The consumer should ignore this call if `item`'s ID has
@@ -51,10 +54,12 @@ class WebStateID;
 - (void)replaceItem:(GridItemIdentifier*)item
     withReplacementItem:(GridItemIdentifier*)replacementItem;
 
-// Tells the consumer to move the item with id `itemID` to `toIndex`. Note that
-// the ID of the selected item isn't changed by this method, although the index
-// of that item might be.
-- (void)moveItemWithID:(web::WebStateID)itemID toIndex:(NSUInteger)toIndex;
+// Tells the consumer to move the `item` before `nextItemIdentifier`. If
+// `nextItemIdentifier` is nil, `item` is moved to the end of the collection
+// view. Note that the selected item isn't changed by this method, although the
+// index of that item might be.
+- (void)moveItem:(GridItemIdentifier*)item
+      beforeItem:(GridItemIdentifier*)nextItemIdentifier;
 
 // Dismisses any presented modal UI.
 - (void)dismissModals;

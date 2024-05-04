@@ -18,6 +18,7 @@
 #include "components/attribution_reporting/aggregation_keys.h"
 #include "components/attribution_reporting/filters.h"
 #include "components/attribution_reporting/os_registration.h"
+#include "components/attribution_reporting/registrar.h"
 #include "components/attribution_reporting/source_type.mojom.h"
 #include "components/attribution_reporting/suitable_origin.h"
 #include "components/attribution_reporting/trigger_registration.h"
@@ -41,7 +42,6 @@
 #include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browsing_data_filter_builder.h"
-#include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
@@ -56,6 +56,7 @@
 #include "net/base/schemeful_site.h"
 #include "services/network/public/cpp/trigger_verification.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/blink/public/mojom/aggregation_service/aggregatable_report.mojom.h"
 #include "url/origin.h"
 
 namespace content {
@@ -94,7 +95,8 @@ AttributionReport IrreleventAggregatableReport() {
   return ReportBuilder(AttributionInfoBuilder().Build(),
                        SourceBuilder().BuildStored())
       .SetAggregatableHistogramContributions(
-          {AggregatableHistogramContribution(1, 2)})
+          {blink::mojom::AggregatableReportHistogramContribution(
+              1, 2, /*filtering_id=*/std::nullopt)})
       .BuildAggregatableAttribution();
 }
 
@@ -357,7 +359,7 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
           .Build(),
       StorableSource::Result::kExcessiveReportingOrigins);
 
-  // TODO(crbug.com/1491813): Bypass locale dependency to validate event report
+  // TODO(crbug.com/40285244): Bypass locale dependency to validate event report
   // windows column value.
   static constexpr char kScript[] = R"(
     // TODO(apaseltiner): This is necessary because innerText returns different
@@ -505,14 +507,13 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
   TitleWatcher title_watcher(shell()->web_contents(), kCompleteTitle);
 
   manager()->NotifyOsRegistration(
-      OsRegistration(
-          {OsRegistrationItem(GURL("https://a.test"),
-                              /*debug_reporting=*/false)},
-          url::Origin::Create(GURL("https://b.test")), AttributionInputEvent(),
-          /*is_within_fenced_frame=*/false,
-          /*render_frame_id=*/GlobalRenderFrameHostId(),
-          {ContentBrowserClient::AttributionReportingOsReportType::kWeb,
-           ContentBrowserClient::AttributionReportingOsReportType::kWeb}),
+      OsRegistration({OsRegistrationItem(GURL("https://a.test"),
+                                         /*debug_reporting=*/false)},
+                     url::Origin::Create(GURL("https://b.test")),
+                     AttributionInputEvent(),
+                     /*is_within_fenced_frame=*/false,
+                     /*render_frame_id=*/GlobalRenderFrameHostId(),
+                     attribution_reporting::Registrar::kWeb),
       /*is_debug_key_allowed=*/false,
       attribution_reporting::mojom::OsRegistrationResult::kPassedToOs);
   EXPECT_EQ(kCompleteTitle, title_watcher.WaitAndGetTitle());
@@ -699,21 +700,19 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
                   .SetReportTime(now)
                   .SetPriority(13)
                   .Build()}));
-  manager()->NotifyTriggerHandled(
-      DefaultTrigger(),
-      CreateReportResult(
-          /*trigger_time=*/base::Time::Now(),
-          AttributionTrigger::EventLevelResult::kSuccessDroppedLowerPriority,
-          AttributionTrigger::AggregatableResult::kNoHistograms,
-          /*replaced_event_level_report=*/
-          ReportBuilder(AttributionInfoBuilder().Build(),
-                        SourceBuilder(now).BuildStored())
-              .SetReportTime(now + base::Hours(1))
-              .SetPriority(11)
-              .Build(),
-          /*new_event_level_report=*/IrreleventEventLevelReport(),
-          /*new_aggregatable_report=*/std::nullopt,
-          /*source=*/SourceBuilder().BuildStored()));
+  manager()->NotifyTriggerHandled(CreateReportResult(
+      /*trigger_time=*/base::Time::Now(), DefaultTrigger(),
+      AttributionTrigger::EventLevelResult::kSuccessDroppedLowerPriority,
+      AttributionTrigger::AggregatableResult::kNoHistograms,
+      /*replaced_event_level_report=*/
+      ReportBuilder(AttributionInfoBuilder().Build(),
+                    SourceBuilder(now).BuildStored())
+          .SetReportTime(now + base::Hours(1))
+          .SetPriority(11)
+          .Build(),
+      /*new_event_level_report=*/IrreleventEventLevelReport(),
+      /*new_aggregatable_report=*/std::nullopt,
+      /*source=*/SourceBuilder().BuildStored()));
 
   {
     static constexpr char kScript[] = R"(
@@ -1112,8 +1111,9 @@ IN_PROC_BROWSER_TEST_F(
 
   const base::Time now = base::Time::Now();
 
-  std::vector<AggregatableHistogramContribution> contributions{
-      AggregatableHistogramContribution(1, 2)};
+  std::vector<blink::mojom::AggregatableReportHistogramContribution>
+      contributions{blink::mojom::AggregatableReportHistogramContribution(
+          1, 2, /*filtering_id=*/std::nullopt)};
 
   manager()->NotifyReportSent(
       ReportBuilder(AttributionInfoBuilder().Build(),
@@ -1265,9 +1265,8 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
           std::optional<uint64_t> cleared_debug_key = std::nullopt) {
         static int offset_hours = 0;
         manager()->NotifyTriggerHandled(
-            trigger,
             CreateReportResult(
-                /*trigger_time=*/now + base::Hours(++offset_hours),
+                /*trigger_time=*/now + base::Hours(++offset_hours), trigger,
                 event_status, aggregatable_status,
                 /*replaced_event_level_report=*/std::nullopt,
                 /*new_event_level_report=*/IrreleventEventLevelReport(),
@@ -1307,7 +1306,8 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
                         SourceBuilder().BuildStored())
               .SetReportId(AttributionReport::Id(5))
               .SetAggregatableHistogramContributions(
-                  {AggregatableHistogramContribution(1, 2)})
+                  {blink::mojom::AggregatableReportHistogramContribution(
+                      1, 2, /*filtering_id=*/std::nullopt)})
               .BuildAggregatableAttribution()}))
       .WillOnce(RunOnceCallback<1>(std::vector<AttributionReport>{}));
 
@@ -1385,9 +1385,13 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
   ASSERT_TRUE(NavigateToURL(shell(), GURL(kAttributionInternalsUrl)));
 
   std::optional<AttributionDebugReport> report = AttributionDebugReport::Create(
-      SourceBuilder().SetDebugReporting(true).Build(),
-      /*is_debug_cookie_set=*/true,
-      StoreSourceResult(StoreSourceResult::InternalError()));
+      /*is_operation_allowed=*/[]() { return true; },
+      StoreSourceResult(SourceBuilder()
+                            .SetDebugReporting(true)
+                            .SetDebugCookieSet(true)
+                            .Build(),
+                        /*is_noised=*/false,
+                        StoreSourceResult::InternalError()));
   ASSERT_TRUE(report);
 
   static constexpr char kScript[] = R"(
@@ -1438,7 +1442,6 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
       ReportBuilder(AttributionInfoBuilder().Build(),
                     SourceBuilder().BuildStored())
           .SetReportTime(now + base::Hours(2))
-          //.SetAggregatableHistogramContributions(contributions)
           .BuildAggregatableAttribution(),
       /*is_debug_report=*/true,
       SendResult(SendResult::Status::kTransientFailure,

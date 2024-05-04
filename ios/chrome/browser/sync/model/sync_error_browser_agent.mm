@@ -4,9 +4,12 @@
 
 #import "ios/chrome/browser/sync/model/sync_error_browser_agent.h"
 
+#import "ios/chrome/browser/infobars/model/infobar_manager_impl.h"
+#import "ios/chrome/browser/infobars/model/infobar_utils.h"
 #import "ios/chrome/browser/settings/model/sync/utils/sync_util.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
+#import "ios/chrome/browser/signin/model/authentication_service_factory.h"
 #import "ios/chrome/browser/ui/authentication/re_signin_infobar_delegate.h"
 #import "ios/chrome/browser/ui/authentication/signin_presenter.h"
 
@@ -92,6 +95,18 @@ void SyncErrorBrowserAgent::WebStateListDidChange(
       CreateReSignInInfoBarDelegate(insert_change.inserted_web_state());
       break;
     }
+    case WebStateListChange::Type::kGroupCreate:
+      // Do nothing when a group is created.
+      break;
+    case WebStateListChange::Type::kGroupVisualDataUpdate:
+      // Do nothing when a tab group's visual data are updated.
+      break;
+    case WebStateListChange::Type::kGroupMove:
+      // Do nothing when a tab group is moved.
+      break;
+    case WebStateListChange::Type::kGroupDelete:
+      // Do nothing when a group is deleted.
+      break;
   }
 }
 
@@ -116,8 +131,15 @@ void SyncErrorBrowserAgent::CreateReSignInInfoBarDelegate(
   }
 
   ChromeBrowserState* browser_state = browser_->GetBrowserState();
-  if (!ReSignInInfoBarDelegate::Create(browser_state, web_state,
-                                       signin_presenter_provider_)) {
-    DisplaySyncErrors(browser_state, web_state, sync_presenter_provider_);
+
+  std::unique_ptr<ReSignInInfoBarDelegate> delegate =
+      ReSignInInfoBarDelegate::Create(
+          AuthenticationServiceFactory::GetForBrowserState(browser_state),
+          signin_presenter_provider_);
+  if (delegate) {
+    InfoBarManagerImpl::FromWebState(web_state)->AddInfoBar(
+        CreateConfirmInfoBar(std::move(delegate)));
+    return;
   }
+  DisplaySyncErrors(browser_state, web_state, sync_presenter_provider_);
 }

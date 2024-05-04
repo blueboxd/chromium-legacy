@@ -180,9 +180,7 @@ TagParsingResult& TagParsingResult::operator=(const TagParsingResult&) =
 
 TagParsingResult GetTagArgsForCommandLine(
     const base::CommandLine& command_line) {
-  std::string tag = command_line.HasSwitch(kTagSwitch)
-                        ? command_line.GetSwitchValueASCII(kTagSwitch)
-                    : command_line.HasSwitch(kInstallSwitch)
+  std::string tag = command_line.HasSwitch(kInstallSwitch)
                         ? command_line.GetSwitchValueASCII(kInstallSwitch)
                         : command_line.GetSwitchValueASCII(kHandoffSwitch);
   if (tag.empty()) {
@@ -377,21 +375,19 @@ bool DeleteExcept(const std::optional<base::FilePath>& except) {
   if (!except) {
     return false;
   }
-
   bool delete_success = true;
   base::FileEnumerator(
       except->DirName(), false,
       base::FileEnumerator::FILES | base::FileEnumerator::DIRECTORIES)
-      .ForEach([&except, &delete_success](const base::FilePath& item) {
+      .ForEach([&](const base::FilePath& item) {
         if (item != *except) {
-          VLOG(2) << __func__ << ": Deleting: " << item;
+          VLOG(2) << "DeleteExcept deleting: " << item;
           if (!base::DeletePathRecursively(item)) {
-            LOG(ERROR) << __func__ << ": Failed to delete: " << item;
+            VPLOG(1) << "DeleteExcept failed to delete: " << item;
             delete_success = false;
           }
         }
       });
-
   return delete_success;
 }
 

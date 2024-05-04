@@ -3,11 +3,15 @@
 // found in the LICENSE file.
 
 import type {Tab} from 'chrome://new-tab-page/history_types.mojom-webui.js';
+import {DeviceType} from 'chrome://new-tab-page/history_types.mojom-webui.js';
 import type {DismissModuleInstanceEvent, TabResumptionModuleElement} from 'chrome://new-tab-page/lazy_load.js';
 import {tabResumptionDescriptor, TabResumptionProxyImpl} from 'chrome://new-tab-page/lazy_load.js';
 import {$$} from 'chrome://new-tab-page/new_tab_page.js';
 import {PageHandlerRemote} from 'chrome://new-tab-page/tab_resumption.mojom-webui.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {assertEquals, assertTrue} from 'chrome://webui-test/chai_assert.js';
+import type {MetricsTracker} from 'chrome://webui-test/metrics_test_support.js';
+import {fakeMetricsPrivate} from 'chrome://webui-test/metrics_test_support.js';
 import {waitAfterNextRender} from 'chrome://webui-test/polymer_test_util.js';
 import type {TestMock} from 'chrome://webui-test/test_mock.js';
 import {eventToPromise} from 'chrome://webui-test/test_util.js';
@@ -24,11 +28,12 @@ function createSampleTab(
     ): Tab {
   const tab: Tab = Object.assign(
       {
-        deviceType: 1,
+        decorator: null,
+        deviceType: DeviceType.kDesktop,
         sessionName: 'Test Device',
         url: {url: 'https://www.foo.com'},
         title: 'Test Tab Title',
-        relativeTime: 0,
+        relativeTime: {microseconds: BigInt(0)},
         relativeTimeText: '0 seconds ago',
       },
       overrides);
@@ -38,6 +43,13 @@ function createSampleTab(
 
 suite('NewTabPageModulesTabResumptionModuleTest', () => {
   let handler: TestMock<PageHandlerRemote>;
+  let metrics: MetricsTracker;
+
+  suiteSetup(() => {
+    loadTimeData.overrideValues({
+      modulesRedesignedEnabled: true,
+    });
+  });
 
   setup(() => {
     document.body.innerHTML = window.trustedTypes!.emptyHTML;
@@ -45,6 +57,7 @@ suite('NewTabPageModulesTabResumptionModuleTest', () => {
         PageHandlerRemote,
         mock => TabResumptionProxyImpl.setInstance(
             new TabResumptionProxyImpl(mock)));
+    metrics = fakeMetricsPrivate();
   });
 
   async function initializeModule(tabs: Tab[]):
@@ -127,5 +140,51 @@ suite('NewTabPageModulesTabResumptionModuleTest', () => {
       restoreCallback();
       assertTrue(!!moduleElement);
     });
+
+    test(
+        'Header dismiss button dispatches dismiss module event in pre ' +
+            'redesign launchpad',
+        async () => {
+          loadTimeData.overrideValues({
+            modulesRedesignedEnabled: false,
+          });
+          // Arrange.
+          const moduleElement = await initializeModule(createSampleTabs(1));
+
+          // Assert.
+          assertTrue(!!moduleElement);
+          const headerElement = $$(moduleElement, 'ntp-module-header');
+          assertTrue(!!headerElement);
+          const waitForDismissEvent =
+              eventToPromise('dismiss-module', moduleElement);
+          headerElement!.dispatchEvent(new Event('dismiss-button-click'));
+
+          const dismissEvent: DismissModuleInstanceEvent =
+              await waitForDismissEvent;
+          assertEquals(`Tabs hidden`, dismissEvent.detail.message);
+
+          // Act.
+          const restoreCallback = dismissEvent.detail.restoreCallback!;
+          restoreCallback();
+          assertTrue(!!moduleElement);
+        });
+
+      test('Tab click fires usage event', async () => {
+          // Arrange.
+          const moduleElement = await initializeModule(createSampleTabs(1));
+
+          // Assert.
+          assertTrue(!!moduleElement);
+          const tabElement = $$<HTMLElement>(moduleElement, '.tab');
+          assertTrue(!!tabElement);
+          const waitForUsageEvent =
+              eventToPromise('usage', moduleElement);
+          tabElement!.click();
+          assertEquals(
+                1,
+                metrics.count(`NewTabPage.TabResumption.ClickIndex`));
+
+          await waitForUsageEvent;
+        });
   });
 });

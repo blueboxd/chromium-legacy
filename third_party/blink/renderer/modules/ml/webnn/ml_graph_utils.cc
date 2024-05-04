@@ -88,9 +88,13 @@ std::optional<ArrayBufferViewInfo> TransferArrayBufferView(
     v8::Isolate* isolate,
     NotShared<DOMArrayBufferView> source_view,
     ExceptionState& exception_state) {
-  // A detached ArrayBufferView should be caught by
-  // `ValidateNamedArrayBufferViews()` called in `MLGraph::Compute()`.
-  CHECK(!source_view->IsDetached());
+  // Need to check whether each `ArrayBufferView` of `NamedArrayBufferViews` is
+  // detached because transferring an `ArrayBuffer` would impact all
+  // `ArrayBufferView`s sharing the same `ArrayBuffer`.
+  if (source_view->IsDetached()) {
+    exception_state.ThrowTypeError("The ArrayBuffer is detached.");
+    return std::nullopt;
+  }
 
   // Avoid transferring a non-detachable ArrayBuffer.
   // `DOMArrayBuffer::Transfer()` would make a copy if the ArrayBuffer is not
@@ -98,8 +102,7 @@ std::optional<ArrayBufferViewInfo> TransferArrayBufferView(
   // ArrayBuffer of WebIDL spec:
   // https://webidl.spec.whatwg.org/#arraybuffer-transfer
   if (!source_view->buffer()->IsDetachable(isolate)) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kDataError,
-                                      "The ArrayBuffer is not detachable.");
+    exception_state.ThrowTypeError("The ArrayBuffer is not detachable.");
     return std::nullopt;
   }
 
@@ -225,12 +228,6 @@ Vector<uint32_t> CreateLayerNormalizationDefaultAxes(const wtf_size_t rank) {
     std::iota(default_axes.begin(), default_axes.end(), 1);
   }
   return default_axes;
-}
-
-bool IsDepthwiseConv2d(uint32_t input_channels,
-                       uint32_t output_channels,
-                       uint32_t groups) {
-  return groups == input_channels && groups == output_channels && groups != 1;
 }
 
 base::expected<void, String> ValidateFilterLayout(

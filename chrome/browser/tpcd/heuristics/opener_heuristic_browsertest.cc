@@ -141,9 +141,7 @@ class OpenerHeuristicBrowserTest
           tpcd_heuristics_grants_params_},
          {network::features::kSkipTpcdMitigationsForAds,
           {{"SkipTpcdMitigationsForAdsHeuristics", "true"}}}},
-        // Disable tracking protection by default to test third-party cookie
-        // behavior for PostPopupCookieAccess events.
-        {content_settings::features::kTrackingProtection3pcd});
+        {});
 
     OpenerHeuristicTabHelper::SetClockForTesting(&clock_);
     PlatformBrowserTest::SetUp();
@@ -299,7 +297,7 @@ IN_PROC_BROWSER_TEST_F(OpenerHeuristicBrowserTest,
   ASSERT_FALSE(GetTabHelper()->popup_observer_for_testing());
 }
 
-// TODO(crbug.com/1465642): Test is flaky on Android.
+// TODO(crbug.com/40276065): Test is flaky on Android.
 #if BUILDFLAG(IS_ANDROID)
 #define MAYBE_PopupsWithOpenerHavePopupState \
   DISABLED_PopupsWithOpenerHavePopupState
@@ -323,7 +321,7 @@ IN_PROC_BROWSER_TEST_F(OpenerHeuristicBrowserTest,
   ASSERT_TRUE(popup_tab_helper->popup_observer_for_testing());
 }
 
-// TODO(https://crbug.com/1469394): Flaky on android.
+// TODO(crbug.com/40925352): Flaky on android.
 #if BUILDFLAG(IS_ANDROID)
 #define MAYBE_PopupsWithoutOpenerDoNotHavePopupState \
   DISABLED_PopupsWithoutOpenerDoNotHavePopupState
@@ -348,7 +346,7 @@ IN_PROC_BROWSER_TEST_F(OpenerHeuristicBrowserTest,
   ASSERT_FALSE(popup_tab_helper->popup_observer_for_testing());
 }
 
-// TODO(crbug.com/1469394): Flaky on android.
+// TODO(crbug.com/40925352): Flaky on android.
 #if BUILDFLAG(IS_ANDROID)
 #define MAYBE_NewTabURLsHavePopupState DISABLED_NewTabURLsHavePopupState
 #else
@@ -581,7 +579,7 @@ IN_PROC_BROWSER_TEST_P(OpenerHeuristicPastInteractionGrantBrowserTest,
             CONTENT_SETTING_BLOCK);
 }
 
-// TODO(crbug.com/1506932) Flaky on mac.
+// TODO(crbug.com/40947612) Flaky on mac.
 #if BUILDFLAG(IS_MAC)
 #define MAYBE_AdTaggedPopupPastInteractionIsReported_WithStorageAccessGrant \
   DISABLED_AdTaggedPopupPastInteractionIsReported_WithStorageAccessGrant
@@ -616,7 +614,7 @@ INSTANTIATE_TEST_SUITE_P(All,
                          ::testing::ValuesIn(kAccessGrantTestCases));
 #endif  // !BUILDFLAG(IS_ANDROID)
 
-// TODO(crbug.com/1457925): Test is flaky on Android.
+// TODO(crbug.com/40918571): Test is flaky on Android.
 #if BUILDFLAG(IS_ANDROID)
 #define MAYBE_PopupPastInteractionIsReported_ServerRedirect \
   DISABLED_PopupPastInteractionIsReported_ServerRedirect
@@ -647,7 +645,7 @@ IN_PROC_BROWSER_TEST_F(OpenerHeuristicBrowserTest,
               ElementsAre(Pair("HoursSinceLastInteraction", 3)));
 }
 
-// TODO(crbug.com/1485029): Flaky on Android.
+// TODO(crbug.com/40282438): Flaky on Android.
 #if BUILDFLAG(IS_ANDROID)
 #define MAYBE_PopupPastInteractionIsReported_ClientRedirect \
   DISABLED_PopupPastInteractionIsReported_ClientRedirect
@@ -709,6 +707,8 @@ IN_PROC_BROWSER_TEST_F(OpenerHeuristicBrowserTest,
   ukm::TestAutoSetUkmRecorder ukm_recorder;
   GURL opener_url = embedded_test_server()->GetURL("a.test", "/title1.html");
   GURL popup_url = embedded_test_server()->GetURL("b.test", "/title1.html");
+  CookieSettingsFactory::GetForProfile(browser()->profile())
+      ->SetThirdPartyCookieSetting(opener_url, CONTENT_SETTING_ALLOW);
 
   // Initialize interaction and popup.
   RecordInteraction(popup_url, clock_.Now() - base::Hours(3));
@@ -971,6 +971,8 @@ IN_PROC_BROWSER_TEST_F(
   GURL popup_url_2 =
       embedded_test_server()->GetURL("b.test", "/server-redirect?title1.html");
   GURL popup_url_3 = embedded_test_server()->GetURL("b.test", "/title1.html");
+  CookieSettingsFactory::GetForProfile(browser()->profile())
+      ->SetThirdPartyCookieSetting(opener_url, CONTENT_SETTING_ALLOW);
 
   // Initialize popup and interaction.
   ASSERT_TRUE(content::NavigateToURL(GetActiveWebContents(), opener_url));
@@ -1169,7 +1171,7 @@ IN_PROC_BROWSER_TEST_F(OpenerHeuristicBrowserTest, TopLevel_PopupId) {
   EXPECT_NE(popup_id, popup_id2);
 }
 
-// TODO(crbug.com/1511706): Flaky on mac.
+// TODO(crbug.com/41484288): Flaky on mac.
 #if BUILDFLAG(IS_MAC)
 #define MAYBE_TopLevel_PastInteraction_AdTagged \
   DISABLED_TopLevel_PastInteraction_AdTagged

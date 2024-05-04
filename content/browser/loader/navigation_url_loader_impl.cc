@@ -7,6 +7,7 @@
 #include <map>
 #include <memory>
 #include <optional>
+#include <string_view>
 #include <utility>
 
 #include "base/command_line.h"
@@ -366,7 +367,7 @@ void UnknownSchemeCallback(
           handled_externally ? net::ERR_ABORTED : net::ERR_UNKNOWN_URL_SCHEME));
 }
 
-void LogQueueTimeHistogram(base::StringPiece name,
+void LogQueueTimeHistogram(std::string_view name,
                            bool is_outermost_main_frame) {
   auto* task = base::TaskAnnotator::CurrentTaskForThread();
   // Only log for non-delayed tasks with a valid queue_time.
@@ -411,7 +412,7 @@ void CheckParsedHeadersEquals(const network::mojom::ParsedHeadersPtr& lhs,
     return;
   }
 
-  // TODO(https://crbug.com/1362779) Remove this instrumentation once fixed.
+  // TODO(crbug.com/40864513) Remove this instrumentation once fixed.
   auto to_string = [](const auto& policies) {
     std::string out;
     for (const auto& csp : policies) {
@@ -432,6 +433,8 @@ void CheckParsedHeadersEquals(const network::mojom::ParsedHeadersPtr& lhs,
                      rhs->cross_origin_embedder_policy));
   CHECK(mojo::Equals(adjusted_lhs->cross_origin_opener_policy,
                      rhs->cross_origin_opener_policy));
+  CHECK(mojo::Equals(adjusted_lhs->document_isolation_policy,
+                     rhs->document_isolation_policy));
   CHECK(mojo::Equals(adjusted_lhs->origin_agent_cluster,
                      rhs->origin_agent_cluster));
   CHECK(mojo::Equals(adjusted_lhs->accept_ch, rhs->accept_ch));
@@ -444,7 +447,8 @@ void CheckParsedHeadersEquals(const network::mojom::ParsedHeadersPtr& lhs,
                      rhs->supports_loading_mode));
   CHECK(mojo::Equals(adjusted_lhs->reporting_endpoints,
                      rhs->reporting_endpoints));
-  CHECK(mojo::Equals(adjusted_lhs->variants_headers, rhs->variants_headers));
+  CHECK(mojo::Equals(adjusted_lhs->cookie_indices, rhs->cookie_indices));
+  CHECK(mojo::Equals(adjusted_lhs->avail_language, rhs->avail_language));
   CHECK(mojo::Equals(adjusted_lhs->content_language, rhs->content_language));
   CHECK(mojo::Equals(adjusted_lhs->no_vary_search_with_parse_error,
                      rhs->no_vary_search_with_parse_error));
@@ -494,7 +498,7 @@ void NavigationURLLoaderImpl::Start() {
   // interception is required, but these loaders are not; see crbug.com/1253314
   // and crbug.com/1253984.)
   //
-  // TODO(crbug.com/1255181): Consider getting rid of these exceptions.
+  // TODO(crbug.com/40794764): Consider getting rid of these exceptions.
   if (!request_info_->is_pdf) {
     // Requests to WebUI scheme won't get redirected to/from other schemes
     // or be intercepted, so we just let it go here.
@@ -515,7 +519,9 @@ void NavigationURLLoaderImpl::Start() {
               url_loader_factory::ContentClientParams(
                   browser_context_, frame_tree_node->current_frame_host(),
                   frame_tree_node->current_frame_host()->GetProcess()->GetID(),
-                  url::Origin(), ukm::SourceIdObj::FromInt64(ukm_source_id_),
+                  resource_request_->request_initiator.value_or(url::Origin()),
+                  net::IsolationInfo(),
+                  ukm::SourceIdObj::FromInt64(ukm_source_id_),
                   /*bypass_redirect_checks=*/nullptr,
                   frame_tree_node->navigation_request()->GetNavigationId(),
                   GetUIThreadTaskRunner(
@@ -819,7 +825,8 @@ NavigationURLLoaderImpl::CreateNonNetworkLoaderFactory(
                 std::move(terminal), network::mojom::kBrowserProcessId),
             url_loader_factory::ContentClientParams(
                 frame->GetSiteInstance()->GetBrowserContext(), frame,
-                frame->GetProcess()->GetID(), url::Origin(), ukm_id,
+                frame->GetProcess()->GetID(), url::Origin(),
+                net::IsolationInfo(), ukm_id,
                 /*bypass_redirect_checks=*/nullptr,
                 frame_tree_node->navigation_request()->GetNavigationId(),
                 GetUIThreadTaskRunner(
@@ -1002,7 +1009,7 @@ void NavigationURLLoaderImpl::OnReceiveResponse(
     // intercepting URLLoaderFactory it gets notified.
     url_loader_->CancelWithError(
         net::ERR_ABORTED,
-        base::StringPiece(base::NumberToString(net::ERR_ABORTED)));
+        std::string_view(base::NumberToString(net::ERR_ABORTED)));
     return;
   }
 
@@ -1100,9 +1107,9 @@ void NavigationURLLoaderImpl::OnReceiveRedirect(
       // intercepting URLLoaderFactory (created through the embedder's
       // ContentBrowserClient::WillCreateURLLoaderFactory) it gets notified.
       url_loader_->CancelWithError(
-          error, base::StringPiece(base::NumberToString(error)));
+          error, std::string_view(base::NumberToString(error)));
     } else {
-      // TODO(https://crbug.com/1052242): Make sure ResetWithReason() is called
+      // TODO(crbug.com/40118809): Make sure ResetWithReason() is called
       // on the original `url_loader_`.
       OnComplete(network::URLLoaderCompletionStatus(error));
     }
@@ -1417,7 +1424,7 @@ void NavigationURLLoaderImpl::ParseHeaders(
       base::BindOnce(assign, std::move(continuation), head));
 }
 
-// TODO(https://crbug.com/790734): pass `navigation_ui_data` along with the
+// TODO(crbug.com/40552600): pass `navigation_ui_data` along with the
 // request so that it could be modified.
 NavigationURLLoaderImpl::NavigationURLLoaderImpl(
     BrowserContext* browser_context,
@@ -1519,7 +1526,7 @@ NavigationURLLoaderImpl::CreateTerminalNonNetworkLoaderFactory(
         base::FeatureList::IsEnabled(
             blink::features::kFileSystemUrlNavigation) ||
         !frame_tree_node->navigation_request()->IsRendererInitiated()) {
-      // TODO(https://crbug.com/256067): Once DevTools has support for
+      // TODO(crbug.com/40323778): Once DevTools has support for
       // sandboxed file system inspection there isn't much reason anymore to
       // support browser initiated filesystem: navigations, so remove this
       // entirely at that point.
@@ -1589,6 +1596,7 @@ NavigationURLLoaderImpl::CreateNetworkLoaderFactory(
       browser_context, frame_tree_node->current_frame_host(),
       frame_tree_node->current_frame_host()->GetProcess()->GetID(),
       ContentBrowserClient::URLLoaderFactoryType::kNavigation, url::Origin(),
+      net::IsolationInfo(),
       frame_tree_node->navigation_request()->GetNavigationId(), ukm_id,
       factory_builder, &header_client, bypass_redirect_checks,
       /*disable_secure_dns=*/nullptr, /*factory_override=*/nullptr,

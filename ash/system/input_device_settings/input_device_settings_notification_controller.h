@@ -75,7 +75,33 @@ class ASH_EXPORT InputDeviceSettingsNotificationController {
 
   // Use to display a notification when a graphics table is first connected.
   void NotifyGraphicsTabletFirstTimeConnected(
-      const mojom::GraphicsTablet* graphics_tablet);
+      const mojom::GraphicsTablet& graphics_tablet);
+
+  // Use to display a notification when a keyboard is first connected.
+  void NotifyKeyboardFirstTimeConnected(const mojom::Keyboard& keyboard);
+
+  // Use to display a notification when a touchpad is first connected.
+  void NotifyTouchpadFirstTimeConnected(const mojom::Touchpad& touchpad);
+
+  // Use to display a notification when a pointing stick is first connected.
+  void NotifyPointingStickFirstTimeConnected(
+      const mojom::PointingStick& pointing_stick);
+
+  // Use to display a notification to remind users to press Fn key when users
+  // press search key with top row keys and there is no matching behavior.
+  void ShowTopRowRewritingNudge();
+
+  // Use to display a notification to remind users to press Fn key when users
+  // press search key or alt key with arrow keys and there is no matching
+  // behavior.
+  void ShowSixPackKeyRewritingNudge(
+      ui::KeyboardCode key_code,
+      ui::mojom::SixPackShortcutModifier blocked_modifier);
+
+  // Use to display a notification to remind users to press Fn key when users
+  // press search key or right-alt key with alt key to switch caps lock
+  // and there is no matching.
+  void ShowCapsLockRewritingNudge();
 
  private:
   void HandleRightClickNotificationClicked(const std::string& notification_id,

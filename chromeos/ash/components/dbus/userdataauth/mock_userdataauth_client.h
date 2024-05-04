@@ -25,11 +25,20 @@ class COMPONENT_EXPORT(USERDATAAUTH_CLIENT) MockUserDataAuthClient
   void AddFingerprintAuthObserver(FingerprintAuthObserver* observer) override;
   void RemoveFingerprintAuthObserver(
       FingerprintAuthObserver* observer) override;
+  void AddPrepareAuthFactorProgressObserver(
+      PrepareAuthFactorProgressObserver* observer) override;
+  void RemovePrepareAuthFactorProgressObserver(
+      PrepareAuthFactorProgressObserver* observer) override;
 
   MOCK_METHOD(void,
               IsMounted,
               (const ::user_data_auth::IsMountedRequest& request,
                IsMountedCallback callback),
+              (override));
+  MOCK_METHOD(void,
+              GetVaultProperties,
+              (const ::user_data_auth::GetVaultPropertiesRequest& request,
+               GetVaultPropertiesCallback callback),
               (override));
   MOCK_METHOD(void,
               Unmount,
@@ -141,11 +150,6 @@ class COMPONENT_EXPORT(USERDATAAUTH_CLIENT) MockUserDataAuthClient
               RemoveAuthFactor,
               (const ::user_data_auth::RemoveAuthFactorRequest& request,
                RemoveAuthFactorCallback callback),
-              (override));
-  MOCK_METHOD(void,
-              GetRecoveryRequest,
-              (const ::user_data_auth::GetRecoveryRequestRequest& request,
-               GetRecoveryRequestCallback callback),
               (override));
   MOCK_METHOD(void,
               GetAuthSessionStatus,

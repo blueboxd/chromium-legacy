@@ -317,11 +317,10 @@ bool H264Decoder::CalculatePicOrderCounts(scoped_refptr<H264Picture> pic) {
       if (pic->nal_ref_idc == 0 && abs_frame_num > 0)
         --abs_frame_num;
 
-      int expected_pic_order_cnt = 0;
+      base::CheckedNumeric<int> expected_pic_order_cnt = 0;
       if (abs_frame_num > 0) {
         if (sps->num_ref_frames_in_pic_order_cnt_cycle == 0) {
-          DVLOG(1) << "Invalid num_ref_frames_in_pic_order_cnt_cycle "
-                   << "in stream";
+          DVLOG(1) << "Invalid num_ref_frames_in_pic_order_cnt_cycle.";
           return false;
         }
 
@@ -330,8 +329,10 @@ bool H264Decoder::CalculatePicOrderCounts(scoped_refptr<H264Picture> pic) {
         int frame_num_in_pic_order_cnt_cycle =
             (abs_frame_num - 1) % sps->num_ref_frames_in_pic_order_cnt_cycle;
 
-        expected_pic_order_cnt = pic_order_cnt_cycle_cnt *
-                                 sps->expected_delta_per_pic_order_cnt_cycle;
+        expected_pic_order_cnt =
+            base::CheckedNumeric<int>(pic_order_cnt_cycle_cnt) *
+            sps->expected_delta_per_pic_order_cnt_cycle;
+
         // frame_num_in_pic_order_cnt_cycle is verified < 255 in parser
         for (int i = 0; i <= frame_num_in_pic_order_cnt_cycle; ++i)
           expected_pic_order_cnt += sps->offset_for_ref_frame[i];
@@ -340,12 +341,24 @@ bool H264Decoder::CalculatePicOrderCounts(scoped_refptr<H264Picture> pic) {
       if (!pic->nal_ref_idc)
         expected_pic_order_cnt += sps->offset_for_non_ref_pic;
 
-      pic->top_field_order_cnt =
+      base::CheckedNumeric<int> top_field_order_cnt =
           expected_pic_order_cnt + pic->delta_pic_order_cnt0;
-      pic->bottom_field_order_cnt = pic->top_field_order_cnt +
-                                    sps->offset_for_top_to_bottom_field +
-                                    pic->delta_pic_order_cnt1;
+      base::CheckedNumeric<int> bottom_field_order_cnt =
+          top_field_order_cnt + sps->offset_for_top_to_bottom_field +
+          pic->delta_pic_order_cnt1;
 
+      if (!top_field_order_cnt.IsValid()) {
+        DVLOG(1) << "Invalid top_field_order_cnt.";
+        return false;
+      }
+
+      if (!bottom_field_order_cnt.IsValid()) {
+        DVLOG(1) << "Invalid bottom_field_order_cnt.";
+        return false;
+      }
+
+      pic->top_field_order_cnt = top_field_order_cnt.ValueOrDie();
+      pic->bottom_field_order_cnt = bottom_field_order_cnt.ValueOrDie();
       break;
     }
 
@@ -834,7 +847,7 @@ bool H264Decoder::HandleMemoryManagementOps(scoped_refptr<H264Picture> pic) {
         if (to_mark) {
           to_mark->ref = false;
         } else {
-          // TODO(crbug.com/1402627): consider doing the same for mmco 2 when
+          // TODO(crbug.com/40251206): consider doing the same for mmco 2 when
           // we can have testing for it, as how we handle missing |to_mark| for
           // mmco 1.
           DVLOG(1) << "Invalid long term ref pic num to unmark";
@@ -1431,7 +1444,7 @@ H264Decoder::H264Accelerator::Status H264Decoder::ProcessCurrentSlice() {
 
 void H264Decoder::SetStream(int32_t id, const DecoderBuffer& decoder_buffer) {
   const uint8_t* ptr = decoder_buffer.data();
-  const size_t size = decoder_buffer.data_size();
+  const size_t size = decoder_buffer.size();
   const DecryptConfig* decrypt_config = decoder_buffer.decrypt_config();
 
   DCHECK(ptr);

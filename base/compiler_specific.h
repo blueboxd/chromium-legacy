@@ -455,6 +455,67 @@ inline constexpr bool AnalyzerAssumeTrue(bool arg) {
 #define PRESERVE_MOST
 #endif
 
+// Mark parameters or return types as having a lifetime attached to the class.
+//
+// When used to mark a method's pointer/reference parameter, the compiler is
+// made aware that it will be stored internally in the class and the pointee
+// must outlive the class. Typically used on constructor arguments. It should
+// appear to the right of the parameter's variable name.
+//
+// Example:
+// ```
+// struct S {
+//    S(int* p LIFETIME_BOUND) : ptr_(p) {}
+//
+//    int* ptr_;
+// };
+// ```
+//
+// When used on a method with a return value, the compiler is made aware that
+// the returned type is/has a pointer to the internals of the class, and must
+// not outlive the class object. It should appear after any method qualifiers.
+//
+// Example:
+// ```
+// struct S {
+//   int* GetPtr() const LIFETIME_BOUND { return i_; };
+//
+//   int i_;
+// };
+// ```
+//
+// This allows the compiler to warn in (a limited set of) cases where the
+// pointer would otherwise be left dangling, especially in cases where the
+// pointee would be a destroyed temporary.
+//
+// Docs: https://clang.llvm.org/docs/AttributeReference.html#lifetimebound
+#if defined(__clang__)
+#define LIFETIME_BOUND [[clang::lifetimebound]]
+#else
+#define LIFETIME_BOUND
+#endif
+
+// Mark a function as pure, meaning that it does not have side effects, meaning
+// that it does not write anything external to the function's local variables
+// and return value.
+//
+// WARNING: If this attribute is mis-used it will result in UB and
+// miscompilation, as the optimizator may fold multiple calls into one and
+// reorder them inappropriately. This shouldn't appear outside of key vocabulary
+// types. It allows callers to work with the vocab type directly, and call its
+// methods without having to worry about caching things into local variables in
+// hot code.
+//
+// This attribute must not appear on functions that make use of function
+// pointers, virtual methods, or methods of templates (including operators like
+// comparison), as the "pure" function can not know what those functions do and
+// can not guarantee there will never be sideeffects.
+#if defined(COMPILER_GCC) || defined(__clang__)
+#define PURE_FUNCTION [[gnu::pure]]
+#else
+#define PURE_FUNCTION
+#endif
+
 // Functions should be marked with UNSAFE_BUFFER_USAGE when they lead to
 // out-of-bounds bugs when called with incorrect inputs.
 //
@@ -463,8 +524,8 @@ inline constexpr bool AnalyzerAssumeTrue(bool arg) {
 // should be documented along side the use of `UNSAFE_BUFFER_USAGE`.
 //
 // All functions marked with UNSAFE_BUFFER_USAGE should come with a safety
-// comment that explains the requirements of the function to prevent any chance
-// of an out-of-bounds bug. For example:
+// comment that explains the requirements of the function to prevent an
+// out-of-bounds bug. For example:
 // ```
 // // Function to do things between `input` and `end`.
 // //
@@ -472,6 +533,12 @@ inline constexpr bool AnalyzerAssumeTrue(bool arg) {
 // // The `input` must point to an array with size at least 5. The `end` must
 // // point within the same allocation of `input` and not come before `input`.
 // ```
+//
+// The requirements described in the safety comment must be sufficient to
+// guarantee that the function never goes out of bounds. Annotating a function
+// in this way means that all callers will be required to wrap the call in an
+// `UNSAFE_BUFFERS()` macro (see below), with a comment justifying how it meets
+// the requirements.
 #if defined(__clang__) && HAS_ATTRIBUTE(unsafe_buffer_usage)
 #define UNSAFE_BUFFER_USAGE [[clang::unsafe_buffer_usage]]
 #else
@@ -484,24 +551,39 @@ inline constexpr bool AnalyzerAssumeTrue(bool arg) {
 // - pointer subscripting, and
 // - calls to functions annotated with UNSAFE_BUFFER_USAGE.
 //
-// ** USE OF THIS MACRO SHOULD BE VERY RARE.** Reviewers should push back when
-// it is not strictly necessary. Prefer to use `base::span` instead of pointers,
-// or other safer coding patterns (like std containers) that avoid the
-// opportunity for out-of-bounds bugs to creep into the code. Any use of
-// UNSAFE_BUFFERS() can lead to a critical security bug if any assumptions are
-// wrong, or ever become wrong in the future.
+// This indicates code whose bounds correctness cannot be ensured
+// systematically, and thus requires manual review.
+//
+// ** USE OF THIS MACRO SHOULD BE VERY RARE.** This should only be used when
+// strictly necessary. Prefer to use `base::span` instead of pointers, or other
+// safer coding patterns (like std containers) that avoid the opportunity for
+// out-of-bounds bugs to creep into the code. Any use of UNSAFE_BUFFERS() can
+// lead to a critical security bug if any assumptions are wrong, or ever become
+// wrong in the future.
 //
 // The macro should be used to wrap the minimum necessary code, to make it clear
 // what is unsafe, and prevent accidentally opting extra things out of the
 // warning.
 //
 // All usage of UNSAFE_BUFFERS() should come with a `// SAFETY: ...` comment
-// that explains how we have guaranteed (ideally directly above, with conditions
-// or CHECKs) that the pointer usage can never go out-of-bounds, or that the
-// requirements of the UNSAFE_BUFFER_USAGE function are met. If the safety
-// explanation requires cooperation of code that is not fully encapsulated close
-// to the UNSAFE_BUFFERS() usage, it should be rejected and replaced with safer
-// coding patterns or stronger guarantees.
+// that explains how we have guaranteed that the pointer usage can never go
+// out-of-bounds, or that the requirements of the UNSAFE_BUFFER_USAGE function
+// are met. The safety comment should allow a reader to check that all
+// requirements have been met, using only local invariants. Examples of local
+// invariants include:
+// - Runtime conditions or CHECKs near the UNSAFE_BUFFERS macros
+// - Invariants guaranteed by types in the surrounding code
+// - Invariants guaranteed by function calls in the surrounding code
+// - Caller requirements, if the containing function is itself marked with
+//   UNSAFE_BUFFER_USAGE
+//
+// The last case should be an option of last resort. It is less safe and will
+// require the caller also use the UNSAFE_BUFFERS() macro. Prefer directly
+// capturing such invariants in types like `base::span`.
+//
+// Safety explanations may not rely on invariants that are not fully
+// encapsulated close to the UNSAFE_BUFFERS() usage. Instead, use safer coding
+// patterns or stronger invariants.
 #if defined(__clang__)
 // clang-format off
 // Formatting is off so that we can put each _Pragma on its own line, as
@@ -513,6 +595,35 @@ inline constexpr bool AnalyzerAssumeTrue(bool arg) {
 // clang-format on
 #else
 #define UNSAFE_BUFFERS(...) __VA_ARGS__
+#endif
+
+// Defines a condition for a function to be checked at compile time if the
+// parameter's value is known at compile time. If the condition is failed, the
+// function is omitted from the overload set resolution, much like `requires`.
+//
+// If the parameter is a runtime value, then the condition is unable to be
+// checked and the function will be omitted from the overload set resolution.
+// This ensures the function can only be called with values known at compile
+// time. This is a clang extension.
+//
+// Example:
+// ```
+// void f(int a) ENABLE_IF_ATTR(a > 0) {}
+// f(1);  // Ok.
+// f(0);  // Error: no valid f() found.
+// ```
+//
+// The `ENABLE_IF_ATTR` annotation is preferred over `consteval` with a check
+// that breaks compile because metaprogramming does not observe such checks. So
+// with `consteval`, the function looks callable to concepts/type_traits but is
+// not and will fail to compile even though it reports it's usable. Whereas
+// `ENABLE_IF_ATTR` interacts correctly with metaprogramming. This is especially
+// painful for constructors. See also
+// https://github.com/chromium/subspace/issues/266.
+#if defined(__clang__)
+#define ENABLE_IF_ATTR(cond, msg) __attribute__((enable_if(cond, msg)))
+#else
+#define ENABLE_IF_ATTR(cond, msg)
 #endif
 
 #endif  // BASE_COMPILER_SPECIFIC_H_

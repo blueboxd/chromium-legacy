@@ -29,9 +29,7 @@
 #include "third_party/skia/include/core/SkPicture.h"
 #include "third_party/skia/include/core/SkSerialProcs.h"
 #include "third_party/skia/include/core/SkStream.h"
-// Note that headers in third_party/skia/src are fragile.  This is
-// an experimental, fragile, and diagnostic-only document type.
-#include "third_party/skia/src/utils/SkMultiPictureDocument.h"
+#include "third_party/skia/include/docs/SkMultiPictureDocument.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/geometry/skia_conversions.h"
 
@@ -200,7 +198,7 @@ bool MetafileSkia::FinishDocument() {
 
   SkDynamicMemoryWStream stream;
   sk_sp<SkDocument> doc;
-  cc::PlaybackParams::CustomDataRasterCallback custom_callback;
+  cc::PlaybackCallbacks::CustomDataRasterCallback custom_callback;
   switch (data_->type) {
     case mojom::SkiaDocumentType::kPDF:
       doc = MakePdfDocument(printing::GetAgent(), title_, accessibility_tree_,
@@ -208,15 +206,13 @@ bool MetafileSkia::FinishDocument() {
       break;
 #if BUILDFLAG(IS_WIN)
     case mojom::SkiaDocumentType::kXPS:
-      // TODO(crbug.com/1008222) Update to use MakeXpsDocument() once it is
-      // available.
-      NOTIMPLEMENTED();
+      doc = MakeXpsDocument(&stream);
       break;
 #endif
     case mojom::SkiaDocumentType::kMSKP:
       SkSerialProcs procs = SerializationProcs(&data_->subframe_content_info,
                                                data_->typeface_content_info);
-      doc = SkMakeMultiPictureDocument(&stream, &procs);
+      doc = SkMultiPictureDocument::Make(&stream, &procs);
       // It is safe to use base::Unretained(this) because the callback
       // is only used by `canvas` in the following loop which has shorter
       // lifetime than `this`.
@@ -245,11 +241,11 @@ void MetafileSkia::FinishFrameContent() {
   DCHECK_EQ(data_->type, mojom::SkiaDocumentType::kMSKP);
   DCHECK(!data_->data_stream);
 
-  cc::PlaybackParams::CustomDataRasterCallback custom_callback =
-      base::BindRepeating(&MetafileSkia::CustomDataToSkPictureCallback,
-                          base::Unretained(this));
+  cc::PlaybackCallbacks callbacks;
+  callbacks.custom_callback = base::BindRepeating(
+      &MetafileSkia::CustomDataToSkPictureCallback, base::Unretained(this));
   sk_sp<SkPicture> pic = data_->pages[0].content.ToSkPicture(
-      SkRect::MakeSize(data_->pages[0].size), nullptr, custom_callback);
+      SkRect::MakeSize(data_->pages[0].size), nullptr, callbacks);
   SkSerialProcs procs = SerializationProcs(&data_->subframe_content_info,
                                            data_->typeface_content_info);
   SkDynamicMemoryWStream stream;

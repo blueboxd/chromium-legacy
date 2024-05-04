@@ -51,9 +51,9 @@ enum class PermissionDelegationMode {
 
 PermissionDelegationMode GetPermissionDelegationMode(
     ContentSettingsType permission) {
-  // TODO(crbug.com/987654): Generalize this to other "background permissions",
-  // that is, permissions that can be used by a service worker. This includes
-  // durable storage, background sync, etc.
+  // TODO(crbug.com/40637582): Generalize this to other "background
+  // permissions", that is, permissions that can be used by a service worker.
+  // This includes durable storage, background sync, etc.
   if (permission == ContentSettingsType::NOTIFICATIONS)
     return PermissionDelegationMode::kUndelegated;
   if (permission == ContentSettingsType::STORAGE_ACCESS ||
@@ -198,6 +198,12 @@ bool PermissionUtil::GetPermissionType(ContentSettingsType type,
     case ContentSettingsType::SPEAKER_SELECTION:
       *out = PermissionType::SPEAKER_SELECTION;
       break;
+    case ContentSettingsType::KEYBOARD_LOCK:
+      *out = PermissionType::KEYBOARD_LOCK;
+      break;
+    case ContentSettingsType::POINTER_LOCK:
+      *out = PermissionType::POINTER_LOCK;
+      break;
     default:
       return false;
   }
@@ -341,6 +347,10 @@ ContentSettingsType PermissionUtil::PermissionTypeToContentSettingTypeSafe(
       return ContentSettingsType::WEB_PRINTING;
     case PermissionType::SPEAKER_SELECTION:
       return ContentSettingsType::SPEAKER_SELECTION;
+    case PermissionType::KEYBOARD_LOCK:
+      return ContentSettingsType::KEYBOARD_LOCK;
+    case PermissionType::POINTER_LOCK:
+      return ContentSettingsType::POINTER_LOCK;
     case PermissionType::NUM:
       break;
   }
@@ -415,7 +425,7 @@ bool PermissionUtil::IsPermissionBlockedInPartition(
     case PermissionDelegationMode::kDoubleKeyed:
       return false;
     case PermissionDelegationMode::kUndelegated:
-      // TODO(crbug.com/1312218): This will create |requesting_origin|'s home
+      // TODO(crbug.com/40220503): This will create |requesting_origin|'s home
       // StoragePartition if it doesn't already exist. Given how
       // StoragePartitions are used today, this shouldn't actually be a
       // problem, but ideally we'd compare StoragePartitionConfigs.

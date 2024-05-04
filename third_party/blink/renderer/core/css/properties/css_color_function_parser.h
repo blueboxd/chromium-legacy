@@ -21,11 +21,13 @@ class CORE_EXPORT ColorFunctionParser {
                                     const CSSParserContext& context,
                                     Color& result);
 
+  struct FunctionMetadata;
+
  private:
   enum class ChannelType { kNone, kPercentage, kNumber, kRelative };
-  bool ConsumeColorSpaceAndOriginColor(CSSParserTokenRange& range,
-                                       const CSSParserContext& context,
-                                       CSSParserTokenRange& args);
+  bool ConsumeColorSpaceAndOriginColor(CSSParserTokenRange& args,
+                                       CSSValueID function_id,
+                                       const CSSParserContext& context);
   bool ConsumeChannel(CSSParserTokenRange& args,
                       const CSSParserContext& context,
                       int index);
@@ -36,6 +38,11 @@ class CORE_EXPORT ColorFunctionParser {
   std::optional<double> channels_[3];
   ChannelType channel_types_[3];
   std::optional<double> alpha_ = 1.0;
+
+  // Metadata about the current function being parsed. Set by
+  // `ConsumeColorSpaceAndOriginColor()` after parsing the preamble of the
+  // function.
+  const FunctionMetadata* function_metadata_ = nullptr;
 
   // Legacy colors have commas separating their channels. This syntax is
   // incompatible with CSSColor4 features like "none" or alpha with a slash.

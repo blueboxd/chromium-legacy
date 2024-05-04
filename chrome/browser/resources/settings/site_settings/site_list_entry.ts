@@ -8,7 +8,7 @@
  */
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.js';
 import 'chrome://resources/cr_elements/icons.html.js';
-import 'chrome://resources/cr_elements/policy/cr_policy_pref_indicator.js';
+import '/shared/settings/controls/cr_policy_pref_indicator.js';
 import 'chrome://resources/cr_elements/policy/cr_tooltip_icon.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 import '../icons.html.js';
@@ -115,7 +115,7 @@ export class SiteListEntryElement extends SiteListEntryElementBase {
     const indicator =
         this.shadowRoot!.querySelector('cr-policy-pref-indicator');
     assert(!!indicator);
-    // The tooltip text is used by an paper-tooltip contained inside the
+    // The tooltip text is used by an cr-tooltip contained inside the
     // cr-policy-pref-indicator. This text is needed here to send up to the
     // common tooltip component.
     const text = indicator.indicatorTooltip;
@@ -124,7 +124,7 @@ export class SiteListEntryElement extends SiteListEntryElementBase {
 
   private onShowIncognitoTooltip_() {
     const tooltip = this.shadowRoot!.querySelector('#incognitoTooltip');
-    // The tooltip text is used by an paper-tooltip contained inside the
+    // The tooltip text is used by an cr-tooltip contained inside the
     // cr-policy-pref-indicator. The text is currently held in a private
     // property. This text is needed here to send up to the common tooltip
     // component.
@@ -185,8 +185,9 @@ export class SiteListEntryElement extends SiteListEntryElementBase {
    */
   private computeDisplayName_(): string {
     if (this.model.embeddingOrigin &&
-        this.model.category === ContentSettingsTypes.COOKIES &&
-        this.model.origin.trim() === SITE_EXCEPTION_WILDCARD) {
+        ((this.model.category === ContentSettingsTypes.COOKIES &&
+          this.model.origin.trim() === SITE_EXCEPTION_WILDCARD) ||
+         this.model.category === ContentSettingsTypes.TRACKING_PROTECTION)) {
       return this.model.embeddingOrigin;
     }
     return this.model.displayName;
@@ -214,7 +215,7 @@ export class SiteListEntryElement extends SiteListEntryElementBase {
     let description = '';
 
     // If a description has been set by the handler, have it override others.
-    // TODO(crbug.com/1467504): Move all possible descriptions in to this
+    // TODO(crbug.com/40276807): Move all possible descriptions in to this
     // field C++ side so this function can be greatly simplified.
     if (this.model.description) {
       description = this.model.description;
@@ -232,7 +233,8 @@ export class SiteListEntryElement extends SiteListEntryElementBase {
           description = loadTimeData.getString(
               'siteSettingsCookiesThirdPartyExceptionLabel');
         }
-      } else {
+      } else if (
+          this.model.category !== ContentSettingsTypes.TRACKING_PROTECTION) {
         description = loadTimeData.getStringF(
             'embeddedOnHost', this.sanitizePort(this.model.embeddingOrigin));
       }

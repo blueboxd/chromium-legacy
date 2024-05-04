@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import './i18n_setup.js';
-
 import {assert, assertNotReached} from 'chrome://resources/js/assert.js';
-import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import type {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {dedupingMixin} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {loadTimeData} from './i18n_setup.js';
 
 /**
  * Specifies all possible routes in settings.
@@ -73,6 +72,7 @@ export interface SettingsRoutes {
   SITE_SETTINGS_BLUETOOTH_DEVICES: Route;
   SITE_SETTINGS_BLUETOOTH_SCANNING: Route;
   SITE_SETTINGS_CAMERA: Route;
+  SITE_SETTINGS_CAPTURED_SURFACE_CONTROL: Route;
   SITE_SETTINGS_CLIPBOARD: Route;
   SITE_SETTINGS_COOKIES: Route;
   SITE_SETTINGS_FEDERATED_IDENTITY_API: Route;
@@ -80,6 +80,7 @@ export interface SettingsRoutes {
   SITE_SETTINGS_HID_DEVICES: Route;
   SITE_SETTINGS_IDLE_DETECTION: Route;
   SITE_SETTINGS_IMAGES: Route;
+  SITE_SETTINGS_KEYBOARD_LOCK: Route;
   SITE_SETTINGS_LOCAL_FONTS: Route;
   SITE_SETTINGS_MIXEDSCRIPT: Route;
   SITE_SETTINGS_JAVASCRIPT: Route;
@@ -94,6 +95,7 @@ export interface SettingsRoutes {
   SITE_SETTINGS_NOTIFICATIONS: Route;
   SITE_SETTINGS_PAYMENT_HANDLER: Route;
   SITE_SETTINGS_PDF_DOCUMENTS: Route;
+  SITE_SETTINGS_POINTER_LOCK: Route;
   SITE_SETTINGS_POPUPS: Route;
   SITE_SETTINGS_PROTECTED_CONTENT: Route;
   SITE_SETTINGS_SERIAL_PORTS: Route;

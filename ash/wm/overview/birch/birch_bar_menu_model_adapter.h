@@ -32,7 +32,11 @@ class ASH_EXPORT BirchBarMenuModelAdapter : public AppMenuModelAdapter,
   BirchBarMenuModelAdapter& operator=(const BirchBarMenuModelAdapter&) = delete;
   ~BirchBarMenuModelAdapter() override;
 
-  aura::Window* root_window() { return root_window_; }
+  // If set to true, the menu should be dismissed when a checkbox of suggestion
+  // type is checked/unchecked.
+  void set_close_menu_on_customizing_suggestions(bool close_menu) {
+    close_menu_on_customizing_suggestions_ = close_menu;
+  }
 
   // Checkbox::Delegate:
   void OnButtonSelected(OptionButtonBase* button) override;
@@ -46,7 +50,7 @@ class ASH_EXPORT BirchBarMenuModelAdapter : public AppMenuModelAdapter,
   void RecordHistogramOnMenuClosed() override;
 
  private:
-  raw_ptr<aura::Window> root_window_;
+  bool close_menu_on_customizing_suggestions_ = false;
 };
 
 }  // namespace ash

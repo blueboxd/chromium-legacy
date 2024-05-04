@@ -114,9 +114,6 @@ void UpdatePolicyStorage(PolicyStorage* policy_storage) {
   policy_storage->SetPolicyPayload(
       dm_protocol::kChromeMachineLevelUserCloudPolicyType,
       settings.SerializeAsString());
-  policy_storage->SetPolicyPayload(
-      dm_protocol::kChromeMachineLevelUserCloudPolicyAndroidType,
-      settings.SerializeAsString());
   policy_storage->set_robot_api_auth_code("fake_auth_code");
   policy_storage->set_service_account_identity("foo@bar.com");
 }
@@ -127,7 +124,6 @@ ClientStorage::ClientInfo CreateTestClientInfo() {
   client_info.device_token = kDMToken;
   client_info.allowed_policy_types.insert(
       {dm_protocol::kChromeMachineLevelUserCloudPolicyType,
-       dm_protocol::kChromeMachineLevelUserCloudPolicyAndroidType,
        dm_protocol::kChromeMachineLevelExtensionCloudPolicyType});
   return client_info;
 }
@@ -280,7 +276,7 @@ class ChromeBrowserCloudManagementServiceIntegrationTest
     }
 
     auto params = DMServerJobConfiguration::CreateParams::WithoutClient(
-        DeviceManagementService::JobConfiguration::TYPE_TOKEN_ENROLLMENT,
+        DeviceManagementService::JobConfiguration::TYPE_BROWSER_REGISTRATION,
         service_.get(), kClientID,
         g_browser_process->system_network_context_manager()
             ->GetSharedURLLoaderFactory());
@@ -723,7 +719,7 @@ class MachineLevelUserCloudPolicyPolicyFetchTest
 
 #if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC) || \
     BUILDFLAG(IS_WIN)
-// TODO(crbug.com/1235367): Test is flaky.
+// TODO(crbug.com/40782028): Test is flaky.
 IN_PROC_BROWSER_TEST_P(MachineLevelUserCloudPolicyPolicyFetchTest,
                        DISABLED_Test) {
 #else

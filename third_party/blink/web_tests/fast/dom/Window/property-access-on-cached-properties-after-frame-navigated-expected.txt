@@ -62,14 +62,19 @@ PASS window.cached_navigator_managed.onmanagedconfigurationchange is null
 PASS window.cached_navigator_mediaDevices.ondevicechange is null
 PASS window.cached_navigator_mediaSession.metadata is null
 PASS window.cached_navigator_mediaSession.playbackState is 'none'
+PASS window.cached_navigator_preferences_colorScheme.onchange is null
 PASS window.cached_navigator_preferences_colorScheme.override is null
 PASS window.cached_navigator_preferences_colorScheme.value is ''
+PASS window.cached_navigator_preferences_contrast.onchange is null
 PASS window.cached_navigator_preferences_contrast.override is null
 PASS window.cached_navigator_preferences_contrast.value is ''
+PASS window.cached_navigator_preferences_reducedData.onchange is null
 PASS window.cached_navigator_preferences_reducedData.override is null
 PASS window.cached_navigator_preferences_reducedData.value is ''
+PASS window.cached_navigator_preferences_reducedMotion.onchange is null
 PASS window.cached_navigator_preferences_reducedMotion.override is null
 PASS window.cached_navigator_preferences_reducedMotion.value is ''
+PASS window.cached_navigator_preferences_reducedTransparency.onchange is null
 PASS window.cached_navigator_preferences_reducedTransparency.override is null
 PASS window.cached_navigator_preferences_reducedTransparency.value is ''
 PASS window.cached_navigator_presentation.defaultRequest is null
@@ -156,6 +161,7 @@ PASS window.cached_visualViewport.offsetLeft is 0
 PASS window.cached_visualViewport.offsetTop is 0
 PASS window.cached_visualViewport.onresize is null
 PASS window.cached_visualViewport.onscroll is null
+PASS window.cached_visualViewport.onscrollend is null
 PASS window.cached_visualViewport.pageLeft is 0
 PASS window.cached_visualViewport.pageTop is 0
 PASS window.cached_visualViewport.scale is 0

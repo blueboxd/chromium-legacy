@@ -7,6 +7,7 @@
 #include "base/ranges/algorithm.h"
 #include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/form_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -19,6 +20,11 @@ using ::testing::UnorderedElementsAre;
 // Tests that `DisambiguatePossibleFieldTypes` makes the correct choices.
 class DisambiguatePossibleFieldTypesTest : public ::testing::Test {
  protected:
+  DisambiguatePossibleFieldTypesTest() {
+    feature_list_.InitAndEnableFeature(
+        features::kAutofillDisambiguateContradictingFieldTypes);
+  }
+
   struct TestFieldData {
     FieldType predicted_type;
     FieldTypeSet ambiguous_possible_field_types;
@@ -42,7 +48,7 @@ class DisambiguatePossibleFieldTypesTest : public ::testing::Test {
           test_fields[i].predicted_type)});
       if (test_fields[i].is_autofilled) {
         field.set_autofilled_type(test_fields[i].predicted_type);
-        field.is_autofilled = true;
+        field.set_is_autofilled(true);
       }
     }
 
@@ -60,6 +66,7 @@ class DisambiguatePossibleFieldTypesTest : public ::testing::Test {
 
  protected:
   test::AutofillUnitTestEnvironment autofill_test_environment_;
+  base::test::ScopedFeatureList feature_list_;
 };
 
 // Name disambiguation.

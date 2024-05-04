@@ -10,6 +10,7 @@
 #include "base/debug/debugging_buildflags.h"
 #include "build/build_config.h"
 #include "components/gwp_asan/buildflags/buildflags.h"
+#include "components/memory_system/buildflags.h"
 #include "components/memory_system/parameters.h"
 #include "third_party/abseil-cpp/absl/base/attributes.h"
 
@@ -20,7 +21,7 @@
 #endif
 #endif
 
-#if BUILDFLAG(IS_IOS) && BUILDFLAG(USE_ALLOCATOR_SHIM)
+#if BUILDFLAG(IS_IOS) && PA_BUILDFLAG(USE_ALLOCATOR_SHIM)
 #include "base/allocator/partition_allocator/src/partition_alloc/shim/allocator_interception_apple.h"
 #include "base/allocator/partition_allocator/src/partition_alloc/shim/allocator_shim.h"
 #include "base/ios/ios_util.h"
@@ -29,7 +30,7 @@
 
 // HeapProfilerController's dependencies are not compiled on iOS unless
 // AllocatorShim is enabled.
-#if !BUILDFLAG(IS_IOS) || BUILDFLAG(USE_ALLOCATOR_SHIM)
+#if !BUILDFLAG(IS_IOS) || PA_BUILDFLAG(USE_ALLOCATOR_SHIM)
 #define HEAP_PROFILING_SUPPORTED 1
 #else
 #define HEAP_PROFILING_SUPPORTED 0
@@ -59,9 +60,9 @@
 namespace memory_system {
 namespace {
 
-#if BUILDFLAG(IS_IOS) && BUILDFLAG(USE_ALLOCATOR_SHIM)
+#if BUILDFLAG(IS_IOS) && PA_BUILDFLAG(USE_ALLOCATOR_SHIM)
 // Do not install allocator shim on iOS 13.4 due to high crash volume on this
-// particular version of OS. TODO(crbug.com/1108219): Remove this workaround
+// particular version of OS. TODO(crbug.com/40707342): Remove this workaround
 // when/if the bug gets fixed.
 bool ShouldInstallAllocatorShim() {
   return !base::ios::IsRunningOnOrLater(13, 4, 0) ||
@@ -127,7 +128,7 @@ struct MemorySystem::Impl {
       heap_profiler_controller_;
 #endif
 
-#if BUILDFLAG(IS_IOS) && BUILDFLAG(USE_ALLOCATOR_SHIM)
+#if BUILDFLAG(IS_IOS) && PA_BUILDFLAG(USE_ALLOCATOR_SHIM)
   const bool should_install_allocator_shim_ = ShouldInstallAllocatorShim();
 #endif
 
@@ -150,7 +151,7 @@ struct MemorySystem::Impl {
 };
 
 MemorySystem::Impl::Impl() {
-#if BUILDFLAG(IS_IOS) && BUILDFLAG(USE_ALLOCATOR_SHIM)
+#if BUILDFLAG(IS_IOS) && PA_BUILDFLAG(USE_ALLOCATOR_SHIM)
   if (should_install_allocator_shim_) {
     allocator_shim::InitializeAllocatorShim();
   }
@@ -208,7 +209,7 @@ void MemorySystem::Impl::Initialize(
 }
 
 bool MemorySystem::Impl::IsAllocatorShimInitialized() {
-#if BUILDFLAG(IS_IOS) && BUILDFLAG(USE_ALLOCATOR_SHIM)
+#if BUILDFLAG(IS_IOS) && PA_BUILDFLAG(USE_ALLOCATOR_SHIM)
   if (!should_install_allocator_shim_) {
     return false;
   }
@@ -235,12 +236,12 @@ void MemorySystem::Impl::InitializeGwpASan(
 
 #if BUILDFLAG(ENABLE_GWP_ASAN_MALLOC)
   gwp_asan::EnableForMalloc(gwp_asan_parameters.boost_sampling,
-                            gwp_asan_parameters.process_type.c_str());
+                            gwp_asan_parameters.process_type);
 #endif
 
 #if BUILDFLAG(ENABLE_GWP_ASAN_PARTITIONALLOC)
   gwp_asan::EnableForPartitionAlloc(gwp_asan_parameters.boost_sampling,
-                                    gwp_asan_parameters.process_type.c_str());
+                                    gwp_asan_parameters.process_type);
 #endif
 
   gwp_asan::MaybeEnableLightweightDetector(
@@ -283,7 +284,12 @@ bool MemorySystem::Impl::DispatcherIncludesAllocationTraceRecorder(
     const DispatcherParameters& dispatcher_parameters) {
   switch (dispatcher_parameters.allocation_trace_recorder_inclusion) {
     case DispatcherParameters::AllocationTraceRecorderInclusion::kDynamic:
+#if BUILDFLAG( \
+    TREAT_DYNAMIC_INCLUSION_OF_ALLOCATION_RECORDER_AS_FORCED_INCLUSION)
+      return true;
+#else
       return base::CPU::GetInstanceNoAllocation().has_mte();
+#endif
     case DispatcherParameters::AllocationTraceRecorderInclusion::kIgnore:
       return false;
   }

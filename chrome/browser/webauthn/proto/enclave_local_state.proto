@@ -95,9 +95,16 @@ message EnclaveLocalState {
     // secret for that epoch.
     map<int32, bytes> wrapped_security_domain_secrets = 10;
 
-    // A map from security domain epoch to the wrapped Google Password Manager
-    // PIN for that epoch.
-    map<int32, WrappedPIN> wrapped_pins = 11;
+    // The wrapped Google Password Manager PIN.
+    optional WrappedPIN wrapped_pin = 11;
+
+    // The public key of the GPM PIN member of the security domain.
+    optional bytes pin_public_key = 12;
+
+    // Flag set when the device is in a newly-registered state but the UV key
+    // has not yet been created, and should be created at the time of the first
+    // UV request.
+    optional bool deferred_uv_key_creation = 13;
   }
 
   map<string, User> users = 1;

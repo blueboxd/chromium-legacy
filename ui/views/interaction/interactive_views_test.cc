@@ -6,6 +6,8 @@
 
 #include <functional>
 #include <optional>
+#include <string_view>
+#include <variant>
 
 #include "base/functional/callback_forward.h"
 #include "base/functional/overloaded.h"
@@ -56,7 +58,7 @@ InteractiveViewsTestApi::InteractiveViewsTestApi(
 InteractiveViewsTestApi::~InteractiveViewsTestApi() = default;
 
 ui::InteractionSequence::StepBuilder InteractiveViewsTestApi::NameView(
-    base::StringPiece name,
+    std::string_view name,
     AbsoluteViewSpecifier spec) {
   return NameViewRelative(kInteractiveTestPivotElementId, name,
                           GetFindViewCallback(std::move(spec)));
@@ -65,7 +67,7 @@ ui::InteractionSequence::StepBuilder InteractiveViewsTestApi::NameView(
 // static
 ui::InteractionSequence::StepBuilder InteractiveViewsTestApi::NameChildView(
     ElementSpecifier parent,
-    base::StringPiece name,
+    std::string_view name,
     ChildViewSpecifier spec) {
   return std::move(
       NameViewRelative(parent, name, GetFindViewCallback(std::move(spec)))
@@ -76,7 +78,7 @@ ui::InteractionSequence::StepBuilder InteractiveViewsTestApi::NameChildView(
 // static
 ui::InteractionSequence::StepBuilder
 InteractiveViewsTestApi::NameDescendantView(ElementSpecifier parent,
-                                            base::StringPiece name,
+                                            std::string_view name,
                                             ViewMatcher matcher) {
   return std::move(
       NameViewRelative(
@@ -219,7 +221,7 @@ InteractiveViewsTestApi::StepBuilder InteractiveViewsTestApi::ReleaseMouse(
 // static
 InteractiveViewsTestApi::FindViewCallback
 InteractiveViewsTestApi::GetFindViewCallback(AbsoluteViewSpecifier spec) {
-  return absl::visit(
+  return std::visit(
       base::Overloaded{
           [](View* view) {
             CHECK(view) << "NameView(View*): view must be set.";
@@ -251,7 +253,7 @@ InteractiveViewsTestApi::GetFindViewCallback(AbsoluteViewSpecifier spec) {
 // static
 InteractiveViewsTestApi::FindViewCallback
 InteractiveViewsTestApi::GetFindViewCallback(ChildViewSpecifier spec) {
-  return absl::visit(
+  return std::visit(
       base::Overloaded{
           [](size_t index) {
             return base::BindOnce(
@@ -312,7 +314,7 @@ void InteractiveViewsTestApi::SetContextWidget(Widget* widget) {
 // static
 InteractiveViewsTestApi::RelativePositionCallback
 InteractiveViewsTestApi::GetPositionCallback(AbsolutePositionSpecifier spec) {
-  return absl::visit(
+  return std::visit(
       base::Overloaded{
           [](const gfx::Point& point) {
             return base::BindOnce(
@@ -333,7 +335,7 @@ InteractiveViewsTestApi::GetPositionCallback(AbsolutePositionSpecifier spec) {
 // static
 InteractiveViewsTestApi::RelativePositionCallback
 InteractiveViewsTestApi::GetPositionCallback(RelativePositionSpecifier spec) {
-  return absl::visit(
+  return std::visit(
       base::Overloaded{[](RelativePositionCallback& callback) {
                          return std::move(callback);
                        },

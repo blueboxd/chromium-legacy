@@ -98,7 +98,6 @@ class USER_MANAGER_EXPORT FakeUserManager : public UserManagerBase {
                             const std::string& display_email) override {}
   std::optional<std::string> GetOwnerEmail() override;
   bool IsCurrentUserNonCryptohomeDataEphemeral() const override;
-  bool CanCurrentUserLock() const override;
   bool IsUserLoggedIn() const override;
   bool IsLoggedInAsUserWithGaiaAccount() const override;
   bool IsLoggedInAsManagedGuestSession() const override;
@@ -110,40 +109,25 @@ class USER_MANAGER_EXPORT FakeUserManager : public UserManagerBase {
   bool IsLoggedInAsStub() const override;
   bool IsUserNonCryptohomeDataEphemeral(
       const AccountId& account_id) const override;
-  void AddObserver(Observer* obs) override {}
-  void RemoveObserver(Observer* obs) override {}
-  void AddSessionStateObserver(UserSessionStateObserver* obs) override {}
-  void RemoveSessionStateObserver(UserSessionStateObserver* obs) override {}
-  void NotifyLocalStateChanged() override {}
   bool IsGuestSessionAllowed() const override;
   bool IsGaiaUserAllowed(const User& user) const override;
   bool IsUserAllowed(const User& user) const override;
   void AsyncRemoveCryptohome(const AccountId& account_id) const override;
   bool IsDeprecatedSupervisedAccountId(
       const AccountId& account_id) const override;
-  void ScheduleResolveLocale(const std::string& locale,
-                             base::OnceClosure on_resolved_callback,
-                             std::string* out_resolved_locale) const override;
   bool IsValidDefaultUserImageId(int image_index) const override;
-  MultiUserSignInPolicyController* GetMultiUserSignInPolicyController()
-      override;
 
   // UserManagerBase overrides:
   void SetEphemeralModeConfig(
       EphemeralModeConfig ephemeral_mode_config) override;
 
-  const std::string& GetApplicationLocale() const override;
   bool IsEnterpriseManaged() const override;
   void LoadDeviceLocalAccounts(
       std::set<AccountId>* device_local_accounts_set) override {}
-  void PerformPostUserLoggedInActions(bool browser_restart) override {}
   bool IsDeviceLocalAccountMarkedForRemoval(
       const AccountId& account_id) const override;
-  void SetUserAffiliation(
-      const AccountId& account_id,
-      const base::flat_set<std::string>& user_affiliation_ids) override {}
-  void KioskAppLoggedIn(User* user) override {}
-  void PublicAccountUserLoggedIn(User* user) override {}
+  void SetUserAffiliated(const AccountId& account_id,
+                         bool is_affiliated) override {}
   // Just make it public for tests.
   using UserManagerBase::ResetOwnerId;
   using UserManagerBase::SetOwnerId;

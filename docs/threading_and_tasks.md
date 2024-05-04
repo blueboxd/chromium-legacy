@@ -286,7 +286,7 @@ The preferred way of posting to the current (virtual) thread is via
 ```cpp
 // The task will run on the current (virtual) thread's default task queue.
 base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
-    FROM_HERE, base::BindOnce(&Task);
+    FROM_HERE, base::BindOnce(&Task));
 ```
 
 Note that `SequencedTaskRunner::GetCurrentDefault()` returns the default queue for the
@@ -956,7 +956,7 @@ Sample workaround when inner task processing is needed:
 ```
 
 Please be SURE your task is reentrant (nestable) and all global variables
-are stable and accessible before before using
+are stable and accessible before using
 CurrentThread::ScopedAllowApplicationTasksInNativeNestedLoop.
 
 ## APIs for general use

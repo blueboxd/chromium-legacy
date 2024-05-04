@@ -46,7 +46,7 @@ constexpr int kOverlayScrollbarBorderPatchWidth = 2;
 constexpr int kOverlayScrollbarCenterPatchSize = 1;
 
 // This radius let scrollbar arrows fit in the default rounded border of some
-// form controls. TODO(crbug.com/1493088): We should probably let blink pass
+// form controls. TODO(crbug.com/40285711): We should probably let blink pass
 // the actual border radii.
 const SkScalar kScrollbarArrowRadius = 1;
 // Killswitch for the changed behavior (only drawing rounded corner for form
@@ -156,7 +156,7 @@ void NativeThemeAura::PaintMenuPopupBackground(
     const MenuBackgroundExtraParams& menu_background,
     ColorScheme color_scheme) const {
   DCHECK(color_provider);
-  // TODO(crbug/1308932): Remove FromColor and make all SkColor4f.
+  // TODO(crbug.com/40219248): Remove FromColor and make all SkColor4f.
   SkColor4f color =
       SkColor4f::FromColor(color_provider->GetColor(kColorMenuBackground));
   if (menu_background.corner_radius > 0) {
@@ -197,6 +197,7 @@ void NativeThemeAura::PaintArrowButton(
     Part direction,
     State state,
     ColorScheme color_scheme,
+    bool in_forced_colors,
     const ScrollbarArrowExtraParams& extra_params) const {
   SkColor bg_color =
       GetControlColor(kScrollbarArrowBackground, color_scheme, color_provider);
@@ -227,18 +228,18 @@ void NativeThemeAura::PaintArrowButton(
   }
   if (extra_params.thumb_color.has_value() &&
       extra_params.thumb_color.value() == gfx::kPlaceholderColor) {
-    // TODO(crbug.com/1473075): Remove this and the below checks for
+    // TODO(crbug.com/40278836): Remove this and the below checks for
     // placeholderColor.
     DLOG(ERROR) << "thumb_color with a placeholderColor value encountered";
   }
   if (extra_params.thumb_color.has_value() &&
       extra_params.thumb_color.value() != gfx::kPlaceholderColor) {
-    // TODO(crbug.com/891944): Adjust thumb_color based on `state`.
+    // TODO(crbug.com/40596569): Adjust thumb_color based on `state`.
     arrow_color = extra_params.thumb_color.value();
   }
   if (extra_params.track_color.has_value() &&
       extra_params.track_color.value() != gfx::kPlaceholderColor) {
-    // TODO(crbug.com/891944): Adjust track_color based on `state`.
+    // TODO(crbug.com/40596569): Adjust track_color based on `state`.
     bg_color = extra_params.track_color.value();
   }
   DCHECK_NE(arrow_color, gfx::kPlaceholderColor);
@@ -250,7 +251,7 @@ void NativeThemeAura::PaintArrowButton(
       !extra_params.needs_rounded_corner) {
     canvas->drawIRect(gfx::RectToSkIRect(rect), flags);
   } else {
-    // TODO(crbug.com/1493088): Also draw rounded corner for left and right
+    // TODO(crbug.com/40285711): Also draw rounded corner for left and right
     // buttons when needed.
     SkScalar upper_left_radius = 0;
     SkScalar lower_left_radius = 0;
@@ -284,7 +285,8 @@ void NativeThemeAura::PaintScrollbarTrack(
     State state,
     const ScrollbarTrackExtraParams& extra_params,
     const gfx::Rect& rect,
-    ColorScheme color_scheme) const {
+    ColorScheme color_scheme,
+    bool in_forced_colors) const {
   // Overlay Scrollbar should never paint a scrollbar track.
   DCHECK(!use_overlay_scrollbars_);
   cc::PaintFlags flags;
@@ -319,35 +321,13 @@ void NativeThemeAura::PaintScrollbarThumb(
 
     const bool hovered = state != kNormal;
 
-    static constexpr auto kFillIdMap =
-        base::MakeFixedFlatMap<ScrollbarOverlayColorTheme, std::array<int, 2>>({
-            {ScrollbarOverlayColorTheme::kDefault,
-             {kColorOverlayScrollbarFill, kColorOverlayScrollbarFillHovered}},
-            {ScrollbarOverlayColorTheme::kLight,
-             {kColorOverlayScrollbarFillLight,
-              kColorOverlayScrollbarFillHoveredLight}},
-            {ScrollbarOverlayColorTheme::kDark,
-             {kColorOverlayScrollbarFillDark,
-              kColorOverlayScrollbarFillHoveredDark}},
-        });
-    static constexpr auto kStrokeIdMap =
-        base::MakeFixedFlatMap<ScrollbarOverlayColorTheme, std::array<int, 2>>({
-            {ScrollbarOverlayColorTheme::kDefault,
-             {kColorOverlayScrollbarStroke,
-              kColorOverlayScrollbarStrokeHovered}},
-            {ScrollbarOverlayColorTheme::kLight,
-             {kColorOverlayScrollbarStrokeLight,
-              kColorOverlayScrollbarStrokeHoveredLight}},
-            {ScrollbarOverlayColorTheme::kDark,
-             {kColorOverlayScrollbarStrokeDark,
-              kColorOverlayScrollbarStrokeHoveredDark}},
-        });
-
     DCHECK(color_provider);
-    default_thumb_color = color_provider->GetColor(
-        kFillIdMap.at(extra_params.scrollbar_theme)[hovered]);
-    const SkColor stroke_color = color_provider->GetColor(
-        kStrokeIdMap.at(extra_params.scrollbar_theme)[hovered]);
+    default_thumb_color =
+        color_provider->GetColor(hovered ? kColorOverlayScrollbarFillHovered
+                                         : kColorOverlayScrollbarFill);
+    const SkColor stroke_color =
+        color_provider->GetColor(hovered ? kColorOverlayScrollbarStrokeHovered
+                                         : kColorOverlayScrollbarStroke);
 
     // In overlay mode, draw a stroke (border).
     constexpr int kStrokeWidth = kOverlayScrollbarStrokeWidth;

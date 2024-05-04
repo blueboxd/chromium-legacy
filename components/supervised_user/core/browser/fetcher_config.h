@@ -12,7 +12,6 @@
 
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
-#include "base/strings/string_piece.h"
 #include "base/types/strong_alias.h"
 #include "components/signin/public/identity_manager/primary_account_access_token_fetcher.h"
 #include "google_apis/gaia/gaia_constants.h"
@@ -38,7 +37,7 @@ struct AccessTokenConfig {
   std::optional<signin::PrimaryAccountAccessTokenFetcher::Mode> mode;
 
   // The OAuth 2.0 permission scope to request the authorization token.
-  base::StringPiece oauth2_scope;
+  std::string_view oauth2_scope;
 };
 
 // Configuration bundle for the ProtoFetcher.
@@ -124,23 +123,19 @@ constexpr FetcherConfig kClassifyUrlConfig = {
     .request_priority = net::IDLE,
 };
 
-constexpr FetcherConfig kClassifyUrlConfigWithHighestPriority = {
+constexpr FetcherConfig kClassifyUrlConfigWaitUntilAccessTokenAvailable = {
     .service_path = "/kidsmanagement/v1/people/me:classifyUrl",
     .method = FetcherConfig::Method::kPost,
     .histogram_basename = "FamilyLinkUser.ClassifyUrlRequest",
     .traffic_annotation = annotations::ClassifyUrlTag,
     .access_token_config =
         {
-            // Fail the fetch right away when access token is not immediately
-            // available.
-            // TODO(b/301931929): consider using `kWaitUntilAvailable` to
-            // improve reliability.
-            .mode = signin::PrimaryAccountAccessTokenFetcher::Mode::kImmediate,
+            .mode = signin::PrimaryAccountAccessTokenFetcher::Mode::
+                kWaitUntilAvailable,
             // TODO(b/284523446): Refer to GaiaConstants rather than literal.
             .oauth2_scope = "https://www.googleapis.com/auth/kid.permission",
         },
-    // Fetch is on critical path for the rendering.
-    .request_priority = net::HIGHEST,
+    .request_priority = net::IDLE,
 };
 
 constexpr FetcherConfig kListFamilyMembersConfig{

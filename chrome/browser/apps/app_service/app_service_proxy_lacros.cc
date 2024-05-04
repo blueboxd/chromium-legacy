@@ -14,16 +14,16 @@
 #include "base/notreached.h"
 #include "base/task/single_thread_task_runner.h"
 #include "build/chromeos_buildflags.h"
-#include "chrome/browser/apps/app_service/app_icon/app_icon_source.h"
-#include "chrome/browser/apps/app_service/app_install/app_install_service_lacros.h"
+#include "chrome/browser/apps/app_service/app_icon_source.h"
+#include "chrome/browser/apps/app_service/app_install/app_install_service.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
-#include "chrome/browser/apps/app_service/browser_app_instance_forwarder.h"
-#include "chrome/browser/apps/app_service/browser_app_instance_tracker.h"
 #include "chrome/browser/apps/app_service/intent_util.h"
 #include "chrome/browser/apps/app_service/launch_result_type.h"
 #include "chrome/browser/apps/app_service/launch_utils.h"
 #include "chrome/browser/apps/app_service/metrics/website_metrics_service_lacros.h"
 #include "chrome/browser/apps/app_service/publishers/extension_apps.h"
+#include "chrome/browser/apps/browser_instance/browser_app_instance_forwarder.h"
+#include "chrome/browser/apps/browser_instance/browser_app_instance_tracker.h"
 #include "chrome/browser/extensions/extension_keeplist_chromeos.h"
 #include "chrome/browser/profiles/keep_alive/profile_keep_alive_types.h"
 #include "chrome/browser/profiles/keep_alive/scoped_profile_keep_alive.h"
@@ -60,7 +60,7 @@ AppServiceProxyLacros::AppServiceProxyLacros(Profile* profile)
     if (service &&
         service->IsAvailable<crosapi::mojom::BrowserAppInstanceRegistry>()) {
       browser_app_instance_tracker_ =
-          std::make_unique<apps::BrowserAppInstanceTracker>(
+          std::make_unique<apps::BrowserAppInstanceTrackerLacros>(
               profile_, app_registry_cache_);
       auto& registry =
           service->GetRemote<crosapi::mojom::BrowserAppInstanceRegistry>();
@@ -571,8 +571,7 @@ void AppServiceProxyLacros::Initialize() {
   remote_crosapi_app_service_proxy_ =
       service->GetRemote<crosapi::mojom::AppServiceProxy>().get();
 
-  app_install_service_ = std::make_unique<AppInstallServiceLacros>(
-      *remote_crosapi_app_service_proxy_);
+  app_install_service_ = AppInstallService::Create(*profile_);
 }
 
 void AppServiceProxyLacros::Shutdown() {

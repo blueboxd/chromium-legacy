@@ -54,6 +54,7 @@ class GPU_GLES2_EXPORT ExternalVkImageBackingFactory
       SkAlphaType alpha_type,
       uint32_t usage,
       std::string debug_label,
+      bool is_thread_safe,
       base::span<const uint8_t> pixel_data) override;
   std::unique_ptr<SharedImageBacking> CreateSharedImage(
       const Mailbox& mailbox,
@@ -107,7 +108,7 @@ class GPU_GLES2_EXPORT ExternalVkImageBackingFactory
 
   bool CanImportGpuMemoryBuffer(gfx::GpuMemoryBufferType memory_buffer_type);
 
-  scoped_refptr<SharedContextState> context_state_;
+  const scoped_refptr<SharedContextState> context_state_;
   std::unique_ptr<VulkanCommandPool> command_pool_;
 
   // Map VkImageUsageFlags flags based on VkFormat for VK_IMAGE_TILING_OPTIMAL.

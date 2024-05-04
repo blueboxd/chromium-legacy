@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40284755): Remove this and spanify to fix the errors.
+#pragma allow_unsafe_buffers
+#endif
+
 #ifndef BASE_DEBUG_STACK_TRACE_H_
 #define BASE_DEBUG_STACK_TRACE_H_
 
@@ -14,6 +19,7 @@
 #include "base/containers/span.h"
 #include "base/debug/debugging_buildflags.h"
 #include "base/memory/raw_ptr.h"
+#include "base/strings/cstring_view.h"
 #include "build/build_config.h"
 
 #if BUILDFLAG(IS_POSIX)
@@ -67,7 +73,7 @@ class BASE_EXPORT StackTrace {
  public:
   // LINT.IfChange(max_stack_frames)
 #if BUILDFLAG(IS_ANDROID)
-  // TODO(https://crbug.com/925525): Testing indicates that Android has issues
+  // TODO(crbug.com/41437515): Testing indicates that Android has issues
   // with a larger value here, so leave Android at 62.
   static constexpr size_t kMaxTraces = 62;
 #else
@@ -116,7 +122,7 @@ class BASE_EXPORT StackTrace {
 
   // Prints the stack trace to stderr, prepending the given string before
   // each output line.
-  void PrintWithPrefix(const char* prefix_string) const;
+  void PrintWithPrefix(cstring_view prefix_string) const;
 
 #if !defined(__UCLIBC__) && !defined(_AIX)
   // Resolves backtrace to symbols and write to stream.
@@ -124,7 +130,7 @@ class BASE_EXPORT StackTrace {
   // Resolves backtrace to symbols and write to stream, with the provided
   // prefix string prepended to each line.
   void OutputToStreamWithPrefix(std::ostream* os,
-                                const char* prefix_string) const;
+                                cstring_view prefix_string) const;
 #endif
 
   // Resolves backtrace to symbols and returns as string.
@@ -132,17 +138,35 @@ class BASE_EXPORT StackTrace {
 
   // Resolves backtrace to symbols and returns as string, prepending the
   // provided prefix string to each line.
-  std::string ToStringWithPrefix(const char* prefix_string) const;
+  std::string ToStringWithPrefix(cstring_view prefix_string) const;
+
+  // Sets a message to be emitted in place of symbolized stack traces. When
+  // such a message is provided, collection and symbolization of stack traces
+  // is suppressed. Suppression is cancelled if `message` is empty.
+  static void SuppressStackTracesWithMessageForTesting(std::string message);
 
  private:
+  // Prints `message` with an optional prefix.
+  static void PrintMessageWithPrefix(cstring_view prefix_string,
+                                     cstring_view message);
+
+  void PrintWithPrefixImpl(cstring_view prefix_string) const;
+#if !defined(__UCLIBC__) && !defined(_AIX)
+  void OutputToStreamWithPrefixImpl(std::ostream* os,
+                                    cstring_view prefix_string) const;
+#endif
+
+  // Returns true if generation of symbolized stack traces is to be suppressed.
+  static bool ShouldSuppressOutput();
+
 #if BUILDFLAG(IS_WIN)
   void InitTrace(const _CONTEXT* context_record);
 #endif
 
   const void* trace_[kMaxTraces];
 
-  // The number of valid frames in |trace_|.
-  size_t count_;
+  // The number of valid frames in |trace_|, or 0 if collection was suppressed.
+  size_t count_ = 0;
 };
 
 // Forwards to StackTrace::OutputToStream().
@@ -151,6 +175,24 @@ BASE_EXPORT std::ostream& operator<<(std::ostream& os, const StackTrace& s);
 // Record a stack trace with up to |count| frames into |trace|. Returns the
 // number of frames read.
 BASE_EXPORT size_t CollectStackTrace(const void** trace, size_t count);
+
+// A helper for tests that must either override the default suppression of
+// symbolized stack traces in death tests, or the default generation of them in
+// normal tests.
+class BASE_EXPORT OverrideStackTraceOutputForTesting {
+ public:
+  enum class Mode {
+    kUnset,
+    kForceOutput,
+    kSuppressOutput,
+  };
+  explicit OverrideStackTraceOutputForTesting(Mode mode);
+  OverrideStackTraceOutputForTesting(
+      const OverrideStackTraceOutputForTesting&) = delete;
+  OverrideStackTraceOutputForTesting& operator=(
+      const OverrideStackTraceOutputForTesting&) = delete;
+  ~OverrideStackTraceOutputForTesting();
+};
 
 #if BUILDFLAG(CAN_UNWIND_WITH_FRAME_POINTERS)
 

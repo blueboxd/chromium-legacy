@@ -32,6 +32,11 @@ bool RenderWidgetHostDelegate::HandleKeyboardEvent(
   return false;
 }
 
+bool RenderWidgetHostDelegate::ShouldIgnoreWebInputEvents(
+    const blink::WebInputEvent& event) {
+  return false;
+}
+
 bool RenderWidgetHostDelegate::ShouldIgnoreInputEvents() {
   return false;
 }
@@ -162,6 +167,11 @@ int RenderWidgetHostDelegate::GetVirtualKeyboardResizeHeight() {
 
 bool RenderWidgetHostDelegate::ShouldDoLearning() {
   return true;
+}
+
+std::optional<double> RenderWidgetHostDelegate::AdjustedChildZoom(
+    const RenderWidgetHostViewChildFrame* render_widget) {
+  return std::nullopt;
 }
 
 }  // namespace content

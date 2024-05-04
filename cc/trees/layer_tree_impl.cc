@@ -34,6 +34,7 @@
 #include "cc/base/histograms.h"
 #include "cc/base/math_util.h"
 #include "cc/base/synced_property.h"
+#include "cc/input/browser_controls_offset_manager.h"
 #include "cc/input/page_scale_animation.h"
 #include "cc/input/scrollbar_animation_controller.h"
 #include "cc/layers/effect_tree_layer_list_iterator.h"
@@ -232,21 +233,15 @@ void LayerTreeImpl::DidUpdateScrollOffset(ElementId id) {
     return;
   }
 
-  // This bit controls whether we'll update the transform node based on a
-  // changed scroll offset. We can mutate scroll nodes which have main thread
-  // scrolling reasons, or aren't backed by a layer at all, but in those cases
-  // we don't want to produce any immediate changes in the compositor. Instead
-  // we want the scroll to propagate through Blink in a commit and have Blink
-  // update properties, paint, compositing, etc. Thus, we avoid mutating the
-  // transform tree in this case.
-  bool should_realize_scroll_on_compositor =
-      scroll_tree.CanRealizeScrollsOnCompositor(*scroll_node);
-
-  // A ScrollNode may have an invalid transform_id if its scroller is
-  // unpainted. Since an unpainted scroller would not be visible to the
-  // user, realizing this scroll is a nop.
-  if (should_realize_scroll_on_compositor &&
-      scroll_node->transform_id != kInvalidPropertyNodeId) {
+  // This condition controls whether we'll update the transform node based on a
+  // changed scroll offset. If it's false (e.g. if the scroll node has any main
+  // thread repaint reasons), we can mutate scroll nodes but don't want to
+  // produce any immediate changes in the compositor. Instead we want the scroll
+  // to propagate through Blink in a commit and have Blink update properties,
+  // paint, compositing, etc. Thus, we avoid mutating the transform tree in
+  // this case.
+  if (scroll_tree.CanRealizeScrollsOnCompositor(*scroll_node)) {
+    CHECK_NE(scroll_node->transform_id, kInvalidPropertyNodeId);
     TransformTree& transform_tree = property_trees()->transform_tree_mutable();
     auto* transform_node = transform_tree.Node(scroll_node->transform_id);
     if (transform_node->scroll_offset !=
@@ -525,7 +520,7 @@ OwnedLayerImplList LayerTreeImpl::DetachLayers() {
   render_surface_list_.clear();
   set_needs_update_draw_properties();
   OwnedLayerImplList result = std::move(layer_list_);
-  // TODO(crbug.com/1229805): remove diagnostic CHECK
+  // TODO(crbug.com/40778609): remove diagnostic CHECK
   CHECK(!layer_list_.size());
   return result;
 }
@@ -632,8 +627,14 @@ void LayerTreeImpl::PullPropertiesFrom(
   TreeSynchronizer::PushLayerProperties(commit_state, unsafe_state, this);
   lifecycle().AdvanceTo(LayerTreeLifecycle::kSyncedLayerProperties);
 
+  for (const ElementId& id : commit_state.scrollers_clobbering_active_value) {
+    property_trees()->scroll_tree_mutable().SetScrollOffsetClobberActiveValue(
+        id);
+  }
+
   // This must happen after synchronizing property trees and after pushing
-  // properties, which updates the clobber_active_value flag.
+  // properties,  which updates the clobber_active_value flag (specifically in
+  // Layer::PushPropertiesTo).
   // TODO(pdr): Enforce this comment with DCHECKS and a lifecycle state.
   property_trees()->scroll_tree_mutable().PushScrollUpdatesFromMainThread(
       unsafe_state.property_trees, this,
@@ -733,6 +734,10 @@ void LayerTreeImpl::PullLayerTreePropertiesFrom(CommitState& commit_state) {
   if (commit_state.new_local_surface_id_request)
     RequestNewLocalSurfaceId();
 
+  if (!commit_state.screenshot_destination_token.is_empty()) {
+    SetScreenshotDestinationToken(commit_state.screenshot_destination_token);
+  }
+
   SetLocalSurfaceIdFromParent(commit_state.local_surface_id_from_parent);
 
   if (commit_state.pending_page_scale_animation) {
@@ -830,6 +835,10 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
   if (TakeNewLocalSurfaceIdRequest())
     target_tree->RequestNewLocalSurfaceId();
   target_tree->SetLocalSurfaceIdFromParent(local_surface_id_from_parent());
+
+  if (auto token = TakeScreenshotDestinationToken(); !token.is_empty()) {
+    target_tree->SetScreenshotDestinationToken(std::move(token));
+  }
 
   target_tree->pending_page_scale_animation_ =
       std::move(pending_page_scale_animation_);
@@ -1024,14 +1033,16 @@ LayerTreeImpl::TakePresentationCallbacks() {
 }
 
 void LayerTreeImpl::AddSuccessfulPresentationCallbacks(
-    std::vector<PresentationTimeCallbackBuffer::SuccessfulCallback> callbacks) {
+    std::vector<PresentationTimeCallbackBuffer::SuccessfulCallbackWithDetails>
+        callbacks) {
   base::ranges::move(callbacks,
                      std::back_inserter(successful_presentation_callbacks_));
 }
 
-std::vector<PresentationTimeCallbackBuffer::SuccessfulCallback>
+std::vector<PresentationTimeCallbackBuffer::SuccessfulCallbackWithDetails>
 LayerTreeImpl::TakeSuccessfulPresentationCallbacks() {
-  std::vector<PresentationTimeCallbackBuffer::SuccessfulCallback> callbacks;
+  std::vector<PresentationTimeCallbackBuffer::SuccessfulCallbackWithDetails>
+      callbacks;
   callbacks.swap(successful_presentation_callbacks_);
   return callbacks;
 }
@@ -1434,6 +1445,17 @@ bool LayerTreeImpl::TakeNewLocalSurfaceIdRequest() {
   return new_local_surface_id_request;
 }
 
+void LayerTreeImpl::SetScreenshotDestinationToken(
+    base::UnguessableToken destination_token) {
+  screenshot_destination_ = std::move(destination_token);
+}
+
+base::UnguessableToken LayerTreeImpl::TakeScreenshotDestinationToken() {
+  base::UnguessableToken token = std::move(screenshot_destination_);
+  screenshot_destination_ = base::UnguessableToken();
+  return token;
+}
+
 void LayerTreeImpl::SetDeviceViewportRect(
     const gfx::Rect& device_viewport_rect) {
   if (device_viewport_rect == device_viewport_rect_)
@@ -1771,8 +1793,8 @@ void LayerTreeImpl::ClearSurfaceRanges() {
 
 void LayerTreeImpl::AddLayerShouldPushProperties(LayerImpl* layer) {
   DCHECK(!IsActiveTree()) << "The active tree does not push layer properties";
-  // TODO(crbug.com/303943): PictureLayerImpls always push properties so should
-  // not go into this set or we'd push them twice.
+  // TODO(crbug.com/40335690): PictureLayerImpls always push properties so
+  // should not go into this set or we'd push them twice.
   DCHECK(!base::Contains(picture_layers_, layer));
   layers_that_should_push_properties_.insert(layer);
 }
@@ -2526,7 +2548,7 @@ LayerTreeImpl::FindLayersUpToFirstScrollableOrOpaqueToHitTest(
       // The intention here is to skip over any layers that belong to a
       // different 3d sorting context than the first_hit layer.
       //
-      // TODO(crbug.com/1407697): This code is kind of broken for the case of a
+      // TODO(crbug.com/40887983): This code is kind of broken for the case of a
       // scroller inside a preserve-3d: we assign a sorting_context_id to the
       // scroller's main layer, which is marked as scrollable, but not its
       // scrolling-contents layer, which is first_hit.  Currently we rely on
@@ -2555,7 +2577,9 @@ LayerTreeImpl::FindLayersUpToFirstScrollableOrOpaqueToHitTest(
           std::pair<const LayerImpl*, float>(layer, distance_to_intersection));
     } else {
       layers.push_back(layer);
-      if (layer->IsScrollerOrScrollbar() || layer->OpaqueToHitTest()) {
+      if (settings().enable_hit_test_opaqueness
+              ? layer->OpaqueToHitTest()
+              : layer->IsScrollerOrScrollbar()) {
         break;
       }
     }
@@ -2584,7 +2608,9 @@ LayerTreeImpl::FindLayersUpToFirstScrollableOrOpaqueToHitTest(
       const LayerImpl* layer = pair.first;
 
       result.push_back(layer);
-      if (layer->IsScrollerOrScrollbar() || layer->OpaqueToHitTest()) {
+      if (settings().enable_hit_test_opaqueness
+              ? layer->OpaqueToHitTest()
+              : layer->IsScrollerOrScrollbar()) {
         return result;
       }
     }
@@ -2696,7 +2722,7 @@ ElementId LayerTreeImpl::FindFrameElementIdAtPoint(
                                          layer_list_[0].get(), &state);
 
   if (const auto* layer = state.closest_match.get()) {
-    // TODO(https://crbug.com/1058870): Permit hit testing only if the framed
+    // TODO(crbug.com/40121347): Permit hit testing only if the framed
     // element hit has a simple mask/clip. We don't have enough information
     // about complex masks/clips on the impl-side to do accurate hit testing.
     bool layer_hit_test_region_is_masked =
@@ -2898,6 +2924,14 @@ std::string LayerTreeImpl::LayerListAsJson() const {
 
 void LayerTreeImpl::AddViewTransitionRequest(
     std::unique_ptr<ViewTransitionRequest> request) {
+  if (IsActiveTree() && request->type() == ViewTransitionRequest::Type::kSave) {
+    // If the next frame will capture view transition snapshots, the main
+    // thread will have already computed all transforms based on the current
+    // location. Prevent any browser controls animation from ticking which
+    // would make the transition state inconsistent with what is visually
+    // displayed.
+    host_impl_->browser_controls_manager()->ResetAnimations();
+  }
   view_transition_requests_.push_back(std::move(request));
   // We need to send the request to viz.
   SetNeedsRedraw();

@@ -8,7 +8,7 @@ found in the LICENSE file.
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Colors should be mirrored by Theme.BrowserUI.DialogWhenLarge and
          Theme.BrowserUI.AlertDialog.NoActionBar. -->
-    <style name="Base.V21.Theme.BrowserUI" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+    <style name="Base.V21.Theme.BrowserUI" parent="Theme.Material3.DayNight.NoActionBar">
         <item name="dynamicColorThemeOverlay">@style/ThemeOverlay.BrowserUI.DynamicColors</item>
 
         <!-- Color palettes -->
@@ -35,7 +35,6 @@ found in the LICENSE file.
         <!-- Text colors-->
         <item name="android:textColorPrimary">@color/default_text_color_list</item>
         <item name="android:textColorSecondary">@color/default_text_color_secondary_list</item>
-        <item name="android:textColorLink">@macro/default_text_color_link</item>
         <item name="android:textColorHighlight">@color/text_highlight_color</item>
         <item name="android:textColorHint">@color/default_text_color_hint_list</item>
 
@@ -58,17 +57,14 @@ found in the LICENSE file.
         <item name="globalLinkTextColor">?attr/colorPrimary</item>
         <item name="globalClickableSpanColor">?attr/colorPrimary</item>
 
-        <item name="materialSwitchStyle">@style/Widget.BrowserUI.Switch</item>
-
         <!-- Switches style workaround for UI that might use SwitchPreferenceCompat while not
          using the theme for SettingsActivity (e.g. PageInfoView) -->
         <item name="switchPreferenceCompatStyle">@style/SwitchPreference</item>
 
         <item name="android:elegantTextHeight">false</item>
-    </style>
-    <style name="Base.V31.Theme.BrowserUI" parent="Base.V21.Theme.BrowserUI" />
-    <style name="Base.Theme.BrowserUI" parent="Base.V31.Theme.BrowserUI" />
-    <style name="Theme.BrowserUI" parent="Base.Theme.BrowserUI">
+
+        <item name="actionBarSize">@dimen/default_action_bar_height</item>
+
         <!-- Control styles -->
         <item name="checkboxStyle">@style/Widget.BrowserUI.CheckBox</item>
         <item name="radioButtonStyle">@style/Widget.BrowserUI.RadioButton</item>
@@ -90,23 +86,36 @@ found in the LICENSE file.
         <!-- Set android popup menu attributes for context menu styles because the context menus are
              OS-dependent. -->
         <item name="android:popupMenuStyle">@style/PopupMenuStyle</item>
+        <item name="android:contextPopupMenuStyle" tools:targetApi="24">@style/PopupMenuStyle</item>
+
+        <!-- Text styles -->
         <item name="android:textAppearanceLargePopupMenu">
+            @style/TextAppearance.TextLarge.Primary
+        </item>
+        <item name="textAppearanceLabelLarge">
             @style/TextAppearance.TextLarge.Primary
         </item>
         <item name="android:textAppearanceSmallPopupMenu">
             @style/TextAppearance.TextLarge.Primary
         </item>
-        <item name="android:contextPopupMenuStyle" tools:targetApi="24">@style/PopupMenuStyle</item>
+        <item name="android:textAppearanceListItem">@style/TextAppearance.TextLarge.Primary</item>
+        <item name="android:textAppearanceListItemSmall">@style/TextAppearance.TextSmall.Primary</item>
+        <item name="android:textAppearanceListItemSecondary">@style/TextAppearance.TextMedium.Secondary</item>
 
         <!-- This is for keeping the current TextInputLayout style.
-             TODO(crbug.com/1206024): Remove or update once the design for the app is updated. -->
+             TODO(crbug.com/40764906): Remove or update once the design for the app is updated. -->
         <item name="textInputStyle">@style/Widget.BrowserUI.TextInputLayout</item>
     </style>
+
+    <style name="Base.V31.Theme.BrowserUI" parent="Base.V21.Theme.BrowserUI" />
+    <style name="Base.V35.Theme.BrowserUI" parent="Base.V31.Theme.BrowserUI" />
+    <style name="Base.Theme.BrowserUI" parent="Base.V35.Theme.BrowserUI" />
+    <style name="Theme.BrowserUI" parent="Base.Theme.BrowserUI" />
     <!-- Overridden by night mode. -->
     <style name="Theme.BrowserUI.DayNight" parent="Theme.BrowserUI" />
 
     <!-- Colors should be mirrored by Base.V21.Theme.BrowserUI. -->
-    <style name="Theme.BrowserUI.DialogWhenLarge" parent="Theme.MaterialComponents.DayNight.DialogWhenLarge">
+    <style name="Theme.BrowserUI.DialogWhenLarge" parent="Theme.Material3.DayNight.DialogWhenLarge">
         <item name="dynamicColorThemeOverlay">@style/ThemeOverlay.BrowserUI.DynamicColors</item>
 
          <!-- Color palettes -->
@@ -133,7 +142,6 @@ found in the LICENSE file.
         <!-- Text colors-->
         <item name="android:textColorPrimary">@color/default_text_color_list</item>
         <item name="android:textColorSecondary">@color/default_text_color_secondary_list</item>
-        <item name="android:textColorLink">@macro/default_text_color_link</item>
         <item name="android:textColorHighlight">@color/text_highlight_color</item>
         <item name="android:textColorHint">@color/default_text_color_hint_list</item>
 
@@ -164,14 +172,15 @@ found in the LICENSE file.
 
         <item name="android:elegantTextHeight">false</item>
     </style>
+    <style name="Theme.BrowserUI.DialogWhenLarge.V35" parent="Theme.BrowserUI.DialogWhenLarge" />
     <!-- Overridden by night mode. -->
-    <style name="Theme.BrowserUI.DialogWhenLarge.DayNight" parent="Theme.BrowserUI.DialogWhenLarge"/>
+    <style name="Theme.BrowserUI.DialogWhenLarge.DayNight" parent="Theme.BrowserUI.DialogWhenLarge.V35"/>
 
     <!-- Unlike |ThemeOverlay.BrowserUI.AlertDialog|, this is a complete theme that can be used as
          an activity theme on its own. In addition to mirroring |Base.V21.Theme.BrowserUI|, this
          should include all the attributes that |ThemeOverlay.BrowserUI.AlertDialog| has.
          -->
-    <style name="Theme.BrowserUI.AlertDialog.NoActionBar" parent="Theme.MaterialComponents.DayNight.Dialog.Alert">
+    <style name="Theme.BrowserUI.AlertDialog.NoActionBar" parent="Theme.Material3.DayNight.Dialog.Alert">
         <item name="dynamicColorThemeOverlay">@style/ThemeOverlay.BrowserUI.DynamicColors</item>
 
         <!-- Color palettes -->
@@ -198,7 +207,6 @@ found in the LICENSE file.
         <!-- Text colors-->
         <item name="android:textColorPrimary">@color/default_text_color_list</item>
         <item name="android:textColorSecondary">@color/default_text_color_secondary_list</item>
-        <item name="android:textColorLink">@macro/default_text_color_link</item>
         <item name="android:textColorHighlight">@color/text_highlight_color</item>
         <item name="android:textColorHint">@color/default_text_color_hint_list</item>
 
@@ -245,8 +253,9 @@ found in the LICENSE file.
 
         <item name="android:elegantTextHeight">false</item>
     </style>
+    <style name="Theme.BrowserUI.AlertDialog.NoActionBar.V35" parent="Theme.BrowserUI.AlertDialog.NoActionBar" />
     <!-- Overridden by night mode. -->
-    <style name="Theme.BrowserUI.AlertDialog.NoActionBar.DayNight" parent="Theme.BrowserUI.AlertDialog.NoActionBar"/>
+    <style name="Theme.BrowserUI.AlertDialog.NoActionBar.DayNight" parent="Theme.BrowserUI.AlertDialog.NoActionBar.V35"/>
 
     <!-- This theme is used instead of android:style/Theme.NoDisplay so that it has the required
         attributes in case the context ends up being used to inflate views. -->

@@ -34,7 +34,6 @@
 #include "third_party/blink/renderer/platform/graphics/paint/paint_canvas.h"
 #include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
-#include "third_party/skia/include/effects/SkDashPathEffect.h"
 
 static const char defaultFont[] = "10px sans-serif";
 static const char defaultFilter[] = "none";
@@ -224,7 +223,7 @@ ALWAYS_INLINE void CanvasRenderingContext2DState::UpdateLineDash() const {
   } else {
     Vector<float> line_dash(line_dash_.size());
     base::ranges::copy(line_dash_, line_dash.begin());
-    stroke_flags_.setPathEffect(SkDashPathEffect::Make(
+    stroke_flags_.setPathEffect(cc::PathEffect::MakeDash(
         line_dash.data(), line_dash.size(), line_dash_offset_));
   }
   line_dash_dirty_ = false;
@@ -535,14 +534,14 @@ void CanvasRenderingContext2DState::ClearResolvedFilter() {
   ValidateFilterState();
 }
 
-sk_sp<SkDrawLooper>& CanvasRenderingContext2DState::EmptyDrawLooper() const {
+sk_sp<cc::DrawLooper>& CanvasRenderingContext2DState::EmptyDrawLooper() const {
   if (!empty_draw_looper_)
     empty_draw_looper_ = DrawLooperBuilder().DetachDrawLooper();
 
   return empty_draw_looper_;
 }
 
-sk_sp<SkDrawLooper>& CanvasRenderingContext2DState::ShadowOnlyDrawLooper()
+sk_sp<cc::DrawLooper>& CanvasRenderingContext2DState::ShadowOnlyDrawLooper()
     const {
   if (!shadow_only_draw_looper_) {
     DrawLooperBuilder draw_looper_builder;
@@ -555,7 +554,7 @@ sk_sp<SkDrawLooper>& CanvasRenderingContext2DState::ShadowOnlyDrawLooper()
   return shadow_only_draw_looper_;
 }
 
-sk_sp<SkDrawLooper>&
+sk_sp<cc::DrawLooper>&
 CanvasRenderingContext2DState::ShadowAndForegroundDrawLooper() const {
   if (!shadow_and_foreground_draw_looper_) {
     DrawLooperBuilder draw_looper_builder;

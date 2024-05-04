@@ -10,7 +10,6 @@
 
 #import "base/apple/foundation_util.h"
 #import "base/check_op.h"
-#import "base/feature_list.h"
 #import "base/metrics/user_metrics.h"
 #import "base/metrics/user_metrics_action.h"
 #import "base/notreached.h"
@@ -19,7 +18,6 @@
 #import "base/time/time.h"
 #import "components/bookmarks/browser/bookmark_utils.h"
 #import "components/signin/public/identity_manager/account_info.h"
-#import "components/sync/base/features.h"
 #import "components/sync/service/sync_service.h"
 #import "components/sync/service/sync_service_utils.h"
 #import "ios/chrome/browser/bookmarks/model/account_bookmark_model_factory.h"
@@ -27,6 +25,7 @@
 #import "ios/chrome/browser/bookmarks/model/legacy_bookmark_model.h"
 #import "ios/chrome/browser/bookmarks/model/local_or_syncable_bookmark_model_factory.h"
 #import "ios/chrome/browser/default_browser/model/default_browser_interest_signals.h"
+#import "ios/chrome/browser/feature_engagement/model/tracker_factory.h"
 #import "ios/chrome/browser/metrics/model/new_tab_page_uma.h"
 #import "ios/chrome/browser/shared/model/browser/browser.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
@@ -258,7 +257,9 @@ enum class PresentedState {
       showSnackbarMessage:[self.mediator addBookmarkWithTitle:title
                                                           URL:bookmarkedURL
                                                    editAction:editAction]];
-  default_browser::NotifyBookmarkAddOrEdit();
+  default_browser::NotifyBookmarkAddOrEdit(
+      feature_engagement::TrackerFactory::GetForBrowserState(
+          _currentBrowserState.get()));
 }
 
 - (void)presentBookmarkEditorForURL:(const GURL&)URL {
@@ -275,15 +276,20 @@ enum class PresentedState {
   }
   [self presentEditorForURLNode:bookmark];
 
-  default_browser::NotifyBookmarkAddOrEdit();
+  default_browser::NotifyBookmarkAddOrEdit(
+      feature_engagement::TrackerFactory::GetForBrowserState(
+          _currentBrowserState.get()));
 }
 
 - (void)presentBookmarks {
-  [self presentBookmarksAtDisplayedFolderNode:_localOrSyncableBookmarkModel
-                                                  ->root_node()
+  [self presentBookmarksAtDisplayedFolderNode:
+            _localOrSyncableBookmarkModel
+                ->subtle_root_node_with_unspecified_children()
                             selectingBookmark:nil];
 
-  default_browser::NotifyBookmarkManagerOpened();
+  default_browser::NotifyBookmarkManagerOpened(
+      feature_engagement::TrackerFactory::GetForBrowserState(
+          _currentBrowserState.get()));
 }
 
 - (void)presentFolderChooser {
@@ -348,6 +354,15 @@ enum class PresentedState {
   }
   DCHECK(self.bookmarkNavigationController);
 
+  if (urlsToOpen.empty()) {
+    default_browser::NotifyBookmarkManagerClosed(
+        feature_engagement::TrackerFactory::GetForBrowserState(
+            _currentBrowserState.get()));
+  } else {
+    default_browser::NotifyURLFromBookmarkOpened(
+        feature_engagement::TrackerFactory::GetForBrowserState(
+            _currentBrowserState.get()));
+  }
   // If trying to open urls with tab mode changed, we need to postpone openUrls
   // until the dismissal of Bookmarks is done.  This is to prevent the race
   // condition between the dismissal of bookmarks and switch of BVC.
@@ -394,7 +409,7 @@ enum class PresentedState {
         base::apple::ObjCCastStrict<BookmarksHomeViewController>(controller);
     [bookmarksHomeViewController shutdown];
   }
-  // TODO(crbug.com/940856): Make sure navigaton
+  // TODO(crbug.com/40617797): Make sure navigaton
   // controller doesn't keep any controllers. Without
   // this there's a memory leak of (almost) every BHVC
   // the user visits.
@@ -409,7 +424,7 @@ enum class PresentedState {
 
 - (void)dismissBookmarksEditorAnimated:(BOOL)animated {
   if (self.currentPresentedState != PresentedState::BOOKMARK_EDITOR) {
-    // TODO(crbug.com/1404250): This test should be turned into a DCHECK().
+    // TODO(crbug.com/40062447): This test should be turned into a DCHECK().
     return;
   }
   self.bookmarkEditorCoordinator.animatedDismissal = animated;
@@ -453,11 +468,8 @@ enum class PresentedState {
   CHECK(!syncService->GetAccountInfo().IsEmpty())
       << base::SysNSStringToUTF8([self description]);
   SyncSettingsAccountState accountState =
-      (base::FeatureList::IsEnabled(
-           syncer::kReplaceSyncPromosWithSignInPromos) &&
-       !syncService->HasSyncConsent())
-          ? SyncSettingsAccountState::kSignedIn
-          : SyncSettingsAccountState::kSyncing;
+      syncService->HasSyncConsent() ? SyncSettingsAccountState::kSyncing
+                                    : SyncSettingsAccountState::kSignedIn;
   _manageSyncSettingsCoordinator = [[ManageSyncSettingsCoordinator alloc]
       initWithBaseViewController:self.baseViewController
                          browser:self.browser
@@ -516,7 +528,9 @@ enum class PresentedState {
       showSnackbarMessage:[self.mediator addBookmarks:_URLs toFolder:folder]];
   _URLs = nil;
 
-  default_browser::NotifyBookmarkAddOrEdit();
+  default_browser::NotifyBookmarkAddOrEdit(
+      feature_engagement::TrackerFactory::GetForBrowserState(
+          _currentBrowserState.get()));
 }
 
 - (void)bookmarksFolderChooserCoordinatorDidCancel:
@@ -555,14 +569,14 @@ enum class PresentedState {
   WebStateList* webStateList = self.browser->GetWebStateList();
   for (const GURL& url : urls) {
     DCHECK(url.is_valid()) << [self description];
-    // TODO(crbug.com/695749): Force url to open in non-incognito mode. if
+    // TODO(crbug.com/40508042): Force url to open in non-incognito mode. if
     // !IsURLAllowedInIncognito(url).
 
     if (openInForegroundTab) {
       // Only open the first URL in foreground tab.
       openInForegroundTab = NO;
 
-      // TODO(crbug.com/695749): See if we need different metrics for 'Open
+      // TODO(crbug.com/40508042): See if we need different metrics for 'Open
       // all', 'Open all in incognito' and 'Open in incognito'.
       bool is_ntp = webStateList->GetActiveWebState()->GetVisibleURL() ==
                     kChromeUINewTabURL;
@@ -571,7 +585,9 @@ enum class PresentedState {
           new_tab_page_uma::ACTION_OPENED_BOOKMARK);
       base::RecordAction(
           base::UserMetricsAction("MobileBookmarkManagerEntryOpened"));
-      default_browser::NotifyURLFromBookmarkOpened();
+      default_browser::NotifyURLFromBookmarkOpened(
+          feature_engagement::TrackerFactory::GetForBrowserState(
+              _currentBrowserState.get()));
 
       if (newTab ||
           ((!!inIncognito) != _currentBrowserState->IsOffTheRecord())) {
@@ -654,12 +670,7 @@ enum class PresentedState {
       bookmark_utils_ios::GetMostRecentlyAddedUserNodeForURL(
           URL, _localOrSyncableBookmarkModel.get(),
           _accountBookmarkModel.get());
-  if (!base::FeatureList::IsEnabled(
-          syncer::kReplaceSyncPromosWithSignInPromos)) {
-    [self presentBookmarksAtDisplayedFolderNode:_localOrSyncableBookmarkModel
-                                                    ->mobile_node()
-                              selectingBookmark:existingBookmark];
-  } else if (existingBookmark) {
+  if (existingBookmark) {
     [self presentBookmarksAtDisplayedFolderNode:existingBookmark->parent()
                               selectingBookmark:existingBookmark];
   } else {
@@ -753,8 +764,8 @@ enum class PresentedState {
 - (void)openURLInNewTab:(const GURL&)url
             inIncognito:(BOOL)inIncognito
            inBackground:(BOOL)inBackground {
-  // TODO(crbug.com/695749):  Open bookmarklet in new tab doesn't work.  See how
-  // to deal with this later.
+  // TODO(crbug.com/40508042):  Open bookmarklet in new tab doesn't work.  See
+  // how to deal with this later.
   UrlLoadParams params = UrlLoadParams::InNewTab(url);
   params.SetInBackground(inBackground);
   params.in_incognito = inIncognito;
@@ -794,7 +805,9 @@ enum class PresentedState {
     // after the model is finished loading.
     self.bookmarkBrowser.displayedFolderNode = displayedFolderNode;
     [self.bookmarkBrowser setExternalBookmark:bookmarkNode];
-    if (displayedFolderNode == _localOrSyncableBookmarkModel->root_node()) {
+    if (displayedFolderNode ==
+        _localOrSyncableBookmarkModel
+            ->subtle_root_node_with_unspecified_children()) {
       replacementViewControllers =
           [self.bookmarkBrowser cachedViewControllerStack];
     }

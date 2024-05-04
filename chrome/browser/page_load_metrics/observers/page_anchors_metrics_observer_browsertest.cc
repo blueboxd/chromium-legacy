@@ -4,6 +4,8 @@
 
 #include "chrome/browser/page_load_metrics/observers/page_anchors_metrics_observer.h"
 
+#include <string_view>
+
 #include "base/memory/raw_ptr.h"
 #include "base/test/scoped_run_loop_timeout.h"
 #include "chrome/browser/ui/browser.h"
@@ -81,7 +83,7 @@ class PageAnchorsMetricsObserverBrowserTest
   }
 
   std::vector<raw_ptr<const ukm::mojom::UkmEntry, VectorExperimental>>
-  GetEntriesByName(base::StringPiece entry_name) const {
+  GetEntriesByName(std::string_view entry_name) const {
     return ukm_recorder_->GetEntriesByName(entry_name);
   }
 
@@ -177,7 +179,7 @@ IN_PROC_BROWSER_TEST_F(PageAnchorsMetricsObserverBrowserTest,
       ukm::builders::NavigationPredictorUserInteractions::kAnchorIndexName, 0);
 }
 
-// TODO(crbug.com/1456408): Test is flaky.
+// TODO(crbug.com/40273087): Test is flaky.
 IN_PROC_BROWSER_TEST_F(PageAnchorsMetricsObserverBrowserTest,
                        DISABLED_TestDifferentUKMSourceIdsPerNavigation) {
   // Start with page 1.

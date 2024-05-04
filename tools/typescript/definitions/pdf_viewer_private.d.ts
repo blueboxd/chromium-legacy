@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 /** @fileoverview Definitions for chrome.pdfViewerPrivate API. */
-// TODO(crbug.com/1203307): Auto-generate this file.
+// TODO(crbug.com/40179454): Auto-generate this file.
 
 import {ChromeEvent} from './chrome_event.js';
 
@@ -12,7 +12,7 @@ declare global {
     export namespace pdfViewerPrivate {
       // `mimeType` and `responseHeaders` are unused fields, but they are
       // necessary to be able to cast to chrome.mimeHandlerPrivate.StreamInfo.
-      // TODO(crbug.com/1445746): Remove `mimeType` and `responseHeaders` after
+      // TODO(crbug.com/40268279): Remove `mimeType` and `responseHeaders` after
       // PDF viewer no longer uses chrome.mimeHandlerPrivate.
       export interface StreamInfo {
         mimeType: string;

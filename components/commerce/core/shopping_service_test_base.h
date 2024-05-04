@@ -7,11 +7,14 @@
 
 #include <map>
 #include <memory>
+#include <optional>
+#include <string>
 #include <vector>
 
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/values.h"
+#include "components/commerce/core/commerce_info_cache.h"
 #include "components/commerce/core/shopping_service.h"
 #include "components/commerce/core/web_extractor.h"
 #include "components/commerce/core/web_wrapper.h"
@@ -80,7 +83,8 @@ class MockOptGuideDecider
       const base::flat_set<OptimizationType>& optimization_types,
       RequestContext request_context,
       OnDemandOptimizationGuideDecisionRepeatingCallback callback,
-      RequestContextMetadata* request_context_metadata = nullptr) override;
+      std::optional<RequestContextMetadata> request_context_metadata =
+          std::nullopt) override;
 
   void AddOnDemandShoppingResponse(const GURL& url,
                                    const OptimizationGuideDecision decision,
@@ -99,7 +103,8 @@ class MockOptGuideDecider
       const std::string& country_code,
       const int64_t amount_micros = 0,
       const std::string& currency_code = "USD",
-      const std::string& gpc_title = "example_gpc_title");
+      const std::string& gpc_title = "example_gpc_title",
+      const std::vector<std::vector<std::string>>& product_categories = {});
 
   void AddPriceUpdateToPriceTrackingResponse(OptimizationMetadata* out_meta,
                                              const std::string& currency_code,
@@ -148,13 +153,12 @@ class MockOptGuideDecider
 // A mock WebWrapper where returned values can be manually set.
 class MockWebWrapper : public WebWrapper {
  public:
-  MockWebWrapper(const GURL& last_committed_url, bool is_off_the_record);
-
   // `result` specified the result of the subsequent javascript execution. This
   // object does not take ownership of the provided pointer.
   MockWebWrapper(const GURL& last_committed_url,
                  bool is_off_the_record,
-                 base::Value* result);
+                 base::Value* result = nullptr,
+                 std::u16string title = u"");
 
   MockWebWrapper(const MockWebWrapper&) = delete;
   MockWebWrapper operator=(const MockWebWrapper&) = delete;
@@ -162,6 +166,7 @@ class MockWebWrapper : public WebWrapper {
   ~MockWebWrapper() override;
 
   const GURL& GetLastCommittedURL() override;
+  const std::u16string& GetTitle() override;
 
   bool IsFirstLoadForNavigationFinished() override;
   void SetIsFirstLoadForNavigationFinished(bool finished);
@@ -181,6 +186,7 @@ class MockWebWrapper : public WebWrapper {
   const bool is_off_the_record_;
   bool is_first_load_finished_{true};
   const raw_ptr<base::Value> mock_js_result_;
+  const std::u16string title_;
 };
 
 class TestWebExtractor : public WebExtractor {
@@ -213,7 +219,9 @@ class ShoppingServiceTestBase : public testing::Test {
   void DidNavigatePrimaryMainFrame(WebWrapper* web);
   void DidFinishLoad(WebWrapper* web);
   void DidNavigateAway(WebWrapper* web, const GURL& url);
+  void WebWrapperCreated(WebWrapper* web);
   void WebWrapperDestroyed(WebWrapper* web);
+  void OnWebWrapperSwitched(WebWrapper* web);
   static void MergeProductInfoData(ProductInfo* info,
                                    const base::Value::Dict& on_page_data_map);
 
@@ -227,6 +235,9 @@ class ShoppingServiceTestBase : public testing::Test {
 
   // Get the item in the product info cache if it exists.
   const ProductInfo* GetFromProductInfoCache(const GURL& url);
+
+  // Gets a handle to the cache.
+  CommerceInfoCache& GetCache();
 
  protected:
   base::test::TaskEnvironment task_environment_{

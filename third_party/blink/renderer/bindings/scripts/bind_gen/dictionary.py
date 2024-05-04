@@ -50,7 +50,7 @@ class _DictionaryMember(object):
 
     # Map from Blink member type to presence expression.
     _MEMBER_TYPE_TO_PRESENCE_EXPR = {
-        "ScriptPromise": "!{}.IsEmpty()",
+        "ScriptPromiseUntyped": "!{}.IsEmpty()",
         "ScriptValue": "!{}.IsEmpty()",
     }
 
@@ -220,6 +220,9 @@ def bind_local_vars(code_node, cg_context):
           ("const bool ${is_cross_origin_isolated} = "
            "${execution_context}"
            "->CrossOriginIsolatedCapabilityOrDisabledWebSecurity();")),
+        S("is_in_injection_mitigated_context",
+          ("const bool ${is_in_injection_mitigated_context} = "
+           "${execution_context}->IsInjectionMitigatedContext();")),
         S("is_in_isolated_context",
           ("const bool ${is_in_isolated_context} = "
            "${execution_context}->IsIsolatedContext();")),

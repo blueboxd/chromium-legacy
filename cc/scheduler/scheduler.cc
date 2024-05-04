@@ -789,7 +789,6 @@ void Scheduler::OnBeginImplFrameDeadline() {
     //     order to wait for more user-input before starting the next commit.
     // * Creating a new OutputSurface will not occur during the deadline in
     //     order to allow the state machine to "settle" first.
-    compositor_timing_history_->RecordDeadlineMode(deadline_mode_);
     if (!settings_.using_synchronous_renderer_compositor) {
       compositor_timing_history_->WillFinishImplFrame(
           state_machine_.needs_redraw());
@@ -885,8 +884,10 @@ void Scheduler::ProcessScheduledActions() {
     action = state_machine_.NextAction();
     TRACE_EVENT(TRACE_DISABLED_BY_DEFAULT("cc.debug.scheduler"),
                 "SchedulerStateMachine", [this](perfetto::EventContext ctx) {
-                  this->AsProtozeroInto(ctx,
-                                        ctx.event()->set_cc_scheduler_state());
+                  this->AsProtozeroInto(
+                      ctx,
+                      ctx.event<perfetto::protos::pbzero::ChromeTrackEvent>()
+                          ->set_cc_scheduler_state());
                 });
     base::AutoReset<SchedulerStateMachine::Action> mark_inside_action(
         &inside_action_, action);
@@ -976,7 +977,7 @@ void Scheduler::ProcessScheduledActions() {
 
 void Scheduler::AsProtozeroInto(
     perfetto::EventContext& ctx,
-    perfetto::protos::pbzero::ChromeCompositorSchedulerState* state) const {
+    perfetto::protos::pbzero::ChromeCompositorSchedulerStateV2* state) const {
   base::TimeTicks now = Now();
 
   state_machine_.AsProtozeroInto(state->set_state_machine());

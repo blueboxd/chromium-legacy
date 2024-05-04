@@ -41,7 +41,6 @@ component("service") {
     "image_decode_accelerator_stub.h",
     "image_decode_accelerator_worker.h",
     "image_transport_surface.h",
-    "image_transport_surface_delegate.h",
     "raster_command_buffer_stub.cc",
     "raster_command_buffer_stub.h",
     "shared_image_stub.cc",
@@ -73,7 +72,6 @@ component("service") {
     "//url",
   ]
   deps = [
-    "//base/third_party/dynamic_annotations",
     "//build:chromeos_buildflags",
 
     # crbug.com/799267: crash_key needs to be added explicitly for Windows and
@@ -173,6 +171,9 @@ component("service") {
       "//third_party/dawn/src/dawn:proc",
       "//third_party/dawn/src/dawn/native",
     ]
+  }
+  if (skia_use_dawn) {
+    deps += [ "//third_party/dawn/include/dawn:cpp_headers" ]
   }
 }
 

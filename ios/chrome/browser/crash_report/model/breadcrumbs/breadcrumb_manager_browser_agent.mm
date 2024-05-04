@@ -18,6 +18,7 @@
 #import "ios/chrome/browser/overlays/model/public/web_content_area/java_script_prompt_dialog_overlay.h"
 #import "ios/chrome/browser/shared/model/browser/browser.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/shared/model/web_state_list/tab_group_range.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
 
 namespace {
@@ -121,6 +122,33 @@ void BreadcrumbManagerBrowserAgent::WebStateListDidChange(
                        insert_change.index(), status.active_web_state_change());
       break;
     }
+    case WebStateListChange::Type::kGroupCreate:
+      // TODO(crbug.com/330155206): Log tab group creation in breadcrumbs.
+      break;
+    case WebStateListChange::Type::kGroupVisualDataUpdate:
+      // TODO(crbug.com/330155206): Log tab group's visual data update in
+      // breadcrumbs.
+      break;
+    case WebStateListChange::Type::kGroupMove: {
+      // TODO(crbug.com/330155206): Should we just record a group move instead
+      // of N tab moves?
+      const WebStateListChangeGroupMove& group_move_change =
+          change.As<WebStateListChangeGroupMove>();
+      const TabGroupRange from_range = group_move_change.moved_from_range();
+      const TabGroupRange to_range = group_move_change.moved_to_range();
+      CHECK_EQ(from_range.count(), to_range.count());
+      const int count = from_range.count();
+      for (int offset = 0; offset < count; ++offset) {
+        const int from_index = from_range.range_begin() + offset;
+        const int to_index = to_range.range_begin() + offset;
+        LogTabMoved(GetTabId(web_state_list->GetWebStateAt(to_index)),
+                    from_index, to_index);
+      }
+      break;
+    }
+    case WebStateListChange::Type::kGroupDelete:
+      // TODO(crbug.com/330155206): Log tab group deletion in breadcrumbs.
+      break;
   }
 }
 

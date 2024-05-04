@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
 #include "third_party/blink/renderer/core/editing/position_with_affinity.h"
 #include "third_party/blink/renderer/core/editing/text_affinity.h"
+#include "third_party/blink/renderer/core/html/html_anchor_element.h"
 #include "third_party/blink/renderer/core/layout/block_break_token.h"
 #include "third_party/blink/renderer/core/layout/box_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/disable_layout_side_effects_scope.h"
@@ -103,11 +104,12 @@ const PhysicalBoxFragment* PhysicalBoxFragment::Create(
   const PhysicalBoxStrut borders =
       builder->initial_fragment_geometry_->border.ConvertToPhysical(
           writing_direction);
-  bool has_borders = !borders.IsZero();
+  const PhysicalBoxStrut scrollbar =
+      builder->initial_fragment_geometry_->scrollbar.ConvertToPhysical(
+          writing_direction);
   const PhysicalBoxStrut padding =
       builder->initial_fragment_geometry_->padding.ConvertToPhysical(
           writing_direction);
-  bool has_padding = !padding.IsZero();
 
   const PhysicalSize physical_size =
       ToPhysicalSize(builder->Size(), builder->GetWritingMode());
@@ -127,9 +129,6 @@ const PhysicalBoxFragment* PhysicalBoxFragment::Create(
 
   PhysicalRect scrollable_overflow = {PhysicalOffset(), physical_size};
   if (builder->node_ && !builder->node_.IsReplaced()) {
-    const PhysicalBoxStrut scrollbar =
-        builder->initial_fragment_geometry_->scrollbar.ConvertToPhysical(
-            writing_direction);
     ScrollableOverflowCalculator calculator(
         To<BlockNode>(builder->node_),
         /* is_css_box */ !builder->IsFragmentainerBoxType(),
@@ -179,8 +178,10 @@ const PhysicalBoxFragment* PhysicalBoxFragment::Create(
   // we pass the buffer as a constructor argument.
   return MakeGarbageCollected<PhysicalBoxFragment>(
       AdditionalBytes(byte_size), PassKey(), builder, has_scrollable_overflow,
-      scrollable_overflow, has_borders, borders, has_padding, padding,
-      inflow_bounds, has_fragment_items, block_or_line_writing_mode);
+      scrollable_overflow, borders.IsZero() ? nullptr : &borders,
+      scrollbar.IsZero() ? nullptr : &scrollbar,
+      padding.IsZero() ? nullptr : &padding, inflow_bounds, has_fragment_items,
+      block_or_line_writing_mode);
 }
 
 // static
@@ -271,10 +272,9 @@ PhysicalBoxFragment::PhysicalBoxFragment(
     BoxFragmentBuilder* builder,
     bool has_scrollable_overflow,
     const PhysicalRect& scrollable_overflow,
-    bool has_borders,
-    const PhysicalBoxStrut& borders,
-    bool has_padding,
-    const PhysicalBoxStrut& padding,
+    const PhysicalBoxStrut* borders,
+    const PhysicalBoxStrut* scrollbar,
+    const PhysicalBoxStrut* padding,
     const std::optional<PhysicalRect>& inflow_bounds,
     bool has_fragment_items,
     WritingMode block_or_line_writing_mode)
@@ -327,14 +327,13 @@ PhysicalBoxFragment::PhysicalBoxFragment(
       !!builder->table_collapsed_borders_geometry_ +
       !!builder->table_cell_column_index_ +
       (builder->table_section_row_offsets_.empty() ? 0 : 2) +
-      !!builder->page_name_ + has_borders + has_padding +
+      !!builder->page_name_ + !!borders + !!scrollbar + !!padding +
       inflow_bounds.has_value() + !!builder->Style().MayHaveMargin();
 
   if (rare_fields_size > 0 || !builder->table_column_geometries_.empty()) {
     rare_data_ = MakeGarbageCollected<PhysicalFragmentRareData>(
-        has_scrollable_overflow ? &scrollable_overflow : nullptr,
-        has_borders ? &borders : nullptr, has_padding ? &padding : nullptr,
-        inflow_bounds, *builder, rare_fields_size);
+        has_scrollable_overflow ? &scrollable_overflow : nullptr, borders,
+        scrollbar, padding, inflow_bounds, *builder, rare_fields_size);
   }
 
   bit_field_.set<IsFirstForNodeFlag>(builder->is_first_for_node_);
@@ -425,7 +424,7 @@ const LayoutBox* PhysicalBoxFragment::OwnerLayoutBox() const {
   DCHECK(owner_box);
   if (UNLIKELY(IsFragmentainerBox())) {
     if (owner_box->IsLayoutView()) {
-      DCHECK(IsPageBox());
+      DCHECK_EQ(GetBoxType(), kPageArea);
       DCHECK(To<LayoutView>(owner_box)->ShouldUsePrintingLayout());
     } else {
       DCHECK(IsColumnBox());
@@ -491,28 +490,23 @@ const PhysicalBoxFragment* PhysicalBoxFragment::PostLayout() const {
     return this;
   }
 
-  const auto* layout_object = GetSelfOrContainerLayoutObject();
+  const LayoutObject* layout_object = GetLayoutObject();
   if (UNLIKELY(!layout_object)) {
-    // In some cases the layout object may have been removed. This can of course
-    // not happen if we have actually performed layout, but we may in some cases
-    // clone a fragment *before* layout, to ensure that the fragment tree spine
-    // is correctly rebuilt after a subtree layout.
+    // Some fragments don't have a layout object associated directly with
+    // them. This is the case for lines and fragmentainers (columns / pages).
+    // We don't need to do anything special for such fragments. Any post-layout
+    // fragmentainers should be found as children of the post-layout fragments
+    // of the containing block.
+    //
+    // In some cases the layout object may also have been removed. This can of
+    // course not happen if we have actually performed layout, but we may in
+    // some cases clone a fragment *before* layout, to ensure that the fragment
+    // tree spine is correctly rebuilt after a subtree layout.
     return this;
   }
   const auto* box = DynamicTo<LayoutBox>(layout_object);
   if (UNLIKELY(!box)) {
     DCHECK(IsInlineBox());
-    return this;
-  }
-  if (UNLIKELY(!IsCSSBox())) {
-    // We don't need to do anything special for fragments that don't correspond
-    // to entries in the CSS box tree (such as fragmentainers). Any post-layout
-    // fragmentainers should be found as children of the post-layout fragments
-    // of the containing block.
-    //
-    // TODO(mstensho): Clean up this method. Rather than calling
-    // GetSelfOrContainerLayoutObject() above, we first bail on !IsCSSBox(), and
-    // then simply use GetLayoutObject().
     return this;
   }
 
@@ -975,9 +969,6 @@ PhysicalRect PhysicalBoxFragment::ComputeSelfInkOverflow() const {
   DCHECK_EQ(PostLayout(), this);
   const ComputedStyle& style = Style();
 
-  // TODO(crbug.com/325215738): Remove this when we're done investigating.
-  CHECK(&style);
-
   PhysicalRect ink_overflow(LocalRect());
   if (UNLIKELY(IsTableRow())) {
     // This is necessary because table-rows paints beyond border box if it
@@ -1187,8 +1178,7 @@ void PhysicalBoxFragment::AddOutlineRectsForInlineBox(
       }
 
       AddOutlineRectsForDescendant(child, collector, additional_offset,
-                                   outline_type,
-                                   To<LayoutBoxModelObject>(layout_object));
+                                   outline_type, layout_object);
     }
   }
 }

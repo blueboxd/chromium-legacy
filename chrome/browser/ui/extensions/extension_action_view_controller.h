@@ -10,7 +10,7 @@
 #include "base/scoped_observation.h"
 #include "chrome/browser/extensions/extension_action_icon_factory.h"
 #include "chrome/browser/extensions/extension_context_menu_model.h"
-#include "chrome/browser/extensions/site_permissions_helper.h"
+#include "chrome/browser/extensions/permissions/site_permissions_helper.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_hover_card_types.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 #include "extensions/browser/extension_host.h"
@@ -81,8 +81,6 @@ class ExtensionActionViewController
       content::WebContents* web_contents) const override;
   bool IsEnabled(content::WebContents* web_contents) const override;
   bool IsShowingPopup() const override;
-  bool ShouldShowSiteAccessRequestInToolbar(
-      content::WebContents* web_contents) const override;
   void HidePopup() override;
   gfx::NativeView GetPopupNativeView() override;
   ui::MenuModel* GetContextMenu(

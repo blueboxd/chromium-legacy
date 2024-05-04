@@ -25,7 +25,6 @@
 #include "content/public/browser/desktop_media_id.h"
 #include "content/public/common/content_features.h"
 #include "media/base/media_switches.h"
-#include "media/capture/mojom/video_effects_manager.mojom.h"
 #include "media/capture/video/fake_video_capture_device.h"
 #include "media/capture/video/fake_video_capture_device_factory.h"
 #include "media/capture/video/video_capture_buffer_pool_impl.h"
@@ -34,6 +33,7 @@
 #include "media/capture/video/video_capture_device_client.h"
 #include "media/capture/video/video_frame_receiver.h"
 #include "media/capture/video/video_frame_receiver_on_task_runner.h"
+#include "services/video_effects/public/mojom/video_effects_processor.mojom-forward.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
 
 #if BUILDFLAG(ENABLE_SCREEN_CAPTURE)
@@ -82,12 +82,12 @@ std::unique_ptr<media::VideoCaptureJpegDecoder> CreateGpuJpegDecoder(
 }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
+#if BUILDFLAG(ENABLE_SCREEN_CAPTURE)
+
 // The maximum number of video frame buffers in-flight at any one time. This
 // value should be based on the logical capacity of the capture pipeline, and
 // not on hardware performance.
 const int kMaxNumberOfBuffers = media::kVideoCaptureDefaultMaxBufferPoolSize;
-
-#if BUILDFLAG(ENABLE_SCREEN_CAPTURE)
 
 #if BUILDFLAG(IS_MAC)
 BASE_FEATURE(kScreenCaptureKitMac,
@@ -215,10 +215,8 @@ DesktopCaptureImplementation CreatePlatformDependentVideoCaptureDevice(
 }  // anonymous namespace
 
 InProcessVideoCaptureDeviceLauncher::InProcessVideoCaptureDeviceLauncher(
-    scoped_refptr<base::SingleThreadTaskRunner> device_task_runner,
-    media::VideoCaptureSystem* video_capture_system)
+    scoped_refptr<base::SingleThreadTaskRunner> device_task_runner)
     : device_task_runner_(std::move(device_task_runner)),
-      video_capture_system_(video_capture_system),
       state_(State::READY_TO_LAUNCH) {}
 
 InProcessVideoCaptureDeviceLauncher::~InProcessVideoCaptureDeviceLauncher() {
@@ -234,8 +232,8 @@ void InProcessVideoCaptureDeviceLauncher::LaunchDeviceAsync(
     base::OnceClosure /* connection_lost_cb */,
     Callbacks* callbacks,
     base::OnceClosure done_cb,
-    mojo::PendingRemote<media::mojom::VideoEffectsManager>
-        video_effects_manager) {
+    mojo::PendingRemote<video_effects::mojom::VideoEffectsProcessor>
+        video_effects_processor) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(state_ == State::READY_TO_LAUNCH);
 
@@ -262,22 +260,10 @@ void InProcessVideoCaptureDeviceLauncher::LaunchDeviceAsync(
           base::Unretained(this), callbacks, std::move(done_cb)));
 
   switch (stream_type) {
-    case blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE: {
-      // Clients who create an instance of |this| without providing a
-      // VideoCaptureSystem instance are expected to know that
-      // MEDIA_DEVICE_VIDEO_CAPTURE is not supported in this case.
-      CHECK(video_capture_system_);
-      start_capture_closure = base::BindOnce(
-          &InProcessVideoCaptureDeviceLauncher::
-              DoStartDeviceCaptureOnDeviceThread,
-          base::Unretained(this), device_id, params,
-          CreateDeviceClient(media::VideoCaptureBufferType::kSharedMemory,
-                             kMaxNumberOfBuffers, std::move(receiver),
-                             std::move(receiver_on_io_thread)),
-          std::move(after_start_capture_callback));
-      break;
-    }
-
+    case blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE:
+      // Only the Service-based device launcher is supported for device capture
+      // from cameras etc.
+      NOTREACHED_NORETURN();
 #if BUILDFLAG(ENABLE_SCREEN_CAPTURE)
     case blink::mojom::MediaStreamType::GUM_TAB_VIDEO_CAPTURE:
       start_capture_closure = base::BindOnce(
@@ -400,16 +386,11 @@ InProcessVideoCaptureDeviceLauncher::CreateDeviceClient(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
 #if BUILDFLAG(IS_WIN)
-  scoped_refptr<media::DXGIDeviceManager> dxgi_device_manager;
-  if (video_capture_system_ && video_capture_system_->GetFactory()) {
-    dxgi_device_manager =
-        video_capture_system_->GetFactory()->GetDxgiDeviceManager();
-  }
   scoped_refptr<media::VideoCaptureBufferPool> buffer_pool =
       base::MakeRefCounted<media::VideoCaptureBufferPoolImpl>(
           requested_buffer_type, buffer_pool_max_buffer_count,
           std::make_unique<media::VideoCaptureBufferTrackerFactoryImpl>(
-              std::move(dxgi_device_manager)));
+              /*dxgi_device_manager=*/nullptr));
 #else
   scoped_refptr<media::VideoCaptureBufferPool> buffer_pool =
       base::MakeRefCounted<media::VideoCaptureBufferPoolImpl>(
@@ -428,7 +409,7 @@ InProcessVideoCaptureDeviceLauncher::CreateDeviceClient(
 #else
   return std::make_unique<media::VideoCaptureDeviceClient>(
       std::move(receiver), std::move(buffer_pool),
-      mojo::PendingRemote<media::mojom::VideoEffectsManager>{});
+      media::VideoEffectsContext({}));
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
 
@@ -471,26 +452,6 @@ void InProcessVideoCaptureDeviceLauncher::OnDeviceStarted(
       return;
     case State::READY_TO_LAUNCH:
       NOTREACHED_NORETURN();
-  }
-}
-
-void InProcessVideoCaptureDeviceLauncher::DoStartDeviceCaptureOnDeviceThread(
-    const std::string& device_id,
-    const media::VideoCaptureParams& params,
-    std::unique_ptr<media::VideoCaptureDeviceClient> device_client,
-    ReceiveDeviceCallback result_callback) {
-  DCHECK(device_task_runner_->BelongsToCurrentThread());
-  DCHECK(video_capture_system_);
-
-  auto device_status = video_capture_system_->CreateDevice(device_id);
-
-  if (device_status.ok()) {
-    std::unique_ptr<media::VideoCaptureDevice> video_capture_device =
-        device_status.ReleaseDevice();
-    video_capture_device->AllocateAndStart(params, std::move(device_client));
-    std::move(result_callback).Run(std::move(video_capture_device));
-  } else {
-    std::move(result_callback).Run(nullptr);
   }
 }
 

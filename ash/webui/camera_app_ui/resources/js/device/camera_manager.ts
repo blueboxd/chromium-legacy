@@ -5,13 +5,11 @@
 import {
   assert,
   assertExists,
-  assertInstanceof,
 } from '../assert.js';
-import * as error from '../error.js';
 import * as expert from '../expert.js';
 import {Point} from '../geometry.js';
 import * as metrics from '../metrics.js';
-import {isLocalDev} from '../models/load_time_data.js';
+import * as loadTimeData from '../models/load_time_data.js';
 import {ChromeHelper} from '../mojo/chrome_helper.js';
 import {LidState, ScreenState} from '../mojo/type.js';
 import * as nav from '../nav.js';
@@ -19,8 +17,6 @@ import {PerfLogger} from '../perf.js';
 import * as state from '../state.js';
 import {
   AspectRatioSet,
-  ErrorLevel,
-  ErrorType,
   Facing,
   Mode,
   PerfEvent,
@@ -123,25 +119,6 @@ export class CameraManager implements EventListener {
         defaultFacing,
         modeConstraints,
     );
-
-    // Monitors the states to stop camera when locked/minimized.
-    // TODO(pihsun): The IdleDetector permission is auto-granted on CrOS. For
-    // local dev, we can request it by IdleDetector.requestPermission(), but
-    // that needs to be done in a user gesture and can't be done here.
-    if (!isLocalDev()) {
-      const idleDetector = new IdleDetector();
-      idleDetector.addEventListener('change', async () => {
-        this.locked = idleDetector.screenState === 'locked';
-        if (this.locked) {
-          await this.reconfigure();
-        }
-      });
-      idleDetector.start().catch((e) => {
-        error.reportError(
-            ErrorType.IDLE_DETECTOR_FAILURE, ErrorLevel.ERROR,
-            assertInstanceof(e, Error));
-      });
-    }
 
     document.addEventListener('visibilitychange', async () => {
       const recording = state.get(state.State.TAKING) && state.get(Mode.VIDEO);
@@ -274,6 +251,16 @@ export class CameraManager implements EventListener {
 
     const lidState = await helper.initLidStateMonitor(setLidClosed);
     setLidClosed(lidState);
+
+    const handleScreenLockedChange = async (isScreenLocked: boolean) => {
+      this.locked = isScreenLocked;
+      if (this.locked) {
+        await this.reconfigure();
+      }
+    };
+
+    this.locked =
+        await helper.initScreenLockedMonitor(handleScreenLockedChange);
 
     const handleScreenStateChange = async () => {
       if (this.screenOff) {
@@ -492,6 +479,20 @@ export class CameraManager implements EventListener {
   }
 
   /**
+   * Whether the photo taking should be done by using preview frame as photo.
+   * This is the workaround for b/184089334 to avoid mismatch between preview
+   * and photo results in some PTZ cameras.
+   */
+  shouldUsePreviewAsPhoto(): boolean {
+    const deviceId = this.getDeviceId();
+    if (deviceId === null) {
+      return false;
+    }
+    return state.get(state.State.ENABLE_PTZ) &&
+        this.getCameraInfo().hasBuiltinPTZSupport(deviceId);
+  }
+
+  /**
    * Whether app window is suspended.
    */
   private shouldSuspend(): boolean {
@@ -575,6 +576,14 @@ export class CameraManager implements EventListener {
     state.set(state.State.CAMERA_CONFIGURING, true);
     this.setCameraAvailable(false);
     this.scheduler.reconfigurer.setShouldSuspend(this.shouldSuspend());
+    if (loadTimeData.isVideoCaptureDisallowed()) {
+      if (this.watchdog === null) {
+        nav.open(ViewName.WARNING, WarningType.DISABLED_CAMERA);
+        this.watchdog = new ResumeStateWatchdog(() => this.doReconfigure());
+        this.perfLogger.interrupt();
+      }
+      return false;
+    }
     try {
       if (!(await this.scheduler.reconfigure())) {
         throw new Error('camera suspended');

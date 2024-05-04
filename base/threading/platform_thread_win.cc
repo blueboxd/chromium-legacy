@@ -4,11 +4,12 @@
 
 #include "base/threading/platform_thread_win.h"
 
+#include <windows.h>
+
 #include <stddef.h>
 
 #include <string>
 
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_buildflags.h"
 #include "base/debug/alias.h"
 #include "base/debug/crash_logging.h"
 #include "base/debug/profiler.h"
@@ -28,12 +29,10 @@
 #include "base/win/scoped_handle.h"
 #include "base/win/windows_version.h"
 #include "build/build_config.h"
+#include "partition_alloc/partition_alloc_buildflags.h"
 
-#include <windows.h>
-
-#if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && BUILDFLAG(USE_STARSCAN)
-#include "base/allocator/partition_allocator/src/partition_alloc/starscan/pcscan.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/starscan/stack/stack.h"
+#if PA_BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
+#include "partition_alloc/stack/stack.h"
 #endif
 
 namespace base {
@@ -123,9 +122,8 @@ DWORD __stdcall ThreadFunc(void* params) {
                                 FALSE,
                                 DUPLICATE_SAME_ACCESS);
 
-#if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && BUILDFLAG(USE_STARSCAN)
-  partition_alloc::internal::PCScan::NotifyThreadCreated(
-      partition_alloc::internal::GetStackPointer());
+#if PA_BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
+  partition_alloc::internal::StackTopRegistry::Get().NotifyThreadCreated();
 #endif
 
   win::ScopedHandle scoped_platform_handle;
@@ -144,8 +142,8 @@ DWORD __stdcall ThreadFunc(void* params) {
                                                    PlatformThread::CurrentId());
   }
 
-#if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && BUILDFLAG(USE_STARSCAN)
-  partition_alloc::internal::PCScan::NotifyThreadDestroyed();
+#if PA_BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
+  partition_alloc::internal::StackTopRegistry::Get().NotifyThreadDestroyed();
 #endif
 
   // Ensure thread priority is at least NORMAL before initiating thread

@@ -4,7 +4,8 @@
 
 #include "android_webview/common/aw_content_client.h"
 
-#include "android_webview/common/aw_features.h"
+#include <string_view>
+
 #include "android_webview/common/aw_media_drm_bridge_client.h"
 #include "android_webview/common/aw_resource.h"
 #include "android_webview/common/crash_reporter/crash_keys.h"
@@ -50,7 +51,7 @@ std::u16string AwContentClient::GetLocalizedString(int message_id) {
   return l10n_util::GetStringUTF16(message_id);
 }
 
-base::StringPiece AwContentClient::GetDataResource(
+std::string_view AwContentClient::GetDataResource(
     int resource_id,
     ui::ResourceScaleFactor scale_factor) {
   // TODO(boliu): Used only by WebKit, so only bundle those resources for
@@ -112,10 +113,6 @@ void AwContentClient::ExposeInterfacesToBrowser(
 }
 
 blink::OriginTrialPolicy* AwContentClient::GetOriginTrialPolicy() {
-  if (!base::FeatureList::IsEnabled(features::kWebViewOriginTrials)) {
-    return nullptr;
-  }
-
   // Prevent initialization race (see crbug.com/721144). There may be a
   // race when the policy is needed for worker startup (which happens on a
   // separate worker thread).

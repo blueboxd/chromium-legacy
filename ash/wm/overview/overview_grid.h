@@ -5,15 +5,12 @@
 #ifndef ASH_WM_OVERVIEW_OVERVIEW_GRID_H_
 #define ASH_WM_OVERVIEW_OVERVIEW_GRID_H_
 
-#include <stddef.h>
-
 #include <memory>
 #include <vector>
 
 #include "ash/public/cpp/wallpaper/wallpaper_controller_observer.h"
 #include "ash/rotator/screen_rotation_animator_observer.h"
-#include "ash/style/icon_button.h"
-#include "ash/style/rounded_label_widget.h"
+#include "ash/wm/desks/desk_bar_view_base.h"
 #include "ash/wm/desks/templates/saved_desk_save_desk_button_container.h"
 #include "ash/wm/overview/birch/birch_bar_view.h"
 #include "ash/wm/overview/overview_controller.h"
@@ -51,8 +48,10 @@ class OverviewDropTarget;
 class OverviewGridEventHandler;
 class OverviewItemBase;
 class OverviewSession;
+class RoundedLabelWidget;
 class SavedDeskSaveDeskButton;
 class SavedDeskLibraryView;
+class ScopedOverviewHideWindows;
 class ScopedOverviewWallpaperClipper;
 class SplitViewController;
 
@@ -222,7 +221,7 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
 
   // Called when any OverviewItem on any OverviewGrid has started/ended being
   // dragged.
-  void OnOverviewItemDragStarted(OverviewItemBase* item);
+  void OnOverviewItemDragStarted();
   void OnOverviewItemDragEnded(bool snap);
 
   // Called when a window (either it's browser window or an app window)
@@ -301,7 +300,8 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
   bool IsDesksBarViewActive() const;
 
   // Gets the effective bounds of this grid (the area in which the windows are
-  // positioned, taking into account the availability of the Desks bar).
+  // positioned, taking into account the availability of the desks bar and birch
+  // bar).
   gfx::Rect GetGridEffectiveBounds() const;
 
   // Gets the horizontal paddings according to the shelf alignment and the
@@ -421,7 +421,16 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
 
   FasterSplitView* GetFasterSplitView();
 
-  bool IsBirchBarShowing() const;
+  // Gets the cropping area of the wallpaper in screen coordinates.
+  gfx::Rect GetWallpaperClipBounds() const;
+
+  // Initializes the widget that contains the `BirchBarView` contents.`by_user`
+  // is true, if the user selects to show the birch bar from the context menu.
+  void MaybeInitBirchBarWidget(bool by_user = false);
+
+  // Destroys birch bar widget. `by_user` is true, if the user selects to hide
+  // the birch bar from the context menu.
+  void DestroyBirchBarWidget(bool by_user = false);
 
   // SplitViewObserver:
   void OnSplitViewStateChanged(SplitViewController::State previous_state,
@@ -495,6 +504,12 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
     return faster_splitview_widget_.get();
   }
 
+  const views::Widget* pine_widget() const { return pine_widget_.get(); }
+
+  ScopedOverviewWallpaperClipper* scoped_overview_wallpaper_clipper() {
+    return scoped_overview_wallpaper_clipper_.get();
+  }
+
   int num_incognito_windows() const { return num_incognito_windows_; }
 
   int num_unsupported_windows() const { return num_unsupported_windows_; }
@@ -503,6 +518,7 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
   friend class DesksTemplatesTest;
   friend class OverviewGridTestApi;
   friend class OverviewTestBase;
+  FRIEND_TEST_ALL_PREFIXES(PineTest, ZoomDisplay);
 
   // Struct which holds data required to perform nudges. Nudge in the context of
   // overview view means an overview item is currently being dragged vertically
@@ -518,12 +534,6 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
   // will update the save desk buttons visibility after we initialize
   // `LegacyDeskBarView`.
   void MaybeInitDesksWidget();
-
-  // Initializes the widget that contains the `BirchBarView` contents.
-  void MaybeInitBirchBarWidget();
-
-  // Destroys birch bar widget.
-  void DestroyBirchBarWidget();
 
   // Gets the layout of the overview items. Layout is done in 2 stages
   // maintaining fixed MRU ordering.
@@ -565,8 +575,11 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
       int* out_min_right,
       int* out_max_right);
 
-  // Maybe modify `out_window_rects` to center the overview items.
-  void MaybeCenterOverviewItems(std::vector<gfx::RectF>& out_window_rects);
+  // Maybe modify `out_window_rects` to center the overview items excluding the
+  // the rect(s) corresponding to item(s) in `ignored_items`.
+  void MaybeCenterOverviewItems(
+      const base::flat_set<OverviewItemBase*>& ignored_items,
+      std::vector<gfx::RectF>& out_window_rects);
 
   // Returns the index of `item` in `item_list_`.
   size_t GetOverviewItemIndex(OverviewItemBase* item) const;
@@ -604,6 +617,10 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
   // Called when the layout of the birch bar is updated. We may need to
   // reposition the windows if the relayout is due to the contents change.
   void OnBirchBarLayoutChanged(BirchBarView::RelayoutReason reason);
+
+  // Refreshes desks widgets visibility: hidden in partial Overview, visibility
+  // restored when partial Overview ends.
+  void RefreshDesksWidgets(bool visible);
 
   // Updates the number of unsupported windows of saved desk. This includes
   // `num_incognito_windows_` and `num_unsupported_windows` as of now. When
@@ -667,9 +684,6 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
   // if split view is unsupported (see |ShouldAllowSplitView|).
   std::unique_ptr<SplitViewDragIndicators> split_view_drag_indicators_;
 
-  // A solid-color layer stacked below the clipped wallpaper.
-  std::unique_ptr<ui::Layer> wallpaper_underlay_layer_;
-
   // Widget that contains the DeskBarView contents when the Virtual Desks
   // feature is enabled.
   std::unique_ptr<views::Widget> desks_widget_;
@@ -722,6 +736,10 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
 
   // Handles events that are not handled by the OverviewItems.
   std::unique_ptr<OverviewGridEventHandler> grid_event_handler_;
+
+  // Hides scoped windows in partial overview, restores their visibility when
+  // partial overview ends.
+  std::unique_ptr<ScopedOverviewHideWindows> hide_windows_in_partial_overview_;
 
   // Records the presentation time of scrolling the grid in overview mode.
   std::unique_ptr<ui::PresentationTimeRecorder> presentation_time_recorder_;

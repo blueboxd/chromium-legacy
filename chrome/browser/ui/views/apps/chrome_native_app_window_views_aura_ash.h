@@ -112,12 +112,9 @@ class ChromeNativeAppWindowViewsAuraAsh
                        ExclusiveAccessBubbleType bubble_type,
                        int64_t display_id) override;
   void ExitFullscreen() override;
-  void UpdateExclusiveAccessExitBubbleContent(
-      const GURL& url,
-      ExclusiveAccessBubbleType bubble_type,
-      ExclusiveAccessBubbleHideCallback bubble_first_hide_callback,
-      bool notify_download,
-      bool force_update) override;
+  void UpdateExclusiveAccessBubble(
+      const ExclusiveAccessBubbleParams& params,
+      ExclusiveAccessBubbleHideCallback first_hide_callback) override;
   bool IsExclusiveAccessBubbleDisplayed() const override;
   void OnExclusiveAccessUserInput() override;
   content::WebContents* GetActiveWebContents() override;
@@ -125,10 +122,8 @@ class ChromeNativeAppWindowViewsAuraAsh
 
   // ExclusiveAccessBubbleViewsContext:
   ExclusiveAccessManager* GetExclusiveAccessManager() override;
-  views::Widget* GetBubbleAssociatedWidget() override;
   ui::AcceleratorProvider* GetAcceleratorProvider() override;
   gfx::NativeView GetBubbleParentView() const override;
-  gfx::Point GetCursorPointInParent() const override;
   gfx::Rect GetClientAreaBoundsInScreen() const override;
   bool IsImmersiveModeEnabled() const override;
   gfx::Rect GetTopContainerBoundsInScreen() override;

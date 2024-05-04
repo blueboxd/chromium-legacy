@@ -51,6 +51,7 @@
 #include "chromeos/components/onc/onc_test_utils.h"
 #include "chromeos/components/onc/onc_utils.h"
 #include "chromeos/components/onc/onc_validator.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "components/onc/onc_pref_names.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/proxy_config/pref_proxy_config_tracker_impl.h"
@@ -406,12 +407,9 @@ class ManagedNetworkConfigurationHandlerTest : public testing::Test {
   }
 
   void SetArcAlwaysOnUserPrefs(std::string package_name,
-                               bool lockdown,
                                bool vpn_configured_allowed = false) {
     user_prefs_.SetUserPref(arc::prefs::kAlwaysOnVpnPackage,
                             base::Value(package_name));
-    user_prefs_.SetUserPref(arc::prefs::kAlwaysOnVpnLockdown,
-                            base::Value(lockdown));
     user_prefs_.SetUserPref(prefs::kVpnConfigAllowed,
                             base::Value(vpn_configured_allowed));
   }
@@ -423,6 +421,7 @@ class ManagedNetworkConfigurationHandlerTest : public testing::Test {
  protected:
   base::test::TaskEnvironment task_environment_{
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
+  base::test::ScopedFeatureList feature_list_;
 
   TestNetworkPolicyObserver policy_observer_;
   std::unique_ptr<MockNetworkStateHandler> network_state_handler_;
@@ -665,56 +664,7 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, SetPolicyProhibitedTechnology) {
       IsEmpty());
 }
 
-TEST_F(ManagedNetworkConfigurationHandlerTest,
-       SetPolicyManagedCellular_SmdsSupportDisabled) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndDisableFeature(ash::features::kSmdsSupport);
-
-  InitializeStandardProfiles();
-  InitializeEuicc();
-
-  base::Value::Dict expected_shill_properties = test_utils::ReadTestDictionary(
-      "policy/shill_policy_on_unconfigured_cellular.json");
-
-  EXPECT_TRUE(SetPolicy(::onc::ONC_SOURCE_DEVICE_POLICY, std::string(),
-                        "policy/policy_cellular.onc"));
-  FastForwardProfileRefreshDelay();
-  FastForwardAutoConnectWaiting();
-  base::RunLoop().RunUntilIdle();
-
-  std::string service_path = GetShillServiceClient()->FindServiceMatchingGUID(
-      kTestGuidManagedCellular);
-  const base::Value::Dict* properties =
-      GetShillServiceClient()->GetServiceProperties(service_path);
-  ASSERT_TRUE(properties);
-  EXPECT_THAT(*properties, DictionaryHasValues(expected_shill_properties));
-  const std::string* iccid = properties->FindString(shill::kIccidProperty);
-  ASSERT_TRUE(iccid);
-  EXPECT_TRUE(managed_cellular_pref_handler_->GetSmdpAddressFromIccid(*iccid));
-
-  // Verify that applying a new cellular policy with same ICCID should update
-  // the old shill configuration.
-  EXPECT_TRUE(SetPolicy(::onc::ONC_SOURCE_DEVICE_POLICY, std::string(),
-                        "policy/policy_cellular_with_iccid.onc"));
-  base::RunLoop().RunUntilIdle();
-
-  ASSERT_EQ(std::string(), GetShillServiceClient()->FindServiceMatchingGUID(
-                               kTestGuidManagedCellular));
-  service_path = GetShillServiceClient()->FindServiceMatchingGUID(
-      kTestGuidManagedCellular2);
-  const base::Value::Dict* properties2 =
-      GetShillServiceClient()->GetServiceProperties(service_path);
-  ASSERT_TRUE(properties2);
-  std::optional<bool> auto_connect =
-      properties2->FindBool(shill::kAutoConnectProperty);
-  ASSERT_TRUE(*auto_connect);
-}
-
-TEST_F(ManagedNetworkConfigurationHandlerTest,
-       SetPolicyManagedCellular_SmdsSupportEnabled) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(ash::features::kSmdsSupport);
-
+TEST_F(ManagedNetworkConfigurationHandlerTest, SetPolicyManagedCellular) {
   InitializeStandardProfiles();
   InitializeEuicc();
 
@@ -2126,6 +2076,33 @@ TEST_F(ManagedNetworkConfigurationHandlerTest,
       managed_handler()->UserCreatedNetworkConfigurationsAreEphemeral());
 }
 
+TEST_F(ManagedNetworkConfigurationHandlerTest, AllowApnModification) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(/*enabled_features=*/
+                                       {features::kApnRevamp,
+                                        chromeos::features::kApnPolicies},
+                                       /*disabled_features=*/{});
+
+  // TODO(b/333100319): When feature is fully enabled, test
+  // AllowApnModification() in other unit tests to be consistent.
+  EXPECT_TRUE(managed_handler()->AllowApnModification());
+
+  // Set 'AllowApnModification' policy.
+  EXPECT_TRUE(SetPolicy(::onc::ONC_SOURCE_DEVICE_POLICY, std::string(),
+                        "policy/policy_allow_apn_modification.onc"));
+  base::RunLoop().RunUntilIdle();
+
+  // Check ManagedNetworkConfigurationHandler policy accessors.
+  EXPECT_FALSE(managed_handler()->AllowApnModification());
+  EXPECT_TRUE(managed_handler()->AllowCellularHotspot());
+  EXPECT_TRUE(managed_handler()->AllowCellularSimLock());
+  EXPECT_FALSE(managed_handler()->AllowOnlyPolicyCellularNetworks());
+  EXPECT_FALSE(managed_handler()->AllowOnlyPolicyWiFiToConnect());
+  EXPECT_FALSE(managed_handler()->AllowOnlyPolicyWiFiToConnectIfAvailable());
+  EXPECT_FALSE(managed_handler()->AllowOnlyPolicyNetworksToAutoconnect());
+  EXPECT_TRUE(managed_handler()->GetBlockedHexSSIDs().empty());
+}
+
 TEST_F(ManagedNetworkConfigurationHandlerTest, AllowCellularSimLock) {
   // Set 'AllowCellularSimLock' policy.
   EXPECT_TRUE(SetPolicy(::onc::ONC_SOURCE_DEVICE_POLICY, std::string(),
@@ -2402,17 +2379,15 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, IsProhibitedFromConfiguringVpn) {
   user_prefs_.registry()->RegisterBooleanPref(prefs::kVpnConfigAllowed, true);
 
   for (const std::string& package_name : {"", "package_name"}) {
-    for (const bool lockdown : {true, false}) {
-      for (const bool vpn_configure_allowed : {true, false}) {
-        SetArcAlwaysOnUserPrefs(package_name, lockdown, vpn_configure_allowed);
-        if (package_name.empty() || !lockdown || vpn_configure_allowed) {
-          EXPECT_FALSE(managed_network_configuration_handler_
-                           ->IsProhibitedFromConfiguringVpn());
-          continue;
-        }
-        EXPECT_TRUE(managed_network_configuration_handler_
-                        ->IsProhibitedFromConfiguringVpn());
+    for (const bool vpn_configure_allowed : {true, false}) {
+      SetArcAlwaysOnUserPrefs(package_name, vpn_configure_allowed);
+      if (package_name.empty() || vpn_configure_allowed) {
+        EXPECT_FALSE(managed_network_configuration_handler_
+                         ->IsProhibitedFromConfiguringVpn());
+        continue;
       }
+      EXPECT_TRUE(managed_network_configuration_handler_
+                      ->IsProhibitedFromConfiguringVpn());
     }
   }
 }

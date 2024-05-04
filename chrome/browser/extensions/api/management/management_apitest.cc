@@ -22,6 +22,7 @@
 #include "chrome/browser/web_applications/extension_status_utils.h"
 #include "chrome/browser/web_applications/os_integration/os_integration_manager.h"
 #include "chrome/browser/web_applications/test/fake_web_app_ui_manager.h"
+#include "chrome/browser/web_applications/test/os_integration_test_override_impl.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
@@ -61,8 +62,7 @@ Browser* FindOtherBrowser(Browser* browser) {
 }
 
 bool ExpectChromeAppsDefaultEnabled() {
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
-    BUILDFLAG(IS_FUCHSIA)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
   return false;
 #else
   return true;
@@ -142,6 +142,7 @@ class ExtensionManagementApiTest
 
  protected:
   base::AutoReset<bool> enable_chrome_apps_;
+  web_app::OsIntegrationTestOverrideBlockingRegistration faked_os_integration_;
 };
 
 INSTANTIATE_TEST_SUITE_P(PersistentBackground,
@@ -205,7 +206,7 @@ class InstallReplacementWebAppApiTest : public ExtensionManagementApiTest {
  protected:
   static const char kManifest[];
   static const char kAppManifest[];
-  web_app::OsIntegrationManager::ScopedSuppressForTesting os_hooks_suppress_;
+
   void SetUpOnMainThread() override {
     ExtensionManagementApiTest::SetUpOnMainThread();
     https_test_server_.ServeFilesFromDirectory(test_data_dir_);
@@ -350,7 +351,7 @@ IN_PROC_BROWSER_TEST_P(InstallReplacementWebAppApiTest, NotInstallableWebApp) {
 }
 
 #if !BUILDFLAG(IS_CHROMEOS_LACROS)
-// TODO(crbug.com/1288199): Run these tests on Chrome OS with both Ash and
+// TODO(crbug.com/40211465): Run these tests on Chrome OS with both Ash and
 // Lacros processes active.
 IN_PROC_BROWSER_TEST_P(InstallReplacementWebAppApiTest, InstallableWebApp) {
   static constexpr char kGoodWebAppURL[] =
@@ -361,7 +362,7 @@ IN_PROC_BROWSER_TEST_P(InstallReplacementWebAppApiTest, InstallableWebApp) {
 #endif
 
 #if !BUILDFLAG(IS_CHROMEOS_LACROS)
-// TODO(crbug.com/1288199): Run these tests on Chrome OS with both Ash and
+// TODO(crbug.com/40211465): Run these tests on Chrome OS with both Ash and
 // Lacros processes active.
 
 // Check that web app still installs and launches correctly when start_url does
@@ -433,7 +434,7 @@ IN_PROC_BROWSER_TEST_P(ExtensionManagementApiTest, ManagementPolicyProhibited) {
 }
 
 #if !BUILDFLAG(IS_CHROMEOS_LACROS)
-// TODO(crbug.com/1288199): Run these tests on Chrome OS with both Ash and
+// TODO(crbug.com/40211465): Run these tests on Chrome OS with both Ash and
 // Lacros processes active.
 
 IN_PROC_BROWSER_TEST_P(ExtensionManagementApiTest, LaunchPanelApp) {

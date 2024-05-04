@@ -166,13 +166,10 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
 }
 
 - (NSString*)autocompleteText {
-  DCHECK_LT(self.text.length, _selection.text.length)
-      << "[_selection text] and self.text are out of sync. "
-      << "Please email justincohen@ and rohitrao@ if you see this.";
-  if (_selection && _selection.text.length > self.text.length) {
-    return [_selection.text substringFromIndex:self.text.length];
+  if (!_selection || self.text.length >= _selection.text.length) {
+    return @"";
   }
-  return @"";
+  return [_selection.text substringFromIndex:self.text.length];
 }
 
 - (BOOL)hasAutocompleteText {
@@ -193,7 +190,6 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
 }
 
 - (NSRange)selectedNSRange {
-  DCHECK([self isFirstResponder]);
   UITextPosition* beginning = [self beginningOfDocument];
   UITextRange* selectedRange = [self selectedTextRange];
   NSInteger start = [self offsetFromPosition:beginning
@@ -576,10 +572,7 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
   if (!touch)
     return;
 
-  // Accept selection.
-  NSString* newText = [[self displayedText] copy];
-  [self clearAutocompleteText];
-  [self setText:newText];
+  [self acceptAutocompleteText];
 }
 
 - (void)select:(id)sender {
@@ -602,7 +595,7 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
 }
 
 - (BOOL)canPerformAction:(SEL)action withSender:(id)sender {
-  // TODO(crbug.com/1478261): Improve this short term fix.
+  // TODO(crbug.com/40280508): Improve this short term fix.
   if (@available(iOS 17.0, *)) {
     if (action == @selector(undoManager)) {
       return YES;
@@ -823,6 +816,21 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
   NSAttributedString* string =
       [[NSAttributedString alloc] initWithString:_selection.text];
   [self setText:string userTextLength:string.length];
+  if ([self.delegate
+          respondsToSelector:@selector(textFieldDidAcceptAutocomplete:)]) {
+    [self.delegate textFieldDidAcceptAutocomplete:self];
+  }
+}
+
+#pragma mark - UIAccessibilityElement
+
+- (NSString*)accessibilityValue {
+  if (NSClassFromString(@"XCTest")) {
+    return [NSString stringWithFormat:@"%@||||%@||||%@", self.userText ?: @"",
+                                      self.autocompleteText ?: @"",
+                                      self.additionalText ?: @""];
+  }
+  return self.text;
 }
 
 #pragma mark - OmniboxKeyboardDelegate

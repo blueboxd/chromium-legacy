@@ -65,16 +65,20 @@ v8::Local<v8::Object> V8DOMWrapper::CreateWrapper(ScriptState* script_state,
   return wrapper;
 }
 
-bool V8DOMWrapper::IsWrapper(v8::Isolate* isolate, v8::Local<v8::Value> value) {
-  if (value.IsEmpty() || !value->IsObject())
-    return false;
+bool V8DOMWrapper::IsWrapper(v8::Isolate* isolate,
+                             v8::Local<v8::Object> object) {
+  CHECK(!object.IsEmpty());
 
-  v8::Local<v8::Object> object = v8::Local<v8::Object>::Cast(value);
-  if (!object->IsApiWrapper())
+  if (!object->IsApiWrapper()) {
     return false;
+  }
 
-  if (object->InternalFieldCount() < kV8DefaultWrapperInternalFieldCount)
+  // TODO(b/328117814): this works as long as other embedders within the
+  // renderer process are not using new wrappers. We will need to come up
+  // with a friend-or-foe identification when we switch gin to new wrappers.
+  if (WrapperTypeInfo::HasLegacyInternalFieldsSet(object)) {
     return false;
+  }
 
   const WrapperTypeInfo* untrusted_wrapper_type_info =
       ToWrapperTypeInfo(object);
@@ -85,21 +89,15 @@ bool V8DOMWrapper::IsWrapper(v8::Isolate* isolate, v8::Local<v8::Value> value) {
       untrusted_wrapper_type_info, object);
 }
 
-bool V8DOMWrapper::HasInternalFieldsSet(v8::Local<v8::Value> value) {
-  if (value.IsEmpty() || !value->IsObject())
-    return false;
+bool V8DOMWrapper::HasInternalFieldsSet(v8::Isolate* isolate,
+                                        v8::Local<v8::Object> object) {
+  CHECK(!object.IsEmpty());
 
-  v8::Local<v8::Object> object = v8::Local<v8::Object>::Cast(value);
   if (!object->IsApiWrapper())
     return false;
-
-  if (object->InternalFieldCount() < kV8DefaultWrapperInternalFieldCount)
-    return false;
-
-  const ScriptWrappable* untrused_wrappable = ToScriptWrappable(object);
   const WrapperTypeInfo* untrusted_wrapper_type_info =
       ToWrapperTypeInfo(object);
-  return untrused_wrappable && untrusted_wrapper_type_info &&
+  return untrusted_wrapper_type_info &&
          untrusted_wrapper_type_info->gin_embedder == gin::kEmbedderBlink;
 }
 

@@ -75,14 +75,14 @@ class ASH_EXPORT CameraEffectsController : public AutozoomObserver,
     base::Time creation_time;
     base::Time last_accessed;
     base::FilePath basename;
-    std::string jpeg_bytes;
+    gfx::ImageSkia image;
     std::string metadata;
 
     BackgroundImageInfo(const BackgroundImageInfo& info);
     BackgroundImageInfo(const base::Time& creation_time,
                         const base::Time& last_accessed,
                         const base::FilePath& basename,
-                        const std::string& jpeg_bytes,
+                        const gfx::ImageSkia& image,
                         const std::string& metadata);
   };
 
@@ -174,6 +174,14 @@ class ASH_EXPORT CameraEffectsController : public AutozoomObserver,
     camera_background_run_dir_ = camera_background_run_dir;
   }
 
+  // Background images are resized to have this width when they are used as icon
+  // in the sysui or webui.
+  static constexpr int kImageAsIconWidth = 512;
+
+  bool is_eligible_for_background_replace() const {
+    return is_eligible_for_background_replace_;
+  }
+
  private:
   // AutozoomObserver:
   void OnAutozoomControlEnabledChanged(bool enabled) override;
@@ -224,7 +232,8 @@ class ASH_EXPORT CameraEffectsController : public AutozoomObserver,
   void AddBackgroundBlurStateToEffect(VcHostedEffect* effect,
                                       const gfx::VectorIcon& icon,
                                       int state_value,
-                                      int string_id);
+                                      int string_id,
+                                      int view_id);
 
   // A helper for easier binding.
   void SetCameraEffectsInCameraHalDispatcherImpl(
@@ -233,6 +242,8 @@ class ASH_EXPORT CameraEffectsController : public AutozoomObserver,
   // Used to bypass the CameraHalDispatcherImpl::SetCameraEffects for
   // testing purpose.
   bool in_testing_mode_ = false;
+
+  bool is_eligible_for_background_replace_ = false;
 
   // Directory that stores the camera background images.
   base::FilePath camera_background_img_dir_;

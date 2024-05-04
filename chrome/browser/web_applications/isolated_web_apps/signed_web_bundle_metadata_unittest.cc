@@ -4,12 +4,13 @@
 
 #include "chrome/browser/web_applications/isolated_web_apps/signed_web_bundle_metadata.h"
 
+#include <string_view>
+
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/test/gmock_expected_support.h"
 #include "base/test/test_future.h"
 #include "base/threading/thread_restrictions.h"
-#include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_location.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_source.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_storage_location.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_trust_checker.h"
@@ -19,10 +20,10 @@
 #include "chrome/browser/web_applications/test/web_app_icon_test_utils.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/browser/web_applications/test/web_app_test.h"
-#include "chrome/browser/web_applications/web_contents/web_app_url_loader.h"
 #include "chrome/common/url_constants.h"
 #include "components/web_package/test_support/signed_web_bundles/web_bundle_signer.h"
 #include "components/webapps/browser/installable/installable_logging.h"
+#include "components/webapps/browser/web_contents/web_app_url_loader.h"
 #include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -38,7 +39,7 @@ using testing::Eq;
 using testing::HasSubstr;
 using testing::Property;
 
-constexpr base::StringPiece kIconPath = "/icon.png";
+constexpr std::string_view kIconPath = "/icon.png";
 
 blink::mojom::ManifestPtr CreateDefaultManifest(const GURL& application_url,
                                                 const base::Version version) {
@@ -79,8 +80,8 @@ class SignedWebBundleMetadataTest : public WebAppTest {
     return IsolatedWebAppUrlInfo::CreateFromSignedWebBundleId(bundle.id);
   }
 
-  IwaSourceBundle bundle_source() const {
-    return IwaSourceBundle{.path = location_.GetPath(profile()->GetPath())};
+  IwaSourceBundleProdMode bundle_source() const {
+    return IwaSourceBundleProdMode(location_.GetPath(profile()->GetPath()));
   }
 
   void MockIconAndPageState(FakeWebContentsManager& fake_web_contents_manager,
@@ -95,7 +96,7 @@ class SignedWebBundleMetadataTest : public WebAppTest {
                       "/.well-known/_generated_install_page.html"}));
     auto& page_state = fake_web_contents_manager.GetOrCreatePageState(url);
 
-    page_state.url_load_result = WebAppUrlLoaderResult::kUrlLoaded;
+    page_state.url_load_result = webapps::WebAppUrlLoaderResult::kUrlLoaded;
     page_state.error_code = webapps::InstallableStatusCode::NO_ERROR_DETECTED;
     page_state.manifest_url =
         url_info.origin().GetURL().Resolve("manifest.webmanifest");
@@ -155,8 +156,9 @@ TEST_F(SignedWebBundleMetadataTest, FailsWhenWebBundleIdNotTrusted) {
 TEST_F(SignedWebBundleMetadataTest, FailsWhenBundleInvalid) {
   IsolatedWebAppUrlInfo url_info = WriteBundleToDisk(
       TestSignedWebBundleBuilder::BuildOptions().SetErrorsForTesting(
-          {web_package::WebBundleSigner::ErrorForTesting::
-               kInvalidIntegrityBlockStructure}));
+          {{web_package::WebBundleSigner::IntegrityBlockErrorForTesting::
+                kInvalidIntegrityBlockStructure},
+           {}}));
   SetTrustedWebBundleIdsForTesting({url_info.web_bundle_id()});
   FakeWebContentsManager& fake_web_contents_manager =
       static_cast<FakeWebContentsManager&>(

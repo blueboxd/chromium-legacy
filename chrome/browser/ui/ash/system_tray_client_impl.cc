@@ -6,6 +6,7 @@
 
 #include <cstdio>
 #include <memory>
+#include <string_view>
 
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
@@ -398,7 +399,7 @@ void SystemTrayClientImpl::ShowBluetoothSettings(const std::string& device_id) {
 }
 
 void SystemTrayClientImpl::ShowBluetoothPairingDialog(
-    std::optional<base::StringPiece> device_address) {
+    std::optional<std::string_view> device_address) {
   if (ash::BluetoothPairingDialog::ShowDialog(device_address)) {
     base::RecordAction(
         base::UserMetricsAction("StatusArea_Bluetooth_Connect_Unknown"));
@@ -608,7 +609,7 @@ void SystemTrayClientImpl::ShowNetworkCreate(const std::string& type) {
 }
 
 void SystemTrayClientImpl::ShowSettingsCellularSetup(bool show_psim_flow) {
-  // TODO(crbug.com/1093185) Add metrics action recorder
+  // TODO(crbug.com/40134918) Add metrics action recorder
   std::string page = chromeos::settings::mojom::kCellularNetworksSubpagePath;
   page += "&showCellularSetup=true";
   if (show_psim_flow)
@@ -646,7 +647,7 @@ void SystemTrayClientImpl::ShowArcVpnCreate(const std::string& app_id) {
 }
 
 void SystemTrayClientImpl::ShowSettingsSimUnlock() {
-  // TODO(https://crbug.com/1093185) Add metrics action recorder.
+  // TODO(crbug.com/40134918) Add metrics action recorder.
   SessionManager* const session_manager = SessionManager::Get();
   DCHECK(session_manager->IsSessionStarted());
   DCHECK(!session_manager->IsInSecondaryLoginScreen());
@@ -843,6 +844,31 @@ void SystemTrayClientImpl::ShowRemapKeysSubpage(int device_id) {
       "?keyboardId=",
       base::NumberToString(device_id),
   }));
+}
+
+void SystemTrayClientImpl::ShowYouTubeMusicPremiumPage() {
+  DCHECK(ash::features::IsFocusModeEnabled());
+  base::RecordAction(base::UserMetricsAction("ShowYouTubeMusicPremiumPage"));
+
+  const GURL official_url(chrome::kYoutubeMusicPremiumURL);
+
+  // Check YouTube Music web app installation.
+  if (!IsAppInstalled(web_app::kYoutubeMusicAppId)) {
+    OpenInBrowser(official_url);
+    return;
+  }
+
+  // Need this in order to launch the web app.
+  apps::AppServiceProxyAsh* proxy = GetActiveUserAppServiceProxyAsh();
+  if (!proxy) {
+    LOG(ERROR) << " failed to get active user AppServiceProxyAsh";
+    OpenInBrowser(official_url);
+    return;
+  }
+
+  // Launch web app.
+  proxy->LaunchAppWithUrl(web_app::kYoutubeMusicAppId, ui::EF_NONE,
+                          official_url, apps::LaunchSource::kFromFocusMode);
 }
 
 void SystemTrayClientImpl::ShowEolInfoPage() {

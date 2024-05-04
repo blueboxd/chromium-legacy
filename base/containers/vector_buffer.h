@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40284755): Remove this and spanify to fix the errors.
+#pragma allow_unsafe_buffers
+#endif
+
 #ifndef BASE_CONTAINERS_VECTOR_BUFFER_H_
 #define BASE_CONTAINERS_VECTOR_BUFFER_H_
 
@@ -76,7 +81,7 @@ class VectorBuffer {
   size_t capacity() const { return capacity_; }
 
   T& operator[](size_t i) {
-    // TODO(crbug.com/817982): Some call sites (at least circular_deque.h) are
+    // TODO(crbug.com/40565371): Some call sites (at least circular_deque.h) are
     // calling this with `i == capacity_` as a way of getting `end()`. Therefore
     // we have to allow this for now (`i <= capacity_`), until we fix those call
     // sites to use real iterators. This comment applies here and to `const T&

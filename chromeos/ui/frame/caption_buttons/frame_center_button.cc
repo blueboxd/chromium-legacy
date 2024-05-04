@@ -62,7 +62,7 @@ FrameCenterButton::FrameCenterButton(PressedCallback callback)
 FrameCenterButton::~FrameCenterButton() = default;
 
 gfx::Size FrameCenterButton::GetMinimumSize() const {
-  gfx::Size size = GetPreferredSize();
+  gfx::Size size = GetPreferredSize({0, 0});
   // Similar to CalculatePreferredSize(), but allow the text width to be zero.
   size.set_width((sub_icon_image_
                       ? base::ClampCeil(icon_image().width() / 2.0f) +
@@ -128,8 +128,9 @@ void FrameCenterButton::SetText(std::optional<std::u16string> text) {
 // (v) The margin between the text and the sub icon (kMarginBetweenContents)
 // (vi) The left semicircle of the sub icon (sub_icon_image_->width() / 2)
 // (vii) The right semicircle of the sub icon (views::kCaptionButtonWidth / 2)
-gfx::Size FrameCenterButton::CalculatePreferredSize() const {
-  gfx::Size size = views::View::CalculatePreferredSize();
+gfx::Size FrameCenterButton::CalculatePreferredSize(
+    const views::SizeBounds& available_size) const {
+  gfx::Size size = views::View::CalculatePreferredSize(available_size);
 
   if (chromeos::features::IsJellyEnabled()) {
     size.set_width(

@@ -20,6 +20,7 @@
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/trace_event/trace_event.h"
+#include "components/sync/base/deletion_origin.h"
 #include "components/sync/base/features.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/model/client_tag_based_model_type_processor.h"
@@ -133,35 +134,29 @@ PasskeySyncBridge::CreateMetadataChangeList() {
 std::optional<syncer::ModelError> PasskeySyncBridge::MergeFullSyncData(
     std::unique_ptr<syncer::MetadataChangeList> metadata_changes,
     syncer::EntityChangeList entity_changes) {
-  // Passkeys should be deleted when sync is turned off. Therefore, there should
-  // be no local data at this point.
-  CHECK(data_.empty());
+  CHECK(base::ranges::all_of(entity_changes, [](const auto& change) {
+    return change->type() == syncer::EntityChange::ACTION_ADD;
+  }));
 
-  std::unique_ptr<syncer::ModelTypeStore::WriteBatch> write_batch =
-      store_->CreateWriteBatch();
-
-  // Merge sync to local data. Since there should be no local-only passkeys for
-  // now, we don't actually need to merge anything yet. If we do merge, we need
-  // to feed the changes back to `change_processor()`.
-  std::vector<PasskeyModelChange> changes;
-  for (const auto& entity_change : entity_changes) {
-    CHECK_EQ(entity_change->type(), syncer::EntityChange::ACTION_ADD);
-    const sync_pb::WebauthnCredentialSpecifics& specifics =
-        entity_change->data().specifics.webauthn_credential();
-    data_[entity_change->storage_key()] = specifics;
-    write_batch->WriteData(entity_change->storage_key(),
-                           specifics.SerializeAsString());
-    changes.emplace_back(PasskeyModelChange::ChangeType::ADD, specifics);
+  // Google Password Manager passkeys are disabled when Sync is disabled so it
+  // shouldn't be the case that there are any local entities when Sync starts.
+  // But it can happen in corner cases. This code uploads any such entities to
+  // the server.
+  base::flat_set<std::string_view> local_only_sync_ids;
+  for (const auto& it : data_) {
+    local_only_sync_ids.insert(it.first);
+  }
+  for (const auto& change : entity_changes) {
+    local_only_sync_ids.erase(change->storage_key());
+  }
+  for (const auto& local_only_sync_id : local_only_sync_ids) {
+    std::string sync_id(local_only_sync_id);
+    change_processor()->Put(sync_id, CreateEntityData(data_.at(sync_id)),
+                            metadata_changes.get());
   }
 
-  // No data is local-only for now. No need to write local entries back to sync.
-  write_batch->TakeMetadataChangesFrom(std::move(metadata_changes));
-  store_->CommitWriteBatch(
-      std::move(write_batch),
-      base::BindOnce(&PasskeySyncBridge::OnStoreCommitWriteBatch,
-                     weak_ptr_factory_.GetWeakPtr()));
-  NotifyPasskeysChanged(std::move(changes));
-  return std::nullopt;
+  return ApplyIncrementalSyncChanges(std::move(metadata_changes),
+                                     std::move(entity_changes));
 }
 
 std::optional<syncer::ModelError>
@@ -189,6 +184,7 @@ PasskeySyncBridge::ApplyIncrementalSyncChanges(
       }
       case syncer::EntityChange::ACTION_ADD:
       case syncer::EntityChange::ACTION_UPDATE: {
+        // No merging is done and remote changes override local changes.
         const sync_pb::WebauthnCredentialSpecifics& specifics =
             entity_change->data().specifics.webauthn_credential();
         changes.emplace_back(change_type, specifics);
@@ -265,6 +261,10 @@ PasskeySyncBridge::GetModelTypeControllerDelegate() {
   return change_processor()->GetControllerDelegate();
 }
 
+bool PasskeySyncBridge::IsReady() const {
+  return ready_;
+}
+
 base::flat_set<std::string> PasskeySyncBridge::GetAllSyncIds() const {
   std::vector<std::string> sync_ids;
   base::ranges::transform(data_, std::back_inserter(sync_ids),
@@ -315,7 +315,8 @@ PasskeySyncBridge::GetPasskeysForRelyingPartyId(
   return passkey_model_utils::FilterShadowedCredentials(passkeys);
 }
 
-bool PasskeySyncBridge::DeletePasskey(const std::string& credential_id) {
+bool PasskeySyncBridge::DeletePasskey(const std::string& credential_id,
+                                      const base::Location& location) {
   // Find the credential with the given |credential_id|.
   const auto passkey_it =
       base::ranges::find_if(data_, [&credential_id](const auto& passkey) {
@@ -357,7 +358,9 @@ bool PasskeySyncBridge::DeletePasskey(const std::string& credential_id) {
     changes.emplace_back(PasskeyModelChange::ChangeType::REMOVE,
                          data_.at(sync_id));
     data_.erase(sync_id);
-    change_processor()->Delete(sync_id, write_batch->GetMetadataChangeList());
+    change_processor()->Delete(sync_id,
+                               syncer::DeletionOrigin::FromLocation(location),
+                               write_batch->GetMetadataChangeList());
     write_batch->DeleteData(sync_id);
   }
   store_->CommitWriteBatch(
@@ -502,6 +505,7 @@ void PasskeySyncBridge::OnStoreReadAllMetadata(
     changes.emplace_back(PasskeyModelChange::ChangeType::ADD, specifics);
     data_[std::move(storage_key)] = std::move(specifics);
   }
+  ready_ = true;
   NotifyPasskeysChanged(std::move(changes));
   change_processor()->ModelReadyToSync(std::move(metadata_batch));
 }

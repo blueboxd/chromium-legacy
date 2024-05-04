@@ -14,7 +14,6 @@
 #include "ui/chromeos/styles/cros_tokens_color_mappings.h"
 #include "ui/gfx/vector_icon_types.h"
 #include "ui/views/controls/menu/menu_types.h"
-#include "ui/views/vector_icons.h"
 
 namespace ash {
 
@@ -59,16 +58,12 @@ void BirchBarContextMenuModel::AddBarMenuItems() {
   // Expanded menu also has customizing suggestions options.
   if (type_ == Type::kExpandedBarMenu) {
     AddSeparator(ui::MenuSeparatorType::NORMAL_SEPARATOR);
-    AddCheckItem(base::to_underlying(CommandId::kWeatherSuggestions),
-                 u"Weather");
-    AddCheckItem(base::to_underlying(CommandId::kCalendarSuggestions),
-                 u"Google Calendar");
-    AddCheckItem(base::to_underlying(CommandId::kDriveSuggestions),
-                 u"Google Drive");
-    AddCheckItem(base::to_underlying(CommandId::kYouTubeSuggestions),
-                 u"YouTube");
-    AddCheckItem(base::to_underlying(CommandId::kOtherDeviceSuggestions),
-                 u"Chrome from other devices");
+    AddItem(base::to_underlying(CommandId::kWeatherSuggestions), u"Weather");
+    AddItem(base::to_underlying(CommandId::kCalendarSuggestions),
+            u"Google Calendar");
+    AddItem(base::to_underlying(CommandId::kDriveSuggestions), u"Google Drive");
+    AddItem(base::to_underlying(CommandId::kOtherDeviceSuggestions),
+            u"Chrome from other devices");
     AddSeparator(ui::MenuSeparatorType::NORMAL_SEPARATOR);
     AddItemWithIcon(base::to_underlying(CommandId::kReset), u"Reset",
                     CreateIcon(kResetIcon));
@@ -80,7 +75,8 @@ void BirchBarContextMenuModel::AddChipMenuItems() {
   sub_menu_model_ = std::make_unique<BirchBarContextMenuModel>(
       delegate(), Type::kExpandedBarMenu);
   AddItemWithIcon(base::to_underlying(CommandId::kHideSuggestion),
-                  u"Hide this suggestion", CreateIcon(views::kCloseIcon));
+                  u"Hide this suggestion",
+                  CreateIcon(kSystemTrayDoNotDisturbIcon));
   AddItemWithIcon(base::to_underlying(CommandId::kHideDriveSuggestions),
                   u"Hide all Google Drive suggestions",
                   CreateIcon(kForbidIcon));

@@ -15,8 +15,8 @@
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/time/time.h"
+#include "components/optimization_guide/core/model_execution/feature_keys.h"
 #include "components/optimization_guide/core/optimization_guide_enums.h"
-#include "components/optimization_guide/core/page_content_annotation_type.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "components/optimization_guide/proto/model_execution.pb.h"
 #include "components/optimization_guide/proto/models.pb.h"
@@ -41,19 +41,11 @@ BASE_DECLARE_FEATURE(kOptimizationTargetPrediction);
 COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
 BASE_DECLARE_FEATURE(kOptimizationGuideModelDownloading);
 COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
-BASE_DECLARE_FEATURE(kPageContentAnnotations);
-COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
-BASE_DECLARE_FEATURE(kPageVisibilityPageContentAnnotations);
-COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
 BASE_DECLARE_FEATURE(kPageTextExtraction);
 COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
 BASE_DECLARE_FEATURE(kPushNotifications);
 COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
 BASE_DECLARE_FEATURE(kOptimizationGuideMetadataValidation);
-COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
-BASE_DECLARE_FEATURE(kPageVisibilityBatchAnnotations);
-COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
-BASE_DECLARE_FEATURE(kPageContentAnnotationsValidation);
 COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
 BASE_DECLARE_FEATURE(kPreventLongRunningPredictionModels);
 COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
@@ -61,13 +53,7 @@ BASE_DECLARE_FEATURE(kOverrideNumThreadsForModelExecution);
 COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
 BASE_DECLARE_FEATURE(kOptGuideEnableXNNPACKDelegateWithTFLite);
 COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
-BASE_DECLARE_FEATURE(kRemotePageMetadata);
-COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
 BASE_DECLARE_FEATURE(kOptimizationHintsComponent);
-COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
-BASE_DECLARE_FEATURE(kExtractRelatedSearchesFromPrefetchedZPSResponse);
-COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
-BASE_DECLARE_FEATURE(kPageContentAnnotationsPersistSalientImageMetadata);
 COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
 BASE_DECLARE_FEATURE(kOptimizationGuidePersonalizedFetching);
 COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
@@ -84,23 +70,13 @@ COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
 BASE_DECLARE_FEATURE(kLogOnDeviceMetricsOnStartup);
 COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
 BASE_DECLARE_FEATURE(kTextSafetyClassifier);
+COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
+BASE_DECLARE_FEATURE(kTextSafetyRemoteFallback);
 
 typedef base::EnumSet<proto::RequestContext,
                       proto::RequestContext_MIN,
                       proto::RequestContext_MAX>
     RequestContextSet;
-
-// Enables use of task runner with trait CONTINUE_ON_SHUTDOWN for page content
-// annotations on-device models.
-COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
-BASE_DECLARE_FEATURE(
-    kOptimizationGuideUseContinueOnShutdownForPageContentAnnotations);
-
-// The maximum number of "related searches" entries allowed to be maintained in
-// a least-recently-used cache for "related searches" data obtained via ZPS
-// prefetch logic.
-COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
-size_t MaxRelatedSearchesCacheSize();
 
 // The grace period duration for how long to give outstanding page text dump
 // requests to respond after DidFinishLoad.
@@ -244,11 +220,6 @@ base::TimeDelta StoredModelsValidDuration();
 COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
 base::TimeDelta URLKeyedHintValidCacheDuration();
 
-// The amount of time the PCAService will wait for the title of a page to be
-// modified.
-COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
-base::TimeDelta PCAServiceWaitForTitleDelayDuration();
-
 // The maximum number of hosts allowed to be requested by the client to the
 // remote Optimization Guide Service for use by prediction models.
 COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
@@ -333,91 +304,19 @@ bool IsModelDownloadingEnabled();
 COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
 bool IsUnrestrictedModelDownloadingEnabled();
 
-// Returns whether the feature to annotate page content is enabled.
-COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
-bool IsPageContentAnnotationEnabled();
-
-// Whether we should write content annotations to History Service.
-COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
-bool ShouldWriteContentAnnotationsToHistoryService();
-
-// Returns the max size of the MRU Cache of content that has been requested
-// for annotation.
-COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
-size_t MaxContentAnnotationRequestsCached();
-
-// Returns whether or not related searches should be extracted from Google SRP
-// as part of page content annotations.
-COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
-bool ShouldExtractRelatedSearches();
-
 // Returns whether the page entities model should be executed on page content
 // for a user using |locale| as their browser language.
 COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
 bool ShouldExecutePageEntitiesModelOnPageContent(const std::string& locale);
-
-// Returns whether the page visibility model should be executed on page content
-// for a user using |locale| as their browser language.
-COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
-bool ShouldExecutePageVisibilityModelOnPageContent(const std::string& locale);
-
-// Returns whether page metadata should be retrieved from the remote
-// Optimization Guide service.
-COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
-bool RemotePageMetadataEnabled(const std::string& locale,
-                               const std::string& country_code);
-
-// Returns the minimum score associated with a category for it to be persisted.
-// Will be a value from 0 to 100, inclusive.
-COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
-int GetMinimumPageCategoryScoreToPersist();
 
 // The time to wait beyond the onload event before sending the hints request for
 // link predictions.
 COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
 base::TimeDelta GetOnloadDelayForHintsFetching();
 
-// The number of bits used for RAPPOR-style metrics reporting on content
-// annotation models. Must be at least 1 bit.
-COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
-int NumBitsForRAPPORMetrics();
-
-// The probability of a bit flip a score with RAPPOR-style metrics reporting.
-// Must be between 0 and 1.
-COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
-double NoiseProbabilityForRAPPORMetrics();
-
 // Returns whether the metadata validation fetch feature is host keyed.
 COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
 bool ShouldMetadataValidationFetchHostKeyed();
-
-// Returns if Page Visibility Batch Annotations are enabled.
-COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
-bool PageVisibilityBatchAnnotationsEnabled();
-
-// The number of visits batch before running the page content annotation
-// models. A size of 1 is equivalent to annotating one page load at time
-// immediately after requested.
-COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
-size_t AnnotateVisitBatchSize();
-
-// Whether the page content annotation validation feature or command line flag
-// is enabled for the given annotation type.
-COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
-bool PageContentAnnotationValidationEnabledForType(AnnotationType type);
-
-// The time period between browser start and running a running page content
-// annotation validation.
-COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
-base::TimeDelta PageContentAnnotationValidationStartupDelay();
-
-// The size of batches to run for page content validation.
-COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
-size_t PageContentAnnotationsValidationBatchSize();
-
-// The maximum size of the visit annotation cache.
-COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
-size_t MaxVisitAnnotationCacheSize();
 
 // Returns the number of threads to use for model inference on the given
 // optimization target.
@@ -434,19 +333,13 @@ bool TFLiteXNNPACKDelegateEnabled();
 COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
 bool ShouldCheckFailedComponentVersionPref();
 
-// Whether to persist salient image metadata for each visit.
-COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
-bool ShouldPersistSalientImageMetadata(const std::string& locale,
-                                       const std::string& country_code);
-
 // Whether logging of model quality is enabled.
 COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
 bool IsModelQualityLoggingEnabled();
 
 // Whether model quality logging is enabled for a feature.
 COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
-bool IsModelQualityLoggingEnabledForFeature(
-    proto::ModelExecutionFeature feature);
+bool IsModelQualityLoggingEnabledForFeature(UserVisibleFeatureKey feature);
 
 // Returns whether the `model_version` for `opt_target` is part of emergency
 // killswitch, and this model should be stopped serving immediately.
@@ -569,6 +462,11 @@ uint32_t GetOnDeviceModelTextSafetyTokenInterval();
 // range [0, 1].
 COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
 double GetOnDeviceModelLanguageDetectionMinimumReliability();
+
+// Whether to use text safety remote fallback for on-device text safety
+// evaluation.
+COMPONENT_EXPORT(OPTIMIZATION_GUIDE_FEATURES)
+bool ShouldUseTextSafetyRemoteFallbackForEligibleFeatures();
 
 // These params configure the repetition checker. See HasRepeatingSuffix() in
 // repetition_checker.h for explanation. A value of 2 for num repeats and 16 for

@@ -22,13 +22,17 @@ enum class ASH_EXPORT PickerSectionType {
   kDriveFiles,
   kGifs,
   kRecentlyUsed,
+  kExamples,
+  kEditorWrite,
+  kEditorRewrite,
 };
 
 // Search results are divided into different sections.
 class ASH_EXPORT PickerSearchResultsSection {
  public:
   explicit PickerSearchResultsSection(PickerSectionType type,
-                                      std::vector<PickerSearchResult> results);
+                                      std::vector<PickerSearchResult> results,
+                                      bool has_more_results);
   PickerSearchResultsSection(const PickerSearchResultsSection& other);
   PickerSearchResultsSection& operator=(
       const PickerSearchResultsSection& other);
@@ -40,10 +44,12 @@ class ASH_EXPORT PickerSearchResultsSection {
 
   base::span<const PickerSearchResult> results() const;
 
+  bool has_more_results() const;
+
  private:
   PickerSectionType type_;
-
   std::vector<PickerSearchResult> results_;
+  bool has_more_results_;
 };
 
 }  // namespace ash

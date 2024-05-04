@@ -6,7 +6,6 @@
 #define COMPONENTS_VIZ_SERVICE_DISPLAY_OUTPUT_SURFACE_H_
 
 #include <memory>
-#include <optional>
 #include <vector>
 
 #include "base/functional/callback_helpers.h"
@@ -185,20 +184,6 @@ class VIZ_SERVICE_EXPORT OutputSurface {
 
   virtual void EnsureBackbuffer() = 0;
   virtual void DiscardBackbuffer() = 0;
-
-  // Marks that the given rectangle will be drawn to on the default, bound
-  // framebuffer. The contents of the framebuffer are undefined after this
-  // command and must be filled in completely before a swap happens. Drawing
-  // outside this rectangle causes undefined behavior.
-  //
-  // Note: This is only valid to call if `capabilities().supports_dc_layers` is
-  // true. It can only be called once per swap and must be called before
-  // drawing to the default framebuffer.
-  virtual void SetDrawRectangle(const gfx::Rect& rect);
-
-  // Enable or disable DC layers. Must be called before DC layers are scheduled.
-  // Only valid if |capabilities().supports_dc_layers| is true.
-  virtual void SetEnableDCLayers(bool enabled);
 
   // Returns true if a main image overlay plane should be scheduled.
   virtual bool IsDisplayedAsOverlayPlane() const = 0;

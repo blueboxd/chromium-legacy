@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/memory/raw_ptr.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/win/scoped_bstr.h"
 #include "base/win/scoped_variant.h"
@@ -351,7 +352,8 @@ TEST_F(ViewAXPlatformNodeDelegateWinTest, DISABLED_RetrieveAllAlerts) {
 }
 
 // Test trying to retrieve child widgets during window close does not crash.
-// TODO(crbug.com/1218885): Remove this after WIDGET_OWNS_NATIVE_WIDGET is gone.
+// TODO(crbug.com/40185858): Remove this after WIDGET_OWNS_NATIVE_WIDGET is
+// gone.
 TEST_F(ViewAXPlatformNodeDelegateWinTest, GetAllOwnedWidgetsCrash) {
   Widget widget;
   Widget::InitParams init_params =
@@ -399,10 +401,10 @@ TEST_F(ViewAXPlatformNodeDelegateWinTest, Overrides) {
   alert_view->GetViewAccessibility().SetName(u"Name",
                                              ax::mojom::NameFrom::kAttribute);
   alert_view->GetViewAccessibility().SetDescription("Description");
-  alert_view->GetViewAccessibility().OverrideIsLeaf(true);
+  alert_view->GetViewAccessibility().SetIsLeaf(true);
   contents_view->AddChildView(alert_view);
 
-  // Descendant should be ignored because the parent uses OverrideIsLeaf().
+  // Descendant should be ignored because the parent uses SetIsLeaf().
   View* ignored_descendant = new View;
   alert_view->AddChildView(ignored_descendant);
 
@@ -542,6 +544,32 @@ TEST_F(ViewAXPlatformNodeDelegateWinTest, IsUIAControlIsTrueEvenWhenReadonly) {
   ComPtr<IRawElementProviderSimple> textfield_provider =
       GetIRawElementProviderSimple(text_field);
   EXPECT_UIA_BOOL_EQ(textfield_provider, UIA_IsControlElementPropertyId, true);
+}
+
+TEST_F(ViewAXPlatformNodeDelegateWinTest, UIAGetPropertyValue_Histograms) {
+  UniqueWidgetPtr widget = std::make_unique<Widget>();
+  Widget::InitParams init_params = CreateParams(Widget::InitParams::TYPE_POPUP);
+  widget->Init(std::move(init_params));
+
+  View* content = widget->SetContentsView(std::make_unique<View>());
+
+  Textfield* text_field = new Textfield();
+  text_field->SetReadOnly(true);
+  content->AddChildView(text_field);
+
+  ComPtr<IRawElementProviderSimple> textfield_provider =
+      GetIRawElementProviderSimple(text_field);
+  ScopedVariant actual;
+  base::HistogramTester histogram_tester;
+
+  histogram_tester.ExpectTotalCount(
+      "Accessibility.Performance.WinAPIs.Views.UMA_API_GET_PROPERTY_VALUE", 0);
+
+  ASSERT_HRESULT_SUCCEEDED(textfield_provider->GetPropertyValue(
+      UIA_IsControlElementPropertyId, actual.Receive()));
+
+  histogram_tester.ExpectTotalCount(
+      "Accessibility.Performance.WinAPIs.Views.UMA_API_GET_PROPERTY_VALUE", 1);
 }
 
 TEST_F(ViewAXPlatformNodeDelegateWinTest, TextPositionAt) {
@@ -708,9 +736,10 @@ class ViewAXPlatformNodeDelegateWinInnerTextRangeTest
     label_ = new Label();
     widget_->GetContentsView()->AddChildView(label_.get());
 
-    // TODO(1468416): This is not obvious, but the AtomicViewAXTreeManager
-    // gets initialized from this GetData() call. This won't be needed anymore
-    // once we finish the ViewsAX project and remove the temporary solution.
+    // TODO(crbug.com/40924888): This is not obvious, but the
+    // AtomicViewAXTreeManager gets initialized from this GetData() call. This
+    // won't be needed anymore once we finish the ViewsAX project and remove the
+    // temporary solution.
     textfield_delegate()->GetData();
     CHECK(textfield_delegate()->GetAtomicViewAXTreeManagerForTesting());
 
@@ -794,9 +823,10 @@ TEST_F(ViewAXPlatformNodeDelegateWinInnerTextRangeTest, Textfield_LTR) {
   gfx::Insets insets = textfield_->GetInsets();
 
   textfield_->SetText(kText);
-  // TODO(1468416): This is not obvious, but we need to call `GetData` to
-  // refresh the text offsets and accessible name. This won't be needed anymore
-  // once we finish the ViewsAX project and remove the temporary solution.
+  // TODO(crbug.com/40924888): This is not obvious, but we need to call
+  // `GetData` to refresh the text offsets and accessible name. This won't be
+  // needed anymore once we finish the ViewsAX project and remove the temporary
+  // solution.
   textfield_delegate()->GetData();
 
   int height = textfield_bounds.height() - insets.top() - insets.bottom();
@@ -901,11 +931,12 @@ TEST_F(ViewAXPlatformNodeDelegateWinInnerTextRangeTest,
   textfield_delegate()->AccessibilityPerformAction(set_selection_action_data_2);
   int scroll_x = textfield_delegate()->GetData().GetIntAttribute(
       ax::mojom::IntAttribute::kScrollX);
-  EXPECT_EQ(scroll_x, -156);
+  EXPECT_LT(scroll_x, 0);
 
-  // TODO(1468416): This is not obvious, but we need to call `GetData` to
-  // refresh the text offsets and accessible name. This won't be needed anymore
-  // once we finish the ViewsAX project and remove the temporary solution.
+  // TODO(crbug.com/40924888): This is not obvious, but we need to call
+  // `GetData` to refresh the text offsets and accessible name. This won't be
+  // needed anymore once we finish the ViewsAX project and remove the temporary
+  // solution.
   textfield_delegate()->GetData();
 
   bounds = textfield_delegate()->GetInnerTextRangeBoundsRect(
@@ -941,9 +972,10 @@ TEST_F(ViewAXPlatformNodeDelegateWinInnerTextRangeTest, Label_LTR) {
   render_text_test_api.SetGlyphWidth(kGlyphWidth);
   render_text_test_api.SetGlyphHeight(kGlyphHeight);
 
-  // TODO(1468416): This is not obvious, but we need to call `GetData` to
-  // refresh the text offsets and accessible name. This won't be needed anymore
-  // once we finish the ViewsAX project and remove the temporary solution.
+  // TODO(crbug.com/40924888): This is not obvious, but we need to call
+  // `GetData` to refresh the text offsets and accessible name. This won't be
+  // needed anymore once we finish the ViewsAX project and remove the temporary
+  // solution.
   label_delegate()->GetData();
 
   // Range 1: 'a'.
@@ -996,9 +1028,10 @@ TEST_F(ViewAXPlatformNodeDelegateWinInnerTextRangeTest, Textfield_RTL) {
   textfield_->SetHorizontalAlignment(gfx::ALIGN_RIGHT);
 
   textfield_->SetText(kText);
-  // TODO(1468416): This is not obvious, but we need to call `GetData` to
-  // refresh the text offsets and accessible name. This won't be needed anymore
-  // once we finish the ViewsAX project and remove the temporary solution.
+  // TODO(crbug.com/40924888): This is not obvious, but we need to call
+  // `GetData` to refresh the text offsets and accessible name. This won't be
+  // needed anymore once we finish the ViewsAX project and remove the temporary
+  // solution.
   textfield_delegate()->GetData();
 
   int height = textfield_bounds.height() - insets.top() - insets.bottom();
@@ -1094,9 +1127,10 @@ TEST_F(ViewAXPlatformNodeDelegateWinInnerTextRangeTest, Label_RTL) {
   render_text_test_api.SetGlyphWidth(kGlyphWidth);
   render_text_test_api.SetGlyphHeight(kGlyphHeight);
 
-  // TODO(1468416): This is not obvious, but we need to call `GetData` to
-  // refresh the text offsets and accessible name. This won't be needed anymore
-  // once we finish the ViewsAX project and remove the temporary solution.
+  // TODO(crbug.com/40924888): This is not obvious, but we need to call
+  // `GetData` to refresh the text offsets and accessible name. This won't be
+  // needed anymore once we finish the ViewsAX project and remove the temporary
+  // solution.
   label_delegate()->GetData();
 
   // Range 1.
@@ -1149,9 +1183,10 @@ TEST_F(ViewAXPlatformNodeDelegateWinInnerTextRangeTest,
   const std::u16string kText = u"text";
   textfield_->SetText(kText);
 
-  // TODO(1468416): This is not obvious, but we need to call `GetData` to
-  // refresh the text offsets and accessible name. This won't be needed anymore
-  // once we finish the ViewsAX project and remove the temporary solution.
+  // TODO(crbug.com/40924888): This is not obvious, but we need to call
+  // `GetData` to refresh the text offsets and accessible name. This won't be
+  // needed anymore once we finish the ViewsAX project and remove the temporary
+  // solution.
   ui::AXNodeData data = textfield_delegate()->GetData();
 
   ui::AXNodeID expected_node_id = data.id;
@@ -1202,9 +1237,10 @@ TEST_F(ViewAXPlatformNodeDelegateWinInnerTextRangeTest,
 
   textfield_->SetText(kText);
 
-  // TODO(1468416): This is not obvious, but we need to call `GetData` to
-  // refresh the text offsets and accessible name. This won't be needed anymore
-  // once we finish the ViewsAX project and remove the temporary solution.
+  // TODO(crbug.com/40924888): This is not obvious, but we need to call
+  // `GetData` to refresh the text offsets and accessible name. This won't be
+  // needed anymore once we finish the ViewsAX project and remove the temporary
+  // solution.
   textfield_delegate()->GetData();
 
   bounds = textfield_delegate()->GetInnerTextRangeBoundsRect(

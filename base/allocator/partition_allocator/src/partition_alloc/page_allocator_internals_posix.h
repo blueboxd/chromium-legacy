@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_ALLOCATOR_PARTITION_ALLOCATOR_SRC_PARTITION_ALLOC_PAGE_ALLOCATOR_INTERNALS_POSIX_H_
-#define BASE_ALLOCATOR_PARTITION_ALLOCATOR_SRC_PARTITION_ALLOC_PAGE_ALLOCATOR_INTERNALS_POSIX_H_
+#ifndef PARTITION_ALLOC_PAGE_ALLOCATOR_INTERNALS_POSIX_H_
+#define PARTITION_ALLOC_PAGE_ALLOCATOR_INTERNALS_POSIX_H_
+
+#include <sys/mman.h>
 
 #include <algorithm>
 #include <atomic>
@@ -11,9 +13,7 @@
 #include <cstdint>
 #include <cstring>
 
-#include <sys/mman.h>
-
-#include "build/build_config.h"
+#include "partition_alloc/build_config.h"
 #include "partition_alloc/oom.h"
 #include "partition_alloc/page_allocator.h"
 #include "partition_alloc/page_allocator_constants.h"
@@ -165,7 +165,7 @@ bool UseMapJit() {
 #if TARGET_IPHONE_SIMULATOR
   return true;
 #else
-  // TODO(https://crbug.com/1413818): Fill this out when the API it is
+  // TODO(crbug.com/40255826): Fill this out when the API it is
   // available.
   return false;
 #endif  // TARGET_IPHONE_SIMULATOR
@@ -446,4 +446,4 @@ void DiscardSystemPagesInternal(uintptr_t address, size_t length) {
 
 }  // namespace partition_alloc::internal
 
-#endif  // BASE_ALLOCATOR_PARTITION_ALLOCATOR_SRC_PARTITION_ALLOC_PAGE_ALLOCATOR_INTERNALS_POSIX_H_
+#endif  // PARTITION_ALLOC_PAGE_ALLOCATOR_INTERNALS_POSIX_H_

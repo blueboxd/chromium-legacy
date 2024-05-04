@@ -155,12 +155,19 @@ CandidateView::CandidateView(PressedCallback callback,
   }
 
   SetFocusBehavior(views::View::FocusBehavior::ACCESSIBLE_ONLY);
+  SetAccessibleRole(ax::mojom::Role::kImeCandidate);
 }
 
 void CandidateView::GetPreferredWidths(int* shortcut_width,
                                        int* candidate_width) {
-  *shortcut_width = shortcut_label_->GetPreferredSize().width();
-  *candidate_width = candidate_label_->GetPreferredSize().width();
+  *shortcut_width =
+      shortcut_label_
+          ->GetPreferredSize(views::SizeBounds(shortcut_label_->width(), {}))
+          .width();
+  *candidate_width =
+      candidate_label_
+          ->GetPreferredSize(views::SizeBounds(candidate_label_->width(), {}))
+          .width();
 }
 
 void CandidateView::SetWidths(int shortcut_width, int candidate_width) {
@@ -171,8 +178,9 @@ void CandidateView::SetWidths(int shortcut_width, int candidate_width) {
 
 void CandidateView::SetEntry(const ui::CandidateWindow::Entry& entry) {
   std::u16string label = entry.label;
-  if (!label.empty() && orientation_ != ui::CandidateWindow::VERTICAL)
+  if (!label.empty() && orientation_ != ui::CandidateWindow::VERTICAL) {
     label += u".";
+  }
   shortcut_label_->SetText(label);
   candidate_label_->SetText(entry.value);
   annotation_label_->SetText(entry.annotation);
@@ -180,14 +188,16 @@ void CandidateView::SetEntry(const ui::CandidateWindow::Entry& entry) {
 }
 
 void CandidateView::SetInfolistIcon(bool enable) {
-  if (infolist_icon_)
+  if (infolist_icon_) {
     infolist_icon_->SetVisible(enable);
+  }
   SchedulePaint();
 }
 
 void CandidateView::SetHighlighted(bool highlighted) {
-  if (highlighted_ == highlighted)
+  if (highlighted_ == highlighted) {
     return;
+  }
 
   highlighted_ = highlighted;
   if (highlighted) {
@@ -198,8 +208,9 @@ void CandidateView::SetHighlighted(bool highlighted) {
 
     // Cancel currently focused one.
     for (View* view : parent()->children()) {
-      if (view != this)
+      if (view != this) {
         static_cast<CandidateView*>(view)->SetHighlighted(false);
+      }
     }
   } else {
     SetBackground(nullptr);
@@ -215,8 +226,9 @@ void CandidateView::StateChanged(ButtonState old_state) {
   shortcut_label_->SetEnabledColorId(
       views::TypographyProvider::Get().GetColorId(views::style::CONTEXT_LABEL,
                                                   text_style));
-  if (GetState() == STATE_PRESSED)
+  if (GetState() == STATE_PRESSED) {
     SetHighlighted(true);
+  }
 }
 
 bool CandidateView::OnMouseDragged(const ui::MouseEvent& event) {
@@ -225,8 +237,9 @@ bool CandidateView::OnMouseDragged(const ui::MouseEvent& event) {
     gfx::Point location_in_widget(event.location());
     ConvertPointToWidget(this, &location_in_widget);
     for (View* view : parent()->children()) {
-      if (view == this)
+      if (view == this) {
         continue;
+      }
       gfx::Point location_in_sibling(location_in_widget);
       ConvertPointFromWidget(view, &location_in_sibling);
       if (view->HitTestPoint(location_in_sibling)) {
@@ -248,8 +261,9 @@ void CandidateView::Layout(PassKey) {
       orientation_ == ui::CandidateWindow::VERTICAL ? 4 : 6;
   int x = 0;
   shortcut_label_->SetBounds(x, 0, shortcut_width_, height());
-  if (shortcut_width_ > 0)
+  if (shortcut_width_ > 0) {
     x += shortcut_width_ + padding_width;
+  }
   candidate_label_->SetBounds(x, 0, candidate_width_, height());
   x += candidate_width_ + padding_width;
 
@@ -264,28 +278,35 @@ void CandidateView::Layout(PassKey) {
   annotation_label_->SetBounds(x, 0, right - x, height());
 }
 
-gfx::Size CandidateView::CalculatePreferredSize() const {
+gfx::Size CandidateView::CalculatePreferredSize(
+    const views::SizeBounds& available_size) const {
   const int padding_width =
       orientation_ == ui::CandidateWindow::VERTICAL ? 4 : 6;
   gfx::Size size;
   if (shortcut_label_->GetVisible()) {
-    size = shortcut_label_->GetPreferredSize();
+    size = shortcut_label_->GetPreferredSize(
+        views::SizeBounds(shortcut_width_, {}));
     size.SetToMax(gfx::Size(shortcut_width_, 0));
     size.Enlarge(padding_width, 0);
   }
-  gfx::Size candidate_size = candidate_label_->GetPreferredSize();
+  gfx::Size candidate_size = candidate_label_->GetPreferredSize(
+      views::SizeBounds(candidate_width_, {}));
   candidate_size.SetToMax(gfx::Size(candidate_width_, 0));
   size.Enlarge(candidate_size.width() + padding_width, 0);
   size.SetToMax(candidate_size);
+  int reserve_margin =
+      kInfolistIndicatorIconWidth + kInfolistIndicatorIconPadding * 2;
   if (annotation_label_->GetVisible()) {
-    gfx::Size annotation_size = annotation_label_->GetPreferredSize();
+    views::SizeBound available_width = std::max<views::SizeBound>(
+        0, available_size.width() - size.width() - reserve_margin);
+    gfx::Size annotation_size = annotation_label_->GetPreferredSize(
+        views::SizeBounds(available_width, {}));
     size.Enlarge(annotation_size.width() + padding_width, 0);
     size.SetToMax(annotation_size);
   }
 
   // Reserves the margin for infolist_icon even if it's not visible.
-  size.Enlarge(kInfolistIndicatorIconWidth + kInfolistIndicatorIconPadding * 2,
-               0);
+  size.Enlarge(reserve_margin, 0);
   return size;
 }
 

@@ -168,7 +168,7 @@ class MockVaapiWrapper : public VaapiWrapper {
   MOCK_METHOD2(CreateVABuffer,
                std::unique_ptr<ScopedVABuffer>(VABufferType, size_t));
   MOCK_METHOD2(CreateVASurfaceForPixmap,
-               scoped_refptr<VASurface>(scoped_refptr<gfx::NativePixmap>,
+               scoped_refptr<VASurface>(scoped_refptr<const gfx::NativePixmap>,
                                         bool));
   MOCK_METHOD2(GetEncodedChunkSize, uint64_t(VABufferID, VASurfaceID));
   MOCK_METHOD5(
@@ -446,7 +446,6 @@ class VaapiVideoEncodeAcceleratorTest
               // Same implementation in VP9VaapiVideoEncoderDelegate.
               BitstreamBufferMetadata metadata(
                   payload_size, job.IsKeyframeRequested(), job.timestamp());
-              metadata.end_of_picture = job.end_of_picture();
               CodecPicture* picture = job.picture().get();
               metadata.vp9 =
                   reinterpret_cast<VP9Picture*>(picture)->metadata_for_encoding;
@@ -628,7 +627,6 @@ class VaapiVideoEncodeAcceleratorTest
                 // Same implementation in VP9VaapiVideoEncoderDelegate.
                 BitstreamBufferMetadata metadata(
                     payload_size, job.IsKeyframeRequested(), job.timestamp());
-                metadata.end_of_picture = job.end_of_picture();
                 CodecPicture* picture = job.picture().get();
                 metadata.vp9 = reinterpret_cast<VP9Picture*>(picture)
                                    ->metadata_for_encoding;

@@ -4,18 +4,23 @@
 
 #include "components/performance_manager/graph/frame_node_impl.h"
 
+#include <optional>
+
 #include "base/containers/contains.h"
 #include "base/memory/raw_ptr.h"
+#include "base/task/task_traits.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/test/gtest_util.h"
 #include "components/performance_manager/graph/page_node_impl.h"
 #include "components/performance_manager/graph/process_node_impl.h"
+#include "components/performance_manager/public/execution_context_priority/execution_context_priority.h"
 #include "components/performance_manager/public/render_process_host_id.h"
 #include "components/performance_manager/public/render_process_host_proxy.h"
 #include "components/performance_manager/test_support/graph_test_harness.h"
 #include "components/performance_manager/test_support/mock_graphs.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/origin.h"
 
 namespace performance_manager {
 
@@ -94,9 +99,13 @@ TEST_F(FrameNodeImplTest, NavigationCommitted_SameDocument) {
   auto page = CreateNode<PageNodeImpl>();
   auto frame_node = CreateFrameNodeAutoId(process.get(), page.get());
   EXPECT_TRUE(frame_node->GetURL().is_empty());
-  const GURL url("http://www.foo.com/");
-  frame_node->OnNavigationCommitted(url, /* same_document */ true);
-  EXPECT_EQ(url, frame_node->GetURL());
+  EXPECT_FALSE(frame_node->GetOrigin().has_value());
+  const GURL kUrl("http://www.foo.com/");
+  const url::Origin kOrigin = url::Origin::Create(kUrl);
+  frame_node->OnNavigationCommitted(kUrl, kOrigin, /* same_document */ true);
+  EXPECT_EQ(kUrl, frame_node->GetURL());
+  // Origin argument is ignored for same-document navigation.
+  EXPECT_FALSE(frame_node->GetOrigin().has_value());
 }
 
 TEST_F(FrameNodeImplTest, NavigationCommitted_DifferentDocument) {
@@ -104,9 +113,12 @@ TEST_F(FrameNodeImplTest, NavigationCommitted_DifferentDocument) {
   auto page = CreateNode<PageNodeImpl>();
   auto frame_node = CreateFrameNodeAutoId(process.get(), page.get());
   EXPECT_TRUE(frame_node->GetURL().is_empty());
-  const GURL url("http://www.foo.com/");
-  frame_node->OnNavigationCommitted(url, /* same_document */ false);
-  EXPECT_EQ(url, frame_node->GetURL());
+  EXPECT_FALSE(frame_node->GetOrigin().has_value());
+  const GURL kUrl("http://www.foo.com/");
+  const url::Origin kOrigin = url::Origin::Create(kUrl);
+  frame_node->OnNavigationCommitted(kUrl, kOrigin, /* same_document */ false);
+  EXPECT_EQ(kUrl, frame_node->GetURL());
+  EXPECT_EQ(kOrigin, frame_node->GetOrigin());
 }
 
 TEST_F(FrameNodeImplTest, RemoveChildFrame) {
@@ -142,6 +154,8 @@ class LenientMockObserver : public FrameNodeImpl::Observer {
   MOCK_METHOD1(OnNetworkAlmostIdleChanged, void(const FrameNode*));
   MOCK_METHOD1(OnFrameLifecycleStateChanged, void(const FrameNode*));
   MOCK_METHOD2(OnURLChanged, void(const FrameNode*, const GURL&));
+  MOCK_METHOD2(OnOriginChanged,
+               void(const FrameNode*, const std::optional<url::Origin>&));
   MOCK_METHOD1(OnIsAdFrameChanged, void(const FrameNode*));
   MOCK_METHOD1(OnFrameIsHoldingWebLockChanged, void(const FrameNode*));
   MOCK_METHOD1(OnFrameIsHoldingIndexedDBLockChanged, void(const FrameNode*));
@@ -171,6 +185,7 @@ using MockObserver = ::testing::StrictMock<LenientMockObserver>;
 
 using testing::_;
 using testing::Invoke;
+using testing::InvokeWithoutArgs;
 
 }  // namespace
 
@@ -178,14 +193,30 @@ TEST_F(FrameNodeImplTest, ObserverWorks) {
   auto process = CreateNode<ProcessNodeImpl>();
   auto page = CreateNode<PageNodeImpl>();
 
+  MockObserver head_obs;
   MockObserver obs;
+  MockObserver tail_obs;
+  graph()->AddFrameNodeObserver(&head_obs);
   graph()->AddFrameNodeObserver(&obs);
+  graph()->AddFrameNodeObserver(&tail_obs);
+
+  // Remove observers at the head and tail of the list inside a callback, and
+  // expect that `obs` is still notified correctly.
+  EXPECT_CALL(head_obs, OnFrameNodeAdded(_)).WillOnce(InvokeWithoutArgs([&] {
+    graph()->RemoveFrameNodeObserver(&head_obs);
+    graph()->RemoveFrameNodeObserver(&tail_obs);
+  }));
+  // `tail_obs` should not be notified as it was removed.
+  EXPECT_CALL(tail_obs, OnFrameNodeAdded(_)).Times(0);
 
   // Create a frame node and expect a matching call to "OnFrameNodeAdded".
   EXPECT_CALL(obs, OnFrameNodeAdded(_))
       .WillOnce(Invoke(&obs, &MockObserver::SetCreatedFrameNode));
   auto frame_node = CreateFrameNodeAutoId(process.get(), page.get());
+
+  testing::Mock::VerifyAndClear(&head_obs);
   testing::Mock::VerifyAndClear(&obs);
+  testing::Mock::VerifyAndClear(&tail_obs);
 
   const FrameNode* raw_frame_node = frame_node.get();
   EXPECT_EQ(raw_frame_node, obs.created_frame_node());
@@ -213,9 +244,48 @@ TEST_F(FrameNodeImplTest, ObserverWorks) {
   frame_node->OnNonPersistentNotificationCreated();
   testing::Mock::VerifyAndClear(&obs);
 
-  // Invoke "OnNavigationCommitted" and expect an "OnURLChanged" callback.
-  EXPECT_CALL(obs, OnURLChanged(raw_frame_node, _));
-  frame_node->OnNavigationCommitted(GURL("https://foo.com/"), true);
+  // Invoke "OnNavigationCommitted" for a different-document navigation and
+  // expect "OnURLChanged", "OnOriginChanged" and "OnNetworkAlmostIdleChanged"
+  // notifications (note: navigation resets network idle state).
+  const GURL kUrl("http://www.foo.com/");
+  const url::Origin kOrigin = url::Origin::Create(kUrl);
+  EXPECT_CALL(obs, OnURLChanged(raw_frame_node, GURL()))
+      .WillOnce([&](const FrameNode*, const GURL& previous_value) {
+        // The observer sees the new URL *and* origin.
+        EXPECT_EQ(frame_node->GetURL(), kUrl);
+        EXPECT_EQ(frame_node->GetOrigin(), kOrigin);
+      });
+  EXPECT_CALL(obs, OnOriginChanged(
+                       raw_frame_node,
+                       // Note: Specifying std::optional<url::Origin>() instead
+                       // of std::nullopt so Gmock can deduce the type.
+                       std::optional<url::Origin>()))
+      .WillOnce([&](const FrameNode*,
+                    const std::optional<url::Origin>& previous_value) {
+        // The observer sees the new URL *and* origin.
+        EXPECT_EQ(frame_node->GetURL(), kUrl);
+        EXPECT_EQ(frame_node->GetOrigin(), kOrigin);
+      });
+  EXPECT_CALL(obs, OnNetworkAlmostIdleChanged(raw_frame_node));
+  frame_node->OnNavigationCommitted(kUrl, kOrigin, /*same_document=*/false);
+  testing::Mock::VerifyAndClear(&obs);
+
+  // Invoke "OnNavigationCommitted" for a same-document navigation. Origin isn't
+  // affected.
+  const GURL kSameDocumentUrl("http://www.foo.com#same-document");
+  EXPECT_CALL(obs, OnURLChanged(raw_frame_node, kUrl));
+  frame_node->OnNavigationCommitted(kSameDocumentUrl, kOrigin,
+                                    /*same_document=*/true);
+  testing::Mock::VerifyAndClear(&obs);
+
+  // Re-entrant iteration should work.
+  EXPECT_CALL(obs, OnFrameVisibilityChanged(raw_frame_node, _))
+      .WillOnce(InvokeWithoutArgs([&] {
+        frame_node->SetPriorityAndReason(PriorityAndReason(
+            base::TaskPriority::USER_BLOCKING, "test priority"));
+      }));
+  EXPECT_CALL(obs, OnPriorityAndReasonChanged(raw_frame_node, _));
+  frame_node->SetVisibility(FrameNode::Visibility::kVisible);
   testing::Mock::VerifyAndClear(&obs);
 
   // Release the frame node and expect a call to "OnBeforeFrameNodeRemoved".

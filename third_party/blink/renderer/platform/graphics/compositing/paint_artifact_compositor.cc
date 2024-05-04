@@ -49,6 +49,8 @@ namespace blink {
 static int g_s_property_tree_sequence_number = 1;
 
 class PaintArtifactCompositor::OldPendingLayerMatcher {
+  STACK_ALLOCATED();
+
  public:
   explicit OldPendingLayerMatcher(PendingLayers pending_layers)
       : pending_layers_(std::move(pending_layers)) {}
@@ -192,7 +194,7 @@ bool PaintArtifactCompositor::NeedsCompositedScrolling(
 
 bool PaintArtifactCompositor::ComputeNeedsCompositedScrolling(
     const PaintArtifact& artifact,
-    Vector<PaintChunk>::const_iterator chunk_cursor) const {
+    PaintChunks::const_iterator chunk_cursor) const {
   // The chunk must be a ScrollHitTest chunk which contains no display items.
   DCHECK(chunk_cursor->hit_test_data);
   DCHECK(chunk_cursor->hit_test_data->scroll_translation);
@@ -208,8 +210,7 @@ bool PaintArtifactCompositor::ComputeNeedsCompositedScrolling(
     return true;
   }
   // Don't automatically composite non-user-scrollable scrollers.
-  if (!scroll_translation.ScrollNode()->UserScrollableHorizontal() &&
-      !scroll_translation.ScrollNode()->UserScrollableVertical()) {
+  if (!scroll_translation.ScrollNode()->UserScrollable()) {
     return false;
   }
   auto preference =
@@ -227,7 +228,7 @@ bool PaintArtifactCompositor::ComputeNeedsCompositedScrolling(
   // the opaqueness of the scrolling contents. If it has an opaque rect
   // covering the whole scrolling contents, we can use composited scrolling
   // without losing LCD text.
-  for (auto* next = chunk_cursor + 1; next != artifact.PaintChunks().end();
+  for (auto* next = chunk_cursor + 1; next != artifact.GetPaintChunks().end();
        ++next) {
     if (&next->properties.Transform() ==
         &chunk_cursor->properties.Transform()) {
@@ -393,16 +394,16 @@ void PaintArtifactCompositor::SetNeedsFullUpdateAfterPaintIfNeeded(
     return;
 
   // Adding or removing chunks requires a full update to add/remove cc::layers.
-  if (previous.PaintChunks().size() != repainted.PaintChunks().size()) {
+  if (previous.GetPaintChunks().size() != repainted.GetPaintChunks().size()) {
     SetNeedsUpdate();
     return;
   }
 
   // Loop over both paint chunk subsets in order.
-  for (wtf_size_t i = 0; i < previous.PaintChunks().size(); i++) {
-    if (NeedsFullUpdateAfterPaintingChunk(previous.PaintChunks()[i], previous,
-                                          repainted.PaintChunks()[i],
-                                          repainted)) {
+  for (wtf_size_t i = 0; i < previous.GetPaintChunks().size(); i++) {
+    if (NeedsFullUpdateAfterPaintingChunk(
+            previous.GetPaintChunks()[i], previous,
+            repainted.GetPaintChunks()[i], repainted)) {
       SetNeedsUpdate();
       return;
     }
@@ -508,9 +509,9 @@ bool PaintArtifactCompositor::DecompositeEffect(
 }
 
 void PaintArtifactCompositor::LayerizeGroup(
-    scoped_refptr<const PaintArtifact> artifact,
+    const PaintArtifact& artifact,
     const EffectPaintPropertyNode& current_group,
-    Vector<PaintChunk>::const_iterator& chunk_cursor,
+    PaintChunks::const_iterator& chunk_cursor,
     HashSet<const TransformPaintPropertyNode*>& directly_composited_transforms,
     bool force_draws_content) {
   wtf_size_t first_layer_in_current_group = pending_layers_.size();
@@ -532,7 +533,7 @@ void PaintArtifactCompositor::LayerizeGroup(
   // previous layer. Again finding the host costs O(qd). Merging would cost
   // O(p) due to copying the chunk list. Subtotal: O((qd + p)d) = O(qd^2 + pd)
   // Assuming p > d, the total complexity would be O(pqd + qd^2 + pd) = O(pqd)
-  while (chunk_cursor != artifact->PaintChunks().end()) {
+  while (chunk_cursor != artifact.GetPaintChunks().end()) {
     // Look at the effect node of the next chunk. There are 3 possible cases:
     // A. The next chunk belongs to the current group but no subgroup.
     // B. The next chunk does not belong to the current group.
@@ -547,11 +548,11 @@ void PaintArtifactCompositor::LayerizeGroup(
           chunk_cursor->hit_test_data->scroll_translation) {
         painted_scroll_translations_.insert(
             chunk_cursor->hit_test_data->scroll_translation.get(),
-            ComputeNeedsCompositedScrolling(*artifact, chunk_cursor));
+            ComputeNeedsCompositedScrolling(artifact, chunk_cursor));
       }
       pending_layers_.emplace_back(artifact, *chunk_cursor);
       pending_layers_.back().SetCompositingType(
-          ChunkCompositingType(*artifact, *chunk_cursor));
+          ChunkCompositingType(artifact, *chunk_cursor));
       ++chunk_cursor;
       // force_draws_content doesn't apply to pending layers that require own
       // layer, specifically scrollbar layers, foreign layers, scroll hit
@@ -628,12 +629,12 @@ void PaintArtifactCompositor::LayerizeGroup(
 }
 
 void PaintArtifactCompositor::CollectPendingLayers(
-    scoped_refptr<const PaintArtifact> artifact) {
+    const PaintArtifact& artifact) {
   HashSet<const TransformPaintPropertyNode*> directly_composited_transforms;
-  Vector<PaintChunk>::const_iterator cursor = artifact->PaintChunks().begin();
+  PaintChunks::const_iterator cursor = artifact.GetPaintChunks().begin();
   LayerizeGroup(artifact, EffectPaintPropertyNode::Root(), cursor,
                 directly_composited_transforms, /*force_draws_content*/ false);
-  DCHECK(cursor == artifact->PaintChunks().end());
+  DCHECK(cursor == artifact.GetPaintChunks().end());
   pending_layers_.ShrinkToReasonableCapacity();
 }
 
@@ -735,20 +736,21 @@ SynthesizedClip& PaintArtifactCompositor::CreateOrReuseSynthesizedClipLayer(
     synthesized_clip.Layer()->SetLayerTreeHost(root_layer_->layer_tree_host());
     if (layer_debug_info_enabled_ && !synthesized_clip.Layer()->debug_info())
       synthesized_clip.Layer()->SetDebugName("Synthesized Clip");
+  }
 
-    if (!should_always_update_on_scroll_) {
-      // If there is any scroll translation between `clip.LocalTransformSpace`
-      // and `transform`, the synthesized clip layer's geometry and paint
-      // operations depend on the scroll offset and we need to update them
-      // on each scroll of the scroller.
-      const auto& clip_transform = clip.LocalTransformSpace().Unalias();
-      if (&clip_transform != &transform &&
-          &clip_transform.NearestScrollTranslationNode() !=
-              &transform.NearestScrollTranslationNode()) {
-        should_always_update_on_scroll_ = true;
-      }
+  if (!should_always_update_on_scroll_) {
+    // If there is any scroll translation between `clip.LocalTransformSpace`
+    // and `transform`, the synthesized clip's fast rounded border or layer
+    // geometry and paint operations depend on the scroll offset and we need to
+    // update them on each scroll of the scroller.
+    const auto& clip_transform = clip.LocalTransformSpace().Unalias();
+    if (&clip_transform != &transform &&
+        &clip_transform.NearestScrollTranslationNode() !=
+            &transform.NearestScrollTranslationNode()) {
+      should_always_update_on_scroll_ = true;
     }
   }
+
   mask_isolation_id = synthesized_clip.GetMaskIsolationId();
   mask_effect_id = synthesized_clip.GetMaskEffectId();
   return synthesized_clip;
@@ -760,8 +762,8 @@ void PaintArtifactCompositor::UpdateCompositorViewportProperties(
     cc::LayerTreeHost* layer_tree_host) {
   // The inner and outer viewports' existence is linked. That is, either they're
   // both null or they both exist.
-  CHECK_EQ(static_cast<bool>(properties.outer_scroll_translation.get()),
-           static_cast<bool>(properties.inner_scroll_translation.get()));
+  CHECK_EQ(static_cast<bool>(properties.outer_scroll_translation),
+           static_cast<bool>(properties.inner_scroll_translation));
   CHECK(!properties.outer_clip ||
         static_cast<bool>(properties.inner_scroll_translation));
 
@@ -801,7 +803,7 @@ void PaintArtifactCompositor::UpdateCompositorViewportProperties(
 }
 
 void PaintArtifactCompositor::Update(
-    scoped_refptr<const PaintArtifact> artifact,
+    const PaintArtifact& artifact,
     const ViewportProperties& viewport_properties,
     const Vector<const TransformPaintPropertyNode*>& scroll_translation_nodes,
     Vector<std::unique_ptr<cc::ViewTransitionRequest>> transition_requests) {
@@ -845,6 +847,23 @@ void PaintArtifactCompositor::Update(
   should_always_update_on_scroll_ = false;
   for (auto& entry : synthesized_clip_cache_)
     entry.in_use = false;
+
+  // Ensure scroll and scroll translation nodes which may be referenced by
+  // AnchorPositionScrollTranslation nodes, to reduce chance of inefficient
+  // stale_forward_dependencies in cc::TransformTree::AnchorPositionOffset().
+  // We want to create a cc::TransformNode only if the scroller is painted.
+  // This avoids violating an assumption in CompositorAnimations that an
+  // element has property nodes for either all or none of its animating
+  // properties (see crbug.com/1385575).
+  // However, we want to create a cc::ScrollNode regardless of whether the
+  // scroller is painted. This ensures that scroll offset animations aren't
+  // affected by becoming unpainted.
+  for (auto* node : scroll_translation_nodes) {
+    property_tree_manager.EnsureCompositorScrollNode(*node);
+  }
+  for (auto* node : painted_scroll_translations_.Keys()) {
+    property_tree_manager.EnsureCompositorScrollAndTransformNode(*node);
+  }
 
   host->property_trees()
       ->effect_tree_mutable()
@@ -904,20 +923,6 @@ void PaintArtifactCompositor::Update(
     }
   }
 
-  // We want to create a cc::TransformNode only if the scroller is painted.
-  // This avoids violating an assumption in CompositorAnimations that an
-  // element has property nodes for either all or none of its animating
-  // properties (see crbug.com/1385575).
-  // However, we want to create a cc::ScrollNode regardless of whether the
-  // scroller is painted. This ensures that scroll offset animations aren't
-  // affected by becoming unpainted.
-  for (auto* node : scroll_translation_nodes) {
-    property_tree_manager.EnsureCompositorScrollNode(*node);
-  }
-  for (auto* node : painted_scroll_translations_.Keys()) {
-    property_tree_manager.EnsureCompositorScrollAndTransformNode(*node);
-  }
-
   root_layer_->layer_tree_host()->RegisterSelection(layer_selection);
 
   property_tree_manager.Finalize();
@@ -951,9 +956,13 @@ void PaintArtifactCompositor::Update(
 
   // For information about |sequence_number|, see:
   // PaintPropertyNode::changed_sequence_number_|;
-  for (auto& chunk : artifact->PaintChunks()) {
+  for (auto& chunk : artifact.GetPaintChunks()) {
     chunk.properties.GetPropertyTreeState().ClearChangedToRoot(
         g_s_property_tree_sequence_number);
+    if (chunk.hit_test_data && chunk.hit_test_data->scroll_translation) {
+      chunk.hit_test_data->scroll_translation->ClearChangedToRoot(
+          g_s_property_tree_sequence_number);
+    }
   }
 
   DVLOG(2) << "PaintArtifactCompositor::Update() done\n"
@@ -964,13 +973,13 @@ void PaintArtifactCompositor::Update(
 }
 
 void PaintArtifactCompositor::UpdateRepaintedLayers(
-    scoped_refptr<const PaintArtifact> repainted_artifact) {
+    const PaintArtifact& repainted_artifact) {
   // |Update| should be used for full updates.
   DCHECK(!needs_update_);
 
 #if DCHECK_IS_ON()
   // Any property tree state change should have caused a full update.
-  for (const auto& chunk : repainted_artifact->PaintChunks()) {
+  for (const auto& chunk : repainted_artifact.GetPaintChunks()) {
     // If this fires, a property tree value has changed but we are missing a
     // call to |PaintArtifactCompositor::SetNeedsUpdate|.
     DCHECK(!chunk.properties.GetPropertyTreeState().Unalias().ChangedToRoot(
@@ -1067,6 +1076,19 @@ bool PaintArtifactCompositor::DirectlySetScrollOffset(
   PropertyTreeManager::DirectlySetScrollOffset(*root_layer_->layer_tree_host(),
                                                element_id, scroll_offset);
   return true;
+}
+
+void PaintArtifactCompositor::DropCompositorScrollDeltaNextCommit(
+    CompositorElementId element_id) {
+  if (!root_layer_ || !root_layer_->layer_tree_host()) {
+    return;
+  }
+  auto* property_trees = root_layer_->layer_tree_host()->property_trees();
+  if (!property_trees->scroll_tree().FindNodeFromElementId(element_id)) {
+    return;
+  }
+  PropertyTreeManager::DropCompositorScrollDeltaNextCommit(
+      *root_layer_->layer_tree_host(), element_id);
 }
 
 uint32_t PaintArtifactCompositor::GetMainThreadScrollingReasons(

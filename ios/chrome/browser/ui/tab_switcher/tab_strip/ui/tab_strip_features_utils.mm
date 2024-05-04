@@ -17,4 +17,8 @@
   return feature_param != kModernTabStripNTBStaticParam;
 }
 
++ (BOOL)isModernTabStripWithTabGroups {
+  return IsTabGroupInGridEnabled();
+}
+
 @end

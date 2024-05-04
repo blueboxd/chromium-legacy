@@ -63,7 +63,7 @@ namespace {
 
 using WebUIImplBrowserTest = ContentBrowserTest;
 
-// TODO(crbug.com/154571): Shared workers are not available on Android.
+// TODO(crbug.com/40290702): Shared workers are not available on Android.
 #if !BUILDFLAG(IS_ANDROID)
 const char kLoadSharedWorkerScript[] = R"(
     new Promise((resolve) => {
@@ -547,7 +547,7 @@ IN_PROC_BROWSER_TEST_F(WebUIImplBrowserTest, ReuseProcessInClonedTab) {
   // The cloned WebContents will use the old tab's current SiteInstance for its
   // initial RFH.  That means its initial SiteInstance should already have a
   // site, and it should keep the same process (from the old tab).
-  // TODO(crbug.com/1468601): these expectations may change in the future if
+  // TODO(crbug.com/40277187): these expectations may change in the future if
   // duplicating tabs stops inheriting the old tab's SiteInstance.
   EXPECT_EQ(shell()->web_contents()->GetPrimaryMainFrame()->GetSiteInstance(),
             cloned_tab->GetPrimaryMainFrame()->GetSiteInstance());
@@ -559,7 +559,7 @@ IN_PROC_BROWSER_TEST_F(WebUIImplBrowserTest, ReuseProcessInClonedTab) {
       cloned_tab_impl->GetPrimaryMainFrame()->GetProcess()->IsUnused());
 
   // Load the cloned tab.  This should reuse the old tab's WebUI process.
-  // TODO(crbug.com/1468601): this expectation may change in the future if
+  // TODO(crbug.com/40277187): this expectation may change in the future if
   // duplicating tabs stops inheriting the old tab's SiteInstance.
   {
     TestNavigationObserver clone_observer(cloned_tab_impl);
@@ -789,7 +789,7 @@ IN_PROC_BROWSER_TEST_F(WebUIRequiringGestureBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(
     WebUIRequiringGestureBrowserTest,
-    // TODO(crbug.com/1342300): Re-enable this test
+    // TODO(crbug.com/40851657): Re-enable this test
     DISABLED_MessageRequiringGestureAllowedWithInteractiveEvent) {
   // Simulate a click at Now.
   content::SimulateMouseClick(web_contents(), 0,
@@ -823,7 +823,7 @@ IN_PROC_BROWSER_TEST_F(WebUIImplBrowserTest, UntrustedSchemeLoads) {
 
 // Verify that we can successfully navigate to a chrome-untrusted:// URL
 // without a crash while WebUI::Send is being performed.
-// TODO(crbug.com/1221528): Enable this test once a root cause is identified.
+// TODO(crbug.com/40773523): Enable this test once a root cause is identified.
 IN_PROC_BROWSER_TEST_F(WebUIImplBrowserTest, DISABLED_NavigateWhileWebUISend) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
@@ -1094,7 +1094,7 @@ class WebUIDedicatedWorkerTest : public WebUIWorkerTest,
 
 INSTANTIATE_TEST_SUITE_P(All, WebUIDedicatedWorkerTest, testing::Bool());
 
-// TODO(crbug.com/154571): Shared workers are not available on Android.
+// TODO(crbug.com/40290702): Shared workers are not available on Android.
 #if !BUILDFLAG(IS_ANDROID)
 // Verify that we can create SharedWorker with scheme "chrome://" under
 // WebUI page.

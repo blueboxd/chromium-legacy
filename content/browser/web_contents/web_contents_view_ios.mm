@@ -10,9 +10,12 @@
 #include <string>
 #include <utility>
 
+#include "base/apple/foundation_util.h"
+#include "base/memory/weak_ptr.h"
 #include "content/browser/renderer_host/popup_menu_helper_ios.h"
 #include "content/browser/renderer_host/render_widget_host_view_ios.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/public/browser/context_menu_params.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_view_delegate.h"
 #include "ui/base/cocoa/animation_utils.h"
@@ -168,6 +171,15 @@ void WebContentsViewIOS::GotFocus(RenderWidgetHostImpl* render_widget_host) {
 
 void WebContentsViewIOS::LostFocus(RenderWidgetHostImpl* render_widget_host) {
   web_contents_->NotifyWebContentsLostFocus(render_widget_host);
+}
+
+void WebContentsViewIOS::ShowContextMenu(RenderFrameHost& render_frame_host,
+                                         const ContextMenuParams& params) {
+  if (delegate_) {
+    delegate_->ShowContextMenu(render_frame_host, params);
+  } else {
+    DLOG(ERROR) << "Cannot show context menus without a delegate.";
+  }
 }
 
 void WebContentsViewIOS::ShowPopupMenu(

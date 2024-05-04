@@ -84,10 +84,10 @@ scoped_refptr<base::RefCountedMemory> LoadUserImageFrameForScaleFactor(
   gfx::ImageSkia* image =
       ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(resource_id);
   float scale = ui::GetScaleForResourceScaleFactor(scale_factor);
-  scoped_refptr<base::RefCountedBytes> data(new base::RefCountedBytes);
+  auto data = base::MakeRefCounted<base::RefCountedBytes>();
   gfx::PNGCodec::EncodeBGRASkBitmap(image->GetRepresentation(scale).GetBitmap(),
                                     false /* discard transparency */,
-                                    &data->data());
+                                    &data->as_vector());
   return data;
 }
 
@@ -114,7 +114,7 @@ scoped_refptr<base::RefCountedMemory> GetUserImageFrame(
   }
   scoped_refptr<base::RefCountedBytes> data(new base::RefCountedBytes);
   gfx::PNGCodec::EncodeBGRASkBitmap(bitmap, false /* discard transparency */,
-                                    &data->data());
+                                    &data->as_vector());
   return data;
 }
 
@@ -143,7 +143,7 @@ scoped_refptr<base::RefCountedMemory> GetUserImageInternal(
         scoped_refptr<base::RefCountedBytes> data(new base::RefCountedBytes);
         gfx::PNGCodec::EncodeBGRASkBitmap(*user->GetImage().bitmap(),
                                           false /* discard transparency */,
-                                          &data->data());
+                                          &data->as_vector());
         return data;
       }
     }
@@ -179,7 +179,7 @@ void UserImageSource::StartDataRequest(
     const GURL& url,
     const content::WebContents::Getter& wc_getter,
     content::URLDataSource::GotDataCallback callback) {
-  // TODO(crbug/1009127): Make sure |url| matches
+  // TODO(crbug.com/40050262): Make sure |url| matches
   // |chrome::kChromeUIUserImageURL| now that |url| is available.
   const std::string path = content::URLDataSource::URLToRequestPath(url);
   std::string email;

@@ -22,9 +22,9 @@ import {FakeNetworkDiagnostics} from './fake_network_diagnostics_routines.js';
 import {getIconFromSrc} from './network_health_test_utils.js';
 
 suite('NetworkDiagnosticsTest', () => {
-  let networkDiagnostics: NetworkDiagnosticsElement|null;
+  let networkDiagnostics: NetworkDiagnosticsElement;
 
-  let fakeNetworkDiagnostics_: FakeNetworkDiagnostics|null;
+  let fakeNetworkDiagnostics_: FakeNetworkDiagnostics;
 
   setup(() => {
     document.body.innerHTML = window.trustedTypes!.emptyHTML;
@@ -36,34 +36,36 @@ suite('NetworkDiagnosticsTest', () => {
   });
 
   teardown(() => {
-    networkDiagnostics!.remove();
+    networkDiagnostics.remove();
   });
 
   function setFakeVerdict(verdict: RoutineVerdict) {
-    fakeNetworkDiagnostics_!.setFakeVerdict(verdict);
+    fakeNetworkDiagnostics_.setFakeVerdict(verdict);
   }
 
   async function runRoutines() {
-    networkDiagnostics!.runAllRoutines();
+    networkDiagnostics.runAllRoutines();
     await flushTasks();
   }
 
   async function resolveRoutines() {
-    fakeNetworkDiagnostics_!.resolveRoutines();
+    fakeNetworkDiagnostics_.resolveRoutines();
     await flushTasks();
   }
 
   function getRoutineGroups(): NodeListOf<RoutineGroupElement> {
-    return networkDiagnostics!.querySelectorAll('routine-group');
+    const groups =
+        networkDiagnostics.shadowRoot!.querySelectorAll<RoutineGroupElement>(
+            'routine-group');
+    assertEquals(8, groups.length);
+    return groups;
   }
 
   /**
    * Checks that all the routine groups match the |running| param
    */
   function checkRoutinesRunning(running: boolean) {
-    const groups = getRoutineGroups();
-
-    for (const group of groups) {
+    for (const group of getRoutineGroups()) {
       const spinner =
           group.shadowRoot!.querySelector<HTMLElement>('paper-spinner-lite');
       assertEquals(isVisible(spinner), running);
@@ -112,22 +114,24 @@ suite('NetworkDiagnosticsTest', () => {
       header!.click();
       await flushTasks();
       assertTrue(group.expanded.valueOf());
-      for (const routine of container!.shadowRoot!
-               .querySelectorAll<HTMLElement>('.routine-container')) {
-        const msg = routine.shadowRoot!.querySelector(
-                                           '#result-msg')!.textContent!.trim();
+
+      const routineContainers =
+          container!.querySelectorAll<HTMLElement>('.routine-container');
+      assertGT(routineContainers.length, 0);
+      for (const routine of routineContainers) {
+        const msg = routine.querySelector('#result-msg')!.textContent!.trim();
         const parts = msg!.split(': ');
 
         switch (verdict) {
           case RoutineVerdict.kNoProblem:
             assertEquals(parts.length, 1);
             assertEquals(
-                parts[0], networkDiagnostics!.i18n('NetworkDiagnosticsPassed'));
+                parts[0], networkDiagnostics.i18n('NetworkDiagnosticsPassed'));
             break;
           case RoutineVerdict.kProblem:
             assertGT(parts.length, 0);
             assertEquals(
-                parts[0], networkDiagnostics!.i18n('NetworkDiagnosticsFailed'));
+                parts[0], networkDiagnostics.i18n('NetworkDiagnosticsFailed'));
             // Routine has an associated problem string.
             if (parts.length === 2) {
               assertGT(parts[1]!.length, 0);
@@ -136,7 +140,7 @@ suite('NetworkDiagnosticsTest', () => {
           case RoutineVerdict.kNotRun:
             assertEquals(parts.length, 1);
             assertEquals(
-                parts[0], networkDiagnostics!.i18n('NetworkDiagnosticsNotRun'));
+                parts[0], networkDiagnostics.i18n('NetworkDiagnosticsNotRun'));
             break;
           default:
             assertNotReached();

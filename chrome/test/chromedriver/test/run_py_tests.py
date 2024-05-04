@@ -136,6 +136,9 @@ _OS_SPECIFIC_FILTER['mac'] = [
     'ChromeDriverTest.testTakeElementScreenshotInIframe',
     'ChromeDriverTest.testTakeElementScreenshotPartlyVisible',
     'ChromeDriverTest.testTakeLargeElementScreenshot',
+    # Flaky: https://crbug.com/333826980 (fails in 80% of cases on mac-arm64)
+    # Error message: Timed out receiving message from renderer: 10.000
+    'ChromeDriverTest.testTakeLargeElementViewportScreenshot',
     'ChromeDriverSiteIsolation.testCanClickOOPIF',
     # Flaky: https://crbug.com/1496826.
     'PureBidiTest.testParallelConnectionIsClosedOnSessionEnd',
@@ -158,8 +161,6 @@ _BROWSER_SPECIFIC_FILTER['chrome'] = [
     'ChromeDriverTest.testHeadlessWithUserDataDirStarts',
     # This test is a chrome-headless-shell version of testWindowFullScreen
     'ChromeDriverTest.testWindowFullScreenHeadless',
-    # Chrome does not support --remote-debugging-address argument
-    'RemoteBrowserTest.testConnectToRemoteBrowserLiteralAddressHeadless',
 ]
 _BROWSER_SPECIFIC_FILTER['chrome-headless-shell'] = [
     # Maximize and FullScreeen operations make no sense in chrome-headless-mode.
@@ -167,11 +168,15 @@ _BROWSER_SPECIFIC_FILTER['chrome-headless-shell'] = [
     # S/A: BrowserHandler::setWindowsBounds at
     # //headelss/lib/browser/protocol/browser_handler.cc.
     'ChromeDriverTest.testWindowMaximize',
+    'ChromeDriverTest.testWindowMaximizeFromFrame',
     'ChromeDriverTest.testWindowFullScreen',
     # chrome-headless-shell does not support scripted print
     'ChromeDriverTest.testCanSwitchToPrintPreviewDialog',
     # FedCM is not supported by chrome-headless-shell.
     'FedCmSpecificTest.*',
+    # https://crbug.com/40279363
+    # Bounce Tracking Mitigations is not supported by chrome-headless-shell.
+    'NavTrackingMitigationSpecificTest.testRunBounceTrackingMitigations',
     # chrome-headless-shell stops handling some CDP commands until the page is
     # fully loaded.
     # See: https://crbug.com/chromedriver/4624
@@ -285,6 +290,7 @@ _ANDROID_NEGATIVE_FILTER['chrome'] = (
         'ChromeDriverTest.testWindowSize',
         'ChromeDriverTest.testWindowRect',
         'ChromeDriverTest.testWindowMaximize',
+        'ChromeDriverTest.testWindowMaximizeFromFrame',
         'ChromeDriverTest.testWindowMinimize',
         'ChromeLogPathCapabilityTest.testChromeLogPath',
         # Connecting to running browser is not supported on Android.
@@ -343,7 +349,10 @@ _ANDROID_NEGATIVE_FILTER['chrome'] = (
         # These tests are failing on Android
         # https://bugs.chromium.org/p/chromedriver/issues/detail?id=3560
         'ChromeDriverTest.testTakeLargeElementViewportScreenshot',
-        'ChromeDriverTest.testTakeLargeElementFullPageScreenshot'
+        'ChromeDriverTest.testTakeLargeElementFullPageScreenshot',
+        # Android does not support command line switches, which are
+        # currently needed for these tests.
+        'NavTrackingMitigationSpecificTest.testRunBounceTrackingMitigations'
     ]
 )
 _ANDROID_NEGATIVE_FILTER['chrome_stable'] = (
@@ -680,6 +689,13 @@ class ChromeDriverBaseTestWithWebServer(ChromeDriverBaseTest):
   @staticmethod
   def GetHttpUrlForFile(file_path):
     return ChromeDriverBaseTestWithWebServer._http_server.GetUrl() + file_path
+
+  @staticmethod
+  def ReplaceHostName(url, new_host_name):
+    url_components = urllib.parse.urlparse(url)
+    return urllib.parse.urlunparse(
+        url_components._replace(
+            netloc=('%s:%d' % (new_host_name, url_components.port))))
 
 
 class ChromeDriverTestWithCustomCapability(ChromeDriverBaseTestWithWebServer):
@@ -1434,6 +1450,38 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
         'document.body.innerHTML = "<div>new</div>";')
     with self.assertRaises(chromedriver.StaleElementReference):
       div.FindElements('tag name', 'br')
+
+  def testFindWithInvalidSelector(self):
+    selectors = ['css selector', 'xpath'];
+    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
+    self._driver.ExecuteScript(
+        'document.body.innerHTML = "<div>a</div><div>b</div>";')
+    root = self._driver.FindElement('css selector', 'div')
+    for selector in selectors:
+      with self.assertRaises(chromedriver.InvalidSelector):
+        self._driver.FindElement(selector, '>-?!.#&<@*')
+      with self.assertRaises(chromedriver.InvalidSelector):
+        self._driver.FindElements(selector, '>-?!.#&<@*')
+      with self.assertRaises(chromedriver.InvalidSelector):
+        root.FindElement(selector, '>-?!.#&<@*')
+      with self.assertRaises(chromedriver.InvalidSelector):
+        root.FindElements(selector, '>-?!.#&<@*')
+
+  def testFindWithEmptySelector(self):
+    selectors = ['css selector', 'xpath'];
+    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
+    self._driver.ExecuteScript(
+        'document.body.innerHTML = "<div>a</div><div>b</div>";')
+    root = self._driver.FindElement('css selector', 'div')
+    for selector in selectors:
+      with self.assertRaises(chromedriver.InvalidSelector):
+        self._driver.FindElement(selector, '')
+      with self.assertRaises(chromedriver.InvalidSelector):
+        self._driver.FindElements(selector, '')
+      with self.assertRaises(chromedriver.InvalidSelector):
+        root.FindElement(selector, '>-?!.#&<@*')
+      with self.assertRaises(chromedriver.InvalidSelector):
+        root.FindElements(selector, '>-?!.#&<@*')
 
   def testClickElement(self):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
@@ -2531,6 +2579,33 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
   def testWindowMaximize(self):
     old_rect_list = [640, 400, 100, 200]
     self._driver.SetWindowRect(*old_rect_list)
+    new_rect = self._driver.MaximizeWindow()
+    new_rect_list = [
+        new_rect['width'],
+        new_rect['height'],
+        new_rect['x'],
+        new_rect['y']
+    ]
+    self.assertNotEqual(old_rect_list, new_rect_list)
+
+    self._driver.SetWindowRect(*old_rect_list)
+    self.assertEqual(old_rect_list, self._driver.GetWindowRect())
+
+  def testWindowMaximizeFromFrame(self):
+    # This test is somewhat close to WindowTest.testCanMaximizeTheWindow of
+    # Selenium in its attempt to reproduce https://crbug.com/chromedriver/2663
+    self._http_server.SetDataForPath('/nested.html',
+      bytes('<p>nested.html</p>', 'utf-8'))
+    self._http_server.SetDataForPath('/main.html',
+      bytes('<iframe src="/nested.html">', 'utf-8'))
+
+    old_rect_list = [640, 400, 100, 200]
+    self._driver.SetWindowRect(*old_rect_list)
+
+    self._driver.Load(self.GetHttpUrlForFile('/main.html'))
+    frame = self._driver.FindElement('tag name', 'iframe')
+    self._driver.SwitchToFrame(frame)
+
     new_rect = self._driver.MaximizeWindow()
     new_rect_list = [
         new_rect['width'],
@@ -4817,6 +4892,60 @@ class ChromeDriverSecureContextTest(ChromeDriverBaseTestWithWebServer):
         "This sensor type is not being overridden with a virtual sensor",
         self._driver.UpdateVirtualSensor, 'ambient-light', {'illuminance': 42})
 
+  def testSetDevicePosture(self):
+    self._driver.Load(
+        self.GetHttpsUrlForFile('/chromedriver/device_posture_test.html'))
+    self._driver.ExecuteScript('addDevicePostureEventListener()')
+    original_posture = self._driver.ExecuteScript(
+        'return navigator.devicePosture.type')
+    posture = 'folded' if original_posture == 'continuous' else 'continuous'
+    self._driver.SetDevicePosture(posture)
+    self.assertTrue(
+        self.WaitForCondition(lambda: self._driver.ExecuteScript(
+            'return postures.length === 1')))
+    self.assertNotEqual(original_posture,
+                        self._driver.ExecuteScript('return postures.at(-1)'))
+    self._driver.SetDevicePosture(original_posture)
+    self.assertTrue(
+        self.WaitForCondition(lambda: self._driver.ExecuteScript(
+            'return postures.length === 2')))
+    self.assertEqual(original_posture,
+                     self._driver.ExecuteScript('return postures.at(-1)'))
+
+  def testSetDevicePostureInvalidArgument(self):
+    self.assertRaisesRegex(
+        chromedriver.InvalidArgument,
+        "Invalid posture type",
+        self._driver.SetDevicePosture, 'invalid-posture')
+
+  def testClearDevicePosture(self):
+    self._driver.Load(
+        self.GetHttpsUrlForFile('/chromedriver/device_posture_test.html'))
+    self._driver.ExecuteScript('addDevicePostureEventListener()')
+    original_posture = self._driver.ExecuteScript(
+        'return navigator.devicePosture.type')
+    posture = 'folded' if original_posture == 'continuous' else 'continuous'
+    self._driver.SetDevicePosture(posture)
+    self.assertTrue(
+        self.WaitForCondition(lambda: self._driver.ExecuteScript(
+            'return postures.length === 1')))
+    self.assertNotEqual(original_posture,
+                        self._driver.ExecuteScript('return postures.at(-1)'))
+    self._driver.ClearDevicePosture()
+    self.assertTrue(
+        self.WaitForCondition(lambda: self._driver.ExecuteScript(
+            'return postures.length === 2')))
+    self.assertEqual(original_posture,
+                     self._driver.ExecuteScript('return postures.at(-1)'))
+
+  def testClearDevicePostureWithoutSetDevicePosture(self):
+    self._driver.Load(
+        self.GetHttpsUrlForFile('/chromedriver/device_posture_test.html'))
+    self._driver.ExecuteScript('addDevicePostureEventListener()')
+    self._driver.ClearDevicePosture()
+    self.assertFalse(
+        self.WaitForCondition(lambda: self._driver.ExecuteScript(
+            'return postures.length === 1')))
 
 # Tests in the following class are expected to be moved to ChromeDriverTest
 # class when we no longer support the legacy mode.
@@ -5215,12 +5344,6 @@ class ChromeDriverSiteIsolation(ChromeDriverBaseTestWithWebServer):
   Note that Chrome does not allow "localhost" to be passed to --isolate-origins
   for fixable technical reasons related to subdomain matching.
   """
-
-  def ReplaceHostName(self, url, new_host_name):
-    url_components = urllib.parse.urlparse(url)
-    return urllib.parse.urlunparse(
-        url_components._replace(
-            netloc=('%s:%d' % (new_host_name, url_components.port))))
 
   def setUp(self):
     self._driver = self.CreateDriver(chrome_switches=['--site-per-process'])
@@ -6517,54 +6640,6 @@ class RemoteBrowserTest(ChromeDriverBaseTest):
     if exception is not None:
       raise exception
 
-  def testConnectToRemoteBrowserLiteralAddressHeadless(self):
-    debug_addrs = ['127.0.0.1', '::1']
-    debug_url_addrs = ['127.0.0.1', '[::1]']
-
-    for (debug_addr, debug_url_addr) in zip(debug_addrs, debug_url_addrs):
-      # Must use retries since there is an inherent race condition in port
-      # selection.
-      ports_generator = util.FindProbableFreePorts()
-      exception = None
-      for _ in range(3):
-        exception = None
-        port = next(ports_generator)
-        temp_dir = util.MakeTempDir()
-        print('temp dir is ' + temp_dir)
-        cmd = [_CHROME_BINARY,
-              '--remote-debugging-address=%s' % debug_addr,
-              '--remote-debugging-port=%d' % port,
-              '--user-data-dir=%s' % temp_dir,
-              '--use-mock-keychain',
-              '--password-store=basic',
-              'data:,']
-        process = subprocess.Popen(cmd)
-        try:
-          driver = self.CreateDriver(
-            debugger_address='%s:%d' % (debug_url_addr, port))
-          driver.ExecuteScript(
-            'console.info("%s")' % 'connecting at %d!' % port)
-          driver.Quit()
-        except Exception as e:
-          exception = e
-
-        # The process must be closed on each iteration otherwise a resource leak
-        # happens.
-        if process.poll() is None:
-          process.terminate()
-          # Wait for Chrome to exit here to prevent a race with Chrome to
-          # delete/modify the temporary user-data-dir.
-          # Maximum wait ~1 second.
-          for _ in range(20):
-            if process.poll() is not None:
-              break
-            print('continuing to wait for Chrome to exit')
-            time.sleep(.05)
-          else:
-            process.kill()
-        break
-      if exception is not None:
-        raise exception
 
 
 class LaunchDesktopTest(ChromeDriverBaseTest):
@@ -6806,7 +6881,7 @@ class PureBidiTest(ChromeDriverBaseTestWithWebServer):
     # Resampling can change the distance of a synthetic scroll.
     chrome_switches.append('disable-features=ResamplingScrollEvents')
     options['args'] = chrome_switches
-    # TODO(crbug.com/1011000): Work around a bug with headless on Mac.
+    # TODO(crbug.com/40101714): Work around a bug with headless on Mac.
     if (util.GetPlatformName() == 'mac' and
         browser_name == 'chrome-headless-shell'):
       options['excludeSwitches'] = ['--enable-logging']
@@ -7754,7 +7829,9 @@ class FedCmSpecificTest(ChromeDriverBaseTestWithWebServer):
         ]}""" % self._accounts, 'utf-8')
 
     def respondWithTokenResponse(request):
-      return {'Content-Type': 'application/json'}, self._token_response
+      return {'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': request.GetHeader('Origin'),
+        'Access-Control-Allow-Credentials': 'true'}, self._token_response
 
     self._https_server.SetCallbackForPath('/.well-known/web-identity',
                                           respondWithWellKnownFile)
@@ -7913,6 +7990,32 @@ class FedCmSpecificTest(ChromeDriverBaseTestWithWebServer):
     token = self._driver.ExecuteScript("return getResult()")
     self.assertEqual("token", token)
 
+  def testCancelAfterFailedSelectAccount(self):
+    self._accounts = ""
+
+    self._driver.Load(self._https_server.GetUrl() + "/fedcm.html")
+
+    self._driver.SetDelayEnabled(False)
+    self._driver.ResetCooldown()
+
+    self.assertRaises(chromedriver.NoSuchAlert, self._driver.GetAccounts)
+    self._driver.ExecuteScript("callFedCm()")
+    self.assertTrue(self.WaitForCondition(self.FedCmDialogCondition))
+
+    accounts = self._driver.GetAccounts()
+    self.assertEqual("ConfirmIdpLogin", self._driver.GetDialogType())
+    self.assertEqual(0, len(accounts))
+
+    # SelectAccount should fail, but not cause a later CancelFedCmDialog
+    # to fail.
+    self.assertRaises(chromedriver.InvalidArgument, self._driver.SelectAccount,
+                      0)
+
+    self._driver.CancelFedCmDialog()
+    self.assertRaises(chromedriver.NoSuchAlert, self._driver.GetAccounts)
+    token = self._driver.ExecuteScript('return getResult()')
+    self.assertEqual('NetworkError: Error retrieving a token.', token)
+
   def testClickErrorGotIt(self):
     self._token_response = bytes("""
         {
@@ -8007,6 +8110,92 @@ class FedCmSpecificTest(ChromeDriverBaseTestWithWebServer):
 
     self._driver.CancelFedCmDialog()
 
+class NavTrackingMitigationSpecificTest(ChromeDriverBaseTestWithWebServer):
+
+  def setUp(self):
+    global _VENDOR_ID
+    self._vendor_id = _VENDOR_ID
+
+    self._driver = self.CreateDriver(chrome_switches=[
+        '--enable-features="DIPS:delete/true/'
+            'triggering_action/stateful_bounce/'
+            'client_bounce_detection_timeout/inf"',
+        '--test-third-party-cookie-phaseout',
+        '--host-resolver-rules=MAP * 127.0.0.1'
+    ])
+
+  def testRunBounceTrackingMitigations(self):
+    """Test implementation of bounce tracking mitigations.
+    """
+
+    # This makes sure the underlying service exists and returns an empty
+    # list before the test continues.
+    self.assertTrue(self.WaitForCondition(
+        lambda: len(self._driver.RunBounceTrackingMitigations()) == 0))
+
+    initial_url = self.GetHttpUrlForFile('/initial.html')
+    bounce_url = self.ReplaceHostName(
+        self.GetHttpUrlForFile('/bounce.html'), 'tracker.test')
+    landing_url = self.GetHttpUrlForFile('/landing.html')
+    final_url = self.GetHttpUrlForFile('/final.html')
+
+    self._http_server.SetDataForPath('/initial.html', bytes("""
+        <html>
+          <title>Initial Page</title>
+          <body>
+            <a href='%s' id='bounce'>Stateful Bounce\n</a><br>
+          </body>
+        </html>""" % bounce_url, 'utf-8'))
+
+    def StatefullyBounce(request):
+      return {'Set-Cookie': 'x=y'}, bytes("""
+          <html>
+            <title>Bounce Tracker</title>
+            <body>
+              <script>
+                document.cookie = 'a=b'
+                while (document.cookie.length == 0){}
+                window.location = '%s';
+              </script>
+            </body>
+          </html>""" % landing_url, 'utf-8')
+    self._http_server.SetCallbackForPath('/bounce.html', StatefullyBounce)
+
+    self._http_server.SetDataForPath('/landing.html', bytes("""
+        <html>
+          <title>Landing Page</title>
+          <body>
+            <a href='%s' id='final'>To Final\n</a>
+          </body>
+        </html>""" % final_url, 'utf-8'))
+
+    self._http_server.SetDataForPath('/final.html', bytes("""
+        <html>
+          <title>DONE!</title>
+        </html>""", 'utf-8'))
+
+    self._driver.Load(initial_url)
+    anchor = self._driver.FindElement('css selector', '#bounce')
+    anchor.Click()
+
+    # Waiting to be redirected to landing_url by the bounce page.
+    self.assertTrue(self.WaitForCondition(
+        (lambda: 'Landing Page' in self._driver.GetTitle())))
+
+    # A click-started navigation is used to end the active redirect chain.
+    anchor = self._driver.FindElement('css selector', '#final')
+    anchor.Click()
+
+    # Wait for navigation to final_url to complete.
+    self.assertTrue(self.WaitForCondition(
+        (lambda: 'DONE!' in self._driver.GetTitle())))
+
+    # The DIPSService can take some time to process and record the terminated
+    # redirect chain, but there is not an existing signal exposed to notify
+    # when it has finished. This wait should be sufficient to allow time for it.
+    self.assertTrue(self.WaitForCondition(
+        lambda: "tracker.test" in
+                self._driver.RunBounceTrackingMitigations(), 30, 0.5))
 
 # 'Z' in the beginning is to make test executed in the end of suite.
 class ZChromeStartRetryCountTest(unittest.TestCase):
@@ -8027,6 +8216,11 @@ if __name__ == '__main__':
       '--replayable',
       help="Don't truncate long strings in the log so that the log can be "
       "replayed.")
+  parser.add_argument(
+      '--failfast',
+      action='store_true',
+      default=False,
+      help='Stop the test run on the first error or failure.')
   parser.add_argument('--chrome', help='Path to a build of the chrome binary')
   parser.add_argument(
       '--filter',
@@ -8195,6 +8389,7 @@ if __name__ == '__main__':
 
   runner = unittest.TextTestRunner(
       stream=sys.stdout, descriptions=False, verbosity=2,
+      failfast=options.failfast,
       resultclass=unittest_util.AddSuccessTextTestResult)
   result = runner.run(test_suite)
   results = [result]

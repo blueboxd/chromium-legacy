@@ -1,7 +1,7 @@
 Name: libvpx
 URL: https://chromium.googlesource.com/webm/libvpx
 Version: N/A
-Revision: b207d1c9bd2f38a9bb694642594873760445b57b
+Revision: b61b27220848e3c827eaa8d497422f42612af57e
 CPEPrefix: cpe:/a:webmproject:libvpx:1.14.0
 License: BSD
 License File: source/libvpx/LICENSE
@@ -60,3 +60,12 @@ Configuration for the build is taken from vpx_config.h for each platform.
 
 A tool to verify vpx_config.h and vpx_config.asm are matched. This also
 prints the final configuration after checking.
+
+The PGO (Profile-Guided Optimization) test cases located in the tests/pgo
+directory require a set of test data. To download this test data, execute
+the following command:
+
+     python3 ./source/libvpx/test/android/get_files.py \
+       -i tests/pgo/pgo-test-data.sha1 \
+       -o ../../out/Default/ \
+       -u http://downloads.webmproject.org/test_data/libvpx

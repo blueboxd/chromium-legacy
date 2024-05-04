@@ -40,9 +40,14 @@ class TabGroupTabCollection : public TabCollection {
   void CloseTab(TabModel* tab_model);
 
   // Returns the `group_id_` this collection is associated with.
-  tab_groups::TabGroupId GetTabGroupId() { return group_id_; }
+  tab_groups::TabGroupId GetTabGroupId() const { return group_id_; }
+
+  // Returns the tab at a direct child index in this collection. If the index is
+  // invalid it returns nullptr.
+  tabs::TabModel* GetTabAtIndex(size_t index) const;
 
   // TabCollection:
+  bool ContainsTab(TabModel* tab_model) const override;
   // This is non-recursive for grouped tab collection as it does not contain
   // another collection.
   bool ContainsTabRecursive(TabModel* tab_model) const override;
@@ -54,7 +59,7 @@ class TabGroupTabCollection : public TabCollection {
   // This is non-recursive for grouped tab collection as it does not contain
   // another collection.
   std::optional<size_t> GetIndexOfTabRecursive(
-      TabModel* tab_model) const override;
+      const TabModel* tab_model) const override;
 
   // This is nullopt as grouped tab collection does not contain another
   // collection.

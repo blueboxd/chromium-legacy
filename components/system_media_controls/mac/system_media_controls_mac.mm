@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "components/system_media_controls/mac/system_media_controls_mac.h"
+#include "base/notimplemented.h"
 
 namespace system_media_controls {
 
@@ -15,6 +16,11 @@ std::unique_ptr<SystemMediaControls> SystemMediaControls::Create(
   if (@available(macOS 10.13.1, *))
     return std::make_unique<internal::SystemMediaControlsMac>();
   return nullptr;
+}
+// static
+void SystemMediaControls::SetVisibilityChangedCallbackForTesting(
+    base::RepeatingCallback<void(bool)>*) {
+  NOTIMPLEMENTED();
 }
 
 namespace internal {
@@ -81,6 +87,11 @@ void SystemMediaControlsMac::SetPosition(
 
 void SystemMediaControlsMac::ClearMetadata() {
   now_playing_info_center_delegate_.ClearMetadata();
+}
+
+bool SystemMediaControlsMac::GetVisibilityForTesting() const {
+  NOTIMPLEMENTED();
+  return false;
 }
 
 }  // namespace internal

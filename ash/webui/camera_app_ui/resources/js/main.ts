@@ -26,6 +26,7 @@ import {ModeConstraints} from './device/type.js';
 import * as dom from './dom.js';
 import {reportError} from './error.js';
 import * as expert from './expert.js';
+import {Flag} from './flag.js';
 import {Intent} from './intent.js';
 import * as Comlink from './lib/comlink.js';
 import {startMeasuringMemoryUsage} from './memory_usage.js';
@@ -58,8 +59,10 @@ import {
 import {addUnloadCallback} from './unload.js';
 import * as util from './util.js';
 import {Camera} from './views/camera.js';
+import {toggleIndicatorOnOpenPTZButton} from './views/camera/options.js';
 import * as timertick from './views/camera/timertick.js';
 import {CameraIntent} from './views/camera_intent.js';
+import {SuperResIntroDialog} from './views/dialog.js';
 import {View} from './views/view.js';
 import {Warning, WarningType} from './views/warning.js';
 import {WaitableEvent} from './waitable_event.js';
@@ -377,18 +380,28 @@ function createPerfLogger(): PerfLogger {
   });
 
   state.addObserver(state.State.TAKING, (val, extras) => {
-    // 'taking' state indicates either taking photo or video. Skips for
-    // video-taking case since we only want to collect the metrics of
-    // photo-taking.
-    if (state.get(Mode.VIDEO)) {
+    // `taking` state indicates either taking photo or video. Skips for
+    // some modes such as video mode since they didn't start `photo-taking`.
+    if (!state.get(PerfEvent.PHOTO_TAKING)) {
       return;
     }
-    const event = PerfEvent.PHOTO_TAKING;
+    if (!val) {
+      state.set(PerfEvent.PHOTO_TAKING, false, extras);
+    }
+  });
 
+  state.addObserver(PerfEvent.PHOTO_CAPTURE_SHUTTER, (val) => {
+    // `photo-taking` is a sum of `photo-capture-shutter` and
+    // `photo-capture-post-processing`. As scan mode doesn't record
+    // `photo-capture-post-processing`, returns early in this case.
+    if (state.get(Mode.SCAN)) {
+      return;
+    }
+    // If we log photo-taking metrics by 'taking' state, we cannot exclude the
+    // timer duration. photo-capture-shutter is the timing that a shutter is
+    // clicked.
     if (val) {
-      perfLogger.start(event);
-    } else {
-      perfLogger.stop(event, extras);
+      state.set(PerfEvent.PHOTO_TAKING, true);
     }
   });
 
@@ -415,6 +428,19 @@ function setupSvgs() {
     // other possible children (e.g. inkdrop effect).
     el.prepend(svg);
   }
+}
+
+function maybeIntroduceSuperRes() {
+  // Only introduce the feature when both digital zoom and super res flags are
+  // enabled for the first time.
+  if (!loadTimeData.getChromeFlag(Flag.DIGITAL_ZOOM) ||
+      !loadTimeData.getChromeFlag(Flag.SUPER_RES) ||
+      localStorage.getBool(LocalStorageKey.SUPER_RES_DIALOG_SHOWN)) {
+    return;
+  }
+  nav.open(ViewName.SUPER_RES_INTRO_DIALOG);
+  toggleIndicatorOnOpenPTZButton(true);
+  localStorage.set(LocalStorageKey.SUPER_RES_DIALOG_SHOWN, true);
 }
 
 /**
@@ -482,6 +508,7 @@ async function main() {
   // Set up views navigation by their DOM z-order.
   nav.setup([
     cameraView,
+    new SuperResIntroDialog(),
     new Warning(),
     new View(ViewName.SPLASH),
   ]);
@@ -514,16 +541,6 @@ async function main() {
                                                 metrics.LaunchType.DEFAULT;
 
   await DeviceOperator.initializeInstance();
-  try {
-    await filesystem.initialize();
-    const cameraDir = filesystem.getCameraDirectory();
-    if (!shouldHandleIntentResult) {
-      await resultSaver.initialize(cameraDir);
-    }
-  } catch (error) {
-    reportError(ErrorType.FILE_SYSTEM_FAILURE, ErrorLevel.ERROR, error);
-    nav.open(ViewName.WARNING, WarningType.FILESYSTEM_FAILURE);
-  }
 
   // Create a promise to finish the intent, that runs in parallel with starting
   // camera.
@@ -547,6 +564,17 @@ async function main() {
 
   await cameraResourceInitialized.wait();
   const cameraStartSuccessful = await cameraManager.requestResume();
+
+  try {
+    await filesystem.initialize();
+    const cameraDir = filesystem.getCameraDirectory();
+    if (!shouldHandleIntentResult) {
+      await resultSaver.initialize(cameraDir);
+    }
+  } catch (error) {
+    reportError(ErrorType.FILE_SYSTEM_FAILURE, ErrorLevel.ERROR, error);
+    nav.open(ViewName.WARNING, WarningType.FILESYSTEM_FAILURE);
+  }
 
   // To align window behavior with other apps, defaultWindowSize is only applied
   // when the camera app is first opened. Later, the window will be opened in
@@ -572,6 +600,8 @@ async function main() {
   perfLogger.stop(
       PerfEvent.LAUNCHING_FROM_WINDOW_CREATION,
       {hasError: !cameraStartSuccessful});
+
+  maybeIntroduceSuperRes();
 
   // Start the memory measurement when the camera preview is ready. The first
   // measurement is performed immediately. The following measurements are

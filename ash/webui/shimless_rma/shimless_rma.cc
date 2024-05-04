@@ -32,8 +32,8 @@ namespace ash {
 
 namespace {
 
-// TODO(crbug/1051793): Replace with webui::SetUpWebUIDataSource() once it no
-// longer requires a dependency on //chrome/browser.
+// TODO(crbug.com/40673941): Replace with webui::SetUpWebUIDataSource() once it
+// no longer requires a dependency on //chrome/browser.
 void SetUpWebUIDataSource(content::WebUIDataSource* source,
                           base::span<const webui::ResourcePath> resources,
                           int default_resource) {
@@ -425,8 +425,6 @@ void AddFeatureFlags(content::WebUIDataSource* html_source) {
       base::FeatureList::IsEnabled(features::kShimlessRMAOsUpdate));
   html_source->AddBoolean("complianceCheckEnabled",
                           features::IsShimlessRMAComplianceCheckEnabled());
-  html_source->AddBoolean("skuDescriptionEnabled",
-                          features::IsShimlessRMASkuDescriptionEnabled());
   html_source->AddBoolean("3pDiagnosticsEnabled",
                           features::IsShimlessRMA3pDiagnosticsEnabled());
 }

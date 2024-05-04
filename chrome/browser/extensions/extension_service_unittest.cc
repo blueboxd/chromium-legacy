@@ -36,6 +36,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/test/bind.h"
+#include "base/test/gmock_expected_support.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/test_future.h"
 #include "base/time/time.h"
@@ -71,8 +72,8 @@
 #include "chrome/browser/extensions/pack_extension_job.h"
 #include "chrome/browser/extensions/pending_extension_info.h"
 #include "chrome/browser/extensions/pending_extension_manager.h"
-#include "chrome/browser/extensions/permissions_test_util.h"
-#include "chrome/browser/extensions/permissions_updater.h"
+#include "chrome/browser/extensions/permissions/permissions_test_util.h"
+#include "chrome/browser/extensions/permissions/permissions_updater.h"
 #include "chrome/browser/extensions/plugin_manager.h"
 #include "chrome/browser/extensions/preinstalled_apps.h"
 #include "chrome/browser/extensions/scoped_database_manager_for_test.h"
@@ -168,8 +169,8 @@
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
-#include "storage/browser/database/database_tracker.h"
 #include "storage/browser/quota/quota_manager.h"
+#include "storage/browser/quota/quota_manager_proxy.h"
 #include "storage/common/database/database_identifier.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -892,6 +893,20 @@ class ExtensionServiceTest : public ExtensionServiceTestWithInstall {
     auto found = base::ranges::find(errors, extension_id,
                                     &ExternalInstallError::extension_id);
     return found == errors.end() ? nullptr : *found;
+  }
+
+  storage::QuotaErrorOr<storage::BucketLocator> GetStorageBucket(
+      const blink::StorageKey& storage_key) {
+    base::test::TestFuture<storage::QuotaErrorOr<storage::BucketInfo>> future;
+    profile()
+        ->GetDefaultStoragePartition()
+        ->GetQuotaManager()
+        ->proxy()
+        ->UpdateOrCreateBucket(
+            storage::BucketInitParams::ForDefaultBucket(storage_key),
+            base::SingleThreadTaskRunner::GetCurrentDefault(),
+            future.GetCallback());
+    return future.Take().transform(&storage::BucketInfo::ToBucketLocator);
   }
 
   typedef ExtensionManagementPrefUpdater<
@@ -2848,7 +2863,7 @@ TEST_F(ExtensionServiceTest, DefaultUnpackedFileAccess) {
 // Tests that adding a packed extension grants file access if the appropriate
 // creation flag is set. Note: This doesn't normally happen in practice but it
 // is tested here to document the behavior.
-// TODO(crbug/1432284): The werid behavior here should be cleared up and we
+// TODO(crbug.com/40263865): The werid behavior here should be cleared up and we
 // should simplify how we're storing and checking if file access has been
 // granted to an extension.
 TEST_F(ExtensionServiceTest, DefaultPackedFileAccessWithCreationFlag) {
@@ -4297,63 +4312,6 @@ TEST_F(ExtensionServiceTest, PolicyInstalledExtensionsAllowlisted) {
   EXPECT_TRUE(registry()->enabled_extensions().GetByID(good_crx));
 }
 
-// Tests that non-CWS extensions are disabled when force-installed in non
-// domain-join environment. See https://b/283274398.
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
-TEST_F(ExtensionServiceTest, NonCWSForceInstalledDisabledOnNonDomainJoin) {
-  // Mark as non enterprise managed.
-  policy::ScopedManagementServiceOverrideForTesting browser_management(
-      policy::ManagementServiceFactory::GetForPlatform(),
-      policy::EnterpriseManagementAuthority::NONE);
-  InitializeEmptyExtensionServiceWithTestingPrefs();
-
-  {
-    ManagementPrefUpdater pref(profile_->GetTestingPrefService());
-    // Mark good.crx for force-installation.
-    pref.SetIndividualExtensionAutoInstalled(
-        good_crx, "http://example.com/update_url", true);
-  }
-
-  // Have policy force-install an extension.
-  MockExternalProvider* provider =
-      AddMockExternalProvider(ManifestLocation::kExternalPolicyDownload);
-  provider->UpdateOrAddExtension(good_crx, "1.0.0.0",
-                                 data_dir().AppendASCII("good.crx"));
-
-  WaitForInstallationAttemptToComplete(good_crx);
-
-  // Extension should be disabled.
-  EXPECT_EQ(1u, registry()->disabled_extensions().size());
-  EXPECT_TRUE(registry()->disabled_extensions().GetByID(good_crx));
-  EXPECT_EQ(0u, registry()->enabled_extensions().size());
-}
-
-TEST_F(ExtensionServiceTest, NonCWSForceInstalledEnabledOnDomainJoin) {
-  // Mark as enterprise managed.
-  policy::ScopedDomainEnterpriseManagement scoped_domain;
-  InitializeEmptyExtensionServiceWithTestingPrefs();
-
-  {
-    ManagementPrefUpdater pref(profile_->GetTestingPrefService());
-    // Mark good.crx for force-installation.
-    pref.SetIndividualExtensionAutoInstalled(
-        good_crx, "http://example.com/update_url", true);
-  }
-
-  // Have policy force-install an extension.
-  MockExternalProvider* provider =
-      AddMockExternalProvider(ManifestLocation::kExternalPolicyDownload);
-  provider->UpdateOrAddExtension(good_crx, "1.0.0.0",
-                                 data_dir().AppendASCII("good.crx"));
-
-  WaitForExternalExtensionInstalled(good_crx);
-
-  // Extension is enabled.
-  EXPECT_EQ(1u, registry()->enabled_extensions().size());
-  EXPECT_TRUE(registry()->enabled_extensions().GetByID(good_crx));
-}
-#endif
-
 // Tests that extensions cannot be installed if the policy provider prohibits
 // it. This functionality is implemented in CrxInstaller::ConfirmInstall().
 TEST_F(ExtensionServiceTest, ManagementPolicyProhibitsInstall) {
@@ -5572,24 +5530,6 @@ class ExtensionCookieCallback {
   bool result_ = false;
 };
 
-namespace {
-// Helper to create (open, close, verify) a WebSQL database.
-// Must be run on the DatabaseTracker's task runner.
-void CreateDatabase(storage::DatabaseTracker* db_tracker,
-                    const std::string& origin_id) {
-  DCHECK(db_tracker->task_runner()->RunsTasksInCurrentSequence());
-  std::u16string db_name = u"db";
-  std::u16string description = u"db_description";
-  int64_t size;
-  db_tracker->DatabaseOpened(origin_id, db_name, description, &size);
-  db_tracker->DatabaseClosed(origin_id, db_name);
-  std::vector<storage::OriginInfo> origins;
-  db_tracker->GetAllOriginsInfo(&origins);
-  EXPECT_EQ(1U, origins.size());
-  EXPECT_EQ(origin_id, origins[0].GetOriginIdentifier());
-}
-}  // namespace
-
 // Verifies extension state is removed upon uninstall.
 TEST_F(ExtensionServiceTest, ClearExtensionData) {
   InitializeEmptyExtensionService();
@@ -5608,9 +5548,8 @@ TEST_F(ExtensionServiceTest, ClearExtensionData) {
       extensions::ChromeExtensionCookies::Get(profile())
           ->GetCookieStoreForTesting();
   ASSERT_TRUE(cookie_store);
-  auto cookie = net::CanonicalCookie::Create(
-      ext_url, "dummy=value", base::Time::Now(), std::nullopt /* server_time */,
-      std::nullopt /* cookie_partition_key */);
+  auto cookie = net::CanonicalCookie::CreateForTesting(ext_url, "dummy=value",
+                                                       base::Time::Now());
   cookie_store->SetCanonicalCookieAsync(
       std::move(cookie), ext_url, net::CookieOptions::MakeAllInclusive(),
       base::BindOnce(&ExtensionCookieCallback::SetCookieCallback,
@@ -5625,14 +5564,6 @@ TEST_F(ExtensionServiceTest, ClearExtensionData) {
                      base::Unretained(&callback)));
   task_environment()->RunUntilIdle();
   EXPECT_EQ(1U, callback.list_.size());
-
-  // Open a database.
-  storage::DatabaseTracker* db_tracker =
-      profile()->GetDefaultStoragePartition()->GetDatabaseTracker();
-  db_tracker->task_runner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&CreateDatabase, base::Unretained(db_tracker), origin_id));
-  task_environment()->RunUntilIdle();
 
   // Create local storage.
   auto* local_storage_control =
@@ -5658,19 +5589,17 @@ TEST_F(ExtensionServiceTest, ClearExtensionData) {
 
   base::FilePath idb_path;
   {
+    ASSERT_OK_AND_ASSIGN(auto bucket_locator,
+                         GetStorageBucket(blink::StorageKey::CreateFirstParty(
+                             url::Origin::Create(ext_url))));
     base::RunLoop run_loop;
-    auto bucket_locator = storage::BucketLocator();
-    bucket_locator.id = storage::BucketId::FromUnsafeValue(1);
-    bucket_locator.storage_key =
-        blink::StorageKey::CreateFirstParty(url::Origin::Create(ext_url));
     idb_control_test->GetFilePathForTesting(
         bucket_locator,
         base::BindLambdaForTesting([&](const base::FilePath& path) {
           idb_path = path;
           EXPECT_TRUE(base::CreateDirectory(idb_path));
           EXPECT_TRUE(base::DirectoryExists(idb_path));
-          idb_control_test->ResetCachesForTesting(
-              base::BindLambdaForTesting([&]() { run_loop.Quit(); }));
+          idb_control_test->ResetCachesForTesting(run_loop.QuitClosure());
         }));
     run_loop.Run();
   }
@@ -5692,16 +5621,6 @@ TEST_F(ExtensionServiceTest, ClearExtensionData) {
   task_environment()->RunUntilIdle();
   EXPECT_EQ(0U, callback.list_.size());
 
-  // The database should have vanished as well.
-  db_tracker->task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(
-                     [](storage::DatabaseTracker* db_tracker) {
-                       std::vector<storage::OriginInfo> origins;
-                       db_tracker->GetAllOriginsInfo(&origins);
-                       EXPECT_EQ(0U, origins.size());
-                     },
-                     base::Unretained(db_tracker)));
-  task_environment()->RunUntilIdle();
 
   // Check that the localStorage data been removed.
   {
@@ -5763,9 +5682,9 @@ TEST_F(ExtensionServiceTest, ClearAppData) {
   network_context->GetCookieManager(
       cookie_manager_remote.BindNewPipeAndPassReceiver());
 
-  std::unique_ptr<net::CanonicalCookie> cc(net::CanonicalCookie::Create(
-      origin1, "dummy=value", base::Time::Now(), std::nullopt /* server_time */,
-      std::nullopt /* cookie_partition_key */));
+  std::unique_ptr<net::CanonicalCookie> cc(
+      net::CanonicalCookie::CreateForTesting(origin1, "dummy=value",
+                                             base::Time::Now()));
   ASSERT_TRUE(cc.get());
 
   {
@@ -5786,14 +5705,6 @@ TEST_F(ExtensionServiceTest, ClearAppData) {
         base::BindOnce(IncludedCookies).Then(future.GetCallback()));
     EXPECT_EQ(1U, future.Get().size());
   }
-
-  // Open a database.
-  storage::DatabaseTracker* db_tracker =
-      profile()->GetDefaultStoragePartition()->GetDatabaseTracker();
-  db_tracker->task_runner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&CreateDatabase, base::Unretained(db_tracker), origin_id));
-  task_environment()->RunUntilIdle();
 
   // Create local storage.
   auto* local_storage_control =
@@ -5819,19 +5730,17 @@ TEST_F(ExtensionServiceTest, ClearAppData) {
 
   base::FilePath idb_path;
   {
+    ASSERT_OK_AND_ASSIGN(auto bucket_locator,
+                         GetStorageBucket(blink::StorageKey::CreateFirstParty(
+                             url::Origin::Create(origin1))));
     base::RunLoop run_loop;
-    auto bucket_locator = storage::BucketLocator();
-    bucket_locator.id = storage::BucketId::FromUnsafeValue(1);
-    bucket_locator.storage_key =
-        blink::StorageKey::CreateFirstParty(url::Origin::Create(origin1));
     idb_control_test->GetFilePathForTesting(
         bucket_locator,
         base::BindLambdaForTesting([&](const base::FilePath& path) {
           idb_path = path;
           EXPECT_TRUE(base::CreateDirectory(idb_path));
           EXPECT_TRUE(base::DirectoryExists(idb_path));
-          idb_control_test->ResetCachesForTesting(
-              base::BindLambdaForTesting([&]() { run_loop.Quit(); }));
+          idb_control_test->ResetCachesForTesting(run_loop.QuitClosure());
         }));
     run_loop.Run();
   }
@@ -5869,17 +5778,6 @@ TEST_F(ExtensionServiceTest, ClearAppData) {
         base::BindOnce(IncludedCookies).Then(future.GetCallback()));
     EXPECT_EQ(0U, future.Get().size());
   }
-
-  // The database should have vanished as well.
-  db_tracker->task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(
-                     [](storage::DatabaseTracker* db_tracker) {
-                       std::vector<storage::OriginInfo> origins;
-                       db_tracker->GetAllOriginsInfo(&origins);
-                       EXPECT_EQ(0U, origins.size());
-                     },
-                     base::Unretained(db_tracker)));
-  task_environment()->RunUntilIdle();
 
   // Check that the localStorage data been removed.
   {

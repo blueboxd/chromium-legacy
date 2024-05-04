@@ -51,12 +51,19 @@ class CONTENT_EXPORT AuctionDownloader {
     kSimulatedDownload
   };
 
+  using ResponseStartedCallback =
+      base::OnceCallback<void(const network::mojom::URLResponseHead&)>;
+
   // Passes in nullptr on failure. Always invoked asynchronously. Will not be
   // invoked after the AuctionDownloader is destroyed.
   using AuctionDownloaderCallback =
       base::OnceCallback<void(std::unique_ptr<std::string> response_body,
                               scoped_refptr<net::HttpResponseHeaders> headers,
                               std::optional<std::string> error)>;
+
+  // When a URL appears in a network error message, it's truncated to never be
+  // longed than this length.
+  static constexpr size_t kMaxErrorUrlLength = 10 * 1024;
 
   // This handles how network requests get logged to devtools.
   class CONTENT_EXPORT NetworkEventsDelegate {
@@ -73,13 +80,35 @@ class CONTENT_EXPORT AuctionDownloader {
         const network::URLLoaderCompletionStatus& status) = 0;
   };
 
-  // Starts loading `source_url` on construction. Callback will be invoked
-  // asynchronously once the data has been fetched or an error has occurred.
+  // Starts loading `source_url` on construction.
+  //
+  // `response_started_callback` is optional, and will be invoked once the
+  // response headers have been received if they are for a 2xx with an
+  // appropriate Ad-Auction-Allowed header.
+  //
+  // `auction_downloader_callback` will be invoked asynchronously once the data
+  // has been fetched or an error has occurred.
+  //
+  // When `response_started_callback` is set, the following sequences of
+  // callback invocations are possible:
+  //
+  // 1) `auction_downloader_callback` with a failure. This happens e.g.
+  //    if the response doesn't have the proper Ad-Auction-Allowed header.
+  //
+  // 2) `response_started_callback` followed by an `auction_downloader_callback`
+  //    with a failure. This means the headers were received fine and checked
+  //    out, but something went wrong afterwards. This also includes the
+  //    mimetype and charset check.
+  //
+  // 3) `response_started_callback` followed by an `auction_downloader_callback`
+  //    with a success.
   AuctionDownloader(
       network::mojom::URLLoaderFactory* url_loader_factory,
       const GURL& source_url,
       DownloadMode download_mode,
       MimeType mime_type,
+      std::optional<std::string> post_body,
+      ResponseStartedCallback response_started_callback,
       AuctionDownloaderCallback auction_downloader_callback,
       std::unique_ptr<NetworkEventsDelegate> network_events_delegate);
   explicit AuctionDownloader(const AuctionDownloader&) = delete;
@@ -99,6 +128,11 @@ class CONTENT_EXPORT AuctionDownloader {
                   std::vector<std::string>* removed_headers);
   void OnResponseStarted(const GURL& final_url,
                          const network::mojom::URLResponseHead& response_head);
+
+  // Notifies tracing, devtools and callback of a failure and cancels any
+  // further loading.
+  void FailRequest(network::URLLoaderCompletionStatus status,
+                   std::string error_string);
   void TraceResult(bool failure,
                    base::TimeTicks completion_time,
                    int64_t encoded_data_length,
@@ -110,6 +144,7 @@ class CONTENT_EXPORT AuctionDownloader {
   std::string request_id_;
 
   std::unique_ptr<network::SimpleURLLoader> simple_url_loader_;
+  ResponseStartedCallback response_started_callback_;
   AuctionDownloaderCallback auction_downloader_callback_;
   std::unique_ptr<NetworkEventsDelegate> network_events_delegate_;
 };

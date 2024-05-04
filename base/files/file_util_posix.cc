@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40284755): Remove this and spanify to fix the errors.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "base/files/file_util.h"
 
 #include <dirent.h>
@@ -29,6 +34,7 @@
 #include "base/command_line.h"
 #include "base/containers/adapters.h"
 #include "base/containers/contains.h"
+#include "base/containers/heap_array.h"
 #include "base/containers/stack.h"
 #include "base/environment.h"
 #include "base/files/file_enumerator.h"
@@ -40,6 +46,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/path_service.h"
 #include "base/posix/eintr_wrapper.h"
+#include "base/strings/cstring_view.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
@@ -86,7 +93,7 @@ bool VerifySpecificPathControlledByUser(const FilePath& path,
                                         uid_t owner_uid,
                                         const std::set<gid_t>& group_gids) {
   stat_wrapper_t stat_info;
-  if (File::Lstat(path.value().c_str(), &stat_info) != 0) {
+  if (File::Lstat(path, &stat_info) != 0) {
     DPLOG(ERROR) << "Failed to get information on path "
                  << path.value();
     return false;
@@ -174,7 +181,7 @@ bool DoCopyDirectory(const FilePath& from_path,
   // start the loop with |to_path|.
   stat_wrapper_t from_stat;
   FilePath current = from_path;
-  if (File::Stat(from_path.value().c_str(), &from_stat) < 0) {
+  if (File::Stat(from_path, &from_stat) < 0) {
     DPLOG(ERROR) << "CopyDirectory() couldn't stat source directory: "
                  << from_path.value();
     return false;
@@ -287,16 +294,16 @@ bool DoDeleteFile(const FilePath& path, bool recursive) {
     return DeleteContentUri(path);
 #endif  // BUILDFLAG(IS_ANDROID)
 
-  const char* path_str = path.value().c_str();
   stat_wrapper_t file_info;
-  if (File::Lstat(path_str, &file_info) != 0) {
+  if (File::Lstat(path, &file_info) != 0) {
     // The Windows version defines this condition as success.
     return (errno == ENOENT);
   }
+  cstring_view path_str = path.value();
   if (!S_ISDIR(file_info.st_mode))
-    return (unlink(path_str) == 0) || (errno == ENOENT);
+    return (unlink(path_str.c_str()) == 0) || (errno == ENOENT);
   if (!recursive)
-    return (rmdir(path_str) == 0) || (errno == ENOENT);
+    return (rmdir(path_str.c_str()) == 0) || (errno == ENOENT);
 
   bool success = true;
   stack<std::string> directories;
@@ -343,28 +350,21 @@ bool PreReadFileSlow(const FilePath& file_path, int64_t max_bytes) {
     return false;
   }
 
-  constexpr int kBufferSize = 1024 * 1024;
-  // Ensures the buffer is deallocated at function exit.
-  std::unique_ptr<char[]> buffer_deleter(new char[kBufferSize]);
-  char* const buffer = buffer_deleter.get();
+  constexpr size_t kBufferSize = 1024 * 1024;
+  auto buffer = base::HeapArray<uint8_t>::Uninit(kBufferSize);
 
   while (max_bytes > 0) {
-    // The static_cast<int> is safe because kBufferSize is int, and both values
-    // are non-negative. So, the minimum is guaranteed to fit in int.
-    const int read_size =
-        static_cast<int>(std::min<int64_t>(max_bytes, kBufferSize));
-    DCHECK_GE(read_size, 0);
-    DCHECK_LE(read_size, kBufferSize);
-
-    const int read_bytes = file.ReadAtCurrentPos(buffer, read_size);
-    if (read_bytes < 0) {
+    const size_t read_size = base::checked_cast<size_t>(
+        std::min<uint64_t>(static_cast<uint64_t>(max_bytes), buffer.size()));
+    std::optional<size_t> read_bytes =
+        file.ReadAtCurrentPos(buffer.first(read_size));
+    if (!read_bytes.has_value()) {
       return false;
     }
-    if (read_bytes == 0) {
+    if (read_bytes.value() == 0) {
       break;
     }
-
-    max_bytes -= read_bytes;
+    max_bytes -= read_bytes.value();
   }
 
   return true;
@@ -546,8 +546,9 @@ bool PathIsWritable(const FilePath& path) {
 bool DirectoryExists(const FilePath& path) {
   ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
   stat_wrapper_t file_info;
-  if (File::Stat(path.value().c_str(), &file_info) != 0)
+  if (File::Stat(path, &file_info) != 0) {
     return false;
+  }
   return S_ISDIR(file_info.st_mode);
 }
 
@@ -638,8 +639,9 @@ bool GetPosixFilePermissions(const FilePath& path, int* mode) {
   stat_wrapper_t file_info;
   // Uses stat(), because on symbolic link, lstat() does not return valid
   // permission bits in st_mode
-  if (File::Stat(path.value().c_str(), &file_info) != 0)
+  if (File::Stat(path, &file_info) != 0) {
     return false;
+  }
 
   *mode = file_info.st_mode & FILE_PERMISSION_MASK;
   return true;
@@ -652,8 +654,9 @@ bool SetPosixFilePermissions(const FilePath& path,
 
   // Calls stat() so that we can preserve the higher bits like S_ISGID.
   stat_wrapper_t stat_buf;
-  if (File::Stat(path.value().c_str(), &stat_buf) != 0)
+  if (File::Stat(path, &stat_buf) != 0) {
     return false;
+  }
 
   // Clears the existing permission bits, and adds the new ones.
   // The casting here is because the Android NDK does not declare `st_mode` as a
@@ -859,8 +862,8 @@ bool ReadFileToStringNonBlocking(const base::FilePath& file, std::string* ret) {
   DCHECK(ret);
   ret->clear();
 
-  base::ScopedFD fd(HANDLE_EINTR(
-      open(file.MaybeAsASCII().c_str(), O_CLOEXEC | O_NONBLOCK | O_RDONLY)));
+  const int flags = O_CLOEXEC | O_NONBLOCK | O_RDONLY | O_NOCTTY;
+  base::ScopedFD fd(HANDLE_EINTR(open(file.MaybeAsASCII().c_str(), flags)));
   if (!fd.is_valid()) {
     return false;
   }
@@ -898,8 +901,9 @@ bool IsLink(const FilePath& file_path) {
   stat_wrapper_t st;
   // If we can't lstat the file, it's safe to assume that the file won't at
   // least be a 'followable' link.
-  if (File::Lstat(file_path.value().c_str(), &st) != 0)
+  if (File::Lstat(file_path, &st) != 0) {
     return false;
+  }
   return S_ISLNK(st.st_mode);
 }
 
@@ -913,8 +917,9 @@ bool GetFileInfo(const FilePath& file_path, File::Info* results) {
     return file.GetInfo(results);
   } else {
 #endif  // BUILDFLAG(IS_ANDROID)
-    if (File::Stat(file_path.value().c_str(), &file_info) != 0)
+    if (File::Stat(file_path, &file_info) != 0) {
       return false;
+    }
 #if BUILDFLAG(IS_ANDROID)
   }
 #endif  // BUILDFLAG(IS_ANDROID)
@@ -980,7 +985,7 @@ std::optional<uint64_t> ReadFile(const FilePath& filename, span<char> buffer) {
     return std::nullopt;
   }
 
-  // TODO(crbug.com/1333521): Consider supporting reading more than INT_MAX
+  // TODO(crbug.com/40227936): Consider supporting reading more than INT_MAX
   // bytes.
   size_t bytes_to_read = static_cast<size_t>(checked_cast<int>(buffer.size()));
 
@@ -1337,10 +1342,11 @@ bool MoveUnsafe(const FilePath& from_path, const FilePath& to_path) {
   // Windows compatibility: if |to_path| exists, |from_path| and |to_path|
   // must be the same type, either both files, or both directories.
   stat_wrapper_t to_file_info;
-  if (File::Stat(to_path.value().c_str(), &to_file_info) == 0) {
+  if (File::Stat(to_path, &to_file_info) == 0) {
     stat_wrapper_t from_file_info;
-    if (File::Stat(from_path.value().c_str(), &from_file_info) != 0)
+    if (File::Stat(from_path, &from_file_info) != 0) {
       return false;
+    }
     if (S_ISDIR(to_file_info.st_mode) != S_ISDIR(from_file_info.st_mode))
       return false;
   }

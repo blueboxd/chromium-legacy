@@ -6,7 +6,6 @@
  * @fileoverview Polymer element for displaying network selection OOBE dialog.
  */
 
-import '//resources/polymer/v3_0/paper-styles/color.js';
 import '//resources/polymer/v3_0/iron-icon/iron-icon.js';
 import '//resources/ash/common/network/network_list.js';
 import '../../components/buttons/oobe_back_button.js';
@@ -53,6 +52,7 @@ const NetworkScreenBase = mixinBehaviors(
 interface NetworkScreenData {
   ssid: string|undefined;
   useQuickStartSubtitle: boolean|undefined;
+  useQuickStartWiFiErrorStrings: boolean | undefined;
 }
 
 /**
@@ -117,6 +117,20 @@ class NetworkScreen extends NetworkScreenBase {
         type: Boolean,
         value: false,
       },
+
+      // Whether to use a title and subtitle telling the user that there was
+      // an error during QuickStart. This is only true when the QuickStart flow
+      // is aborted while showing the network screen.
+      useQuickStartWiFiErrorStrings: {
+        type: Boolean,
+        value: false,
+      },
+
+      // Whether the QuickStart 'Cancel' button is visible.
+      quickStartCancelButtonVisible: {
+        type: Boolean,
+        value: true,
+      },
     };
   }
 
@@ -134,6 +148,8 @@ class NetworkScreen extends NetworkScreenBase {
   private enableWifiScans: boolean;
   private isQuickStartVisible: boolean;
   private useQuickStartSubtitle: boolean;
+  private useQuickStartWiFiErrorStrings: boolean;
+  private quickStartCancelButtonVisible: boolean;
 
   constructor() {
     super();
@@ -169,15 +185,13 @@ class NetworkScreen extends NetworkScreenBase {
     }
     if (this.ssid) {
       this.setUIStep(NetworkScreenStates.QUICK_START_CONNECTING);
+      this.quickStartCancelButtonVisible = true;
       return;
     }
 
-    if (data && 'useQuickStartSubtitle' in data &&
-        data['useQuickStartSubtitle']) {
-      this.useQuickStartSubtitle = data['useQuickStartSubtitle'];
-    } else {
-      this.useQuickStartSubtitle = false;
-    }
+    this.useQuickStartSubtitle = data?.useQuickStartSubtitle ?? false;
+    this.useQuickStartWiFiErrorStrings =
+      data?.useQuickStartWiFiErrorStrings ?? false;
 
     this.setUIStep(NetworkScreenStates.DEFAULT);
     this.enableWifiScans = true;
@@ -224,13 +238,18 @@ class NetworkScreen extends NetworkScreenBase {
    */
   private getSubtitleMessage(
       locale: string, errorMessage: string,
-      useQuickStartSubtitle: string): string {
+    useQuickStartSubtitle: string,
+    useQuickStartWiFiErrorStrings: string): string {
     if (errorMessage) {
       return errorMessage;
     }
 
     if (useQuickStartSubtitle) {
       return this.i18nDynamic(locale, 'quickStartNetworkNeededSubtitle');
+    }
+
+    if (useQuickStartWiFiErrorStrings) {
+      return this.i18nDynamic(locale, 'networkScreenQuickStartWiFiErrorSubtitle');
     }
 
     return this.i18nDynamic(locale, 'networkSectionSubtitle');
@@ -242,6 +261,8 @@ class NetworkScreen extends NetworkScreenBase {
    */
   setError(message: string) {
     this.errorMessage = message;
+    // Reset QuickStart WiFi error message
+    this.useQuickStartWiFiErrorStrings = false;
   }
 
   setQuickStartVisible() {
@@ -300,9 +321,10 @@ class NetworkScreen extends NetworkScreenBase {
   }
 
   /**
-   * Cancels ongoing connection.
+   * Cancels ongoing connection with the phone for QuickStart.
    */
   private onCancelClicked() {
+    this.quickStartCancelButtonVisible = false;
     this.userActed('cancel');
   }
 

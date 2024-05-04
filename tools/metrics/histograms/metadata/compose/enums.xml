@@ -100,6 +100,11 @@ chromium-metrics-reviews@google.com.
   <int value="18" label="The request timed out"/>
 </enum>
 
+<enum name="ComposeSelectAllStatus">
+  <int value="0" label="Did not select all text for the user"/>
+  <int value="1" label="Selected all text for the user"/>
+</enum>
+
 <enum name="ComposeSessionCloseReasonType">
   <int value="0" label="Accepted suggestion"/>
   <int value="1" label="Close button"/>
@@ -123,7 +128,7 @@ chromium-metrics-reviews@google.com.
   <int value="3" label="MSBB Shown"/>
   <int value="4" label="MSBB Settings Opened"/>
   <int value="5" label="MSBB Enabled In Session"/>
-  <int value="6" label="Sesstion started with selection"/>
+  <int value="6" label="Session started with selection"/>
   <int value="7" label="Create Clicked"/>
   <int value="8" label="Update Clicked"/>
   <int value="9" label="Retry Clicked"/>
@@ -138,6 +143,10 @@ chromium-metrics-reviews@google.com.
   <int value="18" label="Close Clicked"/>
   <int value="19" label="Edit Clicked"/>
   <int value="20" label="Cancel Edit Clicked"/>
+  <int value="21" label="Used a modifier">Added in M124</int>
+  <int value="22" label="Redo Clicked"/>
+  <int value="23" label="Result Edited"/>
+  <int value="24" label="Edited Result Inserted"/>
 </enum>
 
 <enum name="ComposeShowStatus">
@@ -158,6 +167,8 @@ chromium-metrics-reviews@google.com.
   <int value="11" label="Blocked for element appearing inside a fenced frame"/>
   <int value="12"
       label="Blocked for feature flag for Chrome Compose not enabled"/>
+  <int value="13"
+      label="Blocked for not being supported on this ChromeOS device"/>
 </enum>
 
 <enum name="OpenComposeDialogResult">
@@ -169,6 +180,7 @@ chromium-metrics-reviews@google.com.
   <int value="5" label="autofill::FormFieldData not found"/>
   <int value="6" label="No WebContents instance"/>
   <int value="7" label="Failed creating ComposeDialogView"/>
+  <int value="8" label="autofill::FormData not found after select all"/>
 </enum>
 
 </enums>

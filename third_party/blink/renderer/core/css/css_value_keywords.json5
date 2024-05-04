@@ -192,6 +192,13 @@
     "font-format",
 
     //
+    // font-variant-emoji
+    // normal
+    // text
+    "emoji",
+    "unicode",
+
+    //
     // font-palette animation
     //
     "palette-mix",
@@ -876,13 +883,6 @@
     "square-button",
     "slider-horizontal",
     "searchfield-cancel-button",
-    // TODO(crbug/924486) All appearance values that should not be accepted by the parser (low usage).
-    "media-slider",
-    "media-sliderthumb",
-    "media-volume-slider",
-    "media-volume-sliderthumb",
-    "sliderthumb-horizontal",
-    "sliderthumb-vertical",
     // TODO(crbug/1426629) All appearance values that should not be accepted by the parser (special case).
     "slider-vertical",
     //
@@ -891,9 +891,10 @@
     // stretch
     // repeat
     "round",
-    // TODO(crbug.com/1511354): "bikeshed" is a temporary name for stylable
+    // TODO(crbug.com/1511354): "base-select" is a temporary name for stylable
     // <select>. It should be renamed when a standardized name is chosen.
-    "bikeshed",
+    "base-select",
+    "-internal-appearance-auto-base-select",
 
     //
     // background-clip/background-origin
@@ -1737,12 +1738,9 @@
     "self-block",
     "self-inline",
 
-    // anchor-default
+    // position-anchor
     "implicit",
     // none,
-
-    // position-fallback-bounds
-    // normal,
 
     // animation-[end-]delay
     // contain
@@ -1781,24 +1779,58 @@
 
     // inset-area
     // none,
-    // all,
-    // center,
-    // start,
-    // end,
-    // self-start,
-    // self-end,
-    // top,
-    // bottom,
     // left,
+    // center,
     // right,
+    "span-left",
+    "span-right",
     "x-start",
     "x-end",
-    "y-start",
-    "y-end",
+    "span-x-start",
+    "span-x-end",
     "x-self-start",
     "x-self-end",
+    "span-x-self-start",
+    "span-x-self-end",
+    "span-all",
+    // top,
+    // bottom,
+    "span-top",
+    "span-bottom",
+    "y-start",
+    "y-end",
+    "span-y-start",
+    "span-y-end",
     "y-self-start",
     "y-self-end",
+    "span-y-self-start",
+    "span-y-self-end",
+    "block-start",
+    "block-end",
+    "span-block-start",
+    "span-block-end",
+    "self-block-start",
+    "self-block-end",
+    "span-self-block-start",
+    "span-self-block-end",
+    // inline-start,
+    // inline-end,
+    "span-inline-start",
+    "span-inline-end",
+    "self-inline-start",
+    "self-inline-end",
+    "span-self-inline-start",
+    "span-self-inline-end",
+    // start,
+    // end,
+    "span-start",
+    "span-end",
+    // self-start,
+    // self-end,
+    "span-self-start",
+    "span-self-end",
+    // inset-area()
+    "inset-area",
 
     // resize
     // none
@@ -1823,6 +1855,13 @@
     "flip-inline",
     "flip-start",
 
+    // position-visibility
+    // always
+    // TODO(crbug.com/332933527): Support anchors-valid.
+    // "anchors-valid",
+    "anchors-visible",
+    "no-overflow",
+
     // reading-order-items
     // normal
     "flex-visual",
@@ -1833,6 +1872,13 @@
 
     // fill / stroke
     "context-fill",
-    "context-stroke"
+    "context-stroke",
+
+    // media-progress()
+    "media-progress",
+
+    // container-progress()
+    "container-progress",
+    "of",
   ],
 }

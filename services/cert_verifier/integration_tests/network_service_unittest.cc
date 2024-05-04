@@ -149,7 +149,7 @@ class NetworkServiceIntegrationTest : public testing::Test {
   mojo::Remote<network::mojom::URLLoader> loader_;
 };
 
-// TODO(crbug.com/860189): AIA tests fail on iOS
+// TODO(crbug.com/41399468): AIA tests fail on iOS
 #if BUILDFLAG(IS_IOS)
 #define MAYBE(test_name) DISABLED_##test_name
 #else
@@ -206,7 +206,7 @@ TEST_F(NetworkServiceAIATest, MAYBE(AIAFetching)) {
 TEST_F(NetworkServiceAIATest,
        MAYBE(AIAFetchingWithURLLoaderFactoryDisconnect)) {
   if (!cert_net_fetcher_url_loader()) {
-    // TODO(crbug.com/1015706): Switch to GTEST_SKIP().
+    // TODO(crbug.com/40103822): Switch to GTEST_SKIP().
     LOG(WARNING) << "Skipping AIA reconnection test because the underlying "
                     "cert verifier does not use a CertNetFetcherURLLoader.";
     return;

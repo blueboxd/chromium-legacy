@@ -16,8 +16,8 @@
 
 namespace {
 
-// TODO(crbug.com/660005) A message that is attached to useless entries that we
-// create, to explain its existence.
+// TODO(crbug.com/40490926) A message that is attached to useless entries that
+// we create, to explain its existence.
 const char kExplanationMessage[] =
     "Because of quirks in the gnome libsecret API, Chrome needs to store a "
     "dummy entry to guarantee that this keyring was properly unlocked. More "
@@ -107,7 +107,7 @@ bool LibsecretLoader::LoadLibsecret() {
     // We wanted to use libsecret, but we couldn't load it. Warn, because
     // either the user asked for this, or we autodetected it incorrectly. (Or
     // the system has broken libraries, which is also good to warn about.)
-    // TODO(crbug.com/607435): Channel this message to the user-facing log
+    // TODO(crbug.com/40467093): Channel this message to the user-facing log
     VLOG(1) << "Could not load libsecret-1.so.0: " << dlerror();
     return false;
   }
@@ -149,8 +149,8 @@ bool LibsecretLoader::LibsecretIsAvailable() {
   return helper.success();
 }
 
-// TODO(crbug.com/660005) This is needed to properly unlock the default keyring.
-// We don't need to ever read it.
+// TODO(crbug.com/40490926) This is needed to properly unlock the default
+// keyring. We don't need to ever read it.
 void LibsecretLoader::EnsureKeyringUnlocked() {
   const SecretSchema kDummySchema = {
       "_chrome_dummy_schema_for_unlocking",

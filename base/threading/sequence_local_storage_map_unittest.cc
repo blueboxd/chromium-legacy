@@ -7,9 +7,9 @@
 #include <memory>
 #include <utility>
 
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_buildflags.h"
 #include "base/compiler_specific.h"
 #include "base/memory/raw_ptr.h"
+#include "partition_alloc/partition_alloc_buildflags.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -49,7 +49,7 @@ class TRIVIAL_ABI SetOnDestroy {
   }
 
  private:
-#if BUILDFLAG(ENABLE_BACKUP_REF_PTR_INSTANCE_TRACER)
+#if PA_BUILDFLAG(ENABLE_BACKUP_REF_PTR_INSTANCE_TRACER)
   // In instance tracer mode, raw_ptr is larger than a void*, but values stored
   // inline in a SequenceLocalStorageMap must be at most sizeof(void*).
   RAW_PTR_EXCLUSION bool* was_destroyed_ptr_;

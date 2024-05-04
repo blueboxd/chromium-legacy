@@ -68,7 +68,7 @@ AppBannerManager* WebappsClientAndroid::GetAppBannerManager(
   return AppBannerManagerAndroid::FromWebContents(web_contents);
 }
 
-bool WebappsClientAndroid::IsWebAppConsideredFullyInstalled(
+bool WebappsClientAndroid::DoesNewWebAppConflictWithExistingInstallation(
     content::BrowserContext* browsing_context,
     const GURL& start_url,
     const ManifestId& manifest_id) const {
@@ -114,7 +114,7 @@ bool WebappsClientAndroid::IsMlPromotionBlockedByHistoryGuardrail(
 segmentation_platform::SegmentationPlatformService*
 WebappsClientAndroid::GetSegmentationPlatformService(
     content::BrowserContext* browsing_context) const {
-  // TODO(https://crbug.com/1449993): Implement.
+  // TODO(crbug.com/40269982): Implement.
   // Note: By returning a non-nullptr, all of the Ml code (after metrics
   // gathering) in `MlInstallabilityPromoter` will execute, including requesting
   // classifiction & eventually calling `OnMlInstallPrediction` above. Make sure
@@ -131,7 +131,7 @@ bool WebappsClientAndroid::IsInstallationInProgress(
 }
 
 bool WebappsClientAndroid::CanShowAppBanners(
-    content::WebContents* web_contents) {
+    const content::WebContents* web_contents) {
   TabAndroid* tab = TabAndroid::FromWebContents(web_contents);
   return tab && static_cast<android::TabWebContentsDelegateAndroid*>(
                     tab->web_contents()->GetDelegate())

@@ -197,8 +197,12 @@ SkiaOutputDeviceBufferQueue::SkiaOutputDeviceBufferQueue(
   capabilities_.only_invalidates_damage_rect = false;
   capabilities_.number_of_buffers = 3;
 
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
   capabilities_.renderer_allocates_images =
       ::features::ShouldRendererAllocateImages();
+#else
+  capabilities_.renderer_allocates_images = true;
+#endif
 
 #if BUILDFLAG(IS_ANDROID)
   if (::features::IncreaseBufferCountForHighFrameRate()) {
@@ -224,6 +228,7 @@ SkiaOutputDeviceBufferQueue::SkiaOutputDeviceBufferQueue(
     capabilities_.pending_swap_params.max_pending_swaps_120hz = 4;
   }
 #endif
+
   DCHECK_LT(capabilities_.pending_swap_params.max_pending_swaps,
             capabilities_.number_of_buffers);
   DCHECK_LT(
@@ -237,6 +242,11 @@ SkiaOutputDeviceBufferQueue::SkiaOutputDeviceBufferQueue(
 
   if (capabilities_.supports_post_sub_buffer)
     capabilities_.supports_target_damage = true;
+
+#if BUILDFLAG(IS_MAC)
+  presenter_->SetMaxPendingSwaps(
+      capabilities_.pending_swap_params.max_pending_swaps);
+#endif
 }
 
 SkiaOutputDeviceBufferQueue::~SkiaOutputDeviceBufferQueue() {
@@ -369,8 +379,9 @@ SkiaOutputDeviceBufferQueue::GetOrCreateOverlayData(const gpu::Mailbox& mailbox,
   if (is_existing)
     *is_existing = false;
 
-  if (!mailbox.IsSharedImage())
+  if (mailbox.IsZero()) {
     return nullptr;
+  }
 
   auto it = overlays_.find(mailbox);
   if (it != overlays_.end()) {
@@ -562,20 +573,6 @@ void SkiaOutputDeviceBufferQueue::DoFinishSwapBuffers(
   // overlay representations are destroyed, backing may get destroyed leading to
   // GL texture destruction. This destruction needs GL context current.
   need_gl_context = true;
-#elif BUILDFLAG(IS_OZONE)
-  // GL textures are cached in OzoneImageBacking with this workaround and when
-  // overlay representations are destroyed, backing may get destroyed leading to
-  // GL texture destruction. This destruction needs GL context current. Please
-  // note there are two type of caches as of now - one is per context cache that
-  // is only enabled when the feature is enabled, and another is a general cache
-  // that has some drawbacks and cannot be enabled by default. The cache that is
-  // used when the feature is enabled also supersedes the workaround and doesn't
-  // require a gl context as it is able to manage that by itself.
-  if (!base::FeatureList::IsEnabled(
-          features::kEnablePerContextGLTextureCache) &&
-      workarounds_.cache_texture_in_ozone_backing) {
-    need_gl_context = true;
-  }
 #endif
 
   // Code below can destroy last representation of the overlay shared image. On

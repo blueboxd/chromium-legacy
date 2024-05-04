@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.background_task_scheduler;
 
 import android.content.Context;
 
+import org.jni_zero.JniType;
 import org.jni_zero.NativeMethods;
 
 import org.chromium.base.Callback;
@@ -34,7 +35,7 @@ public final class ProxyNativeTask extends NativeBackgroundTask {
     @Override
     protected void onStartTaskWithNative(
             Context context, TaskParameters taskParameters, TaskFinishedCallback callback) {
-        String extras = taskParameters.getExtras().getString(TaskInfo.SERIALIZED_TASK_EXTRAS);
+        String extras = taskParameters.getExtras().getString(TaskInfo.SERIALIZED_TASK_EXTRAS, "");
         Callback<Boolean> wrappedCallback =
                 needsReschedule -> {
                     callback.taskFinished(needsReschedule);
@@ -111,16 +112,24 @@ public final class ProxyNativeTask extends NativeBackgroundTask {
 
     @NativeMethods
     interface Natives {
-        long init(ProxyNativeTask caller, int taskType, String extras, Callback<Boolean> callback);
+        long init(
+                ProxyNativeTask caller,
+                int taskType,
+                @JniType("std::string") String extras,
+                Callback<Boolean> callback);
 
         void startBackgroundTaskInReducedMode(
                 long nativeProxyNativeTask, ProxyNativeTask caller, ProfileKey key);
 
         void startBackgroundTaskWithFullBrowser(
-                long nativeProxyNativeTask, ProxyNativeTask caller, Profile profile);
+                long nativeProxyNativeTask,
+                ProxyNativeTask caller,
+                @JniType("Profile*") Profile profile);
 
         void onFullBrowserLoaded(
-                long nativeProxyNativeTask, ProxyNativeTask caller, Profile profile);
+                long nativeProxyNativeTask,
+                ProxyNativeTask caller,
+                @JniType("Profile*") Profile profile);
 
         boolean stopBackgroundTask(long nativeProxyNativeTask, ProxyNativeTask caller);
 

@@ -66,12 +66,12 @@ AXRestriction AXMenuListPopup::Restriction() const {
              : kRestrictionNone;
 }
 
-bool AXMenuListPopup::ComputeAccessibilityIsIgnored(
+bool AXMenuListPopup::ComputeIsIgnored(
     IgnoredReasons* ignored_reasons) const {
   // Base whether the menupopup is ignored on the containing <select>.
   if (parent_) {
     parent_->UpdateCachedAttributeValuesIfNeeded();
-    return parent_->ComputeAccessibilityIsIgnored(ignored_reasons);
+    return parent_->ComputeIsIgnored(ignored_reasons);
   }
 
   return kIgnoreObject;
@@ -121,9 +121,9 @@ void AXMenuListPopup::AddChildren() {
   DCHECK(!is_adding_children_) << " Reentering method on " << GetNode();
   base::AutoReset<bool> reentrancy_protector(&is_adding_children_, true);
   DCHECK_EQ(children_.size(), 0U)
-      << "Parent still has " << children_.size() << " children before adding:"
-      << "\nParent is " << ToString(true, true) << "\nFirst child is "
-      << children_[0]->ToString(true, true);
+      << "Parent still has " << children_.size()
+      << " children before adding:" << "\nParent is " << this
+      << "\nFirst child is " << children_[0];
 #endif
 
   if (!parent_)
@@ -143,7 +143,7 @@ void AXMenuListPopup::AddChildren() {
   for (auto* const option_element : html_select_element->GetOptionList()) {
     AXMenuListOption* option = MenuListOptionAXObject(option_element);
     CHECK_EQ(option->ParentObject(), this);
-    if (option && option->AccessibilityIsIncludedInTree()) {
+    if (option && option->IsIncludedInTree()) {
       DCHECK(!option->IsDetached());
       children_.push_back(option);
     }
@@ -200,7 +200,7 @@ void AXMenuListPopup::DidShow() {
   cache.MarkAXSubtreeDirtyWithCleanLayout(ParentObject());
 }
 
-AXObject* AXMenuListPopup::ActiveDescendant() {
+AXObject* AXMenuListPopup::ActiveDescendant() const {
   // Some Windows screen readers don't work properly if the active descendant
   // gets the focus before they focus the list menu popup.
   if (parent_ && !parent_->IsFocused())

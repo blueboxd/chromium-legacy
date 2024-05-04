@@ -144,7 +144,7 @@ CSVPasswordToCredentialUIEntry(const CSVPassword& csv_password,
   auto with_status = [&](ImportEntry::Status status) {
     ImportEntry entry;
     entry.status = status;
-    // TODO(crbug/1417650): Use password_manager::GetShownOrigin.
+    // TODO(crbug.com/40894187): Use password_manager::GetShownOrigin.
     auto url = csv_password.GetURL();
     entry.url = url.has_value() ? url.value().spec() : url.error();
     entry.username = csv_password.GetUsername();
@@ -330,7 +330,7 @@ void ReportImportResultsMetrics(const ImportResults& results,
                                   entry.status);
   }
 
-  // TODO(crbug/1417650): In case of conflicts, with `kPasswordsImportM2`
+  // TODO(crbug.com/40894187): In case of conflicts, with `kPasswordsImportM2`
   // enabled, `PasswordManager.ImportDuration` will be affected. Because, the
   // flow is interrupted and the user needs to select the next action in the UI.
   // Reporting or the histogram description needs to be updated accordingly.
@@ -388,7 +388,7 @@ void ProcessParsedCredential(
   if (conflicting_credential.has_value()) {
     std::vector<PasswordForm> forms = GetMatchingPasswordForms(
         presenter, conflicting_credential.value(), to_store);
-    // TODO(crbug/1417650): Add conflicts check for notes.
+    // TODO(crbug.com/40894187): Add conflicts check for notes.
     for (PasswordForm& form : forms) {
       form.password_value = imported_credential.password;
     }
@@ -525,7 +525,7 @@ void PasswordImporter::ConsumePasswords(
     return;
   }
 
-  // TODO(crbug/1325290): Either move to earlier point or update histogram.
+  // TODO(crbug.com/40225420): Either move to earlier point or update histogram.
   base::Time start_time = base::Time::Now();
   // Used to compute conflicts and duplicates.
   std::map<std::u16string, std::vector<CredentialUIEntry>>

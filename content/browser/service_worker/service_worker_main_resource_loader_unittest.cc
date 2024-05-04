@@ -467,6 +467,10 @@ class ServiceWorkerMainResourceLoaderTest : public testing::Test {
     version_->set_fetch_handler_type(
         ServiceWorkerVersion::FetchHandlerType::kNotSkippable);
     version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
+    PolicyContainerPolicies policies;
+    policies.ip_address_space = network::mojom::IPAddressSpace::kPrivate;
+    version_->set_policy_container_host(
+        base::MakeRefCounted<PolicyContainerHost>(std::move(policies)));
     registration_->SetActiveVersion(version_);
 
     // Make the registration findable via storage functions.
@@ -588,7 +592,7 @@ class ServiceWorkerMainResourceLoaderTest : public testing::Test {
               info.cache_storage_cache_name);
     EXPECT_EQ(expected_info.did_service_worker_navigation_preload,
               info.did_service_worker_navigation_preload);
-    // TODO(crbug.com/1504040): Write tests about Static Routing API, in
+    // TODO(crbug.com/40944544): Write tests about Static Routing API, in
     // particular, checking the correctness of `service_worker_router_info`.
   }
 
@@ -639,6 +643,9 @@ TEST_F(ServiceWorkerMainResourceLoaderTest, Basic) {
   EXPECT_FALSE(info->load_timing.receive_headers_end.is_null());
   EXPECT_LE(info->load_timing.receive_headers_start,
             info->load_timing.receive_headers_end);
+  EXPECT_TRUE(info->was_fetched_via_service_worker);
+  EXPECT_EQ(info->client_address_space,
+            network::mojom::IPAddressSpace::kPrivate);
   ExpectResponseInfo(*info, *CreateResponseInfoFromServiceWorker());
 
   histogram_tester.ExpectUniqueSample(kHistogramMainResourceFetchEvent,
@@ -824,7 +831,7 @@ TEST_F(ServiceWorkerMainResourceLoaderTest, StreamResponse) {
   EXPECT_FALSE(version_->HasNoWork());
 
   // Write the body stream.
-  uint32_t written_bytes = sizeof(kResponseBody) - 1;
+  size_t written_bytes = sizeof(kResponseBody) - 1;
   MojoResult mojo_result = producer_handle->WriteData(
       kResponseBody, &written_bytes, MOJO_WRITE_DATA_FLAG_NONE);
   ASSERT_EQ(MOJO_RESULT_OK, mojo_result);
@@ -874,7 +881,7 @@ TEST_F(ServiceWorkerMainResourceLoaderTest, StreamResponse_Abort) {
   ExpectResponseInfo(*info, *CreateResponseInfoFromServiceWorker());
 
   // Start writing the body stream, then abort before finishing.
-  uint32_t written_bytes = sizeof(kResponseBody) - 1;
+  size_t written_bytes = sizeof(kResponseBody) - 1;
   MojoResult mojo_result = producer_handle->WriteData(
       kResponseBody, &written_bytes, MOJO_WRITE_DATA_FLAG_NONE);
   ASSERT_EQ(MOJO_RESULT_OK, mojo_result);
@@ -929,7 +936,7 @@ TEST_F(ServiceWorkerMainResourceLoaderTest, StreamResponseAndCancel) {
 
   // Start writing the body stream, then break the Mojo connection to the loader
   // before finishing.
-  uint32_t written_bytes = sizeof(kResponseBody) - 1;
+  size_t written_bytes = sizeof(kResponseBody) - 1;
   MojoResult mojo_result = producer_handle->WriteData(
       kResponseBody, &written_bytes, MOJO_WRITE_DATA_FLAG_NONE);
   ASSERT_EQ(MOJO_RESULT_OK, mojo_result);

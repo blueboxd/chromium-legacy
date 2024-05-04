@@ -39,6 +39,8 @@ TestCaptureModeDelegate::TestCaptureModeDelegate()
   DCHECK(created_dir);
   created_dir = fake_linux_files_path_.CreateUniqueTempDir();
   DCHECK(created_dir);
+  created_dir = fake_one_drive_mount_path_.CreateUniqueTempDir();
+  DCHECK(created_dir);
 }
 
 TestCaptureModeDelegate::~TestCaptureModeDelegate() = default;
@@ -122,12 +124,7 @@ bool TestCaptureModeDelegate::IsCaptureAllowedByPolicy() const {
 void TestCaptureModeDelegate::StartObservingRestrictedContent(
     const aura::Window* window,
     const gfx::Rect& bounds,
-    base::OnceClosure stop_callback) {
-  // This is called at the last stage of recording initialization to signal that
-  // recording has actually started.
-  if (on_recording_started_callback_)
-    std::move(on_recording_started_callback_).Run();
-}
+    base::OnceClosure stop_callback) {}
 
 void TestCaptureModeDelegate::StopObservingRestrictedContent(
     OnCaptureModeDlpRestrictionChecked callback) {
@@ -175,6 +172,15 @@ base::FilePath TestCaptureModeDelegate::GetAndroidFilesPath() const {
 
 base::FilePath TestCaptureModeDelegate::GetLinuxFilesPath() const {
   return fake_linux_files_path_.GetPath();
+}
+
+base::FilePath TestCaptureModeDelegate::GetOneDriveMountPointPath() const {
+  return fake_one_drive_mount_path_.GetPath();
+}
+
+TestCaptureModeDelegate::PolicyCapturePath
+TestCaptureModeDelegate::GetPolicyCapturePath() const {
+  return policy_capture_path_;
 }
 
 std::unique_ptr<RecordingOverlayView>

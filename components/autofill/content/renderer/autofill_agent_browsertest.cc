@@ -55,6 +55,7 @@ using ::testing::IsNull;
 using ::testing::Matcher;
 using ::testing::NiceMock;
 using ::testing::Optional;
+using ::testing::Property;
 using ::testing::SizeIs;
 
 class MockAutofillAgent : public AutofillAgent {
@@ -76,28 +77,25 @@ class MockFormTracker : public FormTracker {
               (override));
 };
 
-// Matches a specific FormRendererId.
-auto IsFormId(absl::variant<FormRendererId, size_t> expectation) {
-  FormRendererId id = absl::holds_alternative<FormRendererId>(expectation)
-                          ? absl::get<FormRendererId>(expectation)
-                          : FormRendererId(absl::get<size_t>(expectation));
-  return Eq(id);
-}
-
 // Matches a `FormData` whose `FormData::fields`' `FormFieldData::id_attribute`
 // match `id_attributes`.
 auto HasFieldsWithIdAttributes(std::vector<std::u16string> id_attributes) {
   std::vector<Matcher<FormFieldData>> field_matchers;
   for (std::u16string& id_attribute : id_attributes) {
     field_matchers.push_back(
-        Field(&FormFieldData::id_attribute, std::move(id_attribute)));
+        Property(&FormFieldData::id_attribute, std::move(id_attribute)));
   }
   return Field(&FormData::fields, ElementsAreArray(field_matchers));
 }
 
 // Matches a `FormData` with a specific `FormData::renderer_id`.
-auto HasFormId(absl::variant<FormRendererId, size_t> expectation) {
-  return Field(&FormData::renderer_id, IsFormId(expectation));
+auto HasFormId(FormRendererId expectation) {
+  return Field(&FormData::renderer_id, expectation);
+}
+
+// Matches a `FormFieldData` with a specific `FormData::renderer_id`.
+auto HasFieldId(FieldRendererId expectation) {
+  return Property(&FormFieldData::renderer_id, expectation);
 }
 
 // Matches a `FormData` with a specific `FormData::id_attribute`.
@@ -122,36 +120,52 @@ auto HasSingleElementWhich(auto... element_matchers) {
 }
 
 auto HasType(FormControlType type) {
-  return Field(&FormFieldData::form_control_type, type);
+  return Property(&FormFieldData::form_control_type, type);
 }
 
+// Matches a FormFieldData if its `i`th field's `member` matches the
+// `expected_values[i]`.
+// `member` may point to a data member or to a member function of
+// `FormFieldData`.
 auto FieldsAre(std::string field_name,
-               std::u16string FormFieldData::*field,
-               std::vector<std::u16string> expecteds) {
-  std::vector<decltype(Field(field_name, field, expecteds[0]))> matchers;
-  for (const std::u16string& expected : expecteds) {
-    matchers.push_back(Field(field_name, field, expected));
+               auto&& member,
+               std::vector<std::u16string> expected_values) {
+  std::vector<::testing::Matcher<FormFieldData>> matchers;
+  for (const std::u16string& expected : expected_values) {
+    if constexpr (std::is_member_function_pointer_v<
+                      std::decay_t<decltype(member)>>) {
+      matchers.push_back(Property(field_name, member, expected));
+    } else {
+      matchers.push_back(Field(field_name, member, expected));
+    }
   }
   return Field(&FormData::fields, ElementsAreArray(matchers));
 }
 
-// TODO(crbug.com/63573): Add many more test cases.
+// TODO(crbug.com/41268731): Add many more test cases.
 class AutofillAgentTest : public test::AutofillRendererTest {
  public:
   void SetUp() override {
     test::AutofillRendererTest::SetUp();
     test_api(autofill_agent())
         .set_form_tracker(std::make_unique<MockFormTracker>(
-            GetMainRenderFrame(), FormTracker::UserGestureRequired(true)));
+            GetMainRenderFrame(), FormTracker::UserGestureRequired(true),
+            autofill_agent()));
   }
 
-  blink::WebElement GetWebElementById(const std::string& id) {
+  blink::WebElement GetWebElementById(std::string_view id) {
     return GetMainFrame()->GetDocument().GetElementById(
         blink::WebString::FromUTF8(id));
   }
 
   FormRendererId GetFormRendererIdById(std::string_view id) {
     return form_util::GetFormRendererId(
+        GetMainFrame()->GetDocument().GetElementById(
+            blink::WebString::FromUTF8(id)));
+  }
+
+  FieldRendererId GetFieldRendererIdById(std::string_view id) {
+    return form_util::GetFieldRendererId(
         GetMainFrame()->GetDocument().GetElementById(
             blink::WebString::FromUTF8(id)));
   }
@@ -172,6 +186,17 @@ class AutofillAgentTest : public test::AutofillRendererTest {
   MockFormTracker& form_tracker() {
     return static_cast<MockFormTracker&>(
         test_api(autofill_agent()).form_tracker());
+  }
+
+  std::vector<FormFieldData::FillData> GetFieldsForFilling(
+      const std::vector<FormData>& forms) {
+    std::vector<FormFieldData::FillData> fields;
+    for (const FormData& form : forms) {
+      for (const FormFieldData& field : form.fields) {
+        fields.emplace_back(field);
+      }
+    }
+    return fields;
   }
 };
 
@@ -202,10 +227,11 @@ TEST_F(AutofillAgentTestWithFeatures, FormsSeen_NoEmpty) {
 }
 
 TEST_F(AutofillAgentTestWithFeatures, FormsSeen_NewFormUnowned) {
-  EXPECT_CALL(autofill_driver(),
-              FormsSeen(HasSingleElementWhich(HasFormId(0u), HasNumFields(1),
-                                              HasNumChildFrames(0)),
-                        SizeIs(0)));
+  EXPECT_CALL(
+      autofill_driver(),
+      FormsSeen(HasSingleElementWhich(HasFormId(FormRendererId(0)),
+                                      HasNumFields(1), HasNumChildFrames(0)),
+                SizeIs(0)));
   LoadHTML(R"(<body> <input> </body>)");
   WaitForFormsSeen();
 }
@@ -612,9 +638,9 @@ TEST_F(AutofillAgentTest, UndoAutofillSetsLastQueriedElement) {
                                   {form_util::ExtractOption::kValue});
 
   ASSERT_TRUE(autofill_agent().focused_element().IsNull());
-  autofill_agent().ApplyFormAction(mojom::FormActionType::kUndo,
-                                   mojom::ActionPersistence::kFill,
-                                   FormData::FillData(form));
+  autofill_agent().ApplyFieldsAction(mojom::FormActionType::kUndo,
+                                     mojom::ActionPersistence::kFill,
+                                     GetFieldsForFilling({form}));
   EXPECT_FALSE(autofill_agent().focused_element().IsNull());
 }
 
@@ -640,25 +666,101 @@ TEST_F(AutofillAgentTest, PreviewThenClear) {
       GetWebElementById("text_id").DynamicTo<blink::WebFormControlElement>();
   ASSERT_FALSE(field.IsNull());
 
-  std::u16string prior_value = form.fields[0].value;
-  form.fields[0].value += u"AUTOFILLED";
-  form.fields[0].is_autofilled = true;
+  std::u16string prior_value = form.fields[0].value();
+  form.fields[0].set_value(form.fields[0].value() + u"AUTOFILLED");
+  form.fields[0].set_is_autofilled(true);
 
   ASSERT_EQ(field.GetAutofillState(), blink::WebAutofillState::kNotFilled);
-  autofill_agent().ApplyFormAction(mojom::FormActionType::kFill,
-                                   mojom::ActionPersistence::kPreview,
-                                   FormData::FillData(form));
+  autofill_agent().ApplyFieldsAction(mojom::FormActionType::kFill,
+                                     mojom::ActionPersistence::kPreview,
+                                     GetFieldsForFilling({form}));
   EXPECT_EQ(field.GetAutofillState(), blink::WebAutofillState::kPreviewed);
   autofill_agent().ClearPreviewedForm();
   EXPECT_EQ(field.GetAutofillState(), blink::WebAutofillState::kNotFilled);
 }
 
+// Tests that when JS modifies a value, the autofill state is only lost if the
+// changes were not simple reformatting changes.
+TEST_F(AutofillAgentTest, JavaScriptChangedValue_AutofillState) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      {blink::features::kAutofillDontSetAutofillStateAfterJavaScriptChanges,
+       features::kAutofillFixCachingOnJavaScriptChanges},
+      /*disabled_features=*/{});
+  LoadHTML(R"(
+    <form id="form_id">
+      <input id="cc_number">
+      <input id="phone_number">
+      <input id="full_name">
+    </form>
+  )");
+  blink::WebFormControlElement cc_field =
+      GetWebElementById("cc_number").DynamicTo<blink::WebFormControlElement>();
+  blink::WebFormControlElement phone_field =
+      GetWebElementById("phone_number")
+          .DynamicTo<blink::WebFormControlElement>();
+  blink::WebFormControlElement name_field =
+      GetWebElementById("full_name").DynamicTo<blink::WebFormControlElement>();
+
+  cc_field.SetAutofillValue("4111111111111111");
+  ASSERT_EQ(cc_field.Value().Ascii(), "4111111111111111");
+  ASSERT_TRUE(cc_field.IsAutofilled());
+
+  phone_field.SetAutofillValue("12345678900");  //+1 [234] 567-8900
+  ASSERT_EQ(phone_field.Value().Ascii(), "12345678900");
+  ASSERT_TRUE(phone_field.IsAutofilled());
+
+  name_field.SetAutofillValue("John Doe");
+  ASSERT_EQ(name_field.Value().Ascii(), "John Doe");
+  ASSERT_TRUE(name_field.IsAutofilled());
+
+  ExecuteJavaScriptForTests(R"(
+    document.forms[0].elements[0].value = '4111 1111 1111 1111';
+    document.forms[0].elements[1].value = '+1 (234) 567-8900';
+    document.forms[0].elements[2].value = 'Mr. John Doe';
+  )");
+
+  ASSERT_EQ(cc_field.Value().Ascii(), "4111 1111 1111 1111");
+  EXPECT_TRUE(cc_field.IsAutofilled());
+
+  ASSERT_EQ(phone_field.Value().Ascii(), "+1 (234) 567-8900");
+  EXPECT_TRUE(phone_field.IsAutofilled());
+
+  ASSERT_EQ(name_field.Value().Ascii(), "Mr. John Doe");
+  EXPECT_FALSE(name_field.IsAutofilled());
+}
+
+class AutofillAgentSubmissionTest : public AutofillAgentTest,
+                                    public testing::WithParamInterface<bool> {
+ public:
+  AutofillAgentSubmissionTest() {
+    if (improved_submission_detection()) {
+      scoped_feature_list.InitWithFeatures(
+          {features::kAutofillReplaceCachedWebElementsByRendererIds,
+           features::kAutofillReplaceFormElementObserver},
+          /*disabled_features=*/{});
+    } else {
+      scoped_feature_list.InitAndDisableFeature(
+          features::kAutofillReplaceFormElementObserver);
+    }
+  }
+
+  bool improved_submission_detection() { return GetParam(); }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list;
+};
+
+INSTANTIATE_TEST_SUITE_P(AutofillSubmissionTest,
+                         AutofillAgentSubmissionTest,
+                         ::testing::Bool());
+
 // Test that AutofillAgent::JavaScriptChangedValue updates the
 // last interacted saved state.
-TEST_F(AutofillAgentTest,
+TEST_P(AutofillAgentSubmissionTest,
        JavaScriptChangedValueUpdatesLastInteractedSavedState) {
   base::test::ScopedFeatureList scoped_feature_list{
-      features::kAutofillImproveSubmissionDetection};
+      features::kAutofillReplaceFormElementObserver};
   LoadHTML(R"(<form id="form_id"><input id="text_id"></form>)");
 
   blink::WebFormElement form = GetMainFrame()
@@ -669,36 +771,36 @@ TEST_F(AutofillAgentTest,
 
   ExecuteJavaScriptForTests(
       R"(document.forms[0].elements[0].value = 'js-set value';)");
-  std::optional<FormData> last_interacted_saved_state =
-      AutofillAgentTestApi(&autofill_agent()).last_interacted_saved_state();
+  std::optional<FormData> provisionally_saved_form =
+      AutofillAgentTestApi(&autofill_agent()).provisionally_saved_form();
   // Since we do not have a tracked form yet, the JS call should not update (in
   // this case set) the last interacted form.
-  ASSERT_FALSE(last_interacted_saved_state.has_value());
+  ASSERT_FALSE(provisionally_saved_form.has_value());
 
   SimulateUserEditField(form, "text_id", "user-set value");
-  last_interacted_saved_state =
-      AutofillAgentTestApi(&autofill_agent()).last_interacted_saved_state();
-  ASSERT_TRUE(last_interacted_saved_state.has_value());
-  EXPECT_EQ(last_interacted_saved_state->renderer_id, form_id);
-  ASSERT_EQ(1u, last_interacted_saved_state->fields.size());
-  EXPECT_EQ(u"user-set value", last_interacted_saved_state->fields[0].value);
+  provisionally_saved_form =
+      AutofillAgentTestApi(&autofill_agent()).provisionally_saved_form();
+  ASSERT_TRUE(provisionally_saved_form.has_value());
+  EXPECT_EQ(provisionally_saved_form->renderer_id, form_id);
+  ASSERT_EQ(1u, provisionally_saved_form->fields.size());
+  EXPECT_EQ(u"user-set value", provisionally_saved_form->fields[0].value());
 
   ExecuteJavaScriptForTests(
       R"(document.forms[0].elements[0].value = 'js-set value';)");
-  last_interacted_saved_state =
-      AutofillAgentTestApi(&autofill_agent()).last_interacted_saved_state();
+  provisionally_saved_form =
+      AutofillAgentTestApi(&autofill_agent()).provisionally_saved_form();
   // Since we now have a tracked form and JS modified the same form, we should
   // see the JS modification reflected in the last interacted saved form.
-  ASSERT_TRUE(last_interacted_saved_state.has_value());
-  EXPECT_EQ(last_interacted_saved_state->renderer_id, form_id);
-  ASSERT_EQ(1u, last_interacted_saved_state->fields.size());
-  EXPECT_EQ(u"js-set value", last_interacted_saved_state->fields[0].value);
+  ASSERT_TRUE(provisionally_saved_form.has_value());
+  EXPECT_EQ(provisionally_saved_form->renderer_id, form_id);
+  ASSERT_EQ(1u, provisionally_saved_form->fields.size());
+  EXPECT_EQ(u"js-set value", provisionally_saved_form->fields[0].value());
 }
 
 // Test that AutofillAgent::ApplyFormAction(mojom::ActionPersistence::kFill)
 // updates the last interacted saved state when the <input>s have no containing
 // <form>.
-TEST_F(AutofillAgentTest,
+TEST_P(AutofillAgentSubmissionTest,
        FormlessApplyFormActionUpdatesLastInteractedSavedState) {
   LoadHTML(R"(
     <input id="text_id">
@@ -713,63 +815,66 @@ TEST_F(AutofillAgentTest,
       blink::WebFormElement(), field, &autofill_agent().field_data_manager(),
       {form_util::ExtractOption::kValue}, &form_field);
 
-  form_field.value = u"autofilled";
-  form_field.is_autofilled = true;
+  form_field.set_value(u"autofilled");
+  form_field.set_is_autofilled(true);
 
   ASSERT_EQ(field.GetAutofillState(), blink::WebAutofillState::kNotFilled);
   FormData form;
   form.fields = {form_field};
-  autofill_agent().ApplyFormAction(mojom::FormActionType::kFill,
-                                   mojom::ActionPersistence::kFill,
-                                   FormData::FillData(form));
+  autofill_agent().ApplyFieldsAction(mojom::FormActionType::kFill,
+                                     mojom::ActionPersistence::kFill,
+                                     GetFieldsForFilling({form}));
   ASSERT_EQ(field.GetAutofillState(), blink::WebAutofillState::kAutofilled);
 
-  std::optional<FormData> last_interacted_saved_state =
-      AutofillAgentTestApi(&autofill_agent()).last_interacted_saved_state();
-  ASSERT_TRUE(last_interacted_saved_state.has_value());
-  ASSERT_EQ(1u, last_interacted_saved_state->fields.size());
-  EXPECT_EQ(u"autofilled", last_interacted_saved_state->fields[0].value);
+  std::optional<FormData> provisionally_saved_form =
+      AutofillAgentTestApi(&autofill_agent()).provisionally_saved_form();
+  ASSERT_TRUE(provisionally_saved_form.has_value());
+  ASSERT_EQ(1u, provisionally_saved_form->fields.size());
+  EXPECT_EQ(u"autofilled", provisionally_saved_form->fields[0].value());
 }
 
 // Test that AutofillAgent::ApplyFormAction(mojom::ActionPersistence::kFill)
 // updates the last interacted saved state when the <input>s have a containing
 // <form>.
-TEST_F(AutofillAgentTest, FormApplyFormActionUpdatesLastInteractedSavedState) {
+TEST_P(AutofillAgentSubmissionTest,
+       FormApplyFormActionUpdatesLastInteractedSavedState) {
   LoadHTML(R"(
     <form id="form_id">
       <input id="text_id">
     </form>
   )");
 
-  blink::WebFormElement form =
+  blink::WebFormElement form_element =
       GetWebElementById("form_id").DynamicTo<blink::WebFormElement>();
-  ASSERT_EQ(1u, form.GetFormControlElements().size());
-  blink::WebFormControlElement field = form.GetFormControlElements()[0];
+  ASSERT_EQ(1u, form_element.GetFormControlElements().size());
+  blink::WebFormControlElement field = form_element.GetFormControlElements()[0];
   ASSERT_FALSE(field.IsNull());
   ASSERT_EQ("text_id", field.GetIdAttribute().Ascii());
 
-  FormData form_data = *form_util::ExtractFormData(
-      form.GetDocument(), form, *base::MakeRefCounted<FieldDataManager>(),
-      {form_util::ExtractOption::kValue});
+  FormData form =
+      *form_util::ExtractFormData(form_element.GetDocument(), form_element,
+                                  *base::MakeRefCounted<FieldDataManager>(),
+                                  {form_util::ExtractOption::kValue});
 
-  ASSERT_EQ(1u, form_data.fields.size());
-  form_data.fields[0].value = u"autofilled";
-  form_data.fields[0].is_autofilled = true;
+  ASSERT_EQ(1u, form.fields.size());
+  form.fields[0].set_value(u"autofilled");
+  form.fields[0].set_is_autofilled(true);
 
   ASSERT_EQ(field.GetAutofillState(), blink::WebAutofillState::kNotFilled);
-  autofill_agent().ApplyFormAction(mojom::FormActionType::kFill,
-                                   mojom::ActionPersistence::kFill,
-                                   FormData::FillData(form_data));
+  autofill_agent().ApplyFieldsAction(mojom::FormActionType::kFill,
+                                     mojom::ActionPersistence::kFill,
+                                     GetFieldsForFilling({form}));
   ASSERT_EQ(field.GetAutofillState(), blink::WebAutofillState::kAutofilled);
 
-  std::optional<FormData> last_interacted_saved_state =
-      AutofillAgentTestApi(&autofill_agent()).last_interacted_saved_state();
-  ASSERT_TRUE(last_interacted_saved_state.has_value());
-  ASSERT_EQ(1u, last_interacted_saved_state->fields.size());
-  EXPECT_EQ(u"autofilled", last_interacted_saved_state->fields[0].value);
+  std::optional<FormData> provisionally_saved_form =
+      AutofillAgentTestApi(&autofill_agent()).provisionally_saved_form();
+  ASSERT_TRUE(provisionally_saved_form.has_value());
+  ASSERT_EQ(1u, provisionally_saved_form->fields.size());
+  EXPECT_EQ(u"autofilled", provisionally_saved_form->fields[0].value());
 }
 
-TEST_F(AutofillAgentTest, HideElementTriggersFormTracker_DisplayNone) {
+TEST_P(AutofillAgentSubmissionTest,
+       HideElementTriggersFormTracker_DisplayNone) {
   LoadHTML(R"(
     <form id="form_id">
       <input id="field_id">
@@ -784,7 +889,8 @@ TEST_F(AutofillAgentTest, HideElementTriggersFormTracker_DisplayNone) {
       blink::DocumentUpdateReason::kTest);
 }
 
-TEST_F(AutofillAgentTest, HideElementTriggersFormTracker_VisibilityHidden) {
+TEST_P(AutofillAgentSubmissionTest,
+       HideElementTriggersFormTracker_VisibilityHidden) {
   LoadHTML(R"(
     <form id="form_id">
       <input id="field_id">
@@ -799,7 +905,7 @@ TEST_F(AutofillAgentTest, HideElementTriggersFormTracker_VisibilityHidden) {
       blink::DocumentUpdateReason::kTest);
 }
 
-TEST_F(AutofillAgentTest, HideElementTriggersFormTracker_TypeHidden) {
+TEST_P(AutofillAgentSubmissionTest, HideElementTriggersFormTracker_TypeHidden) {
   LoadHTML(R"(
     <form id="form_id">
       <input id="field_id">
@@ -814,7 +920,7 @@ TEST_F(AutofillAgentTest, HideElementTriggersFormTracker_TypeHidden) {
       blink::DocumentUpdateReason::kTest);
 }
 
-TEST_F(AutofillAgentTest, HideElementTriggersFormTracker_HiddenTrue) {
+TEST_P(AutofillAgentSubmissionTest, HideElementTriggersFormTracker_HiddenTrue) {
   LoadHTML(R"(
     <form id="form_id">
       <input id="field_id">
@@ -829,7 +935,7 @@ TEST_F(AutofillAgentTest, HideElementTriggersFormTracker_HiddenTrue) {
       blink::DocumentUpdateReason::kTest);
 }
 
-TEST_F(AutofillAgentTest, HideElementTriggersFormTracker_ShadowDom) {
+TEST_P(AutofillAgentSubmissionTest, HideElementTriggersFormTracker_ShadowDom) {
   LoadHTML(R"(
    <form id="form_id">
     <div>
@@ -851,7 +957,7 @@ TEST_F(AutofillAgentTest, HideElementTriggersFormTracker_ShadowDom) {
 // Test that an inferred form submission as a result of a page deleting ALL of
 // the <input>s (that the user has edited) on a page with no <form> sends the
 // contents of all of the fields to the browser.
-TEST_F(AutofillAgentTest,
+TEST_P(AutofillAgentSubmissionTest,
        FormlessOnInferredFormSubmissionAfterXhrAndAllInputsRemoved) {
   LoadHTML(R"(
     <div id='shipping'>
@@ -881,7 +987,7 @@ TEST_F(AutofillAgentTest,
 // Tests that an inferred form submission as a result of a page deleting ALL of
 // the <input>s that the user has edited but NOT ALL of the <inputs> on the page
 // sends the user-edited <inputs> to the browser.
-TEST_F(AutofillAgentTest,
+TEST_P(AutofillAgentSubmissionTest,
        FormlessOnInferredFormSubmissionAfterXhrAndSomeInputsRemoved) {
   LoadHTML(R"(
     Search: <input type='text' id='search'><br>
@@ -915,8 +1021,9 @@ TEST_F(AutofillAgentTest,
 // AND
 // - An <input> other than the last interacted <input> is hidden.
 // THAT
-// The visible <input>s are sent to the browser.
-TEST_F(AutofillAgentTest, FormlessOnNavigationAfterSomeInputsRemoved) {
+// The edited <input>s are sent to the browser.
+TEST_P(AutofillAgentSubmissionTest,
+       FormlessOnNavigationAfterSomeInputsRemoved) {
   LoadHTML(R"(
     Name: <input type='text' id='name'><br>
     Address: <input type='text' id='address'>
@@ -925,12 +1032,22 @@ TEST_F(AutofillAgentTest, FormlessOnNavigationAfterSomeInputsRemoved) {
   SimulateUserEditField(blink::WebFormElement(), "name", "Ariel");
   SimulateUserEditField(blink::WebFormElement(), "address", "Atlantica");
 
-  EXPECT_CALL(
-      autofill_driver(),
-      FormSubmitted(
-          AllOf(FieldsAre("id", &FormFieldData::id_attribute, {u"address"}),
-                FieldsAre("value", &FormFieldData::value, {u"Atlantica"})),
-          _, _));
+  std::vector<std::u16string> expected_id_attributes =
+      improved_submission_detection()
+          ? std::vector<std::u16string>{u"name", u"address"}
+          : std::vector<std::u16string>{u"address"};
+
+  std::vector<std::u16string> expected_values =
+      improved_submission_detection()
+          ? std::vector<std::u16string>{u"Ariel", u"Atlantica"}
+          : std::vector<std::u16string>{u"Atlantica"};
+
+  EXPECT_CALL(autofill_driver(),
+              FormSubmitted(AllOf(FieldsAre("id", &FormFieldData::id_attribute,
+                                            expected_id_attributes),
+                                  FieldsAre("value", &FormFieldData::value,
+                                            expected_values)),
+                            _, _));
 
   // Remove element that the user did not interact with last.
   ExecuteJavaScriptForTests(R"(document.getElementById('name').remove();)");
@@ -946,7 +1063,7 @@ TEST_F(AutofillAgentTest, FormlessOnNavigationAfterSomeInputsRemoved) {
 // - Inferred form submission as a result of the page removing the <form> from
 //   the DOM hierarchy does not send fields which were removed from the DOM
 //   hierarchy at autofill time.
-TEST_F(AutofillAgentTest,
+TEST_P(AutofillAgentSubmissionTest,
        OnInferredFormSubmissionAfterAutofillRemovesLastQueriedElement) {
   LoadHTML(R"(
     <form id="form">
@@ -958,11 +1075,11 @@ TEST_F(AutofillAgentTest,
   blink::WebFormElement form_element =
       GetWebElementById("form").DynamicTo<blink::WebFormElement>();
   ASSERT_FALSE(form_element.IsNull());
-  std::optional<FormData> form_data =
+  std::optional<FormData> form =
       form_util::ExtractFormData(GetMainFrame()->GetDocument(), form_element,
                                  autofill_agent().field_data_manager(),
                                  {form_util::ExtractOption::kValue});
-  ASSERT_TRUE(form_data.has_value());
+  ASSERT_TRUE(form.has_value());
 
   blink::WebVector<blink::WebFormControlElement> field_elements =
       form_element.GetFormControlElements();
@@ -972,18 +1089,18 @@ TEST_F(AutofillAgentTest,
               blink::WebAutofillState::kNotFilled);
   }
 
-  for (FormFieldData& field : form_data->fields) {
-    field.value = field.id_attribute + u" autofilled";
-    field.is_autofilled = true;
+  for (FormFieldData& field : form->fields) {
+    field.set_value(field.id_attribute() + u" autofilled");
+    field.set_is_autofilled(true);
   }
 
   // Update `AutofillAgent::last_queried_element_`.
   static_cast<content::RenderFrameObserver*>(&autofill_agent())
       ->FocusedElementChanged(field_elements[0]);
 
-  autofill_agent().ApplyFormAction(mojom::FormActionType::kFill,
-                                   mojom::ActionPersistence::kFill,
-                                   FormData::FillData(*form_data));
+  autofill_agent().ApplyFieldsAction(mojom::FormActionType::kFill,
+                                     mojom::ActionPersistence::kFill,
+                                     GetFieldsForFilling({*form}));
 
   for (const blink::WebFormControlElement& field_element : field_elements) {
     ASSERT_EQ(field_element.GetAutofillState(),
@@ -1032,6 +1149,127 @@ TEST_F(AutofillAgentTestNavigationReset, NavigationResetsIsDomContentLoaded) {
   LoadHTML(R"(Hello world)");
   LoadHTML(R"(Hello world)");
   EXPECT_THAT(is_dom_content_loaded, ElementsAre(false, true, false, true));
+}
+
+// Test fixture for FocusedElementChanged().
+class AutofillAgentTestFocus : public AutofillAgentTest {
+ public:
+  // A permutation of the fields. Cycling through these fields guarantees a
+  // diverse collection of transitions:
+  // - [un]owned -> [un]owned (all four combinations),
+  // - <input>, <select>, <textarea>, contenteditable
+  static constexpr std::array kPermutationOfFields = {
+      "owned_field",  "owned_select",  "unowned_field",  "contenteditable",
+      "owned_field2", "unowned_field", "unowned_select", "owned_select2"};
+
+  void SetUp() override {
+    AutofillAgentTest::SetUp();
+    LoadHTML(R"(
+      <html>
+      <div id=uneditable></div>
+      <div id=contenteditable contenteditable></div>
+      <input id=unowned_field>
+      <select id=unowned_select><option>Something</option></select>
+      <form>
+        <input id=owned_field>
+        <select id=owned_select><option>Something</option></select>
+      </form>
+      <form>
+        <textarea id=owned_field2></textarea>
+        <select id=owned_select2><option>Something</option></select>
+      </form>
+    )");
+    for (std::string_view id : kPermutationOfFields) {
+      ASSERT_FALSE(GetWebElementById(id).IsNull());
+    }
+  }
+
+  void FocusedElementChanged(blink::WebElement e) {
+    test_api(autofill_agent()).FocusedElementChanged(e);
+    task_environment_.RunUntilIdle();
+  }
+
+  void FocusedElementChanged(std::string_view id) {
+    blink::WebElement e = GetWebElementById(id);
+    ASSERT_FALSE(e.IsNull()) << "Field " << id << " doesn't exist";
+    FocusedElementChanged(e);
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_{
+      autofill::features::kAutofillNewFocusEvents};
+};
+
+// Tests that when the focus moves from field to field, FocusedElementChanged()
+// fires FocusOnFormField() and FocusNoLongerOnForm().
+TEST_F(AutofillAgentTestFocus, FireFocusEventsWhenCyclingThroughFields) {
+  testing::MockFunction<void(std::string_view)> checkpoint;
+  {
+    testing::InSequence s;
+    // Moves the focus one field to another.
+    for (std::string_view id : kPermutationOfFields) {
+      EXPECT_CALL(checkpoint, Call(id));
+      EXPECT_CALL(autofill_driver(), FocusNoLongerOnForm).Times(0);
+      EXPECT_CALL(
+          autofill_driver(),
+          FocusOnFormField(_, HasFieldId(GetFieldRendererIdById(id)), _));
+    }
+  }
+  for (std::string_view id : kPermutationOfFields) {
+    checkpoint.Call(id);
+    FocusedElementChanged(id);
+  }
+}
+
+// Tests that when the focus switches between an uneditable <div> and
+// a field, FocusedElementChanged() fires FocusOnFormField() and
+// FocusNoLongerOnForm().
+TEST_F(AutofillAgentTestFocus,
+       FireFocusEventsWhenSwitchingBetweenFieldAndNonField) {
+  testing::MockFunction<void(std::string_view)> checkpoint;
+  {
+    testing::InSequence s;
+    for (std::string_view id : kPermutationOfFields) {
+      EXPECT_CALL(checkpoint, Call("uneditable"));
+      EXPECT_CALL(autofill_driver(), FocusNoLongerOnForm);
+      EXPECT_CALL(autofill_driver(), FocusOnFormField).Times(0);
+      EXPECT_CALL(checkpoint, Call(id));
+      EXPECT_CALL(autofill_driver(), FocusNoLongerOnForm).Times(0);
+      EXPECT_CALL(
+          autofill_driver(),
+          FocusOnFormField(_, HasFieldId(GetFieldRendererIdById(id)), _));
+    }
+  }
+  for (std::string_view id : kPermutationOfFields) {
+    checkpoint.Call("uneditable");
+    FocusedElementChanged("uneditable");
+    checkpoint.Call(id);
+    FocusedElementChanged(id);
+  }
+}
+
+// Tests that FocusedElementChanged() treats null as a non-FormField.
+TEST_F(AutofillAgentTestFocus, FireFocusEventsForNullElement) {
+  testing::MockFunction<void(std::string_view)> checkpoint;
+  {
+    testing::InSequence s;
+    EXPECT_CALL(checkpoint, Call("owned_field"));
+    EXPECT_CALL(autofill_driver(), FocusOnFormField);
+    EXPECT_CALL(checkpoint, Call("null"));
+    EXPECT_CALL(autofill_driver(), FocusNoLongerOnForm);
+    EXPECT_CALL(checkpoint, Call("contenteditable"));
+    EXPECT_CALL(autofill_driver(), FocusOnFormField);
+    EXPECT_CALL(checkpoint, Call("null"));
+    EXPECT_CALL(autofill_driver(), FocusNoLongerOnForm);
+  }
+  checkpoint.Call("owned_field");
+  FocusedElementChanged("owned_field");
+  checkpoint.Call("null");
+  FocusedElementChanged(blink::WebElement());
+  checkpoint.Call("contenteditable");
+  FocusedElementChanged("contenteditable");
+  checkpoint.Call("null");
+  FocusedElementChanged(blink::WebElement());
 }
 
 }  // namespace

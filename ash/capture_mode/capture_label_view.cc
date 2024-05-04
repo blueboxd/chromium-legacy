@@ -330,7 +330,8 @@ void CaptureLabelView::Layout(PassKey) {
   gfx::Rect label_bounds = GetLocalBounds();
   capture_button_container_->SetBoundsRect(label_bounds);
 
-  label_bounds.ClampToCenteredSize(label_->GetPreferredSize());
+  label_bounds.ClampToCenteredSize(
+      label_->GetPreferredSize(views::SizeBounds(label_->width(), {})));
   label_->SetBoundsRect(label_bounds);
 
   // This is necessary to update the focus ring, which is a child view of
@@ -338,7 +339,8 @@ void CaptureLabelView::Layout(PassKey) {
   LayoutSuperclass<views::View>(this);
 }
 
-gfx::Size CaptureLabelView::CalculatePreferredSize() const {
+gfx::Size CaptureLabelView::CalculatePreferredSize(
+    const views::SizeBounds& available_size) const {
   if (countdown_finished_callback_)
     return gfx::Size(kCaptureLabelRadius * 2, kCaptureLabelRadius * 2);
 
@@ -355,8 +357,10 @@ gfx::Size CaptureLabelView::CalculatePreferredSize() const {
   }
 
   DCHECK(is_label_visible && !is_label_button_visible);
-  return gfx::Size(label_->GetPreferredSize().width() + kCaptureLabelRadius * 2,
-                   kCaptureLabelRadius * 2);
+  return gfx::Size(
+      label_->GetPreferredSize(views::SizeBounds(label_->width(), {})).width() +
+          kCaptureLabelRadius * 2,
+      kCaptureLabelRadius * 2);
 }
 
 void CaptureLabelView::OnThemeChanged() {

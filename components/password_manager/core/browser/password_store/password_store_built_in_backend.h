@@ -70,13 +70,16 @@ class PasswordStoreBuiltInBackend : public PasswordStoreBackend,
                      PasswordChangesOrErrorReply callback) override;
   void UpdateLoginAsync(const PasswordForm& form,
                         PasswordChangesOrErrorReply callback) override;
-  void RemoveLoginAsync(const PasswordForm& form,
+  void RemoveLoginAsync(const base::Location& location,
+                        const PasswordForm& form,
                         PasswordChangesOrErrorReply callback) override;
   void RemoveLoginsCreatedBetweenAsync(
+      const base::Location& location,
       base::Time delete_begin,
       base::Time delete_end,
       PasswordChangesOrErrorReply callback) override;
   void RemoveLoginsByURLAndTimeAsync(
+      const base::Location& location,
       const base::RepeatingCallback<bool(const GURL&)>& url_filter,
       base::Time delete_begin,
       base::Time delete_end,
@@ -86,7 +89,7 @@ class PasswordStoreBuiltInBackend : public PasswordStoreBackend,
       const base::RepeatingCallback<bool(const GURL&)>& origin_filter,
       base::OnceClosure completion) override;
   SmartBubbleStatsStore* GetSmartBubbleStatsStore() override;
-  std::unique_ptr<syncer::ProxyModelTypeControllerDelegate>
+  std::unique_ptr<syncer::ModelTypeControllerDelegate>
   CreateSyncControllerDelegate() override;
   void OnSyncServiceInitialized(syncer::SyncService* sync_service) override;
   void RecordAddLoginAsyncCalledFromTheStore() override;

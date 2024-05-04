@@ -53,6 +53,7 @@
 #include "chromeos/ash/components/dbus/concierge/fake_concierge_client.h"
 #include "chromeos/ash/components/dbus/debug_daemon/debug_daemon_client.h"
 #include "chromeos/ash/components/dbus/debug_daemon/fake_debug_daemon_client.h"
+#include "chromeos/ash/components/dbus/patchpanel/fake_patchpanel_client.h"
 #include "chromeos/ash/components/dbus/session_manager/fake_session_manager_client.h"
 #include "chromeos/ash/components/dbus/upstart/fake_upstart_client.h"
 #include "components/user_manager/fake_user_manager.h"
@@ -382,6 +383,7 @@ class ArcVmClientAdapterTest : public testing::Test,
         // connect_sleep_duration_initial
         base::Milliseconds(20));
 
+    ash::PatchPanelClient::InitializeFake();
     ash::SessionManagerClient::InitializeFake();
 
     adapter_->SetDemoModeDelegate(&demo_mode_delegate_);
@@ -397,6 +399,7 @@ class ArcVmClientAdapterTest : public testing::Test,
   void TearDown() override {
     scoped_user_manager_.reset();
     arc_dlc_installer_.reset();
+    ash::PatchPanelClient::Shutdown();
     ash::SessionManagerClient::Shutdown();
     adapter_->RemoveObserver(this);
     adapter_.reset();
@@ -1712,6 +1715,36 @@ TEST_F(ArcVmClientAdapterTest, VirtioBlkForData_NoLvmForEphemeralCryptohome) {
   EXPECT_TRUE(req.enable_virtio_blk_data());
 }
 
+TEST_F(ArcVmClientAdapterTest, MetadataDisk_DisabledForArcT) {
+  // Metadata disk should not be requested for ARC T.
+  base::test::ScopedChromeOSVersionInfo version(
+      "CHROMEOS_ARC_ANDROID_SDK_VERSION=33", base::Time::Now());
+
+  StartParams start_params(GetPopulatedStartParams());
+  StartMiniArcWithParams(true, std::move(start_params));
+  const auto& req = GetTestConciergeClient()->start_arc_vm_request();
+
+  const std::string metadta_disk_path =
+      base::StringPrintf("/run/daemon-store/crosvm/%s/YXJjdm0=.metadata.img",
+                         std::string(kUserIdHash).c_str());
+  EXPECT_FALSE(HasDiskImage(req, metadta_disk_path));
+}
+
+TEST_F(ArcVmClientAdapterTest, MetadataDisk_EnabledForArcU) {
+  // Metadata disk should be requested for ARC U.
+  base::test::ScopedChromeOSVersionInfo version(
+      "CHROMEOS_ARC_ANDROID_SDK_VERSION=34", base::Time::Now());
+
+  StartParams start_params(GetPopulatedStartParams());
+  StartMiniArcWithParams(true, std::move(start_params));
+  const auto& req = GetTestConciergeClient()->start_arc_vm_request();
+
+  const std::string metadta_disk_path =
+      base::StringPrintf("/run/daemon-store/crosvm/%s/YXJjdm0=.metadata.img",
+                         std::string(kUserIdHash).c_str());
+  EXPECT_TRUE(HasDiskImage(req, metadta_disk_path));
+}
+
 TEST_F(ArcVmClientAdapterTest, ArcErofsImagesDisabled) {
   StartParams start_params(GetPopulatedStartParams());
   StartMiniArcWithParams(true, std::move(start_params));
@@ -2861,37 +2894,6 @@ TEST_F(ArcVmClientAdapterTest, ArcLmkPerceptibleMinStateUpdateEnabled) {
   UpgradeArcWithParams(true, std::move(upgrade_params));
   EXPECT_TRUE(base::Contains(boot_notification_server()->received_data(),
                              "ro.boot.arc.lmk.perceptible_min_state_update=1"));
-}
-
-TEST_F(ArcVmClientAdapterTest, ForcePostBootDexOpDisabled) {
-  StartMiniArc();
-  UpgradeParams upgrade_params = GetPopulatedUpgradeParams();
-  upgrade_params.force_post_boot_dex_opt = false;
-  UpgradeArcWithParams(true, std::move(upgrade_params));
-  EXPECT_FALSE(base::Contains(boot_notification_server()->received_data(),
-                              "ro.boot.force_post_boot_dexopt"));
-}
-
-TEST_F(ArcVmClientAdapterTest, ForcePostBootDexOpEnabledArcT) {
-  base::test::ScopedChromeOSVersionInfo version(
-      "CHROMEOS_ARC_ANDROID_SDK_VERSION=33", base::Time::Now());
-  StartMiniArc();
-  UpgradeParams upgrade_params = GetPopulatedUpgradeParams();
-  upgrade_params.force_post_boot_dex_opt = true;
-  UpgradeArcWithParams(true, std::move(upgrade_params));
-  EXPECT_TRUE(base::Contains(boot_notification_server()->received_data(),
-                             "ro.boot.force_post_boot_dexopt=1"));
-}
-
-TEST_F(ArcVmClientAdapterTest, ForcePostBootDexOpEnabledArcR) {
-  base::test::ScopedChromeOSVersionInfo version(
-      "CHROMEOS_ARC_ANDROID_SDK_VERSION=30", base::Time::Now());
-  StartMiniArc();
-  UpgradeParams upgrade_params = GetPopulatedUpgradeParams();
-  upgrade_params.force_post_boot_dex_opt = true;
-  UpgradeArcWithParams(true, std::move(upgrade_params));
-  EXPECT_FALSE(base::Contains(boot_notification_server()->received_data(),
-                              "ro.boot.force_post_boot_dexopt"));
 }
 
 TEST_F(ArcVmClientAdapterTest, DefaultDexOptCacheSetup) {

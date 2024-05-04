@@ -11,10 +11,12 @@
 #include "chrome/browser/complex_tasks/task_tab_helper.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history_clusters/history_clusters_tab_helper.h"
+#include "chrome/browser/history_embeddings/history_embeddings_tab_helper.h"
 #include "chrome/browser/preloading/prefetch/no_state_prefetch/no_state_prefetch_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/chrome_navigation_ui_data.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
+#include "components/feed/buildflags.h"
 #include "components/history/content/browser/history_context_helper.h"
 #include "components/history/core/browser/history_constants.h"
 #include "components/history/core/browser/history_service.h"
@@ -33,18 +35,21 @@
 #if BUILDFLAG(IS_ANDROID)
 #include "base/android/jni_string.h"
 #include "chrome/browser/android/background_tab_manager.h"
-#include "chrome/browser/feed/feed_service_factory.h"
 #include "chrome/browser/flags/android/chrome_session_state.h"
 #include "chrome/browser/history/jni_headers/HistoryTabHelper_jni.h"
 #include "chrome/browser/ui/android/tab_model/tab_model.h"
 #include "chrome/browser/ui/android/tab_model/tab_model_list.h"
-#include "components/feed/core/v2/public/feed_api.h"
-#include "components/feed/core/v2/public/feed_service.h"
 #include "content/public/browser/web_contents.h"
 #else
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #endif
+
+#if BUILDFLAG(ENABLE_FEED_V2)
+#include "chrome/browser/feed/feed_service_factory.h"
+#include "components/feed/core/v2/public/feed_api.h"      // nogncheck
+#include "components/feed/core/v2/public/feed_service.h"  // nogncheck
+#endif  // BUILDFLAG(ENABLE_FEED_V2)
 
 namespace {
 
@@ -54,7 +59,7 @@ using content::WebContents;
 using chrome::android::BackgroundTabManager;
 #endif
 
-#if BUILDFLAG(IS_ANDROID)
+#if BUILDFLAG(ENABLE_FEED_V2)
 bool IsNavigationFromFeed(content::WebContents& web_contents, const GURL& url) {
   feed::FeedService* feed_service =
       feed::FeedServiceFactory::GetForBrowserContext(
@@ -64,13 +69,12 @@ bool IsNavigationFromFeed(content::WebContents& web_contents, const GURL& url) {
 
   return feed_service->GetStream()->WasUrlRecentlyNavigatedFromFeed(url);
 }
-
-#endif
+#endif  // BUILDFLAG(ENABLE_FEED_V2)
 
 bool ShouldConsiderForNtpMostVisited(
     content::WebContents& web_contents,
     content::NavigationHandle* navigation_handle) {
-#if BUILDFLAG(IS_ANDROID)
+#if BUILDFLAG(ENABLE_FEED_V2)
   // Clicks on content suggestions on the NTP should not contribute to the
   // Most Visited tiles in the NTP.
   DCHECK(!navigation_handle->GetRedirectChain().empty());
@@ -80,7 +84,7 @@ bool ShouldConsiderForNtpMostVisited(
                            navigation_handle->GetRedirectChain()[0])) {
     return false;
   }
-#endif
+#endif  // BUILDFLAG(ENABLE_FEED_V2)
 
   return true;
 }
@@ -377,6 +381,12 @@ void HistoryTabHelper::DidFinishNavigation(
           HistoryClustersTabHelper::FromWebContents(web_contents())) {
     clusters_tab_helper->OnUpdatedHistoryForNavigation(
         navigation_handle->GetNavigationId(), timestamp, add_page_args.url);
+  }
+
+  if (HistoryEmbeddingsTabHelper* embeddings_tab_helper =
+          HistoryEmbeddingsTabHelper::FromWebContents(web_contents())) {
+    embeddings_tab_helper->OnUpdatedHistoryForNavigation(
+        navigation_handle, timestamp, add_page_args.url);
   }
 }
 

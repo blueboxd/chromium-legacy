@@ -462,7 +462,7 @@ id<GREYMatcher> PasswordPickerViewMatcher() {
   [[EarlGrey
       selectElementWithMatcher:grey_accessibilityID(kFamilyPickerShareButtonID)]
       performAction:grey_tap()];
-  // TODO(crbug.com/1463882): Override animation time for tests.
+  // TODO(crbug.com/40275395): Override animation time for tests.
   GREYCondition* waitForAnimationEnding = [GREYCondition
       conditionWithName:@"Wait for sharing animation to end"
                   block:^{
@@ -624,7 +624,7 @@ id<GREYMatcher> PasswordPickerViewMatcher() {
 }
 
 - (void)testTappingLearnMoreInFirstRunExperienceView {
-  // TODO(crbug.com/1488977): Test fails on iPad simulator.
+  // TODO(crbug.com/40283859): Test fails on iPad simulator.
   if ([ChromeEarlGrey isIPadIdiom]) {
     EARL_GREY_TEST_DISABLED(@"Failing on iPad Simulator");
   }

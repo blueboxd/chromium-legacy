@@ -164,6 +164,7 @@ void DrmThread::CreateBuffer(gfx::AcceleratedWidget widget,
   // allocation should fail if it's not possible to allocate a BO_USE_SCANOUT
   // buffer in that case.
   if (!*buffer && usage != gfx::BufferUsage::SCANOUT &&
+      usage != gfx::BufferUsage::PROTECTED_SCANOUT &&
       usage != gfx::BufferUsage::PROTECTED_SCANOUT_VDA_WRITE &&
       usage != gfx::BufferUsage::SCANOUT_FRONT_RENDERING) {
     flags &= ~GBM_BO_USE_SCANOUT;
@@ -504,9 +505,8 @@ void DrmThread::SetPrivacyScreen(int64_t display_id,
 
 void DrmThread::GetSeamlessRefreshRates(
     int64_t display_id,
-    base::OnceCallback<void(const std::optional<display::RefreshRange>&)>
-        callback) {
-  std::optional<display::RefreshRange> ranges =
+    GetSeamlessRefreshRatesCallback callback) {
+  std::optional<std::vector<float>> ranges =
       display_manager_->GetSeamlessRefreshRates(display_id);
   std::move(callback).Run(std::move(ranges));
 }

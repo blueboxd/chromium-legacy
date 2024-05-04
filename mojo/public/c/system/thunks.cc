@@ -343,6 +343,13 @@ MojoResult MojoSerializeMessage(MojoMessageHandle message,
   return INVOKE_THUNK(SerializeMessage, message, options);
 }
 
+MojoResult MojoReserveMessageCapacity(MojoMessageHandle message,
+                                      uint32_t payload_buffer_size,
+                                      uint32_t* buffer_size) {
+  return INVOKE_THUNK(ReserveMessageCapacity, message, payload_buffer_size,
+                      buffer_size);
+}
+
 MojoResult MojoAppendMessageData(MojoMessageHandle message,
                                  uint32_t payload_size,
                                  const MojoHandle* handles,
@@ -856,6 +863,7 @@ MojoSystemThunks32 g_thunks_32 = {
     MojoQueryQuota32,
     MojoShutdown,
     MojoSetDefaultProcessErrorHandler,
+    MojoReserveMessageCapacity,
 };
 
 const MojoSystemThunks2* MojoEmbedderGetSystemThunks2() {

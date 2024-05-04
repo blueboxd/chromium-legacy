@@ -176,7 +176,7 @@ class CORE_EXPORT ElementRareDataVector final : public NodeRareData {
   }
 
  public:
-  explicit ElementRareDataVector(NodeData*);
+  ElementRareDataVector();
   ~ElementRareDataVector() override;
 
   void SetPseudoElement(
@@ -304,9 +304,6 @@ class CORE_EXPORT ElementRareDataVector final : public NodeRareData {
     element_flags_ &= ~static_cast<uint16_t>(mask);
   }
 
-  bool HasRestyleFlags() const { return bit_field_.get<RestyleFlags>(); }
-  void ClearRestyleFlags() { bit_field_.set<RestyleFlags>(0); }
-
   void SetTabIndexExplicitly() {
     SetElementFlag(ElementFlags::kTabIndexWasSetExplicitly, true);
   }
@@ -386,14 +383,6 @@ class CORE_EXPORT ElementRareDataVector final : public NodeRareData {
   void SetAncestorsOrSiblingsAffectedByHoverInHas() {
     has_invalidation_flags_.ancestors_or_siblings_affected_by_hover_in_has =
         true;
-  }
-  bool AncestorsOrSiblingsAffectedByActiveViewTransitionInHas() const {
-    return has_invalidation_flags_
-        .ancestors_or_siblings_affected_by_active_view_transition_in_has;
-  }
-  void SetAncestorsOrSiblingsAffectedByActiveViewTransitionInHas() {
-    has_invalidation_flags_
-        .ancestors_or_siblings_affected_by_active_view_transition_in_has = true;
   }
   bool AncestorsOrSiblingsAffectedByActiveInHas() const {
     return has_invalidation_flags_

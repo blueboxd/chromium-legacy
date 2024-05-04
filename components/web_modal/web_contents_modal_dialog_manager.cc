@@ -111,7 +111,7 @@ void WebContentsModalDialogManager::BlockWebContentsInteraction(bool blocked) {
   }
 
   if (blocked) {
-    scoped_ignore_input_events_ = contents->IgnoreInputEvents();
+    scoped_ignore_input_events_ = contents->IgnoreInputEvents(std::nullopt);
   } else {
     scoped_ignore_input_events_.reset();
   }
@@ -179,7 +179,7 @@ void WebContentsModalDialogManager::OnVisibilityChanged(
   } else {
     // Show the dialog if it transitioned from HIDDEN to VISIBLE or OCCLUDED, or
     // from OCCLUDED to VISIBLE if the dialog is no longer active.
-    // TODO(crbug.com/1487345): Add an interaction test for this.
+    // TODO(crbug.com/40283251): Add an interaction test for this.
     if (state_changed || !child_dialogs_.front().manager->IsActive()) {
       child_dialogs_.front().manager->Show();
     }

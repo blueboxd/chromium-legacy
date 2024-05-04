@@ -70,7 +70,7 @@ bool VerifyTrustTokenParamsIntegrityIfPresent(
     return false;
   }
 
-  // TODO(crbug.com/1145346): There's no current way to get a trusted
+  // TODO(crbug.com/40729410): There's no current way to get a trusted
   // browser-side view of whether a request "came from" a secure context, so we
   // don't implement a check for the second criterion in the function comment.
 
@@ -117,7 +117,7 @@ bool IsTrustedNavigationRequestFromSecureContext(
   }
 
   // `client_security_state` is not set for top-level navigation requests.
-  // TODO(crbug.com/1129326): Remove this when we set it for top-level
+  // TODO(crbug.com/40149351): Remove this when we set it for top-level
   // navigation requests.
   if (!request.trusted_params->client_security_state) {
     return IsUrlPotentiallyTrustworthy(request.url);
@@ -206,8 +206,7 @@ CorsURLLoaderFactory::CorsURLLoaderFactory(
     mojom::URLLoaderFactoryParamsPtr params,
     scoped_refptr<ResourceSchedulerClient> resource_scheduler_client,
     mojo::PendingReceiver<mojom::URLLoaderFactory> receiver,
-    const OriginAccessList* origin_access_list,
-    NetworkServiceResourceBlockList* resource_block_list)
+    const OriginAccessList* origin_access_list)
     : context_(context),
       is_trusted_(params->is_trusted),
       disable_web_security_(params->disable_web_security),
@@ -232,8 +231,7 @@ CorsURLLoaderFactory::CorsURLLoaderFactory(
           std::move(params->shared_dictionary_observer)),
       require_cross_site_request_for_cookies_(
           params->require_cross_site_request_for_cookies),
-      origin_access_list_(origin_access_list),
-      resource_block_list_(resource_block_list) {
+      origin_access_list_(origin_access_list) {
   TRACE_EVENT("loading", "CorsURLLoaderFactory::CorsURLLoaderFactory",
               perfetto::Flow::FromPointer(this));
   DCHECK(context_);
@@ -321,18 +319,6 @@ void CorsURLLoaderFactory::DestroyCorsURLLoader(CorsURLLoader* loader) {
   DestroyLoader(loader, cors_url_loaders_);
 }
 
-bool CorsURLLoaderFactory::ShouldBlockRequestForAfpExperiment(
-    const ResourceRequest& resource_request) {
-  if (context_ && context_->AfpBlockListExperimentEnabled() &&
-      resource_block_list_) {
-    return resource_block_list_->Matches(
-        resource_request.url,
-        URLLoader::GetIsolationInfo(isolation_info_, false, resource_request));
-  }
-
-  return false;
-}
-
 void CorsURLLoaderFactory::CreateLoaderAndStart(
     mojo::PendingReceiver<mojom::URLLoader> receiver,
     int32_t request_id,
@@ -358,15 +344,6 @@ void CorsURLLoaderFactory::CreateLoaderAndStart(
   if (!IsValidRequest(resource_request, options)) {
     mojo::Remote<mojom::URLLoaderClient>(std::move(client))
         ->OnComplete(URLLoaderCompletionStatus(net::ERR_INVALID_ARGUMENT));
-    return;
-  }
-
-  if (ShouldBlockRequestForAfpExperiment(resource_request)) {
-    VLOG(1)
-        << "CorsURLLoaderFactory: blocking request for resource_request.url: "
-        << resource_request.url;
-    mojo::Remote<mojom::URLLoaderClient>(std::move(client))
-        ->OnComplete(URLLoaderCompletionStatus(net::ERR_BLOCKED_BY_CLIENT));
     return;
   }
 
@@ -396,17 +373,30 @@ void CorsURLLoaderFactory::CreateLoaderAndStart(
       factory_override_ ? factory_override_->get()
                         : network_loader_factory_.get();
   DCHECK(inner_url_loader_factory);
+
+  const net::IsolationInfo* isolation_info_ptr = &isolation_info_;
+  auto isolation_info = URLLoader::GetIsolationInfo(
+      isolation_info_, automatically_assign_isolation_info_, resource_request);
+  if (isolation_info.has_value()) {
+    isolation_info_ptr = &isolation_info.value();
+  }
+
+  // Check if the initiator's network access has been revoked.
+  // This check is only relevant if there is a partition nonce in the
+  // isolation info. (All requests originating from a fenced frame have a
+  // nonce specified.)
+  if (isolation_info.has_value() && isolation_info->nonce().has_value() &&
+      !context_->IsNetworkForNonceAndUrlAllowed(*isolation_info->nonce(),
+                                                resource_request.url)) {
+    mojo::Remote<mojom::URLLoaderClient>(std::move(client))
+        ->OnComplete(
+            URLLoaderCompletionStatus(net::ERR_NETWORK_ACCESS_REVOKED));
+    return;
+  }
+
   if (!disable_web_security_) {
     mojo::PendingRemote<mojom::DevToolsObserver> devtools_observer =
         GetDevToolsObserver(resource_request);
-
-    const net::IsolationInfo* isolation_info_ptr = &isolation_info_;
-    auto isolation_info = URLLoader::GetIsolationInfo(
-        isolation_info_, automatically_assign_isolation_info_,
-        resource_request);
-    if (isolation_info) {
-      isolation_info_ptr = &isolation_info.value();
-    }
 
     scoped_refptr<SharedDictionaryStorage> shared_dictionary_storage =
         shared_dictionary_storage_;
@@ -422,23 +412,47 @@ void CorsURLLoaderFactory::CreateLoaderAndStart(
       }
     }
 
-    auto loader = std::make_unique<CorsURLLoader>(
-        std::move(receiver), process_id_, request_id, options,
-        base::BindOnce(&CorsURLLoaderFactory::DestroyCorsURLLoader,
-                       base::Unretained(this)),
-        resource_request, ignore_isolated_world_origin_,
-        factory_override_ &&
-            factory_override_->ShouldSkipCorsEnabledSchemeCheck(),
-        std::move(client), traffic_annotation, inner_url_loader_factory,
-        factory_override_ ? nullptr : network_loader_factory_.get(),
-        origin_access_list_, GetAllowAnyCorsExemptHeaderForBrowser(),
-        HasFactoryOverride(!!factory_override_), *isolation_info_ptr,
-        std::move(devtools_observer), client_security_state_.get(),
-        &url_loader_network_service_observer_, cross_origin_embedder_policy_,
-        shared_dictionary_storage,
-        shared_dictionary_observer_ ? shared_dictionary_observer_.get()
-                                    : nullptr,
-        context_);
+    std::unique_ptr<CorsURLLoader> loader;
+    if (base::FeatureList::IsEnabled(
+            network::features::kAvoidResourceRequestCopies)) {
+      // TODO(crbug.com/332697604): Pass by non-const ref once mojo supports it.
+      loader = std::make_unique<CorsURLLoader>(
+          std::move(receiver), process_id_, request_id, options,
+          base::BindOnce(&CorsURLLoaderFactory::DestroyCorsURLLoader,
+                         base::Unretained(this)),
+          std::move(const_cast<network::ResourceRequest&>(resource_request)),
+          ignore_isolated_world_origin_,
+          factory_override_ &&
+              factory_override_->ShouldSkipCorsEnabledSchemeCheck(),
+          std::move(client), traffic_annotation, inner_url_loader_factory,
+          factory_override_ ? nullptr : network_loader_factory_.get(),
+          origin_access_list_, GetAllowAnyCorsExemptHeaderForBrowser(),
+          HasFactoryOverride(!!factory_override_), *isolation_info_ptr,
+          std::move(devtools_observer), client_security_state_.get(),
+          &url_loader_network_service_observer_, cross_origin_embedder_policy_,
+          shared_dictionary_storage,
+          shared_dictionary_observer_ ? shared_dictionary_observer_.get()
+                                      : nullptr,
+          context_);
+    } else {
+      loader = std::make_unique<CorsURLLoader>(
+          std::move(receiver), process_id_, request_id, options,
+          base::BindOnce(&CorsURLLoaderFactory::DestroyCorsURLLoader,
+                         base::Unretained(this)),
+          resource_request, ignore_isolated_world_origin_,
+          factory_override_ &&
+              factory_override_->ShouldSkipCorsEnabledSchemeCheck(),
+          std::move(client), traffic_annotation, inner_url_loader_factory,
+          factory_override_ ? nullptr : network_loader_factory_.get(),
+          origin_access_list_, GetAllowAnyCorsExemptHeaderForBrowser(),
+          HasFactoryOverride(!!factory_override_), *isolation_info_ptr,
+          std::move(devtools_observer), client_security_state_.get(),
+          &url_loader_network_service_observer_, cross_origin_embedder_policy_,
+          shared_dictionary_storage,
+          shared_dictionary_observer_ ? shared_dictionary_observer_.get()
+                                      : nullptr,
+          context_);
+    }
     auto* raw_loader = loader.get();
     OnCorsURLLoaderCreated(std::move(loader));
     raw_loader->Start();
@@ -733,7 +747,7 @@ bool CorsURLLoaderFactory::IsValidRequest(const ResourceRequest& request,
   // Check only when `disable_web_security_` is false because
   // PreflightControllerTest use CorsURLLoaderFactory with this flag true
   // instead of network::URLLoaderFactory.
-  // TODO(https://crbug.com/1264298): consider if we can remove this exemption.
+  // TODO(crbug.com/40203308): consider if we can remove this exemption.
   if (!disable_web_security_) {
     // `net_log_create_info` field is expected to be used within network
     // service.
@@ -788,9 +802,20 @@ CorsURLLoaderFactory::GetDevToolsObserver(
   mojo::PendingRemote<mojom::DevToolsObserver> devtools_observer;
   if (resource_request.trusted_params &&
       resource_request.trusted_params->devtools_observer) {
-    ResourceRequest::TrustedParams cloned_params =
-        *resource_request.trusted_params;
-    devtools_observer = std::move(cloned_params.devtools_observer);
+    if (base::FeatureList::IsEnabled(features::kAvoidResourceRequestCopies)) {
+      // TODO(crbug.com/332697604): Pass by non-const ref once mojo supports it.
+      auto& original_observer =
+          const_cast<mojo::PendingRemote<mojom::DevToolsObserver>&>(
+              resource_request.trusted_params->devtools_observer);
+      mojo::Remote<mojom::DevToolsObserver> remote(
+          std::move(original_observer));
+      remote->Clone(devtools_observer.InitWithNewPipeAndPassReceiver());
+      original_observer = remote.Unbind();
+    } else {
+      ResourceRequest::TrustedParams cloned_params =
+          *resource_request.trusted_params;
+      devtools_observer = std::move(cloned_params.devtools_observer);
+    }
   } else {
     mojom::DevToolsObserver* observer =
         factory_override_ ? factory_override_->GetDevToolsObserver()
@@ -806,6 +831,33 @@ mojom::SharedDictionaryAccessObserver*
 CorsURLLoaderFactory::GetSharedDictionaryAccessObserver() const {
   return shared_dictionary_observer_ ? shared_dictionary_observer_.get()
                                      : nullptr;
+}
+
+net::handles::NetworkHandle CorsURLLoaderFactory::GetBoundNetworkForTesting()
+    const {
+  CHECK(!factory_override_);
+  return network_loader_factory_->GetBoundNetworkForTesting();  // IN-TEST
+}
+
+void CorsURLLoaderFactory::CancelRequestsIfNonceMatchesAndUrlNotExempted(
+    const base::UnguessableToken& nonce,
+    const std::set<GURL>& exemptions) {
+  // Cancelling the request may cause the URL loader to be deleted from the data
+  // structure, invalidating the iterator if it is currently pointing to that
+  // element. So advance to the next element first and delete the previous one.
+  for (auto loader_it = url_loaders_.begin(); loader_it != url_loaders_.end();
+       /* iteration performed inside the loop */) {
+    ++loader_it;
+    (*std::prev(loader_it))
+        ->CancelRequestIfNonceMatchesAndUrlNotExempted(nonce, exemptions);
+  }
+  for (auto loader_it = cors_url_loaders_.begin();
+       loader_it != cors_url_loaders_.end();
+       /* iteration performed inside the loop */) {
+    ++loader_it;
+    (*std::prev(loader_it))
+        ->CancelRequestIfNonceMatchesAndUrlNotExempted(nonce, exemptions);
+  }
 }
 
 }  // namespace network::cors

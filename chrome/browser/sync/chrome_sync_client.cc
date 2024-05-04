@@ -15,7 +15,9 @@
 #include "base/task/sequenced_task_runner.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "chrome/browser/commerce/product_specifications/product_specifications_service_factory.h"
 #include "chrome/browser/consent_auditor/consent_auditor_factory.h"
+#include "chrome/browser/data_sharing/data_sharing_service_factory.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/metrics/variations/google_groups_updater_service_factory.h"
@@ -26,6 +28,7 @@
 #include "chrome/browser/power_bookmarks/power_bookmark_service_factory.h"
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_key.h"
 #include "chrome/browser/reading_list/reading_list_model_factory.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/security_events/security_event_recorder.h"
@@ -34,6 +37,7 @@
 #include "chrome/browser/sharing/sharing_message_bridge_factory.h"
 #include "chrome/browser/sharing/sharing_message_model_type_controller.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
+#include "chrome/browser/supervised_user/supervised_user_settings_service_factory.h"
 #include "chrome/browser/sync/account_bookmark_sync_service_factory.h"
 #include "chrome/browser/sync/device_info_sync_service_factory.h"
 #include "chrome/browser/sync/local_or_syncable_bookmark_sync_service_factory.h"
@@ -42,6 +46,9 @@
 #include "chrome/browser/sync/session_sync_service_factory.h"
 #include "chrome/browser/sync/sync_invalidations_service_factory.h"
 #include "chrome/browser/sync/user_event_service_factory.h"
+#include "chrome/browser/tab_group_sync/feature_utils.h"
+#include "chrome/browser/tab_group_sync/tab_group_sync_service_factory.h"
+#include "chrome/browser/tab_group_sync/tab_group_trial.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/themes/theme_syncable_service.h"
@@ -55,6 +62,7 @@
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/browser_sync/sync_api_component_factory_impl.h"
 #include "components/consent_auditor/consent_auditor.h"
+#include "components/data_sharing/public/features.h"
 #include "components/desks_storage/core/desk_sync_service.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/metrics/demographics/user_demographics.h"
@@ -62,11 +70,13 @@
 #include "components/password_manager/core/browser/sharing/password_receiver_service.h"
 #include "components/password_manager/core/browser/sharing/password_sender_service.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
+#include "components/plus_addresses/webdata/plus_address_webdata_service.h"
 #include "components/prefs/pref_service.h"
+#include "components/saved_tab_groups/tab_group_sync_service.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/send_tab_to_self/send_tab_to_self_sync_service.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
-#include "components/supervised_user/core/common/buildflags.h"
+#include "components/supervised_user/core/browser/supervised_user_settings_service.h"
 #include "components/sync/base/features.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/pref_names.h"
@@ -97,13 +107,6 @@
 #include "chrome/browser/web_applications/web_app_utils.h"
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
-#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-#include "chrome/browser/profiles/profile_key.h"
-#include "chrome/browser/supervised_user/supervised_user_settings_service_factory.h"
-#include "components/supervised_user/core/browser/supervised_user_settings_model_type_controller.h"
-#include "components/supervised_user/core/browser/supervised_user_settings_service.h"
-#endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
-
 #if BUILDFLAG(ENABLE_SPELLCHECK)
 #include "chrome/browser/spellchecker/spellcheck_factory.h"
 #include "chrome/browser/spellchecker/spellcheck_service.h"
@@ -114,6 +117,8 @@
     BUILDFLAG(IS_WIN)
 #include "chrome/browser/ui/tabs/saved_tab_groups/saved_tab_group_keyed_service.h"
 #include "chrome/browser/ui/tabs/saved_tab_groups/saved_tab_group_service_factory.h"
+#elif BUILDFLAG(IS_ANDROID)
+#include "components/saved_tab_groups/features.h"
 #endif  // BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC) ||
         // BUILDFLAG(IS_WIN)
 
@@ -242,12 +247,9 @@ ChromeSyncClient::ChromeSyncClient(Profile* profile)
           profile_, ServiceAccessType::IMPLICIT_ACCESS);
 
   supervised_user::SupervisedUserSettingsService*
-      supervised_user_settings_service = nullptr;
-#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-  supervised_user_settings_service =
-      SupervisedUserSettingsServiceFactory::GetForKey(
-          profile_->GetProfileKey());
-#endif
+      supervised_user_settings_service =
+          SupervisedUserSettingsServiceFactory::GetForKey(
+              profile_->GetProfileKey());
 
   component_factory_ = std::make_unique<SyncApiComponentFactoryImpl>(
       this, chrome::GetChannel(), content::GetUIThreadTaskRunner({}),
@@ -256,7 +258,12 @@ ChromeSyncClient::ChromeSyncClient(Profile* profile)
       LocalOrSyncableBookmarkSyncServiceFactory::GetForProfile(profile_),
       AccountBookmarkSyncServiceFactory::GetForProfile(profile_),
       PowerBookmarkServiceFactory::GetForBrowserContext(profile_),
-      supervised_user_settings_service);
+      supervised_user_settings_service,
+      WebDataServiceFactory::GetPlusAddressWebDataForProfile(
+          profile_, ServiceAccessType::IMPLICIT_ACCESS),
+      commerce::ProductSpecificationsServiceFactory::GetForBrowserContext(
+          profile_),
+      data_sharing::DataSharingServiceFactory::GetForProfile(profile_));
 }
 
 ChromeSyncClient::~ChromeSyncClient() = default;
@@ -354,10 +361,11 @@ ChromeSyncClient::GetPasswordSenderService() {
   return PasswordSenderServiceFactory::GetForProfile(profile_);
 }
 
-syncer::DataTypeController::TypeVector
-ChromeSyncClient::CreateDataTypeControllers(syncer::SyncService* sync_service) {
-  syncer::DataTypeController::TypeVector controllers =
-      component_factory_->CreateCommonDataTypeControllers(
+syncer::ModelTypeController::TypeVector
+ChromeSyncClient::CreateModelTypeControllers(
+    syncer::SyncService* sync_service) {
+  syncer::ModelTypeController::TypeVector controllers =
+      component_factory_->CreateCommonModelTypeControllers(
           GetDisabledCommonDataTypes(), sync_service);
 
   const base::RepeatingClosure dump_stack = GetDumpStackClosure();
@@ -456,17 +464,39 @@ ChromeSyncClient::CreateDataTypeControllers(syncer::SyncService* sync_service) {
                 kLegacyFullSyncModeOnly));
 #endif  // !BUILDFLAG(IS_ANDROID)
 
+    // Tab group sync is enabled via separate feature flags on different
+    // platforms.
+    bool enable_tab_group_sync = false;
 #if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC) || \
     BUILDFLAG(IS_WIN)
-    if (base::FeatureList::IsEnabled(features::kTabGroupsSave)) {
+    enable_tab_group_sync = true;
+#elif BUILDFLAG(IS_ANDROID)
+    enable_tab_group_sync = tab_groups::IsTabGroupSyncEnabled(GetPrefService());
+    tab_groups::TabGroupTrial::OnTabgroupSyncEnabled(enable_tab_group_sync);
+#endif  // BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC) ||
+        // BUILDFLAG(IS_WIN)
+
+    if (enable_tab_group_sync) {
       controllers.push_back(std::make_unique<syncer::ModelTypeController>(
           syncer::SAVED_TAB_GROUP,
           std::make_unique<syncer::ForwardingModelTypeControllerDelegate>(
               GetControllerDelegateForModelType(syncer::SAVED_TAB_GROUP).get()),
           /*delegate_for_transport_mode=*/nullptr));
     }
-#endif  // BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC) ||
-        // BUILDFLAG(IS_WIN)
+
+    if (base::FeatureList::IsEnabled(
+            data_sharing::features::kDataSharingFeature)) {
+      controllers.push_back(std::make_unique<syncer::ModelTypeController>(
+          syncer::SHARED_TAB_GROUP_DATA,
+          /*delegate_for_full_sync_mode=*/
+          std::make_unique<syncer::ForwardingModelTypeControllerDelegate>(
+              GetControllerDelegateForModelType(syncer::SHARED_TAB_GROUP_DATA)
+                  .get()),
+          /*delegate_for_transport_mode=*/
+          std::make_unique<syncer::ForwardingModelTypeControllerDelegate>(
+              GetControllerDelegateForModelType(syncer::SHARED_TAB_GROUP_DATA)
+                  .get())));
+    }
 
 // Chrome prefers OS provided spell checkers where they exist. So only sync the
 // custom dictionary on platforms that typically don't provide one.
@@ -625,17 +655,24 @@ ChromeSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
 base::WeakPtr<syncer::ModelTypeControllerDelegate>
 ChromeSyncClient::GetControllerDelegateForModelType(syncer::ModelType type) {
   switch (type) {
+    case syncer::SAVED_TAB_GROUP: {
 #if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC) || \
     BUILDFLAG(IS_WIN)
-    case syncer::SAVED_TAB_GROUP: {
-      DCHECK(base::FeatureList::IsEnabled(features::kTabGroupsSave));
-      return tab_groups::SavedTabGroupServiceFactory::GetForProfile(profile_)
-          ->bridge()
-          ->change_processor()
-          ->GetControllerDelegate();
-    }
+      auto* keyed_service =
+          tab_groups::SavedTabGroupServiceFactory::GetForProfile(profile_);
+      CHECK(keyed_service);
+      return keyed_service->GetSavedTabGroupControllerDelegate();
+#elif BUILDFLAG(IS_ANDROID)
+      DCHECK(tab_groups::IsTabGroupSyncEnabled(GetPrefService()));
+      return tab_groups::TabGroupSyncServiceFactory::GetForProfile(profile_)
+          ->GetSavedTabGroupControllerDelegate();
+#else
+      NOTREACHED();
+      return base::WeakPtr<syncer::ModelTypeControllerDelegate>();
 #endif  // BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC) ||
         // BUILDFLAG(IS_WIN)
+    }
+
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     case syncer::PRINTERS:
       return ash::SyncedPrintersManagerFactory::GetForBrowserContext(profile_)
@@ -694,6 +731,11 @@ ChromeSyncClient::GetControllerDelegateForModelType(syncer::ModelType type) {
           ->GetModelTypeControllerDelegate();
     }
 #endif  //  !BUILDFLAG(IS_ANDROID)
+    case syncer::SHARED_TAB_GROUP_DATA:
+      CHECK(base::FeatureList::IsEnabled(
+          data_sharing::features::kDataSharingFeature));
+      return tab_groups::TabGroupSyncServiceFactory::GetForProfile(profile_)
+          ->GetSharedTabGroupControllerDelegate();
     // We don't exercise this function for certain datatypes, because their
     // controllers get the delegate elsewhere.
     case syncer::AUTOFILL:
@@ -721,7 +763,6 @@ ChromeSyncClient::GetSyncApiComponentFactory() {
 }
 
 bool ChromeSyncClient::IsCustomPassphraseAllowed() {
-#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   supervised_user::SupervisedUserSettingsService*
       supervised_user_settings_service =
           SupervisedUserSettingsServiceFactory::GetForKey(
@@ -729,7 +770,6 @@ bool ChromeSyncClient::IsCustomPassphraseAllowed() {
   if (supervised_user_settings_service) {
     return supervised_user_settings_service->IsCustomPassphraseAllowed();
   }
-#endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
   return true;
 }
 

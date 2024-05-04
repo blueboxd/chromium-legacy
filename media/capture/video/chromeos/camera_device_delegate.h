@@ -13,7 +13,9 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/single_thread_task_runner.h"
+#include "base/threading/sequence_bound.h"
 #include "media/capture/video/chromeos/camera_device_context.h"
+#include "media/capture/video/chromeos/camera_effects_observer.h"
 #include "media/capture/video/chromeos/camera_hal_dispatcher_impl.h"
 #include "media/capture/video/chromeos/capture_metadata_dispatcher.h"
 #include "media/capture/video/chromeos/mojom/camera3.mojom.h"
@@ -39,6 +41,9 @@ enum class StreamType : uint64_t {
   kRecordingOutput = 3,
   kUnknown = 4,
 };
+
+// TODO(b/130774415): Get the keys from VendorTagOps by names instead.
+inline constexpr uint32_t kCrosDigitalZoomRequestedVendorKey = 0x80070001;
 
 // A map to know that each StreamType belongs to which ClientType.
 // The index is StreamType value.
@@ -134,15 +139,15 @@ class CAPTURE_EXPORT StreamCaptureInterface {
 // second client for recording stream.
 // The second client will be a virtual camera device which is only used in CCA.
 class CAPTURE_EXPORT CameraDeviceDelegate final
-    : public CaptureMetadataDispatcher::ResultMetadataObserver,
-      public media::CameraEffectObserver {
+    : public CaptureMetadataDispatcher::ResultMetadataObserver {
  public:
   CameraDeviceDelegate() = delete;
 
   CameraDeviceDelegate(
       VideoCaptureDeviceDescriptor device_descriptor,
       CameraHalDelegate* camera_hal_delegate,
-      scoped_refptr<base::SingleThreadTaskRunner> ipc_task_runner);
+      scoped_refptr<base::SingleThreadTaskRunner> ipc_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
 
   CameraDeviceDelegate(const CameraDeviceDelegate&) = delete;
   CameraDeviceDelegate& operator=(const CameraDeviceDelegate&) = delete;
@@ -178,6 +183,8 @@ class CAPTURE_EXPORT CameraDeviceDelegate final
                          int32_t ret);
 
   base::WeakPtr<CameraDeviceDelegate> GetWeakPtr();
+
+  void OnCameraEffectsChanged(cros::mojom::EffectsConfigPtr new_effects);
 
  private:
   class StreamCaptureInterfaceImpl;
@@ -269,20 +276,17 @@ class CAPTURE_EXPORT CameraDeviceDelegate final
       uint32_t frame_number,
       const cros::mojom::CameraMetadataPtr& result_metadata) final;
 
-  // media::CameraEffectObserver AddObserver callback.
-  void OnCameraEffectObserverAdded(
-      cros::mojom::EffectsConfigPtr current_effects);
-
-  // media::CameraEffectObserver implementation.
-  void OnCameraEffectChanged(
-      const cros::mojom::EffectsConfigPtr& new_effects) final;
-
   void DoGetPhotoState(VideoCaptureDevice::GetPhotoStateCallback callback);
 
   // Gets the target frame rate range as std::pair<min, max>.
   // Returns 0 for min or max or both fps when fps range is not valid,
   // caller should handle that accordingly.
   std::pair<int32_t, int32_t> GetFrameRateRange();
+
+  // Configures the session_parameters to configure the streams to handle
+  // digital zoom in the stream manipulator.
+  void SetDigitalZoomSessionParameters(
+      cros::mojom::CameraMetadataPtr* session_parameters);
 
   // Configures the session_parameters with initial values for the keys
   // found in ANDROID_REQUEST_AVAILABLE_SESSION_KEYS.
@@ -348,9 +352,6 @@ class CAPTURE_EXPORT CameraDeviceDelegate final
   bool is_set_tilt_;
   bool is_set_zoom_;
 
-  // Whether |this| is added to camera effect observer list.
-  bool camera_effect_observer_added_;
-
   std::vector<base::OnceClosure> get_photo_state_queue_;
   bool use_digital_zoom_;
   float ae_compensation_step_;
@@ -365,6 +366,8 @@ class CAPTURE_EXPORT CameraDeviceDelegate final
   uint32_t result_metadata_frame_number_;
   ResultMetadata result_metadata_;
   gfx::Rect active_array_size_;
+
+  base::SequenceBound<CrosCameraEffectsObserver> camera_effects_observer_;
 
   base::WeakPtrFactory<CameraDeviceDelegate> weak_ptr_factory_{this};
 };

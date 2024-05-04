@@ -20,6 +20,7 @@
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
@@ -39,8 +40,6 @@
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "storage/common/database/database_identifier.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
-#include "third_party/leveldatabase/env_chromium.h"
-#include "third_party/leveldatabase/leveldb_chrome.h"
 
 namespace storage {
 
@@ -64,6 +63,8 @@ namespace {
 
 // Temporary alias as this code moves incrementally into the storage namespace.
 using StorageAreaImpl = StorageAreaImpl;
+
+static const int kDaysInTenYears = 10 * 365;
 
 constexpr std::string_view kVersionKey = "VERSION";
 const uint8_t kMetaPrefix[] = {'M', 'E', 'T', 'A', ':'};
@@ -248,7 +249,7 @@ LocalStorageImpl::LocalStorageImpl(
     mojo::PendingReceiver<mojom::LocalStorageControl> receiver)
     : directory_(storage_root.empty() ? storage_root
                                       : storage_root.Append(kLocalStoragePath)),
-      leveldb_task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
+      database_task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
           {base::MayBlock(), base::WithBaseSyncPrimitives(),
            base::TaskShutdownBehavior::BLOCK_SHUTDOWN})),
       memory_dump_id_(base::StringPrintf("LocalStorage/0x%" PRIXPTR,
@@ -530,18 +531,10 @@ void LocalStorageImpl::InitiateConnection(bool in_memory_only) {
 
   if (!directory_.empty() && directory_.IsAbsolute() && !in_memory_only) {
     // We were given a subdirectory to write to, so use a disk-backed database.
-    leveldb_env::Options options;
-    options.create_if_missing = true;
-    options.max_open_files = 0;  // use minimum
-    // Default write_buffer_size is 4 MB but that might leave a 3.999
-    // memory allocation in RAM from a log file recovery.
-    options.write_buffer_size = 64 * 1024;
-    options.block_cache = leveldb_chrome::GetSharedWebBlockCache();
-
     in_memory_ = false;
     database_ = AsyncDomStorageDatabase::OpenDirectory(
-        std::move(options), directory_, kLocalStorageLeveldbName,
-        memory_dump_id_, leveldb_task_runner_,
+        directory_, kLocalStorageLeveldbName, memory_dump_id_,
+        database_task_runner_,
         base::BindOnce(&LocalStorageImpl::OnDatabaseOpened,
                        weak_ptr_factory_.GetWeakPtr()));
     return;
@@ -550,7 +543,7 @@ void LocalStorageImpl::InitiateConnection(bool in_memory_only) {
   // We were not given a subdirectory. Use a memory backed database.
   in_memory_ = true;
   database_ = AsyncDomStorageDatabase::OpenInMemory(
-      memory_dump_id_, "local-storage", leveldb_task_runner_,
+      memory_dump_id_, "local-storage", database_task_runner_,
       base::BindOnce(&LocalStorageImpl::OnDatabaseOpened,
                      weak_ptr_factory_.GetWeakPtr()));
 }
@@ -565,9 +558,16 @@ void LocalStorageImpl::OnDatabaseOpened(leveldb::Status status) {
 
   // Verify DB schema version.
   if (database_) {
-    database_->Get(std::vector<uint8_t>(kVersionKey.begin(), kVersionKey.end()),
-                   base::BindOnce(&LocalStorageImpl::OnGotDatabaseVersion,
-                                  weak_ptr_factory_.GetWeakPtr()));
+    database_->RunDatabaseTask(
+        base::BindOnce(
+            [](const std::vector<uint8_t>& key, const DomStorageDatabase& db) {
+              DomStorageDatabase::Value value;
+              leveldb::Status status = db.Get(key, &value);
+              return std::make_tuple(status, std::move(value));
+            },
+            std::vector<uint8_t>(kVersionKey.begin(), kVersionKey.end())),
+        base::BindOnce(&LocalStorageImpl::OnGotDatabaseVersion,
+                       weak_ptr_factory_.GetWeakPtr()));
     return;
   }
 
@@ -575,7 +575,7 @@ void LocalStorageImpl::OnDatabaseOpened(leveldb::Status status) {
 }
 
 void LocalStorageImpl::OnGotDatabaseVersion(leveldb::Status status,
-                                            const std::vector<uint8_t>& value) {
+                                            DomStorageDatabase::Value value) {
   if (status.IsNotFound()) {
     // New database, nothing more to do. Current version will get written
     // when first data is committed.
@@ -583,7 +583,7 @@ void LocalStorageImpl::OnGotDatabaseVersion(leveldb::Status status,
     // Existing database, check if version number matches current schema
     // version.
     int64_t db_version;
-    if (!base::StringToInt64(std::string(value.begin(), value.end()),
+    if (!base::StringToInt64(base::as_string_view(base::span(value)),
                              &db_version) ||
         db_version < kMinSchemaVersion ||
         db_version > kCurrentLocalStorageSchemaVersion) {
@@ -650,7 +650,7 @@ void LocalStorageImpl::DeleteAndRecreateDatabase() {
   // Destroy database, and try again.
   if (!in_memory_) {
     DomStorageDatabase::Destroy(
-        directory_, kLocalStorageLeveldbName, leveldb_task_runner_,
+        directory_, kLocalStorageLeveldbName, database_task_runner_,
         base::BindOnce(&LocalStorageImpl::OnDBDestroyed,
                        weak_ptr_factory_.GetWeakPtr(), recreate_in_memory));
   } else {
@@ -751,6 +751,25 @@ void LocalStorageImpl::OnGotStorageUsageForShutdown(
   for (const auto& info : usage) {
     const blink::StorageKey& storage_key = info->storage_key;
     const url::Origin& key_origin = storage_key.origin();
+    // Ideally we would be recording last_accessed instead, but there is no
+    // historical data on that. Instead, we will use last_modified as a sanity
+    // check against other data as we try to understand how many 'old' storage
+    // buckets are still in use. This is split into two buckets for greater
+    // resolution on near and far term ages.
+    if (!info->last_modified.is_null() &&
+        info->last_modified < base::Time::Now()) {
+      int days_since_last_modified =
+          (base::Time::Now() - info->last_modified).InDays();
+      if (days_since_last_modified > 400) {
+        base::UmaHistogramCustomCounts(
+            "LocalStorage.DaysSinceLastModified400DaysGT",
+            days_since_last_modified, 401, kDaysInTenYears, 100);
+      } else {
+        base::UmaHistogramCustomCounts(
+            "LocalStorage.DaysSinceLastModified400DaysLTE",
+            days_since_last_modified, 1, 400, 100);
+      }
+    }
     // Delete the storage if its origin matches one of the origins to purge, or
     // if it is third-party and the top-level site is same-site with one of
     // those origins.
@@ -783,7 +802,7 @@ void LocalStorageImpl::OnShutdownComplete() {
   // Flush any final tasks on the DB task runner before invoking the callback.
   PurgeAllStorageAreas();
   database_.reset();
-  leveldb_task_runner_->PostTaskAndReply(
+  database_task_runner_->PostTaskAndReply(
       FROM_HERE, base::DoNothing(), std::move(shutdown_complete_callback_));
 }
 

@@ -226,8 +226,8 @@ void UrlLoadingBrowserAgent::LoadUrlInCurrentTab(const UrlLoadParams& params) {
   }
 
   // If this is a reload initiated from the omnibox.
-  // TODO(crbug.com/730192): Add DCHECK to verify that whenever urlToLoad is the
-  // same as the old url, the transition type is ui::PAGE_TRANSITION_RELOAD.
+  // TODO(crbug.com/41323528): Add DCHECK to verify that whenever urlToLoad is
+  // the same as the old url, the transition type is ui::PAGE_TRANSITION_RELOAD.
   if (PageTransitionCoreTypeIs(web_params.transition_type,
                                ui::PAGE_TRANSITION_RELOAD)) {
     current_web_state->GetNavigationManager()->Reload(
@@ -385,6 +385,8 @@ void UrlLoadingBrowserAgent::LoadUrlInNewTabImpl(const UrlLoadParams& params,
   insertion_params.inherit_opener = params.inherit_opener;
   insertion_params.should_skip_new_tab_animation = params.from_external;
   insertion_params.placeholder_title = params.placeholder_title;
+  insertion_params.insert_in_group = params.load_in_group;
+  insertion_params.tab_group = params.tab_group;
 
   web::WebState* web_state =
       insertion_agent->InsertWebState(params.web_params, insertion_params);

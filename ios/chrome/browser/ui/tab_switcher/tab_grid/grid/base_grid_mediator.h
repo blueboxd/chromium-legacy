@@ -7,10 +7,10 @@
 
 #import <Foundation/Foundation.h>
 
+#import "ios/chrome/browser/shared/model/web_state_list/web_state_list_observer_bridge.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_collection_drag_drop_handler.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/base_grid_mediator_items_provider.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_commands.h"
-#import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_shareable_items_provider.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_view_controller_mutator.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_page_mutator.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_paging.h"
@@ -22,11 +22,17 @@ class Browser;
 @protocol GridToolbarsConfigurationProvider;
 @protocol GridToolbarsMutator;
 @protocol TabCollectionConsumer;
+@protocol TabGridIdleStatusHandler;
 @class TabGridToolbarsConfiguration;
 @protocol TabGridToolbarsMainTabGridDelegate;
 @protocol TabGroupsCommands;
 @protocol TabPresentationDelegate;
+class TabBasedIPHBrowserAgent;
 class WebStateList;
+
+namespace web {
+class WebState;
+}
 
 // Mediates between model layer and tab grid UI layer.
 @interface BaseGridMediator : NSObject <BaseGridMediatorItemProvider,
@@ -58,9 +64,15 @@ class WebStateList;
 @property(nonatomic, weak) id<TabPresentationDelegate> tabPresentationDelegate;
 // Tab Groups Dispatcher.
 @property(nonatomic, weak) id<TabGroupsCommands> dispatcher;
+// Tab grid idle status handler.
+@property(nonatomic, weak) id<TabGridIdleStatusHandler>
+    tabGridIdleStatusHandler;
+// Browser agent to trigger tab based IPH.
+@property(nonatomic, assign) TabBasedIPHBrowserAgent* tabBasedIPHBrowserAgent;
+
 @end
 
-@interface BaseGridMediator (Subclassing)
+@interface BaseGridMediator (Subclassing) <WebStateListObserving>
 
 // Current mode.
 @property(nonatomic, assign) TabGridMode currentMode;
@@ -75,6 +87,38 @@ class WebStateList;
 // Called when the buttons needs to be updated for the selection mode.
 - (void)configureButtonsInSelectionMode:
     (TabGridToolbarsConfiguration*)configuration;
+
+// Display the current active tab. This function should be implemented in a
+// subclass.
+- (void)displayActiveTab;
+
+// Calls `-populateItems:selectedItemID:` on the consumer.
+- (void)populateConsumerItems;
+
+// Returns the active grid item identifier.
+- (GridItemIdentifier*)activeIdentifier;
+
+// Adds an observation to every non-pinned WebState. Subclasses can override
+// this to observe a different set of `WebState`s. It's not necessary to call
+// the parent class implementation if not desired.
+- (void)addWebStateObservations;
+
+// Adds or removes observation to the given `webState`.
+- (void)addObservationForWebState:(web::WebState*)webState;
+- (void)removeObservationForWebState:(web::WebState*)webState;
+
+// Inserts a new WebState at the given WebStateList `index`.
+- (void)insertNewWebStateAtIndex:(int)index withURL:(const GURL&)newTabURL;
+
+// Inserts `item` before the WebState at `nextWebStateIndex`.
+- (void)insertItem:(GridItemIdentifier*)item
+    beforeWebStateIndex:(int)nextWebStateIndex;
+// Moves `item` before the WebState at `nextWebStateIndex`.
+- (void)moveItem:(GridItemIdentifier*)item
+    beforeWebStateIndex:(int)nextWebStateIndex;
+
+// Reconfigures the item containing the `webState`.
+- (void)updateConsumerItemForWebState:(web::WebState*)webState;
 
 @end
 

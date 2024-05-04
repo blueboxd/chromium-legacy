@@ -24,7 +24,6 @@ import org.junit.runner.RunWith;
 import org.chromium.base.Callback;
 import org.chromium.base.FeatureList;
 import org.chromium.base.TimeUtils;
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.params.ParameterAnnotations;
 import org.chromium.base.test.params.ParameterProvider;
 import org.chromium.base.test.params.ParameterSet;
@@ -421,7 +420,7 @@ public class WebApkUpdateManagerTest {
      * the URLs in the Web Manifest have been modified by the WebAPK server prior to being stored in
      * the WebAPK Android Manifest. Chrome and the WebAPK server used to parse URLs differently.
      *
-     * <p>TODO(https://crbug.com/1475509): We probably no longer need this test because
+     * <p>TODO(crbug.com/40279669): We probably no longer need this test because
      * https://crbug.com/1252531 was fixed. Someone familiar with the context of this test might
      * want to update or remove this test.
      */
@@ -522,13 +521,11 @@ public class WebApkUpdateManagerTest {
                     Integer.toString(WEBAPK_SHELL_VERSION));
         }
 
+        FeatureList.setTestValues(mTestValues);
+
         // The same icon is always used for tests, but the threshold is raised or lowered, depending
         // on the outcome we want.
-        String threshold = iconChangeSignificant ? "0" : "101";
-        mTestValues.addFieldTrialParamOverride(
-                ChromeFeatureList.WEB_APK_ICON_UPDATE_THRESHOLD, "change_threshold", threshold);
-
-        FeatureList.setTestValues(mTestValues);
+        WebApkUpdateManager.setIconThresholdForTesting(iconChangeSignificant ? 0 : 101);
     }
 
     @Test
@@ -910,15 +907,6 @@ public class WebApkUpdateManagerTest {
         WebappTestPage.navigateToServiceWorkerPageWithManifest(
                 mTestServer, mTab, WEBAPK_MANIFEST_URL);
         Assert.assertTrue(checkUpdateNeeded(legacyWebApkData, /* acceptDialogIfAppears= */ false));
-
-        Assert.assertEquals(
-                1,
-                RecordHistogram.getHistogramValueCountForTesting(
-                        "WebApk.Update.UniqueIdEmpty.ManifestUrl", 0 /* False */));
-        Assert.assertEquals(
-                1,
-                RecordHistogram.getHistogramValueCountForTesting(
-                        "WebApk.Update.UniqueIdEmpty.StartUrl", 1 /* True */));
     }
 
     /*
@@ -937,15 +925,6 @@ public class WebApkUpdateManagerTest {
         WebappTestPage.navigateToServiceWorkerPageWithManifest(
                 mTestServer, mTab, WEBAPK_MANIFEST_URL);
         Assert.assertTrue(checkUpdateNeeded(legacyWebApkData, /* acceptDialogIfAppears= */ false));
-
-        Assert.assertEquals(
-                1,
-                RecordHistogram.getHistogramValueCountForTesting(
-                        "WebApk.Update.UniqueIdEmpty.ManifestUrl", 1 /* True */));
-        Assert.assertEquals(
-                1,
-                RecordHistogram.getHistogramValueCountForTesting(
-                        "WebApk.Update.UniqueIdEmpty.StartUrl", 0 /* False */));
     }
 
     /*

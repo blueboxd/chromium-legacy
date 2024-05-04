@@ -7,9 +7,25 @@
 
 #include <string>
 
+#include "base/memory/weak_ptr.h"
+
 // Data to configure a Contextual Panel item. Individual features can subclass
 // this to add their own data.
-struct ContextualPanelItemConfiguration {
+struct ContextualPanelItemConfiguration
+    : public base::SupportsWeakPtr<ContextualPanelItemConfiguration> {
+  // A constant defined to always be a high relevance amount.
+  static const int high_relevance;
+
+  // A constant defined to always be a low relevance amount.
+  static const int low_relevance;
+
+  ContextualPanelItemConfiguration();
+  ~ContextualPanelItemConfiguration();
+  ContextualPanelItemConfiguration(
+      const ContextualPanelItemConfiguration& other) = delete;
+  ContextualPanelItemConfiguration& operator=(
+      const ContextualPanelItemConfiguration& other) = delete;
+
   // The different supported image types.
   enum class EntrypointImageType {
     // The image name is a UIImage to be loaded in.
@@ -19,16 +35,25 @@ struct ContextualPanelItemConfiguration {
   };
 
   // The string the UI can show the user if this item is the primary item in the
-  // contextual panel.
+  // contextual panel. If none is provided, no large entrypoint can be shown.
   std::string entrypoint_message;
 
-  // The name of the image the UI can show the user if this item is the primary
-  // item in the contextual panel.
+  // Required. The string the entrypoint's badge button should have for
+  // accessibility.
+  std::string accessibility_label;
+
+  // Required. The name of the image the UI can show the user if this item is
+  // the primary item in the contextual panel.
   std::string entrypoint_image_name;
 
-  // The type of entrypoint image. This is used by the UI to decide how to
-  // interpret `entrypoint_image_name`.
+  // Required. The type of entrypoint image. This is used by the UI to decide
+  // how to interpret `entrypoint_image_name`.
   EntrypointImageType image_type;
+
+  // Required. A value from 0 to 100 representing the relevance of this item to
+  // the user. Individual panel models can use one of the provided constants or
+  // set their own value.
+  int relevance;
 };
 
 #endif  // IOS_CHROME_BROWSER_CONTEXTUAL_PANEL_MODEL_CONTEXTUAL_PANEL_ITEM_CONFIGURATION_H_

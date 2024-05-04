@@ -13,13 +13,17 @@
 #include "ash/public/mojom/input_device_settings.mojom-forward.h"
 #include "ash/public/mojom/input_device_settings.mojom-shared.h"
 #include "ash/public/mojom/input_device_settings.mojom.h"
+#include "ash/system/keyboard_brightness_control_delegate.h"
 #include "base/memory/raw_ptr.h"
 #include "base/notreached.h"
 #include "base/ranges/algorithm.h"
 #include "base/run_loop.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_future.h"
 #include "chrome/browser/ui/webui/ash/settings/pages/device/input_device_settings/input_device_settings_provider.mojom.h"
+#include "chromeos/dbus/power/fake_power_manager_client.h"
+#include "chromeos/dbus/power_manager/backlight.pb.h"
 #include "mojo/public/cpp/bindings/clone_traits.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/keycodes/keyboard_codes_posix.h"
@@ -36,7 +40,8 @@ const ::ash::mojom::Keyboard kKeyboard1 =
                            /*meta_key=*/::ash::mojom::MetaKey::kLauncher,
                            /*modifier_keys=*/{},
                            /*top_row_action_keys=*/{},
-                           ::ash::mojom::KeyboardSettings::New());
+                           ::ash::mojom::KeyboardSettings::New(),
+                           ::ash::mojom::BatteryInfo::New());
 const ::ash::mojom::Keyboard kKeyboard2 =
     ::ash::mojom::Keyboard(/*name=*/"Logitech K580",
                            /*is_external=*/true,
@@ -45,7 +50,8 @@ const ::ash::mojom::Keyboard kKeyboard2 =
                            /*meta_key=*/::ash::mojom::MetaKey::kExternalMeta,
                            /*modifier_keys=*/{},
                            /*top_row_action_keys=*/{},
-                           ::ash::mojom::KeyboardSettings::New());
+                           ::ash::mojom::KeyboardSettings::New(),
+                           ::ash::mojom::BatteryInfo::New());
 const ::ash::mojom::Keyboard kKeyboard3 =
     ::ash::mojom::Keyboard(/*name=*/"HP 910 White Bluetooth Keyboard",
                            /*is_external=*/true,
@@ -54,21 +60,24 @@ const ::ash::mojom::Keyboard kKeyboard3 =
                            /*meta_key=*/::ash::mojom::MetaKey::kExternalMeta,
                            /*modifier_keys=*/{},
                            /*top_row_action_keys=*/{},
-                           ::ash::mojom::KeyboardSettings::New());
+                           ::ash::mojom::KeyboardSettings::New(),
+                           ::ash::mojom::BatteryInfo::New());
 const ::ash::mojom::Touchpad kTouchpad1 =
     ::ash::mojom::Touchpad(/*name=*/"test touchpad",
                            /*is_external=*/false,
                            /*id=*/3,
                            /*device_key=*/"fake-device-key3",
                            /*is_haptic=*/true,
-                           ::ash::mojom::TouchpadSettings::New());
+                           ::ash::mojom::TouchpadSettings::New(),
+                           ::ash::mojom::BatteryInfo::New());
 const ::ash::mojom::Touchpad kTouchpad2 =
     ::ash::mojom::Touchpad(/*name=*/"Logitech T650",
                            /*is_external=*/true,
                            /*id=*/4,
                            /*device_key=*/"fake-device-key4",
                            /*is_haptic=*/false,
-                           ::ash::mojom::TouchpadSettings::New());
+                           ::ash::mojom::TouchpadSettings::New(),
+                           ::ash::mojom::BatteryInfo::New());
 const ::ash::mojom::PointingStick kPointingStick1 =
     ::ash::mojom::PointingStick(/*name=*/"test pointing stick",
                                 /*is_external=*/false,
@@ -89,7 +98,8 @@ const ::ash::mojom::Mouse kMouse1 = ::ash::mojom::Mouse(
     /*customization_restriction=*/
     ::ash::mojom::CustomizationRestriction::kAllowCustomizations,
     /*mouse_button_config=*/::ash::mojom::MouseButtonConfig::kNoConfig,
-    ::ash::mojom::MouseSettings::New());
+    ::ash::mojom::MouseSettings::New(),
+    ::ash::mojom::BatteryInfo::New());
 const ::ash::mojom::Mouse kMouse2 = ::ash::mojom::Mouse(
     /*name=*/"MX Anywhere 2S",
     /*is_external=*/true,
@@ -98,7 +108,8 @@ const ::ash::mojom::Mouse kMouse2 = ::ash::mojom::Mouse(
     /*customization_restriction=*/
     ::ash::mojom::CustomizationRestriction::kAllowCustomizations,
     /*mouse_button_config=*/::ash::mojom::MouseButtonConfig::kNoConfig,
-    ::ash::mojom::MouseSettings::New());
+    ::ash::mojom::MouseSettings::New(),
+    ::ash::mojom::BatteryInfo::New());
 const ::ash::mojom::GraphicsTablet kGraphicsTablet1 =
     ::ash::mojom::GraphicsTablet(
         /*name=*/"Wacom Intuos S",
@@ -107,7 +118,8 @@ const ::ash::mojom::GraphicsTablet kGraphicsTablet1 =
         /*customization_restriction=*/
         ::ash::mojom::CustomizationRestriction::kAllowCustomizations,
         ::ash::mojom::GraphicsTabletButtonConfig::kNoConfig,
-        ::ash::mojom::GraphicsTabletSettings::New());
+        ::ash::mojom::GraphicsTabletSettings::New(),
+        ::ash::mojom::BatteryInfo::New());
 const ::ash::mojom::GraphicsTablet kGraphicsTablet2 =
     ::ash::mojom::GraphicsTablet(
         /*name=*/"Huion H1060P",
@@ -116,7 +128,8 @@ const ::ash::mojom::GraphicsTablet kGraphicsTablet2 =
         /*customization_restriction=*/
         ::ash::mojom::CustomizationRestriction::kAllowCustomizations,
         ::ash::mojom::GraphicsTabletButtonConfig::kNoConfig,
-        ::ash::mojom::GraphicsTabletSettings::New());
+        ::ash::mojom::GraphicsTabletSettings::New(),
+        ::ash::mojom::BatteryInfo::New());
 
 template <bool sorted = false, typename T>
 void ExpectListsEqual(const std::vector<T>& expected_list,
@@ -280,6 +293,58 @@ class FakeButtonPressObserver : public mojom::ButtonPressObserver {
 
  private:
   ::ash::mojom::ButtonPtr last_pressed_button_;
+};
+
+class FakeKeyboardBrightnessObserver
+    : public mojom::KeyboardBrightnessObserver {
+ public:
+  void OnKeyboardBrightnessChanged(double percent) override {
+    keyboard_brightness_ = percent;
+    ++num_times_called_;
+  }
+  double keyboard_brightness() { return keyboard_brightness_; }
+
+  int num_times_called() { return num_times_called_; }
+
+  mojo::Receiver<mojom::KeyboardBrightnessObserver> receiver{this};
+
+ private:
+  int num_times_called_ = 0;
+  double keyboard_brightness_ = 0;
+};
+
+class FakeKeyboardBrightnessControlDelegate
+    : public KeyboardBrightnessControlDelegate {
+ public:
+  FakeKeyboardBrightnessControlDelegate() = default;
+  ~FakeKeyboardBrightnessControlDelegate() override = default;
+
+  // override methods:
+  void HandleKeyboardBrightnessDown() override {}
+  void HandleKeyboardBrightnessUp() override {}
+  void HandleToggleKeyboardBacklight() override {}
+  void HandleSetKeyboardBrightness(double percent, bool gradual) override {
+    keyboard_brightness_ = percent;
+  }
+  void HandleGetKeyboardBrightness(
+      base::OnceCallback<void(std::optional<double>)> callback) override {
+    std::move(callback).Run(keyboard_brightness_);
+  }
+  void HandleSetKeyboardAmbientLightSensorEnabled(bool enabled) override {
+    keyboard_ambient_light_sensor_enabled_ = enabled;
+  }
+
+  void HandleGetKeyboardAmbientLightSensorEnabled(
+      base::OnceCallback<void(std::optional<bool>)> callback) override {}
+
+  double keyboard_brightness() { return keyboard_brightness_; }
+  bool keyboard_ambient_light_sensor_enabled() {
+    return keyboard_ambient_light_sensor_enabled_;
+  }
+
+ private:
+  double keyboard_brightness_ = 0;
+  bool keyboard_ambient_light_sensor_enabled_ = true;
 };
 
 class FakeInputDeviceSettingsController
@@ -466,9 +531,11 @@ class InputDeviceSettingsProviderTest : public views::ViewsTestBase {
 
   void SetUp() override {
     feature_list_ = std::make_unique<base::test::ScopedFeatureList>();
-    feature_list_->InitWithFeatures({features::kInputDeviceSettingsSplit,
-                                     features::kPeripheralCustomization},
-                                    {});
+    feature_list_->InitWithFeatures(
+        {features::kInputDeviceSettingsSplit,
+         features::kPeripheralCustomization,
+         features::kEnableKeyboardBacklightControlInSettings},
+        {});
     views::ViewsTestBase::SetUp();
     widget_ = CreateTestWidget();
     widget_->Show();
@@ -477,24 +544,38 @@ class InputDeviceSettingsProviderTest : public views::ViewsTestBase {
     controller_ = std::make_unique<FakeInputDeviceSettingsController>();
     provider_ = std::make_unique<InputDeviceSettingsProvider>();
     provider_->SetWidgetForTesting(widget_.get());
+    keyboard_brightness_control_delegate_ =
+        std::make_unique<FakeKeyboardBrightnessControlDelegate>();
+    provider_->SetKeyboardBrightnessControlDelegateForTesting(
+        keyboard_brightness_control_delegate_.get());
+    power_manager_client_ =
+        std::make_unique<chromeos::FakePowerManagerClient>();
+    histogram_tester_ = std::make_unique<base::HistogramTester>();
   }
 
   void TearDown() override {
     provider_.reset();
     controller_.reset();
+    keyboard_brightness_control_delegate_.reset();
+    power_manager_client_.reset();
     scoped_resetter_.reset();
     widget_.reset();
     views::ViewsTestBase::TearDown();
     feature_list_.reset();
+    histogram_tester_.reset();
   }
 
  protected:
   std::unique_ptr<FakeInputDeviceSettingsController> controller_;
   std::unique_ptr<InputDeviceSettingsProvider> provider_;
+  std::unique_ptr<FakeKeyboardBrightnessControlDelegate>
+      keyboard_brightness_control_delegate_;
+  std::unique_ptr<chromeos::FakePowerManagerClient> power_manager_client_;
   std::unique_ptr<base::test::ScopedFeatureList> feature_list_;
   std::unique_ptr<InputDeviceSettingsController::ScopedResetterForTest>
       scoped_resetter_;
   std::unique_ptr<views::Widget> widget_;
+  std::unique_ptr<base::HistogramTester> histogram_tester_;
 };
 
 TEST_F(InputDeviceSettingsProviderTest, TestSetKeyboardSettings) {
@@ -1008,6 +1089,65 @@ TEST_F(InputDeviceSettingsProviderTest, ButtonPressObserverTest) {
   EXPECT_EQ(*expected_button, fake_observer.last_pressed_button());
 }
 
+TEST_F(InputDeviceSettingsProviderTest, KeyboardBrightnessObserverTest) {
+  FakeKeyboardBrightnessObserver fake_observer;
+  EXPECT_EQ(0, fake_observer.num_times_called());
+
+  // Set initial brightness to 40.0.
+  double initial_brightness = 40.0;
+  keyboard_brightness_control_delegate_->HandleSetKeyboardBrightness(
+      initial_brightness, /*gradual=*/false);
+
+  provider_->ObserveKeyboardBrightness(
+      fake_observer.receiver.BindNewPipeAndPassRemote());
+  base::RunLoop().RunUntilIdle();
+
+  // OnKeyboardBrightnessChange is called when observer is registered.
+  EXPECT_EQ(1, fake_observer.num_times_called());
+
+  double expected_brightness = 66.6;
+
+  power_manager::BacklightBrightnessChange brightness_change;
+  brightness_change.set_percent(expected_brightness);
+  brightness_change.set_cause(
+      power_manager::BacklightBrightnessChange_Cause_USER_REQUEST);
+  provider_->KeyboardBrightnessChanged(brightness_change);
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(expected_brightness, fake_observer.keyboard_brightness());
+  EXPECT_EQ(2, fake_observer.num_times_called());
+}
+
+TEST_F(InputDeviceSettingsProviderTest, SetKeyboardBrightness) {
+  double adjustedBrightness = 60.9;
+  keyboard_brightness_control_delegate_->HandleSetKeyboardBrightness(
+      adjustedBrightness, /*gradual=*/false);
+  EXPECT_EQ(adjustedBrightness,
+            keyboard_brightness_control_delegate_->keyboard_brightness());
+
+  adjustedBrightness = 20.3;
+  keyboard_brightness_control_delegate_->HandleSetKeyboardBrightness(
+      adjustedBrightness, /*gradual=*/false);
+  EXPECT_EQ(adjustedBrightness,
+            keyboard_brightness_control_delegate_->keyboard_brightness());
+}
+
+TEST_F(InputDeviceSettingsProviderTest, SetKeyboardAmbientLightSensorEnabled) {
+  // Verify initial state is enabled.
+  EXPECT_TRUE(keyboard_brightness_control_delegate_
+                  ->keyboard_ambient_light_sensor_enabled());
+
+  // Disable the ambient light sensor.
+  provider_->SetKeyboardAmbientLightSensorEnabled(false);
+  EXPECT_FALSE(keyboard_brightness_control_delegate_
+                   ->keyboard_ambient_light_sensor_enabled());
+
+  // Re-enable the ambient light sensor and verify.
+  provider_->SetKeyboardAmbientLightSensorEnabled(true);
+  EXPECT_TRUE(keyboard_brightness_control_delegate_
+                  ->keyboard_ambient_light_sensor_enabled());
+}
+
 TEST_F(InputDeviceSettingsProviderTest, ButtonPressObserverFollowsWindowFocus) {
   FakeButtonPressObserver fake_observer;
   provider_->ObserveButtonPresses(
@@ -1054,6 +1194,51 @@ TEST_F(InputDeviceSettingsProviderTest, HasLauncherButton) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(future.Get<0>());
+}
+
+TEST_F(InputDeviceSettingsProviderTest, HasKeyboardBacklight) {
+  base::test::TestFuture<bool> future;
+
+  power_manager_client_->set_has_keyboard_backlight(true);
+  provider_->HasKeyboardBacklight(future.GetCallback());
+  EXPECT_TRUE(future.Get<0>());
+
+  future.Clear();
+  power_manager_client_->set_has_keyboard_backlight(false);
+  provider_->HasKeyboardBacklight(future.GetCallback());
+  EXPECT_FALSE(future.Get<0>());
+}
+
+TEST_F(InputDeviceSettingsProviderTest, HasAmbientLightSensor) {
+  base::test::TestFuture<bool> future;
+
+  power_manager_client_->set_has_ambient_light_sensor(true);
+  provider_->HasAmbientLightSensor(future.GetCallback());
+  EXPECT_TRUE(future.Get<0>());
+
+  future.Clear();
+  power_manager_client_->set_has_ambient_light_sensor(false);
+  provider_->HasAmbientLightSensor(future.GetCallback());
+  EXPECT_FALSE(future.Get<0>());
+}
+
+TEST_F(InputDeviceSettingsProviderTest, RecordKeyboardColorLinkClicked) {
+  histogram_tester_->ExpectTotalCount(
+      "ChromeOS.Settings.Device.Keyboard.ColorLinkClicked", 0);
+  provider_->RecordKeyboardColorLinkClicked();
+  base::RunLoop().RunUntilIdle();
+  histogram_tester_->ExpectTotalCount(
+      "ChromeOS.Settings.Device.Keyboard.ColorLinkClicked", 1);
+}
+
+TEST_F(InputDeviceSettingsProviderTest,
+       RecordKeyboardBrightnessChangeFromSlider) {
+  histogram_tester_->ExpectTotalCount(
+      "ChromeOS.Settings.Device.Keyboard.BrightnessSliderAdjusted", 0);
+  provider_->RecordKeyboardBrightnessChangeFromSlider(40.0);
+  base::RunLoop().RunUntilIdle();
+  histogram_tester_->ExpectTotalCount(
+      "ChromeOS.Settings.Device.Keyboard.BrightnessSliderAdjusted", 1);
 }
 
 }  // namespace ash::settings

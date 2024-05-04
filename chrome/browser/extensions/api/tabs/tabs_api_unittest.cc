@@ -511,23 +511,29 @@ TEST_F(TabsApiUnitTest, TabsUpdate) {
 
 // Tests that calling chrome.tabs.update does not update a saved tab.
 TEST_F(TabsApiUnitTest, TabsUpdateSavedTabGroupTab) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures({features::kTabGroupsSave}, {});
   const GURL kExampleCom("http://example.com");
   const GURL kChromiumOrg("https://chromium.org");
 
   // Add a web contents to the browser.
-  std::unique_ptr<content::WebContents> contents(
-      content::WebContentsTester::CreateTestWebContents(profile(), nullptr));
-  content::WebContents* raw_contents = contents.get();
-  browser()->tab_strip_model()->AppendWebContents(std::move(contents), true);
+  content::WebContents* raw_contents;
+  {
+    std::unique_ptr<content::WebContents> contents =
+        content::WebContentsTester::CreateTestWebContents(profile(), nullptr);
+    raw_contents = contents.get();
+    browser()->tab_strip_model()->AppendWebContents(std::move(contents), true);
+  }
 
   // contents used to test active state by taking active state first.
-  std::unique_ptr<content::WebContents> non_updated_contents(
-      content::WebContentsTester::CreateTestWebContents(profile(), nullptr));
-  content::WebContents* raw_non_updated_contents = non_updated_contents.get();
-  browser()->tab_strip_model()->AppendWebContents(
-      std::move(non_updated_contents), false);
+  content::WebContents* raw_non_updated_contents;
+  {
+    std::unique_ptr<content::WebContents> non_updated_contents =
+        content::WebContentsTester::CreateTestWebContents(profile(), nullptr);
+    raw_non_updated_contents = non_updated_contents.get();
+    browser()->tab_strip_model()->AppendWebContents(
+        std::move(non_updated_contents), false);
+  }
+  ASSERT_NE(raw_contents, nullptr);
+  ASSERT_NE(raw_non_updated_contents, nullptr);
 
   EXPECT_EQ(browser()->tab_strip_model()->GetActiveWebContents(), raw_contents);
   CreateSessionServiceTabHelper(raw_contents);
@@ -636,7 +642,7 @@ TEST_F(TabsApiUnitTest, TabsUpdateSavedTabGroupTab) {
         ExtensionBuilder("UpdateTest").Build();
     auto function = base::MakeRefCounted<TabsUpdateFunction>();
     function->set_extension(extension);
-    static constexpr char kFormatArgs[] = R"([%d, {"opener_tab_id": "%d"}])";
+    static constexpr char kFormatArgs[] = R"([%d, {"openerTabId": %d}])";
     const std::string args =
         base::StringPrintf(kFormatArgs, tab_id, non_updated_tab_id);
     EXPECT_TRUE(api_test_utils::RunFunction(
@@ -648,7 +654,7 @@ TEST_F(TabsApiUnitTest, TabsUpdateSavedTabGroupTab) {
         ExtensionBuilder("UpdateTest").Build();
     auto function = base::MakeRefCounted<TabsUpdateFunction>();
     function->set_extension(extension);
-    static constexpr char kFormatArgs[] = R"([%d, {"auto_discardable": true}])";
+    static constexpr char kFormatArgs[] = R"([%d, {"autoDiscardable": true}])";
     const std::string args = base::StringPrintf(kFormatArgs, tab_id);
     EXPECT_TRUE(api_test_utils::RunFunction(
         function.get(), args, profile(), api_test_utils::FunctionMode::kNone));
@@ -692,8 +698,6 @@ TEST_F(TabsApiUnitTest, TabsUpdateSavedTabGroupTab) {
 // only.
 TEST_F(TabsApiUnitTest,
        TabsUpdateSavedTabGroupTabAllowedForLockedFullscreenPermission) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures({features::kTabGroupsSave}, {});
   scoped_refptr<const Extension> extension =
       ExtensionBuilder("UpdateTest")
           .SetID("pmgljoohajacndjcjlajcopidgnhphcl")
@@ -915,8 +919,6 @@ TEST_F(TabsApiUnitTest, TabsMoveAcrossWindows) {
 
 // Tests that calling chrome.tabs.move doesn't move a saved tab.
 TEST_F(TabsApiUnitTest, TabsMoveSavedTabGroupTabNotAllowed) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures({features::kTabGroupsSave}, {});
   scoped_refptr<const Extension> extension =
       ExtensionBuilder("MoveWithinWindowTest").Build();
 
@@ -983,8 +985,6 @@ TEST_F(TabsApiUnitTest, TabsMoveSavedTabGroupTabNotAllowed) {
 // locked fullscreen permission. Locked fullscreen permission is ChromeOS only.
 TEST_F(TabsApiUnitTest,
        TabsMoveSavedTabGroupTabAllowedForLockedFullscreenPermission) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures({features::kTabGroupsSave}, {});
   scoped_refptr<const Extension> extension =
       ExtensionBuilder("MoveWithinWindowTest")
           .SetID("pmgljoohajacndjcjlajcopidgnhphcl")
@@ -1285,8 +1285,6 @@ TEST_F(TabsApiUnitTest, TabsGroupAcrossWindows) {
 
 // Test that grouping tabs that are in a saved group should fail.
 TEST_F(TabsApiUnitTest, TabsGroupForSavedTabGroupTabNotAllowed) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures({features::kTabGroupsSave}, {});
   ASSERT_TRUE(browser()->tab_strip_model()->SupportsTabGroups());
 
   scoped_refptr<const Extension> extension =
@@ -1363,8 +1361,6 @@ TEST_F(TabsApiUnitTest, TabsGroupForSavedTabGroupTabNotAllowed) {
 // is ChromeOS only.
 TEST_F(TabsApiUnitTest,
        TabsGroupForSavedTabGroupTabAllowedForLockedFullscreenPermission) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures({features::kTabGroupsSave}, {});
   ASSERT_TRUE(browser()->tab_strip_model()->SupportsTabGroups());
 
   scoped_refptr<const Extension> extension =
@@ -1482,8 +1478,6 @@ TEST_F(TabsApiUnitTest, TabsUngroupSingleGroup) {
 
 // Test that the tabs.ungroup does not ungroup a SavedTabGroup.
 TEST_F(TabsApiUnitTest, TabsUngroupSingleGroupForSavedTabGroupNotAllowed) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures({features::kTabGroupsSave}, {});
   ASSERT_TRUE(browser()->tab_strip_model()->SupportsTabGroups());
 
   scoped_refptr<const Extension> extension =
@@ -1552,8 +1546,6 @@ TEST_F(TabsApiUnitTest, TabsUngroupSingleGroupForSavedTabGroupNotAllowed) {
 TEST_F(
     TabsApiUnitTest,
     TabsUngroupSingleGroupForSavedTabGroupAllowedForLockedFullscreenPermission) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures({features::kTabGroupsSave}, {});
   ASSERT_TRUE(browser()->tab_strip_model()->SupportsTabGroups());
 
   scoped_refptr<const Extension> extension =
@@ -1742,8 +1734,6 @@ TEST_F(TabsApiUnitTest, TabsGoForwardAndBack) {
 }
 
 TEST_F(TabsApiUnitTest, TabsGoForwardAndBackSavedTabGroupTabNotAllowed) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures({features::kTabGroupsSave}, {});
   scoped_refptr<const Extension> extension_with_tabs_permission =
       CreateTabsExtension();
 
@@ -1822,8 +1812,6 @@ TEST_F(TabsApiUnitTest, TabsGoForwardAndBackSavedTabGroupTabNotAllowed) {
 TEST_F(
     TabsApiUnitTest,
     TabsGoForwardAndBackSavedTabGroupTabAllowedForLockedFullscreenPermission) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures({features::kTabGroupsSave}, {});
   scoped_refptr<const Extension> extension =
       ExtensionBuilder("GoForwardAndBackTest")
           .SetID("pmgljoohajacndjcjlajcopidgnhphcl")
@@ -2157,8 +2145,6 @@ TEST_F(TabsApiUnitTest, TabsDiscard) {
 
 // Tests that calling chrome.tabs.discard on a saved tab does not discard.
 TEST_F(TabsApiUnitTest, TabsDiscardSavedTabGroupTabNotAllowed) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures({features::kTabGroupsSave}, {});
   scoped_refptr<const Extension> extension =
       ExtensionBuilder("DiscardTest").Build();
   const GURL kExampleCom("http://example.com");
@@ -2219,8 +2205,6 @@ TEST_F(TabsApiUnitTest, TabsDiscardSavedTabGroupTabNotAllowed) {
 // is ChromeOS only.
 TEST_F(TabsApiUnitTest,
        TabsDiscardSavedTabGroupTabAllowedForLockedFullscreenPermission) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures({features::kTabGroupsSave}, {});
   scoped_refptr<const Extension> extension =
       ExtensionBuilder("DiscardTest")
           .SetID("pmgljoohajacndjcjlajcopidgnhphcl")

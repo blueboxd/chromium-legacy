@@ -854,28 +854,10 @@ TEST(AutofillProfileTest, IsSubsetOfForFieldSet_DifferentStreetAddresses) {
   profile2.SetRawInfo(ADDRESS_HOME_STREET_ADDRESS, u"275 Main Street");
 
   const AutofillProfileComparator comparator("en-US");
-  {
-    // The two profiles have different streets, since the default behavior is to
-    // ignore streets, they are considered equal.
-    base::test::ScopedFeatureList scoped_feature_list;
-    scoped_feature_list.InitAndDisableFeature(
-        features::kAutofillUseAddressRewriterInProfileSubsetComparison);
-    EXPECT_TRUE(profile1.IsSubsetOfForFieldSet(comparator, profile2,
-                                               {ADDRESS_HOME_STREET_ADDRESS}));
-    EXPECT_TRUE(profile2.IsSubsetOfForFieldSet(comparator, profile1,
-                                               {ADDRESS_HOME_STREET_ADDRESS}));
-  }
-  {
-    // When we start considering streets in subset comparison, the two profiles
-    // won't be considered equal anymore, since the differences in street
-    // addresses are more than just formatting differences.
-    base::test::ScopedFeatureList scoped_feature_list(
-        features::kAutofillUseAddressRewriterInProfileSubsetComparison);
-    EXPECT_FALSE(profile1.IsSubsetOfForFieldSet(comparator, profile2,
-                                                {ADDRESS_HOME_STREET_ADDRESS}));
-    EXPECT_FALSE(profile2.IsSubsetOfForFieldSet(comparator, profile1,
-                                                {ADDRESS_HOME_STREET_ADDRESS}));
-  }
+  EXPECT_FALSE(profile1.IsSubsetOfForFieldSet(comparator, profile2,
+                                              {ADDRESS_HOME_STREET_ADDRESS}));
+  EXPECT_FALSE(profile2.IsSubsetOfForFieldSet(comparator, profile1,
+                                              {ADDRESS_HOME_STREET_ADDRESS}));
 }
 
 TEST(AutofillProfileTest, IsSubsetOfForFieldSet_DifferentNonStreetAddresses) {
@@ -1355,19 +1337,24 @@ TEST(AutofillProfileTest, Compare) {
 
 // For each structured profile tokens, test the comparison operator for both the
 // value and the status.
-// TODO(crbug.com/1464568): Extend this test to cover i18n profiles.
+// TODO(crbug.com/40275657): Extend this test to cover i18n profiles.
 TEST(AutofillProfileTest, Compare_StructuredTypes) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitWithFeatures(
       {features::kAutofillUseI18nAddressModel,
+       features::kAutofillUseAUAddressModel,
+       features::kAutofillUseBRAddressModel,
+       features::kAutofillUseDEAddressModel,
        features::kAutofillUseINAddressModel,
+       features::kAutofillUseMXAddressModel,
        features::kAutofillEnableSupportForLandmark,
        features::kAutofillEnableSupportForBetweenStreets,
        features::kAutofillEnableSupportForAdminLevel2,
        features::kAutofillEnableSupportForApartmentNumbers,
        features::kAutofillEnableSupportForAddressOverflow,
        features::kAutofillEnableSupportForBetweenStreetsOrLandmark,
-       features::kAutofillEnableSupportForAddressOverflowAndLandmark},
+       features::kAutofillEnableSupportForAddressOverflowAndLandmark,
+       features::kAutofillEnableDependentLocalityParsing},
       {});
   // Those types do store a verification status.
   FieldTypeSet structured_types{
@@ -1524,7 +1511,8 @@ TEST(AutofillProfileTest, SetRawInfoDoesntTrimWhitespace) {
 TEST(AutofillProfileTest, SetRawInfoWorksForLandmark) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitWithFeatures({features::kAutofillEnableSupportForLandmark,
-                                 features::kAutofillUseI18nAddressModel},
+                                 features::kAutofillUseI18nAddressModel,
+                                 features::kAutofillUseMXAddressModel},
                                 {});
 
   AutofillProfile profile(AddressCountryCode("MX"));
@@ -1537,7 +1525,8 @@ TEST(AutofillProfileTest, SetRawInfoWorksForBetweenStreets) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitWithFeatures(
       {features::kAutofillEnableSupportForBetweenStreets,
-       features::kAutofillUseI18nAddressModel},
+       features::kAutofillUseI18nAddressModel,
+       features::kAutofillUseMXAddressModel},
       {});
   AutofillProfile profile(AddressCountryCode("MX"));
 

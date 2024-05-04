@@ -22,8 +22,75 @@ chromium-metrics-reviews@google.com.
 
 <histograms>
 
+<histogram name="Input.Digitizer.MaxTouchPoints.{PointerDigitizerType}"
+    units="maximum allowed touch points" expires_after="2025-03-01">
+  <owner>kouhei@chromium.org</owner>
+  <owner>Adam.Ettenberger@microsoft.com</owner>
+  <owner>input-dev@chromium.org</owner>
+  <summary>
+    Record the maximum number of active touch points allowed for each pointer
+    digitizer found at startup or connected following startup, grouping results
+    by {PointerDigitizerType}. Currently this metric is only available on
+    Windows. This is logged once for every pointer digitizer discovered when
+    initializing the singleton `TouchUiController` during startup, and once for
+    each pointer digitizer that's connected afterwards in response to OS
+    specific events.
+  </summary>
+  <token key="PointerDigitizerType">
+    <variant name="DirectPen" summary="pen digitizer integrated into display"/>
+    <variant name="IndirectPen" summary="pen digitizer not display integrated"/>
+    <variant name="Touch" summary="touch digitizer"/>
+    <variant name="TouchPad" summary="touchpad digitizer"/>
+    <variant name="Unknown" summary="unknown digitizer type"/>
+  </token>
+</histogram>
+
+<histogram name="Input.Digitizer.MaxTouchPointsSupportedBySystemAtStartup"
+    units="maximum supported contacts" expires_after="2025-03-01">
+  <owner>kouhei@chromium.org</owner>
+  <owner>Adam.Ettenberger@microsoft.com</owner>
+  <owner>input-dev@chromium.org</owner>
+  <summary>
+    Record the maximum number of simultaneous contacts supported by the pointer
+    digitizer that supports the most simultaneous contacts among all pointer
+    digitizers available to the system at startup. e.g, If the system only has
+    single-touch digitizers, the recorded value is 1. If the system has
+    multi-touch digitizers, the recorded value is the maximum number of contacts
+    supported by the multi-touch digitizer that supports the most contacts.
+    Currently this metric is only available on Windows. This is logged only once
+    per browser session, when initializing the singleton `TouchUiController` at
+    startup.
+  </summary>
+</histogram>
+
+<histogram name="Input.Digitizer.{Interaction}" enum="PointerDigitizerType"
+    expires_after="2025-03-01">
+  <owner>kouhei@chromium.org</owner>
+  <owner>Adam.Ettenberger@microsoft.com</owner>
+  <owner>input-dev@chromium.org</owner>
+  <summary>
+    Record each pointer digitizer found at startup, and each pointer digitizer
+    connected or disconnected following startup, grouping by {Interaction}.
+    Currently this metric is only available on Windows.
+
+    OnConnected: Logged once for each pointer digitizer that's been connected
+    after initialization, in response to OS specific events.
+
+    OnDisconnected: Logged once for each pointer digitizer that's been
+    disconnected after initialization, in response to OS specific events.
+
+    OnStartup : Logged only once per browser session for each pointer digitizer
+    discovered when initializing the singleton `TouchUiController` at startup.
+  </summary>
+  <token key="Interaction">
+    <variant name="OnConnected" summary="connected following startup"/>
+    <variant name="OnDisconnected" summary="disconnected following startup"/>
+    <variant name="OnStartup" summary="connected at startup"/>
+  </token>
+</histogram>
+
 <histogram name="Input.PointerTypePrimary" enum="PrimaryPointerType"
-    expires_after="2024-07-19">
+    expires_after="2024-09-22">
   <owner>flackr@chromium.org</owner>
   <owner>input-dev@chromium.org</owner>
   <summary>
@@ -34,7 +101,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Input.PointerTypesAll" enum="AllPointerTypes"
-    expires_after="2024-07-19">
+    expires_after="2024-09-22">
   <owner>flackr@chromium.org</owner>
   <owner>input-dev@chromium.org</owner>
   <summary>
@@ -46,7 +113,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Input.ToolType.Android" units="tool type"
-    expires_after="2024-07-21">
+    expires_after="2024-09-22">
   <owner>alexmitra@chromium.org</owner>
   <owner>flackr@chromium.org</owner>
   <owner>peconn@chromium.org</owner>
@@ -1342,7 +1409,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="InputMethod.PhysicalKeyboard.KeyboardShortcut"
-    enum="PhysicalKeyboardShortcut" expires_after="2024-07-07">
+    enum="PhysicalKeyboardShortcut" expires_after="2024-09-15">
   <owner>wbjacksonjr@chromium.org</owner>
   <owner>embedded-experience@google.com</owner>
   <summary>
@@ -1522,7 +1589,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="InputMethod.StylusHandwriting.Gesture"
-    enum="StylusHandwritingGesture" expires_after="2024-07-07">
+    enum="StylusHandwritingGesture" expires_after="2024-09-15">
   <owner>peconn@chromium.org</owner>
   <owner>embedded-experience@google.com</owner>
   <summary>
@@ -1533,7 +1600,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="InputMethod.StylusHandwriting.GestureResult"
-    enum="StylusHandwritingGestureResult" expires_after="2024-07-28">
+    enum="StylusHandwritingGestureResult" expires_after="2024-09-29">
   <owner>alexmitra@chromium.org</owner>
   <owner>embedded-experience@google.com</owner>
   <summary>
@@ -1542,7 +1609,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="InputMethod.StylusHandwriting.GestureTime2" units="ms"
-    expires_after="2024-08-04">
+    expires_after="2024-10-06">
   <owner>alexmitra@chromium.org</owner>
   <owner>embedded-experience@google.com</owner>
   <summary>
@@ -1553,7 +1620,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="InputMethod.StylusHandwriting.Triggered"
-    enum="StylusHandwritingApi" expires_after="2024-07-07">
+    enum="StylusHandwritingApi" expires_after="2024-09-15">
   <owner>peconn@chromium.org</owner>
   <owner>embedded-experience@google.com</owner>
   <summary>
@@ -1766,17 +1833,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="InputMethod.VirtualKeyboard.Handwriting.CommitType"
-    enum="VirtualKeyboardHandwritingCommitType" expires_after="2024-11-01">
-  <owner>curtismcmullan@chromium.org</owner>
-  <owner>essential-inputs-team@google.com</owner>
-  <summary>
-    Warning: this histogram was expired from 2022-02 to 2023-11; data may be
-    missing. What kind of commit method was used when text was committed to an
-    input from the handwriting input method in the virtual keyboard.
-  </summary>
-</histogram>
-
 <histogram
     name="InputMethod.VirtualKeyboard.Handwriting.DWServiceCallbackFailed"
     enum="Boolean" expires_after="2024-06-30">
@@ -1966,7 +2022,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="TextInputClient.FirstRect" units="ms"
-    expires_after="2024-08-18">
+    expires_after="2024-10-20">
   <owner>kouhei@chromium.org</owner>
   <owner>input-dev@chromium.org</owner>
   <summary>
@@ -2014,7 +2070,7 @@ is owned by the Blink input team.
 -->
 
 <histogram name="Viewport.MetaTagType" enum="MetaTagTypeEnum"
-    expires_after="2024-03-23">
+    expires_after="2025-03-23">
   <owner>bokan@chromium.org</owner>
   <owner>input-dev@chromium.org</owner>
   <summary>

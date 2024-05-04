@@ -12,10 +12,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_buildflags.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc_config.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/shim/allocator_shim.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/shim/allocator_shim_default_dispatch_to_partition_alloc.h"
 #include "base/compiler_specific.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
@@ -40,14 +36,18 @@
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "partition_alloc/partition_alloc_buildflags.h"
+#include "partition_alloc/partition_alloc_config.h"
+#include "partition_alloc/shim/allocator_shim.h"
+#include "partition_alloc/shim/allocator_shim_default_dispatch_to_partition_alloc.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && \
+#if PA_BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && \
     PA_CONFIG(THREAD_CACHE_SUPPORTED)
-#include "base/allocator/partition_allocator/src/partition_alloc/extended_api.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/thread_cache.h"
-#endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) &&
+#include "partition_alloc/extended_api.h"
+#include "partition_alloc/thread_cache.h"
+#endif  // PA_BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) &&
         // PA_CONFIG(THREAD_CACHE_SUPPORTED)
 
 using testing::_;
@@ -406,7 +406,7 @@ class ThreadPoolWorkerTest : public testing::Test {
   void WaitForNumGetWork(size_t num_get_work) {
     CheckedAutoLock auto_lock(lock_);
     while (num_get_work_ < num_get_work) {
-      num_get_work_cv_->Wait();
+      num_get_work_cv_.Wait();
     }
   }
 
@@ -488,7 +488,7 @@ class ThreadPoolWorkerTest : public testing::Test {
 
         // Increment the number of times that this method has been called.
         ++outer_->num_get_work_;
-        outer_->num_get_work_cv_->Signal();
+        outer_->num_get_work_cv_.Signal();
 
         // Verify that this method isn't called more times than expected.
         EXPECT_LE(outer_->num_get_work_, outer_->max_get_work_);
@@ -616,7 +616,7 @@ class ThreadPoolWorkerTest : public testing::Test {
   size_t max_get_work_ = 0;
 
   // Condition variable signaled when |num_get_work_| is incremented.
-  std::unique_ptr<ConditionVariable> num_get_work_cv_;
+  ConditionVariable num_get_work_cv_;
 
   // Sequences created by GetWork().
   std::vector<scoped_refptr<TaskSource>> created_sequences_;
@@ -993,7 +993,7 @@ TYPED_TEST(ThreadPoolWorkerTest, WorkerThreadObserver) {
   Mock::VerifyAndClear(observer);
 }
 
-#if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && \
+#if PA_BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && \
     PA_CONFIG(THREAD_CACHE_SUPPORTED)
 namespace {
 NOINLINE void FreeForTest(void* data) {
@@ -1149,7 +1149,7 @@ TYPED_TEST(ThreadPoolWorkerTest, PurgeOnUninteruptedSleep) {
   delegate->wakeup_done_.Wait();
 }
 
-#endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) &&
+#endif  // PA_BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) &&
         // PA_CONFIG(THREAD_CACHE_SUPPORTED)
 
 }  // namespace internal

@@ -10,28 +10,44 @@
 @class TabGroupItem;
 
 @class GroupTabInfo;
+#ifdef __cplusplus
 class TabGroup;
+class WebStateList;
+#endif
 
 // Block invoked when a GroupTabInfo fetching operation completes. The
 // `groupTabInfos` is nil if the operation failed.
 typedef void (^GroupTabInfosFetchingCompletionBlock)(
-    TabGroupItem* item,
-    NSArray<GroupTabInfo*>* groupTabInfos);
+    TabGroupItem* _Nullable item,
+    NSArray<GroupTabInfo*>* _Nullable groupTabInfos);
 
 // Model object representing an group item.
 @interface TabGroupItem : NSObject
 
-- (instancetype)initWithTabGroup:(const TabGroup*)tabGroup
+#ifdef __cplusplus
+- (nonnull instancetype)initWithTabGroup:(const TabGroup* _Nonnull)tabGroup
+                             webStateList:(WebStateList* _Nonnull)webStateList
     NS_DESIGNATED_INITIALIZER;
-- (instancetype)init NS_UNAVAILABLE;
+#endif
+- (nonnull instancetype)init NS_UNAVAILABLE;
 
-@property(nonatomic, readonly) const TabGroup* tabGroup;
-@property(nonatomic, readonly) NSString* title;
-@property(nonatomic, readonly) UIColor* groupColor;
+#ifdef __cplusplus
+// Identifier of the group. Use this to compare two TabGroupItem objects.
+@property(nonatomic, readonly, nonnull) const void* tabGroupIdentifier;
+// If the underlying `TabGroup` object still exists, returns it.
+// Otherwise, returns `nullptr`.
+@property(nonatomic, readonly, nullable) const TabGroup* tabGroup;
+#endif
+@property(nonatomic, readonly, nullable) NSString* title;
+@property(nonatomic, readonly, nullable) NSString* rawTitle;
+@property(nonatomic, readonly, nullable) UIColor* groupColor;
+@property(nonatomic, readonly) NSInteger numberOfTabsInGroup;
+@property(nonatomic, readonly) BOOL collapsed;
 
 // Fetches the groupTabInfos (pair of snapshots and favicons), calling
 // `completion` on the calling sequence when the operation completes.
-- (void)fetchGroupTabInfos:(GroupTabInfosFetchingCompletionBlock)completion;
+- (void)fetchGroupTabInfos:
+    (nonnull GroupTabInfosFetchingCompletionBlock)completion;
 
 @end
 

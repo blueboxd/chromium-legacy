@@ -201,10 +201,7 @@ bool KeySystemConfigSelector::WebLocalFrameDelegate::
 bool KeySystemConfigSelector::WebLocalFrameDelegate::AllowStorageAccessSync(
     WebContentSettingsClient::StorageType storage_type) {
   DCHECK(web_frame_);
-  WebContentSettingsClient* content_settings_client =
-      web_frame_->GetContentSettingsClient();
-  return !content_settings_client ||
-         content_settings_client->AllowStorageAccessSync(storage_type);
+  return web_frame_->AllowStorageAccessSyncAndNotify(storage_type);
 }
 
 struct KeySystemConfigSelector::SelectionRequest {
@@ -1115,8 +1112,9 @@ void KeySystemConfigSelector::SelectConfigInternal(
         return;
       case CONFIGURATION_SUPPORTED:
         std::string key_system = request->key_system;
-        if (key_systems_->ShouldUseBaseKeySystemName(key_system))
+        if (key_systems_->ShouldUseBaseKeySystemName(key_system)) {
           key_system = key_systems_->GetBaseKeySystemName(key_system);
+        }
         cdm_config.key_system = key_system;
 
         cdm_config.allow_distinctive_identifier =

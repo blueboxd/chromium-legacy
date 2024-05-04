@@ -54,7 +54,7 @@ namespace {
 // more refined solution. See crbug.com/1513904.
 BASE_FEATURE(kRendererMainIsDefaultThreadTypeForWebRTC,
              "RendererMainIsNormalThreadTypeForWebRTC",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 const char* VisibilityStateToString(bool is_visible) {
   if (is_visible) {
@@ -463,7 +463,6 @@ FrameScheduler::FrameType FrameSchedulerImpl::GetFrameType() const {
 
 // static
 QueueTraits FrameSchedulerImpl::CreateQueueTraitsForTaskType(TaskType type) {
-  // TODO(haraken): Optimize the mapping from TaskTypes to task runners.
   // TODO(sreejakshetty): Clean up the PrioritisationType QueueTrait and
   // QueueType for kInternalContinueScriptLoading and kInternalContentCapture.
   switch (type) {
@@ -645,9 +644,15 @@ QueueTraits FrameSchedulerImpl::CreateQueueTraitsForTaskType(TaskType type) {
 
 scoped_refptr<base::SingleThreadTaskRunner> FrameSchedulerImpl::GetTaskRunner(
     TaskType type) {
-  scoped_refptr<MainThreadTaskQueue> task_queue = GetTaskQueue(type);
-  DCHECK(task_queue);
-  return task_queue->CreateTaskRunner(type);
+  auto it = task_runners_.find(type);
+  if (it == task_runners_.end()) {
+    scoped_refptr<MainThreadTaskQueue> task_queue = GetTaskQueue(type);
+    DCHECK(task_queue);
+    auto res = task_queue->CreateTaskRunner(type);
+    task_runners_.insert(type, res);
+    return res;
+  }
+  return it->value;
 }
 
 scoped_refptr<MainThreadTaskQueue> FrameSchedulerImpl::GetTaskQueue(
@@ -1000,6 +1005,9 @@ void FrameSchedulerImpl::OnFirstMeaningfulPaint(base::TimeTicks timestamp) {
   }
 
   main_thread_scheduler_->OnMainFramePaint();
+  if (delegate_) {
+    return delegate_->MainFrameFirstMeaningfulPaint();
+  }
 }
 
 void FrameSchedulerImpl::OnDispatchLoadEvent() {
@@ -1374,6 +1382,10 @@ const base::UnguessableToken& FrameSchedulerImpl::GetAgentClusterId() const {
   if (!delegate_)
     return base::UnguessableToken::Null();
   return delegate_->GetAgentClusterId();
+}
+
+base::TimeDelta FrameSchedulerImpl::UnreportedTaskTime() const {
+  return unreported_task_time_;
 }
 
 // static

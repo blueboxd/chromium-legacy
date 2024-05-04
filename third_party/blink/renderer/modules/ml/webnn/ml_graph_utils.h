@@ -70,10 +70,17 @@ struct ArrayBufferViewInfo {
 //
 // TODO(crbug.com/1273291): Revisit the error handling once the WebNN spec issue
 // is resolved: https://github.com/webmachinelearning/webnn/issues/351
+//
+// TODO(crbug.com/332782852): Accepts a `ScriptPromiseResolver` rather than
+// `ExceptionState`. So the caller, i.e. `MLGraph::Compute()`, won't need to
+// pass both ways of throwing an exception.
 MODULES_EXPORT std::unique_ptr<Vector<std::pair<String, ArrayBufferViewInfo>>>
 TransferNamedArrayBufferViews(v8::Isolate* isolate,
                               const MLNamedArrayBufferViews& source_views,
                               ExceptionState& exception_state);
+
+MODULES_EXPORT DOMArrayBufferView* CreateArrayBufferView(
+    ArrayBufferViewInfo view_info);
 
 MODULES_EXPORT MLNamedArrayBufferViews* CreateNamedArrayBufferViews(
     std::unique_ptr<Vector<std::pair<String, ArrayBufferViewInfo>>> views_info);
@@ -88,13 +95,6 @@ Vector<uint32_t> CreateAllAxes(const wtf_size_t rank);
 // vector when rank <= 1 for layer normalization specified in
 // https://www.w3.org/TR/webnn/#api-mlgraphbuilder-layernorm.
 Vector<uint32_t> CreateLayerNormalizationDefaultAxes(const wtf_size_t rank);
-
-// A depthwise conv2d operation is a variant of grouped convolution where the
-// options.groups == input_channels == output_channels according to WebNN conv2d
-// spec: https://www.w3.org/TR/webnn/#api-mlgraphbuilder-conv2d.
-bool IsDepthwiseConv2d(uint32_t input_channels,
-                       uint32_t output_channels,
-                       uint32_t groups);
 
 // Helper to validate filer layout for Nhwc input layout.
 base::expected<void, String> ValidateFilterLayout(

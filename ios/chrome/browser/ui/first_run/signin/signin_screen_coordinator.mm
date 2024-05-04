@@ -10,7 +10,6 @@
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
 #import "ios/chrome/browser/shared/model/browser/browser.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
-#import "ios/chrome/browser/shared/public/commands/browsing_data_commands.h"
 #import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
 #import "ios/chrome/browser/shared/public/commands/tos_commands.h"
 #import "ios/chrome/browser/signin/model/authentication_service.h"
@@ -20,9 +19,9 @@
 #import "ios/chrome/browser/signin/model/identity_manager_factory.h"
 #import "ios/chrome/browser/sync/model/sync_service_factory.h"
 #import "ios/chrome/browser/ui/authentication/authentication_flow.h"
+#import "ios/chrome/browser/ui/authentication/identity_chooser/identity_chooser_coordinator.h"
+#import "ios/chrome/browser/ui/authentication/identity_chooser/identity_chooser_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_coordinator.h"
-#import "ios/chrome/browser/ui/authentication/unified_consent/identity_chooser/identity_chooser_coordinator.h"
-#import "ios/chrome/browser/ui/authentication/unified_consent/identity_chooser/identity_chooser_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/first_run/first_run_constants.h"
 #import "ios/chrome/browser/ui/first_run/first_run_screen_delegate.h"
 #import "ios/chrome/browser/ui/first_run/first_run_util.h"
@@ -199,14 +198,13 @@
 // Starts the sign in process.
 - (void)startSignIn {
   DCHECK(self.mediator.selectedIdentity);
-  AuthenticationFlow* authenticationFlow =
-      [[AuthenticationFlow alloc] initWithBrowser:self.browser
-                                         identity:self.mediator.selectedIdentity
-                                      accessPoint:_accessPoint
-                                 postSignInAction:PostSignInAction::kNone
-                         presentingViewController:self.viewController];
-  authenticationFlow.dispatcher = HandlerForProtocol(
-      self.browser->GetCommandDispatcher(), BrowsingDataCommands);
+  AuthenticationFlow* authenticationFlow = [[AuthenticationFlow alloc]
+               initWithBrowser:self.browser
+                      identity:self.mediator.selectedIdentity
+                   accessPoint:_accessPoint
+             postSignInActions:PostSignInActionSet({PostSignInAction::kNone})
+      presentingViewController:self.viewController];
+  authenticationFlow.precedingHistorySync = YES;
   __weak __typeof(self) weakSelf = self;
   ProceduralBlock completion = ^() {
     [weakSelf finishPresentingWithSignIn:YES];

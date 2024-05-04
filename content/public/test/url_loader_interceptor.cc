@@ -5,6 +5,7 @@
 #include "content/public/test/url_loader_interceptor.h"
 
 #include <string>
+#include <string_view>
 #include <utility>
 
 #include "base/containers/unique_ptr_adapters.h"
@@ -467,8 +468,8 @@ URLLoaderInterceptor::ServeFilesFromDirectoryAtOrigin(
 }
 
 void URLLoaderInterceptor::WriteResponse(
-    base::StringPiece headers,
-    base::StringPiece body,
+    std::string_view headers,
+    std::string_view body,
     network::mojom::URLLoaderClient* client,
     std::optional<net::SSLInfo> ssl_info,
     std::optional<GURL> url) {
@@ -497,7 +498,7 @@ void URLLoaderInterceptor::WriteResponse(
       CreateDataPipe(&options, producer_handle, consumer_handle);
   CHECK_EQ(result, MOJO_RESULT_OK);
 
-  uint32_t bytes_written = body.size();
+  size_t bytes_written = body.size();
   result = producer_handle->WriteData(body.data(), &bytes_written,
                                       MOJO_WRITE_DATA_FLAG_ALL_OR_NONE);
   CHECK_EQ(result, MOJO_RESULT_OK);

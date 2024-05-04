@@ -8,7 +8,7 @@
 #include "ash/ash_export.h"
 #include "ash/wm/overview/birch/birch_chip_button.h"
 #include "base/callback_list.h"
-#include "base/gtest_prod_util.h"
+#include "base/memory/weak_ptr.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/base/models/image_model.h"
 #include "ui/views/controls/button/button.h"
@@ -23,6 +23,8 @@ class Widget;
 }  // namespace views
 
 namespace ash {
+
+class BirchItem;
 
 // The birch chips bar container holds up to four birch chips. It has a
 // responsive layout to adjust the chips position according to the number of
@@ -41,11 +43,12 @@ namespace ash {
 // fit in the work area. Otherwise, the third and fourth chips will be moved to
 // the secondary row.
 
-class ASH_EXPORT BirchBarView : public views::BoxLayoutView,
-                                public BirchChipButton::Delegate {
+class ASH_EXPORT BirchBarView : public views::BoxLayoutView {
   METADATA_HEADER(BirchBarView, views::BoxLayoutView)
 
  public:
+  static constexpr int kMaxChipsNum = 4;
+
   enum class RelayoutReason {
     // Relayout caused by adding or removing chips.
     kAddRemoveChip,
@@ -66,6 +69,15 @@ class ASH_EXPORT BirchBarView : public views::BoxLayoutView,
   static std::unique_ptr<views::Widget> CreateBirchBarWidget(
       aura::Window* root_window);
 
+  // Adds chip loaders to show loading animations.
+  void Loading();
+
+  // Adds chip loaders to show reloading animations.
+  void Reloading();
+
+  // Shuts down the `BirchChipButtons`.
+  void Shutdown();
+
   // Updates the birch bar's available space and relayout the bar according to
   // the updated available space. Note that the function must be called before
   // getting the view's preferred size.
@@ -77,22 +89,19 @@ class ASH_EXPORT BirchBarView : public views::BoxLayoutView,
   // Gets current number of chips.
   int GetChipsNum() const;
 
-  // Adds a new birch chip to the bar.
-  // TODO(zxdan): move the function to private when using model and replace the
-  // arguments with chip data structure.
-  void AddChip(const ui::ImageModel& icon,
-               const std::u16string& title,
-               const std::u16string& sub_title,
-               views::Button::PressedCallback callback,
-               std::optional<std::u16string> button_title = std::nullopt,
-               std::optional<views::Button::PressedCallback> button_callback =
-                   std::nullopt);
+  // Clear existing chips and create new chips with given items.
+  void SetupChips(const std::vector<raw_ptr<BirchItem>>& items);
 
-  // BirchChipButton::Delegate:
-  void RemoveChip(BirchChipButton* chip) override;
+  // Adds a new chip with given item.
+  void AddChip(BirchItem* birch_item);
+
+  void RemoveChip(BirchItem* birch_item);
+
+  // Gets the maximum height of the bar with full chips.
+  int GetMaximumHeight() const;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(BirchBarLayoutTest, ResponsiveLayout);
+  friend class OverviewGridTestApi;
 
   // The layouts that the birch bar may use. When current available space can
   // hold all present chips, a 1x4 grids layout is used. Otherwise, a 2x2 grids
@@ -102,13 +111,16 @@ class ASH_EXPORT BirchBarView : public views::BoxLayoutView,
     kTwoByTwo,
   };
 
+  // Remove all current chips.
+  void Clear();
+
   // Calculates the chip size according to current shelf position and display
   // size.
   gfx::Size GetChipSize() const;
 
-  // Gets expected layout types according to the number of chips and available
-  // space.
-  LayoutType GetExpectedLayoutType() const;
+  // Gets expected layout types according to the given number of chips and
+  // current available space.
+  LayoutType GetExpectedLayoutType(int chip_num) const;
 
   // Rearranges the chips according to current expected layout type.
   void Relayout(RelayoutReason reason);
@@ -132,7 +144,7 @@ class ASH_EXPORT BirchBarView : public views::BoxLayoutView,
   raw_ptr<BoxLayoutView> secondary_row_ = nullptr;
 
   // The chips are owned by either primary or secondary row.
-  std::vector<raw_ptr<BirchChipButton>> chips_;
+  std::vector<raw_ptr<BirchChipButtonBase>> chips_;
 
   base::RepeatingCallbackList<RelayoutCallback::RunType>
       relayout_callback_list_;

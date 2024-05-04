@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_ALLOCATOR_PARTITION_ALLOCATOR_SRC_PARTITION_ALLOC_SHIM_ALLOCATOR_SHIM_DEFAULT_DISPATCH_TO_PARTITION_ALLOC_H_
-#define BASE_ALLOCATOR_PARTITION_ALLOCATOR_SRC_PARTITION_ALLOC_SHIM_ALLOCATOR_SHIM_DEFAULT_DISPATCH_TO_PARTITION_ALLOC_H_
+#ifndef PARTITION_ALLOC_SHIM_ALLOCATOR_SHIM_DEFAULT_DISPATCH_TO_PARTITION_ALLOC_H_
+#define PARTITION_ALLOC_SHIM_ALLOCATOR_SHIM_DEFAULT_DISPATCH_TO_PARTITION_ALLOC_H_
 
 #include "partition_alloc/partition_alloc_buildflags.h"
 
@@ -96,11 +96,13 @@ PA_ALWAYS_INLINE void ConfigurePartitionsForTesting() {
   auto scheduler_loop_quarantine = SchedulerLoopQuarantine(false);
   size_t scheduler_loop_quarantine_capacity_in_bytes = 0;
   auto zapping_by_free_flags = ZappingByFreeFlags(false);
+  auto use_pool_offset_freelists = UsePoolOffsetFreelists(true);
 
-  ConfigurePartitions(
-      enable_brp, enable_memory_tagging, memory_tagging_reporting_mode,
-      distribution, scheduler_loop_quarantine,
-      scheduler_loop_quarantine_capacity_in_bytes, zapping_by_free_flags);
+  ConfigurePartitions(enable_brp, enable_memory_tagging,
+                      memory_tagging_reporting_mode, distribution,
+                      scheduler_loop_quarantine,
+                      scheduler_loop_quarantine_capacity_in_bytes,
+                      zapping_by_free_flags, use_pool_offset_freelists);
 }
 #endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
 
@@ -108,4 +110,4 @@ PA_ALWAYS_INLINE void ConfigurePartitionsForTesting() {
 
 #endif  // BUILDFLAG(USE_ALLOCATOR_SHIM)
 
-#endif  // BASE_ALLOCATOR_PARTITION_ALLOCATOR_SRC_PARTITION_ALLOC_SHIM_ALLOCATOR_SHIM_DEFAULT_DISPATCH_TO_PARTITION_ALLOC_H_
+#endif  // PARTITION_ALLOC_SHIM_ALLOCATOR_SHIM_DEFAULT_DISPATCH_TO_PARTITION_ALLOC_H_

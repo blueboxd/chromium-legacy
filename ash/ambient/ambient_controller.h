@@ -16,6 +16,7 @@
 #include "ash/ambient/ambient_weather_controller.h"
 #include "ash/ambient/managed/screensaver_images_policy_handler.h"
 #include "ash/ambient/model/ambient_backend_model.h"
+#include "ash/ambient/resources/ambient_dlc_background_installer.h"
 #include "ash/ambient/ui/ambient_view_delegate.h"
 #include "ash/ash_export.h"
 #include "ash/assistant/model/assistant_interaction_model_observer.h"
@@ -294,10 +295,13 @@ class ASH_EXPORT AmbientController
   // this will return the `sign_in_pref_change_registrar_`.
   PrefChangeRegistrar* GetActivePrefChangeRegistrar();
 
+  void MaybeStopUiEventPropagation(ui::Event* event);
+
   AmbientViewDelegateImpl delegate_{this};
   AmbientUiModel ambient_ui_model_;
 
   AmbientAccessTokenController access_token_controller_;
+  AmbientBackgroundDlcInstaller background_dlc_installer_;
   std::unique_ptr<AmbientBackendController> ambient_backend_controller_;
   std::unique_ptr<AmbientWeatherController> ambient_weather_controller_;
 

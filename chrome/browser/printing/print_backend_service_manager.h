@@ -8,6 +8,7 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <string_view>
 #include <type_traits>
 
 #include "base/containers/flat_map.h"
@@ -99,6 +100,10 @@ class PrintBackendServiceManager {
   PrintBackendServiceManager(const PrintBackendServiceManager&) = delete;
   PrintBackendServiceManager& operator=(const PrintBackendServiceManager&) =
       delete;
+
+  // Launch a service that is intended to persist indefinitely and can be used
+  // by all further clients.
+  static void LaunchPersistentService();
 
   // Client registration routines.  These act as a signal of impending activity
   // enabling possible optimizations within the manager.  They return an ID
@@ -368,9 +373,9 @@ class PrintBackendServiceManager {
 
   static std::string ClientTypeToString(ClientType client_type);
 
-  static void LogCallToRemote(base::StringPiece name,
+  static void LogCallToRemote(std::string_view name,
                               const CallbackContext& context);
-  static void LogCallbackFromRemote(base::StringPiece name,
+  static void LogCallbackFromRemote(std::string_view name,
                                     const CallbackContext& context);
 
   void SetCrashKeys(const std::string& printer_name);
@@ -428,8 +433,8 @@ class PrintBackendServiceManager {
       RemotesBundleMap<T>& bundle_map);
 
   // Get the idle timeout value to user for a particular client type.
-  static constexpr base::TimeDelta GetClientTypeIdleTimeout(
-      ClientType client_type);
+  constexpr base::TimeDelta GetClientTypeIdleTimeout(
+      ClientType client_type) const;
 
   // Whether any clients are queries with UI to `remote_id`.
   bool HasQueryWithUiClientForRemoteId(const RemoteId& remote_id) const;
@@ -711,6 +716,10 @@ class PrintBackendServiceManager {
   // within browser process management code, so a simple incrementating
   // sequence is sufficient.
   uint32_t remote_id_sequence_ = 0;
+
+  // Set when launched services are intended to persist indefinitely, rather
+  // than being disconnected after a finite idle timeout expires.
+  bool persistent_service_ = false;
 
   // Crash key is kept at class level so that we can obtain printer driver
   // information for a prior call should the process be terminated due to Mojo

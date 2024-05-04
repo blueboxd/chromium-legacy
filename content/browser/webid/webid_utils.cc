@@ -4,22 +4,24 @@
 
 #include "content/browser/webid/webid_utils.h"
 
+#include "base/rand_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/url_formatter/elide_url.h"
 #include "components/url_formatter/url_formatter.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
-#include "content/browser/runtime_feature_state/runtime_feature_state_document_data.h"
 #include "content/browser/webid/fedcm_metrics.h"
+#include "content/browser/webid/federated_auth_request_page_data.h"
 #include "content/browser/webid/flags.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/federated_identity_api_permission_context_delegate.h"
 #include "content/public/browser/federated_identity_permission_context_delegate.h"
+#include "content/public/browser/runtime_feature_state/runtime_feature_state_document_data.h"
 #include "content/public/common/web_identity.h"
 #include "net/base/net_errors.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
+#include "net/base/schemeful_site.h"
 #include "net/base/url_util.h"
-
 #include "third_party/blink/public/mojom/devtools/inspector_issue.mojom.h"
 #include "third_party/blink/public/mojom/webid/federated_auth_request.mojom.h"
 #include "url/origin.h"
@@ -118,34 +120,7 @@ bool IsEndpointSameOrigin(const GURL& identity_provider_config_url,
 }
 
 bool IsSameSite(const url::Origin& origin1, const url::Origin& origin2) {
-  if (origin1.opaque() || origin2.opaque()) {
-    return false;
-  }
-  // We don't use FormatUrlWithDomain because that does not let us detect if
-  // the eTLD+1 is empty -- an empty eTLD+1 should be considered cross-site
-  // unless the host is equal (we want "localhost" to be same-site with
-  // "localhost", but cross-site with "foo"). Conversely, GetDomainAndRegistry
-  // only returns the domain itself without a scheme. Combining these
-  // constraints means we have to explicitly compare the scheme and the host
-  // here.
-  if (origin1.scheme() != origin2.scheme()) {
-    return false;
-  }
-  if (origin1.host() == origin2.host()) {
-    return true;
-  }
-  std::string origin1_etld_plus_one =
-      net::registry_controlled_domains::GetDomainAndRegistry(
-          origin1.GetURL(), kDefaultPrivateRegistryFilter);
-  if (origin1_etld_plus_one.empty()) {
-    // If the host is different but there is no eTLD, the origins are not
-    // same-site.
-    return false;
-  }
-  std::string origin2_etld_plus_one =
-      net::registry_controlled_domains::GetDomainAndRegistry(
-          origin2.GetURL(), kDefaultPrivateRegistryFilter);
-  return origin1_etld_plus_one == origin2_etld_plus_one;
+  return net::SchemefulSite(origin1) == net::SchemefulSite(origin2);
 }
 
 bool ShouldFailAccountsEndpointRequestBecauseNotSignedInWithIdp(
@@ -154,11 +129,6 @@ bool ShouldFailAccountsEndpointRequestBecauseNotSignedInWithIdp(
     FederatedIdentityPermissionContextDelegate* permission_delegate) {
   const url::Origin idp_origin =
       url::Origin::Create(identity_provider_config_url);
-  if (webid::GetIdpSigninStatusMode(host, idp_origin) ==
-      FedCmIdpSigninStatusMode::DISABLED) {
-    return false;
-  }
-
   const std::optional<bool> idp_signin_status =
       permission_delegate->GetIdpSigninStatus(idp_origin);
   return !idp_signin_status.value_or(true);
@@ -169,19 +139,14 @@ void UpdateIdpSigninStatusForAccountsEndpointResponse(
     const GURL& identity_provider_config_url,
     IdpNetworkRequestManager::FetchStatus fetch_status,
     bool does_idp_have_failing_signin_status,
-    FederatedIdentityPermissionContextDelegate* permission_delegate,
-    FedCmMetrics* metrics) {
+    FederatedIdentityPermissionContextDelegate* permission_delegate) {
   url::Origin idp_origin = url::Origin::Create(identity_provider_config_url);
-  if (webid::GetIdpSigninStatusMode(host, idp_origin) ==
-      FedCmIdpSigninStatusMode::DISABLED) {
-    return;
-  }
 
   // Record metrics on effect of IDP sign-in status API.
   const std::optional<bool> idp_signin_status =
       permission_delegate->GetIdpSigninStatus(idp_origin);
-  metrics->RecordIdpSigninMatchStatus(idp_signin_status,
-                                      fetch_status.parse_status);
+  FedCmMetrics::RecordIdpSigninMatchStatus(idp_signin_status,
+                                           fetch_status.parse_status);
 
   if (fetch_status.parse_status ==
       IdpNetworkRequestManager::ParseStatus::kSuccess) {
@@ -329,6 +294,12 @@ std::string GetConsoleErrorMessageFromResult(
              "FedCM without third-party cookies, enable the "
              "#fedcm-without-third-party-cookies flag.";
     }
+    case FederatedAuthRequestResult::kErrorMissingTransientUserActivation: {
+      return "FedCM button mode requires transient user activation.";
+    }
+    case FederatedAuthRequestResult::kErrorReplacedByButtonMode: {
+      return "The request is replaced by a new one with button mode.";
+    }
     case FederatedAuthRequestResult::kErrorNotSignedInWithIdp: {
       return "Not signed in with the identity provider.";
     }
@@ -415,12 +386,12 @@ std::string GetDisconnectConsoleErrorMessage(
 
 FedCmIdpSigninStatusMode GetIdpSigninStatusMode(RenderFrameHost& host,
                                                 const url::Origin& idp_origin) {
-  // TODO(crbug.com/1487668): Remove this function in favor of
+  // TODO(crbug.com/40283354): Remove this function in favor of
   // GetFedCmIdpSigninStatusFlag.
   return GetFedCmIdpSigninStatusFlag();
 }
 
-std::string FormatUrlWithDomain(const GURL& url, bool for_display) {
+std::string FormatUrlForDisplay(const GURL& url) {
   // We do not use url_formatter::FormatUrlForSecurityDisplay() directly because
   // our UI intentionally shows only the eTLD+1, as it makes for a shorter text
   // that is also clearer to users. The identity provider's well-known file is
@@ -431,20 +402,9 @@ std::string FormatUrlWithDomain(const GURL& url, bool for_display) {
           ? url.host()
           : net::registry_controlled_domains::GetDomainAndRegistry(
                 url, kDefaultPrivateRegistryFilter);
-  if (for_display) {
-    return base::UTF16ToUTF8(url_formatter::FormatUrlForSecurityDisplay(
-        GURL(url.scheme() + "://" + formatted_url_str),
-        url_formatter::SchemeDisplay::OMIT_HTTP_AND_HTTPS));
-  }
-  // We want defaults but we need to keep the scheme.
-  url_formatter::FormatUrlTypes types =
-      url_formatter::kFormatUrlOmitDefaults &
-      ~(url_formatter::kFormatUrlOmitHTTP | url_formatter::kFormatUrlOmitHTTPS |
-        url_formatter::kFormatUrlOmitFileScheme);
-  std::string out = base::UTF16ToUTF8(url_formatter::FormatUrl(
-      GURL(url.scheme() + "://" + formatted_url_str), types,
-      base::UnescapeRule::SPACES, nullptr, nullptr, nullptr));
-  return out;
+  return base::UTF16ToUTF8(url_formatter::FormatUrlForSecurityDisplay(
+      GURL(url.scheme() + "://" + formatted_url_str),
+      url_formatter::SchemeDisplay::OMIT_HTTP_AND_HTTPS));
 }
 
 bool HasSharingPermissionOrIdpHasThirdPartyCookiesAccess(
@@ -455,13 +415,46 @@ bool HasSharingPermissionOrIdpHasThirdPartyCookiesAccess(
     const std::optional<std::string>& account_id,
     FederatedIdentityPermissionContextDelegate* sharing_permission_delegate,
     FederatedIdentityApiPermissionContextDelegate* api_permission_delegate) {
-  bool has_access = IsFedCmExemptIdpWithThirdPartyCookiesEnabled() &&
-                    api_permission_delegate->HasThirdPartyCookiesAccess(
-                        host, provider_url, embedder_origin);
+  bool has_access = api_permission_delegate->HasThirdPartyCookiesAccess(
+      host, provider_url, embedder_origin);
   return sharing_permission_delegate->HasSharingPermission(
              requester_origin, embedder_origin,
              url::Origin::Create(provider_url), account_id) ||
          has_access;
+}
+
+bool IsFedCmAuthzEnabled(RenderFrameHost& host, const url::Origin& idp_origin) {
+  RuntimeFeatureStateDocumentData* rfs_document_data =
+      RuntimeFeatureStateDocumentData::GetForCurrentDocument(&host);
+  // If field trials or an explicit user selection disables authz, we should
+  // respect that.
+  std::optional<bool> is_overridden = IsFedCmAuthzOverridden();
+  if (is_overridden) {
+    return *is_overridden;
+  }
+
+  // Should not be null as this gets initialized when the host gets created.
+  DCHECK(rfs_document_data);
+  std::vector<url::Origin> third_party_origins = {idp_origin};
+  // This includes origin trials.
+  bool runtime_enabled =
+      rfs_document_data->runtime_feature_state_read_context()
+          .IsFedCmAuthzEnabled() ||
+      rfs_document_data->runtime_feature_state_read_context()
+          .IsFedCmAuthzEnabledForThirdParty(host.GetLastCommittedOrigin(),
+                                            third_party_origins);
+
+  bool flag_enabled = IsFedCmAuthzFlagEnabled();
+  return runtime_enabled || flag_enabled;
+}
+
+FederatedAuthRequestPageData* GetPageData(RenderFrameHost* render_frame_host) {
+  return FederatedAuthRequestPageData::GetOrCreateForPage(
+      render_frame_host->GetPage());
+}
+
+int GetNewSessionID() {
+  return base::RandInt(1, 1 << 30);
 }
 
 }  // namespace content::webid

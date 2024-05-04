@@ -8,6 +8,7 @@
 #include <iterator>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/containers/flat_map.h"
 #include "base/debug/crash_logging.h"
@@ -91,23 +92,10 @@ void WorkerIdSet::Add(const WorkerId& worker_id,
       kMaxWorkerCountToReport);
 
   if (!g_allow_multiple_workers_per_extension) {
-    // TODO(crbug.com/1493391):Enable this CHECK and delete the
-    // DUMP_WILL_BE_CHECK() once multiple active workers is resolved.
-    // CHECK_LE(new_size, 1u) << "Extension with worker id " << worker_id
+    // TODO(crbug.com/40936639):Enable this CHECK once multiple active workers
+    // is resolved. CHECK_LE(new_size, 1u) << "Extension with worker id " <<
+    // worker_id
     //                        << " added additional worker";
-
-    if (new_size == 2) {
-      // new_size == 2 guarantees that a previous WorkerId will be present.
-      const WorkerId& previous_worker_id = previous_worker_ids.front();
-      // Set crash keys for the DUMP_WILL_BE_CHECK() below.
-      debug::ScopedMultiWorkerCrashKeys multi_worker_keys(
-          worker_id.extension_id, previous_worker_id, worker_id, context);
-
-      // Only dump when there are two workers. Two added should be enough to
-      // solve why there's N workers.
-      DUMP_WILL_BE_CHECK(false) << "Extension with worker id " << worker_id
-                                << " added additional worker";
-    }
   }
 
   // Only emit our incorrect worker metrics if an unexpected number of workers
@@ -154,6 +142,19 @@ std::vector<WorkerId> WorkerIdSet::GetAllForExtension(
   while (end_range != workers_.end() && end_range->extension_id == extension_id)
     ++end_range;
   return std::vector<WorkerId>(begin_range, end_range);
+}
+
+std::vector<WorkerId> WorkerIdSet::GetAllForExtension(
+    const ExtensionId& extension_id,
+    int64_t worker_version_id) const {
+  std::vector<WorkerId> worker_ids;
+  for (const auto& worker_id : workers_) {
+    if (worker_id.version_id == worker_version_id &&
+        worker_id.extension_id == extension_id) {
+      worker_ids.push_back(worker_id);
+    }
+  }
+  return worker_ids;
 }
 
 bool WorkerIdSet::Contains(const WorkerId& worker_id) const {
@@ -209,41 +210,39 @@ std::string GetVersionIdValue(int64_t version_id) {
 
 base::debug::CrashKeyString* GetExtensionIdCrashKey() {
   static auto* crash_key = base::debug::AllocateCrashKeyString(
-      "multi_extension_worker_extension_id", base::debug::CrashKeySize::Size32);
+      "multi_ext_worker_extension_id", base::debug::CrashKeySize::Size32);
   return crash_key;
 }
 
 base::debug::CrashKeyString* GetIdenticalVersionIdsCrashKey() {
   static auto* crash_key = base::debug::AllocateCrashKeyString(
-      "multi_extension_worker_identical_worker_version_ids",
+      "multi_ext_worker_identical_version_ids",
       base::debug::CrashKeySize::Size32);
   return crash_key;
 }
 
 base::debug::CrashKeyString* GetPreviousWorkerVersionIdCrashKey() {
   static auto* crash_key = base::debug::AllocateCrashKeyString(
-      "multi_extension_worker_previous_worker_version_id",
-      base::debug::CrashKeySize::Size32);
+      "multi_ext_worker_prev_version_id", base::debug::CrashKeySize::Size32);
   return crash_key;
 }
 
 base::debug::CrashKeyString* GetNewWorkerVersionIdCrashKey() {
   static auto* crash_key = base::debug::AllocateCrashKeyString(
-      "multi_extension_worker_new_worker_version_id",
-      base::debug::CrashKeySize::Size32);
+      "multi_ext_worker_new_version_id", base::debug::CrashKeySize::Size32);
   return crash_key;
 }
 
 base::debug::CrashKeyString* GetPreviousWorkerLifecycleStateCrashKey() {
   static auto* crash_key = base::debug::AllocateCrashKeyString(
-      "multi_extension_worker_previous_worker_lifecycle_state",
+      "multi_ext_worker_prev_lifecycle_state",
       base::debug::CrashKeySize::Size32);
   return crash_key;
 }
 
 base::debug::CrashKeyString* GetNewWorkerLifecycleStateCrashKey() {
   static auto* crash_key = base::debug::AllocateCrashKeyString(
-      "multi_extension_worker_new_worker_lifecycle_state",
+      "multi_ext_worker_new_lifecycle_state",
       base::debug::CrashKeySize::Size32);
   return crash_key;
 }
@@ -276,21 +275,21 @@ const char* GetLifecycleStateValue(const WorkerId& worker_id,
 
 base::debug::CrashKeyString* GetIdenticalRendererProcessesIdsCrashKey() {
   static auto* crash_key = base::debug::AllocateCrashKeyString(
-      "multi_extension_worker_identical_renderer_process_ids",
+      "multi_ext_worker_identical_process_ids",
       base::debug::CrashKeySize::Size32);
   return crash_key;
 }
 
 base::debug::CrashKeyString* GetPreviousWorkerRendererProcessRunningCrashKey() {
   static auto* crash_key = base::debug::AllocateCrashKeyString(
-      "multi_extension_worker_previous_worker_renderer_process_running",
+      "multi_ext_worker_prev_process_running",
       base::debug::CrashKeySize::Size32);
   return crash_key;
 }
 
 base::debug::CrashKeyString* GetNewWorkerRendererProcessRunningCrashKey() {
   static auto* crash_key = base::debug::AllocateCrashKeyString(
-      "multi_extension_worker_new_worker_renderer_process_running",
+      "multi_ext_worker_new_process_running",
       base::debug::CrashKeySize::Size32);
   return crash_key;
 }
@@ -329,16 +328,16 @@ ScopedMultiWorkerCrashKeys::ScopedMultiWorkerCrashKeys(
       new_worker_lifecycle_state_crash_key_(
           GetNewWorkerLifecycleStateCrashKey(),
           GetLifecycleStateValue(new_worker_id, context)),
-      identical_worker_renderer_process_ids_crash_key_(
+      identical_worker_render_process_ids_crash_key_(
           GetIdenticalRendererProcessesIdsCrashKey(),
           BoolToCrashKeyValue(previous_worker_id.render_process_id ==
                               new_worker_id.render_process_id)),
-      previous_worker_renderer_process_running_crash_key_(
+      previous_worker_render_process_running_crash_key_(
           GetPreviousWorkerRendererProcessRunningCrashKey(),
           GetRendererProcessRunningValue(extension_id,
                                          previous_worker_id.render_process_id,
                                          context)),
-      new_worker_renderer_process_running_crash_key_(
+      new_worker_render_process_running_crash_key_(
           GetNewWorkerRendererProcessRunningCrashKey(),
           GetRendererProcessRunningValue(extension_id,
                                          new_worker_id.render_process_id,

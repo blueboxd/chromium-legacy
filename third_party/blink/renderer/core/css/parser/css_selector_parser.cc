@@ -73,6 +73,10 @@ CSSSelector::RelationType GetImplicitShadowCombinatorForMatching(
     case CSSSelector::PseudoType::kPseudoDetailsContent:
     case CSSSelector::PseudoType::kPseudoPlaceholder:
     case CSSSelector::PseudoType::kPseudoFileSelectorButton:
+    case CSSSelector::PseudoType::kPseudoSelectFallbackButton:
+    case CSSSelector::PseudoType::kPseudoSelectFallbackButtonIcon:
+    case CSSSelector::PseudoType::kPseudoSelectFallbackButtonText:
+    case CSSSelector::PseudoType::kPseudoSelectFallbackDatalist:
       return CSSSelector::RelationType::kUAShadow;
     case CSSSelector::PseudoType::kPseudoPart:
       return CSSSelector::RelationType::kShadowPart;
@@ -719,23 +723,6 @@ base::span<CSSSelector> CSSSelectorParser::ConsumeComplexSelector(
     return {};
   }
 
-  // When nesting, the complex selector list cannot start with a tag,
-  // since that would cause ambiguous parsing without adding more
-  // lookahead. We normally cannot get here if so (since seeing an ident
-  // would cause us to parse it as a property declaration, not a selector),
-  // but if we tried to set the selector text via CSSOM, we could.
-  // Thus, we need the explicit test here.
-  //
-  // (This only covers the first rule in the complex selector list;
-  // see https://github.com/w3c/csswg-drafts/issues/7980.)
-  const bool disallow_tag_start =
-      !RuntimeEnabledFeatures::CSSNestingIdentEnabled() &&
-      (nesting_type == CSSNestingType::kNesting);
-  if (disallow_tag_start && first_in_complex_selector_list &&
-      compound_selector[0].Match() == CSSSelector::MatchType::kTag) {
-    return {};
-  }
-
   // Reverse the compound selector, so that it comes out properly
   // after we reverse everything below.
   std::reverse(compound_selector.begin(), compound_selector.end());
@@ -952,11 +939,9 @@ AtomicString ParsePseudoElementArgument(const String& selector_string) {
 // static
 PseudoId CSSSelectorParser::ParsePseudoElement(const String& selector_string,
                                                const Node* parent,
-                                               AtomicString& argument,
-                                               PseudoElementParseMode mode) {
+                                               AtomicString& argument) {
   if (!RuntimeEnabledFeatures::
-          CSSComputedStyleFullPseudoElementParserEnabled() ||
-      mode == PseudoElementParseMode::kLegacy) {
+          CSSComputedStyleFullPseudoElementParserEnabled()) {
     PseudoId pseudo_id = ParsePseudoElementLegacy(selector_string, parent);
     if (PseudoElementHasArguments(pseudo_id)) {
       argument = ParsePseudoElementArgument(selector_string);
@@ -1108,6 +1093,11 @@ bool IsPseudoClassValidAfterPseudoElement(
     case CSSSelector::kPseudoSelection:
       return pseudo_class == CSSSelector::kPseudoWindowInactive;
     case CSSSelector::kPseudoPart:
+    // TODO(crbug.com/1511354): Add tests for the PseudoSelect cases here
+    case CSSSelector::kPseudoSelectFallbackButton:
+    case CSSSelector::kPseudoSelectFallbackButtonIcon:
+    case CSSSelector::kPseudoSelectFallbackButtonText:
+    case CSSSelector::kPseudoSelectFallbackDatalist:
       return IsUserActionPseudoClass(pseudo_class) ||
              pseudo_class == CSSSelector::kPseudoState ||
              pseudo_class == CSSSelector::kPseudoStateDeprecatedSyntax;
@@ -1677,7 +1667,7 @@ bool CSSSelectorParser::ConsumePseudo(CSSParserTokenRange& range) {
       output_.push_back(std::move(selector));
       return true;
     }
-    case CSSSelector::kPseudoActiveViewTransition: {
+    case CSSSelector::kPseudoActiveViewTransitionType: {
       if (!RuntimeEnabledFeatures::ViewTransitionTypesEnabled()) {
         return false;
       }
@@ -1685,15 +1675,6 @@ bool CSSSelectorParser::ConsumePseudo(CSSParserTokenRange& range) {
       Vector<AtomicString> types;
       for (;;) {
         const CSSParserToken& ident = block.ConsumeIncludingWhitespace();
-        // If the only ident is '*' then break out of the loop, and set empty
-        // ident list.
-        if (ident.GetType() == kDelimiterToken && ident.Delimiter() == '*') {
-          if (types.empty() && block.AtEnd()) {
-            break;
-          }
-          return false;
-        }
-
         if (ident.GetType() != kIdentToken) {
           return false;
         }
@@ -1716,24 +1697,29 @@ bool CSSSelectorParser::ConsumePseudo(CSSParserTokenRange& range) {
     case CSSSelector::kPseudoViewTransitionImagePair:
     case CSSSelector::kPseudoViewTransitionOld:
     case CSSSelector::kPseudoViewTransitionNew: {
-      const CSSParserToken& ident = block.Consume();
-      std::optional<AtomicString> name_or_wildcard;
-      if (ident.GetType() == kIdentToken) {
-        name_or_wildcard = ident.Value().ToAtomicString();
-      } else if (ident.GetType() == kDelimiterToken &&
-                 ident.Delimiter() == '*') {
-        name_or_wildcard = CSSSelector::UniversalSelectorAtom();
-      }
-
-      // TODO(https://github.com/w3c/csswg-drafts/issues/9874)
-      // Consider allowing (.class) without *.
-      if (!name_or_wildcard) {
-        return false;
-      }
-
       std::unique_ptr<Vector<AtomicString>> name_and_classes =
           std::make_unique<Vector<AtomicString>>();
-      name_and_classes->push_back(*name_or_wildcard);
+      if (RuntimeEnabledFeatures::CSSViewTransitionClassEnabled()) {
+        if (block.Peek().GetType() == kDelimiterToken &&
+            block.Peek().Delimiter() == '.') {
+          name_and_classes->push_back(CSSSelector::UniversalSelectorAtom());
+        }
+      }
+
+      if (name_and_classes->empty()) {
+        const CSSParserToken& ident = block.Consume();
+        if (ident.GetType() == kIdentToken) {
+          name_and_classes->push_back(ident.Value().ToAtomicString());
+        } else if (ident.GetType() == kDelimiterToken &&
+                   ident.Delimiter() == '*') {
+          name_and_classes->push_back(CSSSelector::UniversalSelectorAtom());
+        } else {
+          return false;
+        }
+      }
+
+      CHECK_EQ(name_and_classes->size(), 1ull);
+
       if (RuntimeEnabledFeatures::CSSViewTransitionClassEnabled()) {
         while (!block.AtEnd() && block.Peek().GetType() != kWhitespaceToken) {
           if (block.Peek().GetType() != kDelimiterToken ||
@@ -2388,6 +2374,12 @@ static void RecordUsageAndDeprecationsOneSelector(
       break;
     case CSSSelector::kPseudoState:
       feature = WebFeature::kCSSSelectorPseudoState;
+      break;
+    case CSSSelector::kPseudoUserValid:
+      feature = WebFeature::kCSSSelectorUserValid;
+      break;
+    case CSSSelector::kPseudoUserInvalid:
+      feature = WebFeature::kCSSSelectorUserInvalid;
       break;
     default:
       break;

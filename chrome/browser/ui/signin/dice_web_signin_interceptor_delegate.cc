@@ -13,7 +13,6 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/task/single_thread_task_runner.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/signin/signin_features.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser.h"
@@ -21,6 +20,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/webui/signin/signin_utils.h"
 #include "components/signin/public/base/signin_metrics.h"
+#include "components/signin/public/base/signin_switches.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "google_apis/gaia/core_account_id.h"
 #include "google_apis/gaia/gaia_auth_util.h"
@@ -63,6 +63,8 @@ class ForcedEnterpriseSigninInterceptionHandle
     DCHECK(callback_);
     browser_->signin_view_controller()->ShowModalManagedUserNoticeDialog(
         bubble_parameters.intercepted_account,
+        /*is_oidc_account=*/bubble_parameters.interception_type ==
+            WebSigninInterceptor::SigninInterceptionType::kEnterpriseOIDC,
         profile_creation_required_by_policy_, show_link_data_option_,
         base::BindOnce(&ForcedEnterpriseSigninInterceptionHandle::
                            OnEnterpriseInterceptionDialogClosed,
@@ -152,7 +154,9 @@ DiceWebSigninInterceptorDelegate::ShowSigninInterceptionBubble(
           WebSigninInterceptor::SigninInterceptionType::kEnterpriseForced ||
       bubble_parameters.interception_type ==
           WebSigninInterceptor::SigninInterceptionType::
-              kEnterpriseAcceptManagement) {
+              kEnterpriseAcceptManagement ||
+      bubble_parameters.interception_type ==
+          WebSigninInterceptor::SigninInterceptionType::kEnterpriseOIDC) {
     return std::make_unique<ForcedEnterpriseSigninInterceptionHandle>(
         chrome::FindBrowserWithTab(web_contents), bubble_parameters,
         std::move(callback));
@@ -190,6 +194,8 @@ std::string DiceWebSigninInterceptorDelegate::GetHistogramSuffix(
       return ".ChromeSignin";
     case WebSigninInterceptor::SigninInterceptionType::kEnterpriseForced:
       return ".EnterpriseForced";
+    case WebSigninInterceptor::SigninInterceptionType::kEnterpriseOIDC:
+      return ".EnterpriseOIDC";
   }
 }
 

@@ -475,12 +475,14 @@ void ProfilePolicyConnector::Init(
         policy_providers_, std::move(migrators),
         user_policy_delegate_candidate);
   } else {
-    policy_service_ = std::make_unique<PolicyServiceImpl>(policy_providers_,
-                                                          std::move(migrators));
+    policy_service_ = std::make_unique<PolicyServiceImpl>(
+        policy_providers_, PolicyServiceImpl::ScopeForMetrics::kUser,
+        std::move(migrators));
   }
 #else   // BUILDFLAG(IS_CHROMEOS_ASH)
-  policy_service_ = std::make_unique<PolicyServiceImpl>(policy_providers_,
-                                                        std::move(migrators));
+  policy_service_ = std::make_unique<PolicyServiceImpl>(
+      policy_providers_, PolicyServiceImpl::ScopeForMetrics::kUser,
+      std::move(migrators));
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   if (local_test_policy_provider_ && local_test_policy_provider_->is_active()) {
@@ -532,7 +534,7 @@ bool ProfilePolicyConnector::IsManaged() const {
   // device account (via IsManagedDeviceAccount).
   // Desktop's way is used for secondary profiles and is using dice, which
   // can be read directly from the profile.
-  // TODO(crbug/1245077): Remove this once Lacros only uses mirror.
+  // TODO(crbug.com/40788404): Remove this once Lacros only uses mirror.
   if (browser_policy_connector_ && IsMainProfile())
     return browser_policy_connector_->IsMainUserManaged();
 #endif
@@ -543,7 +545,7 @@ bool ProfilePolicyConnector::IsManaged() const {
 bool ProfilePolicyConnector::IsMainProfile() const {
   // If there is only a single profile or this connector object is owned by the
   // main profile, it must be the main profile.
-  // TODO(crbug/1245077): Remove this once Lacros only uses mirror.
+  // TODO(crbug.com/40788404): Remove this once Lacros only uses mirror.
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   if (profile_manager->GetNumberOfProfiles() <= 1)
     return true;
@@ -724,7 +726,8 @@ ProfilePolicyConnector::CreatePolicyServiceWithInitializationThrottled(
   DCHECK(user_policy_delegate);
 
   auto policy_service = PolicyServiceImpl::CreateWithThrottledInitialization(
-      policy_providers, std::move(migrators));
+      policy_providers, PolicyServiceImpl::ScopeForMetrics::kUser,
+      std::move(migrators));
 
   // base::Unretained is OK for |this| because
   // |proxied_policies_propagated_watcher_| is guaranteed not to call its

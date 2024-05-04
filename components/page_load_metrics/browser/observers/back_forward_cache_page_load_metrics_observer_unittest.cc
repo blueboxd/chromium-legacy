@@ -30,8 +30,9 @@ class BackForwardCachePageLoadMetricsObserverTest
   void RegisterObservers(page_load_metrics::PageLoadTracker* tracker) override {
     auto observer = std::make_unique<BackForwardCachePageLoadMetricsObserver>();
     observer_ = observer.get();
-    // TODO(crbug.com/1265307): Remove this when removing the DCHECK for lack of
-    // page end metric logging from the back forward page load metrics observer.
+    // TODO(crbug.com/40203717): Remove this when removing the DCHECK for lack
+    // of page end metric logging from the back forward page load metrics
+    // observer.
     observer_->logged_page_end_metrics_ = true;
     tracker->AddObserver(std::move(observer));
   }
@@ -52,8 +53,9 @@ class BackForwardCachePageLoadMetricsObserverTest
     observer_with_fake_delegate_->has_ever_entered_back_forward_cache_ = true;
     observer_with_fake_delegate_->back_forward_cache_navigation_ids_.push_back(
         123456);
-    // TODO(crbug.com/1265307): Remove this when removing the DCHECK for lack of
-    // page end metric logging from the back forward page load metrics observer.
+    // TODO(crbug.com/40203717): Remove this when removing the DCHECK for lack
+    // of page end metric logging from the back forward page load metrics
+    // observer.
     observer_with_fake_delegate_->logged_page_end_metrics_ = true;
     test_clock_ = std::make_unique<base::SimpleTestTickClock>();
     test_clock_->SetNowTicks(base::TimeTicks() + base::Milliseconds(25000));
@@ -108,7 +110,7 @@ class BackForwardCachePageLoadMetricsObserverTest
 
   void SetObserverHidden() { observer_with_fake_delegate_->was_hidden_ = true; }
 
-  // TODO(crbug.com/1265307): Remove this when removing the DCHECK for lack of
+  // TODO(crbug.com/40203717): Remove this when removing the DCHECK for lack of
   // page end metric logging from the back forward page load metrics observer.
   void SetPageEndReasonLogged() { observer_->logged_page_end_metrics_ = true; }
 
@@ -244,8 +246,11 @@ TEST_F(BackForwardCachePageLoadMetricsObserverTest,
 
   // None of these should cause logs, as all of these restores are started in
   // the background.
-  std::vector<std::optional<base::TimeDelta>> test_times(
-      {first_bg_time, second_bg_time, std::optional<base::TimeDelta>()});
+  std::vector<std::optional<base::TimeDelta>> test_times({
+      first_bg_time,
+      second_bg_time,
+      std::nullopt,
+  });
   size_t index = 3;
   for (auto bg_time : test_times) {
     AddBFCacheRestoreState(observer_with_fake_delegate_.get(),
@@ -340,7 +345,7 @@ TEST_F(BackForwardCachePageLoadMetricsObserverTest,
   EXPECT_EQ(400, result_metrics[1].begin()->second);
 }
 
-// TODO(crbug.com/1255496): Flaky under TSan.
+// TODO(crbug.com/40200061): Flaky under TSan.
 TEST_F(BackForwardCachePageLoadMetricsObserverTest,
        TestLoggingWithNoPageEndWithNoFirstBackgroundTime) {
   // In the case that there is no page end time and the page has never

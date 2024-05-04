@@ -275,6 +275,8 @@ static_library("common") {
     "config_watcher.h",
     "continue_window.cc",
     "continue_window.h",
+    "corp_host_status_logger.cc",
+    "corp_host_status_logger.h",
     "crash_process.cc",
     "crash_process.h",
     "curtain_mode.h",
@@ -297,6 +299,8 @@ static_library("common") {
     "desktop_display_info_monitor.h",
     "desktop_display_layout_util.cc",
     "desktop_display_layout_util.h",
+    "desktop_geometry.cc",
+    "desktop_geometry.h",
     "desktop_process.cc",
     "desktop_process.h",
     "desktop_resizer.h",
@@ -369,6 +373,8 @@ static_library("common") {
     "mojo_caller_security_checker.h",
     "mojo_video_capturer.cc",
     "mojo_video_capturer.h",
+    "mojo_video_capturer_list.cc",
+    "mojo_video_capturer_list.h",
     "mouse_cursor_monitor_proxy.cc",
     "mouse_cursor_monitor_proxy.h",
     "mouse_shape_pump.cc",
@@ -592,6 +598,8 @@ static_library("common") {
       "linux/wayland_seat.h",
       "x11_crtc_resizer.cc",
       "x11_crtc_resizer.h",
+      "x11_desktop_resizer.cc",
+      "x11_desktop_resizer.h",
       "x11_display_util.cc",
       "x11_display_util.h",
     ]
@@ -795,6 +803,7 @@ source_set("unit_tests") {
     "chromoting_host_unittest.cc",
     "client_session_unittest.cc",
     "config_file_watcher_unittest.cc",
+    "corp_host_status_logger_unittest.cc",
     "daemon_process_unittest.cc",
     "desktop_display_info_unittest.cc",
     "desktop_display_layout_util_unittest.cc",
@@ -816,6 +825,7 @@ source_set("unit_tests") {
     "it2me/it2me_host_unittest.cc",
     "it2me/it2me_native_messaging_host_unittest.cc",
     "it2me_desktop_environment_unittest.cc",
+    "mojo_video_capturer_list_unittest.cc",
     "mouse_cursor_monitor_proxy_unittest.cc",
     "mouse_shape_pump_unittest.cc",
     "native_messaging/native_messaging_reader_unittest.cc",
@@ -827,6 +837,7 @@ source_set("unit_tests") {
     "resizing_host_observer_unittest.cc",
     "resources_unittest.cc",
     "server_log_entry_host_unittest.cc",
+    "setup/host_starter_oauth_helper_unittest.cc",
     "setup/me2me_native_messaging_host_unittest.cc",
     "setup/pin_validator_unittest.cc",
     "third_party_auth_config_unittest.cc",
@@ -865,8 +876,10 @@ source_set("unit_tests") {
     "//remoting/host/remote_open_url:unit_tests",
     "//remoting/host/security_key:unit_tests",
     "//remoting/host/setup:common",
+    "//remoting/host/setup:start_host_common",
     "//remoting/host/webauthn:unit_tests",
     "//remoting/proto",
+    "//remoting/proto:internal_structs",
     "//remoting/proto/remoting/v1:chrome_os_enterprise_options",
     "//remoting/proto/remoting/v1:remote_support_host_messages",
     "//remoting/protocol:test_support",
@@ -890,6 +903,11 @@ source_set("unit_tests") {
     ]
 
     deps += [ "//remoting/host:ipc_constants" ]
+  }
+
+  # start_host is only supported on Linux and Windows.
+  if (is_linux || is_win) {
+    sources += [ "setup/host_starter_base_unittest.cc" ]
   }
 
   if (is_linux) {
@@ -986,6 +1004,8 @@ if (enable_remoting_host) {
     if (is_win) {
       defines = host_predefines +
                 [ "REMOTING_HOST_BINARY=BINARY_REMOTING_START_HOST" ]
+
+      sources += [ "$root_gen_dir/remoting/version.rc" ]
 
       deps += [
         "//remoting/host/win:elevated_exe_manifest",

@@ -693,9 +693,7 @@ scoped_refptr<DecoderBuffer> CreateFakeVideoBufferForTest(
   pickle.WriteInt(config.coded_size().height());
   pickle.WriteInt64(timestamp.InMilliseconds());
 
-  scoped_refptr<DecoderBuffer> buffer =
-      DecoderBuffer::CopyFrom(static_cast<const uint8_t*>(pickle.data()),
-                              static_cast<int>(pickle.size()));
+  scoped_refptr<DecoderBuffer> buffer = DecoderBuffer::CopyFrom(pickle);
   buffer->set_timestamp(timestamp);
   buffer->set_duration(duration);
   buffer->set_is_key_frame(true);
@@ -706,7 +704,7 @@ scoped_refptr<DecoderBuffer> CreateFakeVideoBufferForTest(
 scoped_refptr<DecoderBuffer> CreateMismatchedBufferForTest() {
   std::vector<uint8_t> data = {42, 22, 26, 13, 7, 16, 8, 2};
   scoped_refptr<media::DecoderBuffer> mismatched_encrypted_buffer =
-      media::DecoderBuffer::CopyFrom(data.data(), data.size());
+      media::DecoderBuffer::CopyFrom(data);
   mismatched_encrypted_buffer->set_timestamp(base::Seconds(42));
   mismatched_encrypted_buffer->set_duration(base::Seconds(64));
   mismatched_encrypted_buffer->set_decrypt_config(
@@ -740,14 +738,13 @@ scoped_refptr<DecoderBuffer> CreateClearBuffer() {
 bool VerifyFakeVideoBufferForTest(const DecoderBuffer& buffer,
                                   const VideoDecoderConfig& config) {
   // Check if the input |buffer| matches the |config|.
-  base::PickleIterator pickle(
-      base::Pickle(reinterpret_cast<const char*>(buffer.data()),
-                   static_cast<int>(buffer.data_size())));
+  base::Pickle pickle = base::Pickle::WithUnownedBuffer(buffer);
+  base::PickleIterator iterator(pickle);
   std::string header;
   int width = 0;
   int height = 0;
-  bool success = pickle.ReadString(&header) && pickle.ReadInt(&width) &&
-                 pickle.ReadInt(&height);
+  bool success = iterator.ReadString(&header) && iterator.ReadInt(&width) &&
+                 iterator.ReadInt(&height);
   return (success && header == kFakeVideoBufferHeader &&
           width == config.coded_size().width() &&
           height == config.coded_size().height());

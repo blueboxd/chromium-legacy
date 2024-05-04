@@ -13,6 +13,7 @@
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/common/mojom/app_window.mojom.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/mojom/page/draggable_region.mojom.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/views/controls/webview/webview.h"
@@ -277,7 +278,7 @@ void NativeAppWindowViews::RenderFrameCreated(
     mojo::Remote<extensions::mojom::AppWindow> app_window;
     render_frame_host->GetRemoteInterfaces()->GetInterface(
         app_window.BindNewPipeAndPassReceiver());
-    app_window->SetSupportsAppRegion(true);
+    app_window->SetSupportsDraggableRegions(true);
   }
 }
 
@@ -320,8 +321,8 @@ void NativeAppWindowViews::UpdateWindowTitle() {
   widget_->UpdateWindowTitle();
 }
 
-void NativeAppWindowViews::UpdateDraggableRegions(
-    const std::vector<extensions::mojom::DraggableRegionPtr>& regions) {
+void NativeAppWindowViews::DraggableRegionsChanged(
+    const std::vector<blink::mojom::DraggableRegionPtr>& regions) {
   // Draggable region is not supported for non-frameless window.
   if (!frameless_)
     return;

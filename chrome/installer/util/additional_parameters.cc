@@ -11,7 +11,6 @@
 #include "base/check.h"
 #include "base/notreached.h"
 #include "base/strings/strcat.h"
-#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/win/registry.h"
 #include "build/branding_buildflags.h"
@@ -88,7 +87,7 @@ bool HasFullSuffix(const std::optional<std::wstring>& value) {
 
 // Expands `channel` to include an optional -arch_FOO suffix, returning true
 // if one is found. Returns false without modifying `channel` if none is found.
-// `channel` must be a sub-StringPiece of `ap`.
+// `channel` must be a sub-std::string_view of `ap`.
 bool SwallowArchSufix(std::wstring_view ap, std::wstring_view& channel) {
   DCHECK_LE(channel.size(), ap.size());
   DCHECK_GE(channel.data(), ap.data());
@@ -160,8 +159,9 @@ ChannelParseState MakeChannelParseState(
     std::wstring_view literal;
     bool is_stable;  // if false, the channel name is embedded in `literal`.
   } kLiteralChannels[] = {
-      {L"x64-stable", true}, {L"x86-stable", true}, {L"x64-beta", false},
-      {L"x86-beta", false},  {L"x64-dev", false},   {L"x86-dev", false},
+      {L"x64-stable", true}, {L"x86-stable", true}, {L"arm64-stable", true},
+      {L"x64-beta", false},  {L"x86-beta", false},  {L"arm64-beta", false},
+      {L"x64-dev", false},   {L"x86-dev", false},   {L"arm64-dev", false},
   };
   for (const auto& literal_channel : kLiteralChannels) {
     auto pos = ap.find(literal_channel.literal);
@@ -242,7 +242,7 @@ std::wstring GetChannelIdentifier(version_info::Channel channel,
 #elif defined(ARCH_CPU_X86)
       return L"stable-arch_x86";
 #elif defined(ARCH_CPU_ARM64)
-      return L"stable-arch_arm64";
+      return L"arm64-stable";
 #else
 #error unsupported processor architecture.
 #endif

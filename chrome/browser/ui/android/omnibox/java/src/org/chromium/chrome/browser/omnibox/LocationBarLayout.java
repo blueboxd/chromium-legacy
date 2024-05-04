@@ -25,10 +25,12 @@ import androidx.core.widget.ImageViewCompat;
 
 import org.chromium.base.MathUtils;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.lens.LensEntryPoint;
 import org.chromium.chrome.browser.omnibox.status.StatusCoordinator;
 import org.chromium.chrome.browser.omnibox.status.StatusView;
 import org.chromium.chrome.browser.omnibox.styles.OmniboxResourceProvider;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteCoordinator;
+import org.chromium.chrome.browser.omnibox.voice.VoiceRecognitionHandler;
 import org.chromium.components.browser_ui.widget.CompositeTouchDelegate;
 import org.chromium.components.embedder_support.util.UrlUtilities;
 import org.chromium.ui.base.DeviceFormFactor;
@@ -379,18 +381,11 @@ public class LocationBarLayout extends FrameLayout {
 
     /** Returns the increase in StatusView end padding, when the Url bar is focused. */
     public int getEndPaddingPixelSizeOnFocusDelta() {
-        boolean modernizeVisualUpdate =
-                OmniboxFeatures.shouldShowModernizeVisualUpdate(getContext());
-        if (!modernizeVisualUpdate
-                && DeviceFormFactor.isNonMultiDisplayContextOnTablet(getContext())) {
-            return 0;
-        }
-        int focusedPaddingDimen = R.dimen.location_bar_icon_end_padding_focused;
-        if (modernizeVisualUpdate && mLocationBarDataProvider.isIncognito()) {
-            focusedPaddingDimen = R.dimen.location_bar_icon_end_padding_focused_incognito;
-        }
-
-        return getResources().getDimensionPixelSize(focusedPaddingDimen);
+        return getResources()
+                .getDimensionPixelSize(
+                        mLocationBarDataProvider.isIncognito()
+                                ? R.dimen.location_bar_icon_end_padding_focused_incognito
+                                : R.dimen.location_bar_icon_end_padding_focused);
     }
 
     /**
@@ -446,10 +441,6 @@ public class LocationBarLayout extends FrameLayout {
             float startSurfaceScrollFraction,
             float urlFocusChangeFraction,
             boolean isUrlFocusChangeInProgress) {
-        if (!OmniboxFeatures.shouldShowModernizeVisualUpdate(getContext())) {
-            return;
-        }
-
         float maxPercent =
                 getMaxValue(
                         ntpSearchBoxScrollFraction,
@@ -599,7 +590,15 @@ public class LocationBarLayout extends FrameLayout {
         mSearchEngineUtils = searchEngineUtils;
     }
 
-    public void notifyVoiceRecognitionCanceled() {}
+    /** Returns the source of Voice Recognition interactions. */
+    public int getVoiceRecogintionSource() {
+        return VoiceRecognitionHandler.VoiceInteractionSource.OMNIBOX;
+    }
+
+    /** Returns the entrypoint used to launch Lens. */
+    public int getLensEntryPoint() {
+        return LensEntryPoint.OMNIBOX;
+    }
 
     /**
      * Updates the value for the end margin of the url action container in the search box.

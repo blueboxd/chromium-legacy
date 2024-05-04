@@ -8,10 +8,15 @@
 #include <memory>
 
 #include "base/functional/callback.h"
+#include "base/functional/callback_forward.h"
+#include "base/scoped_observation.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
+#include "base/timer/timer.h"
+#include "base/timer/wall_clock_timer.h"
 #include "chrome/browser/ash/policy/scheduled_task_handler/scoped_wake_lock.h"
 #include "chromeos/ash/components/policy/weekly_time/weekly_time_interval.h"
+#include "chromeos/ash/components/settings/timezone_settings.h"
 #include "chromeos/dbus/power/native_timer.h"
 
 namespace ash {
@@ -22,49 +27,64 @@ namespace ash {
 // schedules the time interval using the system timezone. Changes to the system
 // timezone will make it reprogram the time interval. When the timer fails to
 // start the callbacks will not be executed.
-// TODO(b/319083880) Observe time zone changes and cancel pending executors.
-class RepeatingTimeIntervalTaskExecutor {
+class RepeatingTimeIntervalTaskExecutor
+    : public system::TimezoneSettings::Observer {
  public:
   using TimerResultCallback =
       base::OnceCallback<void(policy::ScopedWakeLock, bool)>;
+  class Factory {
+   public:
+    Factory();
+    Factory(const Factory&) = delete;
+    const Factory& operator=(const Factory&) = delete;
+    virtual ~Factory();
+
+    virtual std::unique_ptr<RepeatingTimeIntervalTaskExecutor> Create(
+        const policy::WeeklyTimeInterval& time_interval,
+        base::RepeatingCallback<void(base::TimeDelta)>
+            on_interval_start_callback,
+        base::RepeatingClosure on_interval_end_callback);
+  };
 
   RepeatingTimeIntervalTaskExecutor() = delete;
 
+  // TODO(b/328421429): Make constructor private and inline `ScheduleTimer()`
+  // method.
   RepeatingTimeIntervalTaskExecutor(
       const policy::WeeklyTimeInterval& time_interval,
-      base::RepeatingClosure on_interval_start_callback,
-      base::RepeatingClosure on_interval_end_callback,
-      const std::string& tag);
+      base::RepeatingCallback<void(base::TimeDelta)> on_interval_start_callback,
+      base::RepeatingClosure on_interval_end_callback);
 
   RepeatingTimeIntervalTaskExecutor(const RepeatingTimeIntervalTaskExecutor&) =
       delete;
   RepeatingTimeIntervalTaskExecutor& operator=(
       const RepeatingTimeIntervalTaskExecutor&) = delete;
 
-  virtual ~RepeatingTimeIntervalTaskExecutor();
+  ~RepeatingTimeIntervalTaskExecutor() override;
+
+  // Starts the executor and schedules the `timer_` to the start and end of the
+  // `interval_` respectively. Runs `on_interval_start_callback_` at the start
+  // of the interval and `on_interval_end_callback_` at the end.
+  void ScheduleTimer();
+
+  // system::TimezoneSettings::Observer
+  void TimezoneChanged(const icu::TimeZone& timezone) override;
 
   const policy::WeeklyTimeInterval& time_interval() const {
     return time_interval_;
   }
 
-  const std::string& timer_tag() const { return timer_tag_; }
-
-  // Starts the executor and schedules the `timer_` to the start and end of the
-  // `interval_` respectively. Runs `on_interval_start_callback_` at the start
-  // of the interval and `on_interval_end_callback_` at the end.
-  void Start();
-
-  // The amount of time that has to be remaining for the executor to schedule
-  // the `timer_` to the end of the interval. If the
-  // duration to the end of the interval is smaller than this time, a timer will
-  // be scheduled to the start of the next interval.
-  // TODO(b/328073367): Update policy and validator to account for this
-  // duration.
-  static constexpr base::TimeDelta kMinScheduleDuration = base::Minutes(5);
-
  protected:
   // Clock to get the current system time.
   raw_ptr<const base::Clock> clock_;
+
+  // `timer_` is used for two reasons:
+  // 1) When we are waiting until the time interval starts to call
+  // `on_interval_start_callback_`.
+  //
+  // 2) When we are waiting until the time interval ends to call
+  // `on_interval_end_callback_`.
+  std::unique_ptr<base::WallClockTimer> timer_;
 
  private:
   // Called by the `Start` function when the current time falls inside the
@@ -76,41 +96,34 @@ class RepeatingTimeIntervalTaskExecutor {
   void IntervalStartsLater();
 
   // Starts a timer to expire at `expiration_time`. Calls the
-  // `timer_start_result_callback` at the start of the timer and
   // `timer_expiration_callback` on timer expiration.
   void StartTimer(policy::WeeklyTime expiration_time,
-                  TimerResultCallback timer_start_result_callback,
                   base::OnceClosure timer_expiration_callback);
 
-  // Timer until the end of the interval can fail to start. Handle the result to
-  // inform about the failure, or proceed on the successful timer start.
-  void HandleIntervalEndTimerStartResult(policy::ScopedWakeLock wakelock,
-                                         bool result);
-
   // Timer until the end of the interval is finished.
+  // TODO(b/330836068): Remove interval end timer.
   void HandleIntervalEndTimerFinish();
 
-  // Timer until the start of the interval can fail to start. Handle the result
-  // to inform about the failure, or proceed on the successful timer start.
-  void HandleIntervalStartTimerStartResult(policy::ScopedWakeLock wakelock,
-                                           bool result);
-
-  virtual base::TimeTicks GetTimeTicksSinceBoot();
-
   const policy::WeeklyTimeInterval time_interval_;
-  const base::RepeatingClosure on_interval_start_callback_;
+
+  const base::RepeatingCallback<void(base::TimeDelta)>
+      on_interval_start_callback_;
+  // TODO(b/330836068): Remove interval end callback.
   const base::RepeatingClosure on_interval_end_callback_;
 
-  // Tag associated with the `NativeTimer`.
-  const std::string timer_tag_;
+  bool timer_scheduled_ = false;
 
-  // `timer_` is used for two reasons:
-  // 1) When we are waiting until the time interval starts to call
-  // `on_interval_start_callback_`.
-  //
-  // 2) When we are waiting until the time interval ends to call
-  // `on_interval_end_callback_`.
-  std::unique_ptr<chromeos::NativeTimer> timer_;
+  // Flag to track if a timer to the end of the interval has started. Used to
+  // run the `on_interval_start_callback_` when the timezone changes.
+  bool has_interval_end_timer_started_ = false;
+
+  // Last known timezone used to prevent reacting to multiple `TimezoneChanged`
+  // observer calls of the same timezone.
+  std::u16string last_known_time_zone_id_;
+
+  base::ScopedObservation<system::TimezoneSettings,
+                          system::TimezoneSettings::Observer>
+      timezone_observer_{this};
 
   base::WeakPtrFactory<RepeatingTimeIntervalTaskExecutor> weak_ptr_factory_{
       this};

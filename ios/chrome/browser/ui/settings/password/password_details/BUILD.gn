@@ -19,7 +19,6 @@ source_set("password_details") {
     "password_details_mediator_delegate.h",
   ]
   deps = [
-    ":password_details_ui",
     "//components/autofill/core/common",
     "//components/password_manager/core/browser/form_parsing",
     "//components/password_manager/core/common",
@@ -27,13 +26,11 @@ source_set("password_details") {
     "//components/strings",
     "//components/url_formatter",
     "//ios/chrome/app/strings",
-    "//ios/chrome/browser/credential_provider_promo/model:features",
     "//ios/chrome/browser/passwords/model",
     "//ios/chrome/browser/passwords/model:password_checkup_metrics",
     "//ios/chrome/browser/passwords/model:password_checkup_utils",
     "//ios/chrome/browser/passwords/model/metrics",
     "//ios/chrome/browser/shared/coordinator/alert",
-    "//ios/chrome/browser/shared/coordinator/chrome_coordinator",
     "//ios/chrome/browser/shared/model/browser",
     "//ios/chrome/browser/shared/model/browser_state",
     "//ios/chrome/browser/shared/model/prefs:pref_names",
@@ -54,8 +51,12 @@ source_set("password_details") {
     "//ios/chrome/common/ui/colors",
     "//ios/chrome/common/ui/reauthentication",
     "//ios/chrome/common/ui/util",
-    "//ios/web",
+    "//ios/web/public",
     "//ui/base",
+  ]
+  public_deps = [
+    ":password_details_ui",
+    "//ios/chrome/browser/shared/coordinator/chrome_coordinator",
   ]
 }
 
@@ -147,7 +148,6 @@ source_set("unit_tests") {
     "//components/sync/base",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/affiliations/model",
-    "//ios/chrome/browser/credential_provider_promo/model:features",
     "//ios/chrome/browser/passwords/model",
     "//ios/chrome/browser/passwords/model:store_factory",
     "//ios/chrome/browser/passwords/model/metrics",

@@ -14,8 +14,9 @@ import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
-import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab_ui.TabContentManager;
+import org.chromium.chrome.browser.tab_ui.TabSwitcher;
 import org.chromium.chrome.browser.tabmodel.TabList;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelFilter;
@@ -101,7 +102,7 @@ public class TabListEditorManager {
 
     /** Initializes the tab list editor. */
     public void initTabListEditor() {
-        // TODO(crbug.com/1504606): Permit a method of switching between selectable and closable
+        // TODO(crbug.com/40945154): Permit a method of switching between selectable and closable
         // modes (or create separate instances).
         if (mTabListEditorCoordinator == null) {
             assert mSnackbarManager != null

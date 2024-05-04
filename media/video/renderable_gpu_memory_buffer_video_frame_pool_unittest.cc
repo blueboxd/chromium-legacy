@@ -12,8 +12,10 @@
 #include "base/test/task_environment.h"
 #include "components/viz/common/resources/shared_image_format.h"
 #include "components/viz/common/resources/shared_image_format_utils.h"
+#include "components/viz/test/test_context_provider.h"
 #include "gpu/command_buffer/client/client_shared_image.h"
 #include "gpu/config/gpu_finch_features.h"
+#include "media/base/format_utils.h"
 #include "media/base/media_switches.h"
 #include "media/base/video_frame.h"
 #include "media/video/fake_gpu_memory_buffer.h"
@@ -31,19 +33,8 @@ gfx::ColorSpace GetColorSpaceForPixelFormat(media::VideoPixelFormat format) {
     case media::PIXEL_FORMAT_NV12:
       return gfx::ColorSpace::CreateREC709();
     case media::PIXEL_FORMAT_ARGB:
+    case media::PIXEL_FORMAT_ABGR:
       return gfx::ColorSpace::CreateSRGB();
-    default:
-      NOTREACHED_NORETURN();
-  }
-}
-
-gfx::BufferFormat GetBufferFormatForVideoPixelFormat(
-    media::VideoPixelFormat format) {
-  switch (format) {
-    case media::PIXEL_FORMAT_ARGB:
-      return gfx::BufferFormat::RGBA_8888;
-    case media::PIXEL_FORMAT_NV12:
-      return gfx::BufferFormat::YUV_420_BIPLANAR;
     default:
       NOTREACHED_NORETURN();
   }
@@ -51,7 +42,9 @@ gfx::BufferFormat GetBufferFormatForVideoPixelFormat(
 
 class FakeContext : public RenderableGpuMemoryBufferVideoFramePool::Context {
  public:
-  FakeContext() : weak_factory_(this) {}
+  FakeContext()
+      : context_provider_(viz::TestContextProvider::Create()),
+        weak_factory_(this) {}
   ~FakeContext() override = default;
 
   std::unique_ptr<gfx::GpuMemoryBuffer> CreateGpuMemoryBuffer(
@@ -72,12 +65,10 @@ class FakeContext : public RenderableGpuMemoryBufferVideoFramePool::Context {
     DoCreateSharedImage(si_format, gpu_memory_buffer->GetSize(), color_space,
                         surface_origin, alpha_type, usage,
                         gpu_memory_buffer->CloneHandle());
-    return base::MakeRefCounted<gpu::ClientSharedImage>(
-        gpu::Mailbox::GenerateForSharedImage(),
-        gpu::SharedImageMetadata(si_format, gpu_memory_buffer->GetSize(),
-                                 color_space, surface_origin, alpha_type,
-                                 usage),
-        sync_token, nullptr);
+    return context_provider_->SharedImageInterface()->CreateSharedImage(
+        {si_format, gpu_memory_buffer->GetSize(), color_space, surface_origin,
+         alpha_type, usage, "RenderableGpuMemoryBufferVideoFramePoolTest"},
+        gpu_memory_buffer->CloneHandle());
   }
   scoped_refptr<gpu::ClientSharedImage> CreateSharedImage(
       gfx::GpuMemoryBuffer* gpu_memory_buffer,
@@ -89,13 +80,10 @@ class FakeContext : public RenderableGpuMemoryBufferVideoFramePool::Context {
       gpu::SyncToken& sync_token) override {
     DoCreateSharedImage(gpu_memory_buffer, plane, color_space, surface_origin,
                         alpha_type, usage);
-    return base::MakeRefCounted<gpu::ClientSharedImage>(
-        gpu::Mailbox::GenerateForSharedImage(),
-        gpu::SharedImageMetadata(viz::GetSinglePlaneSharedImageFormat(
-                                     gpu_memory_buffer->GetFormat()),
-                                 gpu_memory_buffer->GetSize(), color_space,
-                                 surface_origin, alpha_type, usage),
-        sync_token, nullptr);
+    return context_provider_->SharedImageInterface()->CreateSharedImage(
+        gpu_memory_buffer, /*gpu_memory_buffer_manager=*/nullptr, plane,
+        {color_space, surface_origin, alpha_type, usage,
+         "RenderableGpuMemoryBufferVideoFramePoolTest"});
   }
 
   MOCK_METHOD2(DoCreateGpuMemoryBuffer,
@@ -122,6 +110,7 @@ class FakeContext : public RenderableGpuMemoryBufferVideoFramePool::Context {
   base::WeakPtr<FakeContext> GetWeakPtr() { return weak_factory_.GetWeakPtr(); }
 
  private:
+  scoped_refptr<viz::TestContextProvider> context_provider_;
   base::WeakPtrFactory<FakeContext> weak_factory_;
 };
 
@@ -160,6 +149,12 @@ class RenderableGpuMemoryBufferVideoFramePoolTest
       }
       case PIXEL_FORMAT_ARGB: {
         EXPECT_CALL(*context,
+                    DoCreateSharedImage(viz::SinglePlaneFormat::kBGRA_8888, _,
+                                        _, _, _, _, _));
+        break;
+      }
+      case PIXEL_FORMAT_ABGR: {
+        EXPECT_CALL(*context,
                     DoCreateSharedImage(viz::SinglePlaneFormat::kRGBA_8888, _,
                                         _, _, _, _, _));
         break;
@@ -175,6 +170,7 @@ class RenderableGpuMemoryBufferVideoFramePoolTest
       case PIXEL_FORMAT_NV12: {
         return nv12_multi_plane_ ? 1 : 2;
       }
+      case PIXEL_FORMAT_ABGR:
       case PIXEL_FORMAT_ARGB: {
         return 1;
       }
@@ -193,7 +189,8 @@ class RenderableGpuMemoryBufferVideoFramePoolTest
 TEST_P(RenderableGpuMemoryBufferVideoFramePoolTest, SimpleLifetimes) {
   base::test::SingleThreadTaskEnvironment task_environment;
   const gfx::Size size0(128, 256);
-  const gfx::BufferFormat format = GetBufferFormatForVideoPixelFormat(format_);
+  const gfx::BufferFormat format =
+      VideoPixelFormatToGfxBufferFormat(format_).value();
   const gfx::ColorSpace color_space0 = GetColorSpaceForPixelFormat(format_);
 
   base::WeakPtr<FakeContext> context;
@@ -253,7 +250,8 @@ TEST_P(RenderableGpuMemoryBufferVideoFramePoolTest, SimpleLifetimes) {
 TEST_P(RenderableGpuMemoryBufferVideoFramePoolTest, FrameFreedAfterPool) {
   base::test::SingleThreadTaskEnvironment task_environment;
   const gfx::Size size0(128, 256);
-  const gfx::BufferFormat format = GetBufferFormatForVideoPixelFormat(format_);
+  const gfx::BufferFormat format =
+      VideoPixelFormatToGfxBufferFormat(format_).value();
   const gfx::ColorSpace color_space0 = GetColorSpaceForPixelFormat(format_);
 
   base::WeakPtr<FakeContext> context;
@@ -318,7 +316,8 @@ TEST_P(RenderableGpuMemoryBufferVideoFramePoolTest,
   base::test::TaskEnvironment task_environment{
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
   const gfx::Size size0(128, 256);
-  const gfx::BufferFormat format = GetBufferFormatForVideoPixelFormat(format_);
+  const gfx::BufferFormat format =
+      VideoPixelFormatToGfxBufferFormat(format_).value();
   const gfx::ColorSpace color_space0 = GetColorSpaceForPixelFormat(format_);
 
   // Create a pool and several frames on the main thread.
@@ -385,7 +384,8 @@ TEST_P(RenderableGpuMemoryBufferVideoFramePoolTest, ConcurrentCreateDestroy) {
 
 TEST_P(RenderableGpuMemoryBufferVideoFramePoolTest, RespectSizeAndColorSpace) {
   base::test::SingleThreadTaskEnvironment task_environment;
-  const gfx::BufferFormat format = GetBufferFormatForVideoPixelFormat(format_);
+  const gfx::BufferFormat format =
+      VideoPixelFormatToGfxBufferFormat(format_).value();
   const gfx::Size size0(128, 256);
   const gfx::ColorSpace color_space0 = GetColorSpaceForPixelFormat(format_);
   const gfx::Size size1(256, 256);
@@ -462,9 +462,17 @@ INSTANTIATE_TEST_SUITE_P(
     All,
     RenderableGpuMemoryBufferVideoFramePoolTest,
     testing::Combine(
+#if BUILDFLAG(IS_FUCHSIA) || BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_LINUX) || \
+    BUILDFLAG(IS_CHROMEOS)
+        // kUseMultiPlaneFormatForHardwareVideo experiment has been enabled on
+        // Fuchsia and Mac fully and codepath is deleted.
+        testing::Values(true),
+#else
         testing::Bool(),
+#endif
         testing::Values(media::VideoPixelFormat::PIXEL_FORMAT_NV12,
-                        media::VideoPixelFormat::PIXEL_FORMAT_ARGB)));
+                        media::VideoPixelFormat::PIXEL_FORMAT_ARGB,
+                        media::VideoPixelFormat::PIXEL_FORMAT_ABGR)));
 
 }  // namespace
 

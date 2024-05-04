@@ -7,12 +7,10 @@ package org.chromium.chrome.browser.tabmodel;
 import androidx.annotation.NonNull;
 
 import org.chromium.base.Callback;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabSelectionType;
 import org.chromium.content_public.browser.WebContents;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * A set of convenience methods used for interacting with {@link TabList}s and {@link TabModel}s.
@@ -35,28 +33,19 @@ public class TabModelUtils {
     /**
      * @param model The {@link TabModel} to act on.
      * @param tabId The id of the {@link Tab} to close.
-     * @return      {@code true} if the {@link Tab} was found.
-     */
-    public static boolean closeTabById(TabModel model, int tabId) {
-        return closeTabById(model, tabId, false);
-    }
-
-    /**
-     * @param model   The {@link TabModel} to act on.
-     * @param tabId   The id of the {@link Tab} to close.
      * @param canUndo Whether or not this closure can be undone.
-     * @return        {@code true} if the {@link Tab} was found.
+     * @return {@code true} if the {@link Tab} was found.
      */
     public static boolean closeTabById(TabModel model, int tabId, boolean canUndo) {
         Tab tab = TabModelUtils.getTabById(model, tabId);
         if (tab == null || tab.isClosing()) return false;
 
-        return model.closeTab(tab, true, false, canUndo);
+        return model.closeTab(tab, false, canUndo);
     }
 
     /**
      * @param model The {@link TabModel} to act on.
-     * @return      {@code true} if the {@link Tab} was found.
+     * @return {@code true} if the {@link Tab} was found.
      */
     public static boolean closeCurrentTab(TabModel model) {
         Tab tab = TabModelUtils.getCurrentTab(model);
@@ -86,21 +75,27 @@ public class TabModelUtils {
 
     /**
      * Find the {@link Tab} with the specified id.
+     *
      * @param model The {@link TabModel} to act on.
      * @param tabId The id of the {@link Tab} to find.
-     * @return      Specified {@link Tab} or {@code null} if the {@link Tab} is not found
+     * @return Specified {@link Tab} or {@code null} if the {@link Tab} is not found
      */
     public static Tab getTabById(TabList model, int tabId) {
-        int index = getTabIndexById(model, tabId);
-        if (index == TabModel.INVALID_TAB_INDEX) return null;
-        return model.getTabAt(index);
+        if (ChromeFeatureList.sTabIdMap.isEnabled() && model instanceof TabModel tabModel) {
+            return tabModel.getTabById(tabId);
+        } else {
+            int index = getTabIndexById(model, tabId);
+            if (index == TabModel.INVALID_TAB_INDEX) return null;
+            return model.getTabAt(index);
+        }
     }
 
     /**
      * Find the {@link Tab} index whose URL matches the specified URL.
+     *
      * @param model The {@link TabModel} to act on.
-     * @param url   The URL to search for.
-     * @return      Specified {@link Tab} or {@code null} if the {@link Tab} is not found
+     * @param url The URL to search for.
+     * @return Specified {@link Tab} or {@code null} if the {@link Tab} is not found
      */
     public static int getTabIndexByUrl(TabList model, String url) {
         int count = model.getCount();
@@ -194,36 +189,8 @@ public class TabModelUtils {
     }
 
     /**
-     * Returns all the Tabs in the specified TabList that were opened from the Tab with the
-     * specified ID. The returned Tabs are in the same order as in the TabList.
-     * @param model The {@link TabModel} to act on.
-     * @param tabId The ID of the Tab whose children should be returned.
-     */
-    public static List<Tab> getChildTabs(TabList model, int tabId) {
-        ArrayList<Tab> childTabs = new ArrayList<Tab>();
-        for (int i = 0; i < model.getCount(); i++) {
-            if (model.getTabAt(i).getParentId() == tabId) {
-                childTabs.add(model.getTabAt(i));
-            }
-        }
-
-        return childTabs;
-    }
-
-    /**
-     * @return all regular {@link Tab} ids from a {@link TabModelSelectoor}
-     */
-    public static List<Integer> getRegularTabIds(TabModelSelector tabModelSelector) {
-        List<Integer> tabIds = new ArrayList<>();
-        int numTabs = tabModelSelector.getModel(false).getCount();
-        for (int i = 0; i < numTabs; i++) {
-            tabIds.add(tabModelSelector.getModel(false).getTabAt(i).getId());
-        }
-        return tabIds;
-    }
-
-    /**
      * Returns the most recently visited Tab in the specified TabList that is not {@code tabId}.
+     *
      * @param model The {@link TabModel} to act on.
      * @param tabId The ID of the {@link Tab} to skip or {@link Tab.INVALID_TAB_ID}.
      * @return the most recently visited Tab or null if none can be found.

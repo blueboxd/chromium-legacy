@@ -22,7 +22,6 @@
 #include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
 #include "chrome/browser/ash/policy/core/device_cloud_policy_manager_ash.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
-#include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part_ash.h"
 #include "chrome/browser/extensions/chrome_extension_function_details.h"
@@ -35,6 +34,7 @@
 #include "chromeos/ash/components/dbus/attestation/interface.pb.h"
 #include "chromeos/ash/components/dbus/constants/attestation_constants.h"
 #include "chromeos/ash/components/install_attributes/install_attributes.h"
+#include "chromeos/ash/components/settings/cros_settings.h"
 #include "chromeos/ash/components/settings/cros_settings_names.h"
 #include "chromeos/components/kiosk/kiosk_utils.h"
 #include "chromeos/dbus/tpm_manager/tpm_manager.pb.h"
@@ -56,7 +56,7 @@ TpmChallengeKeySubtle* TpmChallengeKeySubtleFactory::next_result_for_testing_ =
 
 // static
 std::unique_ptr<TpmChallengeKeySubtle> TpmChallengeKeySubtleFactory::Create() {
-  if (UNLIKELY(next_result_for_testing_)) {
+  if (next_result_for_testing_) [[unlikely]] {
     std::unique_ptr<TpmChallengeKeySubtle> result(next_result_for_testing_);
     next_result_for_testing_ = nullptr;
     return result;

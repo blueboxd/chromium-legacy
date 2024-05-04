@@ -67,7 +67,7 @@ void ChromeClassTester::CheckTag(TagDecl* tag) {
 ChromeClassTester::LocationType ChromeClassTester::ClassifyLocation(
     SourceLocation loc) {
   auto classification = chrome_checker::ClassifySourceLocation(
-      instance().getSourceManager(), loc);
+      instance().getHeaderSearchOpts(), instance().getSourceManager(), loc);
 
   // Convert to a less granular legacy classificatoin.
   switch (classification) {
@@ -110,7 +110,8 @@ bool ChromeClassTester::InImplementationFile(SourceLocation record_location) {
   // If |record_location| is a macro, check the whole chain of expansions.
   const SourceManager& source_manager = instance_.getSourceManager();
   while (true) {
-    filename = GetFilename(instance().getSourceManager(), record_location);
+    filename = GetFilename(instance().getSourceManager(), record_location,
+                           FilenameLocationType::kSpellingLoc);
     if (ends_with(filename, ".cc") || ends_with(filename, ".cpp") ||
         ends_with(filename, ".mm")) {
       return true;

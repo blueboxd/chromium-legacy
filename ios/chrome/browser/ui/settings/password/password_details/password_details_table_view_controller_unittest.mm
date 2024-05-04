@@ -89,10 +89,6 @@ constexpr char kNote[] = "note";
   self.editingCalled = YES;
 }
 
-- (void)onPasswordCopiedByUser {
-  self.passwordCopiedByUserCalled = YES;
-}
-
 - (void)onAllPasswordsDeleted {
 }
 
@@ -206,8 +202,7 @@ class PasswordDetailsTableViewControllerTest
   PasswordDetailsTableViewControllerTest() {
     feature_list_.InitWithFeatures(
         /*enabled_features=*/{password_manager::features::
-                                  kIOSPasswordAuthOnEntryV2,
-                              kEnableUIEditMenuInteraction},
+                                  kIOSPasswordAuthOnEntryV2},
         /*disabled_features=*/{});
     handler_ = [[FakePasswordDetailsHandler alloc] init];
     delegate_ = [[FakePasswordDetailsDelegate alloc] init];
@@ -856,8 +851,6 @@ TEST_F(PasswordDetailsTableViewControllerTest, CopyPasswordSuccess) {
     [password_details copyPasswordDetails:menu];
   }
 #endif
-
-  EXPECT_TRUE(handler().passwordCopiedByUserCalled);
 
   UIPasteboard* generalPasteboard = [UIPasteboard generalPasteboard];
   EXPECT_NSEQ(@"test", generalPasteboard.string);

@@ -6,7 +6,7 @@
 import 'chrome://resources/cr_elements/cr_radio_button/cr_card_radio_button.js';
 
 import type {CrCardRadioButtonElement} from 'chrome://resources/cr_elements/cr_radio_button/cr_card_radio_button.js';
-import {assertEquals, assertFalse, assertNotEquals, assertTrue} from 'chrome://webui-test/chai_assert.js';
+import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
 
 // clang-format on
 
@@ -39,7 +39,7 @@ suite('cr-card-radio-button', function() {
     assertTrue(radioButton.hasAttribute('disabled'));
     assertEquals('true', radioButton.$.button.getAttribute('aria-disabled'));
     assertEquals('none', getComputedStyle(radioButton).pointerEvents);
-    assertNotEquals('1', getComputedStyle(radioButton).opacity);
+    assertEquals('1', getComputedStyle(radioButton).opacity);
   }
 
   function assertNotDisabled() {
@@ -72,14 +72,15 @@ suite('cr-card-radio-button', function() {
   });
 
   test('Ripple', function() {
-    assertFalse(!!radioButton.shadowRoot!.querySelector('paper-ripple'));
-    radioButton.dispatchEvent(
-        new CustomEvent('focus', {bubbles: true, composed: true}));
-    assertTrue(!!radioButton.shadowRoot!.querySelector('paper-ripple'));
-    assertTrue(radioButton.shadowRoot!.querySelector('paper-ripple')!.holdDown);
+    function getRipple() {
+      return radioButton.shadowRoot!.querySelector('cr-ripple');
+    }
+
+    assertFalse(!!getRipple());
     radioButton.dispatchEvent(
         new CustomEvent('up', {bubbles: true, composed: true}));
-    assertFalse(
-        radioButton.shadowRoot!.querySelector('paper-ripple')!.holdDown);
+    const ripple = getRipple();
+    assertTrue(!!ripple);
+    assertFalse(ripple.holdDown);
   });
 });

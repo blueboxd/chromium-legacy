@@ -5,21 +5,23 @@
 #include "components/signin/public/identity_manager/identity_utils.h"
 
 #include <string>
+#include <string_view>
 
 #include "base/logging.h"
-#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/base/signin_pref_names.h"
+#include "components/signin/public/base/signin_switches.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "third_party/icu/source/i18n/unicode/regex.h"
 
 namespace signin {
 
 namespace {
 
-bool IsUsernameAllowedByPattern(base::StringPiece username,
-                                base::StringPiece pattern) {
+bool IsUsernameAllowedByPattern(std::string_view username,
+                                std::string_view pattern) {
   if (pattern.empty())
     return true;
 
@@ -58,6 +60,26 @@ bool IsUsernameAllowedByPatternFromPrefs(const PrefService* prefs,
                                          const std::string& username) {
   return IsUsernameAllowedByPattern(
       username, prefs->GetString(prefs::kGoogleServicesUsernamePattern));
+}
+
+bool IsImplicitBrowserSigninOrExplicitDisabled(
+    IdentityManager* identity_manager,
+    PrefService* prefs) {
+  if (!switches::IsExplicitBrowserSigninUIOnDesktopEnabled()) {
+    return true;
+  }
+
+  // The feature is enabled, check if the user is implicitly signed in.
+  // Signed out users or signed in explicitly should return false.
+  return identity_manager->HasPrimaryAccount(signin::ConsentLevel::kSignin) &&
+         !prefs->GetBoolean(prefs::kExplicitBrowserSignin);
+}
+
+bool AreGoogleCookiesRebuiltAfterClearingWhenSignedIn(
+    signin::IdentityManager& manager,
+    PrefService& prefs) {
+  return !signin::IsImplicitBrowserSigninOrExplicitDisabled(&manager, &prefs) &&
+         !manager.HasPrimaryAccount(signin::ConsentLevel::kSync);
 }
 
 }  // namespace signin

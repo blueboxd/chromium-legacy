@@ -11,6 +11,7 @@ include_rules = [
   # These dependencies are currently in //chrome but are semantically part of
   # ChromeOS.
   "+chrome/browser/apps/app_service",
+  "+chrome/browser/apps/browser_instance",
   "+chrome/browser/ash",
   "+chrome/browser/chromeos",
   "+chrome/browser/exo_parts.h",
@@ -107,6 +108,7 @@ include_rules = [
   "+chrome/browser/profiles/profile_test_util.h",
   "+chrome/browser/profiles/profiles_state.h",
   "+chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h",
+  "+chrome/browser/resources/preinstalled_web_apps/internal/container.h",
   "+chrome/browser/search_engines/template_url_service_factory.h",
   "+chrome/browser/scalable_iph/scalable_iph_factory.h",
   "+chrome/browser/sessions/session_restore.h",
@@ -161,6 +163,7 @@ include_rules = [
   "+chrome/browser/ui/tabs/tab_enums.h",
   "+chrome/browser/ui/tabs/tab_group.h",
   "+chrome/browser/ui/tabs/tab_group_model.h",
+  "+chrome/browser/ui/tabs/tab_model.h",
   "+chrome/browser/ui/tabs/tab_strip_model.h",
   "+chrome/browser/ui/tabs/tab_strip_model_observer.h",
   "+chrome/browser/ui/test/test_app_window_icon_observer.h",

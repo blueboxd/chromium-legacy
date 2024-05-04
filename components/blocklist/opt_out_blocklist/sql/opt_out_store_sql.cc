@@ -94,8 +94,8 @@ void DatabaseErrorCallback(sql::Database* db,
                            int extended_error,
                            sql::Statement* stmt) {
   // Attempt to recover a corrupt database, if it is eligible to be recovered.
-  if (sql::BuiltInRecovery::RecoverIfPossible(
-          db, extended_error, sql::BuiltInRecovery::Strategy::kRecoverOrRaze)) {
+  if (sql::Recovery::RecoverIfPossible(
+          db, extended_error, sql::Recovery::Strategy::kRecoverOrRaze)) {
     // Recovery was attempted. The database handle has been poisoned and the
     // error callback has been reset.
 
@@ -106,7 +106,7 @@ void DatabaseErrorCallback(sql::Database* db,
 }
 
 void InitDatabase(sql::Database* db, base::FilePath path) {
-  // TODO(crbug.com/1092101): Migrate to OptOutBlocklist and update any backend
+  // TODO(crbug.com/40134470): Migrate to OptOutBlocklist and update any backend
   // code that may depend on this tag.
   db->set_histogram_tag("OptOutBlacklist");
 

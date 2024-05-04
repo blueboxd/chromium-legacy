@@ -68,7 +68,7 @@ void CreateCookies(
             url.path(), base::Time::Now(), base::Time::Max(), base::Time::Now(),
             url.SchemeIsCryptographic(), false,
             net::CookieSameSite::NO_RESTRICTION, net::COOKIE_PRIORITY_DEFAULT,
-            std::nullopt);
+            std::nullopt, /*status=*/nullptr);
     cookie_manager->SetCanonicalCookie(
         *cookie, url, net::CookieOptions::MakeAllInclusive(),
         base::BindLambdaForTesting(
@@ -122,11 +122,9 @@ class DiceSignedInProfileCreatorTest
  public:
   DiceSignedInProfileCreatorTest()
       : local_state_(TestingBrowserProcess::GetGlobal()) {
-#if !BUILDFLAG(IS_FUCHSIA)
     scoped_feature_list_.InitWithFeatureState(
         profile_management::features::kThirdPartyProfileManagement,
         GetParam().enable_third_party_management_feature);
-#endif
     auto profile_manager_unique = std::make_unique<UnittestProfileManager>(
         base::CreateUniqueTempDirectoryScopedToTest());
     profile_manager_ = profile_manager_unique.get();
@@ -246,10 +244,10 @@ class DiceSignedInProfileCreatorTest
       EXPECT_TRUE(cookies_new_profile.empty());
       return;
     }
-    // Third party management feature not enabled on fuchsia.
-#if !BUILDFLAG(IS_FUCHSIA)
+
+    // I don't know why this test looks like this, but I am only removing
+    // !BUILDFLAG(IS_FUCHSIA).
     return;
-#endif
 
     EXPECT_EQ(3u, cookies_source_profile.size());
     EXPECT_EQ(3u, cookies_new_profile.size());

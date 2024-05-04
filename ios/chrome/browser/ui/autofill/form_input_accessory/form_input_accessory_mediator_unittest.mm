@@ -60,7 +60,7 @@ class FormInputAccessoryMediatorTest : public PlatformTest {
     test_web_state_->SetNavigationManager(
         std::make_unique<web::FakeNavigationManager>());
 
-    AutofillBottomSheetTabHelper::CreateForWebState(test_web_state_.get(), nil);
+    AutofillBottomSheetTabHelper::CreateForWebState(test_web_state_.get());
 
     web_state_list_.InsertWebState(
         std::move(test_web_state_),
@@ -77,7 +77,8 @@ class FormInputAccessoryMediatorTest : public PlatformTest {
                                         profilePasswordStore:nullptr
                                         accountPasswordStore:nullptr
                                         securityAlertHandler:nil
-                                      reauthenticationModule:nil];
+                                      reauthenticationModule:nil
+                                           engagementTracker:nil];
   }
 
   void TearDown() override {
@@ -148,7 +149,7 @@ TEST_F(FormInputAccessoryMediatorTest, ShowSuggestions) {
       suggestionWithValue:@"value"
        displayDescription:@"display-description"
                      icon:nil
-              popupItemId:autofill::PopupItemId::kAutocompleteEntry
+              popupItemId:autofill::SuggestionType::kAutocompleteEntry
         backendIdentifier:nil
            requiresReauth:NO];
   NSArray<FormSuggestion*>* suggestions = [NSArray arrayWithObject:suggestion];
@@ -198,7 +199,7 @@ TEST_F(FormInputAccessoryMediatorTest, ShowSuggestions_WithConcurrentQueries) {
       suggestionWithValue:@"value"
        displayDescription:@"display-description"
                      icon:nil
-              popupItemId:autofill::PopupItemId::kAutocompleteEntry
+              popupItemId:autofill::SuggestionType::kAutocompleteEntry
         backendIdentifier:nil
            requiresReauth:NO];
   NSArray<FormSuggestion*>* suggestions_from_first_query =
@@ -208,7 +209,7 @@ TEST_F(FormInputAccessoryMediatorTest, ShowSuggestions_WithConcurrentQueries) {
       suggestionWithValue:@"value2"
        displayDescription:@"display-description"
                      icon:nil
-              popupItemId:autofill::PopupItemId::kAutocompleteEntry
+              popupItemId:autofill::SuggestionType::kAutocompleteEntry
         backendIdentifier:nil
            requiresReauth:NO];
   NSArray<FormSuggestion*>* suggestions_from_second_query =

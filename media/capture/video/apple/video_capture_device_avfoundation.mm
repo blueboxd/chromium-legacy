@@ -47,6 +47,10 @@ BASE_FEATURE(kAVFoundationCaptureForwardSampleTimestamps,
              "AVFoundationCaptureForwardSampleTimestamps",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+BASE_FEATURE(kAVFoundationCaptureSonomaStallCheck,
+             "AVFoundationCaptureSonomaStallCheck",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 namespace {
 
 // Logitech 4K Pro
@@ -79,6 +83,16 @@ std::optional<base::TimeTicks> GetCMSampleBufferTimestamp(
     return base::TimeTicks::FromMachAbsoluteTime(mach_time);
   }
   return std::nullopt;
+}
+
+bool ShouldRunStallCheck() {
+  // The stall check should not be needed on macOS 14 due to a redesign of the
+  // camera capture in macOS 14. It also interferes with the Presenter's Overlay
+  // feature that was introduced in macOS 14. See https://crbug.com/335210401.
+  if (@available(macOS 14.0, *)) {
+    return base::FeatureList::IsEnabled(kAVFoundationCaptureSonomaStallCheck);
+  }
+  return true;
 }
 
 constexpr size_t kPixelBufferPoolSize = 10;
@@ -473,7 +487,7 @@ AVCaptureDeviceFormat* FindBestCaptureFormat(
   if (best_fourcc == kCMVideoCodecType_JPEG_OpenDML) {
     // Capturing MJPEG for the following camera does not work (frames not
     // forwarded). macOS can convert to the default pixel format for us instead.
-    // TODO(crbug.com/1124884): figure out if there's another workaround.
+    // TODO(crbug.com/40147585): figure out if there's another workaround.
     if ([_captureDevice.modelID isEqualToString:kModelIdLogitech4KPro]) {
       LOG(WARNING) << "Activating MJPEG workaround for camera "
                    << base::SysNSStringToUTF8(kModelIdLogitech4KPro);
@@ -565,7 +579,9 @@ AVCaptureDeviceFormat* FindBestCaptureFormat(
     _capturedFirstFrame = false;
     _capturedFrameSinceLastStallCheck = NO;
   }
-  [self doStallCheck:0];
+  if (ShouldRunStallCheck()) {
+    [self doStallCheck:0];
+  }
   return YES;
 }
 
@@ -1151,7 +1167,7 @@ AVCaptureDeviceFormat* FindBestCaptureFormat(
   // The SampleBufferTransformer CHECK-crashes if the sample buffer is not MJPEG
   // and does not have a pixel buffer (https://crbug.com/1160647) so we fall
   // back on the M87 code path if this is the case.
-  // TODO(https://crbug.com/1160315): When the SampleBufferTransformer is
+  // TODO(crbug.com/40162135): When the SampleBufferTransformer is
   // patched to support non-MJPEG-and-non-pixel-buffer sample buffers, remove
   // this workaround and the fallback other code path.
   bool sampleHasPixelBufferOrIsMjpeg =
@@ -1161,7 +1177,7 @@ AVCaptureDeviceFormat* FindBestCaptureFormat(
 
   // If the SampleBufferTransformer is enabled, convert all possible capture
   // formats to an IOSurface-backed NV12 pixel buffer.
-  // TODO(https://crbug.com/1175142): Refactor to not hijack the code paths
+  // TODO(crbug.com/40747183): Refactor to not hijack the code paths
   // below the transformer code.
   if (_useGPUMemoryBuffer && sampleHasPixelBufferOrIsMjpeg) {
     _sampleBufferTransformer->Reconfigure(

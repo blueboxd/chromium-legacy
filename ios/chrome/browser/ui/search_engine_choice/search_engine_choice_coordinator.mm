@@ -5,17 +5,24 @@
 #import "ios/chrome/browser/ui/search_engine_choice/search_engine_choice_coordinator.h"
 
 #import "base/check_op.h"
-#import "components/search_engines/search_engine_choice_utils.h"
+#import "base/time/time.h"
+#import "components/search_engines/search_engine_choice/search_engine_choice_utils.h"
 #import "components/search_engines/search_engines_switches.h"
 #import "components/strings/grit/components_strings.h"
+#import "ios/chrome/app/application_delegate/app_state.h"
+#import "ios/chrome/browser/search_engines/model/search_engine_choice_service_factory.h"
 #import "ios/chrome/browser/search_engines/model/template_url_service_factory.h"
+#import "ios/chrome/browser/shared/coordinator/scene/scene_state.h"
 #import "ios/chrome/browser/shared/model/browser/browser.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/ui/first_run/first_run_screen_delegate.h"
+#import "ios/chrome/browser/ui/scoped_iphone_portrait_only/scoped_iphone_portrait_only.h"
+#import "ios/chrome/browser/ui/search_engine_choice/search_engine_choice_constants.h"
 #import "ios/chrome/browser/ui/search_engine_choice/search_engine_choice_learn_more/search_engine_choice_learn_more_coordinator.h"
 #import "ios/chrome/browser/ui/search_engine_choice/search_engine_choice_learn_more/search_engine_choice_learn_more_view_controller.h"
 #import "ios/chrome/browser/ui/search_engine_choice/search_engine_choice_mediator.h"
 #import "ios/chrome/browser/ui/search_engine_choice/search_engine_choice_view_controller.h"
+#import "ui/base/device_form_factor.h"
 #import "ui/base/l10n/l10n_util_mac.h"
 
 @interface SearchEngineChoiceCoordinator () <
@@ -33,8 +40,14 @@
       _searchEngineChoiceLearnMoreCoordinator;
   // Whether the screen is being shown in the FRE.
   BOOL _firstRun;
+  // Whether the primary account button was already tapped.
+  BOOL _didTapPrimaryButton;
+  // Timestamp of the previous call to `-(void)_didTapPrimaryButton`.
+  base::Time _lastCallToDidTapPrimaryButtonTimestamp;
   // First run screen delegate.
-  __weak id<FirstRunScreenDelegate> _first_run_delegate;
+  __weak id<FirstRunScreenDelegate> _firstRunDelegate;
+  // Force iPhone to be in portrait only for this coordinator.
+  std::unique_ptr<ScopedIphonePortraitOnly> _scopedIphonePortraitOnly;
 }
 
 @synthesize baseNavigationController = _baseNavigationController;
@@ -44,6 +57,7 @@
   self = [super initWithBaseViewController:viewController browser:browser];
   if (self) {
     _firstRun = NO;
+    _didTapPrimaryButton = NO;
   }
   return self;
 }
@@ -58,21 +72,27 @@
   if (self) {
     _baseNavigationController = navigationController;
     _firstRun = YES;
-    _first_run_delegate = delegate;
+    _firstRunDelegate = delegate;
   }
   return self;
 }
 
 - (void)start {
   [super start];
-  ChromeBrowserState* browserState = self.browser->GetBrowserState();
+  // Make sure we use the original browser state (non-incognito).
+  ChromeBrowserState* originalBrowserState =
+      self.browser->GetBrowserState()->GetOriginalChromeBrowserState();
   _viewController =
       [[SearchEngineChoiceViewController alloc] initWithFirstRunMode:_firstRun];
   _viewController.actionDelegate = self;
+  TemplateURLService* templateURLService =
+      ios::TemplateURLServiceFactory::GetForBrowserState(originalBrowserState);
+  search_engines::SearchEngineChoiceService* searchEngineChoiceService =
+      ios::SearchEngineChoiceServiceFactory::GetForBrowserState(
+          originalBrowserState);
   _mediator = [[SearchEngineChoiceMediator alloc]
-      initWithTemplateURLService:ios::TemplateURLServiceFactory::
-                                     GetForBrowserState(browserState)
-                     prefService:browserState->GetPrefs()];
+      initWithTemplateURLService:templateURLService
+       searchEngineChoiceService:searchEngineChoiceService];
   _mediator.consumer = _viewController;
   _viewController.mutator = _mediator;
   _viewController.modalInPresentation = YES;
@@ -84,6 +104,17 @@
         search_engines::SearchEngineChoiceScreenEvents::
             kFreChoiceScreenWasDisplayed);
   } else {
+    ui::DeviceFormFactor deviceFormFactor = ui::GetDeviceFormFactor();
+    if (deviceFormFactor == ui::DEVICE_FORM_FACTOR_PHONE) {
+      AppState* appState = self.browser->GetSceneState().appState;
+      _scopedIphonePortraitOnly =
+          std::make_unique<ScopedIphonePortraitOnly>(appState);
+    } else {
+      _viewController.modalPresentationStyle = UIModalPresentationFormSheet;
+      _viewController.preferredContentSize =
+          CGSizeMake(kIPadSearchEngineChoiceScreenPreferredWidth,
+                     kIPadSearchEngineChoiceScreenPreferredHeight);
+    }
     [self.baseViewController presentViewController:_viewController
                                           animated:YES
                                         completion:nil];
@@ -108,7 +139,8 @@
   _viewController.mutator = nil;
   _viewController = nil;
   _baseNavigationController = nil;
-  _first_run_delegate = nil;
+  _firstRunDelegate = nil;
+  _scopedIphonePortraitOnly.reset();
   [super stop];
 }
 
@@ -119,7 +151,8 @@
       [[SearchEngineChoiceLearnMoreCoordinator alloc]
           initWithBaseViewController:_viewController
                              browser:self.browser];
-  _searchEngineChoiceLearnMoreCoordinator.presentationFormSheet = _firstRun;
+  _searchEngineChoiceLearnMoreCoordinator.forcePresentationFormSheet =
+      _firstRun;
   _searchEngineChoiceLearnMoreCoordinator.delegate = self;
   [_searchEngineChoiceLearnMoreCoordinator start];
   if (_firstRun) {
@@ -133,6 +166,17 @@
 }
 
 - (void)didTapPrimaryButton {
+  if (_didTapPrimaryButton) {
+    NOTREACHED(base::NotFatalUntil::M127)
+        << "Double tap on primary button [_firstRun = " << _firstRun
+        << " ; delay : "
+        << (base::Time::Now() - _lastCallToDidTapPrimaryButtonTimestamp)
+               .InMilliseconds()
+        << " ms]";
+    return;
+  }
+  _didTapPrimaryButton = YES;
+  _lastCallToDidTapPrimaryButtonTimestamp = base::Time::Now();
   if (_firstRun) {
     search_engines::RecordChoiceScreenEvent(
         search_engines::SearchEngineChoiceScreenEvents::kFreDefaultWasSet);
@@ -156,7 +200,7 @@
 
 - (void)dismissChoiceScreen {
   if (_firstRun) {
-    [_first_run_delegate screenWillFinishPresenting];
+    [_firstRunDelegate screenWillFinishPresenting];
   } else {
     [self.delegate choiceScreenWillBeDismissed:self];
   }

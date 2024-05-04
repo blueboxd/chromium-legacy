@@ -83,7 +83,7 @@ class CORE_EXPORT FragmentBuilder {
   bool IsFragmentainerBoxType() const {
     PhysicalFragment::BoxType box_type = GetBoxType();
     return box_type == PhysicalFragment::kColumnBox ||
-           box_type == PhysicalFragment::kPageBox;
+           box_type == PhysicalFragment::kPageArea;
   }
 
   LayoutUnit InlineSize() const { return size_.inline_size; }
@@ -141,6 +141,7 @@ class CORE_EXPORT FragmentBuilder {
     lines_until_clamp_ = value;
   }
 
+  bool IsTextBoxTrimApplied() const { return is_text_box_trim_applied_; }
   void SetIsTextBoxTrimApplied() { is_text_box_trim_applied_ = true; }
 
   const UnpositionedListMarker& GetUnpositionedListMarker() const {
@@ -206,9 +207,8 @@ class CORE_EXPORT FragmentBuilder {
       BlockNode,
       const LogicalOffset& child_offset,
       LogicalStaticPosition::InlineEdge = LogicalStaticPosition::kInlineStart,
-      LogicalStaticPosition::BlockEdge = LogicalStaticPosition::kBlockStart);
-
-  void AddOutOfFlowChildCandidate(const LogicalOofPositionedNode& candidate);
+      LogicalStaticPosition::BlockEdge = LogicalStaticPosition::kBlockStart,
+      bool is_hidden_for_paint = false);
 
   // This should only be used for inline-level OOF-positioned nodes.
   // |inline_container_direction| is the current text direction for determining
@@ -216,7 +216,8 @@ class CORE_EXPORT FragmentBuilder {
   void AddOutOfFlowInlineChildCandidate(
       BlockNode,
       const LogicalOffset& child_offset,
-      TextDirection inline_container_direction);
+      TextDirection inline_container_direction,
+      bool is_hidden_for_paint = false);
 
   void AddOutOfFlowFragmentainerDescendant(
       const LogicalOofNodeForFragmentation& descendant);
@@ -271,10 +272,6 @@ class CORE_EXPORT FragmentBuilder {
 
   bool HasMulticolsWithPendingOOFs() const {
     return !multicols_with_pending_oofs_.empty();
-  }
-
-  HeapVector<LogicalOofPositionedNode>* MutableOutOfFlowPositionedCandidates() {
-    return &oof_positioned_candidates_;
   }
 
   // This method should only be used within the inline layout algorithm. It is
@@ -511,7 +508,7 @@ class CORE_EXPORT FragmentBuilder {
   }
 
   HeapVector<Member<LayoutBoxModelObject>>& EnsureStickyDescendants();
-  HeapHashSet<Member<LayoutBox>>& EnsureSnapAreas();
+  HeapVector<Member<LayoutBox>>& EnsureSnapAreas();
   LogicalAnchorQuery& EnsureAnchorQuery();
   ScrollStartTargetCandidates& EnsureScrollStartTargets();
 
@@ -558,7 +555,7 @@ class CORE_EXPORT FragmentBuilder {
   const BreakToken* break_token_ = nullptr;
 
   HeapVector<Member<LayoutBoxModelObject>>* sticky_descendants_ = nullptr;
-  HeapHashSet<Member<LayoutBox>>* snap_areas_ = nullptr;
+  HeapVector<Member<LayoutBox>>* snap_areas_ = nullptr;
   LogicalAnchorQuery* anchor_query_ = nullptr;
   LayoutUnit bfc_line_offset_;
   std::optional<LayoutUnit> bfc_block_offset_;
@@ -629,6 +626,8 @@ class CORE_EXPORT FragmentBuilder {
   bool has_out_of_flow_in_fragmentainer_subtree_ = false;
   bool is_text_box_trim_applied_ = false;
 
+  bool oof_candidates_may_have_anchor_queries_ = false;
+  bool oof_fragmentainer_descendants_may_have_anchor_queries_ = false;
 #if DCHECK_IS_ON()
   bool is_may_have_descendant_above_block_start_explicitly_set_ = false;
 #endif

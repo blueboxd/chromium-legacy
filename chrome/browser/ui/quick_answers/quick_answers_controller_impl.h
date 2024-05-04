@@ -9,15 +9,17 @@
 #include <string>
 
 #include "base/memory/raw_ptr.h"
+#include "base/memory/raw_ref.h"
 #include "base/time/time.h"
+#include "chrome/browser/ui/chromeos/read_write_cards/read_write_cards_ui_controller.h"
 #include "chromeos/components/editor_menu/public/cpp/read_write_card_controller.h"
 #include "chromeos/components/quick_answers/public/cpp/controller/quick_answers_controller.h"
+#include "chromeos/components/quick_answers/public/cpp/quick_answers_state.h"
 #include "chromeos/components/quick_answers/quick_answers_client.h"
 #include "chromeos/components/quick_answers/quick_answers_model.h"
 #include "ui/gfx/geometry/rect.h"
 
 class Profile;
-class QuickAnswersState;
 class QuickAnswersUiController;
 
 // Implementation of QuickAnswerController. It fetches quick answers
@@ -26,7 +28,8 @@ class QuickAnswersControllerImpl : public chromeos::ReadWriteCardController,
                                    public QuickAnswersController,
                                    public quick_answers::QuickAnswersDelegate {
  public:
-  QuickAnswersControllerImpl();
+  explicit QuickAnswersControllerImpl(
+      chromeos::ReadWriteCardsUiController& read_write_cards_ui_controller);
   QuickAnswersControllerImpl(const QuickAnswersControllerImpl&) = delete;
   QuickAnswersControllerImpl& operator=(const QuickAnswersControllerImpl&) =
       delete;
@@ -48,7 +51,8 @@ class QuickAnswersControllerImpl : public chromeos::ReadWriteCardController,
   void DismissQuickAnswers(
       quick_answers::QuickAnswersExitPoint exit_point) override;
   quick_answers::QuickAnswersDelegate* GetQuickAnswersDelegate() override;
-  QuickAnswersVisibility GetVisibilityForTesting() const override;
+
+  QuickAnswersVisibility GetQuickAnswersVisibility() const override;
   void SetVisibility(QuickAnswersVisibility visibility) override;
 
   // QuickAnswersDelegate:
@@ -81,9 +85,17 @@ class QuickAnswersControllerImpl : public chromeos::ReadWriteCardController,
                : nullptr;
   }
 
+  chromeos::ReadWriteCardsUiController& read_write_cards_ui_controller() {
+    return read_write_cards_ui_controller_.get();
+  }
+
   base::WeakPtr<QuickAnswersControllerImpl> GetWeakPtr();
 
+  const gfx::Rect& anchor_bounds() { return anchor_bounds_; }
+
  private:
+  friend class QuickAnswersUiControllerTest;
+
   void HandleQuickAnswerRequest(
       const quick_answers::QuickAnswersRequest& request);
 
@@ -121,7 +133,14 @@ class QuickAnswersControllerImpl : public chromeos::ReadWriteCardController,
   // The last received `QuickAnswersSession` from client.
   std::unique_ptr<quick_answers::QuickAnswersSession> quick_answers_session_;
 
+  const raw_ref<chromeos::ReadWriteCardsUiController>
+      read_write_cards_ui_controller_;
+
   QuickAnswersVisibility visibility_ = QuickAnswersVisibility::kClosed;
+
+  // Use `std::unique_ptr` instead of `std::optional` as we can pass a class
+  // defined in an unnamed namespace.
+  std::unique_ptr<QuickAnswersStateObserver> perform_on_consent_accepted_;
 
   base::WeakPtrFactory<QuickAnswersControllerImpl> weak_factory_{this};
 };

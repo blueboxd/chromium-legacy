@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40284755): Remove this and spanify to fix the errors.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "base/trace_event/trace_logging_minimal_win.h"
 
 #include <evntrace.h>
@@ -40,7 +45,7 @@ uint16_t TlmProvider::AppendNameToMetadata(
     return static_cast<uint16_t>(-1);
   }
 
-  memcpy(metadata + index, name.begin(), cch);
+  memcpy(metadata + index, name.data(), cch);
   metadata[index + cch] = 0;
   index += static_cast<uint16_t>(cch) + 1;
   return index;

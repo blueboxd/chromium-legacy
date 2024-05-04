@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.app.bookmarks;
 
-import android.content.Intent;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.view.Menu;
@@ -49,8 +48,8 @@ import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 import org.chromium.url.GURL;
 
 /** The activity that enables the user to modify the title, url and parent folder of a bookmark. */
-// TODO(crbug.com/1448929): Separate the activity from its view.
-// TODO(crbug.com/1448929): Add a coordinator/mediator for business logic.
+// TODO(crbug.com/40269559): Separate the activity from its view.
+// TODO(crbug.com/40269559): Add a coordinator/mediator for business logic.
 public class BookmarkEditActivity extends SnackbarActivity {
     /** The intent extra specifying the ID of the bookmark to be edited. */
     public static final String INTENT_BOOKMARK_ID = "BookmarkEditActivity.BookmarkId";
@@ -169,16 +168,6 @@ public class BookmarkEditActivity extends SnackbarActivity {
         updateViewContent(false);
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == MOVE_REQUEST_CODE && resultCode == RESULT_OK) {
-            mInFolderSelect = false;
-            mBookmarkId = BookmarkFolderSelectActivity.parseMoveIntentResult(data);
-            updateViewContent(true);
-        }
-    }
-
     /**
      * @param modelChanged Whether this view update is due to a model change in background.
      */
@@ -250,7 +239,9 @@ public class BookmarkEditActivity extends SnackbarActivity {
         if (mBookmarkUiPrefs != null) {
             mBookmarkUiPrefs.removeObserver(mBookmarkUiPrefsObserver);
         }
-        mBookmarkMoveSnackbarManager.destroy();
+        if (mBookmarkMoveSnackbarManager != null) {
+            mBookmarkMoveSnackbarManager.destroy();
+        }
         super.onDestroy();
     }
 

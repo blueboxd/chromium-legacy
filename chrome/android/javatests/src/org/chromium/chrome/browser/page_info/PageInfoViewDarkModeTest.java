@@ -23,6 +23,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Features.DisableFeatures;
 import org.chromium.chrome.browser.app.ChromeActivity;
@@ -89,7 +90,10 @@ public class PageInfoViewDarkModeTest {
                                     null)
                             .show(tab, ChromePageInfoHighlight.noHighlight());
                 });
-        onViewWaiting(allOf(withId(R.id.page_info_url_wrapper), isDisplayed()));
+        onViewWaiting(
+                allOf(withId(R.id.page_info_url_wrapper), isDisplayed()),
+                true // Put Focus on dialog to fix flakiness in api 29+ with espresso 3.2.
+                );
     }
 
     private View getPageInfoView() {
@@ -128,6 +132,7 @@ public class PageInfoViewDarkModeTest {
     @MediumTest
     @Feature({"RenderTest"})
     @DisableFeatures(ChromeFeatureList.TRACKING_PROTECTION_3PCD)
+    @DisabledTest(message = "crbug.com/330166513")
     public void testShowOnSecureWebsiteDark() throws IOException {
         loadUrlAndOpenPageInfo(mTestServerRule.getServer().getURL(sSimpleHtml));
         mRenderTestRule.render(getPageInfoView(), "PageInfo_SecureWebsiteDark");

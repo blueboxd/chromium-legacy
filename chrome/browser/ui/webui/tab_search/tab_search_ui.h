@@ -11,11 +11,14 @@
 #include "chrome/browser/ui/webui/metrics_reporter/metrics_reporter.h"
 #include "chrome/browser/ui/webui/tab_search/tab_search.mojom.h"
 #include "chrome/browser/ui/webui/tab_search/tab_search_page_handler.h"
+#include "chrome/browser/ui/webui/top_chrome/top_chrome_web_ui_controller.h"
 #include "chrome/browser/ui/webui/webui_load_timer.h"
+#include "chrome/common/webui_url_constants.h"
+#include "content/public/browser/webui_config.h"
+#include "content/public/common/url_constants.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
-#include "ui/webui/mojo_bubble_web_ui_controller.h"
 #include "ui/webui/resources/cr_components/color_change_listener/color_change_listener.mojom.h"
 #include "ui/webui/resources/js/metrics_reporter/metrics_reporter.mojom.h"
 
@@ -23,7 +26,16 @@ namespace ui {
 class ColorChangeHandler;
 }
 
-class TabSearchUI : public ui::MojoBubbleWebUIController,
+class TabSearchUI;
+
+class TabSearchUIConfig : public content::DefaultWebUIConfig<TabSearchUI> {
+ public:
+  TabSearchUIConfig()
+      : DefaultWebUIConfig(content::kChromeUIScheme,
+                           chrome::kChromeUITabSearchHost) {}
+};
+
+class TabSearchUI : public TopChromeWebUIController,
                     public tab_search::mojom::PageHandlerFactory {
  public:
   explicit TabSearchUI(content::WebUI* web_ui);

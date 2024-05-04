@@ -113,7 +113,11 @@ void Adapter::GetInfo(GetInfoCallback callback) {
   adapter_info->name = adapter_->GetName();
 #if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX)
   adapter_info->system_name = adapter_->GetSystemName();
+#endif
+#if BUILDFLAG(IS_CHROMEOS)
   adapter_info->floss = floss::features::IsFlossEnabled();
+  adapter_info->extended_advertisement_support =
+      adapter_->IsExtendedAdvertisementsAvailable();
 #endif
   adapter_info->initialized = adapter_->IsInitialized();
   adapter_info->present = adapter_->IsPresent();
@@ -132,10 +136,13 @@ void Adapter::AddObserver(mojo::PendingRemote<mojom::AdapterObserver> observer,
 void Adapter::RegisterAdvertisement(const device::BluetoothUUID& service_uuid,
                                     const std::vector<uint8_t>& service_data,
                                     bool use_scan_response,
+                                    bool connectable,
                                     RegisterAdvertisementCallback callback) {
   auto advertisement_data =
       std::make_unique<device::BluetoothAdvertisement::Data>(
-          device::BluetoothAdvertisement::ADVERTISEMENT_TYPE_BROADCAST);
+          connectable
+              ? device::BluetoothAdvertisement::ADVERTISEMENT_TYPE_PERIPHERAL
+              : device::BluetoothAdvertisement::ADVERTISEMENT_TYPE_BROADCAST);
 
   device::BluetoothAdvertisement::UUIDList uuid_list;
   uuid_list.push_back(service_uuid.value());
@@ -236,7 +243,8 @@ void Adapter::ConnectToServiceInsecurely(
                       should_unbond_on_error, std::move(callback)));
 
   if (device) {
-    OnDeviceFetchedForInsecureServiceConnection(request_id, device);
+    ProcessDeviceForInsecureServiceConnection(request_id, device,
+                                              /*disconnected=*/false);
     return;
   }
 
@@ -292,21 +300,26 @@ void Adapter::CreateLocalGattService(
   mojo::PendingRemote<mojom::GattService> pending_gatt_service_remote =
       pending_gatt_service_receiver.InitWithNewPipeAndPassRemote();
 
-  // TODO(crbug.com/311430390): `gatt_service` can become invalidated if the
-  // consumer of `pending_gatt_service_remote` calls `Stop()` (which will be
-  // added in a follow up CL as part of this work). When that happens,
-  // `Adapter` needs to observe the invalidation event, and clean up the
-  // `gatt_service` from `uuid_to_local_gatt_service_map_`. This TODO tracks
-  // adding an observer interface to `GattService` to notify `Adapter` when it
-  // is invalidated, which then `Adapter` can erase `gatt_service` from
-  // `uuid_to_local_gatt_service_map_`.
-  auto gatt_service =
-      std::make_unique<GattService>(std::move(pending_gatt_service_receiver),
-                                    std::move(observer), service_id, adapter_);
+  auto gatt_service = std::make_unique<GattService>(
+      std::move(pending_gatt_service_receiver), std::move(observer), service_id,
+      adapter_,
+      base::BindOnce(&Adapter::OnGattServiceInvalidated,
+                     base::Unretained(this)));
   uuid_to_local_gatt_service_map_.try_emplace(service_id,
                                               std::move(gatt_service));
   std::move(callback).Run(
       /*gatt_service=*/std::move(pending_gatt_service_remote));
+}
+
+void Adapter::IsLeScatternetDualRoleSupported(
+    IsLeScatternetDualRoleSupportedCallback callback) {
+#if BUILDFLAG(IS_CHROMEOS)
+  std::move(callback).Run(base::Contains(
+      adapter_->GetSupportedRoles(),
+      device::BluetoothAdapter::BluetoothRole::kCentralPeripheral));
+#else
+  std::move(callback).Run(/*is_supported=*/false);
+#endif  // BUILDFLAG(IS_CHROMEOS)
 }
 
 void Adapter::AdapterPresentChanged(device::BluetoothAdapter* adapter,
@@ -345,8 +358,8 @@ void Adapter::DeviceChanged(device::BluetoothAdapter* adapter,
   // consider a null RSSI indicative of a device no longer being discoverable.
   // In this scenario, we fail any pending connection requests.
   if (!device->GetInquiryRSSI()) {
-    ProcessPendingInsecureServiceConnectionRequest(device->GetAddress(),
-                                                   /*device=*/nullptr);
+    ProcessPendingInsecureServiceConnectionRequest(device,
+                                                   /*disconnected=*/true);
   }
 
   for (auto& observer : observers_)
@@ -355,8 +368,8 @@ void Adapter::DeviceChanged(device::BluetoothAdapter* adapter,
 
 void Adapter::DeviceRemoved(device::BluetoothAdapter* adapter,
                             device::BluetoothDevice* device) {
-  ProcessPendingInsecureServiceConnectionRequest(device->GetAddress(),
-                                                 /*device=*/nullptr);
+  ProcessPendingInsecureServiceConnectionRequest(device,
+                                                 /*disconnected=*/true);
 
   for (auto& observer : observers_)
     observer->DeviceRemoved(Device::ConstructDeviceInfoStruct(device));
@@ -368,10 +381,10 @@ void Adapter::GattServicesDiscovered(device::BluetoothAdapter* adapter,
   // indicate that all services on the remote device, including SDP, are
   // resolved. Once service probing for a device within a cached request (in
   // |pending_connect_to_service_args_|) concludes, attempt socket creation
-  // again via OnDeviceFetchedForInsecureServiceConnection().
+  // again via ProcessDeviceForInsecureServiceConnection().
   if (device->IsGattServicesDiscoveryComplete()) {
-    ProcessPendingInsecureServiceConnectionRequest(device->GetAddress(),
-                                                   device);
+    ProcessPendingInsecureServiceConnectionRequest(device,
+                                                   /*disconnected=*/false);
   }
 }
 
@@ -380,12 +393,26 @@ void Adapter::AllowConnectionsForUuid(
   allowed_uuids_.emplace(service_uuid);
 }
 
+void Adapter::OnGattServiceInvalidated(device::BluetoothUUID service_id) {
+  uuid_to_local_gatt_service_map_.erase(service_id);
+}
+
 void Adapter::OnDeviceFetchedForInsecureServiceConnection(
     int request_id,
     device::BluetoothDevice* device) {
-  DCHECK(connect_to_service_request_map_.contains(request_id));
+  CHECK(device);
+  ProcessDeviceForInsecureServiceConnection(request_id, device,
+                                            /*disconnected=*/false);
+}
 
-  if (!device) {
+void Adapter::ProcessDeviceForInsecureServiceConnection(
+    int request_id,
+    device::BluetoothDevice* device,
+    bool disconnected) {
+  CHECK(connect_to_service_request_map_.contains(request_id));
+  CHECK(device);
+
+  if (disconnected) {
     ExecuteConnectToServiceCallback(request_id, /*result=*/nullptr);
     return;
   }
@@ -411,14 +438,16 @@ void Adapter::OnDeviceFetchedForInsecureServiceConnection(
 }
 
 void Adapter::ProcessPendingInsecureServiceConnectionRequest(
-    const std::string& address,
-    device::BluetoothDevice* device) {
+    device::BluetoothDevice* device,
+    bool disconnected) {
+  CHECK(device);
+  const std::string& address = device->GetAddress();
   auto it = connect_to_service_requests_pending_discovery_.begin();
   while (it != connect_to_service_requests_pending_discovery_.end()) {
     auto request_it = connect_to_service_request_map_.find(*it);
     DCHECK(request_it != connect_to_service_request_map_.end());
     if (address == request_it->second->address) {
-      OnDeviceFetchedForInsecureServiceConnection(*it, device);
+      ProcessDeviceForInsecureServiceConnection(*it, device, disconnected);
       it = connect_to_service_requests_pending_discovery_.erase(it);
     } else {
       ++it;

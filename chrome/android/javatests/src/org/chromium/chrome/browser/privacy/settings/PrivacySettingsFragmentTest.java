@@ -13,6 +13,7 @@ import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
+import static org.hamcrest.Matchers.allOf;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -157,11 +158,26 @@ public class PrivacySettingsFragmentTest {
                                 .setBoolean(Pref.TRACKING_PROTECTION3PCD_ENABLED, show));
     }
 
+    private void setIpProtection(boolean ipProtectionEnabled) {
+        TestThreadUtils.runOnUiThreadBlocking(
+                () ->
+                        UserPrefs.get(ProfileManager.getLastUsedRegularProfile())
+                                .setBoolean(Pref.IP_PROTECTION_ENABLED, ipProtectionEnabled));
+    }
+
+    private boolean isIpProtectionEnabled() throws ExecutionException {
+        return TestThreadUtils.runOnUiThreadBlocking(
+                () ->
+                        UserPrefs.get(ProfileManager.getLastUsedRegularProfile())
+                                .getBoolean(Pref.IP_PROTECTION_ENABLED));
+    }
+
     @Before
     public void setUp() {
         NativeLibraryTestUtils.loadNativeLibraryAndInitBrowserProcess();
         mFakePrivacySandboxBridge = new FakePrivacySandboxBridge();
         mocker.mock(PrivacySandboxBridgeJni.TEST_HOOKS, mFakePrivacySandboxBridge);
+        mActionTester = new UserActionTester();
     }
 
     @After
@@ -246,6 +262,21 @@ public class PrivacySettingsFragmentTest {
 
     @Test
     @LargeTest
+    @Features.EnableFeatures(ChromeFeatureList.IP_PROTECTION_UX)
+    public void testIpProtectionFragment() throws IOException {
+        mSettingsActivityTestRule.startSettingsActivity();
+        // Scroll down and open Privacy Sandbox page.
+        scrollToSetting(withText(R.string.ip_protection_title));
+        onView(withText(R.string.ip_protection_title)).perform(click());
+        // Verify that the right view is shown depending on feature state.
+        onView(withText(R.string.ip_protection_title)).check(matches(isDisplayed()));
+        // Verify that the user action is emitted when ip protection is clicked
+        assertTrue(
+                mActionTester.getActions().contains("Settings.IpProtection.OpenedFromPrivacyPage"));
+    }
+
+    @Test
+    @LargeTest
     public void testPrivacySandboxV4RestrictedWithRestrictedNoticeEnabled() throws IOException {
         mFakePrivacySandboxBridge.setRestrictedNoticeEnabled(true);
         mFakePrivacySandboxBridge.setPrivacySandboxRestricted(true);
@@ -305,6 +336,21 @@ public class PrivacySettingsFragmentTest {
 
     @Test
     @LargeTest
+    @Features.EnableFeatures(ChromeFeatureList.IP_PROTECTION_UX)
+    public void testIpProtectionSettingsE2E() throws ExecutionException {
+        setIpProtection(false);
+        mSettingsActivityTestRule.startSettingsActivity();
+        // Scroll down and open Privacy Sandbox page.
+        scrollToSetting(withText(R.string.ip_protection_title));
+        onView(withText(R.string.ip_protection_title)).perform(click());
+        // Verify that the right view is shown depending on feature state.
+        onView(withText(R.string.ip_protection_title)).check(matches(isDisplayed()));
+        onView(allOf(withText(R.string.text_off), isDisplayed())).perform(click());
+        assertTrue(isIpProtectionEnabled());
+    }
+
+    @Test
+    @LargeTest
     @Feature({"RenderTest"})
     public void testRenderIncognitoLockView_DeviceScreenLockDisabled() throws IOException {
         IncognitoReauthManager.setIsIncognitoReauthFeatureAvailableForTesting(true);
@@ -338,7 +384,6 @@ public class PrivacySettingsFragmentTest {
     @LargeTest
     public void testPrivacyGuideLinkRowEntryPointUserAction() throws IOException {
         mSettingsActivityTestRule.startSettingsActivity();
-        mActionTester = new UserActionTester();
         // Scroll down and open Privacy Guide page.
         scrollToSetting(withText(R.string.privacy_guide_pref_summary));
         onView(withText(R.string.privacy_guide_pref_summary)).perform(click());
@@ -389,7 +434,7 @@ public class PrivacySettingsFragmentTest {
     @LargeTest
     @DisabledTest(message = "crbug.com/1437093")
     public void testPrivacyGuideNotDisplayedWhenUserIsChild() {
-        // TODO(crbug.com/1433652): Remove once SigninChecker is automatically created.
+        // TODO(crbug.com/40264499): Remove once SigninChecker is automatically created.
         TestThreadUtils.runOnUiThreadBlockingNoException(
                 () -> SigninCheckerProvider.get(ProfileManager.getLastUsedRegularProfile()));
         mSigninTestRule.addChildTestAccountThenWaitForSignin();

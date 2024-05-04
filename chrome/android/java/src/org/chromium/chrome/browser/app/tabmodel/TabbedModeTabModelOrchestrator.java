@@ -9,15 +9,22 @@ import android.util.Pair;
 
 import androidx.annotation.VisibleForTesting;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.supplier.OneshotSupplier;
+import org.chromium.chrome.browser.DeferredStartupHandler;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.multiwindow.MultiInstanceManager;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.profiles.ProfileProvider;
+import org.chromium.chrome.browser.tab_ui.TabContentManager;
 import org.chromium.chrome.browser.tabmodel.MismatchedIndicesHandler;
 import org.chromium.chrome.browser.tabmodel.NextTabPolicy.NextTabPolicySupplier;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorBase;
+import org.chromium.chrome.browser.tabmodel.TabModelSelectorImpl;
 import org.chromium.chrome.browser.tabmodel.TabPersistentStore;
 import org.chromium.chrome.browser.tabmodel.TabbedModeTabPersistencePolicy;
 import org.chromium.ui.widget.Toast;
@@ -28,18 +35,36 @@ import org.chromium.ui.widget.Toast;
  */
 public class TabbedModeTabModelOrchestrator extends TabModelOrchestrator {
     private final boolean mTabMergingEnabled;
+    private final ActivityLifecycleDispatcher mActivityLifecycleDispatcher;
+
+    // This class is driven by TabbedModeTabModelOrchestrator to prevent duplicate glue code in
+    //  ChromeTabbedActivity.
+    private ArchivedTabModelOrchestrator mArchivedTabModelOrchestrator;
+    private OneshotSupplier<ProfileProvider> mProfileProviderSupplier;
+    private TabCreatorManager mTabCreatorManager;
 
     /**
      * Constructor.
+     *
      * @param tabMergingEnabled Whether we are on the platform where tab merging is enabled.
+     * @param activityLifecycleDispatcher Used to determine if the current activity context is still
+     *     valid when running deferred tasks.
      */
-    public TabbedModeTabModelOrchestrator(boolean tabMergingEnabled) {
+    public TabbedModeTabModelOrchestrator(
+            boolean tabMergingEnabled, ActivityLifecycleDispatcher activityLifecycleDispatcher) {
         mTabMergingEnabled = tabMergingEnabled;
+        mActivityLifecycleDispatcher = activityLifecycleDispatcher;
     }
 
     /**
      * Creates the TabModelSelector and the TabPersistentStore.
      *
+     * @param activity The activity that hosts this TabModelOrchestrator.
+     * @param profileProviderSupplier Supplies the {@link ProfileProvider} for the activity.
+     * @param tabCreatorManager Manager for the {@link TabCreator} for the {@link TabModelSelector}.
+     * @param nextTabPolicyProvider Policy for what to do when a tab is closed.
+     * @param mismatchedIndicesHandler Handles when indices are mismatched.
+     * @param selectorIndex Which index to use when requesting a selector.
      * @return Whether the creation was successful. It may fail is we reached the limit of number of
      *     windows.
      */
@@ -50,6 +75,8 @@ public class TabbedModeTabModelOrchestrator extends TabModelOrchestrator {
             NextTabPolicySupplier nextTabPolicySupplier,
             MismatchedIndicesHandler mismatchedIndicesHandler,
             int selectorIndex) {
+        mProfileProviderSupplier = profileProviderSupplier;
+        mTabCreatorManager = tabCreatorManager;
         boolean mergeTabsOnStartup = shouldMergeTabs(activity);
         if (mergeTabsOnStartup) {
             MultiInstanceManager.mergedOnStartup();
@@ -133,6 +160,50 @@ public class TabbedModeTabModelOrchestrator extends TabModelOrchestrator {
     @Override
     public void cleanupInstance(int instanceId) {
         mTabPersistentStore.cleanupStateFile(instanceId);
+    }
+
+    @Override
+    public void onNativeLibraryReady(TabContentManager tabContentManager) {
+        super.onNativeLibraryReady(tabContentManager);
+
+        if (ChromeFeatureList.sAndroidTabDeclutterRescueKillSwitch.isEnabled()) {
+            DeferredStartupHandler.getInstance()
+                    .addDeferredTask(
+                            () -> createAndInitArchivedTabModelOrchestrator(tabContentManager));
+            DeferredStartupHandler.getInstance().queueDeferredTasksOnIdleHandler();
+        }
+    }
+
+    @Override
+    public void saveState() {
+        super.saveState();
+        if (mArchivedTabModelOrchestrator != null
+                && mArchivedTabModelOrchestrator.areTabModelsInitialized()) {
+            mArchivedTabModelOrchestrator.saveState();
+        }
+    }
+
+    private void createAndInitArchivedTabModelOrchestrator(TabContentManager tabContentManager) {
+        if (mActivityLifecycleDispatcher.isActivityFinishingOrDestroyed()) return;
+        ThreadUtils.assertOnUiThread();
+        // The profile will be available because native is initialized.
+        assert mProfileProviderSupplier.hasValue();
+        assert tabContentManager != null;
+
+        Profile profile = mProfileProviderSupplier.get().getOriginalProfile();
+        assert profile != null;
+
+        mArchivedTabModelOrchestrator = ArchivedTabModelOrchestrator.getForProfile(profile);
+        mArchivedTabModelOrchestrator.maybCreateAndInitTabModels(tabContentManager);
+
+        // If the feature flag is enabled, then start the declutter process. Otherwise, rescue
+        // tabs that may have been archived previously.
+        if (ChromeFeatureList.sAndroidTabDeclutter.isEnabled()) {
+            mArchivedTabModelOrchestrator.maybeBeginDeclutter();
+        } else {
+            mArchivedTabModelOrchestrator.maybeRescueArchivedTabs(
+                    mTabCreatorManager.getTabCreator(/* incognito= */ false));
+        }
     }
 
     public TabPersistentStore getTabPersistentStoreForTesting() {

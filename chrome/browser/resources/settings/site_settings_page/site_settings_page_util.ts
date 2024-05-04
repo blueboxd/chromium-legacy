@@ -31,6 +31,8 @@ export function getLocalizationStringForContentType(
       return 'siteSettingsBluetoothScanningMidSentence';
     case ContentSettingsTypes.CAMERA:
       return 'siteSettingsCameraMidSentence';
+    case ContentSettingsTypes.CAPTURED_SURFACE_CONTROL:
+      return 'siteSettingsCapturedSurfaceControlMidSentence';
     case ContentSettingsTypes.CLIPBOARD:
       return 'siteSettingsClipboardMidSentence';
     case ContentSettingsTypes.COOKIES:
@@ -49,6 +51,8 @@ export function getLocalizationStringForContentType(
       return 'siteSettingsImagesMidSentence';
     case ContentSettingsTypes.JAVASCRIPT:
       return 'siteSettingsJavascriptMidSentence';
+    case ContentSettingsTypes.KEYBOARD_LOCK:
+      return 'siteSettingsKeyboardLockMidSentence';
     case ContentSettingsTypes.LOCAL_FONTS:
       return 'siteSettingsFontAccessMidSentence';
     case ContentSettingsTypes.MIC:
@@ -61,6 +65,8 @@ export function getLocalizationStringForContentType(
       return 'siteSettingsNotificationsMidSentence';
     case ContentSettingsTypes.PAYMENT_HANDLER:
       return 'siteSettingsPaymentHandlerMidSentence';
+    case ContentSettingsTypes.POINTER_LOCK:
+      return 'siteSettingsPointerLockMidSentence';
     case ContentSettingsTypes.POPUPS:
       return 'siteSettingsPopupsMidSentence';
     case ContentSettingsTypes.PROTECTED_CONTENT:
@@ -92,6 +98,7 @@ export function getLocalizationStringForContentType(
     case ContentSettingsTypes.PERFORMANCE:
     case ContentSettingsTypes.PRIVATE_NETWORK_DEVICES:
     case ContentSettingsTypes.SITE_DATA:
+    case ContentSettingsTypes.TRACKING_PROTECTION:
       return null;
     default:
       assertNotReached();

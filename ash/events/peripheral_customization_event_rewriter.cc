@@ -30,6 +30,7 @@
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "ui/base/accelerators/ash/right_alt_event_property.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/display/screen.h"
 #include "ui/events/ash/mojom/modifier_key.mojom-shared.h"
@@ -173,12 +174,15 @@ int ConvertModifierKeyToFlags(ui::mojom::ModifierKey modifier_key) {
       return ui::EF_CONTROL_DOWN;
     case ui::mojom::ModifierKey::kAlt:
       return ui::EF_ALT_DOWN;
+    case ui::mojom::ModifierKey::kFunction:
+      return ui::EF_FUNCTION_DOWN;
     case ui::mojom::ModifierKey::kEscape:
     case ui::mojom::ModifierKey::kBackspace:
     case ui::mojom::ModifierKey::kAssistant:
     case ui::mojom::ModifierKey::kCapsLock:
     case ui::mojom::ModifierKey::kVoid:
     case ui::mojom::ModifierKey::kIsoLevel5ShiftMod3:
+    case ui::mojom::ModifierKey::kRightAlt:
       return ui::EF_NONE;
   }
 }
@@ -324,12 +328,20 @@ std::vector<std::unique_ptr<ui::Event>> RewriteEventToKeyEvents(
     applied_modifier_key_flag = ui::EF_NONE;
   }
 
+  const bool is_rewrite_to_right_alt = key_event.vkey == ui::VKEY_RIGHT_ALT;
+  ui::KeyboardCode key_code = key_event.vkey;
+  if (is_rewrite_to_right_alt) {
+    key_code = ui::VKEY_ASSISTANT;
+  }
   auto rewritten_event = std::make_unique<ui::KeyEvent>(
-      event_type, key_event.vkey, static_cast<ui::DomCode>(key_event.dom_code),
+      event_type, key_code, static_cast<ui::DomCode>(key_event.dom_code),
       applied_modifier_key_flag | other_modifiers_to_apply | event.flags() |
           ui::EF_IS_CUSTOMIZED_FROM_BUTTON,
       static_cast<ui::DomKey>(key_event.dom_key), event.time_stamp());
   rewritten_event->set_source_device_id(event.source_device_id());
+  if (is_rewrite_to_right_alt) {
+    ui::SetRightAltProperty(rewritten_event.get());
+  }
 
   return GenerateFullKeyEventSequence(
       event, other_modifiers_to_apply, event.flags(),
@@ -372,7 +384,7 @@ std::vector<std::unique_ptr<ui::Event>> RewriteEventToMouseButtonEvents(
 
   std::vector<std::unique_ptr<ui::Event>> rewritten_events;
 
-  auto* flag_iter = kStaticActionToMouseButtonFlag.find(action);
+  auto flag_iter = kStaticActionToMouseButtonFlag.find(action);
   CHECK(flag_iter != kStaticActionToMouseButtonFlag.end());
   const int characteristic_flag = flag_iter->second;
 
@@ -649,8 +661,21 @@ void RecordMouseInvalidKeyPressed(InputDeviceSettingsController* controller,
   }
 
   auto* mouse = controller->GetMouse(key_event.source_device_id());
+  auto* keyboard = controller->GetKeyboard(key_event.source_device_id());
   if (!mouse) {
     return;
+  }
+
+  if (mouse && keyboard) {
+    base::UmaHistogramSparse("ChromeOS.Inputs.Mouse.InvalidRegistration.Combo",
+                             key_event.key_code());
+    return;
+  }
+
+  if (mouse) {
+    base::UmaHistogramSparse(
+        "ChromeOS.Inputs.Mouse.InvalidRegistration.NonCombo",
+        key_event.key_code());
   }
 
   LOG(WARNING) << base::StringPrintf(
@@ -1130,7 +1155,8 @@ void PeripheralCustomizationEventRewriter::UpdatePressedButtonMapFlags(
   auto modifier_key = ConvertDomCodeToModifierKey(key_event.code());
   int key_event_characteristic_flag =
       ConvertKeyCodeToFlags(key_event.key_code());
-  if (settings && modifier_key) {
+  // Modifiers only need to be remapped now if the rewriter fix is disabled.
+  if (!features::IsKeyboardRewriterFixEnabled() && settings && modifier_key) {
     auto iter = settings->modifier_remappings.find(*modifier_key);
     if (iter != settings->modifier_remappings.end()) {
       key_event_characteristic_flag = ConvertModifierKeyToFlags(iter->second);

@@ -138,7 +138,7 @@ message SyncEnums {
 
   // New enums to describe the device type were introduced; OsType and
   // FormFactor. Deprecated 12/2022.
-  // TODO(1395353): Remove deprecated values from DeviceType enum.
+  // TODO(crbug.com/40882073): Remove deprecated values from DeviceType enum.
   enum DeviceType {
     TYPE_UNSET = 0 [deprecated = true];
     TYPE_WIN = 1 [deprecated = true];
@@ -197,6 +197,7 @@ message SyncEnums {
   // don't add any values < 12 unless there's a good reason for it.
   //
   // Introduced in M28.
+  // LINT.IfChange(SyncGetUpdatesOrigin)
   enum GetUpdatesOrigin {
     UNKNOWN_ORIGIN = 0;  // The source was not set by the caller.
     PERIODIC = 4;        // The source of the update was periodic polling.
@@ -220,4 +221,5 @@ message SyncEnums {
     PROGRAMMATIC = 14;  // A GU to programmatically enable/disable a
                         // datatype, often due to error handling.
   }
+  // LINT.ThenChange(/tools/metrics/histograms/metadata/sync/enums.xml:SyncGetUpdatesOrigin)
 }

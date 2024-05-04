@@ -37,7 +37,7 @@ namespace {
 
 constexpr int kFocusRingCornerRadius = 14;
 constexpr int kFocusRingCornerRadiusOld = 20;
-constexpr float kFocusRingThickness = 4.f;
+constexpr float kFocusRingThickness = 4.0f;
 
 // Returns the rounded corners of the preview view scaled by the given value of
 // `scale` for the preview view with given source `window`. If the preview view
@@ -55,12 +55,7 @@ gfx::RoundedCornersF GetRoundedCornersForPreviewView(
   }
 
   if (preview_view_rounded_corners.has_value()) {
-    // TODO(b/294294344): Return a different set of rounded corners if it is
-    // for vertical split view.
-    const auto raw_value = preview_view_rounded_corners.value();
-    return gfx::RoundedCornersF(raw_value.upper_left(), raw_value.upper_right(),
-                                raw_value.lower_right(),
-                                raw_value.lower_left());
+    return *preview_view_rounded_corners;
   }
 
   const int corner_radius = window_util::GetMiniWindowRoundedCornerRadius();
@@ -106,7 +101,7 @@ void WindowMiniView::SetRoundedCornersRadius(
 
   preview_view_rounded_corners_ =
       gfx::RoundedCornersF(/*upper_left=*/0, /*upper_right=*/0,
-                           exposed_rounded_corners.upper_right(),
+                           exposed_rounded_corners.lower_right(),
                            exposed_rounded_corners.lower_left());
   OnRoundedCornersSet();
 }
@@ -159,9 +154,7 @@ void WindowMiniView::RefreshPreviewRoundedCorners() {
   layer->SetRoundedCornerRadius(GetRoundedCornersForPreviewView(
       source_window_, backdrop_view_, preview_view_->GetBoundsInScreen(),
       layer->transform().To2dScale().x(), preview_view_rounded_corners_));
-  if (!chromeos::features::IsRoundedWindowsEnabled()) {
-    layer->SetIsFastRoundedCorner(true);
-  }
+  layer->SetIsFastRoundedCorner(true);
 }
 
 void WindowMiniView::RefreshHeaderViewRoundedCorners() {
@@ -211,9 +204,11 @@ void WindowMiniView::SetShowPreview(bool show) {
   preview_view_ =
       AddChildView(std::make_unique<WindowPreviewView>(source_window_));
   preview_view_->SetPaintToLayer();
-  preview_view_->layer()->SetFillsBoundsOpaquely(false);
+  ui::Layer* preview_layer = preview_view_->layer();
+  preview_layer->SetName("PreviewView");
+  preview_layer->SetFillsBoundsOpaquely(false);
 
-  // TODO(crbug.com/1522471): Consider redesigning `WindowCycleItemView` to
+  // TODO(http://b/41495434): Consider redesigning `WindowCycleItemView` to
   // cancel Layer rounded corners.
   //
   // The derived class `WindowCycleItemView` of `WindowMiniView` will create
@@ -241,7 +236,8 @@ gfx::RoundedCornersF WindowMiniView::GetRoundedCorners() const {
   }
 
   const gfx::RoundedCornersF header_rounded_corners =
-      header_view_->GetHeaderRoundedCorners(source_window_);
+      header_view_->background()->GetRoundedCornerRadii().value_or(
+          gfx::RoundedCornersF());
   const gfx::RoundedCornersF preview_rounded_corners =
       preview_view_->layer()->rounded_corner_radii();
   return gfx::RoundedCornersF(header_rounded_corners.upper_left(),

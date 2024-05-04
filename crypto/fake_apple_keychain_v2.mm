@@ -12,12 +12,16 @@
 
 #import <CoreFoundation/CoreFoundation.h>
 #import <Foundation/Foundation.h>
+#import <LocalAuthentication/LocalAuthentication.h>
 #import <Security/Security.h>
 
 #include "base/apple/bridging.h"
 #include "base/apple/foundation_util.h"
 #include "base/apple/scoped_cftyperef.h"
+#include "base/apple/scoped_typeref.h"
 #include "base/check_op.h"
+#include "base/memory/scoped_policy.h"
+#include "base/notimplemented.h"
 #include "base/notreached.h"
 #include "base/strings/sys_string_conversions.h"
 #include "crypto/apple_keychain_v2.h"
@@ -133,13 +137,26 @@ FakeAppleKeychainV2::KeyCopyAttributes(SecKeyRef key) {
   if (it == items_.end()) {
     return base::apple::ScopedCFTypeRef<CFDictionaryRef>();
   }
-  base::apple::ScopedCFTypeRef<CFMutableDictionaryRef> result =
-      base::apple::ScopedCFTypeRef<CFMutableDictionaryRef>(
-          CFDictionaryCreateMutableCopy(kCFAllocatorDefault, /*capacity=*/0,
-                                        it->get()));
+  base::apple::ScopedCFTypeRef<CFMutableDictionaryRef> result(
+      CFDictionaryCreateMutableCopy(kCFAllocatorDefault, /*capacity=*/0,
+                                    it->get()));
   // The real implementation does not return the actual key.
   CFDictionaryRemoveValue(result.get(), kSecValueRef);
   return result;
+}
+
+OSStatus FakeAppleKeychainV2::ItemAdd(CFDictionaryRef attributes,
+                                      CFTypeRef* result) {
+  CFStringRef keychain_access_group =
+      base::apple::GetValueFromDictionary<CFStringRef>(attributes,
+                                                       kSecAttrAccessGroup);
+  if (!CFEqual(keychain_access_group, keychain_access_group_.get())) {
+    return errSecMissingEntitlement;
+  }
+  base::apple::ScopedCFTypeRef<CFDictionaryRef> item(
+      attributes, base::scoped_policy::RETAIN);
+  items_.push_back(item);
+  return errSecSuccess;
 }
 
 OSStatus FakeAppleKeychainV2::ItemCopyMatching(CFDictionaryRef query,
@@ -289,5 +306,23 @@ FakeAppleKeychainV2::TaskCopyValueForEntitlement(SecTaskRef task,
   return keychain_access_groups;
 }
 #endif  // !BUILDFLAG(IS_IOS)
+
+BOOL FakeAppleKeychainV2::LAContextCanEvaluatePolicy(
+    LAPolicy policy,
+    NSError* __autoreleasing* error) {
+  switch (policy) {
+    case LAPolicyDeviceOwnerAuthentication:
+      return uv_method_ == UVMethod::kBiometrics ||
+             uv_method_ == UVMethod::kPasswordOnly;
+    case LAPolicyDeviceOwnerAuthenticationWithBiometrics:
+      return uv_method_ == UVMethod::kBiometrics;
+    case LAPolicyDeviceOwnerAuthenticationWithBiometricsOrWatch:
+      return uv_method_ == UVMethod::kBiometrics;
+    default:  // Avoid needing to refer to values not available in the minimum
+              // supported macOS version.
+      NOTIMPLEMENTED();
+      return false;
+  }
+}
 
 }  // namespace crypto

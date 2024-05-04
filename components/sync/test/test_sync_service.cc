@@ -10,6 +10,7 @@
 #include "base/containers/contains.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "components/sync/base/progress_marker_map.h"
 #include "components/sync/engine/cycle/model_neutral_state.h"
 #include "components/sync/model/type_entities_count.h"
@@ -42,15 +43,57 @@ CoreAccountInfo GetDefaultAccountInfo() {
 }  // namespace
 
 TestSyncService::TestSyncService()
-    : user_settings_(this),
-      account_info_(GetDefaultAccountInfo()),
-      last_cycle_snapshot_(MakeDefaultCycleSnapshot()) {}
+    : user_settings_(this), last_cycle_snapshot_(MakeDefaultCycleSnapshot()) {
+  SetSignedInWithSyncFeatureOn();
+}
 
 TestSyncService::~TestSyncService() = default;
 
+void TestSyncService::SetSignedInWithoutSyncFeature() {
+  SetSignedInWithoutSyncFeature(GetDefaultAccountInfo());
+}
+
+void TestSyncService::SetSignedInWithoutSyncFeature(
+    const CoreAccountInfo& account_info) {
+  SetHasSyncConsent(false);
+  user_settings_.ClearInitialSyncFeatureSetupComplete();
+  SetTransportState(TransportState::ACTIVE);
+  SetDisableReasons({});
+  SetAccountInfo(account_info);
+}
+
+void TestSyncService::SetSignedInWithSyncFeatureOn() {
+  SetSignedInWithSyncFeatureOn(GetDefaultAccountInfo());
+}
+
+void TestSyncService::SetSignedInWithSyncFeatureOn(
+    const CoreAccountInfo& account_info) {
+  SetSignedInWithoutSyncFeature(account_info);
+  SetHasSyncConsent(true);
+  user_settings_.SetInitialSyncFeatureSetupComplete();
+}
+
+void TestSyncService::SetSignedOut() {
+  SetHasSyncConsent(false);
+  user_settings_.ClearInitialSyncFeatureSetupComplete();
+  SetAccountInfo(CoreAccountInfo());
+  SetDisableReasons({DISABLE_REASON_NOT_SIGNED_IN});
+  CHECK_EQ(GetTransportState(), TransportState::DISABLED);
+}
+
+void TestSyncService::MimicDashboardClear() {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // Clearing sync from the dashboard results in
+  // IsSyncFeatureDisabledViaDashboard() returning true.
+  user_settings_.SetSyncFeatureDisabledViaDashboard(true);
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+  StopAndClear();
+}
+
 void TestSyncService::SetDisableReasons(DisableReasonSet disable_reasons) {
   disable_reasons_ = disable_reasons;
-  if (!disable_reasons_.Empty()) {
+  if (!disable_reasons_.empty()) {
     transport_state_ = TransportState::DISABLED;
   } else if (transport_state_ == TransportState::DISABLED) {
     transport_state_ = TransportState::ACTIVE;
@@ -67,10 +110,6 @@ void TestSyncService::SetLocalSyncEnabled(bool local_sync_enabled) {
 
 void TestSyncService::SetAccountInfo(const CoreAccountInfo& account_info) {
   account_info_ = account_info;
-}
-
-void TestSyncService::SetSetupInProgress(bool in_progress) {
-  setup_in_progress_ = in_progress;
 }
 
 void TestSyncService::SetHasSyncConsent(bool has_sync_consent) {
@@ -118,22 +157,12 @@ void TestSyncService::SetDetailedSyncStatus(bool engine_available,
   detailed_sync_status_ = status;
 }
 
-void TestSyncService::SetPassphraseRequired(bool required) {
-  user_settings_.SetPassphraseRequired(required);
-}
-
-void TestSyncService::SetPassphraseRequiredForPreferredDataTypes(
-    bool required) {
-  user_settings_.SetPassphraseRequiredForPreferredDataTypes(required);
+void TestSyncService::SetPassphraseRequired() {
+  user_settings_.SetPassphraseRequired();
 }
 
 void TestSyncService::SetTrustedVaultKeyRequired(bool required) {
   user_settings_.SetTrustedVaultKeyRequired(required);
-}
-
-void TestSyncService::SetTrustedVaultKeyRequiredForPreferredDataTypes(
-    bool required) {
-  user_settings_.SetTrustedVaultKeyRequiredForPreferredDataTypes(required);
 }
 
 void TestSyncService::SetTrustedVaultRecoverabilityDegraded(bool degraded) {
@@ -150,6 +179,10 @@ void TestSyncService::SetDownloadStatusFor(
   for (const auto type : types) {
     download_statuses_[type] = download_status;
   }
+}
+
+void TestSyncService::SetSetupInProgress() {
+  outstanding_setup_in_progress_handles_++;
 }
 
 void TestSyncService::FireStateChanged() {
@@ -174,6 +207,13 @@ void TestSyncService::SetSyncFeatureRequested() {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   user_settings_.SetSyncFeatureDisabledViaDashboard(false);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+  // Implement some realistic behavior in case a test is exercising the
+  // START_DEFERRED state (advanced).
+  if (transport_state_ == TransportState::START_DEFERRED) {
+    transport_state_ = TransportState::INITIALIZING;
+    FireStateChanged();
+  }
 }
 
 TestSyncUserSettings* TestSyncService::GetUserSettings() {
@@ -230,11 +270,14 @@ bool TestSyncService::RequiresClientUpgrade() const {
 
 std::unique_ptr<SyncSetupInProgressHandle>
 TestSyncService::GetSetupInProgressHandle() {
-  return nullptr;
+  outstanding_setup_in_progress_handles_++;
+  return std::make_unique<SyncSetupInProgressHandle>(
+      base::BindRepeating(&TestSyncService::OnSetupInProgressHandleDestroyed,
+                          weak_factory_.GetWeakPtr()));
 }
 
 bool TestSyncService::IsSetupInProgress() const {
-  return setup_in_progress_;
+  return outstanding_setup_in_progress_handles_ > 0;
 }
 
 ModelTypeSet TestSyncService::GetPreferredDataTypes() const {
@@ -263,11 +306,21 @@ ModelTypeSet TestSyncService::GetTypesWithPendingDownloadForInitialSync()
   return Difference(GetPreferredDataTypes(), failed_data_types_);
 }
 
-void TestSyncService::StopAndClear() {}
+void TestSyncService::StopAndClear() {
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
+  SetSignedInWithoutSyncFeature();
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
+
+  SetTransportState(TransportState::INITIALIZING);
+}
 
 void TestSyncService::OnDataTypeRequestsSyncStartup(ModelType type) {}
 
-void TestSyncService::TriggerRefresh(const ModelTypeSet& types) {}
+void TestSyncService::TriggerRefresh(const ModelTypeSet& types) {
+  if (trigger_refresh_cb_) {
+    trigger_refresh_cb_.Run(types);
+  }
+}
 
 void TestSyncService::DataTypePreconditionChanged(ModelType type) {}
 
@@ -306,10 +359,7 @@ base::Value::List TestSyncService::GetTypeStatusMapForDebugging() const {
 }
 
 void TestSyncService::GetEntityCountsForDebugging(
-    base::OnceCallback<void(const std::vector<TypeEntitiesCount>&)> callback)
-    const {
-  std::move(callback).Run({});
-}
+    base::RepeatingCallback<void(const TypeEntitiesCount&)> callback) const {}
 
 const GURL& TestSyncService::GetSyncServiceUrlForDebugging() const {
   return sync_service_url_;
@@ -398,5 +448,15 @@ void TestSyncService::GetLocalDataDescriptions(
 }
 
 void TestSyncService::TriggerLocalDataMigration(ModelTypeSet types) {}
+
+void TestSyncService::SetTriggerRefreshCallback(
+    const base::RepeatingCallback<void(syncer::ModelTypeSet)>&
+        trigger_refresh_cb) {
+  trigger_refresh_cb_ = trigger_refresh_cb;
+}
+
+void TestSyncService::OnSetupInProgressHandleDestroyed() {
+  outstanding_setup_in_progress_handles_--;
+}
 
 }  // namespace syncer

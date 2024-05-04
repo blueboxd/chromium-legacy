@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -224,7 +225,7 @@ void TooltipController::OnKeyEvent(ui::KeyEvent* event) {
   HideAndReset();
 }
 
-// TODO(crbug.com/1492222): Figure out why we have code both here and
+// TODO(crbug.com/40285439): Figure out why we have code both here and
 // in DesktopNativeWidgetAura to handle mouse (and key?) events. Seems like we
 // should only need one set of them.
 void TooltipController::OnMouseEvent(ui::MouseEvent* event) {
@@ -323,7 +324,7 @@ void TooltipController::OnCancelMode(ui::CancelModeEvent* event) {
   HideAndReset();
 }
 
-base::StringPiece TooltipController::GetLogContext() const {
+std::string_view TooltipController::GetLogContext() const {
   return "TooltipController";
 }
 
@@ -542,7 +543,7 @@ bool TooltipController::ShouldHideBecauseMouseWasOncePressed() {
   // This is required since client-side tooltip appears as empty text on server
   // side so that the tooltip is overridden by empty text regardless of the
   // actual text to show.
-  // TODO(crbug.com/1383844): Remove or update this special path when tooltip
+  // TODO(crbug.com/40246278): Remove or update this special path when tooltip
   // identifier is implemented.
   if (wm::GetTooltipText(observed_window_).empty())
     return false;

@@ -188,12 +188,12 @@ void TreeView::StartEditing(TreeModelNode* node) {
     // not parented.
     AddChildView(editor_.get());
     editor_->SetFontList(font_list_);
-    empty_editor_size_ = editor_->GetPreferredSize();
+    empty_editor_size_ = editor_->GetPreferredSize({});
     editor_->set_controller(this);
   }
   editor_->SetText(selected_node_->model_node()->GetTitle());
-  // TODO(crbug.com/1345828): Investigate whether accessible name should stay in
-  // sync during editing.
+  // TODO(crbug.com/40853810): Investigate whether accessible name should stay
+  // in sync during editing.
   editor_->SetAccessibleName(
       selected_node_->model_node()->GetAccessibleTitle());
   LayoutEditor();
@@ -402,7 +402,8 @@ void TreeView::Layout(PassKey) {
   LayoutEditor();
 }
 
-gfx::Size TreeView::CalculatePreferredSize() const {
+gfx::Size TreeView::CalculatePreferredSize(
+    const SizeBounds& /*available_size*/) const {
   return preferred_size_;
 }
 
@@ -655,7 +656,7 @@ std::optional<size_t> TreeView::GetSelectedRow() {
 void TreeView::SetSelectedRow(std::optional<size_t> row) {
   // Type-ahead manipulates selection because active node is synced to selected
   // node, so call SetSelectedNode() instead of SetActiveNode().
-  // TODO(crbug.com/1080944): Decouple active node from selected node by adding
+  // TODO(crbug.com/40691087): Decouple active node from selected node by adding
   // new keyboard affordances.
   SetSelectedNode(
       GetNodeForRow(row.has_value() ? static_cast<int>(row.value()) : -1));
@@ -809,7 +810,7 @@ void TreeView::UpdateSelection(TreeModelNode* model_node,
     // GetForegroundBoundsForNode() returns RTL-flipped coordinates for paint.
     // Un-flip before passing to ScrollRectToVisible(), which uses layout
     // coordinates.
-    // TODO(crbug.com/1267807): We should not be doing synchronous layout here
+    // TODO(crbug.com/40204541): We should not be doing synchronous layout here
     // but instead we should call into this asynchronously after the Views
     // tree has processed a layout pass which happens asynchronously.
     if (auto* widget = GetWidget())

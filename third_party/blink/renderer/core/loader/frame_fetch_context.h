@@ -105,6 +105,8 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext,
 
   bool DoesLCPPHaveAnyHintData() override;
 
+  bool DoesLCPPHaveLcpElementLocatorHintData() override;
+
   // Exposed for testing.
   void ModifyRequestForCSP(ResourceRequest&);
   void AddClientHintsIfNecessary(const std::optional<float> resource_width,
@@ -137,6 +139,10 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext,
 
   scoped_refptr<const SecurityOrigin> GetTopFrameOrigin() const override;
 
+  const Vector<KURL>& GetPotentiallyUnusedPreloads() const override;
+
+  void AddLcpPredictedCallback(base::OnceClosure callback) override;
+
  private:
   friend class FrameFetchContextTest;
 
@@ -160,7 +166,7 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext,
                                ResourceType) const override;
   ContentSecurityPolicy* GetContentSecurityPolicyForWorld(
       const DOMWrapperWorld* world) const override;
-  bool IsSVGImageChromeClient() const override;
+  bool IsIsolatedSVGChromeClient() const override;
   void CountUsage(WebFeature) const override;
   void CountDeprecation(WebFeature) const override;
   bool ShouldBlockWebSocketByMixedContentCheck(const KURL&) const override;
@@ -197,9 +203,9 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext,
                             const ClientHintsPreferences&) const;
   void SetFirstPartyCookie(ResourceRequest&);
 
-  // Returns true if the origin of |url| is same as the origin of the top level
+  // Returns true if `resource_origin` is same as the origin of the top level
   // frame's main resource.
-  bool IsFirstPartyOrigin(const KURL& url) const;
+  bool IsFirstPartyOrigin(const SecurityOrigin* resource_origin) const;
 
   CoreProbeSink* Probe() const;
 

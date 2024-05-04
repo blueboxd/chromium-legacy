@@ -29,6 +29,10 @@
 namespace blink {
 
 // kAutoPart is never returned by ComputedStyle::EffectiveAppearance()
+// ComputedStyle::EffectiveAppearance() returns the effective appearance
+// to render the element by matching the element's computed style to a
+// ControlPart.
+// CSS appearance values do not match 1-to-1 with ControlPart.
 enum ControlPart {
   kNoControlPart,
   kAutoPart,
@@ -56,7 +60,7 @@ enum ControlPart {
   kSliderThumbVerticalPart,
   kSearchFieldCancelButtonPart,
   kSliderVerticalPart,
-  kBikeshedPart,
+  kBaseSelectPart,
 };
 
 }  // namespace blink

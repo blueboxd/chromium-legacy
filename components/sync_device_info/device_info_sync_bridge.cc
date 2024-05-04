@@ -307,7 +307,7 @@ bool StoredDeviceInfoStillAccurate(const DeviceInfo* stored,
 
 // Record a histogram of the age of the PaaSK fields, in days. To confirm that
 // crbug.com/1465558 is fixed.
-// TODO(crbug.com/1465558): remove this function before Oct 2023.
+// TODO(crbug.com/40276038): remove this function before Oct 2023.
 void RecordPhoneAsASecurityKeyFieldsAge(const DeviceInfoSpecifics& specifics) {
   if (!specifics.has_paask_fields()) {
     return;
@@ -859,7 +859,7 @@ bool DeviceInfoSyncBridge::ReconcileLocalAndStored() {
   const ModelTypeSet new_data_types =
       Difference(current_info->interested_data_types(),
                  previous_device_info.interested_data_types());
-  if (new_interested_data_types_callback_ && !new_data_types.Empty()) {
+  if (new_interested_data_types_callback_ && !new_data_types.empty()) {
     device_info_synced_callback_list_.push_back(
         base::BindOnce(new_interested_data_types_callback_, new_data_types));
   }

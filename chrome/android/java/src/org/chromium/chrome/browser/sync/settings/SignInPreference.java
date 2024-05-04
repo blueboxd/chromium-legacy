@@ -17,12 +17,18 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.preferences.Pref;
+import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.signin.SigninAndHistoryOptInActivityLauncherImpl;
 import org.chromium.chrome.browser.signin.SyncConsentActivityLauncherImpl;
 import org.chromium.chrome.browser.signin.services.DisplayableProfileData;
+import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.services.ProfileDataCache;
 import org.chromium.chrome.browser.signin.services.SigninManager;
 import org.chromium.chrome.browser.signin.services.SigninManager.SignInStateObserver;
+import org.chromium.chrome.browser.sync.SyncServiceFactory;
 import org.chromium.chrome.browser.sync.settings.SyncSettingsUtils.SyncError;
+import org.chromium.chrome.browser.ui.signin.SigninAndHistoryOptInCoordinator;
+import org.chromium.chrome.browser.ui.signin.account_picker.AccountPickerBottomSheetStrings;
 import org.chromium.components.browser_ui.settings.ManagedPreferencesUtils;
 import org.chromium.components.prefs.PrefService;
 import org.chromium.components.signin.AccountManagerFacade;
@@ -32,12 +38,12 @@ import org.chromium.components.signin.identitymanager.ConsentLevel;
 import org.chromium.components.signin.identitymanager.IdentityManager;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
 import org.chromium.components.sync.SyncService;
+import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.ui.base.ViewUtils;
 
 /**
- * A preference that displays "Sign in to Chrome" when the user is not sign in, and displays
- * the user's name, email, profile image and sync error icon if necessary when the user is signed
- * in.
+ * A preference that displays "Sign in to Chrome" when the user is not sign in, and displays the
+ * user's name, email, profile image and sync error icon if necessary when the user is signed in.
  */
 public class SignInPreference extends Preference
         implements SignInStateObserver,
@@ -49,6 +55,7 @@ public class SignInPreference extends Preference
     private boolean mIsShowingSigninPromo;
     private boolean mShowAlertIcon;
 
+    private Profile mProfile;
     private PrefService mPrefService;
     private ProfileDataCache mProfileDataCache;
     private AccountManagerFacade mAccountManagerFacade;
@@ -70,22 +77,20 @@ public class SignInPreference extends Preference
     /**
      * Initialize the dependencies for the SignInPreference.
      *
-     * Must be called before the preference is attached, which is called from the containing
+     * <p>Must be called before the preference is attached, which is called from the containing
      * settings screen's onViewCreated method.
      */
     public void initialize(
+            Profile profile,
             ProfileDataCache profileDataCache,
-            AccountManagerFacade accountManagerFacade,
-            PrefService prefService,
-            SyncService syncService,
-            SigninManager signinManager,
-            IdentityManager identityManager) {
+            AccountManagerFacade accountManagerFacade) {
+        mProfile = profile;
         mProfileDataCache = profileDataCache;
         mAccountManagerFacade = accountManagerFacade;
-        mPrefService = prefService;
-        mSyncService = syncService;
-        mSigninManager = signinManager;
-        mIdentityManager = identityManager;
+        mPrefService = UserPrefs.get(mProfile);
+        mSyncService = SyncServiceFactory.getForProfile(mProfile);
+        mSigninManager = IdentityServicesProvider.get().getSigninManager(mProfile);
+        mIdentityManager = IdentityServicesProvider.get().getIdentityManager(mProfile);
     }
 
     @Override
@@ -127,7 +132,7 @@ public class SignInPreference extends Preference
     private void update() {
         setVisible(!mIsShowingSigninPromo);
         if (mSigninManager.isSigninDisabledByPolicy()) {
-            // TODO(https://crbug.com/1133739): Clean up after revising isSigninDisabledByPolicy.
+            // TODO(crbug.com/40722691): Clean up after revising isSigninDisabledByPolicy.
             if (mPrefService.isManagedPreference(Pref.SIGNIN_ALLOWED)) {
                 setupSigninDisabledByPolicy();
             } else {
@@ -173,11 +178,33 @@ public class SignInPreference extends Preference
         setFragment(null);
         setIcon(AppCompatResources.getDrawable(getContext(), R.drawable.logo_avatar_anonymous));
         setViewEnabledAndShowAlertIcon(/* enabled= */ true, /* alertIconVisible= */ false);
-        setOnPreferenceClickListener(
-                pref ->
+        OnPreferenceClickListener clickListener =
+                pref -> {
+                    if (ChromeFeatureList.isEnabled(
+                            ChromeFeatureList.REPLACE_SYNC_PROMOS_WITH_SIGN_IN_PROMOS)) {
+                        AccountPickerBottomSheetStrings bottomSheetStrings =
+                                new AccountPickerBottomSheetStrings.Builder(
+                                                R.string.sign_in_to_chrome)
+                                        .build();
+                        SigninAndHistoryOptInActivityLauncherImpl.get()
+                                .launchActivityIfAllowed(
+                                        getContext(),
+                                        mProfile,
+                                        bottomSheetStrings,
+                                        SigninAndHistoryOptInCoordinator.NoAccountSigninMode
+                                                .ADD_ACCOUNT,
+                                        SigninAndHistoryOptInCoordinator.WithAccountSigninMode
+                                                .DEFAULT_ACCOUNT_BOTTOM_SHEET,
+                                        SigninAndHistoryOptInCoordinator.HistoryOptInMode.OPTIONAL,
+                                        SigninAccessPoint.SETTINGS);
+                    } else {
                         SyncConsentActivityLauncherImpl.get()
                                 .launchActivityIfAllowed(
-                                        getContext(), SigninAccessPoint.SETTINGS_SYNC_OFF_ROW));
+                                        getContext(), SigninAccessPoint.SETTINGS_SYNC_OFF_ROW);
+                    }
+                    return true;
+                };
+        setOnPreferenceClickListener(clickListener);
 
         if (!mWasGenericSigninPromoDisplayed) {
             RecordUserAction.record("Signin_Impression_FromSettings");
@@ -193,13 +220,17 @@ public class SignInPreference extends Preference
         setTitle(
                 SyncSettingsUtils.getDisplayableFullNameOrEmailWithPreference(
                         profileData, getContext(), SyncSettingsUtils.TitlePreference.FULL_NAME));
-        setFragment(AccountManagementFragment.class.getName());
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.REPLACE_SYNC_PROMOS_WITH_SIGN_IN_PROMOS)
+                && !mSyncService.hasSyncConsent()) {
+            setFragment(ManageSyncSettings.class.getName());
+        } else {
+            setFragment(AccountManagementFragment.class.getName());
+        }
         setIcon(profileData.getImage());
         setViewEnabledAndShowAlertIcon(
                 /* enabled= */ true,
-                /* alertIconVisible= */ ChromeFeatureList.isEnabled(
-                                ChromeFeatureList.SYNC_SHOW_IDENTITY_ERRORS_FOR_SIGNED_IN_USERS)
-                        && SyncSettingsUtils.getIdentityError(mSyncService) != SyncError.NO_ERROR);
+                /* alertIconVisible= */ SyncSettingsUtils.getIdentityError(mProfile)
+                        != SyncError.NO_ERROR);
         setOnPreferenceClickListener(null);
 
         mWasGenericSigninPromoDisplayed = false;

@@ -8,7 +8,6 @@
 #include <string_view>
 
 #include "ash/ash_export.h"
-#include "ash/picker/metrics/picker_session_metrics.h"
 #include "base/functional/callback_forward.h"
 #include "base/memory/raw_ptr.h"
 #include "base/time/time.h"
@@ -19,11 +18,13 @@
 
 namespace views {
 class Textfield;
+class ImageButton;
 }
 
 namespace ash {
 
 class PickerKeyEventHandler;
+class PickerPerformanceMetrics;
 
 // View for the Picker search field.
 class ASH_EXPORT PickerSearchFieldView : public views::View,
@@ -37,12 +38,12 @@ class ASH_EXPORT PickerSearchFieldView : public views::View,
 
   // `search_callback` is called asynchronously whenever the contents of the
   // search field changes (with debouncing logic to avoid unnecessary calls).
-  // `key_event_handler` and `session_metrics` must live as long as this class.
-  // `delay` is the time to wait before calling `search_callback` for
+  // `key_event_handler` and `performance_metrics` must live as long as this
+  // class. `delay` is the time to wait before calling `search_callback` for
   // debouncing.
   explicit PickerSearchFieldView(SearchCallback search_callback,
                                  PickerKeyEventHandler* key_event_handler,
-                                 PickerSessionMetrics* session_metrics);
+                                 PickerPerformanceMetrics* performance_metrics);
   PickerSearchFieldView(const PickerSearchFieldView&) = delete;
   PickerSearchFieldView& operator=(const PickerSearchFieldView&) = delete;
   ~PickerSearchFieldView() override;
@@ -65,13 +66,26 @@ class ASH_EXPORT PickerSearchFieldView : public views::View,
   // Set the placeholder text to show when the textfield is empty.
   void SetPlaceholderText(std::u16string_view new_placeholder_text);
 
+  // Sets the active descendant of the underlying textfield to `view` for screen
+  // readers. `view` may be null, in which case the active descendant is
+  // cleared.
+  void SetTextfieldActiveDescendant(views::View* view);
+
+  // Gets or sets the current search query text.
+  std::u16string_view GetQueryText() const;
+  void SetQueryText(std::u16string text);
+
   const views::Textfield& textfield_for_testing() const { return *textfield_; }
+  views::ImageButton& clear_button_for_testing() { return *clear_button_; }
 
  private:
+  void ClearButtonPressed();
+
   SearchCallback search_callback_;
   raw_ptr<PickerKeyEventHandler> key_event_handler_ = nullptr;
-  raw_ptr<PickerSessionMetrics> session_metrics_ = nullptr;
+  raw_ptr<PickerPerformanceMetrics> performance_metrics_ = nullptr;
   raw_ptr<views::Textfield> textfield_ = nullptr;
+  raw_ptr<views::ImageButton> clear_button_ = nullptr;
 };
 
 BEGIN_VIEW_BUILDER(ASH_EXPORT, PickerSearchFieldView, views::View)

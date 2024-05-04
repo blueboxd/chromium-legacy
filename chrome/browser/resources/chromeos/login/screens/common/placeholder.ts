@@ -1,7 +1,8 @@
-// Copyright 2023 The Chromium Authors
+// Copyright 2024 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import '//resources/ash/common/cr_elements/cros_color_overrides.css.js';
 import '../../components/buttons/oobe_back_button.js';
 import '../../components/buttons/oobe_next_button.js';
 import '../../components/common_styles/oobe_common_styles.css.js';
@@ -24,6 +25,11 @@ const PlaceholderScreenElementBase = mixinBehaviors(
         OobeDialogHostBehaviorInterface & LoginScreenBehaviorInterface,
     };
 
+enum UserAction {
+  BACK = 'back',
+  NEXT = 'next',
+}
+
 class PlaceholderScreen extends PlaceholderScreenElementBase {
   static get is() {
     return 'placeholder-element' as const;
@@ -43,17 +49,23 @@ class PlaceholderScreen extends PlaceholderScreenElementBase {
   }
 
   /**
-   * Next button click handler.
+   * Back button click handler.
    */
-  private onNextClicked_(): void {
-    this.userActed('next');
+  private onBackClicked(): void {
+    this.userActed(UserAction.BACK);
   }
 
   /**
-   * Back button click handler.
+   * Next button click handler.
    */
-  private onBackClicked_(): void {
-    this.userActed('back');
+  private onNextClicked(): void {
+    this.userActed(UserAction.NEXT);
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    [PlaceholderScreen.is]: PlaceholderScreen;
   }
 }
 

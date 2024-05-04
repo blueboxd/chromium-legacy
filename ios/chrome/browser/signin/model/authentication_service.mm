@@ -21,7 +21,6 @@
 #import "components/signin/public/identity_manager/account_info.h"
 #import "components/signin/public/identity_manager/device_accounts_synchronizer.h"
 #import "components/signin/public/identity_manager/primary_account_mutator.h"
-#import "components/sync/base/features.h"
 #import "components/sync/service/sync_service.h"
 #import "components/sync/service/sync_user_settings.h"
 #import "google_apis/gaia/gaia_auth_util.h"
@@ -37,7 +36,6 @@
 #import "ios/chrome/browser/signin/model/signin_util.h"
 #import "ios/chrome/browser/signin/model/system_identity.h"
 #import "ios/chrome/browser/signin/model/system_identity_manager.h"
-#import "ios/chrome/browser/sync/model/sync_setup_service.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_utils.h"
 
 namespace {
@@ -67,18 +65,15 @@ CoreAccountId SystemIdentityToAccountID(
 
 AuthenticationService::AuthenticationService(
     PrefService* pref_service,
-    SyncSetupService* sync_setup_service,
     ChromeAccountManagerService* account_manager_service,
     signin::IdentityManager* identity_manager,
     syncer::SyncService* sync_service)
     : pref_service_(pref_service),
-      sync_setup_service_(sync_setup_service),
       account_manager_service_(account_manager_service),
       identity_manager_(identity_manager),
       sync_service_(sync_service),
       weak_pointer_factory_(this) {
   DCHECK(pref_service_);
-  DCHECK(sync_setup_service_);
   DCHECK(identity_manager_);
   DCHECK(sync_service_);
 }
@@ -290,7 +285,7 @@ void AuthenticationService::SignIn(id<SystemIdentity> identity,
 
   ResetReauthPromptForSignInAndSync();
 
-  // TODO(crbug.com/1442202): Move this reset to a place more consistent with
+  // TODO(crbug.com/40266839): Move this reset to a place more consistent with
   // bookmarks.
   ResetLastUsedBookmarkFolder(pref_service_);
 
@@ -342,17 +337,14 @@ void AuthenticationService::SignIn(id<SystemIdentity> identity,
 void AuthenticationService::GrantSyncConsent(
     id<SystemIdentity> identity,
     signin_metrics::AccessPoint access_point) {
-  if (base::FeatureList::IsEnabled(
-          syncer::kReplaceSyncPromosWithSignInPromos)) {
-    // TODO(crbug.com/40067025): Turn sync on was deprecated. Remove
-    // `GrantSyncConsent()` as it is obsolete.
-    DUMP_WILL_BE_CHECK(access_point !=
-                       signin_metrics::AccessPoint::
-                           ACCESS_POINT_POST_DEVICE_RESTORE_SIGNIN_PROMO)
-        << "Turn sync on should not be available as sync promos are deprecated "
-           "[access point = "
-        << int(access_point) << "]";
-  }
+  // TODO(crbug.com/40067025): Turn sync on was deprecated. Remove
+  // `GrantSyncConsent()` as it is obsolete.
+  DUMP_WILL_BE_CHECK(access_point !=
+                     signin_metrics::AccessPoint::
+                         ACCESS_POINT_POST_DEVICE_RESTORE_SIGNIN_PROMO)
+      << "Turn sync on should not be available as sync promos are deprecated "
+         "[access point = "
+      << int(access_point) << "]";
   DCHECK(account_manager_service_->IsValidIdentity(identity));
   DCHECK(identity_manager_->HasPrimaryAccount(signin::ConsentLevel::kSignin));
 
@@ -366,7 +358,7 @@ void AuthenticationService::GrantSyncConsent(
 
   // When sync is disabled by enterprise, sync consent is not removed.
   // Consent can be skipped.
-  // TODO(crbug.com/1259054): Remove this if once the sync consent is removed
+  // TODO(crbug.com/40797392): Remove this if once the sync consent is removed
   // when enteprise disable sync.
   if (!HasPrimaryIdentity(signin::ConsentLevel::kSync)) {
     const signin::PrimaryAccountMutator::PrimaryAccountError error =
@@ -378,12 +370,6 @@ void AuthenticationService::GrantSyncConsent(
   }
   CHECK_EQ(account_id,
            identity_manager_->GetPrimaryAccountId(signin::ConsentLevel::kSync));
-
-  // Sets the Sync setup handle to prepare for configuring the Sync data types
-  // before Sync-the-feature actually starts.
-  // TODO(crbug.com/1206680): Add EarlGrey tests to ensure that the Sync feature
-  // only starts after GrantSyncConsent is called.
-  sync_setup_service_->PrepareForFirstSyncSetup();
 
   // Kick-off sync: The authentication error UI (sign in infobar and warning
   // badge in settings screen) check the sync auth error state. Sync
@@ -403,7 +389,7 @@ void AuthenticationService::SignOut(
     return;
   }
 
-  // TODO(crbug.com/1442202): Move this reset to a place more consistent with
+  // TODO(crbug.com/40266839): Move this reset to a place more consistent with
   // bookmarks.
   ResetLastUsedBookmarkFolder(pref_service_);
 
@@ -613,16 +599,8 @@ void AuthenticationService::HandleForgottenIdentity(
   const bool account_filtered_out =
       account_manager_service_->IsEmailRestricted(account_info.email);
 
-  // Reauth prompt should only be set when the user is syncing, since reauth
-  // turns on sync by default.
-  if (base::FeatureList::IsEnabled(
-          syncer::kReplaceSyncPromosWithSignInPromos)) {
-    should_prompt = should_prompt && identity_manager_->HasPrimaryAccount(
-                                         signin::ConsentLevel::kSignin);
-  } else {
-    should_prompt = should_prompt && identity_manager_->HasPrimaryAccount(
-                                         signin::ConsentLevel::kSync);
-  }
+  should_prompt = should_prompt && identity_manager_->HasPrimaryAccount(
+                                       signin::ConsentLevel::kSignin);
 
   // Metrics.
   signin_metrics::ProfileSignout signout_source;

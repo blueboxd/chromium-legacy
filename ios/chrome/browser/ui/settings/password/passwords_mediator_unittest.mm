@@ -3,15 +3,14 @@
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/settings/password/passwords_mediator.h"
-#import "ios/chrome/browser/ui/settings/password/passwords_mediator+Testing.h"
 
 #import "base/apple/foundation_util.h"
+#import "base/location.h"
 #import "base/memory/raw_ptr.h"
 #import "base/strings/string_piece.h"
 #import "base/strings/string_util.h"
 #import "base/strings/utf_string_conversions.h"
 #import "base/test/bind.h"
-#import "base/test/scoped_feature_list.h"
 #import "components/affiliations/core/browser/fake_affiliation_service.h"
 #import "components/feature_engagement/public/event_constants.h"
 #import "components/feature_engagement/test/mock_tracker.h"
@@ -36,6 +35,7 @@
 #import "ios/chrome/browser/sync/model/sync_observer_bridge.h"
 #import "ios/chrome/browser/sync/model/sync_service_factory.h"
 #import "ios/chrome/browser/ui/settings/password/passwords_consumer.h"
+#import "ios/chrome/browser/ui/settings/password/passwords_mediator+Testing.h"
 #import "ios/chrome/browser/ui/settings/utils/password_auto_fill_status_observer.h"
 #import "ios/web/public/test/web_task_environment.h"
 #import "testing/gmock/include/gmock/gmock.h"
@@ -203,7 +203,7 @@ TEST_F(PasswordsMediatorTest, NotifiesConsumerOnPasswordChange) {
   EXPECT_THAT(affiliatedGroups[0].GetCredentials(),
               testing::ElementsAre(credential));
   // Remove form from the store.
-  store()->RemoveLogin(form);
+  store()->RemoveLogin(FROM_HERE, form);
   RunUntilIdle();
   affiliatedGroups = [consumer() affiliatedGroups];
   EXPECT_THAT(affiliatedGroups, testing::IsEmpty());
@@ -231,7 +231,12 @@ TEST_F(PasswordsMediatorTest, NotifiesConsumerToShowPromoOrNot) {
 // Tests that `Dismissed` is called on the FET on disconnect when the Password
 // Manager widget promo was shown and was not dismissed by the user.
 TEST_F(PasswordsMediatorTest, NotifiesFETToDismissPromoOnDisconnect) {
-  mediator().shouldNotifyFETToDismissPasswordManagerWidgetPromo = YES;
+  // Show the promo first.
+  EXPECT_CALL(*mockTracker(), ShouldTriggerHelpUI(testing::_))
+      .WillRepeatedly(testing::Return(true));
+  [mediator() askFETToShowPasswordManagerWidgetPromo];
+
+  ASSERT_TRUE(mediator().shouldNotifyFETToDismissPasswordManagerWidgetPromo);
 
   EXPECT_CALL(
       *mockTracker(),
@@ -245,7 +250,12 @@ TEST_F(PasswordsMediatorTest, NotifiesFETToDismissPromoOnDisconnect) {
 // Tests that `NotifyEvent` and `Dismissed` is called on the FET when the user
 // taps the close button of the Password Manager widget promo.
 TEST_F(PasswordsMediatorTest, NotifiesFETToDismissPromoOnPromoClosed) {
-  mediator().shouldNotifyFETToDismissPasswordManagerWidgetPromo = YES;
+  // Show the promo first.
+  EXPECT_CALL(*mockTracker(), ShouldTriggerHelpUI(testing::_))
+      .WillRepeatedly(testing::Return(true));
+  [mediator() askFETToShowPasswordManagerWidgetPromo];
+
+  ASSERT_TRUE(mediator().shouldNotifyFETToDismissPasswordManagerWidgetPromo);
 
   EXPECT_CALL(
       *mockTracker(),

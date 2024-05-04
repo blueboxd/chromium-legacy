@@ -5,24 +5,32 @@
 #include "ash/system/input_device_settings/input_device_settings_notification_controller.h"
 
 #include <array>
+#include <optional>
 #include <string>
 
 #include "ash/accelerators/accelerator_controller_impl.h"
+#include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/constants/notifier_catalogs.h"
 #include "ash/public/cpp/new_window_delegate.h"
 #include "ash/public/cpp/notification_utils.h"
+#include "ash/public/cpp/system/anchored_nudge_data.h"
+#include "ash/public/cpp/system/anchored_nudge_manager.h"
 #include "ash/public/cpp/system_tray_client.h"
+#include "ash/public/mojom/input_device_settings.mojom-forward.h"
 #include "ash/public/mojom/input_device_settings.mojom.h"
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "ash/root_window_controller.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/system/input_device_settings/input_device_settings_metadata.h"
 #include "ash/system/input_device_settings/input_device_settings_pref_names.h"
 #include "ash/system/model/system_tray_model.h"
 #include "base/check_op.h"
 #include "base/containers/contains.h"
 #include "base/containers/fixed_flat_map.h"
+#include "base/notimplemented.h"
 #include "base/notreached.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -33,6 +41,7 @@
 #include "ui/events/ash/keyboard_capability.h"
 #include "ui/events/ash/mojom/simulate_right_click_modifier.mojom-shared.h"
 #include "ui/events/ash/mojom/six_pack_shortcut_modifier.mojom-shared.h"
+#include "ui/events/keycodes/keyboard_codes_posix.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/public/cpp/notification.h"
 #include "ui/message_center/public/cpp/notification_types.h"
@@ -43,6 +52,9 @@ namespace {
 
 const char kKeyboardSettingsLearnMoreLink[] =
     "https://support.google.com/chromebook?p=keyboard_settings";
+constexpr char kTopRowKeyNoMatchNudgeId[] = "top-row-key-no-match-nudge-id";
+constexpr char kSixPackKeyNoMatchNudgeId[] = "six-patch-key-no-match-nudge-id";
+constexpr char kCapsLockNoMatchNudgeId[] = "caps-lock-no-match-nudge-id";
 
 using SimulateRightClickModifier = ui::mojom::SimulateRightClickModifier;
 using SixPackShortcutModifier = ui::mojom::SixPackShortcutModifier;
@@ -83,7 +95,17 @@ constexpr auto kSixPackKeyToPrefName =
          {prefs::kSixPackKeyInsertNotificationsRemaining}},
     });
 
-// Device key of the virutal mouse often used by integration tests, avoid
+constexpr auto kKeyCodeToSixPackKeyPrefName =
+    base::MakeFixedFlatMap<ui::KeyboardCode, const char*>({
+        {ui::KeyboardCode::VKEY_DELETE, {prefs::kSixPackKeyDelete}},
+        {ui::KeyboardCode::VKEY_HOME, {prefs::kSixPackKeyHome}},
+        {ui::KeyboardCode::VKEY_PRIOR, {prefs::kSixPackKeyPageUp}},
+        {ui::KeyboardCode::VKEY_END, {prefs::kSixPackKeyEnd}},
+        {ui::KeyboardCode::VKEY_NEXT, {prefs::kSixPackKeyPageDown}},
+        {ui::KeyboardCode::VKEY_INSERT, {prefs::kSixPackKeyInsert}},
+    });
+
+// Device key of the virtual mouse often used by integration tests, avoid
 // showing notification in this case.
 const char kVirtualMouseDeviceKey[] = "0000:0000";
 
@@ -234,6 +256,50 @@ std::u16string GetSixPackKeyName(ui::KeyboardCode key_code) {
   }
 }
 
+std::u16string GetSixPackShortcutUpdatedString(
+    ui::KeyboardCode key_code,
+    SixPackShortcutModifier blocked_modifier) {
+  CHECK(blocked_modifier != SixPackShortcutModifier::kNone);
+  std::u16string input_key_string;
+  switch (key_code) {
+    case ui::VKEY_PRIOR:
+      return blocked_modifier == SixPackShortcutModifier::kSearch
+                 ? l10n_util::GetStringUTF16(
+                       IDS_ASH_SETTINGS_KEYBOARD_USE_FN_KEY_FOR_SEARCH_PLUS_UP_NUDGE_DESCRIPTION)
+                 : l10n_util::GetStringUTF16(
+                       IDS_ASH_SETTINGS_KEYBOARD_USE_FN_KEY_FOR_ALT_PLUS_UP_NUDGE_DESCRIPTION);
+    case ui::VKEY_NEXT:
+      return blocked_modifier == SixPackShortcutModifier::kSearch
+                 ? l10n_util::GetStringUTF16(
+                       IDS_ASH_SETTINGS_KEYBOARD_USE_FN_KEY_FOR_SEARCH_PLUS_DOWN_NUDGE_DESCRIPTION)
+                 : l10n_util::GetStringUTF16(
+                       IDS_ASH_SETTINGS_KEYBOARD_USE_FN_KEY_FOR_ALT_PLUS_DOWN_NUDGE_DESCRIPTION);
+    case ui::VKEY_HOME:
+      return blocked_modifier == SixPackShortcutModifier::kSearch
+                 ? l10n_util::GetStringUTF16(
+                       IDS_ASH_SETTINGS_KEYBOARD_USE_FN_KEY_FOR_SEARCH_PLUS_LEFT_NUDGE_DESCRIPTION)
+                 : l10n_util::GetStringUTF16(
+                       IDS_ASH_SETTINGS_KEYBOARD_USE_FN_KEY_FOR_ALT_PLUS_LEFT_NUDGE_DESCRIPTION);
+    case ui::VKEY_END:
+      return blocked_modifier == SixPackShortcutModifier::kSearch
+                 ? l10n_util::GetStringUTF16(
+                       IDS_ASH_SETTINGS_KEYBOARD_USE_FN_KEY_FOR_SEARCH_PLUS_RIGHT_NUDGE_DESCRIPTION)
+                 : l10n_util::GetStringUTF16(
+                       IDS_ASH_SETTINGS_KEYBOARD_USE_FN_KEY_FOR_ALT_PLUS_RIGHT_NUDGE_DESCRIPTION);
+    case ui::VKEY_DELETE:
+      return blocked_modifier == SixPackShortcutModifier::kSearch
+                 ? l10n_util::GetStringUTF16(
+                       IDS_ASH_SETTINGS_KEYBOARD_USE_FN_KEY_FOR_SEARCH_PLUS_BACKSPACE_NUDGE_DESCRIPTION)
+                 : l10n_util::GetStringUTF16(
+                       IDS_ASH_SETTINGS_KEYBOARD_USE_FN_KEY_FOR_ALT_PLUS_BACKSPACE_NUDGE_DESCRIPTION);
+    case ui::VKEY_INSERT:
+      return l10n_util::GetStringUTF16(
+          IDS_ASH_SETTINGS_KEYBOARD_USE_FN_KEY_FOR_SEARCH_PLUS_SHIFT_BACKSPACE_NUDGE_DESCRIPTION);
+    default:
+      NOTREACHED_NORETURN();
+  }
+}
+
 std::u16string GetSixPackShortcut(ui::KeyboardCode key_code,
                                   SixPackShortcutModifier modifier) {
   CHECK(modifier != SixPackShortcutModifier::kNone);
@@ -327,6 +393,29 @@ void OnLearnMoreClicked() {
       NewWindowDelegate::Disposition::kNewForegroundTab);
 }
 
+// Compares button remapping lists to see if they are equal for notification
+// purposes. This ignores name mismatches, but compares everything else
+// (including ordering).
+bool ButtonRemappingListsAreEqual(
+    const std::vector<mojom::ButtonRemappingPtr>& button_remappings1,
+    const std::vector<mojom::ButtonRemappingPtr>& button_remappings2) {
+  if (button_remappings1.size() != button_remappings2.size()) {
+    return false;
+  }
+
+  for (size_t i = 0; i < button_remappings1.size(); i++) {
+    const auto& button_remapping1 = button_remappings1[i];
+    const auto& button_remapping2 = button_remappings2[i];
+    if (button_remapping1->button != button_remapping2->button ||
+        button_remapping1->remapping_action !=
+            button_remapping2->remapping_action) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 }  // namespace
 
 InputDeviceSettingsNotificationController::
@@ -361,9 +450,18 @@ void InputDeviceSettingsNotificationController::RegisterProfilePrefs(
   pref_registry->RegisterIntegerPref(
       prefs::kSixPackKeyInsertNotificationsRemaining, 3,
       user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
+  pref_registry->RegisterListPref(prefs::kMiceWelcomeNotificationSeen);
+  pref_registry->RegisterListPref(
+      prefs::kGraphicsTabletsWelcomeNotificationSeen);
+  pref_registry->RegisterListPref(prefs::kKeyboardsWelcomeNotificationSeen);
+  pref_registry->RegisterListPref(prefs::kTouchpadsWelcomeNotificationSeen);
+  pref_registry->RegisterListPref(
+      prefs::kPointingSticksWelcomeNotificationSeen);
   pref_registry->RegisterListPref(prefs::kPeripheralNotificationMiceSeen);
   pref_registry->RegisterListPref(
       prefs::kPeripheralNotificationGraphicsTabletsSeen);
+  pref_registry->RegisterDictionaryPref(
+      prefs::kKeyboardSettingSixPackKeyRemappings);
 }
 
 InputDeviceSettingsNotificationController::
@@ -441,12 +539,21 @@ void InputDeviceSettingsNotificationController::NotifyMouseFirstTimeConnected(
   seen_mouse_list.Append(mouse.device_key);
   prefs->SetList(prefs::kPeripheralNotificationMiceSeen,
                  std::move(seen_mouse_list));
+
+  CHECK(mouse.settings);
+  // Do not show notification if the device remapping list has already been
+  // changed which means they have already used the customization feature.
+  if (!ButtonRemappingListsAreEqual(
+          GetButtonRemappingListForConfig(mouse.mouse_button_config),
+          mouse.settings->button_remappings)) {
+    return;
+  }
   NotifyMouseIsCustomizable(mouse);
 }
 
 void InputDeviceSettingsNotificationController::
     NotifyGraphicsTabletFirstTimeConnected(
-        const mojom::GraphicsTablet* graphics_tablet) {
+        const mojom::GraphicsTablet& graphics_tablet) {
   if (!IsActiveUserSession()) {
     return;
   }
@@ -459,14 +566,28 @@ void InputDeviceSettingsNotificationController::
       prefs->GetList(prefs::kPeripheralNotificationGraphicsTabletsSeen).Clone();
 
   for (const auto& value : seen_graphics_tablet_list) {
-    if (value.is_string() && value.GetString() == graphics_tablet->device_key) {
+    if (value.is_string() && value.GetString() == graphics_tablet.device_key) {
       return;
     }
   }
-  seen_graphics_tablet_list.Append(graphics_tablet->device_key);
+  seen_graphics_tablet_list.Append(graphics_tablet.device_key);
   prefs->SetList(prefs::kPeripheralNotificationGraphicsTabletsSeen,
                  std::move(seen_graphics_tablet_list));
-  NotifyGraphicsTabletIsCustomizable(*graphics_tablet);
+
+  CHECK(graphics_tablet.settings);
+  // Do not show notification if the device remapping list has already been
+  // changed which means they have already used the customization feature.
+  if (!ButtonRemappingListsAreEqual(
+          GetPenButtonRemappingListForConfig(
+              graphics_tablet.graphics_tablet_button_config),
+          graphics_tablet.settings->pen_button_remappings) ||
+      !ButtonRemappingListsAreEqual(
+          GetTabletButtonRemappingListForConfig(
+              graphics_tablet.graphics_tablet_button_config),
+          graphics_tablet.settings->tablet_button_remappings)) {
+    return;
+  }
+  NotifyGraphicsTabletIsCustomizable(graphics_tablet);
 }
 
 void InputDeviceSettingsNotificationController::
@@ -549,7 +670,7 @@ void InputDeviceSettingsNotificationController::
   CHECK_NE(blocked_modifier, SixPackShortcutModifier::kNone);
   CHECK(ui::KeyboardCapability::IsSixPackKey(key_code));
 
-  auto* it = kSixPackKeyToPrefName.find(key_code);
+  auto it = kSixPackKeyToPrefName.find(key_code);
   CHECK(it != kSixPackKeyToPrefName.end());
   const char* pref = it->second;
   PrefService* prefs =
@@ -585,6 +706,25 @@ void InputDeviceSettingsNotificationController::
       kNotificationKeyboardIcon,
       message_center::SystemNotificationWarningLevel::NORMAL);
   message_center_->AddNotification(std::move(notification));
+}
+
+void InputDeviceSettingsNotificationController::
+    NotifyKeyboardFirstTimeConnected(const mojom::Keyboard& keyboard) {
+  // TODO(b/329686601): Implement this function.
+  NOTIMPLEMENTED();
+}
+
+void InputDeviceSettingsNotificationController::
+    NotifyTouchpadFirstTimeConnected(const mojom::Touchpad& touchpad) {
+  // TODO(b/329686601): Implement this function.
+  NOTIMPLEMENTED();
+}
+
+void InputDeviceSettingsNotificationController::
+    NotifyPointingStickFirstTimeConnected(
+        const mojom::PointingStick& pointing_stick) {
+  // TODO(b/329686601): Implement this function.
+  NOTIMPLEMENTED();
 }
 
 void InputDeviceSettingsNotificationController::NotifyMouseIsCustomizable(
@@ -642,6 +782,69 @@ void InputDeviceSettingsNotificationController::
               notification_id)),
       kSettingsIcon, message_center::SystemNotificationWarningLevel::NORMAL);
   message_center_->AddNotification(std::move(notification));
+}
+
+void InputDeviceSettingsNotificationController::ShowTopRowRewritingNudge() {
+  AnchoredNudgeData nudge_data(
+      kTopRowKeyNoMatchNudgeId, NudgeCatalogName::kSearchTopRowKeyPressed,
+      l10n_util::GetStringUTF16(
+          IDS_ASH_SETTINGS_KEYBOARD_USE_FN_KEY_FOR_SEARCH_NUDGE_DESCRIPTION));
+  nudge_data.title_text = l10n_util::GetStringUTF16(
+      IDS_ASH_SETTINGS_KEYBOARD_USE_FN_KEY_NUDGE_TITLE);
+
+  AnchoredNudgeManager::Get()->Show(nudge_data);
+}
+
+void InputDeviceSettingsNotificationController::ShowSixPackKeyRewritingNudge(
+    ui::KeyboardCode key_code,
+    SixPackShortcutModifier old_matched_modifier) {
+  if (!IsActiveUserSession() ||
+      !ui::KeyboardCapability::IsSixPackKey(key_code)) {
+    return;
+  }
+
+  CHECK(ash::Shell::HasInstance() && Shell::Get()->session_controller());
+  PrefService* prefs =
+      Shell::Get()->session_controller()->GetActivePrefService();
+  CHECK(prefs);
+
+  auto it = kKeyCodeToSixPackKeyPrefName.find(key_code);
+  CHECK(it != kKeyCodeToSixPackKeyPrefName.end());
+  const auto* six_pack_key_remappings =
+      prefs->GetDict(prefs::kKeyboardDefaultChromeOSSettings)
+          .FindDict(prefs::kKeyboardSettingSixPackKeyRemappings);
+
+  if (!six_pack_key_remappings) {
+    return;
+  }
+
+  // Only show the notification if the modifier key matches the pref in user's
+  // last device for the behavior.
+  const char* pref = it->second;
+  const auto six_pack_key_remapping = six_pack_key_remappings->FindInt(pref);
+  if (six_pack_key_remapping == std::nullopt ||
+      six_pack_key_remapping != static_cast<int>(old_matched_modifier)) {
+    return;
+  }
+
+  AnchoredNudgeData nudge_data(
+      kSixPackKeyNoMatchNudgeId, NudgeCatalogName::kSixPackRemappingPressed,
+      GetSixPackShortcutUpdatedString(key_code, old_matched_modifier));
+  nudge_data.title_text = l10n_util::GetStringUTF16(
+      IDS_ASH_SETTINGS_KEYBOARD_USE_FN_KEY_NUDGE_TITLE);
+
+  AnchoredNudgeManager::Get()->Show(nudge_data);
+}
+
+void InputDeviceSettingsNotificationController::ShowCapsLockRewritingNudge() {
+  AnchoredNudgeData nudge_data(
+      kCapsLockNoMatchNudgeId, NudgeCatalogName::kCapsLockShortcutPressed,
+      l10n_util::GetStringUTF16(
+          IDS_ASH_SETTINGS_KEYBOARD_USE_FN_KEY_FOR_CAPS_LOCK_NUDGE_DESCRIPTION));
+  nudge_data.title_text = l10n_util::GetStringUTF16(
+      IDS_ASH_SETTINGS_KEYBOARD_USE_FN_KEY_NUDGE_TITLE);
+
+  AnchoredNudgeManager::Get()->Show(nudge_data);
 }
 
 }  // namespace ash

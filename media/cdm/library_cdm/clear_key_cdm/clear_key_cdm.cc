@@ -10,6 +10,8 @@
 #include <sstream>
 #include <utility>
 
+#include "base/compiler_specific.h"
+#include "base/containers/span.h"
 #include "base/files/file.h"
 #include "base/functional/bind.h"
 #include "base/logging.h"
@@ -70,7 +72,11 @@ static scoped_refptr<media::DecoderBuffer> CopyDecoderBufferFrom(
 
   // TODO(xhwang): Get rid of this copy.
   scoped_refptr<media::DecoderBuffer> output_buffer =
-      media::DecoderBuffer::CopyFrom(input_buffer.data, input_buffer.data_size);
+      media::DecoderBuffer::CopyFrom(
+          // SAFETY: `data` and `data_size` from `input_buffer` must be
+          // consistent.
+          UNSAFE_BUFFERS(
+              base::span(input_buffer.data, input_buffer.data_size)));
   output_buffer->set_timestamp(base::Microseconds(input_buffer.timestamp));
 
   if (input_buffer.encryption_scheme == cdm::EncryptionScheme::kUnencrypted)
@@ -554,10 +560,10 @@ cdm::Status ClearKeyCdm::Decrypt(const cdm::InputBuffer_2& encrypted_buffer,
 
   DCHECK(buffer->data());
   decrypted_block->SetDecryptedBuffer(
-      cdm_host_proxy_->Allocate(buffer->data_size()));
+      cdm_host_proxy_->Allocate(buffer->size()));
   memcpy(reinterpret_cast<void*>(decrypted_block->DecryptedBuffer()->Data()),
-         buffer->data(), buffer->data_size());
-  decrypted_block->DecryptedBuffer()->SetSize(buffer->data_size());
+         buffer->data(), buffer->size());
+  decrypted_block->DecryptedBuffer()->SetSize(buffer->size());
   decrypted_block->SetTimestamp(buffer->timestamp().InMicroseconds());
 
   return cdm::kSuccess;
@@ -687,7 +693,7 @@ cdm::Status ClearKeyCdm::DecryptAndDecodeSamples(
   int64_t timestamp = 0;
   if (!buffer->end_of_stream()) {
     data = buffer->data();
-    size = buffer->data_size();
+    size = buffer->size();
     timestamp = encrypted_buffer.timestamp;
   }
 

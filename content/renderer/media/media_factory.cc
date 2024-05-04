@@ -27,6 +27,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/renderer/content_renderer_client.h"
+#include "content/public/renderer/key_system_support.h"
 #include "content/public/renderer/render_frame_media_playback_options.h"
 #include "content/renderer/media/batching_media_log.h"
 #include "content/renderer/media/inspector_media_event_handler.h"
@@ -39,10 +40,12 @@
 #include "media/base/cdm_factory.h"
 #include "media/base/decoder_factory.h"
 #include "media/base/demuxer.h"
+#include "media/base/key_systems_impl.h"
 #include "media/base/media_switches.h"
 #include "media/base/renderer_factory_selector.h"
 #include "media/media_buildflags.h"
 #include "media/mojo/buildflags.h"
+#include "media/mojo/mojom/key_system_support.mojom.h"
 #include "media/renderers/decrypting_renderer_factory.h"
 #include "media/renderers/default_decoder_factory.h"
 #include "media/renderers/renderer_impl_factory.h"
@@ -68,6 +71,7 @@
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_source.h"
 #include "third_party/blink/public/web/modules/mediastream/web_media_player_ms.h"
 #include "third_party/blink/public/web/web_local_frame.h"
+#include "third_party/blink/public/web/web_view.h"
 #include "url/origin.h"
 
 #if BUILDFLAG(IS_ANDROID)
@@ -204,7 +208,11 @@ void PostContextProviderToCallback(
             bool is_gpu_composition_disabled = rti->IsGpuCompositingDisabled();
             scoped_refptr<gpu::ClientSharedImageInterface>
                 shared_image_interface;
-            if (is_gpu_composition_disabled) {
+            bool use_shared_image = base::FeatureList::IsEnabled(
+                                        features::kSharedBitmapToSharedImage) &&
+                                    base::FeatureList::IsEnabled(
+                                        media::kMediaSharedBitmapToSharedImage);
+            if (is_gpu_composition_disabled && use_shared_image) {
               shared_image_interface =
                   rti->GetVideoFrameCompositorSharedImageInterface();
               if (!shared_image_interface) {
@@ -414,10 +422,15 @@ blink::WebMediaPlayer* MediaFactory::CreateMediaPlayer(
   if (!render_thread)
     return nullptr;
 
+  // There may be many media elements on a page. Creating OS output streams for
+  // each can be very expensive, so we create an audio output sink which can be
+  // shared (if parameters match) with all RenderFrames in the process which
+  // have the same main frame.
   scoped_refptr<media::SwitchableAudioRendererSink> audio_renderer_sink =
-      blink::AudioDeviceFactory::GetInstance()->NewSwitchableAudioRendererSink(
+      blink::AudioDeviceFactory::GetInstance()->NewMixableSink(
           blink::WebAudioDeviceSourceType::kMediaElement,
           render_frame_->GetWebFrame()->GetLocalFrameToken(),
+          render_frame_->GetWebView()->MainFrame()->GetFrameToken(),
           media::AudioSinkParameters(/*session_id=*/base::UnguessableToken(),
                                      sink_id.Utf8()));
 
@@ -547,7 +560,7 @@ blink::WebEncryptedMediaClient* MediaFactory::EncryptedMediaClient() {
   if (!web_encrypted_media_client_) {
     web_encrypted_media_client_ = std::make_unique<
         blink::WebEncryptedMediaClientImpl>(
-        GetCdmFactory(), render_frame_->GetMediaPermission(),
+        GetKeySystems(), GetCdmFactory(), render_frame_->GetMediaPermission(),
         std::make_unique<blink::KeySystemConfigSelector::WebLocalFrameDelegate>(
             render_frame_->GetWebFrame()));
   }
@@ -873,6 +886,22 @@ media::mojom::RemoterFactory* MediaFactory::GetRemoterFactory() {
 }
 #endif
 
+std::unique_ptr<media::KeySystemSupportRegistration>
+MediaFactory::GetSupportedKeySystems(media::GetSupportedKeySystemsCB cb) {
+  return GetContentClient()->renderer()->GetSupportedKeySystems(render_frame_,
+                                                                std::move(cb));
+}
+
+media::KeySystems* MediaFactory::GetKeySystems() {
+  if (!key_systems_) {
+    // Safe to use base::Unretained(this) because `key_systems_` is owned by
+    // `this`.
+    key_systems_ = std::make_unique<media::KeySystemsImpl>(base::BindOnce(
+        &MediaFactory::GetSupportedKeySystems, base::Unretained(this)));
+  }
+  return key_systems_.get();
+}
+
 media::CdmFactory* MediaFactory::GetCdmFactory() {
   if (cdm_factory_)
     return cdm_factory_.get();
@@ -880,10 +909,11 @@ media::CdmFactory* MediaFactory::GetCdmFactory() {
 #if BUILDFLAG(IS_FUCHSIA)
   DCHECK(interface_broker_);
   cdm_factory_ = std::make_unique<media::FuchsiaCdmFactory>(
-      std::make_unique<media::MojoFuchsiaCdmProvider>(interface_broker_));
+      std::make_unique<media::MojoFuchsiaCdmProvider>(interface_broker_),
+      GetKeySystems());
 #elif BUILDFLAG(ENABLE_MOJO_CDM)
-  cdm_factory_ =
-      std::make_unique<media::MojoCdmFactory>(GetMediaInterfaceFactory());
+  cdm_factory_ = std::make_unique<media::MojoCdmFactory>(
+      GetMediaInterfaceFactory(), GetKeySystems());
 #else
   cdm_factory_ = std::make_unique<media::DefaultCdmFactory>();
 #endif  // BUILDFLAG(ENABLE_MOJO_CDM)

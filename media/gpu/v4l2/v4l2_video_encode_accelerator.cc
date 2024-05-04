@@ -81,7 +81,7 @@ namespace {
 std::optional<ImageProcessor::PortConfig> VideoFrameLayoutToPortConfig(
     const VideoFrameLayout& layout,
     const gfx::Rect& visible_rect,
-    const std::vector<VideoFrame::StorageType>& preferred_storage_types) {
+    VideoFrame::StorageType storage_type) {
   auto fourcc =
       Fourcc::FromVideoPixelFormat(layout.format(), !layout.is_multi_planar());
   if (!fourcc) {
@@ -91,7 +91,7 @@ std::optional<ImageProcessor::PortConfig> VideoFrameLayoutToPortConfig(
   }
   return ImageProcessor::PortConfig(*fourcc, layout.coded_size(),
                                     layout.planes(), visible_rect,
-                                    preferred_storage_types);
+                                    storage_type);
 }
 
 // Create Layout from |layout| with is_multi_planar = true.
@@ -430,7 +430,7 @@ bool V4L2VideoEncodeAccelerator::CreateImageProcessor(
       native_input_mode_ ? VideoFrame::STORAGE_GPU_MEMORY_BUFFER
                          : VideoFrame::STORAGE_SHMEM;
   auto input_config = VideoFrameLayoutToPortConfig(
-      *ip_input_layout, input_visible_rect, {input_storage_type});
+      *ip_input_layout, input_visible_rect, input_storage_type);
   if (!input_config) {
     LOG(ERROR) << "Failed to create ImageProcessor input config";
     return false;
@@ -451,7 +451,7 @@ bool V4L2VideoEncodeAccelerator::CreateImageProcessor(
   }
   auto output_config =
       VideoFrameLayoutToPortConfig(*output_layout, output_visible_rect,
-                                   {VideoFrame::STORAGE_GPU_MEMORY_BUFFER});
+                                   VideoFrame::STORAGE_GPU_MEMORY_BUFFER);
   if (!output_config) {
     LOG(ERROR) << "Failed to create ImageProcessor output config";
     return false;
@@ -506,7 +506,7 @@ bool V4L2VideoEncodeAccelerator::AllocateImageProcessorOutputBuffers(
   const ImageProcessor::PortConfig& output_config =
       image_processor_->output_config();
   for (size_t i = 0; i < count; i++) {
-    switch (output_config.storage_type()) {
+    switch (output_config.storage_type) {
       case VideoFrame::STORAGE_GPU_MEMORY_BUFFER:
         image_processor_output_buffers_[i] = CreateGpuMemoryBufferVideoFrame(
             output_config.fourcc.ToVideoPixelFormat(), output_config.size,
@@ -516,7 +516,7 @@ bool V4L2VideoEncodeAccelerator::AllocateImageProcessorOutputBuffers(
         break;
       default:
         LOG(ERROR) << "Unsupported output storage type of image processor: "
-                   << output_config.storage_type();
+                   << output_config.storage_type;
         return false;
     }
     if (!image_processor_output_buffers_[i]) {
@@ -530,7 +530,7 @@ bool V4L2VideoEncodeAccelerator::AllocateImageProcessorOutputBuffers(
 bool V4L2VideoEncodeAccelerator::InitInputMemoryType(const Config& config) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(encoder_sequence_checker_);
   if (image_processor_) {
-    const auto storage_type = image_processor_->output_config().storage_type();
+    const auto storage_type = image_processor_->output_config().storage_type;
     if (storage_type == VideoFrame::STORAGE_GPU_MEMORY_BUFFER) {
       input_memory_type_ = V4L2_MEMORY_DMABUF;
     } else if (VideoFrame::IsStorageTypeMappable(storage_type)) {
@@ -2029,8 +2029,11 @@ bool V4L2VideoEncodeAccelerator::InitControlsH264(const Config& config) {
                        {V4L2ExtCtrl(V4L2_CID_MPEG_VIDEO_H264_MAX_QP, 51)});
   // Don't set MIN_QP with other controls since it is not supported by
   // some devices and may prevent other controls from being set.
+  // The MIN_QP needed modification due to b/280853786
+  // The value 18 was tuned experimentally to let the test pass but
+  // to be close to the original one
   device_->SetExtCtrls(V4L2_CTRL_CLASS_MPEG,
-                       {V4L2ExtCtrl(V4L2_CID_MPEG_VIDEO_H264_MIN_QP, 24)});
+                       {V4L2ExtCtrl(V4L2_CID_MPEG_VIDEO_H264_MIN_QP, 18)});
   return true;
 }
 

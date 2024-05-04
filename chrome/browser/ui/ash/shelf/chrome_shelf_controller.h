@@ -250,11 +250,7 @@ class ChromeShelfController
   void ReplacePinnedItem(const std::string& old_app_id,
                          const std::string& new_app_id);
 
-  // This method is only used by ApkWebAppService and tests. This method
-  // relies on implicit assumptions and is likely unsuitable for other use
-  // cases.
-  //
-  // Pins app with |app_id| at |target_index|.
+  // Pins app with |app_id| at |target_index| if it is not already pinned.
   void PinAppAtIndex(const std::string& app_id, int target_index);
 
   // Converts |app_id| to shelf_id and calls ShelfModel function ItemIndexbyID
@@ -450,7 +446,7 @@ class ChromeShelfController
   // Used to get app info for tabs.
   std::unique_ptr<ShelfControllerHelper> shelf_controller_helper_;
 
-  // TODO(crbug.com/836128): Remove this once SystemWebApps are enabled by
+  // TODO(crbug.com/40573204): Remove this once SystemWebApps are enabled by
   // default.
   // An observer that manages the shelf title and icon for settings windows.
   std::unique_ptr<SettingsWindowObserver> settings_window_observer_;

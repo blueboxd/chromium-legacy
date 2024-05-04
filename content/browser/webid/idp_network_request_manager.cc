@@ -72,6 +72,9 @@ constexpr char kMetricsEndpoint[] = "metrics_endpoint";
 constexpr char kDisconnectEndpoint[] = "disconnect_endpoint";
 constexpr char kModesKey[] = "modes";
 
+// Keys in the 'accounts' dictionary
+constexpr char kIncludeKey[] = "include";
+
 // Keys in the 'modes' dictionary.
 constexpr char kButtonModeKey[] = "button";
 constexpr char kWidgetModeKey[] = "widget";
@@ -91,6 +94,7 @@ constexpr char kIdpBrandingIcons[] = "icons";
 // Client metadata keys.
 constexpr char kPrivacyPolicyKey[] = "privacy_policy_url";
 constexpr char kTermsOfServiceKey[] = "terms_of_service_url";
+constexpr char kBrandIconUrlKey[] = "brand_icon_url";
 
 // Accounts endpoint response keys.
 constexpr char kAccountsKey[] = "accounts";
@@ -105,6 +109,7 @@ constexpr char kAccountPictureKey[] = "picture";
 constexpr char kAccountApprovedClientsKey[] = "approved_clients";
 constexpr char kHintsKey[] = "login_hints";
 constexpr char kDomainHintsKey[] = "domain_hints";
+constexpr char kLabelsKey[] = "labels";
 
 // Keys in 'branding' 'icons' dictionary in accounts endpoint.
 constexpr char kIdpBrandingIconUrl[] = "url";
@@ -187,7 +192,7 @@ GURL ExtractUrl(const base::Value::Dict& response, const char* key) {
     return GURL();
   }
   GURL url = GURL(*response_url);
-  // TODO(crbug.com/1476951): Allow localhost URLs
+  // TODO(crbug.com/40280145): Allow localhost URLs
   if (!url.is_valid() || !url.SchemeIsHTTPOrHTTPS()) {
     return GURL();
   }
@@ -221,13 +226,21 @@ std::optional<content::IdentityRequestAccount> ParseAccount(
     }
   }
   std::vector<std::string> domain_hints;
-  if (IsFedCmDomainHintEnabled()) {
-    auto* domain_hints_list = account.FindList(kDomainHintsKey);
-    if (domain_hints_list) {
-      for (const base::Value& entry : *domain_hints_list) {
-        if (entry.is_string()) {
-          domain_hints.emplace_back(entry.GetString());
-        }
+  auto* domain_hints_list = account.FindList(kDomainHintsKey);
+  if (domain_hints_list) {
+    for (const base::Value& entry : *domain_hints_list) {
+      if (entry.is_string()) {
+        domain_hints.emplace_back(entry.GetString());
+      }
+    }
+  }
+
+  std::vector<std::string> labels;
+  auto* labels_list = account.FindList(kLabelsKey);
+  if (labels_list) {
+    for (const base::Value& entry : *labels_list) {
+      if (entry.is_string()) {
+        labels.emplace_back(entry.GetString());
       }
     }
   }
@@ -258,7 +271,8 @@ std::optional<content::IdentityRequestAccount> ParseAccount(
   return content::IdentityRequestAccount(
       *id, *email, *name, given_name ? *given_name : "",
       picture ? GURL(*picture) : GURL(), std::move(account_hints),
-      std::move(domain_hints), approved_value);
+      std::move(domain_hints), std::move(labels), approved_value,
+      /*browser_trusted_login_state=*/LoginState::kSignUp);
 }
 
 // Parses accounts from given Value. Returns true if parse is successful and
@@ -535,7 +549,16 @@ void OnConfigParsed(const GURL& provider,
   }
   idp_metadata.idp_login_url =
       ExtractEndpoint(provider, response, kLoginUrlKey);
-  if (IsFedCmUseOtherAccountEnabled()) {
+
+  const base::Value::Dict* accounts_dict = response.FindDict(kAccountsKey);
+  if (accounts_dict) {
+    const std::string* requested_label = accounts_dict->FindString(kIncludeKey);
+    if (requested_label) {
+      idp_metadata.requested_label = *requested_label;
+    }
+  }
+
+  if (IsFedCmUseOtherAccountEnabled(rp_mode == blink::mojom::RpMode::kButton)) {
     const base::Value::Dict* modes_dict = response.FindDict(kModesKey);
     const base::Value::Dict* selected_mode_dict = nullptr;
     if (modes_dict) {
@@ -573,6 +596,7 @@ void OnClientMetadataParsed(
   const base::Value::Dict& response = result->GetDict();
   data.privacy_policy_url = ExtractUrl(response, kPrivacyPolicyKey);
   data.terms_of_service_url = ExtractUrl(response, kTermsOfServiceKey);
+  data.brand_icon_url = ExtractUrl(response, kBrandIconUrlKey);
 
   std::move(callback).Run({ParseStatus::kSuccess, fetch_status.response_code},
                           data);
@@ -682,19 +706,53 @@ ErrorDialogType GetErrorDialogType(const std::string& code, const GURL& url) {
 }
 
 TokenResponseType GetTokenResponseType(const std::string* token,
+                                       const std::string* continue_on,
                                        const base::Value::Dict* error) {
-  if (token && error) {
-    return TokenResponseType::kTokenReceivedAndErrorReceived;
-  } else if (token) {
-    return TokenResponseType::kTokenReceivedAndErrorNotReceived;
-  } else if (error) {
-    return TokenResponseType::kTokenNotReceivedAndErrorReceived;
+  if (token && error && !continue_on) {
+    return TokenResponseType::
+        kTokenReceivedAndErrorReceivedAndContinueOnNotReceived;
+  } else if (token && !error && !continue_on) {
+    return TokenResponseType::
+        kTokenReceivedAndErrorNotReceivedAndContinueOnNotReceived;
+  } else if (!token && error && !continue_on) {
+    return TokenResponseType::
+        kTokenNotReceivedAndErrorReceivedAndContinueOnNotReceived;
+  } else if (token && !error && continue_on) {
+    return TokenResponseType::
+        kTokenReceivedAndErrorNotReceivedAndContinueOnReceived;
+  } else if (token && error && continue_on) {
+    return TokenResponseType::
+        kTokenReceivedAndErrorReceivedAndContinueOnReceived;
+  } else if (!token && !error && continue_on) {
+    return TokenResponseType::
+        kTokenNotReceivedAndErrorNotReceivedAndContinueOnReceived;
+  } else if (!token && error && continue_on) {
+    return TokenResponseType::
+        kTokenNotReceivedAndErrorReceivedAndContinueOnReceived;
   }
-  return TokenResponseType::kTokenNotReceivedAndErrorNotReceived;
+  DCHECK(!token);
+  DCHECK(!error);
+  DCHECK(!continue_on);
+  return TokenResponseType::
+      kTokenNotReceivedAndErrorNotReceivedAndContinueOnNotReceived;
 }
 
 bool IsOkResponseCode(int response_code) {
   return response_code / 100 == 2;
+}
+
+ErrorDialogType GetErrorDialogTypeAndSetTokenError(int response_code,
+                                                   TokenResult& token_result) {
+  if (response_code == net::HTTP_INTERNAL_SERVER_ERROR) {
+    token_result.error = TokenError{kServerError, GURL()};
+    return ErrorDialogType::kServerErrorWithoutUrl;
+  }
+  if (response_code == net::HTTP_SERVICE_UNAVAILABLE) {
+    token_result.error = TokenError{kTemporarilyUnavailable, GURL()};
+    return ErrorDialogType::kTemporarilyUnavailableWithoutUrl;
+  }
+  token_result.error = TokenError{kGenericEmpty, GURL()};
+  return ErrorDialogType::kGenericEmptyWithoutUrl;
 }
 
 void OnTokenRequestParsed(
@@ -707,52 +765,59 @@ void OnTokenRequestParsed(
     data_decoder::DataDecoder::ValueOrError result) {
   TokenResult token_result;
 
-  if (fetch_status.parse_status != ParseStatus::kSuccess) {
-    if (IsFedCmErrorEnabled()) {
-      ErrorDialogType type;
-      if (fetch_status.response_code == net::HTTP_INTERNAL_SERVER_ERROR) {
-        token_result.error = TokenError{kServerError, GURL()};
-        type = ErrorDialogType::kServerErrorWithoutUrl;
-      } else if (fetch_status.response_code == net::HTTP_SERVICE_UNAVAILABLE) {
-        token_result.error = TokenError{kTemporarilyUnavailable, GURL()};
-        type = ErrorDialogType::kTemporarilyUnavailableWithoutUrl;
-      } else {
-        token_result.error = TokenError{kGenericEmpty, GURL()};
-        type = ErrorDialogType::kGenericEmptyWithoutUrl;
-      }
-      std::move(record_error_metrics_callback)
-          .Run(TokenResponseType::kTokenNotReceivedAndErrorNotReceived, type,
-               /*error_url_type=*/std::nullopt);
+  bool parse_succeeded = fetch_status.parse_status == ParseStatus::kSuccess;
+  DCHECK(!parse_succeeded || result.has_value());
+
+  // We need to handle a number of cases, in order:
+  // 1) Result has a custom error field - return error
+  // 2) Parsing the result failed - return error
+  // 3) HTTP error code - return error
+  // 4) Result has token - return success
+  // 5) Result has continue_on URL - return success
+  // 6) Neither token nor continue_on nor HTTP error - return error
+
+  const base::Value::Dict* response =
+      parse_succeeded ? &result->GetDict() : nullptr;
+  bool can_use_response =
+      response && IsOkResponseCode(fetch_status.response_code);
+  const std::string* token =
+      can_use_response ? response->FindString(kTokenKey) : nullptr;
+  // continue_on_callback is only set if authz is enabled.
+  const std::string* continue_on = can_use_response && continue_on_callback
+                                       ? response->FindString(kContinueOnKey)
+                                       : nullptr;
+  const base::Value::Dict* response_error =
+      response ? response->FindDict(kErrorKey) : nullptr;
+  TokenResponseType token_response_type =
+      GetTokenResponseType(token, continue_on, response_error);
+
+  if (response_error) {
+    std::string error_code = ExtractString(*response_error, kErrorCodeKey);
+    const std::string* url = response_error->FindString(kErrorUrlKey);
+    GURL error_url;
+    std::optional<ErrorUrlType> error_url_type;
+    std::tie(error_url, error_url_type) = GetErrorUrlAndType(url, token_url);
+    token_result.error = TokenError{error_code, error_url};
+    std::move(record_error_metrics_callback)
+        .Run(token_response_type, GetErrorDialogType(error_code, error_url),
+             error_url_type);
+    std::move(callback).Run({ParseStatus::kSuccess, fetch_status.response_code},
+                            token_result);
+    return;
+  }
+
+  if (!parse_succeeded || !IsOkResponseCode(fetch_status.response_code)) {
+    ErrorDialogType type = GetErrorDialogTypeAndSetTokenError(
+        fetch_status.response_code, token_result);
+    std::move(record_error_metrics_callback)
+        .Run(token_response_type, type, /*error_url_type=*/std::nullopt);
+    if (parse_succeeded) {
+      fetch_status.parse_status = ParseStatus::kInvalidResponseError;
     }
     std::move(callback).Run(fetch_status, token_result);
     return;
   }
-
-  const base::Value::Dict& response = result->GetDict();
-  const std::string* token = IsOkResponseCode(fetch_status.response_code)
-                                 ? response.FindString(kTokenKey)
-                                 : nullptr;
-  const std::string* continue_on = response.FindString(kContinueOnKey);
-  const base::Value::Dict* response_error = response.FindDict(kErrorKey);
-  TokenResponseType token_response_type =
-      GetTokenResponseType(token, response_error);
-
-  if (IsFedCmErrorEnabled()) {
-    if (response_error) {
-      std::string error_code = ExtractString(*response_error, kErrorCodeKey);
-      const std::string* url = response_error->FindString(kErrorUrlKey);
-      GURL error_url;
-      std::optional<ErrorUrlType> error_url_type;
-      std::tie(error_url, error_url_type) = GetErrorUrlAndType(url, token_url);
-      token_result.error = TokenError{error_code, error_url};
-      std::move(record_error_metrics_callback)
-          .Run(token_response_type, GetErrorDialogType(error_code, error_url),
-               error_url_type);
-      std::move(callback).Run(
-          {ParseStatus::kSuccess, fetch_status.response_code}, token_result);
-      return;
-    }
-  }
+  DCHECK(response);
 
   if (token) {
     token_result.token = *token;
@@ -764,9 +829,12 @@ void OnTokenRequestParsed(
     return;
   }
 
-  if (IsFedCmAuthzEnabled() && continue_on) {
+  if (continue_on) {
     GURL url = token_url.Resolve(*continue_on);
     if (url.is_valid()) {
+      std::move(record_error_metrics_callback)
+          .Run(token_response_type, /*error_dialog_type=*/std::nullopt,
+               /*error_url_type=*/std::nullopt);
       std::move(continue_on_callback)
           .Run({ParseStatus::kSuccess, fetch_status.response_code},
                std::move(url));
@@ -774,9 +842,10 @@ void OnTokenRequestParsed(
     }
   }
 
+  ErrorDialogType type = GetErrorDialogTypeAndSetTokenError(
+      fetch_status.response_code, token_result);
   std::move(record_error_metrics_callback)
-      .Run(token_response_type, ErrorDialogType::kGenericEmptyWithoutUrl,
-           /*error_url_type=*/std::nullopt);
+      .Run(token_response_type, type, /*error_url_type=*/std::nullopt);
   std::move(callback).Run(
       {ParseStatus::kInvalidResponseError, fetch_status.response_code},
       token_result);
@@ -963,7 +1032,7 @@ void IdpNetworkRequestManager::SendTokenRequest(
       // We should parse the response body for the ID assertion endpoint request
       // even if the response code is non-2xx because the server may include the
       // error details with the Error API.
-      IsFedCmErrorEnabled());
+      /*allow_http_error_results=*/true);
 }
 
 void IdpNetworkRequestManager::SendSuccessfulTokenRequestMetrics(
@@ -1125,7 +1194,17 @@ IdpNetworkRequestManager::CreateUncredentialedResourceRequest(
     const GURL& target_url,
     bool send_origin,
     bool follow_redirects) const {
+  // We want this to be unique, so we append a random string.
+  static constexpr char kFedCmSchemeForIsolationKey[] = "fedcm-9c0367b4";
+
   auto resource_request = std::make_unique<network::ResourceRequest>();
+
+  GURL::Replacements replacements;
+  replacements.SetSchemeStr(kFedCmSchemeForIsolationKey);
+  GURL target_url_for_isolation_info =
+      target_url.ReplaceComponents(replacements);
+  url::Origin target_origin_for_isolation_info =
+      url::Origin::Create(target_url_for_isolation_info);
 
   resource_request->url = target_url;
   resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
@@ -1147,8 +1226,9 @@ IdpNetworkRequestManager::CreateUncredentialedResourceRequest(
   }
   resource_request->request_initiator = url::Origin();
   resource_request->trusted_params = network::ResourceRequest::TrustedParams();
-  resource_request->trusted_params->isolation_info =
-      net::IsolationInfo::CreateTransient();
+  resource_request->trusted_params->isolation_info = net::IsolationInfo::Create(
+      net::IsolationInfo::RequestType::kOther, relying_party_origin_,
+      target_origin_for_isolation_info, net::SiteForCookies());
   DCHECK(client_security_state_);
   resource_request->trusted_params->client_security_state =
       client_security_state_.Clone();
@@ -1162,19 +1242,27 @@ IdpNetworkRequestManager::CreateCredentialedResourceRequest(
   auto resource_request = std::make_unique<network::ResourceRequest>();
   auto target_origin = url::Origin::Create(target_url);
   auto site_for_cookies = net::SiteForCookies::FromOrigin(target_origin);
-  // We set the initiator to nullopt to denote browser-initiated so that this
-  // request is considered first-party. We want to send first-party cookies
-  // because this is not a real third-party request as it is mediated by the
-  // browser, and third-party cookies will be going away with 3pc deprecation,
-  // but we still need to send cookies in these requests.
-  // We use nullopt instead of target_origin because we want to send a
-  // `Sec-Fetch-Site: none` header instead of `Sec-Fetch-Site: same-origin`.
-  resource_request->request_initiator = std::nullopt;
+
+  if (IsFedCmSameSiteNoneEnabled()) {
+    // Setting the initiator to relying_party_origin_ ensures that we don't send
+    // SameSite=Strict cookies.
+    resource_request->request_initiator = relying_party_origin_;
+  } else {
+    // We set the initiator to nullopt to denote browser-initiated so that this
+    // request is considered first-party. We want to send first-party cookies
+    // because this is not a real third-party request as it is mediated by the
+    // browser, and third-party cookies will be going away with 3pc deprecation,
+    // but we still need to send cookies in these requests.
+    // We use nullopt instead of target_origin because we want to send a
+    // `Sec-Fetch-Site: none` header instead of `Sec-Fetch-Site: same-origin`.
+    resource_request->request_initiator = std::nullopt;
+  }
+
   resource_request->destination =
       network::mojom::RequestDestination::kWebIdentity;
   resource_request->url = target_url;
   resource_request->site_for_cookies = site_for_cookies;
-  // TODO(crbug.com/1489662): Figure out why when using CORS we still need to
+  // TODO(crbug.com/40284123): Figure out why when using CORS we still need to
   // explicitly pass the Origin header.
   if (type != CredentialedResourceRequestType::kNoOrigin) {
     resource_request->headers.SetHeader(net::HttpRequestHeaders::kOrigin,

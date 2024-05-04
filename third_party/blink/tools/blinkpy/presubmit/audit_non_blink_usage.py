@@ -158,6 +158,7 @@ _CONFIG = [
             'base::ranges::.+',
             'base::sequence_manager::TaskTimeObserver',
             'base::span',
+            'base::Span(Reader|Writer)',
             'logging::GetVlogLevel',
             'logging::SetLogItems',
 
@@ -169,6 +170,7 @@ _CONFIG = [
 
             # //base/types/expected.h
             'base::expected',
+            'base::ok',
             'base::unexpected',
 
             # //base/functional/bind.h
@@ -294,10 +296,9 @@ _CONFIG = [
             'base::SingleThreadTaskRunnerThreadMode',
 
             # Byte order
-            'base::ByteSwap',
-            'base::ReadBigEndian',
-            'base::NetToHost(16|32|64)',
-            'base::HostToNet(16|32|64)',
+            'base::BigEndian(Reader|Writer)',
+            'base::numerics::U(8|16|32|64)(To|From)(Big|Little|Native)Endian',
+            'base::numerics::ByteSwap',
 
             # (Cryptographic) random number generation
             'base::RandUint64',
@@ -335,6 +336,8 @@ _CONFIG = [
             # cc painting and raster types.
             'cc::CategorizedWorkerPool',
             'cc::ColorFilter',
+            'cc::DrawLooper',
+            'cc::PathEffect',
             'cc::InspectablePaintRecorder',
             'cc::InspectableRecordPaintCanvas',
             'cc::PaintCanvas',
@@ -536,8 +539,6 @@ _CONFIG = [
             # View transitions
             'cc::ViewTransitionContentLayer',
             'cc::ViewTransitionRequest',
-            'viz::NavigationId',
-            'viz::TransitionId',
             'viz::ViewTransitionElementResourceId',
 
             # base/types/strong_alias.h
@@ -726,6 +727,7 @@ _CONFIG = [
             'ui::IsCellOrTableHeader',
             'ui::IsClickable',
             'ui::IsComboBox',
+            'ui::IsComboBoxContainer',
             'ui::IsContainerWithSelectableChildren',
             'ui::IsDialog',
             'ui::IsEmbeddingElement',
@@ -760,8 +762,8 @@ _CONFIG = [
             'base::AutoWritableMemory',
         ],
         'disallowed': [
-            ('base::Bind(|Once|Repeating)',
-             'Use WTF::Bind or WTF::BindRepeating.'),
+            ('base::Bind(Once|Repeating)',
+             'Use WTF::BindOnce or WTF::BindRepeating.'),
             'base::BindPostTaskToCurrentDefault',
             _DISALLOW_NON_BLINK_MOJOM,
             _DISALLOW_CONTINUATION_DATA_,
@@ -779,9 +781,16 @@ _CONFIG = [
         'allowed': ['gin::.+'],
     },
     {
-        'paths':
-        ['third_party/blink/renderer/bindings/core/v8/serialization/'],
+        'paths': [
+            'third_party/blink/renderer/bindings/core/v8/serialization/',
+            'third_party/blink/renderer/core/typed_arrays/',
+        ],
         'allowed': ['base::BufferIterator'],
+    },
+    {
+        'paths':
+        ['third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h'],
+        'allowed': ['base::FastHash'],
     },
     {
         'paths':
@@ -925,6 +934,12 @@ _CONFIG = [
         ],
     },
     {
+        'paths': ['third_party/blink/renderer/core/css/properties/css_color_function_parser.cc'],
+        'allowed': [
+            'base::MakeFixedFlatMap',
+        ],
+    },
+    {
         'paths': ['third_party/blink/renderer/core/editing/ime'],
         'allowed': [
             'ui::ImeTextSpan',
@@ -971,6 +986,7 @@ _CONFIG = [
             'cc::InputHandlerScrollResult',
             'cc::SwapPromise',
             'viz::CompositorFrameMetadata',
+            'viz::FrameTimingDetails',
         ],
     },
     {
@@ -1055,6 +1071,27 @@ _CONFIG = [
         ],
     },
     {
+        'paths': [
+            'third_party/blink/public/web/web_frame_widget.h',
+            'third_party/blink/renderer/core/frame/local_frame_client_impl.cc',
+            'third_party/blink/renderer/core/frame/web_frame_widget',
+            'third_party/blink/renderer/core/page/chrome_client.h',
+            'third_party/blink/renderer/core/paint/timing',
+            'third_party/blink/renderer/core/timing',
+        ],
+        'allowed': [
+            'viz::FrameTimingDetails',
+        ],
+    },
+    {
+        'paths': [
+            'third_party/blink/public/web/web_frame_widget.h',
+        ],
+        'allowed': [
+            'base::OnceCallback',
+        ],
+    },
+    {
         'paths': ['third_party/blink/renderer/core/style/computed_style.h'],
         'allowed': [
             'css_longhand::.+',
@@ -1085,6 +1122,7 @@ _CONFIG = [
     {
         'paths': [
             'third_party/blink/renderer/core/css/properties/css_parsing_utils.cc',
+            'third_party/blink/renderer/core/html/html_permission_element.cc',
             'third_party/blink/renderer/core/paint/box_border_painter.cc',
         ],
         'allowed': [
@@ -1219,6 +1257,7 @@ _CONFIG = [
         'allowed': [
             'base::flat_map',
             'gl::GpuPreference',
+            'gpu::ClientSharedImage',
             'gpu::SHARED_IMAGE_USAGE_.+',
             'gpu::gles2::GLES2Interface',
             'gpu::raster::RasterInterface',
@@ -1238,6 +1277,7 @@ _CONFIG = [
             'viz::SinglePlaneFormat',
             'viz::ToClosestSkColorType',
             'viz::TransferableResource',
+            'wgpu::.+',
         ],
     },
     {
@@ -1328,16 +1368,21 @@ _CONFIG = [
             # TODO(https://crbug.com/787252): Remove most of the entries below,
             # once the directory is fully Onion soup'ed.
             'base::Bind.*',
-            'base::Unretained',
-            'base::NoDestructor',
-            'base::flat_map',
             'base::EraseIf',
+            'base::flat_map',
+            'base::flat_set',
+            'base::NoDestructor',
+            'base::RetainedRef',
             'base::ScopedPlatformFile',
+            'base::Unretained',
             'mojo::WrapCallbackWithDefaultInvokeIfNotRun',
 
             # TODO(https://crrev.com/787252): Consider allowlisting fidl::*
             # usage more broadly in Blink.
             'fidl::InterfaceHandle',
+        ],
+        'inclass_allowed': [
+            'base::SequencedTaskRunner::GetCurrentDefault'
         ]
     },
     {
@@ -1602,10 +1647,6 @@ _CONFIG = [
             "absl::Status",
             "absl::StatusOr",
 
-            # Required by liburlpattern API in order to pass string data
-            # efficiently.
-            "absl::string_view",
-
             # Needed to work with std::string values returned from
             # liburlpattern API.
             "base::IsStringASCII",
@@ -1746,7 +1787,6 @@ _CONFIG = [
 
             # Needed to use the liburlpattern API.
             "absl::StatusOr",
-            "absl::string_view",
             'liburlpattern::.+',
         ],
     },

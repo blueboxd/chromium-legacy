@@ -7,10 +7,7 @@ package org.chromium.chrome.browser.tab_resumption;
 import static org.mockito.Mockito.when;
 
 import android.content.Context;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
 
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.filters.SmallTest;
@@ -20,10 +17,12 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab_resumption.UrlImageProvider.UrlImageSource;
 import org.chromium.components.browser_ui.widget.RoundedIconGenerator;
 import org.chromium.components.favicon.IconType;
@@ -56,13 +55,15 @@ public class TabResumptionModuleSuggestionsUnitTest extends TestSupport {
                 final LargeIconCallback callback) {
             // For simplicity, fake with a synchronous call.
             callback.onLargeIconAvailable(
-                    pageUrl.equals(mFakeCachedUrl) ? mFakeCachedBitmap : null,
+                    pageUrl.equals(mFakeCachedUrl) ? mFakeCachedBitmap : /* tab= */ null,
                     DEFAULT_FALLBACK_COLOR,
                     /*isFallbackColorDefault*/ true,
                     IconType.FAVICON);
             return true;
         }
     }
+
+    @Mock private Profile mProfile;
 
     // Various test value that satisfy FOO_LO < FOO_0 < FOO_HI.
     private static final String SOURCE_NAME_LO = "Desktop";
@@ -88,26 +89,6 @@ public class TabResumptionModuleSuggestionsUnitTest extends TestSupport {
 
     @After
     public void tearDown() {}
-
-    @Test
-    @SmallTest
-    public void testAssignSuggestions() {
-        SuggestionEntry entry0 =
-                new SuggestionEntry(SOURCE_NAME_0, URL_0, TITLE_0, TIMESTAMP_0, ID_0);
-        SuggestionEntry entryLo =
-                new SuggestionEntry(SOURCE_NAME_LO, URL_LO, TITLE_LO, TIMESTAMP_LO, ID_LO);
-        SuggestionBundle bundle = new SuggestionBundle(TIMESTAMP_HI);
-        Assert.assertEquals(TIMESTAMP_HI, bundle.referenceTimeMs);
-        bundle.entries.add(entry0);
-        bundle.entries.add(entryLo);
-        Assert.assertEquals(2, bundle.entries.size());
-
-        Resources res = ApplicationProvider.getApplicationContext().getResources();
-        Drawable drawable = new BitmapDrawable(res, makeBitmap(1, 1));
-
-        entry0.setUrlDrawable(drawable);
-        Assert.assertEquals(drawable, entry0.getUrlDrawable());
-    }
 
     @Test
     @SmallTest
@@ -257,7 +238,7 @@ public class TabResumptionModuleSuggestionsUnitTest extends TestSupport {
         when(urlImageSource.createLargeIconBridge()).thenReturn(largeIconBridge);
         when(urlImageSource.createIconGenerator()).thenReturn(roundedIconGenerator);
         Context context = ApplicationProvider.getApplicationContext();
-        UrlImageProvider urlImageProvider = new UrlImageProvider(urlImageSource, context);
+        UrlImageProvider urlImageProvider = new UrlImageProvider(mProfile, urlImageSource, context);
 
         urlImageProvider.fetchImageForUrl(
                 urlWithFavicon,

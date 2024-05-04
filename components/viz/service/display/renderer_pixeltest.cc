@@ -248,7 +248,7 @@ void CreateTestRenderPassDrawQuad(const SharedQuadState* shared_state,
 //   if false, a 1/2 width and height rectangle in the middle of the quad will
 //   be filled with texel_color_two, other part of the texture is filled with
 //   texel_color_one,
-// TODO(crbug.com/1308932): Make this function use SkColor4f
+// TODO(crbug.com/40219248): Make this function use SkColor4f
 void CreateTestTwoColoredTextureDrawQuad(
     bool gpu_resource,
     const gfx::Rect& rect,
@@ -308,9 +308,9 @@ void CreateTestTwoColoredTextureDrawQuad(
         AllocateAndRegisterSharedBitmapMemory(shared_bitmap_id, rect.size(),
                                               shared_bitmap_manager);
     resource = child_resource_provider->ImportResource(
-        TransferableResource::MakeSoftware(shared_bitmap_id, gpu::SyncToken(),
-                                           rect.size(),
-                                           SinglePlaneFormat::kRGBA_8888),
+        TransferableResource::MakeSoftwareSharedBitmap(
+            shared_bitmap_id, gpu::SyncToken(), rect.size(),
+            SinglePlaneFormat::kRGBA_8888),
         base::DoNothing());
 
     auto span = mapping.GetMemoryAsSpan<uint32_t>(pixels.size());
@@ -335,11 +335,11 @@ void CreateTestTwoColoredTextureDrawQuad(
                /*secure_output=*/false, gfx::ProtectedVideoType::kClear);
 }
 
+// TODO(crbug.com/40219248): Make this function use SkColor4f
 void CreateTestTextureDrawQuad(
     bool gpu_resource,
     const gfx::Rect& rect,
     SkColor4f texel_color,
-    base::span<float, 4> vertex_opacity,
     SkColor4f background_color,
     bool premultiplied_alpha,
     const SharedQuadState* shared_state,
@@ -370,9 +370,9 @@ void CreateTestTextureDrawQuad(
         AllocateAndRegisterSharedBitmapMemory(shared_bitmap_id, rect.size(),
                                               shared_bitmap_manager);
     resource = child_resource_provider->ImportResource(
-        TransferableResource::MakeSoftware(shared_bitmap_id, gpu::SyncToken(),
-                                           rect.size(),
-                                           SinglePlaneFormat::kRGBA_8888),
+        TransferableResource::MakeSoftwareSharedBitmap(
+            shared_bitmap_id, gpu::SyncToken(), rect.size(),
+            SinglePlaneFormat::kRGBA_8888),
         base::DoNothing());
 
     auto span = mapping.GetMemoryAsSpan<uint32_t>(pixels.size());
@@ -396,29 +396,8 @@ void CreateTestTextureDrawQuad(
                premultiplied_alpha, uv_top_left, uv_bottom_right,
                background_color, flipped, nearest_neighbor,
                /*secure_output=*/false, gfx::ProtectedVideoType::kClear);
-  quad->set_vertex_opacity(vertex_opacity);
 }
 
-// TODO(crbug.com/1308932): Make this function use SkColor4f
-void CreateTestTextureDrawQuad(
-    bool gpu_resource,
-    const gfx::Rect& rect,
-    SkColor4f texel_color,
-    SkColor4f background_color,
-    bool premultiplied_alpha,
-    const SharedQuadState* shared_state,
-    DisplayResourceProvider* resource_provider,
-    ClientResourceProvider* child_resource_provider,
-    SharedBitmapManager* shared_bitmap_manager,
-    scoped_refptr<RasterContextProvider> child_context_provider,
-    AggregatedRenderPass* render_pass) {
-  float vertex_opacity[4] = {1.0f, 1.0f, 1.0f, 1.0f};
-  CreateTestTextureDrawQuad(gpu_resource, rect, texel_color, vertex_opacity,
-                            background_color, premultiplied_alpha, shared_state,
-                            resource_provider, child_resource_provider,
-                            shared_bitmap_manager,
-                            std::move(child_context_provider), render_pass);
-}
 
 void CreateTestMultiplanarVideoDrawQuad_FromVideoFrame(
     scoped_refptr<media::VideoFrame> video_frame,
@@ -829,7 +808,7 @@ void CreateTestYUVVideoDrawQuad_NV12(
       video_resource_updater->YuvSharedImageFormat(8), color_space, y_pixels);
 
   // U goes in the R component and V goes in the G component.
-  uint32_t rgba_pixel = (u << 24) | (v << 16);
+  uint32_t rgba_pixel = (u) | (v << 8);
   std::vector<uint32_t> uv_pixels(uv_tex_size.GetArea(), rgba_pixel);
   ResourceId resource_u = CreateGpuResource(
       child_context_provider, child_resource_provider, uv_tex_size,
@@ -857,8 +836,8 @@ void CreateTestYUVVideoDrawQuad_NV12(
   yuv_quad->SetNew(shared_state, rect, visible_rect, needs_blending,
                    ya_tex_size, video_frame_visible_rect, uv_sample_size,
                    mapped_resource_y, mapped_resource_u, mapped_resource_v,
-                   resource_a, color_space, 0.0f, 1.0f, 8,
-                   gfx::ProtectedVideoType::kClear, std::nullopt);
+                   resource_a, color_space, 8, gfx::ProtectedVideoType::kClear,
+                   std::nullopt);
 }
 
 // Create two quads of specified colors on half-pixel boundaries.
@@ -901,7 +880,7 @@ INSTANTIATE_TEST_SUITE_P(,
 using GPURendererPixelTest = VizPixelTestWithParam;
 INSTANTIATE_TEST_SUITE_P(,
                          GPURendererPixelTest,
-                         // TODO(crbug.com/1021566): Enable these tests for
+                         // TODO(crbug.com/40106226): Enable these tests for
                          // SkiaRenderer Dawn once video is supported.
                          testing::ValuesIn(GetGpuRendererTypes()),
                          testing::PrintToStringParamName());
@@ -1735,42 +1714,6 @@ TEST_P(GPURendererPixelTest, SolidColorWithTemperatureNonRootRenderPass) {
       cc::AlphaDiscardingFuzzyPixelOffByOneComparator()));
 }
 
-TEST_P(GPURendererPixelTest,
-       PremultipliedTextureWithBackgroundAndVertexOpacity) {
-  gfx::Rect rect(this->device_viewport_size_);
-
-  AggregatedRenderPassId id{1};
-  auto pass = CreateTestRootRenderPass(id, rect);
-
-  SharedQuadState* texture_quad_state = CreateTestSharedQuadState(
-      gfx::Transform(), rect, pass.get(), gfx::MaskFilterInfo());
-  texture_quad_state->opacity = 0.8f;
-
-  float vertex_opacity[4] = {1.f, 1.f, 0.f, 0.f};
-  CreateTestTextureDrawQuad(
-      !is_software_renderer(), gfx::Rect(this->device_viewport_size_),
-      SkColor4f::FromColor(SkColorSetARGB(204, 120, 255, 120)),  // SK_ColorT
-      vertex_opacity,
-      SkColors::kGreen,  // Background color.
-      true,              // Premultiplied alpha.
-      texture_quad_state, this->resource_provider_.get(),
-      this->child_resource_provider_.get(), this->shared_bitmap_manager_.get(),
-      this->child_context_provider_, pass.get());
-
-  SharedQuadState* color_quad_state = CreateTestSharedQuadState(
-      gfx::Transform(), rect, pass.get(), gfx::MaskFilterInfo());
-  auto* color_quad = pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
-  color_quad->SetNew(color_quad_state, rect, rect, SkColors::kWhite, false);
-
-  AggregatedRenderPassList pass_list;
-  pass_list.push_back(std::move(pass));
-
-  EXPECT_TRUE(this->RunPixelTest(
-      &pass_list,
-      base::FilePath(FILE_PATH_LITERAL("green_alpha_vertex_opacity.png")),
-      cc::AlphaDiscardingFuzzyPixelOffByOneComparator()));
-}
-
 // Check that the renderer draws a fallback quad for quads that require overlay.
 TEST_P(GPURendererPixelTest, OverlayHintRequiredFallback) {
   gfx::Rect rect(this->device_viewport_size_);
@@ -2035,7 +1978,7 @@ class IntersectingMultiplanarVideoQuadPixelTest : public VizPixelTestWithParam {
 
 INSTANTIATE_TEST_SUITE_P(,
                          IntersectingMultiplanarVideoQuadPixelTest,
-                         // TODO(crbug.com/1021566): Enable these tests for
+                         // TODO(crbug.com/40106224): Enable these tests for
                          // SkiaRenderer Dawn once video is supported.
                          testing::ValuesIn(GetGpuRendererTypes()),
                          testing::PrintToStringParamName());
@@ -2268,11 +2211,9 @@ TEST_P(IntersectingMultiplanarVideoQuadPixelTest, YUVVideoQuads) {
     baseline = baseline.InsertBeforeExtensionASCII(kANGLEMetalStr);
   }
 
-  // TODO(crbug.com/1465939): Remove error relaxations once software pixel
-  // upload support lands for Windows for multiplanar SI.
   this->AppendBackgroundAndRunTest(cc::FuzzyPixelComparator()
                                        .DiscardAlpha()
-                                       .SetErrorPixelsPercentageLimit(50.0f)
+                                       .SetErrorPixelsPercentageLimit(0.50f)
                                        .SetAvgAbsErrorLimit(1.2f)
                                        .SetAbsErrorLimit(2),
                                    baseline);
@@ -2479,19 +2420,106 @@ TEST_P(VideoRendererPixelHiLoTest, SimpleYUVRect) {
   AggregatedRenderPassList pass_list;
   pass_list.push_back(std::move(copy_pass));
 
-  // TODO(crbug.com/1465939): Remove error relaxations once software pixel
-  // upload support lands for Windows for multiplanar SI.
   EXPECT_TRUE(this->RunPixelTest(
       &pass_list, base::FilePath(FILE_PATH_LITERAL("yuv_stripes.png")),
-      cc::FuzzyPixelComparator()
-          .DiscardAlpha()
-          .SetErrorPixelsPercentageLimit(100.f)
-          .SetAvgAbsErrorLimit(1.2f)
-          .SetAbsErrorLimit(2)));
+      cc::AlphaDiscardingFuzzyPixelOffByOneComparator()));
+}
+
+class VideoRendererPixelHiLoColorSpaceTest
+    : public VideoRendererPixelTestBase,
+      public testing::WithParamInterface<std::tuple<bool, gfx::ColorSpace>> {
+ public:
+  VideoRendererPixelHiLoColorSpaceTest()
+      : VideoRendererPixelTestBase(RendererType::kSkiaGL) {}
+
+  bool IsHighbit() const { return std::get<0>(GetParam()); }
+  gfx::ColorSpace GetColorSpace() const { return std::get<1>(GetParam()); }
+  const std::string GetName() const {
+    auto cs = GetColorSpace();
+    switch (cs.GetMatrixID()) {
+      case gfx::ColorSpace::MatrixID::FCC:
+        return "_fcc_limited";
+      case gfx::ColorSpace::MatrixID::YCOCG:
+        return "_ycocg_limited";
+      case gfx::ColorSpace::MatrixID::SMPTE240M:
+        return "_smpte240m_limited";
+      case gfx::ColorSpace::MatrixID::YDZDX:
+        return "_ydzdx_limited";
+      case gfx::ColorSpace::MatrixID::GBR:
+        return "_gbr_limited";
+      default:
+        NOTREACHED();
+    }
+    return "";
+  }
+};
+
+gfx::ColorSpace yuv_color_spaces[] = {
+    gfx::ColorSpace(gfx::ColorSpace::PrimaryID::SMPTE170M,
+                    gfx::ColorSpace::TransferID::SMPTE170M,
+                    gfx::ColorSpace::MatrixID::YCOCG,
+                    gfx::ColorSpace::RangeID::LIMITED),
+    gfx::ColorSpace(gfx::ColorSpace::PrimaryID::SMPTE170M,
+                    gfx::ColorSpace::TransferID::SMPTE170M,
+                    gfx::ColorSpace::MatrixID::FCC,
+                    gfx::ColorSpace::RangeID::LIMITED),
+    gfx::ColorSpace(gfx::ColorSpace::PrimaryID::SMPTE170M,
+                    gfx::ColorSpace::TransferID::SMPTE170M,
+                    gfx::ColorSpace::MatrixID::SMPTE240M,
+                    gfx::ColorSpace::RangeID::LIMITED),
+    gfx::ColorSpace(gfx::ColorSpace::PrimaryID::SMPTE170M,
+                    gfx::ColorSpace::TransferID::SMPTE170M,
+                    gfx::ColorSpace::MatrixID::YDZDX,
+                    gfx::ColorSpace::RangeID::LIMITED),
+    gfx::ColorSpace(gfx::ColorSpace::PrimaryID::SMPTE170M,
+                    gfx::ColorSpace::TransferID::SMPTE170M,
+                    gfx::ColorSpace::MatrixID::GBR,
+                    gfx::ColorSpace::RangeID::LIMITED),
+};
+
+INSTANTIATE_TEST_SUITE_P(,
+                         VideoRendererPixelHiLoColorSpaceTest,
+                         testing::Combine(testing::Bool(),
+                                          testing::ValuesIn(yuv_color_spaces)));
+
+TEST_P(VideoRendererPixelHiLoColorSpaceTest, SimpleYUVRect) {
+  gfx::Rect rect(this->device_viewport_size_);
+
+  CompositorRenderPassId id{1};
+  auto pass = CreateTestRootRenderPass(id, rect);
+  // Set the output color space to match the input primaries and transfer.
+  this->display_color_spaces_ = kRec601DisplayColorSpaces;
+
+  CreateTestMultiplanarVideoDrawQuad_Striped(
+      media::PIXEL_FORMAT_I420, GetColorSpace(), false, IsHighbit(),
+      gfx::RectF(0.0f, 0.0f, 1.0f, 1.0f), pass.get(),
+      this->video_resource_updater_.get(), rect, rect,
+      this->resource_provider_.get(), this->child_resource_provider_.get(),
+      this->child_context_provider_.get());
+
+  AggregatedRenderPassId new_id{1};
+  auto copy_pass = cc::CopyToAggregatedRenderPass(
+      pass.get(), new_id, gfx::ContentColorUsage::kSRGB);
+
+  AggregatedRenderPassList pass_list;
+  pass_list.push_back(std::move(copy_pass));
+
+  base::FilePath expected_result =
+      base::FilePath(FILE_PATH_LITERAL("yuv_stripes.png"));
+  expected_result = expected_result.InsertBeforeExtensionASCII(GetName());
+  // YCgCo color space supports highbit formats.
+  if (IsHighbit() &&
+      GetColorSpace().GetMatrixID() == gfx::ColorSpace::MatrixID::YCOCG) {
+    expected_result = expected_result.InsertBeforeExtensionASCII("_highbit");
+  }
+
+  EXPECT_TRUE(
+      this->RunPixelTest(&pass_list, expected_result,
+                         cc::AlphaDiscardingFuzzyPixelOffByOneComparator()));
 }
 
 #if BUILDFLAG(IS_IOS)
-// TODO(crbug.com/1421171): currently failing on iOS.
+// TODO(crbug.com/40259140): currently failing on iOS.
 #define MAYBE_ClippedYUVRect DISABLED_ClippedYUVRect
 #else
 #define MAYBE_ClippedYUVRect ClippedYUVRect
@@ -2520,15 +2548,9 @@ TEST_P(VideoRendererPixelHiLoTest, MAYBE_ClippedYUVRect) {
   AggregatedRenderPassList pass_list;
   pass_list.push_back(std::move(copy_pass));
 
-  // TODO(crbug.com/1465939): Remove error relaxations once software pixel
-  // upload support lands for Windows for multiplanar SI.
   EXPECT_TRUE(this->RunPixelTest(
       &pass_list, base::FilePath(FILE_PATH_LITERAL("yuv_stripes_clipped.png")),
-      cc::FuzzyPixelComparator()
-          .DiscardAlpha()
-          .SetErrorPixelsPercentageLimit(100.f)
-          .SetAvgAbsErrorLimit(1.2f)
-          .SetAbsErrorLimit(2)));
+      cc::AlphaDiscardingFuzzyPixelOffByOneComparator()));
 }
 #endif  // #if BUILDFLAG(ENABLE_GL_BACKEND_TESTS)
 
@@ -2541,7 +2563,7 @@ class VideoRendererPixelTest
 
 INSTANTIATE_TEST_SUITE_P(,
                          VideoRendererPixelTest,
-                         // TODO(crbug.com/1021566): Enable these tests for
+                         // TODO(crbug.com/40106226): Enable these tests for
                          // SkiaRenderer Dawn once video is supported.
                          testing::ValuesIn(GetGpuRendererTypes()),
                          testing::PrintToStringParamName());
@@ -2550,11 +2572,6 @@ INSTANTIATE_TEST_SUITE_P(,
 GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(VideoRendererPixelTest);
 
 TEST_P(VideoRendererPixelTest, OffsetYUVRect) {
-  // TODO(b/283271538): Enable this test once YUV sampling/subset issues are
-  // fixed in Graphite.
-  if (is_skia_graphite()) {
-    GTEST_SKIP();
-  }
   gfx::Rect rect(this->device_viewport_size_);
 
   CompositorRenderPassId id{1};
@@ -2577,15 +2594,14 @@ TEST_P(VideoRendererPixelTest, OffsetYUVRect) {
   AggregatedRenderPassList pass_list;
   pass_list.push_back(std::move(copy_pass));
 
-  // TODO(crbug.com/1465939): Remove error relaxations once software pixel
-  // upload support lands for Windows for multiplanar SI.
-  EXPECT_TRUE(this->RunPixelTest(
-      &pass_list, base::FilePath(FILE_PATH_LITERAL("yuv_stripes_offset.png")),
-      cc::FuzzyPixelComparator()
-          .DiscardAlpha()
-          .SetErrorPixelsPercentageLimit(100.f)
-          .SetAvgAbsErrorLimit(1.2f)
-          .SetAbsErrorLimit(2)));
+  base::FilePath expected_result =
+      base::FilePath(FILE_PATH_LITERAL("yuv_stripes_offset.png"));
+  if (is_skia_graphite()) {
+    expected_result = expected_result.InsertBeforeExtensionASCII(kGraphiteStr);
+  }
+  EXPECT_TRUE(
+      this->RunPixelTest(&pass_list, expected_result,
+                         cc::AlphaDiscardingFuzzyPixelOffByOneComparator()));
 }
 
 TEST_P(VideoRendererPixelTest, SimpleYUVRectBlack) {
@@ -2685,10 +2701,10 @@ TEST_P(VideoRendererPixelTest, SimpleNV12JRect) {
   SharedQuadState* shared_state = CreateTestSharedQuadState(
       gfx::Transform(), rect, pass.get(), gfx::MaskFilterInfo());
 
-  // YUV of (149,43,21) should be green (0,255,0) in RGB.
+  // YUV of (149,100,50) should be emerald green (39, 214, 99) in RGB.
   CreateTestYUVVideoDrawQuad_NV12(
       shared_state, gfx::ColorSpace::CreateJpeg(),
-      gfx::RectF(0.0f, 0.0f, 1.0f, 1.0f), 149, 43, 21, pass.get(),
+      gfx::RectF(0.0f, 0.0f, 1.0f, 1.0f), 149, 100, 50, pass.get(),
       this->video_resource_updater_.get(), rect, rect,
       this->resource_provider_.get(), this->child_resource_provider_.get(),
       this->child_context_provider_);
@@ -2697,18 +2713,13 @@ TEST_P(VideoRendererPixelTest, SimpleNV12JRect) {
   pass_list.push_back(std::move(pass));
 
   EXPECT_TRUE(this->RunPixelTest(
-      &pass_list, base::FilePath(FILE_PATH_LITERAL("green.png")),
+      &pass_list, base::FilePath(FILE_PATH_LITERAL("emerald_green.png")),
       cc::AlphaDiscardingFuzzyPixelOffByOneComparator()));
 }
 
 // Test that a YUV video doesn't bleed outside of its tex coords when the
 // tex coord rect is only a partial subrectangle of the coded contents.
 TEST_P(VideoRendererPixelTest, YUVEdgeBleed) {
-  // TODO(b/283271538): Enable this test once YUV sampling/subset issues are
-  // fixed in Graphite.
-  if (is_skia_graphite()) {
-    GTEST_SKIP();
-  }
   AggregatedRenderPassList pass_list;
   this->CreateEdgeBleedPass(media::PIXEL_FORMAT_I420,
                             gfx::ColorSpace::CreateJpeg(), &pass_list);
@@ -2718,11 +2729,6 @@ TEST_P(VideoRendererPixelTest, YUVEdgeBleed) {
 }
 
 TEST_P(VideoRendererPixelTest, YUVAEdgeBleed) {
-  // TODO(b/283271538): Enable this test once YUV sampling/subset issues are
-  // fixed in Graphite.
-  if (is_skia_graphite()) {
-    GTEST_SKIP();
-  }
   AggregatedRenderPassList pass_list;
   this->CreateEdgeBleedPass(media::PIXEL_FORMAT_I420A,
                             gfx::ColorSpace::CreateREC601(), &pass_list);
@@ -3819,7 +3825,7 @@ TEST_P(RendererPixelTestWithBackdropFilter, OffsetFilter) {
       cc::FilterOperation::CreateOffsetFilter(gfx::Point(5, 5)));
   SetUpRenderPassList();
 
-  // TODO(989329): See comment in
+  // TODO(crbug.com/41473761): See comment in
   // LayerTreeHostFiltersPixelTest/BackdropFilterOffsetTest. The software
   // compositor does not correctly apply clamping when accessing content outside
   // of the layer.
@@ -4182,7 +4188,7 @@ TEST_P(GPURendererPixelTest, BlendingWithoutAntiAliasing) {
 }
 
 TEST_P(GPURendererPixelTest, TrilinearFiltering) {
-  // TODO(crbug.com/1442381): Enable test for Graphite once mipmap issue is
+  // TODO(crbug.com/40266937): Enable test for Graphite once mipmap issue is
   // fixed.
   if (is_skia_graphite()) {
     GTEST_SKIP();
@@ -5331,7 +5337,7 @@ TEST_P(RendererPixelTest, RoundedCornerOnRenderPass) {
 }
 
 #if BUILDFLAG(IS_IOS)
-// TODO(crbug.com/1421171): currently failing on iOS.
+// TODO(crbug.com/40259140): currently failing on iOS.
 #define MAYBE_LinearGradientOnRenderPass DISABLED_LinearGradientOnRenderPass
 #else
 #define MAYBE_LinearGradientOnRenderPass LinearGradientOnRenderPass
@@ -5382,7 +5388,7 @@ TEST_P(GPURendererPixelTest, MAYBE_LinearGradientOnRenderPass) {
 }
 
 #if BUILDFLAG(IS_IOS)
-// TODO(crbug.com/1421171): currently failing on iOS.
+// TODO(crbug.com/40259140): currently failing on iOS.
 #define MAYBE_MultiLinearGradientOnRenderPass \
   DISABLED_MultiLinearGradientOnRenderPass
 #else
@@ -5587,7 +5593,7 @@ TEST_P(RendererPixelTest, RoundedCornerMultipleQads) {
 
 TEST_P(RendererPixelTest, BlurExpandsBounds) {
 #if defined(MEMORY_SANITIZER)
-  // TODO(crbug.com/1441704): Re-enable this test.
+  // TODO(crbug.com/40266622): Re-enable this test.
   // Skia Vulkan renderer had problems with this test when MSAN was enabled.
   if (renderer_type() == RendererType::kSkiaVk) {
     GTEST_SKIP();
@@ -5668,7 +5674,8 @@ class RendererPixelTestWithOverdrawFeedback : public VizPixelTestWithParam {
 };
 
 TEST_P(RendererPixelTestWithOverdrawFeedback, TranslucentRectangles) {
-  // TODO(crbug.com/1475653): Enable this test once issue is fixed for Graphite.
+  // TODO(crbug.com/40279711): Enable this test once issue is fixed for
+  // Graphite.
   if (is_skia_graphite()) {
     GTEST_SKIP();
   }
@@ -5710,13 +5717,82 @@ INSTANTIATE_TEST_SUITE_P(,
 GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(
     RendererPixelTestWithOverdrawFeedback);
 
+class RendererPixelTestColorConversion
+    : public VizPixelTest,
+      public testing::WithParamInterface<std::tuple<RendererType, bool>> {
+ public:
+  RendererPixelTestColorConversion() : VizPixelTest(std::get<0>(GetParam())) {
+    // Set a color space that is not suitable for blending to ensure we go
+    // through the color conversion code paths.
+    this->display_color_spaces_ =
+        gfx::DisplayColorSpaces(gfx::ColorSpace::CreateSCRGBLinear80Nits());
+    this->display_color_spaces_.SetSDRMaxLuminanceNits(80.f);
+
+    if (std::get<1>(GetParam())) {
+      features_.InitAndEnableFeature(features::kColorConversionInRenderer);
+    } else {
+      features_.InitAndDisableFeature(features::kColorConversionInRenderer);
+    }
+  }
+
+ private:
+  base::test::ScopedFeatureList features_;
+};
+
+// Check that render pass updates do not blend with previous frames.
+TEST_P(RendererPixelTestColorConversion,
+       RenderPassClearsUpdatesWithHdrContent) {
+  gfx::Rect rect(this->device_viewport_size_);
+
+  SkColor4f semi_transparent_white = SkColors::kWhite;
+  semi_transparent_white.fA = 0.5;
+
+  const int value = 255 * semi_transparent_white.fA;
+  std::vector<SkColor> expected_output_colors(
+      rect.width() * rect.height(), SkColorSetARGB(255, value, value, value));
+
+  // Draw two frames with semi-transparent content. Both frames should result in
+  // the same image.
+  for (int i = 0; i < 2; i++) {
+    SCOPED_TRACE(base::StringPrintf("Frame %d", i));
+
+    AggregatedRenderPassId id{1};
+    auto pass = CreateTestRootRenderPass(id, rect);
+    pass->content_color_usage = gfx::ContentColorUsage::kHDR;
+
+    SharedQuadState* shared_state = CreateTestSharedQuadState(
+        gfx::Transform(), rect, pass.get(), gfx::MaskFilterInfo());
+
+    auto* color_quad = pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
+    color_quad->SetNew(shared_state, rect, rect, semi_transparent_white, false);
+
+    AggregatedRenderPassList pass_list;
+    pass_list.push_back(std::move(pass));
+
+    EXPECT_TRUE(this->RunPixelTest(&pass_list, &expected_output_colors,
+                                   cc::AlphaDiscardingExactPixelComparator()));
+  }
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    ,
+    RendererPixelTestColorConversion,
+    testing::Combine(testing::ValuesIn(GetGpuRendererTypes()),
+                     testing::Bool()));
+
+// GetGpuRendererTypes() can return an empty list, e.g. on Fuchsia ARM64.
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(RendererPixelTestColorConversion);
+
 using PrimaryID = gfx::ColorSpace::PrimaryID;
 using TransferID = gfx::ColorSpace::TransferID;
 
 class ColorTransformPixelTest
     : public VizPixelTest,
-      public testing::WithParamInterface<
-          std::tuple<RendererType, gfx::ColorSpace, gfx::ColorSpace, bool>> {
+      public testing::WithParamInterface<std::tuple<RendererType,
+                                                    gfx::ColorSpace,
+                                                    gfx::ColorSpace,
+                                                    bool,
+                                                    bool>> {
  public:
   ColorTransformPixelTest() : VizPixelTest(std::get<0>(GetParam())) {
     // Note that this size of 17 is not random -- it is chosen to match the
@@ -5736,12 +5812,75 @@ class ColorTransformPixelTest
     this->display_color_spaces_ =
         gfx::DisplayColorSpaces(this->dst_color_space_);
     this->premultiplied_alpha_ = std::get<3>(GetParam());
+    if (std::get<4>(GetParam())) {
+      features_.InitAndEnableFeature(features::kColorConversionInRenderer);
+    } else {
+      features_.InitAndDisableFeature(features::kColorConversionInRenderer);
+    }
+  }
+
+  // Add a new root pass to handle the color conversion to ensure the previous
+  // root pass can blend in a color space suitable for blending. This mimics
+  // what |SurfaceAggregator::AddColorConversionPass|.
+  void AddColorConversionPass(AggregatedRenderPassList& pass_list) {
+    AggregatedRenderPassId color_conversion_pass_id{2};
+
+    // Ensure that the color conversion pass id doesn't conflict with an
+    // existing render pass.
+    ASSERT_THAT(pass_list,
+                testing::Each(testing::Property(
+                    "get", &AggregatedRenderPassList::value_type::get,
+                    testing::Field(
+                        "id", &AggregatedRenderPass::id,
+                        testing::Not(testing::Eq(color_conversion_pass_id))))));
+
+    const gfx::Rect current_output_rect = pass_list.back()->output_rect;
+
+    auto color_conversion_pass = std::make_unique<AggregatedRenderPass>(1, 1);
+    color_conversion_pass->SetAll(
+        color_conversion_pass_id, current_output_rect,
+        pass_list.back()->damage_rect, gfx::Transform(),
+        /*filters=*/cc::FilterOperations(),
+        /*backdrop_filters=*/cc::FilterOperations(),
+        /*backdrop_filter_bounds=*/gfx::RRectF(),
+        dst_color_space_.GetContentColorUsage(),
+        pass_list.back()->has_transparent_background,
+        /*cache_render_pass=*/false,
+        /*has_damage_from_contributing_content=*/false,
+        /*generate_mipmap=*/false);
+    color_conversion_pass->is_color_conversion_pass = true;
+
+    auto* shared_quad_state =
+        color_conversion_pass->CreateAndAppendSharedQuadState();
+    shared_quad_state->SetAll(
+        /*transform=*/gfx::Transform(),
+        /*layer_rect=*/current_output_rect,
+        /*visible_layer_rect=*/current_output_rect, gfx::MaskFilterInfo(),
+        /*clip=*/std::nullopt, /*contents_opaque=*/false,
+        /*opacity_f=*/1.f, SkBlendMode::kSrc, /*sorting_context=*/0,
+        /*layer_id=*/0u,
+        /*fast_rounded_corner=*/false);
+
+    auto* quad = color_conversion_pass
+                     ->CreateAndAppendDrawQuad<AggregatedRenderPassDrawQuad>();
+    quad->SetNew(shared_quad_state, /*rect=*/current_output_rect,
+                 /*visible_rect=*/current_output_rect, pass_list.back()->id,
+                 /*mask_resource_id=*/kInvalidResourceId,
+                 /*mask_uv_rect=*/gfx::RectF(),
+                 /*mask_texture_size=*/gfx::Size(),
+                 /*filters_scale=*/gfx::Vector2dF(1.0f, 1.0f),
+                 /*filters_origin=*/gfx::PointF(),
+                 /*tex_coord_rect=*/gfx::RectF(current_output_rect),
+                 /*force_anti_aliasing_off=*/false,
+                 /*backdrop_filter_quality=*/1.0f);
+
+    pass_list.push_back(std::move(color_conversion_pass));
   }
 
   void Basic() {
-    if (src_color_space_.GetTransferID() == TransferID::PQ &&
-        !dst_color_space_.IsHDR()) {
-      GTEST_SKIP() << "Skipping tonemapped output";
+    if (this->src_color_space_.IsToneMappedByDefault() &&
+        !this->dst_color_space_.IsHDR()) {
+      GTEST_SKIP() << "Skipping tonemapped src for non-hdr dst";
     }
 
     gfx::Rect rect(this->device_viewport_size_);
@@ -5779,9 +5918,20 @@ class ColorTransformPixelTest
     options.tone_map_pq_and_hlg_to_dst = true;
     gfx::ColorTransform::RuntimeOptions runtime_options;
     runtime_options.dst_sdr_max_luminance_nits =
-        gfx::ColorSpace::kDefaultSDRWhiteLevel;
-    std::unique_ptr<gfx::ColorTransform> transform =
+        this->display_color_spaces_.GetSDRMaxLuminanceNits();
+
+    // Ensure our expected color contains the texture color blended in a
+    // blending-suitable space, if a color conversion was required.
+    const gfx::ColorSpace blend_color_space =
+        this->display_color_spaces_.GetCompositingColorSpace(
+            /*needs_alpha=*/true,
+            this->dst_color_space_.GetContentColorUsage());
+    std::unique_ptr<gfx::ColorTransform> transform_src_to_blend =
         gfx::ColorTransform::NewColorTransform(this->src_color_space_,
+                                               blend_color_space, options);
+    // If |dst_color_space_| is suitable for blending, this is a no-op.
+    std::unique_ptr<gfx::ColorTransform> transform_blend_to_dst =
+        gfx::ColorTransform::NewColorTransform(blend_color_space,
                                                this->dst_color_space_, options);
 
     for (size_t i = 0; i < expected_output_colors.size(); ++i) {
@@ -5793,8 +5943,11 @@ class ColorTransformPixelTest
       if (this->premultiplied_alpha_ && alpha > 0.0) {
         color.Scale(1.0f / alpha);
       }
-      transform->Transform(&color, 1, runtime_options);
+      transform_src_to_blend->Transform(&color, 1, runtime_options);
+      // Simulate blending this color onto its black background in
+      // |blend_color_space|, which may be different than |dst_color_space_|.
       color.Scale(alpha);
+      transform_blend_to_dst->Transform(&color, 1, runtime_options);
       color.set_x(std::clamp(color.x(), 0.0f, 1.0f));
       color.set_y(std::clamp(color.y(), 0.0f, 1.0f));
       color.set_z(std::clamp(color.z(), 0.0f, 1.0f));
@@ -5845,11 +5998,16 @@ class ColorTransformPixelTest
     AggregatedRenderPassList pass_list;
     pass_list.push_back(std::move(pass));
 
+    if (!this->dst_color_space_.IsSuitableForBlending() &&
+        !base::FeatureList::IsEnabled(features::kColorConversionInRenderer)) {
+      AddColorConversionPass(pass_list);
+    }
+
     // Allow a difference of 2 bytes in comparison for most cases.
     float avg_abs_error_limit = 2.0f;
     int max_abs_error_limit = 2;
 #if BUILDFLAG(IS_FUCHSIA)
-    if (src_color_space_.GetTransferID() == TransferID::PQ) {
+    if (this->src_color_space_.GetTransferID() == TransferID::PQ) {
       // Fuchsia+SwiftShader/Vulkan has higher error on some pixels with HDR
       // color spaces. See https://crbug.com/1312141.
       max_abs_error_limit = 5;
@@ -5865,12 +6023,14 @@ class ColorTransformPixelTest
         << " src:" << src_color_space_ << ", dst:" << dst_color_space_;
   }
 
+  base::test::ScopedFeatureList features_;
+
   gfx::ColorSpace src_color_space_;
   gfx::ColorSpace dst_color_space_;
   bool premultiplied_alpha_ = false;
 };
 
-// TODO(https://crbug.com/1462855): use-of-uninitialized-value
+// TODO(https://crbug.com/40922049): use-of-uninitialized-value
 #if defined(MEMORY_SANITIZER)
 #define MAYBE_Basic DISABLED_Basic
 #else
@@ -5926,7 +6086,8 @@ INSTANTIATE_TEST_SUITE_P(
     testing::Combine(testing::ValuesIn(GetGpuRendererTypes()),
                      testing::ValuesIn(src_color_spaces),
                      testing::ValuesIn(intermediate_color_spaces),
-                     testing::Bool()));
+                     testing::Bool(),
+                     testing::Values(false)));
 
 INSTANTIATE_TEST_SUITE_P(
     ToColorSpace,
@@ -5934,6 +6095,26 @@ INSTANTIATE_TEST_SUITE_P(
     testing::Combine(testing::ValuesIn(GetGpuRendererTypes()),
                      testing::ValuesIn(intermediate_color_spaces),
                      testing::ValuesIn(dst_color_spaces),
+                     testing::Bool(),
+                     testing::Values(false)));
+
+// Test cases that simulate HDR content with tone mapping, which may require
+// color conversion when the destination color space is not suitable for
+// blending.
+INSTANTIATE_TEST_SUITE_P(
+    HdrVideoCases,
+    ColorTransformPixelTest,
+    testing::Combine(testing::ValuesIn(GetGpuRendererTypes()),
+                     testing::ValuesIn({
+                         gfx::ColorSpace::CreateExtendedSRGB(),
+                         gfx::ColorSpace::CreateHDR10(),
+                         gfx::ColorSpace::CreateHLG(),
+                     }),
+                     testing::ValuesIn({
+                         gfx::ColorSpace::CreateExtendedSRGB(),
+                         gfx::ColorSpace::CreateSCRGBLinear80Nits(),
+                     }),
+                     testing::Bool(),
                      testing::Bool()));
 
 // GetGpuRendererTypes() can return an empty list, e.g. on Fuchsia ARM64.

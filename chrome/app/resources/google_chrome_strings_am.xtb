@@ -16,6 +16,7 @@
 <translation id="1154147086299354128">&amp;በChrome ውስጥ ክፈት</translation>
 <translation id="1194807384646768652">የፋይል ዓይነቱ በተለምዶ ስላማይወርድ እና አደገኛ ሊሆን ስለሚችል Chrome ይህን ውርድ አግዷል</translation>
 <translation id="1203500561924088507">ሰለተጫኑ እናመሰግናለን። <ph name="BUNDLE_NAME" />ን ከመጠቀምዎ በፊት አሳሽዎን እንደገና ማስጀመር አለብዎት።</translation>
+<translation id="1229096353876452996">Google እንደ ነባሪ Chromeን እንዲያቀናብሩ ይመክራል</translation>
 <translation id="1278833599417554002">&amp;Chromeን ለማዘመን ዳግም ያስነሱት</translation>
 <translation id="1302523850133262269">እባክዎ Chrome የቅርብ ጊዜዎቹን ዝማኔዎች እስኪጭን ድረስ ይጠብቁ።</translation>
 <translation id="1335640173511558774"><ph name="MANAGER" /> ይህን መሣሪያ ከመጠቀምዎ በፊት የሚከተለውን የአገልግሎት ውል እንዲያነብቡ እና እንዲቀበሉ ይፈለጋል። ይህ ውል የGoogle ChromeOS Flex ውሉን አያስፋፋውም፣ አይቀይረውም ወይም አይገድበውም።</translation>
@@ -72,7 +73,6 @@
 <translation id="2123055963409958220"><ph name="BEGIN_LINK" />የአሁኖቹን ቅንብሮች<ph name="END_LINK" /> ሪፖርት በማድረግ Chromium የተሻለ እንዲሆን ያግዙ።</translation>
 <translation id="2126108037660393668">የወረደው ፋይል ማረጋገጫን አላለፈም።</translation>
 <translation id="2128411189117340671">የChrome መገለጫዎችን ያስተዳድሩ</translation>
-<translation id="2130870084309816036">ከበይነመረብ ጋር መገናኘት አልተቻለም። ኬላ የሚጠቀሙ ከሆነ እባክዎ የተፈቀዱ ዝርዝር <ph name="PRODUCT_EXE_NAME" />ን ይጠቀሙ።</translation>
 <translation id="2131230230468101642">የእርስዎን ግላዊነት ለመጠበቅ ከ4 ሳምንታት በላይ የቆዩ ዝንባሌዎችዎን በራስ-ሰር እንሰርዛለን። ማሰስዎን በሚቀጥሉበት ጊዜ ዝንባሌ እንደገና በዝርዝሩ ላይ ሊታይ ይችላል። ወይም Chrome ከግምት ውስጥ እንዳያስገባቸው የማይፈልጓቸውን ዝንባሌዎች ማስወገድ ይችላሉ።</translation>
 <translation id="2139300032719313227">ChromeOSን ዳግም አስጀምር</translation>
 <translation id="2151406531797534936">እባክዎ Chrome ን አሁን ዳግም ያስጀምሩ</translation>
@@ -83,7 +83,6 @@
 <translation id="2258103955319320201">በሁሉም መሣሪያዎችዎ ላይ የእርስዎን የChrome አሳሽ ነገሮች ለመድረስ ይግቡ፣ ከዚያ ስምረትን ያብሩ</translation>
 <translation id="2290014774651636340">የGoogle ኤ ፒ አይ ቁልፎች ይጎድላሉ። አንዳንድ የGoogle Chrome ተግባራት ይሰናከላሉ።</translation>
 <translation id="2290095356545025170">እርግጠኛ ነዎት Google Chromeን ማራገፍ ይፈልጋሉ?</translation>
-<translation id="2298849085402457754">በGoogle መለያዎ ውስጥ እያስቀመጡት የአሰሳ ውሂብን ከዚህ መሳሪያ ብቻ ለማጽዳት፣ <ph name="BEGIN_LINK" />ከChrome ዘግተው ይውጡ<ph name="END_LINK" />።</translation>
 <translation id="2309047409763057870">ይሄ ሁለተኛ የGoogle Chrome ጭነት ነው፣ እና ነባሪ አሳሽዎ ማድረግ አይቻልም።</translation>
 <translation id="2345992953227471816">Chrome እነዚህ ቅጥያዎች ተንኮል አዘል ዌርን እንደያዙ አግኝቷል</translation>
 <translation id="2348335408836342058">Chrome ለዚህ ጣቢያ የእርስዎን ካሜራ እና ማይክሮፎን ለመድረስ ፈቃድ ያስፈልገዋል</translation>
@@ -99,7 +98,6 @@
 <translation id="2485422356828889247">አራግፍ</translation>
 <translation id="2513154137948333830">ዳግም ማስነሳት ያስፈልጋል፦ <ph name="INSTALL_SUCCESS" /></translation>
 <translation id="2534365042754120737">ውሂብዎን ለመጠበቅ Chrome እርስዎ በቅርቡ ካልጎበኟቸው ጣቢያዎች ፈቃዶችን እንዲያስወግድ ይፍቀዱ። ማሳወቂያዎችን አያቆምም።</translation>
-<translation id="2534507159460261402">Google Pay (ወደ Chrome ተቀድቷል)</translation>
 <translation id="2556847002339236023">ድርጅትዎ Chrome ለ<ph name="TIMEOUT_DURATION" /> ያህል ሥራ ላይ ሳይውል ይዘጋዋል። የአሰሳ ውሂብ ተሰርዟል። ይህ ታሪክን፣ ራስ-ሙላን እና ውርዶችን ሊያካትት ይችላል።</translation>
 <translation id="2559253115192232574">በኋላ ላይ እርስዎ የሚጎበኙት ጣቢያ እርስዎ የሚያዩዋቸውን ማስታወቂያዎች ግላዊነት ለማላበስ Chrome ዝንባሌዎችዎን እንዲያይ ሊጠይቅ ይችላል። Chrome እስከ 3 ዝንባሌዎች ድረስ ማጋራት ይችላል።</translation>
 <translation id="2563121210305478421">Chrome ዳግም ይጀመር?</translation>
@@ -114,7 +112,6 @@
 <translation id="2649768380733403658">Chrome የእርስዎ አሳሽ ደህንነታቸው የተጠበቁ ቅንብሮች እንዳለው ለማረጋገጥ በመደበኛነት ይፈትሻል። ማንኛውም ነገር የእርስዎ ግምገማ ካስፈለገው እናሳውቅዎታለን።</translation>
 <translation id="2652691236519827073">አገናኝ በአዲስ የChrome &amp;ትር ውስጥ ክፈት</translation>
 <translation id="2665296953892887393">የብልሽት ሪፖርቶችን እና <ph name="UMA_LINK" /> ወደ Google በመላክ Google Chromeን የተሻለ ለማድረግ እገዛ ያድርጉ</translation>
-<translation id="2712234843277364121">ለማዘመን ዳግም ያስጀምሩ - ትሮችዎ ዳግም ይከፍታሉ</translation>
 <translation id="2738871930057338499">ከበይነመረብ ጋር መገናኘት አልተቻለም። ኤችቲቲፒኤስ 403 ተከልክሏል። እባክዎ ተኪ ውቅረትዎን ይፈትሹ።</translation>
 <translation id="2742320827292110288">ማስጠንቀቂያ፦ የGoogle Chrome ቅጥያዎች የአሰሳ ታሪክዎን እንዳይመዘግቡ መከልከል አይችልም። ይህን ቅጥያ ማንነት በማያሳውቅ ሁነት ላይ ለማሰናከል ይህን አማራጭ አይምረጡ።</translation>
 <translation id="2765403129283291972">Chrome ለዚህ ጣቢያ የእርስዎን ማይክሮፎን ለመድረስ ፈቃድ ያስፈልገዋል</translation>
@@ -151,6 +148,7 @@
 <translation id="3100998948628680988">የChrome መገለጫዎን ይሰይሙ</translation>
 <translation id="3112458742631356345">ፋይሉ በተለምዶ ስላማይወርድ እና አደገኛ ሊሆን ስለሚችል Chrome ይህን ውርድ አግዷል</translation>
 <translation id="3114643501466072395">የእርስዎ ሌሎች የይለፍ ቃላት ከውሂብ ጥሰቶች እና ሌሎች የደህንነት ችግሮች ነፃ መሆናቸውን ለማረጋገጥ <ph name="BEGIN_LINK" />በመለያ ወደ Chrome ይግቡ<ph name="END_LINK" />።</translation>
+<translation id="3119573284443908657">የማህደር ፋይሉ ተንኮል አዘል ዌርን ሊደብቁ የሚችሉ ሌሎች ፋይሎችን ስላካተተ Chrome ይህን ውርድ አግዶታል</translation>
 <translation id="3140883423282498090">ለውጦችዎ Google Chrome ዳግም በሚያስጀምሩበት ቀጣዩ ጊዜ ላይ ይተገበራሉ።</translation>
 <translation id="3149510190863420837">Chrome መተግበሪያዎች</translation>
 <translation id="3169523567916669830">በሙከራዎቹ ጊዜ ማስታወቂያዎችን ለእርስዎ ለማሳየት የሚጠቀሙባቸውን የዝንባሌ ጣቢያዎች ርዕሶች ማየት እና ማስወገድ ይችላሉ። Chrome በቅርብ ጊዜ የአሰሳ ታሪክዎ ላይ ተመስርቶ የእርስዎን ዝንባሌዎች ይገምታል።</translation>
@@ -200,6 +198,7 @@
 <translation id="4053720452172726777">Google Chromeን ያብጁ እና ይቆጣጠሩ</translation>
 <translation id="4106587138345390261">Chrome ጣቢያዎች ያነሰ መረጃዎን ተጠቅመው ተመሳሳይ የአሰሳ ተሞክሮ እንዲያቀርቡ የሚያስችሏቸውን አዲስ ባህሪያት እያሰሰ ነው።</translation>
 <translation id="4110895483821904099">አዲሱን የChrome መገለጫዎ ያቀናብሩት</translation>
+<translation id="4111566860456076004">Chrome ይህ ቅጥያ ከየት እንደመጣ ማረጋገጥ አይችልም፣ እና ደህንነቱ ያልተጠበቀ ሊሆን ይችላል። የግል መረጃን ጨምሮ ከእንግዲህ እርስዎ በሚጎበኟቸው ጣቢያዎች ላይ ያለዎን ውሂብ ማየት እና መለወጥ እንዳይችል ከChrome ያስወግዱት።</translation>
 <translation id="4128488089242627000">Chrome ይበልጥ በፍጥነት ይሰራል እና ጃቫስክሪፕት የሚጠቀሙ ባህሪያት በተነደፉት መስራት አለባቸው (የሚመከር)</translation>
 <translation id="4147555960264124640">በሚተዳደር መለያ እየገቡ ነው፣ እና አስተዳዳሪው በእርስዎ Google Chrome መገለጫ ላይ ቁጥጥር እየሰጡት ነው። እንደ የእርስዎ መተግበሪያዎች፣ ዕልባቶች፣ ታሪክ፣ የይለፍ ቃላት እና ሌሎች ቅንብሮች ያሉ የእርስዎ Chrome ውሂብ እስከ መጨረሻው ከ<ph name="USER_NAME" /> ጋር የተያያዙ ይሆናሉ። ይህን ውሂብ በGoogle የመለያዎች Dashboard አማካኝነት ሊሰርዙት ይችላሉ፣ ነገር ግን ይህን ውሂብ ከሌላ መለያ ጋር ሊያጎዳኙት አይችሉም። <ph name="LEARN_MORE" /></translation>
 <translation id="4148957013307229264">በመጫን ላይ...</translation>
@@ -218,9 +217,12 @@
 <translation id="4293420128516039005">Chromeን በመላ መሣሪያዎችዎ ላይ ለማሳመር እና ግላዊነት ለማላበስ</translation>
 <translation id="430327780270213103">ቅጥያ በChrome የመሳሪያ አሞሌ ውስጥ የመዳረሻ ጥያቄዎችን እንዲያሳይ ፍቀድ</translation>
 <translation id="4328355335528187361">Google Chrome ገንቢ (mDNS-In)</translation>
+<translation id="4329315893554541805">ግላዊነት ማላበስን እና ሌሎች ባህሪያትን ለማግኘት Chromeን በድር እና በመተግበሪያ እንቅስቃሴ እና በተገናኙ የGoogle አገልግሎቶች ውስጥ ያካትቱ</translation>
 <translation id="4334294535648607276">ማውረድ ተጠናቅቋል።</translation>
 <translation id="4335235004908507846">Chrome ደህንነትዎ ከውሂብ ጥሰቶች፣ ከመጥፎ ቅጥያዎች እና ተጨማሪ ነገሮች እንደተጠበቀ እንዲቆይ ሊያግዝ ይችላል</translation>
 <translation id="4343195214584226067"><ph name="EXTENSION_NAME" /> ወደ Chrome ታክሏል</translation>
+<translation id="4348548358339558429">ግላዊነትን ለማላበስ Chromeን በድር እና በመተግበሪያ እንቅስቃሴ ውስጥ ያካትቱ</translation>
+<translation id="436060642166082913">ፋይሉ የእርስዎን የግል እና የማህበራዊ አውታረ መረብ መለያዎች ሊጎዳ ስለሚችል Chrome ይህን ውርድ አግዶታል</translation>
 <translation id="4384570495110188418">እርስዎ በመለያ ስላልገቡ ስለሆኑ Chrome የይለፍ ቃላትዎን መፈተሽ አይችልም</translation>
 <translation id="4389991535395284064">ማንነትን በማያሳውቅ ሁነታ ሲያስሱ፣ Chrome ደህንነቱ ያልተጠበቀ ግንኙነት በመጠቀም ጣቢያ ከመጫንዎ በፊት ያስጠነቅቀዎታል</translation>
 <translation id="4427306783828095590">የተሻሻለ ጥበቃ ማስገር እና ተንኮል-አዘል ዌር ለማገድ የበለጠ ይሠራል</translation>
@@ -247,6 +249,7 @@
 <translation id="4793679854893018356">Chrome እንዴት ደህንነትዎን እንደሚጠብቅ ይወቁ</translation>
 <translation id="4828579605166583682">Google Chrome ነባር ይለፍ ቃሎችን ለመተካት እየሞከረ ነው። ይህን ለመፍቀድ የWindows የይለፍ ቃልዎን ይተይቡ።</translation>
 <translation id="4842397268809523050">ስምረት ለጎራዎ ስለማይገኝ ChromeOS Flex ውሂብዎን ማስመር አልቻለም።</translation>
+<translation id="4862446263930606916">ድርጅትዎ እንደ እልባቶችዎ፣ ታሪክዎ እና የይለፍ ቃላትዎ ባሉ የስራ መገለጫዎ ውስጥ የአሰሳ ውሂብን ማየት እና ማስተዳደር ይችላል። በግል የChrome መገለጫዎች ውስጥ የአሰሳ ውሂብን ማየት አይችልም።</translation>
 <translation id="4873692836499071887">የወደፊት የGoogle Chrome ዝማኔዎችን ለማግኘት macOS 11 ወይም ከዚያ በላይ ያስፈልግዎታል። ይህ ኮምፒውተር macOS 10.15 እየተጠቀመ ነው።</translation>
 <translation id="4873783916118289636">በChrome ውስጥ ቁልፍ የግላዊነት እና የደህንነት ቁጥጥሮችን ይገምግሙ</translation>
 <translation id="4891791193823137474">Google Chrome በጀርባ ውስጥ ይሂድ</translation>
@@ -257,7 +260,6 @@
 <translation id="4969674060580488087">የመለያ መግቢያ ዝርዝሮችዎ ጊዜ ያለፈባቸው ስለሆኑ ChromeOS Flex ውሂብዎን ማስመር አልቻለም።</translation>
 <translation id="4970761609246024540">ወደ Chrome መገለጫዎች እንኳን በደህና መጡ</translation>
 <translation id="4970880042055371251">የChromeOS ስሪት</translation>
-<translation id="4970947549776831107">እንደዚህ ዓይነት ፋይል አደገኛ ስለሆነ Chrome ይህን ፋይል አግዶታል።</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5003967926796347400">«Google የይለፍ ቃል አስተዳዳሪ» ላይ ጠቅ ያድርጉ</translation>
 <translation id="5126049312684316860">እርስዎ የመጎብኘት ዕድልዎ ከፍተኛ የሆኑባቸው ተጨማሪ ገጾች ሲጎበኟቸው ይበልጥ በፍጥነት እንዲጫኑ Chrome በቅድሚያ ይጭናቸዋል</translation>
@@ -328,6 +330,7 @@ Google Chrome ቅንጅቶችዎን ማስመለስ አልቻለም።</translat
 <translation id="6251759518630934363">ከመደበኛ ጥበቃ በላይ ተጨማሪ ውሂብ ከጣቢያዎች ትንታኔ በመስጠት Google እንኳን በፊት ስላላወቃቸው አደገኛ ጣቢያዎች ያስጠነቅቅዎታል። የChrome ማስጠንቀቂያዎችን ለመዝለል መምረጥ ይችላሉ።</translation>
 <translation id="6273793429163604305">በቦታህ ተገኝ...</translation>
 <translation id="6277547788421725101">የእርስዎ ወላጅ ለChrome «የጣቢያዎች፣ መተግበሪያዎች እና ቅጥያዎች ፈቃዶች» የሚለውን አጥፍተዋል።</translation>
+<translation id="627882678981830918">Chromeን ያብጁ እና ይቆጣጠሩ። Chromeን እንደ ነባሪ ያቀናብሩት።</translation>
 <translation id="6291089322031436445">Chrome Dev መተግበሪያዎች</translation>
 <translation id="6291549208091401781">Google Chrome ቀደም ብሎ በእርስዎ ኮምፒውተር ላይ ላሉ ተጠቃሚዎች ተጭኗል።</translation>
 <translation id="6326175484149238433">ከChrome አስወግድ</translation>
@@ -336,7 +339,9 @@ Google Chrome ቅንጅቶችዎን ማስመለስ አልቻለም።</translat
 <translation id="6412673304250309937">በChrome ላይ የተከማቹ ድህንነታቸው ያልተጠበቁ ጣቢያዎች ዝርዝር ጋር ዩአርኤሎችን ይፈትሻል። አንድ ጣቢያ የእርስዎን የይለፍ ቃል ለመስረቅ ከሞከረ ወይም ጎጂ ፋይል ካወረደ Chrome እንዲሁም የገጽ ይዘትን ክፍሎችም ጨምሮ ዩአርኤሎችን ወደ የጥንቃቄ አሰሳ መላክ ሊልክ ይችላል።</translation>
 <translation id="6417690341895039567">{COUNT,plural, =1{ድርጅትዎ Chrome ለ1 ደቂቃ ጥቅም ላይ ሳይውል ሲቀር በራስ ሰር ይዘጋዋል። የአሰሳ ውሂብ ተሰርዟል። ይህ ታሪክን፣ ራስ-ሙላን እና ውርዶችን ሊያካትት ይችላል።}one{ድርጅትዎ Chrome ለ# ደቂቃ ጥቅም ላይ ሳይውል ሲቀር በራስ ሰር ይዘጋዋል። የአሰሳ ውሂብ ተሰርዟል። ይህ ታሪክን፣ ራስ-ሙላን እና ውርዶችን ሊያካትት ይችላል።}other{ድርጅትዎ Chrome ለ# ደቂቃዎች ጥቅም ላይ ሳይውል ሲቀር በራስ ሰር ይዘጋዋል። የአሰሳ ውሂብ ተሰርዟል። ይህ ታሪክን፣ ራስ-ሙላን እና ውርዶችን ሊያካትት ይችላል።}}</translation>
 <translation id="6418662306461808273">ወደ ነባር የChrome መገለጫ ይቀየር?</translation>
+<translation id="6481963882741794338">Chromeን እና ሌሎች የGoogle አገልግሎቶችን ግላዊነት ለማላበስ እና ለሌሎች ዓላማዎች ያገናኟቸው</translation>
 <translation id="648319183876919572">የተሻሻለ የደህንነት አሰሳ እርስዎን ከአደገኛ ድር ጣቢያዎች እና ውርዶች ለመጠበቅ ይበልጥ ያደርጋል</translation>
+<translation id="6489302989675808168">በርቷል • Chrome ይህ ቅጥያ ከየት እንደመጣ ማረጋገጥ አይችልም</translation>
 <translation id="6493527311031785448">Google Chrome <ph name="AUTHENTICATION_PURPOSE" /> በመሞከር ላይ ነው</translation>
 <translation id="6497147134301593682">Chrome በራስ-ሰር ተዘግቷል</translation>
 <translation id="6506909944137591434">Chrome የዙሪያዎን የ3ል ካርታ ለመፍጠር የካሜራ ፈቃድ ያስፈልገዋል</translation>
@@ -354,12 +359,14 @@ Google Chrome ቅንጅቶችዎን ማስመለስ አልቻለም።</translat
 <translation id="677276454032249905">የሆነው ሆኖ ከChrome ይወጣ?</translation>
 <translation id="6794858689789885890">Chromeን በሚዘጉበት ጊዜ የጣቢያ ውሂብን ሁልጊዜ ከመሣሪያዎ ላይ ይሰርዙ</translation>
 <translation id="683440813066116847">Google Chrome Canary ለmDNS ትራፊክ ለመፍቀድ የውስጥ ደንብ።</translation>
+<translation id="684888714667046800">ከበይነመረቡ ጋር መገናኘት አልተቻለም። ኬላ የሚጠቀሙ ከሆነ እባክዎ <ph name="PRODUCT_EXE_NAME" /> በተፈቀደ ዝርዝር ውስጥ መሆኑን ያረጋግጡ።</translation>
 <translation id="6851981911629679515">ተጨማሪ ጥበቃን በChrome ጃቫስክሪፕት እና በWebAssembly ሞተር ውስጥ ያብሩ</translation>
 <translation id="6881299373831449287">Chromeን በማዘመን ላይ</translation>
 <translation id="6885412569789873916">የChrome ቅድመ-ይሁነታ መተግበሪያዎች</translation>
 <translation id="6933858244219479645">የChromeOS ስርዓት</translation>
 <translation id="6938166777909186039">የወደፊት የGoogle Chrome ዝማኔዎችን ለማግኘት Windows 10 ወይም ከዚያ በላይ ያስፈልግዎታል። ይህ ኮምፒውተር Windows 8.1ን እየተጠቀመ ነው።</translation>
 <translation id="6943584222992551122">የእዚህ ሰው የአሰሳ ውሂብ ከዚህ መሣሪያ ይሰረዛል። ውሂቡን መልሰው ለማግኘት እንደ <ph name="USER_EMAIL" /> ሆነው ወደ Chrome ይግቡ።</translation>
+<translation id="6944202724043006419">Chrome መሳጭ ክፍለ ጊዜ ለመጀመር የትዕይንት ግንዛቤ እና የእጅ ክትትል ፈቃድ ያስፈልገዋል</translation>
 <translation id="6967962315388095737">የmDNS ትራፊክን ለመፍቀድ የGoogle Chrome ቅድመ-ይሁንታ የውስጥ ደንብ።</translation>
 <translation id="6989339256997917931">Google Chrome ተዘምኗል፣ ግን ቢያንስ ለ30 ቀኖች አልተጠቀሙበትም።</translation>
 <translation id="7011190694940573312">ይህ የስርዓተ ክወናው ስሪት ስለማይደገፍ መጫኑ አልተሳካም።</translation>
@@ -386,7 +393,6 @@ Google Chrome ቅንጅቶችዎን ማስመለስ አልቻለም።</translat
 <translation id="7308322188646931570">Chrome ፋይሎችን ለማውረድ የማከማቻ መዳረሻ ያስፈልገዋል</translation>
 <translation id="7339898014177206373">አዲሰ መስኮት</translation>
 <translation id="7398801000654795464">እንደ <ph name="USER_EMAIL_ADDRESS" /> ሆነው ወደ Chrome ገብተዋል። እባክዎ እንደገና ለመግባት ተመሳሳዩን መለያ ይጠቀሙ።</translation>
-<translation id="7410958280246779049">Chromium ይህ ፋይል አደገኛ ስለሆነ አግዶታል</translation>
 <translation id="7412494426921990001">የChrome ምናሌውን ጠቅ ያድርጉ</translation>
 <translation id="742463671275348370">{NUM_DEVICES,plural, =0{1 የUSB መሣሪያ በአንድ ወይም ከዚያ በላይ በሆኑ የChrome ቅጥያዎች እየተደረሰበት ነበር}=1{1 የUSB መሣሪያ በአንድ ወይም ከዚያ በላይ በሆኑ የChrome ቅጥያዎች እየተደረሰበት ነው}one{# የUSB መሣሪያ በአንድ ወይም ከዚያ በላይ በሆኑ የChrome ቅጥያዎች እየተደረሰበት ነው}other{# የUSB መሣሪያዎች በአንድ ወይም ከዚያ በላይ በሆኑ የChrome ቅጥያዎች እየተደረሰባቸው ነው}}</translation>
 <translation id="7426611252293106642">Google Chrome ከእንግዲህ በዚህ Linux ስርጭት ላይ ስለማይደገፍ በአግባቡ ላይሰራ ይችላል</translation>
@@ -395,6 +401,7 @@ Google Chrome ቅንጅቶችዎን ማስመለስ አልቻለም።</translat
 <translation id="7477130805345743099">Chrome ደህንነቱ ያልተጠበቀ ግንኙነት በመጠቀም ማንኛውንም ጣቢያ ከመጫንዎ በፊት ያስጠነቅቀዎታል</translation>
 <translation id="7481213027396403996">በጣም ጠንካራውን የChrome ደህንነት ያግኙ</translation>
 <translation id="7535429826459677826">Google Chrome ገንቢ</translation>
+<translation id="7572537927358445944">ጠፍቷል • Chrome ይህ ቅጥያ ከየት እንደመጣ ማረጋገጥ አይችልም</translation>
 <translation id="7583399374488819119"><ph name="COMPANY_NAME" /> ጫኝ</translation>
 <translation id="7606334485649076285">Google ChromeOS Flex</translation>
 <translation id="7626032353295482388">ወደ Chrome እንኳን ደህና መጡ</translation>
@@ -459,7 +466,6 @@ Google Chrome ቅንጅቶችዎን ማስመለስ አልቻለም።</translat
 <translation id="8451192282033883849">የእርስዎ መለያ የሚተዳደረው በ<ph name="MANAGER_NAME" /> ነው። የእርስዎ አስተዳዳሪ ይህንን Chrome አሳሽ መገለጫ እንዲሁም እንደ እልባቶች፣ ታሪክ፣ እና የይለፍ ቃላትች ያሉ የእርሱን ውሂቦች መመልከት እና አርትዕ ማድረግ ይችላል/ትችላለች።</translation>
 <translation id="8496177819998570653">Google የይለፍ ቃል አስተዳዳሪ</translation>
 <translation id="8498858610309223613">ለGoogle Chrome ልዩ የደህንነት ዝማኔ አሁን ተጭኗል። አሁን እንደገና ያስጀምሩ እና የእርስዎን ትሮች እንደነበሩ እንመልሳቸዋለን።</translation>
-<translation id="8504220326736535258">ይህ ፋይል ተንኮል-አዘል ዌር ስላለው Chrome አግዶታል</translation>
 <translation id="8516431725144212809">በChrome የተገመቱ የእርስዎ ዝንባሌዎች</translation>
 <translation id="8521348052903287641">የmDNS ትራፊክን ለመፍቀድ የGoogle Chrome ገንቢ የውስጥ ደንብ።</translation>
 <translation id="8550334526674375523">ይህ የስራ መገለጫ ከግል መገለጫዎ ሙሉ ለሙሉ የተለየ ነው።</translation>
@@ -478,11 +484,13 @@ Google Chrome ቅንጅቶችዎን ማስመለስ አልቻለም።</translat
 <translation id="873133009373065397">Google Chrome ነባሪ አሳሹን ማወቅ ወይም ማቀናበር አልቻለም</translation>
 <translation id="8765470054473112089">የአድራሻ አሞሌ ወይም የፍለጋ ሳጥን ውስጥ ሲተይቡ የተሻሉ ጥቆማዎችን ለማግኘት Chrome የሚተይቡትን ለእርስዎ ነባሪ የፍለጋ ፕሮግራም ይልካል። ይህ ማንነት የማያሳውቅ ውስጥ ጠፍቷል።</translation>
 <translation id="878572486461146056">የጭነት ስህተት፦ የእርስዎ የአውታረ መረብ አስተዳዳሪ ጭነትን የሚከላከል የቡድን መመሪያ ተግባራዊ አድርጓል፦ <ph name="INSTALL_ERROR" /></translation>
+<translation id="8796073561259064743">ፋይሉ <ph name="USER_EMAIL" /> ጨምሮ የእርስዎን የግል እና የማህበራዊ አውታረ መረብ መለያዎች ሊጎዳ ስለሚችል Chrome ይህን ውርድ አግዶታል</translation>
 <translation id="8801657293260363985">V8 የChrome ጃቫስክሪፕት እና የWebAssembly ሞተር የጣቢያን አፈጻጸም ለማሻሻል ጥቅም ላይ ይውላል</translation>
 <translation id="8821043148920470810">የወደፊት የGoogle Chrome ዝማኔዎችን ለማግኘት Windows 10 ወይም ከዚያ በላይ ያስፈልግዎታል። ይህ ኮምፒውተር Windows 7ን እየተጠቀመ ነው።</translation>
 <translation id="8823341990149967727">Chrome ጊዜው አልፎበታል</translation>
 <translation id="8825634023950448068">የእርስዎን ግላዊነት ለመጠበቅ ከ4 ሳምንታት በላይ የቆዩ ዝንባሌዎችዎን በራስ-ሰር እንሰርዛለን። ማሰስዎን በሚቀጥሉበት ጊዜ ዝንባሌ እንደገና በዝርዝሩ ላይ ሊታይ ይችላል። እና Chrome ከተሳሳተ ወይም የተወሰኑ ማስታወቂያዎችን ማየት ካልፈለጉ ዝንባሌን ማስወገድ ይችላሉ።</translation>
 <translation id="8834965163890861871">Google Chrome የይለፍ ቃላትን ለማርትዕ እየሞከረ ነው። ይህን ለመፍቀድ የእርስዎን Windows የይለፍ ቃል ይተይቡ።</translation>
+<translation id="8851180723659088381">{NUM_EXTENSIONS,plural, =1{Chrome እንዲያስወግዱት ይመክራል}one{Chrome እንዲያስወግዱት ይመክራል}other{Chrome እንዲያስወግዷቸው ያመክራል}}</translation>
 <translation id="8862326446509486874">ለስርዓተ-ደረጃ ጭነት ተገቢ መብቶች የሉዎትም። ጫኚውን እንደ አስተዳዳሪ በማሄድ እንደገና ይሞክሩ።</translation>
 <translation id="8914504000324227558">Chromeን ዳግም አስጀምር</translation>
 <translation id="8922193594870374009">አንድ ቁጥር ከ<ph name="ORIGIN" /> ወደ የእርስዎ Android ስልክ ለመላክ በሁለቱም መሣሪያዎች ላይ በመለያ ወደ Chrome ይግቡ።</translation>
@@ -490,8 +498,8 @@ Google Chrome ቅንጅቶችዎን ማስመለስ አልቻለም።</translat
 <translation id="8989968390305463310">የአሰሳ ታሪክዎ ከታች እንደተገመተው እርስዎ በሚያዩዋቸው ማስታወቂያዎች እና ዝንባሌዎች ላይ ተጽዕኖ ያሳድራል። የእርስዎን ግላዊነት ለመጠበቅ Chrome በየወሩ ዝንባሌዎችዎን በራስ-ሰር ይሰርዛል። እርስዎ ካላስወገዷቸው በስተቀር ዝንባሌዎችን ማደስ ይችላሉ።</translation>
 <translation id="8999117580775242387">ኤችቲቲፒኤስ በማይኖርበት ጊዜ Chrome እርስዎን ሳያስጠነቅቅ ደህንነቱ ያልተጠበቀ ግንኙነት ይጠቀማል</translation>
 <translation id="8999208279178790196">{0,plural, =0{የChrome ዝማኔ አለ}=1{የChrome ዝማኔ አለ}one{አንድ የChrome ዝማኔ ለ# ቀኖች ነበር}other{አንድ የChrome ዝማኔ ለ# ቀኖች ነበር}}</translation>
+<translation id="9024318700713112071">Chromeን እንደ ነባሪ ያቀናብሩት</translation>
 <translation id="9053892488859122171">የChromeOS Flex ስርዓት</translation>
-<translation id="9054037008353851982">ለማዘመን ዳግም ያስጀምሩ - ትሮችዎ ዳግም ይከፍታሉ</translation>
 <translation id="9090566250983691233">Chrome ለምን አንዳንድ ፋይሎችን እንደሚያግድ ይወቁ</translation>
 <translation id="911206726377975832">የአሰሳ ውሂብዎም ይሰረዝ?</translation>
 <translation id="9138603949443464873">የእርስዎን ለውጦች ተፈጻሚ ለማድረግ፣ Chromeን ዳግም ያስጀምሩ</translation>

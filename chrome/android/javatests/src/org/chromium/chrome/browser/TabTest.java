@@ -10,18 +10,28 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 
 import android.app.Activity;
 
+import androidx.annotation.Nullable;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.filters.SmallTest;
 
+import org.junit.After;
 import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
+import org.mockito.junit.MockitoJUnit;
+import org.mockito.junit.MockitoRule;
 
 import org.chromium.base.Token;
+import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.CriteriaHelper;
@@ -36,12 +46,16 @@ import org.chromium.chrome.browser.tab.TabSelectionType;
 import org.chromium.chrome.browser.tab.TabState;
 import org.chromium.chrome.browser.tab.TabStateExtractor;
 import org.chromium.chrome.browser.tab.TabTestUtils;
+import org.chromium.chrome.browser.tabmodel.TabModel;
+import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
+import org.chromium.chrome.test.batch.BlankCTATabInitialStateRule;
 import org.chromium.chrome.test.util.ChromeApplicationTestUtils;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.RecentTabsPageTestUtils;
 import org.chromium.components.embedder_support.util.UrlConstants;
+import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.base.WindowAndroid;
@@ -49,11 +63,20 @@ import org.chromium.ui.base.WindowAndroid;
 /** Tests for Tab class. */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
+@Batch(Batch.PER_CLASS)
 public class TabTest {
+    @ClassRule
+    public static ChromeTabbedActivityTestRule sActivityTestRule =
+            new ChromeTabbedActivityTestRule();
+
     @Rule
-    public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
+    public BlankCTATabInitialStateRule mBlankCTATabInitialStateRule =
+            new BlankCTATabInitialStateRule(sActivityTestRule, false);
+
+    @Rule public MockitoRule mMockitoRule = MockitoJUnit.rule();
 
     private Tab mTab;
+    private int mRootIdForReset;
     private CallbackHelper mOnTitleUpdatedHelper;
 
     private final TabObserver mTabObserver =
@@ -70,10 +93,21 @@ public class TabTest {
 
     @Before
     public void setUp() throws Exception {
-        mActivityTestRule.startMainActivityOnBlankPage();
-        mTab = mActivityTestRule.getActivity().getActivityTab();
+        mTab = sActivityTestRule.getActivity().getActivityTab();
         TestThreadUtils.runOnUiThreadBlocking(() -> mTab.addObserver(mTabObserver));
         mOnTitleUpdatedHelper = new CallbackHelper();
+        mRootIdForReset = mTab.getRootId();
+    }
+
+    @After
+    public void tearDown() {
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> {
+                    // Reset Root Id to what it was at the start, as it can be modified in the
+                    // tests.
+                    mTab.setRootId(mRootIdForReset);
+                    mTab.removeObserver(mTabObserver);
+                });
     }
 
     @Test
@@ -86,7 +120,7 @@ public class TabTest {
         assertNotSame(
                 "The tab context's theme should have been updated",
                 mTab.getContentView().getContext().getTheme(),
-                mActivityTestRule.getActivity().getApplication().getTheme());
+                sActivityTestRule.getActivity().getApplication().getTheme());
     }
 
     @Test
@@ -96,7 +130,7 @@ public class TabTest {
         final String oldTitle = "oldTitle";
         final String newTitle = "newTitle";
 
-        mActivityTestRule.loadUrl(
+        sActivityTestRule.loadUrl(
                 "data:text/html;charset=utf-8,<html><head><title>"
                         + oldTitle
                         + "</title></head><body/></html>");
@@ -105,7 +139,7 @@ public class TabTest {
                 oldTitle,
                 ChromeTabUtils.getTitleOnUiThread(mTab));
         int currentCallCount = mOnTitleUpdatedHelper.getCallCount();
-        mActivityTestRule.runJavaScriptCodeInCurrentTab("document.title='" + newTitle + "';");
+        sActivityTestRule.runJavaScriptCodeInCurrentTab("document.title='" + newTitle + "';");
         mOnTitleUpdatedHelper.waitForCallback(currentCallCount);
         assertEquals("title does not update", newTitle, ChromeTabUtils.getTitleOnUiThread(mTab));
     }
@@ -165,7 +199,7 @@ public class TabTest {
     @SmallTest
     @Feature({"Tab"})
     public void testNativePageTabAttachment() {
-        mActivityTestRule.loadUrl(UrlConstants.RECENT_TABS_URL);
+        sActivityTestRule.loadUrl(UrlConstants.RECENT_TABS_URL);
         RecentTabsPageTestUtils.waitForRecentTabsPageLoaded(mTab);
         assertNotNull(mTab.getWebContents());
         assertFalse(mTab.isDetached());
@@ -183,7 +217,9 @@ public class TabTest {
     @SmallTest
     @Feature({"Tab"})
     public void testFrozenTabAttachment() {
-        Tab tab = createSecondFrozenTab();
+        String url =
+                sActivityTestRule.getTestServer().getURL("/chrome/test/data/android/about.html");
+        Tab tab = createSecondFrozenTab(url);
         assertNull(tab.getWebContents());
         assertFalse(tab.isDetached());
 
@@ -222,6 +258,100 @@ public class TabTest {
         assertEquals(tabState.tabGroupId, mTab.getTabGroupId());
     }
 
+    @FunctionalInterface
+    private interface TabCreator {
+        /** Create a new tab with the provided URL. */
+        Tab createTab(String url);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Tab"})
+    public void testFreezeAndAppendPendingNavigation_AlreadyFrozen() {
+        checkFreezingAndAppendingPendingNavigation(this::createSecondFrozenTab, "MyFrozenTitle");
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Tab"})
+    public void testFreezeAndAppendPendingNavigation_LiveBackground() {
+        checkFreezingAndAppendingPendingNavigation(
+                url -> {
+                    Tab tab = sActivityTestRule.loadUrlInNewTab(url, /* incognito= */ false);
+                    TestThreadUtils.runOnUiThreadBlocking(
+                            () -> {
+                                TabModel model =
+                                        sActivityTestRule.getActivity().getCurrentTabModel();
+                                TabModelUtils.setIndex(
+                                        model, /* index= */ 0, /* skipLoadingTab= */ false);
+                            });
+                    return tab;
+                },
+                "MyTitle");
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Tab"})
+    public void testFreezeAndAppendPendingNavigation_NullTitle() {
+        checkFreezingAndAppendingPendingNavigation(this::createSecondFrozenTab, null);
+    }
+
+    private void checkFreezingAndAppendingPendingNavigation(
+            TabCreator tabCreator, @Nullable String title) {
+        String firstUrl =
+                sActivityTestRule.getTestServer().getURL("/chrome/test/data/android/about.html");
+        TabObserver observer = Mockito.mock(TabObserver.class);
+        Tab bgTab = tabCreator.createTab(firstUrl);
+        boolean wasFrozen = bgTab.isFrozen();
+
+        String secondUrl =
+                sActivityTestRule.getTestServer().getURL("/chrome/test/data/android/test.html");
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> {
+                    bgTab.addObserver(observer);
+                    bgTab.freezeAndAppendPendingNavigation(new LoadUrlParams(secondUrl), title);
+                    assertTrue(bgTab.isFrozen());
+                });
+        verify(observer).onUrlUpdated(eq(bgTab));
+        if (wasFrozen) {
+            verify(observer, never()).onContentChanged(bgTab);
+        } else {
+            verify(observer).onContentChanged(bgTab);
+        }
+        verify(observer).onFaviconUpdated(bgTab, null, null);
+        verify(observer).onTitleUpdated(bgTab);
+        verify(observer).onNavigationEntriesAppended(bgTab);
+        assertEquals(title, ChromeTabUtils.getTitleOnUiThread(bgTab));
+        assertEquals(secondUrl, ChromeTabUtils.getUrlStringOnUiThread(bgTab));
+
+        Runnable loadPage =
+                () -> {
+                    TestThreadUtils.runOnUiThreadBlocking(
+                            () -> {
+                                TabModel model =
+                                        sActivityTestRule.getActivity().getCurrentTabModel();
+                                TabModelUtils.setIndex(
+                                        model, model.indexOf(bgTab), /* skipLoadingTab= */ false);
+                            });
+                };
+        ChromeTabUtils.waitForTabPageLoaded(bgTab, secondUrl, loadPage);
+        assertNotNull(bgTab.getView());
+
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> {
+                    assertFalse(bgTab.canGoForward());
+                    assertTrue(bgTab.canGoBack());
+                    bgTab.goBack();
+                });
+        ChromeTabUtils.waitForTabPageLoaded(bgTab, firstUrl);
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> {
+                    assertFalse(bgTab.canGoBack());
+                    assertTrue(bgTab.canGoForward());
+                });
+    }
+
     private void detachOnUiThread(Tab tab) {
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> {
@@ -234,25 +364,20 @@ public class TabTest {
     private void attachOnUiThread(Tab tab) {
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> {
-                    WindowAndroid window = mActivityTestRule.getActivity().getWindowAndroid();
+                    WindowAndroid window = sActivityTestRule.getActivity().getWindowAndroid();
                     WebContents webContents = tab.getWebContents();
                     if (webContents != null) webContents.setTopLevelNativeWindow(window);
                     tab.updateAttachment(window, /* tabDelegateFactory= */ null);
                 });
     }
 
-    private Tab createSecondFrozenTab() {
-        Tab tab =
-                mActivityTestRule.loadUrlInNewTab(
-                        mActivityTestRule
-                                .getTestServer()
-                                .getURL("/chrome/test/data/android/about.html"),
-                        /* incognito= */ false);
+    private Tab createSecondFrozenTab(String url) {
+        Tab tab = sActivityTestRule.loadUrlInNewTab(url, /* incognito= */ false);
         return TestThreadUtils.runOnUiThreadBlockingNoException(
                 () -> {
                     TabState state = TabStateExtractor.from(tab);
-                    mActivityTestRule.getActivity().getCurrentTabModel().closeTab(tab);
-                    return mActivityTestRule
+                    sActivityTestRule.getActivity().getCurrentTabModel().closeTab(tab);
+                    return sActivityTestRule
                             .getActivity()
                             .getCurrentTabCreator()
                             .createFrozenTab(state, tab.getId(), /* index= */ 1);

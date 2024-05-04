@@ -4,9 +4,10 @@
 
 #include "third_party/blink/public/common/loader/mime_sniffing_url_loader.h"
 
+#include <string_view>
+
 #include "base/functional/bind.h"
 #include "base/memory/ptr_util.h"
-#include "base/strings/string_piece.h"
 #include "base/task/sequenced_task_runner.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "net/base/mime_sniffer.h"
@@ -199,7 +200,7 @@ void MimeSniffingURLLoader::OnBodyReadable(MojoResult) {
   DCHECK_EQ(State::kSniffing, state_);
 
   size_t start_size = buffered_body_.size();
-  uint32_t read_bytes = net::kMaxBytesToSniff;
+  size_t read_bytes = net::kMaxBytesToSniff;
   buffered_body_.resize(start_size + read_bytes);
   MojoResult result =
       body_consumer_handle_->ReadData(buffered_body_.data() + start_size,
@@ -225,7 +226,7 @@ void MimeSniffingURLLoader::OnBodyReadable(MojoResult) {
   buffered_body_.resize(start_size + read_bytes);
   std::string new_type;
   bool made_final_decision = net::SniffMimeType(
-      base::StringPiece(buffered_body_.data(), buffered_body_.size()),
+      std::string_view(buffered_body_.data(), buffered_body_.size()),
       response_url_, response_head_->mime_type,
       net::ForceSniffFileUrlsForHtml::kDisabled, &new_type);
   response_head_->mime_type = new_type;
@@ -303,7 +304,7 @@ void MimeSniffingURLLoader::SendReceivedBodyToClient() {
   // Send the buffered data first.
   DCHECK_GT(bytes_remaining_in_buffer_, 0u);
   size_t start_position = buffered_body_.size() - bytes_remaining_in_buffer_;
-  uint32_t bytes_sent = bytes_remaining_in_buffer_;
+  size_t bytes_sent = bytes_remaining_in_buffer_;
   MojoResult result =
       body_producer_handle_->WriteData(buffered_body_.data() + start_position,
                                        &bytes_sent, MOJO_WRITE_DATA_FLAG_NONE);
@@ -330,7 +331,7 @@ void MimeSniffingURLLoader::ForwardBodyToClient() {
   DCHECK_EQ(0u, bytes_remaining_in_buffer_);
   // Send the body from the consumer to the producer.
   const void* buffer;
-  uint32_t buffer_size = 0;
+  size_t buffer_size = 0;
   MojoResult result = body_consumer_handle_->BeginReadData(
       &buffer, &buffer_size, MOJO_BEGIN_READ_DATA_FLAG_NONE);
   switch (result) {

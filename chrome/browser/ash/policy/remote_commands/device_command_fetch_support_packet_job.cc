@@ -36,7 +36,6 @@
 #include "chrome/browser/ash/policy/core/device_cloud_policy_manager_ash.h"
 #include "chrome/browser/ash/policy/remote_commands/crd/crd_remote_command_utils.h"
 #include "chrome/browser/ash/policy/uploading/system_log_uploader.h"
-#include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part_ash.h"
 #include "chrome/browser/policy/messaging_layer/proto/synced/log_upload_event.pb.h"
@@ -47,6 +46,7 @@
 #include "chrome/browser/support_tool/support_tool_util.h"
 #include "chrome/browser/ui/webui/support_tool/support_tool_ui_utils.h"
 #include "chromeos/ash/components/browser_context_helper/browser_context_helper.h"
+#include "chromeos/ash/components/settings/cros_settings.h"
 #include "chromeos/ash/components/settings/cros_settings_names.h"
 #include "chromeos/components/kiosk/kiosk_utils.h"
 #include "components/feedback/redaction_tool/pii_types.h"
@@ -452,10 +452,13 @@ void DeviceCommandFetchSupportPacketJob::EnqueueEvent() {
       exported_path_.value());
   log_upload_event->mutable_upload_settings()->set_upload_parameters(
       GetUploadParameters(exported_path_, unique_id()));
-  log_upload_event->set_command_id(unique_id());
-  log_upload_event->set_command_result_payload(GetCommandResultPayload(
+
+  auto* command_details = log_upload_event->mutable_remote_command_details();
+  command_details->set_command_id(unique_id());
+  command_details->set_command_result_payload(GetCommandResultPayload(
       FetchSupportPacketResultCode::FETCH_SUPPORT_PACKET_RESULT_SUCCESS,
       notes_));
+
   report_queue_->Enqueue(
       std::move(log_upload_event), reporting::Priority::SLOW_BATCH,
       base::BindOnce(&DeviceCommandFetchSupportPacketJob::OnEventEnqueued,

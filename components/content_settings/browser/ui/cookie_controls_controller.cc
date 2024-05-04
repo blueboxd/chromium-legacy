@@ -14,7 +14,6 @@
 #include "base/metrics/user_metrics_action.h"
 #include "base/observer_list.h"
 #include "components/browsing_data/content/browsing_data_helper.h"
-#include "components/browsing_data/content/local_shared_objects_container.h"
 #include "components/content_settings/browser/page_specific_content_settings.h"
 #include "components/content_settings/browser/ui/cookie_controls_view.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
@@ -203,12 +202,12 @@ CookieControlsController::Status CookieControlsController::GetStatus(
             : CookieBlocking3pcdStatus::kLimited;
   }
   CookieControlsEnforcement enforcement;
-  if (info.source == SETTING_SOURCE_TPCD_GRANT &&
+  if (info.source == SettingSource::kTpcdGrant &&
       blocking_status == CookieBlocking3pcdStatus::kLimited) {
     enforcement = CookieControlsEnforcement::kEnforcedByTpcdGrant;
-  } else if (info.source == SETTING_SOURCE_POLICY) {
+  } else if (info.source == SettingSource::kPolicy) {
     enforcement = CookieControlsEnforcement::kEnforcedByPolicy;
-  } else if (info.source == SETTING_SOURCE_EXTENSION) {
+  } else if (info.source == SettingSource::kExtension) {
     enforcement = CookieControlsEnforcement::kEnforcedByExtension;
   } else if (exception_exists_in_regular_profile ||
              (!is_default_setting && !host_or_site_scoped_exception)) {
@@ -299,7 +298,6 @@ int CookieControlsController::GetAllowedThirdPartyCookiesSitesCount() const {
 
   return browsing_data::GetUniqueThirdPartyCookiesHostCount(
       GetWebContents()->GetLastCommittedURL(),
-      pscs->allowed_local_shared_objects(),
       *(pscs->allowed_browsing_data_model()));
 }
 
@@ -312,7 +310,6 @@ int CookieControlsController::GetBlockedThirdPartyCookiesSitesCount() const {
 
   return browsing_data::GetUniqueThirdPartyCookiesHostCount(
       GetWebContents()->GetLastCommittedURL(),
-      pscs->blocked_local_shared_objects(),
       *(pscs->blocked_browsing_data_model()));
 }
 
@@ -427,7 +424,7 @@ void CookieControlsController::RecordActivationMetrics() {
   const GURL& url = GetWebContents()->GetLastCommittedURL();
 
   // Metrics, related to confidence signals:
-  // TODO(crbug.com/1446230): Add CookieControlsActivated.FedCmInitiated
+  // TODO(crbug.com/40064612): Add CookieControlsActivated.FedCmInitiated
   base::UmaHistogramBoolean(
       "Privacy.CookieControlsActivated.SaaRequested",
       cookie_settings_->HasAnyFrameRequestedStorageAccess(url));
@@ -447,7 +444,7 @@ void CookieControlsController::RecordActivationMetrics() {
       site_data_access_type);
 
   // Record activation UKM.
-  // TODO(crbug.com/1446230): Include FedCM information.
+  // TODO(crbug.com/40064612): Include FedCM information.
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   auto ukm_source_id =
       GetWebContents()->GetPrimaryMainFrame()->GetPageUkmSourceId();
@@ -465,7 +462,7 @@ void CookieControlsController::RecordActivationMetrics() {
           static_cast<uint64_t>(site_data_access_type))
       .Record(ukm::UkmRecorder::Get());
 
-  // TODO(crbug.com/1446230): Add metrics, related to repeated activations.
+  // TODO(crbug.com/40064612): Add metrics, related to repeated activations.
 }
 
 bool CookieControlsController::ShouldHighlightUserBypass() {
@@ -477,7 +474,7 @@ bool CookieControlsController::ShouldHighlightUserBypass() {
     return false;
   }
 
-  // TODO(crbug.com/1446230): Check if FedCM was requested.
+  // TODO(crbug.com/40064612): Check if FedCM was requested.
   const GURL& url = web_contents->GetLastCommittedURL();
   if (cookie_settings_->HasAnyFrameRequestedStorageAccess(url)) {
     return false;
@@ -561,7 +558,7 @@ void CookieControlsController::TabObserver::OnSiteDataAccessed(
   // not always populated with sufficient granularity (often aliasing to
   // kUnknown). This is relevant as some daya types may impact the block 3P
   // count, while others may not.
-  // TODO(crbug.com/1271155): Replace the SiteDataType with the Browsing Data
+  // TODO(crbug.com/40205603): Replace the SiteDataType with the Browsing Data
   // Model's StorageType, which would let us remove an enum, and let us cache
   // all accesses here.
 

@@ -167,15 +167,20 @@ RootCompositorFrameSinkImpl::Create(
                 restart_id, base::SingleThreadTaskRunner::GetCurrentDefault());
       }
 #elif BUILDFLAG(IS_MAC)
-      if (base::FeatureList::IsEnabled(
-              features::kCVDisplayLinkBeginFrameSource)) {
+      if (features::IsCVDisplayLinkBeginFrameSourceEnabled()) {
         external_begin_frame_source =
             std::make_unique<ExternalBeginFrameSourceMac>(
                 restart_id, params->renderer_settings.display_id,
                 output_surface.get());
+      } else {
+        auto time_source = std::make_unique<DelayBasedTimeSource>(
+            base::SingleThreadTaskRunner::GetCurrentDefault().get());
+        synthetic_begin_frame_source =
+            std::make_unique<DelayBasedBeginFrameSourceMac>(
+                std::move(time_source), restart_id);
       }
 #endif
-      if (!external_begin_frame_source) {
+      if (!external_begin_frame_source && !synthetic_begin_frame_source) {
         auto time_source = std::make_unique<DelayBasedTimeSource>(
             base::SingleThreadTaskRunner::GetCurrentDefault().get());
         synthetic_begin_frame_source =
@@ -321,7 +326,7 @@ void RootCompositorFrameSinkImpl::SetOutputIsSecure(bool secure) {
 void RootCompositorFrameSinkImpl::SetDisplayVSyncParameters(
     base::TimeTicks timebase,
     base::TimeDelta interval) {
-  // If |use_preferred_interval_| is true, we should decide wheter
+  // If |use_preferred_interval_| is true, we should decide whether
   // to update the |supported_intervals_| and timebase here.
   // Otherwise, just update the display parameters (timebase & interval)
   if (use_preferred_interval_) {
@@ -431,7 +436,7 @@ void RootCompositorFrameSinkImpl::PreserveChildSurfaceControls() {
 
 void RootCompositorFrameSinkImpl::SetSwapCompletionCallbackEnabled(
     bool enable) {
-  enable_swap_competion_callback_ = enable;
+  enable_swap_completion_callback_ = enable;
 }
 
 #endif  // BUILDFLAG(IS_ANDROID)
@@ -569,7 +574,9 @@ RootCompositorFrameSinkImpl::RootCompositorFrameSinkImpl(
       synthetic_begin_frame_source_(std::move(synthetic_begin_frame_source)),
       external_begin_frame_source_(std::move(external_begin_frame_source)),
       display_(std::move(display)),
-      eviction_handler_(display_.get(), support_.get()) {
+      eviction_handler_(display_.get(),
+                        support_.get(),
+                        frame_sink_manager->reserved_resource_id_tracker()) {
   DCHECK(display_);
   DCHECK(begin_frame_source());
   frame_sink_manager->RegisterBeginFrameSource(begin_frame_source(),
@@ -646,8 +653,9 @@ void RootCompositorFrameSinkImpl::DisplayDidReceiveCALayerParams(
 void RootCompositorFrameSinkImpl::DisplayDidCompleteSwapWithSize(
     const gfx::Size& pixel_size) {
 #if BUILDFLAG(IS_ANDROID)
-  if (display_client_ && enable_swap_competion_callback_)
+  if (display_client_ && enable_swap_completion_callback_) {
     display_client_->DidCompleteSwapWithSize(pixel_size);
+  }
 #elif BUILDFLAG(IS_LINUX) && BUILDFLAG(IS_OZONE_X11)
   if (display_client_ && pixel_size != last_swap_pixel_size_) {
     last_swap_pixel_size_ = pixel_size;

@@ -4,12 +4,16 @@
 
 #include "services/test/echo/echo_service.h"
 
+#include <optional>
+#include <string>
+
 #include "base/immediate_crash.h"
 #include "base/memory/shared_memory_mapping.h"
 #include "build/build_config.h"
 
 #if BUILDFLAG(IS_WIN)
 #include <windows.h>
+
 #include <winevt.h>
 
 #include "base/native_library.h"
@@ -85,16 +89,21 @@ void EchoService::LoadNativeLibrary(const ::base::FilePath& library,
   }
   std::move(callback).Run(LoadStatus::kSuccess, ERROR_SUCCESS);
 }
-
-void EchoService::CallUser32(const std::string& lower,
-                             CallUser32Callback callback) {
-  // Validate behavior of FileUtilService by calling user32's CharUpperA().
-  std::vector<std::string::value_type> buffer(lower.size() + 1);
-  std::copy(lower.begin(), lower.end(), buffer.begin());
-  ::CharUpperA(buffer.data());
-  std::move(callback).Run(std::string(buffer.data()));
-}
-
 #endif  // BUILDFLAG(IS_WIN)
+
+void EchoService::DecryptEncrypt(os_crypt_async::Encryptor encryptor,
+                                 const std::vector<uint8_t>& input,
+                                 DecryptEncryptCallback callback) {
+  // Take the input, which was encrypted in the caller process, and decrypt it.
+  const auto plaintext = encryptor.DecryptData(input);
+  if (!plaintext.has_value()) {
+    std::move(callback).Run(std::nullopt);
+    return;
+  }
+
+  // Encrypt it again using the key inside this process, and return the
+  // encrypted ciphertext to the caller.
+  std::move(callback).Run(encryptor.EncryptString(*plaintext));
+}
 
 }  // namespace echo

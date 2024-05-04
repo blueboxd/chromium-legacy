@@ -2,21 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/ui/startup/startup_browser_creator.h"
+
 #include <stddef.h>
 
 #include <algorithm>
 #include <memory>
 #include <string>
+#include <string_view>
 
-#include "base/base_switches.h"
 #include "base/command_line.h"
-#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/json/json_writer.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
-#include "base/path_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
@@ -24,12 +23,9 @@
 #include "base/test/mock_log.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_future.h"
-#include "build/branding_buildflags.h"
-#include "build/build_config.h"
 #include "build/buildflag.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/browser_features.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/buildflags.h"
 #include "chrome/browser/chrome_browser_main.h"
@@ -37,63 +33,46 @@
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
-#include "chrome/browser/prefs/chrome_pref_service_factory.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/keep_alive/profile_keep_alive_types.h"
 #include "chrome/browser/profiles/keep_alive/scoped_profile_keep_alive.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
-#include "chrome/browser/profiles/profile_attributes_storage.h"
-#include "chrome/browser/profiles/profile_impl.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_test_util.h"
 #include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/search/search.h"
-#include "chrome/browser/sessions/app_session_service.h"
 #include "chrome/browser/sessions/app_session_service_factory.h"
 #include "chrome/browser/sessions/exit_type_service.h"
 #include "chrome/browser/sessions/session_restore.h"
 #include "chrome/browser/sessions/session_restore_test_helper.h"
 #include "chrome/browser/sessions/session_restore_test_utils.h"
 #include "chrome/browser/sessions/session_service_factory.h"
-#include "chrome/browser/signin/signin_features.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/signin/signin_util.h"
-#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_list_observer.h"
-#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/profiles/profile_ui_test_utils.h"
 #include "chrome/browser/ui/search/ntp_test_utils.h"
 #include "chrome/browser/ui/startup/launch_mode_recorder.h"
-#include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/browser/ui/startup/startup_browser_creator_impl.h"
-#include "chrome/browser/ui/startup/startup_tab_provider.h"
 #include "chrome/browser/ui/startup/startup_types.h"
 #include "chrome/browser/ui/startup/web_app_startup_utils.h"
-#include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
-#include "chrome/browser/web_applications/mojom/user_display_mode.mojom.h"
-#include "chrome/browser/web_applications/test/fake_web_app_provider.h"
+#include "chrome/browser/web_applications/test/os_integration_test_override_impl.h"
 #include "chrome/browser/web_applications/test/web_app_test_observers.h"
 #include "chrome/browser/web_applications/web_app_command_scheduler.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
-#include "chrome/browser/web_applications/web_app_install_manager.h"
 #include "chrome/browser/web_applications/web_app_install_params.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
-#include "chrome/common/buildflags.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_features.h"
-#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/chrome_version.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/infobars/content/content_infobar_manager.h"
@@ -102,12 +81,11 @@
 #include "components/keep_alive_registry/keep_alive_registry.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "components/keep_alive_registry/scoped_keep_alive.h"
-#include "components/metrics/metrics_pref_names.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
 #include "components/policy/policy_constants.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/public/base/signin_buildflags.h"
+#include "components/signin/public/base/signin_switches.h"
 #include "components/webapps/browser/install_result_code.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
 #include "content/public/browser/web_contents.h"
@@ -118,9 +96,7 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_registry.h"
-#include "extensions/browser/pref_names.h"
 #include "extensions/browser/test_management_policy.h"
-#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/strings/ascii.h"
@@ -156,10 +132,6 @@
 #include "third_party/blink/public/common/features.h"
 #include "ui/views/widget/any_widget_observer.h"
 #include "ui/views/widget/widget.h"
-#endif
-
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
-#include "chrome/browser/ui/webui/welcome/helpers.h"
 #endif
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || \
@@ -207,11 +179,7 @@ Browser* FindOneOtherBrowser(Browser* browser) {
   return other_browser;
 }
 
-void DisableWelcomePages(const std::vector<Profile*>& profiles) {
-  for (Profile* profile : profiles)
-    profile->GetPrefs()->SetBoolean(prefs::kHasSeenWelcomePage, true);
-
-  // Also disable What's New.
+void DisableWhatsNewPage() {
   PrefService* pref_service = g_browser_process->local_state();
   pref_service->SetInteger(prefs::kLastWhatsNewVersion, CHROME_VERSION_MAJOR);
 }
@@ -227,12 +195,6 @@ Browser* OpenNewBrowser(Profile* profile) {
   Browser* new_browser = new_browser_observer.Wait();
   ui_test_utils::WaitForBrowserSetLastActive(new_browser);
   return new_browser;
-}
-
-Browser* CloseBrowserAndOpenNew(Browser* browser, Profile* profile) {
-  browser->window()->Close();
-  ui_test_utils::WaitForBrowserToClose(browser);
-  return OpenNewBrowser(profile);
 }
 
 bool HasInfoBar(infobars::ContentInfoBarManager* infobar_manager,
@@ -402,7 +364,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
 
   Profile* profile = browser()->profile();
 
-  DisableWelcomePages({profile});
+  DisableWhatsNewPage();
 
   // Set the startup preference to open these URLs.
   SessionStartupPref pref(SessionStartupPref::URLS);
@@ -454,7 +416,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, StartupURLsOnNewWindow) {
   pref.urls = urls;
   SessionStartupPref::SetStartupPref(browser()->profile(), pref);
 
-  DisableWelcomePages({browser()->profile()});
+  DisableWhatsNewPage();
 
   Browser* new_browser = OpenNewBrowser(browser()->profile());
   ASSERT_TRUE(new_browser);
@@ -568,8 +530,7 @@ namespace {
 
 enum class ChromeAppDeprecationFeatureValue {
   kDefault,
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
-    BUILDFLAG(IS_FUCHSIA)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
   kEnabledWithNoLaunch,
   kDisabled,
 #endif
@@ -583,8 +544,7 @@ std::string ChromeAppDeprecationFeatureValueToString(
     case ChromeAppDeprecationFeatureValue::kDefault:
       result = "ChromeAppDeprecationFeatureDefault";
       break;
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
-    BUILDFLAG(IS_FUCHSIA)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
     case ChromeAppDeprecationFeatureValue::kEnabledWithNoLaunch:
       result = "ChromeAppDeprecationFeatureEnabledWithNoLaunch";
       break;
@@ -606,8 +566,7 @@ class StartupBrowserCreatorChromeAppShortcutTest
     switch (GetParam()) {
       case ChromeAppDeprecationFeatureValue::kDefault:
         break;
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
-    BUILDFLAG(IS_FUCHSIA)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
       case ChromeAppDeprecationFeatureValue::kEnabledWithNoLaunch:
         scoped_feature_list_.InitAndEnableFeature(
             features::kChromeAppsDeprecation);
@@ -626,8 +585,7 @@ class StartupBrowserCreatorChromeAppShortcutTest
 
   void ExpectBlockLaunch(const std::string& app_id, bool force_install_dialog) {
     ASSERT_EQ(2u, chrome::GetBrowserCount(browser()->profile()));
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
-    BUILDFLAG(IS_FUCHSIA)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
     auto waiter = views::NamedWidgetShownWaiter(
         views::test::AnyWidgetTestPasskey{},
         force_install_dialog ? "ForceInstalledDeprecatedAppsDialogView"
@@ -647,8 +605,7 @@ class StartupBrowserCreatorChromeAppShortcutTest
     EXPECT_EQ(1, other_tab_strip->count());
     EXPECT_FALSE(other_browser->is_type_app());
     EXPECT_TRUE(other_browser->is_type_normal());
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
-    BUILDFLAG(IS_FUCHSIA)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
 
     GURL expected_url =
         force_install_dialog
@@ -726,8 +683,7 @@ class StartupBrowserCreatorChromeAppShortcutTest
 #endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
 
   bool IsExpectedToAllowLaunch() {
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
-    BUILDFLAG(IS_FUCHSIA)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
     return false;
 #else
     return true;
@@ -1165,7 +1121,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, StartupPrefSetAsLastAndURLs) {
   Profile& profile =
       profiles::testing::CreateProfileSync(profile_manager, dest_path);
 
-  DisableWelcomePages({&profile});
+  DisableWhatsNewPage();
 
   const GURL t1_url = embedded_test_server()->GetURL("/title1.html");
   const GURL t2_url = embedded_test_server()->GetURL("/title2.html");
@@ -1277,7 +1233,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, StartupURLsForTwoProfiles) {
   pref2.urls = urls2;
   SessionStartupPref::SetStartupPref(&other_profile, pref2);
 
-  DisableWelcomePages({default_profile, &other_profile});
+  DisableWhatsNewPage();
 
   // Close the browser.
   CloseBrowserAsynchronously(browser());
@@ -1327,7 +1283,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, PRE_UpdateWithTwoProfiles) {
       profile_manager, dest_path.Append(FILE_PATH_LITERAL("New Profile 1")));
   Profile& profile2 = profiles::testing::CreateProfileSync(
       profile_manager, dest_path.Append(FILE_PATH_LITERAL("New Profile 2")));
-  DisableWelcomePages({&profile1, &profile2});
+  DisableWhatsNewPage();
 
   // Don't delete Profiles too early.
   ScopedProfileKeepAlive profile1_keep_alive(
@@ -1449,8 +1405,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
   Profile& profile_urls =
       profiles::testing::CreateProfileSync(profile_manager, dest_path4);
 
-  DisableWelcomePages(
-      {&profile_home1, &profile_home2, &profile_last, &profile_urls});
+  DisableWhatsNewPage();
 
   // Set the profiles to open urls, open last visited pages or display the home
   // page.
@@ -1505,8 +1460,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
 
   Browser* new_browser = nullptr;
   // The last open profile (the profile_home1 in this case) will always be
-  // launched, even if it will open just the NTP (and the welcome page on
-  // relevant platforms).
+  // launched, even if it will open just the NTP.
   ASSERT_EQ(1u, chrome::GetBrowserCount(&profile_home1));
   new_browser = FindOneOtherBrowserForProfile(&profile_home1, nullptr);
   ASSERT_TRUE(new_browser);
@@ -1542,7 +1496,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
 // shutting down, and then launching with kNoStartupWindow doesn't restore
 // the previously opened profiles.
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
-// TODO(https://crbug.com/1196684): enable this test on Lacros.
+// TODO(crbug.com/40176564): enable this test on Lacros.
 #define MAYBE_RestoreWithNoStartupWindow DISABLED_RestoreWithNoStartupWindow
 #else
 #define MAYBE_RestoreWithNoStartupWindow RestoreWithNoStartupWindow
@@ -1562,7 +1516,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
       profiles::testing::CreateProfileSync(profile_manager, dest_path1);
   Profile& profile2 =
       profiles::testing::CreateProfileSync(profile_manager, dest_path2);
-  DisableWelcomePages({&profile1, &profile2});
+  DisableWhatsNewPage();
 
   // Set the profiles to open last visited pages.
   SessionStartupPref pref_last(SessionStartupPref::LAST);
@@ -1571,8 +1525,8 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
 
   Profile* default_profile = browser()->profile();
 
-  // TODO(crbug.com/88586): Adapt this test for DestroyProfileOnBrowserClose if
-  // needed.
+  // TODO(crbug.com/40594327): Adapt this test for DestroyProfileOnBrowserClose
+  // if needed.
   ScopedKeepAlive keep_alive(KeepAliveOrigin::SESSION_RESTORE,
                              KeepAliveRestartOption::DISABLED);
   ScopedProfileKeepAlive default_profile_keep_alive(
@@ -1703,7 +1657,6 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
   EXPECT_FALSE(SessionRestore::IsRestoring(&profile_urls));
 
   // The profile which normally opens the home page displays the new tab page.
-  // The welcome page is also shown for relevant platforms.
   Browser* new_browser = nullptr;
   ASSERT_EQ(1u, chrome::GetBrowserCount(&profile_home));
   new_browser = FindOneOtherBrowserForProfile(&profile_home, nullptr);
@@ -1800,6 +1753,7 @@ class StartupBrowserWithListAppsFeature : public StartupBrowserCreatorTest {
   }
 
  private:
+  web_app::OsIntegrationTestOverrideBlockingRegistration faked_os_integration_;
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
@@ -2029,7 +1983,7 @@ class StartupBrowserCreatorRestartTest : public StartupBrowserCreatorTest,
   }
 
   void SetUpInProcessBrowserTestFixture() override {
-    base::StringPiece test_name =
+    std::string_view test_name =
         ::testing::UnitTest::GetInstance()->current_test_info()->name();
 
     if (base::StartsWith(test_name, "PRE_")) {
@@ -2044,7 +1998,7 @@ class StartupBrowserCreatorRestartTest : public StartupBrowserCreatorTest,
   }
 
   void OnBrowserAdded(Browser* browser) override {
-    base::StringPiece test_name =
+    std::string_view test_name =
         ::testing::UnitTest::GetInstance()->current_test_info()->name();
 
     // The non PRE_ test will start up as if it was restarted.
@@ -2060,6 +2014,7 @@ class StartupBrowserCreatorRestartTest : public StartupBrowserCreatorTest,
   bool browser_added_check_passed_ = false;
 
  private:
+  web_app::OsIntegrationTestOverrideBlockingRegistration faked_os_integration_;
   std::unique_ptr<
       base::MockCallback<upgrade_util::RelaunchChromeBrowserCallback>>
       mock_relaunch_callback_;
@@ -2188,7 +2143,7 @@ class StartupBrowserWithWebAppTest : public StartupBrowserCreatorTest {
   WebAppProvider& provider() { return *WebAppProvider::GetForTest(profile()); }
 
   base::test::ScopedFeatureList scoped_feature_list_;
-  web_app::OsIntegrationManager::ScopedSuppressForTesting os_hooks_supress_;
+  web_app::OsIntegrationTestOverrideBlockingRegistration faked_os_integration_;
 };
 
 IN_PROC_BROWSER_TEST_F(StartupBrowserWithWebAppTest,
@@ -2204,7 +2159,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserWithWebAppTest,
       profile_manager, dest_path.Append(FILE_PATH_LITERAL("New Profile 1")));
   Profile& profile2 = profiles::testing::CreateProfileSync(
       profile_manager, dest_path.Append(FILE_PATH_LITERAL("New Profile 2")));
-  DisableWelcomePages({&profile1, &profile2});
+  DisableWhatsNewPage();
 
   // Open some urls with the browsers, and close them.
   Browser* browser1 = Browser::Create({Browser::TYPE_NORMAL, &profile1, true});
@@ -2260,25 +2215,27 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserWithWebAppTest,
 
 IN_PROC_BROWSER_TEST_F(StartupBrowserWithWebAppTest,
                        PRE_LastUsedProfilesWithWebApp) {
-  BrowserAddedObserver added_observer;
+  {
+    BrowserAddedObserver added_observer;
 
 #if BUILDFLAG(IS_MAC)
-  // Simulate an app shim connecting and launching an app.
-  apps::AppShimManager::Get()->LoadAndLaunchAppForTesting(kAppId);
+    // Simulate an app shim connecting and launching an app.
+    apps::AppShimManager::Get()->LoadAndLaunchAppForTesting(kAppId);
 #endif
 
-  content::RunAllTasksUntilIdle();
-  // Launching with an app opens the app window via a task, so the test
-  // might start before SelectFirstBrowser is called.
-  if (!browser()) {
-    added_observer.Wait();
-    SelectFirstBrowser();
+    content::RunAllTasksUntilIdle();
+    // Launching with an app opens the app window via a task, so the test
+    // might start before SelectFirstBrowser is called.
+    if (!browser()) {
+      added_observer.Wait();
+      SelectFirstBrowser();
+    }
   }
   ASSERT_EQ(1u, chrome::GetBrowserCount(browser()->profile()));
 
   // An app window should have been launched.
   EXPECT_TRUE(browser()->is_type_app());
-  CloseBrowserAsynchronously(browser());
+  CloseBrowserSynchronously(browser());
 }
 
 // TODO(crbug.com/327256043): Flaky on win
@@ -2445,6 +2402,9 @@ class StartupBrowserWithRealWebAppTest : public StartupBrowserCreatorTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {}
 
   WebAppProvider& provider() { return *WebAppProvider::GetForTest(profile()); }
+
+ private:
+  web_app::OsIntegrationTestOverrideBlockingRegistration faked_os_integration_;
 };
 
 IN_PROC_BROWSER_TEST_F(StartupBrowserWithRealWebAppTest,
@@ -2459,7 +2419,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserWithRealWebAppTest,
   base::FilePath dest_path = profile_manager->user_data_dir();
   Profile& profile1 = profiles::testing::CreateProfileSync(
       profile_manager, dest_path.Append(FILE_PATH_LITERAL("New Profile 1")));
-  DisableWelcomePages({&profile1});
+  DisableWhatsNewPage();
 
   // Open some urls with the browsers, and close them.
   SessionServiceFactory::GetForProfileForSessionRestore(&profile1);
@@ -2658,6 +2618,8 @@ class StartupBrowserWebAppProtocolHandlingTest : public InProcessBrowserTest {
         last_opened_profiles);
   }
 
+ private:
+  web_app::OsIntegrationTestOverrideBlockingRegistration faked_os_integration_;
   base::test::ScopedFeatureList scoped_feature_list_;
 #if BUILDFLAG(IS_WIN)
   // This is needed to stop StartupBrowserWebAppProtocolHandlingTests creating a
@@ -3045,32 +3007,9 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserWebAppProtocolAndFileHandlingTest,
 // nor the onboarding promos exist there.
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
 
-enum class ForYouFreStateParam {
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-  // On Lacros we are waterfalling the feature, follow whatever the hardcoded
-  // default is.
-  kDefault,
-#else
-  kEnabled,
-  kDisabled,
-#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
-};
-
-class StartupBrowserCreatorFirstRunTest
-    : public InProcessBrowserTest,
-      public testing::WithParamInterface<ForYouFreStateParam> {
+class StartupBrowserCreatorFirstRunTest : public InProcessBrowserTest {
  public:
-  StartupBrowserCreatorFirstRunTest() {
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
-    if (UsesForYouFre()) {
-      scoped_feature_list_.InitWithFeatures(
-          {welcome::kForceEnabled, kForYouFre}, {});
-    } else {
-      scoped_feature_list_.InitWithFeatures({welcome::kForceEnabled},
-                                            {kForYouFre});
-    }
-#endif
-  }
+  StartupBrowserCreatorFirstRunTest() = default;
   StartupBrowserCreatorFirstRunTest(const StartupBrowserCreatorFirstRunTest&) =
       delete;
   StartupBrowserCreatorFirstRunTest& operator=(
@@ -3080,22 +3019,8 @@ class StartupBrowserCreatorFirstRunTest
   void SetUpCommandLine(base::CommandLine* command_line) override;
   void SetUpInProcessBrowserTestFixture() override;
 
-  // Returns `true` when the "ForYouFre" feature is enabled, which does not use
-  // chrome://welcome, but instead runs the first run experience in a dedicated
-  // window.
-  bool UsesForYouFre() const {
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-    return base::FeatureList::IsEnabled(kForYouFre);
-#else
-    return GetParam() == ForYouFreStateParam::kEnabled;
-#endif  //  BUILDFLAG(IS_CHROMEOS_LACROS)
-  }
-
   testing::NiceMock<policy::MockConfigurationPolicyProvider> provider_;
   policy::PolicyMap policy_map_;
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 void StartupBrowserCreatorFirstRunTest::SetUpCommandLine(
@@ -3124,7 +3049,7 @@ void StartupBrowserCreatorFirstRunTest::SetUpInProcessBrowserTestFixture() {
   policy::BrowserPolicyConnector::SetPolicyProviderForTesting(&provider_);
 }
 
-IN_PROC_BROWSER_TEST_P(StartupBrowserCreatorFirstRunTest, AddFirstRunTabs) {
+IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest, AddFirstRunTabs) {
   ASSERT_TRUE(embedded_test_server()->Start());
   StartupBrowserCreator browser_creator;
   browser_creator.AddFirstRunTabs(
@@ -3161,7 +3086,7 @@ IN_PROC_BROWSER_TEST_P(StartupBrowserCreatorFirstRunTest, AddFirstRunTabs) {
 #define MAYBE_RestoreOnStartupURLsPolicySpecified \
   RestoreOnStartupURLsPolicySpecified
 #endif
-IN_PROC_BROWSER_TEST_P(StartupBrowserCreatorFirstRunTest,
+IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
                        MAYBE_RestoreOnStartupURLsPolicySpecified) {
 #if BUILDFLAG(IS_WIN)
   return;
@@ -3170,7 +3095,7 @@ IN_PROC_BROWSER_TEST_P(StartupBrowserCreatorFirstRunTest,
   ASSERT_TRUE(embedded_test_server()->Start());
   StartupBrowserCreator browser_creator;
 
-  DisableWelcomePages({browser()->profile()});
+  DisableWhatsNewPage();
 
   // Set the following user policies:
   // * RestoreOnStartup = RestoreOnStartupIsURLs
@@ -3217,7 +3142,7 @@ IN_PROC_BROWSER_TEST_P(StartupBrowserCreatorFirstRunTest,
 #else
 #define MAYBE_FirstRunTabsWithRestoreSession FirstRunTabsWithRestoreSession
 #endif
-IN_PROC_BROWSER_TEST_P(StartupBrowserCreatorFirstRunTest,
+IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
                        MAYBE_FirstRunTabsWithRestoreSession) {
   // Simulate the following initial preferences:
   // {
@@ -3254,153 +3179,6 @@ IN_PROC_BROWSER_TEST_P(StartupBrowserCreatorFirstRunTest,
   EXPECT_EQ("title1.html",
             tab_strip->GetWebContentsAt(0)->GetVisibleURL().ExtractFileName());
 }
-
-IN_PROC_BROWSER_TEST_P(StartupBrowserCreatorFirstRunTest, WelcomePages) {
-  ASSERT_TRUE(embedded_test_server()->Start());
-
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-  // Welcome page should not be shown on Lacros.
-  // (about:blank or new tab page will be shown instead)
-  TabStripModel* tab_strip = browser()->tab_strip_model();
-  ASSERT_EQ(1, tab_strip->count());
-  EXPECT_NE(chrome::kChromeUIWelcomeURL, tab_strip->GetWebContentsAt(0)
-                                             ->GetLastCommittedURL()
-                                             .possibly_invalid_spec());
-#endif
-
-  ProfileManager* profile_manager = g_browser_process->profile_manager();
-
-  // Open the two profiles.
-  base::FilePath dest_path = profile_manager->user_data_dir();
-
-  std::unique_ptr<Profile> profile1;
-  {
-    base::ScopedAllowBlockingForTesting allow_blocking;
-    profile1 = Profile::CreateProfile(
-        dest_path.Append(FILE_PATH_LITERAL("New Profile 1")), nullptr,
-        Profile::CreateMode::CREATE_MODE_SYNCHRONOUS);
-  }
-  Profile* profile1_ptr = profile1.get();
-  ASSERT_TRUE(profile1_ptr);
-  profile_manager->RegisterTestingProfile(std::move(profile1), true);
-
-  Browser* browser = OpenNewBrowser(profile1_ptr);
-  ASSERT_TRUE(browser);
-
-  TabStripModel* tab_strip1 = browser->tab_strip_model();
-
-  // Ensure that the standard Welcome page appears on second run on Win 10, and
-  // on first run on all other platforms.
-  ASSERT_EQ(1, tab_strip1->count());
-  bool should_show_welcome = !UsesForYouFre();
-  std::string new_tab_url1 =
-      tab_strip1->GetWebContentsAt(0)->GetVisibleURL().possibly_invalid_spec();
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-  // Welcome page should not be shown on Lacros.
-  // (about:blank or new tab page will be shown instead)
-  should_show_welcome = false;
-#endif
-  if (should_show_welcome)
-    EXPECT_EQ(chrome::kChromeUIWelcomeURL, new_tab_url1);
-  else
-    EXPECT_NE(chrome::kChromeUIWelcomeURL, new_tab_url1);
-
-  // TODO(crbug.com/88586): Adapt this test for DestroyProfileOnBrowserClose.
-  ScopedProfileKeepAlive profile1_keep_alive(
-      profile1_ptr, ProfileKeepAliveOrigin::kBrowserWindow);
-
-  browser = CloseBrowserAndOpenNew(browser, profile1_ptr);
-  ASSERT_TRUE(browser);
-  tab_strip1 = browser->tab_strip_model();
-
-  // Ensure that the new tab page appears on subsequent runs.
-  ASSERT_EQ(1, tab_strip1->count());
-  EXPECT_EQ(
-      chrome::kChromeUINewTabURL,
-      tab_strip1->GetWebContentsAt(0)->GetVisibleURL().possibly_invalid_spec());
-}
-
-IN_PROC_BROWSER_TEST_P(StartupBrowserCreatorFirstRunTest,
-                       WelcomePagesWithPolicy) {
-  ASSERT_TRUE(embedded_test_server()->Start());
-
-  // Set the following user policies:
-  // * RestoreOnStartup = RestoreOnStartupIsURLs
-  // * RestoreOnStartupURLs = [ "/title1.html" ]
-  policy_map_.Set(policy::key::kRestoreOnStartup,
-                  policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_MACHINE,
-                  policy::POLICY_SOURCE_CLOUD, base::Value(4), nullptr);
-  base::Value::List url_list;
-  url_list.Append(embedded_test_server()->GetURL("/title1.html").spec());
-  policy_map_.Set(policy::key::kRestoreOnStartupURLs,
-                  policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_MACHINE,
-                  policy::POLICY_SOURCE_CLOUD, base::Value(std::move(url_list)),
-                  nullptr);
-  provider_.UpdateChromePolicy(policy_map_);
-  base::RunLoop().RunUntilIdle();
-
-  ProfileManager* profile_manager = g_browser_process->profile_manager();
-
-  // Open the two profiles.
-  base::FilePath dest_path = profile_manager->user_data_dir();
-
-  std::unique_ptr<Profile> profile1;
-  {
-    base::ScopedAllowBlockingForTesting allow_blocking;
-    profile1 = Profile::CreateProfile(
-        dest_path.Append(FILE_PATH_LITERAL("New Profile 1")), nullptr,
-        Profile::CreateMode::CREATE_MODE_SYNCHRONOUS);
-  }
-  Profile* profile1_ptr = profile1.get();
-  ASSERT_TRUE(profile1_ptr);
-  profile_manager->RegisterTestingProfile(std::move(profile1), true);
-
-  Browser* browser = OpenNewBrowser(profile1_ptr);
-  ASSERT_TRUE(browser);
-
-  TabStripModel* tab_strip = browser->tab_strip_model();
-
-  // TODO(crbug.com/88586): Adapt this test for DestroyProfileOnBrowserClose.
-  ScopedProfileKeepAlive profile1_keep_alive(
-      profile1_ptr, ProfileKeepAliveOrigin::kBrowserWindow);
-
-#if BUILDFLAG(IS_WIN)
-  // Windows has its own Welcome page but even that should not show up when
-  // the policy is set.
-  ASSERT_EQ(1, tab_strip->count());
-  EXPECT_EQ("title1.html",
-            tab_strip->GetWebContentsAt(0)->GetVisibleURL().ExtractFileName());
-
-  browser = CloseBrowserAndOpenNew(browser, profile1_ptr);
-  ASSERT_TRUE(browser);
-  tab_strip = browser->tab_strip_model();
-#endif  // BUILDFLAG(IS_WIN)
-
-  // Ensure that the policy page page appears on second run on Win 10, and
-  // on first run on all other platforms.
-  ASSERT_EQ(1, tab_strip->count());
-  EXPECT_EQ("title1.html",
-            tab_strip->GetWebContentsAt(0)->GetVisibleURL().ExtractFileName());
-
-  browser = CloseBrowserAndOpenNew(browser, profile1_ptr);
-  ASSERT_TRUE(browser);
-  tab_strip = browser->tab_strip_model();
-
-  // Ensure that the policy page page appears on subsequent runs.
-  ASSERT_EQ(1, tab_strip->count());
-  EXPECT_EQ("title1.html",
-            tab_strip->GetWebContentsAt(0)->GetVisibleURL().ExtractFileName());
-}
-
-INSTANTIATE_TEST_SUITE_P(,
-                         StartupBrowserCreatorFirstRunTest,
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-                         testing::Values(ForYouFreStateParam::kDefault)
-#else
-                         testing::Values(ForYouFreStateParam::kEnabled,
-                                         ForYouFreStateParam::kDisabled)
-#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
-);
 
 #endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
@@ -3525,7 +3303,7 @@ class StartupBrowserCreatorInfobarsTest
       policy_provider_.UpdateChromePolicy(policies);
     }
   }
-
+  web_app::OsIntegrationTestOverrideBlockingRegistration faked_os_integration_;
   testing::NiceMock<policy::MockConfigurationPolicyProvider> policy_provider_;
 };
 
@@ -3876,6 +3654,7 @@ struct ProfilePickerSetup {
   std::optional<std::string> switch_value_ascii;
   std::optional<GURL> url_arg;
   ShutdownType shutdown_type = ShutdownType::kNormal;
+  std::optional<std::string> extra_switch_name = std::nullopt;
 };
 
 // Checks the correct behavior of the profile picker on startup. This feature is
@@ -3901,12 +3680,16 @@ class StartupBrowserCreatorPickerTest
 
     if (GetParam().url_arg) {
       command_line->AppendArg(GetParam().url_arg->spec());
-    } else if (GetParam().switch_value_ascii) {
+    }
+    if (GetParam().switch_value_ascii) {
       DCHECK(GetParam().switch_name);
       command_line->AppendSwitchASCII(*GetParam().switch_name,
                                       *GetParam().switch_value_ascii);
     } else if (GetParam().switch_name) {
       command_line->AppendSwitch(*GetParam().switch_name);
+    }
+    if (GetParam().extra_switch_name) {
+      command_line->AppendSwitch(*GetParam().extra_switch_name);
     }
   }
 
@@ -3998,6 +3781,24 @@ INSTANTIATE_TEST_SUITE_P(
         ProfilePickerSetup{/*expected_to_show=*/false,
                            /*switch_name=*/switches::kProfileDirectory,
                            /*switch_value_ascii=*/"Default"},
+        // Same, but with the kIgnoreProfileDirectoryIfNotExists flag with the
+        // profile existing.
+        ProfilePickerSetup{
+            /*expected_to_show=*/false,
+            /*switch_name=*/switches::kProfileDirectory,
+            /*switch_value_ascii=*/"Default",
+            /*url_arg=*/std::nullopt,
+            /*shutdown_type=*/ProfilePickerSetup::ShutdownType::kNormal,
+            /*extra_switch_name=*/
+            switches::kIgnoreProfileDirectoryIfNotExists},
+        // Show the picker if the profile is ignored due to it not existing.
+        ProfilePickerSetup{
+            /*expected_to_show=*/true,
+            /*switch_name=*/switches::kProfileDirectory,
+            /*switch_value_ascii=*/"DoesNotExist",
+            /*url_arg=*/std::nullopt,
+            /*shutdown_type=*/ProfilePickerSetup::ShutdownType::kNormal,
+            /*extra_switch_name=*/switches::kIgnoreProfileDirectoryIfNotExists},
         // Skip the picker when a specific profile is requested by email.
         ProfilePickerSetup{/*expected_to_show=*/false,
                            /*switch_name=*/switches::kProfileEmail,
@@ -4028,7 +3829,16 @@ INSTANTIATE_TEST_SUITE_P(
             /*switch_name=*/std::nullopt,
             /*switch_value_ascii=*/std::nullopt,
             /*url_arg=*/std::nullopt,
-            /*shutdown_type=*/ProfilePickerSetup::ShutdownType::kRestart}));
+            /*shutdown_type=*/ProfilePickerSetup::ShutdownType::kRestart},
+        // Skip the picker when a url is requested and the profile is ignored.
+        ProfilePickerSetup{
+            /*expected_to_show=*/false,
+            /*switch_name=*/switches::kProfileDirectory,
+            /*switch_value_ascii=*/"DoesNotExist",
+            /*url_arg=*/GURL("https://www.foo.com/"),
+            /*shutdown_type=*/ProfilePickerSetup::ShutdownType::kNormal,
+            /*extra_switch_name=*/
+            switches::kIgnoreProfileDirectoryIfNotExists}));
 
 class GuestStartupBrowserCreatorPickerTest
     : public StartupBrowserCreatorPickerTestBase {
@@ -4235,7 +4045,7 @@ INSTANTIATE_TEST_SUITE_P(
       return name;
     });
 
-// TODO(crbug.com/1439821): Mocking the logger appears to not work correctly on
+// TODO(crbug.com/40265712): Mocking the logger appears to not work correctly on
 // Windows. Investigate why it is not working and enable the test on Windows.
 #if !BUILDFLAG(IS_WIN)
 class StartupBrowserCreatorIwaCommandLineInstallProfilePickerErrorTest

@@ -74,7 +74,7 @@ SetUpListItem* BuildItem(SetUpListItemType type,
       complete = GetIsItemComplete(type, prefs, local_state, auth_service);
       // If complete, mark it as "not in list" for next time, but add to list
       // this time.
-      new_state = complete ? SetUpListItemState::kCompleteNotInList
+      new_state = complete ? SetUpListItemState::kCompleteInList
                            : SetUpListItemState::kNotComplete;
       set_up_list_prefs::SetItemState(local_state, type, new_state);
       if (complete) {
@@ -82,9 +82,6 @@ SetUpListItem* BuildItem(SetUpListItemType type,
       }
       return [[SetUpListItem alloc] initWithType:type complete:complete];
     case SetUpListItemState::kCompleteInList:
-      // Display in list this time, but remove from list next time.
-      new_state = SetUpListItemState::kCompleteNotInList;
-      set_up_list_prefs::SetItemState(local_state, type, new_state);
       return [[SetUpListItem alloc] initWithType:type complete:YES];
     case SetUpListItemState::kCompleteNotInList:
       return nil;
@@ -109,6 +106,16 @@ bool IsSigninEnabled(AuthenticationService* auth_service) {
     case AuthenticationService::ServiceStatus::SigninDisabledByInternal:
       return false;
   }
+}
+
+// Returns `YES` if all items are complete.
+BOOL AllItemsComplete(NSArray<SetUpListItem*>* items) {
+  for (SetUpListItem* item in items) {
+    if (!item.complete) {
+      return NO;
+    }
+  }
+  return YES;
 }
 
 }  // namespace
@@ -147,9 +154,6 @@ bool IsSigninEnabled(AuthenticationService* auth_service) {
     }
   };
 
-  if (!IsMagicStackEnabled()) {
-    AddSignInItem();
-  }
   AddItemIfNotNil(items, BuildItem(SetUpListItemType::kDefaultBrowser, prefs,
                                    localState, authService));
   AddItemIfNotNil(items, BuildItem(SetUpListItemType::kAutofill, prefs,
@@ -163,12 +167,19 @@ bool IsSigninEnabled(AuthenticationService* auth_service) {
     AddItemIfNotNil(items, BuildItem(SetUpListItemType::kNotifications, prefs,
                                      localState, authService));
   }
+  AddSignInItem();
 
-  if (IsMagicStackEnabled()) {
-    AddSignInItem();
+  // Once all items are complete, set them to disappear from the list the next
+  // time so that the list will be empty and the "All Set" item will not show.
+  if (AllItemsComplete(items)) {
+    for (SetUpListItem* item in items) {
+      set_up_list_prefs::SetItemState(localState, item.type,
+                                      SetUpListItemState::kCompleteNotInList);
+    }
+    set_up_list_prefs::MarkAllItemsComplete(localState);
   }
 
-  // TODO(crbug.com/1428070): Add a Follow item to the Set Up List.
+  // TODO(crbug.com/40262090): Add a Follow item to the Set Up List.
   return [[self alloc] initWithItems:items
                           localState:localState
                authenticationService:authService];
@@ -208,12 +219,7 @@ bool IsSigninEnabled(AuthenticationService* auth_service) {
 }
 
 - (BOOL)allItemsComplete {
-  for (SetUpListItem* item in _items) {
-    if (!item.complete) {
-      return NO;
-    }
-  }
-  return YES;
+  return AllItemsComplete(self.items);
 }
 
 - (NSArray<SetUpListItem*>*)allItems {
@@ -250,8 +256,12 @@ bool IsSigninEnabled(AuthenticationService* auth_service) {
       set_up_list_prefs::GetItemState(_localState, item.type);
   if (state == SetUpListItemState::kCompleteInList) {
     [item markComplete];
+    BOOL allItemsComplete = [self allItemsComplete];
     [self.delegate setUpListItemDidComplete:item
-                          allItemsCompleted:[self allItemsComplete]];
+                          allItemsCompleted:allItemsComplete];
+    if (allItemsComplete) {
+      set_up_list_prefs::MarkAllItemsComplete(_localState);
+    }
   }
 }
 

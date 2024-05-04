@@ -5,6 +5,7 @@
 #include "content/browser/devtools/protocol/target_handler.h"
 
 #include <memory>
+#include <string_view>
 
 #include "base/base64.h"
 #include "base/containers/contains.h"
@@ -179,7 +180,7 @@ class BrowserToPageConnector {
     }
 
    private:
-    BrowserToPageConnector* connector_;
+    raw_ptr<BrowserToPageConnector> connector_;
   };
 
   BrowserToPageConnector(const std::string& binding_name,
@@ -240,8 +241,8 @@ class BrowserToPageConnector {
 
   void DispatchProtocolMessage(DevToolsAgentHost* agent_host,
                                base::span<const uint8_t> message) {
-    base::StringPiece message_sp(reinterpret_cast<const char*>(message.data()),
-                                 message.size());
+    std::string_view message_sp(reinterpret_cast<const char*>(message.data()),
+                                message.size());
     if (agent_host == page_host_.get()) {
       std::optional<base::Value> value = base::JSONReader::Read(message_sp);
       if (!value || !value->is_dict()) {
@@ -339,7 +340,7 @@ class TargetHandler::Throttle : public content::NavigationThrottle {
 
  private:
   void CleanupPointers();
-  TargetAutoAttacher* auto_attacher_;
+  raw_ptr<TargetAutoAttacher> auto_attacher_;
 };
 
 class TargetHandler::ResponseThrottle : public TargetHandler::Throttle {
@@ -494,7 +495,7 @@ class TargetHandler::Session : public DevToolsAgentHostClient {
 
     if (throttle_ || worker_throttle_) {
       std::optional<base::Value> value =
-          base::JSONReader::Read(base::StringPiece(
+          base::JSONReader::Read(std::string_view(
               reinterpret_cast<const char*>(message.data()), message.size()));
       const std::string* method;
       if (value.has_value() && value->is_dict() &&
@@ -544,7 +545,7 @@ class TargetHandler::Session : public DevToolsAgentHostClient {
     // TODO(johannes): For now, We need to copy here because
     // ReceivedMessageFromTarget is generated code and we're using const
     // std::string& for such parameters. Perhaps we should switch this to
-    // base::StringPiece?
+    // std::string_view?
     std::string message_copy(message.begin(), message.end());
     handler_->frontend_->ReceivedMessageFromTarget(id_, message_copy,
                                                    agent_host_->GetId());
@@ -577,12 +578,12 @@ class TargetHandler::Session : public DevToolsAgentHostClient {
     return handler_->root_session_->GetClient();
   }
 
-  TargetHandler* handler_;
+  raw_ptr<TargetHandler> handler_;
   scoped_refptr<DevToolsAgentHost> agent_host_;
   std::string id_;
   bool flatten_protocol_;
-  DevToolsSession* devtools_session_ = nullptr;
-  Throttle* throttle_ = nullptr;
+  raw_ptr<DevToolsSession, DanglingUntriaged> devtools_session_ = nullptr;
+  raw_ptr<Throttle> throttle_ = nullptr;
   scoped_refptr<DevToolsThrottleHandle> worker_throttle_;
   // This is needed to identify sessions associated with given
   // AutoAttacher to properly support SetAttachedTargetsOfType()
@@ -658,7 +659,7 @@ class TargetHandler::TargetFilter {
 
   bool Match(DevToolsAgentHost& host) const { return Match(host.GetType()); }
 
-  bool Match(base::StringPiece type) const {
+  bool Match(std::string_view type) const {
     for (const auto& entry : entries_) {
       if (!entry->HasType() || entry->GetType("") == type) {
         return !entry->GetExclude(false);

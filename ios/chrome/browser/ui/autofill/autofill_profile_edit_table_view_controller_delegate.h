@@ -6,7 +6,7 @@
 #define IOS_CHROME_BROWSER_UI_AUTOFILL_AUTOFILL_PROFILE_EDIT_TABLE_VIEW_CONTROLLER_DELEGATE_H_
 
 #import "components/autofill/core/browser/field_types.h"
-#import "ios/chrome/browser/ui/autofill/autofill_ui_type.h"
+#import "ios/chrome/browser/ui/autofill/autofill_profile_address_field.h"
 
 // Delegate manages viewing/editing the profile data.
 @protocol AutofillProfileEditTableViewControllerDelegate
@@ -18,21 +18,32 @@
 // Notifies the class that conforms this delegate to save the profile.
 - (void)didSaveProfileFromModal;
 
-// Returns true if the field value is empty.
-- (BOOL)fieldValueEmptyOnProfileLoadForType:
-    (autofill::FieldType)serverFieldType;
-
 // Notifies the class that conforms this delegate to update the profile
 // `serverFieldType` with `value`.
 - (void)updateProfileMetadataWithValue:(NSString*)value
-                     forAutofillUIType:(AutofillUIType)autofillUIType;
+                  forAutofillFieldType:(NSString*)autofillFieldType;
+
+// For `autofillFieldType`, computes whether the field contains a valid value or
+// not. If not,
+- (BOOL)fieldContainsValidValue:(NSString*)autofillFieldType
+                  hasEmptyValue:(BOOL)hasEmptyValue
+      moveToAccountFromSettings:(BOOL)moveToAccountFromSettings;
 
 // Notifies the class that conforms this delegate that the view has moved out of
 // the view hierarchy.
 - (void)viewDidDisappear;
 
-// The selected country' country code
-- (NSString*)selectedCountryCode;
+// Returns the type name in "NSString*" for the `autofillType`.
+- (NSString*)fieldTypeToTypeName:(autofill::FieldType)autofillType;
+
+// Returns the count of the fields that are required and contain no value.
+- (int)requiredFieldsWithEmptyValuesCount;
+
+// Resets the container that stores the required fields with empty values.
+- (void)resetRequiredFieldsWithEmptyValuesCount;
+
+// Returns the list of the address fields.
+- (NSArray<AutofillProfileAddressField*>*)inputAddressFields;
 
 @end
 

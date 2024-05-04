@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <string>
+#include <string_view>
 #include <utility>
 
 #include "base/check.h"
@@ -61,7 +62,7 @@ PhoneFieldParser::~PhoneFieldParser() = default;
 // The following notation is used to describe the patterns:
 // <cc> - country code field.
 // <ac> - area code field.
-// TODO(crbug.com/1348137): Add a separate prefix type.
+// TODO(crbug.com/40233246): Add a separate prefix type.
 // <phone> - phone or prefix.
 // <suffix> - suffix.
 // :N means field is limited to N characters, otherwise it is unlimited.
@@ -165,25 +166,26 @@ bool PhoneFieldParser::LikelyAugmentedPhoneCountryCode(
 
   // Return false if the field is not a selection box.
   if (!MatchesFormControlType(
-          field->form_control_type,
+          field->form_control_type(),
           {FormControlType::kSelectOne, FormControlType::kSelectList})) {
     return false;
   }
 
   // If the number of the options is less than the minimum limit or more than
   // the maximum limit, return false.
-  if (field->options.size() < kMinSelectOptionsForCountryCode ||
-      field->options.size() >= kMaxSelectOptionsForCountryCode)
+  if (field->options().size() < kMinSelectOptionsForCountryCode ||
+      field->options().size() >= kMaxSelectOptionsForCountryCode) {
     return false;
+  }
 
   // |total_covered_options| stores the count of the options that are
   // compared with the regex.
-  int total_num_options = static_cast<int>(field->options.size());
+  int total_num_options = static_cast<int>(field->options().size());
 
   // |total_positive_options| stores the count of the options that match the
   // regex.
   int total_positive_options =
-      base::ranges::count_if(field->options, [](const SelectOption& option) {
+      base::ranges::count_if(field->options(), [](const SelectOption& option) {
         return MatchesRegex<kAugmentedPhoneCountryCodeRe>(option.content);
       });
 
@@ -234,8 +236,8 @@ bool PhoneFieldParser::ParseGrammar(ParsingContext& context,
     }
 
     if (rule.max_size != 0 &&
-        (parsed_fields[rule.phone_part]->max_length == 0 ||
-         rule.max_size < parsed_fields[rule.phone_part]->max_length)) {
+        (parsed_fields[rule.phone_part]->max_length() == 0 ||
+         rule.max_size < parsed_fields[rule.phone_part]->max_length())) {
       return false;
     }
   }
@@ -313,7 +315,7 @@ void PhoneFieldParser::AddClassifications(
     // is technically dialable (seven-digit dialing), and thus not contained in
     // the area code branch.
     if (parsed_phone_fields_[FIELD_SUFFIX]) {
-      // TODO(crbug.com/1348137): Ideally we want to DCHECK that
+      // TODO(crbug.com/40233246): Ideally we want to DCHECK that
       // `parsed_phone_fields_[FIELD_AREA_CODE] || !has_country_code` here.
       // With the current grammars this can be violated, even though it
       // seemingly never happens in practice according to our metrics.
@@ -328,9 +330,9 @@ void PhoneFieldParser::AddClassifications(
     if (base::FeatureList::IsEnabled(
             features::kAutofillDefaultToCityAndNumber)) {
       const AutofillField* field = parsed_phone_fields_[FIELD_PHONE];
-      if (field->label.find(u"+") != std::u16string::npos ||
-          field->placeholder.find(u"+") != std::u16string::npos ||
-          field->aria_description.find(u"+") != std::u16string::npos) {
+      if (field->label().find(u"+") != std::u16string::npos ||
+          field->placeholder().find(u"+") != std::u16string::npos ||
+          field->aria_description().find(u"+") != std::u16string::npos) {
         AddClassification(field, PHONE_HOME_WHOLE_NUMBER, kBasePhoneParserScore,
                           field_candidates);
       } else {
@@ -442,7 +444,7 @@ std::string PhoneFieldParser::GetJSONFieldType(RegexType phonetype_id) {
 // static
 bool PhoneFieldParser::ParsePhoneField(ParsingContext& context,
                                        AutofillScanner* scanner,
-                                       base::StringPiece16 regex,
+                                       std::u16string_view regex,
                                        raw_ptr<AutofillField>* field,
                                        const char* regex_name,
                                        const bool is_country_code_field,

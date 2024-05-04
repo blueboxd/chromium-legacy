@@ -19,6 +19,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/scoped_observation.h"
+#include "base/types/strong_alias.h"
 #include "chrome/browser/profiles/profile_manager_observer.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_url_info.h"
 #include "chrome/browser/web_applications/mojom/user_display_mode.mojom.h"
@@ -63,6 +64,10 @@ struct ValueWithPolicy {
   bool user_controllable;
 };
 
+using DiyAppCount = base::StrongAlias<class DiyAppCountTag, int>;
+using InstallableAppCount =
+    base::StrongAlias<class InstallableAppCountTag, int>;
+
 // A registry model. This is a read-only container, which owns WebApp objects.
 class WebAppRegistrar : public ProfileManagerObserver {
  public:
@@ -75,7 +80,7 @@ class WebAppRegistrar : public ProfileManagerObserver {
 
   const WebApp* GetAppById(const webapps::AppId& app_id) const;
 
-  // TODO(https://crbug.com/1182363): should be removed when id is introduced to
+  // TODO(crbug.com/40170773): should be removed when id is introduced to
   // manifest.
   const WebApp* GetAppByStartUrl(const GURL& start_url) const;
   std::vector<webapps::AppId> GetAppsFromSyncAndPendingInstallation() const;
@@ -201,13 +206,13 @@ class WebAppRegistrar : public ProfileManagerObserver {
   // Gets all disallowed launch protocols from all installed apps.
   base::flat_set<std::string> GetAllDisallowedLaunchProtocols() const;
 
-  // Count a number of all apps which are installed by user (non-default).
+  // Count number of all apps which are installed by user (non-default).
   // Requires app registry to be in a ready state.
   int CountUserInstalledApps() const;
 
-  // Count a number of all apps which are installed by the user but not locally
-  // installed (aka installed via sync).
-  int CountUserInstalledNotLocallyInstalledApps() const;
+  // Count number of all apps which are installed by user as DIY apps. Requires
+  // app registry to be in a ready state.
+  int CountUserInstalledDiyApps() const;
 
   // All names are UTF8 encoded.
   std::string GetAppShortName(const webapps::AppId& app_id) const;
@@ -241,7 +246,7 @@ class WebAppRegistrar : public ProfileManagerObserver {
   // Returns the start_url with launch_query_params appended to the end if any.
   GURL GetAppLaunchUrl(const webapps::AppId& app_id) const;
 
-  // TODO(crbug.com/1469482): Replace uses of this with GetAppScope().
+  // TODO(crbug.com/40277513): Replace uses of this with GetAppScope().
   std::optional<GURL> GetAppScopeInternal(const webapps::AppId& app_id) const;
 
   DisplayMode GetAppDisplayMode(const webapps::AppId& app_id) const;
@@ -348,10 +353,13 @@ class WebAppRegistrar : public ProfileManagerObserver {
 
   // Returns the app id of an installed app in the registry with the longest
   // scope that is a prefix of |url|, if any. If |window_only| is specified,
-  // only apps that open in app windows will be considered.
+  // only apps that open in app windows will be considered. If
+  // |exclude_diy_apps| is true, then DIY apps will not be taken into account
+  // while looking for installed apps whose url is in scope.
   std::optional<webapps::AppId> FindInstalledAppWithUrlInScope(
       const GURL& url,
-      bool window_only = false) const;
+      bool window_only = false,
+      bool exclude_diy_apps = false) const;
 
   // Returns true if there is an app that is not locally installed that has
   // a scope which is a prefix of |url|.
@@ -588,13 +596,6 @@ class WebAppRegistrar : public ProfileManagerObserver {
   // is a subset of GetAppsIncludingStubs().
   AppSet GetApps() const;
 
-#if BUILDFLAG(IS_CHROMEOS)
-  // Set (or replace existing) temporary experimental overrides for
-  // UserDisplayMode. `overrides` maps app IDs to their overridden value.
-  void SetUserDisplayModeOverridesForExperiment(
-      base::flat_map<webapps::AppId, mojom::UserDisplayMode> overrides);
-#endif
-
   // Returns a dict with debug values for each app in the registry, including
   // registrar-evaluated effective fields.
   base::Value AsDebugValue() const;
@@ -624,13 +625,14 @@ class WebAppRegistrar : public ProfileManagerObserver {
   bool ShouldCaptureLinksConsiderOverlappingScopes(
       const webapps::AppId& app_id);
 
-#if BUILDFLAG(IS_CHROMEOS)
-  // Returns if a given app_id is considered as a shortcut in Chrome OS
-  // platform. In Chrome OS, we treated more web apps as app and force them to
-  // be opened in standalone windows, and the checking criteria is more
-  // complicated and documented in go/shortstand-prd#bookmark=id.mbe9ojau9umf.
-  bool IsShortcutAppChromeOs(const webapps::AppId& app_id) const;
-#endif
+  // Count a number of all apps which are installed by the user but not locally
+  // installed (aka installed via sync).
+  int CountUserInstalledNotLocallyInstalledApps() const;
+
+  // Count number of all apps which are installed by user, including DIY apps.
+  // Requires app registry to be in a ready state.
+  std::tuple<DiyAppCount, InstallableAppCount>
+  CountTotalUserInstalledAppsIncludingDiy() const;
 
   const raw_ptr<Profile> profile_;
   raw_ptr<WebAppProvider> provider_ = nullptr;
@@ -643,9 +645,6 @@ class WebAppRegistrar : public ProfileManagerObserver {
 #if DCHECK_IS_ON()
   size_t mutations_count_ = 0;
 #endif
-
-  base::flat_map<webapps::AppId, mojom::UserDisplayMode>
-      user_display_mode_overrides_for_experiment_;
 
   // Keeps a record of in-memory (non-persistent) Storage Partitions created by
   // Isolated Web Apps' Controlled Frames. This table will expire on browser

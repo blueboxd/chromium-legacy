@@ -400,7 +400,7 @@ std::unique_ptr<net::test_server::HttpResponse> GetContentDispositionResponse(
 // presented. EarlGrey does not allow testing "Open in..." dialog, because it
 // is run in a separate process. Performs download in Incognito.
 #if !TARGET_IPHONE_SIMULATOR
-// TODO(crbug.com/1059320): Test consistently failing on device.
+// TODO(crbug.com/40678419): Test consistently failing on device.
 #define MAYBE_testSuccessfulDownloadInIncognito \
   DISABLED_testSuccessfulDownloadInIncognito
 #else
@@ -503,7 +503,7 @@ std::unique_ptr<net::test_server::HttpResponse> GetContentDispositionResponse(
 // presented. EarlGrey does not allow testing "Open in..." dialog, because it
 // is run in a separate process. Performs download in Incognito.
 #if !TARGET_IPHONE_SIMULATOR
-// TODO(crbug.com/1059320): Test consistently failing on device.
+// TODO(crbug.com/40678419): Test consistently failing on device.
 #define MAYBE_testSuccessfulDownloadInIncognito \
   DISABLED_testSuccessfulDownloadInIncognito
 #else
@@ -573,7 +573,7 @@ std::unique_ptr<net::test_server::HttpResponse> GetContentDispositionResponse(
   [ChromeEarlGrey waitForPageToFinishLoading];
   GREYAssert(WaitForDownloadButton(), @"Download button did not show up");
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
-      performAction:grey_scrollInDirection(kGREYDirectionDown, 200)];
+      performAction:grey_scrollInDirection(kGREYDirectionDown, 150)];
 
   GREYAssert(base::test::ios::WaitUntilConditionOrTimeout(
                  base::test::ios::kWaitForPageLoadTimeout,

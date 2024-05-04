@@ -143,7 +143,7 @@ H265Decoder::~H265Decoder() = default;
 
 void H265Decoder::SetStream(int32_t id, const DecoderBuffer& decoder_buffer) {
   const uint8_t* ptr = decoder_buffer.data();
-  const size_t size = decoder_buffer.data_size();
+  const size_t size = decoder_buffer.size();
   const DecryptConfig* decrypt_config = decoder_buffer.decrypt_config();
 
   DCHECK(ptr);
@@ -435,9 +435,9 @@ H265Decoder::DecodeResult H265Decoder::Decode() {
         if (par_res != H265Parser::kOk) {
           SET_ERROR_AND_RETURN();
         }
-        // TODO(crbug.com/1495665): Technically, we should cache a map of vps_id
-        // to aux_alpha_layer_id, and look up the aux_alpha_layer_id for each
-        // NALU.
+        // TODO(crbug.com/40937818): Technically, we should cache a map of
+        // vps_id to aux_alpha_layer_id, and look up the aux_alpha_layer_id for
+        // each NALU.
         aux_alpha_layer_id_ = parser_.GetVPS(vps_id)->aux_alpha_layer_id;
         accelerator_->ProcessVPS(
             parser_.GetVPS(vps_id),

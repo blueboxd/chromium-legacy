@@ -2,10 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40284755): Remove this and spanify to fix the errors.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "base/containers/heap_array.h"
 
 #include <stdint.h>
 
+#include <algorithm>
 #include <type_traits>
 
 #include "base/containers/span.h"
@@ -54,6 +60,13 @@ TEST(HeapArray, WithSizeZero) {
 TEST(HeapArray, WithSizeNonZero) {
   auto vec = HeapArray<uint32_t>::WithSize(2u);
   EXPECT_EQ(vec.size(), 2u);
+  EXPECT_NE(vec.data(), nullptr);
+}
+
+TEST(HeapArray, FromOwningPointer) {
+  auto vec = UNSAFE_BUFFERS(
+      HeapArray<uint32_t>::FromOwningPointer(new uint32_t[3], 3u));
+  EXPECT_EQ(vec.size(), 3u);
   EXPECT_NE(vec.data(), nullptr);
 }
 
@@ -205,6 +218,15 @@ TEST(HeapArray, Uninit) {
   // volatile uint32_t* x = vec.data() + 2;
   // EXPECT_DEATH(*x, "");
 #endif
+}
+
+TEST(HeapArray, Fill) {
+  auto vec = HeapArray<uint32_t>::Uninit(4);
+  std::ranges::fill(vec, 0x76543210);
+  EXPECT_EQ(0x76543210u, vec[0]);
+  EXPECT_EQ(0x76543210u, vec[1]);
+  EXPECT_EQ(0x76543210u, vec[2]);
+  EXPECT_EQ(0x76543210u, vec[3]);
 }
 
 TEST(HeapArray, CopiedFrom) {

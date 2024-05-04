@@ -77,14 +77,14 @@ void SetFormData(const std::string& origin,
   form_data->renderer_id = FormRendererId(form_id);
 
   FormFieldData field;
-  field.value = base::UTF8ToUTF16(username_value);
-  field.form_control_type = autofill::FormControlType::kInputText;
-  field.renderer_id = FieldRendererId(username_field_id);
+  field.set_value(base::UTF8ToUTF16(username_value));
+  field.set_form_control_type(autofill::FormControlType::kInputText);
+  field.set_renderer_id(FieldRendererId(username_field_id));
   form_data->fields.push_back(field);
 
-  field.value = base::UTF8ToUTF16(password_value);
-  field.form_control_type = autofill::FormControlType::kInputPassword;
-  field.renderer_id = FieldRendererId(password_field_id);
+  field.set_value(base::UTF8ToUTF16(password_value));
+  field.set_form_control_type(autofill::FormControlType::kInputPassword);
+  field.set_renderer_id(FieldRendererId(password_field_id));
   form_data->fields.push_back(field);
 }
 
@@ -95,18 +95,18 @@ autofill::FormData MakeSimpleFormData() {
   form_data.name = u"login_form";
 
   autofill::FormFieldData field;
-  field.name = u"Username";
-  field.id_attribute = field.name;
-  field.name_attribute = field.name;
-  field.value = u"googleuser";
-  field.form_control_type = autofill::FormControlType::kInputText;
+  field.set_name(u"Username");
+  field.set_id_attribute(field.name());
+  field.set_name_attribute(field.name());
+  field.set_value(u"googleuser");
+  field.set_form_control_type(autofill::FormControlType::kInputText);
   form_data.fields.push_back(field);
 
-  field.name = u"Passwd";
-  field.id_attribute = field.name;
-  field.name_attribute = field.name;
-  field.value = u"p4ssword";
-  field.form_control_type = autofill::FormControlType::kInputPassword;
+  field.set_name(u"Passwd");
+  field.set_id_attribute(field.name());
+  field.set_name_attribute(field.name());
+  field.set_value(u"p4ssword");
+  field.set_form_control_type(autofill::FormControlType::kInputPassword);
   form_data.fields.push_back(field);
 
   return form_data;

@@ -67,7 +67,6 @@
 #include "chrome/browser/ash/policy/core/device_local_account_policy_service.h"
 #include "chrome/browser/ash/policy/handlers/minimum_version_policy_handler.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
-#include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/ash/system/device_disabling_manager.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
@@ -100,6 +99,8 @@
 #include "chromeos/ash/components/login/auth/public/auth_failure.h"
 #include "chromeos/ash/components/login/auth/public/key.h"
 #include "chromeos/ash/components/login/session/session_termination_manager.h"
+#include "chromeos/ash/components/osauth/public/auth_hub.h"
+#include "chromeos/ash/components/settings/cros_settings.h"
 #include "chromeos/ash/components/settings/cros_settings_names.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
@@ -122,8 +123,6 @@
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/storage_partition.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -397,11 +396,7 @@ ExistingUserController::ExistingUserController()
 
   observed_user_manager_.Observe(user_manager::UserManager::Get());
 
-  if (ui::UserActivityDetector::Get()) {
-    ui::UserActivityDetector::Get()->AddObserver(this);
-  } else {
-    CHECK_IS_TEST();
-  }
+  ui::UserActivityDetector::Get()->AddObserver(this);
 }
 
 void ExistingUserController::Init(const user_manager::UserList& users) {
@@ -441,7 +436,8 @@ void ExistingUserController::UpdateLoginDisplay(
   }
 
   if (LoginDisplayHostMojo::Get()) {
-    auto login_users = chrome_user_manager_util::FindLoginAllowedUsers(users);
+    auto login_users =
+        user_manager::UserManager::Get()->FindLoginAllowedUsersFrom(users);
     LoginDisplayHostMojo::Get()->SetUsers(login_users);
   }
 }
@@ -484,10 +480,7 @@ void ExistingUserController::HttpAuthDialogSupplied(
 
 ExistingUserController::~ExistingUserController() {
   HttpAuthDialog::RemoveObserver(this);
-  ui::UserActivityDetector* activity_detector = ui::UserActivityDetector::Get();
-  if (activity_detector) {
-    activity_detector->RemoveObserver(this);
-  }
+  ui::UserActivityDetector::Get()->RemoveObserver(this);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -760,11 +753,6 @@ void ExistingUserController::OnAuthSuccess(const UserContext& user_context) {
 
   StopAutoLoginTimer();
 
-  ContinueAuthSuccessAfterResumeAttempt(user_context);
-}
-
-void ExistingUserController::ContinueAuthSuccessAfterResumeAttempt(
-    const UserContext& user_context) {
   // Truth table of `has_auth_cookies`:
   //                          Regular        SAML
   //  /ServiceLogin              T            T
@@ -780,9 +768,8 @@ void ExistingUserController::ContinueAuthSuccessAfterResumeAttempt(
   login_performer_->set_delegate(nullptr);
   std::ignore = login_performer_.release();
 
-  const bool is_enterprise_managed = g_browser_process->platform_part()
-                                         ->browser_policy_connector_ash()
-                                         ->IsDeviceEnterpriseManaged();
+  const bool is_enterprise_managed =
+      ash::InstallAttributes::Get()->IsEnterpriseManaged();
 
   // Mark device will be consumer owned if the device is not managed and this is
   // the first user on the device.
@@ -813,7 +800,7 @@ void ExistingUserController::ContinueAuthSuccessAfterResumeAttempt(
           g_browser_process->local_state(), user_context.GetAccountId(),
           user_context.GetUserIDHash(),
           crosapi::browser_util::PolicyInitState::kAfterInit)) {
-    // TODO(crbug.com/1261730): Add an UMA.
+    // TODO(crbug.com/40799062): Add an UMA.
     LOG(WARNING) << "Restarting Chrome to resume move migration.";
     return;
   }
@@ -858,14 +845,14 @@ void ExistingUserController::ContinueAuthSuccessAfterResumeAttempt(
 }
 
 void ExistingUserController::ShowAutoLaunchManagedGuestSessionNotification() {
-  policy::BrowserPolicyConnectorAsh* connector =
-      g_browser_process->platform_part()->browser_policy_connector_ash();
-  DCHECK(connector->IsDeviceEnterpriseManaged());
+  DCHECK(ash::InstallAttributes::Get()->IsEnterpriseManaged());
   message_center::RichNotificationData data;
   data.buttons.push_back(message_center::ButtonInfo(
       l10n_util::GetStringUTF16(IDS_AUTO_LAUNCH_NOTIFICATION_BUTTON)));
   const std::u16string title =
       l10n_util::GetStringUTF16(IDS_AUTO_LAUNCH_NOTIFICATION_TITLE);
+  policy::BrowserPolicyConnectorAsh* connector =
+      g_browser_process->platform_part()->browser_policy_connector_ash();
   const std::u16string message = l10n_util::GetStringFUTF16(
       IDS_ASH_LOGIN_MANAGED_SESSION_MONITORING_FULL_WARNING,
       base::UTF8ToUTF16(connector->GetEnterpriseDomainManager()));
@@ -923,6 +910,10 @@ void ExistingUserController::OnProfilePrepared(Profile* profile,
   for (auto& auth_status_consumer : auth_status_consumers_) {
     auth_status_consumer.OnAuthSuccess(user_context);
   }
+
+  // Initialize `AuthHub` in `kInSession` mode, see documentation in
+  // `AuthHub` for more details.
+  AuthHub::Get()->InitializeForMode(AuthHubMode::kInSession);
 }
 
 base::WeakPtr<UserSessionManagerDelegate> ExistingUserController::AsWeakPtr() {

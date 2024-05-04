@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/autofill/autofill_popup_view.h"
 #include "chrome/browser/ui/views/autofill/popup/popup_base_view.h"
 #include "chrome/browser/ui/views/autofill/popup/popup_row_view.h"
+#include "chrome/browser/ui/views/autofill/popup/popup_search_bar_view.h"
 #include "components/autofill/core/common/aliases.h"
 #include "content/public/common/input/native_web_keyboard_event.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
@@ -33,7 +34,9 @@ class ScrollView;
 namespace autofill {
 
 class AutofillPopupController;
+class AutofillSuggestionController;
 class PopupSeparatorView;
+class PopupTitleView;
 class PopupWarningView;
 
 // Sub-popups and their parent popups are connected by providing children
@@ -51,6 +54,13 @@ class ExpandablePopupParentView {
   virtual void OnMouseExitedInChildren() = 0;
 };
 
+struct PopupViewSearchBarConfig {
+  // This setting controls the search bar's visibility. If set to 'false',
+  // the search bar won't be displayed, and other settings become irrelevant.
+  bool enabled = false;
+  std::u16string placeholder;
+};
+
 // Views implementation for the autofill and password suggestion.
 class PopupViewViews : public PopupBaseView,
                        public AutofillPopupView,
@@ -59,8 +69,10 @@ class PopupViewViews : public PopupBaseView,
   METADATA_HEADER(PopupViewViews, PopupBaseView)
 
  public:
-  using RowPointer =
-      absl::variant<PopupRowView*, PopupSeparatorView*, PopupWarningView*>;
+  using RowPointer = absl::variant<PopupRowView*,
+                                   PopupSeparatorView*,
+                                   PopupTitleView*,
+                                   PopupWarningView*>;
 
   // The time it takes for a selected cell to open a sub-popup if it has one.
   static constexpr base::TimeDelta kMouseOpenSubPopupDelay =
@@ -73,10 +85,14 @@ class PopupViewViews : public PopupBaseView,
   static constexpr base::TimeDelta kNoSelectionHideSubPopupDelay =
       base::Milliseconds(2500);
 
+  // Constructor for creating sub-popups.
   PopupViewViews(base::WeakPtr<AutofillPopupController> controller,
                  base::WeakPtr<ExpandablePopupParentView> parent,
                  views::Widget* parent_widget);
-  explicit PopupViewViews(base::WeakPtr<AutofillPopupController> controller);
+
+  // Constructor for creating root level popups.
+  explicit PopupViewViews(base::WeakPtr<AutofillPopupController> controller,
+                          PopupViewSearchBarConfig search_bar_config = {});
   PopupViewViews(const PopupViewViews&) = delete;
   PopupViewViews& operator=(const PopupViewViews&) = delete;
   ~PopupViewViews() override;
@@ -100,9 +116,10 @@ class PopupViewViews : public PopupBaseView,
   std::optional<int32_t> GetAxUniqueId() override;
   void AxAnnounce(const std::u16string& text) override;
   base::WeakPtr<AutofillPopupView> CreateSubPopupView(
-      base::WeakPtr<AutofillPopupController> controller) override;
+      base::WeakPtr<AutofillSuggestionController> controller) override;
   std::optional<AutofillClient::PopupScreenLocation> GetPopupScreenLocation()
       const override;
+  bool HasFocus() const override;
   base::WeakPtr<AutofillPopupView> GetWeakPtr() override;
 
   // PopupBaseView:
@@ -141,12 +158,12 @@ class PopupViewViews : public PopupBaseView,
   bool HasPopupRowViewAt(size_t index) const;
 
   // Instantiates the content of the popup.
-  void InitViews();
+  void InitViews(PopupViewSearchBarConfig search_bar_config);
 
   // Creates child views based on the suggestions given by |controller_|.
   // This method expects that all non-footer suggestions precede footer
   // suggestions.
-  void CreateChildViews();
+  void CreateSuggestionViews();
 
   // Applies certain rounding rules to the given width, such as matching the
   // element width when possible.
@@ -211,6 +228,18 @@ class PopupViewViews : public PopupBaseView,
       AutoselectFirstSuggestion autoselect_first_suggestion =
           AutoselectFirstSuggestion(false));
 
+  // Returns true when fields `is_acceptable` and `apply_style_deactivated` are
+  // false for the suggestion as it indicates that the suggestion is a manual
+  // fallback suggestion.
+  bool CanOpenSubPopupSuggestion(const Suggestion& suggestion);
+
+  // Callback passed to the search bar (if enabled). Hides the popup.
+  void OnSearchBarFocusLost();
+
+  // Callback passed to the search bar (if enabled). Updates the controller
+  // filter with the `query` argument.
+  void OnSearchBarInputChanged(const std::u16string& query);
+
   // Controller for this view.
   base::WeakPtr<AutofillPopupController> controller_ = nullptr;
 
@@ -225,6 +254,8 @@ class PopupViewViews : public PopupBaseView,
   std::optional<size_t> row_with_open_sub_popup_;
 
   std::vector<RowPointer> rows_;
+  raw_ptr<PopupSearchBarView> search_bar_ = nullptr;
+  raw_ptr<views::BoxLayoutView> suggestions_container_ = nullptr;
   raw_ptr<views::ScrollView> scroll_view_ = nullptr;
   raw_ptr<views::BoxLayoutView> body_container_ = nullptr;
   raw_ptr<views::BoxLayoutView> footer_container_ = nullptr;
@@ -241,6 +272,14 @@ class PopupViewViews : public PopupBaseView,
   // set in `Show()`, but after that once it is `true` the value never gets back
   // to `false.`
   bool has_keyboard_focus_ = false;
+
+  // A boolean variable tracking the execution state of the `Show()` method.
+  // It's set to `true` when the method starts and `false` before it finishes.
+  // Required for the `HasFocus()` method, that might be called during
+  // the `Show()` execution. In this case, `GetWidget()->IsActive()` may not yet
+  // be `true`, and the `HasFocus()` returning `false` may potentially cause
+  // the popup to hide.
+  bool show_in_progress_ = false;
 
   base::WeakPtrFactory<PopupViewViews> weak_ptr_factory_{this};
 };

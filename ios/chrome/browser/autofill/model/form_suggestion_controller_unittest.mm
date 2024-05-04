@@ -58,9 +58,9 @@ using autofill::FormRendererId;
 @implementation TestSuggestionProvider {
   NSArray* _suggestions;
   NSString* _formName;
-  FormRendererId _uniqueFormID;
+  FormRendererId _formRendererID;
   NSString* _fieldIdentifier;
-  FieldRendererId _uniqueFieldID;
+  FieldRendererId _fieldRendererID;
   NSString* _frameID;
   FormSuggestion* _suggestion;
 }
@@ -75,13 +75,13 @@ using autofill::FormRendererId;
         suggestionWithValue:@"foo"
          displayDescription:nil
                        icon:nil
-                popupItemId:autofill::PopupItemId::kAutocompleteEntry
+                popupItemId:autofill::SuggestionType::kAutocompleteEntry
           backendIdentifier:nil
              requiresReauth:NO],
     [FormSuggestion suggestionWithValue:@"bar"
                      displayDescription:nil
                                    icon:nil
-                            popupItemId:autofill::PopupItemId::kAddressEntry
+                            popupItemId:autofill::SuggestionType::kAddressEntry
                       backendIdentifier:nil
                          requiresReauth:NO]
   ];
@@ -132,17 +132,17 @@ using autofill::FormRendererId;
 
 - (void)didSelectSuggestion:(FormSuggestion*)suggestion
                        form:(NSString*)formName
-               uniqueFormID:(FormRendererId)uniqueFormID
+             formRendererID:(FormRendererId)formRendererID
             fieldIdentifier:(NSString*)fieldIdentifier
-              uniqueFieldID:(FieldRendererId)uniqueFieldID
+            fieldRendererID:(FieldRendererId)fieldRendererID
                     frameID:(NSString*)frameID
           completionHandler:(SuggestionHandledCompletion)completion {
   self.selected = YES;
   _suggestion = suggestion;
   _formName = [formName copy];
-  _uniqueFormID = uniqueFormID;
+  _formRendererID = formRendererID;
   _fieldIdentifier = [fieldIdentifier copy];
-  _uniqueFieldID = uniqueFieldID;
+  _fieldRendererID = fieldRendererID;
   _frameID = [frameID copy];
   completion();
 }
@@ -211,7 +211,8 @@ class FormSuggestionControllerTest : public PlatformTest {
                                         profilePasswordStore:nullptr
                                         accountPasswordStore:nullptr
                                         securityAlertHandler:nil
-                                      reauthenticationModule:nil];
+                                      reauthenticationModule:nil
+                                           engagementTracker:nil];
 
     [accessory_mediator_ injectWebState:&fake_web_state_];
     [accessory_mediator_ injectProvider:suggestion_controller_];
@@ -384,13 +385,13 @@ TEST_F(FormSuggestionControllerTest,
         suggestionWithValue:@"foo"
          displayDescription:nil
                        icon:nil
-                popupItemId:autofill::PopupItemId::kAutocompleteEntry
+                popupItemId:autofill::SuggestionType::kAutocompleteEntry
           backendIdentifier:nil
              requiresReauth:NO],
     [FormSuggestion suggestionWithValue:@"bar"
                      displayDescription:nil
                                    icon:nil
-                            popupItemId:autofill::PopupItemId::kAddressEntry
+                            popupItemId:autofill::SuggestionType::kAddressEntry
                       backendIdentifier:nil
                          requiresReauth:NO]
   ];
@@ -437,7 +438,7 @@ TEST_F(FormSuggestionControllerTest, SelectingSuggestionShouldNotifyDelegate) {
         suggestionWithValue:@"foo"
          displayDescription:nil
                        icon:nil
-                popupItemId:autofill::PopupItemId::kAutocompleteEntry
+                popupItemId:autofill::SuggestionType::kAutocompleteEntry
           backendIdentifier:nil
              requiresReauth:NO],
   ];
@@ -475,7 +476,7 @@ TEST_F(FormSuggestionControllerTest, AutofillSuggestionIPH) {
       suggestionWithValue:@"foo"
        displayDescription:nil
                      icon:nil
-              popupItemId:autofill::PopupItemId::kAutocompleteEntry
+              popupItemId:autofill::SuggestionType::kAutocompleteEntry
         backendIdentifier:nil
            requiresReauth:NO];
   suggestion.featureForIPH = @"YES";

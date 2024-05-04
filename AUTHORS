@@ -154,6 +154,7 @@ Armin Burgmeier <aburgmeier@bloomberg.net>
 Arnaud Coomans <hello@acoomans.com>
 Arnaud Mandy <arnaud.mandy@intel.com>
 Arnaud Renevier <a.renevier@samsung.com>
+Arnaud Renevier <arnaud@switchboard.app>
 Arpita Bahuguna <a.bah@samsung.com>
 Arthur Lussos <developer0420@gmail.com>
 Artin Lindqvist <artin.lindqvist.chromium@gmail.com>
@@ -216,6 +217,7 @@ Brian Merrell, Novell Inc. <bgmerrell@gmail.com>
 Brian Salomon <briansalomon@gmail.com>
 Brian Yip <itsbriany@gmail.com>
 Brook Hong <hzgmaxwell@gmail.com>
+Bruce Dai <feng.dai@intel.com>
 Bruno Calvignac <bruno@flock.com>
 Bruno de Oliveira Abinader <brunoabinader@gmail.com>
 Bruno Pitrus <brunopitrus@hotmail.com>
@@ -359,6 +361,7 @@ Dillon Sellars <dill.sellars@gmail.com>
 Divya Bansal <divya.bansal@samsung.com>
 Dmitry Shachnev <mitya57@gmail.com>
 Dmitry Sokolov <dimanne@gmail.com>
+Dominic Elm <elmdominic@gmx.net>
 Dominic Farolino <domfarolino@gmail.com>
 Dominic Jodoin <dominic.jodoin@gmail.com>
 Dominik Röttsches <dominik.rottsches@intel.com>
@@ -485,11 +488,13 @@ Halton Huo <halton.huo@gmail.com>
 Halton Huo <halton.huo@intel.com>
 Hans Hillen <hans.hillen@gmail.com>
 Hansel Lee <mr.hansel.lee@gmail.com>
+Hanwen Zheng <eserinc.z@gmail.com>
 Hao Li <hao.x.li@intel.com>
 Haojian Wu <hokein.wu@gmail.com>
 Haoxuan Zhang <zhanghaoxuan.59@bytedance.com>
 Hari Singh <hari.singh1@samsung.com>
 Harpreet Singh Khurana <harpreet.sk@samsung.com>
+Harshal Gupta <gupta.h@samsung.com>
 Harshikesh Kumar <harshikeshnobug@gmail.com>
 Harshit Pal <harshitp12345@gmail.com>
 Hassan Salehe Matar <hassansalehe@gmail.com>
@@ -507,7 +512,6 @@ Himanshu Joshi <h.joshi@samsung.com>
 Himanshu Nayak <himanshu.nayak@amd.corp-partner.google.com>
 Hiroki Oshima <hiroki.oshima@gmail.com>
 Hiroyuki Matsuda <gsittyz@gmail.com>
-Ho Cheung <uioptt24@gmail.com>
 Hodol Han <bab6ting@gmail.com>
 Holger Kraus <kraush@amazon.com>
 Hong Zheng <hong.zheng@intel.com>
@@ -650,6 +654,8 @@ Jincheol Jo <jincheol.jo@navercorp.com>
 Jinfeng Ma <majinfeng1@xiaomi.com>
 Jing Zhao <zhaojing7@xiaomi.com>
 Jinglong Zuo <zuojinglong@xiaomi.com>
+Jingqi Sun <sunjingqi47@gmail.com>
+Jingqi Sun <jingqi.sun@hotmail.com>
 Jingwei Liu <kingweiliu@gmail.com>
 Jingyi Wei <wjywbs@gmail.com>
 Jinho Bang <jinho.bang@samsung.com>
@@ -700,6 +706,7 @@ Joshua Lock <joshua.lock@intel.com>
 Joshua Roesslein <jroesslein@gmail.com>
 Josué Ratelle <jorat1346@gmail.com>
 Josyula Venkat Narasimham <venkat.nj@samsung.com>
+Joy Roy <joy.roy.nil76@gmail.com>
 Joyer Huang <collger@gmail.com>
 Juan Cruz Viotti <jv@jviotti.com>
 Juan Jose Lopez Jaimez <jj.lopezjaimez@gmail.com>
@@ -783,6 +790,7 @@ Kirill Ovchinnikov <kirill.ovchinn@gmail.com>
 Klemen Forstnerič <klemen.forstneric@gmail.com>
 Kodam Nagaraju <k2.nagaraju@samsung.com>
 Konrad Dzwinel <kdzwinel@gmail.com>
+Kousuke Takaki <yoseio@brainoid.dev>
 Kovacs Zeteny <brightbulbapp@gmail.com>
 Krishna Chaitanya <krish.botta@samsung.com>
 Kristof Kosztyo <kkosztyo.u-szeged@partner.samsung.com>
@@ -927,6 +935,7 @@ Mayur Kankanwadi <mayurk.vk@samsung.com>
 Mc Zeng <zengmcong@gmail.com>
 Md Abdullah Al Alamin <a.alamin.cse@gmail.com>
 Md. Hasanur Rashid <hasanur.r@samsung.com>
+Md Hasibul Hasan <hasibulhasan873@gmail.com>
 Md Jobed Hossain <jobed.h@samsung.com>
 Md Raiyan bin Sayeed <mrbsayee@uwaterloo.ca>
 Md. Sadiqul Amin <sadiqul.amin@samsung.com>
@@ -982,6 +991,7 @@ Momoka Yamamoto <momoka.my6@gmail.com>
 Momoko Hattori <momohatt10@gmail.com>
 Mostafa Sedaghat joo <mostafa.sedaghat@gmail.com>
 Mrunal Kapade <mrunal.kapade@intel.com>
+Muhammad Mahad <mahadtxt@gmail.com>
 Munira Tursunova <moonira@google.com>
 Myeongjin Cho <myeongjin.cho@navercorp.com>
 Myles C. Maxfield <mymax@amazon.com>
@@ -990,6 +1000,7 @@ Myunghoon Kim <asdvfrqwe@gmail.com>
 Nagarajan Narayanan <nagarajan.n@samsung.com>
 Nagarjuna Atluri <nagarjuna.a@samsung.com>
 Naiem Shaik <naiem.shaik@gmail.com>
+Nakuru Wubni <nakuru.wubni@gitstart.dev>
 Naman Kumar Narula <namankumarnarula@gmail.com>
 Naman Yadav <naman.yadav@samsung.com>
 Nancy Tillery <hedonistsmith@gmail.com>
@@ -1029,12 +1040,14 @@ Oliver Dunk <oliver@oliverdunk.com>
 Olivier Tilloy <olivier+chromium@tilloy.net>
 Olli Raula (Old name Olli Syrjälä) <olli.raula@intel.com>
 Omar Sandoval <osandov@osandov.com>
+Omar Shawky <omarmshawky11@gmail.com>
 Orko Garai <orko.garai@gmail.com>
 Owen Shaw <owenpshaw@gmail.com>
 Owen Yuwono <owenyuwono@gmail.com>
 Palash Verma <palashverma47@gmail.com>
 Pan Deng <pan.deng@intel.com>
 Parag Radke <nrqv63@motorola.com>
+Paras Awasthi <awasthiparas6@gmail.com>
 Paritosh Kumar <paritosh.in@samsung.com>
 Pasquale Riello <pas.riello@gmail.com>
 Patrasciuc Sorin Cristian <cristian.patrasciuc@gmail.com>
@@ -1097,6 +1110,7 @@ Pratham <prathamIN@proton.me>
 Praveen Akkiraju <praveen.anp@samsung.com>
 Preeti Nayak <preeti.nayak@samsung.com>
 Pritam Nikam <pritam.nikam@samsung.com>
+Psychpsyo <psychpsyo@gmail.com>
 Puttaraju R <puttaraju.r@samsung.com>
 Punith Nayak <npunith125@gmail.com>
 Qi Tiezheng <qitiezheng@360.cn>
@@ -1194,6 +1208,7 @@ Sam James <sam@gentoo.org>
 Sam Larison <qufighter@gmail.com>
 Sam McDonald <sam@sammcd.com>
 Samuel Attard <samuel.r.attard@gmail.com>
+Samuel Maddock <samuelmaddock@electronjs.org>
 Sanfeng Liao <sanfengliao@gmail.com>
 Sanggi Hong <sanggi.hong11@gmail.com>
 Sanghee Lee <sanghee.lee1992@gmail.com>
@@ -1248,6 +1263,7 @@ Shail Singhal <shail.s@samsung.com>
 Shane Hansen <shanemhansen@gmail.com>
 ShankarGanesh K <blr.bmlab@gmail.com>
 Shanmuga Pandi M <shanmuga.m@samsung.com>
+Shanxing Mei <shanxing.mei@intel.com>
 Shaobo Yan <shaobo.yan@intel.com>
 Shaotang Zhu <zhushaotang@uniontech.com>
 Shashi Kumar <sk.kumar@samsung.com>
@@ -1521,6 +1537,7 @@ Youngho Seo <hazivoo@gmail.com>
 Youngjin Choi <cyjin9.yc@gmail.com>
 YoungKi Hong <simon.hong81@gmail.com>
 Youngmin Yoo <youngmin.yoo@samsung.com>
+Youngmin Hong <mjdal0523@gmail.com>
 Youngsoo Choi <kenshin.choi@samsung.com>
 Youngsun Suh <zard17@gmail.com>
 Yuan-Pin Yu <yjames@uber.com>
@@ -1635,6 +1652,7 @@ Rakuten Kobo Inc. <*@kobo.com>
 Rakuten Kobo Inc. <*@rakuten.com>
 Red Hat Inc. <*@redhat.com>
 Semihalf <*@semihalf.com>
+S57 ApS <*@s57.io>
 Seznam.cz, a.s. <*@firma.seznam.cz>
 Slack Technologies Inc. <*@slack-corp.com>
 Spotify AB <*@spotify.com>

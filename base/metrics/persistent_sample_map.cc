@@ -207,12 +207,13 @@ PersistentSampleMap::CreatePersistentRecord(
   if (!record) {
     if (!allocator->IsFull()) {
 #if !BUILDFLAG(IS_NACL)
-      // TODO(crbug/1432981): Remove these. They are used to investigate
+      // TODO(crbug.com/40064026): Remove these. They are used to investigate
       // unexpected failures.
       SCOPED_CRASH_KEY_BOOL("PersistentSampleMap", "corrupted",
                             allocator->IsCorrupt());
 #endif  // !BUILDFLAG(IS_NACL)
-      NOTREACHED() << "corrupt=" << allocator->IsCorrupt();
+      DUMP_WILL_BE_NOTREACHED_NORETURN()
+          << "corrupt=" << allocator->IsCorrupt();
     }
     return 0;
   }

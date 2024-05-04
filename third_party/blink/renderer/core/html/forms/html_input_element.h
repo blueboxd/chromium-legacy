@@ -103,6 +103,8 @@ class CORE_EXPORT HTMLInputElement
   // stepUp()/stepDown() for user-interaction.
   bool IsSteppable() const;
 
+  // Returns true if the type is button, reset, submit, or image.
+  bool IsButton() const;
   // Returns true if the type is button, reset, or submit.
   bool IsTextButton() const;
   // Returns true if the type is email, number, password, search, tel, text,
@@ -385,8 +387,10 @@ class CORE_EXPORT HTMLInputElement
 
   ShadowRoot* EnsureShadowSubtree();
 
-  bool HandleInvokeInternal(HTMLElement& invoker,
-                            AtomicString& action) override;
+  bool IsValidInvokeAction(HTMLElement& invoker, InvokeAction action) override;
+  bool HandleInvokeInternal(HTMLElement& invoker, InvokeAction action) override;
+
+  void SetFocused(bool is_focused, mojom::blink::FocusType) override;
 
  protected:
   void DefaultEventHandler(Event&) override;
@@ -482,8 +486,6 @@ class CORE_EXPORT HTMLInputElement
 
   void AddToRadioButtonGroup();
   void RemoveFromRadioButtonGroup();
-  const ComputedStyle* CustomStyleForLayoutObject(
-      const StyleRecalcContext&) override;
   void AdjustStyle(ComputedStyleBuilder&) override;
 
   void MaybeReportPiiMetrics();

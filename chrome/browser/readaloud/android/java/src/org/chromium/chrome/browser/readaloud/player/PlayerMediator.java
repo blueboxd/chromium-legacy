@@ -92,7 +92,7 @@ class PlayerMediator implements InteractionHandler {
 
                 @Override
                 public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                    if (!fromUser) {
+                    if (!fromUser || mPlayback == null) {
                         return;
                     }
                     float percent = (float) progress / (float) seekBar.getMax();
@@ -205,7 +205,9 @@ class PlayerMediator implements InteractionHandler {
     // InteractionHandler implementation
     @Override
     public void onPlayPauseClick() {
-        assert mPlayback != null;
+        if (mPlayback == null) {
+            return;
+        }
 
         // Call playback control methods and rely on updates through mPlaybackListener
         // to update UI with new playback state.
@@ -294,6 +296,10 @@ class PlayerMediator implements InteractionHandler {
 
     @Override
     public void onSpeedChange(float newSpeed) {
+        if (mPlayback == null) {
+            return;
+        }
+
         ReadAloudPrefs.setSpeed(mDelegate.getPrefService(), newSpeed);
         mPlayback.setRate(newSpeed);
         if (newSpeed >= 2.0f) {
@@ -367,6 +373,8 @@ class PlayerMediator implements InteractionHandler {
 
     private static void handlePlayButtonClick(
             Playback playback, @PlaybackListener.State int state) {
+        assert playback != null;
+
         switch (state) {
             case PLAYING:
                 playback.pause();

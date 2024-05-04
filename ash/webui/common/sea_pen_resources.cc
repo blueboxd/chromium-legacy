@@ -4,7 +4,6 @@
 
 #include "ash/webui/common/sea_pen_resources.h"
 
-#include "ash/constants/ash_features.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
 #include "ui/base/webui/web_ui_util.h"
 
@@ -17,6 +16,7 @@ void AddSeaPenStrings(content::WebUIDataSource* source) {
       {"seaPenChooseAWallpaperHeading",
        IDS_PERSONALIZATION_APP_CHOOSE_A_WALLPAPER_HEADING},
       {"seaPenLabel", IDS_SEA_PEN_LABEL},
+      {"vcBackgroundLabel", IDS_VC_BACKGROUND_LABEL},
       {"seaPenPoweredByGoogleAi", IDS_SEA_PEN_POWERED_BY_GOOGLE_AI},
       {"seaPenTemplateHeading", IDS_SEA_PEN_TEMPLATE_HEADING},
       {"seaPenRecentWallpapersHeading", IDS_SEA_PEN_RECENT_WALLPAPERS_HEADING},
@@ -32,7 +32,9 @@ void AddSeaPenStrings(content::WebUIDataSource* source) {
       {"seaPenCreateMore", IDS_SEA_PEN_CREATE_MORE},
       {"seaPenAbout", IDS_SEA_PEN_ABOUT},
       {"seaPenAboutDialogTitle", IDS_SEA_PEN_ABOUT_DIALOG_TITLE},
+      {"vcBackgroundAboutDialogTitle", IDS_VC_BACKGROUND_ABOUT_DIALOG_TITLE},
       {"seaPenAboutDialogPrompt", IDS_SEA_PEN_ABOUT_DIALOG_PROMPT},
+      {"vcBackgroundAboutDialogPrompt", IDS_VC_BACKGROUND_ABOUT_DIALOG_PROMPT},
       {"seaPenAboutDialogDate", IDS_SEA_PEN_ABOUT_DIALOG_DATE},
       {"seaPenAboutDialogClose", IDS_SEA_PEN_ABOUT_DIALOG_CLOSE},
       {"seaPenErrorNoInternet", IDS_SEA_PEN_ERROR_NO_INTERNET},
@@ -40,15 +42,25 @@ void AddSeaPenStrings(content::WebUIDataSource* source) {
       {"seaPenErrorGeneric", IDS_SEA_PEN_ERROR_GENERIC},
       {"seaPenExperimentLabel", IDS_SEA_PEN_EXPERIMENT_LABEL},
       {"seaPenThumbnailsLoading", IDS_SEA_PEN_THUMBNAILS_LOADING},
-      {"seaPenWallpaperTermsDialogTitle",
-       IDS_SEA_PEN_WALLPAPER_TERMS_DIALOG_TITLE},
-      {"seaPenWallpaperTermsAcceptButton",
-       IDS_SEA_PEN_WALLPAPER_TERMS_ACCEPT_BUTTON},
-      {"seaPenWallpaperTermsRefuseButton",
-       IDS_SEA_PEN_WALLPAPER_TERMS_REFUSE_BUTTON},
-      {"seaPenWallpaperTermsOfServiceDesc",
-       IDS_SEA_PEN_WALLPAPER_TERMS_OF_SERVICE_DESC},
       {"seaPenCreatingHighResImage", IDS_SEA_PEN_CREATING_HIGH_RES_IMAGE},
+      {"seaPenExpandOptionsButton", IDS_SEA_PEN_EXPAND_OPTIONS_BUTTON},
+      {"seaPenRecentImageMenuButton", IDS_SEA_PEN_RECENT_IMAGE_MENU_BUTTON},
+      {"seaPenMenuRoleDescription", IDS_SEA_PEN_MENU_ROLE_DESCRIPTION},
+      {"seaPenCustomizeAiPrompt", IDS_SEA_PEN_CUSTOMIZE_AI_PROMPT},
+      {"seaPenFeedbackDescription", IDS_SEA_PEN_FEEDBACK_DESCRIPTION},
+      {"seaPenFeedbackPositive", IDS_SEA_PEN_FEEDBACK_POSITIVE},
+      {"seaPenFeedbackNegative", IDS_SEA_PEN_FEEDBACK_NEGATIVE},
+      {"seaPenSetWallpaper", IDS_SEA_PEN_SET_WALLPAPER},
+      {"seaPenSetCameraBackground", IDS_SEA_PEN_SET_CAMERA_BACKGROUND},
+      {"seaPenLabel", IDS_SEA_PEN_LABEL},
+      {"seaPenZeroStateMessage", IDS_SEA_PEN_ZERO_STATE_MESSAGE},
+      {"seaPenIntroductionTitle", IDS_SEA_PEN_INTRODUCTION_DIALOG_TITLE},
+      {"seaPenIntroductionContent", IDS_SEA_PEN_INTRODUCTION_DIALOG_CONTENT},
+      {"seaPenIntroductionDialogCloseButton",
+       IDS_SEA_PEN_INTRODUCTION_DIALOG_CLOSE_BUTTON},
+
+      {"seaPenDismissError", IDS_PERSONALIZATION_APP_DISMISS},
+      {"ariaLabelLoading", IDS_PERSONALIZATION_APP_ARIA_LABEL_LOADING},
   };
   source->AddLocalizedStrings(kLocalizedStrings);
 }

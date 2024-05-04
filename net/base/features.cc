@@ -81,6 +81,10 @@ BASE_FEATURE(kUseHostResolverCache,
              "UseHostResolverCache",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+BASE_FEATURE(kUseServiceEndpointRequest,
+             "UseServiceEndpointRequest",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 const base::FeatureParam<int> kAlternativePortForGloballyReachableCheck{
     &kUseAlternativePortForGloballyReachableCheck,
     "AlternativePortForGloballyReachableCheck", 443};
@@ -147,13 +151,13 @@ BASE_FEATURE(kTLS13KeyUpdate,
              "TLS13KeyUpdate",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kPermuteTLSExtensions,
-             "PermuteTLSExtensions",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 BASE_FEATURE(kPostQuantumKyber,
              "PostQuantumKyber",
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
              base::FEATURE_DISABLED_BY_DEFAULT);
+#else
+             base::FEATURE_ENABLED_BY_DEFAULT);
+#endif
 
 BASE_FEATURE(kNetUnusedIdleSocketTimeout,
              "NetUnusedIdleSocketTimeout",
@@ -166,12 +170,6 @@ BASE_FEATURE(kShortLaxAllowUnsafeThreshold,
 BASE_FEATURE(kSameSiteDefaultChecksMethodRigorously,
              "SameSiteDefaultChecksMethodRigorously",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-#if BUILDFLAG(IS_MAC) || BUILDFLAG(USE_NSS_CERTS) || BUILDFLAG(IS_WIN)
-BASE_FEATURE(kTrustStoreTrustedLeafSupport,
-             "TrustStoreTrustedLeafSupport",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-#endif
 
 BASE_FEATURE(kTurnOffStreamingMediaCachingOnBattery,
              "TurnOffStreamingMediaCachingOnBattery",
@@ -219,12 +217,6 @@ BASE_FEATURE(kDocumentReporting,
              base::FEATURE_ENABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 
-#if BUILDFLAG(IS_POSIX) || BUILDFLAG(IS_FUCHSIA)
-BASE_FEATURE(kUdpSocketPosixAlwaysUpdateBytesReceived,
-             "UdpSocketPosixAlwaysUpdateBytesReceived",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-#endif  // BUILDFLAG(IS_POSIX) || BUILDFLAG(IS_FUCHSIA)
-
 BASE_FEATURE(kCookieSameSiteConsidersRedirectChain,
              "CookieSameSiteConsidersRedirectChain",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -240,6 +232,10 @@ extern const base::FeatureParam<base::TimeDelta>
         &kWaitForFirstPartySetsInit,
         "kWaitForFirstPartySetsInitNavigationThrottleTimeout",
         base::Seconds(0)};
+
+BASE_FEATURE(kAncestorChainBitEnabledInPartitionedCookies,
+             "AncestorChainBitEnabledInPartitionedCookies",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kBlockTruncatedCookies,
              "BlockTruncatedCookies",
@@ -278,6 +274,10 @@ BASE_FEATURE(kTpcdMetadataGrants,
              "TpcdMetadataGrants",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+BASE_FEATURE(kTpcdMetadataStagedRollback,
+             "TpcdMetadataStageControl",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kAlpsParsing, "AlpsParsing", base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kAlpsClientHintParsing,
@@ -296,22 +296,14 @@ BASE_FEATURE(kEnableWebsocketsOverHttp3,
              "EnableWebsocketsOverHttp3",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kUseNAT64ForIPv4Literal,
-             "UseNAT64ForIPv4Literal",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-BASE_FEATURE(kBlockNewForbiddenHeaders,
-             "BlockNewForbiddenHeaders",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 #if BUILDFLAG(IS_WIN)
-BASE_FEATURE(kPlatformKeyProbeSHA256,
-             "PlatformKeyProbeSHA256",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Disabled because of https://crbug.com/1489696.
 BASE_FEATURE(kEnableGetNetworkConnectivityHintAPI,
              "EnableGetNetworkConnectivityHintAPI",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kEnableTcpPortRandomization,
+             "EnableTcpPortRandomization",
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
 
@@ -416,6 +408,36 @@ const base::FeatureParam<base::TimeDelta> kIpPrivacyExpirationFuzz{
     &kEnableIpProtectionProxy, /*name=*/"IpPrivacyExpirationFuzz",
     /*default_value=*/base::Minutes(15)};
 
+const base::FeatureParam<bool> kIpPrivacyRestrictTopLevelSiteSchemes{
+    &kEnableIpProtectionProxy,
+    /*name=*/"IpPrivacyRestrictTopLevelSiteSchemes",
+    /*default_value=*/true};
+
+const base::FeatureParam<bool> kIpPrivacyUseQuicProxies{
+    &kEnableIpProtectionProxy,
+    /*name=*/"IpPrivacyUseQuicProxies",
+    /*default_value=*/false};
+
+const base::FeatureParam<bool> kIpPrivacyUseQuicProxiesOnly{
+    &kEnableIpProtectionProxy,
+    /*name=*/"IpPrivacyUseQuicProxiesOnly",
+    /*default_value=*/false};
+
+const base::FeatureParam<bool> kIpPrivacyUseSingleProxy{
+    &kEnableIpProtectionProxy,
+    /*name=*/"IpPrivacyUseSingleProxy",
+    /*default_value=*/false};
+
+const base::FeatureParam<std::string> kIpPrivacyAlwaysProxy{
+    &kEnableIpProtectionProxy,
+    /*name=*/"IpPrivacyAlwaysProxy",
+    /*default_value=*/""};
+
+const base::FeatureParam<bool> kIpPrivacyFallbackToDirect{
+    &kEnableIpProtectionProxy,
+    /*name=*/"IpPrivacyFallbackToDirect",
+    /*default_value=*/true};
+
 // Network-change migration requires NetworkHandle support, which are currently
 // only supported on Android (see
 // NetworkChangeNotifier::AreNetworkHandlesSupported).
@@ -491,13 +513,7 @@ BASE_FEATURE(kSpdyHeadersToHttpResponseUseBuilder,
              "SpdyHeadersToHttpResponseUseBuilder",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kReceiveEcn, "ReceiveEcn", base::FEATURE_DISABLED_BY_DEFAULT);
-
-// TODO(crbug.com/634470): Remove this feature flag in January 2024 if the new
-// limit sticks.
-BASE_FEATURE(kNewCertPathBuilderIterationLimit,
-             "NewCertPathBuilderIterationLimit",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+BASE_FEATURE(kReportEcn, "ReportEcn", base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kUseNewAlpsCodepointHttp2,
              "UseNewAlpsCodepointHttp2",
@@ -513,6 +529,20 @@ BASE_FEATURE(kTreatHTTPExpiresHeaderValueZeroAsExpired,
 
 BASE_FEATURE(kTruncateBodyToContentLength,
              "TruncateBodyToContentLength",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+#if BUILDFLAG(IS_MAC)
+BASE_FEATURE(kReduceIPAddressChangeNotification,
+             "ReduceIPAddressChangeNotification",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+#endif  // BUILDFLAG(IS_MAC)
+
+BASE_FEATURE(kDeviceBoundSessions,
+             "DeviceBoundSessions",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kStoreConnectionSubtype,
+             "StoreConnectionSubtype",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 }  // namespace net::features

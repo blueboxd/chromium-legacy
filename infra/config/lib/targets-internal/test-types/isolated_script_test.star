@@ -8,6 +8,37 @@ load("@stdlib//internal/graph.star", "graph")
 load("../common.star", _targets_common = "common")
 load("../nodes.star", _targets_nodes = "nodes")
 
+def _isolated_script_test_spec_init(node, settings):
+    return _targets_common.spec_init(node, settings)
+
+def _isolated_script_test_spec_finalize(name, settings, spec_value):
+    default_merge_script = "standard_isolated_script_merge"
+    spec_value = _targets_common.spec_finalize(settings, spec_value, default_merge_script)
+    return "isolated_scripts", name, spec_value
+
+def create_isolated_script_test_spec_handler(type_name):
+    """Create spec handler for test type implemented via isolated scripts.
+
+    The isolated script interface is the common interface all tests should
+    implement, but ideally we would not allow directly configuring arbitrary
+    isolated scripts and instead require a more-specific test type. This
+    function allows other test types to be implemented that use the isolated
+    script interface at run time. It should not be used by files outside of this
+    directory.
+    """
+    return _targets_common.spec_handler(
+        type_name = type_name,
+        init = _isolated_script_test_spec_init,
+        finalize = _isolated_script_test_spec_finalize,
+    )
+
+def isolated_script_test_details(args = None):
+    return struct(
+        args = args,
+    )
+
+_isolated_script_test_spec_handler = create_isolated_script_test_spec_handler("isolated script")
+
 def isolated_script_test(*, name, binary = None, mixins = None, args = None):
     """Define an isolated script test.
 
@@ -25,7 +56,7 @@ def isolated_script_test(*, name, binary = None, mixins = None, args = None):
         mixins: Mixins to apply when expanding the test.
         args: Arguments to be passed to the test binary.
     """
-    key = _targets_common.create_legacy_test(
+    legacy_test_key = _targets_common.create_legacy_test(
         name = name,
         basic_suite_test_config = _targets_common.basic_suite_test_config(
             binary = binary,
@@ -34,11 +65,15 @@ def isolated_script_test(*, name, binary = None, mixins = None, args = None):
         mixins = mixins,
     )
 
-    # Make sure that the binary actually exists
-    graph.add_edge(key, _targets_nodes.BINARY.key(binary or name))
-
-    _targets_common.create_test(
+    test_key = _targets_common.create_test(
         name = name,
-        spec_handler = _targets_common.spec_handler_for_unimplemented_target_type("isolated_script_test"),
-        spec_value = None,
+        spec_handler = _isolated_script_test_spec_handler,
+        details = isolated_script_test_details(
+            args = args,
+        ),
+        mixins = mixins,
     )
+
+    binary_key = _targets_nodes.BINARY.key(binary or name)
+    graph.add_edge(legacy_test_key, binary_key)
+    graph.add_edge(test_key, binary_key)

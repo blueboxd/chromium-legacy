@@ -244,11 +244,11 @@ TEST_F(ElementTest, StickySubtreesAreTrackedCorrectly) {
   UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(DocumentLifecycle::kPaintClean, document.Lifecycle().GetState());
 
-  EXPECT_EQ(RubyPosition::kBefore, outer_sticky->StyleRef().GetRubyPosition());
-  EXPECT_EQ(RubyPosition::kAfter, child->StyleRef().GetRubyPosition());
-  EXPECT_EQ(RubyPosition::kAfter, grandchild->StyleRef().GetRubyPosition());
-  EXPECT_EQ(RubyPosition::kAfter, inner_sticky->StyleRef().GetRubyPosition());
-  EXPECT_EQ(RubyPosition::kAfter,
+  EXPECT_EQ(RubyPosition::kOver, outer_sticky->StyleRef().GetRubyPosition());
+  EXPECT_EQ(RubyPosition::kUnder, child->StyleRef().GetRubyPosition());
+  EXPECT_EQ(RubyPosition::kUnder, grandchild->StyleRef().GetRubyPosition());
+  EXPECT_EQ(RubyPosition::kUnder, inner_sticky->StyleRef().GetRubyPosition());
+  EXPECT_EQ(RubyPosition::kUnder,
             great_grandchild->StyleRef().GetRubyPosition());
 
   // Setting -webkit-ruby value shouldn't have affected the sticky subtree bit.
@@ -447,9 +447,9 @@ TEST_F(ElementTest, ExportpartsAttribute) {
     const NamesMap* part_names_map = has_one_mapping->PartNamesMap();
     ASSERT_TRUE(part_names_map);
     ASSERT_EQ(1UL, part_names_map->size());
-    ASSERT_EQ("partname2", part_names_map->Get(AtomicString("partname1"))
-                               .value()
-                               .SerializeToString());
+    ASSERT_EQ(
+        "partname2",
+        part_names_map->Get(AtomicString("partname1"))->SerializeToString());
   }
 
   {
@@ -457,12 +457,12 @@ TEST_F(ElementTest, ExportpartsAttribute) {
     const NamesMap* part_names_map = has_two_mappings->PartNamesMap();
     ASSERT_TRUE(part_names_map);
     ASSERT_EQ(2UL, part_names_map->size());
-    ASSERT_EQ("partname2", part_names_map->Get(AtomicString("partname1"))
-                               .value()
-                               .SerializeToString());
-    ASSERT_EQ("partname4", part_names_map->Get(AtomicString("partname3"))
-                               .value()
-                               .SerializeToString());
+    ASSERT_EQ(
+        "partname2",
+        part_names_map->Get(AtomicString("partname1"))->SerializeToString());
+    ASSERT_EQ(
+        "partname4",
+        part_names_map->Get(AtomicString("partname3"))->SerializeToString());
   }
 
   {
@@ -475,9 +475,9 @@ TEST_F(ElementTest, ExportpartsAttribute) {
     const NamesMap* part_names_map = has_no_mapping->PartNamesMap();
     ASSERT_TRUE(part_names_map);
     ASSERT_EQ(1UL, part_names_map->size());
-    ASSERT_EQ("partname2", part_names_map->Get(AtomicString("partname1"))
-                               .value()
-                               .SerializeToString());
+    ASSERT_EQ(
+        "partname2",
+        part_names_map->Get(AtomicString("partname1"))->SerializeToString());
   }
 }
 

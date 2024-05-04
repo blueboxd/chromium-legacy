@@ -8,7 +8,9 @@
 
 // clang-format off
 import type {CrLitElement, PropertyValues} from '//resources/lit/v3_0/lit.rollup.js';
-import type {PaperRippleElement} from '//resources/polymer/v3_0/paper-ripple/paper-ripple.js';
+
+import type {CrRippleElement} from '../cr_ripple/cr_ripple.js';
+
 import {assert, assertNotReached} from '//resources/js/assert.js';
 // clang-format on
 
@@ -59,7 +61,6 @@ export const CrRadioButtonMixinLit =
             /**
              * Holds the tabIndex for the radio button.
              */
-            buttonTabIndex: {type: Number},
             ariaCheckedString: {type: String},
             ariaDisabledString: {type: String},
           };
@@ -71,16 +72,12 @@ export const CrRadioButtonMixinLit =
         hideLabelText: boolean = false;
         label: string = '';
         name?: string;
-        buttonTabIndex: number = -1;
         ariaCheckedString: string = 'false';
         ariaDisabledString: string = 'false';
 
         override connectedCallback() {
           super.connectedCallback();
           this.addEventListener('blur', this.hideRipple_.bind(this));
-          if (!document.documentElement.hasAttribute('chrome-refresh-2023')) {
-            this.addEventListener('focus', this.onFocus_.bind(this));
-          }
           this.addEventListener('up', this.hideRipple_.bind(this));
         }
 
@@ -116,16 +113,16 @@ export const CrRadioButtonMixinLit =
           button.focus();
         }
 
-        getPaperRipple(): PaperRippleElement {
+        getRipple(): CrRippleElement {
           assertNotReached();
         }
 
         private onFocus_() {
-          this.getPaperRipple().showAndHoldDown();
+          this.getRipple().showAndHoldDown();
         }
 
         private hideRipple_() {
-          this.getPaperRipple().clear();
+          this.getRipple().clear();
         }
 
         /**
@@ -158,5 +155,5 @@ export interface CrRadioButtonMixinLitInterface {
   getAriaDisabled(): string;
   getAriaChecked(): string;
   onInputKeydown(e: KeyboardEvent): void;
-  getPaperRipple(): PaperRippleElement;
+  getRipple(): CrRippleElement;
 }

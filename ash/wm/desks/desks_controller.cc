@@ -115,13 +115,6 @@ constexpr int kDeskTraversalsMaxValue = 20;
 // interval.
 constexpr base::TimeDelta kDeskTraversalsTimeout = base::Seconds(5);
 
-constexpr char kCloseAllZombieWindowsFoundHistogramName[] =
-    "Ash.Desks.CloseAllZombieWindowsFound";
-
-// The amount of time we wait after `CleanUpClosedAppWindowsTask` runs before
-// we check how many of those windows are still in memory.
-constexpr base::TimeDelta kCloseAllWindowsZombieCheckTimeout = base::Minutes(1);
-
 constexpr int kDeskDefaultNameIds[] = {
     IDS_ASH_DESKS_DESK_1_MINI_VIEW_TITLE,
     IDS_ASH_DESKS_DESK_2_MINI_VIEW_TITLE,
@@ -268,13 +261,6 @@ void ShowDeskRemovalUndoToast(const std::string& toast_id,
   undo_toast_data.dismiss_callback = std::move(dismiss_callback);
   undo_toast_data.expired_callback = std::move(expired_callback);
   ToastManager::Get()->Show(std::move(undo_toast_data));
-}
-
-// Reports the number of windows that still exist in `window_tracker`.
-void ReportNumberOfZombieWindows(
-    std::unique_ptr<aura::WindowTracker> window_tracker) {
-  base::UmaHistogramCounts100(kCloseAllZombieWindowsFoundHistogramName,
-                              window_tracker->windows().size());
 }
 
 AccountId GetPrimaryUserAccountId() {
@@ -1737,12 +1723,13 @@ void DesksController::ActivateDeskInternal(const Desk* desk,
     overview_controller->EndOverview(OverviewEndAction::kDeskActivation,
                                      OverviewEnterExitType::kImmediateExit);
   }
+
   // We should always end split view during a desk change in order to update the
   // divider widget.
-  SplitViewController* split_view_controller =
-      SplitViewController::Get(Shell::GetPrimaryRootWindow());
-  split_view_controller->EndSplitView(
-      SplitViewController::EndReason::kDesksChange);
+  for (aura::Window* root_window : Shell::GetAllRootWindows()) {
+    SplitViewController::Get(root_window)
+        ->EndSplitView(SplitViewController::EndReason::kDesksChange);
+  }
 
   MoveVisibleOnAllDesksWindowsFromActiveDeskTo(const_cast<Desk*>(desk));
   active_desk_ = const_cast<Desk*>(desk);
@@ -2159,6 +2146,8 @@ void DesksController::FinalizeDeskRemoval(RemovedDeskData* removed_desk_data) {
   // while-loop.
   aura::WindowTracker unclosed_windows_tracker(app_windows);
 
+  aura::Window* floated_window =
+      Shell::Get()->float_controller()->FindFloatedWindowOfDesk(removed_desk);
   while (!unclosed_windows_tracker.windows().empty()) {
     aura::Window* window = unclosed_windows_tracker.Pop();
     views::Widget* widget = views::Widget::GetWidgetForNativeView(window);
@@ -2173,16 +2162,17 @@ void DesksController::FinalizeDeskRemoval(RemovedDeskData* removed_desk_data) {
     // container are removed from the container in case we want to immediately
     // reuse that container. Since floated window doesn't belong to desk
     // container, handle it separately.
-    aura::Window* floated_window =
-        Shell::Get()->float_controller()->FindFloatedWindowOfDesk(removed_desk);
 
     // When windows are being closed, they do so asynchronously. So, to free up
     // the desk container while the windows are being closed, we want to move
     // those windows to the container `kShellWindowId_UnparentedContainer`.
-    if (window != floated_window) {
-      window->GetRootWindow()
-          ->GetChildById(kShellWindowId_UnparentedContainer)
-          ->AddChild(window);
+    // If we move one of the windows in a snap group, the `SnapGroup` will take
+    // care of moving the other to be under the same parent, so we don't need to
+    // move it here again.
+    auto* unparented_container = window->GetRootWindow()->GetChildById(
+        kShellWindowId_UnparentedContainer);
+    if (window != floated_window && unparented_container != window->parent()) {
+      unparented_container->AddChild(window);
     }
 
     // We need to ensure that `widget->Close()` is called after we move the
@@ -2246,8 +2236,6 @@ void DesksController::UntrackWindowFromAllDesks(aura::Window* window) {
 
 void DesksController::CleanUpClosedAppWindowsTask(
     std::unique_ptr<aura::WindowTracker> closing_window_tracker) {
-  auto widgetless_windows = std::make_unique<aura::WindowTracker>();
-
   // We have waited long enough for these app windows to close cleanly.
   // If there is any app windows still around, we will close them forcefully.
   // These window's desk has already been removed. We should not let these
@@ -2262,20 +2250,8 @@ void DesksController::CleanUpClosedAppWindowsTask(
     // close cleanly before this.
     if (widget) {
       widget->CloseNow();
-    } else {
-      // If the window does not have a widget, we add it to the
-      // `widgetless_windows` tracker to check back on later.
-      widgetless_windows->Add(window);
     }
   }
-
-  // We post a delayed task to check that all of the windows in
-  // `widgetless_windows eventually end up closing.
-  base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(&ReportNumberOfZombieWindows,
-                     std::move(widgetless_windows)),
-      kCloseAllWindowsZombieCheckTimeout);
 }
 
 void DesksController::MoveVisibleOnAllDesksWindowsFromActiveDeskTo(

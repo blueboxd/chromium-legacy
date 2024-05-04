@@ -5,6 +5,7 @@
 #include "chrome/browser/hid/chrome_hid_delegate.h"
 
 #include <memory>
+#include <string_view>
 
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
@@ -61,14 +62,14 @@ using ::testing::ElementsAre;
 using ::testing::NiceMock;
 using ::testing::UnorderedElementsAre;
 
-constexpr base::StringPiece kDefaultTestUrl{"https://www.google.com"};
-constexpr base::StringPiece kCrossOriginTestUrl{"https://www.chromium.org"};
+constexpr std::string_view kDefaultTestUrl{"https://www.google.com"};
+constexpr std::string_view kCrossOriginTestUrl{"https://www.chromium.org"};
 constexpr char kTestUserEmail[] = "user@example.com";
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-constexpr base::StringPiece kPrivilegedExtensionId{
+constexpr std::string_view kPrivilegedExtensionId{
     "ckcendljdlmgnhghiaomidhiiclmapok"};
-constexpr base::StringPiece kExtensionDocumentFileName{"index.html"};
+constexpr std::string_view kExtensionDocumentFileName{"index.html"};
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 MATCHER_P(HasGuid, matcher, "") {
@@ -229,7 +230,7 @@ class ChromeHidTestHelper {
   // Creates a fake extension with the specified `extension_id` so that it can
   // exercise behaviors that are only enabled for privileged extensions.
   scoped_refptr<const extensions::Extension> CreateExtensionWithId(
-      base::StringPiece extension_id) {
+      std::string_view extension_id) {
     auto manifest =
         base::Value::Dict()
             .Set("name", "Fake extension")
@@ -871,7 +872,7 @@ class ChromeHidDelegateRenderFrameTestBase
     profile_manager_ = std::make_unique<TestingProfileManager>(
         TestingBrowserProcess::GetGlobal());
     ASSERT_TRUE(profile_manager_->SetUp());
-    // TODO(crbug.com/1399310): Pass testing factory when creating profile.
+    // TODO(crbug.com/40249783): Pass testing factory when creating profile.
     // Ideally, we should be able to pass testing factory when calling profile
     // manager's CreateTestingProfile. However, due to the fact that:
     // 1) TestingProfile::TestingProfile(...) will call BrowserContextShutdown
@@ -923,7 +924,7 @@ class ChromeHidDelegateRenderFrameTestBase
     // The test assumes the previous page gets deleted after navigation,
     // disconnecting the device. Disable back/forward cache to ensure that it
     // doesn't get preserved in the cache.
-    // TODO(crbug.com/1346021): Integrate WebHID with bfcache and remove this.
+    // TODO(crbug.com/40232335): Integrate WebHID with bfcache and remove this.
     content::DisableBackForwardCacheForTesting(
         web_contents, content::BackForwardCache::TEST_REQUIRES_NO_CACHING);
 
@@ -1032,7 +1033,7 @@ class ChromeHidDelegateServiceWorkerTestBase
     auto builder = TestingProfile::Builder();
     auto testing_profile = builder.Build();
     profile_ = testing_profile.get();
-    // TODO(crbug.com/1399310): Pass testing factory when creating profile.
+    // TODO(crbug.com/40249783): Pass testing factory when creating profile.
     // Ideally, we should use TestingProfile::Builder::AddTestingFactory to
     // inject MockHidConnectionTracker. However, due to the fact that:
     // 1) TestingProfile::TestingProfile(...) will call BrowserContextShutdown

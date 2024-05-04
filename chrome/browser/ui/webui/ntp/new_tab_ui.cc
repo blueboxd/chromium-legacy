@@ -147,7 +147,8 @@ void NewTabUI::NewTabHTMLSource::StartDataRequest(
     const content::WebContents::Getter& wc_getter,
     content::URLDataSource::GotDataCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  // TODO(crbug/1009127): Simplify usages of |path| since |url| is available.
+  // TODO(crbug.com/40050262): Simplify usages of |path| since |url| is
+  // available.
   const std::string path = content::URLDataSource::URLToRequestPath(url);
   if (!path.empty() && path[0] != '#') {
     // A path under new-tab was requested; it's likely a bad relative
@@ -199,7 +200,7 @@ std::string NewTabUI::NewTabHTMLSource::GetContentSecurityPolicy(
   } else if (directive ==
                  network::mojom::CSPDirectiveName::RequireTrustedTypesFor ||
              directive == network::mojom::CSPDirectiveName::TrustedTypes) {
-    // TODO(crbug.com/1098687): Trusted Type New Tab Page
+    // TODO(crbug.com/40137143): Trusted Type New Tab Page
     // This removes require-trusted-types-for and trusted-types directives
     // from the CSP header.
     return std::string();

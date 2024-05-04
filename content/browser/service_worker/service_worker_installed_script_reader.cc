@@ -39,7 +39,7 @@ class ServiceWorkerInstalledScriptReader::MetaDataSender {
   void OnWritable(MojoResult) {
     // It isn't necessary to handle MojoResult here since WriteDataRaw()
     // returns an equivalent error.
-    uint32_t size = meta_data_->size() - bytes_sent_;
+    size_t size = meta_data_->size() - bytes_sent_;
     TRACE_EVENT2(
         "ServiceWorker",
         "ServiceWorkerInstalledScriptReader::MetaDataSender::OnWritable",
@@ -169,7 +169,7 @@ void ServiceWorkerInstalledScriptReader::OnReadDataPrepared(
       return;
     }
 
-    // TODO(crbug.com/1055677): Avoid copying |metadata| if |client_| doesn't
+    // TODO(crbug.com/40120038): Avoid copying |metadata| if |client_| doesn't
     // need it.
     auto buffer = base::MakeRefCounted<net::IOBufferWithSize>(metadata->size());
     memmove(buffer->data(), metadata->data(), metadata->size());

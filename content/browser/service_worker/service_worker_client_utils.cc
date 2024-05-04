@@ -23,6 +23,7 @@
 #include "content/browser/service_worker/service_worker_container_host.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
+#include "content/browser/service_worker/service_worker_security_utils.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -45,7 +46,7 @@
 #include "url/gurl.h"
 #include "url/origin.h"
 
-// TODO(https://crbug.com/824858): Much of this file, which dealt with thread
+// TODO(crbug.com/40568315): Much of this file, which dealt with thread
 // hops between UI and IO, can likely be simplified now that service worker code
 // is on the UI thread.
 
@@ -258,12 +259,11 @@ void GetNonWindowClients(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (options->include_uncontrolled) {
     if (controller->context()) {
-      for (auto it = controller->context()->GetClientContainerHostIterator(
+      for (auto it = controller->context()->GetServiceWorkerClients(
                controller->key(), false /* include_reserved_clients */,
                false /* include_back_forward_cached_clients */);
-           !it->IsAtEnd(); it->Advance()) {
-        AddNonWindowClient(it->GetContainerHost(), options->client_type,
-                           &clients);
+           !it.IsAtEnd(); ++it) {
+        AddNonWindowClient(&*it, options->client_type, &clients);
       }
     }
   } else {
@@ -305,11 +305,11 @@ void GetWindowClients(
       clients_info;
   if (options->include_uncontrolled) {
     if (controller->context()) {
-      for (auto it = controller->context()->GetClientContainerHostIterator(
+      for (auto it = controller->context()->GetServiceWorkerClients(
                controller->key(), false /* include_reserved_clients */,
                false /* include_back_forward_cached_clients */);
-           !it->IsAtEnd(); it->Advance()) {
-        AddWindowClient(it->GetContainerHost(), &clients_info);
+           !it.IsAtEnd(); ++it) {
+        AddWindowClient(&*it, &clients_info);
       }
     }
   } else {
@@ -376,8 +376,10 @@ void DidGetExecutionReadyClient(
 
   // In a scenario where "--disable-web-security" is specified the |script_url|
   // may be cross-origin
-  CHECK_EQ(container_host->GetCorrectStorageKeyForWebSecurityState(script_url),
-           key);
+  CHECK_EQ(
+      service_worker_security_utils::GetCorrectStorageKeyForWebSecurityState(
+          container_host->key(), script_url),
+      key);
 
   blink::mojom::ServiceWorkerClientInfoPtr info = GetWindowClientInfo(
       container_host->GetRenderFrameHostId(), container_host->create_time(),
@@ -403,7 +405,7 @@ void FocusWindowClient(ServiceWorkerContainerHost* container_host,
   }
 
   // Avoid focusing on inactive pages.
-  // TODO(https://crbug.com/1239553): Running the callback with nullptr
+  // TODO(crbug.com/40193903): Running the callback with nullptr
   // results in NotFoundError whereas TypeError should be invoked
   // according to the specification.
   // https://w3c.github.io/ServiceWorker/#client-focus
@@ -615,31 +617,31 @@ void DidNavigate(const base::WeakPtr<ServiceWorkerContextCore>& context,
     return;
   }
 
-  for (std::unique_ptr<ServiceWorkerContextCore::ContainerHostIterator> it =
-           context->GetClientContainerHostIterator(
-               key, true /* include_reserved_clients */,
-               false /* include_back_forward_cached_clients */);
-       !it->IsAtEnd(); it->Advance()) {
-    ServiceWorkerContainerHost* container_host = it->GetContainerHost();
-    if (!container_host->IsContainerForWindowClient())
+  for (auto it = context->GetServiceWorkerClients(
+           key, true /* include_reserved_clients */,
+           false /* include_back_forward_cached_clients */);
+       !it.IsAtEnd(); ++it) {
+    if (!it->IsContainerForWindowClient()) {
       continue;
+    }
 
-    if (container_host->GetRenderFrameHostId() != rfh_id)
+    if (it->GetRenderFrameHostId() != rfh_id) {
       continue;
+    }
 
     // DidNavigate must be called with a preparation complete client (the
     // navigation was committed), but the client might not be execution ready
     // yet (Blink hasn't yet created the Document).
-    DCHECK(container_host->is_response_committed());
-    if (!container_host->is_execution_ready()) {
-      container_host->AddExecutionReadyCallback(base::BindOnce(
-          &DidGetExecutionReadyClient, context, container_host->client_uuid(),
-          script_url, key, std::move(callback)));
+    DCHECK(it->is_response_committed());
+    if (!it->is_execution_ready()) {
+      it->AddExecutionReadyCallback(base::BindOnce(
+          &DidGetExecutionReadyClient, context, it->client_uuid(), script_url,
+          key, std::move(callback)));
       return;
     }
 
-    DidGetExecutionReadyClient(context, container_host->client_uuid(),
-                               script_url, key, std::move(callback));
+    DidGetExecutionReadyClient(context, it->client_uuid(), script_url, key,
+                               std::move(callback));
     return;
   }
 

@@ -176,7 +176,7 @@ class CompositorAnimationWaiter : public ui::CompositorObserver {
     loop.Run();
   }
 
-  void OnCompositingEnded(ui::Compositor* compositor) override {
+  void OnCompositingAckDeprecated(ui::Compositor* compositor) override {
     if (compositing_ended_callback_) {
       std::move(compositing_ended_callback_).Run();
     }
@@ -314,7 +314,7 @@ class PersonalizationAppIntegrationPixelBrowserTest
     scoped_feature_list_.InitAndDisableFeature(chromeos::features::kJelly);
   }
 
-  // TODO(crbug.com/1491942): This fails with the field trial testing config.
+  // TODO(crbug.com/40285326): This fails with the field trial testing config.
   void SetUpCommandLine(base::CommandLine* command_line) override {
     PersonalizationAppIntegrationBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch("disable-field-trial-config");
@@ -371,7 +371,7 @@ class PersonalizationAppIntegrationPixelBrowserTest
 
 // Do not run on very slow builds.
 #if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER) || \
-    defined(THREAD_SANITIZER)
+    defined(THREAD_SANITIZER) || !defined(NDEBUG)
 #define MAYBE_PixelTestFullscreenPreview DISABLED_PixelTestFullscreenPreview
 #else
 #define MAYBE_PixelTestFullscreenPreview PixelTestFullscreenPreview

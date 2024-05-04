@@ -316,7 +316,7 @@ void FindRequestManager::Find(int request_id,
   DCHECK_GT(request_id, current_request_.id);
   DCHECK_GT(request_id, current_session_id_);
 
-  // TODO(crbug.com/1250158): Remove this when we decide how long the
+  // TODO(crbug.com/40197893): Remove this when we decide how long the
   // find-in-page delay should be.
   if (options->new_session) {
     base::TimeTicks now = base::TimeTicks::Now();
@@ -843,7 +843,7 @@ void FindRequestManager::AddFrame(RenderFrameHost* rfh, bool force) {
 }
 
 bool FindRequestManager::CheckFrame(RenderFrameHost* rfh) const {
-  // TODO(crbug.com/1245613): Convert IsFindInPageDisabled to a DCHECK when we
+  // TODO(crbug.com/40196212): Convert IsFindInPageDisabled to a DCHECK when we
   // replace DidFinishLoad with DidFinishNavigation in FrameObserver.
   if (!rfh || !base::Contains(find_in_page_clients_, rfh) ||
       IsFindInPageDisabled(rfh)) {

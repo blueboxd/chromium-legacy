@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_ALLOCATOR_PARTITION_ALLOCATOR_SRC_PARTITION_ALLOC_PARTITION_ALLOC_BASE_LOG_MESSAGE_H_
-#define BASE_ALLOCATOR_PARTITION_ALLOCATOR_SRC_PARTITION_ALLOC_PARTITION_ALLOC_BASE_LOG_MESSAGE_H_
+#ifndef PARTITION_ALLOC_PARTITION_ALLOC_BASE_LOG_MESSAGE_H_
+#define PARTITION_ALLOC_PARTITION_ALLOC_BASE_LOG_MESSAGE_H_
 
 #include <cstddef>
 
-#include "build/build_config.h"
+#include "partition_alloc/build_config.h"
 #include "partition_alloc/partition_alloc_base/component_export.h"
 #include "partition_alloc/partition_alloc_base/debug/debugging_buildflags.h"
 #include "partition_alloc/partition_alloc_base/scoped_clear_last_error.h"
@@ -151,4 +151,4 @@ class PA_COMPONENT_EXPORT(PARTITION_ALLOC_BASE) ErrnoLogMessage
 
 }  // namespace partition_alloc::internal::logging
 
-#endif  // BASE_ALLOCATOR_PARTITION_ALLOCATOR_SRC_PARTITION_ALLOC_PARTITION_ALLOC_BASE_LOG_MESSAGE_H_
+#endif  // PARTITION_ALLOC_PARTITION_ALLOC_BASE_LOG_MESSAGE_H_

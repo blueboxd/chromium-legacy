@@ -270,7 +270,7 @@ std::optional<SkColor> GetAccentColor(const ComputedStyle& style,
     return css_accent_color->Rgb();
 
   bool in_image =
-      document.GetPage()->GetChromeClient().IsSVGImageChromeClient();
+      document.GetPage()->GetChromeClient().IsIsolatedSVGChromeClient();
   if (!RuntimeEnabledFeatures::PreventReadingSystemAccentColorEnabled() ||
       !in_image) {
     mojom::blink::ColorScheme color_scheme = style.UsedColorScheme();
@@ -323,7 +323,8 @@ bool ThemePainterDefault::PaintCheckbox(const Element& element,
   WebThemeEngineHelper::GetNativeThemeEngine()->Paint(
       paint_info.context.Canvas(), WebThemeEngine::kPartCheckbox,
       GetWebThemeState(element), unzoomed_rect, &extra_params, color_scheme,
-      color_provider, GetAccentColor(style, document));
+      document.InForcedColorsMode(), color_provider,
+      GetAccentColor(style, document));
   return false;
 }
 
@@ -361,7 +362,8 @@ bool ThemePainterDefault::PaintRadio(const Element& element,
   WebThemeEngineHelper::GetNativeThemeEngine()->Paint(
       paint_info.context.Canvas(), WebThemeEngine::kPartRadio,
       GetWebThemeState(element), unzoomed_rect, &extra_params, color_scheme,
-      color_provider, GetAccentColor(style, document));
+      document.InForcedColorsMode(), color_provider,
+      GetAccentColor(style, document));
   return false;
 }
 
@@ -381,7 +383,8 @@ bool ThemePainterDefault::PaintButton(const Element& element,
   WebThemeEngineHelper::GetNativeThemeEngine()->Paint(
       paint_info.context.Canvas(), WebThemeEngine::kPartButton,
       GetWebThemeState(element), rect, &extra_params, color_scheme,
-      color_provider, GetAccentColor(style, document));
+      document.InForcedColorsMode(), color_provider,
+      GetAccentColor(style, document));
   return false;
 }
 
@@ -417,7 +420,8 @@ bool ThemePainterDefault::PaintTextField(const Element& element,
   WebThemeEngineHelper::GetNativeThemeEngine()->Paint(
       paint_info.context.Canvas(), WebThemeEngine::kPartTextField,
       GetWebThemeState(element), rect, &extra_params, color_scheme,
-      color_provider, GetAccentColor(style, element.GetDocument()));
+      element.GetDocument().InForcedColorsMode(), color_provider,
+      GetAccentColor(style, element.GetDocument()));
   return false;
 }
 
@@ -458,7 +462,8 @@ bool ThemePainterDefault::PaintMenuList(const Element& element,
   WebThemeEngineHelper::GetNativeThemeEngine()->Paint(
       paint_info.context.Canvas(), WebThemeEngine::kPartMenuList,
       GetWebThemeState(element), rect, &extra_params, color_scheme,
-      color_provider, GetAccentColor(style, document));
+      document.InForcedColorsMode(), color_provider,
+      GetAccentColor(style, document));
   return false;
 }
 
@@ -481,7 +486,8 @@ bool ThemePainterDefault::PaintMenuListButton(const Element& element,
   WebThemeEngineHelper::GetNativeThemeEngine()->Paint(
       paint_info.context.Canvas(), WebThemeEngine::kPartMenuList,
       GetWebThemeState(element), rect, &extra_params, color_scheme,
-      color_provider, GetAccentColor(style, document));
+      document.InForcedColorsMode(), color_provider,
+      GetAccentColor(style, document));
   return false;
 }
 
@@ -492,9 +498,7 @@ void ThemePainterDefault::SetupMenuListArrow(
     WebThemeEngine::ExtraParams& extra_params) {
   auto& menu_list =
       absl::get<WebThemeEngine::MenuListExtraParams>(extra_params);
-  if (IsHorizontalWritingMode(style.GetWritingMode()) ||
-      !RuntimeEnabledFeatures::
-          FormControlsVerticalWritingModeSupportEnabled()) {
+  if (IsHorizontalWritingMode(style.GetWritingMode())) {
     menu_list.arrow_direction = WebThemeEngine::ArrowDirection::kDown;
     const int left = rect.x() + floorf(style.BorderLeftWidth());
     const int right =
@@ -556,7 +560,6 @@ bool ThemePainterDefault::PaintSliderTrack(const Element& element,
           NonStandardAppearanceValueSliderVerticalEnabled() &&
       style.EffectiveAppearance() == kSliderVerticalPart;
   bool is_writing_mode_vertical =
-      RuntimeEnabledFeatures::FormControlsVerticalWritingModeSupportEnabled() &&
       !IsHorizontalWritingMode(style.GetWritingMode());
   slider.vertical = is_writing_mode_vertical || is_slider_vertical;
   slider.in_drag = false;
@@ -615,7 +618,8 @@ bool ThemePainterDefault::PaintSliderTrack(const Element& element,
   WebThemeEngineHelper::GetNativeThemeEngine()->Paint(
       paint_info.context.Canvas(), WebThemeEngine::kPartSliderTrack,
       GetWebThemeState(element), rect, &extra_params, color_scheme,
-      color_provider, GetAccentColor(style, element.GetDocument()));
+      element.GetDocument().InForcedColorsMode(), color_provider,
+      GetAccentColor(style, element.GetDocument()));
   return false;
 }
 
@@ -624,9 +628,7 @@ bool ThemePainterDefault::PaintSliderThumb(const Element& element,
                                            const PaintInfo& paint_info,
                                            const gfx::Rect& rect) {
   WebThemeEngine::SliderExtraParams slider;
-  slider.vertical = (RuntimeEnabledFeatures::
-                         FormControlsVerticalWritingModeSupportEnabled() &&
-                     !IsHorizontalWritingMode(style.GetWritingMode())) ||
+  slider.vertical = !IsHorizontalWritingMode(style.GetWritingMode()) ||
                     (RuntimeEnabledFeatures::
                          NonStandardAppearanceValueSliderVerticalEnabled() &&
                      style.EffectiveAppearance() == kSliderThumbVerticalPart);
@@ -664,7 +666,7 @@ bool ThemePainterDefault::PaintSliderThumb(const Element& element,
   WebThemeEngineHelper::GetNativeThemeEngine()->Paint(
       paint_info.context.Canvas(), WebThemeEngine::kPartSliderThumb,
       GetWebThemeState(element), rect, &extra_params, color_scheme,
-      color_provider, accent_color);
+      element.GetDocument().InForcedColorsMode(), color_provider, accent_color);
   return false;
 }
 
@@ -699,7 +701,8 @@ bool ThemePainterDefault::PaintInnerSpinButton(const Element& element,
   WebThemeEngineHelper::GetNativeThemeEngine()->Paint(
       paint_info.context.Canvas(), WebThemeEngine::kPartInnerSpinButton,
       GetWebThemeState(element), rect, &extra_params, color_scheme,
-      color_provider, GetAccentColor(style, element.GetDocument()));
+      element.GetDocument().InForcedColorsMode(), color_provider,
+      GetAccentColor(style, element.GetDocument()));
   return false;
 }
 
@@ -740,7 +743,8 @@ bool ThemePainterDefault::PaintProgressBar(const Element& element,
   WebThemeEngineHelper::GetNativeThemeEngine()->Paint(
       paint_info.context.Canvas(), WebThemeEngine::kPartProgressBar,
       GetWebThemeState(element), rect, &extra_params, color_scheme,
-      color_provider, GetAccentColor(style, element.GetDocument()));
+      element.GetDocument().InForcedColorsMode(), color_provider,
+      GetAccentColor(style, element.GetDocument()));
   return false;
 }
 

@@ -17,6 +17,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/event_type_names.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/testing/null_execution_context.h"
 #include "third_party/blink/renderer/modules/peerconnection/mock_rtc_peer_connection_handler_platform.h"
@@ -30,6 +31,8 @@
 
 namespace blink {
 namespace {
+
+using testing::_;
 
 void RunSynchronous(base::TestSimpleTaskRunner* thread,
                     CrossThreadOnceClosure closure) {
@@ -52,6 +55,11 @@ void RunSynchronous(base::TestSimpleTaskRunner* thread,
   waitable_event.Wait();
 }
 
+class MockEventListener final : public NativeEventListener {
+ public:
+  MOCK_METHOD(void, Invoke, (ExecutionContext * executionContext, Event*));
+};
+
 class MockPeerConnectionHandler : public MockRTCPeerConnectionHandlerPlatform {
  public:
   MockPeerConnectionHandler(
@@ -65,16 +73,6 @@ class MockPeerConnectionHandler : public MockRTCPeerConnectionHandlerPlatform {
   scoped_refptr<base::SingleThreadTaskRunner> signaling_thread()
       const override {
     return signaling_thread_;
-  }
-
-  void RunSynchronousOnceClosureOnSignalingThread(
-      CrossThreadOnceClosure closure,
-      const char* trace_event_name) override {
-    closure_ = std::move(closure);
-    RunSynchronous(
-        signaling_thread_.get(),
-        CrossThreadBindOnce(&MockPeerConnectionHandler::RunOnceClosure,
-                            CrossThreadUnretained(this)));
   }
 
  private:
@@ -306,17 +304,19 @@ TEST_F(RTCDataChannelTest, BufferedAmountLow) {
       new rtc::RefCountedObject<MockDataChannel>(signaling_thread()));
   std::unique_ptr<MockPeerConnectionHandler> pc(
       new MockPeerConnectionHandler(signaling_thread()));
+  auto* onbufferedamountlow_handler = MakeGarbageCollected<MockEventListener>();
   auto* channel = MakeGarbageCollected<RTCDataChannel>(
       execution_context_, webrtc_channel, pc.get());
+  channel->addEventListener(event_type_names::kBufferedamountlow,
+                            onbufferedamountlow_handler);
+  EXPECT_CALL(*onbufferedamountlow_handler, Invoke(_, _));
   webrtc_channel->ChangeState(webrtc::DataChannelInterface::kOpen);
 
   channel->setBufferedAmountLowThreshold(1);
   channel->send("TEST", IGNORE_EXCEPTION_FOR_TESTING);
   EXPECT_EQ(4U, channel->bufferedAmount());
   channel->OnBufferedAmountChange(4);
-  ASSERT_EQ(1U, channel->scheduled_events_.size());
-  EXPECT_EQ("bufferedamountlow",
-            channel->scheduled_events_.back()->type().Utf8());
+
   // The actual send operation is posted to the signaling thread; wait for it
   // to run to avoid a memory leak.
   signaling_thread()->RunUntilIdle();
@@ -349,12 +349,13 @@ TEST_F(RTCDataChannelTest, Message) {
       new rtc::RefCountedObject<MockDataChannel>(signaling_thread()));
   std::unique_ptr<MockPeerConnectionHandler> pc(
       new MockPeerConnectionHandler(signaling_thread()));
+  auto* onmessage_handler = MakeGarbageCollected<MockEventListener>();
   auto* channel = MakeGarbageCollected<RTCDataChannel>(
       execution_context_, webrtc_channel, pc.get());
+  channel->addEventListener(event_type_names::kMessage, onmessage_handler);
+  EXPECT_CALL(*onmessage_handler, Invoke(_, _));
 
   channel->OnMessage(webrtc::DataBuffer("A"));
-  ASSERT_EQ(1U, channel->scheduled_events_.size());
-  EXPECT_EQ("message", channel->scheduled_events_.back()->type().Utf8());
 }
 
 TEST_F(RTCDataChannelTest, SendAfterContextDestroyed) {

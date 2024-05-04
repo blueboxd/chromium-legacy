@@ -24,6 +24,7 @@ four_colors_img_path = os.path.join(data_path, 'four-colors.y4m')
 frame_sources = [
     'camera', 'capture', 'offscreen', 'arraybuffer', 'hw_decoder', 'sw_decoder'
 ]
+hbd_frame_sources = ['hbd_arraybuffer']
 video_codecs = [
     'avc1.42001E', 'hvc1.1.6.L123.00', 'vp8', 'vp09.00.10.08', 'av01.0.04M.08'
 ]
@@ -84,6 +85,11 @@ class WebCodecsIntegrationTest(gpu_integration_test.GpuIntegrationTest):
           source_type
       }])
       yield ('WebCodecs_convertToRGB_' + source_type, 'convert-to-rgb.html', [{
+          'source_type':
+          source_type
+      }])
+    for source_type in hbd_frame_sources:
+      yield ('WebCodecs_DrawImage_' + source_type, 'draw-image.html', [{
           'source_type':
           source_type
       }])
@@ -183,6 +189,7 @@ class WebCodecsIntegrationTest(gpu_integration_test.GpuIntegrationTest):
         for bitrate_mode in ['constant', 'variable']:
           for latency_mode in ['realtime', 'quality']:
             source_type = 'offscreen'
+            content_hint = 'motion'
             args = (source_type, codec, acc, bitrate_mode, latency_mode)
             yield ('WebCodecs_EncodingModes_%s_%s_%s_%s_%s' % args,
                    'encoding-modes.html', [{
@@ -190,8 +197,25 @@ class WebCodecsIntegrationTest(gpu_integration_test.GpuIntegrationTest):
                        'codec': codec,
                        'acceleration': acc,
                        'bitrate_mode': bitrate_mode,
-                       'latency_mode': latency_mode
+                       'latency_mode': latency_mode,
+                       'content_hint': content_hint
                    }])
+
+    for codec in video_codecs:
+      for content_hint in ['detail', 'text', 'motion']:
+        source_type = 'offscreen'
+        acc = 'prefer-hardware'
+        bitrate_mode = 'constant'
+        latency_mode = 'realtime'
+        yield ('WebCodecs_ContentHint_%s_%s' % (codec, content_hint),
+               'encoding-modes.html', [{
+                   'source_type': source_type,
+                   'codec': codec,
+                   'acceleration': acc,
+                   'bitrate_mode': bitrate_mode,
+                   'latency_mode': latency_mode,
+                   'content_hint': content_hint
+               }])
 
     for codec in video_codecs:
       for acc in accelerations:

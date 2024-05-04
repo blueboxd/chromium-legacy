@@ -8,6 +8,7 @@
 #include <tuple>
 
 #include "base/hash/hash.h"
+#include "base/location.h"
 #include "base/rand_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/uuid.h"
@@ -65,7 +66,7 @@ class TwoClientPasswordsSyncTestWithVerifier
   ~TwoClientPasswordsSyncTestWithVerifier() override = default;
 
   bool UseVerifier() override {
-    // TODO(crbug.com/1137740): rewrite tests to not use verifier.
+    // TODO(crbug.com/40152785): rewrite tests to not use verifier.
     return true;
   }
 };
@@ -95,8 +96,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest,
     ASSERT_FALSE(GetSyncService(i)->IsSyncFeatureEnabled());
 
     // The PASSWORDS are active only if the signin was explicit.
-    if (!switches::IsExplicitBrowserSigninUIOnDesktopEnabled(
-            switches::ExplicitBrowserSigninPhase::kExperimental)) {
+    if (!switches::IsExplicitBrowserSigninUIOnDesktopEnabled()) {
       // Opt in. PASSWORDS should become active.
       password_manager::features_util::OptInToAccountStorage(
           GetProfile(i)->GetPrefs(), GetSyncService(i));
@@ -277,8 +277,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTestWithVerifier, Delete) {
   // Wait for client 0 to commit and client 1 to receive the update.
   ASSERT_TRUE(SamePasswordFormsAsVerifierChecker(1).Wait());
 
-  GetProfilePasswordStoreInterface(1)->RemoveLogin(form0);
-  GetVerifierProfilePasswordStoreInterface()->RemoveLogin(form0);
+  GetProfilePasswordStoreInterface(1)->RemoveLogin(FROM_HERE, form0);
+  GetVerifierProfilePasswordStoreInterface()->RemoveLogin(FROM_HERE, form0);
   ASSERT_EQ(1, GetVerifierPasswordCount());
 
   // Wait for deletion from client 1 to propagate.
@@ -336,13 +336,13 @@ IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest, E2E_ONLY(DeleteTwo)) {
   ASSERT_TRUE(SamePasswordFormsChecker().Wait());
   ASSERT_EQ(init_password_count, GetPasswordCount(1));
 
-  GetProfilePasswordStoreInterface(1)->RemoveLogin(form0);
+  GetProfilePasswordStoreInterface(1)->RemoveLogin(FROM_HERE, form0);
 
   // Wait for deletion from client 1 to propagate.
   ASSERT_TRUE(SamePasswordFormsChecker().Wait());
   ASSERT_EQ(init_password_count - 1, GetPasswordCount(0));
 
-  GetProfilePasswordStoreInterface(1)->RemoveLogin(form1);
+  GetProfilePasswordStoreInterface(1)->RemoveLogin(FROM_HERE, form1);
 
   // Wait for deletion from client 1 to propagate.
   ASSERT_TRUE(SamePasswordFormsChecker().Wait());
@@ -583,8 +583,8 @@ IN_PROC_BROWSER_TEST_F(
 
   // Remove the password from both clients to simulate a conflict with matching
   // remote and local deletion after Client 1 comes back online.
-  GetProfilePasswordStoreInterface(0)->RemoveLogin(form);
-  GetProfilePasswordStoreInterface(1)->RemoveLogin(form);
+  GetProfilePasswordStoreInterface(0)->RemoveLogin(FROM_HERE, form);
+  GetProfilePasswordStoreInterface(1)->RemoveLogin(FROM_HERE, form);
 
   // Simulate going online again.
   fake_server::FakeServerHttpPostProvider::EnableNetwork();

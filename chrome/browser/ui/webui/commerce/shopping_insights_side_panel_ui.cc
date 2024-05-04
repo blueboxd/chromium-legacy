@@ -7,11 +7,11 @@
 #include <memory>
 
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/commerce/shopping_service_factory.h"
 #include "chrome/browser/feature_engagement/tracker_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/commerce/shopping_ui_handler_delegate.h"
+#include "chrome/browser/ui/webui/top_chrome/top_chrome_web_ui_controller.h"
 #include "chrome/browser/ui/webui/webui_load_timer.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/grit/generated_resources.h"
@@ -19,7 +19,6 @@
 #include "chrome/grit/side_panel_commerce_resources_map.h"
 #include "chrome/grit/side_panel_shared_resources.h"
 #include "chrome/grit/side_panel_shared_resources_map.h"
-#include "components/commerce/core/commerce_constants.h"
 #include "components/commerce/core/commerce_feature_list.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_ui.h"
@@ -28,11 +27,10 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "ui/webui/color_change_listener/color_change_handler.h"
-#include "ui/webui/mojo_bubble_web_ui_controller.h"
 #include "ui/webui/resources/cr_components/commerce/shopping_service.mojom.h"
 
 ShoppingInsightsSidePanelUI::ShoppingInsightsSidePanelUI(content::WebUI* web_ui)
-    : ui::MojoBubbleWebUIController(web_ui) {
+    : TopChromeWebUIController(web_ui) {
   Profile* profile = Profile::FromWebUI(web_ui);
 
   content::WebUIDataSource* source = content::WebUIDataSource::CreateAndAdd(
@@ -117,7 +115,6 @@ void ShoppingInsightsSidePanelUI::CreateShoppingServiceHandler(
       std::make_unique<commerce::ShoppingServiceHandler>(
           std::move(page), std::move(receiver), bookmark_model,
           shopping_service, profile->GetPrefs(), tracker,
-          g_browser_process->GetApplicationLocale(),
           std::make_unique<commerce::ShoppingUiHandlerDelegate>(this, profile));
 }
 

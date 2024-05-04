@@ -75,6 +75,7 @@ public class MultiWindowUtils implements ActivityStateListener {
     private static MultiWindowUtils sInstance = new MultiWindowUtils();
 
     private static Integer sMaxInstancesForTesting;
+    private static Integer sInstanceCountForTesting;
 
     private final boolean mMultiInstanceApi31Enabled;
     private static Boolean sMultiInstanceApi31EnabledForTesting;
@@ -187,7 +188,7 @@ public class MultiWindowUtils implements ActivityStateListener {
      * @return Whether the system currently supports multiple displays, requiring Android Q+.
      */
     public boolean isInMultiDisplayMode(Activity activity) {
-        // TODO(crbug.com/824954): Consider supporting more displays.
+        // TODO(crbug.com/41378391): Consider supporting more displays.
         return ApiCompatibilityUtils.getTargetableDisplayIds(activity).size() == 2;
     }
 
@@ -238,7 +239,8 @@ public class MultiWindowUtils implements ActivityStateListener {
         // url other than the NTP. We should not allow dragging the last tab or display 'Move to
         // other window' in this scenario as the source window might be closed before drag n drop
         // completes properly and thus cause other complications.
-        boolean shouldAppCloseWithZeroTabs = HomepageManager.shouldCloseAppWithZeroTabs();
+        boolean shouldAppCloseWithZeroTabs =
+                HomepageManager.getInstance().shouldCloseAppWithZeroTabs();
         return hasAtMostOneTab && shouldAppCloseWithZeroTabs;
     }
 
@@ -400,6 +402,7 @@ public class MultiWindowUtils implements ActivityStateListener {
      * @return The number of Chrome instances that can switch to or launch.
      */
     public static int getInstanceCount() {
+        if (sInstanceCountForTesting != null) return sInstanceCountForTesting;
         int count = 0;
         for (int i = 0; i < getMaxInstances(); ++i) {
             if (MultiInstanceManagerApi31.instanceEntryExists(i) && isRestorableInstance(i)) {
@@ -839,6 +842,11 @@ public class MultiWindowUtils implements ActivityStateListener {
         var oldValue = sInstance;
         sInstance = instance;
         ResettersForTesting.register(() -> sInstance = oldValue);
+    }
+
+    public static void setInstanceCountForTesting(int instanceCount) {
+        sInstanceCountForTesting = instanceCount;
+        ResettersForTesting.register(() -> sInstanceCountForTesting = null);
     }
 
     public static void setMaxInstancesForTesting(int maxInstances) {

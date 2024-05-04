@@ -68,8 +68,7 @@
 #endif
 
 #if BUILDFLAG(IS_WIN)
-#include "content/browser/child_process_launcher_helper.h"
-#include "content/public/common/prefetch_type_win.h"
+#include "components/app_launch_prefetch/app_launch_prefetch.h"
 #include "media/capture/capture_switches.h"
 #include "services/audio/public/mojom/audio_service.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
@@ -112,19 +111,20 @@ base::ScopedFD PassNetworkContextParentDirs(
 #endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 
 #if BUILDFLAG(IS_WIN)
-std::string_view UtilityToAppLaunchPrefetchArg(
+base::CommandLine::StringPieceType UtilityToAppLaunchPrefetchArg(
     const std::string& utility_type) {
   // Set the default prefetch type for utility processes.
-  AppLaunchPrefetchType prefetch_type = AppLaunchPrefetchType::kUtilityOther;
+  app_launch_prefetch::SubprocessType prefetch_type =
+      app_launch_prefetch::SubprocessType::kUtilityOther;
 
   if (utility_type == network::mojom::NetworkService::Name_) {
-    prefetch_type = AppLaunchPrefetchType::kUtilityNetworkService;
+    prefetch_type = app_launch_prefetch::SubprocessType::kUtilityNetworkService;
   } else if (utility_type == storage::mojom::StorageService::Name_) {
-    prefetch_type = AppLaunchPrefetchType::kUtilityStorage;
+    prefetch_type = app_launch_prefetch::SubprocessType::kUtilityStorage;
   } else if (utility_type == audio::mojom::AudioService::Name_) {
-    prefetch_type = AppLaunchPrefetchType::kUtilityAudio;
+    prefetch_type = app_launch_prefetch::SubprocessType::kUtilityAudio;
   }
-  return internal::ChildProcessLauncherHelper::GetPrefetchSwitch(prefetch_type);
+  return app_launch_prefetch::GetPrefetchSwitch(prefetch_type);
 }
 #endif  // BUILDFLAG(IS_WIN)
 
@@ -188,28 +188,6 @@ bool UtilityProcessHost::Start() {
   return StartProcess();
 }
 
-// TODO(crbug.com/1328879): Remove this method when fixing the bug.
-#if BUILDFLAG(IS_CASTOS) || BUILDFLAG(IS_CAST_ANDROID)
-void UtilityProcessHost::RunServiceDeprecated(
-    const std::string& service_name,
-    mojo::ScopedMessagePipeHandle service_pipe,
-    RunServiceDeprecatedCallback callback) {
-  if (launch_state_ == LaunchState::kLaunchFailed) {
-    std::move(callback).Run(std::nullopt);
-    return;
-  }
-
-  process_->GetHost()->RunServiceDeprecated(service_name,
-                                            std::move(service_pipe));
-  if (launch_state_ == LaunchState::kLaunchComplete) {
-    std::move(callback).Run(process_->GetProcess().Pid());
-  } else {
-    DCHECK_EQ(launch_state_, LaunchState::kLaunchInProgress);
-    pending_run_service_callbacks_.push_back(std::move(callback));
-  }
-}
-#endif
-
 void UtilityProcessHost::SetMetricsName(const std::string& metrics_name) {
   metrics_name_ = metrics_name;
 }
@@ -227,9 +205,6 @@ void UtilityProcessHost::SetExtraCommandLineSwitches(
 void UtilityProcessHost::SetPreloadLibraries(
     const std::vector<base::FilePath>& preloads) {
   preload_libraries_ = preloads;
-}
-void UtilityProcessHost::SetPinUser32() {
-  pin_user32_ = true;
 }
 #endif  // BUILDFLAG(IS_WIN)
 
@@ -326,7 +301,7 @@ bool UtilityProcessHost::StartProcess() {
     cmd_line->AppendSwitchASCII(switches::kLang, locale);
 
 #if BUILDFLAG(IS_WIN)
-    cmd_line->AppendArg(UtilityToAppLaunchPrefetchArg(metrics_name_));
+    cmd_line->AppendArgNative(UtilityToAppLaunchPrefetchArg(metrics_name_));
 #endif  // BUILDFLAG(IS_WIN)
 
     sandbox::policy::SetCommandLineFlagsForSandboxType(cmd_line.get(),
@@ -431,7 +406,7 @@ bool UtilityProcessHost::StartProcess() {
 #endif
 
 #if BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_MAC)
-    file_data_->files_to_preload.merge(GetV8SnapshotFilesToPreload());
+    file_data_->files_to_preload.merge(GetV8SnapshotFilesToPreload(*cmd_line));
 #endif  // BUILDFLAG(IS_POSIX)
 
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
@@ -471,9 +446,6 @@ bool UtilityProcessHost::StartProcess() {
     if (!preload_libraries_.empty()) {
       delegate->SetPreloadLibraries(preload_libraries_);
     }
-    if (pin_user32_) {
-      delegate->SetPinUser32();
-    }
 #endif  // BUILDFLAG(IS_WIN)
 
 #if BUILDFLAG(USE_ZYGOTE)
@@ -491,24 +463,12 @@ bool UtilityProcessHost::StartProcess() {
 
 void UtilityProcessHost::OnProcessLaunched() {
   launch_state_ = LaunchState::kLaunchComplete;
-// TODO(crbug.com/1328879): Remove this when fixing the bug.
-#if BUILDFLAG(IS_CASTOS) || BUILDFLAG(IS_CAST_ANDROID)
-  for (auto& callback : pending_run_service_callbacks_)
-    std::move(callback).Run(process_->GetProcess().Pid());
-  pending_run_service_callbacks_.clear();
-#endif
   if (client_)
     client_->OnProcessLaunched(process_->GetProcess());
 }
 
 void UtilityProcessHost::OnProcessLaunchFailed(int error_code) {
   launch_state_ = LaunchState::kLaunchFailed;
-// TODO(crbug.com/1328879): Remove this when fixing the bug.
-#if BUILDFLAG(IS_CASTOS) || BUILDFLAG(IS_CAST_ANDROID)
-  for (auto& callback : pending_run_service_callbacks_)
-    std::move(callback).Run(std::nullopt);
-  pending_run_service_callbacks_.clear();
-#endif
 }
 
 void UtilityProcessHost::OnProcessCrashed(int exit_code) {

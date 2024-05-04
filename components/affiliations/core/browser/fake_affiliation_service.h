@@ -27,7 +27,6 @@ class FakeAffiliationService : public AffiliationService {
   void CancelPrefetch(const FacetURI& facet_uri,
                       const base::Time& keep_fresh_until) override;
   void KeepPrefetchForFacets(std::vector<FacetURI> facet_uris) override;
-  void TrimCacheForFacetURI(const FacetURI& facet_uri) override;
   void TrimUnusedCache(std::vector<FacetURI> facet_uris) override;
   void GetGroupingInfo(std::vector<FacetURI> facet_uris,
                        GroupsCallback callback) override;
@@ -35,6 +34,7 @@ class FakeAffiliationService : public AffiliationService {
                             callback) const override;
   void UpdateAffiliationsAndBranding(const std::vector<FacetURI>& facets,
                                      base::OnceClosure callback) override;
+  void RegisterSource(std::unique_ptr<AffiliationSource> source) override;
 };
 
 }  // namespace affiliations

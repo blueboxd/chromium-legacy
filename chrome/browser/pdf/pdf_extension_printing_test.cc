@@ -15,7 +15,6 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/pdf/pdf_extension_test_base.h"
 #include "chrome/browser/pdf/pdf_extension_test_util.h"
-#include "chrome/browser/pdf/pdf_frame_util.h"
 #include "chrome/browser/printing/browser_printing_context_factory_for_test.h"
 #include "chrome/browser/printing/print_error_dialog.h"
 #include "chrome/browser/printing/print_job.h"
@@ -399,7 +398,7 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionPrintingTest,
   menu_interceptor.Wait();
 }
 
-// TODO(crbug.com/1330032): Fix flakiness.
+// TODO(crbug.com/40842943): Fix flakiness.
 IN_PROC_BROWSER_TEST_P(PDFExtensionPrintingTest,
                        DISABLED_ContextMenuPrintCommandEmbeddedPluginFrame) {
   content::RenderFrameHost* extension_host =

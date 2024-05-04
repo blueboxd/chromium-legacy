@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40284755): Remove this and spanify to fix the errors.
+#pragma allow_unsafe_buffers
+#endif
+
 #include <link.h>
 #include <sys/mman.h>
 #include <sys/prctl.h>
@@ -197,7 +202,7 @@ TEST_F(LinkerTest, FindReservedMemoryRegion) {
     return;
   }
 
-  // TODO(crbug.com/1223747): Check that only non-low-end Android Q+ devices
+  // TODO(crbug.com/40774803): Check that only non-low-end Android Q+ devices
   // reach this point.
 
   // Create a properly named synthetic region with a size smaller than a real

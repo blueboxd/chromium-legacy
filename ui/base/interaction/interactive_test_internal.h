@@ -9,8 +9,10 @@
 #include <functional>
 #include <memory>
 #include <string>
+#include <string_view>
 #include <tuple>
 #include <type_traits>
+#include <variant>
 
 #include "base/callback_list.h"
 #include "base/containers/contains.h"
@@ -19,13 +21,11 @@
 #include "base/logging.h"
 #include "base/no_destructor.h"
 #include "base/strings/strcat.h"
-#include "base/strings/string_piece.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/test/bind.h"
 #include "base/test/rectify_callback.h"
 #include "base/types/is_instantiation.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/abseil-cpp/absl/types/variant.h"
 #include "ui/base/interaction/element_identifier.h"
 #include "ui/base/interaction/element_test_util.h"
 #include "ui/base/interaction/element_tracker.h"
@@ -147,7 +147,7 @@ class InteractiveTestPrivate {
   // Places a callback in the message queue to bounce an event off of the pivot
   // element, then responds by executing `task`.
   template <typename T>
-  static MultiStep PostTask(const base::StringPiece& description, T&& task);
+  static MultiStep PostTask(std::string_view description, T&& task);
 
  private:
   friend class ui::test::InteractiveTestTest;
@@ -194,7 +194,7 @@ class InteractiveTestPrivate {
 };
 
 // Specifies an element either by ID or by name.
-using ElementSpecifier = absl::variant<ElementIdentifier, base::StringPiece>;
+using ElementSpecifier = std::variant<ElementIdentifier, std::string_view>;
 
 class StateObserverElement : public TestElementBase {
  public:
@@ -298,7 +298,7 @@ class StateObserverElementT : public StateObserverElement {
 // Steps which use this method will fail if it returns false, printing out the
 // details of the step in the usual way.
 template <typename T, typename V = std::decay_t<T>>
-bool MatchAndExplain(const base::StringPiece& test_name,
+bool MatchAndExplain(std::string_view test_name,
                      const testing::Matcher<V>& matcher,
                      const T& value) {
   if (matcher.Matches(value))
@@ -333,7 +333,7 @@ bool InteractiveTestPrivate::AddStateObserver(
 // static
 template <typename T>
 InteractiveTestPrivate::MultiStep InteractiveTestPrivate::PostTask(
-    const base::StringPiece& description,
+    std::string_view description,
     T&& task) {
   MultiStep result;
   result.emplace_back(std::move(

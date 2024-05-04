@@ -4,6 +4,8 @@
 
 #include "components/password_manager/core/browser/password_store/fake_password_store_backend.h"
 
+#include <iterator>
+#include <optional>
 #include <utility>
 
 #include "base/functional/bind.h"
@@ -67,12 +69,29 @@ void FakePasswordStoreBackend::Clear() {
   stored_passwords_.clear();
 }
 
+void FakePasswordStoreBackend::TriggerOnLoginsRetainedForAndroid(
+    const std::vector<PasswordForm>& password_forms) {
+  stored_passwords_.clear();
+  for (const auto& password_form : password_forms) {
+    PasswordForm stored_form = password_form;
+    stored_form.in_store = is_account_store()
+                               ? PasswordForm::Store::kAccountStore
+                               : PasswordForm::Store::kProfileStore;
+    stored_passwords_[password_form.signon_realm].push_back(
+        std::move(stored_form));
+  }
+
+  base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
+      FROM_HERE, base::BindOnce(remote_form_changes_received_, std::nullopt));
+}
+
 void FakePasswordStoreBackend::InitBackend(
     AffiliatedMatchHelper* affiliated_match_helper,
     RemoteChangesReceived remote_form_changes_received,
     base::RepeatingClosure sync_enabled_or_disabled_cb,
     base::OnceCallback<void(bool)> completion) {
   match_helper_ = affiliated_match_helper;
+  remote_form_changes_received_ = std::move(remote_form_changes_received);
   GetTaskRunner()->PostTask(
       FROM_HERE, base::BindOnce(std::move(completion), /*success=*/true));
 }
@@ -158,6 +177,7 @@ void FakePasswordStoreBackend::UpdateLoginAsync(
 }
 
 void FakePasswordStoreBackend::RemoveLoginAsync(
+    const base::Location& location,
     const PasswordForm& form,
     PasswordChangesOrErrorReply callback) {
   GetTaskRunner()->PostTaskAndReplyWithResult(
@@ -168,6 +188,7 @@ void FakePasswordStoreBackend::RemoveLoginAsync(
 }
 
 void FakePasswordStoreBackend::RemoveLoginsByURLAndTimeAsync(
+    const base::Location& location,
     const base::RepeatingCallback<bool(const GURL&)>& url_filter,
     base::Time delete_begin,
     base::Time delete_end,
@@ -185,6 +206,7 @@ void FakePasswordStoreBackend::RemoveLoginsByURLAndTimeAsync(
 }
 
 void FakePasswordStoreBackend::RemoveLoginsCreatedBetweenAsync(
+    const base::Location& location,
     base::Time delete_begin,
     base::Time delete_end,
     PasswordChangesOrErrorReply callback) {
@@ -211,7 +233,7 @@ SmartBubbleStatsStore* FakePasswordStoreBackend::GetSmartBubbleStatsStore() {
   return nullptr;
 }
 
-std::unique_ptr<syncer::ProxyModelTypeControllerDelegate>
+std::unique_ptr<syncer::ModelTypeControllerDelegate>
 FakePasswordStoreBackend::CreateSyncControllerDelegate() {
   NOTIMPLEMENTED();
   return nullptr;

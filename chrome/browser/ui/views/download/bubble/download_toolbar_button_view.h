@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_DOWNLOAD_BUBBLE_DOWNLOAD_TOOLBAR_BUTTON_VIEW_H_
 
 #include <optional>
+#include <string>
 
 #include "base/memory/raw_ptr.h"
 #include "base/time/time.h"
@@ -106,6 +107,7 @@ class DownloadToolbarButtonView : public ToolbarButton,
   void ShowDetails() override;
   void HideDetails() override;
   bool IsShowingDetails() const override;
+  void AnnounceAccessibleAlertNow(const std::u16string& alert_text) override;
   bool IsFullscreenWithParentViewHidden() const override;
   bool ShouldShowExclusiveAccessBubble() const override;
   void OpenSecuritySubpage(
@@ -165,7 +167,7 @@ class DownloadToolbarButtonView : public ToolbarButton,
   // already-inactive state. This is created by the DownloadToolbarButtonView
   // when the bubble is shown with ShowInactive, and is destroyed when the
   // bubble is closed.
-  // TODO(crbug.com/1503082): Factor out common logic copied from translate
+  // TODO(crbug.com/40943500): Factor out common logic copied from translate
   // bubble.
   class BubbleCloser : public ui::EventObserver {
    public:

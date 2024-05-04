@@ -114,14 +114,14 @@ using manual_fill::ManualFillDataType;
 
   self.view = self.formInputAccessoryView;
 
-  if (IsBottomOmniboxSteadyStateEnabled()) {
+  if (IsBottomOmniboxAvailable()) {
     [self updateOmniboxTypingShieldVisibility];
   }
 }
 
 - (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
   [super traitCollectionDidChange:previousTraitCollection];
-  if (IsBottomOmniboxSteadyStateEnabled()) {
+  if (IsBottomOmniboxAvailable()) {
     [self updateOmniboxTypingShieldVisibility];
   }
 }
@@ -168,6 +168,16 @@ using manual_fill::ManualFillDataType;
 #pragma mark - FormInputAccessoryConsumer
 
 - (void)showAccessorySuggestions:(NSArray<FormSuggestion*>*)suggestions {
+  BOOL hasSingleManualFillButton = suggestions.count > 0;
+  self.formInputAccessoryView.manualFillButton.hidden =
+      !hasSingleManualFillButton;
+  self.formInputAccessoryView.passwordManualFillButton.hidden =
+      hasSingleManualFillButton;
+  self.formInputAccessoryView.creditCardManualFillButton.hidden =
+      hasSingleManualFillButton;
+  self.formInputAccessoryView.addressManualFillButton.hidden =
+      hasSingleManualFillButton;
+
   [self createFormSuggestionViewIfNeeded];
   __weak __typeof(self) weakSelf = self;
   auto completion = ^(BOOL finished) {
@@ -188,19 +198,50 @@ using manual_fill::ManualFillDataType;
 }
 
 - (void)manualFillButtonPressed:(UIButton*)button {
-  DCHECK(IsKeyboardAccessoryUpgradeEnabled());
+  [self manualFillButtonPressed:button
+                    forDataType:[self manualFillDataTypeFromFillingProduct:
+                                          _mainFillingProduct]];
+}
 
-  ManualFillDataType dataType =
-      [self manualFillDataTypeFromFillingProduct:_mainFillingProduct];
-  [_formInputAccessoryViewControllerDelegate
-      formInputAccessoryViewController:self
-              didPressManualFillButton:button
-                           forDataType:dataType];
+- (void)passwordManualFillButtonPressed:(UIButton*)button {
+  [self manualFillButtonPressed:button
+                    forDataType:ManualFillDataType::kPassword];
+}
+
+- (void)creditCardManualFillButtonPressed:(UIButton*)button {
+  [self manualFillButtonPressed:button
+                    forDataType:ManualFillDataType::kPaymentMethod];
+}
+
+- (void)addressManualFillButtonPressed:(UIButton*)button {
+  [self manualFillButtonPressed:button
+                    forDataType:ManualFillDataType::kAddress];
 }
 
 - (void)newOmniboxPositionIsBottom:(BOOL)isBottomOmnibox {
   _isBottomOmnibox = isBottomOmnibox;
   [self updateOmniboxTypingShieldVisibility];
+}
+
+- (void)keyboardHeightChanged:(CGFloat)newHeight oldHeight:(CGFloat)oldHeight {
+  if (newHeight < oldHeight) {
+    // Add a quick animation to move the keyboard accessory view, which will
+    // prevent it from moving if this is a quick flicker of the keyboard.
+    [self verticalOffset:newHeight - oldHeight];
+    [UIView animateWithDuration:0.1
+                          delay:0.1
+                        options:UIViewAnimationOptionCurveEaseInOut
+                     animations:^{
+                       [self verticalOffset:0];
+                     }
+                     completion:nil];
+  } else if (newHeight > oldHeight) {
+    // If the height is increasing, whether or not this was a flicker, we can
+    // cancel the animations and offset to immediately return to the default
+    // state.
+    [self.formInputAccessoryView.layer removeAllAnimations];
+    [self verticalOffset:0];
+  }
 }
 
 #pragma mark - Getter
@@ -259,7 +300,7 @@ using manual_fill::ManualFillDataType;
   if (base::FeatureList::IsEnabled(kEnableStartupImprovements)) {
     [self.formInputAccessoryViewControllerDelegate
         formInputAccessoryViewController:self
-            didTapFormInputAccessoryView:self.view];
+            didTapFormInputAccessoryView:self.formInputAccessoryView];
   } else {
     // This method can't be reached when `kEnableStartupImprovements` is
     // enabled.
@@ -269,8 +310,23 @@ using manual_fill::ManualFillDataType;
 
 #pragma mark - Private
 
+// Invoked after the user taps any of the `manual fill` buttons.
+- (void)manualFillButtonPressed:(UIButton*)button
+                    forDataType:(manual_fill::ManualFillDataType)dataType {
+  DCHECK(IsKeyboardAccessoryUpgradeEnabled());
+
+  self.formInputAccessoryView.hidden = YES;
+
+  [_formInputAccessoryViewControllerDelegate
+      formInputAccessoryViewController:self
+              didPressManualFillButton:button
+                           forDataType:dataType];
+}
+
 // Resets this view to its original state. Can be animated.
 - (void)resetAnimated:(BOOL)animated {
+  self.formInputAccessoryView.hidden = NO;
+
   [self.formSuggestionView resetContentInsetAndDelegateAnimated:animated];
   [self.manualFillAccessoryViewController resetAnimated:animated];
   self.brandingViewController.keyboardAccessoryVisible =
@@ -304,18 +360,27 @@ using manual_fill::ManualFillDataType;
           customTrailingView:self.manualFillAccessoryViewController.view];
   } else {
     formInputAccessoryView.accessibilityViewIsModal = YES;
-    self.formSuggestionView.trailingView =
-        self.manualFillAccessoryViewController.view;
     if (IsKeyboardAccessoryUpgradeEnabled()) {
       [formInputAccessoryView
-          setUpWithLeadingView:self.leadingView
-            navigationDelegate:self.navigationDelegate
-              manualFillSymbol:DefaultSymbolWithPointSize(
-                                   kExpandSymbol, kSymbolActionPointSize)
-             closeButtonSymbol:DefaultSymbolWithPointSize(
-                                   kKeyboardDownSymbol,
-                                   kSymbolActionPointSize)];
+                setUpWithLeadingView:self.leadingView
+                  navigationDelegate:self.navigationDelegate
+                    manualFillSymbol:DefaultSymbolWithPointSize(
+                                         kExpandSymbol, kSymbolActionPointSize)
+            passwordManualFillSymbol:CustomSymbolWithPointSize(
+                                         kPasswordSymbol,
+                                         kSymbolActionPointSize)
+          creditCardManualFillSymbol:DefaultSymbolWithPointSize(
+                                         kCreditCardSymbol,
+                                         kSymbolActionPointSize)
+             addressManualFillSymbol:CustomSymbolWithPointSize(
+                                         kLocationSymbol,
+                                         kSymbolActionPointSize)
+                   closeButtonSymbol:DefaultSymbolWithPointSize(
+                                         kKeyboardDownSymbol,
+                                         kSymbolActionPointSize)];
     } else {
+      self.formSuggestionView.trailingView =
+          self.manualFillAccessoryViewController.view;
       [formInputAccessoryView setUpWithLeadingView:self.leadingView
                                 navigationDelegate:self.navigationDelegate];
     }
@@ -409,7 +474,6 @@ using manual_fill::ManualFillDataType;
 }
 
 - (void)updateOmniboxTypingShieldVisibility {
-  CHECK(IsBottomOmniboxSteadyStateEnabled());
   if (!self.formInputAccessoryView) {
     return;
   }
@@ -444,6 +508,13 @@ using manual_fill::ManualFillDataType;
       // These cases are currently not available on iOS.
       NOTREACHED_NORETURN();
   }
+}
+
+// Moves the main view down by a certain offset (negative offsets move the view
+// up).
+- (void)verticalOffset:(CGFloat)offset {
+  self.formInputAccessoryView.transform =
+      CGAffineTransformMakeTranslation(0, offset);
 }
 
 #pragma mark - ManualFillAccessoryViewControllerDelegate

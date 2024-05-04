@@ -211,11 +211,11 @@ class GtestCommandGenerator(object):
     return []
 
   def _generate_repeat_args(self):
-    # TODO(crbug.com/920002): Support --isolated-script-test-repeat.
+    # TODO(crbug.com/40608634): Support --isolated-script-test-repeat.
     return []
 
   def _generate_also_run_disabled_tests_args(self):
-    # TODO(crbug.com/920002): Support
+    # TODO(crbug.com/40608634): Support
     # --isolated-script-test-also-run-disabled-tests.
     return []
 
@@ -233,7 +233,7 @@ class GtestCommandGenerator(object):
 
 
 def write_simple_test_results(return_code, output_filepath, benchmark_name):
-  # TODO(crbug.com/1115658): Fix to output
+  # TODO(crbug.com/40144432): Fix to output
   # https://chromium.googlesource.com/chromium/src/+/main/docs/testing/json_test_results_format.md
   # for each test rather than this summary.
   # Append the shard index to the end of the name so that the merge script
@@ -261,7 +261,7 @@ def write_simple_test_results(return_code, output_filepath, benchmark_name):
 
 
 def upload_simple_test_results(return_code, benchmark_name):
-  # TODO(crbug.com/1115658): Fix to upload results for each test rather than
+  # TODO(crbug.com/40144432): Fix to upload results for each test rather than
   # this summary.
   try:
     with open(os.environ['LUCI_CONTEXT']) as f:
@@ -302,10 +302,10 @@ def execute_gtest_perf_test(command_generator, output_paths, use_xvfb=False,
 
   env = os.environ.copy()
   env['CHROME_HEADLESS'] = '1'
-  #TODO(crbug/1138988): Some gtests do not implements the unit_test_launcher.cc.
-  # As a result, they will not respect the arguments added by
-  # _generate_shard_args() and will still use the values of GTEST_SHARD_INDEX
-  # and GTEST_TOTAL_SHARDS to run part of the tests.
+  # TODO(crbug.com/40153230): Some gtests do not implements the
+  # unit_test_launcher.cc. As a result, they will not respect the arguments
+  # added by _generate_shard_args() and will still use the values of
+  # GTEST_SHARD_INDEX and GTEST_TOTAL_SHARDS to run part of the tests.
   # Removing those environment variables as a workaround.
   if command_generator._ignore_shard_env_vars:
     if 'GTEST_TOTAL_SHARDS' in env:
@@ -437,6 +437,9 @@ class TelemetryCommandGenerator(object):
     return []
 
   def _generate_output_args(self, output_dir):
+    if self._options.no_output_conversion:
+      return ['--output-format=none',
+              '--output-dir=' + output_dir]
     return ['--output-format=json-test-results',
             '--output-format=histograms',
             '--output-dir=' + output_dir]
@@ -495,7 +498,7 @@ class TelemetryCommandGenerator(object):
   def _generate_reference_build_args(self):
     if self._is_reference:
       reference_browser_flag = '--browser=reference'
-      # TODO(crbug.com/1038137): Make the logic generic once more reference
+      # TODO(crbug.com/40113070): Make the logic generic once more reference
       # settings are added
       if '--browser=android-chrome-bundle' in self._get_passthrough_args():
         reference_browser_flag = '--browser=reference-android-chrome-bundle'
@@ -510,7 +513,7 @@ class TelemetryCommandGenerator(object):
 
 def execute_telemetry_benchmark(
     command_generator, output_paths, use_xvfb=False,
-    return_exit_code_zero=False):
+    return_exit_code_zero=False, no_output_conversion=False):
   start = time.time()
 
   env = os.environ.copy()
@@ -536,8 +539,10 @@ def execute_telemetry_benchmark(
       shutil.move(expected_results_filename, output_paths.test_results)
     else:
       common.write_interrupted_test_results_to(output_paths.test_results, start)
-    expected_perf_filename = os.path.join(temp_dir, 'histograms.json')
-    shutil.move(expected_perf_filename, output_paths.perf_results)
+
+    if not no_output_conversion:
+      expected_perf_filename = os.path.join(temp_dir, 'histograms.json')
+      shutil.move(expected_perf_filename, output_paths.perf_results)
 
     csv_file_path = os.path.join(temp_dir, 'results.csv')
     if os.path.isfile(csv_file_path):
@@ -567,7 +572,7 @@ def execute_telemetry_benchmark(
   # Telemetry sets exit code to -1 to indicate that no stories were run. This
   # becomes 255 on linux because linux doesn't support -1 so it does modulo:
   # -1 % 256 == 255.
-  # TODO(crbug.com/1019139): Make 111 be the exit code that means
+  # TODO(crbug.com/40105219): Make 111 be the exit code that means
   # "no stories were run.".
   if return_code in (111, -1, 255):
     print('Exit code %s indicates that no stories were run, so we are marking '
@@ -656,6 +661,12 @@ def parse_arguments(args):
                       type=str,
                       required=False
                       )
+  parser.add_argument('--no-output-conversion',
+                      help='If supplied, trace conversion is not done.',
+                      action='store_true',
+                      required=False,
+                      default=False
+                      )
   options, leftover_args = parser.parse_known_args(args)
   options.passthrough_args.extend(leftover_args)
   return options
@@ -692,7 +703,7 @@ def main(sys_args):
     command_generator = GtestCommandGenerator(
         options, additional_flags=passthrough_args, ignore_shard_env_vars=True)
     # Fallback to use the name of the executable if flag isn't set.
-    # TODO(crbug.com/870899): remove fallback logic and raise parser error if
+    # TODO(crbug.com/40588014): remove fallback logic and raise parser error if
     # --non-telemetry is set but --gtest-benchmark-name is not set once pinpoint
     # is converted to always pass --gtest-benchmark-name flag.
     if not benchmark_name:
@@ -728,7 +739,8 @@ def main(sys_args):
         print('\n### {folder} ###'.format(folder=benchmark))
         return_code = execute_telemetry_benchmark(
             command_generator, output_paths, options.xvfb,
-            options.ignore_benchmark_exit_code)
+            options.ignore_benchmark_exit_code,
+            no_output_conversion=options.no_output_conversion)
         overall_return_code = return_code or overall_return_code
         test_results_files.append(output_paths.test_results)
       if options.run_ref_build:
@@ -772,7 +784,7 @@ def _run_benchmarks_on_shardmap(
   env = os.environ.copy()
   if 'GTEST_SHARD_INDEX' in env:
     shard_index = env['GTEST_SHARD_INDEX']
-  # TODO(crbug.com/972844): shard environment variables are not specified
+  # TODO(crbug.com/40631538): shard environment variables are not specified
   # for single-shard shard runs.
   if not shard_index:
     shard_map_has_multiple_shards = bool(shard_map.get('1', False))
@@ -799,7 +811,8 @@ def _run_benchmarks_on_shardmap(
       print('\n### {folder} ###'.format(folder=benchmark))
       return_code = execute_telemetry_benchmark(
           command_generator, output_paths, options.xvfb,
-          options.ignore_benchmark_exit_code)
+          options.ignore_benchmark_exit_code,
+          no_output_conversion=options.no_output_conversion)
       overall_return_code = return_code or overall_return_code
       test_results_files.append(output_paths.test_results)
       if options.run_ref_build:
@@ -816,7 +829,8 @@ def _run_benchmarks_on_shardmap(
         # reference build.
         execute_telemetry_benchmark(
             reference_command_generator, reference_output_paths,
-            options.xvfb, options.ignore_benchmark_exit_code)
+            options.xvfb, options.ignore_benchmark_exit_code,
+            no_output_conversion=no_output_conversion)
   if 'executables' in shard_configuration:
     names_and_configs = shard_configuration['executables']
     for (name, configuration) in names_and_configs.items():

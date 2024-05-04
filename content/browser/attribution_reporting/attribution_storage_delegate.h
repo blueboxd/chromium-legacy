@@ -13,11 +13,13 @@
 #include "base/thread_annotations.h"
 #include "base/time/time.h"
 #include "base/types/expected.h"
+#include "components/attribution_reporting/privacy_math.h"
+#include "components/attribution_reporting/source_registration_time_config.mojom-forward.h"
 #include "components/attribution_reporting/source_type.mojom-forward.h"
 #include "content/browser/attribution_reporting/attribution_config.h"
 #include "content/browser/attribution_reporting/attribution_reporting.mojom-forward.h"
-#include "content/browser/attribution_reporting/privacy_math.h"
 #include "content/common/content_export.h"
+#include "third_party/abseil-cpp/absl/numeric/int128.h"
 
 namespace attribution_reporting {
 class EventLevelEpsilon;
@@ -37,7 +39,6 @@ class TriggerVerification;
 namespace content {
 
 class AttributionReport;
-class AttributionTrigger;
 
 // Storage delegate that can supplied to extend basic attribution storage
 // functionality like annotating reports. Users and subclasses must NOT assume
@@ -49,12 +50,6 @@ class CONTENT_EXPORT AttributionStorageDelegate {
   struct OfflineReportDelayConfig {
     base::TimeDelta min;
     base::TimeDelta max;
-  };
-
-  struct ExceedsChannelCapacityLimit {};
-
-  struct NullAggregatableReport {
-    base::Time fake_source_time;
   };
 
   explicit AttributionStorageDelegate(const AttributionConfig& config);
@@ -107,6 +102,10 @@ class CONTENT_EXPORT AttributionStorageDelegate {
   // SourceType.
   double GetMaxChannelCapacity(attribution_reporting::mojom::SourceType) const;
 
+  // Returns the max number of report states allowed for any source
+  // registration.
+  absl::uint128 GetMaxTriggerStateCardinality() const;
+
   // Returns the maximum frequency at which to delete expired sources.
   // Must be positive.
   virtual base::TimeDelta GetDeleteExpiredSourcesFrequency() const = 0;
@@ -147,7 +146,8 @@ class CONTENT_EXPORT AttributionStorageDelegate {
       attribution_reporting::EventLevelEpsilon) const = 0;
 
   using GetRandomizedResponseResult =
-      base::expected<RandomizedResponseData, ExceedsChannelCapacityLimit>;
+      base::expected<attribution_reporting::RandomizedResponseData,
+                     attribution_reporting::RandomizedResponseError>;
 
   // Returns a randomized response for the given source, consisting of zero or
   // more fake reports. Returns an error if the channel capacity exceeds the
@@ -156,18 +156,15 @@ class CONTENT_EXPORT AttributionStorageDelegate {
       attribution_reporting::mojom::SourceType,
       const attribution_reporting::TriggerSpecs&,
       attribution_reporting::MaxEventLevelReports,
-      attribution_reporting::EventLevelEpsilon,
-      base::Time source_time) const = 0;
+      attribution_reporting::EventLevelEpsilon) = 0;
 
   int GetMaxAggregatableReportsPerSource() const;
 
   AttributionConfig::DestinationRateLimit GetDestinationRateLimit() const;
 
-  // Returns zero or more null aggregatable reports for the given trigger.
-  virtual std::vector<NullAggregatableReport> GetNullAggregatableReports(
-      const AttributionTrigger&,
-      base::Time trigger_time,
-      std::optional<base::Time> attributed_source_time) const = 0;
+  virtual bool GenerateNullAggregatableReportForLookbackDay(
+      int lookback_day,
+      attribution_reporting::mojom::SourceRegistrationTimeConfig) const = 0;
 
  protected:
   AttributionConfig config_ GUARDED_BY_CONTEXT(sequence_checker_);

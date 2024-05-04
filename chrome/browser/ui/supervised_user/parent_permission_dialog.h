@@ -50,6 +50,10 @@ class Extension;
 class ParentPermissionDialog {
  public:
   DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(kDialogViewIdForTesting);
+  DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(
+      kExtensionsParentApprovalVerificationTextIdForTesting);
+  DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(kParentAccountTextIdForTesting);
+  DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(kIncorrectParentPasswordIdForTesting);
 
   enum class Result {
     // The parent has given their permission for the action.

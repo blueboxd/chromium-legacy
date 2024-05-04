@@ -12,16 +12,45 @@
 #include "base/feature_list.h"
 #include "base/functional/callback_helpers.h"
 #include "base/logging.h"
-#include "chrome/android/chrome_jni_headers/WebApkSyncService_jni.h"
 #include "chrome/browser/android/webapk/webapk_sync_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "components/sync/base/features.h"
+#include "ui/gfx/android/java_bitmap.h"
 
-using base::android::ConvertJavaStringToUTF8;
+// Must come after other includes, because FromJniType() uses Profile.
+#include "chrome/android/chrome_jni_headers/WebApkSyncService_jni.h"
+
 using base::android::JavaParamRef;
+using base::android::JavaRef;
+using base::android::ScopedJavaGlobalRef;
+using base::android::ScopedJavaLocalRef;
 
 namespace webapk {
+
+namespace {
+
+// Called after getting restorable app info.
+void OnGotAppsInfo(const JavaRef<jobject>& java_callback,
+                   const std::vector<std::string>& app_ids,
+                   const std::vector<std::u16string>& names,
+                   const std::vector<int>& last_used_in_days,
+                   const std::vector<SkBitmap>& icons) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> jbitmaps =
+      Java_WebApkSyncService_createBitmapList(env);
+  for (const SkBitmap& bitmap : icons) {
+    ScopedJavaLocalRef<jobject> jbitmap = gfx::ConvertToJavaBitmap(bitmap);
+    Java_WebApkSyncService_addToBitmapList(env, jbitmaps, jbitmap);
+  }
+  Java_PwaRestorableListCallback_onRestorableAppsAvailable(
+      env, java_callback, true,
+      base::android::ToJavaArrayOfStrings(env, app_ids),
+      base::android::ToJavaArrayOfStrings(env, names),
+      base::android::ToJavaIntArray(env, last_used_in_days), jbitmaps);
+}
+
+}  // anonymous namespace
 
 // static
 WebApkSyncService* WebApkSyncService::GetForProfile(Profile* profile) {
@@ -32,6 +61,7 @@ WebApkSyncService::WebApkSyncService(Profile* profile) {
   database_factory_ = std::make_unique<WebApkDatabaseFactory>(profile);
   sync_bridge_ = std::make_unique<WebApkSyncBridge>(database_factory_.get(),
                                                     base::DoNothing());
+  restore_manager_ = std::make_unique<WebApkRestoreManager>(profile);
 }
 
 WebApkSyncService::~WebApkSyncService() = default;
@@ -62,8 +92,9 @@ WebApkSyncService::GetModelTypeControllerDelegate() {
 }
 
 void WebApkSyncService::OnWebApkUsed(
-    std::unique_ptr<sync_pb::WebApkSpecifics> app_specifics) {
-  sync_bridge_->OnWebApkUsed(std::move(app_specifics));
+    std::unique_ptr<sync_pb::WebApkSpecifics> app_specifics,
+    bool is_install) {
+  sync_bridge_->OnWebApkUsed(std::move(app_specifics), is_install);
 }
 
 void WebApkSyncService::OnWebApkUninstalled(const std::string& manifest_id) {
@@ -75,10 +106,22 @@ void WebApkSyncService::RemoveOldWebAPKsFromSync(
   sync_bridge_->RemoveOldWebAPKsFromSync(current_time_ms_since_unix_epoch);
 }
 
+void WebApkSyncService::PrepareRestorableAppsInfo(
+    WebApkRestoreManager::RestorableAppsCallback result_callback) const {
+  restore_manager_->PrepareRestorableApps(
+      sync_bridge_->GetRestorableAppsShortcutInfo(),
+      std::move(result_callback));
+}
+
+WebApkRestoreManager* WebApkSyncService::GetWebApkRestoreManager() const {
+  return restore_manager_.get();
+}
+
 // static
 static void JNI_WebApkSyncService_OnWebApkUsed(
     JNIEnv* env,
-    const JavaParamRef<jbyteArray>& java_webapk_specifics) {
+    const JavaParamRef<jbyteArray>& java_webapk_specifics,
+    jboolean is_install) {
   if (!base::FeatureList::IsEnabled(syncer::kWebApkBackupAndRestoreBackend)) {
     return;
   }
@@ -98,12 +141,13 @@ static void JNI_WebApkSyncService_OnWebApkUsed(
     LOG(ERROR) << "failed to parse WebApkSpecifics proto";
     return;
   }
-  WebApkSyncService::GetForProfile(profile)->OnWebApkUsed(std::move(specifics));
+  WebApkSyncService::GetForProfile(profile)->OnWebApkUsed(
+      std::move(specifics), static_cast<bool>(is_install));
 }
 
 static void JNI_WebApkSyncService_OnWebApkUninstalled(
     JNIEnv* env,
-    const JavaParamRef<jstring>& java_manifest_id) {
+    std::string& java_manifest_id) {
   if (!base::FeatureList::IsEnabled(syncer::kWebApkBackupAndRestoreBackend)) {
     return;
   }
@@ -114,7 +158,7 @@ static void JNI_WebApkSyncService_OnWebApkUninstalled(
   }
 
   WebApkSyncService::GetForProfile(profile)->OnWebApkUninstalled(
-      ConvertJavaStringToUTF8(env, java_manifest_id));
+      java_manifest_id);
 }
 
 static void JNI_WebApkSyncService_RemoveOldWebAPKsFromSync(
@@ -131,6 +175,19 @@ static void JNI_WebApkSyncService_RemoveOldWebAPKsFromSync(
 
   WebApkSyncService::GetForProfile(profile)->RemoveOldWebAPKsFromSync(
       static_cast<int64_t>(java_current_time_ms_since_unix_epoch));
+}
+
+static void JNI_WebApkSyncService_FetchRestorableApps(
+    JNIEnv* env,
+    Profile* profile,
+    const JavaParamRef<jobject>& java_callback) {
+  if (profile == nullptr) {
+    return;
+  }
+
+  ScopedJavaGlobalRef<jobject> callback_ref(java_callback);
+  WebApkSyncService::GetForProfile(profile)->PrepareRestorableAppsInfo(
+      base::BindOnce(&OnGotAppsInfo, callback_ref));
 }
 
 }  // namespace webapk

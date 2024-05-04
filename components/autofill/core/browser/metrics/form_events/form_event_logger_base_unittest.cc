@@ -15,7 +15,7 @@
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/metrics/autofill_metrics_test_base.h"
 #include "components/autofill/core/browser/metrics/ukm_metrics_test_utils.h"
-#include "components/autofill/core/browser/ui/popup_item_ids.h"
+#include "components/autofill/core/browser/ui/suggestion_type.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/mojom/autofill_types.mojom-shared.h"
@@ -257,7 +257,7 @@ TEST_F(FormEventLoggerBaseTest, FillingOperationCount) {
   autofill_manager().FillOrPreviewField(
       mojom::ActionPersistence::kFill, mojom::FieldActionType::kReplaceAll,
       form, form.fields[2], u"CC_NAME_VALUE",
-      PopupItemId::kCreditCardFieldByFieldFilling);
+      SuggestionType::kCreditCardFieldByFieldFilling);
   autofill_manager().FillOrPreviewCreditCardForm(
       mojom::ActionPersistence::kFill, form, form.fields[3],
       test::GetCreditCard(), std::u16string(),
@@ -288,7 +288,7 @@ TEST_F(FormEventLoggerBaseTest, FilledFieldTypeStat) {
   autofill_manager().FillOrPreviewField(
       mojom::ActionPersistence::kFill, mojom::FieldActionType::kReplaceAll,
       form, form.fields[3], u"SOME_VALUE",
-      PopupItemId::kCreditCardFieldByFieldFilling);
+      SuggestionType::kCreditCardFieldByFieldFilling);
 
   base::HistogramTester histogram_tester;
   ResetDriverToCommitMetrics();
@@ -707,9 +707,6 @@ TEST_F(FormEventLoggerUndoTest, LogUndoMetrics_NoInitialFilling) {
 
   EXPECT_THAT(histogram_tester.GetAllSamples("Autofill.UndoAfterFill.Address"),
               base::BucketsAre(Bucket(0, 0), Bucket(1, 0)));
-
-  EXPECT_THAT(histogram_tester.GetAllSamples("Autofill.FillAfterUndo.Address"),
-              base::BucketsAre(Bucket(0, 0), Bucket(1, 0)));
 }
 
 TEST_F(FormEventLoggerUndoTest, LogUndoMetrics_FillWithNoUndo) {
@@ -720,9 +717,6 @@ TEST_F(FormEventLoggerUndoTest, LogUndoMetrics_FillWithNoUndo) {
 
   EXPECT_THAT(histogram_tester.GetAllSamples("Autofill.UndoAfterFill.Address"),
               base::BucketsAre(Bucket(0, 1), Bucket(1, 0)));
-
-  EXPECT_THAT(histogram_tester.GetAllSamples("Autofill.FillAfterUndo.Address"),
-              base::BucketsAre(Bucket(0, 0), Bucket(1, 0)));
 }
 
 TEST_F(FormEventLoggerUndoTest, LogUndoMetrics_FillThenUndo) {
@@ -733,24 +727,6 @@ TEST_F(FormEventLoggerUndoTest, LogUndoMetrics_FillThenUndo) {
   SubmitForm(form());
 
   EXPECT_THAT(histogram_tester.GetAllSamples("Autofill.UndoAfterFill.Address"),
-              base::BucketsAre(Bucket(0, 0), Bucket(1, 1)));
-
-  EXPECT_THAT(histogram_tester.GetAllSamples("Autofill.FillAfterUndo.Address"),
-              base::BucketsAre(Bucket(0, 1), Bucket(1, 0)));
-}
-
-TEST_F(FormEventLoggerUndoTest, LogUndoMetrics_FillThenUndoThenFill) {
-  FillTestProfile(form());
-  UndoAutofill(form());
-  FillTestProfile(form());
-
-  base::HistogramTester histogram_tester;
-  SubmitForm(form());
-
-  EXPECT_THAT(histogram_tester.GetAllSamples("Autofill.UndoAfterFill.Address"),
-              base::BucketsAre(Bucket(0, 0), Bucket(1, 1)));
-
-  EXPECT_THAT(histogram_tester.GetAllSamples("Autofill.FillAfterUndo.Address"),
               base::BucketsAre(Bucket(0, 0), Bucket(1, 1)));
 }
 

@@ -13,7 +13,7 @@
 namespace content {
 
 namespace {
-// TODO(https://crbug.com/1414164): Consult with Clank team to see if we have
+// TODO(crbug.com/40256003): Consult with Clank team to see if we have
 // any metrics for this.
 #if BUILDFLAG(IS_ANDROID)
 constexpr static size_t kMaxNumThumbnails = 20U;
@@ -21,7 +21,7 @@ constexpr static size_t kMaxNumThumbnails = 20U;
 constexpr static size_t kMaxNumThumbnails = 0U;
 #endif
 
-// TODO(https://crbug.com/1414164): Optimise the memory budget. This is fine for
+// TODO(crbug.com/40256003): Optimise the memory budget. This is fine for
 // MVP, but we need to consult the Clank team for a more propriate budget size.
 static size_t GetMemoryBudget() {
   // Assume 4 bytes per pixel. This value estimates the max number of bytes of
@@ -127,7 +127,7 @@ void NavigationEntryScreenshotManager::Unregister(
 // regardless of which tab the entry is from. The pro of this alternative is to
 // have all the eviction logic inside the global manager.
 //
-// TODO(https://crbug.com/1420998): We need some metrics to understand if the
+// TODO(crbug.com/40259040): We need some metrics to understand if the
 // currently implementation affects the cache hit rate. (I.e., would the
 // alternative be a better approach?)
 void NavigationEntryScreenshotManager::EvictIfOutOfMemoryBudget() {

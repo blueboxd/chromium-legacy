@@ -145,6 +145,7 @@ void MockBidderWorklet::ReportWin(
     uint8_t browser_signal_recency,
     const url::Origin& browser_signal_seller_origin,
     const std::optional<url::Origin>& browser_signal_top_level_seller_origin,
+    const std::optional<base::TimeDelta> browser_signal_reporting_timeout,
     std::optional<uint32_t> bidding_signals_data_version,
     uint64_t trace_id,
     ReportWinCallback report_win_callback) {
@@ -229,7 +230,7 @@ void MockBidderWorklet::InvokeGenerateBidCallback(
   generate_bid_client_->OnBiddingSignalsReceived(
       /*priority_vector=*/{},
       /*trusted_signals_fetch_latency=*/trusted_signals_fetch_latency_,
-      run_loop.QuitClosure());
+      /*update_if_older_than=*/std::nullopt, run_loop.QuitClosure());
   run_loop.Run();
 
   if (!dependency_latencies) {
@@ -363,6 +364,7 @@ void MockSellerWorklet::ScoreAd(
     const GURL& browser_signal_render_url,
     const std::vector<GURL>& browser_signal_ad_components,
     uint32_t browser_signal_bidding_duration_msecs,
+    const std::optional<blink::AdSize>& browser_signal_render_size,
     bool browser_signal_for_debugging_only_in_cooldown_or_lockout,
     const std::optional<base::TimeDelta> seller_timeout,
     uint64_t trace_id,

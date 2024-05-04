@@ -24,12 +24,12 @@ import com.google.android.material.color.MaterialColors;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.night_mode.NightModeUtils;
-import org.chromium.chrome.browser.omnibox.OmniboxFeatures;
 import org.chromium.chrome.browser.omnibox.R;
 import org.chromium.chrome.browser.theme.ThemeUtils;
 import org.chromium.chrome.browser.ui.theme.BrandedColorScheme;
 import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.components.browser_ui.styles.SemanticColorUtils;
+import org.chromium.components.omnibox.OmniboxFeatures;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.util.ColorUtils;
 
@@ -476,10 +476,7 @@ public class OmniboxResourceProvider {
         }
 
         return context.getResources()
-                .getDimensionPixelSize(
-                        OmniboxFeatures.shouldShowActiveColorOnOmnibox()
-                                ? R.dimen.toolbar_url_focus_height_increase_active_color
-                                : R.dimen.toolbar_url_focus_height_increase_no_active_color);
+                .getDimensionPixelSize(R.dimen.toolbar_url_focus_height_increase);
     }
 
     /** Returns the amount of pixels for the toolbar's side padding when the omnibox is focused. */

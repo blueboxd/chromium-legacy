@@ -30,6 +30,17 @@ BASE_DECLARE_FEATURE(kLauncherFuzzyMatchForOmnibox);
 // Enables image search in the launcher.
 BASE_DECLARE_FEATURE(kLauncherImageSearch);
 
+// Segmentation flag for local image search.
+BASE_DECLARE_FEATURE(kFeatureManagementLocalImageSearch);
+
+// Whether or not to override configuration of the local image search confidence
+// threshold with an experiment.
+BASE_DECLARE_FEATURE(kLauncherLocalImageSearchConfidence);
+
+// Whether or not to override configuration of the local image search Relevance
+// threshold with an experiment.
+BASE_DECLARE_FEATURE(kLauncherLocalImageSearchRelevance);
+
 // Enable Image Content-based Annotation
 BASE_DECLARE_FEATURE(kLauncherImageSearchIca);
 
@@ -39,10 +50,10 @@ BASE_DECLARE_FEATURE(kICASupportedByHardware);
 // Enable Optical Character Recognition
 BASE_DECLARE_FEATURE(kLauncherImageSearchOcr);
 
-BASE_DECLARE_FEATURE(kLauncherSystemInfoAnswerCards);
+// Applies a hard limit about how many images can be process per user session.
+BASE_DECLARE_FEATURE(kLauncherImageSearchIndexingLimit);
 
-// Enable manatee for keyboard shortcuts
-BASE_DECLARE_FEATURE(kLauncherManateeForKeyboardShortcuts);
+BASE_DECLARE_FEATURE(kLauncherSystemInfoAnswerCards);
 
 bool IsLauncherGameSearchEnabled();
 bool IsLauncherKeywordExtractionScoringEnabled();
@@ -50,11 +61,10 @@ bool IsLauncherQueryFederatedAnalyticsPHHEnabled();
 bool IsLauncherImageSearchEnabled();
 bool IsLauncherImageSearchIcaEnabled();
 bool IsLauncherImageSearchOcrEnabled();
+bool IsLauncherImageSearchIndexingLimitEnabled();
 bool IsLauncherFuzzyMatchAcrossProvidersEnabled();
 bool isLauncherFuzzyMatchForOmniboxEnabled();
 bool isLauncherSystemInfoAnswerCardsEnabled();
-bool isLauncherManateeForKeyboardShortcutsEnabled();
-
 }  // namespace search_features
 
 #endif  // CHROME_BROWSER_ASH_APP_LIST_SEARCH_SEARCH_FEATURES_H_

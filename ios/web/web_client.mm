@@ -6,6 +6,8 @@
 
 #import <Foundation/Foundation.h>
 
+#import <string_view>
+
 #import "ios/web/common/features.h"
 #import "ios/web/public/init/web_main_parts.h"
 #import "url/gurl.h"
@@ -49,10 +51,10 @@ std::u16string WebClient::GetLocalizedString(int message_id) const {
   return std::u16string();
 }
 
-base::StringPiece WebClient::GetDataResource(
+std::string_view WebClient::GetDataResource(
     int resource_id,
     ui::ResourceScaleFactor scale_factor) const {
-  return base::StringPiece();
+  return std::string_view();
 }
 
 base::RefCountedMemory* WebClient::GetDataResourceBytes(int resource_id) const {
@@ -112,11 +114,6 @@ void WebClient::LogDefaultUserAgent(web::WebState* web_state,
 bool WebClient::IsPointingToSameDocument(const GURL& url1,
                                          const GURL& url2) const {
   return url1 == url2;
-}
-
-bool WebClient::IsMixedContentAutoupgradeEnabled(
-    web::BrowserState* browser_state) const {
-  return true;
 }
 
 bool WebClient::IsBrowserLockdownModeEnabled(web::BrowserState* browser_state) {

@@ -10,11 +10,14 @@
 #include <vector>
 
 #include "base/functional/callback.h"
+#include "chromeos/ash/services/nearby/public/cpp/nearby_process_manager.h"
 #include "chromeos/ash/services/nearby/public/mojom/nearby_presence.mojom.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "third_party/nearby/internal/proto/metadata.pb.h"
+#include "third_party/nearby/src/presence/presence_device.h"
 
 namespace ash::nearby::presence {
+
+class NearbyPresenceConnectionsManager;
 
 // This service implements Nearby Presence on top of the Nearby Presence .mojom
 // interface.
@@ -25,14 +28,6 @@ class NearbyPresenceService {
 
   NearbyPresenceService();
   virtual ~NearbyPresenceService();
-
-  enum class IdentityType {
-    kUnspecified,
-    kPrivate,
-    kTrusted,
-    kPublic,
-    kProvisioned
-  };
 
   enum class Action {
     kActiveUnlock = 8,
@@ -71,47 +66,13 @@ class NearbyPresenceService {
     kFailedToStartProcess = 17,
   };
 
-  // TODO(b/276642472): Move PresenceDevice into its own class and file, to
-  // inherit from the upcoming Nearby Connections Device class.
-  class PresenceDevice {
-   public:
-    PresenceDevice(::nearby::internal::Metadata metadata,
-                   std::optional<std::string> stable_device_id,
-                   std::string endpoint_id,
-                   std::vector<Action> actions,
-                   int rssi);
-
-    PresenceDevice(const PresenceDevice&);
-    PresenceDevice& operator=(const PresenceDevice&);
-    ~PresenceDevice();
-
-    ::nearby::internal::Metadata GetMetadata() const { return metadata_; }
-    ::nearby::internal::DeviceType GetType() const {
-      return metadata_.device_type();
-    }
-
-    const std::optional<std::string> GetStableId() const {
-      return stable_device_id_;
-    }
-    const std::string& GetEndpointId() const { return endpoint_id_; }
-    const std::string& GetName() const { return metadata_.device_name(); }
-    const std::vector<Action> GetActions() const { return actions_; }
-    int GetRssi() const { return rssi_; }
-
-   private:
-    ::nearby::internal::Metadata metadata_;
-    std::optional<std::string> stable_device_id_;
-    std::string endpoint_id_;
-    std::vector<Action> actions_;
-    int rssi_;
-  };
-
   struct ScanFilter {
-    ScanFilter(IdentityType identity_type, const std::vector<Action>& actions);
+    ScanFilter(::nearby::internal::IdentityType identity_type,
+               const std::vector<Action>& actions);
     ScanFilter(const ScanFilter&);
     ~ScanFilter();
 
-    IdentityType identity_type_;
+    ::nearby::internal::IdentityType identity_type_;
     std::vector<Action> actions_;
   };
 
@@ -120,9 +81,12 @@ class NearbyPresenceService {
     ScanDelegate();
     virtual ~ScanDelegate();
 
-    virtual void OnPresenceDeviceFound(PresenceDevice presence_device) = 0;
-    virtual void OnPresenceDeviceChanged(PresenceDevice presence_device) = 0;
-    virtual void OnPresenceDeviceLost(PresenceDevice presence_device) = 0;
+    virtual void OnPresenceDeviceFound(
+        ::nearby::presence::PresenceDevice presence_device) = 0;
+    virtual void OnPresenceDeviceChanged(
+        ::nearby::presence::PresenceDevice presence_device) = 0;
+    virtual void OnPresenceDeviceLost(
+        ::nearby::presence::PresenceDevice presence_device) = 0;
     virtual void OnScanSessionInvalidated() = 0;
   };
 
@@ -153,6 +117,9 @@ class NearbyPresenceService {
   //     2. Downloading remote devices' credentials from the NP server and
   //        saving them to the NP library.
   virtual void UpdateCredentials() = 0;
+
+  virtual std::unique_ptr<NearbyPresenceConnectionsManager>
+  CreateNearbyPresenceConnectionsManager() = 0;
 };
 
 }  // namespace ash::nearby::presence

@@ -61,7 +61,7 @@ PermissionToSchedulingFeature(PermissionType permission_name) {
           kRequestedBackgroundWorkPermission;
     case PermissionType::STORAGE_ACCESS_GRANT:
     // These two permissions are in the process of being split; they share logic
-    // for now. TODO(crbug.com/1385156): split and consolidate as much as
+    // for now. TODO(crbug.com/40246640): split and consolidate as much as
     // possible.
     case PermissionType::TOP_LEVEL_STORAGE_ACCESS:
       return blink::scheduler::WebSchedulerTrackedFeature::
@@ -90,6 +90,8 @@ PermissionToSchedulingFeature(PermissionType permission_name) {
     case PermissionType::SMART_CARD:
     case PermissionType::WEB_PRINTING:
     case PermissionType::SPEAKER_SELECTION:
+    case PermissionType::KEYBOARD_LOCK:
+    case PermissionType::POINTER_LOCK:
       return std::nullopt;
   }
 }
@@ -280,7 +282,7 @@ PermissionControllerImpl::PermissionControllerImpl(
     BrowserContext* browser_context)
     : browser_context_(browser_context) {}
 
-// TODO(https://crbug.com/1271543): Remove this method and use
+// TODO(crbug.com/40205763): Remove this method and use
 // `PermissionController` instead.
 // static
 PermissionControllerImpl* PermissionControllerImpl::FromBrowserContext(
@@ -693,7 +695,7 @@ void PermissionControllerImpl::OnDelegatePermissionStatusChange(
     PermissionStatus status) {
   Subscription* subscription = subscriptions_.Lookup(subscription_id);
   DCHECK(subscription);
-  // TODO(crbug.com/1223407) Adding this block to prevent crashes while we
+  // TODO(crbug.com/40056329) Adding this block to prevent crashes while we
   // investigate the root cause of the crash. This block will be removed as the
   // CHECK() above should be enough.
   if (!subscription) {

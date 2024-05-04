@@ -24,8 +24,8 @@
 
 // Fetches all stored cookies. If the store didn't change between calls, this
 // method will return the cached result of the last call.
-// TODO(crbug.com/946171): Remove caching when WKHTTPCookieStore performance bug
-// is fixed.
+// TODO(crbug.com/40620220): Remove caching when WKHTTPCookieStore performance
+// bug is fixed.
 - (void)getAllCookies:(void (^)(NSArray<NSHTTPCookie*>*))completionHandler;
 
 // Sets `cookie` to the store, and invokes `completionHandler` after cookie is
@@ -37,6 +37,10 @@
 // is deleted.
 - (void)deleteCookie:(NSHTTPCookie*)cookie
     completionHandler:(void (^)(void))completionHandler;
+
+// Deletes all cookies from the store, and invokes `completionHandler` after
+// they have all been deleted.
+- (void)clearCookies:(void (^)(void))completionHandler;
 
 @end
 

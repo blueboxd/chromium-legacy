@@ -10,6 +10,7 @@
 #include "base/feature_list.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_forward.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/to_string.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -19,6 +20,7 @@
 #include "chrome/browser/web_applications/locks/app_lock.h"
 #include "chrome/browser/web_applications/locks/noop_lock.h"
 #include "chrome/browser/web_applications/locks/web_app_lock_manager.h"
+#include "chrome/browser/web_applications/proto/web_app_os_integration_state.pb.h"
 #include "chrome/browser/web_applications/web_app_command_manager.h"
 #include "chrome/browser/web_applications/web_app_command_scheduler.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
@@ -148,6 +150,17 @@ void LogInstallInfo(base::Value::Dict& dict,
   dict.Set("start_url", install_info.start_url.spec());
   dict.Set("name", install_info.title);
 }
+
+bool IsShortcutCreated(WebAppRegistrar& registrar,
+                       const webapps::AppId& app_id) {
+  auto os_state = registrar.GetAppCurrentOsIntegrationState(app_id);
+  if (!os_state.has_value()) {
+    return false;
+  }
+
+  return os_state->has_shortcut();
+}
+
 }  // namespace
 
 FetchManifestAndInstallCommand::FetchManifestAndInstallCommand(
@@ -298,6 +311,7 @@ void FetchManifestAndInstallCommand::Abort(webapps::InstallResultCode code,
   GetMutableDebugValue().Set("result_code", base::ToString(code));
   webapps::InstallableMetrics::TrackInstallResult(false);
   Observe(nullptr);
+  MeasureUserInstalledAppHistogram(code);
   CompleteAndSelfDestruct(CommandResult::kFailure, webapps::AppId(), code,
                           location);
 }
@@ -419,13 +433,9 @@ void FetchManifestAndInstallCommand::OnDidPerformInstallableCheck(
                                web_app_info_.get());
   LogInstallInfo(GetMutableDebugValue(), *web_app_info_);
 
-  if (install_surface_ == webapps::WebappInstallSource::MENU_CREATE_SHORTCUT &&
-      (base::FeatureList::IsEnabled(
-           webapps::features::kCreateShortcutIgnoresManifest)
 #if BUILDFLAG(IS_CHROMEOS)
-       || chromeos::features::IsCrosShortstandEnabled()
-#endif
-           )) {
+  if (install_surface_ == webapps::WebappInstallSource::MENU_CREATE_SHORTCUT &&
+      chromeos::features::IsCrosShortstandEnabled()) {
     // When creating a shortcut, the |manifest_id| is not part of the App's
     // primary key. The only thing that identifies a shortcut is the start URL,
     // which is always set to the current page.
@@ -433,6 +443,7 @@ void FetchManifestAndInstallCommand::OnDidPerformInstallableCheck(
         web_contents_->GetLastCommittedURL(), web_contents_->GetTitle(),
         *web_app_info_);
   }
+#endif
 
   icons_from_manifest_ = GetValidIconUrlsToDownload(*web_app_info_);
   for (const IconUrlWithSize& icon_with_size : icons_from_manifest_) {
@@ -459,9 +470,9 @@ void FetchManifestAndInstallCommand::OnDidPerformInstallableCheck(
   GetMutableDebugValue().Set("skip_page_favicons_on_initial_download",
                              skip_page_favicons_on_initial_download_);
 
-  app_id_ = GenerateAppIdFromManifestId(web_app_info_->manifest_id);
   command_manager()->lock_manager().UpgradeAndAcquireLock(
-      std::move(noop_lock_), {app_id_},
+      std::move(noop_lock_),
+      {GenerateAppIdFromManifestId(web_app_info_->manifest_id)},
       base::BindOnce(
           &FetchManifestAndInstallCommand::CheckForPlayStoreIntentOrGetIcons,
           weak_ptr_factory_.GetWeakPtr()));
@@ -591,6 +602,8 @@ void FetchManifestAndInstallCommand::OnIconsRetrievedShowDialog(
     }
   }
 
+  CHECK(web_app_info_);
+
   // In kUseFallbackInfoWhenNotInstallable mode, we skip favicons if the
   // manifest looks valid. However, if the icon download fails, we are no longer
   // installable & thus fall back to favicons.
@@ -612,8 +625,6 @@ void FetchManifestAndInstallCommand::OnIconsRetrievedShowDialog(
             weak_ptr_factory_.GetWeakPtr()));
     return;
   }
-
-  DCHECK(web_app_info_);
 
   PopulateProductIcons(web_app_info_.get(), &icons_map);
   PopulateOtherIcons(web_app_info_.get(), icons_map);
@@ -665,8 +676,7 @@ void FetchManifestAndInstallCommand::OnDialogCompleted(
 
 void FetchManifestAndInstallCommand::OnInstallFinalizedMaybeReparentTab(
     const webapps::AppId& app_id,
-    webapps::InstallResultCode code,
-    OsHooksErrors os_hooks_errors) {
+    webapps::InstallResultCode code) {
   if (IsWebContentsDestroyed()) {
     Abort(webapps::InstallResultCode::kWebContentsDestroyed);
     return;
@@ -685,10 +695,10 @@ void FetchManifestAndInstallCommand::OnInstallFinalizedMaybeReparentTab(
           ->GetPrefs(),
       app_id, install_surface_);
 
-  bool error = os_hooks_errors[OsHookType::kShortcuts];
+  bool is_shortcut_created = IsShortcutCreated(app_lock_->registrar(), app_id);
   DCHECK(app_lock_);
-  const bool can_reparent_tab =
-      app_lock_->install_finalizer().CanReparentTab(app_id, !error);
+  const bool can_reparent_tab = app_lock_->install_finalizer().CanReparentTab(
+      app_id, is_shortcut_created);
 
   bool should_reparent_tab = true;
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -699,14 +709,17 @@ void FetchManifestAndInstallCommand::OnInstallFinalizedMaybeReparentTab(
     should_reparent_tab = false;
   }
 #endif
+  if (install_surface_ == webapps::WebappInstallSource::DEVTOOLS) {
+    should_reparent_tab = false;
+  }
 
   if (should_reparent_tab && can_reparent_tab &&
       (web_app_info_->user_display_mode != mojom::UserDisplayMode::kBrowser)) {
-    app_lock_->install_finalizer().ReparentTab(app_id, !error,
+    app_lock_->install_finalizer().ReparentTab(app_id, is_shortcut_created,
                                                web_contents_.get());
   }
 
-  OnInstallCompleted(app_id, webapps::InstallResultCode::kSuccessNewInstall);
+  OnInstallCompleted(app_id, code);
 }
 
 void FetchManifestAndInstallCommand::OnInstallCompleted(
@@ -721,8 +734,26 @@ void FetchManifestAndInstallCommand::OnInstallCompleted(
   GetMutableDebugValue().Set("result_code", base::ToString(code));
 
   webapps::InstallableMetrics::TrackInstallResult(webapps::IsSuccess(code));
+  MeasureUserInstalledAppHistogram(code);
   CompleteAndSelfDestruct(webapps::IsSuccess(code) ? CommandResult::kSuccess
                                                    : CommandResult::kFailure,
                           app_id, code);
 }
+
+void FetchManifestAndInstallCommand::MeasureUserInstalledAppHistogram(
+    webapps::InstallResultCode code) {
+  if (!web_app_info_) {
+    return;
+  }
+
+  bool is_new_success_install = webapps::IsNewInstall(code);
+  if (web_app_info_->is_diy_app) {
+    base::UmaHistogramBoolean("WebApp.NewDiyAppInstalled.ByUser",
+                              is_new_success_install);
+  } else {
+    base::UmaHistogramBoolean("WebApp.NewCraftedAppInstalled.ByUser",
+                              is_new_success_install);
+  }
+}
+
 }  // namespace web_app

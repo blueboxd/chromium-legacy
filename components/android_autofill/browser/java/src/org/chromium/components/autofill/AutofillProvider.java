@@ -22,6 +22,7 @@ import androidx.annotation.VisibleForTesting;
 
 import org.jni_zero.CalledByNative;
 import org.jni_zero.JNINamespace;
+import org.jni_zero.JniType;
 import org.jni_zero.NativeMethods;
 
 import org.chromium.base.ContextUtils;
@@ -45,9 +46,9 @@ import org.chromium.ui.display.DisplayAndroid;
  * cancels previous session and starts a new one, the calling of other methods shall associate with
  * current session.
  *
- * <p>This class doesn't have 1:1 mapping to native AutofillProviderAndroid; the normal ownership
+ * <p>This class doesn't have 1:1 mapping to native AndroidAutofillProvider; the normal ownership
  * model is that this object is owned by the embedder-specific Java WebContents wrapper (e.g.,
- * AwContents.java in //android_webview), and AutofillProviderAndroid is owned by the
+ * AwContents.java in //android_webview), and AndroidAutofillProvider is owned by the
  * embedder-specific C++ WebContents wrapper (e.g., native AwContents in //android_webview).
  */
 @JNINamespace("autofill")
@@ -258,14 +259,15 @@ public class AutofillProvider {
             float width,
             float height,
             boolean hasServerPrediction) {
+        Rect absBound = transformToWindowBounds(new RectF(x, y, x + width, y + height));
+        if (mRequest != null) notifyViewExitBeforeDestroyRequest();
+
         // Check focusField inside short value? Autofill Manager might have session that wasn't
         // started by AutofillProvider, we just always cancel existing session here.
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) {
             mAutofillManager.cancel();
         }
 
-        Rect absBound = transformToWindowBounds(new RectF(x, y, x + width, y + height));
-        if (mRequest != null) notifyViewExitBeforeDestroyRequest();
         transformFormFieldToContainViewCoordinates(formData);
         mAutofillUMA.onSessionStarted(mAutofillManager.isDisabled());
         mRequest =
@@ -572,7 +574,7 @@ public class AutofillProvider {
                             .setLabel(datalistValues[i])
                             .setSubLabel(datalistLabels[i])
                             .setItemTag("")
-                            .setPopupItemId(PopupItemId.DATALIST_ENTRY)
+                            .setSuggestionType(SuggestionType.DATALIST_ENTRY)
                             .setFeatureForIPH("")
                             .build();
         }
@@ -757,20 +759,17 @@ public class AutofillProvider {
      * @param nativeAutofillProvider the native autofill provider.
      */
     private void autofill(long nativeAutofillProvider) {
-        AutofillProviderJni.get()
-                .onAutofillAvailable(nativeAutofillProvider, AutofillProvider.this);
+        AutofillProviderJni.get().onAutofillAvailable(nativeAutofillProvider);
     }
 
     private void acceptDataListSuggestion(long nativeAutofillProvider, String value) {
-        AutofillProviderJni.get()
-                .onAcceptDataListSuggestion(nativeAutofillProvider, AutofillProvider.this, value);
+        AutofillProviderJni.get().onAcceptDataListSuggestion(nativeAutofillProvider, value);
     }
 
     private void setAnchorViewRect(long nativeAutofillProvider, View anchorView, RectF rect) {
         AutofillProviderJni.get()
                 .setAnchorViewRect(
                         nativeAutofillProvider,
-                        AutofillProvider.this,
                         anchorView,
                         rect.left,
                         rect.top,
@@ -796,19 +795,16 @@ public class AutofillProvider {
     interface Natives {
         void init(AutofillProvider caller, WebContents webContents);
 
-        void detachFromJavaAutofillProvider(long nativeAutofillProviderAndroidBridgeImpl);
+        void detachFromJavaAutofillProvider(long nativeAndroidAutofillProviderBridgeImpl);
 
-        void onAutofillAvailable(
-                long nativeAutofillProviderAndroidBridgeImpl, AutofillProvider caller);
+        void onAutofillAvailable(long nativeAndroidAutofillProviderBridgeImpl);
 
         void onAcceptDataListSuggestion(
-                long nativeAutofillProviderAndroidBridgeImpl,
-                AutofillProvider caller,
-                String value);
+                long nativeAndroidAutofillProviderBridgeImpl,
+                @JniType("std::u16string") String value);
 
         void setAnchorViewRect(
-                long nativeAutofillProviderAndroidBridgeImpl,
-                AutofillProvider caller,
+                long nativeAndroidAutofillProviderBridgeImpl,
                 View anchorView,
                 float x,
                 float y,
@@ -816,7 +812,7 @@ public class AutofillProvider {
                 float height);
 
         void onShowBottomSheetResult(
-                long nativeAutofillProviderAndroidBridgeImpl,
+                long nativeAndroidAutofillProviderBridgeImpl,
                 boolean isShown,
                 boolean providedAutofillStructure);
     }

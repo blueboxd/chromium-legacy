@@ -17,7 +17,6 @@
 #include "chrome/browser/ui/autofill/autofill_popup_view_delegate.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/autofill/popup/custom_cursor_suppressor.h"
-#include "chrome/browser/ui/views/autofill/popup/popup_base_view.h"
 #include "chrome/browser/ui/views/autofill/popup/popup_row_view.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/metadata/metadata_header_macros.h"
@@ -54,11 +53,9 @@ class PopupBaseView : public PopupRowView::AccessibilitySelectionDelegate,
   PopupBaseView& operator=(const PopupBaseView&) = delete;
 
   static int GetCornerRadius();
-  // Returns the horizontal margin between elements and the edge of the view.
-  static int GetHorizontalMargin();
-  // Returns the horizontal space between elements in the view (e.g. icon and
-  // text).
-  static int GetHorizontalPadding();
+  // Returns the horizontal margin between the arrow and the edge of the view.
+  // Used to align child elements to the popup arrow.
+  static int ArrowHorizontalMargin();
 
   // Notify accessibility that an item has been selected.
   void NotifyAXSelection(views::View& view) override;
@@ -69,6 +66,8 @@ class PopupBaseView : public PopupRowView::AccessibilitySelectionDelegate,
  protected:
   PopupBaseView(base::WeakPtr<AutofillPopupViewDelegate> delegate,
                 views::Widget* parent_widget,
+                views::Widget::InitParams::Activatable new_widget_activatable =
+                    views::Widget::InitParams::Activatable::kDefault,
                 base::span<const views::BubbleArrowSide> preferred_popup_sides =
                     kDefaultPreferredPopupSides,
                 bool show_arrow_pointer = true);
@@ -125,7 +124,7 @@ class PopupBaseView : public PopupRowView::AccessibilitySelectionDelegate,
 
   // Hide the controller of this view. This assumes that doing so will
   // eventually hide this view in the process.
-  void HideController(PopupHidingReason reason);
+  void HideController(SuggestionHidingReason reason);
 
   // Return the web contents related to this.
   content::WebContents* GetWebContents() const;
@@ -146,6 +145,9 @@ class PopupBaseView : public PopupRowView::AccessibilitySelectionDelegate,
 
   // The widget of the window that triggered this popup. Weak reference.
   raw_ptr<views::Widget> parent_widget_ = nullptr;
+
+  // The corresponding parameter for newly created widget (in `DoShow()`).
+  const views::Widget::InitParams::Activatable new_widget_activatable_;
 
   const std::vector<views::BubbleArrowSide> preferred_popup_sides_;
 

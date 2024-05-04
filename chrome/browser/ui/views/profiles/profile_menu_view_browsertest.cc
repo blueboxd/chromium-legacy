@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/ui/views/profiles/profile_menu_view.h"
+
 #include <stddef.h>
 
 #include "base/callback_list.h"
@@ -15,6 +17,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/metrics/user_action_tester.h"
+#include "base/test/scoped_feature_list.h"
+#include "base/test/with_feature_override.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
@@ -28,6 +32,7 @@
 #include "chrome/browser/profiles/profile_test_util.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
+#include "chrome/browser/signin/signin_browser_test_base.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/signin/signin_ui_util.h"
 #include "chrome/browser/sync/sync_service_factory.h"
@@ -39,18 +44,19 @@
 #include "chrome/browser/themes/test/theme_service_changed_waiter.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_enums.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/profiles/profile_menu_coordinator.h"
-#include "chrome/browser/ui/views/profiles/profile_menu_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/browser/ui/views/web_apps/frame_toolbar/web_app_frame_toolbar_test_helper.h"
 #include "chrome/browser/ui/views/web_apps/frame_toolbar/web_app_frame_toolbar_view.h"
-#include "chrome/browser/ui/web_applications/web_app_controller_browsertest.h"
+#include "chrome/browser/ui/web_applications/web_app_browsertest_base.h"
 #include "chrome/browser/ui/webui/signin/login_ui_test_utils.h"
+#include "chrome/browser/web_applications/test/os_integration_test_override_impl.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/browser/web_applications/test/web_app_test_utils.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
@@ -106,6 +112,8 @@
 #endif
 
 namespace {
+
+constexpr char kTestEmail[] = "foo@example.com";
 
 class UnconsentedPrimaryAccountChecker
     : public StatusChangeChecker,
@@ -350,11 +358,19 @@ IN_PROC_BROWSER_TEST_F(ProfileMenuViewExtensionsTest, CloseIPH) {
 // Test that sets up a primary account (without sync) and simulates a click on
 // the signout button.
 class ProfileMenuViewSignoutTest : public ProfileMenuViewTestBase,
-                                   public InProcessBrowserTest {
+                                   public SigninBrowserTestBase {
  public:
-  ProfileMenuViewSignoutTest() = default;
+  ProfileMenuViewSignoutTest()
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+      // Signout is not allowed on the main profile.
+      : SigninBrowserTestBase(/*use_main_profile=*/false){}
+#else
+      = default;
+#endif
 
-  CoreAccountId account_id() const { return account_id_; }
+        CoreAccountId account_id() const {
+    return account_id_;
+  }
 
   bool Signout() {
     OpenProfileMenu();
@@ -365,14 +381,6 @@ class ProfileMenuViewSignoutTest : public ProfileMenuViewTestBase,
     return true;
   }
 
-  signin::IdentityManager* identity_manager() {
-    return IdentityManagerFactory::GetForProfile(GetProfile());
-  }
-
-  Profile* GetProfile() {
-    return profile_ ? profile_.get() : browser()->profile();
-  }
-
 #if !BUILDFLAG(IS_CHROMEOS_LACROS)
   GURL GetExpectedLogoutURL(bool uno_enabled) const {
     if (uno_enabled) {
@@ -381,28 +389,26 @@ class ProfileMenuViewSignoutTest : public ProfileMenuViewTestBase,
       return GaiaUrls::GetInstance()->service_logout_url();
     }
   }
-#else
-  void UseSecondaryProfile() {
-    // Signout not allowed in the main profile.
-    profile_ = CreateAdditionalProfile();
-    SetTargetBrowser(CreateBrowser(profile_));
-  }
 #endif
 
-  // InProcessBrowserTest:
+  // SigninBrowserTestBase:
   void SetUpOnMainThread() override {
-    InProcessBrowserTest::SetUpOnMainThread();
-    SetTargetBrowser(browser());
+    SigninBrowserTestBase::SetUpOnMainThread();
+    SetTargetBrowser(GetProfile() == browser()->profile()
+                         ? browser()
+                         : CreateBrowser(GetProfile()));
 
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-    // Signout is not allowed on the main profile.
-    UseSecondaryProfile();
-#endif
-    // Add an account (no sync).
-    account_id_ =
-        signin::MakeAccountAvailable(identity_manager(), "foo@example.com")
-            .account_id;
+    // Add an account (no sync) with cookie.
+    signin::AccountAvailabilityOptionsBuilder builder =
+        identity_test_env()
+            ->CreateAccountAvailabilityOptionsBuilder()
+            .AsPrimary(signin::ConsentLevel::kSignin)
+            .WithCookie();
+    CoreAccountInfo account_info =
+        identity_test_env()->MakeAccountAvailable(builder.Build(kTestEmail));
+    account_id_ = account_info.account_id;
     ASSERT_TRUE(identity_manager()->HasAccountWithRefreshToken(account_id_));
+    identity_test_env()->SetFreshnessOfAccountsInGaiaCookie(true);
   }
 
  private:
@@ -422,26 +428,17 @@ IN_PROC_BROWSER_TEST_F(ProfileMenuViewSignoutTest, Signout) {
 
 #if !BUILDFLAG(IS_CHROMEOS_LACROS)
 
-// Wrapper class to add parametrized feature tests.
-// Param of the ProfileMenuViewSignoutTestWithExplicitBrowserSigninFeature:
-// -- bool uno_enabled;
+// Wrapper class to add parametrized
+// `switches::kExplicitBrowserSigninUIOnDesktop` feature tests.
 class ProfileMenuViewSignoutTestWithExplicitBrowserSigninFeature
     : public ProfileMenuViewSignoutTest,
-      public testing::WithParamInterface<bool> {
+      public base::test::WithFeatureOverride {
  public:
-  ProfileMenuViewSignoutTestWithExplicitBrowserSigninFeature() {
-    if (uno_enabled()) {
-      feature_list_.InitWithFeatures(
-          {switches::kUnoDesktop, switches::kExplicitBrowserSigninUIOnDesktop},
-          {});
-    } else {
-      feature_list_.InitWithFeatures(
-          {},
-          {switches::kUnoDesktop, switches::kExplicitBrowserSigninUIOnDesktop});
-    }
-  }
+  ProfileMenuViewSignoutTestWithExplicitBrowserSigninFeature()
+      : base::test::WithFeatureOverride(
+            switches::kExplicitBrowserSigninUIOnDesktop) {}
 
-  bool uno_enabled() const { return GetParam(); }
+  bool uno_enabled() const { return IsParamFeatureEnabled(); }
 
  private:
   base::test::ScopedFeatureList feature_list_;
@@ -499,13 +496,8 @@ IN_PROC_BROWSER_TEST_P(
   }
 }
 
-INSTANTIATE_TEST_SUITE_P(
-    ,
-    ProfileMenuViewSignoutTestWithExplicitBrowserSigninFeature,
-    testing::Bool(),
-    [](const ::testing::TestParamInfo<bool>& info) {
-      return info.param ? "UnoEnabled" : "UnoDisabled";
-    });
+INSTANTIATE_FEATURE_OVERRIDE_TEST_SUITE(
+    ProfileMenuViewSignoutTestWithExplicitBrowserSigninFeature);
 
 // Signout test that handles logout requests. The parameter indicates whether
 // an error page is generated for the logout request.
@@ -522,15 +514,8 @@ class ProfileMenuViewSignoutTestWithNetwork
         &ProfileMenuViewSignoutTestWithNetwork::HandleSignoutURL,
         has_network_error()));
 
-    if (uno_enabled()) {
-      feature_list_.InitWithFeatures(
-          {switches::kUnoDesktop, switches::kExplicitBrowserSigninUIOnDesktop},
-          {});
-    } else {
-      feature_list_.InitWithFeatures(
-          {},
-          {switches::kUnoDesktop, switches::kExplicitBrowserSigninUIOnDesktop});
-    }
+    feature_list_.InitWithFeatureState(
+        switches::kExplicitBrowserSigninUIOnDesktop, uno_enabled());
   }
 
   bool uno_enabled() const { return std::get<0>(GetParam()); }
@@ -661,7 +646,7 @@ class ProfileMenuViewSyncErrorButtonTest : public ProfileMenuViewTestBase,
     signin::IdentityManager* identity_manager =
         IdentityManagerFactory::GetForProfile(browser()->profile());
     account_info_ = signin::MakePrimaryAccountAvailable(
-        identity_manager, "foo@example.com", signin::ConsentLevel::kSync);
+        identity_manager, kTestEmail, signin::ConsentLevel::kSync);
     signin::SetInvalidRefreshTokenForPrimaryAccount(identity_manager);
     ASSERT_TRUE(
         identity_manager->HasAccountWithRefreshTokenInPersistentErrorState(
@@ -745,7 +730,7 @@ class ProfileMenuViewSigninErrorButtonTest : public ProfileMenuViewTestBase,
     signin::IdentityManager* identity_manager =
         IdentityManagerFactory::GetForProfile(browser()->profile());
     account_info_ = signin::MakePrimaryAccountAvailable(
-        identity_manager, "foo@example.com", signin::ConsentLevel::kSignin);
+        identity_manager, kTestEmail, signin::ConsentLevel::kSignin);
     signin::UpdatePersistentErrorOfRefreshTokenForAccount(
         identity_manager, account_info_.account_id,
         GoogleServiceAuthError::FromInvalidGaiaCredentialsReason(
@@ -950,11 +935,15 @@ class ProfileMenuClickTest : public SyncTest,
   raw_ptr<Profile, DanglingUntriaged> profile_ = nullptr;
 };
 
-#define PROFILE_MENU_CLICK_TEST_F(FixtureClass, actionable_item_list,     \
-                                  test_case_name)                         \
+#define PROFILE_MENU_CLICK_TEST_WITH_FEATURE_STATES_F(                    \
+    FixtureClass, actionable_item_list, test_case_name, enabled_features, \
+    disabled_features)                                                    \
   class test_case_name : public FixtureClass {                            \
    public:                                                                \
-    test_case_name() = default;                                           \
+    test_case_name() {                                                    \
+      scoped_feature_list_##test_case_name.InitWithFeatures(              \
+          enabled_features, disabled_features);                           \
+    }                                                                     \
     test_case_name(const test_case_name&) = delete;                       \
     test_case_name& operator=(const test_case_name&) = delete;            \
                                                                           \
@@ -962,6 +951,9 @@ class ProfileMenuClickTest : public SyncTest,
         size_t index) override {                                          \
       return actionable_item_list[index];                                 \
     }                                                                     \
+                                                                          \
+   private:                                                               \
+    base::test::ScopedFeatureList scoped_feature_list_##test_case_name;   \
   };                                                                      \
                                                                           \
   INSTANTIATE_TEST_SUITE_P(                                               \
@@ -970,16 +962,33 @@ class ProfileMenuClickTest : public SyncTest,
                                                                           \
   IN_PROC_BROWSER_TEST_P(test_case_name, test_case_name)
 
-// Specialized variant of `PROFILE_MENU_CLICK_TEST_F` using
-// `ProfileMenuClickTest` as `FixtureClass`.
-#define PROFILE_MENU_CLICK_TEST(actionable_item_list, test_case_name)   \
-  PROFILE_MENU_CLICK_TEST_F(ProfileMenuClickTest, actionable_item_list, \
-                            test_case_name)
+// Specialized variant of `PROFILE_MENU_CLICK_TEST_WITH_FEATURE_STATES_F` with
+// no features overrides.
+#define PROFILE_MENU_CLICK_TEST_F(FixtureClass, actionable_item_list, \
+                                  test_case_name)                     \
+  PROFILE_MENU_CLICK_TEST_WITH_FEATURE_STATES_F(                      \
+      FixtureClass, actionable_item_list, test_case_name, {}, {})
 
-// List of actionable items in the correct order as they appear in the menu.
-// If a new button is added to the menu, it should also be added to this list.
+// Specialized variant of `PROFILE_MENU_CLICK_TEST_WITH_FEATURE_STATES_F` using
+// `ProfileMenuClickTest` as `FixtureClass`, and allowing to override features
+// states.
+#define PROFILE_MENU_CLICK_WITH_FEATURE_TEST(                                  \
+    actionable_item_list, test_case_name, enabled_features, disabled_features) \
+  PROFILE_MENU_CLICK_TEST_WITH_FEATURE_STATES_F(                               \
+      ProfileMenuClickTest, actionable_item_list, test_case_name,              \
+      enabled_features, disabled_features)
+
+// Specialized variant of `PROFILE_MENU_CLICK_WITH_FEATURE_TEST` with no
+// features overrides, which uses `ProfileMenuClickTest` as fixture class.
+#define PROFILE_MENU_CLICK_TEST(actionable_item_list, test_case_name)        \
+  PROFILE_MENU_CLICK_WITH_FEATURE_TEST(actionable_item_list, test_case_name, \
+                                       {}, {})
+
+// List of actionable items in the correct order as they appear in the menu with
+// Uno disabled. If a new button is added to the menu, it should also be added
+// to this list.
 constexpr ProfileMenuViewBase::ActionableItem
-    kActionableItems_SingleProfileWithCustomName[] = {
+    kActionableItems_SingleProfileWithCustomName_UnoDisabled[] = {
         ProfileMenuViewBase::ActionableItem::kEditProfileButton,
         ProfileMenuViewBase::ActionableItem::kPasswordsButton,
         ProfileMenuViewBase::ActionableItem::kCreditCardsButton,
@@ -992,16 +1001,47 @@ constexpr ProfileMenuViewBase::ActionableItem
         // there are no other buttons at the end.
         ProfileMenuViewBase::ActionableItem::kEditProfileButton};
 
-PROFILE_MENU_CLICK_TEST(kActionableItems_SingleProfileWithCustomName,
-                        ProfileMenuClickTest_SingleProfileWithCustomName) {
+PROFILE_MENU_CLICK_WITH_FEATURE_TEST(
+    kActionableItems_SingleProfileWithCustomName_UnoDisabled,
+    ProfileMenuClickTest_SingleProfileWithCustomName_UnoDisabled,
+    /*enabled_features=*/{},
+    /*disabled_features=*/{switches::kExplicitBrowserSigninUIOnDesktop}) {
   profiles::UpdateProfileName(browser()->profile(), u"Custom name");
   RunTest();
 }
 
-// List of actionable items in the correct order as they appear in the menu.
-// If a new button is added to the menu, it should also be added to this list.
+// List of actionable items in the correct order as they appear in the menu with
+// Uno enabled. If a new button is added to the menu, it should also be added
+// to this list.
 constexpr ProfileMenuViewBase::ActionableItem
-    kActionableItems_MultipleProfiles[] = {
+    kActionableItems_SingleProfileWithCustomName_UnoEnabled[] = {
+        ProfileMenuViewBase::ActionableItem::kPasswordsButton,
+        ProfileMenuViewBase::ActionableItem::kCreditCardsButton,
+        ProfileMenuViewBase::ActionableItem::kAddressesButton,
+        ProfileMenuViewBase::ActionableItem::kSigninButton,
+        ProfileMenuViewBase::ActionableItem::kEditProfileButton,
+        ProfileMenuViewBase::ActionableItem::kExitProfileButton,
+        ProfileMenuViewBase::ActionableItem::kGuestProfileButton,
+        ProfileMenuViewBase::ActionableItem::kAddNewProfileButton,
+        ProfileMenuViewBase::ActionableItem::kManageProfilesButton,
+        // The first button is added again to finish the cycle and test that
+        // there are no other buttons at the end.
+        ProfileMenuViewBase::ActionableItem::kPasswordsButton};
+
+PROFILE_MENU_CLICK_WITH_FEATURE_TEST(
+    kActionableItems_SingleProfileWithCustomName_UnoEnabled,
+    ProfileMenuClickTest_SingleProfileWithCustomName_UnoEnabled,
+    /*enabled_features=*/{switches::kExplicitBrowserSigninUIOnDesktop},
+    /*disabled_features=*/{}) {
+  profiles::UpdateProfileName(browser()->profile(), u"Custom name");
+  RunTest();
+}
+
+// List of actionable items in the correct order as they appear in the menu with
+// Uno disabled. If a new button is added to the menu, it should also be added
+// to this list.
+constexpr ProfileMenuViewBase::ActionableItem
+    kActionableItems_MultipleProfiles_UnoDisabled[] = {
         ProfileMenuViewBase::ActionableItem::kEditProfileButton,
         ProfileMenuViewBase::ActionableItem::kPasswordsButton,
         ProfileMenuViewBase::ActionableItem::kCreditCardsButton,
@@ -1017,8 +1057,11 @@ constexpr ProfileMenuViewBase::ActionableItem
         // there are no other buttons at the end.
         ProfileMenuViewBase::ActionableItem::kEditProfileButton};
 
-PROFILE_MENU_CLICK_TEST(kActionableItems_MultipleProfiles,
-                        ProfileMenuClickTest_MultipleProfiles) {
+PROFILE_MENU_CLICK_WITH_FEATURE_TEST(
+    kActionableItems_MultipleProfiles_UnoDisabled,
+    ProfileMenuClickTest_MultipleProfiles_UnoDisabled,
+    /*enabled_features=*/{},
+    /*disabled_features=*/{switches::kExplicitBrowserSigninUIOnDesktop}) {
   // Add two additional profiles.
   CreateAdditionalProfile();
   CreateAdditionalProfile();
@@ -1028,46 +1071,118 @@ PROFILE_MENU_CLICK_TEST(kActionableItems_MultipleProfiles,
   RunTest();
 }
 
-// List of actionable items in the correct order as they appear in the menu.
-// If a new button is added to the menu, it should also be added to this list.
-constexpr ProfileMenuViewBase::ActionableItem kActionableItems_SyncEnabled[] = {
-    ProfileMenuViewBase::ActionableItem::kEditProfileButton,
-    ProfileMenuViewBase::ActionableItem::kPasswordsButton,
-    ProfileMenuViewBase::ActionableItem::kCreditCardsButton,
-    ProfileMenuViewBase::ActionableItem::kAddressesButton,
-    ProfileMenuViewBase::ActionableItem::kSyncSettingsButton,
-    ProfileMenuViewBase::ActionableItem::kManageGoogleAccountButton,
-    ProfileMenuViewBase::ActionableItem::kManageProfilesButton,
-    ProfileMenuViewBase::ActionableItem::kGuestProfileButton,
-    ProfileMenuViewBase::ActionableItem::kAddNewProfileButton,
-    // The first button is added again to finish the cycle and test that
-    // there are no other buttons at the end.
-    ProfileMenuViewBase::ActionableItem::kEditProfileButton};
+// List of actionable items in the correct order as they appear in the menu with
+// Uno enabled. If a new button is added to the menu, it should also be added
+// to this list.
+constexpr ProfileMenuViewBase::ActionableItem
+    kActionableItems_MultipleProfiles_UnoEnabled[] = {
+        ProfileMenuViewBase::ActionableItem::kPasswordsButton,
+        ProfileMenuViewBase::ActionableItem::kCreditCardsButton,
+        ProfileMenuViewBase::ActionableItem::kAddressesButton,
+        ProfileMenuViewBase::ActionableItem::kSigninButton,
+        ProfileMenuViewBase::ActionableItem::kEditProfileButton,
+        ProfileMenuViewBase::ActionableItem::kExitProfileButton,
+        ProfileMenuViewBase::ActionableItem::kOtherProfileButton,
+        ProfileMenuViewBase::ActionableItem::kOtherProfileButton,
+        ProfileMenuViewBase::ActionableItem::kGuestProfileButton,
+        ProfileMenuViewBase::ActionableItem::kAddNewProfileButton,
+        ProfileMenuViewBase::ActionableItem::kManageProfilesButton,
+        // The first button is added again to finish the cycle and test that
+        // there are no other buttons at the end.
+        ProfileMenuViewBase::ActionableItem::kPasswordsButton};
 
-PROFILE_MENU_CLICK_TEST(kActionableItems_SyncEnabled,
-                        ProfileMenuClickTest_SyncEnabled) {
+PROFILE_MENU_CLICK_WITH_FEATURE_TEST(
+    kActionableItems_MultipleProfiles_UnoEnabled,
+    ProfileMenuClickTest_MultipleProfiles_UnoEnabled,
+    /*enabled_features=*/{switches::kExplicitBrowserSigninUIOnDesktop},
+    /*disabled_features=*/{}) {
+  // Add two additional profiles.
+  CreateAdditionalProfile();
+  CreateAdditionalProfile();
+  // Open a second browser window for the current profile, so the
+  // ExitProfileButton is shown.
+  SetTargetBrowser(CreateBrowser(browser()->profile()));
+  RunTest();
+}
+
+// List of actionable items in the correct order as they appear in the menu with
+// Uno disabled. If a new button is added to the menu, it should also be added
+// to this list.
+constexpr ProfileMenuViewBase::ActionableItem
+    kActionableItems_SyncEnabled_UnoDisabled[] = {
+        ProfileMenuViewBase::ActionableItem::kEditProfileButton,
+        ProfileMenuViewBase::ActionableItem::kPasswordsButton,
+        ProfileMenuViewBase::ActionableItem::kCreditCardsButton,
+        ProfileMenuViewBase::ActionableItem::kAddressesButton,
+        ProfileMenuViewBase::ActionableItem::kSyncSettingsButton,
+        ProfileMenuViewBase::ActionableItem::kManageGoogleAccountButton,
+        ProfileMenuViewBase::ActionableItem::kManageProfilesButton,
+        ProfileMenuViewBase::ActionableItem::kGuestProfileButton,
+        ProfileMenuViewBase::ActionableItem::kAddNewProfileButton,
+        // The first button is added again to finish the cycle and test that
+        // there are no other buttons at the end.
+        ProfileMenuViewBase::ActionableItem::kEditProfileButton};
+
+PROFILE_MENU_CLICK_WITH_FEATURE_TEST(
+    kActionableItems_SyncEnabled_UnoDisabled,
+    ProfileMenuClickTest_SyncEnabled_UnoDisabled,
+    /*enabled_features=*/{},
+    /*disabled_features=*/{switches::kExplicitBrowserSigninUIOnDesktop}) {
   EnableSync();
   RunTest();
 }
 
-// List of actionable items in the correct order as they appear in the menu.
-// If a new button is added to the menu, it should also be added to this list.
-constexpr ProfileMenuViewBase::ActionableItem kActionableItems_SyncError[] = {
-    ProfileMenuViewBase::ActionableItem::kEditProfileButton,
-    ProfileMenuViewBase::ActionableItem::kPasswordsButton,
-    ProfileMenuViewBase::ActionableItem::kCreditCardsButton,
-    ProfileMenuViewBase::ActionableItem::kAddressesButton,
-    ProfileMenuViewBase::ActionableItem::kSyncErrorButton,
-    ProfileMenuViewBase::ActionableItem::kManageGoogleAccountButton,
-    ProfileMenuViewBase::ActionableItem::kManageProfilesButton,
-    ProfileMenuViewBase::ActionableItem::kGuestProfileButton,
-    ProfileMenuViewBase::ActionableItem::kAddNewProfileButton,
-    // The first button is added again to finish the cycle and test that
-    // there are no other buttons at the end.
-    ProfileMenuViewBase::ActionableItem::kEditProfileButton};
+// List of actionable items in the correct order as they appear in the menu with
+// Uno enabled. If a new button is added to the menu, it should also be added to
+// this list.
+constexpr ProfileMenuViewBase::ActionableItem
+    kActionableItems_SyncEnabled_UnoEnabled[] = {
+        ProfileMenuViewBase::ActionableItem::kPasswordsButton,
+        ProfileMenuViewBase::ActionableItem::kCreditCardsButton,
+        ProfileMenuViewBase::ActionableItem::kAddressesButton,
+        ProfileMenuViewBase::ActionableItem::kSyncSettingsButton,
+        ProfileMenuViewBase::ActionableItem::kEditProfileButton,
+        ProfileMenuViewBase::ActionableItem::kManageGoogleAccountButton,
+        ProfileMenuViewBase::ActionableItem::kExitProfileButton,
+        ProfileMenuViewBase::ActionableItem::kGuestProfileButton,
+        ProfileMenuViewBase::ActionableItem::kAddNewProfileButton,
+        ProfileMenuViewBase::ActionableItem::kManageProfilesButton,
+        // The first button is added again to finish the cycle and test that
+        // there are no other buttons at the end.
+        ProfileMenuViewBase::ActionableItem::kPasswordsButton};
 
-PROFILE_MENU_CLICK_TEST(kActionableItems_SyncError,
-                        ProfileMenuClickTest_SyncError) {
+PROFILE_MENU_CLICK_WITH_FEATURE_TEST(
+    kActionableItems_SyncEnabled_UnoEnabled,
+    ProfileMenuClickTest_SyncEnabled_UnoEnabled,
+    /*enabled_features=*/{switches::kExplicitBrowserSigninUIOnDesktop},
+    /*disabled_features=*/{}) {
+  EnableSync();
+  RunTest();
+}
+
+// List of actionable items in the correct order as they appear in the menu with
+// Uno disabled. If a new button is added to the menu, it should also be added
+// to this list.
+constexpr ProfileMenuViewBase::ActionableItem
+    kActionableItems_SyncError_UnoDisabled[] = {
+        ProfileMenuViewBase::ActionableItem::kEditProfileButton,
+        ProfileMenuViewBase::ActionableItem::kPasswordsButton,
+        ProfileMenuViewBase::ActionableItem::kCreditCardsButton,
+        ProfileMenuViewBase::ActionableItem::kAddressesButton,
+        ProfileMenuViewBase::ActionableItem::kSyncErrorButton,
+        ProfileMenuViewBase::ActionableItem::kManageGoogleAccountButton,
+        ProfileMenuViewBase::ActionableItem::kManageProfilesButton,
+        ProfileMenuViewBase::ActionableItem::kGuestProfileButton,
+        ProfileMenuViewBase::ActionableItem::kAddNewProfileButton,
+        // The first button is added again to finish the cycle and test that
+        // there are no other buttons at the end.
+        ProfileMenuViewBase::ActionableItem::kEditProfileButton};
+
+PROFILE_MENU_CLICK_WITH_FEATURE_TEST(
+    kActionableItems_SyncError_UnoDisabled,
+    ProfileMenuClickTest_SyncError_UnoDisabled,
+    /*enabled_features=*/{},
+    /*disabled_features=*/{switches::kExplicitBrowserSigninUIOnDesktop}) {
   ASSERT_TRUE(
       sync_harness()->SignInPrimaryAccount(signin::ConsentLevel::kSync));
   // Check that the setup was successful.
@@ -1078,30 +1193,112 @@ PROFILE_MENU_CLICK_TEST(kActionableItems_SyncError,
   RunTest();
 }
 
-// List of actionable items in the correct order as they appear in the menu.
-// If a new button is added to the menu, it should also be added to this list.
-constexpr ProfileMenuViewBase::ActionableItem kActionableItems_SyncPaused[] = {
-    ProfileMenuViewBase::ActionableItem::kEditProfileButton,
-    ProfileMenuViewBase::ActionableItem::kPasswordsButton,
-    ProfileMenuViewBase::ActionableItem::kCreditCardsButton,
-    ProfileMenuViewBase::ActionableItem::kAddressesButton,
-    ProfileMenuViewBase::ActionableItem::kSyncErrorButton,
-    ProfileMenuViewBase::ActionableItem::kManageProfilesButton,
-    ProfileMenuViewBase::ActionableItem::kGuestProfileButton,
-    ProfileMenuViewBase::ActionableItem::kAddNewProfileButton,
-    // The first button is added again to finish the cycle and test that
-    // there are no other buttons at the end.
-    ProfileMenuViewBase::ActionableItem::kEditProfileButton};
+// List of actionable items in the correct order as they appear in the menu with
+// Uno enabled. If a new button is added to the menu, it should also be added
+// to this list.
+constexpr ProfileMenuViewBase::ActionableItem
+    kActionableItems_SyncError_UnoEnabled[] = {
+        ProfileMenuViewBase::ActionableItem::kPasswordsButton,
+        ProfileMenuViewBase::ActionableItem::kCreditCardsButton,
+        ProfileMenuViewBase::ActionableItem::kAddressesButton,
+        ProfileMenuViewBase::ActionableItem::kSyncErrorButton,
+        ProfileMenuViewBase::ActionableItem::kEditProfileButton,
+        ProfileMenuViewBase::ActionableItem::kManageGoogleAccountButton,
+        ProfileMenuViewBase::ActionableItem::kExitProfileButton,
+        ProfileMenuViewBase::ActionableItem::kGuestProfileButton,
+        ProfileMenuViewBase::ActionableItem::kAddNewProfileButton,
+        ProfileMenuViewBase::ActionableItem::kManageProfilesButton,
+        // The first button is added again to finish the cycle and test that
+        // there are no other buttons at the end.
+        ProfileMenuViewBase::ActionableItem::kPasswordsButton};
 
-// TODO(crbug.com/1298490): flaky on Windows and Mac
+PROFILE_MENU_CLICK_WITH_FEATURE_TEST(
+    kActionableItems_SyncError_UnoEnabled,
+    ProfileMenuClickTest_SyncError_UnoEnabled,
+    /*enabled_features=*/{switches::kExplicitBrowserSigninUIOnDesktop},
+    /*disabled_features=*/{}) {
+  ASSERT_TRUE(
+      sync_harness()->SignInPrimaryAccount(signin::ConsentLevel::kSync));
+  // Check that the setup was successful.
+  ASSERT_TRUE(
+      identity_manager()->HasPrimaryAccount(signin::ConsentLevel::kSync));
+  ASSERT_FALSE(sync_service()->IsSyncFeatureEnabled());
+
+  RunTest();
+}
+
+// List of actionable items in the correct order as they appear in the menu with
+// Uno disabled. If a new button is added to the menu, it should also be added
+// to this list.
+constexpr ProfileMenuViewBase::ActionableItem
+    kActionableItems_SyncPaused_UnoDisabled[] = {
+        ProfileMenuViewBase::ActionableItem::kEditProfileButton,
+        ProfileMenuViewBase::ActionableItem::kPasswordsButton,
+        ProfileMenuViewBase::ActionableItem::kCreditCardsButton,
+        ProfileMenuViewBase::ActionableItem::kAddressesButton,
+        ProfileMenuViewBase::ActionableItem::kSyncErrorButton,
+        ProfileMenuViewBase::ActionableItem::kManageProfilesButton,
+        ProfileMenuViewBase::ActionableItem::kGuestProfileButton,
+        ProfileMenuViewBase::ActionableItem::kAddNewProfileButton,
+        // The first button is added again to finish the cycle and test that
+        // there are no other buttons at the end.
+        ProfileMenuViewBase::ActionableItem::kEditProfileButton};
+
+// TODO(crbug.com/40822972): flaky on Windows and Mac
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
-#define MAYBE_ProfileMenuClickTest_SyncPaused \
-  DISABLED_ProfileMenuClickTest_SyncPaused
+#define MAYBE_ProfileMenuClickTest_SyncPaused_UnoDisabled \
+  DISABLED_ProfileMenuClickTest_SyncPaused_UnoDisabled
 #else
-#define MAYBE_ProfileMenuClickTest_SyncPaused ProfileMenuClickTest_SyncPaused
+#define MAYBE_ProfileMenuClickTest_SyncPaused_UnoDisabled \
+  ProfileMenuClickTest_SyncPaused_UnoDisabled
 #endif
-PROFILE_MENU_CLICK_TEST(kActionableItems_SyncPaused,
-                        MAYBE_ProfileMenuClickTest_SyncPaused) {
+PROFILE_MENU_CLICK_WITH_FEATURE_TEST(
+    kActionableItems_SyncPaused_UnoDisabled,
+    MAYBE_ProfileMenuClickTest_SyncPaused_UnoDisabled,
+    /*enabled_features=*/{},
+    /*disabled_features=*/{switches::kExplicitBrowserSigninUIOnDesktop}) {
+  EnableSync();
+  sync_harness()->EnterSyncPausedStateForPrimaryAccount();
+  // Check that the setup was successful.
+  ASSERT_TRUE(
+      identity_manager()->HasPrimaryAccount(signin::ConsentLevel::kSync));
+  ASSERT_EQ(syncer::SyncService::TransportState::PAUSED,
+            sync_service()->GetTransportState());
+
+  RunTest();
+}
+
+// List of actionable items in the correct order as they appear in the menu with
+// Uno enabled. If a new button is added to the menu, it should also be added
+// to this list.
+constexpr ProfileMenuViewBase::ActionableItem
+    kActionableItems_SyncPaused_UnoEnabled[] = {
+        ProfileMenuViewBase::ActionableItem::kPasswordsButton,
+        ProfileMenuViewBase::ActionableItem::kCreditCardsButton,
+        ProfileMenuViewBase::ActionableItem::kAddressesButton,
+        ProfileMenuViewBase::ActionableItem::kSyncErrorButton,
+        ProfileMenuViewBase::ActionableItem::kEditProfileButton,
+        ProfileMenuViewBase::ActionableItem::kExitProfileButton,
+        ProfileMenuViewBase::ActionableItem::kGuestProfileButton,
+        ProfileMenuViewBase::ActionableItem::kAddNewProfileButton,
+        ProfileMenuViewBase::ActionableItem::kManageProfilesButton,
+        // The first button is added again to finish the cycle and test that
+        // there are no other buttons at the end.
+        ProfileMenuViewBase::ActionableItem::kPasswordsButton};
+
+// TODO(crbug.com/40822972): flaky on Windows and Mac
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
+#define MAYBE_ProfileMenuClickTest_SyncPaused_UnoEnabled \
+  DISABLED_ProfileMenuClickTest_SyncPaused_UnoEnabled
+#else
+#define MAYBE_ProfileMenuClickTest_SyncPaused_UnoEnabled \
+  ProfileMenuClickTest_SyncPaused_UnoEnabled
+#endif
+PROFILE_MENU_CLICK_WITH_FEATURE_TEST(
+    kActionableItems_SyncPaused_UnoEnabled,
+    MAYBE_ProfileMenuClickTest_SyncPaused_UnoEnabled,
+    /*enabled_features=*/{switches::kExplicitBrowserSigninUIOnDesktop},
+    /*disabled_features=*/{}) {
   EnableSync();
   sync_harness()->EnterSyncPausedStateForPrimaryAccount();
   // Check that the setup was successful.
@@ -1114,13 +1311,14 @@ PROFILE_MENU_CLICK_TEST(kActionableItems_SyncPaused,
 }
 
 // Lacros doesn't allow to disable sign-in in regular profiles yet.
-// TODO(https://crbug.com/1220066): re-enable this test once kSigninAllowed is
+// TODO(crbug.com/40772644): re-enable this test once kSigninAllowed is
 // no longer force set to true on Lacros.
 #if !BUILDFLAG(IS_CHROMEOS_LACROS)
-// List of actionable items in the correct order as they appear in the menu.
-// If a new button is added to the menu, it should also be added to this list.
+// List of actionable items in the correct order as they appear in the menu with
+// Uno disabled. If a new button is added to the menu, it should also be added
+// to this list.
 constexpr ProfileMenuViewBase::ActionableItem
-    kActionableItems_SigninDisallowed[] = {
+    kActionableItems_SigninDisallowed_UnoDisabled[] = {
         ProfileMenuViewBase::ActionableItem::kEditProfileButton,
         ProfileMenuViewBase::ActionableItem::kPasswordsButton,
         ProfileMenuViewBase::ActionableItem::kCreditCardsButton,
@@ -1132,8 +1330,11 @@ constexpr ProfileMenuViewBase::ActionableItem
         // there are no other buttons at the end.
         ProfileMenuViewBase::ActionableItem::kEditProfileButton};
 
-PROFILE_MENU_CLICK_TEST(kActionableItems_SigninDisallowed,
-                        ProfileMenuClickTest_SigninDisallowed) {
+PROFILE_MENU_CLICK_WITH_FEATURE_TEST(
+    kActionableItems_SigninDisallowed_UnoDisabled,
+    ProfileMenuClickTest_SigninDisallowed_UnoDisabled,
+    /*enabled_features=*/{},
+    /*disabled_features=*/{switches::kExplicitBrowserSigninUIOnDesktop}) {
   // Check that the setup was successful.
   ASSERT_FALSE(
       browser()->profile()->GetPrefs()->GetBoolean(prefs::kSigninAllowed));
@@ -1141,17 +1342,53 @@ PROFILE_MENU_CLICK_TEST(kActionableItems_SigninDisallowed,
   RunTest();
 }
 
-IN_PROC_BROWSER_TEST_P(ProfileMenuClickTest_SigninDisallowed,
-                       PRE_ProfileMenuClickTest_SigninDisallowed) {
+IN_PROC_BROWSER_TEST_P(ProfileMenuClickTest_SigninDisallowed_UnoDisabled,
+                       PRE_ProfileMenuClickTest_SigninDisallowed_UnoDisabled) {
+  browser()->profile()->GetPrefs()->SetBoolean(
+      prefs::kSigninAllowedOnNextStartup, false);
+}
+
+// List of actionable items in the correct order as they appear in the menu with
+// Uno enabled. If a new button is added to the menu, it should also be added
+// to this list.
+constexpr ProfileMenuViewBase::ActionableItem
+    kActionableItems_SigninDisallowed_UnoEnabled[] = {
+        ProfileMenuViewBase::ActionableItem::kPasswordsButton,
+        ProfileMenuViewBase::ActionableItem::kCreditCardsButton,
+        ProfileMenuViewBase::ActionableItem::kAddressesButton,
+        ProfileMenuViewBase::ActionableItem::kEditProfileButton,
+        ProfileMenuViewBase::ActionableItem::kExitProfileButton,
+        ProfileMenuViewBase::ActionableItem::kGuestProfileButton,
+        ProfileMenuViewBase::ActionableItem::kAddNewProfileButton,
+        ProfileMenuViewBase::ActionableItem::kManageProfilesButton,
+        // The first button is added again to finish the cycle and test that
+        // there are no other buttons at the end.
+        ProfileMenuViewBase::ActionableItem::kPasswordsButton};
+
+PROFILE_MENU_CLICK_WITH_FEATURE_TEST(
+    kActionableItems_SigninDisallowed_UnoEnabled,
+    ProfileMenuClickTest_SigninDisallowed_UnoEnabled,
+    /*enabled_features=*/{switches::kExplicitBrowserSigninUIOnDesktop},
+    /*disabled_features=*/{}) {
+  // Check that the setup was successful.
+  ASSERT_FALSE(
+      browser()->profile()->GetPrefs()->GetBoolean(prefs::kSigninAllowed));
+
+  RunTest();
+}
+
+IN_PROC_BROWSER_TEST_P(ProfileMenuClickTest_SigninDisallowed_UnoEnabled,
+                       PRE_ProfileMenuClickTest_SigninDisallowed_UnoEnabled) {
   browser()->profile()->GetPrefs()->SetBoolean(
       prefs::kSigninAllowedOnNextStartup, false);
 }
 #endif  // !BUILDFLAG(IS_CHROMEOS_LACROS)
 
-// List of actionable items in the correct order as they appear in the menu.
-// If a new button is added to the menu, it should also be added to this list.
+// List of actionable items in the correct order as they appear in the menu with
+// Uno disabled. If a new button is added to the menu, it should also be added
+// to this list.
 constexpr ProfileMenuViewBase::ActionableItem
-    kActionableItems_WithUnconsentedPrimaryAccount[] = {
+    kActionableItems_WithUnconsentedPrimaryAccount_UnoDisabled[] = {
         ProfileMenuViewBase::ActionableItem::kEditProfileButton,
         ProfileMenuViewBase::ActionableItem::kPasswordsButton,
         ProfileMenuViewBase::ActionableItem::kCreditCardsButton,
@@ -1169,8 +1406,51 @@ constexpr ProfileMenuViewBase::ActionableItem
         // there are no other buttons at the end.
         ProfileMenuViewBase::ActionableItem::kEditProfileButton};
 
-PROFILE_MENU_CLICK_TEST(kActionableItems_WithUnconsentedPrimaryAccount,
-                        ProfileMenuClickTest_WithUnconsentedPrimaryAccount) {
+PROFILE_MENU_CLICK_WITH_FEATURE_TEST(
+    kActionableItems_WithUnconsentedPrimaryAccount_UnoDisabled,
+    ProfileMenuClickTest_WithUnconsentedPrimaryAccount_UnoDisabled,
+    /*enabled_features=*/{},
+    /*disabled_features=*/{switches::kExplicitBrowserSigninUIOnDesktop}) {
+  secondary_account_helper::SignInUnconsentedAccount(
+      GetProfile(), &test_url_loader_factory_, "user@example.com");
+  UnconsentedPrimaryAccountChecker(identity_manager()).Wait();
+  // Check that the setup was successful.
+  ASSERT_FALSE(
+      identity_manager()->HasPrimaryAccount(signin::ConsentLevel::kSync));
+  ASSERT_TRUE(
+      identity_manager()->HasPrimaryAccount(signin::ConsentLevel::kSignin));
+
+  RunTest();
+}
+
+// List of actionable items in the correct order as they appear in the menu with
+// Uno enabled. If a new button is added to the menu, it should also be added
+// to this list.
+constexpr ProfileMenuViewBase::ActionableItem
+    kActionableItems_WithUnconsentedPrimaryAccount_UnoEnabled[] = {
+        ProfileMenuViewBase::ActionableItem::kPasswordsButton,
+        ProfileMenuViewBase::ActionableItem::kCreditCardsButton,
+        ProfileMenuViewBase::ActionableItem::kAddressesButton,
+        ProfileMenuViewBase::ActionableItem::kSigninAccountButton,
+        ProfileMenuViewBase::ActionableItem::kEditProfileButton,
+        ProfileMenuViewBase::ActionableItem::kManageGoogleAccountButton,
+        ProfileMenuViewBase::ActionableItem::kExitProfileButton,
+#if !BUILDFLAG(IS_CHROMEOS_LACROS)
+        // Signout is not allowed in the main profile.
+        ProfileMenuViewBase::ActionableItem::kSignoutButton,
+#endif
+        ProfileMenuViewBase::ActionableItem::kGuestProfileButton,
+        ProfileMenuViewBase::ActionableItem::kAddNewProfileButton,
+        ProfileMenuViewBase::ActionableItem::kManageProfilesButton,
+        // The first button is added again to finish the cycle and test that
+        // there are no other buttons at the end.
+        ProfileMenuViewBase::ActionableItem::kPasswordsButton};
+
+PROFILE_MENU_CLICK_WITH_FEATURE_TEST(
+    kActionableItems_WithUnconsentedPrimaryAccount_UnoEnabled,
+    ProfileMenuClickTest_WithUnconsentedPrimaryAccount_UnoEnabled,
+    /*enabled_features=*/{switches::kExplicitBrowserSigninUIOnDesktop},
+    /*disabled_features=*/{}) {
   secondary_account_helper::SignInUnconsentedAccount(
       GetProfile(), &test_url_loader_factory_, "user@example.com");
   UnconsentedPrimaryAccountChecker(identity_manager()).Wait();
@@ -1360,40 +1640,105 @@ PROFILE_MENU_CLICK_TEST_F(ProfileMenuClickTestGuestSession,
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
 #if !BUILDFLAG(IS_CHROMEOS)
+class ProfileMenuClickTestWebApp : public ProfileMenuClickTest {
+ protected:
+  void SetUpOnMainThread() override {
+    ProfileMenuClickTest::SetUpOnMainThread();
+
+    // OS integration is needed to be able to launch web applications. This
+    // override ensures OS integration doesn't leave any traces.
+    override_registration_ =
+        web_app::OsIntegrationTestOverrideImpl::OverrideForTesting();
+  }
+
+  void TearDownOnMainThread() override {
+    for (Profile* profile :
+         g_browser_process->profile_manager()->GetLoadedProfiles()) {
+      web_app::test::UninstallAllWebApps(profile);
+    }
+    override_registration_.reset();
+    ProfileMenuClickTest::TearDownOnMainThread();
+  }
+
+  WebAppFrameToolbarTestHelper& toolbar_helper() {
+    return web_app_frame_toolbar_helper_;
+  }
+
+ private:
+  // OS integration is needed to be able to launch web applications. This
+  // override ensures OS integration doesn't leave any traces.
+  std::unique_ptr<web_app::OsIntegrationTestOverrideImpl::BlockingRegistration>
+      override_registration_;
+  WebAppFrameToolbarTestHelper web_app_frame_toolbar_helper_;
+};
+
 // List of actionable items in the correct order as they appear in the menu.
 // If a new button is added to the menu, it should also be added to this list.
 constexpr ProfileMenuViewBase::ActionableItem
     kActionableItems_PasswordManagerWebApp[] = {
         ProfileMenuViewBase::ActionableItem::kOtherProfileButton};
 
-PROFILE_MENU_CLICK_TEST(kActionableItems_PasswordManagerWebApp,
-                        ProfileMenuClickTest_PasswordManagerWebApp) {
+PROFILE_MENU_CLICK_TEST_F(ProfileMenuClickTestWebApp,
+                          kActionableItems_PasswordManagerWebApp,
+                          ProfileMenuClickTest_PasswordManagerWebApp) {
   // Add an additional profile.
   CreateAdditionalProfile();
 
   // Install and launch an application for the first profile.
-  WebAppFrameToolbarTestHelper toolbar_helper;
-  webapps::AppId app_id = toolbar_helper.InstallAndLaunchCustomWebApp(
+  webapps::AppId app_id = toolbar_helper().InstallAndLaunchCustomWebApp(
       browser(), CreatePasswordManagerWebAppInfo(),
       GURL(kPasswordManagerPWAUrl));
-  SetTargetBrowser(toolbar_helper.app_browser());
+  SetTargetBrowser(toolbar_helper().app_browser());
   RunTest();
 }
 
-class ProfileMenuViewWebAppTest : public ProfileMenuViewTestBase,
-                                  public web_app::WebAppControllerBrowserTest {
- protected:
-  void SetUp() override { web_app::WebAppControllerBrowserTest::SetUp(); }
+#if BUILDFLAG(IS_MAC)
+// List of actionable items in the correct order as they appear in the menu.
+// If a new button is added to the menu, it should also be added to this list.
+// Unfortunately by how Click Tests work we can't verify how many other profile
+// buttons are present, so this test merely verifies that at least one exists.
+constexpr ProfileMenuViewBase::ActionableItem kActionableItems_RegularWebApp[] =
+    {ProfileMenuViewBase::ActionableItem::kOtherProfileButton};
+PROFILE_MENU_CLICK_TEST_F(ProfileMenuClickTestWebApp,
+                          kActionableItems_RegularWebApp,
+                          ProfileMenuClickTest_RegularWebApp) {
+  // Add an additional profile.
+  Profile* profile1 = GetProfile();
+  Profile* profile2 = CreateAdditionalProfile();
 
-  WebAppFrameToolbarTestHelper* toolbar_helper() {
-    return &web_app_frame_toolbar_helper_;
+  // Install and launch an application in profile1 and also install the same
+  // app in profile2.
+  webapps::AppId app_id = toolbar_helper().InstallAndLaunchWebApp(
+      profile1, GURL("https://test.org"));
+  SetTargetBrowser(toolbar_helper().app_browser());
+  EXPECT_EQ(app_id,
+            toolbar_helper().InstallWebApp(profile2, GURL("https://test.org")));
+
+  RunTest();
+}
+#endif
+
+class ProfileMenuViewWebAppTest : public ProfileMenuViewTestBase,
+                                  public web_app::WebAppBrowserTestBase {
+ protected:
+  void TearDownOnMainThread() override {
+    for (Profile* profile :
+         g_browser_process->profile_manager()->GetLoadedProfiles()) {
+      web_app::test::UninstallAllWebApps(profile);
+    }
+    web_app::WebAppBrowserTestBase::TearDownOnMainThread();
+  }
+
+  WebAppFrameToolbarTestHelper& toolbar_helper() {
+    return web_app_frame_toolbar_helper_;
   }
 
  private:
   WebAppFrameToolbarTestHelper web_app_frame_toolbar_helper_;
 };
 
-IN_PROC_BROWSER_TEST_F(ProfileMenuViewWebAppTest, SelectingOtherProfile) {
+IN_PROC_BROWSER_TEST_F(ProfileMenuViewWebAppTest,
+                       SelectingOtherProfilePasswordManager) {
   // Create a second profile.
   Profile* second_profile = CreateAdditionalProfile();
   web_app::test::WaitUntilWebAppProviderAndSubsystemsReady(
@@ -1401,14 +1746,14 @@ IN_PROC_BROWSER_TEST_F(ProfileMenuViewWebAppTest, SelectingOtherProfile) {
   ASSERT_FALSE(chrome::FindBrowserWithProfile(second_profile));
 
   // Install and launch an application for the first profile.
-  webapps::AppId app_id = toolbar_helper()->InstallAndLaunchCustomWebApp(
+  webapps::AppId app_id = toolbar_helper().InstallAndLaunchCustomWebApp(
       browser(), CreatePasswordManagerWebAppInfo(),
       GURL(kPasswordManagerPWAUrl));
-  SetTargetBrowser(toolbar_helper()->app_browser());
+  SetTargetBrowser(toolbar_helper().app_browser());
 
   // Open profile menu.
   auto* toolbar =
-      toolbar_helper()->browser_view()->web_app_frame_toolbar_for_testing();
+      toolbar_helper().browser_view()->web_app_frame_toolbar_for_testing();
   ASSERT_TRUE(toolbar);
   OpenProfileMenuFromToolbar(toolbar);
 
@@ -1429,4 +1774,76 @@ IN_PROC_BROWSER_TEST_F(ProfileMenuViewWebAppTest, SelectingOtherProfile) {
             new_web_contents);
   EXPECT_EQ(new_web_contents->GetVisibleURL(), GURL(kPasswordManagerPWAUrl));
 }
+
+#if BUILDFLAG(IS_MAC)
+IN_PROC_BROWSER_TEST_F(ProfileMenuViewWebAppTest, SelectingOtherProfile) {
+  // Add additional profiles.
+  Profile* profile1 = profile();
+  Profile* profile2 = CreateAdditionalProfile();
+  Profile* profile3 = CreateAdditionalProfile();
+
+  // Install an application in first and third profiles, launching only in the
+  // first profile.
+  webapps::AppId app_id = toolbar_helper().InstallAndLaunchWebApp(
+      profile1, GURL("https://test.org"));
+  EXPECT_EQ(app_id,
+            toolbar_helper().InstallWebApp(profile3, GURL("https://test.org")));
+  SetTargetBrowser(toolbar_helper().app_browser());
+  EXPECT_FALSE(chrome::FindBrowserWithProfile(profile3));
+
+  // Open profile menu in first profile.
+  auto* toolbar =
+      toolbar_helper().browser_view()->web_app_frame_toolbar_for_testing();
+  ASSERT_TRUE(toolbar);
+  OpenProfileMenuFromToolbar(toolbar);
+
+  // Select third profile by advancing the focus one step forward.
+  profile_menu_view()->GetFocusManager()->AdvanceFocus(/*reverse=*/false);
+  auto* focused_item = profile_menu_view()->GetFocusManager()->GetFocusedView();
+  ASSERT_TRUE(focused_item);
+
+  // Wait for the new app window to be open for the third profile.
+  ui_test_utils::AllBrowserTabAddedWaiter waiter;
+  Click(focused_item);
+  content::WebContents* new_web_contents = waiter.Wait();
+  ASSERT_TRUE(new_web_contents);
+  EXPECT_FALSE(chrome::FindBrowserWithProfile(profile2));
+  Browser* new_browser = chrome::FindBrowserWithProfile(profile3);
+  ASSERT_TRUE(new_browser);
+  EXPECT_TRUE(new_browser->is_type_app());
+  EXPECT_EQ(new_browser->tab_strip_model()->GetActiveWebContents(),
+            new_web_contents);
+  EXPECT_EQ(new_web_contents->GetVisibleURL(), GURL("https://test.org"));
+}
+
+IN_PROC_BROWSER_TEST_F(ProfileMenuViewWebAppTest, ProfileMenuVisibility) {
+  // Add an additional profile.
+  Profile* profile1 = profile();
+  Profile* profile2 = CreateAdditionalProfile();
+
+  // Install and launch an application in first profile.
+  webapps::AppId app_id = toolbar_helper().InstallAndLaunchWebApp(
+      profile1, GURL("https://test.org"));
+
+  // Verify that avatar button is not visible.
+  auto* toolbar_profile1 =
+      toolbar_helper().browser_view()->web_app_frame_toolbar_for_testing();
+  ASSERT_TRUE(toolbar_profile1);
+  ASSERT_TRUE(toolbar_profile1->GetAvatarToolbarButton());
+  EXPECT_FALSE(toolbar_profile1->GetAvatarToolbarButton()->GetVisible());
+
+  // Now install and launch application in second profile.
+  EXPECT_EQ(app_id, toolbar_helper().InstallAndLaunchWebApp(
+                        profile2, GURL("https://test.org")));
+
+  // Avatar button should be visible in both profiles.
+  EXPECT_TRUE(toolbar_profile1->GetAvatarToolbarButton()->GetVisible());
+  auto* toolbar_profile2 =
+      toolbar_helper().browser_view()->web_app_frame_toolbar_for_testing();
+  ASSERT_TRUE(toolbar_profile2);
+  ASSERT_TRUE(toolbar_profile2->GetAvatarToolbarButton());
+  EXPECT_TRUE(toolbar_profile2->GetAvatarToolbarButton()->GetVisible());
+}
+#endif
+
 #endif  // !BUILDFLAG(IS_CHROMEOS)

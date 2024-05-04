@@ -4,30 +4,37 @@
 
 #include "components/optimization_guide/core/model_execution/session_impl.h"
 
+#include <optional>
+
 #include "base/containers/contains.h"
+#include "base/functional/callback.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/stringprintf.h"
 #include "base/timer/elapsed_timer.h"
 #include "base/uuid.h"
+#include "components/optimization_guide/core/model_execution/feature_keys.h"
 #include "components/optimization_guide/core/model_execution/model_execution_util.h"
 #include "components/optimization_guide/core/model_execution/on_device_model_access_controller.h"
-#include "components/optimization_guide/core/model_execution/on_device_model_execution_config_interpreter.h"
+#include "components/optimization_guide/core/model_execution/on_device_model_feature_adapter.h"
 #include "components/optimization_guide/core/model_execution/on_device_model_service_controller.h"
 #include "components/optimization_guide/core/model_execution/redactor.h"
 #include "components/optimization_guide/core/model_execution/repetition_checker.h"
+#include "components/optimization_guide/core/model_execution/substitution.h"
 #include "components/optimization_guide/core/optimization_guide_features.h"
 #include "components/optimization_guide/core/optimization_guide_logger.h"
 #include "components/optimization_guide/core/optimization_guide_model_executor.h"
 #include "components/optimization_guide/core/optimization_guide_util.h"
+#include "components/optimization_guide/proto/string_value.pb.h"
+#include "components/optimization_guide/proto/text_safety_model_metadata.pb.h"
 
 namespace optimization_guide {
 namespace {
 
+using google::protobuf::RepeatedPtrField;
 using ModelExecutionError =
     OptimizationGuideModelExecutionError::ModelExecutionError;
 
-void LogResponseHasRepeats(proto::ModelExecutionFeature feature,
-                           bool has_repeats) {
+void LogResponseHasRepeats(ModelBasedCapabilityKey feature, bool has_repeats) {
   base::UmaHistogramBoolean(
       base::StrCat(
           {"OptimizationGuide.ModelExecution.OnDeviceResponseHasRepeats.",
@@ -37,6 +44,21 @@ void LogResponseHasRepeats(proto::ModelExecutionFeature feature,
 
 std::string GenerateExecutionId() {
   return "on-device:" + base::Uuid::GenerateRandomV4().AsLowercaseString();
+}
+
+void InvokeStreamingCallbackWithRemoteResult(
+    OptimizationGuideModelExecutionResultStreamingCallback callback,
+    OptimizationGuideModelExecutionResult result,
+    std::unique_ptr<ModelQualityLogEntry> log_entry) {
+  OptimizationGuideModelStreamingExecutionResult streaming_result;
+  streaming_result.log_entry = std::move(log_entry);
+  if (result.has_value()) {
+    streaming_result.response =
+        base::ok(StreamingResponse{.response = *result, .is_complete = true});
+  } else {
+    streaming_result.response = base::unexpected(result.error());
+  }
+  callback.Run(std::move(streaming_result));
 }
 
 }  // namespace
@@ -121,22 +143,25 @@ class SessionImpl::ContextProcessor
   mojo::Receiver<on_device_model::mojom::ContextClient> client_{this};
 };
 
+SessionImpl::OnDeviceModelClient::~OnDeviceModelClient() = default;
+
+SessionImpl::OnDeviceOptions::OnDeviceOptions() = default;
+SessionImpl::OnDeviceOptions::OnDeviceOptions(OnDeviceOptions&&) = default;
+SessionImpl::OnDeviceOptions::~OnDeviceOptions() = default;
+
+bool SessionImpl::OnDeviceOptions::ShouldUse() const {
+  return model_client->ShouldUse();
+}
+
 SessionImpl::SessionImpl(
-    StartSessionFn start_session_fn,
-    proto::ModelExecutionFeature feature,
-    std::optional<proto::OnDeviceModelVersions> on_device_model_versions,
-    const OnDeviceModelExecutionConfigInterpreter* config_interpreter,
-    base::WeakPtr<OnDeviceModelServiceController> controller,
-    const std::optional<proto::FeatureTextSafetyConfiguration>& safety_config,
+    ModelBasedCapabilityKey feature,
+    std::optional<OnDeviceOptions> on_device_opts,
     ExecuteRemoteFn execute_remote_fn,
-    OptimizationGuideLogger* optimization_guide_logger,
+    base::WeakPtr<OptimizationGuideLogger> optimization_guide_logger,
     base::WeakPtr<ModelQualityLogsUploaderService>
         model_quality_uploader_service,
     const std::optional<SessionConfigParams>& config_params)
-    : controller_(controller),
-      feature_(feature),
-      on_device_model_versions_(on_device_model_versions),
-      safety_config_(safety_config),
+    : feature_(feature),
       execute_remote_fn_(std::move(execute_remote_fn)),
       optimization_guide_logger_(optimization_guide_logger),
       model_quality_uploader_service_(model_quality_uploader_service),
@@ -148,17 +173,19 @@ SessionImpl::SessionImpl(
                   .temperature = static_cast<float>(
                       features::GetOnDeviceModelDefaultTemperature()),
               })) {
-  if (controller_ && controller_->ShouldStartNewSession()) {
-    on_device_state_.emplace(std::move(start_session_fn), this);
-    on_device_state_->config_interpreter = config_interpreter;
+  if (on_device_opts && on_device_opts->ShouldUse()) {
+    on_device_state_.emplace(std::move(*on_device_opts), this);
     // Prewarm the initial session to make sure the service is started.
     GetOrCreateSession();
   }
-  OPTIMIZATION_GUIDE_LOGGER(
-      optimization_guide_common::mojom::LogSource::MODEL_EXECUTION,
-      optimization_guide_logger_)
-      << "Starting on-device session for "
-      << std::string(GetStringNameForModelExecutionFeature(feature_));
+  if (optimization_guide_logger_ &&
+      optimization_guide_logger_->ShouldEnableDebugLogs()) {
+    OPTIMIZATION_GUIDE_LOGGER(
+        optimization_guide_common::mojom::LogSource::MODEL_EXECUTION,
+        optimization_guide_logger_.get())
+        << "Starting on-device session for "
+        << std::string(GetStringNameForModelExecutionFeature(feature_));
+  }
 }
 
 SessionImpl::~SessionImpl() {
@@ -192,22 +219,22 @@ SessionImpl::AddContextResult SessionImpl::AddContextImpl(
   context_->CheckTypeAndMergeFrom(request_metadata);
   context_start_time_ = base::TimeTicks::Now();
 
+  // Cancel any pending response.
+  CancelPendingResponse(ExecuteModelResult::kCancelled);
+
   if (!ShouldUseOnDeviceModel()) {
     DestroyOnDeviceState();
     return AddContextResult::kUsingServer;
   }
 
   on_device_state_->add_context_before_execute = false;
-  auto input = on_device_state_->config_interpreter->ConstructInputString(
-      feature_, *context_, /*want_input_context=*/true);
+  auto input = on_device_state_->opts.adapter->ConstructInputString(
+      *context_, /*want_input_context=*/true);
   if (!input) {
     // Use server if can't construct input.
     DestroyOnDeviceState();
     return AddContextResult::kFailedConstructingInput;
   }
-
-  // Cancel any pending response.
-  CancelPendingResponse(ExecuteModelResult::kCancelled);
 
   // Only the latest context is used, so restart the mojo session here.
   on_device_state_->session.reset();
@@ -255,39 +282,44 @@ void SessionImpl::ExecuteModel(
   }
 
   if (!ShouldUseOnDeviceModel()) {
+    CancelPendingResponse(ExecuteModelResult::kCancelled);
     DestroyOnDeviceState();
-    execute_remote_fn_.Run(feature_, *last_message_,
-                           /*log_ai_data_request=*/nullptr,
-                           std::move(callback));
+    execute_remote_fn_.Run(
+        feature_, *last_message_,
+        /*log_ai_data_request=*/nullptr,
+        base::BindOnce(&InvokeStreamingCallbackWithRemoteResult,
+                       std::move(callback)));
     return;
   }
 
-  CHECK(on_device_model_versions_);
   *(log_ai_data_request->mutable_model_execution_info()
         ->mutable_on_device_model_execution_info()
-        ->mutable_model_versions()) = *on_device_model_versions_;
+        ->mutable_model_versions()) = on_device_state_->opts.model_versions;
 
   if (on_device_state_->add_context_before_execute) {
     CHECK(context_);
     std::unique_ptr<google::protobuf::MessageLite> context =
         std::move(context_);
+    // Note that this will CancelPendingResponse, so it must be called before
+    // switching to the new pending response below.
     AddContext(*context);
     CHECK(!on_device_state_->add_context_before_execute);
   }
 
-  auto input = on_device_state_->config_interpreter->ConstructInputString(
-      feature_, *last_message_, /*want_input_context=*/false);
+  // Make sure to cancel any pending response.
+  CancelPendingResponse(ExecuteModelResult::kCancelled);
+  // Set new pending response.
+  on_device_state_->histogram_logger = std::move(logger);
+  on_device_state_->callback = std::move(callback);
+
+  auto input = on_device_state_->opts.adapter->ConstructInputString(
+      *last_message_, /*want_input_context=*/false);
   if (!input) {
     // Use server if can't construct input.
-    on_device_state_->histogram_logger = std::move(logger);
-    on_device_state_->callback = std::move(callback);
     DestroyOnDeviceStateAndFallbackToRemote(
         ExecuteModelResult::kFailedConstructingMessage);
     return;
   }
-
-  // Make sure to cancel any pending response.
-  CancelPendingResponse(ExecuteModelResult::kCancelled);
 
   // Cancel any optional context still processing.
   if (on_device_state_->context_processor) {
@@ -308,8 +340,8 @@ void SessionImpl::ExecuteModel(
   }
 
   // Note: if on-device fails for some reason, the result will be changed.
-  logger->set_result(ExecuteModelResult::kUsedOnDevice);
-  on_device_state_->histogram_logger = std::move(logger);
+  on_device_state_->histogram_logger->set_result(
+      ExecuteModelResult::kUsedOnDevice);
 
   if (!input->should_ignore_input_context &&
       on_device_state_->context_processor) {
@@ -321,10 +353,11 @@ void SessionImpl::ExecuteModel(
   logged_request->set_execution_num_tokens_processed(
       features::GetOnDeviceModelMaxTokensForOutput());
 
-  if (optimization_guide_logger_->ShouldEnableDebugLogs()) {
+  if (optimization_guide_logger_ &&
+      optimization_guide_logger_->ShouldEnableDebugLogs()) {
     OPTIMIZATION_GUIDE_LOGGER(
         optimization_guide_common::mojom::LogSource::MODEL_EXECUTION,
-        optimization_guide_logger_)
+        optimization_guide_logger_.get())
         << "Executing model "
         << (input->should_ignore_input_context
                 ? ""
@@ -337,12 +370,10 @@ void SessionImpl::ExecuteModel(
   }
 
   on_device_state_->log_ai_data_request = std::move(log_ai_data_request);
-  on_device_state_->callback = std::move(callback);
   on_device_state_->start = base::TimeTicks::Now();
   on_device_state_->timer_for_first_response.Start(
       FROM_HERE, features::GetOnDeviceModelTimeForInitialResponse(),
-      base::BindOnce(&SessionImpl::DestroyOnDeviceStateAndFallbackToRemote,
-                     base::Unretained(this), ExecuteModelResult::kTimedOut));
+      base::BindOnce(&SessionImpl::OnSessionTimedOut, base::Unretained(this)));
 
   auto options = on_device_model::mojom::InputOptions::New();
   options->text = input->input_string;
@@ -351,10 +382,93 @@ void SessionImpl::ExecuteModel(
   options->max_output_tokens = features::GetOnDeviceModelMaxTokensForOutput();
   options->top_k = sampling_params_.top_k;
   options->temperature = sampling_params_.temperature;
-  if (safety_config_) {
-    options->safety_interval =
-        features::GetOnDeviceModelTextSafetyTokenInterval();
+  options->safety_interval = on_device_state_->opts.safety_cfg.TokenInterval();
+
+  RunNextRequestSafetyCheckOrBeginExecution(std::move(options), 0);
+}
+
+void SessionImpl::RunNextRequestSafetyCheckOrBeginExecution(
+    on_device_model::mojom::InputOptionsPtr options,
+    int request_check_idx) {
+  if (on_device_state_->opts.safety_cfg.NumRequestChecks() <=
+      request_check_idx) {
+    // All check have passed.
+    BeginRequestExecution(std::move(options));
+    return;
   }
+  auto check_input = on_device_state_->opts.safety_cfg.GetRequestCheckInput(
+      request_check_idx, *last_message_);
+  if (!check_input) {
+    // This is mostly likely means a malformed safety config.
+    DestroyOnDeviceStateAndFallbackToRemote(
+        ExecuteModelResult::kFailedConstructingMessage);
+    return;
+  }
+  if (on_device_state_->opts.safety_cfg.IsRequestCheckLanguageOnly(
+          request_check_idx)) {
+    on_device_state_->opts.model_client->GetModelRemote()->DetectLanguage(
+        check_input->input_string,
+        base::BindOnce(&SessionImpl::OnRequestDetectLanguageResult,
+                       on_device_state_->session_weak_ptr_factory_.GetWeakPtr(),
+                       std::move(options), request_check_idx,
+                       check_input->input_string));
+  } else {
+    on_device_state_->opts.model_client->GetModelRemote()->ClassifyTextSafety(
+        check_input->input_string,
+        base::BindOnce(&SessionImpl::OnRequestSafetyResult,
+                       on_device_state_->session_weak_ptr_factory_.GetWeakPtr(),
+                       std::move(options), request_check_idx,
+                       check_input->input_string));
+  }
+}
+
+void SessionImpl::OnRequestDetectLanguageResult(
+    on_device_model::mojom::InputOptionsPtr options,
+    int request_check_idx,
+    std::string check_input_text,
+    on_device_model::mojom::LanguageDetectionResultPtr result) {
+  auto safety_info = on_device_model::mojom::SafetyInfo::New();
+  safety_info->language = std::move(result);
+  OnRequestSafetyResult(std::move(options), request_check_idx, check_input_text,
+                        std::move(safety_info));
+}
+
+void SessionImpl::OnRequestSafetyResult(
+    on_device_model::mojom::InputOptionsPtr options,
+    int request_check_idx,
+    std::string check_input_text,
+    on_device_model::mojom::SafetyInfoPtr safety_info) {
+  // Evaluate the check.
+  bool is_unsafe = on_device_state_->opts.safety_cfg.IsRequestUnsafe(
+      request_check_idx, safety_info);
+  bool is_unsupported_language =
+      on_device_state_->opts.safety_cfg
+          .IsTextInUnsupportedOrUndeterminedLanguage(safety_info);
+
+  // Log the check execution.
+  on_device_state_->AddTextSafetyExecutionLogging(
+      check_input_text, safety_info, is_unsafe);
+
+  // Handle the result.
+  if (is_unsafe || is_unsupported_language) {
+    if (on_device_state_->histogram_logger) {
+      on_device_state_->histogram_logger->set_result(
+          ExecuteModelResult::kRequestUnsafe);
+    }
+    if (features::GetOnDeviceModelRetractUnsafeContent()) {
+      CancelPendingResponse(ExecuteModelResult::kRequestUnsafe,
+                            is_unsupported_language
+                                ? ModelExecutionError::kUnsupportedLanguage
+                                : ModelExecutionError::kFiltered);
+      return;
+    }
+  }
+  RunNextRequestSafetyCheckOrBeginExecution(std::move(options),
+                                            request_check_idx + 1);
+}
+
+void SessionImpl::BeginRequestExecution(
+    on_device_model::mojom::InputOptionsPtr options) {
   GetOrCreateSession().Execute(
       std::move(options),
       on_device_state_->receiver.BindNewPipeAndPassRemote());
@@ -394,6 +508,13 @@ void SessionImpl::OnResponse(on_device_model::mojom::ResponseChunkPtr chunk) {
     }
   }
 
+  if (features::ShouldUseTextSafetyRemoteFallbackForEligibleFeatures() ||
+      on_device_state_->opts.safety_cfg.HasRawOutputCheck()) {
+    // If using remote text safety fallback, or an explicit output check,
+    // we will not be streaming. Do not process partial responses.
+    return;
+  }
+
   bool chunk_provided_safety_info = false;
   if (chunk->safety_info) {
     on_device_state_->current_safety_info = std::move(chunk->safety_info);
@@ -402,13 +523,17 @@ void SessionImpl::OnResponse(on_device_model::mojom::ResponseChunkPtr chunk) {
 
   // Only proceed to send the response if we are not evaluating text safety or
   // if there are text safety scores to evaluate.
-  if (!safety_config_ || chunk_provided_safety_info) {
-    SendResponse(ResponseType::kPartial);
+  if (!on_device_state_->opts.safety_cfg.IsMissingSafetyInfo(
+          chunk_provided_safety_info)) {
+    SendResponse(ResponseType::kPartial, on_device_state_->current_response);
   }
 }
 
 void SessionImpl::OnComplete(
     on_device_model::mojom::ResponseSummaryPtr summary) {
+  // Stop timer, just in case we didn't already via OnResponse().
+  on_device_state_->timer_for_first_response.Stop();
+
   base::TimeDelta time_to_completion =
       base::TimeTicks::Now() - on_device_state_->start;
   base::UmaHistogramMediumTimes(
@@ -418,11 +543,18 @@ void SessionImpl::OnComplete(
       time_to_completion);
   on_device_state_->MutableLoggedResponse()->set_time_to_completion_millis(
       time_to_completion.InMilliseconds());
-  if (controller_) {
-    controller_->access_controller(/*pass_key=*/{})->OnResponseCompleted();
+  on_device_state_->opts.model_client->OnResponseCompleted();
+
+  if (on_device_state_->opts.safety_cfg.HasRawOutputCheck()) {
+    // The stream should be complete, but explicitly reset the receiver to
+    // avoid any async surprises from misbehaving remote.
+    on_device_state_->receiver.reset();
+    RunRawOutputSafetyCheck();
+    return;
   }
 
-  if (safety_config_ && !summary->safety_info) {
+  if (on_device_state_->opts.safety_cfg.IsMissingSafetyInfo(
+          !!summary->safety_info)) {
     on_device_state_->receiver.ReportBadMessage(
         "Missing required safety scores on complete");
     CancelPendingResponse(
@@ -434,14 +566,36 @@ void SessionImpl::OnComplete(
   if (summary->safety_info) {
     on_device_state_->current_safety_info = std::move(summary->safety_info);
   }
-  SendResponse(ResponseType::kComplete);
-  on_device_state_->ResetRequestState();
+  SendResponse(ResponseType::kComplete, on_device_state_->current_response);
+}
+
+void SessionImpl::RunRawOutputSafetyCheck() {
+  auto check_input = on_device_state_->opts.safety_cfg.GetRawOutputCheckInput(
+    on_device_state_->current_response);
+  if (!check_input) {
+    // This mostly likely means a malformed safety config.
+    DestroyOnDeviceStateAndFallbackToRemote(
+        ExecuteModelResult::kFailedConstructingMessage);
+    return;
+  }
+  on_device_state_->opts.model_client->GetModelRemote()->ClassifyTextSafety(
+      check_input->input_string,
+      base::BindOnce(&SessionImpl::OnRawOutputSafetyResult,
+                     on_device_state_->session_weak_ptr_factory_.GetWeakPtr(),
+                     check_input->input_string));
+}
+
+void SessionImpl::OnRawOutputSafetyResult(
+    std::string safety_check_text,
+    on_device_model::mojom::SafetyInfoPtr safety_info) {
+  on_device_state_->current_safety_info = std::move(safety_info);
+  SendResponse(ResponseType::kComplete, safety_check_text);
 }
 
 on_device_model::mojom::Session& SessionImpl::GetOrCreateSession() {
   CHECK(ShouldUseOnDeviceModel());
   if (!on_device_state_->session) {
-    on_device_state_->start_session_fn.Run(
+    on_device_state_->opts.model_client->GetModelRemote()->StartSession(
         on_device_state_->session.BindNewPipeAndPassReceiver());
     on_device_state_->session.set_disconnect_handler(
         base::BindOnce(&SessionImpl::OnDisconnect, base::Unretained(this)));
@@ -463,11 +617,19 @@ void SessionImpl::OnDisconnect() {
     on_device_state_->add_context_before_execute = true;
   }
   on_device_state_->session.reset();
-  CancelPendingResponse(ExecuteModelResult::kDisconnectAndCancel);
+
+  if (!on_device_state_->model_response_complete) {
+    // Only cancel the request if the model response is not complete yet. We can
+    // get in this state if there is an outstanding remote text safety request.
+    CancelPendingResponse(ExecuteModelResult::kDisconnectAndCancel);
+  }
 }
 
 void SessionImpl::CancelPendingResponse(ExecuteModelResult result,
                                         ModelExecutionError error) {
+  if (!on_device_state_) {
+    return;
+  }
   if (on_device_state_->histogram_logger) {
     on_device_state_->histogram_logger->set_result(result);
   }
@@ -489,41 +651,20 @@ void SessionImpl::CancelPendingResponse(ExecuteModelResult result,
   }
 }
 
-void SessionImpl::SendResponse(ResponseType response_type) {
-  on_device_state_->timer_for_first_response.Stop();
-  if (!on_device_state_->callback) {
-    on_device_state_->histogram_logger.get();
-    return;
-  }
-
-  proto::OnDeviceModelServiceResponse* logged_response =
-      on_device_state_->MutableLoggedResponse();
-
-  std::string current_response = on_device_state_->current_response;
-  logged_response->set_output_string(current_response);
-
-  auto redact_result = on_device_state_->config_interpreter->Redact(
-      feature_, *last_message_, current_response);
-  if (redact_result == RedactResult::kReject) {
-    if (on_device_state_->histogram_logger) {
-      on_device_state_->histogram_logger->set_result(
-          ExecuteModelResult::kContainedPII);
-      on_device_state_->histogram_logger.reset();
-    }
-    logged_response->set_status(
-        proto::ON_DEVICE_MODEL_SERVICE_RESPONSE_STATUS_RETRACTED);
-    CancelPendingResponse(ExecuteModelResult::kUsedOnDeviceOutputUnsafe,
-                          ModelExecutionError::kFiltered);
-    return;
-  }
-
+void SessionImpl::SendResponse(
+    ResponseType response_type,
+    const std::string& safety_check_text) {
   const bool is_complete = response_type != ResponseType::kPartial;
   const bool is_unsupported_language =
-      IsTextInUnsupportedOrUndeterminedLanguage(
-          on_device_state_->current_safety_info);
-  const bool is_unsafe = IsUnsafeText(on_device_state_->current_safety_info);
-  if (is_unsafe || is_complete) {
-    on_device_state_->AddTextSafetyExecutionLogging(is_unsafe);
+      on_device_state_->opts.safety_cfg
+          .IsTextInUnsupportedOrUndeterminedLanguage(
+              on_device_state_->current_safety_info);
+  const bool is_unsafe = on_device_state_->opts.safety_cfg.IsUnsafeText(
+      on_device_state_->current_safety_info);
+  if (is_unsafe || is_unsupported_language || is_complete) {
+    on_device_state_->AddTextSafetyExecutionLogging(
+      safety_check_text, on_device_state_->current_safety_info,
+      is_unsafe);
   }
   if (is_unsafe || is_unsupported_language) {
     if (on_device_state_->histogram_logger) {
@@ -532,7 +673,6 @@ void SessionImpl::SendResponse(ResponseType response_type) {
     }
 
     if (features::GetOnDeviceModelRetractUnsafeContent()) {
-      on_device_state_->current_response.clear();
       CancelPendingResponse(ExecuteModelResult::kUsedOnDeviceOutputUnsafe,
                             is_unsupported_language
                                 ? ModelExecutionError::kUnsupportedLanguage
@@ -542,14 +682,25 @@ void SessionImpl::SendResponse(ResponseType response_type) {
     }
   }
 
-  auto output = on_device_state_->config_interpreter->ConstructOutputMetadata(
-      feature_, current_response);
+  proto::OnDeviceModelServiceResponse* logged_response =
+      on_device_state_->MutableLoggedResponse();
+
+  logged_response->set_output_string(on_device_state_->current_response);
+
+  std::string redacted_response = on_device_state_->current_response;
+  auto redact_result =
+      on_device_state_->opts.adapter->Redact(*last_message_, redacted_response);
+  if (redact_result == RedactResult::kReject) {
+    logged_response->set_status(
+        proto::ON_DEVICE_MODEL_SERVICE_RESPONSE_STATUS_RETRACTED);
+    CancelPendingResponse(ExecuteModelResult::kContainedPII,
+                          ModelExecutionError::kFiltered);
+    return;
+  }
+
+  auto output = on_device_state_->opts.adapter->ConstructOutputMetadata(
+      redacted_response);
   if (!output) {
-    if (on_device_state_->histogram_logger) {
-      on_device_state_->histogram_logger->set_result(
-          ExecuteModelResult::kFailedConstructingResponseMessage);
-      on_device_state_->histogram_logger.reset();
-    }
     CancelPendingResponse(
         ExecuteModelResult::kFailedConstructingResponseMessage,
         ModelExecutionError::kGenericFailure);
@@ -559,7 +710,6 @@ void SessionImpl::SendResponse(ResponseType response_type) {
   if (!is_complete &&
       on_device_state_->MutableLoggedResponse()->has_repeats()) {
     if (features::GetOnDeviceModelRetractRepeats()) {
-      on_device_state_->current_response.clear();
       logged_response->set_status(
           proto::ON_DEVICE_MODEL_SERVICE_RESPONSE_STATUS_RETRACTED);
       CancelPendingResponse(ExecuteModelResult::kResponseHadRepeats,
@@ -586,48 +736,79 @@ void SessionImpl::SendResponse(ResponseType response_type) {
     LogResponseHasRepeats(feature_, false);
   }
 
-  std::unique_ptr<ModelQualityLogEntry> log_entry;
-  if (is_complete) {
-    // Only bother setting the full response if the request is complete.
-    if (on_device_state_->log_ai_data_request) {
-      SetExecutionResponse(feature_, *(on_device_state_->log_ai_data_request),
-                           *output);
-      logged_response->set_status(
-          proto::ON_DEVICE_MODEL_SERVICE_RESPONSE_STATUS_SUCCESS);
-      log_entry = std::make_unique<ModelQualityLogEntry>(
-          std::move(on_device_state_->log_ai_data_request),
-          model_quality_uploader_service_);
-      log_entry->set_model_execution_id(GenerateExecutionId());
-      on_device_state_->log_ai_data_request.reset();
-    }
+  if (!is_complete) {
+    SendPartialResponseCallback(*output);
+    return;
   }
+
+  on_device_state_->model_response_complete = true;
+
+  if (features::ShouldUseTextSafetyRemoteFallbackForEligibleFeatures()) {
+    RunTextSafetyRemoteFallbackAndCompletionCallback(std::move(*output));
+    return;
+  }
+
+  SendSuccessCompletionCallback(*output);
+}
+
+void SessionImpl::SendPartialResponseCallback(
+    const proto::Any& success_response_metadata) {
   on_device_state_->callback.Run(OptimizationGuideModelStreamingExecutionResult(
-      base::ok(
-          StreamingResponse{.response = *output, .is_complete = is_complete}),
-      true, std::move(log_entry)));
+      base::ok(StreamingResponse{.response = success_response_metadata,
+                                 .is_complete = false}),
+      /*provided_by_on_device=*/true, /*log_entry=*/nullptr));
+}
+
+void SessionImpl::SendSuccessCompletionCallback(
+    const proto::Any& success_response_metadata) {
+  // Complete the log entry and promise it to the ModelQualityUploaderService.
+  std::unique_ptr<ModelQualityLogEntry> log_entry;
+  if (on_device_state_->log_ai_data_request) {
+    SetExecutionResponse(feature_, *(on_device_state_->log_ai_data_request),
+                         success_response_metadata);
+    on_device_state_->MutableLoggedResponse()->set_status(
+        proto::ON_DEVICE_MODEL_SERVICE_RESPONSE_STATUS_SUCCESS);
+    log_entry = std::make_unique<ModelQualityLogEntry>(
+        std::move(on_device_state_->log_ai_data_request),
+        model_quality_uploader_service_);
+    log_entry->set_model_execution_id(GenerateExecutionId());
+    on_device_state_->log_ai_data_request.reset();
+  }
+
+  // Return the execution response.
+  on_device_state_->callback.Run(OptimizationGuideModelStreamingExecutionResult(
+      base::ok(StreamingResponse{.response = success_response_metadata,
+                                 .is_complete = true}),
+      /*provided_by_on_device=*/true, std::move(log_entry)));
+
+  on_device_state_->ResetRequestState();
 }
 
 bool SessionImpl::ShouldUseOnDeviceModel() const {
-  return controller_ && controller_->ShouldStartNewSession() &&
-         on_device_state_;
+  return on_device_state_ && on_device_state_->opts.model_client->ShouldUse();
+}
+
+void SessionImpl::OnSessionTimedOut() {
+  on_device_state_->opts.model_client->OnSessionTimedOut();
+  DestroyOnDeviceStateAndFallbackToRemote(ExecuteModelResult::kTimedOut);
 }
 
 void SessionImpl::DestroyOnDeviceStateAndFallbackToRemote(
     ExecuteModelResult result) {
-  if (result == ExecuteModelResult::kTimedOut && controller_) {
-    controller_->access_controller(/*pass_key=*/{})->OnSessionTimedOut();
-  }
   if (on_device_state_->histogram_logger) {
     on_device_state_->histogram_logger->set_result(result);
   }
   auto log_ai_data_request = std::move(on_device_state_->log_ai_data_request);
   auto callback = std::move(on_device_state_->callback);
   DestroyOnDeviceState();
-  execute_remote_fn_.Run(feature_, *last_message_,
-                         std::move(log_ai_data_request), std::move(callback));
+  execute_remote_fn_.Run(
+      feature_, *last_message_, std::move(log_ai_data_request),
+      base::BindOnce(&InvokeStreamingCallbackWithRemoteResult,
+                     std::move(callback)));
 }
 
 void SessionImpl::DestroyOnDeviceState() {
+  DCHECK(!on_device_state_ || !on_device_state_->callback);
   on_device_state_.reset();
 }
 
@@ -644,72 +825,72 @@ std::unique_ptr<google::protobuf::MessageLite> SessionImpl::MergeContext(
   return message;
 }
 
-bool SessionImpl::IsTextInUnsupportedOrUndeterminedLanguage(
-    const on_device_model::mojom::SafetyInfoPtr& safety_info) const {
-  if (!safety_config_) {
-    // No safety config, so no language requirements.
-    return false;
+void SessionImpl::RunTextSafetyRemoteFallbackAndCompletionCallback(
+    proto::Any success_response_metadata) {
+  auto ts_request = on_device_state_->opts.adapter->ConstructTextSafetyRequest(
+      *last_message_, on_device_state_->current_response);
+  if (!ts_request) {
+    CancelPendingResponse(
+        ExecuteModelResult::kFailedConstructingRemoteTextSafetyRequest,
+        ModelExecutionError::kGenericFailure);
+    return;
   }
 
-  CHECK(safety_config_);
-  if (safety_config_->allowed_languages().empty()) {
-    // No language requirements.
-    return false;
-  }
+  proto::InternalOnDeviceModelExecutionInfo remote_ts_model_execution_info;
+  auto* ts_request_log = remote_ts_model_execution_info.mutable_request()
+                             ->mutable_text_safety_model_request();
+  ts_request_log->set_text(ts_request->text());
+  ts_request_log->set_url(ts_request->url());
 
-  CHECK(safety_info);
-  if (!safety_info->language) {
-    // No language detection available, but language detection is required.
-    // Treat as an unsupported language.
-    return true;
-  }
-
-  if (!base::Contains(safety_config_->allowed_languages(),
-                      safety_info->language->code)) {
-    // Unsupported language.
-    return true;
-  }
-
-  if (safety_info->language->reliability <
-      features::GetOnDeviceModelLanguageDetectionMinimumReliability()) {
-    // Unreliable language detection. Treat as an unsupported language.
-    return true;
-  }
-
-  // Language was detected reliably and is supported.
-  return false;
+  execute_remote_fn_.Run(
+      ModelBasedCapabilityKey::kTextSafety, *ts_request,
+      /*log_ai_data_request=*/nullptr,
+      base::BindOnce(&SessionImpl::OnTextSafetyRemoteResponse,
+                     on_device_state_->session_weak_ptr_factory_.GetWeakPtr(),
+                     std::move(remote_ts_model_execution_info),
+                     std::move(success_response_metadata)));
 }
 
-bool SessionImpl::IsUnsafeText(
-    const on_device_model::mojom::SafetyInfoPtr& safety_info) const {
-  if (!safety_config_) {
-    // If no safety config and we are allowed here, that means we don't care
-    // about the safety scores so just mark the content as safe.
-    return false;
+void SessionImpl::OnTextSafetyRemoteResponse(
+    proto::InternalOnDeviceModelExecutionInfo remote_ts_model_execution_info,
+    proto::Any success_response_metadata,
+    OptimizationGuideModelExecutionResult result,
+    std::unique_ptr<ModelQualityLogEntry> remote_log_entry) {
+  bool is_unsafe =
+      !result.has_value() &&
+      result.error().error() ==
+          OptimizationGuideModelExecutionError::ModelExecutionError::kFiltered;
+  if (on_device_state_->log_ai_data_request) {
+    if (remote_log_entry) {
+      auto* ts_response_log = remote_ts_model_execution_info.mutable_response()
+                                  ->mutable_text_safety_model_response();
+      ts_response_log->set_server_execution_id(
+          remote_log_entry->model_execution_id());
+      ts_response_log->set_is_unsafe(is_unsafe);
+    }
+    *(on_device_state_->log_ai_data_request->mutable_model_execution_info()
+          ->mutable_on_device_model_execution_info()
+          ->add_execution_infos()) = remote_ts_model_execution_info;
   }
 
-  CHECK(safety_info);
-  CHECK(!safety_info->class_scores.empty());
-  for (const auto& threshold : safety_config_->safety_category_thresholds()) {
-    size_t output_index = static_cast<size_t>(threshold.output_index());
-    if (static_cast<size_t>(output_index) >= safety_info->class_scores.size()) {
-      // Needed to evaluate a score, but output was invalid. Mark it as unsafe.
-      return true;
-    }
-
-    if (safety_info->class_scores.at(output_index) >= threshold.threshold()) {
-      // Output score exceeded threshold.
-      return true;
-    }
+  if (is_unsafe) {
+    CancelPendingResponse(ExecuteModelResult::kUsedOnDeviceOutputUnsafe,
+                          ModelExecutionError::kFiltered);
+    return;
   }
 
-  // If it gets here, everything has passed.
-  return false;
+  if (!result.has_value()) {
+    CancelPendingResponse(ExecuteModelResult::kTextSafetyRemoteRequestFailed,
+                          ModelExecutionError::kGenericFailure);
+    return;
+  }
+
+  SendSuccessCompletionCallback(success_response_metadata);
 }
 
-SessionImpl::OnDeviceState::OnDeviceState(StartSessionFn start_session_fn,
+SessionImpl::OnDeviceState::OnDeviceState(OnDeviceOptions&& options,
                                           SessionImpl* session)
-    : start_session_fn(std::move(start_session_fn)),
+    : opts(std::move(options)),
       receiver(session),
       session_weak_ptr_factory_(session) {}
 
@@ -729,8 +910,11 @@ SessionImpl::OnDeviceState::MutableLoggedResponse() {
       ->mutable_on_device_model_service_response();
 }
 
-void SessionImpl::OnDeviceState::AddTextSafetyExecutionLogging(bool is_unsafe) {
-  if (!current_safety_info) {
+void SessionImpl::OnDeviceState::AddTextSafetyExecutionLogging(
+        const std::string& text,
+        const on_device_model::mojom::SafetyInfoPtr& safety_info,
+        bool is_unsafe) {
+  if (!safety_info) {
     return;
   }
 
@@ -741,12 +925,15 @@ void SessionImpl::OnDeviceState::AddTextSafetyExecutionLogging(bool is_unsafe) {
                                 ->add_execution_infos();
   ts_execution_info->mutable_request()
       ->mutable_text_safety_model_request()
-      ->set_text(current_response);
+      ->set_text(text);
   auto* ts_resp = ts_execution_info->mutable_response()
                       ->mutable_text_safety_model_response();
-  *ts_resp->mutable_scores() = {current_safety_info->class_scores.begin(),
-                                current_safety_info->class_scores.end()};
+  *ts_resp->mutable_scores() = {safety_info->class_scores.begin(),
+                                safety_info->class_scores.end()};
   ts_resp->set_is_unsafe(is_unsafe);
+  if (safety_info->language) {
+    ts_resp->set_language_code(safety_info->language->code);
+  }
 }
 
 void SessionImpl::OnDeviceState::ResetRequestState() {
@@ -758,6 +945,7 @@ void SessionImpl::OnDeviceState::ResetRequestState() {
   timer_for_first_response.Stop();
   histogram_logger.reset();
   log_ai_data_request.reset();
+  model_response_complete = false;
   session_weak_ptr_factory_.InvalidateWeakPtrs();
 }
 

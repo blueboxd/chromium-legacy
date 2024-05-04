@@ -12,17 +12,13 @@
 #include <vector>
 
 #include "base/containers/flat_map.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "components/attribution_reporting/event_report_windows.h"
-#include "components/attribution_reporting/features.h"
-#include "components/attribution_reporting/source_registration_time_config.mojom.h"
+#include "components/attribution_reporting/privacy_math.h"
 #include "components/attribution_reporting/source_type.mojom.h"
-#include "content/browser/attribution_reporting/aggregatable_attribution_utils.h"
 #include "content/browser/attribution_reporting/attribution_report.h"
 #include "content/browser/attribution_reporting/attribution_test_utils.h"
 #include "content/browser/attribution_reporting/common_source_info.h"
-#include "content/browser/attribution_reporting/privacy_math.h"
 #include "content/browser/attribution_reporting/stored_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -80,8 +76,7 @@ TEST(AttributionStorageDelegateImplTest,
                       .GetRandomizedResponse(source.common_info().source_type(),
                                              source.trigger_specs(),
                                              source.max_event_level_reports(),
-                                             source.event_level_epsilon(),
-                                             source.source_time());
+                                             source.event_level_epsilon());
     ASSERT_TRUE(result.has_value());
     ASSERT_GT(result->rate(), 0);
     ASSERT_EQ(result->response(), std::nullopt);
@@ -133,126 +128,10 @@ TEST(AttributionStorageDelegateImplTest,
 
     auto result = delegate->GetRandomizedResponse(
         test_case.source_type, source.trigger_specs(),
-        source.max_event_level_reports(), source.event_level_epsilon(),
-        source.source_time());
+        source.max_event_level_reports(), source.event_level_epsilon());
 
     EXPECT_EQ(result.has_value(), test_case.expected_ok);
   }
-}
-
-class AttributionStorageDelegateImplTestFeatureConfigured
-    : public testing::Test {
- public:
-  AttributionStorageDelegateImplTestFeatureConfigured() {
-    feature_list_.InitWithFeaturesAndParameters(
-        {{attribution_reporting::features::kConversionMeasurement,
-          {{"aggregate_report_min_delay", "1m"},
-           {"aggregate_report_delay_span", "29m"}}}},
-        /*disabled_features=*/{});
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
-TEST_F(AttributionStorageDelegateImplTestFeatureConfigured,
-       GetFeatureAggregatableReportTime) {
-  base::Time trigger_time = base::Time::Now();
-  EXPECT_THAT(
-      AttributionStorageDelegateImpl().GetAggregatableReportTime(trigger_time),
-      AllOf(Ge(trigger_time + base::Minutes(1)),
-            Lt(trigger_time + base::Minutes(30))));
-}
-
-// Verifies that field test params are validated correctly.
-class AttributionStorageDelegateImplTestInvalidFeatureConfigured
-    : public testing::Test {
- public:
-  AttributionStorageDelegateImplTestInvalidFeatureConfigured() {
-    feature_list_.InitWithFeaturesAndParameters(
-        {{attribution_reporting::features::kConversionMeasurement,
-          {{"aggregate_report_min_delay", "-1m"},
-           {"aggregate_report_delay_span", "-29m"}}}},
-        /*disabled_features=*/{});
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
-TEST_F(AttributionStorageDelegateImplTestInvalidFeatureConfigured,
-       NegativeAggregateParams_DefaultsUsed) {
-  base::Time trigger_time = base::Time::Now();
-  EXPECT_THAT(
-      AttributionStorageDelegateImpl().GetAggregatableReportTime(trigger_time),
-      AllOf(Ge(trigger_time), Lt(trigger_time + base::Minutes(10))));
-}
-
-TEST(AttributionStorageDelegateImplTest,
-     NullAggregatableReports_IncludeSourceRegistrationTime) {
-  const auto trigger = DefaultTrigger();
-
-  EXPECT_THAT(AttributionStorageDelegateImpl()
-                  .GetNullAggregatableReports(
-                      trigger, /*trigger_time=*/base::Time::Now(),
-                      /*attributed_source_time=*/std::nullopt)
-                  .size(),
-              Le(31u));
-
-  base::Time attributed_source_time = base::Time::Now() - base::Days(1);
-  auto null_reports =
-      AttributionStorageDelegateImpl().GetNullAggregatableReports(
-          trigger, /*trigger_time=*/base::Time::Now(), attributed_source_time);
-  EXPECT_THAT(null_reports.size(), Lt(31u));
-
-  auto same_source_time_report =
-      base::ranges::find_if(null_reports, [&](const auto& null_report) {
-        return RoundDownToWholeDaySinceUnixEpoch(
-                   null_report.fake_source_time) ==
-               RoundDownToWholeDaySinceUnixEpoch(attributed_source_time);
-      });
-  EXPECT_TRUE(same_source_time_report == null_reports.end());
-}
-
-TEST(AttributionStorageDelegateImplTest,
-     NullAggregatableReports_ExcludeSourceRegistrationTime) {
-  const auto trigger = TriggerBuilder()
-                           .SetSourceRegistrationTimeConfig(
-                               attribution_reporting::mojom::
-                                   SourceRegistrationTimeConfig::kExclude)
-                           .Build();
-
-  EXPECT_THAT(AttributionStorageDelegateImpl()
-                  .GetNullAggregatableReports(
-                      trigger, /*trigger_time=*/base::Time::Now(),
-                      /*attributed_source_time=*/std::nullopt)
-                  .size(),
-              Le(1u));
-
-  EXPECT_THAT(AttributionStorageDelegateImpl().GetNullAggregatableReports(
-                  trigger, /*trigger_time=*/base::Time::Now(),
-                  /*attributed_source_time=*/base::Time::Now() - base::Days(1)),
-              IsEmpty());
-}
-
-TEST(AttributionStorageDelegateImplTest,
-     NullAggregatableReports_WithTriggerContextId) {
-  const auto trigger = TriggerBuilder()
-                           .SetSourceRegistrationTimeConfig(
-                               attribution_reporting::mojom::
-                                   SourceRegistrationTimeConfig::kExclude)
-                           .SetTriggerContextId("123")
-                           .Build();
-
-  EXPECT_THAT(AttributionStorageDelegateImpl().GetNullAggregatableReports(
-                  trigger, /*trigger_time=*/base::Time::Now(),
-                  /*attributed_source_time=*/std::nullopt),
-              SizeIs(1u));
-
-  EXPECT_THAT(AttributionStorageDelegateImpl().GetNullAggregatableReports(
-                  trigger, /*trigger_time=*/base::Time::Now(),
-                  /*attributed_source_time=*/base::Time::Now() - base::Days(1)),
-              IsEmpty());
 }
 
 }  // namespace

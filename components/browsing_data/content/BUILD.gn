@@ -18,8 +18,6 @@ static_library("content") {
     "conditional_cache_counting_helper.h",
     "cookie_helper.cc",
     "cookie_helper.h",
-    "local_shared_objects_container.cc",
-    "local_shared_objects_container.h",
     "local_storage_helper.cc",
     "local_storage_helper.h",
     "shared_worker_info.cc",
@@ -54,7 +52,6 @@ source_set("unit_tests") {
     "browsing_data_model_unittest.cc",
     "browsing_data_quota_helper_unittest.cc",
     "cookie_helper_unittest.cc",
-    "local_storage_helper_unittest.cc",
   ]
 
   deps = [

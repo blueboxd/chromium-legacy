@@ -4,6 +4,7 @@
 
 #include "components/safe_browsing/content/browser/browser_url_loader_throttle.h"
 
+#include <string_view>
 #include <vector>
 
 #include "base/functional/callback.h"
@@ -15,10 +16,11 @@
 #include "components/safe_browsing/content/browser/async_check_tracker.h"
 #include "components/safe_browsing/content/browser/base_ui_manager.h"
 #include "components/safe_browsing/content/browser/url_checker_on_sb.h"
-#include "components/safe_browsing/core/browser/hashprefix_realtime/hash_realtime_utils.h"
+#include "components/safe_browsing/core/browser/realtime/fake_url_lookup_service.h"
 #include "components/safe_browsing/core/browser/safe_browsing_url_checker_impl.h"
 #include "components/safe_browsing/core/browser/url_checker_delegate.h"
 #include "components/safe_browsing/core/common/features.h"
+#include "components/safe_browsing/core/common/hashprefix_realtime/hash_realtime_utils.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_browser_context.h"
@@ -83,75 +85,33 @@ class MockThrottleDelegate : public blink::URLLoaderThrottle::Delegate {
   ~MockThrottleDelegate() override = default;
 
   void CancelWithError(int error_code,
-                       base::StringPiece custom_reason) override {
+                       std::string_view custom_reason) override {
     error_code_ = error_code;
     custom_reason_ = custom_reason;
   }
   void Resume() override { is_resumed_ = true; }
 
   int GetErrorCode() { return error_code_; }
-  base::StringPiece GetCustomReason() { return custom_reason_; }
+  std::string_view GetCustomReason() { return custom_reason_; }
   bool IsResumed() { return is_resumed_; }
 
  private:
   int error_code_ = 0;
-  base::StringPiece custom_reason_ = "";
+  std::string_view custom_reason_ = "";
   bool is_resumed_ = false;
 };
 
-class MockRealTimeUrlLookupService : public RealTimeUrlLookupServiceBase {
+class FakeRealTimeUrlLookupService
+    : public testing::FakeRealTimeUrlLookupService {
  public:
-  MockRealTimeUrlLookupService()
-      : RealTimeUrlLookupServiceBase(
-            /*url_loader_factory=*/nullptr,
-            /*cache_manager=*/nullptr,
-            /*get_user_population_callback=*/base::BindRepeating([]() {
-              return ChromeUserPopulation();
-            }),
-            /*referrer_chain_provider=*/nullptr,
-            /*pref_service=*/nullptr,
-            /*webui_delegate=*/nullptr) {}
+  FakeRealTimeUrlLookupService() = default;
 
   // RealTimeUrlLookupServiceBase:
-  bool CanPerformFullURLLookup() const override { return true; }
-  bool CanIncludeSubframeUrlInReferrerChain() const override { return false; }
-  bool CanCheckSafeBrowsingDb() const override { return true; }
-  bool CanCheckSafeBrowsingHighConfidenceAllowlist() const override {
-    return true;
-  }
-  bool CanSendRTSampleRequest() const override { return false; }
-  std::string GetMetricSuffix() const override { return ".Mock"; }
   void StartLookup(
       const GURL& url,
       RTLookupResponseCallback response_callback,
       scoped_refptr<base::SequencedTaskRunner> callback_task_runner,
       SessionID tab_id) override {}
-  void SendSampledRequest(
-      const GURL& url,
-      scoped_refptr<base::SequencedTaskRunner> callback_task_runner,
-      SessionID tab_id) override {}
-
- private:
-  GURL GetRealTimeLookupUrl() const override { return GURL(); }
-  net::NetworkTrafficAnnotationTag GetTrafficAnnotationTag() const override {
-    return TRAFFIC_ANNOTATION_FOR_TESTS;
-  }
-  bool CanPerformFullURLLookupWithToken() const override { return false; }
-  int GetReferrerUserGestureLimit() const override { return 0; }
-  bool CanSendPageLoadToken() const override { return false; }
-  void GetAccessToken(
-      const GURL& url,
-      RTLookupResponseCallback response_callback,
-      scoped_refptr<base::SequencedTaskRunner> callback_task_runner,
-      SessionID tab_id) override {}
-  std::optional<std::string> GetDMTokenString() const override {
-    return std::nullopt;
-  }
-  bool ShouldIncludeCredentials() const override { return false; }
-  std::optional<base::Time> GetMinAllowedTimestampForReferrerChains()
-      const override {
-    return std::nullopt;
-  }
 };
 
 class MockSafeBrowsingUrlChecker : public SafeBrowsingUrlCheckerImpl {
@@ -282,9 +242,7 @@ class SBBrowserUrlLoaderThrottleTestBase : public ::testing::Test {
  protected:
   SBBrowserUrlLoaderThrottleTestBase()
       : web_contents_(
-            web_contents_factory_.CreateWebContents(&browser_context_)) {
-    feature_list_.InitAndEnableFeature(kSafeBrowsingSkipSubresources);
-  }
+            web_contents_factory_.CreateWebContents(&browser_context_)) {}
 
   scoped_refptr<UrlCheckerDelegate> GetUrlCheckerDelegate() {
     return url_checker_delegate_;
@@ -298,7 +256,7 @@ class SBBrowserUrlLoaderThrottleTestBase : public ::testing::Test {
         },
         base::Unretained(this));
     EXPECT_CALL(mock_web_contents_getter_, Run())
-        .WillRepeatedly(testing::Return(web_contents_));
+        .WillRepeatedly(::testing::Return(web_contents_));
     ui_manager_ = base::MakeRefCounted<BaseUIManager>();
     async_check_tracker_ = async_check_enabled
                                ? base::WrapUnique(new AsyncCheckTracker(
@@ -457,8 +415,8 @@ class SBBrowserUrlLoaderThrottleTestBase : public ::testing::Test {
   // setting it up at the start of the test.
   base::WeakPtr<MockSafeBrowsingUrlChecker> sync_url_checker_;
   base::WeakPtr<MockSafeBrowsingUrlChecker> async_url_checker_;
-  std::unique_ptr<MockRealTimeUrlLookupService> url_lookup_service_ =
-      std::make_unique<MockRealTimeUrlLookupService>();
+  std::unique_ptr<FakeRealTimeUrlLookupService> url_lookup_service_ =
+      std::make_unique<FakeRealTimeUrlLookupService>();
   scoped_refptr<MockUrlCheckerDelegate> url_checker_delegate_;
   std::unique_ptr<MockThrottleDelegate> throttle_delegate_;
   std::unique_ptr<AsyncCheckTracker> async_check_tracker_;
@@ -473,7 +431,7 @@ class SBBrowserUrlLoaderThrottleTestBase : public ::testing::Test {
 
 class SBBrowserUrlLoaderThrottleTest
     : public SBBrowserUrlLoaderThrottleTestBase,
-      public testing::WithParamInterface<bool> {
+      public ::testing::WithParamInterface<bool> {
  protected:
   void SetUpTest() {
     bool async_check_enabled = GetParam();
@@ -508,7 +466,7 @@ class SBBrowserUrlLoaderThrottleTest
 
 INSTANTIATE_TEST_SUITE_P(AsyncCheckEnabled,
                          SBBrowserUrlLoaderThrottleTest,
-                         testing::Bool());
+                         ::testing::Bool());
 
 TEST_P(SBBrowserUrlLoaderThrottleTest,
        VerifyDefer_DoesNotDeferOnSafeDocumentUrl) {
@@ -1202,97 +1160,6 @@ TEST_F(SBBrowserUrlLoaderThrottleAsyncCheckTest,
   throttle_.reset();
   VerifyHistograms(/*is_async_check_faster=*/std::nullopt,
                    /*is_async_check_transferred=*/std::nullopt);
-}
-
-class SBBrowserUrlLoaderThrottleDisableSkipSubresourcesTest
-    : public SBBrowserUrlLoaderThrottleTest {
- public:
-  SBBrowserUrlLoaderThrottleDisableSkipSubresourcesTest() {
-    feature_list_.InitAndDisableFeature(kSafeBrowsingSkipSubresources);
-  }
-
- protected:
-  void AddSyncCallbackInfo(bool should_proceed, bool should_delay_callback) {
-    sync_url_checker_->AddCallbackInfo(
-        should_proceed,
-        /*should_show_interstitial=*/!should_proceed,
-        /*should_delay_callback=*/should_delay_callback);
-  }
-
-  base::test::ScopedFeatureList feature_list_;
-};
-
-INSTANTIATE_TEST_SUITE_P(AsyncCheckEnabled,
-                         SBBrowserUrlLoaderThrottleDisableSkipSubresourcesTest,
-                         testing::Bool());
-
-TEST_P(SBBrowserUrlLoaderThrottleDisableSkipSubresourcesTest,
-       VerifyDefer_DoesNotDeferOnSafeDocumentUrl) {
-  SetUpTest();
-  AddCallbackInfo(/*should_proceed=*/true,
-                  /*should_show_interstitial=*/false,
-                  /*should_delay_callback=*/false);
-
-  bool defer = CallWillStartRequest();
-  EXPECT_FALSE(defer);
-  EXPECT_EQ(throttle_delegate_->GetErrorCode(), 0);
-
-  defer = CallWillProcessResponse();
-  EXPECT_FALSE(defer);
-}
-
-TEST_P(SBBrowserUrlLoaderThrottleDisableSkipSubresourcesTest,
-       VerifyDefer_DefersOnUnsafeDocumentUrl) {
-  SetUpTest();
-  AddCallbackInfo(/*should_proceed=*/false,
-                  /*should_show_interstitial=*/true,
-                  /*should_delay_callback=*/false);
-
-  bool defer = CallWillStartRequest();
-  // Safe Browsing and URL loader are performed in parallel. Safe Browsing
-  // doesn't defer the start of the request.
-  EXPECT_FALSE(defer);
-  EXPECT_EQ(throttle_delegate_->GetErrorCode(), net::ERR_BLOCKED_BY_CLIENT);
-  EXPECT_EQ(throttle_delegate_->GetCustomReason(), "SafeBrowsing");
-
-  defer = CallWillProcessResponse();
-  EXPECT_TRUE(defer);
-}
-
-TEST_P(SBBrowserUrlLoaderThrottleDisableSkipSubresourcesTest,
-       VerifyDefer_DefersOnUnsafeIframeUrl) {
-  SetUpTest();
-  AddCallbackInfo(/*should_proceed=*/false,
-                  /*should_show_interstitial=*/true,
-                  /*should_delay_callback=*/false);
-
-  bool defer = CallWillStartRequest(
-      {.destination = network::mojom::RequestDestination::kIframe});
-  // Safe Browsing and URL loader are performed in parallel. Safe Browsing
-  // doesn't defer the start of the request.
-  EXPECT_FALSE(defer);
-  EXPECT_EQ(throttle_delegate_->GetErrorCode(), net::ERR_BLOCKED_BY_CLIENT);
-  EXPECT_EQ(throttle_delegate_->GetCustomReason(), "SafeBrowsing");
-
-  defer = CallWillProcessResponse();
-  EXPECT_TRUE(defer);
-}
-
-TEST_P(SBBrowserUrlLoaderThrottleDisableSkipSubresourcesTest,
-       VerifyAsyncChecksNotEligible_IframeUrl) {
-  SetUpTest();
-  AddSyncCallbackInfo(/*should_proceed=*/true,
-                      /*should_delay_callback=*/true);
-  // Do not call |AddAsyncCallbackInfo| so that if the async callback is
-  // called (incorrectly), the test will fail.
-
-  CallWillStartRequest(
-      {.destination = network::mojom::RequestDestination::kIframe});
-  CallWillProcessResponse();
-
-  sync_url_checker_->RestartDelayedCallback(/*index=*/0);
-  task_environment_.RunUntilIdle();
-  EXPECT_TRUE(throttle_delegate_->IsResumed());
 }
 
 }  // namespace safe_browsing

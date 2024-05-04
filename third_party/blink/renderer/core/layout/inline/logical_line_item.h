@@ -156,11 +156,15 @@ struct LogicalLineItem {
     return layout_result && layout_result->GetPhysicalFragment().IsInlineBox();
   }
   bool HasInFlowFragment() const {
-    return inline_item || (layout_result &&
-                           !layout_result->GetPhysicalFragment().IsFloating());
+    return (inline_item &&
+            inline_item->Type() != InlineItem::kRubyLinePlaceholder) ||
+           (layout_result &&
+            !layout_result->GetPhysicalFragment().IsFloating());
   }
   bool HasInFlowOrFloatingFragment() const {
-    return inline_item || layout_result || layout_object;
+    return (inline_item &&
+            inline_item->Type() != InlineItem::kRubyLinePlaceholder) ||
+           layout_result || layout_object;
   }
   bool HasOutOfFlowFragment() const {
     return out_of_flow_positioned_box != nullptr;
@@ -188,6 +192,10 @@ struct LogicalLineItem {
       }
     }
     return false;
+  }
+  bool IsRubyLinePlaceholder() const {
+    return inline_item &&
+           inline_item->Type() == InlineItem::kRubyLinePlaceholder;
   }
 
   const LogicalOffset& Offset() const { return rect.offset; }
@@ -264,6 +272,9 @@ struct LogicalLineItem {
   bool has_only_bidi_trailing_spaces = false;
 
   bool is_hidden_for_paint = false;
+
+  bool has_over_annotation = false;
+  bool has_under_annotation = false;
 };
 
 CORE_EXPORT std::ostream& operator<<(std::ostream& stream,

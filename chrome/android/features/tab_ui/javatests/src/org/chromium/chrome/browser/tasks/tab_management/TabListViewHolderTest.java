@@ -27,6 +27,8 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
+import android.graphics.drawable.LayerDrawable;
 import android.graphics.drawable.VectorDrawable;
 import android.util.Size;
 import android.view.View;
@@ -38,6 +40,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.core.widget.ImageViewCompat;
+import androidx.test.annotation.UiThreadTest;
 import androidx.test.filters.MediumTest;
 
 import com.google.protobuf.ByteString;
@@ -54,17 +57,18 @@ import org.mockito.stubbing.Answer;
 
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
-import org.chromium.base.test.UiThreadTest;
 import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.Features;
+import org.chromium.base.test.util.Features.EnableFeatures;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.optimization_guide.OptimizationGuideBridge;
 import org.chromium.chrome.browser.optimization_guide.OptimizationGuideBridge.OptimizationGuideCallback;
-import org.chromium.chrome.browser.optimization_guide.OptimizationGuideBridgeJni;
+import org.chromium.chrome.browser.optimization_guide.OptimizationGuideBridgeFactory;
+import org.chromium.chrome.browser.optimization_guide.OptimizationGuideBridgeFactoryJni;
 import org.chromium.chrome.browser.price_tracking.PriceTrackingFeatures;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.profiles.ProfileManager;
@@ -74,10 +78,12 @@ import org.chromium.chrome.browser.tab.state.LevelDBPersistedDataStorage;
 import org.chromium.chrome.browser.tab.state.LevelDBPersistedDataStorageJni;
 import org.chromium.chrome.browser.tab.state.PersistedTabDataConfiguration;
 import org.chromium.chrome.browser.tab.state.ShoppingPersistedTabData;
-import org.chromium.chrome.browser.tasks.tab_management.TabListFaviconProvider.ResourceTabFavicon;
-import org.chromium.chrome.browser.tasks.tab_management.TabListFaviconProvider.StaticTabFaviconType;
-import org.chromium.chrome.browser.tasks.tab_management.TabListFaviconProvider.TabFavicon;
-import org.chromium.chrome.browser.tasks.tab_management.TabListFaviconProvider.TabFaviconFetcher;
+import org.chromium.chrome.browser.tab_ui.TabListFaviconProvider.ResourceTabFavicon;
+import org.chromium.chrome.browser.tab_ui.TabListFaviconProvider.StaticTabFaviconType;
+import org.chromium.chrome.browser.tab_ui.TabListFaviconProvider.TabFavicon;
+import org.chromium.chrome.browser.tab_ui.TabListFaviconProvider.TabFaviconFetcher;
+import org.chromium.chrome.browser.tab_ui.TabThumbnailView;
+import org.chromium.chrome.browser.tab_ui.ThumbnailProvider;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.components.browser_ui.widget.selectable_list.SelectionDelegate;
@@ -89,14 +95,15 @@ import org.chromium.components.embedder_support.util.UrlUtilities;
 import org.chromium.components.embedder_support.util.UrlUtilitiesJni;
 import org.chromium.components.optimization_guide.OptimizationGuideDecision;
 import org.chromium.components.optimization_guide.proto.CommonTypesProto.Any;
+import org.chromium.components.optimization_guide.proto.HintsProto;
 import org.chromium.components.payments.CurrencyFormatter;
 import org.chromium.components.payments.CurrencyFormatterJni;
+import org.chromium.components.tab_groups.TabGroupColorId;
 import org.chromium.content_public.browser.BrowserContextHandle;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 import org.chromium.ui.test.util.BlankUiTestActivityTestCase;
-import org.chromium.ui.widget.ButtonCompat;
 import org.chromium.url.GURL;
 
 import java.lang.ref.WeakReference;
@@ -180,7 +187,8 @@ public class TabListViewHolderTest extends BlankUiTestActivityTestCase {
 
     @Mock private CurrencyFormatter.Natives mCurrencyFormatterJniMock;
 
-    @Mock private OptimizationGuideBridge.Natives mOptimizationGuideBridgeJniMock;
+    @Mock private OptimizationGuideBridgeFactory.Natives mOptimizationGuideBridgeFactoryJniMock;
+    @Mock private OptimizationGuideBridge mOptimizationGuideBridge;
 
     private TabListMediator.ThumbnailFetcher mMockThumbnailProvider =
             new TabListMediator.ThumbnailFetcher(
@@ -299,7 +307,9 @@ public class TabListViewHolderTest extends BlankUiTestActivityTestCase {
                                     .with(
                                             TabProperties.TAB_SELECTED_LISTENER,
                                             mMockSelectedListener)
-                                    .with(TabProperties.TAB_CLOSED_LISTENER, mMockCloseListener)
+                                    .with(
+                                            TabProperties.TAB_ACTION_BUTTON_LISTENER,
+                                            mMockCloseListener)
                                     .with(
                                             TabProperties.SELECTED_TAB_BACKGROUND_DRAWABLE_ID,
                                             mSelectedTabBackgroundDrawableId)
@@ -309,7 +319,9 @@ public class TabListViewHolderTest extends BlankUiTestActivityTestCase {
                                     .with(
                                             TabProperties.TAB_SELECTED_LISTENER,
                                             mMockSelectedListener)
-                                    .with(TabProperties.TAB_CLOSED_LISTENER, mMockCloseListener)
+                                    .with(
+                                            TabProperties.TAB_ACTION_BUTTON_LISTENER,
+                                            mMockCloseListener)
                                     .with(
                                             TabProperties.TABSTRIP_FAVICON_BACKGROUND_COLOR_ID,
                                             R.color.favicon_background_color)
@@ -362,8 +374,12 @@ public class TabListViewHolderTest extends BlankUiTestActivityTestCase {
                 .initCurrencyFormatterAndroid(
                         any(CurrencyFormatter.class), anyString(), anyString());
         doNothing().when(mCurrencyFormatterJniMock).setMaxFractionalDigits(anyLong(), anyInt());
-        doReturn(1L).when(mOptimizationGuideBridgeJniMock).init();
-        mMocker.mock(OptimizationGuideBridgeJni.TEST_HOOKS, mOptimizationGuideBridgeJniMock);
+        mMocker.mock(
+                OptimizationGuideBridgeFactoryJni.TEST_HOOKS,
+                mOptimizationGuideBridgeFactoryJniMock);
+        doReturn(mOptimizationGuideBridge)
+                .when(mOptimizationGuideBridgeFactoryJniMock)
+                .getForProfile(mProfile);
         PriceTrackingFeatures.setIsSignedInAndSyncEnabledForTesting(true);
     }
 
@@ -705,14 +721,13 @@ public class TabListViewHolderTest extends BlankUiTestActivityTestCase {
 
         // For the List version, we need to trigger the click from the view that has id
         // content_view, because of the xml hierarchy.
-        ViewGroup selectableTabListContent = mSelectableTabListView.findViewById(R.id.content_view);
-        testSelectableTabClickToSelect(selectableTabListContent, mSelectableModel, false);
-        testSelectableTabClickToSelect(selectableTabListContent, mSelectableModel, true);
+        testSelectableTabClickToSelect(mSelectableTabListView, mSelectableModel, false);
+        testSelectableTabClickToSelect(mSelectableTabListView, mSelectableModel, true);
         // Also test the end button.
         testSelectableTabClickToSelect(
-                selectableTabListContent.findViewById(R.id.end_button), mSelectableModel, false);
+                mSelectableTabListView.findViewById(R.id.end_button), mSelectableModel, false);
         testSelectableTabClickToSelect(
-                selectableTabListContent.findViewById(R.id.end_button), mSelectableModel, true);
+                mSelectableTabListView.findViewById(R.id.end_button), mSelectableModel, true);
     }
 
     @Test
@@ -807,7 +822,7 @@ public class TabListViewHolderTest extends BlankUiTestActivityTestCase {
 
         mCloseClicked.set(false);
 
-        mGridModel.set(TabProperties.TAB_CLOSED_LISTENER, null);
+        mGridModel.set(TabProperties.TAB_ACTION_BUTTON_LISTENER, null);
         gridActionButton.performClick();
         Assert.assertFalse(mCloseClicked.get());
         listActionButton.performClick();
@@ -821,40 +836,6 @@ public class TabListViewHolderTest extends BlankUiTestActivityTestCase {
         mStripModel.set(TabProperties.IS_SELECTED, false);
         button.performClick();
         Assert.assertFalse(mCloseClicked.get());
-    }
-
-    @Test
-    @MediumTest
-    @UiThreadTest
-    public void testSetCreateGroupListener() {
-        ButtonCompat actionButton = mTabGridView.findViewById(R.id.create_group_button);
-        // By default, the create group button is invisible.
-        Assert.assertEquals(View.GONE, actionButton.getVisibility());
-
-        // When setup with actual listener, the button should be visible.
-        mGridModel.set(TabProperties.CREATE_GROUP_LISTENER, mMockCreateGroupButtonListener);
-        Assert.assertEquals(View.VISIBLE, actionButton.getVisibility());
-        Assert.assertFalse(mCreateGroupButtonClicked.get());
-        actionButton.performClick();
-        Assert.assertTrue(mCreateGroupButtonClicked.get());
-        mCreateGroupButtonClicked.set(false);
-        int firstCreateGroupId = mCreateGroupTabId.get();
-        Assert.assertEquals(TAB1_ID, firstCreateGroupId);
-
-        mGridModel.set(TabProperties.TAB_ID, TAB2_ID);
-        actionButton.performClick();
-        Assert.assertTrue(mCreateGroupButtonClicked.get());
-        mCreateGroupButtonClicked.set(false);
-        int secondCreateGroupId = mCreateGroupTabId.get();
-        // When TAB_ID in PropertyModel is updated, binder should create group with updated tab ID.
-        Assert.assertEquals(TAB2_ID, secondCreateGroupId);
-        Assert.assertNotEquals(firstCreateGroupId, secondCreateGroupId);
-
-        mGridModel.set(TabProperties.CREATE_GROUP_LISTENER, null);
-        actionButton.performClick();
-        Assert.assertFalse(mCreateGroupButtonClicked.get());
-        // When CREATE_GROUP_LISTENER is set to null, the button should be invisible.
-        Assert.assertEquals(View.GONE, actionButton.getVisibility());
     }
 
     @Test
@@ -1050,6 +1031,67 @@ public class TabListViewHolderTest extends BlankUiTestActivityTestCase {
                 tabFavicon);
     }
 
+    @Test
+    @MediumTest
+    @UiThreadTest
+    @EnableFeatures(ChromeFeatureList.TAB_GROUP_PARITY_ANDROID)
+    public void testColorIcon_validNewColor() {
+        final int colorId = TabGroupColorId.BLUE;
+        final int colorLayer = 1;
+
+        ImageView colorIconView = mTabListView.findViewById(R.id.icon);
+        assertNull(colorIconView.getBackground());
+
+        mGridModel.set(TabProperties.TAB_GROUP_COLOR_ID, colorId);
+
+        assertEquals(colorIconView.getVisibility(), View.VISIBLE);
+        assertThat(colorIconView.getBackground(), instanceOf(LayerDrawable.class));
+        LayerDrawable layerDrawable = (LayerDrawable) colorIconView.getBackground();
+        assertEquals(2, layerDrawable.getNumberOfLayers());
+
+        // Check outer color layer
+        assertThat(layerDrawable.getDrawable(colorLayer), instanceOf(GradientDrawable.class));
+        GradientDrawable drawable = (GradientDrawable) layerDrawable.getDrawable(colorLayer);
+        assertEquals(GradientDrawable.OVAL, drawable.getShape());
+        assertEquals(
+                ColorStateList.valueOf(
+                        ColorPickerUtils.getTabGroupColorPickerItemColor(
+                                getActivity(), colorId, false)),
+                drawable.getColor());
+    }
+
+    @Test
+    @MediumTest
+    @UiThreadTest
+    @EnableFeatures(ChromeFeatureList.TAB_GROUP_PARITY_ANDROID)
+    public void testColorIcon_validExistingColor() {
+        final int colorId1 = TabGroupColorId.BLUE;
+        final int colorId2 = TabGroupColorId.RED;
+        final int colorLayer = 1;
+
+        mGridModel.set(TabProperties.TAB_GROUP_COLOR_ID, colorId1);
+
+        ImageView colorIconView = mTabListView.findViewById(R.id.icon);
+        assertEquals(colorIconView.getVisibility(), View.VISIBLE);
+        assertNotNull(colorIconView.getBackground());
+
+        mGridModel.set(TabProperties.TAB_GROUP_COLOR_ID, colorId2);
+
+        assertThat(colorIconView.getBackground(), instanceOf(LayerDrawable.class));
+        LayerDrawable layerDrawable = (LayerDrawable) colorIconView.getBackground();
+        assertEquals(2, layerDrawable.getNumberOfLayers());
+
+        // Check outer color layer
+        assertThat(layerDrawable.getDrawable(colorLayer), instanceOf(GradientDrawable.class));
+        GradientDrawable drawable = (GradientDrawable) layerDrawable.getDrawable(colorLayer);
+        assertEquals(GradientDrawable.OVAL, drawable.getShape());
+        assertEquals(
+                ColorStateList.valueOf(
+                        ColorPickerUtils.getTabGroupColorPickerItemColor(
+                                getActivity(), colorId2, false)),
+                drawable.getColor());
+    }
+
     private void testFaviconFetcher(
             PropertyModel model,
             ImageView faviconView,
@@ -1108,14 +1150,16 @@ public class TabListViewHolderTest extends BlankUiTestActivityTestCase {
                             @Override
                             public Void answer(InvocationOnMock invocation) {
                                 OptimizationGuideCallback callback =
-                                        (OptimizationGuideCallback) invocation.getArguments()[3];
+                                        (OptimizationGuideCallback) invocation.getArguments()[2];
                                 callback.onOptimizationGuideDecision(decision, metadata);
                                 return null;
                             }
                         })
-                .when(mOptimizationGuideBridgeJniMock)
+                .when(mOptimizationGuideBridge)
                 .canApplyOptimization(
-                        anyLong(), any(GURL.class), anyInt(), any(OptimizationGuideCallback.class));
+                        any(GURL.class),
+                        any(HintsProto.OptimizationType.class),
+                        any(OptimizationGuideCallback.class));
     }
 
     @Override

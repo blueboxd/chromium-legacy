@@ -6,6 +6,7 @@
 
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/html/forms/html_data_list_element.h"
+#include "third_party/blink/renderer/core/html/forms/html_opt_group_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_option_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_select_element.h"
 
@@ -42,7 +43,8 @@ void OptionListIterator::Advance(HTMLOptionElement* previous) {
         // TODO(crbug.com/1511354): We shouldn't have to call IsDescendantOf
         // here since we are already doing a tree traversal. This increases
         // runtime.
-        if (current == datalist || current->IsDescendantOf(datalist)) {
+        if (current == datalist || (current->IsDescendantOf(datalist) &&
+                                    !IsA<HTMLSelectElement>(current))) {
           current = ElementTraversal::Next(*current, select_);
           continue;
         }

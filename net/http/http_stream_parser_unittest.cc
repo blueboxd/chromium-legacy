@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <memory>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -18,7 +19,6 @@
 #include "base/functional/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
-#include "base/strings/string_piece.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/test/task_environment.h"
 #include "net/base/chunked_upload_data_stream.h"
@@ -291,12 +291,12 @@ TEST(HttpStreamParser, InitAsynchronousUploadDataStream) {
 TEST(HttpStreamParser, EncodeChunk_EmptyPayload) {
   char output[kOutputSize];
 
-  const base::StringPiece kPayload = "";
-  const base::StringPiece kExpected = "0\r\n\r\n";
+  const std::string_view kPayload = "";
+  const std::string_view kExpected = "0\r\n\r\n";
   const int num_bytes_written =
       HttpStreamParser::EncodeChunk(kPayload, output, sizeof(output));
   ASSERT_EQ(kExpected.size(), static_cast<size_t>(num_bytes_written));
-  EXPECT_EQ(kExpected, base::StringPiece(output, num_bytes_written));
+  EXPECT_EQ(kExpected, std::string_view(output, num_bytes_written));
 }
 
 TEST(HttpStreamParser, EncodeChunk_ShortPayload) {
@@ -308,7 +308,7 @@ TEST(HttpStreamParser, EncodeChunk_ShortPayload) {
   const int num_bytes_written =
       HttpStreamParser::EncodeChunk(kPayload, output, sizeof(output));
   ASSERT_EQ(kExpected.size(), static_cast<size_t>(num_bytes_written));
-  EXPECT_EQ(kExpected, base::StringPiece(output, num_bytes_written));
+  EXPECT_EQ(kExpected, std::string_view(output, num_bytes_written));
 }
 
 TEST(HttpStreamParser, EncodeChunk_LargePayload) {
@@ -320,7 +320,7 @@ TEST(HttpStreamParser, EncodeChunk_LargePayload) {
   const int num_bytes_written =
       HttpStreamParser::EncodeChunk(kPayload, output, sizeof(output));
   ASSERT_EQ(kExpected.size(), static_cast<size_t>(num_bytes_written));
-  EXPECT_EQ(kExpected, base::StringPiece(output, num_bytes_written));
+  EXPECT_EQ(kExpected, std::string_view(output, num_bytes_written));
 }
 
 TEST(HttpStreamParser, EncodeChunk_FullPayload) {
@@ -332,7 +332,7 @@ TEST(HttpStreamParser, EncodeChunk_FullPayload) {
   const int num_bytes_written =
       HttpStreamParser::EncodeChunk(kPayload, output, sizeof(output));
   ASSERT_EQ(kExpected.size(), static_cast<size_t>(num_bytes_written));
-  EXPECT_EQ(kExpected, base::StringPiece(output, num_bytes_written));
+  EXPECT_EQ(kExpected, std::string_view(output, num_bytes_written));
 }
 
 TEST(HttpStreamParser, EncodeChunk_TooLargePayload) {
@@ -1211,9 +1211,9 @@ TEST(HttpStreamParser, WebSocket101Response) {
   EXPECT_TRUE(response_info.headers->HasHeaderValue("Connection", "Upgrade"));
   EXPECT_TRUE(response_info.headers->HasHeaderValue("Upgrade", "websocket"));
   EXPECT_EQ(read_buffer->capacity(), read_buffer->offset());
-  EXPECT_EQ("a fake websocket frame",
-            base::StringPiece(read_buffer->StartOfBuffer(),
-                              read_buffer->capacity()));
+  EXPECT_EQ(
+      "a fake websocket frame",
+      std::string_view(read_buffer->StartOfBuffer(), read_buffer->capacity()));
 
   EXPECT_EQ(CountWriteBytes(writes), parser.sent_bytes());
   EXPECT_EQ(CountReadBytes(reads) -
@@ -1247,12 +1247,12 @@ class SimpleGetRunner {
 
   // The data used to back |string_piece| must stay alive until all mock data
   // has been read.
-  void AddRead(base::StringPiece string_piece) {
+  void AddRead(std::string_view string_piece) {
     reads_.emplace_back(SYNCHRONOUS, string_piece.data(), string_piece.length(),
                         sequence_number_++);
   }
 
-  void AddAsyncRead(base::StringPiece string_piece) {
+  void AddAsyncRead(std::string_view string_piece) {
     reads_.emplace_back(ASYNC, string_piece.data(), string_piece.length(),
                         sequence_number_++);
   }
@@ -1871,6 +1871,76 @@ TEST(HttpStreamParser, NonInformationalResponseStart) {
   EXPECT_EQ(response_size, parser.received_bytes());
 }
 
+// Test timing information of responses that don't have informational (1xx)
+// response headers, and have no response body.
+TEST(HttpStreamParser, NonInformationalResponseStartWithoutBody) {
+  base::test::TaskEnvironment task_environment(
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME);
+
+  std::string response_headers1 = "HTTP/1.1 200 OK\r\n";
+  std::string response_headers2 = "Content-Length: 0\r\n\r\n";
+  int64_t response_size = response_headers1.size() + response_headers2.size();
+
+  MockWrite writes[] = {MockWrite(SYNCHRONOUS, 0, "GET / HTTP/1.1\r\n\r\n")};
+
+  MockRead reads[] = {
+      // Add pauses between header fragments so that the test runner can advance
+      // the mock clock to test timing information.
+      MockRead(ASYNC, 1, response_headers1.c_str()),
+      MockRead(ASYNC, ERR_IO_PENDING, 2),
+      MockRead(ASYNC, 3, response_headers2.c_str()),
+  };
+
+  // Set up the sequenced socket data.
+  SequencedSocketData sequenced_socket_data(reads, writes);
+  std::unique_ptr<StreamSocket> stream_socket =
+      CreateConnectedSocket(&sequenced_socket_data);
+
+  // Set up the http stream parser.
+  HttpRequestInfo request;
+  auto read_buffer = base::MakeRefCounted<GrowableIOBuffer>();
+  HttpStreamParser parser(stream_socket.get(), /*connection_is_reused=*/false,
+                          &request, read_buffer.get(), NetLogWithSource());
+
+  // Send a request.
+  HttpResponseInfo response;
+  TestCompletionCallback callback;
+  EXPECT_THAT(parser.SendRequest("GET / HTTP/1.1\r\n", HttpRequestHeaders(),
+                                 TRAFFIC_ANNOTATION_FOR_TESTS, &response,
+                                 callback.callback()),
+              IsOk());
+
+  EXPECT_THAT(parser.ReadResponseHeaders(callback.callback()),
+              IsError(ERR_IO_PENDING));
+  task_environment.AdvanceClock(base::Seconds(1));
+
+  // [seq=1 --> seq=2] The parser reads the first fragment of the response
+  // headers and then pauses to advance the mock clock.
+  base::TimeTicks first_response_start_time = task_environment.NowTicks();
+  sequenced_socket_data.RunUntilPaused();
+  task_environment.AdvanceClock(base::Seconds(1));
+
+  // [seq=3] The parser reads the second fragment of the response headers.
+  sequenced_socket_data.Resume();
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
+
+  // Check the received headers.
+  EXPECT_EQ(200, response.headers->response_code());
+  EXPECT_EQ(response_size, parser.received_bytes());
+
+  // No informational responses were served. The first response start time
+  // should be equal to the non-informational response start time.
+  EXPECT_EQ(parser.first_response_start_time(), first_response_start_time);
+  EXPECT_EQ(parser.non_informational_response_start_time(),
+            first_response_start_time);
+
+  // [seq=4] The parser reads the response body.
+  auto body_buffer = base::MakeRefCounted<IOBufferWithSize>(10);
+  int result = parser.ReadResponseBody(body_buffer.get(), body_buffer->size(),
+                                       callback.callback());
+  EXPECT_THAT(callback.GetResult(result), IsError(OK));
+}
+
 // Test that "continue" HTTP header is counted as "received_bytes".
 TEST(HttpStreamParser, ReceivedBytesIncludesContinueHeader) {
   base::test::TaskEnvironment task_environment(
@@ -2317,10 +2387,10 @@ TEST(HttpStreamParser, ReceiveOneByteAtATime) {
 
   SimpleGetRunner get_runner;
   for (size_t i = 0; i < kResponseHeaders.length(); ++i) {
-    get_runner.AddRead(base::StringPiece(kResponseHeaders.data() + i, 1));
+    get_runner.AddRead(std::string_view(kResponseHeaders.data() + i, 1));
   }
   for (size_t i = 0; i < kResponseBody.length(); ++i) {
-    get_runner.AddRead(base::StringPiece(kResponseBody.data() + i, 1));
+    get_runner.AddRead(std::string_view(kResponseBody.data() + i, 1));
   }
   // EOF
   get_runner.AddRead("");

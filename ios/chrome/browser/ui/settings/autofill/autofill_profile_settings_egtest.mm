@@ -8,13 +8,13 @@
 #import "base/test/ios/wait_util.h"
 #import "components/autofill/core/common/autofill_features.h"
 #import "components/strings/grit/components_strings.h"
-#import "components/sync/base/features.h"
 #import "ios/chrome/browser/shared/ui/elements/activity_overlay_egtest_util.h"
 #import "ios/chrome/browser/signin/model/fake_system_identity.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui_test_util.h"
 #import "ios/chrome/browser/ui/autofill/autofill_app_interface.h"
-#import "ios/chrome/browser/ui/settings/autofill/autofill_constants.h"
+#import "ios/chrome/browser/ui/autofill/autofill_constants.h"
+#import "ios/chrome/browser/ui/settings/autofill/autofill_settings_constants.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_actions.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
@@ -138,18 +138,6 @@ id<GREYMatcher> MigrateToAccountButton() {
 - (void)tearDown {
   [AutofillAppInterface clearProfilesStore];
   [super tearDown];
-}
-
-- (AppLaunchConfiguration)appConfigurationForTestCase {
-  AppLaunchConfiguration config;
-
-  if ([self isRunningTest:@selector(testMigrateToAccount)] ||
-      [self isRunningTest:@selector(testIncompleteProfileMigrateToAccount)]) {
-    config.features_enabled.push_back(
-        syncer::kSyncEnableContactInfoDataTypeInTransportMode);
-  }
-
-  return config;
 }
 
 // Helper to open the settings page for Autofill profiles.

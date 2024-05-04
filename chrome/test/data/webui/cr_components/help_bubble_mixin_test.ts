@@ -4,7 +4,6 @@
 
 import 'chrome://resources/cr_components/help_bubble/help_bubble.js';
 
-import type {IronIconElement} from '//resources/polymer/v3_0/iron-icon/iron-icon.js';
 import type {HelpBubbleElement} from 'chrome://resources/cr_components/help_bubble/help_bubble.js';
 import type {HelpBubbleClientRemote, HelpBubbleHandlerInterface, HelpBubbleParams} from 'chrome://resources/cr_components/help_bubble/help_bubble.mojom-webui.js';
 import {HelpBubbleArrowPosition, HelpBubbleClientCallbackRouter, HelpBubbleClosedReason} from 'chrome://resources/cr_components/help_bubble/help_bubble.mojom-webui.js';
@@ -35,7 +34,7 @@ const HelpBubbleMixinTestElementBase = HelpBubbleMixin(PolymerElement) as {
   new (): PolymerElement & HelpBubbleMixinInterface,
 };
 
-export interface HelpBubbleMixinTestElement {
+interface HelpBubbleMixinTestElement {
   $: {
     bulletList: HTMLElement,
     container: HTMLElement,
@@ -52,7 +51,7 @@ let spanBubble: HelpBubbleController;
 let nestedChildBubble: HelpBubbleController;
 
 // HelpBubbleMixinTestElement
-export class HelpBubbleMixinTestElement extends HelpBubbleMixinTestElementBase {
+class HelpBubbleMixinTestElement extends HelpBubbleMixinTestElementBase {
   static get is() {
     return 'help-bubble-mixin-test-element';
   }
@@ -108,13 +107,6 @@ export class HelpBubbleMixinTestContainerElement extends PolymerElement {
 customElements.define(
     HelpBubbleMixinTestContainerElement.is,
     HelpBubbleMixinTestContainerElement);
-
-declare global {
-  interface HTMLElementTagNameMap {
-    'help-bubble-mixin-test-element': HelpBubbleMixinTestElement;
-    'container-element': HelpBubbleMixinTestContainerElement;
-  }
-}
 
 class TestHelpBubbleHandler extends TestBrowserProxy implements
     HelpBubbleHandlerInterface {
@@ -260,7 +252,8 @@ suite('CrComponentsHelpBubbleMixinTest', () => {
     HelpBubbleProxyImpl.setInstance(testProxy);
 
     document.body.innerHTML = window.trustedTypes!.emptyHTML;
-    container = document.createElement('help-bubble-mixin-test-element');
+    container = document.createElement('help-bubble-mixin-test-element') as
+        HelpBubbleMixinTestElement;
     document.body.appendChild(container);
     return waitForVisibilityEvents();
   });
@@ -336,15 +329,13 @@ suite('CrComponentsHelpBubbleMixinTest', () => {
 
   test('help bubble mixin hides bubble when called directly', () => {
     container.showHelpBubble(p1Bubble, defaultParams);
-    // @ts-ignore - accessing private member for test
-    assertTrue(container.hideHelpBubble(p1Bubble.nativeId_));
+    assertTrue(container.hideHelpBubble(p1Bubble.getNativeId()));
     assertFalse(container.isHelpBubbleShowing());
   });
 
   test('help bubble mixin called directly doesn\'t hide wrong bubble', () => {
     container.showHelpBubble(p1Bubble, defaultParams);
-    // @ts-ignore - accessing private member for test
-    assertFalse(container.hideHelpBubble(titleBubble.nativeId_));
+    assertFalse(container.hideHelpBubble(titleBubble.getNativeId()));
     assertTrue(container.isHelpBubbleShowing());
   });
 
@@ -359,14 +350,12 @@ suite('CrComponentsHelpBubbleMixinTest', () => {
     assertTrue(container.isHelpBubbleShowingForTesting('title'));
     assertTrue(container.isHelpBubbleShowing());
 
-    // @ts-ignore - accessing private member for test
-    container.hideHelpBubble(p1Bubble.nativeId_);
+    container.hideHelpBubble(p1Bubble.getNativeId());
     assertFalse(container.isHelpBubbleShowingForTesting('p1'));
     assertTrue(container.isHelpBubbleShowingForTesting('title'));
     assertTrue(container.isHelpBubbleShowing());
 
-    // @ts-ignore - accessing private member for test
-    container.hideHelpBubble(titleBubble.nativeId_);
+    container.hideHelpBubble(titleBubble.getNativeId());
     assertFalse(container.isHelpBubbleShowingForTesting('p1'));
     assertFalse(container.isHelpBubbleShowingForTesting('title'));
     assertFalse(container.isHelpBubbleShowing());
@@ -403,7 +392,7 @@ suite('CrComponentsHelpBubbleMixinTest', () => {
     assertEquals(bubble.bodyIconName, defaultParams.bodyIconName);
     const bodyIcon = bubble.shadowRoot!.querySelector<HTMLElement>('#bodyIcon');
     assertTrue(!!bodyIcon);
-    const ironIcon = bodyIcon!.querySelector<IronIconElement>('iron-icon');
+    const ironIcon = bodyIcon.querySelector('cr-icon');
     assertTrue(!!ironIcon);
     assertEquals(`iph:${defaultParams.bodyIconName}`, ironIcon.icon);
   });
@@ -531,10 +520,8 @@ suite('CrComponentsHelpBubbleMixinTest', () => {
     container.showHelpBubble(titleBubble, defaultParams);
     container.showHelpBubble(bulletListBubble, defaultParams);
     await waitAfterNextRender(container);
-    // @ts-ignore - accessing private member for test
-    container.notifyHelpBubbleAnchorActivated(bulletListBubble.nativeId_);
-    // @ts-ignore - accessing private member for test
-    container.notifyHelpBubbleAnchorActivated(titleBubble.nativeId_);
+    container.notifyHelpBubbleAnchorActivated(bulletListBubble.getNativeId());
+    container.notifyHelpBubbleAnchorActivated(titleBubble.getNativeId());
     assertEquals(
         2, testProxy.getHandler().getCallCount('helpBubbleAnchorActivated'));
     assertDeepEquals(
@@ -547,11 +534,9 @@ suite('CrComponentsHelpBubbleMixinTest', () => {
     container.showHelpBubble(titleBubble, defaultParams);
     await waitAfterNextRender(container);
     container.notifyHelpBubbleAnchorCustomEvent(
-        // @ts-ignore - accessing private member for test
-        p1Bubble.nativeId_, EVENT1_NAME);
+        p1Bubble.getNativeId(), EVENT1_NAME);
     container.notifyHelpBubbleAnchorCustomEvent(
-        // @ts-ignore - accessing private member for test
-        titleBubble.nativeId_, EVENT2_NAME);
+        titleBubble.getNativeId(), EVENT2_NAME);
     assertEquals(
         2, testProxy.getHandler().getCallCount('helpBubbleAnchorCustomEvent'));
     assertDeepEquals(

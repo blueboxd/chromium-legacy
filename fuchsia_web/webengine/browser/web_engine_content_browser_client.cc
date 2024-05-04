@@ -122,7 +122,7 @@ static constexpr char const* kRendererSwitchesToCopy[] = {
     switches::kForceProtectedVideoOutputBuffers,
     switches::kMinVideoDecoderOutputBufferSize,
 
-// TODO(crbug/1013412): Delete these two switches when fixed.
+// TODO(crbug.com/42050020): Delete these two switches when fixed.
 #if BUILDFLAG(ENABLE_WIDEVINE)
     switches::kEnableWidevine,
 #if BUILDFLAG(ENABLE_CAST_RECEIVER)
@@ -196,7 +196,7 @@ void WebEngineContentBrowserClient::OverrideWebkitPrefs(
   // and does not work. See crbug.com/1317431.
   web_prefs->databases_enabled = false;
 
-  // TODO(crbug.com/1382970): Remove once supported in WebEngine.
+  // TODO(crbug.com/40245916): Remove once supported in WebEngine.
   web_prefs->disable_webauthn = true;
 
 #if BUILDFLAG(ENABLE_CAST_RECEIVER)
@@ -343,7 +343,7 @@ WebEngineContentBrowserClient::CreateURLLoaderThrottles(
     int frame_tree_node_id,
     std::optional<int64_t> navigation_id) {
   if (frame_tree_node_id == content::RenderFrameHost::kNoFrameTreeNodeId) {
-    // TODO(crbug.com/1378791): Add support for Shared and Service Workers.
+    // TODO(crbug.com/40244093): Add support for Shared and Service Workers.
     return {};
   }
 

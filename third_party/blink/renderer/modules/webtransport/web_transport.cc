@@ -103,16 +103,16 @@ class WebTransport::DatagramUnderlyingSink final : public UnderlyingSinkBase {
                          DatagramDuplexStream* datagrams)
       : web_transport_(web_transport), datagrams_(datagrams) {}
 
-  ScriptPromise start(ScriptState* script_state,
-                      WritableStreamDefaultController*,
-                      ExceptionState&) override {
-    return ScriptPromise::CastUndefined(script_state);
+  ScriptPromise<IDLUndefined> start(ScriptState* script_state,
+                                    WritableStreamDefaultController*,
+                                    ExceptionState&) override {
+    return ToResolvedUndefinedPromise(script_state);
   }
 
-  ScriptPromise write(ScriptState* script_state,
-                      ScriptValue chunk,
-                      WritableStreamDefaultController*,
-                      ExceptionState& exception_state) override {
+  ScriptPromise<IDLUndefined> write(ScriptState* script_state,
+                                    ScriptValue chunk,
+                                    WritableStreamDefaultController*,
+                                    ExceptionState& exception_state) override {
     auto v8chunk = chunk.V8Value();
     auto* isolate = script_state->GetIsolate();
 
@@ -120,7 +120,7 @@ class WebTransport::DatagramUnderlyingSink final : public UnderlyingSinkBase {
       DOMArrayBuffer* data = NativeValueTraits<DOMArrayBuffer>::NativeValue(
           isolate, v8chunk, exception_state);
       if (exception_state.HadException())
-        return ScriptPromise();
+        return ScriptPromise<IDLUndefined>();
       return SendDatagram(
           {static_cast<const uint8_t*>(data->Data()), data->ByteLength()});
     }
@@ -130,7 +130,7 @@ class WebTransport::DatagramUnderlyingSink final : public UnderlyingSinkBase {
           NativeValueTraits<NotShared<DOMArrayBufferView>>::NativeValue(
               isolate, v8chunk, exception_state);
       if (exception_state.HadException())
-        return ScriptPromise();
+        return ScriptPromise<IDLUndefined>();
       return SendDatagram({static_cast<const uint8_t*>(data->buffer()->Data()) +
                                data->byteOffset(),
                            data->byteLength()});
@@ -138,19 +138,20 @@ class WebTransport::DatagramUnderlyingSink final : public UnderlyingSinkBase {
 
     exception_state.ThrowTypeError(
         "Datagram is not an ArrayBuffer or ArrayBufferView type.");
-    return ScriptPromise();
+    return ScriptPromise<IDLUndefined>();
   }
 
-  ScriptPromise close(ScriptState* script_state, ExceptionState&) override {
+  ScriptPromise<IDLUndefined> close(ScriptState* script_state,
+                                    ExceptionState&) override {
     web_transport_ = nullptr;
-    return ScriptPromise::CastUndefined(script_state);
+    return ToResolvedUndefinedPromise(script_state);
   }
 
-  ScriptPromise abort(ScriptState* script_state,
-                      ScriptValue reason,
-                      ExceptionState&) override {
+  ScriptPromise<IDLUndefined> abort(ScriptState* script_state,
+                                    ScriptValue reason,
+                                    ExceptionState&) override {
     web_transport_ = nullptr;
-    return ScriptPromise::CastUndefined(script_state);
+    return ToResolvedUndefinedPromise(script_state);
   }
 
   void SendPendingDatagrams() {
@@ -172,8 +173,8 @@ class WebTransport::DatagramUnderlyingSink final : public UnderlyingSinkBase {
   }
 
  private:
-  ScriptPromise SendDatagram(base::span<const uint8_t> data) {
-    auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(
+  ScriptPromise<IDLUndefined> SendDatagram(base::span<const uint8_t> data) {
+    auto* resolver = MakeGarbageCollected<ScriptPromiseResolver<IDLUndefined>>(
         web_transport_->script_state_);
     // This resolver is for the return value of this function. When the
     // WebTransport is closed, the stream (for datagrams) is errored and
@@ -199,24 +200,21 @@ class WebTransport::DatagramUnderlyingSink final : public UnderlyingSinkBase {
         static_cast<wtf_size_t>(high_water_mark)) {
       // In this case we pretend that the datagram is processed immediately, to
       // get more requests from the stream.
-      return ScriptPromise::CastUndefined(web_transport_->script_state_.Get());
+      return ToResolvedUndefinedPromise(web_transport_->script_state_.Get());
     }
     return resolver->Promise();
   }
 
   void OnDatagramProcessed(bool sent) {
     DCHECK(!pending_datagrams_resolvers_.empty());
-
-    ScriptPromiseResolver* resolver = pending_datagrams_resolvers_.front();
-    pending_datagrams_resolvers_.pop_front();
-
-    resolver->Resolve();
+    pending_datagrams_resolvers_.TakeFirst()->Resolve();
   }
 
   Member<WebTransport> web_transport_;
   const Member<DatagramDuplexStream> datagrams_;
   Vector<Vector<uint8_t>> pending_datagrams_;
-  HeapDeque<Member<ScriptPromiseResolver>> pending_datagrams_resolvers_;
+  HeapDeque<Member<ScriptPromiseResolver<IDLUndefined>>>
+      pending_datagrams_resolvers_;
 };
 
 // Passes incoming datagrams to the datagrams.readable stream. It maintains its
@@ -236,15 +234,15 @@ class WebTransport::DatagramUnderlyingSource final
                       &DatagramUnderlyingSource::ExpiryTimerFired) {}
 
   // Implementation of UnderlyingByteSourceBase.
-  ScriptPromise Pull(ReadableByteStreamController* controller,
-                     ExceptionState& exception_state) override {
+  ScriptPromiseUntyped Pull(ReadableByteStreamController* controller,
+                            ExceptionState& exception_state) override {
     DVLOG(1) << "DatagramUnderlyingSource::pull()";
 
     if (waiting_for_datagrams_) {
       // This can happen if a second read is issued while a read is already
       // pending.
       DCHECK(queue_.empty());
-      return ScriptPromise::CastUndefined(script_state_.Get());
+      return ScriptPromiseUntyped::CastUndefined(script_state_.Get());
     }
 
     // If high water mark is reset to 0 and then read() is called, it should
@@ -257,11 +255,11 @@ class WebTransport::DatagramUnderlyingSource final
     if (queue_.empty()) {
       if (close_when_queue_empty_) {
         controller->close(script_state_, exception_state);
-        return ScriptPromise::CastUndefined(script_state_.Get());
+        return ScriptPromiseUntyped::CastUndefined(script_state_.Get());
       }
 
       waiting_for_datagrams_ = true;
-      return ScriptPromise::CastUndefined(script_state_.Get());
+      return ScriptPromiseUntyped::CastUndefined(script_state_.Get());
     }
 
     const QueueEntry* entry = queue_.front();
@@ -277,7 +275,7 @@ class WebTransport::DatagramUnderlyingSource final
                         NotShared<DOMUint8Array>(entry->datagram),
                         exception_state);
     if (exception_state.HadException()) {
-      return ScriptPromise::CastUndefined(script_state_.Get());
+      return ScriptPromiseUntyped::CastUndefined(script_state_.Get());
     }
 
     // JavaScript could have called some other method at this point.
@@ -288,14 +286,15 @@ class WebTransport::DatagramUnderlyingSource final
       controller->close(script_state_, exception_state);
     }
 
-    return ScriptPromise::CastUndefined(script_state_.Get());
+    return ScriptPromiseUntyped::CastUndefined(script_state_.Get());
   }
 
-  ScriptPromise Cancel(ExceptionState& exception_state) override {
+  ScriptPromiseUntyped Cancel(ExceptionState& exception_state) override {
     return Cancel(v8::Undefined(script_state_->GetIsolate()), exception_state);
   }
 
-  ScriptPromise Cancel(v8::Local<v8::Value> reason, ExceptionState&) override {
+  ScriptPromiseUntyped Cancel(v8::Local<v8::Value> reason,
+                              ExceptionState&) override {
     uint32_t code = 0;
     WebTransportError* exception =
         V8WebTransportError::ToWrappable(script_state_->GetIsolate(), reason);
@@ -308,7 +307,7 @@ class WebTransport::DatagramUnderlyingSource final
     canceled_ = true;
     DiscardQueue();
 
-    return ScriptPromise::CastUndefined(script_state_.Get());
+    return ScriptPromiseUntyped::CastUndefined(script_state_.Get());
   }
 
   ScriptState* GetScriptState() override { return script_state_.Get(); }
@@ -380,7 +379,7 @@ class WebTransport::DatagramUnderlyingSource final
                               "supplied view is not large enough.")));
           return;
         }
-        memcpy(view.Data(), data.data(), data.size());
+        view.ByteSpan().first(data.size()).copy_from(data);
         request->respond(script_state_, data.size(), exception_state);
         return;
       }
@@ -573,16 +572,17 @@ class WebTransport::StreamVendingUnderlyingSource final
         script_state_(script_state),
         vendor_(vendor) {}
 
-  ScriptPromise Pull(ScriptState* script_state, ExceptionState&) override {
+  ScriptPromiseUntyped Pull(ScriptState* script_state,
+                            ExceptionState&) override {
     if (!is_opened_) {
       is_pull_waiting_ = true;
-      return ScriptPromise::CastUndefined(script_state);
+      return ScriptPromiseUntyped::CastUndefined(script_state);
     }
 
     vendor_->RequestStream(WTF::BindOnce(
         &StreamVendingUnderlyingSource::Enqueue, WrapWeakPersistent(this)));
 
-    return ScriptPromise::CastUndefined(script_state);
+    return ScriptPromiseUntyped::CastUndefined(script_state);
   }
 
   // Used by WebTransport to error the stream.
@@ -775,9 +775,12 @@ WebTransport::WebTransport(ScriptState* script_state,
       transport_remote_(context),
       handshake_client_receiver_(this, context),
       client_receiver_(this, context),
+      ready_(MakeGarbageCollected<ReadyProperty>(context)),
+      closed_(MakeGarbageCollected<
+              ScriptPromiseProperty<WebTransportCloseInfo, IDLAny>>(context)),
       inspector_transport_id_(CreateUniqueIdentifier()) {}
 
-ScriptPromiseTyped<WritableStream> WebTransport::createUnidirectionalStream(
+ScriptPromise<WritableStream> WebTransport::createUnidirectionalStream(
     ScriptState* script_state,
     ExceptionState& exception_state) {
   DVLOG(1) << "WebTransport::createUnidirectionalStream() this=" << this;
@@ -788,7 +791,7 @@ ScriptPromiseTyped<WritableStream> WebTransport::createUnidirectionalStream(
     // TODO(ricea): Should we wait if we're still connecting?
     exception_state.ThrowDOMException(DOMExceptionCode::kNetworkError,
                                       "No connection.");
-    return ScriptPromiseTyped<WritableStream>();
+    return ScriptPromise<WritableStream>();
   }
 
   mojo::ScopedDataPipeProducerHandle data_pipe_producer;
@@ -796,12 +799,11 @@ ScriptPromiseTyped<WritableStream> WebTransport::createUnidirectionalStream(
 
   if (!CreateStreamDataPipe(&data_pipe_producer, &data_pipe_consumer,
                             exception_state)) {
-    return ScriptPromiseTyped<WritableStream>();
+    return ScriptPromise<WritableStream>();
   }
 
-  auto* resolver =
-      MakeGarbageCollected<ScriptPromiseResolverTyped<WritableStream>>(
-          script_state, exception_state.GetContext());
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver<WritableStream>>(
+      script_state, exception_state.GetContext());
   create_stream_resolvers_.insert(resolver);
   transport_remote_->CreateStream(
       std::move(data_pipe_consumer), mojo::ScopedDataPipeProducerHandle(),
@@ -818,7 +820,7 @@ ReadableStream* WebTransport::incomingUnidirectionalStreams() {
   return received_streams_;
 }
 
-ScriptPromiseTyped<BidirectionalStream> WebTransport::createBidirectionalStream(
+ScriptPromise<BidirectionalStream> WebTransport::createBidirectionalStream(
     ScriptState* script_state,
     ExceptionState& exception_state) {
   DVLOG(1) << "WebTransport::createBidirectionalStream() this=" << this;
@@ -829,25 +831,25 @@ ScriptPromiseTyped<BidirectionalStream> WebTransport::createBidirectionalStream(
     // TODO(ricea): We should wait if we are still connecting.
     exception_state.ThrowDOMException(DOMExceptionCode::kNetworkError,
                                       "No connection.");
-    return ScriptPromiseTyped<BidirectionalStream>();
+    return ScriptPromise<BidirectionalStream>();
   }
 
   mojo::ScopedDataPipeProducerHandle outgoing_producer;
   mojo::ScopedDataPipeConsumerHandle outgoing_consumer;
   if (!CreateStreamDataPipe(&outgoing_producer, &outgoing_consumer,
                             exception_state)) {
-    return ScriptPromiseTyped<BidirectionalStream>();
+    return ScriptPromise<BidirectionalStream>();
   }
 
   mojo::ScopedDataPipeProducerHandle incoming_producer;
   mojo::ScopedDataPipeConsumerHandle incoming_consumer;
   if (!CreateStreamDataPipe(&incoming_producer, &incoming_consumer,
                             exception_state)) {
-    return ScriptPromiseTyped<BidirectionalStream>();
+    return ScriptPromise<BidirectionalStream>();
   }
 
   auto* resolver =
-      MakeGarbageCollected<ScriptPromiseResolverTyped<BidirectionalStream>>(
+      MakeGarbageCollected<ScriptPromiseResolver<BidirectionalStream>>(
           script_state, exception_state.GetContext());
   create_stream_resolvers_.insert(resolver);
   transport_remote_->CreateStream(
@@ -884,7 +886,7 @@ ReadableStream* WebTransport::datagramReadable() {
   return received_datagrams_;
 }
 
-void WebTransport::close(const WebTransportCloseInfo* close_info) {
+void WebTransport::close(WebTransportCloseInfo* close_info) {
   DVLOG(1) << "WebTransport::close() this=" << this;
   v8::Isolate* isolate = script_state_->GetIsolate();
   if (!connector_.is_bound() && !transport_remote_.is_bound()) {
@@ -898,15 +900,8 @@ void WebTransport::close(const WebTransportCloseInfo* close_info) {
         WebTransportError::Create(isolate, /*stream_error_code=*/std::nullopt,
                                   "close() is called while connecting.",
                                   WebTransportError::Source::kSession);
-    Cleanup(error, error, /*abruptly=*/true);
+    Cleanup(nullptr, error, /*abruptly=*/true);
     return;
-  }
-
-  v8::Local<v8::Value> reason;
-  if (close_info) {
-    reason = ToV8Traits<WebTransportCloseInfo>::ToV8(script_state_, close_info);
-  } else {
-    reason = v8::Object::New(isolate);
   }
 
   v8::Local<v8::Value> error = WebTransportError::Create(
@@ -921,7 +916,8 @@ void WebTransport::close(const WebTransportCloseInfo* close_info) {
 
   transport_remote_->Close(std::move(close_info_to_pass));
 
-  Cleanup(reason, error, /*abruptly=*/false);
+  Cleanup(close_info ? close_info : WebTransportCloseInfo::Create(), error,
+          /*abruptly=*/false);
 }
 
 void WebTransport::setDatagramWritableQueueExpirationDuration(double duration) {
@@ -932,10 +928,20 @@ void WebTransport::setDatagramWritableQueueExpirationDuration(double duration) {
   }
 }
 
-ScriptPromiseTyped<WebTransportConnectionStats> WebTransport::getStats(
+ScriptPromise<IDLUndefined> WebTransport::ready(ScriptState* script_state) {
+  return ready_->Promise(script_state->World());
+}
+
+ScriptPromise<WebTransportCloseInfo> WebTransport::closed(
     ScriptState* script_state) {
-  auto* resolver = MakeGarbageCollected<
-      ScriptPromiseResolverTyped<WebTransportConnectionStats>>(script_state);
+  return closed_->Promise(script_state->World());
+}
+
+ScriptPromise<WebTransportConnectionStats> WebTransport::getStats(
+    ScriptState* script_state) {
+  auto* resolver =
+      MakeGarbageCollected<ScriptPromiseResolver<WebTransportConnectionStats>>(
+          script_state);
   if (!transport_remote_.is_bound() && !connection_pending_) {
     auto promise = resolver->Promise();
     if (latest_stats_) {
@@ -993,9 +999,9 @@ void WebTransport::OnConnectionEstablished(
   received_bidirectional_streams_underlying_source_->NotifyOpened();
 
   connection_pending_ = false;
-  ready_resolver_->Resolve();
+  ready_->ResolveWithUndefined();
 
-  HeapVector<Member<ScriptPromiseResolverTyped<WebTransportConnectionStats>>>
+  HeapVector<Member<ScriptPromiseResolver<WebTransportConnectionStats>>>
       stats_resolvers;
   pending_get_stats_resolvers_.swap(stats_resolvers);
   for (auto& resolver : stats_resolvers) {
@@ -1015,7 +1021,7 @@ void WebTransport::OnHandshakeFailed(
       script_state_->GetIsolate(),
       /*stream_error_code=*/std::nullopt, "Opening handshake failed.",
       WebTransportError::Source::kSession);
-  Cleanup(error_to_pass, error_to_pass, /*abruptly=*/true);
+  Cleanup(nullptr, error_to_pass, /*abruptly=*/true);
 }
 
 void WebTransport::OnDatagramReceived(base::span<const uint8_t> data) {
@@ -1095,14 +1101,12 @@ void WebTransport::OnClosed(
     idl_close_info.setCloseCode(close_info->code);
     idl_close_info.setReason(close_info->reason);
   }
-  v8::Local<v8::Value> reason =
-      ToV8Traits<WebTransportCloseInfo>::ToV8(script_state_, &idl_close_info);
 
   v8::Local<v8::Value> error = WebTransportError::Create(
       isolate, /*stream_error_code=*/std::nullopt, "The session is closed.",
       WebTransportError::Source::kSession);
 
-  Cleanup(reason, error, /*abruptly=*/false);
+  Cleanup(&idl_close_info, error, /*abruptly=*/false);
 }
 
 void WebTransport::OnOutgoingStreamClosed(uint32_t stream_id) {
@@ -1188,9 +1192,7 @@ void WebTransport::Trace(Visitor* visitor) const {
   visitor->Trace(transport_remote_);
   visitor->Trace(handshake_client_receiver_);
   visitor->Trace(client_receiver_);
-  visitor->Trace(ready_resolver_);
   visitor->Trace(ready_);
-  visitor->Trace(closed_resolver_);
   visitor->Trace(closed_);
   visitor->Trace(latest_stats_);
   visitor->Trace(pending_get_stats_resolvers_);
@@ -1242,27 +1244,23 @@ void WebTransport::Init(const String& url_for_diagnostics,
     return;
   }
 
-  ready_resolver_ = MakeGarbageCollected<ScriptPromiseResolver>(script_state_);
-  ready_ = ready_resolver_->Promise();
-
-  closed_resolver_ = MakeGarbageCollected<ScriptPromiseResolver>(script_state_);
-  closed_ = closed_resolver_->Promise();
-
   auto* execution_context = GetExecutionContext();
 
   bool is_url_blocked = false;
   if (!execution_context->GetContentSecurityPolicyForCurrentWorld()
            ->AllowConnectToSource(url_, url_, RedirectStatus::kNoRedirect)) {
-    v8::Local<v8::Value> error = WebTransportError::Create(
+    ScriptValue error(
         script_state_->GetIsolate(),
-        /*stream_error_code=*/std::nullopt,
-        "Refused to connect to '" + url_.ElidedString() +
-            "' because it violates the document's Content Security Policy",
-        WebTransportError::Source::kSession);
+        WebTransportError::Create(
+            script_state_->GetIsolate(),
+            /*stream_error_code=*/std::nullopt,
+            "Refused to connect to '" + url_.ElidedString() +
+                "' because it violates the document's Content Security Policy",
+            WebTransportError::Source::kSession));
 
     connection_pending_ = false;
-    ready_resolver_->Reject(error);
-    closed_resolver_->Reject(error);
+    ready_->Reject(error);
+    closed_->Reject(error);
 
     is_url_blocked = true;
   }
@@ -1322,12 +1320,14 @@ void WebTransport::Init(const String& url_for_diagnostics,
 
   if (DoesSubresourceFilterBlockConnection(url_)) {
     // SubresourceFilter::ReportLoad() may report an actual message.
-    auto dom_exception = V8ThrowDOMException::CreateOrEmpty(
-        script_state_->GetIsolate(), DOMExceptionCode::kNetworkError, "");
+    ScriptValue dom_exception(
+        script_state_->GetIsolate(),
+        V8ThrowDOMException::CreateOrEmpty(
+            script_state_->GetIsolate(), DOMExceptionCode::kNetworkError, ""));
 
     connection_pending_ = false;
-    ready_resolver_->Reject(dom_exception);
-    closed_resolver_->Reject(dom_exception);
+    ready_->Reject(dom_exception);
+    closed_->Reject(dom_exception);
     is_url_blocked = true;
   }
 
@@ -1409,9 +1409,10 @@ void WebTransport::Dispose() {
 }
 
 // https://w3c.github.io/webtransport/#webtransport-cleanup
-void WebTransport::Cleanup(v8::Local<v8::Value> reason,
+void WebTransport::Cleanup(WebTransportCloseInfo* info,
                            v8::Local<v8::Value> error,
                            bool abruptly) {
+  CHECK_EQ(!info, abruptly);
   v8::Isolate* isolate = script_state_->GetIsolate();
 
   RejectPendingStreamResolvers(error);
@@ -1425,8 +1426,6 @@ void WebTransport::Cleanup(v8::Local<v8::Value> reason,
       received_bidirectional_streams_underlying_source_.Get();
   auto* incoming_unidirectional_streams_source =
       received_streams_underlying_source_.Get();
-  auto* closed_resolver = closed_resolver_.Get();
-  auto* ready_resolver = ready_resolver_.Get();
   auto incoming_stream_map = std::move(incoming_stream_map_);
   auto outgoing_stream_map = std::move(outgoing_stream_map_);
 
@@ -1441,14 +1440,16 @@ void WebTransport::Cleanup(v8::Local<v8::Value> reason,
 
   if (abruptly) {
     connection_pending_ = false;
-    closed_resolver->Reject(error);
-    ready_resolver->Reject(error);
+    closed_->Reject(ScriptValue(isolate, error));
+    if (ready_->GetState() == ReadyProperty::kPending) {
+      ready_->Reject(ScriptValue(isolate, error));
+    }
     incoming_bidirectional_streams_source->Error(error);
     incoming_unidirectional_streams_source->Error(error);
   } else {
-    closed_resolver->Resolve(reason);
-    DCHECK_EQ(ready_.V8Promise()->State(),
-              v8::Promise::PromiseState::kFulfilled);
+    CHECK(info);
+    closed_->Resolve(info);
+    DCHECK_EQ(ready_->GetState(), ReadyProperty::kResolved);
     incoming_bidirectional_streams_source->Close();
     incoming_unidirectional_streams_source->Close();
   }
@@ -1464,19 +1465,19 @@ void WebTransport::OnConnectionError() {
       /*stream_error_code=*/std::nullopt, "Connection lost.",
       WebTransportError::Source::kSession);
 
-  Cleanup(error, error, /*abruptly=*/true);
+  Cleanup(nullptr, error, /*abruptly=*/true);
 }
 
 void WebTransport::RejectPendingStreamResolvers(v8::Local<v8::Value> error) {
-  HeapHashSet<Member<ScriptPromiseResolver>> create_stream_resolvers;
+  HeapHashSet<Member<ScriptPromiseResolverBase>> create_stream_resolvers;
   create_stream_resolvers_.swap(create_stream_resolvers);
-  for (ScriptPromiseResolver* resolver : create_stream_resolvers) {
+  for (ScriptPromiseResolverBase* resolver : create_stream_resolvers) {
     resolver->Reject(error);
   }
 }
 
 void WebTransport::HandlePendingGetStatsResolvers(v8::Local<v8::Value> error) {
-  HeapVector<Member<ScriptPromiseResolverTyped<WebTransportConnectionStats>>>
+  HeapVector<Member<ScriptPromiseResolver<WebTransportConnectionStats>>>
       stats_resolvers;
   stats_resolvers.swap(pending_get_stats_resolvers_);
   for (auto& resolver : stats_resolvers) {
@@ -1496,7 +1497,7 @@ void WebTransport::HandlePendingGetStatsResolvers(v8::Local<v8::Value> error) {
 }
 
 void WebTransport::OnCreateSendStreamResponse(
-    ScriptPromiseResolverTyped<WritableStream>* resolver,
+    ScriptPromiseResolver<WritableStream>* resolver,
     mojo::ScopedDataPipeProducerHandle producer,
     bool succeeded,
     uint32_t stream_id) {
@@ -1543,7 +1544,7 @@ void WebTransport::OnCreateSendStreamResponse(
 }
 
 void WebTransport::OnCreateBidirectionalStreamResponse(
-    ScriptPromiseResolverTyped<BidirectionalStream>* resolver,
+    ScriptPromiseResolver<BidirectionalStream>* resolver,
     mojo::ScopedDataPipeProducerHandle outgoing_producer,
     mojo::ScopedDataPipeConsumerHandle incoming_consumer,
     bool succeeded,
@@ -1599,7 +1600,7 @@ void WebTransport::OnGetStatsResponse(
     network::mojom::blink::WebTransportStatsPtr stats) {
   auto* idl_stats = ConvertStatsFromMojom(std::move(stats));
   latest_stats_ = idl_stats;
-  HeapVector<Member<ScriptPromiseResolverTyped<WebTransportConnectionStats>>>
+  HeapVector<Member<ScriptPromiseResolver<WebTransportConnectionStats>>>
       resolvers;
   pending_get_stats_resolvers_.swap(resolvers);
   for (auto& resolver : resolvers) {

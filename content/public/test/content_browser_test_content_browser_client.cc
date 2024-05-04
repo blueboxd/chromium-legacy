@@ -4,6 +4,8 @@
 
 #include "content/public/test/content_browser_test_content_browser_client.h"
 
+#include <string_view>
+
 #include "base/test/task_environment.h"
 #include "content/public/common/content_client.h"
 
@@ -32,7 +34,7 @@ ContentBrowserTestContentBrowserClient::
 }
 
 bool ContentBrowserTestContentBrowserClient::CreateThreadPool(
-    base::StringPiece name) {
+    std::string_view name) {
   // Injects a test TaskTracker to watch for long-running tasks and produce a
   // useful timeout message in order to find the cause of flaky timeout tests.
   base::test::TaskEnvironment::CreateThreadPool();
@@ -44,7 +46,7 @@ void ContentBrowserTestContentBrowserClient::OnNetworkServiceCreated(
   // Override ShellContentBrowserClient::OnNetworkServiceCreated() not to call
   // NetworkService::ConfigureStubHostResolver(), because some tests are flaky
   // when configuring the stub host resolver.
-  // TODO(crbug.com/1521190): Remove this override once the flakiness is fixed.
+  // TODO(crbug.com/41494161): Remove this override once the flakiness is fixed.
 }
 
 }  // namespace content

@@ -197,7 +197,7 @@ void OpenUrl(content::WebContents* current_web_contents,
                                     : WindowOpenDisposition::CURRENT_TAB,
                                 ui::PAGE_TRANSITION_LINK,
                                 /*is_renderer_initiated=*/false);
-  current_web_contents->OpenURL(params);
+  current_web_contents->OpenURL(params, /*navigation_handle_callback=*/{});
 }
 
 int64_t GetNavigationIDFromPrefsByOrigin(PrefService* prefs,
@@ -499,8 +499,8 @@ void ChromePasswordProtectionService::OnModalWarningShownForSavedPassword(
     content::WebContents* web_contents,
     ReusedPasswordAccountType password_type,
     const std::string& verdict_token) {
-  UpdateSecurityState(SB_THREAT_TYPE_SAVED_PASSWORD_REUSE, password_type,
-                      web_contents);
+  UpdateSecurityState(SBThreatType::SB_THREAT_TYPE_SAVED_PASSWORD_REUSE,
+                      password_type, web_contents);
   // Starts preparing post-warning report.
   MaybeStartThreatDetailsCollection(web_contents, verdict_token, password_type);
 }
@@ -522,9 +522,10 @@ void ChromePasswordProtectionService::OnModalWarningShownForGaiaPassword(
   }
   SBThreatType threat_type;
   if (password_type.is_account_syncing()) {
-    threat_type = SB_THREAT_TYPE_SIGNED_IN_SYNC_PASSWORD_REUSE;
+    threat_type = SBThreatType::SB_THREAT_TYPE_SIGNED_IN_SYNC_PASSWORD_REUSE;
   } else {
-    threat_type = SB_THREAT_TYPE_SIGNED_IN_NON_SYNC_PASSWORD_REUSE;
+    threat_type =
+        SBThreatType::SB_THREAT_TYPE_SIGNED_IN_NON_SYNC_PASSWORD_REUSE;
   }
   UpdateSecurityState(threat_type, password_type, web_contents);
 
@@ -537,8 +538,8 @@ void ChromePasswordProtectionService::OnModalWarningShownForEnterprisePassword(
     ReusedPasswordAccountType password_type,
     const std::string& verdict_token) {
   web_contents_with_unhandled_enterprise_reuses_.insert(web_contents);
-  UpdateSecurityState(SB_THREAT_TYPE_ENTERPRISE_PASSWORD_REUSE, password_type,
-                      web_contents);
+  UpdateSecurityState(SBThreatType::SB_THREAT_TYPE_ENTERPRISE_PASSWORD_REUSE,
+                      password_type, web_contents);
   // Starts preparing post-warning report.
   MaybeStartThreatDetailsCollection(web_contents, verdict_token, password_type);
 }
@@ -563,7 +564,7 @@ void ChromePasswordProtectionService::ShowInterstitial(
 
   params.post_data = network::ResourceRequestBody::CreateFromBytes(
       post_data.data(), post_data.size());
-  web_contents->OpenURL(params);
+  web_contents->OpenURL(params, /*navigation_handle_callback=*/{});
 
   LogWarningAction(WarningUIType::INTERSTITIAL, WarningAction::SHOWN,
                    password_type);
@@ -649,14 +650,17 @@ void ChromePasswordProtectionService::MaybeStartThreatDetailsCollection(
   security_interstitials::UnsafeResource resource;
   if (password_type.account_type() ==
       ReusedPasswordAccountType::NON_GAIA_ENTERPRISE) {
-    resource.threat_type = SB_THREAT_TYPE_ENTERPRISE_PASSWORD_REUSE;
+    resource.threat_type =
+        SBThreatType::SB_THREAT_TYPE_ENTERPRISE_PASSWORD_REUSE;
   } else if (password_type.account_type() ==
              ReusedPasswordAccountType::SAVED_PASSWORD) {
-    resource.threat_type = SB_THREAT_TYPE_SAVED_PASSWORD_REUSE;
+    resource.threat_type = SBThreatType::SB_THREAT_TYPE_SAVED_PASSWORD_REUSE;
   } else if (password_type.is_account_syncing()) {
-    resource.threat_type = SB_THREAT_TYPE_SIGNED_IN_SYNC_PASSWORD_REUSE;
+    resource.threat_type =
+        SBThreatType::SB_THREAT_TYPE_SIGNED_IN_SYNC_PASSWORD_REUSE;
   } else {
-    resource.threat_type = SB_THREAT_TYPE_SIGNED_IN_NON_SYNC_PASSWORD_REUSE;
+    resource.threat_type =
+        SBThreatType::SB_THREAT_TYPE_SIGNED_IN_NON_SYNC_PASSWORD_REUSE;
   }
   resource.url = web_contents->GetLastCommittedURL();
   resource.render_process_id = primary_main_frame_id.child_id;
@@ -1157,7 +1161,8 @@ void ChromePasswordProtectionService::HandleUserActionOnPageInfo(
         UserMetricsAction("PasswordProtection.PageInfo.MarkSiteAsLegitimate"));
     // TODO(vakh): There's no good enum to report this dialog interaction.
     // This needs to be investigated.
-    UpdateSecurityState(SB_THREAT_TYPE_SAFE, password_type, web_contents);
+    UpdateSecurityState(SBThreatType::SB_THREAT_TYPE_SAFE, password_type,
+                        web_contents);
     if (password_type.account_type() ==
         ReusedPasswordAccountType::NON_GAIA_ENTERPRISE) {
       web_contents_with_unhandled_enterprise_reuses_.erase(web_contents);
@@ -1253,7 +1258,7 @@ std::string ChromePasswordProtectionService::GetOrganizationName(
 // Disabled on Android, because enterprise reporting extension is not supported.
 #if !BUILDFLAG(IS_ANDROID)
 void ChromePasswordProtectionService::MaybeReportPasswordReuseDetected(
-    PasswordProtectionRequest* request,
+    const GURL& main_frame_url,
     const std::string& username,
     PasswordType password_type,
     bool is_phishing_url,
@@ -1283,11 +1288,8 @@ void ChromePasswordProtectionService::MaybeReportPasswordReuseDetected(
         extensions::SafeBrowsingPrivateEventRouterFactory::GetForProfile(
             profile_);
     if (router) {
-      PasswordProtectionRequestContent* request_content =
-          static_cast<PasswordProtectionRequestContent*>(request);
       router->OnPolicySpecifiedPasswordReuseDetected(
-          request_content->web_contents()->GetLastCommittedURL(),
-          username_or_email, is_phishing_url, warning_shown);
+          main_frame_url, username_or_email, is_phishing_url, warning_shown);
     }
   }
 }
@@ -1407,7 +1409,7 @@ void ChromePasswordProtectionService::UpdateSecurityState(
     return;
 
   const GURL url_with_empty_path = url.GetWithEmptyPath();
-  if (threat_type == SB_THREAT_TYPE_SAFE) {
+  if (threat_type == SBThreatType::SB_THREAT_TYPE_SAFE) {
     ui_manager_->RemoveAllowlistUrlSet(
         url_with_empty_path, /*navigation_id=*/std::nullopt, web_contents,
         /*from_pending_only=*/false);
@@ -1422,14 +1424,14 @@ void ChromePasswordProtectionService::UpdateSecurityState(
     return;
   }
 
-  SBThreatType current_threat_type = SB_THREAT_TYPE_UNUSED;
+  SBThreatType current_threat_type = SBThreatType::SB_THREAT_TYPE_UNUSED;
   // If user already click-through interstitial warning, or if there's already
   // a dangerous security state showing, we'll override it.
   if (ui_manager_->IsUrlAllowlistedOrPendingForWebContents(
           url_with_empty_path, /*is_subresource=*/false,
           web_contents->GetController().GetLastCommittedEntry(), web_contents,
           /*allowlist_only=*/false, &current_threat_type)) {
-    DCHECK_NE(SB_THREAT_TYPE_UNUSED, current_threat_type);
+    DCHECK_NE(SBThreatType::SB_THREAT_TYPE_UNUSED, current_threat_type);
     if (current_threat_type == threat_type)
       return;
     // Resets previous threat type.
@@ -1706,10 +1708,11 @@ bool ChromePasswordProtectionService::UserClickedThroughSBInterstitial(
           /*allowlist_only=*/true, &current_threat_type)) {
     return false;
   }
-  return current_threat_type == SB_THREAT_TYPE_URL_PHISHING ||
-         current_threat_type == SB_THREAT_TYPE_URL_MALWARE ||
-         current_threat_type == SB_THREAT_TYPE_URL_UNWANTED ||
-         current_threat_type == SB_THREAT_TYPE_URL_CLIENT_SIDE_PHISHING;
+  return current_threat_type == SBThreatType::SB_THREAT_TYPE_URL_PHISHING ||
+         current_threat_type == SBThreatType::SB_THREAT_TYPE_URL_MALWARE ||
+         current_threat_type == SBThreatType::SB_THREAT_TYPE_URL_UNWANTED ||
+         current_threat_type ==
+             SBThreatType::SB_THREAT_TYPE_URL_CLIENT_SIDE_PHISHING;
 }
 
 AccountInfo ChromePasswordProtectionService::GetAccountInfo() const {

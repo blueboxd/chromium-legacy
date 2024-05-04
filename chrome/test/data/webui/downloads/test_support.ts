@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 import type {IconLoader, MojomData, PageHandlerInterface, PageRemote} from 'chrome://downloads/downloads.js';
-import {DangerType, PageCallbackRouter, SafeBrowsingState, State} from 'chrome://downloads/downloads.js';
+import {DangerType, PageCallbackRouter, SafeBrowsingState, State, TailoredWarningType} from 'chrome://downloads/downloads.js';
 import {stringToMojoString16, stringToMojoUrl} from 'chrome://resources/js/mojo_type_util.js';
 import {TestBrowserProxy} from 'chrome://webui-test/test_browser_proxy.js';
 
@@ -23,8 +23,11 @@ export class TestDownloadsProxy {
 }
 
 class FakePageHandler implements PageHandlerInterface {
+  private eligibleForEsbPromo_: boolean = false;
   private callbackRouterRemote_: PageRemote;
   private callTracker_: TestBrowserProxy = new TestBrowserProxy([
+    'openEsbSettings',
+    'isEligibleForEsbPromo',
     'recordCancelBypassWarningPrompt',
     'recordOpenBypassWarningPrompt',
     'remove',
@@ -68,6 +71,10 @@ class FakePageHandler implements PageHandlerInterface {
     this.callTracker_.methodCalled('saveSuspiciousRequiringGesture', id);
   }
 
+  openEsbSettings() {
+    this.callTracker_.methodCalled('openEsbSettings');
+  }
+
   getDownloads(_searchTerms: string[]) {}
   openFileRequiringGesture(_id: string) {}
   drag(_id: string) {}
@@ -85,7 +92,13 @@ class FakePageHandler implements PageHandlerInterface {
   reviewDangerousRequiringGesture(_id: string) {}
   deepScan(_id: string) {}
   bypassDeepScanRequiringGesture(_id: string) {}
-  openEsbSettings() {}
+  async isEligibleForEsbPromo(): Promise<{result: boolean}> {
+    this.callTracker_.methodCalled('isEligibleForEsbPromo');
+    return {result: this.eligibleForEsbPromo_};
+  }
+  setEligbleForEsbPromo(eligible: boolean) {
+    this.eligibleForEsbPromo_ = eligible;
+  }
 }
 
 export class TestIconLoader extends TestBrowserProxy implements IconLoader {
@@ -108,6 +121,7 @@ export class TestIconLoader extends TestBrowserProxy implements IconLoader {
 export function createDownload(config?: Partial<MojomData>): MojomData {
   return Object.assign(
       {
+        accountEmail: '',
         byExtId: '',
         byExtName: '',
         dangerType: DangerType.kNoApplicableDangerType,
@@ -133,6 +147,8 @@ export function createDownload(config?: Partial<MojomData>): MojomData {
         sinceString: 'Today',
         started: Date.now() - 10000,
         state: State.kComplete,
+        tailoredWarningType:
+            TailoredWarningType.kNoApplicableTailoredWarningType,
         total: -1,
         url: stringToMojoUrl('http://permission.site'),
         displayUrl: stringToMojoString16('http://permission.site'),

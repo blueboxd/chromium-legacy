@@ -74,7 +74,7 @@ class VIZ_SERVICE_EXPORT DCLayerOverlayProcessor final
   // underlays. The caller must aggregate overlays from all render passes into
   // a global overlay list, taking into account the render pass's z-order.
   virtual void Process(
-      DisplayResourceProvider* resource_provider,
+      const DisplayResourceProvider* resource_provider,
       const FilterOperationsMap& render_pass_filters,
       const FilterOperationsMap& render_pass_backdrop_filters,
       const SurfaceDamageRectList& surface_damage_rect_list_in_root_space,
@@ -133,6 +133,15 @@ class VIZ_SERVICE_EXPORT DCLayerOverlayProcessor final
     bool is_overlay = true;  // If false, it's an underlay.
     friend bool operator==(const OverlayRect&, const OverlayRect&) = default;
   };
+
+  // Promote a single quad in isolation, like how |Process| would internally.
+  // This ignores per-frame limitations such as max number of YUV quads, etc.
+  // This also adds other properties needed for delegated compositing.
+  std::optional<OverlayCandidate> FromTextureOrYuvQuad(
+      const DisplayResourceProvider* resource_provider,
+      const AggregatedRenderPass* render_pass,
+      const QuadList::ConstIterator& it,
+      bool is_page_fullscreen_mode) const;
 
  private:
   // Information about a render pass's overlays from the previous frame. The
@@ -247,7 +256,7 @@ class VIZ_SERVICE_EXPORT DCLayerOverlayProcessor final
   // render pass, the damage rect in |overlay_data| is unioned with the previous
   // frame's overlay damages, and the previous frame state is cleared.
   void CollectCandidates(
-      DisplayResourceProvider* resource_provider,
+      const DisplayResourceProvider* resource_provider,
       AggregatedRenderPass* render_pass,
       const FilterOperationsMap& render_pass_backdrop_filters,
       RenderPassOverlayData& overlay_data,
@@ -266,7 +275,7 @@ class VIZ_SERVICE_EXPORT DCLayerOverlayProcessor final
   // |current_frame_state|'s fields and |processed_yuv_overlay_count| to reflect
   // the actual number of overlays promoted.
   void PromoteCandidates(
-      DisplayResourceProvider* resource_provider,
+      const DisplayResourceProvider* resource_provider,
       AggregatedRenderPass* render_pass,
       const FilterOperationsMap& render_pass_filters,
       const RenderPassPreviousFrameState& previous_frame_state,
@@ -281,7 +290,7 @@ class VIZ_SERVICE_EXPORT DCLayerOverlayProcessor final
   // Creates an OverlayCandidate for a quad candidate and updates the states
   // for the render pass.
   void UpdateDCLayerOverlays(
-      DisplayResourceProvider* resource_provider,
+      const DisplayResourceProvider* resource_provider,
       AggregatedRenderPass* render_pass,
       const QuadList::Iterator& it,
       const gfx::Rect& quad_rectangle_in_target_space,
@@ -330,7 +339,7 @@ class VIZ_SERVICE_EXPORT DCLayerOverlayProcessor final
   // to be in overlay, but we also exclude them from de-promotion to keep the
   // protection benefits of being in an overlay.
   void RemoveClearVideoQuadCandidatesIfMoving(
-      DisplayResourceProvider* resource_provider,
+      const DisplayResourceProvider* resource_provider,
       RenderPassOverlayDataMap& render_pass_overlay_data_map,
       RenderPassCurrentFrameStateMap& render_pass_current_state_map);
 
@@ -354,7 +363,7 @@ class VIZ_SERVICE_EXPORT DCLayerOverlayProcessor final
   // Used in `RemoveClearVideoQuadCandidatesIfMoving`
   // List of clear video content candidate bounds. These rects are in root space
   // and contains the candidate rects for all render passes.
-  // TODO(crbug.com/1454329): Compute these values using
+  // TODO(crbug.com/40272272): Compute these values using
   // |previous_frame_render_pass_states_| and remove this field.
   std::vector<gfx::Rect> previous_frame_overlay_candidate_rects_;
   int frames_since_last_overlay_candidate_rects_change_ = 0;

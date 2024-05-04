@@ -79,7 +79,11 @@ class InterceptingRendererStartupHelper : public RendererStartupHelper,
   void SetWebViewPartitionID(const std::string& partition_id) override {}
   void SetScriptingAllowlist(
       const std::vector<ExtensionId>& extension_ids) override {}
-  void UpdateUserScriptWorld(mojom::UserScriptWorldInfoPtr info) override {}
+  void UpdateUserScriptWorlds(
+      std::vector<mojom::UserScriptWorldInfoPtr> info) override {}
+  void ClearUserScriptWorldConfig(
+      const std::string& extension_id,
+      const std::optional<std::string>& world_id) override {}
   void ShouldSuspend(ShouldSuspendCallback callback) override {
     std::move(callback).Run();
   }

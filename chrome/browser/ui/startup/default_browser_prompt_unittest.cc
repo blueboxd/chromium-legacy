@@ -3,8 +3,10 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/startup/default_browser_prompt.h"
+
 #include <memory>
 
+#include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -24,6 +26,8 @@ class DefaultBrowserPromptTest : public testing::Test {
   }
 
   PrefService* profile_prefs() { return testing_profile->GetPrefs(); }
+
+  Profile* profile() { return testing_profile; }
 
   PrefService* local_state() { return g_browser_process->local_state(); }
 

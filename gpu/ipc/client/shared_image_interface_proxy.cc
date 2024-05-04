@@ -134,7 +134,7 @@ Mailbox SharedImageInterfaceProxy::CreateSharedImage(
   // Call existing SI method to create a SI from handle. Note that we are doing
   // 2 IPCs here in this call. 1 to create a GMB above and then another to
   // create a SI from it.
-  // TODO(crbug.com/1486930) : This can be optimize to just 1 IPC. Instead of
+  // TODO(crbug.com/40283107) : This can be optimize to just 1 IPC. Instead of
   // sending a deferred IPC from SIIProxy after receiving the handle,
   // GpuChannelMessageFilter::CreateGpuMemoryBuffer() call in service side can
   // itself can post a task from IO thread to gpu main thread to create a
@@ -255,6 +255,16 @@ void SharedImageInterfaceProxy::CopyToGpuMemoryBuffer(
                                                         ++next_release_id_))),
         std::move(dependencies));
   }
+}
+
+void SharedImageInterfaceProxy::CopyToGpuMemoryBufferAsync(
+    const SyncToken& sync_token,
+    const Mailbox& mailbox,
+    base::OnceCallback<void(bool)> callback) {
+  base::AutoLock lock(lock_);
+  host_->CopyToGpuMemoryBufferAsync(
+      mailbox, GenerateDependenciesFromSyncToken(std::move(sync_token), host_),
+      ++next_release_id_, std::move(callback));
 }
 
 void SharedImageInterfaceProxy::UpdateSharedImage(

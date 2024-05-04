@@ -422,7 +422,7 @@ export function sendCaptureEvent({
       resolutionLevel:
           mojoTypeUtils.convertResolutionLevelToMojo(resolutionLevel),
       aspectRatioSet: mojoTypeUtils.convertAspectRatioSetToMojo(aspectRatioSet),
-      captureDetails: {},
+      captureDetails: null,
     };
     if (mode === Mode.PHOTO || isVideoSnapshot) {
       captureEvent.captureDetails = {
@@ -503,6 +503,15 @@ export function sendPerfEvent({event, duration, perfInfo = {}}: PerfEventParam):
       new Map([
         [GaMetricDimension.RESOLUTION, `${resolution}`],
       ]));
+  void (async () => {
+    (await getEventsSender()).sendPerfEvent({
+      eventType: mojoTypeUtils.convertPerfEventTypeToMojo(event),
+      duration,
+      facing: mojoTypeUtils.convertFacingToMojo(perfInfo.facing ?? null),
+      resolutionWidth: perfInfo.resolution?.width ?? 0,
+      resolutionHeight: perfInfo.resolution?.height ?? 0,
+    });
+  })();
 }
 
 /**
@@ -612,6 +621,14 @@ export function sendBarcodeDetectedEvent(
       new Map([
         [GaMetricDimension.WIFI_SECURITY_TYPE, wifiSecurityType],
       ]));
+
+  void (async () => {
+    (await getEventsSender()).sendBarcodeDetectedEvent({
+      contentType: mojoTypeUtils.convertBarcodeContentTypeToMojo(contentType),
+      wifiSecurityType:
+          mojoTypeUtils.convertWifiSecurityTypeToMojo(wifiSecurityType),
+    });
+  })();
 }
 
 /**
@@ -718,6 +735,12 @@ export function sendLowStorageEvent(action: LowStorageActionType): void {
     eventCategory: 'low-storage',
     eventAction: action,
   });
+
+  void (async () => {
+    (await getEventsSender()).sendLowStorageActionEvent({
+      actionType: mojoTypeUtils.convertLowStorageActionTypeToMojo(action),
+    });
+  })();
 }
 
 function boolToIntString(b: boolean) {
@@ -760,6 +783,10 @@ export class PopularCamPeripheralSet {
     ]);
   }
 
+  has(moduleId: string): boolean {
+    return this.moduleIDSet.has(moduleId);
+  }
+
   /**
    * Returns the original `moduleId` if it exists in `moduleIDSet`. If not,
    * returns 'others'.
@@ -792,6 +819,34 @@ export function sendOpenCameraEvent(moduleId: string|null): void {
       new Map([
         [GaMetricDimension.CAMERA_MODULE_ID, newModuleId],
       ]));
+
+  const params = {cameraModule: {}};
+  if (moduleId === null) {
+    params.cameraModule = {
+      mipiCamera: {},
+    };
+  } else {
+    params.cameraModule = {
+      usbCamera: {id: moduleIDSet.has(moduleId) ? moduleId : null},
+    };
+  }
+  void (async () => {
+    (await getEventsSender()).sendOpenCameraEvent(params);
+  })();
+}
+
+/**
+ * Sends unsupported protocol event.
+ */
+export function sendUnsupportedProtocolEvent(): void {
+  sendEvent({
+    eventCategory: 'barcode',
+    eventAction: 'unsupportedProtocol',
+  });
+
+  void (async () => {
+    (await getEventsSender()).sendUnsupportedProtocolEvent();
+  })();
 }
 
 /**
@@ -805,5 +860,11 @@ export function updateMemoryUsageEventDimensions(
   void (async () => {
     const gaHelper = await getGaHelper();
     await gaHelper.updateMemoryUsageEventDimensions(updatedValue);
+
+    (await getEventsSender()).updateMemoryUsageEventParams({
+      behaviorsMask: mojoTypeUtils.convertSessionBehaviorToMojo(
+          updatedValue.sessionBehavior),
+      memoryUsage: BigInt(updatedValue.memoryUsage),
+    });
   })();
 }

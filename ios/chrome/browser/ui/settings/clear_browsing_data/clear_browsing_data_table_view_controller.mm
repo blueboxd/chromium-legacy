@@ -55,7 +55,7 @@
     TableViewLinkHeaderFooterItemDelegate,
     UIGestureRecognizerDelegate>
 
-// TODO(crbug.com/850699): remove direct dependency and replace with
+// TODO(crbug.com/40579855): remove direct dependency and replace with
 // delegate.
 @property(nonatomic, readonly, strong) ClearBrowsingDataManager* dataManager;
 
@@ -453,7 +453,7 @@
   };
 
   // If browsing History will be cleared set the kLastClearBrowsingDataTime.
-  // TODO(crbug.com/1085419): This pref is used by the Feed to prevent the
+  // TODO(crbug.com/40693626): This pref is used by the Feed to prevent the
   // showing of customized content after history has been cleared. We might want
   // to create a specific Pref for this.
   if (IsRemoveDataMaskSet(removeMask, BrowsingDataRemoveMask::REMOVE_HISTORY)) {
@@ -591,7 +591,7 @@
 
 // Offer the user to sign-out near itemView
 // If they sync, they can keep or delete their data.
-// TODO(crbug.com/1385791) Test that correct histogram is registered.
+// TODO(crbug.com/40879413) Test that correct histogram is registered.
 - (void)showSignOutWithItemView:(UIView*)itemView {
   if (_signoutCoordinator) {
     // An action is already in progress, ignore user's request.

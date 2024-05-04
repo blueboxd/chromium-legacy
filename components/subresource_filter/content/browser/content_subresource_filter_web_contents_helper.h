@@ -13,7 +13,7 @@
 #include "base/scoped_observation.h"
 #include "components/subresource_filter/content/browser/subresource_filter_observer.h"
 #include "components/subresource_filter/content/browser/subresource_filter_observer_manager.h"
-#include "components/subresource_filter/content/browser/verified_ruleset_dealer.h"
+#include "components/subresource_filter/core/browser/verified_ruleset_dealer.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
@@ -137,22 +137,6 @@ class ContentSubresourceFilterWebContentsHelper
       raw_ptr<ContentSubresourceFilterThrottleManager, CtnExperimental>>
       throttle_managers_;
 };
-
-// Returns true if the navigation is happening in the main frame of a page
-// considered a subresource filter root (i.e. one that may create a new
-// ThrottleManager). These navigations are not themselves able to be filtered
-// by the subresource filter.
-bool IsInSubresourceFilterRoot(content::NavigationHandle* navigation_handle);
-
-// Same as above but for RenderFrameHosts, returns true if the given
-// RenderFrameHost is a subresource filter root.
-bool IsSubresourceFilterRoot(content::RenderFrameHost* rfh);
-
-// Gets the closest ancestor Page which is a subresource filter root, i.e. one
-// for which we have created a throttle manager. Note: This crosses the fenced
-// frame boundary (as they are considered a subresource filter child), but does
-// not cross a portal boundary (which is a subresource filter root).
-content::Page& GetSubresourceFilterRootPage(content::RenderFrameHost* rfh);
 
 }  // namespace subresource_filter
 

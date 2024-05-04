@@ -51,7 +51,7 @@
 #include "third_party/blink/public/common/interest_group/auction_config.h"
 #include "third_party/blink/public/common/interest_group/interest_group.h"
 #include "third_party/blink/public/common/interest_group/test_interest_group_builder.h"
-#include "third_party/blink/public/mojom/private_aggregation/aggregatable_report.mojom.h"
+#include "third_party/blink/public/mojom/aggregation_service/aggregatable_report.mojom.h"
 #include "third_party/blink/public/mojom/private_aggregation/private_aggregation_host.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -154,7 +154,8 @@ class InterestGroupAuctionReporterTest
     auto losing_interest_group =
         blink::TestInterestGroupBuilder(kLosingBidderOrigin, kLosingBidderName)
             .SetBiddingUrl(kLosingBidderScriptUrl)
-            // A non-empty ad list is needed by KAnonKeyForAdBid().
+            // An interest group needs at least one ad to participate in an
+            // auction.
             .SetAds({{{GURL("https://ad.render.url.test/"), "null"}}})
             .Build();
     interest_group_manager_impl_->JoinInterestGroup(
@@ -175,8 +176,10 @@ class InterestGroupAuctionReporterTest
     // actually use any strings for the sake of these tests, but seems best to
     // use accurate ones.
     std::vector<std::string> k_anon_keys_to_join{
-        KAnonKeyForAdBid(interest_group, (*interest_group.ads)[0].render_url()),
-        KAnonKeyForAdNameReporting(interest_group, (*interest_group.ads)[0]),
+        HashedKAnonKeyForAdBid(interest_group,
+                               (*interest_group.ads)[0].render_url()),
+        HashedKAnonKeyForAdNameReporting(interest_group,
+                                         (*interest_group.ads)[0]),
     };
     k_anon_keys_to_join_ =
         base::flat_set<std::string>(std::move(k_anon_keys_to_join));
@@ -432,7 +435,8 @@ class InterestGroupAuctionReporterTest
         blink::TestInterestGroupBuilder(kWinningBidderOrigin,
                                         kWinningBidderName)
             .SetBiddingUrl(kWinningBidderScriptUrl)
-            // A non-empty ad list is needed by KAnonKeyForAdBid().
+            // An interest group needs at least one ad to participate in an
+            // auction.
             .SetAds({{{GURL("https://ad.render.url.test/"),
                        "\"This be metadata\""}}})
             .Build();
@@ -502,7 +506,9 @@ class InterestGroupAuctionReporterTest
               auction_worklet::mojom::AggregatableReportContribution::
                   NewHistogramContribution(
                       blink::mojom::AggregatableReportHistogramContribution::
-                          New(/*bucket=*/1, /*value=*/2)),
+                          New(/*bucket=*/1,
+                              /*value=*/2,
+                              /*filtering_id=*/std::nullopt)),
               blink::mojom::AggregationServiceMode::kDefault,
               blink::mojom::DebugModeDetails::New());
   const auction_worklet::mojom::PrivateAggregationRequestPtr
@@ -511,7 +517,9 @@ class InterestGroupAuctionReporterTest
               auction_worklet::mojom::AggregatableReportContribution::
                   NewHistogramContribution(
                       blink::mojom::AggregatableReportHistogramContribution::
-                          New(/*bucket=*/3, /*value=*/4)),
+                          New(/*bucket=*/3,
+                              /*value=*/4,
+                              /*filtering_id=*/std::nullopt)),
               blink::mojom::AggregationServiceMode::kDefault,
               blink::mojom::DebugModeDetails::New());
   const auction_worklet::mojom::PrivateAggregationRequestPtr
@@ -520,7 +528,9 @@ class InterestGroupAuctionReporterTest
               auction_worklet::mojom::AggregatableReportContribution::
                   NewHistogramContribution(
                       blink::mojom::AggregatableReportHistogramContribution::
-                          New(/*bucket=*/5, /*value=*/6)),
+                          New(/*bucket=*/5,
+                              /*value=*/6,
+                              /*filtering_id=*/std::nullopt)),
               blink::mojom::AggregationServiceMode::kDefault,
               blink::mojom::DebugModeDetails::New());
   const auction_worklet::mojom::PrivateAggregationRequestPtr
@@ -529,7 +539,9 @@ class InterestGroupAuctionReporterTest
               auction_worklet::mojom::AggregatableReportContribution::
                   NewHistogramContribution(
                       blink::mojom::AggregatableReportHistogramContribution::
-                          New(/*bucket=*/7, /*value=*/8)),
+                          New(/*bucket=*/7,
+                              /*value=*/8,
+                              /*filtering_id=*/std::nullopt)),
               blink::mojom::AggregationServiceMode::kDefault,
               blink::mojom::DebugModeDetails::New());
   const auction_worklet::mojom::PrivateAggregationRequestPtr
@@ -538,7 +550,9 @@ class InterestGroupAuctionReporterTest
               auction_worklet::mojom::AggregatableReportContribution::
                   NewHistogramContribution(
                       blink::mojom::AggregatableReportHistogramContribution::
-                          New(/*bucket=*/9, /*value=*/10)),
+                          New(/*bucket=*/9,
+                              /*value=*/10,
+                              /*filtering_id=*/std::nullopt)),
               blink::mojom::AggregationServiceMode::kDefault,
               blink::mojom::DebugModeDetails::New());
   const auction_worklet::mojom::PrivateAggregationRequestPtr
@@ -547,7 +561,9 @@ class InterestGroupAuctionReporterTest
               auction_worklet::mojom::AggregatableReportContribution::
                   NewHistogramContribution(
                       blink::mojom::AggregatableReportHistogramContribution::
-                          New(/*bucket=*/42, /*value=*/24)),
+                          New(/*bucket=*/42,
+                              /*value=*/24,
+                              /*filtering_id=*/std::nullopt)),
               blink::mojom::AggregationServiceMode::kDefault,
               blink::mojom::DebugModeDetails::New());
   const auction_worklet::mojom::PrivateAggregationRequestPtr

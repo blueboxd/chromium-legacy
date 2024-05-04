@@ -14,6 +14,7 @@
 #include "base/functional/callback.h"
 #include "build/build_config.h"
 #include "components/viz/common/vertical_scroll_direction.h"
+#include "content/browser/renderer_host/render_widget_host_view_child_frame.h"
 #include "content/common/content_export.h"
 #include "content/public/common/drop_data.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
@@ -117,6 +118,7 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
                                     const blink::WebInputEvent& event) {}
 
   // Asks whether the page is in a state of ignoring input events.
+  virtual bool ShouldIgnoreWebInputEvents(const blink::WebInputEvent& event);
   virtual bool ShouldIgnoreInputEvents();
 
   // Callback to give the browser a chance to handle the specified gesture
@@ -161,6 +163,12 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
   virtual void MoveCaret(const gfx::Point& extent) {}
 
   virtual RenderWidgetHostInputEventRouter* GetInputEventRouter();
+
+  virtual void GetRenderWidgetHostAtPointAsynchronously(
+      RenderWidgetHostViewBase* root_view,
+      const gfx::PointF& point,
+      base::OnceCallback<void(base::WeakPtr<RenderWidgetHostViewBase>,
+                              std::optional<gfx::PointF>)> callback) {}
 
   // Get the focused RenderWidgetHost associated with |receiving_widget|. A
   // RenderWidgetHostView, upon receiving a keyboard event, will pass its
@@ -334,6 +342,14 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
   // Returns false if it's a private window, and text entered into this page
   // shouldn't be used to improve typing suggestions for the user.
   virtual bool ShouldDoLearning();
+
+  // Zoom level is normally inherited from the parent. The delegate can override
+  // this behavior by returning a value.
+  // This is used in <webview>, which permits zoom level to be set
+  // programmatically by script:
+  // https://developer.chrome.com/docs/apps/reference/webviewTag#method-setZoom
+  virtual std::optional<double> AdjustedChildZoom(
+      const RenderWidgetHostViewChildFrame* render_widget);
 
  protected:
   virtual ~RenderWidgetHostDelegate() {}

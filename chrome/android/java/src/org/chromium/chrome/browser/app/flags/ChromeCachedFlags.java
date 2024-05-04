@@ -20,11 +20,9 @@ import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.build.BuildConfig;
 import org.chromium.chrome.browser.JankTrackerExperiment;
 import org.chromium.chrome.browser.back_press.BackPressManager;
-import org.chromium.chrome.browser.back_press.MinimizeAppAndCloseTabBackPressHandler;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.customtabs.features.minimizedcustomtab.MinimizedFeatureUtils;
-import org.chromium.chrome.browser.feed.FeedPlaceholderLayout;
 import org.chromium.chrome.browser.firstrun.FirstRunUtils;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.hub.HubFieldTrial;
@@ -33,17 +31,21 @@ import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.new_tab_url.DseNewTabUrlManager;
 import org.chromium.chrome.browser.notifications.chime.ChimeFeatures;
 import org.chromium.chrome.browser.omaha.VersionNumberGetter;
-import org.chromium.chrome.browser.omnibox.OmniboxFeatures;
 import org.chromium.chrome.browser.optimization_guide.OptimizationGuidePushNotificationManager;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.ChromeSharedPreferences;
 import org.chromium.chrome.browser.tab.state.ShoppingPersistedTabDataService;
+import org.chromium.chrome.browser.tab_resumption.TabResumptionModuleUtils;
+import org.chromium.chrome.browser.tabpersistence.TabStateFileManager;
 import org.chromium.chrome.browser.tasks.tab_management.TabManagementFieldTrial;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 import org.chromium.chrome.browser.toolbar.ToolbarFeatures;
+import org.chromium.chrome.browser.ui.google_bottom_bar.GoogleBottomBarCoordinator;
 import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
+import org.chromium.components.omnibox.OmniboxFeatures;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /** Caches the flags that Chrome might require before native is loaded in a later next run. */
@@ -82,70 +84,78 @@ public class ChromeCachedFlags {
         cacheAdditionalNativeFlags();
 
         List<CachedFieldTrialParameter> fieldTrialsToCache =
-                List.of(
-                        BackPressManager.TAB_HISTORY_RECOVER,
-                        ChimeFeatures.ALWAYS_REGISTER,
-                        CustomTabIntentDataProvider.AUTO_TRANSLATE_ALLOW_ALL_FIRST_PARTIES,
-                        CustomTabIntentDataProvider.AUTO_TRANSLATE_PACKAGE_NAME_ALLOWLIST,
-                        CustomTabIntentDataProvider.THIRD_PARTIES_DEFAULT_POLICY,
-                        CustomTabIntentDataProvider.DENYLIST_ENTRIES,
-                        CustomTabIntentDataProvider.ALLOWLIST_ENTRIES,
-                        DseNewTabUrlManager.EEA_COUNTRY_ONLY,
-                        DseNewTabUrlManager.SKIP_EEA_COUNTRY_CHECK,
-                        DseNewTabUrlManager.SWAP_OUT_NTP,
-                        FeedPlaceholderLayout.ENABLE_INSTANT_START_ANIMATION,
-                        HubFieldTrial.FLOATING_ACTION_BUTTON,
-                        HubFieldTrial.PANE_SWITCHER_USES_TEXT,
-                        HubFieldTrial.SUPPORTS_OTHER_TABS,
-                        HubFieldTrial.SUPPORTS_SEARCH,
-                        HubFieldTrial.SUPPORTS_BOOKMARKS,
-                        JankTrackerExperiment.JANK_TRACKER_DELAYED_START_MS,
-                        MinimizeAppAndCloseTabBackPressHandler.SYSTEM_BACK,
-                        MinimizedFeatureUtils.ICON_VARIANT,
-                        MinimizedFeatureUtils.MANUFACTURER_EXCLUDE_LIST,
-                        MultiWindowUtils.BACK_TO_BACK_CTA_CREATION_TIMESTAMP_DIFF_THRESHOLD_MS,
-                        OptimizationGuidePushNotificationManager.MAX_CACHE_SIZE,
-                        OmniboxFeatures.ENABLE_MODERNIZE_VISUAL_UPDATE_ON_TABLET,
-                        OmniboxFeatures.MODERNIZE_VISUAL_UPDATE_ACTIVE_COLOR_ON_OMNIBOX,
-                        OmniboxFeatures.MODERNIZE_VISUAL_UPDATE_SMALLEST_MARGINS,
-                        OmniboxFeatures.QUERY_TILES_SHOW_AS_CAROUSEL,
-                        ShoppingPersistedTabDataService
-                                .SKIP_SHOPPING_PERSISTED_TAB_DATA_DELAYED_INITIALIZATION,
-                        StartSurfaceConfiguration.IS_DOODLE_SUPPORTED,
-                        StartSurfaceConfiguration.START_SURFACE_RETURN_TIME_SECONDS,
-                        StartSurfaceConfiguration.START_SURFACE_RETURN_TIME_ON_TABLET_SECONDS,
-                        StartSurfaceConfiguration.START_SURFACE_RETURN_TIME_USE_MODEL,
-                        StartSurfaceConfiguration.SIGNIN_PROMO_NTP_COUNT_LIMIT,
-                        StartSurfaceConfiguration
-                                .SIGNIN_PROMO_NTP_SINCE_FIRST_TIME_SHOWN_LIMIT_HOURS,
-                        StartSurfaceConfiguration.SIGNIN_PROMO_NTP_RESET_AFTER_HOURS,
-                        StartSurfaceConfiguration.START_SURFACE_HIDE_INCOGNITO_SWITCH_NO_TAB,
-                        StartSurfaceConfiguration.START_SURFACE_OPEN_NTP_INSTEAD_OF_START,
-                        StartSurfaceConfiguration.START_SURFACE_OPEN_START_AS_HOMEPAGE,
-                        StartSurfaceConfiguration.SURFACE_POLISH_OMNIBOX_COLOR,
-                        StartSurfaceConfiguration.SURFACE_POLISH_MOVE_DOWN_LOGO,
-                        StartSurfaceConfiguration.SURFACE_POLISH_LESS_BRAND_SPACE,
-                        StartSurfaceConfiguration.SURFACE_POLISH_SCROLLABLE_MVT,
-                        StartSurfaceConfiguration.LOGO_POLISH_LARGE_SIZE,
-                        StartSurfaceConfiguration.LOGO_POLISH_MEDIUM_SIZE,
-                        StartSurfaceConfiguration.LOGO_POLISH_SMALL_SIZE,
-                        TabManagementFieldTrial.DELAY_TEMP_STRIP_TIMEOUT_MS,
-                        HomeModulesMetricsUtils.HOME_MODULES_SHOW_ALL_MODULES,
-                        TabUiFeatureUtilities.ANIMATION_START_TIMEOUT_MS,
-                        TabUiFeatureUtilities.ZOOMING_MIN_MEMORY,
-                        TabUiFeatureUtilities.SKIP_SLOW_ZOOMING,
-                        TabUiFeatureUtilities.DISABLE_STRIP_TO_CONTENT_DD,
-                        TabUiFeatureUtilities.DISABLE_STRIP_TO_STRIP_DD,
-                        TabUiFeatureUtilities.DISABLE_STRIP_TO_STRIP_DIFF_MODEL_DD,
-                        TabUiFeatureUtilities.DISABLE_DRAG_TO_NEW_INSTANCE_DD,
-                        TabUiFeatureUtilities.ENABLE_NON_SPLIT_MODE_TAB_DRAG_MANUFACTURER_ALLOWLIST,
-                        ToolbarFeatures.DTC_TRANSITION_THRESHOLD_DP,
-                        ToolbarFeatures.USE_TOOLBAR_BG_COLOR_FOR_STRIP_TRANSITION_SCRIM,
-                        VersionNumberGetter.MIN_SDK_VERSION);
+                new ArrayList<>(
+                        Arrays.asList(
+                                BackPressManager.TAB_HISTORY_RECOVER,
+                                ChimeFeatures.ALWAYS_REGISTER,
+                                CustomTabIntentDataProvider.AUTO_TRANSLATE_ALLOW_ALL_FIRST_PARTIES,
+                                CustomTabIntentDataProvider.AUTO_TRANSLATE_PACKAGE_NAME_ALLOWLIST,
+                                CustomTabIntentDataProvider.THIRD_PARTIES_DEFAULT_POLICY,
+                                CustomTabIntentDataProvider.DENYLIST_ENTRIES,
+                                CustomTabIntentDataProvider.ALLOWLIST_ENTRIES,
+                                CustomTabIntentDataProvider.OMNIBOX_ALLOWED_PACKAGE_NAMES,
+                                DseNewTabUrlManager.EEA_COUNTRY_ONLY,
+                                DseNewTabUrlManager.SKIP_EEA_COUNTRY_CHECK,
+                                DseNewTabUrlManager.SWAP_OUT_NTP,
+                                GoogleBottomBarCoordinator.GOOGLE_BOTTOM_BAR_PARAM_BUTTON_LIST,
+                                HubFieldTrial.FLOATING_ACTION_BUTTON,
+                                HubFieldTrial.PANE_SWITCHER_USES_TEXT,
+                                HubFieldTrial.SUPPORTS_OTHER_TABS,
+                                HubFieldTrial.SUPPORTS_SEARCH,
+                                HubFieldTrial.SUPPORTS_BOOKMARKS,
+                                JankTrackerExperiment.JANK_TRACKER_DELAYED_START_MS,
+                                MinimizedFeatureUtils.ICON_VARIANT,
+                                MinimizedFeatureUtils.MANUFACTURER_EXCLUDE_LIST,
+                                MultiWindowUtils
+                                        .BACK_TO_BACK_CTA_CREATION_TIMESTAMP_DIFF_THRESHOLD_MS,
+                                OptimizationGuidePushNotificationManager.MAX_CACHE_SIZE,
+                                ShoppingPersistedTabDataService
+                                        .SKIP_SHOPPING_PERSISTED_TAB_DATA_DELAYED_INITIALIZATION,
+                                StartSurfaceConfiguration.IS_DOODLE_SUPPORTED,
+                                StartSurfaceConfiguration.START_SURFACE_RETURN_TIME_SECONDS,
+                                StartSurfaceConfiguration
+                                        .START_SURFACE_RETURN_TIME_ON_TABLET_SECONDS,
+                                StartSurfaceConfiguration.START_SURFACE_RETURN_TIME_USE_MODEL,
+                                StartSurfaceConfiguration.SIGNIN_PROMO_NTP_COUNT_LIMIT,
+                                StartSurfaceConfiguration
+                                        .SIGNIN_PROMO_NTP_SINCE_FIRST_TIME_SHOWN_LIMIT_HOURS,
+                                StartSurfaceConfiguration.SIGNIN_PROMO_NTP_RESET_AFTER_HOURS,
+                                StartSurfaceConfiguration
+                                        .START_SURFACE_HIDE_INCOGNITO_SWITCH_NO_TAB,
+                                StartSurfaceConfiguration.START_SURFACE_OPEN_NTP_INSTEAD_OF_START,
+                                StartSurfaceConfiguration.START_SURFACE_OPEN_START_AS_HOMEPAGE,
+                                StartSurfaceConfiguration.SURFACE_POLISH_OMNIBOX_COLOR,
+                                StartSurfaceConfiguration.SURFACE_POLISH_MOVE_DOWN_LOGO,
+                                StartSurfaceConfiguration.SURFACE_POLISH_LESS_BRAND_SPACE,
+                                StartSurfaceConfiguration.SURFACE_POLISH_SCROLLABLE_MVT,
+                                StartSurfaceConfiguration.LOGO_POLISH_LARGE_SIZE,
+                                StartSurfaceConfiguration.LOGO_POLISH_MEDIUM_SIZE,
+                                TabManagementFieldTrial.DELAY_TEMP_STRIP_TIMEOUT_MS,
+                                HomeModulesMetricsUtils.HOME_MODULES_SHOW_ALL_MODULES,
+                                HomeModulesMetricsUtils.HOME_MODULES_COMBINE_TABS,
+                                TabResumptionModuleUtils.TAB_RESUMPTION_MAX_TILES_NUMBER,
+                                TabResumptionModuleUtils.TAB_RESUMPTION_USE_SALIENT_IMAGE,
+                                TabResumptionModuleUtils.TAB_RESUMPTION_V2,
+                                TabStateFileManager.MIGRATE_STALE_TABS_CACHED_PARAM,
+                                TabUiFeatureUtilities.ANIMATION_START_TIMEOUT_MS,
+                                TabUiFeatureUtilities.ZOOMING_MIN_MEMORY,
+                                TabUiFeatureUtilities.SKIP_SLOW_ZOOMING,
+                                TabUiFeatureUtilities.DISABLE_STRIP_TO_CONTENT_DD,
+                                TabUiFeatureUtilities.DISABLE_STRIP_TO_STRIP_DD,
+                                TabUiFeatureUtilities.DISABLE_STRIP_TO_STRIP_DIFF_MODEL_DD,
+                                TabUiFeatureUtilities.DISABLE_DRAG_TO_NEW_INSTANCE_DD,
+                                TabUiFeatureUtilities
+                                        .ENABLE_NON_SPLIT_MODE_TAB_DRAG_MANUFACTURER_ALLOWLIST,
+                                ToolbarFeatures.DTC_TRANSITION_THRESHOLD_DP,
+                                ToolbarFeatures.USE_TOOLBAR_BG_COLOR_FOR_STRIP_TRANSITION_SCRIM,
+                                VersionNumberGetter.MIN_SDK_VERSION));
+
+        fieldTrialsToCache.addAll(OmniboxFeatures.getFieldTrialParamsToCache());
 
         tryToCatchMissingParameters(fieldTrialsToCache);
         CachedFlagUtils.cacheFieldTrialParameters(fieldTrialsToCache);
 
+        OmniboxFeatures.cacheFeatureFlags();
         CachedFlagsSafeMode.getInstance().onEndCheckpoint();
         mIsFinishedCachingNativeFlags = true;
     }

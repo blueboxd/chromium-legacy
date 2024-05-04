@@ -17,6 +17,7 @@
 #include "chrome/browser/search_engine_choice/search_engine_choice_service_factory.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/search_test_utils.h"
@@ -46,7 +47,7 @@ namespace {
 // The default set of engines (when no country is available) has ids 1, 2
 // and 3. The ID 83 is associated with mail.ru, chosen because it's not part
 // of the prepopulated set where we run tests.
-// TODO(crbug.com/1500526): Update the test to fix the country in such a way
+// TODO(crbug.com/40940777): Update the test to fix the country in such a way
 // that we have more control on what is in the prepopulated set or not.
 const int kTestExtensionPrepopulatedId = 83;
 // TemplateURLData with search engines settings from test extension manifest.

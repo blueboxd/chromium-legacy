@@ -5,6 +5,7 @@
 #include "chrome/browser/ash/system_web_apps/apps/help_app/help_app_notification_controller.h"
 
 #include "ash/constants/ash_features.h"
+#include "ash/utility/forest_util.h"
 #include "base/logging.h"
 #include "base/version.h"
 #include "chrome/browser/ash/release_notes/release_notes_notification.h"
@@ -64,6 +65,9 @@ void HelpAppNotificationController::MaybeShowReleaseNotesNotification() {
   if (IsNotificationShownForCurrentMilestone(profile_) &&
       !base::FeatureList::IsEnabled(
           features::kReleaseNotesNotificationAlwaysEligible)) {
+    return;
+  }
+  if (IsForestFeatureEnabled()) {
     return;
   }
   ReleaseNotesStorage release_notes_storage(profile_);

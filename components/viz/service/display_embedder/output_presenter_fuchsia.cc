@@ -47,7 +47,6 @@ OutputPresenterFuchsia::OutputPresenterFuchsia(
     SkiaOutputSurfaceDependency* deps)
     : window_surface_(window_surface), dependency_(deps) {
   CHECK(window_surface_);
-  CHECK(features::ShouldRendererAllocateImages());
 }
 
 OutputPresenterFuchsia::~OutputPresenterFuchsia() = default;
@@ -118,7 +117,6 @@ void OutputPresenterFuchsia::ScheduleOverlayPlane(
   if (!next_frame_)
     next_frame_.emplace();
 
-  DCHECK(overlay_plane_candidate.mailbox.IsSharedImage());
   auto pixmap = access ? access->GetNativePixmap() : nullptr;
 
   if (!pixmap) {

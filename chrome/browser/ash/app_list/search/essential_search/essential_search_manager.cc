@@ -187,6 +187,12 @@ void EssentialSearchManager::RemoveSocsCookie() {
 
 void EssentialSearchManager::OnCookieDeleted(
     uint32_t number_of_cookies_deleted) {
+  // Notify the test that OnCookieDeleted has been triggered.
+  if (cookie_deletion_closure_for_test_) {
+    CHECK_IS_TEST();
+    std::move(cookie_deletion_closure_for_test_).Run();
+  }
+
   if (number_of_cookies_deleted != 1) {
     LOG(WARNING) << "Failed to remove SOCS cookie";
   }
@@ -201,7 +207,9 @@ void EssentialSearchManager::OnCookieFetched(const std::string& cookie_header) {
 
   std::unique_ptr<net::CanonicalCookie> cc(net::CanonicalCookie::Create(
       google_url, cookie_header, base::Time::Now(),
-      std::nullopt /* server_time */, std::nullopt /* cookie_partition_key */));
+      std::nullopt /* server_time */, std::nullopt /* cookie_partition_key */,
+      /*block_truncated=*/true, net::CookieSourceType::kOther,
+      /*status=*/nullptr));
 
   if (!cc) {
     LOG(ERROR) << "Invalid cookie header";
@@ -221,6 +229,12 @@ void EssentialSearchManager::OnCookieFetched(const std::string& cookie_header) {
 
 void EssentialSearchManager::OnCookieAddedToUserProfile(
     net::CookieAccessResult result) {
+  // Notify the test that OnCookieAddedToUserProfile has been triggered.
+  if (cookie_insertion_closure_for_test_) {
+    CHECK_IS_TEST();
+    std::move(cookie_insertion_closure_for_test_).Run();
+  }
+
   if (!result.status.IsInclude()) {
     // Handle SOCS cookie insertion failure.
     LOG(WARNING) << "Failed to add SOCS cookie to user profile. Retrying.";

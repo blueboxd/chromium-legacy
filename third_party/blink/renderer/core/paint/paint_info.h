@@ -63,10 +63,15 @@ struct CORE_EXPORT SvgContextPaints {
 
   SvgContextPaints(const ContextPaint& f, const ContextPaint& s)
       : fill(f), stroke(s) {}
+  SvgContextPaints(const ContextPaint& f,
+                   const ContextPaint& s,
+                   const AffineTransform& t)
+      : fill(f), stroke(s), transform(t) {}
   SvgContextPaints(const SvgContextPaints&) = default;
 
   ContextPaint fill;
   ContextPaint stroke;
+  AffineTransform transform;
 };
 
 struct CORE_EXPORT PaintInfo {
@@ -76,13 +81,15 @@ struct CORE_EXPORT PaintInfo {
   PaintInfo(GraphicsContext& context,
             const CullRect& cull_rect,
             PaintPhase phase,
+            bool descendant_painting_blocked,
             PaintFlags paint_flags = PaintFlag::kNoFlag,
             const SvgContextPaints* context_paints = nullptr)
       : context(context),
         phase(phase),
         cull_rect_(cull_rect),
         svg_context_paints_(context_paints),
-        paint_flags_(paint_flags) {}
+        paint_flags_(paint_flags),
+        descendant_painting_blocked_(descendant_painting_blocked) {}
 
   // Creates a PaintInfo for painting descendants. See comments about the paint
   // phases in PaintPhase.h for details.
@@ -165,9 +172,6 @@ struct CORE_EXPORT PaintInfo {
 
   bool DescendantPaintingBlocked() const {
     return descendant_painting_blocked_;
-  }
-  void SetDescendantPaintingBlocked(bool blocked) {
-    descendant_painting_blocked_ = blocked;
   }
 
   GraphicsContext& context;

@@ -11,6 +11,7 @@
 
 namespace ash {
 
+class SoundSectionView;
 class TabSliderButton;
 
 // This view will be added on `FocusModeDetailedView` below the task container
@@ -28,6 +29,9 @@ class ASH_EXPORT FocusModeSoundsView : public RoundedContainer {
   ~FocusModeSoundsView() override;
 
  private:
+  // Update this view based on `is_soundscape_type`.
+  void UpdateSoundsView(bool is_soundscape_type);
+
   // Creates `soundscape_button_` and `youtube_music_button_`.
   void CreateTabSliderButtons();
 
@@ -35,11 +39,15 @@ class ASH_EXPORT FocusModeSoundsView : public RoundedContainer {
   void OnSoundscapeButtonToggled();
 
   // Called to show personalized YouTube Music playlists.
-  void OnYoutubeMusicButtonToggled();
+  void OnYouTubeMusicButtonToggled();
 
   // The slider buttons on the sound view.
   raw_ptr<TabSliderButton> soundscape_button_ = nullptr;
   raw_ptr<TabSliderButton> youtube_music_button_ = nullptr;
+
+  // Container views for the Soundscape type or the YouTube Music type.
+  raw_ptr<SoundSectionView> soundscape_container_ = nullptr;
+  raw_ptr<SoundSectionView> youtube_music_container_ = nullptr;
 
   base::WeakPtrFactory<FocusModeSoundsView> weak_factory_{this};
 };

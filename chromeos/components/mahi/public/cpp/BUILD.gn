@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/chromeos/ui_mode.gni")
+
 assert(is_chromeos)
 
 component("cpp") {
@@ -10,17 +12,29 @@ component("cpp") {
   sources = [
     "mahi_manager.cc",
     "mahi_manager.h",
+    "mahi_switches.cc",
+    "mahi_switches.h",
     "views/experiment_badge.cc",
     "views/experiment_badge.h",
   ]
 
   deps = [
     "//base",
+    "//chromeos/constants",
     "//chromeos/crosapi/mojom",
     "//chromeos/strings:strings_grit",
+    "//components/account_id",
+    "//components/user_manager",
+    "//google_apis",
     "//ui/base",
-    "//ui/chromeos/styles:cros_tokens_color_mappings",
+    "//ui/color",
     "//ui/gfx",
     "//ui/views",
   ]
+  if (is_chromeos_ash) {
+    deps += [ "//ash/constants" ]
+  }
+  if (is_chromeos_lacros) {
+    deps += [ "//chromeos/startup" ]
+  }
 }

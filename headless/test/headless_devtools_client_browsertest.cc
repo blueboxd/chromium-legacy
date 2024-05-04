@@ -158,7 +158,7 @@ class HeadlessDevToolsClientChangeWindowBoundsTest
 };
 
 #if BUILDFLAG(IS_MAC) && defined(ADDRESS_SANITIZER)
-// TODO(crbug.com/1086872): Disabled due to flakiness on Mac ASAN.
+// TODO(crbug.com/40694526): Disabled due to flakiness on Mac ASAN.
 DISABLED_HEADLESS_DEVTOOLED_TEST_F(
     HeadlessDevToolsClientChangeWindowBoundsTest);
 #else
@@ -336,7 +336,7 @@ class HeadlessCrashObserverTest : public HeadlessDevTooledBrowserTest {
   void RenderProcessExited(base::TerminationStatus status,
                            int exit_code) override {
 #if BUILDFLAG(IS_WIN) && defined(ADDRESS_SANITIZER)
-    // TODO(crbug.com/845011): Make ASan not interfere and expect a crash.
+    // TODO(crbug.com/40577245): Make ASan not interfere and expect a crash.
     // ASan's normal error exit code is 1, which base categorizes as the process
     // being killed.
     EXPECT_EQ(base::TERMINATION_STATUS_PROCESS_WAS_KILLED, status);
@@ -352,7 +352,8 @@ class HeadlessCrashObserverTest : public HeadlessDevTooledBrowserTest {
   content::ScopedAllowRendererCrashes scoped_allow_renderer_crashes_;
 };
 
-// TODO(1272554): HeadlessCrashObserverTest.RunAsyncTest is flaky on Win debug.
+// TODO(crbug.com/40206073): HeadlessCrashObserverTest.RunAsyncTest is flaky on
+// Win debug.
 #if BUILDFLAG(IS_WIN) && !defined(NDEBUG)
 DISABLED_HEADLESS_DEVTOOLED_TEST_F(HeadlessCrashObserverTest);
 #else
@@ -695,7 +696,7 @@ class DomTreeExtractionBrowserTest : public HeadlessDevTooledBrowserTest {
   }
 };
 
-// TODO(crbug.com/1090930): Fix this test on Fuchsia and re-enable.
+// TODO(crbug.com/40697467): Fix this test on Fuchsia and re-enable.
 // NOTE: These macros expand to: DomTreeExtractionBrowserTest.RunAsyncTest
 #if BUILDFLAG(IS_FUCHSIA)
 DISABLED_HEADLESS_DEVTOOLED_TEST_F(DomTreeExtractionBrowserTest);
@@ -892,7 +893,7 @@ class DevtoolsInterceptionWithAuthProxyTest
     std::unique_ptr<net::ProxyConfig> proxy_config(new net::ProxyConfig);
     proxy_config->proxy_rules().ParseFromString(
         proxy_server_.host_port_pair().ToString());
-    // TODO(https://crbug.com/901896): Don't rely on proxying localhost.
+    // TODO(crbug.com/40600992): Don't rely on proxying localhost.
     proxy_config->proxy_rules().bypass_rules.AddRulesToSubtractImplicit();
     builder.SetProxyConfig(std::move(proxy_config));
   }
@@ -904,8 +905,8 @@ class DevtoolsInterceptionWithAuthProxyTest
 };
 
 #if (BUILDFLAG(IS_MAC) && defined(ADDRESS_SANITIZER)) || BUILDFLAG(IS_FUCHSIA)
-// TODO(crbug.com/1086872): Disabled due to flakiness on Mac ASAN.
-// TODO(crbug.com/1090933): Reenable on Fuchsia when fixed.
+// TODO(crbug.com/40694526): Disabled due to flakiness on Mac ASAN.
+// TODO(crbug.com/40697469): Reenable on Fuchsia when fixed.
 // NOTE: This macro expands to:
 //   DevtoolsInterceptionWithAuthProxyTest.RunAsyncTest
 DISABLED_HEADLESS_DEVTOOLED_TEST_F(DevtoolsInterceptionWithAuthProxyTest);

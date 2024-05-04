@@ -17,6 +17,7 @@
 #include "components/enterprise/client_certificates/core/private_key.h"
 #include "components/enterprise/client_certificates/core/unexportable_private_key.h"
 #include "crypto/unexportable_key.h"
+#include "net/ssl/ssl_private_key.h"
 
 namespace client_certificates {
 

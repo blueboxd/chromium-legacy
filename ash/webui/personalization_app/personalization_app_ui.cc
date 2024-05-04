@@ -32,6 +32,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chromeos/constants/chromeos_features.h"
+#include "chromeos/crosapi/cpp/lacros_startup_state.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
 #include "components/manta/features.h"
 #include "content/public/browser/browser_context.h"
@@ -448,6 +449,10 @@ PersonalizationAppUI::PersonalizationAppUI(
       network::mojom::CSPDirectiveName::ScriptSrc,
       "script-src chrome://resources chrome://webui-test 'self';");
 
+  source->OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::WorkerSrc,
+      "worker-src blob: chrome://resources 'self';");
+
   ash::EnableTrustedTypesCSP(source);
 
   AddResources(source);
@@ -518,9 +523,6 @@ void PersonalizationAppUI::AddBooleans(content::WebUIDataSource* source) {
       "isRgbKeyboardSupported",
       Shell::Get()->rgb_keyboard_manager()->IsRgbKeyboardSupported());
 
-  source->AddBoolean("isScreenSaverDurationEnabled",
-                     features::IsScreenSaverDurationEnabled());
-
   source->AddBoolean("isPersonalizationJellyEnabled",
                      features::IsPersonalizationJellyEnabled());
 
@@ -532,9 +534,6 @@ void PersonalizationAppUI::AddBooleans(content::WebUIDataSource* source) {
 
   source->AddBoolean("isTimeOfDayWallpaperEnabled",
                      features::IsTimeOfDayWallpaperEnabled());
-
-  source->AddBoolean("isTimeOfDayWallpaperForcedAutoScheduleEnabled",
-                     features::IsTimeOfDayWallpaperForcedAutoScheduleEnabled());
 
   source->AddBoolean("isCrosPrivacyHubLocationEnabled",
                      features::IsCrosPrivacyHubLocationEnabled());
@@ -549,6 +548,12 @@ void PersonalizationAppUI::AddBooleans(content::WebUIDataSource* source) {
                      ::ash::features::IsSeaPenTextInputEnabled() &&
                          manta::features::IsMantaServiceEnabled() &&
                          common_sea_pen_requirements);
+  source->AddBoolean("isSeaPenUINextEnabled",
+                     ::ash::features::IsSeaPenUINextEnabled() &&
+                         manta::features::IsMantaServiceEnabled() &&
+                         common_sea_pen_requirements);
+  source->AddBoolean("isLacrosEnabled",
+                     ::crosapi::lacros_startup_state::IsLacrosEnabled());
 }
 
 void PersonalizationAppUI::AddIntegers(content::WebUIDataSource* source) {

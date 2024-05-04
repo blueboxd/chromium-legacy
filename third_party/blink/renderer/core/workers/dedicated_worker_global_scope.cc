@@ -33,7 +33,10 @@
 #include <memory>
 
 #include "base/feature_list.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/trace_event/trace_id_helper.h"
+#include "base/trace_event/typed_macros.h"
 #include "base/types/pass_key.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/loader/worker_main_script_load_parameters.h"
@@ -48,6 +51,7 @@
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
 #include "third_party/blink/renderer/core/inspector/worker_thread_debugger.h"
 #include "third_party/blink/renderer/core/messaging/blink_transferable_message.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
@@ -76,6 +80,7 @@ DedicatedWorkerGlobalScope* DedicatedWorkerGlobalScope::Create(
         dedicated_worker_host,
     mojo::PendingRemote<mojom::blink::BackForwardCacheControllerHost>
         back_forward_cache_controller_host) {
+  TRACE_EVENT("blink.worker", "DedicatedWorkerGlobalScope::Create");
   std::unique_ptr<Vector<mojom::blink::OriginTrialFeature>>
       inherited_trial_features =
           std::move(creation_params->inherited_trial_features);
@@ -228,6 +233,8 @@ void DedicatedWorkerGlobalScope::Initialize(
     network::mojom::ReferrerPolicy response_referrer_policy,
     Vector<network::mojom::blink::ContentSecurityPolicyPtr> response_csp,
     const Vector<String>* /* response_origin_trial_tokens */) {
+  TRACE_EVENT("blink.worker", "DedicatedWorkerGlobalScope::Initialize",
+              "response_url", response_url);
   // Step 14.3. "Set worker global scope's url to response's url."
   InitializeURL(response_url);
 
@@ -281,6 +288,12 @@ void DedicatedWorkerGlobalScope::FetchAndRunClassicScript(
     const v8_inspector::V8StackTraceId& stack_id) {
   DCHECK(base::FeatureList::IsEnabled(features::kPlzDedicatedWorker));
   DCHECK(!IsContextPaused());
+  TRACE_EVENT("blink.worker",
+              "DedicatedWorkerGlobalScope::FetchAndRunClassicScript",
+              "script_url", script_url);
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN0(
+      "blink.worker", "DedicatedWorkerGlobalScope Fetch", TRACE_ID_LOCAL(this));
+  fetch_classic_script_start_ = base::TimeTicks::Now();
 
   // TODO(crbug.com/1177199): SetPolicyContainer once we passed down policy
   // container from DedicatedWorkerHost
@@ -324,6 +337,9 @@ void DedicatedWorkerGlobalScope::FetchAndRunModuleScript(
     WorkerResourceTimingNotifier& outside_resource_timing_notifier,
     network::mojom::CredentialsMode credentials_mode,
     RejectCoepUnsafeNone reject_coep_unsafe_none) {
+  TRACE_EVENT("blink.worker",
+              "DedicatedWorkerGlobalScope::FetchAndRunModuleScript",
+              "module_url_record", module_url_record);
   // TODO(crbug.com/1177199): SetPolicyContainer once we passed down policy
   // container from DedicatedWorkerHost
 
@@ -380,6 +396,7 @@ void DedicatedWorkerGlobalScope::postMessage(ScriptState* script_state,
                                              const ScriptValue& message,
                                              const PostMessageOptions* options,
                                              ExceptionState& exception_state) {
+  TRACE_EVENT("blink.worker", "DedicatedWorkerGlobalScope::postMessage");
   Transferables transferables;
   scoped_refptr<SerializedScriptValue> serialized_message =
       PostMessageHelper::SerializeMessageByMove(script_state->GetIsolate(),
@@ -398,12 +415,22 @@ void DedicatedWorkerGlobalScope::postMessage(ScriptState* script_state,
       exception_state);
   if (exception_state.HadException())
     return;
+  uint64_t trace_id = base::trace_event::GetNextGlobalTraceId();
+  transferable_message.trace_id = trace_id;
   WorkerThreadDebugger* debugger =
       WorkerThreadDebugger::From(script_state->GetIsolate());
   transferable_message.sender_stack_trace_id =
       debugger->StoreCurrentStackTrace("postMessage");
   WorkerObjectProxy().PostMessageToWorkerObject(
       std::move(transferable_message));
+
+  TRACE_EVENT_INSTANT(
+      "devtools.timeline", "SchedulePostMessage", "data",
+      [&](perfetto::TracedValue context) {
+        inspector_schedule_post_message_event::Data(
+            std::move(context), GetExecutionContext(), trace_id);
+      },
+      perfetto::Flow::Global(trace_id));  // SchedulePostMessage
 }
 
 void DedicatedWorkerGlobalScope::DidReceiveResponseForClassicScript(
@@ -419,6 +446,12 @@ void DedicatedWorkerGlobalScope::DidFetchClassicScript(
     const v8_inspector::V8StackTraceId& stack_id) {
   DCHECK(IsContextThread());
   DCHECK(base::FeatureList::IsEnabled(features::kPlzDedicatedWorker));
+  TRACE_EVENT("blink.worker",
+              "DedicatedWorkerGlobalScope::DidFetchClassicScript");
+  TRACE_EVENT_NESTABLE_ASYNC_END0(
+      "blink.worker", "DedicatedWorkerGlobalScope Fetch", TRACE_ID_LOCAL(this));
+  base::UmaHistogramTimes("Worker.TopLevelScript.FetchClassicScriptTime",
+                          base::TimeTicks::Now() - fetch_classic_script_start_);
 
   // Step 12. "If the algorithm asynchronously completes with null, then:"
   if (classic_script_loader->Failed()) {

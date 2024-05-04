@@ -39,7 +39,7 @@ class LoginDisplayHostWebUI;
 class OobeUI;
 
 // View used to render a WebUI supporting Widget. This widget is used for the
-// WebUI based start up and lock screens. It contains a WebView.
+// WebUI based start up. It contains a WebView.
 class WebUILoginView : public views::View,
                        public content::WebContentsDelegate,
                        public session_manager::SessionManagerObserver,
@@ -49,18 +49,7 @@ class WebUILoginView : public views::View,
   METADATA_HEADER(WebUILoginView, views::View)
 
  public:
-  struct WebViewSettings {
-    // If true, this will check for and consume a preloaded views::WebView
-    // instance.
-    bool check_for_preload = false;
-
-    // Title of the web contents. This will be shown in the task manager. If
-    // empty, the default webview title will be used.
-    std::u16string web_view_title;
-  };
-
-  WebUILoginView(const WebViewSettings& settings,
-                 base::WeakPtr<LoginDisplayHostWebUI> controller);
+  explicit WebUILoginView(base::WeakPtr<LoginDisplayHostWebUI> controller);
 
   WebUILoginView(const WebUILoginView&) = delete;
   WebUILoginView& operator=(const WebUILoginView&) = delete;
@@ -103,9 +92,6 @@ class WebUILoginView : public views::View,
   // Called when WebUI is being shown after being initilized hidden.
   void OnPostponedShow();
 
-  // Toggles status area visibility.
-  void SetStatusAreaVisible(bool visible);
-
   // Sets whether keyboard events can be forwarded from the WebUI and the system
   // tray is available.
   void SetKeyboardEventsAndSystemTrayEnabled(bool enabled);
@@ -120,9 +106,6 @@ class WebUILoginView : public views::View,
   void set_shelf_enabled(bool enabled) { shelf_enabled_ = enabled; }
 
  protected:
-  static void InitializeWebView(views::WebView* web_view,
-                                const std::u16string& title);
-
   // Overridden from views::View:
   void Layout(PassKey) override;
   void ChildPreferredSizeChanged(View* child) override;
@@ -170,8 +153,6 @@ class WebUILoginView : public views::View,
   base::ScopedObservation<session_manager::SessionManager,
                           session_manager::SessionManagerObserver>
       session_observation_{this};
-  // WebView configuration options.
-  const WebViewSettings settings_;
 
   base::WeakPtr<LoginDisplayHostWebUI> controller_;
 

@@ -162,7 +162,7 @@ void PageLifecycleStateManager::SendUpdatesToRendererIfNeeded(
     blink::mojom::PageRestoreParamsPtr page_restore_params,
     base::OnceClosure done_cb) {
   if (!render_view_host_impl_->GetAssociatedPageBroadcast()) {
-    // TODO(https://crbug.com/1153155): For some tests, |render_view_host_impl_|
+    // TODO(crbug.com/40158974): For some tests, |render_view_host_impl_|
     // does not have the associated page.
     if (done_cb) {
       base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
@@ -222,7 +222,7 @@ void PageLifecycleStateManager::OnPageLifecycleChangedAck(
   if (last_acknowledged_state_->is_in_back_forward_cache) {
     did_receive_back_forward_cache_ack_ = true;
 
-    // TODO(crbug.com/1521212): currently after the navigation, the old
+    // TODO(crbug.com/41494183): currently after the navigation, the old
     // RenderViewHost is marked as inactive.
     // `RenderViewHostImpl::GetMainRenderFrameHost()` will return nullptr. This
     // prevents us from getting the RenderFrameHost even if the main frame of

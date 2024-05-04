@@ -212,19 +212,23 @@ bool IsCreditCardMigrationEnabled(PersonalDataManager* personal_data_manager,
   // credit card upload should be enabled by default to fix flaky
   // local card migration browsertests.
   if (!is_test_mode &&
-      !IsCreditCardUploadEnabled(
-          sync_service,
-          personal_data_manager->GetAccountInfoForPaymentsServer().email,
-          personal_data_manager->GetCountryCodeForExperimentGroup(),
-          personal_data_manager->GetPaymentsSigninStateForMetrics(),
-          log_manager)) {
+      !IsCreditCardUploadEnabled(sync_service,
+                                 personal_data_manager->payments_data_manager()
+                                     .GetAccountInfoForPaymentsServer()
+                                     .email,
+                                 personal_data_manager->payments_data_manager()
+                                     .GetCountryCodeForExperimentGroup(),
+                                 personal_data_manager->payments_data_manager()
+                                     .GetPaymentsSigninStateForMetrics(),
+                                 log_manager)) {
     return false;
   }
 
   if (!payments::HasGooglePaymentsAccount(personal_data_manager))
     return false;
 
-  return personal_data_manager->IsPaymentsDownloadActive();
+  return personal_data_manager->payments_data_manager()
+      .IsPaymentsDownloadActive();
 }
 
 bool IsInAutofillSuggestionsDisabledExperiment() {

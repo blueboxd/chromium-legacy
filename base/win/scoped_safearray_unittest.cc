@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40284755): Remove this and spanify to fix the errors.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "base/win/scoped_safearray.h"
 
 #include <stddef.h>
@@ -22,7 +27,7 @@ namespace {
 static constexpr std::array<int, 5> kInputValues = {0, 1, 2, 1, 0};
 
 static void PopulateScopedSafearrayOfInts(ScopedSafearray& scoped_safe_array) {
-  // TODO(crbug.com/1082005): Create a safer alternative to SAFEARRAY methods.
+  // TODO(crbug.com/40691652): Create a safer alternative to SAFEARRAY methods.
   scoped_safe_array.Reset(SafeArrayCreateVector(
       /*vartype=*/VT_I4, /*lower_bound=*/2,
       /*element_count=*/kInputValues.size()));
@@ -149,7 +154,7 @@ TEST(ScopedSafearrayTest, InitiallyEmpty) {
 }
 
 TEST(ScopedSafearrayTest, ScopedSafearrayGetCount) {
-  // TODO(crbug.com/1082005): Create a safer alternative to SAFEARRAY methods.
+  // TODO(crbug.com/40691652): Create a safer alternative to SAFEARRAY methods.
   ScopedSafearray scoped_safe_array(SafeArrayCreateVector(
       /*vartype=*/VT_I4, /*lower_bound=*/2, /*element_count=*/5));
   ASSERT_NE(scoped_safe_array.Get(), nullptr);

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_ACTION_RUNNER_H_
-#define CHROME_BROWSER_EXTENSIONS_EXTENSION_ACTION_RUNNER_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_PERMISSIONS_EXTENSION_ACTION_RUNNER_H_
+#define CHROME_BROWSER_EXTENSIONS_PERMISSIONS_EXTENSION_ACTION_RUNNER_H_
 
 #include <stdint.h>
 
@@ -81,7 +81,7 @@ class ExtensionActionRunner : public content::WebContentsObserver,
   // well.
   void GrantTabPermissions(const std::vector<const Extension*>& extensions);
 
-  // TODO(crbug.com/1400812): Move the reload bubble outside of
+  // TODO(crbug.com/40883928): Move the reload bubble outside of
   // `ExtensionActionRunner` as it is no longer tied to running an action. See
   // if it can be merged with extensions dialogs utils `ShowReloadPageDialog`.
   // Shows the bubble to prompt the user to refresh the page to run or not the
@@ -249,4 +249,4 @@ class ExtensionActionRunner : public content::WebContentsObserver,
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_ACTION_RUNNER_H_
+#endif  // CHROME_BROWSER_EXTENSIONS_PERMISSIONS_EXTENSION_ACTION_RUNNER_H_

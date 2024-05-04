@@ -14,6 +14,7 @@ export class FakeReadingMode {
   // Items in the ReadAnythingTheme struct, see read_anything.mojom for info.
   fontName: string = 'MyFont';
   fontSize: number = 0;
+  linksEnabled: boolean = true;
   foregroundColor: number = 0;
   backgroundColor: number = 0;
   lineSpacing: number = 0;
@@ -28,16 +29,16 @@ export class FakeReadingMode {
 
   // Enum values for various visual theme changes.
   standardLineSpacing: number = 0;
-  looseLineSpacing: number = 0;
-  veryLooseLineSpacing: number = 0;
-  standardLetterSpacing: number = 0;
-  wideLetterSpacing: number = 0;
-  veryWideLetterSpacing: number = 0;
-  defaultTheme: number = 0;
-  lightTheme: number = 0;
-  darkTheme: number = 0;
-  yellowTheme: number = 0;
-  blueTheme: number = 0;
+  looseLineSpacing: number = 1;
+  veryLooseLineSpacing: number = 2;
+  standardLetterSpacing: number = 3;
+  wideLetterSpacing: number = 4;
+  veryWideLetterSpacing: number = 5;
+  defaultTheme: number = 6;
+  lightTheme: number = 7;
+  darkTheme: number = 8;
+  yellowTheme: number = 9;
+  blueTheme: number = 10;
   highlightOn: number = 0;
 
   // Whether the WebUI toolbar feature flag is enabled.
@@ -46,20 +47,26 @@ export class FakeReadingMode {
   // Whether the Read Aloud feature flag is enabled.
   isReadAloudEnabled: boolean = false;
 
-  // Indicates if select-to-distill works on the web page. Used to
-  // determine which empty state to display.
-  isSelectable: boolean = false;
+  // Returns true if the webpage corresponds to a Google Doc.
+  isGoogleDocs: boolean = false;
 
   // Fonts supported by the browser's preferred language.
   supportedFonts: string[] = ['roboto'];
 
-  // The language code that should be used for speech synthesis voices.
-  speechSynthesisLanguageCode: string = '';
+  // The base language code that should be used for speech synthesis voices.
+  baseLanguageForSpeech: string = '';
+
+  // The fallback language, corresponding to the browser language, that
+  // should only be used when baseLanguageForSpeech is unavailable.
+  defaultLanguageForSpeech: string = '';
+
+  // TTS voice language preferences saved in database
+  savedLanguagePref: Set<string> = new Set<string>();
 
   private maxNodeId: number = 5;
 
-  // Returns the stored user voice preference for the given language.
-  getStoredVoice(_lang: string): string {
+  // Returns the stored user voice preference for the current language.
+  getStoredVoice(): string {
     return 'abc';
   }
 
@@ -69,6 +76,12 @@ export class FakeReadingMode {
   // contained within the selection.
   getChildren(nodeId: number): number[] {
     return (nodeId > this.maxNodeId) ? [] : [nodeId + 1];
+  }
+
+  // Returns content of "data-font-css" html attribute. This is needed for
+  // rendering content from annotated canvas in Google Docs.
+  getDataFontCss(_nodeId: number): string {
+    return '400 14.6667px "Courier New"';
   }
 
   // Returns the HTML tag of the AXNode for the provided AXNodeID. For testing,
@@ -114,11 +127,6 @@ export class FakeReadingMode {
     return nodeId === this.maxNodeId;
   }
 
-  // Returns true if the webpage corresponds to a Google Doc.
-  isGoogleDocs(): boolean {
-    return false;
-  }
-
   // Connects to the browser process. Called by ts when the read anything
   // element is added to the document.
   onConnected() {}
@@ -135,9 +143,15 @@ export class FakeReadingMode {
   onLinkClicked(_nodeId: number) {}
 
   // Called when the line spacing is changed via the webui toolbar.
-  onStandardLineSpacing() {}
-  onLooseLineSpacing() {}
-  onVeryLooseLineSpacing() {}
+  onStandardLineSpacing() {
+    this.lineSpacing = this.standardLineSpacing;
+  }
+  onLooseLineSpacing() {
+    this.lineSpacing = this.looseLineSpacing;
+  }
+  onVeryLooseLineSpacing() {
+    this.lineSpacing = this.veryLooseLineSpacing;
+  }
 
   // Called when a user makes a font size change via the webui toolbar.
   onFontSizeChanged(_increase: boolean) {
@@ -147,20 +161,48 @@ export class FakeReadingMode {
     this.fontSize = 0;
   }
 
+  // Called when a user toggles a switch in the language menu
+  onLanguagePrefChange(lang: string, enabled: boolean) {
+    if(enabled) {
+      this.savedLanguagePref.add(lang);
+    } else {
+      this.savedLanguagePref.delete(lang);
+    }
+  }
+
+
   // Called when a user toggles links via the webui toolbar.
-  onLinksEnabledToggled() {}
+  onLinksEnabledToggled() {
+    this.linksEnabled = !this.linksEnabled;
+  }
 
   // Called when the letter spacing is changed via the webui toolbar.
-  onStandardLetterSpacing() {}
-  onWideLetterSpacing() {}
-  onVeryWideLetterSpacing() {}
+  onStandardLetterSpacing() {
+    this.letterSpacing = this.standardLetterSpacing;
+  }
+  onWideLetterSpacing() {
+    this.letterSpacing = this.wideLetterSpacing;
+  }
+  onVeryWideLetterSpacing() {
+    this.letterSpacing = this.veryWideLetterSpacing;
+  }
 
   // Called when the color theme is changed via the webui toolbar.
-  onDefaultTheme() {}
-  onLightTheme() {}
-  onDarkTheme() {}
-  onYellowTheme() {}
-  onBlueTheme() {}
+  onDefaultTheme() {
+    this.colorTheme = this.defaultTheme;
+  }
+  onLightTheme() {
+    this.colorTheme = this.lightTheme;
+  }
+  onDarkTheme() {
+    this.colorTheme = this.darkTheme;
+  }
+  onYellowTheme() {
+    this.colorTheme = this.yellowTheme;
+  }
+  onBlueTheme() {
+    this.colorTheme = this.blueTheme;
+  }
 
   // Called when the font is changed via the webui toolbar.
   onFontChange(font: string) {
@@ -195,6 +237,11 @@ export class FakeReadingMode {
     return letterSpacing;
   }
 
+  // Returns the actual enabled languages in preference
+  getLanguagesEnabledInPref(): string[] {
+    return [...this.savedLanguagePref.values()];
+  }
+
   // Called when a user makes a selection change. AnchorNodeID and
   // focusAXNodeID are AXNodeIDs which identify the anchor and focus AXNodes
   // in the main pane. The selection can either be forward or backwards.
@@ -205,6 +252,8 @@ export class FakeReadingMode {
   // Called when a user collapses the selection. This is usually accomplished
   // by clicking.
   onCollapseSelection() {}
+
+  sendGetVoicePackInfoRequest(_: string) {}
 
   // Set the content. Used by tests only.
   // SnapshotLite is a data structure which resembles an AXTreeUpdate. E.g.:
@@ -231,7 +280,7 @@ export class FakeReadingMode {
       _foregroundColor: number, _backgroundColor: number, _lineSpacing: number,
       _letterSpacing: number) {}
 
-  // Sets the default language. Used by tests only.
+  // Sets the language. Used by tests only.
   setLanguageForTesting(_code: string) {}
 
   // Called when the side panel has finished loading and it's safe to call
@@ -260,6 +309,12 @@ export class FakeReadingMode {
   // Ping that the theme choices of the user have been changed using the
   // toolbar and are ready to consume.
   updateTheme() {}
+
+  // Called with the response of sendGetVoicePackInfoRequest()
+  updateVoicePackStatus(_lang: string, _status: string) {}
+
+  // Called with the response of sendInstallVoicePackRequest()
+  updateVoicePackStatusFromInstallResponse() {}
 
   // Ping that the theme choices of the user have been retrieved from
   // preferences and can be used to set up the page.
@@ -317,4 +372,6 @@ export class FakeReadingMode {
   getDisplayNameForLocale(_locale: string, _displayLocale: string): string {
     return '';
   }
+
+  logMetric(_time: number, _metricName: string) : void {}
 }

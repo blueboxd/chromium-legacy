@@ -47,7 +47,7 @@ class AutofillField;
 class AutofillProfile;
 class CreditCard;
 struct FormData;
-struct FormFieldData;
+class FormFieldData;
 class FormStructure;
 class LogManager;
 class TouchToFillDelegateAndroidImpl;
@@ -75,8 +75,8 @@ class AutofillManager
   // no 2XX
   //   response code or a null response body).
   //
-  // TODO(crbug.com/1476488): Consider moving events that are specific to BAM to
-  // a new BAM::Observer class.
+  // TODO(crbug.com/40280003): Consider moving events that are specific to BAM
+  // to a new BAM::Observer class.
   class Observer : public base::CheckedObserver {
    public:
     virtual void OnAutofillManagerDestroyed(AutofillManager& manager) {}
@@ -94,7 +94,7 @@ class AutofillManager
                                             FormGlobalId form,
                                             FieldGlobalId field) {}
 
-    // TODO(crbug.com/1331312): Get rid of `text_value`.
+    // TODO(crbug.com/40227496): Get rid of `text_value`.
     virtual void OnAfterTextFieldDidChange(AutofillManager& manager,
                                            FormGlobalId form,
                                            FieldGlobalId field,
@@ -121,6 +121,14 @@ class AutofillManager
     virtual void OnAfterAskForValuesToFill(AutofillManager& manager,
                                            FormGlobalId form,
                                            FieldGlobalId field) {}
+
+    virtual void OnBeforeFocusOnFormField(AutofillManager& manager,
+                                          FormGlobalId form,
+                                          FieldGlobalId field,
+                                          const FormData& form_data) {}
+    virtual void OnAfterFocusOnFormField(AutofillManager& manager,
+                                         FormGlobalId form,
+                                         FieldGlobalId field) {}
 
     virtual void OnBeforeDidFillAutofillFormData(AutofillManager& manager,
                                                  FormGlobalId form) {}
@@ -157,8 +165,8 @@ class AutofillManager
     // be filled: each `FormFieldData::value` contains the filled or previewed
     // value; the corresponding `AutofillField` contains the field type
     // information. The field values come from `profile_or_credit_card`.
-    // TODO(crbug.com/1331312): Get rid of FormFieldData.
-    // TODO(crbug.com/1476488): Consider removing the event in favor of
+    // TODO(crbug.com/40227496): Get rid of FormFieldData.
+    // TODO(crbug.com/40280003): Consider removing the event in favor of
     // OnAfterDidFillAutofillFormData(), which is fired by the renderer.
     virtual void OnFillOrPreviewDataModelForm(
         AutofillManager& manager,
@@ -171,7 +179,7 @@ class AutofillManager
     virtual void OnFormSubmitted(AutofillManager& manager, FormGlobalId form) {}
   };
 
-  // TODO(crbug.com/1151542): Move to anonymous namespace once
+  // TODO(crbug.com/40733066): Move to anonymous namespace once
   // BrowserAutofillManager::OnLoadedServerPredictions() moves to
   // AutofillManager.
   static void LogAutofillTypePredictionsAvailable(
@@ -186,12 +194,11 @@ class AutofillManager
   // The following will fail a DCHECK if called for a prerendered main frame.
   AutofillClient& client() {
     DCHECK(!driver().IsPrerendering());
-    return *client_;
+    return unsafe_client();
   }
 
   const AutofillClient& client() const {
-    DCHECK(!driver().IsPrerendering());
-    return *client_;
+    return const_cast<AutofillManager*>(this)->client();
   }
 
   AutofillClient& unsafe_client(
@@ -285,11 +292,14 @@ class AutofillManager
   // if |field| was in autofilled state. Note that from a renderer's
   // perspective, modifying the value with JavaScript leads to a state where
   // the field is not considered autofilled anymore. So this notification won't
-  // be sent again until the field gets autofilled again.
+  // be sent again until the field gets autofilled again. `formatting_only` is
+  // true if JavaScript only modified whitespaces, symbols and capitalization,
+  // and in that case, the field is still considered autofilled.
   virtual void OnJavaScriptChangedAutofilledValue(
       const FormData& form,
       const FormFieldData& field,
-      const std::u16string& old_value);
+      const std::u16string& old_value,
+      bool formatting_only);
 
   // Other events.
 
@@ -351,7 +361,6 @@ class AutofillManager
   }
 
   AutofillDriver& driver() { return *driver_; }
-  const AutofillDriver& driver() const { return *driver_; }
 
   // The return value shouldn't be cached, retrieve it as needed.
   AutofillMetrics::FormInteractionsUkmLogger* form_interactions_ukm_logger() {
@@ -359,7 +368,7 @@ class AutofillManager
   }
 
  protected:
-  AutofillManager(AutofillDriver* driver, AutofillClient* client);
+  explicit AutofillManager(AutofillDriver* driver);
 
   LogManager* log_manager() { return log_manager_; }
 
@@ -368,8 +377,7 @@ class AutofillManager
 
   // The following do not check for prerendering. These should only used while
   // constructing or resetting the manager.
-  AutofillClient& unsafe_client() { return *client_; }
-  const AutofillClient& unsafe_client() const { return *client_; }
+  AutofillClient& unsafe_client() { return driver_->GetAutofillClient(); }
 
   virtual void OnFormSubmittedImpl(const FormData& form,
                                    bool known_success,
@@ -414,14 +422,15 @@ class AutofillManager
   virtual void OnJavaScriptChangedAutofilledValueImpl(
       const FormData& form,
       const FormFieldData& field,
-      const std::u16string& old_value) = 0;
+      const std::u16string& old_value,
+      bool formatting_only) = 0;
 
   // Return whether the |forms| from OnFormSeen() should be parsed to
   // form_structures.
   virtual bool ShouldParseForms() = 0;
 
   // Invoked before parsing the forms.
-  // TODO(crbug.com/1309848): Rename to some consistent scheme, e.g.,
+  // TODO(crbug.com/40219607): Rename to some consistent scheme, e.g.,
   // OnBeforeParsedForm().
   virtual void OnBeforeProcessParsedForms() = 0;
 
@@ -429,10 +438,6 @@ class AutofillManager
   // |form_structure|.
   virtual void OnFormProcessed(const FormData& form_data,
                                const FormStructure& form_structure) = 0;
-  // Invoked after all forms have been processed, |form_types| is a set of
-  // FormType found.
-  virtual void OnAfterProcessParsedForms(
-      const DenseSet<FormType>& form_types) = 0;
 
   // Returns the number of FormStructures with the given |form_signature| and
   // appends them to |form_structures|. Runs in linear time.
@@ -455,8 +460,8 @@ class AutofillManager
   // - if the overall number exceeds `kAutofillManagerMaxFormCacheSize`;
   // - if the form should not be parsed according to ShouldParseForms().
   //
-  // TODO(crbug.com/1309848): Add unit tests.
-  // TODO(crbug.com/1345089): Eliminate either the ParseFormsAsync() or
+  // TODO(crbug.com/40219607): Add unit tests.
+  // TODO(crbug.com/40232021): Eliminate either the ParseFormsAsync() or
   // ParseFormAsync(). There are a few possible directions:
   // - Let ParseFormAsync() wrap the FormData in a vector, call
   //   ParseFormsAsync(), and then unwrap the vector again.
@@ -499,11 +504,6 @@ class AutofillManager
   // Provides driver-level context to the shared code of the component.
   // `*driver_` owns this object.
   const raw_ref<AutofillDriver> driver_;
-
-  // Do not access this directly. Instead, please use client() or
-  // unsafe_client(). These functions check (or explicitly don't check) that the
-  // client isn't accessed incorrectly.
-  const raw_ref<AutofillClient> client_;
 
   const raw_ptr<LogManager> log_manager_;
 

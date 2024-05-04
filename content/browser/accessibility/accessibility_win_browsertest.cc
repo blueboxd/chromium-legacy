@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <objbase.h>
+
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
@@ -12,6 +13,7 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/containers/heap_array.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
@@ -604,9 +606,9 @@ AccessibilityWinBrowserTest::GetAllAccessibleChildren(IAccessible* element) {
   if (child_count <= 0)
     return std::vector<base::win::ScopedVariant>();
 
-  std::unique_ptr<VARIANT[]> children_array(new VARIANT[child_count]);
+  auto children_array = base::HeapArray<VARIANT>::WithSize(child_count);
   LONG obtained_count = 0;
-  hr = AccessibleChildren(element, 0, child_count, children_array.get(),
+  hr = AccessibleChildren(element, 0, child_count, children_array.data(),
                           &obtained_count);
   EXPECT_EQ(S_OK, hr);
   EXPECT_EQ(child_count, obtained_count);
@@ -935,7 +937,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
       ui::AXEventGenerator::Event::FOCUS_CHANGED);
   GURL html_data_url("data:text/html,<p>Hello world.</p>");
   ASSERT_TRUE(NavigateToURL(shell(), html_data_url));
-  // TODO(https://crbug.com/1332468): Investigate why this does not return
+  // TODO(crbug.com/40844856): Investigate why this does not return
   // true.
   ASSERT_TRUE(waiter.WaitForNotification());
 
@@ -1190,7 +1192,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, FocusEventOnPageLoad) {
     EXPECT_TRUE(NavigateToURL(shell(), html_data_url));
     run_loop.Run();  // Wait for the focus change.
   }
-  // TODO(https://crbug.com/1332468): Investigate why this does not return
+  // TODO(crbug.com/40844856): Investigate why this does not return
   // true.
   ASSERT_TRUE(waiter.WaitForNotification());
 
@@ -1210,9 +1212,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, NoFocusEventOnRootChange) {
 
   // Adding an iframe as a direct descendant of the root will reserialize the
   // root node.
-  AccessibilityNotificationWaiter waiter(shell()->web_contents(),
-                                         ui::kAXModeComplete,
-                                         ax::mojom::Event::kLayoutComplete);
+  AccessibilityNotificationWaiter waiter(shell()->web_contents());
   ExecuteScript(
       u"let iframe = document.createElement('iframe');"
       u"iframe.srcdoc = '<button>Button</button>';"
@@ -1270,9 +1270,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   }
 
   {
-    AccessibilityNotificationWaiter iframe_waiter(
-        shell()->web_contents(), ui::kAXModeComplete,
-        ax::mojom::Event::kLayoutComplete);
+    AccessibilityNotificationWaiter iframe_waiter(shell()->web_contents());
     ExecuteScript(u"document.body.removeChild(iframe);");
     WaitForAccessibilityFocusChange();
     ASSERT_TRUE(iframe_waiter.WaitForNotification());
@@ -1302,9 +1300,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   ASSERT_NE(nullptr, outer_button_win);
 
   {
-    AccessibilityNotificationWaiter waiter(shell()->web_contents(),
-                                           ui::kAXModeComplete,
-                                           ax::mojom::Event::kLayoutComplete);
+    AccessibilityNotificationWaiter waiter(shell()->web_contents());
     ExecuteScript(
         u"let iframe = document.createElement('iframe');"
         u"iframe.srcdoc = '<button>Inner button</button>';"
@@ -1319,9 +1315,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   }
 
   {
-    AccessibilityNotificationWaiter waiter(shell()->web_contents(),
-                                           ui::kAXModeComplete,
-                                           ax::mojom::Event::kLayoutComplete);
+    AccessibilityNotificationWaiter waiter(shell()->web_contents());
     ExecuteScript(u"document.body.removeChild(iframe);");
     ASSERT_TRUE(waiter.WaitForNotification());
 
@@ -5043,9 +5037,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinUIABrowserTest,
   ASSERT_NE(nullptr, root_element.Get());
 
   // Insert a new iframe and wait for tree update.
-  AccessibilityNotificationWaiter waiter(shell()->web_contents(),
-                                         ui::kAXModeComplete,
-                                         ax::mojom::Event::kLayoutComplete);
+  AccessibilityNotificationWaiter waiter(shell()->web_contents());
   ExecuteScript(
       u"let new_frame = document.createElement('iframe');"
       u"new_frame.setAttribute('src', 'about:blank');"
@@ -5608,7 +5600,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinUIABrowserTest,
   EXPECT_NE(nullptr, text_pattern_unknown.Get());
 }
 
-// TODO(crbug.com/1432289): Fix this failing test.
+// TODO(crbug.com/40902845): Fix this failing test.
 IN_PROC_BROWSER_TEST_F(AccessibilityWinUIABrowserTest,
                        DISABLED_AsyncContentLoadedEventOnDocumentLoad) {
   // Load the page.
@@ -5774,9 +5766,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, FixedRuntimeId) {
       u"let parent = document.getElementById('newParent');"
       u"parent.appendChild(target);");
 
-  AccessibilityNotificationWaiter waiter(shell()->web_contents(),
-                                         ui::kAXModeComplete,
-                                         ax::mojom::Event::kLayoutComplete);
+  AccessibilityNotificationWaiter waiter(shell()->web_contents());
   ASSERT_TRUE(waiter.WaitForNotification());
 
   target = FindNode(ax::mojom::Role::kStaticText, "foo");

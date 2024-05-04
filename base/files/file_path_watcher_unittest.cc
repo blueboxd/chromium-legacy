@@ -205,7 +205,7 @@ inline constexpr auto IsUnknownPathType = []() {
 // path (which is often fixed) and whether or not an error occurred (which is
 // rare).
 //
-// TODO(https://crbug.com/1425601): This is not a common pattern. Generally,
+// TODO(crbug.com/40260973): This is not a common pattern. Generally,
 // expectations are specified all-in-one at the start of a test, like so:
 //   - Expect events { `event1`, `event2` }
 //   - Do something that should fire `event1` on `delegate`
@@ -715,7 +715,7 @@ TEST_F(FilePathWatcherTest, NonExistentDirectory) {
   // The delegate is only watching the file. Parent directory creation should
   // not trigger an event.
   ASSERT_TRUE(CreateDirectory(dir));
-  // TODO(https://crbug.com/1432064): Expect that no events are fired.
+  // TODO(crbug.com/40263777): Expect that no events are fired.
 
   // It may take some time for `watcher` to re-construct its watch list, so it's
   // possible an event is missed. _At least_ one event should be fired, though.
@@ -759,7 +759,7 @@ TEST_F(FilePathWatcherTest, DirectoryChain) {
   for (const auto& dir_name : dir_names) {
     sub_path = sub_path.AppendASCII(dir_name);
     ASSERT_TRUE(CreateDirectory(sub_path));
-    // TODO(https://crbug.com/1432064): Expect that no events are fired.
+    // TODO(crbug.com/40263777): Expect that no events are fired.
   }
 
   // It may take some time for `watcher` to re-construct its watch list, so it's
@@ -793,7 +793,7 @@ TEST_F(FilePathWatcherTest, DisappearingDirectory) {
   ASSERT_TRUE(DeletePathRecursively(dir));
   event_expecter.AddExpectedEventForPath(file);
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID)
-  // TODO(https://crbug.com/1432044): Figure out why this may fire two events on
+  // TODO(crbug.com/40263766): Figure out why this may fire two events on
   // inotify. Only the file is being watched, so presumably there should only be
   // one deletion event.
   event_expecter.AddExpectedEventForPath(file);
@@ -824,7 +824,7 @@ TEST_F(FilePathWatcherTest, DeleteAndRecreate) {
   delegate.RunUntilEventsMatch(event_expecter);
 }
 
-// TODO(https://crbug.com/1432064): Split into smaller tests.
+// TODO(crbug.com/40263777): Split into smaller tests.
 TEST_F(FilePathWatcherTest, WatchDirectory) {
   FilePathWatcher watcher;
   FilePath dir(temp_dir_.GetPath().AppendASCII("dir"));
@@ -850,8 +850,8 @@ TEST_F(FilePathWatcherTest, WatchDirectory) {
 #if !BUILDFLAG(IS_APPLE)
   ASSERT_TRUE(WriteFile(file1, "content v2"));
   // Mac implementation does not detect files modified in a directory.
-  // TODO(https://crbug.com/1432064): Expect that no events are fired on Mac.
-  // TODO(https://crbug.com/1019297): Consider using FSEvents to support
+  // TODO(crbug.com/40263777): Expect that no events are fired on Mac.
+  // TODO(crbug.com/40105284): Consider using FSEvents to support
   // watching a directory and its immediate children, as Type::kNonRecursive
   // does on other platforms.
   VLOG(1) << "Waiting for file1 modification";
@@ -889,7 +889,7 @@ TEST_F(FilePathWatcherTest, MoveParent) {
   // We should only get notified on `subdir_delegate` of its creation.
   ASSERT_TRUE(CreateDirectory(subdir));
   subdir_event_expecter.AddExpectedEventForPath(subdir);
-  // TODO(https://crbug.com/1432064): Expect that no events are fired on the
+  // TODO(crbug.com/40263777): Expect that no events are fired on the
   // file delegate.
   subdir_delegate.RunUntilEventsMatch(subdir_event_expecter);
 
@@ -923,7 +923,7 @@ TEST_F(FilePathWatcherTest, RecursiveWatch) {
   }
   ASSERT_TRUE(setup_result);
 
-  // TODO(https://crbug.com/1432064): Create a version of this test which also
+  // TODO(crbug.com/40263777): Create a version of this test which also
   // verifies that the events occur on the correct file path if the watcher is
   // set up to record the target of the event.
 
@@ -966,19 +966,19 @@ TEST_F(FilePathWatcherTest, RecursiveWatch) {
   delegate.RunUntilEventsMatch(event_expecter);
 
 // Mac and Win don't generate events for Touch.
-// TODO(https://crbug.com/1432064): Add explicit expectations for Mac and Win.
+// TODO(crbug.com/40263777): Add explicit expectations for Mac and Win.
 // Android TouchFile returns false.
 #if !(BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_ANDROID))
   // Touch "$dir".
   Time access_time;
   ASSERT_TRUE(Time::FromString("Wed, 16 Nov 1994, 00:00:00", &access_time));
   ASSERT_TRUE(TouchFile(dir, access_time, access_time));
-  // TODO(https://crbug.com/1432044): Investigate why we're getting two events
+  // TODO(crbug.com/40263766): Investigate why we're getting two events
   // here from inotify.
   event_expecter.AddExpectedEventForPath(dir);
   event_expecter.AddExpectedEventForPath(dir);
   delegate.RunUntilEventsMatch(event_expecter);
-  // TODO(https://crbug.com/1432064): Add a test touching `subdir`.
+  // TODO(crbug.com/40263777): Add a test touching `subdir`.
 #endif  // !(BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_ANDROID))
 
   // Create "$dir/subdir/subdir_file1".
@@ -1053,7 +1053,7 @@ TEST_F(FilePathWatcherTest, RecursiveWithSymLink) {
   ASSERT_TRUE(SetupWatch(symlink, &watcher, &delegate,
                          FilePathWatcher::Type::kRecursive));
 
-  // TODO(https://crbug.com/1432064): Figure out what the intended behavior here
+  // TODO(crbug.com/40263777): Figure out what the intended behavior here
   // is. Many symlink operations don't seem to be supported on Mac, while in
   // other cases Mac fires more events than expected.
 
@@ -1079,7 +1079,7 @@ TEST_F(FilePathWatcherTest, RecursiveWithSymLink) {
   // Link change.
   FilePath target2(temp_dir_.GetPath().AppendASCII("target2"));
   ASSERT_TRUE(CreateDirectory(target2));
-  // TODO(https://crbug.com/1432064): Expect that no events are fired.
+  // TODO(crbug.com/40263777): Expect that no events are fired.
 
   ASSERT_TRUE(DeleteFile(symlink));
   event_expecter.AddExpectedEventForPath(symlink);
@@ -1265,7 +1265,7 @@ TEST_F(FilePathWatcherTest, LinkedDirectoryPart1) {
 
   ASSERT_TRUE(WriteFile(file, "content v2"));
   VLOG(1) << "Waiting for file creation + modification";
-  // TODO(https://crbug.com/1432064): Should this fire two events on inotify?
+  // TODO(crbug.com/40263777): Should this fire two events on inotify?
   event_expecter.AddExpectedEventForPath(linkfile);
   delegate.RunUntilEventsMatch(event_expecter);
 
@@ -1282,7 +1282,7 @@ TEST_F(FilePathWatcherTest, LinkedDirectoryPart1) {
 
 // Verify that watching a file whose parent directory is a
 // dangling symlink works if the directory is created eventually.
-// TODO(https://crbug.com/1432064): Add test coverage for symlinked file
+// TODO(crbug.com/40263777): Add test coverage for symlinked file
 // creation independent of a corresponding write.
 TEST_F(FilePathWatcherTest, LinkedDirectoryPart2) {
   FilePathWatcher watcher;
@@ -1300,7 +1300,7 @@ TEST_F(FilePathWatcherTest, LinkedDirectoryPart2) {
                          FilePathWatcher::Type::kNonRecursive));
 
   ASSERT_TRUE(CreateDirectory(dir));
-  // TODO(https://crbug.com/1432064): Expect that no events are fired.
+  // TODO(crbug.com/40263777): Expect that no events are fired.
 
   // It may take some time for `watcher` to re-construct its watch list, so it's
   // possible an event is missed. _At least_ one event should be fired, though.
@@ -1701,7 +1701,7 @@ TEST_F(FilePathWatcherTest, ReturnFullPath_NonRecursiveRemoveEnclosingFolder) {
   // Triggers three events:
   // delete on /watched_folder/file.
   // delete on /watched_folder twice.
-  // TODO(https://crbug.com/1432044): Figure out why duplicate events are fired
+  // TODO(crbug.com/40263766): Figure out why duplicate events are fired
   // on `watched_folder`.
   ASSERT_TRUE(DeletePathRecursively(folder));
   event_expecter.AddExpectedEventForPath(file);
@@ -1845,7 +1845,7 @@ TEST_F(FilePathWatcherTest, DirAttributesChanged) {
   // to access the file.
   ASSERT_TRUE(ChangeFilePermissions(test_dir1, Read, false));
   ASSERT_TRUE(ChangeFilePermissions(test_dir1, Read, true));
-  // TODO(https://crbug.com/1432064): Expect that no events are fired.
+  // TODO(crbug.com/40263777): Expect that no events are fired.
 
   // We should get notified in this case because filepathwatcher can no
   // longer access the file.
@@ -1854,7 +1854,7 @@ TEST_F(FilePathWatcherTest, DirAttributesChanged) {
   delegate.RunUntilEventsMatch(event_expecter);
 
   ASSERT_TRUE(ChangeFilePermissions(test_dir1, Execute, true));
-  // TODO(https://crbug.com/1432064): Expect that no events are fired.
+  // TODO(crbug.com/40263777): Expect that no events are fired.
 }
 
 #endif  // BUILDFLAG(IS_APPLE)
@@ -1938,9 +1938,9 @@ TEST_F(FilePathWatcherTest, TrivialDirMove) {
 #endif  // BUILDFLAG(IS_APPLE)
 
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID)
-// TODO(https://crbug.com/1432064): Ideally most all of the tests above would be
+// TODO(crbug.com/40263777): Ideally most all of the tests above would be
 // parameterized in this way.
-// TODO(https://crbug.com/1425601): ChangeInfo is currently only supported by
+// TODO(crbug.com/40260973): ChangeInfo is currently only supported by
 // the inotify based implementation.
 class FilePathWatcherWithChangeInfoTest
     : public FilePathWatcherTest,
@@ -1965,7 +1965,7 @@ TEST_P(FilePathWatcherWithChangeInfoTest, NewFile) {
       testing::AllOf(HasPath(test_file()), testing::Not(HasErrored()), IsFile(),
                      testing::Not(HasCookie())));
   // Match the expected change types, in this order.
-  // TODO(https://crbug.com/1425601): Update this when change types are
+  // TODO(crbug.com/40260973): Update this when change types are
   // supported on more platforms.
   static_assert(kExpectedEventsForNewFileWrite == 2);
   const auto sequence_matcher =
@@ -1999,7 +1999,7 @@ TEST_P(FilePathWatcherWithChangeInfoTest, NewDirectory) {
 }
 
 TEST_P(FilePathWatcherWithChangeInfoTest, ModifiedFile) {
-  // TODO(https://crbug.com/1425601): Some platforms will not support
+  // TODO(crbug.com/40260973): Some platforms will not support
   // `ChangeType::kContentsModified`. Update this matcher once support for those
   // platforms is added.
   const auto matcher = testing::ElementsAre(
@@ -2009,7 +2009,7 @@ TEST_P(FilePathWatcherWithChangeInfoTest, ModifiedFile) {
 
   ASSERT_TRUE(WriteFile(test_file(), "content"));
 #if BUILDFLAG(IS_ANDROID)
-  // TODO(https://crbug.com/1496350): There appears to be a race condition
+  // TODO(crbug.com/40286767): There appears to be a race condition
   // between setting up the inotify watch and the processing of the file system
   // notifications created while setting up the file system for this test. Spin
   // the event loop to ensure that the events have been processed by the time
@@ -2027,7 +2027,7 @@ TEST_P(FilePathWatcherWithChangeInfoTest, ModifiedFile) {
 }
 
 TEST_P(FilePathWatcherWithChangeInfoTest, MovedFile) {
-  // TODO(https://crbug.com/1425601): Some platforms will not provide separate
+  // TODO(crbug.com/40260973): Some platforms will not provide separate
   // events for "moved from" and "moved to". Update this matcher once support
   // for those platforms is added.
   const auto matcher = testing::ElementsAre(
@@ -2053,7 +2053,7 @@ TEST_P(FilePathWatcherWithChangeInfoTest, MatchCookies) {
   const auto each_event_matcher = testing::Each(
       testing::AllOf(testing::Not(HasErrored()), IsFile(),
                      IsType(FilePathWatcher::ChangeType::kMoved), HasCookie()));
-  // TODO(https://crbug.com/1425601): Some platforms will not provide separate
+  // TODO(crbug.com/40260973): Some platforms will not provide separate
   // events for "moved from" and "moved to". Update this matcher once support
   // for those platforms is added.
   const auto sequence_matcher = testing::UnorderedElementsAre(
@@ -2067,7 +2067,7 @@ TEST_P(FilePathWatcherWithChangeInfoTest, MatchCookies) {
   ASSERT_TRUE(CreateDirectory(test_file()));
   ASSERT_TRUE(WriteFile(source_file, "content"));
 #if BUILDFLAG(IS_ANDROID)
-  // TODO(https://crbug.com/1496350): There appears to be a race condition
+  // TODO(crbug.com/40286767): There appears to be a race condition
   // between setting up the inotify watch and the processing of the file system
   // notifications created while setting up the file system for this test. Spin
   // the event loop to ensure that the events have been processed by the time
@@ -2099,7 +2099,7 @@ TEST_P(FilePathWatcherWithChangeInfoTest, DeletedFile) {
 
   ASSERT_TRUE(WriteFile(test_file(), "content"));
 #if BUILDFLAG(IS_ANDROID)
-  // TODO(https://crbug.com/1496350): There appears to be a race condition
+  // TODO(crbug.com/40286767): There appears to be a race condition
   // between setting up the inotify watch and the processing of the file system
   // notifications created while setting up the file system for this test. Spin
   // the event loop to ensure that the events have been processed by the time
@@ -2124,7 +2124,7 @@ TEST_P(FilePathWatcherWithChangeInfoTest, DeletedDirectory) {
 
   ASSERT_TRUE(CreateDirectory(test_file()));
 #if BUILDFLAG(IS_ANDROID)
-  // TODO(https://crbug.com/1496350): There appears to be a race condition
+  // TODO(crbug.com/40286767): There appears to be a race condition
   // between setting up the inotify watch and the processing of the file system
   // notifications created while setting up the file system for this test. Spin
   // the event loop to ensure that the events have been processed by the time
@@ -2145,7 +2145,7 @@ TEST_P(FilePathWatcherWithChangeInfoTest, MultipleWatchersSingleFile) {
   const auto each_event_matcher = testing::Each(
       testing::AllOf(HasPath(test_file()), testing::Not(HasErrored()), IsFile(),
                      testing::Not(HasCookie())));
-  // TODO(https://crbug.com/1425601): Update this when change types are
+  // TODO(crbug.com/40260973): Update this when change types are
   // supported on more platforms.
   static_assert(kExpectedEventsForNewFileWrite == 2);
   const auto sequence_matcher =
@@ -2245,7 +2245,7 @@ TEST_P(FilePathWatcherWithChangeInfoTest, DisappearingDirectory) {
       testing::AllOf(HasPath(file), testing::Not(HasErrored()),
                      IsType(FilePathWatcher::ChangeType::kDeleted),
                      testing::Not(HasCookie())));
-  // TODO(https://crbug.com/1432044): inotify incorrectly reports an additional
+  // TODO(crbug.com/40263766): inotify incorrectly reports an additional
   // deletion event for the parent directory (though while confusingly reporting
   // the path as `file`). Once fixed, update this matcher to assert that only
   // one event is received.
@@ -2255,7 +2255,7 @@ TEST_P(FilePathWatcherWithChangeInfoTest, DisappearingDirectory) {
   ASSERT_TRUE(CreateDirectory(dir));
   ASSERT_TRUE(WriteFile(file, "content"));
 #if BUILDFLAG(IS_ANDROID)
-  // TODO(https://crbug.com/1496350): There appears to be a race condition
+  // TODO(crbug.com/40286767): There appears to be a race condition
   // between setting up the inotify watch and the processing of the file system
   // notifications created while setting up the file system for this test. Spin
   // the event loop to ensure that the events have been processed by the time
@@ -2276,7 +2276,7 @@ TEST_P(FilePathWatcherWithChangeInfoTest, DeleteAndRecreate) {
   const auto each_event_matcher = testing::Each(
       testing::AllOf(HasPath(test_file()), testing::Not(HasErrored()), IsFile(),
                      testing::Not(HasCookie())));
-  // TODO(https://crbug.com/1425601): Update this when change types are
+  // TODO(crbug.com/40260973): Update this when change types are
   // supported on on more platforms.
   static_assert(kExpectedEventsForNewFileWrite == 2);
   const auto sequence_matcher =
@@ -2287,7 +2287,7 @@ TEST_P(FilePathWatcherWithChangeInfoTest, DeleteAndRecreate) {
 
   ASSERT_TRUE(WriteFile(test_file(), "content"));
 #if BUILDFLAG(IS_ANDROID)
-  // TODO(https://crbug.com/1496350): There appears to be a race condition
+  // TODO(crbug.com/40286767): There appears to be a race condition
   // between setting up the inotify watch and the processing of the file system
   // notifications created while setting up the file system for this test. Spin
   // the event loop to ensure that the events have been processed by the time
@@ -2326,7 +2326,7 @@ TEST_P(FilePathWatcherWithChangeInfoTest, WatchDirectory) {
 
   ASSERT_TRUE(CreateDirectory(dir));
 #if BUILDFLAG(IS_ANDROID)
-  // TODO(https://crbug.com/1496350): There appears to be a race condition
+  // TODO(crbug.com/40286767): There appears to be a race condition
   // between setting up the inotify watch and the processing of the file system
   // notifications created while setting up the file system for this test. Spin
   // the event loop to ensure that the events have been processed by the time
@@ -2353,7 +2353,7 @@ TEST_P(FilePathWatcherWithChangeInfoTest, MoveParent) {
   FilePath file(subdir.AppendASCII("file"));
 
   const auto each_event_matcher = testing::Each(testing::Not(HasErrored()));
-  // TODO(https://crbug.com/1432044): inotify incorrectly sometimes reports
+  // TODO(crbug.com/40263766): inotify incorrectly sometimes reports
   // the first event as a directory creation... why?
   const auto file_delegate_sequence_matcher = testing::IsSupersetOf(
       {testing::AllOf(HasPath(file), IsFile(),
@@ -2453,7 +2453,7 @@ TEST_P(FilePathWatcherWithChangeInfoTest, FileAttributesChanged) {
 }
 
 TEST_P(FilePathWatcherWithChangeInfoTest, CreateLink) {
-  // TODO(https://crbug.com/1425601): Check for symlink-ness on platforms which
+  // TODO(crbug.com/40260973): Check for symlink-ness on platforms which
   // support it.
   const auto matcher = testing::ElementsAre(
       testing::AllOf(HasPath(test_link()), testing::Not(HasErrored()), IsFile(),
@@ -2475,7 +2475,7 @@ TEST_P(FilePathWatcherWithChangeInfoTest, CreateLink) {
 // Unfortunately this test case only works if the link target exists.
 // TODO(craig) fix this as part of crbug.com/91561.
 TEST_P(FilePathWatcherWithChangeInfoTest, DeleteLink) {
-  // TODO(https://crbug.com/1425601): Check for symlink-ness on platforms which
+  // TODO(crbug.com/40260973): Check for symlink-ness on platforms which
   // support it.
   const auto matcher = testing::ElementsAre(
       testing::AllOf(HasPath(test_link()), testing::Not(HasErrored()), IsFile(),
@@ -2496,7 +2496,7 @@ TEST_P(FilePathWatcherWithChangeInfoTest, DeleteLink) {
 }
 
 TEST_P(FilePathWatcherWithChangeInfoTest, ModifiedLinkedFile) {
-  // TODO(https://crbug.com/1425601): Check for symlink-ness on platforms which
+  // TODO(crbug.com/40260973): Check for symlink-ness on platforms which
   // support it.
   const auto matcher = testing::ElementsAre(
       testing::AllOf(HasPath(test_link()), testing::Not(HasErrored()), IsFile(),
@@ -2517,12 +2517,12 @@ TEST_P(FilePathWatcherWithChangeInfoTest, ModifiedLinkedFile) {
 }
 
 TEST_P(FilePathWatcherWithChangeInfoTest, CreateTargetLinkedFile) {
-  // TODO(https://crbug.com/1425601): Check for symlink-ness on platforms which
+  // TODO(crbug.com/40260973): Check for symlink-ness on platforms which
   // support it.
   const auto each_event_matcher = testing::Each(
       testing::AllOf(HasPath(test_link()), testing::Not(HasErrored()), IsFile(),
                      testing::Not(HasCookie())));
-  // TODO(https://crbug.com/1425601): Update this when change types are
+  // TODO(crbug.com/40260973): Update this when change types are
   // supported on on more platforms.
   static_assert(kExpectedEventsForNewFileWrite == 2);
   const auto sequence_matcher =
@@ -2543,7 +2543,7 @@ TEST_P(FilePathWatcherWithChangeInfoTest, CreateTargetLinkedFile) {
 }
 
 TEST_P(FilePathWatcherWithChangeInfoTest, DeleteTargetLinkedFile) {
-  // TODO(https://crbug.com/1425601): Check for symlink-ness on platforms which
+  // TODO(crbug.com/40260973): Check for symlink-ness on platforms which
   // support it.
   const auto matcher = testing::ElementsAre(
       testing::AllOf(HasPath(test_link()), testing::Not(HasErrored()), IsFile(),
@@ -2569,7 +2569,7 @@ TEST_P(FilePathWatcherWithChangeInfoTest, LinkedDirectoryPart1) {
   FilePath file(dir.AppendASCII("file"));
   FilePath linkfile(link_dir.AppendASCII("file"));
 
-  // TODO(https://crbug.com/1425601): Check for symlink-ness on platforms which
+  // TODO(crbug.com/40260973): Check for symlink-ness on platforms which
   // support it.
   const auto each_event_matcher = testing::Each(
       testing::AllOf(HasPath(linkfile), testing::Not(HasErrored()), IsFile(),
@@ -2606,7 +2606,7 @@ TEST_P(FilePathWatcherWithChangeInfoTest, LinkedDirectoryPart2) {
   FilePath file(dir.AppendASCII("file"));
   FilePath linkfile(link_dir.AppendASCII("file"));
 
-  // TODO(https://crbug.com/1425601): Check for symlink-ness on platforms which
+  // TODO(crbug.com/40260973): Check for symlink-ness on platforms which
   // support it.
   const auto each_event_matcher = testing::Each(
       testing::AllOf(HasPath(linkfile), testing::Not(HasErrored()), IsFile(),
@@ -2643,7 +2643,7 @@ TEST_P(FilePathWatcherWithChangeInfoTest, LinkedDirectoryPart3) {
   FilePath file(dir.AppendASCII("file"));
   FilePath linkfile(link_dir.AppendASCII("file"));
 
-  // TODO(https://crbug.com/1425601): Check for symlink-ness on platforms which
+  // TODO(crbug.com/40260973): Check for symlink-ness on platforms which
   // support it.
   const auto each_event_matcher = testing::Each(
       testing::AllOf(HasPath(linkfile), testing::Not(HasErrored()), IsFile(),
@@ -2706,13 +2706,13 @@ TEST_P(FilePathWatcherWithChangeInfoTest, ModifiedFileInDirectory) {
   ASSERT_TRUE(CreateDirectory(parent));
   ASSERT_TRUE(WriteFile(child, "contents"));
 #if BUILDFLAG(IS_ANDROID)
-  // TODO(https://crbug.com/1496350): There appears to be a race condition
+  // TODO(crbug.com/40286767): There appears to be a race condition
   // between setting up the inotify watch and the processing of the file system
   // notifications created while setting up the file system for this test. Spin
   // the event loop to ensure that the events have been processed by the time
   // the inotify watch has been set up.
 #if BUILDFLAG(IS_ANDROID)
-  // TODO(https://crbug.com/1496350): There appears to be a race condition
+  // TODO(crbug.com/40286767): There appears to be a race condition
   // between setting up the inotify watch and the processing of the file system
   // notifications created while setting up the file system for this test. Spin
   // the event loop to ensure that the events have been processed by the time
@@ -2874,7 +2874,7 @@ TEST_P(FilePathWatcherWithChangeInfoTest, DeleteDirectoryRecursively) {
       testing::Not(HasErrored()), IsType(FilePathWatcher::ChangeType::kDeleted),
       testing::Not(HasCookie())));
 
-  // TODO(https://crbug.com/1432044): inotify incorrectly reports an additional
+  // TODO(crbug.com/40263766): inotify incorrectly reports an additional
   // deletion event. Once fixed, update this matcher to assert that only one
   // event per removed file/dir is received.
   EventListMatcher sequence_matcher;
@@ -2883,7 +2883,7 @@ TEST_P(FilePathWatcherWithChangeInfoTest, DeleteDirectoryRecursively) {
         {testing::AllOf(HasPath(parent), IsDirectory()),
          testing::AllOf(HasPath(report_modified_path() ? child : parent),
                         IsDirectory()),
-         // TODO(https://crbug.com/1432044): inotify incorrectly reports this
+         // TODO(crbug.com/40263766): inotify incorrectly reports this
          // deletion on the path of just "grandchild" rather than on
          // "/absolute/path/blah/blah/parent/child/grantchild".
          testing::AllOf(

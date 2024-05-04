@@ -21,16 +21,15 @@ class RectF;
 namespace autofill {
 
 struct FormData;
-struct FormFieldData;
+class FormFieldData;
 class FormStructure;
 class AutofillDriver;
-class AutofillClient;
 
 // Reusable mock of AutofillManager. Note that only the pure virtual methods are
 // mocked here; non-virtual methods still rely on their default implementation.
 class MockAutofillManager : public AutofillManager {
  public:
-  MockAutofillManager(AutofillDriver* driver, AutofillClient* client);
+  explicit MockAutofillManager(AutofillDriver* driver);
   MockAutofillManager(const MockAutofillManager&) = delete;
   MockAutofillManager& operator=(const MockAutofillManager&) = delete;
   ~MockAutofillManager() override;
@@ -54,7 +53,8 @@ class MockAutofillManager : public AutofillManager {
               OnJavaScriptChangedAutofilledValueImpl,
               (const FormData& form,
                const FormFieldData& field,
-               const std::u16string& old_value),
+               const std::u16string& old_value,
+               bool formatting_only),
               (override));
   MOCK_METHOD(void,
               OnFormSubmittedImpl,
@@ -99,10 +99,6 @@ class MockAutofillManager : public AutofillManager {
   MOCK_METHOD(void,
               OnFormProcessed,
               (const FormData& form_data, const FormStructure& form_structure),
-              (override));
-  MOCK_METHOD(void,
-              OnAfterProcessParsedForms,
-              (const DenseSet<FormType>& form_types),
               (override));
   MOCK_METHOD(void,
               ReportAutofillWebOTPMetrics,

@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/drag_and_drop/model/drag_item_util.h"
 
 #import "base/check_op.h"
+#import "ios/chrome/browser/shared/model/web_state_list/tab_group.h"
 #import "ios/chrome/browser/window_activities/model/window_activity_helpers.h"
 #import "ios/web/public/browser_state.h"
 #import "ios/web/public/web_state.h"
@@ -31,6 +32,29 @@
   }
   return self;
 }
+@end
+
+@implementation TabGroupInfo {
+  // Weak reference of the dragged tab group.
+  base::WeakPtr<const TabGroup> _weakTabGroup;
+}
+
+- (instancetype)initWithTabGroup:(const TabGroup*)tabGroup
+                       incognito:(BOOL)incognito {
+  self = [super init];
+  if (self) {
+    _weakTabGroup = tabGroup->GetWeakPtr();
+    _incognito = incognito;
+  }
+  return self;
+}
+
+#pragma mark - Getters
+
+- (const TabGroup*)tabGroup {
+  return _weakTabGroup.get();
+}
+
 @end
 
 UIDragItem* CreateTabDragItem(web::WebState* web_state) {
@@ -68,5 +92,18 @@ UIDragItem* CreateURLDragItem(URLInfo* url_info, WindowActivityOrigin origin) {
   // Local objects allow synchronous drops, whereas NSItemProvider only allows
   // asynchronous drops.
   drag_item.localObject = url_info;
+  return drag_item;
+}
+
+UIDragItem* CreateTabGroupDragItem(const TabGroup* tab_group, bool incognito) {
+  if (!tab_group) {
+    return nil;
+  }
+
+  UIDragItem* drag_item =
+      [[UIDragItem alloc] initWithItemProvider:[[NSItemProvider alloc] init]];
+  TabGroupInfo* tab_group_info =
+      [[TabGroupInfo alloc] initWithTabGroup:tab_group incognito:incognito];
+  drag_item.localObject = tab_group_info;
   return drag_item;
 }

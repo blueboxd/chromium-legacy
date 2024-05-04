@@ -20,6 +20,7 @@
 #include "net/cert/internal/trust_store_chrome.h"
 #include "net/cert/internal/trust_store_features.h"
 #include "net/cert/x509_util.h"
+#include "net/dns/mock_host_resolver.h"
 #include "net/net_buildflags.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -43,6 +44,8 @@ class CertVerifierServiceChromeRootStoreOptionalTest
     // during this test.
     SystemNetworkContextManager::SetEnableCertificateTransparencyForTesting(
         false);
+
+    host_resolver()->AddRule("*", "127.0.0.1");
 
     content::GetCertVerifierServiceFactory()->SetUseChromeRootStore(
         use_chrome_root_store(), base::DoNothing());
@@ -69,9 +72,10 @@ IN_PROC_BROWSER_TEST_P(CertVerifierServiceChromeRootStoreOptionalTest, Test) {
       net::EmbeddedTestServer::TYPE_HTTPS);
   // Use a runtime generated cert, as the pre-generated ok_cert has too long of
   // a validity period to be accepted by a publicly trusted root.
-  https_test_server.SetSSLConfig(
-      net::test_server::EmbeddedTestServer::CERT_AUTO);
   https_test_server.ServeFilesFromSourceDirectory("chrome/test/data");
+  // The test uses a certificate with a publicly resolvable name, since Chrome
+  // rejects certificates for non-unique names from publicly trusted CAs.
+  https_test_server.SetCertHostnames({"example.com"});
   ASSERT_TRUE(https_test_server.Start());
 
   // Clear test roots so that cert validation only happens with
@@ -80,33 +84,26 @@ IN_PROC_BROWSER_TEST_P(CertVerifierServiceChromeRootStoreOptionalTest, Test) {
 
   {
     // Create updated Chrome Root Store with just the test server root cert.
-    chrome_root_store::RootStore root_store_proto;
-    root_store_proto.set_version_major(net::CompiledChromeRootStoreVersion() +
-                                       1);
+    chrome_root_store::RootStore root_store;
+    root_store.set_version_major(net::CompiledChromeRootStoreVersion() + 1);
 
-    chrome_root_store::TrustAnchor* anchor =
-        root_store_proto.add_trust_anchors();
+    chrome_root_store::TrustAnchor* anchor = root_store.add_trust_anchors();
     scoped_refptr<net::X509Certificate> root_cert =
         net::ImportCertFromFile(net::EmbeddedTestServer::GetRootCertPemPath());
     ASSERT_TRUE(root_cert);
     anchor->set_der(std::string(
         net::x509_util::CryptoBufferAsStringPiece(root_cert->cert_buffer())));
 
-    std::string proto_serialized;
-    root_store_proto.SerializeToString(&proto_serialized);
-    cert_verifier::mojom::ChromeRootStorePtr root_store_ptr =
-        cert_verifier::mojom::ChromeRootStore::New(
-            base::as_bytes(base::make_span(proto_serialized)));
-
     base::RunLoop update_run_loop;
     content::GetCertVerifierServiceFactory()->UpdateChromeRootStore(
-        std::move(root_store_ptr), update_run_loop.QuitClosure());
+        mojo_base::ProtoWrapper(root_store), update_run_loop.QuitClosure());
     update_run_loop.Run();
   }
 
   EXPECT_EQ(use_chrome_root_store(),
-            content::NavigateToURL(GetActiveWebContents(),
-                                   https_test_server.GetURL("/simple.html")));
+            content::NavigateToURL(
+                GetActiveWebContents(),
+                https_test_server.GetURL("example.com", "/simple.html")));
 
   // The navigation should show an interstitial if CRS was not in use, since
   // the root was only trusted in the test CRS update and won't be trusted by
@@ -194,7 +191,7 @@ IN_PROC_BROWSER_TEST_P(
     CertVerifierServiceEnforceLocalAnchorConstraintsFeaturePolicyTest,
     Test) {
 #if BUILDFLAG(IS_ANDROID)
-  // TODO(https://crbug.com/1410924): Avoid flake on android browser tests by
+  // TODO(crbug.com/40254617): Avoid flake on android browser tests by
   // requiring the test to always take at least 1 second to finish. Remove this
   // delay once issue 1410924 is resolved.
   base::RunLoop run_loop;

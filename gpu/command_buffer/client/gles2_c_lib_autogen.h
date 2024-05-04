@@ -1534,13 +1534,6 @@ GLES2DrawElementsInstancedBaseVertexBaseInstanceANGLE(GLenum mode,
 void GL_APIENTRY GLES2VertexAttribDivisorANGLE(GLuint index, GLuint divisor) {
   gles2::GetGLContext()->VertexAttribDivisorANGLE(index, divisor);
 }
-void GL_APIENTRY GLES2ProduceTextureDirectCHROMIUM(GLuint texture,
-                                                   GLbyte* mailbox) {
-  gles2::GetGLContext()->ProduceTextureDirectCHROMIUM(texture, mailbox);
-}
-GLuint GL_APIENTRY GLES2CreateAndConsumeTextureCHROMIUM(const GLbyte* mailbox) {
-  return gles2::GetGLContext()->CreateAndConsumeTextureCHROMIUM(mailbox);
-}
 void GL_APIENTRY GLES2BindUniformLocationCHROMIUM(GLuint program,
                                                   GLint location,
                                                   const char* name) {
@@ -1719,7 +1712,7 @@ GLES2CopySharedImageToTextureINTERNAL(GLuint texture,
       texture, target, internal_format, type, src_x, src_y, width, height,
       flip_y, src_mailbox);
 }
-void GL_APIENTRY
+GLboolean GL_APIENTRY
 GLES2ReadbackARGBImagePixelsINTERNAL(const GLbyte* mailbox,
                                      const void* dst_color_space,
                                      GLuint dst_color_space_size,
@@ -1733,7 +1726,7 @@ GLES2ReadbackARGBImagePixelsINTERNAL(const GLbyte* mailbox,
                                      GLint src_y,
                                      GLint plane_index,
                                      void* pixels) {
-  gles2::GetGLContext()->ReadbackARGBImagePixelsINTERNAL(
+  return gles2::GetGLContext()->ReadbackARGBImagePixelsINTERNAL(
       mailbox, dst_color_space, dst_color_space_size, dst_size, dst_width,
       dst_height, dst_color_type, dst_alpha_type, dst_row_bytes, src_x, src_y,
       plane_index, pixels);
@@ -3070,15 +3063,6 @@ extern const NameToFunc g_gles2_function_table[] = {
     {
         "glVertexAttribDivisorANGLE",
         reinterpret_cast<GLES2FunctionPointer>(glVertexAttribDivisorANGLE),
-    },
-    {
-        "glProduceTextureDirectCHROMIUM",
-        reinterpret_cast<GLES2FunctionPointer>(glProduceTextureDirectCHROMIUM),
-    },
-    {
-        "glCreateAndConsumeTextureCHROMIUM",
-        reinterpret_cast<GLES2FunctionPointer>(
-            glCreateAndConsumeTextureCHROMIUM),
     },
     {
         "glBindUniformLocationCHROMIUM",

@@ -13,27 +13,23 @@
 #include <utility>
 #include <vector>
 
-#include "base/check.h"
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/rand_util.h"
 #include "base/time/time.h"
+#include "base/types/expected_macros.h"
 #include "base/uuid.h"
 #include "components/attribution_reporting/aggregatable_trigger_config.h"
-#include "components/attribution_reporting/constants.h"
 #include "components/attribution_reporting/event_level_epsilon.h"
 #include "components/attribution_reporting/event_report_windows.h"
 #include "components/attribution_reporting/features.h"
 #include "components/attribution_reporting/max_event_level_reports.h"
+#include "components/attribution_reporting/privacy_math.h"
 #include "components/attribution_reporting/source_registration_time_config.mojom.h"
 #include "components/attribution_reporting/source_type.mojom.h"
 #include "components/attribution_reporting/trigger_config.h"
-#include "components/attribution_reporting/trigger_registration.h"
-#include "content/browser/attribution_reporting/aggregatable_attribution_utils.h"
 #include "content/browser/attribution_reporting/attribution_config.h"
 #include "content/browser/attribution_reporting/attribution_report.h"
-#include "content/browser/attribution_reporting/attribution_trigger.h"
-#include "content/browser/attribution_reporting/privacy_math.h"
 #include "content/browser/attribution_reporting/stored_source.h"
 #include "services/network/public/cpp/trigger_verification.h"
 
@@ -42,31 +38,6 @@ namespace content {
 namespace {
 
 using ::attribution_reporting::mojom::SourceType;
-
-std::vector<AttributionStorageDelegate::NullAggregatableReport>
-GetNullAggregatableReportsForLookback(
-    const AttributionTrigger& trigger,
-    base::Time trigger_time,
-    std::optional<base::Time> attributed_source_time,
-    int days_lookback,
-    double rate) {
-  std::vector<AttributionStorageDelegate::NullAggregatableReport> reports;
-  for (int i = 0; i <= days_lookback; i++) {
-    base::Time fake_source_time = trigger_time - base::Days(i);
-    if (attributed_source_time &&
-        RoundDownToWholeDaySinceUnixEpoch(fake_source_time) ==
-            *attributed_source_time) {
-      continue;
-    }
-
-    if (GenerateWithRate(rate)) {
-      reports.push_back(AttributionStorageDelegate::NullAggregatableReport{
-          .fake_source_time = fake_source_time,
-      });
-    }
-  }
-  return reports;
-}
 
 }  // namespace
 
@@ -158,7 +129,7 @@ AttributionStorageDelegateImpl::GetOfflineReportDelayConfig() const {
       delay_mode_ == AttributionDelayMode::kDefault) {
     // Add uniform random noise in the range of [0, 1 minutes] to the report
     // time.
-    // TODO(https://crbug.com/1075600): This delay is very conservative.
+    // TODO(crbug.com/40687765): This delay is very conservative.
     // Consider increasing this delay once we can be sure reports are still
     // sent at reasonable times, and not delayed for many browser sessions due
     // to short session up-times.
@@ -202,7 +173,7 @@ double AttributionStorageDelegateImpl::GetRandomizedResponseRate(
     attribution_reporting::MaxEventLevelReports max_event_level_reports,
     attribution_reporting::EventLevelEpsilon epsilon) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return content::GetRandomizedResponseRate(
+  return attribution_reporting::GetRandomizedResponseRate(
       GetNumStates(trigger_specs, max_event_level_reports), epsilon);
 }
 
@@ -211,91 +182,55 @@ AttributionStorageDelegateImpl::GetRandomizedResponse(
     SourceType source_type,
     const attribution_reporting::TriggerSpecs& trigger_specs,
     attribution_reporting::MaxEventLevelReports max_event_level_reports,
-    attribution_reporting::EventLevelEpsilon epsilon,
-    base::Time source_time) const {
+    attribution_reporting::EventLevelEpsilon epsilon) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  RandomizedResponseData response =
-      DoRandomizedResponse(trigger_specs, max_event_level_reports, epsilon);
 
-  if (response.channel_capacity() > GetMaxChannelCapacity(source_type)) {
-    return base::unexpected(ExceedsChannelCapacityLimit());
-  }
+  ASSIGN_OR_RETURN(auto response,
+                   attribution_reporting::DoRandomizedResponse(
+                       trigger_specs, max_event_level_reports, epsilon,
+                       config_.event_level_limit.max_trigger_state_cardinality,
+                       GetMaxChannelCapacity(source_type)));
 
   switch (noise_mode_) {
     case AttributionNoiseMode::kDefault:
-      return response;
+      break;
     case AttributionNoiseMode::kNone:
-      return RandomizedResponseData(response.rate(),
-                                    response.channel_capacity(), std::nullopt);
+      // TODO(apaseltiner): When noise is disabled, we shouldn't even bother
+      // generating the response in the first place.
+      response.response() = std::nullopt;
+      break;
   }
+
+  return response;
 }
 
-std::vector<AttributionStorageDelegate::NullAggregatableReport>
-AttributionStorageDelegateImpl::GetNullAggregatableReports(
-    const AttributionTrigger& trigger,
-    base::Time trigger_time,
-    std::optional<base::Time> attributed_source_time) const {
+bool AttributionStorageDelegateImpl::
+    GenerateNullAggregatableReportForLookbackDay(
+        int lookback_day,
+        attribution_reporting::mojom::SourceRegistrationTimeConfig
+            source_registration_time_config) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   switch (noise_mode_) {
     case AttributionNoiseMode::kDefault:
-      return GetNullAggregatableReportsImpl(trigger, trigger_time,
-                                            attributed_source_time);
+      break;
     case AttributionNoiseMode::kNone:
-      return {};
+      return false;
   }
-}
 
-std::vector<AttributionStorageDelegate::NullAggregatableReport>
-AttributionStorageDelegateImpl::GetNullAggregatableReportsImpl(
-    const AttributionTrigger& trigger,
-    base::Time trigger_time,
-    std::optional<base::Time> attributed_source_time) const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  // See spec
-  // https://wicg.github.io/attribution-reporting-api/#generate-null-reports.
-
-  bool has_trigger_context_id =
-      trigger.registration()
-          .aggregatable_trigger_config.trigger_context_id()
-          .has_value();
-
-  switch (trigger.registration()
-              .aggregatable_trigger_config.source_registration_time_config()) {
-    case attribution_reporting::mojom::SourceRegistrationTimeConfig::kInclude: {
-      std::optional<base::Time> rounded_attributed_source_time;
-      if (attributed_source_time) {
-        rounded_attributed_source_time =
-            RoundDownToWholeDaySinceUnixEpoch(*attributed_source_time);
-      }
-
-      static_assert(attribution_reporting::kMaxSourceExpiry == base::Days(30),
-                    "update null reports rate");
-
-      CHECK(!has_trigger_context_id);
-
-      return GetNullAggregatableReportsForLookback(
-          trigger, trigger_time, rounded_attributed_source_time,
-          /*days_lookback=*/
-          attribution_reporting::kMaxSourceExpiry.InDays(),
-          config_.aggregate_limit
-              .null_reports_rate_include_source_registration_time);
-    }
-    case attribution_reporting::mojom::SourceRegistrationTimeConfig::kExclude: {
-      const bool has_real_report = attributed_source_time.has_value();
-      if (has_real_report) {
-        return {};
-      }
-
-      return GetNullAggregatableReportsForLookback(
-          trigger, trigger_time, attributed_source_time, /*days_lookback=*/0,
-          has_trigger_context_id
-              ? 1.
-              : config_.aggregate_limit
-                    .null_reports_rate_exclude_source_registration_time);
-    }
+  double rate;
+  switch (source_registration_time_config) {
+    case attribution_reporting::mojom::SourceRegistrationTimeConfig::kInclude:
+      rate = config_.aggregate_limit
+                 .null_reports_rate_include_source_registration_time;
+      break;
+    case attribution_reporting::mojom::SourceRegistrationTimeConfig::kExclude:
+      rate = config_.aggregate_limit
+                 .null_reports_rate_exclude_source_registration_time;
+      break;
   }
+
+  return attribution_reporting::GenerateWithRate(rate);
 }
 
 }  // namespace content

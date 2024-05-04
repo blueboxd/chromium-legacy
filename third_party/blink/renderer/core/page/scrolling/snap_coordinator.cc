@@ -76,8 +76,8 @@ bool SnapCoordinator::UpdateSnapContainerData(LayoutBox& snap_container) {
     // Clear the old data if needed.
     if (old_snap_container_data) {
       snap_container.SetNeedsPaintPropertyUpdate();
-      scrollable_area->SetSnapChangingTargetData(std::nullopt);
-      scrollable_area->SetSnappedTargetData(std::nullopt);
+      scrollable_area->SetSnapchangingTargetIds(std::nullopt);
+      scrollable_area->SetSnapchangedTargetIds(std::nullopt);
       if (RuntimeEnabledFeatures::CSSSnapChangedEventEnabled()) {
         scrollable_area->EnqueueSnapChangedEvent();
       }
@@ -128,6 +128,8 @@ bool SnapCoordinator::UpdateSnapContainerData(LayoutBox& snap_container) {
       MinimumValueForLength(container_style->ScrollPaddingLeft(),
                             container_rect.Width()));
   snap_container_data.set_rect(gfx::RectF(container_rect));
+  snap_container_data.set_has_horizontal_writing_mode(
+      container_style->IsHorizontalWritingMode());
 
   if (snap_container_data.scroll_snap_type().strictness ==
       cc::SnapStrictness::kProximity) {

@@ -330,7 +330,8 @@ class MacNotificationServiceUNTest : public testing::Test {
             mojom::RequestPermissionResult::kPermissionPreviouslyGranted) {
       bool granted =
           result == mojom::RequestPermissionResult::kPermissionGranted;
-      id error = result == mojom::RequestPermissionResult::kRequestFailed
+      id error = (result == mojom::RequestPermissionResult::kRequestFailed ||
+                  result == mojom::RequestPermissionResult::kPermissionDenied)
                      ? [NSError errorWithDomain:@"" code:0 userInfo:nil]
                      : NSNull.null;
       OCMExpect(
@@ -682,9 +683,10 @@ TEST_F(MacNotificationServiceUNTest, LogsMetricsForAlerts) {
     @"NSUserNotificationAlertStyle" : @"alert"
   });
 
+  // Test does not include kRequestFailed, as currently there is no code path
+  // that would result in that error.
   for (auto result :
-       {mojom::RequestPermissionResult::kRequestFailed,
-        mojom::RequestPermissionResult::kPermissionDenied,
+       {mojom::RequestPermissionResult::kPermissionDenied,
         mojom::RequestPermissionResult::kPermissionGranted,
         mojom::RequestPermissionResult::kPermissionPreviouslyDenied,
         mojom::RequestPermissionResult::kPermissionPreviouslyGranted}) {
@@ -707,9 +709,10 @@ TEST_F(MacNotificationServiceUNTest, LogsMetricsForBanners) {
     @"NSUserNotificationAlertStyle" : @"banner"
   });
 
+  // Test does not include kRequestFailed, as currently there is no code path
+  // that would result in that error.
   for (auto result :
-       {mojom::RequestPermissionResult::kRequestFailed,
-        mojom::RequestPermissionResult::kPermissionDenied,
+       {mojom::RequestPermissionResult::kPermissionDenied,
         mojom::RequestPermissionResult::kPermissionGranted,
         mojom::RequestPermissionResult::kPermissionPreviouslyDenied,
         mojom::RequestPermissionResult::kPermissionPreviouslyGranted}) {
@@ -807,6 +810,37 @@ TEST_F(MacNotificationServiceUNTest, OnNotificationAction) {
     inner_run_loop.Run();
     run_loop.Run();
   }
+}
+
+TEST_F(MacNotificationServiceUNTest, DidRecentlyHandledClickAction) {
+  EXPECT_FALSE(service_->DidRecentlyHandleClickAction());
+
+  // Simulate a notification click.
+  FakeUNNotification* notification =
+      CreateNotification("notificationId", "profileId",
+                         /*incognito=*/false);
+  id response = [OCMockObject mockForClass:[UNNotificationResponse class]];
+  OCMStub([response actionIdentifier])
+      .andReturn(UNNotificationDefaultActionIdentifier);
+  OCMStub([response notification]).andReturn(notification);
+
+  base::RunLoop run_loop;
+  EXPECT_CALL(mock_handler_, OnNotificationAction)
+      .WillOnce([&](mojom::NotificationActionInfoPtr action_info) {
+        run_loop.Quit();
+      });
+
+  [notification_center_delegate_
+              userNotificationCenter:mock_notification_center_
+      didReceiveNotificationResponse:response
+               withCompletionHandler:^(){
+               }];
+
+  EXPECT_TRUE(service_->DidRecentlyHandleClickAction());
+  run_loop.Run();
+  EXPECT_TRUE(service_->DidRecentlyHandleClickAction());
+  task_environment_.FastForwardBy(base::Milliseconds(250));
+  EXPECT_FALSE(service_->DidRecentlyHandleClickAction());
 }
 
 TEST_F(MacNotificationServiceUNTest,

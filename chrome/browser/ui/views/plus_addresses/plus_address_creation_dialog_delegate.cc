@@ -22,6 +22,7 @@
 #include "components/plus_addresses/features.h"
 #include "components/plus_addresses/plus_address_types.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/vector_icons/vector_icons.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "components/web_modal/web_contents_modal_dialog_manager_delegate.h"
 #include "content/public/browser/page_navigator.h"
@@ -36,6 +37,8 @@
 #include "ui/gfx/text_constants.h"
 #include "ui/gfx/vector_icon_types.h"
 #include "ui/views/background.h"
+#include "ui/views/controls/button/image_button.h"
+#include "ui/views/controls/button/image_button_factory.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/layout/box_layout.h"
@@ -77,7 +80,8 @@ DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(PlusAddressCreationView,
 PlusAddressCreationDialogDelegate::PlusAddressCreationDialogDelegate(
     base::WeakPtr<PlusAddressCreationController> controller,
     content::WebContents* web_contents,
-    const std::string& primary_email_address)
+    const std::string& primary_email_address,
+    bool offer_refresh)
     : views::BubbleDialogDelegate(/*anchor_view=*/nullptr,
                                   views::BubbleBorder::Arrow::NONE),
       controller_(controller),
@@ -181,24 +185,53 @@ PlusAddressCreationDialogDelegate::PlusAddressCreationDialogDelegate(
 
   std::unique_ptr<views::Background> background =
       views::CreateThemedRoundedRectBackground(
-          // TODO(crbug.com/1467623) - Replace with color from the mocks.
+          // TODO(crbug.com/40276862) - Replace with color from the mocks.
           ui::kColorSubtleEmphasisBackground, kRectangleRadius);
-  plus_address_label_ = primary_view->AddChildView(
+  views::BoxLayoutView* label_container =
+      primary_view->AddChildView(views::Builder<views::BoxLayoutView>()
+                                     .SetBackground(std::move(background))
+                                     .Build());
+  label_container->SetProperty(
+      views::kMarginsKey, gfx::Insets::VH(kPlusAddressLabelVerticalMargin, 0));
+  plus_address_label_ = label_container->AddChildView(
       views::Builder<views::Label>()
           .SetText(l10n_util::GetStringUTF16(
               IDS_PLUS_ADDRESS_MODAL_PROPOSED_PLUS_ADDRESS_PLACEHOLDER))
           .SetTextContext(views::style::CONTEXT_DIALOG_BODY_TEXT)
           .SetTextStyle(views::style::STYLE_PRIMARY)
-          .SetBackground(std::move(background))
           .Build());
-  plus_address_label_->SetProperty(
-      views::kMarginsKey,
-      gfx::Insets::TLBR(kPlusAddressLabelVerticalMargin, 0,
-                        kPlusAddressLabelVerticalMargin, 0));
   plus_address_label_->SetProperty(views::kElementIdentifierKey,
                                    kPlusAddressSuggestedEmailElementId);
   plus_address_label_->SetSelectable(true);
   plus_address_label_->SetLineHeight(2 * plus_address_label_->GetLineHeight());
+
+  // The refresh button.
+  if (offer_refresh) {
+    refresh_button_ =
+        label_container->AddChildView(views::CreateVectorImageButton(
+            base::BindRepeating(
+                [](views::Label& label) {
+                  label.SetText(l10n_util::GetStringUTF16(
+                      IDS_PLUS_ADDRESS_MODEL_REFRESH_TEMPORARY_LABEL_CONTENT));
+                },
+                std::ref(*plus_address_label_))
+                .Then(base::BindRepeating(
+                    &PlusAddressCreationController::OnRefreshClicked,
+                    controller_))));
+    views::SetImageFromVectorIconWithColorId(refresh_button_,
+                                             vector_icons::kReloadIcon,
+                                             ui::kColorIcon, ui::kColorIcon);
+    refresh_button_->SetAccessibleName(l10n_util::GetStringUTF16(
+        IDS_PLUS_ADDRESS_MODEL_REFRESH_BUTTON_ACCESSIBLE_NAME));
+    refresh_button_->SetProperty(views::kMarginsKey,
+                                 gfx::Insets::TLBR(0, 0, 0, 16));
+    refresh_button_->SetBorder(views::CreateEmptyBorder(gfx::Insets::VH(0, 8)));
+    plus_address_label_->SetProperty(
+        views::kMarginsKey,
+        gfx::Insets::TLBR(0, 16 + refresh_button_->GetMinimumSize().width(), 0,
+                          0));
+  }
+  label_container->SetFlexForView(plus_address_label_, 1);
 
   // Create and hide label for bug report instruction.
   std::vector<size_t> error_link_offsets;
@@ -301,11 +334,13 @@ void PlusAddressCreationDialogDelegate::OnWidgetInitialized() {
 void PlusAddressCreationDialogDelegate::OpenSettingsLink(
     content::WebContents* web_contents) {
   if (web_contents && !features::kPlusAddressManagementUrl.Get().empty()) {
-    web_contents->OpenURL(content::OpenURLParams(
-        GURL(features::kPlusAddressManagementUrl.Get()), content::Referrer(),
-        WindowOpenDisposition::NEW_FOREGROUND_TAB,
-        ui::PageTransition::PAGE_TRANSITION_LINK,
-        /*is_renderer_initiated=*/false));
+    web_contents->OpenURL(
+        content::OpenURLParams(GURL(features::kPlusAddressManagementUrl.Get()),
+                               content::Referrer(),
+                               WindowOpenDisposition::NEW_FOREGROUND_TAB,
+                               ui::PageTransition::PAGE_TRANSITION_LINK,
+                               /*is_renderer_initiated=*/false),
+        /*navigation_handle_callback=*/{});
   }
 }
 
@@ -313,12 +348,24 @@ void PlusAddressCreationDialogDelegate::OpenSettingsLink(
 void PlusAddressCreationDialogDelegate::OpenErrorReportLink(
     content::WebContents* web_contents) {
   if (web_contents && !features::kPlusAddressErrorReportUrl.Get().empty()) {
-    web_contents->OpenURL(content::OpenURLParams(
-        GURL(features::kPlusAddressErrorReportUrl.Get()), content::Referrer(),
-        WindowOpenDisposition::NEW_FOREGROUND_TAB,
-        ui::PageTransition::PAGE_TRANSITION_LINK,
-        /*is_renderer_initiated=*/false));
+    web_contents->OpenURL(
+        content::OpenURLParams(GURL(features::kPlusAddressErrorReportUrl.Get()),
+                               content::Referrer(),
+                               WindowOpenDisposition::NEW_FOREGROUND_TAB,
+                               ui::PageTransition::PAGE_TRANSITION_LINK,
+                               /*is_renderer_initiated=*/false),
+        /*navigation_handle_callback=*/{});
   }
+}
+
+void PlusAddressCreationDialogDelegate::HideRefreshButton() {
+  if (!refresh_button_) {
+    return;
+  }
+  std::unique_ptr<views::View> button =
+      refresh_button_->parent()->RemoveChildViewT(refresh_button_.get());
+  refresh_button_ = nullptr;
+  plus_address_label_->SetProperty(views::kMarginsKey, gfx::Insets());
 }
 
 void PlusAddressCreationDialogDelegate::ShowReserveResult(

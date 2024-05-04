@@ -26,6 +26,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "crypto/sha2.h"
+#include "net/base/cronet_buildflags.h"
 #include "net/base/net_errors.h"
 #include "net/cert/asn1_util.h"
 #include "net/cert/cert_net_fetcher.h"
@@ -84,7 +85,7 @@
 #include "net/cert/internal/trust_store_chrome.h"
 #endif
 
-// TODO(crbug.com/649017): Add tests that only certificates with
+// TODO(crbug.com/41276779): Add tests that only certificates with
 // serverAuth are accepted.
 
 using net::test::IsError;
@@ -244,7 +245,7 @@ scoped_refptr<CertVerifyProc> CreateCertVerifyProc(
 // The set of all CertVerifyProcTypes that tests should be parameterized on.
 // This needs to be kept in sync with CertVerifyProc::CreateSystemVerifyProc()
 // and the platforms where CreateSslSystemTrustStore() is not a dummy store.
-// TODO(crbug.com/649017): Enable CERT_VERIFY_PROC_BUILTIN everywhere. Right
+// TODO(crbug.com/41276779): Enable CERT_VERIFY_PROC_BUILTIN everywhere. Right
 // now this is gated on having CertVerifyProcBuiltin understand the roots added
 // via TestRootCerts.
 constexpr CertVerifyProcType kAllCertVerifiers[] = {
@@ -1097,11 +1098,21 @@ class CertVerifyProcInspectSignatureAlgorithmsTest : public ::testing::Test {
 
   // Manufactures a certificate chain where each certificate has the indicated
   // signature algorithms, and then returns the result of verifying this chain.
-  //
-  // TODO(mattm): Replace the custom cert mangling code in this test with
-  // CertBuilder.
   [[nodiscard]] int VerifyChain(const std::vector<CertParams>& chain_params) {
-    auto chain = CreateChain(chain_params);
+    // Manufacture a chain with the given combinations of signature algorithms.
+    // This chain isn't actually a valid chain, but it is good enough for
+    // testing the base CertVerifyProc.
+    std::vector<std::unique_ptr<CertBuilder>> builders =
+        CertBuilder::CreateSimpleChain(chain_params.size());
+    for (size_t i = 0; i < chain_params.size(); i++) {
+      builders[i]->SetOuterSignatureAlgorithmTLV(base::as_string_view(
+          GetAlgorithmSequence(chain_params[i].cert_algorithm)));
+      builders[i]->SetTBSSignatureAlgorithmTLV(base::as_string_view(
+          GetAlgorithmSequence(chain_params[i].tbs_algorithm)));
+    }
+
+    scoped_refptr<X509Certificate> chain =
+        builders.front()->GetX509CertificateFullChain();
     if (!chain) {
       ADD_FAILURE() << "Failed creating certificate chain";
       return ERR_UNEXPECTED;
@@ -1114,160 +1125,32 @@ class CertVerifyProcInspectSignatureAlgorithmsTest : public ::testing::Test {
     auto verify_proc = base::MakeRefCounted<MockCertVerifyProc>(dummy_result);
 
     return verify_proc->Verify(
-        chain.get(), "127.0.0.1", /*ocsp_response=*/std::string(),
+        chain.get(), "www.example.com", /*ocsp_response=*/std::string(),
         /*sct_list=*/std::string(), flags, &verify_result, NetLogWithSource());
   }
 
  private:
-  // Overwrites the AlgorithmIdentifier pointed to by |algorithm_sequence| with
-  // |algorithm|. Note this violates the constness of StringPiece.
-  [[nodiscard]] static bool SetAlgorithmSequence(
-      bssl::DigestAlgorithm algorithm,
-      std::string_view* algorithm_sequence) {
-    // This string of bytes is the full SEQUENCE for an AlgorithmIdentifier.
-    std::vector<uint8_t> replacement_sequence;
+  static base::span<const uint8_t> GetAlgorithmSequence(
+      bssl::DigestAlgorithm algorithm) {
     switch (algorithm) {
       case bssl::DigestAlgorithm::Sha1:
-        // sha1WithRSAEncryption
-        replacement_sequence = {0x30, 0x0D, 0x06, 0x09, 0x2a, 0x86, 0x48, 0x86,
-                                0xf7, 0x0d, 0x01, 0x01, 0x05, 0x05, 0x00};
-        break;
+        static const uint8_t kSha1WithRSAEncryption[] = {
+            0x30, 0x0D, 0x06, 0x09, 0x2a, 0x86, 0x48, 0x86,
+            0xf7, 0x0d, 0x01, 0x01, 0x05, 0x05, 0x00};
+        return kSha1WithRSAEncryption;
       case bssl::DigestAlgorithm::Sha256:
-        // sha256WithRSAEncryption
-        replacement_sequence = {0x30, 0x0D, 0x06, 0x09, 0x2a, 0x86, 0x48, 0x86,
-                                0xf7, 0x0d, 0x01, 0x01, 0x0b, 0x05, 0x00};
-        break;
+        static const uint8_t kSha256WithRSAEncryption[] = {
+            0x30, 0x0D, 0x06, 0x09, 0x2a, 0x86, 0x48, 0x86,
+            0xf7, 0x0d, 0x01, 0x01, 0x0b, 0x05, 0x00};
+        return kSha256WithRSAEncryption;
       case kUnknownDigestAlgorithm:
-        // This shouldn't be anything meaningful (modified numbers at random).
-        replacement_sequence = {0x30, 0x0D, 0x06, 0x09, 0x8a, 0x87, 0x18, 0x46,
-                                0xd7, 0x0d, 0x01, 0x01, 0x0b, 0x05, 0x00};
-        break;
+        static const uint8_t kUnknownAlgorithm[] = {
+            0x30, 0x0D, 0x06, 0x09, 0x8a, 0x87, 0x18, 0x46,
+            0xd7, 0x0d, 0x01, 0x01, 0x0b, 0x05, 0x00};
+        return kUnknownAlgorithm;
       default:
-        ADD_FAILURE() << "Unsupported digest algorithm";
-        return false;
+        NOTREACHED_NORETURN() << "Unsupported digest algorithm";
     }
-
-    // For this simple replacement to work (without modifying any
-    // other sequence lengths) the original algorithm and replacement
-    // algorithm must have the same encoded length.
-    if (algorithm_sequence->size() != replacement_sequence.size()) {
-      ADD_FAILURE() << "AlgorithmIdentifier must have length "
-                    << replacement_sequence.size();
-      return false;
-    }
-
-    memcpy(const_cast<char*>(algorithm_sequence->data()),
-           replacement_sequence.data(), replacement_sequence.size());
-    return true;
-  }
-
-  // Locate the serial number bytes.
-  [[nodiscard]] static bool ExtractSerialNumberFromDERCert(
-      std::string_view der_cert,
-      std::string_view* serial_value) {
-    bssl::der::Parser parser((bssl::der::Input(der_cert)));
-    bssl::der::Parser certificate;
-    if (!parser.ReadSequence(&certificate)) {
-      return false;
-    }
-
-    bssl::der::Parser tbs_certificate;
-    if (!certificate.ReadSequence(&tbs_certificate)) {
-      return false;
-    }
-
-    bool unused;
-    if (!tbs_certificate.SkipOptionalTag(
-            CBS_ASN1_CONSTRUCTED | CBS_ASN1_CONTEXT_SPECIFIC | 0, &unused)) {
-      return false;
-    }
-
-    // serialNumber
-    bssl::der::Input serial_value_der;
-    if (!tbs_certificate.ReadTag(CBS_ASN1_INTEGER, &serial_value_der)) {
-      return false;
-    }
-
-    *serial_value = serial_value_der.AsStringView();
-    return true;
-  }
-
-  // Creates a certificate (based on some base certificate file) using the
-  // specified signature algorithms.
-  static scoped_refptr<X509Certificate> CreateCertificate(
-      const CertParams& params) {
-    // Dosn't really matter which base certificate is used, so long as it is
-    // valid and uses a signature AlgorithmIdentifier with the same encoded
-    // length as sha1WithRSASignature.
-    const char* kLeafFilename = "ok_cert.pem";
-
-    auto cert = CreateCertificateChainFromFile(
-        GetTestCertsDirectory(), kLeafFilename, X509Certificate::FORMAT_AUTO);
-    if (!cert) {
-      ADD_FAILURE() << "Failed to load certificate: " << kLeafFilename;
-      return nullptr;
-    }
-
-    // Start with the DER bytes of a valid certificate. The der data is copied
-    // to a new std::string as it will modified to create a new certificate.
-    std::string cert_der(
-        x509_util::CryptoBufferAsStringPiece(cert->cert_buffer()));
-
-    // Parse the certificate and identify the locations of interest within
-    // |cert_der|.
-    std::string_view cert_algorithm_sequence;
-    std::string_view tbs_algorithm_sequence;
-    if (!asn1::ExtractSignatureAlgorithmsFromDERCert(
-            cert_der, &cert_algorithm_sequence, &tbs_algorithm_sequence)) {
-      ADD_FAILURE() << "Failed parsing certificate algorithms";
-      return nullptr;
-    }
-
-    std::string_view serial_value;
-    if (!ExtractSerialNumberFromDERCert(cert_der, &serial_value)) {
-      ADD_FAILURE() << "Failed parsing certificate serial number";
-      return nullptr;
-    }
-
-    // Give each certificate a unique serial number based on its content (which
-    // in turn is a function of |params|, otherwise importing it may fail.
-
-    // Upper bound for last entry in DigestAlgorithm
-    const int kNumDigestAlgorithms = 15;
-    *const_cast<char*>(serial_value.data()) +=
-        static_cast<int>(params.tbs_algorithm) * kNumDigestAlgorithms +
-        static_cast<int>(params.cert_algorithm);
-
-    // Change the signature AlgorithmIdentifiers.
-    if (!SetAlgorithmSequence(params.cert_algorithm,
-                              &cert_algorithm_sequence) ||
-        !SetAlgorithmSequence(params.tbs_algorithm, &tbs_algorithm_sequence)) {
-      return nullptr;
-    }
-
-    // NOTE: The signature is NOT recomputed over TBSCertificate -- for these
-    // tests it isn't needed.
-    return X509Certificate::CreateFromBytes(base::as_byte_span(cert_der));
-  }
-
-  static scoped_refptr<X509Certificate> CreateChain(
-      const std::vector<CertParams>& params) {
-    // Manufacture a chain with the given combinations of signature algorithms.
-    // This chain isn't actually a valid chain, but it is good enough for
-    // testing the base CertVerifyProc.
-    CertificateList certs;
-    for (const auto& cert_params : params) {
-      certs.push_back(CreateCertificate(cert_params));
-      if (!certs.back())
-        return nullptr;
-    }
-
-    std::vector<bssl::UniquePtr<CRYPTO_BUFFER>> intermediates;
-    for (size_t i = 1; i < certs.size(); ++i)
-      intermediates.push_back(bssl::UpRef(certs[i]->cert_buffer()));
-
-    return X509Certificate::CreateFromBuffer(
-        bssl::UpRef(certs[0]->cert_buffer()), std::move(intermediates));
   }
 };
 
@@ -1481,10 +1364,10 @@ TEST_P(CertVerifyProcInternalTest, TestKnownRoot) {
   int flags = 0;
   CertVerifyResult verify_result;
   int error =
-      Verify(cert_chain.get(), "smallstrategies.com", flags, &verify_result);
+      Verify(cert_chain.get(), "foo.chickentools.org", flags, &verify_result);
   EXPECT_THAT(error, IsOk())
       << "This test relies on a real certificate that "
-      << "expires on Nov 29 2024. If failing on/after "
+      << "expires on May 11 2025. If failing on/after "
       << "that date, please disable and file a bug "
       << "against mattm. Current time: " << base::Time::Now();
   EXPECT_TRUE(verify_result.is_issued_by_known_root);
@@ -1603,7 +1486,13 @@ TEST(CertVerifyProcTest, IntranetHostsRejected) {
                               /*ocsp_response=*/std::string(),
                               /*sct_list=*/std::string(), 0, &verify_result,
                               NetLogWithSource());
+  // Intranet certificates from known roots are accepted without error in Cronet
+  // to avoid breaking consumer tests. See b/337196170 (Google-internal).
+#if BUILDFLAG(CRONET_BUILD)
   EXPECT_THAT(error, IsOk());
+#else
+  EXPECT_THAT(error, IsError(ERR_CERT_NON_UNIQUE_NAME));
+#endif  // BUILDFLAG(CRONET_BUILD)
   EXPECT_TRUE(verify_result.cert_status & CERT_STATUS_NON_UNIQUE_NAME);
 
   // However, if the CA is not well known, these should not be flagged:
@@ -2996,7 +2885,7 @@ TEST_P(CertVerifyProcInternalWithNetFetchingTest,
 
 // Tries verifying a certificate chain that is missing an intermediate. The
 // intermediate is available via AIA.
-// TODO(crbug.com/860189): Failing on iOS
+// TODO(crbug.com/41399468): Failing on iOS
 #if BUILDFLAG(IS_IOS)
 #define MAYBE_IntermediateFromAia200Der DISABLED_IntermediateFromAia200Der
 #else
@@ -3054,7 +2943,7 @@ TEST_P(CertVerifyProcInternalWithNetFetchingTest,
 // Tries verifying a certificate chain that is missing an intermediate. The
 // intermediate is available via AIA, however is served as a PEM file rather
 // than DER.
-// TODO(crbug.com/860189): Failing on iOS
+// TODO(crbug.com/41399468): Failing on iOS
 #if BUILDFLAG(IS_IOS)
 #define MAYBE_IntermediateFromAia200Pem DISABLED_IntermediateFromAia200Pem
 #else
@@ -3106,7 +2995,7 @@ TEST_P(CertVerifyProcInternalWithNetFetchingTest,
 // This test is the same as IntermediateFromAia200Pem, but with a different
 // formatting on the PEM data.
 //
-// TODO(crbug.com/860189): Failing on iOS
+// TODO(crbug.com/41399468): Failing on iOS
 #if BUILDFLAG(IS_IOS)
 #define MAYBE_IntermediateFromAia200Pem2 DISABLED_IntermediateFromAia200Pem2
 #else

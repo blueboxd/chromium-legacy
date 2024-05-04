@@ -4,112 +4,104 @@
 
 package org.chromium.chrome.test.transit;
 
-import org.chromium.base.ThreadUtils;
-import org.chromium.base.test.transit.Elements;
-import org.chromium.base.test.transit.StationFacility;
-import org.chromium.base.test.transit.Trip;
 import org.chromium.chrome.R;
-import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 
-/**
- * The app menu shown when pressing ("...") in the Hub on a tab swicther pane.
- */
-public class HubTabSwitcherAppMenuFacility extends StationFacility<HubTabSwitcherBaseStation> {
-    // TODO(crbug/1506104): Uncomment once the app menu is hooked up to Hub.
-    // public static final Matcher<View> MENU_LIST = withId(R.id.app_menu_list);
+import java.util.List;
 
-    private final ChromeTabbedActivityTestRule mChromeTabbedActivityTestRule;
+/** The app menu shown when pressing ("...") in the Hub on a tab switcher pane. */
+public class HubTabSwitcherAppMenuFacility extends AppMenuFacility<HubTabSwitcherBaseStation> {
+    public static final int CLOSE_ALL_TABS_ID = R.id.close_all_tabs_menu_id;
+    public static final int CLOSE_INCOGNITO_TABS_ID = R.id.close_all_incognito_tabs_menu_id;
+    public static final int SELECT_TABS_ID = R.id.menu_select_tabs;
+    public static final int CLEAR_BROWSING_DATA_ID = R.id.quick_delete_menu_id;
 
-    public HubTabSwitcherAppMenuFacility(
-            HubTabSwitcherBaseStation station,
-            ChromeTabbedActivityTestRule chromeTabbedActivityTestRule) {
-        super(station);
-        mChromeTabbedActivityTestRule = chromeTabbedActivityTestRule;
+    private final boolean mIsIncognito;
+    private Item<NewTabPageStation> mNewTab;
+    private Item<IncognitoNewTabPageStation> mNewIncognitoTab;
+    private Item<Void> mCloseAllTabs;
+    private Item<Void> mCloseIncognitoTabs;
+    private Item<HubTabSwitcherListEditorFacility> mSelectTabs;
+    private Item<Void> mClearBrowsingData;
+    private Item<SettingsStation> mSettings;
+
+    public HubTabSwitcherAppMenuFacility(HubTabSwitcherBaseStation station, boolean isIncognito) {
+        super(station, station.mChromeTabbedActivityTestRule);
+        mIsIncognito = isIncognito;
     }
 
     @Override
-    public void declareElements(Elements.Builder elements) {
-        // TODO(crbug/1506104): Uncomment once the app menu is hooked up to Hub.
-        // elements.declareView(MENU_LIST);
+    protected void declareItems(List<Item<?>> items) {
+        boolean isTablet = mChromeTabbedActivityTestRule.getActivity().isTablet();
+
+        mNewTab = newMenuItemToStation(NEW_TAB_ID, this::createNewTabPageStation);
+        mNewIncognitoTab =
+                newMenuItemToStation(NEW_INCOGNITO_TAB_ID, this::createIncognitoNewTabPageStation);
+        mSettings = newMenuItemToStation(SETTINGS_ID, this::createSettingsStation);
+        if (!mIsIncognito) {
+            // Regular Hub Tab Switcher
+
+            Item<?> selectTabs;
+            if (mChromeTabbedActivityTestRule.tabsCount(/* regular= */ false) > 0) {
+                mCloseAllTabs = newStubMenuItem(CLOSE_ALL_TABS_ID);
+                mSelectTabs = newMenuItemToFacility(SELECT_TABS_ID, this::createListEditorFacility);
+                selectTabs = mSelectTabs;
+            } else {
+                // Empty state. In tablets the following items are not displayed, while in phones
+                // they are disabled.
+                if (isTablet) {
+                    mCloseAllTabs = newAbsentMenuItem(CLOSE_ALL_TABS_ID);
+                    selectTabs = newAbsentMenuItem(SELECT_TABS_ID);
+                } else {
+                    mCloseAllTabs = newDisabledMenuItem(CLOSE_ALL_TABS_ID);
+                    selectTabs = newDisabledMenuItem(SELECT_TABS_ID);
+                }
+            }
+            mClearBrowsingData = newStubMenuItem(CLEAR_BROWSING_DATA_ID);
+
+            items.add(mNewTab);
+            items.add(mNewIncognitoTab);
+            items.add(mCloseAllTabs);
+            items.add(selectTabs);
+            items.add(mClearBrowsingData);
+            items.add(mSettings);
+        } else {
+            // Incognito Hub Tab Switcher
+
+            // If there are no incognito tabs, the incognito tab switcher pane disappears so
+            // "Close Incognito Tabs" and "Select tabs" are always present and
+            // enabled.
+            mCloseIncognitoTabs = newStubMenuItem(CLOSE_INCOGNITO_TABS_ID);
+            mSelectTabs = newMenuItemToFacility(SELECT_TABS_ID, this::createListEditorFacility);
+
+            items.add(mNewTab);
+            items.add(mNewIncognitoTab);
+            items.add(mCloseIncognitoTabs);
+            items.add(mSelectTabs);
+            items.add(mSettings);
+        }
     }
 
-    /** Selects "New tab" from the app menu. */
+    /** Select "New tab" from the app menu. */
     public NewTabPageStation openNewTab() {
-        recheckActiveConditions();
-
-        NewTabPageStation destination =
-                new NewTabPageStation(
-                        mChromeTabbedActivityTestRule,
-                        /* incognito= */ false,
-                        /* isOpeningTab= */ true);
-
-        // TODO(crbug/1506104): Uncomment once the app menu is hooked up to Hub.
-        // return Trip.travelSync(
-        //         mStation,
-        //         destination,
-        //         (t) -> onView(allOf(isDescendantOfA(MENU_LIST),
-        //                       withId(R.id.new_tab_menu_id))));
-        return Trip.travelSync(
-                mStation,
-                destination,
-                (t) ->
-                        ThreadUtils.postOnUiThread(
-                                () ->
-                                        mChromeTabbedActivityTestRule
-                                                .getActivity()
-                                                .onMenuOrKeyboardAction(
-                                                        R.id.new_tab_menu_id, true)));
+        return mNewTab.scrollToAndSelect();
     }
 
-    /** Selects "New Incognito tab" from the app menu. */
-    public NewTabPageStation openNewIncognitoTab() {
-        recheckActiveConditions();
-
-        NewTabPageStation destination =
-                new NewTabPageStation(
-                        mChromeTabbedActivityTestRule,
-                        /* incognito= */ true,
-                        /* isOpeningTab= */ true);
-
-        // TODO(crbug/1506104): Uncomment once the app menu is hooked up to Hub.
-        // return Trip.travelSync(
-        //         mStation,
-        //         destination,
-        //         (t) -> onView(allOf(isDescendantOfA(MENU_LIST),
-        //                       withId(R.id.new_incognito_tab_menu_id))));
-        return Trip.travelSync(
-                mStation,
-                destination,
-                (t) ->
-                        ThreadUtils.postOnUiThread(
-                                () ->
-                                        mChromeTabbedActivityTestRule
-                                                .getActivity()
-                                                .onMenuOrKeyboardAction(
-                                                        R.id.new_incognito_tab_menu_id, true)));
+    /** Select "New Incognito tab" from the app menu. */
+    public IncognitoNewTabPageStation openNewIncognitoTab() {
+        return mNewIncognitoTab.scrollToAndSelect();
     }
 
-    /** Clicks "Select tabs" from the app menu. */
+    /** Select "Settings" from the app menu. */
+    public SettingsStation openSettings() {
+        return mSettings.scrollToAndSelect();
+    }
+
+    /** Select "Select tabs" from the app menu. */
     public HubTabSwitcherListEditorFacility clickSelectTabs() {
-        recheckActiveConditions();
+        return mSelectTabs.scrollToAndSelect();
+    }
 
-        HubTabSwitcherListEditorFacility listEditor =
-                new HubTabSwitcherListEditorFacility(this.mStation, mChromeTabbedActivityTestRule);
-
-        // TODO(crbug/1506104): Click menu item directly.
-        return StationFacility.enterSync(
-                listEditor,
-                t1 -> {
-                    StationFacility.exitSync(
-                            this,
-                            t2 -> {
-                                ThreadUtils.postOnUiThread(
-                                        () ->
-                                                mChromeTabbedActivityTestRule
-                                                        .getActivity()
-                                                        .onMenuOrKeyboardAction(
-                                                                R.id.menu_select_tabs, true));
-                            });
-                });
+    private HubTabSwitcherListEditorFacility createListEditorFacility() {
+        return new HubTabSwitcherListEditorFacility(mHostStation, mChromeTabbedActivityTestRule);
     }
 }

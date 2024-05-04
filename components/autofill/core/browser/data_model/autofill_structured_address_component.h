@@ -12,7 +12,6 @@
 #include <vector>
 
 #include "base/memory/raw_ptr.h"
-#include "base/strings/string_piece.h"
 #include "components/autofill/core/browser/data_model/autofill_i18n_parsing_expression_components.h"
 #include "components/autofill/core/browser/field_types.h"
 
@@ -218,7 +217,7 @@ class AddressComponent {
 
   // Wrapper function around
   // SetValueForTypeIfPossible(/*invalidate_child_nodes=*/true);
-  // TODO(1440504): Remove and merge with SetValueForType.
+  // TODO(crbug.com/40266145): Remove and merge with SetValueForType.
   bool SetValueForTypeAndResetSubstructure(FieldType field_type,
                                            const std::u16string& value,
                                            const VerificationStatus& status);
@@ -333,6 +332,12 @@ class AddressComponent {
 
   // Returns a constant vector of pointers to the child nodes of the component.
   const SubcomponentsList& Subcomponents() const { return subcomponents_; }
+
+  // Returns a constant vector of pointers to the synthesized child nodes of the
+  // component.
+  const SubcomponentsList& SynthesizedSubcomponents() const {
+    return synthesized_subcomponents_;
+  }
 
   // Returns a pointer to the parent node.
   AddressComponent* Parent() const { return parent_; }

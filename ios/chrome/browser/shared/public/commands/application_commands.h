@@ -25,6 +25,16 @@ enum class TrustedVaultUserActionTriggerForUMA;
 }  // namespace syncer
 @class UIViewController;
 
+// The mode in which the TabGrid should be opened.
+enum class TabGridOpeningMode {
+  // Don't force any mode, use the current one.
+  kDefault,
+  // Force to display the incognito mode.
+  kIncognito,
+  // Force to display the regular mode.
+  kRegular,
+};
+
 // Protocol for commands that will generally be handled by the application,
 // rather than a specific tab; in practice this means the SceneController
 // instance.
@@ -45,7 +55,7 @@ enum class TrustedVaultUserActionTriggerForUMA;
                              referrer:(password_manager::PasswordCheckReferrer)
                                           referrer;
 
-// TODO(crbug.com/779791) : Do not pass baseViewController through dispatcher.
+// TODO(crbug.com/41352590) : Do not pass baseViewController through dispatcher.
 // Shows the Settings UI, presenting from `baseViewController`.
 - (void)showSettingsFromViewController:(UIViewController*)baseViewController;
 
@@ -79,6 +89,10 @@ enum class TrustedVaultUserActionTriggerForUMA;
                                                                    AccessPoint)
                                                                   accessPoint;
 
+// Shows the Safe Browsing settings page presenting from `baseViewController`.
+- (void)showSafeBrowsingSettingsFromViewController:
+    (UIViewController*)baseViewController;
+
 // Starts a voice search on the current BVC.
 - (void)startVoiceSearch;
 
@@ -94,14 +108,10 @@ enum class TrustedVaultUserActionTriggerForUMA;
 // Prepare to show the TabSwitcher UI.
 - (void)prepareTabSwitcher;
 
-// Shows the TabSwitcher UI.
-- (void)displayTabSwitcherInGridLayout;
+// Shows the TabGrid, in the chosen `mode`.
+- (void)displayTabGridInMode:(TabGridOpeningMode)mode;
 
-// Same as displayTabSwitcherInGridLayout, but also force tab switcher to
-// regular tabs page.
-- (void)displayRegularTabSwitcherInGridLayout;
-
-// TODO(crbug.com/779791) : Do not pass baseViewController through dispatcher.
+// TODO(crbug.com/41352590) : Do not pass baseViewController through dispatcher.
 // Shows the settings Privacy UI.
 - (void)showPrivacySettingsFromViewController:
     (UIViewController*)baseViewController;
@@ -120,16 +130,16 @@ enum class TrustedVaultUserActionTriggerForUMA;
                                             specificProductData;
 
 // Opens the `command` URL in a new tab.
-// TODO(crbug.com/907527): Check if it is possible to merge it with the
+// TODO(crbug.com/41427539): Check if it is possible to merge it with the
 // URLLoader methods.
 - (void)openURLInNewTab:(OpenNewTabCommand*)command;
 
-// TODO(crbug.com/779791) : Do not pass baseViewController through dispatcher.
+// TODO(crbug.com/41352590) : Do not pass baseViewController through dispatcher.
 // Shows the signin UI, presenting from `baseViewController`.
 - (void)showSignin:(ShowSigninCommand*)command
     baseViewController:(UIViewController*)baseViewController;
 
-// TODO(crbug.com/779791) : Do not pass baseViewController through dispatcher.
+// TODO(crbug.com/41352590) : Do not pass baseViewController through dispatcher.
 // Shows the consistency promo UI that allows users to sign in to Chrome using
 // the default accounts on the device.
 // Redirects to `url` when the sign-in flow is complete.
@@ -146,6 +156,10 @@ enum class TrustedVaultUserActionTriggerForUMA;
 
 // Open a new window with `userActivity`
 - (void)openNewWindowWithActivity:(NSUserActivity*)userActivity;
+
+// Closes all open modals and ensures that a non-incognito tab is open. If
+// incognito is forced, then it will ensure an incognito tab is open.
+- (void)prepareToPresentModal:(ProceduralBlock)completion;
 
 @end
 

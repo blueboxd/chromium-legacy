@@ -55,8 +55,12 @@
 #include "components/history/core/browser/visit_delegate.h"
 #include "components/history/core/browser/web_history_service.h"
 #include "components/sync/model/proxy_model_type_controller_delegate.h"
+#include "components/visitedlink/core/visited_link.h"
+#include "net/base/schemeful_site.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/page_transition_types.h"
+#include "url/gurl.h"
+#include "url/origin.h"
 
 #if BUILDFLAG(IS_IOS)
 #include "base/critical_closure.h"
@@ -134,10 +138,23 @@ class HistoryService::BackendDelegate : public HistoryBackend::Delegate {
                                   history_service_, changed_urls));
   }
 
-  void NotifyURLsDeleted(DeletionInfo deletion_info) override {
+  void NotifyDeletions(DeletionInfo deletion_info) override {
     service_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(&HistoryService::NotifyURLsDeleted,
+        FROM_HERE, base::BindOnce(&HistoryService::NotifyDeletions,
                                   history_service_, std::move(deletion_info)));
+  }
+
+  void NotifyVisitedLinksAdded(const HistoryAddPageArgs& args) override {
+    service_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&HistoryService::AddPartitionedVisitedLinks,
+                                  history_service_, args));
+  }
+
+  void NotifyVisitedLinksDeleted(
+      const std::vector<DeletedVisitedLink>& links) override {
+    service_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&HistoryService::NotifyVisitedLinksDeleted,
+                                  history_service_, links));
   }
 
   void NotifyKeywordSearchTermUpdated(const URLRow& row,
@@ -498,10 +515,10 @@ void HistoryService::OnDeviceInfoChange() {
                                 history_backend_, std::move(sync_device_info)));
 }
 
-// TODO(crbug.com/1400663): `OnDeviceInfoShutdown()` was created as a workaround
-// because PrivacySandboxSettingsFactory incorrectly declares its KeyedServices
-// dependencies. Once this is fixed, `OnDeviceInfoShutdown()` should be
-// deprecated.
+// TODO(crbug.com/40250371): `OnDeviceInfoShutdown()` was created as a
+// workaround because PrivacySandboxSettingsFactory incorrectly declares its
+// KeyedServices dependencies. Once this is fixed, `OnDeviceInfoShutdown()`
+// should be deprecated.
 void HistoryService::OnDeviceInfoShutdown() {
   device_info_tracker_observation_.Reset();
   device_info_tracker_ = nullptr;
@@ -549,6 +566,14 @@ base::CancelableTaskTracker::TaskId HistoryService::ScheduleDBTask(
           &HistoryBackend::ProcessDBTask, history_backend_, std::move(task),
           base::SingleThreadTaskRunner::GetCurrentDefault(), is_canceled));
   return task_id;
+}
+
+void HistoryService::ScheduleDBTaskForUI(
+    base::OnceCallback<void(HistoryBackend*, URLDatabase*)> callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  ScheduleTask(PRIORITY_UI,
+               base::BindOnce(&HistoryBackend::RunDBTask, history_backend_,
+                              std::move(callback)));
 }
 
 void HistoryService::FlushForTest(base::OnceClosure flushed) {
@@ -621,7 +646,9 @@ void HistoryService::AddPage(HistoryAddPageArgs add_page_args) {
   std::erase_if(add_page_args.redirects,
                 [this](const GURL& url) { return !CanAddURL(url); });
 
-  // Inform VisitedDelegate of all links and redirects.
+  // Inform `visit_delegate_` of all links and redirects for the unpartitioned
+  // table. The `visit_delegate_` is informed of partitioned links and redirects
+  // via HistoryBackend::AddPage.
   if (visit_delegate_) {
     if (!add_page_args.redirects.empty()) {
       // We should not be asked to add a page in the middle of a redirect chain,
@@ -646,6 +673,39 @@ void HistoryService::AddPage(HistoryAddPageArgs add_page_args) {
   ScheduleTask(PRIORITY_NORMAL,
                base::BindOnce(&HistoryBackend::AddPage, history_backend_,
                               add_page_args));
+}
+
+void HistoryService::AddPartitionedVisitedLinks(
+    const HistoryAddPageArgs& args) {
+  // We require each element of the triple-partition key <link url, top-level
+  // site, frame origin> to have a value.
+  if (!visit_delegate_ || !args.top_level_url.has_value()) {
+    return;
+  }
+  // We require each element of the triple-partition key to be valid GURLs.
+  if (!args.top_level_url->is_valid() || !args.referrer.is_valid()) {
+    return;
+  }
+  // Add the VisitedLink representing each navigation to the partitioned
+  // hashtable.
+  if (!args.redirects.empty()) {
+    // We should not be asked to add a page in the middle of a redirect chain,
+    // and thus add_page_args.url should be the last element in the array
+    // add_page_args.redirects.
+    DCHECK_EQ(args.url, args.redirects.back());
+    for (const GURL& redirect : args.redirects) {
+      // All redirects originate from the same top-level site and frame origin.
+      VisitedLink link = {redirect,
+                          net::SchemefulSite(args.top_level_url.value()),
+                          url::Origin::Create(args.referrer)};
+      visit_delegate_->AddVisitedLink(link);
+    }
+  } else {
+    VisitedLink link = {args.url,
+                        net::SchemefulSite(args.top_level_url.value()),
+                        url::Origin::Create(args.referrer)};
+    visit_delegate_->AddVisitedLink(link);
+  }
 }
 
 void HistoryService::AddPageNoVisitForBookmark(const GURL& url,
@@ -744,6 +804,15 @@ void HistoryService::AddRelatedSearchesForVisit(
   ScheduleTask(PRIORITY_NORMAL,
                base::BindOnce(&HistoryBackend::AddRelatedSearchesForVisit,
                               history_backend_, visit_id, related_searches));
+}
+
+std::optional<uint64_t> HistoryService::GetOrAddOriginSalt(
+    const url::Origin& origin) {
+  if (visit_delegate_) {
+    return visit_delegate_->GetOrAddOriginSalt(origin);
+  }
+  // If there is no visit_delegate_ we cannot determine the corresponding salt.
+  return std::nullopt;
 }
 
 void HistoryService::AddSearchMetadataForVisit(
@@ -850,7 +919,7 @@ base::CancelableTaskTracker::TaskId HistoryService::GetFavicon(
     base::CancelableTaskTracker* tracker) {
   TRACE_EVENT0("browser", "HistoryService::GetFavicons");
   CHECK(backend_task_runner_) << "History service being called after cleanup";
-  // TODO(https://crbug.com/1024959): convert to DCHECK once crash is resolved.
+  // TODO(crbug.com/40658964): convert to DCHECK once crash is resolved.
   CHECK(tracker);
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return tracker->PostTaskAndReplyWithResult(
@@ -1076,6 +1145,20 @@ void HistoryService::SetImportedFavicons(
 
 // Querying --------------------------------------------------------------------
 
+base::CancelableTaskTracker::TaskId
+HistoryService::GetMostRecentVisitForEachURL(
+    const std::vector<GURL>& urls,
+    base::OnceCallback<void(std::map<GURL, VisitRow>)> callback,
+    base::CancelableTaskTracker* tracker) {
+  DCHECK(backend_task_runner_) << "History service being called after cleanup";
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return tracker->PostTaskAndReplyWithResult(
+      backend_task_runner_.get(), FROM_HERE,
+      base::BindOnce(&HistoryBackend::GetMostRecentVisitForEachURL,
+                     history_backend_, urls),
+      std::move(callback));
+}
+
 base::CancelableTaskTracker::TaskId HistoryService::QueryURL(
     const GURL& url,
     bool want_visits,
@@ -1166,6 +1249,17 @@ void HistoryService::GetUniqueDomainsVisited(
       std::move(callback));
 }
 
+void HistoryService::GetAllAppIds(GetAllAppIdsCallback callback,
+                                  base::CancelableTaskTracker* tracker) {
+  DCHECK(backend_task_runner_) << "History service being called after cleanup";
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  tracker->PostTaskAndReplyWithResult(
+      backend_task_runner_.get(), FROM_HERE,
+      base::BindOnce(&HistoryBackend::GetAllAppIds, history_backend_),
+      std::move(callback));
+}
+
 base::CancelableTaskTracker::TaskId HistoryService::GetLastVisitToHost(
     const std::string& host,
     base::Time begin_time,
@@ -1226,6 +1320,22 @@ base::CancelableTaskTracker::TaskId HistoryService::GetDailyVisitsToHost(
       backend_task_runner_.get(), FROM_HERE,
       base::BindOnce(&HistoryBackend::GetDailyVisitsToHost, history_backend_,
                      host, begin_time, end_time),
+      std::move(callback));
+}
+
+// Generic operations ----------------------------------------------------------
+
+base::CancelableTaskTracker::TaskId HistoryService::GetMostRecentVisitsForGurl(
+    GURL url,
+    int max_visits,
+    QueryURLCallback callback,
+    base::CancelableTaskTracker* tracker) {
+  DCHECK(backend_task_runner_) << "History service being called after cleanup";
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return tracker->PostTaskAndReplyWithResult(
+      backend_task_runner_.get(), FROM_HERE,
+      base::BindOnce(&HistoryBackend::GetMostRecentVisitsForGurl,
+                     history_backend_, url, max_visits),
       std::move(callback));
 }
 
@@ -1415,6 +1525,8 @@ bool HistoryService::Init(
   TRACE_EVENT0("browser,startup", "HistoryService::Init");
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+  history_dir_ = history_database_params.history_dir;
+
   // Unit tests can inject `backend_task_runner_` before this is called.
   if (!backend_task_runner_) {
     backend_task_runner_ = base::ThreadPool::CreateSequencedTaskRunner(
@@ -1456,14 +1568,6 @@ bool HistoryService::Init(
     history_client_->OnHistoryServiceCreated(this);
 
   return true;
-}
-
-void HistoryService::ScheduleAutocomplete(
-    base::OnceCallback<void(HistoryBackend*, URLDatabase*)> callback) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  ScheduleTask(PRIORITY_UI,
-               base::BindOnce(&HistoryBackend::ScheduleAutocomplete,
-                              history_backend_, std::move(callback)));
 }
 
 void HistoryService::ScheduleTask(SchedulePriority priority,
@@ -1603,7 +1707,7 @@ void HistoryService::DeleteLocalAndRemoteHistoryBetween(
     std::optional<std::string> app_id,
     base::OnceClosure callback,
     base::CancelableTaskTracker* tracker) {
-  // TODO(crbug.com/929111): This should be factored out into a separate class
+  // TODO(crbug.com/41439580): This should be factored out into a separate class
   // that dispatches deletions to the proper places.
   if (web_history) {
     delete_directive_handler_->CreateTimeRangeDeleteDirective(begin_time,
@@ -1649,7 +1753,7 @@ void HistoryService::DeleteLocalAndRemoteHistoryBetween(
 void HistoryService::DeleteLocalAndRemoteUrl(WebHistoryService* web_history,
                                              const GURL& url) {
   DCHECK(url.is_valid());
-  // TODO(crbug.com/929111): This should be factored out into a separate class
+  // TODO(crbug.com/41439580): This should be factored out into a separate class
   // that dispatches deletions to the proper places.
   if (web_history) {
     delete_directive_handler_->CreateUrlDeleteDirective(url);
@@ -1709,7 +1813,7 @@ void HistoryService::NotifyURLsModified(const URLRows& changed_urls) {
     observer.OnURLsModified(this, changed_urls);
 }
 
-void HistoryService::NotifyURLsDeleted(const DeletionInfo& deletion_info) {
+void HistoryService::NotifyDeletions(const DeletionInfo& deletion_info) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!backend_task_runner_)
     return;
@@ -1735,7 +1839,25 @@ void HistoryService::NotifyURLsDeleted(const DeletionInfo& deletion_info) {
   }
 
   for (HistoryServiceObserver& observer : observers_)
-    observer.OnURLsDeleted(this, deletion_info);
+    observer.OnHistoryDeletions(this, deletion_info);
+}
+
+void HistoryService::NotifyVisitedLinksDeleted(
+    const std::vector<DeletedVisitedLink>& links) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!visit_delegate_) {
+    return;
+  }
+  std::vector<VisitedLink> partitioned_links;
+  for (const DeletedVisitedLink& link : links) {
+    net::SchemefulSite top_level_site(link.visited_link_row.top_level_url);
+    url::Origin frame_origin =
+        url::Origin::Create(link.visited_link_row.frame_url);
+    VisitedLink partitioned_link = {link.link_url, top_level_site,
+                                    frame_origin};
+    partitioned_links.push_back(partitioned_link);
+  }
+  visit_delegate_->DeleteVisitedLinks(partitioned_links);
 }
 
 void HistoryService::NotifyHistoryServiceLoaded() {

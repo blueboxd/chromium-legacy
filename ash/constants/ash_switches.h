@@ -7,6 +7,7 @@
 
 #include <optional>
 
+#include "base/auto_reset.h"
 #include "base/component_export.h"
 
 namespace base {
@@ -48,7 +49,6 @@ COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kArcUseDevCaches[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kArcErofs[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kArcForceMountAndroidVolumesInFiles[];
-COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kArcForcePostBootDexOpt[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kArcForceShowOptInUi[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kArcGeneratePlayAutoInstall[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kArcHostUreadaheadMode[];
@@ -63,7 +63,6 @@ COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kArcVmMountDebugFs[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kArcVmUreadaheadMode[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kArcVmUseHugePages[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kAshClearFastInkBuffer[];
-COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kAshBypassGlanceablesPref[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kAshConstrainPointerToRoot[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kAshContextualNudgesInterval[];
@@ -123,7 +122,6 @@ extern const char kDemoModeSwaContentDirectory[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kDerelictDetectionTimeout[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kDerelictIdleTimeout[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kDisableArcCpuRestriction[];
-COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kDisableArcDataWipe[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kDisableArcOptInVerification[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kDisableDemoMode[];
@@ -218,6 +216,7 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kForceHappinessTrackingSystem[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kForceLacrosLaunchAtLoginScreenForTesting[];
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kForceBirchReleaseNotes[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kForceLaunchBrowser[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kForceLoginManagerInTests[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kForceShowCursor[];
@@ -225,8 +224,11 @@ COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kForceShowReleaseTrack[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kForceTabletPowerButton[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kForestFeatureKey[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kFormFactor[];
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const char kGlanceablesIgnoreEnableMergeRequestBuildFlag[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kGlanceablesKeyExpectedHash[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kGlanceablesKeySwitch[];
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kGrowthCampaigns[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kGrowthCampaignsPath[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kGuestSession[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kGuestWallpaperLarge[];
@@ -269,6 +271,7 @@ COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kLoginProfile[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kLoginUser[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kDisallowLacros[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kDisableDisallowLacros[];
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kMahiFeatureKey[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kBrowserDataMigrationForUser[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
@@ -367,14 +370,10 @@ COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kUpdateRequiredAueForTest[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kUseFakeCrasAudioClientForDBus[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
-extern const char kUseFakeMahiManager[];
-COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kUseMyFilesInUserDataDirForTesting[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kWebUiDataSourcePathForTesting[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kGetAccessTokenForTest[];
-COMPONENT_EXPORT(ASH_CONSTANTS)
-extern const char kCameraEffectsSupportedByHardware[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kPreventKioskAutolaunchForTesting[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
@@ -497,9 +496,6 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 bool IsStabilizeTimeDependentViewForTestsEnabled();
 
 COMPONENT_EXPORT(ASH_CONSTANTS)
-bool IsCameraEffectsSupportedByHardware();
-
-COMPONENT_EXPORT(ASH_CONSTANTS)
 bool UseFakeCrasAudioClientForDBus();
 
 COMPONENT_EXPORT(ASH_CONSTANTS)
@@ -513,6 +509,18 @@ bool IsForestSecretKeyMatched();
 
 COMPONENT_EXPORT(ASH_CONSTANTS)
 void SetIgnoreForestSecretKeyForTest(bool ignore);
+
+COMPONENT_EXPORT(ASH_CONSTANTS)
+bool IsMahiSecretKeyMatched();
+
+COMPONENT_EXPORT(ASH_CONSTANTS)
+base::AutoReset<bool> SetIgnoreMahiSecretKeyForTest();
+
+COMPONENT_EXPORT(ASH_CONSTANTS)
+bool IsModifierSplitSecretKeyMatched();
+
+COMPONENT_EXPORT(ASH_CONSTANTS)
+base::AutoReset<bool> SetIgnoreModifierSplitSecretKeyForTest();
 
 }  // namespace ash::switches
 

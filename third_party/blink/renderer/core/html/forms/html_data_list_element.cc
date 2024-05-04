@@ -31,9 +31,11 @@
 
 #include "third_party/blink/renderer/core/html/forms/html_data_list_element.h"
 
+#include "third_party/blink/renderer/core/dom/focus_params.h"
 #include "third_party/blink/renderer/core/dom/id_target_observer_registry.h"
 #include "third_party/blink/renderer/core/dom/node_lists_node_data.h"
 #include "third_party/blink/renderer/core/dom/popover_data.h"
+#include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/html/forms/html_data_list_options_collection.h"
 #include "third_party/blink/renderer/core/html/forms/html_select_element.h"
@@ -86,25 +88,40 @@ HTMLSelectElement* HTMLDataListElement::ParentSelect() const {
   if (!RuntimeEnabledFeatures::StylableSelectEnabled()) {
     return nullptr;
   }
-  return DynamicTo<HTMLSelectElement>(parentNode());
+  if (auto* select = DynamicTo<HTMLSelectElement>(parentNode())) {
+    return select;
+  }
+  if (ShadowRoot* root = ContainingShadowRoot()) {
+    if (auto* select = DynamicTo<HTMLSelectElement>(root->host())) {
+      return select;
+    }
+  }
+  return nullptr;
 }
 
 Node::InsertionNotificationRequest HTMLDataListElement::InsertedInto(
-    ContainerNode& parent) {
-  if (auto* select = DynamicTo<HTMLSelectElement>(parent)) {
-    if (RuntimeEnabledFeatures::StylableSelectEnabled()) {
+    ContainerNode& insertion_point) {
+  if (RuntimeEnabledFeatures::StylableSelectEnabled()) {
+    HTMLSelectElement* parent_select = nullptr;
+    if (parentNode() == insertion_point &&
+        IsA<HTMLSelectElement>(insertion_point)) {
+      parent_select = To<HTMLSelectElement>(&insertion_point);
+    } else if (ShadowRoot* root = ContainingShadowRoot()) {
+      parent_select = DynamicTo<HTMLSelectElement>(root->host());
+    }
+    if (parent_select) {
       EnsurePopoverData()->setType(PopoverValueType::kAuto);
-      select->IncrementImplicitlyAnchoredElementCount();
+      parent_select->IncrementImplicitlyAnchoredElementCount();
     }
   }
-  return HTMLElement::InsertedInto(parent);
+  return HTMLElement::InsertedInto(insertion_point);
 }
 
 void HTMLDataListElement::RemovedFrom(ContainerNode& insertion_point) {
   HTMLElement::RemovedFrom(insertion_point);
 
-  if (auto* select = DynamicTo<HTMLSelectElement>(insertion_point)) {
-    if (RuntimeEnabledFeatures::StylableSelectEnabled()) {
+  if (!parentNode() && RuntimeEnabledFeatures::StylableSelectEnabled()) {
+    if (auto* select = DynamicTo<HTMLSelectElement>(insertion_point)) {
       // Clean up the popover data we set in InsertedInto. If this datalist is
       // still considered select-associated, then UpdatePopoverAttribute will
       // early out.
@@ -112,6 +129,57 @@ void HTMLDataListElement::RemovedFrom(ContainerNode& insertion_point) {
       select->DecrementImplicitlyAnchoredElementCount();
     }
   }
+}
+
+void HTMLDataListElement::ShowPopoverInternal(Element* invoker,
+                                              ExceptionState* exception_state) {
+  HTMLElement::ShowPopoverInternal(invoker, exception_state);
+  if (exception_state && exception_state->HadException()) {
+    return;
+  }
+
+  if (auto* select = ParentSelect()) {
+    if (select->IsAppearanceBaseSelect()) {
+      CHECK(RuntimeEnabledFeatures::StylableSelectEnabled());
+      // MenuListSelectType::ManuallyAssignSlots changes behavior based on
+      // whether the popover is opened or closed.
+      select->GetShadowRoot()->SetNeedsAssignmentRecalc();
+      // This is a StylableSelect popup. When it is shown, we should focus the
+      // selected option.
+      if (auto* option = select->SelectedOption()) {
+        option->Focus(FocusParams(FocusTrigger::kScript));
+      }
+    }
+  }
+}
+
+void HTMLDataListElement::HidePopoverInternal(
+    HidePopoverFocusBehavior focus_behavior,
+    HidePopoverTransitionBehavior event_firing,
+    ExceptionState* exception_state) {
+  HTMLElement::HidePopoverInternal(focus_behavior, event_firing,
+                                   exception_state);
+  if (auto* select = ParentSelect()) {
+    if (select->IsAppearanceBaseSelect()) {
+      CHECK(RuntimeEnabledFeatures::StylableSelectEnabled());
+      // MenuListSelectType::ManuallyAssignSlots changes behavior based on
+      // whether the popover is opened or closed.
+      select->GetShadowRoot()->SetNeedsAssignmentRecalc();
+    }
+  }
+}
+
+void HTMLDataListElement::ShowPopoverForSelectElement() {
+  CHECK(ParentSelect());
+  ShowPopoverInternal(/*invoker=*/nullptr, /*exception_state=*/nullptr);
+}
+
+void HTMLDataListElement::HidePopoverForSelectElement() {
+  CHECK(ParentSelect());
+  HidePopoverInternal(
+      HidePopoverFocusBehavior::kFocusPreviousElement,
+      HidePopoverTransitionBehavior::kFireEventsAndWaitForTransitions,
+      /*exception_state=*/nullptr);
 }
 
 }  // namespace blink

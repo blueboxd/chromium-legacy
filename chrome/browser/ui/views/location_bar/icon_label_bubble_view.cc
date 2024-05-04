@@ -224,7 +224,7 @@ void IconLabelBubbleView::SetLabel(const std::u16string& label_text) {
 
 void IconLabelBubbleView::SetLabel(const std::u16string& label_text,
                                    const std::u16string& accessible_name) {
-  // TODO(crbug.com/1411342): Under what conditions, if any, will the text be
+  // TODO(crbug.com/40890218): Under what conditions, if any, will the text be
   // empty? Read the description of the bug and update accordingly.
   SetAccessibleName(accessible_name,
                     accessible_name.empty()
@@ -326,7 +326,7 @@ bool IconLabelBubbleView::ShouldShowLabelAfterAnimation() const {
 }
 
 int IconLabelBubbleView::GetWidthBetween(int min, int max) const {
-  // TODO(https://crbug.com/8944): Disable animations globally instead of having
+  // TODO(crbug.com/41420184): Disable animations globally instead of having
   // piecemeal opt ins for respecting prefers reduced motion.
   if (gfx::Animation::PrefersReducedMotion()) {
     return max;
@@ -385,8 +385,12 @@ void IconLabelBubbleView::OnTouchUiChanged() {
   }
 }
 
-gfx::Size IconLabelBubbleView::CalculatePreferredSize() const {
-  return GetSizeForLabelWidth(label()->GetPreferredSize().width());
+gfx::Size IconLabelBubbleView::CalculatePreferredSize(
+    const views::SizeBounds& available_size) const {
+  return GetSizeForLabelWidth(
+      label()
+          ->GetPreferredSize(views::SizeBounds(label()->width(), {}))
+          .width());
 }
 
 void IconLabelBubbleView::Layout(PassKey) {
@@ -636,7 +640,7 @@ void IconLabelBubbleView::AnimateIn(std::optional<int> string_id) {
           ax::mojom::State::kInvisible);
 
       // A valid role must be set prior to setting the name.
-      // TODO(crbug.com/1361281): Consider using AnnounceText instead of a
+      // TODO(crbug.com/40863593): Consider using AnnounceText instead of a
       // virtual view.
       alert_virtual_view_->GetCustomData().role = ax::mojom::Role::kAlert;
       alert_virtual_view_->GetCustomData().SetNameChecked(label);

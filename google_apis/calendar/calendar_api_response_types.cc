@@ -55,7 +55,6 @@ constexpr char kCalendarEventKind[] = "calendar#event";
 constexpr char kColorId[] = "colorId";
 constexpr char kEnd[] = "end";
 constexpr char kHtmlLink[] = "htmlLink";
-constexpr char kPathToCreatorSelf[] = "creator.self";
 constexpr char kStart[] = "start";
 constexpr char kStatus[] = "status";
 constexpr char kSummary[] = "summary";
@@ -65,6 +64,7 @@ constexpr char kAttachments[] = "attachments";
 constexpr char kAttachmentTitle[] = "title";
 constexpr char kAttachmentFileUrl[] = "fileUrl";
 constexpr char kAttachmentIconLink[] = "iconLink";
+constexpr char kAttachmentFileId[] = "fileId";
 
 constexpr auto kEventStatuses =
     base::MakeFixedFlatMap<std::string_view, CalendarEvent::EventStatus>(
@@ -89,8 +89,8 @@ constexpr char kEntryPointUri[] = "uri";
 // (e.g. the value is structurally different from expected).
 bool ConvertEventStatus(const base::Value* value,
                         CalendarEvent::EventStatus* result) {
-  DCHECK(value);
-  DCHECK(result);
+  CHECK(value);
+  CHECK(result);
 
   const auto* status = value->GetIfString();
   if (!status) {
@@ -124,8 +124,19 @@ std::optional<CalendarEvent::ResponseStatus> CalculateSelfResponseStatus(
     // - user invited 2+ guests and removed themselves from the event (also,
     // the `attendeesOmitted` flag will be set to true).
 
-    const bool is_self_created =
-        event->FindBoolByDottedPath(kPathToCreatorSelf).value_or(false);
+    bool is_self_created = false;
+    // For non-primary-calendar events, a self-created event does not
+    // contain a creator field. Therefore, we assume that if an event
+    // is confirmed and has no attendees it is self-created.
+    const std::string* event_status = event->FindString(kStatus);
+    if (event_status) {
+      const auto it = kEventStatuses.find(*event_status);
+      if (it != kEventStatuses.end() &&
+          it->second == CalendarEvent::EventStatus::kConfirmed) {
+        is_self_created = true;
+      }
+    }
+
     const bool has_omitted_attendees =
         event->FindBool(kAttendeesOmitted).value_or(false);
 
@@ -243,6 +254,11 @@ std::vector<Attachment> GetAttachments(const base::Value::Dict& dict) {
     if (icon_link_string) {
       auto icon_link = GURL(*icon_link_string);
       attachment.set_icon_link(icon_link.is_valid() ? icon_link : GURL());
+    }
+
+    const std::string* file_id = attachment_dict->FindString(kAttachmentFileId);
+    if (file_id) {
+      attachment.set_file_id(*file_id);
     }
 
     result.push_back(std::move(attachment));
@@ -418,6 +434,7 @@ SingleCalendar& SingleCalendar::operator=(const SingleCalendar&) = default;
 void SingleCalendar::RegisterJSONConverter(
     base::JSONValueConverter<SingleCalendar>* converter) {
   converter->RegisterStringField(kApiResponseIdKey, &SingleCalendar::id_);
+  converter->RegisterStringField(kSummary, &SingleCalendar::summary_);
   converter->RegisterStringField(kCalendarColorId, &SingleCalendar::color_id_);
   converter->RegisterBoolField(kPrimary, &SingleCalendar::primary_);
   converter->RegisterBoolField(kSelected, &SingleCalendar::selected_);
@@ -428,6 +445,7 @@ int SingleCalendar::GetApproximateSizeInBytes() const {
 
   total_bytes += sizeof(SingleCalendar);
   total_bytes += id_.length();
+  total_bytes += summary_.length();
   total_bytes += color_id_.length();
   total_bytes += sizeof(primary_);
   total_bytes += sizeof(selected_);

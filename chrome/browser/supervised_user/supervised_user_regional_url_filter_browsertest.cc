@@ -5,6 +5,7 @@
 #include <memory>
 #include <sstream>
 #include <string>
+#include <string_view>
 #include <utility>
 
 #include "base/callback_list.h"
@@ -12,7 +13,6 @@
 #include "base/feature_list.h"
 #include "base/functional/bind.h"
 #include "base/ranges/algorithm.h"
-#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/types/strong_alias.h"
@@ -25,7 +25,7 @@
 #include "chrome/test/supervised_user/supervision_mixin.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/supervised_user/core/browser/fetcher_config.h"
-#include "components/supervised_user/core/browser/proto/kidschromemanagement_messages.pb.h"
+#include "components/supervised_user/core/browser/proto/kidsmanagement_messages.pb.h"
 #include "components/supervised_user/core/browser/supervised_user_preferences.h"
 #include "components/supervised_user/core/common/features.h"
 #include "components/supervised_user/test_support/kids_management_api_server_mock.h"
@@ -42,7 +42,7 @@
 namespace supervised_user {
 namespace {
 
-using ::kids_chrome_management::ClassifyUrlRequest;
+using ::kidsmanagement::ClassifyUrlRequest;
 using ::testing::_;
 using ::testing::NiceMock;
 using ::testing::Pointee;
@@ -72,7 +72,7 @@ class TestCase {
 };
 
 // The region code for variations service (any should work).
-constexpr base::StringPiece kRegionCode = "jp";
+constexpr std::string_view kRegionCode = "jp";
 
 // Tests custom filtering logic based on regions, for supervised users.
 class SupervisedUserRegionalURLFilterTest
@@ -80,7 +80,7 @@ class SupervisedUserRegionalURLFilterTest
       public ::testing::WithParamInterface<SupervisionMixin::SignInMode> {
  public:
   SupervisedUserRegionalURLFilterTest() {
-    // TODO(crbug.com/1394910): Use HTTPS URLs in tests to avoid having to
+    // TODO(crbug.com/40248833): Use HTTPS URLs in tests to avoid having to
     // disable this feature.
     feature_list_.InitWithFeatures(
         /*enabled_features=*/{},
@@ -91,7 +91,7 @@ class SupervisedUserRegionalURLFilterTest
  protected:
   MOCK_METHOD(void,
               ClassifyUrlRequestMonitor,
-              (base::StringPiece, base::StringPiece));
+              (std::string_view, std::string_view));
 
   static const TestCase GetTestCase() { return TestCase(GetParam()); }
 

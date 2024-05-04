@@ -33,7 +33,7 @@ import java.util.concurrent.ConcurrentLinkedDeque;
  * capability of fetching and seeding system accounts into AccountTrackerService in C++ layer, and
  * notifies observers when it is complete.
  *
- * <p>TODO(crbug/1176136): Move this class to components/signin/internal
+ * <p>TODO(crbug.com/40747749): Move this class to components/signin/internal
  */
 public class AccountTrackerService implements AccountsChangeObserver {
     /** Observers the account seeding. */
@@ -80,6 +80,12 @@ public class AccountTrackerService implements AccountsChangeObserver {
         if (!SigninFeatureMap.isEnabled(SigninFeatures.SEED_ACCOUNTS_REVAMP)) {
             mAccountManagerFacade.addObserver(this);
         }
+    }
+
+    @CalledByNative
+    private long getNativePointer() {
+        assert mNativeAccountTrackerService != 0;
+        return mNativeAccountTrackerService;
     }
 
     @VisibleForTesting

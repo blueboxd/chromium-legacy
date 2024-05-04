@@ -10,6 +10,7 @@
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "components/password_manager/core/browser/affiliation/affiliated_match_helper.h"
+#include "components/password_manager/core/browser/password_manager_buildflags.h"
 #include "components/password_manager/core/browser/password_store/get_logins_with_affiliations_request_handler.h"
 #include "components/password_manager/core/browser/password_store/login_database.h"
 #include "components/password_manager/core/browser/password_store/login_database_async_helper.h"
@@ -19,10 +20,11 @@
 #include "components/password_manager/core/browser/password_store/password_store_util.h"
 #include "components/sync/model/proxy_model_type_controller_delegate.h"
 
-#if BUILDFLAG(IS_ANDROID)
+#if !BUILDFLAG(USE_LOGIN_DATABASE_AS_BACKEND)
 #include "components/password_manager/core/browser/features/password_features.h"
+#include "components/password_manager/core/browser/password_store/password_model_type_controller_delegate_android.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
-#endif
+#endif  // !BUILDFLAG(USE_LOGIN_DATABASE_AS_BACKEND)
 
 namespace password_manager {
 
@@ -87,18 +89,22 @@ void PasswordStoreBuiltInBackend::Shutdown(
 }
 
 bool PasswordStoreBuiltInBackend::IsAbleToSavePasswords() {
-#if BUILDFLAG(IS_ANDROID)
-  CHECK(pref_service_);
-  // If `kUnifiedPasswordManagerSyncOnlyInGMSCore` is enabled then
-  // PasswordStoreBuiltInBackend is only created for profile store.
-  return !(pref_service_->GetBoolean(
-               password_manager::prefs::kEmptyProfileStoreLoginDatabase) &&
-           base::FeatureList::IsEnabled(
-               password_manager::features::
-                   kUnifiedPasswordManagerSyncOnlyInGMSCore)) &&
-         is_database_initialized_successfully_;
-#else
+#if BUILDFLAG(USE_LOGIN_DATABASE_AS_BACKEND)
   return is_database_initialized_successfully_;
+#else
+  CHECK(pref_service_);
+  // Database was not initialized siccessfully, disable saving.
+  if (!is_database_initialized_successfully_) {
+    return false;
+  }
+
+  // Login database is not empty continue saving passwords.
+  if (!pref_service_->GetBoolean(prefs::kEmptyProfileStoreLoginDatabase)) {
+    return true;
+  }
+
+  // Login database is empty, disable saving if M4 feature is enabled.
+  return !features::IsUnifiedPasswordManagerSyncOnlyInGMSCoreEnabled();
 #endif
 }
 
@@ -226,6 +232,7 @@ void PasswordStoreBuiltInBackend::UpdateLoginAsync(
 }
 
 void PasswordStoreBuiltInBackend::RemoveLoginAsync(
+    const base::Location& location,
     const PasswordForm& form,
     PasswordChangesOrErrorReply callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -235,13 +242,14 @@ void PasswordStoreBuiltInBackend::RemoveLoginAsync(
       base::BindOnce(
           &LoginDatabaseAsyncHelper::RemoveLogin,
           base::Unretained(helper_.get()),  // Safe until `Shutdown()`.
-          form),
+          location, form),
       ReportMetricsForResultCallback<PasswordChangesOrError>(
           MethodName("RemoveLoginAsync"))
           .Then(std::move(callback)));
 }
 
 void PasswordStoreBuiltInBackend::RemoveLoginsCreatedBetweenAsync(
+    const base::Location& location,
     base::Time delete_begin,
     base::Time delete_end,
     PasswordChangesOrErrorReply callback) {
@@ -252,13 +260,14 @@ void PasswordStoreBuiltInBackend::RemoveLoginsCreatedBetweenAsync(
       base::BindOnce(
           &LoginDatabaseAsyncHelper::RemoveLoginsCreatedBetween,
           base::Unretained(helper_.get()),  // Safe until `Shutdown()`.
-          delete_begin, delete_end),
+          location, delete_begin, delete_end),
       ReportMetricsForResultCallback<PasswordChangesOrError>(
           MethodName("RemoveLoginsCreatedBetweenAsync"))
           .Then(std::move(callback)));
 }
 
 void PasswordStoreBuiltInBackend::RemoveLoginsByURLAndTimeAsync(
+    const base::Location& location,
     const base::RepeatingCallback<bool(const GURL&)>& url_filter,
     base::Time delete_begin,
     base::Time delete_end,
@@ -271,7 +280,8 @@ void PasswordStoreBuiltInBackend::RemoveLoginsByURLAndTimeAsync(
       base::BindOnce(
           &LoginDatabaseAsyncHelper::RemoveLoginsByURLAndTime,
           base::Unretained(helper_.get()),  // Safe until `Shutdown()`.
-          url_filter, delete_begin, delete_end, std::move(sync_completion)),
+          location, url_filter, delete_begin, delete_end,
+          std::move(sync_completion)),
       ReportMetricsForResultCallback<PasswordChangesOrError>(
           MethodName("RemoveLoginsByURLAndTimeAsync"))
           .Then(std::move(callback)));
@@ -296,9 +306,15 @@ SmartBubbleStatsStore* PasswordStoreBuiltInBackend::GetSmartBubbleStatsStore() {
   return this;
 }
 
-std::unique_ptr<syncer::ProxyModelTypeControllerDelegate>
+std::unique_ptr<syncer::ModelTypeControllerDelegate>
 PasswordStoreBuiltInBackend::CreateSyncControllerDelegate() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+#if !BUILDFLAG(USE_LOGIN_DATABASE_AS_BACKEND)
+  if (password_manager::features::
+          IsUnifiedPasswordManagerSyncOnlyInGMSCoreEnabled()) {
+    return std::make_unique<PasswordModelTypeConrollerDelegateAndroid>();
+  }
+#endif
   DCHECK(helper_);
   // Note that a callback is bound for
   // GetSyncControllerDelegate() because this getter itself

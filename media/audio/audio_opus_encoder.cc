@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/containers/heap_array.h"
 #include "base/functional/bind.h"
 #include "base/logging.h"
 #include "base/memory/raw_ptr.h"
@@ -13,6 +14,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "media/base/audio_encoder.h"
 #include "media/base/channel_mixer.h"
 #include "media/base/converting_audio_fifo.h"
 #include "media/base/encoder_status.h"
@@ -271,10 +273,10 @@ void AudioOpusEncoder::DoEncode(const AudioBus* audio_bus) {
   if (!current_done_cb_)
     return;
 
-  std::unique_ptr<uint8_t[]> encoded_data(new uint8_t[kOpusMaxDataBytes]);
+  auto encoded_data = base::HeapArray<uint8_t>::Uninit(kOpusMaxDataBytes);
   auto result = opus_encode_float(opus_encoder_.get(), buffer_.data(),
                                   converted_params_.frames_per_buffer(),
-                                  encoded_data.get(), kOpusMaxDataBytes);
+                                  encoded_data.data(), kOpusMaxDataBytes);
 
   if (result < 0) {
     DCHECK(current_done_cb_);
@@ -391,11 +393,18 @@ EncoderStatus::Or<OwnedOpusEncoder> AudioOpusEncoder::CreateOpusEncoder(
                                             use_in_band_fec));
   }
 
-  const unsigned int use_dtx = opus_options.value().use_dtx ? 1 : 0;
-
-  // For some reason, DTX doesn't work without setting the `OPUS_SIGNAL_VOICE`
-  // hint. Set or unset the signal type accordingly before using DTX.
-  const unsigned int opus_signal = use_dtx ? OPUS_SIGNAL_VOICE : OPUS_AUTO;
+  unsigned int opus_signal;
+  switch (opus_options.value().signal) {
+    case AudioEncoder::OpusSignal::kAuto:
+      opus_signal = OPUS_AUTO;
+      break;
+    case AudioEncoder::OpusSignal::kMusic:
+      opus_signal = OPUS_SIGNAL_MUSIC;
+      break;
+    case AudioEncoder::OpusSignal::kVoice:
+      opus_signal = OPUS_SIGNAL_VOICE;
+      break;
+  }
 
   if (opus_encoder_ctl(encoder.get(), OPUS_SET_SIGNAL(opus_signal)) !=
       OPUS_OK) {
@@ -404,10 +413,32 @@ EncoderStatus::Or<OwnedOpusEncoder> AudioOpusEncoder::CreateOpusEncoder(
         base::StringPrintf("Failed to set Opus signal hint: %d", opus_signal));
   }
 
+  const unsigned int use_dtx = opus_options.value().use_dtx ? 1 : 0;
   if (opus_encoder_ctl(encoder.get(), OPUS_SET_DTX(use_dtx)) != OPUS_OK) {
     return EncoderStatus(
         EncoderStatus::Codes::kEncoderInitializationError,
         base::StringPrintf("Failed to set Opus DTX: %d", use_dtx));
+  }
+
+  unsigned int opus_application;
+  switch (opus_options.value().application) {
+    case AudioEncoder::OpusApplication::kVoip:
+      opus_application = OPUS_APPLICATION_VOIP;
+      break;
+    case AudioEncoder::OpusApplication::kAudio:
+      opus_application = OPUS_APPLICATION_AUDIO;
+      break;
+    case AudioEncoder::OpusApplication::kLowDelay:
+      opus_application = OPUS_APPLICATION_RESTRICTED_LOWDELAY;
+      break;
+  }
+
+  if (opus_encoder_ctl(encoder.get(), OPUS_SET_APPLICATION(opus_application)) !=
+      OPUS_OK) {
+    return EncoderStatus(
+        EncoderStatus::Codes::kEncoderInitializationError,
+        base::StringPrintf("Failed to set Opus application hint: %d",
+                           opus_application));
   }
 
   return encoder;

@@ -4,18 +4,19 @@
 
 #include "sandbox/policy/win/sandbox_win.h"
 
-#include <stddef.h>
 #include <windows.h>
+
+#include <stddef.h>
 #include <winternl.h>
 
 #include <map>
+#include <optional>
 #include <sstream>
 #include <string>
 #include <string_view>
 #include <utility>
 #include <vector>
 
-#include <optional>
 #include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/feature_list.h"
@@ -27,6 +28,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/metrics_hashes.h"
 #include "base/no_destructor.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
@@ -170,6 +172,9 @@ const wchar_t* const kTroublesomeDlls[] = {
 BASE_FEATURE(kEnableCsrssLockdownFeature,
              "EnableCsrssLockdown",
              base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(GpuLockdownDefaultDacl,
+             "GpuLockdownDefaultDacl",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Helper to recording timing information during process creation.
 class SandboxLaunchTimer {
@@ -279,21 +284,25 @@ std::map<std::wstring, std::wstring> GetShortNameModules() {
 // passed as |module_name|. The DLL must be loaded in the current process. A
 // mapping from long names to short names should also be passed in |modules| to
 // attempt to map a long name to the actual loaded name, this can be initialized
-// with a call to GetShortNameModules.
-void BlocklistAddOneDll(const wchar_t* module_name,
+// with a call to GetShortNameModules. Returns true if the DLL is loaded and
+// will be blocked in the child.
+bool BlocklistAddOneDll(const wchar_t* module_name,
                         const std::map<std::wstring, std::wstring>& modules,
                         TargetConfig* config) {
   DCHECK(!config->IsConfigured());
   if (::GetModuleHandleW(module_name) != nullptr) {
     config->AddDllToUnload(module_name);
     DVLOG(1) << "dll to unload found: " << module_name;
+    return true;
   } else {
     auto short_name = modules.find(base::ToLowerASCII(module_name));
     if (short_name != modules.end()) {
       config->AddDllToUnload(short_name->second.c_str());
       config->AddDllToUnload(module_name);
+      return true;
     }
   }
+  return false;
 }
 
 // Adds the generic config rules to a sandbox TargetConfig.
@@ -343,8 +352,14 @@ ResultCode AddGenericConfig(sandbox::TargetConfig* config) {
   // Adds policy rules for unloading the known dlls that cause Chrome to crash.
   // Eviction of injected DLLs is done by the sandbox so that the injected
   // module does not get a chance to execute any code.
-  for (int ix = 0; ix != std::size(kTroublesomeDlls); ++ix)
-    BlocklistAddOneDll(kTroublesomeDlls[ix], modules, config);
+  for (const wchar_t* blocklist_dll : kTroublesomeDlls) {
+    if (BlocklistAddOneDll(blocklist_dll, modules, config)) {
+      // Log the module to help with list cleanup.
+      base::UmaHistogramSparse("Process.Sandbox.DllBlocked",
+                               static_cast<int32_t>(base::HashMetricName(
+                                   base::WideToASCII(blocklist_dll))));
+    }
+  }
 
   return SBOX_ALL_OK;
 }
@@ -495,6 +510,11 @@ std::wstring GetAppContainerProfileName(const std::string& appcontainer_id,
     case Sandbox::kOnDeviceModelExecution:
       sandbox_base_name = std::string("cr.sb.odm");
       break;
+#if BUILDFLAG(ENABLE_PRINTING)
+    case Sandbox::kPrintCompositor:
+      sandbox_base_name = std::string("cr.sb.prnc");
+      break;
+#endif
     case Sandbox::kWindowsSystemProxyResolver:
       sandbox_base_name = std::string("cr.sb.pxy");
       break;
@@ -529,6 +549,11 @@ ResultCode SetupAppContainerProfile(AppContainer* container,
       sandbox_type != Sandbox::kMediaFoundationCdm &&
       sandbox_type != Sandbox::kNetwork &&
       sandbox_type != Sandbox::kOnDeviceModelExecution &&
+#if BUILDFLAG(ENABLE_PRINTING)
+      !(sandbox_type == Sandbox::kPrintCompositor &&
+        base::FeatureList::IsEnabled(
+            sandbox::policy::features::kPrintCompositorLPAC)) &&
+#endif
       sandbox_type != Sandbox::kWindowsSystemProxyResolver) {
     return SBOX_ERROR_UNSUPPORTED;
   }
@@ -593,6 +618,14 @@ ResultCode SetupAppContainerProfile(AppContainer* container,
     container->SetEnableLowPrivilegeAppContainer(true);
   }
 
+#if BUILDFLAG(ENABLE_PRINTING)
+  if (sandbox_type == Sandbox::kPrintCompositor) {
+    container->AddCapability(kLpacCom);
+    container->AddCapability(L"lpacPrinting");
+    container->SetEnableLowPrivilegeAppContainer(true);
+  }
+#endif
+
   if (sandbox_type == Sandbox::kWindowsSystemProxyResolver) {
     container->AddCapability(base::win::WellKnownCapability::kInternetClient);
     container->AddCapability(kLpacServicesManagement);
@@ -649,7 +682,8 @@ ResultCode GenerateConfigForSandboxedProcess(const base::CommandLine& cmd_line,
     return result;
 
   if (process_type == switches::kRendererProcess) {
-    // TODO(crbug.com/74242) Remove if we can reliably not load cryptbase.dll.
+    // TODO(crbug.com/40088338) Remove if we can reliably not load
+    // cryptbase.dll.
     config->AddKernelObjectToClose(HandleToClose::kKsecDD);
     result = SandboxWin::AddWin32kLockdownPolicy(config);
     if (result != SBOX_ALL_OK) {
@@ -669,8 +703,7 @@ ResultCode GenerateConfigForSandboxedProcess(const base::CommandLine& cmd_line,
     return result;
 
   if (process_type == switches::kGpuProcess &&
-      base::FeatureList::IsEnabled(
-          {"GpuLockdownDefaultDacl", base::FEATURE_ENABLED_BY_DEFAULT})) {
+      base::FeatureList::IsEnabled(GpuLockdownDefaultDacl)) {
     config->SetLockdownDefaultDacl();
     config->AddRestrictingRandomSid();
   }
@@ -693,21 +726,6 @@ ResultCode GenerateConfigForSandboxedProcess(const base::CommandLine& cmd_line,
     DCHECK_EQ(result, SBOX_ALL_OK);
     if (result != SBOX_ALL_OK)
       return result;
-  }
-
-  // Allow the renderer, gpu and utility processes to access the log file.
-  if (process_type == switches::kRendererProcess ||
-      process_type == switches::kGpuProcess ||
-      process_type == switches::kUtilityProcess) {
-    if (logging::IsLoggingToFileEnabled()) {
-      auto log_path = logging::GetLogFileFullPath();
-      DCHECK(base::FilePath(log_path).IsAbsolute());
-      result =
-          config->AllowFileAccess(FileSemantics::kAllowAny, log_path.c_str());
-      if (result != SBOX_ALL_OK) {
-        return result;
-      }
-    }
   }
 
   if (sandbox_type == Sandbox::kMediaFoundationCdm) {
@@ -920,6 +938,13 @@ bool SandboxWin::IsAppContainerEnabledForSandbox(
   if (sandbox_type == Sandbox::kOnDeviceModelExecution) {
     return true;
   }
+
+#if BUILDFLAG(ENABLE_PRINTING)
+  if (sandbox_type == Sandbox::kPrintCompositor) {
+    return base::FeatureList::IsEnabled(
+        sandbox::policy::features::kPrintCompositorLPAC);
+  }
+#endif
 
   if (sandbox_type == Sandbox::kWindowsSystemProxyResolver)
     return true;

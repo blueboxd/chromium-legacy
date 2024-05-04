@@ -15,7 +15,7 @@ import {assert, assertInstanceof} from 'chrome://resources/js/assert.js';
 import type {Crostini} from '../../background/js/crostini.js';
 import type {FileManagerBase} from '../../background/js/file_manager_base.js';
 import type {ProgressCenter} from '../../background/js/progress_center.js';
-import {getBulkPinProgress, getDialogCaller, getDlpBlockedComponents, getDriveConnectionState, getPreferences} from '../../common/js/api.js';
+import {getBulkPinProgress, getDialogCaller, getDlpBlockedComponents, getDriveConnectionState, getMaterializedViews, getPreferences} from '../../common/js/api.js';
 import type {ArrayDataModel} from '../../common/js/array_data_model.js';
 import {crInjectTypeAndInit} from '../../common/js/cr_ui.js';
 import {isFolderDialogType} from '../../common/js/dialog_type.js';
@@ -24,7 +24,7 @@ import type {FakeEntry, FilesAppDirEntry, FilesAppEntry} from '../../common/js/f
 import {EntryList, FakeEntryImpl} from '../../common/js/files_app_entry_types.js';
 import type {FilesAppState} from '../../common/js/files_app_state.js';
 import {FilteredVolumeManager} from '../../common/js/filtered_volume_manager.js';
-import {isDlpEnabled, isGuestOsEnabled, isNewDirectoryTreeEnabled} from '../../common/js/flags.js';
+import {isDlpEnabled, isGuestOsEnabled, isMaterializedViewsEnabled, isNewDirectoryTreeEnabled} from '../../common/js/flags.js';
 import {recordEnum, recordInterval, startInterval} from '../../common/js/metrics.js';
 import {ProgressItemState} from '../../common/js/progress_center_common.js';
 import {str} from '../../common/js/translations.js';
@@ -38,12 +38,13 @@ import {updateBulkPinProgress} from '../../state/ducks/bulk_pinning.js';
 import {updateDeviceConnectionState} from '../../state/ducks/device.js';
 import {updateDriveConnectionStatus} from '../../state/ducks/drive.js';
 import {setLaunchParameters} from '../../state/ducks/launch_params.js';
+import {updateMaterializedViews} from '../../state/ducks/materialized_views.js';
 import {updatePreferences} from '../../state/ducks/preferences.js';
 import {getDefaultSearchOptions, updateSearch} from '../../state/ducks/search.js';
 import {addUiEntry, removeUiEntry} from '../../state/ducks/ui_entries.js';
 import {driveRootEntryListKey, trashRootKey} from '../../state/ducks/volumes.js';
 import {DialogType, PropStatus, SearchLocation} from '../../state/state.js';
-import {getEmptyState, getEntry, getStore} from '../../state/store.js';
+import {getEmptyState, getEntry, getStore, getVolume} from '../../state/store.js';
 import {isXfTree} from '../../widgets/xf_tree_util.js';
 
 import {ActionsController} from './actions_controller.js';
@@ -537,8 +538,7 @@ export class FileManager {
     });
 
     this.directoryModel.addEventListener('directory-changed', event => {
-      this.navigationUma_!.onDirectoryChanged(
-          event.detail.newDirEntry as Entry);
+      this.navigationUma_!.onDirectoryChanged(event.detail.newDirEntry);
     });
 
     this.initCommands_();
@@ -785,12 +785,12 @@ export class FileManager {
         this.onTabletModeChanged_.bind(this));
 
     this.initEssentialUi_();
+    // Initialize the Store for the whole app.
+    this.store_.init(getEmptyState());
     this.initAdditionalUi_();
+    await this.initPrefs_();
     await this.initSettingsPromise_;
     const fileSystemUIPromise = this.initFileSystemUi_();
-    // Initialize the Store for the whole app.
-    const store = getStore();
-    store.init(getEmptyState());
     this.initUiFocus_();
     recordInterval('Load.InitUI');
 
@@ -807,29 +807,17 @@ export class FileManager {
    * initializing methods.
    */
   private initGeneral_() {
-    // Initialize the application state.
-    // TODO(mtomasz): Unify window.appState with location.search format.
-    if (window.appState) {
-      const params: Record<string, any> = {};
-
-      for (const [name, value] of Object.entries(window.appState)) {
-        params[name] = value;
+    // Initialize the application state, from the GET params.
+    let json = {};
+    if (location.search) {
+      const query = location.search.substr(1);
+      try {
+        json = JSON.parse(decodeURIComponent(query));
+      } catch (e) {
+        console.debug(`Error parsing location.search "${query}" due to ${e}`);
       }
-
-      this.launchParams_ = new LaunchParam(params);
-    } else {
-      // Used by the select dialog and SWA.
-      let json = {};
-      if (location.search) {
-        const query = location.search.substr(1);
-        try {
-          json = JSON.parse(decodeURIComponent(query));
-        } catch (e) {
-          console.debug(`Error parsing location.search "${query}" due to ${e}`);
-        }
-      }
-      this.launchParams_ = new LaunchParam(json);
     }
+    this.launchParams_ = new LaunchParam(json);
     this.store_.dispatch(
         setLaunchParameters({dialogType: this.launchParams_.type}));
 
@@ -959,6 +947,23 @@ export class FileManager {
     // Arrange the file list.
     this.ui_.listContainer.table.normalizeColumns();
     this.ui_.listContainer.table.redraw();
+  }
+
+  /**
+   * Initializes the prefs in the store.
+   */
+  private async initPrefs_():
+      Promise<chrome.fileManagerPrivate.Preferences|null> {
+    let prefs = null;
+    try {
+      prefs = await getPreferences();
+    } catch (e) {
+      console.error('Cannot get preferences:', e);
+      return null;
+    }
+
+    this.store_.dispatch(updatePreferences(prefs));
+    return prefs;
   }
 
   /**
@@ -1228,6 +1233,11 @@ export class FileManager {
     }
   }
 
+  private async initMaterializedViews_() {
+    const views = await getMaterializedViews();
+    this.store_.dispatch(updateMaterializedViews({materializedViews: views}));
+  }
+
   /**
    * Sets up the current directory during initialization.
    */
@@ -1238,6 +1248,9 @@ export class FileManager {
     assert(this.volumeManager_);
     assert(this.metadataModel_);
     assert(this.directoryModel_);
+    const initMaterializedViewsPromise = isMaterializedViewsEnabled() ?
+        this.initMaterializedViews_() :
+        Promise.resolve();
     const tracker = this.directoryModel_.createDirectoryChangeTracker();
     tracker.start();
 
@@ -1382,9 +1395,7 @@ export class FileManager {
     // If the directory to be changed to is still not resolved, then fallback to
     // the default display root.
     if (!nextCurrentDirEntry) {
-      nextCurrentDirEntry = await new Promise(resolve => {
-        this.volumeManager_!.getDefaultDisplayRoot(resolve);
-      });
+      nextCurrentDirEntry = await this.volumeManager_.getDefaultDisplayRoot();
     }
 
     // If selection failed to be resolved (eg. didn't exist, in case of saving a
@@ -1420,8 +1431,9 @@ export class FileManager {
       }
     }
 
-    // If there is no target select MyFiles by default.
-    if (!nextCurrentDirEntry) {
+    // If there is no target select MyFiles by default, but only if local files
+    // are enabled.
+    if (!nextCurrentDirEntry && this.localUserFilesAllowed) {
       assert(this.ui.directoryTree);
       if (isXfTree(this.ui.directoryTree)) {
         const myFiles = getMyFiles(this.store_.getState());
@@ -1431,7 +1443,7 @@ export class FileManager {
         // here.
         // TODO(b/308504417): MyFiles entry list should be selected before
         // MyFiles volume mounts.
-        if (myFiles.myFilesVolume) {
+        if (myFiles && myFiles.myFilesVolume) {
           nextCurrentDirEntry = myFiles.myFilesEntry;
         }
       } else if (this.ui.directoryTree?.dataModel.myFilesModel) {
@@ -1439,6 +1451,12 @@ export class FileManager {
             this.ui.directoryTree.dataModel.myFilesModel.entry;
       }
     }
+
+    // The next directory might be a materialized view.
+    await initMaterializedViewsPromise;
+
+    // TODO(b/328031885): Handle !nextCurrentDirEntry case here - it means some
+    // error occurred and we should show the appropriate UI.
 
     // Check directory change.
     if (!tracker.hasChanged) {
@@ -1600,15 +1618,10 @@ export class FileManager {
    * otherwise remove it. This supports dynamic refresh when the pref changes.
    */
   private async onPreferencesChanged_() {
-    let prefs = null;
-    try {
-      prefs = await getPreferences();
-    } catch (e) {
-      console.error('Cannot get preferences:', e);
+    const prefs = await this.initPrefs_();
+    if (!prefs) {
       return;
     }
-
-    this.store_.dispatch(updatePreferences(prefs));
 
     let redraw = false;
     if (this.driveEnabled_ !== prefs.driveEnabled) {
@@ -1638,8 +1651,9 @@ export class FileManager {
 
     if (this.localUserFilesAllowed !== prefs.localUserFilesAllowed) {
       this.localUserFilesAllowed = prefs.localUserFilesAllowed;
-      // TODO(b/322779971): Trigger all changes necessary: remove placeholders,
-      // remove commands that aren't valid, etc.
+      // Trigger the change after prefs are updated, so that if needed, the
+      // default root can be resolved correctly.
+      await this.maybeChangeRootOnPreferencesUpdate_();
     }
 
     await this.updateOfficePrefs_(prefs);
@@ -1768,6 +1782,38 @@ export class FileManager {
   }
 
   /**
+   * Navigates to default display root if currently in a local folder and
+   * `localUserFilesAllowed` preference is updated to False.
+   */
+  private async maybeChangeRootOnPreferencesUpdate_() {
+    if (this.localUserFilesAllowed) {
+      return;
+    }
+    assert(this.directoryModel_);
+    assert(this.volumeManager_);
+
+    const fileData = this.directoryModel_.getCurrentFileData();
+    if (!fileData) {
+      return;
+    }
+
+    const tracker = this.directoryModel_.createDirectoryChangeTracker();
+    tracker.start();
+
+    const state = this.store_.getState();
+    const volume = getVolume(state, fileData);
+    // The current directory is pointing to an entry that has a volume,
+    // but the volume isn't mounted anymore.
+    if (fileData.volumeId && !volume) {
+      const displayRoot = await this.volumeManager_.getDefaultDisplayRoot();
+      if (displayRoot && !tracker.hasChanged) {
+        this.directoryModel_!.changeDirectoryEntry(displayRoot);
+      }
+    }
+    tracker.stop();
+  }
+
+  /**
    * If the root item has been disabled but it is the current visible entry,
    * navigate away from it to the default display root.
    * @param entry The entry to navigate away from.
@@ -1782,7 +1828,7 @@ export class FileManager {
     // The fake root item is being hidden so navigate away if it's the
     // current directory.
     if (this.directoryModel_.getCurrentDirEntry() === entry) {
-      this.volumeManager_.getDefaultDisplayRoot((displayRoot) => {
+      this.volumeManager_.getDefaultDisplayRoot().then((displayRoot) => {
         if (this.directoryModel_!.getCurrentDirEntry() === entry &&
             displayRoot) {
           this.directoryModel_!.changeDirectoryEntry(displayRoot);

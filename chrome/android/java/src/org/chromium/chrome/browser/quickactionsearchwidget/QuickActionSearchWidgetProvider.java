@@ -23,14 +23,13 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.IntentUtils;
-import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskTraits;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.browserservices.intents.WebappConstants;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
-import org.chromium.chrome.browser.searchwidget.SearchActivity;
+import org.chromium.chrome.browser.searchwidget.SearchActivityUtils;
 import org.chromium.chrome.browser.ui.quickactionsearchwidget.QuickActionSearchWidgetProviderDelegate;
 import org.chromium.chrome.browser.ui.searchactivityutils.SearchActivityPreferencesManager;
 import org.chromium.chrome.browser.ui.searchactivityutils.SearchActivityPreferencesManager.SearchActivityPreferences;
@@ -44,8 +43,6 @@ import java.util.Map;
  * actions in Chrome.
  */
 public abstract class QuickActionSearchWidgetProvider extends AppWidgetProvider {
-    public static final String TAG = "b/300599867";
-
     /**
      * A sub class of {@link QuickActionSearchWidgetProvider} that provides the widget that can
      * resize.
@@ -60,7 +57,8 @@ public abstract class QuickActionSearchWidgetProvider extends AppWidgetProvider 
                 int areaWidthDp,
                 int areaHeightDp) {
             return getDelegate()
-                    .createSearchWidgetRemoteViews(context, prefs, areaWidthDp, areaHeightDp);
+                    .createSearchWidgetRemoteViews(
+                            context, new SearchActivityUtils(), prefs, areaWidthDp, areaHeightDp);
         }
     }
 
@@ -97,14 +95,9 @@ public abstract class QuickActionSearchWidgetProvider extends AppWidgetProvider 
                 @NonNull SearchActivityPreferences prefs,
                 int areaWidthDp,
                 int areaHeightDp) {
-            Log.w(
-                    TAG,
-                    "Launcher-reported dino widget area size (W, H): "
-                            + areaWidthDp
-                            + ", "
-                            + areaHeightDp);
             return getDelegate()
-                    .createDinoWidgetRemoteViews(context, prefs, areaWidthDp, areaHeightDp);
+                    .createDinoWidgetRemoteViews(
+                            context, new SearchActivityUtils(), prefs, areaWidthDp, areaHeightDp);
         }
     }
 
@@ -157,7 +150,6 @@ public abstract class QuickActionSearchWidgetProvider extends AppWidgetProvider 
         if (sDelegate != null) return sDelegate;
 
         Context context = ContextUtils.getApplicationContext();
-        ComponentName searchActivityComponent = new ComponentName(context, SearchActivity.class);
         Intent trustedIncognitoIntent =
                 IntentHandler.createTrustedOpenNewTabIntent(context, /* incognito= */ true);
         trustedIncognitoIntent.putExtra(IntentHandler.EXTRA_INVOKED_FROM_APP_WIDGET, true);
@@ -167,7 +159,7 @@ public abstract class QuickActionSearchWidgetProvider extends AppWidgetProvider 
 
         sDelegate =
                 new QuickActionSearchWidgetProviderDelegate(
-                        context, searchActivityComponent, trustedIncognitoIntent, dinoIntent);
+                        context, trustedIncognitoIntent, dinoIntent);
         return sDelegate;
     }
 

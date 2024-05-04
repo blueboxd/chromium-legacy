@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <memory>
 #include <string>
+#include <string_view>
 #include <utility>
 
 #include "base/memory/raw_ptr.h"
@@ -21,7 +22,6 @@
 #include "chrome/browser/picture_in_picture/picture_in_picture_window_manager.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
-#include "chrome/browser/preloading/prefetch/no_state_prefetch/no_state_prefetch_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/chrome_navigation_ui_data.h"
 #include "chrome/browser/signin/signin_promo.h"
@@ -289,9 +289,17 @@ std::pair<Browser*, int> GetBrowserAndTabForDisposition(
     case WindowOpenDisposition::NEW_PICTURE_IN_PICTURE:
 #if !BUILDFLAG(IS_ANDROID)
     {
-      Browser::CreateParams browser_params(Browser::TYPE_PICTURE_IN_PICTURE,
-                                           profile, params.user_gesture);
-      browser_params.trusted_source = params.trusted_source;
+      // The picture in picture window should be part of the opener's web app,
+      // if any.
+      std::string app_name;
+      if (!params.app_id.empty()) {
+        app_name = web_app::GenerateApplicationNameFromAppId(params.app_id);
+      } else if (params.browser && !params.browser->app_name().empty()) {
+        app_name = params.browser->app_name();
+      }
+
+      auto browser_params = Browser::CreateParams::CreateForPictureInPicture(
+          app_name, params.trusted_source, profile, params.user_gesture);
       DCHECK(params.contents_to_insert);
       auto pip_options =
           params.contents_to_insert->GetPictureInPictureOptions();
@@ -513,7 +521,7 @@ class ScopedBrowserShower {
   ~ScopedBrowserShower() {
     BrowserWindow* window = params_->browser->window();
     if (params_->window_action == NavigateParams::SHOW_WINDOW_INACTIVE) {
-      // TODO(crbug.com/1490267): investigate if SHOW_WINDOW_INACTIVE needs to
+      // TODO(crbug.com/40284685): investigate if SHOW_WINDOW_INACTIVE needs to
       // be supported for tab modal popups.
       CHECK_EQ(params_->is_tab_modal_popup, false);
       window->ShowInactive();
@@ -627,7 +635,7 @@ base::WeakPtr<content::NavigationHandle> Navigate(NavigateParams* params) {
   }
 
   // Open System Apps in their standalone window if necessary.
-  // TODO(crbug.com/1096345): Remove this code after we integrate with intent
+  // TODO(crbug.com/40136163): Remove this code after we integrate with intent
   // handling.
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   const std::optional<ash::SystemWebAppType> capturing_system_app_type =
@@ -924,7 +932,7 @@ base::WeakPtr<content::NavigationHandle> Navigate(NavigateParams* params) {
     }
 
     // Maybe notify that an open operation has been done from a gesture.
-    // TODO(crbug.com/1129028): preferably pipe this information through the
+    // TODO(crbug.com/40719979): preferably pipe this information through the
     // TabStripModel instead. See bug for deeper discussion.
     if (params->user_gesture && source_browser == params->browser) {
       params->browser->window()->LinkOpeningFromGesture(params->disposition);
@@ -992,7 +1000,7 @@ base::WeakPtr<content::NavigationHandle> Navigate(NavigateParams* params) {
 
 bool IsHostAllowedInIncognito(const GURL& url) {
   std::string scheme = url.scheme();
-  base::StringPiece host = url.host_piece();
+  std::string_view host = url.host_piece();
   if (scheme != content::kChromeUIScheme) {
     return true;
   }

@@ -42,6 +42,14 @@ class MockShoppingService : public commerce::ShoppingService {
               GetPriceInsightsInfoForUrl,
               (const GURL& url, commerce::PriceInsightsInfoCallback callback),
               (override));
+  MOCK_METHOD(const std::vector<commerce::UrlInfo>,
+              GetUrlInfosForActiveWebWrappers,
+              (),
+              (override));
+  MOCK_METHOD(const std::vector<commerce::UrlInfo>,
+              GetUrlInfosForRecentlyViewedWebWrappers,
+              (),
+              (override));
   MOCK_METHOD(void,
               GetUpdatedProductInfoForBookmarks,
               (const std::vector<int64_t>& bookmark_ids,
@@ -121,6 +129,15 @@ class MockShoppingService : public commerce::ShoppingService {
               (const std::string& tracking_id,
                base::OnceCallback<void(bool)> callback),
               (override));
+  MOCK_METHOD(void,
+              GetProductSpecificationsForUrls,
+              (const std::vector<GURL>& urls,
+               ProductSpecificationsCallback callback),
+              (override));
+  MOCK_METHOD(ProductSpecificationsService*,
+              GetProductSpecificationsService,
+              (),
+              (override));
 
   // Make this mock permissive for all features but default to providing empty
   // data for all accessors of shopping data.
@@ -131,6 +148,8 @@ class MockShoppingService : public commerce::ShoppingService {
       std::optional<commerce::ProductInfo> product_info);
   void SetResponseForGetPriceInsightsInfoForUrl(
       std::optional<commerce::PriceInsightsInfo> price_insights_info);
+  void SetResponseForGetUrlInfosForActiveWebWrappers(
+      std::vector<commerce::UrlInfo> url_infos);
   void SetResponsesForGetUpdatedProductInfoForBookmarks(
       std::map<int64_t, ProductInfo> bookmark_updates);
   void SetResponseForGetMerchantInfoForUrl(
@@ -155,6 +174,8 @@ class MockShoppingService : public commerce::ShoppingService {
   void SetIsParcelTrackingEligible(bool is_eligible);
   void SetGetAllParcelStatusesCallbackValue(
       std::vector<ParcelTrackingStatus> parcels);
+  void SetResponseForGetProductSpecificationsForUrls(
+      ProductSpecifications specs);
 
  private:
   // Since the discount API wants a const ref to some map, keep a default

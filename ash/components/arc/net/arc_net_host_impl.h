@@ -68,7 +68,11 @@ class ArcNetHostImpl : public KeyedService,
   // Overridden from mojom::NetHost.
   void GetNetworks(mojom::GetNetworksRequestType type,
                    GetNetworksCallback callback) override;
+  // TODO(b/329552433): Delete this method after pi-arc is removed.
+  // Deprecated. ArcWifiHostImpl::GetWifiEnabledState() should be used.
   void GetWifiEnabledState(GetWifiEnabledStateCallback callback) override;
+  // TODO(b/329552433): Delete this method after pi-arc is removed.
+  // Deprecated. ArcWifiHostImpl::SetWifiEnabledState() should be used.
   void SetWifiEnabledState(bool is_enabled,
                            SetWifiEnabledStateCallback callback) override;
   void StartScan() override;
@@ -84,7 +88,10 @@ class ArcNetHostImpl : public KeyedService,
   void StartDisconnect(const std::string& guid,
                        StartDisconnectCallback callback) override;
   void AndroidVpnConnected(mojom::AndroidVpnConfigurationPtr cfg) override;
-  void AndroidVpnStateChanged(mojom::ConnectionStateType state) override;
+  void AndroidVpnUpdated(mojom::AndroidVpnConfigurationPtr cfg) override;
+  void DEPRECATED_AndroidVpnStateChanged(
+      mojom::ConnectionStateType state) override;
+  void AndroidVpnDisconnected() override;
   void AddPasspointCredentials(
       mojom::PasspointCredentialsPtr credentials) override;
   void RemovePasspointCredentials(

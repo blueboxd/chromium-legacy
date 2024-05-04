@@ -16,6 +16,7 @@
 #include "base/observer_list.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/uuid.h"
+#include "components/saved_tab_groups/features.h"
 #include "components/saved_tab_groups/saved_tab_group.h"
 #include "components/saved_tab_groups/saved_tab_group_model_observer.h"
 #include "components/saved_tab_groups/saved_tab_group_tab.h"
@@ -37,13 +38,40 @@ void RecordGroupDeletedMetric(const SavedTabGroup* removed_group) {
   base::RecordAction(
       base::UserMetricsAction("TabGroups_SavedTabGroups_Deleted"));
 }
+
+// Compare function for 2 SavedTabGroup.
+// SaveTabGroup with position set is always placed before the one without
+// position set. If both have position set, the one with lower position number
+// should place before. If both positions are the same or both are not set, the
+// one with more recent update time should place before.
+bool ShouldPlaceBefore(const SavedTabGroup& group1,
+                       const SavedTabGroup& group2) {
+  std::optional<size_t> position1 = group1.position();
+  std::optional<size_t> position2 = group2.position();
+  if (position1.has_value() && position2.has_value()) {
+    if (position1.value() != position2.value()) {
+      return position1.value() < position2.value();
+    } else {
+      return group1.update_time_windows_epoch_micros() >=
+             group2.update_time_windows_epoch_micros();
+    }
+  } else if (position1.has_value() && !position2.has_value()) {
+    return true;
+  } else if (!position1.has_value() && position2.has_value()) {
+    return false;
+  } else {
+    return group1.update_time_windows_epoch_micros() >=
+           group2.update_time_windows_epoch_micros();
+  }
+}
+
 }  // anonymous namespace
 
 SavedTabGroupModel::SavedTabGroupModel() = default;
 SavedTabGroupModel::~SavedTabGroupModel() = default;
 
 std::optional<int> SavedTabGroupModel::GetIndexOf(
-    tab_groups::TabGroupId tab_group_id) const {
+    LocalTabGroupID tab_group_id) const {
   for (size_t i = 0; i < saved_tab_groups_.size(); i++) {
     if (saved_tab_groups_[i].local_group_id() == tab_group_id)
       return i;
@@ -61,6 +89,16 @@ std::optional<int> SavedTabGroupModel::GetIndexOf(const base::Uuid& id) const {
   return std::nullopt;
 }
 
+std::optional<bool> SavedTabGroupModel::IsGroupPinned(
+    const base::Uuid& id) const {
+  std::optional<int> index = GetIndexOf(id);
+  if (index.has_value()) {
+    return saved_tab_groups_[index.value()].is_pinned();
+  } else {
+    return std::nullopt;
+  }
+}
+
 const SavedTabGroup* SavedTabGroupModel::Get(const base::Uuid& id) const {
   std::optional<int> index = GetIndexOf(id);
   if (!index.has_value()) {
@@ -71,7 +109,7 @@ const SavedTabGroup* SavedTabGroupModel::Get(const base::Uuid& id) const {
 }
 
 const SavedTabGroup* SavedTabGroupModel::Get(
-    const tab_groups::TabGroupId local_group_id) const {
+    const LocalTabGroupID local_group_id) const {
   std::optional<int> index = GetIndexOf(local_group_id);
   if (!index.has_value())
     return nullptr;
@@ -83,8 +121,11 @@ void SavedTabGroupModel::Add(SavedTabGroup saved_group) {
   base::Uuid group_guid = saved_group.saved_guid();
   CHECK(!Contains(group_guid));
 
-  // Give a default position to groups if it is not already set.
-  if (!saved_group.position().has_value()) {
+  // In V1, give a default position to groups if it is not already set.
+  // In V2, do nothing because unpinned saved tab groups don't have position
+  // set.
+  if (!IsTabGroupsSaveUIUpdateEnabled() &&
+      !saved_group.position().has_value()) {
     saved_group.SetPosition(Count());
   }
 
@@ -95,7 +136,7 @@ void SavedTabGroupModel::Add(SavedTabGroup saved_group) {
   }
 }
 
-void SavedTabGroupModel::Remove(const tab_groups::TabGroupId tab_group_id) {
+void SavedTabGroupModel::Remove(const LocalTabGroupID tab_group_id) {
   if (!Contains(tab_group_id))
     return;
 
@@ -128,7 +169,7 @@ void SavedTabGroupModel::Remove(const base::Uuid& id) {
 }
 
 void SavedTabGroupModel::UpdateVisualData(
-    tab_groups::TabGroupId tab_group_id,
+    LocalTabGroupID tab_group_id,
     const tab_groups::TabGroupVisualData* visual_data) {
   if (!Contains(tab_group_id))
     return;
@@ -166,8 +207,7 @@ void SavedTabGroupModel::AddedFromSync(SavedTabGroup saved_group) {
   }
 }
 
-void SavedTabGroupModel::RemovedFromSync(
-    const tab_groups::TabGroupId tab_group_id) {
+void SavedTabGroupModel::RemovedFromSync(const LocalTabGroupID tab_group_id) {
   if (!Contains(tab_group_id))
     return;
 
@@ -192,7 +232,7 @@ void SavedTabGroupModel::RemovedFromSync(const base::Uuid& id) {
 }
 
 void SavedTabGroupModel::UpdatedVisualDataFromSync(
-    tab_groups::TabGroupId tab_group_id,
+    LocalTabGroupID tab_group_id,
     const tab_groups::TabGroupVisualData* visual_data) {
   if (!Contains(tab_group_id))
     return;
@@ -229,7 +269,7 @@ SavedTabGroup* SavedTabGroupModel::GetGroupContainingTab(
 }
 
 SavedTabGroup* SavedTabGroupModel::GetGroupContainingTab(
-    const base::Token& local_tab_id) {
+    const LocalTabID& local_tab_id) {
   for (auto& saved_group : saved_tab_groups_) {
     if (saved_group.ContainsTab(local_tab_id))
       return &saved_group;
@@ -299,7 +339,7 @@ void SavedTabGroupModel::UpdateTabInGroup(const base::Uuid& group_id,
 
 void SavedTabGroupModel::UpdateLocalTabId(const base::Uuid& group_id,
                                           SavedTabGroupTab tab,
-                                          std::optional<base::Token> local_id) {
+                                          std::optional<LocalTabID> local_id) {
   std::optional<int> group_index = GetIndexOf(group_id);
   CHECK(group_index.has_value());
   tab.SetLocalTabID(local_id);
@@ -325,8 +365,8 @@ void SavedTabGroupModel::RemoveTabFromGroupLocally(const base::Uuid& group_id,
     return;
   }
 
-  // TODO(crbug/1401965): Convert all methods to pass ids by value to prevent
-  // UAFs. Also removes the need for a separate copy variable.
+  // TODO(crbug.com/40062298): Convert all methods to pass ids by value to
+  // prevent UAFs. Also removes the need for a separate copy variable.
   const base::Uuid copy_tab_id = tab_id;
   saved_tab_groups_[index.value()].RemoveTabLocally(tab_id);
 
@@ -382,7 +422,7 @@ void SavedTabGroupModel::MoveTabInGroupTo(const base::Uuid& group_id,
   saved_tab_groups_[index.value()].MoveTabLocally(tab_id, new_index);
 
   for (auto& observer : observers_) {
-    // TODO(crbug/1459730): Consider further optimizations.
+    // TODO(crbug.com/40919583): Consider further optimizations.
     observer.SavedTabGroupTabsReorderedLocally(group_id);
   }
 }
@@ -393,16 +433,36 @@ std::unique_ptr<sync_pb::SavedTabGroupSpecifics> SavedTabGroupModel::MergeGroup(
 
   DCHECK(Contains(group_id));
 
+  // For unpinned groups, `pinned_index` should be std::nullopt since its
+  // position doesn't matter.
   const int index = GetIndexOf(group_id).value();
-  const int preferred_index = sync_specific.group().position();
+  const std::optional<size_t> pinned_index =
+      saved_tab_groups_[index].is_pinned() ? std::optional<size_t>(index)
+                                           : std::nullopt;
 
+  // Merge group and get `preferred_pinned_index`.
   saved_tab_groups_[index].MergeGroup(std::move(sync_specific));
+  std::optional<size_t> preferred_pinned_index =
+      saved_tab_groups_[index].position();
 
-  if (index != preferred_index) {
-    const int num_groups = Count();
-    const int new_index =
-        preferred_index < num_groups ? preferred_index : num_groups - 1;
-    ReorderGroupFromSync(group_id, std::max(new_index, 0));
+  if (pinned_index != preferred_pinned_index) {
+    int new_index;
+    if (preferred_pinned_index.has_value()) {
+      // If the group is pinned, find the pinned position to insert.
+      new_index = preferred_pinned_index.value();
+    } else {
+      // If the group is unpinned, find the first unpinned group index to
+      // insert.
+      new_index = 0;
+      for (auto& group : saved_tab_groups_) {
+        if (group.is_pinned()) {
+          ++new_index;
+        }
+      }
+    }
+
+    ReorderGroupFromSync(group_id,
+                         std::min(std::max(new_index, 0), Count() - 1));
   }
 
   for (auto& observer : observers_) {
@@ -495,7 +555,7 @@ SavedTabGroupModel::LoadStoredEntries(
 }
 
 void SavedTabGroupModel::OnGroupClosedInTabStrip(
-    const tab_groups::TabGroupId& tab_group_id) {
+    const LocalTabGroupID& tab_group_id) {
   const std::optional<int> index = GetIndexOf(tab_group_id);
   if (!index.has_value())
     return;
@@ -513,7 +573,7 @@ void SavedTabGroupModel::OnGroupClosedInTabStrip(
 
 void SavedTabGroupModel::OnGroupOpenedInTabStrip(
     const base::Uuid& id,
-    const tab_groups::TabGroupId& tab_group_id) {
+    const LocalTabGroupID& tab_group_id) {
   const std::optional<int> index = GetIndexOf(id);
   CHECK(index.has_value());
   CHECK_GE(index.value(), 0);
@@ -534,6 +594,19 @@ void SavedTabGroupModel::RemoveObserver(SavedTabGroupModelObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
+void SavedTabGroupModel::MigrateTabGroupSavesUIUpdate() {
+  CHECK(IsTabGroupsSaveUIUpdateEnabled());
+  constexpr size_t kMaxNumberOfGroupToPin = 4;
+  // Pin the first 4 saved tab groups from V1.
+  for (size_t i = 0;
+       i < std::min(saved_tab_groups_.size(), kMaxNumberOfGroupToPin); ++i) {
+    saved_tab_groups_[i].SetPosition(i);
+    for (auto& observer : observers_) {
+      observer.SavedTabGroupUpdatedLocally(saved_tab_groups_[i].saved_guid());
+    }
+  }
+}
+
 void SavedTabGroupModel::ReorderGroupImpl(const base::Uuid& id, int new_index) {
   DCHECK_GE(new_index, 0);
   DCHECK_LT(new_index, Count());
@@ -551,52 +624,23 @@ void SavedTabGroupModel::ReorderGroupImpl(const base::Uuid& id, int new_index) {
 
 void SavedTabGroupModel::UpdateGroupPositionsImpl() {
   for (size_t i = 0; i < saved_tab_groups_.size(); ++i) {
-    saved_tab_groups_[i].SetPosition(i);
+    //  Only update position for tab groups for which position is set.
+    if (saved_tab_groups_[i].position().has_value()) {
+      saved_tab_groups_[i].SetPosition(i);
+    }
   }
 }
 
 void SavedTabGroupModel::InsertGroupImpl(const SavedTabGroup& group) {
-  // We can always safely insert the first group.
-  if (saved_tab_groups_.empty()) {
-    saved_tab_groups_.emplace_back(std::move(group));
-    return;
-  }
-
-  CHECK(group.position().has_value());
-
-  // Because saved_tab_groups_ must be in sorted order, we can immediately place
-  // the group at the end of the vector if `group` is the largest
-  // element we have seen yet.
-  if (saved_tab_groups_[saved_tab_groups_.size() - 1].position() <
-      group.position()) {
-    saved_tab_groups_.emplace_back(std::move(group));
-    return;
-  }
-
-  // Insert `group` in front of an element if one of these criteria
-  // are met:
-  // 1. The current index is larger than `group`.
-  // 2. The current index has the same position as `group` and is not
-  // the most recently updated position.
-  for (size_t index = 0; index < saved_tab_groups_.size(); ++index) {
+  size_t index;
+  for (index = 0; index < saved_tab_groups_.size(); ++index) {
     const SavedTabGroup& curr_group = saved_tab_groups_[index];
-    bool curr_position_larger = curr_group.position() > group.position();
-    bool curr_position_same = curr_group.position() == group.position();
-    bool curr_position_least_recently_updated =
-        curr_group.update_time_windows_epoch_micros() <=
-        group.update_time_windows_epoch_micros();
 
-    if (curr_position_larger ||
-        (curr_position_same && curr_position_least_recently_updated)) {
-      saved_tab_groups_.insert(saved_tab_groups_.begin() + index,
-                               std::move(group));
-      return;
+    if (ShouldPlaceBefore(group, curr_group)) {
+      break;
     }
   }
-
-  // This can happen when the last element of the vector has the same position
-  // as `group` and was more recently updated.
-  saved_tab_groups_.emplace_back(std::move(group));
+  saved_tab_groups_.insert(saved_tab_groups_.begin() + index, std::move(group));
 }
 
 std::unique_ptr<SavedTabGroup> SavedTabGroupModel::RemoveImpl(int index) {
@@ -617,6 +661,29 @@ void SavedTabGroupModel::UpdateVisualDataImpl(
 
   saved_group.SetTitle(visual_data->title());
   saved_group.SetColor(visual_data->color());
+}
+
+void SavedTabGroupModel::TogglePinState(base::Uuid id) {
+  CHECK(IsTabGroupsSaveUIUpdateEnabled());
+  if (!Contains(id)) {
+    return;
+  }
+  const int index = GetIndexOf(id).value();
+  std::unique_ptr<SavedTabGroup> saved_group = RemoveImpl(index);
+  bool was_pinned = saved_group->is_pinned();
+  saved_group->SetPinned(!saved_group->is_pinned());
+  InsertGroupImpl(*saved_group);
+  for (auto& observer : observers_) {
+    observer.SavedTabGroupUpdatedLocally(id);
+  }
+
+  if (was_pinned) {
+    base::RecordAction(
+        base::UserMetricsAction("TabGroups_SavedTabGroups_Unpinned"));
+  } else {
+    base::RecordAction(
+        base::UserMetricsAction("TabGroups_SavedTabGroups_Pinned"));
+  }
 }
 
 }  // namespace tab_groups

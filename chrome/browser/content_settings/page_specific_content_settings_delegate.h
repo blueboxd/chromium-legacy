@@ -86,14 +86,14 @@ class PageSpecificContentSettingsDelegate
   void SetDefaultRendererContentSettingRules(
       content::RenderFrameHost* rfh,
       RendererContentSettingRules* rules) override;
-  browsing_data::CookieHelper::IsDeletionDisabledCallback
-  GetIsDeletionDisabledCallback() override;
   content_settings::PageSpecificContentSettings::MicrophoneCameraState
   GetMicrophoneCameraState() override;
   content::WebContents* MaybeGetSyncedWebContentsForPictureInPicture(
       content::WebContents* web_contents) override;
   void OnContentAllowed(ContentSettingsType type) override;
   void OnContentBlocked(ContentSettingsType type) override;
+  bool IsFrameAllowlistedForJavaScript(
+      content::RenderFrameHost* render_frame_host) override;
 
   // content::WebContentsObserver:
   void PrimaryPageChanged(content::Page& page) override;

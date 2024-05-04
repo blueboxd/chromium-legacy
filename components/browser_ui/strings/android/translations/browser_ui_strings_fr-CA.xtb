@@ -31,7 +31,6 @@
 <translation id="1620510694547887537">Caméra</translation>
 <translation id="1633720957382884102">Sites connexes</translation>
 <translation id="1644574205037202324">Historique</translation>
-<translation id="1647582022260550163">Voulez-vous vraiment réinitialiser les autorisations, ainsi que supprimer les témoins et les données de ce site?</translation>
 <translation id="1652197001188145583">Lorsque cette option est activée, les sites peuvent demander à utiliser des appareils CCP. Lorsqu'elle est désactivée, les sites ne peuvent pas utiliser les appareils CCP.</translation>
 <translation id="1660204651932907780">Autoriser les sites à faire jouer du son (recommandé)</translation>
 <translation id="1677097821151855053">Les témoins et les autres données de sites sont utilisés pour se souvenir de vous. Par exemple : pour vous connecter à votre compte ou pour personnaliser les annonces. Pour gérer les témoins pour tous les sites, reportez-vous au menu <ph name="BEGIN_LINK" />Paramètres<ph name="END_LINK" />.</translation>
@@ -94,12 +93,12 @@
 <translation id="2501278716633472235">Retour</translation>
 <translation id="2546283357679194313">Témoins et données des sites</translation>
 <translation id="2550801787432930915">Carte de baisse de prix</translation>
-<translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{1 témoin bloqué}one{# témoin bloqué}other{# témoins bloqués}}</translation>
 <translation id="2570922361219980984">L'accès à la localisation est également désactivé pour cet appareil. Activez-le dans les <ph name="BEGIN_LINK" />paramètres Android<ph name="END_LINK" />.</translation>
 <translation id="257931822824936280">Développé : cliquer pour réduire</translation>
 <translation id="2586657967955657006">Presse-papiers</translation>
 <translation id="2597457036804169544">Ne pas appliquer le thème sombre aux sites</translation>
 <translation id="2606760465469169465">Vérification automatique</translation>
+<translation id="2613007545732217283"><ph name="HOST_NAME" /> <ph name="SEPARATOR" /> <ph name="RECENCY" /></translation>
 <translation id="2621115761605608342">Autoriser JavaScript pour un site en particulier.</translation>
 <translation id="2653659639078652383">Envoyer</translation>
 <translation id="2677748264148917807">Quitter</translation>
@@ -122,9 +121,7 @@
 <translation id="2979365474350987274">Les témoins tiers sont limités</translation>
 <translation id="3008272652534848354">Réinitialiser les autorisations</translation>
 <translation id="301521992641321250">Bloquée automatiquement</translation>
-<translation id="3025010840409371499"><ph name="RECENCY" /> <ph name="SEPARATOR" /> <ph name="HOST_NAME" /></translation>
 <translation id="3069226013421428034">Autorisez la connexion de tiers pour un site particulier.</translation>
-<translation id="3082992102194421695">{COUNT,plural, =1{Expire demain}one{Expire dans # jour}other{Expire dans # jours}}</translation>
 <translation id="310297983047869047">Diapositive précédente</translation>
 <translation id="3109724472072898302">Réduit</translation>
 <translation id="3114012059975132928">Lecteur vidéo</translation>
@@ -177,6 +174,7 @@
 <translation id="3895926599014793903">Forcer l'activation du zoom</translation>
 <translation id="3908288065506437185">Bloquer les témoins tiers en mode de navigation privée</translation>
 <translation id="3918378745482005425">Certaines fonctionnalités pourraient ne pas fonctionner. Les sites associés peuvent toujours utiliser des témoins tiers.</translation>
+<translation id="3933121352599513978">Réduire les requêtes indésirables (recommandé)</translation>
 <translation id="3955193568934677022">Autoriser les sites à lire le contenu protégé (recommandé)</translation>
 <translation id="3967822245660637423">Téléchargement terminé</translation>
 <translation id="3974105241379491420">Les sites peuvent demander d'utiliser les informations qu'ils ont enregistrées à votre sujet</translation>
@@ -198,7 +196,9 @@
 <translation id="4278390842282768270">Autorisé</translation>
 <translation id="429312253194641664">Un site lit du contenu multimédia</translation>
 <translation id="42981349822642051">Développer</translation>
+<translation id="4336219115486912529">{COUNT,plural, =1{Expire demain}one{Expire dans # jour}other{Expire dans # jours}}</translation>
 <translation id="4336566011000459927">Chrome limitera à nouveau les témoins aujourd'hui</translation>
+<translation id="4336836404251800362"><ph name="RECENCY" /> <ph name="SEPARATOR" /> Votre dernier onglet</translation>
 <translation id="4338831206024587507">Tous les sites associés à <ph name="DOMAIN" /></translation>
 <translation id="4402755511846832236">Empêcher les sites de savoir quand vous êtes en train d'utiliser cet appareil</translation>
 <translation id="4412992751769744546">Autoriser les témoins tiers</translation>
@@ -289,6 +289,7 @@
 <translation id="5853982612236235577">Lorsque cette option est activée, les sites peuvent demander à envoyer des notifications. Lorsqu'elle est désactivée, les sites ne peuvent pas envoyer de notifications.</translation>
 <translation id="5860033963881614850">Désactivé</translation>
 <translation id="5876056640971328065">Suspendre la vidéo</translation>
+<translation id="5877248419911025165">Réduire toutes les requêtes</translation>
 <translation id="5884085660368669834">Préférence de site</translation>
 <translation id="5887687176710214216">Dernière visite : hier.</translation>
 <translation id="5916664084637901428">Activé</translation>
@@ -306,6 +307,7 @@
 <translation id="6064125863973209585">Téléchargements terminés</translation>
 <translation id="6071501408666570960">Vous pouvez être déconnecté de ce site</translation>
 <translation id="6120483543004435978">Lorsque cette option est activée, les sites peuvent vous demander si vous utilisez activement votre appareil. Lorsqu'elle est désactivée, les sites ne peuvent pas savoir si vous utilisez activement votre appareil.</translation>
+<translation id="6140839633433422817">Voulez-vous vraiment réinitialiser les autorisations et supprimer les témoins et les données relatives à ce site?</translation>
 <translation id="6165508094623778733">En savoir plus</translation>
 <translation id="6171020522141473435">Lorsque cette option est activée, les sites peuvent demander à utiliser des appareils Bluetooth. Lorsqu'elle est désactivée, les sites ne peuvent pas utiliser d'appareils Bluetooth.</translation>
 <translation id="6177111841848151710">Bloquée pour le moteur de recherche actuel</translation>
@@ -345,6 +347,7 @@
 <translation id="6612358246767739896">Contenu protégé</translation>
 <translation id="662080504995468778">Rester</translation>
 <translation id="6653342741369270081">Appuyez sur le bouton de retour pour quitter le mode plein écran.</translation>
+<translation id="6670377348676659110">{TILE_COUNT,plural, =1{Masquer Continuer avec cet onglet}one{Masquer Continuer avec cet onglet}other{Masquer Continuer avec ces onglets}}</translation>
 <translation id="6689172468748959065">Photos de profils</translation>
 <translation id="6697925417670533197">Téléchargements actifs</translation>
 <translation id="6722828510648505498">Bloquez les invites de connexion provenant de services de vérification d'identité.</translation>
@@ -398,7 +401,6 @@
 <translation id="7561196759112975576">Toujours</translation>
 <translation id="757524316907819857">Empêcher les sites de lire du contenu protégé</translation>
 <translation id="7594634374516752650">Connecté à un appareil Bluetooth</translation>
-<translation id="7641339528570811325">Effacer les données de navigation…</translation>
 <translation id="7649070708921625228">Aide</translation>
 <translation id="7658239707568436148">Annuler</translation>
 <translation id="7667547420449112975">Le Magicien d'Oz</translation>
@@ -456,7 +458,6 @@
 <translation id="8441146129660941386">Rechercher vers l'arrière</translation>
 <translation id="8444433999583714703">Pour autoriser <ph name="APP_NAME" /> à accéder à votre position, activez aussi la localisation dans les <ph name="BEGIN_LINK" />paramètres d'Android<ph name="END_LINK" />.</translation>
 <translation id="8447861592752582886">Révoquer l'autorisation de l'appareil</translation>
-<translation id="8451050538944905715">{NUM_SELECTED,plural, =1{1 témoin en cours d'utilisation}one{# témoin en cours d'utilisation}other{# témoins en cours d'utilisation}}</translation>
 <translation id="8487700953926739672">Offert en ligne</translation>
 <translation id="848952951823693243">Toujours demander le site pour appareils mobiles</translation>
 <translation id="8499083585497694743">Réactiver le microphone</translation>
@@ -484,7 +485,6 @@
 <translation id="8803526663383843427">Lorsque activée</translation>
 <translation id="8805385115381080995">La navigation est plus rapide, car il est moins probable qu'un site vérifie que vous êtes bien une personne réelle</translation>
 <translation id="8816026460808729765">Empêcher les sites d'accéder aux capteurs</translation>
-<translation id="8843699287283948910">Masquer les onglets des autres appareils</translation>
 <translation id="8847988622838149491">USB</translation>
 <translation id="8874790741333031443">Essayez d'autoriser temporairement les témoins tiers, ce qui signifie que la navigation est moins protégée, mais que les fonctionnalités des sites sont plus susceptibles de fonctionner comme prévu.</translation>
 <translation id="8889294078294184559">Pendant que vous continuez à les parcourir, les sites peuvent vérifier la probabilité que vous soyez une personne réelle par le biais de Chrome et d'un site que vous avez visité précédemment</translation>
@@ -497,6 +497,7 @@
 <translation id="8959122750345127698">Navigation inaccessible : <ph name="URL" /></translation>
 <translation id="8986362086234534611">Supprimer</translation>
 <translation id="8990043154272859344">Vous serez déconnecté de tous les sites</translation>
+<translation id="8993853206419610596">Développer toutes les requêtes</translation>
 <translation id="9002538116239926534">Lorsque cette option est activée, les sites peuvent enregistrer des données sur votre appareil. Lorsqu'elle est désactivée, les sites ne peuvent pas enregistrer de données sur votre appareil.</translation>
 <translation id="9011903857143958461">Autorisation de <ph name="SITE_NAME" /> accordée</translation>
 <translation id="9019902583201351841">Géré par tes parents</translation>

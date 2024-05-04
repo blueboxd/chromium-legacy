@@ -37,7 +37,6 @@ import org.chromium.components.browser_ui.bottomsheet.BottomSheetController.Shee
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetControllerProvider;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetTestSupport;
 import org.chromium.components.messages.MessagesTestHelper;
-import org.chromium.components.signin.AccountUtils;
 import org.chromium.content_public.browser.ImeAdapter;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.util.DOMUtils;
@@ -45,6 +44,7 @@ import org.chromium.content_public.browser.test.util.TestInputMethodManagerWrapp
 import org.chromium.content_public.browser.test.util.WebContentsUtils;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.test.util.DeviceRestriction;
+import org.chromium.ui.test.util.GmsCoreVersionRestriction;
 import org.chromium.ui.widget.ButtonCompat;
 import org.chromium.url.GURL;
 
@@ -83,21 +83,8 @@ public class PasswordSavingIntegrationTest {
 
     @Before
     public void setup() throws Exception {
-        PasswordStoreAndroidBackendFactory.setFactoryInstanceForTesting(
-                new FakePasswordStoreAndroidBackendFactoryImpl());
-        runOnUiThreadBlocking(
-                () -> {
-                    ((FakePasswordStoreAndroidBackend)
-                                    PasswordStoreAndroidBackendFactory.getInstance()
-                                            .createBackend())
-                            .setSyncingAccount(
-                                    AccountUtils.createAccountFromName(
-                                            SigninTestRule.TEST_ACCOUNT_EMAIL));
-                });
-        PasswordSyncControllerDelegateFactory.setFactoryInstanceForTesting(
-                new FakePasswordSyncControllerDelegateFactoryImpl());
-
         mActivityTestRule.startMainActivityOnBlankPage();
+        PasswordManagerTestHelper.setAccountForPasswordStore(SigninTestRule.TEST_ACCOUNT_EMAIL);
         PasswordManagerTestUtilsBridge.disableServerPredictions();
         mSigninTestRule.addTestAccountThenSigninAndEnableSync();
 
@@ -126,7 +113,10 @@ public class PasswordSavingIntegrationTest {
 
     @Test
     @MediumTest
-    @Restriction(DeviceRestriction.RESTRICTION_TYPE_NON_AUTO)
+    @Restriction({
+        DeviceRestriction.RESTRICTION_TYPE_NON_AUTO,
+        GmsCoreVersionRestriction.RESTRICTION_TYPE_VERSION_GE_22W30
+    })
     // TODO(crbug/1475346): Add integration tests for automotive save password flow.
     public void testSavingNewPassword() throws InterruptedException, TimeoutException {
         mActivityTestRule.loadUrl(mActivityTestRule.getTestServer().getURL(SIGNIN_FORM_URL));
@@ -158,7 +148,7 @@ public class PasswordSavingIntegrationTest {
     @Test
     @MediumTest
     @Restriction(DeviceRestriction.RESTRICTION_TYPE_NON_AUTO)
-    // TODO(crbug/1475346): Add integration tests for automotive update password flow.
+    // TODO(crbug.com/40927881): Add integration tests for automotive update password flow.
     @DisabledTest(message = "https://crbug.com/1468903")
     public void testUpdatingPassword() throws InterruptedException, TimeoutException {
         // Store the test credential.

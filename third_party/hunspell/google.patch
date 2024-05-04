@@ -279,7 +279,7 @@ index 83a4b42..162b475 100644
    bool parse_flag(const std::string& line, unsigned short* out, FileMgr* af);
    bool parse_num(const std::string& line, int* out, FileMgr* af);
 diff --git a/src/hunspell/filemgr.cxx b/src/hunspell/filemgr.cxx
-index b7c89b2..aef6dba 100644
+index b7c89b2..9eccc40 100644
 --- a/src/hunspell/filemgr.cxx
 +++ b/src/hunspell/filemgr.cxx
 @@ -78,6 +78,32 @@
@@ -298,9 +298,9 @@ index b7c89b2..aef6dba 100644
 +bool FileMgr::getline(std::string& line) {
 +  // Read one line from a BDICT file and return it, if we can read a line
 +  // without errors.
-+  bool result = iterator_->AdvanceAndCopy(line_, BUFSIZE - 1);
++  const char* result = iterator_->Advance();
 +  if (result)
-+    line = line_;
++    line = result;
 +  return result;
 +}
 +
@@ -321,10 +321,10 @@ index b7c89b2..aef6dba 100644
  }
 +#endif
 diff --git a/src/hunspell/filemgr.hxx b/src/hunspell/filemgr.hxx
-index 991e924..65fae23 100644
+index 991e924..018ffed 100644
 --- a/src/hunspell/filemgr.hxx
 +++ b/src/hunspell/filemgr.hxx
-@@ -80,6 +80,30 @@
+@@ -80,6 +80,29 @@
  #include <string>
  #include <fstream>
  
@@ -349,19 +349,18 @@ index 991e924..65fae23 100644
 +
 + protected:
 +  hunspell::LineIterator* iterator_;
-+  char line_[BUFSIZE + 50]; // input buffer
 +};
 +#else
  class FileMgr {
   private:
    FileMgr(const FileMgr&);
-@@ -99,3 +123,4 @@ class FileMgr {
+@@ -99,3 +122,4 @@ class FileMgr {
    int getlinenum();
  };
  #endif
 +#endif
 diff --git a/src/hunspell/hashmgr.cxx b/src/hunspell/hashmgr.cxx
-index 1de1690..770fac1 100644
+index 1de1690..a7bcbb7 100644
 --- a/src/hunspell/hashmgr.cxx
 +++ b/src/hunspell/hashmgr.cxx
 @@ -84,8 +84,14 @@
@@ -737,7 +736,7 @@ index 1de1690..770fac1 100644
    return (aliasf != NULL);
  }
 diff --git a/src/hunspell/hashmgr.hxx b/src/hunspell/hashmgr.hxx
-index 812171a..af27d6c 100644
+index 812171a..6471833 100644
 --- a/src/hunspell/hashmgr.hxx
 +++ b/src/hunspell/hashmgr.hxx
 @@ -82,9 +82,22 @@
@@ -763,7 +762,7 @@ index 812171a..af27d6c 100644
    int tablesize;
    struct hentry** tableptr;
    flag flag_mode;
-@@ -104,7 +118,23 @@ class HashMgr {
+@@ -104,7 +117,23 @@ class HashMgr {
    char** aliasm;
  
   public:
@@ -787,7 +786,7 @@ index 812171a..af27d6c 100644
    ~HashMgr();
  
    struct hentry* lookup(const char*) const;
-@@ -134,6 +164,40 @@ class HashMgr {
+@@ -134,6 +163,40 @@ class HashMgr {
                 bool onlyupcase);
    int load_config(const char* affpath, const char* key);
    bool parse_aliasf(const std::string& line, FileMgr* af);
@@ -850,10 +849,10 @@ index 1e6c118..c3aa2be 100644
  
  #define ROTATE(v, q) \
 diff --git a/src/hunspell/hunspell.cxx b/src/hunspell/hunspell.cxx
-index abcdb8f..c8c5cf4 100644
+index abcdb8f..7847549 100644
 --- a/src/hunspell/hunspell.cxx
 +++ b/src/hunspell/hunspell.cxx
-@@ -79,6 +79,9 @@
+@@ -79,19 +79,28 @@
  #include "hunspell.hxx"
  #include "suggestmgr.hxx"
  #include "hunspell.h"
@@ -864,15 +863,15 @@ index abcdb8f..c8c5cf4 100644
  
  #include <limits>
  #include <string>
-
--#define MAXWORDUTF8LEN (MAXWORDLEN * 2)
-+#define MAXWORDUTF8LEN (MAXWORDLEN * 3)
-
+ 
+-#define MAXWORDUTF8LEN (MAXWORDLEN * 3)
++#define MAXWORDUTF8LEN (MAXWORDLEN * 2)
+ 
  class HunspellImpl
  {
  public:
 +#ifdef HUNSPELL_CHROME_CLIENT
-+  HunspellImpl(const unsigned char* bdict_data, size_t bdict_length);
++  explicit HunspellImpl(base::span<const unsigned char> bdict_data);
 +#else
    HunspellImpl(const char* affpath, const char* dpath, const char* key);
 +#endif
@@ -910,8 +909,8 @@ index abcdb8f..c8c5cf4 100644
  };
  
 +#ifdef HUNSPELL_CHROME_CLIENT
-+Hunspell::Hunspell(const unsigned char* bdict_data, size_t bdict_length)
-+  : m_Impl(new HunspellImpl(bdict_data, bdict_length)) {
++Hunspell::Hunspell(base::span<const unsigned char> bdict_data)
++  : m_Impl(new HunspellImpl(bdict_data)) {
 +#else
  Hunspell::Hunspell(const char* affpath, const char* dpath, const char* key)
    : m_Impl(new HunspellImpl(affpath, dpath, key)) {
@@ -919,7 +918,7 @@ index abcdb8f..c8c5cf4 100644
  }
  
 +#ifdef HUNSPELL_CHROME_CLIENT
-+HunspellImpl::HunspellImpl(const unsigned char* bdict_data, size_t bdict_length) {
++HunspellImpl::HunspellImpl(base::span<const unsigned char> bdict_data) {
 +#else
  HunspellImpl::HunspellImpl(const char* affpath, const char* dpath, const char* key) {
 +#endif
@@ -932,14 +931,14 @@ index abcdb8f..c8c5cf4 100644
 +
 +#ifdef HUNSPELL_CHROME_CLIENT
 +  bdict_reader = new hunspell::BDictReader;
-+  bdict_reader->Init(bdict_data, bdict_length);
++  bdict_reader->Init(bdict_data);
  
-   /* first set up the hash manager */
++  /* first set up the hash manager */
 +  m_HMgrs.push_back(new HashMgr(bdict_reader));
 +
 +  pAMgr = new AffixMgr(bdict_reader, m_HMgrs); // TODO: 'key' ?
 +#else
-+  /* first set up the hash manager */
+   /* first set up the hash manager */
    m_HMgrs.push_back(new HashMgr(dpath, affpath, key));
  
    /* next set up the affix manager */
@@ -1055,14 +1054,15 @@ index abcdb8f..c8c5cf4 100644
  int Hunspell_spell(Hunhandle* pHunspell, const char* word) {
    return reinterpret_cast<Hunspell*>(pHunspell)->spell(std::string(word));
 diff --git a/src/hunspell/hunspell.hxx b/src/hunspell/hunspell.hxx
-index 43af66b..a35df83 100644
+index 43af66b..d0be851 100644
 --- a/src/hunspell/hunspell.hxx
 +++ b/src/hunspell/hunspell.hxx
-@@ -79,9 +79,13 @@
+@@ -79,9 +79,14 @@
  #include <string>
  #include <vector>
  
 +#ifdef HUNSPELL_CHROME_CLIENT
++#include "base/containers/span.h"
 +#include "third_party/hunspell/google/bdict_reader.h"
 +#endif
 +
@@ -1073,13 +1073,12 @@ index 43af66b..a35df83 100644
  #define MAXSHARPS 5
  
  #ifndef MAXWORDLEN
-
-@@ -115,11 +119,17 @@ class LIBHUNSPELL_DLL_EXPORTED Hunspell {
+@@ -115,11 +120,17 @@ class LIBHUNSPELL_DLL_EXPORTED Hunspell {
     * long path names (without the long path prefix Hunspell will use fopen()
     * with system-dependent character encoding instead of _wfopen()).
     */
 +#ifdef HUNSPELL_CHROME_CLIENT
-+  Hunspell(const unsigned char* bdict_data, size_t bdict_length);
++  explicit Hunspell(base::span<const unsigned char> bdict_data);
 +#else
    Hunspell(const char* affpath, const char* dpath, const char* key = NULL);
 +#endif

@@ -30,8 +30,6 @@ namespace gpu {
 
 class DawnContextProvider;
 class GpuDriverBugWorkarounds;
-class ImageTransportSurfaceDelegate;
-class MailboxManager;
 class SharedContextState;
 class SharedImageManager;
 class SingleTaskSequence;
@@ -75,15 +73,12 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceDependency {
   virtual gpu::DawnContextProvider* GetDawnContextProvider() = 0;
   virtual const gpu::GpuPreferences& GetGpuPreferences() const = 0;
   virtual const gpu::GpuFeatureInfo& GetGpuFeatureInfo() = 0;
-  virtual gpu::MailboxManager* GetMailboxManager() = 0;
   // Note it is possible for IsOffscreen to be false and GetSurfaceHandle to
   // return kNullSurfaceHandle.
   virtual bool IsOffscreen() = 0;
   virtual gpu::SurfaceHandle GetSurfaceHandle() = 0;
-  virtual scoped_refptr<gl::Presenter> CreatePresenter(
-      base::WeakPtr<gpu::ImageTransportSurfaceDelegate> stub) = 0;
+  virtual scoped_refptr<gl::Presenter> CreatePresenter() = 0;
   virtual scoped_refptr<gl::GLSurface> CreateGLSurface(
-      base::WeakPtr<gpu::ImageTransportSurfaceDelegate> stub,
       gl::GLSurfaceFormat format) = 0;
   // Hold a ref of the given surface until the returned closure is fired.
   virtual base::ScopedClosureRunner CacheGLSurface(gl::GLSurface* surface) = 0;

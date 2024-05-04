@@ -32,7 +32,6 @@ import org.chromium.base.Callback;
 import org.chromium.base.CallbackController;
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
-import org.chromium.base.StrictModeContext;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.supplier.LazyOneshotSupplier;
@@ -54,6 +53,10 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabCreationState;
 import org.chromium.chrome.browser.tab.TabSelectionType;
 import org.chromium.chrome.browser.tab.state.ShoppingPersistedTabData;
+import org.chromium.chrome.browser.tab_ui.TabSwitcher;
+import org.chromium.chrome.browser.tab_ui.TabSwitcher.TabSwitcherType;
+import org.chromium.chrome.browser.tab_ui.TabSwitcher.TabSwitcherViewObserver;
+import org.chromium.chrome.browser.tab_ui.TabSwitcherCustomViewManager;
 import org.chromium.chrome.browser.tabmodel.TabList;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelFilter;
@@ -61,12 +64,9 @@ import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
-import org.chromium.chrome.browser.tasks.pseudotab.PseudoTab;
 import org.chromium.chrome.browser.tasks.tab_management.TabGridDialogMediator.DialogController;
 import org.chromium.chrome.browser.tasks.tab_management.TabListCoordinator.TabListMode;
 import org.chromium.chrome.browser.tasks.tab_management.TabListEditorCoordinator.TabListEditorController;
-import org.chromium.chrome.browser.tasks.tab_management.TabManagementDelegate.TabSwitcherType;
-import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher.TabSwitcherViewObserver;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.features.start_surface.StartSurfaceUserData;
 import org.chromium.chrome.tab_ui.R;
@@ -536,7 +536,7 @@ class TabSwitcherMediator
                 if (mMode == TabListCoordinator.TabListMode.GRID) {
                     RecordUserAction.record("MobileTabReturnedToCurrentTab.TabGrid");
                 } else {
-                    // TODO(crbug.com/1085246): Differentiate others.
+                    // TODO(crbug.com/40132120): Differentiate others.
                 }
                 RecordUserAction.record("MobileTabReturnedToCurrentTab");
                 RecordHistogram.recordSparseHistogram(
@@ -683,13 +683,6 @@ class TabSwitcherMediator
                 // TabModelObserver#restoreCompleted. Therefore, we only need to handle the case
                 // with isTabStateInitialized() here.
                 setInitialScrollIndexOffset();
-            } else if (ChromeFeatureList.sInstantStart.isEnabled()) {
-                List<PseudoTab> allTabs;
-                try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
-                    allTabs = PseudoTab.getAllPseudoTabsFromStateFile(mContext);
-                }
-                mResetHandler.resetWithTabs(
-                        allTabs, TabUiFeatureUtilities.isTabToGtsAnimationEnabled(mContext));
             }
         }
 
@@ -1109,6 +1102,14 @@ class TabSwitcherMediator
                         public void onFinishedHiding(int layoutType) {
                             mLastActiveLayoutType = layoutType;
                         }
+
+                        @Override
+                        public void onStartedShowing(int layoutType) {
+                            if (layoutType == LayoutType.TAB_SWITCHER) {
+                                mIsTransitionInProgress = true;
+                                notifyBackPressStateChangedInternal();
+                            }
+                        }
                     };
         }
         mLayoutStateProvider.addObserver(mLayoutStateObserver);
@@ -1122,5 +1123,16 @@ class TabSwitcherMediator
         return mTabListEditorControllerSupplier == null
                 ? null
                 : mTabListEditorControllerSupplier.get();
+    }
+
+    /**
+     * Refresh the tab switcher's tab list and perform an out-of-band update on the UI. If the tab
+     * switcher is not visible, this will no-op.
+     */
+    public void refreshTabList() {
+        if (!mContainerViewModel.get(IS_VISIBLE)) return;
+
+        mResetHandler.resetWithTabList(
+                mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter(), false);
     }
 }

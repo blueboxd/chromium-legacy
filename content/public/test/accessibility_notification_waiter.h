@@ -50,9 +50,8 @@ class AccessibilityNotificationWaiter : public WebContentsObserver {
   ~AccessibilityNotificationWaiter() override;
 
   // Blocks until the specific accessibility notification registered in
-  // AccessibilityNotificationWaiter is received. Ignores notifications for
-  // "about:blank". Returns true if an event was received, false if waiting
-  // ended for some other reason.
+  // AccessibilityNotificationWaiter is received. Returns true if an event was
+  // received, false if waiting ended for some other reason.
   // Pass true for |all_frames| to wait for a notification on all frames
   // before returning, rather than waiting for only a single notification
   // from any frame.
@@ -120,19 +119,14 @@ class AccessibilityNotificationWaiter : public WebContentsObserver {
 
   // Callback from BrowserAccessibilityManager for the focus changed event.
   //
-  // TODO(982776): Remove this method once we migrate to using AXEventGenerator
-  // for focus changed events.
+  // TODO(crbug.com/41470112): Remove this method once we migrate to using
+  // AXEventGenerator for focus changed events.
   void OnFocusChanged();
 
   // Returns the tree of accessibility nodes received from renderer processes
   // for the WebContents that owns `render_frame`. This may not be the observed
   // WebContents, but rather an inner WebContents (e.g., for a guest view).
   const ui::AXTree& GetAXTreeForFrame(RenderFrameHostImpl* render_frame) const;
-
-  // Returns true if the accessibility tree for the owner of `render_frame` or
-  // the observed WebContents (if `render_frame` is null) is for the url
-  // "about:blank".
-  bool IsAboutBlank(RenderFrameHostImpl* render_frame);
 
   std::optional<ax::mojom::Event> event_to_wait_for_;
   std::optional<ui::AXEventGenerator::Event> generated_event_to_wait_for_;

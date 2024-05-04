@@ -44,11 +44,11 @@ crashpad::CrashpadClient& GetCrashpadClient() {
 std::vector<std::string> MakeCrashHandlerArgs(UpdaterScope updater_scope) {
   base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
   command_line.AppendSwitch(kCrashHandlerSwitch);
-  command_line.AppendSwitch(kEnableLoggingSwitch);
-  command_line.AppendSwitchASCII(kLoggingModuleSwitch,
-                                 kLoggingModuleSwitchValue);
   if (IsSystemInstall(updater_scope)) {
     command_line.AppendSwitch(kSystemSwitch);
+  }
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(kMonitorSelfSwitch)) {
+    command_line.AppendSwitch(kMonitorSelfSwitch);
   }
 
   // The first element in the command line arguments is the program name,

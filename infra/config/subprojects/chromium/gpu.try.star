@@ -22,6 +22,7 @@ try_.defaults.set(
     expiration_timeout = 2 * time.hour,
     reclient_instance = reclient.instance.DEFAULT_UNTRUSTED,
     service_account = "chromium-try-gpu-builder@chops-service-accounts.iam.gserviceaccount.com",
+    siso_enabled = True,
     subproject_list_view = "luci.chromium.try",
     task_template_canary_percentage = 5,
 )
@@ -107,6 +108,28 @@ gpu_android_builder(
     ],
     gn_args = "ci/GPU FYI Android arm64 Builder",
     pool = "luci.chromium.gpu.android.pixel6.try",
+)
+
+gpu_android_builder(
+    name = "gpu-fyi-try-android-moto-g-power-5g-64",
+    description_html = "Runs GPU tests on Motorola Moto G Power 5G phones",
+    mirrors = [
+        "ci/GPU FYI Android arm64 Builder",
+        "ci/Android FYI Release (Motorola Moto G Power 5G)",
+    ],
+    gn_args = "ci/GPU FYI Android arm64 Builder",
+    pool = "luci.chromium.gpu.android.moto-g-power-5g.try",
+)
+
+gpu_android_builder(
+    name = "gpu-fyi-try-android-s23-64",
+    description_html = "Runs GPU tests on Samsung S23 phones",
+    mirrors = [
+        "ci/GPU FYI Android arm64 Builder",
+        "ci/Android FYI Release (Samsung S23)",
+    ],
+    gn_args = "ci/GPU FYI Android arm64 Builder",
+    pool = "luci.chromium.gpu.android.s23.try",
 )
 
 gpu_android_builder(
@@ -215,6 +238,17 @@ gpu_linux_builder(
     ],
     gn_args = "ci/GPU FYI Linux Builder",
     pool = "luci.chromium.gpu.linux.intel.try",
+)
+
+gpu_linux_builder(
+    name = "gpu-fyi-try-linux-intel-uhd770-rel",
+    description_html = "Runs GPU tests on 12th gen Intel CPUs with UHD 770 GPUs",
+    mirrors = [
+        "ci/GPU FYI Linux Builder",
+        "ci/Linux FYI Release (Intel UHD 770)",
+    ],
+    gn_args = "ci/GPU FYI Linux Builder",
+    pool = "luci.chromium.gpu.linux.intel.uhd770.try",
 )
 
 gpu_linux_builder(
@@ -509,6 +543,17 @@ gpu_win_builder(
     ],
     gn_args = "ci/GPU FYI Win x64 Builder",
     pool = "luci.chromium.gpu.win10.intel.try",
+)
+
+gpu_win_builder(
+    name = "gpu-fyi-try-win10-intel-uhd770-rel",
+    description_html = "Runs GPU tests on 12th gen Intel CPUs with UHD 770 GPUs",
+    mirrors = [
+        "ci/GPU FYI Win x64 Builder",
+        "ci/Win10 FYI x64 Release (Intel UHD 770)",
+    ],
+    gn_args = "ci/GPU FYI Win x64 Builder",
+    pool = "luci.chromium.gpu.win10.intel.uhd770.try",
 )
 
 gpu_win_builder(

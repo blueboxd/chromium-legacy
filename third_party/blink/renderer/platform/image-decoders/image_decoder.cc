@@ -24,8 +24,8 @@
 
 #include "base/containers/heap_array.h"
 #include "base/logging.h"
+#include "base/numerics/byte_conversions.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/sys_byteorder.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "media/media_buildflags.h"
@@ -327,17 +327,16 @@ bool ImageDecoder::HasSufficientDataToSniffMimeType(const SharedBuffer& data) {
     // The first eight bytes would be a big-endian 32-bit unsigned integer
     // 'size' and a four-byte 'type'.
     struct {
-      uint32_t size;  // unsigned int(32) size;
+      uint8_t size[4];  // unsigned int(32) size;
       char type[4];   // unsigned int(32) type = boxtype;
     } box;
     static_assert(sizeof(box) == 8, "");
     static_assert(8 <= kLongestSignatureLength, "");
     bool ok = data.GetBytes(&box, 8u);
     DCHECK(ok);
-    if (memcmp(box.type, "ftyp", 4) == 0) {
+    if (base::span(box.type) == base::span({'f', 't', 'y', 'p'})) {
       // Returns whether we have received the File Type Box in its entirety.
-      box.size = base::NetToHost32(box.size);
-      return box.size <= data.size();
+      return base::numerics::U32FromBigEndian(box.size) <= data.size();
     }
   }
 #endif
@@ -1002,13 +1001,11 @@ ColorProfile::ColorProfile(const skcms_ICCProfile& profile,
 
 ColorProfile::~ColorProfile() = default;
 
-std::unique_ptr<ColorProfile> ColorProfile::Create(const void* buffer,
-                                                   size_t size) {
+std::unique_ptr<ColorProfile> ColorProfile::Create(
+    base::span<const uint8_t> buffer) {
   // After skcms_Parse, profile will have pointers into the passed buffer,
   // so we need to copy first, then parse.
-  auto owned_buffer = base::HeapArray<uint8_t>::Uninit(size);
-  owned_buffer.copy_from(
-      base::span<const uint8_t>(static_cast<const uint8_t*>(buffer), size));
+  auto owned_buffer = base::HeapArray<uint8_t>::CopiedFrom(buffer);
   skcms_ICCProfile profile;
   if (skcms_Parse(owned_buffer.data(), owned_buffer.size(), &profile)) {
     return std::make_unique<ColorProfile>(profile, std::move(owned_buffer));

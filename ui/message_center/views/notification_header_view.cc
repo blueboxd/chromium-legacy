@@ -169,7 +169,7 @@ NotificationHeaderView::NotificationHeaderView(PressedCallback callback)
   app_icon_view_->SetBorder(views::CreateEmptyBorder(kAppIconPadding));
   app_icon_view_->SetVerticalAlignment(views::ImageView::Alignment::kLeading);
   app_icon_view_->SetHorizontalAlignment(views::ImageView::Alignment::kLeading);
-  DCHECK_EQ(kInnerHeaderHeight, app_icon_view_->GetPreferredSize().height());
+  DCHECK_EQ(kInnerHeaderHeight, app_icon_view_->GetPreferredSize({}).height());
   AddChildView(app_icon_view_.get());
 
   // App name view
@@ -220,7 +220,7 @@ NotificationHeaderView::NotificationHeaderView(PressedCallback callback)
   expand_button_->SetVerticalAlignment(views::ImageView::Alignment::kLeading);
   expand_button_->SetHorizontalAlignment(views::ImageView::Alignment::kLeading);
   expand_button_->SetImageSize(gfx::Size(kExpandIconSize, kExpandIconSize));
-  DCHECK_EQ(kInnerHeaderHeight, expand_button_->GetPreferredSize().height());
+  DCHECK_EQ(kInnerHeaderHeight, expand_button_->GetPreferredSize({}).height());
   detail_views_->AddChildView(expand_button_.get());
 
   // Spacer between left-aligned views and right-aligned views
@@ -439,7 +439,7 @@ void NotificationHeaderView::UpdateSummaryTextAndTimestampVisibility() {
   const bool timestamp_visible = !has_progress_ && timestamp_;
   SetTimestampVisible(timestamp_visible);
 
-  // TODO(crbug.com/991492): this should not be necessary.
+  // TODO(crbug.com/40639286): this should not be necessary.
   detail_views_->InvalidateLayout();
 }
 

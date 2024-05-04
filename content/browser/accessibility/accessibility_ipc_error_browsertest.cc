@@ -7,7 +7,6 @@
 #include "build/build_config.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
-#include "content/public/browser/ax_event_notification_details.h"
 #include "content/public/test/accessibility_notification_waiter.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
@@ -17,6 +16,7 @@
 #include "ui/accessibility/ax_common.h"
 #include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_tree.h"
+#include "ui/accessibility/ax_updates_and_events.h"
 
 namespace content {
 
@@ -46,14 +46,15 @@ class AccessibilityIpcErrorBrowserTest : public ContentBrowserTest {
 // Do not test on AX_FAIL_FAST_BUILDS, where the BAD IPC will simply assert.
 #if (BUILDFLAG(IS_ANDROID) && defined(ARCH_CPU_X86)) || \
     defined(AX_FAIL_FAST_BUILD)
-#define MAYBE_AccessibilityFatalErrorDisallowReenabling \
-  DISABLED_AccessibilityFatalErrorDisallowReenabling
+#define MAYBE_UnrecoverableAccessibilityErrorDisallowReenabling \
+  DISABLED_UnrecoverableAccessibilityErrorDisallowReenabling
 #else
-#define MAYBE_AccessibilityFatalErrorDisallowReenabling \
-  AccessibilityFatalErrorDisallowReenabling
+#define MAYBE_UnrecoverableAccessibilityErrorDisallowReenabling \
+  UnrecoverableAccessibilityErrorDisallowReenabling
 #endif
-IN_PROC_BROWSER_TEST_F(AccessibilityIpcErrorBrowserTest,
-                       MAYBE_AccessibilityFatalErrorDisallowReenabling) {
+IN_PROC_BROWSER_TEST_F(
+    AccessibilityIpcErrorBrowserTest,
+    MAYBE_UnrecoverableAccessibilityErrorDisallowReenabling) {
   // Create a data url and load it.
   const char url_str[] =
       "data:text/html,"
@@ -101,9 +102,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityIpcErrorBrowserTest,
   {
     // Hide one of the elements on the page, and wait for an accessibility
     // notification triggered by the hide.
-    AccessibilityNotificationWaiter waiter(shell()->web_contents(),
-                                           ui::kAXModeComplete,
-                                           ax::mojom::Event::kLayoutComplete);
+    AccessibilityNotificationWaiter waiter(shell()->web_contents());
     ASSERT_TRUE(ExecJs(
         shell(), "document.getElementById('p1').style.display = 'none';"));
     ASSERT_TRUE(waiter.WaitForNotification());

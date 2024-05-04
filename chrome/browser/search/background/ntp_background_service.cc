@@ -4,6 +4,8 @@
 
 #include "chrome/browser/search/background/ntp_background_service.h"
 
+#include <string_view>
+
 #include "base/barrier_closure.h"
 #include "base/command_line.h"
 #include "base/functional/bind.h"
@@ -55,14 +57,14 @@ constexpr char kNextCollectionImagePath[] =
 
 // The options to be added to an image URL, specifying resolution, cropping,
 // etc. Options appear on an image URL after the '=' character.
-// TODO(crbug.com/874339): Set options based on display resolution capability.
+// TODO(crbug.com/41408116): Set options based on display resolution capability.
 constexpr char kImageOptions[] = "=w3840-h2160-p-k-no-nd-mv";
 
 // Label added to request to filter out unwanted collections.
 constexpr char kFilteringLabel[] = "chrome_desktop_ntp";
 
 // Returns the configured collections base URL with |path| appended.
-GURL GetUrl(base::StringPiece path) {
+GURL GetUrl(std::string_view path) {
   return GURL(base::CommandLine::ForCurrentProcess()->HasSwitch(
                   kCollectionsBaseUrlCmdlineSwitch)
                   ? base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
@@ -257,7 +259,7 @@ void NtpBackgroundService::FetchCollectionImageInfo(
     const std::string& collection_id) {
   collection_images_error_info_.ClearError();
   // Ignore subsequent requests to fetch collection image info.
-  // TODO(crbug.com/1454463): Prioritize the latest request to fetch collection
+  // TODO(crbug.com/40916951): Prioritize the latest request to fetch collection
   // images.
   if (!requested_collection_id_.empty()) {
     return;

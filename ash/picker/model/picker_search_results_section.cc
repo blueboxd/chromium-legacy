@@ -14,8 +14,11 @@ namespace ash {
 
 PickerSearchResultsSection::PickerSearchResultsSection(
     PickerSectionType type,
-    std::vector<PickerSearchResult> results)
-    : type_(type), results_(std::move(results)) {}
+    std::vector<PickerSearchResult> results,
+    bool has_more_results)
+    : type_(type),
+      results_(std::move(results)),
+      has_more_results_(has_more_results) {}
 
 PickerSearchResultsSection::PickerSearchResultsSection(
     const PickerSearchResultsSection& other) = default;
@@ -38,6 +41,10 @@ PickerSectionType PickerSearchResultsSection::type() const {
 base::span<const PickerSearchResult> PickerSearchResultsSection::results()
     const {
   return results_;
+}
+
+bool PickerSearchResultsSection::has_more_results() const {
+  return has_more_results_;
 }
 
 }  // namespace ash

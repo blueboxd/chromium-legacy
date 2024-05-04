@@ -9,6 +9,7 @@
 #include <functional>
 #include <memory>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -22,8 +23,8 @@
 #include "base/logging.h"
 #include "base/no_destructor.h"
 #include "base/path_service.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequence_local_storage_slot.h"
@@ -108,7 +109,7 @@
 #endif
 
 #if BUILDFLAG(IS_MAC)
-#include "services/device/public/cpp/test/fake_geolocation_manager.h"
+#include "services/device/public/cpp/test/fake_geolocation_system_permission_manager.h"
 #endif
 
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID)
@@ -185,8 +186,8 @@ class ShellControllerImpl : public mojom::ShellController {
   void ShutDown() override { Shell::Shutdown(); }
 };
 
-// TODO(crbug/1219642): Consider not needing VariationsServiceClient just to use
-// VariationsFieldTrialCreator.
+// TODO(crbug.com/40772375): Consider not needing VariationsServiceClient just
+// to use VariationsFieldTrialCreator.
 class ShellVariationsServiceClient
     : public variations::VariationsServiceClient {
  public:
@@ -239,11 +240,11 @@ base::flat_set<url::Origin> GetIsolatedContextOriginSetFromFlag() {
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kIsolatedContextOrigins));
 
-  std::vector<base::StringPiece> origin_strings = base::SplitStringPiece(
+  std::vector<std::string_view> origin_strings = base::SplitStringPiece(
       cmdline_origins, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
 
   base::flat_set<url::Origin> origin_set;
-  for (const base::StringPiece& origin_string : origin_strings) {
+  for (std::string_view origin_string : origin_strings) {
     url::Origin allowed_origin = url::Origin::Create(GURL(origin_string));
     if (!allowed_origin.opaque()) {
       origin_set.insert(allowed_origin);
@@ -260,14 +261,16 @@ base::flat_set<url::Origin> GetIsolatedContextOriginSetFromFlag() {
 struct SharedState {
   SharedState() {
 #if BUILDFLAG(IS_MAC)
-    location_manager = std::make_unique<device::FakeGeolocationManager>();
+    location_manager =
+        std::make_unique<device::FakeGeolocationSystemPermissionManager>();
     location_manager->SetSystemPermission(
         device::LocationSystemPermissionStatus::kAllowed);
 #endif
   }
 
 #if BUILDFLAG(IS_MAC)
-  std::unique_ptr<device::FakeGeolocationManager> location_manager;
+  std::unique_ptr<device::FakeGeolocationSystemPermissionManager>
+      location_manager;
 #endif
 
   // Owned by content::BrowserMainLoop.
@@ -326,7 +329,7 @@ blink::UserAgentMetadata GetShellUserAgentMetadata() {
 
   metadata.bitness = GetCpuBitness();
   metadata.wow64 = content::IsWoW64();
-  metadata.form_factor = {"Desktop"};
+  metadata.form_factors = {"Desktop"};
 
   return metadata;
 }
@@ -450,13 +453,16 @@ void ShellContentBrowserClient::AppendExtraCommandLineSwitches(
   }
 }
 
-device::GeolocationManager* ShellContentBrowserClient::GetGeolocationManager() {
+device::GeolocationSystemPermissionManager*
+ShellContentBrowserClient::GetGeolocationSystemPermissionManager() {
 #if BUILDFLAG(IS_MAC)
   return GetSharedState().location_manager.get();
 #elif BUILDFLAG(IS_IOS)
-  // TODO(crbug.com/1431447, 1411704): Unify this to FakeGeolocationManager once
-  // exploring browser features in ContentShell on iOS is done.
-  return GetSharedState().shell_browser_main_parts->GetGeolocationManager();
+  // TODO(crbug.com/1431447, 1411704): Unify this to
+  // FakeGeolocationSystemPermissionManager once exploring browser features in
+  // ContentShell on iOS is done.
+  return GetSharedState()
+      .shell_browser_main_parts->GetGeolocationSystemPermissionManager();
 #else
   return nullptr;
 #endif
@@ -555,8 +561,10 @@ void ShellContentBrowserClient::OverrideWebkitPrefs(
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kForceHighContrast)) {
+    prefs->in_forced_colors = true;
     prefs->preferred_contrast = blink::mojom::PreferredContrast::kMore;
   } else {
+    prefs->in_forced_colors = false;
     prefs->preferred_contrast = blink::mojom::PreferredContrast::kNoPreference;
   }
 
@@ -621,6 +629,18 @@ ShellContentBrowserClient::CreateThrottlesForNavigation(
     return create_throttles_for_navigation_callback_.Run(navigation_handle);
   return empty_throttles;
 }
+
+#if BUILDFLAG(IS_WIN)
+std::string ShellContentBrowserClient::GetAppContainerId() {
+  base::FilePath path = base::PathService::CheckedGet(SHELL_DIR_USER_DATA);
+  // Multiple tests running at the same time from the same binary might try to
+  // race each other to create the AppContainer profile for sandboxed processes.
+  // To avoid this hitting in tests, append the data dir so they are all unique
+  // for each test instance. See https://crbug.com/40223285.
+  return base::StrCat({ContentBrowserClient::GetAppContainerId(),
+                       base::WideToUTF8(path.value())});
+}
+#endif  // BUILDFLAG(IS_WIN)
 
 std::unique_ptr<LoginDelegate> ShellContentBrowserClient::CreateLoginDelegate(
     const net::AuthChallengeInfo& auth_info,
@@ -711,7 +731,7 @@ void ShellContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
 // Note that ShellContentBrowserClient overrides this method to work around
 // test flakiness that happens when NetworkService::SetTestDohConfigForTesting()
 // is used.
-// TODO(crbug.com/1521190): Remove that override once the flakiness is fixed.
+// TODO(crbug.com/41494161): Remove that override once the flakiness is fixed.
 void ShellContentBrowserClient::OnNetworkServiceCreated(
     network::mojom::NetworkService* network_service) {
   // TODO(bashi): Consider enabling this for Android. Excluded because the
@@ -890,7 +910,7 @@ void ShellContentBrowserClient::SetUpFieldTrials() {
 
   // Since this is a test-only code path, some arguments to SetUpFieldTrials are
   // null.
-  // TODO(crbug/1248066): Consider passing a low entropy source.
+  // TODO(crbug.com/40790318): Consider passing a low entropy source.
   variations::PlatformFieldTrials platform_field_trials;
   variations::SyntheticTrialRegistry synthetic_trial_registry;
   field_trial_creator.SetUpFieldTrials(

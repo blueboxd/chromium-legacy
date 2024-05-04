@@ -6,8 +6,10 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
 #include <algorithm>
 #include <memory>
+#include <string_view>
 #include <utility>
 
 #include "base/feature_list.h"
@@ -108,6 +110,9 @@ const char kHistogramFirstImagePaint[] =
     "PageLoad.PaintTiming.NavigationToFirstImagePaint";
 const char kBackgroundHistogramFirstImagePaint[] =
     "PageLoad.PaintTiming.NavigationToFirstImagePaint.Background";
+const char kBackgroundHttpsOrDataOrFileSchemeHistogramFirstContentfulPaint[] =
+    "PageLoad.PaintTiming.NavigationToFirstContentfulPaint.Background."
+    "HttpsOrDataOrFileScheme";
 const char kHistogramFirstContentfulPaint[] =
     "PageLoad.PaintTiming.NavigationToFirstContentfulPaint";
 const char kBackgroundHistogramFirstContentfulPaint[] =
@@ -117,6 +122,9 @@ const char kHistogramFirstContentfulPaintInitiatingProcess[] =
     "InitiatingProcess";
 const char kHistogramLargestContentfulPaint[] =
     "PageLoad.PaintTiming.NavigationToLargestContentfulPaint2";
+const char kBackgroundHttpsOrDataOrFileSchemeHistogramLargestContentfulPaint[] =
+    "PageLoad.PaintTiming.NavigationToLargestContentfulPaint2.Background."
+    "HttpsOrDataOrFileScheme";
 const char kHistogramLargestContentfulPaintContentType[] =
     "PageLoad.Internal.PaintTiming.LargestContentfulPaint.ContentType";
 const char kHistogramLargestContentfulPaintMainFrame[] =
@@ -496,10 +504,10 @@ void UmaPageLoadMetricsObserver::OnFirstContentfulPaintInPage(
     }
 
     if (GetDelegate().GetTimeToFirstBackground()) {
-      // We were started in the foreground, and got FCP while in foreground, but
-      // became hidden while propagating the FCP value from Blink into the PLM
-      // observer. In this case, we will have missed the FCP UKM value, since it
-      // is logged in UkmPageLoadMetricsObserver::OnHidden.
+      // We were started in the foreground, and got FCP while in foreground,
+      // but became hidden while propagating the FCP value from Blink into the
+      // PLM observer. In this case, we will have missed the FCP UKM value,
+      // since it is logged in UkmPageLoadMetricsObserver::OnHidden.
       PAGE_LOAD_HISTOGRAM(
           internal::kHistogramFirstContentfulPaintHiddenWhileFlushing,
           timing.paint_timing->first_contentful_paint.value());
@@ -550,6 +558,11 @@ void UmaPageLoadMetricsObserver::OnFirstContentfulPaintInPage(
       PAGE_LOAD_HISTOGRAM(internal::kBackgroundHistogramInputToNavigation,
                           timing.input_to_navigation_start.value());
     }
+
+    PAGE_LOAD_HISTOGRAM(
+        internal::
+            kBackgroundHttpsOrDataOrFileSchemeHistogramFirstContentfulPaint,
+        timing.paint_timing->first_contentful_paint.value());
   }
 
   if (page_load_metrics::WasStartedInBackgroundOptionalEventInForeground(
@@ -688,7 +701,7 @@ void UmaPageLoadMetricsObserver::OnLoadedResource(
   if (timing_info.receive_headers_end.is_null())
     return;
 
-  base::StringPiece destination =
+  std::string_view destination =
       network::RequestDestinationToStringForHistogram(
           extra_request_complete_info.request_destination);
 
@@ -782,7 +795,7 @@ void UmaPageLoadMetricsObserver::RecordNavigationTimingHistograms() {
       timing.navigation_commit_sent_time.is_null()) {
     return;
   }
-  // TODO(https://crbug.com/1076710): Change these early-returns to DCHECKs
+  // TODO(crbug.com/40688345): Change these early-returns to DCHECKs
   // after the issue 1076710 is fixed.
   if (navigation_start_time > timing.first_request_start_time ||
       timing.first_request_start_time > timing.first_response_start_time ||
@@ -896,26 +909,32 @@ void UmaPageLoadMetricsObserver::RecordTimingHistograms(
           GetDelegate()
               .GetLargestContentfulPaintHandler()
               .MergeMainFrameAndSubframes();
-  if (all_frames_largest_contentful_paint.ContainsValidTime() &&
-      WasStartedInForegroundOptionalEventInForeground(
-          all_frames_largest_contentful_paint.Time(), GetDelegate())) {
-    EmitLCPTraceEvent(all_frames_largest_contentful_paint.Time().value());
-    PAGE_LOAD_HISTOGRAM(internal::kHistogramLargestContentfulPaint,
-                        all_frames_largest_contentful_paint.Time().value());
-    // The pseudo metric of |kHistogramLargestContentfulPaint|. Only used to
-    // assess field trial data quality.
-    PAGE_LOAD_HISTOGRAM(
-        "UMA.Pseudo.PageLoad.PaintTiming.NavigationToLargestContentfulPaint2",
-        metrics::GetPseudoMetricsSample(
-            all_frames_largest_contentful_paint.Time().value()));
-    UMA_HISTOGRAM_ENUMERATION(
-        internal::kHistogramLargestContentfulPaintContentType,
-        all_frames_largest_contentful_paint.TextOrImage());
-    TRACE_EVENT_MARK_WITH_TIMESTAMP1(
-        "loading", "NavStartToLargestContentfulPaint::AllFrames::UMA",
-        GetDelegate().GetNavigationStart() +
-            all_frames_largest_contentful_paint.Time().value(),
-        "data", all_frames_largest_contentful_paint.DataAsTraceValue());
+  if (all_frames_largest_contentful_paint.ContainsValidTime()) {
+    if (WasStartedInForegroundOptionalEventInForeground(
+            all_frames_largest_contentful_paint.Time(), GetDelegate())) {
+      EmitLCPTraceEvent(all_frames_largest_contentful_paint.Time().value());
+      PAGE_LOAD_HISTOGRAM(internal::kHistogramLargestContentfulPaint,
+                          all_frames_largest_contentful_paint.Time().value());
+      // The pseudo metric of |kHistogramLargestContentfulPaint|. Only used to
+      // assess field trial data quality.
+      PAGE_LOAD_HISTOGRAM(
+          "UMA.Pseudo.PageLoad.PaintTiming.NavigationToLargestContentfulPaint2",
+          metrics::GetPseudoMetricsSample(
+              all_frames_largest_contentful_paint.Time().value()));
+      UMA_HISTOGRAM_ENUMERATION(
+          internal::kHistogramLargestContentfulPaintContentType,
+          all_frames_largest_contentful_paint.TextOrImage());
+      TRACE_EVENT_MARK_WITH_TIMESTAMP1(
+          "loading", "NavStartToLargestContentfulPaint::AllFrames::UMA",
+          GetDelegate().GetNavigationStart() +
+              all_frames_largest_contentful_paint.Time().value(),
+          "data", all_frames_largest_contentful_paint.DataAsTraceValue());
+    } else {
+      PAGE_LOAD_HISTOGRAM(
+          internal::
+              kBackgroundHttpsOrDataOrFileSchemeHistogramLargestContentfulPaint,
+          all_frames_largest_contentful_paint.Time().value());
+    }
   }
 
   RecordNormalizedResponsivenessMetrics();

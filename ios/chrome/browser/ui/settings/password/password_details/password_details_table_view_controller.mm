@@ -136,7 +136,8 @@ bool ShouldAllowToRestoreWarning(DetailsContext context, bool is_muted) {
 
 @interface PasswordDetailsTableViewController () <
     TableViewTextEditItemDelegate,
-    TableViewMultiLineTextEditItemDelegate> {
+    TableViewMultiLineTextEditItemDelegate,
+    UIEditMenuInteractionDelegate> {
   // Index of the password the user wants to reveal.
   NSInteger _passwordIndexToReveal;
 
@@ -190,8 +191,8 @@ bool ShouldAllowToRestoreWarning(DetailsContext context, bool is_muted) {
 
 // Used to create and show the actions users can execute when they tap on a row
 // in the tableView. These actions are displayed a pop-up.
-// TODO(crbug.com/1489457): Remove available guard when min deployment target is
-// bumped to iOS 16.0.
+// TODO(crbug.com/40284033): Remove available guard when min deployment target
+// is bumped to iOS 16.0.
 @property(nonatomic, strong)
     UIEditMenuInteraction* interactionMenu API_AVAILABLE(ios(16));
 
@@ -226,10 +227,9 @@ bool ShouldAllowToRestoreWarning(DetailsContext context, bool is_muted) {
   self.tableView.accessibilityIdentifier = kPasswordDetailsViewControllerID;
   self.tableView.allowsSelectionDuringEditing = YES;
 
-  if (base::FeatureList::IsEnabled(kEnableUIEditMenuInteraction)) {
-    if (@available(iOS 16.0, *)) {
-      _interactionMenu = [[UIEditMenuInteraction alloc] initWithDelegate:self];
-    }
+  if (@available(iOS 16.0, *)) {
+    _interactionMenu = [[UIEditMenuInteraction alloc] initWithDelegate:self];
+    [self.tableView addInteraction:self.interactionMenu];
   }
   [self setOrExtendAuthValidityTimer];
 }
@@ -274,7 +274,7 @@ bool ShouldAllowToRestoreWarning(DetailsContext context, bool is_muted) {
     // Editing mode will be exited only if user confirms saving.
     if ([self passwordsDidChange]) {
       DCHECK(self.handler);
-      // TODO(crbug.com/1401035): Show Password Edit Dialog when Password
+      // TODO(crbug.com/40884045): Show Password Edit Dialog when Password
       // Grouping is enabled.
       [self.handler showPasswordEditDialogWithOrigin:self.pageTitle];
     } else {
@@ -636,21 +636,18 @@ bool ShouldAllowToRestoreWarning(DetailsContext context, bool is_muted) {
 - (void)ensureContextMenuShownForItemType:(NSInteger)itemType
                                 tableView:(UITableView*)tableView
                               atIndexPath:(NSIndexPath*)indexPath {
-  if (base::FeatureList::IsEnabled(kEnableUIEditMenuInteraction) &&
-      base::ios::IsRunningOnIOS16OrLater()) {
-    if (@available(iOS 16.0, *)) {
-      CGRect row = [tableView rectForRowAtIndexPath:indexPath];
-      CGPoint editMenuLocation =
-          CGPointMake(row.origin.x + row.size.width / 2, row.origin.y);
-      UIEditMenuConfiguration* configuration = [UIEditMenuConfiguration
-          configurationWithIdentifier:[NSNumber numberWithInt:itemType]
-                          sourcePoint:editMenuLocation];
-      [self.interactionMenu presentEditMenuWithConfiguration:configuration];
-    }
+  if (@available(iOS 16.0, *)) {
+    CGRect row = [tableView rectForRowAtIndexPath:indexPath];
+    CGPoint editMenuLocation =
+        CGPointMake(row.origin.x + row.size.width / 2, row.origin.y);
+    UIEditMenuConfiguration* configuration = [UIEditMenuConfiguration
+        configurationWithIdentifier:[NSNumber numberWithInt:itemType]
+                        sourcePoint:editMenuLocation];
+    [self.interactionMenu presentEditMenuWithConfiguration:configuration];
   }
 #if !defined(__IPHONE_16_0) || __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_16_0
   else {
-    // TODO(crbug.com/1481223): Replace UIMenuController with
+    // TODO(crbug.com/40930648): Replace UIMenuController with
     // UIEditMenuInteraction in iOS 16+.
     UIMenuController* menu = [UIMenuController sharedMenuController];
     if (![menu isMenuVisible]) {
@@ -748,7 +745,7 @@ bool ShouldAllowToRestoreWarning(DetailsContext context, bool is_muted) {
               containsObject:self.passwords[indexPath.section].username]) {
         [self.usernamesWithMoveToAccountOfferRecorded
             addObject:self.passwords[indexPath.section].username];
-        // TODO(crbug.com/1392747): Use a common function for recording sites.
+        // TODO(crbug.com/40880533): Use a common function for recording sites.
         base::UmaHistogramEnumeration(
             "PasswordManager.AccountStorage.MoveToAccountStoreFlowOffered",
             password_manager::metrics_util::MoveToAccountStoreTrigger::
@@ -971,8 +968,6 @@ bool ShouldAllowToRestoreWarning(DetailsContext context, bool is_muted) {
       [self showToast:l10n_util::GetNSString(
                           IDS_IOS_SETTINGS_PASSWORD_WAS_COPIED_MESSAGE)
            forSuccess:YES];
-      DCHECK(self.handler);
-      [self.handler onPasswordCopiedByUser];
       break;
     }
     case PasswordAccessReasonEdit:
@@ -1319,8 +1314,8 @@ bool ShouldAllowToRestoreWarning(DetailsContext context, bool is_muted) {
 
 #pragma mark - UIEditMenuInteractionDelegate
 
-// TODO(crbug.com/1489457): Remove available guard when min deployment target is
-// bumped to iOS 16.0.
+// TODO(crbug.com/40284033): Remove available guard when min deployment target
+// is bumped to iOS 16.0.
 - (UIMenu*)editMenuInteraction:(UIEditMenuInteraction*)interaction
           menuForConfiguration:(UIEditMenuConfiguration*)configuration
               suggestedActions:(NSArray<UIMenuElement*>*)suggestedActions

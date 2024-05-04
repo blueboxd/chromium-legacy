@@ -23,6 +23,7 @@ import android.view.MotionEvent.PointerCoords;
 import android.view.MotionEvent.PointerProperties;
 import android.widget.FrameLayout;
 
+import androidx.test.annotation.UiThreadTest;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.filters.MediumTest;
 import androidx.test.filters.SmallTest;
@@ -41,7 +42,6 @@ import org.chromium.base.MathUtils;
 import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.supplier.OneshotSupplierImpl;
 import org.chromium.base.supplier.Supplier;
-import org.chromium.base.test.UiThreadTest;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.CriteriaHelper;
@@ -53,7 +53,6 @@ import org.chromium.base.test.util.Features.EnableFeatures;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.compositor.layouts.Layout.LayoutState;
-import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.hub.HubLayoutDependencyHolder;
@@ -67,11 +66,12 @@ import org.chromium.chrome.browser.profiles.ProfileManager;
 import org.chromium.chrome.browser.tab.MockTab;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabLaunchType;
+import org.chromium.chrome.browser.tab_ui.TabContentManager;
+import org.chromium.chrome.browser.tab_ui.TabSwitcher;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.tasks.tab_management.TabListCoordinator;
-import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher;
 import org.chromium.chrome.browser.theme.TopUiThemeColorProvider;
 import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
 import org.chromium.chrome.features.start_surface.StartSurface;
@@ -90,7 +90,6 @@ import java.util.concurrent.TimeoutException;
 
 /** Unit tests for {@link org.chromium.chrome.browser.compositor.layouts.LayoutManagerChrome} */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@EnableFeatures(ChromeFeatureList.DEFER_TAB_SWITCHER_LAYOUT_CREATION)
 public class LayoutManagerTest implements MockTabModelDelegate {
     private static final String TAG = "LayoutManagerTest";
 
@@ -112,6 +111,7 @@ public class LayoutManagerTest implements MockTabModelDelegate {
     private TabModelSelector mTabModelSelector;
     private Supplier<StartSurface> mStartSurfaceSupplier;
     private OneshotSupplierImpl<TabSwitcher> mTabSwitcherSupplier;
+    private Supplier<TabModelSelector> mTabModelSelectorSupplier;
     private LayoutManagerChrome mManager;
     private LayoutManagerChromePhone mManagerPhone;
 
@@ -233,6 +233,7 @@ public class LayoutManagerTest implements MockTabModelDelegate {
                         container,
                         mStartSurfaceSupplier,
                         mTabSwitcherSupplier,
+                        mTabModelSelectorSupplier,
                         mBrowserControlsStateProvider,
                         tabContentManagerSupplier,
                         () -> mTopUiThemeColorProvider,
@@ -407,7 +408,7 @@ public class LayoutManagerTest implements MockTabModelDelegate {
         showTabSwitcherLayout();
     }
 
-    // TODO(crbug.com/1108496): Update the test to use assertThat for better failure message.
+    // TODO(crbug.com/40141330): Update the test to use assertThat for better failure message.
     @Test
     @MediumTest
     public void testLayoutObserverNotification_ShowAndHide_ToolbarSwipe() throws TimeoutException {
@@ -489,7 +490,7 @@ public class LayoutManagerTest implements MockTabModelDelegate {
         // initialization. Because LayoutManager does not explicitly hide the old layout when a new
         // layout is forced to show, the callCount for |finishedShowingCallback|,
         // |startedHidingCallback|, and |finishedHidingCallback| are still 0.
-        // TODO(crbug.com/1108496): update the callCount when LayoutManager explicitly hide the old
+        // TODO(crbug.com/40141330): update the callCount when LayoutManager explicitly hide the old
         // layout.
         startedShowingCallback.waitForCallback(1);
         Assert.assertEquals(LayoutType.TAB_SWITCHER, startedShowingCallback.layoutType);
@@ -673,6 +674,7 @@ public class LayoutManagerTest implements MockTabModelDelegate {
                 });
 
         mStartSurfaceSupplier = () -> mStartSurface;
+        mTabModelSelectorSupplier = () -> mTabModelSelector;
     }
 
     @After

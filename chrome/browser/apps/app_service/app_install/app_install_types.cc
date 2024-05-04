@@ -12,12 +12,24 @@ namespace apps {
 // Do not modify existing strings, they are used by metrics.
 std::ostream& operator<<(std::ostream& out, AppInstallSurface surface) {
   switch (surface) {
-    case AppInstallSurface::kAppInstallNavigationThrottle:
-      return out << "AppInstallNavigationThrottle";
     case AppInstallSurface::kAppPreloadServiceOem:
       return out << "AppPreloadServiceOem";
     case AppInstallSurface::kAppPreloadServiceDefault:
       return out << "AppPreloadServiceDefault";
+    case AppInstallSurface::kOobeAppRecommendations:
+      return out << "OobeAppRecommendations";
+    case AppInstallSurface::kAppInstallUriUnknown:
+      return out << "AppInstallUriUnknown";
+    case AppInstallSurface::kAppInstallUriShowoff:
+      return out << "AppInstallUriShowoff";
+    case AppInstallSurface::kAppInstallUriMall:
+      return out << "AppInstallUriMall";
+    case AppInstallSurface::kAppInstallUriGetit:
+      return out << "AppInstallUriGetit";
+    case AppInstallSurface::kAppInstallUriLauncher:
+      return out << "AppInstallUriLauncher";
+    case AppInstallSurface::kAppInstallUriPeripherals:
+      return out << "AppInstallUriPeripherals";
   }
 }
 
@@ -27,6 +39,16 @@ std::ostream& operator<<(std::ostream& out, const AppInstallIcon& icon) {
   out << ", width_in_pixels: " << icon.width_in_pixels;
   out << ", mime_type: " << icon.mime_type;
   out << ", is_masking_allowed: " << icon.is_masking_allowed;
+  return out << "}";
+}
+
+std::ostream& operator<<(std::ostream& out,
+                         const AppInstallScreenshot& screenshot) {
+  out << "AppInstallScreenshot{";
+  out << "url: " << screenshot.url;
+  out << ", mime_type: " << screenshot.mime_type;
+  out << ", width_in_pixels: " << screenshot.width_in_pixels;
+  out << ", height_in_pixels: " << screenshot.height_in_pixels;
   return out << "}";
 }
 
@@ -70,9 +92,13 @@ std::ostream& operator<<(std::ostream& out, const AppInstallData& data) {
 
   out << ", description: " << data.description;
 
-  out << ", icons: {";
-  for (const AppInstallIcon& icon : data.icons) {
-    out << icon << ", ";
+  if (data.icon.has_value()) {
+    out << ", icon: " << data.icon.value();
+  }
+
+  out << ", screenshots: {";
+  for (const AppInstallScreenshot& screenshot : data.screenshots) {
+    out << screenshot << ", ";
   }
   out << "}, ";
 

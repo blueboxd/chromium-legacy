@@ -1212,6 +1212,8 @@ void HistoryBackend::AddPage(const HistoryAddPageArgs& request) {
                       last_visit_id);
   }
 
+  delegate_->NotifyVisitedLinksAdded(request);
+
   ScheduleCommit();
 }
 
@@ -1459,7 +1461,7 @@ std::pair<URLID, VisitID> HistoryBackend::AddPageVisit(
     visit_info.visited_link_id = visited_link_info.id;
   }
 
-  // TODO(crbug.com/1476511): any visit added via sync should not have a
+  // TODO(crbug.com/40280017): any visit added via sync should not have a
   // corresponding entry in the VisitedLinkDatabase.
   if (visit_source == VisitSource::SOURCE_SYNCED) {
     CHECK(visit_info.visited_link_id == kInvalidVisitedLinkID);
@@ -1484,7 +1486,7 @@ std::pair<URLID, VisitID> HistoryBackend::AddPageVisit(
   return std::make_pair(url_id, visit_info.visit_id);
 }
 
-// TODO(crbug.com/1475714): Determine if we want to record these URLs in the
+// TODO(crbug.com/40279741): Determine if we want to record these URLs in the
 // VisitedLinkDatabase, and if so, plumb the correct value for top_level_site.
 void HistoryBackend::AddPagesWithDetails(const URLRows& urls,
                                          VisitSource visit_source) {
@@ -1657,6 +1659,22 @@ bool HistoryBackend::GetVisitsForURL(URLID id, VisitVector* visits) {
   return false;
 }
 
+std::map<GURL, VisitRow> HistoryBackend::GetMostRecentVisitForEachURL(
+    const std::vector<GURL>& urls) {
+  std::map<GURL, VisitRow> visit_rows;
+  for (auto url : urls) {
+    QueryURLResult result;
+    result.success = db_->GetRowForURL(url, &result.row);
+    if (result.success) {
+      VisitRow visit_row;
+      if (db_->GetMostRecentVisitForURL(result.row.id(), &visit_row)) {
+        visit_rows[url] = visit_row;
+      }
+    }
+  }
+  return visit_rows;
+}
+
 bool HistoryBackend::GetMostRecentVisitForURL(URLID id, VisitRow* visit_row) {
   if (db_)
     return db_->GetMostRecentVisitForURL(id, visit_row);
@@ -1669,6 +1687,17 @@ bool HistoryBackend::GetMostRecentVisitsForURL(URLID id,
   if (db_)
     return db_->GetMostRecentVisitsForURL(id, max_visits, visits);
   return false;
+}
+
+QueryURLResult HistoryBackend::GetMostRecentVisitsForGurl(GURL url,
+                                                          int max_visits) {
+  QueryURLResult result;
+  if (db_ && GetURL(url, &result.row) &&
+      db_->GetMostRecentVisitsForURL(result.row.id(), max_visits,
+                                     &result.visits)) {
+    result.success = true;
+  }
+  return result;
 }
 
 bool HistoryBackend::GetForeignVisit(const std::string& originator_cache_guid,
@@ -1807,7 +1836,7 @@ VisitID HistoryBackend::UpdateSyncedVisit(
   // existing row. It'll be updated below, if necessary.
   updated_row.segment_id = original_row.segment_id;
 
-  // TODO(crbug.com/1476511): any VisitedLinkID associated with `updated_row`
+  // TODO(crbug.com/40280017): any VisitedLinkID associated with `updated_row`
   // will be voided to avoid storing stale/incorrect VisitedLinkIDs once
   // elements of the VisitRow's partition key change (in this case the
   // referring_visit).
@@ -1858,7 +1887,7 @@ bool HistoryBackend::UpdateVisitReferrerOpenerIDs(VisitID visit_id,
   row.referring_visit = referrer_id;
   row.opener_visit = opener_id;
 
-  // TODO(crbug.com/1476511): any VisitedLinkID associated with `row`
+  // TODO(crbug.com/40280017): any VisitedLinkID associated with `row`
   // will be voided to avoid storing stale/incorrect VisitedLinkIDs once
   // elements of the VisitRow's partition key change (in this case the
   // referring_visit).
@@ -2082,6 +2111,13 @@ DomainsVisitedResult HistoryBackend::GetUniqueDomainsVisited(
   }
 
   return db_->GetUniqueDomainsVisited(begin_time, end_time);
+}
+
+GetAllAppIdsResult HistoryBackend::GetAllAppIds() {
+  if (!db_) {
+    return {};
+  }
+  return db_->GetAllAppIds();
 }
 
 HistoryLastVisitResult HistoryBackend::GetLastVisitToHost(
@@ -2915,11 +2951,6 @@ void HistoryBackend::GetRedirectsToSpecificVisit(VisitID cur_visit,
   }
 }
 
-void HistoryBackend::ScheduleAutocomplete(
-    base::OnceCallback<void(HistoryBackend*, URLDatabase*)> callback) {
-  std::move(callback).Run(this, db_.get());
-}
-
 void HistoryBackend::DeleteFTSIndexDatabases() {
   // Find files on disk matching the text databases file pattern so we can
   // quickly test for and delete them.
@@ -3511,7 +3542,7 @@ void HistoryBackend::DatabaseErrorCallback(int error, sql::Statement* stmt) {
 
     // Don't just do the close/delete here, as we are being called by `db` and
     // that seems dangerous.
-    // TODO(https://crbug.com/854258): It is also dangerous to kill the database
+    // TODO(crbug.com/41395467): It is also dangerous to kill the database
     // by a posted task: tasks that run before KillHistoryDatabase still can try
     // to use the broken database. Consider protecting against other tasks using
     // the DB or consider changing KillHistoryDatabase() to use RazeAndClose()
@@ -3575,6 +3606,11 @@ void HistoryBackend::ProcessDBTask(
     ProcessDBTaskImpl();
 }
 
+void HistoryBackend::RunDBTask(
+    base::OnceCallback<void(HistoryBackend*, URLDatabase*)> callback) {
+  std::move(callback).Run(this, db_.get());
+}
+
 void HistoryBackend::NotifyFaviconsChanged(const std::set<GURL>& page_urls,
                                            const GURL& icon_url) {
   delegate_->NotifyFaviconsChanged(page_urls, icon_url);
@@ -3598,7 +3634,7 @@ void HistoryBackend::NotifyURLsModified(const URLRows& changed_urls,
   delegate_->NotifyURLsModified(changed_urls);
 }
 
-void HistoryBackend::NotifyURLsDeleted(DeletionInfo deletion_info) {
+void HistoryBackend::NotifyDeletions(DeletionInfo deletion_info) {
   std::set<GURL> origins;
   for (const history::URLRow& row : deletion_info.deleted_rows())
     origins.insert(row.url().DeprecatedGetOriginAsURL());
@@ -3607,12 +3643,12 @@ void HistoryBackend::NotifyURLsDeleted(DeletionInfo deletion_info) {
       GetCountsAndLastVisitForOrigins(origins));
 
   for (HistoryBackendObserver& observer : observers_) {
-    observer.OnURLsDeleted(
+    observer.OnHistoryDeletions(
         this, deletion_info.IsAllHistory(), deletion_info.is_from_expiration(),
         deletion_info.deleted_rows(), deletion_info.favicon_urls());
   }
 
-  delegate_->NotifyURLsDeleted(std::move(deletion_info));
+  delegate_->NotifyDeletions(std::move(deletion_info));
 }
 
 void HistoryBackend::NotifyVisitUpdated(const VisitRow& visit,
@@ -3622,10 +3658,23 @@ void HistoryBackend::NotifyVisitUpdated(const VisitRow& visit,
   }
 }
 
-void HistoryBackend::NotifyVisitDeleted(const VisitRow& visit) {
-  tracker_.RemoveVisitById(visit.visit_id);
-  for (HistoryBackendObserver& observer : observers_) {
-    observer.OnVisitDeleted(visit);
+void HistoryBackend::NotifyVisitsDeleted(
+    const std::vector<DeletedVisit>& visits) {
+  std::vector<DeletedVisitedLink> links;
+  for (const DeletedVisit& visit : visits) {
+    tracker_.RemoveVisitById(visit.visit_row.visit_id);
+    for (HistoryBackendObserver& observer : observers_) {
+      observer.OnVisitDeleted(visit.visit_row);
+    }
+    // Determine if a VisitedLink was deleted as a result of the deleted Visit.
+    if (visit.deleted_visited_link.has_value()) {
+      links.push_back(visit.deleted_visited_link.value());
+    }
+  }
+  // We want to avoid posting a new task for every VisitedLink deleted, so we
+  // notify the `delegate_` in a batch.
+  if (!links.empty()) {
+    delegate_->NotifyVisitedLinksDeleted(links);
   }
 }
 
@@ -3684,7 +3733,7 @@ void HistoryBackend::DeleteAllHistory() {
 
   // Send out the notification that history is cleared. The in-memory database
   // will pick this up and clear itself.
-  NotifyURLsDeleted(DeletionInfo::ForAllHistory());
+  NotifyDeletions(DeletionInfo::ForAllHistory());
 }
 
 bool HistoryBackend::ClearAllFaviconHistory(

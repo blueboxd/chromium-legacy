@@ -52,6 +52,12 @@ void AddMaterialNewTabPageColorMixer(ui::ColorProvider* provider,
       ui::kColorSysBaseContainerElevated};
 
   mixer[kColorNewTabPageModuleBackground] = {ui::kColorSysBaseContainer};
+  mixer[kColorNewTabPageModuleIconBackground] = {ui::kColorSysNeutralContainer};
+  // Styling for Doodle Share Button.
+  mixer[kColorNewTabPageDoodleShareButtonBackground] = {
+      ui::kColorSysNeutralContainer};
+  mixer[kColorNewTabPageDoodleShareButtonIcon] = {ui::kColorSysOnSurface};
+
   if (base::FeatureList::IsEnabled(ntp_features::kNtpModulesRedesigned)) {
     mixer[kColorNewTabPageModuleItemBackground] = {
         ui::kColorSysBaseContainerElevated};
@@ -68,9 +74,11 @@ void AddMaterialNewTabPageColorMixer(ui::ColorProvider* provider,
   mixer[kColorNewTabPageSecondaryForeground] = {ui::kColorSysOnSurfaceSubtle};
 
   mixer[kColorNewTabPageWallpaperSearchButtonBackground] = {
-      ui::kColorSysSecondary};
+      ui::kColorSysPrimary};
+  mixer[kColorNewTabPageWallpaperSearchButtonBackgroundHovered] = {
+      kColorNewTabPageButtonBackgroundHovered};
   mixer[kColorNewTabPageWallpaperSearchButtonForeground] = {
-      ui::kColorSysOnSecondary};
+      ui::kColorSysOnPrimary};
   if (base::FeatureList::IsEnabled(ntp_features::kRealboxCr23Theming) ||
       base::FeatureList::IsEnabled(ntp_features::kRealboxCr23All)) {
     // Steady state theme colors.

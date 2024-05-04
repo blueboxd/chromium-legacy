@@ -2,7 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "extensions/browser/script_injection_tracker.h"
+
 #include <string>
+#include <string_view>
 #include <vector>
 
 #include "base/files/file_path.h"
@@ -15,8 +18,9 @@
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/extension_util.h"
-#include "chrome/browser/extensions/permissions_test_util.h"
+#include "chrome/browser/extensions/permissions/permissions_test_util.h"
 #include "chrome/browser/extensions/tab_helper.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -34,7 +38,6 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/script_executor.h"
-#include "extensions/browser/script_injection_tracker.h"
 #include "extensions/browser/user_script_manager.h"
 #include "extensions/common/extension_features.h"
 #include "extensions/common/features/feature_channel.h"
@@ -111,6 +114,7 @@ void ExecuteUserScript(content::WebContents& web_contents,
       mojom::HostID(mojom::HostID::HostType::kExtensions, extension_id),
       mojom::CodeInjection::NewJs(mojom::JSInjection::New(
           std::move(sources), mojom::ExecutionWorld::kUserScript,
+          /*world_id=*/std::nullopt,
           blink::mojom::WantResultOption::kWantResult,
           blink::mojom::UserActivationOption::kDoNotActivate,
           blink::mojom::PromiseResultOption::kAwait)),
@@ -146,8 +150,8 @@ class ScriptInjectionTrackerBrowserTest : public ExtensionBrowserTest {
 
   // Navigates to url for given `hostname` and `relative_url`. Returns whether
   // the navigation is in a new process compared to the currently active tab.
-  [[nodiscard]] bool NavigateToURLInNewProcess(base::StringPiece hostname,
-                                               base::StringPiece relative_url) {
+  [[nodiscard]] bool NavigateToURLInNewProcess(std::string_view hostname,
+                                               std::string_view relative_url) {
     content::WebContents* original_web_contents = GetActiveWebContents();
 
     // Opening the URL in a new tab should force it into a new process.
@@ -289,7 +293,7 @@ IN_PROC_BROWSER_TEST_F(ScriptInjectionTrackerBrowserTest,
   ASSERT_TRUE(embedded_test_server()->Start());
 
   // Install a test extension.
-  // TODO(https://crbug.com/1429408): There's currently no way for extensions
+  // TODO(crbug.com/40262660): There's currently no way for extensions
   // to trigger user script injections, so this extension is really just to
   // have one we force to be associated with the injection. When the userScripts
   // API is fully developed, we should update this to use the developer-facing
@@ -355,7 +359,7 @@ IN_PROC_BROWSER_TEST_F(ScriptInjectionTrackerBrowserTest,
 // also the "DocumentUserData race w/ Commit IPC" section in the
 // document here:
 // https://docs.google.com/document/d/1MFprp2ss2r9RNamJ7Jxva1bvRZvec3rzGceDGoJ6vW0/edit#heading=h.n2ppjzx4jpzt
-// TODO(crbug.com/936696): Remove the test after RenderDocument is shipped.
+// TODO(crbug.com/40615943): Remove the test after RenderDocument is shipped.
 IN_PROC_BROWSER_TEST_F(ScriptInjectionTrackerBrowserTest,
                        ProgrammaticInjectionRacingWithDidCommit) {
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -1386,7 +1390,7 @@ IN_PROC_BROWSER_TEST_F(DynamicScriptsTrackerBrowserTest,
   dir.WriteManifest(kManifestTemplate);
   dir.WriteFile(FILE_PATH_LITERAL("page.html"), "<p>Extension page</p>");
   const char kContentScript[] = R"(
-      // TODO(https://crbug.com/1502769): Remove `console.log` after confirming
+      // TODO(crbug.com/40943155): Remove `console.log` after confirming
       // that the test is no longer flaky
       console.log('CONTENT SCRIPT: running...');
 
@@ -1397,7 +1401,7 @@ IN_PROC_BROWSER_TEST_F(DynamicScriptsTrackerBrowserTest,
       document.body.innerText = 'content script has run';
       chrome.test.notifyPass();
 
-      // TODO(https://crbug.com/1502769): Remove `console.log` after confirming
+      // TODO(crbug.com/40943155): Remove `console.log` after confirming
       // that the test is no longer flaky
       console.log('CONTENT SCRIPT: running... DONE.');
   )";
@@ -1561,7 +1565,7 @@ IN_PROC_BROWSER_TEST_F(DynamicScriptsTrackerBrowserTest,
 
 // Tests that ScriptInjectionTracker monitors extension permission changes
 // between commit and load, and updates the renderer data accordingly.
-// TODO(crbug.com/1522216): Flaky test.
+// TODO(crbug.com/41495179): Flaky test.
 #if BUILDFLAG(IS_LINUX)
 #define MAYBE_UpdateHostPermissions_RaceCondition \
   DISABLED_UpdateHostPermissions_RaceCondition
@@ -1764,7 +1768,7 @@ class UserScriptTrackerBrowserTest : public ScriptInjectionTrackerBrowserTest {
 
  private:
   // The userScripts API is currently behind a feature restriction.
-  // TODO(crbug.com/1472902): Remove once the feature is stable for awhile.
+  // TODO(crbug.com/40926805): Remove once the feature is stable for awhile.
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 

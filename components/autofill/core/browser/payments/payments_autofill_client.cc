@@ -6,12 +6,22 @@
 
 #include "base/functional/callback.h"
 #include "components/autofill/core/browser/autofill_progress_dialog_type.h"
+#include "components/autofill/core/browser/data_model/credit_card.h"
+#include "components/autofill/core/browser/payments/autofill_error_dialog_context.h"
+#include "components/autofill/core/browser/payments/card_unmask_delegate.h"
+#include "components/autofill/core/browser/payments/virtual_card_enrollment_manager.h"
+#include "components/autofill/core/browser/ui/payments/card_unmask_prompt_options.h"
 
 namespace autofill::payments {
 
 PaymentsAutofillClient::~PaymentsAutofillClient() = default;
 
-#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
+#if BUILDFLAG(IS_ANDROID)
+AutofillSaveCardBottomSheetBridge*
+PaymentsAutofillClient::GetOrCreateAutofillSaveCardBottomSheetBridge() {
+  return nullptr;
+}
+#elif !BUILDFLAG(IS_IOS)
 void PaymentsAutofillClient::ShowLocalCardMigrationDialog(
     base::OnceClosure show_migration_dialog_closure) {}
 
@@ -28,9 +38,15 @@ void PaymentsAutofillClient::ShowLocalCardMigrationResults(
     MigrationDeleteCardCallback delete_local_card_callback) {}
 
 void PaymentsAutofillClient::VirtualCardEnrollCompleted(bool is_vcn_enrolled) {}
-#endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
+#endif  // BUILDFLAG(IS_ANDROID)
 
 void PaymentsAutofillClient::CreditCardUploadCompleted(bool card_saved) {}
+
+bool PaymentsAutofillClient::IsSaveCardPromptVisible() const {
+  return false;
+}
+
+void PaymentsAutofillClient::HideSaveCardPromptPrompt() {}
 
 void PaymentsAutofillClient::ShowAutofillProgressDialog(
     AutofillProgressDialogType autofill_progress_dialog_type,
@@ -39,5 +55,41 @@ void PaymentsAutofillClient::ShowAutofillProgressDialog(
 void PaymentsAutofillClient::CloseAutofillProgressDialog(
     bool show_confirmation_before_closing,
     base::OnceClosure no_interactive_authentication_callback) {}
+
+void PaymentsAutofillClient::ShowCardUnmaskOtpInputDialog(
+    const CardUnmaskChallengeOption& challenge_option,
+    base::WeakPtr<OtpUnmaskDelegate> delegate) {}
+
+void PaymentsAutofillClient::OnUnmaskOtpVerificationResult(
+    OtpUnmaskResult unmask_result) {}
+
+PaymentsNetworkInterface*
+PaymentsAutofillClient::GetPaymentsNetworkInterface() {
+  return nullptr;
+}
+
+void PaymentsAutofillClient::ShowAutofillErrorDialog(
+    AutofillErrorDialogContext context) {}
+
+PaymentsWindowManager* PaymentsAutofillClient::GetPaymentsWindowManager() {
+  return nullptr;
+}
+
+void PaymentsAutofillClient::ShowUnmaskPrompt(
+    const CreditCard& card,
+    const CardUnmaskPromptOptions& card_unmask_prompt_options,
+    base::WeakPtr<CardUnmaskDelegate> delegate) {}
+
+void PaymentsAutofillClient::OnUnmaskVerificationResult(
+    AutofillClient::PaymentsRpcResult result) {}
+
+VirtualCardEnrollmentManager*
+PaymentsAutofillClient::GetVirtualCardEnrollmentManager() {
+  return nullptr;
+}
+
+CreditCardOtpAuthenticator* PaymentsAutofillClient::GetOtpAuthenticator() {
+  return nullptr;
+}
 
 }  // namespace autofill::payments

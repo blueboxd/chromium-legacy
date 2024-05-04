@@ -9,7 +9,6 @@
 #include "base/files/file_util.h"
 #include "base/functional/callback_helpers.h"
 #include "base/json/values_util.h"
-#include "base/memory/raw_ptr.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/test/bind.h"
@@ -34,6 +33,7 @@
 #include "content/public/test/browser_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/public/common/page/page_zoom.h"
+#include "ui/views/test/views_test_utils.h"
 #include "url/gurl.h"
 
 namespace {
@@ -97,9 +97,8 @@ class MockHatsNextWebDialog : public HatsNextWebDialog {
 class HatsNextWebDialogBrowserTest : public InProcessBrowserTest {
  public:
   void SetUpOnMainThread() override {
-    hats_service_ = static_cast<MockHatsService*>(
-        HatsServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-            browser()->profile(), base::BindRepeating(&BuildMockHatsService)));
+    HatsServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+        browser()->profile(), base::BindRepeating(&BuildMockHatsService));
   }
 
   // Open a blank tab in the main browser, inspect it, and return the devtools
@@ -113,7 +112,10 @@ class HatsNextWebDialogBrowserTest : public InProcessBrowserTest {
     return devtools_window->browser_;
   }
 
-  MockHatsService* hats_service() { return hats_service_; }
+  MockHatsService* hats_service() {
+    return static_cast<MockHatsService*>(HatsServiceFactory::GetForProfile(
+        browser()->profile(), /*create_if_necessary=*/false));
+  }
 
   base::OnceClosure GetSuccessClosure() {
     return base::BindLambdaForTesting([&]() { ++success_count; });
@@ -125,9 +127,6 @@ class HatsNextWebDialogBrowserTest : public InProcessBrowserTest {
 
   int success_count = 0;
   int failure_count = 0;
-
- private:
-  raw_ptr<MockHatsService, DanglingUntriaged> hats_service_;
 };
 
 // Test that the web dialog correctly receives change to history state that
@@ -324,6 +323,12 @@ IN_PROC_BROWSER_TEST_F(HatsNextWebDialogBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(HatsNextWebDialogBrowserTest, DialogResize) {
+  // TODO(https://crbug.com/329235190): render_frame_metadata is skipped,
+  // causing no UpdateWidgetSize() call.
+  if (views::test::IsOzoneBubblesUsingPlatformWidgets()) {
+    GTEST_SKIP();
+  }
+
   ASSERT_TRUE(embedded_test_server()->Start());
 
   auto* dialog = new MockHatsNextWebDialog(
@@ -338,15 +343,21 @@ IN_PROC_BROWSER_TEST_F(HatsNextWebDialogBrowserTest, DialogResize) {
   // Depending on renderer warm-up, an initial empty size may additionally be
   // reported before hats_next_mock.html has had a chance to resize.
   dialog->WaitForUpdateWidgetSize();
-  auto size = dialog->CalculatePreferredSize();
+  auto size = dialog->CalculatePreferredSize({});
   EXPECT_TRUE(size == kTargetSize || size == dialog->kMinSize);
   if (size != kTargetSize) {
     dialog->WaitForUpdateWidgetSize();
-    EXPECT_EQ(kTargetSize, dialog->CalculatePreferredSize());
+    EXPECT_EQ(kTargetSize, dialog->CalculatePreferredSize({}));
   }
 }
 
 IN_PROC_BROWSER_TEST_F(HatsNextWebDialogBrowserTest, MaximumSize) {
+  // TODO(https://crbug.com/329235190): render_frame_metadata is skipped,
+  // causing no UpdateWidgetSize() call.
+  if (views::test::IsOzoneBubblesUsingPlatformWidgets()) {
+    GTEST_SKIP();
+  }
+
   ASSERT_TRUE(embedded_test_server()->Start());
 
   EXPECT_CALL(*hats_service(), HatsNextDialogClosed);
@@ -360,11 +371,11 @@ IN_PROC_BROWSER_TEST_F(HatsNextWebDialogBrowserTest, MaximumSize) {
   // may additionally be reported before hats_next_mock.html has had a chance
   // to resize.
   dialog->WaitForUpdateWidgetSize();
-  auto size = dialog->CalculatePreferredSize();
+  auto size = dialog->CalculatePreferredSize({});
   EXPECT_TRUE(size == HatsNextWebDialog::kMaxSize || size == dialog->kMinSize);
   if (size != HatsNextWebDialog::kMaxSize) {
     dialog->WaitForUpdateWidgetSize();
-    EXPECT_EQ(HatsNextWebDialog::kMaxSize, dialog->CalculatePreferredSize());
+    EXPECT_EQ(HatsNextWebDialog::kMaxSize, dialog->CalculatePreferredSize({}));
   }
 }
 

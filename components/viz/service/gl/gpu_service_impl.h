@@ -336,10 +336,6 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl
     return gpu_memory_buffer_factory_.get();
   }
 
-  gpu::MailboxManager* mailbox_manager() {
-    return gpu_channel_manager_->mailbox_manager();
-  }
-
   gpu::SharedImageManager* shared_image_manager() {
     return gpu_channel_manager_->shared_image_manager();
   }
@@ -543,7 +539,7 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl
   scoped_refptr<base::SingleThreadTaskRunner> io_runner_;
 
 #if BUILDFLAG(IS_FUCHSIA)
-  // TODO(crbug.com/1340041): Fuchsia does not support FIDL communication from
+  // TODO(crbug.com/40850116): Fuchsia does not support FIDL communication from
   // ThreadPool's worker threads.
   std::unique_ptr<base::Thread> vea_thread_;
 #endif

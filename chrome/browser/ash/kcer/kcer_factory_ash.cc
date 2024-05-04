@@ -7,14 +7,18 @@
 #include <utility>
 
 #include "ash/constants/ash_switches.h"
+#include "ash/shell.h"
 #include "base/check_is_test.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/bind_post_task.h"
 #include "chrome/browser/ash/crosapi/chaps_service_ash.h"
 #include "chrome/browser/ash/crosapi/crosapi_ash.h"
 #include "chrome/browser/ash/crosapi/crosapi_manager.h"
+#include "chrome/browser/ash/kcer/nssdb_migration/kcer_rollback_helper.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/pref_names.h"
 #include "chromeos/ash/components/browser_context_helper/browser_context_helper.h"
 #include "chromeos/ash/components/browser_context_helper/browser_context_types.h"
 #include "chromeos/ash/components/network/system_token_cert_db_storage.h"
@@ -23,11 +27,33 @@
 #include "chromeos/components/kcer/chaps/session_chaps_client.h"
 #include "chromeos/components/kcer/extra_instances.h"
 #include "components/account_id/account_id.h"
+#include "components/pref_registry/pref_registry_syncable.h"
+#include "components/prefs/pref_service.h"
 #include "components/user_manager/user.h"
+#include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "crypto/nss_util_internal.h"
 
 namespace kcer {
+namespace {
+
+// Returns the currently valid ChapsService. Might return a nullptr during early
+// initialization and after shutdown.
+crosapi::mojom::ChapsService* GetChapsService() {
+  crosapi::mojom::ChapsService* chaps_service = nullptr;
+  if (crosapi::CrosapiManager::IsInitialized() &&
+      crosapi::CrosapiManager::Get() &&
+      crosapi::CrosapiManager::Get()->crosapi_ash()) {
+    chaps_service =
+        crosapi::CrosapiManager::Get()->crosapi_ash()->chaps_service_ash();
+  }
+  if (!chaps_service) {
+    LOG(ERROR) << "ChapsService mojo interface is not available";
+  }
+  return chaps_service;
+}
+
+}  // namespace
 
 const user_manager::User* GetUserByContext(content::BrowserContext* context) {
   if (!context) {
@@ -38,6 +64,15 @@ const user_manager::User* GetUserByContext(content::BrowserContext* context) {
     return nullptr;
   }
   return ash::ProfileHelper::Get()->GetUserByProfile(profile);
+}
+
+KcerFactoryAsh::KcerFactoryAsh() = default;
+KcerFactoryAsh::~KcerFactoryAsh() = default;
+
+// static
+KcerFactory* KcerFactoryAsh::GetInstance() {
+  EnsureFactoryBuilt();
+  return GetGlobalPointer();
 }
 
 // static
@@ -56,6 +91,21 @@ void KcerFactoryAsh::EnsureFactoryBuilt() {
   }
 }
 
+PrefService* GetActiveUserPrefs() {
+  if (!user_manager::UserManager::IsInitialized()) {
+    return nullptr;
+  }
+  user_manager::UserManager* manager = user_manager::UserManager::Get();
+  if (!manager) {
+    return nullptr;
+  }
+  user_manager::User* user = manager->GetActiveUser();
+  if (!user) {
+    return nullptr;
+  }
+  return user->GetProfilePrefs();
+}
+
 void KcerFactoryAsh::Initialize() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (UseKcerWithoutNss()) {
@@ -63,6 +113,46 @@ void KcerFactoryAsh::Initialize() {
   } else {
     StartInitializingDeviceKcerForNss();
   }
+
+  // Check whether prefs for the active user are already available. If yes,
+  // continue with the potential rollback, otherwise observe session_controller
+  // and wait for the user. In Lacros Chrome is restarted with the correct user
+  // instead of adding a new one on user login, so
+  // OnActiveUserPrefServiceChanged() is not called.
+  PrefService* pref_service = GetActiveUserPrefs();
+  if (pref_service) {
+    return MaybeScheduleRollbackForCertDoubleWrite(pref_service);
+  }
+  if (ash::Shell::HasInstance() && ash::Shell::Get()->session_controller()) {
+    ash::Shell::Get()->session_controller()->AddObserver(this);
+  } else {
+    CHECK_IS_TEST();
+  }
+}
+
+void KcerFactoryAsh::RegisterProfilePrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterBooleanPref(prefs::kNssChapsDualWrittenCertsExist,
+                                /*default_value=*/false);
+}
+
+// Writes the prefs::kNssChapsDualWrittenCertsExist pref into the pref storage
+// of the currently active user. The value might be used to clean up the user
+// slot in Chaps, which is semantically owned by the current ChromeOS user.
+void KcerFactoryAsh::RecordPkcs12CertDualWrittenImpl() {
+  user_manager::UserManager* manager = user_manager::UserManager::Get();
+  if (!manager) {
+    return;
+  }
+  user_manager::User* user = manager->GetActiveUser();
+  if (!user) {
+    return;
+  }
+  PrefService* prefs = user->GetProfilePrefs();
+  if (!prefs) {
+    return;
+  }
+  prefs->SetBoolean(prefs::kNssChapsDualWrittenCertsExist, true);
 }
 
 base::WeakPtr<Kcer> KcerFactoryAsh::GetKcerImpl(Profile* profile) {
@@ -268,35 +358,39 @@ void KcerFactoryAsh::InitializeDeviceKcerWithoutNss(
       content::GetIOThreadTaskRunner({}), std::move(device_token));
 }
 
-// This method can in theory fail, but this shouldn't happen. In Ash the mojo
-// interface is implemented by Ash itself, so it should always be present.
 bool KcerFactoryAsh::EnsureHighLevelChapsClientInitialized() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (did_shutdown_) {
-    return false;
-  }
   if (IsHighLevelChapsClientInitialized()) {
     return true;
   }
 
-  crosapi::mojom::ChapsService* chaps_service = nullptr;
-  if (crosapi::CrosapiManager::IsInitialized() &&
-      crosapi::CrosapiManager::Get() &&
-      crosapi::CrosapiManager::Get()->crosapi_ash()) {
-    chaps_service =
-        crosapi::CrosapiManager::Get()->crosapi_ash()->chaps_service_ash();
-  }
-  if (!chaps_service) {
-    LOG(ERROR) << "ChapsService mojo interface is not available";
-    return false;
-  }
-
-  session_chaps_client_ =
-      std::make_unique<SessionChapsClientImpl>(chaps_service);
+  session_chaps_client_ = std::make_unique<SessionChapsClientImpl>(
+      base::BindRepeating(&GetChapsService));
   high_level_chaps_client_ =
       std::make_unique<HighLevelChapsClientImpl>(session_chaps_client_.get());
 
   return IsHighLevelChapsClientInitialized();
+}
+
+void KcerFactoryAsh::OnActiveUserPrefServiceChanged(PrefService* pref_service) {
+  MaybeScheduleRollbackForCertDoubleWrite(pref_service);
+}
+
+void KcerFactoryAsh::MaybeScheduleRollbackForCertDoubleWrite(
+    PrefService* pref_service) {
+  if (rollback_helper_) {
+    rollback_helper_.reset();
+  }
+  if (!pref_service) {
+    return;
+  }
+  EnsureHighLevelChapsClientInitialized();
+  if (internal::KcerRollbackHelper::IsChapsRollbackRequired(pref_service)) {
+    rollback_helper_ = std::make_unique<internal::KcerRollbackHelper>(
+        high_level_chaps_client_.get(), pref_service);
+
+    return rollback_helper_->PerformRollback();
+  }
 }
 
 }  // namespace kcer

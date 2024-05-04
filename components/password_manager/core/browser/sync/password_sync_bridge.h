@@ -14,6 +14,10 @@
 #include "components/sync/model/model_type_sync_bridge.h"
 #include "components/sync/model/wipe_model_upon_sync_disabled_behavior.h"
 
+namespace base {
+class Location;
+}  // namespace base
+
 namespace syncer {
 class MetadataChangeList;
 class ModelTypeChangeProcessor;
@@ -48,8 +52,10 @@ class PasswordSyncBridge : public syncer::ModelTypeSyncBridge {
 
   // Notifies the bridge of changes to the password database. Callers are
   // responsible for calling this function within the very same transaction as
-  // the data changes.
-  void ActOnPasswordStoreChanges(const PasswordStoreChangeList& changes);
+  // the data changes. |location| is used for logging purposes and
+  // investigations concerning deletions only.
+  void ActOnPasswordStoreChanges(const base::Location& location,
+                                 const PasswordStoreChangeList& changes);
 
   // ModelTypeSyncBridge implementation.
   std::unique_ptr<syncer::MetadataChangeList> CreateMetadataChangeList()

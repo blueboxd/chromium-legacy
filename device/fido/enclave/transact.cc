@@ -15,6 +15,7 @@
 #include "device/fido/cable/v2_handshake.h"
 #include "device/fido/enclave/enclave_protocol_utils.h"
 #include "device/fido/enclave/enclave_websocket_client.h"
+#include "device/fido/network_context_factory.h"
 
 namespace device::enclave {
 
@@ -40,8 +41,7 @@ struct Transaction : base::RefCounted<Transaction> {
   void OnData(device::enclave::EnclaveWebSocketClient::SocketStatus status,
               std::optional<std::vector<uint8_t>> data) {
     if (!done_handshake_) {
-      if (status != EnclaveWebSocketClient::SocketStatus::kOk) {
-        LOG(ERROR) << "Enclave WebSocket connection failed";
+      if (!CompleteHandshake(status, data)) {
         std::move(callback_).Run(std::nullopt);
         // client_ holds a RepeatingCallback that has a reference to this
         // object. Thus, by deleting it, this object should also be destroyed.
@@ -49,19 +49,7 @@ struct Transaction : base::RefCounted<Transaction> {
         return;
       }
 
-      cablev2::HandshakeResult result = handshake_.ProcessResponse(*data);
-      if (!result) {
-        LOG(ERROR) << "Enclave handshake failed";
-        std::move(callback_).Run(std::nullopt);
-        client_.reset();
-        return;
-      }
-
-      crypter_ = std::move(result->first);
-      handshake_hash_ = result->second;
-      done_handshake_ = true;
-
-      FIDO_LOG(ERROR) << "<- " << cbor::DiagnosticWriter::Write(request_);
+      FIDO_LOG(EVENT) << "<- " << cbor::DiagnosticWriter::Write(request_);
       BuildCommandRequestBody(
           std::move(request_), std::move(signing_callback_), *handshake_hash_,
           base::BindOnce(&Transaction::RequestReady, scoped_refptr(this)));
@@ -81,8 +69,21 @@ struct Transaction : base::RefCounted<Transaction> {
           break;
         }
 
-        FIDO_LOG(ERROR) << "-> " << cbor::DiagnosticWriter::Write(*response);
-        std::move(callback_).Run(std::move(*response));
+        FIDO_LOG(EVENT) << "-> " << cbor::DiagnosticWriter::Write(*response);
+        if (!response->is_map()) {
+          std::move(callback_).Run(std::nullopt);
+          break;
+        }
+
+        const cbor::Value::MapValue& map = response->GetMap();
+        const cbor::Value::MapValue::const_iterator ok_it =
+            map.find(cbor::Value("ok"));
+        if (ok_it == map.end()) {
+          std::move(callback_).Run(std::nullopt);
+          break;
+        }
+
+        std::move(callback_).Run(ok_it->second.Clone());
       } while (false);
 
       client_.reset();
@@ -103,6 +104,37 @@ struct Transaction : base::RefCounted<Transaction> {
     client_->Write(request);
   }
 
+  bool CompleteHandshake(
+      device::enclave::EnclaveWebSocketClient::SocketStatus status,
+      const std::optional<std::vector<uint8_t>>& data) {
+    if (status != EnclaveWebSocketClient::SocketStatus::kOk) {
+      LOG(ERROR) << "Enclave WebSocket connection failed";
+      return false;
+    }
+
+    base::span<const uint8_t> response(*data);
+    if (response.size() < cablev2::HandshakeInitiator::kResponseSize) {
+      LOG(ERROR) << "Enclave handshake response too short";
+      return false;
+    }
+
+    // `response` may contain arbitrary extra data, which is ignored. In
+    // the future this will contain attestation information.
+    response = response.subspan(0, cablev2::HandshakeInitiator::kResponseSize);
+
+    cablev2::HandshakeResult result = handshake_.ProcessResponse(response);
+    if (!result) {
+      LOG(ERROR) << "Enclave handshake failed";
+      return false;
+    }
+
+    crypter_ = std::move(result->first);
+    handshake_hash_ = result->second;
+    done_handshake_ = true;
+
+    return true;
+  }
+
   const std::array<uint8_t, kP256X962Length> enclave_public_key_;
   cbor::Value request_;
   SigningCallback signing_callback_;
@@ -116,9 +148,10 @@ struct Transaction : base::RefCounted<Transaction> {
 
 }  // namespace
 
-void Transact(raw_ptr<network::mojom::NetworkContext> network_context,
+void Transact(NetworkContextFactory network_context_factory,
               const EnclaveIdentity& enclave,
               std::string access_token,
+              std::optional<std::string> reauthentication_token,
               cbor::Value request,
               SigningCallback signing_callback,
               base::OnceCallback<void(std::optional<cbor::Value>)> callback) {
@@ -127,7 +160,8 @@ void Transact(raw_ptr<network::mojom::NetworkContext> network_context,
       std::move(callback));
 
   transaction->set_client(std::make_unique<EnclaveWebSocketClient>(
-      enclave.url, std::move(access_token), network_context,
+      enclave.url, std::move(access_token), std::move(reauthentication_token),
+      std::move(network_context_factory),
       base::BindRepeating(&Transaction::OnData, transaction)));
 
   transaction->Start();

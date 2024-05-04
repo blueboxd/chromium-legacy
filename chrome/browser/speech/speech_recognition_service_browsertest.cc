@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <algorithm>
+#include <string_view>
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -492,11 +493,11 @@ IN_PROC_BROWSER_TEST_F(SpeechRecognitionServiceTest, CreateAudioSourceFetcher) {
   SetUpPrefs();
   LaunchServiceWithAudioSourceFetcher();
 
-  // TODO(crbug.com/1185978): Check implementation / sandbox policy on Mac and
+  // TODO(crbug.com/40753481): Check implementation / sandbox policy on Mac and
   // Windows.
 #if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX)
   // Check that Start begins audio recording.
-  // TODO(crbug.com/1173135): Try to mock audio input, maybe with
+  // TODO(crbug.com/40166991): Try to mock audio input, maybe with
   // TestStreamFactory::stream_, to test end-to-end.
   std::string device_id = media::AudioDeviceDescription::kDefaultDeviceId;
   media::AudioParameters params(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
@@ -532,7 +533,7 @@ IN_PROC_BROWSER_TEST_F(SpeechRecognitionServiceTest, CompromisedRenderer) {
   ASSERT_TRUE(base::PathExists(config_dir));
   base::FilePath config_file_path =
       config_dir.Append(FILE_PATH_LITERAL("config_file"));
-  ASSERT_TRUE(base::WriteFile(config_file_path, base::StringPiece()));
+  ASSERT_TRUE(base::WriteFile(config_file_path, std::string_view()));
   ASSERT_TRUE(base::PathExists(config_file_path));
   g_browser_process->local_state()->SetFilePath(prefs::kSodaEnUsConfigPath,
                                                 config_file_path);

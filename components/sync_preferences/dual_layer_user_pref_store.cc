@@ -6,13 +6,13 @@
 
 #include <optional>
 #include <string>
+#include <string_view>
 #include <utility>
 
 #include "base/auto_reset.h"
 #include "base/barrier_closure.h"
 #include "base/logging.h"
 #include "base/observer_list.h"
-#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "build/chromeos_buildflags.h"
@@ -130,7 +130,7 @@ bool DualLayerUserPrefStore::IsInitializationComplete() const {
          account_pref_store_->IsInitializationComplete();
 }
 
-bool DualLayerUserPrefStore::GetValue(base::StringPiece key,
+bool DualLayerUserPrefStore::GetValue(std::string_view key,
                                       const base::Value** result) const {
   const std::string pref_name(key);
   if (!ShouldGetValueFromAccountStore(pref_name)) {
@@ -537,7 +537,7 @@ void DualLayerUserPrefStore::DisableTypeAndClearAccountStore(
     // Clear the account store of any garbage value without notifications. This
     // can happen if a previously syncable pref was persisted to the account
     // store but is no longer syncable.
-    // TODO(crbug.com/1466439): Look into if the garbage values can cleared on
+    // TODO(crbug.com/40067768): Look into if the garbage values can cleared on
     // browser startup.
 
     // Since there's no direct way to clear the pref store or get a list of all
@@ -611,7 +611,7 @@ std::pair<base::Value, base::Value> DualLayerUserPrefStore::UnmergeValue(
   CHECK(ShouldSetValueInAccountStore(pref_name));
 
   // Note: There is no "standard" unmerging logic for list or scalar prefs.
-  // TODO(crbug.com/1416479): Allow support for custom unmerge logic.
+  // TODO(crbug.com/40256874): Allow support for custom unmerge logic.
   if (pref_model_associator_client_->GetSyncablePrefsDatabase()
           .GetSyncablePrefMetadata(pref_name)
           ->merge_behavior() == MergeBehavior::kMergeableDict) {

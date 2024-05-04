@@ -2,10 +2,10 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ru">
 <translation id="1012876632442809908">Устройство USB-C (порт спереди)</translation>
-<translation id="1013598600051641573">Для экрана "<ph name="DISPLAY_NAME" />" установлено разрешение <ph name="RESOLUTION" /> (<ph name="REFRESH_RATE" /> Гц). Чтобы сохранить изменения, нажмите "Подтвердить". Предыдущие настройки восстановятся через <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="1013923882670373915">Устройству <ph name="DEVICE_NAME" /> требуется разрешение на подключение через Bluetooth. Введите на нем PIN-код: <ph name="PINCODE" /></translation>
 <translation id="1014722676793506285">Приложение "<ph name="APP_NAME" />", операционная система ChromeOS, а также все приложения и сайты с доступом к данным о местоположении смогут использовать Wi-Fi и мобильную сеть для геолокации.</translation>
 <translation id="1017556409696559990">Свернуть верхнее окно Chrome, если нет истории изменений</translation>
+<translation id="101823271612280837">Запись прекращена. В режиме планшета игровая панель недоступна.</translation>
 <translation id="1024364763893396229">Сохраните <ph name="NAME" /></translation>
 <translation id="1032891413405719768">Батарея стилуса почти разряжена</translation>
 <translation id="1036073649888683237">Чтобы управлять уведомлениями, откройте настройки</translation>
@@ -31,10 +31,10 @@
 <translation id="109942774857561566">Мне скучно</translation>
 <translation id="1104084341931202936">Показать настройки специальных возможностей</translation>
 <translation id="1104621072296271835">Вместе ваши устройства будут работать ещё лучше</translation>
-<translation id="1106446201446919638">Подключено 1 устройство. Wi-Fi не будет включен, пока вы используете точку доступа.</translation>
 <translation id="1111021433905331574">Изменить цвет подсветки клавиатуры можно в разделе "Настройки" &gt; "<ph name="APP_TITLE" />".</translation>
 <translation id="1117719261843403176">Включить или отключить мобильный интернет. <ph name="STATE" />.</translation>
 <translation id="112308213915226829">Автоматически скрывать панель запуска</translation>
+<translation id="1129383337808748948">Обновите "<ph name="CONTENT_TITLE" />"</translation>
 <translation id="1142002900084379065">Недавние фотографии</translation>
 <translation id="114221662579355151">Доступ к камере получат приложения "<ph name="APP1_NAME" />" и "<ph name="APP2_NAME" />", а также все приложения и сайты с разрешением "Камера". Возможно, потребуется обновить веб-страницу или перезапустить приложение.</translation>
 <translation id="1148499908455722006">Открыть диалоговое окно с информацией об аккаунте <ph name="USER_NAME" /></translation>
@@ -68,6 +68,7 @@
 <translation id="1218444235442067213"><ph name="APP_NAME" />, приложение из Play Маркета</translation>
 <translation id="1225748608451425081">Устройство Chromebook заблокировано в связи с известной проблемой. Время, по истечении которого можно будет выполнить вход: <ph name="TIME_LEFT" />.</translation>
 <translation id="1229194443904279055">Остановить выбор текста</translation>
+<translation id="1230853660706736937">Поиск текста на картинках и предварительный просмотр изображений</translation>
 <translation id="1235458158152011030">Сохраненные сети</translation>
 <translation id="1239161794459865856">Функция "<ph name="FEATURE_NAME" />" подключена.</translation>
 <translation id="1240638468526743569">приложение</translation>
@@ -96,6 +97,7 @@
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1294046132466831888">Открыть приложение "Возможности"</translation>
 <translation id="1301069673413256657">GSM</translation>
+<translation id="1301513122398173424">Нажмите <ph name="LAUNCHER_KEY_NAME" /> + G в любой момент.</translation>
 <translation id="1306549533752902673">РЕКОМЕНДУЕМЫЕ ПРИЛОЖЕНИЯ</translation>
 <translation id="1311294419381837540">Идет трансляция вкладки. Этот процесс можно в любое время приостановить или завершить.</translation>
 <translation id="1312604459020188865">Уровень сигнала – <ph name="SIGNAL_STRENGTH" /></translation>
@@ -116,6 +118,7 @@
 <translation id="1383597849754832576">Не удалось скачать файлы автоматических субтитров. Повторите попытку позже.</translation>
 <translation id="1383876407941801731">Поиск</translation>
 <translation id="1391102559483454063">Включено</translation>
+<translation id="1394698770495054737">Полное размытие</translation>
 <translation id="1407069428457324124">Тёмная тема</translation>
 <translation id="1410568680128842168"><ph name="DATE_CELL_TOOL_TIP" />. Чтобы переключаться между датами, используйте клавиши со стрелками.</translation>
 <translation id="141170878022560212">Средняя кнопка</translation>
@@ -126,6 +129,7 @@
 <translation id="1420408895951708260">Включить или отключить ночную подсветку (<ph name="STATE_TEXT" />)</translation>
 <translation id="1426410128494586442">Да</translation>
 <translation id="1435537621343861112">Невозможно начать голосовой ввод. Микрофон отключен.</translation>
+<translation id="1448963928642384376">Ваши устройства с точкой доступа</translation>
 <translation id="1455242230282523554">Показать языковые настройки</translation>
 <translation id="1460620680449458626">Сейчас звук выключен.</translation>
 <translation id="14648076227129703">Доступ к камере получат приложения "<ph name="APP1_NAME" />" и "<ph name="APP2_NAME" />", а также все приложения и сайты с разрешением "Камера".</translation>
@@ -158,6 +162,7 @@
 <translation id="1569384531973824928">Доступ будет предоставлен всем приложениям и сайтам с разрешениями "Камера" и "Микрофон". Возможно, потребуется обновить веб-страницу или перезапустить приложение.</translation>
 <translation id="1571697193564730395">Включить или отключить режим "Не беспокоить". <ph name="STATE_TEXT" /></translation>
 <translation id="1576623706766186887">Уменьшить, когда включена лупа</translation>
+<translation id="1582946770779745370">Доступна игровая панель. Чтобы открыть ее, в любой момент нажмите <ph name="LAUNCHER_KEY_NAME" /> + Shift + Escape, а потом <ph name="LAUNCHER_KEY_NAME" /> + G</translation>
 <translation id="1586324912145647027">Перейти к рабочим столам (от 1 до 8)</translation>
 <translation id="158838227375272121">Сайт "Google Класс"</translation>
 <translation id="1589090746204042747">Получать доступ к данным о ваших действиях во время этого сеанса.</translation>
@@ -224,10 +229,13 @@
 <translation id="1864454756846565995">Устройство USB-C (порт сзади)</translation>
 <translation id="1869497990620230175">Быстрый доступ к файлам</translation>
 <translation id="1871023081802165724">Воспроизвести медиаконтент</translation>
+<translation id="1871915835366697861">Недоступно для этой игры</translation>
 <translation id="1879018240766558464">Окна в режиме инкогнито пока не поддерживаются. Остальные приложения будут сохранены.</translation>
 <translation id="1882814835921407042">Не подключено к мобильной сети</translation>
 <translation id="1882897271359938046">Дублирование экрана в <ph name="DISPLAY_NAME" /></translation>
 <translation id="1885785240814121742">Используйте разблокировку по отпечатку пальца</translation>
+<translation id="1894024878080591367">Измените настройки, чтобы играть с помощью клавиатуры.</translation>
+<translation id="1904997243703671177">После этого от вашего устройства (<ph name="DEVICE_TYPE" />) будет отключено несколько внешних устройств (<ph name="DEVICE_COUNT" />), в том числе:</translation>
 <translation id="1908992311423394684">Недавно установленное приложение</translation>
 <translation id="1915307458270490472">Закрыть</translation>
 <translation id="1918022425394817322">Окно предварительного просмотра камеры привязано к правому верхнему углу</translation>
@@ -258,11 +266,9 @@
 <translation id="2017998995161831444">Открыть Справку в приложении "Возможности"</translation>
 <translation id="2018630726571919839">Расскажи анекдот</translation>
 <translation id="2021864487439853900">Нажать, чтобы разблокировать</translation>
-<translation id="2023558322300866873">Операцию можно прервать в любой момент.</translation>
 <translation id="2034971124472263449">Все равно сохранить</translation>
 <translation id="204259843076055848">Сочетание клавиш для действия "<ph name="SIX_PACK_KEY_NAME" />" отключено</translation>
 <translation id="2049240716062114887">Название рабочего стола изменилось на "<ph name="DESK_NAME" />"</translation>
-<translation id="206377500836174974">Полное</translation>
 <translation id="2064048859448024834">Предварительный просмотр для камеры включен</translation>
 <translation id="2067602449040652523">Яркость клавиатуры</translation>
 <translation id="2075520525463668108">Включить или отключить функцию "<ph name="CAPTURE_MEDIUM" />". Функция "<ph name="CAPTURE_MEDIUM" />" <ph name="CAPTURE_STATE" />.</translation>
@@ -327,6 +333,8 @@
 <translation id="2367972762794486313">Показать сервисы</translation>
 <translation id="2368828502825385061">Найти</translation>
 <translation id="2369165858548251131">"Привет" по-китайски</translation>
+<translation id="2370971919968699910">Может взиматься плата за передачу данных.
+Подключено несколько устройств (<ph name="DEVICECOUNT" />).</translation>
 <translation id="2382875860893882175">Трансляция приостановлена. Ее можно в любое время возобновить или завершить.</translation>
 <translation id="2386292613071805067">Выделить все содержимое страницы</translation>
 <translation id="2392659840443812875">Точки доступа не найдены. Убедитесь, что устройство находится рядом и Bluetooth включен.</translation>
@@ -337,6 +345,7 @@
 <translation id="2405664212338326887">Не подключено</translation>
 <translation id="2408955596600435184">Введите PIN-код</translation>
 <translation id="2412593942846481727">Доступно обновление</translation>
+<translation id="2416438829169535743">Выйти из обучения?</translation>
 <translation id="2417486498593892439">Регистрация в сети</translation>
 <translation id="2426051945783024481">Центрировано автоматически.</translation>
 <translation id="2427507373259914951">Нажатие на левую кнопку мыши</translation>
@@ -356,13 +365,16 @@
 <translation id="2482878487686419369">Уведомления</translation>
 <translation id="2484513351006226581">Чтобы переключить раскладку клавиатуры, нажмите клавиши <ph name="KEYBOARD_SHORTCUT" />.</translation>
 <translation id="2486214324139475545">Предпросмотр активного рабочего стола "<ph name="DESK_NAME" />".</translation>
+<translation id="2486405091093637109">Вы изменили разрешение экрана "<ph name="DISPLAY_NAME" />" на <ph name="RESOLUTION" /> (<ph name="REFRESH_RATE" /> Гц). Если вы не подтвердите изменение, будут восстановлены предыдущие настройки. Оставшееся время: <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="2487915095798731898">Присоединиться</translation>
 <translation id="2499445554382787206">Меню профиля рабочего стола. <ph name="DESK_NAME" /></translation>
 <translation id="2501920221385095727">Залипание клавиш</translation>
 <translation id="2504454902900101003">Не настраивать просмотр недавних фотографий, медиафайлов и уведомлений с телефона</translation>
+<translation id="2505378917951323738">Не удалось сохранить изменения. Восстановите связь и повторите попытку.</translation>
 <translation id="2509468283778169019">Включен режим CAPS LOCK</translation>
 <translation id="2514415433888497495">Отключить функцию "<ph name="CAPTURE_MEDIUM" />". Функция "<ph name="CAPTURE_MEDIUM" />" <ph name="CAPTURE_STATE" />.</translation>
 <translation id="2515586267016047495">Alt</translation>
+<translation id="2516637483312286228">Настроить элементы управления</translation>
 <translation id="2526581474998477112">Открепить окна</translation>
 <translation id="2528111225373402384">Настройки точки доступа</translation>
 <translation id="253007620291357635"><ph name="NETWORK_NAME" /> · <ph name="SERVICE_PROVIDER" /></translation>
@@ -392,6 +404,7 @@
 <translation id="2624588537172718173">Звук с устройства и микрофон</translation>
 <translation id="263399434338050016">"Выбрать все"</translation>
 <translation id="2644422758626431000">Закрепить окно слева</translation>
+<translation id="2645380101799517405">Элементы управления</translation>
 <translation id="2645435784669275700">ChromeOS</translation>
 <translation id="2653019840645008922">Съемка окна</translation>
 <translation id="2653659639078652383">Отправить</translation>
@@ -404,6 +417,7 @@
 <translation id="2695305337569143674">веб</translation>
 <translation id="2697697418792422688">Показать настройки клавиатуры. Выбрано: <ph name="KEYBOARD_NAME" />.</translation>
 <translation id="2700493154570097719">Выберите раскладку</translation>
+<translation id="2701576323154693023">Точка доступа включена (Wi-Fi отключен)</translation>
 <translation id="2704781753052663061">Подключиться к другим сетям Wi-Fi</translation>
 <translation id="2705001408393684014">Кнопка включения и отключения микрофона. <ph name="STATE_TEXT" /></translation>
 <translation id="2706462751667573066">Вверх</translation>
@@ -425,6 +439,8 @@
 <translation id="2785499565474703580">Подключено 1 устройство.</translation>
 <translation id="2791421900609674576">Следуйте рекомендациям, чтобы продолжить работу с того места, на котором вы остановились. Нажмите на них и удерживайте, чтобы удалить.</translation>
 <translation id="2792498699870441125">Alt + Search</translation>
+<translation id="2798702144670138229">Включен режим планшета. Игровая панель недоступна.</translation>
+<translation id="2801954693771979815">Масштаб изображения на экране</translation>
 <translation id="2802938996245446490">Выделен текст "<ph name="BUTTON_LABEL" />"</translation>
 <translation id="2805756323405976993">Сервисы</translation>
 <translation id="2814448776515246190">Запись части экрана</translation>
@@ -438,6 +454,7 @@
 <translation id="2841907151129139818">Вы перешли в режим планшета.</translation>
 <translation id="2844169650293029770">Устройство USB-C (ближний порт слева)</translation>
 <translation id="2844350028562914727">подробные сведения</translation>
+<translation id="2847759467426165163">Выберите устройство</translation>
 <translation id="2848120746144143659">Нажмите Ввод, чтобы сделать скриншот всего экрана</translation>
 <translation id="2849936225196189499">Критическое</translation>
 <translation id="2860184359326882502">Лучшие результаты</translation>
@@ -471,10 +488,12 @@
 <translation id="2992327365391326550">Кнопка микрофона на устройстве отключена</translation>
 <translation id="2996462380875591307">Закрепленная лупа включена. Чтобы отключить ее, нажмите Ctrl + Поиск + D.</translation>
 <translation id="3000461861112256445">Монофо­нический звук</translation>
+<translation id="3001391739687111021">Изменить размер экрана</translation>
 <translation id="3009178788565917040">Выход</translation>
 <translation id="3009958530611748826">Выберите папку для сохранения</translation>
 <translation id="301282384882049174">Доступ предоставлен администратором.</translation>
 <translation id="301584155502740476">Показать сведения о точке доступа. Точка доступа отключена.</translation>
+<translation id="3017079585324758401">Фон</translation>
 <translation id="3018135054368884502">Перемотать вперед</translation>
 <translation id="3033545621352269033">Включено</translation>
 <translation id="3033912566804961911">Объединить с рабочим столом <ph name="DESK_NAME" /></translation>
@@ -482,6 +501,7 @@
 <translation id="3038571455154067151">Чтобы войти, введите родительский код доступа Family Link.</translation>
 <translation id="3039939407102840004">Заряд батареи стилуса составляет <ph name="PERCENTAGE" /> процентов.</translation>
 <translation id="304097922505898963">Открыть приложение "Сочетания клавиш"</translation>
+<translation id="304417730895741346">Открытые приложения находятся на панели запуска. Там их можно закрепить. Для этого нажмите на приложение правой кнопкой мыши или коснитесь двумя пальцами сенсорной панели.</translation>
 <translation id="3045488863354895414">Добрый день!</translation>
 <translation id="3047761520276763270">Скажите:</translation>
 <translation id="3055162170959710888">Сегодня вы уже использовали это устройство <ph name="USED_TIME" />.</translation>
@@ -498,6 +518,7 @@
 <translation id="3100274880412651815">Отключить режим снимка экрана</translation>
 <translation id="3105917916468784889">Скриншот</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
+<translation id="3107155169630537783">Статус приветственного уведомления: "<ph name="STATE" />"</translation>
 <translation id="3113492864356515707">Выделить предыдущий элемент на панели запуска</translation>
 <translation id="311799651966070385">Закрыть напоминание</translation>
 <translation id="3120421559657122717">Выключить устройство?</translation>
@@ -507,14 +528,13 @@
 <translation id="3126069444801937830">Перезагрузите, чтобы обновить</translation>
 <translation id="3139188263101386725">Воспользуйтесь обновленным сочетанием клавиш</translation>
 <translation id="3139942575505304791">Рабочий стол 1</translation>
-<translation id="315116470104423982">Мобильное подключение</translation>
+<translation id="315116470104423982">Мобильный интернет</translation>
 <translation id="3151786313568798007">Ориентация</translation>
 <translation id="3153444934357957346">Для множественного входа можно использовать не более <ph name="MULTI_PROFILE_USER_LIMIT" /> аккаунтов.</translation>
 <translation id="3154351730702813399">Администратору устройства доступна информация о том, какие страницы вы просматриваете в браузере.</translation>
 <translation id="316086887565479535">В шаблоне есть неподдерживаемые приложения</translation>
 <translation id="3160929076476941240">2 часа</translation>
 <translation id="316356270129335934">По требованию <ph name="MANAGER" /> на вашем устройстве <ph name="DEVICE_TYPE" /> выполняется откат. Настройки устройства будут сброшены, а все данные – удалены.</translation>
-<translation id="3170769098533255179">Нет подключенных устройств. Wi-Fi не будет включен, пока вы используете точку доступа.</translation>
 <translation id="3171170659304083361">Настройки способов ввода</translation>
 <translation id="3176221688814061633">На одном из ваших устройств устаревшая версия Bluetooth. Включите функцию Bluetooth Super Resolution или используйте встроенный микрофон для более высокого качества звука.</translation>
 <translation id="3181441307743005334">Перезапуск может занять несколько минут</translation>
@@ -549,7 +569,6 @@
 <translation id="3306386552969601301">К точке доступа <ph name="DEVICE_NAME" /> подключено несколько устройств (<ph name="DEVICECOUNT" />)</translation>
 <translation id="3307642347673023554">Вы перешли в режим ноутбука.</translation>
 <translation id="3308453408813785101">Пользователь <ph name="USER_EMAIL_ADDRESS" /> сможет войти в аккаунт позже.</translation>
-<translation id="3317779231018057649">Подключено несколько устройств (<ph name="DEVICECOUNT" />). Wi-Fi не будет включен, пока вы используете точку доступа.</translation>
 <translation id="3321628682574733415">Неверный родительский код доступа</translation>
 <translation id="332827762492701193">Уведомления скрыты</translation>
 <translation id="3333674550998107387">Развернуть уведомление "<ph name="NOTIFICATION_TITLE" />"</translation>
@@ -610,11 +629,9 @@
 <translation id="3526440770046466733">Открыть ссылку в новой вкладке, но не переходить на нее</translation>
 <translation id="353086728817903341">Подключенных устройств: <ph name="NUM_DEVICES" /></translation>
 <translation id="3533126039236445965">Приложения на панели запуска</translation>
-<translation id="3537350467437346467">Вы открывали</translation>
 <translation id="3539957339480430241">Точка доступа устройства "<ph name="DEVICE_NAME" />"</translation>
 <translation id="3540893133818942399">Не настраивать просмотр недавних фотографий и медиафайлов с телефона</translation>
 <translation id="3542066395059568317">Следуйте рекомендациям, чтобы продолжить работу с того места, на котором вы остановились. Нажмите на них правой кнопкой мыши, чтобы удалить.</translation>
-<translation id="3547318469722231257">Вы изменили файл</translation>
 <translation id="3552189655002856821">Wi-Fi отключен</translation>
 <translation id="3554215588514239132">Показать или скрыть панель инструментов разработчика</translation>
 <translation id="3554637740840164787">Объект "<ph name="ITEM_TITLE" />" закреплен</translation>
@@ -665,7 +682,6 @@
 <translation id="3660860940251915011">Включить или отключить широкий доступ для функции "<ph name="FEATURE_NAME" />"</translation>
 <translation id="366222428570480733">Управляемый пользователь <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="3666266999138159418">Чтобы скрыть плавающее окно, проведите по нему в сторону.</translation>
-<translation id="3673898235958558034">Когда вы отключите Bluetooth, "<ph name="DEVICE_NAME_1" />" и "<ph name="DEVICE_NAME_2" />" отключатся от устройства Chromebook.</translation>
 <translation id="367531336287639526">Выбрать первый значок слева от адресной строки</translation>
 <translation id="3677931086890821290">Операционная система ChromeOS, а также все приложения и сайты с доступом к данным о местоположении смогут использовать Wi-Fi и мобильную сеть для геолокации.</translation>
 <translation id="3679827876008292680">Перейти на последнюю вкладку в окне</translation>
@@ -676,11 +692,13 @@
 <translation id="3702809606464356667">Показаны окна текущего рабочего стола. Чтобы показать окна со всех рабочих столов, нажмите на стрелку вверх.</translation>
 <translation id="3702846122927433391">Население Нигерии</translation>
 <translation id="3705722231355495246">-</translation>
+<translation id="3706423975342040244">Развлечения</translation>
 <translation id="3708186454126126312">Ранее подключенные устройства</translation>
 <translation id="3712143870407382523">Выберите окно для этой стороны.</translation>
 <translation id="371370241367527062">Фронтальный микрофон</translation>
 <translation id="3713734891607377840">Открыть после скачивания</translation>
 <translation id="3726171378575546917">Приложения "<ph name="UNAVAILABLE_APPS_ONE" />", "<ph name="UNAVAILABLE_APPS_TWO" />" и ещё несколько сервисов (<ph name="UNAVAILABLE_APPS_COUNT" />) не установлены на этом устройстве.</translation>
+<translation id="3727231512028252576">Не удалось загрузить данные. Восстановите связь и повторите попытку.</translation>
 <translation id="3735740477244556633">Сортировать по:</translation>
 <translation id="3738664582935948253">Теперь в записи видео с экрана можно показывать сочетания клавиш и нажатия.</translation>
 <translation id="3742055079367172538">Сделан скриншот</translation>
@@ -698,19 +716,19 @@
 <translation id="380165613292957338">Привет! Чем могу помочь?</translation>
 <translation id="3804737937830804242">Скрыть кнопку изменения размера</translation>
 <translation id="3824784079442479685">Доступ к камере получит приложение "<ph name="APP_NAME" />", а также все приложения и сайты с разрешением "Камера". Возможно, потребуется обновить веб-страницу или перезапустить приложение.</translation>
-<translation id="3825680296690914697">Сдано: <ph name="NUM_TURNED_IN" /> из <ph name="TOTAL_NUM_OF_SUBMISSIONS" />. Проверенных заданий: <ph name="NUM_GRADED" />.</translation>
 <translation id="3826099427150913765">Войти с помощью пароля</translation>
 <translation id="383058930331066723">Включен режим энергосбережения</translation>
+<translation id="3831226344927851293">Выйти из руководства</translation>
 <translation id="383629559565718788">Показать настройки клавиатуры</translation>
 <translation id="384082539148746321">Удалить шаблон?</translation>
 <translation id="3844627820291068572"><ph name="MODIFIER_ONE" /><ph name="MODIFIER_TWO" />, затем <ph name="KEY_ONE" />, <ph name="KEY_TWO" />, <ph name="KEY_THREE" /> или <ph name="KEY_FOUR" /></translation>
 <translation id="3846559267983630264">50 + 94 / 5</translation>
 <translation id="3846575436967432996">Информация о сетях недоступна</translation>
+<translation id="3848526302597027234">Получение доступа к разрешениям ниже</translation>
 <translation id="385051799172605136">Назад</translation>
 <translation id="385300504083504382">В начало</translation>
 <translation id="3859364108019690">Ошибка трансляции приложений</translation>
 <translation id="3861651314799684201">Нажмите Ввод, чтобы записать видео со всего экрана</translation>
-<translation id="3882323608730650973">Файл был изменен</translation>
 <translation id="3886872229787704059">Открыто сегодня</translation>
 <translation id="3891340733213178823">Чтобы выйти, дважды нажмите Ctrl+Shift+Q.</translation>
 <translation id="3893630138897523026">ChromeVox (голосовое сопровождение)</translation>
@@ -741,6 +759,7 @@
 <translation id="3984536049089846927">Следующая страница</translation>
 <translation id="3986082989454912832">Ответить</translation>
 <translation id="3990002060657467458">Часто используемые параметры, такие как Wi-Fi, Bluetooth и громкость, находятся в меню быстрых настроек. Там также есть функция для создания скриншотов.</translation>
+<translation id="3991203706072366707">Отключено для игры "<ph name="GAME_APP_NAME" />"</translation>
 <translation id="3995138139523574647">Устройство USB-C (дальний порт справа)</translation>
 <translation id="4002066346123236978">Название</translation>
 <translation id="40062176907008878">Рукописный ввод</translation>
@@ -763,7 +782,6 @@
 <translation id="4066027111132117168">Включен, <ph name="REMAINING_TIME" /></translation>
 <translation id="4069532248403319695">Показать скачанные файлы</translation>
 <translation id="4072264167173457037">сигнал средней мощности</translation>
-<translation id="4076455981957565732">Сдано: <ph name="NUM_TURNED_IN" /> из <ph name="TOTAL_NUM_OF_SUBMISSIONS" /> • C оценкой: <ph name="NUM_GRADED" /></translation>
 <translation id="4086921558679520050">Переключите физический выключатель микрофона на устройстве</translation>
 <translation id="4101772068965291327">Открытие главной страницы</translation>
 <translation id="4112140312785995938">Перемотать назад</translation>
@@ -801,6 +819,7 @@
 <translation id="4209973997261364186">Wi-Fi включен</translation>
 <translation id="4212472694152630271">Войти с помощью PIN-кода</translation>
 <translation id="4215497585250573029">Настройки VPN</translation>
+<translation id="4215548513524864822">Шаг 5 из 5. Персонализируйте свое устройство (<ph name="PRODUCT_NAME" />) в приложении "Настройки" на панели запуска. Например, измените обои или установите заставку.</translation>
 <translation id="4217571870635786043">Голосовой ввод</translation>
 <translation id="4221957499226645091"><ph name="APP_NAME" />, установленное приложение, приостановлено</translation>
 <translation id="4228078597006700451">Элементы управления не настроены</translation>
@@ -834,6 +853,7 @@
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4322742403972824594">Функция сочетания клавиш Ctrl + Alt + Стрелка вверх изменилась. Чтобы выполнить действие клавиши Home, нажмите <ph name="LAUNCHER_KEY_NAME" /> + Стрелка влево.</translation>
 <translation id="4324840740119394760">Доступ к камере получит приложение "<ph name="APP_NAME" />", а также все приложения и сайты с разрешением "Камера".</translation>
+<translation id="4327147325944669226">Записать игру</translation>
 <translation id="4333628967105022692">Lacros не поддерживается, если выполнен вход в несколько аккаунтов.</translation>
 <translation id="4338109981321384717">Лупа</translation>
 <translation id="4351244548802238354">Закрыть</translation>
@@ -852,6 +872,7 @@
 <translation id="440113666232554208">Не удалось сохранить скринкаст</translation>
 <translation id="4405151984121254935">Подключенное периферийное устройство этого типа не поддерживается.</translation>
 <translation id="4406883609789734330">Автоматические субтитры</translation>
+<translation id="4412698727486357573">Справочный центр</translation>
 <translation id="4412944820643904175">Функция "<ph name="FEATURE_NAME" />" отключена</translation>
 <translation id="4424159417645388645">Рабочий стол 5</translation>
 <translation id="4430019312045809116">Объем</translation>
@@ -868,11 +889,14 @@
 <translation id="4471432286288241507">{0,plural, =0{Перезагрузите устройство прямо сейчас}=1{Перезагрузите устройство в течение 1 секунды}one{Перезагрузите устройство в течение # секунды}few{Перезагрузите устройство в течение # секунд}many{Перезагрузите устройство в течение # секунд}other{Перезагрузите устройство в течение # секунды}}</translation>
 <translation id="4472575034687746823">Начать</translation>
 <translation id="4477350412780666475">Следующий трек</translation>
+<translation id="4477751544736611934">Может взиматься плата за передачу данных.
+Подключено 1 устройство.</translation>
 <translation id="4477892968187500306">На устройстве могут быть приложения, не проверенные Google.</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4481530544597605423">Отключенные устройства</translation>
 <translation id="4485506555414638855">Не настраивать просмотр недавних фотографий, медиафайлов, уведомлений и приложений с телефона</translation>
 <translation id="4491109536499578614">Изображение</translation>
+<translation id="4493452241184130939">Это были основные сведения. Ещё больше информации вы найдете во встроенном приложении "Возможности": инструкции по началу работы, рекомендации по приложениям, специальные предложения и новые функции вашего устройства (<ph name="PRODUCT_NAME" />).</translation>
 <translation id="450584155212756404">Версия для разработчиков</translation>
 <translation id="4513946894732546136">Отзыв</translation>
 <translation id="4518404433291145981">Чтобы разблокировать Chromebook, сначала разблокируйте телефон.</translation>
@@ -891,7 +915,6 @@
 <translation id="4566144812051858745">Мне неинтересны эти подсказки</translation>
 <translation id="4569753163207712681">Просматривайте недавние фотографии, медиафайлы и приложения с телефона.</translation>
 <translation id="4573176682887762361">"Напечатать [слово или фраза]"</translation>
-<translation id="4577188182049003486">Когда используется точка доступа, Wi-Fi отключается</translation>
 <translation id="4577274620589681794">Время истекло · <ph name="LABEL" /></translation>
 <translation id="4577990005084629481">Включить предпросмотр</translation>
 <translation id="4578906031062871102">Меню настроек открыто</translation>
@@ -910,6 +933,7 @@
 <translation id="4642092649622328492">Сделать скриншот части экрана</translation>
 <translation id="4644727592819780893">Область для изображения с камеры слишком маленькая.</translation>
 <translation id="4648249871170053485"><ph name="APP_NAME" />, рекомендуемое приложение</translation>
+<translation id="4649019912155580914">Вы изменили файл</translation>
 <translation id="4654916960643280876"><ph name="PROFILE_NAME" /> (<ph name="EMAIL" />), флажок установлен.</translation>
 <translation id="4657775630156561295">Эта подсказка будет навсегда удалена из истории вашего аккаунта:
 
@@ -922,6 +946,7 @@
 <translation id="468293128311738995">Приложения на вашем телефоне</translation>
 <translation id="4690510401873698237">Временное хранилище размещено в нижней части экрана</translation>
 <translation id="4696813013609194136">Требуется родительский код доступа</translation>
+<translation id="469693290987463983">Шаг 1 из 5. На панели запуска в нижней части экрана находятся закрепленные и открытые приложения. Чтобы перейти к ним, нажмите Alt + Shift + L.</translation>
 <translation id="4702647871202761252">Экран конфиденциальности отключен</translation>
 <translation id="4706121060329443414">Повторное скачивание запустится позже. Сейчас запись речи будет передана для обработки в Google.</translation>
 <translation id="470644585772471629">Инверсия цветов</translation>
@@ -952,9 +977,11 @@
 <translation id="4798888871844665150">Скопированный объект уже в буфере обмена. Нажмите <ph name="SHORTCUT_KEY_NAME" /> + V для просмотра.</translation>
 <translation id="479989351350248267">поиск</translation>
 <translation id="4804818685124855865">Отключиться</translation>
+<translation id="4806631651704497161">Слабое размытие</translation>
 <translation id="4813311884204119883">Перетащите ссылку в пустую область на панели вкладок</translation>
 <translation id="4814539958450445987">Экран входа</translation>
 <translation id="481455355267255546">Предстоящие мероприятия</translation>
+<translation id="481749895090480684">Список задач "<ph name="GLANCEABLES_TASKS_LIST_NAME" />"</translation>
 <translation id="4826588772550366629">"Камера" и "Микрофон"</translation>
 <translation id="482908187605862807">Доступные приложения из Google Play</translation>
 <translation id="4831034276697007977">Вы уверены, что хотите отключить функцию автоматического нажатия?</translation>
@@ -993,9 +1020,11 @@
 <translation id="4945196315133970626">Отключить уведомления</translation>
 <translation id="4946376291507881335">Снимок</translation>
 <translation id="495046168593986294">Прокрутить вверх</translation>
+<translation id="4950800194215951939">Настройте игровой процесс.</translation>
 <translation id="4952936045814352993">Функция "Найти телефон" недоступна, так как отключены сигналы оповещений</translation>
 <translation id="4960324571663582548">Согласно требованиям <ph name="MANAGER" /> вам нужно выполнить откат на устройстве <ph name="DEVICE_TYPE" />. Настройки устройства будут сброшены, а все данные – удалены.</translation>
 <translation id="4961318399572185831">Трансляция экрана</translation>
+<translation id="4964188651935955085">После этого от вашего устройства (<ph name="DEVICE_TYPE" />) будет отключено следующее внешнее устройство:</translation>
 <translation id="4966431234408005599">Увеличить громкость</translation>
 <translation id="4969092041573468113"><ph name="HOURS" /> ч. <ph name="MINUTES" /> мин. <ph name="SECONDS" /> сек.</translation>
 <translation id="4975771730019223894">Число уведомлений на значке приложения</translation>
@@ -1006,9 +1035,12 @@
 <translation id="4981175556418720939">Изменено <ph name="DATE_AND_TIME" /></translation>
 <translation id="4987738733603015246">Рабочий стол 16</translation>
 <translation id="4989163558385430922">Посмотреть все</translation>
+<translation id="4995963195354861331">Приветственное диалоговое окно</translation>
+<translation id="4996265698919320288">Идет запись</translation>
 <translation id="5003993274120026347">К следующему предложению</translation>
 <translation id="5004607513195820459">Сетью управляет администратор</translation>
 <translation id="5009463889040999939">Профиль переименовывается. Это может занять несколько минут.</translation>
+<translation id="5013847959275396160">Скрыть панель инструментов</translation>
 <translation id="5016558321564993266">Статус фломастера: <ph name="STATE_TEXT" /></translation>
 <translation id="5020360656995955353">Категории поиска</translation>
 <translation id="5030659775136592441">Открыть менеджер закладок</translation>
@@ -1016,7 +1048,6 @@
 <translation id="5033299697334913360">Чтобы снять экран полностью, нажмите в любом его месте</translation>
 <translation id="5034421018520995080">Перейти к верхней части экрана</translation>
 <translation id="5035236842988137213">Устройство <ph name="DEVICE_NAME" /> подключено к новому телефону</translation>
-<translation id="5035389544768382859">Подтвердите конфигурацию экрана</translation>
 <translation id="5042305953558921026">Клавиша режима обзора</translation>
 <translation id="5043679421800073804">Выбрать последний значок на панели запуска</translation>
 <translation id="504465286040788597">Предыдущий абзац</translation>
@@ -1024,17 +1055,18 @@
 <translation id="5062496344832867502">озу</translation>
 <translation id="5068762093486106012">Если вы будете говорить при выключенном микрофоне, появится уведомление. Аудио с вашего устройства никуда не передается.</translation>
 <translation id="5077416371682039027">Настроить просмотр недавних фотографий, медиафайлов, уведомлений и приложений с телефона</translation>
+<translation id="5077936103761694531">Подтвердите изменение</translation>
 <translation id="5078796286268621944">Неверный PIN-код</translation>
 <translation id="5083035541015925118">Ctrl + Alt + Стрелка вверх</translation>
 <translation id="5083553833479578423">Получите доступ к другим возможностям Ассистента.</translation>
 <translation id="5092436659250499817">Включить/отключить подсветку клавиатуры</translation>
 <translation id="5094577350232361255">сведения о версии</translation>
+<translation id="5095136268899496849">Персонализируйте свое устройство (<ph name="PRODUCT_NAME" />) в приложении "Настройки". Например, измените обои или установите заставку.</translation>
 <translation id="509790653408515442">Приложения, которые вы транслируете с телефона, появляются здесь.</translation>
 <translation id="5098537242461068432">Рабочий стол и окна открыты повторно</translation>
 <translation id="5104236669533825617">Не удалось создать скринкаст</translation>
 <translation id="5107522548814527560">Интернет</translation>
 <translation id="5111318697104479778"><ph name="DESC" />, <ph name="STRENGTH" /></translation>
-<translation id="5111930673176965299">Размытие фона</translation>
 <translation id="5117590920725113268">Показать следующий месяц</translation>
 <translation id="5121628974188116412">Перейти к нижней части экрана</translation>
 <translation id="5122517996953421795">Предпросмотр неактивного рабочего стола "<ph name="DESK_NAME" />".</translation>
@@ -1057,7 +1089,6 @@
 <translation id="5207949376430453814">Выделять курсор при вводе текста</translation>
 <translation id="5208059991603368177">Включено</translation>
 <translation id="5216991270656129561">Выкл. до <ph name="TIME" /></translation>
-<translation id="5218064144558110424">Отметить как невыполненную</translation>
 <translation id="5222676887888702881">Выйти</translation>
 <translation id="5229343007215035173">Включить/отключить экран конфиденциальности</translation>
 <translation id="5230516054153933099">Окно</translation>
@@ -1069,7 +1100,6 @@
 <translation id="5253783950165989294">Установлено подключение к устройству "<ph name="DEVICE_NAME" />", заряд батареи – <ph name="BATTERY_PERCENTAGE" /> %</translation>
 <translation id="5258528442992323769">Нет сохраненных рабочих столов.</translation>
 <translation id="5260676007519551770">Рабочий стол 4</translation>
-<translation id="5268819379131021772">Список задач Google</translation>
 <translation id="5277869901083657836">Показать или скрыть инструменты стилуса</translation>
 <translation id="5278086053818066789">Включить или отключить ChromeVox (озвучивание текста на экране)</translation>
 <translation id="5283099933536931082">Приложение "<ph name="APP_ITEM_TITLE" />" требует вашего внимания.</translation>
@@ -1086,7 +1116,6 @@
 <translation id="5313326810920013265">Настройки Bluetooth</translation>
 <translation id="5314219114274263156">Видео с экрана записано</translation>
 <translation id="5314489738835854379">Перейти к предыдущему окну</translation>
-<translation id="5315931444962548795">Включите Bluetooth, чтобы находить точки доступа поблизости.</translation>
 <translation id="5316716239522500219">Дублировать изображения на мониторах</translation>
 <translation id="5317780077021120954">Сохранить</translation>
 <translation id="5319712128756744240">Подключить новое устройство</translation>
@@ -1098,6 +1127,8 @@
 <translation id="533282197239610265">Показать Cast-устройства</translation>
 <translation id="5344128444027639014"><ph name="BATTERY_PERCENTAGE" /> % (правый)</translation>
 <translation id="5352250171825660495">Тёмная тема включена</translation>
+<translation id="5354804064646502504">Может взиматься плата за передачу данных.
+Нет подключенных устройств.</translation>
 <translation id="5356963482258194581">Вы можете переключаться с тёмной темы на светлую и обратно. Для этого нажмите правой кнопкой мыши на рабочий стол и выберите "Обои и стиль".</translation>
 <translation id="536019650977002321">Администратор запретил запись аудио. Обратитесь к нему за подробной информацией.</translation>
 <translation id="5361524080961918551"><ph name="LANGUAGE" />: файлы для распознавания речи частично скачаны</translation>
@@ -1146,11 +1177,13 @@
 <translation id="5550417424894892620">Чтобы добавить файлы в раздел "<ph name="HOLDING_SPACE_TITLE" />", перетащите их на рабочий стол. Вы не можете хранить файлы на рабочем столе.</translation>
 <translation id="5551456515017410630">Открыть или закрыть календарь</translation>
 <translation id="5551974246223970793">Перейти к следующему результату поиска по странице</translation>
-<translation id="5555639311269196631">Отключить точку доступа</translation>
+<translation id="5556459405103347317">Перезагрузить</translation>
 <translation id="5558091555391176027">Включить или отключить широкий доступ для Обмена с окружением</translation>
+<translation id="5558314826121965174">Творчество</translation>
 <translation id="556042886152191864">Кнопка</translation>
 <translation id="5570122939431135380">Открыть вкладку в новом окне в режиме инкогнито</translation>
 <translation id="5571066253365925590">Bluetooth включен</translation>
+<translation id="5572632238877308040">Основное</translation>
 <translation id="557563299383177668">Следующий абзац</translation>
 <translation id="5577082622442191756">Включить или отключить Bluetooth. <ph name="STATE_TEXT" />.</translation>
 <translation id="5577281275355252094">Чтобы использовать функцию "Управление телефоном", включите Bluetooth на телефоне.</translation>
@@ -1175,6 +1208,7 @@
 <translation id="5662075790140998213">Рабочий стол 10</translation>
 <translation id="5662709761327382534">Запись аудио с микрофона <ph name="CURRENT_STATE" />. Нажмите Ввод, чтобы она стала <ph name="NEW_STATE" />.</translation>
 <translation id="5669267381087807207">Активация</translation>
+<translation id="5672890847723042801">Утилиты</translation>
 <translation id="5673434351075758678">В результате синхронизации настроек язык изменен. Теперь используется <ph name="TO_LOCALE" />, а не <ph name="FROM_LOCALE" />.</translation>
 <translation id="5675363643668471212">Объект на панели запуска</translation>
 <translation id="5677928146339483299">Заблокированы</translation>
@@ -1191,8 +1225,10 @@
 <translation id="570390244361237317">Все приложения. Чтобы листать список, нажимайте клавиши со стрелками.</translation>
 <translation id="5707775774148071965">Поддерживаемая скорость передачи данных для устройства выше, чем для кабеля. Производительность устройства может быть ограничена.</translation>
 <translation id="5710450975648804523">Режим "Не беспокоить" включен</translation>
+<translation id="5712132663381964774">Выполняйте разные задачи на устройстве (<ph name="PRODUCT_NAME" />) с помощью приложений. Чтобы их найти, откройте панель запуска.</translation>
 <translation id="571295407079589142">Передача данных отключена</translation>
 <translation id="5727460725221669831">Если вы забыли или недавно сменили пароль от аккаунта Google, попробуйте восстановить пользователя.</translation>
+<translation id="5733630091161562207">Приветственное уведомление</translation>
 <translation id="573413375004481890">Вы подключили к устройству больше дисплеев, чем оно может поддерживать, поэтому один из них пришлось отключить</translation>
 <translation id="5740328398383587084">Обмен с окружением</translation>
 <translation id="574392208103952083">Средний</translation>
@@ -1219,7 +1255,6 @@
 <translation id="5802516411616338943">Открыть быстрые настройки</translation>
 <translation id="5804651031882187592">Отключите блокировку SIM-карты</translation>
 <translation id="5805809050170488595">Нажмите, чтобы активировать <ph name="NETWORK_NAME" /></translation>
-<translation id="5816222150329690597">Когда вы отключите Bluetooth, "<ph name="DEVICE_NAME_1" />", "<ph name="DEVICE_NAME_2" />" и несколько других устройств (<ph name="DEVICE_COUNT" />) отключатся от устройства Chromebook.</translation>
 <translation id="5823239091726045201">Google Задачи (веб-версия)</translation>
 <translation id="5825969630400862129">Настройки подключенных устройств</translation>
 <translation id="5837036133683224804">Остановить трансляцию <ph name="ROUTE_TITLE" /> на устройство "<ph name="RECEIVER_NAME" />"</translation>
@@ -1232,9 +1267,9 @@
 <translation id="5864748620896638071">Батарея: <ph name="BATTERY_PERCENTAGE" /> %</translation>
 <translation id="5867217927013474703">Сбор информации о сети</translation>
 <translation id="5867606971598166637">Системный администратор видит действия на ваших экранах</translation>
-<translation id="5876535466645959772">В выбранном списке ничего нет. Добавьте новую задачу в нижней части страницы.</translation>
 <translation id="5876666360658629066">Введите родительский код</translation>
 <translation id="5881540930187678962">Настройте функцию "Управление телефоном" позже</translation>
+<translation id="588258955323874662">Полноэкранный режим</translation>
 <translation id="5887954372087850114">Окно "<ph name="WINDOW_TITLE" />" назначено рабочему столу "<ph name="DESK_TITLE" />". Назначение для других рабочих столов отменено.</translation>
 <translation id="588817334757907802">Открыть файл в браузере Chrome</translation>
 <translation id="5895138241574237353">Перезапустить</translation>
@@ -1252,7 +1287,6 @@
 <translation id="5955304353782037793">app</translation>
 <translation id="5958529069007801266">Контролируемый профиль</translation>
 <translation id="5960410286721553511">Просматривайте недавно добавленные на телефон фотографии и медиафайлы.</translation>
-<translation id="5961960957587052807">Слабое</translation>
 <translation id="5965524703725988602">Включить или отключить тёмную тему. <ph name="STATE_TEXT" />.</translation>
 <translation id="5975235751479998104">Перейти к следующему окну</translation>
 <translation id="5978382165065462689">Доступ к экрану с помощью удаленного помощника</translation>
@@ -1260,8 +1294,8 @@
 <translation id="5983567367406220847">Точка доступа отключена из-за бездействия.</translation>
 <translation id="598407983968395253">Использовать шаблон</translation>
 <translation id="598882571027504733">Чтобы выполнить обновление, перезагрузите устройство Chromebook, не отключая от него клавиатуру.</translation>
+<translation id="5998374579424866922">Отключить элементы управления</translation>
 <translation id="6000279412553873020">Клавиши, кнопки и прочее</translation>
-<translation id="6002122790816966947">Ваши устройства</translation>
 <translation id="6012623610530968780">Страница <ph name="SELECTED_PAGE" /> из <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="601304062528754300">Выделить следующий элемент на панели запуска</translation>
 <translation id="6015573907265691211">Отметить как выполненную</translation>
@@ -1357,6 +1391,7 @@
 <translation id="6351032674660237738">ПРЕДЛАГАЕМЫЕ ПРИЛОЖЕНИЯ</translation>
 <translation id="6352082849089527770">Неизвестные сети</translation>
 <translation id="6359587239691116345">Получите доступ к новым функциям и улучшениям безопасности. Если вы откажетесь от этого обновления, могут возникнуть сбои в работе устройства, а также проблемы с безопасностью и производительностью.</translation>
+<translation id="6362833380917912748">Узнайте о встроенных приложениях</translation>
 <translation id="6376931439017688372">Bluetooth включен</translation>
 <translation id="6378515133128829137">Закрепить окно справа</translation>
 <translation id="6381109794406942707">Чтобы разблокировать устройство, введите PIN-код.</translation>
@@ -1379,6 +1414,7 @@
 <translation id="6453179446719226835">Язык изменен</translation>
 <translation id="6459472438155181876">Расширение экрана на <ph name="DISPLAY_NAME" /></translation>
 <translation id="6464094930452079790">изображения</translation>
+<translation id="6467290994038932560">Включено для игры "<ph name="GAME_APP_NAME" />"</translation>
 <translation id="6469104339369989396">Включить или отключить точку доступа</translation>
 <translation id="6477681113376365978">Не удалось скачать файл</translation>
 <translation id="6482559668224714696">Полноэкранная лупа</translation>
@@ -1401,8 +1437,6 @@
 <translation id="6537924328260219877">Уровень сигнала – <ph name="SIGNAL_STRENGTH" />, заряд батареи – <ph name="BATTERY_STATUS" /></translation>
 <translation id="6539852571005954999">Выполняется проверка скачиваемого файла "<ph name="FILENAME" />"</translation>
 <translation id="6542521951477560771">Трансляция на устройство "<ph name="RECEIVER_NAME" />"</translation>
-<translation id="6546062506073634094">Поиск картинок по описанию и предварительному просмотру</translation>
-<translation id="6547795021703527064">Когда вы отключите Bluetooth, "<ph name="DEVICE_NAME" />" отключится от Chromebook.</translation>
 <translation id="6555373427270923730">Введите веб-адрес в адресной строке и нажмите <ph name="MODIFIER" /><ph name="KEY" /></translation>
 <translation id="655633303491376835">"<ph name="APP_NAME" />"
 Новое приложение</translation>
@@ -1431,6 +1465,7 @@
 <translation id="6643169293433369663">Отменить упорядочивание по названию</translation>
 <translation id="6649641931981131786">Настроить камеру так, чтобы лицо оказалось в центре экрана</translation>
 <translation id="6650072551060208490"><ph name="ORIGIN_NAME" /> запрашивает подтверждение вашей личности.</translation>
+<translation id="6650742588569439432">Не удалось загрузить данные.</translation>
 <translation id="6650933572246256093">Устройству <ph name="DEVICE_NAME" /> требуется разрешение на подключение через Bluetooth. Введите на нем код: <ph name="PASSKEY" />.</translation>
 <translation id="6657585470893396449">Пароль</translation>
 <translation id="666343722268997814">Открыть меню для выделенного объекта, нажав правую кнопку мыши</translation>
@@ -1489,6 +1524,7 @@
 <translation id="6874854809828346832">Показать сведения о точке доступа. Точка доступа включена.</translation>
 <translation id="6878400149835617132">Быстрые клавиши отключены</translation>
 <translation id="6878701771800702153">{NUM_APPS,plural, =1{1 приложение}one{# приложение}few{# приложения}many{# приложений}other{# приложения}}</translation>
+<translation id="6878787305374738418">Шаг 4 из 5. На открытой панели запуска доступна строка улучшенного поиска. Чтобы найти нужный файл, приложение или другой контент, начните вводить его название. Там же можно задать вопрос о своем устройстве (<ph name="PRODUCT_NAME" />).</translation>
 <translation id="6883768636838842873">Сочетания клавиш, советы по использованию устройства и не только</translation>
 <translation id="6884665277231944629">Вернуться к сегодняшней дате</translation>
 <translation id="6886172995547742638"><ph name="DEVICE_TYPE" /> может работать неэффективно. Используйте сертифицированный адаптер питания USB-C на <ph name="PREFERRED_MINIMUM_POWER" /> Вт или выше.</translation>
@@ -1509,13 +1545,13 @@
 <translation id="6961840794482373852">Функция сочетания клавиш Alt + Стрелка вверх изменилась. Чтобы выполнить действие клавиши Page Up, нажмите <ph name="LAUNCHER_KEY_NAME" /> + Стрелка вверх.</translation>
 <translation id="696267987219125751">Автомасштабирование отключено</translation>
 <translation id="6965382102122355670">ОК</translation>
+<translation id="6972629891077993081">Устройства HID</translation>
 <translation id="6972754398087986839">Начать</translation>
 <translation id="6979158407327259162">Google Диск</translation>
 <translation id="6980402667292348590">Insert</translation>
 <translation id="6981291220124935078">Разрешить доступ</translation>
 <translation id="6981982820502123353">Спец. возможности</translation>
 <translation id="698231206551913481">После удаления пользователя все связанные с ним файлы и локальные данные также будут удалены.</translation>
-<translation id="6984028004251196682">Устройство "<ph name="DISPLAY_NAME" />" не поддерживает разрешение <ph name="SPECIFIED_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" /> Гц). Установлено разрешение <ph name="FALLBACK_RESOLUTION" /> (<ph name="FALLBACK_REFRESH_RATE" /> Гц). Чтобы сохранить изменения, нажмите "Подтвердить". Предыдущие настройки восстановятся через <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="7000027735917578303">Настройки окон и рабочих столов</translation>
 <translation id="7004910047186208204">Подключиться к мобильному интернету</translation>
 <translation id="7005239792648594238">Чтобы начать, откройте приложение</translation>
@@ -1523,6 +1559,7 @@
 <translation id="7014684956566476813">Установлено подключение к устройству "<ph name="DEVICE_NAME" />"</translation>
 <translation id="7015766095477679451">Увидимся снова в <ph name="COME_BACK_TIME" />.</translation>
 <translation id="70168403932084660">Рабочий стол 6</translation>
+<translation id="702252130983202758">Мои приложения</translation>
 <translation id="7025533177575372252">Подключите <ph name="DEVICE_NAME" /> к своему телефону</translation>
 <translation id="7026338066939101231">Уменьшить</translation>
 <translation id="7029814467594812963">Завершить сеанс</translation>
@@ -1562,6 +1599,7 @@
 <translation id="7168224885072002358">Возврат к предыдущему разрешению через <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7173114856073700355">Открыть настройки</translation>
 <translation id="7180611975245234373">Обновить</translation>
+<translation id="7181691792034457084">Здравствуйте! Непривычно работать на новом устройстве (<ph name="PRODUCT_NAME" />)?</translation>
 <translation id="7188494361780961876">Меню перемещено в левый верхний угол экрана.</translation>
 <translation id="7189412385142492784">Расстояние до Венеры</translation>
 <translation id="7198435252016571249">Окно предварительного просмотра камеры привязано к правому нижнему углу, так как перекрывало элементы системного интерфейса</translation>
@@ -1575,6 +1613,7 @@
 <translation id="726276584504105859">Перетащите сюда, чтобы разделить экран</translation>
 <translation id="7262906531272962081">Создать напоминание</translation>
 <translation id="7278787617901301220"><ph name="LAUNCHER_KEY_NAME" /> + Backspace</translation>
+<translation id="7282547098317872382">Шаг 3 из 5. Выполняйте разные задачи на устройстве (<ph name="PRODUCT_NAME" />) с помощью приложений. Чтобы их найти, откройте панель запуска. Вы можете перейти к ней, нажав Alt + Shift + L.</translation>
 <translation id="7285232777292757180">Чтобы сделать скриншот, воспользуйтесь инструментом записи экрана в быстрых настройках.</translation>
 <translation id="7301826272005790482">Закрыть рекомендации окон</translation>
 <translation id="7302889331339392448">Автоматические субтитры отключены</translation>
@@ -1618,6 +1657,7 @@
 <translation id="746232733191930409">Режим записи видео с экрана</translation>
 <translation id="7466449121337984263">Приложите палец к сканеру.</translation>
 <translation id="7477793887173910789">Управляйте воспроизведением музыки, видео и других медиафайлов</translation>
+<translation id="7488762544858401571">С изменениями</translation>
 <translation id="7489261257412536105">Войти в полноэкранный режим или выйти из него</translation>
 <translation id="7490360161041035804">Вы можете закреплять важные файлы, включая файлы на Google Диске. Чтобы это сделать, наведите указатель на нужный объект или откройте приложение "Файлы", найдите объект и нажмите на него правой кнопкой мыши.</translation>
 <translation id="7497767806359279797">Выберите язык и клавиатуру</translation>
@@ -1658,6 +1698,7 @@
 <translation id="7607002721634913082">Приостановлен</translation>
 <translation id="7609951632080598826">Календарь: <ph name="TIME" />, <ph name="DATE" /></translation>
 <translation id="7611213136657090146">Камера переподключена.</translation>
+<translation id="7613620083300976559">Включить элементы управления</translation>
 <translation id="761736749114493194">Включить или отключить автомасштабирование. <ph name="STATE_TEXT" />.</translation>
 <translation id="7624117708979618027"><ph name="TEMPERATURE_F" /> °F</translation>
 <translation id="7634648064048557203">Окно предварительного просмотра камеры привязано к правому нижнему углу</translation>
@@ -1668,6 +1709,7 @@
 <translation id="7647488630410863958">Чтобы просмотреть уведомления, разблокируйте устройство</translation>
 <translation id="7649070708921625228">Справка</translation>
 <translation id="7654687942625752712">Чтобы отключить озвучивание текста на экране, удерживайте обе кнопки громкости в течение пяти секунд.</translation>
+<translation id="7654916369822103315">Вы изменили разрешение экрана "<ph name="DISPLAY_NAME" />" на <ph name="FALLBACK_RESOLUTION" /> (<ph name="FALLBACK_REFRESH_RATE" /> Гц). Из-за ограниченной пропускной способности порта экран не поддерживает разрешение <ph name="SPECIFIED_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" /> Гц). Если вы не подтвердите изменение, будут восстановлены предыдущие настройки. Оставшееся время: <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="7658239707568436148">Отмена</translation>
 <translation id="7659861092419699379">Рабочий стол и окна закрыты.</translation>
 <translation id="7660160718439869192">Устройство <ph name="NAME" /> будет видно на устройствах, связанных с адресом электронной почты <ph name="EMAIL" />.</translation>
@@ -1677,6 +1719,7 @@
 <translation id="7672095158465655885">Подключено к сети <ph name="NAME" />, <ph name="SUBTEXT" /></translation>
 <translation id="7682351277038250258">Вставить содержимое из буфера обмена в виде обычного текста</translation>
 <translation id="7684531502177797067">Используется камера "<ph name="CAMERA_NAME" />".</translation>
+<translation id="7687172143976244806">Вы открывали</translation>
 <translation id="7689817529363080918">Доступ к микрофону получат приложения "<ph name="APP1_NAME" />" и "<ph name="APP2_NAME" />", а также все приложения и сайты с разрешением "Микрофон".</translation>
 <translation id="7704000866383261579">Повторить последнее действие</translation>
 <translation id="7705524343798198388">VPN</translation>
@@ -1730,6 +1773,7 @@
 <translation id="7893503627044934815">Скрыть файл</translation>
 <translation id="7893547474469215105">Определение слова "зенит"</translation>
 <translation id="7895348134893321514">Быстрый доступ</translation>
+<translation id="7896681766480521542">Добавить задачу</translation>
 <translation id="7897375687985782769">Вы нажали сочетание клавиш для поворота экрана. Выполнить это действие?</translation>
 <translation id="7897626842031123113">Строка состояния. Время: <ph name="TIME" />.
         <ph name="BATTERY" />
@@ -1752,13 +1796,16 @@
 <translation id="79341161159229895">Администраторы аккаунта: <ph name="FIRST_PARENT_EMAIL" /> и <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="793716872548410480">Чтобы посмотреть содержимое буфера обмена, нажмите клавиши <ph name="SHORTCUT_KEY_NAME" /> + V. В буфере сохраняются пять последних скопированных объектов.</translation>
 <translation id="7942349550061667556">Красный</translation>
+<translation id="7943516765291457328">Включите Bluetooth, чтобы начать поиск точек доступа поблизости.</translation>
 <translation id="7944023924886109030">Посмотреть все мероприятия на сегодня</translation>
 <translation id="7945357288295809525">Открыть настройки специальных возможностей. Включенные функции: <ph name="ENABLED_FEATURES" />.</translation>
 <translation id="7947798320695032612">Приложению "<ph name="APP_NAME" />" требуется разрешение (<ph name="DEVICE_NAME" />)</translation>
 <translation id="7951630946012935453">Уменьшить яркость подсветки клавиатуры</translation>
+<translation id="7953994493035617347">Подтвердите изменение</translation>
 <translation id="7963689218131240420">Сейчас он отключен.</translation>
 <translation id="7963992254934562106">С <ph name="PHONE_NAME" /></translation>
 <translation id="7968693143708939792">Выбрать папку</translation>
+<translation id="7973756967040444713">Закрыть панель инструментов</translation>
 <translation id="797512352675305461">Включить или отключить полноэкранную лупу</translation>
 <translation id="7977927628060636163">Поиск мобильных сетей...</translation>
 <translation id="7982789257301363584">Сеть</translation>
@@ -1768,10 +1815,11 @@
 <translation id="799296642788192631">Вы можете закреплять важные файлы. Чтобы это сделать, наведите указатель на нужный объект или откройте приложение "Файлы", найдите объект и нажмите на него правой кнопкой мыши.</translation>
 <translation id="7994370417837006925">Множественный вход</translation>
 <translation id="7995804128062002838">Ошибка записи экрана</translation>
+<translation id="8000020256436988724">Панель инструментов</translation>
 <translation id="8000066093800657092">Нет сети</translation>
 <translation id="8001755249288974029">Выделить текст от курсора до начала строки</translation>
 <translation id="8004512796067398576">Увеличить</translation>
-<translation id="8026334261755873520">Очистить историю</translation>
+<translation id="8015361438441228492">Не удалось сохранить изменения.</translation>
 <translation id="802782383769312836">Предыдущий рабочий стол: <ph name="DESK_NAME" />. Номер рабочего стола: <ph name="DESK_INDEX" /> из <ph name="DESK_COUNT" />.</translation>
 <translation id="8029247720646289474">Не удалось подключиться к точке доступа</translation>
 <translation id="8029629653277878342">В качестве дополнительной меры безопасности введите PIN-код или пароль.</translation>
@@ -1813,6 +1861,7 @@
 <translation id="8155628902202578800">Открыть диалоговое окно с информацией об аккаунте <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8167567890448493835">Используемый язык: <ph name="LOCALE_NAME" /></translation>
 <translation id="8185090165691050712">Показать или скрыть меню для режима блокировки изменения размеров</translation>
+<translation id="8192727139462702395">После этого от вашего устройства (<ph name="DEVICE_TYPE" />) будут отключены следующие внешние устройства:</translation>
 <translation id="8198456017687137612">Трансляция вкладки</translation>
 <translation id="8200772114523450471">Возобновить</translation>
 <translation id="8203795194971602413">Нажатие правой кнопкой мыши</translation>
@@ -1822,14 +1871,17 @@
 <translation id="8230305195727960608">Режим инверсии цветов</translation>
 <translation id="8236042855478648955">Пора сделать перерыв</translation>
 <translation id="8237964652943995219">Следующий рабочий стол: <ph name="DESK_NAME" />. Номер рабочего стола: <ph name="DESK_INDEX" /> из <ph name="DESK_COUNT" />.</translation>
+<translation id="8238817965863339552">Посмотрите краткий обзор и узнайте, как работать с устройством (<ph name="PRODUCT_NAME" />). Обучение состоит из 5 шагов.</translation>
 <translation id="8239034820133090126">Включить рабочий стол справа</translation>
 <translation id="8247060538831475781">Статус подключения – "<ph name="CONNECTION_STATUS" />", уровень сигнала – <ph name="SIGNAL_STRENGTH" />, заряд батареи – <ph name="BATTERY_STATUS" /></translation>
 <translation id="8247998213073982446"><ph name="APP_NAME" />, приложение</translation>
 <translation id="8255234195843591763">Сбросить настройки и обновить ОС</translation>
+<translation id="8257510091797044096">Настройте устройство</translation>
 <translation id="8261506727792406068">Удалить</translation>
 <translation id="8262312463845990408">Воспроизвести/приостановить</translation>
 <translation id="8270450402312105425">{0,plural, =1{Вернитесь к предыдущей версии ОС в течение 1 часа}one{Вернитесь к предыдущей версии ОС в течение # часа}few{Вернитесь к предыдущей версии ОС в течение # часов}many{Вернитесь к предыдущей версии ОС в течение # часов}other{Вернитесь к предыдущей версии ОС в течение # часа}}</translation>
 <translation id="8277261673056602147">Выделите текст на экране</translation>
+<translation id="8287009018010202411">Работа</translation>
 <translation id="828708037801473432">Отключено</translation>
 <translation id="8297006494302853456">Слабый</translation>
 <translation id="8308637677604853869">Предыдущее меню</translation>
@@ -1858,6 +1910,7 @@
 <translation id="8412677897383510995">Показать настройки экрана</translation>
 <translation id="8413272770729657668">До начала записи: 3, 2, 1</translation>
 <translation id="8416730306157376817"><ph name="BATTERY_PERCENTAGE" /> % (чехол)</translation>
+<translation id="8417951779969083400">Шаг 2 из 5. Часто используемые параметры, такие как Wi-Fi, Bluetooth и громкость, находятся в меню быстрых настроек. Там также есть функция для создания скриншотов. Чтобы открыть быстрые настройки, нажмите Alt + Shift + S.</translation>
 <translation id="8420205633584771378">Удалить эту подсказку?</translation>
 <translation id="8421270167862077762">Приложение "<ph name="UNAVAILABLE_APPS" />" не установлено на этом устройстве.</translation>
 <translation id="8426708595819210923">Добрый вечер, <ph name="GIVEN_NAME" />!</translation>
@@ -1875,6 +1928,7 @@
 <translation id="847056008324733326">Настройки масштаба экрана</translation>
 <translation id="8473301994082929012">Организация <ph name="ORGANIZATION_NAME" /> <ph name="FEATURE_STATE" /> функцию "<ph name="FEATURE_NAME" />".</translation>
 <translation id="8477270416194247200">Для отмены нажмите ALT + SEARCH или SHIFT.</translation>
+<translation id="8480418399907765580">Показать панель инструментов</translation>
 <translation id="8487699605742506766">Точка доступа</translation>
 <translation id="8491237443345908933">Открыть ссылку в новой вкладке</translation>
 <translation id="8492573885090281069"><ph name="DISPLAY_NAME" /> не поддерживает разрешение <ph name="SPECIFIED_RESOLUTION" />. Установлено разрешение <ph name="FALLBACK_RESOLUTION" />. Чтобы сохранить изменения, нажмите "Подтвердить". Предыдущие настройки восстановятся через <ph name="TIMEOUT_SECONDS" />.</translation>
@@ -1892,6 +1946,7 @@
 <translation id="8551588720239073785">Настройки даты и времени</translation>
 <translation id="8553395910833293175">Уже доступно на всех рабочих столах.</translation>
 <translation id="8555757996376137129">Удалить текущий рабочий стол</translation>
+<translation id="8559845965695780508">Пользователь <ph name="USER" /> изменил файл</translation>
 <translation id="856298576161209842">Согласно рекомендациям <ph name="MANAGER" /> вам нужно обновить устройство <ph name="DEVICE_TYPE" />.</translation>
 <translation id="8569751806372591456">Вот несколько идей:</translation>
 <translation id="857201607579416096">Меню перемещено в правый нижний угол экрана.</translation>
@@ -1899,8 +1954,11 @@
 <translation id="8594115950068821369">-<ph name="FORMATTED_TIME" /></translation>
 <translation id="8598235756057743477">Упорядочить приложения по названию или цвету</translation>
 <translation id="8609384513243082612">Открыть новую вкладку</translation>
+<translation id="861045123704058818">Приложения отсортированы по категориям временно.</translation>
 <translation id="8612216344243590325">Храните важные файлы в разделе "<ph name="HOLDING_SPACE_TITLE" />". Для этого просто перетащите их в раздел "<ph name="HOLDING_SPACE_TITLE" />".</translation>
 <translation id="8614517853887502247">Уведомления "<ph name="APP_1_TITLE" />" и "<ph name="APP_2_TITLE" />" скрыты, потому что включен режим безопасного просмотра.</translation>
+<translation id="8615778328722901791">Открыть панель инструментов</translation>
+<translation id="8619000641825875669">OneDrive</translation>
 <translation id="8619138598101195078">Уменьшить громкость</translation>
 <translation id="8627191004499078455">Подключено устройство "<ph name="DEVICE_NAME" />"</translation>
 <translation id="8631727435199967028">Настройки специальных возможностей</translation>
@@ -1922,10 +1980,12 @@
 <translation id="8703634754197148428">Начать запись. Чтобы найти кнопку остановки записи, перейдите к панели запуска, используя сочетание клавиш Alt + Shift + L.</translation>
 <translation id="8704155109538237473">Переключиться на окно "Картинка в картинке"</translation>
 <translation id="870917907284186124">Включить или отключить голосовой ввод</translation>
+<translation id="8711169534266271368">Настройки игровой панели</translation>
 <translation id="8714138378966541668">Есть ограничение оператора</translation>
 <translation id="8717459106217102612">Выбрать предыдущее слово или букву</translation>
 <translation id="8721053961083920564">Включить или выключить звук. <ph name="STATE_TEXT" /></translation>
 <translation id="8724318433625452070">Запись всего экрана</translation>
+<translation id="8725066075913043281">Повторить попытку</translation>
 <translation id="8725214031272624704">Показать доступные способы ввода</translation>
 <translation id="8730621377337864115">Готово</translation>
 <translation id="8731487213223706745">Окончание: <ph name="END_TIME" /> <ph name="DAYS_ELAPSED" /></translation>
@@ -1936,6 +1996,7 @@
         <ph name="SCREEN_SHARE_STATUS" /></translation>
 <translation id="8755498163081687682"><ph name="ORIGIN_NAME" /> запрашивает подтверждение вашей личности</translation>
 <translation id="875593634123171288">Показать настройки VPN</translation>
+<translation id="8756799553341497810">Вы сможете упорядочить приложения, после того как выйдете из режима обучения.</translation>
 <translation id="8759408218731716181">Не удалось настроить множественный вход</translation>
 <translation id="8763883995157866248">Перевести устройство в спящий режим</translation>
 <translation id="877404052021108314">90 °F в °C</translation>
@@ -1951,11 +2012,13 @@
 <translation id="8815390544836110344">Нажмите сочетание клавиш для создания скриншота, Ctrl + Shift + Клавиша режима обзора</translation>
 <translation id="881757059229893486">Настройки способов ввода</translation>
 <translation id="8819728065740986820">Адаптивная зарядка включена</translation>
+<translation id="8822104519413696986">Это игра с сенсорным управлением</translation>
 <translation id="8825863694328519386">Чтобы вернуться, проведите по экрану от левого края</translation>
 <translation id="8832513206237979203">Показать или скрыть панель закладок</translation>
 <translation id="8834539327799336565">Текущие подключения</translation>
 <translation id="8841375032071747811">Назад</translation>
 <translation id="8843682306134542540">Изменить настройки автоповорота экрана. <ph name="STATE_TEXT" />.</translation>
+<translation id="8845001906332463065">Справка</translation>
 <translation id="8849001918648564819">Скрытые</translation>
 <translation id="8853703225951107899">Введенный PIN-код или пароль снова оказался недействительным. Если вы недавно меняли пароль, введите прежний. Новый пароль вступит в силу после того, как вы выйдете из аккаунта.</translation>
 <translation id="8855885154700222542">Клавиша полноэкранного режима</translation>
@@ -2007,6 +2070,7 @@
 <translation id="9065203028668620118">Изменить</translation>
 <translation id="9070640332319875144">Настройки Ассистента</translation>
 <translation id="9072519059834302790">Оставшееся время работы от батареи: <ph name="TIME_LEFT" />.</translation>
+<translation id="9074432941673450836">Выполняйте разные задачи на устройстве (<ph name="PRODUCT_NAME" />) с помощью приложений. Чтобы их найти, откройте панель запуска. Для этого также можно использовать специальную клавишу на клавиатуре – она располагается над Shift слева.</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9077515519330855811">Элементы управления медиафайлами, сейчас играет "<ph name="MEDIA_TITLE" />"</translation>
 <translation id="9079731690316798640">Wi-Fi: <ph name="ADDRESS" /></translation>
@@ -2018,6 +2082,7 @@
 <translation id="9084606467167974638">Переместить меню</translation>
 <translation id="9085962983642906571">Устройство будет поддерживать заряд на уровне 80 %, чтобы продлить срок службы батареи.</translation>
 <translation id="9089416786594320554">Способы ввода</translation>
+<translation id="9091406374499386796">На панели запуска можно искать файлы, приложения и другой контент, а также задавать вопросы о своем устройстве (<ph name="PRODUCT_NAME" />).</translation>
 <translation id="9091626656156419976">Удален экран "<ph name="DISPLAY_NAME" />"</translation>
 <translation id="9098969848082897657">Отключить звук на телефоне</translation>
 <translation id="9121941381564890244"><ph name="SNIP" /> или <ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="OVERVIEW" /></translation>
@@ -2025,6 +2090,7 @@
 <translation id="9129245940793250979">Задняя кнопка</translation>
 <translation id="9133335900048457298">Не удается записать видео с экрана из-за защищенного контента</translation>
 <translation id="9139720510312328767">Удалить следующую букву</translation>
+<translation id="9148058034647219655">Выйти</translation>
 <translation id="9151906066336345901">End</translation>
 <translation id="9161053988251441839">РЕКОМЕНДУЕМЫЕ ПРИЛОЖЕНИЯ</translation>
 <translation id="9168436347345867845">Позже</translation>
@@ -2057,7 +2123,8 @@
 <translation id="953431725143473984">Выключить устройство?</translation>
 <translation id="954052413789300507">Недостаточно свободного места для скачивания файла <ph name="FILENAME" />. Освободите пространство.</translation>
 <translation id="954520015070501466">30 минут</translation>
-<translation id="954786879461589145">Пользователь <ph name="USER" /> изменил файл</translation>
+<translation id="956452277966142925">Настройки игровой панели</translation>
+<translation id="961856697154696964">Удалить данные браузера</translation>
 <translation id="974545358917229949">Показано результатов поиска по запросу "<ph name="QUERY" />": <ph name="RESULT_COUNT" /></translation>
 <translation id="981011780479609956">Срок сдачи не указан</translation>
 <translation id="98120814841227350">Перейти к концу документа</translation>

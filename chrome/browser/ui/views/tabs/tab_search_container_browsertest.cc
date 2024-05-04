@@ -44,8 +44,7 @@ class TabSearchContainerBrowserTest : public InProcessBrowserTest {
     PrefService* prefs = browser()->profile()->GetPrefs();
     prefs->SetInteger(
         optimization_guide::prefs::GetSettingEnabledPrefName(
-            optimization_guide::proto::ModelExecutionFeature::
-                MODEL_EXECUTION_FEATURE_TAB_ORGANIZATION),
+            optimization_guide::UserVisibleFeatureKey::kTabOrganization),
         static_cast<int>(
             optimization_guide::prefs::FeatureOptInState::kEnabled));
   }
@@ -102,6 +101,46 @@ IN_PROC_BROWSER_TEST_F(TabSearchContainerBrowserTest,
       tab_search_container()->expansion_animation_for_testing()->IsShowing());
   EXPECT_FALSE(
       second_search_container->expansion_animation_for_testing()->IsShowing());
+}
+
+IN_PROC_BROWSER_TEST_F(TabSearchContainerBrowserTest,
+                       DoesntShowIfTabStripModalUIExists) {
+  ASSERT_FALSE(
+      tab_search_container()->expansion_animation_for_testing()->IsShowing());
+
+  std::unique_ptr<ScopedTabStripModalUI> scoped_tab_strip_modal_ui =
+      browser()->tab_strip_model()->ShowModalUI();
+  tab_search_container()->ShowTabOrganization();
+
+  EXPECT_FALSE(
+      tab_search_container()->expansion_animation_for_testing()->IsShowing());
+
+  scoped_tab_strip_modal_ui.reset();
+  tab_search_container()->ShowTabOrganization();
+
+  EXPECT_TRUE(
+      tab_search_container()->expansion_animation_for_testing()->IsShowing());
+}
+
+IN_PROC_BROWSER_TEST_F(TabSearchContainerBrowserTest,
+                       BlocksTabStripModalUIWhileShown) {
+  ASSERT_TRUE(browser()->tab_strip_model()->CanShowModalUI());
+
+  tab_search_container()->ShowTabOrganization();
+
+  EXPECT_FALSE(browser()->tab_strip_model()->CanShowModalUI());
+
+  tab_search_container()->expansion_animation_for_testing()->Reset(1);
+
+  EXPECT_FALSE(browser()->tab_strip_model()->CanShowModalUI());
+
+  tab_search_container()->HideTabOrganization();
+
+  EXPECT_FALSE(browser()->tab_strip_model()->CanShowModalUI());
+
+  tab_search_container()->expansion_animation_for_testing()->Reset(0);
+
+  EXPECT_TRUE(browser()->tab_strip_model()->CanShowModalUI());
 }
 
 IN_PROC_BROWSER_TEST_F(TabSearchContainerBrowserTest, DelaysShow) {

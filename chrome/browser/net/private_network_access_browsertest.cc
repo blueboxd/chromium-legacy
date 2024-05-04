@@ -4,14 +4,12 @@
 
 #include <map>
 #include <string>
+#include <string_view>
 
 #include "base/files/file_util.h"
 #include "base/functional/bind.h"
-#include "base/strings/string_piece.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
-#include "chrome/browser/dom_distiller/tab_utils.h"
-#include "chrome/browser/dom_distiller/test_distillation_observers.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/install_verifier.h"
 #include "chrome/browser/extensions/test_extension_system.h"
@@ -22,11 +20,6 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/web_feature_histogram_tester.h"
-#include "components/dom_distiller/content/browser/distiller_javascript_utils.h"
-#include "components/dom_distiller/content/browser/test_distillability_observer.h"
-#include "components/dom_distiller/core/dom_distiller_features.h"
-#include "components/dom_distiller/core/dom_distiller_switches.h"
-#include "components/dom_distiller/core/url_constants.h"
 #include "components/embedder_support/switches.h"
 #include "components/error_page/content/browser/net_error_auto_reloader.h"
 #include "components/metrics/content/subprocess_metrics_provider.h"
@@ -116,7 +109,7 @@ std::string FetchScript(const GURL& url) {
       "fetch($1).then(response => true).catch(error => false)", url);
 }
 
-std::string FetchWorkerScript(base::StringPiece relative_url) {
+std::string FetchWorkerScript(std::string_view relative_url) {
   constexpr char kTemplate[] = R"(
     new Promise((resolve) => {
       const worker = new Worker($1);
@@ -137,7 +130,7 @@ constexpr char kSharedWorkerScriptWithPnaHeadersPath[] =
 // Instantiates a shared worker script from `path`.
 // If it loads successfully, the worker should post a message to each client
 // that connects to it to signal success.
-std::string FetchSharedWorkerScript(base::StringPiece path) {
+std::string FetchSharedWorkerScript(std::string_view path) {
   constexpr char kTemplate[] = R"(
     new Promise((resolve) => {
       const worker = new SharedWorker($1);
@@ -274,7 +267,6 @@ class PrivateNetworkAccessWithFeatureEnabledBrowserTest
                 features::kPrivateNetworkAccessSendPreflights,
                 features::kPrivateNetworkAccessForNavigations,
                 features::kPrivateNetworkAccessForWorkers,
-                dom_distiller::kReaderMode,
             },
             is_warning_only
                 ? std::vector<base::test::FeatureRef>()
@@ -283,18 +275,6 @@ class PrivateNetworkAccessWithFeatureEnabledBrowserTest
                   })) {}
   void SetUpCommandLine(base::CommandLine* command_line) override {
     PrivateNetworkAccessBrowserTestBase::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kEnableDomDistiller);
-  }
-
- private:
-  void SetUpOnMainThread() override {
-    PrivateNetworkAccessBrowserTestBase::SetUpOnMainThread();
-    // The distiller needs to run in an isolated environment. For tests we
-    // can simply use the last value available.
-    if (!dom_distiller::DistillerJavaScriptWorldIdIsSet()) {
-      dom_distiller::SetDistillerJavaScriptWorldId(
-          content::ISOLATED_WORLD_ID_CONTENT_END);
-    }
   }
 };
 
@@ -354,7 +334,7 @@ IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessWithFeatureDisabledBrowserTest,
 // This test verifies that no feature is counted for top-level navigations from
 // a public page to a local page.
 //
-// TODO(crbug.com/1129326): Revisit this once the story around top-level
+// TODO(crbug.com/40149351): Revisit this once the story around top-level
 // navigations is closer to being resolved. Counting these events will help
 // decide what to do.
 IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessWithFeatureDisabledBrowserTest,
@@ -511,7 +491,7 @@ IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessWithFeatureDisabledBrowserTest,
       feature_histogram_tester.GetNonZeroCounts(AllAddressSpaceFeatures()),
       IsEmpty());
 
-  base::StringPiece script_template = R"(
+  std::string_view script_template = R"(
     new Promise(resolve => {
       const child = document.createElement("iframe");
       child.src = $1;
@@ -547,7 +527,7 @@ IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessWithFeatureDisabledBrowserTest,
       feature_histogram_tester.GetNonZeroCounts(AllAddressSpaceFeatures()),
       IsEmpty());
 
-  base::StringPiece script_template = R"(
+  std::string_view script_template = R"(
     function addChildFrame(doc, src) {
       return new Promise(resolve => {
         const child = doc.createElement("iframe");
@@ -1231,7 +1211,7 @@ INSTANTIATE_TEST_SUITE_P(
 
 // This test verifies that the chrome-untrusted:// scheme is considered local
 // for the purpose of Private Network Access computations.
-// TODO(crbug.com/1244544): The NTP no longer loads a chrome-untrusted://
+// TODO(crbug.com/40195864): The NTP no longer loads a chrome-untrusted://
 // iframe in all cases. Find another way to test the chrome-untrusted:// scheme.
 IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessWithFeatureEnabledBrowserTest,
                        DISABLED_SpecialSchemeChromeUntrusted) {
@@ -1250,9 +1230,9 @@ IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessWithFeatureEnabledBrowserTest,
   std::unique_ptr<net::EmbeddedTestServer> server = NewServer();
   GURL fetch_url = LocalNonSecureWithCrossOriginCors(*server);
 
-  // TODO(crbug.com/591068): The chrome-untrusted:// page should be kLocal, and
-  // not require a Private Network Access CORS preflight. However we have not
-  // yet implemented the CORS preflight mechanism, and fixing the underlying
+  // TODO(crbug.com/40459152): The chrome-untrusted:// page should be kLocal,
+  // and not require a Private Network Access CORS preflight. However we have
+  // not yet implemented the CORS preflight mechanism, and fixing the underlying
   // issue will not change the test result. Once CORS preflight is implemented,
   // review this test and delete this comment.
   // Note: CSP is blocking javascript eval, unless we run it in an isolated
@@ -1275,7 +1255,7 @@ IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessWithFeatureEnabledBrowserTest,
   std::unique_ptr<net::EmbeddedTestServer> server = NewServer();
   GURL fetch_url = LocalNonSecureWithCrossOriginCors(*server);
 
-  // TODO(crbug.com/591068): The devtools:// page should be kLocal, and not
+  // TODO(crbug.com/40459152): The devtools:// page should be kLocal, and not
   // require a Private Network Access CORS preflight. However we have not yet
   // implemented the CORS preflight mechanism, and fixing the underlying issue
   // will not change the test result. Once CORS preflight is implemented, review
@@ -1296,13 +1276,12 @@ IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessWithFeatureEnabledBrowserTest,
   std::unique_ptr<net::EmbeddedTestServer> server = NewServer();
   GURL fetch_url = LocalNonSecureWithCrossOriginCors(*server);
 
-  // TODO(crbug.com/591068): The chrome-search:// page should be kLocal, and not
-  // require a Private Network Access CORS preflight. However we have not yet
-  // implemented the CORS preflight mechanism, and fixing the underlying issue
-  // will not change the test result. Once CORS preflight is implemented, review
-  // this test and delete this comment.
-  // Note: CSP is blocking javascript eval, unless we run it in an isolated
-  // world.
+  // TODO(crbug.com/40459152): The chrome-search:// page should be kLocal, and
+  // not require a Private Network Access CORS preflight. However we have not
+  // yet implemented the CORS preflight mechanism, and fixing the underlying
+  // issue will not change the test result. Once CORS preflight is implemented,
+  // review this test and delete this comment. Note: CSP is blocking javascript
+  // eval, unless we run it in an isolated world.
   EXPECT_EQ(true, content::EvalJs(web_contents(), FetchScript(fetch_url),
                                   content::EXECUTE_SCRIPT_DEFAULT_OPTIONS,
                                   content::ISOLATED_WORLD_ID_CONTENT_END));
@@ -1355,9 +1334,9 @@ IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessWithFeatureEnabledBrowserTest,
   std::unique_ptr<net::EmbeddedTestServer> server = NewServer();
   GURL fetch_url = LocalNonSecureWithCrossOriginCors(*server);
 
-  // TODO(crbug.com/591068): The chrome-extension:// page should be kLocal, and
-  // not require a Private Network Access CORS preflight. However we have not
-  // yet implemented the CORS preflight mechanism, and fixing the underlying
+  // TODO(crbug.com/40459152): The chrome-extension:// page should be kLocal,
+  // and not require a Private Network Access CORS preflight. However we have
+  // not yet implemented the CORS preflight mechanism, and fixing the underlying
   // issue will not change the test result. Once CORS preflight is implemented,
   // review this test and delete this comment.
   // Note: CSP is blocking javascript eval, unless we run it in an isolated
@@ -1365,47 +1344,6 @@ IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessWithFeatureEnabledBrowserTest,
   EXPECT_EQ(true, content::EvalJs(web_contents(), FetchScript(fetch_url),
                                   content::EXECUTE_SCRIPT_DEFAULT_OPTIONS,
                                   content::ISOLATED_WORLD_ID_CONTENT_END));
-}
-
-// This test verifies that the chrome-distiller:// scheme is considered public
-// for the purpose of Private Network Access.
-IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessWithFeatureEnabledBrowserTest,
-                       SpecialSchemeChromeDistiller) {
-  // Load the base page to be distilled. Note that HTTPS has to be used
-  // otherwise the page won't be distillable.
-  std::unique_ptr<net::EmbeddedTestServer> https_server =
-      NewServer(net::EmbeddedTestServer::TYPE_HTTPS);
-  GURL article_url = https_server->GetURL("/dom_distiller/simple_article.html");
-
-  dom_distiller::TestDistillabilityObserver distillability_observer(
-      web_contents());
-  dom_distiller::DistillabilityResult expected_result;
-  expected_result.is_distillable = true;
-  expected_result.is_last = false;
-  expected_result.is_mobile_friendly = false;
-
-  EXPECT_TRUE(content::NavigateToURL(web_contents(), article_url));
-  // This blocks until the page is found to be distillable.
-  distillability_observer.WaitForResult(expected_result);
-
-  // Distill the page. It will be placed in a new WebContents replacing the old
-  // one.
-  DistillCurrentPageAndView(web_contents());
-  dom_distiller::DistilledPageObserver(web_contents())
-      .WaitUntilFinishedLoading();
-
-  EXPECT_TRUE(
-      web_contents()->GetPrimaryMainFrame()->GetLastCommittedURL().SchemeIs(
-          dom_distiller::kDomDistillerScheme));
-
-  std::unique_ptr<net::EmbeddedTestServer> server = NewServer();
-  GURL fetch_url = LocalNonSecureWithCrossOriginCors(*server);
-
-  // Note: CSP is blocking javascript eval, unless we run it in an isolated
-  // world.
-  EXPECT_EQ(false, content::EvalJs(web_contents(), FetchScript(fetch_url),
-                                   content::EXECUTE_SCRIPT_DEFAULT_OPTIONS,
-                                   content::ISOLATED_WORLD_ID_CONTENT_END));
 }
 
 // =================
@@ -1476,7 +1414,7 @@ class PrivateNetworkAccessAutoReloadBrowserTest
 // load due to a transient network error, it is auto-reloaded a short while
 // later and that fetch is not blocked as a private network request.
 //
-// TODO(crbug.com/1326341): Test is flaky.
+// TODO(crbug.com/40225769): Test is flaky.
 IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessAutoReloadBrowserTest,
                        DISABLED_AutoReloadWorks) {
   ASSERT_TRUE(embedded_test_server()->Start());

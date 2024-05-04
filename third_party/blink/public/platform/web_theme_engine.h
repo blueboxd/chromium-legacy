@@ -192,8 +192,6 @@ class WebThemeEngine {
 
   // Extra parameters for scrollbar thumb.
   struct ScrollbarThumbExtraParams {
-    WebScrollbarOverlayColorTheme scrollbar_theme =
-        WebScrollbarOverlayColorTheme::kWebScrollbarOverlayColorThemeDark;
     std::optional<SkColor> thumb_color;
     bool is_thumb_minimal_mode = false;
     bool is_web_test = false;
@@ -207,13 +205,6 @@ class WebThemeEngine {
     bool right_to_left = false;
     std::optional<SkColor> thumb_color;
     std::optional<SkColor> track_color;
-  };
-
-  // Represents ui::NativeTheme System Info
-  struct SystemColorInfoState {
-    bool is_dark_mode = false;
-    bool forced_colors = false;
-    std::map<SystemThemeColor, uint32_t> colors;
   };
 
 #if BUILDFLAG(IS_MAC)
@@ -293,25 +284,11 @@ class WebThemeEngine {
       const gfx::Rect&,
       const ExtraParams*,
       blink::mojom::ColorScheme,
+      bool in_forced_colors,
       const ui::ColorProvider*,
       const std::optional<SkColor>& accent_color = std::nullopt) {}
 
-  virtual std::optional<SkColor> GetSystemColor(
-      SystemThemeColor system_theme) const {
-    return std::nullopt;
-  }
-
   virtual std::optional<SkColor> GetAccentColor() const { return std::nullopt; }
-
-  virtual ForcedColors GetForcedColors() const { return ForcedColors::kNone; }
-  virtual void OverrideForcedColorsTheme(bool is_dark_theme) {}
-  virtual void SetForcedColors(const blink::ForcedColors forced_colors) {}
-  virtual void ResetToSystemColors(
-      SystemColorInfoState system_color_info_state) {}
-  virtual SystemColorInfoState GetSystemColorInfo() {
-    SystemColorInfoState state;
-    return state;
-  }
 };
 
 }  // namespace blink

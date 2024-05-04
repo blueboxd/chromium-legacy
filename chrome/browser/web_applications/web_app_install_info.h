@@ -35,7 +35,7 @@
 #include "url/gurl.h"
 
 static_assert(BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) ||
-              BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_FUCHSIA));
+              BUILDFLAG(IS_CHROMEOS));
 
 namespace web_app {
 
@@ -86,7 +86,7 @@ struct IconBitmaps {
 
   bool empty() const;
 
-  // TODO(crbug.com/1152661): Consider using base::flat_map.
+  // TODO(crbug.com/40158740): Consider using base::flat_map.
 
   // Icon bitmaps suitable for any context, keyed by their square size.
   // See https://www.w3.org/TR/appmanifest/#dfn-any-purpose

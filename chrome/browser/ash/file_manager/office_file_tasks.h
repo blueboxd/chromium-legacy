@@ -32,7 +32,7 @@ namespace file_manager::file_tasks {
 
 struct TaskDescriptor;
 
-constexpr char kActionIdQuickOffice[] = "qo_documents";
+constexpr char kActionIdQuickOffice[] = "/views/app.html";
 constexpr char kActionIdWebDriveOfficeWord[] = "open-web-drive-office-word";
 constexpr char kActionIdWebDriveOfficeExcel[] = "open-web-drive-office-excel";
 constexpr char kActionIdWebDriveOfficePowerPoint[] =
@@ -160,6 +160,9 @@ bool IsQuickOfficeInstalled(Profile* profile);
 
 // Returns whether |path| is a MS Office file according to its extension.
 bool IsOfficeFile(const base::FilePath& path);
+
+// Returns whether |mime_type| is a MS Office file mimetype.
+bool IsOfficeFileMimeType(const std::string& mime_type);
 
 // Returns the group of extensions we consider to be 'Word', 'Excel' or
 // 'PowerPoint' files for the purpose of setting preferences. The extensions

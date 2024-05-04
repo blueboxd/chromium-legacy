@@ -111,6 +111,9 @@ class CORE_EXPORT FragmentItem final {
                TextDirection resolved_direction);
   // Create a line item.
   explicit FragmentItem(const PhysicalLineBoxFragment& line);
+  // Create an annotation line item.
+  FragmentItem(const PhysicalSize& size,
+               const PhysicalLineBoxFragment& base_line);
 
   // The copy/move constructors.
   FragmentItem(const FragmentItem&);
@@ -295,7 +298,8 @@ class CORE_EXPORT FragmentItem final {
     if (const PhysicalLineBoxFragment* line_box = LineBoxFragment()) {
       return To<InlineBreakToken>(line_box->GetBreakToken());
     }
-    NOTREACHED();
+    DCHECK_EQ(Type(), kLine);
+    // Nested kLine item doesn't have a line box fragment.
     return nullptr;
   }
 
@@ -477,6 +481,11 @@ class CORE_EXPORT FragmentItem final {
   unsigned TextOffsetForPoint(const PhysicalOffset& point,
                               const FragmentItems& items) const;
 
+  // True if this item is associated with over/under ruby annotations.
+  // These functions are valid only if IsText() is true.
+  bool HasOverAnnotation() const { return has_over_annotation_; }
+  bool HasUnderAnnotation() const { return has_under_annotation_; }
+
   // Whether this item was marked dirty for reuse or not.
   bool IsDirty() const { return is_dirty_; }
   void SetDirty() const { is_dirty_ = true; }
@@ -605,6 +614,8 @@ class CORE_EXPORT FragmentItem final {
   // Note: For |TextItem| and |GeneratedTextItem|, |text_direction_| equals to
   // |ShapeResult::Direction()|.
   unsigned text_direction_ : 1;  // TextDirection.
+  unsigned has_over_annotation_ : 1 = 0;
+  unsigned has_under_annotation_ : 1 = 0;
 
   unsigned ink_overflow_type_ : InkOverflow::kTypeBits;
 

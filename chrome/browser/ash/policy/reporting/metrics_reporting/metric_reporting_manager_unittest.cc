@@ -278,6 +278,8 @@ const MetricReportingSettingData website_event_settings = {
     kReportWebsiteActivityAllowlist, false, "", 1};
 const MetricReportingSettingData fatal_crash_event_settings = {
     ::ash::kReportDeviceCrashReportInfo, false, "", 1};
+const MetricReportingSettingData chrome_fatal_crash_event_settings = {
+    ::ash::kReportDeviceCrashReportInfo, false, "", 1};
 
 struct MetricReportingManagerTestCase {
   std::string test_name;
@@ -378,7 +380,10 @@ class MetricReportingManagerTest
         metrics::kWebsiteEventsWindow, metrics::kWebsiteEventsBucketCount);
     crash_event_queue_ptr_ = CreateMockMetricReportQueueHelper(
         mock_delegate_.get(), EventType::kDevice, Destination::CRASH_EVENTS,
-        Priority::IMMEDIATE);
+        Priority::FAST_BATCH);
+    chrome_crash_event_queue_ptr_ = CreateMockMetricReportQueueHelper(
+        mock_delegate_.get(), EventType::kDevice,
+        Destination::CHROME_CRASH_EVENTS, Priority::FAST_BATCH);
 
     auto telemetry_queue = std::make_unique<test::FakeMetricReportQueue>();
     telemetry_queue_ptr_ = telemetry_queue.get();
@@ -412,6 +417,8 @@ class MetricReportingManagerTest
   raw_ptr<test::FakeMetricReportQueue, DanglingUntriaged> heartbeat_queue_ptr_;
   raw_ptr<test::FakeMetricReportQueue, DanglingUntriaged>
       crash_event_queue_ptr_;
+  raw_ptr<test::FakeMetricReportQueue, DanglingUntriaged>
+      chrome_crash_event_queue_ptr_;
 
   std::unique_ptr<::testing::NiceMock<MockDelegate>> mock_delegate_;
 };
@@ -603,6 +610,16 @@ TEST_P(MetricReportingManagerEventTest, Default) {
       *mock_delegate_ptr,
       CreateEventObserverManager(
           _, crash_event_queue_ptr_.get(), _,
+          test_case.setting_data.enable_setting_path,
+          test_case.setting_data.setting_enabled_default_value, _, init_delay))
+      .WillByDefault([&]() {
+        return std::make_unique<FakeMetricEventObserverManager>(
+            fake_reporting_settings.get(), &observer_manager_count);
+      });
+  ON_CALL(
+      *mock_delegate_ptr,
+      CreateEventObserverManager(
+          _, chrome_crash_event_queue_ptr_.get(), _,
           test_case.setting_data.enable_setting_path,
           test_case.setting_data.setting_enabled_default_value, _, init_delay))
       .WillByDefault([&]() {
@@ -836,6 +853,34 @@ INSTANTIATE_TEST_SUITE_P(
           /*enabled_features=*/{kEnableFatalCrashEventsObserver},
           /*disabled_features=*/{},
           /*is_affiliated=*/true, fatal_crash_event_settings,
+          /*has_init_delay=*/false,
+          /*expected_count_before_login=*/1,
+          /*expected_count_after_login=*/1},
+         {"ChromeFatalCrashEvents_Unaffiliated_FeatureUnchanged",
+          /*enabled_features=*/{},
+          /*disabled_features=*/{},
+          /*is_affiliated=*/false, chrome_fatal_crash_event_settings,
+          /*has_init_delay=*/false,
+          /*expected_count_before_login=*/0,
+          /*expected_count_after_login=*/0},
+         {"ChromeFatalCrashEvents_Unaffiliated_FeatureEnabled",
+          /*enabled_features=*/{kEnableChromeFatalCrashEventsObserver},
+          /*disabled_features=*/{},
+          /*is_affiliated=*/false, chrome_fatal_crash_event_settings,
+          /*has_init_delay=*/false,
+          /*expected_count_before_login=*/1,
+          /*expected_count_after_login=*/1},
+         {"ChromeFatalCrashEvents_Default_FeatureUnchanged",
+          /*enabled_features=*/{},
+          /*disabled_features=*/{},
+          /*is_affiliated=*/true, chrome_fatal_crash_event_settings,
+          /*has_init_delay=*/false,
+          /*expected_count_before_login=*/0,
+          /*expected_count_after_login=*/0},
+         {"ChromeFatalCrashEvents_Default_FeatureEnabled",
+          /*enabled_features=*/{kEnableChromeFatalCrashEventsObserver},
+          /*disabled_features=*/{},
+          /*is_affiliated=*/true, chrome_fatal_crash_event_settings,
           /*has_init_delay=*/false,
           /*expected_count_before_login=*/1,
           /*expected_count_after_login=*/1}}),
@@ -1103,17 +1148,16 @@ class KioskHeartbeatTelemetryTest : public MetricReportingManagerTest {
     // Mock app service unavailability to eliminate noise.
     ON_CALL(*mock_delegate_ptr, IsAppServiceAvailableForProfile)
         .WillByDefault(Return(false));
-    ON_CALL(
-        *mock_delegate_ptr,
-        CreatePeriodicCollector(
-            /*sampler=*/_,
-            /*queue=*/heartbeat_queue_ptr_.get(),
-            /*report_settings=*/_,
-            /*enable_setting_path=*/::ash::kHeartbeatEnabled,
-            /*setting_enabled_default_value=*/
-            metrics::kHeartbeatTelemetryDefaultValue,
-            /*rate_setting_path=*/::ash::kHeartbeatFrequency, _, 1,
-            /*init_delay=*/metrics::kDefaultHeartbeatTelemetryCollectionRate))
+    ON_CALL(*mock_delegate_ptr,
+            CreatePeriodicCollector(
+                /*sampler=*/_,
+                /*queue=*/heartbeat_queue_ptr_.get(),
+                /*report_settings=*/_,
+                /*enable_setting_path=*/::ash::kHeartbeatEnabled,
+                /*setting_enabled_default_value=*/
+                metrics::kHeartbeatTelemetryDefaultValue,
+                /*rate_setting_path=*/::ash::kHeartbeatFrequency, _, 1,
+                /*init_delay=*/base::TimeDelta()))
         .WillByDefault([&]() {
           return std::make_unique<FakeCollector>(&collector_count_);
         });
@@ -1182,17 +1226,16 @@ TEST_F(KioskHeartbeatTelemetryTest, Init) {
                               _, _, _, _, _))
       .Times(AnyNumber());
   // PeriodicCollector should be created here.
-  EXPECT_CALL(
-      *mock_delegate_ptr,
-      CreatePeriodicCollector(
-          /*sampler=*/_,
-          /*queue=*/heartbeat_queue_ptr_.get(),
-          /*report_settings=*/_,
-          /*enable_setting_path=*/::ash::kHeartbeatEnabled,
-          /*setting_enabled_default_value=*/
-          metrics::kHeartbeatTelemetryDefaultValue,
-          /*rate_setting_path=*/::ash::kHeartbeatFrequency, _, 1,
-          /*init_delay=*/metrics::kDefaultHeartbeatTelemetryCollectionRate))
+  EXPECT_CALL(*mock_delegate_ptr,
+              CreatePeriodicCollector(
+                  /*sampler=*/_,
+                  /*queue=*/heartbeat_queue_ptr_.get(),
+                  /*report_settings=*/_,
+                  /*enable_setting_path=*/::ash::kHeartbeatEnabled,
+                  /*setting_enabled_default_value=*/
+                  metrics::kHeartbeatTelemetryDefaultValue,
+                  /*rate_setting_path=*/::ash::kHeartbeatFrequency, _, 1,
+                  /*init_delay=*/base::TimeDelta()))
       .Times(1);
 
   metric_reporting_manager->OnLogin(profile());

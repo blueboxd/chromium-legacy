@@ -46,6 +46,7 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.metrics.TimingMetric;
 import org.chromium.build.BuildConfig;
 import org.chromium.chrome.browser.back_press.BackPressManager;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.components.browser_ui.share.ShareHelper;
 import org.chromium.components.browser_ui.util.FirstDrawDetector;
 import org.chromium.ui.KeyboardVisibilityDelegate;
@@ -77,7 +78,7 @@ public abstract class UrlBar extends AutocompleteEditText {
     // The text must be at least this long to be truncated. Safety measure to prevent accidentally
     // over truncating text for large tablets and external displays. Also, tests can continue to
     // check for text equality, instead of worrying about partial equality with truncated text.
-    static final int MIN_LENGTH_FOR_TRUNCATION_V2 = 100;
+    static final int MIN_LENGTH_FOR_TRUNCATION = 100;
 
     /**
      * The text direction of the URL or query: LAYOUT_DIRECTION_LOCALE, LAYOUT_DIRECTION_LTR, or
@@ -125,11 +126,6 @@ public abstract class UrlBar extends AutocompleteEditText {
      * that the end of the origin is not scrolled out of view for long hostnames.
      */
     private int mOriginEndIndex;
-
-    // TODO (peilinwang) Currently only used for logging the cases where truncation was incorrect.
-    // Remove once the kAndroidVisibleUrlTruncationV2 experiment is complete.
-    private boolean mIsTextTruncated;
-    private boolean mDidJustTruncate;
 
     /** What scrolling action should be taken after the URL bar text changes. * */
     @IntDef({ScrollType.NO_SCROLL, ScrollType.SCROLL_TO_TLD, ScrollType.SCROLL_TO_BEGINNING})
@@ -558,11 +554,9 @@ public abstract class UrlBar extends AutocompleteEditText {
             CharSequence text, @ScrollType int scrollType, int scrollToIndex) {
         if (mFocused
                 || TextUtils.isEmpty(text)
-                || text.length() < MIN_LENGTH_FOR_TRUNCATION_V2
+                || text.length() < MIN_LENGTH_FOR_TRUNCATION
                 || getLayoutParams().width == LayoutParams.WRAP_CONTENT
                 || containsRtl(text)) {
-            mIsTextTruncated = false;
-            mDidJustTruncate = false;
             setText(text);
             return;
         }
@@ -591,10 +585,6 @@ public abstract class UrlBar extends AutocompleteEditText {
         }
 
         truncationIndex = Math.min(text.length(), truncationIndex);
-
-        mIsTextTruncated = truncationIndex < text.length();
-        mDidJustTruncate = mIsTextTruncated;
-
         CharSequence truncatedText = text.subSequence(0, truncationIndex);
         setText(truncatedText);
     }
@@ -865,7 +855,7 @@ public abstract class UrlBar extends AutocompleteEditText {
                     // padding.
                     mVisibleTextPrefixHint = null;
                 } else {
-                    if (OmniboxFeatures.shouldOmitVisibleHintCalculationForDifferentTLD()) {
+                    if (ChromeFeatureList.sNoVisibleHintForDifferentTLD.isEnabled()) {
                         String previousTLD =
                                 mPreviousScrollText == null
                                         ? null
@@ -970,32 +960,11 @@ public abstract class UrlBar extends AutocompleteEditText {
         if (DEBUG) Log.i(TAG, "setText -- text: %s", text);
         super.setText(text, type);
 
-        RecordHistogram.recordCount1000Histogram("Omnibox.SetText.TextLength", text.length());
-
         fixupTextDirection();
 
         if (mVisibleTextPrefixHint != null
                 && (text == null || TextUtils.indexOf(text, mVisibleTextPrefixHint) != 0)) {
             mVisibleTextPrefixHint = null;
-        }
-
-        if (OmniboxFeatures.shouldTruncateVisibleUrlV2()) {
-            // Make sure we didn't truncate too much.
-            int measuredWidth = getVisibleMeasuredViewportWidth();
-            int textLength = text.length();
-            if (mIsTextTruncated) {
-                Layout layout = getLayout();
-                boolean truncatedTooMuch =
-                        layout != null && layout.getPrimaryHorizontal(textLength) < measuredWidth;
-                RecordHistogram.recordBooleanHistogram(
-                        "Omnibox.setText.TruncatedTooMuch", truncatedTooMuch);
-                assert !truncatedTooMuch
-                        : "Url was truncated too much. If discovered locally, please update "
-                                + "crbug.com/1476013 with steps to reproduce.";
-            }
-
-            mIsTextTruncated = mDidJustTruncate;
-            mDidJustTruncate = false;
         }
     }
 
@@ -1037,7 +1006,7 @@ public abstract class UrlBar extends AutocompleteEditText {
 
     @Override
     public void requestLayout() {
-        // TODO(crbug/1492681): it is speculated that a requestLayout invoked during an active
+        // TODO(crbug.com/40285597): it is speculated that a requestLayout invoked during an active
         // layout pass is causing Omnibox/Chrome to become unresponsive.
         // While Android seemingly supports that, emitting just a warning, we can't rule this out
         // completely. It is currently unclear where the secondary requestLayout could come from.

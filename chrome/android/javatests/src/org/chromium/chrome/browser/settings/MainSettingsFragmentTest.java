@@ -14,13 +14,13 @@ import static androidx.test.espresso.intent.Intents.intended;
 import static androidx.test.espresso.matcher.PreferenceMatchers.withKey;
 import static androidx.test.espresso.matcher.ViewMatchers.hasDescendant;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
-import static androidx.test.espresso.matcher.ViewMatchers.thatMatchesFirst;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.not;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -66,6 +66,7 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Features.DisableFeatures;
 import org.chromium.base.test.util.Features.EnableFeatures;
 import org.chromium.base.test.util.HistogramWatcher;
+import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.about_settings.AboutChromeSettings;
 import org.chromium.chrome.browser.accessibility.settings.AccessibilitySettings;
 import org.chromium.chrome.browser.autofill.settings.AutofillPaymentMethodsFragment;
@@ -83,14 +84,18 @@ import org.chromium.chrome.browser.night_mode.NightModeUtils;
 import org.chromium.chrome.browser.night_mode.settings.ThemeSettingsFragment;
 import org.chromium.chrome.browser.password_check.PasswordCheck;
 import org.chromium.chrome.browser.password_check.PasswordCheckFactory;
+import org.chromium.chrome.browser.password_manager.PasswordManagerUtilBridge;
+import org.chromium.chrome.browser.password_manager.PasswordManagerUtilBridgeJni;
 import org.chromium.chrome.browser.password_manager.settings.PasswordSettings;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.ChromeSharedPreferences;
 import org.chromium.chrome.browser.privacy.settings.PrivacySettings;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.safety_check.SafetyCheckSettingsFragment;
 import org.chromium.chrome.browser.safety_hub.SafetyHubFragment;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.search_engines.settings.SearchEngineSettings;
+import org.chromium.chrome.browser.signin.SigninAndHistoryOptInActivityLauncherImpl;
 import org.chromium.chrome.browser.signin.SyncConsentActivityLauncherImpl;
 import org.chromium.chrome.browser.sync.FakeSyncServiceImpl;
 import org.chromium.chrome.browser.sync.SyncServiceFactory;
@@ -99,9 +104,13 @@ import org.chromium.chrome.browser.sync.settings.AccountManagementFragment;
 import org.chromium.chrome.browser.sync.settings.SignInPreference;
 import org.chromium.chrome.browser.sync.settings.SyncPromoPreference;
 import org.chromium.chrome.browser.sync.settings.SyncPromoPreference.State;
+import org.chromium.chrome.browser.tasks.tab_management.TabsSettings;
 import org.chromium.chrome.browser.tracing.settings.DeveloperSettings;
+import org.chromium.chrome.browser.ui.signin.SigninAndHistoryOptInActivityLauncher;
+import org.chromium.chrome.browser.ui.signin.SigninAndHistoryOptInCoordinator;
 import org.chromium.chrome.browser.ui.signin.SyncConsentActivityLauncher;
 import org.chromium.chrome.browser.ui.signin.SyncPromoController;
+import org.chromium.chrome.browser.ui.signin.account_picker.AccountPickerBottomSheetStrings;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.R;
 import org.chromium.chrome.test.util.ChromeRenderTestRule;
@@ -114,9 +123,12 @@ import org.chromium.components.browser_ui.site_settings.SiteSettings;
 import org.chromium.components.policy.test.annotations.Policies;
 import org.chromium.components.search_engines.TemplateUrl;
 import org.chromium.components.search_engines.TemplateUrlService;
+import org.chromium.components.signin.SigninFeatures;
 import org.chromium.components.signin.base.AccountInfo;
 import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
+import org.chromium.components.signin.test.util.AccountCapabilitiesBuilder;
+import org.chromium.components.signin.test.util.FakeAccountManagerFacade;
 import org.chromium.components.sync.SyncService;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.test.util.RenderTestRule;
@@ -128,6 +140,7 @@ import java.util.HashSet;
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE, "show-autofill-signatures"})
 @DoNotBatch(reason = "Tests cannot run batched because they launch a Settings activity.")
+@DisableFeatures(SigninFeatures.HIDE_SETTINGS_SIGN_IN_PROMO)
 public class MainSettingsFragmentTest {
     private static final String SEARCH_ENGINE_SHORT_NAME = "Google";
 
@@ -158,12 +171,16 @@ public class MainSettingsFragmentTest {
                     .setBugComponent(ChromeRenderTestRule.Component.UI_BROWSER_MOBILE_SETTINGS)
                     .build();
 
+    @Rule public JniMocker mJniMocker = new JniMocker();
+
     @Mock public TemplateUrlService mMockTemplateUrlService;
     @Mock public TemplateUrl mMockSearchEngine;
 
     @Mock private PasswordCheck mPasswordCheck;
+    @Mock private PasswordManagerUtilBridge.Natives mPasswordManagerUtilBridgeJniMock;
 
-    @Mock private SyncConsentActivityLauncher mMockSyncConsentActivityLauncher;
+    @Mock private SyncConsentActivityLauncher mSyncConsentActivityLauncher;
+    @Mock private SigninAndHistoryOptInActivityLauncher mSigninAndHistoryOptInActivityLauncher;
     @Mock private HomeModulesConfigManager mHomeModulesConfigManager;
 
     private MainSettings mMainSettings;
@@ -173,7 +190,10 @@ public class MainSettingsFragmentTest {
         MockitoAnnotations.initMocks(this);
         InstrumentationRegistry.getInstrumentation().setInTouchMode(true);
         PasswordCheckFactory.setPasswordCheckForTesting(mPasswordCheck);
-        SyncConsentActivityLauncherImpl.setLauncherForTest(mMockSyncConsentActivityLauncher);
+        mJniMocker.mock(PasswordManagerUtilBridgeJni.TEST_HOOKS, mPasswordManagerUtilBridgeJniMock);
+        SyncConsentActivityLauncherImpl.setLauncherForTest(mSyncConsentActivityLauncher);
+        SigninAndHistoryOptInActivityLauncherImpl.setLauncherForTest(
+                mSigninAndHistoryOptInActivityLauncher);
         DeveloperSettings.setIsEnabledForTests(true);
         NightModeUtils.setNightModeSupportedForTesting(true);
         Intents.init();
@@ -299,7 +319,8 @@ public class MainSettingsFragmentTest {
 
     @Test
     @MediumTest
-    public void testSigninRowLaunchesSignInFlowForSignedOutAccounts() {
+    @DisableFeatures(ChromeFeatureList.REPLACE_SYNC_PROMOS_WITH_SIGN_IN_PROMOS)
+    public void testSignInRowLaunchesSyncFlowForSignedOutAccounts() {
         // When there are no accounts, sync promo and the signin preference shows the same text.
         mSyncTestRule.addTestAccount();
         launchSettingsActivity();
@@ -309,9 +330,33 @@ public class MainSettingsFragmentTest {
                 .perform(scrollTo(hasDescendant(withText(R.string.sync_promo_turn_on_sync))));
         onView(withText(R.string.sync_promo_turn_on_sync)).perform(click());
 
-        verify(mMockSyncConsentActivityLauncher)
+        verify(mSyncConsentActivityLauncher)
                 .launchActivityIfAllowed(
                         any(Activity.class), eq(SigninAccessPoint.SETTINGS_SYNC_OFF_ROW));
+    }
+
+    @Test
+    @MediumTest
+    @EnableFeatures(ChromeFeatureList.REPLACE_SYNC_PROMOS_WITH_SIGN_IN_PROMOS)
+    public void testSignInRowLaunchesSignInFlowForSignedOutAccounts() {
+        mSyncTestRule.addTestAccount();
+        launchSettingsActivity();
+
+        onView(withId(R.id.recycler_view))
+                .perform(scrollTo(hasDescendant(withText(R.string.sync_promo_turn_on_sync))));
+        onView(withText(R.string.sync_promo_turn_on_sync)).perform(click());
+
+        verify(mSigninAndHistoryOptInActivityLauncher)
+                .launchActivityIfAllowed(
+                        any(Activity.class),
+                        any(Profile.class),
+                        any(AccountPickerBottomSheetStrings.class),
+                        eq(SigninAndHistoryOptInCoordinator.NoAccountSigninMode.ADD_ACCOUNT),
+                        eq(
+                                SigninAndHistoryOptInCoordinator.WithAccountSigninMode
+                                        .DEFAULT_ACCOUNT_BOTTOM_SHEET),
+                        eq(SigninAndHistoryOptInCoordinator.HistoryOptInMode.OPTIONAL),
+                        eq(SigninAccessPoint.SETTINGS));
     }
 
     @Test
@@ -325,7 +370,7 @@ public class MainSettingsFragmentTest {
                 .perform(scrollTo(hasDescendant(withText(R.string.sync_category_title))));
         onView(withText(R.string.sync_category_title)).perform(click());
 
-        verify(mMockSyncConsentActivityLauncher)
+        verify(mSyncConsentActivityLauncher)
                 .launchActivityForPromoDefaultFlow(
                         any(Activity.class),
                         eq(SigninAccessPoint.SETTINGS_SYNC_OFF_ROW),
@@ -335,21 +380,19 @@ public class MainSettingsFragmentTest {
     // Tests that no alert icon is visible if there are no identity errors.
     @Test
     @SmallTest
-    @EnableFeatures(ChromeFeatureList.SYNC_SHOW_IDENTITY_ERRORS_FOR_SIGNED_IN_USERS)
     public void testSigninRowShowsNoAlertWhenNoIdentityErrors() {
         // Sign-in and open settings.
         mSyncTestRule.setUpAccountAndSignInForTesting();
         launchSettingsActivity();
 
         assertSettingsExists(MainSettings.PREF_SIGN_IN, AccountManagementFragment.class);
-        onView(thatMatchesFirst(withId(R.id.alert_icon))).check(matches(not(isDisplayed())));
+        onView(allOf(withId(R.id.alert_icon), isDisplayed())).check(doesNotExist());
     }
 
     // Tests that no alert icon is shown on the account row for syncing users, even if there exists
     // an identity error.
     @Test
     @SmallTest
-    @EnableFeatures(ChromeFeatureList.SYNC_SHOW_IDENTITY_ERRORS_FOR_SIGNED_IN_USERS)
     public void testSigninRowShowsNoAlertForIdentityErrorsForSyncingUsers() {
         FakeSyncServiceImpl fakeSyncService =
                 TestThreadUtils.runOnUiThreadBlockingNoException(
@@ -365,14 +408,13 @@ public class MainSettingsFragmentTest {
         launchSettingsActivity();
 
         assertSettingsExists(MainSettings.PREF_SIGN_IN, AccountManagementFragment.class);
-        onView(thatMatchesFirst(withId(R.id.alert_icon))).check(matches(not(isDisplayed())));
+        onView(allOf(withId(R.id.alert_icon), isDisplayed())).check(doesNotExist());
     }
 
     // Tests that an alert icon is shown on the account row in case of an identity error for a
     // signed-in non-syncing user.
     @Test
     @SmallTest
-    @EnableFeatures(ChromeFeatureList.SYNC_SHOW_IDENTITY_ERRORS_FOR_SIGNED_IN_USERS)
     public void testSigninRowShowsAlertForIdentityErrors() {
         FakeSyncServiceImpl fakeSyncService =
                 TestThreadUtils.runOnUiThreadBlockingNoException(
@@ -388,14 +430,12 @@ public class MainSettingsFragmentTest {
         launchSettingsActivity();
 
         assertSettingsExists(MainSettings.PREF_SIGN_IN, AccountManagementFragment.class);
-        // Check for the alert icon.
-        onView(thatMatchesFirst(withId(R.id.alert_icon))).check(matches(isDisplayed()));
+        onView(allOf(withId(R.id.alert_icon), isDisplayed())).check(matches(isDisplayed()));
     }
 
     @Test
     @LargeTest
     @Feature({"RenderTest"})
-    @EnableFeatures(ChromeFeatureList.SYNC_SHOW_IDENTITY_ERRORS_FOR_SIGNED_IN_USERS)
     public void testRenderOnIdentityErrorForSignedInUsers() throws IOException {
         FakeSyncServiceImpl fakeSyncService =
                 TestThreadUtils.runOnUiThreadBlockingNoException(
@@ -413,7 +453,7 @@ public class MainSettingsFragmentTest {
         launchSettingsActivity();
 
         // Population of profile data is flaky. Thus, wait till it's populated.
-        // TODO(crbug.com/1503649): Check if there exists an alternate way out.
+        // TODO(crbug.com/40944114): Check if there exists an alternate way out.
         SignInPreference signInPreference = mMainSettings.findPreference(MainSettings.PREF_SIGN_IN);
         CriteriaHelper.pollUiThread(
                 () -> {
@@ -444,6 +484,20 @@ public class MainSettingsFragmentTest {
         launchSettingsActivity();
 
         onView(withText(R.string.sync_data_types_off)).check(matches(isDisplayed()));
+    }
+
+    @Test
+    @SmallTest
+    public void testSyncRowSummaryWhenUpmBackendOutdated() {
+        when(mPasswordManagerUtilBridgeJniMock.isGmsCoreUpdateRequired(any(), anyBoolean()))
+                .thenReturn(true);
+
+        mSyncTestRule.setUpAccountAndEnableSyncForTesting();
+        SyncTestUtil.waitForSyncFeatureActive();
+
+        launchSettingsActivity();
+
+        onViewWaiting(withText(R.string.sync_error_outdated_gms)).check(matches(isDisplayed()));
     }
 
     @Test
@@ -527,6 +581,53 @@ public class MainSettingsFragmentTest {
     }
 
     @Test
+    @MediumTest
+    @EnableFeatures(SigninFeatures.HIDE_SETTINGS_SIGN_IN_PROMO)
+    public void testSignInPromoHidden_HideSignInPromoEnabled() {
+        launchSettingsActivity();
+
+        onView(withText(R.string.sync_promo_title_settings)).check(doesNotExist());
+    }
+
+    @Test
+    @SmallTest
+    @EnableFeatures(ChromeFeatureList.REPLACE_SYNC_PROMOS_WITH_SIGN_IN_PROMOS)
+    public void
+            testManageSyncRowIsNotShownWhenReplaceSyncPromosWithSignInPromosEnabledWithoutSyncConsent()
+                    throws InterruptedException {
+        launchSettingsActivity();
+
+        Assert.assertFalse(
+                "Sync preference should be hidden when the user is signed out.",
+                mMainSettings.findPreference(MainSettings.PREF_MANAGE_SYNC).isVisible());
+
+        mSyncTestRule.setUpAccountAndSignInForTesting();
+        Assert.assertFalse(
+                "Sync preference should not be shown when the user is signed in.",
+                mMainSettings.findPreference(MainSettings.PREF_MANAGE_SYNC).isVisible());
+    }
+
+    @Test
+    @SmallTest
+    @EnableFeatures(ChromeFeatureList.REPLACE_SYNC_PROMOS_WITH_SIGN_IN_PROMOS)
+    @DisabledTest(message = "http://b/issues/41491395")
+    public void
+            testManageSyncRowIsShownWhenReplaceSyncPromosWithSignInPromosEnabledWithSyncConsent()
+                    throws InterruptedException {
+        launchSettingsActivity();
+
+        Assert.assertFalse(
+                "Sync preference should be hidden when the user is signed out.",
+                mMainSettings.findPreference(MainSettings.PREF_MANAGE_SYNC).isVisible());
+
+        mSyncTestRule.setUpAccountAndEnableSyncForTesting();
+        SyncTestUtil.waitForSyncFeatureActive();
+        Assert.assertTrue(
+                "Sync preference should be shown when the user is syncing.",
+                mMainSettings.findPreference(MainSettings.PREF_MANAGE_SYNC).isVisible());
+    }
+
+    @Test
     @SmallTest
     public void testAccountManagementRowForChildAccountWithNonDisplayableAccountEmail()
             throws InterruptedException {
@@ -535,11 +636,8 @@ public class MainSettingsFragmentTest {
         // Account set up.
         final SigninTestRule signinTestRule = mSyncTestRule.getSigninTestRule();
         AccountInfo accountInfo =
-                signinTestRule.addAccount(
-                        AccountManagerTestRule.CHILD_ACCOUNT_EMAIL,
-                        SigninTestRule.NON_DISPLAYABLE_EMAIL_ACCOUNT_CAPABILITIES);
-        signinTestRule.waitForSeeding();
-        signinTestRule.waitForSignin(accountInfo);
+                signinTestRule.addChildTestAccountThenWaitForSignin(
+                        new AccountCapabilitiesBuilder().setCanHaveEmailAddressDisplayed(false));
 
         // Force update the preference so that NON_DISPLAYABLE_EMAIL_ACCOUNT_CAPABILITIES is
         // actually utilized. This is to replicate downstream implementation behavior, where
@@ -555,7 +653,8 @@ public class MainSettingsFragmentTest {
         TestThreadUtils.runOnUiThreadBlocking(signInPreference::syncStateChanged);
 
         mSettingsActivityTestRule.startSettingsActivity();
-        onView(thatMatchesFirst(withText(accountInfo.getFullName()))).check(matches(isDisplayed()));
+        onView(allOf(withText(accountInfo.getFullName()), isDisplayed()))
+                .check(matches(isDisplayed()));
         onView(withText(accountInfo.getEmail())).check(matches(not(isDisplayed())));
     }
 
@@ -570,13 +669,14 @@ public class MainSettingsFragmentTest {
         // If both fullName and givenName are empty, accountCapabilities is ignored.
         final SigninTestRule signinTestRule = mSyncTestRule.getSigninTestRule();
         AccountInfo accountInfo =
-                signinTestRule.addAccount(
-                        AccountManagerTestRule.CHILD_ACCOUNT_EMAIL,
-                        "",
-                        "child.test.given",
-                        null,
-                        SigninTestRule.NON_DISPLAYABLE_EMAIL_ACCOUNT_CAPABILITIES);
-        signinTestRule.waitForSeeding();
+                new AccountInfo.Builder(
+                                AccountManagerTestRule.generateChildEmail("test@gmail.com"),
+                                FakeAccountManagerFacade.toGaiaId("test-gaia-id"))
+                        .givenName("child.test.given")
+                        .accountCapabilities(
+                                SigninTestRule.NON_DISPLAYABLE_EMAIL_ACCOUNT_CAPABILITIES)
+                        .build();
+        signinTestRule.addAccountAndWaitForSeeding(accountInfo);
         signinTestRule.waitForSignin(accountInfo);
 
         SignInPreference signInPreference = mMainSettings.findPreference(MainSettings.PREF_SIGN_IN);
@@ -591,7 +691,7 @@ public class MainSettingsFragmentTest {
 
         mSettingsActivityTestRule.startSettingsActivity();
         onView(withText(accountInfo.getEmail())).check(matches(not(isDisplayed())));
-        onView(thatMatchesFirst(withText(R.string.default_google_account_username)))
+        onView(allOf(withText(R.string.default_google_account_username), isDisplayed()))
                 .check(matches(isDisplayed()));
     }
 
@@ -784,6 +884,24 @@ public class MainSettingsFragmentTest {
         Assert.assertNull(
                 "Home modules config setting should not be shown on automotive",
                 mMainSettings.findPreference(MainSettings.PREF_HOME_MODULES_CONFIG));
+    }
+
+    @Test
+    @SmallTest
+    @EnableFeatures(ChromeFeatureList.TAB_GROUP_SYNC_ANDROID)
+    public void testTabsSettingsOn() {
+        launchSettingsActivity();
+        assertSettingsExists(MainSettings.PREF_TABS, TabsSettings.class);
+    }
+
+    @Test
+    @SmallTest
+    @DisableFeatures(ChromeFeatureList.TAB_GROUP_SYNC_ANDROID)
+    public void testTabsSettingsOff() {
+        launchSettingsActivity();
+        Assert.assertNull(
+                "Tabs settings should not be shown",
+                mMainSettings.findPreference(MainSettings.PREF_TABS));
     }
 
     @Test

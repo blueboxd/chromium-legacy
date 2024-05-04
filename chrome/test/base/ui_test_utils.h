@@ -16,9 +16,6 @@
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "components/history/core/browser/history_service.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_source.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/window_open_disposition.h"
@@ -26,6 +23,10 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/view_observer.h"
 #include "url/gurl.h"
+
+#if defined(TOOLKIT_VIEWS)
+#include "ui/views/test/widget_test_api.h"
+#endif
 
 class Browser;
 class FullscreenController;
@@ -200,6 +201,23 @@ void WaitForAutocompleteDone(Browser* browser);
 // Waits until the window gets minimized.
 // Returns success or not.
 bool WaitForMinimized(Browser* browser);
+
+// Waits until the window gets maximized.
+// Returns success or not.
+bool WaitForMaximized(Browser* browser);
+
+// See comment on views::AsyncWidgetRequestWaiter.
+[[nodiscard]] views::AsyncWidgetRequestWaiter CreateAsyncWidgetRequestWaiter(
+    Browser& browser);
+
+// SetAndWaitForBounds sets the given `bounds` on `browser` and waits until the
+// bounds update will be observable from all parts of the client.
+void SetAndWaitForBounds(Browser& browser, const gfx::Rect& bounds);
+
+// Maximizes the browser window and wait until the window is maximized and all
+// related visible UI effects are applied and observable from chrome.
+// Returns true if succeeded.
+bool MaximizeAndWaitUntilUIUpdateDone(Browser& browser);
 
 // Waits for fullscreen state to be updated.
 // There're two variation of fullscreen concepts, browser fullscreen and
@@ -438,18 +456,12 @@ class AllTabsObserver : public TabStripModelObserver,
   std::unique_ptr<base::RunLoop> run_loop_;
 };
 
-// Notification observer which waits for navigation events and blocks until
-// a specific URL is loaded. The URL must be an exact match.
+// Observer which waits for navigation events and blocks until a specific URL is
+// loaded. The URL must be an exact match.
 class UrlLoadObserver : public AllTabsObserver {
  public:
   // `url` is the URL to look for.
   explicit UrlLoadObserver(const GURL& url);
-
-  // Temporary constructor while callsites are updated.  `unused_source` must be
-  // `AllSources()`.  Do not use this for new code -- use the one-argument
-  // constructor instead.
-  UrlLoadObserver(const GURL& url,
-                  const content::NotificationSource& unused_source);
   ~UrlLoadObserver() override;
 
   // Returns the WebContents which navigated to `url`.

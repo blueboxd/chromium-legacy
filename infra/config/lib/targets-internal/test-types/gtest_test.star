@@ -5,8 +5,29 @@
 """Implementation of tests for gtest-based tests."""
 
 load("@stdlib//internal/graph.star", "graph")
+load("//lib/args.star", args_lib = "args")
 load("../common.star", _targets_common = "common")
 load("../nodes.star", _targets_nodes = "nodes")
+
+def _gtest_test_spec_init(node, settings):
+    return _targets_common.spec_init(node, settings, use_isolated_scripts_api = None)
+
+def _gtest_test_spec_finalize(name, settings, spec_value):
+    use_isolated_scripts_api = spec_value["use_isolated_scripts_api"]
+    if (settings.is_android and spec_value["swarming"].enable and not use_isolated_scripts_api):
+        # TODO(crbug.com/40725094) make Android presentation work with
+        # isolated scripts in test_results_presentation.py merge script
+        _targets_common.update_spec_for_android_presentation(spec_value)
+        spec_value["args"] = args_lib.listify(spec_value["args"], "--recover-devices")
+    default_merge_script = "standard_isolated_script_merge" if use_isolated_scripts_api else "standard_gtest_merge"
+    spec_value = _targets_common.spec_finalize(settings, spec_value, default_merge_script)
+    return "gtest_tests", name, spec_value
+
+_gtest_test_spec_handler = _targets_common.spec_handler(
+    type_name = "gtest",
+    init = _gtest_test_spec_init,
+    finalize = _gtest_test_spec_finalize,
+)
 
 def gtest_test(*, name, binary = None, mixins = None, args = None):
     """Define a gtest-based test.
@@ -25,7 +46,7 @@ def gtest_test(*, name, binary = None, mixins = None, args = None):
         mixins: Mixins to apply when expanding the test.
         args: Arguments to be passed to the test binary.
     """
-    key = _targets_common.create_legacy_test(
+    legacy_test_key = _targets_common.create_legacy_test(
         name = name,
         basic_suite_test_config = _targets_common.basic_suite_test_config(
             binary = binary,
@@ -34,11 +55,15 @@ def gtest_test(*, name, binary = None, mixins = None, args = None):
         mixins = mixins,
     )
 
-    # Make sure that the binary actually exists
-    graph.add_edge(key, _targets_nodes.BINARY.key(binary or name))
-
-    _targets_common.create_test(
+    test_key = _targets_common.create_test(
         name = name,
-        spec_handler = _targets_common.spec_handler_for_unimplemented_target_type("gtest_test"),
-        spec_value = None,
+        spec_handler = _gtest_test_spec_handler,
+        details = struct(
+            args = args,
+        ),
+        mixins = mixins,
     )
+
+    binary_key = _targets_nodes.BINARY.key(binary or name)
+    graph.add_edge(legacy_test_key, binary_key)
+    graph.add_edge(test_key, binary_key)

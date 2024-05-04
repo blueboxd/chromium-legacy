@@ -5,6 +5,7 @@
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
 
 #include <memory>
+#include <string_view>
 #include <utility>
 
 #include "base/auto_reset.h"
@@ -239,7 +240,7 @@ class DesktopNativeWidgetAuraWindowParentingClient
   aura::Window* GetDefaultParent(aura::Window* window,
                                  const gfx::Rect& bounds,
                                  const int64_t display_id) override {
-    // TODO(crbug.com/1236997): Re-enable this logic once Fuchsia's windowing
+    // TODO(crbug.com/40192931): Re-enable this logic once Fuchsia's windowing
     // APIs provide the required functionality.
 #if !BUILDFLAG(IS_FUCHSIA)
     bool is_fullscreen = window->GetProperty(aura::client::kShowStateKey) ==
@@ -1064,6 +1065,14 @@ void DesktopNativeWidgetAura::RunShellDrag(
                       source);
 }
 
+void DesktopNativeWidgetAura::CancelShellDrag(View* view) {
+  if (!content_window_) {
+    return;
+  }
+
+  views::CancelShellDrag(content_window_);
+}
+
 void DesktopNativeWidgetAura::SchedulePaintInRect(const gfx::Rect& rect) {
   if (content_window_)
     content_window_->SchedulePaintInRect(rect);
@@ -1340,7 +1349,7 @@ void DesktopNativeWidgetAura::OnGestureEvent(ui::GestureEvent* event) {
     native_widget_delegate_->OnGestureEvent(event);
 }
 
-base::StringPiece DesktopNativeWidgetAura::GetLogContext() const {
+std::string_view DesktopNativeWidgetAura::GetLogContext() const {
   return "DesktopNativeWidgetAura";
 }
 
@@ -1392,7 +1401,7 @@ void DesktopNativeWidgetAura::OnWindowActivated(
   // will be notified of the change there directly.
   const bool content_window_activated = content_window_ == gained_active;
   const bool tree_host_active = desktop_window_tree_host_->IsActive();
-  // TODO(crbug.com/1300567): Update focus rules to avoid focusing the desktop
+  // TODO(crbug.com/40216323): Update focus rules to avoid focusing the desktop
   // widget's content window if its window tree host is not active.
   if (native_widget_delegate_ && !should_activate_.has_value() &&
       (tree_host_active || !content_window_activated)) {
@@ -1401,7 +1410,8 @@ void DesktopNativeWidgetAura::OnWindowActivated(
   }
 
   // Give the native widget a chance to handle any specific changes it needs.
-  desktop_window_tree_host_->OnActiveWindowChanged(content_window_activated);
+  desktop_window_tree_host_->OnActiveWindowChanged(
+      content_window_->Contains(gained_active));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

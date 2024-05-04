@@ -10,7 +10,6 @@
 #include "base/functional/bind.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/web_applications/jobs/uninstall/web_app_uninstall_and_replace_job.h"
-#include "chrome/browser/web_applications/os_integration/os_integration_manager.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_install_finalizer.h"
@@ -63,7 +62,7 @@ InstallFromInfoJob::InstallFromInfoJob(
   debug_value_->Set("overwrite_existing_manifest_fields",
                     overwrite_existing_manifest_fields_);
   debug_value_->Set("install_surface", static_cast<int>(install_surface_));
-  debug_value_->Set("has_install_params", install_params_ ? true : false);
+  debug_value_->Set("has_install_params", !!install_params_);
 }
 
 InstallFromInfoJob::~InstallFromInfoJob() = default;
@@ -103,11 +102,10 @@ void InstallFromInfoJob::Start(WithAppResources* lock_with_app_resources) {
 }
 
 void InstallFromInfoJob::OnInstallCompleted(const webapps::AppId& app_id,
-                                            webapps::InstallResultCode code,
-                                            OsHooksErrors os_hook_errors) {
+                                            webapps::InstallResultCode code) {
   debug_value_->Set("result_code", base::ToString(code));
   CHECK(callback_);
-  std::move(callback_).Run(app_id_, code, os_hook_errors);
+  std::move(callback_).Run(app_id_, code);
 }
 
 }  // namespace web_app

@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40284755): Remove this and spanify to fix the errors.
+#pragma allow_unsafe_buffers
+#endif
+
 #include <stddef.h>
 
 #include <limits>
@@ -16,15 +21,16 @@
 #include "base/process/process_handle.h"
 #include "base/profiler/stack_buffer.h"
 #include "base/profiler/stack_copier.h"
+#include "base/strings/cstring_view.h"
 #include "base/test/test_timeouts.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/multiprocess_func_list.h"
 
 #include "base/allocator/buildflags.h"
-#include "base/allocator/partition_allocator/src/partition_alloc/partition_alloc.h"
-#if BUILDFLAG(USE_ALLOCATOR_SHIM)
-#include "base/allocator/partition_allocator/src/partition_alloc/shim/allocator_shim.h"
+#include "partition_alloc/partition_alloc.h"
+#if PA_BUILDFLAG(USE_ALLOCATOR_SHIM)
+#include "partition_alloc/shim/allocator_shim.h"
 #endif
 
 #if BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
@@ -133,14 +139,14 @@ TEST_F(StackTraceTest, DebugPrintWithPrefixBacktrace) {
 // Make sure nullptr prefix doesn't crash. Output not examined, much
 // like the DebugPrintBacktrace test above.
 TEST_F(StackTraceTest, DebugPrintWithNullPrefixBacktrace) {
-  StackTrace().PrintWithPrefix(nullptr);
+  StackTrace().PrintWithPrefix({});
 }
 
 // Test OutputToStreamWithPrefix, mainly to make sure it doesn't
 // crash. Any "real" stack trace testing happens above.
 TEST_F(StackTraceTest, DebugOutputToStreamWithPrefix) {
   StackTrace trace;
-  const char* prefix_string = "[test]";
+  cstring_view prefix_string = "[test]";
   std::ostringstream os;
   trace.OutputToStreamWithPrefix(&os, prefix_string);
   std::string backtrace_message = os.str();
@@ -154,8 +160,8 @@ TEST_F(StackTraceTest, DebugOutputToStreamWithPrefix) {
 TEST_F(StackTraceTest, DebugOutputToStreamWithNullPrefix) {
   StackTrace trace;
   std::ostringstream os;
-  trace.OutputToStreamWithPrefix(&os, nullptr);
-  trace.ToStringWithPrefix(nullptr);
+  trace.OutputToStreamWithPrefix(&os, {});
+  trace.ToStringWithPrefix({});
 }
 
 #endif  // !defined(__UCLIBC__) && !defined(_AIX)
@@ -163,7 +169,7 @@ TEST_F(StackTraceTest, DebugOutputToStreamWithNullPrefix) {
 #if BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_ANDROID)
 // Since Mac's base::debug::StackTrace().Print() is not malloc-free, skip
 // StackDumpSignalHandlerIsMallocFree if BUILDFLAG(IS_MAC).
-#if BUILDFLAG(USE_ALLOCATOR_SHIM) && !BUILDFLAG(IS_MAC)
+#if PA_BUILDFLAG(USE_ALLOCATOR_SHIM) && !BUILDFLAG(IS_MAC)
 
 namespace {
 
@@ -246,7 +252,7 @@ TEST_F(StackTraceDeathTest, StackDumpSignalHandlerIsMallocFree) {
       }(),
       "\\[end of stack trace\\]\n");
 }
-#endif  // BUILDFLAG(USE_ALLOCATOR_SHIM)
+#endif  // PA_BUILDFLAG(USE_ALLOCATOR_SHIM)
 
 namespace {
 
@@ -412,7 +418,7 @@ TEST_F(StackTraceTest, MAYBE_TraceStackFramePointers) {
 // This is expected because we're walking and reading the stack, and
 // sometimes we read fp / pc from the place that previously held
 // uninitialized value.
-// TODO(crbug.com/1132511): Enable this test on Fuchsia.
+// TODO(crbug.com/40150655): Enable this test on Fuchsia.
 #if defined(MEMORY_SANITIZER) || BUILDFLAG(IS_FUCHSIA)
 #define MAYBE_TraceStackFramePointersFromBuffer \
   DISABLED_TraceStackFramePointersFromBuffer

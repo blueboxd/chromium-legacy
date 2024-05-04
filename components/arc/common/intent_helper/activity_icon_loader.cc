@@ -6,6 +6,7 @@
 
 #include <string.h>
 
+#include <string_view>
 #include <tuple>
 #include <utility>
 
@@ -157,7 +158,7 @@ scoped_refptr<base::RefCountedData<GURL>> GeneratePNGDataUrl(
   std::vector<unsigned char> output;
   gfx::PNGCodec::EncodeBGRASkBitmap(image.GetRepresentation(scale).GetBitmap(),
                                     false /* discard_transparency */, &output);
-  const std::string encoded = base::Base64Encode(base::StringPiece(
+  const std::string encoded = base::Base64Encode(std::string_view(
       reinterpret_cast<const char*>(output.data()), output.size()));
   return base::WrapRefCounted(
       new base::RefCountedData<GURL>(GURL(kPngDataUrlPrefix + encoded)));
@@ -362,9 +363,9 @@ void ActivityIconLoader::OnIconsReady(
     return;
   }
 
-  // TODO(crbug.com/1083331): Remove when the adaptive icon feature is enabled
+  // TODO(crbug.com/40131344): Remove when the adaptive icon feature is enabled
   // by default.
-  // TODO(crbug.com/1272349): Adaptive Icon is not supported in Lacros now. Do
+  // TODO(crbug.com/40806186): Adaptive Icon is not supported in Lacros now. Do
   // not remove this until it's supported.
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE,

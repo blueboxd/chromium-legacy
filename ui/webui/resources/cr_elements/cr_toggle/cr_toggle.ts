@@ -14,14 +14,14 @@ export const MOVE_THRESHOLD_PX: number = 5;
  * interaction. Besides just clicking the element, its state can be changed by
  * dragging (pointerdown+pointermove) the element towards the desired direction.
  */
-import {CrPaperRippleMixin} from '../cr_paper_ripple_mixin.js';
+import {CrRippleMixin} from '../cr_ripple/cr_ripple_mixin.js';
 import {CrLitElement} from '//resources/lit/v3_0/lit.rollup.js';
 import type {PropertyValues} from '//resources/lit/v3_0/lit.rollup.js';
 import {assert} from '//resources/js/assert.js';
 import {getCss} from './cr_toggle.css.js';
 import {getHtml} from './cr_toggle.html.js';
 
-const CrToggleElementBase = CrPaperRippleMixin(CrLitElement);
+const CrToggleElementBase = CrRippleMixin(CrLitElement);
 
 export interface CrToggleElement {
   $: {
@@ -50,11 +50,6 @@ export class CrToggleElement extends CrToggleElementBase {
         notify: true,
       },
 
-      dark: {
-        type: Boolean,
-        reflect: true,
-      },
-
       disabled: {
         type: Boolean,
         reflect: true,
@@ -63,7 +58,6 @@ export class CrToggleElement extends CrToggleElementBase {
   }
 
   checked: boolean = false;
-  dark: boolean = false;
   disabled: boolean = false;
 
   private boundPointerMove_: ((e: PointerEvent) => void)|null = null;
@@ -83,11 +77,6 @@ export class CrToggleElement extends CrToggleElementBase {
     }
     this.setAttribute('aria-pressed', this.checked ? 'true' : 'false');
     this.setAttribute('aria-disabled', this.disabled ? 'true' : 'false');
-
-    if (!document.documentElement.hasAttribute('chrome-refresh-2023')) {
-      this.addEventListener('blur', this.hideRipple_.bind(this));
-      this.addEventListener('focus', this.onFocus_.bind(this));
-    }
 
     this.addEventListener('click', this.onClick_.bind(this));
     this.addEventListener('keydown', this.onKeyDown_.bind(this));
@@ -132,10 +121,6 @@ export class CrToggleElement extends CrToggleElementBase {
       this.setAttribute('tabindex', this.disabled ? '-1' : '0');
       this.setAttribute('aria-disabled', this.disabled ? 'true' : 'false');
     }
-  }
-
-  private onFocus_() {
-    this.getRipple().showAndHoldDown();
   }
 
   private hideRipple_() {
@@ -231,13 +216,12 @@ export class CrToggleElement extends CrToggleElementBase {
     }
   }
 
-  // Overridden from CrPaperRippleMixin
+  // Overridden from CrRippleMixin
   override createRipple() {
     this.rippleContainer = this.$.knob;
     const ripple = super.createRipple();
-    ripple.id = 'ink';
     ripple.setAttribute('recenters', '');
-    ripple.classList.add('circle', 'toggle-ink');
+    ripple.classList.add('circle');
     return ripple;
   }
 }

@@ -1231,9 +1231,31 @@ policies:
   1230: DefaultDirectSocketsSetting
   1231: DirectSocketsAllowedForUrls
   1232: DirectSocketsBlockedForUrls
-  1233: ProductSpecificationsEnabled
+  1233: ''
   1234: PrefixedVideoFullscreenApiAvailability
   1235: PrivacySandboxIpProtectionEnabled
+  1236: OrcaEnabled
+  1237: EnterpriseLogoUrl
+  1238: CustomProfileLabel
+  1239: ProfileLabel
+  1240: PrivacySandboxFingerprintingProtectionEnabled
+  1241: MultiScreenCaptureAllowedForUrls
+  1242: ''
+  1243: ''
+  1244: BoundSessionCredentialsEnabled
+  1245: UiAutomationProviderEnabled
+  1246: ApplicationBoundEncryptionEnabled
+  1247: DeviceAuthenticationFlowAutoReloadInterval
+  1248: ShowAiIntroScreenEnabled
+  1249: ShowTunaScreenEnabled
+  1250: EnterpriseBadgingTemporarySetting
+  1251: GenAILocalFoundationalModelSettings
+  1252: DeviceExtensionsSystemLogEnabled
+  1253: ChromeDataRegionSetting
+  1254: ContextualGoogleIntegrationsEnabled
+  1255: ContextualGoogleIntegrationsConfiguration
+  1256: PdfViewerOutOfProcessIframeEnabled
+  1257: LockScreenAutoStartOnlineReauth
 atomic_groups:
   1: Homepage
   2: RemoteAccess

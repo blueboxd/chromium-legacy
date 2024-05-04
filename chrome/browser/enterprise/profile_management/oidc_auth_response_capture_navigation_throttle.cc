@@ -16,6 +16,7 @@
 #include "chrome/browser/enterprise/signin/oidc_authentication_signin_interceptor.h"
 #include "chrome/browser/enterprise/signin/oidc_authentication_signin_interceptor_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/policy/core/common/policy_logger.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/navigation_throttle.h"
@@ -24,8 +25,19 @@
 
 namespace {
 
+constexpr char kEnrollmentFallbackHost[] = "chromeenterprise.google";
+constexpr char kEnrollmentFallbackPath[] = "/enroll/";
+
+// Msft Entra will first navigate to a reprocess URL and redirect to our
+// enrolllment URL, we need to capture this to correctly create the navigation
+// throttle.
+constexpr char kOidcEntraLoginHost[] = "login.microsoftonline.com";
+constexpr char kOidcEntraReprocessPath[] = "/common/reprocess";
+constexpr char kOidcEntraLoginPath[] = "/common/login";
+// For new identities, the redirection starts from the "Keep me signed in" page.
+constexpr char kOidcEntraKmsiPath[] = "/kmsi";
+
 constexpr char kQuerySeparator[] = "&";
-constexpr char kOidcEnrollmentHost[] = "chromeprofiletoken";
 constexpr char kAuthTokenHeader[] = "access_token=";
 constexpr char kIdTokenHeader[] = "id_token=";
 
@@ -42,6 +54,11 @@ std::string ExtractFragmentValueWithKey(const std::string& fragment,
                                     : fragment.substr(start, end - start);
 }
 
+bool IsEnrollmentUrl(GURL& url) {
+  return url.DomainIs(kEnrollmentFallbackHost) &&
+         url.path() == kEnrollmentFallbackPath;
+}
+
 }  // namespace
 
 namespace profile_management {
@@ -50,12 +67,23 @@ namespace profile_management {
 std::unique_ptr<OidcAuthResponseCaptureNavigationThrottle>
 OidcAuthResponseCaptureNavigationThrottle::MaybeCreateThrottleFor(
     content::NavigationHandle* navigation_handle) {
-  return (base::FeatureList::IsEnabled(
-              profile_management::features::kOidcAuthProfileManagement) &&
-          navigation_handle->GetURL().host() == kOidcEnrollmentHost)
-             ? std::make_unique<OidcAuthResponseCaptureNavigationThrottle>(
-                   navigation_handle)
-             : nullptr;
+  if (!base::FeatureList::IsEnabled(
+          profile_management::features::kOidcAuthProfileManagement)) {
+    return nullptr;
+  }
+
+  auto url = navigation_handle->GetURL();
+  if (!(url.DomainIs(kOidcEntraLoginHost) &&
+        (url.path() == kOidcEntraReprocessPath ||
+         url.path() == kOidcEntraKmsiPath ||
+         url.path() == kOidcEntraLoginPath))) {
+    return nullptr;
+  }
+
+  VLOG_POLICY(2, OIDC_ENROLLMENT)
+      << "Valid enrollment URL found, processing URL: " << url;
+  return std::make_unique<OidcAuthResponseCaptureNavigationThrottle>(
+      navigation_handle);
 }
 
 OidcAuthResponseCaptureNavigationThrottle::
@@ -67,43 +95,65 @@ OidcAuthResponseCaptureNavigationThrottle::
     ~OidcAuthResponseCaptureNavigationThrottle() = default;
 
 content::NavigationThrottle::ThrottleCheckResult
-OidcAuthResponseCaptureNavigationThrottle::WillStartRequest() {
-  return WillRedirectRequest();
+OidcAuthResponseCaptureNavigationThrottle::WillRedirectRequest() {
+  return AttemptToTriggerInterception();
 }
 
 content::NavigationThrottle::ThrottleCheckResult
-OidcAuthResponseCaptureNavigationThrottle::WillRedirectRequest() {
+OidcAuthResponseCaptureNavigationThrottle::WillProcessResponse() {
+  return AttemptToTriggerInterception();
+}
+
+content::NavigationThrottle::ThrottleCheckResult
+OidcAuthResponseCaptureNavigationThrottle::AttemptToTriggerInterception() {
+  if (interception_triggered_) {
+    return PROCEED;
+  }
+  auto url = navigation_handle()->GetURL();
+
+  // This maybe some other redirect from MSFT Entra that isn't an OIDC profile
+  // registration attempt.
+  if (!IsEnrollmentUrl(url)) {
+    VLOG_POLICY(1, OIDC_ENROLLMENT)
+        << "Enrollment URL from OIDC redircetion is invalid: " << url;
+    return PROCEED;
+  }
+
   // Extract parameters from the fragment part (#) of the URL. The auth token
   // from OIDC authentication will be decoded and parsed by data_decoder for
   // security reasons. Example URL:
   // https://chromeprofiletoken/#access_token=<oauth_token>&token_type=Bearer&expires_in=4887&scope=email+openid+profile&id_token=<id_token>&session_state=<session
   // state>
-  std::string url_ref = navigation_handle()->GetURL().ref();
+  std::string url_ref = url.ref();
 
   std::string auth_token =
       ExtractFragmentValueWithKey(url_ref, kAuthTokenHeader);
   std::string id_token = ExtractFragmentValueWithKey(url_ref, kIdTokenHeader);
 
   if (auth_token.empty() || id_token.empty()) {
-    LOG(ERROR) << "Missing token from OIDC response.";
-    return CANCEL_AND_IGNORE;
+    LOG_POLICY(ERROR, OIDC_ENROLLMENT)
+        << "Tokens missing from OIDC Redirection URL";
+    return PROCEED;
   }
 
   std::string json_payload;
   std::vector<std::string_view> jwt_sections = base::SplitStringPiece(
-      auth_token, ".", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
+      id_token, ".", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
   if (jwt_sections.size() != 3) {
-    LOG(ERROR) << "Oauth token from OIDC response has Invalid JWT format.";
+    LOG_POLICY(ERROR, OIDC_ENROLLMENT)
+        << "Oauth token from OIDC response has Invalid JWT format.";
     return CANCEL_AND_IGNORE;
   }
 
   if (!base::Base64UrlDecode(jwt_sections[1],
                              base::Base64UrlDecodePolicy::IGNORE_PADDING,
                              &json_payload)) {
-    LOG(ERROR) << "Oauth token payload from OIDC response can't be decoded.";
+    LOG_POLICY(ERROR, OIDC_ENROLLMENT)
+        << "Oauth token payload from OIDC response can't be decoded.";
     return CANCEL_AND_IGNORE;
   }
 
+  interception_triggered_ = true;
   data_decoder::DataDecoder::ParseJsonIsolated(
       json_payload,
       base::BindOnce(
@@ -122,28 +172,36 @@ void OidcAuthResponseCaptureNavigationThrottle::RegisterWithOidcTokens(
     ProfileManagementOicdTokens tokens,
     data_decoder::DataDecoder::ValueOrError result) {
   if (!result.has_value()) {
-    LOG(ERROR) << "Failed to parse decoded Oauth token payload.";
-    return;
+    LOG_POLICY(ERROR, OIDC_ENROLLMENT)
+        << "Failed to parse decoded Oauth token payload.";
+    return Resume();
   }
   const base::Value::Dict* parsed_json = result->GetIfDict();
 
   if (!parsed_json) {
-    LOG(ERROR) << "Decoded Oauth token payload is empty.";
-    return;
+    LOG_POLICY(ERROR, OIDC_ENROLLMENT)
+        << "Decoded Oauth token payload is empty.";
+    return Resume();
   }
 
-  const std::string* user_email = parsed_json->FindString("upn");
-  if (!user_email || (*user_email).empty()) {
-    LOG(ERROR) << "User email not found in token payload.";
-    return;
+  const std::string* subject_id = parsed_json->FindString("sub");
+  if (!subject_id || (*subject_id).empty()) {
+    LOG_POLICY(ERROR, OIDC_ENROLLMENT)
+        << "Subject ID is missing in token payload.";
+    return Resume();
   }
 
   auto* interceptor = OidcAuthenticationSigninInterceptorFactory::GetForProfile(
       Profile::FromBrowserContext(
           navigation_handle()->GetWebContents()->GetBrowserContext()));
 
+  VLOG_POLICY(2, OIDC_ENROLLMENT)
+      << "OIDC redirection meets all requirements, starting enrollment "
+         "process.";
   interceptor->MaybeInterceptOidcAuthentication(
-      navigation_handle()->GetWebContents(), tokens, *user_email);
+      navigation_handle()->GetWebContents(), tokens, *subject_id,
+      base::BindOnce(&OidcAuthResponseCaptureNavigationThrottle::Resume,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 }  // namespace profile_management

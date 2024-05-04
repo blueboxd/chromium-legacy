@@ -450,7 +450,7 @@ TEST_F(SiteEngagementServiceTest, GetTotalNotificationPoints) {
                                EngagementType::kNotificationInteraction, 4);
 }
 
-// TODO(https://crbug.com/1426914): Fix and enable this test.
+// TODO(crbug.com/40899584): Fix and enable this test.
 TEST_F(SiteEngagementServiceTest, DISABLED_RestrictedToHTTPAndHTTPS) {
   // The https and http versions of www.google.com should be separate.
   GURL url1("ftp://www.google.com/");
@@ -528,7 +528,7 @@ TEST_F(SiteEngagementServiceTest, LastShortcutLaunch) {
   EXPECT_DOUBLE_EQ(0.0, service_->GetScore(url2));
 }
 
-// TODO(https://crbug.com/1137759): Flaky test.
+// TODO(crbug.com/40724963): Flaky test.
 TEST_F(SiteEngagementServiceTest, DISABLED_CheckHistograms) {
   base::HistogramTester histograms;
 
@@ -1629,6 +1629,37 @@ TEST_F(SiteEngagementServiceTest, GetAllDetailsIncludesBonusOnlyScores) {
   // included.
   details = service_->GetAllDetails();
   EXPECT_EQ(2u, details.size());
+}
+
+TEST_F(SiteEngagementServiceTest, GetAllDetailsFilterByURLSets) {
+  GURL http_url("http://www.google.com/");
+  GURL webui_url("chrome://history");
+
+  EXPECT_EQ(0u, service_->GetAllDetails().size());
+
+  // Add a HTTP url.
+  service_->ResetBaseScoreForURL(http_url, 5);
+  // Add a WebUI url.
+  service_->ResetBaseScoreForURL(webui_url, 5);
+
+  {
+    // By default, GetAllDetails() returns http:// and https:// sites.
+    std::vector<mojom::SiteEngagementDetails> details =
+        service_->GetAllDetails();
+    EXPECT_EQ(1u, details.size());
+    EXPECT_EQ(http_url, details[0].origin);
+  }
+
+  {
+    // Request scores from both HTTP and WebUI sites.
+    std::vector<mojom::SiteEngagementDetails> details = service_->GetAllDetails(
+        site_engagement::SiteEngagementService::URLSets::HTTP |
+        site_engagement::SiteEngagementService::URLSets::WEB_UI);
+    EXPECT_EQ(2u, details.size());
+    EXPECT_TRUE(http_url == details[0].origin || http_url == details[1].origin);
+    EXPECT_TRUE(webui_url == details[0].origin ||
+                webui_url == details[1].origin);
+  }
 }
 
 }  // namespace site_engagement

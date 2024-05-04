@@ -2,10 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40284755): Remove this and spanify to fix the errors.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "base/memory/platform_shared_memory_mapper.h"
 
-#include "base/allocator/partition_allocator/src/partition_alloc/page_allocator.h"
 #include "base/logging.h"
+#include "partition_alloc/page_allocator.h"
 
 #include <aclapi.h>
 

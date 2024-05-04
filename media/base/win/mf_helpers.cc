@@ -4,15 +4,16 @@
 
 #include "media/base/win/mf_helpers.h"
 
-#include <d3d11.h>
 #include <initguid.h>
+
+#include <d3d11.h>
 #include <ks.h>
 #include <ksmedia.h>
 #include <mfapi.h>
-#include <mferror.h>  // NOLINT(build/include_order)
+#include <mferror.h>
 #include <mfidl.h>
-#include <mmreg.h>  // NOLINT(build/include_order)
-#include <wrl.h>    // NOLINT(build/include_order)
+#include <mmreg.h>
+#include <wrl.h>
 
 #include "base/check_op.h"
 #include "base/win/scoped_co_mem.h"
@@ -586,8 +587,8 @@ HRESULT GenerateSampleFromDecoderBuffer(
   RETURN_IF_FAILED(mf_sample->SetSampleTime(sample_time));
 
   ComPtr<IMFMediaBuffer> mf_buffer;
-  size_t data_size = buffer->data_size();
-  RETURN_IF_FAILED(MFCreateMemoryBuffer(buffer->data_size(), &mf_buffer));
+  size_t data_size = buffer->size();
+  RETURN_IF_FAILED(MFCreateMemoryBuffer(buffer->size(), &mf_buffer));
 
   BYTE* mf_buffer_data = nullptr;
   DWORD max_length = 0;

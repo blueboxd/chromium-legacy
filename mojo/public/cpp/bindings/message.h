@@ -68,19 +68,35 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS_BASE) Message {
   // Note that |payload_size| is only the initially known size of the message
   // payload, if any. The payload can be expanded after construction using the
   // interface returned by |payload_buffer()|.
+  //
+  // |estimated_payload_size| will be used to preallocate an appropriate amount
+  // of memory for the message buffer, based on the history of previous
+  // allocations for this message's |name|.
   Message(uint32_t name,
           uint32_t flags,
           size_t payload_size,
           size_t payload_interface_id_count,
           MojoCreateMessageFlags create_message_flags,
-          std::vector<ScopedHandle>* handles);
+          std::vector<ScopedHandle>* handles,
+          size_t estimated_payload_size = 0);
 
   // Same as above, but the with default MojoCreateMessageFlags.
   Message(uint32_t name,
           uint32_t flags,
           size_t payload_size,
           size_t payload_interface_id_count,
-          std::vector<ScopedHandle>* handles);
+          std::vector<ScopedHandle>* handles,
+          size_t estimated_payload_size = 0);
+
+  // Constructor for the common case of unknown `payload_size`, unspecified
+  // `payload_interface_id_count`, and no `handles` vector.
+  Message(uint32_t name,
+          uint32_t flags,
+          MojoCreateMessageFlags create_message_flags,
+          size_t estimated_payload_size);
+
+  // Same as above, but the with default MojoCreateMessageFlags.
+  Message(uint32_t name, uint32_t flags, size_t estimated_payload_size);
 
   // Constructs a new Message object from an existing message handle. Used
   // exclusively for serializing an existing unserialized message.
@@ -239,6 +255,14 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS_BASE) Message {
   // Deserializes associated endpoint handles from the payload_interface_ids
   // field, into |associated_endpoint_handles_|.
   bool DeserializeAssociatedEndpointHandles(
+      AssociatedGroupController* group_controller);
+
+  // If this message contains serialized associated interface endponits but is
+  // going to be destroyed without being sent across a pipe, this notifies any
+  // relevant local peer endpoints about peer closure. Must be called on any
+  // unsent Message that is going to be destroyed after calling
+  // SerializeHandles().
+  void NotifyPeerClosureForSerializedHandles(
       AssociatedGroupController* group_controller);
 
   // If this Message has an unserialized message context attached, force it to

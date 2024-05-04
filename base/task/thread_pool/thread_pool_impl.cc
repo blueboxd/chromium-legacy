@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <optional>
 #include <string>
+#include <string_view>
 #include <utility>
 
 #include "base/base_switches.h"
@@ -68,10 +69,10 @@ bool g_synchronous_thread_start_for_testing = false;
 
 }  // namespace
 
-ThreadPoolImpl::ThreadPoolImpl(StringPiece histogram_label)
+ThreadPoolImpl::ThreadPoolImpl(std::string_view histogram_label)
     : ThreadPoolImpl(histogram_label, std::make_unique<TaskTrackerImpl>()) {}
 
-ThreadPoolImpl::ThreadPoolImpl(StringPiece histogram_label,
+ThreadPoolImpl::ThreadPoolImpl(std::string_view histogram_label,
                                std::unique_ptr<TaskTrackerImpl> task_tracker,
                                bool use_background_threads)
     : histogram_label_(histogram_label),
@@ -243,14 +244,16 @@ void ThreadPoolImpl::Start(const ThreadPoolInstance::InitParams& init_params,
       foreground_threads, max_best_effort_tasks,
       init_params.suggested_reclaim_time, service_thread_task_runner,
       worker_thread_observer, worker_environment,
-      g_synchronous_thread_start_for_testing);
+      g_synchronous_thread_start_for_testing,
+      /*may_block_threshold=*/{});
 
   if (utility_thread_group_) {
     utility_thread_group_.get()->Start(
         utility_threads, max_best_effort_tasks,
         init_params.suggested_reclaim_time, service_thread_task_runner,
         worker_thread_observer, worker_environment,
-        g_synchronous_thread_start_for_testing);
+        g_synchronous_thread_start_for_testing,
+        /*may_block_threshold=*/{});
   }
 
   if (background_thread_group_) {
@@ -258,7 +261,8 @@ void ThreadPoolImpl::Start(const ThreadPoolInstance::InitParams& init_params,
         max_best_effort_tasks, max_best_effort_tasks,
         init_params.suggested_reclaim_time, service_thread_task_runner,
         worker_thread_observer, worker_environment,
-        g_synchronous_thread_start_for_testing);
+        g_synchronous_thread_start_for_testing,
+        /*may_block_threshold=*/{});
   }
 
   started_ = true;

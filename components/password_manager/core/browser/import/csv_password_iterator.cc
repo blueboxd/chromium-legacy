@@ -4,11 +4,11 @@
 
 #include "components/password_manager/core/browser/import/csv_password_iterator.h"
 
+#include <string_view>
 #include <utility>
 
 #include "base/check.h"
 #include "base/strings/string_util.h"
-#include "base/template_util.h"
 
 namespace password_manager {
 
@@ -16,11 +16,11 @@ namespace {
 
 // Takes the |rest| of the CSV lines, returns the first one and stores the
 // remaining ones back in |rest|.
-base::StringPiece ExtractFirstRow(base::StringPiece* rest) {
+std::string_view ExtractFirstRow(std::string_view* rest) {
   DCHECK(rest);
   if (!rest->empty())
     return ConsumeCSVLine(rest);
-  return base::StringPiece();
+  return std::string_view();
 }
 
 }  // namespace
@@ -28,7 +28,7 @@ base::StringPiece ExtractFirstRow(base::StringPiece* rest) {
 CSVPasswordIterator::CSVPasswordIterator() = default;
 
 CSVPasswordIterator::CSVPasswordIterator(const CSVPassword::ColumnMap& map,
-                                         base::StringPiece csv)
+                                         std::string_view csv)
     : map_(&map), csv_rest_(csv) {
   SeekToNextValidRow();
 }
@@ -85,7 +85,7 @@ void CSVPasswordIterator::SeekToNextValidRow() {
   password_.emplace(*map_, csv_row_);
 }
 
-base::StringPiece ConsumeCSVLine(base::StringPiece* input) {
+std::string_view ConsumeCSVLine(std::string_view* input) {
   DCHECK(input);
   DCHECK(!input->empty());
 
@@ -97,7 +97,7 @@ base::StringPiece ConsumeCSVLine(base::StringPiece* input) {
       case '\n':
         if (!inside_quotes) {
           const size_t eol_start = last_char_was_CR ? current - 1 : current;
-          base::StringPiece ret = input->substr(0, eol_start);
+          std::string_view ret = input->substr(0, eol_start);
           *input = input->substr(current + 1);
           return ret;
         }
@@ -112,7 +112,7 @@ base::StringPiece ConsumeCSVLine(base::StringPiece* input) {
   }
 
   // The whole |*input| is one line.
-  return std::exchange(*input, base::StringPiece());
+  return std::exchange(*input, std::string_view());
 }
 
 }  // namespace password_manager

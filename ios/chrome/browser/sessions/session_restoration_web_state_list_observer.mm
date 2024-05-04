@@ -85,6 +85,22 @@ void SessionRestorationWebStateListObserver::WebStateListDidChange(
       AttachWebState(insert_change.inserted_web_state());
       break;
     }
+
+    case WebStateListChange::Type::kGroupCreate:
+      // Nothing specific to do.
+      break;
+
+    case WebStateListChange::Type::kGroupVisualDataUpdate:
+      // Nothing specific to do.
+      break;
+
+    case WebStateListChange::Type::kGroupMove:
+      // Nothing specific to do.
+      break;
+
+    case WebStateListChange::Type::kGroupDelete:
+      // Nothing specific to do.
+      break;
   }
 
   if (!web_state_list->IsBatchInProgress()) {

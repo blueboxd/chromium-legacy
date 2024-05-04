@@ -139,17 +139,9 @@ public class TabUiFeatureUtilities {
     }
 
     /**
-     * @return Whether the instant start is supported.
-     */
-    public static boolean supportInstantStart(boolean isTablet, Context context) {
-        return ChromeFeatureList.sInstantStart.isEnabled()
-                && !isTablet
-                && !SysUtils.isLowEndDevice();
-    }
-
-    /**
      * @return whether tab drag is enabled (either via drag as window or drag as tab).
-     * TODO(crbug.com/1485628) - merge both flags and use device property instead to differentiate.
+     *     TODO(crbug.com/40933355) - merge both flags and use device property instead to
+     *     differentiate.
      */
     public static boolean isTabDragEnabled() {
         if (!MultiWindowUtils.isMultiInstanceApi31Enabled()) {
@@ -185,17 +177,13 @@ public class TabUiFeatureUtilities {
         return ChromeFeatureList.sTabGroupPaneAndroid.isEnabled();
     }
 
-    /** Returns if we are using optimized window layout for tab strip. */
-    public static boolean isTabStripWindowLayoutOptimizationEnabled() {
-        return ChromeFeatureList.sTabStripLayoutOptimization.isEnabled();
-    }
-
     /** Returns whether drag drop from tab strip to create new instance is enabled. */
     // TODO(crbug/328511660): This flag is similar with {@link #isTabDragAsWindowEnabled()}.
     // Consider merge code logic.
     public static boolean isTabTearingEnabled() {
         // TODO(crbug/328511660): Add OS version check once available.
         return ChromeFeatureList.sTabLinkDragDropAndroid.isEnabled()
-                && ChromeFeatureList.isEnabled(ChromeFeatureList.DRAG_DROP_TAB_TEARING);
+                && ChromeFeatureList.isEnabled(ChromeFeatureList.DRAG_DROP_TAB_TEARING)
+                && !DISABLE_DRAG_TO_NEW_INSTANCE_DD.getValue();
     }
 }

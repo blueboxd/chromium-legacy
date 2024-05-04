@@ -3,17 +3,16 @@
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/settings/password/password_manager_view_controller.h"
-#import "ios/chrome/browser/ui/settings/password/password_manager_view_controller+Testing.h"
 
 #import "base/apple/foundation_util.h"
 #import "base/functional/bind.h"
+#import "base/location.h"
 #import "base/strings/string_piece.h"
 #import "base/strings/sys_string_conversions.h"
 #import "base/strings/utf_string_conversions.h"
 #import "base/test/bind.h"
 #import "base/test/ios/wait_util.h"
 #import "base/test/metrics/histogram_tester.h"
-#import "base/test/scoped_feature_list.h"
 #import "components/affiliations/core/browser/fake_affiliation_service.h"
 #import "components/feature_engagement/public/feature_constants.h"
 #import "components/keyed_service/core/service_access_type.h"
@@ -41,6 +40,7 @@
 #import "ios/chrome/browser/ui/settings/cells/inline_promo_cell.h"
 #import "ios/chrome/browser/ui/settings/cells/inline_promo_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_check_item.h"
+#import "ios/chrome/browser/ui/settings/password/password_manager_view_controller+Testing.h"
 #import "ios/chrome/browser/ui/settings/password/passwords_consumer.h"
 #import "ios/chrome/browser/ui/settings/password/passwords_mediator.h"
 #import "ios/chrome/browser/ui/settings/password/passwords_settings_commands.h"
@@ -67,7 +67,7 @@ using password_manager::PasswordForm;
 using password_manager::TestPasswordStore;
 using ::testing::Return;
 
-// TODO(crbug.com/1324555): Remove this double and uses TestSyncUserSettings
+// TODO(crbug.com/40839348): Remove this double and uses TestSyncUserSettings
 @interface TestPasswordsMediator : PasswordsMediator
 
 @property(nonatomic) OnDeviceEncryptionState encryptionState;
@@ -83,19 +83,6 @@ using ::testing::Return;
 @end
 
 namespace {
-
-// Returns whether or not the Password Manager widget promo feature is enabled.
-bool IsPasswordMangerWidgetPromoEnabled() {
-  return base::FeatureList::IsEnabled(
-      feature_engagement::kIPHiOSPromoPasswordManagerWidgetFeature);
-}
-
-// Returns the offset to take into account when expecting a certain number of
-// sections. Offset depends on whether or not the Password Manager widget promo
-// flag is enabled.
-int GetNumberOfSectionsOffset() {
-  return IsPasswordMangerWidgetPromoEnabled();
-}
 
 // Use this test suite for tests that verify behaviors of
 // PasswordManagerViewController before loading the passwords for the first time
@@ -152,9 +139,8 @@ class PasswordManagerViewControllerTest
         OCMStrictProtocolMock(@protocol(PasswordsSettingsCommands));
     passwords_controller.handler = passwords_settings_commands_strict_mock_;
 
-    // Show the Password Manager widget promo if the feature is enabled.
-    passwords_controller.shouldShowPasswordManagerWidgetPromo =
-        IsPasswordMangerWidgetPromoEnabled();
+    // Show the Password Manager widget promo.
+    passwords_controller.shouldShowPasswordManagerWidgetPromo = YES;
 
     WaitForPasswordsLoadingCompletion();
   }
@@ -203,8 +189,7 @@ class PasswordManagerViewControllerTest
     passwords_controller.delegate = mediator_;
     mediator_.consumer = passwords_controller;
     passwords_controller.handler = passwords_settings_commands_strict_mock_;
-    passwords_controller.shouldShowPasswordManagerWidgetPromo =
-        IsPasswordMangerWidgetPromoEnabled();
+    passwords_controller.shouldShowPasswordManagerWidgetPromo = YES;
 
     // Wait for passwords loading completion.
     EXPECT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
@@ -390,7 +375,7 @@ TEST_F(PasswordManagerViewControllerTest, TestInitialization) {
 TEST_F(PasswordManagerViewControllerTest, AddSavedPasswords) {
   AddSavedForm1();
 
-  EXPECT_EQ(4 + GetNumberOfSectionsOffset(), NumberOfSections());
+  EXPECT_EQ(5, NumberOfSections());
   EXPECT_EQ(1, NumberOfItemsInSection(
                    GetSectionIndex(SectionIdentifierSavedPasswords)));
   [GetPasswordManagerViewController() settingsWillBeDismissed];
@@ -400,7 +385,7 @@ TEST_F(PasswordManagerViewControllerTest, AddSavedPasswords) {
 TEST_F(PasswordManagerViewControllerTest, AddBlockedPasswords) {
   AddBlockedForm1();
 
-  EXPECT_EQ(4 + GetNumberOfSectionsOffset(), NumberOfSections());
+  EXPECT_EQ(5, NumberOfSections());
   EXPECT_EQ(1,
             NumberOfItemsInSection(GetSectionIndex(SectionIdentifierBlocked)));
   [GetPasswordManagerViewController() settingsWillBeDismissed];
@@ -414,7 +399,7 @@ TEST_F(PasswordManagerViewControllerTest, AddSavedAndBlocked) {
   AddBlockedForm2();
 
   // There should be two sections added.
-  EXPECT_EQ(5 + GetNumberOfSectionsOffset(), NumberOfSections());
+  EXPECT_EQ(6, NumberOfSections());
 
   // There should be 1 row in saved password section.
   EXPECT_EQ(1, NumberOfItemsInSection(
@@ -462,7 +447,7 @@ TEST_F(PasswordManagerViewControllerTest, AddSavedDuplicates) {
   AddSavedForm1();
   AddSavedForm1();
 
-  EXPECT_EQ(4 + GetNumberOfSectionsOffset(), NumberOfSections());
+  EXPECT_EQ(5, NumberOfSections());
   EXPECT_EQ(1, NumberOfItemsInSection(
                    GetSectionIndex(SectionIdentifierSavedPasswords)));
   [GetPasswordManagerViewController() settingsWillBeDismissed];
@@ -474,7 +459,7 @@ TEST_F(PasswordManagerViewControllerTest, AddBlockedDuplicates) {
   AddBlockedForm1();
   AddBlockedForm1();
 
-  EXPECT_EQ(4 + GetNumberOfSectionsOffset(), NumberOfSections());
+  EXPECT_EQ(5, NumberOfSections());
   EXPECT_EQ(1,
             NumberOfItemsInSection(GetSectionIndex(SectionIdentifierBlocked)));
   [GetPasswordManagerViewController() settingsWillBeDismissed];
@@ -559,7 +544,7 @@ TEST_F(PasswordManagerViewControllerTest, TestChangePasswordsWhileSearching) {
         return presentation_finished;
       }));
 
-  EXPECT_EQ(4 + GetNumberOfSectionsOffset(), NumberOfSections());
+  EXPECT_EQ(5, NumberOfSections());
   EXPECT_TRUE([passwords_controller.tableViewModel
       hasSectionForSectionIdentifier:SectionIdentifierAddPasswordButton]);
   EXPECT_TRUE([passwords_controller.tableViewModel
@@ -583,7 +568,7 @@ TEST_F(PasswordManagerViewControllerTest, TestChangePasswordsWhileSearching) {
   passwords_controller.navigationItem.searchController.active = NO;
 
   // Sections are restored after search is over.
-  EXPECT_EQ(4 + GetNumberOfSectionsOffset(), NumberOfSections());
+  EXPECT_EQ(5, NumberOfSections());
   EXPECT_TRUE([passwords_controller.tableViewModel
       hasSectionForSectionIdentifier:SectionIdentifierAddPasswordButton]);
   EXPECT_TRUE([passwords_controller.tableViewModel
@@ -699,8 +684,7 @@ TEST_F(PasswordManagerViewControllerTest, TestOpenInSearchMode) {
 
   // Verify that the content of table view model is as expected after leaving
   // search mode.
-  EXPECT_EQ(4 + GetNumberOfSectionsOffset(),
-            [[passwords_controller tableViewModel] numberOfSections]);
+  EXPECT_EQ(5, [[passwords_controller tableViewModel] numberOfSections]);
   EXPECT_TRUE([passwords_controller.tableViewModel
       hasSectionForSectionIdentifier:SectionIdentifierAddPasswordButton]);
   EXPECT_TRUE([passwords_controller.tableViewModel
@@ -759,7 +743,7 @@ TEST_F(PasswordManagerViewControllerTest, FilterItems) {
   AddBlockedForm1();
   AddBlockedForm2();
 
-  EXPECT_EQ(5 + GetNumberOfSectionsOffset(), NumberOfSections());
+  EXPECT_EQ(6, NumberOfSections());
 
   PasswordManagerViewController* passwords_controller =
       GetPasswordManagerViewController();
@@ -820,7 +804,7 @@ TEST_F(PasswordManagerViewControllerTest, FilterGroupsOfPasswords) {
     AddPasswordForm(std::move(form));
   }
 
-  EXPECT_EQ(4 + GetNumberOfSectionsOffset(), NumberOfSections());
+  EXPECT_EQ(5, NumberOfSections());
 
   PasswordManagerViewController* passwords_controller =
       GetPasswordManagerViewController();
@@ -1217,7 +1201,7 @@ TEST_F(PasswordManagerViewControllerTest, PasswordStoreListener) {
 
   auto password =
       GetTestStore().stored_passwords().at("http://www.example.com/").at(0);
-  GetTestStore().RemoveLogin(password);
+  GetTestStore().RemoveLogin(FROM_HERE, password);
   RunUntilIdle();
   EXPECT_EQ(1, NumberOfItemsInSection(
                    GetSectionIndex(SectionIdentifierSavedPasswords)));
@@ -1226,10 +1210,6 @@ TEST_F(PasswordManagerViewControllerTest, PasswordStoreListener) {
 
 // Test verifies the content of the widget promo cell.
 TEST_F(PasswordManagerViewControllerTest, WidgetPromo) {
-  // Enable Password Manager widget promo feature.
-  base::test::ScopedFeatureList feature_list(
-      feature_engagement::kIPHiOSPromoPasswordManagerWidgetFeature);
-
   AddSavedForm1();
 
   GetPasswordManagerViewController().shouldShowPasswordManagerWidgetPromo = YES;
@@ -1241,7 +1221,7 @@ TEST_F(PasswordManagerViewControllerTest, WidgetPromo) {
   InlinePromoItem* item = static_cast<InlinePromoItem*>(
       GetTableViewItem(GetSectionIndex(SectionIdentifierWidgetPromo), 0));
 
-  EXPECT_NSEQ(item.promoImage, [UIImage imageNamed:kWidgetPromoImageName]);
+  EXPECT_NSEQ(item.promoImage, [UIImage imageNamed:WidgetPromoImageName()]);
   EXPECT_NSEQ(item.promoText, l10n_util::GetNSString(
                                   IDS_IOS_PASSWORD_MANAGER_WIDGET_PROMO_TEXT));
   EXPECT_NSEQ(item.moreInfoButtonTitle,
@@ -1254,7 +1234,7 @@ TEST_F(PasswordManagerViewControllerTest, WidgetPromo) {
   SetEditing(true);
   EXPECT_FALSE(item.enabled);
   EXPECT_NSEQ(item.promoImage,
-              [UIImage imageNamed:kWidgetPromoDisabledImageName]);
+              [UIImage imageNamed:WidgetPromoDisabledImageName()]);
   SetEditing(false);
 
   [GetPasswordManagerViewController() settingsWillBeDismissed];
@@ -1263,10 +1243,6 @@ TEST_F(PasswordManagerViewControllerTest, WidgetPromo) {
 // Tests that the right metric is logged when tapping the widget promo's close
 // button.
 TEST_F(PasswordManagerViewControllerTest, WidgetPromoCloseButtonMetric) {
-  // Enable Password Manager widget promo feature.
-  base::test::ScopedFeatureList feature_list(
-      feature_engagement::kIPHiOSPromoPasswordManagerWidgetFeature);
-
   AddSavedForm1();
 
   // Make Password Manager show the promo.
@@ -1300,10 +1276,6 @@ TEST_F(PasswordManagerViewControllerTest, WidgetPromoCloseButtonMetric) {
 // Tests that the right metric is logged when tapping the widget promo's more
 // info button.
 TEST_F(PasswordManagerViewControllerTest, WidgetPromoMoreInfoButtonMetric) {
-  // Enable Password Manager widget promo feature.
-  base::test::ScopedFeatureList feature_list(
-      feature_engagement::kIPHiOSPromoPasswordManagerWidgetFeature);
-
   AddSavedForm1();
 
   // Make Password Manager show the promo.

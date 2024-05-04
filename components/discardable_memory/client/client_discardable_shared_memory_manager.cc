@@ -237,8 +237,8 @@ ClientDiscardableSharedMemoryManager::AllocateLockedDiscardableMemory(
   base::AutoLock lock(lock_);
 
   if (!is_purge_scheduled_) {
-    task_runner_->PostDelayedTask(
-        FROM_HERE,
+    base::PostDelayedMemoryReductionTask(
+        task_runner_, FROM_HERE,
         base::BindOnce(&ClientDiscardableSharedMemoryManager::ScheduledPurge,
                        this),
         kScheduledPurgeInterval);
@@ -306,9 +306,6 @@ ClientDiscardableSharedMemoryManager::AllocateLockedDiscardableMemory(
     // at least one span from the free lists.
     MemoryUsageChanged(heap_->GetSize(), heap_->GetFreelistSize());
 
-    // Memory in this span is no longer held in the freelist, so we don't want
-    // to count it towards the total of dirty freelist memory.
-    heap_->dirty_freed_memory_page_count_ -= free_span->MarkAsClean();
     auto discardable_memory =
         std::make_unique<DiscardableMemoryImpl>(this, std::move(free_span));
     allocated_memory_.insert(discardable_memory.get());
@@ -394,10 +391,6 @@ bool ClientDiscardableSharedMemoryManager::OnMemoryDump(
                                total_size - freelist_size);
   }
 
-  base::UmaHistogramCounts1M(
-      "Memory.Discardable.FreelistSize.Dirty",
-      heap_->dirty_freed_memory_page_count_ * base::GetPageSize() / 1024);
-
   return heap_->OnMemoryDump(args, pmd);
 }
 
@@ -414,13 +407,18 @@ void ClientDiscardableSharedMemoryManager::BackgroundPurge() {
   PurgeUnlockedMemory(base::TimeDelta());
 }
 
-void ClientDiscardableSharedMemoryManager::ScheduledPurge() {
+void ClientDiscardableSharedMemoryManager::ScheduledPurge(
+    base::MemoryReductionTaskContext task_type) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   // From local testing and UMA, memory usually accumulates slowly in renderers,
   // and can sit idle for hours. We purge only the old memory, as this should
-  // recover the memory without adverse latency effects.
-  PurgeUnlockedMemory(
-      ClientDiscardableSharedMemoryManager::kMinAgeForScheduledPurge);
+  // recover the memory without adverse latency effects. If |task_type| is
+  // |kProactive|, we instead purge all memory.
+  const base::TimeDelta min_age =
+      task_type == base::MemoryReductionTaskContext::kProactive
+          ? base::TimeDelta::Min()
+          : ClientDiscardableSharedMemoryManager::kMinAgeForScheduledPurge;
+  PurgeUnlockedMemory(min_age);
 
   bool should_schedule = false;
   {
@@ -430,8 +428,8 @@ void ClientDiscardableSharedMemoryManager::ScheduledPurge() {
   }
 
   if (should_schedule) {
-    task_runner_->PostDelayedTask(
-        FROM_HERE,
+    base::PostDelayedMemoryReductionTask(
+        task_runner_, FROM_HERE,
         base::BindOnce(&ClientDiscardableSharedMemoryManager::ScheduledPurge,
                        this),
         kScheduledPurgeInterval);

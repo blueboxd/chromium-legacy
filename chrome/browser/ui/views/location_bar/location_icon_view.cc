@@ -37,6 +37,7 @@
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/vector_icon_types.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/animation/ink_drop_highlight.h"
@@ -156,7 +157,9 @@ int LocationIconView::GetMinimumLabelTextWidth() const {
     // Optimize this common case by not creating a new label.
     // GetPreferredSize is not dependent on the label's current
     // width, so this returns the same value as the branch below.
-    width = label()->GetPreferredSize().width();
+    width = label()
+                ->GetPreferredSize(views::SizeBounds(label()->width(), {}))
+                .width();
   } else {
     views::Label label(text, {font_list()});
     width = label.GetPreferredSize().width();
@@ -203,7 +206,7 @@ std::u16string LocationIconView::GetText() const {
   if (delegate_->GetWebContents()) {
     // On ChromeOS, this can be called using web_contents from
     // SimpleWebViewDialog::GetWebContents() which always returns null.
-    // TODO(crbug.com/680329) Remove the null check and make
+    // TODO(crbug.com/40501128) Remove the null check and make
     // SimpleWebViewDialog::GetWebContents return the proper web contents
     // instead.
     const std::u16string extension_name =
@@ -254,7 +257,8 @@ void LocationIconView::SetAccessibleProperties(bool is_initialization) {
 
   // If no display text exists, ensure that the accessibility label is added.
   const std::u16string description =
-      delegate_->IsEditingOrEmpty() ? GetAccessibleDescription()
+      delegate_->IsEditingOrEmpty()
+          ? GetViewAccessibility().GetCachedDescription()
       : label()->GetText().empty()
           ? delegate_->GetLocationBarModel()->GetSecureAccessibilityText()
           : std::u16string();
@@ -264,7 +268,7 @@ void LocationIconView::SetAccessibleProperties(bool is_initialization) {
   } else {
     SetAccessibleRole(role);
     SetAccessibleName(name);
-    SetAccessibleDescription(description);
+    GetViewAccessibility().SetDescription(description);
   }
 }
 

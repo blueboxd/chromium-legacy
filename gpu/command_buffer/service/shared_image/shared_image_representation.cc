@@ -265,6 +265,11 @@ SkiaGaneshImageRepresentation::ScopedGaneshWriteAccess::
   }
 }
 
+bool SkiaGaneshImageRepresentation::ScopedGaneshWriteAccess::
+    HasBackendSurfaceEndState() {
+  return !!end_state_;
+}
+
 void SkiaGaneshImageRepresentation::ScopedGaneshWriteAccess::
     ApplyBackendSurfaceEndState() {
   if (!end_state_) {
@@ -416,7 +421,7 @@ SkiaGaneshImageRepresentation::ScopedGaneshReadAccess::CreateSkImage(
     }
 
     SkISize sk_size = gfx::SizeToSkISize(representation()->size());
-    // TODO(crbug.com/828599): This should really default to rec709.
+    // TODO(crbug.com/41380578): This should really default to rec709.
     SkYUVColorSpace yuv_color_space = kRec601_SkYUVColorSpace;
     representation()->color_space().ToSkYUVColorSpace(
         format.MultiplanarBitDepth(), &yuv_color_space);
@@ -451,7 +456,7 @@ SkiaGaneshImageRepresentation::ScopedGaneshReadAccess::CreateSkImageForPlane(
 
 bool SkiaGaneshImageRepresentation::ScopedGaneshReadAccess::
     HasBackendSurfaceEndState() {
-  return end_state_.get();
+  return !!end_state_;
 }
 
 void SkiaGaneshImageRepresentation::ScopedGaneshReadAccess::
@@ -527,6 +532,11 @@ SkiaGraphiteImageRepresentation::ScopedGraphiteWriteAccess::
 
 SkiaGraphiteImageRepresentation::ScopedGraphiteWriteAccess::
     ~ScopedGraphiteWriteAccess() = default;
+
+bool SkiaGraphiteImageRepresentation::ScopedGraphiteWriteAccess::
+    HasBackendSurfaceEndState() {
+  return false;
+}
 
 // Graphite-Dawn backend handles Vulkan transitions by itself, so nothing to do
 // here.
@@ -642,7 +652,7 @@ SkiaGraphiteImageRepresentation::ScopedGraphiteReadAccess::CreateSkImage(
     CHECK_EQ(static_cast<int>(graphite_textures_.size()),
              format.NumberOfPlanes());
     SkISize sk_size = gfx::SizeToSkISize(representation()->size());
-    // TODO(crbug.com/828599): This should really default to rec709.
+    // TODO(crbug.com/41380578): This should really default to rec709.
     SkYUVColorSpace yuv_color_space = kRec601_SkYUVColorSpace;
     representation()->color_space().ToSkYUVColorSpace(
         format.MultiplanarBitDepth(), &yuv_color_space);

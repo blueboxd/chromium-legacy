@@ -41,6 +41,7 @@
 #include "third_party/blink/public/platform/scheduler/web_agent_group_scheduler.h"
 #include "third_party/blink/public/platform/scheduler/web_renderer_process_type.h"
 #include "third_party/blink/public/platform/web_input_event_result.h"
+#include "third_party/blink/renderer/platform/bindings/parkable_string_manager.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_vector.h"
 #include "third_party/blink/renderer/platform/instrumentation/resource_coordinator/renderer_resource_coordinator.h"
@@ -406,11 +407,6 @@ MainThreadSchedulerImpl::MainThreadOnly::MainThreadOnly(
                        "Scheduler.UseCase",
                        &main_thread_scheduler_impl->tracing_controller_,
                        UseCaseToString),
-      longest_jank_free_task_duration(
-          base::TimeDelta(),
-          "Scheduler.LongestJankFreeTaskDuration",
-          &main_thread_scheduler_impl->tracing_controller_,
-          TimeDeltaToMilliseconds),
       renderer_pause_count(0,
                            "Scheduler.PauseCount",
                            &main_thread_scheduler_impl->tracing_controller_),
@@ -429,11 +425,6 @@ MainThreadSchedulerImpl::MainThreadOnly::MainThreadOnly(
       blocking_input_expected_soon(
           false,
           "Scheduler.BlockingInputExpectedSoon",
-          &main_thread_scheduler_impl->tracing_controller_,
-          YesNoStateToString),
-      has_visible_render_widget_with_touch_handler(
-          false,
-          "Scheduler.HasVisibleRenderWidgetWithTouchHandler",
           &main_thread_scheduler_impl->tracing_controller_,
           YesNoStateToString),
       in_idle_period_for_testing(
@@ -1013,20 +1004,6 @@ void MainThreadSchedulerImpl::SetAllRenderWidgetsHidden(bool hidden) {
   CreateTraceEventObjectSnapshot();
 }
 
-void MainThreadSchedulerImpl::SetHasVisibleRenderWidgetWithTouchHandler(
-    bool has_visible_render_widget_with_touch_handler) {
-  helper_.CheckOnValidThread();
-  if (has_visible_render_widget_with_touch_handler ==
-      main_thread_only().has_visible_render_widget_with_touch_handler)
-    return;
-
-  main_thread_only().has_visible_render_widget_with_touch_handler =
-      has_visible_render_widget_with_touch_handler;
-
-  base::AutoLock lock(any_thread_lock_);
-  UpdatePolicyLocked(UpdateType::kForceUpdate);
-}
-
 void MainThreadSchedulerImpl::SetRendererHidden(bool hidden) {
   if (hidden) {
     TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
@@ -1071,7 +1048,13 @@ void MainThreadSchedulerImpl::SetRendererBackgrounded(bool backgrounded) {
     main_thread_only().metrics_helper.OnRendererForegrounded(now);
   }
 
+  ParkableStringManager::Instance().SetRendererBackgrounded(backgrounded);
   memory_purge_manager_.SetRendererBackgrounded(backgrounded);
+}
+
+void MainThreadSchedulerImpl::SetRendererBackgroundedForTesting(
+    bool backgrounded) {
+  SetRendererBackgrounded(backgrounded);
 }
 
 #if BUILDFLAG(IS_ANDROID)
@@ -1388,22 +1371,6 @@ void MainThreadSchedulerImpl::DidHandleInputEventOnMainThread(
   }
 }
 
-bool MainThreadSchedulerImpl::IsHighPriorityWorkAnticipated() {
-  helper_.CheckOnValidThread();
-  if (helper_.IsShutdown())
-    return false;
-
-  MaybeUpdatePolicy();
-  // The touchstart, synchronized gesture and main-thread gesture use cases
-  // indicate a strong likelihood of high-priority work in the near future.
-  UseCase use_case = main_thread_only().current_use_case;
-  return main_thread_only().blocking_input_expected_soon ||
-         use_case == UseCase::kTouchstart ||
-         use_case == UseCase::kMainThreadGesture ||
-         use_case == UseCase::kMainThreadCustomInputHandling ||
-         use_case == UseCase::kSynchronizedGesture;
-}
-
 bool MainThreadSchedulerImpl::ShouldYieldForHighPriorityWork() {
   helper_.CheckOnValidThread();
   if (helper_.IsShutdown())
@@ -1509,11 +1476,6 @@ void MainThreadSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
         any_thread().user_model.IsGestureExpectedSoon(
             now, &gesture_expected_flag_valid_for_duration);
   }
-
-  base::TimeDelta longest_jank_free_task_duration =
-      EstimateLongestJankFreeTaskDuration();
-  main_thread_only().longest_jank_free_task_duration =
-      longest_jank_free_task_duration;
 
   // The |new_policy_duration| is the minimum of |expected_use_case_duration|
   // and |gesture_expected_flag_valid_for_duration| unless one is zero in
@@ -1753,28 +1715,6 @@ UseCase MainThreadSchedulerImpl::ComputeCurrentUseCase(
   return UseCase::kNone;
 }
 
-base::TimeDelta MainThreadSchedulerImpl::EstimateLongestJankFreeTaskDuration()
-    const {
-  switch (main_thread_only().current_use_case) {
-    case UseCase::kTouchstart:
-    case UseCase::kCompositorGesture:
-    case UseCase::kEarlyLoading:
-    case UseCase::kLoading:
-    case UseCase::kNone:
-      return base::Milliseconds(kRailsResponseTimeMillis);
-
-    case UseCase::kMainThreadCustomInputHandling:
-    case UseCase::kMainThreadGesture:
-    case UseCase::kSynchronizedGesture:
-      return main_thread_only().idle_time_estimator.GetExpectedIdleDuration(
-          main_thread_only().compositor_frame_interval);
-
-    default:
-      NOTREACHED();
-      return base::Milliseconds(kRailsResponseTimeMillis);
-  }
-}
-
 bool MainThreadSchedulerImpl::CanEnterLongIdlePeriod(
     base::TimeTicks now,
     base::TimeDelta* next_long_idle_period_delay_out) {
@@ -1879,8 +1819,6 @@ void MainThreadSchedulerImpl::WriteIntoTraceLocked(
 
   if (optional_now.is_null())
     optional_now = helper_.NowTicks();
-  dict.Add("has_visible_render_widget_with_touch_handler",
-           main_thread_only().has_visible_render_widget_with_touch_handler);
   dict.Add("current_use_case",
            UseCaseToString(main_thread_only().current_use_case));
   dict.Add("compositor_will_send_main_frame_not_expected",
@@ -1925,9 +1863,6 @@ void MainThreadSchedulerImpl::WriteIntoTraceLocked(
   dict.Add("policy", main_thread_only().current_policy);
 
   // TODO(skyostil): Can we somehow trace how accurate these estimates were?
-  dict.Add(
-      "longest_jank_free_task_duration",
-      main_thread_only().longest_jank_free_task_duration->InMillisecondsF());
   dict.Add("compositor_frame_interval",
            main_thread_only().compositor_frame_interval.InMillisecondsF());
   dict.Add("estimated_next_frame_begin",

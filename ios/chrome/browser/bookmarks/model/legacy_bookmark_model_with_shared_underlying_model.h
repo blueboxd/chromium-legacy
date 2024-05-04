@@ -50,6 +50,7 @@ class LegacyBookmarkModelWithSharedUnderlyingModel
   const bookmarks::BookmarkNode* bookmark_bar_node() const override;
   const bookmarks::BookmarkNode* other_node() const override;
   const bookmarks::BookmarkNode* mobile_node() const override;
+  const bookmarks::BookmarkNode* managed_node() const override;
   bool IsBookmarked(const GURL& url) const override;
   bool is_permanent_node(const bookmarks::BookmarkNode* node) const override;
   void AddObserver(bookmarks::BookmarkModelObserver* observer) override;
@@ -62,11 +63,16 @@ class LegacyBookmarkModelWithSharedUnderlyingModel
   const bookmarks::BookmarkNode* GetMostRecentlyAddedUserNodeForURL(
       const GURL& url) const override;
   bool HasBookmarks() const override;
-  void GetBookmarksMatchingProperties(
+  std::vector<const bookmarks::BookmarkNode*> GetBookmarksMatchingProperties(
       const bookmarks::QueryFields& query,
-      size_t max_count,
-      std::vector<const bookmarks::BookmarkNode*>* nodes) override;
+      size_t max_count) override;
   const bookmarks::BookmarkNode* GetNodeById(int64_t id) override;
+  bool IsNodePartOfModel(const bookmarks::BookmarkNode* node) const override;
+  const bookmarks::BookmarkNode* MoveToOtherModelPossiblyWithNewNodeIdsAndUuids(
+      const bookmarks::BookmarkNode* node,
+      LegacyBookmarkModel* dest_model,
+      const bookmarks::BookmarkNode* dest_parent) override;
+  base::WeakPtr<LegacyBookmarkModel> AsWeakPtr() override;
 
   // BookmarkModelObserver overrides.
   void BookmarkModelLoaded(bool ids_reassigned) override;
@@ -80,11 +86,13 @@ class LegacyBookmarkModelWithSharedUnderlyingModel
                          bool added_by_user) override;
   void OnWillRemoveBookmarks(const bookmarks::BookmarkNode* parent,
                              size_t old_index,
-                             const bookmarks::BookmarkNode* node) override;
+                             const bookmarks::BookmarkNode* node,
+                             const base::Location& location) override;
   void BookmarkNodeRemoved(const bookmarks::BookmarkNode* parent,
                            size_t old_index,
                            const bookmarks::BookmarkNode* node,
-                           const std::set<GURL>& no_longer_bookmarked) override;
+                           const std::set<GURL>& no_longer_bookmarked,
+                           const base::Location& location) override;
   void OnWillChangeBookmarkNode(const bookmarks::BookmarkNode* node) override;
   void BookmarkNodeChanged(const bookmarks::BookmarkNode* node) override;
   void OnWillChangeBookmarkMetaInfo(
@@ -96,11 +104,11 @@ class LegacyBookmarkModelWithSharedUnderlyingModel
       const bookmarks::BookmarkNode* node) override;
   void ExtensiveBookmarkChangesBeginning() override;
   void ExtensiveBookmarkChangesEnded() override;
-  void OnWillRemoveAllUserBookmarks() override;
-  void BookmarkAllUserNodesRemoved(const std::set<GURL>& removed_urls) override;
+  void OnWillRemoveAllUserBookmarks(const base::Location& location) override;
+  void BookmarkAllUserNodesRemoved(const std::set<GURL>& removed_urls,
+                                   const base::Location& location) override;
   void GroupedBookmarkChangesBeginning() override;
   void GroupedBookmarkChangesEnded() override;
-  base::WeakPtr<LegacyBookmarkModel> AsWeakPtr() override;
 
  protected:
   const bookmarks::BookmarkModel* underlying_model() const override;
@@ -127,9 +135,13 @@ class LegacyBookmarkModelWithSharedUnderlyingModel
     const raw_ptr<const bookmarks::BookmarkNode> managed_node_;
   };
 
+  // Predicate that determines whether a specific node is relevant or visible
+  // in the context of this view. For example, if `this` is exposing account
+  // bookmarks, then this predicate will exclude local-or-syncable nodes,
+  // including permanent folders themselves. It always returns false for the
+  // root node.
   NodeExcludedFromViewPredicate GetNodeExcludedFromViewPredicate() const;
   bool IsNodeExcludedFromView(const bookmarks::BookmarkNode* node) const;
-  const bookmarks::BookmarkNode* managed_node() const;
 
   const raw_ptr<bookmarks::BookmarkModel> underlying_model_;
   const bookmarks::BookmarkModel::NodeTypeForUuidLookup

@@ -176,6 +176,9 @@ class StyleBuilderConverter {
   static FontDescription::FontVariantPosition ConvertFontVariantPosition(
       StyleResolverState&,
       const CSSValue&);
+  static FontDescription::FontVariantEmoji ConvertFontVariantEmoji(
+      StyleResolverState&,
+      const CSSValue&);
   static FontDescription::Kerning ConvertFontKerning(StyleResolverState&,
                                                      const CSSValue&);
   static OpticalSizing ConvertFontOpticalSizing(StyleResolverState&,
@@ -200,7 +203,7 @@ class StyleBuilderConverter {
       const CSSValue&);
   template <typename T>
   static T ConvertLineWidth(StyleResolverState&, const CSSValue&);
-  static LayoutUnit ConvertBorderWidth(StyleResolverState&, const CSSValue&);
+  static int ConvertBorderWidth(StyleResolverState&, const CSSValue&);
   static uint16_t ConvertColumnRuleWidth(StyleResolverState&, const CSSValue&);
   static LayoutUnit ConvertLayoutUnit(const StyleResolverState&,
                                       const CSSValue&);
@@ -219,6 +222,8 @@ class StyleBuilderConverter {
   static Length ConvertLineHeight(StyleResolverState&, const CSSValue&);
   static float ConvertNumberOrPercentage(StyleResolverState&, const CSSValue&);
   static int ConvertInteger(StyleResolverState&, const CSSValue&);
+  template <int NoneValue = 0>
+  static int ConvertIntegerOrNone(StyleResolverState&, const CSSValue&);
   static ScrollStartData ConvertScrollStart(const StyleResolverState&,
                                             const CSSValue&);
   static float ConvertAlpha(StyleResolverState&,
@@ -229,8 +234,10 @@ class StyleBuilderConverter {
                                                    const CSSValue&);
   static ScopedCSSName* ConvertCustomIdent(StyleResolverState&,
                                            const CSSValue&);
-  static ScopedCSSName* ConvertAnchorDefault(StyleResolverState&,
-                                             const CSSValue&);
+  static ScopedCSSName* ConvertPositionAnchor(StyleResolverState&,
+                                              const CSSValue&);
+  static PositionVisibility ConvertPositionVisibility(StyleResolverState& state,
+                                                      const CSSValue& value);
   static ScopedCSSNameList* ConvertAnchorName(StyleResolverState&,
                                               const CSSValue&);
   static StyleInitialLetter ConvertInitialLetter(StyleResolverState&,
@@ -251,8 +258,7 @@ class StyleBuilderConverter {
   static ShadowData ConvertShadow(const CSSToLengthConversionData&,
                                   StyleResolverState*,
                                   const CSSValue&);
-  static scoped_refptr<ShadowList> ConvertShadowList(StyleResolverState&,
-                                                     const CSSValue&);
+  static ShadowList* ConvertShadowList(StyleResolverState&, const CSSValue&);
   static ShapeValue* ConvertShapeValue(StyleResolverState&, const CSSValue&);
   static float ConvertSpacing(StyleResolverState&, const CSSValue&);
   template <CSSValueID IdForNone>
@@ -341,9 +347,8 @@ class StyleBuilderConverter {
   static RubyPosition ConvertRubyPosition(StyleResolverState& state,
                                           const CSSValue& value);
 
-  static std::optional<StyleScrollbarColor> ConvertScrollbarColor(
-      StyleResolverState& state,
-      const CSSValue& value);
+  static StyleScrollbarColor* ConvertScrollbarColor(StyleResolverState& state,
+                                                    const CSSValue& value);
 
   static ScrollbarGutter ConvertScrollbarGutter(StyleResolverState& state,
                                                 const CSSValue& value);
@@ -486,6 +491,16 @@ AtomicString StyleBuilderConverter::ConvertString(StyleResolverState&,
   }
   DCHECK_EQ(To<CSSIdentifierValue>(value).GetValueID(), IdForNone);
   return g_null_atom;
+}
+
+template <int NoneValue>
+int StyleBuilderConverter::ConvertIntegerOrNone(StyleResolverState& state,
+                                                const CSSValue& value) {
+  if (IsA<CSSPrimitiveValue>(value)) {
+    return ConvertInteger(state, value);
+  }
+  DCHECK_EQ(To<CSSIdentifierValue>(value).GetValueID(), CSSValueID::kNone);
+  return NoneValue;
 }
 
 // Returns the computed <color> value for `value`. Note that it's expected that

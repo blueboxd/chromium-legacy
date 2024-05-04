@@ -42,10 +42,12 @@
 #include "ui/message_center/message_center.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/controls/scroll_view.h"
 #include "ui/views/layout/box_layout_view.h"
 #include "ui/views/test/views_test_utils.h"
 #include "ui/views/view_utils.h"
 #include "ui/views/widget/widget.h"
+#include "url/gurl.h"
 
 namespace ash {
 
@@ -97,6 +99,13 @@ class FocusModeDetailedViewTest : public AshTestBase {
     DCHECK(!FocusModeController::Get()->in_focus_session());
     focus_mode_detailed_view_->SetInactiveSessionDuration(base::Minutes(
         focus_mode_util::GetTimerTextfieldInputInMinutes(timer_textfield)));
+  }
+
+  // Scroll to the bottom of the defailed view.
+  void ScrollToBottom() {
+    auto* scroll_view = focus_mode_detailed_view_->scroll_view_for_testing();
+    scroll_view->ScrollToPosition(scroll_view->vertical_scroll_bar(),
+                                  scroll_view->GetVisibleRect().bottom());
   }
 
   views::Label* GetToggleRowLabel() {
@@ -197,6 +206,9 @@ TEST_F(FocusModeDetailedViewTest, DndOffBeforeStart) {
 
   // 2. Before turning on a focus session, the system do not disturb is off. The
   // default value for the toggle button is set to disabled.
+  // Scroll to the bottom of the focus panel to make the `toggle_button` visible
+  // before clicking on it.
+  ScrollToBottom();
   LeftClickOn(toggle_button);
   EXPECT_FALSE(toggle_button->GetIsOn());
 
@@ -251,6 +263,9 @@ TEST_F(FocusModeDetailedViewTest, DndOnBeforeStart) {
   message_center->SetQuietMode(true);
   EXPECT_TRUE(message_center->IsQuietMode());
 
+  // Scroll to the bottom of the focus panel to make the `toggle_button` visible
+  // before clicking on it.
+  ScrollToBottom();
   LeftClickOn(toggle_button);
   EXPECT_FALSE(toggle_button->GetIsOn());
 
@@ -515,7 +530,8 @@ TEST_F(FocusModeDetailedViewTest, TimerSettingViewDecrements) {
 
 // Tests that the timer setting view is visible outside of a focus session and
 // the countdown view is visible in a focus session.
-TEST_F(FocusModeDetailedViewTest, TimerViewVisibility) {
+// TODO(b/338629645): disabled due to flakes.
+TEST_F(FocusModeDetailedViewTest, DISABLED_TimerViewVisibility) {
   auto* focus_mode_controller = FocusModeController::Get();
   auto* timer_setting_view = GetTimerSettingView();
   auto* countdown_view = GetTimerCountdownView();
@@ -798,16 +814,13 @@ TEST_F(FocusModeDetailedViewTest, CheckHasSelectedTaskHistogram) {
   EXPECT_FALSE(controller->in_focus_session());
 
   // 2. Start a focus session with a selected task.
-  int id = 0;
-  const std::string title = "Focus Task";
-  controller->SetSelectedTask(std::make_unique<api::Task>(
-                                  /*id=*/base::NumberToString(id), title,
-                                  /*due=*/std::nullopt, /*completed=*/false,
-                                  /*has_subtasks=*/false,
-                                  /*has_email_link=*/false,
-                                  /*has_notes=*/false,
-                                  /*updated=*/base::Time::Now())
-                                  .get());
+  FocusModeTask task;
+  task.task_list_id = "abc";
+  task.task_id = "1";
+  task.title = "Focus Task";
+  task.updated = base::Time::Now();
+
+  controller->SetSelectedTask(task);
   EXPECT_TRUE(controller->HasSelectedTask());
 
   controller->ToggleFocusMode();

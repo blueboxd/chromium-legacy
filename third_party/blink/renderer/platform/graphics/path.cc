@@ -170,8 +170,8 @@ static gfx::PointF* ConvertPathPoints(gfx::PointF dst[],
 void Path::Apply(void* info, PathApplierFunction function) const {
   SkPath::RawIter iter(path_);
   SkPoint pts[4];
-  PathElement path_element;
   gfx::PointF path_points[3];
+  PathElement path_element;
 
   for (;;) {
     switch (iter.next(pts)) {
@@ -418,6 +418,9 @@ void Path::AddEllipse(const gfx::PointF& p,
   // nothing.
   SkScalar s180 = SkIntToScalar(180);
   if (SkScalarNearlyEqual(sweep_degrees, s360)) {
+    // incReserve() results in a single allocation instead of multiple as is
+    // done by multiple calls to arcTo().
+    path_.incReserve(10, 5, 4);
     // SkPath::arcTo can't handle the sweepAngle that is equal to or greater
     // than 2Pi.
     path_.arcTo(oval, start_degrees, s180, false);
@@ -425,6 +428,9 @@ void Path::AddEllipse(const gfx::PointF& p,
     return;
   }
   if (SkScalarNearlyEqual(sweep_degrees, -s360)) {
+    // incReserve() results in a single allocation instead of multiple as is
+    // done by multiple calls to arcTo().
+    path_.incReserve(10, 5, 4);
     path_.arcTo(oval, start_degrees, -s180, false);
     path_.arcTo(oval, start_degrees - s180, -s180, false);
     return;

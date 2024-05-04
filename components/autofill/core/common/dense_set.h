@@ -87,10 +87,8 @@ class Bitset {
     return x;
   }
 
-  friend constexpr auto operator<=>(const Bitset& lhs,
-                                    const Bitset& rhs) = default;
-  friend constexpr bool operator==(const Bitset& lhs,
-                                   const Bitset& rhs) = default;
+  friend auto operator<=>(const Bitset& lhs, const Bitset& rhs) = default;
+  friend bool operator==(const Bitset& lhs, const Bitset& rhs) = default;
 
   constexpr base::span<const Word, kNumWords> data() const { return words_; }
 
@@ -503,6 +501,14 @@ class DenseSet {
 
   Bitset bitset_{};
 };
+
+template <typename T, typename... Ts>
+  requires(std::same_as<T, Ts> && ...)
+DenseSet(T, Ts...) -> DenseSet<T>;
+
+template <typename InputIt>
+DenseSet(InputIt first, InputIt last)
+    -> DenseSet<typename std::iterator_traits<InputIt>::value_type>;
 
 }  // namespace autofill
 

@@ -25,8 +25,10 @@ namespace ash {
 
 namespace test {
 
-constexpr char kTestEmail[] = "test_user@gmail.com";
-constexpr char kTestGaiaId[] = "111111111";
+// These probably could be removed and replaced by
+// FakeGaiaMixin::kFakeUserEmail/kFakeUserGaiaId.
+inline constexpr char kTestEmail[] = "fake-email@gmail.com";
+inline constexpr char kTestGaiaId[] = "fake-gaia-id";
 
 }  // namespace test
 
@@ -85,6 +87,7 @@ class LoginManagerMixin : public InProcessBrowserTestMixin,
 
   // Should be called before any InProcessBrowserTestMixin functions.
   void AppendRegularUsers(int n);
+  void AppendChildUsers(int n);
   void AppendManagedUsers(int n);
 
   explicit LoginManagerMixin(InProcessBrowserTestMixinHost* host);
@@ -117,6 +120,11 @@ class LoginManagerMixin : public InProcessBrowserTestMixin,
   // launch browser as part of user session setup - use this to override that
   // behavior.
   void set_should_launch_browser(bool value) { should_launch_browser_ = value; }
+
+  // By default, LoginManagerMixin will set wait for successful profile
+  // initialization. If test expects some errors during profile initialization
+  // this gives an option to bypass the wait.
+  void set_should_wait_for_profile(bool value) { wait_for_profile_ = value; }
 
   void set_should_obtain_handles(bool value) { should_obtain_handles_ = value; }
 
@@ -163,11 +171,8 @@ class LoginManagerMixin : public InProcessBrowserTestMixin,
 
   // Logs in a user using with CreateDefaultUserContext(user_info) context.
   // When |wait_for_profile_prepared| is true, it waits until user profile is
-  // fully initialized. This is used for regular user login. When user profile
-  // initialization is expected to never complete (i.e. restart request),
-  // |wait_for_profile_prepared| should be false.
-  void LoginWithDefaultContext(const TestUserInfo& user_info,
-                               bool wait_for_profile_prepared = true);
+  // fully initialized. This is used for regular user login.
+  void LoginWithDefaultContext(const TestUserInfo& user_info);
 
   // Logs in as a regular user with default user context. Should be used for
   // proceeding into the session from the login screen.
@@ -200,6 +205,9 @@ class LoginManagerMixin : public InProcessBrowserTestMixin,
 
   // Whether the user will skip post login screens.
   bool skip_post_login_screens_ = false;
+
+  // Whether we should wait for profile creation upon login.
+  bool wait_for_profile_ = true;
 
   LocalStateMixin local_state_mixin_;
   raw_ptr<FakeGaiaMixin> fake_gaia_mixin_;

@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/side_swipe/side_swipe_mediator.h"
-#import "ios/chrome/browser/ui/side_swipe/side_swipe_mediator+Testing.h"
 
 #import <memory>
 
@@ -15,6 +14,7 @@
 #import "components/feature_engagement/public/tracker.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list_observer_bridge.h"
+#import "ios/chrome/browser/shared/public/commands/help_commands.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/snapshots/model/snapshot_tab_helper.h"
 #import "ios/chrome/browser/ui/fullscreen/animated_scoped_fullscreen_disabler.h"
@@ -22,6 +22,7 @@
 #import "ios/chrome/browser/ui/fullscreen/scoped_fullscreen_disabler.h"
 #import "ios/chrome/browser/ui/side_swipe/card_side_swipe_view.h"
 #import "ios/chrome/browser/ui/side_swipe/side_swipe_gesture_recognizer.h"
+#import "ios/chrome/browser/ui/side_swipe/side_swipe_mediator+Testing.h"
 #import "ios/chrome/browser/ui/side_swipe/side_swipe_navigation_view.h"
 #import "ios/chrome/browser/ui/side_swipe/side_swipe_util.h"
 #import "ios/chrome/browser/ui/tabs/requirements/tab_strip_highlighting.h"
@@ -38,8 +39,6 @@ NSString* const kSideSwipeDidStopNotification =
     @"kSideSwipeDidStopNotification";
 
 namespace {
-
-enum class SwipeType { NONE, CHANGE_TAB, CHANGE_PAGE };
 
 // Swipe starting distance from edge.
 const CGFloat kSwipeEdge = 20;
@@ -156,7 +155,7 @@ const CGFloat kIpadTabSwipeDistance = 100;
 }
 
 - (void)dealloc {
-  // TODO(crbug.com/1466454);
+  // TODO(crbug.com/40276402);
   DUMP_WILL_BE_CHECK(!_fullscreenController);
 }
 
@@ -187,6 +186,22 @@ const CGFloat kIpadTabSwipeDistance = 100;
   [_panGestureRecognizer setSwipeThreshold:kPanGestureRecognizerThreshold];
   [_panGestureRecognizer setDelegate:self];
   [view addGestureRecognizer:_panGestureRecognizer];
+}
+
+- (void)animateSwipe:(SwipeType)swipeType
+         inDirection:(UISwipeGestureRecognizerDirection)direction {
+  if (_inSwipe || [_swipeDelegate preventSideSwipe]) {
+    return;
+  }
+  switch (swipeType) {
+    case SwipeType::NONE:
+    case SwipeType::CHANGE_TAB:
+      NOTREACHED();
+      break;
+    case SwipeType::CHANGE_PAGE:
+      [self animatePageNavigationInDirection:direction];
+      break;
+  }
 }
 
 - (web::WebState*)activeWebState {
@@ -277,6 +292,7 @@ const CGFloat kIpadTabSwipeDistance = 100;
       }
 
       if (newIndex != currentIndex) {
+        [self willActivateWebStateAtIndex:newIndex];
         web::WebState* webState = self.webStateList->GetWebStateAt(newIndex);
         // Toggle overlay preview mode for selected tab.
         PagePlaceholderTabHelper::FromWebState(webState)
@@ -308,6 +324,19 @@ const CGFloat kIpadTabSwipeDistance = 100;
 
     // Stop disabling fullscreen.
     _fullscreenDisabler = nullptr;
+  }
+}
+
+// Invoked when the active tab is about to be changed.
+- (void)willActivateWebStateAtIndex:(int)index {
+  if (!self.activeWebState || index == WebStateList::kInvalidIndex) {
+    return;
+  }
+  int currentIndex = self.webStateList->GetIndexOfWebState(self.activeWebState);
+  if (currentIndex != index && currentIndex != WebStateList::kInvalidIndex) {
+    _engagementTracker->NotifyEvent(
+        feature_engagement::events::kIOSSwipeToolbarToChangeTabUsed);
+    [self.helpHandler handleToolbarSwipeGesture];
   }
 }
 
@@ -365,16 +394,53 @@ const CGFloat kIpadTabSwipeDistance = 100;
   __weak SideSwipeMediator* weakSelf = self;
   [_pageSideSwipeView handleHorizontalPan:gesture
       onOverThresholdCompletion:^{
-        [weakSelf handleOverThresholdCompletion:gesture];
+        [weakSelf handleOverThresholdCompletion:gesture.direction];
       }
       onUnderThresholdCompletion:^{
         [weakSelf handleUnderThresholdCompletion];
       }];
 }
 
-- (void)handleOverThresholdCompletion:(SideSwipeGestureRecognizer*)gesture {
+// Animate page navigation.
+- (void)animatePageNavigationInDirection:
+    (UISwipeGestureRecognizerDirection)direction {
+  BOOL canNavigate = [self canNavigate:IsSwipingBack(direction)];
+  CHECK(canNavigate);
+
+  _inSwipe = YES;
+  [_swipeDelegate updateAccessoryViewsForSideSwipeWithVisibility:NO];
+
+  UIView* navigatingView = [_swipeDelegate sideSwipeContentView].superview;
+  CGRect navigatingBounds = navigatingView.bounds;
+  CGFloat headerHeight = [_swipeDelegate headerHeightForSideSwipe];
+  CGRect navigationFrame =
+      CGRectMake(CGRectGetMinX(navigatingBounds),
+                 CGRectGetMinY(navigatingBounds) + headerHeight,
+                 CGRectGetWidth(navigatingBounds),
+                 CGRectGetHeight(navigatingBounds) - headerHeight);
+
+  _pageSideSwipeView = [[SideSwipeNavigationView alloc]
+      initWithFrame:navigationFrame
+      withDirection:direction
+        canNavigate:YES
+              image:[UIImage imageNamed:@"side_swipe_navigation_back"]];
+  [_pageSideSwipeView setTargetView:[_swipeDelegate sideSwipeContentView]];
+
+  [navigatingView insertSubview:_pageSideSwipeView
+                   belowSubview:[_swipeDelegate topToolbarView]];
+
+  __weak SideSwipeMediator* weakSelf = self;
+  [_pageSideSwipeView
+      animateHorizontalPanWithDirection:direction
+                      completionHandler:^{
+                        [weakSelf handleOverThresholdCompletion:direction];
+                      }];
+}
+
+- (void)handleOverThresholdCompletion:
+    (UISwipeGestureRecognizerDirection)direction {
   web::WebState* webState = self.activeWebState;
-  BOOL wantsBack = IsSwipingBack(gesture.direction);
+  BOOL wantsBack = IsSwipingBack(direction);
   if (webState) {
     if (wantsBack) {
       web_navigation_util::GoBack(webState);
@@ -449,7 +515,12 @@ const CGFloat kIpadTabSwipeDistance = 100;
     [gesture.view addSubview:_tabSideSwipeView];
   }
 
-  [_tabSideSwipeView handleHorizontalPan:gesture];
+  __weak SideSwipeMediator* weakSelf = self;
+  [_tabSideSwipeView
+        handleHorizontalPan:gesture
+      actionBeforeTabSwitch:^(int destinationWebStateIndex) {
+        [weakSelf willActivateWebStateAtIndex:destinationWebStateIndex];
+      }];
 }
 
 - (void)addCurtainWithCompletionHandler:(ProceduralBlock)completionHandler {

@@ -672,14 +672,14 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
 
   void commit();
 
-  ScriptPromise makeXRCompatible(ScriptState*, ExceptionState&);
+  ScriptPromise<IDLUndefined> makeXRCompatible(ScriptState*, ExceptionState&);
   bool IsXRCompatible() const;
 
   void UpdateNumberOfUserAllocatedMultisampledRenderbuffers(int delta);
 
   // The maximum supported size of an ArrayBuffer is the maximum size that can
   // be allocated in JavaScript. This maximum is defined by the maximum size
-  // partition alloc can allocate.
+  // PartitionAlloc can allocate.
   // We limit the maximum size of ArrayBuffers we support to avoid integer
   // overflows in the WebGL implementation. WebGL stores the data size as
   // uint32_t, so if sizes just below uint32_t::max() were passed in, integer
@@ -916,7 +916,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
       device::mojom::blink::XrCompatibleResult xr_compatible_result);
   void CompleteXrCompatiblePromiseIfPending(DOMExceptionCode exception_code);
   bool xr_compatible_;
-  Member<ScriptPromiseResolver> make_xr_compatible_resolver_;
+  Member<ScriptPromiseResolver<IDLUndefined>> make_xr_compatible_resolver_;
 
   HeapVector<TextureUnitState> texture_units_;
   wtf_size_t active_texture_unit_;
@@ -1043,13 +1043,12 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   template <typename T>
   class TypedExtensionTracker final : public ExtensionTracker {
    public:
-    TypedExtensionTracker(Member<T>& extension_field, ExtensionFlags flags)
-        : ExtensionTracker(flags), extension_field_(extension_field) {}
+    explicit TypedExtensionTracker(ExtensionFlags flags)
+        : ExtensionTracker(flags) {}
 
     WebGLExtension* GetExtension(WebGLRenderingContextBase* context) override {
       if (!extension_) {
         extension_ = MakeGarbageCollected<T>(context);
-        extension_field_ = extension_;
       }
 
       return extension_.Get();
@@ -1079,11 +1078,6 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
     }
 
    private:
-    // RAW_PTR_EXCLUSION: `Member<T>` denotes a type managed by Oilpan, and is
-    // contained in a type managed by Oilpan, i.e. not managed by
-    // PartitionAlloc.
-    // TODO(crbug/325359457): Make it non-reference.
-    RAW_PTR_EXCLUSION Member<T>& extension_field_;
     // ExtensionTracker holds it's own reference to the extension to ensure
     // that it is not deleted before this object's destructor is called
     Member<T> extension_;
@@ -1094,10 +1088,9 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   HashSet<String> disabled_extensions_;
 
   template <typename T>
-  void RegisterExtension(Member<T>& extension_ptr,
-                         ExtensionFlags flags = kApprovedExtension) {
+  void RegisterExtension(ExtensionFlags flags = kApprovedExtension) {
     extensions_.push_back(
-        MakeGarbageCollected<TypedExtensionTracker<T>>(extension_ptr, flags));
+        MakeGarbageCollected<TypedExtensionTracker<T>>(flags));
   }
 
   bool ExtensionSupportedAndAllowed(const ExtensionTracker*);
@@ -1546,7 +1539,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   bool ValidateTexFuncData(const TexImageParams& params,
                            DOMArrayBufferView* pixels,
                            NullDisposition,
-                           GLuint src_offset);
+                           int64_t src_offset);
 
   // Helper function to validate a given texture format is settable as in
   // you can supply data to texImage2D, or call texImage2D, copyTexImage2D and
@@ -1616,6 +1609,23 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   // Helper function to validate a GL capability.
   virtual bool ValidateCapability(const char* function_name, GLenum);
 
+  bool ValidateUniformLocation(const char* function_name,
+                               const WebGLUniformLocation* location,
+                               const WebGLProgram* program) {
+    const WebGLProgram* loc_program = location->Program();
+    if (!loc_program) {
+      SynthesizeGLError(GL_INVALID_OPERATION, function_name,
+                        "location has been invalidated");
+      return false;
+    }
+    if (loc_program != program) {
+      SynthesizeGLError(GL_INVALID_OPERATION, function_name,
+                        "location is not from the associated program");
+      return false;
+    }
+    return true;
+  }
+
   // Helper function to validate input parameters for uniform functions.
   template <typename T>
   bool ValidateUniformParameters(const char* function_name,
@@ -1675,9 +1685,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
     DCHECK(size >= 0 && required_min_size > 0);
     if (!location)
       return false;
-    if (location->Program() != current_program_) {
-      SynthesizeGLError(GL_INVALID_OPERATION, function_name,
-                        "location is not from current program");
+    if (!ValidateUniformLocation(function_name, location, current_program_)) {
       return false;
     }
     if (!v) {
@@ -1922,7 +1930,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   void TexImageHelperDOMArrayBufferView(TexImageParams params,
                                         DOMArrayBufferView*,
                                         NullDisposition,
-                                        GLuint src_offset);
+                                        int64_t src_offset);
   void TexImageHelperImageData(TexImageParams, ImageData*);
 
   void TexImageHelperHTMLImageElement(const SecurityOrigin*,

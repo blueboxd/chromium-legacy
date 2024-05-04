@@ -4,6 +4,8 @@
 
 #include "components/segmentation_platform/internal/execution/processing/custom_input_processor.h"
 
+#include <string_view>
+
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/system/sys_info.h"
@@ -30,15 +32,17 @@ std::optional<int> GetArgAsInt(
   auto iter = args.find(key);
 
   // Did not find target key.
-  if (iter == args.end())
-    return std::optional<int>();
+  if (iter == args.end()) {
+    return std::nullopt;
+  }
 
   // Perform string to int conversion, return empty value if the conversion
   // failed.
-  if (!base::StringToInt(base::StringPiece(iter->second), &value))
-    return std::optional<int>();
+  if (!base::StringToInt(std::string_view(iter->second), &value)) {
+    return std::nullopt;
+  }
 
-  return std::optional<int>(value);
+  return value;
 }
 
 }  // namespace

@@ -139,13 +139,7 @@ IN_PROC_BROWSER_TEST_F(ClipboardHostImplBrowserTest, Multiple) {
 class ClipboardDocUrlBrowserTestP : public ClipboardHostImplBrowserTest,
                                     public testing::WithParamInterface<bool> {
  public:
-  ClipboardDocUrlBrowserTestP() {
-    scoped_feature_list_.InitWithFeatureState(
-        blink::features::kClipboardWellFormedHtmlSanitizationWrite, GetParam());
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
+  ClipboardDocUrlBrowserTestP() = default;
 };
 
 INSTANTIATE_TEST_SUITE_P(ClipboardDocUrlBrowserTests,
@@ -256,32 +250,6 @@ IN_PROC_BROWSER_TEST_F(ClipboardBrowserTest, NumberOfFormatsOnRead) {
                                      1);
   histogram_tester.ExpectBucketCount("Blink.Clipboard.Read.NumberOfFormats", 1,
                                      1);
-}
-
-IN_PROC_BROWSER_TEST_F(ClipboardBrowserTest, CopyPasteHtmlOnMac) {
-  NavigateAndSetFocusToPage();
-  base::RunLoop loop;
-  // Execute copy command to select the content of the body element.
-  ASSERT_TRUE(ExecJs(shell(),
-                     " document.execCommand('selectAll');"
-                     " document.execCommand('copy')"));
-  loop.RunUntilIdle();
-  // Get the HTML content from the clipboard and check that meta tag is added.
-  std::u16string html;
-  std::string url;
-  uint32_t ignore_offsets;
-  ui::Clipboard::GetForCurrentThread()->ReadHTML(
-      ui::ClipboardBuffer::kCopyPaste, nullptr, &html, &url, &ignore_offsets,
-      &ignore_offsets);
-// The meta tag is added only on Mac. See AddMetaCharsetTagToHtmlOnMac for
-// details.
-#if BUILDFLAG(IS_MAC)
-  EXPECT_TRUE(base::UTF16ToUTF8(html).find("<meta charset=\"utf-8\">") !=
-              std::string::npos);
-#else
-  EXPECT_TRUE(base::UTF16ToUTF8(html).find("<meta charset=\"utf-8\">") ==
-              std::string::npos);
-#endif
 }
 
 }  // namespace content

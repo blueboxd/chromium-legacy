@@ -238,7 +238,7 @@ void KeyboardUIController::DisableKeyboard() {
   if (model_.state() != KeyboardUIState::kInitial)
     ChangeState(KeyboardUIState::kInitial);
 
-  // TODO(https://crbug.com/731537): Move KeyboardUIController members into a
+  // TODO(crbug.com/40524972): Move KeyboardUIController members into a
   // subobject so we can just put this code into the subobject destructor.
   queued_display_change_.reset();
   queued_container_type_.reset();
@@ -327,7 +327,7 @@ void KeyboardUIController::NotifyKeyboardBoundsChanging(
     // TODO(andrewxu): Add the unit test case for issue 960174.
     occluded_bounds_in_screen = GetWorkspaceOccludedBoundsInScreen();
 
-    // TODO(https://crbug.com/943446): Use screen bounds for visual bounds.
+    // TODO(crbug.com/40619022): Use screen bounds for visual bounds.
     notification_manager_.SendNotifications(
         container_behavior_->OccludedBoundsAffectWorkspaceLayout(),
         new_bounds_in_root, occluded_bounds_in_screen, observer_list_);
@@ -687,7 +687,7 @@ void KeyboardUIController::LoadKeyboardWindowInBackground() {
 
   // For now, using Unretained is safe here because the |ui_| is owned by
   // |this| and the callback does not outlive |ui_|.
-  // TODO(https://crbug.com/845780): Use a weak ptr here in case this
+  // TODO(crbug.com/40577582): Use a weak ptr here in case this
   // assumption changes.
   DVLOG(1) << "LoadKeyboardWindow";
   aura::Window* keyboard_window = ui_->LoadKeyboardWindow(

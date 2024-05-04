@@ -14,6 +14,7 @@
 #include "base/test/test_future.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_apitest.h"
+#include "chrome/browser/profiles/profile.h"
 #include "components/onc/onc_constants.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
@@ -958,8 +959,15 @@ IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest, GetErrorState) {
 }
 #endif
 
+// TODO(crbug.com/41496066): This test is flaky on linux-chromeos builders.
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#define MAYBE_OnNetworksChangedEventConnect \
+  DISABLED_OnNetworksChangedEventConnect
+#else
+#define MAYBE_OnNetworksChangedEventConnect OnNetworksChangedEventConnect
+#endif
 IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest,
-                       OnNetworksChangedEventConnect) {
+                       MAYBE_OnNetworksChangedEventConnect) {
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   if (!SetUpAsh()) {
     GTEST_SKIP() << "Unsupported ash version.";

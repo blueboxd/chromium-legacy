@@ -11,6 +11,7 @@
 #include "chrome/browser/accessibility/pdf_ocr_controller_factory.h"
 #include "chrome/browser/pdf/pdf_extension_test_base.h"
 #include "chrome/browser/screen_ai/screen_ai_install_state.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -134,7 +135,7 @@ class PdfOcrControllerBrowserTest : public base::test::WithFeatureOverride,
 #endif
 };
 
-// TODO(crbug.com/1443346): Fix flakiness.
+// TODO(crbug.com/40267312): Fix flakiness.
 // Enabling PDF OCR should affect the accessibility mode of a new WebContents
 // of PDF Viewer Mimehandler.
 IN_PROC_BROWSER_TEST_P(PdfOcrControllerBrowserTest,
@@ -166,7 +167,7 @@ IN_PROC_BROWSER_TEST_P(PdfOcrControllerBrowserTest,
   }
 }
 
-// TODO(crbug.com/1443346): Fix flakiness.
+// TODO(crbug.com/40267312): Fix flakiness.
 // Enabling PDF OCR should affect the accessibility mode of an exiting
 // WebContents of PDF Viewer Mimehandler.
 IN_PROC_BROWSER_TEST_P(PdfOcrControllerBrowserTest,
@@ -290,6 +291,6 @@ IN_PROC_BROWSER_TEST_P(PdfOcrControllerBrowserTest,
 }
 #endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
-// TODO(crbug.com/1445746): Stop testing both modes after OOPIF PDF viewer
+// TODO(crbug.com/40268279): Stop testing both modes after OOPIF PDF viewer
 // launches.
 INSTANTIATE_FEATURE_OVERRIDE_TEST_SUITE(PdfOcrControllerBrowserTest);

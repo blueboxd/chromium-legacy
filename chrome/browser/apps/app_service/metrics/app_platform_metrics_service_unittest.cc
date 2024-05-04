@@ -38,10 +38,10 @@
 #include "chrome/browser/apps/app_service/publishers/app_publisher.h"
 #include "chrome/browser/ash/borealis/borealis_util.h"
 #include "chrome/browser/ash/borealis/testing/apps.h"
+#include "chrome/browser/ash/crosapi/browser_util.h"
 #include "chrome/browser/ash/crostini/crostini_test_helper.h"
 #include "chrome/browser/ash/guest_os/guest_os_registry_service.h"
 #include "chrome/browser/ash/guest_os/guest_os_registry_service_factory.h"
-#include "chrome/browser/metrics/structured/event_logging_features.h"
 #include "chrome/browser/metrics/usertype_by_devicetype_metrics_provider.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -2080,7 +2080,7 @@ TEST_P(AppPlatformMetricsServiceTest, LaunchApps) {
       1, IsLacrosEnabled() ? AppTypeNameV2::kStandaloneBrowserWebAppWindow
                            : AppTypeNameV2::kWebWindow);
 
-  // TODO(crbug.com/1253250): Register non-mojom apps and use
+  // TODO(crbug.com/40199106): Register non-mojom apps and use
   // AppServiceProxy::LaunchAppWithParams to test launching.
   proxy->BrowserAppLauncher()->LaunchAppWithParamsForTesting(AppLaunchParams(
       kWebAppId2, LaunchContainer::kLaunchContainerTab,
@@ -2947,9 +2947,7 @@ class AppDiscoveryMetricsTest : public AppPlatformMetricsServiceTest {
     metrics::structured::Recorder::GetInstance()->SetUiTaskRunner(
         task_environment_.GetMainThreadTaskRunner());
 
-    std::vector<base::test::FeatureRef> enabled{
-        metrics::structured::kAppDiscoveryLogging,
-        metrics::structured::kEventSequenceLogging};
+    std::vector<base::test::FeatureRef> enabled;
     std::vector<base::test::FeatureRef> disabled;
     if (IsLacrosEnabled()) {
       base::Extend(enabled, ash::standalone_browser::GetFeatureRefs());

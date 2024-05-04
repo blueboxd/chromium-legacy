@@ -8,6 +8,7 @@
 
 #include "base/functional/bind.h"
 #include "base/task/single_thread_task_runner.h"
+#include "base/time/time.h"
 
 namespace ash {
 
@@ -45,18 +46,6 @@ void FakeResourcedClient::SetMemoryMarginsBps(
       base::BindOnce(std::move(callback), true, critical_kb, moderate_kb));
 }
 
-void FakeResourcedClient::ReportBackgroundProcesses(
-    Component component,
-    const std::vector<int32_t>& pids) {
-  if (component == ResourcedClient::Component::kAsh) {
-    ash_background_pids_ = pids;
-  } else if (component == ResourcedClient::Component::kLacros) {
-    lacros_background_pids_ = pids;
-  } else {
-    NOTREACHED();
-  }
-}
-
 void FakeResourcedClient::ReportBrowserProcesses(
     Component component,
     const std::vector<Process>& processes) {
@@ -73,9 +62,9 @@ void FakeResourcedClient::SetProcessState(base::ProcessId process_id,
                                           resource_manager::ProcessState state,
                                           SetQoSStateCallback callback) {
   process_state_history_.push_back({process_id, state});
-  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
-      FROM_HERE,
-      base::BindOnce(std::move(callback), set_process_state_result_));
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
+      FROM_HERE, base::BindOnce(std::move(callback), set_process_state_result_),
+      set_process_state_delay_);
 }
 
 void FakeResourcedClient::SetThreadState(base::ProcessId process_id,
@@ -83,8 +72,9 @@ void FakeResourcedClient::SetThreadState(base::ProcessId process_id,
                                          resource_manager::ThreadState state,
                                          SetQoSStateCallback callback) {
   thread_state_history_.push_back({process_id, thread_id, state});
-  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), set_thread_state_result_));
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
+      FROM_HERE, base::BindOnce(std::move(callback), set_thread_state_result_),
+      set_thread_state_delay_);
 }
 
 void FakeResourcedClient::WaitForServiceToBeAvailable(
@@ -143,6 +133,14 @@ void FakeResourcedClient::SetProcessStateResult(dbus::DBusResult result) {
 
 void FakeResourcedClient::SetThreadStateResult(dbus::DBusResult result) {
   set_thread_state_result_ = result;
+}
+
+void FakeResourcedClient::DelaySetProcessStateResult(base::TimeDelta delay) {
+  set_process_state_delay_ = delay;
+}
+
+void FakeResourcedClient::DelaySetThreadStateResult(base::TimeDelta delay) {
+  set_thread_state_delay_ = delay;
 }
 
 void FakeResourcedClient::AddArcContainerObserver(

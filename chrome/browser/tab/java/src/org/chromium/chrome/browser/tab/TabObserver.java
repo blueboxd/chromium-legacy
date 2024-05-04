@@ -216,9 +216,8 @@ public interface TabObserver {
     void onDidStartNavigationInPrimaryMainFrame(Tab tab, NavigationHandle navigationHandle);
 
     /**
-     * TODO(crbug.com/1434461) Temporary fix for LocationBarModel not properly
-     * caching same document navigation state. Will be removed later, see bug for more
-     * details.
+     * TODO(crbug.com/40264745) Temporary fix for LocationBarModel not properly caching same
+     * document navigation state. Will be removed later, see bug for more details.
      */
     void onDidFinishNavigationEnd();
 
@@ -294,13 +293,22 @@ public interface TabObserver {
 
     /**
      * Called when renderer changes its state about being responsive to requests.
+     *
      * @param tab The notifying {@link Tab}.
      * @param {@code true} if the renderer becomes responsive, otherwise {@code false}.
      */
     void onRendererResponsiveStateChanged(Tab tab, boolean isResponsive);
 
     /**
+     * Called when navigation entries of a tab have been appended while the tab is frozen.
+     *
+     * @param tab The notifying {@link Tab}.
+     */
+    void onNavigationEntriesAppended(Tab tab);
+
+    /**
      * Called when navigation entries of a tab have been deleted.
+     *
      * @param tab The notifying {@link Tab}.
      */
     void onNavigationEntriesDeleted(Tab tab);
@@ -335,6 +343,13 @@ public interface TabObserver {
             int bottomControlsMinHeightOffsetY);
 
     /**
+     * Called when the tab is about to notify its renderer to show the browser controls.
+     *
+     * @param tab The notifying {@link Tab}.
+     */
+    void onWillShowBrowserControls(Tab tab);
+
+    /**
      * Called when scrolling state of Tab's content view changes.
      * @param scrolling {@code true} if scrolling started; {@code false} if stopped.
      */
@@ -353,12 +368,13 @@ public interface TabObserver {
 
     /**
      * Broadcast that the timestamp on a {@link Tab} has changed
+     *
      * @param tab {@link Tab} timestamp has changed on
      * @param timestampMillis new value of the timestamp
      */
     default void onTimestampChanged(Tab tab, long timestampMillis) {}
 
-    // TODO(crbug/1524345): deprecate RootId once TabGroupId has finished replacing it.
+    // TODO(crbug.com/41497290): deprecate RootId once TabGroupId has finished replacing it.
     /**
      * Broadcast that root identifier on a {@link Tab} has changed. This method will be functionally
      * replaced by onTabGroupIdChanged as part of https://crbug.com/1523745.

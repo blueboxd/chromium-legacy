@@ -148,15 +148,18 @@ export class SettingsCategoryDefaultRadioGroupElement extends
       case ContentSettingsTypes.BLUETOOTH_DEVICES:
       case ContentSettingsTypes.BLUETOOTH_SCANNING:
       case ContentSettingsTypes.CAMERA:
+      case ContentSettingsTypes.CAPTURED_SURFACE_CONTROL:
       case ContentSettingsTypes.CLIPBOARD:
       case ContentSettingsTypes.FILE_SYSTEM_WRITE:
       case ContentSettingsTypes.GEOLOCATION:
       case ContentSettingsTypes.HID_DEVICES:
       case ContentSettingsTypes.IDLE_DETECTION:
+      case ContentSettingsTypes.KEYBOARD_LOCK:
       case ContentSettingsTypes.LOCAL_FONTS:
       case ContentSettingsTypes.MIC:
       case ContentSettingsTypes.MIDI_DEVICES:
       case ContentSettingsTypes.NOTIFICATIONS:
+      case ContentSettingsTypes.POINTER_LOCK:
       case ContentSettingsTypes.SERIAL_PORTS:
       case ContentSettingsTypes.STORAGE_ACCESS:
       case ContentSettingsTypes.USB_DEVICES:

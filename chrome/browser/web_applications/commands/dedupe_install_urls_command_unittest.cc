@@ -47,11 +47,6 @@ class DedupeInstallUrlsCommandTest : public WebAppTest {
     return *WebAppProvider::GetForWebApps(profile());
   }
 
-  void TearDown() override {
-    provider().Shutdown();
-    WebAppTest::TearDown();
-  }
-
   void SetPolicyInstallUrlAndSynchronize(const GURL& url) {
     base::test::TestFuture<void> future;
     provider()
@@ -103,8 +98,8 @@ class DedupeInstallUrlsCommandTest : public WebAppTest {
       webapps::WebappInstallSource install_surface,
       const GURL& install_url,
       const GURL& start_url) {
-    auto web_app_info = std::make_unique<WebAppInstallInfo>();
-    web_app_info->start_url = start_url;
+    auto web_app_info =
+        WebAppInstallInfo::CreateWithStartUrlForTesting(start_url);
     web_app_info->title = u"Test app";
     web_app_info->install_url = install_url;
 

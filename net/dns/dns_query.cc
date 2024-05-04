@@ -5,9 +5,12 @@
 #include "net/dns/dns_query.h"
 
 #include <optional>
+#include <string_view>
 #include <utility>
 
 #include "base/big_endian.h"
+#include "base/containers/span.h"
+#include "base/containers/span_writer.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/numerics/byte_conversions.h"
@@ -71,7 +74,7 @@ std::unique_ptr<OptRecordRdata> AddPaddingIfNecessary(
   std::unique_ptr<OptRecordRdata> merged_opt_rdata;
   if (opt_rdata) {
     merged_opt_rdata = OptRecordRdata::Create(
-        base::StringPiece(opt_rdata->buf().data(), opt_rdata->buf().size()));
+        std::string_view(opt_rdata->buf().data(), opt_rdata->buf().size()));
   } else {
     merged_opt_rdata = std::make_unique<OptRecordRdata>();
   }
@@ -128,31 +131,30 @@ DnsQuery::DnsQuery(uint16_t id,
   header->qdcount = base::HostToNet16(1);
 
   // Write question section after the header.
-  base::BigEndianWriter writer(
+  auto writer = base::SpanWriter(
       base::as_writable_bytes(io_buffer_->span()).subspan(kHeaderSize));
-  writer.WriteBytes(qname.data(), qname.size());
-  writer.WriteU16(qtype);
-  writer.WriteU16(dns_protocol::kClassIN);
+  writer.Write(qname);
+  writer.WriteU16BigEndian(qtype);
+  writer.WriteU16BigEndian(dns_protocol::kClassIN);
 
   if (merged_opt_rdata) {
     DCHECK_NE(merged_opt_rdata->OptCount(), 0u);
 
     header->arcount = base::HostToNet16(1);
     // Write OPT pseudo-resource record.
-    writer.WriteU8(0);                       // empty domain name (root domain)
-    writer.WriteU16(OptRecordRdata::kType);  // type
-    writer.WriteU16(kMaxUdpPayloadSize);     // class
+    writer.WriteU8BigEndian(0);  // empty domain name (root domain)
+    writer.WriteU16BigEndian(OptRecordRdata::kType);  // type
+    writer.WriteU16BigEndian(kMaxUdpPayloadSize);     // class
     // ttl (next 3 fields)
-    writer.WriteU8(0);  // rcode does not apply to requests
-    writer.WriteU8(0);  // version
+    writer.WriteU8BigEndian(0);  // rcode does not apply to requests
+    writer.WriteU8BigEndian(0);  // version
     // TODO(robpercival): Set "DNSSEC OK" flag if/when DNSSEC is supported:
     // https://tools.ietf.org/html/rfc3225#section-3
-    writer.WriteU16(0);  // flags
+    writer.WriteU16BigEndian(0);  // flags
 
     // rdata
-    writer.WriteU16(merged_opt_rdata->buf().size());  // rdata length
-    writer.WriteBytes(merged_opt_rdata->buf().data(),
-                      merged_opt_rdata->buf().size());
+    writer.WriteU16BigEndian(merged_opt_rdata->buf().size());  // rdata length
+    writer.Write(base::as_byte_span(merged_opt_rdata->buf()));
   }
 }
 
@@ -178,8 +180,8 @@ bool DnsQuery::Parse(size_t valid_bytes) {
   if (io_buffer_ == nullptr || io_buffer_->span().empty()) {
     return false;
   }
-  base::BigEndianReader reader(
-      base::as_bytes(io_buffer_->span()).first(valid_bytes));
+  auto reader =
+      base::SpanReader(base::as_bytes(io_buffer_->span()).first(valid_bytes));
   dns_protocol::Header header;
   if (!ReadHeader(&reader, &header)) {
     return false;
@@ -198,7 +200,7 @@ bool DnsQuery::Parse(size_t valid_bytes) {
   }
   uint16_t qtype;
   uint16_t qclass;
-  if (!reader.ReadU16(&qtype) || !reader.ReadU16(&qclass) ||
+  if (!reader.ReadU16BigEndian(qtype) || !reader.ReadU16BigEndian(qclass) ||
       qclass != dns_protocol::kClassIN) {
     return false;
   }
@@ -217,15 +219,14 @@ base::span<const uint8_t> DnsQuery::qname() const {
 }
 
 uint16_t DnsQuery::qtype() const {
-  return base::numerics::U16FromBigEndian(
-      base::as_bytes(io_buffer_->span())
-          .subspan(kHeaderSize + qname_size_)
-          .first<2u>());
+  return base::U16FromBigEndian(base::as_bytes(io_buffer_->span())
+                                    .subspan(kHeaderSize + qname_size_)
+                                    .first<2u>());
 }
 
-base::StringPiece DnsQuery::question() const {
+std::string_view DnsQuery::question() const {
   auto s = io_buffer_->span().subspan(kHeaderSize, QuestionSize(qname_size_));
-  return base::StringPiece(s.begin(), s.end());
+  return std::string_view(s.begin(), s.end());
 }
 
 size_t DnsQuery::question_size() const {
@@ -247,20 +248,23 @@ void DnsQuery::CopyFrom(const DnsQuery& orig) {
   io_buffer_->span().copy_from(orig.io_buffer()->span());
 }
 
-bool DnsQuery::ReadHeader(base::BigEndianReader* reader,
+bool DnsQuery::ReadHeader(base::SpanReader<const uint8_t>* reader,
                           dns_protocol::Header* header) {
-  return (
-      reader->ReadU16(&header->id) && reader->ReadU16(&header->flags) &&
-      reader->ReadU16(&header->qdcount) && reader->ReadU16(&header->ancount) &&
-      reader->ReadU16(&header->nscount) && reader->ReadU16(&header->arcount));
+  return (reader->ReadU16BigEndian(header->id) &&
+          reader->ReadU16BigEndian(header->flags) &&
+          reader->ReadU16BigEndian(header->qdcount) &&
+          reader->ReadU16BigEndian(header->ancount) &&
+          reader->ReadU16BigEndian(header->nscount) &&
+          reader->ReadU16BigEndian(header->arcount));
 }
 
-bool DnsQuery::ReadName(base::BigEndianReader* reader, std::string* out) {
+bool DnsQuery::ReadName(base::SpanReader<const uint8_t>* reader,
+                        std::string* out) {
   DCHECK(out != nullptr);
   out->clear();
   out->reserve(dns_protocol::kMaxNameLength + 1);
   uint8_t label_length;
-  if (!reader->ReadU8(&label_length)) {
+  if (!reader->ReadU8BigEndian(label_length)) {
     return false;
   }
   while (label_length) {
@@ -268,14 +272,15 @@ bool DnsQuery::ReadName(base::BigEndianReader* reader, std::string* out) {
       return false;
     }
 
-    out->append(reinterpret_cast<char*>(&label_length), 1);
+    out->push_back(static_cast<char>(label_length));
 
-    base::StringPiece label;
-    if (!reader->ReadPiece(&label, label_length)) {
+    std::optional<base::span<const uint8_t>> label = reader->Read(label_length);
+    if (!label) {
       return false;
     }
-    out->append(label);
-    if (!reader->ReadU8(&label_length)) {
+    out->append(base::as_string_view(*label));
+
+    if (!reader->ReadU8BigEndian(label_length)) {
       return false;
     }
   }

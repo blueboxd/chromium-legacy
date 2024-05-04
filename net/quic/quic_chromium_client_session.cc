@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <set>
+#include <string_view>
 #include <utility>
 
 #include "base/containers/contains.h"
@@ -27,15 +28,17 @@
 #include "base/time/tick_clock.h"
 #include "base/trace_event/memory_usage_estimator.h"
 #include "base/values.h"
+#include "net/base/connection_endpoint_metadata.h"
 #include "net/base/features.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_activity_monitor.h"
 #include "net/base/network_anonymization_key.h"
 #include "net/base/privacy_mode.h"
+#include "net/base/session_usage.h"
 #include "net/base/url_util.h"
 #include "net/cert/signed_certificate_timestamp_and_status.h"
-#include "net/dns/public/host_resolver_results.h"
+#include "net/dns/public/secure_dns_policy.h"
 #include "net/http/transport_security_state.h"
 #include "net/log/net_log_event_type.h"
 #include "net/log/net_log_source_type.h"
@@ -171,7 +174,7 @@ void LogMigrateToSocketStatus(bool success) {
 
 void RecordConnectionCloseErrorCode(const quic::QuicConnectionCloseFrame& frame,
                                     quic::ConnectionCloseSource source,
-                                    base::StringPiece hostname,
+                                    std::string_view hostname,
                                     bool handshake_confirmed,
                                     bool has_ech_config_list) {
   bool is_google_host = IsGoogleHost(hostname);
@@ -224,7 +227,7 @@ void RecordConnectionCloseErrorCode(const quic::QuicConnectionCloseFrame& frame,
 
 base::Value::Dict NetLogQuicMigrationFailureParams(
     quic::QuicConnectionId connection_id,
-    base::StringPiece reason) {
+    std::string_view reason) {
   return base::Value::Dict()
       .Set("connection_id", connection_id.ToString())
       .Set("reason", reason);
@@ -319,6 +322,7 @@ std::string MigrationCauseToString(MigrationCause cause) {
 }
 
 base::Value::Dict NetLogQuicClientSessionParams(
+    const NetLogWithSource& net_log,
     const QuicSessionKey* session_key,
     const quic::QuicConnectionId& connection_id,
     const quic::QuicConnectionId& client_connection_id,
@@ -330,20 +334,31 @@ base::Value::Dict NetLogQuicClientSessionParams(
       base::Value::Dict()
           .Set("host", session_key->server_id().host())
           .Set("port", session_key->server_id().port())
-          .Set("privacy_mode",
-               PrivacyModeToDebugString(session_key->privacy_mode()))
-          .Set("network_anonymization_key",
-               session_key->network_anonymization_key().ToDebugString())
+          .Set("connection_id", connection_id.ToString())
+          .Set("versions", ParsedQuicVersionVectorToString(supported_versions))
           .Set("require_confirmation", require_confirmation)
           .Set("cert_verify_flags", cert_verify_flags)
-          .Set("connection_id", connection_id.ToString())
-          .Set("versions", ParsedQuicVersionVectorToString(supported_versions));
+          .Set("server_id_privacy_mode",
+               session_key->server_id().privacy_mode_enabled())
+          .Set("privacy_mode",
+               PrivacyModeToDebugString(session_key->privacy_mode()))
+          .Set("proxy_chain", session_key->proxy_chain().ToDebugString())
+          .Set("session_usage",
+               session_key->session_usage() == SessionUsage::kDestination
+                   ? "destination"
+                   : "proxy")
+          .Set("network_anonymization_key",
+               session_key->network_anonymization_key().ToDebugString())
+          .Set("secure_dns_policy",
+               SecureDnsPolicyToDebugString(session_key->secure_dns_policy()))
+          .Set("require_dns_https_alpn", session_key->require_dns_https_alpn());
   if (!client_connection_id.IsEmpty()) {
     dict.Set("client_connection_id", client_connection_id.ToString());
   }
   if (!ech_config_list.empty()) {
     dict.Set("ech_config_list", NetLogBinaryValue(ech_config_list));
   }
+  net_log.source().AddToEventParameters(dict);
   return dict;
 }
 
@@ -909,13 +924,15 @@ QuicChromiumClientSession::QuicChromiumClientSession(
     int cert_verify_flags,
     const quic::QuicConfig& config,
     std::unique_ptr<QuicCryptoClientConfigHandle> crypto_config,
+    const char* const connection_description,
     base::TimeTicks dns_resolution_start_time,
     base::TimeTicks dns_resolution_end_time,
     const base::TickClock* tick_clock,
     base::SequencedTaskRunner* task_runner,
     std::unique_ptr<SocketPerformanceWatcher> socket_performance_watcher,
-    const HostResolverEndpointResult& endpoint_result,
-    NetLog* net_log)
+    const ConnectionEndpointMetadata& metadata,
+    bool report_ecn,
+    const NetLogWithSource& net_log)
     : quic::QuicSpdyClientSessionBase(connection,
                                       /*visitor=*/nullptr,
                                       config,
@@ -946,20 +963,23 @@ QuicChromiumClientSession::QuicChromiumClientSession(
       transport_security_state_(transport_security_state),
       ssl_config_service_(ssl_config_service),
       server_info_(std::move(server_info)),
+      report_ecn_(report_ecn),
       task_runner_(task_runner),
-      net_log_(NetLogWithSource::Make(net_log, NetLogSourceType::QUIC_SESSION)),
+      net_log_(NetLogWithSource::Make(net_log.net_log(),
+                                      NetLogSourceType::QUIC_SESSION)),
       logger_(std::make_unique<QuicConnectionLogger>(
           this,
+          connection_description,
           std::move(socket_performance_watcher),
           net_log_)),
       http3_logger_(std::make_unique<QuicHttp3Logger>(net_log_)),
       path_validation_writer_delegate_(this, task_runner_),
-      ech_config_list_(endpoint_result.metadata.ech_config_list) {
+      ech_config_list_(metadata.ech_config_list) {
   default_network_ = default_network;
   auto* socket_raw = socket.get();
   packet_readers_.push_back(std::make_unique<QuicChromiumPacketReader>(
       std::move(socket), clock, this, yield_after_packets, yield_after_duration,
-      net_log_));
+      report_ecn, net_log_));
   crypto_stream_ = crypto_client_stream_factory->CreateQuicCryptoClientStream(
       session_key.server_id(), this,
       std::make_unique<ProofVerifyContextChromium>(cert_verify_flags, net_log_),
@@ -970,10 +990,14 @@ QuicChromiumClientSession::QuicChromiumClientSession(
   migrate_back_to_default_timer_.SetTaskRunner(task_runner_.get());
   net_log_.BeginEvent(NetLogEventType::QUIC_SESSION, [&] {
     return NetLogQuicClientSessionParams(
-        &session_key, connection_id(), connection->client_connection_id(),
-        supported_versions(), cert_verify_flags, require_confirmation_,
-        ech_config_list_);
+        net_log, &session_key, connection_id(),
+        connection->client_connection_id(), supported_versions(),
+        cert_verify_flags, require_confirmation_, ech_config_list_);
   });
+  // Associate the owned NetLog with the parent NetLog.
+  net_log.AddEventReferencingSource(NetLogEventType::QUIC_SESSION_CREATED,
+                                    net_log_.source());
+
   IPEndPoint address;
   if (socket_raw && socket_raw->GetLocalAddress(&address) == OK &&
       address.GetFamily() == ADDRESS_FAMILY_IPV6) {
@@ -1026,6 +1050,12 @@ QuicChromiumClientSession::~QuicChromiumClientSession() {
     RecordHandshakeState(STATE_FAILED);
   }
 
+  UMA_HISTOGRAM_ENUMERATION(
+      "Net.QuicSession.EcnMarksObserved",
+      static_cast<EcnPermutations>(observed_incoming_ecn_));
+  UMA_HISTOGRAM_COUNTS_10M(
+      "Net.QuicSession.PacketsBeforeEcnTransition",
+      observed_ecn_transition_ ? incoming_packets_before_ecn_transition_ : 0);
   UMA_HISTOGRAM_COUNTS_1M("Net.QuicSession.NumTotalStreams",
                           num_total_streams_);
 
@@ -1359,7 +1389,7 @@ bool QuicChromiumClientSession::GetSSLInfo(SSLInfo* ssl_info) const {
   return true;
 }
 
-base::StringPiece QuicChromiumClientSession::GetAcceptChViaAlps(
+std::string_view QuicChromiumClientSession::GetAcceptChViaAlps(
     const url::SchemeHostPort& scheme_host_port) const {
   auto it = accept_ch_entries_received_via_alps_.find(scheme_host_port);
   if (it == accept_ch_entries_received_via_alps_.end()) {
@@ -2087,7 +2117,7 @@ int QuicChromiumClientSession::HandleWriteError(
           weak_factory_.GetWeakPtr(), error_code,
           // UnsafeDanglingUntriaged triggered by test:
           // QuicSessionPoolTest.MigrateSessionOnSyncWriteErrorPauseBeforeConnected
-          // TODO(https://crbug.com/1380714): Remove `UnsafeDanglingUntriaged`
+          // TODO(crbug.com/40061562): Remove `UnsafeDanglingUntriaged`
           base::UnsafeDanglingUntriaged(connection()->writer())));
 
   ignore_read_error_ = true;
@@ -3075,7 +3105,7 @@ void QuicChromiumClientSession::FinishCreateContextForMultiPortPath(
       probing_socket.get(), task_runner_);
   auto probing_reader = std::make_unique<QuicChromiumPacketReader>(
       std::move(probing_socket), clock_, this, yield_after_packets_,
-      yield_after_duration_, net_log_);
+      yield_after_duration_, session_pool_->report_ecn(), net_log_);
 
   probing_reader->StartReading();
   path_validation_writer_delegate_.set_network(default_network_);
@@ -3171,7 +3201,7 @@ void QuicChromiumClientSession::FinishStartProbing(
       probing_socket.get(), task_runner_);
   auto probing_reader = std::make_unique<QuicChromiumPacketReader>(
       std::move(probing_socket), clock_, this, yield_after_packets_,
-      yield_after_duration_, net_log_);
+      yield_after_duration_, session_pool_->report_ecn(), net_log_);
 
   probing_reader->StartReading();
   path_validation_writer_delegate_.set_network(network);
@@ -3571,6 +3601,16 @@ bool QuicChromiumClientSession::OnPacket(
     const quic::QuicSocketAddress& local_address,
     const quic::QuicSocketAddress& peer_address) {
   ProcessUdpPacket(local_address, peer_address, packet);
+  uint8_t new_incoming_ecn =
+      (0x1 << static_cast<uint8_t>(packet.ecn_codepoint()));
+  if (new_incoming_ecn != observed_incoming_ecn_ &&
+      incoming_packets_before_ecn_transition_ > 0) {
+    observed_ecn_transition_ = true;
+  }
+  if (!observed_ecn_transition_) {
+    ++incoming_packets_before_ecn_transition_;
+  }
+  observed_incoming_ecn_ |= new_incoming_ecn;
   if (!connection()->connected()) {
     NotifyFactoryOfSessionClosedLater();
     return false;
@@ -3744,7 +3784,7 @@ void QuicChromiumClientSession::FinishMigrate(
   // Create new packet reader and writer on the new socket.
   auto new_reader = std::make_unique<QuicChromiumPacketReader>(
       std::move(socket), clock_, this, yield_after_packets_,
-      yield_after_duration_, net_log_);
+      yield_after_duration_, session_pool_->report_ecn(), net_log_);
   new_reader->StartReading();
   auto new_writer = std::make_unique<QuicChromiumPacketWriter>(
       new_reader->socket(), task_runner_);
@@ -3881,6 +3921,14 @@ QuicChromiumClientSession::GetDnsAliasesForSessionKey(
   static const base::NoDestructor<std::set<std::string>> emptyset_result;
   return session_pool_ ? session_pool_->GetDnsAliasesForSessionKey(key)
                        : *emptyset_result;
+}
+
+quic::QuicPacketLength
+QuicChromiumClientSession::Handle::GetGuaranteedLargestMessagePayload() const {
+  if (!session_) {
+    return 0;
+  }
+  return session_->GetGuaranteedLargestMessagePayload();
 }
 
 #if BUILDFLAG(ENABLE_WEBSOCKETS)

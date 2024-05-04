@@ -5,6 +5,7 @@
 #include "ash/system/input_device_settings/input_device_settings_metrics_manager.h"
 
 #include <cstdint>
+#include <optional>
 #include <string_view>
 
 #include "ash/accelerators/accelerator_encoding.h"
@@ -16,6 +17,7 @@
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/system/input_device_settings/input_device_settings_controller_impl.h"
+#include "ash/system/input_device_settings/input_device_settings_metadata.h"
 #include "ash/system/input_device_settings/input_device_settings_pref_names.h"
 #include "ash/system/input_device_settings/input_device_settings_utils.h"
 #include "ash/system/input_device_settings/settings_updated_metrics_info.h"
@@ -26,9 +28,12 @@
 #include "base/strings/strcat.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
+#include "base/types/optional_ref.h"
 #include "components/prefs/pref_service.h"
 #include "ui/events/ash/keyboard_capability.h"
 #include "ui/events/ash/mojom/six_pack_shortcut_modifier.mojom-shared.h"
+#include "ui/events/devices/device_data_manager.h"
+#include "ui/events/devices/keyboard_device.h"
 #include "ui/events/keycodes/keyboard_codes_posix.h"
 #include "ui/events/ozone/evdev/keyboard_mouse_combo_device_metrics.h"
 
@@ -47,6 +52,7 @@ enum class PointerSensitivity {
 
 // Do not change ordering of this list as the ordering is used to compute
 // modifier hash in `RecordModifierRemappingHash()`.
+// TODO(b/329330990): Update modifier names map.
 static constexpr struct {
   const char* key_name;
   ui::mojom::ModifierKey modifier_key;
@@ -87,6 +93,7 @@ constexpr int kNumModifiers = std::size(kModifierNames);
 // Verify that the number of modifiers we are trying to hash together into a
 // 32-bit int will fit without any overflow or UB.
 // Modifier hash is limited to 32 bits as metrics can only handle 32 bit ints.
+// TODO(b/329330990): Update modifier hash.
 static_assert((sizeof(int32_t) * 8) >= (kModifierHashWidth * kNumModifiers));
 static_assert(static_cast<int>(ui::mojom::ModifierKey::kMaxValue) <=
               kMaxModifierValue);
@@ -238,7 +245,15 @@ bool ShouldRecordFkeyMetrics(const mojom::Keyboard& keyboard) {
   return ::features::AreF11AndF12ShortcutsEnabled() &&
          Shell::Get()->keyboard_capability()->IsChromeOSKeyboard(keyboard.id) &&
          (keyboard.settings->f11.has_value() &&
-          keyboard.settings->f12.has_value());
+          keyboard.settings->f12.has_value()) &&
+         !base::Contains(keyboard.modifier_keys,
+                         ui::mojom::ModifierKey::kFunction);
+}
+
+bool ShouldRecordSixPackKeyMetrics(const mojom::Keyboard& keyboard) {
+  return features::IsAltClickAndSixPackCustomizationEnabled() &&
+         !base::Contains(keyboard.modifier_keys,
+                         ui::mojom::ModifierKey::kFunction);
 }
 
 void RecordButtonMetrics(const mojom::Button& button,
@@ -419,6 +434,19 @@ void RecordInitialButtonRemappingAction(
                               peripheral_kind, "Initial");
 }
 
+std::optional<ui::KeyboardDevice> FindKeyboardWithId(int device_id) {
+  const auto& keyboards =
+      ui::DeviceDataManager::GetInstance()->GetKeyboardDevices();
+  auto iter = base::ranges::find(
+      keyboards, device_id,
+      [](const ui::KeyboardDevice& keyboard) { return keyboard.id; });
+  if (iter == keyboards.end()) {
+    return std::nullopt;
+  }
+
+  return *iter;
+}
+
 }  // namespace
 
 InputDeviceSettingsMetricsManager::InputDeviceSettingsMetricsManager() =
@@ -454,6 +482,11 @@ void InputDeviceSettingsMetricsManager::RecordKeyboardInitialMetrics(
 
   // Record metrics for modifier remappings.
   for (const auto modifier_key : keyboard.modifier_keys) {
+    // TODO(b/329330990): Remove after updating modifier names map.
+    if (features::IsModifierSplitEnabled()) {
+      break;
+    }
+
     const auto modifier_name = GetModifierKeyName(modifier_key);
     CHECK(modifier_name.has_value());
     const auto key_remapped_to =
@@ -467,7 +500,7 @@ void InputDeviceSettingsMetricsManager::RecordKeyboardInitialMetrics(
   // Record remapping metrics when keyboard is initialized.
   RecordModifierRemappingHash(keyboard);
   RecordKeyboardNumberOfKeysRemapped(keyboard);
-  if (features::IsAltClickAndSixPackCustomizationEnabled()) {
+  if (ShouldRecordSixPackKeyMetrics(keyboard)) {
     RecordSixPackKeyInfo(keyboard, ui::VKEY_DELETE, /*is_initial_value=*/true);
     RecordSixPackKeyInfo(keyboard, ui::VKEY_INSERT, /*is_initial_value=*/true);
     RecordSixPackKeyInfo(keyboard, ui::VKEY_HOME, /*is_initial_value=*/true);
@@ -506,6 +539,11 @@ void InputDeviceSettingsMetricsManager::RecordKeyboardChangedMetrics(
 
   // Record metrics for modifier remappings.
   for (const auto modifier_key : keyboard.modifier_keys) {
+    // TODO(b/329330990): Remove after updating modifier names map.
+    if (features::IsModifierSplitEnabled()) {
+      break;
+    }
+
     const auto modifier_name = GetModifierKeyName(modifier_key);
     CHECK(modifier_name.has_value());
     const auto key_remapped_to_before =
@@ -522,7 +560,7 @@ void InputDeviceSettingsMetricsManager::RecordKeyboardChangedMetrics(
     }
   }
 
-  if (features::IsAltClickAndSixPackCustomizationEnabled()) {
+  if (ShouldRecordSixPackKeyMetrics(keyboard)) {
     CHECK(keyboard.settings->six_pack_key_remappings);
     if (keyboard.settings->six_pack_key_remappings->del !=
         old_settings.six_pack_key_remappings->del) {
@@ -981,22 +1019,18 @@ void InputDeviceSettingsMetricsManager::RecordKeyboardMouseComboDeviceMetric(
     const mojom::Keyboard& keyboard,
     const mojom::Mouse& mouse) {
   static base::NoDestructor<base::flat_set<std::string>> logged_devices;
-  static constexpr auto kKnownKeyboardMouseComboDevices =
-      base::MakeFixedFlatSet<std::string_view>({
-          "046d:4024",  // Logitech K400
-          "046d:404d",  // Logitech K400+
-          "046d:c548",  // Logitech BOLT Receiver
-          "17ef:60e1",  // Lenovo TrackPoint Keyboard II
-          "17ef:60ee",  // Lenovo TrackPoint Keyboard II
-          "17ef:609f",  // Lenovo 100 USB-A Wireless Combo Keyboard and Mouse
-      });
 
   auto [_, inserted] = logged_devices->insert(keyboard.device_key);
   if (!inserted) {
     return;
   }
 
-  if (kKnownKeyboardMouseComboDevices.contains(keyboard.device_key)) {
+  auto keyboard_device = FindKeyboardWithId(keyboard.id);
+  if (!keyboard_device) {
+    return;
+  }
+
+  if (GetDeviceType(*keyboard_device) == DeviceType::kKeyboardMouseCombo) {
     base::UmaHistogramEnumeration(
         "ChromeOS.Inputs.ComboDeviceClassification",
         ui::ComboDeviceClassification::kKnownComboDevice);

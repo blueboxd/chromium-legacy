@@ -173,7 +173,7 @@ class Port(object):
         ('win11', 'x86_64'),
         ('linux', 'x86_64'),
         ('fuchsia', 'x86_64'),
-        ('ios16-simulator', 'x86_64'),
+        ('ios17-simulator', 'x86_64'),
     )
 
     CONFIGURATION_SPECIFIER_MACROS = {
@@ -181,7 +181,7 @@ class Port(object):
             'mac10.15', 'mac11', 'mac11-arm64', 'mac12', 'mac12-arm64',
             'mac13', 'mac13-arm64', 'mac14', 'mac14-arm64'
         ],
-        'ios': ['ios16-simulator'],
+        'ios': ['ios17-simulator'],
         'win': ['win10.20h2', 'win11-arm64', 'win11'],
         'linux': ['linux'],
         'fuchsia': ['fuchsia'],
@@ -773,6 +773,41 @@ class Port(object):
             test_name_root, _ = self._filesystem.splitext(test_name)
         return test_name_root + suffix + extension
 
+    @memoized
+    def test_from_output_filename(self, baseline_path: str) -> Optional[str]:
+        """Derive the test corresponding to a baseline.
+
+        Arguments:
+            baseline_path: Path to a generic baseline relative to `web_tests/`
+                (i.e., not platform- or flag-specific). The baseline does not
+                need to exist on the filesystem. A virtual baseline resolves
+                to the corresponding virtual test.
+
+        Returns:
+            The test name, if found, and `None` otherwise.
+        """
+        stem, extension = self._filesystem.splitext(baseline_path)
+        if stem.endswith(self.BASELINE_SUFFIX):
+            suffix = self.BASELINE_SUFFIX
+        elif stem.endswith(self.BASELINE_MISMATCH_SUFFIX):
+            suffix = self.BASELINE_MISMATCH_SUFFIX
+        else:
+            return None
+
+        # This is a fast path for the common case of `.html` test files.
+        maybe_test = stem[:-len(suffix)] + '.html'
+        if self.tests([maybe_test]) == [maybe_test]:
+            return maybe_test
+
+        test_dir = self._filesystem.dirname(stem)
+        # `tests()` can be arbitrarily slow, but there's no better way to do the
+        # inversion because `output_filename()` sanitizes the original test name
+        # lossily.
+        for test in self.tests([test_dir]):
+            if baseline_path == self.output_filename(test, suffix, extension):
+                return test
+        return None
+
     def expected_baselines(self,
                            test_name,
                            extension,
@@ -1024,13 +1059,17 @@ class Port(object):
                 return tests matching at least one path in paths.
 
         Returns:
-            An array of test paths and test names. The latter are web platform
-            tests that don't correspond to file paths but are valid tests,
-            for instance a file path test.any.js could correspond to two test
-            names: test.any.html and test.any.worker.html.
+            A list of concrete test URLs. Each URL usually corresponds to a
+            file under `web_tests/`, but not always [0, 1, 2].
+
+        [0]: https://web-platform-tests.org/writing-tests/testharness.html#variants
+        [1]: https://web-platform-tests.org/writing-tests/testharness.html#tests-for-other-or-multiple-globals-any-js
+        [2]: https://chromium.googlesource.com/chromium/src/+/HEAD/docs/testing/web_tests.md#Virtual-test-suites
         """
         tests = self.real_tests(paths)
 
+        # TODO(crbug.com/338295229): Consolidate the code paths for all/explicit
+        # tests so that they're less likely to diverge.
         if paths:
             if self._options.virtual_tests:
                 tests.extend(self._virtual_tests_matching_paths(paths))
@@ -1062,8 +1101,8 @@ class Port(object):
         for path in paths:
             # Some WPT files can expand to multiple tests, and the file itself
             # is not a test so it is not in tests_by_dir. Do special handling
-            # when we found a WPT file in virtual bases.
-            if self.is_wpt_file(path):
+            # when we find a WPT URL, file, or directory in virtual bases.
+            if any(path.startswith(wpt_dir) for wpt_dir in self.WPT_DIRS):
                 files.extend(self._wpt_test_urls_matching_paths([path]))
                 continue
             if self._has_supported_extension_for_all(path):
@@ -1693,7 +1732,14 @@ class Port(object):
     def _normalized_exclusive_tests(self, virtual_suite):
         tests = set()
         for exclusive_test in virtual_suite.exclusive_tests:
-            tests.add(self.normalize_test_name(exclusive_test))
+            normalized_test = self.normalize_test_name(exclusive_test)
+            # WPT JS tests can expand to multiple tests. Remove the "js" suffix
+            # so that generated variants (e.g. "test.any.worker.html") match
+            # against the base with startswith and are correctly excluded.
+            if self.is_wpt_test(normalized_test) and normalized_test.endswith(
+                    '.js'):
+                normalized_test = normalized_test[:-2]
+            tests.add(normalized_test)
         return tests
 
     @memoized
@@ -2890,12 +2936,15 @@ class VirtualTestSuite(object):
         elif skip_base_tests is None:
             skip_base_tests = []
         assert isinstance(skip_base_tests, list)
+        self.prefix = prefix
         self.full_prefix = 'virtual/' + prefix + '/'
         self.platforms = [x.lower() for x in platforms]
         self.bases = bases
         self.exclusive_tests = exclusive_tests
         self.skip_base_tests = skip_base_tests
+        self.expires = expires
         self.args = sorted(args)
+        self.owners = owners
         # always put --enable-threaded-compositing at the end of list, so that after appending
         # this parameter due to crrev.com/c/4599846, we do not need to restart content shell
         # if the parameter set is same.

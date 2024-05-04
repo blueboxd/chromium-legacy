@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #import "components/feature_engagement/public/feature_constants.h"
-#import "components/sync/base/features.h"
 #import "ios/chrome/browser/metrics/model/metrics_app_interface.h"
 #import "ios/chrome/browser/shared/model/prefs/pref_names.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
@@ -193,7 +192,7 @@ void ResolvePassphraseErrorFromOverflowMenu() {
 }
 
 // Tests non-error destination highlights.
-// TODO(crbug.com/1431012): This test is very flaky. Fails especially on
+// TODO(crbug.com/40263342): This test is very flaky. Fails especially on
 // devices.
 - (void)FLAKY_testNonErrorDestinationHighlights {
   if (![ChromeEarlGrey isNewOverflowMenuEnabled]) {

@@ -10,6 +10,7 @@
 #include "components/omnibox/browser/buildflags.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/safe_browsing/core/common/features.h"
+#include "components/security_state/core/security_state.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/gfx/vector_icon_types.h"
 
@@ -42,10 +43,16 @@ const gfx::VectorIcon& GetSecurityVectorIcon(
                  ? vector_icons::kNotSecureWarningChromeRefreshIcon
                  : vector_icons::kNotSecureWarningIcon;
     case security_state::DANGEROUS:
-      if (base::FeatureList::IsEnabled(
-              safe_browsing::kRedInterstitialFacelift) &&
-          malicious_content_status !=
-              security_state::MALICIOUS_CONTENT_STATUS_BILLING) {
+      if (malicious_content_status ==
+              security_state::MALICIOUS_CONTENT_STATUS_MANAGED_POLICY_WARN ||
+          malicious_content_status ==
+              security_state::MALICIOUS_CONTENT_STATUS_MANAGED_POLICY_BLOCK) {
+        return IsChromeRefreshIconsEnabled()
+                   ? vector_icons::kBusinessChromeRefreshIcon
+                   : vector_icons::kBusinessIcon;
+      }
+      if (malicious_content_status !=
+          security_state::MALICIOUS_CONTENT_STATUS_BILLING) {
         return IsChromeRefreshIconsEnabled()
                    ? vector_icons::kDangerousChromeRefreshIcon
                    : vector_icons::kDangerousIcon;

@@ -11,8 +11,12 @@
 #import "base/strings/string_split.h"
 #import "base/strings/string_util.h"
 #import "components/tab_groups/tab_group_visual_data.h"
+#import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/shared/model/url/chrome_url_constants.h"
 #import "ios/chrome/browser/shared/model/web_state_list/tab_group.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
+#import "ios/web/public/test/fakes/fake_navigation_manager.h"
+#import "ios/web/public/test/fakes/fake_web_frames_manager.h"
 #import "ios/web/public/test/fakes/fake_web_state.h"
 
 namespace {
@@ -74,18 +78,55 @@ std::vector<Token> TokenizeWebStateListDescription(
   return tokens;
 }
 
+// Creates a fake WebState with navigation items.
+std::unique_ptr<web::WebState> CreateWebState(
+    ChromeBrowserState* browser_state) {
+  const GURL url = GURL(kChromeUIVersionURL);
+  auto navigation_manager = std::make_unique<web::FakeNavigationManager>();
+  navigation_manager->AddItem(url, ui::PAGE_TRANSITION_TYPED);
+
+  auto web_state =
+      std::make_unique<web::FakeWebState>(web::WebStateID::NewUnique());
+  web_state->SetNavigationManager(std::move(navigation_manager));
+  web_state->SetNavigationItemCount(1);
+  web_state->SetVisibleURL(url);
+  web_state->SetBrowserState(browser_state);
+  web_state->SetWebFramesManager(web::ContentWorld::kAllContentWorlds,
+                                 std::make_unique<web::FakeWebFramesManager>());
+  web_state->SetWebFramesManager(web::ContentWorld::kPageContentWorld,
+                                 std::make_unique<web::FakeWebFramesManager>());
+  web_state->SetWebFramesManager(web::ContentWorld::kIsolatedWorld,
+                                 std::make_unique<web::FakeWebFramesManager>());
+  return web_state;
+}
+
 }  // namespace
 
-WebStateListBuilderFromDescription::WebStateListBuilderFromDescription() =
-    default;
+WebStateListBuilderFromDescription::WebStateListBuilderFromDescription(
+    WebStateList* web_state_list)
+    : web_state_list_(web_state_list) {
+  DCHECK(web_state_list_);
+  DCHECK(web_state_list_->empty());
+  web_state_list_->AddObserver(this);
+}
 
-WebStateListBuilderFromDescription::~WebStateListBuilderFromDescription() =
-    default;
+WebStateListBuilderFromDescription::~WebStateListBuilderFromDescription() {
+  web_state_list_->RemoveObserver(this);
+}
 
 bool WebStateListBuilderFromDescription::BuildWebStateListFromDescription(
-    WebStateList& web_state_list,
-    std::string_view description) {
-  if (!web_state_list.empty()) {
+    std::string_view description,
+    ChromeBrowserState* browser_state) {
+  return BuildWebStateListFromDescription(
+      description,
+      base::BindRepeating(CreateWebState, base::Unretained(browser_state)));
+}
+
+bool WebStateListBuilderFromDescription::BuildWebStateListFromDescription(
+    std::string_view description,
+    base::RepeatingCallback<std::unique_ptr<web::WebState>()>
+        create_web_state) {
+  if (!web_state_list_->empty()) {
     return false;
   }
 
@@ -110,25 +151,25 @@ bool WebStateListBuilderFromDescription::BuildWebStateListFromDescription(
         if (GetWebStateForIdentifier(token.character)) {
           return false;
         }
-        auto web_state = std::make_unique<web::FakeWebState>();
+        auto web_state = create_web_state.Run();
         SetWebStateIdentifier(web_state.get(), token.character);
-        web_state_list.InsertWebState(
+        web_state_list_->InsertWebState(
             std::move(web_state),
-            WebStateList::InsertionParams::AtIndex(web_state_list.count())
+            WebStateList::InsertionParams::AtIndex(web_state_list_->count())
                 .Pinned(parsing_pinned_web_states));
         if (identifier_for_current_tab_group) {
-          indices_for_current_tab_group.insert(web_state_list.count() - 1);
+          indices_for_current_tab_group.insert(web_state_list_->count() - 1);
         }
         break;
       }
 
       case TokenType::kWebStateActivation: {
-        if (web_state_list.GetActiveWebState() != nullptr ||
-            web_state_list.count() == 0 || !prev_token ||
+        if (web_state_list_->GetActiveWebState() != nullptr ||
+            web_state_list_->count() == 0 || !prev_token ||
             prev_token->type != TokenType::kWebStateIdentifier) {
           return false;
         }
-        web_state_list.ActivateWebStateAt(web_state_list.count() - 1);
+        web_state_list_->ActivateWebStateAt(web_state_list_->count() - 1);
         break;
       }
 
@@ -160,9 +201,9 @@ bool WebStateListBuilderFromDescription::BuildWebStateListFromDescription(
             indices_for_current_tab_group.empty()) {
           return false;
         }
-        const TabGroup* created_group =
-            web_state_list.CreateGroup(std::move(indices_for_current_tab_group),
-                                       tab_groups::TabGroupVisualData());
+        const TabGroup* created_group = web_state_list_->CreateGroup(
+            std::move(indices_for_current_tab_group),
+            tab_groups::TabGroupVisualData());
         SetTabGroupIdentifier(created_group, identifier_for_current_tab_group);
         identifier_for_current_tab_group = 0;
         break;
@@ -177,31 +218,31 @@ bool WebStateListBuilderFromDescription::BuildWebStateListFromDescription(
   return true;
 }
 
-std::string WebStateListBuilderFromDescription::GetWebStateListDescription(
-    const WebStateList& web_state_list) const {
-  if (web_state_list.empty()) {
+std::string WebStateListBuilderFromDescription::GetWebStateListDescription()
+    const {
+  if (web_state_list_->empty()) {
     return "|";
   }
 
   std::ostringstream oss;
   bool pinned_web_states_separator_added = false;
-  for (int i = 0; i < web_state_list.count(); ++i) {
-    const WebState* web_state = web_state_list.GetWebStateAt(i);
-    const TabGroup* tab_group = web_state_list.GetGroupOfWebStateAt(i);
-    const WebState* prev_web_state = web_state_list.ContainsIndex(i - 1)
-                                         ? web_state_list.GetWebStateAt(i - 1)
-                                         : nullptr;
+  for (int i = 0; i < web_state_list_->count(); ++i) {
+    WebState* web_state = web_state_list_->GetWebStateAt(i);
+    const TabGroup* tab_group = web_state_list_->GetGroupOfWebStateAt(i);
+    WebState* prev_web_state = web_state_list_->ContainsIndex(i - 1)
+                                   ? web_state_list_->GetWebStateAt(i - 1)
+                                   : nullptr;
     const TabGroup* prev_tab_group =
-        prev_web_state ? web_state_list.GetGroupOfWebStateAt(i - 1) : nullptr;
-    const WebState* next_web_state = web_state_list.ContainsIndex(i + 1)
-                                         ? web_state_list.GetWebStateAt(i + 1)
-                                         : nullptr;
+        prev_web_state ? web_state_list_->GetGroupOfWebStateAt(i - 1) : nullptr;
+    WebState* next_web_state = web_state_list_->ContainsIndex(i + 1)
+                                   ? web_state_list_->GetWebStateAt(i + 1)
+                                   : nullptr;
     const TabGroup* next_tab_group =
-        next_web_state ? web_state_list.GetGroupOfWebStateAt(i + 1) : nullptr;
+        next_web_state ? web_state_list_->GetGroupOfWebStateAt(i + 1) : nullptr;
 
     if (!pinned_web_states_separator_added &&
-        !web_state_list.IsWebStatePinnedAt(i) &&
-        (!prev_web_state || web_state_list.IsWebStatePinnedAt(i - 1))) {
+        !web_state_list_->IsWebStatePinnedAt(i) &&
+        (!prev_web_state || web_state_list_->IsWebStatePinnedAt(i - 1))) {
       pinned_web_states_separator_added = true;
       oss << "| ";
     }
@@ -210,14 +251,14 @@ std::string WebStateListBuilderFromDescription::GetWebStateListDescription(
       oss << "[ " << GetTabGroupIdentifier(tab_group) << " ";
     }
     oss << GetWebStateIdentifier(web_state)
-        << ((web_state_list.active_index() == i) ? "* " : " ");
+        << ((web_state_list_->active_index() == i) ? "* " : " ");
     if (tab_group != next_tab_group && tab_group != nullptr) {
       oss << "] ";
     }
 
     if (!pinned_web_states_separator_added &&
-        web_state_list.IsWebStatePinnedAt(i) &&
-        (!next_web_state || !web_state_list.IsWebStatePinnedAt(i + 1))) {
+        web_state_list_->IsWebStatePinnedAt(i) &&
+        (!next_web_state || !web_state_list_->IsWebStatePinnedAt(i + 1))) {
       pinned_web_states_separator_added = true;
       oss << "| ";
     }
@@ -248,8 +289,7 @@ std::string WebStateListBuilderFromDescription::FormatWebStateListDescription(
   return result;
 }
 
-const web::WebState*
-WebStateListBuilderFromDescription::GetWebStateForIdentifier(
+web::WebState* WebStateListBuilderFromDescription::GetWebStateForIdentifier(
     char identifier) const {
   auto found_web_state_it = web_state_for_identifier_.find(identifier);
   return found_web_state_it != end(web_state_for_identifier_)
@@ -266,7 +306,7 @@ const TabGroup* WebStateListBuilderFromDescription::GetTabGroupForIdentifier(
 }
 
 char WebStateListBuilderFromDescription::GetWebStateIdentifier(
-    const WebState* web_state) const {
+    WebState* web_state) const {
   auto found_identifier_it = identifier_for_web_state_.find(web_state);
   return found_identifier_it != end(identifier_for_web_state_)
              ? found_identifier_it->second
@@ -282,7 +322,7 @@ char WebStateListBuilderFromDescription::GetTabGroupIdentifier(
 }
 
 void WebStateListBuilderFromDescription::SetWebStateIdentifier(
-    const WebState* web_state,
+    WebState* web_state,
     char new_identifier) {
   CHECK(web_state);
   CHECK(base::IsAsciiAlpha(new_identifier));
@@ -309,8 +349,7 @@ void WebStateListBuilderFromDescription::SetTabGroupIdentifier(
   tab_group_for_identifier_[new_identifier] = tab_group;
 }
 
-void WebStateListBuilderFromDescription::GenerateIdentifiersForWebStateList(
-    const WebStateList& web_state_list) {
+void WebStateListBuilderFromDescription::GenerateIdentifiersForWebStateList() {
   std::queue<char> available_web_state_identifiers;
   for (char identifier = 'a'; identifier <= 'z'; ++identifier) {
     if (!GetWebStateForIdentifier(identifier)) {
@@ -330,8 +369,8 @@ void WebStateListBuilderFromDescription::GenerateIdentifiersForWebStateList(
     }
   }
 
-  for (int i = 0; i < web_state_list.count(); ++i) {
-    const WebState* web_state = web_state_list.GetWebStateAt(i);
+  for (int i = 0; i < web_state_list_->count(); ++i) {
+    WebState* web_state = web_state_list_->GetWebStateAt(i);
     if (GetWebStateIdentifier(web_state) == '_') {
       CHECK(!available_web_state_identifiers.empty());
       char identifier = available_web_state_identifiers.front();
@@ -339,7 +378,7 @@ void WebStateListBuilderFromDescription::GenerateIdentifiersForWebStateList(
       SetWebStateIdentifier(web_state, identifier);
     }
 
-    const TabGroup* tab_group = web_state_list.GetGroupOfWebStateAt(i);
+    const TabGroup* tab_group = web_state_list_->GetGroupOfWebStateAt(i);
     if (tab_group && GetTabGroupIdentifier(tab_group) == '_') {
       CHECK(!available_tab_group_identifiers.empty());
       char identifier = available_tab_group_identifiers.front();
@@ -347,4 +386,84 @@ void WebStateListBuilderFromDescription::GenerateIdentifiersForWebStateList(
       SetTabGroupIdentifier(tab_group, identifier);
     }
   }
+}
+
+#pragma mark - WebStateListObserver
+
+void WebStateListBuilderFromDescription::WebStateListDidChange(
+    WebStateList* web_state_list,
+    const WebStateListChange& change,
+    const WebStateListStatus& status) {
+  switch (change.type()) {
+    case WebStateListChange::Type::kStatusOnly:
+      // Nothing to do.
+      break;
+    case WebStateListChange::Type::kDetach: {
+      const WebStateListChangeDetach& detach_change =
+          change.As<WebStateListChangeDetach>();
+      const auto web_state = detach_change.detached_web_state();
+      const char identifier = GetWebStateIdentifier(web_state);
+      if (identifier != '_') {
+        web_state_for_identifier_.erase(identifier);
+      }
+      const auto iter = identifier_for_web_state_.find(web_state);
+      if (iter != end(identifier_for_web_state_)) {
+        identifier_for_web_state_.erase(web_state);
+      }
+      break;
+    }
+    case WebStateListChange::Type::kMove:
+      // Nothing to do.
+      break;
+    case WebStateListChange::Type::kReplace: {
+      const WebStateListChangeReplace& replace_change =
+          change.As<WebStateListChangeReplace>();
+      const auto replaced_web_state = replace_change.replaced_web_state();
+      const char identifier = GetWebStateIdentifier(replaced_web_state);
+      // Remove the replaced WebState.
+      if (identifier != '_') {
+        web_state_for_identifier_.erase(identifier);
+      }
+      const auto iter = identifier_for_web_state_.find(replaced_web_state);
+      if (iter != end(identifier_for_web_state_)) {
+        identifier_for_web_state_.erase(replaced_web_state);
+      }
+      // Add the inserted WebState.
+      const auto inserted_web_state = replace_change.inserted_web_state();
+      SetWebStateIdentifier(inserted_web_state, identifier);
+      break;
+    }
+    case WebStateListChange::Type::kInsert:
+      // Nothing to do.
+      break;
+    case WebStateListChange::Type::kGroupCreate:
+      // Nothing to do.
+      break;
+    case WebStateListChange::Type::kGroupVisualDataUpdate:
+      // Nothing to do.
+      break;
+    case WebStateListChange::Type::kGroupMove:
+      // Nothing to do.
+      break;
+    case WebStateListChange::Type::kGroupDelete: {
+      const WebStateListChangeGroupDelete& group_delete_change =
+          change.As<WebStateListChangeGroupDelete>();
+      const auto group = group_delete_change.deleted_group();
+      const char identifier = GetTabGroupIdentifier(group);
+      if (identifier != '_') {
+        tab_group_for_identifier_.erase(identifier);
+      }
+      const auto iter = identifier_for_tab_group_.find(group);
+      if (iter != end(identifier_for_tab_group_)) {
+        identifier_for_tab_group_.erase(group);
+      }
+      break;
+    }
+  }
+}
+
+void WebStateListBuilderFromDescription::WebStateListDestroyed(
+    WebStateList* web_state_list) {
+  NOTREACHED() << "WebStateListBuilderFromDescription shouldn’t outlive its "
+                  "WebStateList";
 }

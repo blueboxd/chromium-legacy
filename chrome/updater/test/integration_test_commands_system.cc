@@ -26,7 +26,7 @@
 #include "chrome/updater/prefs.h"
 #include "chrome/updater/test/integration_test_commands.h"
 #include "chrome/updater/test/integration_tests_impl.h"
-#include "chrome/updater/test_scope.h"
+#include "chrome/updater/test/test_scope.h"
 #include "chrome/updater/update_service.h"
 #include "chrome/updater/updater_scope.h"
 #include "chrome/updater/util/util.h"
@@ -37,8 +37,7 @@
 #include "base/strings/utf_string_conversions.h"
 #endif  // BUILDFLAG(IS_WIN)
 
-namespace updater {
-namespace test {
+namespace updater::test {
 
 namespace {
 
@@ -77,17 +76,18 @@ class IntegrationTestCommandsSystem : public IntegrationTestCommands {
 
   void ExpectClean() const override { RunCommand("expect_clean"); }
 
-  void Install() const override { RunCommand("install"); }
-
-  void InstallEulaRequired() const override {
-    RunCommand("install_eula_required");
+  void Install(const base::Value::List& switches) const override {
+    RunCommand(
+        "install",
+        {Param("switches", StringFromValue(base::Value(switches.Clone())))});
   }
 
   void InstallUpdaterAndApp(const std::string& app_id,
                             const bool is_silent_install,
                             const std::string& tag,
                             const std::string& child_window_text_to_find,
-                            const bool always_launch_cmd) const override {
+                            const bool always_launch_cmd,
+                            const bool verify_app_logo_loaded) const override {
     RunCommand(
         "install_updater_and_app",
         {
@@ -96,6 +96,8 @@ class IntegrationTestCommandsSystem : public IntegrationTestCommands {
             Param("tag", tag),
             Param("child_window_text_to_find", child_window_text_to_find),
             Param("always_launch_cmd", BoolToString(always_launch_cmd)),
+            Param("verify_app_logo_loaded",
+                  BoolToString(verify_app_logo_loaded)),
         });
   }
 
@@ -110,11 +112,13 @@ class IntegrationTestCommandsSystem : public IntegrationTestCommands {
   void EnterTestMode(const GURL& update_url,
                      const GURL& crash_upload_url,
                      const GURL& device_management_url,
+                     const GURL& app_logo_url,
                      const base::TimeDelta& idle_timeout) const override {
     RunCommand("enter_test_mode",
                {Param("update_url", update_url.spec()),
                 Param("crash_upload_url", crash_upload_url.spec()),
                 Param("device_management_url", device_management_url.spec()),
+                Param("app_logo_url", app_logo_url.spec()),
                 Param("idle_timeout",
                       base::NumberToString(idle_timeout.InSeconds()))});
   }
@@ -140,8 +144,23 @@ class IntegrationTestCommandsSystem : public IntegrationTestCommands {
     updater::test::ExpectSelfUpdateSequence(updater_scope_, test_server);
   }
 
-  void ExpectPing(ScopedServer* test_server, int event_type) const override {
-    updater::test::ExpectPing(updater_scope_, test_server, event_type);
+  void ExpectPing(ScopedServer* test_server,
+                  int event_type,
+                  std::optional<GURL> target_url) const override {
+    updater::test::ExpectPing(updater_scope_, test_server, event_type,
+                              target_url);
+  }
+
+  void ExpectAppCommandPing(ScopedServer* test_server,
+                            const std::string& appid,
+                            const std::string& appcommandid,
+                            int errorcode,
+                            int eventresult,
+                            int event_type,
+                            const base::Version& version) const override {
+    updater::test::ExpectAppCommandPing(updater_scope_, test_server, appid,
+                                        appcommandid, errorcode, eventresult,
+                                        event_type, version);
   }
 
   void ExpectUpdateCheckRequest(ScopedServer* test_server) const override {
@@ -557,15 +576,11 @@ class IntegrationTestCommandsSystem : public IntegrationTestCommands {
     RunCommand(command_switch, {});
   }
 
-  static const UpdaterScope updater_scope_;
+  inline static const UpdaterScope updater_scope_ = GetUpdaterScopeForTesting();
 };
-
-const UpdaterScope IntegrationTestCommandsSystem::updater_scope_ =
-    GetTestScope();
 
 scoped_refptr<IntegrationTestCommands> CreateIntegrationTestCommandsSystem() {
   return base::MakeRefCounted<IntegrationTestCommandsSystem>();
 }
 
-}  // namespace test
-}  // namespace updater
+}  // namespace updater::test

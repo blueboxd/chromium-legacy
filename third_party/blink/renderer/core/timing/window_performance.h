@@ -52,6 +52,10 @@
 #include "third_party/blink/renderer/core/timing/responsiveness_metrics.h"
 #include "third_party/blink/renderer/platform/wtf/wtf_size_t.h"
 
+namespace viz {
+struct FrameTimingDetails;
+}
+
 namespace blink {
 
 class AnimationFrameTimingInfo;
@@ -141,6 +145,11 @@ class CORE_EXPORT WindowPerformance final : public Performance,
                            base::TimeTicks processing_start,
                            base::TimeTicks processing_end);
 
+  // Set commit finish time for all pending events that have finished processing
+  // and are watiting for presentation promise to resolve.
+  void SetCommitFinishTimeStampForPendingEvents(
+      base::TimeTicks commit_finish_time);
+
   void OnPaintFinished();
 
   void AddElementTiming(const AtomicString& name,
@@ -204,8 +213,9 @@ class CORE_EXPORT WindowPerformance final : public Performance,
 
   void BuildJSONValue(V8ObjectBuilder&) const override;
 
-  void OnPresentationPromiseResolved(uint64_t presentation_index,
-                                     base::TimeTicks presentation_timestamp);
+  void OnPresentationPromiseResolved(
+      uint64_t presentation_index,
+      const viz::FrameTimingDetails& presentation_details);
   // Report buffered events with presentation time following their registered
   // order; stop as soon as seeing an event with pending presentation promise.
   void ReportEventTimings();

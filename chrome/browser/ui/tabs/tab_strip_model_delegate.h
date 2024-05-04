@@ -9,12 +9,13 @@
 #include <optional>
 #include <vector>
 
+#include "base/functional/callback_forward.h"
 #include "components/sessions/core/session_id.h"
 #include "components/tab_groups/tab_group_id.h"
 
 class Browser;
+class BrowserWindowInterface;
 class GURL;
-struct DetachedWebContents;
 
 namespace tabs {
 class TabModel;
@@ -130,6 +131,10 @@ class TabStripModelDelegate {
   // |group|.
   virtual void CreateHistoricalGroup(const tab_groups::TabGroupId& group) = 0;
 
+  // Notifies the delegate that a group is about to be closed, and allows it
+  // to perform any preparation neccessary.
+  virtual void WillCloseGroup(const tab_groups::TabGroupId& group) = 0;
+
   // Notifies the tab restore service that the group is no longer closing.
   virtual void GroupCloseStopped(const tab_groups::TabGroupId& group) = 0;
 
@@ -159,24 +164,6 @@ class TabStripModelDelegate {
   // Returns whether the tabstrip supports the read later feature.
   virtual bool SupportsReadLater() = 0;
 
-  // Gives the delegate an opportunity to cache (take ownership) of
-  // WebContents before they are destroyed. The delegate takes ownership by way
-  // of using std::move() on the `owned_contents` and resetting `remove_reason`
-  // to kCached. It is expected that any WebContents the delegate takes
-  // ownership of remain valid until the next message is pumped. In other
-  // words, the delegate must not immediately destroy any of the supplied
-  // WebContents.
-  // TODO(https://crbug.com/1234332): Provide active web contents.
-  virtual void CacheWebContents(
-      const std::vector<std::unique_ptr<DetachedWebContents>>&
-          web_contents) = 0;
-
-  // Follows a web feed for the specified WebContents.
-  virtual void FollowSite(content::WebContents* web_contents) = 0;
-
-  // Unfollows a web feed for the specified WebContents.
-  virtual void UnfollowSite(content::WebContents* web_contents) = 0;
-
   // Returns whether this tab strip model is for a web app.
   virtual bool IsForWebApp() = 0;
 
@@ -188,6 +175,23 @@ class TabStripModelDelegate {
 
   // Returns whether the web_contents can be navigated back.
   virtual bool CanGoBack(content::WebContents* web_contents) = 0;
+
+  // Whether the associated window is a normal browser window.
+  virtual bool IsNormalWindow() = 0;
+
+  // Returns the BrowserWindow that owns the TabStripModel. Never changes.
+  virtual BrowserWindowInterface* GetBrowserWindowInterface() = 0;
+
+  // When closing groups, some features may need to show interstitials before
+  // allowing deletion. |groups| is a list of all of the groups that would be
+  // Closed by the |callback| which may be called by the implementation. A
+  // return value of true means that deletion can continue synchronously. A
+  // return value of false means that an asynchronous action is taking place,
+  // and whatever process of destroying groups should be stopped. The callback
+  // will not be called if the process returns true.
+  virtual bool ConfirmDestroyingGroups(
+      const std::vector<tab_groups::TabGroupId>& group_ids,
+      base::OnceCallback<void()> callback) = 0;
 };
 
 #endif  // CHROME_BROWSER_UI_TABS_TAB_STRIP_MODEL_DELEGATE_H_

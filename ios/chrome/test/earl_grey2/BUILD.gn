@@ -171,10 +171,9 @@ chrome_ios_eg2_test("ios_chrome_signin_eg2tests_module") {
   deps = [
     "//ios/chrome/browser/signin/model:eg2_tests",
     "//ios/chrome/browser/ui/authentication/signin:eg2_tests",
-    "//ios/chrome/browser/ui/authentication/signin/advanced_settings_signin:eg2_tests",
     "//ios/chrome/browser/ui/authentication/signin/consistency_promo_signin:eg2_tests",
     "//ios/chrome/browser/ui/authentication/signin/forced_signin:eg2_tests",
-    "//ios/chrome/browser/ui/authentication/signin/user_signin:eg2_tests",
+    "//ios/chrome/browser/ui/authentication/signin/two_screens_signin:eg2_tests",
     "//ios/chrome/browser/ui/authentication/signout_action_sheet:eg2_tests",
   ]
   data_deps = [ ":ios_chrome_eg2tests" ]
@@ -187,6 +186,7 @@ chrome_ios_eg2_test("ios_chrome_ui_eg2tests_module") {
     "//ios/chrome/browser/plus_addresses/ui:eg2_tests",
     "//ios/chrome/browser/qr_scanner/ui_bundled:eg2_tests",
     "//ios/chrome/browser/settings/model/sync/utils:eg2_tests",
+    "//ios/chrome/browser/ui/autofill/authentication:eg2_tests",
     "//ios/chrome/browser/ui/autofill/bottom_sheet:eg2_tests",
     "//ios/chrome/browser/ui/autofill/form_input_accessory:eg2_tests",
     "//ios/chrome/browser/ui/bring_android_tabs:eg2_tests",

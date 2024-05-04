@@ -2,12 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <string_view>
+
 #include "base/base_paths.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "base/threading/platform_thread.h"
 #include "chrome/browser/extensions/chrome_test_extension_loader.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "components/metrics/content/subprocess_metrics_provider.h"
 #include "content/public/test/browser_test.h"
@@ -22,7 +26,7 @@ class WasmExtensionCachingBrowserTest
   WasmExtensionCachingBrowserTest() = default;
   ~WasmExtensionCachingBrowserTest() override = default;
 
-  static constexpr base::StringPiece kHistogram = "V8.WasmCodeCaching";
+  static constexpr std::string_view kHistogram = "V8.WasmCodeCaching";
 
   // The enum values need to match "WasmCodeCaching" in
   // tools/metrics/histograms/metadata/v8/enums.xml.
@@ -68,7 +72,7 @@ class WasmExtensionCachingBrowserTest
 
   // Fetch the `bucket` from the `histogram` in every renderer process until
   // reaching, but not exceeding, `expected_samples`.
-  void WaitForHistogramSamples(base::StringPiece histogram,
+  void WaitForHistogramSamples(std::string_view histogram,
                                int expected_samples) {
     // We sleep for an increasing amount of time for the background task to
     // finish.
@@ -91,16 +95,19 @@ class WasmExtensionCachingBrowserTest
 
  private:
   // JS flags:
-  // --allow-natives-syntax:     Enables the use of (internal) runtime functions
-  //                             like %IsLiftoffFunction`,
-  // --wasm-caching-threshold=1: Trigger caching as soon as any TurboFan code is
-  //                             available.
-  // --wasm-tiering-budget=10:   Trigger tier-up earlier.
+  // --allow-natives-syntax:          Enables the use of (internal) runtime
+  //                                  functions like `%IsLiftoffFunction`.
+  // --wasm-caching-threshold=1:      Trigger caching as soon as any TurboFan
+  //                                  code is available.
+  // --wasm-caching-hard-threshold=1: Trigger caching immediately, not after a
+  //                                  delay.
+  // --wasm-tiering-budget=1:         Trigger tier-up earlier.
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitchASCII(
-        blink::switches::kJavaScriptFlags,
-        "--allow-natives-syntax --wasm-caching-threshold=1 "
-        "--wasm-tiering-budget=10");
+    command_line->AppendSwitchASCII(blink::switches::kJavaScriptFlags,
+                                    "--allow-natives-syntax"
+                                    " --wasm-caching-threshold=1"
+                                    " --wasm-caching-hard-threshold=1"
+                                    " --wasm-tiering-budget=1");
     ExtensionBrowserTest::SetUpCommandLine(command_line);
   }
 

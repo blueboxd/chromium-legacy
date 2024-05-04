@@ -11,7 +11,7 @@ import textwrap
 from unittest import mock
 
 from blinkpy.common.checkout.git_mock import MockGit
-from blinkpy.common.net.git_cl import TryJobStatus
+from blinkpy.common.net.git_cl import BuildStatus
 from blinkpy.common.net.git_cl_mock import MockGitCL
 from blinkpy.common.net.results_fetcher import Build
 from blinkpy.common.net.web_test_results import (
@@ -43,13 +43,13 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
         self.maxDiff = None
         self.builds = {
             Build('MOCK Try Win', 5000, 'Build-1'):
-            TryJobStatus('COMPLETED', 'FAILURE'),
+            BuildStatus.FAILURE,
             Build('MOCK Try Mac', 4000, 'Build-2'):
-            TryJobStatus('COMPLETED', 'FAILURE'),
+            BuildStatus.FAILURE,
             Build('MOCK Try Linux', 6000, 'Build-3'):
-            TryJobStatus('COMPLETED', 'FAILURE'),
+            BuildStatus.FAILURE,
             Build('MOCK Try Linux Multiple Steps', 9000, 'Build-5'):
-            TryJobStatus('COMPLETED', 'FAILURE'),
+            BuildStatus.FAILURE,
         }
 
         self.command.git_cl = MockGitCL(self.tool, self.builds)
@@ -67,7 +67,7 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
                 'specifiers': ['Win7', 'Release'],
                 'is_try_builder': True,
                 'steps': {
-                    'blink_web_tests (with patch)': {},
+                    'blink_web_tests': {},
                 },
             },
             'MOCK Try Linux': {
@@ -75,7 +75,7 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
                 'specifiers': ['Trusty', 'Release'],
                 'is_try_builder': True,
                 'steps': {
-                    'blink_web_tests (with patch)': {},
+                    'blink_web_tests': {},
                 },
             },
             'MOCK Try Mac': {
@@ -83,7 +83,7 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
                 'specifiers': ['Mac10.11', 'Release'],
                 'is_try_builder': True,
                 'steps': {
-                    'blink_web_tests (with patch)': {},
+                    'blink_web_tests': {},
                 },
             },
             'MOCK Try Linux (CQ duplicate)': {
@@ -92,7 +92,7 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
                 'is_try_builder': True,
                 'is_cq_builder': True,
                 'steps': {
-                    'blink_web_tests (with patch)': {},
+                    'blink_web_tests': {},
                 },
             },
         })
@@ -186,9 +186,8 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
         for build in self.builds:
             self.tool.results_fetcher.set_results(
                 build,
-                WebTestResults.from_json(
-                    self.raw_web_test_results,
-                    step_name='blink_web_tests (with patch)'))
+                WebTestResults.from_json(self.raw_web_test_results,
+                                         step_name='blink_web_tests'))
             self.tool.results_fetcher.set_retry_sumary_json(
                 build,
                 json.dumps({
@@ -431,8 +430,8 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
 
     def test_execute_one_missing_build(self):
         builds = {
-            Build('MOCK Try Win', 5000): TryJobStatus('COMPLETED', 'FAILURE'),
-            Build('MOCK Try Mac', 4000): TryJobStatus('COMPLETED', 'FAILURE'),
+            Build('MOCK Try Win', 5000): BuildStatus.FAILURE,
+            Build('MOCK Try Mac', 4000): BuildStatus.FAILURE,
         }
         self.command.git_cl = MockGitCL(self.tool, builds)
         exit_code = self.command.execute(self.command_options(), [], self.tool)
@@ -458,12 +457,9 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
 
     def test_execute_with_unfinished_jobs(self):
         builds = {
-            Build('MOCK Try Win', 5000, 'Build-1'):
-            TryJobStatus('COMPLETED', 'FAILURE'),
-            Build('MOCK Try Mac', 4000, 'Build-2'):
-            TryJobStatus('STARTED'),
-            Build('MOCK Try Linux', 6000, 'Build-3'):
-            TryJobStatus('SCHEDULED'),
+            Build('MOCK Try Win', 5000, 'Build-1'): BuildStatus.FAILURE,
+            Build('MOCK Try Mac', 4000, 'Build-2'): BuildStatus.STARTED,
+            Build('MOCK Try Linux', 6000, 'Build-3'): BuildStatus.SCHEDULED,
         }
         self.command.git_cl = MockGitCL(self.tool, builds)
         exit_code = self.command.execute(self.command_options(), [], self.tool)
@@ -491,12 +487,9 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
 
     def test_execute_with_passing_jobs(self):
         builds = {
-            Build('MOCK Try Win', 5000, 'Build-1'):
-            TryJobStatus('COMPLETED', 'FAILURE'),
-            Build('MOCK Try Mac', 4000, 'Build-2'):
-            TryJobStatus('COMPLETED', 'SUCCESS'),
-            Build('MOCK Try Linux', 6000, 'Build-3'):
-            TryJobStatus('COMPLETED', 'SUCCESS'),
+            Build('MOCK Try Win', 5000, 'Build-1'): BuildStatus.FAILURE,
+            Build('MOCK Try Mac', 4000, 'Build-2'): BuildStatus.SUCCESS,
+            Build('MOCK Try Linux', 6000, 'Build-3'): BuildStatus.SUCCESS,
         }
         self.command.git_cl = MockGitCL(self.tool, builds)
         exit_code = self.command.execute(self.command_options(), [], self.tool)
@@ -528,17 +521,13 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
             crbug.com/1475247#c1
         """
         builds = {
-            Build('MOCK Try Win', 5000, 'Build-1'):
-            TryJobStatus('COMPLETED', 'FAILURE'),
-            Build('MOCK Try Mac', 4000, 'Build-2'):
-            TryJobStatus('COMPLETED', 'FAILURE'),
-            Build('MOCK Try Linux', 6000, 'Build-3'):
-            TryJobStatus('COMPLETED', 'FAILURE'),
+            Build('MOCK Try Win', 5000, 'Build-1'): BuildStatus.FAILURE,
+            Build('MOCK Try Mac', 4000, 'Build-2'): BuildStatus.FAILURE,
+            Build('MOCK Try Linux', 6000, 'Build-3'): BuildStatus.FAILURE,
         }
         for build in builds:
             self.tool.results_fetcher.set_results(
-                build,
-                WebTestResults([], step_name='blink_web_tests (with patch)'))
+                build, WebTestResults([], step_name='blink_web_tests'))
         self.command.git_cl = MockGitCL(self.tool, builds)
         exit_code = self.command.execute(self.command_options(), [], self.tool)
         self.assertEqual(exit_code, 0)
@@ -551,10 +540,8 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
 
     def test_execute_with_no_trigger_jobs_option(self):
         builds = {
-            Build('MOCK Try Win', 5000, 'Build-1'):
-            TryJobStatus('COMPLETED', 'FAILURE'),
-            Build('MOCK Try Mac', 4000, 'Build-2'):
-            TryJobStatus('COMPLETED', 'FAILURE'),
+            Build('MOCK Try Win', 5000, 'Build-1'): BuildStatus.FAILURE,
+            Build('MOCK Try Mac', 4000, 'Build-2'): BuildStatus.FAILURE,
         }
         self.command.git_cl = MockGitCL(self.tool, builds)
         exit_code = self.command.execute(
@@ -649,7 +636,7 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
         test_baseline_set = TestBaselineSet(self.tool.builders)
         test_baseline_set.add('one/flaky-fail.html',
                               Build('MOCK Try Win', 5000, 'Build-1'),
-                              'blink_web_tests (with patch)')
+                              'blink_web_tests')
         self.command.rebaseline(self.command_options(), test_baseline_set)
         self._mock_copier.find_baselines_to_copy.assert_called_once_with(
             'one/flaky-fail.html', 'wav', test_baseline_set)
@@ -675,8 +662,8 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
                 'specifiers': ['Trusty', 'Release'],
                 'is_try_builder': True,
                 'steps': {
-                    'blink_web_tests (with patch)': {},
-                    'not_site_per_process_blink_web_tests (with patch)': {
+                    'blink_web_tests': {},
+                    'not_site_per_process_blink_web_tests': {
                         'flag_specific': 'disable-site-isolation-trials',
                     },
                 },
@@ -690,7 +677,7 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
             multiple_step_build,
             WebTestResults.from_json(
                 self.raw_web_test_results,
-                step_name='not_site_per_process_blink_web_tests (with patch)'))
+                step_name='not_site_per_process_blink_web_tests'))
 
         exit_code = self.command.execute(
             self.command_options(builders=['MOCK Try Linux Multiple Steps']),
@@ -698,9 +685,9 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
         self.assertEqual(exit_code, 0)
         baseline_set = TestBaselineSet(self.tool.builders)
         baseline_set.add('one/text-fail.html', multiple_step_build,
-                         'blink_web_tests (with patch)')
+                         'blink_web_tests')
         baseline_set.add('one/text-fail.html', multiple_step_build,
-                         'not_site_per_process_blink_web_tests (with patch)')
+                         'not_site_per_process_blink_web_tests')
         self._mock_copier.find_baselines_to_copy.assert_called_once_with(
             'one/text-fail.html', 'txt', baseline_set)
         self._assert_baseline_downloaded(
@@ -719,7 +706,7 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
 
     def test_execute_missing_results_with_no_fill_missing_prompts(self):
         build = Build('MOCK Try Win', 5000, 'Build-1')
-        self.builds[build] = TryJobStatus.from_bb_status('CANCELED')
+        self.builds[build] = BuildStatus.CANCELED
         exit_code = self.command.execute(self.command_options(), [], self.tool)
         self.assertEqual(exit_code, 1)
         self.assertLog([
@@ -746,7 +733,7 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
 
     def test_execute_interrupted_results_with_fill_missing(self):
         build = Build('MOCK Try Win', 5000, 'Build-1')
-        self.builds[build] = TryJobStatus.from_bb_status('INFRA_FAILURE')
+        self.builds[build] = BuildStatus.INFRA_FAILURE
         self.tool.user.set_canned_responses(['y'])
         exit_code = self.command.execute(self.command_options(),
                                          ['one/flaky-fail.html'], self.tool)
@@ -812,7 +799,7 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
         })
         self.tool.results_fetcher.set_results(
             Build('MOCK Try Mac', 4000, 'Build-2'),
-            WebTestResults([result], step_name='blink_web_tests (with patch)'))
+            WebTestResults([result], step_name='blink_web_tests'))
         exit_code = self.command.execute(self.command_options(),
                                          ['one/flaky-fail.html'], self.tool)
         self.assertEqual(exit_code, 0)
@@ -860,7 +847,7 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
         }[url]
         self.tool.results_fetcher.set_results(
             Build('MOCK Try Mac', 4000, 'Build-2'),
-            WebTestResults([result], step_name='blink_web_tests (with patch)'))
+            WebTestResults([result], step_name='blink_web_tests'))
 
         with mock.patch.object(self._test_port,
                                'diff_image',
@@ -908,7 +895,7 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
         }[url]
         self.tool.results_fetcher.set_results(
             Build('MOCK Try Mac', 4000, 'Build-2'),
-            WebTestResults([result], step_name='blink_web_tests (with patch)'))
+            WebTestResults([result], step_name='blink_web_tests'))
 
         with mock.patch.object(self._test_port,
                                'diff_image',
@@ -947,11 +934,9 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
     def test_fill_in_missing_results(self):
         test_baseline_set = TestBaselineSet(self.tool.builders)
         test_baseline_set.add('one/flaky-fail.html',
-                              Build('MOCK Try Linux', 100),
-                              'blink_web_tests (with patch)')
+                              Build('MOCK Try Linux', 100), 'blink_web_tests')
         test_baseline_set.add('one/flaky-fail.html',
-                              Build('MOCK Try Win',
-                                    200), 'blink_web_tests (with patch)')
+                              Build('MOCK Try Win', 200), 'blink_web_tests')
         self.command.fill_in_missing_results(test_baseline_set)
         self.assertEqual(
             test_baseline_set.build_port_pairs('one/flaky-fail.html'), [
@@ -963,8 +948,7 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
     def test_fill_in_missing_results_with_skipped_test(self):
         test_baseline_set = TestBaselineSet(self.tool.builders)
         test_baseline_set.add('one/flaky-fail.html',
-                              Build('MOCK Try Linux', 100),
-                              'blink_web_tests (with patch)')
+                              Build('MOCK Try Linux', 100), 'blink_web_tests')
         self.tool.filesystem.write_text_file(
             self.mac_port.path_to_never_fix_tests_file(),
             textwrap.dedent("""\
@@ -986,7 +970,7 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
                 'specifiers': ['Trusty', 'Release'],
                 'is_try_builder': True,
                 'steps': {
-                    'blink_web_tests (with patch)': {},
+                    'blink_web_tests': {},
                 },
             },
             'MOCK Linux Precise': {
@@ -994,7 +978,7 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
                 'specifiers': ['Precise', 'Release'],
                 'is_try_builder': True,
                 'steps': {
-                    'blink_web_tests (with patch)': {},
+                    'blink_web_tests': {},
                 },
             },
             'MOCK Mac10.11': {
@@ -1002,7 +986,7 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
                 'specifiers': ['Mac10.11', 'Release'],
                 'is_try_builder': True,
                 'steps': {
-                    'blink_web_tests (with patch)': {},
+                    'blink_web_tests': {},
                 },
             },
             'MOCK Mac10.10': {
@@ -1010,17 +994,16 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
                 'specifiers': ['Mac10.10', 'Release'],
                 'is_try_builder': True,
                 'steps': {
-                    'blink_web_tests (with patch)': {},
+                    'blink_web_tests': {},
                 },
             },
         })
         test_baseline_set = TestBaselineSet(self.tool.builders)
         test_baseline_set.add('one/flaky-fail.html',
                               Build('MOCK Linux Trusty', 100),
-                              'blink_web_tests (with patch)')
+                              'blink_web_tests')
         test_baseline_set.add('one/flaky-fail.html',
-                              Build('MOCK Mac10.10',
-                                    200), 'blink_web_tests (with patch)')
+                              Build('MOCK Mac10.10', 200), 'blink_web_tests')
         self.command.fill_in_missing_results(test_baseline_set)
         self.assertEqual(
             sorted(test_baseline_set.build_port_pairs('one/flaky-fail.html')),
@@ -1038,8 +1021,8 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
                 'specifiers': ['Trusty', 'Release'],
                 'is_try_builder': True,
                 'steps': {
-                    'blink_web_tests (with patch)': {},
-                    'blink_wpt_tests (with patch)': {},
+                    'blink_web_tests': {},
+                    'blink_wpt_tests': {},
                 },
             },
             'MOCK Linux Precise': {
@@ -1047,36 +1030,36 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
                 'specifiers': ['Precise', 'Release'],
                 'is_try_builder': True,
                 'steps': {
-                    'blink_web_tests (with patch)': {},
-                    'blink_wpt_tests (with patch)': {},
+                    'blink_web_tests': {},
+                    'blink_wpt_tests': {},
                 },
             },
         })
         test_baseline_set = TestBaselineSet(self.tool.builders)
         test_baseline_set.add('one/flaky-fail.html',
                               Build('MOCK Linux Trusty', 100),
-                              'blink_web_tests (with patch)')
+                              'blink_web_tests')
         test_baseline_set.add('two/image-fail.html',
                               Build('MOCK Linux Precise', 200),
-                              'blink_wpt_tests (with patch)')
+                              'blink_wpt_tests')
         self.command.fill_in_missing_results(test_baseline_set)
         self.assertEqual(
             sorted(test_baseline_set.runs_for_test('one/flaky-fail.html')),
             [
                 # Do not add this test to `blink_wpt_tests`.
-                (Build('MOCK Linux Trusty', 100),
-                 'blink_web_tests (with patch)', 'test-linux-precise'),
-                (Build('MOCK Linux Trusty', 100),
-                 'blink_web_tests (with patch)', 'test-linux-trusty'),
+                (Build('MOCK Linux Trusty',
+                       100), 'blink_web_tests', 'test-linux-precise'),
+                (Build('MOCK Linux Trusty',
+                       100), 'blink_web_tests', 'test-linux-trusty'),
             ])
         self.assertEqual(
             sorted(test_baseline_set.runs_for_test('two/image-fail.html')),
             [
                 # Do not add this test to `blink_web_tests`.
-                (Build('MOCK Linux Precise', 200),
-                 'blink_wpt_tests (with patch)', 'test-linux-precise'),
-                (Build('MOCK Linux Precise', 200),
-                 'blink_wpt_tests (with patch)', 'test-linux-trusty'),
+                (Build('MOCK Linux Precise',
+                       200), 'blink_wpt_tests', 'test-linux-precise'),
+                (Build('MOCK Linux Precise',
+                       200), 'blink_wpt_tests', 'test-linux-trusty'),
             ])
 
     def test_explicit_builder_list(self):

@@ -906,16 +906,13 @@ void PushMessagingServiceImpl::RegisterPrefs(PrefRegistrySimple* registry) {
 static void
 JNI_PushMessagingServiceBridge_VerifyAndRevokeNotificationsPermission(
     JNIEnv* env,
-    const JavaParamRef<jstring>& java_origin,
-    const JavaParamRef<jstring>& java_profile_id,
+    std::string& origin,
+    std::string& profile_id,
     jboolean app_level_notifications_enabled) {
   if (!base::FeatureList::IsEnabled(
           features::kRevokeNotificationsPermissionIfDisabledOnAppLevel)) {
     return;
   }
-
-  GURL origin(ConvertJavaStringToUTF8(env, java_origin));
-  std::string profile_id = ConvertJavaStringToUTF8(env, java_profile_id);
 
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   DCHECK(profile_manager);
@@ -924,8 +921,7 @@ JNI_PushMessagingServiceBridge_VerifyAndRevokeNotificationsPermission(
       NotificationPlatformBridge::GetProfileBaseNameFromProfileId(profile_id),
       /*incognito=*/false,
       base::BindOnce(&PushMessagingServiceImpl::RevokePermissionIfPossible,
-                     GURL(ConvertJavaStringToUTF8(env, java_origin)),
-                     app_level_notifications_enabled,
+                     GURL(origin), app_level_notifications_enabled,
                      g_browser_process->local_state()));
 }
 
@@ -1702,7 +1698,7 @@ void PushMessagingServiceImpl::DidUpdateSubscription(
     const std::vector<uint8_t>& p256dh,
     const std::vector<uint8_t>& auth,
     blink::mojom::PushRegistrationStatus status) {
-  // TODO(crbug.com/1122545): Currently, if |status| is unsuccessful, the old
+  // TODO(crbug.com/40146635): Currently, if |status| is unsuccessful, the old
   // subscription remains in SW database and preferences and the refresh is
   // aborted. Instead, one should abort the refresh and retry to refresh
   // periodically.

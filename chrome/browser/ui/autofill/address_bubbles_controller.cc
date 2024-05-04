@@ -20,6 +20,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
+#include "chrome/browser/ui/autofill/add_new_address_bubble_controller.h"
 #include "chrome/browser/ui/autofill/autofill_bubble_handler.h"
 #include "chrome/browser/ui/autofill/edit_address_profile_dialog_controller_impl.h"
 #include "chrome/browser/ui/autofill/save_address_bubble_controller.h"
@@ -30,6 +31,7 @@
 #include "chrome/grit/theme_resources.h"
 #include "components/autofill/content/browser/content_autofill_client.h"
 #include "components/autofill/core/browser/autofill_address_util.h"
+#include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/common/autofill_features.h"
@@ -72,6 +74,18 @@ AutofillBubbleBase* ShowUpdateBubble(
           web_contents, std::move(update_controller), shown_by_user_gesture);
 }
 
+AutofillBubbleBase* ShowAddNewAddressBubble(
+    content::WebContents* web_contents,
+    bool shown_by_user_gesture,
+    base::WeakPtr<AddressBubbleControllerDelegate> delegate) {
+  auto controller =
+      std::make_unique<AddNewAddressBubbleController>(web_contents, delegate);
+  return chrome::FindBrowserWithTab(web_contents)
+      ->window()
+      ->GetAutofillBubbleHandler()
+      ->ShowAddNewAddressProfileBubble(web_contents, std::move(controller),
+                                       shown_by_user_gesture);
+}
 }  // namespace
 
 AddressBubblesController::AddressBubblesController(
@@ -112,9 +126,39 @@ void AddressBubblesController::SetUpAndShowSaveOrUpdateAddressBubble(
                             : IDS_AUTOFILL_SAVE_ADDRESS_PROMPT_TITLE)
                      : IDS_AUTOFILL_UPDATE_ADDRESS_PROMPT_TITLE);
 
-  controller->SetUpAndShowBubble(
-      std::move(show_bubble_view_impl), std::move(page_action_icon_tootip),
-      profile, original_profile, options, std::move(callback));
+  controller->SetUpAndShowBubble(std::move(show_bubble_view_impl),
+                                 std::move(page_action_icon_tootip), options,
+                                 std::move(callback));
+}
+
+// static
+void AddressBubblesController::SetUpAndShowAddNewAddressBubble(
+    content::WebContents* web_contents,
+    AutofillClient::AddressProfileSavePromptCallback callback) {
+  AddressBubblesController::CreateForWebContents(web_contents);
+  auto* controller = AddressBubblesController::FromWebContents(web_contents);
+  std::u16string page_action_icon_tootip =
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_ADD_NEW_ADDRESS_PROMPT_TITLE);
+
+  controller->SetUpAndShowBubble(base::BindRepeating(ShowAddNewAddressBubble),
+                                 std::move(page_action_icon_tootip), {},
+                                 std::move(callback));
+}
+
+void AddressBubblesController::ShowEditor(
+    const AutofillProfile& address_profile,
+    const std::u16string& title_override,
+    const std::u16string& editor_footer_message,
+    bool is_editing_existing_address) {
+  EditAddressProfileDialogControllerImpl::CreateForWebContents(web_contents());
+  EditAddressProfileDialogControllerImpl* controller =
+      EditAddressProfileDialogControllerImpl::FromWebContents(web_contents());
+  controller->OfferEdit(
+      address_profile, title_override, editor_footer_message,
+      is_editing_existing_address, is_migration_to_account_,
+      base::BindOnce(&AddressBubblesController::OnUserDecision,
+                     weak_ptr_factory_.GetWeakPtr()));
+  HideBubble();
 }
 
 void AddressBubblesController::OnUserDecision(
@@ -129,20 +173,6 @@ void AddressBubblesController::OnUserDecision(
   if (address_profile_save_prompt_callback_) {
     std::move(address_profile_save_prompt_callback_).Run(decision, profile);
   }
-}
-
-void AddressBubblesController::OnEditButtonClicked(
-    const std::u16string& editor_footer_message) {
-  EditAddressProfileDialogControllerImpl::CreateForWebContents(web_contents());
-  EditAddressProfileDialogControllerImpl* controller =
-      EditAddressProfileDialogControllerImpl::FromWebContents(web_contents());
-  controller->OfferEdit(
-      *address_profile_, base::OptionalToPtr(original_profile_),
-      editor_footer_message,
-      base::BindOnce(&AddressBubblesController::OnUserDecision,
-                     weak_ptr_factory_.GetWeakPtr()),
-      is_migration_to_account_);
-  HideBubble();
 }
 
 void AddressBubblesController::OnBubbleClosed() {
@@ -200,8 +230,6 @@ void AddressBubblesController::DoShowBubble() {
 void AddressBubblesController::SetUpAndShowBubble(
     ShowBubbleViewCallback show_bubble_view_callback,
     std::u16string page_action_icon_tootip,
-    const AutofillProfile& profile,
-    const AutofillProfile* original_profile,
     AutofillClient::SaveAddressProfilePromptOptions options,
     AutofillClient::AddressProfileSavePromptCallback
         address_profile_save_prompt_callback) {
@@ -226,15 +254,12 @@ void AddressBubblesController::SetUpAndShowBubble(
 
   show_bubble_view_callback_ = std::move(show_bubble_view_callback);
   page_action_icon_tootip_ = std::move(page_action_icon_tootip);
-  address_profile_ = profile;
-  original_profile_ = base::OptionalFromPtr(original_profile);
   address_profile_save_prompt_callback_ =
       std::move(address_profile_save_prompt_callback);
   shown_by_user_gesture_ = false;
   is_migration_to_account_ = options.is_migration_to_account;
-  if (options.show_prompt) {
-    Show();
-  }
+
+  Show();
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(AddressBubblesController);

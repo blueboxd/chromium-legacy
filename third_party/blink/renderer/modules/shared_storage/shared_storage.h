@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/async_iterable.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_async_iterator_shared_storage.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_typedefs.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
@@ -37,42 +38,47 @@ class MODULES_EXPORT SharedStorage final
   void Trace(Visitor*) const override;
 
   // SharedStorage IDL
-  ScriptPromise set(ScriptState*,
-                    const String& key,
-                    const String& value,
-                    ExceptionState&);
-  ScriptPromise set(ScriptState*,
-                    const String& key,
-                    const String& value,
-                    const SharedStorageSetMethodOptions* options,
-                    ExceptionState&);
-  ScriptPromise append(ScriptState*,
-                       const String& key,
-                       const String& value,
-                       ExceptionState&);
-  ScriptPromise Delete(ScriptState*, const String& key, ExceptionState&);
-  ScriptPromise clear(ScriptState*, ExceptionState&);
-  ScriptPromiseTyped<IDLString> get(ScriptState*,
-                                    const String& key,
-                                    ExceptionState&);
-  ScriptPromiseTyped<IDLUnsignedLong> length(ScriptState*, ExceptionState&);
-  ScriptPromiseTyped<IDLDouble> remainingBudget(ScriptState*, ExceptionState&);
+  ScriptPromise<IDLAny> set(ScriptState*,
+                            const String& key,
+                            const String& value,
+                            ExceptionState&);
+  ScriptPromise<IDLAny> set(ScriptState*,
+                            const String& key,
+                            const String& value,
+                            const SharedStorageSetMethodOptions* options,
+                            ExceptionState&);
+  ScriptPromise<IDLAny> append(ScriptState*,
+                               const String& key,
+                               const String& value,
+                               ExceptionState&);
+  ScriptPromise<IDLAny> Delete(ScriptState*,
+                               const String& key,
+                               ExceptionState&);
+  ScriptPromise<IDLAny> clear(ScriptState*, ExceptionState&);
+  ScriptPromise<IDLString> get(ScriptState*,
+                               const String& key,
+                               ExceptionState&);
+  ScriptPromise<IDLUnsignedLong> length(ScriptState*, ExceptionState&);
+  ScriptPromise<IDLDouble> remainingBudget(ScriptState*, ExceptionState&);
   ScriptValue context(ScriptState*, ExceptionState&) const;
-  ScriptPromise selectURL(ScriptState*,
-                          const String& name,
-                          HeapVector<Member<SharedStorageUrlWithMetadata>> urls,
-                          ExceptionState&);
-  ScriptPromise selectURL(ScriptState*,
-                          const String& name,
-                          HeapVector<Member<SharedStorageUrlWithMetadata>> urls,
-                          const SharedStorageRunOperationMethodOptions* options,
-                          ExceptionState&);
-  ScriptPromise run(ScriptState*, const String& name, ExceptionState&);
-  ScriptPromise run(ScriptState*,
-                    const String& name,
-                    const SharedStorageRunOperationMethodOptions* options,
-                    ExceptionState&);
-  ScriptPromiseTyped<SharedStorageWorklet> createWorklet(
+  ScriptPromise<V8SharedStorageResponse> selectURL(
+      ScriptState*,
+      const String& name,
+      HeapVector<Member<SharedStorageUrlWithMetadata>> urls,
+      ExceptionState&);
+  ScriptPromise<V8SharedStorageResponse> selectURL(
+      ScriptState*,
+      const String& name,
+      HeapVector<Member<SharedStorageUrlWithMetadata>> urls,
+      const SharedStorageRunOperationMethodOptions* options,
+      ExceptionState&);
+  ScriptPromise<IDLAny> run(ScriptState*, const String& name, ExceptionState&);
+  ScriptPromise<IDLAny> run(
+      ScriptState*,
+      const String& name,
+      const SharedStorageRunOperationMethodOptions* options,
+      ExceptionState&);
+  ScriptPromise<SharedStorageWorklet> createWorklet(
       ScriptState*,
       const String& module_url,
       const WorkletOptions* options,

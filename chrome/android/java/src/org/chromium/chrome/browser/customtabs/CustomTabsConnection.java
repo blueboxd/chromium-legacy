@@ -33,6 +33,7 @@ import androidx.browser.customtabs.PostMessageServiceConnection;
 
 import org.jni_zero.CalledByNative;
 import org.jni_zero.JNINamespace;
+import org.jni_zero.JniType;
 import org.jni_zero.NativeMethods;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -43,7 +44,6 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.IntentUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ResettersForTesting;
-import org.chromium.base.StrictModeContext;
 import org.chromium.base.SysUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
@@ -68,6 +68,7 @@ import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.metrics.UmaSessionStats;
+import org.chromium.chrome.browser.page_insights.PageInsightsConfigRequest;
 import org.chromium.chrome.browser.page_insights.proto.Config.PageInsightsConfig;
 import org.chromium.chrome.browser.page_insights.proto.IntentParams.PageInsightsIntentParams;
 import org.chromium.chrome.browser.page_load_metrics.PageLoadMetrics;
@@ -77,6 +78,7 @@ import org.chromium.chrome.browser.privacy.settings.PrivacyPreferencesManagerImp
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.profiles.ProfileManager;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.ui.google_bottom_bar.proto.IntentParams.GoogleBottomBarIntentParams;
 import org.chromium.components.content_settings.CookieControlsMode;
 import org.chromium.components.embedder_support.util.Origin;
 import org.chromium.components.embedder_support.util.UrlConstants;
@@ -459,7 +461,7 @@ public class CustomTabsConnection {
                         // https://crbug.com/797832.
                         if (!BrowserStartupController.getInstance().isFullBrowserStarted()) return;
                         try (TraceEvent e = TraceEvent.scoped("CreateSpareWebContents")) {
-                            createSpareWebContents();
+                            createSpareWebContents(ProfileManager.getLastUsedRegularProfile());
                         }
                     });
         }
@@ -559,7 +561,7 @@ public class CustomTabsConnection {
     boolean lowConfidenceMayLaunchUrl(List<Bundle> likelyBundles) {
         ThreadUtils.assertOnUiThread();
         if (!preconnectUrls(likelyBundles)) return false;
-        createSpareWebContents();
+        createSpareWebContents(ProfileManager.getLastUsedRegularProfile());
         return true;
     }
 
@@ -651,8 +653,7 @@ public class CustomTabsConnection {
         if (experimentIds == null) return;
         // When ids are set through cct, they should not override existing ids.
         boolean override = false;
-        UmaSessionStats.registerExternalExperiment(
-                BaseCustomTabActivity.GSA_FALLBACK_STUDY_NAME, experimentIds, override);
+        UmaSessionStats.registerExternalExperiment(experimentIds, override);
     }
 
     private void doMayLaunchUrlOnUiThread(
@@ -1290,7 +1291,7 @@ public class CustomTabsConnection {
         if (height != mPrevHeight) {
             args.putInt(ON_RESIZED_SIZE_EXTRA, height);
 
-            // TODO(crbug.com/1366844): Deprecate the extra callback.
+            // TODO(crbug.com/40867201): Deprecate the extra callback.
             if (safeExtraCallback(session, ON_RESIZED_CALLBACK, args) && mLogRequests) {
                 logCallback("extraCallback(" + ON_RESIZED_CALLBACK + ")", args);
             }
@@ -1445,7 +1446,7 @@ public class CustomTabsConnection {
 
     @VisibleForTesting
     boolean setupDynamicFeaturesInternal(Intent intent) {
-        // TODO(https://crbug.com/1401098) Add support for separate dynamic experiments per session!
+        // TODO(crbug.com/40884078) Add support for separate dynamic experiments per session!
         // Early exits if any CCT client app has already set or cleared dynamic experiments.
         if (mDynamicEnabledFeatures != null || mDynamicDisabledFeatures != null) return false;
 
@@ -1486,9 +1487,10 @@ public class CustomTabsConnection {
         return false;
     }
 
-    // TODO(https://crbug.com/1458640): Remove this and other dynamic feature related methods.
+    // TODO(crbug.com/40274032): Remove this and other dynamic feature related methods.
     /**
      * Determines if the given Feature is enabled after factoring in active Intent overrides.
+     *
      * @see #setupDynamicFeatures
      * @param featureName The Feature to check if it's enabled.
      * @return Whether the given Feature is effectively enabled given active overrides.
@@ -1539,7 +1541,7 @@ public class CustomTabsConnection {
 
         // Notifies all the sessions, as warmup() is tied to a UID, not a session.
         for (CustomTabsSessionToken session : mClientManager.uidToSessions(uid)) {
-            // TODO(crbug.com/1484676): Remove extra callback after its usage dwindles down.
+            // TODO(crbug.com/40932858): Remove extra callback after its usage dwindles down.
             safeExtraCallback(session, ON_WARMUP_COMPLETED, null);
 
             CustomTabsCallback callback = mClientManager.getCallbackForSession(session);
@@ -1722,10 +1724,7 @@ public class CustomTabsConnection {
         // world-readable.
         String cgroupFilename = "/proc/" + pid + "/cgroup";
         String controllerName = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O ? "cpuset" : "cpu";
-        // Reading from /proc does not cause disk IO, but strict mode doesn't like it.
-        // crbug.com/567143
-        try (StrictModeContext ignored = StrictModeContext.allowDiskReads();
-                BufferedReader reader = new BufferedReader(new FileReader(cgroupFilename))) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(cgroupFilename))) {
             String line = null;
             while ((line = reader.readLine()) != null) {
                 // line format: 2:cpu:/bg_non_interactive
@@ -1792,12 +1791,12 @@ public class CustomTabsConnection {
         if (!DeviceClassManager.enablePrerendering()) {
             return false;
         }
-        if (UserPrefs.get(ProfileManager.getLastUsedRegularProfile())
-                        .getInteger(COOKIE_CONTROLS_MODE)
+        Profile profile = ProfileManager.getLastUsedRegularProfile();
+        if (UserPrefs.get(profile).getInteger(COOKIE_CONTROLS_MODE)
                 == CookieControlsMode.BLOCK_THIRD_PARTY) {
             return false;
         }
-        if (PreloadPagesSettingsBridge.getState() == PreloadPagesState.NO_PRELOADING) {
+        if (PreloadPagesSettingsBridge.getState(profile) == PreloadPagesState.NO_PRELOADING) {
             return false;
         }
         return true;
@@ -1829,7 +1828,7 @@ public class CustomTabsConnection {
         if (useHiddenTab) {
             launchUrlInHiddenTab(session, profile, url, extras);
         } else {
-            createSpareWebContents();
+            createSpareWebContents(profile);
         }
         warmupManager.maybePreconnectUrlAndSubResources(profile, url);
     }
@@ -1914,9 +1913,13 @@ public class CustomTabsConnection {
         return mHiddenTabHolder.getSpeculationParamsForTesting();
     }
 
-    public static void createSpareWebContents() {
+    public static void createSpareWebContents(Profile profile) {
         if (SysUtils.isLowEndDevice()) return;
-        WarmupManager.getInstance().createSpareWebContents();
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.CCT_PREWARM_TAB)) {
+            WarmupManager.getInstance().createRegularSpareTab(profile);
+        } else {
+            WarmupManager.getInstance().createSpareWebContents(profile);
+        }
     }
 
     public boolean receiveFile(
@@ -1969,8 +1972,17 @@ public class CustomTabsConnection {
         return false;
     }
 
+    /** Specifies what content should be presented by the CustomTabs instance in location bar. */
+    public int getTitleVisibilityState(BrowserServicesIntentDataProvider intentData) {
+        if (shouldEnableOmniboxForIntent(intentData)) {
+            return CustomTabsIntent.NO_TITLE;
+        }
+        return intentData.getTitleVisibilityState();
+    }
+
     /**
      * Whether PageInsight Hub is enabled by the launching Intent. False by default.
+     *
      * @param intentData {@link BrowserServicesIntentDataProvider} built from the Intent that
      *     launched this CCT.
      */
@@ -1988,6 +2000,7 @@ public class CustomTabsConnection {
     public PageInsightsConfig getPageInsightsConfig(
             BrowserServicesIntentDataProvider intentData,
             @Nullable NavigationHandle navigationHandle,
+            @Nullable NavigationEntry navigationEntry,
             Supplier<Profile> profileSupplier) {
         // For all params, by default populate the most conservative values.
         return PageInsightsConfig.newBuilder()
@@ -2003,16 +2016,14 @@ public class CustomTabsConnection {
      * if {@link #shouldEnablePageInsightsForIntent(BrowserServicesIntentDataProvider)} returns
      * true.
      *
+     * @param request {@link PageInsightsConfigRequest} containing info important for config
      * @param intentData {@link BrowserServicesIntentDataProvider} built from the Intent that
      *     launched this CCT.
-     * @param navigationHandle the {@link NavigationHandle} for the current URL.
-     * @param navigationEntry the {@link NavigationEntry} for the current URL.
      * @param profileSupplier supplier of the current {@link Profile}.
      */
     public PageInsightsConfig getPageInsightsConfig(
+            PageInsightsConfigRequest request,
             BrowserServicesIntentDataProvider intentData,
-            @Nullable NavigationHandle navigationHandle,
-            @Nullable NavigationEntry navigationEntry,
             Supplier<Profile> profileSupplier) {
         // For all params, by default populate the most conservative values.
         return PageInsightsConfig.newBuilder()
@@ -2021,6 +2032,22 @@ public class CustomTabsConnection {
                 .setIsInitialPage(false)
                 .setServerShouldNotLogOrPersonalize(true)
                 .build();
+    }
+
+    /**
+     * Whether Google Bottom Bar is enabled by the launching Intent. False by default.
+     *
+     * @param intentData {@link BrowserServicesIntentDataProvider} built from the Intent that
+     *     launched this CCT.
+     */
+    public boolean shouldEnableGoogleBottomBarForIntent(
+            BrowserServicesIntentDataProvider intentData) {
+        return false;
+    }
+
+    public GoogleBottomBarIntentParams getGoogleBottomBarIntentParams(
+            BrowserServicesIntentDataProvider intentData) {
+        return GoogleBottomBarIntentParams.getDefaultInstance();
     }
 
     /**
@@ -2060,7 +2087,7 @@ public class CustomTabsConnection {
     @NativeMethods
     interface Natives {
         void createAndStartDetachedResourceRequest(
-                Profile profile,
+                @JniType("Profile*") Profile profile,
                 CustomTabsSessionToken session,
                 String packageName,
                 String url,

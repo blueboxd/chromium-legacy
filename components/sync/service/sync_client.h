@@ -12,7 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "components/sync/base/extensions_activity.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/service/data_type_controller.h"
+#include "components/sync/service/model_type_controller.h"
 
 class PrefService;
 
@@ -54,7 +54,7 @@ class SyncClient {
   virtual base::FilePath GetLocalSyncBackendFolder() = 0;
 
   // Returns a vector with all supported datatypes and their controllers.
-  virtual DataTypeController::TypeVector CreateDataTypeControllers(
+  virtual ModelTypeController::TypeVector CreateModelTypeControllers(
       SyncService* sync_service) = 0;
 
   virtual SyncInvalidationsService* GetSyncInvalidationsService() = 0;
@@ -69,7 +69,7 @@ class SyncClient {
 
   // Notifies the client that local sync metadata in preferences has been
   // cleared.
-  // TODO(crbug.com/1137346): Replace this mechanism with a more universal one,
+  // TODO(crbug.com/40724759): Replace this mechanism with a more universal one,
   // e.g. using SyncServiceObserver.
   virtual void OnLocalSyncTransportDataCleared() = 0;
 
@@ -91,8 +91,8 @@ class SyncClient {
   // `types` is available.
   // Note: Only data types that are enabled and support this functionality are
   // part of the response.
-  // TODO(crbug.com/1451508): Mark as pure virtual once all implementations have
-  // overridden this.
+  // TODO(crbug.com/40065374): Mark as pure virtual once all implementations
+  // have overridden this.
   virtual void GetLocalDataDescriptions(
       ModelTypeSet types,
       base::OnceCallback<void(std::map<ModelType, LocalDataDescription>)>
@@ -102,8 +102,8 @@ class SyncClient {
   // types. This is an asynchronous method which moves the local data for all
   // `types` to the account store locally. Upload to the server will happen as
   // part of the regular commit process, and is NOT part of this method.
-  // TODO(crbug.com/1451508): Mark as pure virtual once all implementations have
-  // overridden this.
+  // TODO(crbug.com/40065374): Mark as pure virtual once all implementations
+  // have overridden this.
   virtual void TriggerLocalDataMigration(ModelTypeSet types);
 };
 

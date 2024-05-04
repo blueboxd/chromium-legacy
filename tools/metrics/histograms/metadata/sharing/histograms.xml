@@ -30,7 +30,7 @@ chromium-metrics-reviews@google.com.
 </variants>
 
 <histogram name="SharedHighlights.AndroidShareSheet.SharedState"
-    enum="LinkGenerationSharedStatus" expires_after="2024-07-28">
+    enum="LinkGenerationSharedStatus" expires_after="2024-10-20">
   <owner>sebsg@chromium.org</owner>
   <owner>jeffreycohen@chromium.org</owner>
   <owner>chrome-shared-highlighting@google.com</owner>
@@ -73,7 +73,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SharedHighlights.LinkGenerated.Error"
-    enum="LinkGenerationError" expires_after="2024-07-28">
+    enum="LinkGenerationError" expires_after="2024-09-29">
   <owner>jeffreycohen@chromium.org</owner>
   <owner>chrome-shared-highlighting@google.com</owner>
   <summary>
@@ -94,7 +94,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SharedHighlights.LinkGenerated.Error.Requested"
-    enum="LinkGenerationError" expires_after="2024-07-28">
+    enum="LinkGenerationError" expires_after="2024-09-29">
   <owner>jeffreycohen@chromium.org</owner>
   <owner>chrome-shared-highlighting@google.com</owner>
   <summary>
@@ -169,6 +169,17 @@ chromium-metrics-reviews@google.com.
   <summary>
     Records if obtaining reshare link was successful. Otherwise, it records the
     failure reason.
+  </summary>
+</histogram>
+
+<histogram name="Sharing.AndroidPageSummary.SheetEvents"
+    enum="PageSummarySheetEvents" expires_after="2024-06-30">
+  <owner>salg@google.com</owner>
+  <owner>ssid@google.com</owner>
+  <summary>
+    Records ocurrences of various UI events related to the page summary sharing
+    sheet (open sheet, dismiss sheet, send feedback, etc.). Recorded based on
+    user actions (See enum definitions for more details).
   </summary>
 </histogram>
 
@@ -257,7 +268,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Sharing.DefaultSharesheetAndroid.Opened" enum="ShareOrigin"
-    expires_after="2024-07-28">
+    expires_after="2024-09-29">
   <owner>wenyufu@chromium.org</owner>
   <owner>sophey@chromium.org</owner>
   <owner>src/chrome/browser/share/OWNERS</owner>
@@ -279,7 +290,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Sharing.PreparePreviewFaviconDuration" units="ms"
-    expires_after="2024-07-08">
+    expires_after="2024-09-15">
   <owner>wenyufu@chromium.org</owner>
   <owner>src/chrome/browser/share/OWNERS</owner>
   <summary>
@@ -290,7 +301,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Sharing.QRCodeGeneration.Duration" units="ms"
-    expires_after="2024-07-21">
+    expires_after="2024-09-22">
   <owner>danakj@chromium.org</owner>
   <owner>lukasza@chromium.org</owner>
   <owner>petewil@chromium.org</owner>
@@ -309,7 +320,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Sharing.QRCodeGeneration.Duration.BytesToQrPixels2"
-    units="microseconds" expires_after="2024-07-21">
+    units="microseconds" expires_after="2024-09-22">
   <owner>danakj@chromium.org</owner>
   <owner>lukasza@chromium.org</owner>
   <owner>petewil@chromium.org</owner>
@@ -331,7 +342,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Sharing.QRCodeGeneration.Duration.QrPixelsToQrImage2"
-    units="microseconds" expires_after="2024-07-21">
+    units="microseconds" expires_after="2024-09-22">
   <owner>danakj@chromium.org</owner>
   <owner>lukasza@chromium.org</owner>
   <owner>petewil@chromium.org</owner>
@@ -395,7 +406,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Sharing.SendMessageResult" enum="SharingSendMessageResult"
-    expires_after="2024-07-07">
+    expires_after="2024-09-15">
 <!-- Name completed by histogram_suffixes SharingChannelType,
     SharingDevicePlatform, SharingMessage, and SharingPulseInterval. -->
 
@@ -408,8 +419,18 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Sharing.SendMessageUsingSync" enum="Boolean"
+    expires_after="2024-09-27">
+  <owner>rushans@google.com</owner>
+  <owner>src/chrome/browser/share/OWNERS</owner>
+  <summary>
+    Records whether a SharingMessage is being sent over sync. Recorded for all
+    messages before sending them. Recorded for all platforms.
+  </summary>
+</histogram>
+
 <histogram name="Sharing.SendTabToSelf.NotificationStatus"
-    enum="SendTabToSelfNotificationStatus" expires_after="2024-07-21">
+    enum="SendTabToSelfNotificationStatus" expires_after="2024-09-22">
   <owner>jeffreycohen@chromium.org</owner>
   <owner>src/chrome/browser/share/OWNERS</owner>
   <summary>
@@ -451,8 +472,18 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Sharing.SharingHubAndroid.CustomAction"
+    enum="ShareCustomAction" expires_after="2024-10-22">
+  <owner>wenyufu@chromium.org</owner>
+  <owner>src/chrome/browser/share/OWNERS</owner>
+  <summary>
+    Records the custom action when the user clicked one on the share sheet.
+    Recorded for both Chrome's sharing hub and Android's share sheet on U+.
+  </summary>
+</histogram>
+
 <histogram name="Sharing.SharingHubAndroid.Opened" enum="ShareOrigin"
-    expires_after="2024-07-28">
+    expires_after="2024-09-29">
   <owner>wenyufu@chromium.org</owner>
   <owner>sophey@chromium.org</owner>
   <owner>src/chrome/browser/share/OWNERS</owner>
@@ -473,8 +504,21 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Sharing.SharingHubAndroid.TimeToCustomAction" units="ms"
+    expires_after="2024-10-22">
+  <owner>wenyufu@chromium.org</owner>
+  <owner>src/chrome/browser/share/OWNERS</owner>
+  <summary>
+    Records the amount of time taken for the user to select a custom action
+    after initiating a share. Can record multiple times if the custom action
+    redirect the user back to the share sheet, but each time only record the
+    duration between share sheet shown until user click an action. Recorded for
+    both Chrome's sharing hub and Android's share sheet on U+.
+  </summary>
+</histogram>
+
 <histogram name="Sharing.SharingHubAndroid.TimeToShare" units="ms"
-    expires_after="2024-07-28">
+    expires_after="2024-09-29">
   <owner>wenyufu@chromium.org</owner>
   <owner>sophey@chromium.org</owner>
   <owner>src/chrome/browser/share/OWNERS</owner>
@@ -485,7 +529,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Sharing.SharingHubAndroid.TimeToShowShareSheet" units="ms"
-    expires_after="2024-07-08">
+    expires_after="2024-10-20">
   <owner>wenyufu@chromium.org</owner>
   <owner>sophey@chromium.org</owner>
   <owner>src/chrome/browser/share/OWNERS</owner>
@@ -520,7 +564,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Sharing.SharingHubDesktop.CrOSSharesheetResult"
-    enum="SharingHubSharesheetResult" expires_after="2024-07-21">
+    enum="SharingHubSharesheetResult" expires_after="2024-09-22">
   <owner>tsergeant@chromium.org</owner>
   <owner>src/chrome/browser/share/OWNERS</owner>
   <summary>
@@ -530,7 +574,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Sharing.SmsFetcherAvailableDeviceCount" units="devices"
-    expires_after="2024-07-07">
+    expires_after="2024-09-15">
   <owner>yigu@chromium.org</owner>
   <owner>src/content/browser/sms/OWNERS</owner>
   <summary>
@@ -552,7 +596,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Sharing.SmsFetcherScreenOnAndUnlocked" enum="Boolean"
-    expires_after="2024-07-07">
+    expires_after="2024-09-15">
   <owner>yigu@chromium.org</owner>
   <owner>src/content/browser/sms/OWNERS</owner>
   <summary>
@@ -563,7 +607,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Sharing.SmsFetcherTapWithChromeDestroyed" enum="Boolean"
-    expires_after="2024-07-07">
+    expires_after="2024-09-15">
   <owner>yigu@chromium.org</owner>
   <owner>src/content/browser/sms/OWNERS</owner>
   <summary>
@@ -585,7 +629,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Sharing.{ShareSurface}.ShareContentType"
-    enum="SharingContentTypeAndroid" expires_after="2024-07-28">
+    enum="SharingContentTypeAndroid" expires_after="2024-09-29">
   <owner>wenyufu@chromium.org</owner>
   <owner>src/chrome/browser/share/OWNERS</owner>
   <summary>
@@ -599,7 +643,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="TextFragmentAnchor.LinkOpenSource"
-    enum="TextFragmentLinkOpenSource" expires_after="2024-07-28">
+    enum="TextFragmentLinkOpenSource" expires_after="2024-09-29">
   <owner>jeffreycohen@chromium.org</owner>
   <owner>chrome-shared-highlighting@google.com</owner>
   <summary>

@@ -43,8 +43,10 @@ import org.chromium.chrome.browser.accessibility.settings.ChromeAccessibilitySet
 import org.chromium.chrome.browser.autofill.options.AutofillOptionsCoordinator;
 import org.chromium.chrome.browser.autofill.options.AutofillOptionsFragment;
 import org.chromium.chrome.browser.autofill.settings.AutofillCreditCardEditor;
+import org.chromium.chrome.browser.autofill.settings.AutofillIbanEditor;
 import org.chromium.chrome.browser.back_press.BackPressHelper;
 import org.chromium.chrome.browser.back_press.SecondaryActivityBackPressUma.SecondaryActivity;
+import org.chromium.chrome.browser.browsing_data.ClearBrowsingDataFragment;
 import org.chromium.chrome.browser.browsing_data.ClearBrowsingDataFragmentBasic;
 import org.chromium.chrome.browser.feedback.FragmentHelpAndFeedbackLauncher;
 import org.chromium.chrome.browser.feedback.HelpAndFeedbackLauncherImpl;
@@ -73,10 +75,15 @@ import org.chromium.chrome.browser.safety_check.SafetyCheckBridge;
 import org.chromium.chrome.browser.safety_check.SafetyCheckCoordinator;
 import org.chromium.chrome.browser.safety_check.SafetyCheckSettingsFragment;
 import org.chromium.chrome.browser.safety_check.SafetyCheckUpdatesDelegateImpl;
+import org.chromium.chrome.browser.safety_hub.SafetyHubFragment;
+import org.chromium.chrome.browser.safety_hub.SafetyHubModuleDelegateImpl;
 import org.chromium.chrome.browser.search_engines.settings.SearchEngineSettings;
 import org.chromium.chrome.browser.signin.SyncConsentActivityLauncherImpl;
 import org.chromium.chrome.browser.site_settings.ChromeSiteSettingsDelegate;
 import org.chromium.chrome.browser.sync.SyncServiceFactory;
+import org.chromium.chrome.browser.sync.settings.AccountManagementFragment;
+import org.chromium.chrome.browser.sync.settings.GoogleServicesSettings;
+import org.chromium.chrome.browser.sync.settings.ManageSyncSettings;
 import org.chromium.chrome.browser.ui.device_lock.MissingDeviceLockLauncher;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager.SnackbarManageable;
@@ -364,6 +371,18 @@ public class SettingsActivity extends ChromeBaseAppCompatActivity
             ((PrivacySandboxSettingsBaseFragment) fragment)
                     .setSnackbarManager(getSnackbarManager());
         }
+        if (fragment instanceof ClearBrowsingDataFragment) {
+            ((ClearBrowsingDataFragment) fragment).setSnackbarManager(mSnackbarManager);
+        }
+        if (fragment instanceof AccountManagementFragment) {
+            ((AccountManagementFragment) fragment).setSnackbarManager(mSnackbarManager);
+        }
+        if (fragment instanceof GoogleServicesSettings) {
+            ((GoogleServicesSettings) fragment).setSnackbarManager(mSnackbarManager);
+        }
+        if (fragment instanceof ManageSyncSettings) {
+            ((ManageSyncSettings) fragment).setSnackbarManager(mSnackbarManager);
+        }
         initBackPressHandler();
     }
 
@@ -582,7 +601,7 @@ public class SettingsActivity extends ChromeBaseAppCompatActivity
             sandboxFragment.setCookieSettingsIntentHelper(
                     (Context context) -> {
                         SiteSettingsHelper.showCategorySettings(
-                                context, mProfile, SiteSettingsCategory.Type.THIRD_PARTY_COOKIES);
+                                context, SiteSettingsCategory.Type.THIRD_PARTY_COOKIES);
                     });
         }
         if (fragment instanceof SafeBrowsingSettingsFragmentBase) {
@@ -618,7 +637,10 @@ public class SettingsActivity extends ChromeBaseAppCompatActivity
             ((PasswordSettings) fragment).setBottomSheetController(mBottomSheetController);
         }
         if (fragment instanceof AutofillOptionsFragment) {
-            AutofillOptionsCoordinator.createFor((AutofillOptionsFragment) fragment);
+            AutofillOptionsCoordinator.createFor(
+                    (AutofillOptionsFragment) fragment,
+                    getModalDialogManagerSupplier(),
+                    () -> ApplicationLifetime.terminate(true));
         }
         if (fragment instanceof TrackingProtectionSettings) {
             TrackingProtectionSettings tpFragment = ((TrackingProtectionSettings) fragment);
@@ -636,8 +658,22 @@ public class SettingsActivity extends ChromeBaseAppCompatActivity
                     .setModalDialogManagerSupplier(getModalDialogManagerSupplier());
         }
         if (fragment instanceof IpProtectionSettingsFragment) {
-            ((IpProtectionSettingsFragment) fragment)
-                    .setIProtectionDelegate(new ChromeIpProtectionDelegate(mProfile));
+            IpProtectionSettingsFragment ipProtectionSettingsFragment =
+                    ((IpProtectionSettingsFragment) fragment);
+            ipProtectionSettingsFragment.setIProtectionDelegate(
+                    new ChromeIpProtectionDelegate(mProfile));
+            ipProtectionSettingsFragment.setCustomTabIntentHelper(
+                    LaunchIntentDispatcher::createCustomTabActivityIntent);
+        }
+        if (fragment instanceof AutofillIbanEditor) {
+            ((AutofillIbanEditor) fragment)
+                    .setModalDialogManagerSupplier(getModalDialogManagerSupplier());
+        }
+        if (fragment instanceof SafetyHubFragment) {
+            ((SafetyHubFragment) fragment)
+                    .setDelegate(
+                            new SafetyHubModuleDelegateImpl(
+                                    mProfile, getModalDialogManagerSupplier()));
         }
     }
 

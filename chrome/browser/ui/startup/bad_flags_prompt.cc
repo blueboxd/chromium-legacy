@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <string>
+#include <string_view>
 
 #include "base/base_switches.h"
 #include "base/command_line.h"
@@ -28,6 +29,7 @@
 #include "components/history_clusters/core/file_clustering_backend.h"
 #include "components/infobars/content/content_infobar_manager.h"
 #include "components/infobars/core/infobar_delegate.h"
+#include "components/media_router/common/providers/cast/certificate/switches.h"
 #include "components/network_session_configurator/common/network_switches.h"
 #include "components/startup_metric_utils/browser/startup_metric_utils.h"
 #include "components/translate/core/common/translate_switches.h"
@@ -103,18 +105,12 @@ const char* const kBadFlags[] = {
     extensions::switches::kExtensionsOnChromeURLs,
 #endif
 
-// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
+// TODO(crbug.com/40118868): Revisit the macro expression once build flag switch
 // of lacros-chrome is complete.
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
     // Speech dispatcher is buggy, it can crash and it can make Chrome freeze.
     // http://crbug.com/327295
     switches::kEnableSpeechDispatcher,
-#endif
-
-#if BUILDFLAG(IS_MAC)
-    // This flag is only used for performance tests in mac, to ensure that
-    // calculated values are reliable. Should not be used elsewhere.
-    switches::kUseHighGPUThreadPriorityForPerfTests,
 #endif
 
     // These flags control Blink feature state, which is not supported and is
@@ -178,6 +174,10 @@ const char* const kBadFlags[] = {
     // in tests and performance benchmarks. Using it could allow faking user
     // interaction across origins.
     cc::switches::kEnableGpuBenchmarking,
+
+    // This flag enables loading a developer-signed certificate for Cast
+    // streaming receivers and should only be used for testing purposes.
+    cast_certificate::switches::kCastDeveloperCertificatePath,
 };
 #endif  // !BUILDFLAG(IS_ANDROID)
 
@@ -204,7 +204,7 @@ static const base::Feature* kBadFeatureFlagsInAboutFlags[] = {
 
 void ShowBadFlagsInfoBarHelper(content::WebContents* web_contents,
                                int message_id,
-                               base::StringPiece flag) {
+                               std::string_view flag) {
   // Animating the infobar also animates the content area size which can trigger
   // a flood of page layout, compositing, texture reallocations, etc.  Do not
   // animate the infobar to reduce noise in perf benchmarks because they pass

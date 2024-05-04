@@ -118,7 +118,7 @@
 #include "ui/display/screen.h"
 #include "url/gurl.h"
 
-#if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && BUILDFLAG(USE_STARSCAN)
+#if PA_BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && PA_BUILDFLAG(USE_STARSCAN)
 #include "base/allocator/partition_allocator/src/partition_alloc/starscan/pcscan.h"
 #endif
 
@@ -144,7 +144,7 @@ void ResizeWebContentsView(Shell* shell,
 
 class WebContentsImplBrowserTest : public ContentBrowserTest {
  public:
-  WebContentsImplBrowserTest();
+  WebContentsImplBrowserTest() = default;
   void SetUp() override {
     RenderWidgetHostImpl::DisableResizeAckCheckForTesting();
     ContentBrowserTest::SetUp();
@@ -169,13 +169,6 @@ class WebContentsImplBrowserTest : public ContentBrowserTest {
  protected:
   base::test::ScopedFeatureList scoped_feature_list_;
 };
-
-WebContentsImplBrowserTest::WebContentsImplBrowserTest() {
-  // The WebDisplayModeDelegate does not trigger any of the layout used to
-  // complete SurfaceSync for Fullscreen transitions.
-  scoped_feature_list_.InitAndDisableFeature(
-      features::kSurfaceSyncFullscreenKillswitch);
-}
 
 // Starts a new navigation as soon as the current one commits, but does not
 // wait for it to complete.  This allows us to observe DidStopLoading while
@@ -546,7 +539,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, OpenURLSubframe) {
                        WindowOpenDisposition::CURRENT_TAB,
                        ui::PAGE_TRANSITION_LINK, true);
   params.initiator_origin = wc->GetPrimaryMainFrame()->GetLastCommittedOrigin();
-  shell()->web_contents()->OpenURL(params);
+  shell()->web_contents()->OpenURL(params, /*navigation_handle_callback=*/{});
 
   // Make sure the NavigationEntry ends up with the FrameTreeNode ID.
   NavigationController* controller = &shell()->web_contents()->GetController();
@@ -573,7 +566,8 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, OpenURLNonExistentSubframe) {
                        WindowOpenDisposition::CURRENT_TAB,
                        ui::PAGE_TRANSITION_LINK, true);
   params.initiator_origin = wc->GetPrimaryMainFrame()->GetLastCommittedOrigin();
-  WebContents* new_web_contents = shell()->web_contents()->OpenURL(params);
+  WebContents* new_web_contents = shell()->web_contents()->OpenURL(
+      params, /*navigation_handle_callback=*/{});
 
   // The navigation should have been ignored.
   EXPECT_EQ(new_web_contents, nullptr);
@@ -2441,7 +2435,7 @@ class PointerLockDelegate : public WebContentsDelegate {
   bool request_pointer_lock_called_ = false;
 };
 
-// TODO(crbug.com/898641): This test is flaky.
+// TODO(crbug.com/41422519): This test is flaky.
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
                        DISABLED_RenderWidgetDeletedWhileMouseLockPending) {
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -5131,7 +5125,7 @@ class DidChangeVerticalScrollDirectionObserver : public WebContentsObserver {
 
 // Tests that DidChangeVerticalScrollDirection is called only when the vertical
 // scroll direction has changed and that it includes the correct details.
-// TODO(crbug.com/1359225): This is flaky on the Mac10.14 bot.
+// TODO(crbug.com/40862270): This is flaky on the Mac10.14 bot.
 #if BUILDFLAG(IS_MAC)
 #define MAYBE_DidChangeVerticalScrollDirection \
   DISABLED_DidChangeVerticalScrollDirection
@@ -6112,15 +6106,11 @@ class MediaWatchTimeChangedDelegate : public WebContentsDelegate {
   void MediaWatchTimeChanged(const MediaPlayerWatchTime& watch_time) override {
     watch_time_ = watch_time;
   }
-  base::WeakPtr<WebContentsDelegate> GetDelegateWeakPtr() override {
-    return weak_factory_.GetWeakPtr();
-  }
 
   const MediaPlayerWatchTime& watch_time() { return watch_time_; }
 
  private:
   MediaPlayerWatchTime watch_time_;
-  base::WeakPtrFactory<MediaWatchTimeChangedDelegate> weak_factory_{this};
 };
 
 // Tests that a media in a fenced frame reports the watch time with the url from
@@ -6168,7 +6158,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsFencedFrameBrowserTest,
   }
 }
 
-#if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && BUILDFLAG(USE_STARSCAN)
+#if PA_BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && PA_BUILDFLAG(USE_STARSCAN)
 
 namespace {
 
@@ -6312,7 +6302,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplStarScanPrerenderBrowserTest,
 
 class MockColorProviderSource : public ui::ColorProviderSource {
  public:
-  MockColorProviderSource() { provider_.GenerateColorMap(); }
+  MockColorProviderSource() = default;
   MockColorProviderSource(const MockColorProviderSource&) = delete;
   MockColorProviderSource& operator=(const MockColorProviderSource&) = delete;
   ~MockColorProviderSource() override = default;
@@ -6321,7 +6311,7 @@ class MockColorProviderSource : public ui::ColorProviderSource {
   const ui::ColorProvider* GetColorProvider() const override {
     return &provider_;
   }
-  const ui::RendererColorMap GetRendererColorMap(
+  ui::RendererColorMap GetRendererColorMap(
       ui::ColorProviderKey::ColorMode color_mode,
       ui::ColorProviderKey::ForcedColors forced_colors) const override {
     auto key = GetColorProviderKey();
@@ -6421,6 +6411,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   }
 }
 
-#endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && BUILDFLAG(USE_STARSCAN)
+#endif  // PA_BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) &&
+        // PA_BUILDFLAG(USE_STARSCAN)
 
 }  // namespace content

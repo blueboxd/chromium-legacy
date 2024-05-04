@@ -175,6 +175,9 @@ public class SingleCategorySettings extends BaseSiteSettingsFragment
     private @GlobalToggleLayout int mGlobalToggleLayout = GlobalToggleLayout.BINARY_TOGGLE;
     // The "notifications_quiet_ui" preference to allow hiding/showing it.
     private ChromeBaseCheckBoxPreference mNotificationsQuietUiPref;
+    // The three-way settings pref for notification and geolocation permissions.
+    private TriStatePermissionPreference mNotificationsTriStatePref;
+    private TriStatePermissionPreference mLocationTriStatePref;
     // The "desktop_site_window" preference to allow hiding/showing it.
     private ChromeBaseCheckBoxPreference mDesktopSiteWindowPref;
     private CardPreference mCardPreference;
@@ -225,6 +228,8 @@ public class SingleCategorySettings extends BaseSiteSettingsFragment
     // Keys for category-specific preferences (toggle, link, button etc.), dynamically shown.
     public static final String NOTIFICATIONS_VIBRATE_TOGGLE_KEY = "notifications_vibrate";
     public static final String NOTIFICATIONS_QUIET_UI_TOGGLE_KEY = "notifications_quiet_ui";
+    public static final String NOTIFICATIONS_TRI_STATE_PREF_KEY = "notifications_tri_state_toggle";
+    public static final String LOCATION_TRI_STATE_PREF_KEY = "location_tri_state_toggle";
     public static final String DESKTOP_SITE_WINDOW_TOGGLE_KEY = "desktop_site_window";
     public static final String EXPLAIN_PROTECTED_MEDIA_KEY = "protected_content_learn_more";
     public static final String ADD_EXCEPTION_KEY = "add_exception";
@@ -311,8 +316,7 @@ public class SingleCategorySettings extends BaseSiteSettingsFragment
         }
 
         WebsitePermissionsFetcher fetcher =
-                new WebsitePermissionsFetcher(
-                        getSiteSettingsDelegate().getBrowserContextHandle(), false);
+                new WebsitePermissionsFetcher(getSiteSettingsDelegate(), false);
         fetcher.fetchPreferencesForCategory(mCategory, new ResultsPopulator());
     }
 
@@ -628,6 +632,8 @@ public class SingleCategorySettings extends BaseSiteSettingsFragment
 
             if (type == SiteSettingsCategory.Type.NOTIFICATIONS) {
                 updateNotificationsSecondaryControls();
+            } else if (type == SiteSettingsCategory.Type.DEVICE_LOCATION) {
+                updateLocationSecondaryControls();
             } else if (type == SiteSettingsCategory.Type.AUTO_DARK_WEB_CONTENT) {
                 AutoDarkMetrics.recordAutoDarkSettingsChangeSource(
                         AutoDarkSettingsChangeSource.SITE_SETTINGS_GLOBAL, toggleValue);
@@ -1093,9 +1099,7 @@ public class SingleCategorySettings extends BaseSiteSettingsFragment
             preference.setIcon(
                     SettingsUtils.getTintedIcon(
                             getContext(),
-                            ContentSettingsResources.getIcon(
-                                    mCategory.getContentSettingsType(),
-                                    getSiteSettingsDelegate())));
+                            ContentSettingsResources.getIcon(mCategory.getContentSettingsType())));
             preference.setTitle(entry.first.get(0).getName());
             preference.setFragment(ChosenObjectSettings.class.getCanonicalName());
             getPreferenceScreen().addPreference(preference);
@@ -1137,6 +1141,8 @@ public class SingleCategorySettings extends BaseSiteSettingsFragment
                 screen.findPreference(TRI_STATE_COOKIE_TOGGLE);
         Preference notificationsVibrate = screen.findPreference(NOTIFICATIONS_VIBRATE_TOGGLE_KEY);
         mNotificationsQuietUiPref = screen.findPreference(NOTIFICATIONS_QUIET_UI_TOGGLE_KEY);
+        mNotificationsTriStatePref = screen.findPreference(NOTIFICATIONS_TRI_STATE_PREF_KEY);
+        mLocationTriStatePref = screen.findPreference(LOCATION_TRI_STATE_PREF_KEY);
         mDesktopSiteWindowPref = screen.findPreference(DESKTOP_SITE_WINDOW_TOGGLE_KEY);
         Preference explainProtectedMediaKey = screen.findPreference(EXPLAIN_PROTECTED_MEDIA_KEY);
         PreferenceGroup allowedGroup = screen.findPreference(ALLOWED_GROUP);
@@ -1198,11 +1204,24 @@ public class SingleCategorySettings extends BaseSiteSettingsFragment
             screen.removePreference(antiAbuseThingsToConsiderSectionOne);
         }
 
+        // Show either the old or new settings UI for geolocation permissions.
+        if (mCategory.getType() == SiteSettingsCategory.Type.DEVICE_LOCATION) {
+            if (getSiteSettingsDelegate().isPermissionDedicatedCpssSettingAndroidFeatureEnabled()) {
+                mLocationTriStatePref.initialize(
+                        (UserPrefs.get(getSiteSettingsDelegate().getBrowserContextHandle())));
+                updateLocationSecondaryControls();
+            } else {
+                screen.removePreference(mLocationTriStatePref);
+            }
+        } else {
+            screen.removePreference(mLocationTriStatePref);
+        }
+
         if (permissionBlockedByOs) {
             maybeShowOsWarning(screen);
-
             screen.removePreference(notificationsVibrate);
             screen.removePreference(mNotificationsQuietUiPref);
+            screen.removePreference(mNotificationsTriStatePref);
             screen.removePreference(mDesktopSiteWindowPref);
             screen.removePreference(explainProtectedMediaKey);
             screen.removePreference(allowedGroup);
@@ -1226,11 +1245,19 @@ public class SingleCategorySettings extends BaseSiteSettingsFragment
             } else {
                 screen.removePreference(mNotificationsQuietUiPref);
             }
-
+            // Show either the old or new settings UI for notifications permissions.
+            if (getSiteSettingsDelegate().isPermissionDedicatedCpssSettingAndroidFeatureEnabled()) {
+                screen.removePreference(mNotificationsQuietUiPref);
+                mNotificationsTriStatePref.initialize(
+                        UserPrefs.get(getSiteSettingsDelegate().getBrowserContextHandle()));
+            } else {
+                screen.removePreference(mNotificationsTriStatePref);
+            }
             updateNotificationsSecondaryControls();
         } else {
             screen.removePreference(notificationsVibrate);
             screen.removePreference(mNotificationsQuietUiPref);
+            screen.removePreference(mNotificationsTriStatePref);
         }
 
         // Configure/hide the desktop site window setting, as needed.
@@ -1353,8 +1380,7 @@ public class SingleCategorySettings extends BaseSiteSettingsFragment
 
     private void configureBinaryToggle(ChromeSwitchPreference binaryToggle, int contentType) {
         binaryToggle.setOnPreferenceChangeListener(this);
-        binaryToggle.setTitle(
-                ContentSettingsResources.getTitle(contentType, getSiteSettingsDelegate()));
+        binaryToggle.setTitle(ContentSettingsResources.getTitle(contentType));
 
         // Set summary on or off.
         BrowserContextHandle browserContextHandle =
@@ -1363,16 +1389,11 @@ public class SingleCategorySettings extends BaseSiteSettingsFragment
                 && WebsitePreferenceBridge.isLocationAllowedByPolicy(browserContextHandle)) {
             binaryToggle.setSummaryOn(ContentSettingsResources.getGeolocationAllowedSummary());
         } else {
-            binaryToggle.setSummaryOn(
-                    ContentSettingsResources.getEnabledSummary(
-                            contentType, getSiteSettingsDelegate()));
+            binaryToggle.setSummaryOn(ContentSettingsResources.getEnabledSummary(contentType));
         }
-        binaryToggle.setSummaryOff(
-                ContentSettingsResources.getDisabledSummary(
-                        contentType, getSiteSettingsDelegate()));
+        binaryToggle.setSummaryOff(ContentSettingsResources.getDisabledSummary(contentType));
         int summaryForAccessibility =
-                ContentSettingsResources.getSummaryOverrideForScreenReader(
-                        contentType, getSiteSettingsDelegate());
+                ContentSettingsResources.getSummaryOverrideForScreenReader(contentType);
         if (summaryForAccessibility != 0) {
             binaryToggle.setSummaryOverrideForScreenReader(
                     getContext().getString(summaryForAccessibility));
@@ -1402,16 +1423,39 @@ public class SingleCategorySettings extends BaseSiteSettingsFragment
         if (!getSiteSettingsDelegate().isQuietNotificationPromptsFeatureEnabled()) return;
 
         if (categoryEnabled) {
-            getPreferenceScreen().addPreference(mNotificationsQuietUiPref);
-            PrefService prefService = UserPrefs.get(browserContextHandle);
-            mNotificationsQuietUiPref.setChecked(
-                    prefService.getBoolean(ENABLE_QUIET_NOTIFICATION_PERMISSION_UI));
+            if (getSiteSettingsDelegate().isPermissionDedicatedCpssSettingAndroidFeatureEnabled()) {
+                getPreferenceScreen().addPreference(mNotificationsTriStatePref);
+            } else {
+                getPreferenceScreen().addPreference(mNotificationsQuietUiPref);
+                PrefService prefService = UserPrefs.get(browserContextHandle);
+                mNotificationsQuietUiPref.setChecked(
+                        prefService.getBoolean(ENABLE_QUIET_NOTIFICATION_PERMISSION_UI));
+            }
         } else {
-            getPreferenceScreen().removePreference(mNotificationsQuietUiPref);
+            if (getSiteSettingsDelegate().isPermissionDedicatedCpssSettingAndroidFeatureEnabled()) {
+                getPreferenceScreen().removePreference(mNotificationsTriStatePref);
+            } else {
+                getPreferenceScreen().removePreference(mNotificationsQuietUiPref);
+            }
         }
     }
 
-    // TODO(crbug.com/1343640): Looking at a different class setup for SingleCategorySettings that
+    private void updateLocationSecondaryControls() {
+        BrowserContextHandle browserContextHandle =
+                getSiteSettingsDelegate().getBrowserContextHandle();
+        Boolean categoryEnabled =
+                WebsitePreferenceBridge.isCategoryEnabled(
+                        browserContextHandle, ContentSettingsType.GEOLOCATION);
+        if (getSiteSettingsDelegate().isPermissionDedicatedCpssSettingAndroidFeatureEnabled()) {
+            if (categoryEnabled) {
+                getPreferenceScreen().addPreference(mLocationTriStatePref);
+            } else {
+                getPreferenceScreen().removePreference(mLocationTriStatePref);
+            }
+        }
+    }
+
+    // TODO(crbug.com/40852484): Looking at a different class setup for SingleCategorySettings that
     // allows category specific logic to live in separate files.
     private void updateDesktopSiteWindowSetting() {
         if (!ContentFeatureMap.isEnabled(ContentFeatureList.REQUEST_DESKTOP_SITE_WINDOW_SETTING)) {
@@ -1562,7 +1606,7 @@ public class SingleCategorySettings extends BaseSiteSettingsFragment
         RecordHistogram.recordEnumeratedHistogram(
                 "Android.RequestDesktopSite.Changed", layout, SiteLayout.NUM_ENTRIES);
 
-        // TODO(crbug.com/1069897): Use SharedPreferencesManager if it is componentized.
+        // TODO(crbug.com/40126122): Use SharedPreferencesManager if it is componentized.
         ContextUtils.getAppSharedPreferences()
                 .edit()
                 .putBoolean(

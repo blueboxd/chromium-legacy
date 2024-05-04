@@ -17,6 +17,7 @@
 #include "content/public/browser/global_routing_id.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/test/test_web_contents.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/page/page_zoom.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom.h"
@@ -212,6 +213,16 @@ class MockCapturedSurfaceControlPermissionManager
 };
 
 using MockPermissionManager = MockCapturedSurfaceControlPermissionManager;
+
+class MockObserver : public content::WebContentsObserver {
+ public:
+  explicit MockObserver(content::WebContents* web_contents)
+      : content::WebContentsObserver(web_contents) {}
+  ~MockObserver() override = default;
+
+  // content::WebContentsObserver:
+  MOCK_METHOD(void, OnCapturedSurfaceControl, (), (override));
+};
 
 // Make a callback that expects `result` and then unblock `run_loop`.
 base::OnceCallback<void(CSCResult)> MakeCallbackExpectingResult(
@@ -889,48 +900,6 @@ TEST_P(CapturedSurfaceControllerSelfCaptureTest,
   run_loop.Run();
 }
 
-class CapturedSurfaceControllerFocusRequirementTest
-    : public CapturedSurfaceControllerInterfaceTestBase,
-      public ::testing::WithParamInterface<CapturedSurfaceControlAPI> {
- public:
-  CapturedSurfaceControllerFocusRequirementTest()
-      : CapturedSurfaceControllerInterfaceTestBase(GetParam()) {}
-
-  void SetUp() override {
-    // Skip CapturedSurfaceControllerTestBase's SetUp(),
-    RenderViewHostTestHarness::SetUp();
-    SetUpTestTabs(/*focus_capturer=*/false);
-    StartCaptureOf(*capturee_);
-    AwaitWebContentsResolution();
-  }
-
-  ~CapturedSurfaceControllerFocusRequirementTest() override = default;
-};
-
-INSTANTIATE_TEST_SUITE_P(
-    ,
-    CapturedSurfaceControllerFocusRequirementTest,
-    ::testing::Values(CapturedSurfaceControlAPI::kSendWheel,
-                      CapturedSurfaceControlAPI::kSetZoomLevel));
-
-TEST_P(CapturedSurfaceControllerFocusRequirementTest,
-       CallSucceedsIfCapturerFocused) {
-  base::RunLoop run_loop;
-  permission_manager_->SetPermissionResult(CSCPermissionResult::kGranted);
-  capturer_->Focus();
-  RunTestedActionAndExpect(&run_loop, CSCResult::kSuccess);
-  run_loop.Run();
-}
-
-TEST_P(CapturedSurfaceControllerFocusRequirementTest,
-       CallsFailsIfCapturerUnfocused) {
-  base::RunLoop run_loop;
-  permission_manager_->SetPermissionResult(CSCPermissionResult::kGranted);
-  // Note absence of call to `capturer_->Focus()`.
-  RunTestedActionAndExpect(&run_loop, CSCResult::kCapturerNotFocusedError);
-  run_loop.Run();
-}
-
 // This test suite checks correct clamping of x/y wheel-deltas to min/max.
 //
 // The suite is parameterized on the *zoom* level because that affects
@@ -1041,6 +1010,71 @@ TEST_P(CapturedSurfaceControllerSendWheelClampTest, ClampMaxWheelDeltaY) {
           /*wheel_delta_x=*/0,
           /*wheel_delta_y=*/std::numeric_limits<WheelDeltaType>::max()),
       MakeCallbackExpectingResult(&run_loop, CSCResult::kSuccess));
+  run_loop.Run();
+}
+
+class WebContentsObserverCscNotifiedTest
+    : public CapturedSurfaceControllerTestBase {
+ public:
+  ~WebContentsObserverCscNotifiedTest() override = default;
+};
+
+TEST_F(WebContentsObserverCscNotifiedTest, NotifiedBySendWheelIfSuccessful) {
+  permission_manager_->SetPermissionResult(CSCPermissionResult::kGranted);
+  testing::StrictMock<MockObserver> observer(capturer_->web_contents());
+  EXPECT_CALL(observer, OnCapturedSurfaceControl()).Times(1);
+
+  base::RunLoop run_loop;
+  controller_->SendWheel(
+      CapturedWheelAction::New(
+          /*x=*/0.25,
+          /*y=*/0.5,
+          /*wheel_delta_x=*/300,
+          /*wheel_delta_y=*/400),
+      MakeCallbackExpectingResult(&run_loop, CSCResult::kSuccess));
+  run_loop.Run();
+}
+
+TEST_F(WebContentsObserverCscNotifiedTest, NotifiedBySetZoomLevelIfSuccessful) {
+  permission_manager_->SetPermissionResult(CSCPermissionResult::kGranted);
+
+  testing::StrictMock<MockObserver> observer(capturer_->web_contents());
+  EXPECT_CALL(observer, OnCapturedSurfaceControl()).Times(1);
+
+  base::RunLoop run_loop;
+  controller_->SetZoomLevel(
+      200, MakeCallbackExpectingResult(&run_loop, CSCResult::kSuccess));
+  run_loop.Run();
+}
+
+TEST_F(WebContentsObserverCscNotifiedTest,
+       NotNotifiedBySendWheelIfUnsuccessful) {
+  permission_manager_->SetPermissionResult(CSCPermissionResult::kDenied);
+
+  testing::StrictMock<MockObserver> observer(capturer_->web_contents());
+  EXPECT_CALL(observer, OnCapturedSurfaceControl()).Times(0);
+
+  base::RunLoop run_loop;
+  controller_->SendWheel(
+      CapturedWheelAction::New(
+          /*x=*/0.25,
+          /*y=*/0.5,
+          /*wheel_delta_x=*/300,
+          /*wheel_delta_y=*/400),
+      MakeCallbackExpectingResult(&run_loop, CSCResult::kNoPermissionError));
+  run_loop.Run();
+}
+
+TEST_F(WebContentsObserverCscNotifiedTest,
+       NotNotifiedBySetZoomLevelIfUnsuccessful) {
+  permission_manager_->SetPermissionResult(CSCPermissionResult::kDenied);
+
+  testing::StrictMock<MockObserver> observer(capturer_->web_contents());
+  EXPECT_CALL(observer, OnCapturedSurfaceControl()).Times(0);
+
+  base::RunLoop run_loop;
+  controller_->SetZoomLevel(200, MakeCallbackExpectingResult(
+                                     &run_loop, CSCResult::kNoPermissionError));
   run_loop.Run();
 }
 

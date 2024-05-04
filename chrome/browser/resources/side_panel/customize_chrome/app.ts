@@ -10,7 +10,7 @@ import 'chrome://resources/polymer/v3_0/iron-pages/iron-pages.js';
 import './appearance.js';
 import './cards.js';
 import './categories.js';
-import './chrome_colors.js';
+import './customize_toolbar/toolbar.js';
 import './shortcuts.js';
 import './themes.js';
 import './wallpaper_search/wallpaper_search.js';
@@ -25,7 +25,6 @@ import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bu
 import {getTemplate} from './app.html.js';
 import type {AppearanceElement} from './appearance.js';
 import type {CategoriesElement} from './categories.js';
-import type {ChromeColorsElement} from './chrome_colors.js';
 import type {BackgroundCollection, CustomizeChromePageHandlerInterface} from './customize_chrome.mojom-webui.js';
 import {ChromeWebStoreCategory, ChromeWebStoreCollection, CustomizeChromeSection} from './customize_chrome.mojom-webui.js';
 import {CustomizeChromeApiProxy} from './customize_chrome_api_proxy.js';
@@ -44,7 +43,7 @@ export enum CustomizeChromePage {
   OVERVIEW = 'overview',
   CATEGORIES = 'categories',
   THEMES = 'themes',
-  CHROME_COLORS = 'chrome-colors',
+  TOOLBAR = 'toolbar',
   WALLPAPER_SEARCH = 'wallpaper-search',
 }
 
@@ -57,7 +56,6 @@ export interface AppElement {
     categoriesPage: CategoriesElement,
     themesPage: ThemesElement,
     appearanceElement: AppearanceElement,
-    chromeColorsPage: ChromeColorsElement,
   };
 }
 
@@ -91,6 +89,10 @@ export class AppElement extends AppElementBase {
       wallpaperSearchEnabled_: {
         type: Boolean,
         value: () => loadTimeData.getBoolean('wallpaperSearchEnabled'),
+      },
+      toolbarCustomizationEnabled_: {
+        type: Boolean,
+        value: () => loadTimeData.getBoolean('toolbarCustomizationEnabled'),
       },
     };
   }
@@ -148,11 +150,11 @@ export class AppElement extends AppElementBase {
   private onBackClick_() {
     switch (this.page_) {
       case CustomizeChromePage.CATEGORIES:
+      case CustomizeChromePage.TOOLBAR:
         this.page_ = CustomizeChromePage.OVERVIEW;
         this.$.appearanceElement.focusOnThemeButton();
         break;
       case CustomizeChromePage.THEMES:
-      case CustomizeChromePage.CHROME_COLORS:
       case CustomizeChromePage.WALLPAPER_SEARCH:
         this.page_ = CustomizeChromePage.CATEGORIES;
         this.$.categoriesPage.focusOnBackButton();
@@ -176,11 +178,6 @@ export class AppElement extends AppElementBase {
     this.$.appearanceElement.focusOnThemeButton();
   }
 
-  private onChromeColorsSelect_() {
-    this.page_ = CustomizeChromePage.CHROME_COLORS;
-    this.$.chromeColorsPage.focusOnBackButton();
-  }
-
   private onWallpaperSearchSelect_() {
     this.page_ = CustomizeChromePage.WALLPAPER_SEARCH;
     const page =
@@ -196,7 +193,7 @@ export class AppElement extends AppElementBase {
 
   private onWritingButtonClick_() {
     this.pageHandler_.openChromeWebStoreCollectionPage(
-        ChromeWebStoreCollection.kWrittingEssentials);
+        ChromeWebStoreCollection.kWritingEssentials);
   }
 
   private onProductivityButtonClick_() {
@@ -206,6 +203,13 @@ export class AppElement extends AppElementBase {
 
   private onChromeWebStoreLinkClick_() {
     this.pageHandler_.openChromeWebStoreHomePage();
+  }
+
+  private onToolbarCustomizationButtonClicked_() {
+    this.page_ = CustomizeChromePage.TOOLBAR;
+    const page = this.shadowRoot!.querySelector('customize-chrome-toolbar');
+    assert(page);
+    page.focusOnBackButton();
   }
 }
 

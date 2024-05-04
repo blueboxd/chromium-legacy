@@ -18,10 +18,7 @@
 using manual_fill::ManualFillDataType;
 
 @interface ExpandedManualFillCoordinator () <
-    ExpandedManualFillViewControllerDelegate,
-    AddressCoordinatorDelegate,
-    CardCoordinatorDelegate,
-    PasswordCoordinatorDelegate>
+    ExpandedManualFillViewControllerDelegate>
 
 // Main view controller for this coordinator.
 @property(nonatomic, strong)
@@ -84,40 +81,6 @@ using manual_fill::ManualFillDataType;
   // now.
 }
 
-#pragma mark - PasswordCoordinatorDelegate
-
-- (void)openPasswordManager {
-  //  TODO(b/40942168): Implement logic.
-}
-
-- (void)openPasswordSettings {
-  //  TODO(b/40942168): Implement logic.
-}
-
-- (void)openAllPasswordsPicker {
-  //  TODO(b/40942168): Implement logic.
-}
-
-- (void)openPasswordSuggestion {
-  //  TODO(b/40942168): Implement logic.
-}
-
-#pragma mark - CardCoordinatorDelegate
-
-- (void)openCardSettings {
-  //  TODO(b/40942168): Implement logic.
-}
-
-- (void)openAddCreditCard {
-  //  TODO(b/40942168): Implement logic.
-}
-
-#pragma mark - AddressCoordinatorDelegate
-
-- (void)openAddressSettings {
-  //  TODO(b/40942168): Implement logic.
-}
-
 #pragma mark - Private
 
 // Stops and deletes all active child coordinators.
@@ -160,7 +123,7 @@ using manual_fill::ManualFillDataType;
             invokedOnObfuscatedField:self.invokedOnObfuscatedField
                               formID:self.formID
                              frameID:self.frameID];
-  passwordCoordinator.delegate = self;
+  passwordCoordinator.delegate = self.delegate;
 
   self.expandedManualFillViewController.childViewController =
       passwordCoordinator.viewController;
@@ -176,7 +139,7 @@ using manual_fill::ManualFillDataType;
       initWithBaseViewController:self.baseViewController
                          browser:self.browser
                 injectionHandler:self.injectionHandler];
-  cardCoordinator.delegate = self;
+  cardCoordinator.delegate = self.delegate;
 
   self.expandedManualFillViewController.childViewController =
       cardCoordinator.viewController;
@@ -192,7 +155,7 @@ using manual_fill::ManualFillDataType;
       initWithBaseViewController:self.baseViewController
                          browser:self.browser
                 injectionHandler:self.injectionHandler];
-  addressCoordinator.delegate = self;
+  addressCoordinator.delegate = self.delegate;
 
   self.expandedManualFillViewController.childViewController =
       addressCoordinator.viewController;

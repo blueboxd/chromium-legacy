@@ -36,6 +36,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/time/time.h"
 #include "base/unguessable_token.h"
+#include "base/uuid.h"
 #include "mojo/public/cpp/base/big_buffer.h"
 #include "mojo/public/cpp/bindings/shared_remote.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
@@ -735,6 +736,8 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
 
   const base::UnguessableToken devtools_navigation_token_;
 
+  const base::Uuid base_auction_nonce_;
+
   LoaderFreezeMode freeze_mode_ = LoaderFreezeMode::kNone;
 
   // Whether the last navigation (cross-document or same-document) that
@@ -864,6 +867,10 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
 
   // Renderer-enforced content settings are stored on a per-document basis.
   mojom::RendererContentSettingsPtr content_settings_;
+
+  // When document is fetched from service worker, we keep track of the body
+  // size for reporting in Navigation Timing encodedBodySize/decodedBodySize.
+  int64_t total_body_size_from_service_worker_ = 0;
 };
 
 DECLARE_WEAK_IDENTIFIER_MAP(DocumentLoader);

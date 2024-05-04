@@ -7,8 +7,8 @@
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/complex_tasks/task_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/supervised_user/supervised_user_navigation_observer.h"
 #include "components/sessions/content/content_serialized_navigation_builder.h"
-#include "components/supervised_user/core/common/buildflags.h"
 #include "components/sync/base/features.h"
 #include "components/sync_sessions/sync_sessions_client.h"
 #include "components/sync_sessions/synced_window_delegate.h"
@@ -21,10 +21,6 @@
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/apps/app_service/web_contents_app_id_utils.h"
-#endif
-
-#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-#include "chrome/browser/supervised_user/supervised_user_navigation_observer.h"
 #endif
 
 using content::NavigationEntry;
@@ -42,7 +38,7 @@ NavigationEntry* GetPossiblyPendingEntryAtIndex(
   NavigationEntry* entry = web_contents->GetController().GetEntryAtIndex(i);
   // Don't use the entry for sync if it doesn't exist or is the initial
   // NavigationEntry.
-  // TODO(https://crbug.com/1240138): Guarantee this won't be called when on the
+  // TODO(crbug.com/40194151): Guarantee this won't be called when on the
   // initial NavigationEntry instead of bailing out here.
   if (!entry || entry->IsInitialEntry()) {
     return nullptr;
@@ -126,7 +122,6 @@ bool TabContentsSyncedTabDelegate::ProfileHasChildAccount() const {
 
 const std::vector<std::unique_ptr<const sessions::SerializedNavigationEntry>>*
 TabContentsSyncedTabDelegate::GetBlockedNavigations() const {
-#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   SupervisedUserNavigationObserver* navigation_observer =
       SupervisedUserNavigationObserver::FromWebContents(web_contents_);
 #if BUILDFLAG(IS_ANDROID)
@@ -141,10 +136,6 @@ TabContentsSyncedTabDelegate::GetBlockedNavigations() const {
   DCHECK(navigation_observer);
 
   return &navigation_observer->blocked_navigations();
-#else
-  NOTREACHED();
-  return nullptr;
-#endif
 }
 
 bool TabContentsSyncedTabDelegate::ShouldSync(

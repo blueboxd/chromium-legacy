@@ -7,7 +7,7 @@
 namespace base {
 
 // Static table of checksums for all possible 8 bit bytes.
-const uint32_t kCrcTable[256] = {
+const std::array<uint32_t, 256> kCrcTable = {
     0x0,         0x77073096L, 0xee0e612cL, 0x990951baL, 0x76dc419L,
     0x706af48fL, 0xe963a535L, 0x9e6495a3L, 0xedb8832L,  0x79dcb8a4L,
     0xe0d5e91eL, 0x97d2d988L, 0x9b64c2bL,  0x7eb17cbdL, 0xe7b82d07L,

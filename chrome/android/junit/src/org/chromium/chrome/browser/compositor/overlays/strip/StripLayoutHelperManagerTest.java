@@ -10,6 +10,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyFloat;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
@@ -22,7 +23,9 @@ import static org.mockito.Mockito.when;
 import static org.chromium.chrome.browser.multiwindow.MultiWindowTestUtils.enableMultiInstance;
 
 import android.content.Context;
+import android.graphics.Rect;
 import android.graphics.RectF;
+import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.view.ContextThemeWrapper;
 import android.view.MotionEvent;
@@ -40,6 +43,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -60,7 +65,6 @@ import org.chromium.chrome.browser.compositor.layouts.LayoutManagerHost;
 import org.chromium.chrome.browser.compositor.layouts.LayoutRenderHost;
 import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
 import org.chromium.chrome.browser.compositor.layouts.components.TintedCompositorButton;
-import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.compositor.overlays.strip.StripLayoutHelperManager.TabModelStartupInfo;
 import org.chromium.chrome.browser.compositor.scene_layer.TabStripSceneLayer;
 import org.chromium.chrome.browser.compositor.scene_layer.TabStripSceneLayerJni;
@@ -70,12 +74,17 @@ import org.chromium.chrome.browser.layouts.components.VirtualView;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.multiwindow.MultiInstanceManager;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab_ui.TabContentManager;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelFilterProvider;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
+import org.chromium.chrome.browser.tasks.tab_management.TabUiThemeUtil;
 import org.chromium.chrome.browser.toolbar.ToolbarFeatures;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
+import org.chromium.chrome.browser.ui.desktop_windowing.AppHeaderState;
+import org.chromium.chrome.browser.ui.desktop_windowing.DesktopWindowStateProvider;
 import org.chromium.chrome.browser.ui.system.StatusBarColorController;
 import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.components.browser_ui.styles.SemanticColorUtils;
@@ -105,6 +114,7 @@ public class StripLayoutHelperManagerTest {
     @Mock private DragAndDropDelegate mDragDropDelegate;
     @Mock private TabModelSelector mTabModelSelector;
     @Mock private TabCreatorManager mTabCreatorManager;
+    @Mock private TabGroupModelFilter mTabGroupModelFilter;
     @Mock private TabModelFilterProvider mTabModelFilterProvider;
     @Mock private TabModel mStandardTabModel;
     @Mock private Tab mSelectedTab;
@@ -115,6 +125,8 @@ public class StripLayoutHelperManagerTest {
     @Mock private WindowAndroid mWindowAndroid;
     @Mock private ToolbarManager mToolbarManager;
     @Mock private StatusBarColorController mStatusBarColorController;
+    @Mock private DesktopWindowStateProvider mDesktopWindowStateProvider;
+    @Captor private ArgumentCaptor<List<Rect>> mSystemExclusionRectCaptor;
 
     private StripLayoutHelperManager mStripLayoutHelperManager;
     private Context mContext;
@@ -142,6 +154,7 @@ public class StripLayoutHelperManagerTest {
         TabStripSceneLayer.setTestFlag(true);
         ToolbarFeatures.USE_TOOLBAR_BG_COLOR_FOR_STRIP_TRANSITION_SCRIM.setForTesting(true);
 
+        when(mDesktopWindowStateProvider.isInUnfocusedDesktopWindow()).thenReturn(false);
         initializeTest();
     }
 
@@ -151,6 +164,8 @@ public class StripLayoutHelperManagerTest {
     }
 
     private void initializeTest() {
+        when(mTabModelFilterProvider.getTabModelFilter(anyBoolean()))
+                .thenReturn(mTabGroupModelFilter);
         when(mTabModelSelector.getTabModelFilterProvider()).thenReturn(mTabModelFilterProvider);
         when(mTabModelSelector.getCurrentModel()).thenReturn(mStandardTabModel);
 
@@ -178,13 +193,14 @@ public class StripLayoutHelperManagerTest {
                         mTabContentManagerSupplier,
                         mBrowserControlStateProvider,
                         mWindowAndroid,
-                        mToolbarManager);
+                        mToolbarManager,
+                        mDesktopWindowStateProvider);
         mStripLayoutHelperManager.setTabModelSelector(mTabModelSelector, mTabCreatorManager);
     }
 
     @Test
-    @DisableFeatures(ChromeFeatureList.TAB_STRIP_LAYOUT_OPTIMIZATION)
     public void testGetBackgroundColor_ActivityFocusChange_TsloDisabled() {
+        ToolbarFeatures.setIsTabStripLayoutOptimizationEnabledForTesting(false);
         assertEquals(
                 "Initial strip background color is incorrect.",
                 ChromeColors.getSurfaceColor(mContext, R.dimen.default_elevation_3),
@@ -192,29 +208,49 @@ public class StripLayoutHelperManagerTest {
         // Assume the current activity lost focus.
         mStripLayoutHelperManager.onTopResumedActivityChanged(false);
         assertEquals(
-                "Strip background color should not be updated when activity focus state changes",
+                "Strip background color should not be updated when activity focus state changes.",
                 ChromeColors.getSurfaceColor(mContext, R.dimen.default_elevation_3),
                 mStripLayoutHelperManager.getBackgroundColor());
     }
 
     @Test
-    @EnableFeatures(ChromeFeatureList.TAB_STRIP_LAYOUT_OPTIMIZATION)
+    public void testGetBackgroundColor_ActivityFocusChange_NotInDesktopWindow() {
+        ToolbarFeatures.setIsTabStripLayoutOptimizationEnabledForTesting(true);
+        when(mDesktopWindowStateProvider.getAppHeaderState()).thenReturn(new AppHeaderState());
+        assertEquals(
+                "Initial strip background color is incorrect.",
+                ChromeColors.getSurfaceColor(mContext, R.dimen.default_elevation_3),
+                mStripLayoutHelperManager.getBackgroundColor());
+        // Assume the current activity lost focus.
+        mStripLayoutHelperManager.onTopResumedActivityChanged(false);
+        assertEquals(
+                "Strip background color should not be updated when activity focus state changes"
+                        + " while not in desktop window.",
+                ChromeColors.getSurfaceColor(mContext, R.dimen.default_elevation_3),
+                mStripLayoutHelperManager.getBackgroundColor());
+    }
+
+    @Test
     public void testGetBackgroundColor_ActivityFocusChange_LightTheme() {
+        ToolbarFeatures.setIsTabStripLayoutOptimizationEnabledForTesting(true);
+        initializeTest();
         doTestBackgroundColorOnActivityFocusChange(
                 /* isNightMode= */ false, /* isIncognito= */ false);
     }
 
     @Test
     @Config(qualifiers = "night")
-    @EnableFeatures(ChromeFeatureList.TAB_STRIP_LAYOUT_OPTIMIZATION)
     public void testGetBackgroundColor_ActivityFocusChange_DarkTheme() {
+        ToolbarFeatures.setIsTabStripLayoutOptimizationEnabledForTesting(true);
+        initializeTest();
         doTestBackgroundColorOnActivityFocusChange(
                 /* isNightMode= */ true, /* isIncognito= */ false);
     }
 
     @Test
-    @EnableFeatures(ChromeFeatureList.TAB_STRIP_LAYOUT_OPTIMIZATION)
     public void testGetBackgroundColor_ActivityFocusChange_Incognito() {
+        ToolbarFeatures.setIsTabStripLayoutOptimizationEnabledForTesting(true);
+        initializeTest();
         mStripLayoutHelperManager.setIsIncognitoForTesting(true);
         doTestBackgroundColorOnActivityFocusChange(
                 /* isNightMode= */ false, /* isIncognito= */ true);
@@ -222,6 +258,9 @@ public class StripLayoutHelperManagerTest {
 
     private void doTestBackgroundColorOnActivityFocusChange(
             boolean isNightMode, boolean isIncognito) {
+        var appHeaderState = Mockito.mock(AppHeaderState.class);
+        doReturn(true).when(appHeaderState).isInDesktopWindow();
+        when(mDesktopWindowStateProvider.getAppHeaderState()).thenReturn(appHeaderState);
         @ColorInt
         int focusedColor =
                 ChromeColors.getSurfaceColor(
@@ -257,6 +296,38 @@ public class StripLayoutHelperManagerTest {
                         + " true.",
                 focusedColor,
                 mStripLayoutHelperManager.getBackgroundColor());
+    }
+
+    @Test
+    public void testGetBackgroundColor_ActivityStartsInUnfocusedDesktopWindow() {
+        // Assume that the app starts in an unfocused desktop window.
+        when(mDesktopWindowStateProvider.isInUnfocusedDesktopWindow()).thenReturn(true);
+        initializeTest();
+
+        @ColorInt
+        int unfocusedLightThemeColor =
+                ChromeColors.getSurfaceColor(mContext, R.dimen.default_elevation_2);
+        assertEquals(
+                "Strip background color is incorrect.",
+                unfocusedLightThemeColor,
+                mStripLayoutHelperManager.getBackgroundColor());
+    }
+
+    @Test
+    public void testUpdateForeGroundColor() {
+        initializeTest();
+
+        mStripLayoutHelperManager.onAppHeaderStateChanged(new AppHeaderState());
+
+        int normalColor = TabUiThemeUtil.getTabStripBackgroundColor(mContext, false);
+        verify(mDesktopWindowStateProvider).updateForegroundColor(normalColor);
+
+        Mockito.reset(mDesktopWindowStateProvider);
+        mStripLayoutHelperManager.setIsIncognitoForTesting(true);
+        mStripLayoutHelperManager.onAppHeaderStateChanged(new AppHeaderState());
+
+        int incognitoColor = TabUiThemeUtil.getTabStripBackgroundColor(mContext, true);
+        verify(mDesktopWindowStateProvider).updateForegroundColor(incognitoColor);
     }
 
     @Test
@@ -380,7 +451,6 @@ public class StripLayoutHelperManagerTest {
 
     @Test
     @Feature("Advanced Peripherals Support")
-    @EnableFeatures(ChromeFeatureList.ADVANCED_PERIPHERALS_SUPPORT_TAB_STRIP)
     public void testModelSelectorButtonHoverEnter() {
         mStripLayoutHelperManager.setModelSelectorButtonVisibleForTesting(true);
 
@@ -406,7 +476,6 @@ public class StripLayoutHelperManagerTest {
 
     @Test
     @Feature("Advanced Peripherals Support")
-    @EnableFeatures(ChromeFeatureList.ADVANCED_PERIPHERALS_SUPPORT_TAB_STRIP)
     public void testModelSelectorButtonHoverOnDown() {
         mStripLayoutHelperManager.setModelSelectorButtonVisibleForTesting(true);
 
@@ -557,6 +626,8 @@ public class StripLayoutHelperManagerTest {
 
     @Test
     public void testGetUpdatedSceneOverlayTree() {
+        ToolbarFeatures.setIsTabStripLayoutOptimizationEnabledForTesting(true);
+        initializeTest();
         // Setup and stub required mocks.
         int hoveredTabId = 1;
         int selectedTabId = 2;
@@ -571,9 +642,20 @@ public class StripLayoutHelperManagerTest {
         activeLayoutHelper.setLastHoveredTabForTesting(mHoveredStripTab);
 
         // Update the paddings.
-        float leftPadding = 10f;
-        float rightPadding = 20f;
-        mStripLayoutHelperManager.updateHorizontalPaddings(leftPadding, rightPadding);
+        int leftPadding = 10;
+        int rightPadding = 20;
+        int topPaddingPx = 5;
+        var appHeaderState =
+                new AppHeaderState(
+                        new Rect(0, 0, (int) SCREEN_WIDTH, (int) SCREEN_HEIGHT),
+                        new Rect(
+                                leftPadding,
+                                0,
+                                (int) (SCREEN_WIDTH - rightPadding),
+                                TAB_STRIP_HEIGHT_PX + topPaddingPx),
+                        true);
+        mStripLayoutHelperManager.onAppHeaderStateChanged(appHeaderState);
+        mStripLayoutHelperManager.onHeightChanged(TAB_STRIP_HEIGHT_PX + topPaddingPx);
 
         // Invoke the method.
         mStripLayoutHelperManager.getUpdatedSceneOverlayTree(
@@ -592,13 +674,13 @@ public class StripLayoutHelperManagerTest {
                         eq(hoveredTabId),
                         anyInt(),
                         anyFloat(),
-                        eq(leftPadding),
-                        eq(rightPadding));
+                        eq((float) leftPadding),
+                        eq((float) rightPadding),
+                        eq((float) topPaddingPx));
     }
 
     @Test
     @Config(sdk = VERSION_CODES.R)
-    @EnableFeatures(ChromeFeatureList.TAB_LINK_DRAG_DROP_ANDROID)
     public void testDragDropInstances_Success() {
         enableMultiInstance();
         initializeTest();
@@ -609,7 +691,6 @@ public class StripLayoutHelperManagerTest {
 
     @Test
     @Config(sdk = VERSION_CODES.Q)
-    @EnableFeatures(ChromeFeatureList.TAB_LINK_DRAG_DROP_ANDROID)
     public void testDragDropInstances_MultiInstanceNotEnabled_ReturnsNull() {
         initializeTest();
         assertNull(
@@ -632,7 +713,6 @@ public class StripLayoutHelperManagerTest {
 
     @Test
     @Config(sdk = VERSION_CODES.S)
-    @EnableFeatures(ChromeFeatureList.TAB_LINK_DRAG_DROP_ANDROID)
     public void testGetDragListener() {
         enableMultiInstance();
         initializeTest();
@@ -640,6 +720,8 @@ public class StripLayoutHelperManagerTest {
     }
 
     @Test
+    @EnableFeatures(ChromeFeatureList.DYNAMIC_TOP_CHROME)
+    @DisableFeatures(ChromeFeatureList.TAB_STRIP_LAYOUT_OPTIMIZATION)
     public void testTabStripTransition_Hide() {
         mStripLayoutHelperManager.setTabStripTreeProviderForTesting(mTabStripTreeProvider);
 
@@ -659,6 +741,7 @@ public class StripLayoutHelperManagerTest {
                         anyInt(),
                         eq(mToolbarPrimaryColor),
                         /* scrimOpacity= */ eq(0f),
+                        anyFloat(),
                         anyFloat(),
                         anyFloat());
 
@@ -684,6 +767,7 @@ public class StripLayoutHelperManagerTest {
                         eq(mToolbarPrimaryColor),
                         /* scrimOpacity= */ eq(expectedOpacity),
                         anyFloat(),
+                        anyFloat(),
                         anyFloat());
 
         // With tab strip transition finished, the yOffset will be forced to be the negative of the
@@ -704,6 +788,7 @@ public class StripLayoutHelperManagerTest {
                         eq(mToolbarPrimaryColor),
                         /* scrimOpacity= */ eq(0f),
                         anyFloat(),
+                        anyFloat(),
                         anyFloat());
 
         // Verify StatusBarColorController method invocations.
@@ -718,11 +803,14 @@ public class StripLayoutHelperManagerTest {
     }
 
     @Test
+    @EnableFeatures(ChromeFeatureList.DYNAMIC_TOP_CHROME)
+    @DisableFeatures(ChromeFeatureList.TAB_STRIP_LAYOUT_OPTIMIZATION)
     public void testTabStripTransition_Show_ScrimUsesToolbarBgColor() {
         doTestTabStripTransition_Show(mToolbarPrimaryColor);
     }
 
     @Test
+    @DisableFeatures(ChromeFeatureList.DYNAMIC_TOP_CHROME)
     public void testTabStripTransition_Show_ScrimUsesStripBgColor() {
         ToolbarFeatures.USE_TOOLBAR_BG_COLOR_FOR_STRIP_TRANSITION_SCRIM.setForTesting(false);
         doTestTabStripTransition_Show(mStripLayoutHelperManager.getBackgroundColor());
@@ -740,7 +828,7 @@ public class StripLayoutHelperManagerTest {
         List<VirtualView> views = new ArrayList<>();
         mStripLayoutHelperManager
                 .getTabSwitcherObserver()
-                .onStartedShowing(LayoutType.TAB_SWITCHER);
+                .onFinishedShowing(LayoutType.TAB_SWITCHER);
         mStripLayoutHelperManager.getVirtualViews(views);
         assertTrue("Views are empty when tab switcher is showing.", views.isEmpty());
 
@@ -839,6 +927,7 @@ public class StripLayoutHelperManagerTest {
                         eq(scrimColor),
                         /* scrimOpacity= */ eq(0f),
                         anyFloat(),
+                        anyFloat(),
                         anyFloat());
 
         // With tab strip transition, the yOffset will be forced to be 0.
@@ -864,6 +953,7 @@ public class StripLayoutHelperManagerTest {
                         eq(scrimColor),
                         /* scrimOpacity= */ eq(expectedOpacity),
                         anyFloat(),
+                        anyFloat(),
                         anyFloat());
 
         // When transition finished while tabs strip showing, yOffset will be forwarded to cc
@@ -884,6 +974,7 @@ public class StripLayoutHelperManagerTest {
                         eq(scrimColor),
                         /* scrimOpacity= */ eq(0f),
                         anyFloat(),
+                        anyFloat(),
                         anyFloat());
 
         // Verify StatusBarColorController method invocations.
@@ -902,11 +993,20 @@ public class StripLayoutHelperManagerTest {
     }
 
     @Test
-    public void testTouchEventsIgnoredOnMargins() {
+    public void testTouchEventsIgnoredOnPaddings() {
         // Update the size and paddings.
-        float leftPadding = 10f;
-        float rightPadding = 20f;
-        mStripLayoutHelperManager.updateHorizontalPaddings(leftPadding, rightPadding);
+        int leftPadding = 10;
+        int rightPadding = 20;
+        var appHeaderState =
+                new AppHeaderState(
+                        new Rect(0, 0, (int) SCREEN_WIDTH, (int) SCREEN_HEIGHT),
+                        new Rect(
+                                leftPadding,
+                                0,
+                                (int) (SCREEN_WIDTH - rightPadding),
+                                TAB_STRIP_HEIGHT_PX),
+                        true);
+        mStripLayoutHelperManager.onAppHeaderStateChanged(appHeaderState);
         mStripLayoutHelperManager.onSizeChanged(
                 SCREEN_WIDTH, SCREEN_HEIGHT, VISIBLE_VIEWPORT_Y, ORIENTATION);
 
@@ -932,6 +1032,124 @@ public class StripLayoutHelperManagerTest {
         assertTrue(
                 "Event on not on margin should be handled.",
                 motionEvenHandled(SCREEN_WIDTH - rightPadding - 1, yCenterOfStrip));
+    }
+
+    @Test
+    public void testTopPadding() {
+        ToolbarFeatures.setIsTabStripLayoutOptimizationEnabledForTesting(true);
+        initializeTest();
+        int topPadding = 10;
+        mStripLayoutHelperManager.onHeightChanged(TAB_STRIP_HEIGHT_PX + topPadding);
+        mStripLayoutHelperManager.onSizeChanged(
+                SCREEN_WIDTH, SCREEN_HEIGHT, VISIBLE_VIEWPORT_Y, ORIENTATION);
+
+        assertFalse(
+                "Event on top padding should not be handled.",
+                motionEvenHandled(SCREEN_WIDTH / 2, 0));
+        assertFalse(
+                "Event on top padding should not be handled.",
+                motionEvenHandled(SCREEN_WIDTH / 2, topPadding - 1));
+        assertTrue(
+                "Event should be handled below top padding.",
+                motionEvenHandled(SCREEN_WIDTH / 2, topPadding));
+        assertTrue(
+                "Ensure top padding increase the entire height",
+                motionEvenHandled(SCREEN_WIDTH / 2, topPadding + TAB_STRIP_HEIGHT_PX - 1));
+    }
+
+    @Test
+    @Config(sdk = Build.VERSION_CODES.Q)
+    public void testUpdateTouchableAreas_WithModelSelectorButton() {
+        int leftPadding = 10;
+        int rightPadding = 20;
+        int topPadding = 5;
+        var appHeaderState =
+                new AppHeaderState(
+                        new Rect(0, 0, (int) SCREEN_WIDTH, (int) SCREEN_HEIGHT),
+                        new Rect(
+                                leftPadding,
+                                0,
+                                (int) (SCREEN_WIDTH - rightPadding),
+                                TAB_STRIP_HEIGHT_PX + topPadding),
+                        true);
+        ToolbarFeatures.setIsTabStripLayoutOptimizationEnabledForTesting(true);
+        initializeTest();
+
+        // Ensure incognito icon is showing.
+        mStripLayoutHelperManager.setModelSelectorButtonVisibleForTesting(true);
+
+        mStripLayoutHelperManager.onSizeChanged(
+                SCREEN_WIDTH, SCREEN_HEIGHT, VISIBLE_VIEWPORT_Y, ORIENTATION);
+        mStripLayoutHelperManager.onAppHeaderStateChanged(appHeaderState);
+        mStripLayoutHelperManager.onHeightChanged(TAB_STRIP_HEIGHT_PX + topPadding);
+        mStripLayoutHelperManager.updateOverlay(0, 0);
+
+        verify(mToolbarContainerView)
+                .setSystemGestureExclusionRects(mSystemExclusionRectCaptor.capture());
+        assertEquals(
+                "Number of exclusion rects is wrong.",
+                2,
+                mSystemExclusionRectCaptor.getValue().size());
+
+        Rect rect = mSystemExclusionRectCaptor.getValue().get(0);
+        assertEquals("rect.top should be the top padding of the strip.", topPadding, rect.top);
+        assertEquals(
+                "rect.bottom should be the height of the strip.",
+                TAB_STRIP_HEIGHT_PX + topPadding,
+                rect.bottom);
+
+        Rect rect2 = mSystemExclusionRectCaptor.getValue().get(1);
+        // Left: 728 = width(800) - rightPadding(20) - modelSelectorWidth(32) - endPadding(8) -
+        // clickSlop(12)
+        // Top: 5 = max(topPadding(5) , topPadding(5) + modelSelectorYOffset(3) - clickSlop(12)))
+        // Right: 784 =  width(800) - rightPadding(20) - endPadding(8) + clickSlop(12)
+        // Bottom: 45 = min(height(45),  topPadding(5) + modelSelectorHeight(32) + clickSlop(12))
+        assertEquals(
+                "2nd rect should represent model selector button.",
+                new Rect(728, 5, 784, 45),
+                rect2);
+    }
+
+    @Test
+    @Config(sdk = Build.VERSION_CODES.Q)
+    public void testUpdateTouchableAreas_NoModelSelectorButton() {
+        int leftPadding = 10;
+        int rightPadding = 20;
+        int topPadding = 5;
+        var appHeaderState =
+                new AppHeaderState(
+                        new Rect(0, 0, (int) SCREEN_WIDTH, (int) SCREEN_HEIGHT),
+                        new Rect(
+                                leftPadding,
+                                0,
+                                (int) (SCREEN_WIDTH - rightPadding),
+                                TAB_STRIP_HEIGHT_PX + topPadding),
+                        true);
+        ToolbarFeatures.setIsTabStripLayoutOptimizationEnabledForTesting(true);
+        initializeTest();
+
+        // Ensure incognito icon is NOT showing.
+        mStripLayoutHelperManager.setModelSelectorButtonVisibleForTesting(false);
+
+        mStripLayoutHelperManager.onSizeChanged(
+                SCREEN_WIDTH, SCREEN_HEIGHT, VISIBLE_VIEWPORT_Y, ORIENTATION);
+        mStripLayoutHelperManager.onAppHeaderStateChanged(appHeaderState);
+        mStripLayoutHelperManager.onHeightChanged(TAB_STRIP_HEIGHT_PX + topPadding);
+        mStripLayoutHelperManager.updateOverlay(0, 0);
+
+        verify(mToolbarContainerView)
+                .setSystemGestureExclusionRects(mSystemExclusionRectCaptor.capture());
+        assertEquals(
+                "Number of exclusion rects is wrong.",
+                1,
+                mSystemExclusionRectCaptor.getValue().size());
+
+        Rect rect = mSystemExclusionRectCaptor.getValue().get(0);
+        assertEquals("rect.top should be the top padding of the strip.", topPadding, rect.top);
+        assertEquals(
+                "rect.bottom should be the height of the strip.",
+                TAB_STRIP_HEIGHT_PX + topPadding,
+                rect.bottom);
     }
 
     private boolean motionEvenHandled(float x, float y) {

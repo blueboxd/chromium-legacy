@@ -98,7 +98,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaDatabase {
       const BucketInitParams& params,
       blink::mojom::StorageType type);
 
-  // TODO(crbug.com/1208141): Remove `storage_type` when the only supported
+  // TODO(crbug.com/40181609): Remove `storage_type` when the only supported
   // StorageType is kTemporary.
   QuotaErrorOr<BucketInfo> CreateBucketForTesting(
       const blink::StorageKey& storage_key,
@@ -141,7 +141,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaDatabase {
   QuotaErrorOr<BucketInfo> UpdateBucketPersistence(BucketId bucket,
                                                    bool persistent);
 
-  // TODO(crbug.com/1202167): Remove once all usages have updated to use
+  // TODO(crbug.com/40179024): Remove once all usages have updated to use
   // SetBucketLastAccessTime.
   [[nodiscard]] QuotaError SetStorageKeyLastAccessTime(
       const blink::StorageKey& storage_key,

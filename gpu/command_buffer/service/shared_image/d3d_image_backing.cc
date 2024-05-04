@@ -6,10 +6,13 @@
 
 #include <d3d11_3.h>
 
+#include <functional>
+
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
+#include "base/synchronization/waitable_event.h"
 #include "gpu/command_buffer/common/shared_image_trace_utils.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/command_buffer/service/dxgi_shared_handle_manager.h"
@@ -36,12 +39,6 @@
 #if BUILDFLAG(USE_DAWN)
 #include <dawn/native/D3D11Backend.h>
 #include <dawn/native/D3DBackend.h>
-using dawn::native::ExternalImageDescriptor;
-using dawn::native::d3d::ExternalImageDescriptorD3D11Texture;
-using dawn::native::d3d::ExternalImageDescriptorDXGISharedHandle;
-using dawn::native::d3d::ExternalImageDXGI;
-using dawn::native::d3d::ExternalImageDXGIBeginAccessDescriptor;
-using dawn::native::d3d::ExternalImageDXGIFenceDescriptor;
 #endif  // BUILDFLAG(USE_DAWN)
 
 #ifndef EGL_ANGLE_image_d3d11_texture
@@ -441,136 +438,140 @@ void D3DImageBacking::Update(std::unique_ptr<gfx::GpuFence> in_fence) {
 bool D3DImageBacking::UploadFromMemory(const std::vector<SkPixmap>& pixmaps) {
   DCHECK_EQ(pixmaps.size(), static_cast<size_t>(format().NumberOfPlanes()));
 
+  ID3D11Texture2D* staging_texture = GetOrCreateStagingTexture();
+  if (!staging_texture) {
+    return false;
+  }
+
   CHECK(texture_d3d11_device_);
   Microsoft::WRL::ComPtr<ID3D11DeviceContext> device_context;
   texture_d3d11_device_->GetImmediateContext(&device_context);
 
-  if (d3d11_texture_desc_.CPUAccessFlags & D3D11_CPU_ACCESS_WRITE) {
-    // D3D doesn't support mappable+default YUV textures.
-    DCHECK(format().is_single_plane());
+  D3D11_MAPPED_SUBRESOURCE mapped_resource = {};
+  HRESULT hr = device_context->Map(staging_texture, 0, D3D11_MAP_WRITE, 0,
+                                    &mapped_resource);
+  if (FAILED(hr)) {
+    LOG(ERROR) << "Failed to map texture for write. hr=" << std::hex << hr;
+    return false;
+  }
 
-    Microsoft::WRL::ComPtr<ID3D11Device3> device3;
-    HRESULT hr = texture_d3d11_device_.As(&device3);
-    if (FAILED(hr)) {
-      LOG(ERROR) << "Failed to retrieve ID3D11Device3. hr=" << std::hex << hr;
-      return false;
-    }
-    hr = device_context->Map(d3d11_texture_.Get(), 0, D3D11_MAP_WRITE, 0,
-                             nullptr);
-    if (FAILED(hr)) {
-      LOG(ERROR) << "Failed to map texture for write. hr = " << std::hex << hr;
-      return false;
-    }
+  // The mapped staging texture pData points to the first plane's data so an
+  // offset is needed for subsequent planes.
+  size_t dest_offset = 0;
+
+  for (int plane = 0; plane < format().NumberOfPlanes(); ++plane) {
+    auto& pixmap = pixmaps[plane];
+    const uint8_t* source_memory = static_cast<const uint8_t*>(pixmap.addr());
+    const size_t source_stride = pixmap.rowBytes();
+
+    uint8_t* dest_memory =
+        static_cast<uint8_t*>(mapped_resource.pData) + dest_offset;
+    const size_t dest_stride = mapped_resource.RowPitch;
+
+    gfx::Size plane_size = format().GetPlaneSize(plane, size());
+    CopyPlane(source_memory, source_stride, dest_memory, dest_stride,
+              pixmap.info().minRowBytes(), plane_size);
+
+    dest_offset += mapped_resource.RowPitch * plane_size.height();
+  }
+
+  device_context->Unmap(staging_texture, 0);
+  device_context->CopyResource(d3d11_texture_.Get(), staging_texture);
+  return true;
+}
+
+bool D3DImageBacking::CopyToStagingTexture() {
+  TRACE_EVENT0("gpu", "D3DImageBacking::CopyToStagingTexture");
+  ID3D11Texture2D* staging_texture = GetOrCreateStagingTexture();
+  if (!staging_texture) {
+    return false;
+  }
+  Microsoft::WRL::ComPtr<ID3D11DeviceContext> device_context;
+  texture_d3d11_device_->GetImmediateContext(&device_context);
+  device_context->CopyResource(staging_texture, d3d11_texture_.Get());
+  return true;
+}
+
+bool D3DImageBacking::ReadbackFromStagingTexture(
+    const std::vector<SkPixmap>& pixmaps) {
+  TRACE_EVENT0("gpu", "D3DImageBacking::ReadbackFromStagingTexture");
+  Microsoft::WRL::ComPtr<ID3D11DeviceContext> device_context;
+  texture_d3d11_device_->GetImmediateContext(&device_context);
+
+  ID3D11Texture2D* staging_texture = GetOrCreateStagingTexture();
+
+  D3D11_MAPPED_SUBRESOURCE mapped_resource = {};
+  HRESULT hr = device_context->Map(staging_texture, 0, D3D11_MAP_READ, 0,
+                                   &mapped_resource);
+  if (FAILED(hr)) {
+    LOG(ERROR) << "Failed to map texture for read. hr=" << std::hex << hr;
+    return false;
+  }
+
+  // The mapped staging texture pData points to the first plane's data so an
+  // offset is needed for subsequent planes.
+  size_t source_offset = 0;
+
+  for (int plane = 0; plane < format().NumberOfPlanes(); ++plane) {
+    auto& pixmap = pixmaps[plane];
+    uint8_t* dest_memory = static_cast<uint8_t*>(pixmap.writable_addr());
+    const size_t dest_stride = pixmap.rowBytes();
 
     const uint8_t* source_memory =
-        static_cast<const uint8_t*>(pixmaps[0].addr());
-    const size_t source_stride = pixmaps[0].rowBytes();
-    device3->WriteToSubresource(d3d11_texture_.Get(), 0, nullptr, source_memory,
-                                source_stride, 0);
-    device_context->Unmap(d3d11_texture_.Get(), 0);
-  } else {
-    ID3D11Texture2D* staging_texture = GetOrCreateStagingTexture();
-    if (!staging_texture) {
-      return false;
-    }
-    D3D11_MAPPED_SUBRESOURCE mapped_resource = {};
-    HRESULT hr = device_context->Map(staging_texture, 0, D3D11_MAP_WRITE, 0,
-                                     &mapped_resource);
-    if (FAILED(hr)) {
-      LOG(ERROR) << "Failed to map texture for write. hr=" << std::hex << hr;
-      return false;
-    }
+        static_cast<uint8_t*>(mapped_resource.pData) + source_offset;
+    const size_t source_stride = mapped_resource.RowPitch;
 
-    // The mapped staging texture pData points to the first plane's data so an
-    // offset is needed for subsequent planes.
-    size_t dest_offset = 0;
+    gfx::Size plane_size = format().GetPlaneSize(plane, size());
+    CopyPlane(source_memory, source_stride, dest_memory, dest_stride,
+              pixmap.info().minRowBytes(), plane_size);
 
-    for (int plane = 0; plane < format().NumberOfPlanes(); ++plane) {
-      auto& pixmap = pixmaps[plane];
-      const uint8_t* source_memory = static_cast<const uint8_t*>(pixmap.addr());
-      const size_t source_stride = pixmap.rowBytes();
-
-      uint8_t* dest_memory =
-          static_cast<uint8_t*>(mapped_resource.pData) + dest_offset;
-      const size_t dest_stride = mapped_resource.RowPitch;
-
-      gfx::Size plane_size = format().GetPlaneSize(plane, size());
-      CopyPlane(source_memory, source_stride, dest_memory, dest_stride,
-                pixmap.info().minRowBytes(), plane_size);
-
-      dest_offset += mapped_resource.RowPitch * plane_size.height();
-    }
-
-    device_context->Unmap(staging_texture, 0);
-    device_context->CopyResource(d3d11_texture_.Get(), staging_texture);
+    source_offset += mapped_resource.RowPitch * plane_size.height();
   }
+
+  device_context->Unmap(staging_texture, 0);
   return true;
 }
 
 bool D3DImageBacking::ReadbackToMemory(const std::vector<SkPixmap>& pixmaps) {
-  CHECK(texture_d3d11_device_);
-  Microsoft::WRL::ComPtr<ID3D11DeviceContext> device_context;
-  texture_d3d11_device_->GetImmediateContext(&device_context);
+  TRACE_EVENT0("gpu", "D3DImageBacking::ReadbackToMemory");
+  return CopyToStagingTexture() && ReadbackFromStagingTexture(pixmaps);
+}
 
-  if (d3d11_texture_desc_.CPUAccessFlags & D3D11_CPU_ACCESS_READ) {
-    // D3D doesn't support mappable+default YUV textures.
-    DCHECK(format().is_single_plane());
+void D3DImageBacking::ReadbackToMemoryAsync(
+    const std::vector<SkPixmap>& pixmaps,
+    base::OnceCallback<void(bool)> callback) {
+  TRACE_EVENT0("gpu", "D3DImageBacking::ReadbackToMemoryAsync");
 
-    Microsoft::WRL::ComPtr<ID3D11Device3> device3;
-    HRESULT hr = texture_d3d11_device_.As(&device3);
-    if (FAILED(hr)) {
-      LOG(ERROR) << "Failed to retrieve ID3D11Device3. hr=" << std::hex << hr;
-      return false;
-    }
-    hr = device_context->Map(d3d11_texture_.Get(), 0, D3D11_MAP_READ, 0,
-                             nullptr);
-    if (FAILED(hr)) {
-      LOG(ERROR) << "Failed to map texture for read. hr=" << std::hex << hr;
-      return false;
-    }
-
-    uint8_t* dest_memory = static_cast<uint8_t*>(pixmaps[0].writable_addr());
-    const size_t dest_stride = pixmaps[0].rowBytes();
-    device3->ReadFromSubresource(dest_memory, dest_stride, 0,
-                                 d3d11_texture_.Get(), 0, nullptr);
-    device_context->Unmap(d3d11_texture_.Get(), 0);
-  } else {
-    ID3D11Texture2D* staging_texture = GetOrCreateStagingTexture();
-    if (!staging_texture) {
-      return false;
-    }
-    device_context->CopyResource(staging_texture, d3d11_texture_.Get());
-    D3D11_MAPPED_SUBRESOURCE mapped_resource = {};
-    HRESULT hr = device_context->Map(staging_texture, 0, D3D11_MAP_READ, 0,
-                                     &mapped_resource);
-    if (FAILED(hr)) {
-      LOG(ERROR) << "Failed to map texture for read. hr=" << std::hex << hr;
-      return false;
-    }
-
-    // The mapped staging texture pData points to the first plane's data so an
-    // offset is needed for subsequent planes.
-    size_t source_offset = 0;
-
-    for (int plane = 0; plane < format().NumberOfPlanes(); ++plane) {
-      auto& pixmap = pixmaps[plane];
-      uint8_t* dest_memory = static_cast<uint8_t*>(pixmap.writable_addr());
-      const size_t dest_stride = pixmap.rowBytes();
-
-      const uint8_t* source_memory =
-          static_cast<uint8_t*>(mapped_resource.pData) + source_offset;
-      const size_t source_stride = mapped_resource.RowPitch;
-
-      gfx::Size plane_size = format().GetPlaneSize(plane, size());
-      CopyPlane(source_memory, source_stride, dest_memory, dest_stride,
-                pixmap.info().minRowBytes(), plane_size);
-
-      source_offset += mapped_resource.RowPitch * plane_size.height();
-    }
-
-    device_context->Unmap(staging_texture, 0);
+  if (pending_copy_event_watcher_) {
+    LOG(ERROR) << "Existing ReadbackToMemory operation pending";
+    std::move(callback).Run(false);
+    return;
   }
-  return true;
+
+  if (!CopyToStagingTexture()) {
+    std::move(callback).Run(false);
+    return;
+  }
+
+  base::WaitableEvent copy_complete_event;
+  Microsoft::WRL::ComPtr<IDXGIDevice2> dxgi_device;
+  texture_d3d11_device_.As(&dxgi_device);
+  dxgi_device->EnqueueSetEvent(copy_complete_event.handle());
+
+  pending_copy_event_watcher_.emplace();
+  CHECK(pending_copy_event_watcher_->StartWatching(
+      &copy_complete_event,
+      base::IgnoreArgs<base::WaitableEvent*>(base::BindOnce(
+          &D3DImageBacking::OnCopyToStagingTextureDone,
+          weak_ptr_factory_.GetWeakPtr(), pixmaps, std::move(callback))),
+      base::SingleThreadTaskRunner::GetCurrentDefault()));
+}
+
+void D3DImageBacking::OnCopyToStagingTextureDone(
+    const std::vector<SkPixmap>& pixmaps,
+    base::OnceCallback<void(bool)> readback_cb) {
+  pending_copy_event_watcher_.reset();
+  std::move(readback_cb).Run(ReadbackFromStagingTexture(pixmaps));
 }
 
 #if BUILDFLAG(USE_DAWN)
@@ -607,40 +608,40 @@ std::unique_ptr<DawnImageRepresentation> D3DImageBacking::ProduceDawn(
   }
 
   // Persistently open the shared handle by caching it on this backing.
-  auto& external_image = GetDawnExternalImage(device.Get());
-  if (!external_image) {
+  auto& shared_texture_memory = GetDawnSharedTextureMemory(device.Get());
+  if (!shared_texture_memory) {
     Microsoft::WRL::ComPtr<ID3D11Device> dawn_d3d11_device;
     if (backend_type == wgpu::BackendType::D3D11) {
       dawn_d3d11_device = dawn::native::d3d11::GetD3D11Device(device.Get());
     }
     if (dawn_d3d11_device == texture_d3d11_device_) {
-      external_image = CreateDawnExternalImageDXGI(
-          device, usage(), d3d11_texture_desc_, d3d11_texture_, view_formats);
+      shared_texture_memory =
+          CreateDawnSharedTextureMemory(device, d3d11_texture_);
     } else {
       CHECK(dxgi_shared_handle_state_);
       const HANDLE shared_handle = dxgi_shared_handle_state_->GetSharedHandle();
       CHECK(base::win::HandleTraits::IsHandleValid(shared_handle));
-      external_image = CreateDawnExternalImageDXGI(
-          device, usage(), d3d11_texture_desc_, shared_handle, view_formats);
+      bool use_keyed_mutex =
+          d3d11_texture_desc_.MiscFlags & D3D11_RESOURCE_MISC_SHARED_KEYEDMUTEX;
+      shared_texture_memory =
+          CreateDawnSharedTextureMemory(device, use_keyed_mutex, shared_handle);
     }
 
-    if (!external_image) {
+    if (!shared_texture_memory) {
+      LOG(ERROR) << "Failed to create shared_texture_memory.";
       return nullptr;
     }
   }
 
-  return std::make_unique<DawnD3DImageRepresentation>(manager, this, tracker,
-                                                      device, backend_type);
+  return std::make_unique<DawnD3DImageRepresentation>(
+      manager, this, tracker, device, backend_type, view_formats);
 }
 #endif  // BUILDFLAG(USE_DAWN)
 
 void D3DImageBacking::UpdateExternalFence(
     scoped_refptr<gfx::D3DSharedFence> external_fence) {
-  if (!write_fence_) {
-    write_fence_ = std::move(external_fence);
-  }
-
-  // TODO(crbug.com/1236801): Handle cases that write_fence_ exists.
+  // TODO(crbug.com/40192861): Handle cases that write_fences_ is not empty.
+  write_fences_.insert(std::move(external_fence));
 }
 
 std::unique_ptr<VideoDecodeImageRepresentation>
@@ -672,60 +673,57 @@ D3DImageBacking::GetPendingWaitFences(
       LOG(ERROR) << "Failed to retrieve D3D11 signal fence";
       return {};
     }
-    // Make D3D11 device wait for |write_fence_| since we'll replace it below.
-    if (write_fence_ && !write_fence_->WaitD3D11(texture_d3d11_device_)) {
-      LOG(ERROR) << "Failed to wait for write fence";
-      return {};
+    // Make D3D11 device wait for |write_fences_| since we'll replace it below.
+    for (auto& fence : write_fences_) {
+      if (!fence->WaitD3D11(texture_d3d11_device_)) {
+        LOG(ERROR) << "Failed to wait for write fence";
+        return {};
+      }
     }
     if (!texture_device_fence->IncrementAndSignalD3D11()) {
       LOG(ERROR) << "Failed to signal D3D11 signal fence";
       return {};
     }
-    // Store it in |write_fence_| so it's waited on for all subsequent access.
-    write_fence_ = texture_device_fence;
+    // Store it in |write_fences_| so it's waited on for all subsequent access.
+    write_fences_.clear();
+    write_fences_.insert(texture_device_fence);
   }
 
 #if BUILDFLAG(USE_DAWN)
-  const gfx::D3DSharedFence* dawn_signaled_fence =
-      wait_dawn_device ? dawn_signaled_fence_map_[wait_dawn_device.Get()].get()
-                       : nullptr;
+  const auto& dawn_signaled_fences =
+      wait_dawn_device ? dawn_signaled_fences_map_[wait_dawn_device.Get()]
+                       : D3DSharedFenceSet();
 #else
-  const gfx::D3DSharedFence* dawn_signaled_fence = nullptr;
-#endif
+  const auto& dawn_signaled_fences = D3DSharedFenceSet();
+#endif  // BUILDFLAG(USE_DAWN)
 
-  auto should_wait_on_fence = [&](gfx::D3DSharedFence* wait_fence) -> bool {
-    // Skip the wait if it's for the fence last signaled by the Dawn device, or
-    // for D3D11 if the fence was issued for the same device since D3D11 uses a
-    // single immediate context for issuing commands on a device.
-    CHECK(wait_fence);
-    return (wait_dawn_device && dawn_signaled_fence != wait_fence) ||
-           (wait_d3d11_device &&
-            wait_d3d11_device != wait_fence->GetD3D11Device());
-  };
-
+  // TODO(crbug.com/335003893): Investigate how to avoid passing any fences back
+  // to Dawn that were previously signaled by Dawn. Currently there's no way to
+  // determine which of the fences that Dawn returns to us in EndAccess fit this
+  // criteria.
   std::vector<scoped_refptr<gfx::D3DSharedFence>> wait_fences;
   // Always wait for previous write for both read-only or read-write access.
   // Skip the wait if it's for the fence last signaled by the Dawn device, or
   // for D3D11 if the fence was issued for the same device since D3D11 has a
   // single immediate context for issuing commands.
-  if (write_fence_ && should_wait_on_fence(write_fence_.get())) {
-    wait_fences.push_back(write_fence_);
+  for (auto& fence : write_fences_) {
+    wait_fences.push_back(fence);
   }
   // Also wait for all previous reads for read-write access.
   if (write_access) {
     for (const auto& read_fence : read_fences_) {
-      if (should_wait_on_fence(read_fence.get())) {
         wait_fences.push_back(read_fence);
-      }
     }
   }
   return wait_fences;
 }
 
 #if BUILDFLAG(USE_DAWN)
-wgpu::Texture D3DImageBacking::BeginAccessDawn(const wgpu::Device& device,
-                                               wgpu::BackendType backend_type,
-                                               wgpu::TextureUsage wgpu_usage) {
+wgpu::Texture D3DImageBacking::BeginAccessDawn(
+    const wgpu::Device& device,
+    wgpu::BackendType backend_type,
+    wgpu::TextureUsage wgpu_usage,
+    std::vector<wgpu::TextureFormat> view_formats) {
   const bool write_access = wgpu_usage & (wgpu::TextureUsage::CopyDst |
                                           wgpu::TextureUsage::StorageBinding |
                                           wgpu::TextureUsage::RenderAttachment);
@@ -744,25 +742,42 @@ wgpu::Texture D3DImageBacking::BeginAccessDawn(const wgpu::Device& device,
   CHECK(dxgi_shared_handle_state_ ||
         dawn_d3d11_device == texture_d3d11_device_);
 
-  auto& external_image = GetDawnExternalImage(device);
-  CHECK(external_image);
-
-  ExternalImageDXGIBeginAccessDescriptor desc;
-  desc.isInitialized = IsCleared();
-  desc.isSwapChainTexture =
-      (usage() & SHARED_IMAGE_USAGE_WEBGPU_SWAP_CHAIN_TEXTURE);
-  desc.usage = static_cast<WGPUTextureUsage>(wgpu_usage);
+  auto& shared_texture_memory = GetDawnSharedTextureMemory(device);
+  CHECK(shared_texture_memory);
 
   // Defer clearing fences until later to handle Dawn failure to import texture.
   std::vector<scoped_refptr<gfx::D3DSharedFence>> wait_fences =
       GetPendingWaitFences(dawn_d3d11_device, device, write_access);
+  std::vector<wgpu::SharedFence> shared_fences;
+  std::vector<uint64_t> signaled_values;
   for (auto& wait_fence : wait_fences) {
-    desc.waitFences.push_back(ExternalImageDXGIFenceDescriptor{
-        wait_fence->GetSharedHandle(), wait_fence->GetFenceValue()});
+    wgpu::SharedFenceDXGISharedHandleDescriptor dxgi_desc;
+    dxgi_desc.handle = wait_fence->GetSharedHandle();
+    wgpu::SharedFenceDescriptor fence_desc;
+    fence_desc.nextInChain = &dxgi_desc;
+    // TODO(crbug.com/335003893): Look into caching the wgpu::SharedFence object
+    // in gfx::D3DSharedFence.
+    shared_fences.push_back(device.ImportSharedFence(&fence_desc));
+    signaled_values.push_back(wait_fence->GetFenceValue());
   }
 
-  auto texture = wgpu::Texture::Acquire(external_image->BeginAccess(&desc));
-  if (!texture) {
+  wgpu::SharedTextureMemoryD3DSwapchainBeginState swapchain_begin_state = {};
+  swapchain_begin_state.isSwapchain =
+      (usage() & SHARED_IMAGE_USAGE_WEBGPU_SWAP_CHAIN_TEXTURE);
+
+  wgpu::SharedTextureMemoryBeginAccessDescriptor desc = {};
+  desc.initialized = IsCleared();
+  // TODO(crbug.com/335003893): Figure out a clear way to express what's allowed
+  // and what's not to the client.
+  desc.concurrentRead = !write_access && IsCleared();
+  desc.fenceCount = shared_fences.size();
+  desc.fences = shared_fences.data();
+  desc.signaledValues = signaled_values.data();
+  desc.nextInChain = &swapchain_begin_state;
+
+  wgpu::Texture texture =
+      CreateDawnSharedTexture(shared_texture_memory, wgpu_usage, view_formats);
+  if (!texture || !shared_texture_memory.BeginAccess(texture, &desc)) {
     LOG(ERROR) << "Failed to begin access and produce WGPUTexture";
     return nullptr;
   }
@@ -780,47 +795,66 @@ void D3DImageBacking::EndAccessDawn(const wgpu::Device& device,
     SetCleared();
   }
 
-  // External image is removed from cache on first EndAccess after device is
-  // lost. It's ok to skip synchronization because it should've already been
+  // Shared texture memory is removed from cache on first EndAccess after device
+  // is lost. It's ok to skip synchronization because it should've already been
   // synchronized before the entry was removed from the cache.
-  if (auto& external_image = GetDawnExternalImage(device.Get())) {
+  if (auto& shared_texture_memory = GetDawnSharedTextureMemory(device.Get())) {
     // EndAccess returns a null fence handle if the device was lost, but that's
     // OK since we check for it explicitly below.
-    ExternalImageDXGIFenceDescriptor descriptor;
-    external_image->EndAccess(texture.Get(), &descriptor);
+    wgpu::SharedTextureMemoryEndAccessState end_state = {};
+    shared_texture_memory.EndAccess(texture.Get(), &end_state);
 
-    scoped_refptr<gfx::D3DSharedFence> signaled_fence;
-    if (use_fence_synchronization() && descriptor.fenceHandle != nullptr) {
-      auto& cached_fence = dawn_signaled_fence_map_[device.Get()];
-      // Try to reuse the last signaled fence if it's the same fence.
-      if (!cached_fence ||
-          !cached_fence->IsSameFenceAsHandle(descriptor.fenceHandle)) {
-        cached_fence = gfx::D3DSharedFence::CreateFromUnownedHandle(
-            descriptor.fenceHandle);
+    D3DSharedFenceSet signaled_fences;
+    if (use_fence_synchronization()) {
+      auto& cached_fences = dawn_signaled_fences_map_[device.Get()];
+      for (size_t i = 0; i < end_state.fenceCount; ++i) {
+        auto& signaled_value = end_state.signaledValues[i];
+        auto& fence = end_state.fences[i];
+        wgpu::SharedFenceDXGISharedHandleExportInfo shared_handle_info;
+        wgpu::SharedFenceExportInfo export_info;
+        export_info.nextInChain = &shared_handle_info;
+        fence.ExportInfo(&export_info);
+        DCHECK_EQ(export_info.type, wgpu::SharedFenceType::DXGISharedHandle);
+
+        // Try to find and reuse the last signaled fence if it's the same fence.
+        scoped_refptr<gfx::D3DSharedFence> signaled_fence;
+        for (auto& cached_fence : cached_fences) {
+          if (cached_fence->IsSameFenceAsHandle(shared_handle_info.handle)) {
+            signaled_fence = cached_fence;
+            break;
+          }
+        }
+        if (!signaled_fence) {
+          signaled_fence = gfx::D3DSharedFence::CreateFromUnownedHandle(
+              shared_handle_info.handle);
+        }
+        if (signaled_fence) {
+          signaled_fence->Update(signaled_value);
+          signaled_fences.insert(signaled_fence);
+        } else {
+          LOG(ERROR) << "Failed to import D3D fence from Dawn on EndAccess";
+        }
       }
-      if (cached_fence) {
-        cached_fence->Update(descriptor.fenceValue);
-        signaled_fence = cached_fence;
-      } else {
-        LOG(ERROR) << "Failed to import D3D fence from Dawn on EndAccess";
-      }
+      // Cache the fences.
+      cached_fences = signaled_fences;
     }
 
-    if (!external_image->IsValid()) {
+    if (shared_texture_memory.IsDeviceLost()) {
       // Erase from cache if external image is invalid i.e. device was lost.
-      dawn_signaled_fence_map_.erase(device.Get());
-      dxgi_shared_handle_state_->EraseDawnExternalImage(device.Get());
+      dawn_signaled_fences_map_.erase(device.Get());
+      dxgi_shared_handle_state_->EraseDawnSharedTextureMemory(device.Get());
     }
 
-    EndAccessCommon(std::move(signaled_fence));
+    EndAccessCommon(signaled_fences);
   }
 }
 
-std::unique_ptr<ExternalImageDXGI>& D3DImageBacking::GetDawnExternalImage(
+wgpu::SharedTextureMemory& D3DImageBacking::GetDawnSharedTextureMemory(
     const wgpu::Device& device) {
   return dxgi_shared_handle_state_
-             ? dxgi_shared_handle_state_->GetDawnExternalImage(device.Get())
-             : dawn_external_image_;
+             ? dxgi_shared_handle_state_->GetDawnSharedTextureMemory(
+                   device.Get())
+             : dawn_shared_texture_memory_;
 }
 #endif
 
@@ -862,14 +896,14 @@ void D3DImageBacking::EndAccessD3D11(
   // Do not create a fence for the texture's original device if we're only using
   // the texture on one device or using a keyed mutex. The fence is lazily
   // created on the first access from another device in GetPendingWaitFences().
-  scoped_refptr<gfx::D3DSharedFence> signaled_fence;
+  D3DSharedFenceSet signaled_fence;
   if (use_fence_synchronization()) {
     auto& d3d11_signal_fence = d3d11_signaled_fence_map_[d3d11_device];
     if (!d3d11_signal_fence) {
       d3d11_signal_fence = gfx::D3DSharedFence::CreateForD3D11(d3d11_device);
     }
     if (d3d11_signal_fence && d3d11_signal_fence->IncrementAndSignalD3D11()) {
-      signaled_fence = d3d11_signal_fence;
+      signaled_fence.insert(d3d11_signal_fence);
     } else {
       LOG(ERROR) << "Failed to signal D3D11 device fence on EndAccess";
     }
@@ -879,7 +913,7 @@ void D3DImageBacking::EndAccessD3D11(
     dxgi_shared_handle_state_->ReleaseKeyedMutex(d3d11_device);
   }
 
-  EndAccessCommon(std::move(signaled_fence));
+  EndAccessCommon(signaled_fence);
 }
 
 bool D3DImageBacking::ValidateBeginAccess(bool write_access) const {
@@ -899,7 +933,7 @@ void D3DImageBacking::BeginAccessCommon(bool write_access) {
     // For read-write access, we wait for all previous reads and reset fences
     // since all subsequent access will wait on |write_fence_| generated when
     // this access ends.
-    write_fence_.reset();
+    write_fences_.clear();
     read_fences_.clear();
     in_write_access_ = true;
   } else {
@@ -908,16 +942,18 @@ void D3DImageBacking::BeginAccessCommon(bool write_access) {
 }
 
 void D3DImageBacking::EndAccessCommon(
-    scoped_refptr<gfx::D3DSharedFence> signaled_fence) {
+    const D3DSharedFenceSet& signaled_fences) {
+  DCHECK(base::ranges::all_of(signaled_fences, std::identity()));
   if (in_write_access_) {
-    DCHECK(!write_fence_);
+    DCHECK(write_fences_.empty());
     DCHECK(read_fences_.empty());
     in_write_access_ = false;
-    write_fence_ = std::move(signaled_fence);
+    write_fences_ = signaled_fences;
   } else {
     num_readers_--;
-    if (signaled_fence)
-      read_fences_.insert(std::move(signaled_fence));
+    for (const auto& signaled_fence : signaled_fences) {
+      read_fences_.insert(signaled_fence);
+    }
   }
 }
 
@@ -1052,11 +1088,15 @@ D3DImageBacking::ProduceSkiaGraphite(
   auto dawn_representation =
       ProduceDawn(manager, tracker, device.Get(),
                   adapter_properties.backendType, {}, context_state);
+  if (!dawn_representation) {
+    LOG(ERROR) << "Could not create Dawn Representation";
+    return nullptr;
+  }
   const bool is_yuv_plane = NumPlanes(d3d11_texture_desc_.Format) > 1;
   return SkiaGraphiteDawnImageRepresentation::Create(
       std::move(dawn_representation), context_state,
       context_state->gpu_main_graphite_recorder(), manager, this, tracker,
-      is_yuv_plane, plane_index_);
+      is_yuv_plane, plane_index_, array_slice_);
 }
 #endif  // BUILDFLAG(SKIA_USE_DAWN)
 

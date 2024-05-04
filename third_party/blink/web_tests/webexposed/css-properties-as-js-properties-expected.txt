@@ -8,7 +8,6 @@ alignItems
 alignSelf
 alignmentBaseline
 all
-anchorDefault
 anchorName
 animation
 animationComposition
@@ -294,6 +293,7 @@ minHeight
 minInlineSize
 minWidth
 mixBlendMode
+navigation
 negative
 objectFit
 objectPosition
@@ -355,11 +355,11 @@ pointerEvents
 popoverHideDelay
 popoverShowDelay
 position
-positionFallback
-positionFallbackBounds
+positionAnchor
 positionTry
 positionTryOptions
 positionTryOrder
+positionVisibility
 prefix
 quotes
 r
@@ -484,6 +484,7 @@ transitionDuration
 transitionProperty
 transitionTimingFunction
 translate
+types
 unicodeBidi
 unicodeRange
 userSelect

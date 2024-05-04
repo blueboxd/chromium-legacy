@@ -5,7 +5,6 @@
 #import "ios/chrome/browser/tabs/model/tab_helper_util.h"
 
 #import "base/feature_list.h"
-#import "components/autofill/ios/form_util/unique_id_data_tab_helper.h"
 #import "components/breadcrumbs/core/breadcrumbs_status.h"
 #import "components/commerce/ios/browser/commerce_tab_helper.h"
 #import "components/favicon/core/favicon_service.h"
@@ -30,6 +29,8 @@
 #import "ios/chrome/browser/commerce/model/shopping_persisted_data_tab_helper.h"
 #import "ios/chrome/browser/commerce/model/shopping_service_factory.h"
 #import "ios/chrome/browser/complex_tasks/model/ios_task_tab_helper.h"
+#import "ios/chrome/browser/contextual_panel/model/contextual_panel_model_service.h"
+#import "ios/chrome/browser/contextual_panel/model/contextual_panel_model_service_factory.h"
 #import "ios/chrome/browser/contextual_panel/model/contextual_panel_tab_helper.h"
 #import "ios/chrome/browser/crash_report/model/breadcrumbs/breadcrumb_manager_tab_helper.h"
 #import "ios/chrome/browser/download/model/ar_quick_look_tab_helper.h"
@@ -219,8 +220,6 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
       web_state,
       ios::TopSitesFactory::GetForBrowserState(original_browser_state).get());
 
-  UniqueIDDataTabHelper::CreateForWebState(web_state);
-
   // Depends on favicon::WebFaviconDriver, must be created after it.
   SearchEngineTabHelper::CreateForWebState(web_state);
 
@@ -251,7 +250,7 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
   LookalikeUrlTabAllowList::CreateForWebState(web_state);
   LookalikeUrlContainer::CreateForWebState(web_state);
 
-  // TODO(crbug.com/794115): pre-rendered WebState have lots of unnecessary
+  // TODO(crbug.com/41360476): pre-rendered WebState have lots of unnecessary
   // tab helpers for historical reasons. For the moment, AttachTabHelpers
   // allows to inhibit the creation of some of them. Once PreloadController
   // has been refactored to only create the necessary tab helpers, this
@@ -267,12 +266,7 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
     ChromeIOSTranslateClient::CreateForWebState(web_state);
 
     PasswordTabHelper::CreateForWebState(web_state);
-    // TODO(crbug.com/1434606): PasswordTabHelper and
-    // AutofillBottomSheetTabHelper must share a password controller until the
-    // Butter notice is removed.
-    AutofillBottomSheetTabHelper::CreateForWebState(
-        web_state, PasswordTabHelper::FromWebState(web_state)
-                       ->GetPasswordsAccountStorageNoticeHandler());
+    AutofillBottomSheetTabHelper::CreateForWebState(web_state);
     AutofillTabHelper::CreateForWebState(web_state);
 
     FormSuggestionTabHelper::CreateForWebState(web_state, @[
@@ -281,9 +275,7 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
     ]);
   }
 
-  if (!base::FeatureList::IsEnabled(kEnableStartupImprovements)) {
-    InfobarBadgeTabHelper::GetOrCreateForWebState(web_state);
-  }
+  InfobarBadgeTabHelper::GetOrCreateForWebState(web_state);
 
   if (base::FeatureList::IsEnabled(kSharedHighlightingIOS)) {
     LinkToTextTabHelper::CreateForWebState(web_state);
@@ -333,8 +325,12 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
     PriceNotificationsTabHelper::CreateForWebState(web_state);
   }
 
-  if (IsContextualPanelEnabled()) {
-    ContextualPanelTabHelper::CreateForWebState(web_state);
+  if (!is_off_the_record && IsContextualPanelEnabled()) {
+    ContextualPanelModelService* model_service =
+        ContextualPanelModelServiceFactory::GetForBrowserState(
+            ChromeBrowserState::FromBrowserState(browser_state));
+    ContextualPanelTabHelper::CreateForWebState(web_state,
+                                                model_service->models());
   }
 
   if (!is_off_the_record && IsAboutThisSiteFeatureEnabled()) {

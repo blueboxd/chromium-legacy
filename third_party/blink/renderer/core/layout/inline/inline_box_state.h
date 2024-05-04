@@ -23,6 +23,7 @@ class InlineItem;
 class LogicalLineItems;
 class ShapeResultView;
 struct InlineItemResult;
+struct LogicalRubyColumn;
 
 // Fragments that require the layout position/size of ancestor are packed in
 // this struct.
@@ -150,9 +151,10 @@ struct InlineBoxState {
 // 2) Performs layout when the positin/size of a box was computed.
 // 3) Cache common values for a box.
 class CORE_EXPORT InlineLayoutStateStack {
-  STACK_ALLOCATED();
+  DISALLOW_NEW();
 
  public:
+  void Trace(Visitor* visitor) const;
   // The box state for the line box.
   InlineBoxState& LineBoxState() { return stack_.front(); }
 
@@ -192,6 +194,20 @@ class CORE_EXPORT InlineLayoutStateStack {
 
   void OnBlockInInline(const FontHeight& metrics, LogicalLineItems* line_box);
 
+  LogicalRubyColumn& CreateRubyColumn();
+  LogicalRubyColumn& RubyColumnAt(wtf_size_t index) {
+    return *ruby_column_list_[index];
+  }
+  HeapVector<Member<LogicalRubyColumn>>& RubyColumnList() {
+    return ruby_column_list_;
+  }
+  // Returns `ruby_column_list_`. The data member becomes unusable after
+  // calling this functions.
+  // This function should be called after finishing to fill LogicalLineItems.
+  HeapVector<Member<LogicalRubyColumn>> TakeRubyColumnList() {
+    return std::move(ruby_column_list_);
+  }
+
   bool HasBoxFragments() const { return !box_data_list_.empty(); }
 
   // Notify when child is inserted at |index| to adjust child indexes.
@@ -211,6 +227,13 @@ class CORE_EXPORT InlineLayoutStateStack {
   LayoutUnit ComputeInlinePositions(LogicalLineItems*,
                                     LayoutUnit position,
                                     bool ignore_box_margin_border_padding);
+
+  // This should be called when the corresponding LogicalLineItems are moved in
+  // the block direction, and should be called before CreateBoxFragments().
+  // This is necessary only for annotation lines, which requires to move its
+  // LogicalLineItems in the block direction before calling
+  // CreateBoxFragments().
+  void MoveBoxDataInBlockDirection(LayoutUnit diff);
 
   void ApplyRelativePositioning(const ConstraintSpace&, LogicalLineItems*);
   // Create box fragments. This function turns a flat list of children into
@@ -323,10 +346,36 @@ class CORE_EXPORT InlineLayoutStateStack {
 
   HeapVector<InlineBoxState, 4> stack_;
   Vector<BoxData, 4> box_data_list_;
+  HeapVector<Member<LogicalRubyColumn>> ruby_column_list_;
 
   bool is_empty_line_ = false;
   bool has_block_in_inline_ = false;
   bool is_svg_text_ = false;
+};
+
+// Represents a ruby column.  This associates LogicalLineItems for a ruby-base
+// and LogicalLineItems for a ruby-text.
+struct CORE_EXPORT LogicalRubyColumn
+    : public GarbageCollected<LogicalRubyColumn> {
+  // Start index of a ruby-base for the corresponding LogicalLineItems.
+  unsigned start_index;
+  // The number of ruby-base items in the corresponding LogicalLineItems.
+  unsigned size;
+  // Inset values applied after bidi reorder.
+  std::pair<LayoutUnit, LayoutUnit> base_insets;
+
+  Member<LogicalLineItems> annotation_items;
+
+  // Nested <ruby>s in `annotation_items`.
+  HeapVector<Member<LogicalRubyColumn>> ruby_column_list;
+
+  // `ruby-position` property value.
+  RubyPosition ruby_position = RubyPosition::kOver;
+
+  InlineLayoutStateStack state_stack;
+
+  void Trace(Visitor* visitor) const;
+  unsigned EndIndex() const { return start_index + size; }
 };
 
 }  // namespace blink

@@ -123,11 +123,9 @@ HTMLImageElement::HTMLImageElement(Document& document, bool created_by_parser)
       is_predicted_lcp_element_(false) {
   if (blink::LcppScriptObserverEnabled()) {
     if (LocalFrame* frame = document.GetFrame()) {
-      if (LCPCriticalPathPredictor* lcpp = frame->GetLCPP()) {
-        if (LCPScriptObserver* script_observer = lcpp->lcp_script_observer()) {
-          // Record scripts that created this HTMLImageElement.
-          creator_scripts_ = script_observer->GetExecutingScriptUrls();
-        }
+      if (LCPScriptObserver* script_observer = frame->GetScriptObserver()) {
+        // Record scripts that created this HTMLImageElement.
+        creator_scripts_ = script_observer->GetExecutingScriptUrls();
       }
     }
   }
@@ -398,8 +396,19 @@ void HTMLImageElement::ParseAttribute(
   } else if (name == html_names::kAttributionsrcAttr) {
     LocalDOMWindow* window = GetDocument().domWindow();
     if (window && window->GetFrame()) {
+      // Copied from `ImageLoader::DoUpdateFromElement()`.
+      network::mojom::ReferrerPolicy referrer_policy =
+          network::mojom::ReferrerPolicy::kDefault;
+      AtomicString referrer_policy_attribute =
+          FastGetAttribute(html_names::kReferrerpolicyAttr);
+      if (!referrer_policy_attribute.IsNull()) {
+        SecurityPolicy::ReferrerPolicyFromString(
+            referrer_policy_attribute, kSupportReferrerPolicyLegacyKeywords,
+            &referrer_policy);
+      }
       window->GetFrame()->GetAttributionSrcLoader()->Register(params.new_value,
-                                                              /*element=*/this);
+                                                              /*element=*/this,
+                                                              referrer_policy);
     }
   } else if (name == html_names::kSharedstoragewritableAttr &&
              RuntimeEnabledFeatures::SharedStorageAPIM118Enabled(
@@ -565,20 +574,23 @@ Node::InsertionNotificationRequest HTMLImageElement::InsertedInto(
     }
   }
 
-  if (base::FeatureList::IsEnabled(features::kLCPScriptObserver)) {
+  static const bool is_lcp_script_observer_enabled =
+      blink::LcppScriptObserverEnabled();
+  if (is_lcp_script_observer_enabled) {
     if (LocalFrame* frame = GetDocument().GetFrame()) {
-      if (LCPCriticalPathPredictor* lcpp = frame->GetLCPP()) {
-        if (LCPScriptObserver* script_observer = lcpp->lcp_script_observer()) {
-          // Record scripts that inserted this HTMLImageElement.
-          for (auto& url : script_observer->GetExecutingScriptUrls()) {
-            creator_scripts_.insert(url);
-          }
+      if (LCPScriptObserver* script_observer = frame->GetScriptObserver()) {
+        // Record scripts that inserted this HTMLImageElement.
+        for (auto& url : script_observer->GetExecutingScriptUrls()) {
+          creator_scripts_.insert(url);
         }
       }
     }
   }
 
-  if (features::
+  static const bool is_lcpp_enabled =
+      base::FeatureList::IsEnabled(features::kLCPCriticalPathPredictor);
+  if (is_lcpp_enabled &&
+      features::
           kLCPCriticalPathPredictorImageLoadPriorityEnabledForHTMLImageElement
               .Get()) {
     if (LocalFrame* frame = GetDocument().GetFrame()) {
@@ -841,8 +853,9 @@ int HTMLImageElement::y() const {
   return abs_pos.top.ToInt();
 }
 
-ScriptPromise HTMLImageElement::decode(ScriptState* script_state,
-                                       ExceptionState& exception_state) {
+ScriptPromise<IDLUndefined> HTMLImageElement::decode(
+    ScriptState* script_state,
+    ExceptionState& exception_state) {
   return GetImageLoader().Decode(script_state, exception_state);
 }
 
@@ -1112,7 +1125,7 @@ void HTMLImageElement::SetLayoutDisposition(
 
 void HTMLImageElement::AdjustStyle(ComputedStyleBuilder& builder) {
   DCHECK_EQ(layout_disposition_, LayoutDisposition::kFallbackContent);
-  HTMLImageFallbackHelper::CustomStyleForAltText(*this, builder);
+  HTMLImageFallbackHelper::AdjustHostStyle(*this, builder);
 }
 
 void HTMLImageElement::AssociateWith(HTMLFormElement* form) {

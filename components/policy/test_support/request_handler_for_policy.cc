@@ -26,6 +26,11 @@ namespace em = enterprise_management;
 
 namespace policy {
 
+// As policy test server can be used not only for regular managed users,
+// but also for unicorn users, we need to handle some policy aspects for
+// them in a special way.
+inline constexpr char kUnicornUsersDomain[] = "gmail.com";
+
 RequestHandlerForPolicy::RequestHandlerForPolicy(
     EmbeddedPolicyTestServer* parent)
     : EmbeddedPolicyTestServer::RequestHandler(parent) {}
@@ -42,8 +47,6 @@ std::unique_ptr<HttpResponse> RequestHandlerForPolicy::HandleRequest(
       dm_protocol::kChromeDevicePolicyType,
       dm_protocol::kChromeExtensionPolicyType,
       dm_protocol::kChromeMachineLevelUserCloudPolicyType,
-      dm_protocol::kChromeMachineLevelUserCloudPolicyAndroidType,
-      dm_protocol::kChromeMachineLevelUserCloudPolicyIOSType,
       dm_protocol::kChromeMachineLevelExtensionCloudPolicyType,
       dm_protocol::kChromePublicAccountPolicyType,
       dm_protocol::kChromeSigninExtensionPolicyType,
@@ -91,7 +94,7 @@ std::unique_ptr<HttpResponse> RequestHandlerForPolicy::HandleRequest(
   for (const auto& fetch_request :
        device_management_request.policy_request().requests()) {
     const std::string& policy_type = fetch_request.policy_type();
-    // TODO(crbug.com/1221328): Add other policy types as needed.
+    // TODO(crbug.com/40773420): Add other policy types as needed.
     if (!base::Contains(kCloudPolicyTypes, policy_type)) {
       return CreateHttpResponse(
           net::HTTP_BAD_REQUEST,
@@ -181,8 +184,13 @@ bool RequestHandlerForPolicy::ProcessCloudPolicy(
                                         ? kDefaultUsername
                                         : policy_storage()->policy_user());
   policy_data.set_username(username);
-  policy_data.set_managed_by(
-      gaia::ExtractDomainName(gaia::SanitizeEmail(username)));
+
+  std::string domain = gaia::ExtractDomainName(gaia::SanitizeEmail(username));
+
+  if (domain != kUnicornUsersDomain) {
+    // Unicorn users don't have "managed by" field.
+    policy_data.set_managed_by(domain);
+  }
   policy_data.set_policy_invalidation_topic(
       policy_storage()->policy_invalidation_topic());
 
@@ -199,6 +207,10 @@ bool RequestHandlerForPolicy::ProcessCloudPolicy(
         policy_data.add_user_affiliation_ids(user_affiliation_id);
       }
     }
+    if (policy_storage()->metrics_log_segment()) {
+      policy_data.set_metrics_log_segment(
+          policy_storage()->metrics_log_segment().value());
+    }
   } else if (policy_type == dm_protocol::kChromeDevicePolicyType) {
     std::vector<std::string> device_affiliation_ids =
         policy_storage()->device_affiliation_ids();
@@ -206,6 +218,10 @@ bool RequestHandlerForPolicy::ProcessCloudPolicy(
       for (const std::string& device_affiliation_id : device_affiliation_ids) {
         policy_data.add_device_affiliation_ids(device_affiliation_id);
       }
+    }
+    if (policy_storage()->market_segment()) {
+      policy_data.set_market_segment(
+          policy_storage()->market_segment().value());
     }
   }
 
@@ -233,8 +249,6 @@ bool RequestHandlerForPolicy::ProcessCloudPolicy(
     // Set the verification signature appropriate for the policy domain.
     // TODO(http://crbug.com/328038): Use the enrollment domain for public
     // accounts when we add key validation for ChromeOS.
-    std::string domain =
-        gaia::ExtractDomainName(gaia::SanitizeEmail(policy_data.username()));
     if (!signing_key->GetSignatureForDomain(
             domain,
             fetch_response

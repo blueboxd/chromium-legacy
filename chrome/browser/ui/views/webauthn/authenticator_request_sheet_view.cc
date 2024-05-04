@@ -16,10 +16,12 @@
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_features.h"
+#include "ui/color/color_id.h"
+#include "ui/color/color_provider.h"
+#include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/lottie/animation.h"
-#include "ui/native_theme/native_theme.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/animated_image_view.h"
 #include "ui/views/controls/image_view.h"
@@ -29,13 +31,14 @@
 
 namespace {
 
-// Margin between the top of the dialog and the start of any illustration.
+// Margins around any illustration.
 constexpr int kImageMarginTop = 22;
+constexpr int kImageMarginBottom = 2;
 
 template <typename T>
 void ConfigureHeaderIllustration(T* illustration, gfx::Size header_size) {
   illustration->SetBorder(views::CreateEmptyBorder(
-      gfx::Insets::TLBR(kImageMarginTop, 0, kImageMarginTop, 0)));
+      gfx::Insets::TLBR(kImageMarginTop, 0, kImageMarginBottom, 0)));
   illustration->SetSize(header_size);
   illustration->SetVerticalAlignment(views::ImageView::Alignment::kLeading);
 }
@@ -88,7 +91,7 @@ AuthenticatorRequestSheetView::BuildStepSpecificContent() {
 
 std::unique_ptr<views::View>
 AuthenticatorRequestSheetView::CreateIllustrationWithOverlays() {
-  constexpr int kImageHeight = 112, kImageMarginBottom = 2;
+  constexpr int kImageHeight = 112;
   constexpr int kHeaderHeight =
       kImageHeight + kImageMarginTop + kImageMarginBottom;
   const int dialog_width = ChromeLayoutProvider::Get()->GetDistanceMetric(
@@ -101,7 +104,10 @@ AuthenticatorRequestSheetView::CreateIllustrationWithOverlays() {
   View* illustration;
   if (model()->lottie_illustrations()) {
     auto animation = std::make_unique<views::AnimatedImageView>();
-    animation->SetPreferredSize(gfx::Size(dialog_width, kImageHeight));
+    // `AnimatedImageView` will horizontally center if the width is larger than
+    // the size from the Lottie file, but the height is just used to truncate
+    // the image, so that is disabled with a very large value.
+    animation->SetPreferredSize(gfx::Size(dialog_width, 9999));
     ConfigureHeaderIllustration(animation.get(), header_size);
     child_views_.step_illustration_animation_ = animation.get();
     illustration = animation.release();
@@ -231,7 +237,8 @@ void AuthenticatorRequestSheetView::OnThemeChanged() {
 }
 
 void AuthenticatorRequestSheetView::UpdateIconImageFromModel() {
-  const bool is_dark = GetNativeTheme()->ShouldUseDarkColors();
+  const bool is_dark = color_utils::IsDark(
+      GetColorProvider()->GetColor(ui::kColorDialogBackground));
   if (child_views_.step_illustration_image_) {
     child_views_.step_illustration_image_->SetImage(
         ui::ImageModel::FromVectorIcon(
@@ -242,7 +249,7 @@ void AuthenticatorRequestSheetView::UpdateIconImageFromModel() {
     std::optional<std::vector<uint8_t>> lottie_bytes =
         ui::ResourceBundle::GetSharedInstance().GetLottieData(lottie_id);
     scoped_refptr<cc::SkottieWrapper> skottie =
-        cc::SkottieWrapper::CreateSerializable(std::move(*lottie_bytes));
+        cc::SkottieWrapper::UnsafeCreateSerializable(std::move(*lottie_bytes));
     child_views_.step_illustration_animation_->SetAnimatedImage(
         std::make_unique<lottie::Animation>(skottie));
     child_views_.step_illustration_animation_->SizeToPreferredSize();

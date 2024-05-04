@@ -42,11 +42,11 @@ void ResetTabPickupLastDisplayedURLPref() {
   [ChromeEarlGrey clearUserPrefWithName:prefs::kTabPickupLastDisplayedURL];
 }
 
-// Sign in and sync using a fake identity.
-void SignInAndSync() {
+// Sign in and enable history/tab sync using a fake identity.
+void SignInAndEnableHistorySync() {
   FakeSystemIdentity* fake_identity = [FakeSystemIdentity fakeIdentity1];
   [SigninEarlGrey addFakeIdentity:fake_identity];
-  [SigninEarlGreyUI signinWithFakeIdentity:fake_identity enableSync:YES];
+  [SigninEarlGreyUI signinWithFakeIdentity:fake_identity enableHistorySync:YES];
   [ChromeEarlGrey
       waitForSyncTransportStateActiveWithTimeout:kSyncOperationTimeout];
 }
@@ -88,7 +88,6 @@ id<GREYMatcher> TabPickupSwitchItem(bool is_toggled_on, bool enabled) {
   if ([self isRunningTest:@selector
             (testBannerNotDisplayedOnNTPWhenTabResumptionEnbaled)]) {
     config.features_enabled.push_back(kTabResumption);
-    config.features_enabled.push_back(kMagicStack);
 
   } else {
     config.features_disabled.push_back(kTabResumption);
@@ -103,7 +102,7 @@ id<GREYMatcher> TabPickupSwitchItem(bool is_toggled_on, bool enabled) {
   ResetTabPickupLastDisplayedTimePref();
   ResetTabPickupLastDisplayedURLPref();
   GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
-  SignInAndSync();
+  SignInAndEnableHistorySync();
 }
 
 - (void)tearDown {
@@ -119,7 +118,7 @@ id<GREYMatcher> TabPickupSwitchItem(bool is_toggled_on, bool enabled) {
 // resumption feature is enabled.
 - (void)testBannerNotDisplayedOnNTPWhenTabResumptionEnbaled {
   // This test is failing on iOS 16.7 only.
-  // TODO(crbug.com/1516761): Re-enable the test.
+  // TODO(crbug.com/41489744): Re-enable the test.
   if (@available(iOS 16.7, *)) {
     if (@available(iOS 17.0, *)) {
     } else {
@@ -145,7 +144,7 @@ id<GREYMatcher> TabPickupSwitchItem(bool is_toggled_on, bool enabled) {
 // was synced before the defined threshold.
 - (void)testBannerVisibleBeforeThreshold {
   // This test is failing on iOS 16.7 only.
-  // TODO(crbug.com/1516761): Re-enable the test.
+  // TODO(crbug.com/41489744): Re-enable the test.
   if (@available(iOS 16.7, *)) {
     if (@available(iOS 17.0, *)) {
     } else {
@@ -173,7 +172,7 @@ id<GREYMatcher> TabPickupSwitchItem(bool is_toggled_on, bool enabled) {
 // synced after the defined threshold.
 - (void)testBannerNotVisibleAfterThreshold {
   // This test is failing on iOS 16.7 only.
-  // TODO(crbug.com/1516761): Re-enable the test.
+  // TODO(crbug.com/41489744): Re-enable the test.
   if (@available(iOS 16.7, *)) {
     if (@available(iOS 17.0, *)) {
     } else {
@@ -198,7 +197,7 @@ id<GREYMatcher> TabPickupSwitchItem(bool is_toggled_on, bool enabled) {
 // Verifies that tapping on the open button of the TabPickup banner correctly
 // opens the distant tab.
 - (void)testAcceptBanner {  // This test is failing on iOS 16.7 only.
-  // TODO(crbug.com/1516761): Re-enable the test.
+  // TODO(crbug.com/41489744): Re-enable the test.
   if (@available(iOS 16.7, *)) {
     if (@available(iOS 17.0, *)) {
     } else {
@@ -236,7 +235,7 @@ id<GREYMatcher> TabPickupSwitchItem(bool is_toggled_on, bool enabled) {
 // modal.
 - (void)testOpenModalFromBanner {
   // This test is failing on iOS 16.7 only.
-  // TODO(crbug.com/1516761): Re-enable the test.
+  // TODO(crbug.com/41489744): Re-enable the test.
   if (@available(iOS 16.7, *)) {
     if (@available(iOS 17.0, *)) {
     } else {
@@ -279,7 +278,7 @@ id<GREYMatcher> TabPickupSwitchItem(bool is_toggled_on, bool enabled) {
 // Verifies that the TabPickup banner is displayed only once.
 - (void)testBannerDisplayedOnce {
   // This test is failing on iOS 16.7 only.
-  // TODO(crbug.com/1516761): Re-enable the test.
+  // TODO(crbug.com/41489744): Re-enable the test.
   if (@available(iOS 16.7, *)) {
     if (@available(iOS 17.0, *)) {
     } else {
@@ -326,7 +325,7 @@ id<GREYMatcher> TabPickupSwitchItem(bool is_toggled_on, bool enabled) {
 // delay between the presentation of two tab pickup banners.
 - (void)testBannerDisplayedAfterBackground {
   // This test is failing on iOS 16.7 only.
-  // TODO(crbug.com/1516761): Re-enable the test.
+  // TODO(crbug.com/41489744): Re-enable the test.
   if (@available(iOS 16.7, *)) {
     if (@available(iOS 17.0, *)) {
     } else {
@@ -378,7 +377,7 @@ id<GREYMatcher> TabPickupSwitchItem(bool is_toggled_on, bool enabled) {
 // and foregrounding the app.
 - (void)testBannerNotDisplayedAfterBackground {
   // This test is failing on iOS 16.7 only.
-  // TODO(crbug.com/1516761): Re-enable the test.
+  // TODO(crbug.com/41489744): Re-enable the test.
   if (@available(iOS 16.7, *)) {
     if (@available(iOS 17.0, *)) {
     } else {
@@ -426,7 +425,7 @@ id<GREYMatcher> TabPickupSwitchItem(bool is_toggled_on, bool enabled) {
 // Verifies that the same TabPickup banner is not displayed twice.
 - (void)testSameBannerNotDisplayedTwice {
   // This test is failing on iOS 16.7 only.
-  // TODO(crbug.com/1516761): Re-enable the test.
+  // TODO(crbug.com/41489744): Re-enable the test.
   if (@available(iOS 16.7, *)) {
     if (@available(iOS 17.0, *)) {
     } else {

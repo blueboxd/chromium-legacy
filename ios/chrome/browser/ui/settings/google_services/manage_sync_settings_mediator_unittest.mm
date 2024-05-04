@@ -11,7 +11,6 @@
 #import "base/strings/sys_string_conversions.h"
 #import "base/test/scoped_feature_list.h"
 #import "components/signin/public/identity_manager/account_info.h"
-#import "components/sync/base/features.h"
 #import "components/sync/base/user_selectable_type.h"
 #import "components/sync/service/sync_service.h"
 #import "components/sync/test/mock_sync_service.h"
@@ -32,8 +31,6 @@
 #import "ios/chrome/browser/signin/model/identity_manager_factory.h"
 #import "ios/chrome/browser/sync/model/mock_sync_service_utils.h"
 #import "ios/chrome/browser/sync/model/sync_service_factory.h"
-#import "ios/chrome/browser/sync/model/sync_setup_service_factory.h"
-#import "ios/chrome/browser/sync/model/sync_setup_service_mock.h"
 #import "ios/chrome/browser/ui/authentication/cells/central_account_view.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_image_detail_text_item.h"
 #import "ios/chrome/browser/ui/settings/cells/sync_switch_item.h"
@@ -72,9 +69,6 @@ class ManageSyncSettingsMediatorTest : public PlatformTest {
     TestChromeBrowserState::Builder builder;
     builder.AddTestingFactory(SyncServiceFactory::GetInstance(),
                               base::BindRepeating(&CreateMockSyncService));
-    builder.AddTestingFactory(
-        SyncSetupServiceFactory::GetInstance(),
-        base::BindRepeating(&SyncSetupServiceMock::CreateKeyedService));
     builder.AddTestingFactory(
         AuthenticationServiceFactory::GetInstance(),
         AuthenticationServiceFactory::GetDefaultFactory());
@@ -156,9 +150,6 @@ class ManageSyncSettingsMediatorTest : public PlatformTest {
   }
 
   void SimulateFirstSetupSyncOffWithSignedInAccount() {
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndEnableFeature(
-        syncer::kReplaceSyncPromosWithSignInPromos);
     ON_CALL(*sync_service_mock_, HasSyncConsent()).WillByDefault(Return(false));
     ON_CALL(*sync_service_mock_, GetTransportState())
         .WillByDefault(Return(syncer::SyncService::TransportState::ACTIVE));
@@ -190,30 +181,6 @@ class ManageSyncSettingsMediatorTest : public PlatformTest {
 };
 
 // Tests for Advanced Settings items.
-
-// Tests that encryption is accessible even when Sync settings have not been
-// confirmed.
-TEST_F(ManageSyncSettingsMediatorTest, SyncServiceSetupNotCommitted) {
-  CreateManageSyncSettingsMediator(
-      SyncSettingsAccountState::kAdvancedInitialSyncSetup);
-  SimulateFirstSetupSyncOff();
-
-  [mediator_ manageSyncSettingsTableViewControllerLoadModel:mediator_.consumer];
-
-  EXPECT_FALSE([mediator_.consumer.tableViewModel
-      hasSectionForSectionIdentifier:SyncSettingsSectionIdentifier::
-                                         SignOutSectionIdentifier]);
-
-  // Encryption item is enabled.
-  NSArray* advanced_settings_items = [mediator_.consumer.tableViewModel
-      itemsInSectionWithIdentifier:SyncSettingsSectionIdentifier::
-                                       AdvancedSettingsSectionIdentifier];
-  ASSERT_EQ(2UL, advanced_settings_items.count);
-
-  TableViewImageItem* encryption_item = advanced_settings_items[0];
-  EXPECT_EQ(encryption_item.type, SyncSettingsItemType::EncryptionItemType);
-  EXPECT_TRUE(encryption_item.enabled);
-}
 
 // Tests that encryption is accessible when there is a Sync error due to a
 // missing passphrase, but Sync has otherwise been enabled.
@@ -276,20 +243,6 @@ TEST_F(ManageSyncSettingsMediatorTest,
   TableViewImageItem* encryption_item = advanced_settings_items[0];
   EXPECT_EQ(encryption_item.type, SyncSettingsItemType::EncryptionItemType);
   EXPECT_FALSE(encryption_item.enabled);
-}
-
-// Tests that "Turn off Sync" is hidden when Sync is disabled.
-TEST_F(ManageSyncSettingsMediatorTest, SyncServiceDisabledWithTurnOffSync) {
-  CreateManageSyncSettingsMediator(
-      SyncSettingsAccountState::kAdvancedInitialSyncSetup);
-  SimulateFirstSetupSyncOff();
-
-  [mediator_ manageSyncSettingsTableViewControllerLoadModel:mediator_.consumer];
-
-  // Sign out section not added.
-  EXPECT_FALSE([mediator_.consumer.tableViewModel
-      hasSectionForSectionIdentifier:SyncSettingsSectionIdentifier::
-                                         SignOutSectionIdentifier]);
 }
 
 // Tests that "Turn off Sync" is accessible when Sync is enabled.
@@ -422,13 +375,7 @@ TEST_F(ManageSyncSettingsMediatorTest,
     }
     SyncSwitchItem* switch_item =
         base::apple::ObjCCastStrict<SyncSwitchItem>(item);
-    if (switch_item.type == PaymentsDataTypeItemType &&
-        !base::FeatureList::IsEnabled(
-            syncer::kSyncDecoupleAddressPaymentSettings)) {
-      EXPECT_FALSE(switch_item.enabled);
-    } else {
-      EXPECT_TRUE(switch_item.enabled);
-    }
+    EXPECT_TRUE(switch_item.enabled);
   }
 }
 

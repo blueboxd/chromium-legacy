@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <windows.h>
+
 #include <ntstatus.h>
 #include <stdlib.h>
-#include <windows.h>
 #include <winternl.h>
 
 #include <memory>
@@ -133,8 +134,7 @@ PolicyGlobal* GenerateBlankPolicy() {
 
   LowLevelPolicy policy_maker(policy);
 
-  for (int i = static_cast<int>(IpcTag::UNUSED);
-       i < static_cast<int>(IpcTag::LAST); i++) {
+  for (size_t i = 0; i < kSandboxIpcCount; i++) {
     IpcTag service = static_cast<IpcTag>(i);
     PolicyRule ask_broker(ASK_BROKER);
     ask_broker.Done();
@@ -156,7 +156,7 @@ void CopyPolicyToTarget(const void* source, size_t size, void* dest) {
 
   size_t offset = reinterpret_cast<size_t>(source);
 
-  for (size_t i = 0; i < sandbox::kMaxServiceCount; i++) {
+  for (size_t i = 0; i < kSandboxIpcCount; i++) {
     size_t buffer = reinterpret_cast<size_t>(policy->entry[i]);
     if (buffer) {
       buffer -= offset;

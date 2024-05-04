@@ -5,9 +5,11 @@
 #import "ios/chrome/browser/ui/push_notification/notifications_opt_in_view_controller.h"
 
 #import "ios/chrome/browser/shared/public/features/features.h"
+#import "ios/chrome/browser/shared/ui/symbols/symbols.h"
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_switch_cell.h"
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_switch_item.h"
 #import "ios/chrome/browser/shared/ui/table_view/table_view_utils.h"
+#import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/grit/ios_branded_strings.h"
 #import "ios/chrome/grit/ios_strings.h"
@@ -25,14 +27,28 @@ struct CellConfig {
 };
 // Radius size of the table view.
 CGFloat const kTableViewCornerRadius = 10;
-// Name of the banner image above the title.
-NSString* const kBanner = @"notifications_opt_in_banner";
 // Table view separator inset.
 CGFloat const kTableViewSeparatorInset = 16.0;
 // Space above the title.
 CGFloat const kSpaceAboveTitle = 20.0;
 // Accessibility identifier.
 NSString* const kNotificationsOptInScreenAxId = @"NotificationsOptInScreenAxId";
+// Constant for the subtitleLabel's width anchor.
+CGFloat const kSubtitleWidthConstant = 23.0;
+// Title's horizontal margin.
+CGFloat const kTitleHorizontalMargin = 25.0;
+
+// Returns the name of the banner image above the title.
+NSString* BannerImageName(bool landscape) {
+#if BUILDFLAG(IOS_USE_BRANDED_SYMBOLS)
+  return landscape ? kChromeNotificationsOptInBannerLandscapeImage
+                   : kChromeNotificationsOptInBannerImage;
+#else
+  return landscape ? kChromiumNotificationsOptInBannerLandscapeImage
+                   : kChromiumNotificationsOptInBannerImage;
+#endif
+}
+
 }  // namespace
 
 @interface NotificationsOptInViewController () <UITableViewDelegate>
@@ -55,14 +71,16 @@ NSString* const kNotificationsOptInScreenAxId = @"NotificationsOptInScreenAxId";
   self.titleText = l10n_util::GetNSString(IDS_IOS_NOTIFICATIONS_OPT_IN_TITLE);
   self.subtitleText =
       l10n_util::GetNSString(IDS_IOS_NOTIFICATIONS_OPT_IN_SUBTITLE);
+  self.titleHorizontalMargin = kTitleHorizontalMargin;
   self.primaryActionString =
       l10n_util::GetNSString(IDS_IOS_NOTIFICATIONS_OPT_IN_ENABLE_BUTTON);
   self.secondaryActionString =
       l10n_util::GetNSString(IDS_IOS_NOTIFICATIONS_ALERT_CANCEL);
   self.titleTopMarginWhenNoHeaderImage = kSpaceAboveTitle;
-  self.bannerName = kBanner;
+  self.bannerName = BannerImageName(IsLandscape(self.view.window));
   self.bannerSize = BannerImageSizeType::kShort;
   self.shouldBannerFillTopSpace = YES;
+  self.shouldHideBanner = IsCompactHeight(self.traitCollection);
   self.view.accessibilityIdentifier = kNotificationsOptInScreenAxId;
   _tableView = [self createTableView];
   [self.specificContentView addSubview:_tableView];
@@ -82,12 +100,25 @@ NSString* const kNotificationsOptInScreenAxId = @"NotificationsOptInScreenAxId";
   [self updatePrimaryButtonState];
   [super viewDidLoad];
 
+  // Add subtitle constraint after it is added to hierarchy.
+  [NSLayoutConstraint activateConstraints:@[
+    [self.subtitleLabel.widthAnchor
+        constraintEqualToAnchor:self.view.widthAnchor
+                       constant:-kSubtitleWidthConstant],
+  ]];
+
   self.view.backgroundColor = [UIColor colorNamed:kSecondaryBackgroundColor];
 }
 
 - (void)viewWillLayoutSubviews {
   [super viewWillLayoutSubviews];
   [self updateTableViewHeightConstraint];
+  self.bannerName = BannerImageName(IsLandscape(self.view.window));
+}
+
+- (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
+  [super traitCollectionDidChange:previousTraitCollection];
+  self.shouldHideBanner = IsCompactHeight(self.traitCollection);
 }
 
 #pragma mark - PromoStyleViewController
@@ -98,7 +129,8 @@ NSString* const kNotificationsOptInScreenAxId = @"NotificationsOptInScreenAxId";
 
 - (UILabel*)createSubtitleLabel {
   UILabel* subtitleLabel = [[UILabel alloc] init];
-  subtitleLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
+  subtitleLabel.font =
+      [UIFont preferredFontForTextStyle:UIFontTextStyleCallout];
   subtitleLabel.numberOfLines = 0;
   subtitleLabel.textColor = [UIColor colorNamed:kTextSecondaryColor];
   subtitleLabel.text = self.subtitleText;
@@ -284,8 +316,9 @@ NSString* const kNotificationsOptInScreenAxId = @"NotificationsOptInScreenAxId";
     switch (incomingButton.state) {
       case UIControlStateDisabled: {
         updatedConfig.background.backgroundColor =
-            [UIColor colorNamed:kGrey300Color];
-        updatedConfig.baseForegroundColor = [UIColor colorNamed:kGrey800Color];
+            [UIColor colorNamed:kUpdatedTertiaryBackgroundColor];
+        updatedConfig.baseForegroundColor =
+            [UIColor colorNamed:kTextTertiaryColor];
         break;
       }
       case UIControlStateNormal: {

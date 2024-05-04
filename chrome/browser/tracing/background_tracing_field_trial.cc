@@ -4,6 +4,7 @@
 
 #include "chrome/browser/tracing/background_tracing_field_trial.h"
 
+#include "components/tracing/common/background_tracing_state_manager.h"
 #include "components/tracing/common/background_tracing_utils.h"
 #include "content/public/browser/background_tracing_config.h"
 #include "content/public/browser/background_tracing_manager.h"
@@ -25,10 +26,14 @@ bool MaybeSetupSystemTracingFromFieldTrial() {
     return false;
   }
 
+  auto& manager = BackgroundTracingManager::GetInstance();
+  auto trigger_config = tracing::GetTracingTriggerRulesConfig();
+  if (trigger_config) {
+    return manager.InitializePerfettoTriggerRules(std::move(*trigger_config));
+  }
   if (tracing::IsFieldTracingEnabled()) {
     return false;
   }
-  auto& manager = BackgroundTracingManager::GetInstance();
   std::unique_ptr<BackgroundTracingConfig> config =
       manager.GetBackgroundTracingConfig(kBackgroundTracingFieldTrial);
   if (!config || config->tracing_mode() != BackgroundTracingConfig::SYSTEM) {
@@ -37,9 +42,9 @@ bool MaybeSetupSystemTracingFromFieldTrial() {
 
   BackgroundTracingManager::DataFiltering data_filtering =
       BackgroundTracingManager::ANONYMIZE_DATA;
-  if (tracing::HasBackgroundTracingOutputFile()) {
+  if (tracing::HasBackgroundTracingOutputPath()) {
     data_filtering = BackgroundTracingManager::NO_DATA_FILTERING;
-    if (!tracing::SetBackgroundTracingOutputFile()) {
+    if (!tracing::SetBackgroundTracingOutputPath()) {
       return false;
     }
   }
@@ -55,18 +60,20 @@ bool MaybeSetupBackgroundTracingFromFieldTrial() {
 
   BackgroundTracingManager::DataFiltering data_filtering =
       BackgroundTracingManager::ANONYMIZE_DATA;
-  if (tracing::HasBackgroundTracingOutputFile()) {
+  if (tracing::HasBackgroundTracingOutputPath()) {
     data_filtering = BackgroundTracingManager::NO_DATA_FILTERING;
-    if (!tracing::SetBackgroundTracingOutputFile()) {
+    if (!tracing::SetBackgroundTracingOutputPath()) {
       return false;
     }
+  } else if (!tracing::ShouldAnonymizeFieldTracing()) {
+    data_filtering = BackgroundTracingManager::NO_DATA_FILTERING;
   }
 
   auto& manager = BackgroundTracingManager::GetInstance();
   auto field_tracing_config = tracing::GetFieldTracingConfig();
   if (field_tracing_config) {
-    return manager.InitializeScenarios(std::move(*field_tracing_config),
-                                       data_filtering);
+    return manager.InitializeFieldScenarios(std::move(*field_tracing_config),
+                                            data_filtering);
   }
 
   std::unique_ptr<BackgroundTracingConfig> config =

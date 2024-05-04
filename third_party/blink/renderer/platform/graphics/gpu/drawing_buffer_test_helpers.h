@@ -88,6 +88,8 @@ class WebGraphicsContext3DProviderForTests
     return 0;
   }
 
+  gpu::GpuFeatureInfo& GetMutableGpuFeatureInfo() { return gpu_feature_info_; }
+
  private:
   cc::StubDecodeCache image_decode_cache_;
   std::unique_ptr<gpu::gles2::GLES2Interface> gl_;
@@ -210,13 +212,6 @@ class GLES2InterfaceForTests : public gpu::gles2::GLES2InterfaceStub,
       default:
         break;
     }
-  }
-
-  void ProduceTextureDirectCHROMIUM(GLuint texture, GLbyte* mailbox) override {
-    ++current_mailbox_byte_;
-    memset(mailbox, current_mailbox_byte_, GL_MAILBOX_SIZE_CHROMIUM);
-    ASSERT_TRUE(texture_sizes_.Contains(texture));
-    most_recently_produced_size_ = texture_sizes_.at(texture);
   }
 
   void TexImage2D(GLenum target,
@@ -404,7 +399,6 @@ class GLES2InterfaceForTests : public gpu::gles2::GLES2InterfaceStub,
   State saved_state_;
 
   gpu::SyncToken most_recently_waited_sync_token_;
-  GLbyte current_mailbox_byte_ = 0;
   gfx::Size most_recently_produced_size_;
   GLuint current_image_id_ = 1;
   HashMap<GLuint, gfx::Size> texture_sizes_;

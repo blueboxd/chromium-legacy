@@ -3,10 +3,14 @@
 // found in the LICENSE file.
 
 import {assert} from 'chrome://resources/js/assert.js';
+import {EventTracker} from 'chrome://resources/js/event_tracker.js';
 
 import {createCustomEvent} from '../utils/event_utils.js';
 import {getPrintPreviewPageHandler} from '../utils/mojo_data_providers.js';
-import {type PrintPreviewPageHandler} from '../utils/print_preview_cros_app_types.js';
+import {type PrintPreviewPageHandler, PrintTicket, SessionContext} from '../utils/print_preview_cros_app_types.js';
+
+import {DESTINATION_MANAGER_ACTIVE_DESTINATION_CHANGED, DestinationManager} from './destination_manager.js';
+import {DEFAULT_PARTIAL_PRINT_TICKET} from './ticket_constants.js';
 
 /**
  * @fileoverview
@@ -18,6 +22,8 @@ export const PRINT_REQUEST_STARTED_EVENT =
     'print-ticket-manager.print-request-started';
 export const PRINT_REQUEST_FINISHED_EVENT =
     'print-ticket-manager.print-request-finished';
+export const PRINT_TICKET_MANAGER_SESSION_INITIALIZED =
+    'print-ticket-manager.session-initialized';
 
 export class PrintTicketManager extends EventTarget {
   private static instance: PrintTicketManager|null = null;
@@ -37,6 +43,11 @@ export class PrintTicketManager extends EventTarget {
   // Non-static properties:
   private printPreviewPageHandler: PrintPreviewPageHandler|null;
   private printRequestInProgress = false;
+  private printTicket: PrintTicket|null = null;
+  private sessionContext: SessionContext;
+  private destinationManager: DestinationManager =
+      DestinationManager.getInstance();
+  private eventTracker = new EventTracker();
 
   // Prevent additional initialization.
   private constructor() {
@@ -46,11 +57,47 @@ export class PrintTicketManager extends EventTarget {
     this.printPreviewPageHandler = getPrintPreviewPageHandler();
   }
 
+  // `initializeSession` is only intended to be called once from the
+  // `PrintPreviewCrosAppController`.
+  initializeSession(sessionContext: SessionContext): void {
+    assert(
+        !this.sessionContext, 'SessionContext should only be configured once');
+    this.sessionContext = sessionContext;
+    // TODO(b/323421684): Uses session context to configure ticket properties
+    // and validating ticket matches policy requirements.
+    this.printTicket = {
+      // Set print ticket defaults.
+      ...DEFAULT_PARTIAL_PRINT_TICKET,
+      printPreviewId: this.sessionContext.printPreviewId,
+      destination: this.destinationManager.getActiveDestination()?.id ?? '',
+      previewModifiable: this.sessionContext.isModifiable,
+      shouldPrintSelectionOnly: this.sessionContext.hasSelection,
+    } as PrintTicket;
+
+    if (this.printTicket.destination === '') {
+      this.eventTracker.add(
+          this.destinationManager,
+          DESTINATION_MANAGER_ACTIVE_DESTINATION_CHANGED,
+          (event: Event): void => this.onActiveDestinationChanged(event));
+    }
+
+    // TODO(b/323421684): Apply default settings from destination capabilities
+    // once capabilities manager has fetched active destination capabilities.
+
+    this.dispatchEvent(
+        createCustomEvent(PRINT_TICKET_MANAGER_SESSION_INITIALIZED));
+  }
+
   // Handles notifying start and finish print request.
   // TODO(b/323421684): Takes current print ticket uses PrintPreviewPageHandler
   // to initiate actual print request.
   sendPrintRequest(): void {
     assert(this.printPreviewPageHandler);
+
+    if (this.printTicket === null) {
+      // Print Ticket is not ready to be sent.
+      return;
+    }
 
     if (this.printRequestInProgress) {
       // Print is already in progress, wait for request to resolve before
@@ -63,7 +110,7 @@ export class PrintTicketManager extends EventTarget {
 
     // TODO(b/323421684): Handle result from page handler and update UI if error
     // occurred.
-    this.printPreviewPageHandler!.print().finally(() => {
+    this.printPreviewPageHandler!.print(this.printTicket).finally(() => {
       this.printRequestInProgress = false;
       this.dispatchEvent(createCustomEvent(PRINT_REQUEST_FINISHED_EVENT));
     });
@@ -77,6 +124,38 @@ export class PrintTicketManager extends EventTarget {
 
   isPrintRequestInProgress(): boolean {
     return this.printRequestInProgress;
+  }
+
+  // Returns true only after the `initializeSession` function has been called
+  // with a valid `SessionContext`.
+  isSessionInitialized(): boolean {
+    return !!this.sessionContext;
+  }
+
+  getPrintTicketForTesting(): PrintTicket|null {
+    return this.printTicket;
+  }
+
+  // Handles setting initial active destination in print ticket if not already
+  // set. Removes listener once destination is set in print ticket. After the
+  // initial change, future updates to active destination will start in the
+  // print ticket manager.
+  private onActiveDestinationChanged(_event: Event): void {
+    // Event listener added by initializeSession; print ticket will not be null.
+    assert(this.printTicket);
+
+    const activeDest = this.destinationManager.getActiveDestination();
+    if (activeDest === null) {
+      return;
+    }
+
+    if (this.printTicket!.destination === '') {
+      this.printTicket!.destination = activeDest.id;
+    }
+
+    this.eventTracker.remove(
+        this.destinationManager,
+        DESTINATION_MANAGER_ACTIVE_DESTINATION_CHANGED);
   }
 }
 

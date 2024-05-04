@@ -6,11 +6,13 @@
 
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
+#include "base/functional/concurrent_closures.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/commands/web_app_command.h"
 #include "chrome/browser/web_applications/locks/app_lock.h"
+#include "chrome/browser/web_applications/os_integration/os_integration_test_override.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_ui_manager.h"
 #include "components/services/app_service/public/cpp/app_launch_util.h"
@@ -45,20 +47,72 @@ LaunchWebAppCommand::~LaunchWebAppCommand() = default;
 
 void LaunchWebAppCommand::StartWithLock(std::unique_ptr<AppLock> lock) {
   lock_ = std::move(lock);
-
-  provider_->ui_manager().WaitForFirstRunService(
-      *profile_, base::BindOnce(&LaunchWebAppCommand::FirstRunServiceCompleted,
-                                weak_factory_.GetWeakPtr()));
-}
-
-void LaunchWebAppCommand::FirstRunServiceCompleted(bool success) {
-  GetMutableDebugValue().Set("first_run_success", base::Value(success));
-  if (!success) {
+  if (!lock_->registrar().IsInstalled(params_.app_id)) {
+    GetMutableDebugValue().Set("error", "not_installed");
     CompleteAndSelfDestruct(CommandResult::kFailure, nullptr, nullptr,
                             apps::LaunchContainer::kLaunchContainerNone);
     return;
   }
 
+  bool is_standalone_launch =
+      params_.container == apps::LaunchContainer::kLaunchContainerWindow ||
+      (launch_setting_ ==
+           LaunchWebAppWindowSetting::kOverrideWithWebAppConfig &&
+       lock_->registrar().GetAppUserDisplayMode(params_.app_id) !=
+           mojom::UserDisplayMode::kBrowser);
+
+  GetMutableDebugValue().Set("is_standalone_launch", is_standalone_launch);
+  if (is_standalone_launch) {
+    // Launching an app in a standalone windows requires OS integration, and the
+    // only way this is supported in tests is to use the
+    // OsIntegrationTestOverride functionality.
+    CHECK_OS_INTEGRATION_ALLOWED();
+  }
+
+  std::optional<proto::WebAppOsIntegrationState> os_integration =
+      lock_->registrar().GetAppCurrentOsIntegrationState(params_.app_id);
+  CHECK(os_integration);
+  bool needs_os_integration_sync =
+      !os_integration->has_shortcut() && is_standalone_launch;
+  GetMutableDebugValue().Set("needs_os_integration_sync",
+                             needs_os_integration_sync);
+
+  base::ConcurrentClosures completion;
+
+  if (needs_os_integration_sync) {
+    lock_->os_integration_manager().Synchronize(
+        params_.app_id,
+        base::BindOnce(&LaunchWebAppCommand::OnOsIntegrationSynchronized,
+                       weak_factory_.GetWeakPtr())
+            .Then(completion.CreateClosure()));
+  }
+
+  // Note: In tests this can synchronously call FirstRunServiceCompleted and
+  // self-destruct. So take the weak pointer first.
+  base::WeakPtr<LaunchWebAppCommand> weak_ptr = weak_factory_.GetWeakPtr();
+  provider_->ui_manager().WaitForFirstRunService(
+      *profile_, base::BindOnce(&LaunchWebAppCommand::FirstRunServiceCompleted,
+                                weak_factory_.GetWeakPtr())
+                     .Then(completion.CreateClosure()));
+
+  std::move(completion)
+      .Done(base::BindOnce(&LaunchWebAppCommand::DoLaunch, weak_ptr));
+}
+
+void LaunchWebAppCommand::FirstRunServiceCompleted(bool success) {
+  GetMutableDebugValue().Set("first_run_success", success);
+  if (!success) {
+    CompleteAndSelfDestruct(CommandResult::kFailure, nullptr, nullptr,
+                            apps::LaunchContainer::kLaunchContainerNone);
+    return;
+  }
+}
+
+void LaunchWebAppCommand::OnOsIntegrationSynchronized() {
+  GetMutableDebugValue().Set("os_integration_synchronized", true);
+}
+
+void LaunchWebAppCommand::DoLaunch() {
   provider_->ui_manager().LaunchWebApp(
       std::move(params_), launch_setting_, *profile_,
       base::BindOnce(&LaunchWebAppCommand::OnAppLaunched,

@@ -121,6 +121,10 @@ void ShoppingBookmarkModelObserver::BookmarkNodeAdded(
         "Commerce.PriceTracking.ShoppingCollection.Created"));
   }
 
+  if (model->IsLocalOnlyNode(*node)) {
+    return;
+  }
+
   // TODO(b:287289351): We should consider listening to metadata changes
   //                    instead. Presumably, shopping data is primarily being
   //                    added to new bookmarks, so we could potentially use the
@@ -155,7 +159,8 @@ void ShoppingBookmarkModelObserver::BookmarkNodeMoved(
 void ShoppingBookmarkModelObserver::OnWillRemoveBookmarks(
     const bookmarks::BookmarkNode* parent,
     size_t old_index,
-    const bookmarks::BookmarkNode* node) {
+    const bookmarks::BookmarkNode* node,
+    const base::Location& location) {
   if (node->is_folder()) {
     std::set<uint64_t> unsubscribed_ids;
     HandleFolderDeletion(node, &unsubscribed_ids);

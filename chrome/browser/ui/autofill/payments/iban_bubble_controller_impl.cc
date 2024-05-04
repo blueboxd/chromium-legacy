@@ -178,7 +178,8 @@ AccountInfo IbanBubbleControllerImpl::GetAccountInfo() {
   }
 
   return identity_manager->FindExtendedAccountInfo(
-      personal_data_manager->GetAccountInfoForPaymentsServer());
+      personal_data_manager->payments_data_manager()
+          .GetAccountInfoForPaymentsServer());
 }
 
 const Iban& IbanBubbleControllerImpl::GetIban() const {
@@ -214,9 +215,11 @@ void IbanBubbleControllerImpl::OnAcceptButton(const std::u16string& nickname) {
 }
 
 void IbanBubbleControllerImpl::OnLegalMessageLinkClicked(const GURL& url) {
-  web_contents()->OpenURL(content::OpenURLParams(
-      url, content::Referrer(), WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      ui::PAGE_TRANSITION_LINK, false));
+  web_contents()->OpenURL(
+      content::OpenURLParams(url, content::Referrer(),
+                             WindowOpenDisposition::NEW_FOREGROUND_TAB,
+                             ui::PAGE_TRANSITION_LINK, false),
+      /*navigation_handle_callback=*/{});
 }
 
 void IbanBubbleControllerImpl::OnManageSavedIbanExtraButtonClicked() {
@@ -378,7 +381,7 @@ void IbanBubbleControllerImpl::DoShowBubble() {
           /*is_upload_save=*/true);
       break;
     case IbanBubbleType::kManageSavedIban:
-      // TODO(crbug.com/1349109): Add metrics for manage saved IBAN mode.
+      // TODO(crbug.com/40233611): Add metrics for manage saved IBAN mode.
       break;
     case IbanBubbleType::kInactive:
       NOTREACHED();

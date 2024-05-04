@@ -86,6 +86,10 @@ class PasswordsModelDelegateMock : public PasswordsModelDelegate {
               (password_manager::ManagePasswordsReferrer),
               (override));
   MOCK_METHOD(void,
+              NavigateToPasswordDetailsPageInPasswordManager,
+              (const std::string&, password_manager::ManagePasswordsReferrer),
+              (override));
+  MOCK_METHOD(void,
               NavigateToPasswordManagerSettingsAccountStoreToggle,
               (password_manager::ManagePasswordsReferrer),
               (override));
@@ -116,7 +120,7 @@ class PasswordsModelDelegateMock : public PasswordsModelDelegate {
   MOCK_METHOD(void, OnBiometricAuthBeforeFillingDeclined, (), (override));
   MOCK_METHOD(void,
               OnAddUsernameSaveClicked,
-              (const std::u16string&),
+              (const std::u16string&, const password_manager::PasswordForm&),
               (override));
   MOCK_METHOD(void, MaybeShowIOSPasswordPromo, (), (override));
   MOCK_METHOD(void, RelaunchChrome, (), (override));

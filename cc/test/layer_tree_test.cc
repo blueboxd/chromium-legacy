@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/cfi_buildflags.h"
+#include "base/clang_profiling_buildflags.h"
 #include "base/command_line.h"
 #include "base/functional/bind.h"
 #include "base/location.h"
@@ -382,12 +383,6 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
     test_hooks_->DidRequestImplSideInvalidation(this);
   }
 
-  void DidReceiveCompositorFrameAck() override {
-    test_hooks_->WillReceiveCompositorFrameAckOnThread(this);
-    LayerTreeHostImpl::DidReceiveCompositorFrameAck();
-    test_hooks_->DidReceiveCompositorFrameAckOnThread(this);
-  }
-
   void DidPresentCompositorFrame(
       uint32_t presentation_token,
       const viz::FrameTimingDetails& details) override {
@@ -491,10 +486,6 @@ class LayerTreeHostClientForTesting : public LayerTreeHostClient,
     test_hooks_->DidCommitAndDrawFrame();
   }
 
-  void DidReceiveCompositorFrameAck() override {
-    test_hooks_->DidReceiveCompositorFrameAck();
-  }
-
   void DidRunBeginMainFrame() override { test_hooks_->DidRunBeginMainFrame(); }
 
   void DidSubmitCompositorFrame() override {}
@@ -506,7 +497,9 @@ class LayerTreeHostClientForTesting : public LayerTreeHostClient,
   void BeginMainFrameNotExpectedUntil(base::TimeTicks time) override {}
   void DidPresentCompositorFrame(
       uint32_t frame_token,
-      const gfx::PresentationFeedback& feedback) override {}
+      const viz::FrameTimingDetails& frame_timing_details) override {
+    test_hooks_->DidPresentCompositorFrame(frame_token, frame_timing_details);
+  }
 
  private:
   explicit LayerTreeHostClientForTesting(TestHooks* test_hooks)
@@ -715,6 +708,12 @@ LayerTreeTest::LayerTreeTest(viz::RendererType renderer_type)
 #elif BUILDFLAG(IS_OZONE)
     // Ozone builds go through a slower path than regular Linux builds.
     timeout_seconds_ = 30;
+#elif BUILDFLAG(IS_MAC) && BUILDFLAG(USE_CLANG_COVERAGE)
+    // TODO(crbug.com/337055578) SkiaGraphiteDawn renderer is at least 20x
+    // slower than the other renderers with clang coverage. Investigate why.
+    if (renderer_type_ == viz::RendererType::kSkiaGraphiteDawn) {
+      timeout_seconds_ = 25;
+    }
 #endif
   }
 

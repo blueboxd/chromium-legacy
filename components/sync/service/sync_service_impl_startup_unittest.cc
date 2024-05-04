@@ -12,7 +12,7 @@
 #include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "components/sync/base/pref_names.h"
 #include "components/sync/service/data_type_manager_impl.h"
-#include "components/sync/test/fake_data_type_controller.h"
+#include "components/sync/test/fake_model_type_controller.h"
 #include "components/sync/test/fake_sync_api_component_factory.h"
 #include "components/sync/test/fake_sync_engine.h"
 #include "components/sync/test/sync_client_mock.h"
@@ -53,9 +53,9 @@ class SyncServiceImplStartupTest : public testing::Test {
   ~SyncServiceImplStartupTest() override { sync_service_->Shutdown(); }
 
   void CreateSyncService(ModelTypeSet registered_types = {BOOKMARKS}) {
-    DataTypeController::TypeVector controllers;
+    ModelTypeController::TypeVector controllers;
     for (ModelType type : registered_types) {
-      auto controller = std::make_unique<FakeDataTypeController>(type);
+      auto controller = std::make_unique<FakeModelTypeController>(type);
       // Hold a raw pointer to directly interact with the controller.
       controller_map_[type] = controller.get();
       controllers.push_back(std::move(controller));
@@ -63,7 +63,7 @@ class SyncServiceImplStartupTest : public testing::Test {
 
     std::unique_ptr<SyncClientMock> sync_client =
         sync_service_impl_bundle_.CreateSyncClientMock();
-    ON_CALL(*sync_client, CreateDataTypeControllers)
+    ON_CALL(*sync_client, CreateModelTypeControllers)
         .WillByDefault(Return(ByMove(std::move(controllers))));
 
     sync_service_ = std::make_unique<SyncServiceImpl>(
@@ -160,7 +160,7 @@ class SyncServiceImplStartupTest : public testing::Test {
     return component_factory()->last_created_engine();
   }
 
-  FakeDataTypeController* get_controller(ModelType type) {
+  FakeModelTypeController* get_controller(ModelType type) {
     return controller_map_[type];
   }
 
@@ -174,7 +174,7 @@ class SyncServiceImplStartupTest : public testing::Test {
   SyncPrefs sync_prefs_;
   std::unique_ptr<SyncServiceImpl> sync_service_;
   // The controllers are owned by |sync_service_|.
-  std::map<ModelType, FakeDataTypeController*> controller_map_;
+  std::map<ModelType, FakeModelTypeController*> controller_map_;
 };
 
 // ChromeOS does not support sign-in after startup
@@ -193,8 +193,7 @@ TEST_F(SyncServiceImplStartupTest, StartFirstTime) {
             sync_service()->GetDisableReasons());
   EXPECT_EQ(SyncService::TransportState::DISABLED,
             sync_service()->GetTransportState());
-  EXPECT_EQ(nullptr, data_type_manager());
-  EXPECT_FALSE(engine());
+  EXPECT_EQ(nullptr, engine());
 
   // Preferences should be back to defaults.
   EXPECT_EQ(base::Time(), sync_service()->GetLastSyncedTimeForDebugging());
@@ -515,8 +514,7 @@ TEST_F(SyncServiceImplStartupTest, ManagedStartup) {
                 {SyncService::DISABLE_REASON_ENTERPRISE_POLICY}),
             sync_service()->GetDisableReasons());
   // Service should not be started by Initialize() since it's managed.
-  EXPECT_EQ(nullptr, data_type_manager());
-  EXPECT_FALSE(engine());
+  EXPECT_EQ(nullptr, engine());
 }
 
 TEST_F(SyncServiceImplStartupTest, SwitchManaged) {
@@ -635,7 +633,7 @@ TEST_F(SyncServiceImplStartupTest, FullStartupSequenceFirstTime) {
   component_factory()->AllowFakeEngineInitCompletion(false);
   SignInWithoutSyncConsent();
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(sync_service()->GetDisableReasons().Empty());
+  EXPECT_TRUE(sync_service()->GetDisableReasons().empty());
   EXPECT_EQ(SyncService::TransportState::INITIALIZING,
             sync_service()->GetTransportState());
   EXPECT_FALSE(sync_service()->IsSyncFeatureEnabled());
@@ -669,7 +667,8 @@ TEST_F(SyncServiceImplStartupTest, FullStartupSequenceFirstTime) {
 
   // Prevent immediate configuration of one datatype, to verify the state
   // during CONFIGURING.
-  ASSERT_EQ(DataTypeController::NOT_RUNNING, get_controller(SESSIONS)->state());
+  ASSERT_EQ(ModelTypeController::NOT_RUNNING,
+            get_controller(SESSIONS)->state());
   get_controller(SESSIONS)->model()->EnableManualModelStart();
 
   // Releasing the setup in progress handle lets the service actually configure
@@ -681,8 +680,7 @@ TEST_F(SyncServiceImplStartupTest, FullStartupSequenceFirstTime) {
   EXPECT_EQ(SyncService::TransportState::CONFIGURING,
             sync_service()->GetTransportState());
   EXPECT_TRUE(sync_service()->IsSyncFeatureActive());
-  EXPECT_NE(nullptr, data_type_manager());
-  EXPECT_TRUE(engine());
+  EXPECT_NE(nullptr, engine());
 
   // Finally, once the DataTypeManager says it's done with configuration, Sync
   // is actually fully up and running.
@@ -699,6 +697,8 @@ TEST_F(SyncServiceImplStartupTest, FullStartupSequenceNthTime) {
   // Prevent one model initialization, to test TransportState::CONFIGURING.
   SignInWithSyncConsent();
   SetSyncFeatureEnabledPrefs();
+  // Deferred startup is only possible if first sync completed earlier.
+  component_factory()->set_first_time_sync_configure_done(true);
   component_factory()->AllowFakeEngineInitCompletion(false);
   CreateSyncService({SESSIONS});
   get_controller(SESSIONS)->model()->EnableManualModelStart();
@@ -711,8 +711,7 @@ TEST_F(SyncServiceImplStartupTest, FullStartupSequenceNthTime) {
   ASSERT_TRUE(sync_service()->CanSyncFeatureStart());
   EXPECT_EQ(SyncService::TransportState::START_DEFERRED,
             sync_service()->GetTransportState());
-  EXPECT_EQ(nullptr, data_type_manager());
-  EXPECT_FALSE(engine());
+  EXPECT_EQ(nullptr, engine());
 
   // Cause the deferred startup timer to expire.
   FastForwardUntilNoTasksRemain();
@@ -720,8 +719,7 @@ TEST_F(SyncServiceImplStartupTest, FullStartupSequenceNthTime) {
   // The Sync service should start initializing the engine.
   EXPECT_EQ(SyncService::TransportState::INITIALIZING,
             sync_service()->GetTransportState());
-  EXPECT_EQ(nullptr, data_type_manager());
-  EXPECT_TRUE(engine());
+  EXPECT_NE(nullptr, engine());
 
   // Allow engine initialization to finish.
   engine()->TriggerInitializationCompletion(/*success=*/true);
@@ -730,7 +728,6 @@ TEST_F(SyncServiceImplStartupTest, FullStartupSequenceNthTime) {
   // already done.
   EXPECT_EQ(SyncService::TransportState::CONFIGURING,
             sync_service()->GetTransportState());
-  ASSERT_NE(nullptr, data_type_manager());
   EXPECT_EQ(DataTypeManager::CONFIGURING, data_type_manager()->state());
   EXPECT_TRUE(engine());
 
@@ -740,7 +737,6 @@ TEST_F(SyncServiceImplStartupTest, FullStartupSequenceNthTime) {
   // Sync is fully up and running.
   EXPECT_EQ(SyncService::TransportState::ACTIVE,
             sync_service()->GetTransportState());
-  ASSERT_NE(nullptr, data_type_manager());
   EXPECT_EQ(DataTypeManager::CONFIGURED, data_type_manager()->state());
   EXPECT_TRUE(engine());
 }

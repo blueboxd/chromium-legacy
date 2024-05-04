@@ -39,8 +39,6 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.Features.DisableFeatures;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -82,7 +80,7 @@ public class ScrollCaptureCallbackRenderTest {
 
     @Before
     public void setUp() {
-        // TODO(https://crbug.com/1254801): create a page that checkboards in a gradient or
+        // TODO(crbug.com/40199744): create a page that checkboards in a gradient or
         // something more complex to generate better test images.
         GURL url =
                 new GURL(
@@ -116,8 +114,6 @@ public class ScrollCaptureCallbackRenderTest {
     @Test
     @LargeTest
     @Feature({"RenderTest"})
-    // TODO(crbug.com/1453741): Fix test with CREATE_NEW_TAB_INITIALIZE_RENDERER.
-    @DisableFeatures(ChromeFeatureList.CREATE_NEW_TAB_INITIALIZE_RENDERER)
     public void testCaptureTop() throws Exception {
         View view = mTab.getView();
         Size size = new Size(view.getWidth(), view.getHeight());
@@ -131,8 +127,6 @@ public class ScrollCaptureCallbackRenderTest {
     @Test
     @LargeTest
     @Feature({"RenderTest"})
-    // TODO(crbug.com/1453741): Fix test with CREATE_NEW_TAB_INITIALIZE_RENDERER.
-    @DisableFeatures(ChromeFeatureList.CREATE_NEW_TAB_INITIALIZE_RENDERER)
     public void testCaptureBottom() throws Exception {
         RenderCoordinates renderCoordinates =
                 RenderCoordinates.fromWebContents(mTab.getWebContents());

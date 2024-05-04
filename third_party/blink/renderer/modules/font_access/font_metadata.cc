@@ -7,10 +7,8 @@
 #include <memory>
 #include <utility>
 
-#include "base/big_endian.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/sys_byteorder.h"
 #include "build/build_config.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/fileapi/blob.h"
@@ -50,9 +48,9 @@ FontMetadata* FontMetadata::Create(const FontEnumerationEntry& entry) {
   return MakeGarbageCollected<FontMetadata>(entry);
 }
 
-ScriptPromiseTyped<Blob> FontMetadata::blob(ScriptState* script_state) {
+ScriptPromise<Blob> FontMetadata::blob(ScriptState* script_state) {
   auto* resolver =
-      MakeGarbageCollected<ScriptPromiseResolverTyped<Blob>>(script_state);
+      MakeGarbageCollected<ScriptPromiseResolver<Blob>>(script_state);
   auto promise = resolver->Promise();
 
   ExecutionContext::From(script_state)
@@ -69,7 +67,7 @@ void FontMetadata::Trace(blink::Visitor* visitor) const {
 }
 
 // static
-void FontMetadata::BlobImpl(ScriptPromiseResolverTyped<Blob>* resolver,
+void FontMetadata::BlobImpl(ScriptPromiseResolver<Blob>* resolver,
                             const String& postscriptName) {
   if (!resolver->GetScriptState()->ContextIsValid())
     return;

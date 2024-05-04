@@ -15,7 +15,8 @@ source_set("commands") {
     "browsing_data_commands.h",
     "command_dispatcher.h",
     "command_dispatcher.mm",
-    "contextual_panel_commands.h",
+    "contextual_panel_entrypoint_commands.h",
+    "contextual_sheet_commands.h",
     "credential_provider_promo_commands.h",
     "docking_promo_commands.h",
     "feed_commands.h",
@@ -39,7 +40,6 @@ source_set("commands") {
     "password_breach_commands.h",
     "password_protection_commands.h",
     "password_suggestion_commands.h",
-    "passwords_account_storage_notice_commands.h",
     "phone_number_commands.h",
     "policy_change_commands.h",
     "popup_menu_commands.h",
@@ -47,6 +47,7 @@ source_set("commands") {
     "promos_manager_commands.h",
     "qr_generation_commands.h",
     "qr_scanner_commands.h",
+    "quick_delete_commands.h",
     "reading_list_add_command.h",
     "reading_list_add_command.mm",
     "save_image_to_photos_command.h",
@@ -76,8 +77,7 @@ source_set("commands") {
     "//ios/chrome/browser/shared/ui/util:url_with_title",
     "//ios/chrome/browser/tabs/model",
     "//ios/public/provider/chrome/browser/user_feedback:user_feedback_api",
-    "//ios/web",
-    "//ios/web/public/annotations:custom_text_check_result",
+    "//ios/web/public",
     "//net",
     "//url",
   ]
@@ -90,6 +90,7 @@ source_set("commands") {
     "//ios/chrome/browser/browsing_data/model:model_remove_mask",
     "//ios/chrome/browser/discover_feed/model:constants",
     "//ios/chrome/browser/promos_manager/model:constants",
+    "//ios/web/public/annotations:custom_text_check_result",
   ]
 }
 

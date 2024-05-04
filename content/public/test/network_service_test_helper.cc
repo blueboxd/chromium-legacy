@@ -530,7 +530,7 @@ class NetworkServiceTestHelper::NetworkServiceTestImpl
   void MockCertVerifierSetDefaultResult(
       int32_t default_result,
       MockCertVerifierSetDefaultResultCallback callback) override {
-    // TODO(crbug.com/1377734): Since testing/variations/
+    // TODO(crbug.com/40243688): Since testing/variations/
     // fieldtrial_testing_config.json changes the command line flags after
     // ContentBrowserTest::SetUpCommandLine() and NetworkServiceTest
     // instantiation, MockCertVerifierSetDefaultResult can be called without
@@ -554,13 +554,6 @@ class NetworkServiceTestHelper::NetworkServiceTestImpl
       MockCertVerifierAddResultForCertAndHostCallback callback) override {
     mock_cert_verifier_->AddResultForCertAndHost(cert, host_pattern,
                                                  verify_result, rv);
-    std::move(callback).Run();
-  }
-
-  void SetRequireCT(RequireCT required,
-                    SetRequireCTCallback callback) override {
-    net::TransportSecurityState::SetRequireCTForTesting(
-        required == NetworkServiceTest::RequireCT::REQUIRE);
     std::move(callback).Run();
   }
 

@@ -151,10 +151,10 @@ class PrivacyGuideMetricsDelegate {
     }
 
     /** A method to record metrics on the next click of {@link SafeBrowsingFragment} */
-    private void recordMetricsOnNextForSafeBrowsingCard() {
+    private void recordMetricsOnNextForSafeBrowsingCard(Profile profile) {
         assert mInitialSafeBrowsingState != null : "Initial state of Safe Browsing not set.";
 
-        @SafeBrowsingState int currentValue = PrivacyGuideUtils.getSafeBrowsingState();
+        @SafeBrowsingState int currentValue = PrivacyGuideUtils.getSafeBrowsingState(profile);
 
         boolean isStartStateEnhance =
                 mInitialSafeBrowsingState == SafeBrowsingState.ENHANCED_PROTECTION;
@@ -274,7 +274,7 @@ class PrivacyGuideMetricsDelegate {
                 }
             case PrivacyGuideFragment.FragmentType.SAFE_BROWSING:
                 {
-                    mInitialSafeBrowsingState = PrivacyGuideUtils.getSafeBrowsingState();
+                    mInitialSafeBrowsingState = PrivacyGuideUtils.getSafeBrowsingState(mProfile);
                     break;
                 }
             case PrivacyGuideFragment.FragmentType.COOKIES:
@@ -290,7 +290,7 @@ class PrivacyGuideMetricsDelegate {
                 }
             case PrivacyGuideFragment.FragmentType.PRELOAD:
                 {
-                    // TODO(crbug.com/1482753): Initial state for the preload card should be added
+                    // TODO(crbug.com/40281867): Initial state for the preload card should be added
                     // here.
                     break;
                 }
@@ -326,7 +326,7 @@ class PrivacyGuideMetricsDelegate {
                 }
             case PrivacyGuideFragment.FragmentType.SAFE_BROWSING:
                 {
-                    recordMetricsOnNextForSafeBrowsingCard();
+                    recordMetricsOnNextForSafeBrowsingCard(mProfile);
                     break;
                 }
             case PrivacyGuideFragment.FragmentType.COOKIES:
@@ -341,7 +341,7 @@ class PrivacyGuideMetricsDelegate {
                 }
             case PrivacyGuideFragment.FragmentType.PRELOAD:
                 {
-                    // TODO(crbug.com/1482753): Metrics on next for preload card should be recorded
+                    // TODO(crbug.com/40281867): Metrics on next for preload card should be recorded
                     // here.
                     break;
                 }
@@ -493,7 +493,7 @@ class PrivacyGuideMetricsDelegate {
                 }
             case PrivacyGuideFragment.FragmentType.PRELOAD:
                 {
-                    // TODO(crbug.com/1482753): Metrics for preload card back click should be
+                    // TODO(crbug.com/40281867): Metrics for preload card back click should be
                     // recorded here.
                     break;
                 }

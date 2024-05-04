@@ -9,14 +9,9 @@
 
 namespace screen_ai {
 
-// Returns the absolute path of the highest-versioned component directory.
-base::FilePath GetLatestComponentPath();
-
-// Get the absolute path of the ScreenAI component. This function verifies that
-// the binary exists on disk and can be opened. It may return empty if some
-// other piece of software has opened the binary file with restrictive
-// permissions (e.g., "security" software or malware protection).
-base::FilePath GetLatestComponentBinaryPath();
+// Get the absolute path of the ScreenAI component binary for tests. This
+// function verifies that the binary exists on disk and can be opened.
+base::FilePath GetComponentBinaryPathForTests();
 
 // Returns the install directory relative to components folder.
 base::FilePath GetRelativeInstallDir();
@@ -26,6 +21,9 @@ base::FilePath GetComponentDir();
 
 // Returns the file name of component binary.
 base::FilePath GetComponentBinaryFileName();
+
+// Returns the commandline switch for the binary file path.
+const char* GetBinaryPathSwitch();
 
 }  // namespace screen_ai
 #endif  // SERVICES_SCREEN_AI_PUBLIC_CPP_UTILITIES_H_

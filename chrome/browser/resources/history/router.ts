@@ -11,12 +11,13 @@ import type {QueryState} from './externs.js';
 import {getTemplate} from './router.html.js';
 
 // All valid pages.
-// TODO(crbug.com/1473855): Change this to an enum and use that type for holding
+// TODO(crbug.com/40069898): Change this to an enum and use that type for holding
 //  these values for better type check when `loadTimeData` is no longer needed.
 export const Page = {
   HISTORY: 'history',
   HISTORY_CLUSTERS: 'grouped',
   SYNCED_TABS: 'syncedTabs',
+  PRODUCT_SPECIFICATIONS_LISTS: 'productSpecificationsLists',
 };
 
 // The ids of pages with corresponding tabs in the order of their tab indices.
@@ -33,6 +34,9 @@ export class HistoryRouterElement extends PolymerElement {
 
   static get properties() {
     return {
+      lastSelectedTab: {
+        type: Number,
+      },
       selectedPage: {
         type: String,
         notify: true,
@@ -61,12 +65,14 @@ export class HistoryRouterElement extends PolymerElement {
     return ['onUrlChanged_(path_, queryParams_)'];
   }
 
+  lastSelectedTab: number;
   selectedPage: string;
   queryState: QueryState;
+  timeRangeStart?: Date;
   private parsing_: boolean = false;
   private debouncer_: Debouncer|null = null;
   private query_: string;
-  private queryParams_: {q: string};
+  private queryParams_: {q: string, after?: string};
   private path_: string;
   private urlQuery_: string;
 
@@ -108,6 +114,7 @@ export class HistoryRouterElement extends PolymerElement {
     // the outcome.
     this.path_ = '/' + path;
     this.set('queryParams_.q', this.queryState.searchTerm || null);
+    this.set('queryParams_.after', this.queryState.after || null);
   }
 
   private selectedPageChanged_() {
@@ -120,14 +127,29 @@ export class HistoryRouterElement extends PolymerElement {
 
   private parseUrl_() {
     this.parsing_ = true;
-    const changes: {search: string} = {search: ''};
+    const changes: {search: string, after?: string} = {search: ''};
     const sections = this.path_.substr(1).split('/');
-    const page = sections[0] || Page.HISTORY;
+    const page = sections[0] ||
+        (window.location.search ? 'history' :
+                                  TABBED_PAGES[this.lastSelectedTab]);
 
     changes.search = this.queryParams_.q || '';
 
+    let after = '';
+    if (this.queryParams_.after &&
+        this.queryParams_.after.match(/^\d{4}-\d{2}-\d{2}$/)) {
+      const afterAsDate = new Date(this.queryParams_.after);
+      if (!isNaN(afterAsDate.getTime())) {
+        after = this.queryParams_.after;
+      }
+    }
+    changes.after = after;
+
     // Must change selectedPage before `change-query`, otherwise the
     // query-manager will call serializeUrl() with the old page.
+    // TODO(b/338245900): This is kind of nasty. Without cr-tabs to constrain
+    //   `selectedPage`, this can be set to an arbitrary value from the URL.
+    //   To fix this, we should constrain the selected pages to an actual enum.
     this.selectedPage = page;
     this.dispatchEvent(new CustomEvent(
         'change-query', {bubbles: true, composed: true, detail: changes}));

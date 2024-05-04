@@ -12,7 +12,6 @@
 #include "ash/wm/overview/overview_observer.h"
 #include "ash/wm/wm_metrics.h"
 #include "base/containers/flat_map.h"
-#include "base/observer_list.h"
 #include "ui/display/display_observer.h"
 
 namespace aura {
@@ -33,15 +32,6 @@ class SnapGroup;
 class ASH_EXPORT SnapGroupController : public OverviewObserver,
                                        public display::DisplayObserver {
  public:
-  class Observer : public base::CheckedObserver {
-   public:
-    // Called to notify with the creation of snap group.
-    virtual void OnSnapGroupCreated() = 0;
-
-    // Called to notify the removal of `snap_group`.
-    virtual void OnSnapGroupRemoved(SnapGroup* snap_group) = 0;
-  };
-
   using SnapGroups = std::vector<std::unique_ptr<SnapGroup>>;
   using WindowToSnapGroupMap = base::flat_map<aura::Window*, SnapGroup*>;
 
@@ -58,12 +48,11 @@ class ASH_EXPORT SnapGroupController : public OverviewObserver,
   bool AreWindowsInSnapGroup(aura::Window* window1,
                              aura::Window* window2) const;
 
-  // Returns true if the corresponding SnapGroup for the given `window1` and
-  // `window2` gets created, added to the `snap_groups_` and updated
-  // `window_to_snap_group_map_` successfully. False otherwise.
-  // Currently, we make the assumption that the two windows need to be on the
-  // same parent container.
-  bool AddSnapGroup(aura::Window* window1, aura::Window* window2);
+  //  Attempts to add `window1` and `window2` as a `SnapGroup`. Returns the
+  //  `SnapGroup`, if the creation is successful. Returns nullptr, otherwise.
+  //  Currently, both windows must reside within the same parent container for
+  //  successful creation.
+  SnapGroup* AddSnapGroup(aura::Window* window1, aura::Window* window2);
 
   // Returns true if the corresponding `snap_group` has
   // been successfully removed from the `snap_groups_` and
@@ -76,20 +65,26 @@ class ASH_EXPORT SnapGroupController : public OverviewObserver,
 
   // Returns the corresponding `SnapGroup` if the given `window` belongs to a
   // snap group or nullptr otherwise.
-  SnapGroup* GetSnapGroupForGivenWindow(const aura::Window* window);
+  SnapGroup* GetSnapGroupForGivenWindow(const aura::Window* window) const;
 
-  // Used to decide whether showing overview on window snapped is allowed in
-  // clamshell.
-  bool CanEnterOverview() const;
-
-  void AddObserver(Observer* observer);
-  void RemoveObserver(Observer* observer);
+  // Returns true if the attempt to replace the window within the snap group
+  // positioned directly below with the given `to_be_snapped_window` is
+  // successful, returns false otherwise. The `snap_action_source` determines
+  // the need for snap ratio difference calculations during 'snap to replace'.
+  bool OnSnappingWindow(aura::Window* to_be_snapped_window,
+                        WindowSnapActionSource snap_action_source);
 
   // Minimizes the most recently used and unminimized snap groups.
   void MinimizeTopMostSnapGroup();
 
+  // Returns the topmost fully visible non-occluded snap group on `target_root`.
+  SnapGroup* GetTopmostVisibleSnapGroup(const aura::Window* target_root) const;
+
   // Returns the topmost snap group in unminimized state.
-  SnapGroup* GetTopmostSnapGroup();
+  // TODO(b/333772909): Currently used mostly for group minimize shortcut, which
+  // does not differentiate between root windows. See if we can remove it when
+  // we remove group minimize.
+  SnapGroup* GetTopmostSnapGroup() const;
 
   // Restores the most recent used snap group to be at the default snapped state
   // i.e. two windows in the most recent snap group are positioned at primary
@@ -97,7 +92,9 @@ class ASH_EXPORT SnapGroupController : public OverviewObserver,
   void RestoreTopmostSnapGroup();
 
   // OverviewObserver:
-  void OnOverviewModeEnded() override;
+  void OnOverviewModeStarting() override;
+  void OnOverviewModeEnding(OverviewSession* overview_session) override;
+  void OnOverviewModeEndingAnimationComplete(bool canceled) override;
 
   // display::DisplayObserver:
   void OnDisplayTabletStateChanged(display::TabletState state) override;
@@ -105,9 +102,6 @@ class ASH_EXPORT SnapGroupController : public OverviewObserver,
   const SnapGroups& snap_groups_for_testing() const { return snap_groups_; }
   const WindowToSnapGroupMap& window_to_snap_group_map_for_testing() const {
     return window_to_snap_group_map_;
-  }
-  void set_can_enter_overview_for_testing(bool can_enter_overview) {
-    can_enter_overview_ = can_enter_overview;
   }
 
  private:
@@ -126,6 +120,9 @@ class ASH_EXPORT SnapGroupController : public OverviewObserver,
   // Restore the snap state of the windows in the given `snap_group`.
   void RestoreSnapState(SnapGroup* snap_group);
 
+  // Called when the display tablet state is changed.
+  void OnTabletModeStarted();
+
   // Contains all the `SnapGroup`(s), we will have one `SnapGroup` globally for
   // the first iteration but will have multiple in the future iteration.
   SnapGroups snap_groups_;
@@ -135,14 +132,7 @@ class ASH_EXPORT SnapGroupController : public OverviewObserver,
   // window is in a `SnapGroup` or not.
   WindowToSnapGroupMap window_to_snap_group_map_;
 
-  base::ObserverList<Observer> observers_;
-
   display::ScopedDisplayObserver display_observer_{this};
-
-  // If false, overview will not be allowed to show on the other side of the
-  // screen on one window snapped, which is an instant way to snap window when
-  // restoring the window snapped state.
-  bool can_enter_overview_ = true;
 };
 
 }  // namespace ash

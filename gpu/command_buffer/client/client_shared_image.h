@@ -5,11 +5,14 @@
 #ifndef GPU_COMMAND_BUFFER_CLIENT_CLIENT_SHARED_IMAGE_H_
 #define GPU_COMMAND_BUFFER_CLIENT_CLIENT_SHARED_IMAGE_H_
 
+#include "base/feature_list.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "gpu/command_buffer/client/shared_image_interface.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/shared_image_trace_utils.h"
 #include "gpu/gpu_export.h"
+#include "gpu/ipc/common/exported_shared_image.mojom-shared.h"
 #include "gpu/ipc/common/gpu_memory_buffer_handle_info.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/gpu_memory_buffer.h"
@@ -19,6 +22,17 @@ class TestSharedImageInterface;
 }
 
 namespace gpu {
+
+class ClientSharedImageInterface;
+
+// Controls whether all ClientSharedImage::GetTextureTarget*(...) variants call
+// through to ClientSharedImage::GetTextureTarget() under the hood.
+GPU_EXPORT BASE_DECLARE_FEATURE(kUseUniversalGetTextureTargetFunction);
+
+// Controls whether SharedImageInterface::DestroySharedImage() should be called
+// in ClientSharedImage's destructor if the shared image has not been marked
+// for destruction.
+GPU_EXPORT BASE_DECLARE_FEATURE(kEnableAutomaticSharedImageManagement);
 
 struct ExportedSharedImage;
 
@@ -70,18 +84,27 @@ class GPU_EXPORT ClientSharedImage
 
     // ScopedMapping is essentially a wrapper around GpuMemoryBuffer for now for
     // simplicity and will be removed later.
-    // TODO(crbug.com/1474697): Refactor/Rename GpuMemoryBuffer and its
+    // TODO(crbug.com/40279377): Refactor/Rename GpuMemoryBuffer and its
     // implementations  as the end goal after all clients using GMB are
     // converted to use the ScopedMapping and notion of GpuMemoryBuffer is being
     // removed.
     raw_ptr<gfx::GpuMemoryBuffer> buffer_;
   };
 
-  explicit ClientSharedImage(
-      const Mailbox& mailbox,
-      const SharedImageMetadata& metadata,
-      const SyncToken& sync_token,
-      scoped_refptr<SharedImageInterfaceHolder> sii_holder);
+  // Tests sometimes "fake" GMBs that are conceptually native with shared
+  // memory GMBs. Via this function, they can instruct ClientSharedImage to
+  // elide its normal CHECK that external sampling is used only when the client
+  // provides a native buffer.
+  static void AllowExternalSamplingWithoutNativeBuffersForTesting(bool allow);
+
+  // `sii_holder` must not be null.
+  ClientSharedImage(const Mailbox& mailbox,
+                    const SharedImageMetadata& metadata,
+                    const SyncToken& sync_token,
+                    scoped_refptr<SharedImageInterfaceHolder> sii_holder,
+                    gfx::GpuMemoryBufferType gmb_type);
+
+  // `sii_holder` must not be null.
   ClientSharedImage(const Mailbox& mailbox,
                     const SharedImageMetadata& metadata,
                     const SyncToken& sync_token,
@@ -110,6 +133,16 @@ class GPU_EXPORT ClientSharedImage
   // client-accessible IOSurface.
   void SetColorSpaceOnNativeBuffer(const gfx::ColorSpace& color_space);
 #endif
+
+  // Returns the GL texture target to use for this SharedImage.
+  // TODO(crbug.com/41494843): Eliminate all the below variants in favor of all
+  // clients using this function.
+  uint32_t GetTextureTarget();
+
+  // Returns the texture target to use for overlays:
+  // * GL_TEXTURE_2D on platforms other than MacOS
+  // * The platform-specific texture target for MacOS
+  uint32_t GetTextureTargetForOverlays();
 
   // Returns the texture target to be used for the given |format|. For usage
   // when this SharedImage was created from a native buffer and the client knows
@@ -144,6 +177,13 @@ class GPU_EXPORT ClientSharedImage
   // backing this ClientSI must have been created with CPU_READ/CPU_WRITE usage.
   std::unique_ptr<ScopedMapping> Map();
 
+  // Returns an unowned copy of the current ClientSharedImage. This function
+  // is a temporary workaround for the situation where a ClientSharedImage may
+  // have more than one reference when being destroyed.
+  // TODO(crbug.com/40286368): Remove this function once ClientSharedImage
+  // can properly handle shared image destruction internally.
+  scoped_refptr<ClientSharedImage> MakeUnowned();
+
   ExportedSharedImage Export();
 
   // Returns an unowned reference. The caller should ensure that the original
@@ -153,11 +193,15 @@ class GPU_EXPORT ClientSharedImage
   static scoped_refptr<ClientSharedImage> ImportUnowned(
       const ExportedSharedImage& exported_shared_image);
 
-  static scoped_refptr<ClientSharedImage> CreateForTesting() {
-    return base::MakeRefCounted<ClientSharedImage>(
-        Mailbox::GenerateForSharedImage(), SharedImageMetadata(),
-        gpu::SyncToken(), nullptr);
+  void UpdateDestructionSyncToken(const gpu::SyncToken& sync_token) {
+    destruction_sync_token_ = sync_token;
   }
+
+  void MarkForDestruction() { marked_for_destruction_ = true; }
+
+  // Creates a ClientSharedImage that is not associated with any
+  // SharedImageInterface for testing.
+  static scoped_refptr<ClientSharedImage> CreateForTesting();
 
   static scoped_refptr<ClientSharedImage> CreateForTesting(
       const Mailbox& mailbox,
@@ -166,36 +210,73 @@ class GPU_EXPORT ClientSharedImage
       std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer,
       scoped_refptr<SharedImageInterfaceHolder> sii_holder) {
     auto client_si = base::MakeRefCounted<ClientSharedImage>(
-        mailbox, metadata, sync_token, sii_holder);
+        mailbox, metadata, sync_token, sii_holder,
+        gpu_memory_buffer->GetType());
     client_si->gpu_memory_buffer_ = std::move(gpu_memory_buffer);
     return client_si;
   }
+
+  const SyncToken& creation_sync_token() const { return creation_sync_token_; }
 
  private:
   friend class base::RefCountedThreadSafe<ClientSharedImage>;
   ~ClientSharedImage();
 
+  // This constructor is used only when importing an owned ClientSharedImage,
+  // which should only be done via implementations of
+  // SharedImageInterface::ImportSharedImage().
+  // `sii_holder` must not be null.
+  friend class ClientSharedImageInterface;
+  friend class viz::TestSharedImageInterface;
+  ClientSharedImage(const Mailbox& mailbox,
+                    const SharedImageMetadata& metadata,
+                    const SyncToken& sync_token,
+                    scoped_refptr<SharedImageInterfaceHolder> sii_holder,
+                    uint32_t texture_target);
+
+  // This constructor is used only when importing an unowned ClientSharedImage,
+  // in which case this ClientSharedImage is not associated with a
+  // SharedImageInterface.
+  ClientSharedImage(const Mailbox& mailbox,
+                    const SharedImageMetadata& metadata,
+                    const SyncToken& sync_token,
+                    uint32_t texture_target);
+
   const Mailbox mailbox_;
   const SharedImageMetadata metadata_;
   SyncToken creation_sync_token_;
+  SyncToken destruction_sync_token_;
   std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer_;
   scoped_refptr<SharedImageInterfaceHolder> sii_holder_;
+
+  // The texture target returned by `GetTextureTarget()`.
+  uint32_t texture_target_ = 0;
+
+  bool marked_for_destruction_ = false;
 };
 
 struct GPU_EXPORT ExportedSharedImage {
+ public:
+  ExportedSharedImage();
+
  private:
   friend class ClientSharedImage;
   friend class SharedImageInterface;
   friend class ClientSharedImageInterface;
   friend class viz::TestSharedImageInterface;
+  friend struct mojo::StructTraits<gpu::mojom::ExportedSharedImageDataView,
+                                   ExportedSharedImage>;
+  FRIEND_TEST_ALL_PREFIXES(ClientSharedImageTest, ImportUnowned);
 
   ExportedSharedImage(const Mailbox& mailbox,
                       const SharedImageMetadata& metadata,
-                      const SyncToken& sync_token);
+                      const SyncToken& sync_token,
+                      uint32_t texture_target);
 
-  const Mailbox mailbox_;
-  const SharedImageMetadata metadata_;
-  SyncToken sync_token_;
+  Mailbox mailbox_;
+  SharedImageMetadata metadata_;
+  SyncToken creation_sync_token_;
+  uint32_t texture_target_ = 0;
 };
 
 }  // namespace gpu

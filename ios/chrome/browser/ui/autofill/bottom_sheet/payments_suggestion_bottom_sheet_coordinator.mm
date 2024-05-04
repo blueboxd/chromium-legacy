@@ -82,7 +82,7 @@ using PaymentsSuggestionBottomSheetExitReason::kUsePaymentsSuggestion;
   // and other operations which may modify the list of available credit cards
   // can happen between these two operations.
   if (!self.mediator.hasCreditCards) {
-    [self.mediator disableBottomSheet];
+    [self.mediator disableBottomSheetAndRefocus:YES];
     [self.mediator disconnect];
     return;
   }
@@ -157,7 +157,7 @@ using PaymentsSuggestionBottomSheetExitReason::kUsePaymentsSuggestion;
   [self.viewController dismissViewControllerAnimated:YES completion:NULL];
 }
 
-- (void)viewDidDisappear:(BOOL)animated {
+- (void)viewDidDisappear {
   if (_dismissing) {
     return;
   }

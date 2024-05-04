@@ -128,15 +128,11 @@ export class InternetDetailDialogElement extends
         },
       },
 
-      /**
-       * Return true if Jelly feature flag is enabled.
-       */
-      isJellyEnabled_: {
+      isApnRevampAndPoliciesEnabled_: {
         type: Boolean,
-        readOnly: true,
         value() {
-          return loadTimeData.valueExists('isJellyEnabled') &&
-              loadTimeData.getBoolean('isJellyEnabled');
+          return loadTimeData.valueExists('isApnRevampAndPoliciesEnabled') &&
+              loadTimeData.getBoolean('isApnRevampAndPoliciesEnabled');
         },
       },
 
@@ -170,7 +166,7 @@ export class InternetDetailDialogElement extends
   private globalPolicy_: GlobalPolicy;
   private apnExpanded_: boolean;
   private isApnRevampEnabled_: boolean;
-  private isJellyEnabled_: boolean;
+  private isApnRevampAndPoliciesEnabled_: boolean;
   private isNumCustomApnsLimitReached_: boolean;
   private errorToastMessage_: string;
   private didSetFocus_: boolean = false;
@@ -208,16 +204,9 @@ export class InternetDetailDialogElement extends
 
     this.browserProxy_ = InternetDetailDialogBrowserProxyImpl.getInstance();
     const dialogArgs = this.browserProxy_.getDialogArguments();
-    if (this.isJellyEnabled_) {
-      const link = document.createElement('link');
-      link.rel = 'stylesheet';
-      link.href = 'chrome://theme/colors.css?sets=legacy,sys';
-      document.head.appendChild(link);
-      document.body.classList.add('jelly-enabled');
-      (function() {
-        ColorChangeUpdater.forDocument().start();
-      })();
-    }
+
+    ColorChangeUpdater.forDocument().start();
+
     let type;
     let name;
     if (dialogArgs) {
@@ -373,9 +362,6 @@ export class InternetDetailDialogElement extends
       if (this.isPortalState_(managedProperties.portalState)) {
         return this.i18n('networkListItemSignIn');
       }
-      if (managedProperties.portalState === PortalState.kPortalSuspected) {
-        return this.i18n('networkListItemConnectedLimited');
-      }
       if (managedProperties.portalState === PortalState.kNoInternet) {
         return this.i18n('networkListItemConnectedNoConnectivity');
       }
@@ -464,6 +450,16 @@ export class InternetDetailDialogElement extends
     return getApnDisplayName(
         this.i18n.bind(this),
         managedProperties.typeProperties.cellular!.connectedApn);
+  }
+
+  private isApnManaged_(globalPolicy: GlobalPolicy|undefined): boolean {
+    if (!this.isApnRevampAndPoliciesEnabled_) {
+      return false;
+    }
+    if (!globalPolicy) {
+      return false;
+    }
+    return !globalPolicy.allowApnModification;
   }
 
   private showCellularSim_(managedProperties: ManagedProperties): boolean {
@@ -723,12 +719,9 @@ export class InternetDetailDialogElement extends
     return OncMojo.deviceIsInhibited(this.deviceState_);
   }
 
-  /**
-   * Return true if portalState is either kPortal or kProxyAuthRequired.
-   */
   private isPortalState_(portalState: PortalState): boolean {
     return portalState === PortalState.kPortal ||
-        portalState === PortalState.kProxyAuthRequired;
+        portalState === PortalState.kPortalSuspected;
   }
 
   /**

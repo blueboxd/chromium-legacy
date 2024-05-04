@@ -359,10 +359,6 @@ AccessibilityPrivateIsFeatureEnabledFunction::Run() {
   accessibility_private::AccessibilityFeature params_feature = params->feature;
   bool enabled;
   switch (params_feature) {
-    case accessibility_private::AccessibilityFeature::kGoogleTtsLanguagePacks:
-      enabled = ::features::
-          IsExperimentalAccessibilityGoogleTtsLanguagePacksEnabled();
-      break;
     case accessibility_private::AccessibilityFeature::
         kGoogleTtsHighQualityVoices:
       enabled = ::features::
@@ -714,8 +710,10 @@ AccessibilityPrivateSetSelectToSpeakFocusFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(params);
 
   if (features::IsAccessibilityMagnifierFollowsStsEnabled() &&
-      ash::AccessibilityController::Get()->fullscreen_magnifier().enabled()) {
-    // Ship this event to AccessibilityCommon for fullscreen magnifier.
+      (ash::AccessibilityController::Get()->fullscreen_magnifier().enabled() ||
+       ash::AccessibilityController::Get()->docked_magnifier().enabled())) {
+    // Ship this event to AccessibilityCommon for docked or fullscreen
+    // magnifier.
     auto bounds =
         std::make_unique<extensions::api::accessibility_private::ScreenRect>();
     bounds->left = params->bounds.left;

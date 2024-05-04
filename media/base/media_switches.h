@@ -16,6 +16,7 @@
 #include "media/base/media_export.h"
 #include "media/gpu/buildflags.h"
 #include "media/media_buildflags.h"
+#include "ui/gl/angle_implementation.h"
 
 namespace base {
 class CommandLine;
@@ -96,6 +97,8 @@ MEDIA_EXPORT extern const char kLacrosEnablePlatformHevc[];
 MEDIA_EXPORT extern const char kLacrosUseChromeosProtectedMedia[];
 MEDIA_EXPORT extern const char kLacrosUseChromeosProtectedAv1[];
 MEDIA_EXPORT extern const char kAllowRAInDevMode[];
+MEDIA_EXPORT extern const char kCrosWidevineBundledDir[];
+MEDIA_EXPORT extern const char kCrosWidevineComponentUpdatedDir[];
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
 namespace autoplay {
@@ -130,6 +133,11 @@ MEDIA_EXPORT extern const char kCastStreamingForceDisableHardwareH264[];
 // kCastStreamingForceEnableHardwareVp8.
 MEDIA_EXPORT extern const char kCastStreamingForceDisableHardwareVp8[];
 
+// If enabled, completely disables use of VP9 hardware encoding for Cast
+// Streaming sessions. Takes precedence over
+// kCastStreamingForceEnableHardwareVp9.
+MEDIA_EXPORT extern const char kCastStreamingForceDisableHardwareVp9[];
+
 // If enabled, allows use of H264 hardware encoding for Cast Streaming sessions,
 // even on platforms where it is disabled due to performance and reliability
 // issues. kCastStreamingForceDisableHardwareH264 must be disabled for this flag
@@ -141,6 +149,12 @@ MEDIA_EXPORT extern const char kCastStreamingForceEnableHardwareH264[];
 // issues. kCastStreamingForceDisableHardwareVp8 must be disabled for this flag
 // to take effect.
 MEDIA_EXPORT extern const char kCastStreamingForceEnableHardwareVp8[];
+
+// If enabled, allows use of VP9 hardware encoding for Cast Streaming sessions,
+// even on platforms where it is disabled due to performance and reliability
+// issues. kCastStreamingForceDisableHardwareVp9 must be disabled for this flag
+// to take effect.
+MEDIA_EXPORT extern const char kCastStreamingForceEnableHardwareVp9[];
 
 #if !BUILDFLAG(IS_ANDROID)
 // If enabled, overrides the target playout delay for a casting mirroring
@@ -163,7 +177,6 @@ MEDIA_EXPORT BASE_DECLARE_FEATURE(kAudioRendererAlgorithmParameters);
 MEDIA_EXPORT extern const base::FeatureParam<base::TimeDelta>
     kAudioRendererAlgorithmStartingCapacityForEncrypted;
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kAutoPictureInPictureForVideoPlayback);
-MEDIA_EXPORT BASE_DECLARE_FEATURE(kAutoplayIgnoreWebAudio);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kAutoplayDisableSettings);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kAVDColorSpaceChanges);
 
@@ -260,6 +273,7 @@ MEDIA_EXPORT extern const base::FeatureParam<bool>
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kHideIncognitoMediaMetadata);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kInternalMediaSession);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kKeyPressMonitoring);
+MEDIA_EXPORT BASE_DECLARE_FEATURE(kOnDeviceWebSpeech);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kLiveCaption);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kLiveCaptionAutomaticLanguageDownload);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kLiveCaptionRightClick);
@@ -273,7 +287,6 @@ MEDIA_EXPORT BASE_DECLARE_FEATURE(kLiveCaptionSystemWideOnChromeOS);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kLiveTranslate);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kLowDelayVideoRenderingOnLiveStream);
 #if BUILDFLAG(IS_MAC)
-MEDIA_EXPORT BASE_DECLARE_FEATURE(kMacLoopbackAudioForCast);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kMacLoopbackAudioForScreenShare);
 #endif  // BUILDFLAG(IS_MAC)
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kMediaCapabilitiesQueryGpuFactories);
@@ -294,9 +307,6 @@ MEDIA_EXPORT BASE_DECLARE_FEATURE(kMemoryPressureBasedSourceBufferGC);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kUseWritePixelsYUV);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kUseMultiPlaneFormatForHardwareVideo);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kUseMultiPlaneFormatForSoftwareVideo);
-#if BUILDFLAG(IS_ANDROID)
-MEDIA_EXPORT BASE_DECLARE_FEATURE(kRasterInterfaceInVideoResourceUpdater);
-#endif
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kMultiPlaneSoftwareVideoSharedImages);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kMultiPlaneVideoCaptureSharedImages);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kOverlayFullscreenVideo);
@@ -321,6 +331,9 @@ MEDIA_EXPORT BASE_DECLARE_FEATURE(kPulseaudioLoopbackForScreenShare);
 #endif  // BUILDFLAG(IS_LINUX)
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kRecordMediaEngagementScores);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kRecordWebAudioEngagement);
+#if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX)
+MEDIA_EXPORT BASE_DECLARE_FEATURE(kReduceHardwareVideoDecoderBuffers);
+#endif  // BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX)
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kResumeBackgroundVideo);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kRevokeMediaSourceObjectURLOnAttach);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kShareThisTabInsteadButtonGetDisplayMedia);
@@ -415,6 +428,7 @@ MEDIA_EXPORT BASE_DECLARE_FEATURE(kUSeSequencedTaskRunnerForVEA);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kUseGLForScaling);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kPreferGLImageProcessor);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kPreferSoftwareMT21);
+MEDIA_EXPORT BASE_DECLARE_FEATURE(kEnableProtectedVulkanDetiling);
 #endif  // defined(ARCH_CPU_ARM_FAMILY)
 #if BUILDFLAG(IS_CHROMEOS) && !BUILDFLAG(USE_VAAPI)
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kUseAlternateVideoDecoderImplementation);
@@ -520,7 +534,16 @@ MEDIA_EXPORT BASE_DECLARE_FEATURE(kCrOSLegacyMediaFormats);
 
 #if BUILDFLAG(IS_WIN)
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kD3D12VideoDecoder);
+
+MEDIA_EXPORT extern const base::FeatureParam<double> kAudioOffloadBufferTimeMs;
+MEDIA_EXPORT BASE_DECLARE_FEATURE(kAudioOffload);
 #endif
+
+#if BUILDFLAG(IS_WIN) && defined(ARCH_CPU_ARM64)
+MEDIA_EXPORT BASE_DECLARE_FEATURE(kMediaFoundationAcceleratedEncodeOnArm64);
+#endif
+
+MEDIA_EXPORT BASE_DECLARE_FEATURE(kMediaSharedBitmapToSharedImage);
 
 // Based on a |command_line| and the current platform, returns the effective
 // autoplay policy. In other words, it will take into account the default policy
@@ -531,10 +554,13 @@ MEDIA_EXPORT std::string GetEffectiveAutoplayPolicy(
     const base::CommandLine& command_line);
 
 MEDIA_EXPORT bool IsChromeWideEchoCancellationEnabled();
+MEDIA_EXPORT bool IsDedicatedMediaServiceThreadEnabled(
+    gl::ANGLEImplementation impl);
 MEDIA_EXPORT int GetProcessingAudioFifoSize();
 MEDIA_EXPORT bool IsHardwareSecureDecryptionEnabled();
 MEDIA_EXPORT bool IsVideoCaptureAcceleratedJpegDecodingEnabled();
 MEDIA_EXPORT bool IsMultiPlaneFormatForHardwareVideoEnabled();
+MEDIA_EXPORT bool IsMultiPlaneFormatForSoftwareVideoEnabled();
 MEDIA_EXPORT bool IsWritePixelsYUVEnabled();
 
 #if BUILDFLAG(IS_WIN)

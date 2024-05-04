@@ -20,6 +20,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
+#include "base/not_fatal_until.h"
 #include "base/strings/strcat.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/sequence_bound.h"
@@ -34,7 +35,7 @@
 #include "content/browser/aggregation_service/public_key.h"
 #include "content/browser/aggregation_service/public_key_parsing_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/mojom/private_aggregation/aggregatable_report.mojom.h"
+#include "third_party/blink/public/mojom/aggregation_service/aggregatable_report.mojom.h"
 #include "third_party/boringssl/src/include/openssl/hpke.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -252,10 +253,11 @@ AggregatableReportRequest CreateExampleRequestWithReportTime(
              AggregationServicePayloadContents(
                  AggregationServicePayloadContents::Operation::kHistogram,
                  {blink::mojom::AggregatableReportHistogramContribution(
-                     /*bucket=*/123,
-                     /*value=*/456)},
+                     /*bucket=*/123, /*value=*/456,
+                     /*filtering_id=*/std::nullopt)},
                  aggregation_mode, std::move(aggregation_coordinator_origin),
-                 /*max_contributions_allowed=*/20),
+                 /*max_contributions_allowed=*/20,
+                 /*filtering_id_byte_size=*/std::nullopt),
              AggregatableReportSharedInfo(
                  /*scheduled_report_time=*/report_time,
                  /*report_id=*/
@@ -359,7 +361,7 @@ std::vector<uint8_t> DecryptPayloadWithHpke(
       base::as_bytes(base::make_span(authenticated_info_str));
 
   // No null terminators should have been copied when concatenating the strings.
-  DCHECK(!base::Contains(authenticated_info_str, '\0'));
+  CHECK(!base::Contains(authenticated_info_str, '\0'));
 
   bssl::ScopedEVP_HPKE_CTX recipient_context;
   if (!EVP_HPKE_CTX_setup_recipient(

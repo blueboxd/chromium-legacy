@@ -7,7 +7,6 @@
 #include "base/feature_list.h"
 #include "base/functional/callback_helpers.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/signin_features.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/signin/dice_web_signin_interceptor_delegate.h"
 #include "chrome/browser/ui/ui_features.h"
@@ -16,6 +15,7 @@
 #include "chrome/browser/ui/views/profiles/avatar_toolbar_button.h"
 #include "chrome/browser/ui/webui/signin/profile_customization_ui.h"
 #include "chrome/common/webui_url_constants.h"
+#include "components/signin/public/base/signin_switches.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
@@ -36,7 +36,7 @@ ProfileCustomizationBubbleView::~ProfileCustomizationBubbleView() = default;
 ProfileCustomizationBubbleView* ProfileCustomizationBubbleView::CreateBubble(
     Browser* browser,
     views::View* anchor_view) {
-  // TODO(crbug.com/1459176): With Sync Promo After Signin Intercept launched,
+  // TODO(crbug.com/40274192): With Sync Promo After Signin Intercept launched,
   // the profile customization is always displayed in a modal dialog. Remove
   // `ProfileCustomizationBubbleView` and migrate all the callers to
   // `ShowModalProfileCustomizationDialog()`.

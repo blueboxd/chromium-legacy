@@ -29,9 +29,12 @@ TestPaymentsNetworkInterface::TestPaymentsNetworkInterface(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_,
     signin::IdentityManager* identity_manager,
     PersonalDataManager* personal_data_manager)
-    : PaymentsNetworkInterface(url_loader_factory_,
-                     identity_manager,
-                     personal_data_manager) {
+    : PaymentsNetworkInterface(
+          url_loader_factory_,
+          identity_manager,
+          personal_data_manager
+              ? &personal_data_manager->payments_data_manager()
+              : nullptr) {
   // Default value should be CVC.
   unmask_details_.unmask_auth_method = AutofillClient::UnmaskAuthMethod::kCvc;
 }
@@ -50,7 +53,7 @@ void TestPaymentsNetworkInterface::GetUnmaskDetails(
 void TestPaymentsNetworkInterface::UnmaskCard(
     const UnmaskRequestDetails& unmask_request,
     base::OnceCallback<void(AutofillClient::PaymentsRpcResult,
-                            UnmaskResponseDetails&)> callback) {
+                            const UnmaskResponseDetails&)> callback) {
   unmask_request_ = unmask_request;
 }
 
@@ -269,8 +272,8 @@ std::unique_ptr<base::Value::Dict> TestPaymentsNetworkInterface::LegalMessage() 
         "}");
     DCHECK(parsed_json);
   }
-  // TODO(crbug/1303949): Refactor when `base::JSONReader::Read` is updated to
-  // return a Dict.
+  // TODO(crbug.com/40826246): Refactor when `base::JSONReader::Read` is updated
+  // to return a Dict.
   return std::make_unique<base::Value::Dict>(std::move(parsed_json->GetDict()));
 }
 

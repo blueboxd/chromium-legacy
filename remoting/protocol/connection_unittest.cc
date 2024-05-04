@@ -560,7 +560,7 @@ TEST_P(ConnectionTest, MAYBE_Video) {
 
   std::unique_ptr<VideoStream> video_stream =
       host_connection_->StartVideoStream(
-          "screen_stream", std::make_unique<TestScreenCapturer>());
+          0, std::make_unique<TestScreenCapturer>());
 
   // Receive 5 frames.
   for (int i = 0; i < 5; ++i) {
@@ -585,7 +585,7 @@ TEST_P(ConnectionTest, MAYBE_VideoWithSlowSignaling) {
 
   std::unique_ptr<VideoStream> video_stream =
       host_connection_->StartVideoStream(
-          "screen_stream", base::WrapUnique(new TestScreenCapturer()));
+          0, base::WrapUnique(new TestScreenCapturer()));
 
   WaitNextVideoFrame();
 }
@@ -615,7 +615,7 @@ TEST_P(ConnectionTest, MAYBE_DestroyOnIncomingMessage) {
   run_loop.Run();
 }
 
-// TODO(crbug.com/1146302): Test is flaky.
+// TODO(crbug.com/40729981): Test is flaky.
 TEST_P(ConnectionTest, DISABLED_VideoStats) {
   // Currently this test only works for WebRTC because ICE connections stats are
   // reported by SoftwareVideoRenderer which is not used in this test.
@@ -636,7 +636,7 @@ TEST_P(ConnectionTest, DISABLED_VideoStats) {
 
   std::unique_ptr<VideoStream> video_stream =
       host_connection_->StartVideoStream(
-          "screen_stream", std::make_unique<TestScreenCapturer>());
+          0, std::make_unique<TestScreenCapturer>());
   video_stream->SetEventTimestampsSource(input_event_timestamps_source);
 
   WaitNextVideoFrame();
@@ -699,7 +699,7 @@ TEST_P(ConnectionTest, DISABLED_FirstCaptureFailed) {
   auto capturer = std::make_unique<TestScreenCapturer>();
   capturer->FailNthFrame(0);
   auto video_stream =
-      host_connection_->StartVideoStream("screen_stream", std::move(capturer));
+      host_connection_->StartVideoStream(0, std::move(capturer));
 
   WaitNextVideoFrame();
 }
@@ -712,7 +712,7 @@ TEST_P(ConnectionTest, DISABLED_SecondCaptureFailed) {
   auto capturer = std::make_unique<TestScreenCapturer>();
   capturer->FailNthFrame(1);
   auto video_stream =
-      host_connection_->StartVideoStream("screen_stream", std::move(capturer));
+      host_connection_->StartVideoStream(0, std::move(capturer));
 
   WaitNextVideoFrame();
   WaitNextVideoFrame();

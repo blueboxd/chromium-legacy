@@ -31,7 +31,6 @@
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1633720957382884102">Povezana spletna mesta</translation>
 <translation id="1644574205037202324">Zgodovina</translation>
-<translation id="1647582022260550163">Ali ste prepričani, da želite ponastaviti dovoljenja in izbrisati piškotke ter podatke spletnega mesta?</translation>
 <translation id="1652197001188145583">Če je ta možnost vklopljena, spletna mesta lahko zahtevajo uporabo naprav NFC. Če je ta možnost izklopljena, spletna mesta ne smejo uporabljati naprav NFC.</translation>
 <translation id="1660204651932907780">Dovoli spletnim mestom predvajanje zvoka (priporočljivo)</translation>
 <translation id="1677097821151855053">Piškotke in druge podatke spletnega mesta uporabljamo, da si zapomnimo vaše podatke, na primer za prijavo ali osebno prilagajanje oglasov. Če želite upravljati piškotke za vsa spletna mesta, si oglejte <ph name="BEGIN_LINK" />Nastavitve<ph name="END_LINK" />.</translation>
@@ -92,14 +91,14 @@
 <translation id="2490684707762498678">Upravlja aplikacija <ph name="APP_NAME" /></translation>
 <translation id="2498359688066513246">Pomoč in povratne inform.</translation>
 <translation id="2501278716633472235">Nazaj</translation>
-<translation id="2546283357679194313">Piškotki in podatki o spletnih mestih</translation>
+<translation id="2546283357679194313">Piškotki in podatki spletnih mest</translation>
 <translation id="2550801787432930915">Kartica z znižano ceno</translation>
-<translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{Blokiran je en piškotek}one{Blokiran je # piškotek}two{Blokirana sta # piškotka}few{Blokirani so # piškotki}other{Blokiranih je # piškotkov}}</translation>
 <translation id="2570922361219980984">Dostop do lokacije je tudi izklopljen za to napravo. Vklopite ga lahko v <ph name="BEGIN_LINK" />nastavitvah za Android<ph name="END_LINK" />.</translation>
 <translation id="257931822824936280">Razširjeno – kliknite, če želite strniti.</translation>
 <translation id="2586657967955657006">Odložišče</translation>
 <translation id="2597457036804169544">Brez uporabe temne teme na spletnih mestih.</translation>
 <translation id="2606760465469169465">Samodejno preverjanje</translation>
+<translation id="2613007545732217283"><ph name="HOST_NAME" />, <ph name="SEPARATOR" />, <ph name="RECENCY" /></translation>
 <translation id="2621115761605608342">Dovoli JavaScript za določeno spletno mesto.</translation>
 <translation id="2653659639078652383">Pošlji</translation>
 <translation id="2677748264148917807">Zapusti</translation>
@@ -122,9 +121,7 @@
 <translation id="2979365474350987274">Piškotki tretjih oseb so omejeni</translation>
 <translation id="3008272652534848354">Ponastavi dovoljenja</translation>
 <translation id="301521992641321250">Samodejno blokirano</translation>
-<translation id="3025010840409371499"><ph name="RECENCY" />, <ph name="SEPARATOR" />, <ph name="HOST_NAME" /></translation>
 <translation id="3069226013421428034">Omogočanje prijave prek zunanjih ponudnikov za določeno spletno mesto.</translation>
-<translation id="3082992102194421695">{COUNT,plural, =1{Poteče jutri}one{Poteče čez # dan}two{Poteče čez # dneva}few{Poteče čez # dni}other{Poteče čez # dni}}</translation>
 <translation id="310297983047869047">Prejšnji diapozitiv</translation>
 <translation id="3109724472072898302">Strnjeno</translation>
 <translation id="3114012059975132928">Videopredvajalnik</translation>
@@ -177,6 +174,7 @@
 <translation id="3895926599014793903">Vsili povečavo</translation>
 <translation id="3908288065506437185">Blokiranje piškotkov tretjih oseb v anonimnem načinu.</translation>
 <translation id="3918378745482005425">Nekatere funkcije morda ne bodo delovale. Povezana spletna mesta lahko še vedno uporabljajo piškotke tretjih oseb.</translation>
+<translation id="3933121352599513978">Strni neželene zahteve (priporočeno)</translation>
 <translation id="3955193568934677022">Dovoli spletnim mestom predvajanje zaščitene vsebine (priporočeno)</translation>
 <translation id="3967822245660637423">Prenos končan</translation>
 <translation id="3974105241379491420">Spletna mesta lahko zahtevajo uporabo podatkov, ki so jih shranila o vas</translation>
@@ -188,7 +186,7 @@
 <translation id="4149890623864272035">Ali ste prepričani, da želite izbrisati vse lokalne podatke, vključno s piškotki, in ponastaviti vsa dovoljenja za to spletno mesto?</translation>
 <translation id="4149994727733219643">Poenostavljen pogled za spletne strani</translation>
 <translation id="4151930093518524179">Privzeta stopnja povečave</translation>
-<translation id="4165986682804962316">Nastavitve spletnega mesta</translation>
+<translation id="4165986682804962316">Nastavitve spletnih mest</translation>
 <translation id="4169549551965910670">Povezano z napravo USB</translation>
 <translation id="4194328954146351878">Vprašaj, preden se spletnim mestom dovoli ogled in spreminjanje podatkov v napravah NFC (priporočeno)</translation>
 <translation id="4200726100658658164">Odpri nastavitve lokacije</translation>
@@ -198,7 +196,9 @@
 <translation id="4278390842282768270">Dovoljeno</translation>
 <translation id="429312253194641664">Spletno mesto predvaja predstavnost</translation>
 <translation id="42981349822642051">Razširi</translation>
+<translation id="4336219115486912529">{COUNT,plural, =1{Poteče jutri}one{Poteče čez # dan}two{Poteče čez # dneva}few{Poteče čez # dni}other{Poteče čez # dni}}</translation>
 <translation id="4336566011000459927">Chrome bo danes znova omejil piškotke</translation>
+<translation id="4336836404251800362"><ph name="RECENCY" /> <ph name="SEPARATOR" /> Zadnji zavihek</translation>
 <translation id="4338831206024587507">Vsa spletna mesta v domeni <ph name="DOMAIN" />.</translation>
 <translation id="4402755511846832236">Preprečevanje, da bi spletna mesta vedela, kdaj aktivno uporabljate to napravo.</translation>
 <translation id="4412992751769744546">Omogočanje piškotkov drugih spletnih mest</translation>
@@ -289,6 +289,7 @@
 <translation id="5853982612236235577">Če je ta možnost vklopljena, spletna mesta lahko vprašajo, ali želite, da vam pošiljajo obvestila. Če je ta možnost izklopljena, spletna mesta ne smejo pošiljati obvestil.</translation>
 <translation id="5860033963881614850">Izklopljeno</translation>
 <translation id="5876056640971328065">Začasna zaustavitev videa</translation>
+<translation id="5877248419911025165">Strni vse zahteve</translation>
 <translation id="5884085660368669834">Nastavitve spletnega mesta</translation>
 <translation id="5887687176710214216">Nazadnje obiskano včeraj</translation>
 <translation id="5916664084637901428">Vklopljeno</translation>
@@ -306,6 +307,7 @@
 <translation id="6064125863973209585">Dokončani prenosi</translation>
 <translation id="6071501408666570960">Morda ste odjavljeni s tega spletnega mesta.</translation>
 <translation id="6120483543004435978">Če je ta možnost vklopljena, spletna mesta lahko vprašajo, ali aktivno uporabljate napravo. Če je ta možnost izklopljena, spletna mesta ne smejo vprašati, ali aktivno uporabljate napravo.</translation>
+<translation id="6140839633433422817">Ali ste prepričani, da želite ponastaviti dovoljenja in izbrisati piškotke ter podatke spletnega mesta?</translation>
 <translation id="6165508094623778733">Več o tem</translation>
 <translation id="6171020522141473435">Če je ta možnost vklopljena, spletna mesta lahko zahtevajo uporabo naprav Bluetooth. Če je ta možnost izklopljena, spletna mesta ne smejo uporabljati naprav Bluetooth.</translation>
 <translation id="6177111841848151710">Blokirano za trenutni iskalnik</translation>
@@ -345,6 +347,7 @@
 <translation id="6612358246767739896">Zaščitena vsebina</translation>
 <translation id="662080504995468778">Ostani</translation>
 <translation id="6653342741369270081">Pritisnite gumb za nazaj, če želite zapreti celozaslonski način.</translation>
+<translation id="6670377348676659110">{TILE_COUNT,plural, =1{Skrij »Nadaljuj s tem zavihkom«}one{Skrij »Nadaljuj s temi zavihki«}two{Skrij »Nadaljuj s temi zavihki«}few{Skrij »Nadaljuj s temi zavihki«}other{Skrij »Nadaljuj s temi zavihki«}}</translation>
 <translation id="6689172468748959065">Profilne fotografije</translation>
 <translation id="6697925417670533197">Aktivni prenosi</translation>
 <translation id="6722828510648505498">Blokiranje poskusov prijav storitev za identiteto.</translation>
@@ -398,7 +401,6 @@
 <translation id="7561196759112975576">Vedno</translation>
 <translation id="757524316907819857">Prepreči spletnim mestom predvajanje zaščitene vsebine</translation>
 <translation id="7594634374516752650">Povezano z napravo Bluetooth</translation>
-<translation id="7641339528570811325">Izbris podatkov brskanja …</translation>
 <translation id="7649070708921625228">Pomoč</translation>
 <translation id="7658239707568436148">Prekliči</translation>
 <translation id="7667547420449112975">Čudoviti čarovnik iz Oza</translation>
@@ -456,7 +458,6 @@
 <translation id="8441146129660941386">Išči nazaj</translation>
 <translation id="8444433999583714703">Če želite aplikaciji <ph name="APP_NAME" /> omogočiti dostop do lokacije, lokacijo vklopite tudi v <ph name="BEGIN_LINK" />nastavitvah za Android<ph name="END_LINK" />.</translation>
 <translation id="8447861592752582886">Umik dovoljenja za dostop do naprave</translation>
-<translation id="8451050538944905715">{NUM_SELECTED,plural, =1{1 piškotek v uporabi}one{# piškotek v uporabi}two{# piškotka v uporabi}few{# piškotki v uporabi}other{# piškotkov v uporabi}}</translation>
 <translation id="8487700953926739672">Na voljo brez povezave</translation>
 <translation id="848952951823693243">Vedno zahtevaj spletno mesto za mobilne naprave</translation>
 <translation id="8499083585497694743">Vklopi mikrofon</translation>
@@ -484,7 +485,6 @@
 <translation id="8803526663383843427">Če je to vklopljeno</translation>
 <translation id="8805385115381080995">Brskanje je hitrejše, ker je manj verjetno, da vas bo spletno mesto pozvalo, da potrdite, da ste resnična oseba.</translation>
 <translation id="8816026460808729765">Preprečevanje spletnim mestom dostopa do tipal</translation>
-<translation id="8843699287283948910">Skrivanje zavihkov iz drugih naprav</translation>
 <translation id="8847988622838149491">USB</translation>
 <translation id="8874790741333031443">Poskusite začasno omogočiti piškotke tretjih oseb, kar pomeni manj zaščite brskanja, vendar je bolj verjetno, da bodo funkcije spletnega mesta delovale po pričakovanjih.</translation>
 <translation id="8889294078294184559">Med brskanjem se lahko spletna mesta obrnejo na Chrome in pri prejšnjem spletnem mestu, ki ste ga obiskali, potrdijo, da ste verjetno resnična oseba.</translation>
@@ -497,6 +497,7 @@
 <translation id="8959122750345127698">Krmarjenje ni dosegljivo: <ph name="URL" /></translation>
 <translation id="8986362086234534611">Pozabi</translation>
 <translation id="8990043154272859344">Odjavljeni boste z vseh spletnih mest.</translation>
+<translation id="8993853206419610596">Razširi vse zahteve</translation>
 <translation id="9002538116239926534">Če je ta možnost vklopljena, spletna mesta lahko shranjujejo podatke v napravi. Če je ta možnost izklopljena, spletna mesta ne smejo shranjevati podatkov v napravi.</translation>
 <translation id="9011903857143958461">Dovoljeno: <ph name="SITE_NAME" /></translation>
 <translation id="9019902583201351841">Upravljajo starši</translation>

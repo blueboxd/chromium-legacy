@@ -5,8 +5,6 @@
 #ifndef CONTENT_BROWSER_PRELOADING_PREFETCH_PREFETCH_NETWORK_CONTEXT_H_
 #define CONTENT_BROWSER_PRELOADING_PREFETCH_PREFETCH_NETWORK_CONTEXT_H_
 
-#include <optional>
-
 #include "base/memory/scoped_refptr.h"
 #include "content/browser/preloading/prefetch/prefetch_type.h"
 #include "content/common/content_export.h"
@@ -73,6 +71,7 @@ class CONTENT_EXPORT PrefetchNetworkContext {
 
   // The referring RenderFrameHost is used when considering to proxy
   // |url_loader_factory_| by calling WillCreateURLLoaderFactory.
+  // This should be empty when the trigger is browser-initiated.
   const GlobalRenderFrameHostId referring_render_frame_host_id_;
 
   // The origin that initiates the prefetch request, used when considering to

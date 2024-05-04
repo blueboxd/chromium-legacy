@@ -8,6 +8,7 @@
 #include <string_view>
 #include <vector>
 
+#include "android_webview/common/aw_features.h"
 #include "android_webview/common/aw_switches.h"
 #include "android_webview/common/mojom/frame.mojom.h"
 #include "android_webview/common/url_constants.h"
@@ -187,6 +188,15 @@ void AwContentRendererClient::
           autofill::features::kAutofillSharedAutofill)) {
     blink::WebRuntimeFeatures::EnableSharedAutofill(true);
   }
+
+  if (base::FeatureList::IsEnabled(
+          features::kWebViewMediaIntegrityApiBlinkExtension) &&
+      !base::FeatureList::IsEnabled(features::kWebViewMediaIntegrityApi)) {
+    // Enable the overall android.webview namespace.
+    blink::WebRuntimeFeatures::EnableBlinkExtensionWebView(true);
+    // Enable the android.webview.getExperimentalMediaIntegrityProvider API.
+    blink::WebRuntimeFeatures::EnableBlinkExtensionWebViewMediaIntegrity(true);
+  }
 }
 
 void AwContentRendererClient::WebViewCreated(
@@ -225,10 +235,13 @@ void AwContentRendererClient::RunScriptsAtDocumentStart(
   communication->RunScriptsAtDocumentStart();
 }
 
-void AwContentRendererClient::GetSupportedKeySystems(
+std::unique_ptr<media::KeySystemSupportRegistration>
+AwContentRendererClient::GetSupportedKeySystems(
+    content::RenderFrame* render_frame,
     media::GetSupportedKeySystemsCB cb) {
   // WebView always allows persisting data.
-  cdm::GetSupportedKeySystemsUpdates(/*can_persist_data=*/true, std::move(cb));
+  return cdm::GetSupportedKeySystemsUpdates(
+      render_frame, /*can_persist_data=*/true, std::move(cb));
 }
 
 std::unique_ptr<blink::WebSocketHandshakeThrottleProvider>
@@ -248,7 +261,7 @@ void AwContentRendererClient::GetInterface(
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle interface_pipe) {
   // A dirty hack to make SpellCheckHost requests work on WebView.
-  // TODO(crbug.com/806394): Use a WebView-specific service for SpellCheckHost
+  // TODO(crbug.com/40560165): Use a WebView-specific service for SpellCheckHost
   // and SafeBrowsing, instead of |content_browser|.
   RenderThread::Get()->BindHostReceiver(
       mojo::GenericPendingReceiver(interface_name, std::move(interface_pipe)));

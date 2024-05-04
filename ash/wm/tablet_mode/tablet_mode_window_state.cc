@@ -137,11 +137,12 @@ bool BoundsChangeIsFromVKAndAllowed(aura::Window* window) {
 
 }  // namespace
 
-TabletModeWindowState::TabletModeWindowState(aura::Window* window,
-                                             TabletModeWindowManager* creator,
-                                             bool snap,
-                                             bool animate_bounds_on_attach,
-                                             bool entering_tablet_mode)
+TabletModeWindowState::TabletModeWindowState(
+    aura::Window* window,
+    base::WeakPtr<TabletModeWindowManager> creator,
+    bool snap,
+    bool animate_bounds_on_attach,
+    bool entering_tablet_mode)
     : window_(window),
       creator_(creator),
       animate_bounds_on_attach_(animate_bounds_on_attach) {
@@ -166,7 +167,9 @@ TabletModeWindowState::TabletModeWindowState(aura::Window* window,
 }
 
 TabletModeWindowState::~TabletModeWindowState() {
-  creator_->WindowStateDestroyed(window_);
+  if (creator_) {
+    creator_->WindowStateDestroyed(window_);
+  }
 }
 
 // static
@@ -358,7 +361,7 @@ void TabletModeWindowState::OnWMEvent(WindowState* window_state,
       break;
     case WM_EVENT_SET_BOUNDS: {
       gfx::Rect bounds_in_parent =
-          event->AsSetBoundsWMEvent()->requested_bounds();
+          event->AsSetBoundsWMEvent()->requested_bounds_in_parent();
       if (bounds_in_parent.IsEmpty())
         break;
 

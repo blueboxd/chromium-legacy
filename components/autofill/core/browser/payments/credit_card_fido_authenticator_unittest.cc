@@ -82,6 +82,8 @@ constexpr char kTestCredentialId[] = "VGhpcyBpcyBhIHRlc3QgQ3JlZGVudGlhbCBJRC4=";
 // Base64 encoding of "This is a test signature".
 constexpr char kTestSignature[] = "VGhpcyBpcyBhIHRlc3Qgc2lnbmF0dXJl";
 constexpr char kTestAuthToken[] = "dummy_card_authorization_token";
+constexpr std::string_view kEnrollmentOfferedHistogramName =
+    "Autofill.BetterAuth.EnrollmentPromptOffered";
 
 std::vector<uint8_t> Base64ToBytes(std::string base64) {
   return base::Base64Decode(base64).value_or(std::vector<uint8_t>());
@@ -94,27 +96,17 @@ std::string BytesToBase64(const std::vector<uint8_t> bytes) {
 
 class CreditCardFidoAuthenticatorTest : public testing::Test {
  public:
-  CreditCardFidoAuthenticatorTest() {}
-
   void SetUp() override {
-    personal_data_manager().Init(/*profile_database=*/database_,
-                                 /*account_database=*/nullptr,
-                                 /*pref_service=*/autofill_client_.GetPrefs(),
-                                 /*local_state=*/autofill_client_.GetPrefs(),
-                                 /*identity_manager=*/nullptr,
-                                 /*history_service=*/nullptr,
-                                 /*sync_service=*/nullptr,
-                                 /*strike_database=*/nullptr,
-                                 /*image_fetcher=*/nullptr,
-                                 /*shared_storage_handler=*/nullptr);
     personal_data_manager().SetPrefService(autofill_client_.GetPrefs());
 
     autofill_driver_.SetAuthenticator(new TestInternalAuthenticator());
 
-    autofill_client_.set_test_payments_network_interface(
-        std::make_unique<payments::TestPaymentsNetworkInterface>(
-            autofill_client_.GetURLLoaderFactory(),
-            autofill_client_.GetIdentityManager(), &personal_data_manager()));
+    autofill_client_.GetPaymentsAutofillClient()
+        ->set_test_payments_network_interface(
+            std::make_unique<payments::TestPaymentsNetworkInterface>(
+                autofill_client_.GetURLLoaderFactory(),
+                autofill_client_.GetIdentityManager(),
+                &personal_data_manager()));
     autofill_client_.set_test_strike_database(
         std::make_unique<TestStrikeDatabase>());
     fido_authenticator_ = std::make_unique<CreditCardFidoAuthenticator>(
@@ -226,8 +218,7 @@ class CreditCardFidoAuthenticatorTest : public testing::Test {
   variations::ScopedVariationsIdsProvider scoped_variations_ids_provider_{
       variations::VariationsIdsProvider::Mode::kUseSignedInState};
   TestAutofillClient autofill_client_;
-  TestAutofillDriver autofill_driver_;
-  scoped_refptr<AutofillWebDataService> database_;
+  TestAutofillDriver autofill_driver_{&autofill_client_};
   TestAuthenticationRequester requester_;
   std::unique_ptr<CreditCardFidoAuthenticator> fido_authenticator_;
 };
@@ -619,6 +610,40 @@ TEST_F(CreditCardFidoAuthenticatorTest, Register_NewCardAuthorization) {
   OptChange(AutofillClient::PaymentsRpcResult::kSuccess,
             /*user_is_opted_in=*/true);
   EXPECT_TRUE(fido_authenticator().IsUserOptedIn());
+}
+
+// Test that if FIDO enrollment is offered, the enrollment histogram logs to the
+// enrollment offered bucket.
+TEST_F(CreditCardFidoAuthenticatorTest,
+       Register_EnrollmentOfferedHistogramBucketLogs) {
+  base::HistogramTester histogram_tester;
+
+  SetUserOptInPreference(true);
+
+  fido_authenticator().Authorize(
+      requester().GetWeakPtr(), kTestAuthToken,
+      GetTestRequestOptions(kTestChallenge, kTestRelyingPartyId,
+                            kTestCredentialId));
+
+  histogram_tester.ExpectUniqueSample(kEnrollmentOfferedHistogramName,
+                                      /*sample=*/true,
+                                      /*expected_bucket_count=*/1);
+}
+
+// Test that if FIDO enrollment is not offered, the enrollment histogram logs
+// to the enrollment not offered bucket.
+TEST_F(CreditCardFidoAuthenticatorTest,
+       Register_EnrollmentNotOfferedHistogramBucketLogs) {
+  base::HistogramTester histogram_tester;
+
+  SetUserOptInPreference(true);
+
+  fido_authenticator().Authorize(requester().GetWeakPtr(), kTestAuthToken,
+                                 base::Value::Dict());
+
+  histogram_tester.ExpectUniqueSample(kEnrollmentOfferedHistogramName,
+                                      /*sample=*/false,
+                                      /*expected_bucket_count=*/1);
 }
 
 TEST_F(CreditCardFidoAuthenticatorTest, OptOut_Success) {

@@ -8,14 +8,12 @@ package org.chromium.content_public.browser;
 public class ContentFeatureList {
     private ContentFeatureList() {}
 
-    // TODO(crbug.com/1447098): Use generated constants in ContentFeatures and other generated
+    // TODO(crbug.com/40268884): Use generated constants in ContentFeatures and other generated
     // Features files, then remove the constants below.
 
     // Alphabetical:
     public static final String ACCESSIBILITY_INCLUDE_LONG_CLICK_ACTION =
             "AccessibilityIncludeLongClickAction";
-
-    public static final String ACCESSIBILITY_JNI_OPTIMIZATIONS = "AccessibilityJNIOptimizations";
 
     public static final String ACCESSIBILITY_PAGE_ZOOM = "AccessibilityPageZoom";
     // Field trial param associated with the Page Zoom feature.
@@ -27,6 +25,8 @@ public class ContentFeatureList {
     public static final String ACCESSIBILITY_UNIFIED_SNAPSHOTS = "AccessibilityUnifiedSnapshots";
 
     public static final String ANDROID_OPEN_PDF_INLINE = "AndroidOpenPdfInline";
+
+    public static final String HIDE_PASTE_POPUP_ON_GSB = "HidePastePopupOnGSB";
 
     public static final String MOUSE_AND_TRACKPAD_DROPDOWN_MENU = "MouseAndTrackpadDropdownMenu";
 

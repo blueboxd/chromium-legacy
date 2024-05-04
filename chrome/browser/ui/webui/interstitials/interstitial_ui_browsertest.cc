@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/devtools/devtools_window_testing.h"
@@ -27,8 +26,6 @@ class InterstitialUITest : public InProcessBrowserTest {
   ~InterstitialUITest() override {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    scoped_feature_list_.InitAndEnableFeature(
-        safe_browsing::kRedInterstitialFacelift);
     InProcessBrowserTest::SetUpCommandLine(command_line);
 
 #if BUILDFLAG(IS_CHROMEOS)
@@ -83,9 +80,6 @@ class InterstitialUITest : public InProcessBrowserTest {
                         int message_id) {
     TestInterstitial(url, page_title, l10n_util::GetStringUTF16(message_id));
   }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 IN_PROC_BROWSER_TEST_F(InterstitialUITest, HomePage) {
@@ -139,17 +133,17 @@ IN_PROC_BROWSER_TEST_F(InterstitialUITest, EnterpriseWarnInterstitial) {
 
 IN_PROC_BROWSER_TEST_F(InterstitialUITest, MalwareInterstitial) {
   TestInterstitial(GURL("chrome://interstitials/safebrowsing?type=malware"),
-                   "Security error", IDS_HEADING_NEW);
+                   "Security error", IDS_SAFEBROWSING_HEADING);
 }
 
 IN_PROC_BROWSER_TEST_F(InterstitialUITest, PhishingInterstitial) {
   TestInterstitial(GURL("chrome://interstitials/safebrowsing?type=phishing"),
-                   "Security error", IDS_HEADING_NEW);
+                   "Security error", IDS_SAFEBROWSING_HEADING);
 }
 
 IN_PROC_BROWSER_TEST_F(InterstitialUITest, UnwantedSoftwareInterstitial) {
   TestInterstitial(GURL("chrome://interstitials/safebrowsing?type=unwanted"),
-                   "Security error", IDS_HEADING_NEW);
+                   "Security error", IDS_SAFEBROWSING_HEADING);
 }
 
 IN_PROC_BROWSER_TEST_F(InterstitialUITest, MalwareInterstitialQuiet) {
@@ -179,13 +173,13 @@ IN_PROC_BROWSER_TEST_F(InterstitialUITest, BillingInterstitialQuiet) {
 IN_PROC_BROWSER_TEST_F(InterstitialUITest, ClientsideMalwareInterstitial) {
   TestInterstitial(
       GURL("chrome://interstitials/safebrowsing?type=clientside_malware"),
-      "Security error", IDS_HEADING_NEW);
+      "Security error", IDS_SAFEBROWSING_HEADING);
 }
 
 IN_PROC_BROWSER_TEST_F(InterstitialUITest, ClientsidePhishingInterstitial) {
   TestInterstitial(
       GURL("chrome://interstitials/safebrowsing?type=clientside_phishing"),
-      "Security error", IDS_HEADING_NEW);
+      "Security error", IDS_SAFEBROWSING_HEADING);
 }
 
 IN_PROC_BROWSER_TEST_F(InterstitialUITest, BillingInterstitial) {

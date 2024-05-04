@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <string>
+#include <string_view>
 #include <utility>
 
 #include "base/base_paths.h"
@@ -489,7 +490,7 @@ void OnNetworkServiceProcessGone(bool crashed) {
 // line.
 net::NetLogCaptureMode GetNetCaptureModeFromCommandLine(
     const base::CommandLine& command_line) {
-  base::StringPiece switch_name = network::switches::kNetLogCaptureMode;
+  std::string_view switch_name = network::switches::kNetLogCaptureMode;
 
   if (command_line.HasSwitch(switch_name)) {
     std::string value = command_line.GetSwitchValueASCII(switch_name);
@@ -523,7 +524,7 @@ net::NetLogCaptureMode GetNetCaptureModeFromCommandLine(
 // kNoLimit indicates no, valid, maximum size was specified.
 int64_t GetNetMaximumFileSizeFromCommandLine(
     const base::CommandLine& command_line) {
-  base::StringPiece switch_name = network::switches::kNetLogMaxSizeMb;
+  std::string_view switch_name = network::switches::kNetLogMaxSizeMb;
 
   if (!command_line.HasSwitch(switch_name)) {
     return net::FileNetLogObserver::kNoLimit;
@@ -892,7 +893,7 @@ GetCertVerifierServiceFactoryForTesting() {
   // from GetCertVerifierServiceFactoryRemoteForTesting() applies here, but
   // since this method could be called on the IO thread, it is not CHECKed here.
 
-  // TODO(https://crbug.com/1085233): This depends on the cert verifier service
+  // TODO(crbug.com/40693524): This depends on the cert verifier service
   // and the network service both being in the same process as the unit test.
   // The network service is taken care of by `UnitTestTestSuite` calling
   // `ForceCreateNetworkServiceDirectlyForTesting()`, but if the cert verifier

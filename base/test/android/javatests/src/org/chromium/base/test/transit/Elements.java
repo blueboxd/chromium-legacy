@@ -4,6 +4,12 @@
 
 package org.chromium.base.test.transit;
 
+import android.view.View;
+
+import org.hamcrest.Matcher;
+
+import org.chromium.base.test.transit.ViewConditions.NotDisplayedAnymoreCondition;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,10 +24,6 @@ import java.util.List;
  * </pre>
  */
 public class Elements {
-
-    /** If passed as |id|, the description is considered the id. */
-    public static final String DESCRIPTION_AS_ID = "__DESCRIPTION_AS_ID";
-
     static final Elements EMPTY = new Elements();
 
     private ArrayList<ElementInState> mElementsInState = new ArrayList<>();
@@ -63,9 +65,10 @@ public class Elements {
         }
 
         /** Declare as an element a View that matches |viewMatcher|. */
-        public Builder declareView(ViewElement viewElement) {
-            mElements.mElementsInState.add(new ViewElementInState(viewElement, /* gate= */ null));
-            return this;
+        public ViewElementInState declareView(ViewElement viewElement) {
+            ViewElementInState inState = new ViewElementInState(viewElement, /* gate= */ null);
+            mElements.mElementsInState.add(inState);
+            return inState;
         }
 
         /**
@@ -73,9 +76,15 @@ public class Elements {
          *
          * <p>The element is only expected if |gate| returns true.
          */
-        public Builder declareViewIf(ViewElement viewElement, Condition gate) {
-            mElements.mElementsInState.add(new ViewElementInState(viewElement, gate));
-            return this;
+        public ViewElementInState declareViewIf(ViewElement viewElement, Condition gate) {
+            ViewElementInState inState = new ViewElementInState(viewElement, gate);
+            mElements.mElementsInState.add(inState);
+            return inState;
+        }
+
+        /** Declare as a Condition that a View is not displayed. */
+        public void declareNoView(Matcher<View> viewMatcher) {
+            mElements.mOtherEnterConditions.add(new NotDisplayedAnymoreCondition(viewMatcher));
         }
 
         /**
@@ -86,9 +95,9 @@ public class Elements {
          * LogicalElements do not generate exit Conditions when going to another ConditionalState
          * with the same LogicalElement.
          */
-        public Builder declareLogicalElement(LogicalElement logicalElement) {
+        public LogicalElement declareLogicalElement(LogicalElement logicalElement) {
             mElements.mElementsInState.add(logicalElement);
-            return this;
+            return logicalElement;
         }
 
         /**
@@ -101,9 +110,9 @@ public class Elements {
          * <p>Further, no promises are made that the Condition is false after exiting the State. Use
          * a scoped {@link LogicalElement} in this case.
          */
-        public Builder declareEnterCondition(Condition condition) {
+        public Condition declareEnterCondition(Condition condition) {
             mElements.mOtherEnterConditions.add(condition);
-            return this;
+            return condition;
         }
 
         /**
@@ -113,9 +122,15 @@ public class Elements {
          * <p>No promises are made that the Condition is false as long as the ConditionalState is
          * ACTIVE. For these cases, use a scoped {@link LogicalElement}.
          */
-        public Builder declareExitCondition(Condition condition) {
+        public Condition declareExitCondition(Condition condition) {
             mElements.mOtherExitConditions.add(condition);
-            return this;
+            return condition;
+        }
+
+        /** Declare a custom element, already rendered to an ElementInState. */
+        public <T extends ElementInState> T declareElementInState(T elementInState) {
+            mElements.mElementsInState.add(elementInState);
+            return elementInState;
         }
 
         void addAll(Elements otherElements) {
@@ -134,5 +149,4 @@ public class Elements {
             return elements;
         }
     }
-
 }

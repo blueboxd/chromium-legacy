@@ -31,6 +31,7 @@
 #include "net/base/transport_info.h"
 #include "net/base/upload_progress.h"
 #include "net/cookies/cookie_setting_override.h"
+#include "net/cookies/cookie_util.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_request.h"
 #include "services/network/attribution/attribution_request_helper.h"
@@ -66,9 +67,10 @@
 
 namespace net {
 class HttpResponseHeaders;
+class IOBufferWithSize;
 class IPEndPoint;
-struct RedirectInfo;
 class URLRequestContext;
+struct RedirectInfo;
 }  // namespace net
 
 namespace network {
@@ -246,6 +248,11 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
       mojo::PendingRemote<mojom::SSLPrivateKey> ssl_private_key) override;
   void ContinueWithoutCertificate() override;
   void CancelRequest() override;
+
+  // Cancel the request because network revocation was triggered.
+  void CancelRequestIfNonceMatchesAndUrlNotExempted(
+      const base::UnguessableToken& nonce,
+      const std::set<GURL>& exemptions);
 
   net::LoadState GetLoadState() const;
   net::UploadProgress GetUploadProgress() const;
@@ -513,6 +520,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   void CompletePendingWrite(bool success);
   void SetRawResponseHeaders(scoped_refptr<const net::HttpResponseHeaders>);
   void NotifyEarlyResponse(scoped_refptr<const net::HttpResponseHeaders>);
+  void MaybeNotifyEarlyResponseToDevtools(const net::HttpResponseHeaders&);
   void SetRawRequestHeadersAndNotify(net::HttpRawRequestHeaders);
   bool IsSharedDictionaryReadAllowed();
   void DispatchOnRawRequest(
@@ -625,6 +633,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   uint32_t pending_write_buffer_offset_ = 0;
   mojo::SimpleWatcher writable_handle_watcher_;
   mojo::SimpleWatcher peer_closed_handle_watcher_;
+
+  scoped_refptr<net::IOBufferWithSize> discard_buffer_;
 
   // True if there's a URLRequest::Read() call in progress.
   bool read_in_progress_ = false;
@@ -790,6 +800,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   // request. This prevents the network stack from overriding them.
   bool allow_cookies_from_browser_ = false;
   std::string cookies_from_browser_;
+
+  // Specifies that the response head should include request cookies.
+  bool include_request_cookies_with_response_ = false;
+  net::cookie_util::ParsedRequestCookies request_cookies_;
 
   std::vector<network::mojom::CookieAccessDetailsPtr> cookie_access_details_;
 

@@ -27,6 +27,7 @@
 #include "components/autofill/core/browser/payments/card_unmask_delegate.h"
 #include "components/autofill/core/browser/payments/client_behavior_constants.h"
 #include "components/autofill/core/browser/payments/payments_network_interface_base.h"
+#include "components/autofill/core/browser/payments/payments_window_manager.h"
 #include "components/autofill/core/browser/payments/virtual_card_enrollment_flow.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "url/origin.h"
@@ -416,6 +417,10 @@ class PaymentsNetworkInterface : public PaymentsNetworkInterfaceBase {
   // UploadCardRequest.
   struct UploadCardResponseDetails {
     UploadCardResponseDetails();
+    UploadCardResponseDetails(const UploadCardResponseDetails&);
+    UploadCardResponseDetails(UploadCardResponseDetails&&);
+    UploadCardResponseDetails& operator=(const UploadCardResponseDetails&);
+    UploadCardResponseDetails& operator=(UploadCardResponseDetails&&);
     ~UploadCardResponseDetails();
     // |instrument_id| is used by the server as an identifier for the card that
     // was uploaded. Currently, we have it in the UploadCardResponseDetails so
@@ -454,8 +459,8 @@ class PaymentsNetworkInterface : public PaymentsNetworkInterfaceBase {
   // denotes incognito mode.
   PaymentsNetworkInterface(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      signin::IdentityManager* const identity_manager,
-      AccountInfoGetter* const account_info_getter,
+      signin::IdentityManager* identity_manager,
+      AccountInfoGetter* account_info_getter,
       bool is_off_the_record = false);
 
   PaymentsNetworkInterface(const PaymentsNetworkInterface&) = delete;
@@ -479,7 +484,7 @@ class PaymentsNetworkInterface : public PaymentsNetworkInterfaceBase {
   virtual void UnmaskCard(
       const UnmaskRequestDetails& request_details,
       base::OnceCallback<void(AutofillClient::PaymentsRpcResult,
-                              UnmaskResponseDetails&)> callback);
+                              const UnmaskResponseDetails&)> callback);
 
   // Triggers a request to the Payments server to unmask an IBAN. `callback` is
   // the callback function that is triggered when a response is received from
@@ -535,17 +540,19 @@ class PaymentsNetworkInterface : public PaymentsNetworkInterfaceBase {
   // The service uses `app_locale` and `billing_customer_number` to determine
   // which legal message to display. `billable_service_number` is defined in
   // the Payments server to distinguish different requests and is set in the
-  // GetIbanUploadDetails request. `callback` is the callback function that is
-  // triggered when a response is received from the server, and the callback is
-  // triggered with that response's result. The legal message will always be
-  // returned upon a successful response via `callback`. A successful response
-  // does not guarantee that the legal message is valid, callers should parse
-  // the legal message and use it to decide if IBAN upload save should be
-  // offered.
+  // GetIbanUploadDetails request. `country_code` is the first two characters
+  // of the IBAN, representing its country of origin. `callback` is the
+  // callback function that is triggered when a response is received from the
+  // server, and the callback is triggered with that response's result. The
+  // legal message will always be returned upon a successful response via
+  // `callback`. A successful response does not guarantee that the legal
+  // message is valid, callers should parse the legal message and use it to
+  // decide if IBAN upload save should be offered.
   virtual void GetIbanUploadDetails(
       const std::string& app_locale,
       int64_t billing_customer_number,
       int billable_service_number,
+      const std::string& country_code,
       base::OnceCallback<void(AutofillClient::PaymentsRpcResult,
                               const std::u16string&,
                               std::unique_ptr<base::Value::Dict>)> callback);

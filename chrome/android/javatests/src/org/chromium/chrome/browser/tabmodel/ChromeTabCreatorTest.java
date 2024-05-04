@@ -152,7 +152,8 @@ public class ChromeTabCreatorTest {
                     @Override
                     public void run() {
                         Tab currentTab = sActivityTestRule.getActivity().getActivityTab();
-                        WarmupManager.getInstance().createSpareWebContents();
+                        WarmupManager.getInstance()
+                                .createSpareWebContents(sActivityTestRule.getProfile(false));
                         Assert.assertTrue(WarmupManager.getInstance().hasSpareWebContents());
                         sActivityTestRule
                                 .getActivity()
@@ -204,6 +205,51 @@ public class ChromeTabCreatorTest {
                                 2 == indexOf(tabOne));
                     }
                 });
+    }
+
+    /** Verify that tabs opened in background when launch type is FROM_SYNC_BACKGROUND. */
+    @Test
+    @MediumTest
+    @Feature({"Browser"})
+    public void testCreateNewTabWithSyncBackgroundFrozen() throws ExecutionException {
+        final String url = mTestServer.getURL(TEST_PATH);
+        final String title = "BAR";
+        final Tab bgTab =
+                TestThreadUtils.runOnUiThreadBlocking(
+                        () -> {
+                            Tab tab =
+                                    sActivityTestRule
+                                            .getActivity()
+                                            .getCurrentTabCreator()
+                                            .createNewTab(
+                                                    new LoadUrlParams(url),
+                                                    title,
+                                                    TabLaunchType.FROM_SYNC_BACKGROUND,
+                                                    null,
+                                                    TabModel.INVALID_TAB_INDEX);
+                            return tab;
+                        });
+        Assert.assertEquals(title, ChromeTabUtils.getTitleOnUiThread(bgTab));
+
+        // Verify that the background tab is not loading.
+        Assert.assertFalse(bgTab.isLoading());
+
+        // Switch tabs and verify that the tab is loaded as it gets foregrounded.
+        Runnable loadPage =
+                () -> {
+                    TestThreadUtils.runOnUiThreadBlocking(
+                            () -> {
+                                TabModelUtils.setIndex(
+                                        sActivityTestRule.getActivity().getCurrentTabModel(),
+                                        indexOf(bgTab),
+                                        /* skipLoadingTab= */ false);
+                            });
+                };
+        ChromeTabUtils.waitForTabPageLoaded(bgTab, url, loadPage);
+        Assert.assertNotNull(bgTab.getView());
+
+        // Title should change when the page loads.
+        Assert.assertNotEquals(title, ChromeTabUtils.getTitleOnUiThread(bgTab));
     }
 
     private Intent createIntent(int tabIndex) {

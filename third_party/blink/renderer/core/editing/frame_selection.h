@@ -83,7 +83,7 @@ enum class SelectSoftLineBreak { kNotSelected, kSelected };
 // |line_break| : This value represents If this fragment is selected and
 // selection wraps soft line break.
 struct LayoutSelectionStatus {
-  STACK_ALLOCATED();
+  DISALLOW_NEW();
 
  public:
   LayoutSelectionStatus(unsigned passed_start,
@@ -160,7 +160,7 @@ class CORE_EXPORT FrameSelection final
 
   void SetSelection(const SelectionInDOMTree&, const SetSelectionOptions&);
   void SetSelectionAndEndTyping(const SelectionInDOMTree&);
-  void SelectAll(SetSelectionBy);
+  void SelectAll(SetSelectionBy, bool canonicalize_selection = false);
   void SelectAll();
   void SelectSubString(const Element&, int offset, int count);
   void Clear();

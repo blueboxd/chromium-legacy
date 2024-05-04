@@ -15,6 +15,7 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Features.DisableFeatures;
 import org.chromium.base.test.util.Features.EnableFeatures;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.profiles.ProfileManager;
 import org.chromium.chrome.browser.safe_browsing.SafeBrowsingBridge;
 import org.chromium.chrome.browser.safe_browsing.SafeBrowsingState;
 import org.chromium.chrome.browser.settings.SettingsActivityTestRule;
@@ -75,7 +76,7 @@ public class EnhancedProtectionSettingsFragmentTest {
                 fragment.findPreference(EnhancedProtectionSettingsFragment.PREF_LEARN_MORE);
     }
 
-    // TODO(crbug.com/1478337): Add a test to check the openUrlInCCT functionality.
+    // TODO(crbug.com/40929404): Add a test to check the openUrlInCCT functionality.
 
     @Test
     @SmallTest
@@ -84,7 +85,8 @@ public class EnhancedProtectionSettingsFragmentTest {
     public void testFriendlierSafeBrowsingSettingsEnhancedProtection() {
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> {
-                    SafeBrowsingBridge.setSafeBrowsingState(SafeBrowsingState.ENHANCED_PROTECTION);
+                    new SafeBrowsingBridge(ProfileManager.getLastUsedRegularProfile())
+                            .setSafeBrowsingState(SafeBrowsingState.ENHANCED_PROTECTION);
                 });
         launchSettingsActivity();
 
@@ -176,7 +178,8 @@ public class EnhancedProtectionSettingsFragmentTest {
     public void testDisabledFriendlierSafeBrowsingSettingsEnhancedProtection() {
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> {
-                    SafeBrowsingBridge.setSafeBrowsingState(SafeBrowsingState.ENHANCED_PROTECTION);
+                    new SafeBrowsingBridge(ProfileManager.getLastUsedRegularProfile())
+                            .setSafeBrowsingState(SafeBrowsingState.ENHANCED_PROTECTION);
                 });
         launchSettingsActivity();
 

@@ -3,71 +3,119 @@
 // found in the LICENSE file.
 
 #include "ash/wm/overview/scoped_overview_wallpaper_clipper.h"
+
 #include "ash/root_window_controller.h"
+#include "ash/shell.h"
 #include "ash/wallpaper/views/wallpaper_view.h"
 #include "ash/wallpaper/views/wallpaper_widget_controller.h"
-#include "ash/wm/drag_window_controller.h"
 #include "ash/wm/overview/overview_constants.h"
 #include "ash/wm/overview/overview_grid.h"
-#include "ash/wm/overview/overview_utils.h"
-#include "ash/wm/splitview/layout_divider_controller.h"
-#include "ui/chromeos/styles/cros_tokens_color_mappings.h"
+#include "base/functional/bind.h"
 #include "ui/compositor/layer.h"
 #include "ui/display/screen.h"
+#include "ui/views/animation/animation_builder.h"
+#include "ui/wm/core/coordinate_conversion.h"
 
 namespace ash {
 
+namespace {
+
+// Duration of wallpaper clipping animation when entering overview.
+constexpr base::TimeDelta kWallpaperClippingAnimationDuration =
+    base::Milliseconds(350);
+
+// Duration of wallpaper restoration animation when exiting overview.
+constexpr base::TimeDelta kWallpaperRestoreAnimationDuration =
+    base::Milliseconds(200);
+
+}  // namespace
+
 ScopedOverviewWallpaperClipper::ScopedOverviewWallpaperClipper(
     OverviewGrid* overview_grid)
-    : wallpaper_underlay_layer_(ui::LAYER_SOLID_COLOR),
-      overview_grid_(overview_grid) {
-  const gfx::Rect current_grid_bounds = overview_grid_->bounds();
-  wallpaper_underlay_layer_.SetBounds(current_grid_bounds);
-
+    : overview_grid_(overview_grid) {
+  aura::Window* root_window = overview_grid_->root_window();
   WallpaperWidgetController* wallpaper_widget_controller =
-      RootWindowController::ForWindow(overview_grid_->root_window())
+      RootWindowController::ForWindow(root_window)
           ->wallpaper_widget_controller();
+  auto* wallpaper_underlay_layer =
+      wallpaper_widget_controller->wallpaper_underlay_layer();
+  // TODO(http://b/333952534): Remove this check once `wallpaper_underlay_layer`
+  // is always created.
+  CHECK(wallpaper_underlay_layer);
+  wallpaper_underlay_layer->SetVisible(true);
+
   auto* wallpaper_view_layer =
       wallpaper_widget_controller->wallpaper_view()->layer();
-  auto* wallpaper_view_layer_parent = wallpaper_view_layer->parent();
 
-  // TODO(http://b/327663905): Implement on theme change for the
-  // `wallpaper_underlay_layer_`.
-  wallpaper_underlay_layer_.SetColor(
-      wallpaper_widget_controller->GetWidget()->GetColorProvider()->GetColor(
-          cros_tokens::kCrosSysSystemBase));
-  wallpaper_view_layer->SetRoundedCornerRadius(
-      kWallpaperClipRoundedCornerRadii);
-  wallpaper_view_layer->SetClipRect(overview_grid_->GetGridEffectiveBounds());
-  wallpaper_view_layer_parent->Add(&wallpaper_underlay_layer_);
-  wallpaper_view_layer_parent->StackBelow(&wallpaper_underlay_layer_,
-                                          wallpaper_view_layer);
+  views::AnimationBuilder()
+      .SetPreemptionStrategy(
+          ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET)
+      .Once()
+      .SetDuration(kWallpaperClippingAnimationDuration)
+      .SetClipRect(wallpaper_view_layer, GetTargetClipBounds(),
+                   gfx::Tween::ACCEL_20_DECEL_100)
+      .SetRoundedCorners(wallpaper_view_layer, kWallpaperClipRoundedCornerRadii,
+                         gfx::Tween::ACCEL_20_DECEL_100);
 }
 
 ScopedOverviewWallpaperClipper::~ScopedOverviewWallpaperClipper() {
   aura::Window* root_window = overview_grid_->root_window();
-  auto* wallpaper_view_layer = RootWindowController::ForWindow(root_window)
-                                   ->wallpaper_widget_controller()
-                                   ->wallpaper_view()
-                                   ->layer();
-  auto* wallpaper_view_layer_parent = wallpaper_view_layer->parent();
-  CHECK_EQ(wallpaper_underlay_layer_.parent(), wallpaper_view_layer_parent);
-  wallpaper_view_layer->SetClipRect(gfx::Rect());
-  wallpaper_view_layer->SetBounds(display::Screen::GetScreen()
-                                      ->GetDisplayNearestWindow(root_window)
-                                      .bounds());
-  wallpaper_view_layer->SetRoundedCornerRadius(gfx::RoundedCornersF());
-}
-
-void ScopedOverviewWallpaperClipper::RefreshWallpaperClipBounds() {
-  wallpaper_underlay_layer_.SetBounds(overview_grid_->bounds());
-
-  WallpaperWidgetController* wallpaper_widget_controller =
-      RootWindowController::ForWindow(overview_grid_->root_window())
+  auto* wallpaper_widget_controller =
+      RootWindowController::ForWindow(root_window)
           ->wallpaper_widget_controller();
   auto* wallpaper_view_layer =
       wallpaper_widget_controller->wallpaper_view()->layer();
-  wallpaper_view_layer->SetClipRect(overview_grid_->GetGridEffectiveBounds());
+
+  // Convert display bounds to the parent's coordinates, as layer bounds are
+  // always relative to their parent.
+  gfx::Rect target_restore_rect = display::Screen::GetScreen()
+                                      ->GetDisplayNearestWindow(root_window)
+                                      .bounds();
+  wm::ConvertRectFromScreen(root_window, &target_restore_rect);
+
+  views::AnimationBuilder()
+      .OnEnded(base::BindOnce(
+          [](WallpaperWidgetController* wallpaper_widget_controller) {
+            // `WallpaperWidgetController` owns the wallpaper view layer and
+            // wallpaper underlay layer, so it's guaranteed to outlive it.
+            if (wallpaper_widget_controller->wallpaper_underlay_layer()) {
+              wallpaper_widget_controller->wallpaper_underlay_layer()
+                  ->SetVisible(false);
+            }
+            if (auto* wallpaper_view_layer =
+                    wallpaper_widget_controller->wallpaper_view()->layer()) {
+              wallpaper_view_layer->SetClipRect(gfx::Rect());
+            }
+          },
+          base::Unretained(wallpaper_widget_controller)))
+      .SetPreemptionStrategy(
+          ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET)
+      .Once()
+      .SetDuration(kWallpaperRestoreAnimationDuration)
+      .SetClipRect(wallpaper_view_layer, target_restore_rect,
+                   gfx::Tween::ACCEL_20_DECEL_100)
+      .SetRoundedCorners(wallpaper_view_layer, gfx::RoundedCornersF(),
+                         gfx::Tween::ACCEL_20_DECEL_100);
+}
+
+void ScopedOverviewWallpaperClipper::RefreshWallpaperClipBounds() {
+  aura::Window* root_window = overview_grid_->root_window();
+  WallpaperWidgetController* wallpaper_widget_controller =
+      RootWindowController::ForWindow(root_window)
+          ->wallpaper_widget_controller();
+  auto* wallpaper_view_layer =
+      wallpaper_widget_controller->wallpaper_view()->layer();
+
+  wallpaper_view_layer->SetClipRect(GetTargetClipBounds());
+}
+
+gfx::Rect ScopedOverviewWallpaperClipper::GetTargetClipBounds() const {
+  // `GetWallpaperClipBounds()` returns the bounds in screen coordinates.
+  // Convert these to the parent's coordinates, as layer bounds are always
+  // relative to their parent.
+  gfx::Rect target_clip_rect = overview_grid_->GetWallpaperClipBounds();
+  wm::ConvertRectFromScreen(overview_grid_->root_window(), &target_clip_rect);
+  return target_clip_rect;
 }
 
 }  // namespace ash

@@ -37,6 +37,7 @@
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_control_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_element.h"
+#include "third_party/blink/renderer/core/html/forms/html_text_area_element.h"
 #include "third_party/blink/renderer/core/html/html_template_element.h"
 #include "third_party/blink/renderer/core/html/parser/atomic_html_token.h"
 #include "third_party/blink/renderer/core/html/parser/html_document_parser.h"
@@ -1030,7 +1031,8 @@ DeclarativeShadowRootMode DeclarativeShadowRootModeFromToken(
         mojom::blink::ConsoleMessageSource::kOther,
         mojom::blink::ConsoleMessageLevel::kWarning,
         "Found declarative shadowrootmode attribute on a template, but "
-        "declarative Shadow DOM has not been enabled by includeShadowRoots."));
+        "declarative Shadow DOM is not being parsed. Use setHTMLUnsafe() "
+        "or parseHTMLUnsafe() instead."));
   } else {
     document.AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
         mojom::blink::ConsoleMessageSource::kOther,
@@ -3082,6 +3084,16 @@ void HTMLTreeBuilder::ProcessTokenInForeignContent(AtomicHTMLToken* token) {
         AdjustSVGAttributes(token);
       }
       AdjustForeignAttributes(token);
+
+      if (tag == HTMLTag::kScript && token->SelfClosing() &&
+          current_namespace == svg_names::kNamespaceURI) {
+        token->SetSelfClosingToFalse();
+        tree_.InsertForeignElement(token, current_namespace);
+        AtomicHTMLToken fake_token(HTMLToken::kEndTag, HTMLTag::kScript);
+        ProcessTokenInForeignContent(&fake_token);
+        return;
+      }
+
       tree_.InsertForeignElement(token, current_namespace);
       break;
     }

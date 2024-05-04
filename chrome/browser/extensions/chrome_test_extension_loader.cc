@@ -143,7 +143,7 @@ scoped_refptr<const Extension> ChromeTestExtensionLoader::LoadExtension(
 
   // Permissions and the install param are handled by the unpacked installer
   // before the extension is installed.
-  // TODO(https://crbug.com/1157606): Fix CrxInstaller to enable this for
+  // TODO(crbug.com/40160904): Fix CrxInstaller to enable this for
   // packed extensions.
   if (!is_unpacked) {
     // Trying to reload a shared module (as we do when adjusting extension
@@ -411,7 +411,7 @@ bool ChromeTestExtensionLoader::CheckInstallWarnings(
   std::string install_warnings_string;
   for (const InstallWarning& warning : install_warnings) {
     // Don't fail on the manifest v2 deprecation warning in tests for now.
-    // TODO(https://crbug.com/1269161): Stop skipping this warning when all
+    // TODO(crbug.com/40804030): Stop skipping this warning when all
     // tests are updated to MV3.
     if (warning.message == manifest_errors::kManifestV2IsDeprecatedWarning)
       continue;

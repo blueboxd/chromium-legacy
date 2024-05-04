@@ -27,6 +27,7 @@ android_library("test_java") {
     "//third_party/androidx:androidx_appcompat_appcompat_resources_java",
     "//third_party/androidx:androidx_test_runner_java",
     "//third_party/google-truth:google_truth_java",
+    "//third_party/hamcrest:hamcrest_java",
     "//third_party/junit:junit",
     "//url:gurl_java",
   ]
@@ -41,7 +42,10 @@ android_library("test_support_java") {
 
   deps = [
     ":jni_headers",
+    "//chrome/browser/profiles/android:java",
     "//content/public/android:content_java",
+    "//third_party/android_deps:espresso_java",
+    "//third_party/hamcrest:hamcrest_java",
     "//third_party/jni_zero:jni_zero_java",
     "//url:gurl_java",
   ]

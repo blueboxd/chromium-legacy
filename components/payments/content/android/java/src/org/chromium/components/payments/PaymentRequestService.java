@@ -60,8 +60,8 @@ import java.util.Set;
  * shareable between Clank and WebLayer. The Clank specific logic lives in
  * org.chromium.chrome.browser.payments.ChromePaymentRequestService.
  *
- * <p>TODO(crbug.com/1102522): ChromePaymentRequestService is under refactoring, with the purpose of
- * moving the business logic of ChromePaymentRequestService into PaymentRequestService and
+ * <p>TODO(crbug.com/40138829): ChromePaymentRequestService is under refactoring, with the purpose
+ * of moving the business logic of ChromePaymentRequestService into PaymentRequestService and
  * eventually moving ChromePaymentRequestService. Note that the callers of the instances of this
  * class need to close them with {@link PaymentRequestService#close()}, after which no usage is
  * allowed.
@@ -460,7 +460,7 @@ public class PaymentRequestService
             return false;
         }
         mPaymentRequestSecurityOrigin = mRenderFrameHost.getLastCommittedOrigin();
-        // TODO(crbug.com/992593): replace UrlFormatter with GURL operations.
+        // TODO(crbug.com/41475385): replace UrlFormatter with GURL operations.
         mPaymentRequestOrigin =
                 mDelegate.formatUrlForSecurityDisplay(mRenderFrameHost.getLastCommittedURL());
 
@@ -469,7 +469,7 @@ public class PaymentRequestService
             abortForInvalidDataFromRenderer(ErrorStrings.NO_WEB_CONTENTS);
             return false;
         }
-        // TODO(crbug.com/992593): replace UrlFormatter with GURL operations.
+        // TODO(crbug.com/41475385): replace UrlFormatter with GURL operations.
         mTopLevelOrigin = mDelegate.formatUrlForSecurityDisplay(mWebContents.getLastCommittedUrl());
 
         mMerchantName = mWebContents.getTitle();
@@ -605,7 +605,7 @@ public class PaymentRequestService
         PaymentMethodData spcMethodData = methodData.get(MethodStrings.SECURE_PAYMENT_CONFIRMATION);
         if (spcMethodData.securePaymentConfirmation == null) return false;
 
-        // TODO(crbug.com/1342686): Update checks to match desktop browser-side logic.
+        // TODO(crbug.com/40231121): Update checks to match desktop browser-side logic.
         if ((spcMethodData.securePaymentConfirmation.payeeOrigin == null
                         && spcMethodData.securePaymentConfirmation.payeeName == null)
                 || (spcMethodData.securePaymentConfirmation.payeeName != null
@@ -1066,7 +1066,7 @@ public class PaymentRequestService
 
     private boolean isSecurePaymentConfirmationApplicable() {
         PaymentApp selectedApp = mBrowserPaymentRequest.getSelectedPaymentApp();
-        // TODO(crbug.com/1211947): Deduplicate this part with
+        // TODO(crbug.com/40767878): Deduplicate this part with
         // SecurePaymentConfirmationController::SetupModelAndShowDialogIfApplicable().
         return selectedApp != null
                 && selectedApp.getPaymentAppType() == PaymentAppType.INTERNAL

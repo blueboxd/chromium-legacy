@@ -52,7 +52,7 @@ class NET_EXPORT_PRIVATE HttpTransaction {
   // Otherwise the transaction continues unimpeded.
   // Must not return ERR_IO_PENDING.
   //
-  // TODO(crbug.com/986744): Fix handling of OnConnected() when proxy
+  // TODO(crbug.com/40637204): Fix handling of OnConnected() when proxy
   // authentication is required. We should notify this callback that a
   // connection was established, even though the stream might not be ready for
   // us to send data through it.
@@ -65,10 +65,10 @@ class NET_EXPORT_PRIVATE HttpTransaction {
 
   // Starts the HTTP transaction (i.e., sends the HTTP request).
   //
-  // TODO(crbug.com/723786) The consumer should ensure that request_info points
-  // to a valid value till final response headers are received; after that
-  // point, the HttpTransaction will not access |*request_info| and it may be
-  // deleted.
+  // TODO(crbug.com/40521353) The consumer should ensure that request_info
+  // points to a valid value till final response headers are received; after
+  // that point, the HttpTransaction will not access |*request_info| and it may
+  // be deleted.
   //
   // Returns OK if the transaction could be started synchronously, which means
   // that the request was served from the cache.  ERR_IO_PENDING is returned to

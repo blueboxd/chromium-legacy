@@ -20,6 +20,7 @@
 #import "components/sync/service/sync_service.h"
 #import "components/sync/test/fake_model_type_controller_delegate.h"
 #import "components/sync/test/test_sync_service.h"
+#import "components/sync/test/test_sync_user_settings.h"
 #import "components/sync_sessions/open_tabs_ui_delegate.h"
 #import "components/sync_sessions/session_sync_service.h"
 #import "components/sync_sessions/synced_session.h"
@@ -201,11 +202,25 @@ class RecentTabsTableCoordinatorTest : public BlockCleanupTest {
 
     sync_service_ = static_cast<syncer::TestSyncService*>(
         SyncServiceFactory::GetForBrowserState(chrome_browser_state_.get()));
-    sync_service_->SetSetupInProgress(!sync_enabled);
-    sync_service_->SetHasSyncConsent(sync_completed);
 
-    // Needed by SyncService's initialization, triggered during initialization
-    // of SyncSetupServiceMock.
+    if (!signed_in) {
+      CHECK(!sync_enabled);
+      CHECK(!sync_completed);
+      CHECK(!has_foreign_sessions);
+      sync_service_->SetSignedOut();
+    } else if (!sync_enabled) {
+      CHECK(!sync_completed);
+      CHECK(!has_foreign_sessions);
+      sync_service_->SetSignedInWithoutSyncFeature();
+    } else {
+      sync_service_->SetSignedInWithSyncFeatureOn();
+      if (!sync_completed) {
+        sync_service_->GetUserSettings()
+            ->ClearInitialSyncFeatureSetupComplete();
+      }
+    }
+
+    // Needed by SyncService's initialization.
     ON_CALL(*session_sync_service, GetControllerDelegate())
         .WillByDefault(Return(fake_controller_delegate_.GetWeakPtr()));
     ON_CALL(*session_sync_service, GetGlobalIdMapper())
@@ -318,30 +333,30 @@ TEST_F(RecentTabsTableCoordinatorTest, TestConstructorDestructor) {
 }
 
 TEST_F(RecentTabsTableCoordinatorTest, TestUserSignedOut) {
-  // TODO(crbug.com/907495): Actual test expectations are missing below.
+  // TODO(crbug.com/40603410): Actual test expectations are missing below.
   SetupSyncState(NO, NO, NO, NO);
   CreateController();
 }
 
 TEST_F(RecentTabsTableCoordinatorTest, TestUserSignedInSyncOff) {
-  // TODO(crbug.com/907495): Actual test expectations are missing below.
+  // TODO(crbug.com/40603410): Actual test expectations are missing below.
   SetupSyncState(YES, NO, NO, NO);
   CreateController();
 }
 
 TEST_F(RecentTabsTableCoordinatorTest, TestUserSignedInSyncInProgress) {
-  // TODO(crbug.com/907495): Actual test expectations are missing below.
+  // TODO(crbug.com/40603410): Actual test expectations are missing below.
   SetupSyncState(YES, YES, NO, NO);
   CreateController();
 }
 TEST_F(RecentTabsTableCoordinatorTest, TestUserSignedInSyncOnWithoutSessions) {
-  // TODO(crbug.com/907495): Actual test expectations are missing below.
+  // TODO(crbug.com/40603410): Actual test expectations are missing below.
   SetupSyncState(YES, YES, YES, NO);
   CreateController();
 }
 
 TEST_F(RecentTabsTableCoordinatorTest, TestUserSignedInSyncOnWithSessions) {
-  // TODO(crbug.com/907495): Actual test expectations are missing below.
+  // TODO(crbug.com/40603410): Actual test expectations are missing below.
   SetupSyncState(YES, YES, YES, YES);
   CreateController();
 }

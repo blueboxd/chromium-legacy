@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <string_view>
 
 #include "base/memory/ref_counted.h"
 #include "gpu/command_buffer/common/context_creation_attribs.h"
@@ -131,7 +132,6 @@ class GPU_GLES2_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
     bool mesa_framebuffer_flip_y = false;
     bool ovr_multiview2 = false;
     bool khr_parallel_shader_compile = false;
-    bool android_surface_control = false;
     bool khr_robust_buffer_access_behavior = false;
     bool webgl_multi_draw = false;
     bool nv_internalformat_sample_query = false;
@@ -251,7 +251,7 @@ class GPU_GLES2_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
 
   ~FeatureInfo();
 
-  void AddExtensionString(const base::StringPiece& s);
+  void AddExtensionString(std::string_view s);
   void InitializeBasicState(const base::CommandLine* command_line);
   void InitializeFeatures();
   void InitializeFloatAndHalfFloatFeatures(const gfx::ExtensionSet& extensions);

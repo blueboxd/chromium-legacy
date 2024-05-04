@@ -6,7 +6,7 @@
 load("//lib/branches.star", "branches")
 load("//lib/builder_config.star", "builder_config")
 load("//lib/builder_url.star", "linkify_builder")
-load("//lib/builders.star", "os", "reclient", "siso")
+load("//lib/builders.star", "os", "reclient")
 load("//lib/try.star", "try_")
 load("//lib/consoles.star", "consoles")
 load("//lib/gn_args.star", "gn_args")
@@ -19,17 +19,13 @@ try_.defaults.set(
     cores = 8,
     os = os.LINUX_DEFAULT,
     compilator_cores = 16,
-    compilator_reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
     execution_timeout = try_.DEFAULT_EXECUTION_TIMEOUT,
     orchestrator_cores = 2,
+    orchestrator_siso_remote_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
     reclient_instance = reclient.instance.DEFAULT_UNTRUSTED,
-    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
     service_account = try_.DEFAULT_SERVICE_ACCOUNT,
-    siso_configs = ["builder"],
-    siso_enable_cloud_profiler = True,
-    siso_enable_cloud_trace = True,
     siso_enabled = True,
-    siso_project = siso.project.DEFAULT_UNTRUSTED,
+    siso_remote_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
 consoles.list_view(
@@ -50,7 +46,7 @@ try_.builder(
     mirrors = [
         "ci/chromeos-amd64-generic-cfi-thin-lto-rel",
     ],
-    # TODO(crbug.com/913750): Enable DCHECKS on the two amd64-generic bots
+    # TODO(crbug.com/40605913): Enable DCHECKS on the two amd64-generic bots
     # when the PFQ has it enabled.
     gn_args = "ci/chromeos-amd64-generic-cfi-thin-lto-rel",
     # TODO(b/326865026): This build seems to have a high number of fallbacks,
@@ -203,6 +199,17 @@ try_.builder(
     gn_args = "ci/chromeos-arm-generic-dbg",
 )
 
+# crbug.com/40207910
+try_.builder(
+    name = "linux-chromeos-dbg-oslogin",
+    description_html = "Try job to test changes that may fix OSLogin issues with tests on ChromeOS.",
+    mirrors = [
+        "ci/linux-chromeos-dbg-oslogin",
+    ],
+    gn_args = "ci/linux-chromeos-dbg-oslogin",
+    contact_team_email = "chrome-dev-infra-team@google.com",
+)
+
 try_.builder(
     name = "chromeos-arm-generic-rel",
     branch_selector = branches.selector.CROS_LTS_BRANCHES,
@@ -251,7 +258,7 @@ try_.orchestrator_builder(
     compilator = "lacros-amd64-generic-rel-gtest-compilator",
     contact_team_email = "chrome-desktop-engprod@google.com",
     main_list_view = "try",
-    # TODO(crbug.com/1471166) Enable on CQ.
+    # TODO(crbug.com/40278121) Enable on CQ.
     tryjob = try_.job(
         equivalent_builder = "try/lacros-amd64-generic-rel-gtest-and-tast",
         equivalent_builder_percentage = 100,
@@ -432,8 +439,8 @@ try_.builder(
         "chromium.enable_cleandead": 100,
     },
     main_list_view = "try",
-    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
     siso_enabled = True,
+    siso_remote_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
     tryjob = try_.job(),
 )
 
@@ -493,7 +500,7 @@ try_.orchestrator_builder(
         "chromium.enable_cleandead": 100,
     },
     main_list_view = "try",
-    # TODO(crbug.com/1372179): Use orchestrator pool once overloaded test pools
+    # TODO(crbug.com/40241638): Use orchestrator pool once overloaded test pools
     # are addressed
     # use_orchestrator_pool = True,
     tryjob = try_.job(),
@@ -510,7 +517,7 @@ try_.compilator_builder(
 try_.builder(
     name = "linux-lacros-dbg",
     branch_selector = branches.selector.CROS_BRANCHES,
-    # TODO(crbug.com/1233247) Adds the CI tester when it's available.
+    # TODO(crbug.com/40780788) Adds the CI tester when it's available.
     mirrors = [
         "ci/linux-lacros-dbg",
     ],
@@ -542,7 +549,7 @@ try_.orchestrator_builder(
         "chromium.enable_cleandead": 50,
     },
     main_list_view = "try",
-    # TODO(crbug.com/1372179): Use orchestrator pool once overloaded test pools
+    # TODO(crbug.com/40241638): Use orchestrator pool once overloaded test pools
     # are addressed
     # use_orchestrator_pool = True,
     tryjob = try_.job(),

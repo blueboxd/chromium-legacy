@@ -21,10 +21,10 @@ namespace content {
 class BrowserContext;
 enum class FedCmDisconnectStatus;
 enum class FedCmIdpSigninStatusMode;
-class FedCmMetrics;
 class FederatedIdentityApiPermissionContextDelegate;
 class FederatedIdentityPermissionContextDelegate;
 enum class IdpSigninStatus;
+class FederatedAuthRequestPageData;
 
 namespace webid {
 
@@ -74,8 +74,7 @@ void UpdateIdpSigninStatusForAccountsEndpointResponse(
     const GURL& identity_provider_config_url,
     IdpNetworkRequestManager::FetchStatus account_endpoint_fetch_status,
     bool does_idp_have_failing_idp_signin_status,
-    FederatedIdentityPermissionContextDelegate* permission_delegate,
-    FedCmMetrics* metrics);
+    FederatedIdentityPermissionContextDelegate* permission_delegate);
 
 // Returns a string to be used as the console error message from a
 // FederatedAuthRequestResult.
@@ -91,7 +90,7 @@ FedCmIdpSigninStatusMode GetIdpSigninStatusMode(RenderFrameHost& host,
                                                 const url::Origin& idp_origin);
 
 // Returns the eTLD+1 for a given url. For localhost, returns the host.
-std::string FormatUrlWithDomain(const GURL& url, bool for_display);
+std::string FormatUrlForDisplay(const GURL& url);
 
 // Returns true if the user has used FedCM to login to the RP via the IdP
 // account or if the IdP has third party cookies access. For the former, if
@@ -106,6 +105,13 @@ bool HasSharingPermissionOrIdpHasThirdPartyCookiesAccess(
     FederatedIdentityPermissionContextDelegate* sharing_permission_delegate,
     FederatedIdentityApiPermissionContextDelegate* api_permission_delegate);
 
+bool IsFedCmAuthzEnabled(RenderFrameHost& host, const url::Origin& idp_origin);
+
+FederatedAuthRequestPageData* GetPageData(RenderFrameHost* render_frame_host);
+
+// Returns a new session ID. Used to record UKM metrics corresponding to a new
+// API invocation, like get() or disconnect().
+int GetNewSessionID();
 }  // namespace webid
 
 }  // namespace content

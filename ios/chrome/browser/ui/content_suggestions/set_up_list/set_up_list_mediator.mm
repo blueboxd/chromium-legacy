@@ -12,6 +12,7 @@
 #import "components/prefs/ios/pref_observer_bridge.h"
 #import "components/prefs/pref_service.h"
 #import "components/signin/public/identity_manager/objc/identity_manager_observer_bridge.h"
+#import "ios/chrome/browser/default_browser/model/utils.h"
 #import "ios/chrome/browser/ntp/model/set_up_list.h"
 #import "ios/chrome/browser/ntp/model/set_up_list_delegate.h"
 #import "ios/chrome/browser/ntp/model/set_up_list_item.h"
@@ -46,6 +47,25 @@ bool CredentialProviderPromoDismissed(PrefService* local_state) {
       static_cast<IOSCredentialProviderPromoAction>(local_state->GetInteger(
           prefs::kIosCredentialProviderPromoLastActionTaken));
   return last_action == IOSCredentialProviderPromoAction::kNo;
+}
+
+// Returns true if a Default Browser Promo was completed, outside of SetUpList.
+// This includes the FRE.
+bool DefaultBrowserPromoCompleted() {
+  std::optional<IOSDefaultBrowserPromoAction> action =
+      DefaultBrowserPromoLastAction();
+  if (!action.has_value()) {
+    return false;
+  }
+
+  switch (action.value()) {
+    case IOSDefaultBrowserPromoAction::kActionButton:
+    case IOSDefaultBrowserPromoAction::kCancel:
+      return true;
+    case IOSDefaultBrowserPromoAction::kRemindMeLater:
+    case IOSDefaultBrowserPromoAction::kDismiss:
+      return false;
+  }
 }
 
 }  // namespace
@@ -120,6 +140,9 @@ bool CredentialProviderPromoDismissed(PrefService* local_state) {
         prefs::kIosCredentialProviderPromoLastActionTaken,
         &_localStatePrefChangeRegistrar);
     _prefObserverBridge->ObserveChangesForPreference(
+        prefs::kIosDefaultBrowserPromoLastAction,
+        &_localStatePrefChangeRegistrar);
+    _prefObserverBridge->ObserveChangesForPreference(
         set_up_list_prefs::kDisabled, &_localStatePrefChangeRegistrar);
     if (IsIOSTipsNotificationsEnabled()) {
       _prefObserverBridge->ObserveChangesForPreference(
@@ -133,6 +156,11 @@ bool CredentialProviderPromoDismissed(PrefService* local_state) {
                                           SetUpListItemType::kAutofill);
     } else {
       [self checkIfCPEEnabled];
+    }
+
+    if (DefaultBrowserPromoCompleted()) {
+      set_up_list_prefs::MarkItemComplete(_localState,
+                                          SetUpListItemType::kDefaultBrowser);
     }
 
     _sceneState = sceneState;
@@ -208,16 +236,14 @@ bool CredentialProviderPromoDismissed(PrefService* local_state) {
 }
 
 - (void)showSetUpList {
-  NSArray<SetUpListItemViewData*>* items = [self setUpListItems];
-  if (IsMagicStackEnabled()) {
-    DCHECK(!IsIOSMagicStackCollectionViewEnabled());
-    [self.consumer showSetUpListModuleWithConfigs:[self setUpListConfigs]];
-  } else {
-    [self.consumer showSetUpListWithItems:items];
-  }
+  DCHECK(!IsIOSMagicStackCollectionViewEnabled());
+  [self.consumer showSetUpListModuleWithConfigs:[self setUpListConfigs]];
   [self.contentSuggestionsMetricsRecorder recordSetUpListShown];
-  for (SetUpListItemViewData* item in items) {
-    [self.contentSuggestionsMetricsRecorder recordSetUpListItemShown:item.type];
+  for (SetUpListConfig* config in [self setUpListConfigs]) {
+    for (SetUpListItemViewData* item in config.setUpListItems) {
+      [self.contentSuggestionsMetricsRecorder
+          recordSetUpListItemShown:item.type];
+    }
   }
 }
 
@@ -284,23 +310,16 @@ bool CredentialProviderPromoDismissed(PrefService* local_state) {
         [self.audience replaceSetUpListWithAllSet:config];
       } else {
         [weakSelf.consumer showSetUpListDoneWithAnimations:^{
-          if (!IsMagicStackEnabled()) {
-            [weakSelf.delegate contentSuggestionsWasUpdated];
-          }
         }];
       }
-    } else if (IsMagicStackEnabled()) {
+    } else {
       [weakSelf.consumer scrollToNextMagicStackModuleForCompletedModule:
                              SetUpListModuleTypeForSetUpListType(item.type)];
     }
   };
-  if (IsMagicStackEnabled()) {
     [_consumers setUpListItemDidComplete:item
                        allItemsCompleted:completed
                               completion:completion];
-  } else {
-    [self.consumer markSetUpListItemComplete:item.type completion:completion];
-  }
 }
 
 #pragma mark - IdentityManagerObserverBridgeDelegate
@@ -333,6 +352,9 @@ bool CredentialProviderPromoDismissed(PrefService* local_state) {
   if (preferenceName == prefs::kIosCredentialProviderPromoLastActionTaken &&
       CredentialProviderPromoDismissed(_localState)) {
     [self markSetUpListItemPrefComplete:SetUpListItemType::kAutofill];
+  } else if (preferenceName == prefs::kIosDefaultBrowserPromoLastAction &&
+             DefaultBrowserPromoCompleted()) {
+    [self markSetUpListItemPrefComplete:SetUpListItemType::kDefaultBrowser];
   } else if (preferenceName == set_up_list_prefs::kDisabled &&
              set_up_list_prefs::IsSetUpListDisabled(_localState)) {
     [self hideSetUpList];
@@ -392,7 +414,21 @@ bool CredentialProviderPromoDismissed(PrefService* local_state) {
 
 - (NSArray<SetUpListItemViewData*>*)setUpListItems {
   NSMutableArray<SetUpListItemViewData*>* items = [[NSMutableArray alloc] init];
+  // Add items that are not complete yet.
   for (SetUpListItem* model in _setUpList.items) {
+    if (model.complete) {
+      continue;
+    }
+    SetUpListItemViewData* item =
+        [[SetUpListItemViewData alloc] initWithType:model.type
+                                           complete:model.complete];
+    [items addObject:item];
+  }
+  // Add items that are complete to the end.
+  for (SetUpListItem* model in _setUpList.items) {
+    if (!model.complete) {
+      continue;
+    }
     SetUpListItemViewData* item =
         [[SetUpListItemViewData alloc] initWithType:model.type
                                            complete:model.complete];
@@ -403,6 +439,11 @@ bool CredentialProviderPromoDismissed(PrefService* local_state) {
 
 // Sets the pref for a SetUpList item to indicate it is complete.
 - (void)markSetUpListItemPrefComplete:(SetUpListItemType)type {
+  // Exit early if this is called after `disconnect` which clears _localState.
+  // Item states will be reevaluated the next time this mediator is loaded.
+  if (!_localState) {
+    return;
+  }
   set_up_list_prefs::MarkItemComplete(_localState, type);
 }
 

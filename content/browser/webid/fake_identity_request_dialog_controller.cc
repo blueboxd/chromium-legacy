@@ -30,7 +30,7 @@ void FakeIdentityRequestDialogController::ShowAccountsDialog(
     LoginToIdPCallback on_add_account,
     DismissCallback dismiss_callback,
     AccountsDisplayedCallback accounts_displayed_callback) {
-  // TODO(crbug.com/1348262): Temporarily support only the first IDP, extend to
+  // TODO(crbug.com/40233285): Temporarily support only the first IDP, extend to
   // support multiple IDPs.
   std::vector<IdentityRequestAccount> accounts =
       identity_provider_data[0].accounts;
@@ -94,8 +94,19 @@ void FakeIdentityRequestDialogController::ShowErrorDialog(
     const std::optional<TokenError>& error,
     DismissCallback dismiss_callback,
     MoreDetailsCallback more_details_callback) {
-  DCHECK(dismiss_callback);
-  std::move(dismiss_callback).Run(DismissReason::kOther);
+  if (!is_interception_enabled_) {
+    DCHECK(dismiss_callback);
+    std::move(dismiss_callback).Run(DismissReason::kOther);
+  }
+}
+
+void FakeIdentityRequestDialogController::ShowLoadingDialog(
+    const std::string& top_frame_for_display,
+    const std::string& idp_for_display,
+    blink::mojom::RpContext rp_context,
+    blink::mojom::RpMode rp_mode,
+    DismissCallback dismiss_callback) {
+  title_ = "Loading";
 }
 
 std::string FakeIdentityRequestDialogController::GetTitle() const {
@@ -111,7 +122,8 @@ void FakeIdentityRequestDialogController::ShowUrl(LinkType link_type,
   content::OpenURLParams params(
       url, content::Referrer(), WindowOpenDisposition::NEW_FOREGROUND_TAB,
       ui::PAGE_TRANSITION_AUTO_TOPLEVEL, /*is_renderer_initiated=*/false);
-  web_contents_->GetDelegate()->OpenURLFromTab(web_contents_, params);
+  web_contents_->GetDelegate()->OpenURLFromTab(
+      web_contents_, params, /*navigation_handle_callback=*/{});
 }
 
 content::WebContents* FakeIdentityRequestDialogController::ShowModalDialog(
@@ -126,8 +138,8 @@ content::WebContents* FakeIdentityRequestDialogController::ShowModalDialog(
   content::OpenURLParams params(
       url, content::Referrer(), WindowOpenDisposition::NEW_POPUP,
       ui::PAGE_TRANSITION_AUTO_TOPLEVEL, /*is_renderer_initiated=*/false);
-  popup_window_ =
-      web_contents_->GetDelegate()->OpenURLFromTab(web_contents_, params);
+  popup_window_ = web_contents_->GetDelegate()->OpenURLFromTab(
+      web_contents_, params, /*navigation_handle_callback=*/{});
   Observe(popup_window_);
   return popup_window_;
 }
@@ -152,4 +164,11 @@ void FakeIdentityRequestDialogController::WebContentsDestroyed() {
   popup_window_ = nullptr;
 }
 
+void FakeIdentityRequestDialogController::RequestIdPRegistrationPermision(
+    const url::Origin& origin,
+    base::OnceCallback<void(bool accepted)> callback) {
+  if (!is_interception_enabled_) {
+    std::move(callback).Run(false);
+  }
+}
 }  // namespace content

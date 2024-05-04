@@ -22,13 +22,13 @@ namespace content_settings {
 namespace {
 
 bool IsDefaultCookieContentSettingUserControlled(HostContentSettingsMap* map) {
-  std::string content_setting_provider;
+  content_settings::ProviderType content_setting_provider;
   map->GetDefaultContentSetting(ContentSettingsType::COOKIES,
                                 &content_setting_provider);
   auto content_setting_source =
-      HostContentSettingsMap::GetSettingSourceFromProviderName(
+      HostContentSettingsMap::GetSettingSourceFromProviderType(
           content_setting_provider);
-  return content_setting_source == SettingSource::SETTING_SOURCE_USER;
+  return content_setting_source == SettingSource::kUser;
 }
 
 // Updates all user modifiable cookie content settings and preferences to match
@@ -195,15 +195,14 @@ void GeneratedCookiePrimarySettingPref::ApplyPrimaryCookieSettingManagedState(
     Profile* profile) {
   HostContentSettingsMap* map =
       HostContentSettingsMapFactory::GetForProfile(profile);
-  std::string content_setting_provider;
+  content_settings::ProviderType content_setting_provider;
   auto content_setting = map->GetDefaultContentSetting(
       ContentSettingsType::COOKIES, &content_setting_provider);
   auto content_setting_source =
-      HostContentSettingsMap::GetSettingSourceFromProviderName(
+      HostContentSettingsMap::GetSettingSourceFromProviderType(
           content_setting_provider);
   bool content_setting_enforced =
-      content_setting_source !=
-      content_settings::SettingSource::SETTING_SOURCE_USER;
+      content_setting_source != SettingSource::kUser;
 
   // Both the content setting and the block_third_party preference can
   // be controlled via policy.
@@ -318,7 +317,7 @@ settings_api::PrefObject GeneratedCookieSessionOnlyPref::GetPrefObject() const {
   pref_object.key = pref_name_;
   pref_object.type = settings_api::PrefType::kBoolean;
 
-  std::string content_setting_provider;
+  content_settings::ProviderType content_setting_provider;
   auto content_setting = host_content_settings_map_->GetDefaultContentSetting(
       ContentSettingsType::COOKIES, &content_setting_provider);
 
@@ -330,17 +329,17 @@ settings_api::PrefObject GeneratedCookieSessionOnlyPref::GetPrefObject() const {
   // Content settings can be managed via policy, extension or supervision, but
   // cannot be recommended.
   auto content_setting_source =
-      HostContentSettingsMap::GetSettingSourceFromProviderName(
+      HostContentSettingsMap::GetSettingSourceFromProviderType(
           content_setting_provider);
-  if (content_setting_source == SettingSource::SETTING_SOURCE_POLICY) {
+  if (content_setting_source == SettingSource::kPolicy) {
     pref_object.controlled_by = settings_api::ControlledBy::kDevicePolicy;
     pref_object.enforcement = settings_api::Enforcement::kEnforced;
   }
-  if (content_setting_source == SettingSource::SETTING_SOURCE_EXTENSION) {
+  if (content_setting_source == SettingSource::kExtension) {
     pref_object.controlled_by = settings_api::ControlledBy::kExtension;
     pref_object.enforcement = settings_api::Enforcement::kEnforced;
   }
-  if (content_setting_source == SettingSource::SETTING_SOURCE_SUPERVISED) {
+  if (content_setting_source == SettingSource::kSupervised) {
     pref_object.controlled_by = settings_api::ControlledBy::kChildRestriction;
     pref_object.enforcement = settings_api::Enforcement::kEnforced;
   }
@@ -384,7 +383,7 @@ GeneratedCookieDefaultContentSettingPref::GetPrefObject() const {
   pref_object.key = pref_name_;
   pref_object.type = settings_api::PrefType::kString;
 
-  std::string content_setting_provider;
+  content_settings::ProviderType content_setting_provider;
   auto content_setting = host_content_settings_map_->GetDefaultContentSetting(
       ContentSettingsType::COOKIES, &content_setting_provider);
 
@@ -394,17 +393,17 @@ GeneratedCookieDefaultContentSettingPref::GetPrefObject() const {
   // Cookies content setting can be managed via policy, extension or
   // supervision, but cannot be recommended.
   auto content_setting_source =
-      HostContentSettingsMap::GetSettingSourceFromProviderName(
+      HostContentSettingsMap::GetSettingSourceFromProviderType(
           content_setting_provider);
-  if (content_setting_source == SettingSource::SETTING_SOURCE_POLICY) {
+  if (content_setting_source == SettingSource::kPolicy) {
     pref_object.controlled_by = settings_api::ControlledBy::kDevicePolicy;
     pref_object.enforcement = settings_api::Enforcement::kEnforced;
   }
-  if (content_setting_source == SettingSource::SETTING_SOURCE_EXTENSION) {
+  if (content_setting_source == SettingSource::kExtension) {
     pref_object.controlled_by = settings_api::ControlledBy::kExtension;
     pref_object.enforcement = settings_api::Enforcement::kEnforced;
   }
-  if (content_setting_source == SettingSource::SETTING_SOURCE_SUPERVISED) {
+  if (content_setting_source == SettingSource::kSupervised) {
     pref_object.controlled_by = settings_api::ControlledBy::kChildRestriction;
     pref_object.enforcement = settings_api::Enforcement::kEnforced;
   }

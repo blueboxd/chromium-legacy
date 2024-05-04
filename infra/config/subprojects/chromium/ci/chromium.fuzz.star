@@ -26,6 +26,8 @@ ci.defaults.set(
     reclient_jobs = reclient.jobs.DEFAULT,
     service_account = ci.DEFAULT_SERVICE_ACCOUNT,
     shadow_service_account = ci.DEFAULT_SHADOW_SERVICE_ACCOUNT,
+    siso_enabled = True,
+    siso_remote_jobs = reclient.jobs.DEFAULT,
 )
 
 consoles.console_view(
@@ -240,8 +242,9 @@ ci.builder(
         ),
         clusterfuzz_archive = builder_config.clusterfuzz_archive(
             archive_name_prefix = "asan",
+            archive_subdir = "media",
             gs_acl = "public-read",
-            gs_bucket = "chrome-test-builds/media",
+            gs_bucket = "chromium-browser-asan",
         ),
     ),
     gn_args = gn_args.config(
@@ -278,12 +281,44 @@ ci.builder(
             "release",
             "reclient",
             "disable_seed_corpus",
+            "mojo_fuzzer",
         ],
     ),
     sheriff_rotations = args.ignore_default(None),
     console_view_entry = consoles.console_view_entry(
         category = "centipede",
         short_name = "centipede",
+    ),
+    contact_team_email = "chrome-deet-core@google.com",
+)
+
+ci.builder(
+    name = "Centipede High End Upload Linux ASan",
+    description_html = """This builder uploads centipede high end fuzzers.\
+Those fuzzers require more resources to run correctly.\
+""",
+    executable = "recipe:chromium/fuzz",
+    triggering_policy = scheduler.greedy_batching(
+        max_concurrent_invocations = 4,
+    ),
+    gn_args = gn_args.config(
+        configs = [
+            "centipede",
+            "asan",
+            "chromeos_codecs",
+            "pdf_xfa",
+            "optimize_for_fuzzing",
+            "shared",
+            "release",
+            "reclient",
+            "disable_seed_corpus",
+            "high_end_fuzzer_targets",
+        ],
+    ),
+    sheriff_rotations = args.ignore_default(None),
+    console_view_entry = consoles.console_view_entry(
+        category = "centipede",
+        short_name = "centipede high end",
     ),
     contact_team_email = "chrome-deet-core@google.com",
 )
@@ -307,9 +342,9 @@ ci.builder(
         ),
         clusterfuzz_archive = builder_config.clusterfuzz_archive(
             archive_name_prefix = "asan-v8-arm",
-            archive_subdir = "v8-arm",
+            archive_subdir = "v8-arm-media",
             gs_acl = "public-read",
-            gs_bucket = "chrome-test-builds/media",
+            gs_bucket = "chromium-browser-asan",
         ),
     ),
     gn_args = gn_args.config(
@@ -521,8 +556,9 @@ ci.builder(
         ),
         clusterfuzz_archive = builder_config.clusterfuzz_archive(
             archive_name_prefix = "asan",
+            archive_subdir = "media",
             gs_acl = "public-read",
-            gs_bucket = "chrome-test-builds/media",
+            gs_bucket = "chromium-browser-asan",
         ),
     ),
     gn_args = gn_args.config(
@@ -756,8 +792,9 @@ ci.builder(
         ),
         clusterfuzz_archive = builder_config.clusterfuzz_archive(
             archive_name_prefix = "asan",
+            archive_subdir = "media",
             gs_acl = "public-read",
-            gs_bucket = "chrome-test-builds/media",
+            gs_bucket = "chromium-browser-asan",
         ),
     ),
     gn_args = gn_args.config(

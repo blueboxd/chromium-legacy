@@ -35,8 +35,13 @@ class AddressTest : public testing::Test {
             features::kAutofillEnableSupportForAddressOverflow,
             features::kAutofillEnableSupportForBetweenStreetsOrLandmark,
             features::kAutofillEnableSupportForAddressOverflowAndLandmark,
+            features::kAutofillEnableDependentLocalityParsing,
+            features::kAutofillUseAUAddressModel,
+            features::kAutofillUseBRAddressModel,
             features::kAutofillUseDEAddressModel,
             features::kAutofillUseINAddressModel,
+            features::kAutofillUseMXAddressModel,
+            features::kAutofillUsePLAddressModel,
             features::kAutofillUseI18nAddressModel,
         },
         {});

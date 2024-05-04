@@ -53,6 +53,7 @@ class TemplateUrlServiceAndroid;
 
 namespace search_engines {
 class SearchEngineChoiceService;
+class ChoiceScreenData;
 }
 
 namespace syncer {
@@ -148,7 +149,7 @@ class TemplateURLService final : public WebDataServiceConsumer,
 
   // For testing only.
   // DEPRECATED, prefer the constructor that takes a `PrefService`.
-  // TODO(crbug.com/1499181): Remove once all usage is cleaned up.
+  // TODO(crbug.com/40287734): Remove once all usage is cleaned up.
   TemplateURLService(const Initializer* initializers, const size_t count);
 
   // For testing only. `initializers` will be used to simulate having loaded
@@ -226,7 +227,7 @@ class TemplateURLService final : public WebDataServiceConsumer,
 
   // Returns the number of TemplateURLs that match `host`. Used for logging.
   // Caller must ensure TemplateURLService is loaded before calling this.
-  // TODO(crbug.com/1322216): Delete after bug is fixed.
+  // TODO(crbug.com/40224222): Delete after bug is fixed.
   size_t GetTemplateURLCountForHostForLogging(const std::string& host) const;
 
   // Adds a new TemplateURL to this model.
@@ -284,11 +285,10 @@ class TemplateURLService final : public WebDataServiceConsumer,
   // by TemplateURLService and should not be deleted.
   TemplateURLVector GetTemplateURLs();
 
-  // Returns the list of prepopulated template URLs for the current country
-  // shuffled for display in a search engine choice screen.
-  // TODO (b/282656014): Update the returned list of search engines to comply
-  // with choice screen requirements.
-  OwnedTemplateURLVector GetTemplateURLsForChoiceScreen();
+  // Returns key information needed to show a search engine choice screen, like
+  // the template URLs for the engines to show. See
+  // `search_engines::ChoiceScreenData` for more details.
+  std::unique_ptr<search_engines::ChoiceScreenData> GetChoiceScreenData();
 
 #if BUILDFLAG(IS_ANDROID)
   // Returns the list prepopulated template URLs for `country_code`.

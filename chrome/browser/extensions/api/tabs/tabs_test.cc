@@ -52,7 +52,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/web_applications/test/isolated_web_app_test_utils.h"
 #include "chrome/browser/ui/zoom/chrome_zoom_level_prefs.h"
-#include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_location.h"
+#include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_install_source.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_trust_checker.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_url_info.h"
 #include "chrome/browser/web_applications/isolated_web_apps/test/isolated_web_app_builder.h"
@@ -980,7 +980,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWindowCreateTest, MAYBE_AcceptState) {
       ChromeExtensionFunctionDetails(function.get()), window_id, &error);
   EXPECT_TRUE(error.empty());
 
-// TODO(crbug.com/1410400): Remove this workaround if this wait is no longer
+// TODO(crbug.com/40254339): Remove this workaround if this wait is no longer
 // needed.
 // These builds flags are limiting the check for IsMinimized() for Linux
 // and Lacros. For Linux and Lacros we only check X11 window manager and not
@@ -996,7 +996,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWindowCreateTest, MAYBE_AcceptState) {
       true);
   EXPECT_TRUE(minimize_waiter.Wait());
 #elif BUILDFLAG(IS_OZONE_WAYLAND)
-  // TODO(crbug.com/1406188): Find a fix/workaround for wayland and add
+  // TODO(crbug.com/40252593): Find a fix/workaround for wayland and add
   // verification of IsMinimized() for as well.
 #endif
 #else
@@ -1159,6 +1159,8 @@ class ExtensionWindowCreateIwaTest
   }
 
   void SetUpDefaultCommandLine(base::CommandLine* command_line) override {
+    // Suppress "Welcome to Google Chrome" window
+    command_line->AppendSwitch(switches::kNoFirstRun);
     command_line->AppendSwitch(switches::kNoStartupWindow);
     command_line->AppendSwitch(switches::kKeepAliveForTest);
   }
@@ -1182,7 +1184,7 @@ class ExtensionWindowCreateIwaTest
   void InstallAndTrustBundle() {
     auto bundle = web_app::TestSignedWebBundleBuilder::BuildDefault(
         web_app::TestSignedWebBundleBuilder::BuildOptions()
-            .SetKeyPair(web_package::WebBundleSigner::KeyPair(
+            .SetKeyPair(web_package::WebBundleSigner::Ed25519KeyPair(
                 web_app::kTestPublicKey, web_app::kTestPrivateKey))
             .SetIndexHTMLContent("Hello Extensions!"));
 
@@ -1204,7 +1206,9 @@ class ExtensionWindowCreateIwaTest
         .InstallIsolatedWebApp(
             web_app::IsolatedWebAppUrlInfo::CreateFromSignedWebBundleId(
                 bundle.id),
-            web_app::InstalledBundle{.path = bundle_path},
+            web_app::IsolatedWebAppInstallSource::FromGraphicalInstaller(
+                web_app::IwaSourceBundleProdModeWithFileOp(
+                    bundle_path, web_app::IwaSourceBundleProdFileOp::kCopy)),
             /*expected_version=*/std::nullopt,
             /*optional_keep_alive=*/nullptr,
             /*optional_profile_keep_alive=*/nullptr, future.GetCallback());
@@ -1315,7 +1319,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DuplicateTab) {
   content::OpenURLParams params(GURL(url::kAboutBlankURL), content::Referrer(),
                                 WindowOpenDisposition::NEW_FOREGROUND_TAB,
                                 ui::PAGE_TRANSITION_LINK, false);
-  content::WebContents* web_contents = browser()->OpenURL(params);
+  content::WebContents* web_contents =
+      browser()->OpenURL(params, /*navigation_handle_callback=*/{});
   int tab_id = ExtensionTabUtil::GetTabId(web_contents);
   int window_id = ExtensionTabUtil::GetWindowIdOfTab(web_contents);
   int tab_index = -1;
@@ -1352,7 +1357,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DuplicateTabNoPermission) {
   content::OpenURLParams params(GURL(url::kAboutBlankURL), content::Referrer(),
                                 WindowOpenDisposition::NEW_FOREGROUND_TAB,
                                 ui::PAGE_TRANSITION_LINK, false);
-  content::WebContents* web_contents = browser()->OpenURL(params);
+  content::WebContents* web_contents =
+      browser()->OpenURL(params, /*navigation_handle_callback=*/{});
   int tab_id = ExtensionTabUtil::GetTabId(web_contents);
   int window_id = ExtensionTabUtil::GetWindowIdOfTab(web_contents);
   int tab_index = -1;
@@ -1526,8 +1532,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DiscardedProperty) {
   content::OpenURLParams params(GURL(url::kAboutBlankURL), content::Referrer(),
                                 WindowOpenDisposition::NEW_BACKGROUND_TAB,
                                 ui::PAGE_TRANSITION_LINK, false);
-  content::WebContents* web_contents_a = browser()->OpenURL(params);
-  content::WebContents* web_contents_b = browser()->OpenURL(params);
+  content::WebContents* web_contents_a =
+      browser()->OpenURL(params, /*navigation_handle_callback=*/{});
+  content::WebContents* web_contents_b =
+      browser()->OpenURL(params, /*navigation_handle_callback=*/{});
 
   // Set up query function with an extension.
   scoped_refptr<const Extension> extension = ExtensionBuilder("Test").Build();
@@ -1750,8 +1758,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, AutoDiscardableProperty) {
   content::OpenURLParams params(GURL(url::kAboutBlankURL), content::Referrer(),
                                 WindowOpenDisposition::NEW_BACKGROUND_TAB,
                                 ui::PAGE_TRANSITION_LINK, false);
-  content::WebContents* web_contents_a = browser()->OpenURL(params);
-  content::WebContents* web_contents_b = browser()->OpenURL(params);
+  content::WebContents* web_contents_a =
+      browser()->OpenURL(params, /*navigation_handle_callback=*/{});
+  content::WebContents* web_contents_b =
+      browser()->OpenURL(params, /*navigation_handle_callback=*/{});
 
   // Creates Tab object to ensure the property is correct for the extension.
   TabStripModel* tab_strip_model = browser()->tab_strip_model();
@@ -2270,7 +2280,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsZoomTest, CannotZoomInvalidTab) {
 
   const char kNewTestTabArgs[] = "chrome://version";
   params = GetOpenParams(kNewTestTabArgs);
-  web_contents = browser()->OpenURL(params);
+  web_contents = browser()->OpenURL(params, /*navigation_handle_callback=*/{});
   tab_id = ExtensionTabUtil::GetTabId(web_contents);
 
   // Test chrome.tabs.setZoom().
@@ -2294,7 +2304,7 @@ class ExtensionApiPdfTest : public base::test::WithFeatureOverride,
 
 // Regression test for crbug.com/660498.
 IN_PROC_BROWSER_TEST_P(ExtensionApiPdfTest, TemporaryAddressSpoof) {
-  // TODO(crbug.com/1445746): Remove this once the test passes for OOPIF PDF.
+  // TODO(crbug.com/40268279): Remove this once the test passes for OOPIF PDF.
   if (IsParamFeatureEnabled()) {
     GTEST_SKIP();
   }
@@ -2353,7 +2363,7 @@ IN_PROC_BROWSER_TEST_P(ExtensionApiPdfTest, TemporaryAddressSpoof) {
   ASSERT_TRUE(navigation_manager.WaitForNavigationFinished());
 }
 
-// TODO(crbug.com/1445746): Stop testing both modes after OOPIF PDF viewer
+// TODO(crbug.com/40268279): Stop testing both modes after OOPIF PDF viewer
 // launches.
 INSTANTIATE_FEATURE_OVERRIDE_TEST_SUITE(ExtensionApiPdfTest);
 #endif  // BUILDFLAG(ENABLE_PDF)

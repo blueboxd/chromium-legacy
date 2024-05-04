@@ -421,15 +421,16 @@ void AshNotificationView::NotificationTitleRow::SetMaxAvailableWidth(
   max_available_width_ = max_available_width;
 }
 
-gfx::Size AshNotificationView::NotificationTitleRow::CalculatePreferredSize()
-    const {
-  // TODO(crbug.com/1349528): The size constraint is not passed down from the
+gfx::Size AshNotificationView::NotificationTitleRow::CalculatePreferredSize(
+    const views::SizeBounds& available_size) const {
+  // TODO(crbug.com/40233803): The size constraint is not passed down from the
   // views tree in the first round of layout, so setting a fixed width to bound
   // the view. The layout manager can size the view beyond this width if there
   // is available space. This works similar to applying a max width on the
   // internal labels.
   return gfx::Size(max_available_width_,
-                   GetHeightForWidth(max_available_width_));
+                   GetLayoutManager()->GetPreferredHeightForWidth(
+                       this, max_available_width_));
 }
 
 void AshNotificationView::NotificationTitleRow::OnThemeChanged() {
@@ -454,7 +455,7 @@ AshNotificationView::AshNotificationView(
   }
 
   message_center_observer_.Observe(message_center::MessageCenter::Get());
-  // TODO(crbug/1232197): fix views and layout to match spec.
+  // TODO(crbug.com/40780100): fix views and layout to match spec.
   // Instantiate view instances and define layout and view hierarchy.
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical,
@@ -549,8 +550,8 @@ AshNotificationView::AshNotificationView(
                   .SetAllowCharacterBreak(true)
                   .SetBorder(
                       views::CreateEmptyBorder(kMainRightViewChildPadding))
-                  // TODO(crbug/682266): This is a workaround to that bug by
-                  // explicitly setting the width. Ideally, we should fix the
+                  // TODO(crbug.com/41295639): This is a workaround to that bug
+                  // by explicitly setting the width. Ideally, we should fix the
                   // original bug, but it seems there's no obvious solution for
                   // the bug according to https://crbug.com/678337#c7. We will
                   // consider making changes to this code when the bug is fixed.
@@ -653,7 +654,12 @@ AshNotificationView::AshNotificationView(
   UpdateWithNotification(notification);
 }
 
-AshNotificationView::~AshNotificationView() = default;
+AshNotificationView::~AshNotificationView() {
+  // b/330585555: We need to abort any in progress animations before we destroy
+  // the views hierarchy to make sure there are no dangling pointers associated
+  // with an animations' OnAborted callback.
+  layer()->GetAnimator()->AbortAllAnimations();
+}
 
 void AshNotificationView::SetGroupedChildExpanded(bool expanded) {
   collapsed_summary_view_->SetVisible(!expanded);
@@ -957,7 +963,7 @@ void AshNotificationView::AddGroupNotification(
   total_grouped_notifications_++;
   left_content_->SetVisible(false);
   UpdateGroupedNotificationsVisibility();
-  expand_button_->UpdateGroupedNotificationsCount(total_grouped_notifications_);
+  expand_button_->UpdateCounter(total_grouped_notifications_);
   PreferredSizeChanged();
 }
 
@@ -996,7 +1002,7 @@ void AshNotificationView::PopulateGroupNotifications(
     total_grouped_notifications_++;
   }
   left_content_->SetVisible(total_grouped_notifications_ == 0);
-  expand_button_->UpdateGroupedNotificationsCount(total_grouped_notifications_);
+  expand_button_->UpdateCounter(total_grouped_notifications_);
 }
 
 void AshNotificationView::RemoveGroupNotification(
@@ -1035,8 +1041,7 @@ void AshNotificationView::RemoveGroupNotification(
         }
 
         self->total_grouped_notifications_--;
-        self->expand_button_->UpdateGroupedNotificationsCount(
-            self->total_grouped_notifications_);
+        self->expand_button_->UpdateCounter(self->total_grouped_notifications_);
 
         self->AnimateResizeAfterRemoval(to_be_removed);
       },
@@ -1056,8 +1061,7 @@ void AshNotificationView::RemoveGroupNotification(
         }
 
         self->total_grouped_notifications_--;
-        self->expand_button_->UpdateGroupedNotificationsCount(
-            self->total_grouped_notifications_);
+        self->expand_button_->UpdateCounter(self->total_grouped_notifications_);
 
         self->grouped_notifications_container_->RemoveChildViewT(to_be_removed);
         self->PreferredSizeChanged();

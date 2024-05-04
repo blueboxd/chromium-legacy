@@ -17,6 +17,7 @@
 #import "components/signin/public/identity_manager/account_capabilities_test_mutator.h"
 #import "components/signin/public/identity_manager/account_info.h"
 #import "components/signin/public/identity_manager/identity_manager.h"
+#import "components/signin/public/identity_manager/primary_account_mutator.h"
 #import "components/supervised_user/core/browser/supervised_user_preferences.h"
 #import "components/sync/base/user_selectable_type.h"
 #import "components/sync/service/sync_service.h"
@@ -45,16 +46,23 @@
 
 @implementation SigninEarlGreyAppInterface
 
-+ (void)addFakeIdentity:(FakeSystemIdentity*)fakeIdentity {
++ (void)addFakeIdentity:(FakeSystemIdentity*)fakeIdentity
+    withUnknownCapabilities:(BOOL)usingUnknownCapabilities {
   FakeSystemIdentityManager* systemIdentityManager =
       FakeSystemIdentityManager::FromSystemIdentityManager(
           GetApplicationContext()->GetSystemIdentityManager());
-  systemIdentityManager->AddIdentity(fakeIdentity);
+  if (usingUnknownCapabilities) {
+    systemIdentityManager->AddIdentityWithUnknownCapabilities(fakeIdentity);
+  } else {
+    systemIdentityManager->AddIdentity(fakeIdentity);
+  }
 }
 
 + (void)addFakeIdentityForSSOAuthAddAccountFlow:
-    (FakeSystemIdentity*)fakeIdentity {
-  FakeSystemIdentityInteractionManager.identity = fakeIdentity;
+            (FakeSystemIdentity*)fakeIdentity
+                        withUnknownCapabilities:(BOOL)usingUnknownCapabilities {
+  [FakeSystemIdentityInteractionManager setIdentity:fakeIdentity
+                            withUnknownCapabilities:usingUnknownCapabilities];
 }
 
 + (void)forgetFakeIdentity:(FakeSystemIdentity*)fakeIdentity {
@@ -102,7 +110,7 @@
 }
 
 + (void)signinWithFakeIdentity:(FakeSystemIdentity*)identity {
-  [self addFakeIdentity:identity];
+  [self addFakeIdentity:identity withUnknownCapabilities:NO];
   ChromeBrowserState* browserState =
       chrome_test_util::GetOriginalBrowserState();
   AuthenticationService* authenticationService =
@@ -111,8 +119,34 @@
       identity, signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS);
 }
 
++ (void)signinAndEnableLegacySyncFeature:(FakeSystemIdentity*)identity {
+  [self signinWithFakeIdentity:identity];
+
+  // "Upgrade" the account to ConsentLevel::kSync.
+  ChromeBrowserState* browserState =
+      chrome_test_util::GetOriginalBrowserState();
+  signin::IdentityManager* identityManager =
+      IdentityManagerFactory::GetForBrowserState(browserState);
+  CoreAccountId coreAccountId =
+      identityManager->GetPrimaryAccountId(signin::ConsentLevel::kSignin);
+  CHECK(!coreAccountId.empty());
+  signin::PrimaryAccountMutator::PrimaryAccountError error =
+      identityManager->GetPrimaryAccountMutator()->SetPrimaryAccount(
+          coreAccountId, signin::ConsentLevel::kSync,
+          signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS);
+  CHECK_EQ(error, signin::PrimaryAccountMutator::PrimaryAccountError::kNoError);
+
+  // Mark Sync-the-feature setup as complete, so it can start up.
+  syncer::SyncService* syncService =
+      SyncServiceFactory::GetForBrowserState(browserState);
+  syncService->SetSyncFeatureRequested();
+  syncService->GetUserSettings()->SetInitialSyncFeatureSetupComplete(
+      syncer::SyncFirstSetupCompleteSource::BASIC_FLOW);
+}
+
 + (void)triggerReauthDialogWithFakeIdentity:(FakeSystemIdentity*)identity {
-  FakeSystemIdentityInteractionManager.identity = identity;
+  [FakeSystemIdentityInteractionManager setIdentity:identity
+                            withUnknownCapabilities:NO];
   std::string emailAddress = base::SysNSStringToUTF8(identity.userEmail);
   PrefService* prefService =
       chrome_test_util::GetOriginalBrowserState()->GetPrefs();

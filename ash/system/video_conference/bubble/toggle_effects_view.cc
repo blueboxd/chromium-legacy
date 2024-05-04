@@ -128,7 +128,7 @@ class ToggleEffectsButtonLabel : public views::Label {
 
   gfx::Size CalculatePreferredSize(
       const views::SizeBounds &available_size) const override {
-    // TODO(crbug.com/1349528): The size constraint is not passed down from
+    // TODO(crbug.com/40233803): The size constraint is not passed down from
     // the views tree in the first round of layout, so multiline label might
     // be broken here. We need to explicitly set the size to fix this.
     return gfx::Size(label_max_width_, GetHeightForWidth(label_max_width_));
@@ -292,7 +292,8 @@ ToggleEffectsView::ToggleEffectsView(
       .SetMainAxisAlignment(views::LayoutAlignment::kCenter)
       .SetCrossAxisAlignment(views::LayoutAlignment::kStretch)
       .SetDefault(views::kMarginsKey,
-                  gfx::Insets::TLBR(0, 0, kButtonContainerSpacing, 0));
+                  gfx::Insets::TLBR(0, 0, kButtonContainerSpacing, 0))
+      .SetIgnoreDefaultMainAxisMargins(true);
 
   // The effects manager provides the toggle effects in rows.
   auto& effects_manager = controller->GetEffectsManager();
@@ -307,7 +308,8 @@ ToggleEffectsView::ToggleEffectsView(
         .SetCrossAxisAlignment(views::LayoutAlignment::kStretch)
         .SetDefault(views::kMarginsKey,
                     gfx::Insets::TLBR(0, kButtonContainerSpacing / 2, 0,
-                                      kButtonContainerSpacing / 2));
+                                      kButtonContainerSpacing / 2))
+        .SetIgnoreDefaultMainAxisMargins(true);
 
     // Add a button for each item in the row.
     for (auto* tile : row) {

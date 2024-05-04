@@ -68,6 +68,14 @@ class CredentialProviderService
   void OnPrimaryAccountChanged(
       const signin::PrimaryAccountChangeEvent& event) override;
 
+  // PasswordStoreInterface::Observer:
+  void OnLoginsChanged(
+      password_manager::PasswordStoreInterface* store,
+      const password_manager::PasswordStoreChangeList& changes) override;
+  void OnLoginsRetained(password_manager::PasswordStoreInterface* store,
+                        const std::vector<password_manager::PasswordForm>&
+                            retained_passwords) override;
+
  private:
   // Request all the credentials to sync them. Before adding the fresh ones,
   // the old ones are deleted.
@@ -81,9 +89,20 @@ class CredentialProviderService
   // Syncs the credential store to disk.
   void SyncStore();
 
-  // Add credentials from `forms`.
+  // Add credentials from `forms`. Currently simply calls either the legacy or
+  // refactored version of this function.
   void AddCredentials(MemoryCredentialStore* store,
                       std::vector<password_manager::PasswordForm> forms);
+
+  // Add credentials from `forms`. This is the original legacy version.
+  void AddCredentialsLegacy(MemoryCredentialStore* store,
+                            std::vector<password_manager::PasswordForm> forms);
+
+  // Add credentials from `forms`. This is the refactored version for better
+  // performance.
+  void AddCredentialsRefactored(
+      MemoryCredentialStore* store,
+      std::vector<password_manager::PasswordForm> forms);
 
   // Removes credentials from `forms`.
   void RemoveCredentials(MemoryCredentialStore* store,
@@ -100,14 +119,6 @@ class CredentialProviderService
   void OnGetPasswordStoreResultsOrErrorFrom(
       password_manager::PasswordStoreInterface* store,
       password_manager::LoginsResultOrError results_or_error) override;
-
-  // PasswordStoreInterface::Observer:
-  void OnLoginsChanged(
-      password_manager::PasswordStoreInterface* store,
-      const password_manager::PasswordStoreChangeList& changes) override;
-  void OnLoginsRetained(password_manager::PasswordStoreInterface* store,
-                        const std::vector<password_manager::PasswordForm>&
-                            retained_passwords) override;
 
   // Completion called after the affiliations are injected in the added forms.
   // If no affiliation matcher is available, it is called right away. Errors are
@@ -153,7 +164,7 @@ class CredentialProviderService
 
   // In-memory stores used to dedupe entries from `profile_password_store_` and
   // `account_password_store_` before persisting via `dual_credential_store_`.
-  // TODO(crbug.com/1425420): This is super hacky. Refactor this class to use
+  // TODO(crbug.com/40260886): This is super hacky. Refactor this class to use
   // SavedPasswordsPresenter, which deduplicates internally.
   MemoryCredentialStore* const profile_credential_store_ =
       [[MemoryCredentialStore alloc] init];

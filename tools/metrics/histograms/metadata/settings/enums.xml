@@ -52,7 +52,7 @@ chromium-metrics-reviews@google.com.
   <int value="6" label="DEFAULT_NTP"/>
 </enum>
 
-<enum name="IOSDefaultBrowserPromoSource">
+<enum name="IOSDefaultBrowserSettingsPageSource">
   <int value="0" label="Settings"/>
   <int value="1" label="Omnibox"/>
   <int value="2" label="External Intent"/>
@@ -206,6 +206,7 @@ chromium-metrics-reviews@google.com.
   <int value="22" label="Third-party cookies block all radio"/>
   <int value="23" label="Block all third-party cookies toggle"/>
   <int value="24" label="IP protection toggle"/>
+  <int value="25" label="Fingerprinting protection toggle"/>
 </enum>
 
 <enum name="SettingsPrivacyGuideInteractions">
@@ -220,6 +221,7 @@ chromium-metrics-reviews@google.com.
   <int value="8" label="sWAA Completion Link"/>
   <int value="9" label="Privacy Sandbox Completion Link"/>
   <int value="10" label="Search Suggestions Next Button"/>
+  <int value="11" label="Tracking Protection Completion Link"/>
 </enum>
 
 <enum name="SettingsPrivacyGuideSettingsStates">
@@ -411,6 +413,7 @@ chromium-metrics-reviews@google.com.
   <int value="29" label="kMediaStorageIdSalt"/>
   <int value="30" label="kModuleBlocklistCacheMD5Digest"/>
   <int value="32" label="kMediaCdmOriginData"/>
+  <int value="33" label="kGoogleServicesLastSignedInUsername"/>
 </enum>
 
 </enums>

@@ -23,6 +23,7 @@
 #include "ui/aura/native_window_occlusion_tracker.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/owned_window_anchor.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
@@ -98,8 +99,7 @@ ui::PlatformWindowOpacity GetPlatformWindowOpacity(
 }
 
 ui::PlatformWindowType GetPlatformWindowType(
-    Widget::InitParams::Type window_type,
-    bool requires_accelerated_widget) {
+    Widget::InitParams::Type window_type) {
   switch (window_type) {
     case Widget::InitParams::TYPE_WINDOW:
       return ui::PlatformWindowType::kWindow;
@@ -110,8 +110,7 @@ ui::PlatformWindowType GetPlatformWindowType(
     case Widget::InitParams::TYPE_DRAG:
       return ui::PlatformWindowType::kDrag;
     case Widget::InitParams::TYPE_BUBBLE:
-      return requires_accelerated_widget ? ui::PlatformWindowType::kTooltip
-                                         : ui::PlatformWindowType::kBubble;
+      return ui::PlatformWindowType::kBubble;
     default:
       return ui::PlatformWindowType::kPopup;
   }
@@ -132,12 +131,10 @@ ui::PlatformWindowShadowType GetPlatformWindowShadowType(
 }
 
 ui::PlatformWindowInitProperties ConvertWidgetInitParamsToInitProperties(
-    const Widget::InitParams& params,
-    bool requires_accelerated_widget,
-    float device_scale_factor) {
+    const Widget::InitParams& params) {
   ui::PlatformWindowInitProperties properties;
-  properties.type =
-      GetPlatformWindowType(params.type, requires_accelerated_widget);
+  properties.type = GetPlatformWindowType(params.type);
+  properties.accept_events = params.accept_events;
   properties.activatable =
       params.activatable == Widget::InitParams::Activatable::kYes;
   properties.force_show_in_taskbar = params.force_show_in_taskbar;
@@ -173,9 +170,6 @@ ui::PlatformWindowInitProperties ConvertWidgetInitParamsToInitProperties(
     }
   }
   properties.inhibit_keyboard_shortcuts = params.inhibit_keyboard_shortcuts;
-
-  properties.frame_insets_px =
-      gfx::ScaleToCeiledInsets(params.frame_insets, device_scale_factor);
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS)
@@ -272,14 +266,8 @@ void DesktopWindowTreeHostPlatform::Init(const Widget::InitParams& params) {
   if (params.type == Widget::InitParams::TYPE_WINDOW)
     GetContentWindow()->SetProperty(aura::client::kAnimationsDisabledKey, true);
 
-#if defined(USE_AURA) && (BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS))
-  const bool requires_accelerated_widget = params.requires_accelerated_widget;
-#else
-  const bool requires_accelerated_widget = false;
-#endif
   ui::PlatformWindowInitProperties properties =
-      ConvertWidgetInitParamsToInitProperties(
-          params, requires_accelerated_widget, device_scale_factor());
+      ConvertWidgetInitParamsToInitProperties(params);
   AddAdditionalInitProperties(params, &properties);
 
 #if BUILDFLAG(IS_CHROMEOS)
@@ -341,7 +329,21 @@ void DesktopWindowTreeHostPlatform::OnWidgetInitDone() {
       GetWindowMaskForClipping().isEmpty());
 }
 
-void DesktopWindowTreeHostPlatform::OnActiveWindowChanged(bool active) {}
+void DesktopWindowTreeHostPlatform::OnActiveWindowChanged(bool active) {
+#if BUILDFLAG(IS_OZONE)
+  // When bubbles are accelerated widgets, `window_children_` can contain a
+  // bubble where `bubble->is_active_` is true, while `this->is_active_` is
+  // false.
+  // When WindowFocusedFromInputEvent makes a window of this tree host
+  // active, we enter this condition where `active && !is_active_` because
+  // subwindows do not get active state from the OS on some platforms (E.g.
+  // Wayland). So we need to ensure Activate is conveyed to the platform_window.
+  if (base::FeatureList::IsEnabled(features::kOzoneBubblesUsePlatformWidgets) &&
+      active && !is_active_ && !window_children_.empty()) {
+    Activate();
+  }
+#endif
+}
 
 std::unique_ptr<corewm::Tooltip>
 DesktopWindowTreeHostPlatform::CreateTooltip() {
@@ -475,7 +477,12 @@ void DesktopWindowTreeHostPlatform::Show(ui::WindowShowState show_state,
         IsActive() ? show_state : ui::SHOW_STATE_INACTIVE);
   }
 
-  GetContentWindow()->Show();
+  // compositor()->SetVisible(true) might have already led to content_window
+  // Show() via OnCompositorVisibilityChanging(). Calling Show() a second time
+  // has side effects, so skip it.
+  if (!GetContentWindow()->IsVisible()) {
+    GetContentWindow()->Show();
+  }
 }
 
 bool DesktopWindowTreeHostPlatform::IsVisible() const {
@@ -500,7 +507,7 @@ void DesktopWindowTreeHostPlatform::StackAtTop() {
 }
 
 bool DesktopWindowTreeHostPlatform::IsStackedAbove(aura::Window* window) {
-  // TODO(https://crbug.com/1363218) Implement Window layer check
+  // TODO(crbug.com/40238598) Implement Window layer check
   NOTREACHED_NORETURN();
 }
 
@@ -580,13 +587,13 @@ gfx::Rect DesktopWindowTreeHostPlatform::GetWorkAreaBoundsInScreen() const {
 
 void DesktopWindowTreeHostPlatform::SetShape(
     std::unique_ptr<Widget::ShapeRects> native_shape) {
-  // TODO(crbug.com/1158733) : When supporting PlatformWindow::SetShape,
+  // TODO(crbug.com/40737127) : When supporting PlatformWindow::SetShape,
   // Calls ui::Layer::SetAlphaShape and sets |is_shape_explicitly_set_| to true.
   platform_window()->SetShape(std::move(native_shape), GetRootTransform());
 }
 
 void DesktopWindowTreeHostPlatform::SetParent(gfx::AcceleratedWidget parent) {
-  // TODO(crbug.com/1490267): hook parent to the accelerated widget.
+  // TODO(crbug.com/40284685): hook parent to the accelerated widget.
   if (window_parent_) {
     window_parent_->window_children_.erase(this);
   }
@@ -607,10 +614,6 @@ void DesktopWindowTreeHostPlatform::Deactivate() {
 
 bool DesktopWindowTreeHostPlatform::IsActive() const {
   return is_active_;
-}
-
-bool DesktopWindowTreeHostPlatform::CanMaximize() {
-  return GetWidget()->widget_delegate()->CanMaximize();
 }
 
 void DesktopWindowTreeHostPlatform::Maximize() {
@@ -710,6 +713,11 @@ void DesktopWindowTreeHostPlatform::EndMoveLoop() {
 void DesktopWindowTreeHostPlatform::SetVisibilityChangedAnimationsEnabled(
     bool value) {
   platform_window()->SetVisibilityChangedAnimationsEnabled(value);
+  if (desktop_native_widget_aura_->widget_type() !=
+      Widget::InitParams::TYPE_WINDOW) {
+    GetContentWindow()->SetProperty(aura::client::kAnimationsDisabledKey,
+                                    !value);
+  }
 }
 
 std::unique_ptr<NonClientFrameView>
@@ -748,10 +756,6 @@ void DesktopWindowTreeHostPlatform::FrameTypeChanged() {
     GetWidget()->non_client_view()->UpdateFrame();
 }
 
-bool DesktopWindowTreeHostPlatform::CanFullscreen() {
-  return GetWidget()->widget_delegate()->CanFullscreen();
-}
-
 void DesktopWindowTreeHostPlatform::SetFullscreen(bool fullscreen,
                                                   int64_t target_display_id) {
   auto weak_ptr = GetWeakPtr();
@@ -782,7 +786,7 @@ void DesktopWindowTreeHostPlatform::SetOpacity(float opacity) {
 void DesktopWindowTreeHostPlatform::SetAspectRatio(
     const gfx::SizeF& aspect_ratio,
     const gfx::Size& excluded_margin) {
-  // TODO(crbug.com/1407629): send `excluded_margin`.
+  // TODO(crbug.com/40887946): send `excluded_margin`.
   if (excluded_margin.width() > 0 || excluded_margin.height() > 0) {
     NOTIMPLEMENTED_LOG_ONCE();
   }
@@ -842,7 +846,7 @@ void DesktopWindowTreeHostPlatform::SetBoundsInDIP(const gfx::Rect& bounds) {
 }
 
 gfx::Transform DesktopWindowTreeHostPlatform::GetRootTransform() const {
-  // TODO(crbug.com/1306688): This can use wrong scale during initialization.
+  // TODO(crbug.com/40218466): This can use wrong scale during initialization.
   // Revisit this as a part of 'use dip' work.
 
   display::Display display = display::Screen::GetScreen()->GetPrimaryDisplay();
@@ -876,6 +880,39 @@ gfx::Rect DesktopWindowTreeHostPlatform::GetBoundsInDIP() const {
   return platform_window()->GetBoundsInDIP();
 }
 
+void DesktopWindowTreeHostPlatform::OnCompositorVisibilityChanging(
+    ui::Compositor* compositor,
+    bool visible) {
+  // Make sure to show the content window before the compositor has become
+  // visible.
+  if (visible) {
+    // The UI compositor may not have a valid local surface ID if it was set to
+    // invalid during eviction. This can happen if native occlusion is enabled.
+    // Here we ensure the invariant that a visible UI compositor will always
+    // have a valid local surface ID.
+    if (!window()->GetLocalSurfaceId().is_valid()) {
+      window()->AllocateLocalSurfaceId();
+      compositor->SetLocalSurfaceIdFromParent(window()->GetLocalSurfaceId());
+    }
+    GetContentWindow()->Show();
+  }
+}
+
+void DesktopWindowTreeHostPlatform::OnCompositorVisibilityChanged(
+    ui::Compositor* compositor,
+    bool visible) {
+  // Make sure to hide the content window after the compositor has become
+  // not visible.
+  if (!visible) {
+    GetContentWindow()->Hide();
+  }
+}
+
+gfx::Insets DesktopWindowTreeHostPlatform::CalculateInsetsInDIP(
+    ui::PlatformWindowState window_state) const {
+  return GetWidget()->GetCustomInsetsInDIP();
+}
+
 void DesktopWindowTreeHostPlatform::OnClosed() {
   open_windows().remove(GetAcceleratedWidget());
   wm::SetWindowMoveClient(window(), nullptr);
@@ -899,9 +936,7 @@ void DesktopWindowTreeHostPlatform::OnWindowStateChanged(
       is_minimized != was_minimized) {
     if (is_minimized) {
       SetVisible(false);
-      GetContentWindow()->Hide();
     } else {
-      GetContentWindow()->Show();
       SetVisible(true);
     }
   }
@@ -950,13 +985,21 @@ void DesktopWindowTreeHostPlatform::OnActivationChanged(bool active) {
 }
 
 std::optional<gfx::Size>
-DesktopWindowTreeHostPlatform::GetMinimumSizeForWindow() {
+DesktopWindowTreeHostPlatform::GetMinimumSizeForWindow() const {
   return native_widget_delegate_->GetMinimumSize();
 }
 
 std::optional<gfx::Size>
-DesktopWindowTreeHostPlatform::GetMaximumSizeForWindow() {
+DesktopWindowTreeHostPlatform::GetMaximumSizeForWindow() const {
   return native_widget_delegate_->GetMaximumSize();
+}
+
+bool DesktopWindowTreeHostPlatform::CanMaximize() const {
+  return GetWidget()->widget_delegate()->CanMaximize();
+}
+
+bool DesktopWindowTreeHostPlatform::CanFullscreen() const {
+  return GetWidget()->widget_delegate()->CanFullscreen();
 }
 
 SkPath DesktopWindowTreeHostPlatform::GetWindowMaskForWindowShapeInPixels() {
@@ -992,7 +1035,7 @@ gfx::PointF DesktopWindowTreeHostPlatform::ConvertScreenPointToLocalDIP(
   // lacros should not use this.
   NOTREACHED_NORETURN();
 #else
-  // TODO(crbug.com/1318279): DIP should use gfx::PointF. Fix this as
+  // TODO(crbug.com/40222832): DIP should use gfx::PointF. Fix this as
   // a part of cleanup work(crbug.com/1318279).
   gfx::Point local_dip(screen_in_pixels);
   ConvertScreenInPixelsToDIP(&local_dip);

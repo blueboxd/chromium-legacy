@@ -15,6 +15,7 @@
 #import "ios/chrome/common/ui/elements/highlight_button.h"
 #import "ios/chrome/common/ui/promo_style/constants.h"
 #import "ios/chrome/common/ui/promo_style/promo_style_background_view.h"
+#import "ios/chrome/common/ui/promo_style/utils.h"
 #import "ios/chrome/common/ui/util/button_util.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
 #import "ios/chrome/common/ui/util/device_util.h"
@@ -26,7 +27,6 @@
 
 namespace {
 
-constexpr CGFloat kDefaultMargin = 16;
 // Default margin between the subtitle and the content view.
 constexpr CGFloat kDefaultSubtitleBottomMargin = 22;
 // Top margin for no background header image in percentage of the dialog size.
@@ -37,13 +37,10 @@ constexpr CGFloat kHeaderImageBackgroundTopMarginPercentage = 0.1;
 constexpr CGFloat kHeaderImageBackgroundBottomMargin = 34;
 constexpr CGFloat kTitleHorizontalMargin = 18;
 constexpr CGFloat kTitleNoHeaderTopMargin = 56;
-constexpr CGFloat kActionsBottomMargin = 10;
 constexpr CGFloat kTallBannerMultiplier = 0.35;
 constexpr CGFloat kExtraTallBannerMultiplier = 0.5;
 constexpr CGFloat kDefaultBannerMultiplier = 0.25;
 constexpr CGFloat kShortBannerMultiplier = 0.2;
-constexpr CGFloat kContentWidthMultiplier = 0.8;
-constexpr CGFloat kContentOptimalWidth = 327;
 constexpr CGFloat kMoreArrowMargin = 4;
 constexpr CGFloat kPreviousContentVisibleOnScroll = 0.15;
 constexpr CGFloat kSeparatorHeight = 1;
@@ -146,7 +143,7 @@ const CGFloat kHeaderImageShadowShadowInset = 20;
     _titleHorizontalMargin = kTitleHorizontalMargin;
     _subtitleBottomMargin = kDefaultSubtitleBottomMargin;
     _headerImageShadowInset = kHeaderImageShadowShadowInset;
-    _headerImageBottomMargin = kDefaultMargin;
+    _headerImageBottomMargin = kPromoStyleDefaultMargin;
     _noBackgroundHeaderImageTopMarginPercentage =
         kNoBackgroundHeaderImageTopMarginPercentage;
     _primaryButtonEnabled = YES;
@@ -231,14 +228,13 @@ const CGFloat kHeaderImageShadowShadowInset = 20;
 
   // Create a layout guide to constrain the width of the content, while still
   // allowing the scroll view to take the full screen width.
-  UILayoutGuide* widthLayoutGuide = [[UILayoutGuide alloc] init];
-  [view addLayoutGuide:widthLayoutGuide];
+  UILayoutGuide* widthLayoutGuide = AddPromoStyleWidthLayoutGuide(view);
 
   if (disclaimerView) {
     [NSLayoutConstraint activateConstraints:@[
       [disclaimerView.topAnchor
           constraintEqualToAnchor:specificContentView.bottomAnchor
-                         constant:kDefaultMargin],
+                         constant:kPromoStyleDefaultMargin],
       [disclaimerView.leadingAnchor
           constraintEqualToAnchor:_scrollContentView.leadingAnchor],
       [disclaimerView.trailingAnchor
@@ -262,25 +258,15 @@ const CGFloat kHeaderImageShadowShadowInset = 20;
         .active = YES;
   }
 
-  [NSLayoutConstraint activateConstraints:@[
-    // Content width layout guide constraints. Constrain the width to both at
-    // least 65% of the view width, and to the full view width with margins.
-    // This is to accomodate the iPad layout, which cannot be isolated out using
-    // the traitCollection because of the FormSheet presentation style
-    // (iPad FormSheet is considered compact).
-    [widthLayoutGuide.centerXAnchor
-        constraintEqualToAnchor:view.safeAreaLayoutGuide.centerXAnchor],
-    [widthLayoutGuide.widthAnchor
-        constraintGreaterThanOrEqualToAnchor:view.safeAreaLayoutGuide
-                                                 .widthAnchor
-                                  multiplier:kContentWidthMultiplier],
-    [widthLayoutGuide.widthAnchor
-        constraintLessThanOrEqualToAnchor:view.safeAreaLayoutGuide.widthAnchor
-                                 constant:-2 * kDefaultMargin],
+  NSLayoutConstraint* scrollViewTopConstraint =
+      self.layoutBehindNavigationBar
+          ? [_scrollView.topAnchor constraintEqualToAnchor:view.topAnchor]
+          : [_scrollView.topAnchor
+                constraintEqualToAnchor:view.safeAreaLayoutGuide.topAnchor];
 
+  [NSLayoutConstraint activateConstraints:@[
     // Scroll view constraints.
-    [_scrollView.topAnchor
-        constraintEqualToAnchor:view.safeAreaLayoutGuide.topAnchor],
+    scrollViewTopConstraint,
     [_scrollView.leadingAnchor constraintEqualToAnchor:view.leadingAnchor],
     [_scrollView.trailingAnchor constraintEqualToAnchor:view.trailingAnchor],
 
@@ -312,7 +298,7 @@ const CGFloat kHeaderImageShadowShadowInset = 20;
         constraintLessThanOrEqualToAnchor:_scrollContentView.widthAnchor
                                  constant:-2 * self.titleHorizontalMargin],
     [_subtitleLabel.topAnchor constraintEqualToAnchor:titleLabel.bottomAnchor
-                                             constant:kDefaultMargin],
+                                             constant:kPromoStyleDefaultMargin],
     [_subtitleLabel.centerXAnchor
         constraintEqualToAnchor:_scrollContentView.centerXAnchor],
     [_subtitleLabel.widthAnchor
@@ -472,27 +458,15 @@ const CGFloat kHeaderImageShadowShadowInset = 20;
   _buttonsVerticalAnchorConstraints = @[
     [_scrollView.bottomAnchor
         constraintEqualToAnchor:_actionButtonsStackView.topAnchor
-                       constant:-kDefaultMargin],
+                       constant:-kPromoStyleDefaultMargin],
     [_actionButtonsStackView.bottomAnchor
         constraintLessThanOrEqualToAnchor:view.bottomAnchor
-                                 constant:-kActionsBottomMargin * 2],
+                                 constant:-kActionsBottomMarginWithoutSafeArea],
     [_actionButtonsStackView.bottomAnchor
         constraintLessThanOrEqualToAnchor:view.safeAreaLayoutGuide.bottomAnchor
-                                 constant:-kActionsBottomMargin],
+                                 constant:-kActionsBottomMarginWithSafeArea],
   ];
   [NSLayoutConstraint activateConstraints:_buttonsVerticalAnchorConstraints];
-
-  // This constraint is added to enforce that the content width should be as
-  // close to the optimal width as possible, within the range already activated
-  // for "widthLayoutGuide.widthAnchor" previously, with a higher priority.
-  // In this case, the content width in iPad and iPhone landscape mode should be
-  // the safe layout width multiplied by kContentWidthMultiplier, while the
-  // content width for a iPhone portrait mode should be kContentOptimalWidth.
-  NSLayoutConstraint* contentLayoutGuideWidthConstraint =
-      [widthLayoutGuide.widthAnchor
-          constraintEqualToConstant:kContentOptimalWidth];
-  contentLayoutGuideWidthConstraint.priority = UILayoutPriorityRequired - 1;
-  contentLayoutGuideWidthConstraint.active = YES;
 
   // Also constrain the bottom of the action stack view to the bottom of the
   // safe area, but with a lower priority, so that the action stack view is put
@@ -663,7 +637,7 @@ const CGFloat kHeaderImageShadowShadowInset = 20;
   // Reset the title font and the learn more text to make sure that they are
   // properly scaled. Nothing will be done for the Read More text if the
   // bottom is reached.
-  [self setFontForTitle:self.titleLabel];
+  self.titleLabel.font = GetFRETitleFont(self.titleLabelFontTextStyle);
   [self setReadMoreText];
 
   // Update the primary button once the layout changes take effect to have the
@@ -763,7 +737,7 @@ const CGFloat kHeaderImageShadowShadowInset = 20;
   if (!_titleLabel) {
     _titleLabel = [[UILabel alloc] init];
     _titleLabel.numberOfLines = 0;
-    [self setFontForTitle:_titleLabel];
+    _titleLabel.font = GetFRETitleFont(self.titleLabelFontTextStyle);
     _titleLabel.textColor = [UIColor colorNamed:kTextPrimaryColor];
     _titleLabel.text = self.titleText;
     _titleLabel.textAlignment = NSTextAlignmentCenter;
@@ -916,7 +890,7 @@ const CGFloat kHeaderImageShadowShadowInset = 20;
       [self.bannerImageView.heightAnchor constraintEqualToConstant:0],
       [self.bannerImageView.topAnchor
           constraintEqualToAnchor:_scrollContentView.topAnchor
-                         constant:kDefaultMargin]
+                         constant:kPromoStyleDefaultMargin]
     ]];
   } else if (self.shouldBannerFillTopSpace) {
     NSLayoutDimension* dimFromToOfViewToBottomOfBanner = [self.view.topAnchor
@@ -1004,30 +978,7 @@ const CGFloat kHeaderImageShadowShadowInset = 20;
 // Determines which font text style to use depending on the device size, the
 // size class and if dynamic type is enabled.
 - (UIFontTextStyle)titleLabelFontTextStyle {
-  UIViewController* presenter =
-      self.presentingViewController ? self.presentingViewController : self;
-  BOOL dynamicTypeEnabled = UIContentSizeCategoryIsAccessibilityCategory(
-      presenter.traitCollection.preferredContentSizeCategory);
-
-  if (!dynamicTypeEnabled) {
-    if ([self isRegularXRegularSizeClass:presenter.traitCollection]) {
-      return UIFontTextStyleTitle1;
-    } else if (!IsSmallDevice()) {
-      return UIFontTextStyleLargeTitle;
-    }
-  }
-  return UIFontTextStyleTitle2;
-}
-
-- (void)setFontForTitle:(UILabel*)titleLabel {
-  UIFontTextStyle textStyle = [self titleLabelFontTextStyle];
-
-  UIFontDescriptor* descriptor =
-      [UIFontDescriptor preferredFontDescriptorWithTextStyle:textStyle];
-  UIFont* font = [UIFont systemFontOfSize:descriptor.pointSize
-                                   weight:UIFontWeightBold];
-  UIFontMetrics* fontMetrics = [UIFontMetrics metricsForTextStyle:textStyle];
-  titleLabel.font = [fontMetrics scaledFontForFont:font];
+  return GetTitleLabelFontTextStyle(self);
 }
 
 - (void)setPrimaryActionButtonFont:(UIButton*)button {
@@ -1247,11 +1198,12 @@ const CGFloat kHeaderImageShadowShadowInset = 20;
     _buttonsVerticalAnchorConstraints = @[
       [_scrollView.bottomAnchor
           constraintEqualToAnchor:_actionButtonsStackView.topAnchor
-                         constant:self.tertiaryActionString ? 0
-                                                            : -kDefaultMargin],
+                         constant:self.tertiaryActionString
+                                      ? 0
+                                      : -kPromoStyleDefaultMargin],
       [_actionButtonsStackView.bottomAnchor
           constraintLessThanOrEqualToAnchor:self.view.bottomAnchor
-                                   constant:-kActionsBottomMargin],
+                                   constant:-kActionsBottomMarginWithSafeArea],
       [_actionButtonsStackView.bottomAnchor
           constraintLessThanOrEqualToAnchor:self.view.safeAreaLayoutGuide
                                                 .bottomAnchor],
@@ -1311,14 +1263,6 @@ const CGFloat kHeaderImageShadowShadowInset = 20;
   if ([self.delegate respondsToSelector:@selector(didTapLearnMoreButton)]) {
     [self.delegate didTapLearnMoreButton];
   }
-}
-
-// Helper that returns whether the `traitCollection` has a regular vertical
-// and regular horizontal size class.
-// Copied from "ios/chrome/browser/shared/ui/util/uikit_ui_util.mm"
-- (bool)isRegularXRegularSizeClass:(UITraitCollection*)traitCollection {
-  return traitCollection.verticalSizeClass == UIUserInterfaceSizeClassRegular &&
-         traitCollection.horizontalSizeClass == UIUserInterfaceSizeClassRegular;
 }
 
 - (UIFontTextStyle)disclaimerLabelFontTextStyle {

@@ -33,7 +33,7 @@ bool ComposeUIUntrustedConfig::IsWebUIEnabled(
 }
 
 ComposeUntrustedUI::ComposeUntrustedUI(content::WebUI* web_ui)
-    : ui::UntrustedBubbleWebUIController(web_ui) {
+    : UntrustedTopChromeWebUIController(web_ui) {
   content::WebUIDataSource* source = content::WebUIDataSource::CreateAndAdd(
       web_ui->GetWebContents()->GetBrowserContext(),
       chrome::kChromeUIUntrustedComposeUrl);
@@ -62,20 +62,29 @@ webui::SetupWebUIDataSource(
       {"submitButton", IDS_COMPOSE_SUBMIT_BUTTON},
       {"onDeviceUsedFooter", IDS_COMPOSE_FOOTER_FISHFOOD_ON_DEVICE_USED},
       {"resultFooter", IDS_COMPOSE_EXPERIMENTAL_DISCLAIMER_FOOTER},
+      {"refinementsResultFooter",
+       IDS_COMPOSE_REFINEMENTS_EXPERIMENTAL_DISCLAIMER_FOOTER},
       {"dogfoodFooter", IDS_COMPOSE_FOOTER_FISHFOOD},
       {"insertButton", IDS_COMPOSE_INSERT_BUTTON},
       {"replaceButton", IDS_COMPOSE_REPLACE_BUTTON},
       {"lengthMenuTitle", IDS_COMPOSE_MENU_LENGTH_TITLE},
+      {"toneMenuTitle", IDS_COMPOSE_MENU_TONE_TITLE},
+      {"modifierMenuTitle", IDS_COMPOSE_MODIFIERS_MENU_TITLE},
+      {"retryOption", IDS_COMPOSE_MENU_RETRY_OPTION},
       {"shorterOption", IDS_COMPOSE_MENU_SHORTER_OPTION},
       {"longerOption", IDS_COMPOSE_MENU_LONGER_OPTION},
-      {"toneMenuTitle", IDS_COMPOSE_MENU_TONE_TITLE},
       {"casualToneOption", IDS_COMPOSE_MENU_CASUAL_OPTION},
       {"formalToneOption", IDS_COMPOSE_MENU_FORMAL_OPTION},
+      {"undo", IDS_COMPOSE_UNDO_LABEL},
+      {"undoButtonText", IDS_COMPOSE_UNDO_BUTTON_TEXT},
+      {"redo", IDS_COMPOSE_REDO_LABEL},
+      {"redoButtonText", IDS_COMPOSE_REDO_BUTTON_TEXT},
       {"errorTooShort", IDS_COMPOSE_ERROR_TOO_SHORT},
       {"errorTooLong", IDS_COMPOSE_ERROR_TOO_LONG},
       {"errorTryAgain", IDS_COMPOSE_ERROR_TRY_AGAIN},
       {"errorTryAgainLater", IDS_COMPOSE_ERROR_TRY_AGAIN_LATER},
       {"errorFiltered", IDS_COMPOSE_ERROR_FILTERED},
+      {"errorFilteredGoBackButton", IDS_COMPOSE_ERROR_FILTERED_BACK_BUTTON},
       {"errorUnsupportedLanguage", IDS_COMPOSE_ERROR_UNSUPPORTED_LANGUAGE},
       {"errorPermissionDenied", IDS_COMPOSE_ERROR_PERMISSION_DENIED},
       {"errorRequestThrottled", IDS_COMPOSE_ERROR_REQUEST_THROTTLED},
@@ -83,7 +92,6 @@ webui::SetupWebUIDataSource(
       {"editButton", IDS_COMPOSE_EDIT},
       {"editCancelButton", IDS_CANCEL},
       {"editUpdateButton", IDS_COMPOSE_EDIT_UPDATE_BUTTON},
-      {"undo", IDS_COMPOSE_UNDO},
       {"resubmit", IDS_COMPOSE_RESUBMIT},
       {"thumbsDown", IDS_COMPOSE_THUMBS_DOWN},
       {"thumbsUp", IDS_COMPOSE_THUMBS_UP},
@@ -96,6 +104,10 @@ webui::SetupWebUIDataSource(
       "enableOnDeviceDogfoodFooter",
       base::FeatureList::IsEnabled(
           compose::features::kEnableComposeOnDeviceDogfoodFooter));
+
+  source->AddBoolean(
+      "enableRefinedUi",
+      base::FeatureList::IsEnabled(compose::features::kComposeUiRefinement));
 
   source->OverrideContentSecurityPolicy(
       network::mojom::CSPDirectiveName::StyleSrc,

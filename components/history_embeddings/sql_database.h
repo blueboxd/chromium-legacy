@@ -8,8 +8,10 @@
 #include <optional>
 
 #include "base/files/file_path.h"
+#include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/thread_annotations.h"
+#include "base/time/time.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/history/core/browser/url_row.h"
 #include "components/history_embeddings/proto/history_embeddings.pb.h"
@@ -37,10 +39,7 @@ class SqlDatabase : public VectorDatabase {
   // `visit_time` are needed too, to respect History deletions and expirations.
   // If there are existing passages for `url_id`, they are replaced. Returns
   // whether this operation was successful.
-  bool InsertOrReplacePassages(history::URLID url_id,
-                               history::VisitID visit_id,
-                               base::Time visit_time,
-                               const proto::PassagesValue& passages);
+  bool InsertOrReplacePassages(const UrlPassages& url_passages);
 
   // Gets the passages associated with `url_id`. Returns nullopt if there's
   // nothing available.
@@ -48,8 +47,15 @@ class SqlDatabase : public VectorDatabase {
 
   // VectorDatabase:
   size_t GetEmbeddingDimensions() const override;
-  void AddUrlEmbeddings(UrlEmbeddings url_embeddings) override;
-  std::unique_ptr<EmbeddingsIterator> MakeEmbeddingsIterator() const override;
+  bool AddUrlEmbeddings(const UrlEmbeddings& url_embeddings) override;
+  std::unique_ptr<EmbeddingsIterator> MakeEmbeddingsIterator(
+      std::optional<base::Time> time_range_start) override;
+
+  // These three methods are used to keep the on-disk persistence in sync with
+  // History deletions, either from user action or time-based expiration.
+  bool DeleteDataForUrlId(history::URLID url_id);
+  bool DeleteDataForVisitId(history::VisitID visit_id);
+  bool DeleteAllData();
 
  private:
   // Initializes the database, if it's not already initialized. Returns true if
@@ -66,11 +72,18 @@ class SqlDatabase : public VectorDatabase {
 
   // The underlying SQL database.
   sql::Database db_ GUARDED_BY_CONTEXT(sequence_checker_);
+
+  // An iteration statement with lifetime bounded by above `db_`.
+  // Only one iterator can be used at a time.
+  std::unique_ptr<sql::Statement> iteration_statement_;
+
   // The initialization status of the database. It's not set if never attempted.
   std::optional<sql::InitStatus> db_init_status_ = std::nullopt;
 
   // Verifies that all operations happen on the same sequence.
   SEQUENCE_CHECKER(sequence_checker_);
+
+  base::WeakPtrFactory<SqlDatabase> weak_ptr_factory_;
 };
 
 }  // namespace history_embeddings

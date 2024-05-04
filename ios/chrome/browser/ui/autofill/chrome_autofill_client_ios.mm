@@ -20,19 +20,15 @@
 #import "components/autofill/core/browser/form_data_importer.h"
 #import "components/autofill/core/browser/logging/log_manager.h"
 #import "components/autofill/core/browser/payments/autofill_credit_card_filling_infobar_delegate_mobile.h"
-#import "components/autofill/core/browser/payments/autofill_error_dialog_context.h"
 #import "components/autofill/core/browser/payments/autofill_save_card_delegate.h"
 #import "components/autofill/core/browser/payments/autofill_save_card_infobar_delegate_mobile.h"
 #import "components/autofill/core/browser/payments/autofill_save_card_ui_info.h"
-#import "components/autofill/core/browser/payments/credit_card_cvc_authenticator.h"
-#import "components/autofill/core/browser/payments/credit_card_otp_authenticator.h"
 #import "components/autofill/core/browser/payments/credit_card_risk_based_authenticator.h"
 #import "components/autofill/core/browser/payments/payments_network_interface.h"
 #import "components/autofill/core/browser/payments/virtual_card_enroll_metrics_logger.h"
-#import "components/autofill/core/browser/payments/virtual_card_enrollment_manager.h"
-#import "components/autofill/core/browser/ui/payments/card_unmask_prompt_view.h"
+#import "components/autofill/core/browser/ui/payments/card_unmask_authentication_selection_dialog_controller_impl.h"
 #import "components/autofill/core/browser/ui/payments/virtual_card_enroll_ui_model.h"
-#import "components/autofill/core/browser/ui/popup_item_ids.h"
+#import "components/autofill/core/browser/ui/suggestion_type.h"
 #import "components/autofill/core/common/autofill_features.h"
 #import "components/autofill/core/common/autofill_prefs.h"
 #import "components/autofill/ios/browser/autofill_util.h"
@@ -50,6 +46,7 @@
 #import "ios/chrome/browser/autofill/model/autocomplete_history_manager_factory.h"
 #import "ios/chrome/browser/autofill/model/autofill_log_router_factory.h"
 #import "ios/chrome/browser/autofill/model/bottom_sheet/autofill_bottom_sheet_tab_helper.h"
+#import "ios/chrome/browser/autofill/model/credit_card/autofill_save_card_infobar_delegate_ios.h"
 #import "ios/chrome/browser/autofill/model/personal_data_manager_factory.h"
 #import "ios/chrome/browser/autofill/model/strike_database_factory.h"
 #import "ios/chrome/browser/device_reauth/ios_device_authenticator.h"
@@ -69,8 +66,6 @@
 #import "ios/chrome/browser/translate/model/chrome_ios_translate_client.h"
 #import "ios/chrome/browser/ui/autofill/card_expiration_date_fix_flow_view_bridge.h"
 #import "ios/chrome/browser/ui/autofill/card_name_fix_flow_view_bridge.h"
-#import "ios/chrome/browser/ui/autofill/create_card_unmask_prompt_view_bridge.h"
-#import "ios/chrome/browser/ui/autofill/ios_chrome_payments_autofill_client.h"
 #import "ios/chrome/browser/ui/autofill/scoped_autofill_payment_reauth_module_override.h"
 #import "ios/chrome/browser/webdata_services/model/web_data_service_factory.h"
 #import "ios/chrome/common/channel_info.h"
@@ -84,7 +79,7 @@ namespace {
 
 // Creates and returns an infobar for saving credit cards.
 std::unique_ptr<infobars::InfoBar> CreateSaveCardInfoBarMobile(
-    std::unique_ptr<AutofillSaveCardInfoBarDelegateMobile> delegate) {
+    std::unique_ptr<AutofillSaveCardInfoBarDelegateIOS> delegate) {
   return std::make_unique<InfoBarIOS>(InfobarType::kInfobarTypeSaveCard,
                                       std::move(delegate));
 }
@@ -107,23 +102,8 @@ ChromeAutofillClientIOS::ChromeAutofillClientIOS(
       bridge_(bridge),
       identity_manager_(IdentityManagerFactory::GetForBrowserState(
           browser_state->GetOriginalChromeBrowserState())),
-      payments_network_interface_(
-          std::make_unique<payments::PaymentsNetworkInterface>(
-              base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
-                  browser_state_->GetURLLoaderFactory()),
-              identity_manager_,
-              personal_data_manager_,
-              browser_state_->IsOffTheRecord())),
-      form_data_importer_(std::make_unique<FormDataImporter>(
-          this,
-          personal_data_manager_,
-          ios::HistoryServiceFactory::GetForBrowserState(
-              browser_state,
-              ServiceAccessType::EXPLICIT_ACCESS),
-          GetApplicationContext()->GetApplicationLocale())),
       infobar_manager_(infobar_manager),
-      unmask_controller_(browser_state->GetPrefs()),
-      // TODO(crbug.com/928595): Replace the closure with a callback to the
+      // TODO(crbug.com/40612524): Replace the closure with a callback to the
       // renderer that indicates if log messages should be sent from the
       // renderer.
       log_manager_(LogManager::Create(
@@ -131,7 +111,7 @@ ChromeAutofillClientIOS::ChromeAutofillClientIOS(
           base::RepeatingClosure())) {}
 
 ChromeAutofillClientIOS::~ChromeAutofillClientIOS() {
-  HideAutofillPopup(PopupHidingReason::kTabGone);
+  HideAutofillSuggestions(SuggestionHidingReason::kTabGone);
 }
 
 void ChromeAutofillClientIOS::SetBaseViewController(
@@ -143,7 +123,7 @@ version_info::Channel ChromeAutofillClientIOS::GetChannel() const {
   return ::GetChannel();
 }
 
-bool ChromeAutofillClientIOS::IsOffTheRecord() {
+bool ChromeAutofillClientIOS::IsOffTheRecord() const {
   return web_state_->GetBrowserState()->IsOffTheRecord();
 }
 
@@ -172,18 +152,6 @@ ChromeAutofillClientIOS::GetAutocompleteHistoryManager() {
   return autocomplete_history_manager_;
 }
 
-CreditCardCvcAuthenticator* ChromeAutofillClientIOS::GetCvcAuthenticator() {
-  if (!cvc_authenticator_)
-    cvc_authenticator_ = std::make_unique<CreditCardCvcAuthenticator>(this);
-  return cvc_authenticator_.get();
-}
-
-CreditCardOtpAuthenticator* ChromeAutofillClientIOS::GetOtpAuthenticator() {
-  if (!otp_authenticator_)
-    otp_authenticator_ = std::make_unique<CreditCardOtpAuthenticator>(this);
-  return otp_authenticator_.get();
-}
-
 CreditCardRiskBasedAuthenticator*
 ChromeAutofillClientIOS::GetRiskBasedAuthenticator() {
   if (!risk_based_authenticator_) {
@@ -210,22 +178,26 @@ signin::IdentityManager* ChromeAutofillClientIOS::GetIdentityManager() {
 }
 
 FormDataImporter* ChromeAutofillClientIOS::GetFormDataImporter() {
+  if (!form_data_importer_) {
+    form_data_importer_ = std::make_unique<FormDataImporter>(
+        this, personal_data_manager_,
+        ios::HistoryServiceFactory::GetForBrowserState(
+            browser_state_, ServiceAccessType::EXPLICIT_ACCESS),
+        GetApplicationContext()->GetApplicationLocale());
+  }
+
   return form_data_importer_.get();
 }
 
-payments::PaymentsAutofillClient*
+payments::IOSChromePaymentsAutofillClient*
 ChromeAutofillClientIOS::GetPaymentsAutofillClient() {
   if (!payments_autofill_client_) {
     payments_autofill_client_ =
-        std::make_unique<payments::IOSChromePaymentsAutofillClient>(this);
+        std::make_unique<payments::IOSChromePaymentsAutofillClient>(
+            this, browser_state_);
   }
 
   return payments_autofill_client_.get();
-}
-
-payments::PaymentsNetworkInterface*
-ChromeAutofillClientIOS::GetPaymentsNetworkInterface() {
-  return payments_network_interface_.get();
 }
 
 StrikeDatabase* ChromeAutofillClientIOS::GetStrikeDatabase() {
@@ -261,7 +233,7 @@ ChromeAutofillClientIOS::GetSecurityLevelForUmaHistograms() {
 }
 
 const translate::LanguageState* ChromeAutofillClientIOS::GetLanguageState() {
-  // TODO(crbug.com/912597): iOS vs other platforms extracts language from
+  // TODO(crbug.com/41430413): iOS vs other platforms extracts language from
   // the top level frame vs whatever frame directly holds the form.
   auto* translate_client = ChromeIOSTranslateClient::FromWebState(web_state_);
   if (translate_client) {
@@ -297,21 +269,29 @@ void ChromeAutofillClientIOS::ShowAutofillSettings(
   NOTREACHED();
 }
 
-void ChromeAutofillClientIOS::ShowUnmaskPrompt(
-    const CreditCard& card,
-    const CardUnmaskPromptOptions& card_unmask_prompt_options,
-    base::WeakPtr<CardUnmaskDelegate> delegate) {
-  unmask_controller_.ShowPrompt(
-      base::BindOnce(&CreateCardUnmaskPromptViewBridge,
-                     base::Unretained(&unmask_controller_),
-                     base::Unretained(base_view_controller_),
-                     base::Unretained(personal_data_manager_)),
-      card, card_unmask_prompt_options, delegate);
+void ChromeAutofillClientIOS::ShowUnmaskAuthenticatorSelectionDialog(
+    const std::vector<CardUnmaskChallengeOption>& challenge_options,
+    base::OnceCallback<void(const std::string&)>
+        confirm_unmask_challenge_option_callback,
+    base::OnceClosure cancel_unmasking_closure) {
+  AutofillBottomSheetTabHelper* bottomSheetTabHelper =
+      AutofillBottomSheetTabHelper::FromWebState(web_state_);
+  auto controller = std::make_unique<
+      autofill::CardUnmaskAuthenticationSelectionDialogControllerImpl>(
+      challenge_options, std::move(confirm_unmask_challenge_option_callback),
+      std::move(cancel_unmasking_closure));
+  card_unmask_authentication_selection_controller_ = controller->GetWeakPtr();
+  bottomSheetTabHelper->ShowCardUnmaskAuthenticationSelection(
+      std::move(controller));
 }
 
-void ChromeAutofillClientIOS::OnUnmaskVerificationResult(
-    PaymentsRpcResult result) {
-  unmask_controller_.OnVerificationResult(result);
+void ChromeAutofillClientIOS::DismissUnmaskAuthenticatorSelectionDialog(
+    bool server_success) {
+  if (card_unmask_authentication_selection_controller_) {
+    card_unmask_authentication_selection_controller_
+        ->DismissDialogUponServerProcessedAuthenticationMethodRequest(
+            server_success);
+  }
 }
 
 payments::MandatoryReauthManager*
@@ -329,7 +309,7 @@ void ChromeAutofillClientIOS::ConfirmSaveCreditCardLocally(
     LocalSaveCardPromptCallback callback) {
   DCHECK(options.show_prompt);
   infobar_manager_->AddInfoBar(CreateSaveCardInfoBarMobile(
-      std::make_unique<AutofillSaveCardInfoBarDelegateMobile>(
+      std::make_unique<AutofillSaveCardInfoBarDelegateIOS>(
           AutofillSaveCardUiInfo::CreateForLocalSave(options, card),
           std::make_unique<AutofillSaveCardDelegate>(std::move(callback),
                                                      options))));
@@ -373,7 +353,7 @@ void ChromeAutofillClientIOS::ConfirmSaveCreditCardToCloud(
   AccountInfo account_info = identity_manager_->FindExtendedAccountInfo(
       identity_manager_->GetPrimaryAccountInfo(signin::ConsentLevel::kSignin));
   infobar_manager_->AddInfoBar(CreateSaveCardInfoBarMobile(
-      std::make_unique<AutofillSaveCardInfoBarDelegateMobile>(
+      std::make_unique<AutofillSaveCardInfoBarDelegateIOS>(
           AutofillSaveCardUiInfo::CreateForUploadSave(
               options, card, legal_message_lines, account_info),
           std::make_unique<AutofillSaveCardDelegate>(std::move(callback),
@@ -398,7 +378,7 @@ void ChromeAutofillClientIOS::ConfirmSaveAddressProfile(
     const AutofillProfile* original_profile,
     SaveAddressProfilePromptOptions options,
     AddressProfileSavePromptCallback callback) {
-  // TODO(crbug.com/1167062): Respect SaveAddressProfilePromptOptions.
+  // TODO(crbug.com/40164489): Respect SaveAddressProfilePromptOptions.
   for (infobars::InfoBar* infobar : infobar_manager_->infobars()) {
     AutofillSaveUpdateAddressProfileDelegateIOS* existing_delegate =
         AutofillSaveUpdateAddressProfileDelegateIOS::FromInfobarDelegate(
@@ -466,7 +446,7 @@ void ChromeAutofillClientIOS::HideTouchToFillCreditCard() {
   NOTREACHED();
 }
 
-void ChromeAutofillClientIOS::ShowAutofillPopup(
+void ChromeAutofillClientIOS::ShowAutofillSuggestions(
     const AutofillClient::PopupOpenArgs& open_args,
     base::WeakPtr<AutofillPopupDelegate> delegate) {
   [bridge_ showAutofillPopup:open_args.suggestions popupDelegate:delegate];
@@ -481,28 +461,16 @@ void ChromeAutofillClientIOS::OfferPlusAddressCreation(
     PlusAddressCallback callback) {
   AutofillBottomSheetTabHelper* bottomSheetTabHelper =
       AutofillBottomSheetTabHelper::FromWebState(web_state_);
-  bottomSheetTabHelper->ShowPlusAddressesBottomSheet(main_frame_origin,
-                                                     std::move(callback));
+  bottomSheetTabHelper->ShowPlusAddressesBottomSheet(std::move(callback));
 }
 
-void ChromeAutofillClientIOS::UpdateAutofillPopupDataListValues(
+void ChromeAutofillClientIOS::UpdateAutofillDataListValues(
     base::span<const autofill::SelectOption> datalist) {
   // No op. ios/web_view does not support display datalist.
 }
 
-std::vector<Suggestion> ChromeAutofillClientIOS::GetPopupSuggestions() const {
+void ChromeAutofillClientIOS::PinAutofillSuggestions() {
   NOTIMPLEMENTED();
-  return {};
-}
-
-void ChromeAutofillClientIOS::PinPopupView() {
-  NOTIMPLEMENTED();
-}
-
-AutofillClient::PopupOpenArgs ChromeAutofillClientIOS::GetReopenPopupArgs(
-    AutofillSuggestionTriggerSource trigger_source) const {
-  NOTIMPLEMENTED();
-  return {};
 }
 
 void ChromeAutofillClientIOS::UpdatePopup(
@@ -512,19 +480,9 @@ void ChromeAutofillClientIOS::UpdatePopup(
   NOTIMPLEMENTED();
 }
 
-void ChromeAutofillClientIOS::HideAutofillPopup(PopupHidingReason reason) {
+void ChromeAutofillClientIOS::HideAutofillSuggestions(
+    SuggestionHidingReason reason) {
   [bridge_ hideAutofillPopup];
-}
-
-void ChromeAutofillClientIOS::ShowAutofillErrorDialog(
-    AutofillErrorDialogContext context) {
-  // TODO(b/324609813): Move this function from ChromeAutofillClientIOS to
-  // IOSChromePaymentsAutofillClient to avoid this call.
-  if (!payments_autofill_client_) {
-    payments_autofill_client_ =
-        std::make_unique<payments::IOSChromePaymentsAutofillClient>(this);
-  }
-  payments_autofill_client_->ShowAutofillErrorDialog(std::move(context));
 }
 
 bool ChromeAutofillClientIOS::IsAutocompleteEnabled() const {
@@ -585,10 +543,6 @@ ChromeAutofillClientIOS::GetDeviceAuthenticator() {
     reauthModule = [[ReauthenticationModule alloc] init];
   }
   return CreateIOSDeviceAuthenticator(reauthModule, browser_state_, params);
-}
-VirtualCardEnrollmentManager*
-ChromeAutofillClientIOS::GetVirtualCardEnrollmentManager() {
-  return form_data_importer_->GetVirtualCardEnrollmentManager();
 }
 
 void ChromeAutofillClientIOS::ShowVirtualCardEnrollDialog(

@@ -6,6 +6,7 @@
 
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/layout/anchor_position_visibility_observer.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/non_overflowing_scroll_range.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
@@ -15,23 +16,11 @@ namespace blink {
 
 namespace {
 
-// Finds the LayoutObject of the anchor element given by anchor-default.
-const LayoutObject* AnchorDefaultObject(const LayoutBox& box) {
+// Finds the LayoutObject of the anchor element given by position-anchor.
+const LayoutObject* PositionAnchorObject(const LayoutBox& box) {
   const ComputedStyle& style = box.StyleRef();
-  return style.AnchorDefault() ? box.FindTargetAnchor(*style.AnchorDefault())
-                               : box.AcceptableImplicitAnchor();
-}
-
-// Finds the LayoutObject of the element given by position-fallback-bounds.
-const LayoutObject* PositionFallbackBoundsObject(
-    const LayoutObject* layout_object) {
-  if (!layout_object || !layout_object->IsOutOfFlowPositioned() ||
-      !layout_object->StyleRef().PositionFallbackBounds()) {
-    return nullptr;
-  }
-
-  return To<LayoutBox>(layout_object)
-      ->FindTargetAnchor(*layout_object->StyleRef().PositionFallbackBounds());
+  return style.PositionAnchor() ? box.FindTargetAnchor(*style.PositionAnchor())
+                                : box.AcceptableImplicitAnchor();
 }
 
 const Vector<NonOverflowingScrollRange>* GetNonOverflowingScrollRanges(
@@ -40,7 +29,7 @@ const Vector<NonOverflowingScrollRange>* GetNonOverflowingScrollRanges(
     return nullptr;
   }
   CHECK(layout_object->IsBox());
-  return To<LayoutBox>(layout_object)->PositionFallbackNonOverflowingRanges();
+  return To<LayoutBox>(layout_object)->NonOverflowingScrollRanges();
 }
 
 // First return value for x axis, second for y axis.
@@ -57,20 +46,20 @@ std::pair<bool, bool> CheckHasDefaultAnchorReferences(
 
 }  // namespace
 
-AnchorPositionScrollData::AnchorPositionScrollData(Element* element)
-    : ScrollSnapshotClient(element->GetDocument().GetFrame()),
-      owner_(element) {}
+AnchorPositionScrollData::AnchorPositionScrollData(Element* anchored_element)
+    : ScrollSnapshotClient(anchored_element->GetDocument().GetFrame()),
+      anchored_element_(anchored_element) {}
 
 AnchorPositionScrollData::~AnchorPositionScrollData() = default;
 
 bool AnchorPositionScrollData::IsActive() const {
-  return owner_->GetAnchorPositionScrollData() == this;
+  return anchored_element_->GetAnchorPositionScrollData() == this;
 }
 
 AnchorPositionScrollData::AdjustmentData
 AnchorPositionScrollData::ComputeAdjustmentContainersData(
-    const LayoutObject& anchor_or_bounds) const {
-  CHECK(owner_->GetLayoutObject());
+    const LayoutObject& anchor) const {
+  CHECK(anchored_element_->GetLayoutObject());
   AnchorPositionScrollData::AdjustmentData result;
 
   auto container_ignore_layout_view_for_fixed_pos =
@@ -82,21 +71,34 @@ AnchorPositionScrollData::ComputeAdjustmentContainersData(
     return container;
   };
 
-  const auto* bounding_container =
-      container_ignore_layout_view_for_fixed_pos(*owner_->GetLayoutObject());
-  for (const auto* container = &anchor_or_bounds;
+  const auto* bounding_container = container_ignore_layout_view_for_fixed_pos(
+      *anchored_element_->GetLayoutObject());
+
+  if (bounding_container && bounding_container->IsScrollContainer()) {
+    result.anchored_element_container_scroll_offset =
+        To<LayoutBox>(bounding_container)
+            ->GetScrollableArea()
+            ->GetScrollOffset();
+  }
+
+  for (const auto* container = &anchor;
        container && container != bounding_container;
        container = container_ignore_layout_view_for_fixed_pos(*container)) {
-    if (container != &anchor_or_bounds && container->IsScrollContainer()) {
+    if (container->IsScrollContainer()) {
       const PaintLayerScrollableArea* scrollable_area =
           To<LayoutBox>(container)->GetScrollableArea();
-      result.adjustment_container_ids.push_back(
-          scrollable_area->GetScrollElementId());
-      result.accumulated_offset += scrollable_area->GetScrollOffset();
-      result.accumulated_scroll_origin +=
-          scrollable_area->ScrollOrigin().OffsetFromOrigin();
-      if (scrollable_area->GetLayoutBox()->IsLayoutView()) {
-        result.containers_include_viewport = true;
+      if (container != anchor && container != bounding_container &&
+          (!RuntimeEnabledFeatures::ScrollNodeForOverflowHiddenEnabled() ||
+           // No need to adjust if the scroll container can't scroll anything.
+           To<LayoutBox>(container)->HasScrollableOverflow())) {
+        result.adjustment_container_ids.push_back(
+            scrollable_area->GetScrollElementId());
+        result.accumulated_adjustment += scrollable_area->GetScrollOffset();
+        result.accumulated_adjustment_scroll_origin +=
+            scrollable_area->ScrollOrigin().OffsetFromOrigin();
+        if (scrollable_area->GetLayoutBox()->IsLayoutView()) {
+          result.containers_include_viewport = true;
+        }
       }
     }
     if (const auto* box_model = DynamicTo<LayoutBoxModelObject>(container)) {
@@ -105,24 +107,25 @@ AnchorPositionScrollData::ComputeAdjustmentContainersData(
             CompositorElementIdFromUniqueObjectId(
                 box_model->UniqueId(),
                 CompositorElementIdNamespace::kStickyTranslation));
-        result.accumulated_offset -=
+        result.accumulated_adjustment -=
             gfx::Vector2dF(box_model->StickyPositionOffset());
       }
     }
     if (const auto* box = DynamicTo<LayoutBox>(container)) {
-      if (box->NeedsAnchorPositionScrollAdjustment()) {
-        // Add accumulated offset from chained anchor-positioned element.
-        // If the data of that element is not up-to-date, when it's updated,
-        // we'll schedule needed update according to the type of the change.
-        result.adjustment_container_ids.push_back(
-            CompositorElementIdFromUniqueObjectId(
-                box->UniqueId(), CompositorElementIdNamespace::
-                                     kAnchorPositionScrollTranslation));
-        result.accumulated_offset +=
-            gfx::Vector2dF(To<Element>(box->GetNode())
-                               ->GetAnchorPositionScrollData()
-                               ->ComputeDefaultAnchorAdjustmentData()
-                               .accumulated_offset);
+      if (auto* data = box->GetAnchorPositionScrollData()) {
+        result.has_chained_anchor = true;
+        if (data->NeedsScrollAdjustment()) {
+          // Add accumulated offset from chained anchor-positioned element.
+          // If the data of that element is not up-to-date, when it's updated,
+          // we'll schedule needed update according to the type of the change.
+          result.adjustment_container_ids.push_back(
+              CompositorElementIdFromUniqueObjectId(
+                  box->UniqueId(), CompositorElementIdNamespace::
+                                       kAnchorPositionScrollTranslation));
+          result.accumulated_adjustment +=
+              gfx::Vector2dF(data->ComputeDefaultAnchorAdjustmentData()
+                                 .accumulated_adjustment);
+        }
       }
     }
   }
@@ -131,7 +134,7 @@ AnchorPositionScrollData::ComputeAdjustmentContainersData(
 
 AnchorPositionScrollData::AdjustmentData
 AnchorPositionScrollData::ComputeDefaultAnchorAdjustmentData() const {
-  const LayoutObject* layout_object = owner_->GetLayoutObject();
+  const LayoutObject* layout_object = anchored_element_->GetLayoutObject();
   auto [needs_scroll_adjustment_in_x, needs_scroll_adjustment_in_y] =
       CheckHasDefaultAnchorReferences(layout_object);
   if (!needs_scroll_adjustment_in_x && !needs_scroll_adjustment_in_y) {
@@ -139,7 +142,7 @@ AnchorPositionScrollData::ComputeDefaultAnchorAdjustmentData() const {
   }
 
   const LayoutObject* anchor_default_object =
-      AnchorDefaultObject(To<LayoutBox>(*layout_object));
+      PositionAnchorObject(To<LayoutBox>(*layout_object));
   if (!anchor_default_object) {
     return AdjustmentData();
   }
@@ -149,26 +152,19 @@ AnchorPositionScrollData::ComputeDefaultAnchorAdjustmentData() const {
     needs_scroll_adjustment_in_x = false;
     needs_scroll_adjustment_in_y = false;
   }
+  // These don't reset anchored_element_container_scroll_offset because the
+  // scroll container always scrolls the anchored element.
   if (!needs_scroll_adjustment_in_x) {
-    result.accumulated_offset.set_x(0);
-    result.accumulated_scroll_origin.set_x(0);
+    result.accumulated_adjustment.set_x(0);
+    result.accumulated_adjustment_scroll_origin.set_x(0);
   }
   if (!needs_scroll_adjustment_in_y) {
-    result.accumulated_offset.set_y(0);
-    result.accumulated_scroll_origin.set_y(0);
+    result.accumulated_adjustment.set_y(0);
+    result.accumulated_adjustment_scroll_origin.set_y(0);
   }
   result.needs_scroll_adjustment_in_x = needs_scroll_adjustment_in_x;
   result.needs_scroll_adjustment_in_y = needs_scroll_adjustment_in_y;
   return result;
-}
-
-gfx::Vector2dF AnchorPositionScrollData::ComputeAdditionalBoundsOffset() const {
-  if (const LayoutObject* position_fallback_bounds_object =
-          PositionFallbackBoundsObject(owner_->GetLayoutObject())) {
-    return ComputeAdjustmentContainersData(*position_fallback_bounds_object)
-        .accumulated_offset;
-  }
-  return gfx::Vector2dF();
 }
 
 AnchorPositionScrollData::SnapshotDiff
@@ -176,22 +172,22 @@ AnchorPositionScrollData::TakeAndCompareSnapshot(bool update) {
   DCHECK(IsActive());
 
   AdjustmentData new_adjustment_data = ComputeDefaultAnchorAdjustmentData();
-  gfx::Vector2dF new_additional_bounds_offset = ComputeAdditionalBoundsOffset();
 
-  SnapshotDiff diff;
+  SnapshotDiff diff = SnapshotDiff::kNone;
   if (AdjustmentContainerIds() !=
       new_adjustment_data.adjustment_container_ids) {
     diff = SnapshotDiff::kScrollersOrFallbackPosition;
   } else {
     const bool anchor_scrolled =
-        AccumulatedOffset() != new_adjustment_data.accumulated_offset ||
-        AccumulatedScrollOrigin() !=
-            new_adjustment_data.accumulated_scroll_origin;
-    const bool additional_bounds_scrolled =
-        additional_bounds_offset_ != new_additional_bounds_offset;
-    if ((anchor_scrolled || additional_bounds_scrolled) &&
-        !IsFallbackPositionValid(new_adjustment_data.accumulated_offset,
-                                 new_additional_bounds_offset)) {
+        TotalOffset() !=
+            new_adjustment_data.accumulated_adjustment +
+                new_adjustment_data.anchored_element_container_scroll_offset ||
+        AccumulatedAdjustmentScrollOrigin() !=
+            new_adjustment_data.accumulated_adjustment_scroll_origin;
+    if (anchor_scrolled &&
+        !IsFallbackPositionValid(
+            new_adjustment_data.accumulated_adjustment,
+            new_adjustment_data.anchored_element_container_scroll_offset)) {
       diff = SnapshotDiff::kScrollersOrFallbackPosition;
     } else if (anchor_scrolled ||
                NeedsScrollAdjustmentInX() !=
@@ -202,26 +198,21 @@ AnchorPositionScrollData::TakeAndCompareSnapshot(bool update) {
       // paint properties so that compositor can calculate the translation
       // offset correctly.
       diff = SnapshotDiff::kOffsetOnly;
-    } else {
-      // When the additional bounds rect is scrolled without invalidating the
-      // current fallback position, `owner_` doesn't need paint update.
-      diff = SnapshotDiff::kNone;
     }
   }
 
   if (update && diff != SnapshotDiff::kNone) {
     default_anchor_adjustment_data_ = std::move(new_adjustment_data);
-    additional_bounds_offset_ = new_additional_bounds_offset;
   }
 
   return diff;
 }
 
 bool AnchorPositionScrollData::IsFallbackPositionValid(
-    const gfx::Vector2dF& new_accumulated_offset,
-    const gfx::Vector2dF& new_additional_bounds_offset) const {
+    const gfx::Vector2dF& new_accumulated_adjustment,
+    const gfx::Vector2dF& new_anchored_element_container_scroll_offset) const {
   const Vector<NonOverflowingScrollRange>* non_overflowing_scroll_ranges =
-      GetNonOverflowingScrollRanges(owner_->GetLayoutObject());
+      GetNonOverflowingScrollRanges(anchored_element_->GetLayoutObject());
   if (!non_overflowing_scroll_ranges ||
       non_overflowing_scroll_ranges->empty()) {
     return true;
@@ -229,8 +220,9 @@ bool AnchorPositionScrollData::IsFallbackPositionValid(
 
   for (const NonOverflowingScrollRange& range :
        *non_overflowing_scroll_ranges) {
-    if (range.Contains(AccumulatedOffset(), additional_bounds_offset_) !=
-        range.Contains(new_accumulated_offset, new_additional_bounds_offset)) {
+    if (range.Contains(TotalOffset()) !=
+        range.Contains(new_accumulated_adjustment +
+                       new_anchored_element_container_scroll_offset)) {
       return false;
     }
   }
@@ -286,22 +278,33 @@ bool AnchorPositionScrollData::ShouldScheduleNextService() {
          TakeAndCompareSnapshot(false /*update*/) != SnapshotDiff::kNone;
 }
 
+AnchorPositionVisibilityObserver&
+AnchorPositionScrollData::EnsureAnchorPositionVisibilityObserver() {
+  if (!position_visibility_observer_) {
+    position_visibility_observer_ =
+        MakeGarbageCollected<AnchorPositionVisibilityObserver>(
+            *anchored_element_);
+  }
+  return *position_visibility_observer_;
+}
+
 void AnchorPositionScrollData::InvalidateLayoutAndPaint() {
   DCHECK(IsActive());
-  DCHECK(owner_->GetLayoutObject());
-  owner_->GetLayoutObject()->SetNeedsLayoutAndFullPaintInvalidation(
+  DCHECK(anchored_element_->GetLayoutObject());
+  anchored_element_->GetLayoutObject()->SetNeedsLayoutAndFullPaintInvalidation(
       layout_invalidation_reason::kAnchorPositioning);
-  owner_->GetLayoutObject()->SetNeedsPaintPropertyUpdate();
+  anchored_element_->GetLayoutObject()->SetNeedsPaintPropertyUpdate();
 }
 
 void AnchorPositionScrollData::InvalidatePaint() {
   DCHECK(IsActive());
-  DCHECK(owner_->GetLayoutObject());
-  owner_->GetLayoutObject()->SetNeedsPaintPropertyUpdate();
+  DCHECK(anchored_element_->GetLayoutObject());
+  anchored_element_->GetLayoutObject()->SetNeedsPaintPropertyUpdate();
 }
 
 void AnchorPositionScrollData::Trace(Visitor* visitor) const {
-  visitor->Trace(owner_);
+  visitor->Trace(anchored_element_);
+  visitor->Trace(position_visibility_observer_);
   ScrollSnapshotClient::Trace(visitor);
   ElementRareDataField::Trace(visitor);
 }

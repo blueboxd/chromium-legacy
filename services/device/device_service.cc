@@ -92,7 +92,8 @@ std::unique_ptr<DeviceService> CreateDeviceService(
     mojo::PendingReceiver<mojom::DeviceService> receiver) {
   GeolocationProviderImpl::SetGeolocationConfiguration(
       params->url_loader_factory, params->geolocation_api_key,
-      params->custom_location_provider_callback, params->geolocation_manager,
+      params->custom_location_provider_callback,
+      params->geolocation_system_permission_manager,
       params->use_gms_core_location_provider);
   return std::make_unique<DeviceService>(std::move(params),
                                          std::move(receiver));
@@ -352,7 +353,7 @@ void DeviceService::BindWakeLockProvider(
 
 void DeviceService::BindUsbDeviceManager(
     mojo::PendingReceiver<mojom::UsbDeviceManager> receiver) {
-  // TODO(crbug.com/1109621): usb::DeviceManagerImpl depends on the
+  // TODO(crbug.com/40141825): usb::DeviceManagerImpl depends on the
   // permission_broker service on Chromium OS. We will need to redirect
   // connections for LaCrOS here.
   if (!usb_device_manager_)
@@ -363,7 +364,7 @@ void DeviceService::BindUsbDeviceManager(
 
 void DeviceService::BindUsbDeviceManagerTest(
     mojo::PendingReceiver<mojom::UsbDeviceManagerTest> receiver) {
-  // TODO(crbug.com/1109621): usb::DeviceManagerImpl depends on the
+  // TODO(crbug.com/40141825): usb::DeviceManagerImpl depends on the
   // permission_broker service on Chromium OS. We will need to redirect
   // connections for LaCrOS here.
   if (!usb_device_manager_)

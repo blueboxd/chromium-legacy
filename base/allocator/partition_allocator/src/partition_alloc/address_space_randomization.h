@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_ALLOCATOR_PARTITION_ALLOCATOR_SRC_PARTITION_ALLOC_ADDRESS_SPACE_RANDOMIZATION_H_
-#define BASE_ALLOCATOR_PARTITION_ALLOCATOR_SRC_PARTITION_ALLOC_ADDRESS_SPACE_RANDOMIZATION_H_
+#ifndef PARTITION_ALLOC_ADDRESS_SPACE_RANDOMIZATION_H_
+#define PARTITION_ALLOC_ADDRESS_SPACE_RANDOMIZATION_H_
 
 #include <cstdint>
 
-#include "build/build_config.h"
+#include "partition_alloc/build_config.h"
 #include "partition_alloc/page_allocator_constants.h"
 #include "partition_alloc/partition_alloc_base/compiler_specific.h"
 #include "partition_alloc/partition_alloc_base/component_export.h"
@@ -80,8 +80,8 @@ AslrMask(uintptr_t bits) {
     // https://chromium-review.googlesource.com/c/v8/v8/+/557958. The difference
     // is that here we clamp to 39 bits, not 32.
     //
-    // TODO(crbug.com/738925): Remove this limitation if/when the macOS behavior
-    // changes.
+    // TODO(crbug.com/40528509): Remove this limitation if/when the macOS
+    // behavior changes.
     PA_ALWAYS_INLINE PAGE_ALLOCATOR_CONSTANTS_DECLARE_CONSTEXPR uintptr_t
     ASLRMask() {
       return AslrMask(38);
@@ -113,10 +113,7 @@ AslrMask(uintptr_t bits) {
         return AslrAddress(0);
       }
 
-    #elif defined(ARCH_CPU_ARM64)
-
-      #if BUILDFLAG(IS_ANDROID)
-
+    #elif BUILDFLAG(IS_ANDROID) && (defined(ARCH_CPU_ARM64) || defined(ARCH_CPU_RISCV64))
       // Restrict the address range on Android to avoid a large performance
       // regression in single-process WebViews. See https://crbug.com/837640.
       PA_ALWAYS_INLINE PAGE_ALLOCATOR_CONSTANTS_DECLARE_CONSTEXPR uintptr_t
@@ -127,8 +124,8 @@ AslrMask(uintptr_t bits) {
       ASLROffset() {
         return AslrAddress(0x20000000ULL);
       }
-
-      #elif BUILDFLAG(IS_LINUX)
+    #elif defined(ARCH_CPU_ARM64)
+      #if BUILDFLAG(IS_LINUX)
 
       // Linux on arm64 can use 39, 42, 48, or 52-bit user space, depending on
       // page size and number of levels of translation pages used. We use
@@ -219,7 +216,8 @@ AslrMask(uintptr_t bits) {
            // !defined(ARCH_CPU_S390X) && !defined(ARCH_CPU_S390)
 
       // For all other POSIX variants, use 30 bits.
-      PA_ALWAYS_INLINE constexpr uintptr_t ASLRMask() {
+      PA_ALWAYS_INLINE PAGE_ALLOCATOR_CONSTANTS_DECLARE_CONSTEXPR uintptr_t
+      ASLRMask() {
         return AslrMask(30);
       }
 
@@ -252,7 +250,8 @@ AslrMask(uintptr_t bits) {
         // The range 0x20000000 - 0x60000000 is relatively unpopulated across a
         // variety of ASLR modes (PAE kernel, NX compat mode, etc) and on macOS
         // 10.6 and 10.7.
-        PA_ALWAYS_INLINE constexpr uintptr_t ASLROffset() {
+        PA_ALWAYS_INLINE PAGE_ALLOCATOR_CONSTANTS_DECLARE_CONSTEXPR uintptr_t
+        ASLROffset() {
           return AslrAddress(0x20000000ULL);
         }
 
@@ -287,4 +286,4 @@ AslrMask(uintptr_t bits) {
 
 }  // namespace partition_alloc
 
-#endif  // BASE_ALLOCATOR_PARTITION_ALLOCATOR_SRC_PARTITION_ALLOC_ADDRESS_SPACE_RANDOMIZATION_H_
+#endif  // PARTITION_ALLOC_ADDRESS_SPACE_RANDOMIZATION_H_

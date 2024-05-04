@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40284755): Remove this and spanify to fix the errors.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "base/json/json_parser.h"
 
 #include <cmath>
@@ -86,7 +91,8 @@ enum class ChromiumJsonExtension {
   kXEscape,
   kVerticalTabEscape,
   kControlCharacter,
-  kMaxValue = kControlCharacter,
+  kNewlineInString,
+  kMaxValue = kNewlineInString,
 };
 
 const char kExtensionHistogramName[] =
@@ -561,7 +567,15 @@ bool JSONParser::ConsumeStringRaw(StringBuilder* out) {
       // quotation marks, except for the characters that MUST be escaped:
       // quotation mark, reverse solidus, and the control characters (U+0000
       // through U+001F)".
-      if (next_char <= 0x1F) {
+      if (next_char == '\n' || next_char == '\r') {
+        UmaHistogramEnumeration(kExtensionHistogramName,
+                                ChromiumJsonExtension::kNewlineInString);
+        if (!(options_ &
+              (JSON_ALLOW_NEWLINES_IN_STRINGS | JSON_ALLOW_CONTROL_CHARS))) {
+          ReportError(JSON_UNSUPPORTED_ENCODING, -1);
+          return false;
+        }
+      } else if (next_char <= 0x1F) {
         UmaHistogramEnumeration(kExtensionHistogramName,
                                 ChromiumJsonExtension::kControlCharacter);
         if (!(options_ & JSON_ALLOW_CONTROL_CHARS)) {

@@ -28,7 +28,7 @@ class InlineItem;
 class InlineLayoutStateStack;
 class InlineNode;
 class LineInfo;
-struct InlineBoxState;
+class LogicalLineContainer;
 struct InlineItemResult;
 struct LeadingFloats;
 
@@ -48,18 +48,25 @@ class CORE_EXPORT InlineLayoutAlgorithm final
                         const InlineBreakToken*,
                         const ColumnSpannerPath*,
                         InlineChildLayoutContext* context);
-  ~InlineLayoutAlgorithm() override;
+  ~InlineLayoutAlgorithm();
 
   void CreateLine(const LineLayoutOpportunity&,
                   LineInfo*,
-                  LogicalLineItems* line_box);
+                  LogicalLineContainer* line_container);
 
-  const LayoutResult* Layout() override;
+  const LayoutResult* Layout();
 
-  MinMaxSizesResult ComputeMinMaxSizes(const MinMaxSizesFloatInput&) override {
+  MinMaxSizesResult ComputeMinMaxSizes(const MinMaxSizesFloatInput&) {
     NOTREACHED();
     return MinMaxSizesResult();
   }
+
+#if EXPENSIVE_DCHECKS_ARE_ON()
+  void CheckBoxStates(const LineInfo&) const;
+#endif
+  void PlaceBlockInInline(const InlineItem&,
+                          InlineItemResult*,
+                          LogicalLineItems* line_box);
 
  private:
   friend class LineWidthsTest;
@@ -73,43 +80,7 @@ class CORE_EXPORT InlineLayoutAlgorithm final
   void RebuildBoxStates(const LineInfo&,
                         const InlineBreakToken*,
                         InlineLayoutStateStack*) const;
-#if EXPENSIVE_DCHECKS_ARE_ON()
-  void CheckBoxStates(const LineInfo&, const InlineBreakToken*) const;
-#endif
 
-  InlineBoxState* HandleOpenTag(const InlineItem&,
-                                const InlineItemResult&,
-                                LogicalLineItems*,
-                                InlineLayoutStateStack*) const;
-  InlineBoxState* HandleCloseTag(const InlineItem&,
-                                 const InlineItemResult&,
-                                 LogicalLineItems* line_box,
-                                 InlineBoxState*);
-
-  void BidiReorder(TextDirection base_direction, LogicalLineItems* line_box);
-
-  void PlaceControlItem(const InlineItem&,
-                        const String& text_content,
-                        InlineItemResult*,
-                        LogicalLineItems* line_box,
-                        InlineBoxState*);
-  void PlaceHyphen(const InlineItemResult&,
-                   LayoutUnit hyphen_inline_size,
-                   LogicalLineItems* line_box,
-                   InlineBoxState*);
-  InlineBoxState* PlaceAtomicInline(const InlineItem&,
-                                    InlineItemResult*,
-                                    LogicalLineItems* line_box);
-  void PlaceBlockInInline(const InlineItem&,
-                          InlineItemResult*,
-                          LogicalLineItems* line_box);
-  void PlaceInitialLetterBox(const InlineItem&,
-                             InlineItemResult*,
-                             LogicalLineItems* line_box);
-  void PlaceLayoutResult(InlineItemResult*,
-                         LogicalLineItems* line_box,
-                         InlineBoxState*,
-                         LayoutUnit inline_offset = LayoutUnit());
   void PlaceOutOfFlowObjects(const LineInfo&,
                              const FontHeight&,
                              LogicalLineItems* line_box);
@@ -118,11 +89,8 @@ class CORE_EXPORT InlineLayoutAlgorithm final
                             LayoutUnit ruby_block_start_adjust,
                             LineInfo*,
                             LogicalLineItems* line_box);
-  void PlaceRelativePositionedItems(LogicalLineItems* line_box);
-  void PlaceListMarker(const InlineItem&, InlineItemResult*);
 
   LayoutUnit ApplyTextAlign(LineInfo*);
-  std::optional<LayoutUnit> ApplyJustify(LayoutUnit space, LineInfo*);
 
   // Add any trailing clearance requested by a BR 'clear' attribute on the line.
   // Return true if this was successful (this also includes cases where there is
@@ -130,9 +98,13 @@ class CORE_EXPORT InlineLayoutAlgorithm final
   // will be resumed in a subsequent fragmentainer.
   bool AddAnyClearanceAfterLine(const LineInfo&);
 
-  LayoutUnit SetAnnotationOverflow(const LineInfo& line_info,
-                                   const LogicalLineItems& line_box,
-                                   const FontHeight& line_box_metrics);
+  LayoutUnit SetAnnotationOverflow(
+      const LineInfo& line_info,
+      const LogicalLineItems& line_box,
+      const FontHeight& line_box_metrics,
+      std::optional<FontHeight> annotation_font_height);
+
+  bool ShouldLineClamp(const LineInfo*) const;
 
   InlineLayoutStateStack* box_states_;
   InlineChildLayoutContext* context_;

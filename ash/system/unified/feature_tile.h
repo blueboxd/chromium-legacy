@@ -16,6 +16,7 @@
 
 namespace gfx {
 struct VectorIcon;
+class Insets;
 }  // namespace gfx
 
 namespace views {
@@ -114,6 +115,10 @@ class ASH_EXPORT FeatureTile : public views::Button {
   // Sets the `callback` for clicks on `icon_button_`.
   void SetIconClickCallback(base::RepeatingCallback<void()> callback);
 
+  // Sets the `on_title_container_bounds_changed_` callback.
+  void SetOnTitleBoundsChangedCallback(
+      base::RepeatingCallback<void()> callback);
+
   // Creates a decorative `drill_in_arrow_` on the right side of the tile. This
   // indicates to the user that the tile shows a detailed view when pressed.
   void CreateDecorativeDrillInArrow();
@@ -129,6 +134,9 @@ class ASH_EXPORT FeatureTile : public views::Button {
   // Sets the vector icon.
   void SetVectorIcon(const gfx::VectorIcon& icon);
 
+  // Sets margins for 'title_container_' in the tile.
+  void SetTitleContainerMargins(const gfx::Insets& insets);
+
   // Setters to apply custom background colors.
   void SetBackgroundColorId(ui::ColorId background_color_id);
   void SetBackgroundToggledColorId(ui::ColorId background_toggled_color_id);
@@ -141,6 +149,12 @@ class ASH_EXPORT FeatureTile : public views::Button {
   void SetForegroundColorId(ui::ColorId foreground_color_id);
   void SetForegroundToggledColorId(ui::ColorId foreground_toggled_color_id);
   void SetForegroundDisabledColorId(ui::ColorId foreground_disabled_color_id);
+  void SetForegroundOptionalColorId(ui::ColorId foreground_optional_color_id);
+  void SetForegroundOptionalToggledColorId(
+      ui::ColorId foreground_optional_toggled_color_id);
+
+  // Sets a custom color for the tile's ink drop, when its toggled.
+  void SetInkDropToggledBaseColorId(ui::ColorId ink_drop_toggled_base_color_id);
 
   // Sets the tile icon from an ImageSkia.
   void SetImage(gfx::ImageSkia image);
@@ -175,6 +189,9 @@ class ASH_EXPORT FeatureTile : public views::Button {
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   void AddLayerToRegion(ui::Layer* layer, views::LayerRegion region) override;
   void RemoveLayerFromRegions(ui::Layer* layer) override;
+
+  // views::ViewObserver:
+  void OnViewBoundsChanged(views::View* observed_view) override;
 
   base::WeakPtr<FeatureTile> GetWeakPtr() {
     return weak_ptr_factory_.GetWeakPtr();
@@ -230,6 +247,10 @@ class ASH_EXPORT FeatureTile : public views::Button {
   // Updates the color of `drill_in_arrow_` for better visibility.
   void UpdateDrillInArrowColor();
 
+  // Updates the accessibility properties directly in the cache, like the role
+  // and the toggle state.
+  void UpdateAccessibilityProperties();
+
   // Updates `label_` attributes depending on whether a sub-label will be
   // visible.
   void SetCompactTileLabelPreferences(bool has_sub_label);
@@ -260,7 +281,12 @@ class ASH_EXPORT FeatureTile : public views::Button {
   std::optional<ui::ColorId> background_disabled_color_;
   std::optional<ui::ColorId> foreground_color_;
   std::optional<ui::ColorId> foreground_toggled_color_;
+  std::optional<ui::ColorId> foreground_optional_color_;
+  std::optional<ui::ColorId> foreground_optional_toggled_color_;
   std::optional<ui::ColorId> foreground_disabled_color_;
+
+  // Customized value for the tile's ink drop color.
+  std::optional<ui::ColorId> ink_drop_toggled_base_color_;
 
   // Owned by views hierarchy.
   raw_ptr<views::ImageButton> icon_button_ = nullptr;
@@ -276,7 +302,7 @@ class ASH_EXPORT FeatureTile : public views::Button {
   bool is_icon_clickable_ = false;
 
   // Whether this button is togglable.
-  bool is_togglable_ = false;
+  const bool is_togglable_ = false;
 
   // Whether the button is currently toggled.
   bool toggled_ = false;
@@ -302,6 +328,9 @@ class ASH_EXPORT FeatureTile : public views::Button {
   // The download progress, as an integer percentage in the range [0, 100]. Only
   // has meaning when the tile is in an active download state.
   int download_progress_percent_ = 0;
+
+  // Runs when `title_container_`'s bounds is changed.
+  base::RepeatingClosure on_title_container_bounds_changed_;
 
   base::WeakPtrFactory<FeatureTile> weak_ptr_factory_{this};
 };

@@ -92,25 +92,28 @@ enum class SelectToSpeakState {
   kSelectToSpeakStateSpeaking,
 };
 
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
 enum class SelectToSpeakPanelAction {
   // No action.
-  kNone,
+  kNone = 0,
   // Navigate to previous paragraph/block.
-  kPreviousParagraph,
+  kPreviousParagraph = 1,
   // Navigate to previous sentence.
-  kPreviousSentence,
+  kPreviousSentence = 2,
   // Pause text-to-speech.
-  kPause,
+  kPause = 3,
   // Resumes text-to-speech.
-  kResume,
+  kResume = 4,
   // Navigate to next sentence.
-  kNextSentence,
+  kNextSentence = 5,
   // Navigate to next paragraph/block.
-  kNextParagraph,
+  kNextParagraph = 6,
   // Exit Select-to-speak.
-  kExit,
+  kExit = 7,
   // Change reading speed.
-  kChangeSpeed,
+  kChangeSpeed = 8,
+  kMaxValue = kChangeSpeed,
 };
 
 enum class SwitchAccessCommand {
@@ -239,6 +242,14 @@ enum class DictationNotificationType {
 enum class AccessibilityToastType {
   kDictationMicMuted,
   kDictationNoFocusedTextField,
+};
+
+// Dominant hand for mouse keys.  This determines which keys to use for the
+// feature.
+enum class MouseKeysDominantHand {
+  kRightHandDominant = 0,
+  kLeftHandDominant = 1,
+  kMaxValue = kLeftHandDominant,
 };
 
 }  // namespace ash

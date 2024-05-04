@@ -33,7 +33,6 @@ class ProfileDestroyer;
 class ProfileKey;
 class TestingProfile;
 class ThemeService;
-class TemplateURLService;
 class InstantService;
 
 namespace base {
@@ -51,6 +50,7 @@ class SchemaRegistryService;
 class ProfilePolicyConnector;
 class ProfileCloudPolicyManager;
 class UserCloudPolicyManager;
+class CloudPolicyManager;
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 class UserCloudPolicyManagerAsh;
@@ -82,7 +82,7 @@ class Profile : public content::BrowserContext {
   class OTRProfileID {
    public:
     // ID used by the Incognito and Guest profiles.
-    // TODO(https://crbug.com/1225171): To be replaced with |IncognitoID| if
+    // TODO(crbug.com/40775669): To be replaced with |IncognitoID| if
     // OTR Guest profiles are deprecated.
     static const OTRProfileID PrimaryID();
 
@@ -143,7 +143,7 @@ class Profile : public content::BrowserContext {
 
     // Constructs a string that represents OTRProfileID from the provided
     // OTRProfileID.
-    // TODO(crbug.com/1161104): Use one serialize function for both java and
+    // TODO(crbug.com/40162345): Use one serialize function for both java and
     // native side instead of having duplicate code.
     std::string Serialize() const;
 #endif
@@ -349,6 +349,16 @@ class Profile : public content::BrowserContext {
   virtual policy::ProfileCloudPolicyManager* GetProfileCloudPolicyManager() = 0;
 #endif
 
+  // Returns CloudPolicyManager.
+  // This function combine three Get*CloudPolicyManager functions above and
+  // always returns the one that is currently activated.
+  //
+  // Returns UserCloudPolicyManagerAsh on Ash
+  // Returns null for Lacros main profile
+  // For others, returns UserCloudPolicyManager if it exists, otherwise use
+  // ProfileCloudPolicyManager.
+  virtual policy::CloudPolicyManager* GetCloudPolicyManager() = 0;
+
   virtual policy::ProfilePolicyConnector* GetProfilePolicyConnector() = 0;
   virtual const policy::ProfilePolicyConnector* GetProfilePolicyConnector()
       const = 0;
@@ -358,24 +368,22 @@ class Profile : public content::BrowserContext {
   virtual void set_last_selected_directory(const base::FilePath& path) = 0;
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  enum AppLocaleChangedVia {
-    // Caused by chrome://settings change.
-    APP_LOCALE_CHANGED_VIA_SETTINGS,
-    // Locale has been reverted via LocaleChangeGuard.
-    APP_LOCALE_CHANGED_VIA_REVERT,
-    // From login screen.
-    APP_LOCALE_CHANGED_VIA_LOGIN,
-    // From login to a public session.
-    APP_LOCALE_CHANGED_VIA_PUBLIC_SESSION_LOGIN,
-    // From AllowedLanguages policy.
-    APP_LOCALE_CHANGED_VIA_POLICY,
-    // From demo session.
-    APP_LOCALE_CHANGED_VIA_DEMO_SESSION,
-    // From system tray.
-    APP_LOCALE_CHANGED_VIA_SYSTEM_TRAY,
-    // Source unknown.
-    APP_LOCALE_CHANGED_VIA_UNKNOWN
-  };
+  enum AppLocaleChangedVia{// Caused by chrome://settings change.
+                           APP_LOCALE_CHANGED_VIA_SETTINGS,
+                           // Locale has been reverted via LocaleChangeGuard.
+                           APP_LOCALE_CHANGED_VIA_REVERT,
+                           // From login screen.
+                           APP_LOCALE_CHANGED_VIA_LOGIN,
+                           // From login to a public session.
+                           APP_LOCALE_CHANGED_VIA_PUBLIC_SESSION_LOGIN,
+                           // From AllowedLanguages policy.
+                           APP_LOCALE_CHANGED_VIA_POLICY,
+                           // Locale is reverted in the next demo session.
+                           APP_LOCALE_CHANGED_VIA_DEMO_SESSION_REVERT,
+                           // From system tray.
+                           APP_LOCALE_CHANGED_VIA_SYSTEM_TRAY,
+                           // Source unknown.
+                           APP_LOCALE_CHANGED_VIA_UNKNOWN};
 
   // Changes application locale for a profile.
   virtual void ChangeAppLocale(
@@ -398,7 +406,7 @@ class Profile : public content::BrowserContext {
   // IsRegularProfile(), IsSystemProfile(), IsIncognitoProfile(), and
   // IsGuestSession() are mutually exclusive.
   // Note: IsGuestSession() is not mutually exclusive with the rest of the
-  // methods mentioned above on Ash and Lacros. TODO(crbug.com/1348572).
+  // methods mentioned above on Ash and Lacros. TODO(crbug.com/40233408).
   //
   // IsSystemProfile() returns true for both regular and off-the-record profile
   //   of the system profile.
@@ -411,7 +419,7 @@ class Profile : public content::BrowserContext {
   // Returns whether it is an Incognito profile. An Incognito profile is an
   // off-the-record profile that is used for incognito mode.
   //
-  // TODO(crbug.com/1348572): Also returns true for Lacros in a Ash guest
+  // TODO(crbug.com/40233408): Also returns true for Lacros in a Ash guest
   // profile.
   bool IsIncognitoProfile() const;
 
@@ -500,12 +508,6 @@ class Profile : public content::BrowserContext {
   const std::optional<raw_ptr<ThemeService>>& theme_service() {
     return theme_service_;
   }
-  void set_template_url_service(TemplateURLService* template_url_service) {
-    template_url_service_ = template_url_service;
-  }
-  const std::optional<raw_ptr<TemplateURLService>>& template_url_service() {
-    return template_url_service_;
-  }
   void set_instant_service(InstantService* instant_service) {
     instant_service_ = instant_service;
   }
@@ -546,7 +548,6 @@ class Profile : public content::BrowserContext {
   // Experimental objects to gauge the performance of caching frequently used
   // KeyedServices in a Profile pointer.
   std::optional<raw_ptr<ThemeService>> theme_service_;
-  std::optional<raw_ptr<TemplateURLService>> template_url_service_;
   std::optional<raw_ptr<InstantService>> instant_service_;
 
   base::ObserverList<ProfileObserver,
@@ -555,6 +556,9 @@ class Profile : public content::BrowserContext {
       observers_;
 
   class ChromeVariationsClient;
+
+  // This member is lazily created. Once it is is created its lifetime must
+  // match that of Profile itself.
   std::unique_ptr<variations::VariationsClient> chrome_variations_client_;
 
   base::WeakPtrFactory<Profile> weak_factory_{this};

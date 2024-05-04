@@ -10,14 +10,17 @@ source_set("core") {
   public = [
     "certificate_provisioning_service.h",
     "certificate_store.h",
+    "client_certificates_service.h",
     "client_identity.h",
     "cloud_management_delegate.h",
     "constants.h",
+    "context_delegate.h",
     "dm_server_client.h",
     "ec_private_key.h",
     "ec_private_key_factory.h",
     "features.h",
     "key_upload_client.h",
+    "metrics_util.h",
     "prefs.h",
     "private_key.h",
     "private_key_factory.h",
@@ -31,18 +34,26 @@ source_set("core") {
   sources = [
     "certificate_provisioning_service.cc",
     "certificate_store.cc",
+    "client_certificates_service.cc",
     "client_identity.cc",
     "constants.cc",
     "ec_private_key.cc",
     "ec_private_key_factory.cc",
     "features.cc",
     "key_upload_client.cc",
+    "metrics_util.cc",
     "prefs.cc",
     "private_key.cc",
     "private_key_factory.cc",
     "private_key_types.cc",
+    "ssl_client_cert_identity_wrapper.cc",
+    "ssl_client_cert_identity_wrapper.h",
+    "ssl_key_converter.cc",
+    "ssl_key_converter.h",
+    "store_error.cc",
     "unexportable_private_key.cc",
     "unexportable_private_key_factory.cc",
+    "upload_client_error.cc",
   ]
 
   public_deps = [
@@ -54,9 +65,16 @@ source_set("core") {
   ]
 
   deps = [
+    "//components/policy/core/common",
     "//components/policy/proto",
     "//components/prefs",
     "//net",
+    "//third_party/boringssl",
+  ]
+
+  friend = [
+    ":test_support",
+    ":unit_tests",
   ]
 }
 
@@ -77,14 +95,20 @@ source_set("test_support") {
     "mock_private_key.h",
     "mock_private_key_factory.cc",
     "mock_private_key_factory.h",
+    "scoped_ssl_key_converter.cc",
+    "scoped_ssl_key_converter.h",
   ]
 
   deps = [
     ":core",
     "//components/leveldb_proto",
     "//components/policy/proto",
+    "//crypto",
+    "//crypto:test_support",
     "//net",
+    "//net:test_support",
     "//testing/gmock",
+    "//third_party/boringssl",
   ]
 }
 
@@ -94,10 +118,12 @@ source_set("unit_tests") {
   sources = [
     "certificate_provisioning_service_unittest.cc",
     "certificate_store_unittest.cc",
+    "client_certificates_service_unittest.cc",
     "ec_private_key_factory_unittest.cc",
     "ec_private_key_unittest.cc",
     "key_upload_client_unittest.cc",
     "private_key_factory_unittest.cc",
+    "ssl_client_cert_identity_wrapper_unittest.cc",
     "unexportable_private_key_factory_unittest.cc",
     "unexportable_private_key_unittest.cc",
   ]
@@ -110,14 +136,11 @@ source_set("unit_tests") {
     "//components/enterprise/client_certificates/proto:db_client_certs",
     "//components/leveldb_proto:test_support",
     "//components/prefs:test_support",
+    "//crypto",
+    "//crypto:test_support",
     "//net",
     "//net:test_support",
     "//testing/gmock",
     "//testing/gtest",
-  ]
-
-  deps += [
-    "//crypto",
-    "//crypto:test_support",
   ]
 }

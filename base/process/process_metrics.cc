@@ -123,8 +123,11 @@ double ProcessMetrics::GetPlatformIndependentCPUUsage(
   return 100.0 * cpu_time_delta / time_delta;
 }
 
-double ProcessMetrics::GetPlatformIndependentCPUUsage() {
-  return GetPlatformIndependentCPUUsage(GetCumulativeCPUUsage());
+base::expected<double, ProcessCPUUsageError>
+ProcessMetrics::GetPlatformIndependentCPUUsage() {
+  return GetCumulativeCPUUsage().transform([this](base::TimeDelta cpu_usage) {
+    return GetPlatformIndependentCPUUsage(cpu_usage);
+  });
 }
 #endif
 

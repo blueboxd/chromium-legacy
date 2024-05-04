@@ -824,6 +824,51 @@ TEST_F(SecondDeviceAuthBrokerTest,
                             AuthCodeRejectionResponseEq(expected_response)));
 }
 
+// A Unicorn account was used for QuickStart when QuickStart is disallowed for
+// the account.
+TEST_F(SecondDeviceAuthBrokerTest,
+       FetchAuthCodeReturnsRejectionResponseForDisabledUnicornAccounts) {
+  AddFakeRejectionResponse(kFakeEmail,
+                           /*rejection_reason=*/"ACCOUNT_NOT_SUPPORTED_KID");
+  AuthCodeRejectionResponse expected_response;
+  expected_response.email = kFakeEmail;
+  expected_response.reason =
+      AuthCodeRejectionResponse::Reason::kUnicornAccountNotEnabled;
+  SecondDeviceAuthBroker::AuthCodeResponse response =
+      FetchAuthCode(/*fido_assertion_info=*/FidoAssertionInfo{},
+                    /*certificate=*/GetCertificate());
+  EXPECT_THAT(response, VariantWith<AuthCodeRejectionResponse>(
+                            AuthCodeRejectionResponseEq(expected_response)));
+}
+
+TEST_F(SecondDeviceAuthBrokerTest,
+       FetchAuthCodeReturnsRejectionResponseForAccountLookupErrors) {
+  AddFakeRejectionResponse(
+      kFakeEmail,
+      /*rejection_reason=*/"ACCOUNT_LOOKUP_ACCOUNT_NOT_FOUND");
+  AuthCodeRejectionResponse expected_response1;
+  expected_response1.email = kFakeEmail;
+  expected_response1.reason =
+      AuthCodeRejectionResponse::Reason::kAccountNotFound;
+  SecondDeviceAuthBroker::AuthCodeResponse response =
+      FetchAuthCode(/*fido_assertion_info=*/FidoAssertionInfo{},
+                    /*certificate=*/GetCertificate());
+  EXPECT_THAT(response, VariantWith<AuthCodeRejectionResponse>(
+                            AuthCodeRejectionResponseEq(expected_response1)));
+
+  AddFakeRejectionResponse(
+      kFakeEmail,
+      /*rejection_reason=*/"ACCOUNT_LOOKUP_CAPTCHA_REQUIRED");
+  AuthCodeRejectionResponse expected_response2;
+  expected_response2.email = kFakeEmail;
+  expected_response2.reason =
+      AuthCodeRejectionResponse::Reason::kCaptchaRequired;
+  response = FetchAuthCode(/*fido_assertion_info=*/FidoAssertionInfo{},
+                           /*certificate=*/GetCertificate());
+  EXPECT_THAT(response, VariantWith<AuthCodeRejectionResponse>(
+                            AuthCodeRejectionResponseEq(expected_response2)));
+}
+
 TEST_F(
     SecondDeviceAuthBrokerTest,
     FetchAuthCodeReturnsRejectionResponseWithUnknownReasonForMissingRejectionReason) {

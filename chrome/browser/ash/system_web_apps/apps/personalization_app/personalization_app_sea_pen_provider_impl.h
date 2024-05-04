@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "ash/public/cpp/wallpaper/sea_pen_image.h"
+#include "ash/wallpaper/sea_pen_wallpaper_manager.h"
 #include "ash/webui/common/mojom/sea_pen.mojom-forward.h"
 #include "chrome/browser/ash/system_web_apps/apps/personalization_app/personalization_app_sea_pen_provider_base.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -53,11 +54,12 @@ class PersonalizationAppSeaPenProviderImpl
 
   void GetRecentSeaPenImageThumbnailInternal(
       uint32_t id,
-      DecodeImageCallback callback) override;
+      SeaPenWallpaperManager::GetImageAndMetadataCallback callback) override;
 
-  void GetRecentSeaPenImageInfo(uint32_t id,
-                                DecodeImageCallback callback,
-                                const gfx::ImageSkia& image);
+  void ShouldShowSeaPenIntroductionDialogInternal(
+      ShouldShowSeaPenIntroductionDialogCallback callback) override;
+
+  void HandleSeaPenIntroductionDialogClosedInternal() override;
 
   void OnFetchWallpaperDoneInternal(
       const SeaPenImage& sea_pen_image,

@@ -8,8 +8,11 @@
 #import "ios/chrome/browser/shared/model/browser/browser_list.h"
 #import "ios/chrome/browser/shared/model/browser/browser_list_factory.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state_manager.h"
+#import "ios/chrome/browser/shared/public/commands/application_commands.h"
+#import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
 #import "ios/chrome/browser/url_loading/model/url_loading_browser_agent.h"
 #import "ios/chrome/browser/url_loading/model/url_loading_params.h"
+#import "ios/public/provider/chrome/browser/user_feedback/user_feedback_sender.h"
 
 PushNotificationClient::PushNotificationClient(
     PushNotificationClientId client_id)
@@ -22,20 +25,47 @@ PushNotificationClientId PushNotificationClient::GetClientId() {
 }
 
 void PushNotificationClient::OnSceneActiveForegroundBrowserReady() {
-  if (!urls_delayed_for_loading_.size()) {
+  if (!urls_delayed_for_loading_.size() && !feedback_presentation_delayed_) {
     return;
   }
+  CHECK(!urls_delayed_for_loading_.size() || !feedback_presentation_delayed_);
   Browser* browser = GetSceneLevelForegroundActiveBrowser();
   CHECK(browser);
-  for (const GURL& url : urls_delayed_for_loading_) {
-    loadUrlInNewTab(url, browser);
+  if (feedback_presentation_delayed_) {
+    id<ApplicationCommands> handler =
+        static_cast<id<ApplicationCommands>>(browser->GetCommandDispatcher());
+    switch (feedback_presentation_delayed_client_) {
+      case PushNotificationClientId::kContent:
+      case PushNotificationClientId::kSports:
+        [handler
+            showReportAnIssueFromViewController:browser->GetSceneState()
+                                                    .window.rootViewController
+                                         sender:UserFeedbackSender::
+                                                    ContentNotification
+                            specificProductData:feedback_data_];
+        feedback_presentation_delayed_ = false;
+        break;
+      case PushNotificationClientId::kTips:
+      case PushNotificationClientId::kCommerce:
+        // Features do not support feedback.
+        NOTREACHED();
+        break;
+      default:
+        break;
+    }
   }
-  urls_delayed_for_loading_.clear();
+  if (urls_delayed_for_loading_.size()) {
+    for (const GURL& url : urls_delayed_for_loading_) {
+      loadUrlInNewTab(url, browser);
+    }
+    urls_delayed_for_loading_.clear();
+  }
 }
 
-// TODO(crbug.com/1524081): Make functionality that relies on this multi-profile
-// and multi-window safe. That might mean removing this method and finding a
-// different way to determine which window should be used to present UI.
+// TODO(crbug.com/41497027): Make functionality that relies on this
+// multi-profile and multi-window safe. That might mean removing this method and
+// finding a different way to determine which window should be used to present
+// UI.
 Browser* PushNotificationClient::GetSceneLevelForegroundActiveBrowser() {
   BrowserList* browser_list =
       BrowserListFactory::GetForBrowserState(GetLastUsedBrowserState());
@@ -66,11 +96,23 @@ void PushNotificationClient::loadUrlInNewTab(const GURL& url,
   UrlLoadingBrowserAgent::FromBrowser(browser)->Load(params);
 }
 
+void PushNotificationClient::loadFeedbackWithPayloadAndClientId(
+    NSDictionary<NSString*, NSString*>* data,
+    PushNotificationClientId client) {
+  Browser* browser = GetSceneLevelForegroundActiveBrowser();
+  if (!browser && data) {
+    feedback_presentation_delayed_client_ = client;
+    feedback_presentation_delayed_ = true;
+    feedback_data_ = data;
+    return;
+  }
+}
+
 ChromeBrowserState* PushNotificationClient::GetLastUsedBrowserState() {
   if (last_used_browser_state_for_testing_) {
     return last_used_browser_state_for_testing_;
   }
   return GetApplicationContext()
       ->GetChromeBrowserStateManager()
-      ->GetLastUsedBrowserState();
+      ->GetLastUsedBrowserStateDeprecatedDoNotUse();
 }

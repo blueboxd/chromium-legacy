@@ -15,7 +15,6 @@
 #include "ui/gl/dc_layer_tree.h"
 #include "ui/gl/dcomp_presenter.h"
 #include "ui/gl/direct_composition_support.h"
-#include "ui/gl/gl_angle_util_win.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/init/gl_factory.h"
 #include "ui/gl/test/gl_test_helper.h"
@@ -61,7 +60,7 @@ class DelegatedInkPointRendererGpuTest : public testing::Test {
   }
 
   void SendMetadata(const gfx::DelegatedInkMetadata& metadata) {
-    presenter()->SetDelegatedInkTrailStartPoint(
+    ink_renderer()->SetDelegatedInkTrailStartPoint(
         std::make_unique<gfx::DelegatedInkMetadata>(metadata));
   }
 
@@ -104,9 +103,8 @@ class DelegatedInkPointRendererGpuTest : public testing::Test {
         /*init_bindings=*/true,
         /*gpu_preference=*/gl::GpuPreference::kDefault);
     if (!gl::DirectCompositionSupported()) {
-      LOG(WARNING)
+      GTEST_SKIP()
           << "GL implementation not using DirectComposition, skipping test.";
-      return;
     }
 
     std::tie(gl_surface_, context_) =
@@ -115,14 +113,14 @@ class DelegatedInkPointRendererGpuTest : public testing::Test {
     CreateDCompPresenter();
 
     if (!presenter_->SupportsDelegatedInk()) {
-      LOG(WARNING) << "Delegated ink unsupported, skipping test.";
-      return;
+      GTEST_SKIP() << "Delegated ink unsupported, skipping test.";
     }
 
     // Create the swap chain
     constexpr gfx::Size window_size(100, 100);
     EXPECT_TRUE(presenter_->Resize(window_size, 1.0, gfx::ColorSpace(), true));
-    EXPECT_TRUE(presenter_->SetDrawRectangle(gfx::Rect(window_size)));
+
+    ink_renderer()->InitializeForTesting(gl::GetDirectCompositionDevice());
   }
 
   void TearDown() override {
@@ -137,16 +135,11 @@ class DelegatedInkPointRendererGpuTest : public testing::Test {
  private:
   void CreateDCompPresenter() {
     DCompPresenter::Settings settings;
-    presenter_ = base::MakeRefCounted<DCompPresenter>(
-        gl::GLSurfaceEGL::GetGLDisplayEGL(), settings);
-    EXPECT_TRUE(presenter_->Initialize());
+    presenter_ = base::MakeRefCounted<DCompPresenter>(settings);
 
-    // ImageTransportSurfaceDelegate::AddChildWindowToBrowser() is called in
-    // production code here. However, to remove dependency from
-    // gpu/ipc/service/image_transport_surface_delegate.h, here we directly
-    // executes the required minimum code.
+    // Add our child window to the root window.
     if (parent_window_)
-      ::SetParent(presenter_->window(), parent_window_);
+      ::SetParent(presenter_->GetWindow(), parent_window_);
   }
 
   void DestroyPresenter(scoped_refptr<DCompPresenter> presenter) {

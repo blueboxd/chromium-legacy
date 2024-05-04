@@ -8,7 +8,9 @@ import android.content.Context;
 import android.os.Handler;
 import android.view.View;
 
+import androidx.annotation.ColorInt;
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Callback;
 import org.chromium.base.CallbackController;
@@ -38,6 +40,7 @@ import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilterObserver;
 import org.chromium.chrome.browser.toolbar.bottom.BottomControlsCoordinator;
 import org.chromium.chrome.browser.toolbar.bottom.BottomControlsCoordinator.BottomControlsVisibilityController;
 import org.chromium.chrome.tab_ui.R;
+import org.chromium.components.browser_ui.styles.SemanticColorUtils;
 import org.chromium.components.browser_ui.widget.gesture.BackPressHandler;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -111,6 +114,8 @@ public class TabGroupUiMediator implements BackPressHandler {
     private Callback<Boolean> mOmniboxFocusObserver;
     private boolean mIsTabGroupUiVisible;
     private boolean mIsShowingOverViewMode;
+    private final @ColorInt int mPrimaryBackgroundColor;
+    private final @ColorInt int mIncognitoBackgroundColor;
 
     TabGroupUiMediator(
             Context context,
@@ -125,6 +130,37 @@ public class TabGroupUiMediator implements BackPressHandler {
                     LazyOneshotSupplier<TabGridDialogMediator.DialogController>
                             dialogControllerSupplier,
             ObservableSupplier<Boolean> omniboxFocusStateSupplier) {
+        this(
+                context,
+                visibilityController,
+                resetHandler,
+                model,
+                tabModelSelector,
+                tabCreatorManager,
+                layoutStateProviderSupplier,
+                incognitoStateProvider,
+                dialogControllerSupplier,
+                omniboxFocusStateSupplier,
+                SemanticColorUtils.getDialogBgColor(context),
+                context.getColor(org.chromium.chrome.R.color.dialog_bg_color_dark_baseline));
+    }
+
+    @VisibleForTesting
+    TabGroupUiMediator(
+            Context context,
+            BottomControlsVisibilityController visibilityController,
+            ResetHandler resetHandler,
+            PropertyModel model,
+            TabModelSelector tabModelSelector,
+            TabCreatorManager tabCreatorManager,
+            OneshotSupplier<LayoutStateProvider> layoutStateProviderSupplier,
+            IncognitoStateProvider incognitoStateProvider,
+            @Nullable
+                    LazyOneshotSupplier<TabGridDialogMediator.DialogController>
+                            dialogControllerSupplier,
+            ObservableSupplier<Boolean> omniboxFocusStateSupplier,
+            @ColorInt int primaryBackgroundColor,
+            @ColorInt int incognitoBackgroundColor) {
         mContext = context;
         mResetHandler = resetHandler;
         mModel = model;
@@ -134,6 +170,8 @@ public class TabGroupUiMediator implements BackPressHandler {
         mIncognitoStateProvider = incognitoStateProvider;
         mTabGridDialogControllerSupplier = dialogControllerSupplier;
         mOmniboxFocusStateSupplier = omniboxFocusStateSupplier;
+        mPrimaryBackgroundColor = primaryBackgroundColor;
+        mIncognitoBackgroundColor = incognitoBackgroundColor;
 
         if (layoutStateProviderSupplier.get() != null
                 && (layoutStateProviderSupplier.get().isLayoutVisible(LayoutType.TAB_SWITCHER)
@@ -161,7 +199,7 @@ public class TabGroupUiMediator implements BackPressHandler {
                     // TODO(crbug/41496693): Delete this logic once tab groups with one tab are
                     // launched.
                     @Override
-                    public void willCloseTab(Tab tab, boolean animate, boolean didCloseAlone) {
+                    public void willCloseTab(Tab tab, boolean didCloseAlone) {
                         if (!mIsTabGroupUiVisible) return;
 
                         // Check if the group the tab was part of is still a tab group.
@@ -251,7 +289,8 @@ public class TabGroupUiMediator implements BackPressHandler {
                 new TabModelSelectorTabObserver(mTabModelSelector) {
                     @Override
                     public void onPageLoadStarted(Tab tab, GURL url) {
-                        // TODO(crbug.com/1087826) This is a band-aid fix for M84. The root cause is
+                        // TODO(crbug.com/40695094) This is a band-aid fix for M84. The root cause
+                        // is
                         // probably a leaked observer. Remove this when the TabObservers are removed
                         // during tab reparenting.
                         if (mTabModelSelector.getTabById(tab.getId()) == null) return;
@@ -316,6 +355,7 @@ public class TabGroupUiMediator implements BackPressHandler {
         mIncognitoStateObserver =
                 (isIncognito) -> {
                     mModel.set(TabGroupUiProperties.IS_INCOGNITO, isIncognito);
+                    setBottomControlsBackgroundColor(isIncognito);
                 };
 
         filterProvider.addTabModelFilterObserver(mTabModelObserver);
@@ -346,6 +386,13 @@ public class TabGroupUiMediator implements BackPressHandler {
                                 .addObserver(mBackPressStateSupplier::set);
                     });
         }
+    }
+
+    private void setBottomControlsBackgroundColor(boolean isIncognito) {
+        @ColorInt
+        int backgroundColor = isIncognito ? mIncognitoBackgroundColor : mPrimaryBackgroundColor;
+        mVisibilityController.setBottomControlsColor(backgroundColor);
+        mModel.set(TabGroupUiProperties.BACKGROUND_COLOR, backgroundColor);
     }
 
     void setupLeftButtonDrawable(int drawableId) {
@@ -398,15 +445,16 @@ public class TabGroupUiMediator implements BackPressHandler {
 
     /**
      * Update the tab strip based on given tab ID.
-     * @param id  If the ID is set to Tab.INVALID_TAB_ID, this method will hide the tab strip. If
-     *            not, associated tabs from #getTabsToShowForID will be showing in the tab strip.
+     *
+     * @param id If the ID is set to Tab.INVALID_TAB_ID, this method will hide the tab strip. If
+     *     not, associated tabs from #getTabsToShowForID will be showing in the tab strip.
      */
     private void resetTabStripWithRelatedTabsForId(int id) {
-        // TODO(crbug/1449465): PseudoTab#getRelatedTabList() requires the tab state to be
+        // TODO(crbug.com/40064910): PseudoTab#getRelatedTabList() requires the tab state to be
         // initialized. If this is called before tab state is initialized just skip.
         if (!mTabModelSelector.isTabStateInitialized()) return;
 
-        // TODO(crbug.com/1090655): We should be able to guard this call behind some checks so that
+        // TODO(crbug.com/40133857): We should be able to guard this call behind some checks so that
         // we can assert here that 1) mIsShowingOverViewMode is false 2) mIsTabGroupUiVisible with
         // valid id is false.
         // When overview mode is showing keep the tab strip hidden.
@@ -450,7 +498,7 @@ public class TabGroupUiMediator implements BackPressHandler {
     }
 
     public boolean onBackPressed() {
-        // TODO(crbug.com/1006421): add a regression test to make sure that the back button closes
+        // TODO(crbug.com/40099884): add a regression test to make sure that the back button closes
         // the dialog when the dialog is showing.
         return mTabGridDialogControllerSupplier != null
                 && mTabGridDialogControllerSupplier.hasValue()

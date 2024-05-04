@@ -116,7 +116,7 @@ constexpr char kEnrollmentToken[] = "enrollment_token";
 
 // Ensures that the loading screen is dismissed when registration and policy
 // fetch succeed.
-// TODO(crbug.com/1412454): Flaky.
+// TODO(crbug.com/40255277): Flaky.
 - (void)FLAKY_testLoadingScreenDismissedByPolicyFetchSuccess {
   [self configureAppWithEnrollmentTokenValid:YES];
   [self verifyLoadingScreenIsDismissed];
@@ -125,7 +125,7 @@ constexpr char kEnrollmentToken[] = "enrollment_token";
 }
 
 // Ensures that the loading screen is dismissed when registration fails.
-// TODO(crbug.com/1412454): Flaky.
+// TODO(crbug.com/40255277): Flaky.
 - (void)FLAKY_testLoadingScreenDismissedByRegisterFail {
   [self configureAppWithEnrollmentTokenValid:NO];
   [self verifyLoadingScreenIsDismissed];
@@ -136,7 +136,7 @@ constexpr char kEnrollmentToken[] = "enrollment_token";
 
 // Ensures that the loading screen is dismissed when registration succeeds and
 // policy fetch fails.
-// TODO(crbug.com/1411631): Flaky.
+// TODO(crbug.com/40254900): Flaky.
 - (void)DISABLED_testLoadingScreenDismissedByPolicyFetchError {
   _policyTestServer->ConfigureRequestError(
       policy::dm_protocol::kValueRequestPolicy, net::HTTP_METHOD_NOT_ALLOWED);

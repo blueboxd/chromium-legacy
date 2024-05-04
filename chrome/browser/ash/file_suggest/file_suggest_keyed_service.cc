@@ -6,6 +6,7 @@
 
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
+#include "ash/utility/forest_util.h"
 #include "base/functional/bind.h"
 #include "chrome/browser/ash/file_manager/fileapi_util.h"
 #include "chrome/browser/ash/file_suggest/drive_file_suggestion_provider.h"
@@ -22,7 +23,7 @@ using SuggestResults = std::vector<FileSuggestData>;
 
 FileSuggestKeyedService::FileSuggestKeyedService(
     Profile* profile,
-    app_list::PersistentProto<app_list::RemovedResultsProto> proto)
+    PersistentProto<app_list::RemovedResultsProto> proto)
     : profile_(profile), proto_(std::move(proto)) {
   DCHECK(profile_);
 
@@ -34,7 +35,7 @@ FileSuggestKeyedService::FileSuggestKeyedService(
   proto_.Init();
 
   if (features::IsLauncherContinueSectionWithRecentsEnabled() ||
-      features::IsForestFeatureEnabled()) {
+      IsForestFeatureEnabled()) {
     drive_file_suggestion_provider_ =
         std::make_unique<DriveRecentFileSuggestionProvider>(
             profile, base::BindRepeating(
@@ -138,7 +139,7 @@ void FileSuggestKeyedService::RemoveSuggestionBySearchResultAndNotify(
         search_result.id}});
 }
 
-app_list::PersistentProto<app_list::RemovedResultsProto>*
+PersistentProto<app_list::RemovedResultsProto>*
 FileSuggestKeyedService::GetProto(
     base::PassKey<app_list::RemovedResultsRanker>) {
   return &proto_;

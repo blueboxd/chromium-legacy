@@ -1,0 +1,11 @@
+features:
+- name: autofill
+  files:
+  - autofill.html
+- name: default
+  files:
+  - default.html
+- name: read-write-pseudos
+  files:
+  - readwrite-readonly-type-change.html
+  - readwrite-readonly.html

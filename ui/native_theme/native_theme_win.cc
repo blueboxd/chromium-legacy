@@ -4,11 +4,12 @@
 
 #include "ui/native_theme/native_theme_win.h"
 
+#include <windows.h>
+
 #include <stddef.h>
 #include <uxtheme.h>
 #include <vsstyle.h>
 #include <vssym32.h>
-#include <windows.h>
 
 #include <optional>
 #include <tuple>
@@ -21,6 +22,7 @@
 #include "base/no_destructor.h"
 #include "base/notreached.h"
 #include "base/task/sequenced_task_runner.h"
+#include "base/time/time.h"
 #include "base/win/dark_mode_support.h"
 #include "base/win/scoped_gdi_object.h"
 #include "base/win/scoped_hdc.h"
@@ -48,6 +50,7 @@
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/skia_conversions.h"
 #include "ui/native_theme/common_theme.h"
+#include "ui/native_theme/native_theme.h"
 
 // This was removed from Winvers.h but is still used.
 #if !defined(COLOR_MENUHIGHLIGHT)
@@ -264,6 +267,7 @@ void NativeThemeWin::Paint(cc::PaintCanvas* canvas,
                            const gfx::Rect& rect,
                            const ExtraParams& extra,
                            ColorScheme color_scheme,
+                           bool in_forced_colors,
                            const std::optional<SkColor>& accent_color) const {
   if (rect.IsEmpty())
     return;
@@ -360,8 +364,18 @@ void NativeThemeWin::ConfigureWebInstance() {
       should_use_system_accent_color());
 }
 
+std::optional<base::TimeDelta> NativeThemeWin::GetPlatformCaretBlinkInterval()
+    const {
+  static const size_t system_value = ::GetCaretBlinkTime();
+  if (system_value != 0) {
+    return (system_value == INFINITE) ? base::TimeDelta()
+                                      : base::Milliseconds(system_value);
+  }
+  return std::nullopt;
+}
+
 NativeThemeWin::~NativeThemeWin() {
-  // TODO(https://crbug.com/787692): Calling CloseHandles() here breaks
+  // TODO(crbug.com/40551168): Calling CloseHandles() here breaks
   // certain tests and the reliability bots.
   // CloseHandles();
 }

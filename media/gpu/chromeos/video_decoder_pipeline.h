@@ -199,6 +199,13 @@ class MEDIA_GPU_EXPORT VideoDecoderPipeline : public VideoDecoder,
       std::unique_ptr<MediaLog> media_log,
       mojo::PendingRemote<stable::mojom::StableVideoDecoder> oop_video_decoder,
       bool in_video_decoder_process);
+  // Same idea but creates a VideoDecoderPipeline instance intended to be
+  // adapted or bridged to a VideoDecodeAccelerator interface, for ARC clients.
+  static std::unique_ptr<VideoDecoder> CreateForVDAAdapterForARC(
+      const gpu::GpuDriverBugWorkarounds& workarounds,
+      scoped_refptr<base::SequencedTaskRunner> client_task_runner,
+      std::unique_ptr<DmabufVideoFramePool> frame_pool,
+      std::vector<Fourcc> renderable_fourccs);
 
   static std::unique_ptr<VideoDecoder> CreateForTesting(
       scoped_refptr<base::SequencedTaskRunner> client_task_runner,
@@ -475,6 +482,11 @@ class MEDIA_GPU_EXPORT VideoDecoderPipeline : public VideoDecoder,
 
   // See VP9Decoder for information on this.
   bool ignore_resolution_changes_to_smaller_for_testing_ = false;
+
+  // If we will need to tell the DecoderBufferTranscryptor to do VP9 superframe
+  // splitting.
+  bool decryption_needs_vp9_superframe_splitting_
+      GUARDED_BY_CONTEXT(decoder_sequence_checker_) = false;
 
   base::WeakPtr<VideoDecoderPipeline> decoder_weak_this_;
   // The weak pointer of this, bound to |decoder_task_runner_|.

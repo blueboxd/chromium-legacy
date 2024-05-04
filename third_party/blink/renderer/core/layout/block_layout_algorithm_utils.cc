@@ -59,8 +59,12 @@ BlockContentAlignment ComputeContentAlignment(const ComputedStyle& style,
   }
 
   // https://drafts.csswg.org/css-align/#typedef-overflow-position
-  // The "smart" default value (OverflowAlignment::kDefault) is not implemented.
-  // We handle it as kUnsafe.
+  // UAs that have not implemented the "smart" default behavior must behave as
+  // safe for align-content on block containers
+  if (RuntimeEnabledFeatures::AlignContentForScrollableBlocksEnabled() &&
+      overflow == OverflowAlignment::kDefault) {
+    overflow = OverflowAlignment::kSafe;
+  }
   const bool is_safe = overflow == OverflowAlignment::kSafe;
   switch (position) {
     case ContentPosition::kCenter:
@@ -185,6 +189,10 @@ void AlignBlockContent(const ComputedStyle& style,
 
   LayoutUnit free_space = builder.FragmentBlockSize() - content_block_size;
   if (style.AlignContentBlockCenter()) {
+    // Buttons have safe alignment.
+    if (builder.Node().IsButtonOrInputButton()) {
+      free_space = free_space.ClampNegativeToZero();
+    }
     builder.MoveChildrenInBlockDirection(free_space / 2);
     return;
   }

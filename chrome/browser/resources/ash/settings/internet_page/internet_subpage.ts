@@ -94,6 +94,11 @@ export class SettingsInternetSubpageElement extends
        */
       vpnProviders: Array,
 
+      isAddingBuiltInVpnProhibited: {
+        type: Boolean,
+        value: false,
+      },
+
       showSpinner: {
         type: Boolean,
         notify: true,
@@ -237,6 +242,7 @@ export class SettingsInternetSubpageElement extends
   defaultNetwork: OncMojo.NetworkStateProperties|null|undefined;
   deviceState: OncMojo.DeviceStateProperties|undefined;
   globalPolicy: GlobalPolicy|undefined;
+  isAddingBuiltInVpnProhibited: boolean;
   isCellularSetupActive: boolean;
   isConnectedToNonCellularNetwork: boolean;
   showSpinner: boolean;
@@ -869,6 +875,13 @@ export class SettingsInternetSubpageElement extends
         this.deviceState.type === NetworkType.kCellular;
   }
 
+  private shouldShowBluetoothDisabledTetherErrorMessage_(
+      deviceState: OncMojo.DeviceStateProperties|undefined): boolean {
+    return this.isInstantHotspotRebrandEnabled_ && !!deviceState &&
+        deviceState.type === NetworkType.kTether &&
+        deviceState.deviceState === DeviceStateType.kUninitialized;
+  }
+
   private hideNoNetworksMessage_(
       networkStateList: OncMojo.NetworkStateProperties[]): boolean {
     return this.shouldShowCellularNetworkList_() ||
@@ -879,9 +892,13 @@ export class SettingsInternetSubpageElement extends
       deviceState: OncMojo.DeviceStateProperties,
       _tetherDeviceState: OncMojo.DeviceStateProperties|undefined): string {
     const type = deviceState.type;
-    if (type === NetworkType.kTether ||
-        (!this.isInstantHotspotRebrandEnabled_ &&
-         type === NetworkType.kCellular && this.tetherDeviceState)) {
+    if (type === NetworkType.kTether && this.isInstantHotspotRebrandEnabled_) {
+      return this.i18n('internetNoTetherHosts');
+    }
+
+    if (!this.isInstantHotspotRebrandEnabled_ &&
+        (type === NetworkType.kCellular && this.tetherDeviceState ||
+         type === NetworkType.kTether)) {
       return this.i18nAdvanced('internetNoNetworksMobileData').toString();
     }
 
@@ -899,6 +916,10 @@ export class SettingsInternetSubpageElement extends
     return this.hasCompletedScanSinceLastEnabled_ ?
         this.i18n('internetNoNetworks') :
         this.i18n('networkScanningLabel');
+  }
+
+  private getBluetoothDisabledErrorMessageForTether_(): string {
+    return this.i18n('tetherEnableBluetooth');
   }
 
   private showGmsCoreNotificationsSection_(notificationsDisabledDeviceNames:

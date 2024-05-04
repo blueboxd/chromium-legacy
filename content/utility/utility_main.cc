@@ -23,6 +23,7 @@
 #include "content/common/content_switches_internal.h"
 #include "content/common/features.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
 #include "content/public/utility/content_utility_client.h"
@@ -75,6 +76,7 @@
 
 #if (BUILDFLAG(ENABLE_SCREEN_AI_SERVICE) && \
      (BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)))
+#include "services/screen_ai/public/cpp/utilities.h"  // nogncheck
 #include "services/screen_ai/sandbox/screen_ai_sandbox_hook_linux.h"  // nogncheck
 #endif
 
@@ -112,7 +114,8 @@ std::vector<std::string> GetNetworkContextsParentDirectories() {
     LOG(FATAL) << "Failed to read network context parents dirs from pipe.";
   }
 
-  base::Pickle dirs_pickle(dirs_str.data(), dirs_str.length());
+  base::Pickle dirs_pickle =
+      base::Pickle::WithUnownedBuffer(base::as_byte_span(dirs_str));
   base::PickleIterator dirs_pickle_iter(dirs_pickle);
 
   std::vector<std::string> dirs;
@@ -148,7 +151,7 @@ bool ShouldUseAmdGpuPolicy(sandbox::mojom::Sandbox sandbox_type) {
 #if BUILDFLAG(IS_WIN)
 // Handle pre-lockdown sandbox hooks
 bool PreLockdownSandboxHook(base::span<const uint8_t> delegate_blob) {
-  // TODO(1435571) Migrate other settable things to delegate_data.
+  // TODO(crbug.com/40265190) Migrate other settable things to delegate_data.
   CHECK(!delegate_blob.empty());
   content::mojom::sandbox::UtilityConfigPtr sandbox_config;
   if (!content::mojom::sandbox::UtilityConfig::Deserialize(
@@ -174,9 +177,6 @@ bool PreLockdownSandboxHook(base::span<const uint8_t> delegate_blob) {
       }
     }
   }
-  if (sandbox_config->pin_user32) {
-    base::win::PinUser32();
-  }
   return true;
 }
 #endif  // BUILDFLAG(IS_WIN)
@@ -201,11 +201,6 @@ int UtilityMain(MainFunctionParams parameters) {
       parameters.command_line->HasSwitch(switches::kMessageLoopTypeUi)
           ? base::MessagePumpType::UI
           : base::MessagePumpType::DEFAULT;
-
-  if (parameters.command_line->GetSwitchValueASCII(switches::kUtilitySubType) ==
-      on_device_model::mojom::OnDeviceModelService::Name_) {
-    CHECK(on_device_model::OnDeviceModelService::PreSandboxInit());
-  }
 
 #if BUILDFLAG(IS_MAC)
   auto sandbox_type =
@@ -251,13 +246,18 @@ int UtilityMain(MainFunctionParams parameters) {
     }
   }
 
+  if (utility_sub_type == on_device_model::mojom::OnDeviceModelService::Name_) {
+    CHECK(on_device_model::OnDeviceModelService::PreSandboxInit());
+  }
+
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
-  // Thread type delegate of the process should be registered before
-  // first thread type change in ChildProcess constructor.
-  // It also needs to be registered before the process has multiple threads,
-  // which may race with application of the sandbox.
+  // Thread type delegate of the process should be registered before first
+  // thread type change in ChildProcess constructor. It also needs to be
+  // registered before the process has multiple threads, which may race with
+  // application of the sandbox.
   if (base::FeatureList::IsEnabled(
-          features::kHandleChildThreadTypeChangesInBrowser)) {
+          features::kHandleChildThreadTypeChangesInBrowser) ||
+      base::FeatureList::IsEnabled(features::kSchedQoSOnResourcedForChrome)) {
     SandboxedProcessThreadTypeHandler::Create();
   }
 #endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
@@ -294,7 +294,10 @@ int UtilityMain(MainFunctionParams parameters) {
       break;
 #if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
     case sandbox::mojom::Sandbox::kScreenAI:
-      pre_sandbox_hook = base::BindOnce(&screen_ai::ScreenAIPreSandboxHook);
+      pre_sandbox_hook =
+          base::BindOnce(&screen_ai::ScreenAIPreSandboxHook,
+                         parameters.command_line->GetSwitchValuePath(
+                             screen_ai::GetBinaryPathSwitch()));
       break;
 #endif
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_ASH)
@@ -433,6 +436,10 @@ int UtilityMain(MainFunctionParams parameters) {
       switches::kUtilityProcess);
 
   run_loop.Run();
+
+  if (utility_sub_type == on_device_model::mojom::OnDeviceModelService::Name_) {
+    CHECK(on_device_model::OnDeviceModelService::Shutdown());
+  }
 
 #if defined(LEAK_SANITIZER)
   // Invoke LeakSanitizer before shutting down the utility thread, to avoid

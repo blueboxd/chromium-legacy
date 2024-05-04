@@ -17,19 +17,19 @@ source_set("android") {
 
   deps = [
     ":jni_headers",
-    "//chrome/browser/profiles:profile",
+    "//chrome/browser/profiles",
     "//chrome/browser/safe_browsing:advanced_protection",
     "//components/password_manager/core/browser/leak_detection",
     "//components/password_manager/core/common",
     "//components/prefs",
-    "//components/safe_browsing/core/browser/hashprefix_realtime:hash_realtime_utils",
     "//components/safe_browsing/core/common:safe_browsing_prefs",
+    "//components/safe_browsing/core/common/hashprefix_realtime:hash_realtime_utils",
     "//components/signin/public/identity_manager",
 
     # NOTE: This target cannot depend on //chrome/browser as the latter
     # indirectly depends on it. As a result, we need to add some dependencies
     # explicitly here to avoid flaky build failures that otherwise can occur.
-    # TODO(crbug.com/1222101): Resolve the circular dependency structure so
+    # TODO(crbug.com/40773813): Resolve the circular dependency structure so
     # that workarounds aren't needed.
     "//chrome/common",
     "//content/public/browser",

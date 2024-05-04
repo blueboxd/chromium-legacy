@@ -6,8 +6,7 @@
         "timestamp": "0",
         "registration_request": {
           "context_origin": "https://source.test",
-          "attribution_src_url": "https://reporter.test/register-source",
-          "source_type": "navigation"
+          "Attribution-Reporting-Eligible": "navigation-source"
         },
         "responses": [
           {
@@ -35,7 +34,6 @@
       {
         "timestamp": "1000",
         "registration_request": {
-          "attribution_src_url": "https://reporter.test/register-trigger",
           "context_origin": "https://destination.test"
         },
         "responses": [
@@ -88,7 +86,6 @@
       {
         "timestamp": "2000",
         "registration_request": {
-          "attribution_src_url": "https://reporter.test/register-trigger",
           "context_origin": "https://destination.test"
         },
         "responses": [
@@ -136,7 +133,6 @@
       {
         "timestamp": "3000",
         "registration_request": {
-          "attribution_src_url": "https://reporter.test/register-trigger",
           "context_origin": "https://destination.test"
         },
         "responses": [
@@ -190,7 +186,6 @@
       {
         "timestamp": "4000",
         "registration_request": {
-          "attribution_src_url": "https://reporter.test/register-trigger",
           "context_origin": "https://destination.test"
         },
         "responses": [
@@ -213,7 +208,6 @@
       {
         "timestamp": "5000",
         "registration_request": {
-          "attribution_src_url": "https://reporter.test/register-trigger",
           "context_origin": "https://destination.test"
         },
         "responses": [
@@ -238,7 +232,6 @@
       {
         "timestamp": "6000",
         "registration_request": {
-          "attribution_src_url": "https://reporter.test/register-trigger",
           "context_origin": "https://destination.test"
         },
         "responses": [
@@ -258,7 +251,6 @@
     ]
   },
   "output": {
-    "unparsable_registrations": [],
     "reports": [
       {
         "payload": [
@@ -276,6 +268,7 @@
       },
       {
         "payload": {
+          "aggregation_coordinator_origin": "https://coordinator.test",
           "attribution_destination": "https://destination.test",
           "histograms": [
             {
@@ -297,6 +290,7 @@
       },
       {
         "payload": {
+          "aggregation_coordinator_origin": "https://coordinator.test",
           "attribution_destination": "https://destination.test",
           "histograms": [
             {
@@ -314,6 +308,7 @@
       },
       {
         "payload": {
+          "aggregation_coordinator_origin": "https://coordinator.test",
           "attribution_destination": "https://destination.test",
           "histograms": [
             {
@@ -331,6 +326,7 @@
       },
       {
         "payload": {
+          "aggregation_coordinator_origin": "https://coordinator.test",
           "attribution_destination": "https://destination.test",
           "histograms": [
             {

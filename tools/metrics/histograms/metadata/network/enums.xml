@@ -55,6 +55,13 @@ chromium-metrics-reviews@google.com.
   <int value="1" label="Managed"/>
 </enum>
 
+<enum name="CAPPORTQueryResult">
+  <int value="0" label="Success"/>
+  <int value="1" label="Request failed"/>
+  <int value="2" label="Response failed"/>
+  <int value="3" label="Invalid response"/>
+</enum>
+
 <enum name="CaptivePortalNetworkState">
   <int value="0" label="UNKNOWN"/>
   <int value="1" label="ONLINE"/>
@@ -511,6 +518,13 @@ chromium-metrics-reviews@google.com.
   <int value="10"
       label="kDownstreamNetworkDisconnect: Hotspot disabled due to downstream
              network disconnected."/>
+  <int value="11"
+      label="kStartTimeout: Failed to start tethering within given time"/>
+  <int value="12"
+      label="kUpstreamNotAvailable: Hotspot disabled due to upstream network
+             not available."/>
+  <int value="13"
+      label="kUnknownError: Hotspot disabled due to an unknown error."/>
 </enum>
 
 <enum name="HotspotSetConfigResult">
@@ -1085,7 +1099,7 @@ chromium-metrics-reviews@google.com.
 
 <enum name="NetworkPortalStatus">
   <summary>
-    The portal status types from NetworkPortalDetector::CaptivePortalStatus
+    DEPRECATED. Remove with Network.NetworkPortalDetectorResult 2024-07-21.
   </summary>
   <int value="0" label="Unknown"/>
   <int value="1" label="Offline"/>
@@ -1327,14 +1341,23 @@ chromium-metrics-reviews@google.com.
   <int value="2" label="Suppress"/>
 </enum>
 
+<enum name="PortalDetectorAggregateCAPPORTResult">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Captive"/>
+  <int value="2" label="Open, no verified Internet"/>
+  <int value="3" label="Open, with verified Internet"/>
+</enum>
+
 <enum name="PortalDetectorAggregateResult">
   <int value="0" label="Unknown"/>
   <int value="1" label="No Connectivity"/>
   <int value="2" label="Partial Connectivity"/>
-  <int value="3" label="Redirect"/>
+  <int value="3" label="Portal-Redirect (302, 307)"/>
   <int value="4" label="Internet After Partial Connectivity"/>
-  <int value="5" label="Internet After Redirect"/>
+  <int value="5" label="Internet After Portal-Redirect"/>
   <int value="6" label="Internet"/>
+  <int value="7" label="Portal-Suspected (200)"/>
+  <int value="8" label="Internet After Portal-Suspected"/>
 </enum>
 
 <enum name="PortalDetectorResult">

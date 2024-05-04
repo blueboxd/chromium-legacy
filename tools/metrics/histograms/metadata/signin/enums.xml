@@ -351,6 +351,7 @@ chromium-metrics-reviews@google.com.
       label="Should not Show: Secondary account (deprecated 02-2024)"/>
   <int value="4" label="Should not Show: Unknown access point"/>
   <int value="5" label="Should not Show: Not from web sign in"/>
+  <int value="6" label="Should not Show: User choice"/>
 </enum>
 
 <enum name="SigninAccessPoint">
@@ -417,6 +418,10 @@ chromium-metrics-reviews@google.com.
   <int value="57" label="Save to Drive iOS"/>
   <int value="58" label="Tips Notification on iOS"/>
   <int value="59" label="Notifications Opt-In Screen Content Toggle"/>
+  <int value="60" label="Sign-in choice remembered"/>
+  <int value="61" label="Signout confirmation prompt in profile menu"/>
+  <int value="62" label="Signout confirmation prompt in settings"/>
+  <int value="63" label="NTP Identity Disc"/>
 </enum>
 
 <enum name="SigninAccountReconcilorState">
@@ -744,6 +749,10 @@ chromium-metrics-reviews@google.com.
     profile switch, enterprise related interception or sync merge data
     confirmation.
   </int>
+  <int value="34" label="Signed out during profile deletion">
+    The primary account might be signed out when a profile is being deleted, to
+    avoid that deletion of data propagates via sync to other devices.
+  </int>
 </enum>
 
 <enum name="SigninSSOIdentityListRequestCacheState">
@@ -797,6 +806,26 @@ chromium-metrics-reviews@google.com.
   <int value="19" label="LogoutTabHelper::DidFinishNavigation"/>
   <int value="20" label="ForceSigninReauthWithDifferentAccount"/>
   <int value="21" label="AccountReconcilor::RevokeTokensNotInCookies"/>
+</enum>
+
+<enum name="SyncButtonClicked">
+  <int value="0" label="Equal weighted sync opt-in button clicked"/>
+  <int value="1" label="Equal weighted sync cancel button clicked"/>
+  <int value="2" label="Equal weighted sync settings button clicked"/>
+  <int value="3" label="Not-Equal weighted sync opt-in button clicked"/>
+  <int value="4" label="Not-Equal weighted sync cancel button clicked"/>
+  <int value="5" label="Not-Equal weighted sync settings button clicked"/>
+  <int value="6" label="Equal weighted history sync opt-in button clicked"/>
+  <int value="7" label="Equal weighted history sync cancel button clicked"/>
+  <int value="8" label="Not-Equal weighted history sync opt-in button clicked"/>
+  <int value="9" label="Not-Equal weighted history sync cancel button clicked"/>
+</enum>
+
+<enum name="SyncButtonsType">
+  <int value="0" label="Equal weighted buttons on sync screen"/>
+  <int value="1" label="Not-Equal weighted buttons on sync screen"/>
+  <int value="2" label="Equal weighted buttons on history sync screen"/>
+  <int value="3" label="Not-Equal weighted buttons on history sync screen"/>
 </enum>
 
 <enum name="SyncErrorPromptUIAction">

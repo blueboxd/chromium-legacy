@@ -8,6 +8,7 @@
 #include "cc/resources/ui_resource_client.h"
 #include "content/browser/navigation_transitions/physics_model.h"
 #include "content/browser/renderer_host/navigation_request.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/back_forward_transition_animation_manager.h"
 #include "content/public/browser/render_frame_metadata_provider.h"
 #include "content/public/browser/render_widget_host_observer.h"
@@ -17,6 +18,7 @@
 #include "ui/gfx/animation/keyframe/keyframe_effect.h"
 
 namespace cc::slim {
+class SolidColorLayer;
 class UIResourceLayer;
 }
 
@@ -36,7 +38,8 @@ class CONTENT_EXPORT BackForwardTransitionAnimator
     : public RenderFrameMetadataProvider::Observer,
       public ui::WindowAndroidObserver,
       public WebContentsObserver,
-      public RenderWidgetHostObserver {
+      public RenderWidgetHostObserver,
+      public gfx::FloatAnimationCurve::Target {
  public:
   // To create the `BackForwardTransitionAnimator`. Tests can override this
   // factory to supply a customized version of `BackForwardTransitionAnimator`.
@@ -51,7 +54,8 @@ class CONTENT_EXPORT BackForwardTransitionAnimator
         WebContentsViewAndroid* web_contents_view_android,
         NavigationControllerImpl* controller,
         const ui::BackGestureEvent& gesture,
-        BackForwardTransitionAnimationManager::NavigationType nav_type,
+        BackForwardTransitionAnimationManager::NavigationDirection
+            nav_direction,
         int destination_entry_id,
         BackForwardTransitionAnimationManagerAndroid* animation_manager);
   };
@@ -69,13 +73,14 @@ class CONTENT_EXPORT BackForwardTransitionAnimator
       const NavigationRequest& navigation_request,
       RenderFrameHostImpl* old_host,
       RenderFrameHostImpl* new_host);
+  void OnNavigationCancelledBeforeStart(NavigationHandle* navigation_handle);
 
  protected:
   BackForwardTransitionAnimator(
       WebContentsViewAndroid* web_contents_view_android,
       NavigationControllerImpl* controller,
       const ui::BackGestureEvent& gesture,
-      BackForwardTransitionAnimationManager::NavigationType nav_type,
+      BackForwardTransitionAnimationManager::NavigationDirection nav_type,
       int destination_entry_id,
       BackForwardTransitionAnimationManagerAndroid* animation_manager);
 
@@ -97,10 +102,16 @@ class CONTENT_EXPORT BackForwardTransitionAnimator
   void OnActivityStarted() override {}
 
   // `WebContentsObserver`:
+  void DidStartNavigation(NavigationHandle* navigation_handle) override;
   void DidFinishNavigation(NavigationHandle* navigation_handle) override;
 
   // `RenderWidgetHostObserver`:
   void RenderWidgetHostDestroyed(RenderWidgetHost* widget_host) override;
+
+  // `gfx::FloatAnimationCurve::Target`:
+  void OnFloatAnimated(const float& value,
+                       int target_property_id,
+                       gfx::KeyframeModel* keyframe_model) override;
 
   // Called when each animation finishes. Advances `this` into the next state.
   // Being virtual for testing.
@@ -120,16 +131,27 @@ class CONTENT_EXPORT BackForwardTransitionAnimator
     // is no stateful changes during the in-progress transition period.
 
     // Set when `OnGestureCancelled` is called, signaling the user has decided
-    // to not start the history navigation. Also set when the gesture-initiated
-    // navigation is aborted or cancelled. In this state, an animation is being
-    // displayed to dismiss the screenshot and bring the old page back to the
-    // viewport.
+    // to not start the history navigation.
+    //
+    // Also set when the gesture-initiated navigation is aborted or cancelled.
+    // In this state, an animation is being displayed to dismiss the screenshot
+    // and bring the old page back to the viewport.
+    //
+    // Also set when the active page has a BeforeUnload handler and we need to
+    // animate the active page back so the user can interact with the
+    // BeforeUnload prompt. TODO(liuwilliam): Worth considering a
+    // `kDisplayingCancelAnimationForBeforeUnload` to reduce the compexity in
+    // the `State`'s transition.
     kDisplayingCancelAnimation,
 
-    // TODO(https://crbug.com/1421009): We need a state for the beforeUnload
-    // handler since it is an async state.
+    // Set after the browser has dispatched BeforeUnload IPC to the renderer and
+    // is waiting for the response, and the cancel animation has brought back
+    // the active page to the center of the viewport. This is an optional state:
+    // if the cancel animation hasn't finished before the renderer has
+    // responded, we will skip this state.
+    kWaitingForBeforeUnloadResponse,
 
-    // TODO(https://crbug.com/1421082): If we were to bring the active page back
+    // TODO(crbug.com/40896070): If we were to bring the active page back
     // to let the user interact with the prompt (e.g., camera access), we need a
     // state for that.
 
@@ -176,6 +198,37 @@ class CONTENT_EXPORT BackForwardTransitionAnimator
   static bool CanAdvanceTo(State from, State to);
   static std::string ToString(State state);
 
+  enum class NavigationState {
+    // Navigation has not begun.
+    kNotStarted = 0,
+
+    // Two states to track the BeforeUnload handler. They are optional if the
+    // active page does not have a BeforeUnload handler.
+    kBeforeUnloadDispatched,
+    // This state functions as a boolean flag to distinguish how we get to
+    // `kStarted`:
+    // - From `kNotStarted` as regular navigations, or;
+    // - From `kBeforeUnloadAckedProceed` as navigations with BeforeUnload
+    //   handlers.
+    // It's only set when the browser receives the renderer's ack with proceed,
+    // and advances to `kStarted` when the navigation starts, which happens
+    // within an atomic stack.
+    kBeforeUnloadAckedProceed,
+
+    // The navigation is cancelled before it starts. Terminal state 1/3.
+    // Reachable from `kNotStarted` and `kBeforeUnloadDispatched`.
+    kCancelledBeforeStart,
+    // The navigation has started in the browser.
+    kStarted,
+    // The navigation has either committed to a new doc, or an error page.
+    // Terminal state 2/3.
+    kCommitted,
+    // The navigation has been cancelled (cancelled by a secondary navigation,
+    // or aborted by the user). Terminal state 3/3.
+    kCancelled,
+  };
+  static std::string ToString(NavigationState state);
+
  private:
   // Initializes `effect_` for the scrim and cross-fade animation.
   void InitializeEffectForGestureProgressAnimation();
@@ -203,8 +256,10 @@ class CONTENT_EXPORT BackForwardTransitionAnimator
       cc::UIResourceId resource_id);
 
   // Apply the `result` to the screenshot and the web page, and tick the
-  // animation effector.
-  void SetLayerTransformationAndTickEffect(const PhysicsModel::Result& result);
+  // animation effector. Returns a boolean indicating if both the `PhysicsModel`
+  // and the `gfx::KeyFrameModels` have finished playing.
+  [[nodiscard]] bool SetLayerTransformationAndTickEffect(
+      const PhysicsModel::Result& result);
 
   void CloneOldSurfaceLayerAndRegisterNewFrameActivationObserver(
       RenderFrameHostImpl* old_host,
@@ -212,7 +267,8 @@ class CONTENT_EXPORT BackForwardTransitionAnimator
 
   void UnregisterNewFrameActivationObserver();
 
-  const BackForwardTransitionAnimationManager::NavigationType nav_type_;
+  const BackForwardTransitionAnimationManager::NavigationDirection
+      nav_direction_;
 
   // The ID of the destination `NavigationEntry`. Constant through out the
   // lifetime of a gesture so we are guaranteed to target the correct entry.
@@ -233,6 +289,9 @@ class CONTENT_EXPORT BackForwardTransitionAnimator
   cc::UIResourceId ui_resource_id_ =
       cc::UIResourceClient::kUninitializedUIResourceId;
 
+  // New layer for the scrim. Always on top of the `ui_resource_layer_`.
+  scoped_refptr<cc::slim::SolidColorLayer> screenshot_scrim_;
+
   // New layer for `screenshot_`.
   scoped_refptr<cc::slim::UIResourceLayer> ui_resource_layer_;
 
@@ -247,20 +306,9 @@ class CONTENT_EXPORT BackForwardTransitionAnimator
   // it's being displayed in the UI.
   std::unique_ptr<NavigationEntryScreenshot> screenshot_;
 
-  enum class NavigationTerminalState {
-    // Navigation has not begun, or not yet committed.
-    kNotStartedOrOngoing = 0,
-    // The navigation has either committed to a new doc, or an error page.
-    kCommitted,
-    // The navigation has been cancelled (cancelled by a secondary navigation,
-    // or
-    // aborted by the user).
-    kCancelled,
-  };
-  // Set via `OnDidNavigatePrimaryMainFramePreCommit()`. Records if the
-  // navigation has successfully committed.
-  NavigationTerminalState navigation_terminal_state_ =
-      NavigationTerminalState::kNotStartedOrOngoing;
+  // Tracks various state of the navigation request associated with this
+  // gesture. Only set if the navigation request is successfully created.
+  NavigationState navigation_state_ = NavigationState::kNotStarted;
 
   // If viz has already activated a frame for the new page before the invoke
   // animation finishes, we set this bit so we can start the crossfade animation
@@ -287,6 +335,9 @@ class CONTENT_EXPORT BackForwardTransitionAnimator
 
   // Set by the latest `OnGestureProgressed()`.
   ui::BackGestureEvent latest_progress_gesture_;
+
+  // A transition always suppresses sending input events to the renderer.
+  WebContentsImpl::ScopedIgnoreInputEvents ignore_input_scope_;
 
   State state_;
 };

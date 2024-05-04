@@ -196,15 +196,11 @@ class TestToolbarController : public ToolbarController {
 
   std::u16string GetMenuText(const ToolbarController::ResponsiveElementInfo&
                                  element_info) const override {
-    // TODO(crbug.com/1513684): Convert to MakeFixedFlatMap().
-    static const auto kToolbarToMenuTextMap =
-        base::MakeFixedFlatMapNonConsteval<ui::ElementIdentifier,
-                                           std::u16string>({
-            {kDummyButton1, u"DummyButton1"},
-            {kDummyButton2, u"DummyButton2"},
-            {kDummyButton3, u"DummyButton3"},
-            {kDummyButton4, u"DummyButton4"},
-        });
+    static const base::flat_map<ui::ElementIdentifier, std::u16string>
+        kToolbarToMenuTextMap = {{kDummyButton1, u"DummyButton1"},
+                                 {kDummyButton2, u"DummyButton2"},
+                                 {kDummyButton3, u"DummyButton3"},
+                                 {kDummyButton4, u"DummyButton4"}};
 
     return kToolbarToMenuTextMap.at(
         absl::get<ToolbarController::ElementIdInfo>(element_info.overflow_id)
@@ -281,6 +277,7 @@ class ToolbarControllerUnitTest : public ChromeViewsTestBase {
       auto button = std::make_unique<views::View>();
       button->SetProperty(views::kElementIdentifierKey, ids[i]);
       button->SetPreferredSize(kButtonSize);
+      button->SetAccessibleRole(ax::mojom::Role::kButton);
       button->SetAccessibleName(
           base::StrCat({u"DummyButton", base::NumberToString16(i)}));
       button->SetVisible(true);

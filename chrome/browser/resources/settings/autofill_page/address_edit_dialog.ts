@@ -125,7 +125,7 @@ export class SettingsAddressEditDialogElement extends
     this.countryInfo_.getCountryList().then(countryList => {
       if (this.address.guid && this.address.metadata !== undefined &&
           this.address.metadata.source === AddressSource.ACCOUNT) {
-        // TODO(crbug.com/1432505): remove temporary sanctioned countries
+        // TODO(crbug.com/40263955): remove temporary sanctioned countries
         // filtering.
         countryList = countryList.filter(
             country => !!country.countryCode &&
@@ -172,7 +172,7 @@ export class SettingsAddressEditDialogElement extends
     const countryCode = this.countryCode_ || this.countries_[0].countryCode;
     this.countryInfo_.getAddressFormat(countryCode as string).then(format => {
       this.address.languageCode = format.languageCode;
-      // TODO(crbug.com/1408117): validation is performed for addresses from
+      // TODO(crbug.com/40253382): validation is performed for addresses from
       // the user account only now, this flag should be removed when it
       // becomes the only type of addresses
       const skipValidation = !this.isAccountAddress_;
@@ -350,6 +350,9 @@ export class SettingsAddressEditDialogElement extends
   }
 
   private onCancelClick_(): void {
+    chrome.metricsPrivate.recordBoolean(
+        'Autofill.Settings.EditAddress',
+        /*confirmed=*/ false);
     this.$.dialog.cancel();
   }
 
@@ -369,6 +372,9 @@ export class SettingsAddressEditDialogElement extends
       this.address.fields.push({type: key, value: value});
     });
 
+    chrome.metricsPrivate.recordBoolean(
+        'Autofill.Settings.EditAddress',
+        /*confirmed=*/ true);
     this.fire_('save-address', this.address);
     this.$.dialog.close();
   }

@@ -14,8 +14,10 @@
 #include "services/accessibility/features/bindings_isolate_holder.h"
 #include "services/accessibility/features/v8_utils.h"
 #include "services/accessibility/public/mojom/accessibility_service.mojom.h"
+#include "ui/accessibility/ax_event_generator.h"
 #include "ui/accessibility/ax_node_position.h"
 #include "ui/accessibility/ax_tree_id.h"
+#include "ui/accessibility/mojom/ax_event.mojom.h"
 #include "ui/accessibility/platform/automation/automation_api_util.h"
 #include "ui/accessibility/platform/automation/automation_v8_router.h"
 #include "v8-function.h"
@@ -58,7 +60,17 @@ ui::AutomationV8Bindings* AutomationInternalBindings::GetAutomationV8Bindings()
 }
 
 void AutomationInternalBindings::NotifyTreeEventListenersChanged() {
-  // TODO(crbug.com/1357889): Implement.
+  // This task is posted because we need to wait for any pending mutations
+  // to be processed before sending the event.
+  CHECK(base::SequencedTaskRunner::HasCurrentDefault());
+  auto& main_runner = base::SequencedTaskRunner::GetCurrentDefault();
+
+  // `this` is safe here because this object outlives
+  // AutomationTreeManagerOwner, which in turn generates this kind of event.
+  auto task = base::BindOnce(&AutomationInternalBindings::
+                                 MaybeSendOnAllAutomationEventListenersRemoved,
+                             base::Unretained(this));
+  main_runner->PostTask(FROM_HERE, std::move(task));
 }
 
 void AutomationInternalBindings::ThrowInvalidArgumentsException(
@@ -167,7 +179,20 @@ std::string AutomationInternalBindings::GetTreeChangeTypeString(
 std::string AutomationInternalBindings::GetEventTypeString(
     const std::tuple<ax::mojom::Event, ui::AXEventGenerator::Event>& event_type)
     const {
-  // TODO(crbug.com/1357889): Implement based on Automation API.
+  // TODO(b:327258691): Share const strings between c++ and js for event names.
+  const ui::AXEventGenerator::Event& generated_event = std::get<1>(event_type);
+
+  // Resolve the proper event based on generated or non-generated event sources.
+  if (generated_event != ui::AXEventGenerator::Event::NONE &&
+      !ui::ShouldIgnoreGeneratedEventForAutomation(generated_event)) {
+    return ui::ToString(generated_event);
+  }
+
+  const ax::mojom::Event& event = std::get<0>(event_type);
+  if (event != ax::mojom::Event::kNone &&
+      !ui::ShouldIgnoreAXEventForAutomation(event)) {
+    return ui::ToString(event);
+  }
   return "";
 }
 

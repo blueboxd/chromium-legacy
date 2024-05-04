@@ -79,6 +79,7 @@ import org.chromium.chrome.browser.flags.ActivityType;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.page_insights.PageInsightsCoordinator;
 import org.chromium.chrome.browser.share.ShareUtils;
+import org.chromium.chrome.browser.ui.google_bottom_bar.GoogleBottomBarCoordinator;
 import org.chromium.components.browser_ui.widget.TintedDrawable;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.device.mojom.ScreenOrientationLockType;
@@ -211,6 +212,11 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
                     "package_names_allowlist",
                     "com.google.android.googlequicksearchbox");
 
+    /** Pipe ("|") separated list of package names allowed to use the interactive Omnibox. */
+    public static final StringCachedFieldTrialParameter OMNIBOX_ALLOWED_PACKAGE_NAMES =
+            ChromeFeatureList.newStringCachedFieldTrialParameter(
+                    ChromeFeatureList.SEARCH_IN_CCT, "omnibox_allowed_package_names", null);
+
     private static final String EXTRA_TWA_DISCLOSURE_UI =
             "androidx.browser.trusted.extra.DISCLOSURE_VERSION";
 
@@ -332,6 +338,7 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
     private boolean mShowShareItemInMenu;
     private List<CustomButtonParams> mToolbarButtons = new ArrayList<>(1);
     private List<CustomButtonParams> mBottombarButtons = new ArrayList<>(2);
+    private List<CustomButtonParams> mGoogleBottomBarButtons = new ArrayList<>();
     private RemoteViews mRemoteViews;
     @ActivitySideSheetDecorationType private int mSideSheetDecorationType;
     @ActivitySideSheetRoundedCornersPosition private int mSideSheetRoundedCornersPosition;
@@ -431,11 +438,7 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
 
     private static @Px int getInitialActivityWidth(
             boolean isTrustedIntent, @Px int initialActivityWidth, String packageName) {
-        if (!ChromeFeatureList.sCctResizableSideSheet.isEnabled()) return 0;
-
-        boolean enabledDueToThirdParty =
-                ChromeFeatureList.sCctResizableSideSheetForThirdParties.isEnabled()
-                        && isAllowedThirdParty(packageName);
+        boolean enabledDueToThirdParty = isAllowedThirdParty(packageName);
         return (isTrustedIntent || enabledDueToThirdParty) ? initialActivityWidth : 0;
     }
 
@@ -484,9 +487,10 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
 
     /**
      * Extracts the name that identifies the embedding app from the referrer.
-     * @return Host name as an id if the referrer is of a well-formed URI with app intent scheme.
-     *    If not, just the whole referrer string.
-     * TODO(https://crbug.com/1350252): Move this to IntentHandler.
+     *
+     * @return Host name as an id if the referrer is of a well-formed URI with app intent scheme. If
+     *     not, just the whole referrer string. TODO(crbug.com/40234088): Move this to
+     *     IntentHandler.
      */
     static String getAppIdFromReferrer(Activity activity) {
         String referrer =
@@ -787,8 +791,12 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
     private void retrieveCustomButtons(Intent intent, Context context) {
         assert mCustomButtonParams == null;
         mCustomButtonParams = CustomButtonParamsImpl.fromIntent(context, intent);
+        boolean isGoogleBottomBarEnabled = isGoogleBottomBarEnabled(this);
         for (CustomButtonParams params : mCustomButtonParams) {
-            if (!params.showOnToolbar()) {
+            if (isGoogleBottomBarEnabled
+                    && GoogleBottomBarCoordinator.shouldUseCustomButtonParams(params.getId())) {
+                mGoogleBottomBarButtons.add(params);
+            } else if (!params.showOnToolbar()) {
                 mBottombarButtons.add(params);
             } else if (mToolbarButtons.size() < getMaxCustomToolbarItems()) {
                 mToolbarButtons.add(params);
@@ -796,6 +804,12 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
                 Log.w(TAG, "Only %d items are allowed in the toolbar", getMaxCustomToolbarItems());
             }
         }
+    }
+
+    private static boolean isGoogleBottomBarEnabled(BrowserServicesIntentDataProvider provider) {
+        return GoogleBottomBarCoordinator.isFeatureEnabled()
+                && CustomTabsConnection.getInstance()
+                        .shouldEnableGoogleBottomBarForIntent(provider);
     }
 
     private int getMaxCustomToolbarItems() {
@@ -1113,9 +1127,7 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
 
     @Override
     public boolean isPartialCustomTab() {
-        return isPartialHeightCustomTab()
-                || (ChromeFeatureList.sCctResizableSideSheet.isEnabled()
-                        && isPartialWidthCustomTab());
+        return isPartialHeightCustomTab() || isPartialWidthCustomTab();
     }
 
     @Override
@@ -1134,6 +1146,11 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
     @Override
     public @Nullable String getClientPackageName() {
         return getClientPackageNameFromSessionOrCallingActivity(mIntent, mSession);
+    }
+
+    @Override
+    public @Nullable String getClientPackageNameIdentitySharing() {
+        return IntentUtils.safeGetStringExtra(mIntent, IntentHandler.EXTRA_LAUNCHED_FROM_PACKAGE);
     }
 
     @Override
@@ -1202,6 +1219,11 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
     @Override
     public List<CustomButtonParams> getCustomButtonsOnBottombar() {
         return mBottombarButtons;
+    }
+
+    @Override
+    public List<CustomButtonParams> getCustomButtonsOnGoogleBottomBar() {
+        return mGoogleBottomBarButtons;
     }
 
     @Override
@@ -1464,5 +1486,14 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
         return position == ACTIVITY_SIDE_SHEET_POSITION_DEFAULT
                 ? ACTIVITY_SIDE_SHEET_POSITION_END
                 : position;
+    }
+
+    @Override
+    public boolean isInteractiveOmniboxAllowed() {
+        if (!ChromeFeatureList.sSearchInCCT.isEnabled()) return false;
+        if (isIncognito()) return false;
+
+        return isPackageNameInList(
+                getClientPackageName(), OMNIBOX_ALLOWED_PACKAGE_NAMES.getValue());
     }
 }

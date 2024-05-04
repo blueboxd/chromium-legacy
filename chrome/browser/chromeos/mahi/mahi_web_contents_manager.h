@@ -52,6 +52,9 @@ class MahiWebContentsManager {
   // Virtual so we can override in tests.
   virtual void OnFocusedPageLoadComplete(content::WebContents* web_contents);
 
+  // Clears the focused web content state, and notifies mahi manager.
+  void ClearFocusedWebContentState();
+
   // Called when the browser context menu has been clicked by the user.
   // `question` is used only if `ButtonType` is kQA.
   // Virtual so we can override in tests.
@@ -63,6 +66,10 @@ class MahiWebContentsManager {
   // default return is false, for the cases when the focused page's
   // distillability has not been checked yet.
   bool IsFocusedPageDistillable();
+
+  // Virtual so that can be overridden in test.
+  virtual bool GetPrefValue() const;
+  void set_mahi_pref_lacros(bool value) { mahi_pref_lacros_ = value; }
 
  private:
   friend base::NoDestructor<MahiWebContentsManager>;
@@ -78,6 +85,8 @@ class MahiWebContentsManager {
   virtual ~MahiWebContentsManager();
 
   void OnGetSnapshot(const base::UnguessableToken& page_id,
+                     content::WebContents* web_contents,
+                     const base::Time& start_time,
                      const ui::AXTreeUpdate& snapshot);
 
   void OnFinishDistillableCheck(const base::UnguessableToken& page_id,
@@ -89,8 +98,7 @@ class MahiWebContentsManager {
                       GetContentCallback callback);
 
   // Should be called when user requests on the focused page. We should update
-  // the focused page state to the requested page state and reset the focused
-  // page state.
+  // the focused page state to the requested page state.
   void FocusedPageGotRequest();
 
   // Gets the favicon from the given web contents. Returns an empty imageskia if
@@ -98,13 +106,15 @@ class MahiWebContentsManager {
   // Virtual so we can override in tests.
   virtual gfx::ImageSkia GetFavicon(content::WebContents* web_contents) const;
 
-  // Default pages are all skipped including "about::blank" and
-  // "chrome://newtab/".
+  // Determines if the given web contents should be skipped for distillability
+  // check.
   bool ShouldSkip(content::WebContents* web_contents);
 
   std::unique_ptr<MahiContentExtractionDelegate> content_extraction_delegate_;
   std::unique_ptr<MahiBrowserClientImpl> client_;
   bool is_initialized_ = false;
+
+  bool mahi_pref_lacros_ = false;
 
   // The state of the web content which get focus in the browser.
   WebContentState focused_web_content_state_{/*url=*/GURL(), /*title=*/u""};

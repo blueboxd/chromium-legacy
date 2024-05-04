@@ -5,7 +5,7 @@
 import 'chrome-untrusted://compose/app.js';
 
 import type {ComposeAppElement} from 'chrome-untrusted://compose/app.js';
-import {Length, Tone, UserFeedback} from 'chrome-untrusted://compose/compose.mojom-webui.js';
+import { StyleModifier, UserFeedback } from 'chrome-untrusted://compose/compose.mojom-webui.js';
 import {ComposeApiProxyImpl} from 'chrome-untrusted://compose/compose_api_proxy.js';
 import {ComposeStatus} from 'chrome-untrusted://compose/compose_enums.mojom-webui.js';
 import {assertEquals} from 'chrome-untrusted://webui-test/chai_assert.js';
@@ -31,14 +31,15 @@ suite('ComposeApp', function() {
     document.body.innerHTML = window.trustedTypes!.emptyHTML;
   });
 
-  function mockResponse(
-      result: string = 'some response',
-      status: ComposeStatus = ComposeStatus.kOk): Promise<void> {
+  function mockResponse(triggeredFromModifier: boolean = false): Promise<void> {
     testProxy.remote.responseReceived({
-      status: status,
+      status: ComposeStatus.kOk,
+      result: 'some response',
       undoAvailable: false,
-      result,
+      redoAvailable: false,
+      providedByUser: false,
       onDeviceEvaluationUsed: false,
+      triggeredFromModifier,
     });
     return testProxy.remote.$.flushForTesting();
   }
@@ -72,7 +73,7 @@ suite('ComposeApp', function() {
 
     app.$.refreshButton.click();
     await testProxy.whenCalled('rewrite');
-    await mockResponse('refreshed');
+    await mockResponse(true);
 
     assertEquals(app.$.refreshButton, app.shadowRoot!.activeElement);
   });
@@ -94,11 +95,11 @@ suite('ComposeApp', function() {
     app.$.submitButton.click();
     await mockResponse();
 
-    app.$.lengthMenu.value = `${Length.kShorter}`;
+    app.$.lengthMenu.value = `${StyleModifier.kLonger}`;
     app.$.lengthMenu.dispatchEvent(new CustomEvent('change'));
 
     await testProxy.whenCalled('rewrite');
-    await mockResponse();
+    await mockResponse(true);
 
     assertEquals(app.$.lengthMenu, app.shadowRoot!.activeElement);
   });
@@ -109,11 +110,11 @@ suite('ComposeApp', function() {
     app.$.submitButton.click();
     await mockResponse();
 
-    app.$.toneMenu.value = `${Tone.kCasual}`;
+    app.$.toneMenu.value = `${StyleModifier.kCasual}`;
     app.$.toneMenu.dispatchEvent(new CustomEvent('change'));
 
     await testProxy.whenCalled('rewrite');
-    await mockResponse();
+    await mockResponse(true);
 
     assertEquals(app.$.toneMenu, app.shadowRoot!.activeElement);
   });
@@ -126,8 +127,11 @@ suite('ComposeApp', function() {
       response: {
         status: ComposeStatus.kOk,
         undoAvailable: true,
+        redoAvailable: false,
+        providedByUser: false,
         result: 'here is a result',
         onDeviceEvaluationUsed: false,
+        triggeredFromModifier: false,
       },
     });
     testProxy.setUndoResponse({
@@ -135,13 +139,16 @@ suite('ComposeApp', function() {
       response: {
         status: ComposeStatus.kOk,
         undoAvailable: false,
+        redoAvailable: false,
+        providedByUser: false,
         result: 'some undone result',
         onDeviceEvaluationUsed: false,
+        triggeredFromModifier: false,
       },
       webuiState: JSON.stringify({
         input: 'my old input',
-        selectedLength: Number(Length.kLonger),
-        selectedTone: Number(Tone.kCasual),
+        selectedLength: Number(StyleModifier.kUnset),
+        selectedTone: Number(StyleModifier.kUnset),
       }),
       feedback: UserFeedback.kUserFeedbackUnspecified,
     });

@@ -7,6 +7,7 @@
 
 #include <optional>
 #include <string>
+#include <string_view>
 
 #include "base/containers/span.h"
 #include "base/functional/callback_forward.h"
@@ -117,12 +118,13 @@ class CONTENT_EXPORT WebAuthenticationDelegate {
   // that testing is possible.
   virtual bool IsFocused(WebContents* web_contents);
 
-  // Returns a bool if the result of the isUserVerifyingPlatformAuthenticator
-  // API call originating from |render_frame_host| should be overridden with
-  // that value, or std::nullopt otherwise.
-  virtual std::optional<bool>
-  IsUserVerifyingPlatformAuthenticatorAvailableOverride(
-      RenderFrameHost* render_frame_host);
+  // Determines if the isUserVerifyingPlatformAuthenticator API call originating
+  // from |render_frame_host| should be overridden with a value. The callback is
+  // invoked with the override value, or with std::nullopt if it should not be
+  // overridden. The callback can be invoked synchronously or asynchronously.
+  virtual void IsUserVerifyingPlatformAuthenticatorAvailableOverride(
+      RenderFrameHost* render_frame_host,
+      base::OnceCallback<void(std::optional<bool>)> callback);
 
   // Returns the active WebAuthenticationRequestProxy for WebAuthn requests
   // originating from `caller_origin` in `browser_context`.
@@ -133,8 +135,12 @@ class CONTENT_EXPORT WebAuthenticationDelegate {
       BrowserContext* browser_context,
       const url::Origin& caller_origin);
 
-  // Returns true when the cloud enclave authenticator is available for use.
-  virtual bool IsEnclaveAuthenticatorAvailable(BrowserContext* browser_context);
+  // Invokes the callback with true when the cloud enclave authenticator is
+  // available for use, and false otherwise. The callback can be invoked
+  // synchronously or asynchronously.
+  virtual void IsEnclaveAuthenticatorAvailable(
+      BrowserContext* browser_context,
+      base::OnceCallback<void(bool)> callback);
 
 #if BUILDFLAG(IS_MAC)
   using TouchIdAuthenticatorConfig = device::fido::mac::AuthenticatorConfig;
@@ -170,7 +176,7 @@ class CONTENT_EXPORT AuthenticatorRequestClientDelegate
     : public device::FidoRequestHandlerBase::Observer {
  public:
   using AccountPreselectedCallback =
-      base::RepeatingCallback<void(device::PublicKeyCredentialDescriptor)>;
+      base::RepeatingCallback<void(device::DiscoverableCredentialMetadata)>;
 
   // Failure reasons that might be of interest to the user, so the embedder may
   // decide to inform the user.
@@ -281,6 +287,9 @@ class CONTENT_EXPORT AuthenticatorRequestClientDelegate
   // |resident_key_requirement| (which is only set when provided, i.e. for
   // makeCredential calls) reflects the value requested by the site.
   //
+  // For a create() request, |user_name| contains the contents of the
+  // |user.name| field, which is set by the site.
+  //
   // caBLE (also called the "hybrid" transport) must be configured in order to
   // be functional and |pairings_from_extension| contains any caBLEv1 pairings
   // that have been provided in an extension to the WebAuthn get() call.
@@ -297,6 +306,7 @@ class CONTENT_EXPORT AuthenticatorRequestClientDelegate
       device::FidoRequestType request_type,
       std::optional<device::ResidentKeyRequirement> resident_key_requirement,
       device::UserVerificationRequirement user_verification_requirement,
+      std::optional<std::string_view> user_name,
       base::span<const device::CableDiscoveryData> pairings_from_extension,
       bool is_enclave_authenticator_available,
       device::FidoDiscoveryFactory* fido_discovery_factory);
@@ -369,7 +379,7 @@ class CONTENT_EXPORT AuthenticatorRequestClientDelegate
   void BluetoothAdapterPowerChanged(bool is_powered_on) override;
   void FidoAuthenticatorAdded(
       const device::FidoAuthenticator& authenticator) override;
-  void FidoAuthenticatorRemoved(base::StringPiece device_id) override;
+  void FidoAuthenticatorRemoved(std::string_view device_id) override;
   bool SupportsPIN() const override;
   void CollectPIN(
       CollectPINOptions options,

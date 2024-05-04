@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ash/extensions/file_manager/image_loader_private_api.h"
 
+#include <utility>
+
 #include "base/base64.h"
 #include "base/containers/span.h"
 #include "base/files/file_util.h"
@@ -17,10 +19,10 @@
 #include "chrome/browser/ash/file_manager/fileapi_util.h"
 #include "chrome/browser/ash/file_manager/path_util.h"
 #include "chrome/browser/pdf/pdf_pref_names.h"
-#include "chrome/browser/printing/printing_service.h"
+#include "chrome/browser/pdf/pdf_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/image_loader_private.h"
-#include "chrome/services/printing/public/mojom/printing_service.mojom.h"
+#include "chrome/services/pdf/public/mojom/pdf_service.mojom.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/base/consent_level.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -245,7 +247,7 @@ void ImageLoaderPrivateGetPdfThumbnailFunction::FetchThumbnail(
   }
   memcpy(pdf_region.mapping.memory(), content.data(), content.size());
   DCHECK(!pdf_thumbnailer_.is_bound());
-  GetPrintingService()->BindPdfThumbnailer(
+  GetPdfService()->BindPdfThumbnailer(
       pdf_thumbnailer_.BindNewPipeAndPassReceiver());
   pdf_thumbnailer_.set_disconnect_handler(base::BindOnce(
       &ImageLoaderPrivateGetPdfThumbnailFunction::ThumbnailDisconnected,
@@ -256,7 +258,7 @@ void ImageLoaderPrivateGetPdfThumbnailFunction::FetchThumbnail(
     pdf_thumbnailer_->SetUseSkiaRendererPolicy(
         prefs->GetBoolean(prefs::kPdfUseSkiaRendererEnabled));
   }
-  auto params = printing::mojom::ThumbParams::New(
+  auto params = pdf::mojom::ThumbParams::New(
       /*size_px=*/size, /*dpi=*/gfx::Size(kDpi, kDpi),
       /*stretch_to_bounds=*/false, /*keep_aspect_ratio=*/true);
   pdf_thumbnailer_->GetThumbnail(

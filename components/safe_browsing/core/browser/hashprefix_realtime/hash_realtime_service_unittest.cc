@@ -15,10 +15,10 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "components/safe_browsing/core/browser/db/v4_protocol_manager_util.h"
-#include "components/safe_browsing/core/browser/hashprefix_realtime/hash_realtime_utils.h"
 #include "components/safe_browsing/core/browser/hashprefix_realtime/ohttp_key_service.h"
 #include "components/safe_browsing/core/browser/verdict_cache_manager.h"
 #include "components/safe_browsing/core/common/features.h"
+#include "components/safe_browsing/core/common/hashprefix_realtime/hash_realtime_utils.h"
 #include "components/safe_browsing/core/common/proto/safebrowsingv5.pb.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "google_apis/google_api_keys.h"
@@ -131,7 +131,11 @@ class TestOhttpKeyService : public OhttpKeyService {
  public:
   TestOhttpKeyService()
       : OhttpKeyService(/*url_loader_factory=*/nullptr,
-                        /*pref_service=*/nullptr) {}
+                        /*pref_service=*/nullptr,
+                        /*local_state=*/nullptr,
+                        /*country_getter=*/
+                        base::BindRepeating(&TestOhttpKeyService::GetCountry)) {
+  }
 
   void GetOhttpKey(OhttpKeyService::Callback callback) override {
     std::move(callback).Run(ohttp_key_);
@@ -147,6 +151,8 @@ class TestOhttpKeyService : public OhttpKeyService {
       scoped_refptr<net::HttpResponseHeaders> headers) override {
     lookup_response_notified_ = true;
   }
+
+  static std::optional<std::string> GetCountry() { return std::nullopt; }
 
   bool lookup_response_notified() { return lookup_response_notified_; }
 
@@ -204,8 +210,10 @@ class HashRealTimeServiceTest : public PlatformTest {
           /*sync_observer=*/nullptr);
       cache_manager_ptr = cache_manager_.get();
     }
-    ohttp_key_service_ = std::make_unique<TestOhttpKeyService>();
-    ohttp_key_service_->SetOhttpKey(kOhttpKey);
+    if (include_ohttp_key_service_) {
+      ohttp_key_service_ = std::make_unique<TestOhttpKeyService>();
+      ohttp_key_service_->SetOhttpKey(kOhttpKey);
+    }
     if (include_web_ui_delegate_) {
       webui_delegate_ = std::make_unique<MockWebUIDelegate>();
     }
@@ -674,6 +682,34 @@ class HashRealTimeServiceTest : public PlatformTest {
 
     EXPECT_EQ(network_context_.total_requests(), num_requests);
   }
+  // Starts a lookup on |url| when there is no OHTTP key service and a request
+  // should not be made. Confirms that the lookup's callback is called noting
+  // the lookup failed.
+  void RunNoOhttpKeyServiceTest(const GURL& url) {
+    EXPECT_CALL(*webui_delegate_, AddToHPRTLookupPings(_, _, _)).Times(0);
+    EXPECT_CALL(*webui_delegate_, AddToHPRTLookupResponses(_, _)).Times(0);
+    auto num_requests = network_context_.total_requests();
+    base::MockCallback<HPRTLookupResponseCallback> response_callback;
+    // Confirm request response will be called once with the relevant threat
+    // type.
+    EXPECT_CALL(response_callback,
+                Run(/*is_lookup_successful=*/false,
+                    /*sb_threat_type=*/testing::Eq(std::nullopt)))
+        .Times(1);
+    service_->StartLookup(url, response_callback.Get(),
+                          base::SequencedTaskRunner::GetCurrentDefault());
+    task_environment_.RunUntilIdle();
+
+    CheckPreRequestMetrics(/*expect_cache_hit_all_prefixes=*/false,
+                           /*expected_backoff_mode_status=*/false);
+    CheckNoNetworkRequestMetric();
+    CheckNoPostSuccessfulRequestMetrics();
+    CheckOperationOutcomeMetric(
+        HashRealTimeService::OperationOutcome::kNoOhttpKeyService);
+    ResetMetrics();
+
+    EXPECT_EQ(network_context_.total_requests(), num_requests);
+  }
   void RunSimpleRequest(const GURL& url,
                         const std::vector<V5::FullHash>& response_full_hashes) {
     // Set up request response.
@@ -739,6 +775,7 @@ class HashRealTimeServiceTest : public PlatformTest {
       std::make_unique<base::HistogramTester>();
   bool include_cache_manager_ = true;
   bool include_web_ui_delegate_ = true;
+  bool include_ohttp_key_service_ = true;
 };
 
 class HashRealTimeServiceNoCacheManagerTest : public HashRealTimeServiceTest {
@@ -746,7 +783,17 @@ class HashRealTimeServiceNoCacheManagerTest : public HashRealTimeServiceTest {
   HashRealTimeServiceNoCacheManagerTest() { include_cache_manager_ = false; }
 };
 
+class HashRealTimeServiceNoOhttpKeyServiceTest
+    : public HashRealTimeServiceTest {
+ public:
+  HashRealTimeServiceNoOhttpKeyServiceTest() {
+    include_ohttp_key_service_ = false;
+  }
+};
+
 TEST_F(HashRealTimeServiceTest, TestLookup_OneHash) {
+  using enum SBThreatType;
+
   struct TestCase {
     std::optional<V5::ThreatType> response_threat_type;
     std::optional<std::vector<V5::ThreatAttribute>> response_threat_attributes;
@@ -1717,6 +1764,14 @@ TEST_F(HashRealTimeServiceTest, TestBackoffModeRespected_NotCached) {
   // service is in backoff mode. This is checked within |RunBackoffRequestTest|.
   ResetMetrics();
   RunBackoffRequestTest(url);
+}
+
+TEST_F(HashRealTimeServiceNoOhttpKeyServiceTest, TestNoOhttpKeyService) {
+  // The lookup will fail since there is no OHTTP key service. This is checked
+  // within |RunNoOhttpKeyServiceTest|.
+  GURL url = GURL("https://example.test");
+  ResetMetrics();
+  RunNoOhttpKeyServiceTest(url);
 }
 
 TEST_F(HashRealTimeServiceTest, IsHashDetailMoreSevere) {

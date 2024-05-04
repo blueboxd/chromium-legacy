@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.tabmodel;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.supplier.ObservableSupplier;
@@ -88,6 +89,11 @@ public class EmptyTabModel implements IncognitoTabModel {
     }
 
     @Override
+    public @Nullable Tab getTabById(int tabId) {
+        return null;
+    }
+
+    @Override
     public int indexOf(Tab tab) {
         return INVALID_TAB_INDEX;
     }
@@ -123,14 +129,13 @@ public class EmptyTabModel implements IncognitoTabModel {
     }
 
     @Override
-    public boolean closeTab(Tab tab, boolean animate, boolean uponExit, boolean canUndo) {
+    public boolean closeTab(Tab tab, boolean uponExit, boolean canUndo) {
         return false;
     }
 
     @Override
-    public boolean closeTab(
-            Tab tab, Tab recommendedNextTab, boolean animate, boolean uponExit, boolean canUndo) {
-        return closeTab(tab, animate, uponExit, canUndo);
+    public boolean closeTab(Tab tab, Tab recommendedNextTab, boolean uponExit, boolean canUndo) {
+        return closeTab(tab, uponExit, canUndo);
     }
 
     @Override

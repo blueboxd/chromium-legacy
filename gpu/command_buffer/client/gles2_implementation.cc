@@ -340,6 +340,14 @@ GLES2Implementation::~GLES2Implementation() {
   // called but not the UnmapBuffer() pair.
   ClearMappedBufferRangeMap();
 
+  // Release remaining BufferMap mem; This is when a MapBufferSubData() is
+  // called but not the UnmapBufferSubData() pair.
+  ClearMappedBufferMap();
+
+  // Release remaining TextureMap mem; This is when a MapTexSubImage2D() is
+  // called but not the UnmapTexSubImage2D() pair.
+  ClearMappedTextureMap();
+
   // Release any per-context data in share group.
   share_group_->FreeContext(this);
 
@@ -473,9 +481,9 @@ GLuint GLES2Implementation::CreateGpuFenceCHROMIUM() {
                          ->AllocateIDAtOrAbove(last_gpu_fence_id_ + 1);
   // Out of paranoia, don't allow IDs to wrap around to avoid potential
   // collisions on reuse. The space of 2^32 IDs is enough for over a year of
-  // allocating two per frame at 60fps. TODO(crbug.com/790550): Revisit if this
-  // is an issue, for example by deferring ID release if they would be reissued
-  // too soon.
+  // allocating two per frame at 60fps. TODO(crbug.com/40552536): Revisit if
+  // this is an issue, for example by deferring ID release if they would be
+  // reissued too soon.
   CHECK(client_id > last_gpu_fence_id_) << "ID wrap prevented";
   last_gpu_fence_id_ = client_id;
   helper_->CreateGpuFenceINTERNAL(client_id);
@@ -4715,7 +4723,7 @@ void GLES2Implementation::WritePixelsYUVINTERNAL(
       pixel_offsets[1], pixel_offsets[2], pixel_offsets[3]);
 }
 
-void GLES2Implementation::ReadbackARGBImagePixelsINTERNAL(
+GLboolean GLES2Implementation::ReadbackARGBImagePixelsINTERNAL(
     const GLbyte* mailbox,
     const void* dst_sk_color_space,
     GLuint dst_color_space_size,
@@ -4761,7 +4769,7 @@ void GLES2Implementation::ReadbackARGBImagePixelsINTERNAL(
   ScopedMappedMemoryPtr scoped_shared_memory(total_size, helper(),
                                              mapped_memory_.get());
   if (!scoped_shared_memory.valid()) {
-    return;
+    return GL_FALSE;
   }
 
   GLint shm_id = scoped_shared_memory.shm_id();
@@ -4790,9 +4798,10 @@ void GLES2Implementation::ReadbackARGBImagePixelsINTERNAL(
 
   WaitForCmd();
   if (!*readback_result) {
-    return;
+    return GL_FALSE;
   }
   memcpy(pixels, static_cast<uint8_t*>(shm_address) + pixels_offset, dst_size);
+  return GL_FALSE;
 }
 
 void GLES2Implementation::ReadPixels(GLint xoffset,
@@ -5875,6 +5884,26 @@ void GLES2Implementation::ClearMappedBufferRangeMap() {
   mapped_buffer_range_map_.clear();
 }
 
+void GLES2Implementation::ClearMappedBufferMap() {
+  for (auto& buffer : mapped_buffers_) {
+    if (buffer.second.shm_memory) {
+      mapped_memory_->FreePendingToken(buffer.second.shm_memory,
+                                       helper_->InsertToken());
+    }
+  }
+  mapped_buffers_.clear();
+}
+
+void GLES2Implementation::ClearMappedTextureMap() {
+  for (auto& texture : mapped_textures_) {
+    if (texture.second.shm_memory) {
+      mapped_memory_->FreePendingToken(texture.second.shm_memory,
+                                       helper_->InsertToken());
+    }
+  }
+  mapped_textures_.clear();
+}
+
 void* GLES2Implementation::MapBufferRange(GLenum target,
                                           GLintptr offset,
                                           GLsizeiptr size,
@@ -6583,7 +6612,7 @@ void GLES2Implementation::GetQueryivEXT(GLenum target,
         // Overall reliable driver support for timestamps is limited, so we
         // disable the timestamp portion of this extension to encourage use of
         // the better supported time elapsed queries.
-        // TODO(crbug.com/1411579): Check the underlying driver's capability
+        // TODO(crbug.com/40254878): Check the underlying driver's capability
         // instead of disabling it directly.
         *params = 0;
         break;
@@ -6814,37 +6843,6 @@ void GLES2Implementation::DrawElementsInstancedBaseVertexBaseInstanceANGLE(
   CheckGLError();
 }
 
-void GLES2Implementation::ProduceTextureDirectCHROMIUM(GLuint texture,
-                                                       GLbyte* data) {
-  GPU_CLIENT_SINGLE_THREAD_CHECK();
-  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glProduceTextureDirectCHROMIUM("
-                     << static_cast<const void*>(data) << ")");
-  static_assert(std::is_trivially_copyable<Mailbox>::value,
-                "gpu::Mailbox is not trivially copyable");
-  Mailbox result = Mailbox::GenerateLegacyMailbox();
-  memcpy(data, result.name, sizeof(result.name));
-  helper_->ProduceTextureDirectCHROMIUMImmediate(texture, data);
-  CheckGLError();
-}
-
-GLuint GLES2Implementation::CreateAndConsumeTextureCHROMIUM(
-    const GLbyte* data) {
-  GPU_CLIENT_SINGLE_THREAD_CHECK();
-  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glCreateAndConsumeTextureCHROMIUM("
-                     << static_cast<const void*>(data) << ")");
-  const Mailbox& mailbox = *reinterpret_cast<const Mailbox*>(data);
-  DCHECK(mailbox.Verify()) << "CreateAndConsumeTextureCHROMIUM was passed a "
-                              "mailbox that was not generated by "
-                              "ProduceTextureDirectCHROMIUM.";
-  GLuint client_id;
-  GetIdHandler(SharedIdNamespaces::kTextures)->MakeIds(this, 0, 1, &client_id);
-  helper_->CreateAndConsumeTextureINTERNALImmediate(client_id, data);
-  if (share_group_->bind_generates_resource())
-    helper_->CommandBufferHelper::OrderingBarrier();
-  CheckGLError();
-  return client_id;
-}
-
 GLuint GLES2Implementation::CreateAndTexStorage2DSharedImageCHROMIUM(
     const GLbyte* mailbox_data) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
@@ -6854,7 +6852,6 @@ GLuint GLES2Implementation::CreateAndTexStorage2DSharedImageCHROMIUM(
   const Mailbox& mailbox = *reinterpret_cast<const Mailbox*>(mailbox_data);
   DCHECK(mailbox.Verify()) << "CreateAndTexStorage2DSharedImageCHROMIUM was "
                               "passed an invalid mailbox.";
-  DCHECK(mailbox.IsSharedImage());
   GLuint client_id;
   GetIdHandler(SharedIdNamespaces::kTextures)->MakeIds(this, 0, 1, &client_id);
   helper_->CreateAndTexStorage2DSharedImageINTERNALImmediate(client_id,

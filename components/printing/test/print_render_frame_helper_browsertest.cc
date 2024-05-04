@@ -8,13 +8,13 @@
 
 #include <cmath>
 #include <memory>
+#include <string_view>
 #include <utility>
 
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
-#include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -559,7 +559,7 @@ class PrintRenderFrameHelperTestBase : public content::RenderViewTest {
     base::RunLoop().RunUntilIdle();
   }
 
-  void OnPrintPagesInFrame(base::StringPiece frame_name) {
+  void OnPrintPagesInFrame(std::string_view frame_name) {
     blink::WebFrame* frame =
         GetMainFrame()->FindFrameByName(blink::WebString::FromUTF8(frame_name));
     ASSERT_TRUE(frame);
@@ -1354,7 +1354,7 @@ class PrintRenderFrameHelperPreviewTest
 
       auto mapped = param.content->metafile_data_region.Map();
       ASSERT_TRUE(mapped.IsValid());
-      EXPECT_TRUE(LooksLikePdf(mapped.GetMemoryAsSpan<const char>()));
+      EXPECT_TRUE(LooksLikePdf(mapped.GetMemoryAsSpan<const uint8_t>()));
     }
   }
 
@@ -1511,7 +1511,7 @@ TEST_F(PrintRenderFrameHelperPreviewTest, PrintPreviewHTMLWithPageMarginsCss) {
   OnPrintPreview();
 
   EXPECT_EQ(0u, preview_ui()->print_preview_pages_remaining());
-  VerifyDefaultPageLayout(519, 432, 216, 144, 21, 72, false, false);
+  VerifyDefaultPageLayout(518, 432, 216, 144, 22, 72, false, false);
   VerifyDidPreviewPage(true, 0);
   VerifyPreviewPageCount(1);
   VerifyPrintPreviewCancelled(false);
@@ -1714,7 +1714,7 @@ TEST_F(PrintRenderFrameHelperPreviewTest,
   EXPECT_EQ(0u, preview_ui()->print_preview_pages_remaining());
   // Since PRINT_TO_PDF is selected, pdf page size is equal to print media page
   // size.
-  VerifyDefaultPageLayout(915, 648, 216, 144, 21, 72, true, true);
+  VerifyDefaultPageLayout(914, 648, 216, 144, 22, 72, true, true);
   VerifyDidPreviewPage(true, 0);
   VerifyPreviewPageCount(1);
   VerifyPrintPreviewCancelled(false);
@@ -2979,7 +2979,7 @@ TEST_F(PrintRenderFrameHelperPreviewTest, LandscapeIgnorePageSizeAndMargin) {
   print_settings().Set(kSettingShouldPrintBackgrounds, true);
 
   base::Value::Dict custom_margins;
-  // TODO(crbug.com/1477190): Would be neat to test with different vertical and
+  // TODO(crbug.com/40280219): Would be neat to test with different vertical and
   // horizontal margins here.
   custom_margins.Set(kSettingMarginTop, 12);
   custom_margins.Set(kSettingMarginRight, 12);

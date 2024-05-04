@@ -10,6 +10,7 @@
 #include "base/feature_list.h"
 #include "base/supports_user_data.h"
 #include "components/subresource_filter/content/browser/content_subresource_filter_throttle_manager.h"
+#include "components/subresource_filter/content/shared/common/subresource_filter_utils.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "content/public/browser/frame_type.h"
 #include "content/public/browser/global_routing_id.h"
@@ -245,7 +246,7 @@ void ContentSubresourceFilterWebContentsHelper::DidFinishNavigation(
     ContentSubresourceFilterThrottleManager* throttle_manager =
         GetThrottleManager(navigation_handle->GetRenderFrameHost()->GetPage());
 
-    // TODO(https://crbug.com/1234233): This shouldn't be possible but, from
+    // TODO(crbug.com/40781366): This shouldn't be possible but, from
     // the investigation in https://crbug.com/1264667, this is likely a symptom
     // of navigating a detached WebContents so (very rarely) was causing
     // crashes.
@@ -272,7 +273,7 @@ void ContentSubresourceFilterWebContentsHelper::DidFinishNavigation(
         ThrottleManagerInUserDataContainer::GetForNavigationHandle(
             *navigation_handle);
 
-    // TODO(https://crbug.com/1234233): It is theoretically possible to start a
+    // TODO(crbug.com/40781366): It is theoretically possible to start a
     // navigation in an unattached WebContents (so the WebContents doesn't yet
     // have any WebContentsHelpers such as this class) but attach it before a
     // navigation completes. If that happened we won't have a throttle manager
@@ -295,7 +296,7 @@ void ContentSubresourceFilterWebContentsHelper::DidFinishNavigation(
     } else if (is_initial_navigation) {
       if (auto* rfh = content::RenderFrameHost::FromID(
               navigation_handle->GetPreviousRenderFrameHostId())) {
-        // TODO(https://crbug.com/1234233): Ideally this should only happen on
+        // TODO(crbug.com/40781366): Ideally this should only happen on
         // the first navigation in a frame, however, in some cases we actually
         // attach this TabHelper after a navigation has occurred (possibly
         // before it has finished). See
@@ -360,34 +361,6 @@ void ContentSubresourceFilterWebContentsHelper::OnChildFrameNavigationEvaluated(
     throttle_manager->OnChildFrameNavigationEvaluated(navigation_handle,
                                                       load_policy);
   }
-}
-
-bool IsInSubresourceFilterRoot(content::NavigationHandle* navigation_handle) {
-  // TODO(bokan): This should eventually consider Portals. crbug.com/1267506.
-  switch (navigation_handle->GetNavigatingFrameType()) {
-    case content::FrameType::kPrimaryMainFrame:
-    case content::FrameType::kPrerenderMainFrame:
-      return true;
-    case content::FrameType::kSubframe:
-    case content::FrameType::kFencedFrameRoot:
-      return false;
-  }
-}
-
-bool IsSubresourceFilterRoot(content::RenderFrameHost* rfh) {
-  return !rfh->GetParent() && !rfh->IsFencedFrameRoot();
-}
-
-content::Page& GetSubresourceFilterRootPage(content::RenderFrameHost* rfh) {
-  // This only "breaks out" from fenced frames since the desired behavior in
-  // other nested frame trees (e.g. portals) isn't clear. Otherwise we could
-  // just use GetOutermostMainFrame.
-  while (rfh->IsNestedWithinFencedFrame()) {
-    rfh = rfh->GetMainFrame()->GetParentOrOuterDocument();
-    DCHECK(rfh);
-  }
-
-  return rfh->GetPage();
 }
 
 }  // namespace subresource_filter

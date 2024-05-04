@@ -19,6 +19,7 @@
 #include "base/task/single_thread_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread.h"
+#include "components/embedder_support/android/util/features.h"
 #include "components/embedder_support/android/util/input_stream.h"
 #include "components/embedder_support/android/util/input_stream_reader.h"
 #include "net/base/io_buffer.h"
@@ -59,6 +60,23 @@ void OpenInputStreamOnWorkerThread(
   job_thread_task_runner->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), std::move(delegate),
                                 std::move(input_stream)));
+}
+
+network::ResourceRequest CopyResourceRequest(
+    const network::ResourceRequest& request) {
+  // If the features is disabled, copy the full request to preserve previous
+  // behavior.
+  if (!base::FeatureList::IsEnabled(
+          network::features::kAvoidResourceRequestCopies)) {
+    return request;
+  }
+
+  // Copy only the fields we need from the request.
+  network::ResourceRequest new_request;
+  new_request.url = request.url;
+  new_request.mode = request.mode;
+  new_request.headers = request.headers;
+  return new_request;
 }
 
 }  // namespace
@@ -125,7 +143,7 @@ AndroidStreamReaderURLLoader::AndroidStreamReaderURLLoader(
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
     std::unique_ptr<ResponseDelegate> response_delegate,
     std::optional<SecurityOptions> security_options)
-    : resource_request_(resource_request),
+    : resource_request_(CopyResourceRequest(resource_request)),
       response_head_(network::mojom::URLResponseHead::New()),
       reject_cors_request_(false),
       client_(std::move(client)),
@@ -168,7 +186,8 @@ void AndroidStreamReaderURLLoader::SetPriority(net::RequestPriority priority,
 void AndroidStreamReaderURLLoader::PauseReadingBodyFromNet() {}
 void AndroidStreamReaderURLLoader::ResumeReadingBodyFromNet() {}
 
-void AndroidStreamReaderURLLoader::Start() {
+void AndroidStreamReaderURLLoader::Start(
+    std::unique_ptr<InputStream> input_stream) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (reject_cors_request_ && response_head_->response_type ==
@@ -184,18 +203,22 @@ void AndroidStreamReaderURLLoader::Start() {
     return;
   }
 
-  base::ThreadPool::PostTask(
-      FROM_HERE, {base::MayBlock()},
-      base::BindOnce(
-          &OpenInputStreamOnWorkerThread,
-          base::SingleThreadTaskRunner::GetCurrentDefault(),
-          // This is intentional - the loader could be deleted while the
-          // callback is executing on the background thread. The delegate will
-          // be "returned" to the loader once the InputStream open attempt is
-          // completed.
-          std::move(response_delegate_),
-          base::BindOnce(&AndroidStreamReaderURLLoader::OnInputStreamOpened,
-                         weak_factory_.GetWeakPtr())));
+  if (input_stream) {
+    OnInputStreamOpened(std::move(response_delegate_), std::move(input_stream));
+  } else {
+    base::ThreadPool::PostTask(
+        FROM_HERE, {base::MayBlock()},
+        base::BindOnce(
+            &OpenInputStreamOnWorkerThread,
+            base::SingleThreadTaskRunner::GetCurrentDefault(),
+            // This is intentional - the loader could be deleted while the
+            // callback is executing on the background thread. The delegate will
+            // be "returned" to the loader once the InputStream open attempt is
+            // completed.
+            std::move(response_delegate_),
+            base::BindOnce(&AndroidStreamReaderURLLoader::OnInputStreamOpened,
+                           weak_factory_.GetWeakPtr())));
+  }
 }
 
 void AndroidStreamReaderURLLoader::OnInputStreamOpened(
@@ -237,12 +260,21 @@ void AndroidStreamReaderURLLoader::OnInputStreamOpened(
   input_stream_reader_wrapper_ = base::MakeRefCounted<InputStreamReaderWrapper>(
       std::move(input_stream), std::move(input_stream_reader));
 
-  base::ThreadPool::PostTaskAndReplyWithResult(
-      FROM_HERE, {base::MayBlock()},
-      base::BindOnce(&InputStreamReaderWrapper::Seek,
-                     input_stream_reader_wrapper_, byte_range_),
-      base::BindOnce(&AndroidStreamReaderURLLoader::OnReaderSeekCompleted,
-                     weak_factory_.GetWeakPtr()));
+  if (base::FeatureList::IsEnabled(features::kInputStreamOptimizations) &&
+      !byte_range_.IsValid()) {
+    // If the byte range is invalid, this means there was no range header and
+    // the whole response is wanted. In this case, no blocking calls are made to
+    // the underlying input stream, so it should be safe to do this without
+    // posting to a background thread.
+    OnReaderSeekCompleted(input_stream_reader_wrapper_->Seek(byte_range_));
+  } else {
+    base::ThreadPool::PostTaskAndReplyWithResult(
+        FROM_HERE, {base::MayBlock()},
+        base::BindOnce(&InputStreamReaderWrapper::Seek,
+                       input_stream_reader_wrapper_, byte_range_),
+        base::BindOnce(&AndroidStreamReaderURLLoader::OnReaderSeekCompleted,
+                       weak_factory_.GetWeakPtr()));
+  }
 }
 
 void AndroidStreamReaderURLLoader::OnReaderSeekCompleted(int result) {
@@ -435,10 +467,14 @@ void AndroidStreamReaderURLLoader::DidRead(int result) {
   producer_handle_ = pending_buffer_->Complete(result);
   pending_buffer_ = nullptr;
 
-  // TODO(timvolodine): consider using a sequenced task runner.
-  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
-      FROM_HERE, base::BindOnce(&AndroidStreamReaderURLLoader::ReadMore,
-                                weak_factory_.GetWeakPtr()));
+  if (base::FeatureList::IsEnabled(features::kInputStreamOptimizations)) {
+    ReadMore();
+  } else {
+    // TODO(timvolodine): consider using a sequenced task runner.
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+        FROM_HERE, base::BindOnce(&AndroidStreamReaderURLLoader::ReadMore,
+                                  weak_factory_.GetWeakPtr()));
+  }
 }
 
 void AndroidStreamReaderURLLoader::OnDataPipeWritable(MojoResult result) {

@@ -22,6 +22,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.LaunchIntentDispatcher;
 import org.chromium.chrome.browser.browserservices.intents.BrowserServicesIntentDataProvider.CustomTabsUiType;
 import org.chromium.chrome.browser.browserservices.permissiondelegation.InstalledWebappPermissionManager;
+import org.chromium.chrome.browser.browsing_data.BrowsingDataBridge;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.feedback.HelpAndFeedbackLauncherImpl;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -43,6 +44,7 @@ import org.chromium.components.browser_ui.settings.ManagedPreferenceDelegate;
 import org.chromium.components.browser_ui.settings.SettingsLauncher;
 import org.chromium.components.browser_ui.site_settings.SiteSettingsCategory;
 import org.chromium.components.browser_ui.site_settings.SiteSettingsDelegate;
+import org.chromium.components.browsing_data.content.BrowsingDataModel;
 import org.chromium.components.content_settings.ContentSettingsType;
 import org.chromium.components.embedder_support.util.Origin;
 import org.chromium.components.favicon.LargeIconBridge;
@@ -64,6 +66,8 @@ public class ChromeSiteSettingsDelegate implements SiteSettingsDelegate {
 
     private final Context mContext;
     private final Profile mProfile;
+    private final PrivacySandboxBridge mPrivacySandboxBridge;
+    private BrowsingDataModel mBrowsingDataModel;
     private ManagedPreferenceDelegate mManagedPreferenceDelegate;
     private PrivacySandboxSnackbarController mPrivacySandboxController;
     private LargeIconBridge mLargeIconBridge;
@@ -71,6 +75,7 @@ public class ChromeSiteSettingsDelegate implements SiteSettingsDelegate {
     public ChromeSiteSettingsDelegate(Context context, Profile profile) {
         mContext = context;
         mProfile = profile;
+        mPrivacySandboxBridge = new PrivacySandboxBridge(profile);
     }
 
     @Override
@@ -78,6 +83,11 @@ public class ChromeSiteSettingsDelegate implements SiteSettingsDelegate {
         if (mLargeIconBridge != null) {
             mLargeIconBridge.destroy();
             mLargeIconBridge = null;
+        }
+
+        if (mBrowsingDataModel != null) {
+            mBrowsingDataModel.destroy();
+            mBrowsingDataModel = null;
         }
     }
 
@@ -115,6 +125,11 @@ public class ChromeSiteSettingsDelegate implements SiteSettingsDelegate {
             mLargeIconBridge = new LargeIconBridge(mProfile);
         }
         FaviconLoader.loadFavicon(mContext, mLargeIconBridge, faviconUrl, callback);
+    }
+
+    @Override
+    public boolean isBrowsingDataModelFeatureEnabled() {
+        return ChromeFeatureList.isEnabled(ChromeFeatureList.BROWSING_DATA_MODEL);
     }
 
     @Override
@@ -156,6 +171,12 @@ public class ChromeSiteSettingsDelegate implements SiteSettingsDelegate {
     @Override
     public boolean isQuietNotificationPromptsFeatureEnabled() {
         return ChromeFeatureList.isEnabled(ChromeFeatureList.QUIET_NOTIFICATION_PROMPTS);
+    }
+
+    @Override
+    public boolean isPermissionDedicatedCpssSettingAndroidFeatureEnabled() {
+        return ChromeFeatureList.isEnabled(
+                ChromeFeatureList.PERMISSION_DEDICATED_CPSS_SETTING_ANDROID);
     }
 
     @Override
@@ -216,7 +237,8 @@ public class ChromeSiteSettingsDelegate implements SiteSettingsDelegate {
                         null);
     }
 
-    // TODO(crbug.com/1494876): Migrate to `HelpAndFeedbackLauncherImpl` when Chrome has migrated to
+    // TODO(crbug.com/40286347): Migrate to `HelpAndFeedbackLauncherImpl` when Chrome has migrated
+    // to
     // Open-to-Context (OTC) and new p-links work.
     @Override
     public void launchStorageAccessHelpActivity(Activity currentActivity) {
@@ -253,7 +275,7 @@ public class ChromeSiteSettingsDelegate implements SiteSettingsDelegate {
         // Only show the snackbar when Privacy Sandbox APIs are enabled.
         if (!isAnyPrivacySandboxApiEnabledV4()) return;
 
-        if (PrivacySandboxBridge.isPrivacySandboxRestricted()) return;
+        if (mPrivacySandboxBridge.isPrivacySandboxRestricted()) return;
 
         mPrivacySandboxController.showSnackbar();
     }
@@ -274,23 +296,30 @@ public class ChromeSiteSettingsDelegate implements SiteSettingsDelegate {
 
     @Override
     public boolean isFirstPartySetsDataAccessEnabled() {
-        return PrivacySandboxBridge.isFirstPartySetsDataAccessEnabled();
+        return mPrivacySandboxBridge.isFirstPartySetsDataAccessEnabled();
     }
 
     @Override
     public boolean isFirstPartySetsDataAccessManaged() {
-        return PrivacySandboxBridge.isFirstPartySetsDataAccessManaged();
+        return mPrivacySandboxBridge.isFirstPartySetsDataAccessManaged();
     }
 
     @Override
     public boolean isPartOfManagedFirstPartySet(String origin) {
-        return PrivacySandboxBridge.isPartOfManagedFirstPartySet(origin);
+        return mPrivacySandboxBridge.isPartOfManagedFirstPartySet(origin);
     }
 
     @Override
     public boolean shouldShowTrackingProtectionUI() {
         return UserPrefs.get(mProfile).getBoolean(Pref.TRACKING_PROTECTION3PCD_ENABLED)
-                || ChromeFeatureList.isEnabled(ChromeFeatureList.TRACKING_PROTECTION_3PCD);
+                || ChromeFeatureList.isEnabled(ChromeFeatureList.TRACKING_PROTECTION_3PCD)
+                || ChromeFeatureList.isEnabled(
+                        ChromeFeatureList.TRACKING_PROTECTION_SETTINGS_LAUNCH);
+    }
+
+    @Override
+    public boolean shouldShowTrackingProtectionLaunchUI() {
+        return ChromeFeatureList.isEnabled(ChromeFeatureList.TRACKING_PROTECTION_SETTINGS_LAUNCH);
     }
 
     @Override
@@ -300,12 +329,12 @@ public class ChromeSiteSettingsDelegate implements SiteSettingsDelegate {
 
     @Override
     public void setFirstPartySetsDataAccessEnabled(boolean enabled) {
-        PrivacySandboxBridge.setFirstPartySetsDataAccessEnabled(enabled);
+        mPrivacySandboxBridge.setFirstPartySetsDataAccessEnabled(enabled);
     }
 
     @Override
     public String getFirstPartySetOwner(String memberOrigin) {
-        return PrivacySandboxBridge.getFirstPartySetOwner(memberOrigin);
+        return mPrivacySandboxBridge.getFirstPartySetOwner(memberOrigin);
     }
 
     @Override
@@ -328,7 +357,7 @@ public class ChromeSiteSettingsDelegate implements SiteSettingsDelegate {
     }
 
     @Override
-    // TODO(crbug.com/1393116): Look into a more scalable pattern like
+    // TODO(crbug.com/40880723): Look into a more scalable pattern like
     // notifyPageOpened(String className).
     public void notifyRequestDesktopSiteSettingsPageOpened() {
         RequestDesktopUtils.notifyRequestDesktopSiteSettingsPageOpened(mProfile);
@@ -338,6 +367,22 @@ public class ChromeSiteSettingsDelegate implements SiteSettingsDelegate {
     public boolean shouldShowSettingsOffboardingNotice() {
         return ChromeFeatureList.isEnabled(
                         ChromeFeatureList.TRACKING_PROTECTION_SETTINGS_PAGE_ROLLBACK_NOTICE)
-                && TrackingProtectionBridge.isOffboarded();
+                && new TrackingProtectionBridge(mProfile).isOffboarded();
+    }
+
+    @Override
+    public boolean shouldShowPrivacySandboxRwsUi() {
+        return ChromeFeatureList.isEnabled(
+                ChromeFeatureList.PRIVACY_SANDBOX_RELATED_WEBSITE_SETS_UI);
+    }
+
+    @Override
+    public void getBrowsingDataModel(Callback<BrowsingDataModel> callback) {
+        BrowsingDataBridge.buildBrowsingDataModelFromDisk(
+                mProfile,
+                model -> {
+                    mBrowsingDataModel = model;
+                    callback.onResult(mBrowsingDataModel);
+                });
     }
 }

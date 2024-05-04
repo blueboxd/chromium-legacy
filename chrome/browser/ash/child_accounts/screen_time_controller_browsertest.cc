@@ -147,9 +147,10 @@ class ScreenTimeControllerTest : public MixinBasedInProcessBrowserTest {
                                           LoggedInUserMixin::LogInType::kChild,
                                           embedded_test_server(),
                                           this,
-                                          true /*should_launch_browser*/,
-                                          std::nullopt /*account_id*/,
-                                          false /*include_initial_user*/};
+                                          /*should_launch_browser=*/true,
+                                          /*account_id=*/std::nullopt,
+                                          /*auth_config=*/std::nullopt,
+                                          /*include_initial_user=*/false};
 };
 
 // Tests a simple lock override.
@@ -553,7 +554,9 @@ IN_PROC_BROWSER_TEST_F(ScreenTimeControllerTest, DefaultDailyLimit) {
 }
 
 // Tests that the bedtime locks an active session when it is reached.
-IN_PROC_BROWSER_TEST_F(ScreenTimeControllerTest, ActiveSessionBedtime) {
+// TODO(crbug.com/334319436): Flaky test.
+IN_PROC_BROWSER_TEST_F(ScreenTimeControllerTest,
+                       DISABLED_ActiveSessionBedtime) {
   LogInChildAndSetupClockWithTime("1 Jan 2018 10:00:00 PST");
 
   system::TimezoneSettings::GetInstance()->SetTimezoneFromID(u"PST");
@@ -584,7 +587,9 @@ IN_PROC_BROWSER_TEST_F(ScreenTimeControllerTest, ActiveSessionBedtime) {
 }
 
 // Tests that the daily limit locks the device when it is reached.
-IN_PROC_BROWSER_TEST_F(ScreenTimeControllerTest, ActiveSessionDailyLimit) {
+// TODO(crbug.com/334304756): Flaky on CrOS.
+IN_PROC_BROWSER_TEST_F(ScreenTimeControllerTest,
+                       DISABLED_ActiveSessionDailyLimit) {
   LogInChildAndSetupClockWithTime("1 Jan 2018 10:00:00 PST");
 
   system::TimezoneSettings::GetInstance()->SetTimezoneFromID(u"PST");
@@ -717,7 +722,8 @@ IN_PROC_BROWSER_TEST_F(ScreenTimeControllerTest,
 }
 
 // Tests if call the observers for usage time limit warning.
-IN_PROC_BROWSER_TEST_F(ScreenTimeControllerTest, CallObservers) {
+// TODO(crbug.com/334160972): Flaky on CrOS.
+IN_PROC_BROWSER_TEST_F(ScreenTimeControllerTest, DISABLED_CallObservers) {
   LogInChildAndSetupClockWithTime("1 Jan 2018 10:00:00 PST");
 
   system::TimezoneSettings::GetInstance()->SetTimezoneFromID(u"PST");

@@ -17,6 +17,7 @@
 #include "base/strings/levenshtein_distance.h"
 #include "base/strings/string_util.h"
 #include "base/types/cxx23_to_underlying.h"
+#include "components/autofill/core/browser/address_data_manager.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/field_type_utils.h"
 #include "components/autofill/core/browser/field_types.h"
@@ -127,7 +128,8 @@ bool ProfileTokenQuality::AddObservationsForFilledForm(
     const PersonalDataManager& pdm) {
   CHECK_EQ(form_structure.field_count(), form_data.fields.size());
 
-  std::vector<AutofillProfile*> other_profiles = pdm.GetProfiles();
+  std::vector<AutofillProfile*> other_profiles =
+      pdm.address_data_manager().GetProfiles();
   std::erase_if(other_profiles, [&](AutofillProfile* p) {
     return p->guid() == profile_->guid();
   });
@@ -166,7 +168,7 @@ bool ProfileTokenQuality::AddObservationsForFilledForm(
     possible_observations.emplace_back(
         stored_type,
         Observation{.type = base::to_underlying(GetObservationTypeFromField(
-                        field, form_data.fields[i].value, other_profiles,
+                        field, form_data.fields[i].value(), other_profiles,
                         pdm.app_locale())),
                     .form_hash = hash});
   }
@@ -194,11 +196,11 @@ void ProfileTokenQuality::SaveObservationsForFilledFormForAllSubmittedProfiles(
       // for the profile that was used to autofill the field.
       continue;
     }
-    AutofillProfile* profile =
-        pdm.GetProfileByGUID(*field->autofill_source_profile_guid());
+    AutofillProfile* profile = pdm.address_data_manager().GetProfileByGUID(
+        *field->autofill_source_profile_guid());
     if (profile && profile->token_quality().AddObservationsForFilledForm(
                        form_structure, form_data, pdm)) {
-      pdm.UpdateProfile(*profile);
+      pdm.address_data_manager().UpdateProfile(*profile);
     }
   }
 }
@@ -226,7 +228,6 @@ ProfileTokenQuality::GetObservationTypesForFieldType(FieldType type) const {
 
 void ProfileTokenQuality::AddObservation(FieldType type,
                                          Observation observation) {
-  CHECK(GetSupportedTypes(*profile_).contains(type)) << FieldTypeToString(type);
   CHECK_NE(observation.type, base::to_underlying(ObservationType::kUnknown));
   base::circular_deque<Observation>& observations =
       observations_[profile_->GetStorableTypeOf(type)];
@@ -267,7 +268,7 @@ ObservationType ProfileTokenQuality::GetObservationTypeFromField(
                          [](AutofillProfile* p) { return p->guid(); }));
 
   const FieldType type = field.Type().GetStorableType();
-  if (field.is_autofilled) {
+  if (field.is_autofilled()) {
     // The filled value was accepted without editing.
     return GetDatabaseStoredTypesOfAutofillProfile().contains(type)
                ? ObservationType::kAccepted

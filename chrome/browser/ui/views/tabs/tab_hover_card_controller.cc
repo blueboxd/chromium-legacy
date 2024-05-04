@@ -26,6 +26,7 @@
 #include "chrome/browser/ui/views/tabs/tab_hover_card_thumbnail_observer.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
+#include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/common/pref_names.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
 #include "components/omnibox/browser/omnibox_popup_view.h"
@@ -145,6 +146,16 @@ base::TimeDelta GetShowDelay(int tab_width) {
   return delay;
 }
 
+bool IsBrowserForSystemWebApp(const Browser* browser) {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  const auto* const app_controller = browser->app_controller();
+  if (app_controller && app_controller->system_app()) {
+    return true;
+  }
+#endif
+  return false;
+}
+
 }  // anonymous namespace
 
 //-------------------------------------------------------------------
@@ -201,7 +212,8 @@ class TabHoverCardController::EventSniffer : public ui::EventObserver {
 bool TabHoverCardController::disable_animations_for_testing_ = false;
 
 TabHoverCardController::TabHoverCardController(TabStrip* tab_strip)
-    : tab_strip_(tab_strip) {
+    : tab_strip_(tab_strip),
+      tab_resource_usage_collector_(TabResourceUsageCollector::Get()) {
   if (PrefService* pref_service = g_browser_process->local_state()) {
     // Hovercard image previews are still not fully rolled out to all platforms
     // so we default the pref to the state of the feature rollout.
@@ -209,14 +221,26 @@ TabHoverCardController::TabHoverCardController(TabStrip* tab_strip)
                                       base::Value(base::FeatureList::IsEnabled(
                                           features::kTabHoverCardImages)));
 
+    pref_change_registrar_.Init(pref_service);
+
     // Register for previews enabled pref change events.
     hover_card_image_previews_enabled_ = AreHoverCardImagesEnabled();
-    pref_change_registrar_.Init(pref_service);
     pref_change_registrar_.Add(
         prefs::kHoverCardImagesEnabled,
         base::BindRepeating(
             &TabHoverCardController::OnHovercardImagesEnabledChanged,
             base::Unretained(this)));
+
+    // Register for memory usage enabled pref change events. Exclude
+    // tracking them for system web apps (e.g. ChromeOS terminal app).
+    if (!IsBrowserForSystemWebApp(tab_strip_->GetBrowser())) {
+      OnHovercardMemoryUsageEnabledChanged();
+      pref_change_registrar_.Add(
+          prefs::kHoverCardMemoryUsageEnabled,
+          base::BindRepeating(
+              &TabHoverCardController::OnHovercardMemoryUsageEnabledChanged,
+              base::Unretained(this)));
+    }
   }
 
   // Possibly apply memory pressure override for testing.
@@ -395,7 +419,7 @@ void TabHoverCardController::ShowHoverCard(bool is_initial,
   // CreateHoverCard() above. Regardless, the validity needs to be checked
   // before the next call.
   // See: crbug.com/1295601, crbug.com/1322117, crbug.com/1348956
-  // TODO(crbug.com/1364303): look into this and figure out what is actually
+  // TODO(crbug.com/40865488): look into this and figure out what is actually
   // happening.
   if (!TargetTabIsValid()) {
     HideHoverCard();
@@ -447,7 +471,7 @@ void TabHoverCardController::HideHoverCard() {
 
 void TabHoverCardController::OnViewIsDeleting(views::View* observed_view) {
   if (hover_card_ == observed_view) {
-    TabResourceUsageCollector::Get()->RemoveObserver(this);
+    tab_resource_usage_collector_->RemoveObserver(this);
     delayed_show_timer_.Stop();
     hover_card_observation_.Reset();
     event_sniffer_.reset();
@@ -499,7 +523,14 @@ bool TabHoverCardController::ArePreviewsEnabled() const {
 }
 
 void TabHoverCardController::CreateHoverCard(Tab* tab) {
-  hover_card_ = new TabHoverCardBubbleView(tab);
+  TabHoverCardBubbleView::InitParams params;
+  params.use_animation = UseAnimations();
+  // In some browser types (e.g. ChromeOS terminal app) hide the domain label.
+  params.show_domain = !IsBrowserForSystemWebApp(tab_strip_->GetBrowser());
+  params.show_memory_usage = hover_card_memory_usage_enabled_;
+  params.show_image_preview = hover_card_image_previews_enabled_;
+
+  hover_card_ = new TabHoverCardBubbleView(tab, params);
   hover_card_observation_.Observe(hover_card_.get());
   event_sniffer_ = std::make_unique<EventSniffer>(this);
   slide_animator_ = std::make_unique<views::BubbleSlideAnimator>(hover_card_);
@@ -524,7 +555,7 @@ void TabHoverCardController::CreateHoverCard(Tab* tab) {
                             weak_ptr_factory_.GetWeakPtr()));
   }
 
-  TabResourceUsageCollector::Get()->AddObserver(this);
+  tab_resource_usage_collector_->AddObserver(this);
 }
 
 void TabHoverCardController::UpdateCardContent(Tab* tab) {
@@ -573,7 +604,8 @@ void TabHoverCardController::MaybeStartThumbnailObservation(
   // The crossfade parameter determines when a placeholder image is displayed.
   const auto crossfade_at =
       TabHoverCardBubbleView::GetPreviewImageCrossfadeStart();
-  if (crossfade_at.has_value() && crossfade_at.value() == 0.0) {
+  if (UseAnimations() && crossfade_at.has_value() &&
+      crossfade_at.value() == 0.0) {
     hover_card_->SetPlaceholderImage();
     thumbnail_wait_state_ = ThumbnailWaitState::kWaitingWithPlaceholder;
   } else {
@@ -804,4 +836,10 @@ void TabHoverCardController::OnHovercardImagesEnabledChanged() {
     thumbnail_subscription_ = base::CallbackListSubscription();
     thumbnail_observer_.reset();
   }
+}
+
+void TabHoverCardController::OnHovercardMemoryUsageEnabledChanged() {
+  hover_card_memory_usage_enabled_ =
+      g_browser_process->local_state()->GetBoolean(
+          prefs::kHoverCardMemoryUsageEnabled);
 }

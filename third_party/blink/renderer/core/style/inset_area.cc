@@ -5,7 +5,6 @@
 #include "third_party/blink/renderer/core/style/inset_area.h"
 
 #include "base/check_op.h"
-#include "third_party/blink/renderer/core/css/calculation_expression_anchor_query_node.h"
 #include "third_party/blink/renderer/core/layout/geometry/axis.h"
 #include "third_party/blink/renderer/core/style/anchor_specifier_value.h"
 #include "third_party/blink/renderer/platform/geometry/calculation_value.h"
@@ -14,18 +13,12 @@
 
 namespace blink {
 
-CORE_EXPORT DEFINE_GLOBAL(scoped_refptr<const CalculationExpressionNode>,
-                          g_anchor_top);
-CORE_EXPORT DEFINE_GLOBAL(scoped_refptr<const CalculationExpressionNode>,
-                          g_anchor_bottom);
-CORE_EXPORT DEFINE_GLOBAL(scoped_refptr<const CalculationExpressionNode>,
-                          g_anchor_left);
-CORE_EXPORT DEFINE_GLOBAL(scoped_refptr<const CalculationExpressionNode>,
-                          g_anchor_right);
-
 namespace {
 
-inline PhysicalAxes PhysicalAxisFromRegion(InsetAreaRegion region) {
+inline PhysicalAxes PhysicalAxisFromRegion(
+    InsetAreaRegion region,
+    const WritingDirectionMode& container_writing_direction,
+    const WritingDirectionMode& self_writing_direction) {
   switch (region) {
     case InsetAreaRegion::kTop:
     case InsetAreaRegion::kBottom:
@@ -33,30 +26,52 @@ inline PhysicalAxes PhysicalAxisFromRegion(InsetAreaRegion region) {
     case InsetAreaRegion::kYEnd:
     case InsetAreaRegion::kYSelfStart:
     case InsetAreaRegion::kYSelfEnd:
-      return kPhysicalAxisVertical;
+      return kPhysicalAxesVertical;
     case InsetAreaRegion::kLeft:
     case InsetAreaRegion::kRight:
     case InsetAreaRegion::kXStart:
     case InsetAreaRegion::kXEnd:
     case InsetAreaRegion::kXSelfStart:
     case InsetAreaRegion::kXSelfEnd:
-      return kPhysicalAxisHorizontal;
+      return kPhysicalAxesHorizontal;
+    case InsetAreaRegion::kInlineStart:
+    case InsetAreaRegion::kInlineEnd:
+      return container_writing_direction.IsHorizontal()
+                 ? kPhysicalAxesHorizontal
+                 : kPhysicalAxesVertical;
+    case InsetAreaRegion::kSelfInlineStart:
+    case InsetAreaRegion::kSelfInlineEnd:
+      return self_writing_direction.IsHorizontal() ? kPhysicalAxesHorizontal
+                                                   : kPhysicalAxesVertical;
+    case InsetAreaRegion::kBlockStart:
+    case InsetAreaRegion::kBlockEnd:
+      return container_writing_direction.IsHorizontal()
+                 ? kPhysicalAxesVertical
+                 : kPhysicalAxesHorizontal;
+    case InsetAreaRegion::kSelfBlockStart:
+    case InsetAreaRegion::kSelfBlockEnd:
+      return self_writing_direction.IsHorizontal() ? kPhysicalAxesVertical
+                                                   : kPhysicalAxesHorizontal;
     default:
       // Neutral region. Axis depends on the other span or order of appearance
       // if both spans are neutral.
-      return kPhysicalAxisNone;
+      return kPhysicalAxesNone;
   }
 }
 
 // Return the physical axis for an inset-area span if given by the regions, or
-// kPhysicalAxisNone if we need the direction/writing-mode to decide.
-inline PhysicalAxes PhysicalAxisFromSpan(InsetAreaRegion start,
-                                         InsetAreaRegion end) {
+// kPhysicalAxesNone if we need the direction/writing-mode to decide.
+inline PhysicalAxes PhysicalAxisFromSpan(
+    InsetAreaRegion start,
+    InsetAreaRegion end,
+    const WritingDirectionMode& container_writing_direction,
+    const WritingDirectionMode& self_writing_direction) {
   if (start == InsetAreaRegion::kAll) {
-    return kPhysicalAxisNone;
+    return kPhysicalAxesNone;
   }
   InsetAreaRegion indicator = start == InsetAreaRegion::kCenter ? end : start;
-  return PhysicalAxisFromRegion(indicator);
+  return PhysicalAxisFromRegion(indicator, container_writing_direction,
+                                self_writing_direction);
 }
 
 // Convert a logical region to the corresponding physical region based on the
@@ -67,7 +82,7 @@ InsetAreaRegion ToPhysicalRegion(
     PhysicalAxes axis,
     const WritingDirectionMode& container_writing_direction,
     const WritingDirectionMode& self_writing_direction) {
-  bool is_horizontal = axis == kPhysicalAxisHorizontal;
+  bool is_horizontal = axis == kPhysicalAxesHorizontal;
   InsetAreaRegion axis_region = region;
   switch (region) {
     case InsetAreaRegion::kNone:
@@ -81,18 +96,26 @@ InsetAreaRegion ToPhysicalRegion(
     case InsetAreaRegion::kRight:
       return region;
     case InsetAreaRegion::kStart:
+    case InsetAreaRegion::kInlineStart:
+    case InsetAreaRegion::kBlockStart:
       axis_region =
           is_horizontal ? InsetAreaRegion::kXStart : InsetAreaRegion::kYStart;
       break;
     case InsetAreaRegion::kEnd:
+    case InsetAreaRegion::kInlineEnd:
+    case InsetAreaRegion::kBlockEnd:
       axis_region =
           is_horizontal ? InsetAreaRegion::kXEnd : InsetAreaRegion::kYEnd;
       break;
     case InsetAreaRegion::kSelfStart:
+    case InsetAreaRegion::kSelfInlineStart:
+    case InsetAreaRegion::kSelfBlockStart:
       axis_region = is_horizontal ? InsetAreaRegion::kXSelfStart
                                   : InsetAreaRegion::kYSelfStart;
       break;
     case InsetAreaRegion::kSelfEnd:
+    case InsetAreaRegion::kSelfInlineEnd:
+    case InsetAreaRegion::kSelfBlockEnd:
       axis_region = is_horizontal ? InsetAreaRegion::kXSelfEnd
                                   : InsetAreaRegion::kYSelfEnd;
       break;
@@ -135,28 +158,30 @@ InsetArea InsetArea::ToPhysical(
   if (IsNone()) {
     return *this;
   }
-  PhysicalAxes first_axis = PhysicalAxisFromSpan(FirstStart(), FirstEnd());
-  PhysicalAxes second_axis = PhysicalAxisFromSpan(SecondStart(), SecondEnd());
+  PhysicalAxes first_axis =
+      PhysicalAxisFromSpan(FirstStart(), FirstEnd(),
+                           container_writing_direction, self_writing_direction);
+  PhysicalAxes second_axis =
+      PhysicalAxisFromSpan(SecondStart(), SecondEnd(),
+                           container_writing_direction, self_writing_direction);
 
   if (first_axis == second_axis) {
-    if (first_axis != kPhysicalAxisNone) {
-      // Both regions representing the same axis is invalid
-      return InsetArea();
-    }
+    CHECK_EQ(first_axis, kPhysicalAxesNone)
+        << "Both regions representing the same axis should not happen";
     // If neither span includes a physical keyword, the first refers to the
     // block axis of the containing block, and the second to the inline axis.
-    first_axis = ToPhysicalAxes(kLogicalAxisBlock,
+    first_axis = ToPhysicalAxes(kLogicalAxesBlock,
                                 container_writing_direction.GetWritingMode());
-    second_axis = ToPhysicalAxes(kLogicalAxisInline,
+    second_axis = ToPhysicalAxes(kLogicalAxesInline,
                                  container_writing_direction.GetWritingMode());
   } else {
-    if (first_axis == kPhysicalAxisNone) {
-      first_axis = second_axis ^ kPhysicalAxisBoth;
-    } else if (second_axis == kPhysicalAxisNone) {
-      second_axis = first_axis ^ kPhysicalAxisBoth;
+    if (first_axis == kPhysicalAxesNone) {
+      first_axis = second_axis ^ kPhysicalAxesBoth;
+    } else if (second_axis == kPhysicalAxesNone) {
+      second_axis = first_axis ^ kPhysicalAxesBoth;
     }
   }
-  DCHECK_EQ(first_axis ^ second_axis, kPhysicalAxisBoth)
+  DCHECK_EQ(first_axis ^ second_axis, kPhysicalAxesBoth)
       << "Both axes should be defined and orthogonal";
 
   InsetAreaRegion regions[4] = {InsetAreaRegion::kTop, InsetAreaRegion::kBottom,
@@ -165,7 +190,7 @@ InsetArea InsetArea::ToPhysical(
 
   // Adjust the index to always make the first span the vertical one in the
   // resulting InsetArea, regardless of the original ordering.
-  size_t index = first_axis == kPhysicalAxisHorizontal ? 2 : 0;
+  size_t index = first_axis == kPhysicalAxesHorizontal ? 2 : 0;
   if (FirstStart() != InsetAreaRegion::kAll) {
     regions[index] =
         ToPhysicalRegion(FirstStart(), first_axis, container_writing_direction,
@@ -194,67 +219,67 @@ InsetArea InsetArea::ToPhysical(
   return InsetArea(regions[0], regions[1], regions[2], regions[3]);
 }
 
-const CalculationExpressionNode* InsetArea::UsedTop() const {
+std::optional<AnchorQuery> InsetArea::UsedTop() const {
   switch (FirstStart()) {
     case InsetAreaRegion::kTop:
-      return nullptr;  // 0px
+      return std::nullopt;
     case InsetAreaRegion::kCenter:
-      return g_anchor_top.get();
+      return AnchorTop();
     case InsetAreaRegion::kBottom:
-      return g_anchor_bottom.get();
+      return AnchorBottom();
     default:
       NOTREACHED();
       [[fallthrough]];
     case InsetAreaRegion::kNone:
-      return nullptr;
+      return std::nullopt;
   }
 }
 
-const CalculationExpressionNode* InsetArea::UsedBottom() const {
+std::optional<AnchorQuery> InsetArea::UsedBottom() const {
   switch (FirstEnd()) {
     case InsetAreaRegion::kTop:
-      return g_anchor_top.get();
+      return AnchorTop();
     case InsetAreaRegion::kCenter:
-      return g_anchor_bottom.get();
+      return AnchorBottom();
     case InsetAreaRegion::kBottom:
-      return nullptr;  // 0px
+      return std::nullopt;
     default:
       NOTREACHED();
       [[fallthrough]];
     case InsetAreaRegion::kNone:
-      return nullptr;
+      return std::nullopt;
   }
 }
 
-const CalculationExpressionNode* InsetArea::UsedLeft() const {
+std::optional<AnchorQuery> InsetArea::UsedLeft() const {
   switch (SecondStart()) {
     case InsetAreaRegion::kLeft:
-      return nullptr;  // 0px
+      return std::nullopt;
     case InsetAreaRegion::kCenter:
-      return g_anchor_left.get();
+      return AnchorLeft();
     case InsetAreaRegion::kRight:
-      return g_anchor_right.get();
+      return AnchorRight();
     default:
       NOTREACHED();
       [[fallthrough]];
     case InsetAreaRegion::kNone:
-      return nullptr;
+      return std::nullopt;
   }
 }
 
-const CalculationExpressionNode* InsetArea::UsedRight() const {
+std::optional<AnchorQuery> InsetArea::UsedRight() const {
   switch (SecondEnd()) {
     case InsetAreaRegion::kLeft:
-      return g_anchor_left.get();
+      return AnchorLeft();
     case InsetAreaRegion::kCenter:
-      return g_anchor_right.get();
+      return AnchorRight();
     case InsetAreaRegion::kRight:
-      return nullptr;  // 0px
+      return std::nullopt;
     default:
       NOTREACHED();
       [[fallthrough]];
     case InsetAreaRegion::kNone:
-      return nullptr;
+      return std::nullopt;
   }
 }
 
@@ -298,43 +323,28 @@ std::pair<ItemPosition, ItemPosition> InsetArea::AlignJustifySelfFromPhysical(
                                                     converter.InlineStart());
 }
 
-void InsetArea::InitializeAnchors() {
-  // These globals are initialized here instead of Length::Initialize() because
-  // they depend on anchor expressions defined in core/ which cannot be included
-  // from platform.
-  new (WTF::NotNullTag::kNotNull, (void*)&g_anchor_top)
-      scoped_refptr<const CalculationExpressionNode>(
-          CalculationExpressionAnchorQueryNode::CreateAnchor(
-              *AnchorSpecifierValue::Default(), CSSAnchorValue::kTop,
-              Length::FixedZero()));
-  new (WTF::NotNullTag::kNotNull, (void*)&g_anchor_bottom)
-      scoped_refptr<const CalculationExpressionNode>(
-          CalculationExpressionAnchorQueryNode::CreateAnchor(
-              *AnchorSpecifierValue::Default(), CSSAnchorValue::kBottom,
-              Length::FixedZero()));
-  new (WTF::NotNullTag::kNotNull, (void*)&g_anchor_left)
-      scoped_refptr<const CalculationExpressionNode>(
-          CalculationExpressionAnchorQueryNode::CreateAnchor(
-              *AnchorSpecifierValue::Default(), CSSAnchorValue::kLeft,
-              Length::FixedZero()));
-  new (WTF::NotNullTag::kNotNull, (void*)&g_anchor_right)
-      scoped_refptr<const CalculationExpressionNode>(
-          CalculationExpressionAnchorQueryNode::CreateAnchor(
-              *AnchorSpecifierValue::Default(), CSSAnchorValue::kRight,
-              Length::FixedZero()));
+AnchorQuery InsetArea::AnchorTop() {
+  return AnchorQuery(CSSAnchorQueryType::kAnchor,
+                     AnchorSpecifierValue::Default(), /* percentage */ 0,
+                     CSSAnchorValue::kTop);
 }
 
-const CalculationExpressionNode* InsetArea::AnchorTop() {
-  return g_anchor_top.get();
+AnchorQuery InsetArea::AnchorBottom() {
+  return AnchorQuery(CSSAnchorQueryType::kAnchor,
+                     AnchorSpecifierValue::Default(), /* percentage */ 0,
+                     CSSAnchorValue::kBottom);
 }
-const CalculationExpressionNode* InsetArea::AnchorBottom() {
-  return g_anchor_bottom.get();
+
+AnchorQuery InsetArea::AnchorLeft() {
+  return AnchorQuery(CSSAnchorQueryType::kAnchor,
+                     AnchorSpecifierValue::Default(), /* percentage */ 0,
+                     CSSAnchorValue::kLeft);
 }
-const CalculationExpressionNode* InsetArea::AnchorLeft() {
-  return g_anchor_left.get();
-}
-const CalculationExpressionNode* InsetArea::AnchorRight() {
-  return g_anchor_right.get();
+
+AnchorQuery InsetArea::AnchorRight() {
+  return AnchorQuery(CSSAnchorQueryType::kAnchor,
+                     AnchorSpecifierValue::Default(), /* percentage */ 0,
+                     CSSAnchorValue::kRight);
 }
 
 }  // namespace blink

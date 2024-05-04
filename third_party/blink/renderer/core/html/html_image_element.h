@@ -49,7 +49,7 @@ class HTMLFormElement;
 class ImageCandidate;
 class ShadowRoot;
 
-class CORE_EXPORT HTMLImageElement final
+class CORE_EXPORT HTMLImageElement
     : public HTMLElement,
       public ImageElementBase,
       public ActiveScriptWrappable<HTMLImageElement>,
@@ -118,7 +118,7 @@ class CORE_EXPORT HTMLImageElement final
   int x() const;
   int y() const;
 
-  ScriptPromise decode(ScriptState*, ExceptionState&);
+  ScriptPromise<IDLUndefined> decode(ScriptState*, ExceptionState&);
 
   bool complete() const;
 

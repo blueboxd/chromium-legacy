@@ -12,6 +12,8 @@
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui_test_util.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_constants.h"
+#import "ios/chrome/browser/ui/content_suggestions/magic_stack/magic_stack_constants.h"
+#import "ios/chrome/browser/ui/content_suggestions/new_tab_page_app_interface.h"
 #import "ios/chrome/browser/ui/content_suggestions/tab_resumption/tab_resumption_constants.h"
 #import "ios/chrome/browser/ui/start_surface/start_surface_features.h"
 #import "ios/chrome/browser/ui/tabs/tests/distant_tabs_app_interface.h"
@@ -30,37 +32,38 @@ namespace {
 // Timeout in seconds to wait for asynchronous sync operations.
 constexpr base::TimeDelta kSyncOperationTimeout = base::Seconds(10);
 
-// Sign in and sync using a fake identity.
-void SignInAndSync() {
+// Sign in and enable history/tab sync using a fake identity.
+void SignInAndEnableHistorySync() {
   FakeSystemIdentity* fake_identity = [FakeSystemIdentity fakeIdentity1];
   [SigninEarlGrey addFakeIdentity:fake_identity];
-  [SigninEarlGreyUI signinWithFakeIdentity:fake_identity enableSync:YES];
+  [SigninEarlGreyUI signinWithFakeIdentity:fake_identity enableHistorySync:YES];
   [ChromeEarlGrey
       waitForSyncTransportStateActiveWithTimeout:kSyncOperationTimeout];
 }
 
 // Checks that the visibility of the tab resumption tile matches `should_show`.
 void WaitUntilTabResumptionTileVisibleOrTimeout(bool should_show) {
-  GREYCondition* tile_shown = [GREYCondition
-      conditionWithName:@"Tile shown"
-                  block:^BOOL {
-                    NSError* error;
-                    [[EarlGrey
-                        selectElementWithMatcher:
-                            grey_accessibilityID(
-                                kMagicStackContentSuggestionsModuleTabResumptionAccessibilityIdentifier)]
-                        assertWithMatcher:grey_notNil()
-                                    error:&error];
-                    return error == nil;
-                  }];
-  // Wait for the tile to be shown or timeout after kWaitForUIElementTimeout.
-  BOOL success = [tile_shown
-      waitWithTimeout:base::test::ios::kWaitForUIElementTimeout.InSecondsF()];
+  id<GREYMatcher> matcher =
+      should_show ? grey_sufficientlyVisible() : grey_notVisible();
+  ConditionBlock condition = ^{
+    NSError* error = nil;
+    [[EarlGrey
+        selectElementWithMatcher:
+            grey_allOf(
+                grey_accessibilityID(
+                    kMagicStackContentSuggestionsModuleTabResumptionAccessibilityIdentifier),
+                grey_sufficientlyVisible(), nil)] assertWithMatcher:matcher
+                                                              error:&error];
+    return error == nil;
+  };
+
+  NSString* failure_reason = @"Tile visible.";
   if (should_show) {
-    GREYAssertTrue(success, @"Tile did not appear.");
-  } else {
-    GREYAssertFalse(success, @"Tile appeared.");
+    failure_reason = @"Tile did not appear.";
   }
+  GREYAssert(
+      base::test::ios::WaitUntilConditionOrTimeout(base::Seconds(6), condition),
+      failure_reason);
 }
 
 // Returns a GREYMatcher for the given label.
@@ -92,7 +95,9 @@ NSString* HostnameFromGURL(GURL URL) {
   config.additional_args.push_back(
       "--enable-features=" + std::string(kTabResumption.name) + ":" +
       kTabResumptionParameterName + "/" + kTabResumptionAllTabsParam + "," +
-      kMagicStack.name + "," + syncer::kSyncSessionOnVisibilityChanged.name);
+      syncer::kSyncSessionOnVisibilityChanged.name);
+  config.features_enabled.push_back(kIOSMagicStackCollectionView);
+  config.additional_args.push_back("--test-ios-module-ranker=tab_resumption");
   return config;
 }
 
@@ -102,14 +107,14 @@ NSString* HostnameFromGURL(GURL URL) {
   config.relaunch_policy = ForceRelaunchByCleanShutdown;
   config.additional_args.push_back(
       "--enable-features=" + std::string(kStartSurface.name) + "<" +
-      std::string(kStartSurface.name) + "," + kMagicStack.name + "," +
-      kTabResumption.name);
+      std::string(kStartSurface.name));
   config.additional_args.push_back(
       "--force-fieldtrials=" + std::string(kStartSurface.name) + "/Test");
   config.additional_args.push_back(
       "--force-fieldtrial-params=" + std::string(kStartSurface.name) +
       ".Test:" + std::string(kReturnToStartSurfaceInactiveDurationInSeconds) +
       "/" + "0");
+  config.additional_args.push_back("--test-ios-module-ranker=tab_resumption");
   [[AppLaunchManager sharedManager] ensureAppLaunchedWithConfiguration:config];
 }
 
@@ -117,7 +122,10 @@ NSString* HostnameFromGURL(GURL URL) {
   [super setUp];
   [ChromeEarlGrey clearBrowsingHistory];
   GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
-  SignInAndSync();
+  SignInAndEnableHistorySync();
+  [NewTabPageAppInterface disableSetUpList];
+  [[self class] closeAllTabs];
+  [ChromeEarlGrey openNewTab];
 }
 
 - (void)tearDown {
@@ -173,14 +181,15 @@ NSString* HostnameFromGURL(GURL URL) {
 }
 
 // Tests that the tab resumption tile is correctly displayed for a local tab.
-- (void)testTabResumptionTileDisplayedForLocalTab {
-  if ([ChromeEarlGrey isIPadIdiom]) {
-#if !TARGET_IPHONE_SIMULATOR
-    // TODO(crbug.com/1494006): Test is flaky on iPad device. Re-enable the
-    // test.
-    EARL_GREY_TEST_DISABLED(@"Test is flaky on iPad device.");
+// TODO(crbug.com/333500324): Test failing on iPad device.
+#if TARGET_IPHONE_SIMULATOR
+#define MAYBE_testTabResumptionTileDisplayedForLocalTab \
+  testTabResumptionTileDisplayedForLocalTab
+#else
+#define MAYBE_testTabResumptionTileDisplayedForLocalTab \
+  FLAKY_testTabResumptionTileDisplayedForLocalTab
 #endif
-  }
+- (void)MAYBE_testTabResumptionTileDisplayedForLocalTab {
   // Check that the tile is not displayed when there is no local tab.
   WaitUntilTabResumptionTileVisibleOrTimeout(false);
 
@@ -214,15 +223,9 @@ NSString* HostnameFromGURL(GURL URL) {
       waitForWebStateContainingText:"Anyone know any good pony jokes?"];
 }
 
-// Tests that interacting with the Shortcuts tile works when the tab resumption
-// tile is displayed.
-// TODO(crbug.com/1504149): Test is failing on device.
-#if TARGET_OS_SIMULATOR
-#define MAYBE_testInteractWithAnotherTile testInteractWithAnotherTile
-#else
-#define MAYBE_testInteractWithAnotherTile DISABLED_testInteractWithAnotherTile
-#endif
-- (void)MAYBE_testInteractWithAnotherTile {
+// Tests that interacting with the Magic Stack edit button works when the tab
+// resumption tile is displayed.
+- (void)testInteractWithAnotherTile {
   // Check that the tile is not displayed when there is no distant tab.
   WaitUntilTabResumptionTileVisibleOrTimeout(false);
 
@@ -239,34 +242,14 @@ NSString* HostnameFromGURL(GURL URL) {
   // Check that the tile is displayed when there is a distant tab.
   WaitUntilTabResumptionTileVisibleOrTimeout(true);
 
-  if (![ChromeEarlGrey isIPadIdiom]) {
-    // Rotate iphone device so Magic Stack can be scrollable.
-    [EarlGrey rotateDeviceToOrientation:UIDeviceOrientationLandscapeLeft
-                                  error:nil];
-    [[EarlGrey selectElementWithMatcher:chrome_test_util::NTPCollectionView()]
-        performAction:grey_scrollInDirection(kGREYDirectionDown, 180)];
-  }
   [[[EarlGrey selectElementWithMatcher:
-                  grey_allOf(chrome_test_util::ButtonWithAccessibilityLabelId(
-                                 IDS_IOS_CONTENT_SUGGESTIONS_RECENT_TABS),
+                  grey_allOf(grey_accessibilityID(
+                                 kMagicStackEditButtonAccessibilityIdentifier),
                              grey_sufficientlyVisible(), nil)]
-         usingSearchAction:grey_scrollInDirection(kGREYDirectionRight, 350)
+         usingSearchAction:grey_swipeFastInDirection(kGREYDirectionLeft)
       onElementWithMatcher:grey_accessibilityID(
                                kMagicStackScrollViewAccessibilityIdentifier)]
-      performAction:grey_tap()];
-
-  [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::HeaderWithAccessibilityLabelId(
-                                   IDS_IOS_CONTENT_SUGGESTIONS_RECENT_TABS)]
       assertWithMatcher:grey_sufficientlyVisible()];
-  [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::NavigationBarDoneButton()]
-      performAction:grey_tap()];
-
-  if (![ChromeEarlGrey isIPadIdiom]) {
-    // Rotate iphone device back to portrait mode.
-    [EarlGrey rotateDeviceToOrientation:UIDeviceOrientationPortrait error:nil];
-  }
 }
 
 // Tests that the context menu has the correct action and correctly hides the

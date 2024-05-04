@@ -130,10 +130,7 @@ V4L2VideoDecodeAccelerator::BitstreamBufferRef::~BitstreamBufferRef() {
 }
 
 V4L2VideoDecodeAccelerator::OutputRecord::OutputRecord()
-    : egl_image(EGL_NO_IMAGE_KHR),
-      picture_id(-1),
-      texture_id(0),
-      cleared(false) {}
+    : picture_id(-1), cleared(false) {}
 
 V4L2VideoDecodeAccelerator::OutputRecord::OutputRecord(OutputRecord&&) =
     default;
@@ -360,7 +357,7 @@ void V4L2VideoDecodeAccelerator::Decode(BitstreamBuffer bitstream_buffer) {
 void V4L2VideoDecodeAccelerator::Decode(scoped_refptr<DecoderBuffer> buffer,
                                         int32_t bitstream_id) {
   DVLOGF(4) << "input_id=" << bitstream_id
-            << ", size=" << (buffer ? buffer->data_size() : 0);
+            << ", size=" << (buffer ? buffer->size() : 0);
   DCHECK(decode_task_runner_->RunsTasksInCurrentSequence());
 
   if (bitstream_id < 0) {
@@ -455,12 +452,10 @@ void V4L2VideoDecodeAccelerator::AssignPictureBuffersTask(
     const int i = buffer.BufferId();
 
     OutputRecord& output_record = output_buffer_map_[i];
-    DCHECK_EQ(output_record.egl_image, EGL_NO_IMAGE_KHR);
     DCHECK_EQ(output_record.picture_id, -1);
     DCHECK(!output_record.cleared);
 
     output_record.picture_id = buffers[i].id();
-    output_record.texture_id = buffers[i].service_texture_id();
 
     // We move the buffer into output_wait_map_, so get a reference to
     // its video frame if we need it to create the native pixmap for import.
@@ -497,96 +492,6 @@ void V4L2VideoDecodeAccelerator::AssignPictureBuffersTask(
 
   if (output_mode_ == Config::OutputMode::kAllocate) {
     ScheduleDecodeBufferTaskIfNeeded();
-  }
-}
-
-void V4L2VideoDecodeAccelerator::CreateEGLImageFor(
-    scoped_refptr<V4L2Device> egl_device,
-    size_t buffer_index,
-    int32_t picture_buffer_id,
-    gfx::NativePixmapHandle handle,
-    GLuint texture_id,
-    const gfx::Size& visible_size,
-    const Fourcc fourcc) {
-  DVLOGF(3) << "index=" << buffer_index;
-  DCHECK(child_task_runner_->BelongsToCurrentThread());
-  DCHECK_NE(texture_id, 0u);
-
-  if (!get_gl_context_cb_ || !make_context_current_cb_) {
-    LOG(ERROR) << "GL callbacks required for binding to EGLImages";
-    NOTIFY_ERROR(INVALID_ARGUMENT);
-    return;
-  }
-
-  gl::GLContext* gl_context = get_gl_context_cb_.Run();
-  if (!gl_context || !make_context_current_cb_.Run()) {
-    LOG(ERROR) << "No GL context";
-    NOTIFY_ERROR(PLATFORM_FAILURE);
-    return;
-  }
-
-  gl::ScopedTextureBinder bind_restore(GL_TEXTURE_EXTERNAL_OES, 0);
-
-  EGLImageKHR egl_image = egl_device->CreateEGLImage(
-      egl_display_, gl_context->GetHandle(), texture_id, visible_size,
-      buffer_index, fourcc, std::move(handle));
-  if (egl_image == EGL_NO_IMAGE_KHR) {
-    LOG(ERROR) << "could not create EGLImageKHR,"
-               << " index=" << buffer_index << " texture_id=" << texture_id;
-    NOTIFY_ERROR(PLATFORM_FAILURE);
-    return;
-  }
-
-  decoder_thread_.task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&V4L2VideoDecodeAccelerator::AssignEGLImage,
-                                base::Unretained(this), buffer_index,
-                                picture_buffer_id, egl_image));
-}
-
-void V4L2VideoDecodeAccelerator::AssignEGLImage(size_t buffer_index,
-                                                int32_t picture_buffer_id,
-                                                EGLImageKHR egl_image) {
-  DVLOGF(3) << "index=" << buffer_index << ", picture_id=" << picture_buffer_id;
-  DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
-
-  if (IsDestroyPending())
-    return;
-
-  // It's possible that while waiting for the EGLImages to be allocated and
-  // assigned, we have already decoded more of the stream and saw another
-  // resolution change. This is a normal situation, in such a case either there
-  // is no output record with this index awaiting an EGLImage to be assigned to
-  // it, or the record is already updated to use a newer PictureBuffer and is
-  // awaiting an EGLImage associated with a different picture_buffer_id. If so,
-  // just discard this image, we will get the one we are waiting for later.
-  if (buffer_index >= output_buffer_map_.size() ||
-      output_buffer_map_[buffer_index].picture_id != picture_buffer_id) {
-    DVLOGF(4) << "Picture set already changed, dropping EGLImage";
-    child_task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(base::IgnoreResult(&V4L2Device::DestroyEGLImage),
-                       device_, egl_display_, egl_image));
-    return;
-  }
-
-  OutputRecord& output_record = output_buffer_map_[buffer_index];
-  DCHECK_EQ(output_record.egl_image, EGL_NO_IMAGE_KHR);
-
-  output_record.egl_image = egl_image;
-
-  // Make ourselves available if CreateEGLImageFor has been called from
-  // ImportBufferForPictureTask.
-  if (!image_processor_
-#ifdef SUPPORT_MT21_PIXEL_FORMAT_SOFTWARE_DECOMPRESSION
-      && !mt21_decompressor_
-#endif
-  ) {
-    DCHECK_EQ(output_wait_map_.count(picture_buffer_id), 1u);
-    output_wait_map_.erase(picture_buffer_id);
-    if (decoder_state_ != kChangingResolution) {
-      Enqueue();
-      ScheduleDecodeBufferTaskIfNeeded();
-    }
   }
 }
 
@@ -664,7 +569,7 @@ void V4L2VideoDecodeAccelerator::ImportBufferForPictureTask(
     return;
   }
 
-  // TODO(crbug.com/982172): ARC++ may adjust the size of the buffer due to
+  // TODO(crbug.com/41469754): ARC++ may adjust the size of the buffer due to
   // allocator constraints, but the VDA API does not provide a way for it to
   // communicate the actual buffer size. If we are importing, make sure that the
   // actual buffer size is coherent with what we expect, and adjust our size if
@@ -754,39 +659,6 @@ void V4L2VideoDecodeAccelerator::ImportBufferForPictureTask(
         VideoFrameResource::Create(VideoFrame::WrapExternalDmabufs(
             *layout, gfx::Rect(visible_size_), visible_size_,
             std::move(duped_fds), base::TimeDelta()));
-  }
-
-  if (iter->texture_id != 0) {
-    if (iter->egl_image != EGL_NO_IMAGE_KHR) {
-      child_task_runner_->PostTask(
-          FROM_HERE,
-          base::BindOnce(base::IgnoreResult(&V4L2Device::DestroyEGLImage),
-                         device_, egl_display_, iter->egl_image));
-    }
-
-    // If we are not using an image processor, create the EGL image ahead of
-    // time since we already have its DMABUF fds. It is guaranteed that
-    // CreateEGLImageFor will run before the picture is passed to the client
-    // because the picture will need to be cleared on the child thread first.
-    if (!image_processor_
-#ifdef SUPPORT_MT21_PIXEL_FORMAT_SOFTWARE_DECOMPRESSION
-        && !mt21_decompressor_
-#endif
-    ) {
-      DCHECK_GT(handle.planes.size(), 0u);
-      size_t index = iter - output_buffer_map_.begin();
-
-      child_task_runner_->PostTask(
-          FROM_HERE,
-          base::BindOnce(&V4L2VideoDecodeAccelerator::CreateEGLImageFor,
-                         weak_this_, device_, index, picture_buffer_id,
-                         std::move(handle), iter->texture_id, visible_size_,
-                         *egl_image_format_fourcc_));
-
-      // Early return, AssignEGLImage will make the buffer available for
-      // decoding once the EGL image is created.
-      return;
-    }
   }
 
   // The buffer can now be used for decoding
@@ -961,8 +833,7 @@ void V4L2VideoDecodeAccelerator::DecodeBufferTask() {
     if (buffer) {
       DVLOGF(4) << "reading input_id="
                 << decoder_current_bitstream_buffer_->input_id
-                << ", addr=" << buffer->data()
-                << ", size=" << buffer->data_size();
+                << ", addr=" << buffer->data() << ", size=" << buffer->size();
     } else {
       DCHECK_EQ(decoder_current_bitstream_buffer_->input_id, kFlushBufferId);
       DVLOGF(4) << "reading input_id=kFlushBufferId";
@@ -991,7 +862,7 @@ void V4L2VideoDecodeAccelerator::DecodeBufferTask() {
       // reprocessed when the pipeline frees up.
       schedule_task = false;
     }
-  } else if (buffer->data_size() == 0) {
+  } else if (buffer->empty()) {
     // This is a buffer queued from the client that has zero size.  Skip.
     // TODO(sandersd): This shouldn't be possible, empty buffers are never
     // enqueued.
@@ -1001,7 +872,7 @@ void V4L2VideoDecodeAccelerator::DecodeBufferTask() {
     const uint8_t* const data =
         buffer->data() + decoder_current_bitstream_buffer_->bytes_used;
     const size_t data_size =
-        buffer->data_size() - decoder_current_bitstream_buffer_->bytes_used;
+        buffer->size() - decoder_current_bitstream_buffer_->bytes_used;
 
     if (!frame_splitter_->AdvanceFrameFragment(data, data_size,
                                                &decoded_size)) {
@@ -1033,7 +904,7 @@ void V4L2VideoDecodeAccelerator::DecodeBufferTask() {
 
   if (schedule_task) {
     decoder_current_bitstream_buffer_->bytes_used += decoded_size;
-    if ((buffer ? buffer->data_size() : 0) ==
+    if ((buffer ? buffer->size() : 0) ==
         decoder_current_bitstream_buffer_->bytes_used) {
       // Our current bitstream buffer is done; return it.
       int32_t input_id = decoder_current_bitstream_buffer_->input_id;
@@ -2572,10 +2443,9 @@ bool V4L2VideoDecodeAccelerator::CreateOutputBuffers() {
           : PIXEL_FORMAT_UNKNOWN;
 
   child_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&Client::ProvidePictureBuffersWithVisibleRect, client_,
-                     buffer_count, pixel_format, egl_image_size_,
-                     gfx::Rect(visible_size_), device_->GetTextureTarget()));
+      FROM_HERE, base::BindOnce(&Client::ProvidePictureBuffersWithVisibleRect,
+                                client_, buffer_count, pixel_format,
+                                egl_image_size_, gfx::Rect(visible_size_)));
 
   // Go into kAwaitingPictureBuffers to prevent us from doing any more decoding
   // or event handling while we are waiting for AssignPictureBuffers(). Not
@@ -2617,13 +2487,6 @@ bool V4L2VideoDecodeAccelerator::DestroyOutputBuffers() {
 
   for (size_t i = 0; i < output_buffer_map_.size(); ++i) {
     OutputRecord& output_record = output_buffer_map_[i];
-
-    if (output_record.egl_image != EGL_NO_IMAGE_KHR) {
-      child_task_runner_->PostTask(
-          FROM_HERE,
-          base::BindOnce(base::IgnoreResult(&V4L2Device::DestroyEGLImage),
-                         device_, egl_display_, output_record.egl_image));
-    }
 
     DVLOGF(3) << "dismissing PictureBuffer id=" << output_record.picture_id;
     child_task_runner_->PostTask(
@@ -2729,7 +2592,7 @@ void V4L2VideoDecodeAccelerator::FrameProcessed(
   DVLOGF(4) << "ip_buffer_index=" << ip_buffer_index
             << ", bitstream_buffer_id=" << bitstream_buffer_id;
   DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
-  // TODO(crbug.com/921825): Remove this workaround once reset callback is
+  // TODO(crbug.com/40609453): Remove this workaround once reset callback is
   // implemented.
   if (buffers_at_ip_.empty() ||
       buffers_at_ip_.front().first != bitstream_buffer_id ||
@@ -2758,28 +2621,6 @@ void V4L2VideoDecodeAccelerator::FrameProcessed(
   OutputRecord& ip_output_record = output_buffer_map_[ip_buffer_index];
   DVLOGF(4) << "picture_id=" << ip_output_record.picture_id;
   DCHECK_NE(ip_output_record.picture_id, -1);
-
-  // If the picture has not been cleared yet, this means it is the first time
-  // we are seeing this buffer from the image processor. Schedule a call to
-  // CreateEGLImageFor before the picture is sent to the client. It is
-  // guaranteed that CreateEGLImageFor will complete before the picture is sent
-  // to the client as both events happen on the child thread due to the picture
-  // uncleared status.
-  if (ip_output_record.texture_id != 0 && !ip_output_record.cleared) {
-    DCHECK(frame->HasDmaBufs());
-
-    // TODO(nhebert): drop usage of CreateGpuMemoryBufferHandle(), which
-    // duplicates FD's, when a NativePixmap-based FrameResource is available.
-    child_task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(
-            &V4L2VideoDecodeAccelerator::CreateEGLImageFor, weak_this_,
-            image_processor_device_, ip_buffer_index,
-            ip_output_record.picture_id,
-            frame->CreateGpuMemoryBufferHandle().native_pixmap_handle,
-            ip_output_record.texture_id, visible_size_,
-            *egl_image_format_fourcc_));
-  }
 
   // Remove our job from the IP jobs queue
   DCHECK_GT(buffers_at_ip_.size(), 0u);

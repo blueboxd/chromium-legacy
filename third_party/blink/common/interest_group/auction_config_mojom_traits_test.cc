@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/containers/flat_map.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "base/unguessable_token.h"
 #include "base/uuid.h"
@@ -17,6 +18,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/numeric/int128.h"
 #include "third_party/blink/common/interest_group/auction_config_test_util.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/interest_group/auction_config.h"
 #include "third_party/blink/public/common/interest_group/seller_capabilities.h"
 #include "third_party/blink/public/mojom/interest_group/interest_group_types.mojom.h"
@@ -148,9 +150,30 @@ TEST(AuctionConfigMojomTraitsTest, SellerDecisionUrlMismatch) {
   EXPECT_FALSE(SerializeAndDeserialize(auction_config));
 }
 
+// Tests that decision logic and trusted scoring signals GURLs exceeding max
+// length can be passed through Mojo and will be converted into invalid, empty
+// GURLs, and passing in invalid URLs works as well.
+TEST(AuctionConfigMojomTraitsTest, SellerDecisionAndTrustedSignalsUrlsTooLong) {
+  GURL too_long_url =
+      GURL("https://seller.test/" + std::string(url::kMaxURLChars, '1'));
+  AuctionConfig auction_config = CreateBasicAuctionConfig(too_long_url);
+  auction_config.trusted_scoring_signals_url = too_long_url;
+
+  AuctionConfig auction_config_clone;
+  bool success =
+      mojo::test::SerializeAndDeserialize<blink::mojom::AuctionAdConfig>(
+          auction_config, auction_config_clone);
+  ASSERT_TRUE(success);
+  EXPECT_EQ(auction_config.seller, auction_config_clone.seller);
+  EXPECT_EQ(GURL(), auction_config_clone.decision_logic_url);
+  EXPECT_EQ(GURL(), auction_config_clone.trusted_scoring_signals_url);
+
+  EXPECT_TRUE(SerializeAndDeserialize(auction_config_clone));
+}
+
 TEST(AuctionConfigMojomTraitsTest, SellerScoringSignalsUrlMismatch) {
   AuctionConfig auction_config =
-      CreateBasicAuctionConfig(GURL("http://seller.test"));
+      CreateBasicAuctionConfig(GURL("https://seller.test"));
   // Different origin than seller, but same scheme.
   auction_config.trusted_scoring_signals_url =
       GURL("https://not.seller.test/foo");
@@ -164,6 +187,57 @@ TEST(AuctionConfigMojomTraitsTest, SellerScoringSignalsUrlMismatch) {
   ASSERT_EQ(auction_config.seller,
             url::Origin::Create(*auction_config.trusted_scoring_signals_url));
   EXPECT_FALSE(SerializeAndDeserialize(auction_config));
+}
+
+TEST(AuctionConfigMojomTraitsTest,
+     SellerScoringSignalsUrlCrossOriginPermitted) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      blink::features::kFledgePermitCrossOriginTrustedSignals);
+
+  AuctionConfig auction_config =
+      CreateBasicAuctionConfig(GURL("https://seller.test"));
+  auction_config.trusted_scoring_signals_url =
+      GURL("https://not.seller.org/foo");
+
+  // With kFledgePermitCrossOriginTrustedSignals on, this is OK.
+  EXPECT_TRUE(SerializeAndDeserialize(auction_config));
+
+  auction_config = CreateBasicAuctionConfig(GURL("https://seller.test"));
+  // This blob URL should be considered same-origin to the seller, but the
+  // scheme is wrong. That restriction still applies even if the cross-origin
+  // check is off.
+  auction_config.trusted_scoring_signals_url =
+      GURL("blob:https://seller.test/foo");
+  ASSERT_EQ(auction_config.seller,
+            url::Origin::Create(*auction_config.trusted_scoring_signals_url));
+  EXPECT_FALSE(SerializeAndDeserialize(auction_config));
+}
+
+TEST(AuctionConfigMojomTraitsTest, TrustedScoringSignalsFields) {
+  AuctionConfig auction_config =
+      CreateBasicAuctionConfig(GURL("https://seller.test"));
+
+  const struct {
+    const char* url_str;
+    bool expected_ok = false;
+  } kTests[] = {
+      {"https://seller.test/foo.json", /*expected_ok=*/true},
+      {"https://seller.test/foo.json?query"},
+      {"https://seller.test/foo.json?"},
+      {"https://seller.test/foo.json#foo"},
+      {"https://seller.test/foo.json#"},
+      {"https://user:pass@seller.test/foo.json"},
+      // This is actually the same as https://seller.test/foo.json
+      {"https://:@seller.test/foo.json", /*expected_ok=*/true},
+  };
+
+  for (const auto& test : kTests) {
+    SCOPED_TRACE(test.url_str);
+
+    auction_config.trusted_scoring_signals_url = GURL(test.url_str);
+    EXPECT_EQ(test.expected_ok, SerializeAndDeserialize(auction_config));
+  }
 }
 
 TEST(AuctionConfigMojomTraitsTest, FullConfig) {
@@ -529,6 +603,24 @@ TEST(AuctionConfigMojomTraitsTest,
   }
 }
 
+TEST(AuctionConfigMojomTraitsTest, SellerTimeout) {
+  {
+    AuctionConfig auction_config = CreateBasicAuctionConfig();
+    auction_config.non_shared_params.seller_timeout = base::Milliseconds(50);
+    EXPECT_TRUE(SerializeAndDeserialize(auction_config));
+  }
+  {
+    AuctionConfig auction_config = CreateBasicAuctionConfig();
+    auction_config.non_shared_params.seller_timeout = base::Milliseconds(0);
+    EXPECT_TRUE(SerializeAndDeserialize(auction_config));
+  }
+  {
+    AuctionConfig auction_config = CreateBasicAuctionConfig();
+    auction_config.non_shared_params.seller_timeout = base::Milliseconds(-50);
+    EXPECT_FALSE(SerializeAndDeserialize(auction_config));
+  }
+}
+
 TEST(AuctionConfigMojomTraitsTest, BuyerTimeouts) {
   {
     AuctionConfig::BuyerTimeouts value;
@@ -539,12 +631,25 @@ TEST(AuctionConfigMojomTraitsTest, BuyerTimeouts) {
         base::Milliseconds(50));
     value.per_buyer_timeouts->emplace(
         url::Origin::Create(GURL("https://example.org")),
-        base::Milliseconds(20));
+        base::Milliseconds(0));
     EXPECT_TRUE(SerializeAndDeserialize(value));
   }
   {
     AuctionConfig::BuyerTimeouts value;
     EXPECT_TRUE(SerializeAndDeserialize(value));
+  }
+  {
+    AuctionConfig::BuyerTimeouts value;
+    value.all_buyers_timeout.emplace(base::Milliseconds(-10));
+    EXPECT_FALSE(SerializeAndDeserialize(value));
+  }
+  {
+    AuctionConfig::BuyerTimeouts value;
+    value.per_buyer_timeouts.emplace();
+    value.per_buyer_timeouts->emplace(
+        url::Origin::Create(GURL("https://example.com")),
+        base::Milliseconds(-50));
+    EXPECT_FALSE(SerializeAndDeserialize(value));
   }
 }
 
@@ -569,6 +674,48 @@ TEST(AuctionConfigMojomTraitsTest, MaybePromiseBuyerTimeouts) {
     EXPECT_TRUE(
         SerializeAndDeserialize<
             blink::mojom::AuctionAdConfigMaybePromiseBuyerTimeouts>(timeouts));
+  }
+
+  {
+    AuctionConfig::BuyerTimeouts value;
+    value.all_buyers_timeout.emplace(base::Milliseconds(-10));
+    AuctionConfig::MaybePromiseBuyerTimeouts timeouts =
+        AuctionConfig::MaybePromiseBuyerTimeouts::FromValue(std::move(value));
+    EXPECT_FALSE(
+        SerializeAndDeserialize<
+            blink::mojom::AuctionAdConfigMaybePromiseBuyerTimeouts>(timeouts));
+  }
+
+  {
+    AuctionConfig::BuyerTimeouts value;
+    value.per_buyer_timeouts.emplace();
+    value.per_buyer_timeouts->emplace(
+        url::Origin::Create(GURL("https://example.com")),
+        base::Milliseconds(-50));
+    AuctionConfig::MaybePromiseBuyerTimeouts timeouts =
+        AuctionConfig::MaybePromiseBuyerTimeouts::FromValue(std::move(value));
+    EXPECT_FALSE(
+        SerializeAndDeserialize<
+            blink::mojom::AuctionAdConfigMaybePromiseBuyerTimeouts>(timeouts));
+  }
+}
+
+TEST(AuctionConfigMojomTraitsTest, ReportingTimeout) {
+  {
+    AuctionConfig auction_config = CreateBasicAuctionConfig();
+    auction_config.non_shared_params.reporting_timeout = base::Milliseconds(50);
+    EXPECT_TRUE(SerializeAndDeserialize(auction_config));
+  }
+  {
+    AuctionConfig auction_config = CreateBasicAuctionConfig();
+    auction_config.non_shared_params.reporting_timeout = base::Milliseconds(0);
+    EXPECT_TRUE(SerializeAndDeserialize(auction_config));
+  }
+  {
+    AuctionConfig auction_config = CreateBasicAuctionConfig();
+    auction_config.non_shared_params.reporting_timeout =
+        base::Milliseconds(-50);
+    EXPECT_FALSE(SerializeAndDeserialize(auction_config));
   }
 }
 

@@ -30,6 +30,18 @@ enum class BookmarkModelType;
 
 namespace chrome_test_util {
 
+// Represents in which state we expect to find the bookmark ui.
+enum class KindOfTest {
+  // The user is signed-out. All bookmarks are in the localOrSyncable model.
+  kSignedOut,
+  // The user is signed-in. The test consider the bookmarks in the
+  // localOrSyncable model.
+  kLocal,
+  // The user is signed-in. The test consider the bookmarks in the account
+  // model.
+  kAccount
+};
+
 // Matcher for bookmarks tool tip star. (used in iPad)
 id<GREYMatcher> StarButton();
 
@@ -57,8 +69,12 @@ id<GREYMatcher> ContextBarCenterButtonWithLabel(NSString* label);
 // Matcher for context bar trailing button.
 id<GREYMatcher> ContextBarTrailingButtonWithLabel(NSString* label);
 
-// Matcher for tappable bookmark node.
+// Matcher for tappable bookmark node. The second method must be used if the
+// folder appear in both models.
 id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label);
+id<GREYMatcher> TappableBookmarkNodeWithLabel(
+    NSString* label,
+    chrome_test_util::KindOfTest kindOfTest);
 
 // Matcher for the search button.
 id<GREYMatcher> SearchIconButton();
@@ -77,8 +93,10 @@ id<GREYMatcher> SearchIconButton();
 // Sets and Leaves the root matcher to the given window.
 - (void)openBookmarksInWindowWithNumber:(int)windowNumber;
 
-// Selects MobileBookmarks to open.
+// Selects MobileBookmarks to open. The second method is used in case of
+// ambiguity.
 - (void)openMobileBookmarks;
+- (void)openMobileBookmarks:(chrome_test_util::KindOfTest)kindOfTest;
 
 // Adds a bookmark for the current tab. Must be called when on a tab.
 - (void)starCurrentTab;
@@ -136,11 +154,22 @@ id<GREYMatcher> SearchIconButton();
 // Verify a folder with given name is created and it is not being edited.
 - (void)verifyFolderCreatedWithTitle:(NSString*)folderTitle;
 
+// Opens the folder picker. This method should be called from the bookmark or
+// the folder editor.
+- (void)openFolderPicker;
+
+// Checks that, in the bookmark or folder editor, the currently edited object is
+// in the correct folder. The name of the folder owning the edited node is
+// `parentName`. The expected label of the folder depends on `kindOfTest`.
+- (void)assertChangeFolderIsCorrectlySet:(NSString*)parentName
+                              kindOfTest:
+                                  (chrome_test_util::KindOfTest)kindOfTest;
+
 - (void)tapOnContextMenuButton:(int)menuButtonId
                     openEditor:(NSString*)editorId
              setParentFolderTo:(NSString*)destinationFolder
                           from:(NSString*)sourceFolder
-              onlyOnThisDevice:(BOOL)onlyOnThisDevice;
+                    kindOfTest:(chrome_test_util::KindOfTest)kindOfTest;
 
 - (void)tapOnLongPressContextMenuButton:(id<GREYMatcher>)actionMatcher
                                  onItem:(id<GREYMatcher>)item

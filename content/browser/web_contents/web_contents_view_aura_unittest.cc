@@ -247,7 +247,7 @@ TEST_F(WebContentsViewAuraTest, OccludeView) {
   EXPECT_EQ(web_contents()->GetVisibility(), Visibility::VISIBLE);
 }
 
-// TODO(crbug.com/1231509): Enable these tests on Fuchsia when
+// TODO(crbug.com/40190725): Enable these tests on Fuchsia when
 // OSExchangeDataProviderFactory::CreateProvider is implemented.
 #if BUILDFLAG(IS_FUCHSIA)
 #define MAYBE_DragDropFiles DISABLED_DragDropFiles
@@ -688,11 +688,12 @@ TEST_F(WebContentsViewAuraTest, DragDropUrlData) {
   data->SetURL(url, url_title);
 
   // SetUrl should also add a virtual .url (internet shortcut) file.
-  std::vector<ui::FileInfo> file_infos;
-  EXPECT_TRUE(data->GetVirtualFilenames(&file_infos));
-  ASSERT_EQ(1ULL, file_infos.size());
+  std::optional<std::vector<ui::FileInfo>> file_infos =
+      data->GetVirtualFilenames();
+  ASSERT_TRUE(file_infos.has_value());
+  ASSERT_EQ(1ULL, file_infos.value().size());
   EXPECT_EQ(base::FilePath(base::UTF16ToWide(url_title) + L".url"),
-            file_infos[0].display_name);
+            file_infos.value()[0].display_name);
 
   ui::DropTargetEvent event(*data.get(), kClientPt, kScreenPt,
                             ui::DragDropTypes::DRAG_COPY);

@@ -7,6 +7,7 @@
 #include <map>
 #include <optional>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -53,7 +54,7 @@
 #include "printing/printing_features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if BUILDFLAG(ENABLE_PRINT_CONTENT_ANALYSIS)
+#if BUILDFLAG(ENTERPRISE_CONTENT_ANALYSIS)
 #include "chrome/browser/enterprise/connectors/common.h"
 #include "chrome/browser/enterprise/connectors/test/deep_scanning_test_utils.h"
 #include "chrome/browser/enterprise/connectors/test/fake_content_analysis_delegate.h"
@@ -62,9 +63,9 @@
 #if BUILDFLAG(ENTERPRISE_LOCAL_CONTENT_ANALYSIS)
 #include "chrome/browser/enterprise/connectors/test/fake_content_analysis_sdk_manager.h"  // nogncheck
 #endif  // BUILDFLAG(ENTERPRISE_LOCAL_CONTENT_ANALYSIS)
-#endif  // BUILDFLAG(ENABLE_PRINT_CONTENT_ANALYSIS)
+#endif  // BUILDFLAG(ENTERPRISE_CONTENT_ANALYSIS)
 
-#if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(ENABLE_PRINT_CONTENT_ANALYSIS)
+#if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(ENTERPRISE_CONTENT_ANALYSIS)
 #include "chrome/test/base/testing_profile_manager.h"
 #endif
 
@@ -159,7 +160,7 @@ base::Value::Dict GetPrintPreviewTicket() {
   return print_ticket;
 }
 
-base::Value::List ConstructPreviewArgs(base::StringPiece callback_id,
+base::Value::List ConstructPreviewArgs(std::string_view callback_id,
                                        const base::Value::Dict& print_ticket) {
   base::Value::List args;
   args.Append(callback_id);
@@ -391,7 +392,7 @@ class TestPrintPreviewHandler : public PrintPreviewHandler {
   const raw_ptr<content::WebContents, DanglingUntriaged> initiator_;
 };
 
-#if BUILDFLAG(ENABLE_PRINT_CONTENT_ANALYSIS)
+#if BUILDFLAG(ENTERPRISE_CONTENT_ANALYSIS)
 class TestPrintPreviewHandlerForContentAnalysis
     : public TestPrintPreviewHandler {
  public:
@@ -409,8 +410,7 @@ class TestPrintPreviewHandlerForContentAnalysis
                            base::Value::Dict settings,
                            scoped_refptr<base::RefCountedMemory> data,
                            const std::string& callback_id) override {
-    ASSERT_EQ(base::StringPiece(data->front_as<const char>(), data->size()),
-              kTestData);
+    ASSERT_EQ(base::as_string_view(*data), kTestData);
     print_called_after_scan_ = true;
     PrintPreviewHandler::FinishHandleDoPrint(user_action, std::move(settings),
                                              data, callback_id);
@@ -418,7 +418,7 @@ class TestPrintPreviewHandlerForContentAnalysis
 
   bool print_called_after_scan_ = false;
 };
-#endif  // BUILDFLAG(ENABLE_PRINT_CONTENT_ANALYSIS)
+#endif  // BUILDFLAG(ENTERPRISE_CONTENT_ANALYSIS)
 
 }  // namespace
 
@@ -455,7 +455,7 @@ class PrintPreviewHandlerTest : public testing::Test {
   }
 
   void SetUp() override {
-#if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(ENABLE_PRINT_CONTENT_ANALYSIS)
+#if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(ENTERPRISE_CONTENT_ANALYSIS)
     ASSERT_TRUE(testing_profile_manager_.SetUp());
 #endif
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -756,7 +756,7 @@ class PrintPreviewHandlerTest : public testing::Test {
   TestingProfile* profile() { return &profile_; }
   TestPrinterHandler* printer_handler() { return printer_handler_; }
   std::vector<PrinterInfo>& printers() { return printers_; }
-#if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(ENABLE_PRINT_CONTENT_ANALYSIS)
+#if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(ENTERPRISE_CONTENT_ANALYSIS)
   TestingProfileManager* testing_profile_manager() {
     return &testing_profile_manager_;
   }
@@ -764,7 +764,7 @@ class PrintPreviewHandlerTest : public testing::Test {
 
  private:
   content::BrowserTaskEnvironment task_environment_;
-#if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(ENABLE_PRINT_CONTENT_ANALYSIS)
+#if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(ENTERPRISE_CONTENT_ANALYSIS)
   TestingProfileManager testing_profile_manager_{
       TestingBrowserProcess::GetGlobal()};
 #endif

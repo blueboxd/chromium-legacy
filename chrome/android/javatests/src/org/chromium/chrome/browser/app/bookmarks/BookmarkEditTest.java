@@ -322,6 +322,7 @@ public class BookmarkEditTest {
         // This sleep allows the espresso events to actually go through. Without them, the test is
         // very flaky.
         Thread.sleep(200);
+        onView(withText("Mobile bookmarks")).perform(click());
         onView(withText(FOLDER_A)).perform(click());
         onView(withText("Move here")).perform(click());
         waitForEditActivity();
@@ -374,15 +375,6 @@ public class BookmarkEditTest {
             throws ExecutionException {
         return TestThreadUtils.runOnUiThreadBlocking(
                 () -> sBookmarkModel.addFolder(parent, index, title));
-    }
-
-    private void waitForMoveFolderActivity() {
-        CriteriaHelper.pollUiThread(
-                () ->
-                        ApplicationStatus.getLastTrackedFocusedActivity()
-                                instanceof BookmarkFolderSelectActivity,
-                "Timed out waiting for BookmarkFolderSelectActivity");
-        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
     }
 
     private void waitForEditActivity() {

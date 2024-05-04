@@ -60,7 +60,7 @@ class NATIVE_THEME_EXPORT NativeTheme {
   // The part to be painted / sized.
   enum Part {
     kCheckbox,
-// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
+// TODO(crbug.com/40118868): Revisit the macro expression once build flag switch
 // of lacros-chrome is complete.
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
     kFrameTopArea,
@@ -295,8 +295,6 @@ class NATIVE_THEME_EXPORT NativeTheme {
 
   struct ScrollbarThumbExtraParams {
     bool is_hovering = false;
-    ScrollbarOverlayColorTheme scrollbar_theme =
-        ScrollbarOverlayColorTheme::kDefault;
     // This allows clients to directly override the color values to support
     // element-specific web platform CSS.
     std::optional<SkColor> thumb_color;
@@ -405,6 +403,7 @@ class NATIVE_THEME_EXPORT NativeTheme {
       const gfx::Rect& rect,
       const ExtraParams& extra,
       ColorScheme color_scheme = ColorScheme::kDefault,
+      bool in_forced_colors = false,
       const std::optional<SkColor>& accent_color = std::nullopt) const = 0;
 
   // Returns whether the theme uses a nine-patch resource for the given part.
@@ -566,14 +565,6 @@ class NATIVE_THEME_EXPORT NativeTheme {
     return should_use_system_accent_color_;
   }
 
-  // Updates the state of dark mode, forced colors mode, and the map of system
-  // colors. Returns true if NativeTheme was updated as a result, or false if
-  // the state of NativeTheme was untouched.
-  bool UpdateSystemColorInfo(
-      bool is_dark_mode,
-      bool forced_colors,
-      const base::flat_map<SystemThemeColor, uint32_t>& colors);
-
   // On certain platforms, currently only Mac, there is a unique visual for
   // pressed states.
   virtual SkColor GetSystemButtonPressedColor(SkColor base_color) const;
@@ -586,6 +577,17 @@ class NATIVE_THEME_EXPORT NativeTheme {
   float AdjustBorderRadiusByZoom(Part part,
                                  float border_width,
                                  float zoom_level) const;
+
+  // Returns the rate at which the text caret should blink. If 0, the caret
+  // will not blink.
+  base::TimeDelta GetCaretBlinkInterval() const;
+
+  // Sets the rate at which the text caret should blink. Overrides any
+  // platform values.
+  void set_caret_blink_interval(
+      std::optional<base::TimeDelta> caret_blink_interval) {
+    caret_blink_interval_ = std::move(caret_blink_interval);
+  }
 
   // Whether high contrast is forced via command-line flag.
   static bool IsForcedHighContrast();
@@ -606,6 +608,9 @@ class NATIVE_THEME_EXPORT NativeTheme {
   // or listeners with the webinstance in order to provide correct native
   // platform behaviors.
   virtual void ConfigureWebInstance() {}
+
+  // Gets the platform caret blink interval if it exists.
+  virtual std::optional<base::TimeDelta> GetPlatformCaretBlinkInterval() const;
 
   // Allows one native theme to observe changes in another. For example, the
   // web native theme for Windows observes the corresponding ui native theme in
@@ -658,6 +663,7 @@ class NATIVE_THEME_EXPORT NativeTheme {
   bool inverted_colors_ = false;
   PreferredColorScheme preferred_color_scheme_ = PreferredColorScheme::kLight;
   PreferredContrast preferred_contrast_ = PreferredContrast::kNoPreference;
+  std::optional<base::TimeDelta> caret_blink_interval_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 };

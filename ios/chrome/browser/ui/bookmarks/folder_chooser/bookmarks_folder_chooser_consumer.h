@@ -25,14 +25,12 @@ class BookmarkNode;
 
 // "Mobile Bookmarks" folder node that always exists by default.
 - (const bookmarks::BookmarkNode*)mobileFolderNode;
-// Root folder node in the bookmark model tree.
-- (const bookmarks::BookmarkNode*)rootFolderNode;
 // The list of visible folders to show.
 - (std::vector<const bookmarks::BookmarkNode*>)visibleFolderNodes;
 
 @end
 
-// TODO(crbug.com/1405746): Refactor all the methods in this protocol after the
+// TODO(crbug.com/40252439): Refactor all the methods in this protocol after the
 // view controller has been refactored. View controller should not know about
 // BookmarkNode.
 // Data source protocol to get data on demand.

@@ -8,11 +8,14 @@
 #include <utility>
 
 #include "base/atomic_sequence_num.h"
+#include "base/containers/contains.h"
 #include "base/functional/bind.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/task/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
+#include "gpu/config/gpu_finch_features.h"
 #include "gpu/ipc/client/client_shared_image_interface.h"
 #include "gpu/ipc/common/command_buffer_id.h"
 #include "gpu/ipc/common/gpu_watchdog_timeout.h"
@@ -106,6 +109,20 @@ uint32_t GpuChannelHost::EnqueueDeferredMessage(
   return enqueued_deferred_message_id_;
 }
 
+#if BUILDFLAG(IS_WIN)
+void GpuChannelHost::CopyToGpuMemoryBufferAsync(
+    const Mailbox& mailbox,
+    std::vector<SyncToken> sync_token_dependencies,
+    uint32_t release_id,
+    base::OnceCallback<void(bool)> callback) {
+  AutoLock lock(context_lock_);
+  InternalFlush(UINT32_MAX);
+  GetGpuChannel().CopyToGpuMemoryBufferAsync(mailbox,
+                                             std::move(sync_token_dependencies),
+                                             release_id, std::move(callback));
+}
+#endif
+
 void GpuChannelHost::EnsureFlush(uint32_t deferred_message_id) {
   AutoLock lock(context_lock_);
   InternalFlush(deferred_message_id);
@@ -116,10 +133,44 @@ void GpuChannelHost::VerifyFlush(uint32_t deferred_message_id) {
 
   InternalFlush(deferred_message_id);
 
-  if (deferred_message_id > verified_deferred_message_id_) {
+  bool ipc_needed = false;
+  const bool skip_flush_if_possible =
+      base::FeatureList::IsEnabled(features::kConditionallySkipGpuChannelFlush);
+
+  // A few different scenarios can happen here.
+  //
+  // 1) There is no attempt to skip the flush.
+  // 2) A sync call is issued to establish the shared memory communication.
+  //    This in itself syncs so no further IPCs are needed to flush.
+  // 3) The communication is already established and confirms the need for an
+  //    IPC.
+  // 4) The communication is already established and confirms no need for
+  //    an IPC. In that case the default value of `ipc_needed` which is false
+  //    is used.
+  //
+  if (skip_flush_if_possible) {
+    // If shared memory communication is not established, do so.
+    if (!shared_memory_version_client_.has_value()) {
+      mojo::SyncCallRestrictions::ScopedAllowSyncCall allow_sync;
+      EstablishSharedMemoryForFlushVerification();
+      // A sync IPC was just completed which serves the same purpose as Flush()
+      // which is a noop sync IPC. No need to continue.
+      ipc_needed = false;
+    }
+    // GPUChannel has not processed ids up to the ones that were flushed. IPC
+    // needed.
+    else if (shared_memory_version_client_->SharedVersionIsLessThan(
+                 flushed_deferred_message_id_)) {
+      ipc_needed = true;
+    }
+  } else {
+    ipc_needed = true;
+  }
+
+  // Flush is needed.
+  if (ipc_needed) {
     mojo::SyncCallRestrictions::ScopedAllowSyncCall allow_sync;
     GetGpuChannel().Flush();
-    verified_deferred_message_id_ = flushed_deferred_message_id_;
   }
 }
 
@@ -145,6 +196,14 @@ void GpuChannelHost::EnqueuePendingOrderingBarrier() {
   pending_ordering_barrier_.reset();
 }
 
+void GpuChannelHost::EstablishSharedMemoryForFlushVerification() {
+  base::ReadOnlySharedMemoryRegion mapped_region;
+  GetGpuChannel().GetSharedMemoryForFlushId(&mapped_region);
+  if (mapped_region.IsValid()) {
+    shared_memory_version_client_.emplace(std::move(mapped_region));
+  }
+}
+
 void GpuChannelHost::InternalFlush(uint32_t deferred_message_id) {
   context_lock_.AssertAcquired();
 
@@ -152,10 +211,10 @@ void GpuChannelHost::InternalFlush(uint32_t deferred_message_id) {
   if (!deferred_messages_.empty() &&
       deferred_message_id > flushed_deferred_message_id_) {
     DCHECK_EQ(enqueued_deferred_message_id_, next_deferred_message_id_ - 1);
+    flushed_deferred_message_id_ = enqueued_deferred_message_id_;
 
-    GetGpuChannel().FlushDeferredRequests(std::move(deferred_messages_));
-    deferred_messages_.clear();
-    flushed_deferred_message_id_ = next_deferred_message_id_ - 1;
+    GetGpuChannel().FlushDeferredRequests(std::move(deferred_messages_),
+                                          flushed_deferred_message_id_);
   }
 }
 
@@ -212,7 +271,9 @@ GpuChannelHost::~GpuChannelHost() = default;
 
 GpuChannelHost::ConnectionTracker::ConnectionTracker() = default;
 
-GpuChannelHost::ConnectionTracker::~ConnectionTracker() = default;
+GpuChannelHost::ConnectionTracker::~ConnectionTracker() {
+  CHECK(observer_list_.empty(), base::NotFatalUntil::M126);
+}
 
 void GpuChannelHost::ConnectionTracker::OnDisconnectedFromGpuProcess() {
   is_connected_.store(false);
@@ -222,23 +283,22 @@ void GpuChannelHost::ConnectionTracker::OnDisconnectedFromGpuProcess() {
 void GpuChannelHost::ConnectionTracker::AddObserver(
     GpuChannelLostObserver* obs) {
   AutoLock lock(channel_obs_lock_);
-  observer_list_.AddObserver(obs);
-  DCHECK(!observer_list_.empty());
+  CHECK(!base::Contains(observer_list_, obs), base::NotFatalUntil::M126);
+  observer_list_.push_back(obs);
 }
 
 void GpuChannelHost::ConnectionTracker::RemoveObserver(
     GpuChannelLostObserver* obs) {
   AutoLock lock(channel_obs_lock_);
-  observer_list_.RemoveObserver(obs);
+  std::erase(observer_list_, obs);
 }
 
 void GpuChannelHost::ConnectionTracker::NotifyGpuChannelLost() {
   AutoLock lock(channel_obs_lock_);
-  for (auto& observer : observer_list_) {
-    observer.OnGpuChannelLost();
+  for (GpuChannelLostObserver* observer : observer_list_) {
+    observer->OnGpuChannelLost();
   }
-  observer_list_.Clear();
-  DCHECK(observer_list_.empty());
+  observer_list_.clear();
 }
 
 GpuChannelHost::OrderingBarrierInfo::OrderingBarrierInfo() = default;

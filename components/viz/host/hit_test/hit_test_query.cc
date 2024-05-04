@@ -125,7 +125,7 @@ bool HitTestQuery::TransformLocationForTarget(
     return false;
   }
 
-  // TODO(crbug.com/966944): Cache the matrix product such that the transform
+  // TODO(crbug.com/41460941): Cache the matrix product such that the transform
   // can be done immediately.
   *transformed_location = location_in_root;
   return TransformLocationForTargetRecursively(
@@ -221,7 +221,7 @@ bool HitTestQuery::FindTargetInRegionForLocation(
   // hit test data, e.g. overlapped by ShelfApp on ChromeOS.
   // The kHitTestAsk flag should be ignored in such a case because there is no
   // need to do async hit testing on the root merely because it was overlapped.
-  // TODO(crbug.com/1001238): Do not set the kHitTestAsk and kOverlappedRegion
+  // TODO(crbug.com/40646023): Do not set the kHitTestAsk and kOverlappedRegion
   // flags for root when building hit test data.
   bool root_view_overlapped =
       hit_test_data_[region_index].frame_sink_id == root_view_frame_sink_id &&
@@ -320,7 +320,7 @@ bool HitTestQuery::GetTransformToTargetRecursively(
     const FrameSinkId& target,
     size_t region_index,
     gfx::Transform* transform) const {
-  // TODO(crbug.com/966944): Cache the matrix product such that the transform
+  // TODO(crbug.com/41460941): Cache the matrix product such that the transform
   // can be found immediately.
   if (hit_test_data_[region_index].frame_sink_id == target) {
     *transform = hit_test_data_[region_index].transform;

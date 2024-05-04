@@ -22,7 +22,7 @@ namespace ash {
 
 class FeaturePodControllerBase;
 
-// TODO(crbug/1276545): Remove FeaturePodIconButton after the migration.
+// TODO(crbug.com/40808951): Remove FeaturePodIconButton after the migration.
 // A toggle button with an icon used by feature pods and in other places.
 class ASH_EXPORT FeaturePodIconButton : public IconButton {
   METADATA_HEADER(FeaturePodIconButton, IconButton)
@@ -61,7 +61,8 @@ class ASH_EXPORT FeaturePodLabelButton : public views::Button {
 
   // views::Button:
   void Layout(PassKey) override;
-  gfx::Size CalculatePreferredSize() const override;
+  gfx::Size CalculatePreferredSize(
+      const views::SizeBounds& available_size) const override;
   void OnThemeChanged() override;
 
  private:

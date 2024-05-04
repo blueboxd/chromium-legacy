@@ -37,6 +37,7 @@ namespace content {
 
 class AttributionStorageDelegate;
 class StorableSource;
+class StoreSourceResult;
 struct AttributionInfo;
 
 enum class RateLimitResult : int;
@@ -47,11 +48,11 @@ enum class RateLimitResult : int;
 class CONTENT_EXPORT AttributionStorageSql : public AttributionStorage {
  public:
   // Version number of the database.
-  static constexpr int kCurrentVersionNumber = 58;
+  static constexpr int kCurrentVersionNumber = 59;
 
   // Earliest version which can use a `kCurrentVersionNumber` database
   // without failing.
-  static constexpr int kCompatibleVersionNumber = 58;
+  static constexpr int kCompatibleVersionNumber = 59;
 
   // Latest version of the database that cannot be upgraded to
   // `kCurrentVersionNumber` without razing the database.
@@ -156,10 +157,8 @@ class CONTENT_EXPORT AttributionStorageSql : public AttributionStorage {
   };
 
   // AttributionStorage:
-  StoreSourceResult StoreSource(const StorableSource& source,
-                                bool debug_cookie_set) override;
-  CreateReportResult MaybeCreateAndStoreReport(
-      const AttributionTrigger& trigger) override;
+  StoreSourceResult StoreSource(StorableSource source) override;
+  CreateReportResult MaybeCreateAndStoreReport(AttributionTrigger) override;
   std::vector<AttributionReport> GetAttributionReports(
       base::Time max_report_time,
       int limit = -1) override;
@@ -177,10 +176,6 @@ class CONTENT_EXPORT AttributionStorageSql : public AttributionStorage {
                  StoragePartition::StorageKeyMatcherFunction filter,
                  bool delete_rate_limit_data) override;
   void SetDelegate(std::unique_ptr<AttributionStorageDelegate>) override;
-
-  [[nodiscard]] StoreSourceResult CheckDestinationRateLimit(
-      const StorableSource& source,
-      base::Time source_time);
 
   void ClearAllDataAllTime(bool delete_rate_limit_data)
       VALID_CONTEXT_REQUIRED(sequence_checker_);
@@ -305,7 +300,8 @@ class CONTENT_EXPORT AttributionStorageSql : public AttributionStorage {
       const AttributionTrigger& trigger,
       std::optional<AttributionReport>& report,
       std::optional<uint64_t>& dedup_key,
-      std::optional<int>& max_event_level_reports_per_destination)
+      std::optional<int>& max_event_level_reports_per_destination,
+      std::optional<int64_t>& rate_limits_max_attributions)
       VALID_CONTEXT_REQUIRED(sequence_checker_);
 
   AttributionTrigger::EventLevelResult MaybeStoreEventLevelReport(
@@ -380,7 +376,8 @@ class CONTENT_EXPORT AttributionStorageSql : public AttributionStorage {
       const AttributionTrigger& trigger,
       std::optional<AttributionReport>& report,
       std::optional<uint64_t>& dedup_key,
-      std::optional<int>& max_aggregatable_reports_per_destination)
+      std::optional<int>& max_aggregatable_reports_per_destination,
+      std::optional<int64_t>& rate_limits_max_attributions)
       VALID_CONTEXT_REQUIRED(sequence_checker_);
 
   // Stores the data associated with the aggregatable report, e.g. budget

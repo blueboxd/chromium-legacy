@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#import "ios/chrome/browser/sessions/session_restoration_browser_agent.h"
+
 #import <objc/runtime.h>
 
 #import "base/files/file_path.h"
@@ -16,7 +18,7 @@
 #import "ios/chrome/browser/ntp/model/new_tab_page_tab_helper.h"
 #import "ios/chrome/browser/ntp/model/new_tab_page_tab_helper_delegate.h"
 #import "ios/chrome/browser/sessions/ios_chrome_session_tab_helper.h"
-#import "ios/chrome/browser/sessions/session_restoration_browser_agent.h"
+#import "ios/chrome/browser/sessions/session_tab_group.h"
 #import "ios/chrome/browser/sessions/session_window_ios.h"
 #import "ios/chrome/browser/sessions/test_session_restoration_observer.h"
 #import "ios/chrome/browser/sessions/test_session_service.h"
@@ -24,12 +26,12 @@
 #import "ios/chrome/browser/shared/model/browser/test/test_browser.h"
 #import "ios/chrome/browser/shared/model/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/shared/model/url/chrome_url_constants.h"
+#import "ios/chrome/browser/shared/model/web_state_list/test/web_state_list_builder_from_description.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list_delegate.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_opener.h"
 #import "ios/chrome/browser/signin/model/authentication_service_factory.h"
 #import "ios/chrome/browser/signin/model/fake_authentication_service_delegate.h"
-#import "ios/chrome/browser/tabs/model/features.h"
 #import "ios/chrome/test/ios_chrome_scoped_testing_local_state.h"
 #import "ios/web/public/navigation/navigation_manager.h"
 #import "ios/web/public/navigation/referrer.h"
@@ -107,7 +109,8 @@ CRWSessionStorage* CreateSessionStorage(TabInfo tab_info) {
 
 // Creates a SessionWindowIOS* from `session_info`.
 template <size_t N>
-SessionWindowIOS* CreateSessionWindow(SessionInfo<N> session_info) {
+SessionWindowIOS* CreateSessionWindow(SessionInfo<N> session_info,
+                                      NSArray<SessionTabGroup*>* groups = @[]) {
   if (session_info.active_index < 0) {
     return nil;
   }
@@ -124,6 +127,7 @@ SessionWindowIOS* CreateSessionWindow(SessionInfo<N> session_info) {
   }
 
   return [[SessionWindowIOS alloc] initWithSessions:sessions
+                                          tabGroups:groups
                                       selectedIndex:session_info.active_index];
 }
 
@@ -166,9 +170,11 @@ class SessionRestorationBrowserAgentTest : public PlatformTest {
   NSString* session_id() { return session_identifier_; }
 
  protected:
-  void CreateSessionRestorationBrowserAgent(bool enable_pinned_web_states) {
+  void CreateSessionRestorationBrowserAgent() {
     SessionRestorationBrowserAgent::CreateForBrowser(
-        browser_.get(), test_session_service_, enable_pinned_web_states);
+        browser_.get(), test_session_service_,
+        /*enable_pinned_web_states*/ true,
+        /*enable_tab_groups*/ true);
     session_restoration_agent_ =
         SessionRestorationBrowserAgent::FromBrowser(browser_.get());
     session_restoration_agent_->SetSessionID(session_identifier_);
@@ -217,7 +223,7 @@ class SessionRestorationBrowserAgentTest : public PlatformTest {
 // Tests that restoring a session where all items have no navigation items
 // does not restore anything (as all items would be dropped).
 TEST_F(SessionRestorationBrowserAgentTest, RestoreSession_AllNoNavigation) {
-  CreateSessionRestorationBrowserAgent(true);
+  CreateSessionRestorationBrowserAgent();
 
   SessionWindowIOS* window = CreateSessionWindow(SessionInfo<3>{
       .active_index = 2,
@@ -240,7 +246,7 @@ TEST_F(SessionRestorationBrowserAgentTest, RestoreSession_AllNoNavigation) {
 // Tests that restoring a session where some items have no navigation items
 // only restore those items, and correct fix the opener-opened relationship.
 TEST_F(SessionRestorationBrowserAgentTest, RestoreSesssion_MixedNoNavigation) {
-  CreateSessionRestorationBrowserAgent(true);
+  CreateSessionRestorationBrowserAgent();
 
   SessionWindowIOS* window = CreateSessionWindow(SessionInfo<8>{
       .active_index = 2,
@@ -277,7 +283,7 @@ TEST_F(SessionRestorationBrowserAgentTest, RestoreSesssion_MixedNoNavigation) {
 
 // Tests that restoring a session works correctly.
 TEST_F(SessionRestorationBrowserAgentTest, RestoreSessionOnEmptyWebStateList) {
-  CreateSessionRestorationBrowserAgent(true);
+  CreateSessionRestorationBrowserAgent();
 
   SessionWindowIOS* window =
       CreateSessionWindow(SessionInfo<5>{.active_index = 1,
@@ -306,11 +312,11 @@ TEST_F(SessionRestorationBrowserAgentTest, RestoreSessionOnEmptyWebStateList) {
       "Tabs.DroppedDuplicatesCountOnSessionRestore", 0, 1);
 }
 
-// TODO(crbug.com/888674): This test requires commiting item to
+// TODO(crbug.com/41416872): This test requires commiting item to
 // NavigationManagerImpl which is not possible, migrate this to EG test so
 // it can be tested.
 TEST_F(SessionRestorationBrowserAgentTest, DISABLED_RestoreSessionOnNTPTest) {
-  CreateSessionRestorationBrowserAgent(true);
+  CreateSessionRestorationBrowserAgent();
 
   web::WebState* web_state = InsertNewWebState(
       /*parent=*/nullptr, /*index=*/0, /*pinned=*/false, /*background=*/false);
@@ -345,7 +351,7 @@ TEST_F(SessionRestorationBrowserAgentTest, DISABLED_RestoreSessionOnNTPTest) {
 // Tests that saving a non-empty session, then saving an empty session, then
 // restoring, restores zero web states, and not the non-empty session.
 TEST_F(SessionRestorationBrowserAgentTest, SaveAndRestoreEmptySession) {
-  CreateSessionRestorationBrowserAgent(true);
+  CreateSessionRestorationBrowserAgent();
 
   InsertNewWebState(/*parent=*/nullptr, /*index=*/0,
                     /*pinned=*/false,
@@ -378,9 +384,9 @@ TEST_F(SessionRestorationBrowserAgentTest, SaveAndRestoreEmptySession) {
 
 // Tests that saving a session with web states, then clearing the WebStatelist
 // and then restoring the session will restore the web states correctly.
-// TODO(crbug.com/1433670): The tests are flaky.
+// TODO(crbug.com/40264505): The tests are flaky.
 TEST_F(SessionRestorationBrowserAgentTest, DISABLED_SaveAndRestoreSession) {
-  CreateSessionRestorationBrowserAgent(true);
+  CreateSessionRestorationBrowserAgent();
 
   web::WebState* web_state =
       InsertNewWebState(/*parent=*/nullptr, /*index=*/0,
@@ -423,7 +429,7 @@ TEST_F(SessionRestorationBrowserAgentTest, DISABLED_SaveAndRestoreSession) {
 // clearing the WebStateList and restoring the session will restore the web
 // states correctly.
 TEST_F(SessionRestorationBrowserAgentTest, SaveInProgressAndRestoreSession) {
-  CreateSessionRestorationBrowserAgent(true);
+  CreateSessionRestorationBrowserAgent();
 
   SessionWindowIOS* window =
       CreateSessionWindow(SessionInfo<5>{.active_index = 1,
@@ -468,7 +474,7 @@ TEST_F(SessionRestorationBrowserAgentTest, SaveInProgressAndRestoreSession) {
 // Tests that SessionRestorationObserver methods are called when sessions is
 // restored.
 TEST_F(SessionRestorationBrowserAgentTest, ObserverCalledWithRestore) {
-  CreateSessionRestorationBrowserAgent(true);
+  CreateSessionRestorationBrowserAgent();
 
   TestSessionRestorationObserver observer;
   base::ScopedObservation<SessionRestorationBrowserAgent,
@@ -499,7 +505,7 @@ TEST_F(SessionRestorationBrowserAgentTest, ObserverCalledWithRestore) {
 // changes.
 TEST_F(SessionRestorationBrowserAgentTest,
        SaveSessionWithActiveWebStateChange) {
-  CreateSessionRestorationBrowserAgent(true);
+  CreateSessionRestorationBrowserAgent();
 
   InsertNewWebState(/*parent=*/nullptr, /*index=*/0,
                     /*pinned=*/false,
@@ -546,9 +552,11 @@ TEST_F(SessionRestorationBrowserAgentTest,
   EXPECT_EQ(test_session_service_.saveSessionCallsCount, 7);
 }
 
-// Tests that SessionRestorationAgent doesn't restore duplicates in a session.
-TEST_F(SessionRestorationBrowserAgentTest, RestoreSessionFilterOutDuplicates) {
-  CreateSessionRestorationBrowserAgent(true);
+// Tests that SessionRestorationAgent doesn't restore duplicates in a session
+// and updates the active pinned tab correctly.
+TEST_F(SessionRestorationBrowserAgentTest,
+       RestoreSessionFilterOutDuplicates_ActivePinned) {
+  CreateSessionRestorationBrowserAgent();
 
   const web::WebStateID quadruplet_id = web::WebStateID::NewUnique();
   const web::WebStateID twin_id = web::WebStateID::NewUnique();
@@ -570,7 +578,113 @@ TEST_F(SessionRestorationBrowserAgentTest, RestoreSessionFilterOutDuplicates) {
   session_restoration_agent_->RestoreSessionWindow(window);
   EXPECT_EQ(3, browser_->GetWebStateList()->count());
   EXPECT_EQ(1, browser_->GetWebStateList()->pinned_tabs_count());
-  EXPECT_EQ(1, browser_->GetWebStateList()->active_index());
+  EXPECT_EQ(0, browser_->GetWebStateList()->active_index());
+
+  // Expect a log of 4 duplicates.
+  histogram_tester_.ExpectUniqueSample(
+      "Tabs.DroppedDuplicatesCountOnSessionRestore", 4, 1);
+}
+
+// Tests that SessionRestorationAgent doesn't restore duplicates in a session
+// and updates the active unpinned tab correctly.
+TEST_F(SessionRestorationBrowserAgentTest,
+       RestoreSessionFilterOutDuplicates_ActiveUnpinned) {
+  CreateSessionRestorationBrowserAgent();
+
+  const web::WebStateID quadruplet_id = web::WebStateID::NewUnique();
+  const web::WebStateID twin_id = web::WebStateID::NewUnique();
+  const web::WebStateID single_id = web::WebStateID::NewUnique();
+  SessionWindowIOS* window = CreateSessionWindow(SessionInfo<7>{
+      .active_index = 4,
+      .tab_infos =
+          {
+              TabInfo{.pinned = true, .unique_identifier = quadruplet_id},
+              TabInfo{.pinned = true, .unique_identifier = quadruplet_id},
+              TabInfo{.unique_identifier = twin_id},
+              TabInfo{.unique_identifier = quadruplet_id},
+              TabInfo{.unique_identifier = quadruplet_id},
+              TabInfo{.unique_identifier = twin_id},
+              TabInfo{.unique_identifier = single_id},
+          },
+  });
+
+  session_restoration_agent_->RestoreSessionWindow(window);
+  EXPECT_EQ(3, browser_->GetWebStateList()->count());
+  EXPECT_EQ(1, browser_->GetWebStateList()->pinned_tabs_count());
+  EXPECT_EQ(2, browser_->GetWebStateList()->active_index());
+
+  // Expect a log of 4 duplicates.
+  histogram_tester_.ExpectUniqueSample(
+      "Tabs.DroppedDuplicatesCountOnSessionRestore", 4, 1);
+}
+
+// Tests that filtering tabs with group updates the group accordingly.
+TEST_F(SessionRestorationBrowserAgentTest, FilterOutDuplicateItemsWithGroups) {
+  CreateSessionRestorationBrowserAgent();
+  WebStateListBuilderFromDescription builder(browser_->GetWebStateList());
+
+  const web::WebStateID duplicate_id = web::WebStateID::NewUnique();
+  const web::WebStateID single_id = web::WebStateID::NewUnique();
+  const web::WebStateID another_single_id = web::WebStateID::NewUnique();
+  const web::WebStateID yet_another_single_id = web::WebStateID::NewUnique();
+  const web::WebStateID and_another_single_id = web::WebStateID::NewUnique();
+  SessionTabGroup* session_tab_group_1 = [[SessionTabGroup alloc]
+      initWithRangeStart:2
+              rangeCount:2
+                   title:@"group with duplicate at the end"
+                 colorId:static_cast<NSInteger>(
+                             tab_groups::TabGroupColorId::kGrey)];
+  SessionTabGroup* session_tab_group_2 = [[SessionTabGroup alloc]
+      initWithRangeStart:4
+              rangeCount:2
+                   title:@"group with no duplicate"
+                 colorId:static_cast<NSInteger>(
+                             tab_groups::TabGroupColorId::kPink)];
+  SessionTabGroup* session_tab_group_3 = [[SessionTabGroup alloc]
+      initWithRangeStart:7
+              rangeCount:1
+                   title:@"group with only duplicate"
+                 colorId:static_cast<NSInteger>(
+                             tab_groups::TabGroupColorId::kYellow)];
+  SessionTabGroup* session_tab_group_4 = [[SessionTabGroup alloc]
+      initWithRangeStart:7
+              rangeCount:2
+                   title:@"group with duplicate at the beginning"
+                 colorId:static_cast<NSInteger>(
+                             tab_groups::TabGroupColorId::kOrange)];
+  SessionWindowIOS* window = CreateSessionWindow(
+      SessionInfo<9>{
+          .active_index = 0,
+          .tab_infos =
+              {
+                  TabInfo{.unique_identifier = duplicate_id},
+                  TabInfo{.unique_identifier = duplicate_id},
+                  // First group.
+                  TabInfo{.unique_identifier = single_id},
+                  TabInfo{.unique_identifier = duplicate_id},
+                  // Second group.
+                  TabInfo{.unique_identifier = another_single_id},
+                  TabInfo{.unique_identifier = yet_another_single_id},
+                  // Third group.
+                  TabInfo{.unique_identifier = duplicate_id},
+                  // Fourth group.
+                  TabInfo{.unique_identifier = duplicate_id},
+                  TabInfo{.unique_identifier = and_another_single_id},
+              },
+      },
+      @[
+        session_tab_group_1, session_tab_group_2, session_tab_group_3,
+        session_tab_group_4
+      ]);
+
+  session_restoration_agent_->RestoreSessionWindow(window);
+  EXPECT_EQ(5, browser_->GetWebStateList()->count());
+  EXPECT_EQ(0, browser_->GetWebStateList()->pinned_tabs_count());
+  EXPECT_EQ(0, browser_->GetWebStateList()->active_index());
+  EXPECT_EQ(3u, browser_->GetWebStateList()->GetGroups().size());
+  builder.GenerateIdentifiersForWebStateList();
+  EXPECT_EQ("| a* [ 0 b ] [ 1 c d ] [ 2 e ]",
+            builder.GetWebStateListDescription());
 
   // Expect a log of 4 duplicates.
   histogram_tester_.ExpectUniqueSample(

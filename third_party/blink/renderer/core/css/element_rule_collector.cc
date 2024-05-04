@@ -33,6 +33,7 @@
 #include "base/containers/span.h"
 #include "base/substring_set_matcher/substring_set_matcher.h"
 #include "base/trace_event/common/trace_event_common.h"
+#include "third_party/blink/public/mojom/use_counter/metrics/web_feature.mojom-shared.h"
 #include "third_party/blink/renderer/core/css/cascade_layer_map.h"
 #include "third_party/blink/renderer/core/css/check_pseudo_has_cache_scope.h"
 #include "third_party/blink/renderer/core/css/container_query_evaluator.h"
@@ -390,8 +391,8 @@ void ElementRuleCollector::AddElementStyleProperties(
   }
 }
 
-void ElementRuleCollector::AddTryStyleProperties(
-    const CSSPropertyValueSet* property_set) {
+void ElementRuleCollector::AddTryStyleProperties() {
+  const CSSPropertyValueSet* property_set = style_recalc_context_.try_set;
   if (!property_set) {
     return;
   }
@@ -404,8 +405,9 @@ void ElementRuleCollector::AddTryStyleProperties(
   result_.SetIsCacheable(false);
 }
 
-void ElementRuleCollector::AddTryTacticsStyleProperties(
-    const CSSPropertyValueSet* property_set) {
+void ElementRuleCollector::AddTryTacticsStyleProperties() {
+  const CSSPropertyValueSet* property_set =
+      style_recalc_context_.try_tactics_set;
   if (!property_set) {
     return;
   }
@@ -960,7 +962,7 @@ void ElementRuleCollector::CollectMatchingShadowHostRules(
     CollectMatchingRulesForList</*stop_at_first_match=*/false>(
         bundle.rule_set->ShadowHostRules(), match_request, bundle.rule_set,
         bundle.style_sheet_index, checker, context.context);
-    if (bundle.rule_set->MayHaveScopeInUniversalBucket()) {
+    if (bundle.rule_set->MustCheckUniversalBucketForShadowHost()) {
       CollectMatchingRulesForList</*stop_at_first_match=*/false>(
           bundle.rule_set->UniversalRules(), match_request, bundle.rule_set,
           bundle.style_sheet_index, checker, context.context);
@@ -983,7 +985,7 @@ bool ElementRuleCollector::CheckIfAnyShadowHostRuleMatches(
             bundle.style_sheet_index, checker, context.context)) {
       return true;
     }
-    if (bundle.rule_set->MayHaveScopeInUniversalBucket()) {
+    if (bundle.rule_set->MustCheckUniversalBucketForShadowHost()) {
       if (CollectMatchingRulesForList</*stop_at_first_match=*/true>(
               bundle.rule_set->UniversalRules(), match_request, bundle.rule_set,
               bundle.style_sheet_index, checker, context.context)) {
@@ -1011,10 +1013,10 @@ void ElementRuleCollector::CollectMatchingSlottedRules(
 
 void ElementRuleCollector::CollectMatchingPartPseudoRules(
     const MatchRequest& match_request,
-    PartNames& part_names,
+    PartNames* part_names,
     bool for_shadow_pseudo) {
   PartRequest request{part_names, for_shadow_pseudo};
-  SelectorChecker checker(&part_names, pseudo_style_request_, mode_,
+  SelectorChecker checker(part_names, pseudo_style_request_, mode_,
                           matching_ua_rules_);
 
   ContextWithStyleScopeFrame context(&context_.GetElement(), match_request,
@@ -1230,6 +1232,10 @@ void ElementRuleCollector::DidMatchRule(
       result_.SetFirstLineDependsOnSizeContainerQueries();
     }
   } else {
+    if (rule_data->Rule()->Properties().ContainsCursorHand()) {
+      context_.GetElement().GetDocument().CountUse(
+          WebFeature::kQuirksModeCursorHandApplied);
+    }
     matched_rules_.emplace_back(rule_data, layer_order, proximity,
                                 style_sheet_index);
   }

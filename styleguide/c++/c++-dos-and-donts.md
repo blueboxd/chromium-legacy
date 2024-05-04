@@ -295,7 +295,7 @@ if existing code uses the old one.
 * Function names: `` `FooFunction()` ``. The trailing parens disambiguate
   against class names, and occasionally, English words.
 * Variable names: `` `foo_var` ``.
-* Tracking comments for future improvements: `// TODO(crbug.com/12345): ...`,
+* Tracking comments for future improvements: `// TODO(crbug.com/40781525): ...`,
   or, less optimally, `// TODO(knowledgeable_username): ...`.  Tracking bugs
   provide space to give background context and current status; a username might
   at least provide a starting point for asking about an issue.
@@ -303,7 +303,7 @@ if existing code uses the old one.
 ```cpp
 // `FooImpl` implements the `FooBase` class.
 // `FooFunction()` modifies `foo_member_`.
-// TODO(crbug.com/1): Rename things to something more descriptive than "foo".
+// TODO(crbug.com/40097047): Rename things to something more descriptive than "foo".
 ```
 
 ## Named namespaces

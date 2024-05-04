@@ -291,7 +291,10 @@ class FloatController::FloatedWindowInfo : public aura::WindowObserver {
       float_start_time_ = base::TimeTicks::Now();
 
     if (display::Screen::GetScreen()->InTabletMode() &&
-        TabletModeTuckEducation::CanActivateTuckEducation()) {
+        TabletModeTuckEducation::CanActivateTuckEducation() &&
+        !Shell::Get()
+             ->float_controller()
+             ->disable_tuck_education_for_testing_) {
       tuck_education_ =
           std::make_unique<TabletModeTuckEducation>(floated_window);
     }
@@ -966,6 +969,13 @@ void FloatController::OnScreenRotationAnimationFinished(
                     window, chromeos::FloatStartLocation::kBottomRight);
       const SetBoundsWMEvent event(bounds);
       WindowState::Get(window)->OnWMEvent(&event);
+
+      // When a window is tucked, ash has full control over the bounds.
+      if (IsFloatedWindowTuckedForTablet(window)) {
+        TabletModeWindowState::UpdateWindowPosition(
+            WindowState::Get(window),
+            WindowState::BoundsChangeAnimationType::kNone);
+      }
     }
   }
 }

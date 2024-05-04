@@ -68,7 +68,7 @@ class EventLatencyBrowserTest : public ContentBrowserTest {
 
 // Tests that if a key-press on a page causes a visual update, appropriate event
 // latency metrics are reported.
-// TODO(crbug.com/1085046): flaky test.
+// TODO(crbug.com/40132021): flaky test.
 IN_PROC_BROWSER_TEST_F(EventLatencyBrowserTest, DISABLED_KeyPressOnButton) {
   base::HistogramTester histogram_tester;
 
@@ -192,7 +192,7 @@ IN_PROC_BROWSER_TEST_F(EventLatencyBrowserTest, DISABLED_KeyPressOnButton) {
 
 // Tests that if a key-press on a page with an animation causes a visual update,
 // appropriate event latency metrics are reported.
-// TODO(https://crbug.com/1076186): Test is flaky.
+// TODO(crbug.com/40128555): Test is flaky.
 IN_PROC_BROWSER_TEST_F(EventLatencyBrowserTest,
                        DISABLED_KeyPressOnButtonWithAnimation) {
   base::HistogramTester histogram_tester;
@@ -342,10 +342,11 @@ IN_PROC_BROWSER_TEST_F(EventLatencyBrowserTest,
 
   FetchHistogramsFromChildProcesses();
 
-  // TODO(crbug/1071645): Since this is this first key-press after the textbox
-  // is focused, there would be two reports, one for the RawKeyDown that causes
-  // some style changes (due to :focus-visible behavior) and one for the Char
-  // that inserts the actual character. These should be reported separately.
+  // TODO(crbug.com/40126863): Since this is this first key-press after the
+  // textbox is focused, there would be two reports, one for the RawKeyDown that
+  // causes some style changes (due to :focus-visible behavior) and one for the
+  // Char that inserts the actual character. These should be reported
+  // separately.
   base::HistogramTester::CountsMap expected_counts = {
       {"EventLatency.KeyPressed.BrowserToRendererCompositor", 2},
       {"EventLatency.KeyPressed.BeginImplFrameToSendBeginMainFrame", 2},

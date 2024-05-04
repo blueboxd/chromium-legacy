@@ -197,6 +197,11 @@ const char kApnTypes[] = "ApnTypes";
 const char kApnTypeDefault[] = "Default";
 const char kApnTypeAttach[] = "Attach";
 const char kApnTypeTether[] = "Tether";
+const char kSource[] = "Source";
+const char kSourceModem[] = "Modem";
+const char kSourceModb[] = "Modb";
+const char kSourceUi[] = "Ui";
+const char kSourceAdmin[] = "Admin";
 }  // namespace cellular_apn
 
 namespace cellular_found_network {
@@ -495,6 +500,8 @@ const char kProviderName[] = "ProviderName";
 }  // third_party_vpn
 
 namespace arc_vpn {
+// Deprecated. Property left here for ONC backward compatibility. See
+// b/185202698 for details.
 const char kTunnelChrome[] = "TunnelChrome";
 }  // namespace arc_vpn
 

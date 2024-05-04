@@ -31,7 +31,6 @@ const AccessPoint kAccessPointsThatSupportUserAction[] = {
     AccessPoint::ACCESS_POINT_UNKNOWN,
     AccessPoint::ACCESS_POINT_PASSWORD_BUBBLE,
     AccessPoint::ACCESS_POINT_AUTOFILL_DROPDOWN,
-    AccessPoint::ACCESS_POINT_NTP_CONTENT_SUGGESTIONS,
     AccessPoint::ACCESS_POINT_RESIGNIN_INFOBAR,
     AccessPoint::ACCESS_POINT_TAB_SWITCHER,
     AccessPoint::ACCESS_POINT_MACHINE_LOGON,
@@ -62,7 +61,6 @@ const AccessPoint kAccessPointsThatSupportImpression[] = {
     AccessPoint::ACCESS_POINT_RECENT_TABS,
     AccessPoint::ACCESS_POINT_PASSWORD_BUBBLE,
     AccessPoint::ACCESS_POINT_AUTOFILL_DROPDOWN,
-    AccessPoint::ACCESS_POINT_NTP_CONTENT_SUGGESTIONS,
     AccessPoint::ACCESS_POINT_RESIGNIN_INFOBAR,
     AccessPoint::ACCESS_POINT_TAB_SWITCHER,
     AccessPoint::ACCESS_POINT_NTP_FEED_TOP_PROMO,
@@ -114,8 +112,6 @@ class SigninMetricsTest : public ::testing::Test {
         return "PasswordBubble";
       case AccessPoint::ACCESS_POINT_AUTOFILL_DROPDOWN:
         return "AutofillDropdown";
-      case AccessPoint::ACCESS_POINT_NTP_CONTENT_SUGGESTIONS:
-        return "NTPContentSuggestions";
       case AccessPoint::ACCESS_POINT_RESIGNIN_INFOBAR:
         return "ReSigninInfobar";
       case AccessPoint::ACCESS_POINT_TAB_SWITCHER:
@@ -188,12 +184,18 @@ class SigninMetricsTest : public ::testing::Test {
         return "TipsNotification";
       case AccessPoint::ACCESS_POINT_NOTIFICATIONS_OPT_IN_SCREEN_CONTENT_TOGGLE:
         return "NotificationsOptInScreenContentToggle";
+      case AccessPoint::ACCESS_POINT_SIGNIN_CHOICE_REMEMBERED:
+        return "SigninChoiceRemembered";
+      case AccessPoint::ACCESS_POINT_PROFILE_MENU_SIGNOUT_CONFIRMATION_PROMPT:
+        return "ProfileMenuSignoutConfirmationPrompt";
+      case AccessPoint::ACCESS_POINT_SETTINGS_SIGNOUT_CONFIRMATION_PROMPT:
+        return "SettingsSignoutConfirmationPrompt";
+      case AccessPoint::ACCESS_POINT_NTP_IDENTITY_DISC:
+        return "NtpIdentityDisc";
       case AccessPoint::ACCESS_POINT_MAX:
         NOTREACHED();
         return "";
     }
-    NOTREACHED();
-    return "";
   }
 };
 

@@ -153,9 +153,7 @@ class FakeBrowser {
         base::BindOnce(&FakeBrowser::RemoveBrowser, weak_ptr_.GetWeakPtr()));
   }
 
-  void RemoveBrowser() {
-    BrowserList::GetInstance()->RemoveBrowser(browser_.get());
-  }
+  void RemoveBrowser() { browser_.reset(); }
 
   base::test::TestFuture<void> closed_future_;
   std::unique_ptr<Browser> browser_;
@@ -196,12 +194,9 @@ class FullscreenTestBrowserWindow : public TestBrowserWindow,
     NOTIMPLEMENTED();
     return nullptr;
   }
-  void UpdateExclusiveAccessExitBubbleContent(
-      const GURL& url,
-      ExclusiveAccessBubbleType bubble_type,
-      ExclusiveAccessBubbleHideCallback bubble_first_hide_callback,
-      bool notify_download,
-      bool force_update) override {}
+  void UpdateExclusiveAccessBubble(
+      const ExclusiveAccessBubbleParams& params,
+      ExclusiveAccessBubbleHideCallback first_hide_callback) override {}
   bool IsExclusiveAccessBubbleDisplayed() const override { return false; }
   void OnExclusiveAccessUserInput() override {}
   bool CanUserExitFullscreen() const override { return true; }

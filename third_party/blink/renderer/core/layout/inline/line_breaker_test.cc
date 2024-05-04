@@ -15,7 +15,6 @@
 #include "third_party/blink/renderer/core/layout/layout_ng_block_flow.h"
 #include "third_party/blink/renderer/core/layout/positioned_float.h"
 #include "third_party/blink/renderer/core/layout/unpositioned_float.h"
-#include "third_party/blink/renderer/core/testing/mock_hyphenation.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result_view.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
@@ -755,122 +754,6 @@ TEST_F(LineBreakerTest, TrailingCollapsedSpaces) {
   EXPECT_FALSE(space_text->NeedsLayout());
 }
 
-TEST_F(LineBreakerTest, MinMaxWithTrailingSpaces) {
-  LoadAhem();
-  InlineNode node = CreateInlineNode(R"HTML(
-    <!DOCTYPE html>
-    <style>
-    #container {
-      font: 10px/1 Ahem;
-      white-space: pre-wrap;
-    }
-    </style>
-    <div id=container>12345 6789 </div>
-  )HTML");
-
-  const auto sizes = ComputeMinMaxSizes(node);
-  EXPECT_EQ(sizes.min_size, LayoutUnit(50));
-  EXPECT_EQ(sizes.max_size, LayoutUnit(110));
-}
-
-// `word-break: break-word` can break a space run.
-TEST_F(LineBreakerTest, MinMaxBreakSpaces) {
-  LoadAhem();
-  InlineNode node = CreateInlineNode(R"HTML(
-    <!DOCTYPE html>
-    <style>
-    div {
-      font: 10px/1 Ahem;
-      white-space: pre-wrap;
-      word-break: break-word;
-    }
-    span {
-      font-size: 200%;
-    }
-    </style>
-    <div id=container>M):
-<span>    </span>p</div>
-  )HTML");
-
-  const auto sizes = ComputeMinMaxSizes(node);
-  EXPECT_EQ(sizes.min_size, LayoutUnit(10));
-  EXPECT_EQ(sizes.max_size, LayoutUnit(90));
-}
-
-TEST_F(LineBreakerTest, MinMaxWithSoftHyphen) {
-  LoadAhem();
-  InlineNode node = CreateInlineNode(R"HTML(
-    <!DOCTYPE html>
-    <style>
-    #container {
-      font: 10px/1 Ahem;
-    }
-    </style>
-    <div id=container>abcd&shy;ef xx</div>
-  )HTML");
-
-  const auto sizes = ComputeMinMaxSizes(node);
-  EXPECT_EQ(sizes.min_size, LayoutUnit(50));
-  EXPECT_EQ(sizes.max_size, LayoutUnit(90));
-}
-
-TEST_F(LineBreakerTest, MinMaxWithHyphensDisabled) {
-  LoadAhem();
-  InlineNode node = CreateInlineNode(R"HTML(
-    <!DOCTYPE html>
-    <style>
-    #container {
-      font: 10px/1 Ahem;
-      hyphens: none;
-    }
-    </style>
-    <div id=container>abcd&shy;ef xx</div>
-  )HTML");
-
-  const auto sizes = ComputeMinMaxSizes(node);
-  EXPECT_EQ(sizes.min_size, LayoutUnit(60));
-  EXPECT_EQ(sizes.max_size, LayoutUnit(90));
-}
-
-TEST_F(LineBreakerTest, MinMaxWithHyphensDisabledWithTrailingSpaces) {
-  LoadAhem();
-  InlineNode node = CreateInlineNode(R"HTML(
-    <!DOCTYPE html>
-    <style>
-    #container {
-      font: 10px/1 Ahem;
-      hyphens: none;
-    }
-    </style>
-    <div id=container>abcd&shy; ef xx</div>
-  )HTML");
-
-  const auto sizes = ComputeMinMaxSizes(node);
-  EXPECT_EQ(sizes.min_size, LayoutUnit(50));
-  EXPECT_EQ(sizes.max_size, LayoutUnit(100));
-}
-
-TEST_F(LineBreakerTest, MinMaxWithHyphensAuto) {
-  LoadAhem();
-  LayoutLocale::SetHyphenationForTesting(AtomicString("en-us"),
-                                         MockHyphenation::Create());
-  InlineNode node = CreateInlineNode(R"HTML(
-    <!DOCTYPE html>
-    <style>
-    #container {
-      font: 10px/1 Ahem;
-      hyphens: auto;
-    }
-    </style>
-    <div id=container lang="en-us">zz hyphenation xx</div>
-  )HTML");
-
-  const auto sizes = ComputeMinMaxSizes(node);
-  EXPECT_EQ(sizes.min_size, LayoutUnit(50));
-  EXPECT_EQ(sizes.max_size, LayoutUnit(170));
-  LayoutLocale::SetHyphenationForTesting(AtomicString("en-us"), nullptr);
-}
-
 // For http://crbug.com/1104534
 TEST_F(LineBreakerTest, SplitTextZero) {
   // Note: |V8TestingScope| is needed for |Text::splitText()|.
@@ -1061,6 +944,9 @@ rt { margin: 17179869191em; }
 C c
 <rt>
 )HTML");
+  GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
+  GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kStyleClean);
+  GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInPerformLayout);
   // The test passes if we have no DCHECK failures in BreakLines().
   BreakLines(node, LayoutUnit::Max());
 }
@@ -1211,6 +1097,28 @@ TEST_F(LineBreakerTest, BreakAtTrailingSpacesAfterAtomicInline) {
   EXPECT_EQ(line_info_list[1].Width(), LayoutUnit(20));
   EXPECT_EQ(line_info_list[0].Results().back().item_index, 3u);
   EXPECT_EQ(line_info_list[1].Results().front().item_index, 4u);
+}
+
+TEST_F(LineBreakerTest, SetInputRange) {
+  ScopedRubyLineBreakableForTest enable_ruby_line_breakable(true);
+  InlineNode node = CreateInlineNode(R"HTML(
+      <div id=container>before<span>content</span>after</div>)HTML");
+  node.PrepareLayoutIfNeeded();
+  ExclusionSpace exclusion_space;
+  LeadingFloats leading_floats;
+  LineBreaker line_breaker(node, LineBreakerMode::kContent,
+                           ConstraintSpaceForAvailableSize(LayoutUnit::Max()),
+                           LineLayoutOpportunity(LayoutUnit::Max()),
+                           leading_floats, nullptr, nullptr, &exclusion_space);
+  // <span> to just after </span>.
+  line_breaker.SetInputRange({1, 6}, 4, LineBreaker::WhitespaceState::kLeading);
+  LineInfo line_info;
+  line_breaker.NextLine(&line_info);
+  // The result should contain only <span>...</span>.
+  EXPECT_EQ(3u, line_info.Results().size());
+  EXPECT_EQ(InlineItem::kOpenTag, line_info.Results()[0].item->Type());
+  EXPECT_EQ(InlineItem::kText, line_info.Results()[1].item->Type());
+  EXPECT_EQ(InlineItem::kCloseTag, line_info.Results()[2].item->Type());
 }
 
 struct CanBreakInsideTestData {

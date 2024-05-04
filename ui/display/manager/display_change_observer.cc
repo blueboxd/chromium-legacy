@@ -240,10 +240,7 @@ void DisplayChangeObserver::OnDisplayModeChanged(
 
   // For the purposes of user activity detection, ignore synthetic mouse events
   // that are triggered by screen resizes: http://crbug.com/360634
-  ui::UserActivityDetector* user_activity_detector =
-      ui::UserActivityDetector::Get();
-  if (user_activity_detector)
-    user_activity_detector->OnDisplayPowerChanging();
+  ui::UserActivityDetector::Get()->OnDisplayPowerChanging();
 }
 
 void DisplayChangeObserver::OnDisplayModeChangeFailed(
@@ -341,7 +338,7 @@ ManagedDisplayInfo DisplayChangeObserver::CreateManagedDisplayInfo(
   if (dpi)
     new_info.set_device_dpi(dpi);
 
-  // TODO(crbug.com/1012846): Remove kEnableUseHDRTransferFunction usage when
+  // TODO(crbug.com/40652358): Remove kEnableUseHDRTransferFunction usage when
   // HDR is fully supported on ChromeOS.
   const bool allow_high_bit_depth =
       base::FeatureList::IsEnabled(features::kUseHDRTransferFunction);

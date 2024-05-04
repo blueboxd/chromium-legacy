@@ -22,7 +22,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Log;
-import org.chromium.base.StrictModeContext;
+import org.chromium.base.ResettersForTesting;
 import org.chromium.base.SysUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.library_loader.LibraryLoader;
@@ -43,7 +43,6 @@ import org.chromium.chrome.browser.multiwindow.MultiWindowModeStateDispatcher;
 import org.chromium.chrome.browser.multiwindow.MultiWindowModeStateDispatcherImpl;
 import org.chromium.chrome.browser.profiles.ProfileManager;
 import org.chromium.chrome.browser.profiles.ProfileProvider;
-import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
 import org.chromium.components.browser_ui.share.ShareHelper;
 import org.chromium.components.browser_ui.util.FirstDrawDetector;
@@ -173,37 +172,30 @@ public abstract class AsyncInitializationActivity extends ChromeBaseAppCompatAct
     protected void performPreInflationStartup() {
         mIsTablet = DeviceFormFactor.isNonMultiDisplayContextOnTablet(this);
         mHadWarmStart = LibraryLoader.getInstance().isInitialized();
-        // TODO(https://crbug.com/948745): Dispatch in #preInflationStartup instead so that
+        // TODO(crbug.com/40621278): Dispatch in #preInflationStartup instead so that
         // subclass's #performPreInflationStartup has executed before observers are notified.
         mLifecycleDispatcher.dispatchPreInflationStartup();
     }
 
     @Override
     public final void setContentViewAndLoadLibrary(Runnable onInflationCompleteCallback) {
-        boolean enableInstantStart = isInstantStartEnabled() && !mHadWarmStart;
         mOnInflationCompleteCallback = onInflationCompleteCallback;
-        if (enableInstantStart) {
-            triggerLayoutInflation();
-        }
 
-        // Start loading libraries. It happens before triggerLayoutInflation() for regular startup,
-        // but after triggerLayoutInflation() for instant start because we prioritize a Java UI and
-        // not rendering web content. This "hides" library loading behind UI inflation and prevents
-        // stalling UI thread. See https://crbug.com/796957 for details. Note that for optimal
-        // performance AsyncInitTaskRunner.startBackgroundTasks() needs to start warmup renderer
-        // only after library is loaded.
+        // Start loading libraries. It happens before triggerLayoutInflation(). This "hides" library
+        // loading behind UI inflation and prevents stalling UI thread.
+        // See https://crbug.com/796957 for details. Note that for optimal performance
+        // AsyncInitTaskRunner.startBackgroundTasks() needs to start warm up renderer only after
+        // library is loaded.
 
         if (!mStartupDelayed) {
             // Kick off long running IO tasks that can be done in parallel.
             mNativeInitializationController.startBackgroundTasks(shouldAllocateChildConnection());
         }
 
-        if (!enableInstantStart) {
-            triggerLayoutInflation();
-        }
+        triggerLayoutInflation();
     }
 
-    /** Controls the parameter of {@link NativeInitializationController#startBackgroundTasks}.*/
+    /** Controls the parameter of {@link NativeInitializationController#startBackgroundTasks}. */
     @VisibleForTesting
     public boolean shouldAllocateChildConnection() {
         // If a spare WebContents exists, a child connection has already been allocated that will be
@@ -214,17 +206,8 @@ public abstract class AsyncInitializationActivity extends ChromeBaseAppCompatAct
     @Override
     public final void postInflationStartup() {
         performPostInflationStartup();
-        dispatchOnInflationComplete();
-        mLifecycleDispatcher.dispatchPostInflationStartup();
-    }
-
-    /**
-     * This function allows subclasses overriding and adding additional tasks between calling
-     * mLifecycleDispatcher.dispatchOnInflationComplete() and
-     * mLifecycleDispatcher.dispatchPostInflationStartup().
-     */
-    protected void dispatchOnInflationComplete() {
         mLifecycleDispatcher.dispatchOnInflationComplete();
+        mLifecycleDispatcher.dispatchPostInflationStartup();
     }
 
     /**
@@ -241,8 +224,7 @@ public abstract class AsyncInitializationActivity extends ChromeBaseAppCompatAct
                     mFirstDrawComplete = true;
                     StartSurfaceConfiguration.recordHistogram(
                             FIRST_DRAW_COMPLETED_TIME_MS_UMA,
-                            SystemClock.elapsedRealtime() - getOnCreateTimestampMs(),
-                            isInstantStartEnabled());
+                            SystemClock.elapsedRealtime() - getOnCreateTimestampMs());
                     if (!mStartupDelayed) {
                         onFirstDrawComplete();
                     }
@@ -392,10 +374,7 @@ public abstract class AsyncInitializationActivity extends ChromeBaseAppCompatAct
             return false;
         }
 
-        // Some Samsung devices load fonts from disk, crbug.com/691706.
-        try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
-            super.onCreate(transformSavedInstanceStateForOnCreate(savedInstanceState));
-        }
+        super.onCreate(transformSavedInstanceStateForOnCreate(savedInstanceState));
         mOnCreateTimestampMs = SystemClock.elapsedRealtime();
         mSavedInstanceState = savedInstanceState;
 
@@ -713,7 +692,7 @@ public abstract class AsyncInitializationActivity extends ChromeBaseAppCompatAct
 
     /** Return a supplier for the ProfileProvider. */
     public OneshotSupplier<ProfileProvider> getProfileProviderSupplier() {
-        // TODO(crbug/1464647): Convert to a thrown exception if no asserts are discovered.
+        // TODO(crbug.com/40275690): Convert to a thrown exception if no asserts are discovered.
         assert mProfileProviderSupplier != null;
         return mProfileProviderSupplier;
     }
@@ -769,7 +748,7 @@ public abstract class AsyncInitializationActivity extends ChromeBaseAppCompatAct
 
         mLifecycleDispatcher.dispatchOnRecreate();
 
-        // TODO(https://crbug.com/1252526): Remove stack trace logging once root cause of bug is
+        // TODO(crbug.com/40793204): Remove stack trace logging once root cause of bug is
         // identified & fixed.
         // Piggybacking for multi-instance bug crbug.com/1484026.
         Log.i(TAG_MULTI_INSTANCE, "Tracing recreate().");
@@ -789,11 +768,6 @@ public abstract class AsyncInitializationActivity extends ChromeBaseAppCompatAct
      */
     public boolean isTablet() {
         return mIsTablet;
-    }
-
-    /** Returns whether the instant start is enabled. */
-    protected boolean isInstantStartEnabled() {
-        return TabUiFeatureUtilities.supportInstantStart(isTablet(), this);
     }
 
     /**
@@ -907,9 +881,11 @@ public abstract class AsyncInitializationActivity extends ChromeBaseAppCompatAct
     public static void interceptMoveTaskToBackForTesting() {
         sInterceptMoveTaskToBackForTesting = true;
         sBackInterceptedForTesting = false;
+        ResettersForTesting.register(() -> sInterceptMoveTaskToBackForTesting = false);
     }
 
     public static boolean wasMoveTaskToBackInterceptedForTesting() {
+        assert sInterceptMoveTaskToBackForTesting;
         return sBackInterceptedForTesting;
     }
 

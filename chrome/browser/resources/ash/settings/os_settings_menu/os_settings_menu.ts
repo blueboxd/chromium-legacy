@@ -29,9 +29,10 @@ import {IronSelectorElement} from 'chrome://resources/polymer/v3_0/iron-selector
 import {DomRepeat, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {assertExists, castExists} from '../assert_extras.js';
-import {isRevampWayfindingEnabled} from '../common/load_time_booleans.js';
+import {isInputDeviceSettingsSplitEnabled, isRevampWayfindingEnabled} from '../common/load_time_booleans.js';
 import {RouteObserverMixin, RouteObserverMixinInterface} from '../common/route_observer_mixin.js';
 import {Constructor} from '../common/types.js';
+import {DevicePageBrowserProxy, DevicePageBrowserProxyImpl} from '../device_page/device_page_browser_proxy.js';
 import {FakeInputDeviceSettingsProvider} from '../device_page/fake_input_device_settings_provider.js';
 import {getInputDeviceSettingsProvider} from '../device_page/input_device_mojo_interface_provider.js';
 import {InputDeviceSettingsProviderInterface, Keyboard, Mouse, PointingStick, Touchpad} from '../device_page/input_device_settings_types.js';
@@ -214,7 +215,7 @@ export class OsSettingsMenuElement extends OsSettingsMenuElementBase {
         type: String,
         value: '',
         computed: 'computeDeviceMenuItemDescription_(hasKeyboard_,' +
-            'hasMouse_, hasPointingStick_, hasTouchpad_, hasHapticTouchpad_)',
+            'hasMouse_, hasPointingStick_, hasTouchpad_)',
       },
 
       multideviceMenuItemDescription_: {
@@ -252,6 +253,9 @@ export class OsSettingsMenuElement extends OsSettingsMenuElementBase {
   private hasMouse_: boolean|undefined;
   private hasPointingStick_: boolean|undefined;
   private hasTouchpad_: boolean|undefined;
+  private isInputDeviceSettingsSplitEnabled_: boolean =
+      isInputDeviceSettingsSplitEnabled();
+  private devicePageBrowserProxy_: DevicePageBrowserProxy;
   private inputDeviceSettingsProvider_: InputDeviceSettingsProviderInterface;
   private keyboardSettingsObserverReceiver_: KeyboardSettingsObserverReceiver|
       undefined;
@@ -274,7 +278,11 @@ export class OsSettingsMenuElement extends OsSettingsMenuElementBase {
   constructor() {
     super();
 
-    this.inputDeviceSettingsProvider_ = getInputDeviceSettingsProvider();
+    if (this.isInputDeviceSettingsSplitEnabled_) {
+      this.inputDeviceSettingsProvider_ = getInputDeviceSettingsProvider();
+    } else {
+      this.devicePageBrowserProxy_ = DevicePageBrowserProxyImpl.getInstance();
+    }
     this.multideviceBrowserProxy_ = MultiDeviceBrowserProxyImpl.getInstance();
   }
 
@@ -294,10 +302,24 @@ export class OsSettingsMenuElement extends OsSettingsMenuElementBase {
       this.observeBluetoothProperties_();
 
       // Device menu item.
-      this.observeKeyboardSettings_();
-      this.observeMouseSettings_();
-      this.observePointingStickSettings_();
-      this.observeTouchpadSettings_();
+      if (this.isInputDeviceSettingsSplitEnabled_) {
+        this.observeKeyboardSettings_();
+        this.observeMouseSettings_();
+        this.observePointingStickSettings_();
+        this.observeTouchpadSettings_();
+      } else {
+        // Before input device settings split, keyboard was always assumed to
+        // exist.
+        this.hasKeyboard_ = true;
+        this.addWebUiListener(
+            'has-mouse-changed', this.set.bind(this, 'hasMouse_'));
+        this.addWebUiListener(
+            'has-pointing-stick-changed',
+            this.set.bind(this, 'hasPointingStick_'));
+        this.addWebUiListener(
+            'has-touchpad-changed', this.set.bind(this, 'hasTouchpad_'));
+        this.devicePageBrowserProxy_.initializePointers();
+      }
 
       // Internet menu item.
       this.networkConfig_ =
@@ -351,17 +373,21 @@ export class OsSettingsMenuElement extends OsSettingsMenuElementBase {
   }
 
   /**
-   * Set the selected menu item based on a menu item's route matching or
-   * containing the given |route|.
+   * The selected menu item should be the menu item whose path matches the path
+   * of the section ancestor route for the given `route`. For example, the
+   * BLUETOOTH_DEVICES_SUBPAGE route's section ancestor is the BLUETOOTH route,
+   * whose path matches the bluetooth menu item path.
    */
   private setSelectedItemPathForRoute_(route: Route): void {
-    const menuItems =
-        this.shadowRoot!.querySelectorAll('os-settings-menu-item');
-    for (const menuItem of menuItems) {
-      const matchingRoute = Router.getInstance().getRouteForPath(menuItem.path);
-      if (matchingRoute?.contains(route)) {
-        this.setSelectedItemPath_(menuItem.path);
-        return;
+    const sectionAncestorRoute = route.getSectionAncestor();
+    if (sectionAncestorRoute) {
+      const menuItems =
+          this.shadowRoot!.querySelectorAll('os-settings-menu-item');
+      for (const menuItem of menuItems) {
+        if (sectionAncestorRoute.path === menuItem.path) {
+          this.setSelectedItemPath_(menuItem.path);
+          return;
+        }
       }
     }
 

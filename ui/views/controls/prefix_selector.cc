@@ -178,7 +178,7 @@ bool PrefixSelector::ShouldDoLearning() {
 bool PrefixSelector::SetCompositionFromExistingText(
     const gfx::Range& range,
     const std::vector<ui::ImeTextSpan>& ui_ime_text_spans) {
-  // TODO(https://crbug.com/952757): Implement this method.
+  // TODO(crbug.com/40623107): Implement this method.
   NOTIMPLEMENTED_LOG_ONCE();
   return false;
 }
@@ -196,7 +196,7 @@ gfx::Rect PrefixSelector::GetAutocorrectCharacterBounds() const {
 }
 
 bool PrefixSelector::SetAutocorrectRange(const gfx::Range& range) {
-  // TODO(crbug.com/1091088): Implement SetAutocorrectRange.
+  // TODO(crbug.com/40134032): Implement SetAutocorrectRange.
   NOTIMPLEMENTED_LOG_ONCE();
   return false;
 }

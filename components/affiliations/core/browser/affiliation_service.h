@@ -8,8 +8,9 @@
 #include <vector>
 
 #include "base/functional/callback_forward.h"
-#include "components/keyed_service/core/keyed_service.h"
+#include "components/affiliations/core/browser/affiliation_source.h"
 #include "components/affiliations/core/browser/affiliation_utils.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
 
 class GURL;
@@ -90,14 +91,6 @@ class AffiliationService : public KeyedService {
   // also deletes cache which is no longer needed.
   virtual void KeepPrefetchForFacets(std::vector<FacetURI> facet_uris) = 0;
 
-  // Wipes results of on-demand fetches and expired prefetches from the
-  // cache, but retains information corresponding to facets that are being
-  // kept fresh. As no required data is deleted, there will be no network
-  // requests directly triggered by this call. It will only potentially
-  // remove data corresponding to the given |facet_uri|, but still only as
-  // long as the data is no longer needed.
-  virtual void TrimCacheForFacetURI(const FacetURI& facet_uri) = 0;
-
   // Wipes results from cache which don't correspond to the any facet from
   // |facet_uris|.
   virtual void TrimUnusedCache(std::vector<FacetURI> facet_uris) = 0;
@@ -119,6 +112,12 @@ class AffiliationService : public KeyedService {
   virtual void UpdateAffiliationsAndBranding(
       const std::vector<FacetURI>& facets,
       base::OnceClosure callback) = 0;
+
+  // Registers an affiliation source. Affiliation sources are used for
+  // prefetching of affiliation data soon after start-up. They are owned by
+  // the prefetcher, and observed for changes in their underlying data model to
+  // keep an updated cache of affiliations.
+  virtual void RegisterSource(std::unique_ptr<AffiliationSource> source) = 0;
 };
 
 }  // namespace affiliations

@@ -65,7 +65,7 @@ uint32_t CacheTag(CacheTagKind kind, const String& encoding) {
          (encoding.IsNull() ? 0 : WTF::GetHash(encoding));
 }
 
-bool TimestampIsRecent(CachedMetadata* cached_metadata) {
+bool TimestampIsRecent(const CachedMetadata* cached_metadata) {
   const base::TimeDelta kHotHours = base::Hours(GetV8CodeCacheHotHours());
   uint64_t time_stamp_ms;
   const uint32_t size = sizeof(time_stamp_ms);
@@ -83,6 +83,76 @@ enum class DetailFlags : uint64_t {
   kNone = 0,
   kFull = 1,
 };
+
+V8CodeCache::GetMetadataType ReadGetMetadataType(
+    const CachedMetadataHandler* cache_handler) {
+  // Check the metadata types in the same preference order they're checked in
+  // the code: code cache, local compile hints, timestamp. That way we get the
+  // right sample in case several metadata types are set.
+  uint32_t code_cache_tag = V8CodeCache::TagForCodeCache(cache_handler);
+  if (cache_handler
+          ->GetCachedMetadata(code_cache_tag,
+                              CachedMetadataHandler::kAllowUnchecked)
+          .get()) {
+    return V8CodeCache::GetMetadataType::kCodeCache;
+  }
+  scoped_refptr<CachedMetadata> cached_metadata =
+      cache_handler->GetCachedMetadata(
+          V8CodeCache::TagForCompileHints(cache_handler),
+          CachedMetadataHandler::kAllowUnchecked);
+  if (cached_metadata) {
+    return TimestampIsRecent(cached_metadata.get())
+               ? V8CodeCache::GetMetadataType::
+                     kLocalCompileHintsWithHotTimestamp
+               : V8CodeCache::GetMetadataType::
+                     kLocalCompileHintsWithColdTimestamp;
+  }
+  cached_metadata = cache_handler->GetCachedMetadata(
+      V8CodeCache::TagForTimeStamp(cache_handler),
+      CachedMetadataHandler::kAllowUnchecked);
+  if (cached_metadata) {
+    return TimestampIsRecent(cached_metadata.get())
+               ? V8CodeCache::GetMetadataType::kHotTimestamp
+               : V8CodeCache::GetMetadataType::kColdTimestamp;
+  }
+  return V8CodeCache::GetMetadataType::kNone;
+}
+
+V8CodeCache::GetMetadataType ReadGetMetadataType(
+    const CachedMetadata* cached_metadata,
+    const String& encoding) {
+  if (!cached_metadata) {
+    return V8CodeCache::GetMetadataType::kNone;
+  }
+
+  // Check the metadata types in the same preference order they're checked in
+  // the code: code cache, local compile hints, timestamp. That way we get the
+  // right sample in case several metadata types are set.
+  if (cached_metadata->DataTypeID() == CacheTag(kCacheTagCode, encoding)) {
+    return V8CodeCache::GetMetadataType::kCodeCache;
+  }
+
+  if (cached_metadata->DataTypeID() ==
+      CacheTag(kCacheTagCompileHints, encoding)) {
+    return TimestampIsRecent(cached_metadata)
+               ? V8CodeCache::GetMetadataType::
+                     kLocalCompileHintsWithHotTimestamp
+               : V8CodeCache::GetMetadataType::
+                     kLocalCompileHintsWithColdTimestamp;
+  }
+
+  if (cached_metadata->DataTypeID() == CacheTag(kCacheTagTimeStamp, encoding)) {
+    return TimestampIsRecent(cached_metadata)
+               ? V8CodeCache::GetMetadataType::kHotTimestamp
+               : V8CodeCache::GetMetadataType::kColdTimestamp;
+  }
+  return V8CodeCache::GetMetadataType::kNone;
+}
+
+constexpr const char* kCacheGetHistogram =
+    "WebCore.Scripts.V8CodeCacheMetadata.Get";
+constexpr const char* kCacheSetHistogram =
+    "WebCore.Scripts.V8CodeCacheMetadata.Set";
 
 }  // namespace
 
@@ -115,6 +185,11 @@ bool V8CodeCache::HasCodeCache(
   return cache_handler->GetCachedMetadata(code_cache_tag, behavior).get();
 }
 
+bool V8CodeCache::HasCodeCache(const CachedMetadata& data,
+                               const String& encoding) {
+  return data.DataTypeID() == CacheTag(kCacheTagCode, encoding);
+}
+
 bool V8CodeCache::HasCompileHints(
     const CachedMetadataHandler* cache_handler,
     CachedMetadataHandler::GetCachedMetadataBehavior behavior) {
@@ -129,6 +204,14 @@ bool V8CodeCache::HasCompileHints(
     return false;
   }
   return true;
+}
+
+bool V8CodeCache::HasHotCompileHints(const CachedMetadata& data,
+                                     const String& encoding) {
+  if (data.DataTypeID() != CacheTag(kCacheTagCompileHints, encoding)) {
+    return false;
+  }
+  return TimestampIsRecent(&data);
 }
 
 std::unique_ptr<v8::ScriptCompiler::CachedData> V8CodeCache::CreateCachedData(
@@ -259,6 +342,10 @@ V8CodeCache::GetCompileOptions(mojom::blink::V8CacheOptions cache_options,
                            no_cache_reason);
   }
 
+  // By recording statistics at this point we exclude scripts for which we're
+  // not going to generate metadata.
+  RecordCacheGetStatistics(cache_handler);
+
   if (HasCodeCache(cache_handler) &&
       no_code_cache_compile_options !=
           v8::ScriptCompiler::kProduceCompileHints) {
@@ -375,6 +462,8 @@ static void ProduceCacheInternal(
       std::unique_ptr<v8::ScriptCompiler::CachedData> cached_data(
           v8::ScriptCompiler::CreateCodeCache(unbound_script));
       if (cached_data) {
+        V8CodeCache::RecordCacheSetStatistics(
+            V8CodeCache::SetMetadataType::kCodeCache);
         const uint8_t* data = cached_data->data;
         int length = cached_data->length;
         cache_handler->ClearCachedMetadata(
@@ -445,6 +534,7 @@ uint32_t V8CodeCache::TagForCompileHints(
 // Store a timestamp to the cache as hint.
 void V8CodeCache::SetCacheTimeStamp(CodeCacheHost* code_cache_host,
                                     CachedMetadataHandler* cache_handler) {
+  RecordCacheSetStatistics(V8CodeCache::SetMetadataType::kTimestamp);
   uint64_t now_ms = GetTimestamp();
   cache_handler->ClearCachedMetadata(code_cache_host,
                                      CachedMetadataHandler::kClearLocally);
@@ -477,7 +567,7 @@ scoped_refptr<CachedMetadata> V8CodeCache::GenerateFullCodeCache(
   v8::TryCatch block(isolate);
   ReferrerScriptInfo referrer_info;
   v8::ScriptOrigin origin(
-      isolate, V8String(isolate, file_name),
+      V8String(isolate, file_name),
       0,                                      // line_offset
       0,                                      // column_offset
       opaque_mode == OpaqueMode::kNotOpaque,  // is_shared_cross_origin
@@ -529,6 +619,29 @@ scoped_refptr<CachedMetadata> V8CodeCache::GenerateFullCodeCache(
   }
 
   return cached_metadata;
+}
+
+void V8CodeCache::RecordCacheGetStatistics(
+    const CachedMetadataHandler* cache_handler) {
+  base::UmaHistogramEnumeration(kCacheGetHistogram,
+                                ReadGetMetadataType(cache_handler));
+}
+
+void V8CodeCache::RecordCacheGetStatistics(
+    const CachedMetadata* cached_metadata,
+    const String& encoding) {
+  base::UmaHistogramEnumeration(kCacheGetHistogram,
+                                ReadGetMetadataType(cached_metadata, encoding));
+}
+
+void V8CodeCache::RecordCacheGetStatistics(
+    V8CodeCache::GetMetadataType metadata_type) {
+  base::UmaHistogramEnumeration(kCacheGetHistogram, metadata_type);
+}
+
+void V8CodeCache::RecordCacheSetStatistics(
+    V8CodeCache::SetMetadataType metadata_type) {
+  base::UmaHistogramEnumeration(kCacheSetHistogram, metadata_type);
 }
 
 }  // namespace blink

@@ -5,14 +5,17 @@
 #include "components/segmentation_platform/internal/database/signal_key_internal.h"
 
 #include <stdint.h>
+
 #include <ostream>
 #include <sstream>
 #include <string>
 #include <utility>
 
-#include "base/big_endian.h"
 #include "base/check.h"
 #include "base/check_op.h"
+#include "base/containers/span.h"
+#include "base/containers/span_reader.h"
+#include "base/containers/span_writer.h"
 #include "base/logging.h"
 
 namespace segmentation_platform {
@@ -38,19 +41,19 @@ std::string SignalKeyInternalToBinary(const SignalKeyInternal& input) {
   uint8_t output_buf[sizeof(SignalKeyInternal)];
   auto output = base::span(output_buf);
 
-  base::BigEndianWriter writer(output);
-  writer.WriteBytes(&input.prefix.kind, sizeof(input.prefix.kind));
-  writer.WriteBytes(&input.prefix.padding, sizeof(input.prefix.padding));
-  writer.WriteU64(input.prefix.name_hash);
+  auto writer = base::SpanWriter(output);
+  writer.WriteU8BigEndian(input.prefix.kind);
+  writer.Write(base::as_byte_span(input.prefix.padding));
+  writer.WriteU64BigEndian(input.prefix.name_hash);
   // SAFETY: If the value is negative we want to store the bit pattern of the
   // negative value, which static_cast preserves. The reader will be required to
   // convert back to a signed value.
-  writer.WriteU64(static_cast<uint64_t>(input.time_range_end_sec));
+  writer.WriteU64BigEndian(static_cast<uint64_t>(input.time_range_end_sec));
   // SAFETY: If the value is negative we want to store the bit pattern of the
   // negative value, which static_cast preserves. The reader will be required to
   // convert back to a signed value.
-  writer.WriteU64(static_cast<uint64_t>(input.time_range_start_sec));
-  CHECK(writer.remaining_bytes().empty());
+  writer.WriteU64BigEndian(static_cast<uint64_t>(input.time_range_start_sec));
+  CHECK_EQ(writer.remaining(), 0u);
   return std::string(output.begin(), output.end());
 }
 
@@ -60,23 +63,13 @@ bool SignalKeyInternalFromBinary(const std::string& input,
     ClearKey(output);
     return false;
   }
-  auto reader = base::BigEndianReader::FromStringPiece(input);
-  reader.ReadChar(&output->prefix.kind);
+  auto reader = base::SpanReader(base::as_byte_span(input));
+  reader.ReadChar(output->prefix.kind);
   reader.Skip(sizeof(SignalKeyInternal::Prefix::padding));
-  reader.ReadU64(&output->prefix.name_hash);
-
-  uint64_t unsigned_val;
-  reader.ReadU64(&unsigned_val);
-  // SAFETY: The big endian encoding holds the bit representation of a signed
-  // value, as seen in SignalKeyInternalToBinary(), so we want to convert large
-  // unsigned values back to negative values which static_cast will do.
-  output->time_range_end_sec = static_cast<int64_t>(unsigned_val);
-  reader.ReadU64(&unsigned_val);
-  // SAFETY: The big endian encoding holds the bit representation of a signed
-  // value, as seen in SignalKeyInternalToBinary(), so we want to convert large
-  // unsigned values back to negative values which static_cast will do.
-  output->time_range_start_sec = static_cast<int64_t>(unsigned_val);
-  CHECK(reader.remaining_bytes().empty());
+  reader.ReadU64BigEndian(output->prefix.name_hash);
+  reader.ReadI64BigEndian(output->time_range_end_sec);
+  reader.ReadI64BigEndian(output->time_range_start_sec);
+  CHECK_EQ(reader.remaining(), 0u);
   return true;
 }
 
@@ -88,13 +81,13 @@ std::string SignalKeyInternalToDebugString(const SignalKeyInternal& input) {
 
 std::string SignalKeyInternalPrefixToBinary(
     const SignalKeyInternal::Prefix& input) {
-  char output[sizeof(SignalKeyInternal::Prefix)];
-  base::BigEndianWriter writer(output, sizeof(output));
-  writer.WriteBytes(&input.kind, sizeof(input.kind));
-  writer.WriteBytes(&input.padding, sizeof(input.padding));
-  writer.WriteU64(input.name_hash);
-  CHECK_EQ(0UL, writer.remaining());
-  std::string output_str = std::string(output, sizeof(output));
+  uint8_t output[sizeof(SignalKeyInternal::Prefix)];
+  auto writer = base::SpanWriter(base::span(output));
+  writer.WriteU8BigEndian(input.kind);
+  writer.Write(base::as_byte_span(input.padding));
+  writer.WriteU64BigEndian(input.name_hash);
+  CHECK_EQ(writer.remaining(), 0u);
+  std::string output_str = std::string(std::begin(output), std::end(output));
   return output_str;
 }
 
@@ -104,11 +97,11 @@ bool SignalKeyInternalPrefixFromBinary(const std::string& input,
     ClearKeyPrefix(output);
     return false;
   }
-  auto reader = base::BigEndianReader::FromStringPiece(input);
-  reader.ReadChar(&output->kind);
+  auto reader = base::SpanReader(base::as_byte_span(input));
+  reader.ReadChar(output->kind);
   reader.Skip(sizeof(SignalKeyInternal::Prefix::padding));
-  reader.ReadU64(&output->name_hash);
-  CHECK_EQ(0UL, reader.remaining());
+  reader.ReadU64BigEndian(output->name_hash);
+  CHECK_EQ(reader.remaining(), 0u);
   return true;
 }
 

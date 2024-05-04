@@ -10,6 +10,7 @@
 
 #include "components/web_modal/web_contents_modal_dialog_host.h"
 #include "extensions/common/mojom/frame.mojom-forward.h"
+#include "third_party/blink/public/mojom/page/draggable_region.mojom-forward.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/base_window.h"
 #include "ui/gfx/geometry/insets.h"
@@ -44,8 +45,8 @@ class NativeAppWindow : public ui::BaseWindow,
   virtual void UpdateWindowTitle() = 0;
 
   // Called when the draggable regions are changed.
-  virtual void UpdateDraggableRegions(
-      const std::vector<mojom::DraggableRegionPtr>& regions) = 0;
+  virtual void DraggableRegionsChanged(
+      const std::vector<blink::mojom::DraggableRegionPtr>& regions) = 0;
 
   // Returns the region used by frameless windows for dragging. May return
   // nullptr.

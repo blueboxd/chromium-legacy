@@ -204,7 +204,7 @@ FocusModeTaskView::FocusModeTaskView() {
       std::make_unique<views::ImageButton>(base::BindRepeating(
           &FocusModeTaskView::OnCompleteTask, base::Unretained(this))));
   radio_button_->SetTooltipText(l10n_util::GetStringUTF16(
-      IDS_ASH_STATUS_TRAY_FOCUS_MODE_TASK_RADIO_BUTTON));
+      IDS_ASH_STATUS_TRAY_FOCUS_MODE_TASK_VIEW_RADIO_BUTTON));
   views::FocusRing::Install(radio_button_);
   views::FocusRing::Get(radio_button_)
       ->SetColorId(cros_tokens::kCrosSysFocusRing);
@@ -274,7 +274,7 @@ FocusModeTaskView::FocusModeTaskView() {
   if (has_selected_task) {
     task_title_ = base::UTF8ToUTF16(controller->selected_task_title());
   } else {
-    chip_carousel_->SetTasks(controller->tasks_provider().GetTaskList());
+    chip_carousel_->SetTasks(controller->tasks_provider().GetSortedTaskList());
   }
 
   UpdateStyle(/*show_selected_state=*/has_selected_task);
@@ -293,8 +293,9 @@ void FocusModeTaskView::AddOrUpdateTask(const std::u16string& task_title) {
 
   auto* controller = FocusModeController::Get();
   if (controller->HasSelectedTask()) {
-    controller->tasks_provider().UpdateTaskTitle(
-        controller->selected_task_id(), base::UTF16ToUTF8(task_title),
+    controller->tasks_provider().UpdateTask(
+        controller->selected_task_list_id(), controller->selected_task_id(),
+        base::UTF16ToUTF8(task_title), /*completed=*/false,
         base::BindOnce(&FocusModeTaskView::OnTaskSelected,
                        weak_factory_.GetWeakPtr()));
   } else {
@@ -305,15 +306,15 @@ void FocusModeTaskView::AddOrUpdateTask(const std::u16string& task_title) {
   }
 }
 
-void FocusModeTaskView::OnTaskSelected(const api::Task* task) {
-  if (!task) {
+void FocusModeTaskView::OnTaskSelected(const FocusModeTask& task_entry) {
+  if (task_entry.task_id.empty()) {
     OnClearTask();
     return;
   }
 
-  task_title_ = base::UTF8ToUTF16(task->title);
+  task_title_ = base::UTF8ToUTF16(task_entry.title);
   textfield_->SetText(task_title_);
-  FocusModeController::Get()->SetSelectedTask(task);
+  FocusModeController::Get()->SetSelectedTask(task_entry);
   UpdateStyle(/*show_selected_state=*/true);
 }
 
@@ -321,12 +322,12 @@ void FocusModeTaskView::OnClearTask() {
   task_title_.clear();
   textfield_->SetText(std::u16string());
   auto* controller = FocusModeController::Get();
-  controller->SetSelectedTask(nullptr);
+  controller->SetSelectedTask({});
   // Only update `chip_carousel_` when it's invisible to avoid the crash when
   // moving focus to it by tabbing from an empty text of `textfield_` to the
   // `chip_carousel_`.
   if (!chip_carousel_->GetVisible()) {
-    chip_carousel_->SetTasks(controller->tasks_provider().GetTaskList());
+    chip_carousel_->SetTasks(controller->tasks_provider().GetSortedTaskList());
   }
   UpdateStyle(/*show_selected_state=*/false);
 }

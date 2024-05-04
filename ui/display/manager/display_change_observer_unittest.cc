@@ -533,13 +533,13 @@ TEST_P(DisplayChangeObserverTest, WCGDisplayColorSpaces) {
 
   const auto color_space = display_color_spaces.GetRasterColorSpace();
   EXPECT_TRUE(color_space.IsValid());
-  EXPECT_EQ(color_space.GetPrimaryID(), gfx::ColorSpace::PrimaryID::BT709);
+  EXPECT_EQ(color_space.GetPrimaryID(), gfx::ColorSpace::PrimaryID::P3);
   EXPECT_EQ(color_space.GetTransferID(), gfx::ColorSpace::TransferID::SRGB);
 }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 TEST_P(DisplayChangeObserverTest, HDRDisplayColorSpaces) {
-  // TODO(crbug.com/1012846): Remove this flag and provision when HDR is fully
+  // TODO(crbug.com/40652358): Remove this flag and provision when HDR is fully
   // supported on ChromeOS.
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(

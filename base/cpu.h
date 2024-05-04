@@ -38,9 +38,16 @@ class BASE_EXPORT CPU final {
   CPU(const CPU&) = delete;
 
   // Get a preallocated instance of CPU.
-  // This can be used in very early application startup. The instance of CPU is
-  // created without branding, see CPU(bool requires_branding) for details and
-  // implications.
+  // It can be used in very early application startup or in memory allocation
+  // handlers. The instance of CPU is created without branding, see `CPU(bool
+  // requires_branding)` for details and implications.
+  //
+  // Support for various security features such as Arm's BTI and MTE uses this
+  // instance to detect CPU support. To prevent any attempt
+  // to disable a feature by attacking this data, base::ProtectedMemory is used
+  // to protected it from write accesses.
+  // Note that base::ProtectedMemory falls back to unprotected memory if the
+  // target OS is not supported.
   static const CPU& GetInstanceNoAllocation();
 
   enum IntelMicroArchitecture {
@@ -58,7 +65,8 @@ class BASE_EXPORT CPU final {
   };
 
   // Accessors for CPU information.
-  const std::string& vendor_name() const { return cpu_vendor_; }
+  // TODO(crbug.com/335001230): Most if not all of these should be x86-only.
+  std::string vendor_name() const { return cpu_vendor_; }
   int signature() const { return signature_; }
   int stepping() const { return stepping_; }
   int model() const { return model_; }
@@ -66,6 +74,7 @@ class BASE_EXPORT CPU final {
   int type() const { return type_; }
   int extended_model() const { return ext_model_; }
   int extended_family() const { return ext_family_; }
+#if defined(ARCH_CPU_X86_FAMILY)
   bool has_mmx() const { return has_mmx_; }
   bool has_sse() const { return has_sse_; }
   bool has_sse2() const { return has_sse2_; }
@@ -77,6 +86,7 @@ class BASE_EXPORT CPU final {
   bool has_avx() const { return has_avx_; }
   bool has_fma3() const { return has_fma3_; }
   bool has_avx2() const { return has_avx2_; }
+#endif
   bool has_aesni() const { return has_aesni_; }
   bool has_non_stop_time_stamp_counter() const {
     return has_non_stop_time_stamp_counter_;
@@ -111,7 +121,7 @@ class BASE_EXPORT CPU final {
 #if defined(ARCH_CPU_X86_FAMILY)
   IntelMicroArchitecture GetIntelMicroArchitecture() const;
 #endif
-  const std::string& cpu_brand() const { return cpu_brand_; }
+  std::string cpu_brand() const { return cpu_brand_; }
 
  private:
   // Query the processor for CPUID information.
@@ -129,6 +139,7 @@ class BASE_EXPORT CPU final {
   uint32_t part_number_ = 0;  // ARM MIDR part number
   uint8_t implementer_ = 0;   // ARM MIDR implementer identifier
 #endif
+#if defined(ARCH_CPU_X86_FAMILY)
   bool has_mmx_ = false;
   bool has_sse_ = false;
   bool has_sse2_ = false;
@@ -140,6 +151,7 @@ class BASE_EXPORT CPU final {
   bool has_avx_ = false;
   bool has_fma3_ = false;
   bool has_avx2_ = false;
+#endif
   bool has_aesni_ = false;
 #if defined(ARCH_CPU_ARM_FAMILY)
   bool has_mte_ = false;  // Armv8.5-A MTE (Memory Taggging Extension)
@@ -150,8 +162,17 @@ class BASE_EXPORT CPU final {
 #endif
   bool has_non_stop_time_stamp_counter_ = false;
   bool is_running_in_vm_ = false;
-  std::string cpu_vendor_ = "unknown";
-  std::string cpu_brand_;
+
+  // The CPUID instruction of the X86 instruction set returns the vendor name in
+  // 3 32bit registers, which make 12 characters. See "Intel® 64 and IA-32
+  // Architectures Software Developer’s Manual - Volume 2".
+  static constexpr size_t kVendorNameSize = 12;
+  char cpu_vendor_[kVendorNameSize + 1] = "unknown";
+  // The CPUID instruction of the X86 instruction set returns the brand name in
+  // 3*4 32bit registers, which make 48 characters. See "Intel® 64 and IA-32
+  // Architectures Software Developer’s Manual - Volume 2".
+  static constexpr size_t kBrandNameSize = 48;
+  char cpu_brand_[kBrandNameSize + 1] = "\0";
 };
 
 }  // namespace base

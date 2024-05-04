@@ -9,14 +9,15 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "chrome/browser/android/httpclient/http_client.h"
-#include "chrome/browser/android/httpclient/jni_headers/SimpleHttpClient_jni.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_android.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "url/android/gurl_android.h"
 #include "url/gurl.h"
+
+// Must come after other includes, because FromJniType() uses Profile.
+#include "chrome/browser/android/httpclient/jni_headers/SimpleHttpClient_jni.h"
 
 using base::android::ConvertJavaStringToUTF8;
 using base::android::JavaParamRef;
@@ -26,14 +27,12 @@ using base::android::ScopedJavaLocalRef;
 namespace httpclient {
 
 // static
-jlong JNI_SimpleHttpClient_Init(JNIEnv* env,
-                                const JavaParamRef<jobject>& j_profile) {
-  return reinterpret_cast<intptr_t>(new HttpClientBridge(j_profile));
+jlong JNI_SimpleHttpClient_Init(JNIEnv* env, Profile* profile) {
+  return reinterpret_cast<intptr_t>(new HttpClientBridge(profile));
 }
 
-HttpClientBridge::HttpClientBridge(const JavaParamRef<jobject>& j_profile) {
+HttpClientBridge::HttpClientBridge(Profile* profile) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);
   DCHECK(profile);
   http_client_ = std::make_unique<HttpClient>(profile->GetURLLoaderFactory());
 }
@@ -55,8 +54,8 @@ void HttpClientBridge::SendNetworkRequest(
     const base::android::JavaParamRef<jobject>& j_callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(j_gurl);
-  std::unique_ptr<GURL> gurl = url::GURLAndroid::ToNativeGURL(env, j_gurl);
-  DCHECK(gurl->is_valid());
+  GURL gurl = url::GURLAndroid::ToNativeGURL(env, j_gurl);
+  DCHECK(gurl.is_valid());
   std::vector<uint8_t> request_body;
   base::android::JavaByteArrayToByteVector(env, j_body, &request_body);
   std::vector<std::string> header_keys;
@@ -73,8 +72,7 @@ void HttpClientBridge::SendNetworkRequest(
       &HttpClientBridge::OnResult, weak_ptr_factory_.GetWeakPtr(),
       ScopedJavaGlobalRef<jobject>(env, j_callback));
 
-  http_client_->Send(*std::move(gurl),
-                     ConvertJavaStringToUTF8(env, j_request_type),
+  http_client_->Send(gurl, ConvertJavaStringToUTF8(env, j_request_type),
                      std::move(request_body), std::move(header_keys),
                      std::move(header_values), tag, std::move(callback));
 }

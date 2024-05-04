@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {ManagedCellularProperties} from '//resources/mojo/chromeos/services/network_config/public/mojom/cros_network_config.mojom-webui.js';
+import {PortalState} from '//resources/mojo/chromeos/services/network_config/public/mojom/network_types.mojom-webui.js';
 import {PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {ManagedCellularProperties} from 'chrome://resources/mojo/chromeos/services/network_config/public/mojom/cros_network_config.mojom-webui.js';
-import {PortalState} from 'chrome://resources/mojo/chromeos/services/network_config/public/mojom/network_types.mojom-webui.js';
 
 export class ApnList extends PolymerElement {
   static get is(): string;
@@ -13,6 +13,10 @@ export class ApnList extends PolymerElement {
     guid: StringConstructor,
     managedCellularProperties: ManagedCellularProperties,
     shouldOmitLinks: {
+      type: BooleanConstructor,
+      value: boolean,
+    },
+    shouldDisallowApnModification: {
       type: BooleanConstructor,
       value: boolean,
     },
@@ -32,6 +36,7 @@ export class ApnList extends PolymerElement {
   errorState: string;
   portalState: PortalState;
   shouldOmitLinks: boolean;
+  shouldDisallowApnModification: boolean;
   openApnDetailDialogInCreateMode(): void;
   openApnSelectionDialog(): void;
   private getApns_;

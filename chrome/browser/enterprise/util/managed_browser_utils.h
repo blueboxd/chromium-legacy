@@ -21,6 +21,13 @@ class Profile;
 namespace chrome {
 namespace enterprise_util {
 
+enum EnterpriseProfileBadgingTemporarySetting : int {
+  kHide = 0,
+  kShowOnUnmanagedDevices = 1,
+  kShowOnAllDevices = 2,
+  kShowOnManagedDevices = 3
+};
+
 // Represents which type of managed environment we have.
 enum class ManagementEnvironment { kNone, kSchool, kWork };
 
@@ -71,20 +78,14 @@ bool ProfileCanBeManaged(Profile* profile);
 ManagementEnvironment GetManagementEnvironment(Profile* profile,
                                                const AccountInfo& account_info);
 
+bool CanShowEnterpriseBadging(Profile* profile);
+
 // Checks `email_domain` against the list of pre-defined known consumer domains.
 // Use this for optimization purposes when you want to skip some code paths for
 // most non-managed (=consumer) users with domains like gmail.com. Note that it
 // can still return `false` for consumer domains which are not hardcoded in
 // implementation.
 bool IsKnownConsumerDomain(const std::string& email_domain);
-
-#if BUILDFLAG(IS_ANDROID)
-
-// Returns the UTF8-encoded string representation of the entity that manages
-// `profile` or nullopt if unmanaged. `profile` must be not-null.
-std::string GetBrowserManagerName(Profile* profile);
-
-#endif  // BUILDFLAG(IS_ANDROID)
 
 }  // namespace enterprise_util
 }  // namespace chrome

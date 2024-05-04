@@ -57,12 +57,14 @@ void DataObserver::BookmarkNodeAdded(const BookmarkNode* parent,
 void DataObserver::BookmarkNodeRemoved(const BookmarkNode* parent,
                                        size_t old_index,
                                        const BookmarkNode* node,
-                                       const std::set<GURL>& removed_urls) {
+                                       const std::set<GURL>& removed_urls,
+                                       const base::Location& location) {
   DeleteBookmarks(removed_urls);
 }
 
 void DataObserver::BookmarkAllUserNodesRemoved(
-    const std::set<GURL>& removed_urls) {
+    const std::set<GURL>& removed_urls,
+    const base::Location& location) {
   DeleteBookmarks(removed_urls);
 }
 
@@ -105,8 +107,9 @@ void DataObserver::OnURLVisited(history::HistoryService* history_service,
   stop_reporting_callback_.Run();
 }
 
-void DataObserver::OnURLsDeleted(history::HistoryService* history_service,
-                                 const history::DeletionInfo& deletion_info) {
+void DataObserver::OnHistoryDeletions(
+    history::HistoryService* history_service,
+    const history::DeletionInfo& deletion_info) {
   if (deletion_info.IsAllHistory()) {
     delta_file_service_->Clear();
     data_cleared_callback_.Run();

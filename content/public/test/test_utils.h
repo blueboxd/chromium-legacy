@@ -157,6 +157,10 @@ WebContents* CreateAndAttachInnerContents(RenderFrameHost* rfh);
 // Spins a run loop until IsDocumentOnLoadCompletedInPrimaryMainFrame() is true.
 void AwaitDocumentOnLoadCompleted(WebContents* web_contents);
 
+// Sets the focused frame of `web_contents` to the `rfh` for tests that rely on
+// the focused frame not being null.
+void FocusWebContentsOnFrame(WebContents* web_contents, RenderFrameHost* rfh);
+
 // Helper class to Run and Quit the message loop. Run and Quit can only happen
 // once per instance. Make a new instance for each use. Calling Quit after Run
 // has returned is safe and has no effect.
@@ -290,7 +294,7 @@ class RenderFrameDeletedObserver : public WebContentsObserver {
   // Overridden WebContentsObserver methods.
   void RenderFrameDeleted(RenderFrameHost* render_frame_host) override;
 
-  // TODO(1267073): Add [[nodiscard]]
+  // TODO(crbug.com/40204325): Add [[nodiscard]]
   // Returns true if the frame was deleted before the timeout.
   bool WaitUntilDeleted();
   bool deleted() const;

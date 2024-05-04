@@ -6,7 +6,6 @@ import 'chrome://resources/ash/common/network_health/network_diagnostics.js';
 import 'chrome://resources/ash/common/network_health/network_health_summary.js';
 import 'chrome://resources/ash/common/traffic_counters/traffic_counters.js';
 import 'chrome://resources/ash/common/cr_elements/cr_button/cr_button.js';
-import 'chrome://resources/ash/common/cr_elements/cr_button/cr_button.js';
 import 'chrome://resources/ash/common/cr_elements/cr_input/cr_input.js';
 import 'chrome://resources/ash/common/cr_elements/cr_tabs/cr_tabs.js';
 import 'chrome://resources/ash/common/cr_elements/cr_toggle/cr_toggle.js';
@@ -93,18 +92,12 @@ class NetworkUiElement extends NetworkUiElementBase {
         },
       },
 
-      isTetheringEnabled_: {
+      isWifiDirectEnabled_: {
         type: Boolean,
-        value: false,
-      },
-
-      /**
-       * Set to true while an tethering state change is requested and the
-       * callback hasn't been fired yet.
-       */
-      tetheringChangeInProgress_: {
-        type: Boolean,
-        value: false,
+        value() {
+          return loadTimeData.valueExists('isWifiDirectEnabled') &&
+              loadTimeData.getBoolean('isWifiDirectEnabled');
+        },
       },
 
       invalidJSON_: {
@@ -125,8 +118,7 @@ class NetworkUiElement extends NetworkUiElementBase {
   private tetheringConfigToSet_: string;
   private isGuestModeActive_: boolean;
   private isHotspotEnabled_: boolean;
-  private isTetheringEnabled_: boolean;
-  private tetheringChangeInProgress_: boolean;
+  private isWifiDirectEnabled_: boolean;
   private invalidJSON_: boolean;
   private showNetworkSelect_: boolean;
   private onHashChange_: () => void = () => {
@@ -145,9 +137,16 @@ class NetworkUiElement extends NetworkUiElementBase {
     this.shadowRoot!.querySelector<HTMLInputElement>('#import-onc')!.value = '';
 
     this.requestGlobalPolicy_();
-    this.getTetheringCapabilities_();
-    this.getTetheringConfig_();
-    this.getTetheringStatus_();
+    if (this.isHotspotEnabled_) {
+      this.getTetheringCapabilities_();
+      this.getTetheringConfig_();
+      this.getTetheringStatus_();
+    }
+    if (this.isWifiDirectEnabled_) {
+      this.getWifiDirectCapabilities_();
+      this.getWifiDirectClientInfo_();
+      this.getWifiDirectOwnerInfo_();
+    }
     this.getHostname_();
     this.selectTabFromHash_();
     window.addEventListener('hashchange', this.onHashChange_);
@@ -170,6 +169,9 @@ class NetworkUiElement extends NetworkUiElementBase {
     ];
     if (this.isHotspotEnabled_) {
       values.push(this.i18n('networkHotspotTab'));
+    }
+    if (this.isWifiDirectEnabled_) {
+      values.push(this.i18n('networkWifiDirectTab'));
     }
     return values;
   }
@@ -261,28 +263,26 @@ class NetworkUiElement extends NetworkUiElementBase {
 
   private async getTetheringCapabilities_() {
     const result = await this.browserProxy_.getTetheringCapabilities();
-    this.shadowRoot!.querySelector('#tethering-capabilities-div')!.textContent =
-        stringifyJson(result);
+    const div = this.shadowRoot!.querySelector('#tethering-capabilities-div');
+    if (div) {
+      div.textContent = stringifyJson(result);
+    }
   }
 
   private async getTetheringStatus_() {
     const result = await this.browserProxy_.getTetheringStatus();
-    this.shadowRoot!.querySelector('#tethering-status-div')!.textContent =
-        stringifyJson(result);
-    const state = result.state;
-    const startingState = loadTimeData.getString('tetheringStateStarting');
-    const activeState = loadTimeData.getString('tetheringStateActive');
-    if (!!state && (state === startingState || state === activeState)) {
-      this.isTetheringEnabled_ = true;
-      return;
+    const div = this.shadowRoot!.querySelector('#tethering-status-div');
+    if (div) {
+      div.textContent = stringifyJson(result);
     }
-    this.isTetheringEnabled_ = false;
   }
 
   private async getTetheringConfig_() {
     const result = await this.browserProxy_.getTetheringConfig();
-    this.shadowRoot!.querySelector('#tethering-config-div')!.textContent =
-        stringifyJson(result);
+    const div = this.shadowRoot!.querySelector('#tethering-config-div');
+    if (div) {
+      div.textContent = stringifyJson(result);
+    }
   }
 
   private async setTetheringConfig_() {
@@ -330,17 +330,28 @@ class NetworkUiElement extends NetworkUiElementBase {
     }
   }
 
-  private async onTetheringToggleChanged_() {
-    this.tetheringChangeInProgress_ = true;
-    const result =
-        await this.browserProxy_.setTetheringEnabled(this.isTetheringEnabled_);
-    const resultDiv = this.shadowRoot!.querySelector<HTMLElement>(
-        '#set-tethering-enabled-result');
-    assert(resultDiv);
-    resultDiv.innerText = result;
-    resultDiv.classList.toggle('error', result !== 'success');
-    this.getTetheringStatus_();
-    this.tetheringChangeInProgress_ = false;
+  private async getWifiDirectCapabilities_() {
+    const result = await this.browserProxy_.getWifiDirectCapabilities();
+    const div = this.shadowRoot!.querySelector('#wifi-direct-capabilities-div');
+    if (div) {
+      div.textContent = stringifyJson(result);
+    }
+  }
+
+  private async getWifiDirectOwnerInfo_() {
+    const result = await this.browserProxy_.getWifiDirectOwnerInfo();
+    const div = this.shadowRoot!.querySelector('#wifi-direct-owner-info-div');
+    if (div) {
+      div.textContent = stringifyJson(result);
+    }
+  }
+
+  private async getWifiDirectClientInfo_() {
+    const result = await this.browserProxy_.getWifiDirectClientInfo();
+    const div = this.shadowRoot!.querySelector('#wifi-direct-client-info-div');
+    if (div) {
+      div.textContent = stringifyJson(result);
+    }
   }
 
   private onHostnameChanged_(_: Event) {

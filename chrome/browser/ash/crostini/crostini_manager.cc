@@ -474,7 +474,7 @@ void CrostiniManager::CrostiniRestarter::Timeout(mojom::InstallerState state) {
       result = CrostiniResult::CONFIGURE_CONTAINER_TIMED_OUT;
       break;
     case mojom::InstallerState::kStart:
-      DUMP_WILL_BE_NOTREACHED_NORETURN();
+      result = CrostiniResult::START_TIMED_OUT;
   }
   // Note: FinishRestart deletes |this|.
   FinishRestart(result);
@@ -1612,8 +1612,8 @@ namespace {
 
 std::string GetImageServer() {
   std::string image_server_url;
-  scoped_refptr<component_updater::CrOSComponentManager> component_manager =
-      g_browser_process->platform_part()->cros_component_manager();
+  scoped_refptr<component_updater::ComponentManagerAsh> component_manager =
+      g_browser_process->platform_part()->component_manager_ash();
   if (component_manager) {
     image_server_url =
         component_manager->GetCompatiblePath("cros-crostini-image-server-url")
@@ -3013,9 +3013,11 @@ void CrostiniManager::OnStopLxdContainer(
       break;
 
     case vm_tools::cicerone::StopLxdContainerResponse::STOPPING:
-      VLOG(1) << "Awaiting LxdContainerStoppingSignal for " << owner_id_ << ", "
+      VLOG(1) << "Awaiting ContainerShutdownSignal for " << owner_id_ << ", "
               << container_id;
-      stop_container_callbacks_.emplace(container_id, std::move(callback));
+      shutdown_container_callbacks_.emplace(
+          container_id,
+          base::BindOnce(std::move(callback), CrostiniResult::SUCCESS));
       break;
 
     case vm_tools::cicerone::StopLxdContainerResponse::DOES_NOT_EXIST:
@@ -3247,43 +3249,6 @@ void CrostiniManager::OnLxdContainerStarting(
   }
 
   InvokeAndErasePendingContainerCallbacks(&start_container_callbacks_,
-                                          container_id, result);
-}
-
-void CrostiniManager::OnLxdContainerStopping(
-    const vm_tools::cicerone::LxdContainerStoppingSignal& signal) {
-  if (signal.owner_id() != owner_id_) {
-    return;
-  }
-  guest_os::GuestId container_id(kCrostiniDefaultVmType, signal.vm_name(),
-                                 signal.container_name());
-  CrostiniResult result;
-  switch (signal.status()) {
-    case vm_tools::cicerone::LxdContainerStoppingSignal::UNKNOWN:
-      result = CrostiniResult::UNKNOWN_ERROR;
-      break;
-    case vm_tools::cicerone::LxdContainerStoppingSignal::CANCELLED:
-      result = CrostiniResult::CONTAINER_STOP_CANCELLED;
-      break;
-    case vm_tools::cicerone::LxdContainerStoppingSignal::STOPPED:
-      HandleContainerShutdown(container_id);
-      result = CrostiniResult::SUCCESS;
-      break;
-    case vm_tools::cicerone::LxdContainerStoppingSignal::STOPPING:
-      // No-op
-      return;
-    case vm_tools::cicerone::LxdContainerStoppingSignal::FAILED:
-      result = CrostiniResult::CONTAINER_STOP_FAILED;
-      break;
-    default:
-      result = CrostiniResult::UNKNOWN_ERROR;
-      break;
-  }
-  if (result != CrostiniResult::SUCCESS) {
-    LOG(ERROR) << "Failed to stop container. ID: " << container_id
-               << " reason: " << signal.failure_reason();
-  }
-  InvokeAndErasePendingContainerCallbacks(&stop_container_callbacks_,
                                           container_id, result);
 }
 
@@ -3857,37 +3822,39 @@ void CrostiniManager::EmitVmDiskTypeMetric(const std::string vm_name) {
   request.set_vm_name(vm_name);
   GetConciergeClient()->ListVmDisks(
       std::move(request),
-      base::BindOnce([](std::optional<vm_tools::concierge::ListVmDisksResponse>
-                            response) {
-        if (response) {
-          if (response.value().images().size() != 1) {
-            LOG(ERROR) << "Got " << response.value().images().size()
-                       << " disks for image, don't know how to proceed";
-            base::UmaHistogramEnumeration("Crostini.DiskType",
-                                          CrostiniDiskImageType::kMultiDisk);
-            return;
-          }
-          auto image = response.value().images().Get(0);
-          if (image.image_type() ==
-              vm_tools::concierge::DiskImageType::DISK_IMAGE_QCOW2) {
-            base::UmaHistogramEnumeration("Crostini.DiskType",
-                                          CrostiniDiskImageType::kQCow2Sparse);
-          } else if (image.image_type() ==
-                     vm_tools::concierge::DiskImageType::DISK_IMAGE_RAW) {
-            if (image.user_chosen_size()) {
-              base::UmaHistogramEnumeration(
-                  "Crostini.DiskType", CrostiniDiskImageType::kRawPreallocated);
-            } else {
-              base::UmaHistogramEnumeration("Crostini.DiskType",
-                                            CrostiniDiskImageType::kRawSparse);
+      base::BindOnce(
+          [](std::optional<vm_tools::concierge::ListVmDisksResponse> response) {
+            if (response) {
+              if (response.value().images().size() != 1) {
+                LOG(ERROR) << "Got " << response.value().images().size()
+                           << " disks for image, don't know how to proceed";
+                base::UmaHistogramEnumeration(
+                    "Crostini.DiskType", CrostiniDiskImageType::kMultiDisk);
+                return;
+              }
+              auto image = response.value().images().Get(0);
+              if (image.image_type() ==
+                  vm_tools::concierge::DiskImageType::DISK_IMAGE_QCOW2) {
+                base::UmaHistogramEnumeration(
+                    "Crostini.DiskType", CrostiniDiskImageType::kQCow2Sparse);
+              } else if (image.image_type() ==
+                         vm_tools::concierge::DiskImageType::DISK_IMAGE_RAW) {
+                if (image.user_chosen_size()) {
+                  base::UmaHistogramEnumeration(
+                      "Crostini.DiskType",
+                      CrostiniDiskImageType::kRawPreallocated);
+                } else {
+                  base::UmaHistogramEnumeration(
+                      "Crostini.DiskType", CrostiniDiskImageType::kRawSparse);
+                }
+              } else {
+                // We shouldn't get back the other disk types for Crostini
+                // disks.
+                base::UmaHistogramEnumeration("Crostini.DiskType",
+                                              CrostiniDiskImageType::kUnknown);
+              }
             }
-          } else {
-            // We shouldn't get back the other disk types for Crostini disks.
-            base::UmaHistogramEnumeration("Crostini.DiskType",
-                                          CrostiniDiskImageType::kUnknown);
-          }
-        }
-      }));
+          }));
 }
 
 void CrostiniManager::MountCrostiniFiles(guest_os::GuestId container_id,

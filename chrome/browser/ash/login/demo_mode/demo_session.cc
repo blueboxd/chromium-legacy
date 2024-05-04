@@ -83,7 +83,7 @@ namespace ash {
 namespace {
 
 // The splash screen should be removed either when this timeout passes or the
-// screensaver app is shown, whichever comes first.
+// demo mode launches and enters the full screen, whichever comes first.
 inline constexpr base::TimeDelta kRemoveSplashScreenTimeout = base::Seconds(10);
 
 // Global DemoSession instance.
@@ -148,7 +148,11 @@ std::string GetSwitchOrDefault(std::string_view switch_string,
 
 // If the current locale is not the default one, ensure it is reverted to the
 // default when demo session restarts (i.e. user-selected locale is only allowed
-// to be used for a single session).
+// to be used for a single session), unless the restart is triggered by the user
+// explicitly changing the locale. (e.g. if the current locale is de-de and the
+// user changes the locale to fr-fr from the system tray, when the demo session
+// restarts, the system doesn't revert to the default locale en-us, but instead,
+// goes to fr-fr as specified.
 void RestoreDefaultLocaleForNextSession() {
   auto* user = user_manager::UserManager::Get()->GetActiveUser();
   // Tests may not have an active user.
@@ -181,8 +185,8 @@ void RestoreDefaultLocaleForNextSession() {
   if (current_locale != default_locale) {
     // If the user has changed the locale, request to change it back (which will
     // take effect when the session restarts).
-    profile->ChangeAppLocale(default_locale,
-                             Profile::APP_LOCALE_CHANGED_VIA_DEMO_SESSION);
+    profile->ChangeAppLocale(
+        default_locale, Profile::APP_LOCALE_CHANGED_VIA_DEMO_SESSION_REVERT);
   }
 }
 
@@ -304,15 +308,8 @@ bool DemoSession::IsDeviceInDemoMode() {
   if (!InstallAttributes::IsInitialized()) {
     return false;
   }
-  bool is_demo_device_mode = InstallAttributes::Get()->GetMode() ==
-                             policy::DeviceMode::DEVICE_MODE_DEMO;
-  bool is_demo_device_domain =
-      InstallAttributes::Get()->GetDomain() == policy::kDemoModeDomain;
 
-  // We check device mode and domain to allow for dev/test
-  // setup that is done by manual enrollment into demo domain. Device mode is
-  // not set to DeviceMode::DEVICE_MODE_DEMO then.
-  return is_demo_device_mode || is_demo_device_domain;
+  return InstallAttributes::Get()->IsDeviceInDemoMode();
 }
 
 // static
@@ -638,10 +635,6 @@ void DemoSession::OnSessionStateChanged() {
                          weak_ptr_factory_.GetWeakPtr()));
       break;
     case session_manager::SessionState::ACTIVE:
-      if (ShouldRemoveSplashScreen()) {
-        RemoveSplashScreen();
-      }
-
       // SystemTrayClientImpl may not exist in unit tests.
       if (SystemTrayClientImpl::Get()) {
         const std::string current_locale_iso_code =
@@ -731,9 +724,9 @@ void DemoSession::OnDemoAppComponentLoaded() {
                        ? app_component_version.value().GetString()
                        : "");
   auto error = components_->app_component_error().value_or(
-      component_updater::CrOSComponentManager::Error::NOT_FOUND);
+      component_updater::ComponentManagerAsh::Error::NOT_FOUND);
 
-  if (error != component_updater::CrOSComponentManager::Error::NONE) {
+  if (error != component_updater::ComponentManagerAsh::Error::NONE) {
     LOG(WARNING) << "Error loading demo mode app component: "
                  << static_cast<int>(error);
     return;
@@ -751,6 +744,7 @@ base::FilePath GetSplashScreenImagePath(base::FilePath localized_image_path,
 void DemoSession::ShowSplashScreen(base::FilePath image_path) {
   ash::WallpaperController::Get()->ShowOverrideWallpaper(
       image_path, /*always_on_top=*/true);
+  splash_screen_activated_ = true;
   remove_splash_screen_fallback_timer_->Start(
       FROM_HERE, kRemoveSplashScreenTimeout,
       base::BindOnce(&DemoSession::RemoveSplashScreen,
@@ -778,30 +772,15 @@ void DemoSession::ConfigureAndStartSplashScreen() {
 }
 
 void DemoSession::RemoveSplashScreen() {
-  if (splash_screen_removed_)
+  // The splash screen is shown after the active session starts and the demo
+  // mode app launches and enters the full screen, so that there's no need to
+  // check the session state here like before.
+  if (!splash_screen_activated_) {
     return;
+  }
   ash::WallpaperController::Get()->RemoveOverrideWallpaper();
   remove_splash_screen_fallback_timer_.reset();
-  app_window_registry_observations_.RemoveAllObservations();
-  splash_screen_removed_ = true;
-}
-
-bool DemoSession::ShouldRemoveSplashScreen() {
-  // TODO(crbug.com/934979): Launch screensaver after active session starts, so
-  // that there's no need to check session state here.
-  return session_manager::SessionManager::Get()->session_state() ==
-             session_manager::SessionState::ACTIVE &&
-         screensaver_activated_;
-}
-
-// TODO(b/250637035): Either delete this code or fix it to work with the Demo
-// Mode SWA
-void DemoSession::OnAppWindowActivated(extensions::AppWindow* app_window) {
-  if (app_window->extension_id() != GetScreensaverAppId())
-    return;
-  screensaver_activated_ = true;
-  if (ShouldRemoveSplashScreen())
-    RemoveSplashScreen();
+  splash_screen_activated_ = false;
 }
 
 }  // namespace ash

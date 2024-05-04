@@ -214,13 +214,12 @@ struct AX_BASE_EXPORT AXNodeData {
   bool HasState(ax::mojom::State state) const;
   bool HasAction(ax::mojom::Action action) const;
   bool HasTextStyle(ax::mojom::TextStyle text_style) const;
-  // aria-dropeffect is deprecated in WAI-ARIA 1.1.
-  bool HasDropeffect(ax::mojom::Dropeffect dropeffect) const;
 
   // Set or remove bits in the given enum's corresponding bitfield.
   void AddState(ax::mojom::State state);
   void RemoveState(ax::mojom::State state);
   void AddAction(ax::mojom::Action action);
+  void RemoveAction(ax::mojom::Action action);
   void AddTextStyle(ax::mojom::TextStyle text_style);
 
   // Helper functions to get or set some common int attributes with some
@@ -339,6 +338,9 @@ struct AX_BASE_EXPORT AXNodeData {
   // Helper to determine if the data belongs to a node that supports
   // expand/collapse.
   bool SupportsExpandCollapse() const;
+
+  bool HasChildTreeID() const;
+  std::optional<AXTreeID> GetChildTreeID() const;
 
   // Return a string representation of this data, for debugging.
   virtual std::string ToString(bool verbose = true) const;

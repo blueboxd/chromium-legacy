@@ -66,7 +66,7 @@ include_rules = [
   "+ui/strings/grit/ax_strings.h",
   "+ui/webui",
 
-  # TODO(crbug.com/1079201): Consider removing "+services". Each service should
+  # TODO(crbug.com/40129825): Consider removing "+services". Each service should
   # have explicit rules to allow services/*/public rather than adding a blanket
   # dependency.
   "+services",
@@ -133,7 +133,7 @@ include_rules = [
 
 specific_include_rules = {
   ".*test\.cc": [
-    "+components/os_crypt/async/browser/test_utils.h",
+    "+components/os_crypt/async",
     "+services/network/test",
   ],
   ".*test_utils\.(h|cc)": [
@@ -143,7 +143,7 @@ specific_include_rules = {
     "+components/ml/webnn/features.mojom-features.h",
   ],
   "browser_main_loop\.cc": [
-    # TODO(crbug.com/1049894): Remove.
+    # TODO(crbug.com/40672800): Remove.
     "+services/network/transitional_url_loader_factory_owner.h",
     "+device/fido/hid/fido_hid_discovery.h",
   ],
@@ -162,7 +162,7 @@ specific_include_rules = {
   "network_service_instance_impl\.cc": [
     # Used to instantiate a CertVerifierServiceFactory in the browser process.
     "+services/cert_verifier/cert_verifier_service_factory.h",
-    # TODO(crbug.com/1049894): Remove.
+    # TODO(crbug.com/40672800): Remove.
     "+services/network/network_service.h",
   ],
   "signed_exchange_handler_unittest\.cc": [

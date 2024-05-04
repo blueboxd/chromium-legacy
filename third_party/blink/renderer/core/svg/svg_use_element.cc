@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/id_target_observer.h"
+#include "third_party/blink/renderer/core/dom/increment_load_event_delay_count.h"
 #include "third_party/blink/renderer/core/dom/node_cloning_data.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/dom/xml_document.h"
@@ -38,11 +39,18 @@
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_transformable_container.h"
 #include "third_party/blink/renderer/core/svg/svg_animated_length.h"
+#include "third_party/blink/renderer/core/svg/svg_circle_element.h"
+#include "third_party/blink/renderer/core/svg/svg_ellipse_element.h"
 #include "third_party/blink/renderer/core/svg/svg_g_element.h"
 #include "third_party/blink/renderer/core/svg/svg_length_context.h"
+#include "third_party/blink/renderer/core/svg/svg_path_element.h"
+#include "third_party/blink/renderer/core/svg/svg_polygon_element.h"
+#include "third_party/blink/renderer/core/svg/svg_polyline_element.h"
+#include "third_party/blink/renderer/core/svg/svg_rect_element.h"
 #include "third_party/blink/renderer/core/svg/svg_resource_document_content.h"
 #include "third_party/blink/renderer/core/svg/svg_svg_element.h"
 #include "third_party/blink/renderer/core/svg/svg_symbol_element.h"
+#include "third_party/blink/renderer/core/svg/svg_text_element.h"
 #include "third_party/blink/renderer/core/svg/svg_title_element.h"
 #include "third_party/blink/renderer/core/svg_names.h"
 #include "third_party/blink/renderer/core/xlink_names.h"
@@ -99,7 +107,6 @@ void SVGUseElement::Trace(Visitor* visitor) const {
   visitor->Trace(target_id_observer_);
   SVGGraphicsElement::Trace(visitor);
   SVGURIReference::Trace(visitor);
-  ResourceClient::Trace(visitor);
 }
 
 #if DCHECK_IS_ON()
@@ -132,6 +139,9 @@ void SVGUseElement::RemovedFrom(ContainerNode& root_parent) {
 
 void SVGUseElement::DidMoveToNewDocument(Document& old_document) {
   SVGGraphicsElement::DidMoveToNewDocument(old_document);
+  if (load_event_delayer_) {
+    load_event_delayer_->DocumentChanged(GetDocument());
+  }
   UpdateTargetReference();
 }
 
@@ -192,14 +202,30 @@ bool SVGUseElement::HaveLoadedRequiredResources() {
   return !document_content_ || !document_content_->IsLoading();
 }
 
+void SVGUseElement::UpdateDocumentContent(
+    SVGResourceDocumentContent* document_content) {
+  if (document_content_ == document_content) {
+    return;
+  }
+  auto old_load_event_delayer = std::move(load_event_delayer_);
+  if (document_content_) {
+    document_content_->RemoveObserver(this);
+  }
+  document_content_ = document_content;
+  if (document_content_) {
+    load_event_delayer_ =
+        std::make_unique<IncrementLoadEventDelayCount>(GetDocument());
+    document_content_->AddObserver(this);
+  }
+}
+
 void SVGUseElement::UpdateTargetReference() {
   const String& url_string = HrefString();
   element_url_ = GetDocument().CompleteURL(url_string);
   element_url_is_local_ = url_string.StartsWith('#');
   if (!IsStructurallyExternal() || !GetDocument().IsActive()) {
-    ClearResource();
+    UpdateDocumentContent(nullptr);
     pending_event_.Cancel();
-    document_content_ = nullptr;
     return;
   }
   if (!element_url_.HasFragmentIdentifier() ||
@@ -220,8 +246,11 @@ void SVGUseElement::UpdateTargetReference() {
   ResourceLoaderOptions options(execution_context->GetCurrentWorld());
   options.initiator_info.name = fetch_initiator_type_names::kUse;
   FetchParameters params(ResourceRequest(element_url_), options);
-  document_content_ =
-      SVGResourceDocumentContent::Fetch(params, *context_document, this);
+  params.MutableResourceRequest().SetMode(
+      network::mojom::blink::RequestMode::kSameOrigin);
+  auto* document_content =
+      SVGResourceDocumentContent::Fetch(params, *context_document);
+  UpdateDocumentContent(document_content);
 }
 
 void SVGUseElement::SvgAttributeChanged(
@@ -616,13 +645,15 @@ void SVGUseElement::QueueOrDispatchPendingEvent(
   }
 }
 
-void SVGUseElement::NotifyFinished(Resource* resource) {
+void SVGUseElement::ResourceNotifyFinished(
+    SVGResourceDocumentContent* document_content) {
+  DCHECK_EQ(document_content_, document_content);
+  load_event_delayer_.reset();
   if (!isConnected())
     return;
   InvalidateShadowTree();
 
-  const bool is_error =
-      resource->ErrorOccurred() || !document_content_->GetDocument();
+  const bool is_error = document_content->ErrorOccurred();
   const AtomicString& event_name =
       is_error ? event_type_names::kError : event_type_names::kLoad;
   DCHECK(!pending_event_.IsActive());
@@ -630,10 +661,6 @@ void SVGUseElement::NotifyFinished(Resource* resource) {
       *GetDocument().GetTaskRunner(TaskType::kDOMManipulation), FROM_HERE,
       WTF::BindOnce(&SVGUseElement::QueueOrDispatchPendingEvent,
                     WrapPersistent(this), event_name));
-}
-
-String SVGUseElement::DebugName() const {
-  return "SVGUseElement";
 }
 
 SVGAnimatedPropertyBase* SVGUseElement::PropertyFromAttribute(

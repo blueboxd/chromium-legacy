@@ -21,8 +21,12 @@ class AutofillAgentTestApi {
     agent_->form_tracker_ = std::move(form_tracker);
   }
 
-  std::optional<FormData> last_interacted_saved_state() {
-    return agent_->last_interacted_.saved_state;
+  std::optional<FormData> provisionally_saved_form() {
+    return agent_->provisionally_saved_form();
+  }
+
+  void FocusedElementChanged(blink::WebElement new_focused_element) {
+    agent_->FocusedElementChanged(new_focused_element);
   }
 
  private:

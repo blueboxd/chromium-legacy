@@ -255,7 +255,7 @@ bool InputRouterImpl::HandleGestureScrollForStylusWriting(
       break;
     }
     case WebInputEvent::Type::kGestureScrollUpdate:
-      // TODO(crbug.com/1330817): Pass the queued scroll delta to stylus
+      // TODO(crbug.com/40843488): Pass the queued scroll delta to stylus
       // writing recognition system.
       return stylus_writing_started_;
     case WebInputEvent::Type::kGestureScrollEnd: {
@@ -722,7 +722,7 @@ void InputRouterImpl::TouchEventHandled(
       OnSetCompositorAllowedTouchAction(touch_action->touch_action);
   }
 
-  // TODO(crbug.com/953547): find a proper way to stop the timeout monitor.
+  // TODO(crbug.com/40623448): find a proper way to stop the timeout monitor.
   bool should_stop_timeout_monitor = true;
   // |touch_event_queue_| will forward to OnTouchEventAck when appropriate.
   touch_event_queue_.ProcessTouchAck(source, state, latency,

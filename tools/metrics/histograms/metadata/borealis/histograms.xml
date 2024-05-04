@@ -23,7 +23,7 @@ chromium-metrics-reviews@google.com.
 <histograms>
 
 <histogram name="Borealis.Audio.UsedPath.{Direction}" enum="BorealisAudioPath"
-    expires_after="2024-07-21">
+    expires_after="2024-09-22">
   <owner>normanbt@google.com</owner>
   <owner>src/chrome/browser/ash/borealis/OWNERS</owner>
   <summary>
@@ -38,7 +38,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Borealis.Audio.UsedSubdevices" units="count"
-    expires_after="2024-07-21">
+    expires_after="2024-09-22">
   <owner>normanbt@google.com</owner>
   <owner>src/chrome/browser/ash/borealis/OWNERS</owner>
   <summary>
@@ -48,7 +48,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Borealis.Audio.Xrun.Alsa.Output" units="count"
-    expires_after="2024-07-21">
+    expires_after="2024-09-22">
   <owner>normanbt@google.com</owner>
   <owner>src/chrome/browser/ash/borealis/OWNERS</owner>
   <summary>
@@ -78,28 +78,28 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Borealis.Disk.StatefulReadsDaily" units="KiB"
-    expires_after="2024-08-25">
+    expires_after="2024-10-28">
   <owner>philpearson@google.com</owner>
   <owner>src/chrome/browser/ash/borealis/OWNERS</owner>
   <summary>Borealis stateful KiB read per day. Reported daily.</summary>
 </histogram>
 
 <histogram name="Borealis.Disk.StatefulWritesDaily" units="KiB"
-    expires_after="2024-08-25">
+    expires_after="2024-10-28">
   <owner>philpearson@google.com</owner>
   <owner>src/chrome/browser/ash/borealis/OWNERS</owner>
   <summary>Borealis stateful KiB written per day. Reported daily.</summary>
 </histogram>
 
 <histogram name="Borealis.Disk.SwapReadsDaily" units="KiB"
-    expires_after="2024-08-25">
+    expires_after="2024-10-28">
   <owner>philpearson@google.com</owner>
   <owner>src/chrome/browser/ash/borealis/OWNERS</owner>
   <summary>Borealis swap file KiB read per day. Reported daily.</summary>
 </histogram>
 
 <histogram name="Borealis.Disk.SwapWritesDaily" units="KiB"
-    expires_after="2024-08-25">
+    expires_after="2024-10-28">
   <owner>philpearson@google.com</owner>
   <owner>src/chrome/browser/ash/borealis/OWNERS</owner>
   <summary>Borealis swap file KiB written per day. Reported daily.</summary>
@@ -155,7 +155,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Borealis.Install.NumAttempts" enum="BooleanAttempted"
-    expires_after="2024-08-25">
+    expires_after="2024-10-28">
   <owner>philpearson@google.com</owner>
   <owner>src/chrome/browser/ash/borealis/OWNERS</owner>
   <summary>
@@ -185,7 +185,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Borealis.Install.OverallTime2" units="ms"
-    expires_after="2024-08-09">
+    expires_after="2024-10-13">
   <owner>philpearson@google.com</owner>
   <owner>src/chrome/browser/ash/borealis/OWNERS</owner>
   <improvement direction="LOWER_IS_BETTER"/>
@@ -201,13 +201,25 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Borealis.Install.Result" enum="BorealisInstallResult"
-    expires_after="2024-08-11">
+    expires_after="2024-10-13">
   <owner>philpearson@google.com</owner>
   <owner>src/chrome/browser/ash/borealis/OWNERS</owner>
   <summary>
     The installation result, for example, a successful install, a cancelled
     install, or an error. This is recorded after an installation attempt has
     ended.
+  </summary>
+</histogram>
+
+<histogram name="Borealis.Install.Source" enum="BorealisLaunchSource"
+    expires_after="2024-10-11">
+  <owner>philpearson@google.com</owner>
+  <owner>src/chrome/browser/ash/borealis/OWNERS</owner>
+  <summary>
+    The referring source for a Borealis installer launch, for example, a
+    chromeos-steam://install link, the Steam installer app in the Launcher, or a
+    Unified App Installer click. This is recorded at the start of an
+    installation attempt.
   </summary>
 </histogram>
 
@@ -222,7 +234,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Borealis.Stability" enum="GuestOsFailureClasses"
-    expires_after="2024-08-25">
+    expires_after="2024-10-28">
   <owner>philpearson@google.com</owner>
   <owner>src/chrome/browser/ash/borealis/OWNERS</owner>
   <summary>
@@ -253,7 +265,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Borealis.Startup.NumAttempts" enum="BooleanAttempted"
-    expires_after="2024-08-11">
+    expires_after="2024-10-13">
   <owner>philpearson@google.com</owner>
   <owner>src/chrome/browser/ash/borealis/OWNERS</owner>
   <summary>Recording every attempt to start Borealis (via the UI).</summary>
@@ -272,7 +284,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Borealis.Startup.OverallTime2" units="ms"
-    expires_after="2024-08-09">
+    expires_after="2024-10-13">
   <owner>philpearson@google.com</owner>
   <owner>src/chrome/browser/ash/borealis/OWNERS</owner>
   <improvement direction="LOWER_IS_BETTER"/>
@@ -285,7 +297,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Borealis.Startup.Result" enum="BorealisStartupResult"
-    expires_after="2024-08-25">
+    expires_after="2024-10-28">
   <owner>philpearson@google.com</owner>
   <owner>src/chrome/browser/ash/borealis/OWNERS</owner>
   <summary>
@@ -295,7 +307,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Borealis.VMPerformance.Generic.SlowFrameRatio" units="%"
-    expires_after="2024-08-25">
+    expires_after="2024-10-28">
   <owner>philpearson@google.com</owner>
   <owner>src/chrome/browser/ash/borealis/OWNERS</owner>
   <summary>
@@ -308,7 +320,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Borealis.VMPerformance.Generic.{Variant}" units="fps"
-    expires_after="2024-08-25">
+    expires_after="2024-10-28">
   <owner>philpearson@google.com</owner>
   <owner>src/chrome/browser/ash/borealis/OWNERS</owner>
   <summary>

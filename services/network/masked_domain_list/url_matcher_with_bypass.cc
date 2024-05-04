@@ -56,6 +56,17 @@ void AddRulesToMatcher(net::SchemeHostPortMatcher* matcher,
   }
 }
 
+std::map<std::string, std::set<std::string>> PartitionDomains(
+    const std::set<std::string>& domains) {
+  std::map<std::string, std::set<std::string>> domains_by_partition;
+
+  for (auto domain : domains) {
+    const std::string partition = UrlMatcherWithBypass::PartitionMapKey(domain);
+    domains_by_partition[partition].insert(domain);
+  }
+  return domains_by_partition;
+}
+
 }  // namespace
 
 // static
@@ -95,57 +106,31 @@ std::string UrlMatcherWithBypass::PartitionMapKey(std::string_view domain) {
 UrlMatcherWithBypass::UrlMatcherWithBypass() = default;
 UrlMatcherWithBypass::~UrlMatcherWithBypass() = default;
 
-void UrlMatcherWithBypass::AddDomainWithBypass(
-    std::string_view domain,
-    net::SchemeHostPortMatcher bypass_matcher,
-    bool include_subdomains) {
-  net::SchemeHostPortMatcher matcher;
-  AddRulesToMatcher(&matcher, domain, include_subdomains);
-
-  if (!matcher.rules().empty()) {
-    match_list_with_bypass_map_[PartitionMapKey(domain)].emplace_back(
-        std::make_pair(std::move(matcher), std::move(bypass_matcher)));
-  }
-}
-
 void UrlMatcherWithBypass::AddMaskedDomainListRules(
     const std::set<std::string>& domains,
-    const std::string& partition_key,
-    const masked_domain_list::ResourceOwner& resource_owner) {
-  net::SchemeHostPortMatcher matcher;
-  for (auto domain : domains) {
-    CHECK(PartitionMapKey(domain) == partition_key);
-    AddRulesToMatcher(&matcher, domain, !HasSubdomainCoverage(domain));
-  }
+    base::optional_ref<masked_domain_list::ResourceOwner> resource_owner) {
+  for (const auto& [partition_key, partitioned_domains] :
+       PartitionDomains(domains)) {
+    net::SchemeHostPortMatcher matcher;
+    for (auto domain : domains) {
+      AddRulesToMatcher(&matcher, domain, !HasSubdomainCoverage(domain));
+    }
 
-  if (!matcher.rules().empty()) {
-    match_list_with_bypass_map_[partition_key].emplace_back(
-        std::make_pair(std::move(matcher), BuildBypassMatcher(resource_owner)));
-  }
-}
+    if (!matcher.rules().empty()) {
+      net::SchemeHostPortMatcher bypass_matcher =
+          resource_owner.has_value()
+              ? BuildBypassMatcher(resource_owner.value())
+              : net::SchemeHostPortMatcher();
 
-void UrlMatcherWithBypass::AddMaskedDomainListRules(
-    std::string_view domain,
-    const masked_domain_list::ResourceOwner& resource_owner) {
-  // Only add rules for subdomains if the provided domain string doesn't support
-  // them.
-  AddDomainWithBypass(domain, BuildBypassMatcher(resource_owner),
-                      !HasSubdomainCoverage(domain));
+      match_list_with_bypass_map_[partition_key].emplace_back(
+          std::make_pair(std::move(matcher), std::move(bypass_matcher)));
+    }
+  }
 }
 
 void UrlMatcherWithBypass::AddRulesWithoutBypass(
-    const std::set<std::string>& domains,
-    const std::string& partition_key) {
-  net::SchemeHostPortMatcher matcher;
-  for (auto domain : domains) {
-    CHECK(PartitionMapKey(domain) == partition_key);
-    AddRulesToMatcher(&matcher, domain, !HasSubdomainCoverage(domain));
-  }
-
-  if (!matcher.rules().empty()) {
-    match_list_with_bypass_map_[partition_key].emplace_back(
-        std::make_pair(std::move(matcher), net::SchemeHostPortMatcher()));
-  }
+    const std::set<std::string>& domains) {
+  AddMaskedDomainListRules(domains, std::nullopt);
 }
 
 void UrlMatcherWithBypass::Clear() {
@@ -160,20 +145,15 @@ bool UrlMatcherWithBypass::IsPopulated() {
   return !match_list_with_bypass_map_.empty();
 }
 
-UrlMatcherWithBypass::MatchResult UrlMatcherWithBypass::Matches(
+bool UrlMatcherWithBypass::Matches(
     const GURL& request_url,
     const std::optional<net::SchemefulSite>& top_frame_site,
     bool skip_bypass_check) {
-  auto dvlog = [&](std::string_view message,
-                   const UrlMatcherWithBypass::MatchResult& match_result) {
-    std::string result_message = base::StrCat(
-        {" - matches: ", match_result.matches ? "true" : "false",
-         ", third-party: ", match_result.is_third_party ? "true" : "false"});
+  auto dvlog = [&](std::string_view message, bool matches) {
     DVLOG(3) << "UrlMatcherWithBypass::Matches(" << request_url << ", "
-             << top_frame_site.value() << ") - " << message << result_message;
+             << top_frame_site.value() << ") - " << message
+             << " - matches: " << (matches ? "true" : "false");
   };
-  // Result defaults to {matches = false, is_third_party = false}.
-  MatchResult result;
 
   if (!skip_bypass_check && !top_frame_site.has_value()) {
     NOTREACHED_NORETURN()
@@ -181,35 +161,35 @@ UrlMatcherWithBypass::MatchResult UrlMatcherWithBypass::Matches(
   }
 
   if (!IsPopulated()) {
-    dvlog("skipped (match list not populated)", result);
-    return result;
+    dvlog("skipped (match list not populated)", false);
+    return false;
   }
 
   net::SchemefulSite request_site(request_url);
-  result.is_third_party = skip_bypass_check || (request_site != top_frame_site);
-
   std::string resource_host_suffix = PartitionMapKey(request_url.host());
 
   if (!match_list_with_bypass_map_.contains(resource_host_suffix)) {
-    dvlog("no suffix match", result);
-    return result;
+    dvlog("no suffix match", false);
+    return false;
   }
 
   for (const auto& [matcher, bypass_matcher] :
        match_list_with_bypass_map_.at(resource_host_suffix)) {
     auto rule_result = matcher.Evaluate(request_url);
     if (rule_result == net::SchemeHostPortMatcherResult::kInclude) {
-      result.matches = true;
-      result.is_third_party =
-          skip_bypass_check ||
-          bypass_matcher.Evaluate(top_frame_site.value().GetURL()) ==
-              net::SchemeHostPortMatcherResult::kNoMatch;
-      break;
+      if (skip_bypass_check) {
+        dvlog("matched with skipped bypass check", true);
+        return true;
+      }
+      bool matches = bypass_matcher.Evaluate(top_frame_site->GetURL()) ==
+                     net::SchemeHostPortMatcherResult::kNoMatch;
+      dvlog("bypass_matcher.Matches", matches);
+      return matches;
     }
   }
 
-  dvlog("success", result);
-  return result;
+  dvlog("no request match", false);
+  return false;
 }
 
 }  // namespace network

@@ -9,6 +9,7 @@
 
 #include <memory>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -23,13 +24,13 @@
 #include "base/hash/md5.h"
 #include "base/i18n/file_util_icu.h"
 #include "base/path_service.h"
-#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/win/shortcut.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/shell_integration_win.h"
+#include "chrome/browser/shortcuts/platform_util_win.h"
 #include "chrome/browser/web_applications/os_integration/os_integration_test_override.h"
 #include "chrome/browser/web_applications/os_integration/web_app_shortcuts_menu_win.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
@@ -50,16 +51,7 @@ namespace {
 constexpr base::FilePath::CharType kIconChecksumFileExt[] =
     FILE_PATH_LITERAL(".ico.md5");
 
-constexpr base::FilePath::CharType kChromeProxyExecutable[] =
-    FILE_PATH_LITERAL("chrome_proxy.exe");
-
 }  // namespace
-
-base::FilePath GetChromeProxyPath() {
-  base::FilePath chrome_dir;
-  CHECK(base::PathService::Get(base::DIR_EXE, &chrome_dir));
-  return chrome_dir.Append(kChromeProxyExecutable);
-}
 
 namespace internals {
 namespace {
@@ -75,7 +67,7 @@ void GetImageCheckSum(const gfx::ImageFamily& image, base::MD5Digest* digest) {
        ++it) {
     SkBitmap bitmap = it->AsBitmap();
 
-    base::StringPiece image_data(
+    std::string_view image_data(
         reinterpret_cast<const char*>(bitmap.getPixels()),
         bitmap.computeByteSize());
     base::MD5Update(&md5_context, image_data);
@@ -161,7 +153,7 @@ bool CreateShortcutsInPaths(const base::FilePath& web_app_path,
     return false;
   }
 
-  base::FilePath chrome_proxy_path = GetChromeProxyPath();
+  base::FilePath chrome_proxy_path = shortcuts::GetChromeProxyPath();
 
   // Working directory.
   base::FilePath working_dir(chrome_proxy_path.DirName());
@@ -430,7 +422,7 @@ void GetShortcutLocationsAndDeleteShortcuts(
     return;
   }
 
-  // TODO(crbug.com/1400425): Figure out how to make this call not crash &
+  // TODO(crbug.com/40250252): Figure out how to make this call not crash &
   // incorporate unpin / pin methods in unit-tests.
   shell_integration::win::UnpinShortcuts(
       all_shortcuts, base::BindOnce(&DeleteShortcuts, all_shortcuts,
@@ -446,7 +438,7 @@ void CreateIconAndSetRelaunchDetails(const base::FilePath& web_app_path,
           shortcut_info.url, shortcut_info.app_id, shortcut_info.profile_path,
           "");
 
-  command_line.SetProgram(GetChromeProxyPath());
+  command_line.SetProgram(shortcuts::GetChromeProxyPath());
   ui::win::SetRelaunchDetailsForWindow(command_line.GetCommandLineString(),
                                        base::AsWString(shortcut_info.title),
                                        hwnd);
@@ -573,7 +565,7 @@ bool CreatePlatformShortcuts(const base::FilePath& web_app_path,
   bool pin_to_taskbar = false;
   // PinShortcutToTaskbar in unit-tests are not preferred as unpinning causes
   // crashes, so use the shortcut override for testing to not pin to taskbar.
-  // TODO(crbug.com/1400425): Figure out how to make this call not crash &
+  // TODO(crbug.com/40250252): Figure out how to make this call not crash &
   // incorporate unpin / pin methods in unit-tests.
   if (!test_override) {
     pin_to_taskbar =
@@ -804,32 +796,23 @@ std::vector<base::FilePath> GetShortcutPaths(
   struct {
     bool use_this_location;
     ShellUtil::ShortcutLocation location_id;
-    base::FilePath test_path;
   } locations[] = {
-      {creation_locations.on_desktop, ShellUtil::SHORTCUT_LOCATION_DESKTOP,
-       testing_shortcuts ? testing_shortcuts->desktop() : base::FilePath()},
+      {creation_locations.on_desktop, ShellUtil::SHORTCUT_LOCATION_DESKTOP},
       {creation_locations.applications_menu_location ==
            APP_MENU_LOCATION_SUBDIR_CHROMEAPPS,
-       ShellUtil::SHORTCUT_LOCATION_START_MENU_CHROME_APPS_DIR,
-       testing_shortcuts ? testing_shortcuts->application_menu()
-                         : base::FilePath()},
+       ShellUtil::SHORTCUT_LOCATION_START_MENU_CHROME_APPS_DIR},
       {// For some versions of Windows, `in_quick_launch_bar` indicates that we
        // are pinning to taskbar. This needs to be handled by callers.
        creation_locations.in_quick_launch_bar && CanPinShortcutToTaskbar(),
-       ShellUtil::SHORTCUT_LOCATION_QUICK_LAUNCH,
-       testing_shortcuts ? testing_shortcuts->quick_launch()
-                         : base::FilePath()},
-      {creation_locations.in_startup, ShellUtil::SHORTCUT_LOCATION_STARTUP,
-       testing_shortcuts ? testing_shortcuts->startup() : base::FilePath()}};
+       ShellUtil::SHORTCUT_LOCATION_QUICK_LAUNCH},
+      {creation_locations.in_startup, ShellUtil::SHORTCUT_LOCATION_STARTUP}};
 
   // Populate shortcut_paths.
   base::FilePath path;
   for (auto location : locations) {
     if (location.use_this_location) {
-      if (!location.test_path.empty()) {
-        shortcut_paths.push_back(location.test_path);
-      } else if (ShellUtil::GetShortcutPath(location.location_id,
-                                            ShellUtil::CURRENT_USER, &path)) {
+      if (ShellUtil::GetShortcutPath(location.location_id,
+                                     ShellUtil::CURRENT_USER, &path)) {
         shortcut_paths.push_back(path);
       }
     }

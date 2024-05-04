@@ -10,19 +10,16 @@
 
 #include <optional>
 #include <string>
+#include <string_view>
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/containers/span.h"
+#include "base/containers/span_writer.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/strings/string_piece.h"
 #include "net/base/net_export.h"
 #include "net/dns/dns_response_result_extractor.h"
 #include "net/dns/public/dns_protocol.h"
-
-namespace base {
-class BigEndianWriter;
-}  // namespace base
 
 namespace net {
 
@@ -59,7 +56,7 @@ struct NET_EXPORT_PRIVATE DnsResourceRecord {
   uint16_t klass = 0;
   uint32_t ttl = 0;
   // Points to the original response buffer or otherwise to |owned_rdata|.
-  base::StringPiece rdata;
+  std::string_view rdata;
   // Used to construct a DnsResponse from data. This field is empty if |rdata|
   // points to the response buffer.
   std::string owned_rdata;
@@ -219,7 +216,7 @@ class NET_EXPORT_PRIVATE DnsResponse {
   // used in cases where there is known to be exactly one question (e.g. because
   // that has been validated by `InitParse()`).
   uint16_t GetSingleQType() const;
-  base::StringPiece GetSingleDottedName() const;
+  std::string_view GetSingleDottedName() const;
 
   // Returns an iterator to the resource records in the answer section.
   // The iterator is valid only in the scope of the DnsResponse.
@@ -227,14 +224,14 @@ class NET_EXPORT_PRIVATE DnsResponse {
   DnsRecordParser Parser() const;
 
  private:
-  bool WriteHeader(base::BigEndianWriter* writer,
+  bool WriteHeader(base::SpanWriter<uint8_t>* writer,
                    const dns_protocol::Header& header);
-  bool WriteQuestion(base::BigEndianWriter* writer, const DnsQuery& query);
-  bool WriteRecord(base::BigEndianWriter* writer,
+  bool WriteQuestion(base::SpanWriter<uint8_t>* writer, const DnsQuery& query);
+  bool WriteRecord(base::SpanWriter<uint8_t>* writer,
                    const DnsResourceRecord& record,
                    bool validate_record,
                    bool validate_name_as_internet_hostname);
-  bool WriteAnswer(base::BigEndianWriter* writer,
+  bool WriteAnswer(base::SpanWriter<uint8_t>* writer,
                    const DnsResourceRecord& answer,
                    const std::optional<DnsQuery>& query,
                    bool validate_record,

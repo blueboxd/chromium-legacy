@@ -9,11 +9,14 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/ranges/algorithm.h"
 #include "chrome/browser/enterprise/browser_management/management_service_factory.h"
+#include "chrome/browser/enterprise/connectors/analysis/content_analysis_features.h"
 #include "chrome/browser/enterprise/connectors/connectors_service.h"
 #include "chrome/browser/enterprise/util/affiliation.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager.h"
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager_factory.h"
+#include "chrome/browser/safe_browsing/cloud_content_scanning/multipart_uploader.h"
+#include "chrome/browser/safe_browsing/cloud_content_scanning/resumable_uploader.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chromeos/components/mgs/managed_guest_session_utils.h"
 #include "components/policy/core/common/management/management_service.h"
@@ -28,7 +31,7 @@ namespace {
 
 // The command line flag to control the max amount of concurrent active
 // requests.
-// TODO(crbug.com/1191061): Tweak this number to an "optimal" value.
+// TODO(crbug.com/40174400): Tweak this number to an "optimal" value.
 constexpr char kMaxParallelActiveRequests[] = "wp-max-parallel-active-requests";
 constexpr int kDefaultMaxParallelActiveRequests = 5;
 
@@ -56,6 +59,15 @@ bool IsConsumerScanRequest(const CloudBinaryUploadService::Request& request) {
       return false;
   }
   return request.device_token().empty();
+}
+
+bool IsResumableUpload(const CloudBinaryUploadService::Request& request) {
+  // Currently resumable upload doesn't support paste. If one day we do, we
+  // should update the logic here as well.
+  return !IsConsumerScanRequest(request) &&
+         request.content_analysis_request().analysis_connector() !=
+             enterprise_connectors::AnalysisConnector::BULK_DATA_ENTRY &&
+         enterprise_connectors::IsResumableUploadEnabled();
 }
 
 net::NetworkTrafficAnnotationTag GetTrafficAnnotationTag(bool is_app) {
@@ -186,6 +198,13 @@ bool CanUseAccessToken(const BinaryUploadService::Request& request,
   return request.per_profile_request();
 }
 
+bool IgnoreErrorResultForResumableUpload(BinaryUploadService::Request* request,
+                                         BinaryUploadService::Result result) {
+  return IsResumableUpload(*request) &&
+         (result == BinaryUploadService::Result::FILE_TOO_LARGE ||
+          result == BinaryUploadService::Result::FILE_ENCRYPTED);
+}
+
 }  // namespace
 
 // static
@@ -282,7 +301,8 @@ void CloudBinaryUploadService::MaybeAcknowledge(std::unique_ptr<Ack> ack) {
 void CloudBinaryUploadService::MaybeCancelRequests(
     std::unique_ptr<CancelRequests> cancel) {
   // Nothing to do for cloud upload service.
-  // TODO(1374944): Might consider canceling requests in `request_queue_`.
+  // TODO(crbug.com/40242713): Might consider canceling requests in
+  // `request_queue_`.
 }
 
 base::WeakPtr<BinaryUploadService> CloudBinaryUploadService::AsWeakPtr() {
@@ -294,7 +314,7 @@ void CloudBinaryUploadService::MaybeUploadForDeepScanningCallback(
     bool authorized) {
   // Ignore the request if the browser cannot upload data.
   if (!authorized) {
-    // TODO(crbug/1028133): Add extra logic to handle UX for non-authorized
+    // TODO(crbug.com/40660637): Add extra logic to handle UX for non-authorized
     // users.
     request->FinishRequest(Result::UNAUTHORIZED,
                            enterprise_connectors::ContentAnalysisResponse());
@@ -487,9 +507,16 @@ void CloudBinaryUploadService::OnGetRequestData(Request::Id request_id,
   }
 
   if (result != Result::SUCCESS) {
-    FinishRequest(request, result,
-                  enterprise_connectors::ContentAnalysisResponse());
-    return;
+    if (!IgnoreErrorResultForResumableUpload(request, result)) {
+      FinishRequest(request, result,
+                    enterprise_connectors::ContentAnalysisResponse());
+      return;
+    }
+
+    // If the error is not unrecoverable, chrome can attempt to sent the
+    // file contents to the content analysis service.  Let the service know that
+    // a metadata-only analysis is required.
+    request->set_require_metadata_verdict(true);
   }
 
   if (!request->IsAuthRequest() && data.size == 0) {
@@ -512,19 +539,34 @@ void CloudBinaryUploadService::OnGetRequestData(Request::Id request_id,
       GetTrafficAnnotationTag(IsConsumerScanRequest(*request));
   auto callback = base::BindOnce(&CloudBinaryUploadService::OnUploadComplete,
                                  weakptr_factory_.GetWeakPtr(), request_id);
-  std::unique_ptr<MultipartUploadRequest> upload_request;
+  std::unique_ptr<ConnectorUploadRequest> upload_request;
   if (request->IsAuthRequest() || !data.contents.empty()) {
     upload_request = MultipartUploadRequest::CreateStringRequest(
         url_loader_factory_, std::move(url), metadata, data.contents,
         std::move(traffic_annotation), std::move(callback));
   } else if (!data.path.empty()) {
-    upload_request = MultipartUploadRequest::CreateFileRequest(
-        url_loader_factory_, std::move(url), metadata, data.path, data.size,
-        std::move(traffic_annotation), std::move(callback));
+    upload_request =
+        IsResumableUpload(*request)
+            ? ResumableUploadRequest::CreateFileRequest(
+                  url_loader_factory_, std::move(url), metadata, result,
+                  data.path, data.size, std::move(traffic_annotation),
+                  std::move(callback))
+            : MultipartUploadRequest::CreateFileRequest(
+                  url_loader_factory_, std::move(url), metadata, data.path,
+                  data.size, std::move(traffic_annotation),
+                  std::move(callback));
+
   } else if (data.page.IsValid()) {
-    upload_request = MultipartUploadRequest::CreatePageRequest(
-        url_loader_factory_, std::move(url), metadata, std::move(data.page),
-        std::move(traffic_annotation), std::move(callback));
+    upload_request =
+        IsResumableUpload(*request)
+            ? ResumableUploadRequest::CreatePageRequest(
+                  url_loader_factory_, std::move(url), metadata, result,
+                  std::move(data.page), std::move(traffic_annotation),
+                  std::move(callback))
+            : MultipartUploadRequest::CreatePageRequest(
+                  url_loader_factory_, std::move(url), metadata,
+                  std::move(data.page), std::move(traffic_annotation),
+                  std::move(callback));
   } else {
     NOTREACHED();
     FinishRequest(request, Result::UNKNOWN,
@@ -535,7 +577,7 @@ void CloudBinaryUploadService::OnGetRequestData(Request::Id request_id,
 
   WebUIInfoSingleton::GetInstance()->AddToDeepScanRequests(
       request->per_profile_request(), request->access_token(),
-      request->content_analysis_request());
+      upload_request->GetUploadInfo(), request->content_analysis_request());
 
   // |request| might have been deleted by the call to Start() in tests, so don't
   // dereference it afterwards.
@@ -571,8 +613,6 @@ void CloudBinaryUploadService::OnUploadComplete(
                   enterprise_connectors::ContentAnalysisResponse());
     return;
   }
-
-  active_uploads_.erase(request_id);
 
   // Synchronous scans can return results in the initial response proto, so
   // check for those.
@@ -639,11 +679,15 @@ void CloudBinaryUploadService::FinishRequest(
     Result result,
     enterprise_connectors::ContentAnalysisResponse response) {
   RecordRequestMetrics(request->id(), result, response);
+  std::string upload_info = "None";
+  if (active_uploads_.count(request->id()) && !request->IsAuthRequest()) {
+    upload_info = active_uploads_[request->id()]->GetUploadInfo();
+  }
 
   // We add the request here in case we never actually uploaded anything, so
   // it wasn't added in OnGetRequestData
   WebUIInfoSingleton::GetInstance()->AddToDeepScanRequests(
-      request->per_profile_request(), request->access_token(),
+      request->per_profile_request(), request->access_token(), upload_info,
       request->content_analysis_request());
   WebUIInfoSingleton::GetInstance()->AddToDeepScanResponses(
       active_tokens_[request->id()], ResultToString(result), response);
@@ -744,17 +788,21 @@ void CloudBinaryUploadService::RecordRequestMetrics(Request::Id request_id,
       return;
     }
 
-    // TODO(b/322006583): Add logic so this can be "Resumable" depending on the
-    // request that was made.
-    std::string protocol = "Multipart";
+    std::string protocol =
+        IsResumableUpload(*request) ? "Resumable" : "Multipart";
 
     // Example values:
     //   "Enterprise.ResumableRequest.Print.Duration
     //   "Enterprise.MultipartRequest.Text.Duration
+    //   "Enterprise.ResumableRequest.File.Result
     base::UmaHistogramCustomTimes(
         base::StrCat(
             {"Enterprise.", protocol, "Request.", request_type, ".Duration"}),
         duration, base::Milliseconds(1), base::Minutes(6), 50);
+    base::UmaHistogramEnumeration(
+        base::StrCat(
+            {"Enterprise.", protocol, "Request.", request_type, ".Result"}),
+        result);
   }
 }
 
@@ -861,7 +909,7 @@ void CloudBinaryUploadService::IsAuthorized(
       // differently, as it cannot rely on the GAIA ID to determine whether or
       // not the user has the BCE license.
       enterprise_connectors::ClientMetadata client_metadata;
-      client_metadata.mutable_profile()->set_is_chrome_os_managed_guest_session(
+      client_metadata.set_is_chrome_os_managed_guest_session(
           chromeos::IsManagedGuestSession());
       request->set_client_metadata(std::move(client_metadata));
 #endif

@@ -13,18 +13,16 @@
 #import "components/affiliations/core/browser/affiliation_service.h"
 #import "components/keyed_service/core/service_access_type.h"
 #import "components/keyed_service/ios/browser_state_dependency_manager.h"
-#import "components/password_manager/core/browser/affiliation/affiliations_prefetcher.h"
+#import "components/password_manager/core/browser/affiliation/password_affiliation_source_adapter.h"
 #import "components/password_manager/core/browser/password_store/login_database.h"
 #import "components/password_manager/core/browser/password_store/password_store_built_in_backend.h"
 #import "components/password_manager/core/browser/password_store_factory_util.h"
 #import "components/password_manager/core/common/password_manager_features.h"
 #import "components/signin/public/identity_manager/tribool.h"
-#import "components/sync/base/features.h"
 #import "components/sync/model/wipe_model_upon_sync_disabled_behavior.h"
 #import "components/sync/service/sync_service.h"
 #import "ios/chrome/browser/affiliations/model/ios_chrome_affiliation_service_factory.h"
 #import "ios/chrome/browser/passwords/model/credentials_cleaner_runner_factory.h"
-#import "ios/chrome/browser/passwords/model/ios_chrome_affiliations_prefetcher_factory.h"
 #import "ios/chrome/browser/passwords/model/ios_password_store_utils.h"
 #import "ios/chrome/browser/shared/model/browser_state/browser_state_otr_helper.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
@@ -37,12 +35,6 @@ namespace {
 using affiliations::AffiliationService;
 using password_manager::AffiliatedMatchHelper;
 
-// Kill switch as an extra safeguard, in addition to the guarding behind
-// syncer::kReplaceSyncPromosWithSignInPromos.
-BASE_FEATURE(kAllowPasswordsModelWipingForFirstSessionAfterDeviceRestore,
-             "AllowPasswordsModelWipingForFirstSessionAfterDeviceRestore",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Returns what the profile store should do when sync is disabled, that is,
 // whether passwords might need to be deleted.
 syncer::WipeModelUponSyncDisabledBehavior
@@ -51,13 +43,7 @@ GetWipeModelUponSyncDisabledBehaviorForProfileStore() {
     return syncer::WipeModelUponSyncDisabledBehavior::kNever;
   }
 
-  return (base::FeatureList::IsEnabled(
-              kAllowPasswordsModelWipingForFirstSessionAfterDeviceRestore) &&
-          base::FeatureList::IsEnabled(
-              syncer::kReplaceSyncPromosWithSignInPromos))
-             ? syncer::WipeModelUponSyncDisabledBehavior::
-                   kOnceIfTrackingMetadata
-             : syncer::WipeModelUponSyncDisabledBehavior::kNever;
+  return syncer::WipeModelUponSyncDisabledBehavior::kOnceIfTrackingMetadata;
 }
 
 }  // namespace
@@ -92,7 +78,6 @@ IOSChromeProfilePasswordStoreFactory::IOSChromeProfilePasswordStoreFactory()
           BrowserStateDependencyManager::GetInstance()) {
   DependsOn(CredentialsCleanerRunnerFactory::GetInstance());
   DependsOn(IOSChromeAffiliationServiceFactory::GetInstance());
-  DependsOn(IOSChromeAffiliationsPrefetcherFactory::GetInstance());
 }
 
 IOSChromeProfilePasswordStoreFactory::~IOSChromeProfilePasswordStoreFactory() {}
@@ -116,6 +101,9 @@ IOSChromeProfilePasswordStoreFactory::BuildServiceInstanceFor(
       IOSChromeAffiliationServiceFactory::GetForBrowserState(context);
   std::unique_ptr<AffiliatedMatchHelper> affiliated_match_helper =
       std::make_unique<AffiliatedMatchHelper>(affiliation_service);
+  std::unique_ptr<password_manager::PasswordAffiliationSourceAdapter>
+      password_affiliation_adapter = std::make_unique<
+          password_manager::PasswordAffiliationSourceAdapter>();
 
   store->Init(ChromeBrowserState::FromBrowserState(context)->GetPrefs(),
               std::move(affiliated_match_helper));
@@ -129,8 +117,8 @@ IOSChromeProfilePasswordStoreFactory::BuildServiceInstanceFor(
         ChromeBrowserState::FromBrowserState(context));
   }
 
-  IOSChromeAffiliationsPrefetcherFactory::GetForBrowserState(context)
-      ->RegisterPasswordStore(store.get());
+  password_affiliation_adapter->RegisterPasswordStore(store.get());
+  affiliation_service->RegisterSource(std::move(password_affiliation_adapter));
   return store;
 }
 

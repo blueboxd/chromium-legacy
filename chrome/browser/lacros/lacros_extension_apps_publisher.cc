@@ -288,7 +288,7 @@ class LacrosExtensionAppsPublisher::ProfileTracker
     app->name = extension->name();
     app->short_name = extension->short_name();
 
-    // TODO(crbug.com/1367337): Work out how pinning interacts with Lacros
+    // TODO(crbug.com/40240007): Work out how pinning interacts with Lacros
     // multi-profile support once there is a product decision on what that looks
     // like.
     app->policy_ids = {extension->id()};
@@ -406,7 +406,7 @@ void LacrosExtensionAppsPublisher::Initialize() {
   profile_manager_observation_.Observe(g_browser_process->profile_manager());
   auto profiles = g_browser_process->profile_manager()->GetLoadedProfiles();
   for (auto* profile : profiles) {
-    // TODO(https://crbug.com/1254894): The app id is not stable for secondary
+    // TODO(crbug.com/40199791): The app id is not stable for secondary
     // profiles and cannot be stored in sync. Thus, the app cannot be published
     // at all.
     if (!profile->IsMainProfile())
@@ -482,7 +482,7 @@ void LacrosExtensionAppsPublisher::OnAppWindowRemoved(
 }
 
 void LacrosExtensionAppsPublisher::OnProfileAdded(Profile* profile) {
-  // TODO(https://crbug.com/1254894): The app id is not stable for secondary
+  // TODO(crbug.com/40199791): The app id is not stable for secondary
   // profiles and cannot be stored in sync. Thus, the app cannot be published
   // at all.
   if (!profile->IsMainProfile())

@@ -208,7 +208,7 @@ class POLICY_EXPORT DeviceManagementService {
       /* TYPE_REQUEST_LICENSE_TYPES = 16, */
       /*Deprecated, CloudPolicyClient no longer uses it.
         TYPE_UPLOAD_APP_INSTALL_REPORT = 17,*/
-      TYPE_TOKEN_ENROLLMENT = 18,
+      TYPE_BROWSER_REGISTRATION = 18,
       TYPE_CHROME_DESKTOP_REPORT = 19,
       TYPE_INITIAL_ENROLLMENT_STATE_RETRIEVAL = 20,
       TYPE_UPLOAD_POLICY_VALIDATION_REPORT = 21,
@@ -223,6 +223,7 @@ class POLICY_EXPORT DeviceManagementService {
       TYPE_BROWSER_UPLOAD_PUBLIC_KEY = 30,
       TYPE_CHROME_PROFILE_REPORT = 31,
       TYPE_OIDC_REGISTRATION = 32,
+      TYPE_TOKEN_BASED_DEVICE_REGISTRATION = 33,
     };
 
     // The set of HTTP query parameters of the request.

@@ -635,7 +635,7 @@ public class ChromeTabUtils {
         final TabModelObserver observer =
                 new TabModelObserver() {
                     @Override
-                    public void willCloseTab(Tab tab, boolean animate, boolean didCloseAlone) {
+                    public void willCloseTab(Tab tab, boolean didCloseAlone) {
                         closeCallback.notifyCalled();
                     }
                 };
@@ -719,8 +719,8 @@ public class ChromeTabUtils {
 
     /**
      * @deprecated Transitory method, use {@link #closeAllTabs(Instrumentation,
-     *         ObservableSupplier<TabModelSelector>)} instead.
-     * TODO(crbug.com/1233155): Remove this after the usages are migrated.
+     *     ObservableSupplier<TabModelSelector>)} instead. TODO(crbug.com/40191386): Remove this
+     *     after the usages are migrated.
      */
     public static void closeAllTabs(
             Instrumentation instrumentation, final ChromeTabbedActivity activity) {

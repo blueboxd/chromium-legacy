@@ -8,7 +8,7 @@ import("//components/safe_browsing/buildflags.gni")
 # NOTE: This target is separated from :browser as
 # //components/safe_browsing/content/browser/web_ui, which :browser depends on, depends
 # on this.
-# TODO(crbug.com/1216341): Consider folding all of three these together into
+# TODO(crbug.com/40770425): Consider folding all of three these together into
 # :browser, along with the other browser process code in
 # //components/safe_browsing/content.
 source_set("safe_browsing_service") {
@@ -29,7 +29,7 @@ source_set("safe_browsing_service") {
 # NOTE: This target is separated from :browser as
 # //components/safe_browsing/content/browser/triggers, which this depends on, depends
 # on :browser.
-# TODO(crbug.com/1216341): Consider folding all of three these together into
+# TODO(crbug.com/40770425): Consider folding all of three these together into
 # :browser, along with the other browser process code in
 # //components/safe_browsing/content.
 if (safe_browsing_mode > 0) {
@@ -62,6 +62,7 @@ if (safe_browsing_mode > 0) {
       "//components/security_interstitials/core",
       "//components/security_interstitials/core:unsafe_resource",
       "//content/public/browser",
+      "//services/metrics/public/cpp:ukm_builders",
     ]
   }
 }
@@ -116,12 +117,12 @@ source_set("browser") {
     "//components/safe_browsing/core/browser:verdict_cache_manager",
     "//components/safe_browsing/core/browser/db:database_manager",
     "//components/safe_browsing/core/browser/hashprefix_realtime:hash_realtime_service",
-    "//components/safe_browsing/core/browser/hashprefix_realtime:hash_realtime_utils",
     "//components/safe_browsing/core/browser/realtime:policy_engine",
     "//components/safe_browsing/core/browser/realtime:url_lookup_service_base",
     "//components/safe_browsing/core/browser/utils",
     "//components/safe_browsing/core/common:common",
     "//components/safe_browsing/core/common:safe_browsing_prefs",
+    "//components/safe_browsing/core/common/hashprefix_realtime:hash_realtime_utils",
     "//components/safe_browsing/core/common/proto:csd_proto",
     "//components/safe_browsing/core/common/proto:realtimeapi_proto",
     "//components/security_interstitials/content:security_interstitial_page",
@@ -203,7 +204,8 @@ source_set("unit_tests") {
       "//components/prefs",
       "//components/prefs:test_support",
       "//components/safe_browsing/content/browser:safe_browsing_blocking_page",
-      "//components/safe_browsing/core/browser/hashprefix_realtime:hash_realtime_utils",
+      "//components/safe_browsing/core/browser/realtime:test_support",
+      "//components/safe_browsing/core/common/hashprefix_realtime:hash_realtime_utils",
       "//components/security_interstitials/content:security_interstitial_page",
       "//components/security_interstitials/core",
       "//net/traffic_annotation:test_support",
@@ -295,10 +297,12 @@ source_set("client_side_detection") {
     "//components/safe_browsing/core/common",
     "//components/safe_browsing/core/common:safe_browsing_prefs",
     "//components/safe_browsing/core/common/fbs:client_model",
+    "//components/safe_browsing/core/common/proto:csd_proto",
     "//components/security_interstitials/content:security_interstitial_page",
     "//components/variations",
     "//components/zoom:zoom",
     "//content/public/browser",
+    "//mojo/public/mojom/base:protobuf_support",
   ]
 
   if (safe_browsing_mode != 0) {

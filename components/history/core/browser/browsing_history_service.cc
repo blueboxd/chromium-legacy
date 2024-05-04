@@ -262,19 +262,23 @@ void BrowsingHistoryService::QueryHistoryInternal(
 
   WebHistoryService* web_history = driver_->GetWebHistoryService();
   if (web_history) {
-    if (state->remote_results.size() < desired_count &&
-        state->remote_status != REACHED_BEGINNING) {
-      // Start a timer with timeout before we make the actual query, otherwise
-      // tests get confused when completion callback is run synchronously.
-      web_history_timer_->Start(
-          FROM_HERE, base::Seconds(kWebHistoryTimeoutSeconds),
-          base::BindOnce(&BrowsingHistoryService::WebHistoryTimeout,
-                         weak_factory_.GetWeakPtr(), state));
+    // Run WebHistory query for full history. App-specific history uses the
+    // results from the local database only, since the legacy json API service
+    // WebHistory relies on can't be updated to process app_id.
+    if (state->original_options.app_id == kNoAppIdFilter) {
+      if (state->remote_results.size() < desired_count &&
+          state->remote_status != REACHED_BEGINNING) {
+        // Start a timer with timeout before we make the actual query, otherwise
+        // tests get confused when completion callback is run synchronously.
+        web_history_timer_->Start(
+            FROM_HERE, base::Seconds(kWebHistoryTimeoutSeconds),
+            base::BindOnce(&BrowsingHistoryService::WebHistoryTimeout,
+                           weak_factory_.GetWeakPtr(), state));
 
-      net::PartialNetworkTrafficAnnotationTag partial_traffic_annotation =
-          net::DefinePartialNetworkTrafficAnnotation("web_history_query",
-                                                     "web_history_service",
-                                                     R"(
+        net::PartialNetworkTrafficAnnotationTag partial_traffic_annotation =
+            net::DefinePartialNetworkTrafficAnnotation("web_history_query",
+                                                       "web_history_service",
+                                                       R"(
             semantics {
               description:
                 "If history sync is enabled, this downloads the synced "
@@ -298,22 +302,23 @@ void BrowsingHistoryService::QueryHistoryInternal(
                 }
               }
             })");
-      should_return_results_immediately = false;
-      web_history_request_ = web_history->QueryHistory(
-          state->search_text,
-          OptionsWithEndTime(state->original_options,
-                             state->remote_end_time_for_continuation),
-          base::BindOnce(&BrowsingHistoryService::WebHistoryQueryComplete,
-                         weak_factory_.GetWeakPtr(), state, clock_->Now()),
-          partial_traffic_annotation);
-
-      // Test the existence of other forms of browsing history.
-      driver_->ShouldShowNoticeAboutOtherFormsOfBrowsingHistory(
-          sync_service_, web_history,
-          base::BindOnce(
-              &BrowsingHistoryService::OtherFormsOfBrowsingHistoryQueryComplete,
-              weak_factory_.GetWeakPtr()));
+        should_return_results_immediately = false;
+        web_history_request_ = web_history->QueryHistory(
+            state->search_text,
+            OptionsWithEndTime(state->original_options,
+                               state->remote_end_time_for_continuation),
+            base::BindOnce(&BrowsingHistoryService::WebHistoryQueryComplete,
+                           weak_factory_.GetWeakPtr(), state, clock_->Now()),
+            partial_traffic_annotation);
+      }
     }
+    // Test the existence of other forms of browsing history. Performed for both
+    // full/app-specific history to display the privacy disclaimer on UI.
+    driver_->ShouldShowNoticeAboutOtherFormsOfBrowsingHistory(
+        sync_service_, web_history,
+        base::BindOnce(
+            &BrowsingHistoryService::OtherFormsOfBrowsingHistoryQueryComplete,
+            weak_factory_.GetWeakPtr()));
   } else {
     state->remote_status = NO_DEPENDENCY;
     // The notice could not have been shown, because there is no web history.
@@ -327,6 +332,13 @@ void BrowsingHistoryService::QueryHistoryInternal(
   if (should_return_results_immediately) {
     ReturnResultsToDriver(std::move(state));
   }
+}
+
+void BrowsingHistoryService::GetAllAppIds() {
+  local_history_->GetAllAppIds(
+      base::BindOnce(&BrowsingHistoryService::OnGetAllAppIds,
+                     weak_factory_.GetWeakPtr()),
+      &query_task_tracker_);
 }
 
 void BrowsingHistoryService::GetLastVisitToHostBeforeRecentNavigations(
@@ -606,6 +618,10 @@ void BrowsingHistoryService::QueryComplete(
     ReturnResultsToDriver(std::move(state));
 }
 
+void BrowsingHistoryService::OnGetAllAppIds(GetAllAppIdsResult result) {
+  driver_->OnGetAllAppIds(result.app_ids);
+}
+
 void BrowsingHistoryService::ReturnResultsToDriver(
     scoped_refptr<QueryHistoryState> state) {
   std::vector<HistoryEntry> results;
@@ -789,8 +805,9 @@ static bool DeletionsDiffer(const URLRows& deleted_rows,
   return false;
 }
 
-void BrowsingHistoryService::OnURLsDeleted(HistoryService* history_service,
-                                           const DeletionInfo& deletion_info) {
+void BrowsingHistoryService::OnHistoryDeletions(
+    HistoryService* history_service,
+    const DeletionInfo& deletion_info) {
   if (deletion_info.IsAllHistory() ||
       DeletionsDiffer(deletion_info.deleted_rows(), urls_to_be_deleted_))
     driver_->HistoryDeleted();

@@ -128,6 +128,11 @@ bool ShouldApplyRoundedCorner(OverlayCandidate& candidate,
   return QuadRoundedCornersBoundsIntersects(quad, target_rect);
 }
 
+bool RequiresBlendingForReasonOtherThanRoundedCorners(const DrawQuad* quad) {
+  return quad->ShouldDrawWithBlendingForReasonOtherThanMaskFilter() ||
+         quad->shared_quad_state->mask_filter_info.HasGradientMask();
+}
+
 }  // namespace
 
 OverlayCandidateFactory::OverlayContext::OverlayContext() = default;
@@ -199,27 +204,12 @@ OverlayCandidate::CandidateStatus OverlayCandidateFactory::FromDrawQuad(
       break;
   }
 
-  candidate.has_mask_filter =
-      !quad->shared_quad_state->mask_filter_info.IsEmpty();
-
-  // Conditionally set the rounded corners once the candidate's |display_rect|
-  // is known.
-  // TODO(https://crbug.com/1462171): Consider moving this code to
-  // FromDrawQuadResource() that covers all of delegated compositing.
-  if (context_.disable_wire_size_optimization ||
-      ShouldApplyRoundedCorner(candidate, quad)) {
-    if (!context_.supports_mask_filter) {
-      return CandidateStatus::kFailMaskFilterNotSupported;
-    }
-    candidate.rounded_corners = sqs->mask_filter_info.rounded_corner_bounds();
-  }
-
   return status;
 }
 
 OverlayCandidateFactory::OverlayCandidateFactory(
     const AggregatedRenderPass* render_pass,
-    DisplayResourceProvider* resource_provider,
+    const DisplayResourceProvider* resource_provider,
     const SurfaceDamageRectList* surface_damage_rect_list,
     const SkM44* output_color_matrix,
     const gfx::RectF primary_rect,
@@ -237,7 +227,7 @@ OverlayCandidateFactory::OverlayCandidateFactory(
 
   has_custom_color_matrix_ = *output_color_matrix != SkM44();
 
-  // TODO(crbug.com/1323002): Replace this set with a simple ordered linear
+  // TODO(crbug.com/40224514): Replace this set with a simple ordered linear
   // search when this bug is resolved.
   base::flat_set<size_t> indices_with_quad_damage;
   for (auto* sqs : render_pass_->shared_quad_state_list) {
@@ -420,7 +410,7 @@ OverlayCandidate::CandidateStatus OverlayCandidateFactory::FromDrawQuadResource(
         context_.supports_arbitrary_transform ||
         absl::holds_alternative<gfx::OverlayTransform>(candidate.transform);
     // Out of window clipping is enabled on Lacros only when it is supported.
-    // TODO(crbug.com/1385509): Remove the condition on `quad_within_window`
+    // TODO(crbug.com/40246811): Remove the condition on `quad_within_window`
     // when M117 becomes widely supported.
     bool can_delegate_clipping =
         context_.supports_clip_rect &&
@@ -453,6 +443,18 @@ OverlayCandidate::CandidateStatus OverlayCandidateFactory::FromDrawQuadResource(
         return status;
       }
     }
+  }
+
+  candidate.has_mask_filter = !sqs->mask_filter_info.IsEmpty();
+
+  // Conditionally set the rounded corners once the candidate's |display_rect|
+  // is known.
+  if (context_.disable_wire_size_optimization ||
+      ShouldApplyRoundedCorner(candidate, quad)) {
+    if (!context_.supports_mask_filter) {
+      return CandidateStatus::kFailMaskFilterNotSupported;
+    }
+    candidate.rounded_corners = sqs->mask_filter_info.rounded_corner_bounds();
   }
 
   return CandidateStatus::kSuccess;
@@ -495,7 +497,7 @@ OverlayCandidate::CandidateStatus OverlayCandidateFactory::DoGeometricClipping(
     clip_to_apply.Intersect(gfx::RectF(*candidate.clip_rect));
   }
 
-  // TODO(https://crbug.com/1300552) : Tile quads can overlay other quads
+  // TODO(crbug.com/40216317) : Tile quads can overlay other quads
   // and the window by one pixel. Exo does not yet clip these quads so we
   // need to clip here with the |primary_rect|.
   clip_to_apply.Intersect(primary_rect_);
@@ -647,7 +649,7 @@ OverlayCandidate::CandidateStatus OverlayCandidateFactory::FromTextureQuad(
     candidate.color = quad->background_color;
   } else if (quad->background_color != SkColors::kTransparent &&
              (quad->background_color != SkColors::kBlack ||
-              quad->ShouldDrawWithBlending())) {
+              RequiresBlendingForReasonOtherThanRoundedCorners(quad))) {
     // The condition above is very specific to the implementation of DRM/KMS
     // scanout. An opaque plane with buffer that has buffer element component
     // alpha will default black for the blend. Basically we can simulate a black
@@ -680,18 +682,15 @@ OverlayCandidate::CandidateStatus OverlayCandidateFactory::FromTextureQuad(
     }
 
 #if BUILDFLAG(IS_ANDROID)
+    candidate.is_video_in_surface_view =
+        quad->is_stream_video &&
+        !resource_provider_->IsBackedBySurfaceTexture(quad->resource_id());
     if (quad->is_stream_video) {
       // StreamVideoDrawQuad used to set the resource_size_in_pixels directly
       // from the quad rather than from the resource.
       candidate.resource_size_in_pixels = quad->resource_size_in_pixels();
-      candidate.is_backed_by_surface_texture =
-          resource_provider_->IsBackedBySurfaceTexture(quad->resource_id());
     }
 #endif
-
-    // SkiaRenderer requires overlays to be backed by SharedImages.
-    if (!candidate.mailbox.IsSharedImage())
-      return CandidateStatus::kFailNotSharedImage;
 
     candidate.has_rounded_display_masks =
         !quad->rounded_display_masks_info.IsEmpty();
@@ -725,6 +724,33 @@ void OverlayCandidateFactory::HandleClipAndSubsampling(
   // when there is an arbitrary transform between the two because the transform
   // may not preserve axis alignment.
   DCHECK(absl::holds_alternative<gfx::OverlayTransform>(candidate.transform));
+
+  // Candidates that need detiling have a UV rect that indicates the
+  // relationship between the visible rect and the backing buffer dimensions
+  // (coded size). This rect is calculated assuming no rotation, so we need to
+  // rotate it before applying our own clipping.
+  if (candidate.needs_detiling &&
+      absl::holds_alternative<gfx::OverlayTransform>(candidate.transform)) {
+    switch (absl::get<gfx::OverlayTransform>(candidate.transform)) {
+      case gfx::OVERLAY_TRANSFORM_ROTATE_CLOCKWISE_90:
+        candidate.uv_rect =
+            gfx::RectF(1.0f - candidate.uv_rect.height(), candidate.uv_rect.x(),
+                       candidate.uv_rect.height(), candidate.uv_rect.width());
+        break;
+      case gfx::OVERLAY_TRANSFORM_ROTATE_CLOCKWISE_180:
+        candidate.uv_rect = gfx::RectF(
+            1.0f - candidate.uv_rect.width(), 1.0f - candidate.uv_rect.height(),
+            candidate.uv_rect.width(), candidate.uv_rect.height());
+        break;
+      case gfx::OVERLAY_TRANSFORM_ROTATE_CLOCKWISE_270:
+        candidate.uv_rect =
+            gfx::RectF(candidate.uv_rect.y(), 1.0f - candidate.uv_rect.width(),
+                       candidate.uv_rect.height(), candidate.uv_rect.width());
+        break;
+      default:
+        break;
+    }
+  }
 
   // Calculate |uv_rect| of |clip_rect| in |display_rect|
   // TODO(rivr): Handle candidates with an overlay transform applied.

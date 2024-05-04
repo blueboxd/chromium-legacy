@@ -1749,4 +1749,317 @@ TEST_F(ResourceFetcherTest,
   ASSERT_EQ(observer->GetLastRequest(), std::nullopt);
 }
 
+class DeferUnusedPreloadResourceFetcherTest : public ResourceFetcherTest {
+ public:
+  DeferUnusedPreloadResourceFetcherTest() {
+    scoped_feature_list_.InitWithFeaturesAndParameters(
+        {{features::kLCPPDeferUnusedPreload,
+          {{features::kLcppDeferUnusedPreloadTiming.name, "post_task"}}}},
+        {});
+  }
+
+  ResourceFetcher* CreateFetcher() {
+    MockFetchContext* context = MakeGarbageCollected<MockFetchContext>();
+    context->SetPotentiallyUnusedPreload(potentially_unused_preloads_);
+
+    scoped_refptr<const SecurityOrigin> source_origin =
+        SecurityOrigin::CreateUniqueOpaque();
+    auto* fetcher = ResourceFetcherTest::CreateFetcher(
+        *MakeGarbageCollected<TestResourceFetcherProperties>(source_origin),
+        context);
+    fetcher->EnableDeferUnusedPreloadForTesting();
+    return fetcher;
+  }
+
+  const Vector<KURL>& potentially_unused_preloads() {
+    return potentially_unused_preloads_;
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+  const Vector<KURL> potentially_unused_preloads_{
+      KURL("http://127.0.0.1:8000/test.jpg"),
+      KURL("http://127.0.0.1:8000/test2.jpg"),
+      KURL("http://127.0.0.1:8000/test3.jpg")};
+};
+
+TEST_F(DeferUnusedPreloadResourceFetcherTest, IsPotentiallyUnusedPreload) {
+  ResourceFetcher* fetcher = CreateFetcher();
+  // A single preload request.
+  {
+    KURL url = potentially_unused_preloads()[0];
+    FetchParameters fetch_params =
+        FetchParameters::CreateForTest(ResourceRequest(url));
+    fetch_params.SetLinkPreload(/*is_link_preload=*/true);
+    ResourceResponse response(url);
+    response.SetHttpStatusCode(200);
+
+    platform_->GetURLLoaderMockFactory()->RegisterURL(
+        url, WrappedResourceResponse(response),
+        test::PlatformTestDataPath(kTestResourceFilename));
+
+    Resource* resource = MockResource::Fetch(fetch_params, fetcher, nullptr);
+    ASSERT_TRUE(resource);
+
+    // The resource loading is not started yet because it's delayed with the
+    // post task. On the other hand, it's stored in the memory cache at this
+    // timing.
+    platform_->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
+    EXPECT_FALSE(resource->IsLoaded());
+    EXPECT_TRUE(MemoryCache::Get()->Contains(resource));
+
+    static_cast<scheduler::FakeTaskRunner*>(fetcher->GetTaskRunner().get())
+        ->RunUntilIdle();
+    platform_->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
+    EXPECT_TRUE(resource->IsLoaded());
+    EXPECT_TRUE(MemoryCache::Get()->Contains(resource));
+  }
+
+  // A preload request is scheduled, then other preload requests to the same
+  // resource are passed to the fetcher.
+  {
+    KURL url = potentially_unused_preloads()[1];
+    FetchParameters fetch_params =
+        FetchParameters::CreateForTest(ResourceRequest(url));
+    fetch_params.SetLinkPreload(/*is_link_preload=*/true);
+
+    ResourceResponse response(url);
+    response.SetHttpStatusCode(200);
+
+    platform_->GetURLLoaderMockFactory()->RegisterURL(
+        url, WrappedResourceResponse(response),
+        test::PlatformTestDataPath(kTestResourceFilename));
+
+    Resource* resource = MockResource::Fetch(fetch_params, fetcher, nullptr);
+    ASSERT_TRUE(resource);
+
+    // The resource loading is not started yet.
+    platform_->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
+    EXPECT_FALSE(resource->IsLoaded());
+    EXPECT_TRUE(MemoryCache::Get()->Contains(resource));
+
+    // Handle another request with the link preload. This request is not sent,
+    // and the resource is the same one as the initial preload resource.
+    FetchParameters new_fetch_params =
+        FetchParameters::CreateForTest(ResourceRequest(url));
+    new_fetch_params.SetLinkPreload(/*is_link_preload=*/true);
+    Resource* new_resource =
+        MockResource::Fetch(new_fetch_params, fetcher, nullptr);
+    ASSERT_TRUE(new_resource);
+    EXPECT_FALSE(new_resource->IsLoaded());
+    ASSERT_EQ(new_resource, resource);
+
+    // Handle another request with the speculative preload. This request is not
+    // sent, and the resource is the same one as the initial preload resource.
+    FetchParameters another_new_fetch_params =
+        FetchParameters::CreateForTest(ResourceRequest(url));
+    another_new_fetch_params.SetSpeculativePreloadType(
+        FetchParameters::SpeculativePreloadType::kInDocument);
+    Resource* another_new_resource =
+        MockResource::Fetch(another_new_fetch_params, fetcher, nullptr);
+    ASSERT_TRUE(another_new_resource);
+    EXPECT_FALSE(another_new_resource->IsLoaded());
+    ASSERT_EQ(another_new_resource, resource);
+
+    static_cast<scheduler::FakeTaskRunner*>(fetcher->GetTaskRunner().get())
+        ->RunUntilIdle();
+    platform_->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
+    EXPECT_TRUE(new_resource->IsLoaded());
+  }
+
+  // A preload request is scheduled, then another non-preload request to the
+  // same resource is passed to the fetcher.
+  {
+    KURL url = potentially_unused_preloads()[2];
+    FetchParameters fetch_params =
+        FetchParameters::CreateForTest(ResourceRequest(url));
+    fetch_params.SetLinkPreload(/*is_link_preload=*/true);
+
+    ResourceResponse response(url);
+    response.SetHttpStatusCode(200);
+
+    platform_->GetURLLoaderMockFactory()->RegisterURL(
+        url, WrappedResourceResponse(response),
+        test::PlatformTestDataPath(kTestResourceFilename));
+
+    Resource* resource = MockResource::Fetch(fetch_params, fetcher, nullptr);
+    ASSERT_TRUE(resource);
+
+    // The resource loading is not started yet.
+    platform_->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
+    EXPECT_FALSE(resource->IsLoaded());
+    EXPECT_TRUE(MemoryCache::Get()->Contains(resource));
+
+    // Handle another request without preloading signals just like the normal
+    // resource request. |resource| is the same one as the initial preload
+    // resource, but the request is dispatched immediately.
+    FetchParameters new_fetch_params =
+        FetchParameters::CreateForTest(ResourceRequest(url));
+    Resource* new_resource =
+        MockResource::Fetch(new_fetch_params, fetcher, nullptr);
+    ASSERT_TRUE(new_resource);
+    ASSERT_EQ(new_resource, resource);
+
+    platform_->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
+    EXPECT_TRUE(new_resource->IsLoaded());
+
+    // Confirm if the scheduled task is processed.
+    static_cast<scheduler::FakeTaskRunner*>(fetcher->GetTaskRunner().get())
+        ->RunUntilIdle();
+  }
+}
+
+class DeferUnusedPreloadWithPreloadedReasonResourceFetcherTest
+    : public DeferUnusedPreloadResourceFetcherTest,
+      public testing::WithParamInterface<
+          features::LcppDeferUnusedPreloadPreloadedReason> {
+ public:
+  DeferUnusedPreloadWithPreloadedReasonResourceFetcherTest() {
+    scoped_feature_list_.InitWithFeaturesAndParameters(
+        {{features::kLCPPDeferUnusedPreload,
+          {{features::kLcppDeferUnusedPreloadPreloadedReason.name,
+            GetParamString()}}}},
+        {});
+  }
+
+  features::LcppDeferUnusedPreloadPreloadedReason PreloadedReason() {
+    return GetParam();
+  }
+
+  std::string GetParamString() {
+    switch (PreloadedReason()) {
+      case features::LcppDeferUnusedPreloadPreloadedReason::kAll:
+        return "all";
+      case features::LcppDeferUnusedPreloadPreloadedReason::kLinkPreloadOnly:
+        return "link_preload";
+      case features::LcppDeferUnusedPreloadPreloadedReason::
+          kBrowserSpeculativePreloadOnly:
+        return "speculative_preload";
+    }
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    DeferUnusedPreloadWithPreloadedReasonResourceFetcherTest,
+    testing::Values(
+        features::LcppDeferUnusedPreloadPreloadedReason::kAll,
+        features::LcppDeferUnusedPreloadPreloadedReason::kLinkPreloadOnly,
+        features::LcppDeferUnusedPreloadPreloadedReason::
+            kBrowserSpeculativePreloadOnly));
+
+TEST_P(DeferUnusedPreloadWithPreloadedReasonResourceFetcherTest, NotPreload) {
+  ResourceFetcher* fetcher = CreateFetcher();
+  fetcher->SetDeferUnusedPreloadPreloadedReasonForTesting(PreloadedReason());
+  KURL url = potentially_unused_preloads()[0];
+  FetchParameters fetch_params =
+      FetchParameters::CreateForTest(ResourceRequest(url));
+
+  fetch_params.SetLinkPreload(/*is_link_preload=*/false);
+  ASSERT_FALSE(fetch_params.IsLinkPreload());
+  ASSERT_FALSE(fetch_params.IsSpeculativePreload());
+
+  ResourceResponse response(url);
+  response.SetHttpStatusCode(200);
+
+  platform_->GetURLLoaderMockFactory()->RegisterURL(
+      url, WrappedResourceResponse(response),
+      test::PlatformTestDataPath(kTestResourceFilename));
+
+  Resource* resource = MockResource::Fetch(fetch_params, fetcher, nullptr);
+  ASSERT_TRUE(resource);
+
+  platform_->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
+  EXPECT_TRUE(resource->IsLoaded());
+  EXPECT_TRUE(MemoryCache::Get()->Contains(resource));
+}
+
+TEST_P(DeferUnusedPreloadWithPreloadedReasonResourceFetcherTest, LinkPreload) {
+  ResourceFetcher* fetcher = CreateFetcher();
+  fetcher->SetDeferUnusedPreloadPreloadedReasonForTesting(PreloadedReason());
+  KURL url = potentially_unused_preloads()[0];
+  FetchParameters fetch_params =
+      FetchParameters::CreateForTest(ResourceRequest(url));
+
+  fetch_params.SetLinkPreload(/*is_link_preload=*/true);
+  ASSERT_FALSE(fetch_params.IsSpeculativePreload());
+
+  ResourceResponse response(url);
+  response.SetHttpStatusCode(200);
+
+  platform_->GetURLLoaderMockFactory()->RegisterURL(
+      url, WrappedResourceResponse(response),
+      test::PlatformTestDataPath(kTestResourceFilename));
+
+  Resource* resource = MockResource::Fetch(fetch_params, fetcher, nullptr);
+  ASSERT_TRUE(resource);
+
+  platform_->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
+  switch (PreloadedReason()) {
+    case features::LcppDeferUnusedPreloadPreloadedReason::kAll:
+      EXPECT_FALSE(resource->IsLoaded());
+      break;
+    case features::LcppDeferUnusedPreloadPreloadedReason::kLinkPreloadOnly:
+      EXPECT_FALSE(resource->IsLoaded());
+      break;
+    case features::LcppDeferUnusedPreloadPreloadedReason::
+        kBrowserSpeculativePreloadOnly:
+      EXPECT_TRUE(resource->IsLoaded());
+      break;
+  }
+  EXPECT_TRUE(MemoryCache::Get()->Contains(resource));
+
+  static_cast<scheduler::FakeTaskRunner*>(fetcher->GetTaskRunner().get())
+      ->RunUntilIdle();
+  platform_->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
+  EXPECT_TRUE(resource->IsLoaded());
+  EXPECT_TRUE(MemoryCache::Get()->Contains(resource));
+}
+
+TEST_P(DeferUnusedPreloadWithPreloadedReasonResourceFetcherTest,
+       SpeculativePreload) {
+  ResourceFetcher* fetcher = CreateFetcher();
+  fetcher->SetDeferUnusedPreloadPreloadedReasonForTesting(PreloadedReason());
+  KURL url = potentially_unused_preloads()[0];
+  FetchParameters fetch_params =
+      FetchParameters::CreateForTest(ResourceRequest(url));
+
+  fetch_params.SetSpeculativePreloadType(
+      FetchParameters::SpeculativePreloadType::kInDocument);
+  ASSERT_TRUE(fetch_params.IsSpeculativePreload());
+
+  ResourceResponse response(url);
+  response.SetHttpStatusCode(200);
+
+  platform_->GetURLLoaderMockFactory()->RegisterURL(
+      url, WrappedResourceResponse(response),
+      test::PlatformTestDataPath(kTestResourceFilename));
+
+  Resource* resource = MockResource::Fetch(fetch_params, fetcher, nullptr);
+  ASSERT_TRUE(resource);
+
+  platform_->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
+  switch (PreloadedReason()) {
+    case features::LcppDeferUnusedPreloadPreloadedReason::kAll:
+      EXPECT_FALSE(resource->IsLoaded());
+      break;
+    case features::LcppDeferUnusedPreloadPreloadedReason::kLinkPreloadOnly:
+      EXPECT_TRUE(resource->IsLoaded());
+      break;
+    case features::LcppDeferUnusedPreloadPreloadedReason::
+        kBrowserSpeculativePreloadOnly:
+      EXPECT_FALSE(resource->IsLoaded());
+      break;
+  }
+  EXPECT_TRUE(MemoryCache::Get()->Contains(resource));
+
+  static_cast<scheduler::FakeTaskRunner*>(fetcher->GetTaskRunner().get())
+      ->RunUntilIdle();
+  platform_->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
+  EXPECT_TRUE(resource->IsLoaded());
+  EXPECT_TRUE(MemoryCache::Get()->Contains(resource));
+}
 }  // namespace blink

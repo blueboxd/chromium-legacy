@@ -15,6 +15,7 @@
 // Trigger identifiers currently used; duplicates not allowed.
 extern const char kHatsSurveyTriggerAutofillAddress[];
 extern const char kHatsSurveyTriggerAutofillAddressUserPerception[];
+extern const char kHatsSurveyTriggerAutofillCreditCardUserPerception[];
 extern const char kHatsSurveyTriggerAutofillCard[];
 extern const char kHatsSurveyTriggerAutofillPassword[];
 extern const char kHatsSurveyTriggerDevToolsIssuesCOEP[];
@@ -22,6 +23,12 @@ extern const char kHatsSurveyTriggerDevToolsIssuesMixedContent[];
 extern const char kHatsSurveyTriggerDevToolsIssuesCookiesSameSite[];
 extern const char kHatsSurveyTriggerDevToolsIssuesHeavyAd[];
 extern const char kHatsSurveyTriggerDevToolsIssuesCSP[];
+extern const char kHatsSurveyTriggerDownloadWarningBubbleBypass[];
+extern const char kHatsSurveyTriggerDownloadWarningBubbleHeed[];
+extern const char kHatsSurveyTriggerDownloadWarningBubbleIgnore[];
+extern const char kHatsSurveyTriggerDownloadWarningPageBypass[];
+extern const char kHatsSurveyTriggerDownloadWarningPageHeed[];
+extern const char kHatsSurveyTriggerDownloadWarningPageIgnore[];
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 extern const char kHatsSurveyTriggerGetMostChrome[];
 #endif
@@ -41,10 +48,6 @@ extern const char kHatsSurveyTriggerRedWarning[];
 extern const char kHatsSurveyTriggerSettings[];
 extern const char kHatsSurveyTriggerSettingsPrivacy[];
 extern const char kHatsSurveyTriggerSuggestedPasswordsExperiment[];
-extern const char kHatsSurveyTriggerTrackingProtectionControlImmediate[];
-extern const char kHatsSurveyTriggerTrackingProtectionTreatmentImmediate[];
-extern const char kHatsSurveyTriggerTrackingProtectionControlDelayed[];
-extern const char kHatsSurveyTriggerTrackingProtectionTreatmentDelayed[];
 extern const char kHatsSurveyTriggerSettingsSecurity[];
 extern const char kHatsSurveyTriggerTrustSafetyPrivacySandbox4ConsentAccept[];
 extern const char kHatsSurveyTriggerTrustSafetyPrivacySandbox4ConsentDecline[];

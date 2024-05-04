@@ -118,7 +118,7 @@ class FrameImplTest : public FrameImplTestBase {
 // Verifies that Frames are initially "hidden", changes to "visible" once the
 // View is attached to a Presenter and back to "hidden" when the View is
 // detached from the Presenter.
-// TODO(crbug.com/1377994): Re-enable this test on Arm64 when femu is available
+// TODO(crbug.com/42050537): Re-enable this test on Arm64 when femu is available
 // for that architecture. This test requires Vulkan and Scenic to properly
 // signal the Views visibility.
 #if defined(ARCH_CPU_ARM_FAMILY)
@@ -348,7 +348,7 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, ContextDeletedBeforeFrameWithView) {
   EXPECT_FALSE(frame.ptr());
 }
 
-// TODO(https://crbug.com/695592): Remove this test when WebSQL is removed from
+// TODO(crbug.com/40507959): Remove this test when WebSQL is removed from
 // Chrome.
 IN_PROC_BROWSER_TEST_F(FrameImplTest, EnsureWebSqlDisabled) {
   auto frame = FrameForTest::Create(context(), {});
@@ -873,12 +873,12 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, Stop) {
                    ->web_contents_->IsLoading());
 }
 
-// TODO(crbug.com/1377994): Enable on ARM64 when bots support Vulkan.
+// TODO(crbug.com/42050537): Enable on ARM64 when bots support Vulkan.
 // This test requires Vulkan and Scenic to properly signal the Views visibility.
 #if defined(ARCH_CPU_ARM_FAMILY)
 #define MAYBE_SetPageScale DISABLED_SetPageScale
 #else
-// TODO(crbug.com/1239135): SetPageScale/ExecuteJavaScript is racey, causing
+// TODO(crbug.com/42050328): SetPageScale/ExecuteJavaScript is racey, causing
 // the test to flake.
 #define MAYBE_SetPageScale DISABLED_SetPageScale
 #endif

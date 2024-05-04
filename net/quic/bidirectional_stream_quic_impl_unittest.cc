@@ -17,6 +17,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "net/base/completion_once_callback.h"
+#include "net/base/connection_endpoint_metadata.h"
 #include "net/base/ip_address.h"
 #include "net/base/load_timing_info.h"
 #include "net/base/load_timing_info_test_util.h"
@@ -552,10 +553,11 @@ class BidirectionalStreamQuicImplTest
             kQuicYieldAfterDurationMilliseconds),
         /*cert_verify_flags=*/0, quic::test::DefaultQuicConfig(),
         std::make_unique<TestQuicCryptoClientConfigHandle>(&crypto_config_),
-        dns_start, dns_end, base::DefaultTickClock::GetInstance(),
+        "CONNECTION_UNKNOWN", dns_start, dns_end,
+        base::DefaultTickClock::GetInstance(),
         base::SingleThreadTaskRunner::GetCurrentDefault().get(),
-        /*socket_performance_watcher=*/nullptr, HostResolverEndpointResult(),
-        NetLog::Get());
+        /*socket_performance_watcher=*/nullptr, ConnectionEndpointMetadata(),
+        /*report_ecn=*/true, NetLogWithSource::Make(NetLogSourceType::NONE));
     session_->Initialize();
 
     // Blackhole QPACK decoder stream instead of constructing mock writes.

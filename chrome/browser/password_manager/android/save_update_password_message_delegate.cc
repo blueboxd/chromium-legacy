@@ -46,6 +46,9 @@ using password_manager::UsesSplitStoresAndUPMForLocal;
 // Duration of message before timeout; 20 seconds.
 const int kMessageDismissDurationMs = 20000;
 
+constexpr base::TimeDelta kUpdateGMSCoreMessageDisplayDelay =
+    base::Milliseconds(500);
+
 // Log the outcome of the save/update password workflow.
 // It differentiates whether the the flow was accepted/cancelled immediately
 // or after calling the password edit dialog.
@@ -344,7 +347,7 @@ int SaveUpdatePasswordMessageDelegate::GetPrimaryButtonTextId(
 unsigned int SaveUpdatePasswordMessageDelegate::GetDisplayUsernames(
     std::vector<std::u16string>* usernames) {
   unsigned int selected_username_index = 0;
-  // TODO(crbug.com/1054410): Fix the update logic to use all best matches,
+  // TODO(crbug.com/40675711): Fix the update logic to use all best matches,
   // rather than current_forms which is best_matches without PSL-matched
   // credentials.
   const std::vector<std::unique_ptr<password_manager::PasswordForm>>&
@@ -367,6 +370,12 @@ void SaveUpdatePasswordMessageDelegate::HandleSaveButtonClicked() {
 void SaveUpdatePasswordMessageDelegate::SavePassword() {
   if (!device_lock_bridge_->ShouldShowDeviceLockUi()) {
     passwords_state_.form_manager()->Save();
+    base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
+        FROM_HERE,
+        base::BindOnce(
+            &SaveUpdatePasswordMessageDelegate::MaybeNudgeToUpdateGmsCore,
+            weak_ptr_factory_.GetWeakPtr()),
+        kUpdateGMSCoreMessageDisplayDelay);
     return;
   }
   device_lock_bridge_->LaunchDeviceLockUiIfNeededBeforeRunningCallback(
@@ -381,6 +390,12 @@ void SaveUpdatePasswordMessageDelegate::SavePasswordAfterDeviceLockUi(
   CHECK(device_lock_bridge_->RequiresDeviceLock());
   if (is_device_lock_requirement_met) {
     passwords_state_.form_manager()->Save();
+    base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
+        FROM_HERE,
+        base::BindOnce(
+            &SaveUpdatePasswordMessageDelegate::MaybeNudgeToUpdateGmsCore,
+            weak_ptr_factory_.GetWeakPtr()),
+        kUpdateGMSCoreMessageDisplayDelay);
     TryToShowPasswordMigrationWarning(create_migration_warning_callback_,
                                       web_contents_);
   }
@@ -451,7 +466,7 @@ void SaveUpdatePasswordMessageDelegate::HandleMessageDismissed(
 }
 
 bool SaveUpdatePasswordMessageDelegate::HasMultipleCredentialsStored() {
-  // TODO(crbug.com/1054410): Fix the update logic to use all best matches,
+  // TODO(crbug.com/40675711): Fix the update logic to use all best matches,
   // rather than current_forms which is best_matches without PSL-matched
   // credentials.
   const std::vector<std::unique_ptr<password_manager::PasswordForm>>&
@@ -509,7 +524,7 @@ bool SaveUpdatePasswordMessageDelegate::IsUsingAccountStorage(
   auto different_username = [&username](const auto& form) {
     return (form->username_value != username);
   };
-  // TODO(crbug.com/1054410): Fix the update logic to use all best matches,
+  // TODO(crbug.com/40675711): Fix the update logic to use all best matches,
   // rather than current_forms which is best_matches without PSL-matched
   // credentials.
   if (base::ranges::all_of(passwords_state_.GetCurrentForms(),
@@ -632,4 +647,15 @@ SaveUpdatePasswordMessageDelegate::
       break;
   }
   return ui_dismissal_reason;
+}
+
+void SaveUpdatePasswordMessageDelegate::MaybeNudgeToUpdateGmsCore() {
+  if (passwords_state_.client()
+          ->GetPasswordFeatureManager()
+          ->ShouldUpdateGmsCore()) {
+    passwords_state_.client()->ShowPasswordManagerErrorMessage(
+        password_manager::ErrorMessageFlowType::kSaveFlow,
+        password_manager::PasswordStoreBackendErrorType::
+            kGMSCoreOutdatedSavingPossible);
+  }
 }

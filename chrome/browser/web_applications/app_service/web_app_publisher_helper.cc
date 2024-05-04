@@ -106,7 +106,7 @@
 #include "url/origin.h"
 
 #if BUILDFLAG(IS_CHROMEOS)
-#include "chrome/browser/apps/app_service/browser_app_instance_tracker.h"
+#include "chrome/browser/apps/browser_instance/browser_app_instance_tracker.h"
 #include "chrome/browser/badging/badge_manager.h"
 #include "chrome/browser/badging/badge_manager_factory.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
@@ -206,7 +206,7 @@ apps::PermissionType GetPermissionType(
 }
 
 apps::InstallReason GetHighestPriorityInstallReason(const WebApp* web_app) {
-  // TODO(crbug.com/1189949): Migrate apps with chromeos_data.oem_installed set
+  // TODO(crbug.com/40755721): Migrate apps with chromeos_data.oem_installed set
   // to the new WebAppManagement::Type::kOem install type.
   if (web_app->chromeos_data().has_value()) {
     auto& chromeos_data = web_app->chromeos_data().value();
@@ -216,12 +216,21 @@ apps::InstallReason GetHighestPriorityInstallReason(const WebApp* web_app) {
     }
   }
 
+  // We do not make a distinction in `apps::InstallReason` between IWA sources
+  // and non-IWA sources. For example, we map both `WebAppManagement::kPolicy`
+  // and `WebAppManagement::kIwaPolicy` to `apps::InstallReason::kPolicy`. This
+  // is only possible because there is only a one-way conversion from
+  // `WebAppManagement::Type` to `apps::InstallReason`. Should we ever make them
+  // convertible in the other direction, we'd need to add IWA-specific sources
+  // to `apps::InstallReason` first.
   switch (web_app->GetHighestPrioritySource()) {
     case WebAppManagement::kSystem:
+    case WebAppManagement::kIwaShimlessRma:
       return apps::InstallReason::kSystem;
     case WebAppManagement::kKiosk:
       return apps::InstallReason::kKiosk;
     case WebAppManagement::kPolicy:
+    case WebAppManagement::kIwaPolicy:
       return apps::InstallReason::kPolicy;
     case WebAppManagement::kOem:
       return apps::InstallReason::kOem;
@@ -229,14 +238,13 @@ apps::InstallReason GetHighestPriorityInstallReason(const WebApp* web_app) {
       return apps::InstallReason::kSubApp;
     case WebAppManagement::kWebAppStore:
     case WebAppManagement::kOneDriveIntegration:
+    case WebAppManagement::kIwaUserInstalled:
       return apps::InstallReason::kUser;
     case WebAppManagement::kSync:
       return apps::InstallReason::kSync;
     case WebAppManagement::kDefault:
     case WebAppManagement::kApsDefault:
       return apps::InstallReason::kDefault;
-    case WebAppManagement::kCommandLine:
-      return apps::InstallReason::kCommandLine;
   }
 }
 
@@ -255,7 +263,11 @@ apps::InstallSource GetInstallSource(
     case webapps::WebappInstallSource::API_CUSTOM_TAB:
     case webapps::WebappInstallSource::DEVTOOLS:
     case webapps::WebappInstallSource::MANAGEMENT_API:
-    case webapps::WebappInstallSource::ISOLATED_APP_DEV_INSTALL:
+    case webapps::WebappInstallSource::IWA_DEV_UI:
+    case webapps::WebappInstallSource::IWA_DEV_COMMAND_LINE:
+    case webapps::WebappInstallSource::IWA_GRAPHICAL_INSTALLER:
+    case webapps::WebappInstallSource::IWA_EXTERNAL_POLICY:
+    case webapps::WebappInstallSource::IWA_SHIMLESS_RMA:
     case webapps::WebappInstallSource::AMBIENT_BADGE_BROWSER_TAB:
     case webapps::WebappInstallSource::AMBIENT_BADGE_CUSTOM_TAB:
     case webapps::WebappInstallSource::RICH_INSTALL_UI_WEBLAYER:
@@ -268,6 +280,8 @@ apps::InstallSource GetInstallSource(
     case webapps::WebappInstallSource::KIOSK:
     case webapps::WebappInstallSource::MICROSOFT_365_SETUP:
     case webapps::WebappInstallSource::PROFILE_MENU:
+    case webapps::WebappInstallSource::ALMANAC_INSTALL_APP_URI:
+    case webapps::WebappInstallSource::OOBE_APP_RECOMMENDATIONS:
       return apps::InstallSource::kBrowser;
     case webapps::WebappInstallSource::ARC:
       return apps::InstallSource::kPlayStore;
@@ -279,6 +293,7 @@ apps::InstallSource GetInstallSource(
     case webapps::WebappInstallSource::PRELOADED_DEFAULT:
       return apps::InstallSource::kSystem;
     case webapps::WebappInstallSource::SYNC:
+    case webapps::WebappInstallSource::WEBAPK_RESTORE:
       return apps::InstallSource::kSync;
     case webapps::WebappInstallSource::COUNT:
       NOTREACHED();
@@ -303,6 +318,7 @@ apps::Readiness ConvertWebappUninstallSourceToReadiness(
     case webapps::WebappUninstallSource::kStartupCleanup:
     case webapps::WebappUninstallSource::kParentUninstall:
     case webapps::WebappUninstallSource::kTestCleanup:
+    case webapps::WebappUninstallSource::kDevtools:
       return apps::Readiness::kUninstalledByUser;
     case webapps::WebappUninstallSource::kMigration:
     case webapps::WebappUninstallSource::kInternalPreinstalled:
@@ -589,7 +605,7 @@ apps::Permissions WebAppPublisherHelper::CreatePermissions(
     permissions.push_back(std::make_unique<apps::Permission>(
         GetPermissionType(type), setting_val,
         /*is_managed=*/setting_info.source ==
-            content_settings::SETTING_SOURCE_POLICY));
+            content_settings::SettingSource::kPolicy));
   }
 
   // File handling permission.
@@ -678,15 +694,19 @@ apps::AppPtr WebAppPublisherHelper::CreateWebApp(const WebApp* web_app) {
 
   // Web App's publisher_id the start url.
   app->publisher_id = web_app->start_url().spec();
+  app->installer_package_id =
+      apps::PackageId(apps::PackageType::kWeb, web_app->manifest_id().spec());
 
   app->icon_key = apps::IconKey(GetIconEffects(web_app));
 
   app->last_launch_time = web_app->last_launch_time();
   app->install_time = web_app->first_install_time();
 
-  // For system web apps (only), the install source is |kSystem|.
-  DCHECK_EQ(web_app->IsSystemApp(),
-            app->install_reason == apps::InstallReason::kSystem);
+  // For system web apps and shimless RMA IWAs (only), the install source is
+  // `kSystem`.
+  DCHECK_EQ(web_app->IsSystemApp() || web_app->IsIwaShimlessRmaApp(),
+            app->install_reason == apps::InstallReason::kSystem)
+      << base::ToString(app->install_reason);
 
   app->policy_ids = GetPolicyIds(*web_app);
 
@@ -1030,7 +1050,7 @@ void WebAppPublisherHelper::LaunchAppWithIntent(
       base::BindOnce(
           [](apps::LaunchCallback callback, apps::LaunchSource launch_source,
              std::vector<content::WebContents*> web_contentses) {
-// TODO(crbug.com/1214763): Set ArcWebContentsData for Lacros.
+// TODO(crbug.com/40184120): Set ArcWebContentsData for Lacros.
 #if BUILDFLAG(IS_CHROMEOS_ASH)
             for (content::WebContents* web_contents : web_contentses) {
               if (launch_source == apps::LaunchSource::kFromArc) {
@@ -1078,7 +1098,7 @@ void WebAppPublisherHelper::LaunchAppWithParams(
     const WebApp* web_app = GetWebApp(params_for_restore.app_id);
     is_system_web_app = web_app && web_app->IsSystemApp();
 
-    // TODO(crbug.com/1368285): Determine whether override URL can
+    // TODO(crbug.com/40240250): Determine whether override URL can
     // be restored for all SWAs.
     auto system_app_type =
         swa_manager->GetSystemAppTypeForAppId(params_for_restore.app_id);
@@ -1200,18 +1220,8 @@ void WebAppPublisherHelper::SetWindowMode(const std::string& app_id,
       user_display_mode = mojom::UserDisplayMode::kTabbed;
       break;
   }
-  provider_->scheduler().ScheduleCallback(
-      "WebAppPublisherHelper::SetWindowMode", AppLockDescription(app_id),
-      base::BindOnce(
-          [](webapps::AppId app_id, mojom::UserDisplayMode user_display_mode,
-             AppLock& lock, base::Value::Dict& debug_value) {
-            debug_value.Set("user_display_mode",
-                            base::ToString(user_display_mode));
-            lock.sync_bridge().SetAppUserDisplayMode(app_id, user_display_mode,
-                                                     /*is_user_action=*/true);
-          },
-          app_id, std::move(user_display_mode)),
-      /*on_complete=*/base::DoNothing());
+  provider_->scheduler().SetUserDisplayMode(app_id, user_display_mode,
+                                            base::DoNothing());
 }
 
 apps::WindowMode WebAppPublisherHelper::ConvertDisplayModeToWindowMode(
@@ -1729,7 +1739,7 @@ std::vector<std::string> WebAppPublisherHelper::GetPolicyIds(
 
   std::vector<std::string> policy_ids;
 
-  if (std::optional<base::StringPiece> preinstalled_web_app_policy_id =
+  if (std::optional<std::string_view> preinstalled_web_app_policy_id =
           apps_util::GetPolicyIdForPreinstalledWebApp(app_id)) {
     policy_ids.emplace_back(*preinstalled_web_app_policy_id);
   }
@@ -1740,7 +1750,7 @@ std::vector<std::string> WebAppPublisherHelper::GetPolicyIds(
     const auto& swa_data = web_app.client_data().system_web_app_data;
     DCHECK(swa_data);
     const ash::SystemWebAppType swa_type = swa_data->system_app_type;
-    const std::optional<base::StringPiece> swa_policy_id =
+    const std::optional<std::string_view> swa_policy_id =
         apps_util::GetPolicyIdForSystemWebAppType(swa_type);
     if (swa_policy_id) {
       policy_ids.emplace_back(*swa_policy_id);
@@ -1945,7 +1955,7 @@ void WebAppPublisherHelper::OnFileHandlerDialogCompleted(
         params.display_id, params.launch_files, params.intent);
     // For system web apps, the URL is calculated by the file browser and passed
     // in the intent.
-    // TODO(crbug.com/1264164): remove this check. It's only here to support
+    // TODO(crbug.com/40203246): remove this check. It's only here to support
     // tests that haven't been updated.
     if (params.intent) {
       params_for_file_launch.override_url = GURL(*params.intent->activity_name);

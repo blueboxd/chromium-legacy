@@ -124,7 +124,7 @@ ShareThisTabDialogView::ShareThisTabDialogView(
   title_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   title_label->SetText(
       l10n_util::GetStringFUTF16(IDS_SHARE_THIS_TAB_DIALOG_TITLE, app_name_));
-  // TODO(crbug.com/1448008): Prevent non-initial focus of the title label.
+  // TODO(crbug.com/40269137): Prevent non-initial focus of the title label.
   title_label->SetFocusBehavior(View::FocusBehavior::ALWAYS);
   SetInitiallyFocusedView(title_label);
 
@@ -202,10 +202,13 @@ void ShareThisTabDialogView::DetachParent() {
   parent_ = nullptr;
 }
 
-gfx::Size ShareThisTabDialogView::CalculatePreferredSize() const {
+gfx::Size ShareThisTabDialogView::CalculatePreferredSize(
+    const views::SizeBounds& /*available_size*/) const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   static constexpr size_t kDialogViewWidth = 600;
-  return gfx::Size(kDialogViewWidth, GetHeightForWidth(kDialogViewWidth));
+  return gfx::Size(
+      kDialogViewWidth,
+      GetLayoutManager()->GetPreferredHeightForWidth(this, kDialogViewWidth));
 }
 
 bool ShareThisTabDialogView::ShouldShowWindowTitle() const {

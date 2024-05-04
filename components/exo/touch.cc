@@ -4,8 +4,6 @@
 
 #include "components/exo/touch.h"
 
-#include <optional>
-
 #include "base/ranges/algorithm.h"
 #include "base/trace_event/trace_event.h"
 #include "components/exo/input_trace.h"
@@ -74,9 +72,9 @@ void Touch::OnTouchEvent(ui::TouchEvent* event) {
     return;
   }
 
-  // TODO(1371493): Investigate if we need to do something similar to the filter
-  // in `Pointer::OnMouseEvent` when dragging. (not sending touch events during
-  // drag)
+  // TODO(crbug.com/40061238): Investigate if we need to do something similar to
+  // the filter in `Pointer::OnMouseEvent` when dragging. (not sending touch
+  // events during drag)
 
   bool send_details = false;
 

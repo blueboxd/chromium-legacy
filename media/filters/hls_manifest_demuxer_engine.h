@@ -6,6 +6,7 @@
 #define MEDIA_FILTERS_HLS_MANIFEST_DEMUXER_ENGINE_H_
 
 #include <optional>
+#include <string_view>
 #include <vector>
 
 #include "base/memory/scoped_refptr.h"
@@ -19,6 +20,7 @@
 #include "media/filters/hls_data_source_provider.h"
 #include "media/filters/hls_demuxer_status.h"
 #include "media/filters/hls_rendition.h"
+#include "media/filters/hls_stats_reporter.h"
 #include "media/filters/manifest_demuxer.h"
 #include "media/formats/hls/media_playlist.h"
 #include "media/formats/hls/parse_status.h"
@@ -30,13 +32,20 @@ namespace media {
 // This will use the HLS parsers and rendition selectors to fetch and parse
 // playlists, followed by fetching and appending media segments.
 class MEDIA_EXPORT HlsManifestDemuxerEngine : public ManifestDemuxer::Engine,
-                                              public HlsRenditionHost {
+                                              public HlsRenditionHost,
+                                              public DataSourceInfo {
  public:
   HlsManifestDemuxerEngine(base::SequenceBound<HlsDataSourceProvider> dsp,
                            scoped_refptr<base::SequencedTaskRunner> task_runner,
+                           bool was_already_tainted,
                            GURL root_playlist_uri,
                            MediaLog* media_log);
   ~HlsManifestDemuxerEngine() override;
+
+  // DataSourceInfo implementation
+  int64_t GetMemoryUsage() override;
+  bool WouldTaintOrigin() override;
+  bool IsStreaming() override;
 
   // ManifestDemuxer::Engine implementation
   std::string GetName() const override;
@@ -157,11 +166,6 @@ class MEDIA_EXPORT HlsManifestDemuxerEngine : public ManifestDemuxer::Engine,
                   std::string role,
                   ManifestDemuxer::DelayCallback cb,
                   base::TimeDelta delay_time);
-
-  // Posted by `::UpdateRenditionManifestUri`
-  void UpdateRenditionManifestUriAction(std::string role,
-                                        GURL uri,
-                                        base::OnceCallback<void(bool)> cb);
   void UpdateMediaPlaylistForRole(
       std::string role,
       GURL uri,
@@ -202,6 +206,17 @@ class MEDIA_EXPORT HlsManifestDemuxerEngine : public ManifestDemuxer::Engine,
   void Abort(hls::ParseStatus status);
   void Abort(HlsDataSourceProvider::ReadStatus status);
 
+  // Capture the stream before it gets posted to `cb` and update the internal
+  // memory state and origin tainting.
+  void UpdateHlsDataSourceStats(
+      HlsDataSourceProvider::ReadCb cb,
+      HlsDataSourceProvider::ReadStatus::Or<
+          std::unique_ptr<HlsDataSourceStream>> result);
+
+  // Helper to bind `UpdateHlsDataSourceStats` around a response CB.
+  HlsDataSourceProvider::ReadCb BindStatsUpdate(
+      HlsDataSourceProvider::ReadCb cb);
+
   // Read the entire contents of a data source stream before calling cb.
   void ReadUntilExhausted(HlsDataSourceProvider::ReadCb cb,
                           HlsDataSourceProvider::ReadResult result);
@@ -214,6 +229,7 @@ class MEDIA_EXPORT HlsManifestDemuxerEngine : public ManifestDemuxer::Engine,
       PipelineStatusCallback parse_complete_cb,
       scoped_refptr<hls::MultivariantPlaylist> playlist);
   void OnRenditionsReselected(
+      hls::AdaptationReason reason,
       const hls::VariantStream* variant,
       const hls::AudioRendition* audio_override_rendition);
 
@@ -247,7 +263,7 @@ class MEDIA_EXPORT HlsManifestDemuxerEngine : public ManifestDemuxer::Engine,
 
   // Parses a playlist using the multivariant playlist, if it's being used.
   hls::ParseStatus::Or<scoped_refptr<hls::MediaPlaylist>>
-  ParseMediaPlaylistFromStringSource(base::StringPiece source,
+  ParseMediaPlaylistFromStringSource(std::string_view source,
                                      GURL uri,
                                      hls::types::DecimalInteger version);
 
@@ -288,9 +304,20 @@ class MEDIA_EXPORT HlsManifestDemuxerEngine : public ManifestDemuxer::Engine,
   // Is an action currently running?
   bool action_in_progress_ GUARDED_BY_CONTEXT(media_sequence_checker_) = false;
 
+  // The informational class which can combine memory usage and origin tainting
+  // for all sub-data sources.
+  bool origin_tainted_ = false;
+
+  // The total amount of memory that is used by data sources. It gets updated
+  // after every successful read.
+  uint64_t total_stream_memory_ = 0;
+
   // When renditions are added, this ensures that they are all of the same
   // liveness, and allows access to the liveness check later.
   std::optional<bool> is_seekable_ = std::nullopt;
+
+  hls::HlsStatsReporter stats_reporter_
+      GUARDED_BY_CONTEXT(media_sequence_checker_);
 
   // Ensure that safe member fields are only accessed on the media sequence.
   SEQUENCE_CHECKER(media_sequence_checker_);

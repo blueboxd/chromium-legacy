@@ -118,15 +118,16 @@ void PhoneFieldParserTest::CheckField(const FieldGlobalId id,
 autofill::FieldGlobalId PhoneFieldParserTest::AppendField(
     const TestFieldData& field_data) {
   FormFieldData field;
-  field.form_control_type = field_data.type;
-  field.label = field_data.label;
-  field.name = field_data.name;
-  field.max_length = field_data.max_length;
+  field.set_form_control_type(field_data.type);
+  field.set_label(field_data.label);
+  field.set_name(field_data.name);
+  field.set_max_length(field_data.max_length);
+  std::vector<SelectOption> options;
   for (auto* const element : field_data.options) {
-    field.options.push_back(
-        {.value = u"", .content = base::UTF8ToUTF16(element)});
+    options.push_back({.value = u"", .content = base::UTF8ToUTF16(element)});
   }
-  field.renderer_id = MakeFieldRendererId();
+  field.set_options(std::move(options));
+  field.set_renderer_id(MakeFieldRendererId());
   list_.push_back(std::make_unique<AutofillField>(field));
   return list_.back()->global_id();
 }
@@ -353,7 +354,7 @@ TEST_P(PhoneFieldParserTest, IsPhoneCountryCodeField) {
       {"0091", "0049", "001", "0020", "001242", "00593", "007"}};
 
   for (size_t i = 0; i < augmented_field_options_list.size(); ++i) {
-    // TODO(crbug/1151473): The country code check fails in iteration 4.
+    // TODO(crbug.com/40158319): The country code check fails in iteration 4.
     if (i == 4)
       continue;
 

@@ -8,6 +8,8 @@ import "device/gamepad/public/mojom/gamepad.mojom";
 import "device/vr/public/mojom/xr_session.mojom";
 import "mojo/public/mojom/base/big_buffer.mojom";
 import "mojo/public/mojom/base/time.mojom";
+import "gpu/ipc/common/exported_shared_image.mojom";
+import "gpu/ipc/common/shared_image_metadata.mojom";
 import "gpu/ipc/common/mailbox_holder.mojom";
 import "gpu/ipc/common/sync_token.mojom";
 import "ui/display/mojom/display.mojom";
@@ -318,7 +320,7 @@ struct XRHitResult {
   Pose mojo_from_result;  // Pose of the result (aka intersection point).
   uint64 plane_id;  // If the hit test result was computed based off of a plane,
                     // the plane ID will be stored here. 0 signifies no plane.
-                    // TODO(https://crbug.com/657632) - make it optional once
+                    // TODO(crbug.com/40489779) - make it optional once
                     // mojo supports optional numeric types.
 };
 
@@ -345,7 +347,7 @@ struct XRView {
   // and GVR only expose the head pose (aka. mojo_from_viewer) and the
   // head-from-eye pose (viewer_from_view), so this calculation needs to be
   // done in the XR process before sending to the renderer.
-  // TODO(https://crbug.com/1070380): All of the runtimes currently assume mojo
+  // TODO(crbug.com/40684534): All of the runtimes currently assume mojo
   // and local space are equivalent, so this is the same as local_from_view.
   // Instead, send this in mojo space and send the relevant transforms to other
   // spaces in XRFrameData so the clients can calculate them as needed.
@@ -701,14 +703,16 @@ struct XRFrameData {
   VRPose? mojo_from_viewer;
   // Time delta from an unspecified origin.
   mojo_base.mojom.TimeDelta time_delta;
-  // The buffer_holder is used for sending imagery data back and forth across
-  // the process boundary.
-  gpu.mojom.MailboxHolder? buffer_holder;
+  // The buffer_shared_image is used for sending imagery data back and forth
+  // across the process boundary.
+  gpu.mojom.ExportedSharedImage? buffer_shared_image;
+  gpu.mojom.SyncToken? buffer_sync_token;
 
-  // The camera_image_buffer_holder is used to send a copy of the camera image
-  // across the process boundary for immersive-ar sessions. This assumes that
-  // there exists a single camera.
-  gpu.mojom.MailboxHolder? camera_image_buffer_holder;
+  // The camera_image_buffer_shared_image is used to send a copy of the camera
+  // image across the process boundary for immersive-ar sessions. This assumes
+  // that there exists a single camera.
+  gpu.mojom.ExportedSharedImage? camera_image_buffer_shared_image;
+  gpu.mojom.SyncToken? camera_image_buffer_sync_token;
   gfx.mojom.Size? camera_image_size;
 
   // Depth data (if the device supports it and the environment integration is
@@ -943,7 +947,7 @@ interface XREnvironmentIntegrationProvider {
     XRNativeOriginInformation native_origin_information,
     Pose native_origin_from_anchor)
       => (CreateAnchorResult result, uint64 anchor_id);
-  // TODO(https://crbug.com/657632): Switch anchor_id to nullable integer once
+  // TODO(crbug.com/40489779): Switch anchor_id to nullable integer once
   // that's available. This will allow us to remove CreateAnchorResult if we're
   // not interested in obtaining detailed error information from the device.
 
@@ -959,7 +963,7 @@ interface XREnvironmentIntegrationProvider {
     Pose native_origin_from_anchor,
     uint64 plane_id)
       => (CreateAnchorResult result, uint64 anchor_id);
-  // TODO(https://crbug.com/657632): Ditto - make anchor_id a nullable integer.
+  // TODO(crbug.com/40489779): Ditto - make anchor_id a nullable integer.
 
   // Detaches an existing anchor. The |anchor_id| must be a valid id of an
   // anchor created by one of the CreateAnchor calls, otherwise the call will be

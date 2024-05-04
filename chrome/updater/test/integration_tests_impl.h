@@ -113,6 +113,7 @@ void ExpectClean(UpdaterScope scope);
 void EnterTestMode(const GURL& update_url,
                    const GURL& crash_upload_url,
                    const GURL& device_management_url,
+                   const GURL& app_logo_url,
                    const base::TimeDelta& idle_timeout);
 
 // Takes the updater our of the test mode by deleting the external constants
@@ -140,10 +141,7 @@ void CopyLog(const base::FilePath& src_dir);
 void ExpectInstalled(UpdaterScope scope);
 
 // Installs the updater.
-void Install(UpdaterScope scope);
-
-// Installs the updater in EULA-required mode.
-void InstallEulaRequired(UpdaterScope scope);
+void Install(UpdaterScope scope, const base::Value::List& switches);
 
 // Installs the updater and an app via the command line.
 void InstallUpdaterAndApp(UpdaterScope scope,
@@ -151,7 +149,8 @@ void InstallUpdaterAndApp(UpdaterScope scope,
                           bool is_silent_install,
                           const std::string& tag,
                           const std::string& child_window_text_to_find,
-                          bool always_launch_cmd);
+                          bool always_launch_cmd,
+                          bool verify_app_logo_loaded);
 
 // Expects that the updater is installed on the system and the specified
 // version is active.
@@ -312,7 +311,19 @@ int CountDirectoryFiles(const base::FilePath& dir);
 
 void ExpectSelfUpdateSequence(UpdaterScope scope, ScopedServer* test_server);
 
-void ExpectPing(UpdaterScope scope, ScopedServer* test_server, int event_type);
+void ExpectPing(UpdaterScope scope,
+                ScopedServer* test_server,
+                int event_type,
+                std::optional<GURL> target_url);
+
+void ExpectAppCommandPing(UpdaterScope scope,
+                          ScopedServer* test_server,
+                          const std::string& appid,
+                          const std::string& appcommandid,
+                          int errorcode,
+                          int eventresult,
+                          int event_type,
+                          const base::Version& version);
 
 void ExpectUpdateCheckRequest(UpdaterScope scope, ScopedServer* test_server);
 
@@ -366,7 +377,8 @@ void RunFakeLegacyUpdater(UpdaterScope scope);
 
 // Dismiss the installation completion dialog, then wait for the process
 // exit.
-void CloseInstallCompleteDialog(const std::wstring& child_window_text_to_find);
+void CloseInstallCompleteDialog(const std::wstring& child_window_text_to_find,
+                                bool verify_app_logo_loaded = false);
 #endif  // BUILDFLAG(IS_WIN)
 
 #if BUILDFLAG(IS_MAC)
@@ -420,7 +432,10 @@ void ExpectDeviceManagementPolicyFetchRequest(
     ScopedServer* test_server,
     const std::string& dm_token,
     const ::wireless_android_enterprise_devicemanagement::
-        OmahaSettingsClientProto& omaha_settings);
+        OmahaSettingsClientProto& omaha_settings,
+    bool first_request = true,
+    bool rotate_public_key = false,
+    std::optional<GURL> target_url = std::nullopt);
 void ExpectDeviceManagementPolicyFetchWithNewPublicKeyRequest(
     ScopedServer* test_server,
     const std::string& dm_token,
@@ -431,6 +446,7 @@ void ExpectDeviceManagementTokenDeletionRequest(ScopedServer* test_server,
                                                 bool invalidate_token);
 void ExpectDeviceManagementPolicyValidationRequest(ScopedServer* test_server,
                                                    const std::string& dm_token);
+void ExpectProxyPacScriptRequest(ScopedServer* test_server);
 
 }  // namespace updater::test
 

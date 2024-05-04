@@ -14,6 +14,7 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/camera/autozoom_controller_impl.h"
 #include "ash/system/status_area_widget.h"
+#include "ash/system/video_conference/bubble/bubble_view_ids.h"
 #include "ash/system/video_conference/effects/video_conference_tray_effects_manager.h"
 #include "ash/system/video_conference/effects/video_conference_tray_effects_manager_types.h"
 #include "ash/system/video_conference/video_conference_tray.h"
@@ -37,6 +38,7 @@
 #include "media/capture/video/chromeos/camera_hal_dispatcher_impl.h"
 #include "media/capture/video/chromeos/mojom/cros_camera_service.mojom-shared.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/image/image_util.h"
 #include "ui/gfx/vector_icon_types.h"
 
 namespace ash {
@@ -299,13 +301,28 @@ std::optional<BackgroundImageInfo> GetBackgroundImageInfoOnWorker(
   }
 
   BackgroundImageInfo info{file_info.creation_time, file_info.last_accessed,
-                           filename.BaseName(), "", ""};
+                           filename.BaseName(), gfx::ImageSkia(), ""};
 
-  // TODO(b/314186143): resize the image since we don't need the full size
-  // image here.
-  if (!base::ReadFileToString(filename, &info.jpeg_bytes)) {
+  const std::optional<std::vector<uint8_t>> jpeg_bytes =
+      base::ReadFileToBytes(filename);
+  if (!jpeg_bytes) {
     return std::nullopt;
   }
+
+  auto image = gfx::ImageFrom1xJPEGEncodedData(&jpeg_bytes.value()[0],
+                                               jpeg_bytes.value().size());
+  if (image.IsEmpty()) {
+    return std::nullopt;
+  }
+
+  if (image.Width() > CameraEffectsController::kImageAsIconWidth) {
+    const auto new_size = gfx::ScaleToCeiledSize(
+        image.Size(),
+        static_cast<float>(CameraEffectsController::kImageAsIconWidth) /
+            image.Width());
+    image = gfx::ResizedImage(image, new_size);
+  }
+  info.image = image.AsImageSkia();
 
   // if the metadata is not read successfully, then set it as empty.
   if (!base::ReadFileToString(GetMetadataFilePath(filename), &info.metadata)) {
@@ -387,12 +404,12 @@ BackgroundImageInfo::BackgroundImageInfo(const BackgroundImageInfo& info) =
 BackgroundImageInfo::BackgroundImageInfo(const base::Time& creation_time,
                                          const base::Time& last_accessed,
                                          const base::FilePath& basename,
-                                         const std::string& jpeg_bytes,
+                                         const gfx::ImageSkia& image,
                                          const std::string& metadata)
     : creation_time(creation_time),
       last_accessed(last_accessed),
       basename(basename),
-      jpeg_bytes(jpeg_bytes),
+      image(image),
       metadata(metadata) {}
 
 CameraEffectsController::CameraEffectsController()
@@ -551,6 +568,10 @@ void CameraEffectsController::GetBackgroundImageInfo(
 // Set the `camera_background_img_dir_` when the `account_id` becomes active.
 void CameraEffectsController::OnActiveUserSessionChanged(
     const AccountId& account_id) {
+  is_eligible_for_background_replace_ =
+      features::IsVcBackgroundReplaceEnabled() &&
+      Shell::Get()->session_controller()->IsEligibleForSeaPen(account_id);
+
   const base::FilePath profile_path =
       Shell::Get()->session_controller()->GetProfilePath(account_id);
   CHECK(!profile_path.empty())
@@ -566,6 +587,11 @@ void CameraEffectsController::OnActiveUserSessionChanged(
     SetCameraEffects(GetEffectsConfigFromPref(), /*is_initialization*/ true,
                      base::DoNothing());
   }
+
+  // If any effects have controls the user can access, this will create the
+  // effects UI and register `CameraEffectsController`'s `VcEffectsDelegate`
+  // interface.
+  InitializeEffectControls();
 }
 
 void CameraEffectsController::OnActiveUserPrefServiceChanged(
@@ -586,10 +612,6 @@ void CameraEffectsController::OnActiveUserPrefServiceChanged(
     SetCameraEffects(GetEffectsConfigFromPref(), /*is_initialization*/ true,
                      base::DoNothing());
   }
-  // If any effects have controls the user can access, this will create the
-  // effects UI and register `CameraEffectsController`'s `VcEffectsDelegate`
-  // interface.
-  InitializeEffectControls();
 }
 
 std::optional<int> CameraEffectsController::GetEffectState(
@@ -638,7 +660,7 @@ void CameraEffectsController::OnEffectControlActivated(
 
       // Only change the SetCameraBackgroundView visibility if background
       // replace is enabled; otherwise the view is null.
-      if (features::IsVcBackgroundReplaceEnabled()) {
+      if (is_eligible_for_background_replace_) {
         SetBackgroundReplaceUiVisible(false);
       }
 
@@ -867,7 +889,7 @@ CameraEffectsController::GetEffectsConfigFromPref() {
   effects->blur_enabled = blur_state.second;
   effects->blur_level = blur_state.first;
 
-  if (features::IsVcBackgroundReplaceEnabled()) {
+  if (is_eligible_for_background_replace_) {
     effects->replace_enabled =
         pref_change_registrar_->prefs()->GetBoolean(prefs::kBackgroundReplace);
     if (effects->replace_enabled) {
@@ -896,7 +918,7 @@ void CameraEffectsController::SetEffectsConfigToPref(
                                                    new_config->blur_enabled));
   }
 
-  if (features::IsVcBackgroundReplaceEnabled()) {
+  if (is_eligible_for_background_replace_) {
     if (new_config->replace_enabled != current_effects_->replace_enabled) {
       pref_change_registrar_->prefs()->SetBoolean(prefs::kBackgroundReplace,
                                                   new_config->replace_enabled);
@@ -952,23 +974,27 @@ void CameraEffectsController::InitializeEffectControls() {
     AddBackgroundBlurStateToEffect(
         effect.get(), kVideoConferenceBackgroundBlurOffIcon,
         /*state_value=*/BackgroundBlurPrefValue::kOff,
-        /*string_id=*/IDS_ASH_VIDEO_CONFERENCE_BUBBLE_BACKGROUND_BLUR_OFF);
+        /*string_id=*/IDS_ASH_VIDEO_CONFERENCE_BUBBLE_BACKGROUND_BLUR_OFF,
+        video_conference::BubbleViewID::kBackgroundBlurOffButton);
     AddBackgroundBlurStateToEffect(
         effect.get(), kVideoConferenceBackgroundBlurLightIcon,
         /*state_value=*/BackgroundBlurPrefValue::kLight,
-        /*string_id=*/IDS_ASH_VIDEO_CONFERENCE_BUBBLE_BACKGROUND_BLUR_LIGHT);
+        /*string_id=*/IDS_ASH_VIDEO_CONFERENCE_BUBBLE_BACKGROUND_BLUR_LIGHT,
+        video_conference::BubbleViewID::kBackgroundBlurLightButton);
     AddBackgroundBlurStateToEffect(
         effect.get(), kVideoConferenceBackgroundBlurMaximumIcon,
         /*state_value=*/BackgroundBlurPrefValue::kMaximum,
         /*string_id=*/
-        IDS_ASH_VIDEO_CONFERENCE_BUBBLE_BACKGROUND_BLUR_FULL);
+        IDS_ASH_VIDEO_CONFERENCE_BUBBLE_BACKGROUND_BLUR_FULL,
+        video_conference::BubbleViewID::kBackgroundBlurFullButton);
 
-    if (features::IsVcBackgroundReplaceEnabled()) {
+    if (is_eligible_for_background_replace_) {
       AddBackgroundBlurStateToEffect(
           effect.get(), kAiImageIcon,
           /*state_value=*/BackgroundBlurPrefValue::kImage,
           /*string_id=*/
-          IDS_ASH_VIDEO_CONFERENCE_BUBBLE_BACKGROUND_BLUR_IMAGE);
+          IDS_ASH_VIDEO_CONFERENCE_BUBBLE_BACKGROUND_BLUR_IMAGE,
+          video_conference::BubbleViewID::kBackgroundBlurImageButton);
     }
     effect->set_dependency_flags(VcHostedEffect::ResourceDependency::kCamera);
     AddEffect(std::move(effect));
@@ -1015,7 +1041,8 @@ void CameraEffectsController::AddBackgroundBlurStateToEffect(
     VcHostedEffect* effect,
     const gfx::VectorIcon& icon,
     int state_value,
-    int string_id) {
+    int string_id,
+    int view_id) {
   DCHECK(effect);
   effect->AddState(std::make_unique<VcEffectState>(
       &icon,
@@ -1026,7 +1053,7 @@ void CameraEffectsController::AddBackgroundBlurStateToEffect(
                           weak_factory_.GetWeakPtr(),
                           /*effect_id=*/VcEffectId::kBackgroundBlur,
                           /*value=*/state_value),
-      /*state=*/state_value));
+      /*state=*/state_value, view_id));
 }
 
 void CameraEffectsController::SetCameraEffectsInCameraHalDispatcherImpl(

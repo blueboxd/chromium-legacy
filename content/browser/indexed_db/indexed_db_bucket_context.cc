@@ -6,6 +6,7 @@
 
 #include <inttypes.h>
 #include <stddef.h>
+
 #include <atomic>
 #include <compare>
 #include <list>
@@ -60,7 +61,6 @@
 #include "components/services/storage/privileged/mojom/indexed_db_internals_types.mojom.h"
 #include "components/services/storage/public/mojom/blob_storage_context.mojom-shared.h"
 #include "components/services/storage/public/mojom/blob_storage_context.mojom.h"
-#include "content/browser/indexed_db/features.h"
 #include "content/browser/indexed_db/file_path_util.h"
 #include "content/browser/indexed_db/file_stream_reader_to_data_pipe.h"
 #include "content/browser/indexed_db/indexed_db_active_blob_registry.h"
@@ -84,6 +84,7 @@
 #include "content/browser/indexed_db/indexed_db_transaction.h"
 #include "content/browser/indexed_db/list_set.h"
 #include "content/browser/indexed_db/mock_browsertest_indexed_db_class_factory.h"
+#include "content/public/common/content_features.h"
 #include "env_chromium.h"
 #include "mojo/public/cpp/base/big_buffer.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
@@ -173,6 +174,67 @@ base::Time GenerateNextGlobalCompactionTime(base::Time now) {
   return now + base::Milliseconds(rand_millis);
 }
 
+// This struct facilitates requesting bucket space usage from the quota manager.
+// There have been reports of the callback being passed to the quota manager
+// never being invoked. This struct will make sure to invoke the wrapped
+// callback when it goes out of scope. The struct itself is in turn intended to
+// be wrapped in a callback passed to the quota manager.
+//
+// There are three main tasks for this struct.
+// * It makes sure the passed callback is run by doing so on destruction.
+// * It logs UMA.
+// * It times out the request if the quota manager is taking too long.
+struct GetBucketSpaceRequestWrapper {
+  static constexpr base::TimeDelta kTimeoutDuration = base::Seconds(45);
+
+  explicit GetBucketSpaceRequestWrapper(
+      base::OnceCallback<void(storage::QuotaErrorOr<int64_t>)> callback)
+      : wrapped_callback(std::move(callback)) {
+    StartTimer();
+  }
+
+  GetBucketSpaceRequestWrapper(GetBucketSpaceRequestWrapper&& other) {
+    wrapped_callback = std::move(other.wrapped_callback);
+    start_time = other.start_time;
+    StartTimer();
+  }
+
+  ~GetBucketSpaceRequestWrapper() { InvokeCallback(); }
+
+  void StartTimer() {
+    timeout.Start(FROM_HERE,
+                  kTimeoutDuration - (base::TimeTicks::Now() - start_time),
+                  base::BindOnce(&GetBucketSpaceRequestWrapper::InvokeCallback,
+                                 base::Unretained(this)));
+  }
+
+  void InvokeCallback() {
+    if (!wrapped_callback) {
+      return;
+    }
+
+    static const char kDroppedRequest[] =
+        "IndexedDB.QuotaCheckTime.DroppedRequest";
+    static const char kSuccess[] = "IndexedDB.QuotaCheckTime.Success";
+    static const char kQuotaError[] = "IndexedDB.QuotaCheckTime.QuotaError";
+    const char* histogram =
+        result_value ? result_value->has_value() ? kSuccess : kQuotaError
+                     : kDroppedRequest;
+    base::UmaHistogramCustomTimes(
+        histogram, base::TimeTicks::Now() - start_time, base::Milliseconds(1),
+        kTimeoutDuration, /*buckets=*/50U);
+
+    std::move(wrapped_callback)
+        .Run(result_value.value_or(
+            base::unexpected(storage::QuotaError::kUnknownError)));
+  }
+
+  base::OneShotTimer timeout;
+  base::OnceCallback<void(storage::QuotaErrorOr<int64_t>)> wrapped_callback;
+  std::optional<storage::QuotaErrorOr<int64_t>> result_value;
+  base::TimeTicks start_time = base::TimeTicks::Now();
+};
+
 IndexedDBDatabaseError CreateDefaultError() {
   return IndexedDBDatabaseError(
       blink::mojom::IDBException::kUnknownError,
@@ -235,8 +297,6 @@ CreateLevelDBState(const leveldb_env::Options& base_options,
     leveldb_env::Options in_memory_options = base_options;
     in_memory_options.env = in_memory_env.get();
     in_memory_options.paranoid_checks = false;
-    in_memory_options.create_if_missing = true;
-    in_memory_options.write_buffer_size = 4 * 1024 * 1024;
     std::unique_ptr<leveldb::DB> db;
     leveldb::Status status =
         leveldb_env::OpenDB(in_memory_options, std::string(), &db);
@@ -363,15 +423,12 @@ class IndexedDBDataItemReader : public storage::mojom::BlobDataItemReader {
                           base::Time expected_modification_time,
                           base::OnceCallback<void(const base::FilePath&)>
                               on_last_receiver_disconnected,
-                          scoped_refptr<base::TaskRunner> file_task_runner,
                           scoped_refptr<base::TaskRunner> io_task_runner)
       : file_path_(file_path),
         expected_modification_time_(std::move(expected_modification_time)),
         on_last_receiver_disconnected_(
             std::move(on_last_receiver_disconnected)),
-        file_task_runner_(std::move(file_task_runner)),
         io_task_runner_(std::move(io_task_runner)) {
-    DCHECK(file_task_runner_);
     DCHECK(io_task_runner_);
 
     // The `BlobStorageContext` will disconnect when the blob is no longer
@@ -399,26 +456,17 @@ class IndexedDBDataItemReader : public storage::mojom::BlobDataItemReader {
             ReadCallback callback) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-    auto adapter = std::make_unique<FileStreamReaderToDataPipe>(
-        storage::FileStreamReader::CreateForLocalFile(
-            file_task_runner_, file_path_, offset, expected_modification_time_),
-        std::move(pipe));
-    auto* raw_adapter = adapter.get();
-
     ReadCallback result_callback = base::BindPostTask(
         base::SequencedTaskRunner::GetCurrentDefault(), std::move(callback));
-    // Let the adapter be owned by the result callback. The adapter must be
-    // destroyed on `io_task_runner_`, hence the order of wrapping callbacks.
-    ReadCallback callback_owning_adapter = base::BindOnce(
-        base::IgnoreArgs<std::unique_ptr<FileStreamReaderToDataPipe>>(
-            std::move(result_callback)),
-        std::move(adapter));
-
-    // See note above `io_task_runner_`.
     io_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(&FileStreamReaderToDataPipe::Start,
-                                  base::Unretained(raw_adapter),
-                                  std::move(callback_owning_adapter), length));
+        FROM_HERE,
+        base::BindOnce(
+            &MakeFileStreamAdapterAndRead,
+            storage::FileStreamReader::CreateForLocalFile(
+                base::ThreadPool::CreateTaskRunner(
+                    {base::MayBlock(), base::TaskPriority::USER_BLOCKING}),
+                file_path_, offset, expected_modification_time_),
+            std::move(pipe), std::move(result_callback), length));
   }
 
   void ReadSideData(ReadSideDataCallback callback) override {
@@ -447,16 +495,9 @@ class IndexedDBDataItemReader : public storage::mojom::BlobDataItemReader {
   base::OnceCallback<void(const base::FilePath&)>
       on_last_receiver_disconnected_;
 
-  // There are a lot of task runners in this class:
-  // * IndexedDBDataItemReader runs on the same sequence as
-  // `IndexedDBBucketContext`.
-  // * LocalFileStreamReader wants its own |file_task_runner_| to run
-  //   various asynchronous file operations on.
-  // * net::FileStream (used by LocalFileStreamReader) needs to be run
-  //   on an IO thread for asynchronous file operations (on Windows), which
-  //   is done by passing in an |io_task_runner| to do this.
-  scoped_refptr<base::TaskRunner> file_task_runner_;
-  scoped_refptr<base::TaskRunner> io_task_runner_;
+  // net::FileStream (used by LocalFileStreamReader) needs to be run
+  // on an IO thread for asynchronous file operations on Windows.
+  const scoped_refptr<base::TaskRunner> io_task_runner_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 };
@@ -496,8 +537,6 @@ IndexedDBBucketContext::IndexedDBBucketContext(
       data_path_(data_path),
       leveldb_options_(GetLevelDBOptions()),
       quota_manager_proxy_(std::move(quota_manager_proxy)),
-      file_task_runner_(base::ThreadPool::CreateTaskRunner(
-          {base::MayBlock(), base::TaskPriority::USER_VISIBLE})),
       io_task_runner_(std::move(io_task_runner)),
       blob_storage_context_(std::move(blob_storage_context)),
       file_system_access_context_(std::move(file_system_access_context)),
@@ -597,10 +636,18 @@ void IndexedDBBucketContext::CheckCanUseDiskSpace(
   bucket_space_check_callbacks_.emplace(space_requested,
                                         std::move(bucket_space_check_callback));
   if (!check_pending) {
+    auto callback_with_logging = base::BindOnce(
+        [](GetBucketSpaceRequestWrapper request_wrapper,
+           storage::QuotaErrorOr<int64_t> result) {
+          request_wrapper.result_value = result;
+        },
+        GetBucketSpaceRequestWrapper(
+            base::BindOnce(&IndexedDBBucketContext::OnGotBucketSpaceRemaining,
+                           weak_factory_.GetWeakPtr())));
+
     quota_manager()->GetBucketSpaceRemaining(
         bucket_locator(), base::SequencedTaskRunner::GetCurrentDefault(),
-        base::BindOnce(&IndexedDBBucketContext::OnGotBucketSpaceRemaining,
-                       weak_factory_.GetWeakPtr()));
+        std::move(callback_with_logging));
   }
 }
 
@@ -1301,15 +1348,15 @@ void IndexedDBBucketContext::BindFileReader(
     mojo::PendingReceiver<storage::mojom::BlobDataItemReader> receiver) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(receiver.is_valid());
-  DCHECK(file_task_runner_);
 
   auto itr = file_reader_map_.find(path);
   if (itr == file_reader_map_.end()) {
+    // Unretained is safe because `this` owns the reader.
     auto reader = std::make_unique<IndexedDBDataItemReader>(
         path, expected_modification_time,
         base::BindOnce(&IndexedDBBucketContext::RemoveBoundReaders,
-                       weak_factory_.GetWeakPtr()),
-        file_task_runner_, io_task_runner_);
+                       base::Unretained(this)),
+        io_task_runner_);
     itr = file_reader_map_
               .insert({path, std::make_tuple(std::move(reader),
                                              base::ScopedClosureRunner(
@@ -1373,6 +1420,12 @@ void IndexedDBBucketContext::OnDatabaseError(leveldb::Status status,
 bool IndexedDBBucketContext::OnMemoryDump(
     const base::trace_event::MemoryDumpArgs& args,
     base::trace_event::ProcessMemoryDump* pmd) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!backing_store_) {
+    // Nothing to report when no databases have been loaded.
+    return true;
+  }
+
   base::CheckedNumeric<uint64_t> total_memory_in_flight = 0;
   for (const auto& [name, database] : databases_) {
     for (IndexedDBConnection* connection : database->connections()) {
@@ -1651,6 +1704,7 @@ IndexedDBBucketContext::InitBackingStoreIfNeeded(bool create_if_missing) {
 }
 
 void IndexedDBBucketContext::ResetBackingStore() {
+  file_reader_map_.clear();
   weak_factory_.InvalidateWeakPtrs();
 
   if (backing_store_) {

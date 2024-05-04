@@ -138,6 +138,19 @@ void AddDefaultComponentExtensionsOnMainThread(Profile* profile) {
   extensions::ExtensionService* service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
   service->component_loader()->AddDefaultComponentExtensions(false);
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  // QuickOffice loads from rootfs at /usr/share/chromeos-assets/quickoffce
+  // which does not exist on bots for tests, so load test version.
+  base::FilePath data_dir;
+  CHECK(base::PathService::Get(chrome::DIR_TEST_DATA, &data_dir));
+  base::RunLoop run_loop;
+  service->component_loader()->AddComponentFromDirWithManifestFilename(
+      data_dir.Append("chromeos/file_manager/quickoffice"),
+      extension_misc::kQuickOfficeComponentExtensionId,
+      extensions::kManifestFilename, extensions::kManifestFilename,
+      run_loop.QuitClosure());
+  run_loop.Run();
+#endif
   // AddDefaultComponentExtensions() is normally invoked during
   // ExtensionService::Init() which also invokes UninstallMigratedExtensions().
   // Invoke it here as well, otherwise migrated extensions will remain installed
@@ -452,42 +465,55 @@ FakeExtensionProviderOneDrive::FakeExtensionProviderOneDrive(
 
 FakeExtensionProviderOneDrive::~FakeExtensionProviderOneDrive() = default;
 
-FakeProvidedFileSystemOneDrive* CreateFakeProvidedFileSystemOneDrive(
-    Profile* profile) {
-  // Create a fake ODFS.
+FakeProvidedFileSystemOneDrive::~FakeProvidedFileSystemOneDrive() = default;
+
+ash::file_system_provider::ProvidedFileSystemInterface* MountProvidedFileSystem(
+    Profile* profile,
+    const extensions::ExtensionId& extension_id,
+    ash::file_system_provider::MountOptions options,
+    std::unique_ptr<ash::file_system_provider::ProviderInterface> provider) {
+  // Create a fake provided file system.
   ash::file_system_provider::Service* service =
       ash::file_system_provider::Service::Get(profile);
-  service->RegisterProvider(test::FakeExtensionProviderOneDrive::Create(
-      extension_misc::kODFSExtensionId));
+  service->RegisterProvider(std::move(provider));
   ash::file_system_provider::ProviderId provider_id =
       ash::file_system_provider::ProviderId::CreateFromExtensionId(
-          extension_misc::kODFSExtensionId);
-  ash::file_system_provider::MountOptions options("odfs", "ODFS");
+          extension_id);
   EXPECT_EQ(base::File::FILE_OK,
             service->MountFileSystem(provider_id, options));
 
-  // Get a pointer to the fake ODFS.
+  // Get a pointer to the provided file system.
   std::vector<ash::file_system_provider::ProvidedFileSystemInfo> file_systems =
       service->GetProvidedFileSystemInfoList(provider_id);
-  FakeProvidedFileSystemOneDrive* provided_file_system =
-      static_cast<test::FakeProvidedFileSystemOneDrive*>(
-          service->GetProvidedFileSystem(provider_id,
-                                         file_systems[0].file_system_id()));
-
-  return provided_file_system;
+  return service->GetProvidedFileSystem(provider_id, options.file_system_id);
 }
 
-FakeExtensionProviderOneDrive* GetFakeProviderOneDrive(Profile* profile) {
+ash::file_system_provider::ProviderInterface* GetProvider(
+    Profile* profile,
+    const extensions::ExtensionId& extension_id) {
   ash::file_system_provider::Service* service =
       ash::file_system_provider::Service::Get(profile);
   ash::file_system_provider::ProviderId provider_id =
       ash::file_system_provider::ProviderId::CreateFromExtensionId(
-          extension_misc::kODFSExtensionId);
-  return static_cast<FakeExtensionProviderOneDrive*>(
-      service->GetProvider(provider_id));
+          extension_id);
+  return service->GetProvider(provider_id);
 }
 
-FakeProvidedFileSystemOneDrive::~FakeProvidedFileSystemOneDrive() = default;
+FakeProvidedFileSystemOneDrive* MountFakeProvidedFileSystemOneDrive(
+    Profile* profile) {
+  ash::file_system_provider::MountOptions options(/*file_system_id=*/"odfs",
+                                                  /*display_name=*/"ODFS");
+  std::unique_ptr<ash::file_system_provider::ProviderInterface> provider =
+      FakeExtensionProviderOneDrive::Create(extension_misc::kODFSExtensionId);
+  return static_cast<test::FakeProvidedFileSystemOneDrive*>(
+      MountProvidedFileSystem(profile, extension_misc::kODFSExtensionId,
+                              options, std::move(provider)));
+}
+
+FakeExtensionProviderOneDrive* GetFakeProviderOneDrive(Profile* profile) {
+  return static_cast<FakeExtensionProviderOneDrive*>(
+      GetProvider(profile, extension_misc::kODFSExtensionId));
+}
 
 }  // namespace test
 }  // namespace file_manager

@@ -116,6 +116,9 @@ void AddChromeColorMixer(ui::ColorProvider* provider,
       kColorAvatarButtonHighlightSyncError};
   mixer[kColorAppMenuHighlightSeverityMedium] = AdjustHighlightColorForContrast(
       ui::kColorAlertMediumSeverityIcon, kColorToolbar);
+  mixer[kColorAppMenuHighlightPrimary] = {ui::kColorButtonBackgroundProminent};
+  mixer[kColorAppMenuExpandedForegroundPrimary] = {
+      ui::kColorButtonForegroundProminent};
   mixer[kColorAvatarButtonHighlightNormal] =
       AdjustHighlightColorForContrast(ui::kColorAccent, kColorToolbar);
   mixer[kColorAvatarButtonHighlightSyncError] = AdjustHighlightColorForContrast(
@@ -156,10 +159,6 @@ void AddChromeColorMixer(ui::ColorProvider* provider,
       kColorProfileMenuSyncInfoBackground};
   mixer[kColorDesktopMediaTabListBorder] = {ui::kColorMidground};
   mixer[kColorDesktopMediaTabListPreviewBackground] = {ui::kColorMidground};
-  mixer[kColorDownloadBubbleInfoBackground] = {
-      ui::kColorSubtleEmphasisBackground};
-  mixer[kColorDownloadBubbleInfoIcon] = {ui::kColorIcon};
-  mixer[kColorDownloadBubbleShowAllDownloadsIcon] = {ui::kColorIconSecondary};
   mixer[kColorDownloadItemForeground] = {kColorDownloadShelfForeground};
   mixer[kColorDownloadItemForegroundDangerous] = ui::PickGoogleColor(
       ui::kColorAlertHighSeverity, kColorDownloadShelfBackground,
@@ -295,9 +294,26 @@ void AddChromeColorMixer(ui::ColorProvider* provider,
   mixer[kColorOmniboxAnswerIconForeground] = {
       ui::kColorButtonForegroundProminent};
   mixer[kColorOmniboxChipBackground] = {kColorTabBackgroundActiveFrameActive};
-  mixer[kColorOmniboxChipForegroundLowVisibility] = {kColorToolbarButtonIcon};
-  mixer[kColorOmniboxChipForegroundNormalVisibility] = {
-      ui::kColorButtonForeground};
+  mixer[kColorOmniboxChipBlockedActivityIndicatorBackground] = {
+      kColorInfoBarBackground};
+  mixer[kColorOmniboxChipBlockedActivityIndicatorForeground] = {
+      kColorTabForegroundActiveFrameActive};
+  mixer[kColorOmniboxChipInUseActivityIndicatorBackground] = {
+      ui::kColorButtonBackgroundProminent};
+  mixer[kColorOmniboxChipInUseActivityIndicatorForeground] = {
+      ui::kColorButtonForegroundProminent};
+  mixer[kColorOmniboxChipOnSystemBlockedActivityIndicatorBackground] = {
+      kColorInfoBarBackground};
+  mixer[kColorOmniboxChipOnSystemBlockedActivityIndicatorForeground] =
+      ui::PickGoogleColor(
+          ui::kColorSysError,
+          kColorOmniboxChipOnSystemBlockedActivityIndicatorBackground,
+          color_utils::kMinimumReadableContrastRatio);
+  mixer[kColorOmniboxChipForegroundLowVisibility] = {
+      kColorTabForegroundActiveFrameActive};
+  mixer[kColorOmniboxChipForegroundNormalVisibility] = ui::PickGoogleColor(
+      ui::kColorButtonForeground, kColorOmniboxChipBackground,
+      color_utils::kMaximumPossibleContrast);
   // This color ID is only for Material Refresh 2023, but is a fallback when
   // themes are used.
   mixer[kColorOmniboxChipInkDropHover] = {
@@ -350,7 +366,7 @@ void AddChromeColorMixer(ui::ColorProvider* provider,
   mixer[kColorPipWindowSkipAdButtonBorder] = {kColorPipWindowForeground};
   mixer[kColorProfileMenuBackground] = {ui::kColorDialogBackground};
   mixer[kColorProfileMenuSyncInfoBackground] = {ui::kColorSyncInfoBackground};
-  // TODO(https://crbug.com/1315194): stop forcing the light theme once the
+  // TODO(crbug.com/40833357): stop forcing the light theme once the
   // reauth dialog supports the dark mode.
   mixer[kColorProfilesReauthDialogBorder] = {SK_ColorWHITE};
   mixer[kColorQrCodeBackground] = {SK_ColorWHITE};
@@ -775,13 +791,13 @@ void AddChromeColorMixer(ui::ColorProvider* provider,
       dark_mode ? kColorReadAnythingCurrentReadAloudHighlightDark
                 : kColorReadAnythingCurrentReadAloudHighlightLight};
   mixer[kColorReadAnythingCurrentReadAloudHighlightDark] = {
-      SkColorSetARGB(25, 253, 252, 251)};
+      SkColorSetARGB(46, 253, 252, 251)};
   mixer[kColorReadAnythingCurrentReadAloudHighlightLight] = {
-      SkColorSetARGB(15, 31, 31, 31)};
+      SkColorSetARGB(46, 6, 46, 111)};
   mixer[kColorReadAnythingCurrentReadAloudHighlightBlue] = {
-      SkColorSetARGB(15, 31, 31, 31)};
+      SkColorSetARGB(46, 6, 46, 111)};
   mixer[kColorReadAnythingCurrentReadAloudHighlightYellow] = {
-      SkColorSetARGB(15, 31, 31, 31)};
+      SkColorSetARGB(46, 6, 46, 111)};
   mixer[kColorReadAnythingForeground] = {
       dark_mode ? kColorReadAnythingForegroundDark
                 : kColorReadAnythingForegroundLight};

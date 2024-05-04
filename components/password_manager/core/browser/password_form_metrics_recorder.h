@@ -221,7 +221,10 @@ class PasswordFormMetricsRecorder
     // Form is in an iframe with an origin that differs from the main frame
     // origin.
     kCrossOriginIframe = 12,
-    kMaxValue = kCrossOriginIframe,
+    // A credential with a different domain was grouped with the current domain
+    // by the `AffiliationService`.
+    kGroupedMatch = 13,
+    kMaxValue = kGroupedMatch,
   };
 
   // Used in UMA histogram, please do NOT reorder.
@@ -245,7 +248,10 @@ class PasswordFormMetricsRecorder
     // A credential exists for an affiliated matched site but not for the
     // current security origin.
     kAffiliatedWebsites = 3,
-    kMaxValue = kAffiliatedWebsites,
+    // A credential exists for a web site, which is grouped with the current
+    // domain by the `AffiliationService`.
+    kGroupedWebsites = 4,
+    kMaxValue = kGroupedWebsites,
   };
 
   // This metric records the user experience with the passwords filling. The
@@ -431,6 +437,9 @@ class PasswordFormMetricsRecorder
   void RecordFirstFillingResult(int32_t result);
   void RecordFirstWaitForUsernameReason(WaitForUsernameReason reason);
   void RecordMatchedFormType(const PasswordForm& form);
+  void RecordPotentialPreferredMatch(
+      const PasswordForm* preferred_match,
+      const bool were_grouped_credentials_availible);
 
   // Calculates FillingAssistance metrics for |submitted_form|.
   void CalculateFillingAssistanceMetric(
@@ -577,6 +586,8 @@ class PasswordFormMetricsRecorder
   bool recorded_wait_for_username_reason_ = false;
 
   bool recorded_preferred_matched_password_type = false;
+
+  bool recorded_potential_preferred_matched_password_type = false;
 
   absl::variant<absl::monostate,
                 FillingAssistance,

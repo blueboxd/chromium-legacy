@@ -57,14 +57,17 @@ class DIPSDatabase {
   // was called.
   bool MigrateToVersion3();
 
-  // Migrates from v2 to v3 of the DIPS database schema. This migration adds a
-  // Popups table for recording popupts with a current or prior user
-  // interaction.
+  // Migrates from v3 to v4 of the DIPS database schema. This migration adds a
+  // Popups table for recording popups with a current or prior user interaction.
   bool MigrateToVersion4();
 
-  // Migrates from v2 to v3 of the DIPS database schema. This migration adds an
+  // Migrates from v4 to v5 of the DIPS database schema. This migration adds an
   // `is_current_interaction` field to the Popups table.
   bool MigrateToVersion5();
+
+  // Migrates from v5 to v6 of the DIPS database schema. This migration adds a
+  // Config table for storing key-value configuration data.
+  bool MigrateToVersion6();
 
   // DIPS Bounce table functions -----------------------------------------------
   bool Write(const std::string& site,
@@ -100,18 +103,17 @@ class DIPSDatabase {
   // the other database querying methods.
   std::vector<std::string> GetAllSitesForTesting(const DIPSDatabaseTable table);
 
-  // Returns the subset of sites in |sites| WITH user interaction or successful
-  // web authn assertion recorded.
+  // Returns the subset of sites in |sites| WITH a protective event recorded.
+  // A protective event is a user interaction or successful WebAuthn assertion.
   //
   // NOTE: This method's main procedure is performed after calling
   // `ClearExpiredRows()`.
   //
-  // TODO(njeunje): Consider making this FilterSites(set<string> sites,
-  // FilterType filter) where FilterType lets us specify if we want to filter
-  // out interactions, web authn assertions, or both. There may be other
-  // criteria that we want to filter for in the future & this name might get
-  // even longer.
-  std::set<std::string> FilterSitesWithInteractionOrWaa(
+  // TODO(njeunje): Consider making a method FilterSites(set<string> sites,
+  // FilterType filter) that we call from this method, where FilterType lets us
+  // specify if we want to filter out interactions, WebAuthn assertions, or
+  // both. There may be other criteria that we want to filter for in the future.
+  std::set<std::string> FilterSitesWithProtectiveEvent(
       const std::set<std::string>& sites);
 
   // Returns all sites which bounced the user and aren't protected from DIPS.
@@ -234,11 +236,21 @@ class DIPSDatabase {
   size_t GetMaxEntries() const { return max_entries_; }
   size_t GetPurgeEntries() const { return purge_entries_; }
 
+  std::optional<base::Time> GetTimerLastFired();
+  bool SetTimerLastFired(base::Time time);
+
   // Testing functions --------------------------------------------------
   void SetMaxEntriesForTesting(size_t entries) { max_entries_ = entries; }
   void SetPurgeEntriesForTesting(size_t entries) { purge_entries_ = entries; }
   void SetClockForTesting(base::Clock* clock) { clock_ = clock; }
   bool ExecuteSqlForTesting(const char* sql);
+
+  bool SetConfigValueForTesting(std::string_view name, int64_t value) {
+    return SetConfigValue(name, value);
+  }
+  std::optional<int64_t> GetConfigValueForTesting(std::string_view name) {
+    return GetConfigValue(name);
+  }
 
  protected:
   // Initialization functions --------------------------------------------------
@@ -280,6 +292,11 @@ class DIPSDatabase {
   bool AdjustLastTimestamps(const base::Time& delete_begin,
                             const base::Time& delete_end,
                             const DIPSEventRemovalType type);
+
+  // Upsert the row for `key` in the config table to contain `value`.
+  bool SetConfigValue(std::string_view key, int64_t value);
+  // Get the value for `key` from the config table, or nullopt if absent.
+  std::optional<int64_t> GetConfigValue(std::string_view key);
 
   // When the number of entries in the database exceeds |max_entries_|, purge
   // down to |max_entries_| - |purge_entries_|.

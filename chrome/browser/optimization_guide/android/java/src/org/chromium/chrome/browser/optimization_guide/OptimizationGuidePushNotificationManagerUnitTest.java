@@ -4,14 +4,14 @@
 
 package org.chromium.chrome.browser.optimization_guide;
 
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import android.util.Base64;
 
+import androidx.test.annotation.UiThreadTest;
 import androidx.test.filters.SmallTest;
 
 import com.google.protobuf.ByteString;
@@ -28,7 +28,6 @@ import org.mockito.MockitoAnnotations;
 import org.chromium.base.FeatureList;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
-import org.chromium.base.test.UiThreadTest;
 import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.Features;
 import org.chromium.base.test.util.Features.DisableFeatures;
@@ -58,8 +57,8 @@ public class OptimizationGuidePushNotificationManagerUnitTest {
     @Rule public Features.JUnitProcessor mFeaturesProcessor = new Features.JUnitProcessor();
 
     @Mock private Profile mProfile;
-
-    @Mock OptimizationGuideBridge.Natives mOptimizationGuideBridgeJniMock;
+    @Mock private OptimizationGuideBridgeFactory.Natives mOptimizationGuideBridgeFactoryJniMock;
+    @Mock private OptimizationGuideBridge mOptimizationGuideBridge;
 
     private static final HintNotificationPayload NOTIFICATION_WITH_PAYLOAD =
             HintNotificationPayload.newBuilder()
@@ -81,8 +80,13 @@ public class OptimizationGuidePushNotificationManagerUnitTest {
         resetFeatureFlags();
 
         MockitoAnnotations.initMocks(this);
-        mocker.mock(OptimizationGuideBridgeJni.TEST_HOOKS, mOptimizationGuideBridgeJniMock);
-        when(mOptimizationGuideBridgeJniMock.init()).thenReturn(1L);
+        mocker.mock(
+                org.chromium.chrome.browser.optimization_guide.OptimizationGuideBridgeFactoryJni
+                        .TEST_HOOKS,
+                mOptimizationGuideBridgeFactoryJniMock);
+        doReturn(mOptimizationGuideBridge)
+                .when(mOptimizationGuideBridgeFactoryJniMock)
+                .getForProfile(mProfile);
 
         ProfileManager.setLastUsedProfileForTesting(mProfile);
 
@@ -155,8 +159,8 @@ public class OptimizationGuidePushNotificationManagerUnitTest {
                 new ArrayList<OptimizationType>(),
                 OptimizationGuidePushNotificationManager.getOptTypesWithPushNotifications());
 
-        verify(mOptimizationGuideBridgeJniMock, times(1))
-                .onNewPushNotification(anyLong(), eq(NOTIFICATION_WITHOUT_PAYLOAD.toByteArray()));
+        verify(mOptimizationGuideBridge, times(1))
+                .onNewPushNotification(eq(NOTIFICATION_WITHOUT_PAYLOAD));
     }
 
     @Test

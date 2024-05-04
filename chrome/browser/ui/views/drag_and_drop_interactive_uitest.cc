@@ -408,17 +408,17 @@ class DragStartWaiter : public aura::client::DragDropClient {
       message_loop_runner_->Quit();
 
       source_origin_ = data->GetRendererTaintedOrigin();
-      std::u16string text;
-      if (data->GetString(&text)) {
-        text_ = base::UTF16ToUTF8(text);
+      std::optional<std::u16string> text = data->GetString();
+      if (text) {
+        text_ = base::UTF16ToUTF8(*text);
       } else {
         text_ = "<no text>";
       }
 
-      GURL base_url;
-      std::u16string html;
-      if (data->GetHtml(&html, &base_url)) {
-        html_ = base::UTF16ToUTF8(html);
+      std::optional<ui::OSExchangeData::HtmlInfo> html_content =
+          data->GetHtml();
+      if (html_content.has_value()) {
+        html_ = base::UTF16ToUTF8(html_content->html);
       } else {
         html_ = "<no html>";
       }
@@ -901,9 +901,9 @@ class DragAndDropBrowserTest : public InProcessBrowserTest,
   }
 
   gfx::Point expected_location_of_drag_start_in_left_frame() {
-    // TODO(crbug.com/653490): The delta below should exceed kDragThresholdX and
-    // kDragThresholdY from MouseEventManager.cpp in blink.  Ideally, it would
-    // come from the OS instead.
+    // TODO(crbug.com/41279378): The delta below should exceed kDragThresholdX
+    // and kDragThresholdY from MouseEventManager.cpp in blink.  Ideally, it
+    // would come from the OS instead.
     return kMiddleOfLeftFrame + gfx::Vector2d(10, 10);
   }
 
@@ -1618,10 +1618,17 @@ void DragAndDropBrowserTest::DragImageBetweenFrames_Step3(
 
   // Verify dragend DOM event.
   {
-    // TODO(lukasza): Figure out why the drop event sees different values of
-    // DataTransfer.dropEffect and DataTransfer.types properties.
+    // Different values of DataTransfer.dropEffect is observed and is
+    // being tracked by https://crbug.com/1470718.
+    // Different values of DataTransfer.types is seen due to
+    // https://crbug.com/394955. This causes certain File objects to be
+    // mapped to text/plain in `DataObject::ToWebDragData()` and thus
+    // text/plain is seen in "dragleave", "dragenter", "dragover" and "drop"
+    // events. While dragend doesn't use WebDragData object and that is why
+    // text/plain is not seen in this event.
     state->expected_dom_event_data.set_expected_drop_effect("copy");
-    state->expected_dom_event_data.set_expected_mime_types("");
+    state->expected_dom_event_data.set_expected_mime_types(
+        "Files,text/html,text/uri-list");
 
     // TODO: https://crbug.com/686136: dragEnd coordinates for non-OOPIF
     // scenarios are currently broken.
@@ -1658,9 +1665,9 @@ void DragAndDropBrowserTest::DragImageBetweenFrames_Step3(
 // There is no known way to execute test-controlled tasks during
 // a drag-and-drop loop run by Windows OS.
 // Also disable the test on Linux due to flaky: crbug.com/1164442
-// TODO(crbug.com/1052397): Revisit once build flag switch of lacros-chrome is
+// TODO(crbug.com/40118868): Revisit once build flag switch of lacros-chrome is
 // complete.
-// TODO(crbug.com/1380803): Enable on ChromeOS ASAN once flakiness is fixed.
+// TODO(crbug.com/40876472): Enable on ChromeOS ASAN once flakiness is fixed.
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX) || \
     BUILDFLAG(IS_CHROMEOS_LACROS) ||            \
     (BUILDFLAG(IS_CHROMEOS) && defined(ADDRESS_SANITIZER))
@@ -2203,10 +2210,17 @@ void DragAndDropBrowserTest::CrossTabDrag_Step3(
 
   // Verify dragend DOM event.
   {
-    // TODO(lukasza): Figure out why the drop event sees different values of
-    // DataTransfer.dropEffect and DataTransfer.types properties.
+    // Different values of DataTransfer.dropEffect is observed and is
+    // being tracked by https://crbug.com/1470718.
+    // Different values of DataTransfer.types is seen due to
+    // https://crbug.com/394955. This causes certain File objects to be
+    // mapped to text/plain in `DataObject::ToWebDragData()` and thus
+    // text/plain is seen in "dragleave", "dragenter", "dragover" and "drop"
+    // events. While dragend doesn't use WebDragData object and that is why
+    // text/plain is not seen in this event.
     state->expected_dom_event_data.set_expected_drop_effect("copy");
-    state->expected_dom_event_data.set_expected_mime_types("");
+    state->expected_dom_event_data.set_expected_mime_types(
+        "Files,text/html,text/uri-list");
 
     // TODO: https://crbug.com/686136: dragEnd coordinates for non-OOPIF
     // scenarios are currently broken.
@@ -2276,7 +2290,7 @@ IN_PROC_BROWSER_TEST_P(DragAndDropBrowserTest, DragUpdateScreenCoordinates) {
 // navigation.
 
 // Injecting input with scaling works as expected on Chromeos.
-// TODO(crbug.com/1344579): Enable tests with a scale factor on lacros.
+// TODO(crbug.com/40231833): Enable tests with a scale factor on lacros.
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 constexpr std::initializer_list<double> ui_scaling_factors = {1.0, 1.25, 2.0};
 #else

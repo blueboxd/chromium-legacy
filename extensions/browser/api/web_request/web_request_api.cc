@@ -281,7 +281,7 @@ WebRequestAPI::WebRequestAPI(content::BrowserContext* context)
       proxies_(std::make_unique<ProxySet>()),
       may_have_proxies_(MayHaveProxies()) {
   EventRouter* event_router = EventRouter::Get(browser_context_);
-  // TODO(crbug.com/433136): Once ExtensionWebRequestEventRouter is a per-
+  // TODO(crbug.com/40393861): Once ExtensionWebRequestEventRouter is a per-
   // BrowserContext instance, it can observe these events itself. That's a
   // bit tricky right now because the singleton instance would need to
   // observe the EventRouter for each BrowserContext that has webRequest
@@ -299,7 +299,7 @@ void WebRequestAPI::Shutdown() {
   proxies_.reset();
   EventRouter::Get(browser_context_)->UnregisterObserver(this);
   extensions::ExtensionRegistry::Get(browser_context_)->RemoveObserver(this);
-  // TODO(https://crbug.com/1433136): Remove this once WebRequestEventRouter
+  // TODO(crbug.com/40264286): Remove this once WebRequestEventRouter
   // implements `KeyedService::Shutdown` correctly.
   WebRequestEventRouter::Get(browser_context_)
       ->OnBrowserContextShutdown(browser_context_);
@@ -389,7 +389,7 @@ bool WebRequestAPI::MaybeProxyURLLoaderFactory(
     bool use_proxy = false;
     // There are a few internal WebUIs that use WebView tag that are allowlisted
     // for webRequest.
-    // TODO(https://crbug.com/1500060): Remove the scheme check once we're sure
+    // TODO(crbug.com/40288053): Remove the scheme check once we're sure
     // that WebUIs with WebView run in real WebUI processes and check the
     // context type using |IsAvailableToWebViewEmbedderFrame()| below.
     if (WebViewGuest::IsGuest(frame)) {
@@ -415,7 +415,7 @@ bool WebRequestAPI::MaybeProxyURLLoaderFactory(
     // installed with webRequest permissions. This allows the extension
     // requests to be intercepted for CRX telemetry service if enabled.
     // Only proxy if the new RHC interception logic is disabled.
-    // TODO(crbug.com/1447587): Clean up collection logic here once new RHC
+    // TODO(crbug.com/40913716): Clean up collection logic here once new RHC
     // interception logic is fully launched.
     const std::string& request_scheme = request_initiator.scheme();
     if (extensions::kExtensionScheme == request_scheme &&
@@ -568,7 +568,7 @@ bool WebRequestAPI::MayHaveProxies() const {
 }
 
 bool WebRequestAPI::MayHaveWebsocketProxiesForExtensionTelemetry() const {
-  // TODO(crbug.com/1447587): Clean up once new RHC interception logic is fully
+  // TODO(crbug.com/40913716): Clean up once new RHC interception logic is fully
   // launched.
   return ExtensionsBrowserClient::Get()->IsExtensionTelemetryServiceEnabled(
              browser_context_) &&

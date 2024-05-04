@@ -238,21 +238,9 @@ void ToastManagerImpl::OnToastHoverStateChanged(bool is_hovering) {
 
 void ToastManagerImpl::OnSessionStateChanged(
     session_manager::SessionState state) {
-  const bool locked = state != session_manager::SessionState::ACTIVE;
-
-  if ((locked != locked_) && current_toast_data_) {
-    // Re-queue the currently visible toast which is not for lock screen.
-    queue_.push_front(std::move(*current_toast_data_));
-    current_toast_data_.reset();
-    // Hide the currently visible toast instances without any animation.
-    CloseAllToastsWithoutAnimation();
-  }
-
-  locked_ = locked;
-  if (!queue_.empty()) {
-    // Try to reshow a queued toast from a previous OnSessionStateChanged.
-    ShowLatest();
-  }
+  locked_ = state != session_manager::SessionState::ACTIVE;
+  current_toast_data_.reset();
+  CloseAllToastsWithoutAnimation();
 }
 
 void ToastManagerImpl::ShowLatest() {
@@ -280,12 +268,10 @@ void ToastManagerImpl::ShowLatest() {
 
   DCHECK(!current_toast_expiration_timer_->IsRunning());
 
-  if (current_toast_data_->duration != ToastData::kInfiniteDuration) {
-    current_toast_expiration_timer_->Start(
-        current_toast_data_->duration,
-        base::BindRepeating(&ToastManagerImpl::CloseAllToastsWithAnimation,
-                            base::Unretained(this)));
-  }
+  current_toast_expiration_timer_->Start(
+      current_toast_data_->duration,
+      base::BindRepeating(&ToastManagerImpl::CloseAllToastsWithAnimation,
+                          base::Unretained(this)));
 
   base::UmaHistogramEnumeration("Ash.NotifierFramework.Toast.ShownCount",
                                 current_toast_data_->catalog_name);
@@ -299,10 +285,7 @@ void ToastManagerImpl::CreateToastOverlayForRoot(aura::Window* root_window) {
   DCHECK(!new_overlay);
   DCHECK(current_toast_data_);
   new_overlay = std::make_unique<ToastOverlay>(
-      this, current_toast_data_->text, current_toast_data_->dismiss_text,
-      *current_toast_data_->leading_icon, current_toast_data_->duration,
-      current_toast_data_->persist_on_hover, root_window,
-      current_toast_data_->dismiss_callback);
+      /*delegate=*/this, *current_toast_data_, root_window);
   new_overlay->Show(true);
 
   // We only want to record this value when the first instance of the toast is

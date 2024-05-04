@@ -1033,7 +1033,7 @@ class SystemWebAppManagerInstallAllAppsBrowserTest
   base::test::ScopedFeatureList features_;
 };
 
-// TODO(https://crbug.com/1162992): At the moment, PRE_Test failures aren't
+// TODO(crbug.com/40162953): At the moment, PRE_Test failures aren't
 // reported in test summary, thus won't fail the CI build job. So we need a
 // ordinary test to fail the job and block CQ.
 //
@@ -1059,7 +1059,7 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerInstallAllAppsBrowserTest,
 
     // Check app's install_url and start_url are from the same origin.
     //
-    // TODO(https://crbug.com/1111171): Include OS Settings in this check.
+    // TODO(crbug.com/40709016): Include OS Settings in this check.
     //
     // OS Settings uses a different install_url origin (by mistake) which are
     // persisted to disk. We can't fix it until the above crbug is fixed.
@@ -1887,7 +1887,7 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppIconHealthMetricsTest,
 
   tester_.ExpectBucketCount(kIconsAreHealthyHistogramName, false, 1);
 
-  // TODO(https://crbug.com/1162992): Change CHECK_EQ to EXPECT_TRUE when
+  // TODO(crbug.com/40162953): Change CHECK_EQ to EXPECT_TRUE when
   // assertions report correctly as test failure in PRE_TESTs.
 
   // Icon check should update pref to report broken icons.

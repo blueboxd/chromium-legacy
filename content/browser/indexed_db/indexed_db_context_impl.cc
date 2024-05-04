@@ -18,6 +18,7 @@
 #include "base/check.h"
 #include "base/check_op.h"
 #include "base/containers/contains.h"
+#include "base/feature_list.h"
 #include "base/files/file.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
@@ -31,6 +32,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/task/bind_post_task.h"
 #include "base/task/sequenced_task_runner.h"
+#include "base/task/task_features.h"
 #include "base/task/task_runner.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
@@ -49,12 +51,12 @@
 #include "components/services/storage/public/cpp/quota_error_or.h"
 #include "components/services/storage/public/mojom/quota_client.mojom.h"
 #include "components/services/storage/public/mojom/storage_policy_update.mojom.h"
-#include "content/browser/indexed_db/features.h"
 #include "content/browser/indexed_db/file_path_util.h"
 #include "content/browser/indexed_db/indexed_db_bucket_context.h"
 #include "content/browser/indexed_db/indexed_db_database_error.h"
 #include "content/browser/indexed_db/indexed_db_factory_client.h"
 #include "content/browser/indexed_db/indexed_db_leveldb_coding.h"
+#include "content/public/common/content_features.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -122,11 +124,13 @@ bool ShardingEnabled() {
 }
 
 // Creates a task runner suitable for use either as the main IDB thread or for a
-// backing store.
+// backing store. See https://crbug.com/329221141 for notes on task priority.
 scoped_refptr<base::SequencedTaskRunner> CreateTaskRunner() {
   return base::ThreadPool::CreateSequencedTaskRunner(
       {base::MayBlock(), base::WithBaseSyncPrimitives(),
-       base::TaskPriority::USER_VISIBLE,
+       base::FeatureList::IsEnabled(base::kUseUtilityThreadGroup)
+           ? base::TaskPriority::USER_BLOCKING
+           : base::TaskPriority::USER_VISIBLE,
        // BLOCK_SHUTDOWN to support clearing session-only storage.
        base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
 }
@@ -177,6 +181,63 @@ class MissingBucketErrorEndpoint : public blink::mojom::IDBFactory {
             blink::mojom::IDBException::kUnknownError, u"Internal error."));
   }
 };
+
+// Getting all the bucket details requires multiple asynchronous steps.
+// `IndexedDBContextImpl::ContinueGetAllBucketsDetails` is invoked after
+// asynchronously retrieving buckets from the quota manager, whereas
+// `FinishGetAllBucketsDetails` is invoked after retrieving details from
+// individual bucket contexts.
+void FinishGetAllBucketsDetails(
+    base::OnceCallback<void(std::vector<storage::mojom::IdbOriginMetadataPtr>)>
+        callback,
+    std::vector<storage::mojom::IdbBucketMetadataPtr> infos) {
+  std::map<url::Origin,
+           std::map<blink::StorageKey,
+                    std::vector<storage::mojom::IdbBucketMetadataPtr>>>
+      origin_map;
+  for (storage::mojom::IdbBucketMetadataPtr& info : infos) {
+    if (info) {
+      StorageKey storage_key = info->bucket_locator.storage_key;
+      origin_map[storage_key.origin()][storage_key].push_back(std::move(info));
+    }
+  }
+
+  std::vector<storage::mojom::IdbOriginMetadataPtr> origins;
+  for (auto& [origin_url, top_level_site_map] : origin_map) {
+    storage::mojom::IdbOriginMetadataPtr origin_metadata =
+        storage::mojom::IdbOriginMetadata::New();
+
+    origin_metadata->origin = origin_url;
+
+    for (auto& [storage_key, buckets] : top_level_site_map) {
+      storage::mojom::IdbStorageKeyMetadataPtr storage_key_metadata =
+          storage::mojom::IdbStorageKeyMetadata::New();
+
+      // Sort by name alphabetically but with the default bucket always first.
+      std::sort(
+          buckets.begin(), buckets.end(),
+          [](const storage::mojom::IdbBucketMetadataPtr& b1,
+             const storage::mojom::IdbBucketMetadataPtr& b2) {
+            return (b1->bucket_locator.is_default) ||
+                   (!b2->bucket_locator.is_default && b1->name < b2->name);
+          });
+
+      storage_key_metadata->top_level_site = storage_key.top_level_site();
+      storage_key_metadata->serialized_storage_key = storage_key.Serialize();
+      storage_key_metadata->buckets = std::move(buckets);
+
+      origin_metadata->storage_keys.push_back(std::move(storage_key_metadata));
+    }
+
+    std::sort(origin_metadata->storage_keys.begin(),
+              origin_metadata->storage_keys.end());
+
+    origins.push_back(std::move(origin_metadata));
+  }
+
+  std::sort(origins.begin(), origins.end());
+  std::move(callback).Run(std::move(origins));
+}
 
 }  // namespace
 
@@ -395,8 +456,9 @@ void IndexedDBContextImpl::GetAllBucketsDetails(
         auto collect_buckets =
             base::BarrierCallback<storage::QuotaErrorOr<storage::BucketInfo>>(
                 handler->bucket_set_.size(),
-                base::BindOnce(&IndexedDBContextImpl::OnBucketInfoReady,
-                               handler, std::move(callback)));
+                base::BindOnce(
+                    &IndexedDBContextImpl::ContinueGetAllBucketsDetails,
+                    handler, std::move(callback)));
 
         for (const BucketLocator& bucket_locator : handler->bucket_set_) {
           handler->quota_manager_proxy_->GetBucketById(
@@ -406,18 +468,23 @@ void IndexedDBContextImpl::GetAllBucketsDetails(
       weak_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-void IndexedDBContextImpl::OnBucketInfoReady(
+void IndexedDBContextImpl::ContinueGetAllBucketsDetails(
     GetAllBucketsDetailsCallback callback,
     std::vector<storage::QuotaErrorOr<storage::BucketInfo>> bucket_infos) {
   DCHECK(IDBTaskRunner()->RunsTasksInCurrentSequence());
 
-  std::map<
-      url::Origin,
-      std::map<StorageKey, std::vector<storage::mojom::IdbBucketMetadataPtr>>>
-      bucket_map;
+  // This barrier receives the bucket info from individual bucket contexts and
+  // invokes the next step in the process, `FinishGetAllBucketsDetails`.
+  auto barrier = base::BarrierCallback<storage::mojom::IdbBucketMetadataPtr>(
+      bucket_infos.size(),
+      base::BindOnce(&FinishGetAllBucketsDetails,
+                     base::BindOnce(std::move(callback), in_memory())));
 
+  // Iterate over existing bucket contexts, pre-fill some data into the bucket
+  // info struct, and invoke `FillInBucketMetadata`.
   for (const auto& quota_error_or_bucket_info : bucket_infos) {
     if (!quota_error_or_bucket_info.has_value()) {
+      barrier.Run({});
       continue;
     }
     const storage::BucketInfo& bucket_info = quota_error_or_bucket_info.value();
@@ -437,59 +504,8 @@ void IndexedDBContextImpl::OnBucketInfoReady(
     if (!in_memory()) {
       info->paths = GetStoragePaths(bucket_locator);
     }
-    // TODO(crbug.com/1474996): This executes synchronously for now, but will
-    // need to handle delayed responses.
-    FillInBucketMetadata(
-        std::move(info),
-        base::BindOnce(
-            [](std::map<
-                   url::Origin,
-                   std::map<StorageKey,
-                            std::vector<storage::mojom::IdbBucketMetadataPtr>>>&
-                   bucket_map,
-               storage::mojom::IdbBucketMetadataPtr info) {
-              StorageKey storage_key = info->bucket_locator.storage_key;
-              bucket_map[storage_key.origin()][storage_key].push_back(
-                  std::move(info));
-            },
-            std::ref(bucket_map)));
+    FillInBucketMetadata(std::move(info), barrier);
   }
-
-  std::vector<storage::mojom::IdbOriginMetadataPtr> origins;
-  for (auto& [origin_url, top_level_site_map] : bucket_map) {
-    storage::mojom::IdbOriginMetadataPtr origin_metadata =
-        storage::mojom::IdbOriginMetadata::New();
-
-    origin_metadata->origin = origin_url;
-
-    for (auto& [storage_key, buckets] : top_level_site_map) {
-      storage::mojom::IdbStorageKeyMetadataPtr storage_key_metadata =
-          storage::mojom::IdbStorageKeyMetadata::New();
-
-      // Sort by name alphabetically but with the default bucket always first.
-      std::sort(
-          buckets.begin(), buckets.end(),
-          [](const storage::mojom::IdbBucketMetadataPtr& b1,
-             const storage::mojom::IdbBucketMetadataPtr& b2) {
-            return (b1->bucket_locator.is_default) ||
-                   (!b2->bucket_locator.is_default && b1->name < b2->name);
-          });
-
-      storage_key_metadata->top_level_site = storage_key.top_level_site();
-      storage_key_metadata->serialized_storage_key = storage_key.Serialize();
-      storage_key_metadata->buckets = std::move(buckets);
-
-      origin_metadata->storage_keys.push_back(std::move(storage_key_metadata));
-    }
-
-    std::sort(origin_metadata->storage_keys.begin(),
-              origin_metadata->storage_keys.end());
-
-    origins.push_back(std::move(origin_metadata));
-  }
-
-  std::sort(origins.begin(), origins.end());
-  std::move(callback).Run(in_memory(), std::move(origins));
 }
 
 void IndexedDBContextImpl::SetForceKeepSessionState() {
@@ -522,8 +538,9 @@ void IndexedDBContextImpl::AddObserver(
       base::BindOnce(
           [](base::WeakPtr<IndexedDBContextImpl> context,
              mojo::PendingRemote<storage::mojom::IndexedDBObserver> observer) {
-            if (context)
+            if (context) {
               context->observers_.Add(std::move(observer));
+            }
           },
           weak_factory_.GetWeakPtr(), std::move(observer)));
 }
@@ -615,8 +632,9 @@ std::optional<BucketLocator> IndexedDBContextImpl::LookUpBucket(
   DCHECK(IDBTaskRunner()->RunsTasksInCurrentSequence());
   auto bucket_locator =
       base::ranges::find(bucket_set_, bucket_id, &BucketLocator::id);
-  if (bucket_locator == bucket_set_.end())
+  if (bucket_locator == bucket_set_.end()) {
     return std::nullopt;
+  }
 
   return *bucket_locator;
 }
@@ -625,8 +643,9 @@ int64_t IndexedDBContextImpl::GetBucketDiskUsage(
     const BucketLocator& bucket_locator) {
   DCHECK(IDBTaskRunner()->RunsTasksInCurrentSequence());
   DCHECK(!in_memory());
-  if (!LookUpBucket(bucket_locator.id))
+  if (!LookUpBucket(bucket_locator.id)) {
     return 0;
+  }
 
   bool write_in_progress = false;
   const auto iter = bucket_size_map_.find(bucket_locator);
@@ -646,8 +665,9 @@ int64_t IndexedDBContextImpl::GetBucketDiskUsage(
 base::Time IndexedDBContextImpl::GetBucketLastModified(
     const BucketLocator& bucket_locator) {
   DCHECK(IDBTaskRunner()->RunsTasksInCurrentSequence());
-  if (!LookUpBucket(bucket_locator.id))
+  if (!LookUpBucket(bucket_locator.id)) {
     return base::Time();
+  }
 
   // Only used by indexeddb-internals; not worth the complexity to implement.
   if (in_memory()) {
@@ -678,7 +698,8 @@ base::FilePath IndexedDBContextImpl::GetDataPath(
   if (indexed_db::ShouldUseLegacyFilePath(bucket_locator)) {
     // First-party idb files for the default, for legacy reasons, are stored at:
     // {{storage_partition_path}}/IndexedDB/
-    // TODO(crbug.com/1315371): Migrate all first party buckets to the new path.
+    // TODO(crbug.com/40221733): Migrate all first party buckets to the new
+    // path.
     return GetLegacyDataPath();
   }
 
@@ -742,8 +763,9 @@ void IndexedDBContextImpl::ShutdownOnIDBSequence() {
   // `this` will be destroyed when this method returns.
   DCHECK(IDBTaskRunner()->RunsTasksInCurrentSequence());
 
-  if (force_keep_session_state_)
+  if (force_keep_session_state_) {
     return;
+  }
 
   // Clear session-only databases.
   if (origins_to_purge_on_shutdown_.empty()) {

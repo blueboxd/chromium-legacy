@@ -23,7 +23,7 @@ class PerformanceManagerMetricsProviderDesktopTest : public testing::Test {
     local_state()->SetInteger(
         performance_manager::user_tuning::prefs::kMemorySaverModeState,
         static_cast<int>(enabled ? performance_manager::user_tuning::prefs::
-                                       MemorySaverModeState::kEnabledOnTimer
+                                       MemorySaverModeState::kEnabled
                                  : performance_manager::user_tuning::prefs::
                                        MemorySaverModeState::kDisabled));
   }
@@ -273,4 +273,23 @@ TEST_F(PerformanceManagerMetricsProviderDesktopTest,
                              /*battery_saver_percent=*/100,
                              /*memory_saver_percent=*/0);
   }
+}
+
+TEST_F(PerformanceManagerMetricsProviderDesktopTest,
+       TestCpuThrottlingMetricRecordedWhereAvailable) {
+  InitProvider();
+  base::HistogramTester tester;
+
+  FastForwardBy(base::Minutes(5));
+  tester.ExpectTotalCount("CPU.Experimental.EstimatedFrequencyAsPercentOfMax",
+                          performance_manager::MetricsProviderDesktop::
+                                  ShouldCollectCpuFrequencyMetrics()
+                              ? 1
+                              : 0);
+
+  tester.ExpectTotalCount("CPU.Experimental.EstimatedFrequencyAsPercentOfLimit",
+                          performance_manager::MetricsProviderDesktop::
+                                  ShouldCollectCpuFrequencyMetrics()
+                              ? 1
+                              : 0);
 }

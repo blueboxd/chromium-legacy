@@ -4,6 +4,7 @@
 
 #include "net/quic/dedicated_web_transport_http3_client.h"
 
+#include <string_view>
 #include <vector>
 
 #include "base/containers/contains.h"
@@ -619,7 +620,7 @@ void DedicatedWebTransportHttp3Client::CreateConnection() {
       kQuicYieldAfterPacketsRead,
       quic::QuicTime::Delta::FromMilliseconds(
           kQuicYieldAfterDurationMilliseconds),
-      net_log_);
+      quic_context_->params()->report_ecn, net_log_);
 
   event_logger_ = std::make_unique<QuicEventLogger>(session_.get(), net_log_);
   connection_->set_debug_visitor(event_logger_.get());
@@ -826,7 +827,7 @@ void DedicatedWebTransportHttp3Client::SetErrorIfNecessary(int error) {
 void DedicatedWebTransportHttp3Client::SetErrorIfNecessary(
     int error,
     quic::QuicErrorCode quic_error,
-    base::StringPiece details) {
+    std::string_view details) {
   if (!error_) {
     error_ = WebTransportError(error, quic_error, details,
                                safe_to_report_error_details_);

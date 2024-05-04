@@ -82,7 +82,7 @@ NET_EXPORT_PRIVATE bool GetTLSServerEndPointChannelBinding(
 //
 // Use this certificate only after the above risks are acknowledged.
 NET_EXPORT bool CreateKeyAndSelfSignedCert(
-    const std::string& subject,
+    std::string_view subject,
     uint32_t serial_number,
     base::Time not_valid_before,
     base::Time not_valid_after,
@@ -101,6 +101,21 @@ struct NET_EXPORT Extension {
   base::span<const uint8_t> contents;
 };
 
+// Create a certificate signed by |issuer_key| and write it to |der_encoded|.
+//
+// |subject| and |issuer| specify names as in AddName(). If you want to create
+// a self-signed certificate, see |CreateSelfSignedCert|.
+NET_EXPORT bool CreateCert(EVP_PKEY* subject_key,
+                           DigestAlgorithm digest_alg,
+                           std::string_view subject,
+                           uint32_t serial_number,
+                           base::Time not_valid_before,
+                           base::Time not_valid_after,
+                           const std::vector<Extension>& extension_specs,
+                           std::string_view issuer,
+                           EVP_PKEY* issuer_key,
+                           std::string* der_encoded);
+
 // Creates a self-signed certificate from a provided key, using the specified
 // hash algorithm.
 //
@@ -108,7 +123,7 @@ struct NET_EXPORT Extension {
 NET_EXPORT bool CreateSelfSignedCert(
     EVP_PKEY* key,
     DigestAlgorithm alg,
-    const std::string& subject,
+    std::string_view subject,
     uint32_t serial_number,
     base::Time not_valid_before,
     base::Time not_valid_after,
@@ -127,7 +142,7 @@ NET_EXPORT bssl::UniquePtr<CRYPTO_BUFFER> CreateCryptoBuffer(
     std::string_view data);
 
 // Overload with no definition, to disallow creating a CRYPTO_BUFFER from a
-// char* due to StringPiece implicit ctor.
+// char* due to std::string_view implicit ctor.
 NET_EXPORT bssl::UniquePtr<CRYPTO_BUFFER> CreateCryptoBuffer(
     const char* invalid_data);
 
@@ -141,7 +156,7 @@ CreateCryptoBufferFromStaticDataUnsafe(base::span<const uint8_t> data);
 NET_EXPORT bool CryptoBufferEqual(const CRYPTO_BUFFER* a,
                                   const CRYPTO_BUFFER* b);
 
-// Returns a StringPiece pointing to the data in |buffer|.
+// Returns a std::string_view pointing to the data in |buffer|.
 NET_EXPORT std::string_view CryptoBufferAsStringPiece(
     const CRYPTO_BUFFER* buffer);
 

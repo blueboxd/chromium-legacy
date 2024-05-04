@@ -11,7 +11,6 @@
 #include "base/callback_list.h"
 #include "base/functional/bind.h"
 #include "cc/paint/paint_flags.h"
-#include "third_party/skia/include/core/SkDrawLooper.h"
 #include "third_party/skia/include/core/SkRect.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -277,6 +276,8 @@ ToggleButton::ToggleButton(PressedCallback callback, bool has_thumb_shadow)
   SetInstallFocusRingOnFocus(true);
   FocusRing::Get(this)->SetPathGenerator(
       std::make_unique<FocusRingHighlightPathGenerator>());
+
+  SetAccessibleRole(ax::mojom::Role::kSwitch);
 }
 
 ToggleButton::~ToggleButton() {
@@ -381,7 +382,8 @@ void ToggleButton::RemoveLayerFromRegions(ui::Layer* layer) {
   thumb_view_->RemoveLayerFromRegions(layer);
 }
 
-gfx::Size ToggleButton::CalculatePreferredSize() const {
+gfx::Size ToggleButton::CalculatePreferredSize(
+    const SizeBounds& /*available_size*/) const {
   gfx::Rect rect(GetTrackSize());
   rect.Inset(-GetInsets());
   return rect.size();

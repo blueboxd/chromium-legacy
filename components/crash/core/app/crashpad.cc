@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <map>
 #include <optional>
+#include <string_view>
 #include <vector>
 
 #include "base/auto_reset.h"
@@ -19,7 +20,6 @@
 #include "base/debug/dump_without_crashing.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -47,6 +47,13 @@
 #endif
 
 namespace crash_reporter {
+
+#if BUILDFLAG(IS_IOS)
+crashpad::StringAnnotation<24>& PlatformStorage() {
+  static crashpad::StringAnnotation<24> platform("platform");
+  return platform;
+}
+#endif  // BUILDFLAG(IS_IOS)
 
 namespace {
 
@@ -97,6 +104,7 @@ bool InitializeCrashpadImpl(bool initial_client,
     // as processed by the backend.
     DCHECK(browser_process || process_type == "Chrome Installer" ||
            process_type == "notification-helper" ||
+           process_type == "platform-experience-helper" ||
            process_type == "GCPW Installer" || process_type == "GCPW DLL");
 #elif BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID)
     DCHECK(browser_process);
@@ -138,8 +146,8 @@ bool InitializeCrashpadImpl(bool initial_client,
   InitializeCrashKeys();
 #if !BUILDFLAG(IS_IOS)
   static crashpad::StringAnnotation<24> ptype_key("ptype");
-  ptype_key.Set(browser_process ? base::StringPiece("browser")
-                                : base::StringPiece(process_type));
+  ptype_key.Set(browser_process ? std::string_view("browser")
+                                : std::string_view(process_type));
 
   static crashpad::StringAnnotation<12> pid_key("pid");
 #if BUILDFLAG(IS_POSIX)
@@ -152,8 +160,7 @@ bool InitializeCrashpadImpl(bool initial_client,
   osarch_key.Set(base::SysInfo::OperatingSystemArchitecture());
 #else
   // "platform" is used to determine device_model on the crash server.
-  static crashpad::StringAnnotation<24> platform("platform");
-  platform.Set(base::SysInfo::HardwareModelName());
+  PlatformStorage().Set(base::SysInfo::HardwareModelName());
 #endif  // !BUILDFLAG(IS_IOS)
 
   // If clients called CRASHPAD_SIMULATE_CRASH() instead of
@@ -271,7 +278,11 @@ void DumpWithoutCrashAndDeferProcessingAtPath(const base::FilePath& path) {
   CRASHPAD_SIMULATE_CRASH_AND_DEFER_PROCESSING_AT_PATH(path);
 }
 
-#endif
+void OverridePlatformValue(const std::string& platform_value) {
+  // "platform" is used to determine device_model on the crash server.
+  PlatformStorage().Set(platform_value);
+}
+#endif  // BUILDFLAG(IS_IOS)
 
 #endif
 

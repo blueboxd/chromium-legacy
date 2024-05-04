@@ -109,14 +109,14 @@ class HardwareDisplayPlaneManager {
     display::GammaAdjustment gamma_adjustment;
 
     // The color space of all input planes. This assumes that all planes have
-    // the same color space.
+    // the same color space, because all existing devices only support one
+    // color management configuration for all planes.
     SkColorSpacePrimaries planes_primaries = SkNamedPrimariesExt::kSRGB;
 
-    // The color space of the output.
+    // The color space of the output. All planes must be transformed to this
+    // space, using the hardware color management parameters (DEGAMMA, CTM,
+    // and GAMMA, where available).
     SkColorSpacePrimaries output_primaries = SkNamedPrimariesExt::kSRGB;
-
-    // Used to log changes to the above parameters.
-    bool log_primaries = false;
 
     // Cached blobs for the properties to commit in CommitCrtcProperties.
     // * If a property is `std::nullopt`, then it should be left unchanged.
@@ -146,6 +146,11 @@ class HardwareDisplayPlaneManager {
   // TODO(markyacoub): Consolidate this Commit() with the overloaded page flip
   // Commit() down below.
   virtual bool Commit(CommitRequest commit_request, uint32_t flags) = 0;
+
+  // Probe the mode for the CRTC to |mode| based on the current configuration
+  // of display hardware.
+  virtual bool TestSeamlessMode(int32_t crtc_id,
+                                const drmModeModeInfo& mode) = 0;
 
   // Clears old frame state out. Must be called before any AssignOverlayPlanes
   // calls.
@@ -244,6 +249,10 @@ class HardwareDisplayPlaneManager {
   // `DRM_PLANE_TYPE_OVERLAY` planes.
   HardwareCapabilities GetHardwareCapabilities(uint32_t crtc_id);
 
+  // Get a bitmask of possible CRTCs for the connector with |connector_id|.
+  // Returns 0 for invalid |connector_id|.
+  uint32_t GetPossibleCrtcsBitmaskForConnector(uint32_t connector_id) const;
+
  protected:
   struct ConnectorProperties {
     uint32_t id;
@@ -251,6 +260,7 @@ class HardwareDisplayPlaneManager {
     int count_modes;
     DrmWrapper::Property crtc_id;
     DrmWrapper::Property link_status;
+    uint64_t possible_crtcs_bitmask;
   };
 
   bool InitializeCrtcState();
@@ -303,8 +313,8 @@ class HardwareDisplayPlaneManager {
   // Populates scanout formats supported by all planes.
   void PopulateSupportedFormats();
 
-  void UpdateAndCommitCrtcState(uint32_t crtc_id, CrtcState* state);
-  virtual bool CommitPendingCrtcState(CrtcState* state) = 0;
+  void UpdatePendingCrtcState(CrtcState& state);
+  virtual bool CommitPendingCrtcState(CrtcState& state) = 0;
 
   // Object containing the connection to the graphics device and wraps the API
   // calls to control it. Not owned.

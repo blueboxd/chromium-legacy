@@ -86,14 +86,12 @@ class CONTENT_EXPORT SharedStorageWorkletHost
           urls_with_metadata,
       blink::CloneableMessage serialized_data,
       bool keep_alive_after_operation,
-      const std::optional<std::string>& context_id,
-      const std::optional<url::Origin>& aggregation_coordinator_origin,
+      blink::mojom::PrivateAggregationConfigPtr private_aggregation_config,
       SelectURLCallback callback) override;
   void Run(const std::string& name,
            blink::CloneableMessage serialized_data,
            bool keep_alive_after_operation,
-           const std::optional<std::string>& context_id,
-           const std::optional<url::Origin>& aggregation_coordinator_origin,
+           blink::mojom::PrivateAggregationConfigPtr private_aggregation_config,
            RunCallback callback) override;
 
   // Whether there are unfinished worklet operations (i.e. `addModule()`,
@@ -213,8 +211,8 @@ class CONTENT_EXPORT SharedStorageWorkletHost
   // invalid `PendingRemote`.
   mojo::PendingRemote<blink::mojom::PrivateAggregationHost>
   MaybeBindPrivateAggregationHost(
-      const std::optional<std::string>& context_id,
-      const std::optional<url::Origin>& aggregation_coordinator_origin);
+      const blink::mojom::PrivateAggregationConfigPtr&
+          private_aggregation_config);
 
   bool IsSharedStorageAllowed(std::string* out_debug_message = nullptr);
   bool IsSharedStorageSelectURLAllowed(
@@ -271,6 +269,10 @@ class CONTENT_EXPORT SharedStorageWorkletHost
   // able to call `IsSharedStorageAllowed()` during keep-alive, we need to save
   // the value of the main frame origin in the constructor.
   const url::Origin main_frame_origin_;
+
+  // Whether `shared_storage_origin_` is same origin with the creator context's
+  // origin.
+  bool is_same_origin_worklet_;
 
   // A map of unresolved URNs to the candidate URL with metadata vector. Inside
   // `RunURLSelectionOperationOnWorklet()` a new URN is generated and is

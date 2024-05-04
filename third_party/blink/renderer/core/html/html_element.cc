@@ -85,6 +85,8 @@
 #include "third_party/blink/renderer/core/html/forms/html_listbox_element.h"
 #include "third_party/blink/renderer/core/html/forms/labels_node_list.h"
 #include "third_party/blink/renderer/core/html/forms/text_control_element.h"
+#include "third_party/blink/renderer/core/html/html_bdi_element.h"
+#include "third_party/blink/renderer/core/html/html_body_element.h"
 #include "third_party/blink/renderer/core/html/html_br_element.h"
 #include "third_party/blink/renderer/core/html/html_dialog_element.h"
 #include "third_party/blink/renderer/core/html/html_dimension.h"
@@ -648,16 +650,12 @@ AttributeTriggers* HTMLElement::TriggersForAttributeName(
        kNoEvent, nullptr},
       {html_names::kAriaDisabledAttr, WebFeature::kARIADisabledAttribute,
        kNoEvent, nullptr},
-      {html_names::kAriaDropeffectAttr, WebFeature::kARIADropEffectAttribute,
-       kNoEvent, nullptr},
       {html_names::kAriaErrormessageAttr,
        WebFeature::kARIAErrorMessageAttribute, kNoEvent, nullptr},
       {html_names::kAriaExpandedAttr, WebFeature::kARIAExpandedAttribute,
        kNoEvent, nullptr},
       {html_names::kAriaFlowtoAttr, WebFeature::kARIAFlowToAttribute, kNoEvent,
        nullptr},
-      {html_names::kAriaGrabbedAttr, WebFeature::kARIAGrabbedAttribute,
-       kNoEvent, nullptr},
       {html_names::kAriaHaspopupAttr, WebFeature::kARIAHasPopupAttribute,
        kNoEvent, nullptr},
       {html_names::kAriaHiddenAttr, WebFeature::kARIAHiddenAttribute, kNoEvent,
@@ -1939,21 +1937,28 @@ using PopoverAncestorOptionsSet =
 
 template <typename UnaryPredicate>
 const HTMLElement* NearestMatchingAncestor(
-    const Node* node,
+    const Node* original_node,
     const PopoverAncestorOptionsSet ancestor_options,
     const UnaryPredicate get_candidate_popover) {
-  if (ancestor_options.Has(PopoverAncestorOptions::kExclusive) && node) {
-    node = FlatTreeTraversal::Parent(*node);
+  if (!original_node) {
+    return nullptr;
   }
+  bool exclusive = ancestor_options.Has(PopoverAncestorOptions::kExclusive);
+  auto* node =
+      exclusive ? FlatTreeTraversal::Parent(*original_node) : original_node;
   for (; node; node = FlatTreeTraversal::Parent(*node)) {
     auto* candidate_popover = get_candidate_popover(node);
     if (!candidate_popover || !candidate_popover->popoverOpen()) {
+      continue;
+    }
+    if (exclusive && candidate_popover == original_node) {
       continue;
     }
     if (!ancestor_options.Has(PopoverAncestorOptions::kIncludeManualPopovers) &&
         candidate_popover->PopoverType() == PopoverValueType::kManual) {
       continue;
     }
+    DCHECK(!exclusive || candidate_popover != original_node);
     return candidate_popover;
   }
   return nullptr;
@@ -2222,10 +2227,12 @@ bool HTMLElement::IsNodePopoverDescendant(const Node& node) const {
     if (ancestor == this) {
       return true;
     }
-    ancestor = FindTopmostRelatedPopover(
+    const HTMLElement* new_ancestor = FindTopmostRelatedPopover(
         *ancestor, PopoverAncestorOptionsSet{
                        PopoverAncestorOptions::kExclusive,
                        PopoverAncestorOptions::kIncludeManualPopovers});
+    DCHECK_NE(new_ancestor, ancestor);
+    ancestor = new_ancestor;
   }
   return false;
 }
@@ -2276,6 +2283,13 @@ void HTMLElement::HoveredElementChanged(Element* old_element,
   if (!RuntimeEnabledFeatures::HTMLPopoverActionHoverEnabled()) {
     return;
   }
+  // If either element has an interest target, do nothing.
+  // TODO(crbug.com/326681249): This will be handled in future by a separate
+  // InterestLost() function.
+  if ((old_element && old_element->interestTargetElement()) ||
+      (new_element && new_element->interestTargetElement())) {
+    return;
+  }
   if (old_element) {
     // For the previously-hovered element: loop through all showing popovers
     // (including popover=manual) and see if the element that just lost focus
@@ -2321,12 +2335,30 @@ bool HTMLElement::DispatchFocusEvent(
                                      source_capabilities);
 }
 
+bool HTMLElement::IsValidInvokeAction(HTMLElement& invoker,
+                                      InvokeAction action) {
+  return Element::IsValidInvokeAction(invoker, action) ||
+         action == InvokeAction::kTogglePopover ||
+         action == InvokeAction::kHidePopover ||
+         action == InvokeAction::kShowPopover ||
+         (RuntimeEnabledFeatures::HTMLInvokeActionsV2Enabled() &&
+          (action == InvokeAction::kToggleFullscreen ||
+           action == InvokeAction::kRequestFullscreen ||
+           action == InvokeAction::kExitFullscreen));
+}
+
 bool HTMLElement::HandleInvokeInternal(HTMLElement& invoker,
-                                       AtomicString& action) {
-  bool is_fullscreen_action =
-      EqualIgnoringASCIICase(action, keywords::kToggleFullscreen) ||
-      EqualIgnoringASCIICase(action, keywords::kRequestFullscreen) ||
-      EqualIgnoringASCIICase(action, keywords::kExitFullscreen);
+                                       InvokeAction action) {
+  CHECK(IsValidInvokeAction(invoker, action));
+
+  if (Element::HandleInvokeInternal(invoker, action)) {
+    return true;
+  }
+
+  bool is_fullscreen_action = action == InvokeAction::kToggleFullscreen ||
+                              action == InvokeAction::kRequestFullscreen ||
+                              action == InvokeAction::kExitFullscreen;
+
   if (PopoverType() == PopoverValueType::kNone && !is_fullscreen_action) {
     return false;
   }
@@ -2349,16 +2381,16 @@ bool HTMLElement::HandleInvokeInternal(HTMLElement& invoker,
       IsPopoverReady(PopoverTriggerAction::kShow,
                      /*exception_state=*/nullptr,
                      /*include_event_handler_text=*/true, &document) &&
-      (action.empty() ||
-       EqualIgnoringASCIICase(action, keywords::kTogglePopover) ||
-       EqualIgnoringASCIICase(action, keywords::kShowPopover));
+      (action == InvokeAction::kAuto ||
+       action == InvokeAction::kTogglePopover ||
+       action == InvokeAction::kShowPopover);
   bool can_hide =
       IsPopoverReady(PopoverTriggerAction::kHide,
                      /*exception_state=*/nullptr,
                      /*include_event_handler_text=*/true, &document) &&
-      (action.empty() ||
-       EqualIgnoringASCIICase(action, keywords::kTogglePopover) ||
-       EqualIgnoringASCIICase(action, keywords::kHidePopover));
+      (action == InvokeAction::kAuto ||
+       action == InvokeAction::kTogglePopover ||
+       action == InvokeAction::kHidePopover);
   if (can_hide) {
     HidePopoverInternal(
         HidePopoverFocusBehavior::kFocusPreviousElement,
@@ -2399,7 +2431,7 @@ bool HTMLElement::HandleInvokeInternal(HTMLElement& invoker,
 
   LocalFrame* frame = document.GetFrame();
 
-  if (EqualIgnoringASCIICase(action, keywords::kToggleFullscreen)) {
+  if (action == InvokeAction::kToggleFullscreen) {
     if (Fullscreen::IsFullscreenElement(*this)) {
       Fullscreen::ExitFullscreen(document);
       return true;
@@ -2412,7 +2444,7 @@ bool HTMLElement::HandleInvokeInternal(HTMLElement& invoker,
                         mojom::ConsoleMessageLevel::kWarning, message);
       return false;
     }
-  } else if (EqualIgnoringASCIICase(action, keywords::kRequestFullscreen)) {
+  } else if (action == InvokeAction::kRequestFullscreen) {
     if (Fullscreen::IsFullscreenElement(*this)) {
       return true;
     }
@@ -2425,7 +2457,7 @@ bool HTMLElement::HandleInvokeInternal(HTMLElement& invoker,
                         mojom::ConsoleMessageLevel::kWarning, message);
       return false;
     }
-  } else if (EqualIgnoringASCIICase(action, keywords::kExitFullscreen)) {
+  } else if (action == InvokeAction::kExitFullscreen) {
     if (Fullscreen::IsFullscreenElement(*this)) {
       Fullscreen::ExitFullscreen(document);
     }
@@ -3047,9 +3079,7 @@ void HTMLElement::OnDirAttrChanged(const AttributeModificationParams& params) {
   if (is_new_auto) {
     CalculateAndAdjustAutoDirectionality();
   } else {
-    if (RuntimeEnabledFeatures::BdiElementDirInheritanceEnabled()) {
-      ClearDirAutoInheritsFromParent();
-    }
+    ClearDirAutoInheritsFromParent();
 
     std::optional<TextDirection> text_direction;
     if (EqualIgnoringASCIICase(params.new_value, "ltr")) {

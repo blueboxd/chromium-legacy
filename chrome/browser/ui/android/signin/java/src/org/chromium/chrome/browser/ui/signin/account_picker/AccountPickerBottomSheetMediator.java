@@ -9,16 +9,17 @@ import android.app.Activity;
 import android.content.Intent;
 import android.text.TextUtils;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import org.chromium.base.BuildInfo;
 import org.chromium.base.Callback;
 import org.chromium.base.supplier.ObservableSupplierImpl;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.signin.services.ProfileDataCache;
 import org.chromium.chrome.browser.signin.services.SigninMetricsUtils;
 import org.chromium.chrome.browser.signin.services.SigninPreferencesManager;
 import org.chromium.chrome.browser.ui.signin.SigninUtils;
-import org.chromium.chrome.browser.ui.signin.account_picker.AccountPickerBottomSheetCoordinator.EntryPoint;
 import org.chromium.chrome.browser.ui.signin.account_picker.AccountPickerBottomSheetProperties.ViewState;
 import org.chromium.components.browser_ui.device_lock.DeviceLockActivityLauncher;
 import org.chromium.components.signin.AccountManagerFacade;
@@ -51,8 +52,12 @@ public class AccountPickerBottomSheetMediator
     private final AccountManagerFacade mAccountManagerFacade;
     private final DeviceLockActivityLauncher mDeviceLockActivityLauncher;
     private final @ViewState int mInitialViewState;
+    // TODO(crbug.com/328747528): The web sign-in specific logic should be moved out of the bottom
+    // sheet MVC.
+    private final boolean mIsWebSignin;
+    private final @SigninAccessPoint int mSigninAccessPoint;
 
-    // TODO(crbug.com/1515277): Use CoreAccountInfo here instead.
+    // TODO(crbug.com/41487829): Use CoreAccountInfo here instead.
     private @Nullable String mSelectedAccountEmail;
     private @Nullable String mDefaultAccountEmail;
     private @Nullable String mAddedAccountEmail;
@@ -68,12 +73,16 @@ public class AccountPickerBottomSheetMediator
             Runnable onDismissButtonClicked,
             AccountPickerBottomSheetStrings accountPickerBottomSheetStrings,
             DeviceLockActivityLauncher deviceLockActivityLauncher,
-            @AccountPickerLaunchMode int launchMode) {
+            @AccountPickerLaunchMode int launchMode,
+            boolean isWebSignin,
+            @SigninAccessPoint int signinAccessPoint) {
         mWindowAndroid = windowAndroid;
         mActivity = windowAndroid.getActivity().get();
         mAccountPickerDelegate = accountPickerDelegate;
         mProfileDataCache = ProfileDataCache.createWithDefaultImageSizeAndNoBadge(mActivity);
         mDeviceLockActivityLauncher = deviceLockActivityLauncher;
+        mIsWebSignin = isWebSignin;
+        mSigninAccessPoint = signinAccessPoint;
 
         switch (launchMode) {
             case AccountPickerLaunchMode.CHOOSE_ACCOUNT:
@@ -91,7 +100,6 @@ public class AccountPickerBottomSheetMediator
                         this::onSelectedAccountClicked,
                         this::onContinueAsClicked,
                         view -> onDismissButtonClicked.run(),
-                        accountPickerDelegate.getEntryPoint(),
                         accountPickerBottomSheetStrings);
         mModelPropertyChangedObserver =
                 (source, propertyKey) -> {
@@ -110,33 +118,41 @@ public class AccountPickerBottomSheetMediator
         mAccountManagerFacade.addObserver(this);
     }
 
-    /**
-     * Notifies that the user has selected an account.
-     *
-     * @param accountName The email of the selected account.
-     *
-     * TODO(https://crbug.com/1115965): Use CoreAccountInfo instead of account's email
-     * as the first argument of the method.
-     */
+    /** Implements {@link AccountPickerCoordinator.Listener}. */
     @Override
     public void onAccountSelected(String accountName) {
-        // Clicking on one account in the account list when the account list is expanded
-        // will collapse it to the selected account
-        mModel.set(AccountPickerBottomSheetProperties.VIEW_STATE, ViewState.COLLAPSED_ACCOUNT_LIST);
         setSelectedAccountName(accountName);
+        if (ChromeFeatureList.isEnabled(
+                ChromeFeatureList.REPLACE_SYNC_PROMOS_WITH_SIGN_IN_PROMOS)) {
+            launchDeviceLockIfNeededAndSignIn();
+        } else {
+            // Clicking on one account in the account list when the account list is expanded
+            // will collapse it to the selected account
+            mModel.set(
+                    AccountPickerBottomSheetProperties.VIEW_STATE,
+                    ViewState.COLLAPSED_ACCOUNT_LIST);
+        }
     }
 
-    /** Notifies when the user clicked the "add account" button. */
+    /** Implements {@link AccountPickerCoordinator.Listener}. */
     @Override
     public void addAccount() {
-        logAccountConsistencyPromoAction(AccountConsistencyPromoAction.ADD_ACCOUNT_STARTED);
+        SigninMetricsUtils.logAccountConsistencyPromoAction(
+                AccountConsistencyPromoAction.ADD_ACCOUNT_STARTED, mSigninAccessPoint);
+
+        if (mAccountPickerDelegate.canHandleAddAccount()) {
+            mAccountPickerDelegate.addAccount();
+            return;
+        }
+
         final WindowAndroid.IntentCallback onAddAccountCompleted =
                 (int resultCode, Intent data) -> {
                     if (resultCode != Activity.RESULT_OK) {
                         return;
                     }
-                    logAccountConsistencyPromoAction(
-                            AccountConsistencyPromoAction.ADD_ACCOUNT_COMPLETED);
+                    SigninMetricsUtils.logAccountConsistencyPromoAction(
+                            AccountConsistencyPromoAction.ADD_ACCOUNT_COMPLETED,
+                            mSigninAccessPoint);
                     mAddedAccountEmail = data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME);
                     onAccountSelected(mAddedAccountEmail);
                 };
@@ -154,6 +170,18 @@ public class AccountPickerBottomSheetMediator
     }
 
     /**
+     * Called by the embedder when an account is added through the latter. Sign-in the just added
+     * user.
+     */
+    public void onAccountAdded(@NonNull String accountEmail) {
+        SigninMetricsUtils.logAccountConsistencyPromoAction(
+                AccountConsistencyPromoAction.ADD_ACCOUNT_COMPLETED, mSigninAccessPoint);
+
+        assert mAccountPickerDelegate.canHandleAddAccount();
+        onAccountSelected(accountEmail);
+    }
+
+    /**
      * Notifies when user clicks the back-press button.
      *
      * @return true if the listener handles the back press, false if not.
@@ -161,9 +189,7 @@ public class AccountPickerBottomSheetMediator
     @Override
     public boolean onBackPressed() {
         if (shouldHandleBackPress()) {
-            mModel.set(
-                    AccountPickerBottomSheetProperties.VIEW_STATE,
-                    ViewState.COLLAPSED_ACCOUNT_LIST);
+            mModel.set(AccountPickerBottomSheetProperties.VIEW_STATE, mInitialViewState);
             return true;
         }
         return false;
@@ -188,10 +214,6 @@ public class AccountPickerBottomSheetMediator
 
     PropertyModel getModel() {
         return mModel;
-    }
-
-    boolean isEntryPointWebSignin() {
-        return mModel.get(AccountPickerBottomSheetProperties.ENTRY_POINT) == EntryPoint.WEB_SIGNIN;
     }
 
     void destroy() {
@@ -222,9 +244,19 @@ public class AccountPickerBottomSheetMediator
     }
 
     private boolean shouldHandleBackPress() {
-        return mModel.get(AccountPickerBottomSheetProperties.VIEW_STATE)
-                        == ViewState.EXPANDED_ACCOUNT_LIST
-                && mInitialViewState != ViewState.EXPANDED_ACCOUNT_LIST;
+        boolean hasExpandedAccountList =
+                mModel.get(AccountPickerBottomSheetProperties.VIEW_STATE)
+                                == ViewState.EXPANDED_ACCOUNT_LIST
+                        && mInitialViewState != ViewState.EXPANDED_ACCOUNT_LIST;
+        boolean isOnConfirmManagement =
+                mModel.get(AccountPickerBottomSheetProperties.VIEW_STATE)
+                        == ViewState.CONFIRM_MANAGEMENT;
+        boolean isOnErrorScreen =
+                mModel.get(AccountPickerBottomSheetProperties.VIEW_STATE)
+                                == ViewState.SIGNIN_GENERAL_ERROR
+                        || mModel.get(AccountPickerBottomSheetProperties.VIEW_STATE)
+                                == ViewState.SIGNIN_AUTH_ERROR;
+        return hasExpandedAccountList || isOnConfirmManagement || isOnErrorScreen;
     }
 
     private void initializeViewState(List<CoreAccountInfo> coreAccountInfos) {
@@ -307,21 +339,7 @@ public class AccountPickerBottomSheetMediator
     private void onContinueAsClicked() {
         @ViewState int viewState = mModel.get(AccountPickerBottomSheetProperties.VIEW_STATE);
         if (viewState == ViewState.COLLAPSED_ACCOUNT_LIST) {
-            if (BuildInfo.getInstance().isAutomotive) {
-                mDeviceLockActivityLauncher.launchDeviceLockActivity(
-                        mActivity,
-                        mSelectedAccountEmail,
-                        /* requireDeviceLockReauthentication= */ true,
-                        mWindowAndroid,
-                        (resultCode, data) -> {
-                            if (resultCode == Activity.RESULT_OK) {
-                                signIn();
-                            }
-                        },
-                        DeviceLockActivityLauncher.Source.ACCOUNT_PICKER);
-            } else {
-                signIn();
-            }
+            launchDeviceLockIfNeededAndSignIn();
         } else if (viewState == ViewState.SIGNIN_GENERAL_ERROR) {
             // User already accepted account management and is re-trying login.
             signInAfterCheckingManagement();
@@ -331,9 +349,27 @@ public class AccountPickerBottomSheetMediator
             updateCredentials();
         } else if (viewState == ViewState.CONFIRM_MANAGEMENT) {
             mAcceptedAccountManagement = true;
-            logAccountConsistencyPromoAction(
-                    AccountConsistencyPromoAction.CONFIRM_MANAGEMENT_ACCEPTED);
+            SigninMetricsUtils.logAccountConsistencyPromoAction(
+                    AccountConsistencyPromoAction.CONFIRM_MANAGEMENT_ACCEPTED, mSigninAccessPoint);
             signInAfterCheckingManagement();
+        }
+    }
+
+    private void launchDeviceLockIfNeededAndSignIn() {
+        if (BuildInfo.getInstance().isAutomotive) {
+            mDeviceLockActivityLauncher.launchDeviceLockActivity(
+                    mActivity,
+                    mSelectedAccountEmail,
+                    /* requireDeviceLockReauthentication= */ true,
+                    mWindowAndroid,
+                    (resultCode, data) -> {
+                        if (resultCode == Activity.RESULT_OK) {
+                            signIn();
+                        }
+                    },
+                    DeviceLockActivityLauncher.Source.ACCOUNT_PICKER);
+        } else {
+            signIn();
         }
     }
 
@@ -351,8 +387,9 @@ public class AccountPickerBottomSheetMediator
                 accountInfo,
                 (Boolean isAccountManaged) -> {
                     if (isAccountManaged) {
-                        logAccountConsistencyPromoAction(
-                                AccountConsistencyPromoAction.CONFIRM_MANAGEMENT_SHOWN);
+                        SigninMetricsUtils.logAccountConsistencyPromoAction(
+                                AccountConsistencyPromoAction.CONFIRM_MANAGEMENT_SHOWN,
+                                mSigninAccessPoint);
                         mModel.set(
                                 AccountPickerBottomSheetProperties.VIEW_STATE,
                                 ViewState.CONFIRM_MANAGEMENT);
@@ -368,17 +405,19 @@ public class AccountPickerBottomSheetMediator
         }
         mModel.set(AccountPickerBottomSheetProperties.VIEW_STATE, ViewState.SIGNIN_IN_PROGRESS);
         if (TextUtils.equals(mSelectedAccountEmail, mAddedAccountEmail)) {
-            logAccountConsistencyPromoAction(
-                    AccountConsistencyPromoAction.SIGNED_IN_WITH_ADDED_ACCOUNT);
+            SigninMetricsUtils.logAccountConsistencyPromoAction(
+                    AccountConsistencyPromoAction.SIGNED_IN_WITH_ADDED_ACCOUNT, mSigninAccessPoint);
         } else if (TextUtils.equals(mSelectedAccountEmail, mDefaultAccountEmail)) {
-            logAccountConsistencyPromoAction(
-                    AccountConsistencyPromoAction.SIGNED_IN_WITH_DEFAULT_ACCOUNT);
+            SigninMetricsUtils.logAccountConsistencyPromoAction(
+                    AccountConsistencyPromoAction.SIGNED_IN_WITH_DEFAULT_ACCOUNT,
+                    mSigninAccessPoint);
         } else {
-            logAccountConsistencyPromoAction(
-                    AccountConsistencyPromoAction.SIGNED_IN_WITH_NON_DEFAULT_ACCOUNT);
+            SigninMetricsUtils.logAccountConsistencyPromoAction(
+                    AccountConsistencyPromoAction.SIGNED_IN_WITH_NON_DEFAULT_ACCOUNT,
+                    mSigninAccessPoint);
         }
 
-        if (isEntryPointWebSignin()) {
+        if (mIsWebSignin) {
             SigninPreferencesManager.getInstance()
                     .clearWebSigninAccountPickerActiveDismissalCount();
         }
@@ -406,25 +445,5 @@ public class AccountPickerBottomSheetMediator
                 AccountUtils.createAccountFromName(mSelectedAccountEmail),
                 mActivity,
                 onUpdateCredentialsCompleted);
-    }
-
-    private void logAccountConsistencyPromoAction(@AccountConsistencyPromoAction int promoAction) {
-        switch (mAccountPickerDelegate.getEntryPoint()) {
-            case EntryPoint.WEB_SIGNIN:
-                SigninMetricsUtils.logAccountConsistencyPromoAction(
-                        promoAction, SigninAccessPoint.WEB_SIGNIN);
-                break;
-            case EntryPoint.SEND_TAB_TO_SELF:
-                SigninMetricsUtils.logAccountConsistencyPromoAction(
-                        promoAction, SigninAccessPoint.SEND_TAB_TO_SELF_PROMO);
-                break;
-            case EntryPoint.FEED_ACTION:
-                SigninMetricsUtils.logAccountConsistencyPromoAction(
-                        promoAction, SigninAccessPoint.NTP_FEED_CARD_MENU_PROMO);
-                break;
-            default:
-                assert false;
-                break;
-        }
     }
 }

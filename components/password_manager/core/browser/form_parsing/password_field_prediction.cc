@@ -32,10 +32,11 @@ FieldType GetServerType(const AutofillType::ServerPrediction& prediction) {
   // send additional predictions in `field.server_predictions()`. This function
   // chooses the relevant one for Password Manager predictions.
 
-  // 1. If there is cvc prediction returns it.
+  // 1. If there is cvc or credit card number prediction returns the prediction.
   for (const auto& server_predictions : prediction.server_predictions) {
-    if (server_predictions.type() == autofill::CREDIT_CARD_VERIFICATION_CODE) {
-      return autofill::CREDIT_CARD_VERIFICATION_CODE;
+    if (server_predictions.type() == autofill::CREDIT_CARD_VERIFICATION_CODE ||
+        server_predictions.type() == autofill::CREDIT_CARD_NUMBER) {
+      return static_cast<FieldType>(server_predictions.type());
     }
   }
 
@@ -130,7 +131,7 @@ FormPredictions ConvertToFormPredictions(
     }
 
     field_predictions.emplace_back();
-    field_predictions.back().renderer_id = field.renderer_id;
+    field_predictions.back().renderer_id = field.renderer_id();
     field_predictions.back().signature = current_signature;
     field_predictions.back().type = server_type;
     field_predictions.back().may_use_prefilled_placeholder =

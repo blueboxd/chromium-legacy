@@ -143,6 +143,7 @@ android_resources("autofill_payments_java_resources") {
     "payments/java/res/drawable-xxxhdpi/visa_metadata_card.png",
     "payments/java/res/drawable/discover_card.xml",
     "payments/java/res/drawable/elo_card.xml",
+    "payments/java/res/drawable/iban_icon.xml",
     "payments/java/res/drawable/ic_credit_card_black.xml",
     "payments/java/res/drawable/ic_credit_card_primary.xml",
     "payments/java/res/drawable/ic_offer_tag.xml",
@@ -176,8 +177,15 @@ java_cpp_enum("autofill_core_browser_java_enums") {
     "../core/browser/metrics/payments/virtual_card_enrollment_metrics.h",
     "../core/browser/payments/card_unmask_challenge_option.h",
     "../core/browser/ui/payments/payments_bubble_closed_reasons.h",
-    "../core/browser/ui/popup_item_ids.h",
     "../core/browser/ui/suggestion.h",
+    "../core/browser/ui/suggestion_type.h",
+  ]
+}
+
+java_cpp_enum("payments_autofill_core_browser_java_enums") {
+  sources = [
+    "../core/browser/data_model/bank_account.h",
+    "../core/browser/data_model/payment_instrument.h",
   ]
 }
 
@@ -242,39 +250,51 @@ android_library("payments_autofill_java") {
     "java/src/org/chromium/components/autofill/Completable.java",
     "java/src/org/chromium/components/autofill/EditableOption.java",
     "java/src/org/chromium/components/autofill/payments/AutofillSaveCardUiInfo.java",
+    "java/src/org/chromium/components/autofill/payments/BankAccount.java",
     "java/src/org/chromium/components/autofill/payments/CardDetail.java",
     "java/src/org/chromium/components/autofill/payments/LegalMessageLine.java",
+    "java/src/org/chromium/components/autofill/payments/PaymentInstrument.java",
   ]
   deps = [
     "//third_party/android_deps:guava_android_java",
     "//third_party/androidx:androidx_annotation_annotation_java",
     "//third_party/jni_zero:jni_zero_java",
+    "//url:gurl_java",
   ]
-  srcjar_deps = [ ":payments_jni_headers" ]
+  srcjar_deps = [
+    ":payments_autofill_core_browser_java_enums",
+    ":payments_jni_headers",
+  ]
 }
 
 robolectric_library("payments_autofill_junit_tests") {
   sources = [
     "javatests/src/org/chromium/components/autofill/payments/AutofillSaveCardUiInfoTest.java",
+    "javatests/src/org/chromium/components/autofill/payments/BankAccountTest.java",
     "javatests/src/org/chromium/components/autofill/payments/CardDetailTest.java",
     "javatests/src/org/chromium/components/autofill/payments/LegalMessageLineTest.java",
+    "javatests/src/org/chromium/components/autofill/payments/PaymentInstrumentTest.java",
   ]
   deps = [
     ":payments_autofill_java",
     "//base:base_java_test_support",
     "//base:base_junit_test_support",
     "//third_party/android_deps:guava_android_java",
+    "//third_party/google-truth:google_truth_java",
     "//third_party/hamcrest:hamcrest_core_java",
     "//third_party/hamcrest:hamcrest_library_java",
     "//third_party/junit:junit",
     "//third_party/mockito:mockito_java",
+    "//url:url_java",
   ]
 }
 
 generate_jni("payments_jni_headers") {
   sources = [
     "java/src/org/chromium/components/autofill/payments/AutofillSaveCardUiInfo.java",
+    "java/src/org/chromium/components/autofill/payments/BankAccount.java",
     "java/src/org/chromium/components/autofill/payments/LegalMessageLine.java",
+    "java/src/org/chromium/components/autofill/payments/PaymentInstrument.java",
   ]
 }
 

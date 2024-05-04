@@ -36,7 +36,7 @@ class AutofillMetricsBaseTest;
 namespace payments {
 
 // Retrieves the full card details, including the pan and the cvc.
-// TODO(crbug/1061638): Refactor to use base::WaitableEvent where possible.
+// TODO(crbug.com/40679719): Refactor to use base::WaitableEvent where possible.
 class FullCardRequest final : public CardUnmaskDelegate {
  public:
   // The type of failure.
@@ -175,7 +175,7 @@ class FullCardRequest final : public CardUnmaskDelegate {
   // Called by the PaymentsNetworkInterface when a card has been unmasked.
   void OnDidGetRealPan(
       AutofillClient::PaymentsRpcResult result,
-      payments::PaymentsNetworkInterface::UnmaskResponseDetails&
+      const payments::PaymentsNetworkInterface::UnmaskResponseDetails&
           response_details);
 
   // Called when verification is cancelled. This is used only by
@@ -238,7 +238,7 @@ class FullCardRequest final : public CardUnmaskDelegate {
   // CardUnmaskDelegate:
   void OnUnmaskPromptAccepted(
       const UserProvidedUnmaskDetails& user_response) override;
-  void OnUnmaskPromptClosed() override;
+  void OnUnmaskPromptCancelled() override;
   bool ShouldOfferFidoAuth() const override;
 
   // Called by autofill client when the risk data has been loaded.

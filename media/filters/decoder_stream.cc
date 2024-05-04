@@ -11,6 +11,7 @@
 #include "base/functional/callback_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/task/bind_post_task.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/trace_event/trace_event.h"
@@ -80,7 +81,7 @@ const char* GetPrepareTraceString<DemuxerStream::AUDIO>() {
 }
 
 const char* GetStatusString(const DecoderStatus& status) {
-  // TODO(crbug.com/1129662): Replace this with generic Status-to-string.
+  // TODO(crbug.com/40149493): Replace this with generic Status-to-string.
   switch (status.code()) {
     case DecoderStatus::Codes::kOk:
       return "okay";
@@ -490,7 +491,7 @@ void DecoderStream<StreamType>::Decode(scoped_refptr<DecoderBuffer> buffer) {
     }
   }
 
-  // TODO(https://crbug.com/1324732): We should DCHECK(CanDecodeMore()) here,
+  // TODO(crbug.com/40839438): We should DCHECK(CanDecodeMore()) here,
   // but this breaks a number of tests.
 
   if (!fallback_buffers_.empty()) {
@@ -530,7 +531,7 @@ void DecoderStream<StreamType>::DecodeInternal(
 
   ++pending_decode_requests_;
 
-  const int buffer_size = is_eos ? 0 : buffer->data_size();
+  const int buffer_size = is_eos ? 0 : base::checked_cast<int>(buffer->size());
   decoder_->Decode(
       std::move(buffer),
       base::BindOnce(&DecoderStream<StreamType>::OnDecodeDone,

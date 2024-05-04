@@ -31,7 +31,6 @@ namespace {
 const std::string GetCountryCodeFromVariations() {
   variations::VariationsService* variation_service =
       g_browser_process->variations_service();
-
   return variation_service
              ? base::ToUpperASCII(variation_service->GetLatestCountry())
              : std::string();
@@ -63,7 +62,7 @@ PersonalDataManagerFactory::PersonalDataManagerFactory()
           "PersonalDataManager",
           ProfileSelections::Builder()
               .WithRegular(ProfileSelection::kRedirectedToOriginal)
-              // TODO(crbug.com/1418376): Check if this service is needed in
+              // TODO(crbug.com/40257657): Check if this service is needed in
               // Guest mode.
               .WithGuest(ProfileSelection::kRedirectedToOriginal)
               .Build()) {
@@ -77,13 +76,10 @@ PersonalDataManagerFactory::PersonalDataManagerFactory()
 
 PersonalDataManagerFactory::~PersonalDataManagerFactory() = default;
 
-KeyedService* PersonalDataManagerFactory::BuildPersonalDataManager(
-    content::BrowserContext* context) {
-  Profile* profile = Profile::FromBrowserContext(context);
-  PersonalDataManager* service =
-      new PersonalDataManager(g_browser_process->GetApplicationLocale(),
-                              GetCountryCodeFromVariations());
-
+std::unique_ptr<KeyedService>
+PersonalDataManagerFactory::BuildServiceInstanceForBrowserContext(
+    content::BrowserContext* context) const {
+ Profile* profile = Profile::FromBrowserContext(context);
   // WebDataServiceFactory redirects to the original profile.
   auto local_storage = WebDataServiceFactory::GetAutofillWebDataForProfile(
       profile, ServiceAccessType::EXPLICIT_ACCESS);
@@ -111,17 +107,13 @@ KeyedService* PersonalDataManagerFactory::BuildPersonalDataManager(
                 *shared_storage_manager)
           : nullptr;
 
-  service->Init(local_storage, account_storage, profile->GetPrefs(),
-                g_browser_process->local_state(), identity_manager,
-                history_service, sync_service, strike_database, image_fetcher,
-                std::move(shared_storage_handler));
-
-  return service;
-}
-
-KeyedService* PersonalDataManagerFactory::BuildServiceInstanceFor(
-    content::BrowserContext* context) const {
-  return BuildPersonalDataManager(context);
+  return std::make_unique<PersonalDataManager>(
+      local_storage, account_storage, profile->GetPrefs(),
+      g_browser_process->local_state(), identity_manager, history_service,
+      sync_service, strike_database, image_fetcher,
+      std::move(shared_storage_handler),
+      g_browser_process->GetApplicationLocale(),
+      GetCountryCodeFromVariations());
 }
 
 }  // namespace autofill

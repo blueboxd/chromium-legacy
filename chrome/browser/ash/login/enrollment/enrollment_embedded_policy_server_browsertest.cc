@@ -29,6 +29,7 @@
 #include "chrome/browser/ash/login/test/oobe_base_test.h"
 #include "chrome/browser/ash/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/ash/login/test/oobe_screens_utils.h"
+#include "chrome/browser/ash/login/test/scoped_policy_update.h"
 #include "chrome/browser/ash/login/test/test_condition_waiter.h"
 #include "chrome/browser/ash/login/ui/login_display_host.h"
 #include "chrome/browser/ash/login/wizard_controller.h"
@@ -249,8 +250,8 @@ class AutoEnrollmentWithStatistics : public AutoEnrollmentEmbeddedPolicyServer {
   AutoEnrollmentWithStatistics() {
     // `AutoEnrollmentTypeChecker` assumes that VPD is in valid state if
     // "serial_number" or "Product_S/N" could be read from it.
-    fake_statistics_provider_.SetMachineStatistic(
-        system::kSerialNumberKeyForTest, test::kTestSerialNumber);
+    fake_statistics_provider_.SetMachineStatistic(system::kSerialNumberKey,
+                                                  test::kTestSerialNumber);
     fake_statistics_provider_.SetVpdStatus(
         system::StatisticsProvider::VpdStatus::kValid);
   }
@@ -273,8 +274,7 @@ class AutoEnrollmentWithStatistics : public AutoEnrollmentEmbeddedPolicyServer {
   }
 
   void SetVPDCorrupted() {
-    fake_statistics_provider_.ClearMachineStatistic(
-        system::kSerialNumberKeyForTest);
+    fake_statistics_provider_.ClearMachineStatistic(system::kSerialNumberKey);
     fake_statistics_provider_.SetVpdStatus(
         system::StatisticsProvider::VpdStatus::kRwInvalid);
   }
@@ -926,12 +926,12 @@ IN_PROC_BROWSER_TEST_F(AutoEnrollmentEmbeddedPolicyServer, Attestation) {
 // Verify able to advance to login screen when error screen is shown.
 IN_PROC_BROWSER_TEST_F(AutoEnrollmentEmbeddedPolicyServer, TestCaptivePortal) {
   network_portal_detector_.SimulateDefaultNetworkState(
-      NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL);
+      NetworkPortalDetectorMixin::NetworkStatus::kPortal);
   host()->StartWizard(AutoEnrollmentCheckScreenView::kScreenId);
   OobeScreenWaiter(ErrorScreenView::kScreenId).Wait();
 
   network_portal_detector_.SimulateDefaultNetworkState(
-      NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE);
+      NetworkPortalDetectorMixin::NetworkStatus::kOnline);
   OobeScreenWaiter(GetFirstSigninScreen()).Wait();
 }
 
@@ -1095,7 +1095,7 @@ IN_PROC_BROWSER_TEST_F(EnrollmentRecoveryTest, DifferentDomain) {
   enrollment_ui_.RetryAndWaitForSigninStep();
 }
 
-// TODO(crbug.com/1454755): Flaky on ChromeOS.
+// TODO(crbug.com/40917081): Flaky on ChromeOS.
 #if BUILDFLAG(IS_CHROMEOS)
 #define MAYBE_EnrollmentForced DISABLED_EnrollmentForced
 #else
@@ -1376,8 +1376,6 @@ class KioskEnrollmentTest : public EnrollmentEmbeddedPolicyServerBase {
   // EnrollmentEmbeddedPolicyServerBase:
   void SetUp() override {
     needs_background_networking_ = true;
-    skip_splash_wait_override_ =
-        KioskLaunchController::SkipSplashScreenWaitForTesting();
     EnrollmentEmbeddedPolicyServerBase::SetUp();
   }
 
@@ -1389,7 +1387,8 @@ class KioskEnrollmentTest : public EnrollmentEmbeddedPolicyServerBase {
 
  private:
   KioskAppsMixin kiosk_apps_{&mixin_host_, embedded_test_server()};
-  std::unique_ptr<base::AutoReset<bool>> skip_splash_wait_override_;
+  base::AutoReset<bool> skip_splash_wait_override_ =
+      KioskLaunchController::SkipSplashScreenWaitForTesting();
 };
 
 IN_PROC_BROWSER_TEST_F(KioskEnrollmentTest,

@@ -50,19 +50,19 @@ TEST_F(AnchorPositionScrollDataTest, HasDataAndScrollAdjustment) {
         <div style="height: 100px"></div>
       </div>
       <div id="anchored"
-           style="position: absolute; anchor-default: --a1; top: anchor(top)">
+           style="position: absolute; position-anchor: --a1; top: anchor(top)">
         anchored
       </div>
       <div id="no-anchor-usage"
-           style="position: absolute; anchor-default: --a1;">
+           style="position: absolute; position-anchor: --a1;">
         anchor not used in any anchor function
       </div>
       <div id="no-anchor"
-           style="position: absolute; anchor-default: --b1; top: anchor(top)">
+           style="position: absolute; position-anchor: --b1; top: anchor(top)">
         anchor not found
       </div>
       <div id="not-anchor-positioned"
-           style="anchor-default: --a1; top: anchor(top)">
+           style="position-anchor: --a1; top: anchor(top)">
         not anchor positioned
       </div>
     </div>
@@ -91,7 +91,7 @@ TEST_F(AnchorPositionScrollDataTest, HasDataAndScrollAdjustment) {
 // changes from anchor-positioned to no longer anchor-positioned
 TEST_F(AnchorPositionScrollDataTest, Detach) {
   SetBodyInnerHTML(R"HTML(
-    <style>.anchored { position: absolute; anchor-default: --a1; }</style>
+    <style>.anchored { position: absolute; position-anchor: --a1; }</style>
     <div style="position: relative>
       <div style="overflow: scroll; height: 20px;">
         Lorem ipsum
@@ -147,7 +147,7 @@ TEST_F(AnchorPositionScrollDataTest, ScrollerSizeChange) {
       #anchored {
         position: absolute;
         top: anchor(--a top);
-        anchor-default: --a;
+        position-anchor: --a;
       }
     </style>
     <div style="position: relative">
@@ -167,7 +167,7 @@ TEST_F(AnchorPositionScrollDataTest, ScrollerSizeChange) {
   Element* anchored = GetElementById("anchored");
   EXPECT_TRUE(anchored->GetAnchorPositionScrollData());
   EXPECT_EQ(gfx::Vector2dF(0, 300),
-            anchored->GetAnchorPositionScrollData()->AccumulatedOffset());
+            anchored->GetAnchorPositionScrollData()->AccumulatedAdjustment());
 
   GetElementById("scroller")->classList().Add(AtomicString("changed"));
 
@@ -176,7 +176,7 @@ TEST_F(AnchorPositionScrollDataTest, ScrollerSizeChange) {
   SimulateFrame();
   EXPECT_TRUE(anchored->GetAnchorPositionScrollData());
   EXPECT_EQ(gfx::Vector2dF(0, 300),
-            anchored->GetAnchorPositionScrollData()->AccumulatedOffset());
+            anchored->GetAnchorPositionScrollData()->AccumulatedAdjustment());
 
   UnsetAnimationScheduled();
   UpdateAllLifecyclePhasesForTest();
@@ -190,7 +190,7 @@ TEST_F(AnchorPositionScrollDataTest, ScrollerSizeChange) {
   SimulateFrame();
   EXPECT_TRUE(anchored->GetAnchorPositionScrollData());
   EXPECT_EQ(gfx::Vector2dF(0, 200),
-            anchored->GetAnchorPositionScrollData()->AccumulatedOffset());
+            anchored->GetAnchorPositionScrollData()->AccumulatedAdjustment());
 
   // Should not schedule another frame after all updates are done.
   UnsetAnimationScheduled();
@@ -210,7 +210,7 @@ TEST_F(AnchorPositionScrollDataTest, ScrollContentSizeChange) {
       #anchored {
         position: absolute;
         top: anchor(--a top);
-        anchor-default: --a;
+        position-anchor: --a;
       }
     </style>
     <div style="position: relative">
@@ -230,7 +230,7 @@ TEST_F(AnchorPositionScrollDataTest, ScrollContentSizeChange) {
   Element* anchored = GetElementById("anchored");
   EXPECT_TRUE(anchored->GetAnchorPositionScrollData());
   EXPECT_EQ(gfx::Vector2dF(0, 300),
-            anchored->GetAnchorPositionScrollData()->AccumulatedOffset());
+            anchored->GetAnchorPositionScrollData()->AccumulatedAdjustment());
 
   GetElementById("spacer")->classList().Add(AtomicString("changed"));
 
@@ -239,7 +239,7 @@ TEST_F(AnchorPositionScrollDataTest, ScrollContentSizeChange) {
   SimulateFrame();
   EXPECT_TRUE(anchored->GetAnchorPositionScrollData());
   EXPECT_EQ(gfx::Vector2dF(0, 300),
-            anchored->GetAnchorPositionScrollData()->AccumulatedOffset());
+            anchored->GetAnchorPositionScrollData()->AccumulatedAdjustment());
 
   UnsetAnimationScheduled();
   UpdateAllLifecyclePhasesForTest();
@@ -253,7 +253,7 @@ TEST_F(AnchorPositionScrollDataTest, ScrollContentSizeChange) {
   SimulateFrame();
   EXPECT_TRUE(anchored->GetAnchorPositionScrollData());
   EXPECT_EQ(gfx::Vector2dF(0, 200),
-            anchored->GetAnchorPositionScrollData()->AccumulatedOffset());
+            anchored->GetAnchorPositionScrollData()->AccumulatedAdjustment());
 
   // Should not schedule another frame after all updates are done.
   UnsetAnimationScheduled();

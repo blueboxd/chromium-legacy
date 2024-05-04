@@ -17,6 +17,7 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "base/check.h"
 #include "base/functional/bind.h"
+#include "chromeos/ash/components/geolocation/simple_geolocation_provider.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
@@ -69,15 +70,44 @@ BirchWeatherProvider::BirchWeatherProvider(BirchModel* birch_model)
 BirchWeatherProvider::~BirchWeatherProvider() = default;
 
 void BirchWeatherProvider::RequestBirchDataFetch() {
+  if (!SimpleGeolocationProvider::GetInstance()
+           ->IsGeolocationUsageAllowedForSystem()) {
+    // Weather is not allowed if geolocation is off.
+    birch_model_->SetWeatherItems({});
+    return;
+  }
+  // Only allow one fetch at a time.
+  if (is_fetching_) {
+    return;
+  }
+  is_fetching_ = true;
+
+  if (!birch_model_->birch_client()) {
+    // BirchClient may be null in tests.
+    FetchWeather();
+    return;
+  }
+  // Fetching weather requires auth, but early in startup refresh tokens may not
+  // be loaded yet. Ensure refresh tokens are loaded before doing the fetch.
+  birch_model_->birch_client()->WaitForRefreshTokens(base::BindOnce(
+      &BirchWeatherProvider::FetchWeather, weak_factory_.GetWeakPtr()));
+}
+
+void BirchWeatherProvider::FetchWeather() {
+  const bool prefer_prod_endpoint = base::GetFieldTrialParamByFeatureAsBool(
+      features::kBirchWeather, "prod_weather_endpoint", false);
   Shell::Get()
       ->ambient_controller()
       ->ambient_backend_controller()
-      ->FetchWeather(base::BindOnce(&BirchWeatherProvider::OnWeatherInfoFetched,
+      ->FetchWeather("chromeos-system-ui",
+                     /*prefer_alpha_endpoint=*/!prefer_prod_endpoint,
+                     base::BindOnce(&BirchWeatherProvider::OnWeatherInfoFetched,
                                     weak_factory_.GetWeakPtr()));
 }
 
 void BirchWeatherProvider::OnWeatherInfoFetched(
     const std::optional<WeatherInfo>& weather_info) {
+  is_fetching_ = false;
   if (!weather_info || !weather_info->temp_f.has_value() ||
       !weather_info->condition_icon_url ||
       !weather_info->condition_description ||

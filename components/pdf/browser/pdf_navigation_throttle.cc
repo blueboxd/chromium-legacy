@@ -9,7 +9,6 @@
 #include <utility>
 
 #include "base/check.h"
-#include "base/feature_list.h"
 #include "base/functional/bind.h"
 #include "base/location.h"
 #include "base/memory/weak_ptr.h"
@@ -32,7 +31,7 @@ namespace pdf {
 content::NavigationThrottle::ThrottleCheckResult
 PdfNavigationThrottle::WillProcessResponse() {
   // OOPIF PDF viewer only.
-  if (!base::FeatureList::IsEnabled(chrome_pdf::features::kPdfOopif)) {
+  if (!chrome_pdf::features::IsOopifPdfEnabled()) {
     return PROCEED;
   }
 
@@ -89,8 +88,13 @@ PdfNavigationThrottle::WillStartRequest() {
   // Skip unless navigating to the stream URL.
   const std::optional<GURL> original_url =
       stream_delegate_->MapToOriginalUrl(*navigation_handle());
-  if (!original_url.has_value())
-    return PROCEED;
+  if (!original_url.has_value()) {
+    // Block any non-PDF navigations in internal PDF extension and content
+    // frames. Allow all other navigations to proceed.
+    return stream_delegate_->ShouldAllowPdfFrameNavigation(navigation_handle())
+               ? PROCEED
+               : BLOCK_REQUEST;
+  }
 
   // Uses the same pattern as `PDFIFrameNavigationThrottle` to redirect
   // navigation to the original URL. We'll use this to navigate to the correct
@@ -130,7 +134,7 @@ PdfNavigationThrottle::WillStartRequest() {
   // task does run and does not get canceled due to the embedder frame becoming
   // null, we can restore the source SiteInstance at that point.
   //
-  // TODO(crbug.com/1382761): This should be fixed in a more systematic way.
+  // TODO(crbug.com/40061670): This should be fixed in a more systematic way.
   DCHECK_EQ(params.source_site_instance, embedder_frame->GetSiteInstance());
   params.source_site_instance.reset();
 

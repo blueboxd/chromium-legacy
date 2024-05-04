@@ -25,6 +25,7 @@
 #include "chrome/browser/ui/views/web_apps/isolated_web_apps/isolated_web_app_installer_view_controller.h"
 #include "chrome/browser/ui/views/web_apps/isolated_web_apps/test_isolated_web_app_installer_model_observer.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_source.h"
+#include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_storage_location.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_url_info.h"
 #include "chrome/browser/web_applications/isolated_web_apps/signed_web_bundle_metadata.h"
 #include "chrome/browser/web_applications/test/web_app_icon_test_utils.h"
@@ -90,8 +91,8 @@ SignedWebBundleMetadata CreateTestMetadata() {
   AddGeneratedIcon(&icons.any, 32, SK_ColorBLUE);
   return SignedWebBundleMetadata::CreateForTesting(
       IsolatedWebAppUrlInfo::CreateFromSignedWebBundleId(
-          web_package::SignedWebBundleId::CreateRandomForDevelopment()),
-      IwaSourceBundle{.path = base::FilePath()}, u"Test Isolated Web App",
+          web_package::SignedWebBundleId::CreateRandomForProxyMode()),
+      IwaSourceBundleProdMode(base::FilePath()), u"Test Isolated Web App",
       base::Version("0.0.1"), icons);
 }
 

@@ -170,7 +170,7 @@ void SignedExchangeLoader::OnUploadProgress(
 }
 
 void SignedExchangeLoader::OnTransferSizeUpdated(int32_t transfer_size_diff) {
-  // TODO(https://crbug.com/803774): Implement this to progressively update the
+  // TODO(crbug.com/40558902): Implement this to progressively update the
   // encoded data length in DevTools.
   network::RecordOnTransferSizeUpdatedUMA(
       network::OnTransferSizeUpdatedFrom::kSignedExchangeLoader);
@@ -290,7 +290,7 @@ void SignedExchangeLoader::OnHTTPExchangeFound(
       outer_response_head_->was_fetched_via_cache;
 
   // Currently we always assume that we have body.
-  // TODO(https://crbug.com/80374): Add error handling and bail out
+  // TODO(crbug.com/40558879): Add error handling and bail out
   // earlier if there's an error.
   mojo::ScopedDataPipeProducerHandle producer_handle;
   mojo::ScopedDataPipeConsumerHandle consumer_handle;

@@ -243,7 +243,8 @@ class ProvidedFileSystem : public ProvidedFileSystemInterface {
                            OpenFileMode mode,
                            OpenFileCallback callback,
                            int file_handle,
-                           base::File::Error result);
+                           base::File::Error result,
+                           std::unique_ptr<EntryMetadata> metadata);
 
   // Called when closing a file is completed with either a success or an error.
   void OnCloseFileCompleted(int file_handle,

@@ -27,7 +27,7 @@ import type {MetricsTracker} from 'chrome://webui-test/metrics_test_support.js';
 import {fakeMetricsPrivate} from 'chrome://webui-test/metrics_test_support.js';
 import {flushTasks, waitAfterNextRender} from 'chrome://webui-test/polymer_test_util.js';
 import type {TestMock} from 'chrome://webui-test/test_mock.js';
-import {eventToPromise, isVisible, whenCheck} from 'chrome://webui-test/test_util.js';
+import {eventToPromise, isVisible, microtasksFinished, whenCheck} from 'chrome://webui-test/test_util.js';
 
 import {$$, assertNotStyle, assertStyle, createBackgroundImage, createTheme, installMock} from '../test_support.js';
 
@@ -170,6 +170,7 @@ suite('WallpaperSearchTest', () => {
           !!$$(wallpaperSearchElement, '#descriptorMenuD button [checked]'));
 
       $$<HTMLElement>(wallpaperSearchElement, '.default-color')!.click();
+      await microtasksFinished();
 
       let checkedMarkedColors =
           wallpaperSearchElement.shadowRoot!.querySelectorAll(
@@ -185,6 +186,7 @@ suite('WallpaperSearchTest', () => {
 
       wallpaperSearchElement.$.hueSlider.dispatchEvent(
           new Event('selected-hue-changed'));
+      await microtasksFinished();
 
       checkedMarkedColors = wallpaperSearchElement.shadowRoot!.querySelectorAll(
           '#descriptorMenuD button [checked]');
@@ -207,6 +209,7 @@ suite('WallpaperSearchTest', () => {
           !!$$(wallpaperSearchElement, '#descriptorMenuD button [checked]'));
 
       $$<HTMLElement>(wallpaperSearchElement, '.default-color')!.click();
+      await microtasksFinished();
       let checkedMarkedColors =
           wallpaperSearchElement.shadowRoot!.querySelectorAll(
               '#descriptorMenuD button [checked]');
@@ -214,6 +217,7 @@ suite('WallpaperSearchTest', () => {
 
       // Clicking again should deselect it.
       $$<HTMLElement>(wallpaperSearchElement, '.default-color')!.click();
+      await microtasksFinished();
       checkedMarkedColors = wallpaperSearchElement.shadowRoot!.querySelectorAll(
           '#descriptorMenuD button [checked]');
       assertEquals(0, checkedMarkedColors.length);
@@ -1900,19 +1904,19 @@ suite('WallpaperSearchTest', () => {
       assertEquals(inspirations[0], inspirationGridResults1[0]);
       assertEquals(
           'https://example.com/foo_2.png',
-          (inspirations[0]!.querySelector('img')! as CrAutoImgElement).autoSrc);
+          inspirations[0]!.querySelector<CrAutoImgElement>('img')!.autoSrc);
       assertEquals('Description foo', inspirations[0]!.ariaLabel);
       assertEquals(inspirations[1], inspirationGridResults1[1]);
       assertEquals(
           'https://example.com/bar_2.png',
-          (inspirations[1]!.querySelector('img')! as CrAutoImgElement).autoSrc);
+          inspirations[1]!.querySelector<CrAutoImgElement>('img')!.autoSrc);
       assertEquals('Description bar', inspirations[1]!.ariaLabel);
       const inspirationGridResults2 =
           inspirationsGroups[1]!.querySelectorAll('.tile.result');
       assertEquals(inspirations[2], inspirationGridResults2[0]);
       assertEquals(
           'https://example.com/baz_2.png',
-          (inspirations[2]!.querySelector('img')! as CrAutoImgElement).autoSrc);
+          inspirations[2]!.querySelector<CrAutoImgElement>('img')!.autoSrc);
       assertEquals('Description baz', inspirations[2]!.ariaLabel);
     });
 

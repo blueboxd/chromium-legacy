@@ -49,10 +49,10 @@ component("gpu") {
     "//media/mojo/*",
     "//remoting/codec:encoder",
     "//third_party/blink/renderer/modules:unit_tests",
-    "//third_party/blink/renderer/modules:unit_tests_v2",
+    "//third_party/blink/renderer/modules/mediarecorder",
     "//ui/gl:gl_unittests",
 
-    # TODO(crbug.com/1184041): Remove //remoting/host:common when the usage is removed.
+    # TODO(crbug.com/40752360): Remove //remoting/host:common when the usage is removed.
     "//remoting/host:common",
   ]
 
@@ -175,7 +175,7 @@ component("gpu") {
       "mediandk",
     ]
     deps += [
-      # TODO(crbug.com/789435): This can be removed once CdmManager is removed.
+      # TODO(crbug.com/40552063): This can be removed once CdmManager is removed.
       "//gpu/ipc/common",
       "//media/mojo:buildflags",
       "//services/service_manager/public/cpp:cpp",
@@ -243,6 +243,8 @@ component("gpu") {
       "windows/d3d_accelerator.h",
       "windows/d3d_video_decoder_wrapper.cc",
       "windows/d3d_video_decoder_wrapper.h",
+      "windows/format_utils.cc",
+      "windows/format_utils.h",
       "windows/init_guid.cc",
       "windows/media_foundation_video_encode_accelerator_win.cc",
       "windows/media_foundation_video_encode_accelerator_win.h",
@@ -269,10 +271,7 @@ component("gpu") {
       ]
       deps += [ "//third_party/libaom:libaomrc" ]
     }
-    configs += [
-      "//third_party/khronos:khronos_headers",
-      "//third_party/libvpx:libvpx_config",
-    ]
+    configs += [ "//third_party/khronos:khronos_headers" ]
     deps += [
       "//gpu/ipc/common:common",
       "//media/base/win:color_space_util_win",
@@ -380,13 +379,17 @@ source_set("common") {
 
   if (is_win || use_vaapi) {
     sources += [
+      "h264_builder.cc",
+      "h264_builder.h",
       "vp9_svc_layers.cc",
       "vp9_svc_layers.h",
     ]
-    configs += [ "//third_party/libvpx:libvpx_config" ]
-    deps += [
-      "//third_party/libvpx:libvpxrc",
-    ]
+    if (enable_hevc_parser_and_hw_decoder) {
+      sources += [
+        "h265_builder.cc",
+        "h265_builder.h",
+      ]
+    }
   }
 
   if (use_av1_hw_decoder) {
@@ -652,6 +655,7 @@ source_set("unit_tests") {
       "windows/d3d11_video_device_format_support_unittest.cc",
       "windows/d3d11_video_processor_proxy_unittest.cc",
       "windows/d3d12_helpers_unittest.cc",
+      "windows/mf_audio_encoder_unittest.cc",
       "windows/scoped_d3d_buffers_unittest.cc",
       "windows/supported_profile_helpers_unittest.cc",
     ]
@@ -663,7 +667,10 @@ source_set("unit_tests") {
   }
 
   if (is_win || use_vaapi) {
-    sources += [ "vp9_svc_layers_unittest.cc" ]
+    sources += [
+      "h264_builder_unittest.cc",
+      "vp9_svc_layers_unittest.cc",
+    ]
   }
 }
 

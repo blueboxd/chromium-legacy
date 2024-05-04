@@ -2,16 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/ash/login/screens/quick_start_screen.h"
+
 #include <memory>
+
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/login_screen_test_api.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/ash/login/oobe_quick_start/connectivity/fake_target_device_connection_broker.h"
 #include "chrome/browser/ash/login/oobe_quick_start/connectivity/target_device_connection_broker.h"
-#include "chrome/browser/ash/login/screens/quick_start_screen.h"
 #include "chrome/browser/ash/login/screens/update_screen.h"
 #include "chrome/browser/ash/login/screens/welcome_screen.h"
 #include "chrome/browser/ash/login/test/device_state_mixin.h"
@@ -61,11 +64,32 @@ constexpr char kCancelButton[] = "cancelButton";
 constexpr char kPinCodeWrapper[] = "pinWrapper";
 constexpr char kConfirmAccountDialog[] = "confirmAccountDialog";
 constexpr char kScreenOpenedHistogram[] = "QuickStart.ScreenOpened";
+constexpr char kViewDurationHistogram[] = ".ViewDuration";
+constexpr char kReasonHistogram[] = ".Reason";
+constexpr char kScreenClosedQSSetUpWithAndroidPhone[] =
+    "QuickStart.ScreenClosed.QSSetUpWithAndroidPhone";
+constexpr char kScreenClosedQSConnectingToWifi[] =
+    "QuickStart.ScreenClosed.QSConnectingToWifi";
+constexpr char kScreenClosedQSWifiCredentialsReceived[] =
+    "QuickStart.ScreenClosed.QSWifiCredentialsReceived";
+constexpr char kScreenClosedChooseChromebookSetup[] =
+    "QuickStart.ScreenClosed.ChooseChromebookSetup";
+constexpr char kScreenClosedNetworkScreen[] =
+    "QuickStart.ScreenClosed.NetworkScreen";
+constexpr char kAuthenticationMethodHistogram[] =
+    "QuickStart.AuthenticationMethod";
+constexpr char kFlowAbortedReason[] = "QuickStart.FlowAborted.Reason";
+constexpr char kEntryPointHistogram[] = "QuickStart.EntryPoint";
+
 constexpr test::UIPath kQuickStartEntryPointPath = {
     WelcomeView::kScreenId.name, kWelcomeScreen, kQuickStartEntryPoint};
 constexpr test::UIPath kQuickStartButtonPath = {
     WelcomeView::kScreenId.name, kWelcomeScreen, kQuickStartEntryPoint,
     kQuickStartButton};
+constexpr test::UIPath kNetworkBackButtonPath = {
+    NetworkScreenView::kScreenId.name, "backButton"};
+constexpr test::UIPath kWelcomeScreenNextButton = {
+    WelcomeView::kScreenId.name, kWelcomeScreen, "getStarted"};
 constexpr test::UIPath kQuickStartBluetoothDialogPath = {
     QuickStartView::kScreenId.name, kQuickStartBluetoothDialog};
 constexpr test::UIPath kQuickStartBluetoothCancelButtonPath = {
@@ -100,6 +124,12 @@ void ClickOnWifiNetwork(const std::string& wifi_network_name) {
   test::OobeJS().Evaluate(NetworkElementSelector(wifi_network_name) +
                           ".click()");
 }
+
+void WaitAndClickOnPath(const test::UIPath& path) {
+  test::OobeJS().CreateVisibilityWaiter(/*visibility=*/true, path)->Wait();
+  test::OobeJS().ClickOnPath(path);
+}
+
 }  // namespace
 
 class QuickStartBrowserTest : public OobeBaseTest {
@@ -166,11 +196,7 @@ class QuickStartBrowserTest : public OobeBaseTest {
 
   void EnterQuickStartFlowFromWelcomeScreen() {
     test::WaitForWelcomeScreen();
-    test::OobeJS()
-        .CreateVisibilityWaiter(/*visibility=*/true, kQuickStartButtonPath)
-        ->Wait();
-
-    test::OobeJS().ClickOnPath(kQuickStartButtonPath);
+    WaitAndClickOnPath(kQuickStartButtonPath);
     OobeScreenWaiter(QuickStartView::kScreenId).Wait();
   }
 
@@ -223,6 +249,25 @@ class QuickStartBrowserTest : public OobeBaseTest {
         ->Wait();
   }
 
+  void WaitForNetworkListWifiErrorTitleAndSubtitle() {
+    auto expected_title =
+        l10n_util::GetStringUTF8(IDS_LOGIN_QUICK_START_WIFI_ERROR_TITLE);
+    auto expected_subtitle =
+        l10n_util::GetStringUTF8(IDS_LOGIN_QUICK_START_WIFI_ERROR_SUBTITLE);
+    test::OobeJS()
+        .CreateElementTextContentWaiter(
+            expected_subtitle,
+            {NetworkScreenView::kScreenId.name /*"network-selection"*/,
+             "subtitleText"})
+        ->Wait();
+    test::OobeJS()
+        .CreateElementTextContentWaiter(
+            expected_title,
+            {NetworkScreenView::kScreenId.name /*"network-selection"*/,
+             "titleText"})
+        ->Wait();
+  }
+
   void WaitForUserCreationAndTriggerPersonalFlow() {
     test::WaitForUserCreationScreen();
     test::TapForPersonalUseCrRadioButton();
@@ -236,13 +281,14 @@ class QuickStartBrowserTest : public OobeBaseTest {
     connection_broker()->on_start_advertising_callback().Run(true);
     connection_broker()->InitiateConnection("fake_device_id");
     connection_broker()->AuthenticateConnection(
-        "fake_device_id", quick_start::Connection::AuthenticationMethod::kQR);
+        "fake_device_id",
+        quick_start::QuickStartMetrics::AuthenticationMethod::kQRCode);
   }
 
   void AbortFlowFromPhoneSide() {
     connection_broker()->CloseConnection(
         quick_start::TargetDeviceConnectionBroker::ConnectionClosedReason::
-            kConnectionLost);
+            kUnknownError);
   }
 
   void SimulateUserVerification(bool simulate_failure = false) {
@@ -323,6 +369,7 @@ class QuickStartBrowserTest : public OobeBaseTest {
       connection_broker_factory_;
   scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>>
       mock_bluetooth_adapter_;
+  base::HistogramTester histogram_tester_;
 
  private:
   std::unique_ptr<NetworkStateTestHelper> network_helper_;
@@ -398,18 +445,13 @@ IN_PROC_BROWSER_TEST_F(QuickStartBrowserTestWithBluetoothDisabled,
 
   // Clicking on the entry point when bluetooth is disabled should
   // transition to the QuickStart screen and show the dialog.
-  test::OobeJS().ClickOnPath(kQuickStartButtonPath);
+  WaitAndClickOnPath(kQuickStartButtonPath);
   OobeScreenWaiter(QuickStartView::kScreenId).Wait();
   WaitForVerificationStep();
   WaitForBluetoothDialogToOpen();
 
   // Cancelling the dialog should bring the user back.
-  test::OobeJS()
-      .CreateVisibilityWaiter(/*visibility=*/true,
-                              kQuickStartBluetoothCancelButtonPath)
-      ->Wait();
-  test::OobeJS().ClickOnPath(kQuickStartBluetoothCancelButtonPath);
-
+  WaitAndClickOnPath(kQuickStartBluetoothCancelButtonPath);
   test::WaitForWelcomeScreen();
 }
 
@@ -426,28 +468,22 @@ IN_PROC_BROWSER_TEST_F(QuickStartBrowserTestWithBluetoothDisabled,
 
   // Clicking on the entry point when bluetooth is disabled should
   // transition to the QuickStart screen and show the dialog.
-  test::OobeJS().ClickOnPath(kQuickStartButtonPath);
+  WaitAndClickOnPath(kQuickStartButtonPath);
   OobeScreenWaiter(QuickStartView::kScreenId).Wait();
   WaitForVerificationStep();
   WaitForBluetoothDialogToOpen();
 
-  test::OobeJS()
-      .CreateVisibilityWaiter(/*visibility=*/true,
-                              kQuickStartBluetoothEnableButtonPath)
-      ->Wait();
-  test::OobeJS().ClickOnPath(kQuickStartBluetoothEnableButtonPath);
+  WaitAndClickOnPath(kQuickStartBluetoothEnableButtonPath);
+
   WaitForBluetoothDialogToClose();
 }
 
 IN_PROC_BROWSER_TEST_F(QuickStartBrowserTest, QRCode) {
-  base::HistogramTester histogram_tester;
-  histogram_tester.ExpectBucketCount(
+  histogram_tester_.ExpectBucketCount(
       kScreenOpenedHistogram,
-      quick_start::QuickStartMetrics::ScreenName::kSetUpWithAndroidPhone, 0);
+      quick_start::QuickStartMetrics::ScreenName::kQSSetUpWithAndroidPhone, 0);
   test::WaitForWelcomeScreen();
-  test::OobeJS().ExpectVisiblePath(kQuickStartButtonPath);
-
-  test::OobeJS().ClickOnPath(kQuickStartButtonPath);
+  WaitAndClickOnPath(kQuickStartButtonPath);
 
   OobeScreenWaiter(QuickStartView::kScreenId).Wait();
   connection_broker_factory_.instances().front()->InitiateConnection(
@@ -467,21 +503,18 @@ IN_PROC_BROWSER_TEST_F(QuickStartBrowserTest, QRCode) {
 
   // Squaring the CELL_COUNT must yield the total size of the QR code.
   EXPECT_EQ(canvas_cell_count * canvas_cell_count, qr_code_size);
-  histogram_tester.ExpectBucketCount(
+  histogram_tester_.ExpectBucketCount(
       kScreenOpenedHistogram,
-      quick_start::QuickStartMetrics::ScreenName::kSetUpWithAndroidPhone, 1);
+      quick_start::QuickStartMetrics::ScreenName::kQSSetUpWithAndroidPhone, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(QuickStartBrowserTest, PinCode) {
   test::WaitForWelcomeScreen();
-  test::OobeJS().ExpectVisiblePath(kQuickStartButtonPath);
-
-  test::OobeJS().ClickOnPath(kQuickStartButtonPath);
-
+  WaitAndClickOnPath(kQuickStartButtonPath);
   OobeScreenWaiter(QuickStartView::kScreenId).Wait();
+
   connection_broker()->set_use_pin_authentication(true);
   connection_broker()->InitiateConnection("fake_device_id");
-
   WaitForVerificationStep();
 
   // <quick-start-pin> should become visible and contain the PIN.
@@ -495,9 +528,9 @@ IN_PROC_BROWSER_TEST_F(QuickStartBrowserTest, PinCode) {
   for (auto i = 0; i < 4; i++) {
     const auto digit = std::string{pin[i]};
     test::OobeJS()
-        .CreateWaiter(test::GetOobeElementPath({QuickStartView::kScreenId.name,
-                                                kPinCodeWrapper,
-                                                "digit" + std::to_string(i)}) +
+        .CreateWaiter(test::GetOobeElementPath(
+                          {QuickStartView::kScreenId.name, kPinCodeWrapper,
+                           "digit" + base::NumberToString(i)}) +
                       ".textContent === '" + digit + "'")
         ->Wait();
   }
@@ -511,15 +544,24 @@ IN_PROC_BROWSER_TEST_F(QuickStartBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(QuickStartBrowserTest, ClickingCancelReturnsToWelcome) {
   EnterQuickStartFlowFromWelcomeScreen();
+  histogram_tester_.ExpectBucketCount(
+      std::string{kScreenClosedQSSetUpWithAndroidPhone} + kReasonHistogram,
+      quick_start::QuickStartMetrics::ScreenClosedReason::kUserCancelled, 0);
+  histogram_tester_.ExpectBucketCount(
+      kFlowAbortedReason,
+      quick_start::QuickStartMetrics::AbortFlowReason::USER_CLICKED_CANCEL, 0);
 
-  // Cancel button must be present.
-  test::OobeJS()
-      .CreateVisibilityWaiter(/*visibility=*/true, kCancelButtonLoadingDialog)
-      ->Wait();
-  test::OobeJS().ClickOnPath(kCancelButtonLoadingDialog);
+  // Cancel flow.
+  WaitAndClickOnPath(kCancelButtonLoadingDialog);
   OobeScreenWaiter(WelcomeView::kScreenId).Wait();
 
   EnsureFlowNotActive();
+  histogram_tester_.ExpectBucketCount(
+      std::string{kScreenClosedQSSetUpWithAndroidPhone} + kReasonHistogram,
+      quick_start::QuickStartMetrics::ScreenClosedReason::kUserCancelled, 1);
+  histogram_tester_.ExpectBucketCount(
+      kFlowAbortedReason,
+      quick_start::QuickStartMetrics::AbortFlowReason::USER_CLICKED_CANCEL, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(QuickStartBrowserTest, CancelOnQRCode) {
@@ -529,12 +571,8 @@ IN_PROC_BROWSER_TEST_F(QuickStartBrowserTest, CancelOnQRCode) {
   connection_broker()->InitiateConnection("fake_device_id");
   WaitForVerificationStep();
 
-  // Cancel button must be present.
-  test::OobeJS()
-      .CreateVisibilityWaiter(/*visibility=*/true,
-                              kCancelButtonVerificationDialog)
-      ->Wait();
-  test::OobeJS().ClickOnPath(kCancelButtonVerificationDialog);
+  // Cancel flow.
+  WaitAndClickOnPath(kCancelButtonVerificationDialog);
   OobeScreenWaiter(WelcomeView::kScreenId).Wait();
 
   EnsureFlowNotActive();
@@ -548,11 +586,7 @@ IN_PROC_BROWSER_TEST_F(QuickStartBrowserTest, CancelAndRestartWithNewSession) {
   SimulateUserVerification();
 
   // Cancel flow.
-  test::OobeJS()
-      .CreateVisibilityWaiter(/*visibility=*/true,
-                              kCancelButtonVerificationDialog)
-      ->Wait();
-  test::OobeJS().ClickOnPath(kCancelButtonVerificationDialog);
+  WaitAndClickOnPath(kCancelButtonVerificationDialog);
   OobeScreenWaiter(WelcomeView::kScreenId).Wait();
   EnsureFlowNotActive();
 
@@ -564,35 +598,121 @@ IN_PROC_BROWSER_TEST_F(QuickStartBrowserTest, CancelAndRestartWithNewSession) {
 
 IN_PROC_BROWSER_TEST_F(QuickStartBrowserTest, EndToEndWithMetrics) {
   SetUpDisconnectedWifiNetwork();
-  base::HistogramTester histogram_tester;
-  histogram_tester.ExpectBucketCount(
+  histogram_tester_.ExpectBucketCount(
       kScreenOpenedHistogram,
-      quick_start::QuickStartMetrics::ScreenName::kSetUpWithAndroidPhone, 0);
-  histogram_tester.ExpectBucketCount(
+      quick_start::QuickStartMetrics::ScreenName::kQSSetUpWithAndroidPhone, 0);
+  histogram_tester_.ExpectTotalCount(
+      std::string{kScreenClosedQSSetUpWithAndroidPhone} +
+          kViewDurationHistogram,
+      0);
+  histogram_tester_.ExpectTotalCount(
+      std::string{kScreenClosedQSSetUpWithAndroidPhone} + kReasonHistogram, 0);
+  histogram_tester_.ExpectBucketCount(
       kScreenOpenedHistogram,
-      quick_start::QuickStartMetrics::ScreenName::kConnectingToWifi, 0);
+      quick_start::QuickStartMetrics::ScreenName::kQSConnectingToWifi, 0);
+  histogram_tester_.ExpectTotalCount(
+      std::string{kScreenClosedQSConnectingToWifi} + kViewDurationHistogram, 0);
+  histogram_tester_.ExpectTotalCount(
+      std::string{kScreenClosedQSConnectingToWifi} + kReasonHistogram, 0);
+  histogram_tester_.ExpectBucketCount(
+      kScreenOpenedHistogram,
+      quick_start::QuickStartMetrics::ScreenName::kQSWifiCredentialsReceived,
+      0);
+  histogram_tester_.ExpectTotalCount(
+      std::string{kScreenClosedQSWifiCredentialsReceived} +
+          kViewDurationHistogram,
+      0);
+  histogram_tester_.ExpectTotalCount(
+      std::string{kScreenClosedQSWifiCredentialsReceived} + kReasonHistogram,
+      0);
+  histogram_tester_.ExpectBucketCount(
+      kScreenOpenedHistogram,
+      quick_start::QuickStartMetrics::ScreenName::kChooseChromebookSetup, 0);
+  histogram_tester_.ExpectBucketCount(
+      kScreenOpenedHistogram,
+      quick_start::QuickStartMetrics::ScreenName::kQSSelectGoogleAccount, 0);
+  histogram_tester_.ExpectBucketCount(
+      kAuthenticationMethodHistogram,
+      quick_start::QuickStartMetrics::AuthenticationMethod::kQRCode, 0);
+  histogram_tester_.ExpectBucketCount(
+      kEntryPointHistogram,
+      quick_start::QuickStartMetrics::EntryPoint::WELCOME_SCREEN, 0);
 
   EnterQuickStartFlowFromWelcomeScreen();
-  histogram_tester.ExpectBucketCount(
+
+  histogram_tester_.ExpectBucketCount(
       kScreenOpenedHistogram,
-      quick_start::QuickStartMetrics::ScreenName::kSetUpWithAndroidPhone, 1);
+      quick_start::QuickStartMetrics::ScreenName::kQSSetUpWithAndroidPhone, 1);
+  histogram_tester_.ExpectBucketCount(
+      kEntryPointHistogram,
+      quick_start::QuickStartMetrics::EntryPoint::WELCOME_SCREEN, 1);
 
   SimulatePhoneConnection();
   SimulateUserVerification();
 
-  histogram_tester.ExpectBucketCount(
+  histogram_tester_.ExpectTotalCount(
+      std::string{kScreenClosedQSSetUpWithAndroidPhone} +
+          kViewDurationHistogram,
+      1);
+  histogram_tester_.ExpectBucketCount(
+      std::string{kScreenClosedQSSetUpWithAndroidPhone} + kReasonHistogram,
+      quick_start::QuickStartMetrics::ScreenClosedReason::kAdvancedInFlow, 1);
+  histogram_tester_.ExpectBucketCount(
+      kAuthenticationMethodHistogram,
+      quick_start::QuickStartMetrics::AuthenticationMethod::kQRCode, 1);
+  histogram_tester_.ExpectBucketCount(
       kScreenOpenedHistogram,
-      quick_start::QuickStartMetrics::ScreenName::kConnectingToWifi, 1);
+      quick_start::QuickStartMetrics::ScreenName::kQSConnectingToWifi, 1);
 
   SimulateWiFiTransfer();
 
+  histogram_tester_.ExpectTotalCount(
+      std::string{kScreenClosedQSConnectingToWifi} + kViewDurationHistogram, 1);
+  histogram_tester_.ExpectBucketCount(
+      std::string{kScreenClosedQSConnectingToWifi} + kReasonHistogram,
+      quick_start::QuickStartMetrics::kAdvancedInFlow, 1);
+  histogram_tester_.ExpectBucketCount(
+      kScreenOpenedHistogram,
+      quick_start::QuickStartMetrics::ScreenName::kQSWifiCredentialsReceived,
+      1);
+
   test::WaitForNetworkSelectionScreen();
+
+  histogram_tester_.ExpectBucketCount(
+      kScreenOpenedHistogram,
+      quick_start::QuickStartMetrics::ScreenName::kNetworkScreen, 1);
+  histogram_tester_.ExpectTotalCount(
+      std::string{kScreenClosedQSWifiCredentialsReceived} +
+          kViewDurationHistogram,
+      1);
+  histogram_tester_.ExpectBucketCount(
+      std::string{kScreenClosedQSWifiCredentialsReceived} + kReasonHistogram,
+      quick_start::QuickStartMetrics::ScreenClosedReason::kAdvancedInFlow, 1);
+
   SkipUpdateScreenOnBrandedBuilds();
   WaitForUserCreationAndTriggerPersonalFlow();
 
   // The flow continues to QuickStart upon reaching the GaiaInfoScreen or
   // GaiaScreen.
   OobeScreenWaiter(QuickStartView::kScreenId).Wait();
+
+  histogram_tester_.ExpectTotalCount(
+      std::string{kScreenClosedNetworkScreen} + kViewDurationHistogram, 1);
+  histogram_tester_.ExpectBucketCount(
+      std::string{kScreenClosedNetworkScreen} + kReasonHistogram,
+      quick_start::QuickStartMetrics::ScreenClosedReason::kAdvancedInFlow, 1);
+  histogram_tester_.ExpectBucketCount(
+      kScreenOpenedHistogram,
+      quick_start::QuickStartMetrics::ScreenName::kChooseChromebookSetup, 1);
+  histogram_tester_.ExpectTotalCount(
+      std::string{kScreenClosedChooseChromebookSetup} + kViewDurationHistogram,
+      1);
+  histogram_tester_.ExpectBucketCount(
+      std::string{kScreenClosedChooseChromebookSetup} + kReasonHistogram,
+      quick_start::QuickStartMetrics::ScreenClosedReason::kAdvancedInFlow, 1);
+  histogram_tester_.ExpectBucketCount(
+      kScreenOpenedHistogram,
+      quick_start::QuickStartMetrics::ScreenName::kQSSelectGoogleAccount, 1);
 }
 
 // Simulates the phone cancelling the flow after the WiFi credentials are sent
@@ -727,8 +847,15 @@ IN_PROC_BROWSER_TEST_F(QuickStartBrowserTest, PhoneAbortOnManualNetworkNeeded) {
   AbortFlowFromPhoneSide();
   EnsureFlowNotActive();
 
-  // Once QuickStart is no longer active, the subtitle on the network list must
-  // show its default state.
+  // When the flow is aborted from the phone side on the network screen, there
+  // should be custom strings informing the user about the error.
+  WaitForNetworkListWifiErrorTitleAndSubtitle();
+
+  // Clicking on 'Back' should bring us back to the Welcome screen, and entering
+  // it again should show the default strings.
+  WaitAndClickOnPath(kNetworkBackButtonPath);
+  test::WaitForWelcomeScreen();
+  WaitAndClickOnPath(kWelcomeScreenNextButton);
   WaitForDefaultNetworkSubtitle();
 
   // Manually connect to a network.
@@ -746,20 +873,20 @@ IN_PROC_BROWSER_TEST_F(QuickStartBrowserTest,
                        GaiaEntryPoint_StartAndCancelFlow) {
   SetupAndWaitForGaiaScreen();
 
-  test::OobeJS()
-      .CreateVisibilityWaiter(/*visibility=*/true, kQuickStartButtonGaia)
-      ->Wait();
-  test::OobeJS().ClickOnPath(kQuickStartButtonGaia);
-
+  WaitAndClickOnPath(kQuickStartButtonGaia);
   OobeScreenWaiter(QuickStartView::kScreenId).Wait();
   EnsureFlowActive();
 
-  // Cancel button must be present.
-  test::OobeJS()
-      .CreateVisibilityWaiter(/*visibility=*/true, kCancelButtonLoadingDialog)
-      ->Wait();
-  test::OobeJS().ClickOnPath(kCancelButtonLoadingDialog);
+  histogram_tester_.ExpectBucketCount(
+      std::string{kScreenClosedQSSetUpWithAndroidPhone} + kReasonHistogram,
+      quick_start::QuickStartMetrics::ScreenClosedReason::kUserCancelled, 0);
 
+  // Cancel the flow.
+  WaitAndClickOnPath(kCancelButtonLoadingDialog);
+
+  histogram_tester_.ExpectBucketCount(
+      std::string{kScreenClosedQSSetUpWithAndroidPhone} + kReasonHistogram,
+      quick_start::QuickStartMetrics::ScreenClosedReason::kUserCancelled, 1);
   // Returns to the Gaia screen
   OobeScreenWaiter(GaiaScreenHandler::kScreenId).Wait();
 }
@@ -768,14 +895,10 @@ IN_PROC_BROWSER_TEST_F(QuickStartBrowserTest,
 IN_PROC_BROWSER_TEST_F(QuickStartBrowserTest,
                        GaiaEntryPoint_TransfersGaiaCredentialsOnceConnected) {
   SetupAndWaitForGaiaScreen();
-
-  test::OobeJS()
-      .CreateVisibilityWaiter(/*visibility=*/true, kQuickStartButtonGaia)
-      ->Wait();
-
-  test::OobeJS().ClickOnPath(kQuickStartButtonGaia);
+  WaitAndClickOnPath(kQuickStartButtonGaia);
   OobeScreenWaiter(QuickStartView::kScreenId).Wait();
   EnsureFlowActive();
+
   SimulatePhoneConnection();
   SimulateUserVerification();
 
@@ -785,27 +908,17 @@ IN_PROC_BROWSER_TEST_F(QuickStartBrowserTest,
       ->Wait();
 
   // Cancel and return to the Gaia screen.
-  test::OobeJS()
-      .CreateVisibilityWaiter(/*visibility=*/true,
-                              kCancelButtonGaiaTransferDialog)
-      ->Wait();
-  test::OobeJS().ClickOnPath(kCancelButtonGaiaTransferDialog);
-
-  // Returns to the Gaia screen
+  WaitAndClickOnPath(kCancelButtonGaiaTransferDialog);
   OobeScreenWaiter(GaiaScreenHandler::kScreenId).Wait();
 }
 
 // Test the correct behavior when there are no accounts on the phone.
 IN_PROC_BROWSER_TEST_F(QuickStartBrowserTest, HandleEmptyAccounts) {
   SetupAndWaitForGaiaScreen();
-
-  test::OobeJS()
-      .CreateVisibilityWaiter(/*visibility=*/true, kQuickStartButtonGaia)
-      ->Wait();
-
-  test::OobeJS().ClickOnPath(kQuickStartButtonGaia);
+  WaitAndClickOnPath(kQuickStartButtonGaia);
   OobeScreenWaiter(QuickStartView::kScreenId).Wait();
   EnsureFlowActive();
+
   SimulatePhoneConnection();
   SimulateUserVerification();
 
@@ -834,8 +947,8 @@ IN_PROC_BROWSER_TEST_F(QuickStartLoginScreenTest, EntryPointNotVisible) {
   EXPECT_TRUE(LoginScreenTestApi::IsOobeDialogVisible());
   OobeScreenWaiter(UserCreationView::kScreenId).Wait();
 
-  test::OobeJS().ClickOnPath({"user-creation", "selfButton"});
-  test::OobeJS().ClickOnPath({"user-creation", "nextButton"});
+  WaitAndClickOnPath({"user-creation", "selfButton"});
+  WaitAndClickOnPath({"user-creation", "nextButton"});
 
   OobeScreenWaiter(GaiaView::kScreenId).Wait();
   base::RunLoop().RunUntilIdle();

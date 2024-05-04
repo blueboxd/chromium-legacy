@@ -262,13 +262,13 @@ class ASH_EXPORT SearchResultView : public SearchResultBaseView,
   void OnSelectedResultChanged();
 
   // views::View overrides:
-  gfx::Size CalculatePreferredSize() const override;
+  gfx::Size CalculatePreferredSize(
+      const views::SizeBounds& available_size) const override;
   void Layout(PassKey) override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;
   void PaintButtonContents(gfx::Canvas* canvas) override;
   void OnMouseEntered(const ui::MouseEvent& event) override;
   void OnMouseExited(const ui::MouseEvent& event) override;
-  void VisibilityChanged(View* starting_from, bool is_visible) override;
   void OnThemeChanged() override;
 
   // ui::EventHandler overrides:

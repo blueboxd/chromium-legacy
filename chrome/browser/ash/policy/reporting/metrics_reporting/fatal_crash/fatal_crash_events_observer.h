@@ -23,8 +23,12 @@
 
 namespace reporting {
 
-// Observes fatal crash events. Due to the IO on the save files, this class
-// should only have one instance.
+// TODO(b/336316592): Turn this into a base class and separate the kernel/ec
+// specific parts into a separate observer like
+// `ChromeFatalCrashEventsObserver`.
+
+// Observes fatal kernel and embedded controller crash events. Due to the IO on
+// the save files, this class should only have one instance.
 class FatalCrashEventsObserver
     : public MojoServiceEventsObserverBase<
           ash::cros_healthd::mojom::EventObserver>,
@@ -62,15 +66,29 @@ class FatalCrashEventsObserver
   // Convert a `base::Time` to a timestamp in microseconds.
   static int64_t ConvertTimeToMicroseconds(base::Time t);
 
+ protected:
+  // Get allowed crash types.
+  virtual const base::flat_set<
+      ::ash::cros_healthd::mojom::CrashEventInfo::CrashType>&
+  GetAllowedCrashTypes() const;
+
+  virtual FatalCrashTelemetry::CrashType GetFatalCrashTelemetryCrashType(
+      ::ash::cros_healthd::mojom::CrashEventInfo::CrashType crash_type) const;
+
+  // This constructor enables the test code and subclasses to use non-default
+  // values of the input parameters to accommodate the test environment or
+  // subclass requirements.
+  FatalCrashEventsObserver(
+      const base::FilePath& reported_local_id_save_file_path,
+      const base::FilePath& uploaded_crash_info_save_file_path,
+      scoped_refptr<base::SequencedTaskRunner> reported_local_id_io_task_runner,
+      scoped_refptr<base::SequencedTaskRunner>
+          uploaded_crash_info_io_task_runner);
+
  private:
   // Give `TestEnvironment` the access to the private constructor that
   // specifies the path for the save file.
   friend class FatalCrashEventsObserver::TestEnvironment;
-
-  // Manages default save file paths. The defaults are changed in browser tests.
-  class SaveFilePathsProviderInterface;
-  // Production implementation of `SaveFilePathsProviderInterface`.
-  class DefaultSaveFilePathsProvider;
 
   // For `OnEvent`. Not let `TestEnvironment` be a proxy of `OnEvent` because it
   // is an exception to allow `SlowFileLoadingFieldsPassedThrough` to call
@@ -88,19 +106,6 @@ class FatalCrashEventsObserver
   class UploadedCrashInfoManager;
 
   FatalCrashEventsObserver();
-  // This constructor enables the test code to use non-default values of the
-  // input parameters to accommodate the test environment. In production code,
-  // they are always the default value specified in the default constructor.
-  FatalCrashEventsObserver(
-      const SaveFilePathsProviderInterface& save_file_paths_provider,
-      scoped_refptr<base::SequencedTaskRunner> reported_local_id_io_task_runner,
-      scoped_refptr<base::SequencedTaskRunner>
-          uploaded_crash_info_io_task_runner);
-
-  // Get allowed crash types.
-  static const base::flat_set<
-      ::ash::cros_healthd::mojom::CrashEventInfo::CrashType>&
-  GetAllowedCrashTypes();
 
   MetricData FillFatalCrashTelemetry(
       const ::ash::cros_healthd::mojom::CrashEventInfoPtr& info);

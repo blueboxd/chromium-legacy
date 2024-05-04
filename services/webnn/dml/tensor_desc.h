@@ -15,8 +15,6 @@
 
 namespace webnn::dml {
 
-using Microsoft::WRL::ComPtr;
-
 // The TensorDesc wraps a tensor description (DML_TENSOR_DESC) needed by a DML
 // graph. It owns the tensor's dimensions, strides and DML_BUFFER_TENSOR_DESC.
 // The TensorDesc is prepared for building a DML graph's description
@@ -72,6 +70,8 @@ class COMPONENT_EXPORT(WEBNN_SERVICE) TensorDesc final {
   // target axes of [0, 3], the new shape would be [2, 1, 1, 3].
   void MakeBroadcastCompatible(size_t minimum_rank,
                                base::span<const uint32_t> axes);
+
+  void SetTotalTensorSizeInBytes(uint64_t new_total_tensor_size_bytes);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(WebNNTensorDescTest, CreateAndCopyTensorDescA);

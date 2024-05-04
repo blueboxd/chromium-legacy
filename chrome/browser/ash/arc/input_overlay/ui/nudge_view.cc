@@ -68,7 +68,8 @@ class DotIndicator : public views::View {
   }
   ~DotIndicator() override = default;
 
-  gfx::Size CalculatePreferredSize() const override {
+  gfx::Size CalculatePreferredSize(
+      const views::SizeBounds& available_size) const override {
     return gfx::Size(kDotSizeWithMargin, kDotSizeWithMargin);
   }
 };
@@ -115,11 +116,13 @@ class ContentView : public views::LabelButton {
         views::CreateRoundedRectBackground(background_color, kCornerRadius));
   }
 
-  gfx::Size CalculatePreferredSize() const override {
-    int button_width =
-        std::min(label()->GetPreferredSize().width() + 2 * kHorizontalInset +
-                     kSpaceIconLabel + kIconSize,
-                 available_width_);
+  gfx::Size CalculatePreferredSize(
+      const views::SizeBounds& available_size) const override {
+    int button_width = std::min(
+        label()->GetPreferredSize(views::SizeBounds(label()->width(), {}))
+                .width() +
+            2 * kHorizontalInset + kSpaceIconLabel + kIconSize,
+        available_width_);
     int button_height = GetHeightForWidth(button_width);
     return gfx::Size(button_width, button_height);
   }
@@ -151,12 +154,14 @@ NudgeView::NudgeView(views::View* parent, views::View* menu_entry)
 
 NudgeView::~NudgeView() = default;
 
-gfx::Size NudgeView::CalculatePreferredSize() const {
+gfx::Size NudgeView::CalculatePreferredSize(
+    const views::SizeBounds& available_size) const {
   DCHECK_EQ(2u, children().size());
   int width =
       std::min(children()[0]->GetPreferredSize().width() + kDotSizeWithMargin,
                std::max(0, menu_entry_->origin().x() - kLeftScreenMargin));
-  return gfx::Size(width, GetHeightForWidth(width));
+  return gfx::Size(width,
+                   GetLayoutManager()->GetPreferredHeightForWidth(this, width));
 }
 
 void NudgeView::Init() {

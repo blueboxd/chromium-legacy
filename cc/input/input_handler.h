@@ -228,7 +228,7 @@ class CC_EXPORT InputHandler : public InputDelegateForCompositor {
     uint32_t main_thread_repaint_reasons =
         MainThreadScrollingReason::kNotScrollingOnMain;
 
-    // TODO(crbug.com/1155758): This is a temporary workaround for GuestViews
+    // TODO(crbug.com/40735567): This is a temporary workaround for GuestViews
     // as they create viewport nodes and want to bubble scroll if the
     // viewport cannot scroll in the given delta directions. There should be
     // a parameter to ThreadInputHandler to specify whether unused delta is
@@ -538,7 +538,7 @@ class CC_EXPORT InputHandler : public InputDelegateForCompositor {
   // compositor side. The information gets shared by the main thread as part of
   // the begin_main_frame_state. Finally Use counters are updated in the main
   // thread side to keep track of the frequency of scrolling with different
-  // sources per page load. TODO(crbug.com/691886): Use GRC API to plumb the
+  // sources per page load. TODO(crbug.com/40506330): Use GRC API to plumb the
   // scroll source info for Use Counters.
   void UpdateScrollSourceInfo(const ScrollState& scroll_state,
                               ui::ScrollInputType type);
@@ -572,6 +572,7 @@ class CC_EXPORT InputHandler : public InputDelegateForCompositor {
   // Returns the ScrollNode we should use to scroll, accounting for viewport
   // scroll chaining rules.
   ScrollNode* GetNodeToScroll(ScrollNode* node) const;
+  ScrollNode* GetNodeToScrollForLayer(const LayerImpl* layer) const;
 
   // Given a starting node (determined by hit-test), walks up the scroll tree
   // looking for the first node that can consume scroll from the given

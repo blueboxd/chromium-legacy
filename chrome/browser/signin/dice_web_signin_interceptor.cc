@@ -15,6 +15,7 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
+#include "base/strings/strcat.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/single_thread_task_runner.h"
@@ -36,11 +37,11 @@
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/search_engine_choice/search_engine_choice_dialog_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/signin/chrome_signin_pref_names.h"
 #include "chrome/browser/signin/dice_intercepted_session_startup_helper.h"
 #include "chrome/browser/signin/dice_signed_in_profile_creator.h"
 #include "chrome/browser/signin/dice_web_signin_interceptor_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/signin/signin_features.h"
 #include "chrome/browser/signin/signin_util.h"
 #include "chrome/browser/signin/web_signin_interceptor.h"
 #include "chrome/browser/themes/theme_service.h"
@@ -64,7 +65,7 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
-#include "components/search_engines/search_engine_choice_utils.h"
+#include "components/search_engines/search_engine_choice/search_engine_choice_utils.h"
 #include "components/search_engines/template_url_data.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/signin/public/base/consent_level.h"
@@ -85,14 +86,7 @@
 
 namespace {
 
-constexpr char kProfileCreationInterceptionDeclinedPref[] =
-    "signin.ProfileCreationInterceptionDeclinedPref";
-constexpr char kChromeSigninInterceptionDeclinedPref[] =
-    "signin.ChromeSigninInterceptionDeclinedPref";
-constexpr char kChromeSigninInterceptionShownCountPref[] =
-    "signin.ChromeSigninInterceptionShownCountPref";
-
-constexpr size_t kMaxChromeSigninInterceptionShownCount = 5;
+constexpr size_t kMaxChromeSigninInterceptionDismissCount = 5;
 
 // Helper function to return the primary account info. The returned info is
 // empty if there is no primary account, and non-empty otherwise. Extended
@@ -136,10 +130,10 @@ bool IsFirstAccount(signin::IdentityManager* manager,
 // Returns `ShouldShowChromeSigninBubbleWithReason::kShouldShow` if sign in
 // happens through the web and Chrome isn't already signed in.
 ShouldShowChromeSigninBubbleWithReason MaybeShouldShowChromeSigninBubble(
+    PrefService& pref_service,
     signin::IdentityManager* manager,
-    const std::string& intercepted_email,
-    signin_metrics::AccessPoint access_point,
-    size_t bubble_shown_count) {
+    const std::string& gaia_id,
+    signin_metrics::AccessPoint access_point) {
   // If the access point is not set, we cannot accurately know if we have to
   // show the bubble or not, so we will not show it.
   if (access_point == signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN) {
@@ -156,22 +150,25 @@ ShouldShowChromeSigninBubbleWithReason MaybeShouldShowChromeSigninBubble(
 
   // Check if an account is already signed in to Chrome.
   //
-  // If Uno is disabled, we ignore this condition since the primary account will
-  // be set prior to this call (keeping the check on the right email address).
-  // This is done for metric purposes, this is safe since the bubble will not be
-  // shown in that case any way.
-  if (switches::IsExplicitBrowserSigninUIOnDesktopEnabled(
-          switches::ExplicitBrowserSigninPhase::kExperimental) &&
+  // If explicit browser signin is disabled, we ignore this condition since the
+  // primary account will be set prior to this call. This is done for metric
+  // purposes, this is safe since the bubble will not be shown in that case any
+  // way.
+  if (switches::IsExplicitBrowserSigninUIOnDesktopEnabled() &&
       manager->HasPrimaryAccount(signin::ConsentLevel::kSignin)) {
     return ShouldShowChromeSigninBubbleWithReason::
         kShouldNotShowAlreadySignedIn;
   }
 
-  // Do not show the bubble more than `kMaxChromeSigninInterceptionShownCount`
-  // times.
-  if (bubble_shown_count >= kMaxChromeSigninInterceptionShownCount) {
-    return ShouldShowChromeSigninBubbleWithReason::
-        kShouldNotShowMaxShownCountReached;
+  if (switches::IsExplicitBrowserSigninUIOnDesktopEnabled()) {
+    ChromeSigninUserChoice user_choice =
+        SigninPrefs(pref_service)
+            .GetChromeSigninInterceptionUserChoice(gaia_id);
+
+    if (user_choice != ChromeSigninUserChoice::kAlwaysAsk &&
+        user_choice != ChromeSigninUserChoice::kNoChoice) {
+      return ShouldShowChromeSigninBubbleWithReason::kShouldNotShowUserChoice;
+    }
   }
 
   return ShouldShowChromeSigninBubbleWithReason::kShouldShow;
@@ -264,9 +261,9 @@ std::optional<bool> EnterpriseSeparationMaybeRequired(
 
 void RecordShouldShowChromeSigninBubbleReason(
     ShouldShowChromeSigninBubbleWithReason reason) {
-  // This metric will be recorded both when `switches::kUnoDesktop` is
-  // enabled and disabled when the Chrome Signin bubble is expected to be
-  // shown or not.
+  // This metric will be recorded both when
+  // `switches::kExplicitBrowserSigninUIOnDesktop` is enabled and disabled when
+  // the Chrome Signin bubble is expected to be shown or not.
   base::UmaHistogramEnumeration(
       "Signin.Intercept.Heuristic.ShouldShowChromeSigninBubbleWithReason",
       reason);
@@ -293,6 +290,7 @@ DiceWebSigninInterceptor::DiceWebSigninInterceptor(
     : profile_(profile),
       identity_manager_(IdentityManagerFactory::GetForProfile(profile)),
       delegate_(std::move(delegate)),
+      signin_prefs_(*profile_->GetPrefs()),
       state_(std::make_unique<ResetableState>()) {
   DCHECK(profile_);
   DCHECK(identity_manager_);
@@ -312,7 +310,7 @@ DiceWebSigninInterceptor::ProfilePresets::~ProfilePresets() = default;
 // static
 void DiceWebSigninInterceptor::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterDictionaryPref(kProfileCreationInterceptionDeclinedPref);
+  registry->RegisterDictionaryPref(prefs::kProfileCreationInterceptionDeclined);
   registry->RegisterBooleanPref(prefs::kSigninInterceptionEnabled, true);
   registry->RegisterStringPref(prefs::kManagedAccountsSigninRestriction,
                                std::string());
@@ -326,11 +324,6 @@ void DiceWebSigninInterceptor::RegisterProfilePrefs(
   registry->RegisterListPref(prefs::kProfileSeparationDomainExceptionList);
   registry->RegisterStringPref(
       prefs::kUserCloudSigninPolicyResponseFromPolicyTestPage, std::string());
-  // TODO(b/314079566): Consider merging the different similar pref counts into
-  // a single pref where the email hash maps to multiple values, includes the
-  // following two prefs and `kProfileCreationInterceptionDeclinedPref` above.
-  registry->RegisterDictionaryPref(kChromeSigninInterceptionDeclinedPref);
-  registry->RegisterDictionaryPref(kChromeSigninInterceptionShownCountPref);
 }
 
 std::optional<SigninInterceptionHeuristicOutcome>
@@ -338,6 +331,7 @@ DiceWebSigninInterceptor::GetHeuristicOutcome(
     bool is_new_account,
     bool is_sync_signin,
     const std::string& email,
+    const std::string& gaia_id,
     bool update_state,
     const ProfileAttributesEntry** entry) const {
   bool signin_interception_enabled =
@@ -392,22 +386,25 @@ DiceWebSigninInterceptor::GetHeuristicOutcome(
     return SigninInterceptionHeuristicOutcome::kInterceptProfileSwitch;
   }
 
-  // Chrome sign in bubble is shown if chrome isn't signed in.
-  ShouldShowChromeSigninBubbleWithReason should_show_chrome_signin_bubble =
-      MaybeShouldShowChromeSigninBubble(identity_manager_, email,
-                                        state_->access_point_,
-                                        GetChromeSigninBubbleShownCount(email));
-  if (update_state) {
-    state_->should_show_chrome_signin_bubble_ =
-        should_show_chrome_signin_bubble;
-  }
+  // The `gaia_id` must have a value to properly read the prefs related to the
+  // account and the Chrome Signin Bubble.
+  if (!gaia_id.empty()) {
+    // Chrome sign in bubble is shown if chrome isn't signed in.
+    ShouldShowChromeSigninBubbleWithReason should_show_chrome_signin_bubble =
+        MaybeShouldShowChromeSigninBubble(*profile_->GetPrefs(),
+                                          identity_manager_, gaia_id,
+                                          state_->access_point_);
+    if (update_state) {
+      state_->should_show_chrome_signin_bubble_ =
+          should_show_chrome_signin_bubble;
+    }
 
-  // Showing the Chrome Signin Bubble is part of the Uno Desktop project.
-  if (switches::IsExplicitBrowserSigninUIOnDesktopEnabled(
-          switches::ExplicitBrowserSigninPhase::kExperimental) &&
-      should_show_chrome_signin_bubble ==
-          ShouldShowChromeSigninBubbleWithReason::kShouldShow) {
-    return SigninInterceptionHeuristicOutcome::kInterceptChromeSignin;
+    // Showing the Chrome Signin Bubble is part of the Uno Desktop project.
+    if (switches::IsExplicitBrowserSigninUIOnDesktopEnabled() &&
+        should_show_chrome_signin_bubble ==
+            ShouldShowChromeSigninBubbleWithReason::kShouldShow) {
+      return SigninInterceptionHeuristicOutcome::kInterceptChromeSignin;
+    }
   }
 
   // Do not intercept reauth.
@@ -433,8 +430,7 @@ DiceWebSigninInterceptor::GetHeuristicOutcome(
     // This is not the first account in the identity manager but there is no
     // primary account, all the accounts are in the UNO web-only state, so do
     // not intercept.
-    DCHECK(switches::IsExplicitBrowserSigninUIOnDesktopEnabled(
-        switches::ExplicitBrowserSigninPhase::kExperimental));
+    DCHECK(switches::IsExplicitBrowserSigninUIOnDesktopEnabled());
     return SigninInterceptionHeuristicOutcome::
         kAbortNotFirstAccountButNoPrimaryAccount;
   }
@@ -510,6 +506,7 @@ void DiceWebSigninInterceptor::MaybeInterceptWebSignin(
   const ProfileAttributesEntry* entry = nullptr;
   std::optional<SigninInterceptionHeuristicOutcome> heuristic_outcome =
       GetHeuristicOutcome(is_new_account, is_sync_signin, account_info.email,
+                          account_info.gaia,
                           /*update_state=*/true, &entry);
   state_->account_id_ = account_id;
   state_->is_interception_in_progress_ = true;
@@ -672,7 +669,8 @@ bool DiceWebSigninInterceptor::ShouldShowEnterpriseBubble(
 bool DiceWebSigninInterceptor::ShouldShowMultiUserBubble(
     const AccountInfo& intercepted_account_info) const {
   DCHECK(IsRequiredExtendedAccountInfoAvailable(intercepted_account_info));
-  if (identity_manager_->GetAccountsWithRefreshTokens().size() <= 1u) {
+  if (identity_manager_->GetAccountsWithRefreshTokens().size() <= 1u ||
+      !identity_manager_->HasPrimaryAccount(signin::ConsentLevel::kSignin)) {
     return false;
   }
   // Check if the account has the same name as another account in the profile.
@@ -692,16 +690,14 @@ bool DiceWebSigninInterceptor::ShouldShowMultiUserBubble(
 }
 
 bool DiceWebSigninInterceptor::ShouldShowChromeSigninBubble(
-    const std::string& email) {
+    const std::string& gaia_id) {
   state_->should_show_chrome_signin_bubble_ = MaybeShouldShowChromeSigninBubble(
-      identity_manager_, email, state_->access_point_,
-      GetChromeSigninBubbleShownCount(email));
+      *profile_->GetPrefs(), identity_manager_, gaia_id, state_->access_point_);
   CHECK(state_->should_show_chrome_signin_bubble_.has_value());
   RecordShouldShowChromeSigninBubbleReason(
       state_->should_show_chrome_signin_bubble_.value());
 
-  return switches::IsExplicitBrowserSigninUIOnDesktopEnabled(
-             switches::ExplicitBrowserSigninPhase::kExperimental) &&
+  return switches::IsExplicitBrowserSigninUIOnDesktopEnabled() &&
          state_->should_show_chrome_signin_bubble_ ==
              ShouldShowChromeSigninBubbleWithReason::kShouldShow;
 }
@@ -852,19 +848,11 @@ void DiceWebSigninInterceptor::OnInterceptionReadyToBeProcessed(
         WebSigninInterceptor::SigninInterceptionType::kProfileSwitch;
     RecordSigninInterceptionHeuristicOutcome(
         SigninInterceptionHeuristicOutcome::kInterceptProfileSwitch);
-  } else if (ShouldShowChromeSigninBubble(info.email)) {
+  } else if (ShouldShowChromeSigninBubble(info.gaia)) {
     interception_type =
         WebSigninInterceptor::SigninInterceptionType::kChromeSignin;
     RecordSigninInterceptionHeuristicOutcome(
         SigninInterceptionHeuristicOutcome::kInterceptChromeSignin);
-
-    // It is guaranteed that the Chrome Signin bubble will be shown.
-    IncrementEmailToCountDictionaryPref(kChromeSigninInterceptionShownCountPref,
-                                        info.email);
-    // Record the number of times the bubble was shown.
-    base::UmaHistogramCounts100(
-        "Signin.Intercept.ChromeSignin.BubbleShownCount",
-        GetChromeSigninBubbleShownCount(info.email));
   } else if (reauth) {
     RecordSigninInterceptionHeuristicOutcome(
         SigninInterceptionHeuristicOutcome::kAbortAccountNotNew);
@@ -932,6 +920,9 @@ void DiceWebSigninInterceptor::OnInterceptionReadyToBeProcessed(
       callback = base::BindOnce(&DiceWebSigninInterceptor::OnChromeSigninChoice,
                                 base::Unretained(this), info);
       break;
+    case WebSigninInterceptor::SigninInterceptionType::kEnterpriseOIDC:
+      NOTREACHED() << "This interception type should not happen in DICE";
+      break;
   }
   ShowSigninInterceptionBubble(bubble_parameters, std::move(callback));
 }
@@ -974,7 +965,7 @@ void DiceWebSigninInterceptor::OnProfileCreationChoice(
   if (create != SigninInterceptionResult::kAccepted) {
     if (create == SigninInterceptionResult::kDeclined) {
       IncrementEmailToCountDictionaryPref(
-          kProfileCreationInterceptionDeclinedPref, account_info.email);
+          prefs::kProfileCreationInterceptionDeclined, account_info.email);
     }
     Reset();
     return;
@@ -1003,10 +994,53 @@ void DiceWebSigninInterceptor::OnProfileCreationChoice(
               std::optional<ProfilePresets>(std::move(profile_presets))));
 }
 
+SigninInterceptionResult
+DiceWebSigninInterceptor::ProcessChromeSigninUserChoice(
+    SigninInterceptionResult result,
+    const std::string& gaia_id) {
+  CHECK(switches::IsExplicitBrowserSigninUIOnDesktopEnabled());
+
+  SigninInterceptionResult processed_result = result;
+  // Treat dismiss case: might turn into a decline if max dismiss count is
+  // reached.
+  if (processed_result == SigninInterceptionResult::kDismissed) {
+    size_t dismiss_count =
+        signin_prefs_.IncrementChromeSigninInterceptionDismissCount(gaia_id);
+    if (dismiss_count >= kMaxChromeSigninInterceptionDismissCount &&
+        signin_prefs_.GetChromeSigninInterceptionUserChoice(gaia_id) !=
+            ChromeSigninUserChoice::kAlwaysAsk) {
+      // Proceed with the result treated as declined since we reached the max
+      // dismissal count, or the user is in the always ask mode.
+      // TODO(crbug.com/319396084): Should we record something here?
+      processed_result = SigninInterceptionResult::kDeclined;
+    } else {
+      // Max dismiss count not reached yet, proceed with a simple dismiss.
+      return result;
+    }
+  }
+
+  // Store the processed result only if it ends as a `Decline` or `Accept`.
+  // `Always ask` and `No Choice` cannot be computed from the above logic.
+  if (processed_result == SigninInterceptionResult::kDeclined ||
+      processed_result == SigninInterceptionResult::kAccepted) {
+    // Save the choice per account.
+    ChromeSigninUserChoice choice =
+        (processed_result == SigninInterceptionResult::kAccepted)
+            ? ChromeSigninUserChoice::kSignin
+            : ChromeSigninUserChoice::kDoNotSignin;
+    signin_prefs_.SetChromeSigninInterceptionUserChoice(gaia_id, choice);
+  }
+
+  return processed_result;
+}
+
 void DiceWebSigninInterceptor::OnChromeSigninChoice(
     const AccountInfo& account_info,
     SigninInterceptionResult result) {
-  switch (result) {
+  SigninInterceptionResult processed_result =
+      ProcessChromeSigninUserChoice(result, account_info.gaia);
+
+  switch (processed_result) {
     case SigninInterceptionResult::kIgnored:
       // Can happen if the browser isclosed while the bubble is still opened.
     case SigninInterceptionResult::kNotDisplayed:
@@ -1017,16 +1051,15 @@ void DiceWebSigninInterceptor::OnChromeSigninChoice(
       // declining.
       break;
     case SigninInterceptionResult::kDeclined:
-      // The user declined the bubble.
-      IncrementEmailToCountDictionaryPref(kChromeSigninInterceptionDeclinedPref,
-                                          account_info.email);
+      RecordChromeSigninNumberOfDismissesForAccount(account_info.gaia,
+                                                    processed_result);
       break;
     case SigninInterceptionResult::kAcceptedWithExistingProfile:
       NOTREACHED_NORETURN()
           << "Those results are not expected within the Chrome Signin Bubble.";
     case SigninInterceptionResult::kAccepted:
-      RecordAndResetChromeSigninNumberOfAttemptsBeforeAccept(
-          account_info.email);
+      RecordChromeSigninNumberOfDismissesForAccount(account_info.gaia,
+                                                    processed_result);
 
       auto access_point = signin_metrics::AccessPoint::
           ACCESS_POINT_CHROME_SIGNIN_INTERCEPT_BUBBLE;
@@ -1077,7 +1110,7 @@ void DiceWebSigninInterceptor::OnNewSignedInProfileCreated(
   if (is_new_profile) {
     ProfileMetrics::LogProfileAddNewUser(
         ProfileMetrics::ADD_NEW_USER_SIGNIN_INTERCEPTION);
-    // TODO(https://crbug.com/1225171): Remove the condition if Guest mode
+    // TODO(crbug.com/40775669): Remove the condition if Guest mode
     // option is removed.
     if (!new_profile->IsGuestSession()) {
       // Apply the new color to the profile.
@@ -1100,7 +1133,7 @@ void DiceWebSigninInterceptor::OnNewSignedInProfileCreated(
       }
     }
 
-    // TODO(crbug/1450011): Move this to DiceSignedInProfileCreator when
+    // TODO(crbug.com/40269992): Move this to DiceSignedInProfileCreator when
     // DisallowManagedProfileSignout is fully released.
     if (state_->intercepted_account_management_accepted_ &&
         base::FeatureList::IsEnabled(kDisallowManagedProfileSignout)) {
@@ -1178,7 +1211,7 @@ void DiceWebSigninInterceptor::OnNewBrowserCreated(bool is_new_profile) {
   state_->interception_bubble_handle_.reset();  // Close the bubble now.
   state_->session_startup_helper_.reset();
 
-  // TODO(https://crbug.com/1225171): Remove |IsGuestSession| if Guest option is
+  // TODO(crbug.com/40775669): Remove |IsGuestSession| if Guest option is
   // no more supported.
   if (!is_new_profile || profile_->IsGuestSession()) {
     return;
@@ -1199,54 +1232,50 @@ std::string DiceWebSigninInterceptor::GetPersistentEmailHash(
   return base::StringPrintf("email_%i", hash);
 }
 
-void DiceWebSigninInterceptor::IncrementEmailToCountDictionaryPref(
+size_t DiceWebSigninInterceptor::IncrementEmailToCountDictionaryPref(
     const char* pref_name,
     const std::string& email) {
   // TODO(b/314079566): Consider merging the different similar pref counts into
   // a single pref where the email hash maps to multiple values.
   ScopedDictPrefUpdate update(profile_->GetPrefs(), pref_name);
   std::string key = GetPersistentEmailHash(email);
-  std::optional<int> declined_count = update->FindInt(key);
+  std::optional<int> count = update->FindInt(key);
 
-  update->Set(key, declined_count.value_or(0) + 1);
+  int value = count.value_or(0) + 1;
+  update->Set(key, value);
+
+  CHECK_GE(value, 0);
+  return value;
 }
 
-void DiceWebSigninInterceptor::
-    RecordAndResetChromeSigninNumberOfAttemptsBeforeAccept(
-        const std::string& email) {
-  ScopedDictPrefUpdate update(profile_->GetPrefs(),
-                              kChromeSigninInterceptionDeclinedPref);
-  std::string key = GetPersistentEmailHash(email);
-  std::optional<int> declined_count = update->FindInt(key);
+void DiceWebSigninInterceptor::RecordChromeSigninNumberOfDismissesForAccount(
+    const std::string& gaia_id,
+    SigninInterceptionResult result) {
+  CHECK(switches::IsExplicitBrowserSigninUIOnDesktopEnabled());
+  CHECK(result == SigninInterceptionResult::kAccepted ||
+        result == SigninInterceptionResult::kDeclined)
+      << "Recording results only for accepting/declining the bubble. "
+         "Result: "
+      << static_cast<int>(result);
 
+  std::string_view action_string =
+      result == SigninInterceptionResult::kAccepted ? "Accept" : "Decline";
   base::UmaHistogramCounts100(
-      "Signin.Intercept.ChromeSignin.AttemptsBeforeAccept",
-      declined_count.value_or(0));
-
-  // Remove the value after recording it.
-  update->Remove(key);
+      base::StrCat(
+          {"Signin.Intercept.ChromeSignin.DismissesBefore", action_string}),
+      signin_prefs_.GetChromeSigninInterceptionDismissCount(gaia_id));
 }
 
 bool DiceWebSigninInterceptor::HasUserDeclinedProfileCreation(
     const std::string& email) const {
-  const base::Value::Dict& pref_data =
-      profile_->GetPrefs()->GetDict(kProfileCreationInterceptionDeclinedPref);
+  const base::Value::Dict& pref_data = profile_->GetPrefs()->GetDict(
+      prefs::kProfileCreationInterceptionDeclined);
   std::optional<int> declined_count =
       pref_data.FindInt(GetPersistentEmailHash(email));
   // Check if the user declined 2 times.
   constexpr int kMaxProfileCreationDeclinedCount = 2;
   return declined_count &&
          declined_count.value() >= kMaxProfileCreationDeclinedCount;
-}
-
-size_t DiceWebSigninInterceptor::GetChromeSigninBubbleShownCount(
-    const std::string& email) const {
-  const base::Value::Dict& pref_data =
-      profile_->GetPrefs()->GetDict(kChromeSigninInterceptionShownCountPref);
-  std::optional<int> bubble_shown_count =
-      pref_data.FindInt(GetPersistentEmailHash(email));
-
-  return bubble_shown_count.value_or(0);
 }
 
 void DiceWebSigninInterceptor::

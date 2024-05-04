@@ -145,6 +145,7 @@ class PlatformKeysService : public KeyedService {
   virtual void GenerateSymKey(chromeos::platform_keys::TokenId token_id,
                               std::vector<uint8_t> key_id,
                               int key_size,
+                              chromeos::platform_keys::SymKeyType key_type,
                               GenerateKeyCallback callback) = 0;
 
   // Generates a RSA key pair with |modulus_length_bits|. |token_id| specifies
@@ -166,8 +167,8 @@ class PlatformKeysService : public KeyedService {
   // AES-CBC |decrypt_algorithm| is supported and it requires a 16-byte
   // initialization vector |init_vector|.
   virtual void DecryptAES(chromeos::platform_keys::TokenId token_id,
-                          std::vector<uint8_t> key_id,
                           std::vector<uint8_t> encrypted_data,
+                          std::vector<uint8_t> key_id,
                           std::string decrypt_algorithm,
                           std::vector<uint8_t> init_vector,
                           EncryptDecryptCallback callback) = 0;
@@ -176,8 +177,8 @@ class PlatformKeysService : public KeyedService {
   // AES-CBC |encrypt_algorithm| is supported and it requires a 16-byte
   // initialization vector |init_vector|.
   virtual void EncryptAES(chromeos::platform_keys::TokenId token_id,
-                          std::vector<uint8_t> key_id,
                           std::vector<uint8_t> data,
+                          std::vector<uint8_t> key_id,
                           std::string encrypt_algorithm,
                           std::vector<uint8_t> init_vector,
                           EncryptDecryptCallback callback) = 0;
@@ -217,6 +218,15 @@ class PlatformKeysService : public KeyedService {
       std::vector<uint8_t> data,
       std::vector<uint8_t> public_key_spki_der,
       chromeos::platform_keys::HashAlgorithm hash_algorithm,
+      SignCallback callback) = 0;
+
+  // Signs the data with the symmetric key matching |key_id| using SHA-256 HMAC
+  // algorithm. |callback| will be invoked with the signature or an error
+  // status.
+  virtual void SignWithSymKey(
+      std::optional<chromeos::platform_keys::TokenId> token_id,
+      std::vector<uint8_t> data,
+      std::vector<uint8_t> key_id,
       SignCallback callback) = 0;
 
   // Returns the list of all certificates that were issued by one of the
@@ -380,6 +390,7 @@ class PlatformKeysServiceImpl final : public PlatformKeysService {
   void GenerateSymKey(chromeos::platform_keys::TokenId token_id,
                       std::vector<uint8_t> key_id,
                       int key_size,
+                      chromeos::platform_keys::SymKeyType key_type,
                       GenerateKeyCallback callback) override;
   void GenerateRSAKey(chromeos::platform_keys::TokenId token_id,
                       unsigned int modulus_length_bits,
@@ -389,14 +400,14 @@ class PlatformKeysServiceImpl final : public PlatformKeysService {
                      std::string named_curve,
                      GenerateKeyCallback callback) override;
   void EncryptAES(chromeos::platform_keys::TokenId token_id,
-                  std::vector<uint8_t> key_id,
                   std::vector<uint8_t> data,
+                  std::vector<uint8_t> key_id,
                   std::string encrypt_algorithm,
                   std::vector<uint8_t> init_vector,
                   EncryptDecryptCallback callback) override;
   void DecryptAES(chromeos::platform_keys::TokenId token_id,
-                  std::vector<uint8_t> key_id,
                   std::vector<uint8_t> encrypted_data,
+                  std::vector<uint8_t> key_id,
                   std::string decrypt_algorithm,
                   std::vector<uint8_t> init_vector,
                   EncryptDecryptCallback callback) override;
@@ -414,6 +425,10 @@ class PlatformKeysServiceImpl final : public PlatformKeysService {
                  std::vector<uint8_t> public_key_spki_der,
                  chromeos::platform_keys::HashAlgorithm hash_algorithm,
                  SignCallback callback) override;
+  void SignWithSymKey(std::optional<chromeos::platform_keys::TokenId> token_id,
+                      std::vector<uint8_t> data,
+                      std::vector<uint8_t> key_id,
+                      SignCallback callback) override;
   void SelectClientCertificates(
       std::vector<std::string> certificate_authorities,
       SelectCertificatesCallback callback) override;
@@ -464,10 +479,12 @@ class PlatformKeysServiceImpl final : public PlatformKeysService {
                          chromeos::platform_keys::OperationType operation_type);
   void OnDelegateShutDown();
 
-  std::unique_ptr<PlatformKeysServiceImplDelegate> const delegate_;
+  std::unique_ptr<PlatformKeysServiceImplDelegate> delegate_;
+
   // List of observers that will be notified when the service is shut down.
   base::ObserverList<PlatformKeysServiceObserver> observers_;
   bool map_to_softoken_attrs_for_testing_ = false;
+
   base::WeakPtrFactory<PlatformKeysServiceImpl> weak_factory_{this};
 };
 

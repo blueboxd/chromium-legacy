@@ -14,8 +14,12 @@
 #include "components/password_manager/core/browser/password_store/password_store_change.h"
 #include "components/password_manager/core/browser/password_store/password_store_consumer.h"
 
+namespace base {
+class Location;
+}  // namespace base
+
 namespace syncer {
-class ProxyModelTypeControllerDelegate;
+class ModelTypeControllerDelegate;
 class SyncService;
 }  // namespace syncer
 
@@ -80,7 +84,7 @@ class PasswordStoreBackend {
   // status) saved in the given sync |account|. The passed account should be a
   // current or former syncing account, otherwise |callback| will be
   // called with an error result. Callback is called on the main sequence.
-  // TODO(crbug.com/1315594): Clean up/refactor to avoid having methods
+  // TODO(crbug.com/40833594): Clean up/refactor to avoid having methods
   // introduced for a specific backend in this interface.
   virtual void GetAllLoginsForAccountAsync(std::string account,
                                            LoginsOrErrorReply callback) = 0;
@@ -89,7 +93,7 @@ class PasswordStoreBackend {
   // If |include_psl|==true, the PSL-matched forms are also included.
   // If multiple forms are given, those will be concatenated.
   // Callback is called on the main sequence.
-  // TODO(crbug.com/1428539): Remove and replace with
+  // TODO(crbug.com/40262259): Remove and replace with
   // GetGroupedMatchingLoginsAsync().
   virtual void FillMatchingLoginsAsync(
       LoginsOrErrorReply callback,
@@ -112,10 +116,10 @@ class PasswordStoreBackend {
       LoginsOrErrorReply callback) = 0;
 
   // For all methods below:
-  // TODO(crbug.com/1217071): Make pure virtual.
-  // TODO(crbug.com/1217071): Make PasswordStoreImpl implement it like above.
-  // TODO(crbug.com/1217071): Move and Update doc from PasswordStore here.
-  // TODO(crbug.com/1217071): Delete corresponding Impl method from
+  // TODO(crbug.com/40185050): Make pure virtual.
+  // TODO(crbug.com/40185050): Make PasswordStoreImpl implement it like above.
+  // TODO(crbug.com/40185050): Move and Update doc from PasswordStore here.
+  // TODO(crbug.com/40185050): Delete corresponding Impl method from
   //  PasswordStore and the async method on backend_ instead.
 
   // The completion callback in each of the write operations below receive a
@@ -128,15 +132,18 @@ class PasswordStoreBackend {
                              PasswordChangesOrErrorReply callback) = 0;
   virtual void UpdateLoginAsync(const PasswordForm& form,
                                 PasswordChangesOrErrorReply callback) = 0;
-  virtual void RemoveLoginAsync(const PasswordForm& form,
+  virtual void RemoveLoginAsync(const base::Location& location,
+                                const PasswordForm& form,
                                 PasswordChangesOrErrorReply callback) = 0;
   virtual void RemoveLoginsByURLAndTimeAsync(
+      const base::Location& location,
       const base::RepeatingCallback<bool(const GURL&)>& url_filter,
       base::Time delete_begin,
       base::Time delete_end,
       base::OnceCallback<void(bool)> sync_completion,
       PasswordChangesOrErrorReply callback) = 0;
   virtual void RemoveLoginsCreatedBetweenAsync(
+      const base::Location& location,
       base::Time delete_begin,
       base::Time delete_end,
       PasswordChangesOrErrorReply callback) = 0;
@@ -148,7 +155,7 @@ class PasswordStoreBackend {
 
   // For sync codebase only: instantiates a proxy controller delegate to
   // react to sync events.
-  virtual std::unique_ptr<syncer::ProxyModelTypeControllerDelegate>
+  virtual std::unique_ptr<syncer::ModelTypeControllerDelegate>
   CreateSyncControllerDelegate() = 0;
 
   // Propagates sync initialization event.

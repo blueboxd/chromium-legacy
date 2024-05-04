@@ -79,10 +79,7 @@ gfx::Insets ChromeLayoutProvider::GetInsetsMetric(int metric) const {
     case INSETS_TOAST:
       return gfx::Insets::VH(0, kHarmonyLayoutUnit);
     case INSETS_OMNIBOX_PILL_BUTTON:
-      if ((base::FeatureList::IsEnabled(omnibox::kCr2023ActionChips) ||
-           features::GetChromeRefresh2023Level() ==
-               features::ChromeRefresh2023Level::kLevel2) &&
-          !touch_ui) {
+      if (!touch_ui) {
         return gfx::Insets::VH(4, 8);
       } else {
         return touch_ui
@@ -100,9 +97,6 @@ gfx::Insets ChromeLayoutProvider::GetInsetsMetric(int metric) const {
       // label button because it behaves like a menu control.
       return gfx::Insets::VH(insets.height(), horizontal_padding);
     }
-    case INSETS_INFOBAR_VIEW:
-      return features::IsChromeRefresh2023() ? gfx::Insets::VH(4, 0)
-                                             : gfx::Insets::VH(0, 0);
     default:
       return LayoutProvider::GetInsetsMetric(metric);
   }
@@ -154,8 +148,6 @@ int ChromeLayoutProvider::GetDistanceMetric(int metric) const {
       return 8;
     case DISTANCE_TOAST_LABEL_VERTICAL:
       return 12;
-    case DISTANCE_UNRELATED_CONTROL_HORIZONTAL:
-      return kHarmonyLayoutUnit;
     case DISTANCE_UNRELATED_CONTROL_HORIZONTAL_LARGE:
       return kHarmonyLayoutUnit;
     case DISTANCE_UNRELATED_CONTROL_VERTICAL_LARGE:
@@ -182,6 +174,10 @@ int ChromeLayoutProvider::GetDistanceMetric(int metric) const {
       return features::IsChromeRefresh2023() ? 20 : 0;
     case DISTANCE_INFOBAR_HORIZONTAL_ICON_LABEL_PADDING:
       return features::IsChromeRefresh2023() ? 16 : 12;
+    case DISTANCE_INFOBAR_HEIGHT:
+      // Spec says height of button should be 36dp, vertical padding on both
+      // top and bottom should be 8dp.
+      return 36 + 2 * 8;
     case DISTANCE_PERMISSION_PROMPT_HORIZONTAL_ICON_LABEL_PADDING:
       return features::IsChromeRefresh2023()
                  ? 8

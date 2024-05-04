@@ -86,7 +86,7 @@
     You can text from your computer, share your internet connection, reply to conversation notifications and unlock your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> with your phone.<ph name="FOOTNOTE_POINTER">$2<ex>*</ex></ph> <ph name="LINK_BEGIN">&lt;a href="$3<ex>https://support.google.com/chromebook/?p=multidevice</ex>" target="_blank"&gt;</ph>Learn more<ph name="LINK_END">&lt;/a&gt;</ph>
   </message>
   <message name="IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_FOOTNOTE" desc="Footnote for multi-device feature setup page, which indicates that new features may be added, and the exact set of features available to users differs according to the device model used.">
-    <ph name="FOOTNOTE_POINTER">$1<ex>*</ex></ph>Offer new features as they become available, and features vary by device
+    New features will be included as they become available, and features may vary by device.
   </message>
   <message name="IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_SINGLE_DEVICE_HEADER" desc="Label appearing over the name of an Android phone which this Chromebook can connect to.">
     Device detected
@@ -226,9 +226,6 @@
   <message name="IDS_CELLULAR_SETUP_ESIM_FINAL_PAGE_ERROR_MESSAGE" desc="Message displayed under title in final screen of eSIM cellular setup when ChromeOS encountered an error installing eSIM profiles.">
     Couldn't install eSIM profile. For help, please contact your carrier.
   </message>
-  <message name="IDS_CELLULAR_SETUP_ESIM_PROFILE_DETECT_MESSAGE" desc="Message displayed during loading page in eSIM setup flow when looking for eSIM profiles.">
-    Looking for available profiles...
-  </message>
   <message name="IDS_CELLULAR_SETUP_ESIM_PROFILE_LOADING_TITLE" desc="Title message displayed during loading page in eSIM setup flow when looking for eSIM profiles.">
     Looking for available eSIM profiles
   </message>
@@ -240,9 +237,6 @@
   </message>
   <message name="IDS_CELLULAR_SETUP_CONFIRMATION_CODE_PAGE_TITLE" desc="Title message informing user that they can enter confirmation code in the text box below.">
     Enter confirmation code
-  </message>
-  <message name="IDS_CELLULAR_SETUP_ESIM_PROFILE_DETECT_DURING_ACTIVE_CELLULAR_CONNECTION_MESSAGE" desc="Message displayed during loading page in eSIM setup flow when looking for eSIM profiles informing the user that cellular setup may disconnect their current cellular network connection.">
-    Looking for available profiles. This may cause your mobile network to disconnect for a few minutes.
   </message>
   <message name="IDS_CELLULAR_SETUP_PROFILE_LIST_PAGE_MESSAGE" desc="Label informing the user that they are able to select multiple eSIM profiles for downloading.">
     We've found multiple profiles available to download. Select the ones you would like to download before proceeding.
@@ -1413,7 +1407,7 @@
   <message name="IDS_LOGIN_RECOMMEND_APPS_SCREEN_LOADING" desc="Message shown while the recommended app list is being downloaded.">
     Please wait...
   </message>
-
+  <!-- Strings for app downloading screen -->
   <message name="IDS_LOGIN_APP_DOWNLOADING_SCREEN_TITLE" desc="The title of the dialog that tells the user the selected Android Apps are downloading.">
     Apps downloading
   </message>
@@ -1423,6 +1417,49 @@
   <message name="IDS_LOGIN_APP_DOWNLOADING_SCREEN_NEXT" desc="The label on the button that continues the setup flow.">
     Next
   </message>
+  <!-- Strings for ai intro screen -->
+  <message name="IDS_AI_INTRO_TITLE" desc="The title of the ai intro dialog">
+    Use Google AI to be more creative and productive
+  </message>
+  <message name="IDS_AI_INTRO_SUBTITLE" desc="The subtitle of the ai intro dialog">
+    <ph name="BEGIN_PARAGRAPH1">&lt;p&gt;</ph>Exclusive for <ph name="DEVICE_TYPE">$1<ex>Chromebook Plus</ex></ph>.<ph name="END_PARAGRAPH1">&lt;/p&gt;</ph>
+    <ph name="BEGIN_PARAGRAPH2">&lt;p&gt;</ph>Generative AI is experimental, in early development, and currently has limited availability.<ph name="END_PARAGRAPH2">&lt;/p&gt;</ph>
+  </message>
+  <message name="IDS_AI_INTRO_SLIDE_WRITE_TITLE" desc="The title of the write info slide">
+    Write faster and with more confidence
+  </message>
+  <message name="IDS_AI_INTRO_SLIDE_WRITE_TEXT" desc="The text of the write info slide">
+    Right-click in a text box to use Help me write
+  </message>
+  <message name="IDS_AI_INTRO_SLIDE_WALLPAPER_TITLE" desc="The title of the wallpaper info slide">
+    Create wallpapers with AI
+  </message>
+  <message name="IDS_AI_INTRO_SLIDE_WALLPAPER_TEXT" desc="The text of the wallpaper info slide">
+    Style unique wallpapers
+  </message>
+  <message name="IDS_AI_INTRO_SLIDE_BACKGROUND_TITLE" desc="The title of the background info slide">
+    Create backgrounds with AI
+  </message>
+  <message name="IDS_AI_INTRO_SLIDE_BACKGROUND_TEXT" desc="The text of the background info slide">
+    Personalize your camera backgrounds for video calls and more
+  </message>
+  <message name="IDS_AI_INTRO_SLIDE_LABEL" desc="Text of slide label for accessibility.">
+    Extra content <ph name="CURRENT_ELEMENT">$1<ex>1</ex></ph> out of <ph name="TOTAL_ELEMENTS">$2<ex>2</ex></ph>
+  </message>
+  <message name="IDS_AI_INTRO_SELECTED_BUTTON_LABEL" desc="Text of carousel selected button label for accessibility.">
+    Selected, extra content <ph name="CURRENT_ELEMENT">$1<ex>1</ex></ph> out of <ph name="TOTAL_ELEMENTS">$2<ex>2</ex></ph>
+  </message>
+  <message name="IDS_AI_INTRO_UNSELECTED_BUTTON_LABEL" desc="Text of carousel unselected button label for accessibility.">
+    Navigate to extra content <ph name="CURRENT_ELEMENT">$1<ex>1</ex></ph> out of <ph name="TOTAL_ELEMENTS">$2<ex>2</ex></ph>
+  </message>
+  <!-- Strings for tuna screen -->
+  <message name="IDS_TUNA_TITLE" desc="The title of the tuna dialog" translateable="false">
+    Your <ph name="DEVICE_TYPE">$1<ex>Chromebook Plus</ex></ph> comes with Google AI
+  </message>
+  <message name="IDS_TUNA_SUBTITLE" desc="The subtitle of the tuna dialog" translateable="false">
+    <ph name="BEGIN_PARAGRAPH1">&lt;p&gt;</ph>Get help on writing, planning, learning and more.<ph name="END_PARAGRAPH1">&lt;/p&gt;</ph>
+  </message>
+  <!-- Strings for marketing optin screen -->
   <message name="IDS_LOGIN_MARKETING_OPT_IN_SCREEN_TITLE" desc="The title of the last dialog in the set of screens that are always displayed to the user on the first login to the ChromeOS device.">
     You are all set!
   </message>
@@ -1475,13 +1512,22 @@
     Easily set up your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> with your phone. You can add your Wi-Fi and Google Account without manually entering your passwords.
     <ph name="BR">&lt;br&gt;</ph>
     <ph name="BR">&lt;br&gt;</ph>
-    Visible as <ph name="QUICK_START_DEVICE_DISPLAY_NAME">$2<ex>Chromebook (123)</ex></ph>...
+    Visible as <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>...
+  </message>
+  <message name="IDS_LOGIN_QUICK_START_SETUP_SUBTITLE_ACCOUNT_ONLY" desc="A subtitle used on OOBE's Quick Start screen for setting up a Chromebook using an Android device. This variation only describes setting up a Google account.">
+    Easily set up your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> with your phone. You can add your Google Account without manually entering your password.
+    <ph name="BR">&lt;br&gt;</ph>
+    <ph name="BR">&lt;br&gt;</ph>
+    Visible as <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>...
   </message>
   <message name="IDS_LOGIN_QUICK_START_SETUP_CONTENT_FOOTER_TURN_ON_WIFI_AND_BLT" desc="A message telling the user to turn on their phone's Bluetooth and WiFi when setting up their Chromebook using an Android phone.">
     Turn on your phone’s Bluetooth and Wi-Fi
   </message>
-  <message name="IDS_LOGIN_QUICK_START_SETUP_CONTENT_FOOTER_FOLLOW_INSTRUCTIONS" desc="A message telling the user to follow instructions on their phone when setting up when setting up their Chromebook using an Android phone.">
+  <message name="IDS_LOGIN_QUICK_START_SETUP_CONTENT_FOOTER_FOLLOW_INSTRUCTIONS_PIN" desc="A message telling the user to follow instructions on their phone when setting up when setting up their Chromebook using an Android phone.">
     Follow instructions on your phone to verify the code
+  </message>
+  <message name="IDS_LOGIN_QUICK_START_SETUP_CONTENT_FOOTER_FOLLOW_INSTRUCTIONS_QR" desc="A message telling the user to follow instructions on their phone when setting up when setting up their Chromebook using an Android phone.">
+    Follow instructions on your phone or use the camera app
   </message>
   <message name="IDS_LOGIN_QUICK_START_WIFI_TRANSFER_TITLE" desc="A title used on OOBE's Quick Start screen when WiFi credentials are being transferred to the Chromebook from the Android device.">
     Receiving Wi-Fi info...
@@ -1491,6 +1537,12 @@
   </message>
   <message name="IDS_LOGIN_QUICK_START_NETWORK_NEEDED_SUBTITLE" desc="A subtitle used on OOBE's Quick Start flow prompting the user to connect to a WiFi network in order to continue the Chromebook setup using the Android device.">
     To continue setup with your Android device, connect your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> to a network
+  </message>
+  <message name="IDS_LOGIN_QUICK_START_WIFI_ERROR_TITLE" desc="A title used on the Network Screen when QuickStart fails during the WiFi transfer step.">
+    Can't transfer Wi-Fi
+  </message>
+  <message name="IDS_LOGIN_QUICK_START_WIFI_ERROR_SUBTITLE" desc="A subtitle used on the Network Screen when QuickStart fails during the WiFi transfer step.">
+    Try again or connect to a network manually
   </message>
   <message name="IDS_LOGIN_QUICK_START_RESUME_AFTER_REBOOT_TITLE" desc="A title used on OOBE's Quick Start flow when the device reboots after applying an update and tries to continue the setup by connecting to the Android device.">
     Connecting to your Android phone...
@@ -1507,8 +1559,11 @@
   <message name="IDS_LOGIN_QUICK_START_SETUP_COMPLETE_STEP_TITLE" desc="A title used on OOBE's Quick Start flow screen notifying the user that they have completed the setup using their Android phone.">
     Android quick setup is done. Continue setup on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>.
   </message>
-  <message name="IDS_LOGIN_QUICK_START_SETUP_COMPLETE_STEP_SUBTITLE" desc="A subtitle used on OOBE's Quick Start flow screen notifying the user that they have completed the setup using their Android phone.">
+  <message name="IDS_LOGIN_QUICK_START_SETUP_COMPLETE_STEP_SUBTITLE_BOTH" desc="A subtitle used on OOBE's Quick Start flow screen notifying the user that they have completed the setup using their Android phone, including transferring Wi-Fi network credentials and signing in to their Google account.">
     You connected to Wi-Fi and signed in to <ph name="USER_EMAIL">$1<ex>test@gmail.com</ex></ph> using your Android phone
+  </message>
+  <message name="IDS_LOGIN_QUICK_START_SETUP_COMPLETE_STEP_SUBTITLE_SIGNED_IN" desc="A subtitle used on OOBE's Quick Start flow screen notifying the user that they have completed the setup using their Android phone, including signin in to their Google account.">
+    You signed in to <ph name="USER_EMAIL">$1<ex>test@gmail.com</ex></ph> using your Android phone
   </message>
   <message name="IDS_LOGIN_QUICK_START_SETUP_FROM_SIGNIN_SCREEN_TITLE" desc="A title used on OOBE's Quick Start screen for signing-in into their Chromebook using an Android device prompting the user to scan a QR code.">
     Sign in with your Android phone
@@ -1615,11 +1670,14 @@
   <message name="IDS_APP_START_WAIT_FOR_APP_WINDOW_MESSAGE" desc="Message displayed while waiting for the application to create its window in kiosk mode.">
     Waiting for application window...
   </message>
-  <message name="IDS_PASSWORD_SELECTION_TITLE" desc="Message displayed on the password selection screen.">
-    Use a password to sign in to your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
+  <message name="IDS_PASSWORD_SELECTION_TITLE" desc="Title displayed on the password selection screen.">
+    Set a <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> password to make it easier to sign in
+  </message>
+  <message name="IDS_PASSWORD_SELECTION_SUBTITLE" desc="Message displayed on the password selection screen.">
+    Instead of entering your Google Account password to sign in, you can create a <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> password for this device
   </message>
   <message name="IDS_PASSWORD_SELECTION_LOCAL_PASSWORD_LABEL" desc="Label for the local password option on the password selection screen.">
-    Create <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> password
+    Create password for this <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
   </message>
   <message name="IDS_PASSWORD_SELECTION_GAIA_PASSWORD_LABEL" desc="Label for the online password option on the password selection screen.">
     Use Google Account password
@@ -1747,7 +1805,10 @@
     Please re-enter your password to update your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> profile.
   </message>
   <message name="IDS_LOGIN_LOCAL_PASSWORD_SETUP_TITLE" desc="Title for the local password setup dialog.">
-    Set <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> password
+    Set a <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> password to make it easier to sign in
+  </message>
+  <message name="IDS_LOGIN_LOCAL_PASSWORD_SETUP_SUBTITLE" desc="Subtitle for the local password setup dialog.">
+    Instead of entering your Google Account password to sign in, you can create a <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> password for this device
   </message>
   <message name="IDS_LOGIN_LOCAL_PASSWORD_RESET_TITLE" desc="Title for the local password reset dialog.">
     Reset <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> password
@@ -1998,6 +2059,9 @@
 
   <!-- Strings shown within Tether notifications -->
   <message name="IDS_TETHER_NOTIFICATION_CONNECTION_FAILED_TITLE" desc="Title of the notification shown to the user when an attempt to tether to another device has failed.">
+    Instant hotspot connection failed
+  </message>
+  <message name="IDS_TETHER_NOTIFICATION_CONNECTION_FAILED_TITLE_LEGACY" desc="Title of the notification shown to the user when an attempt to tether to another device has failed.">
     Instant Tethering connection failed
   </message>
   <message name="IDS_TETHER_NOTIFICATION_CONNECTION_FAILED_MESSAGE" desc="Message shown as part of the notification shown to the user when an attempt to tether to another device has failed which gives the user instructions about how to configure tethering.">
@@ -3008,17 +3072,8 @@
   <message name="IDS_NEW_PORTAL_DETECTION_NOTIFICATION_MESSAGE" desc="Body of the new system notification that current wired network is behind captive portal">
     Sign in to "<ph name="NETWORK_ID">$1<ex>Public Network</ex></ph>"
   </message>
-  <message name="IDS_NEW_PORTAL_PROXY_AUTH_REQUIRED_DETECTION_NOTIFICATION_MESSAGE" desc="Body of the new system notification that current wired network is behind captive portal">
-    Proxy authentication is required for "<ph name="NETWORK_ID">$1<ex>Public Network</ex></ph>"
-  </message>
-  <message name="IDS_NEW_PORTAL_SUSPECTED_DETECTION_NOTIFICATION_MESSAGE" desc="Body of the new system notification that current wired network is behind captive portal">
-    Connectivity on "<ph name="NETWORK_ID">$1<ex>Public Network</ex></ph>" may be limited
-  </message>
   <message name="IDS_NEW_PORTAL_DETECTION_NOTIFICATION_BUTTON" desc="The text to display on the button when the user needs to sign in to the captive portal">
     Sign in
-  </message>
-  <message name="IDS_NEW_PORTAL_SUSPECTED_DETECTION_NOTIFICATION_BUTTON" desc="The text to display on the button when the user needs to open a new tab for a suspected portal">
-    Open a new tab
   </message>
   <message name="IDS_PORTAL_DETECTION_NOTIFICATION_TITLE_WIRED" desc="Title for the system notification that current wired network is behind captive portal">
     Connect to network
@@ -3444,6 +3499,9 @@
   <message name="IDS_NETWORK_UI_TAB_NETWORK_HOTSPOT" desc="Hotspot tab name">
     Hotspot
   </message>
+  <message name="IDS_NETWORK_UI_TAB_NETWORK_WIFI_DIRECT" desc="Wifi Direct tab name">
+    WiFi Direct
+  </message>
   <message name="IDS_NETWORK_UI_AUTO_REFRESH" desc="Instructions for how to auto-refresh the page">
     Add a query param in URL to auto-refresh the page: chrome://network/?refresh=&lt;sec&gt;
   </message>
@@ -3624,6 +3682,24 @@
   <message name="IDS_NETWORK_UI_SET_TETHERING_ENABLED_LABEL" desc="Title for the section for enabling or disabling tethering.">
     Enable/Disable Tethering
   </message>
+  <message name="IDS_NETWORK_UI_WIFI_DIRECT_CAPABILITIES_LABEL" desc="Title for the section for displaying and refreshing WiFi Direct capabilities.">
+    WiFi Direct Capabilities:
+  </message>
+  <message name="IDS_NETWORK_UI_REFRESH_WIFI_DIRECT_CAPABILITIES_BUTTON_TEXT" desc="Text for button which, when pressed, refreshing WiFi Direct capabilities.">
+    Refresh WiFi Direct Capabilities
+  </message>
+  <message name="IDS_NETWORK_UI_WIFI_DIRECT_OWNER_INFO_LABEL" desc="Title for the section for displaying and refreshing WiFi Direct owners info.">
+    WiFi Direct Owners Info:
+  </message>
+  <message name="IDS_NETWORK_UI_REFRESH_WIFI_DIRECT_OWNER_INFO_BUTTON_TEXT" desc="Text for button which, when pressed, refreshing WiFi Direct owners info.">
+    Refresh WiFi Direct Owners Info
+  </message>
+  <message name="IDS_NETWORK_UI_WIFI_DIRECT_CLIENT_INFO_LABEL" desc="Title for the section for displaying and refreshing WiFi Direct clients info.">
+    WiFi Direct Clients Info:
+  </message>
+  <message name="IDS_NETWORK_UI_REFRESH_WIFI_DIRECT_CLIENT_INFO_BUTTON_TEXT" desc="Text for button which, when pressed, refreshing WiFi Direct clients info.">
+    Refresh WiFi Direct Clients Info
+  </message>
 
   <message name="IDS_DEVICE_LOG_LINK_TEXT" desc="Message preceeding link to chrome://device-log">
     To view network UI logs, see: <ph name="DEVICE_LOG_LINK">&lt;a href="chrome://device-log"&gt;chrome://device-log&lt;/a&gt;</ph>
@@ -3789,12 +3865,11 @@
   <message name="IDS_ARC_OPT_IN_LOCATION_SETTING_CHILD" desc="Message in the opt-in dialog for Android apps for the user to turn on Google location services, and a child account is in use.">
     Use location. Allow apps and services with location permission to use this device’s location. Google may collect location data periodically and use this data in an anonymous way to improve location accuracy and location-based services. <ph name="BEGIN_LINK1">&lt;a href="#" id="learn-more-link-location-service"&gt;</ph>Learn More<ph name="END_LINK1">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
   </message>
-  <!-- TODO(b/314122885): Remove `translateable=false` when strings are finalized. -->
-  <message name="IDS_CROS_OPT_IN_LOCATION_SETTING" translateable="false" desc="Message in the opt-in dialog for Android apps for the user to turn on Google location services.">
-    Use location. Allow ChromeOS and Android apps, websites, and services with location permission to use your device’s location. Google may collect location data periodically and use this data in an anonymous way to improve location accuracy and location-based services. <ph name="BEGIN_LINK1">&lt;a href="#" id="learn-more-link-location-service"&gt;</ph>Learn More<ph name="END_LINK1">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
+  <message name="IDS_CROS_OPT_IN_LOCATION_SETTING" desc="Message in the opt-in dialog for Android apps for the user to turn on Google location services.">
+    Use location. Allow ChromeOS and Android apps, websites, and services with location permission to use your device's location. Google may collect location data periodically and use this data in an anonymous way to improve location accuracy and location-based services. <ph name="BEGIN_LINK1">&lt;a href="#" id="learn-more-link-location-service"&gt;</ph>Learn More<ph name="END_LINK1">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
   </message>
-  <message name="IDS_CROS_OPT_IN_LOCATION_SETTING_CHILD" translateable="false" desc="Message in the opt-in dialog for Android apps for the user to turn on Google location services, and a child account is in use.">
-    Use location. Allow ChromeOS and Android apps, websites, and services with location permission to use this device’s location. Google may collect location data periodically and use this data in an anonymous way to improve location accuracy and location-based services. <ph name="BEGIN_LINK1">&lt;a href="#" id="learn-more-link-location-service"&gt;</ph>Learn More<ph name="END_LINK1">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
+  <message name="IDS_CROS_OPT_IN_LOCATION_SETTING_CHILD" desc="Message in the opt-in dialog for Android apps for the user to turn on Google location services, and a child account is in use.">
+    Use location. Allow ChromeOS and Android apps, websites, and services with location permission to use this device's location. Google may collect location data periodically and use this data in an anonymous way to improve location accuracy and location-based services. <ph name="BEGIN_LINK1">&lt;a href="#" id="learn-more-link-location-service"&gt;</ph>Learn More<ph name="END_LINK1">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
   </message>
   <message name="IDS_ARC_OPT_IN_PAI" desc="Message in the opt-in dialog for Play auto install.">
     Install updates &#38; apps. By continuing, you agree that this device may also automatically download and install updates and apps from Google, your carrier, and your device's manufacturer, possibly using cellular data. Some of these apps may offer in-app purchases. <ph name="BEGIN_LINK1">&lt;a href="#" id="learn-more-link-pai"&gt;</ph>Learn More<ph name="END_LINK1">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
@@ -3903,12 +3978,11 @@
     <ph name="BEGIN_PARAGRAPH1">&lt;p&gt;</ph>Google's location service uses sources like Wi-Fi, mobile networks, and sensors to help estimate this device’s location.<ph name="END_PARAGRAPH1">&lt;/p&gt;</ph>
     <ph name="BEGIN_PARAGRAPH2">&lt;p&gt;</ph>You can turn off Location by turning off the main Location setting on this device. You can also turn off the use of Wi-Fi, mobile networks, and sensors for location in location settings.<ph name="END_PARAGRAPH2">&lt;/p&gt;</ph>
   </message>
-  <!-- TODO(b/314122885): Remove `translateable=false` when strings are finalized. -->
-  <message name="IDS_CROS_OPT_IN_LEARN_MORE_LOCATION_SERVICES" translateable="false" desc="Message shown in pop up overlay dialog when user clicks learn more location services">
+  <message name="IDS_CROS_OPT_IN_LEARN_MORE_LOCATION_SERVICES" desc="Message shown in pop up overlay dialog when user clicks learn more location services">
     <ph name="BEGIN_PARAGRAPH1">&lt;p&gt;</ph>Google's location service uses sources like Wi-Fi, mobile networks, and sensors to help estimate your device’s location.<ph name="END_PARAGRAPH1">&lt;/p&gt;</ph>
     <ph name="BEGIN_PARAGRAPH2">&lt;p&gt;</ph>You can turn off Location by turning off the main Location setting on your device. You can also turn off the use of Wi-Fi, mobile networks, and sensors for location in location settings.<ph name="END_PARAGRAPH2">&lt;/p&gt;</ph>
   </message>
-  <message name="IDS_CROS_OPT_IN_LEARN_MORE_LOCATION_SERVICES_CHILD" translateable="false" desc="Message shown in pop up overlay dialog when user clicks learn more location services, and a child account is in use">
+  <message name="IDS_CROS_OPT_IN_LEARN_MORE_LOCATION_SERVICES_CHILD" desc="Message shown in pop up overlay dialog when user clicks learn more location services, and a child account is in use">
     <ph name="BEGIN_PARAGRAPH1">&lt;p&gt;</ph>Google's location service uses sources like Wi-Fi, mobile networks, and sensors to help estimate this device’s location.<ph name="END_PARAGRAPH1">&lt;/p&gt;</ph>
     <ph name="BEGIN_PARAGRAPH2">&lt;p&gt;</ph>You can turn off Location by turning off the main Location setting on this device. You can also turn off the use of Wi-Fi, mobile networks, and sensors for location in location settings.<ph name="END_PARAGRAPH2">&lt;/p&gt;</ph>
   </message>
@@ -4381,20 +4455,19 @@
   <message name="IDS_CONSOLIDATED_CONSENT_ARC_LOCATION_OPT_IN_TITLE" desc="Title for the message in the consolidated consent screen to opt-in for location services.">
     Use location for Android apps and services.
   </message>
-  <!-- TODO(b/314122885): Remove `translateable=false` when strings are finalized. -->
-  <message name="IDS_CONSOLIDATED_CONSENT_CROS_LOCATION_OPT_IN_TITLE" translateable="false" desc="Title for the message in the consolidated consent screen to opt-in for location services.">
+  <message name="IDS_CONSOLIDATED_CONSENT_CROS_LOCATION_OPT_IN_TITLE" desc="Title for the message in the consolidated consent screen to opt-in for location services.">
     Use location for ChromeOS and Android apps and services.
   </message>
   <message name="IDS_CONSOLIDATED_CONSENT_ARC_LOCATION_OPT_IN" desc="Message in the consolidated consent screen to opt-in for location services.">
     Allow Android apps and services with location permission to use your device's location. Google may collect location data periodically and use this data in an anonymous way to improve location accuracy and location-based services.
   </message>
-  <message name="IDS_CONSOLIDATED_CONSENT_CROS_LOCATION_OPT_IN" translateable="false" desc="Message in the consolidated consent screen to opt-in for location services.">
+  <message name="IDS_CONSOLIDATED_CONSENT_CROS_LOCATION_OPT_IN" desc="Message in the consolidated consent screen to opt-in for location services.">
     Allow ChromeOS and Android apps and services with location permission to use your device's location. Google may collect location data periodically and use this data in an anonymous way to improve location accuracy and location-based services.
   </message>
   <message name="IDS_CONSOLIDATED_CONSENT_ARC_LOCATION_OPT_IN_CHILD" desc="Message in the consolidated consent screen to opt-in for location services for child accounts.">
     Allow Android apps and services with location permission to use this device's location. Google may collect location data periodically and use this data in an anonymous way to improve location accuracy and location-based services.
   </message>
-  <message name="IDS_CONSOLIDATED_CONSENT_CROS_LOCATION_OPT_IN_CHILD" translateable="false" desc="Message in the consolidated consent screen to opt-in for location services for child accounts.">
+  <message name="IDS_CONSOLIDATED_CONSENT_CROS_LOCATION_OPT_IN_CHILD" desc="Message in the consolidated consent screen to opt-in for location services for child accounts.">
     Allow ChromeOS and Android apps and services with location permission to use this device's location. Google may collect location data periodically and use this data in an anonymous way to improve location accuracy and location-based services.
   </message>
   <message name="IDS_CONSOLIDATED_CONSENT_ARC_LOCATION_OPT_IN_LEARN_MORE" desc="Text shown in a pop-up dialog in the consolidated consent screen when the user clicks on the learn more for location services opt-in.">
@@ -4405,16 +4478,14 @@
     <ph name="BEGIN_PARAGRAPH1">&lt;p&gt;</ph>Google's location service uses sources like Wi-Fi, mobile networks, and sensors to help estimate this device's location.<ph name="END_PARAGRAPH1">&lt;/p&gt;</ph>
     <ph name="BEGIN_PARAGRAPH2">&lt;p&gt;</ph>You can turn off Android location on this device at any time by going to Settings &gt; Apps &gt; Google Play Store &gt; Manage Android preferences &gt; Security &amp; location &gt; Location. You can also turn off the use of Wi-Fi, mobile networks, and sensors for Android location by turning off “Google Location Accuracy” in the same menu.<ph name="END_PARAGRAPH2">&lt;/p&gt;</ph>
   </message>
-
-  <message name="IDS_CONSOLIDATED_CONSENT_CROS_LOCATION_OPT_IN_LEARN_MORE" translateable="false" desc="Text shown in a pop-up dialog in the consolidated consent screen when the user clicks on the learn more for location services opt-in.">
+  <message name="IDS_CONSOLIDATED_CONSENT_CROS_LOCATION_OPT_IN_LEARN_MORE" desc="Text shown in a pop-up dialog in the consolidated consent screen when the user clicks on the learn more for location services opt-in.">
     <ph name="BEGIN_PARAGRAPH1">&lt;p&gt;</ph>Google's location service uses sources like Wi-Fi, mobile networks, and sensors to help estimate your device's location.<ph name="END_PARAGRAPH1">&lt;/p&gt;</ph>
-    <ph name="BEGIN_PARAGRAPH2">&lt;p&gt;</ph>You can turn off location on your device at any time by going to Settings &gt; Security and Privacy &gt; Privacy controls &gt; Location access.
+    <ph name="BEGIN_PARAGRAPH2">&lt;p&gt;</ph>You can turn off ChromeOS and Android location on your device at any time by going to Settings &gt; Privacy and security &gt; Privacy controls &gt; Location access. You can also turn off the use of Wi-Fi, mobile networks, and sensors for Android location by turning off "Improve location accuracy" under "Advanced location settings" in the same menu.<ph name="END_PARAGRAPH2">&lt;/p&gt;</ph>
   </message>
-  <message name="IDS_CONSOLIDATED_CONSENT_CROS_LOCATION_OPT_IN_LEARN_MORE_CHILD" translateable="false" desc="Text shown in a pop-up dialog in the consolidated consent screen when the user clicks on the learn more for location services opt-in. for a child account">
+  <message name="IDS_CONSOLIDATED_CONSENT_CROS_LOCATION_OPT_IN_LEARN_MORE_CHILD" desc="Text shown in a pop-up dialog in the consolidated consent screen when the user clicks on the learn more for location services opt-in. for a child account">
     <ph name="BEGIN_PARAGRAPH1">&lt;p&gt;</ph>Google's location service uses sources like Wi-Fi, mobile networks, and sensors to help estimate this device's location.<ph name="END_PARAGRAPH1">&lt;/p&gt;</ph>
-    <ph name="BEGIN_PARAGRAPH2">&lt;p&gt;</ph>You can turn off location on this device at any time by going to Settings &gt; Security and Privacy &gt; Privacy controls &gt; Location access.
+    <ph name="BEGIN_PARAGRAPH2">&lt;p&gt;</ph>You can turn off ChromeOS and Android location on this device at any time by going to Settings &gt; Privacy and security &gt; Privacy controls &gt; Location access. You can also turn off the use of Wi-Fi, mobile networks, and sensors for Android location by turning off "Improve location accuracy" under "Advanced location settings" in the same menu.<ph name="END_PARAGRAPH2">&lt;/p&gt;</ph>
   </message>
-
   <message name="IDS_CONSOLIDATED_CONSENT_LOCATION_OPT_IN_LEARN_MORE_LINK" desc="Learn more about location opt in">
     Learn more about using location
   </message>
@@ -4760,12 +4831,6 @@
   </message>
 
   <!-- Launcher Searchable ChromeOS internal apps -->
-  <message name="IDS_INTERNAL_APP_KEYBOARD_SHORTCUT_VIEWER" desc="The name of keyboard shortcut viewer app.">
-    Shortcuts
-  </message>
-  <message name="IDS_LAUNCHER_SEARCHABLE_KEYBOARD_SHORTCUT_VIEWER" desc="The string can be used to search keyboard shortcut viewer app.">
-    Keyboard Shortcut Helper
-  </message>
   <message name="IDS_INTERNAL_APP_SETTINGS" desc="The name of Settings.">
     Settings
   </message>
@@ -5318,8 +5383,26 @@
   <message name="IDS_BRUSCHETTA_INSTALLER_ERROR_TITLE" desc="Title for the installer when Bruschetta (codename) fails to install.">
     Sorry, an error occurred
   </message>
-  <message name="IDS_BRUSCHETTA_INSTALLER_ERROR_MESSAGE" desc="More detailed message for the installer when Bruschetta fails to install.">
-    Sorry, something went wrong. Please file feedback with #bruschetta in the description. Error code is <ph name="ERROR">$1<ex>kUnknown</ex></ph>.
+  <message name="IDS_BRUSCHETTA_INSTALLER_GENERIC_ERROR_MESSAGE" desc="Generic message for the installer when Bruschetta fails to install.">
+    Sorry, something went wrong. Please file feedback with #bruschetta in the description. Error code is <ph name="ERROR">$1<ex>kUnknown</ex></ph>, this may be fixed by rebooting and trying again.
+  </message>
+  <message name="IDS_BRUSCHETTA_INSTALLER_PROHIBITED_MESSAGE" desc="Message for the installer when Bruschetta is blocked from being installed.">
+    Installing <ph name="VM_NAME">$1<ex>Managed VM</ex></ph>, is blocked by enterprise policy. Please contact your system administrator for support. Error code is <ph name="ERROR">$1<ex>kUnknown</ex></ph>.
+  </message>
+  <message name="IDS_BRUSCHETTA_INSTALLER_DOWNLOAD_ERROR_MESSAGE" desc="More detailed message for the installer when Bruschetta fails to download needed files.">
+    Unable to download installer files. Please check your internet connection and that you have enough free disk space and try again. Error code is <ph name="ERROR">$1<ex>kUnknown</ex></ph>.
+  </message>
+  <message name="IDS_BRUSCHETTA_INSTALLER_DLC_NEED_UPDATE_ERROR_MESSAGE" desc="More detailed message for the installer when Bruschetta fails to install due to a pending OS update.">
+    Unable to install, OS update is pending. Please apply any pending OS updates, restart, and try again. Error code is <ph name="ERROR">$1<ex>kUnknown</ex></ph>.
+  </message>
+  <message name="IDS_BRUSCHETTA_INSTALLER_NEED_REBOOT_ERROR_MESSAGE" desc="More detailed message for the installer when Bruschetta fails to install due to a reboot being required.">
+    Unable to install, reboot is required. Please restart your computer and try again. Error code is <ph name="ERROR">$1<ex>kUnknown</ex></ph>.
+  </message>
+  <message name="IDS_BRUSCHETTA_INSTALLER_DISK_FULL_ERROR_MESSAGE" desc="More detailed message for the installer when Bruschetta fails to install due to insufficient disk space.">
+    Not enough disk space. Please free up some more disk space and try again. Error code is <ph name="ERROR">$1<ex>kUnknown</ex></ph>.
+  </message>
+  <message name="IDS_BRUSCHETTA_INSTALLER_GENERIC_DLC_ERROR_MESSAGE" desc="Generic message for the installer when Bruschetta fails to install.">
+    Sorry, something went wrong installing DLC dependencies. Please try rebooting and if the issue persists file feedback with #bruschetta in the description. Error code is <ph name="ERROR">$1<ex>kUnknown</ex></ph>.
   </message>
   <message name="IDS_BRUSCHETTA_INSTALLER_ERROR_CLEANUP_MESSAGE" desc="More detailed message for the installer when Bruschetta fails to install and the cleaning up the incomplete install also failed.">
     Sorry, something went wrong. Please file feedback with #bruschetta in the description. Error code is <ph name="ERROR">$1<ex>kUnknown</ex></ph>. Cleaning up failed, you may need to do so manually.
@@ -5688,6 +5771,9 @@
   </message>
   <message name="IDS_ASH_UI_SERVICE_NAME" desc="Name of the internal software service that manages the user interface (UI). Appears in the task manager.">
     UI service
+  </message>
+  <message name="IDS_UTILITY_PROCESS_PDF_SERVICE_NAME" desc="The name of the utility process used for PDF conversions.">
+    PDF Service
   </message>
 
   <message name="IDS_POWER_SOURCE_PORT_LEFT" desc="The text identifying an external device, when that device is connected to the USB Type-C port on the left side of this device.">
@@ -6328,6 +6414,18 @@ Permissions you've already given to websites and apps may apply to this account.
   <message name="IDS_BOREALIS_LAUNCH_ERROR_BODY" desc="Body of a dialog shown when Steam (noun, name of app, a gaming software distribution platform) fails to launch.">
     Something went wrong. Try again.
   </message>
+  <message name="IDS_BOREALIS_LAUNCH_ERROR_NEED_RESTART_BODY" desc="Body of a dialog shown when Steam (noun, name of app, a gaming software distribution platform) fails to launch, due to needing an update.">
+    Steam for Chromebook (Beta) needs to be updated. Restart your Chromebook and try again.
+  </message>
+  <message name="IDS_BOREALIS_LAUNCH_ERROR_NEED_SPACE_BODY" desc="Body of a dialog shown when Steam (noun, name of app, a gaming software distribution platform) fails to launch, due to needing more space.">
+    There is not enough device storage to open this app. Free up space and try again.
+  </message>
+  <message name="IDS_BOREALIS_LAUNCH_ERROR_SEND_FEEDBACK" desc="Label for a checkbox the user can tick to send feedback about the error.">
+    Send feedback
+  </message>
+  <message name="IDS_BOREALIS_LAUNCH_ERROR_BUTTON_RESTART" desc="Button of a dialog shown when Steam (noun, name of app) fails to launch to restart and a restart is suggested.">
+    Restart
+  </message>
   <message name="IDS_BOREALIS_BETA_BADGE" desc="Badge text indicating that borealis (steam on chromeos) is a beta product, i.e. it is still under development.">
     Beta
   </message>
@@ -6349,6 +6447,11 @@ Permissions you've already given to websites and apps may apply to this account.
   <message name="IDS_BOREALIS_HATS_BODY" desc="Message on HaTS notification requesting feedback. It will appear occasionally when a user closes a Steam game. Clicking it will show a satisfaction survey to the user.">
     Tell us about your recent gameplay
   </message>
+  <message name="IDS_BOREALIS_FEEDBACK_PLACEHOLDER" desc="Placeholder text for the Borealis feedback dialog.">
+    Share your feedback or describe your issue. If possible, include steps to reproduce your issue.
+  </message>
+
+
   <!-- TPM firmware auto-update notifications -->
   <message name="IDS_TPM_AUTO_UPDATE_PLANNED_NOTIFICATION_TITLE" desc="Title for the notification informing the user that local data will be deleted.">
     Your local data will soon be deleted
@@ -6633,8 +6736,8 @@ You can manage this account’s settings by installing the Family Link app on yo
   </message>
 
   <!-- Strings for orca-->
-  <message name="IDS_ACCNAME_ORCA" desc="The name for the orca feature in the task manager (this is a code name)">
-    Orca
+  <message name="IDS_ACCNAME_ORCA" desc="The name for the orca feature in the task manager">
+    Tool: Help me write
   </message>
 
   <!-- Strings for Custom Tab UI -->
@@ -7247,11 +7350,17 @@ Your <ph name="DEVICE_TYPE">{0}<ex>Chromebook</ex></ph> will be locked now.
   <message name="IDS_OFFICE_UPLOAD_ERROR_FILE_NOT_EXIST_TO_COPY" desc="Error message for uploading office files indicating that the file does not exist so it cannot be copied.">
     The file can't be copied because it no longer exists
   </message>
+  <message name="IDS_OFFICE_UPLOAD_ERROR_REJECTED" desc="Error message for uploading office files indicating that the upload is rejected by the remote service.">
+    Microsoft OneDrive rejected the request. Please try again later.
+  </message>
   <message name="IDS_OFFICE_UPLOAD_ERROR_GENERIC" desc="Generic error message for uploading office files.">
     Something went wrong. Try again.
   </message>
   <message name="IDS_OFFICE_UPLOAD_ERROR_REAUTHENTICATION_REQUIRED" desc="Error message for uploading office files indicating that the needs to sign in to Microsoft first before uploading the files.">
     Sign in to your Microsoft account and then try again
+  </message>
+  <message name="IDS_OFFICE_UPLOAD_ERROR_NOT_A_VALID_DOCUMENT" desc="Error message for opening office files indicating that the file is not an valid document.">
+    File is not a valid document
   </message>
   <message name="IDS_OFFICE_UPLOAD_ERROR_CANT_OPEN_FILE" desc="Error message for uploading office files indicating that file cannot be open.">
     {NUM_OF_FILES, plural,
@@ -7275,7 +7384,11 @@ Your <ph name="DEVICE_TYPE">{0}<ex>Chromebook</ex></ph> will be locked now.
     Your Google Account is the same account you use for Gmail, YouTube, Chrome, and other Google products.
     Use your account to easily access all of your bookmarks, files, and more. If you don't have an account, you can create one on the next screen.
   </message>
-  <message name="IDS_GAIA_INFO_DESCRIPTION_QUICK_START" desc="Additional description of the Gaia Info screen for quick start flow.">
+  <message name="IDS_GAIA_INFO_DESCRIPTION_QUICK_START_P1" desc="Paragraph 1 of description of the Gaia Info screen for quick start flow.">
+    Your Google Account is the same account you use for Gmail, YouTube, Chrome, and other Google products.
+    Use your account to easily access all of your bookmarks, files, and more.
+  </message>
+  <message name="IDS_GAIA_INFO_DESCRIPTION_QUICK_START_P2" desc="Paragraph 2 of description of the Gaia Info screen for quick start flow.">
     If you don't have an account, select the first option to create one.
   </message>
   <message name="IDS_GAIA_INFO_MANUAL_FLOW" desc="Label for the option on the Gaia Info screen to manually enter account and credentials.">
@@ -7365,20 +7478,99 @@ Your <ph name="DEVICE_TYPE">{0}<ex>Chromebook</ex></ph> will be locked now.
   </message>
 
   <!-- App install dialog -->
-  <message name="IDS_OPEN_APP" desc="Button label in the app install dialog that opens the app that was just installed.">
+  <message name="IDS_APP_INSTALL_DIALOG_OPEN_APP_BUTTON_LABEL" desc="Button label in the app install dialog that opens the app that was just installed.">
     Open app
   </message>
-  <message name="IDS_DEVELOPER_INFORMATION" desc="Label in the app install dialog that is displayed in front of the app URL to give the user information about the app developer.">
-    Developer information:
+  <message name="IDS_APP_INSTALL_DIALOG_APP_DETAILS_TEXT" desc="Label in the app install dialog that is displayed in front of the app URL to give the user information about the app.">
+    App details:
   </message>
-  <message name="IDS_INSTALL_DIALOG_TITLE" desc="Title shown in the app install dialog asking the user if they want to install the app to their device.">
-    Install app to your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
+  <message name="IDS_APP_INSTALL_DIALOG_INSTALL_TITLE" desc="Title shown in the app install dialog asking the user if they want to install the app on their device.">
+    Install app on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
   </message>
-  <message name="IDS_INSTALLING_APP" desc="Title shown in the app install dialog after the user has confirmed they want to install the app. It is only displayed for a couple of seconds while the app installs.">
+  <message name="IDS_APP_INSTALL_DIALOG_INSTALLING_APP_TITLE" desc="Title shown in the app install dialog after the user has confirmed they want to install the app. It is only displayed for a couple of seconds while the app installs.">
     Installing app...
   </message>
-  <message name="IDS_APP_INSTALLED" desc="Title shown in the app install dialog after the app has finished installing.">
+  <message name="IDS_APP_INSTALL_DIALOG_APP_INSTALLED_TITLE" desc="Title shown in the app install dialog after the app has finished installing.">
     App installed
+  </message>
+  <message name="IDS_APP_INSTALL_DIALOG_APP_ALREADY_INSTALLED_TITLE" desc="Title shown in the app install dialog after the app has finished installing.">
+    App is already installed
+  </message>
+  <message name="IDS_APP_INSTALL_DIALOG_NO_APP_ERROR_TITLE" desc="Title shown in the app install dialog when there is no app data.">
+    App not available
+  </message>
+  <message name="IDS_APP_INSTALL_DIALOG_NO_APP_ERROR_DESCRIPTION" desc="Description shown in the app install dialog when there is no app data.">
+    Can't find app data
+  </message>
+  <message name="IDS_APP_INSTALL_DIALOG_CONNECTION_ERROR_TITLE" desc="Title shown in the app install dialog when there was a connection error downloading app data.">
+    Can't install app
+  </message>
+  <message name="IDS_APP_INSTALL_DIALOG_CONNECTION_ERROR_DESCRIPTION" desc="Description shown in the app install dialog when there was a connection error downloading app data.">
+    Check your internet connection and try again
+  </message>
+  <message name="IDS_APP_INSTALL_DIALOG_TRY_AGAIN_BUTTON_LABEL" desc="Button label in the app install dialog that opens the app that was just installed.">
+    Try again
+  </message>
+  <message name="IDS_APP_INSTALL_DIALOG_FAILED_INSTALL_TITLE" desc="Title shown in the app install dialog if the app failed to install.">
+    Can't install app. Something went wrong.
+  </message>
+  <message name="IDS_APP_INSTALL_DIALOG_APP_ICON_ALT" desc="Alt text for the app icon displayed in the app install dialog. This is the text that will be read by screen reader when the app icon is focused.">
+    <ph name="APP">$1<ex>Google Docs</ex></ph> logo
+  </message>
+
+  <!-- Extended Updates Dialog -->
+  <message name="IDS_EXTENDED_UPDATES_DIALOG_DIALOG_HEADING" desc="Dialog heading of the Extended Updates Dialog">
+    Turn on extended security updates
+  </message>
+  <message name="IDS_EXTENDED_UPDATES_DIALOG_DIALOG_DESCRIPTION_P1" desc="Dialog description paragraph 1 of the Extended Updates Dialog">
+    This device is no longer receiving automatic software and security updates, but you can turn on extended security updates.
+  </message>
+  <message name="IDS_EXTENDED_UPDATES_DIALOG_DIALOG_DESCRIPTION_P2" desc="Dialog description paragraph 2 of the Extended Updates Dialog">
+    This change is permanent and can't be reversed. Extended updates apply to all users of this device. <ph name="LINK_START">&lt;a href="$1" target="_blank"&gt;</ph>Learn more<ph name="LINK_END">&lt;/a&gt;</ph>
+  </message>
+  <message name="IDS_EXTENDED_UPDATES_DIALOG_CANCEL_BUTTON" desc="Cancel button label of the Extended Updates Dialog">
+    Cancel
+  </message>
+  <message name="IDS_EXTENDED_UPDATES_DIALOG_ENABLE_BUTTON" desc="Enable button label of the Extended Updates Dialog">
+    Turn on
+  </message>
+  <message name="IDS_EXTENDED_UPDATES_DIALOG_ANDROID_DESCRIPTION" desc="Description of the loss of Android Apps">
+    You won’t be able to use Android apps or the Google Play Store
+  </message>
+  <message name="IDS_EXTENDED_UPDATES_DIALOG_ANDROID_APPS_LIST_DESCRIPTION_SINGULAR" desc="Description of the list of Android Apps for one app">
+    1 installed app will be removed
+  </message>
+  <message name="IDS_EXTENDED_UPDATES_DIALOG_ANDROID_APPS_LIST_DESCRIPTION_PLURAL" desc="Description of the list of Android Apps for multiple apps">
+    <ph name="NUM_OF_APPS">$1<ex>5</ex></ph> installed apps will be removed
+  </message>
+  <message name="IDS_EXTENDED_UPDATES_DIALOG_ANDROID_APPS_LIST_NOTE" desc="Note of the loss of Android Apps">
+    Tip: Many Android apps are available on the web. Check the app or developer website for availability.
+  </message>
+  <message name="IDS_EXTENDED_UPDATES_DIALOG_SECURITY_DESCRIPTION" desc="Description of the extended security updates">
+    Your device gets the latest security, stability, and performance updates
+  </message>
+  <message name="IDS_EXTENDED_UPDATES_DIALOG_POPUP_TITLE" desc="Title of the confirmation popup in the Extended Updates Dialog">
+    Confirm extended security updates?
+  </message>
+  <message name="IDS_EXTENDED_UPDATES_DIALOG_POPUP_DESCRIPTION" desc="Description of the confirmation popup in the Extended Updates Dialog">
+    This change will take effect when you receive the next update and restart your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>. This change can’t be reversed and applies to all users of this device.
+  </message>
+  <message name="IDS_EXTENDED_UPDATES_DIALOG_POPUP_CONFIRM_BUTTON" desc="Confirm button label of the confirmation popup in the Extended Updates Dialog">
+    Confirm &amp; turn on
+  </message>
+
+  <!-- Extended Updates Notification -->
+  <message name="IDS_EXTENDED_UPDATES_NOTIFICATION_TITLE" desc="Notification title that informs users about availability of extended updates.">
+    Extended security updates available
+  </message>
+  <message name="IDS_EXTENDED_UPDATES_NOTIFICATION_MESSAGE" desc="Notification message that informs users about availability of extended updates.">
+    This device is no longer receiving automatic software updates, but you can get continued security, stability, and performance. Some functionality will be limited.
+  </message>
+  <message name="IDS_EXTENDED_UPDATES_NOTIFICATION_SETUP_BUTTON" desc="Setup button in the notification message that informs users about availability of extended updates.">
+    Set up
+  </message>
+  <message name="IDS_EXTENDED_UPDATES_NOTIFICATION_LEARN_MORE_BUTTON" desc="Learn more button in the notification message that informs users about availability of extended updates.">
+    Learn more
   </message>
 
 </grit-part>

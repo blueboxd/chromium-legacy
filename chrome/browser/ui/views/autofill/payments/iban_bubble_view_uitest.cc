@@ -28,6 +28,7 @@
 #include "components/autofill/core/browser/form_data_importer_test_api.h"
 #include "components/autofill/core/browser/metrics/payments/iban_metrics.h"
 #include "components/autofill/core/browser/payments/iban_save_manager.h"
+#include "components/autofill/core/browser/payments/payments_autofill_client.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/strike_databases/payments/iban_save_strike_database.h"
 #include "components/autofill/core/browser/strike_databases/strike_database_integrator_base.h"
@@ -86,8 +87,8 @@ class IbanBubbleViewFullFormBrowserTest
  protected:
   class TestAutofillManager : public BrowserAutofillManager {
    public:
-    TestAutofillManager(ContentAutofillDriver* driver, AutofillClient* client)
-        : BrowserAutofillManager(driver, client, "en-US") {}
+    explicit TestAutofillManager(ContentAutofillDriver* driver)
+        : BrowserAutofillManager(driver, "en-US") {}
 
     testing::AssertionResult WaitForFormsSeen(int min_num_awaited_calls) {
       return forms_seen_waiter_.Wait(min_num_awaited_calls);
@@ -142,7 +143,8 @@ class IbanBubbleViewFullFormBrowserTest
             &test_url_loader_factory_);
     autofill_manager()
         ->client()
-        .GetPaymentsNetworkInterface()
+        .GetPaymentsAutofillClient()
+        ->GetPaymentsNetworkInterface()
         ->set_url_loader_factory_for_testing(test_shared_loader_factory_);
 
     // Set up this class as the ObserverForTest implementation.
@@ -629,8 +631,9 @@ IN_PROC_BROWSER_TEST_F(IbanBubbleViewFullFormBrowserTest,
 
 // Tests the local save bubble. Ensures that clicking the omnibox icon opens
 // manage saved IBAN bubble with IBAN nickname.
+// crbug.com/330725101: disabled because it's flaky
 IN_PROC_BROWSER_TEST_F(IbanBubbleViewFullFormBrowserTest,
-                       Local_SavedIbanHasNickname) {
+                       DISABLED_Local_SavedIbanHasNickname) {
   const std::u16string kNickname = u"My doctor's IBAN";
   FillForm();
   SubmitFormAndWaitForIbanLocalSaveBubble();
@@ -655,8 +658,9 @@ IN_PROC_BROWSER_TEST_F(IbanBubbleViewFullFormBrowserTest,
 
 // Tests the local save bubble. Ensures that clicking the omnibox icon opens
 // manage saved IBAN bubble without IBAN nickname.
+// crbug.com/330725101: disabled because it's flaky
 IN_PROC_BROWSER_TEST_F(IbanBubbleViewFullFormBrowserTest,
-                       Local_SavedIbanNoNickname) {
+                       DISABLED_Local_SavedIbanNoNickname) {
   FillForm();
   SubmitFormAndWaitForIbanLocalSaveBubble();
 

@@ -15,13 +15,25 @@
 
 #include "ash/api/tasks/tasks_client.h"
 #include "ash/api/tasks/tasks_types.h"
+#include "ash/constants/ash_pref_names.h"
+#include "ash/glanceables/glanceables_metrics.h"
 #include "base/barrier_closure.h"
 #include "base/check.h"
+#include "base/containers/contains.h"
 #include "base/containers/flat_set.h"
 #include "base/functional/bind.h"
+#include "base/functional/callback_forward.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/time/time.h"
 #include "base/types/expected.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/web_applications/web_app_id_constants.h"
+#include "components/policy/content/policy_blocklist_service.h"
+#include "components/policy/core/browser/url_blocklist_manager.h"
+#include "components/prefs/pref_service.h"
+#include "components/services/app_service/public/cpp/app_types.h"
 #include "google_apis/common/api_error_codes.h"
 #include "google_apis/common/request_sender.h"
 #include "google_apis/gaia/gaia_constants.h"
@@ -41,6 +53,8 @@ using ::google_apis::tasks::ListTasksRequest;
 using ::google_apis::tasks::PatchTaskRequest;
 using ::google_apis::tasks::TaskRequestPayload;
 using ::google_apis::tasks::TaskStatus;
+
+constexpr char kTasksUrl[] = "https://tasks.google.com/";
 
 // Converts `raw_tasks` received from Google Tasks API to ash-friendly types.
 std::vector<std::unique_ptr<Task>> ConvertTasks(
@@ -83,7 +97,8 @@ std::vector<std::unique_ptr<Task>> ConvertTasks(
     const bool has_notes = !root_task->notes().empty();
     converted_tasks.push_back(std::make_unique<Task>(
         root_task->id(), root_task->title(), root_task->due(), completed,
-        has_subtasks, has_email_link, has_notes, root_task->updated()));
+        has_subtasks, has_email_link, has_notes, root_task->updated(),
+        root_task->web_view_link()));
   }
 
   return converted_tasks;
@@ -100,13 +115,65 @@ TasksClientImpl::TasksFetchState::TasksFetchState() = default;
 TasksClientImpl::TasksFetchState::~TasksFetchState() = default;
 
 TasksClientImpl::TasksClientImpl(
+    Profile* profile,
     const TasksClientImpl::CreateRequestSenderCallback&
         create_request_sender_callback,
     net::NetworkTrafficAnnotationTag traffic_annotation_tag)
-    : create_request_sender_callback_(create_request_sender_callback),
+    : profile_(profile),
+      create_request_sender_callback_(create_request_sender_callback),
       traffic_annotation_tag_(traffic_annotation_tag) {}
 
 TasksClientImpl::~TasksClientImpl() = default;
+
+bool TasksClientImpl::IsDisabledByAdmin() const {
+  // 1) Check the pref.
+  const auto* const pref_service = profile_->GetPrefs();
+  if (!pref_service ||
+      !base::Contains(pref_service->GetList(
+                          prefs::kContextualGoogleIntegrationsConfiguration),
+                      prefs::kGoogleTasksIntegrationName)) {
+    RecordContextualGoogleIntegrationStatus(
+        prefs::kGoogleTasksIntegrationName,
+        ContextualGoogleIntegrationStatus::kDisabledByPolicy);
+    return true;
+  }
+
+  // 2) Check if the Calendar app (home app for Tasks) is disabled by policy.
+  if (!apps::AppServiceProxyFactory::IsAppServiceAvailableForProfile(
+          profile_)) {
+    return true;
+  }
+  auto calendar_app_readiness = apps::Readiness::kUnknown;
+  apps::AppServiceProxyFactory::GetForProfile(profile_)
+      ->AppRegistryCache()
+      .ForOneApp(web_app::kGoogleCalendarAppId,
+                 [&calendar_app_readiness](const apps::AppUpdate& update) {
+                   calendar_app_readiness = update.Readiness();
+                 });
+  if (calendar_app_readiness == apps::Readiness::kDisabledByPolicy) {
+    RecordContextualGoogleIntegrationStatus(
+        prefs::kGoogleTasksIntegrationName,
+        ContextualGoogleIntegrationStatus::kDisabledByAppBlock);
+    return true;
+  }
+
+  // 3) Check if the Tasks URL is blocked by policy.
+  const auto* const policy_blocklist_service =
+      PolicyBlocklistFactory::GetForBrowserContext(profile_);
+  if (!policy_blocklist_service ||
+      policy_blocklist_service->GetURLBlocklistState(GURL(kTasksUrl)) ==
+          policy::URLBlocklist::URLBlocklistState::URL_IN_BLOCKLIST) {
+    RecordContextualGoogleIntegrationStatus(
+        prefs::kGoogleTasksIntegrationName,
+        ContextualGoogleIntegrationStatus::kDisabledByUrlBlock);
+    return true;
+  }
+
+  RecordContextualGoogleIntegrationStatus(
+      prefs::kGoogleTasksIntegrationName,
+      ContextualGoogleIntegrationStatus::kEnabled);
+  return false;
+}
 
 const ui::ListModel<api::TaskList>* TasksClientImpl::GetCachedTaskLists() {
   // Note that this doesn't consider `task_lists_fetch_state_`, which means that
@@ -151,6 +218,10 @@ void TasksClientImpl::GetTasks(const std::string& task_list_id,
                                TasksClient::GetTasksCallback callback) {
   CHECK(!task_list_id.empty());
 
+  // TODO(b/337281579): Creating a list model in `tasks_in_task_lists_` before
+  // the tasks are actually returned will have `GetCachedTasksInTaskList()`
+  // return an empty list model, which is wrong as it is not the actual result.
+  // Move this to `RunGetTasksCallbacks()` will make more sense.
   const auto [iter, inserted] = tasks_in_task_lists_.emplace(
       std::piecewise_construct, std::forward_as_tuple(task_list_id),
       std::forward_as_tuple());
@@ -253,8 +324,7 @@ void TasksClientImpl::InvalidateCache() {
   }
 }
 
-void TasksClientImpl::OnGlanceablesBubbleClosed(
-    TasksClient::OnAllPendingCompletedTasksSavedCallback callback) {
+void TasksClientImpl::OnGlanceablesBubbleClosed(base::OnceClosure callback) {
   // TODO(b/324462272): We need to watch this. This could cause one client to
   // cancel the in-flight callbacks for requests sent by another client. This
   // could become an issue when we have multiple clients for one
@@ -525,7 +595,8 @@ void TasksClientImpl::OnTaskAdded(
                              /*due=*/std::nullopt, /*completed=*/false,
                              /*has_subtasks=*/false,
                              /*has_email_link=*/false, /*has_notes=*/false,
-                             result.value()->updated()));
+                             result.value()->updated(),
+                             result.value()->web_view_link()));
   std::move(callback).Run(/*task=*/task);
 }
 

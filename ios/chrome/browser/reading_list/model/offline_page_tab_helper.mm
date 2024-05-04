@@ -35,7 +35,7 @@ namespace {
 // Gets the offline data at `offline_path`. The result is a single std::string
 // with all resources inlined.
 // This method access file system and cannot be called on UI thread.
-// TODO(crbug.com/1166398): Remove backwards compatibility after M95
+// TODO(crbug.com/40164221): Remove backwards compatibility after M95
 std::string GetOfflineData(base::FilePath offline_root,
                            base::FilePath offline_path) {
   base::FilePath absolute_path =
@@ -140,8 +140,6 @@ void OfflinePageTabHelper::LoadOfflineData(web::WebState* web_state,
                                            const GURL& url,
                                            bool is_pdf,
                                            const std::string& data) {
-  DCHECK(web::features::IsLoadSimulatedRequestAPIEnabled());
-
   presenting_offline_page_ = true;
   offline_navigation_triggered_ = url;
 
@@ -363,7 +361,6 @@ void OfflinePageTabHelper::PresentOfflinePageForOnlineUrl(const GURL& url) {
 }
 
 void OfflinePageTabHelper::LoadOfflinePage(const GURL& url) {
-  DCHECK(web::features::IsLoadSimulatedRequestAPIEnabled());
   ChromeBrowserState* browser_state =
       ChromeBrowserState::FromBrowserState(web_state_->GetBrowserState());
   base::FilePath offline_root =

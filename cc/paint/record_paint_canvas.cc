@@ -7,6 +7,9 @@
 #include <limits>
 #include <utility>
 
+#include "base/containers/span.h"
+#include "cc/paint/paint_filter.h"
+#include "cc/paint/paint_flags.h"
 #include "cc/paint/paint_image_builder.h"
 #include "cc/paint/paint_op.h"
 #include "cc/paint/paint_record.h"
@@ -14,6 +17,9 @@
 #include "cc/paint/skottie_frame_data.h"
 #include "cc/paint/skottie_wrapper.h"
 #include "third_party/skia/include/core/SkAnnotation.h"
+#include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkPaint.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkTextBlob.h"
 #include "third_party/skia/include/utils/SkNWayCanvas.h"
 
@@ -91,6 +97,12 @@ int RecordPaintCanvas::saveLayerAlphaf(float alpha) {
 
 int RecordPaintCanvas::saveLayerAlphaf(const SkRect& bounds, float alpha) {
   push<SaveLayerAlphaOp>(bounds, alpha);
+  return save_count_++;
+}
+
+int RecordPaintCanvas::saveLayerFilters(base::span<sk_sp<PaintFilter>> filters,
+                                        const PaintFlags& flags) {
+  push<SaveLayerFiltersOp>(filters, flags);
   return save_count_++;
 }
 
@@ -229,6 +241,13 @@ void RecordPaintCanvas::drawLine(SkScalar x0,
   // Render lines as paths if there have been a number of drawPaths() recently.
   // See description in header for more details.
   push<DrawLineOp>(x0, y0, x1, y1, flags, draw_path_count_ > 4);
+}
+
+void RecordPaintCanvas::drawArc(const SkRect& oval,
+                                SkScalar start_angle_degrees,
+                                SkScalar sweep_angle_degrees,
+                                const PaintFlags& flags) {
+  push<DrawArcOp>(oval, start_angle_degrees, sweep_angle_degrees, flags);
 }
 
 void RecordPaintCanvas::drawRect(const SkRect& rect, const PaintFlags& flags) {
@@ -402,6 +421,16 @@ int InspectableRecordPaintCanvas::saveLayerAlphaf(const SkRect& bounds,
                                                   float alpha) {
   return CheckSaveCount(RecordPaintCanvas::saveLayerAlphaf(bounds, alpha),
                         canvas_.saveLayerAlphaf(&bounds, alpha));
+}
+
+int InspectableRecordPaintCanvas::saveLayerFilters(
+    base::span<sk_sp<PaintFilter>> filters,
+    const PaintFlags& flags) {
+  SkPaint paint = flags.ToSkPaint();
+  return CheckSaveCount(RecordPaintCanvas::saveLayerFilters(filters, flags),
+                        // Don't bother copying the filter span, filters don't
+                        // impact the current clip or CTM.
+                        canvas_.saveLayer(/*bounds=*/nullptr, &paint));
 }
 
 void InspectableRecordPaintCanvas::restore() {

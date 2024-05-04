@@ -37,7 +37,7 @@ class CORE_EXPORT AsyncIterationSourceBase
 
   // This is called back as part of a get the next iteration result
   // algorithm [1], however this function is called back after a
-  // ScriptPromiseResolver for the next entry has been created, so the
+  // ScriptPromiseResolverBase for the next entry has been created, so the
   // implementation of this callback doesn't need to create a promise resolver,
   // but needs to schedule a task to resolve/reject the promise.
   //
@@ -46,7 +46,7 @@ class CORE_EXPORT AsyncIterationSourceBase
 
   // This is called back as part of an asynchronous iterator return
   // algorithm [1], however this function is called back after a
-  // ScriptPromiseResolver for the return result has been created.
+  // ScriptPromiseResolverBase for the return result has been created.
   //
   // [1] https://webidl.spec.whatwg.org/#asynchronous-iterator-return
   virtual void AsyncIteratorReturn(ScriptValue value) { NOTREACHED(); }
@@ -56,7 +56,7 @@ class CORE_EXPORT AsyncIterationSourceBase
   }
 
   // Returns the pending promise resolver by removing it from this instance.
-  ScriptPromiseResolverTyped<IDLAny>* TakePendingPromiseResolver() {
+  ScriptPromiseResolver<IDLAny>* TakePendingPromiseResolver() {
     DCHECK(pending_promise_resolver_);
     return pending_promise_resolver_.Release();
   }
@@ -75,13 +75,13 @@ class CORE_EXPORT AsyncIterationSourceBase
   class RunReturnStepsCallable;
   class RunReturnFulfillStepsCallable;
 
-  ScriptPromiseTyped<IDLAny> RunNextSteps(ScriptState* script_state);
+  ScriptPromise<IDLAny> RunNextSteps(ScriptState* script_state);
   ScriptValue RunFulfillSteps(ScriptState* script_state,
                               ScriptValue iter_result_object_or_undefined);
   ScriptValue RunRejectSteps(ScriptState* script_state, ScriptValue reason);
 
-  ScriptPromiseTyped<IDLAny> RunReturnSteps(ScriptState* script_state,
-                                            ScriptValue value);
+  ScriptPromise<IDLAny> RunReturnSteps(ScriptState* script_state,
+                                       ScriptValue value);
   ScriptValue RunReturnFulfillSteps(ScriptState* script_state,
                                     ScriptValue value);
 
@@ -93,7 +93,7 @@ class CORE_EXPORT AsyncIterationSourceBase
   // https://webidl.spec.whatwg.org/#dfn-default-asynchronous-iterator-object
   // its 'ongoing promise', which is a Promise or null,
   // its 'is finished', which is a boolean.
-  ScriptPromiseTyped<IDLAny> ongoing_promise_;
+  ScriptPromise<IDLAny> ongoing_promise_;
   bool is_finished_ = false;
 
   // The pending promise resolver. This is basically corresponding to
@@ -106,7 +106,7 @@ class CORE_EXPORT AsyncIterationSourceBase
   // the iterable result type in the relevant IDL, but everything internal to
   // our implementation gives the resolver a v8::Value, which doesn't work
   // well with typing according to the IDL.
-  Member<ScriptPromiseResolverTyped<IDLAny>> pending_promise_resolver_;
+  Member<ScriptPromiseResolver<IDLAny>> pending_promise_resolver_;
 
   template <typename IDLKeyType,
             typename IDLValueType,
@@ -200,42 +200,42 @@ class PairAsyncIterable {
   PairAsyncIterable(const PairAsyncIterable&) = delete;
   PairAsyncIterable& operator=(const PairAsyncIterable&) = delete;
 
+  template <typename... ArgsAndExceptionState>
   AsyncIteratorType* keysForBinding(
       ScriptState* script_state,
-      std::convertible_to<InitArgs> auto&&... args,
-      ExceptionState& exception_state) {
+      ArgsAndExceptionState&&... args_and_exception_state) {
     const auto kind = IterationSource::Kind::kKey;
     IterationSource* source = CreateIterationSource(
-        script_state, kind, std::forward<decltype(args)>(args)...,
-        exception_state);
+        script_state, kind,
+        std::forward<ArgsAndExceptionState>(args_and_exception_state)...);
     if (!source) {
       return nullptr;
     }
     return MakeGarbageCollected<AsyncIteratorType>(source);
   }
 
+  template <typename... ArgsAndExceptionState>
   AsyncIteratorType* valuesForBinding(
       ScriptState* script_state,
-      std::convertible_to<InitArgs> auto&&... args,
-      ExceptionState& exception_state) {
+      ArgsAndExceptionState&&... args_and_exception_state) {
     const auto kind = IterationSource::Kind::kValue;
     IterationSource* source = CreateIterationSource(
-        script_state, kind, std::forward<decltype(args)>(args)...,
-        exception_state);
+        script_state, kind,
+        std::forward<ArgsAndExceptionState>(args_and_exception_state)...);
     if (!source) {
       return nullptr;
     }
     return MakeGarbageCollected<AsyncIteratorType>(source);
   }
 
+  template <typename... ArgsAndExceptionState>
   AsyncIteratorType* entriesForBinding(
       ScriptState* script_state,
-      std::convertible_to<InitArgs> auto&&... args,
-      ExceptionState& exception_state) {
+      ArgsAndExceptionState&&... args_and_exception_state) {
     const auto kind = IterationSource::Kind::kKeyValue;
     IterationSource* source = CreateIterationSource(
-        script_state, kind, std::forward<decltype(args)>(args)...,
-        exception_state);
+        script_state, kind,
+        std::forward<ArgsAndExceptionState>(args_and_exception_state)...);
     if (!source) {
       return nullptr;
     }
@@ -274,14 +274,14 @@ class ValueAsyncIterable {
   ValueAsyncIterable(const ValueAsyncIterable&) = delete;
   ValueAsyncIterable& operator=(const ValueAsyncIterable&) = delete;
 
+  template <typename... ArgsAndExceptionState>
   AsyncIteratorType* valuesForBinding(
       ScriptState* script_state,
-      std::convertible_to<InitArgs> auto&&... args,
-      ExceptionState& exception_state) {
+      ArgsAndExceptionState&&... args_and_exception_state) {
     const auto kind = IterationSource::Kind::kValue;
     IterationSource* source = CreateIterationSource(
-        script_state, kind, std::forward<decltype(args)>(args)...,
-        exception_state);
+        script_state, kind,
+        std::forward<ArgsAndExceptionState>(args_and_exception_state)...);
     if (!source) {
       return nullptr;
     }

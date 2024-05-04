@@ -10,6 +10,7 @@
 
 #include "ipcz/driver_memory.h"
 #include "ipcz/driver_transport.h"
+#include "ipcz/features.h"
 #include "ipcz/ipcz.h"
 #include "ipcz/link_side.h"
 #include "ipcz/link_type.h"
@@ -53,12 +54,14 @@ class TestNodePair {
         NodeLinkMemory::AllocateMemory(kTestDriver);
     node_link_a_ = NodeLink::CreateInactive(
         node_a_, LinkSide::kA, kTestBrokerName, kTestNonBrokerName,
-        Node::Type::kNormal, 0, transports.first,
-        NodeLinkMemory::Create(node_a_, std::move(buffer.mapping)));
+        Node::Type::kNormal, 0, Features{}, transports.first,
+        NodeLinkMemory::Create(node_a_, LinkSide::kA, Features{},
+                               std::move(buffer.mapping)));
     node_link_b_ = NodeLink::CreateInactive(
         node_b_, LinkSide::kB, kTestNonBrokerName, kTestBrokerName,
-        Node::Type::kBroker, 0, transports.second,
-        NodeLinkMemory::Create(node_b_, buffer.memory.Map()));
+        Node::Type::kBroker, 0, Features{}, transports.second,
+        NodeLinkMemory::Create(node_b_, LinkSide::kB, Features{},
+                               buffer.memory.Map()));
     node_a_->AddConnection(kTestNonBrokerName, {.link = node_link_a_});
     node_b_->AddConnection(kTestBrokerName,
                            {.link = node_link_b_, .broker = node_link_b_});

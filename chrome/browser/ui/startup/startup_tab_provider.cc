@@ -5,12 +5,12 @@
 #include "chrome/browser/ui/startup/startup_tab_provider.h"
 
 #include <string>
+#include <string_view>
 
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/ranges/algorithm.h"
-#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/branding_buildflags.h"
@@ -23,7 +23,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/signin/signin_features.h"
 #include "chrome/browser/signin/signin_util.h"
 #include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/browser/ui/browser.h"
@@ -39,6 +38,7 @@
 #include "chrome/common/url_constants.h"
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/util.h"
+#include "components/signin/public/base/signin_switches.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/primary_account_mutator.h"
 #include "components/url_formatter/url_fixer.h"
@@ -439,7 +439,7 @@ StartupTabs StartupTabProviderImpl::GetPrivacySandboxTabsForState(
     return tabs;
 
   // Fallback to using about:blank if the user has customized the NTP.
-  // TODO(crbug.com/1306352): Stop using about:blank and create a dedicated
+  // TODO(crbug.com/40218325): Stop using about:blank and create a dedicated
   // Privacy Sandbox WebUI page for this scenario.
   if (HasExtensionNtpOverride(extension_registry) ||
       !IsChromeControlledNtpUrl(ntp_url)) {

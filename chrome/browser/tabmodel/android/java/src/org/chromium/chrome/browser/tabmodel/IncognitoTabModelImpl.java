@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.tabmodel;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import org.chromium.base.Callback;
 import org.chromium.base.ObserverList;
@@ -138,20 +139,18 @@ class IncognitoTabModelImpl implements IncognitoTabModel {
     }
 
     @Override
-    public boolean closeTab(Tab tab, boolean animate, boolean uponExit, boolean canUndo) {
+    public boolean closeTab(Tab tab, boolean uponExit, boolean canUndo) {
         mCountOfAddingOrClosingTabs++;
-        boolean retVal = mDelegateModel.closeTab(tab, animate, uponExit, canUndo);
+        boolean retVal = mDelegateModel.closeTab(tab, uponExit, canUndo);
         mCountOfAddingOrClosingTabs--;
         destroyIncognitoIfNecessary();
         return retVal;
     }
 
     @Override
-    public boolean closeTab(
-            Tab tab, Tab recommendedNextTab, boolean animate, boolean uponExit, boolean canUndo) {
+    public boolean closeTab(Tab tab, Tab recommendedNextTab, boolean uponExit, boolean canUndo) {
         mCountOfAddingOrClosingTabs++;
-        boolean retVal =
-                mDelegateModel.closeTab(tab, recommendedNextTab, animate, uponExit, canUndo);
+        boolean retVal = mDelegateModel.closeTab(tab, recommendedNextTab, uponExit, canUndo);
         mCountOfAddingOrClosingTabs--;
         destroyIncognitoIfNecessary();
         return retVal;
@@ -194,6 +193,11 @@ class IncognitoTabModelImpl implements IncognitoTabModel {
     @Override
     public Tab getTabAt(int index) {
         return mDelegateModel.getTabAt(index);
+    }
+
+    @Override
+    public @Nullable Tab getTabById(int tabId) {
+        return mDelegateModel.getTabById(tabId);
     }
 
     @Override

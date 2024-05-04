@@ -21,6 +21,7 @@
 #include "components/omnibox/browser/autocomplete_match_type.h"
 #include "components/omnibox/browser/autocomplete_scheme_classifier.h"
 #include "components/omnibox/browser/mock_autocomplete_provider_client.h"
+#include "components/omnibox/browser/omnibox_feature_configs.h"
 #include "components/omnibox/browser/search_suggestion_parser.h"
 #include "components/omnibox/browser/suggestion_answer.h"
 #include "components/omnibox/browser/test_scheme_classifier.h"
@@ -31,6 +32,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/omnibox_proto/entity_info.pb.h"
+#include "third_party/omnibox_proto/rich_answer_template.pb.h"
 
 namespace {
 
@@ -56,6 +58,7 @@ SearchSuggestionParser::SuggestResult BuildSuggestion(
       /*entity_info=*/entity_info,
       /*deletion_url=*/std::string(),
       /*from_keyword=*/false,
+      /*navigational_intent=*/omnibox::NAV_INTENT_LOW,
       /*relevance=*/relevance,
       /*relevance_from_server=*/true,
       /*should_prefetch=*/false,
@@ -154,6 +157,7 @@ TEST_F(BaseSearchProviderTest, PreserveAnswersWhenDeduplicating) {
   SearchSuggestionParser::SuggestResult more_relevant(
       query, AutocompleteMatchType::SEARCH_HISTORY, omnibox::TYPE_NATIVE_CHROME,
       /*subtypes=*/{}, /*from_keyword=*/false,
+      /*navigational_intent=*/omnibox::NAV_INTENT_NONE,
       /*relevance=*/1300, /*relevance_from_server=*/true,
       /*input_text=*/query);
   provider_->AddMatchToMap(
@@ -164,6 +168,7 @@ TEST_F(BaseSearchProviderTest, PreserveAnswersWhenDeduplicating) {
   SearchSuggestionParser::SuggestResult less_relevant(
       query, AutocompleteMatchType::SEARCH_SUGGEST, omnibox::TYPE_QUERY,
       /*subtypes=*/{}, /*from_keyword=*/false,
+      /*navigational_intent=*/omnibox::NAV_INTENT_LOW,
       /*relevance=*/850, /*relevance_from_server=*/true,
       /*input_text=*/query);
   less_relevant.SetAnswer(answer);
@@ -194,7 +199,9 @@ TEST_F(BaseSearchProviderTest, PreserveAnswersWhenDeduplicating) {
   more_relevant = SearchSuggestionParser::SuggestResult(
       query, AutocompleteMatchType::SEARCH_HISTORY, omnibox::TYPE_NATIVE_CHROME,
       /*subtypes=*/{}, /*from_keyword=*/false,
-      /*relevance=*/1300, /*relevance_from_server=*/true,
+      /*navigational_intent=*/omnibox::NAV_INTENT_NONE,
+      /*relevance=*/1300,
+      /*relevance_from_server=*/true,
       /*input_text=*/query);
   more_relevant.SetAnswer(answer2);
   provider_->AddMatchToMap(
@@ -221,6 +228,93 @@ TEST_F(BaseSearchProviderTest, PreserveAnswersWhenDeduplicating) {
   EXPECT_EQ(850, duplicate.relevance);
 }
 
+// Same as test above with kOmniboxSuggestionAnswerMigration enabled.
+TEST_F(BaseSearchProviderTest, AnswerData_PreserveAnswersWhenDeduplicating) {
+  TemplateURLData data;
+  data.SetURL("http://foo.com/url?bar={searchTerms}");
+  auto template_url = std::make_unique<TemplateURL>(data);
+
+  TestBaseSearchProvider::MatchMap map;
+  std::u16string query = u"weather los angeles";
+
+  omnibox_feature_configs::ScopedConfigForTesting<
+      omnibox_feature_configs::SuggestionAnswerMigration>
+      scoped_config;
+  scoped_config.Get().enabled = true;
+
+  omnibox::RichAnswerTemplate answer_template;
+  answer_template.add_answers();
+  answer_template.set_answer_type(omnibox::RichAnswerTemplate::WEATHER);
+
+  SearchSuggestionParser::SuggestResult more_relevant(
+      query, AutocompleteMatchType::SEARCH_HISTORY, omnibox::TYPE_NATIVE_CHROME,
+      /*subtypes=*/{}, /*from_keyword=*/false,
+      /*navigational_intent=*/omnibox::NAV_INTENT_NONE,
+      /*relevance=*/1300, /*relevance_from_server=*/true,
+      /*input_text=*/query);
+  provider_->AddMatchToMap(
+      more_relevant, std::string(), AutocompleteInput(), template_url.get(),
+      client_->GetTemplateURLService()->search_terms_data(),
+      TemplateURLRef::NO_SUGGESTION_CHOSEN, false, false, &map);
+
+  SearchSuggestionParser::SuggestResult less_relevant(
+      query, AutocompleteMatchType::SEARCH_SUGGEST, omnibox::TYPE_QUERY,
+      /*subtypes=*/{}, /*from_keyword=*/false,
+      /*navigational_intent=*/omnibox::NAV_INTENT_LOW,
+      /*relevance=*/850, /*relevance_from_server=*/true,
+      /*input_text=*/query);
+  less_relevant.SetRichAnswerTemplate(answer_template);
+  provider_->AddMatchToMap(
+      less_relevant, std::string(), AutocompleteInput(), template_url.get(),
+      client_->GetTemplateURLService()->search_terms_data(),
+      TemplateURLRef::NO_SUGGESTION_CHOSEN, false, false, &map);
+
+  ASSERT_EQ(1U, map.size());
+  AutocompleteMatch match = map.begin()->second;
+  ASSERT_EQ(1U, match.duplicate_matches.size());
+  AutocompleteMatch duplicate = match.duplicate_matches[0];
+  EXPECT_EQ(answer_template.answer_type(),
+            match.answer_template->answer_type());
+
+  // Ensure answers are not copied over existing answers.
+  map.clear();
+  omnibox::RichAnswerTemplate answer_template2;
+  answer_template2.add_answers();
+  answer_template2.set_answer_type(omnibox::RichAnswerTemplate::FINANCE);
+  more_relevant = SearchSuggestionParser::SuggestResult(
+      query, AutocompleteMatchType::SEARCH_HISTORY, omnibox::TYPE_NATIVE_CHROME,
+      /*subtypes=*/{}, /*from_keyword=*/false,
+      /*navigational_intent=*/omnibox::NAV_INTENT_NONE,
+      /*relevance=*/1300,
+      /*relevance_from_server=*/true,
+      /*input_text=*/query);
+  more_relevant.SetRichAnswerTemplate(answer_template2);
+  provider_->AddMatchToMap(
+      more_relevant, std::string(), AutocompleteInput(), template_url.get(),
+      client_->GetTemplateURLService()->search_terms_data(),
+      TemplateURLRef::NO_SUGGESTION_CHOSEN, false, false, &map);
+  provider_->AddMatchToMap(
+      less_relevant, std::string(), AutocompleteInput(), template_url.get(),
+      client_->GetTemplateURLService()->search_terms_data(),
+      TemplateURLRef::NO_SUGGESTION_CHOSEN, false, false, &map);
+  ASSERT_EQ(1U, map.size());
+  match = map.begin()->second;
+  ASSERT_EQ(1U, match.duplicate_matches.size());
+  duplicate = match.duplicate_matches[0];
+
+  EXPECT_EQ(answer_template2.answer_type(),
+            match.answer_template->answer_type());
+  EXPECT_EQ(AutocompleteMatchType::SEARCH_HISTORY, match.type);
+  EXPECT_EQ(omnibox::TYPE_NATIVE_CHROME, match.suggest_type);
+  EXPECT_EQ(1300, match.relevance);
+
+  EXPECT_EQ(answer_template.answer_type(),
+            duplicate.answer_template->answer_type());
+  EXPECT_EQ(AutocompleteMatchType::SEARCH_SUGGEST, duplicate.type);
+  EXPECT_EQ(omnibox::TYPE_QUERY, duplicate.suggest_type);
+  EXPECT_EQ(850, duplicate.relevance);
+}
+
 TEST_F(BaseSearchProviderTest, PreserveImageWhenDeduplicating) {
   // Ensure categorical suggestions are enabled.
   base::test::ScopedFeatureList scoped_feature_list;
@@ -238,6 +332,7 @@ TEST_F(BaseSearchProviderTest, PreserveImageWhenDeduplicating) {
   SearchSuggestionParser::SuggestResult more_relevant(
       query, AutocompleteMatchType::SEARCH_HISTORY, omnibox::TYPE_NATIVE_CHROME,
       /*subtypes=*/{}, /*from_keyword=*/false,
+      /*navigational_intent=*/omnibox::NAV_INTENT_NONE,
       /*relevance=*/1300, /*relevance_from_server=*/true,
       /*input_text=*/query);
   provider_->AddMatchToMap(
@@ -249,6 +344,7 @@ TEST_F(BaseSearchProviderTest, PreserveImageWhenDeduplicating) {
       query, AutocompleteMatchType::SEARCH_SUGGEST_ENTITY,
       omnibox::TYPE_CATEGORICAL_QUERY,
       /*subtypes=*/{}, /*from_keyword=*/false,
+      /*navigational_intent=*/omnibox::NAV_INTENT_LOW,
       /*relevance=*/850, /*relevance_from_server=*/true,
       /*input_text=*/query);
   less_relevant.SetEntityInfo(entity_info);
@@ -280,6 +376,7 @@ TEST_F(BaseSearchProviderTest, PreserveImageWhenDeduplicating) {
       query, AutocompleteMatchType::SEARCH_SUGGEST_ENTITY,
       omnibox::TYPE_CATEGORICAL_QUERY,
       /*subtypes=*/{}, /*from_keyword=*/false,
+      /*navigational_intent=*/omnibox::NAV_INTENT_LOW,
       /*relevance=*/1300, /*relevance_from_server=*/true,
       /*input_text=*/query);
   more_relevant.SetEntityInfo(entity_info2);
@@ -324,6 +421,7 @@ TEST_F(BaseSearchProviderTest, PreserveSubtypesWhenDeduplicating) {
   SearchSuggestionParser::SuggestResult more_relevant(
       query, AutocompleteMatchType::SEARCH_HISTORY, omnibox::TYPE_NATIVE_CHROME,
       /*subtypes=*/{omnibox::SUBTYPE_PERSONAL}, /*from_keyword=*/false,
+      /*navigational_intent=*/omnibox::NAV_INTENT_NONE,
       /*relevance=*/1300, /*relevance_from_server=*/true,
       /*input_text=*/query);
   provider_->AddMatchToMap(
@@ -335,6 +433,7 @@ TEST_F(BaseSearchProviderTest, PreserveSubtypesWhenDeduplicating) {
       query, AutocompleteMatchType::SEARCH_SUGGEST_ENTITY,
       omnibox::TYPE_CATEGORICAL_QUERY,
       /*subtypes=*/{omnibox::SUBTYPE_TRENDS}, /*from_keyword=*/false,
+      /*navigational_intent=*/omnibox::NAV_INTENT_LOW,
       /*relevance=*/850, /*relevance_from_server=*/true,
       /*input_text=*/query);
   provider_->AddMatchToMap(
@@ -537,6 +636,7 @@ TEST_F(BaseSearchProviderTest, DeleteDuplicateMatch) {
       query, AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
       omnibox::TYPE_NATIVE_CHROME,
       /*subtypes=*/{}, /*from_keyword=*/false,
+      /*navigational_intent=*/omnibox::NAV_INTENT_NONE,
       /*relevance=*/850, /*relevance_from_server=*/true,
       /*input_text=*/query);
   provider_->AddMatchToMap(
@@ -547,6 +647,7 @@ TEST_F(BaseSearchProviderTest, DeleteDuplicateMatch) {
   SearchSuggestionParser::SuggestResult less_relevant(
       query, AutocompleteMatchType::SEARCH_HISTORY, omnibox::TYPE_NATIVE_CHROME,
       /*subtypes=*/{}, /*from_keyword=*/false,
+      /*navigational_intent=*/omnibox::NAV_INTENT_NONE,
       /*relevance=*/735, /*relevance_from_server=*/true,
       /*input_text=*/query);
   provider_->AddMatchToMap(
@@ -578,6 +679,7 @@ TEST_F(BaseSearchProviderTest, PrerenderDefaultMatch) {
   SearchSuggestionParser::SuggestResult default_suggestion(
       query, AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
       omnibox::TYPE_NATIVE_CHROME, /*subtypes=*/{}, /*from_keyword=*/false,
+      /*navigational_intent=*/omnibox::NAV_INTENT_NONE,
       /*relevance=*/850, /*relevance_from_server=*/true,
       /*input_text=*/query);
   provider_->AddMatchToMap(

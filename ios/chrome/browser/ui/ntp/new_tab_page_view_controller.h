@@ -85,6 +85,9 @@
 // Layout guide for NTP modules.
 @property(nonatomic, readonly) UILayoutGuide* moduleLayoutGuide;
 
+// `YES` if the NTP is currently visible.
+@property(nonatomic, assign) BOOL NTPVisible;
+
 // Initializes the new tab page view controller.
 - (instancetype)init NS_DESIGNATED_INITIALIZER;
 
@@ -97,9 +100,6 @@
 
 // Called when a snapshot of the content will be taken.
 - (void)willUpdateSnapshot;
-
-// Stops scrolling in the scroll view.
-- (void)stopScrolling;
 
 // Lays out content above feed and adjusts content suggestions.
 - (void)updateNTPLayout;

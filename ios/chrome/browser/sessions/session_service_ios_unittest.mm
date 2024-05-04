@@ -15,7 +15,6 @@
 #import "base/task/sequenced_task_runner.h"
 #import "base/task/single_thread_task_runner.h"
 #import "base/test/ios/wait_util.h"
-#import "base/test/scoped_feature_list.h"
 #import "base/test/task_environment.h"
 #import "ios/chrome/browser/sessions/session_service_ios.h"
 #import "ios/chrome/browser/sessions/session_window_ios.h"
@@ -275,7 +274,7 @@ TEST_F(SessionServiceTest, LoadCorruptedSession) {
   EXPECT_TRUE(session == nil);
 }
 
-// TODO(crbug.com/661633): remove this once M67 has shipped (i.e. once more
+// TODO(crbug.com/41284267): remove this once M67 has shipped (i.e. once more
 // than a year has passed since the introduction of the compatibility code).
 TEST_F(SessionServiceTest, LoadM57Session) {
   NSString* session_path =
@@ -286,7 +285,7 @@ TEST_F(SessionServiceTest, LoadM57Session) {
   EXPECT_NSNE(nil, session_window);
 }
 
-// TODO(crbug.com/661633): remove this once M68 has shipped (i.e. once more
+// TODO(crbug.com/41284267): remove this once M68 has shipped (i.e. once more
 // than a year has passed since the introduction of the compatibility code).
 TEST_F(SessionServiceTest, LoadM58Session) {
   NSString* session_path =

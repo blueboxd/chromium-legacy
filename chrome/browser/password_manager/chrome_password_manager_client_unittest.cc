@@ -14,11 +14,13 @@
 #include "base/command_line.h"
 #include "base/containers/span.h"
 #include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/ranges/algorithm.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/mock_callback.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
@@ -31,6 +33,7 @@
 #include "chrome/browser/safe_browsing/user_interaction_observer.h"
 #include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/browser/ui/autofill/chrome_autofill_client.h"
+#include "chrome/browser/ui/passwords/password_cross_domain_confirmation_popup_controller_impl.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -96,9 +99,9 @@
 #include "chrome/browser/keyboard_accessory/android/manual_filling_controller_impl.h"
 #include "chrome/browser/keyboard_accessory/android/password_accessory_controller_impl.h"
 #include "chrome/browser/keyboard_accessory/test_utils/android/mock_address_accessory_controller.h"
-#include "chrome/browser/keyboard_accessory/test_utils/android/mock_credit_card_accessory_controller.h"
 #include "chrome/browser/keyboard_accessory/test_utils/android/mock_manual_filling_controller.h"
 #include "chrome/browser/keyboard_accessory/test_utils/android/mock_password_accessory_controller.h"
+#include "chrome/browser/keyboard_accessory/test_utils/android/mock_payment_method_accessory_controller.h"
 #include "chrome/browser/password_manager/account_password_store_factory.h"
 #include "chrome/browser/password_manager/android/password_generation_controller.h"
 #include "chrome/common/chrome_switches.h"
@@ -146,11 +149,11 @@ FormData MakePasswordFormData() {
   form_data.name = u"form-name";
 
   FormFieldData field;
-  field.name = u"password-element";
-  field.id_attribute = field.name;
-  field.name_attribute = field.name;
-  field.form_control_type = autofill::FormControlType::kInputPassword;
-  field.renderer_id = FieldRendererId(123);
+  field.set_name(u"password-element");
+  field.set_id_attribute(field.name());
+  field.set_name_attribute(field.name());
+  field.set_form_control_type(autofill::FormControlType::kInputPassword);
+  field.set_renderer_id(FieldRendererId(123));
   form_data.fields.push_back(field);
 
   return form_data;
@@ -179,12 +182,12 @@ FormData CreateFormForRenderHost(content::RenderFrameHost& rfh,
   form.renderer_id = autofill::test::MakeFormRendererId();
   form.fields = std::move(fields);
   for (FormFieldData& field : form.fields) {
-    field.host_frame = form.host_frame;
+    field.set_host_frame(form.host_frame);
   }
   return form;
 }
 
-// TODO(crbug.com/474577): Get rid of the mocked client in the client's own
+// TODO(crbug.com/40412780): Get rid of the mocked client in the client's own
 // test.
 class MockChromePasswordManagerClient : public ChromePasswordManagerClient {
  public:
@@ -1197,12 +1200,18 @@ class ChromePasswordManagerClientAndroidTest
  private:
   NiceMock<MockPasswordAccessoryController> mock_pwd_controller_;
   NiceMock<MockAddressAccessoryController> mock_address_controller_;
-  NiceMock<MockCreditCardAccessoryController> mock_cc_controller_;
+  NiceMock<MockPaymentMethodAccessoryController>
+      mock_payment_method_controller_;
 };
 
 void ChromePasswordManagerClientAndroidTest::SetUp() {
   ChromePasswordManagerClientTest::SetUp();
   ProfilePasswordStoreFactory::GetInstance()->SetTestingFactory(
+      GetBrowserContext(),
+      base::BindRepeating(
+          &password_manager::BuildPasswordStoreInterface<
+              content::BrowserContext, MockPasswordStoreInterface>));
+  AccountPasswordStoreFactory::GetInstance()->SetTestingFactory(
       GetBrowserContext(),
       base::BindRepeating(
           &password_manager::BuildPasswordStoreInterface<
@@ -1226,7 +1235,8 @@ void ChromePasswordManagerClientAndroidTest::CreateManualFillingController(
     content::WebContents* web_contents) {
   ManualFillingControllerImpl::CreateForWebContentsForTesting(
       web_contents, mock_pwd_controller_.AsWeakPtr(),
-      mock_address_controller_.AsWeakPtr(), mock_cc_controller_.AsWeakPtr(),
+      mock_address_controller_.AsWeakPtr(),
+      mock_payment_method_controller_.AsWeakPtr(),
       std::make_unique<NiceMock<MockManualFillingView>>());
 }
 
@@ -1378,12 +1388,66 @@ TEST_F(ChromePasswordManagerClientAndroidTest,
       RefreshSuggestionsForField(FocusedFieldType::kFillablePasswordField,
                                  /*is_manual_generation_available=*/false));
   GetClient()->FocusedInputChanged(driver.get(),
-                                   observed_form_data.fields[0].renderer_id,
+                                   observed_form_data.fields[0].renderer_id(),
                                    FocusedFieldType::kFillablePasswordField);
 }
 
 TEST_F(ChromePasswordManagerClientAndroidTest,
-       FocusedInputChangedFormsFetched) {
+       FocusedInputChangedFormsFetchedSplitStores) {
+  profile()->GetTestingPrefService()->SetInteger(
+      password_manager::prefs::kPasswordsUseUPMLocalAndSeparateStores,
+      static_cast<int>(
+          password_manager::prefs::UseUpmLocalAndSeparateStoresState::kOn));
+  FormData observed_form_data = MakePasswordFormData();
+  SetUpGenerationPreconditions(observed_form_data.url);
+
+  std::unique_ptr<password_manager::ContentPasswordManagerDriver> driver =
+      CreateContentPasswordManagerDriver(main_rfh());
+
+  // Simulate credential fetching from the stores.
+  MockPasswordStoreInterface* mock_account_store =
+      static_cast<MockPasswordStoreInterface*>(
+          GetClient()->GetAccountPasswordStore());
+  base::WeakPtr<PasswordStoreConsumer> store_consumer;
+  EXPECT_CALL(*mock_account_store, IsAbleToSavePasswords)
+      .WillRepeatedly(Return(true));
+  EXPECT_CALL(*mock_account_store, GetLogins(_, _))
+      .WillOnce(SaveArg<1>(&store_consumer));
+
+  MockPasswordStoreInterface* mock_profile_store =
+      static_cast<MockPasswordStoreInterface*>(
+          GetClient()->GetProfilePasswordStore());
+  // The consumer for both stores is the same.
+  EXPECT_CALL(*mock_profile_store, GetLogins(_, _));
+
+  driver->GetPasswordManager()->OnPasswordFormsParsed(driver.get(),
+                                                      {observed_form_data});
+
+  std::vector<PasswordForm> account_store_forms = {MakePasswordForm()};
+  store_consumer->OnGetPasswordStoreResultsOrErrorFrom(
+      mock_account_store, std::move(account_store_forms));
+
+  std::vector<PasswordForm> profile_store_forms = {MakePasswordForm()};
+  store_consumer->OnGetPasswordStoreResultsOrErrorFrom(
+      mock_profile_store, std::move(profile_store_forms));
+
+  MockPasswordAccessoryControllerImpl* weak_mock_pwd_controller =
+      SetUpMockPwdAccessoryForClientUse(driver.get());
+  EXPECT_CALL(
+      *weak_mock_pwd_controller,
+      RefreshSuggestionsForField(FocusedFieldType::kFillablePasswordField,
+                                 /*is_manual_generation_available=*/true));
+  GetClient()->FocusedInputChanged(driver.get(),
+                                   observed_form_data.fields[0].renderer_id(),
+                                   FocusedFieldType::kFillablePasswordField);
+}
+
+TEST_F(ChromePasswordManagerClientAndroidTest,
+       FocusedInputChangedFormsFetchedSingleStore) {
+  profile()->GetTestingPrefService()->SetInteger(
+      password_manager::prefs::kPasswordsUseUPMLocalAndSeparateStores,
+      static_cast<int>(
+          password_manager::prefs::UseUpmLocalAndSeparateStoresState::kOff));
   FormData observed_form_data = MakePasswordFormData();
   SetUpGenerationPreconditions(observed_form_data.url);
 
@@ -1391,18 +1455,20 @@ TEST_F(ChromePasswordManagerClientAndroidTest,
       CreateContentPasswordManagerDriver(main_rfh());
 
   // Simulate credential fetching from the store.
-  MockPasswordStoreInterface* mock_store =
+  base::WeakPtr<PasswordStoreConsumer> store_consumer;
+  MockPasswordStoreInterface* mock_profile_store =
       static_cast<MockPasswordStoreInterface*>(
           GetClient()->GetProfilePasswordStore());
-  base::WeakPtr<PasswordStoreConsumer> store_consumer;
-  EXPECT_CALL(*mock_store, IsAbleToSavePasswords).WillRepeatedly(Return(true));
-  EXPECT_CALL(*mock_store, GetLogins(_, _))
+
+  EXPECT_CALL(*mock_profile_store, IsAbleToSavePasswords)
+      .WillRepeatedly(Return(true));
+  EXPECT_CALL(*mock_profile_store, GetLogins(_, _))
       .WillOnce(SaveArg<1>(&store_consumer));
   driver->GetPasswordManager()->OnPasswordFormsParsed(driver.get(),
                                                       {observed_form_data});
 
   std::vector<PasswordForm> forms = {MakePasswordForm()};
-  store_consumer->OnGetPasswordStoreResultsOrErrorFrom(mock_store,
+  store_consumer->OnGetPasswordStoreResultsOrErrorFrom(mock_profile_store,
                                                        std::move(forms));
 
   MockPasswordAccessoryControllerImpl* weak_mock_pwd_controller =
@@ -1412,7 +1478,7 @@ TEST_F(ChromePasswordManagerClientAndroidTest,
       RefreshSuggestionsForField(FocusedFieldType::kFillablePasswordField,
                                  /*is_manual_generation_available=*/true));
   GetClient()->FocusedInputChanged(driver.get(),
-                                   observed_form_data.fields[0].renderer_id,
+                                   observed_form_data.fields[0].renderer_id(),
                                    FocusedFieldType::kFillablePasswordField);
 }
 
@@ -1624,3 +1690,52 @@ TEST_F(ChromePasswordManagerClientWithAccountStoreAndroidTest,
 }
 
 #endif  //  BUILDFLAG(IS_ANDROID)
+
+#if !BUILDFLAG(IS_ANDROID)
+
+class MockPasswordCrossDomainConfirmationPopupController
+    : public password_manager::PasswordCrossDomainConfirmationPopupController {
+ public:
+  MOCK_METHOD(void, Hide, (autofill::SuggestionHidingReason), (override));
+  MOCK_METHOD(void,
+              Show,
+              (const gfx::RectF&,
+               base::i18n::TextDirection,
+               const GURL&,
+               const std::u16string&,
+               base::OnceClosure),
+              (override));
+};
+
+TEST_F(ChromePasswordManagerClientTest, ShowCrossDomainConfirmationPopup) {
+// This simple method of the web contents repositioning doesn't work on Mac.
+// The screen coordinates calculation testing is skipped on this platform, but
+// the logic is completely platform independent and is being tested on others.
+#if !BUILDFLAG(IS_MAC)
+  web_contents()->GetNativeView()->SetBounds(gfx::Rect(100, 100, 1000, 1000));
+#endif  // !BUILDFLAG(IS_MAC)
+
+  base::MockRepeatingCallback<std::unique_ptr<
+      password_manager::PasswordCrossDomainConfirmationPopupController>()>
+      popup_factory;
+  EXPECT_CALL(popup_factory, Run).WillOnce([&]() {
+    auto mock_controller =
+        std::make_unique<MockPasswordCrossDomainConfirmationPopupController>();
+    EXPECT_CALL(
+        *mock_controller,
+        Show(gfx::RectF(
+                 gfx::PointF(web_contents()->GetContainerBounds().origin()),
+                 gfx::SizeF(100, 100)),
+             base::i18n::TextDirection::LEFT_TO_RIGHT,
+             GURL("https://google.com"), std::u16string(u"google.de"), _));
+    return mock_controller;
+  });
+  GetClient()->set_cross_domain_confirmation_popup_factory_for_testing(
+      popup_factory.Get());
+
+  GetClient()->ShowCrossDomainConfirmationPopup(
+      gfx::RectF(100, 100), base::i18n::TextDirection::LEFT_TO_RIGHT,
+      GURL("https://google.com"), u"google.de", base::DoNothing());
+}
+
+#endif  //  !BUILDFLAG(IS_ANDROID)

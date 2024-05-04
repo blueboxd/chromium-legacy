@@ -12,6 +12,8 @@
 class ChromeBrowserState;
 class FaviconLoader;
 
+extern const char kSyncStoreHistogramName[];
+
 // Returns the equivalent of a unique record identifier. Built from the unique
 // columns in the logins database.
 NSString* RecordIdentifierForPasswordForm(
@@ -31,5 +33,17 @@ NSString* GetFaviconFileKey(const GURL& url);
 void UpdateFaviconsStorageForBrowserState(
     base::WeakPtr<ChromeBrowserState> weak_browser_state,
     bool fallback_to_google_server);
+
+// Returns a dictionary where the keys are favicon file names (they are hashes
+// of the associated URL) and their creation date.
+NSDictionary<NSString*, NSDate*>* GetFaviconsListAndFreshness();
+
+// Returns whether a favicon for 'favicon_key' should be fetched.
+bool ShouldFetchFavicon(NSString* favicon_key,
+                        NSDictionary<NSString*, NSDate*>* favicon_dict);
+
+// Deletes the folder containing the favicons. Returns whether the deletion was
+// successful.
+bool DeleteFaviconsFolder();
 
 #endif  // IOS_CHROME_BROWSER_CREDENTIAL_PROVIDER_MODEL_CREDENTIAL_PROVIDER_UTIL_H_

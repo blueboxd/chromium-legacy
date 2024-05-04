@@ -2614,7 +2614,7 @@ TEST_F(FeedApiTest, PersistentKeyValueStoreIsClearedOnClearAll) {
 }
 
 TEST_F(FeedApiTest, LoadMultipleStreams) {
-  // TODO(crbug.com/1369777) Add support for single web feed.
+  // TODO(crbug.com/40869325) Add support for single web feed.
   response_translator_.InjectResponse(MakeTypicalInitialModelState());
   response_translator_.InjectResponse(MakeTypicalInitialModelState());
   // WebFeed stream is only fetched when there's a subscription.
@@ -3392,48 +3392,6 @@ TEST_F(FeedApiTest, SetContentOrderIsSavedeNotRefreshedIfUnchanged) {
   // "Raw prefs" order value should have been updated.
   EXPECT_EQ(ContentOrder::kGrouped,
             feed::prefs::GetWebFeedContentOrder(profile_prefs_));
-  EXPECT_EQ(ContentOrder::kGrouped,
-            stream_->GetContentOrder(StreamType(StreamKind::kFollowing)));
-}
-
-TEST_F(FeedApiTest, ContentOrderIsFinchControllable) {
-  network_.InjectListWebFeedsResponse({MakeWireWebFeed("cats")});
-  base::test::ScopedFeatureList scoped_feature_list;
-  base::FieldTrialParams params;
-  params["following_feed_content_order"] = "reverse_chron";
-  scoped_feature_list.InitAndEnableFeatureWithParameters(kWebFeed, params);
-  CreateStream();
-
-  response_translator_.InjectResponse(MakeTypicalInitialModelState());
-  TestWebFeedSurface surface(stream_.get());
-  WaitForIdleTaskQueue();
-
-  EXPECT_EQ("loading -> [user@foo] 2 slices", surface.DescribeUpdates());
-  EXPECT_EQ(
-      feedwire::FeedQuery::ContentOrder::FeedQuery_ContentOrder_RECENT,
-      network_.query_request_sent->feed_request().feed_query().order_by());
-  EXPECT_EQ(ContentOrder::kReverseChron,
-            stream_->GetContentOrder(StreamType(StreamKind::kFollowing)));
-}
-
-TEST_F(FeedApiTest, ContentOrderPrefOverridesFinch) {
-  network_.InjectListWebFeedsResponse({MakeWireWebFeed("cats")});
-  base::test::ScopedFeatureList scoped_feature_list;
-  // Sets the "raw prefs" order value
-  feed::prefs::SetWebFeedContentOrder(profile_prefs_, ContentOrder::kGrouped);
-  base::FieldTrialParams params;
-  params["following_feed_content_order"] = "reverse_chron";
-  scoped_feature_list.InitAndEnableFeatureWithParameters(kWebFeed, params);
-  CreateStream();
-
-  response_translator_.InjectResponse(MakeTypicalInitialModelState());
-  TestWebFeedSurface surface(stream_.get());
-  WaitForIdleTaskQueue();
-
-  EXPECT_EQ("loading -> [user@foo] 2 slices", surface.DescribeUpdates());
-  EXPECT_EQ(
-      feedwire::FeedQuery::ContentOrder::FeedQuery_ContentOrder_GROUPED,
-      network_.query_request_sent->feed_request().feed_query().order_by());
   EXPECT_EQ(ContentOrder::kGrouped,
             stream_->GetContentOrder(StreamType(StreamKind::kFollowing)));
 }

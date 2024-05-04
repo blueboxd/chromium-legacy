@@ -78,6 +78,8 @@ source_set("common") {
     "libyuv_image_processor_backend.h",
     "mailbox_video_frame_converter.cc",
     "mailbox_video_frame_converter.h",
+    "native_pixmap_frame_resource.cc",
+    "native_pixmap_frame_resource.h",
     "oop_video_decoder.h",
     "platform_video_frame_pool.cc",
     "platform_video_frame_pool.h",
@@ -89,7 +91,7 @@ source_set("common") {
     "video_decoder_pipeline.h",
   ]
 
-  # TODO(crbug.com/1012587): Merge :fourcc to :common.
+  # TODO(crbug.com/40652235): Merge :fourcc to :common.
   public_deps = [
     ":fourcc",
     ":video_frame_resource",

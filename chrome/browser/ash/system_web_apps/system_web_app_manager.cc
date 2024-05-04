@@ -107,7 +107,7 @@ namespace {
 
 SystemWebAppDelegateMap CreateSystemWebApps(Profile* profile) {
   std::vector<std::unique_ptr<SystemWebAppDelegate>> info_vec;
-  // TODO(crbug.com/1051229): Currently unused, will be hooked up
+  // TODO(crbug.com/40118385): Currently unused, will be hooked up
   // post-migration. We're making delegates for everything, and will then use
   // them in place of SystemAppInfos.
   info_vec.push_back(std::make_unique<CameraSystemAppDelegate>(profile));
@@ -342,7 +342,7 @@ void SystemWebAppManager::Start() {
       const auto& scheme = origin_to_trial_names.first.scheme();
       DCHECK(scheme == content::kChromeUIScheme ||
              scheme == content::kChromeUIUntrustedScheme);
-      // TODO(https://crbug.com/1043843): Find some ways to validate supplied
+      // TODO(crbug.com/40115403): Find some ways to validate supplied
       // origin trial names. Ideally, construct them from some static const
       // char*.
     }
@@ -418,7 +418,7 @@ void SystemWebAppManager::InstallSystemAppsForTesting() {
     // and violates the expectation (in web app system) that there can be only
     // one in-flight synchronize request for each app install source.
     //
-    // TODO(https://crbug.com/1400853): Ensure browsertests sets up system apps
+    // TODO(crbug.com/40250473): Ensure browsertests sets up system apps
     // before SystemWebAppManager::Start(). Then, remove this method (or
     // restrict its use to system web app feature test that needs to simulate
     // system restart).
@@ -831,7 +831,7 @@ bool SystemWebAppManager::CheckAndIncrementRetryAttempts() {
 
 void SystemWebAppManager::ConnectProviderToSystemWebAppDelegateMap(
     const SystemWebAppDelegateMap* system_web_apps_delegate_map) const {
-  // TODO(crbug.com/1377190): Consider DCHECKing that provider_ is ready.
+  // TODO(crbug.com/40243506): Consider DCHECKing that provider_ is ready.
   provider_->manifest_update_manager().SetSystemWebAppDelegateMap(
       system_web_apps_delegate_map);
   provider_->policy_manager().SetSystemWebAppDelegateMap(

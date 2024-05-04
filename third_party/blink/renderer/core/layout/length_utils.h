@@ -57,17 +57,6 @@ LayoutUnit BlockSizeFromAspectRatio(const BoxStrut& border_padding,
                                     EBoxSizing box_sizing,
                                     LayoutUnit inline_size);
 
-// Returns if the given |Length| is unresolvable, e.g. the length is %-based
-// and resolving against an indefinite size. For block lengths we also consider
-// 'auto', 'min-content', 'max-content', 'fit-content' and 'none' (for
-// max-block-size) as unresolvable.
-CORE_EXPORT bool InlineLengthUnresolvable(const ConstraintSpace&,
-                                          const Length&);
-CORE_EXPORT bool BlockLengthUnresolvable(
-    const ConstraintSpace&,
-    const Length&,
-    const LayoutUnit* override_percentage_resolution_size = nullptr);
-
 // Resolve means translate a Length to a LayoutUnit.
 //  - |ConstraintSpace| the information given by the parent, e.g. the
 //    available-size.
@@ -84,6 +73,7 @@ ResolveInlineLengthInternal(const ConstraintSpace&,
                             const BoxStrut& border_padding,
                             MinMaxSizesFunctionRef,
                             const Length&,
+                            const Length* auto_length,
                             LayoutUnit override_available_size,
                             LayoutUnit unresolvable_length_result);
 
@@ -94,6 +84,7 @@ CORE_EXPORT LayoutUnit ResolveBlockLengthInternal(
     const ComputedStyle&,
     const BoxStrut& border_padding,
     const Length&,
+    const Length* auto_length,
     bool use_intrinsic_size,
     LayoutUnit override_available_size,
     const LayoutUnit* override_percentage_resolution_size,
@@ -109,7 +100,8 @@ inline LayoutUnit ResolveMinInlineLength(
     LayoutUnit override_available_size = kIndefiniteSize) {
   return ResolveInlineLengthInternal(
       constraint_space, style, border_padding, min_max_sizes_func, length,
-      override_available_size, border_padding.InlineSum());
+      /* auto_length */ &Length::Auto(), override_available_size,
+      border_padding.InlineSum());
 }
 
 // Used for resolving max inline lengths, (|ComputedStyle::MaxLogicalWidth|).
@@ -124,7 +116,7 @@ inline LayoutUnit ResolveMaxInlineLength(
   // this LayoutUnit::Max that we pass to ResolveInlineLengthInternal.
   return ResolveInlineLengthInternal(
       constraint_space, style, border_padding, min_max_sizes_func, length,
-      override_available_size, LayoutUnit::Max());
+      /* auto_length */ nullptr, override_available_size, LayoutUnit::Max());
 }
 
 // Used for resolving main inline lengths, (|ComputedStyle::LogicalWidth|).
@@ -134,15 +126,11 @@ inline LayoutUnit ResolveMainInlineLength(
     const BoxStrut& border_padding,
     MinMaxSizesFunctionRef min_max_sizes_func,
     const Length& length,
+    const Length* auto_length,
     LayoutUnit override_available_size = kIndefiniteSize) {
-  // TODO(https://crbug.com/313072): We will need to accept 'auto'
-  // lengths here and handle them in ResolveInlineLengthInternal in
-  // order to support 'auto' values inside of calc-size().
-  DCHECK(!length.IsAuto());
-
   return ResolveInlineLengthInternal(constraint_space, style, border_padding,
-                                     min_max_sizes_func, length,
-                                     override_available_size, LayoutUnit());
+                                     min_max_sizes_func, length, auto_length,
+                                     override_available_size, kIndefiniteSize);
 }
 
 // Used for resolving min block lengths, (|ComputedStyle::MinLogicalHeight|).
@@ -156,6 +144,7 @@ inline LayoutUnit ResolveMinBlockLength(
   LayoutUnit border_padding_sum = border_padding.BlockSum();
   return ResolveBlockLengthInternal(
       constraint_space, style, border_padding, length,
+      /* auto_length */ &Length::Auto(),
       /* use_intrinsic_size */ false, override_available_size,
       override_percentage_resolution_size,
       [border_padding_sum]() { return border_padding_sum; });
@@ -173,6 +162,7 @@ inline LayoutUnit ResolveMaxBlockLength(
   // this LayoutUnit::Max that we pass to ResolveInlineLengthInternal.
   return ResolveBlockLengthInternal(
       constraint_space, style, border_padding, length,
+      /* auto_length */ &Length::Auto(),
       /* use_intrinsic_size */ true, override_available_size,
       override_percentage_resolution_size, []() { return LayoutUnit::Max(); });
 }
@@ -183,16 +173,12 @@ inline LayoutUnit ResolveMainBlockLength(
     const ComputedStyle& style,
     const BoxStrut& border_padding,
     const Length& length,
+    const Length* auto_length,
     LayoutUnit intrinsic_size,
     LayoutUnit override_available_size = kIndefiniteSize,
     const LayoutUnit* override_percentage_resolution_size = nullptr) {
-  // TODO(https://crbug.com/313072): We will need to accept 'auto'
-  // lengths here and handle them in ResolveBlockLengthInternal in
-  // order to support 'auto' values inside of calc-size().
-  DCHECK(!length.IsAuto());
-
   return ResolveBlockLengthInternal(
-      constraint_space, style, border_padding, length,
+      constraint_space, style, border_padding, length, auto_length,
       /* use_intrinsic_size */ true, override_available_size,
       override_percentage_resolution_size,
       [intrinsic_size]() { return intrinsic_size; });
@@ -203,15 +189,11 @@ inline LayoutUnit ResolveMainBlockLength(
     const ComputedStyle& style,
     const BoxStrut& border_padding,
     const Length& length,
+    const Length* auto_length,
     IntrinsicBlockSizeFunctionRef intrinsic_block_size_func,
     LayoutUnit override_available_size = kIndefiniteSize) {
-  // TODO(https://crbug.com/313072): We will need to accept 'auto'
-  // lengths here and handle them in ResolveBlockLengthInternal in
-  // order to support 'auto' values inside of calc-size().
-  DCHECK(!length.IsAuto());
-
   return ResolveBlockLengthInternal(
-      constraint_space, style, border_padding, length,
+      constraint_space, style, border_padding, length, auto_length,
       /* use_intrinsic_size */ true, override_available_size,
       /* override_percentage_resolution_size */ nullptr,
       intrinsic_block_size_func);
@@ -267,7 +249,7 @@ CORE_EXPORT LayoutUnit ComputeBlockSizeForFragment(
     const ComputedStyle&,
     const BoxStrut& border_padding,
     LayoutUnit intrinsic_size,
-    std::optional<LayoutUnit> inline_size,
+    LayoutUnit inline_size,
     LayoutUnit override_available_size = kIndefiniteSize);
 
 CORE_EXPORT LayoutUnit
@@ -324,7 +306,7 @@ LayoutUnit ComputeInitialBlockSizeForFragment(
     const ComputedStyle&,
     const BoxStrut& border_padding,
     LayoutUnit intrinsic_size,
-    std::optional<LayoutUnit> inline_size,
+    LayoutUnit inline_size,
     LayoutUnit override_available_size = kIndefiniteSize);
 
 // Calculates default content size for html and body elements in quirks mode.
@@ -385,13 +367,13 @@ CORE_EXPORT LayoutUnit ColumnInlineProgression(LayoutUnit available_size,
 // Compute physical margins.
 CORE_EXPORT PhysicalBoxStrut
 ComputePhysicalMargins(const ComputedStyle&,
-                       LayoutUnit percentage_resolution_size);
+                       LogicalSize percentage_resolution_size);
 
 inline PhysicalBoxStrut ComputePhysicalMargins(
     const ConstraintSpace& constraint_space,
     const ComputedStyle& style) {
-  LayoutUnit percentage_resolution_size =
-      constraint_space.PercentageResolutionInlineSizeForParentWritingMode();
+  LogicalSize percentage_resolution_size =
+      constraint_space.MarginPaddingPercentageResolutionSize();
   return ComputePhysicalMargins(style, percentage_resolution_size);
 }
 
@@ -402,9 +384,21 @@ CORE_EXPORT BoxStrut ComputeMarginsFor(const ConstraintSpace&,
 
 inline BoxStrut ComputeMarginsFor(
     const ComputedStyle& style,
-    LayoutUnit percentage_resolution_size,
+    LogicalSize percentage_resolution_size,
     WritingDirectionMode container_writing_direction) {
   return ComputePhysicalMargins(style, percentage_resolution_size)
+      .ConvertToLogical(container_writing_direction);
+}
+
+inline BoxStrut ComputeMarginsFor(
+    const ComputedStyle& style,
+    LayoutUnit percentage_resolution_inline_size,
+    WritingDirectionMode container_writing_direction) {
+  // Regular CSS boxes resolve all margin percentages against the inline-size of
+  // the containing block.
+  const LogicalSize resolution_size(percentage_resolution_inline_size,
+                                    percentage_resolution_inline_size);
+  return ComputePhysicalMargins(style, resolution_size)
       .ConvertToLogical(container_writing_direction);
 }
 
@@ -421,8 +415,8 @@ inline BoxStrut ComputeMarginsForSelf(const ConstraintSpace& constraint_space,
                                       const ComputedStyle& style) {
   if (!style.MayHaveMargin() || constraint_space.IsAnonymous())
     return BoxStrut();
-  LayoutUnit percentage_resolution_size =
-      constraint_space.PercentageResolutionInlineSizeForParentWritingMode();
+  LogicalSize percentage_resolution_size =
+      constraint_space.MarginPaddingPercentageResolutionSize();
   return ComputePhysicalMargins(style, percentage_resolution_size)
       .ConvertToLogical(style.GetWritingDirection());
 }
@@ -436,8 +430,8 @@ inline LineBoxStrut ComputeLineMarginsForSelf(
     const ComputedStyle& style) {
   if (!style.MayHaveMargin() || constraint_space.IsAnonymous())
     return LineBoxStrut();
-  LayoutUnit percentage_resolution_size =
-      constraint_space.PercentageResolutionInlineSizeForParentWritingMode();
+  LogicalSize percentage_resolution_size =
+      constraint_space.MarginPaddingPercentageResolutionSize();
   return ComputePhysicalMargins(style, percentage_resolution_size)
       .ConvertToLineLogical(style.GetWritingDirection());
 }
@@ -449,8 +443,8 @@ inline LineBoxStrut ComputeLineMarginsForVisualContainer(
     const ComputedStyle& style) {
   if (!style.MayHaveMargin() || constraint_space.IsAnonymous())
     return LineBoxStrut();
-  LayoutUnit percentage_resolution_size =
-      constraint_space.PercentageResolutionInlineSizeForParentWritingMode();
+  LogicalSize percentage_resolution_size =
+      constraint_space.MarginPaddingPercentageResolutionSize();
   return ComputePhysicalMargins(style, percentage_resolution_size)
       .ConvertToLineLogical(
           {constraint_space.GetWritingMode(), TextDirection::kLtr});

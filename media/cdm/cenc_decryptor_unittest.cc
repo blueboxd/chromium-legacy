@@ -95,7 +95,7 @@ class CencDecryptorTest : public testing::Test {
     EXPECT_FALSE(iv.empty());
 
     scoped_refptr<DecoderBuffer> encrypted_buffer =
-        DecoderBuffer::CopyFrom(data.data(), data.size());
+        DecoderBuffer::CopyFrom(data);
 
     // Key_ID is never used.
     encrypted_buffer->set_decrypt_config(
@@ -111,9 +111,9 @@ class CencDecryptorTest : public testing::Test {
 
     std::vector<uint8_t> decrypted_data;
     if (decrypted.get()) {
-      EXPECT_TRUE(decrypted->data_size());
+      EXPECT_TRUE(decrypted->size());
       decrypted_data.assign(decrypted->data(),
-                            decrypted->data() + decrypted->data_size());
+                            decrypted->data() + decrypted->size());
     }
 
     return decrypted_data;

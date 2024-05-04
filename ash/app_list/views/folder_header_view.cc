@@ -106,7 +106,8 @@ class FolderHeaderView::FolderNameView : public views::Textfield,
 
   ~FolderNameView() override = default;
 
-  gfx::Size CalculatePreferredSize() const override {
+  gfx::Size CalculatePreferredSize(
+      const views::SizeBounds& available_size) const override {
     return gfx::Size(kMaxFolderHeaderWidth, kFolderHeaderHeight);
   }
 
@@ -287,7 +288,8 @@ class FolderHeaderView::FolderNameJellyView
 
   ~FolderNameJellyView() override = default;
 
-  gfx::Size CalculatePreferredSize() const override {
+  gfx::Size CalculatePreferredSize(
+      const views::SizeBounds& available_size) const override {
     return gfx::Size(kMaxFolderHeaderWidth, kFolderHeaderHeight);
   }
 
@@ -507,7 +509,8 @@ bool FolderHeaderView::IsFolderNameEnabledForTest() const {
   return folder_name_view_->GetEnabled();
 }
 
-gfx::Size FolderHeaderView::CalculatePreferredSize() const {
+gfx::Size FolderHeaderView::CalculatePreferredSize(
+    const views::SizeBounds& available_size) const {
   return gfx::Size(kMaxFolderHeaderWidth,
                    folder_name_view_->GetPreferredSize().height());
 }

@@ -12,6 +12,7 @@
 #include "base/files/file_path.h"
 #include "base/functional/bind.h"
 #include "base/values.h"
+#include "chrome/browser/ash/file_system_provider/content_cache/cache_manager_impl.h"
 #include "chrome/browser/ash/file_system_provider/mount_path_util.h"
 #include "chrome/browser/ash/file_system_provider/observer.h"
 #include "chrome/browser/ash/file_system_provider/provided_file_system.h"
@@ -49,8 +50,7 @@ Service::Service(Profile* profile,
   extension_registry_->AddObserver(this);
   if (chromeos::features::IsFileSystemProviderContentCacheEnabled()) {
     DCHECK(profile);
-    cache_manager_ = std::make_unique<CacheManager>(profile->GetPath(),
-                                                    /*in_memory_only=*/true);
+    cache_manager_ = CacheManagerImpl::Create(profile->GetPath());
   }
 }
 
@@ -81,6 +81,10 @@ void Service::Shutdown() {
   }
 
   DCHECK_EQ(0u, file_system_map_.size());
+
+  for (auto& observer : observers_) {
+    observer.OnShutDown();
+  }
 }
 
 void Service::AddObserver(Observer* observer) {
@@ -253,6 +257,10 @@ base::File::Error Service::UnmountFileSystem(const ProviderId& provider_id,
   if (reason == UNMOUNT_REASON_USER) {
     registry_->ForgetFileSystem(file_system_info.provider_id(),
                                 file_system_info.file_system_id());
+    if (cache_manager_ &&
+        cache_manager_->IsProviderInitialized(file_system_info)) {
+      cache_manager_->UninitializeForProvider(file_system_info);
+    }
   }
 
   file_system_map_.erase(file_system_it);

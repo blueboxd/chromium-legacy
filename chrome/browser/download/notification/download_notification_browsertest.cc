@@ -243,7 +243,7 @@ class SlowDownloadInterceptor {
         mojo::CreateDataPipe(data.size(), producer_handle, consumer_handle),
         MOJO_RESULT_OK);
 
-    uint32_t write_size = data.size();
+    size_t write_size = data.size();
     MojoResult result = producer_handle->WriteData(data.c_str(), &write_size,
                                                    MOJO_WRITE_DATA_FLAG_NONE);
     ASSERT_EQ(MOJO_RESULT_OK, result);
@@ -890,7 +890,7 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest,
   EXPECT_EQ(download::DownloadItem::CANCELLED, downloads[0]->GetState());
 }
 
-// TODO(crbug.com/938672): Reenable this.
+// TODO(crbug.com/41445173): Reenable this.
 IN_PROC_BROWSER_TEST_F(DownloadNotificationTest,
                        DISABLED_IncognitoDownloadFile) {
   PrepareIncognitoBrowser();
@@ -934,7 +934,7 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest,
   chrome::CloseWindow(incognito_browser());
 }
 
-// TODO(crbug.com/938672): Reenable this.
+// TODO(crbug.com/41445173): Reenable this.
 IN_PROC_BROWSER_TEST_F(DownloadNotificationTest,
                        DISABLED_SimultaneousIncognitoAndNormalDownloads) {
   PrepareIncognitoBrowser();
@@ -1016,7 +1016,7 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest,
 }
 
 // These tests have ash dependency so they are only available for ash.
-// TODO(crbug.com/1266950): Enable these tests for Lacros.
+// TODO(crbug.com/40204280): Enable these tests for Lacros.
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 
 //////////////////////////////////////////////////

@@ -18,7 +18,6 @@
 #include "components/translate/core/common/translate_metrics.h"
 #include "components/translate/core/common/translate_util.h"
 #include "components/translate/core/language_detection/language_detection_model.h"
-#import "components/translate/ios/browser/js_translate_web_frame_manager_factory.h"
 #include "components/translate/ios/browser/language_detection_model_service.h"
 #import "components/translate/ios/browser/translate_controller.h"
 #include "components/ukm/ios/ukm_url_recorder.h"
@@ -77,8 +76,7 @@ void IOSTranslateDriver::Initialize(
   language::IOSLanguageDetectionTabHelper::FromWebState(web_state_)
       ->AddObserver(this);
 
-  TranslateController::CreateForWebState(
-      web_state_, JSTranslateWebFrameManagerFactory::GetInstance());
+  TranslateController::CreateForWebState(web_state_);
   TranslateController::FromWebState(web_state_)->set_observer(this);
 }
 
@@ -135,7 +133,7 @@ void IOSTranslateDriver::DidFinishNavigation(
     translate_manager_->set_current_seq_no(page_seq_no_);
   }
 
-  // TODO(crbug.com/925320): support navigation types, like content/ does.
+  // TODO(crbug.com/41437388): support navigation types, like content/ does.
   const bool reload = ui::PageTransitionCoreTypeIs(
       navigation_context->GetPageTransition(), ui::PAGE_TRANSITION_RELOAD);
   translate_manager_->GetLanguageState()->DidNavigate(

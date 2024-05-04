@@ -30,7 +30,6 @@
 #include "components/sync/base/model_type.h"
 #include "components/sync/engine/nigori/cross_user_sharing_public_key.h"
 #include "components/sync/engine/nigori/cross_user_sharing_public_private_key_pair.h"
-#include "components/sync/nigori/cryptographer_impl.h"
 #include "components/sync/protocol/nigori_specifics.pb.h"
 #include "components/sync/protocol/password_sharing_invitation_specifics.pb.h"
 #include "components/sync/protocol/sync_entity.pb.h"
@@ -186,8 +185,7 @@ class SingleClientIncomingPasswordSharingInvitationTest : public SyncTest {
 
 #if !BUILDFLAG(IS_ANDROID)
     // Explicitly opt out of account storage when signin is explicit.
-    if (switches::IsExplicitBrowserSigninUIOnDesktopEnabled(
-            switches::ExplicitBrowserSigninPhase::kExperimental)) {
+    if (switches::IsExplicitBrowserSigninUIOnDesktopEnabled()) {
       password_manager::features_util::OptOutOfAccountStorage(
           GetProfile(0)->GetPrefs(), GetSyncService(0));
     }
@@ -362,7 +360,7 @@ IN_PROC_BROWSER_TEST_F(
 #endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
 // The unconsented primary account isn't supported on ChromeOS.
-// TODO(crbug.com/1348950): enable on Android once transport mode for Passwords
+// TODO(crbug.com/40233581): enable on Android once transport mode for Passwords
 // is supported.
 #if !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_ANDROID)
 IN_PROC_BROWSER_TEST_F(SingleClientIncomingPasswordSharingInvitationTest,

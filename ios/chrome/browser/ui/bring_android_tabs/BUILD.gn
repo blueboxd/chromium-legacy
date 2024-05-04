@@ -61,6 +61,7 @@ source_set("bring_android_tabs_ui") {
     "//ios/chrome/common/ui/colors",
     "//ios/chrome/common/ui/favicon",
     "//ios/chrome/common/ui/table_view:cells_constants",
+    "//ios/web/public",
   ]
 }
 
@@ -71,9 +72,9 @@ swift_source_set("bring_android_tabs_ui_swift") {
   deps = [
     ":bring_android_tabs_ui",
     ":constants",
-    "resources:bring_android_tabs_icon",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/shared/public/commands",
+    "//ios/chrome/browser/ui/bring_android_tabs/resources",
     "//ios/chrome/common/ui/confirmation_alert",
     "//ui/base",
   ]
@@ -157,6 +158,7 @@ source_set("eg2_tests") {
     ":constants",
     ":eg_test_support+eg2",
     "//base",
+    "//components/sync/base",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/signin/model:fake_system_identity",
     "//ios/chrome/browser/ui/authentication:eg_test_support+eg2",

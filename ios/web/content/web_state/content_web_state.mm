@@ -6,6 +6,9 @@
 
 #import "base/apple/foundation_util.h"
 #import "base/strings/utf_string_conversions.h"
+#import "components/embedder_support/ios/delegate/color_chooser/color_chooser_ios.h"
+#import "components/embedder_support/ios/delegate/file_chooser/file_select_helper_ios.h"
+#import "content/public/browser/file_select_listener.h"
 #import "content/public/browser/navigation_entry.h"
 #import "content/public/browser/web_contents.h"
 #import "ios/web/content/content_browser_context.h"
@@ -37,7 +40,7 @@ namespace web {
 namespace {
 
 // The content navigation machinery should not use this so we will use a dummy.
-// TODO(crbug.com/1419001): enable returning nullptr for the cache.
+// TODO(crbug.com/40257932): enable returning nullptr for the cache.
 class DummySessionCertificatePolicyCache
     : public SessionCertificatePolicyCache {
  public:
@@ -69,7 +72,7 @@ FaviconURL::IconType IconTypeFromContentIconType(
 }
 
 // Creates a CRWSessionStorage instance from protobuf message.
-// TODO(crbug.com/1383087): remove when ContentWebState supports serialization
+// TODO(crbug.com/40245950): remove when ContentWebState supports serialization
 // using protobuf message format directly.
 CRWSessionStorage* CreateSessionStorage(
     WebStateID unique_identifier,
@@ -138,6 +141,8 @@ ContentWebState::ContentWebState(const CreateParams& params,
   } else {
     UUID_ = [[[NSUUID UUID] UUIDString] copy];
   }
+
+  RegisterNotificationObservers();
 }
 
 ContentWebState::ContentWebState(BrowserState* browser_state,
@@ -161,6 +166,10 @@ ContentWebState::~ContentWebState() {
   for (auto& observer : policy_deciders_) {
     observer.ResetWebState();
   }
+
+  NSNotificationCenter* default_center = [NSNotificationCenter defaultCenter];
+  [default_center removeObserver:keyboard_showing_observer_];
+  [default_center removeObserver:keyboard_hiding_observer_];
 }
 
 content::WebContents* ContentWebState::GetWebContents() {
@@ -168,11 +177,17 @@ content::WebContents* ContentWebState::GetWebContents() {
 }
 
 void ContentWebState::SerializeToProto(proto::WebStateStorage& storage) const {
-  // TODO(crbug.com/1383087): implement directly instead of serialising to
+  // TODO(crbug.com/40245950): implement directly instead of serialising to
   // CRWSessionStorage and then converting to protobuf message format.
   DCHECK(IsRealized());
   CRWSessionStorage* session_storage = BuildSessionStorage();
   [session_storage serializeToProto:storage];
+}
+
+void ContentWebState::SerializeMetadataToProto(
+    proto::WebStateMetadataStorage& storage) const {
+  CRWSessionStorage* session_storage = BuildSessionStorage();
+  [session_storage serializeMetadataToProto:storage];
 }
 
 WebStateDelegate* ContentWebState::GetDelegate() {
@@ -591,12 +606,12 @@ void ContentWebState::DidUpdateFaviconURL(
 
 void ContentWebState::RenderFrameCreated(
     content::RenderFrameHost* render_frame_host) {
-  // TODO(crbug.com/1419001): handle WebFrames.
+  // TODO(crbug.com/40257932): handle WebFrames.
 }
 
 void ContentWebState::RenderFrameDeleted(
     content::RenderFrameHost* render_frame_host) {
-  // TODO(crbug.com/1419001): handle WebFrames.
+  // TODO(crbug.com/40257932): handle WebFrames.
 }
 
 void ContentWebState::DocumentOnLoadCompletedInPrimaryMainFrame() {
@@ -675,6 +690,11 @@ bool ContentWebState::DoBrowserControlsShrinkRendererSize(
   return false;
 }
 
+int ContentWebState::GetVirtualKeyboardHeight(
+    content::WebContents* web_contents) {
+  return keyboard_height_;
+}
+
 bool ContentWebState::OnlyExpandTopControlsAtPageTop() {
   return false;
 }
@@ -685,6 +705,61 @@ void ContentWebState::SetTopControlsGestureScrollInProgress(bool in_progress) {
         DoBrowserControlsShrinkRendererSize(web_contents_.get());
   }
   top_control_scroll_in_progress_ = in_progress;
+}
+
+// TODO(crbug.com/333624335): Consider moving notification observers to a
+// browser-level observer.
+void ContentWebState::RegisterNotificationObservers() {
+  base::RepeatingCallback<void(NSNotification * notification)>
+      keyboard_showing_closure = base::BindRepeating(
+          &ContentWebState::OnKeyboardShow, weak_factory_.GetWeakPtr());
+
+  base::RepeatingCallback<void(NSNotification * notification)>
+      keyboard_hiding_closure = base::BindRepeating(
+          &ContentWebState::OnKeyboardHide, weak_factory_.GetWeakPtr());
+
+  keyboard_showing_observer_ = [[NSNotificationCenter defaultCenter]
+      addObserverForName:UIKeyboardDidShowNotification
+                  object:nil
+                   queue:nil
+              usingBlock:base::CallbackToBlock(keyboard_showing_closure)];
+
+  keyboard_hiding_observer_ = [[NSNotificationCenter defaultCenter]
+      addObserverForName:UIKeyboardWillHideNotification
+                  object:nil
+                   queue:nil
+              usingBlock:base::CallbackToBlock(keyboard_hiding_closure)];
+}
+
+void ContentWebState::OnKeyboardShow(NSNotification* notification) {
+  NSDictionary* info = [notification userInfo];
+  CGFloat height =
+      [[info valueForKey:UIKeyboardFrameEndUserInfoKey] CGRectValue]
+          .size.height;
+  keyboard_height_ = static_cast<int>(height);
+}
+
+void ContentWebState::OnKeyboardHide(NSNotification* notification) {
+  keyboard_height_ = 0;
+}
+
+std::unique_ptr<content::ColorChooser> ContentWebState::OpenColorChooser(
+    content::WebContents* web_contents,
+    SkColor color,
+    const std::vector<blink::mojom::ColorSuggestionPtr>& suggestions) {
+  return std::make_unique<web_contents_delegate_ios::ColorChooserIOS>(
+      web_contents, color, suggestions);
+}
+
+// TODO(crbug.com/40255112): Need to consider showing a context menu that
+// contains 'Photo Library', 'Take Photo', and 'Choose File' sub menus as
+// browsers based on WebKit.
+void ContentWebState::RunFileChooser(
+    content::RenderFrameHost* render_frame_host,
+    scoped_refptr<content::FileSelectListener> listener,
+    const blink::mojom::FileChooserParams& params) {
+  web_contents_delegate_ios::FileSelectHelperIOS::RunFileChooser(
+      render_frame_host, listener, params);
 }
 
 }  // namespace web

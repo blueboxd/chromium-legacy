@@ -226,12 +226,17 @@ HRESULT MediaFoundationRenderer::CreateMediaEngine(
     }
   }
 
-  // TODO(frankli): Only call the followings when there is a video stream.
-  RETURN_IF_FAILED(InitializeDXGIDeviceManager());
-  RETURN_IF_FAILED(InitializeVirtualVideoWindow());
+  // Only call the followings when there is a video stream.
+  for (media::DemuxerStream* stream : media_resource->GetAllStreams()) {
+    if (stream->type() == media::DemuxerStream::VIDEO) {
+      RETURN_IF_FAILED(InitializeDXGIDeviceManager());
+      RETURN_IF_FAILED(InitializeVirtualVideoWindow());
+      break;
+    }
+  }
 
   // The OnXxx() callbacks are invoked by MF threadpool thread, we would like
-  // to bind the callbacks to |task_runner_| MessgaeLoop.
+  // to bind the callbacks to |task_runner_| MessageLoop.
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   auto weak_this = weak_factory_.GetWeakPtr();
   RETURN_IF_FAILED(MakeAndInitialize<MediaEngineNotifyImpl>(
@@ -274,8 +279,8 @@ HRESULT MediaFoundationRenderer::CreateMediaEngine(
     RETURN_IF_FAILED(creation_attributes->SetUnknown(
         MF_MEDIA_ENGINE_DXGI_MANAGER, dxgi_device_manager_.Get()));
 
-    // TODO(crbug.com/1276067): We'll investigate scenarios to see if we can use
-    // the on-screen video window size and not the native video size.
+    // TODO(crbug.com/40808656): We'll investigate scenarios to see if we can
+    // use the on-screen video window size and not the native video size.
     if (rendering_mode_ == MediaFoundationRenderingMode::FrameServer) {
       gfx::Size max_video_size;
       bool has_video = false;
@@ -412,7 +417,7 @@ HRESULT MediaFoundationRenderer::InitializeDXGIDeviceManager() {
   RETURN_IF_FAILED(CreateDXGIFactory1(IID_PPV_ARGS(&factory)));
 
   Microsoft::WRL::ComPtr<IDXGIAdapter> adapter_to_use;
-  // TODO(crbug.com/1426249): Need to handle the case when Adapter LUID is
+  // TODO(crbug.com/40899242): Need to handle the case when Adapter LUID is
   // specific per instance of the video playback. This will now allow all
   // instances to use the default DXGI device manager.
   if (gpu_process_adapter_luid_.LowPart || gpu_process_adapter_luid_.HighPart) {
@@ -666,7 +671,7 @@ void MediaFoundationRenderer::GetDCompSurface(GetDCompSurfaceCB callback) {
   std::move(callback).Run(base::win::ScopedHandle(duplicated_handle), "");
 }
 
-// TODO(crbug.com/1070030): Investigate if we need to add
+// TODO(crbug.com/40126181): Investigate if we need to add
 // OnSelectedVideoTracksChanged() to media renderer.mojom.
 void MediaFoundationRenderer::SetVideoStreamEnabled(bool enabled) {
   DVLOG_FUNC(1) << "enabled=" << enabled;
@@ -713,7 +718,7 @@ HRESULT MediaFoundationRenderer::InitializeTexturePool(const gfx::Size& size) {
     return E_UNEXPECTED;
   }
 
-  // TODO(crbug.com/1276067): change |size| to instead use the required
+  // TODO(crbug.com/40808656): change |size| to instead use the required
   // size of the output (for example if the video is only 1280x720 instead
   // of a source frame of 1920x1080 we'd use the 1280x720 texture size).
   // However we also need to investigate the scenario of WebGL and 360 video
@@ -1088,7 +1093,7 @@ void MediaFoundationRenderer::OnError(PipelineStatus status,
   // it here.
   PipelineStatus new_status = status;
   if (hresult == DRM_E_TEE_INVALID_HWDRM_STATE) {
-    // TODO(crbug.com/1370844): Remove these after the investigation is done.
+    // TODO(crbug.com/40870069): Remove these after the investigation is done.
     base::UmaHistogramBoolean(
         "Media.MediaFoundationRenderer.InvalidHwdrmState.HasReportedPlaying",
         has_reported_playing_);
@@ -1132,8 +1137,8 @@ void MediaFoundationRenderer::RequestNextFrame() {
     return;
   }
 
-  // TODO(crbug.com/1276067): Change the |native_video_size_| to get the correct
-  // output video size as determined by the output texture requirements.
+  // TODO(crbug.com/40808656): Change the |native_video_size_| to get the
+  // correct output video size as determined by the output texture requirements.
   gfx::Size video_size = native_video_size_;
 
   base::UnguessableToken frame_token;

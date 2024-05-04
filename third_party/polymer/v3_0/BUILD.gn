@@ -5,11 +5,13 @@
 import("//build/config/chromeos/ui_mode.gni")
 import("//chrome/common/features.gni")
 import("//tools/typescript/ts_library.gni")
+import("//ui/webui/resources/include_polymer.gni")
 import("//ui/webui/resources/tools/generate_grd.gni")
 import("//ui/webui/resources/tools/minify_js.gni")
 
+assert(include_polymer)
+
 js_files = [
-  "iron-a11y-announcer/iron-a11y-announcer.js",
   "iron-a11y-keys-behavior/iron-a11y-keys-behavior.js",
   "iron-a11y-keys/iron-a11y-keys.js",
   "iron-behaviors/iron-control-state.js",
@@ -34,18 +36,15 @@ js_files = [
   "iron-selector/iron-selector.js",
   "iron-test-helpers/mock-interactions.js",
   "paper-behaviors/paper-ripple-mixin.js",
-  "paper-progress/paper-progress.js",
   "paper-ripple/paper-ripple.js",
   "paper-spinner/paper-spinner-behavior.js",
   "paper-spinner/paper-spinner-lite.js",
   "paper-spinner/paper-spinner-styles.js",
-  "paper-styles/color.js",
-  "paper-styles/shadow.js",
-  "paper-tooltip/paper-tooltip.js",
 ]
 
 if (is_chromeos_ash) {
   js_files += [
+    "iron-a11y-announcer/iron-a11y-announcer.js",
     "iron-dropdown/iron-dropdown.js",
     "iron-dropdown/iron-dropdown-scroll-manager.js",
     "iron-overlay-behavior/iron-focusables-helper.js",
@@ -60,6 +59,8 @@ if (is_chromeos_ash) {
     "neon-animation/neon-animated-pages.js",
     "neon-animation/neon-animation-behavior.js",
     "neon-animation/neon-animation-runner-behavior.js",
+    "paper-progress/paper-progress.js",
+    "paper-tooltip/paper-tooltip.js",
   ]
 }
 
@@ -90,7 +91,6 @@ generate_grd("build_grdp") {
 ts_library("library") {
   composite = true
   definitions = [
-    "components-chromium/iron-a11y-announcer/iron-a11y-announcer.d.ts",
     "components-chromium/iron-a11y-keys-behavior/iron-a11y-keys-behavior.d.ts",
     "components-chromium/iron-a11y-keys/iron-a11y-keys.d.ts",
     "components-chromium/iron-behaviors/iron-control-state.d.ts",
@@ -115,14 +115,10 @@ ts_library("library") {
     "components-chromium/iron-selector/iron-selector.d.ts",
     "components-chromium/iron-test-helpers/mock-interactions.d.ts",
     "components-chromium/paper-behaviors/paper-ripple-mixin.d.ts",
-    "components-chromium/paper-progress/paper-progress.d.ts",
     "components-chromium/paper-ripple/paper-ripple.d.ts",
     "components-chromium/paper-spinner/paper-spinner-behavior.d.ts",
     "components-chromium/paper-spinner/paper-spinner-lite.d.ts",
     "components-chromium/paper-spinner/paper-spinner-styles.d.ts",
-    "components-chromium/paper-styles/color.d.ts",
-    "components-chromium/paper-styles/shadow.d.ts",
-    "components-chromium/paper-tooltip/paper-tooltip.d.ts",
     "components-chromium/polymer/interfaces.d.ts",
     "components-chromium/polymer/lib/elements/array-selector.d.ts",
     "components-chromium/polymer/lib/elements/custom-style.d.ts",
@@ -174,6 +170,7 @@ ts_library("library") {
 
   if (is_chromeos_ash) {
     definitions += [
+      "components-chromium/iron-a11y-announcer/iron-a11y-announcer.d.ts",
       "components-chromium/iron-dropdown/iron-dropdown.d.ts",
       "components-chromium/iron-dropdown/iron-dropdown-scroll-manager.d.ts",
       "components-chromium/iron-overlay-behavior/iron-focusables-helper.d.ts",
@@ -188,6 +185,8 @@ ts_library("library") {
       "components-chromium/neon-animation/neon-animated-pages.d.ts",
       "components-chromium/neon-animation/neon-animation-behavior.d.ts",
       "components-chromium/neon-animation/neon-animation-runner-behavior.d.ts",
+      "components-chromium/paper-progress/paper-progress.d.ts",
+      "components-chromium/paper-tooltip/paper-tooltip.d.ts",
     ]
   }
 }

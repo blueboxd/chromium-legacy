@@ -20,13 +20,21 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_run_loop_timeout.h"
 #include "base/test/task_environment.h"
+#include "base/test/test_timeouts.h"
 #include "base/test/with_feature_override.h"
+#include "base/values.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/privacy_sandbox/privacy_sandbox_settings_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/test/base/chrome_test_utils.h"
+#include "components/content_settings/core/browser/content_settings_pref_provider.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
+#include "components/content_settings/core/common/content_settings.h"
+#include "components/content_settings/core/common/content_settings_partition_key.h"
+#include "components/content_settings/core/common/content_settings_pattern.h"
+#include "components/content_settings/core/common/content_settings_types.h"
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/metrics/content/subprocess_metrics_provider.h"
 #include "components/prefs/pref_service.h"
@@ -41,6 +49,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
+#include "content/public/test/back_forward_cache_util.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/shared_storage_test_utils.h"
@@ -127,10 +136,16 @@ constexpr char kTimingWorkletEntriesHistogram[] =
     "Storage.SharedStorage.Worklet.Timing.Entries.Next";
 constexpr char kWorkletNumPerPageHistogram[] =
     "Storage.SharedStorage.Worklet.NumPerPage";
+constexpr char kSelectUrlCallsPerPageHistogram[] =
+    "Storage.SharedStorage.Worklet.SelectURL.CallsPerPage";
 constexpr char kTimingRemainingBudgetHistogram[] =
     "Storage.SharedStorage.Worklet.Timing.RemainingBudget";
 constexpr char kPrivateAggregationHostPipeResultHistogram[] =
     "PrivacySandbox.PrivateAggregation.Host.PipeResult";
+constexpr char
+    kPrivateAggregationHostTimeToGenerateReportRequestWithContextIdHistogram[] =
+        "PrivacySandbox.PrivateAggregation.Host."
+        "TimeToGenerateReportRequestWithContextId";
 
 const double kBudgetAllowed = 5.0;
 
@@ -447,6 +462,32 @@ class SharedStorageChromeBrowserTestBase : public PlatformBrowserTest {
     EXPECT_TRUE(NavigateToURL(GetActiveWebContents(), main_url));
   }
 
+  void
+  Set3PCSettingAndAttestMainHostPlusAdditionalSitesThenNavigateToMainHostPage(
+      const std::vector<std::string>& additional_site_hosts) {
+    GURL main_url = https_server()->GetURL(kMainHost, kSimplePagePath);
+    std::vector<GURL> urls({main_url});
+    for (const auto& host : additional_site_hosts) {
+      urls.push_back(https_server()->GetURL(host, kSimplePagePath));
+    }
+    SetThirdPartyCookieSetting(main_url);
+    SetAttestationsMap(MakeSharedStoragePrivacySandboxAttestationsMap(urls));
+    EXPECT_TRUE(NavigateToURL(GetActiveWebContents(), main_url));
+  }
+
+  void SetSiteException(const GURL& url, ContentSetting content_setting) {
+    auto* settings_map =
+        HostContentSettingsMapFactory::GetForProfile(GetProfile());
+    CHECK(settings_map);
+    auto* provider = settings_map->GetPrefProvider();
+    CHECK(provider);
+    provider->SetWebsiteSetting(
+        ContentSettingsPattern::FromURL(url),
+        ContentSettingsPattern::Wildcard(), ContentSettingsType::COOKIES,
+        base::Value(content_setting), /*constraints=*/{},
+        content_settings::PartitionKey::GetDefaultForTesting());
+  }
+
   void AddSimpleModule(const content::ToRenderFrameHost& execution_target) {
     content::WebContentsConsoleObserver add_module_console_observer(
         GetActiveWebContents());
@@ -536,7 +577,7 @@ class SharedStorageChromeBrowserTestBase : public PlatformBrowserTest {
       return result.error.empty();
     }
     EXPECT_TRUE(
-        ExecJs(GetActiveWebContents(),
+        ExecJs(execution_target,
                content::JsReplace("window.resolveSelectURLToConfig = $1;",
                                   ResolveSelectURLToConfig())));
 
@@ -548,7 +589,7 @@ class SharedStorageChromeBrowserTestBase : public PlatformBrowserTest {
             ->GetStoragePartition();
     content::TestSelectURLFencedFrameConfigObserver config_observer(
         storage_partition);
-    content::EvalJsResult result = EvalJs(GetActiveWebContents(), R"(
+    content::EvalJsResult result = EvalJs(execution_target, R"(
         (async function() {
           window.select_url_result = await sharedStorage.selectURL(
             'test-operation',
@@ -679,6 +720,12 @@ class SharedStorageChromeBrowserTest
   ~SharedStorageChromeBrowserTest() override = default;
 
   bool ResolveSelectURLToConfig() const override { return GetParam(); }
+
+  EnforcementAndEnrollmentStatus GetEnforcementAndEnrollmentStatus()
+      const override {
+    return EnforcementAndEnrollmentStatus::
+        kAttestationsEnforcedMainHostEnrolled;
+  }
 
  private:
   base::test::ScopedFeatureList fenced_frame_api_change_feature_;
@@ -919,6 +966,12 @@ INSTANTIATE_TEST_SUITE_P(
     DescribePrefBrowserTestParams);
 
 IN_PROC_BROWSER_TEST_P(SharedStoragePrefBrowserTest, AddModule) {
+  // The test assumes pages get deleted after navigation. To ensure this,
+  // disable back/forward cache.
+  content::DisableBackForwardCacheForTesting(
+      GetActiveWebContents(),
+      content::BackForwardCache::TEST_REQUIRES_NO_CACHING);
+
   Set3rdPartyCookieAndMainHostAttestationSettingsThenNavigateToMainHostPage();
 
   content::WebContentsConsoleObserver console_observer(GetActiveWebContents());
@@ -977,6 +1030,12 @@ IN_PROC_BROWSER_TEST_P(SharedStoragePrefBrowserTest, AddModule) {
 }
 
 IN_PROC_BROWSER_TEST_P(SharedStoragePrefBrowserTest, RunOperation) {
+  // The test assumes pages get deleted after navigation. To ensure this,
+  // disable back/forward cache.
+  content::DisableBackForwardCacheForTesting(
+      GetActiveWebContents(),
+      content::BackForwardCache::TEST_REQUIRES_NO_CACHING);
+
   Set3rdPartyCookieAndMainHostAttestationSettingsThenNavigateToMainHostPage();
 
   AddSimpleModuleWithPermissionBypassed(GetActiveWebContents());
@@ -1038,6 +1097,12 @@ IN_PROC_BROWSER_TEST_P(SharedStoragePrefBrowserTest, RunOperation) {
 }
 
 IN_PROC_BROWSER_TEST_P(SharedStoragePrefBrowserTest, RunURLSelectionOperation) {
+  // The test assumes pages get deleted after navigation. To ensure this,
+  // disable back/forward cache.
+  content::DisableBackForwardCacheForTesting(
+      GetActiveWebContents(),
+      content::BackForwardCache::TEST_REQUIRES_NO_CACHING);
+
   Set3rdPartyCookieAndMainHostAttestationSettingsThenNavigateToMainHostPage();
 
   AddSimpleModuleWithPermissionBypassed(GetActiveWebContents());
@@ -1100,16 +1165,19 @@ IN_PROC_BROWSER_TEST_P(SharedStoragePrefBrowserTest, RunURLSelectionOperation) {
                          GetSharedStorageSelectURLDisabledErrorMessage()));
     VerifyDebugErrorMessage(run_url_op_result.error);
 
-    // Navigate away to record `kWorkletNumPerPageHistogram` histogram.
+    // Navigate away to record `kWorkletNumPerPageHistogram`,
+    // `kSelectUrlCallsPerPageHistogram` histograms.
     EXPECT_TRUE(content::NavigateToURL(GetActiveWebContents(),
                                        GURL(url::kAboutBlankURL)));
-    WaitForHistograms({kErrorTypeHistogram, kWorkletNumPerPageHistogram});
+    WaitForHistograms({kErrorTypeHistogram, kWorkletNumPerPageHistogram,
+                       kSelectUrlCallsPerPageHistogram});
     histogram_tester_.ExpectBucketCount(
         kErrorTypeHistogram, blink::SharedStorageWorkletErrorType::kSuccess, 1);
     histogram_tester_.ExpectBucketCount(
         kErrorTypeHistogram,
         blink::SharedStorageWorkletErrorType::kSelectURLWebVisible, 1);
     histogram_tester_.ExpectUniqueSample(kWorkletNumPerPageHistogram, 1, 1);
+    histogram_tester_.ExpectUniqueSample(kSelectUrlCallsPerPageHistogram, 1, 1);
     return;
   }
 
@@ -1132,17 +1200,20 @@ IN_PROC_BROWSER_TEST_P(SharedStoragePrefBrowserTest, RunURLSelectionOperation) {
       "Finish executing \'test-url-selection-operation\'",
       base::UTF16ToUTF8(run_url_op_console_observer.messages()[0].message));
 
-  // Navigate away to record `kWorkletNumPerPageHistogram` histogram.
+  // Navigate away to record `kWorkletNumPerPageHistogram`,
+  // `kSelectUrlCallsPerPageHistogram` histograms.
   EXPECT_TRUE(content::NavigateToURL(GetActiveWebContents(),
                                      GURL(url::kAboutBlankURL)));
   WaitForHistograms({kErrorTypeHistogram, kTimingDocumentAddModuleHistogram,
                      kTimingDocumentSelectUrlHistogram,
-                     kWorkletNumPerPageHistogram});
+                     kWorkletNumPerPageHistogram,
+                     kSelectUrlCallsPerPageHistogram});
   histogram_tester_.ExpectUniqueSample(
       kErrorTypeHistogram, blink::SharedStorageWorkletErrorType::kSuccess, 2);
   histogram_tester_.ExpectTotalCount(kTimingDocumentAddModuleHistogram, 1);
   histogram_tester_.ExpectTotalCount(kTimingDocumentSelectUrlHistogram, 1);
   histogram_tester_.ExpectUniqueSample(kWorkletNumPerPageHistogram, 1, 1);
+  histogram_tester_.ExpectUniqueSample(kSelectUrlCallsPerPageHistogram, 1, 1);
 }
 
 IN_PROC_BROWSER_TEST_P(SharedStoragePrefBrowserTest, Set) {
@@ -1241,6 +1312,12 @@ IN_PROC_BROWSER_TEST_P(SharedStoragePrefBrowserTest, Clear) {
 }
 
 IN_PROC_BROWSER_TEST_P(SharedStoragePrefBrowserTest, WorkletSet) {
+  // The test assumes pages get deleted after navigation. To ensure this,
+  // disable back/forward cache.
+  content::DisableBackForwardCacheForTesting(
+      GetActiveWebContents(),
+      content::BackForwardCache::TEST_REQUIRES_NO_CACHING);
+
   Set3rdPartyCookieAndMainHostAttestationSettingsThenNavigateToMainHostPage();
 
   // If `set()` fails due to Shared Storage being disabled, there will be a
@@ -1267,6 +1344,12 @@ IN_PROC_BROWSER_TEST_P(SharedStoragePrefBrowserTest, WorkletSet) {
 }
 
 IN_PROC_BROWSER_TEST_P(SharedStoragePrefBrowserTest, WorkletAppend) {
+  // The test assumes pages get deleted after navigation. To ensure this,
+  // disable back/forward cache.
+  content::DisableBackForwardCacheForTesting(
+      GetActiveWebContents(),
+      content::BackForwardCache::TEST_REQUIRES_NO_CACHING);
+
   Set3rdPartyCookieAndMainHostAttestationSettingsThenNavigateToMainHostPage();
 
   // If `append()` fails due to Shared Storage being disabled, there will be a
@@ -1293,6 +1376,12 @@ IN_PROC_BROWSER_TEST_P(SharedStoragePrefBrowserTest, WorkletAppend) {
 }
 
 IN_PROC_BROWSER_TEST_P(SharedStoragePrefBrowserTest, WorkletDelete) {
+  // The test assumes pages get deleted after navigation. To ensure this,
+  // disable back/forward cache.
+  content::DisableBackForwardCacheForTesting(
+      GetActiveWebContents(),
+      content::BackForwardCache::TEST_REQUIRES_NO_CACHING);
+
   Set3rdPartyCookieAndMainHostAttestationSettingsThenNavigateToMainHostPage();
 
   // If `delete()` fails due to Shared Storage being disabled, there will be a
@@ -1319,6 +1408,12 @@ IN_PROC_BROWSER_TEST_P(SharedStoragePrefBrowserTest, WorkletDelete) {
 }
 
 IN_PROC_BROWSER_TEST_P(SharedStoragePrefBrowserTest, WorkletClear) {
+  // The test assumes pages get deleted after navigation. To ensure this,
+  // disable back/forward cache.
+  content::DisableBackForwardCacheForTesting(
+      GetActiveWebContents(),
+      content::BackForwardCache::TEST_REQUIRES_NO_CACHING);
+
   Set3rdPartyCookieAndMainHostAttestationSettingsThenNavigateToMainHostPage();
 
   // If `clear()` fails due to Shared Storage being disabled, there will be a
@@ -1345,6 +1440,12 @@ IN_PROC_BROWSER_TEST_P(SharedStoragePrefBrowserTest, WorkletClear) {
 }
 
 IN_PROC_BROWSER_TEST_P(SharedStoragePrefBrowserTest, WorkletGet) {
+  // The test assumes pages get deleted after navigation. To ensure this,
+  // disable back/forward cache.
+  content::DisableBackForwardCacheForTesting(
+      GetActiveWebContents(),
+      content::BackForwardCache::TEST_REQUIRES_NO_CACHING);
+
   Set3rdPartyCookieAndMainHostAttestationSettingsThenNavigateToMainHostPage();
 
   // To prevent failure in the case where Shared Storage is enabled, we set a
@@ -1382,6 +1483,12 @@ IN_PROC_BROWSER_TEST_P(SharedStoragePrefBrowserTest, WorkletGet) {
 }
 
 IN_PROC_BROWSER_TEST_P(SharedStoragePrefBrowserTest, WorkletKeys) {
+  // The test assumes pages get deleted after navigation. To ensure this,
+  // disable back/forward cache.
+  content::DisableBackForwardCacheForTesting(
+      GetActiveWebContents(),
+      content::BackForwardCache::TEST_REQUIRES_NO_CACHING);
+
   Set3rdPartyCookieAndMainHostAttestationSettingsThenNavigateToMainHostPage();
 
   // If `keys()` fails due to Shared Storage being disabled, there will be a
@@ -1410,6 +1517,12 @@ IN_PROC_BROWSER_TEST_P(SharedStoragePrefBrowserTest, WorkletKeys) {
 }
 
 IN_PROC_BROWSER_TEST_P(SharedStoragePrefBrowserTest, WorkletEntries) {
+  // The test assumes pages get deleted after navigation. To ensure this,
+  // disable back/forward cache.
+  content::DisableBackForwardCacheForTesting(
+      GetActiveWebContents(),
+      content::BackForwardCache::TEST_REQUIRES_NO_CACHING);
+
   Set3rdPartyCookieAndMainHostAttestationSettingsThenNavigateToMainHostPage();
 
   // If `entries()` fails due to Shared Storage being disabled, there will be a
@@ -1438,6 +1551,12 @@ IN_PROC_BROWSER_TEST_P(SharedStoragePrefBrowserTest, WorkletEntries) {
 }
 
 IN_PROC_BROWSER_TEST_P(SharedStoragePrefBrowserTest, WorkletLength) {
+  // The test assumes pages get deleted after navigation. To ensure this,
+  // disable back/forward cache.
+  content::DisableBackForwardCacheForTesting(
+      GetActiveWebContents(),
+      content::BackForwardCache::TEST_REQUIRES_NO_CACHING);
+
   Set3rdPartyCookieAndMainHostAttestationSettingsThenNavigateToMainHostPage();
 
   // If `length()` fails due to Shared Storage being disabled, there will be a
@@ -1464,6 +1583,12 @@ IN_PROC_BROWSER_TEST_P(SharedStoragePrefBrowserTest, WorkletLength) {
 }
 
 IN_PROC_BROWSER_TEST_P(SharedStoragePrefBrowserTest, WorkletRemainingBudget) {
+  // The test assumes pages get deleted after navigation. To ensure this,
+  // disable back/forward cache.
+  content::DisableBackForwardCacheForTesting(
+      GetActiveWebContents(),
+      content::BackForwardCache::TEST_REQUIRES_NO_CACHING);
+
   Set3rdPartyCookieAndMainHostAttestationSettingsThenNavigateToMainHostPage();
 
   // If `remainingBudget()` fails due to Shared Storage being disabled, there
@@ -1491,6 +1616,12 @@ IN_PROC_BROWSER_TEST_P(SharedStoragePrefBrowserTest, WorkletRemainingBudget) {
 
 IN_PROC_BROWSER_TEST_P(SharedStorageChromeBrowserTest,
                        WorkletKeysEntries_AllIterated) {
+  // The test assumes pages get deleted after navigation. To ensure this,
+  // disable back/forward cache.
+  content::DisableBackForwardCacheForTesting(
+      GetActiveWebContents(),
+      content::BackForwardCache::TEST_REQUIRES_NO_CACHING);
+
   Set3rdPartyCookieAndMainHostAttestationSettingsThenNavigateToMainHostPage();
 
   EXPECT_TRUE(ExecuteScriptInWorklet(GetActiveWebContents(), R"(
@@ -1572,15 +1703,24 @@ IN_PROC_BROWSER_TEST_P(SharedStorageChromeBrowserTest,
                                       2);
 }
 
-// TODO(crbug.com/1453981): fix and re-enable on Android.
+// See crbug.com/1453981: A CL on V8 side (https://crrev.com/c/4582948) made
+// each Api call slower in Android debug mode compared to what we had before
+// because of additional DCHECKs. So we disable on Android debug builds where
+// this test times out.
 IN_PROC_BROWSER_TEST_P(SharedStorageChromeBrowserTest,
-#if BUILDFLAG(IS_ANDROID)
+#if BUILDFLAG(IS_ANDROID) && !defined(NDEBUG)
                        DISABLED_WorkletKeys_PartiallyIterated
 #else
                        WorkletKeys_PartiallyIterated
-#endif  // BUILDFLAG(IS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID) && !defined(NDEBUG)
 ) {
-  base::test::ScopedRunLoopTimeout timeout(FROM_HERE, base::Seconds(60));
+  base::test::ScopedRunLoopTimeout timeout(FROM_HERE, base::Seconds(120));
+
+  // The test assumes pages get deleted after navigation. To ensure this,
+  // disable back/forward cache.
+  content::DisableBackForwardCacheForTesting(
+      GetActiveWebContents(),
+      content::BackForwardCache::TEST_REQUIRES_NO_CACHING);
 
   Set3rdPartyCookieAndMainHostAttestationSettingsThenNavigateToMainHostPage();
 
@@ -1666,15 +1806,24 @@ IN_PROC_BROWSER_TEST_P(SharedStorageChromeBrowserTest,
                                       0);
 }
 
-// TODO(crbug.com/1453981): fix and re-enable on Android.
+// See crbug.com/1453981: A CL on V8 side (https://crrev.com/c/4582948) made
+// each Api call slower in Android debug mode compared to what we had before
+// because of additional DCHECKs. So we disable on Android debug builds where
+// this test times out.
 IN_PROC_BROWSER_TEST_P(SharedStorageChromeBrowserTest,
-#if BUILDFLAG(IS_ANDROID)
+#if BUILDFLAG(IS_ANDROID) && !defined(NDEBUG)
                        DISABLED_WorkletEntries_PartiallyIterated
 #else
                        WorkletEntries_PartiallyIterated
-#endif  // BUILDFLAG(IS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID) && !defined(NDEBUG)
 ) {
-  base::test::ScopedRunLoopTimeout timeout(FROM_HERE, base::Seconds(60));
+  base::test::ScopedRunLoopTimeout timeout(FROM_HERE, base::Seconds(120));
+
+  // The test assumes pages get deleted after navigation. To ensure this,
+  // disable back/forward cache.
+  content::DisableBackForwardCacheForTesting(
+      GetActiveWebContents(),
+      content::BackForwardCache::TEST_REQUIRES_NO_CACHING);
 
   Set3rdPartyCookieAndMainHostAttestationSettingsThenNavigateToMainHostPage();
 
@@ -1762,6 +1911,12 @@ IN_PROC_BROWSER_TEST_P(SharedStorageChromeBrowserTest,
 
 IN_PROC_BROWSER_TEST_P(SharedStorageChromeBrowserTest,
                        WorkletKeysEntries_AllIteratedLessThanTenKeys) {
+  // The test assumes pages get deleted after navigation. To ensure this,
+  // disable back/forward cache.
+  content::DisableBackForwardCacheForTesting(
+      GetActiveWebContents(),
+      content::BackForwardCache::TEST_REQUIRES_NO_CACHING);
+
   Set3rdPartyCookieAndMainHostAttestationSettingsThenNavigateToMainHostPage();
 
   EXPECT_TRUE(ExecuteScriptInWorklet(GetActiveWebContents(), R"(
@@ -1845,6 +2000,12 @@ IN_PROC_BROWSER_TEST_P(SharedStorageChromeBrowserTest,
 
 IN_PROC_BROWSER_TEST_P(SharedStorageChromeBrowserTest,
                        WorkletKeysEntries_PartiallyIteratedLessThanTenKeys) {
+  // The test assumes pages get deleted after navigation. To ensure this,
+  // disable back/forward cache.
+  content::DisableBackForwardCacheForTesting(
+      GetActiveWebContents(),
+      content::BackForwardCache::TEST_REQUIRES_NO_CACHING);
+
   Set3rdPartyCookieAndMainHostAttestationSettingsThenNavigateToMainHostPage();
 
   EXPECT_TRUE(ExecuteScriptInWorklet(GetActiveWebContents(), R"(
@@ -1940,6 +2101,12 @@ IN_PROC_BROWSER_TEST_P(SharedStorageChromeBrowserTest,
 
 IN_PROC_BROWSER_TEST_P(SharedStorageChromeBrowserTest,
                        WorkletKeysEntries_AllIteratedNoKeys) {
+  // The test assumes pages get deleted after navigation. To ensure this,
+  // disable back/forward cache.
+  content::DisableBackForwardCacheForTesting(
+      GetActiveWebContents(),
+      content::BackForwardCache::TEST_REQUIRES_NO_CACHING);
+
   Set3rdPartyCookieAndMainHostAttestationSettingsThenNavigateToMainHostPage();
 
   EXPECT_TRUE(ExecuteScriptInWorklet(GetActiveWebContents(), R"(
@@ -2113,6 +2280,12 @@ IN_PROC_BROWSER_TEST_P(SharedStorageChromeBrowserTest,
 
 IN_PROC_BROWSER_TEST_P(SharedStorageChromeBrowserTest,
                        AddModule_MultipleAddModuleError) {
+  // The test assumes pages get deleted after navigation. To ensure this,
+  // disable back/forward cache.
+  content::DisableBackForwardCacheForTesting(
+      GetActiveWebContents(),
+      content::BackForwardCache::TEST_REQUIRES_NO_CACHING);
+
   Set3rdPartyCookieAndMainHostAttestationSettingsThenNavigateToMainHostPage();
 
   GURL script_url =
@@ -2163,6 +2336,12 @@ IN_PROC_BROWSER_TEST_P(SharedStorageChromeBrowserTest, Run_NotLoadedError) {
 }
 
 IN_PROC_BROWSER_TEST_P(SharedStorageChromeBrowserTest, Run_NotRegisteredError) {
+  // The test assumes pages get deleted after navigation. To ensure this,
+  // disable back/forward cache.
+  content::DisableBackForwardCacheForTesting(
+      GetActiveWebContents(),
+      content::BackForwardCache::TEST_REQUIRES_NO_CACHING);
+
   Set3rdPartyCookieAndMainHostAttestationSettingsThenNavigateToMainHostPage();
 
   GURL script_url =
@@ -2184,14 +2363,21 @@ IN_PROC_BROWSER_TEST_P(SharedStorageChromeBrowserTest, Run_NotRegisteredError) {
                      kWorkletNumPerPageHistogram});
   histogram_tester_.ExpectTotalCount(kTimingDocumentAddModuleHistogram, 1);
   histogram_tester_.ExpectBucketCount(
-      kErrorTypeHistogram, blink::SharedStorageWorkletErrorType::kSuccess, 2);
+      kErrorTypeHistogram, blink::SharedStorageWorkletErrorType::kSuccess, 1);
   histogram_tester_.ExpectBucketCount(
       kErrorTypeHistogram,
-      blink::SharedStorageWorkletErrorType::kRunNonWebVisible, 1);
+      blink::SharedStorageWorkletErrorType::kRunNonWebVisibleOperationNotFound,
+      1);
   histogram_tester_.ExpectUniqueSample(kWorkletNumPerPageHistogram, 1, 1);
 }
 
 IN_PROC_BROWSER_TEST_P(SharedStorageChromeBrowserTest, Run_FunctionError) {
+  // The test assumes pages get deleted after navigation. To ensure this,
+  // disable back/forward cache.
+  content::DisableBackForwardCacheForTesting(
+      GetActiveWebContents(),
+      content::BackForwardCache::TEST_REQUIRES_NO_CACHING);
+
   Set3rdPartyCookieAndMainHostAttestationSettingsThenNavigateToMainHostPage();
 
   GURL script_url =
@@ -2213,14 +2399,20 @@ IN_PROC_BROWSER_TEST_P(SharedStorageChromeBrowserTest, Run_FunctionError) {
                      kWorkletNumPerPageHistogram});
   histogram_tester_.ExpectTotalCount(kTimingDocumentAddModuleHistogram, 1);
   histogram_tester_.ExpectBucketCount(
-      kErrorTypeHistogram, blink::SharedStorageWorkletErrorType::kSuccess, 2);
+      kErrorTypeHistogram, blink::SharedStorageWorkletErrorType::kSuccess, 1);
   histogram_tester_.ExpectBucketCount(
       kErrorTypeHistogram,
-      blink::SharedStorageWorkletErrorType::kRunNonWebVisible, 1);
+      blink::SharedStorageWorkletErrorType::kRunNonWebVisibleOther, 1);
   histogram_tester_.ExpectUniqueSample(kWorkletNumPerPageHistogram, 1, 1);
 }
 
 IN_PROC_BROWSER_TEST_P(SharedStorageChromeBrowserTest, Run_ScriptError) {
+  // The test assumes pages get deleted after navigation. To ensure this,
+  // disable back/forward cache.
+  content::DisableBackForwardCacheForTesting(
+      GetActiveWebContents(),
+      content::BackForwardCache::TEST_REQUIRES_NO_CACHING);
+
   Set3rdPartyCookieAndMainHostAttestationSettingsThenNavigateToMainHostPage();
 
   GURL script_url =
@@ -2242,15 +2434,21 @@ IN_PROC_BROWSER_TEST_P(SharedStorageChromeBrowserTest, Run_ScriptError) {
                      kWorkletNumPerPageHistogram});
   histogram_tester_.ExpectTotalCount(kTimingDocumentAddModuleHistogram, 1);
   histogram_tester_.ExpectBucketCount(
-      kErrorTypeHistogram, blink::SharedStorageWorkletErrorType::kSuccess, 2);
+      kErrorTypeHistogram, blink::SharedStorageWorkletErrorType::kSuccess, 1);
   histogram_tester_.ExpectBucketCount(
       kErrorTypeHistogram,
-      blink::SharedStorageWorkletErrorType::kRunNonWebVisible, 1);
+      blink::SharedStorageWorkletErrorType::kRunNonWebVisibleOther, 1);
   histogram_tester_.ExpectUniqueSample(kWorkletNumPerPageHistogram, 1, 1);
 }
 
 IN_PROC_BROWSER_TEST_P(SharedStorageChromeBrowserTest,
                        Run_UnexpectedCustomDataError) {
+  // The test assumes pages get deleted after navigation. To ensure this,
+  // disable back/forward cache.
+  content::DisableBackForwardCacheForTesting(
+      GetActiveWebContents(),
+      content::BackForwardCache::TEST_REQUIRES_NO_CACHING);
+
   Set3rdPartyCookieAndMainHostAttestationSettingsThenNavigateToMainHostPage();
 
   GURL script_url =
@@ -2272,10 +2470,10 @@ IN_PROC_BROWSER_TEST_P(SharedStorageChromeBrowserTest,
                      kWorkletNumPerPageHistogram});
   histogram_tester_.ExpectTotalCount(kTimingDocumentAddModuleHistogram, 1);
   histogram_tester_.ExpectBucketCount(
-      kErrorTypeHistogram, blink::SharedStorageWorkletErrorType::kSuccess, 2);
+      kErrorTypeHistogram, blink::SharedStorageWorkletErrorType::kSuccess, 1);
   histogram_tester_.ExpectBucketCount(
       kErrorTypeHistogram,
-      blink::SharedStorageWorkletErrorType::kRunNonWebVisible, 1);
+      blink::SharedStorageWorkletErrorType::kRunNonWebVisibleOther, 1);
   histogram_tester_.ExpectUniqueSample(kWorkletNumPerPageHistogram, 1, 1);
 }
 
@@ -2319,9 +2517,14 @@ IN_PROC_BROWSER_TEST_P(SharedStorageChromeBrowserTest,
       blink::SharedStorageWorkletErrorType::kSelectURLWebVisible, 1);
 }
 
-// TODO(https://crbug.com/1484437): Fix flakes.
 IN_PROC_BROWSER_TEST_P(SharedStorageChromeBrowserTest,
-                       DISABLED_SelectUrl_NotRegisteredError) {
+                       SelectUrl_NotRegisteredError) {
+  // The test assumes pages get deleted after navigation. To ensure this,
+  // disable back/forward cache.
+  content::DisableBackForwardCacheForTesting(
+      GetActiveWebContents(),
+      content::BackForwardCache::TEST_REQUIRES_NO_CACHING);
+
   Set3rdPartyCookieAndMainHostAttestationSettingsThenNavigateToMainHostPage();
 
   GURL script_url =
@@ -2355,32 +2558,33 @@ IN_PROC_BROWSER_TEST_P(SharedStorageChromeBrowserTest,
         })()
       )"));
 
-  // Navigate away to record `kWorkletNumPerPageHistogram` histogram.
+  // Navigate away to record `kWorkletNumPerPageHistogram`,
+  // `kSelectUrlCallsPerPageHistogram` histograms.
   EXPECT_TRUE(content::NavigateToURL(GetActiveWebContents(),
                                      GURL(url::kAboutBlankURL)));
   WaitForHistograms({kTimingDocumentAddModuleHistogram, kErrorTypeHistogram,
-                     kWorkletNumPerPageHistogram});
+                     kWorkletNumPerPageHistogram,
+                     kSelectUrlCallsPerPageHistogram});
   histogram_tester_.ExpectTotalCount(kTimingDocumentAddModuleHistogram, 1);
   histogram_tester_.ExpectBucketCount(
-      kErrorTypeHistogram, blink::SharedStorageWorkletErrorType::kSuccess, 2);
+      kErrorTypeHistogram, blink::SharedStorageWorkletErrorType::kSuccess, 1);
   histogram_tester_.ExpectBucketCount(
       kErrorTypeHistogram,
-      blink::SharedStorageWorkletErrorType::kSelectURLNonWebVisible, 1);
+      blink::SharedStorageWorkletErrorType::
+          kSelectURLNonWebVisibleOperationNotFound,
+      1);
   histogram_tester_.ExpectUniqueSample(kWorkletNumPerPageHistogram, 1, 1);
+  histogram_tester_.ExpectUniqueSample(kSelectUrlCallsPerPageHistogram, 1, 1);
 }
 
-// TODO(crbug.com/1485061): Test is flaky on ChromeOS and Windows.
-#if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_WIN)
-#define MAYBE_SelectUrl_FunctionError DISABLED_SelectUrl_FunctionError
-#else
-#define MAYBE_SelectUrl_FunctionError SelectUrl_FunctionError
-#endif
 IN_PROC_BROWSER_TEST_P(SharedStorageChromeBrowserTest,
-                       MAYBE_SelectUrl_FunctionError) {
-  // TODO(crbug.com/1485061): Test is flaky on linux-bfcache-rel.
-  if (!content::BackForwardCache::IsBackForwardCacheFeatureEnabled()) {
-    return;
-  }
+                       SelectUrl_FunctionError) {
+  // The test assumes pages get deleted after navigation. To ensure this,
+  // disable back/forward cache.
+  content::DisableBackForwardCacheForTesting(
+      GetActiveWebContents(),
+      content::BackForwardCache::TEST_REQUIRES_NO_CACHING);
+
   Set3rdPartyCookieAndMainHostAttestationSettingsThenNavigateToMainHostPage();
 
   GURL script_url =
@@ -2414,23 +2618,30 @@ IN_PROC_BROWSER_TEST_P(SharedStorageChromeBrowserTest,
         })()
       )"));
 
-  // Navigate away to record `kWorkletNumPerPageHistogram` histogram.
+  // Navigate away to record `kWorkletNumPerPageHistogram`,
+  // `kSelectUrlCallsPerPageHistogram` histograms.
   EXPECT_TRUE(content::NavigateToURL(GetActiveWebContents(),
                                      GURL(url::kAboutBlankURL)));
   WaitForHistograms({kTimingDocumentAddModuleHistogram, kErrorTypeHistogram,
-                     kWorkletNumPerPageHistogram});
+                     kWorkletNumPerPageHistogram,
+                     kSelectUrlCallsPerPageHistogram});
   histogram_tester_.ExpectTotalCount(kTimingDocumentAddModuleHistogram, 1);
   histogram_tester_.ExpectBucketCount(
-      kErrorTypeHistogram, blink::SharedStorageWorkletErrorType::kSuccess, 2);
+      kErrorTypeHistogram, blink::SharedStorageWorkletErrorType::kSuccess, 1);
   histogram_tester_.ExpectBucketCount(
       kErrorTypeHistogram,
-      blink::SharedStorageWorkletErrorType::kSelectURLNonWebVisible, 1);
+      blink::SharedStorageWorkletErrorType::kSelectURLNonWebVisibleOther, 1);
   histogram_tester_.ExpectUniqueSample(kWorkletNumPerPageHistogram, 1, 1);
+  histogram_tester_.ExpectUniqueSample(kSelectUrlCallsPerPageHistogram, 1, 1);
 }
 
-// TODO(https://crbug.com/1484437): Fix flakes.
-IN_PROC_BROWSER_TEST_P(SharedStorageChromeBrowserTest,
-                       DISABLED_SelectUrl_ScriptError) {
+IN_PROC_BROWSER_TEST_P(SharedStorageChromeBrowserTest, SelectUrl_ScriptError) {
+  // The test assumes pages get deleted after navigation. To ensure this,
+  // disable back/forward cache.
+  content::DisableBackForwardCacheForTesting(
+      GetActiveWebContents(),
+      content::BackForwardCache::TEST_REQUIRES_NO_CACHING);
+
   Set3rdPartyCookieAndMainHostAttestationSettingsThenNavigateToMainHostPage();
 
   GURL script_url =
@@ -2464,23 +2675,31 @@ IN_PROC_BROWSER_TEST_P(SharedStorageChromeBrowserTest,
         })()
       )"));
 
-  // Navigate away to record `kWorkletNumPerPageHistogram` histogram.
+  // Navigate away to record `kWorkletNumPerPageHistogram`,
+  // `kSelectUrlCallsPerPageHistogram` histograms.
   EXPECT_TRUE(content::NavigateToURL(GetActiveWebContents(),
                                      GURL(url::kAboutBlankURL)));
   WaitForHistograms({kTimingDocumentAddModuleHistogram, kErrorTypeHistogram,
-                     kWorkletNumPerPageHistogram});
+                     kWorkletNumPerPageHistogram,
+                     kSelectUrlCallsPerPageHistogram});
   histogram_tester_.ExpectTotalCount(kTimingDocumentAddModuleHistogram, 1);
   histogram_tester_.ExpectBucketCount(
-      kErrorTypeHistogram, blink::SharedStorageWorkletErrorType::kSuccess, 2);
+      kErrorTypeHistogram, blink::SharedStorageWorkletErrorType::kSuccess, 1);
   histogram_tester_.ExpectBucketCount(
       kErrorTypeHistogram,
-      blink::SharedStorageWorkletErrorType::kSelectURLNonWebVisible, 1);
+      blink::SharedStorageWorkletErrorType::kSelectURLNonWebVisibleOther, 1);
   histogram_tester_.ExpectUniqueSample(kWorkletNumPerPageHistogram, 1, 1);
+  histogram_tester_.ExpectUniqueSample(kSelectUrlCallsPerPageHistogram, 1, 1);
 }
 
-// TODO(https://crbug.com/1484437): Fix flakes.
 IN_PROC_BROWSER_TEST_P(SharedStorageChromeBrowserTest,
-                       DISABLED_SelectUrl_UnexpectedCustomDataError) {
+                       SelectUrl_UnexpectedCustomDataError) {
+  // The test assumes pages get deleted after navigation. To ensure this,
+  // disable back/forward cache.
+  content::DisableBackForwardCacheForTesting(
+      GetActiveWebContents(),
+      content::BackForwardCache::TEST_REQUIRES_NO_CACHING);
+
   Set3rdPartyCookieAndMainHostAttestationSettingsThenNavigateToMainHostPage();
 
   GURL script_url =
@@ -2514,23 +2733,31 @@ IN_PROC_BROWSER_TEST_P(SharedStorageChromeBrowserTest,
         })()
       )"));
 
-  // Navigate away to record `kWorkletNumPerPageHistogram` histogram.
+  // Navigate away to record `kWorkletNumPerPageHistogram`,
+  // `kSelectUrlCallsPerPageHistogram` histograms.
   EXPECT_TRUE(content::NavigateToURL(GetActiveWebContents(),
                                      GURL(url::kAboutBlankURL)));
   WaitForHistograms({kTimingDocumentAddModuleHistogram, kErrorTypeHistogram,
-                     kWorkletNumPerPageHistogram});
+                     kWorkletNumPerPageHistogram,
+                     kSelectUrlCallsPerPageHistogram});
   histogram_tester_.ExpectTotalCount(kTimingDocumentAddModuleHistogram, 1);
   histogram_tester_.ExpectBucketCount(
-      kErrorTypeHistogram, blink::SharedStorageWorkletErrorType::kSuccess, 2);
+      kErrorTypeHistogram, blink::SharedStorageWorkletErrorType::kSuccess, 1);
   histogram_tester_.ExpectBucketCount(
       kErrorTypeHistogram,
-      blink::SharedStorageWorkletErrorType::kSelectURLNonWebVisible, 1);
+      blink::SharedStorageWorkletErrorType::kSelectURLNonWebVisibleOther, 1);
   histogram_tester_.ExpectUniqueSample(kWorkletNumPerPageHistogram, 1, 1);
+  histogram_tester_.ExpectUniqueSample(kSelectUrlCallsPerPageHistogram, 1, 1);
 }
 
-// TODO(https://crbug.com/1484437): Fix flakes.
 IN_PROC_BROWSER_TEST_P(SharedStorageChromeBrowserTest,
-                       DISABLED_SelectUrl_OutOfRangeError) {
+                       SelectUrl_OutOfRangeError) {
+  // The test assumes pages get deleted after navigation. To ensure this,
+  // disable back/forward cache.
+  content::DisableBackForwardCacheForTesting(
+      GetActiveWebContents(),
+      content::BackForwardCache::TEST_REQUIRES_NO_CACHING);
+
   Set3rdPartyCookieAndMainHostAttestationSettingsThenNavigateToMainHostPage();
 
   GURL script_url =
@@ -2564,23 +2791,33 @@ IN_PROC_BROWSER_TEST_P(SharedStorageChromeBrowserTest,
         })()
       )"));
 
-  // Navigate away to record `kWorkletNumPerPageHistogram` histogram.
+  // Navigate away to record `kWorkletNumPerPageHistogram`,
+  // `kSelectUrlCallsPerPageHistogram` histograms.
   EXPECT_TRUE(content::NavigateToURL(GetActiveWebContents(),
                                      GURL(url::kAboutBlankURL)));
   WaitForHistograms({kTimingDocumentAddModuleHistogram, kErrorTypeHistogram,
-                     kWorkletNumPerPageHistogram});
+                     kWorkletNumPerPageHistogram,
+                     kSelectUrlCallsPerPageHistogram});
   histogram_tester_.ExpectTotalCount(kTimingDocumentAddModuleHistogram, 1);
   histogram_tester_.ExpectBucketCount(
-      kErrorTypeHistogram, blink::SharedStorageWorkletErrorType::kSuccess, 2);
+      kErrorTypeHistogram, blink::SharedStorageWorkletErrorType::kSuccess, 1);
   histogram_tester_.ExpectBucketCount(
       kErrorTypeHistogram,
-      blink::SharedStorageWorkletErrorType::kSelectURLNonWebVisible, 1);
+      blink::SharedStorageWorkletErrorType::
+          kSelectURLNonWebVisibleReturnValueOutOfRange,
+      1);
   histogram_tester_.ExpectUniqueSample(kWorkletNumPerPageHistogram, 1, 1);
+  histogram_tester_.ExpectUniqueSample(kSelectUrlCallsPerPageHistogram, 1, 1);
 }
 
-// TODO(https://crbug.com/1484437): Fix flakes.
 IN_PROC_BROWSER_TEST_P(SharedStorageChromeBrowserTest,
-                       DISABLED_SelectUrl_ReturnValueToIntError) {
+                       SelectUrl_ReturnValueToIntError) {
+  // The test assumes pages get deleted after navigation. To ensure this,
+  // disable back/forward cache.
+  content::DisableBackForwardCacheForTesting(
+      GetActiveWebContents(),
+      content::BackForwardCache::TEST_REQUIRES_NO_CACHING);
+
   Set3rdPartyCookieAndMainHostAttestationSettingsThenNavigateToMainHostPage();
 
   GURL script_url =
@@ -2614,18 +2851,581 @@ IN_PROC_BROWSER_TEST_P(SharedStorageChromeBrowserTest,
         })()
       )"));
 
-  // Navigate away to record `kWorkletNumPerPageHistogram` histogram.
+  // Navigate away to record `kWorkletNumPerPageHistogram`,
+  // `kSelectUrlCallsPerPageHistogram` histograms.
   EXPECT_TRUE(content::NavigateToURL(GetActiveWebContents(),
                                      GURL(url::kAboutBlankURL)));
   WaitForHistograms({kTimingDocumentAddModuleHistogram, kErrorTypeHistogram,
-                     kWorkletNumPerPageHistogram});
+                     kWorkletNumPerPageHistogram,
+                     kSelectUrlCallsPerPageHistogram});
   histogram_tester_.ExpectTotalCount(kTimingDocumentAddModuleHistogram, 1);
   histogram_tester_.ExpectBucketCount(
-      kErrorTypeHistogram, blink::SharedStorageWorkletErrorType::kSuccess, 2);
+      kErrorTypeHistogram, blink::SharedStorageWorkletErrorType::kSuccess, 1);
   histogram_tester_.ExpectBucketCount(
       kErrorTypeHistogram,
-      blink::SharedStorageWorkletErrorType::kSelectURLNonWebVisible, 1);
+      blink::SharedStorageWorkletErrorType::
+          kSelectURLNonWebVisibleReturnValueToInt,
+      1);
   histogram_tester_.ExpectUniqueSample(kWorkletNumPerPageHistogram, 1, 1);
+  histogram_tester_.ExpectUniqueSample(kSelectUrlCallsPerPageHistogram, 1, 1);
+}
+
+IN_PROC_BROWSER_TEST_P(
+    SharedStorageChromeBrowserTest,
+    CrossOriginWorklet_CreateWorklet_PrefsError_PrivacySandbox) {
+  Set3PCSettingAndAttestMainHostPlusAdditionalSitesThenNavigateToMainHostPage(
+      {kCrossOriginHost});
+
+  // Disable Privacy Sandbox.
+  SetPrefs(/*enable_privacy_sandbox=*/false,
+           /*allow_third_party_cookies=*/true);
+
+  GURL script_url = https_server()->GetURL(kCrossOriginHost,
+                                           "/shared_storage/simple_module.js");
+
+  // The prefs error for `createWorklet()` won't be revealed to the cross-origin
+  // caller. But we can verify the error indirectly, by checking that no worklet
+  // host is created.
+  EXPECT_TRUE(content::ExecJs(
+      GetActiveWebContents(),
+      content::JsReplace("sharedStorage.createWorklet($1)", script_url)));
+
+  EXPECT_EQ(0u, content::GetAttachedSharedStorageWorkletHostsCount(
+                    GetActiveWebContents()
+                        ->GetPrimaryMainFrame()
+                        ->GetStoragePartition()));
+
+  WaitForHistograms({kErrorTypeHistogram});
+  histogram_tester_.ExpectUniqueSample(
+      kErrorTypeHistogram,
+      blink::SharedStorageWorkletErrorType::
+          kAddModuleNonWebVisibleCrossOriginSharedStorageDisabled,
+      1);
+}
+
+// This test shows that the correct origin is used for the
+// preferences/attestation check for cross-origin worklets.
+IN_PROC_BROWSER_TEST_P(
+    SharedStorageChromeBrowserTest,
+    CrossOriginWorklet_CreateWorklet_PrefsError_SiteSettings) {
+  Set3PCSettingAndAttestMainHostPlusAdditionalSitesThenNavigateToMainHostPage(
+      {kCrossOriginHost});
+
+  GURL script_url = https_server()->GetURL(kCrossOriginHost,
+                                           "/shared_storage/simple_module.js");
+
+  // Set a site exception blocking `script_url`.
+  SetSiteException(script_url, ContentSetting::CONTENT_SETTING_BLOCK);
+
+  // The prefs error for `createWorklet()` won't be revealed to the cross-origin
+  // caller. But we can verify the error indirectly, by checking that no worklet
+  // host is created.
+  EXPECT_TRUE(content::ExecJs(
+      GetActiveWebContents(),
+      content::JsReplace("sharedStorage.createWorklet($1)", script_url)));
+
+  EXPECT_EQ(0u, content::GetAttachedSharedStorageWorkletHostsCount(
+                    GetActiveWebContents()
+                        ->GetPrimaryMainFrame()
+                        ->GetStoragePartition()));
+
+  WaitForHistograms({kErrorTypeHistogram});
+  histogram_tester_.ExpectUniqueSample(
+      kErrorTypeHistogram,
+      blink::SharedStorageWorkletErrorType::
+          kAddModuleNonWebVisibleCrossOriginSharedStorageDisabled,
+      1);
+}
+
+// This test also shows that the correct origin is used for the
+// preferences/attestation check for cross-origin worklets.
+IN_PROC_BROWSER_TEST_P(SharedStorageChromeBrowserTest,
+                       CrossOriginWorklet_CreateWorklet_AttestationError) {
+  // Only the main frame site will be attested.
+  Set3rdPartyCookieAndMainHostAttestationSettingsThenNavigateToMainHostPage();
+
+  GURL script_url = https_server()->GetURL(kCrossOriginHost,
+                                           "/shared_storage/simple_module.js");
+
+  // The attestation error for `createWorklet()` won't be revealed to the
+  // cross-origin caller. But we can verify the error indirectly, by checking
+  // that no worklet host is created.
+  // TODO(cammie): Update this test when we update the code to reveal this error
+  // to JS. It's technically already revealed to JS via the
+  // PrivacySandboxSettings code, which sends an error message to the console.
+  EXPECT_TRUE(content::ExecJs(
+      GetActiveWebContents(),
+      content::JsReplace("sharedStorage.createWorklet($1)", script_url)));
+
+  EXPECT_EQ(0u, content::GetAttachedSharedStorageWorkletHostsCount(
+                    GetActiveWebContents()
+                        ->GetPrimaryMainFrame()
+                        ->GetStoragePartition()));
+
+  WaitForHistograms({kErrorTypeHistogram});
+  histogram_tester_.ExpectUniqueSample(
+      kErrorTypeHistogram,
+      blink::SharedStorageWorkletErrorType::
+          kAddModuleNonWebVisibleCrossOriginSharedStorageDisabled,
+      1);
+}
+
+IN_PROC_BROWSER_TEST_P(SharedStorageChromeBrowserTest,
+                       CrossOriginWorklet_SelectUrl_PrefsError_PrivacySandbox) {
+  Set3PCSettingAndAttestMainHostPlusAdditionalSitesThenNavigateToMainHostPage(
+      {kCrossOriginHost});
+
+  GURL script_url = https_server()->GetURL(
+      kCrossOriginHost,
+      net::test_server::GetFilePathWithReplacements(
+          "/shared_storage/module_with_custom_header.js",
+          content::SharedStorageCrossOriginWorkletResponseHeaderReplacement(
+              "Access-Control-Allow-Origin: *",
+              "Shared-Storage-Cross-Origin-Worklet-Allowed: ?1")));
+
+  EXPECT_TRUE(
+      content::ExecJs(GetActiveWebContents(), content::JsReplace(R"(
+        (async function() {
+          window.testWorklet = await sharedStorage.createWorklet($1);
+        })()
+      )",
+                                                                 script_url)));
+
+  // Disable Privacy Sandbox.
+  SetPrefs(/*enable_privacy_sandbox=*/false,
+           /*allow_third_party_cookies=*/true);
+
+  content::WebContentsConsoleObserver console_observer(GetActiveWebContents());
+
+  // The prefs error for `selectURL()` won't be revealed to the cross-origin
+  // caller. But we can verify the error indirectly, by checking that no console
+  // messages are logged, which indicates that the operation did not execute.
+  EXPECT_TRUE(content::ExecJs(GetActiveWebContents(), R"(
+        window.testWorklet.selectURL(
+            'test-url-selection-operation',
+            [
+              {
+                url: "fenced_frames/title0.html"
+              }
+            ],
+            {
+              data: {'mockResult': 0}
+            }
+          )
+      )"));
+
+  base::RunLoop run_loop;
+  base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
+      FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
+  run_loop.Run();
+
+  EXPECT_EQ(0u, console_observer.messages().size());
+  WaitForHistograms({kErrorTypeHistogram});
+  histogram_tester_.ExpectBucketCount(
+      kErrorTypeHistogram, blink::SharedStorageWorkletErrorType::kSuccess, 1);
+  histogram_tester_.ExpectBucketCount(
+      kErrorTypeHistogram,
+      blink::SharedStorageWorkletErrorType::
+          kSelectURLNonWebVisibleCrossOriginSharedStorageDisabled,
+      1);
+}
+
+IN_PROC_BROWSER_TEST_P(SharedStorageChromeBrowserTest,
+                       CrossOriginWorklet_SelectUrl_PrefsError_SiteSettings) {
+  Set3PCSettingAndAttestMainHostPlusAdditionalSitesThenNavigateToMainHostPage(
+      {kCrossOriginHost});
+
+  GURL script_url = https_server()->GetURL(
+      kCrossOriginHost,
+      net::test_server::GetFilePathWithReplacements(
+          "/shared_storage/module_with_custom_header.js",
+          content::SharedStorageCrossOriginWorkletResponseHeaderReplacement(
+              "Access-Control-Allow-Origin: *",
+              "Shared-Storage-Cross-Origin-Worklet-Allowed: ?1")));
+
+  EXPECT_TRUE(
+      content::ExecJs(GetActiveWebContents(), content::JsReplace(R"(
+        (async function() {
+          window.testWorklet = await sharedStorage.createWorklet($1);
+        })()
+      )",
+                                                                 script_url)));
+
+  // Set a site exception blocking `script_url`.
+  SetSiteException(script_url, ContentSetting::CONTENT_SETTING_BLOCK);
+
+  content::WebContentsConsoleObserver console_observer(GetActiveWebContents());
+
+  // The prefs error for `selectURL()` won't be revealed to the cross-origin
+  // caller. But we can verify the error indirectly, by checking that no console
+  // messages are logged, which indicates that the operation did not execute.
+  EXPECT_TRUE(content::ExecJs(GetActiveWebContents(), R"(
+        window.testWorklet.selectURL(
+            'test-url-selection-operation',
+            [
+              {
+                url: "fenced_frames/title0.html"
+              }
+            ],
+            {
+              data: {'mockResult': 0}
+            }
+          )
+      )"));
+
+  base::RunLoop run_loop;
+  base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
+      FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
+  run_loop.Run();
+
+  EXPECT_EQ(0u, console_observer.messages().size());
+  WaitForHistograms({kErrorTypeHistogram});
+  histogram_tester_.ExpectBucketCount(
+      kErrorTypeHistogram, blink::SharedStorageWorkletErrorType::kSuccess, 1);
+  histogram_tester_.ExpectBucketCount(
+      kErrorTypeHistogram,
+      blink::SharedStorageWorkletErrorType::
+          kSelectURLNonWebVisibleCrossOriginSharedStorageDisabled,
+      1);
+}
+
+IN_PROC_BROWSER_TEST_P(SharedStorageChromeBrowserTest,
+                       CrossOriginWorklet_Run_PrefsError_PrivacySandbox) {
+  Set3PCSettingAndAttestMainHostPlusAdditionalSitesThenNavigateToMainHostPage(
+      {kCrossOriginHost});
+
+  GURL script_url = https_server()->GetURL(
+      kCrossOriginHost,
+      net::test_server::GetFilePathWithReplacements(
+          "/shared_storage/module_with_custom_header.js",
+          content::SharedStorageCrossOriginWorkletResponseHeaderReplacement(
+              "Access-Control-Allow-Origin: *",
+              "Shared-Storage-Cross-Origin-Worklet-Allowed: ?1")));
+
+  EXPECT_TRUE(
+      content::ExecJs(GetActiveWebContents(), content::JsReplace(R"(
+        (async function() {
+          window.testWorklet = await sharedStorage.createWorklet($1);
+        })()
+      )",
+                                                                 script_url)));
+
+  // Disable Privacy Sandbox.
+  SetPrefs(/*enable_privacy_sandbox=*/false,
+           /*allow_third_party_cookies=*/true);
+
+  content::WebContentsConsoleObserver console_observer(GetActiveWebContents());
+
+  // The prefs error for `run()` won't be revealed to the cross-origin caller.
+  // But we can verify the error indirectly, by checking that no console
+  // messages are logged, which indicates that the operation did not execute.
+  EXPECT_TRUE(content::ExecJs(GetActiveWebContents(), R"(
+        window.testWorklet.run('test-operation')
+      )"));
+
+  base::RunLoop run_loop;
+  base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
+      FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
+  run_loop.Run();
+
+  EXPECT_EQ(0u, console_observer.messages().size());
+  WaitForHistograms({kErrorTypeHistogram});
+  histogram_tester_.ExpectBucketCount(
+      kErrorTypeHistogram, blink::SharedStorageWorkletErrorType::kSuccess, 1);
+  histogram_tester_.ExpectBucketCount(
+      kErrorTypeHistogram,
+      blink::SharedStorageWorkletErrorType::
+          kRunNonWebVisibleCrossOriginSharedStorageDisabled,
+      1);
+}
+
+IN_PROC_BROWSER_TEST_P(SharedStorageChromeBrowserTest,
+                       CrossOriginWorklet_Run_PrefsError_SiteSettings) {
+  Set3PCSettingAndAttestMainHostPlusAdditionalSitesThenNavigateToMainHostPage(
+      {kCrossOriginHost});
+
+  GURL script_url = https_server()->GetURL(
+      kCrossOriginHost,
+      net::test_server::GetFilePathWithReplacements(
+          "/shared_storage/module_with_custom_header.js",
+          content::SharedStorageCrossOriginWorkletResponseHeaderReplacement(
+              "Access-Control-Allow-Origin: *",
+              "Shared-Storage-Cross-Origin-Worklet-Allowed: ?1")));
+
+  EXPECT_TRUE(
+      content::ExecJs(GetActiveWebContents(), content::JsReplace(R"(
+        (async function() {
+          window.testWorklet = await sharedStorage.createWorklet($1);
+        })()
+      )",
+                                                                 script_url)));
+
+  // Set a site exception blocking `script_url`.
+  SetSiteException(script_url, ContentSetting::CONTENT_SETTING_BLOCK);
+
+  content::WebContentsConsoleObserver console_observer(GetActiveWebContents());
+
+  // The prefs error for `run()` won't be revealed to the cross-origin caller.
+  // But we can verify the error indirectly, by checking that no console
+  // messages are logged, which indicates that the operation did not execute.
+  EXPECT_TRUE(content::ExecJs(GetActiveWebContents(), R"(
+        window.testWorklet.run('test-operation')
+      )"));
+
+  base::RunLoop run_loop;
+  base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
+      FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
+  run_loop.Run();
+
+  EXPECT_EQ(0u, console_observer.messages().size());
+  WaitForHistograms({kErrorTypeHistogram});
+  histogram_tester_.ExpectBucketCount(
+      kErrorTypeHistogram, blink::SharedStorageWorkletErrorType::kSuccess, 1);
+  histogram_tester_.ExpectBucketCount(
+      kErrorTypeHistogram,
+      blink::SharedStorageWorkletErrorType::
+          kRunNonWebVisibleCrossOriginSharedStorageDisabled,
+      1);
+}
+
+IN_PROC_BROWSER_TEST_P(
+    SharedStorageChromeBrowserTest,
+    CrossOriginWorklet_CreateWorklet_NetworkError_MissingHeaders) {
+  Set3PCSettingAndAttestMainHostPlusAdditionalSitesThenNavigateToMainHostPage(
+      {kCrossOriginHost});
+
+  // simple_module.js does not have the correct headers to be used to register
+  // cross-origin shared storage worklet.
+  GURL script_url = https_server()->GetURL(kCrossOriginHost,
+                                           "/shared_storage/simple_module.js");
+
+  // The network error for `createWorklet()` won't be revealed to the
+  // cross-origin caller. But we can verify the error indirectly, by running a
+  // subsequent operation and checking the console error.
+  EXPECT_TRUE(
+      content::ExecJs(GetActiveWebContents(), content::JsReplace(R"(
+        (async function() {
+          window.testWorklet = await sharedStorage.createWorklet($1);
+        })()
+      )",
+                                                                 script_url)));
+
+  content::WebContentsConsoleObserver console_observer(GetActiveWebContents());
+  console_observer.SetFilter(MakeFilter({"Cannot find operation name."}));
+
+  EXPECT_TRUE(content::ExecJs(GetActiveWebContents(), R"(
+        window.testWorklet.run('test-operation')
+      )"));
+
+  ASSERT_TRUE(console_observer.Wait());
+
+  EXPECT_EQ(1u, console_observer.messages().size());
+  EXPECT_EQ("Cannot find operation name.",
+            base::UTF16ToUTF8(console_observer.messages()[0].message));
+
+  WaitForHistograms({kErrorTypeHistogram});
+  histogram_tester_.ExpectBucketCount(
+      kErrorTypeHistogram,
+      blink::SharedStorageWorkletErrorType::kAddModuleNonWebVisibleOther, 1);
+  histogram_tester_.ExpectBucketCount(
+      kErrorTypeHistogram,
+      blink::SharedStorageWorkletErrorType::kRunNonWebVisibleOperationNotFound,
+      1);
+}
+
+IN_PROC_BROWSER_TEST_P(SharedStorageChromeBrowserTest,
+                       CrossOriginWorklet_CreateWorklet_NetworkError_404) {
+  Set3PCSettingAndAttestMainHostPlusAdditionalSitesThenNavigateToMainHostPage(
+      {kCrossOriginHost});
+
+  // nonexistent_module.js does not exist and should produce a 404 network
+  // error.
+  GURL script_url = https_server()->GetURL(
+      kCrossOriginHost, "/shared_storage/nonexistent_module.js");
+
+  // The network error for `createWorklet()` won't be revealed to the
+  // cross-origin caller. But we can verify the error indirectly, by running a
+  // subsequent operation and checking the console error.
+  EXPECT_TRUE(
+      content::ExecJs(GetActiveWebContents(), content::JsReplace(R"(
+        (async function() {
+          window.testWorklet = await sharedStorage.createWorklet($1);
+        })()
+      )",
+                                                                 script_url)));
+
+  content::WebContentsConsoleObserver console_observer(GetActiveWebContents());
+  console_observer.SetFilter(MakeFilter({"Cannot find operation name."}));
+
+  EXPECT_TRUE(content::ExecJs(GetActiveWebContents(), R"(
+        window.testWorklet.run('test-operation')
+      )"));
+
+  ASSERT_TRUE(console_observer.Wait());
+
+  EXPECT_EQ(1u, console_observer.messages().size());
+  EXPECT_EQ("Cannot find operation name.",
+            base::UTF16ToUTF8(console_observer.messages()[0].message));
+
+  WaitForHistograms({kErrorTypeHistogram});
+  histogram_tester_.ExpectBucketCount(
+      kErrorTypeHistogram,
+      blink::SharedStorageWorkletErrorType::kAddModuleNonWebVisibleOther, 1);
+  histogram_tester_.ExpectBucketCount(
+      kErrorTypeHistogram,
+      blink::SharedStorageWorkletErrorType::kRunNonWebVisibleOperationNotFound,
+      1);
+}
+
+IN_PROC_BROWSER_TEST_P(SharedStorageChromeBrowserTest,
+                       CrossOriginWorklet_CreateWorklet_Success) {
+  Set3PCSettingAndAttestMainHostPlusAdditionalSitesThenNavigateToMainHostPage(
+      {kCrossOriginHost});
+
+  GURL script_url = https_server()->GetURL(
+      kCrossOriginHost,
+      net::test_server::GetFilePathWithReplacements(
+          "/shared_storage/module_with_custom_header.js",
+          content::SharedStorageCrossOriginWorkletResponseHeaderReplacement(
+              "Access-Control-Allow-Origin: *",
+              "Shared-Storage-Cross-Origin-Worklet-Allowed: ?1")));
+
+  content::WebContentsConsoleObserver console_observer(GetActiveWebContents());
+  console_observer.SetFilter(
+      MakeFilter({"Finish executing module_with_custom_header.js"}));
+
+  // The success for `createWorklet()` won't be revealed to the cross-origin
+  // caller definitively. But we can verify the success indirectly, by checking
+  // the console.
+  EXPECT_TRUE(
+      content::ExecJs(GetActiveWebContents(), content::JsReplace(R"(
+        (async function() {
+          window.testWorklet = await sharedStorage.createWorklet($1);
+        })()
+      )",
+                                                                 script_url)));
+
+  ASSERT_TRUE(console_observer.Wait());
+  EXPECT_EQ(1u, console_observer.messages().size());
+  EXPECT_EQ("Finish executing module_with_custom_header.js",
+            base::UTF16ToUTF8(console_observer.messages()[0].message));
+
+  EXPECT_EQ(1u, content::GetAttachedSharedStorageWorkletHostsCount(
+                    GetActiveWebContents()
+                        ->GetPrimaryMainFrame()
+                        ->GetStoragePartition()));
+
+  WaitForHistograms({kErrorTypeHistogram});
+  histogram_tester_.ExpectUniqueSample(
+      kErrorTypeHistogram, blink::SharedStorageWorkletErrorType::kSuccess, 1);
+}
+
+IN_PROC_BROWSER_TEST_P(SharedStorageChromeBrowserTest,
+                       CrossOriginWorklet_SelectURL_Success) {
+  Set3PCSettingAndAttestMainHostPlusAdditionalSitesThenNavigateToMainHostPage(
+      {kCrossOriginHost});
+
+  GURL script_url = https_server()->GetURL(
+      kCrossOriginHost,
+      net::test_server::GetFilePathWithReplacements(
+          "/shared_storage/module_with_custom_header.js",
+          content::SharedStorageCrossOriginWorkletResponseHeaderReplacement(
+              "Access-Control-Allow-Origin: *",
+              "Shared-Storage-Cross-Origin-Worklet-Allowed: ?1")));
+
+  EXPECT_TRUE(
+      content::ExecJs(GetActiveWebContents(), content::JsReplace(R"(
+        (async function() {
+          window.testWorklet = await sharedStorage.createWorklet($1);
+        })()
+      )",
+                                                                 script_url)));
+
+  EXPECT_EQ(1u, content::GetAttachedSharedStorageWorkletHostsCount(
+                    GetActiveWebContents()
+                        ->GetPrimaryMainFrame()
+                        ->GetStoragePartition()));
+
+  content::WebContentsConsoleObserver console_observer(GetActiveWebContents());
+  console_observer.SetFilter(
+      MakeFilter({"Finish executing 'test-url-selection-operation'"}));
+
+  // The success for `selectURL()` won't be revealed to the cross-origin
+  // caller definitively. But we can verify the success indirectly, by checking
+  // the console.
+  EXPECT_TRUE(content::ExecJs(GetActiveWebContents(), R"(
+        window.testWorklet.selectURL(
+            'test-url-selection-operation',
+            [
+              {
+                url: "fenced_frames/title0.html"
+              }
+            ],
+            {
+              data: {'mockResult': 0}
+            }
+          )
+      )"));
+
+  ASSERT_TRUE(console_observer.Wait());
+  EXPECT_EQ(1u, console_observer.messages().size());
+  EXPECT_EQ("Finish executing 'test-url-selection-operation'",
+            base::UTF16ToUTF8(console_observer.messages()[0].message));
+
+  WaitForHistograms({kErrorTypeHistogram});
+  histogram_tester_.ExpectUniqueSample(
+      kErrorTypeHistogram, blink::SharedStorageWorkletErrorType::kSuccess, 2);
+}
+
+IN_PROC_BROWSER_TEST_P(SharedStorageChromeBrowserTest,
+                       CrossOriginWorklet_Run_Success) {
+  Set3PCSettingAndAttestMainHostPlusAdditionalSitesThenNavigateToMainHostPage(
+      {kCrossOriginHost});
+
+  GURL script_url = https_server()->GetURL(
+      kCrossOriginHost,
+      net::test_server::GetFilePathWithReplacements(
+          "/shared_storage/module_with_custom_header.js",
+          content::SharedStorageCrossOriginWorkletResponseHeaderReplacement(
+              "Access-Control-Allow-Origin: *",
+              "Shared-Storage-Cross-Origin-Worklet-Allowed: ?1")));
+
+  EXPECT_TRUE(
+      content::ExecJs(GetActiveWebContents(), content::JsReplace(R"(
+        (async function() {
+          window.testWorklet = await sharedStorage.createWorklet($1);
+        })()
+      )",
+                                                                 script_url)));
+
+  EXPECT_EQ(1u, content::GetAttachedSharedStorageWorkletHostsCount(
+                    GetActiveWebContents()
+                        ->GetPrimaryMainFrame()
+                        ->GetStoragePartition()));
+
+  content::WebContentsConsoleObserver console_observer(GetActiveWebContents());
+  console_observer.SetFilter(MakeFilter({"Finish executing 'test-operation'"}));
+
+  // The success for `run()` won't be revealed to the cross-origin caller
+  // definitively. But we can verify the success indirectly, by checking the
+  // console.
+  EXPECT_TRUE(content::ExecJs(GetActiveWebContents(), R"(
+        window.testWorklet.run(
+            'test-operation',
+            {
+              data: {'customKey': 'customValue'}
+            }
+          )
+      )"));
+
+  ASSERT_TRUE(console_observer.Wait());
+  EXPECT_EQ(1u, console_observer.messages().size());
+  EXPECT_EQ("Finish executing 'test-operation'",
+            base::UTF16ToUTF8(console_observer.messages()[0].message));
+
+  WaitForHistograms({kErrorTypeHistogram});
+  histogram_tester_.ExpectUniqueSample(
+      kErrorTypeHistogram, blink::SharedStorageWorkletErrorType::kSuccess, 2);
 }
 
 IN_PROC_BROWSER_TEST_P(SharedStorageChromeBrowserTest, DocumentTiming) {
@@ -2665,6 +3465,12 @@ IN_PROC_BROWSER_TEST_P(SharedStorageChromeBrowserTest, DocumentTiming) {
 
 IN_PROC_BROWSER_TEST_P(SharedStorageChromeBrowserTest, WorkletTiming) {
   base::test::ScopedRunLoopTimeout timeout(FROM_HERE, base::Seconds(60));
+
+  // The test assumes pages get deleted after navigation. To ensure this,
+  // disable back/forward cache.
+  content::DisableBackForwardCacheForTesting(
+      GetActiveWebContents(),
+      content::BackForwardCache::TEST_REQUIRES_NO_CACHING);
 
   Set3rdPartyCookieAndMainHostAttestationSettingsThenNavigateToMainHostPage();
 
@@ -2727,10 +3533,17 @@ IN_PROC_BROWSER_TEST_P(SharedStorageChromeBrowserTest, WorkletTiming) {
   histogram_tester_.ExpectUniqueSample(kWorkletNumPerPageHistogram, 1, 1);
 }
 
-// Flaky: https://crbug.com/1406845
-IN_PROC_BROWSER_TEST_P(SharedStorageChromeBrowserTest,
-                       DISABLED_WorkletNumPerPage_Two) {
-  Set3rdPartyCookieAndMainHostAttestationSettingsThenNavigateToMainHostPage();
+IN_PROC_BROWSER_TEST_P(SharedStorageChromeBrowserTest, WorkletNumPerPage_Two) {
+  base::test::ScopedRunLoopTimeout timeout(FROM_HERE, base::Seconds(60));
+
+  // The test assumes pages get deleted after navigation. To ensure this,
+  // disable back/forward cache.
+  content::DisableBackForwardCacheForTesting(
+      GetActiveWebContents(),
+      content::BackForwardCache::TEST_REQUIRES_NO_CACHING);
+
+  Set3PCSettingAndAttestMainHostPlusAdditionalSitesThenNavigateToMainHostPage(
+      /*additional_site_hosts=*/std::vector<std::string>({kCrossOriginHost}));
 
   content::RenderFrameHost* main_frame =
       GetActiveWebContents()->GetPrimaryMainFrame();
@@ -2756,21 +3569,27 @@ IN_PROC_BROWSER_TEST_P(SharedStorageChromeBrowserTest,
   EXPECT_TRUE(content::NavigateToURL(GetActiveWebContents(),
                                      GURL(url::kAboutBlankURL)));
   WaitForHistograms({kErrorTypeHistogram, kTimingDocumentAddModuleHistogram,
-                     kTimingDocumentRunHistogram, kTimingWorkletSetHistogram,
-                     kWorkletNumPerPageHistogram});
+                     kTimingDocumentRunHistogram, kWorkletNumPerPageHistogram});
   histogram_tester_.ExpectUniqueSample(
       kErrorTypeHistogram, blink::SharedStorageWorkletErrorType::kSuccess, 4);
   histogram_tester_.ExpectTotalCount(kTimingDocumentAddModuleHistogram, 2);
   histogram_tester_.ExpectTotalCount(kTimingDocumentRunHistogram, 2);
   histogram_tester_.ExpectUniqueSample(kWorkletNumPerPageHistogram, 2, 1);
-  EXPECT_LE(1u,
-            histogram_tester_.GetAllSamples(kTimingWorkletSetHistogram).size());
 }
 
-// Flaky: https://crbug.com/1406845
 IN_PROC_BROWSER_TEST_P(SharedStorageChromeBrowserTest,
-                       DISABLED_WorkletNumPerPage_Three) {
-  Set3rdPartyCookieAndMainHostAttestationSettingsThenNavigateToMainHostPage();
+                       WorkletNumPerPage_Three) {
+  base::test::ScopedRunLoopTimeout timeout(FROM_HERE, base::Seconds(60));
+
+  // The test assumes pages get deleted after navigation. To ensure this,
+  // disable back/forward cache.
+  content::DisableBackForwardCacheForTesting(
+      GetActiveWebContents(),
+      content::BackForwardCache::TEST_REQUIRES_NO_CACHING);
+
+  Set3PCSettingAndAttestMainHostPlusAdditionalSitesThenNavigateToMainHostPage(
+      /*additional_site_hosts=*/std::vector<std::string>(
+          {kCrossOriginHost, kThirdOriginHost}));
 
   content::RenderFrameHost* main_frame =
       GetActiveWebContents()->GetPrimaryMainFrame();
@@ -2780,7 +3599,8 @@ IN_PROC_BROWSER_TEST_P(SharedStorageChromeBrowserTest,
       sharedStorage.set('key0', 'value0');
       console.log('Finished script');
     )",
-                                     "Finished script"));
+                                     "Finished script",
+                                     /*use_select_url=*/true));
 
   content::RenderFrameHost* iframe = CreateIframe(
       main_frame, https_server()->GetURL(kCrossOriginHost, kSimplePagePath));
@@ -2790,7 +3610,8 @@ IN_PROC_BROWSER_TEST_P(SharedStorageChromeBrowserTest,
       sharedStorage.set('key0', 'value0');
       console.log('Finished script');
     )",
-                                     "Finished script"));
+                                     "Finished script",
+                                     /*use_select_url=*/true));
 
   content::RenderFrameHost* nested_iframe = CreateIframe(
       iframe, https_server()->GetURL(kThirdOriginHost, kSimplePagePath));
@@ -2800,21 +3621,23 @@ IN_PROC_BROWSER_TEST_P(SharedStorageChromeBrowserTest,
       sharedStorage.set('key0', 'value0');
       console.log('Finished script');
     )",
-                                     "Finished script"));
+                                     "Finished script",
+                                     /*use_select_url=*/true));
 
-  // Navigate away to record `kWorkletNumPerPageHistogram` histogram.
+  // Navigate away to record `kWorkletNumPerPageHistogram`,
+  // `kSelectUrlCallsPerPageHistogram` histograms.
   EXPECT_TRUE(content::NavigateToURL(GetActiveWebContents(),
                                      GURL(url::kAboutBlankURL)));
   WaitForHistograms({kErrorTypeHistogram, kTimingDocumentAddModuleHistogram,
-                     kTimingDocumentRunHistogram, kTimingWorkletSetHistogram,
-                     kWorkletNumPerPageHistogram});
+                     kTimingDocumentSelectUrlHistogram,
+                     kWorkletNumPerPageHistogram,
+                     kSelectUrlCallsPerPageHistogram});
   histogram_tester_.ExpectUniqueSample(
       kErrorTypeHistogram, blink::SharedStorageWorkletErrorType::kSuccess, 6);
   histogram_tester_.ExpectTotalCount(kTimingDocumentAddModuleHistogram, 3);
-  histogram_tester_.ExpectTotalCount(kTimingDocumentRunHistogram, 3);
+  histogram_tester_.ExpectTotalCount(kTimingDocumentSelectUrlHistogram, 3);
   histogram_tester_.ExpectUniqueSample(kWorkletNumPerPageHistogram, 3, 1);
-  EXPECT_LE(1u,
-            histogram_tester_.GetAllSamples(kTimingWorkletSetHistogram).size());
+  histogram_tester_.ExpectUniqueSample(kSelectUrlCallsPerPageHistogram, 3, 1);
 }
 
 INSTANTIATE_TEST_SUITE_P(All,
@@ -2969,6 +3792,12 @@ class SharedStorageFencedFrameChromeBrowserTest
 
 IN_PROC_BROWSER_TEST_F(SharedStorageFencedFrameChromeBrowserTest,
                        FencedFrameNavigateTop_BudgetWithdrawal) {
+  // The test assumes pages get deleted after navigation. To ensure this,
+  // disable back/forward cache.
+  content::DisableBackForwardCacheForTesting(
+      GetActiveWebContents(),
+      content::BackForwardCache::TEST_REQUIRES_NO_CACHING);
+
   Set3rdPartyCookieAndAttestationSettingsThenNavigateToMainHostPage();
 
   content::RenderFrameHost* iframe =
@@ -3016,6 +3845,12 @@ IN_PROC_BROWSER_TEST_F(SharedStorageFencedFrameChromeBrowserTest,
 IN_PROC_BROWSER_TEST_F(
     SharedStorageFencedFrameChromeBrowserTest,
     TwoFencedFrames_DifferentURNs_EachNavigateOnce_BudgetWithdrawalTwice) {
+  // The test assumes pages get deleted after navigation. To ensure this,
+  // disable back/forward cache.
+  content::DisableBackForwardCacheForTesting(
+      GetActiveWebContents(),
+      content::BackForwardCache::TEST_REQUIRES_NO_CACHING);
+
   Set3rdPartyCookieAndAttestationSettingsThenNavigateToMainHostPage();
 
   content::RenderFrameHost* iframe1 =
@@ -3151,6 +3986,12 @@ INSTANTIATE_TEST_SUITE_P(
 
 IN_PROC_BROWSER_TEST_P(SharedStoragePrivateAggregationChromeBrowserTest,
                        ContributeToHistogramViaRun) {
+  // The test assumes pages get deleted after navigation. To ensure this,
+  // disable back/forward cache.
+  content::DisableBackForwardCacheForTesting(
+      GetActiveWebContents(),
+      content::BackForwardCache::TEST_REQUIRES_NO_CACHING);
+
   // This always enrolls the main host for Shared Storage, but only enrolls the
   // main host for Private Aggregation exactly when `ShouldEnrollMainHost()` is
   // true.
@@ -3174,10 +4015,20 @@ IN_PROC_BROWSER_TEST_P(SharedStoragePrivateAggregationChromeBrowserTest,
           ? content::GetPrivateAggregationHostPipeReportSuccessValue()
           : content::GetPrivateAggregationHostPipeApiDisabledValue(),
       1);
+
+  histogram_tester_.ExpectTotalCount(
+      kPrivateAggregationHostTimeToGenerateReportRequestWithContextIdHistogram,
+      0);
 }
 
 IN_PROC_BROWSER_TEST_P(SharedStoragePrivateAggregationChromeBrowserTest,
                        ContributeToHistogramViaSelectURL) {
+  // The test assumes pages get deleted after navigation. To ensure this,
+  // disable back/forward cache.
+  content::DisableBackForwardCacheForTesting(
+      GetActiveWebContents(),
+      content::BackForwardCache::TEST_REQUIRES_NO_CACHING);
+
   // This always enrolls the main host for Shared Storage, but only enrolls the
   // main host for Private Aggregation exactly when `ShouldEnrollMainHost()` is
   // true.
@@ -3203,10 +4054,19 @@ IN_PROC_BROWSER_TEST_P(SharedStoragePrivateAggregationChromeBrowserTest,
           ? content::GetPrivateAggregationHostPipeReportSuccessValue()
           : content::GetPrivateAggregationHostPipeApiDisabledValue(),
       1);
+  histogram_tester_.ExpectTotalCount(
+      kPrivateAggregationHostTimeToGenerateReportRequestWithContextIdHistogram,
+      0);
 }
 
 IN_PROC_BROWSER_TEST_P(SharedStoragePrivateAggregationChromeBrowserTest,
                        WithContextId_NoPrivateAggregationJS) {
+  // The test assumes pages get deleted after navigation. To ensure this,
+  // disable back/forward cache.
+  content::DisableBackForwardCacheForTesting(
+      GetActiveWebContents(),
+      content::BackForwardCache::TEST_REQUIRES_NO_CACHING);
+
   // This always enrolls the main host for Shared Storage, but only enrolls the
   // main host for Private Aggregation exactly when `ShouldEnrollMainHost()` is
   // true.
@@ -3232,6 +4092,9 @@ IN_PROC_BROWSER_TEST_P(SharedStoragePrivateAggregationChromeBrowserTest,
           ? content::GetPrivateAggregationHostPipeReportSuccessValue()
           : content::GetPrivateAggregationHostPipeApiDisabledValue(),
       1);
+  histogram_tester_.ExpectTotalCount(
+      kPrivateAggregationHostTimeToGenerateReportRequestWithContextIdHistogram,
+      SuccessExpected() ? 1 : 0);
 }
 
 class SharedStorageHeaderPrefBrowserTest : public SharedStoragePrefBrowserTest {

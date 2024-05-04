@@ -229,7 +229,7 @@ int ChromePasswordProtectionService::GetStoredVerdictCount(
 }
 
 void ChromePasswordProtectionService::MaybeReportPasswordReuseDetected(
-    safe_browsing::PasswordProtectionRequest* request,
+    const GURL& main_frame_url,
     const std::string& username,
     PasswordType password_type,
     bool is_phishing_url,
@@ -549,7 +549,7 @@ void ChromePasswordProtectionService::MaybeLogPasswordReuseLookupEvent(
     RequestOutcome outcome,
     PasswordType password_type,
     const LoginReputationClientResponse* response) {
-  // TODO(crbug.com/1147967): Complete PhishGuard iOS implementation.
+  // TODO(crbug.com/40731022): Complete PhishGuard iOS implementation.
 }
 
 void ChromePasswordProtectionService::MaybeLogPasswordReuseDetectedEvent(

@@ -47,7 +47,7 @@ class WebAppShortcutManagerMacTest : public WebAppTest {
     // Put shortcuts somewhere under the home dir, as otherwise LaunchServices
     // won't be able to find them.
     override_registration_ =
-        OsIntegrationTestOverrideImpl::OverrideForTesting(base::GetHomeDir());
+        OsIntegrationTestOverrideImpl::OverrideForTesting();
 
     provider_ = FakeWebAppProvider::Get(profile());
 
@@ -61,8 +61,7 @@ class WebAppShortcutManagerMacTest : public WebAppTest {
         profile(), file_handler_manager.get(), protocol_handler_manager.get());
     provider_->SetOsIntegrationManager(std::make_unique<OsIntegrationManager>(
         profile(), std::move(shortcut_manager), std::move(file_handler_manager),
-        std::move(protocol_handler_manager),
-        /*url_handler_manager*/ nullptr));
+        std::move(protocol_handler_manager)));
 
     // Do not yet start WebAppProvider here in SetUp, as tests verify behavior
     // that happens during and is triggered by start. As such individual tests
@@ -77,19 +76,16 @@ class WebAppShortcutManagerMacTest : public WebAppTest {
     // override DCHECK fails if the directories are not empty. To bypass this in
     // this unittest, we manually delete it.
     // TODO: If these unittests leave OS hook artifacts on bots, undo that here.
-    EXPECT_TRUE(override_registration_->test_override->DeleteChromeAppsDir());
+    EXPECT_TRUE(override_registration_->test_override().DeleteChromeAppsDir());
     override_registration_.reset();
 
     WebAppTest::TearDown();
   }
 
-  WebAppShortcutManager& shortcut_manager() {
-    return provider_->os_integration_manager().shortcut_manager_for_testing();
-  }
-
   base::FilePath GetShortcutPath(const std::string& app_name) {
     std::string shortcut_filename = app_name + ".app";
-    return override_registration_->test_override->chrome_apps_folder()
+    return override_registration_->test_override()
+        .chrome_apps_folder()
         .AppendASCII(shortcut_filename);
   }
 

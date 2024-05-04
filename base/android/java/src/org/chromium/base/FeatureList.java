@@ -50,6 +50,17 @@ public class FeatureList {
             featureParams.put(paramName, testValue);
         }
 
+        /**
+         * Add an override for a field trial parameter.
+         *
+         * @param param The param object that holds feature and param names.
+         * @param testValue The string value to override, which will later be parsed/converted into
+         *     the actual value.
+         */
+        public void addFieldTrialParamOverride(FeatureParam param, String testValue) {
+            addFieldTrialParamOverride(param.getFeatureName(), param.getName(), testValue);
+        }
+
         Boolean getFeatureFlagOverride(String featureName) {
             return mFeatureFlags.get(featureName);
         }
@@ -185,11 +196,23 @@ public class FeatureList {
      * @return Whether the feature has a test value configured.
      */
     public static boolean hasTestFeature(String featureName) {
-        // TODO(crbug.com/1434471)): Copy into a local reference to avoid race conditions
+        // TODO(crbug.com/40264751)): Copy into a local reference to avoid race conditions
         // like crbug.com/1494095 unsetting the test features. Locking down flag state will allow
         // this mitigation to be removed.
         TestValues testValues = sTestFeatures;
         return testValues != null && testValues.mFeatureFlags.containsKey(featureName);
+    }
+
+    /**
+     * @param featureName The name of the feature the param is part of.
+     * @param paramName The name of the param to query.
+     * @return Whether the param has a test value configured.
+     */
+    public static boolean hasTestParam(String featureName, String paramName) {
+        TestValues testValues = sTestFeatures;
+        return testValues != null
+                && testValues.mFieldTrialParams.containsKey(featureName)
+                && testValues.mFieldTrialParams.get(featureName).containsKey(paramName);
     }
 
     /**
@@ -200,7 +223,7 @@ public class FeatureList {
      * @throws IllegalArgumentException if no test value was set and default values aren't allowed.
      */
     public static Boolean getTestValueForFeature(String featureName) {
-        // TODO(crbug.com/1434471)): Copy into a local reference to avoid race conditions
+        // TODO(crbug.com/40264751)): Copy into a local reference to avoid race conditions
         // like crbug.com/1494095 unsetting the test features. Locking down flag state will allow
         // this mitigation to be removed.
         TestValues testValues = sTestFeatures;
@@ -229,7 +252,7 @@ public class FeatureList {
      * @return The test value set for the parameter, or null if no test value has been set.
      */
     public static String getTestValueForFieldTrialParam(String featureName, String paramName) {
-        // TODO(crbug.com/1434471)): Copy into a local reference to avoid race conditions
+        // TODO(crbug.com/40264751)): Copy into a local reference to avoid race conditions
         // like crbug.com/1494095 unsetting the test features. Locking down flag state will allow
         // this mitigation to be removed.
         TestValues testValues = sTestFeatures;
@@ -244,11 +267,11 @@ public class FeatureList {
      *
      * @param featureName The name of the feature to query all parameters.
      * @return The test values set for the parameter, or null if no test values have been set (if
-     *      test values were set for other features, an empty Map will be returned, not null).
+     *     test values were set for other features, an empty Map will be returned, not null).
      */
     public static Map<String, String> getTestValuesForAllFieldTrialParamsForFeature(
             String featureName) {
-        // TODO(crbug.com/1434471)): Copy into a local reference to avoid race conditions
+        // TODO(crbug.com/40264751)): Copy into a local reference to avoid race conditions
         // like crbug.com/1494095 unsetting the test features. Locking down flag state will allow
         // this mitigation to be removed.
         TestValues testValues = sTestFeatures;

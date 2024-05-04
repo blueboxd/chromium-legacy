@@ -36,7 +36,7 @@ SerialPortUnderlyingSource::SerialPortUnderlyingSource(
                                     WrapWeakPersistent(this)));
 }
 
-ScriptPromise SerialPortUnderlyingSource::Pull(
+ScriptPromiseUntyped SerialPortUnderlyingSource::Pull(
     ReadableByteStreamController* controller,
     ExceptionState&) {
   DCHECK(controller_ == nullptr || controller_ == controller);
@@ -49,10 +49,10 @@ ScriptPromise SerialPortUnderlyingSource::Pull(
   // we allow the stream to be canceled before that data is received. pull()
   // will not be called again until a chunk is enqueued or if an error has been
   // signaled to the controller.
-  return ScriptPromise::CastUndefined(script_state_.Get());
+  return ScriptPromiseUntyped::CastUndefined(script_state_.Get());
 }
 
-ScriptPromise SerialPortUnderlyingSource::Cancel(
+ScriptPromiseUntyped SerialPortUnderlyingSource::Cancel(
     ExceptionState& exception_state) {
   DCHECK(data_pipe_);
 
@@ -62,10 +62,11 @@ ScriptPromise SerialPortUnderlyingSource::Cancel(
   // don't need to do it here.
   if (serial_port_->IsClosing()) {
     serial_port_->UnderlyingSourceClosed();
-    return ScriptPromise::CastUndefined(script_state_.Get());
+    return ScriptPromiseUntyped::CastUndefined(script_state_.Get());
   }
 
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state_);
+  auto* resolver =
+      MakeGarbageCollected<ScriptPromiseResolver<IDLUndefined>>(script_state_);
   serial_port_->Flush(
       device::mojom::blink::SerialPortFlushMode::kReceive,
       WTF::BindOnce(&SerialPortUnderlyingSource::OnFlush, WrapPersistent(this),
@@ -73,7 +74,7 @@ ScriptPromise SerialPortUnderlyingSource::Cancel(
   return resolver->Promise();
 }
 
-ScriptPromise SerialPortUnderlyingSource::Cancel(
+ScriptPromiseUntyped SerialPortUnderlyingSource::Cancel(
     v8::Local<v8::Value> reason,
     ExceptionState& exception_state) {
   return Cancel(exception_state);
@@ -149,7 +150,7 @@ void SerialPortUnderlyingSource::Trace(Visitor* visitor) const {
 
 void SerialPortUnderlyingSource::ReadDataOrArmWatcher() {
   const void* buffer = nullptr;
-  uint32_t length = 0;
+  size_t length = 0;
   MojoResult result =
       data_pipe_->BeginReadData(&buffer, &length, MOJO_READ_DATA_FLAG_NONE);
   switch (result) {
@@ -162,8 +163,7 @@ void SerialPortUnderlyingSource::ReadDataOrArmWatcher() {
 
       if (ReadableStreamBYOBRequest* request = controller_->byobRequest()) {
         DOMArrayPiece view(request->view().Get());
-        length =
-            std::min(base::saturated_cast<uint32_t>(view.ByteLength()), length);
+        length = std::min(view.ByteLength(), length);
         memcpy(view.Data(), buffer, length);
         request->respond(script_state_, length, exception_state);
       } else {
@@ -207,7 +207,8 @@ void SerialPortUnderlyingSource::OnHandleReady(
   }
 }
 
-void SerialPortUnderlyingSource::OnFlush(ScriptPromiseResolver* resolver) {
+void SerialPortUnderlyingSource::OnFlush(
+    ScriptPromiseResolver<IDLUndefined>* resolver) {
   serial_port_->UnderlyingSourceClosed();
   resolver->Resolve();
 }

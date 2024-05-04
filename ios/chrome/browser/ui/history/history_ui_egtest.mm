@@ -291,16 +291,17 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
               _URL3.GetContent())] assertWithMatcher:grey_nil()];
 }
 
-// Tests that searching a typed URL (after Sync is enabled and the URL is
-// uploaded to the Sync server) displays only entries matching the search term.
+// Tests that searching a typed URL (after history sync is enabled and the URL
+// is uploaded to the sync server) displays only entries matching the search
+// term.
 - (void)testSearchSyncedHistory {
   const char syncedURL[] = "http://mockurl/sync/";
   const GURL mockURL(syncedURL);
 
-  // Sign in to sync.
+  // Sign in and enable history sync.
   FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
   [SigninEarlGrey addFakeIdentity:fakeIdentity];
-  [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity];
+  [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity enableHistorySync:YES];
 
   [ChromeEarlGrey
       waitForSyncTransportStateActiveWithTimeout:kSyncOperationTimeout];
@@ -521,7 +522,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 }
 
 // Tests clear browsing history.
-// TODO(crbug.com/1408647): Fix flakiness.
+// TODO(crbug.com/40888582): Fix flakiness.
 - (void)DISABLED_testClearBrowsingHistory {
   [self loadTestURLs];
   [self openHistoryPanel];
@@ -746,7 +747,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 
 // Tests that the VC can be dismissed by swiping down while its searching.
 - (void)testSwipeDownDismissWhileSearching {
-// TODO(crbug.com/1078165): Test fails on iOS 13+ iPad devices.
+// TODO(crbug.com/40689184): Test fails on iOS 13+ iPad devices.
 #if !TARGET_IPHONE_SIMULATOR
   if ([ChromeEarlGrey isIPadIdiom]) {
     EARL_GREY_TEST_DISABLED(@"This test fails on iOS 13+ iPad device.");
@@ -820,7 +821,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 #pragma mark Multiwindow
 
 - (void)testHistorySyncInMultiwindow {
-  // TODO(crbug.com/1252457): Test is flaky on iPad devices.
+  // TODO(crbug.com/40198758): Test is flaky on iPad devices.
   if ([ChromeEarlGrey isIPadIdiom]) {
     EARL_GREY_TEST_DISABLED(@"This test is flaky on iPad devices.");
   }

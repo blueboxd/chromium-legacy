@@ -4,6 +4,7 @@
 
 module viz.mojom;
 
+import "mojo/public/mojom/base/unguessable_token.mojom";
 import "gpu/ipc/common/surface_handle.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "services/viz/privileged/mojom/compositing/display_private.mojom";
@@ -19,7 +20,9 @@ import "services/viz/public/mojom/compositing/local_surface_id.mojom";
 import "services/viz/public/mojom/compositing/surface_id.mojom";
 import "services/viz/public/mojom/compositing/surface_info.mojom";
 import "services/viz/public/mojom/hit_test/aggregated_hit_test_region.mojom";
+import "services/viz/public/mojom/compositing/copy_output_result.mojom";
 import "services/viz/public/mojom/compositing/video_detector_observer.mojom";
+import "third_party/blink/public/mojom/tokens/tokens.mojom";
 
 // Initialization parameters for a RootCompositorFrameSink.
 struct RootCompositorFrameSinkParams {
@@ -206,6 +209,17 @@ interface FrameSinkManager {
   // Stops frame counting on the Viz thread and returns all records to the
   // caller.
   StopFrameCountingForTest() => (FrameCountingData? data);
+
+  // Clears the ViewTransition resources if they have not been claimed by a
+  // CompositorFrameSink. `transition_token` identifies the navigation for which
+  // the resources were cached.
+  ClearUnclaimedViewTransitionResources(
+    blink.mojom.ViewTransitionToken transition_token);
+
+  // Returns true if there are any unclaimed ViewTransition resources. For
+  // testing only.
+  [Sync]
+  HasUnclaimedViewTransitionResourcesForTest() => (bool has_resources);
 };
 
 // The FrameSinkManagerClient interface is implemented by the Display
@@ -234,4 +248,15 @@ interface FrameSinkManagerClient {
   [EnableIf=is_android]
   VerifyThreadIdsDoNotBelongToHost(array<int32> thread_ids)
       => (bool passed_verification);
+
+  // Allows the GPU process to send the result of a screenshot back to the host
+  // process. The host stores the screenshot to the destination specified by
+  // `destination_token`.
+  //
+  // This is used to copy a screenshot after same-document navigation committed
+  // in the renderer process.
+  OnScreenshotCaptured(
+    blink.mojom.SameDocNavigationScreenshotDestinationToken destination_token,
+    CopyOutputResult copy_output_result
+  );
 };

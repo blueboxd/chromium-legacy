@@ -85,11 +85,7 @@ void ToolbarActionsModel::OnExtensionActionUpdated(
     extensions::ExtensionAction* extension_action,
     content::WebContents* web_contents,
     content::BrowserContext* browser_context) {
-  // Notify observers if the extension exists and is in the model.
-  if (HasAction(extension_action->extension_id())) {
-    for (Observer& observer : observers_)
-      observer.OnToolbarActionUpdated(extension_action->extension_id());
-  }
+  NotifyToolbarActionUpdated(extension_action->extension_id());
 }
 
 void ToolbarActionsModel::OnExtensionLoaded(
@@ -131,10 +127,12 @@ void ToolbarActionsModel::OnExtensionPermissionsUpdated(
     const extensions::Extension& extension,
     const extensions::PermissionSet& permissions,
     extensions::PermissionsManager::UpdateReason reason) {
-  if (HasAction(extension.id())) {
-    for (Observer& observer : observers_)
-      observer.OnToolbarActionUpdated(extension.id());
-  }
+  NotifyToolbarActionUpdated(extension.id());
+}
+
+void ToolbarActionsModel::OnActiveTabPermissionGranted(
+    const extensions::Extension& extension) {
+  NotifyToolbarActionUpdated(extension.id());
 }
 
 void ToolbarActionsModel::Shutdown() {
@@ -293,7 +291,7 @@ bool ToolbarActionsModel::IsActionForcePinned(const ActionId& action_id) const {
 
 void ToolbarActionsModel::MovePinnedAction(const ActionId& action_id,
                                            size_t target_index) {
-  // TODO(crbug.com/1266952): This code assumes all actions are in
+  // TODO(crbug.com/40204281): This code assumes all actions are in
   // stored_pinned_actions, which force-pinned actions aren't; so, always keep
   // them 'to the right' of other actions. Remove this guard if we ever add
   // force-pinned actions to the pref.
@@ -343,7 +341,7 @@ void ToolbarActionsModel::MovePinnedAction(const ActionId& action_id,
   // non-force-pinned neighbor. This basically keeps force-pinned actions on the
   // right at all times.
   //
-  // TODO(crbug.com/1266952): Simplify this logic when force-pinned extensions
+  // TODO(crbug.com/40204281): Simplify this logic when force-pinned extensions
   // are saved in the pref.
   std::vector<ActionId>::iterator non_force_pinned_neighbor =
       pinned_action_ids_.end();
@@ -526,4 +524,15 @@ ToolbarActionsModel::GetFilteredPinnedActionIds() const {
       filtered_action_ids.push_back(action_id);
   }
   return filtered_action_ids;
+}
+
+void ToolbarActionsModel::NotifyToolbarActionUpdated(
+    const ActionId& action_id) {
+  if (!HasAction(action_id)) {
+    return;
+  }
+
+  for (Observer& observer : observers_) {
+    observer.OnToolbarActionUpdated(action_id);
+  }
 }

@@ -84,10 +84,6 @@ const float kResourceAdjustedRatio = 0.5;
 
 bool g_should_fail_drawing_buffer_creation_for_testing = false;
 
-BASE_FEATURE(kAddSharedImageRasterUsageInDrawingBuffer,
-             "AddSharedImageRasterUsageInDrawingBuffer",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 void FlipVertically(base::span<uint8_t> framebuffer,
                     size_t num_rows,
                     size_t row_bytes) {
@@ -336,10 +332,9 @@ void DrawingBuffer::SetIsInHiddenPage(bool hidden) {
   // Make sure to interrupt pixel local storage.
   ScopedStateRestorer scoped_state_restorer(this);
 
-  if (base::FeatureList::IsEnabled(features::kCanvasFreeMemoryWhenHidden)) {
-    auto* context_support = ContextProvider()->ContextSupport();
-    if (context_support)
-      context_support->SetAggressivelyFreeResources(hidden);
+  auto* context_support = ContextProvider()->ContextSupport();
+  if (context_support) {
+    context_support->SetAggressivelyFreeResources(hidden);
   }
 
   gl_->ContextVisibilityHintCHROMIUM(is_hidden_ ? GL_FALSE : GL_TRUE);
@@ -519,7 +514,7 @@ bool DrawingBuffer::FinishPrepareTransferableResourceSoftware(
   ReadFramebufferIntoBitmapPixels(
       static_cast<uint8_t*>(registered.bitmap->memory()));
 
-  *out_resource = viz::TransferableResource::MakeSoftware(
+  *out_resource = viz::TransferableResource::MakeSoftwareSharedBitmap(
       registered.bitmap->id(), gpu::SyncToken(), size_,
       viz::SinglePlaneFormat::kRGBA_8888,
       viz::TransferableResource::ResourceSource::kDrawingBuffer);
@@ -1917,16 +1912,11 @@ scoped_refptr<DrawingBuffer::ColorBuffer> DrawingBuffer::CreateColorBuffer(
 
   // The SharedImages created here are read to and written from by WebGL. They
   // may also be read via the raster interface for WebGL->video and/or
-  // WebGL->canvas conversions. As RASTER_READ usage was not historically
-  // included here, we are rolling it out with a killswitch.
-  // TODO(crbug.com/1522121): Remove this killswitch post-safe rollout.
+  // WebGL->canvas conversions.
   uint32_t usage = gpu::SHARED_IMAGE_USAGE_GLES2_READ |
                    gpu::SHARED_IMAGE_USAGE_GLES2_WRITE |
-                   gpu::SHARED_IMAGE_USAGE_GLES2_FRAMEBUFFER_HINT |
-                   gpu::SHARED_IMAGE_USAGE_DISPLAY_READ;
-  if (base::FeatureList::IsEnabled(kAddSharedImageRasterUsageInDrawingBuffer)) {
-    usage = usage | gpu::SHARED_IMAGE_USAGE_RASTER_READ;
-  }
+                   gpu::SHARED_IMAGE_USAGE_DISPLAY_READ |
+                   gpu::SHARED_IMAGE_USAGE_RASTER_READ;
   if (initial_gpu_ == gl::GpuPreference::kHighPerformance)
     usage |= gpu::SHARED_IMAGE_USAGE_HIGH_PERFORMANCE_GPU;
   GrSurfaceOrigin origin = opengl_flip_y_extension_
@@ -1959,6 +1949,9 @@ scoped_refptr<DrawingBuffer::ColorBuffer> DrawingBuffer::CreateColorBuffer(
     front_buffer_shared_image = std::move(shared_images.front_buffer);
   } else {
     if (ShouldUseChromiumImage()) {
+#if !BUILDFLAG(IS_ANDROID)
+      // Android's SharedImage backing for ChromiumImage does not support BGRX.
+
       // TODO(b/286417069): BGRX has issues when Vulkan is used for raster and
       // composite. Using BGRX is technically possible but will require a lot
       // of work given the current state of the codebase. There are projects in
@@ -1978,6 +1971,7 @@ scoped_refptr<DrawingBuffer::ColorBuffer> DrawingBuffer::CreateColorBuffer(
               ContextProvider()->GetCapabilities())) {
         color_buffer_format_ = viz::SinglePlaneFormat::kBGRX_8888;
       }
+#endif  // !BUILDFLAG(IS_ANDROID)
 
       bool disallow_gmb = base::FeatureList::IsEnabled(
           features::kDrawingBufferWithoutGpuMemoryBuffer);
@@ -2033,11 +2027,8 @@ scoped_refptr<DrawingBuffer::ColorBuffer> DrawingBuffer::CreateColorBuffer(
           }
 #endif
           back_buffer_shared_image = std::move(client_shared_image);
-#if BUILDFLAG(IS_MAC)
-          // A CHROMIUM_image backed texture requires a specialized set of
-          // parameters on OSX.
-          texture_target = gpu::GetPlatformSpecificTextureTarget();
-#endif
+          texture_target =
+              back_buffer_shared_image->GetTextureTargetForOverlays();
         }
       }
     }
@@ -2203,6 +2194,14 @@ bool DrawingBuffer::ShouldUseChromiumImage() {
   if (chromium_image_usage_ != kAllowChromiumImage) {
     return false;
   }
+#if BUILDFLAG(IS_ANDROID)
+  if (ContextProvider()
+          ->GetGpuFeatureInfo()
+          .status_values[gpu::GPU_FEATURE_TYPE_ANDROID_SURFACE_CONTROL] !=
+      gpu::kGpuFeatureStatusEnabled) {
+    return false;
+  }
+#endif
   if (RuntimeEnabledFeatures::WebGLImageChromiumEnabled()) {
     return true;
   }

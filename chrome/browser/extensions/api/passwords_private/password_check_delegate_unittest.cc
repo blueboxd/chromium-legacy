@@ -7,16 +7,17 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <string_view>
 #include <vector>
 
 #include "base/containers/contains.h"
 #include "base/functional/bind.h"
+#include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
@@ -122,10 +123,10 @@ using MockStartPasswordCheckCallback =
     base::MockCallback<PasswordCheckDelegate::StartPasswordCheckCallback>;
 
 PasswordForm MakeSavedPassword(
-    base::StringPiece signon_realm,
-    base::StringPiece16 username,
-    base::StringPiece16 password = kPassword1,
-    base::StringPiece16 username_element = u"",
+    std::string_view signon_realm,
+    std::u16string_view username,
+    std::u16string_view password = kPassword1,
+    std::u16string_view username_element = u"",
     PasswordForm::Store store = PasswordForm::Store::kProfileStore) {
   PasswordForm form;
   form.signon_realm = std::string(signon_realm);
@@ -138,9 +139,9 @@ PasswordForm MakeSavedPassword(
 }
 
 PasswordForm MakeSavedFederatedCredential(
-    base::StringPiece signon_realm,
-    base::StringPiece16 username,
-    base::StringPiece provider = kGoogleAccounts,
+    std::string_view signon_realm,
+    std::u16string_view username,
+    std::string_view provider = kGoogleAccounts,
     PasswordForm::Store store = PasswordForm::Store::kProfileStore) {
   PasswordForm form;
   form.signon_realm = std::string(signon_realm);
@@ -162,16 +163,16 @@ void AddIssueToForm(PasswordForm* form,
                          IsMuted(is_muted), TriggerBackendNotification(false)));
 }
 
-std::string MakeAndroidRealm(base::StringPiece package_name) {
+std::string MakeAndroidRealm(std::string_view package_name) {
   return base::StrCat({"android://hash@", package_name});
 }
 
 PasswordForm MakeSavedAndroidPassword(
-    base::StringPiece package_name,
-    base::StringPiece16 username,
-    base::StringPiece app_display_name = "",
-    base::StringPiece affiliated_web_realm = "",
-    base::StringPiece16 password = kPassword1) {
+    std::string_view package_name,
+    std::u16string_view username,
+    std::string_view app_display_name = "",
+    std::string_view affiliated_web_realm = "",
+    std::u16string_view password = kPassword1) {
   PasswordForm form;
   form.signon_realm = MakeAndroidRealm(package_name);
   form.username_value = std::u16string(username);
@@ -586,7 +587,7 @@ TEST_F(PasswordCheckDelegateTest, MuteInsecureCredentialStaleData) {
 
   PasswordUiEntry credential =
       std::move(delegate().GetInsecureCredentials().at(0));
-  store().RemoveLogin(form);
+  store().RemoveLogin(FROM_HERE, form);
   RunUntilIdle();
 
   EXPECT_FALSE(delegate().MuteInsecureCredential(credential));
@@ -639,7 +640,7 @@ TEST_F(PasswordCheckDelegateTest, UnmuteInsecureCredentialStaleData) {
 
   PasswordUiEntry credential =
       std::move(delegate().GetInsecureCredentials().at(0));
-  store().RemoveLogin(form);
+  store().RemoveLogin(FROM_HERE, form);
   RunUntilIdle();
 
   EXPECT_FALSE(delegate().UnmuteInsecureCredential(credential));
@@ -669,7 +670,7 @@ TEST_F(PasswordCheckDelegateTest, OnLeakFoundDoesNotCreateCredential) {
   RunUntilIdle();
   delegate().StartPasswordCheck(
       password_manager::LeakDetectionInitiator::kBulkSyncedPasswordsCheck);
-  store().RemoveLogin(form);
+  store().RemoveLogin(FROM_HERE, form);
   RunUntilIdle();
   static_cast<BulkLeakCheckDelegateInterface*>(service())->OnFinishedCredential(
       LeakCheckCredential(kUsername1, kPassword1), IsLeaked(true));
@@ -818,7 +819,7 @@ TEST_F(PasswordCheckDelegateTest, GetPasswordCheckStatusRunning) {
 
   // Make sure that even though the store is emptied after starting a check we
   // don't report a negative number for already processed.
-  store().RemoveLogin(MakeSavedPassword(kExampleCom, kUsername1));
+  store().RemoveLogin(FROM_HERE, MakeSavedPassword(kExampleCom, kUsername1));
   RunUntilIdle();
 
   status = delegate().GetPasswordCheckStatus();
@@ -1112,7 +1113,7 @@ TEST_F(PasswordCheckDelegateTest,
   EXPECT_EQ(1u, delegate().GetCredentialsWithReusedPassword().size());
 
   store().RemoveLogin(
-      MakeSavedPassword(kExampleCom, kUsername1, kWeakPassword1));
+      FROM_HERE, MakeSavedPassword(kExampleCom, kUsername1, kWeakPassword1));
   RunUntilIdle();
 
   EXPECT_THAT(delegate().GetCredentialsWithReusedPassword(), IsEmpty());

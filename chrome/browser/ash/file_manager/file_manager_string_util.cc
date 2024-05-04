@@ -102,7 +102,7 @@ constexpr auto kGoogleOneOfferBannerSupportedCountries =
   dict->Set(id, l10n_util::GetPluralStringFUTF16(idr, n))
 
 void AddStringsForFileTypes(base::Value::Dict* dict) {
-  // TODO(crbug.com/438921): Rename string IDs to something like
+  // TODO(crbug.com/41146170): Rename string IDs to something like
   // FILE_TYPE_WHATEVER.
   SET_STRING("ARCHIVE_FILE_TYPE", IDS_FILE_BROWSER_ARCHIVE_FILE_TYPE);
   SET_STRING("AUDIO_FILE_TYPE", IDS_FILE_BROWSER_AUDIO_FILE_TYPE);
@@ -1017,8 +1017,6 @@ void AddStringsGeneric(base::Value::Dict* dict) {
              IDS_WEBSTORE_WIDGET_LOADING_SPINNER_ALT);
   SET_STRING("SUGGEST_DIALOG_INSTALLING_SPINNER_ALT",
              IDS_WEBSTORE_WIDGET_INSTALLING_SPINNER_ALT);
-  SET_STRING("TASK_INSTALL_ISOLATED_WEB_APP",
-             IDS_FILE_BROWSER_TASK_INSTALL_ISOLATED_WEB_APP);
   SET_STRING("TASK_INSTALL_LINUX_PACKAGE",
              IDS_FILE_BROWSER_TASK_INSTALL_LINUX_PACKAGE);
   SET_STRING("TASK_IMPORT_CROSTINI_IMAGE", IDS_SETTINGS_CROSTINI_IMPORT_LABEL);
@@ -1028,8 +1026,6 @@ void AddStringsGeneric(base::Value::Dict* dict) {
   SET_STRING("TASK_OPEN_GDOC", IDS_FILE_BROWSER_TASK_OPEN_GDOC);
   SET_STRING("TASK_OPEN_GSHEET", IDS_FILE_BROWSER_TASK_OPEN_GSHEET);
   SET_STRING("TASK_OPEN_GSLIDES", IDS_FILE_BROWSER_TASK_OPEN_GSLIDES);
-  SET_STRING("TASK_OPEN_MICROSOFT_365",
-             IDS_FILE_BROWSER_TASK_OPEN_MICROSOFT_365);
   SET_STRING("TASK_VIEW", IDS_FILE_BROWSER_TASK_VIEW);
   SET_STRING("THUMBNAIL_VIEW_TOOLTIP", IDS_FILE_BROWSER_THUMBNAIL_VIEW_TOOLTIP);
   SET_STRING("TIME_REMAINING_ESTIMATE",
@@ -1394,6 +1390,9 @@ void AddFileManagerFeatureStrings(const std::string& locale,
   } else {
     dict->Set("DLP_ENABLED", false);
   }
+
+  dict->Set("SKYVAULT_V2_ENABLED",
+            base::FeatureList::IsEnabled(features::kSkyVaultV2));
 
   base::Value::List vms;
   auto* share_path = guest_os::GuestOsSharePath::GetForProfile(profile);

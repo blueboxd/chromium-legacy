@@ -43,7 +43,7 @@ class ChipController : public permissions::PermissionRequestManager::Observer,
                        public PermissionChipView::Observer {
  public:
   ChipController(
-      Browser* browser,
+      LocationBarView* location_bar_view,
       PermissionChipView* chip_view,
       PermissionDashboardView* permission_dashboard_view = nullptr,
       PermissionDashboardController* permission_dashboard_controller = nullptr);
@@ -113,6 +113,10 @@ class ChipController : public permissions::PermissionRequestManager::Observer,
 
   PermissionPromptBubbleBaseView* GetPromptBubbleView();
 
+  PermissionPromptChipModel* permission_prompt_model() {
+    return permission_prompt_model_.get();
+  }
+
   bool should_expand_for_testing();
 
   bool is_collapse_timer_running_for_testing() const {
@@ -142,8 +146,7 @@ class ChipController : public permissions::PermissionRequestManager::Observer,
   }
 
   std::optional<permissions::PermissionRequestManager*>
-  active_permission_request_manager_for_testing() {
-    CHECK_IS_TEST();
+  active_permission_request_manager() {
     return active_chip_permission_request_manager_;
   }
 
@@ -202,13 +205,13 @@ class ChipController : public permissions::PermissionRequestManager::Observer,
   void ResetTimers();
 
   // The location bar view to which the chip is attached.
-  LocationBarView* GetLocationBarView();
+  LocationBarView* GetLocationBarView() { return location_bar_view_; }
 
   bool is_confirmation_showing_ = false;
   bool is_waiting_for_confirmation_collapse_ = false;
 
-  raw_ptr<Browser> browser_;
-
+  // `LocationBarView` owns this.
+  raw_ptr<LocationBarView> location_bar_view_ = nullptr;
   // The chip view this controller modifies.
   raw_ptr<PermissionChipView> chip_;
 

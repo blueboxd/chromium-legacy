@@ -20,6 +20,8 @@ extern NSString* const kFaviconBackgroundColor;
 extern NSString* const kGroupedPrimaryBackgroundColor;
 // Secondary grouped background color.
 extern NSString* const kGroupedSecondaryBackgroundColor;
+// Background shadow's color.
+extern NSString* const kBackgroundShadowColor;
 // Ink color for an MDC button.
 extern NSString* const kMDCInkColor;
 // Ink color for a secondary style MDC button (button with transparent
@@ -114,6 +116,7 @@ extern NSString* const kRed600Color;
 // Pink palette.
 extern NSString* const kPink400Color;
 extern NSString* const kPink500Color;
+extern NSString* const kPink600Color;
 
 // Purple palette.
 extern NSString* const kPurple500Color;
@@ -121,9 +124,14 @@ extern NSString* const kPurple600Color;
 
 // Yellow palette.
 extern NSString* const kYellow500Color;
+extern NSString* const kYellow600Color;
 
 // Orange palette.
 extern NSString* const kOrange500Color;
+extern NSString* const kOrange600Color;
+
+// Orange palette.
+extern NSString* const kCyan600Color;
 
 // Grey Color Palette.
 extern NSString* const kGrey50Color;

@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 """Definitions of builders in the tryserver.blink builder group."""
 
-load("//lib/builders.star", "os", "reclient")
+load("//lib/builders.star", "cpu", "os", "reclient")
 load("//lib/builder_config.star", "builder_config")
 load("//lib/branches.star", "branches")
 load("//lib/try.star", "try_")
@@ -17,8 +17,9 @@ try_.defaults.set(
     cores = 8,
     execution_timeout = try_.DEFAULT_EXECUTION_TIMEOUT,
     reclient_instance = reclient.instance.DEFAULT_UNTRUSTED,
-    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
     service_account = try_.DEFAULT_SERVICE_ACCOUNT,
+    siso_enabled = True,
+    siso_remote_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
 consoles.list_view(
@@ -69,7 +70,7 @@ try_.builder(
     main_list_view = "try",
 )
 
-# TODO(crbug.com/1474702): Once `chrome_wpt_tests` is on CQ/CI (`linux-rel` and
+# TODO(crbug.com/40927590): Once `chrome_wpt_tests` is on CQ/CI (`linux-rel` and
 # `Linux Tests`), remove `ci/linux-wpt-fyi-rel` and move its definition here.
 #
 # `linux-wpt-chromium-rel` (tests chrome) is distinct from `linux-blink-rel`
@@ -103,7 +104,7 @@ try_.builder(
                 "mb",
             ],
             build_config = builder_config.build_config.RELEASE,
-            target_bits = 32,
+            target_bits = 64,
             target_platform = builder_config.target_platform.WIN,
         ),
         build_gs_bucket = "chromium-fyi-archive",
@@ -116,7 +117,7 @@ try_.builder(
             "release_builder",
             "reclient",
             "chrome_with_codecs",
-            "x86",
+            "x64",
             "minimal_symbols",
         ],
     ),
@@ -261,7 +262,7 @@ blink_mac_builder(
                 "mb",
             ],
             build_config = builder_config.build_config.RELEASE,
-            target_bits = 32,
+            target_bits = 64,
             target_platform = builder_config.target_platform.MAC,
         ),
         build_gs_bucket = "chromium-fyi-archive",
@@ -278,6 +279,8 @@ blink_mac_builder(
             "minimal_symbols",
         ],
     ),
+    cores = None,
+    cpu = cpu.ARM64,
 )
 
 blink_mac_builder(
@@ -305,8 +308,10 @@ blink_mac_builder(
             "reclient",
             "chrome_with_codecs",
             "minimal_symbols",
+            "x64",
         ],
     ),
+    cpu = cpu.ARM64,
 )
 
 blink_mac_builder(
@@ -337,6 +342,8 @@ blink_mac_builder(
             "minimal_symbols",
         ],
     ),
+    cores = None,
+    cpu = cpu.ARM64,
 )
 
 blink_mac_builder(
@@ -364,8 +371,11 @@ blink_mac_builder(
             "reclient",
             "chrome_with_codecs",
             "minimal_symbols",
+            "x64",
         ],
     ),
+    cores = None,
+    cpu = cpu.ARM64,
 )
 
 blink_mac_builder(
@@ -396,6 +406,8 @@ blink_mac_builder(
             "minimal_symbols",
         ],
     ),
+    cores = None,
+    cpu = cpu.ARM64,
 )
 
 blink_mac_builder(
@@ -456,8 +468,10 @@ blink_mac_builder(
             "reclient",
             "chrome_with_codecs",
             "minimal_symbols",
+            "x64",
         ],
     ),
+    cpu = cpu.ARM64,
     contact_team_email = "chrome-blink-engprod@google.com",
 )
 
@@ -492,5 +506,6 @@ blink_mac_builder(
             "minimal_symbols",
         ],
     ),
+    cpu = cpu.ARM64,
     contact_team_email = "chrome-blink-engprod@google.com",
 )

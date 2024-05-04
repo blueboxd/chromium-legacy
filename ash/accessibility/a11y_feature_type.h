@@ -26,6 +26,8 @@ enum class A11yFeatureType {
   kLargeCursor,
   kLiveCaption,
   kMonoAudio,
+  kMouseKeys,
+  kReducedAnimations,
   kSelectToSpeak,
   kSpokenFeedback,
   kStickyKeys,

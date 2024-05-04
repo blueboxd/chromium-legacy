@@ -319,6 +319,7 @@ ShelfNavigationWidget::Delegate::Delegate(Shelf* shelf, ShelfView* shelf_view)
         ax::mojom::Event::kChildrenChanged, true);
   }
 
+  SetAccessibleRole(ax::mojom::Role::kToolbar);
   RefreshAccessibilityWidgetNextPreviousFocus(shelf->shelf_widget());
 }
 
@@ -712,8 +713,8 @@ gfx::Size ShelfNavigationWidget::CalculateIdealSize(
     controls_space +=
         home_button_shown
             ? (shelf_->IsHorizontalAlignment()
-                   ? GetHomeButton()->CalculatePreferredSize().width()
-                   : GetHomeButton()->CalculatePreferredSize().height())
+                   ? GetHomeButton()->CalculatePreferredSize({}).width()
+                   : GetHomeButton()->CalculatePreferredSize({}).height())
             : 0;
     controls_space += back_button_shown ? control_size : 0;
     controls_space +=

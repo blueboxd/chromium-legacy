@@ -6,9 +6,11 @@
 #define IOS_CHROME_BROWSER_BOOKMARKS_MODEL_LEGACY_BOOKMARK_MODEL_H_
 
 #include <memory>
+#include <set>
 #include <string>
 #include <vector>
 
+#include "base/location.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
@@ -50,26 +52,26 @@ class LegacyBookmarkModel : public KeyedService {
 
   // Returns the root node. The 'bookmark bar' node and 'other' node are
   // children of the root node.
-  // TODO(crbug.com/326185948): Remove this API as it is too error-prone during
-  // the migration to single underlying BookmarkModel.
-  const bookmarks::BookmarkNode* root_node() const;
+  // WARNING: avoid exercising this API, in particular if the caller may use
+  // the node to iterate children. This is because the behavior of this function
+  // changes based on whether or not feature
+  // `syncer::kEnableBookmarkFoldersForAccountStorage` is enabled.
+  const bookmarks::BookmarkNode* subtle_root_node_with_unspecified_children()
+      const;
 
   // All public functions below are identical to the functions with the same
   // name in bookmarks::BookmarkModel API or, in some cases, related utility
   // libraries.
   bool loaded() const;
   void Remove(const bookmarks::BookmarkNode* node,
-              bookmarks::metrics::BookmarkEditSource source);
+              bookmarks::metrics::BookmarkEditSource source,
+              const base::Location& location);
   void Move(const bookmarks::BookmarkNode* node,
             const bookmarks::BookmarkNode* new_parent,
             size_t index);
   void Copy(const bookmarks::BookmarkNode* node,
             const bookmarks::BookmarkNode* new_parent,
             size_t index);
-  const bookmarks::BookmarkNode* MoveToOtherModelWithNewNodeIdsAndUuids(
-      const bookmarks::BookmarkNode* node,
-      LegacyBookmarkModel* dest_model,
-      const bookmarks::BookmarkNode* dest_parent);
   void SetTitle(const bookmarks::BookmarkNode* node,
                 const std::u16string& title,
                 bookmarks::metrics::BookmarkEditSource source);
@@ -91,6 +93,9 @@ class LegacyBookmarkModel : public KeyedService {
                                         size_t index,
                                         const std::u16string& title,
                                         const GURL& url);
+  void RemoveMany(const std::set<const bookmarks::BookmarkNode*>& nodes,
+                  bookmarks::metrics::BookmarkEditSource source,
+                  const base::Location& location);
   void CommitPendingWriteForTest();
 
   // LegacyBookmarkModel has three top-level permanent nodes (as opposed to
@@ -98,6 +103,7 @@ class LegacyBookmarkModel : public KeyedService {
   virtual const bookmarks::BookmarkNode* bookmark_bar_node() const = 0;
   virtual const bookmarks::BookmarkNode* other_node() const = 0;
   virtual const bookmarks::BookmarkNode* mobile_node() const = 0;
+  virtual const bookmarks::BookmarkNode* managed_node() const = 0;
 
   virtual bool IsBookmarked(const GURL& url) const = 0;
   virtual bool is_permanent_node(const bookmarks::BookmarkNode* node) const = 0;
@@ -111,11 +117,21 @@ class LegacyBookmarkModel : public KeyedService {
   virtual const bookmarks::BookmarkNode* GetMostRecentlyAddedUserNodeForURL(
       const GURL& url) const = 0;
   virtual bool HasBookmarks() const = 0;
-  virtual void GetBookmarksMatchingProperties(
-      const bookmarks::QueryFields& query,
-      size_t max_count,
-      std::vector<const bookmarks::BookmarkNode*>* nodes) = 0;
+
+  // Functions that aren't present in BookmarkModel but in utility libraries
+  // that require a subclass-specific implementation.
+  virtual std::vector<const bookmarks::BookmarkNode*>
+  GetBookmarksMatchingProperties(const bookmarks::QueryFields& query,
+                                 size_t max_count) = 0;
   virtual const bookmarks::BookmarkNode* GetNodeById(int64_t id) = 0;
+  // Returns whether `node` is part of, or relevant, in the scope of `this`.
+  virtual bool IsNodePartOfModel(const bookmarks::BookmarkNode* node) const = 0;
+  virtual const bookmarks::BookmarkNode*
+  MoveToOtherModelPossiblyWithNewNodeIdsAndUuids(
+      const bookmarks::BookmarkNode* node,
+      LegacyBookmarkModel* dest_model,
+      const bookmarks::BookmarkNode* dest_parent) = 0;
+
   virtual base::WeakPtr<LegacyBookmarkModel> AsWeakPtr() = 0;
 
  protected:

@@ -27,6 +27,7 @@
 #include "base/mac/scoped_sending_event.h"
 #include "base/message_loop/message_pump_apple.h"
 #include "base/message_loop/message_pump_type.h"
+#include "base/metrics/histogram_macros_local.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/sys_string_conversions.h"
@@ -39,12 +40,12 @@
 #include "chrome/app_shim/app_shim_delegate.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_content_client.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/mac/app_mode_common.h"
 #include "chrome/common/mac/app_shim.mojom.h"
 #include "components/crash/core/app/crashpad.h"
+#include "content/public/common/content_features.h"
 #include "mojo/core/embedder/embedder.h"
 #include "mojo/core/embedder/features.h"
 #include "mojo/core/embedder/scoped_ipc_support.h"
@@ -169,7 +170,7 @@ int APP_SHIM_ENTRY_POINT_NAME(const app_mode::ChromeAppModeInfo* info) {
     const base::FilePath user_data_dir =
         base::FilePath(info->user_data_dir).DirName().DirName().DirName();
 
-    // TODO(https://crbug.com/1274807): Specify `user_data_dir` to  CrashPad.
+    // TODO(crbug.com/40807881): Specify `user_data_dir` to  CrashPad.
     ChromeCrashReporterClient::Create();
     crash_reporter::InitializeCrashpad(true, "app_shim");
 
@@ -218,6 +219,9 @@ int APP_SHIM_ENTRY_POINT_NAME(const app_mode::ChromeAppModeInfo* info) {
 
     ChromeContentClient chrome_content_client;
     content::SetContentClient(&chrome_content_client);
+
+    // Local histogram to let tests verify that histograms are emitted properly.
+    LOCAL_HISTOGRAM_BOOLEAN("AppShim.Launched", true);
 
     // Launch the IO thread.
     base::Thread::Options io_thread_options;

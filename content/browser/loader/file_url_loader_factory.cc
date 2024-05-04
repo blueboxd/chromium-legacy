@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -18,7 +19,6 @@
 #include "base/i18n/time_formatting.h"
 #include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -669,10 +669,10 @@ class FileURLLoader : public network::mojom::URLLoader {
       // Write any data we read for MIME sniffing, constraining by range where
       // applicable. This will always fit in the pipe (see DCHECK above, and
       // assertions near network::features::GetDataPipeDefaultAllocationSize()).
-      uint32_t write_size = std::min(
-          static_cast<uint32_t>(initial_read_size - first_byte_to_send),
-          static_cast<uint32_t>(total_bytes_to_send));
-      const uint32_t expected_write_size = write_size;
+      size_t write_size = std::min(
+          base::checked_cast<size_t>(initial_read_size - first_byte_to_send),
+          base::checked_cast<size_t>(total_bytes_to_send));
+      const size_t expected_write_size = write_size;
       MojoResult result =
           producer_handle->WriteData(&initial_read_buffer[first_byte_to_send],
                                      &write_size, MOJO_WRITE_DATA_FLAG_NONE);
@@ -689,7 +689,7 @@ class FileURLLoader : public network::mojom::URLLoader {
     if (!net::GetMimeTypeFromFile(full_path, &head->mime_type)) {
       std::string new_type;
       net::SniffMimeType(
-          base::StringPiece(initial_read_buffer.data(), read_result.bytes_read),
+          std::string_view(initial_read_buffer.data(), read_result.bytes_read),
           request.url, head->mime_type,
           GetContentClient()->browser()->ForceSniffingFileUrlsForHtml()
               ? net::ForceSniffFileUrlsForHtml::kEnabled
@@ -944,7 +944,7 @@ void CreateFileURLLoaderBypassingSecurityChecks(
     std::unique_ptr<FileURLLoaderObserver> observer,
     bool allow_directory_listing,
     scoped_refptr<net::HttpResponseHeaders> extra_response_headers) {
-  // TODO(crbug.com/924416): Re-evaluate how TaskPriority is set here and in
+  // TODO(crbug.com/41436919): Re-evaluate how TaskPriority is set here and in
   // other file URL-loading-related code. Some callers require USER_VISIBLE
   // (i.e., BEST_EFFORT is not enough).
   auto task_runner = base::ThreadPool::CreateSequencedTaskRunner(
@@ -970,8 +970,8 @@ mojo::PendingRemote<network::mojom::URLLoaderFactory>
 CreateFileURLLoaderFactory(
     const base::FilePath& profile_path,
     scoped_refptr<SharedCorsOriginAccessList> shared_cors_origin_access_list) {
-  // TODO(crbug.com/924416): Re-evaluate TaskPriority: Should the caller provide
-  // it?
+  // TODO(crbug.com/41436919): Re-evaluate TaskPriority: Should the caller
+  // provide it?
   return FileURLLoaderFactory::Create(profile_path,
                                       shared_cors_origin_access_list,
                                       base::TaskPriority::USER_VISIBLE);

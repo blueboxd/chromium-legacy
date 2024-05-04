@@ -16,11 +16,17 @@ class TabResumptionModuleViewBinder {
         if (TabResumptionModuleProperties.IS_VISIBLE == propertyKey) {
             moduleView.setVisibility(
                     model.get(TabResumptionModuleProperties.IS_VISIBLE) ? View.VISIBLE : View.GONE);
+        } else if (TabResumptionModuleProperties.USE_SALIENT_IMAGE == propertyKey) {
+            moduleView.setUseSalientImage(
+                    model.get(TabResumptionModuleProperties.USE_SALIENT_IMAGE));
         } else if (TabResumptionModuleProperties.URL_IMAGE_PROVIDER == propertyKey) {
             moduleView.setUrlImageProvider(
                     model.get(TabResumptionModuleProperties.URL_IMAGE_PROVIDER));
+        } else if (TabResumptionModuleProperties.THUMBNAIL_PROVIDER == propertyKey) {
+            moduleView.setThumbnailProvider(
+                    model.get(TabResumptionModuleProperties.THUMBNAIL_PROVIDER));
         } else if (TabResumptionModuleProperties.CLICK_CALLBACK == propertyKey) {
-            moduleView.setClickCallback(model.get(TabResumptionModuleProperties.CLICK_CALLBACK));
+            moduleView.setClickCallbacks(model.get(TabResumptionModuleProperties.CLICK_CALLBACK));
         } else if (TabResumptionModuleProperties.SUGGESTION_BUNDLE == propertyKey) {
             moduleView.setSuggestionBundle(
                     model.get(TabResumptionModuleProperties.SUGGESTION_BUNDLE));

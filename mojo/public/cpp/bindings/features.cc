@@ -31,5 +31,22 @@ BASE_FEATURE(kMojoRecordUnreadMessageCount,
              "MojoRecordUnreadMessageCount",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Enables predictive allocation for Mojo serialization.
+BASE_FEATURE(kMojoPredictiveAllocation,
+             "MojoPredictiveAllocation",
+#if BUILDFLAG(IS_CHROMEOS)
+             base::FEATURE_ENABLED_BY_DEFAULT
+#else
+             base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+);
+
+// Enables a bugfix for https://crbug.com/331636067. This is a very old bug, and
+// this flag will be used to understand the stability and performance impact of
+// the fix, if any.
+BASE_FEATURE(kMojoFixAssociatedHandleLeak,
+             "MojoFixAssociatedHandleLeak",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 }  // namespace features
 }  // namespace mojo

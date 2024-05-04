@@ -395,6 +395,7 @@ class CC_EXPORT EffectTree final : public PropertyTree<EffectNode> {
   void UpdateEffectChanged(EffectNode* node, EffectNode* parent_node);
 
   void UpdateHasFilters(EffectNode* node, EffectNode* parent_node);
+  void UpdateHasFastRoundedCorner(EffectNode* node, EffectNode* parent_node);
 
   typedef std::unordered_multimap<int, std::unique_ptr<viz::CopyOutputRequest>>
       CopyRequestMap;
@@ -537,7 +538,7 @@ class CC_EXPORT ScrollTree final : public PropertyTree<ScrollNode> {
   // Note: Using this method may causes the associated transform node for this
   // scroll node to update its transforms.
   //
-  // TODO(crbug.com/585458): Updating single transform node only works for
+  // TODO(crbug.com/41238797): Updating single transform node only works for
   // simple cases but we really should update the whole transform tree otherwise
   // we are ignoring any parent transform node that needs updating and thus our
   // snap amount can be incorrect.
@@ -609,9 +610,15 @@ class CC_EXPORT ScrollTree final : public PropertyTree<ScrollNode> {
   void NotifyDidChangeScrollbarsHidden(ElementId scroll_element_id,
                                        bool hidden) const;
 
-  // Returns true iff the node is composited and does not have any non-transient
-  // main-thread scrolling reasons (see main_thread_scrolling_reason.h).
+  // These functions determines how the rendered result of a compositor-
+  // initiated scroll should be realized by updating the scroll offset in
+  // the associated transform node.
+  // All of them return false if `node.transform_id` is invalid which means
+  // Blink didn't paint the transform node because the scrolling contents
+  // were far from the viewport and we don't need to realize the scrolls.
   bool CanRealizeScrollsOnCompositor(const ScrollNode& node) const;
+  // TODO(crbug.com/40517276): Add realization mode for RasterInducingScroll.
+  bool ShouldRealizeScrollsOnMain(const ScrollNode& node) const;
 
   // Reports reasons for blocking scroll updates on main-thread repaint. For use
   // only with scroll unification enabled. Returns bitfield of values from

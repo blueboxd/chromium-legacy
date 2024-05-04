@@ -29,6 +29,9 @@ class WeakPtrFactory {
 template <typename T, typename Traits = void>
 class raw_ptr {};
 
+template <typename T, typename Traits = void>
+class raw_ref {};
+
 }  // namespace base
 namespace WTF {
 
@@ -343,6 +346,18 @@ using CrossThreadWeakPersistent = internal::BasicCrossThreadPersistent<
 
 }  // namespace cppgc
 
+namespace v8 {
+
+template <typename T>
+class TracedReference {
+ public:
+  operator T*() const { return 0; }
+  T* operator->() const { return 0; }
+  bool operator!() const { return false; }
+};
+
+}  // namespace v8
+
 namespace blink {
 
 using Visitor = cppgc::Visitor;
@@ -371,6 +386,9 @@ using CrossThreadPersistent = cppgc::subtle::CrossThreadPersistent<T>;
 template <typename T>
 using CrossThreadWeakPersistent = cppgc::subtle::CrossThreadWeakPersistent<T>;
 
+template <typename T>
+using TraceWrapperV8Reference = v8::TracedReference<T>;
+
 using namespace WTF;
 
 #define DISALLOW_NEW()                                            \
@@ -393,14 +411,6 @@ using namespace WTF;
 
 template <typename T>
 class RefCountedGarbageCollected : public GarbageCollected<T> {};
-
-template <typename T>
-class TraceWrapperV8Reference {
- public:
-  operator T*() const { return 0; }
-  T* operator->() const { return 0; }
-  bool operator!() const { return false; }
-};
 
 class HeapAllocator {
 public:

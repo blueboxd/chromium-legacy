@@ -149,7 +149,6 @@
 #include "services/network/public/cpp/network_switches.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/transitional_url_loader_factory_owner.h"
-#include "services/video_capture/public/cpp/features.h"
 #include "skia/ext/event_tracer_impl.h"
 #include "skia/ext/legacy_display_globals.h"
 #include "skia/ext/skia_memory_dump_provider.h"
@@ -192,9 +191,10 @@
 #endif
 
 #if BUILDFLAG(IS_WIN)
+#include <windows.h>
+
 #include <commctrl.h>
 #include <shellapi.h>
-#include <windows.h>
 
 #include "base/threading/platform_thread_win.h"
 #include "net/base/winsock_init.h"
@@ -216,8 +216,6 @@
 #include "sandbox/win/src/process_mitigations.h"
 #elif (BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)) && defined(USE_UDEV)
 #include "media/device_monitors/device_monitor_udev.h"
-#elif BUILDFLAG(IS_MAC)
-#include "media/device_monitors/device_monitor_mac.h"
 #endif
 
 #if BUILDFLAG(IS_FUCHSIA)
@@ -959,7 +957,7 @@ int BrowserMainLoop::CreateThreads() {
   io_thread_->RegisterAsBrowserThread();
   BrowserTaskExecutor::InitializeIOThread();
 
-  // TODO(https://crbug.com/863341): Replace with a better API
+  // TODO(crbug.com/40584847): Replace with a better API
   GetContentClient()->browser()->PostAfterStartupTask(
       FROM_HERE, base::SequencedTaskRunner::GetCurrentDefault(),
       base::BindOnce(
@@ -1041,8 +1039,8 @@ int BrowserMainLoop::PreMainMessageLoopRun() {
                     // Enable MessagePumpPhases metrics/tracing on-first-idle,
                     // not before as queuing time is not relevant before first
                     // idle.
-                    // TODO(1329717): Consider supporting the initial run (until
-                    // first idle) as well.
+                    // TODO(crbug.com/40226913): Consider supporting the initial
+                    // run (until first idle) as well.
                     auto enable_message_pump_metrics =
                         base::BindRepeating([](const char* thread_name) {
                           base::CurrentThread::Get()
@@ -1144,7 +1142,7 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
                      &base::PermanentThreadAllowance::AllowBlocking)));
 
   // Also allow waiting to join threads.
-  // TODO(crbug.com/800808): Ideally this (and the above AllowBlocking() would
+  // TODO(crbug.com/40557572): Ideally this (and the above AllowBlocking() would
   // be scoped allowances). That would be one of the first step to ensure no
   // persistent work is being done after ThreadPoolInstance::Shutdown() in order
   // to move towards atomic shutdown.
@@ -1215,13 +1213,11 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
 
 // The device monitors are using |system_monitor_| as dependency, so delete
 // them before |system_monitor_| goes away.
-// On Mac and windows, the monitor needs to be destroyed on the same thread
+// On windows, the monitor needs to be destroyed on the same thread
 // as they were created. On Linux, the monitor will be deleted when IO thread
 // goes away.
 #if BUILDFLAG(IS_WIN)
   system_message_window_.reset();
-#elif BUILDFLAG(IS_MAC)
-  device_monitor_mac_.reset();
 #endif
 
   if (BrowserGpuChannelHostFactory::instance())
@@ -1341,7 +1337,7 @@ void BrowserMainLoop::PostCreateThreadsImpl() {
   bool always_uses_gpu = true;
   bool established_gpu_channel = false;
 #if BUILDFLAG(IS_ANDROID)
-  // TODO(crbug.com/439322): This should be set to |true|.
+  // TODO(crbug.com/40396955): This should be set to |true|.
   established_gpu_channel = false;
   always_uses_gpu = ShouldStartGpuProcessOnBrowserStartup();
   BrowserGpuChannelHostFactory::Initialize(established_gpu_channel);
@@ -1399,15 +1395,6 @@ void BrowserMainLoop::PostCreateThreadsImpl() {
   system_message_window_ = std::make_unique<media::SystemMessageWindowWin>();
 #elif (BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)) && defined(USE_UDEV)
   device_monitor_linux_ = std::make_unique<media::DeviceMonitorLinux>();
-#elif BUILDFLAG(IS_MAC)
-  // TODO(crbug.com/1448798): Clean up |device_monitor_mac_| in BrowserMainLoop
-  // once |kCameraMonitoringInVideoCaptureService| is fully launched.
-  if (!base::FeatureList::IsEnabled(
-          video_capture::features::kCameraMonitoringInVideoCaptureService)) {
-    device_monitor_mac_ = std::make_unique<media::DeviceMonitorMac>(
-        base::ThreadPool::CreateSingleThreadTaskRunner(
-            {base::TaskPriority::USER_VISIBLE}));
-  }
 #endif
 
   // Instantiated once using CreateSingletonInstance(), and accessed only using

@@ -9,7 +9,7 @@
 #include <string_view>
 
 #include "base/hash/sha1.h"
-#include "base/sys_byteorder.h"
+#include "base/numerics/byte_conversions.h"
 
 namespace base {
 // Implementation of SHA-1. Only handles data in byte-sized blocks,

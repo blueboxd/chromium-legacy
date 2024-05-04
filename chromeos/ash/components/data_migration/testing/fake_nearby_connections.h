@@ -23,6 +23,7 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DATA_MIGRATION)
     FakeNearbyConnections
     : public ::nearby::connections::mojom::NearbyConnections {
  public:
+  using PayloadStatus = ::nearby::connections::mojom::PayloadStatus;
   using Status = ::nearby::connections::mojom::Status;
 
   // `remote_endpoint_id` is the id of the simulated remote device from whom
@@ -39,16 +40,14 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DATA_MIGRATION)
   //
   // Returns true if file transmission was successfully simulated, false if any
   // error prevents the simulation.
-  bool SendFile(int64_t payload_id, std::vector<uint8_t>* transferred_bytes);
+  bool SendFile(int64_t payload_id,
+                std::vector<uint8_t>* transferred_bytes = nullptr);
 
-  // Sets the final payload status for all future `SendFile()` calls. Can be
-  // used to simulate file transfer failures.
+  // Sets the final payload status for all future `SendFile()` calls with
+  // matching `payload_id`. Can be used to simulate file transfer failures.
   //
-  // By default, this is `kSuccess`.
-  void set_final_file_payload_status(
-      ::nearby::connections::mojom::PayloadStatus final_file_payload_status) {
-    final_file_payload_status_ = final_file_payload_status;
-  }
+  // All file payloads with id not matching `payload_id` will return `kSuccess`.
+  void SetFinalFilePayloadStatus(PayloadStatus status, int64_t payload_id);
 
   // The `register_payload_file_result_generator` is invoked for each call to
   // `RegisterPayloadFile()` and returns the `Status` of the operation.
@@ -59,6 +58,51 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DATA_MIGRATION)
     register_payload_file_result_generator_ =
         std::move(register_payload_file_result_generator);
   }
+
+  // Invoked every time a payload is sent from the local device to the remote
+  // device.
+  void set_local_to_remote_payload_listener(
+      base::RepeatingCallback<void(::nearby::connections::mojom::PayloadPtr)>
+          local_to_remote_payload_listener) {
+    local_to_remote_payload_listener_ =
+        std::move(local_to_remote_payload_listener);
+  }
+
+  // Invoked when both sides of the connection have been accepted, and payloads
+  // can be exchanged.
+  void set_connection_established_listener(
+      base::RepeatingClosure connection_established_listener) {
+    connection_established_listener_ =
+        std::move(connection_established_listener);
+  }
+
+  // Size of all test files transmitted via `SendFile()`. Defaults to 1000.
+  void set_test_file_size_in_bytes(size_t test_file_size_in_bytes) {
+    test_file_size_in_bytes_ = test_file_size_in_bytes;
+  }
+  int test_file_size_in_bytes() const { return test_file_size_in_bytes_; }
+
+  // Number of chunks into which files transmitted via `SendFile()` are divided.
+  // Each chunk has the same size:
+  // `test_file_size_in_bytes_` / `test_file_num_chunks_`.
+  //
+  // Defaults to 4.
+  void set_test_file_num_chunks(size_t test_file_num_chunks) {
+    test_file_num_chunks_ = test_file_num_chunks;
+  }
+
+  // Simulates a bytes payload being sent from the remote device to the local
+  // device.
+  //
+  // Returns true if file transmission was successfully simulated, false if any
+  // error prevents the simulation.
+  [[nodiscard]] bool SendBytesPayload(int64_t payload_id,
+                                      const std::string& bytes);
+
+  // Simulates remote device disconnecting from the local device. Returns true
+  // if simulation was successful; false if the remote device is not connected
+  // to begin with.
+  [[nodiscard]] bool SimulateRemoteDisconnect();
 
  private:
   // See `RegisterPayloadFile()` method.
@@ -156,23 +200,34 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DATA_MIGRATION)
       const std::string& service_id,
       ash::nearby::presence::mojom::PresenceDevicePtr remote_device,
       DisconnectFromDeviceV3Callback callback) override;
+  void RegisterServiceWithPresenceDeviceProvider(
+      const std::string& service_id) override;
 
   const std::string remote_endpoint_id_;
+  bool is_advertising_ = false;
 
-  // Conceptually, both the `connection_listener_` and the `payload_listener_`
-  // are the target ChromeOS device that is receiving data.
+  // Conceptually, both the `connection_listener_` and the
+  // `remote_to_local_payload_listener_` are the target ChromeOS device that is
+  // receiving data.
   //
   // Set during the discovery/advertising process.
   mojo::Remote<::nearby::connections::mojom::ConnectionLifecycleListener>
       connection_listener_;
   // Set during the payload transfer process (after connection is established).
-  mojo::Remote<::nearby::connections::mojom::PayloadListener> payload_listener_;
+  mojo::Remote<::nearby::connections::mojom::PayloadListener>
+      remote_to_local_payload_listener_;
 
   base::flat_map</*payload_id*/ int64_t, RegisteredFilePayload>
       registered_files_;
-  ::nearby::connections::mojom::PayloadStatus final_file_payload_status_ =
-      ::nearby::connections::mojom::PayloadStatus::kSuccess;
+  base::flat_map</*payload_id*/ int64_t, PayloadStatus>
+      final_file_payload_status_;
   base::RepeatingCallback<Status()> register_payload_file_result_generator_;
+  base::RepeatingCallback<void(::nearby::connections::mojom::PayloadPtr)>
+      local_to_remote_payload_listener_;
+  base::RepeatingClosure connection_established_listener_;
+
+  size_t test_file_size_in_bytes_ = 1000;
+  size_t test_file_num_chunks_ = 4;
 };
 
 }  // namespace data_migration

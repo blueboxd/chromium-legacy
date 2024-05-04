@@ -9,6 +9,7 @@
 
 #include "base/containers/heap_array.h"
 #include "base/task/sequenced_task_runner.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/modules/ml/ml_trace.h"
 #include "third_party/blink/renderer/modules/ml/webnn/ml_graph.h"
 #include "third_party/blink/renderer/modules/ml/webnn/ml_graph_utils.h"
@@ -24,8 +25,7 @@ class SharedXnnpackContext;
 class XnnRuntimeWrapper;
 }
 
-// Map the MLGraph's input or output name to the XNNPACK external Value ID.
-using ExternalValueIdMap = HashMap<String, uint32_t>;
+namespace internal {
 
 // Hold static or input tensor data for XNNPACK Runtime.
 using DataBuffer = base::HeapArray<uint8_t>;
@@ -36,7 +36,8 @@ using XnnExternalValuesPtr = std::unique_ptr<Vector<xnn_external_value>>;
 
 typedef Vector<std::pair<String, ArrayBufferViewInfo>>
     NamedArrayBufferViewsInfo;
-using NamedArrayBufferViewsInfoPtr = std::unique_ptr<NamedArrayBufferViewsInfo>;
+
+}  // namespace internal
 
 // XNNPACK requires the input tensor data to be padded with `XNN_EXTRA_BYTES`
 // bytes for performance reasons. For each compute, `MLGraphXnnpack` allocates
@@ -44,6 +45,9 @@ using NamedArrayBufferViewsInfoPtr = std::unique_ptr<NamedArrayBufferViewsInfo>;
 // input array buffers to the new input buffers and feeds them to XNNPACK.
 class MODULES_EXPORT MLGraphXnnpack final : public MLGraph {
  public:
+  // Map the MLGraph's input or output name to the XNNPACK external Value ID.
+  using ExternalValueIdMap = HashMap<String, uint32_t>;
+
   // Create and build an MLGraphXnnpack object. Resolve the promise with
   // this concrete object if the underlying XNNPACK subgraph builds
   // successfully.
@@ -51,7 +55,7 @@ class MODULES_EXPORT MLGraphXnnpack final : public MLGraph {
   static void ValidateAndBuild(ScopedMLTrace scoped_trace,
                                MLContext* context,
                                const MLNamedOperands& named_outputs,
-                               ScriptPromiseResolver* resolver);
+                               ScriptPromiseResolver<MLGraph>* resolver);
 
   // The constructor shouldn't be called directly. The callers should use the
   // `ValidateAndBuild()` method instead.
@@ -92,36 +96,36 @@ class MODULES_EXPORT MLGraphXnnpack final : public MLGraph {
   //   `OnDidCreateXnnRuntime()  <-----------------post task
   void BuildImpl(ScopedMLTrace scoped_trace,
                  const MLNamedOperands& named_outputs,
-                 ScriptPromiseResolver* resolver) override;
+                 ScriptPromiseResolver<MLGraph>* resolver) override;
 
   static void GetSharedXnnpackContextOnBackgroundThread(
       ScopedMLTrace scoped_trace,
       CrossThreadHandle<MLGraphXnnpack> graph,
       CrossThreadHandle<MLNamedOperands> named_outputs,
-      CrossThreadHandle<ScriptPromiseResolver> resolver,
+      CrossThreadHandle<ScriptPromiseResolver<MLGraph>> resolver,
       scoped_refptr<base::SequencedTaskRunner> resolver_task_runner);
 
   void OnDidGetSharedXnnpackContext(
       ScopedMLTrace scoped_trace,
       scoped_refptr<SharedXnnpackContext> xnn_context,
       MLNamedOperands* named_outputs,
-      ScriptPromiseResolver* resolver,
+      ScriptPromiseResolver<MLGraph>* resolver,
       String error_message = String());
 
   static void CreateXnnRuntimeOnBackgroundThread(
       ScopedMLTrace scoped_trace,
-      XnnSubgraphPtr subgraph,
+      internal::XnnSubgraphPtr subgraph,
       scoped_refptr<SharedXnnpackContext> xnn_context,
-      Vector<DataBuffer> static_data_buffers,
+      Vector<internal::DataBuffer> static_data_buffers,
       CrossThreadHandle<MLGraphXnnpack> graph,
       uint32_t num_threads,
-      CrossThreadHandle<ScriptPromiseResolver> resolver,
+      CrossThreadHandle<ScriptPromiseResolver<MLGraph>> resolver,
       scoped_refptr<base::SequencedTaskRunner> resolver_task_runner);
 
   void OnDidCreateXnnRuntime(
       ScopedMLTrace scoped_trace,
       scoped_refptr<XnnRuntimeWrapper> xnn_runtime_wrapper,
-      ScriptPromiseResolver* resolver,
+      ScriptPromiseResolver<MLGraph>* resolver,
       String error_message = String());
 
   // Post the XNNPACK Runtime object invocation to a background thread. The
@@ -134,7 +138,7 @@ class MODULES_EXPORT MLGraphXnnpack final : public MLGraph {
   void ComputeImpl(ScopedMLTrace scoped_trace,
                    const MLNamedArrayBufferViews& inputs,
                    const MLNamedArrayBufferViews& outputs,
-                   ScriptPromiseResolverTyped<MLComputeResult>* resolver,
+                   ScriptPromiseResolver<MLComputeResult>* resolver,
                    ExceptionState& exception_state) override;
 
   // Invoking an XNNPACK Runtime object can be time-consuming. Calling this
@@ -148,12 +152,12 @@ class MODULES_EXPORT MLGraphXnnpack final : public MLGraph {
   static void ComputeOnBackgroundThread(
       ScopedMLTrace scoped_trace,
       scoped_refptr<XnnRuntimeWrapper> xnn_runtime_wrapper,
-      Vector<DataBuffer> input_buffers,
-      XnnExternalValuesPtr external_values,
-      NamedArrayBufferViewsInfoPtr inputs_info,
-      NamedArrayBufferViewsInfoPtr outputs_info,
+      Vector<internal::DataBuffer> input_buffers,
+      internal::XnnExternalValuesPtr external_values,
+      std::unique_ptr<internal::NamedArrayBufferViewsInfo> inputs_info,
+      std::unique_ptr<internal::NamedArrayBufferViewsInfo> outputs_info,
       CrossThreadHandle<MLGraphXnnpack> graph,
-      CrossThreadHandle<ScriptPromiseResolverTyped<MLComputeResult>> resolver,
+      CrossThreadHandle<ScriptPromiseResolver<MLComputeResult>> resolver,
       scoped_refptr<base::SequencedTaskRunner> resolver_task_runner);
 
   // Resolve the promise with an `MLComputeResult` on the thread owning this
@@ -162,12 +166,13 @@ class MODULES_EXPORT MLGraphXnnpack final : public MLGraph {
   // from the `inputs_info` and `outputs_info` that carry the backing memory in
   // `ArrayBufferContents` transferred from the original user supplied
   // `ArrayBufferView`s.
-  void OnDidCompute(ScopedMLTrace scoped_trace,
-                    xnn_status status,
-                    NamedArrayBufferViewsInfoPtr inputs_info,
-                    NamedArrayBufferViewsInfoPtr outputs_info,
-                    ScriptPromiseResolverTyped<MLComputeResult>* resolver,
-                    String error_message = String());
+  void OnDidCompute(
+      ScopedMLTrace scoped_trace,
+      xnn_status status,
+      std::unique_ptr<internal::NamedArrayBufferViewsInfo> inputs_info,
+      std::unique_ptr<internal::NamedArrayBufferViewsInfo> outputs_info,
+      ScriptPromiseResolver<MLComputeResult>* resolver,
+      String error_message = String());
 
   // XNNPACK Subgraph is an abstract representation of a neural network model.
   // This method first sorts the MLOperators by searching from `named_outputs`
@@ -178,10 +183,11 @@ class MODULES_EXPORT MLGraphXnnpack final : public MLGraph {
   // using them, they are returned in `out_static_data_buffers`. This method
   // must be called on the thread owning this `MLGraphXnnpack` and
   // `named_outputs`.
-  xnn_status CreateXnnSubgraph(const MLNamedOperands& named_outputs,
-                               XnnSubgraphPtr& out_subgraph,
-                               Vector<DataBuffer>& out_static_data_buffers,
-                               String& error_message);
+  xnn_status CreateXnnSubgraph(
+      const MLNamedOperands& named_outputs,
+      internal::XnnSubgraphPtr& out_subgraph,
+      Vector<internal::DataBuffer>& out_static_data_buffers,
+      String& error_message);
 
   // This method creates the xnn_external_value vector from named input and
   // output array buffer views. The xnn_external_value vector is used to set
@@ -198,7 +204,8 @@ class MODULES_EXPORT MLGraphXnnpack final : public MLGraph {
   //
   // XNNPACK won't write beyond the end of output buffers, so the provided
   // outputs are used as-is.
-  std::optional<std::pair<XnnExternalValuesPtr, Vector<DataBuffer>>>
+  std::optional<
+      std::pair<internal::XnnExternalValuesPtr, Vector<internal::DataBuffer>>>
   CreateExternalValues(const MLNamedArrayBufferViews& inputs,
                        const MLNamedArrayBufferViews& outputs) const;
 

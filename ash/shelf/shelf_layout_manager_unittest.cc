@@ -714,6 +714,17 @@ TEST_F(ShelfLayoutManagerTest, VisibleInOverview) {
             GetShelfWidget()->GetNativeWindow()->GetTargetBounds().y());
 }
 
+TEST_F(ShelfLayoutManagerTest,
+       HotseatStateAfterTabletModeTransitionWithOverview) {
+  // Tests that the shelf is visible when in overview mode.
+  EnterOverview();
+  ASSERT_EQ(HotseatState::kShownClamshell,
+            GetShelfLayoutManager()->hotseat_state());
+
+  TabletModeControllerTestApi().EnterTabletMode();
+  EXPECT_EQ(HotseatState::kExtended, GetShelfLayoutManager()->hotseat_state());
+}
+
 // Assertions around SetAutoHideBehavior.
 TEST_F(ShelfLayoutManagerTest, SetAutoHideBehavior) {
   Shelf* shelf = GetPrimaryShelf();
@@ -3062,7 +3073,7 @@ TEST_F(ShelfLayoutManagerTest, NoBackgroundChange) {
 
 // Tests that tapping the home button is successful on the autohidden shelf.
 //
-// TODO(crbug.com/1418325): Test is flaky.
+// TODO(crbug.com/40894666): Test is flaky.
 TEST_F(ShelfLayoutManagerTest,
        DISABLED_NoTemporaryAutoHideStateWhileOpeningLauncher) {
   // Enable animations and simulate the zero state search called when showing
@@ -3717,7 +3728,7 @@ TEST_F(ShelfLayoutManagerWindowDraggingTest,
 
 // Test that if shelf if hidden or auto-hide hidden, drag window from shelf is a
 // no-op.
-// TODO(1024163): This test consistently crashes.
+// TODO(crbug.com/40107332): This test consistently crashes.
 TEST_F(ShelfLayoutManagerWindowDraggingTest, DISABLED_NoOpForHiddenShelf) {
   std::unique_ptr<aura::Window> window =
       AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));

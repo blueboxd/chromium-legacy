@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <optional>
+#include <string_view>
 
 #include "base/barrier_closure.h"
 #include "base/files/file_path.h"
@@ -12,6 +13,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/test/gmock_expected_support.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/test_future.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
@@ -30,7 +32,7 @@
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/ui/web_applications/test/isolated_web_app_test_utils.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
-#include "chrome/browser/ui/web_applications/web_app_controller_browsertest.h"
+#include "chrome/browser/ui/web_applications/web_app_browsertest_base.h"
 #include "chrome/browser/ui/web_applications/web_app_menu_model.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_url_info.h"
 #include "chrome/browser/web_applications/isolated_web_apps/test/isolated_web_app_builder.h"
@@ -57,6 +59,7 @@
 #include "content/public/browser/service_worker_running_info.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_exposed_isolation_level.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
@@ -74,6 +77,7 @@ namespace web_app {
 namespace {
 
 using ::testing::Eq;
+using ::testing::Ne;
 using ::testing::StartsWith;
 
 const char kNonAppHost[] = "nonapp.com";
@@ -261,7 +265,7 @@ IN_PROC_BROWSER_TEST_F(IsolatedWebAppBrowserTest, NewManifestPathPreferred) {
 IN_PROC_BROWSER_TEST_F(IsolatedWebAppBrowserTest, FallsBackToOldManifestPath) {
   base::ScopedAllowBlockingForTesting allow_blocking;
 
-  auto key_pair = web_package::WebBundleSigner::KeyPair::CreateRandom();
+  auto key_pair = web_package::WebBundleSigner::Ed25519KeyPair::CreateRandom();
   auto web_bundle_id =
       web_package::SignedWebBundleId::CreateForEd25519PublicKey(
           key_pair.public_key);
@@ -272,7 +276,10 @@ IN_PROC_BROWSER_TEST_F(IsolatedWebAppBrowserTest, FallsBackToOldManifestPath) {
   builder.AddExchange(
       "/manifest.webmanifest",
       {{":status", "200"}, {"content-type", "application/manifest+json"}},
-      ManifestBuilder().SetName("fallback manifest").ToJson());
+      ManifestBuilder()
+          .AddIcon("/icon.png", gfx::Size(256, 256), "image/png")
+          .SetName("fallback manifest")
+          .ToJson());
   builder.AddExchange("/", {{":status", "200"}, {"content-type", "text/html"}},
                       "Test html");
   builder.AddExchange("/icon.png",
@@ -339,9 +346,8 @@ IN_PROC_BROWSER_TEST_F(
 
   WebAppProvider::GetForTest(browser()->profile())
       ->sync_bridge_unsafe()
-      .SetAppUserDisplayMode(url_info.app_id(),
-                             mojom::UserDisplayMode::kBrowser,
-                             /*is_user_action=*/false);
+      .SetAppUserDisplayModeForTesting(url_info.app_id(),
+                                       mojom::UserDisplayMode::kBrowser);
 
   GURL app_url = url_info.origin().GetURL().Resolve("/index.html");
   auto* app_frame =
@@ -414,7 +420,7 @@ IN_PROC_BROWSER_TEST_F(IsolatedWebAppBrowserTest, WasmLoadableFromBytes) {
   EXPECT_EQ("loaded", result);
 }
 
-IN_PROC_BROWSER_TEST_F(IsolatedWebAppBrowserTest, BlobUrl) {
+IN_PROC_BROWSER_TEST_F(IsolatedWebAppBrowserTest, CanNavigateToBlobUrl) {
   web_app::IsolatedWebAppUrlInfo url_info = InstallDevModeProxyIsolatedWebApp(
       isolated_web_app_dev_server().GetOrigin());
   content::RenderFrameHost* app_frame = OpenApp(url_info.app_id());
@@ -430,6 +436,96 @@ IN_PROC_BROWSER_TEST_F(IsolatedWebAppBrowserTest, BlobUrl) {
   EXPECT_THAT(navigation_observer.last_net_error_code(), Eq(net::OK));
   EXPECT_THAT(navigation_observer.last_navigation_url().spec(),
               StartsWith("blob:" + url_info.origin().GetURL().spec()));
+}
+
+class IsolatedWebAppApiAccessBrowserTest : public IsolatedWebAppBrowserTest {
+ protected:
+  std::unique_ptr<ScopedBundledIsolatedWebApp> CreateAppWithSocketPermission() {
+    return IsolatedWebAppBuilder(
+               ManifestBuilder().AddPermissionsPolicy(
+                   blink::mojom::PermissionsPolicyFeature::kDirectSockets,
+                   /*self=*/true, {}))
+        .BuildBundle();
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_{
+      blink::features::kIsolateSandboxedIframes};
+};
+
+IN_PROC_BROWSER_TEST_F(IsolatedWebAppApiAccessBrowserTest,
+                       NoApiAccessInDataIframe) {
+  std::unique_ptr<ScopedBundledIsolatedWebApp> app =
+      CreateAppWithSocketPermission();
+  app->TrustSigningKey();
+  ASSERT_OK_AND_ASSIGN(auto url_info, app->Install(profile()));
+  content::RenderFrameHost* app_frame = OpenApp(url_info.app_id());
+
+  ASSERT_THAT(EvalJs(app_frame, "'TCPSocket' in window"), Eq(true));
+
+  ASSERT_TRUE(ExecJs(app_frame, R"(
+      const src = '<!DOCTYPE html><p>data: URL</p>';
+      const url = `data:text/html;base64,${btoa(src)}`;
+      new Promise(resolve => {
+        const f = document.createElement('iframe');
+        f.src = url;
+        f.addEventListener('load', resolve);
+        document.body.appendChild(f);
+      });
+  )"));
+  content::RenderFrameHost* iframe = ChildFrameAt(app_frame, 0);
+  ASSERT_THAT(iframe, Ne(nullptr));
+
+  EXPECT_THAT(
+      EvalJs(iframe, "location.href"),
+      Eq("data:text/html;base64,PCFET0NUWVBFIGh0bWw+PHA+ZGF0YTogVVJMPC9wPg=="));
+  EXPECT_THAT(EvalJs(iframe, "window.origin"), Eq("null"));
+  EXPECT_THAT(EvalJs(iframe, "window.isSecureContext"), Eq(false));
+  EXPECT_THAT(EvalJs(iframe, "window.crossOriginIsolated"), Eq(false));
+  EXPECT_THAT(EvalJs(iframe, "'TCPSocket' in window"), Eq(false));
+  EXPECT_THAT(
+      iframe->GetLastCommittedURL(),
+      Eq("data:text/html;base64,PCFET0NUWVBFIGh0bWw+PHA+ZGF0YTogVVJMPC9wPg=="));
+  EXPECT_THAT(iframe->GetLastCommittedOrigin().opaque(), Eq(true));
+  EXPECT_THAT(iframe->GetWebExposedIsolationLevel(),
+              Eq(content::WebExposedIsolationLevel::kNotIsolated));
+}
+
+IN_PROC_BROWSER_TEST_F(IsolatedWebAppApiAccessBrowserTest,
+                       NoApiAccessInSandboxedIframe) {
+  std::unique_ptr<ScopedBundledIsolatedWebApp> app =
+      CreateAppWithSocketPermission();
+  app->TrustSigningKey();
+  ASSERT_OK_AND_ASSIGN(auto url_info, app->Install(profile()));
+  content::RenderFrameHost* app_frame = OpenApp(url_info.app_id());
+
+  ASSERT_THAT(EvalJs(app_frame, "'TCPSocket' in window"), Eq(true));
+
+  std::string start_url = url_info.origin().GetURL().spec();
+  ASSERT_TRUE(ExecJs(app_frame, content::JsReplace(R"(
+      new Promise(resolve => {
+        const f = document.createElement('iframe');
+        f.src = $1;
+        f.sandbox = 'allow-scripts';  // for EvalJs
+        f.addEventListener('load', resolve);
+        document.body.appendChild(f);
+      });
+  )",
+                                                   start_url)));
+  content::RenderFrameHost* iframe = ChildFrameAt(app_frame, 0);
+  ASSERT_THAT(iframe, Ne(nullptr));
+
+  EXPECT_THAT(EvalJs(iframe, "location.href"), Eq(start_url));
+  EXPECT_THAT(EvalJs(iframe, "window.origin"), Eq("null"));
+  EXPECT_THAT(EvalJs(iframe, "window.isSecureContext"), Eq(true));
+  EXPECT_THAT(EvalJs(iframe, "window.crossOriginIsolated"), Eq(false));
+  EXPECT_THAT(EvalJs(iframe, "'TCPSocket' in window"), Eq(false));
+  EXPECT_THAT(iframe->GetProcess()->GetWebExposedIsolationLevel(),
+              Eq(content::WebExposedIsolationLevel::kIsolated));
+  EXPECT_THAT(iframe->GetLastCommittedURL(), Eq(start_url));
+  EXPECT_THAT(iframe->GetLastCommittedOrigin().opaque(), Eq(true));
+  EXPECT_THAT(iframe->GetWebExposedIsolationLevel(),
+              Eq(content::WebExposedIsolationLevel::kNotIsolated));
 }
 
 class IsolatedWebAppBrowserCookieTest : public IsolatedWebAppBrowserTest {
@@ -850,7 +946,7 @@ class IsolatedWebAppExtensionBrowserTest
 
   base::ScopedTempDir temp_dir_;
 
-  static constexpr base::StringPiece kExtensionManifest = R"({
+  static constexpr std::string_view kExtensionManifest = R"({
     "name": "foo",
     "description": "foo",
     "version": "0.1",
@@ -898,7 +994,7 @@ IN_PROC_BROWSER_TEST_P(IsolatedWebAppExtensionBrowserTest,
   ASSERT_TRUE(IsChromeRuntimeDefined(app_frame));
 
   // IWA: Send a ping to the extension and wait for the pong.
-  constexpr base::StringPiece kSendPing = R"(
+  constexpr std::string_view kSendPing = R"(
     chrome.runtime.sendMessage($1, "iwa->extension: ping");
   )";
   EXPECT_EQ(EvalJs(app_frame, content::JsReplace(kSendPing, extension->id())),
@@ -941,7 +1037,7 @@ IN_PROC_BROWSER_TEST_P(IsolatedWebAppExtensionBrowserTest, ConnectToExtension) {
   ASSERT_TRUE(IsChromeRuntimeDefined(app_frame));
 
   // IWA: Send a ping to the extension and wait for the pong.
-  constexpr base::StringPiece kSendPing = R"(
+  constexpr std::string_view kSendPing = R"(
     new Promise((resolve, reject) => {
       const port = chrome.runtime.connect($1);
       port.onMessage.addListener((response) => resolve(response));

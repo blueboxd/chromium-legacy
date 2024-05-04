@@ -2,13 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifdef UNSAFE_BUFFERS_BUILD
+// TODO(crbug.com/40284755): Remove this and spanify to fix the errors.
+#pragma allow_unsafe_buffers
+#endif
+
 #include "base/memory/discardable_shared_memory.h"
 
 #include <stdint.h>
 
 #include <algorithm>
 
-#include "base/allocator/partition_allocator/src/partition_alloc/page_allocator.h"
 #include "base/atomicops.h"
 #include "base/bits.h"
 #include "base/feature_list.h"
@@ -20,6 +24,7 @@
 #include "base/numerics/safe_math.h"
 #include "base/tracing_buildflags.h"
 #include "build/build_config.h"
+#include "partition_alloc/page_allocator.h"
 
 #if BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_NACL)
 // For madvise() which is available on all POSIX compatible systems.
@@ -32,6 +37,7 @@
 
 #if BUILDFLAG(IS_WIN)
 #include <windows.h>
+
 #include "base/win/windows_version.h"
 #endif
 

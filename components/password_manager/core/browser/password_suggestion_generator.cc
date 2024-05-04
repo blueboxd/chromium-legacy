@@ -4,6 +4,8 @@
 
 #include "components/password_manager/core/browser/password_suggestion_generator.h"
 
+#include <set>
+
 #include "base/base64.h"
 #include "base/i18n/case_conversion.h"
 #include "base/strings/utf_string_conversions.h"
@@ -12,7 +14,9 @@
 #include "components/password_manager/core/browser/password_feature_manager.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
+#include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/browser/password_ui_utils.h"
+#include "components/password_manager/core/browser/ui/credential_ui_entry.h"
 #include "components/password_manager/core/browser/webauthn_credentials_delegate.h"
 #include "components/sync/base/features.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -69,8 +73,7 @@ autofill::Suggestion CreateWebAuthnEntry(bool listed_passkeys) {
       listed_passkeys ? IDS_PASSWORD_MANAGER_USE_DIFFERENT_PASSKEY
                       : IDS_PASSWORD_MANAGER_USE_PASSKEY));
   suggestion.icon = autofill::Suggestion::Icon::kDevice;
-  suggestion.popup_item_id =
-      autofill::PopupItemId::kWebauthnSignInWithAnotherDevice;
+  suggestion.type = autofill::SuggestionType::kWebauthnSignInWithAnotherDevice;
   return suggestion;
 }
 #endif  // !BUILDFLAG(IS_ANDROID)
@@ -80,14 +83,14 @@ autofill::Suggestion CreateGenerationEntry() {
       l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_GENERATE_PASSWORD));
   // The UI code will pick up an icon from the resources based on the string.
   suggestion.icon = autofill::Suggestion::Icon::kKey;
-  suggestion.popup_item_id = autofill::PopupItemId::kGeneratePasswordEntry;
+  suggestion.type = autofill::SuggestionType::kGeneratePasswordEntry;
   return suggestion;
 }
 
 // Entry for opting in to password account storage and then filling.
 autofill::Suggestion CreateEntryToOptInToAccountStorageThenFill() {
   bool has_passkey_sync = false;
-#if !BUILDFLAG(IS_IOS) && !BUILDFLAG(IS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   has_passkey_sync =
       base::FeatureList::IsEnabled(syncer::kSyncWebauthnCredentials);
 #endif
@@ -95,8 +98,7 @@ autofill::Suggestion CreateEntryToOptInToAccountStorageThenFill() {
       has_passkey_sync
           ? IDS_PASSWORD_MANAGER_OPT_INTO_ACCOUNT_STORE_WITH_PASSKEYS
           : IDS_PASSWORD_MANAGER_OPT_INTO_ACCOUNT_STORE));
-  suggestion.popup_item_id =
-      autofill::PopupItemId::kPasswordAccountStorageOptIn;
+  suggestion.type = autofill::SuggestionType::kPasswordAccountStorageOptIn;
   suggestion.icon = autofill::Suggestion::Icon::kGoogle;
   return suggestion;
 }
@@ -105,8 +107,8 @@ autofill::Suggestion CreateEntryToOptInToAccountStorageThenFill() {
 autofill::Suggestion CreateEntryToOptInToAccountStorageThenGenerate() {
   autofill::Suggestion suggestion(
       l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_GENERATE_PASSWORD));
-  suggestion.popup_item_id =
-      autofill::PopupItemId::kPasswordAccountStorageOptInAndGenerate;
+  suggestion.type =
+      autofill::SuggestionType::kPasswordAccountStorageOptInAndGenerate;
   suggestion.icon = autofill::Suggestion::Icon::kKey;
   return suggestion;
 }
@@ -115,8 +117,7 @@ autofill::Suggestion CreateEntryToOptInToAccountStorageThenGenerate() {
 autofill::Suggestion CreateEntryToReSignin() {
   autofill::Suggestion suggestion(
       l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_RE_SIGNIN_ACCOUNT_STORE));
-  suggestion.popup_item_id =
-      autofill::PopupItemId::kPasswordAccountStorageReSignin;
+  suggestion.type = autofill::SuggestionType::kPasswordAccountStorageReSignin;
   suggestion.icon = autofill::Suggestion::Icon::kGoogle;
   return suggestion;
 }
@@ -125,39 +126,39 @@ void MaybeAppendManagePasswordsEntry(
     std::vector<autofill::Suggestion>* suggestions) {
   bool has_no_fillable_suggestions = base::ranges::none_of(
       *suggestions,
-      [](autofill::PopupItemId id) {
-        return id == autofill::PopupItemId::kPasswordEntry ||
-               id == autofill::PopupItemId::kAccountStoragePasswordEntry ||
-               id == autofill::PopupItemId::kGeneratePasswordEntry ||
-               id == autofill::PopupItemId::kWebauthnCredential;
+      [](autofill::SuggestionType id) {
+        return id == autofill::SuggestionType::kPasswordEntry ||
+               id == autofill::SuggestionType::kAccountStoragePasswordEntry ||
+               id == autofill::SuggestionType::kGeneratePasswordEntry ||
+               id == autofill::SuggestionType::kWebauthnCredential;
       },
-      &autofill::Suggestion::popup_item_id);
+      &autofill::Suggestion::type);
   if (has_no_fillable_suggestions) {
     return;
   }
 
   bool has_webauthn_credential = base::ranges::any_of(
       *suggestions,
-      [](autofill::PopupItemId popup_item_id) {
-        return popup_item_id == autofill::PopupItemId::kWebauthnCredential;
+      [](autofill::SuggestionType type) {
+        return type == autofill::SuggestionType::kWebauthnCredential;
       },
-      &autofill::Suggestion::popup_item_id);
+      &autofill::Suggestion::type);
 
   // Add a separator before the manage option unless there are no suggestions
   // yet.
   if (!suggestions->empty()) {
-    suggestions->emplace_back(autofill::PopupItemId::kSeparator);
+    suggestions->emplace_back(autofill::SuggestionType::kSeparator);
   }
 
   autofill::Suggestion suggestion(l10n_util::GetStringUTF16(
       has_webauthn_credential
           ? IDS_PASSWORD_MANAGER_MANAGE_PASSWORDS_AND_PASSKEYS
           : IDS_PASSWORD_MANAGER_MANAGE_PASSWORDS));
-  suggestion.popup_item_id = autofill::PopupItemId::kAllSavedPasswordsEntry;
+  suggestion.type = autofill::SuggestionType::kAllSavedPasswordsEntry;
   suggestion.icon = autofill::Suggestion::Icon::kSettings;
   // The UI code will pick up an icon from the resources based on the string.
   suggestion.trailing_icon = autofill::Suggestion::Icon::kGooglePasswordManager;
-  suggestions->push_back(std::move(suggestion));
+  suggestions->emplace_back(std::move(suggestion));
 }
 
 // If |field_suggestion| matches |field_content|, creates a Suggestion out of it
@@ -193,9 +194,10 @@ void AppendSuggestionIfMatching(
       *suggestion.voice_over += u", ";
       *suggestion.voice_over += suggestion.labels[0][0].value;
     }
-    suggestion.popup_item_id =
-        from_account_store ? autofill::PopupItemId::kAccountStoragePasswordEntry
-                           : autofill::PopupItemId::kPasswordEntry;
+    suggestion.type =
+        from_account_store
+            ? autofill::SuggestionType::kAccountStoragePasswordEntry
+            : autofill::SuggestionType::kPasswordEntry;
     suggestion.custom_icon = custom_icon;
     // The UI code will pick up an icon from the resources based on the string.
     suggestion.icon = autofill::Suggestion::Icon::kGlobe;
@@ -205,7 +207,7 @@ void AppendSuggestionIfMatching(
       suggestion.trailing_icon = CreateStoreIcon(from_account_store);
     }
 #endif
-    suggestions->push_back(suggestion);
+    suggestions->emplace_back(std::move(suggestion));
   }
 }
 
@@ -237,49 +239,66 @@ void GetSuggestions(const autofill::PasswordFormFillData& fill_data,
 
 void AddPasswordUsernameChildSuggestion(const std::u16string& username,
                                         autofill::Suggestion& suggestion) {
-  suggestion.children.push_back(autofill::Suggestion(
-      username, autofill::PopupItemId::kPasswordFieldByFieldFilling));
+  suggestion.children.emplace_back(
+      username, autofill::SuggestionType::kPasswordFieldByFieldFilling);
 }
 
 void AddFillPasswordChildSuggestion(autofill::Suggestion& suggestion,
-                                    const std::u16string& password) {
+                                    const CredentialUIEntry& credential,
+                                    IsCrossDomain is_cross_origin) {
   autofill::Suggestion fill_password(
       l10n_util::GetStringUTF16(
           IDS_PASSWORD_MANAGER_MANUAL_FALLBACK_FILL_PASSWORD_ENTRY),
-      autofill::PopupItemId::kFillPassword);
-  fill_password.payload = autofill::Suggestion::ValueToFill(password);
-  suggestion.children.push_back(fill_password);
+      autofill::SuggestionType::kFillPassword);
+  fill_password.payload = autofill::Suggestion::PasswordSuggestionDetails(
+      credential.password,
+      GetHumanReadableRealm(credential.GetFirstSignonRealm()),
+      is_cross_origin.value());
+  suggestion.children.emplace_back(std::move(fill_password));
 }
 
 void AddViewPasswordDetailsChildSuggestion(autofill::Suggestion& suggestion) {
   autofill::Suggestion view_password_details(
       l10n_util::GetStringUTF16(
           IDS_PASSWORD_MANAGER_MANUAL_FALLBACK_VIEW_DETAILS_ENTRY),
-      autofill::PopupItemId::kViewPasswordDetails);
+      autofill::SuggestionType::kViewPasswordDetails);
   view_password_details.icon = autofill::Suggestion::Icon::kKey;
-  suggestion.children.push_back(view_password_details);
+  suggestion.children.emplace_back(std::move(view_password_details));
 }
 
-autofill::Suggestion GetManualFallbackSuggestion(
-    const CredentialUIEntry& credential) {
-  autofill::Suggestion suggestion(
-      GetHumanReadableRealm(credential.GetFirstSignonRealm()),
-      autofill::PopupItemId::kPasswordEntry);
-  bool replaced;
-  const std::u16string maybe_username =
-      ReplaceEmptyUsername(credential.username, &replaced);
-  suggestion.additional_label = maybe_username;
-  suggestion.icon = autofill::Suggestion::Icon::kGlobe;
+void AppendManualFallbackSuggestions(
+    const CredentialUIEntry& credential,
+    IsTriggeredOnPasswordForm on_password_form,
+    IsCrossDomain is_cross_origin,
+    std::vector<autofill::Suggestion>* suggestions) {
+  // A separate suggestion with the same (username, password) pair is displayed
+  // for every affiliated domain. For example, if the credential was saved on
+  // apple.com and icloud.com, there will be 2 suggestions for both of these
+  // websites.
+  for (const CredentialUIEntry::DomainInfo& domain_info :
+       credential.GetAffiliatedDomains()) {
+    const std::u16string kDisplaySingonRealm =
+        base::UTF8ToUTF16(domain_info.name);
+    autofill::Suggestion suggestion(kDisplaySingonRealm,
+                                    autofill::SuggestionType::kPasswordEntry);
+    bool replaced;
+    const std::u16string maybe_username =
+        ReplaceEmptyUsername(credential.username, &replaced);
+    suggestion.additional_label = maybe_username;
+    suggestion.icon = autofill::Suggestion::Icon::kGlobe;
+    suggestion.payload = autofill::Suggestion::PasswordSuggestionDetails(
+        credential.password, kDisplaySingonRealm, is_cross_origin.value());
+    suggestion.is_acceptable = on_password_form.value();
 
-  if (!replaced) {
-    AddPasswordUsernameChildSuggestion(maybe_username, suggestion);
+    if (!replaced) {
+      AddPasswordUsernameChildSuggestion(maybe_username, suggestion);
+    }
+    AddFillPasswordChildSuggestion(suggestion, credential, is_cross_origin);
+    suggestion.children.emplace_back(autofill::SuggestionType::kSeparator);
+    AddViewPasswordDetailsChildSuggestion(suggestion);
+
+    suggestions->emplace_back(std::move(suggestion));
   }
-  AddFillPasswordChildSuggestion(suggestion, credential.password);
-  suggestion.children.push_back(
-      autofill::Suggestion(autofill::PopupItemId::kSeparator));
-  AddViewPasswordDetailsChildSuggestion(suggestion);
-
-  return suggestion;
 }
 
 }  // namespace
@@ -325,7 +344,7 @@ PasswordSuggestionGenerator::GetSuggestionsForDomain(
         [&page_favicon](const auto& passkey) {
           autofill::Suggestion suggestion(ToUsernameString(passkey.username()));
           suggestion.icon = autofill::Suggestion::Icon::kGlobe;
-          suggestion.popup_item_id = autofill::PopupItemId::kWebauthnCredential;
+          suggestion.type = autofill::SuggestionType::kWebauthnCredential;
           suggestion.custom_icon = page_favicon;
           suggestion.payload = autofill::Suggestion::Guid(
               base::Base64Encode(passkey.credential_id()));
@@ -351,26 +370,27 @@ PasswordSuggestionGenerator::GetSuggestionsForDomain(
   if (uses_passkeys && delegate->OfferPasskeysFromAnotherDeviceOption()) {
     bool listed_passkeys = delegate->GetPasskeys().has_value() &&
                            delegate->GetPasskeys()->size() > 0;
-    suggestions.push_back(CreateWebAuthnEntry(listed_passkeys));
+    suggestions.emplace_back(CreateWebAuthnEntry(listed_passkeys));
   }
 #endif
 
   // Add password generation entry, if available.
   if (offers_generation) {
-    suggestions.push_back(show_account_storage_optin
-                              ? CreateEntryToOptInToAccountStorageThenGenerate()
-                              : CreateGenerationEntry());
+    suggestions.emplace_back(
+        show_account_storage_optin
+            ? CreateEntryToOptInToAccountStorageThenGenerate()
+            : CreateGenerationEntry());
   }
 
   // Add button to opt into using the account storage for passwords and then
   // suggest.
   if (show_account_storage_optin) {
-    suggestions.push_back(CreateEntryToOptInToAccountStorageThenFill());
+    suggestions.emplace_back(CreateEntryToOptInToAccountStorageThenFill());
   }
 
   // Add button to sign-in which unlocks the previously used account store.
   if (show_account_storage_resignin) {
-    suggestions.push_back(CreateEntryToReSignin());
+    suggestions.emplace_back(CreateEntryToReSignin());
   }
 
   // Add "Manage all passwords" link to settings.
@@ -381,16 +401,55 @@ PasswordSuggestionGenerator::GetSuggestionsForDomain(
 
 std::vector<autofill::Suggestion>
 PasswordSuggestionGenerator::GetManualFallbackSuggestions(
-    const std::vector<CredentialUIEntry>& credentials) const {
+    base::span<const PasswordForm> suggested_credentials,
+    base::span<const CredentialUIEntry> credentials,
+    IsTriggeredOnPasswordForm on_password_form) const {
   std::vector<autofill::Suggestion> suggestions;
-  for (const CredentialUIEntry& credential : credentials) {
-    suggestions.push_back(GetManualFallbackSuggestion(credential));
+  const bool generate_sections =
+      !suggested_credentials.empty() && !credentials.empty();
+  if (generate_sections) {
+    suggestions.emplace_back(
+        l10n_util::GetStringUTF16(
+            IDS_PASSWORD_MANAGER_MANUAL_FALLBACK_SUGGESTED_PASSWORDS_SECTION_TITLE),
+        autofill::SuggestionType::kTitle);
   }
 
-  base::ranges::sort(suggestions, [](const autofill::Suggestion& a,
-                                     const autofill::Suggestion& b) {
-    return a.main_text.value < b.main_text.value;
-  });
+  std::set<std::string> suggested_signon_realms;
+  for (const auto& form : suggested_credentials) {
+    suggested_signon_realms.insert(form.signon_realm);
+    AppendManualFallbackSuggestions(CredentialUIEntry(form), on_password_form,
+                                    IsCrossDomain(false), &suggestions);
+  }
+
+  if (generate_sections) {
+    suggestions.emplace_back(
+        l10n_util::GetStringUTF16(
+            IDS_PASSWORD_MANAGER_MANUAL_FALLBACK_ALL_PASSWORDS_SECTION_TITLE),
+        autofill::SuggestionType::kTitle);
+  }
+
+  // Only the "All passwords" section should be sorted alphabetically.
+  const size_t relevant_section_offset = suggestions.size();
+
+  for (const CredentialUIEntry& credential : credentials) {
+    // Check if any credential in the "Suggested" section has the same singon
+    // realm as this `CredentialUIEntry`.
+    const bool has_suggested_realm = base::ranges::any_of(
+        credential.facets,
+        [&suggested_signon_realms](const std::string& signon_realm) {
+          return suggested_signon_realms.count(signon_realm);
+        },
+        &CredentialFacet::signon_realm);
+    AppendManualFallbackSuggestions(credential, on_password_form,
+                                    IsCrossDomain(!has_suggested_realm),
+                                    &suggestions);
+  }
+
+  base::ranges::sort(suggestions.begin() + relevant_section_offset,
+                     suggestions.end(), base::ranges::less(),
+                     [](const autofill::Suggestion& suggestion) {
+                       return suggestion.main_text.value;
+                     });
 
   // Add "Manage all passwords" link to settings.
   MaybeAppendManagePasswordsEntry(&suggestions);

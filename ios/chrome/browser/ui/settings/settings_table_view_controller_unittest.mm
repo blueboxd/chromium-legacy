@@ -17,7 +17,6 @@
 #import "components/policy/policy_constants.h"
 #import "components/signin/public/base/signin_metrics.h"
 #import "components/signin/public/base/signin_pref_names.h"
-#import "components/sync/base/features.h"
 #import "components/sync/test/mock_sync_service.h"
 #import "ios/chrome/browser/passwords/model/ios_chrome_profile_password_store_factory.h"
 #import "ios/chrome/browser/policy/model/policy_util.h"
@@ -30,6 +29,7 @@
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
 #import "ios/chrome/browser/shared/public/commands/browsing_data_commands.h"
 #import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
+#import "ios/chrome/browser/shared/public/commands/settings_commands.h"
 #import "ios/chrome/browser/shared/public/commands/snackbar_commands.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_detail_icon_item.h"
@@ -319,52 +319,9 @@ TEST_F(SettingsTableViewControllerTest, SigninDisabled) {
                                          SettingsSectionIdentifierSignIn]);
 }
 
-// Verifies that for a signed-in non-syncing user with
-// kReplaceSyncPromosWithSignInPromos disabled, the account section shows 3
-// items: the one with the name/email, the "Sync off" one, and the "Google
-// Services" one.
-TEST_F(SettingsTableViewControllerTest,
-       AccountSectionIfSignedInNonSyncing_SyncToSigninDisabled) {
-  base::test::ScopedFeatureList features;
-  features.InitAndDisableFeature(syncer::kReplaceSyncPromosWithSignInPromos);
-
-  ON_CALL(*sync_service_mock_->GetMockUserSettings(),
-          IsInitialSyncFeatureSetupComplete())
-      .WillByDefault(Return(false));
-  auth_service_->SignIn(fake_identity_,
-                        signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN);
-
-  CreateController();
-  CheckController();
-
-  NSArray* account_items = [controller().tableViewModel
-      itemsInSectionWithIdentifier:SettingsSectionIdentifier::
-                                       SettingsSectionIdentifierAccount];
-  ASSERT_EQ(3U, account_items.count);
-
-  auto* account_item = static_cast<TableViewAccountItem*>(account_items[0]);
-  auto* sync_item = static_cast<TableViewDetailIconItem*>(account_items[1]);
-  auto* google_services_item =
-      static_cast<TableViewDetailIconItem*>(account_items[2]);
-  EXPECT_NSEQ(fake_identity_.userFullName, account_item.text);
-  EXPECT_NSEQ(fake_identity_.userEmail, account_item.detailText);
-  EXPECT_NSEQ(l10n_util::GetNSString(IDS_IOS_GOOGLE_SYNC_SETTINGS_TITLE),
-              sync_item.text);
-  EXPECT_NSEQ(l10n_util::GetNSString(IDS_IOS_SETTING_OFF),
-              sync_item.detailText);
-  EXPECT_NSEQ(l10n_util::GetNSString(IDS_IOS_GOOGLE_SERVICES_SETTINGS_TITLE),
-              google_services_item.text);
-  EXPECT_NSEQ(nil, google_services_item.detailText);
-}
-
-// Verifies that for a signed-in non-syncing user with
-// kReplaceSyncPromosWithSignInPromos enabled, the account section shows 2
+// Verifies that for a signed-in non-syncing user, the account section shows 2
 // items: the one with the name/email, and the "Google Services" one.
-TEST_F(SettingsTableViewControllerTest,
-       AccountSectionIfSignedInNonSyncing_SyncToSigninEnabled) {
-  base::test::ScopedFeatureList features(
-      syncer::kReplaceSyncPromosWithSignInPromos);
-
+TEST_F(SettingsTableViewControllerTest, AccountSectionIfSignedInNonSyncing) {
   ON_CALL(*sync_service_mock_->GetMockUserSettings(),
           IsInitialSyncFeatureSetupComplete())
       .WillByDefault(Return(false));
@@ -554,7 +511,8 @@ TEST_F(SettingsTableViewControllerTest, HasDownloadsMenuItem) {
 // Verifies that the plus address option isn't shown when disabled.
 TEST_F(SettingsTableViewControllerTest, NoPlusAddressesByDefault) {
   base::test::ScopedFeatureList features;
-  features.InitAndDisableFeature(plus_addresses::features::kFeature);
+  features.InitAndDisableFeature(
+      plus_addresses::features::kPlusAddressesEnabled);
 
   CreateController();
   CheckController();

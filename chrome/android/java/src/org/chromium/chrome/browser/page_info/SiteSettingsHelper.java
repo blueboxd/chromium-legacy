@@ -8,11 +8,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 
-import org.chromium.base.StrictModeContext;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
-import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
-import org.chromium.chrome.browser.site_settings.ChromeSiteSettingsDelegate;
 import org.chromium.components.browser_ui.settings.SettingsLauncher;
 import org.chromium.components.browser_ui.site_settings.ContentSettingsResources;
 import org.chromium.components.browser_ui.site_settings.SingleCategorySettings;
@@ -29,11 +26,13 @@ import org.chromium.url.GURL;
 public class SiteSettingsHelper {
     /**
      * Whether site settings is available for a given {@link WebContents}.
+     *
      * @param webContents The WebContents for which to check the site settings.
      */
     public static boolean isSiteSettingsAvailable(WebContents webContents) {
         boolean isOfflinePage = OfflinePageUtils.getOfflinePage(webContents) != null;
-        // TODO(crbug.com/1033178): dedupe the DomDistillerUrlUtils#getOriginalUrlFromDistillerUrl()
+        // TODO(crbug.com/40663204): dedupe the
+        // DomDistillerUrlUtils#getOriginalUrlFromDistillerUrl()
         // calls.
         GURL url =
                 webContents != null
@@ -45,7 +44,7 @@ public class SiteSettingsHelper {
 
     /** Show the single category settings page for given category and type. */
     public static void showCategorySettings(
-            Context context, Profile profile, @SiteSettingsCategory.Type int category) {
+            Context context, @SiteSettingsCategory.Type int category) {
         SettingsLauncher settingsLauncher = new SettingsLauncherImpl();
         Bundle extras = new Bundle();
         extras.putString(
@@ -54,10 +53,7 @@ public class SiteSettingsHelper {
         extras.putString(
                 SingleCategorySettings.EXTRA_TITLE,
                 context.getResources()
-                        .getString(
-                                ContentSettingsResources.getTitleForCategory(
-                                        category,
-                                        new ChromeSiteSettingsDelegate(context, profile))));
+                        .getString(ContentSettingsResources.getTitleForCategory(category)));
         Intent preferencesIntent =
                 settingsLauncher.createSettingsActivityIntent(
                         context, SingleCategorySettings.class.getName(), extras);
@@ -66,8 +62,6 @@ public class SiteSettingsHelper {
 
     private static void launchIntent(Context context, Intent intent) {
         // Disabling StrictMode to avoid violations (https://crbug.com/819410).
-        try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
-            context.startActivity(intent);
-        }
+        context.startActivity(intent);
     }
 }

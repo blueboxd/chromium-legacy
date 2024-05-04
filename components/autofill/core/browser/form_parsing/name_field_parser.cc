@@ -5,6 +5,7 @@
 #include "components/autofill/core/browser/form_parsing/name_field_parser.h"
 
 #include <memory>
+#include <string_view>
 
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
@@ -20,7 +21,7 @@
 namespace autofill {
 namespace {
 
-base::span<const MatchPatternRef> GetMatchPatterns(base::StringPiece name,
+base::span<const MatchPatternRef> GetMatchPatterns(std::string_view name,
                                                    ParsingContext& context) {
   return GetMatchPatterns(name, context.page_language, context.pattern_source);
 }
@@ -239,7 +240,7 @@ FirstTwoLastNamesField::ParseComponentNames(ParsingContext& context,
     // Scan for the honorific prefix before checking for unrelated name fields
     // because a honorific prefix field is expected to have very specific labels
     // including "Title:". The latter is matched with |kNameIgnoredRe|.
-    // TODO(crbug.com/1098943): Remove check once feature is launched or
+    // TODO(crbug.com/40137264): Remove check once feature is launched or
     // removed.
     if (!v->honorific_prefix_ &&
         ParseField(context, scanner, kHonorificPrefixRe,

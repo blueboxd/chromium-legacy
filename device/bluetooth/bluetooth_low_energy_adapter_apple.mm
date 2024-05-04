@@ -68,8 +68,7 @@ BluetoothLowEnergyAdapterApple::BluetoothLowEnergyAdapterApple()
       low_energy_peripheral_manager_delegate_(
           [[BluetoothLowEnergyPeripheralManagerDelegate alloc]
               initWithAdvertisementManager:
-                  low_energy_advertisement_manager_.get()
-                                andAdapter:this]) {
+                  low_energy_advertisement_manager_.get()]) {
   DCHECK(low_energy_discovery_manager_);
 }
 
@@ -450,7 +449,7 @@ void BluetoothLowEnergyAdapterApple::LowEnergyDeviceUpdated(
         device_mac->GetAddress(), device_name_opt,
         local_name == nil ? std::nullopt : local_name_opt, rssi,
         tx_power == nil ? std::nullopt : std::make_optional(clamped_tx_power),
-        std::nullopt, /* TODO(crbug.com/588083) Implement appearance */
+        std::nullopt, /* TODO(crbug.com/41240161) Implement appearance */
         advertised_uuids, service_data_map, manufacturer_data_map);
   }
 
@@ -491,7 +490,7 @@ void BluetoothLowEnergyAdapterApple::LowEnergyCentralManagerUpdatedState() {
       // GetDevices() returns instances of BluetoothClassicDeviceMac and
       // BluetoothLowEnergyDeviceMac. The DidDisconnectPeripheral() method is
       // only available on BluetoothLowEnergyDeviceMac.
-      if (!static_cast<BluetoothDeviceMac*>(device)->IsLowEnergyDevice()) {
+      if (!device->IsLowEnergyDevice()) {
         continue;
       }
       BluetoothLowEnergyDeviceMac* device_mac =
@@ -631,10 +630,9 @@ BluetoothLowEnergyAdapterApple::GetBluetoothLowEnergyDeviceMac(
   // device_mac can be BluetoothClassicDeviceMac* or
   // BluetoothLowEnergyDeviceMac* To return valid BluetoothLowEnergyDeviceMac*
   // we need to first check with IsLowEnergyDevice()
-  BluetoothDeviceMac* device_mac =
-      static_cast<BluetoothDeviceMac*>(iter->second.get());
-  return device_mac->IsLowEnergyDevice()
-             ? static_cast<BluetoothLowEnergyDeviceMac*>(device_mac)
+  BluetoothDevice* device = iter->second.get();
+  return device->IsLowEnergyDevice()
+             ? static_cast<BluetoothLowEnergyDeviceMac*>(device)
              : nullptr;
 }
 

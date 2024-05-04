@@ -227,7 +227,8 @@ class LoginPasswordView::LoginTextfield : public views::Textfield {
 
   // This is useful when the display password button is not shown. In such a
   // case, the login text field needs to define its size.
-  gfx::Size CalculatePreferredSize() const override {
+  gfx::Size CalculatePreferredSize(
+      const views::SizeBounds& available_size) const override {
     return gfx::Size(kPasswordTotalWidthDp, kIconSizeDp);
   }
 
@@ -456,11 +457,6 @@ void LoginPasswordView::SetEnabledOnEmptyPassword(bool enabled) {
   UpdateUiState();
 }
 
-void LoginPasswordView::OnAccessibleNameChanged(
-    const std::u16string& new_name) {
-  textfield_->SetAccessibleName(new_name);
-}
-
 void LoginPasswordView::SetFocusEnabledForTextfield(bool enable) {
   auto behavior = enable ? FocusBehavior::ALWAYS : FocusBehavior::NEVER;
   textfield_->SetFocusBehavior(behavior);
@@ -529,8 +525,11 @@ bool LoginPasswordView::IsReadOnly() const {
   return textfield_->GetReadOnly();
 }
 
-gfx::Size LoginPasswordView::CalculatePreferredSize() const {
-  gfx::Size size = views::View::CalculatePreferredSize();
+gfx::Size LoginPasswordView::CalculatePreferredSize(
+    const views::SizeBounds& available_size) const {
+  views::SizeBounds content_available_size(available_size);
+  content_available_size.set_width(kPasswordTotalWidthDp);
+  gfx::Size size = views::View::CalculatePreferredSize(content_available_size);
   size.set_width(kPasswordTotalWidthDp);
   return size;
 }
@@ -665,6 +664,11 @@ void LoginPasswordView::SetCapsLockHighlighted(bool highlight) {
 void LoginPasswordView::SetLoginArrowNavigationDelegate(
     LoginArrowNavigationDelegate* delegate) {
   arrow_navigation_delegate_ = delegate;
+}
+
+void LoginPasswordView::SetAccessibleNameOnTextfield(
+    const std::u16string& new_name) {
+  textfield_->SetAccessibleName(new_name);
 }
 
 BEGIN_METADATA(LoginPasswordView)

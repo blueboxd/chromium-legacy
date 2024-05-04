@@ -10,8 +10,8 @@ import androidx.annotation.Nullable;
 
 import org.chromium.base.Callback;
 import org.chromium.base.supplier.ObservableSupplierImpl;
-import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.compositor.overlays.strip.StripLayoutHelperManager.TabModelStartupInfo;
+import org.chromium.chrome.browser.tab_ui.TabContentManager;
 import org.chromium.chrome.browser.tabmodel.MismatchedIndicesHandler;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -76,7 +76,7 @@ public abstract class TabModelOrchestrator {
             return;
         }
 
-        // TODO(crbug.com/1169408): Set the members to null and mTabModelsInitialized to false.
+        // TODO(crbug.com/40743848): Set the members to null and mTabModelsInitialized to false.
         // Right now, it breaks destruction of VrShell, which relies on using TabModel after
         // its destruction.
 

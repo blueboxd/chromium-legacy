@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <map>
 #include <memory>
+#include <string_view>
 #include <unordered_map>
 #include <utility>
 #include <vector>
@@ -50,7 +51,7 @@ bool DataPack::LoadSharedResourceFromPath(const base::FilePath& path) {
     version = reinterpret_cast<const FileHeaderV1*>(data)[0].version;
   size_t header_length = sizeof(FileHeaderV1);
   if (version == 0 || data_length < header_length) {
-    // TODO(crbug.com/1315912): Add LogDataPackError as DataPack.
+    // TODO(crbug.com/40221977): Add LogDataPackError as DataPack.
     LOG(ERROR) << "Data pack file corruption: incomplete file header.";
     return false;
   }
@@ -66,7 +67,7 @@ bool DataPack::LoadSharedResourceFromPath(const base::FilePath& path) {
     resource_count_ = header.fallback_resource_count;
     alias_count_ = header.fallback_alias_count;
   } else {
-    // TODO(crbug.com/1315912): Add LogDataPackError as DataPack.
+    // TODO(crbug.com/40221977): Add LogDataPackError as DataPack.
     LOG(ERROR) << "Bad shared resource data pack version: got " << version
                << ", expected " << kFileFormatV1;
     return false;
@@ -138,7 +139,7 @@ bool DataPackWithResourceSharing::LoadMappingTable(const base::FilePath& path) {
     version = reinterpret_cast<const FileHeaderV1*>(data)[0].version;
   size_t header_length = sizeof(FileHeaderV1);
   if (version == 0 || data_length < header_length) {
-    // TODO(crbug.com/1315912): Add LogDataPackError as DataPack.
+    // TODO(crbug.com/40221977): Add LogDataPackError as DataPack.
     LOG(ERROR) << "Data pack file corruption: incomplete file header.";
     return false;
   }
@@ -148,7 +149,7 @@ bool DataPackWithResourceSharing::LoadMappingTable(const base::FilePath& path) {
     FileHeaderV1 header = reinterpret_cast<const FileHeaderV1*>(data)[0];
     mapping_count_ = header.mapping_count;
   } else {
-    // TODO(crbug.com/1315912): Add LogDataPackError as DataPack.
+    // TODO(crbug.com/40221977): Add LogDataPackError as DataPack.
     LOG(ERROR) << "Bad shared resource data pack version: got " << version
                << ", expected " << kFileFormatV1;
     return false;
@@ -224,7 +225,7 @@ bool DataPackWithResourceSharing::HasResource(uint16_t resource_id) const {
   return fallback_data_pack_->HasResource(resource_id);
 }
 
-std::optional<base::StringPiece> DataPackWithResourceSharing::GetStringPiece(
+std::optional<std::string_view> DataPackWithResourceSharing::GetStringPiece(
     uint16_t resource_id) const {
   std::optional<uint16_t> ash_resource_id = LookupMappingTable(resource_id);
   if (ash_resource_id.has_value())
@@ -369,7 +370,7 @@ bool DataPackWithResourceSharing::WriteMappingTable(
 bool DataPackWithResourceSharing::WriteFallbackResources(
     std::vector<uint16_t> resource_ids,
     std::map<uint16_t, uint16_t> aliases,
-    std::map<uint16_t, base::StringPiece> fallback_resources,
+    std::map<uint16_t, std::string_view> fallback_resources,
     size_t margin_to_skip,
     ScopedFileWriter& file) {
   DCHECK(std::is_sorted(resource_ids.begin(), resource_ids.end()));
@@ -405,7 +406,7 @@ bool DataPackWithResourceSharing::WriteFallbackResources(
   }
 
   for (const auto& resource_id : resource_ids) {
-    const base::StringPiece data = fallback_resources.find(resource_id)->second;
+    const std::string_view data = fallback_resources.find(resource_id)->second;
     file.Write(data.data(), data.length());
   }
 
@@ -462,8 +463,8 @@ bool DataPackWithResourceSharing::MaybeGenerateFallbackAndMapping(
   }
 
   std::vector<Mapping> mapping_table;
-  std::map<uint16_t, base::StringPiece> fallback_resources;
-  std::unordered_map<base::StringPiece, uint16_t> ash_resources;
+  std::map<uint16_t, std::string_view> fallback_resources;
+  std::unordered_map<std::string_view, uint16_t> ash_resources;
   for (const DataPack::ResourceData& resource_data : *ash_data_pack) {
     ash_resources.emplace(resource_data.data, resource_data.id);
   }
@@ -534,7 +535,7 @@ bool DataPackWithResourceSharing::MaybeGenerateFallbackAndMapping(
   if (fallback_resources.size() > 0) {
     // A reverse map from string pieces to the index of the corresponding
     // original id in the final resource list.
-    std::map<base::StringPiece, uint16_t> rev_map;
+    std::map<std::string_view, uint16_t> rev_map;
     for (const auto& entry : fallback_resources) {
       auto it = rev_map.find(entry.second);
       if (it != rev_map.end()) {
@@ -602,7 +603,7 @@ bool DataPackWithResourceSharing::WriteSharedResourceFileForTesting(
     std::vector<Mapping> mapping,
     std::vector<uint16_t> resource_ids,
     std::map<uint16_t, uint16_t> aliases,
-    std::map<uint16_t, base::StringPiece> fallback_resources) {
+    std::map<uint16_t, std::string_view> fallback_resources) {
   ScopedFileWriter file(path);
   if (!file.valid()) {
     LOG(ERROR) << "Failed to open path for test: " << path;

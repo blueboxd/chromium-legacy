@@ -25,9 +25,8 @@
 
 namespace autofill {
 
-TestBrowserAutofillManager::TestBrowserAutofillManager(AutofillDriver* driver,
-                                                       AutofillClient* client)
-    : BrowserAutofillManager(driver, client, "en-US") {
+TestBrowserAutofillManager::TestBrowserAutofillManager(AutofillDriver* driver)
+    : BrowserAutofillManager(driver, "en-US") {
   test_api(*this).set_form_filler(
       std::make_unique<TestFormFiller>(*this, log_manager(), "en-US"));
 }
@@ -85,10 +84,12 @@ void TestBrowserAutofillManager::OnAskForValuesToFill(
 void TestBrowserAutofillManager::OnJavaScriptChangedAutofilledValue(
     const FormData& form,
     const FormFieldData& field,
-    const std::u16string& old_value) {
+    const std::u16string& old_value,
+    bool formatting_only) {
   TestAutofillManagerWaiter waiter(
       *this, {AutofillManagerEvent::kJavaScriptChangedAutofilledValue});
-  AutofillManager::OnJavaScriptChangedAutofilledValue(form, field, old_value);
+  AutofillManager::OnJavaScriptChangedAutofilledValue(form, field, old_value,
+                                                      formatting_only);
   ASSERT_TRUE(waiter.Wait());
 }
 
@@ -134,7 +135,7 @@ void TestBrowserAutofillManager::UploadVotesAndLogQuality(
     for (size_t i = 0; i < expected_submitted_field_types_.size(); ++i) {
       SCOPED_TRACE(base::StringPrintf(
           "Field %d with value %s", static_cast<int>(i),
-          base::UTF16ToUTF8(submitted_form->field(i)->value).c_str()));
+          base::UTF16ToUTF8(submitted_form->field(i)->value()).c_str()));
       const FieldTypeSet& possible_types =
           submitted_form->field(i)->possible_types();
       EXPECT_EQ(expected_submitted_field_types_[i].size(),
@@ -203,7 +204,7 @@ void TestBrowserAutofillManager::AddSeenForm(
   auto form_structure = std::make_unique<FormStructure>(
       preserve_values_in_form_structure ? form : test::WithoutValues(form));
   test_api(*form_structure).SetFieldTypes(heuristic_types, server_types);
-  test_api(*form_structure).IdentifySections(/*ignore_autocomplete=*/false);
+  test_api(*form_structure).AssignSections();
   AddSeenFormStructure(std::move(form_structure));
   form_interactions_ukm_logger()->OnFormsParsed(client().GetUkmSourceId());
 }

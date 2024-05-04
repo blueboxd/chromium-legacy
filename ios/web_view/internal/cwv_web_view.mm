@@ -17,7 +17,6 @@
 #import "base/notreached.h"
 #include "base/strings/sys_string_conversions.h"
 #import "components/autofill/ios/browser/autofill_agent.h"
-#include "components/autofill/ios/form_util/unique_id_data_tab_helper.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #import "components/password_manager/ios/password_controller_driver_helper.h"
 #import "components/password_manager/ios/shared_password_controller.h"
@@ -86,7 +85,7 @@ BOOL gUseOptimizedSessionStorage = NO;
 BOOL gWebInspectorEnabled = NO;
 
 // A key used in NSCoder to store the session storage object.
-// TODO(crbug.com/1504753): remove once the feature has been launched and
+// TODO(crbug.com/40945317): remove once the feature has been launched and
 // all session migrated to the new format.
 NSString* const kSessionStorageKey = @"sessionStorage";
 
@@ -287,7 +286,7 @@ WEB_STATE_USER_DATA_KEY_IMPL(WebViewHolder)
   CWVWebViewProtobufStorage* _cachedProtobufStorage;
 
   // Cached session storage. Only used if the legacy serialisation code is used.
-  // TODO(crbug.com/1504753): Remove when the feature has launched.
+  // TODO(crbug.com/40945317): Remove when the feature has launched.
   CRWSessionStorage* _cachedSessionStorage;
 }
 
@@ -319,7 +318,7 @@ WEB_STATE_USER_DATA_KEY_IMPL(WebViewHolder)
   }
 
   // Support for legacy session serialisation code path.
-  // TODO(crbug.com/1504753): Remove when the feature has launched.
+  // TODO(crbug.com/40945317): Remove when the feature has launched.
   if (!gUseOptimizedSessionStorage) {
     if (!_cachedSessionStorage) {
       _cachedSessionStorage = [[CRWSessionStorage alloc]
@@ -351,7 +350,7 @@ WEB_STATE_USER_DATA_KEY_IMPL(WebViewHolder)
 }
 
 - (void)encodeWebState:(web::WebState*)webState toCoder:(NSCoder*)coder {
-  // TODO(crbug.com/1504753): Remove when the feature has launched.
+  // TODO(crbug.com/40945317): Remove when the feature has launched.
   if (!gUseOptimizedSessionStorage) {
     if (webState) {
       [self updateStateFromWebState:webState];
@@ -370,7 +369,7 @@ WEB_STATE_USER_DATA_KEY_IMPL(WebViewHolder)
 }
 
 - (void)updateStateFromWebState:(web::WebState*)webState {
-  // TODO(crbug.com/1504753): Remove when the feature has launched.
+  // TODO(crbug.com/40945317): Remove when the feature has launched.
   if (!gUseOptimizedSessionStorage) {
     _cachedSessionStorage = webState->BuildSessionStorage();
     return;
@@ -385,7 +384,7 @@ WEB_STATE_USER_DATA_KEY_IMPL(WebViewHolder)
 }
 
 - (void)clearStateForWebStateIfPossible:(web::WebState*)webState {
-  // TODO(crbug.com/1504753): Remove when the feature has launched.
+  // TODO(crbug.com/40945317): Remove when the feature has launched.
   if (!gUseOptimizedSessionStorage) {
     if (webState) {
       _cachedSessionStorage = nil;
@@ -636,7 +635,7 @@ WEB_STATE_USER_DATA_KEY_IMPL(WebViewHolder)
 }
 
 - (void)evaluateJavaScript:(NSString*)javaScriptString
-                completion:(void (^)(id, NSError*))completion {
+         completionHandler:(void (^)(id result, NSError* error))completion {
   web::WebFrame* mainFrame =
       _webState->GetPageWorldWebFramesManager()->GetMainWebFrame();
   if (!mainFrame) {
@@ -662,6 +661,11 @@ WEB_STATE_USER_DATA_KEY_IMPL(WebViewHolder)
         }
         completion(jsResult, error);
       }));
+}
+
+- (void)evaluateJavaScript:(NSString*)javaScriptString
+                completion:(void (^)(id, NSError*))completion {
+  [self evaluateJavaScript:javaScriptString completionHandler:completion];
 }
 
 - (void)setUIDelegate:(id<CWVUIDelegate>)UIDelegate {
@@ -722,7 +726,7 @@ WEB_STATE_USER_DATA_KEY_IMPL(WebViewHolder)
   [self updateNavigationAvailability];
   [self updateCurrentURLs];
 
-  // TODO(crbug.com/898357): Remove this once crbug.com/898357 is fixed.
+  // TODO(crbug.com/41422373): Remove this once crbug.com/898357 is fixed.
   [self updateVisibleSSLStatus];
 
   if (navigation->HasCommitted() && !navigation->IsSameDocument() &&
@@ -745,7 +749,7 @@ WEB_STATE_USER_DATA_KEY_IMPL(WebViewHolder)
     return;
   }
 
-  // TODO(crbug.com/1374071): Fragment navigations currently skip calling
+  // TODO(crbug.com/40872106): Fragment navigations currently skip calling
   // `webViewDidStartNavigation:` and `webViewDidCommitNavigation:`, and instead
   // only calls `webViewDidFinishNavigation:` below. Fix this inconsistency.
   SEL selector = @selector(webViewDidFinishNavigation:);
@@ -984,8 +988,6 @@ WEB_STATE_USER_DATA_KEY_IMPL(WebViewHolder)
 }
 
 - (CWVAutofillController*)newAutofillController {
-  UniqueIDDataTabHelper::CreateForWebState(_webState.get());
-
   auto autofillClient = autofill::WebViewAutofillClientIOS::Create(
       _webState.get(), _configuration.browserState);
   AutofillAgent* autofillAgent = [[AutofillAgent alloc]
@@ -1168,7 +1170,7 @@ WEB_STATE_USER_DATA_KEY_IMPL(WebViewHolder)
   self.loading = NO;
   self.estimatedProgress = 0.0;
 
-  // TODO(crbug.com/873729): The session will not be restored until
+  // TODO(crbug.com/41407753): The session will not be restored until
   // LoadIfNecessary call. Fix the bug and remove extra call.
   if (coder) {
     _webState->GetNavigationManager()->LoadIfNecessary();

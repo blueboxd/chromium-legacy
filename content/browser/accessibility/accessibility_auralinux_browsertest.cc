@@ -24,7 +24,7 @@
 #include "content/test/content_browser_test_utils_internal.h"
 #include "ui/accessibility/platform/ax_platform_node_auralinux.h"
 
-// TODO(https://crbug.com/1394423): Remove this again.
+// TODO(crbug.com/40248581): Remove this again.
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 
 namespace content {
@@ -890,7 +890,7 @@ typedef bool (*ScrollToPointFunc)(AtkComponent* component,
                                   gint y);
 typedef bool (*ScrollToFunc)(AtkComponent* component, AtkScrollType type);
 
-// TODO(https://crbug.com/1366113): Enable this test.
+// TODO(crbug.com/40866728): Enable this test.
 IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
                        DISABLED_TestScrollToPoint) {
   // There's a chance we may be compiled with a newer version of ATK and then
@@ -953,7 +953,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
   g_object_unref(atk_text);
 }
 
-// TODO(https://crbug.com/1366113): Enable this test.
+// TODO(crbug.com/40866728): Enable this test.
 IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
                        DISABLED_TestScrollTo) {
   // There's a chance we may be compiled with a newer version of ATK and then
@@ -1094,7 +1094,7 @@ gboolean ScrollSubstringTo(AtkText* text,
   return g_scroll_substring_to(text, start_offset, end_offset, type);
 }
 
-// TODO(https://crbug.com/1366113): Enable this test.
+// TODO(crbug.com/40866728): Enable this test.
 IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
                        DISABLED_TestScrollSubstringTo) {
   // There's a chance we may be compiled with a newer version of ATK and then
@@ -1210,7 +1210,7 @@ gboolean ScrollSubstringToPoint(AtkText* text,
                                      x, y);
 }
 
-// TODO(https://crbug.com/1366113): Enable this test.
+// TODO(crbug.com/40866728): Enable this test.
 IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
                        DISABLED_TestScrollSubstringToPoint) {
   // There's a chance we may be compiled with a newer version of ATK and then
@@ -1674,7 +1674,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
   g_object_unref(contenteditable);
 }
 
-// TODO(crbug.com/981913): This flakes on linux.
+// TODO(crbug.com/41469621): This flakes on linux.
 IN_PROC_BROWSER_TEST_F(
     AccessibilityAuraLinuxBrowserTest,
     DISABLED_TestSetCaretSetsSequentialFocusNavigationStartingPoint) {

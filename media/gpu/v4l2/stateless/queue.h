@@ -18,7 +18,7 @@
 #include "media/gpu/v4l2/stateless/stateless_device.h"
 
 namespace media {
-using DequeueCB = base::RepeatingCallback<void(media::Buffer)>;
+using DequeueCB = base::OnceCallback<void(bool)>;
 
 // V4L2 has two similar queues. Capitalized OUTPUT (for compressed frames)
 // and CAPTURE (for uncompressed frames) are the designation that the V4L2
@@ -33,12 +33,11 @@ class MEDIA_GPU_EXPORT BaseQueue {
   BaseQueue& operator=(const BaseQueue&);
   virtual ~BaseQueue() = 0;
 
-  virtual bool PrepareBuffers(size_t num_buffers) = 0;
   void DeallocateBuffers();
   bool StartStreaming();
   bool StopStreaming();
   uint32_t FreeBufferCount() const { return free_buffer_indices_.size(); }
-  void ArmBufferMonitor(DequeueCB cb);
+  virtual const std::optional<Buffer> DequeueBuffer() = 0;
 
  protected:
   bool AllocateBuffers(uint32_t num_planes, size_t num_buffers);
@@ -56,34 +55,40 @@ class MEDIA_GPU_EXPORT BaseQueue {
   // will be used more often than if it was a ring buffer. Using a set
   // enforces the elements be unique.
   std::set<uint32_t> free_buffer_indices_;
-
-  // Workers that block and wait for buffers to be ready to be dequeued.
-  scoped_refptr<base::SequencedTaskRunner> queue_task_runner_;
 };
 
 class MEDIA_GPU_EXPORT InputQueue : public BaseQueue {
  public:
   static std::unique_ptr<InputQueue> Create(
       scoped_refptr<StatelessDevice> device,
-      const VideoCodec codec,
-      const gfx::Size resolution);
+      const VideoCodec codec);
 
   InputQueue(scoped_refptr<StatelessDevice> device, VideoCodec codec);
-  bool SubmitCompressedFrameData(void* ctrls,
-                                 const void* data,
+
+  // Pass all of the data necessary to decode a compressed frame off to the
+  // driver.
+  bool SubmitCompressedFrameData(const void* data,
                                  size_t length,
-                                 uint64_t frame_id);
-  bool PrepareBuffers(size_t num_buffers) override;
+                                 uint64_t frame_id,
+                                 const base::ScopedFD& request_fd);
+
+  // Prepare the buffers required by the driver to hold the compressed data.
+  bool PrepareBuffers(size_t num_buffers, const gfx::Size resolution);
 
   // Add buffers that have been dequeued into the list of buffers available
   // to be used again.
-  void Reclaim(Buffer& buffer);
+  const std::optional<Buffer> DequeueBuffer() override;
+
+  // Check if the new resolution size would require larger buffers than those
+  // already allocated.
+  bool NeedToReallocateBuffers(const gfx::Size new_resolution);
 
  private:
   bool SetupFormat(const gfx::Size resolution);
   std::string Description() override;
 
   VideoCodec codec_;
+  size_t allocated_buffer_size_ = 0;
 };
 
 class MEDIA_GPU_EXPORT OutputQueue : public BaseQueue {
@@ -100,11 +105,14 @@ class MEDIA_GPU_EXPORT OutputQueue : public BaseQueue {
   bool NegotiateFormat();
 
   // Allocate and prepare the buffers that will store the decoded frames.
-  bool PrepareBuffers(size_t num_buffers) override;
+  bool PrepareBuffers(size_t num_buffers);
 
   // After a buffer has been used it needs to be returned to the pool of
   // available buffers. The client tracks using buffers using |frame_id|.
-  bool QueueBufferByFrameID(uint64_t frame_id);
+  void ReturnBuffer(uint64_t frame_id);
+
+  // Enqueue the buffer into the driver.
+  bool QueueBuffer();
 
   // Return the decoded frame format chosen by |NegotiateFormat|
   Fourcc GetQueueFormat() const { return buffer_format_.fourcc; }
@@ -114,7 +122,7 @@ class MEDIA_GPU_EXPORT OutputQueue : public BaseQueue {
 
   // Record buffers that have finished decoded and have been dequeued so that
   // they can later be referenced.
-  void RegisterDequeuedBuffer(Buffer& buffer);
+  const std::optional<Buffer> DequeueBuffer() override;
 
   // Retrieve a |FrameResource| by |frame_id| that has already been decoded and
   // dequeued. Returns |nullptr| if there isn't a corresponding frame that has
@@ -136,6 +144,29 @@ class MEDIA_GPU_EXPORT OutputQueue : public BaseQueue {
   // placed in this map. The frame id to buffer index mapping is how the input
   // queue is mapped to the output queue.
   std::map<uint64_t, uint32_t> decoded_and_dequeued_frames_;
+};
+
+// The Request API closely ties the input and output queues together.
+class MEDIA_GPU_EXPORT RequestQueue {
+ public:
+  static std::unique_ptr<RequestQueue> Create(
+      scoped_refptr<StatelessDevice> device);
+
+  RequestQueue(scoped_refptr<StatelessDevice> device);
+  ~RequestQueue();
+
+  // Returns a request FD that was created by the driver.
+  base::ScopedFD CreateRequestFD();
+
+  // Pass only the data necessary for the driver to determine what output
+  // formats the decoded bitstream can provide.
+  bool SetHeadersForFormatNegotiation(void* ctrls);
+
+  // Pass all of the data that the request api needs to start decoding a frame.
+  bool QueueRequest(void* ctrls, const base::ScopedFD& request_fd);
+
+ private:
+  scoped_refptr<StatelessDevice> device_;
 };
 
 }  // namespace media

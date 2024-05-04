@@ -12,6 +12,7 @@
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
 #include "components/autofill/core/common/mojom/autofill_types.mojom.h"
 #include "components/autofill/core/common/password_generation_util.h"
@@ -19,10 +20,6 @@
 #include "components/password_manager/core/browser/features/password_manager_features_util.h"
 #include "components/password_manager/core/common/credential_manager_types.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
-
-namespace password_manager {
-struct PasswordForm;
-}
 
 namespace password_manager::metrics_util {
 
@@ -74,6 +71,7 @@ enum UIDismissalReason {
   AUTO_SIGNIN_TOAST_CLICKED_OBSOLETE = 10,  // obsolete.
   CLICKED_BRAND_NAME_OBSOLETE = 11,         // obsolete.
   CLICKED_PASSWORDS_DASHBOARD = 12,
+  CLICKED_MANAGE_PASSWORD = 13,
   NUM_UI_RESPONSES,
 };
 
@@ -579,7 +577,8 @@ enum class PasswordManagementBubbleInteractions {
   kNotePartiallyCopied = 15,
   kNoteFullyCopied = 16,
   kMovePasswordLinkClicked = 17,
-  kMaxValue = kMovePasswordLinkClicked,
+  kManagePasswordButtonClicked = 18,
+  kMaxValue = kManagePasswordButtonClicked,
 };
 
 // Represents different causes for showing the password migration warning.
@@ -668,6 +667,17 @@ enum class ProcessIncomingPasswordSharingInvitationResult {
 };
 
 #if BUILDFLAG(IS_ANDROID)
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused. Keep in sync with `
+// `LocalPwdMigrationProgressState` in the passwords' enums.xml.
+enum class LocalPwdMigrationProgressState {
+  kScheduled = 0,
+  kStarted = 1,
+  // Finished is recorded irrespective of success status.
+  kFinished = 2,
+  kMaxValue = kFinished,
+};
+
 // Enum that describes different outcomes on the attempt of triggering the
 // Touch-To-Fill bottom sheet for password generation.
 // These values are persisted to logs. Entries should not be renumbered and
@@ -866,9 +876,12 @@ void LogUserInteractionsInSharedPasswordsNotificationBubble(
 void LogProcessIncomingPasswordSharingInvitationResult(
     ProcessIncomingPasswordSharingInvitationResult result);
 
-// Logs GroupedPasswordFetchResult.
-void LogGroupedPasswordsResults(
-    const std::vector<password_manager::PasswordForm>& logins);
+#if BUILDFLAG(IS_ANDROID)
+// Records the scheduling state of the local passwords migration to the
+// Android backend.
+void LogLocalPwdMigrationProgressState(
+    LocalPwdMigrationProgressState scheduling_state);
+#endif
 
 // Wraps |callback| into another callback that measures the elapsed time between
 // construction and actual execution of the callback. Records the result to
@@ -886,66 +899,28 @@ base::OnceCallback<R(Args...)> TimeCallback(
       histogram, base::ElapsedTimer(), std::move(callback));
 }
 
+// Wraps |callback| into another callback that measures the elapsed time between
+// construction and actual execution of the callback. Records the result to
+// |histogram|, which is expected to be a char literal.
+// For time intervals between 1ms and 3 minutes (50 buckets).
+template <typename R, typename... Args>
+base::OnceCallback<R(Args...)> TimeCallbackMediumTimes(
+    base::OnceCallback<R(Args...)> callback,
+    const char* histogram) {
+  return base::BindOnce(
+      [](const char* histogram, const base::ElapsedTimer& timer,
+         base::OnceCallback<R(Args...)> callback, Args... args) {
+        base::UmaHistogramMediumTimes(histogram, timer.Elapsed());
+        return std::move(callback).Run(std::forward<Args>(args)...);
+      },
+      histogram, base::ElapsedTimer(), std::move(callback));
+}
+
 #if BUILDFLAG(IS_ANDROID)
 void LogTouchToFillPasswordGenerationTriggerOutcome(
     TouchToFillPasswordGenerationTriggerOutcome outcome);
 #endif
 
-#if BUILDFLAG(IS_IOS)
-// This enum indicates migration status from Keychain to OSCrypt for passwords
-// on iOS in the version 39.
-//
-// These values are persisted to logs. Entries should not be renumbered and
-// numeric values should never be reused.
-//
-// Needs to stay in sync with MigrationToOSCryptEnum in enums.xml.
-enum class MigrationToOSCrypt {
-  kStarted = 0,
-  kFailedToCopyPasswordColumn = 1,
-  kFailedToDecryptFromKeychain = 2,
-  kFailedToEncrypt = 3,
-  kFailedToUpdate = 4,
-  kSuccess = 5,
-  kFailedToDelete = 6,
-  kMaxValue = kFailedToDelete,
-};
-
-// Records the latency of the passwords migration to OSCrypt of the login db on
-// iOS separated by password store type and whether the migration was successful
-// or not.
-void RecordMigrationToOSCryptLatency(bool success,
-                                     base::TimeDelta latency,
-                                     base::StringPiece store_infix);
-
-// Records the status of the passwords migration to OSCrypt of the login db on
-// iOS separated by password store type.
-void RecordMigrationToOSCryptStatus(base::TimeTicks migration_start_time,
-                                    bool is_account_store,
-                                    MigrationToOSCrypt status);
-
-// This enum indicates migration status from Keychain to OSCrypt for password
-// notes on iOS in the version 40.
-//
-// These values are persisted to logs. Entries should not be renumbered and
-// numeric values should never be reused.
-//
-// Needs to stay in sync with PasswordNotesMigrationToOSCryptEnum in enums.xml.
-enum class PasswordNotesMigrationToOSCrypt {
-  kStarted = 0,
-  kFailedToDecryptFromKeychain = 1,
-  kFailedToEncrypt = 2,
-  kFailedToUpdate = 3,
-  kSuccess = 4,
-  kFailedToDelete = 5,
-  kMaxValue = kFailedToDelete,
-};
-
-// Records the status of the password notes migration to OSCrypt of the login db
-// on iOS separated by password store type.
-void RecordPasswordNotesMigrationToOSCryptStatus(
-    bool is_account_store,
-    PasswordNotesMigrationToOSCrypt status);
-#endif
 }  // namespace password_manager::metrics_util
 
 #endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_MANAGER_METRICS_UTIL_H_

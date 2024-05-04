@@ -7,6 +7,7 @@
 load("@builtin//encoding.star", "json")
 load("@builtin//lib/gn.star", "gn")
 load("@builtin//path.star", "path")
+load("@builtin//runtime.star", "runtime")
 load("@builtin//struct.star", "module")
 load("./clang_code_coverage_wrapper.star", "clang_code_coverage_wrapper")
 load("./config.star", "config")
@@ -32,7 +33,7 @@ def __parse_rewrapper_cmdline(ctx, cmd):
     wrapped_command_pos = -1
     cfg_file = None
     skip = ""
-    rw_ops = {}
+    rw_cmd_opts = {}
     for i, arg in enumerate(cmd.args):
         if i == 0:
             continue
@@ -40,7 +41,7 @@ def __parse_rewrapper_cmdline(ctx, cmd):
             cfg_file = ctx.fs.canonpath(arg.removeprefix("-cfg="))
             continue
         if arg.startswith("-inputs=") or skip == "-inputs":
-            rw_ops["inputs"] = arg.removeprefix("-inputs=").split(",")
+            rw_cmd_opts["inputs"] = arg.removeprefix("-inputs=").split(",")
             skip = ""
             continue
         if arg == "-inputs":
@@ -50,14 +51,24 @@ def __parse_rewrapper_cmdline(ctx, cmd):
             wrapped_command_pos = i
             break
     if wrapped_command_pos < 1:
-        fail("couldn't find first non-arg passed to rewrapper for %s" % str(cmd.args))
+        fail("couldn't find first non-arg passed to rewrapper from %s" % str(cmd.args))
     if not cfg_file:
-        return cmd.args[wrapped_command_pos:], rw_ops, True
-    rw_cfg_opts = rewrapper_cfg.parse(ctx, cfg_file)
+        fail("couldn't find rewrapper cfg file from %s" % str(cmd.args))
 
-    # Command line options have higher priority than the ones in the cfg file.
-    rw_cfg_opts.update(rw_ops)
-    return cmd.args[wrapped_command_pos:], rw_cfg_opts, True
+    # Config options are the lowest prioity.
+    rw_opts = rewrapper_cfg.parse(ctx, cfg_file)
+
+    # TODO: Read RBE_* envvars.
+    if runtime.os == "windows":
+        # Experimenting if longer timeouts resolve slow Windows developer builds. b/335525655
+        rw_opts.update({
+            "exec_timeout": "4m",
+            "reclient_timeout": "8m",
+        })
+
+    # Command line options are the highest priority.
+    rw_opts.update(rw_cmd_opts)
+    return cmd.args[wrapped_command_pos:], rw_opts, True
 
 def __parse_cros_rewrapper_cmdline(ctx, cmd):
     # fix cros sdk clang command line and extract rewrapper cfg.
@@ -173,13 +184,13 @@ def __rewrite_rewrapper(ctx, cmd, use_large = False):
             return
     if not rwcfg:
         fail("couldn't find rewrapper cfg file in %s" % str(cmd.args))
-    if cmd.outputs[0] == ctx.fs.canonpath("./obj/third_party/abseil-cpp/absl/functional/any_invocable_test/any_invocable_test.o"):
-        # need longer timeout for any_invocable_test.o crbug.com/1484474
-        rwcfg.update({
-            "exec_timeout": "4m",
-        })
     if use_large:
-        if "platform" in rwcfg:
+        platform = rwcfg.get("platform", {})
+        if platform.get("OSFamily") == "Windows":
+            # Since there is no large Windows workers, it needs to run locally.
+            ctx.actions.fix(args = args)
+            return
+        if platform:
             action_key = None
             for key in rwcfg["platform"]:
                 if key.startswith("label:action_"):
@@ -192,6 +203,10 @@ def __rewrite_rewrapper(ctx, cmd, use_large = False):
         rwcfg["platform"].update({
             "label:action_large": "1",
         })
+
+        # Some large compiles take longer than the default timeout 2m.
+        rwcfg["exec_timeout"] = "4m"
+        rwcfg["reclient_timeout"] = "4m"
     ctx.actions.fix(
         args = args,
         reproxy_config = json.encode(rwcfg),
@@ -226,22 +241,7 @@ def __use_remoteexec(ctx):
 
 def __step_config(ctx, step_config):
     # New rules to convert commands calling rewrapper to use reproxy instead.
-    new_rules = [
-        # Disabling remote should always come first.
-        {
-            # TODO(b/281663988): missing headers.
-            "name": "b281663988/missing-headers",
-            "action_outs": [
-                "./obj/ui/qt/qt5_shim/qt_shim.o",
-                "./obj/ui/qt/qt6_shim/qt_shim.o",
-                "./obj/ui/qt/qt5_shim/qt5_shim_moc.o",
-                "./obj/ui/qt/qt6_shim/qt6_shim_moc.o",
-                "./obj/ui/qt/qt_interface/qt_interface.o",
-            ],
-            "remote": False,
-            "handler": "strip_rewrapper",
-        },
-    ]
+    new_rules = []
 
     # Disable racing on builders since bots don't have many CPU cores.
     # TODO: b/297807325 - Siso wants to handle local execution.

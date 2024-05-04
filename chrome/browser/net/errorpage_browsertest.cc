@@ -737,7 +737,7 @@ IN_PROC_BROWSER_TEST_F(ErrorPageAutoReloadTest, MAYBE_AutoReload) {
   EXPECT_EQ(kRequestsToFail + 1, interceptor_requests());
 }
 
-// TODO(crbug.com/1350295): Test is flaky.
+// TODO(crbug.com/40856405): Test is flaky.
 IN_PROC_BROWSER_TEST_F(ErrorPageAutoReloadTest,
                        DISABLED_ManualReloadNotSuppressed) {
   GURL test_url("http://error.page.auto.reload");
@@ -770,7 +770,7 @@ IN_PROC_BROWSER_TEST_F(ErrorPageAutoReloadTest,
 // Make sure that a same document navigation does not cause issues with the
 // auto-reload timer.  Note that this test was added due to this case causing
 // a crash.  On regression, this test may hang due to a crashed renderer.
-// TODO(crbug.com/1111535): Flaky.
+// TODO(crbug.com/40709227): Flaky.
 IN_PROC_BROWSER_TEST_F(ErrorPageAutoReloadTest,
                        DISABLED_IgnoresSameDocumentNavigation) {
   GURL test_url("http://error.page.auto.reload");
@@ -994,12 +994,23 @@ class ErrorPageForIDNTest : public InProcessBrowserTest {
   static const char kHostname[];
   static const char kHostnameJSUnicode[];
 
+  ErrorPageForIDNTest() {
+    // TODO(crbug.com/334954143) This test clears the AcceptLanguage Prefs which
+    // causes Accept-Language to not work correctly. Fix the tests when turning
+    // on the reduce accept-language feature.
+    scoped_feature_list_.InitWithFeatures(
+        {}, {network::features::kReduceAcceptLanguage});
+  }
+
   // InProcessBrowserTest:
   void SetUpOnMainThread() override {
     // Clear AcceptLanguages to force punycode decoding.
     browser()->profile()->GetPrefs()->SetString(
         language::prefs::kAcceptLanguages, std::string());
   }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 const char ErrorPageForIDNTest::kHostname[] =

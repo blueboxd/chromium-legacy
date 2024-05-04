@@ -107,6 +107,9 @@ public class TabSuggestionMessageServiceUnitTest {
         doReturn(mTab1).when(mTabModel).getTabAt(POSITION1);
         doReturn(mTab2).when(mTabModel).getTabAt(POSITION2);
         doReturn(mTab3).when(mTabModel).getTabAt(POSITION3);
+        doReturn(mTab1).when(mTabModel).getTabById(TAB1_ID);
+        doReturn(mTab2).when(mTabModel).getTabById(TAB2_ID);
+        doReturn(mTab3).when(mTabModel).getTabById(TAB3_ID);
 
         // Set up TabModelFilter.
         doReturn(mTabModel).when(mTabGroupModelFilter).getTabModel();
@@ -164,7 +167,7 @@ public class TabSuggestionMessageServiceUnitTest {
                 /* editorSupportsActionOnRelatedTabs= */ false);
         action.perform();
 
-        verify(mTabModel).closeMultipleTabs(eq(suggestedTabs), eq(true));
+        verify(mTabGroupModelFilter).closeMultipleTabs(eq(suggestedTabs), eq(true), eq(false));
         verify(mTabSuggestionFeedbackCallback)
                 .onResult(mTabSuggestionFeedbackCallbackArgumentCaptor.capture());
 

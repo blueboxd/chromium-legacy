@@ -38,6 +38,7 @@
 #include "absl/base/config.h"
 #include "absl/base/internal/endian.h"
 #include "absl/base/macros.h"
+#include "absl/base/no_destructor.h"
 #include "absl/base/options.h"
 #include "absl/container/fixed_array.h"
 #include "absl/functional/function_ref.h"
@@ -701,6 +702,38 @@ TEST_P(CordTest, CopyToString) {
   VerifyCopyToString(MaybeHardened(
       absl::MakeFragmentedCord({"fragmented ", "cord ", "to ", "test ",
                                 "copying ", "to ", "a ", "string."})));
+}
+
+static void VerifyAppendCordToString(const absl::Cord& cord) {
+  std::string initially_empty;
+  absl::AppendCordToString(cord, &initially_empty);
+  EXPECT_EQ(initially_empty, cord);
+
+  const absl::string_view kInitialContents = "initial contents.";
+  std::string expected_after_append =
+      absl::StrCat(kInitialContents, std::string(cord));
+
+  std::string no_reserve(kInitialContents);
+  absl::AppendCordToString(cord, &no_reserve);
+  EXPECT_EQ(no_reserve, expected_after_append);
+
+  std::string has_reserved_capacity(kInitialContents);
+  has_reserved_capacity.reserve(has_reserved_capacity.size() + cord.size());
+  const char* address_before_copy = has_reserved_capacity.data();
+  absl::AppendCordToString(cord, &has_reserved_capacity);
+  EXPECT_EQ(has_reserved_capacity, expected_after_append);
+  EXPECT_EQ(has_reserved_capacity.data(), address_before_copy)
+      << "AppendCordToString allocated new string storage; "
+         "has_reserved_capacity = \""
+      << has_reserved_capacity << "\"";
+}
+
+TEST_P(CordTest, AppendToString) {
+  VerifyAppendCordToString(absl::Cord());  // empty cords cannot carry CRCs
+  VerifyAppendCordToString(MaybeHardened(absl::Cord("small cord")));
+  VerifyAppendCordToString(MaybeHardened(
+      absl::MakeFragmentedCord({"fragmented ", "cord ", "to ", "test ",
+                                "appending ", "to ", "a ", "string."})));
 }
 
 TEST_P(CordTest, AppendEmptyBuffer) {
@@ -2764,34 +2797,15 @@ class AfterExitCordTester {
   absl::string_view expected_;
 };
 
-// Deliberately prevents the destructor for an absl::Cord from running. The cord
-// is accessible via the cord member during the lifetime of the CordLeaker.
-// After the CordLeaker is destroyed, pointers to the cord will remain valid
-// until the CordLeaker's memory is deallocated.
-struct CordLeaker {
-  union {
-    absl::Cord cord;
-  };
-
-  template <typename Str>
-  constexpr explicit CordLeaker(const Str& str) : cord(str) {}
-
-  ~CordLeaker() {
-    // Don't do anything, including running cord's destructor. (cord's
-    // destructor won't run automatically because cord is hidden inside a
-    // union.)
-  }
-};
-
 template <typename Str>
-void TestConstinitConstructor(Str) {
+void TestAfterExit(Str) {
   const auto expected = Str::value;
   // Defined before `cord` to be destroyed after it.
   static AfterExitCordTester exit_tester;  // NOLINT
-  ABSL_CONST_INIT static CordLeaker cord_leaker(Str{});  // NOLINT
+  static absl::NoDestructor<absl::Cord> cord_leaker(Str{});
   // cord_leaker is static, so this reference will remain valid through the end
   // of program execution.
-  static absl::Cord& cord = cord_leaker.cord;
+  static absl::Cord& cord = *cord_leaker;
   static bool init_exit_tester = exit_tester.Set(&cord, expected);
   (void)init_exit_tester;
 
@@ -2843,11 +2857,9 @@ struct LongView {
 };
 
 
-TEST_P(CordTest, ConstinitConstructor) {
-  TestConstinitConstructor(
-      absl::strings_internal::MakeStringConstant(ShortView{}));
-  TestConstinitConstructor(
-      absl::strings_internal::MakeStringConstant(LongView{}));
+TEST_P(CordTest, AfterExit) {
+  TestAfterExit(absl::strings_internal::MakeStringConstant(ShortView{}));
+  TestAfterExit(absl::strings_internal::MakeStringConstant(LongView{}));
 }
 
 namespace {

@@ -12,7 +12,6 @@
 
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/ash_public_export.h"
-#include "ash/public/cpp/ash_web_view.h"
 #include "ash/public/cpp/picker/picker_category.h"
 #include "ash/public/cpp/picker/picker_search_result.h"
 #include "base/functional/callback_forward.h"
@@ -33,9 +32,15 @@ class ASH_PUBLIC_EXPORT PickerClient {
   using CrosSearchResultsCallback =
       base::RepeatingCallback<void(ash::AppListSearchResultType result_type,
                                    std::vector<PickerSearchResult> results)>;
-
-  virtual std::unique_ptr<ash::AshWebView> CreateWebView(
-      const ash::AshWebView::InitParams& params) = 0;
+  using ShowEditorCallback =
+      base::OnceCallback<void(std::optional<std::string> preset_query_id,
+                              std::optional<std::string> freeform_text)>;
+  using SuggestedEditorResultsCallback =
+      base::OnceCallback<void(std::vector<PickerSearchResult>)>;
+  using RecentFilesCallback =
+      base::OnceCallback<void(std::vector<PickerSearchResult>)>;
+  using SuggestedLinksCallback =
+      base::RepeatingCallback<void(std::vector<PickerSearchResult>)>;
 
   // Gets the SharedURLLoaderFactory to use for Picker network requests, e.g. to
   // fetch assets.
@@ -58,6 +63,19 @@ class ASH_PUBLIC_EXPORT PickerClient {
   // Stops a search using the CrOS Search API
   // (`app_list::SearchEngine::StopQuery`).
   virtual void StopCrosQuery() = 0;
+
+  // Caches the current input field context and returns a callback to show
+  // Editor. If Editor is not available, this returns a null callback.
+  virtual ShowEditorCallback CacheEditorContext() = 0;
+
+  virtual void GetSuggestedEditorResults(
+      SuggestedEditorResultsCallback callback) = 0;
+
+  virtual void GetRecentLocalFileResults(RecentFilesCallback callback) = 0;
+
+  virtual void GetRecentDriveFileResults(RecentFilesCallback callback) = 0;
+
+  virtual void GetSuggestedLinkResults(SuggestedLinksCallback callback) = 0;
 
  protected:
   PickerClient();

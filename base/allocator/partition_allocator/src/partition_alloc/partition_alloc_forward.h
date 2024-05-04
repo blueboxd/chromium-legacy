@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_ALLOCATOR_PARTITION_ALLOCATOR_SRC_PARTITION_ALLOC_PARTITION_ALLOC_FORWARD_H_
-#define BASE_ALLOCATOR_PARTITION_ALLOCATOR_SRC_PARTITION_ALLOC_PARTITION_ALLOC_FORWARD_H_
+#ifndef PARTITION_ALLOC_PARTITION_ALLOC_FORWARD_H_
+#define PARTITION_ALLOC_PARTITION_ALLOC_FORWARD_H_
 
 #include <algorithm>
 #include <cstddef>
@@ -73,14 +73,6 @@ Lock& PartitionRootLock(PartitionRoot*);
 #define PA_MALLOC_FN __attribute__((malloc))
 #endif
 
-// Allows the compiler to assume that the return value is aligned on a
-// kAlignment boundary. This is useful for e.g. using aligned vector
-// instructions in the constructor for zeroing.
-#if PA_HAS_ATTRIBUTE(assume_aligned)
-#define PA_MALLOC_ALIGNED \
-  __attribute__((assume_aligned(::partition_alloc::internal::kAlignment)))
-#endif
-
 #if !defined(PA_MALLOC_FN)
 #define PA_MALLOC_FN
 #endif
@@ -89,4 +81,4 @@ Lock& PartitionRootLock(PartitionRoot*);
 #define PA_MALLOC_ALIGNED
 #endif
 
-#endif  // BASE_ALLOCATOR_PARTITION_ALLOCATOR_SRC_PARTITION_ALLOC_PARTITION_ALLOC_FORWARD_H_
+#endif  // PARTITION_ALLOC_PARTITION_ALLOC_FORWARD_H_

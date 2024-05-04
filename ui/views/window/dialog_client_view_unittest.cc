@@ -77,7 +77,7 @@ class DialogClientViewTest : public test::WidgetTest {
 
   void SizeAndLayoutWidget() {
     Widget* dialog = widget();
-    dialog->SetSize(dialog->GetContentsView()->GetPreferredSize());
+    dialog->SetSize(dialog->GetContentsView()->GetPreferredSize({}));
     views::test::RunScheduledLayout(dialog);
   }
 
@@ -85,7 +85,7 @@ class DialogClientViewTest : public test::WidgetTest {
   // the requested amount, but height should always match exactly.
   void CheckContentsIsSetToPreferredSize() {
     const gfx::Rect client_bounds = GetUpdatedClientBounds();
-    const gfx::Size preferred_size = delegate_->GetPreferredSize();
+    const gfx::Size preferred_size = delegate_->GetPreferredSize({});
     EXPECT_EQ(preferred_size.height(), delegate_->bounds().height());
     EXPECT_LE(preferred_size.width(), delegate_->bounds().width());
     EXPECT_EQ(gfx::Point(), delegate_->origin());
@@ -170,7 +170,8 @@ class DialogClientViewTest : public test::WidgetTest {
         : parent_(parent) {}
 
     // DialogDelegateView:
-    gfx::Size CalculatePreferredSize() const override {
+    gfx::Size CalculatePreferredSize(
+        const SizeBounds& /*available_size*/) const override {
       return parent_->preferred_size_;
     }
     gfx::Size GetMinimumSize() const override { return parent_->min_size_; }
@@ -352,7 +353,7 @@ TEST_F(DialogClientViewTest, LayoutWithButtons) {
 // row in its minimum and preferred size calculations.
 TEST_F(DialogClientViewTest, MinMaxPreferredSize) {
   SetDialogButtons(ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL);
-  const gfx::Size buttons_size = client_view()->GetPreferredSize();
+  const gfx::Size buttons_size = client_view()->GetPreferredSize({});
   EXPECT_FALSE(buttons_size.IsEmpty());
 
   // When the contents view has no preference, just fit the buttons. The
@@ -368,7 +369,7 @@ TEST_F(DialogClientViewTest, MinMaxPreferredSize) {
   SetDialogButtons(ui::DIALOG_BUTTON_NONE);
   SetSizeConstraints(gfx::Size(10, 15), gfx::Size(20, 25), gfx::Size(300, 350));
   EXPECT_EQ(gfx::Size(10, 15), client_view()->GetMinimumSize());
-  EXPECT_EQ(gfx::Size(20, 25), client_view()->GetPreferredSize());
+  EXPECT_EQ(gfx::Size(20, 25), client_view()->GetPreferredSize({}));
   EXPECT_EQ(gfx::Size(300, 350), client_view()->GetMaximumSize());
 
   // With buttons, size should increase vertically only.
@@ -376,7 +377,7 @@ TEST_F(DialogClientViewTest, MinMaxPreferredSize) {
   EXPECT_EQ(gfx::Size(buttons_size.width(), 15 + buttons_size.height()),
             client_view()->GetMinimumSize());
   EXPECT_EQ(gfx::Size(buttons_size.width(), 25 + buttons_size.height()),
-            client_view()->GetPreferredSize());
+            client_view()->GetPreferredSize({}));
   EXPECT_EQ(gfx::Size(300, 350 + buttons_size.height()),
             client_view()->GetMaximumSize());
 
@@ -386,7 +387,7 @@ TEST_F(DialogClientViewTest, MinMaxPreferredSize) {
   EXPECT_EQ(gfx::Size(400, 450 + buttons_size.height()),
             client_view()->GetMinimumSize());
   EXPECT_EQ(gfx::Size(500, 550 + buttons_size.height()),
-            client_view()->GetPreferredSize());
+            client_view()->GetPreferredSize({}));
   EXPECT_EQ(gfx::Size(600, 650 + buttons_size.height()),
             client_view()->GetMaximumSize());
 }
@@ -558,7 +559,7 @@ TEST_F(DialogClientViewTest, IgnorePossiblyUnintendedClicks_ClickAfterShown) {
   EXPECT_TRUE(widget()->IsClosed());
 }
 
-// TODO(https://crbug.com/1449221): investigate the tests on ChromeOS and
+// TODO(crbug.com/40269697): investigate the tests on ChromeOS and
 // fuchsia
 #if !BUILDFLAG(IS_CHROMEOS) && !BUILDFLAG(IS_FUCHSIA)
 class DesktopDialogClientViewTest : public DialogClientViewTest {

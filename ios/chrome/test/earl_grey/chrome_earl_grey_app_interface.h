@@ -526,9 +526,6 @@
 // Returns YES if DemographicMetricsReporting feature is enabled.
 + (BOOL)isDemographicMetricsReportingEnabled [[nodiscard]];
 
-// Returns YES if the ReplaceSyncPromosWithSignInPromos feature is enabled.
-+ (BOOL)isReplaceSyncWithSigninEnabled [[nodiscard]];
-
 // Returns YES if the `launchSwitch` is found in host app launch switches.
 + (BOOL)appHasLaunchSwitch:(NSString*)launchSwitch;
 
@@ -536,9 +533,6 @@
 // system frameworks. Always returns YES if the app was not requested to run
 // with custom WebKit frameworks.
 + (BOOL)isCustomWebKitLoadedIfRequested [[nodiscard]];
-
-// Returns YES if error pages are displayed using loadSimulatedRequest.
-+ (BOOL)isLoadSimulatedRequestAPIEnabled [[nodiscard]];
 
 // Returns whether the mobile version of the websites are requested by default.
 + (BOOL)isMobileModeByDefault [[nodiscard]];
@@ -556,8 +550,8 @@
 // Returns whether the Web Channels feature is enabled.
 + (BOOL)isWebChannelsEnabled;
 
-// Returns whether the bottom omnibox steady state feature is enabled.
-+ (BOOL)isBottomOmniboxSteadyStateEnabled;
+// Returns whether Tab Group Sync is enabled.
++ (BOOL)isTabGroupSyncEnabled;
 
 #pragma mark - ContentSettings
 

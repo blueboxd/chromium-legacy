@@ -25,6 +25,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_launcher_utils.h"
 #include "content/public/common/content_descriptors.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
 #include "mojo/core/configuration.h"
@@ -68,7 +69,7 @@ void PassHistogramSharedMemoryHandle(
     [[maybe_unused]] base::CommandLine* command_line,
     [[maybe_unused]] base::LaunchOptions* launch_options,
     [[maybe_unused]] FileMappedForLaunch* files_to_register) {
-  // TODO(crbug.com/1028263): Once all process types support histogram shared
+  // TODO(crbug.com/40109064): Once all process types support histogram shared
   // memory being passed at launch, remove this if.
   if (!histogram_memory_region.IsValid()) {
     return;
@@ -77,7 +78,7 @@ void PassHistogramSharedMemoryHandle(
   CHECK(command_line);
   CHECK(histogram_memory_region.IsValid());
 #if BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_APPLE)
-  // TODO(crbug.com/1028263): content::FileMappedForLaunch (POSIX) is redundant
+  // TODO(crbug.com/40109064): content::FileMappedForLaunch (POSIX) is redundant
   // wrt the base::LaunchOptions::<platform-specific-handles-to-transfer>
   // members. Refactor this so that the details of base::Launch vs Zygote on
   // (some) POSIX platforms is an implementation detail and not exposed here.
@@ -121,7 +122,7 @@ void PassFieldTrialSharedMemoryHandle(
     [[maybe_unused]] FileMappedForLaunch* files_to_register) {
   CHECK(command_line);
 #if BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_APPLE)
-  // TODO(crbug.com/1028263): content::FileMappedForLaunch (POSIX) is redundant
+  // TODO(crbug.com/40109064): content::FileMappedForLaunch (POSIX) is redundant
   // wrt the base::LaunchOptions::<platform-specific-handles-to-transfer>
   // members. Refactor this so that the details of base::Launch vs Zygote on
   // (some) POSIX platforms is an implementation detail and not exposed here.
@@ -211,7 +212,14 @@ ChildProcessLauncherHelper::ChildProcessLauncherHelper(
   command_line_->DetachFromCurrentSequence();
 }
 
-ChildProcessLauncherHelper::~ChildProcessLauncherHelper() = default;
+ChildProcessLauncherHelper::~ChildProcessLauncherHelper() {
+#if BUILDFLAG(IS_CHROMEOS)
+  if (base::FeatureList::IsEnabled(features::kSchedQoSOnResourcedForChrome) &&
+      process_id_.has_value()) {
+    base::Process::Open(process_id_.value()).ForgetPriority();
+  }
+#endif  // BUILDFLAG(IS_CHROMEOS)
+}
 
 void ChildProcessLauncherHelper::StartLaunchOnClientThread() {
   DCHECK(client_task_runner_->RunsTasksInCurrentSequence());
@@ -390,12 +398,13 @@ void ChildProcessLauncherHelper::ForceNormalProcessTerminationAsync(
           std::move(process)));
 }
 
+#if !BUILDFLAG(IS_WIN)
 void ChildProcessLauncherHelper::PassLoggingSwitches(
     base::LaunchOptions* launch_options,
     base::CommandLine* cmd_line) {
   const base::CommandLine& browser_command_line =
       *base::CommandLine::ForCurrentProcess();
-  static const char* const kForwardSwitches[] = {
+  constexpr const char* kForwardSwitches[] = {
       switches::kDisableLogging,
       switches::kEnableLogging,
       switches::kLogFile,
@@ -405,6 +414,7 @@ void ChildProcessLauncherHelper::PassLoggingSwitches(
   };
   cmd_line->CopySwitchesFrom(browser_command_line, kForwardSwitches);
 }
+#endif  // !BUILDFLAG(IS_WIN)
 
 }  // namespace internal
 

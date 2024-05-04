@@ -44,6 +44,26 @@ VisitRow::~VisitRow() = default;
 
 VisitRow::VisitRow(const VisitRow&) = default;
 
+// VisitedLinkRow --------------------------------------------------------------
+
+bool operator==(const VisitedLinkRow& lhs, const VisitedLinkRow& rhs) {
+  return std::tie(lhs.id, lhs.link_url_id, lhs.top_level_url, lhs.frame_url,
+                  lhs.visit_count) == std::tie(rhs.id, rhs.link_url_id,
+                                               rhs.top_level_url, rhs.frame_url,
+                                               rhs.visit_count);
+}
+
+bool operator!=(const VisitedLinkRow& lhs, const VisitedLinkRow& rhs) {
+  return !(lhs == rhs);
+}
+
+bool operator<(const VisitedLinkRow& lhs, const VisitedLinkRow& rhs) {
+  return std::tie(lhs.id, lhs.link_url_id, lhs.top_level_url, lhs.frame_url,
+                  lhs.visit_count) < std::tie(rhs.id, rhs.link_url_id,
+                                              rhs.top_level_url, rhs.frame_url,
+                                              rhs.visit_count);
+}
+
 // QueryResults ----------------------------------------------------------------
 
 QueryResults::QueryResults() = default;
@@ -244,6 +264,17 @@ FilteredURL::~FilteredURL() = default;
 
 FilteredURL::ExtendedInfo::ExtendedInfo() = default;
 
+// GetAllAppIdsResult -------------------------------------------------------
+
+GetAllAppIdsResult::GetAllAppIdsResult() = default;
+
+GetAllAppIdsResult::GetAllAppIdsResult(GetAllAppIdsResult&& other) = default;
+
+GetAllAppIdsResult& GetAllAppIdsResult::operator=(GetAllAppIdsResult&& other) =
+    default;
+
+GetAllAppIdsResult::~GetAllAppIdsResult() = default;
+
 // DomainsVisitedResult -------------------------------------------------------
 
 DomainsVisitedResult::DomainsVisitedResult() = default;
@@ -408,6 +439,7 @@ DeletionInfo::DeletionInfo(const DeletionTimeRange& time_range,
                    is_from_expiration,
                    Reason::kOther,
                    std::move(deleted_rows),
+                   /*deleted_visit_ids=*/{},
                    std::move(favicon_urls),
                    std::move(restrict_urls)) {}
 
@@ -415,12 +447,14 @@ DeletionInfo::DeletionInfo(const DeletionTimeRange& time_range,
                            bool is_from_expiration,
                            Reason deletion_reason,
                            URLRows deleted_rows,
+                           std::set<VisitID> deleted_visit_ids,
                            std::set<GURL> favicon_urls,
                            std::optional<std::set<GURL>> restrict_urls)
     : time_range_(time_range),
       is_from_expiration_(is_from_expiration),
       deletion_reason_(deletion_reason),
       deleted_rows_(std::move(deleted_rows)),
+      deleted_visit_ids_(std::move(deleted_visit_ids)),
       favicon_urls_(std::move(favicon_urls)),
       restrict_urls_(std::move(restrict_urls)) {
   // If time_range is all time or invalid, restrict_urls should be empty.
@@ -435,6 +469,20 @@ DeletionInfo::~DeletionInfo() = default;
 DeletionInfo::DeletionInfo(DeletionInfo&& other) noexcept = default;
 
 DeletionInfo& DeletionInfo::operator=(DeletionInfo&& rhs) noexcept = default;
+
+// DeletedVisit ----------------------------------------------------------------
+
+DeletedVisit::DeletedVisit(VisitRow visit)
+    : visit_row(visit), deleted_visited_link(std::nullopt) {}
+
+DeletedVisit::DeletedVisit(VisitRow visit,
+                           DeletedVisitedLink deleted_visited_link)
+    : visit_row(visit), deleted_visited_link(deleted_visited_link) {}
+
+DeletedVisit::DeletedVisit(const DeletedVisit& other) = default;
+DeletedVisit& DeletedVisit::operator=(const DeletedVisit& other) = default;
+
+DeletedVisit::~DeletedVisit() = default;
 
 // Clusters --------------------------------------------------------------------
 

@@ -346,6 +346,8 @@ class MessagePopupCollectionTest : public views::ViewsTestBase,
     return popup_collection_->popups()[index];
   }
 
+  void CloseAllPopupsNow() { popup_collection()->CloseAllPopupsNow(); }
+
   size_t GetPopupCounts() const { return popup_collection_->popups().size(); }
 
   void SetDisplayInfo(const gfx::Rect& work_area,
@@ -457,7 +459,7 @@ TEST_F(MessagePopupCollectionTest, UpdateContents) {
   EXPECT_TRUE(GetPopup(id)->updated());
 }
 
-// TODO(crbug.com/1403996): Flaky on all platforms.
+// TODO(crbug.com/40885754): Flaky on all platforms.
 TEST_F(MessagePopupCollectionTest, DISABLED_UpdateContentsCausesPopupClose) {
   std::string id = AddNotification();
   AnimateToEnd();
@@ -1137,6 +1139,21 @@ TEST_F(MessagePopupCollectionTest, PopupWidgetClosedOutsideDuringFadeOut) {
   AnimateToEnd();
 
   EXPECT_FALSE(IsAnimating());
+}
+
+TEST_F(MessagePopupCollectionTest, NotifyPopupClosedThenCloseAllPopups) {
+  std::string id1 = AddNotification();
+  std::string id2 = AddNotification();
+  AnimateUntilIdle();
+
+  // This test make sure that when `NotifyPopupClosed()` is called and then
+  // `CloseAllPopupsNow()` is triggered, no crash would happen. This scenerio
+  // can happen when `MessagePopupView::~MessagePopupView()` is called, and then
+  // at the same time another entity (i.e.
+  // AshMessagePopupCollection::NotifierCollisionHandler) calls
+  // `CloseAllPopupsNow()` (b/312515706).
+  popup_collection()->NotifyPopupClosed(GetPopup(id1));
+  CloseAllPopupsNow();
 }
 
 // Notification removing may occur while the animation triggered by the previous

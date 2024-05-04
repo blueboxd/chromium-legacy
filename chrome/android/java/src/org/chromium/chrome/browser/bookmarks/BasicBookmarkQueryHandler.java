@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 
 /** Simple implementation of {@link BookmarkQueryHandler} that fetches children. */
 public class BasicBookmarkQueryHandler implements BookmarkQueryHandler {
-    // TODO(https://crbug.com/1441629): Support pagination.
+    // TODO(crbug.com/40266584): Support pagination.
     private static final int MAXIMUM_NUMBER_OF_SEARCH_RESULTS = 500;
 
     private final BookmarkModel mBookmarkModel;
@@ -110,10 +110,6 @@ public class BasicBookmarkQueryHandler implements BookmarkQueryHandler {
         final List<BookmarkListEntry> bookmarkListEntries = new ArrayList<>();
         for (BookmarkId bookmarkId : bookmarkIds) {
             PowerBookmarkMeta powerBookmarkMeta = mBookmarkModel.getPowerBookmarkMeta(bookmarkId);
-            if (BookmarkId.SHOPPING_FOLDER.equals(parentId)
-                    && !isBookmarkMetaSubscribed(powerBookmarkMeta)) {
-                continue;
-            }
             BookmarkItem bookmarkItem = mBookmarkModel.getBookmarkById(bookmarkId);
             BookmarkListEntry bookmarkListEntry =
                     BookmarkListEntry.createBookmarkEntry(

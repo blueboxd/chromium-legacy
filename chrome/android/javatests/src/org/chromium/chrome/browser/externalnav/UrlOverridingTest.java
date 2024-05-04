@@ -39,7 +39,6 @@ import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.runner.lifecycle.Stage;
 
 import org.hamcrest.Matchers;
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -63,6 +62,7 @@ import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Features.DisableFeatures;
 import org.chromium.base.test.util.Features.EnableFeatures;
@@ -91,7 +91,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.R;
-import org.chromium.components.browser_ui.modaldialog.ModalDialogTestUtils;
+import org.chromium.components.browser_ui.modaldialog.ModalDialogView;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.external_intents.ExternalIntentsFeatures;
 import org.chromium.components.external_intents.ExternalNavigationHandler;
@@ -419,12 +419,7 @@ public class UrlOverridingTest {
                                 true);
         mTestServer = mActivityTestRule.getTestServer();
         mTestContext.setIntentFilterForScheme(EXTERNAL_APP_SCHEME, filter);
-        ModalDialogTestUtils.overrideEnableButtonTapProtection(false);
-    }
-
-    @After
-    public void tearDown() {
-        ModalDialogTestUtils.overrideEnableButtonTapProtection(true);
+        ModalDialogView.disableButtonTapProtectionForTesting();
     }
 
     private Origin createExampleOrigin() {
@@ -849,6 +844,7 @@ public class UrlOverridingTest {
 
     @Test
     @SmallTest
+    @DisabledTest(message = "https://crbug.com/333776487")
     public void testNavigationFromXHRCallbackAndLostActivationLongTimeout() throws Exception {
         mActivityTestRule.startMainActivityOnBlankPage();
 

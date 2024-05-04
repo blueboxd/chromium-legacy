@@ -175,9 +175,10 @@ unsigned int AHardwareBufferFormat(viz::SharedImageFormat format) {
 
 constexpr uint32_t kSupportedUsage =
     SHARED_IMAGE_USAGE_GLES2_READ | SHARED_IMAGE_USAGE_GLES2_WRITE |
-    SHARED_IMAGE_USAGE_GLES2_FRAMEBUFFER_HINT |
+    SHARED_IMAGE_USAGE_GLES2_FOR_RASTER_ONLY |
     SHARED_IMAGE_USAGE_DISPLAY_WRITE | SHARED_IMAGE_USAGE_DISPLAY_READ |
     SHARED_IMAGE_USAGE_RASTER_READ | SHARED_IMAGE_USAGE_RASTER_WRITE |
+    SHARED_IMAGE_USAGE_RASTER_OVER_GLES2_ONLY |
     SHARED_IMAGE_USAGE_OOP_RASTERIZATION | SHARED_IMAGE_USAGE_SCANOUT |
     SHARED_IMAGE_USAGE_WEBGPU_READ | SHARED_IMAGE_USAGE_WEBGPU_WRITE |
     SHARED_IMAGE_USAGE_VIDEO_DECODE |
@@ -281,7 +282,7 @@ class SkiaVkAHBImageRepresentation : public SkiaVkAndroidImageRepresentation {
     // if the vk_info stays the same on subsequent calls.
     promise_texture_ = GrPromiseImageTexture::Make(GrBackendTextures::MakeVk(
         size().width(), size().height(),
-        CreateGrVkImageInfo(vulkan_image_.get(), color_space())));
+        CreateGrVkImageInfo(vulkan_image_.get(), format(), color_space())));
     DCHECK(promise_texture_);
   }
 };
@@ -865,9 +866,10 @@ AHardwareBufferImageBackingFactory::CreateSharedImage(
     SkAlphaType alpha_type,
     uint32_t usage,
     std::string debug_label,
+    bool is_thread_safe,
     base::span<const uint8_t> pixel_data) {
   return MakeBacking(mailbox, format, size, color_space, surface_origin,
-                     alpha_type, usage, std::move(debug_label), false,
+                     alpha_type, usage, std::move(debug_label), is_thread_safe,
                      pixel_data);
 }
 

@@ -45,11 +45,13 @@
 
 namespace blink {
 
+class AnchorPositionScrollData;
 class BlockBreakToken;
 class ColumnSpannerPath;
 class ConstraintSpace;
 class CustomLayoutChild;
 class EarlyBreak;
+class Element;
 class LayoutMultiColumnSpannerPlaceholder;
 class LayoutResult;
 class MeasureCache;
@@ -209,9 +211,6 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
     NOT_DESTROYED();
     return false;
   }
-
-  // Returns whether this object needs a scroll paint property tree node.
-  bool NeedsScrollNode(CompositingReasons direct_compositing_reasons) const;
 
   // Returns true if this LayoutBox has a scroll paint property node and the
   // node is currently composited in cc.
@@ -396,7 +395,6 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
 
   PhysicalBoxStrut ComputeVisualEffectOverflowOutsets();
 
-  void ClearScrollableOverflow();
   void ClearVisualOverflow();
 
   bool CanUseFragmentsForVisualOverflow() const;
@@ -984,6 +982,13 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
     return ScrollableOverflowIsSet();
   }
 
+  // Returns true if reading order should be used on this LayoutBox's content.
+  // https://drafts.csswg.org/css-display-4/#reading-order-items
+  bool IsReadingOrderContainer() const;
+  // Returns the Element children corresponding to this LayoutBox's layout
+  // children, sorted in reading order if IsReadingOrderContainer().
+  HeapVector<Member<Element>> ReadingOrderElements() const;
+
   // See README.md for an explanation of scroll origin.
   gfx::Vector2d OriginAdjustmentForScrollbars() const;
   gfx::Point ScrollOrigin() const;
@@ -1246,6 +1251,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   // See StickyPositionScrollingConstraints::constraining_rect.
   PhysicalRect ComputeStickyConstrainingRect() const;
 
+  AnchorPositionScrollData* GetAnchorPositionScrollData() const;
   bool NeedsAnchorPositionScrollAdjustment() const;
   PhysicalOffset AnchorPositionScrollTranslationOffset() const;
 
@@ -1265,8 +1271,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   // https://drafts.csswg.org/css-anchor-position-1/#ref-for-valdef-anchor-implicit
   const LayoutObject* AcceptableImplicitAnchor() const;
 
-  const Vector<NonOverflowingScrollRange>*
-  PositionFallbackNonOverflowingRanges() const;
+  const Vector<NonOverflowingScrollRange>* NonOverflowingScrollRanges() const;
 
   const BoxStrut& OutOfFlowInsetsForGetComputedStyle() const;
 

@@ -56,6 +56,7 @@ const char* const kWebViewCrashKeyAllowList[] = {
     "crbug1523259-pw_form.password_id",
     "crbug1523259-fs.fields.size",
     "crbug1523259-fs.fields.global_ids",
+    "crbug1523259-fs.fields.global_ids",
 
     // components/viz
     "viz_deserialization",
@@ -68,6 +69,13 @@ const char* const kWebViewCrashKeyAllowList[] = {
     "total-discardable-memory-allocated",
 
     // Navigation
+    "rfhi_can_commit_failure_reason",
+    "is_same_document",
+    "is_main_frame",
+    "is_on_initial_empty_doc",
+    "is_renderer_initiated",
+    "is_error_page",
+
     "VerifyDidCommit-prev_ldwb",
     "VerifyDidCommit-prev_ldwbu",
     "VerifyDidCommit-base_url_fdu_type",

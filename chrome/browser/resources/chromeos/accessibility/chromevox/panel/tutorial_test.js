@@ -83,7 +83,7 @@ ChromeVoxTutorialTest = class extends ChromeVoxPanelTestBase {
   }
 };
 
-// TODO(crbug.com/1501314): Flaky on ChromeOS.
+// TODO(crbug.com/40941587): Flaky on ChromeOS.
 AX_TEST_F('ChromeVoxTutorialTest', 'DISABLED_BasicTest', async function() {
   const mockFeedback = this.createMockFeedback();
   const root = await this.runWithLoadedTree(this.simpleDoc);
@@ -567,7 +567,9 @@ AX_TEST_F('ChromeVoxTutorialTest', 'RestartNudges', async function() {
 });
 
 // Tests that the tutorial closes and ChromeVox navigates to a resource link.
-AX_TEST_F('ChromeVoxTutorialTest', 'ResourcesTest', async function() {
+//
+// Flaky. See crbug.com/336702956.
+AX_TEST_F('ChromeVoxTutorialTest', 'DISABLED_ResourcesTest', async function() {
   const mockFeedback = this.createMockFeedback();
   const root = await this.runWithLoadedTree(this.simpleDoc);
   await this.launchAndWaitForTutorial();

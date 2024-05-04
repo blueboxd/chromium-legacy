@@ -1169,7 +1169,7 @@ TEST_P(BluetoothTestWinrt, SimulateAdapterPoweredOnAndOffWithoutRadio) {
 
 // Makes sure the error callback gets run when changing the adapter power state
 // fails.
-// TODO(https://crbug.com/878680): Implement SimulateAdapterPowerSuccess() and
+// TODO(crbug.com/41410591): Implement SimulateAdapterPowerSuccess() and
 // enable on all platforms.
 TEST_P(BluetoothTestWinrt, SimulateAdapterPowerFailure) {
   if (!PlatformSupportsLowEnergy()) {
@@ -1188,7 +1188,7 @@ TEST_P(BluetoothTestWinrt, SimulateAdapterPowerFailure) {
 }
 #endif  // BUILDFLAG(IS_WIN)
 
-// TODO(https://crbug.com/804356): Enable this test on old Windows versions as
+// TODO(crbug.com/41366193): Enable this test on old Windows versions as
 // well.
 #if BUILDFLAG(IS_WIN)
 TEST_P(BluetoothTestWinrt, TogglePowerFakeAdapter) {
@@ -1476,7 +1476,7 @@ TEST_P(BluetoothTestWinrt, DiscoverySessionFailure) {
 #define MAYBE_TurnOffAdapterWithConnectedDevice \
   DISABLED_TurnOffAdapterWithConnectedDevice
 #endif
-// TODO(crbug.com/725270): Enable on relevant platforms.
+// TODO(crbug.com/40522060): Enable on relevant platforms.
 TEST_F(BluetoothTest, MAYBE_TurnOffAdapterWithConnectedDevice) {
   if (!PlatformSupportsLowEnergy()) {
     GTEST_SKIP() << "Low Energy Bluetooth unavailable, skipping unit test.";

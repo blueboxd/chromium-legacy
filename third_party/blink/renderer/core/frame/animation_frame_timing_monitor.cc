@@ -3,8 +3,10 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/core/frame/animation_frame_timing_monitor.h"
+
 #include "base/time/time.h"
 #include "base/trace_event/base_tracing.h"
+#include "base/trace_event/trace_id_helper.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
@@ -18,6 +20,7 @@
 #include "third_party/blink/renderer/core/script/script.h"
 #include "third_party/blink/renderer/core/timing/animation_frame_timing_info.h"
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
+#include "third_party/blink/renderer/core/timing/third_party_script_detector.h"
 #include "third_party/blink/renderer/platform/bindings/source_location.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
@@ -68,8 +71,10 @@ void AnimationFrameTimingMonitor::WillPerformStyleAndLayoutCalculation() {
       base::TimeTicks::Now());
 }
 
-void AnimationFrameTimingMonitor::DidBeginMainFrame() {
-  // This can happen if a frame becomes visible mid-frame.
+void AnimationFrameTimingMonitor::DidBeginMainFrame(
+    LocalDOMWindow& local_root_window) {
+  // This can happen if the AnimationFrameTimingMonitor instance is created
+  // in the middle of a frame.
   if (!current_frame_timing_info_) {
     return;
   }
@@ -109,8 +114,9 @@ void AnimationFrameTimingMonitor::DidBeginMainFrame() {
     current_frame_timing_info_->SetTotalBlockingDuration(blocking_duration);
 
     client_.ReportLongAnimationFrameTiming(current_frame_timing_info_);
-    RecordLongAnimationFrameUKMAndTrace(*current_frame_timing_info_);
   }
+  RecordLongAnimationFrameUKMAndTrace(*current_frame_timing_info_,
+                                      local_root_window);
 
   first_ui_event_timestamp_ = base::TimeTicks();
   current_frame_timing_info_.Clear();
@@ -226,10 +232,7 @@ void AnimationFrameTimingMonitor::OnTaskCompleted(
     DOMWindowPerformance::performance(*frame->DomWindow())
         ->ReportLongAnimationFrameTiming(timing_info);
   }
-
-  if (frame->IsMainFrame()) {
-    RecordLongAnimationFrameUKMAndTrace(*timing_info);
-  }
+  RecordLongAnimationFrameUKMAndTrace(*timing_info, *frame->DomWindow());
 }
 
 namespace {
@@ -243,33 +246,81 @@ void RecordLongAnimationFrameTrace(const AnimationFrameTimingInfo& info,
   }
 
   auto traced_value = std::make_unique<TracedValue>();
+  uint64_t trace_id = base::trace_event::GetNextGlobalTraceId();
   traced_value->SetDouble("blockingDuration",
                           (info.TotalBlockingDuration()).InMillisecondsF());
   traced_value->SetDouble("duration", info.Duration().InMillisecondsF());
+  if (!info.FirstUIEventTime().is_null()) {
+    TRACE_EVENT_NESTABLE_ASYNC_INSTANT_WITH_TIMESTAMP0(
+        "devtools.timeline", "AnimationFrame::FirstUIEvent", trace_id,
+        info.FirstUIEventTime());
+  }
+  for (ScriptTimingInfo* script : info.Scripts()) {
+    auto script_traced_value = std::make_unique<TracedValue>();
+    script_traced_value->SetDouble("styleDuration",
+                                   script->StyleDuration().InMillisecondsF());
+    script_traced_value->SetDouble("layoutDuration",
+                                   script->LayoutDuration().InMillisecondsF());
+    script_traced_value->SetDouble("pauseDuration",
+                                   script->PauseDuration().InMillisecondsF());
+    script_traced_value->SetInteger("invokerType",
+                                    static_cast<int>(script->GetInvokerType()));
+    script_traced_value->SetStringWithCopiedName("classLikeName",
+                                                 script->ClassLikeName());
+    script_traced_value->SetStringWithCopiedName("propertyLikeName",
+                                                 script->PropertyLikeName());
+    script_traced_value->SetStringWithCopiedName(
+        "sourceLocationUrl", script->GetSourceLocation().url);
+    script_traced_value->SetStringWithCopiedName(
+        "sourceLocationFunctionName",
+        script->GetSourceLocation().function_name);
+    script_traced_value->SetInteger("sourceLocationCharPosition",
+                                    script->GetSourceLocation().char_position);
+    TRACE_EVENT_NESTABLE_ASYNC_BEGIN_WITH_TIMESTAMP1(
+        "devtools.timeline", "AnimationFrame::Script", trace_id,
+        script->StartTime(), "data", std::move(script_traced_value));
+    TRACE_EVENT_NESTABLE_ASYNC_INSTANT_WITH_TIMESTAMP0(
+        "devtools.timeline", "AnimationFrame::Script::ExecutionStartTime",
+        trace_id, script->ExecutionStartTime());
+    TRACE_EVENT_NESTABLE_ASYNC_END_WITH_TIMESTAMP0("devtools.timeline",
+                                                   "AnimationFrame::Script",
+                                                   trace_id, script->EndTime());
+  }
   if (!info.RenderStartTime().is_null()) {
-    traced_value->SetDouble(
-        "renderDuration",
-        (info.RenderEndTime() - info.RenderStartTime()).InMillisecondsF());
+    TRACE_EVENT_NESTABLE_ASYNC_BEGIN_WITH_TIMESTAMP0(
+        "devtools.timeline", "AnimationFrame::Render", trace_id,
+        info.RenderStartTime());
+    TRACE_EVENT_NESTABLE_ASYNC_END_WITH_TIMESTAMP0(
+        "devtools.timeline", "AnimationFrame::Render", trace_id,
+        info.RenderEndTime());
   }
   if (!info.StyleAndLayoutStartTime().is_null()) {
-    traced_value->SetDouble(
-        "styleAndLayoutDuration",
-        (info.RenderEndTime() - info.StyleAndLayoutStartTime())
-            .InMillisecondsF());
+    TRACE_EVENT_NESTABLE_ASYNC_BEGIN_WITH_TIMESTAMP0(
+        "devtools.timeline", "AnimationFrame::StyleAndLayout", trace_id,
+        info.StyleAndLayoutStartTime());
+    TRACE_EVENT_NESTABLE_ASYNC_END_WITH_TIMESTAMP0(
+        "devtools.timeline", "AnimationFrame::StyleAndLayout", trace_id,
+        info.RenderEndTime());
   }
   traced_value->SetInteger("numScripts", info.Scripts().size());
 
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN_WITH_TIMESTAMP1(
-      "devtools.timeline", "LongAnimationFrame", scope, info.FrameStartTime(),
+      "devtools.timeline", "AnimationFrame", trace_id, info.FrameStartTime(),
       "data", std::move(traced_value));
   TRACE_EVENT_NESTABLE_ASYNC_END_WITH_TIMESTAMP0(
-      "devtools.timeline", "LongAnimationFrame", scope, info.RenderEndTime());
+      "devtools.timeline", "AnimationFrame", trace_id, info.RenderEndTime());
 }
 }  // namespace
 
 void AnimationFrameTimingMonitor::RecordLongAnimationFrameUKMAndTrace(
-    const AnimationFrameTimingInfo& info) {
+    const AnimationFrameTimingInfo& info,
+    LocalDOMWindow& window) {
+  // Record all animation frames to traces, but only long ones to UKM.
   RecordLongAnimationFrameTrace(info, this);
+  if (info.Duration() < kLongAnimationFrameDuration) {
+    return;
+  }
+
   ukm::UkmRecorder* recorder = client_.MainFrameUkmRecorder();
   ukm::SourceId source_id = client_.MainFrameUkmSourceId();
   if (!recorder || source_id == ukm::kInvalidSourceId) {
@@ -289,6 +340,8 @@ void AnimationFrameTimingMonitor::RecordLongAnimationFrameUKMAndTrace(
   base::TimeDelta script_type_duration_event_listener;
   base::TimeDelta script_type_duration_promise_handler;
   base::TimeDelta script_type_duration_script_block;
+  int64_t third_party_script_callback_contributors = 0;
+  int64_t third_party_script_execution_contributors = 0;
   for (const Member<ScriptTimingInfo>& script : info.Scripts()) {
     total_compilation_duration +=
         (script->ExecutionStartTime() - script->StartTime());
@@ -297,20 +350,31 @@ void AnimationFrameTimingMonitor::RecordLongAnimationFrameUKMAndTrace(
     total_execution_duration += execution_duration;
     total_forced_style_and_layout_duration += script->StyleDuration();
     total_forced_style_and_layout_duration += script->LayoutDuration();
+    ThirdPartyScriptDetector::Technology third_party_technology =
+        ThirdPartyScriptDetector::From(window).Detect(
+            script->GetSourceLocation().url);
     switch (script->GetInvokerType()) {
       case ScriptTimingInfo::InvokerType::kClassicScript:
       case ScriptTimingInfo::InvokerType::kModuleScript:
         script_type_duration_script_block += execution_duration;
+        third_party_script_execution_contributors |=
+            static_cast<int64_t>(third_party_technology);
         break;
       case ScriptTimingInfo::InvokerType::kEventHandler:
         script_type_duration_event_listener += execution_duration;
+        third_party_script_callback_contributors |=
+            static_cast<int64_t>(third_party_technology);
         break;
       case ScriptTimingInfo::InvokerType::kPromiseResolve:
       case ScriptTimingInfo::InvokerType::kPromiseReject:
         script_type_duration_promise_handler += execution_duration;
+        third_party_script_callback_contributors |=
+            static_cast<int64_t>(third_party_technology);
         break;
       case ScriptTimingInfo::InvokerType::kUserCallback:
         script_type_duration_user_callback += execution_duration;
+        third_party_script_callback_contributors |=
+            static_cast<int64_t>(third_party_technology);
         break;
     }
   }
@@ -329,6 +393,10 @@ void AnimationFrameTimingMonitor::RecordLongAnimationFrameUKMAndTrace(
   builder.SetDuration_StyleAndLayout_Forced(
       total_forced_style_and_layout_duration.InMilliseconds());
   builder.SetDidPause(info.DidPause());
+  builder.SetCategorized3PScriptLongAnimationFrameCallbackContributors(
+      third_party_script_callback_contributors);
+  builder.SetCategorized3PScriptLongAnimationFrameScriptExecutionContributors(
+      third_party_script_execution_contributors);
   builder.Record(recorder);
 }
 

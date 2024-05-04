@@ -13,7 +13,6 @@
 #include "base/notreached.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/strcat.h"
-#include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -102,7 +101,7 @@ FieldType AddressComponent::GetStorageType() const {
 
 FieldType AddressComponent::GetFallbackType(FieldType field_type) const {
   CHECK(IsSupportedType(field_type));
-  // TODO(crbug.com/1464568): Add logic for i18n fallback types.
+  // TODO(crbug.com/40275657): Add logic for i18n fallback types.
   return field_type;
 }
 

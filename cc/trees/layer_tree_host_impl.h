@@ -328,7 +328,6 @@ class CC_EXPORT LayerTreeHostImpl : public TileManagerClient,
   }
 
   virtual void WillSendBeginMainFrame() {}
-  virtual void DidSendBeginMainFrame(const viz::BeginFrameArgs& args);
   virtual void BeginMainFrameAborted(
       CommitEarlyOutReason reason,
       std::vector<std::unique_ptr<SwapPromise>> swap_promises,
@@ -633,7 +632,7 @@ class CC_EXPORT LayerTreeHostImpl : public TileManagerClient,
   // token is greater than or equal to `frame_token`.
   void RegisterMainThreadSuccessfulPresentationTimeCallbackForTesting(
       uint32_t frame_token,
-      PresentationTimeCallbackBuffer::SuccessfulCallback callback);
+      PresentationTimeCallbackBuffer::SuccessfulCallbackWithDetails callback);
 
   // Buffers `callback` until a relevant successful presentation occurs, at
   // which point the callback will be run on the compositor thread. A successful
@@ -1323,6 +1322,9 @@ class CC_EXPORT LayerTreeHostImpl : public TileManagerClient,
 
   bool downsample_metrics_ = true;
   base::MetricsSubSampler metrics_subsampler_;
+
+  // See `CommitState::screenshot_destination_token`.
+  base::UnguessableToken screenshot_destination_;
 
   // Must be the last member to ensure this is destroyed first in the
   // destruction order and invalidates all weak pointers.

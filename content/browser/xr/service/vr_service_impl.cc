@@ -4,7 +4,6 @@
 
 #include "content/browser/xr/service/vr_service_impl.h"
 
-#include <optional>
 #include <utility>
 #include <vector>
 
@@ -101,7 +100,7 @@ std::vector<blink::PermissionType> GetRequiredPermissionsForFeatures(
   return permissions;
 }
 
-// TODO(https://crbug.com/1480022): Replace with base::ranges::set_difference
+// TODO(crbug.com/40930146): Replace with base::ranges::set_difference
 std::unordered_set<device::mojom::XRSessionFeature> GetMissingRequiredFeatures(
     const std::unordered_set<device::mojom::XRSessionFeature>& enabled_features,
     const std::unordered_set<device::mojom::XRSessionFeature>&
@@ -233,6 +232,11 @@ VRServiceImpl::~VRServiceImpl() {
        it != magic_window_controllers_.end(); ++it) {
     OnInlineSessionDisconnected(it.id());
   }
+
+  if (on_exit_present_) {
+    std::move(on_exit_present_).Run();
+  }
+
   runtime_manager_->RemoveService(this);
 }
 
@@ -559,9 +563,7 @@ void VRServiceImpl::GetPermissionStatus(SessionRequestData request,
 #if BUILDFLAG(ENABLE_OPENXR)
   if (request.options->mode == device::mojom::XRSessionMode::kImmersiveAr &&
       runtime->GetId() == device::mojom::XRDeviceId::OPENXR_DEVICE_ID) {
-    DCHECK(
-        base::FeatureList::IsEnabled(
-            device::features::kOpenXrExtendedFeatureSupport));
+    DCHECK(device::features::IsOpenXrArEnabled());
   }
 #endif
 
@@ -849,7 +851,8 @@ void VRServiceImpl::ExitPresent(ExitPresentCallback on_exited) {
       runtime_manager_->GetCurrentlyPresentingImmersiveRuntime();
   DVLOG(2) << __func__ << ": !!immersive_runtime=" << !!immersive_runtime;
   if (immersive_runtime) {
-    immersive_runtime->ExitPresent(this, std::move(on_exited));
+    on_exit_present_ = std::move(on_exited);
+    immersive_runtime->ExitPresent(this);
   } else {
     std::move(on_exited).Run();
   }
@@ -900,6 +903,10 @@ void VRServiceImpl::OnExitPresent() {
       ->OnXrHasRenderTarget(default_frame_sink_id);
 
   GetSessionMetricsHelper()->StopAndRecordImmersiveSession();
+
+  if (on_exit_present_) {
+    std::move(on_exit_present_).Run();
+  }
 
   for (auto& client : session_clients_) {
     // https://crbug.com/1160940 has a fairly generic callstack, in mojom

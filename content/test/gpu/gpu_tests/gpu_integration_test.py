@@ -118,7 +118,7 @@ class GpuIntegrationTest(
   _last_launched_browser_info = _BrowserLaunchInfo()
 
   # Keeps track of flaky tests that we're retrying.
-  # TODO(crbug.com/1248602): Remove this in favor of a method that doesn't rely
+  # TODO(crbug.com/40197330): Remove this in favor of a method that doesn't rely
   # on assumptions about retries, etc. if possible.
   _flaky_test_tries = collections.Counter()
 
@@ -213,39 +213,40 @@ class GpuIntegrationTest(
 
     Subclasses overriding this method must invoke the superclass's
     version!"""
-    parser.add_option(
-        '--disable-log-uploads',
-        dest='disable_log_uploads',
+    parser.add_argument('--disable-log-uploads',
+                        dest='disable_log_uploads',
+                        action='store_true',
+                        default=False,
+                        help='Disables uploads of logs to cloud storage')
+    parser.add_argument('--extra-overlay-config-json',
+                        help=('A path to a JSON file containing additional '
+                              'overlay configs to use. See '
+                              'overlay_support.ParseOverlayJsonFile() for more '
+                              'information on expected format.'))
+    parser.add_argument(
+        '--skip-post-test-cleanup-and-debug-info',
         action='store_true',
-        default=False,
-        help='Disables uploads of logs to cloud storage')
-    parser.add_option('--extra-overlay-config-json',
-                      help=('A path to a JSON file containing additional '
-                            'overlay configs to use. See '
-                            'overlay_support.ParseOverlayJsonFile() for more '
-                            'information on expected format.'))
-    parser.add_option('--skip-post-test-cleanup-and-debug-info',
-                      action='store_true',
-                      help=('Disables the automatic cleanup of minidumps after '
-                            'each test and prevents collection of debug '
-                            'information such as screenshots when a test '
-                            'fails. This can can speed up local testing at the '
-                            'cost of providing less actionable data when a '
-                            'test does fail.'))
-    parser.add_option('--no-browser-restart-on-failure',
-                      action='store_true',
-                      help=('Disables the automatic browser restarts after '
-                            'failing tests. This can speed up local testing at '
-                            'the cost of potentially leaving bad state around '
-                            'after a test fails.'))
-    parser.add_option('--enforce-browser-version',
-                      default=False,
-                      action='store_true',
-                      help=('Enforces that the started browser version is '
-                            'the same as what the current Chromium revision '
-                            'would build, i.e. that the browser being used '
-                            'is one that was built at the current Chromium '
-                            'revision.'))
+        help=('Disables the automatic cleanup of minidumps after '
+              'each test and prevents collection of debug '
+              'information such as screenshots when a test '
+              'fails. This can can speed up local testing at the '
+              'cost of providing less actionable data when a '
+              'test does fail.'))
+    parser.add_argument(
+        '--no-browser-restart-on-failure',
+        action='store_true',
+        help=('Disables the automatic browser restarts after '
+              'failing tests. This can speed up local testing at '
+              'the cost of potentially leaving bad state around '
+              'after a test fails.'))
+    parser.add_argument('--enforce-browser-version',
+                        default=False,
+                        action='store_true',
+                        help=('Enforces that the started browser version is '
+                              'the same as what the current Chromium revision '
+                              'would build, i.e. that the browser being used '
+                              'is one that was built at the current Chromium '
+                              'revision.'))
 
   @classmethod
   def GenerateBrowserArgs(cls, additional_args: List[str]) -> List[str]:
@@ -320,7 +321,7 @@ class GpuIntegrationTest(
     ]:
       # Reduce number of video buffers when running tests on Fuchsia to
       # workaround crbug.com/1203580
-      # TODO(https://crbug.com/1203580): Remove this once the bug is resolved.
+      # TODO(crbug.com/40763608): Remove this once the bug is resolved.
       browser_args.append('--double-buffer-compositing')
 
       # Increase GPU watchdog timeout to 60 seconds to avoid flake when
@@ -670,7 +671,7 @@ class GpuIntegrationTest(
       # Perform the same data collection as we do for an unexpected failure
       # but only if this was the last try for a flaky test so we don't
       # waste time symbolizing minidumps for expected flaky crashes.
-      # TODO(crbug.com/1248602): Replace this with a different method of
+      # TODO(crbug.com/40197330): Replace this with a different method of
       # tracking retries if possible.
       self._flaky_test_tries[test_name] += 1
       if self._flaky_test_tries[test_name] == _MAX_TEST_TRIES:
@@ -959,8 +960,7 @@ class GpuIntegrationTest(
       tags.extend([re.sub('[ _]', '-', tag) for tag in gpu_tags])
 
       # Add tags based on GPU feature status.
-      startup_args = getattr(browser, 'startup_args', None)
-      skia_renderer = gpu_helper.GetSkiaRenderer(gpu_info, startup_args)
+      skia_renderer = gpu_helper.GetSkiaRenderer(gpu_info)
       tags.append(skia_renderer)
       tags.extend(cls._GetDriverVersionTags(browser, system_info))
     display_server = gpu_helper.GetDisplayServer(browser.browser_type)
@@ -1064,6 +1064,7 @@ class GpuIntegrationTest(
         'qualcomm-adreno-(tm)-540',  # android-pixel-2
         'qualcomm-adreno-(tm)-610',  # android-sm-a235m
         'qualcomm-adreno-(tm)-640',  # android-pixel-4
+        'qualcomm-adreno-(tm)-740',  # android-sm-s911u1
         'arm-mali-g78',  # android-pixel-6
         'nvidia-nvidia-tegra',  # android-shield-android-tv
         'vmware,',  # VMs
@@ -1075,13 +1076,6 @@ class GpuIntegrationTest(
         'cros-chrome',  # ChromeOS
         'web-engine-shell',  # Fuchsia
         'cast-streaming-shell',  # Syonymous with cast_streaming suite
-        # WebGL version is already handled by having expectations in separate
-        # files.
-        # TODO(crbug.com/1140283): Remove these tags once we're sure that
-        # all relevant data has aged out. Should be safe to do so at the end of
-        # August 2023.
-        'webgl-version-1',
-        'webgl-version-2',
         # GPU tests are always run in remote mode on the bots, and it shouldn't
         # make a difference to these tests anyways.
         'chromeos-local',
@@ -1095,6 +1089,17 @@ class GpuIntegrationTest(
         'unknown-gpu',
         'unknown-gpu-0x8c',
         'unknown-gpu-',
+        # Android versions prior to Android 14 use the letter corresponding to
+        # the code name, e.g. O for Oreo. 14 and later uses the numerical
+        # version. See crbug.com/333795261 for context on why this is
+        # necessary.
+        'android-8',  # Android O
+        'android-9',  # Android P
+        'android-10',  # Android Q
+        'android-11',  # Android R
+        'android-12',  # Android S
+        'android-13',  # Android T
+        'android-a',  # Android 14+ releases in 2024
     ]
 
   @classmethod

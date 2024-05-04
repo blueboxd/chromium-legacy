@@ -178,7 +178,7 @@ chromium-metrics-reviews@google.com.
   <variant name=".Reshows" summary="re-show"/>
 </variants>
 
-<!-- TODO(crbug.com/1472892): Rename PaymentsRpcCardType since we add LocalCard here. -->
+<!-- TODO(crbug.com/40926801): Rename PaymentsRpcCardType since we add LocalCard here. -->
 
 <variants name="Autofill.PaymentsRpcCardType">
   <variant name="LocalCard" summary="local card"/>
@@ -522,6 +522,15 @@ chromium-metrics-reviews@google.com.
   <variant name=".Upload" summary="Server IBAN save"/>
 </variants>
 
+<variants name="Vcn3ds.ConsentAlreadyGiven">
+  <variant name="ConsentAlreadyGiven"
+      summary="The consent for a pop-up was already given prior to the flow
+               starting"/>
+  <variant name="ConsentNotGivenYet"
+      summary="The consent for a pop-up was not given prior to the flow
+               starting and needs to be requested"/>
+</variants>
+
 <histogram name="Autocomplete.DaysSinceLastUse" units="days"
     expires_after="2024-12-12">
   <owner>battre@chromium.org</owner>
@@ -593,14 +602,14 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Autofill.AcceptedPreviouslyHiddenSuggestion" enum="Boolean"
-    expires_after="2024-12-12">
-  <owner>jihadghanna@google.com</owner>
+<histogram name="Autofill.AddedNewAddress"
+    enum="AutofillManuallyAddedAddressSurface" expires_after="2025-03-19">
+  <owner>brunobraga@google.com</owner>
+  <owner>vykochko@google.com</owner>
   <owner>chrome-autofill-alerts@google.com</owner>
   <summary>
-    Logs if the suggestion accepted by the user was previously hidden due to
-    address types being initially ignored in profile subset comparison. Emitted
-    every time a user accepts a `PopupItemId::kAddressEntry` suggestion.
+    Logs the surface from which the user manually added an address. Emitted
+    every time the user adds an address manually.
   </summary>
 </histogram>
 
@@ -679,11 +688,13 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.AddressSuggestionsCount" units="units"
-    expires_after="2024-12-12">
+    expires_after="2024-09-15">
   <owner>battre@chromium.org</owner>
   <owner>chrome-autofill-alerts@google.com</owner>
   <summary>
-    The number of address suggestions shown in the Autofill popup.
+    The number of address suggestions shown in the Autofill popup. Recorded
+    whenever suggestions are shown. To be replaced by
+    Autofill.SuggestionCount.Address.
   </summary>
 </histogram>
 
@@ -712,7 +723,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Autofill.Autocomplete.NotOff.EditedAutofilledFieldAtSubmission2{AutofillFormType}"
-    enum="AutofilledFieldUserEditingStatus" expires_after="2024-07-14">
+    enum="AutofilledFieldUserEditingStatus" expires_after="2024-09-15">
   <owner>schwering@google.com</owner>
   <owner>chrome-autofill-alerts@google.com</owner>
   <summary>
@@ -727,7 +738,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Autofill.Autocomplete.NotOff.FillingAcceptance{AutofillFormType}"
-    enum="BooleanAutofillFillingAcceptance" expires_after="2024-07-14">
+    enum="BooleanAutofillFillingAcceptance" expires_after="2024-10-20">
   <owner>schwering@google.com</owner>
   <owner>chrome-autofill-alerts@google.com</owner>
   <summary>
@@ -742,7 +753,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Autofill.Autocomplete.Off.EditedAutofilledFieldAtSubmission2{AutofillFormType}"
-    enum="AutofilledFieldUserEditingStatus" expires_after="2024-07-14">
+    enum="AutofilledFieldUserEditingStatus" expires_after="2024-09-15">
   <owner>schwering@google.com</owner>
   <owner>chrome-autofill-alerts@google.com</owner>
   <summary>
@@ -756,7 +767,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.Autocomplete.Off.FillingAcceptance{AutofillFormType}"
-    enum="BooleanAutofillFillingAcceptance" expires_after="2024-07-14">
+    enum="BooleanAutofillFillingAcceptance" expires_after="2024-09-15">
   <owner>schwering@google.com</owner>
   <owner>chrome-autofill-alerts@google.com</owner>
   <summary>
@@ -770,7 +781,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.Autocomplete.PredictionCollisionState"
-    enum="PredictionStateAutocompleteStatePair" expires_after="2024-07-07">
+    enum="PredictionStateAutocompleteStatePair" expires_after="2024-09-22">
   <owner>koerber@google.com</owner>
   <owner>fleimgruber@google.com</owner>
   <owner>chrome-autofill-alerts@google.com</owner>
@@ -842,7 +853,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.Autocomplete.SingleEntryRemovalMethod"
-    enum="AutofillSingleEntryRemovalMethod" expires_after="2024-08-04">
+    enum="AutofillSingleEntryRemovalMethod" expires_after="2024-10-06">
   <owner>jkeitel@google.com</owner>
   <owner>chrome-autofill-alerts@google.com</owner>
   <summary>
@@ -962,6 +973,18 @@ chromium-metrics-reviews@google.com.
     list of instrument IDs in the GDFGRP call, and Chrome makes the final call
     on whether CVC or WebAuthn should be shown. Tracks which authentication
     method was prompted.
+  </summary>
+</histogram>
+
+<histogram name="Autofill.BetterAuth.EnrollmentPromptOffered" enum="Boolean"
+    expires_after="2024-07-01">
+  <owner>vinnypersky@google.com</owner>
+  <owner>payments-autofill-team@google.com</owner>
+  <summary>
+    Records whether the Better Auth (FIDO) enrollment prompt was offered. Logged
+    at the time of showing the prompt, or if not shown, when the prompt would
+    have been shown. This metric can only be logged from the checkout flow,
+    after a CVC authentication has completed.
   </summary>
 </histogram>
 
@@ -1303,7 +1326,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.CreditCard.IsEnabled.Startup" enum="BooleanEnabled"
-    expires_after="2024-07-01">
+    expires_after="2024-09-15">
   <owner>jsaul@google.com</owner>
   <owner>chrome-autofill-alerts@google.com</owner>
   <summary>
@@ -1558,7 +1581,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.CreditCardUpload.ConfirmationResult.{IsCardUploaded}"
-    enum="AutofillSavePaymentMethodPromptResultEnum" expires_after="2024-08-01">
+    enum="AutofillSavePaymentMethodPromptResultEnum" expires_after="2024-10-28">
   <owner>darwinyang@google.com</owner>
   <owner>chrome-payments-team@google.com</owner>
   <owner>payments-autofill-team@google.com</owner>
@@ -1577,7 +1600,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.CreditCardUpload.ConfirmationShown.{IsCardUploaded}"
-    enum="Boolean" expires_after="2024-08-01">
+    enum="Boolean" expires_after="2024-10-28">
   <owner>darwinyang@google.com</owner>
   <owner>chrome-payments-team@google.com</owner>
   <owner>payments-autofill-team@google.com</owner>
@@ -1597,7 +1620,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.CreditCardUpload.LoadingResult"
-    enum="AutofillSavePaymentMethodPromptResultEnum" expires_after="2024-08-01">
+    enum="AutofillSavePaymentMethodPromptResultEnum" expires_after="2024-10-28">
   <owner>darwinyang@google.com</owner>
   <owner>chrome-payments-team@google.com</owner>
   <owner>payments-autofill-team@google.com</owner>
@@ -1608,7 +1631,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.CreditCardUpload.LoadingShown" enum="Boolean"
-    expires_after="2024-08-01">
+    expires_after="2024-10-28">
   <owner>darwinyang@google.com</owner>
   <owner>chrome-payments-team@google.com</owner>
   <owner>payments-autofill-team@google.com</owner>
@@ -1620,7 +1643,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.CreditCardUpload.RanLocalSaveFallback" enum="Boolean"
-    expires_after="2024-08-01">
+    expires_after="2024-10-28">
   <owner>darwinyang@google.com</owner>
   <owner>chrome-payments-team@google.com</owner>
   <owner>payments-autofill-team@google.com</owner>
@@ -1754,6 +1777,58 @@ chromium-metrics-reviews@google.com.
   <token key="Category" variants="AutofillProfileCategory"/>
 </histogram>
 
+<histogram
+    name="Autofill.Deduplication.{Scenario}.RankOfStoredQuasiDuplicateProfiles"
+    units="Rank" expires_after="2024-09-01">
+  <owner>koerber@chromium.org</owner>
+  <owner>fleimgruber@chromium.org</owner>
+  <owner>chrome-autofill-alerts@google.com</owner>
+  <summary>
+    For every profile, records the minimum number of fields in which the profile
+    differs from some other profile of the same country. That is, the minimum
+    number of fields that prevent us from deduplicating the profile. Emitted on
+    browser startup (ExistingProfiles) or on form import (NewProfile), for every
+    user with at least 2 profiles. Profiles of different countries are not
+    considered, since they can never be merged due to the data model
+    differences. If no possible merge candidate exists, a sample is emitted into
+    the overflow bucket.
+  </summary>
+  <token key="Scenario">
+    <variant name="ExistingProfiles"/>
+    <variant name="NewProfile.Accepted"/>
+    <variant name="NewProfile.Declined"/>
+  </token>
+</histogram>
+
+<histogram
+    name="Autofill.Deduplication.{Scenario}.TypeOfQuasiDuplicateToken.{DuplicationRank}"
+    enum="AutofillSettingsVisibleTypes" expires_after="2024-09-01">
+  <owner>koerber@chromium.org</owner>
+  <owner>fleimgruber@chromium.org</owner>
+  <owner>chrome-autofill-alerts@google.com</owner>
+  <summary>
+    For every profile, records the types of the minimum set of fields in which
+    the profile differs from some other profile of the same country. That is,
+    the set of types that prevent us from deduplicating the profile. Emitted on
+    browser startup (ExistingProfiles) or on form import (NewProfile), for every
+    user with at least 2 profiles. Profiles of different countries are not
+    considered, since they can never be merged due to the data model
+    differences. The metric is split by the size of this set (duplication rank).
+  </summary>
+  <token key="Scenario">
+    <variant name="ExistingProfiles"/>
+    <variant name="NewProfile.Accepted"/>
+    <variant name="NewProfile.Declined"/>
+  </token>
+  <token key="DuplicationRank">
+    <variant name="1"/>
+    <variant name="2"/>
+    <variant name="3"/>
+    <variant name="4"/>
+    <variant name="5"/>
+  </token>
+</histogram>
+
 <histogram name="Autofill.DeveloperEngagement"
     enum="AutofillDeveloperEngagement" expires_after="2024-12-12">
   <owner>battre@chromium.org</owner>
@@ -1882,7 +1957,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.ExtendedMenu.EditAddress"
-    enum="BooleanAutofillExtendedMenuEditAddress" expires_after="2024-10-01">
+    enum="BooleanAutofillEditAddress" expires_after="2024-09-15">
   <owner>tchudakov@google.com</owner>
   <owner>chrome-autofill-alerts@google.com</owner>
   <summary>
@@ -1999,7 +2074,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Autofill.FieldFillingStats{AutofillFillingMethod}{AutofillFormType}{FillingStatus}"
-    units="fields" expires_after="2024-08-25">
+    units="fields" expires_after="2024-10-28">
   <owner>brunobraga@google.com</owner>
   <owner>chrome-autofill-alerts@google.com</owner>
   <summary>
@@ -2088,18 +2163,6 @@ chromium-metrics-reviews@google.com.
       variants="AutofillFieldPredictionSource">
     <variant name=""/>
   </token>
-</histogram>
-
-<histogram name="Autofill.FillAfterUndo{AutofillFormType}" enum="Boolean"
-    expires_after="2024-12-12">
-  <owner>jihadghanna@chromium.org</owner>
-  <owner>chrome-autofill-alerts@google.com</owner>
-  <summary>
-    Records whether a user continued using Autofill in his filling journey after
-    using Undo Autofill. Emitted once per form submission, only if the user used
-    Undo Autofill prior to submission.
-  </summary>
-  <token key="AutofillFormType" variants="AutofillFormType"/>
 </histogram>
 
 <histogram
@@ -2300,7 +2363,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.FormForest.GetBrowserFormOfRendererForm.Duration"
-    units="microseconds" expires_after="2024-05-19">
+    units="microseconds" expires_after="2024-09-15">
   <owner>schwering@google.com</owner>
   <owner>chrome-autofill-alerts@google.com</owner>
   <summary>
@@ -2314,7 +2377,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.FormForest.GetRendererFormsOfBrowserForm.Duration"
-    units="microseconds" expires_after="2024-05-19">
+    units="microseconds" expires_after="2024-09-15">
   <owner>schwering@google.com</owner>
   <owner>chrome-autofill-alerts@google.com</owner>
   <summary>
@@ -2328,7 +2391,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.FormForest.UpdateTreeOfRendererForm.Duration"
-    units="microseconds" expires_after="2024-05-19">
+    units="microseconds" expires_after="2024-09-15">
   <owner>schwering@google.com</owner>
   <owner>chrome-autofill-alerts@google.com</owner>
   <summary>
@@ -2340,7 +2403,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.FormForest.UpdateTreeOfRendererForm.Visits"
-    units="node-visits" expires_after="2024-05-19">
+    units="node-visits" expires_after="2024-09-15">
   <owner>schwering@google.com</owner>
   <owner>chrome-autofill-alerts@google.com</owner>
   <summary>
@@ -2351,20 +2414,13 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.FormSubmission.PerProfileType"
-    enum="BrowserProfileType" expires_after="2024-07-21">
-  <owner>rhalavati@chromium.org</owner>
+    enum="BrowserProfileType" expires_after="2024-09-22">
+  <owner>arabm@google.com</owner>
   <owner>chrome-privacy-core@google.com</owner>
   <summary>
     This histogram records the browser profile type when an autofill form is
     submitted.
   </summary>
-</histogram>
-
-<histogram name="Autofill.FormSubmittedState" enum="AutofillFormSubmittedState"
-    expires_after="2024-12-12">
-  <owner>battre@chromium.org</owner>
-  <owner>chrome-autofill-alerts@google.com</owner>
-  <summary>The autofill state related to a submitted form.</summary>
 </histogram>
 
 <histogram
@@ -2496,17 +2552,6 @@ chromium-metrics-reviews@google.com.
   <token key="AutofillFormType" variants="AutofillFormType"/>
 </histogram>
 
-<histogram name="Autofill.HiddenOrPresentationalSelectFieldsFilled"
-    enum="BooleanHiddenPresentationalAutofilled" expires_after="2024-12-12">
-  <owner>battre@chromium.org</owner>
-  <owner>chrome-autofill-alerts@google.com</owner>
-  <summary>
-    Logs when a hidden or presentational field is autofilled. The hidden or
-    presentational fields are only autofilled for 'select' fields to support
-    synthetic fields.
-  </summary>
-</histogram>
-
 <histogram name="Autofill.Iban.ShowSuggestionsBlocklistDecision"
     enum="IbanSuggestionBlockListStatus" expires_after="2024-07-01">
   <owner>qihuizhao@google.com</owner>
@@ -2606,6 +2651,34 @@ chromium-metrics-reviews@google.com.
     Record the image fetch result of one image. If true, then the image was
     fetched successfully.
   </summary>
+</histogram>
+
+<histogram name="Autofill.iOS.FormActivity.SendRatio" units="%"
+    expires_after="2024-09-01">
+  <owner>vincb@google.com</owner>
+  <owner>eic@google.com</owner>
+  <owner>bling-transactions@google.com</owner>
+  <summary>
+    Records the percentage of form activities that were really sent to the
+    browser from the renderer. Recorded when the browser receives the last
+    message of a batch of form activity messages. Only recorded on iOS.
+  </summary>
+</histogram>
+
+<histogram name="Autofill.iOS.FormActivity.{Outcome}Count" units="count"
+    expires_after="2024-09-01">
+  <owner>vincb@google.com</owner>
+  <owner>eic@google.com</owner>
+  <owner>bling-transactions@google.com</owner>
+  <summary>
+    Records the number of form activies observed in the renderer where
+    {Outcome}. Recorded when the browser receives the last message of a batch of
+    form activity messages. Only recorded on iOS.
+  </summary>
+  <token key="Outcome">
+    <variant name="Drop" summary="form activity was dropped"/>
+    <variant name="Send" summary="form activity sent to the browser"/>
+  </token>
 </histogram>
 
 <histogram name="Autofill.IsEnabled.PageLoad" enum="BooleanEnabled"
@@ -2727,7 +2800,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.LabelInference.InferredLabelSource.AtSubmission2"
-    enum="InferredLabelSource" expires_after="2024-08-04">
+    enum="InferredLabelSource" expires_after="2024-10-06">
   <owner>fleimgruber@google.com</owner>
   <owner>chrome-autofill-alerts@google.com</owner>
   <summary>
@@ -2739,7 +2812,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Autofill.Leipzig.Duplication.NumberOfLocalSupersetProfilesOnStartup"
-    units="Profiles" expires_after="2024-07-28">
+    units="Profiles" expires_after="2024-09-29">
   <owner>koerber@google.com</owner>
   <owner>fleimgruber@google.com</owner>
   <owner>chrome-autofill-alerts@google.com</owner>
@@ -2944,9 +3017,49 @@ chromium-metrics-reviews@google.com.
   </token>
 </histogram>
 
+<histogram name="Autofill.ManualFallback.AddNewAddressPromptShown"
+    enum="AutofillAddNewAddressPromptOutcome" expires_after="2025-03-18">
+  <owner>brunobraga@google.com</owner>
+  <owner>vykochko@google.com</owner>
+  <owner>chrome-autofill-alerts@google.com</owner>
+  <summary>
+    Logs the outcome of the 'Add new address' popup prompt interaction (new
+    address added or prompt canceled/ignored).
+  </summary>
+</histogram>
+
+<histogram
+    name="Autofill.ManualFallback.ExplicitlyTriggered.NotClassifiedAsTargetFilling.Total"
+    enum="BooleanSelectManualFallback" expires_after="2025-01-20">
+  <owner>brunobraga@google.com</owner>
+  <owner>chrome-autofill-alerts@google.com</owner>
+  <summary>
+    Records the total acceptance of manual fallback suggestions on fields that
+    are either unclassified or classified differently as the filling product.
+    This tracks the number of times a user accepted/didn't accept the manual
+    fallback option in the context menu. Emitted on navigation (when the
+    AutofillManager is destroyed), at most once per page.
+  </summary>
+</histogram>
+
+<histogram
+    name="Autofill.ManualFallback.ExplicitlyTriggered.NotClassifiedAsTargetFilling{AutofillFormType}"
+    enum="BooleanSelectManualFallback" expires_after="2025-01-20">
+  <owner>brunobraga@google.com</owner>
+  <owner>chrome-autofill-alerts@google.com</owner>
+  <summary>
+    Records per form type the acceptance of manual fallback suggestions on
+    fields that are either unclassified or classified differently as the filling
+    product. This tracks the number of times a user accepted/didn't accept the
+    manual fallback option in the context menu. Emitted on navigation (when the
+    AutofillManager is destroyed), at most once per page.
+  </summary>
+  <token key="AutofillFormType" variants="AutofillFormType"/>
+</histogram>
+
 <histogram
     name="Autofill.ManualFallback.ExplicitlyTriggered.{AutocompleteState}.Address"
-    enum="BooleanSelectManualFallback" expires_after="2024-08-25">
+    enum="BooleanSelectManualFallback" expires_after="2024-10-28">
   <owner>fleimgruber@google.com</owner>
   <owner>chrome-autofill-alerts@google.com</owner>
   <summary>
@@ -2962,35 +3075,6 @@ chromium-metrics-reviews@google.com.
         summary="A classified field with unrecognized autocomplete attribute"/>
     <variant name="Total" summary="Sum of recognized and unrecognized"/>
   </token>
-</histogram>
-
-<histogram
-    name="Autofill.ManualFallback.NotClassifiedAsTargetFilling.ExplicitlyTriggered.Total"
-    enum="BooleanSelectManualFallback" expires_after="2025-01-20">
-  <owner>brunobraga@google.com</owner>
-  <owner>chrome-autofill-alerts@google.com</owner>
-  <summary>
-    Records the total acceptance of manual fallback suggestions on fields that
-    are either unclassified or classified differently as the filling product.
-    This tracks the number of times a user accepted/didn't accept the manual
-    fallback option in the context menu. Emitted on navigation (when the
-    AutofillManager is destroyed), at most once per page.
-  </summary>
-</histogram>
-
-<histogram
-    name="Autofill.ManualFallback.NotClassifiedAsTargetFilling.ExplicitlyTriggered{AutofillFormType}"
-    enum="BooleanSelectManualFallback" expires_after="2025-01-20">
-  <owner>brunobraga@google.com</owner>
-  <owner>chrome-autofill-alerts@google.com</owner>
-  <summary>
-    Records per form type the acceptance of manual fallback suggestions on
-    fields that are either unclassified or classified differently as the filling
-    product. This tracks the number of times a user accepted/didn't accept the
-    manual fallback option in the context menu. Emitted on navigation (when the
-    AutofillManager is destroyed), at most once per page.
-  </summary>
-  <token key="AutofillFormType" variants="AutofillFormType"/>
 </histogram>
 
 <histogram name="Autofill.NameTokenVerificationStatusAtProfileUsage.{NameType}"
@@ -3010,48 +3094,6 @@ chromium-metrics-reviews@google.com.
     <variant name="Middle" summary="the middle name of the profile"/>
     <variant name="SecondLast" summary="the second last name of the profile"/>
   </token>
-</histogram>
-
-<histogram
-    name="Autofill.NumberOfAutofilledFieldsAtSubmission.{AcceptanceStatus}"
-    units="fields" expires_after="2024-09-01">
-  <owner>koerber@google.com</owner>
-  <owner>chrome-autofill-alerts@google.com</owner>
-  <summary>
-    The {AcceptanceStatus} autofilled fields in a form after receiving a form
-    submission event.
-  </summary>
-  <token key="AcceptanceStatus">
-    <variant name="Accepted" summary="number of accepted"/>
-    <variant name="Corrected" summary="number of corrected"/>
-    <variant name="Total" summary="total number of"/>
-  </token>
-</histogram>
-
-<histogram
-    name="Autofill.NumberOfAutofilledFieldsWithAutocompleteUnrecognizedAtSubmission.{AcceptanceStatus}"
-    units="fields" expires_after="2024-07-21">
-  <owner>koerber@google.com</owner>
-  <owner>chrome-autofill-alerts@google.com</owner>
-  <summary>
-    The {AcceptanceStatus} of autofilled fields with an unrecognized
-    autocomplete attribute in a form after receiving a form submission event.
-  </summary>
-  <token key="AcceptanceStatus">
-    <variant name="Accepted" summary="number of accepted"/>
-    <variant name="Corrected" summary="number of corrected"/>
-    <variant name="Total" summary="total number of"/>
-  </token>
-</histogram>
-
-<histogram name="Autofill.NumberOfEditedAutofilledFieldsAtSubmission"
-    units="fields" expires_after="2024-12-12">
-  <owner>battre@chromium.org</owner>
-  <owner>chrome-autofill-alerts@google.com</owner>
-  <summary>
-    The number of autofilled fields that were subsequently edited prior to the
-    form being submitted.
-  </summary>
 </histogram>
 
 <histogram name="Autofill.NumberOfProfilesConsideredForDedupe" units="profiles"
@@ -3207,7 +3249,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Autofill.OfferNotificationBubbleOffer.FreeListingCouponOffer.FromHistoryCluster"
-    enum="BooleanYesNo" expires_after="2024-08-04">
+    enum="BooleanYesNo" expires_after="2024-10-06">
   <owner>meiliang@chromium.org</owner>
   <owner>chrome-shopping@google.com</owner>
   <summary>
@@ -3218,7 +3260,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.OfferNotificationBubbleOffer.{BubbleType}"
-    enum="BooleanPreviouslyShown" expires_after="2024-08-04">
+    enum="BooleanPreviouslyShown" expires_after="2024-10-06">
   <owner>siyua@chromium.org</owner>
   <owner>jsaul@google.com</owner>
   <owner>payments-autofill-team@google.com</owner>
@@ -3232,7 +3274,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Autofill.OfferNotificationBubblePromoCodeButtonClicked.FreeListingCouponOffer.FromHistoryCluster"
-    enum="BooleanYesNo" expires_after="2024-08-04">
+    enum="BooleanYesNo" expires_after="2024-10-06">
   <owner>meiliang@chromium.org</owner>
   <owner>chrome-shopping@google.com</owner>
   <summary>
@@ -3285,30 +3327,6 @@ chromium-metrics-reviews@google.com.
     offer.
   </summary>
   <token key="BubbleType" variants="Autofill.OfferNotification.Type"/>
-</histogram>
-
-<histogram name="Autofill.OfferNotificationInfoBarOffer.{OfferType}"
-    enum="BooleanShown" expires_after="2024-07-01">
-  <owner>siashah@chromium.org</owner>
-  <owner>siyua@chromium.org</owner>
-  <owner>payments-autofill-team@google.com</owner>
-  <summary>
-    Emits true when the offer notification infobar is displayed and does not
-    emit any value otherwise.
-  </summary>
-  <token key="OfferType" variants="Autofill.OfferNotification.Type"/>
-</histogram>
-
-<histogram name="Autofill.OfferNotificationInfoBarResult.{OfferType}"
-    enum="AutofillOfferNotificationInfoBarResult" expires_after="2024-07-01">
-  <owner>siashah@chromium.org</owner>
-  <owner>siyua@chromium.org</owner>
-  <owner>payments-autofill-team@google.com</owner>
-  <summary>
-    Records the reason for closing the offer notification infobar for
-    {OfferType}. Recorded when the infobar is closed.
-  </summary>
-  <token key="OfferType" variants="Autofill.OfferNotification.Type"/>
 </histogram>
 
 <histogram name="Autofill.OtpAuth.{OtpAuthType}.Attempt"
@@ -3422,7 +3440,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Autofill.PageLoadsWithOfferIconShowing.FreeListingCouponOffer.FromHistoryCluster"
-    enum="BooleanYesNo" expires_after="2024-08-04">
+    enum="BooleanYesNo" expires_after="2024-10-06">
   <owner>meiliang@chromium.org</owner>
   <owner>chrome-shopping@google.com</owner>
   <summary>
@@ -3430,6 +3448,20 @@ chromium-metrics-reviews@google.com.
     from History Cluster or normal navigation. It emits true for History Cluster
     and false for normal navigation. This is recorded when the offer
     notification omnibox icon is shown for a FreeListing coupon.
+  </summary>
+</histogram>
+
+<histogram name="Autofill.PaymentMethods.CardBenefitsIsEnabled.Startup"
+    enum="BooleanEnabled" expires_after="2024-10-28">
+  <owner>alexandertekle@google.com</owner>
+  <owner>yishuil@google.com</owner>
+  <owner>payments-autofill-team@google.com</owner>
+  <summary>
+    Tracks enablement of the credit card benefits toggle on the payment methods
+    settings page. This histogram will be populated during profile loadup for
+    users who have enabled autofill for payment methods. A value of true denotes
+    that credit card benefits are enabled for the user, while false denotes that
+    they are not.
   </summary>
 </histogram>
 
@@ -3586,12 +3618,16 @@ chromium-metrics-reviews@google.com.
   <owner>chrome-autofill-alerts@google.com</owner>
   <summary>
     For a form of type {FormType}, log at submission time if the filling
-    experience was perfect. In a perfect filling experience, all non-empty
-    fields have been autofilled without subsequent corrections. Note that the
-    {FormType} is not mutually exclusive. If a single form contains both address
-    and credit card information, the metric is recorded for each {FormType}. In
-    such a combined form, both the address and the credit card information needs
-    to be filled perfectly, in order to record perfect filling.
+    experience was perfect. In a perfect filling experience, the user must have
+    not edited any field, meaning that the filed must either be autofilled
+    without prefix-matching and without further corrections, empty, have the
+    same value as pageload or have its value set by JavaScript.
+
+    Note that the {FormType} is not mutually exclusive. If a single form
+    contains both address and credit card information, the metric is recorded
+    for each {FormType}. In such a combined form, both the address and the
+    credit card information needs to be filled perfectly, in order to record
+    perfect filling.
   </summary>
   <token key="FormType">
     <variant name="Addresses" summary="Form contains address information."/>
@@ -3691,10 +3727,8 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.Popup.AcceptanceDelayThresholdNotMet" units="ms"
-    expires_after="2024-04-01">
+    expires_after="2024-06-01">
   <owner>jkeitel@google.com</owner>
-  <owner>brunobraga@google.com</owner>
-  <owner>derinel@google.com</owner>
   <summary>
     Records instances in which the user attempted to accept an Autofill
     suggestion within less than the acceptance threshold (500ms). For those
@@ -3733,8 +3767,8 @@ chromium-metrics-reviews@google.com.
   </token>
 </histogram>
 
-<histogram name="Autofill.PopupHidingReason" enum="AutofillPopupHidingReason"
-    expires_after="2024-07-21">
+<histogram name="Autofill.PopupHidingReason"
+    enum="AutofillSuggestionHidingReason" expires_after="2024-09-22">
   <owner>koerber@google.com</owner>
   <owner>mamir@chromium.org</owner>
   <summary>
@@ -3745,7 +3779,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.PreFilledFieldClassifications.{FormType}"
-    enum="AutofillPreFilledFieldClassifications" expires_after="2024-08-18">
+    enum="AutofillPreFilledFieldClassifications" expires_after="2024-10-20">
   <owner>bwolfgang@google.com</owner>
   <owner>chrome-autofill-alerts@google.com</owner>
   <summary>
@@ -3757,7 +3791,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Autofill.PreFilledFieldClassificationsQuality.{FormType}"
     enum="AutofillPreFilledFieldClassificationsQuality"
-    expires_after="2024-07-23">
+    expires_after="2024-10-20">
   <owner>bwolfgang@google.com</owner>
   <owner>chrome-autofill-alerts@google.com</owner>
   <summary>
@@ -3769,7 +3803,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.PreFilledFields.ByFieldType"
-    enum="AutofillPreFilledFieldStatusByFieldType" expires_after="2024-06-10">
+    enum="AutofillPreFilledFieldStatusByFieldType" expires_after="2024-10-20">
   <owner>bwolfgang@google.com</owner>
   <owner>chrome-autofill-alerts@google.com</owner>
   <summary>
@@ -3779,7 +3813,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.PreFilledFields.{FormType}"
-    enum="AutofillPreFilledFieldStatus" expires_after="2024-07-21">
+    enum="AutofillPreFilledFieldStatus" expires_after="2024-10-20">
   <owner>bwolfgang@google.com</owner>
   <owner>chrome-autofill-alerts@google.com</owner>
   <summary>
@@ -3790,7 +3824,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.PreFilledValueStatus.{FormType}"
-    enum="AutofillPreFilledValueStatus" expires_after="2024-07-23">
+    enum="AutofillPreFilledValueStatus" expires_after="2024-10-20">
   <owner>bwolfgang@google.com</owner>
   <owner>chrome-autofill-alerts@google.com</owner>
   <summary>
@@ -3798,17 +3832,6 @@ chromium-metrics-reviews@google.com.
     form submission. Emitted on form submission.
   </summary>
   <token key="FormType" variants="Autofill.Ablation.FormType"/>
-</histogram>
-
-<histogram name="Autofill.PreviouslyHiddenSuggestionNumber" units="suggestions"
-    expires_after="2024-12-12">
-  <owner>jihadghanna@google.com</owner>
-  <owner>chrome-autofill-alerts@google.com</owner>
-  <summary>
-    Logs the number suggestion displayed to the user that were previously hidden
-    due to address types being initially ignored in profile subset comparison.
-    Emitted once per suggestion generation.
-  </summary>
 </histogram>
 
 <histogram name="Autofill.ProfileDeleted.{DeletionType}"
@@ -3869,7 +3892,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.ProfileImport.MigrateProfileDecision"
-    enum="AutofillProfileImportDecision" expires_after="2024-07-28">
+    enum="AutofillProfileImportDecision" expires_after="2024-09-29">
   <owner>koerber@google.com</owner>
   <owner>fleimgruber@google.com</owner>
   <owner>src/components/autofill/OWNERS</owner>
@@ -3882,7 +3905,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.ProfileImport.MigrateProfileEditedType"
-    enum="AutofillSettingsVisibleTypes" expires_after="2024-07-07">
+    enum="AutofillSettingsVisibleTypes" expires_after="2024-09-22">
   <owner>koerber@google.com</owner>
   <owner>fleimgruber@google.com</owner>
   <owner>src/components/autofill/OWNERS</owner>
@@ -3892,19 +3915,8 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Autofill.ProfileImport.MigrateProfileNumberOfEditedFields"
-    units="fields" expires_after="2024-07-07">
-  <owner>koerber@google.com</owner>
-  <owner>fleimgruber@google.com</owner>
-  <owner>src/components/autofill/OWNERS</owner>
-  <summary>
-    Logs the number of fields that have been edited by the user in the process
-    of succesfully migrating a profile after an observed form submission.
-  </summary>
-</histogram>
-
 <histogram name="Autofill.ProfileImport.NewProfileDecision"
-    enum="AutofillProfileImportDecision" expires_after="2024-07-14">
+    enum="AutofillProfileImportDecision" expires_after="2024-09-15">
   <owner>koerber@google.com</owner>
   <owner>src/components/autofill/OWNERS</owner>
   <summary>
@@ -3915,7 +3927,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.ProfileImport.NewProfileEditedType"
-    enum="AutofillSettingsVisibleTypes" expires_after="2024-07-14">
+    enum="AutofillSettingsVisibleTypes" expires_after="2024-09-15">
   <owner>koerber@google.com</owner>
   <owner>src/components/autofill/OWNERS</owner>
   <summary>
@@ -3923,16 +3935,6 @@ chromium-metrics-reviews@google.com.
     shown to the user when a new address profile is observed in a form
     submission. This metric is emitted once the user-provided import decision is
     final.
-  </summary>
-</histogram>
-
-<histogram name="Autofill.ProfileImport.NewProfileNumberOfEditedFields"
-    units="fields" expires_after="2024-12-12">
-  <owner>koerber@google.com</owner>
-  <owner>src/components/autofill/OWNERS</owner>
-  <summary>
-    Logs the number of fields that have been edited by the user in the process
-    of succesfully importing a new profile after an observed form submission.
   </summary>
 </histogram>
 
@@ -3947,7 +3949,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.ProfileImport.ProfileImportType"
-    enum="AutofillProfileImportType" expires_after="2024-07-21">
+    enum="AutofillProfileImportType" expires_after="2024-09-22">
   <owner>koerber@google.com</owner>
   <owner>src/components/autofill/OWNERS</owner>
   <summary>
@@ -4012,7 +4014,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.ProfileImport.UpdateProfileDecision"
-    enum="AutofillProfileImportDecision" expires_after="2024-07-14">
+    enum="AutofillProfileImportDecision" expires_after="2024-09-15">
   <owner>koerber@google.com</owner>
   <owner>src/components/autofill/OWNERS</owner>
   <summary>
@@ -4077,20 +4079,9 @@ chromium-metrics-reviews@google.com.
   </token>
 </histogram>
 
-<histogram name="Autofill.ProfileImport.UpdateProfileNumberOfEditedFields"
-    units="fields" expires_after="2024-09-01">
-  <owner>koerber@google.com</owner>
-  <owner>src/components/autofill/OWNERS</owner>
-  <summary>
-    Logs the number of fields that have been edited by the user in the process
-    of succesfully updating an existing profile after an observed form
-    submission.
-  </summary>
-</histogram>
-
 <histogram
     name="Autofill.ProfileTokenQuality.ObservationCountBeforeSubmission.PerProfile"
-    units="Observations" expires_after="2024-07-21">
+    units="Observations" expires_after="2024-09-22">
   <owner>fleimgruber@google.com</owner>
   <owner>chrome-autofill-alerts@google.com</owner>
   <summary>
@@ -4102,7 +4093,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Autofill.ProfileTokenQuality.ObservationCountBeforeSubmission.{Type}"
-    units="Observations" expires_after="2024-08-25">
+    units="Observations" expires_after="2024-10-28">
   <owner>fleimgruber@google.com</owner>
   <owner>chrome-autofill-alerts@google.com</owner>
   <summary>
@@ -4114,7 +4105,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.ProfileTokenQuality.PerProfile" units="Percents"
-    expires_after="2024-07-21">
+    expires_after="2024-09-22">
   <owner>fleimgruber@google.com</owner>
   <owner>chrome-autofill-alerts@google.com</owner>
   <summary>
@@ -4125,7 +4116,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Autofill.ProfileTokenQuality.StoredObservationsCount.PerProfile"
-    units="Observations" expires_after="2024-07-21">
+    units="Observations" expires_after="2024-09-22">
   <owner>fleimgruber@google.com</owner>
   <owner>chrome-autofill-alerts@google.com</owner>
   <summary>
@@ -4136,7 +4127,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Autofill.ProfileTokenQuality.StoredObservationTypes.{Type}"
     enum="AutofillProfileTokenQualityObservationType"
-    expires_after="2024-08-18">
+    expires_after="2024-10-20">
   <owner>fleimgruber@google.com</owner>
   <owner>chrome-autofill-alerts@google.com</owner>
   <summary>
@@ -4268,6 +4259,16 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Autofill.RendererFillSkipReason" enum="RendererFillSkipReason"
+    expires_after="2024-10-20">
+  <owner>jihadghanna@chromium.org</owner>
+  <owner>chrome-autofill-alerts@google.com</owner>
+  <summary>
+    Logs the reason for skipping filling a field in the renderer. Emitted every
+    time a field is passed to ShouldSkipFillField in form_autofill_util.cc.
+  </summary>
+</histogram>
+
 <histogram name="Autofill.RiskBasedAuth.{CardType}.Attempt"
     enum="BooleanAttempted" expires_after="2024-09-01">
   <owner>junhuihe@google.com</owner>
@@ -4314,7 +4315,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.SaveCardCardholderNamePrefilled" enum="Boolean"
-    expires_after="2024-07-01">
+    expires_after="2024-09-15">
   <owner>jsaul@google.com</owner>
   <owner>payments-autofill-team@google.com</owner>
   <summary>
@@ -4325,7 +4326,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.SaveCardCardholderNameWasEdited" enum="Boolean"
-    expires_after="2024-07-01">
+    expires_after="2024-09-15">
   <owner>jsaul@google.com</owner>
   <owner>payments-autofill-team@google.com</owner>
   <summary>
@@ -4422,7 +4423,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.SaveIbanPromptOffer{IbanTypeToBeSaved}{ShowType}"
-    enum="AutofillSavePaymentMethodPromptOfferEnum" expires_after="2024-07-01">
+    enum="AutofillSavePaymentMethodPromptOfferEnum" expires_after="2024-09-22">
   <owner>jsaul@google.com</owner>
   <owner>qihuizhao@google.com</owner>
   <owner>payments-autofill-team@google.com</owner>
@@ -4601,6 +4602,18 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Autofill.Settings.EditAddress"
+    enum="BooleanAutofillEditAddress" expires_after="2024-09-29">
+  <owner>brunobraga@google.com</owner>
+  <owner>chrome-autofill-alerts@google.com</owner>
+  <summary>
+    This metric measures how many users clicked on the edit option from the
+    settings page and what their next action was. The metric is logged when the
+    user closes the edit address profile dialog, either after saving an updated
+    profile or after canceling.
+  </summary>
+</histogram>
+
 <histogram name="Autofill.Settings.ToggleUseThirdPartyFilling" enum="Boolean"
     expires_after="2024-09-01">
   <owner>fhorschig@chromium.org</owner>
@@ -4631,7 +4644,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.ShadowPredictions.{SourcePair}"
-    enum="AutofillPredictionsComparisonResult" expires_after="2024-08-04">
+    enum="AutofillPredictionsComparisonResult" expires_after="2024-10-06">
   <owner>schwering@google.com</owner>
   <owner>fleimgruber@google.com</owner>
   <owner>chrome-autofill-alerts@google.com</owner>
@@ -4644,7 +4657,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Autofill.SharedStorageServerCardDataSetResult"
     enum="AutofillSharedStorageServerCardDataSetResult"
-    expires_after="2024-08-01">
+    expires_after="2024-10-13">
   <owner>nburris@google.com</owner>
   <owner>payments-autofill-team@google.com</owner>
   <summary>
@@ -4786,15 +4799,17 @@ chromium-metrics-reviews@google.com.
   <token key="IbanRecordType" variants="IbanRecordType"/>
 </histogram>
 
-<histogram name="Autofill.StoredProfileCount.{Category}" units="Profiles"
+<histogram name="Autofill.StoredProfileCount.{Suffix}" units="Profiles"
     expires_after="2024-12-12">
   <owner>battre@chromium.org</owner>
   <owner>chrome-autofill-alerts@google.com</owner>
   <summary>
-    The number of Autofill addresses a user has stored of the given category,
-    measured at launch time.
+    The number of Autofill addresses a user has stored of the given category or
+    in total, measured at launch time.
   </summary>
-  <token key="Category" variants="AutofillProfileCategory"/>
+  <token key="Suffix" variants="AutofillProfileCategory">
+    <variant name="Total"/>
+  </token>
 </histogram>
 
 <histogram name="Autofill.StoredProfileCountAtAutofillableFormSubmission"
@@ -5051,9 +5066,37 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram
+    name="Autofill.Suggestion.AcceptanceFieldValueLength.{SuggestionType}"
+    units="units" expires_after="2024-12-12">
+  <owner>jihadghanna@google.com</owner>
+  <owner>chrome-autofill-alerts@google.com</owner>
+  <summary>
+    Records how long was the field's value before accepting an Autofill
+    {SuggestionType} suggestion. Emitted every time a suggestion is accepted.
+    Used to asses the quality of suggestion prefix matching.
+  </summary>
+  <token key="SuggestionType">
+    <variant name="Address"/>
+    <variant name="CreditCard"/>
+  </token>
+</histogram>
+
+<histogram name="Autofill.Suggestion.StrikeSuppression.Address" enum="Boolean"
+    expires_after="2024-12-12">
+  <owner>jihadghanna@google.com</owner>
+  <owner>chrome-autofill-alerts@google.com</owner>
+  <summary>
+    Records whether address suggestions were suppressed because of a field
+    reaching the strike limit due to the user consistently ignoring suggestions
+    on that field. Emitted only on desktop (where strike suppression exists)
+    every time regular (non-manual fallback) address suggestions are triggered.
+  </summary>
+</histogram>
+
 <histogram name="Autofill.SuggestionAccepted.OffTheRecord" units="units"
-    expires_after="2024-05-19">
-  <owner>rhalavati@chromium.org</owner>
+    expires_after="2024-09-22">
+  <owner>arabm@google.com</owner>
   <owner>chrome-privacy-core@google.com</owner>
   <summary>
     Records acceptance of autofill suggestions in regular and off-the-record
@@ -5061,39 +5104,40 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Autofill.SuggestionAcceptedIndex.Autocomplete"
-    units="position" expires_after="2024-12-12">
-  <owner>battre@chromium.org</owner>
-  <owner>chrome-autofill-alerts@google.com</owner>
-  <summary>
-    The index of the accepted Autocomplete suggestion in the popup. Due to
-    crbug.com/966411, the iOS data is incorrect.
-  </summary>
-</histogram>
-
-<histogram
-    name="Autofill.SuggestionAcceptedIndex{AutofillSuggestionAcceptedIndexSuggestionType}"
+<histogram name="Autofill.SuggestionAcceptedIndex{SuggestionType}"
     units="position" expires_after="2024-12-12">
   <owner>battre@chromium.org</owner>
   <owner>chrome-autofill-alerts@google.com</owner>
   <summary>
     The index of the accepted Autofill suggestion in the popup. Due to
-    crbug.com/966411, the iOS data is incorrect.
-    {AutofillSuggestionAcceptedIndexSuggestionType}
+    crbug.com/966411, the iOS data is incorrect. {SuggestionType}
   </summary>
-  <token key="AutofillSuggestionAcceptedIndexSuggestionType">
+  <token key="SuggestionType">
     <variant name=""/>
-    <variant name=".CreditCard" summary="Suggestions with credit card data"/>
+    <variant name=".Autocomplete"/>
+    <variant name=".CreditCard"/>
     <variant name=".Other" summary="Unspecified suggestions"/>
-    <variant name=".Profile"
-        summary="Suggestions with personal data from AutofillProfiles, e.g.
-                 name, address, email address, and or phone number"/>
+    <variant name=".Profile"/>
+  </token>
+</histogram>
+
+<histogram name="Autofill.SuggestionsCount{SuggestionType}" units="units"
+    expires_after="2024-12-12">
+  <owner>jihadghanna@chromium.org</owner>
+  <owner>chrome-autofill-alerts@google.com</owner>
+  <summary>
+    The number of suggestions shown in the Autofill popup. Recorded whenever
+    suggestions are shown. {SuggestionType}
+  </summary>
+  <token key="SuggestionType">
+    <variant name=".Address"/>
+    <variant name=".CreditCard"/>
   </token>
 </histogram>
 
 <histogram name="Autofill.SuggestionShown.OffTheRecord" units="units"
     expires_after="2024-09-01">
-  <owner>rhalavati@chromium.org</owner>
+  <owner>arabm@google.com</owner>
   <owner>chrome-privacy-core@google.com</owner>
   <summary>
     Records showing of autofill suggestions in regular and off-the-record modes.
@@ -5108,6 +5152,36 @@ chromium-metrics-reviews@google.com.
     Recorded when a &quot;Manage...&quot; suggestion is selected from autofill
     popup. Records the type of the &quot;Manage...&quot; suggestion (ex
     &quot;Manage Credit Cards&quot;).
+  </summary>
+</histogram>
+
+<histogram name="Autofill.TestAddressesEvent"
+    enum="AutofillInDevtoolsTestAddressesEvents" expires_after="2024-12-12">
+  <owner>brunobraga@google.com</owner>
+  <owner>chrome-autofill-alerts@google.com</owner>
+  <summary>
+    Recorded when a test address suggestion is shown or selected. These
+    suggestions are displayed when devtools is open, therefore only in desktop.
+    A top level test address suggestion will be shown when the user clicks on an
+    address classified field while devtools is open. This suggestion has child
+    suggestions representing well-formatted addressses from different countries,
+    choosing one of them will fill the form and emit an selected event.
+  </summary>
+</histogram>
+
+<histogram name="Autofill.TestAddressSelected"
+    enum="AutofillInDevtoolsAvailableTestAddressesCountries"
+    expires_after="2024-12-12">
+  <owner>brunobraga@google.com</owner>
+  <owner>chrome-autofill-alerts@google.com</owner>
+  <summary>
+    Recorded when a test address suggestion is selected. Test address
+    suggestions are displayed when devtools is open, therefore only in desktop.
+    A top level test address suggestion will be shown when the user clicks on an
+    address classified field while devtools is open. This suggestion has child
+    suggestions representing well-formatted addressses from different countries,
+    choosing one of them will fill the form and emit this metric, representing
+    which country was chosen.
   </summary>
 </histogram>
 
@@ -5179,29 +5253,8 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Autofill.TouchToFill.CreditCard.Outcome"
-    enum="TouchToFill.CreditCard.Outcome" expires_after="2024-07-21">
-  <owner>mlerman@google.com</owner>
-  <owner>tchudakov@google.com</owner>
-  <owner>vykochko@google.com</owner>
-  <owner>chrome-autofill-alerts@google.com</owner>
-  <summary>
-    Records the outcome with which the bottom sheet was closed: credit card
-    selected, virtual card selected, go to payment settings, scan new credit
-    card or dismissed with no action. The metric is recorded right after user
-    has done the action: the credit card selection or some other option (which
-    always leads to the bottom sheet being closed) or swiped the sheet to close
-    it. See the TouchToFillCreditCardMediator.java for details. Note that
-    &quot;Go to payment settings&quot; click is also considered as the outcome,
-    although it doesn't close the Touch To Fill. So in this case there will be a
-    double count for one bottom sheet showing. This histogram contains a bug of
-    not accounting all users' manual bottom sheet dismissal. It should be
-    removed after M114 is rolled out.
-  </summary>
-</histogram>
-
 <histogram name="Autofill.TouchToFill.CreditCard.Outcome2"
-    enum="TouchToFill.CreditCard.Outcome" expires_after="2024-07-21">
+    enum="TouchToFill.CreditCard.Outcome" expires_after="2024-09-22">
   <owner>mlerman@google.com</owner>
   <owner>tchudakov@google.com</owner>
   <owner>vykochko@google.com</owner>
@@ -5215,14 +5268,12 @@ chromium-metrics-reviews@google.com.
     it. See the TouchToFillCreditCardMediator.java for details. Note that
     &quot;Go to payment settings&quot; click is also considered as the outcome,
     although it doesn't close the Touch To Fill. So in this case there will be a
-    double count for one bottom sheet showing. This fixes the bug introduced in
-    Autofill.TouchToFill.CreditCard.Outcome and counts all user bottom sheet
-    dismissals. The old histogram should be removed after M114 is rolled out.
+    double count for one bottom sheet showing.
   </summary>
 </histogram>
 
 <histogram name="Autofill.TouchToFill.CreditCard.PerfectFilling" enum="Boolean"
-    expires_after="2024-05-19">
+    expires_after="2024-09-22">
   <owner>mlerman@google.com</owner>
   <owner>tchudakov@google.com</owner>
   <owner>vykochko@google.com</owner>
@@ -5236,7 +5287,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.TouchToFill.CreditCard.SelectedIndex" units="index"
-    expires_after="2024-07-21">
+    expires_after="2024-09-22">
   <owner>mlerman@google.com</owner>
   <owner>tchudakov@google.com</owner>
   <owner>vykochko@google.com</owner>
@@ -5248,7 +5299,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.TouchToFill.CreditCard.TriggerOutcome"
-    enum="TouchToFill.CreditCard.TriggerOutcome" expires_after="2024-07-21">
+    enum="TouchToFill.PaymentMethod.TriggerOutcome" expires_after="2024-09-22">
   <owner>mlerman@google.com</owner>
   <owner>tchudakov@google.com</owner>
   <owner>vykochko@google.com</owner>
@@ -5257,6 +5308,18 @@ chromium-metrics-reviews@google.com.
     Records the outcome of the attempt to trigger Touch To Fill for credit
     cards. It is recorded only when the touch to fill feature is enabled and the
     form is parsed as a credit card form by autofill.
+  </summary>
+</histogram>
+
+<histogram name="Autofill.TouchToFill.Iban.TriggerOutcome"
+    enum="TouchToFill.PaymentMethod.TriggerOutcome" expires_after="2024-07-21">
+  <owner>qihuizhao@google.com</owner>
+  <owner>jsaul@google.com</owner>
+  <owner>payments-autofill-team@google.com</owner>
+  <summary>
+    Records the outcome of the attempt to trigger Touch To Fill for IBANs. It is
+    recorded only when the form is parsed as an IBAN by autofill on Chrome
+    Android and the user clicks on the form field.
   </summary>
 </histogram>
 
@@ -5534,18 +5597,48 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Autofill.UserHappiness{AutofillFormType}"
-    enum="AutofillUserHappiness" expires_after="2024-12-12">
-  <owner>battre@chromium.org</owner>
-  <owner>chrome-autofill-alerts@google.com</owner>
+<histogram name="Autofill.Vcn3ds.FlowEvents" enum="Vcn3dsFlowEvents"
+    expires_after="2024-07-01">
+  <owner>vinnypersky@google.com</owner>
+  <owner>payments-autofill-team@google.com</owner>
   <summary>
-    Measures the frequency of various events in the Autofill user interaction
-    flow. By comparing frequencies, we can compute several interesting
-    &quot;user happiness&quot; metrics. {AutofillFormType}
+    Tracks when a user starts and completes a VCN 3DS flow, as well as events
+    throughout the flow. The metrics for flow started log when we initiate a VCN
+    3DS auth flow and are about to either show the consent dialog or the pop-up
+    directly. The metrics for flow completion are logged when the full flow is
+    considered completed, and are broken down by completion result. Other events
+    are logged at the moment they occur. This histogram is an aggregated version
+    of the Autofill.Vcn3ds.FlowEvents.{ConsentAlreadyGiven} histogram.
   </summary>
-  <token key="AutofillFormType" variants="AutofillFormType">
-    <variant name=""/>
-  </token>
+</histogram>
+
+<histogram name="Autofill.Vcn3ds.FlowEvents.{ConsentAlreadyGiven}"
+    enum="Vcn3dsFlowEvents" expires_after="2024-07-01">
+  <owner>vinnypersky@google.com</owner>
+  <owner>payments-autofill-team@google.com</owner>
+  <summary>
+    Tracks when a user starts and completes a VCN 3DS flow, as well as events
+    throughout the flow. The metrics for flow started log when we initiate a VCN
+    3DS auth flow and are about to either show the consent dialog or the pop-up
+    directly. The metrics for flow completion are logged when the full flow is
+    considered completed, and are broken down by completion result. Other events
+    are logged at the moment they occur. The histogram is broken down into
+    sub-histograms by whether user consent was already given prior to the flow
+    starting. If consent was already given, the consent dialog is not shown and
+    the pop-up is immediately triggered, otherwise the consent dialog is shown
+    and must be accepted for the pop-up to be triggered.
+  </summary>
+  <token key="ConsentAlreadyGiven" variants="Vcn3ds.ConsentAlreadyGiven"/>
+</histogram>
+
+<histogram name="Autofill.Vcn3ds.PaymentsWindowUserConsentDialogResult"
+    enum="PaymentsWindowUserConsentDialogResult" expires_after="2024-07-01">
+  <owner>vinnypersky@google.com</owner>
+  <owner>payments-autofill-team@google.com</owner>
+  <summary>
+    Tracks the result of the payments window user consent dialog, broken down by
+    closed reason. Logged when the dialog is closing.
+  </summary>
 </histogram>
 
 <histogram name="Autofill.VirtualCard.Enroll.Attempt.{Source}"
@@ -5610,7 +5703,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.VirtualCard.MetadataSynced" enum="BooleanExists"
-    expires_after="2024-07-01">
+    expires_after="2024-10-28">
   <owner>siyua@chromium.org</owner>
   <owner>payments-autofill-team@google.com</owner>
   <summary>
@@ -5782,7 +5875,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.VirtualCardEnrollBubble.LoadingShown"
-    enum="AutofillVirtualCardEnrollBubbleResult" expires_after="2024-08-01">
+    enum="AutofillVirtualCardEnrollBubbleResult" expires_after="2024-10-28">
   <owner>darwinyang@google.com</owner>
   <owner>kavitasoni@google.com</owner>
   <owner>chrome-payments-team@google.com</owner>
@@ -5897,17 +5990,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Autofill.VoteForSelecteOptionValues"
-    enum="VoteForSelecteOptionValuesEvents" expires_after="2024-12-12">
-  <owner>battre@chromium.org</owner>
-  <owner>chrome-autofill-alerts@google.com</owner>
-  <summary>
-    Logs the impact of the AutofillVoteForSelectOptionValues experiment. Metrics
-    are only recorded for submitted forms (not for blur votes) to prevent double
-    counting.
-  </summary>
-</histogram>
-
 <histogram name="Autofill.WebOTP.OneTimeCode.FillDuration.FromInteraction"
     units="ms" expires_after="2024-12-12">
   <owner>yigu@chromium.org</owner>
@@ -5964,7 +6046,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.WebOTP.PhonePlusWebOTPPlusOTC"
-    enum="PhoneCollectionState" expires_after="2024-07-07">
+    enum="PhoneCollectionState" expires_after="2024-09-15">
   <owner>yigu@chromium.org</owner>
   <owner>web-identity-eng@google.com</owner>
   <summary>
@@ -6020,33 +6102,6 @@ chromium-metrics-reviews@google.com.
   <owner>src/android_webview/OWNERS</owner>
   <summary>
     Whether the autofill service is enabled in Android platform.
-  </summary>
-</histogram>
-
-<histogram name="Autofill.WebView.Events" enum="AutofillWebViewEventsBitmask"
-    expires_after="2024-12-12">
-  <owner>jkeitel@google.com</owner>
-  <owner>battre@chromium.org</owner>
-  <summary>
-    Records the events that ocurred during an Autofill session on Android.
-
-    The emitted value is a bitmask whose bits have the following meaning:
-
-    Bit #1 is true iff WebView received a callback from the Android Autofill
-    framework.
-
-    Bit #2 is true iff suggestions were displayed.
-
-    Bit #3 is true iff the user changed the value of any field.
-
-    Bit #4 is true iff the user changed the value of an autofilled field.
-
-    Bit #5 is true iff a form field changed visibility during the Autofill
-    session.
-
-    Bit #6 is true iff a form submission was detected.
-
-    Bit #7 is true iff a bottom sheet was shown.
   </summary>
 </histogram>
 
@@ -6230,7 +6285,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.WebView.Provider.PackageName"
-    enum="AutofillProviderPackageName" expires_after="2024-05-23">
+    enum="AutofillProviderPackageName" expires_after="2024-09-15">
   <owner>alexmitra@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
   <summary>

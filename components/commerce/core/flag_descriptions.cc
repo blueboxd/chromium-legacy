@@ -25,6 +25,10 @@ const char kProductSpecificationsName[] = "Product Specifications";
 const char kProductSpecificationsDescription[] =
     "Enable the Product Specifications feature.";
 
+const char kProductSpecificationsSyncName[] = "Product Specifications Sync";
+const char kProductSpecificationsSyncDescription[] =
+    "Enable the Product Specifications Sync component.";
+
 const char kShoppingIconColorVariantName[] =
     "Enable color variant for shopping icons";
 const char kShoppingIconColorVariantDescription[] =
@@ -45,6 +49,13 @@ const char kParcelTrackingTestDataDescription[] =
 
 const char kPriceInsightsName[] = "Price Insights";
 const char kPriceInsightsDescription[] = "Enable price insights experiment.";
+
+#if BUILDFLAG(IS_IOS)
+extern const char kPriceInsightsIosName[] = "Price Insights";
+extern const char kPriceInsightsIosDescription[] =
+    "When enabled, the user will be able to get price insights on product "
+    "pages.";
+#endif
 
 const char kShoppingPageTypesName[] = "Shopping Page Types";
 const char kShoppingPageTypesDescription[] =

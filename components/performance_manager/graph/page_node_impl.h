@@ -18,7 +18,6 @@
 #include "base/types/token_type.h"
 #include "components/performance_manager/graph/node_attached_data.h"
 #include "components/performance_manager/graph/node_base.h"
-#include "components/performance_manager/public/freezing/freezing.h"
 #include "components/performance_manager/public/graph/page_node.h"
 #include "components/performance_manager/public/web_contents_proxy.h"
 #include "url/gurl.h"
@@ -91,13 +90,14 @@ class PageNodeImpl
   bool IsHoldingIndexedDBLock() const override;
   int64_t GetNavigationID() const override;
   const std::string& GetContentsMimeType() const override;
+  std::optional<blink::mojom::PermissionStatus>
+  GetNotificationPermissionStatus() const override;
   base::TimeDelta GetTimeSinceLastNavigation() const override;
   const GURL& GetMainFrameUrl() const override;
   uint64_t EstimateMainFramePrivateFootprintSize() const override;
   bool HadFormInteraction() const override;
   bool HadUserEdits() const override;
   const WebContentsProxy& GetContentsProxy() const override;
-  const std::optional<freezing::FreezingVote>& GetFreezingVote() const override;
   PageState GetPageState() const override;
   uint64_t EstimateResidentSetSize() const override;
   uint64_t EstimatePrivateFootprintSize() const override;
@@ -121,11 +121,19 @@ class PageNodeImpl
   void OnFaviconUpdated();
   void OnTitleUpdated();
   void OnAboutToBeDiscarded(base::WeakPtr<PageNode> new_page_node);
-  void OnMainFrameNavigationCommitted(bool same_document,
-                                      base::TimeTicks navigation_committed_time,
-                                      int64_t navigation_id,
-                                      const GURL& url,
-                                      const std::string& contents_mime_type);
+  void OnMainFrameNavigationCommitted(
+      bool same_document,
+      base::TimeTicks navigation_committed_time,
+      int64_t navigation_id,
+      const GURL& url,
+      const std::string& contents_mime_type,
+      std::optional<blink::mojom::PermissionStatus>
+          notification_permission_status);
+  // While notification permission status is most often updated on main frame
+  // navigation, it can also be updated independently from main frame navigation
+  // when the user grants/revokes the permission.
+  void OnNotificationPermissionStatusChange(
+      blink::mojom::PermissionStatus permission_status);
 
   // Accessors.
   FrameNodeImpl* opener_frame_node() const;
@@ -144,7 +152,6 @@ class PageNodeImpl
   void ClearEmbedderFrameNodeAndEmbeddingType();
 
   void set_has_nonempty_beforeunload(bool has_nonempty_beforeunload);
-  void set_freezing_vote(std::optional<freezing::FreezingVote> freezing_vote);
   void set_page_state(PageState page_state);
 
   void SetLifecycleStateForTesting(LifecycleState lifecycle_state) {
@@ -292,6 +299,11 @@ class PageNodeImpl
   // never committed a navigation
   std::string contents_mime_type_ GUARDED_BY_CONTEXT(sequence_checker_);
 
+  // The notification permission status for the last committed main frame
+  // navigation.
+  std::optional<blink::mojom::PermissionStatus> notification_permission_status_
+      GUARDED_BY_CONTEXT(sequence_checker_);
+
   // The unique ID of the browser context that this page belongs to.
   const std::string browser_context_id_;
 
@@ -377,14 +389,6 @@ class PageNodeImpl
   ObservedProperty::
       NotifiesOnlyOnChanges<bool, &PageNodeObserver::OnHadUserEditsChanged>
           had_user_edits_ GUARDED_BY_CONTEXT(sequence_checker_){false};
-  // The freezing vote associated with this page, see the comment of to
-  // Page::GetFreezingVote for a description of the different values this can
-  // take.
-  ObservedProperty::NotifiesOnlyOnChangesWithPreviousValue<
-      std::optional<freezing::FreezingVote>,
-      std::optional<freezing::FreezingVote>,
-      &PageNodeObserver::OnFreezingVoteChanged>
-      freezing_vote_ GUARDED_BY_CONTEXT(sequence_checker_);
   // The state of this page.
   ObservedProperty::NotifiesOnlyOnChangesWithPreviousValue<
       PageState,

@@ -282,7 +282,7 @@ void AddressNormalizerImpl::StartAddressNormalization(
     const base::android::JavaParamRef<jobject>& jprofile,
     jint jtimeout_seconds,
     const base::android::JavaParamRef<jobject>& jdelegate) {
-  // TODO(crbug.com/1484006): Check if existing profile needs to be passed.
+  // TODO(crbug.com/40282123): Check if existing profile needs to be passed.
   AutofillProfile profile = AutofillProfile::CreateFromJavaObject(
       jprofile, /*existing_profile=*/nullptr, app_locale_);
 
@@ -316,7 +316,7 @@ void AddressNormalizerImpl::OnAddressValidationRulesLoaded(
     for (size_t i = 0; i < it->second.size(); ++i) {
       // Some NormalizationRequest are null, and served only to load the rules.
       if (it->second[i]) {
-        // TODO(crbug.com/777417): |success| appears to be true even when the
+        // TODO(crbug.com/40546097): |success| appears to be true even when the
         // key was not actually found.
         it->second[i]->OnRulesLoaded(AreRulesLoadedForRegion(region_code),
                                      address_validator_.get());

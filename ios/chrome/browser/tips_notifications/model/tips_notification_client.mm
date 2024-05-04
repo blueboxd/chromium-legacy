@@ -12,7 +12,6 @@
 #import "components/feature_engagement/public/tracker.h"
 #import "components/prefs/pref_registry_simple.h"
 #import "components/prefs/pref_service.h"
-#import "components/sync/base/features.h"
 #import "ios/chrome/browser/default_browser/model/promo_source.h"
 #import "ios/chrome/browser/default_browser/model/utils.h"
 #import "ios/chrome/browser/feature_engagement/model/tracker_factory.h"
@@ -281,6 +280,9 @@ bool TipsNotificationClient::ShouldSendNotification(TipsNotificationType type) {
 bool TipsNotificationClient::ShouldSendWhatsNew() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   Browser* browser = GetSceneLevelForegroundActiveBrowser();
+  if (!browser) {
+    return false;
+  }
   feature_engagement::Tracker* tracker =
       feature_engagement::TrackerFactory::GetForBrowserState(
           browser->GetBrowserState());
@@ -291,6 +293,9 @@ bool TipsNotificationClient::ShouldSendWhatsNew() {
 bool TipsNotificationClient::ShouldSendSignin() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   Browser* browser = GetSceneLevelForegroundActiveBrowser();
+  if (!browser) {
+    return false;
+  }
   ChromeBrowserState* browser_state = browser->GetBrowserState();
   AuthenticationService* auth_service =
       AuthenticationServiceFactory::GetForBrowserState(browser_state);
@@ -309,13 +314,14 @@ void TipsNotificationClient::ShowDefaultBrowserPromo() {
   Browser* browser = GetSceneLevelForegroundActiveBrowser();
   id<ApplicationCommands> application_handler =
       HandlerForProtocol(browser->GetCommandDispatcher(), ApplicationCommands);
-  [application_handler dismissModalDialogsWithCompletion:^{
+  [application_handler prepareToPresentModal:^{
     id<SettingsCommands> settings_handler =
         HandlerForProtocol(browser->GetCommandDispatcher(), SettingsCommands);
     [settings_handler
         showDefaultBrowserSettingsFromViewController:nil
-                                        sourceForUMA:DefaultBrowserPromoSource::
-                                                         kTipsNotification];
+                                        sourceForUMA:
+                                            DefaultBrowserSettingsPageSource::
+                                                kTipsNotification];
   }];
 }
 
@@ -324,7 +330,7 @@ void TipsNotificationClient::ShowWhatsNew() {
   Browser* browser = GetSceneLevelForegroundActiveBrowser();
   id<ApplicationCommands> application_handler =
       HandlerForProtocol(browser->GetCommandDispatcher(), ApplicationCommands);
-  [application_handler dismissModalDialogsWithCompletion:^{
+  [application_handler prepareToPresentModal:^{
     [HandlerForProtocol(browser->GetCommandDispatcher(),
                         BrowserCoordinatorCommands) showWhatsNew];
   }];
@@ -333,17 +339,13 @@ void TipsNotificationClient::ShowWhatsNew() {
 void TipsNotificationClient::ShowSignin() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   Browser* browser = GetSceneLevelForegroundActiveBrowser();
-  AuthenticationOperation operation = AuthenticationOperation::kSigninAndSync;
-  if (base::FeatureList::IsEnabled(
-          syncer::kReplaceSyncPromosWithSignInPromos)) {
-    // If there are identities, kInstantSignin requires less taps.
-    ChromeBrowserState* browser_state = browser->GetBrowserState();
-    operation =
-        ChromeAccountManagerServiceFactory::GetForBrowserState(browser_state)
-                ->HasIdentities()
-            ? AuthenticationOperation::kSigninOnly
-            : AuthenticationOperation::kInstantSignin;
-  }
+  // If there are 0 identities, kInstantSignin requires less taps.
+  ChromeBrowserState* browser_state = browser->GetBrowserState();
+  AuthenticationOperation operation =
+      ChromeAccountManagerServiceFactory::GetForBrowserState(browser_state)
+              ->HasIdentities()
+          ? AuthenticationOperation::kSigninOnly
+          : AuthenticationOperation::kInstantSignin;
   ShowSigninCommand* command = [[ShowSigninCommand alloc]
       initWithOperation:operation
                identity:nil
@@ -355,7 +357,7 @@ void TipsNotificationClient::ShowSignin() {
 
   id<ApplicationCommands> application_handler =
       HandlerForProtocol(browser->GetCommandDispatcher(), ApplicationCommands);
-  [application_handler dismissModalDialogsWithCompletion:^{
+  [application_handler prepareToPresentModal:^{
     [HandlerForProtocol(browser->GetCommandDispatcher(), SigninPresenter)
         showSignin:command];
   }];

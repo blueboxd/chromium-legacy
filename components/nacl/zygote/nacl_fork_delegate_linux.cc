@@ -355,8 +355,8 @@ pid_t NaClForkDelegate::Fork(const std::string& process_type,
   // The metrics shared memory handle may or may not be in |fds|, depending on
   // whether the feature flag to pass the handle on startup was enabled in the
   // parent; there should either be kNumPassedFDs or kNumPassedFDs-1 present.
-  // TODO(crbug/1028263): Only check for kNumPassedFDs once passing the metrics
-  // shared memory handle on startup is launched.
+  // TODO(crbug.com/40109064): Only check for kNumPassedFDs once passing the
+  // metrics shared memory handle on startup is launched.
   DCHECK(fds.size() == kNumPassedFDs || fds.size() == kNumPassedFDs - 1);
 
   if (status_ != kNaClHelperSuccess) {
@@ -384,7 +384,9 @@ pid_t NaClForkDelegate::Fork(const std::string& process_type,
   }
 
   // Now see if the other end managed to fork.
-  base::Pickle reply_pickle(reply_buf, reply_size);
+  base::Pickle reply_pickle = base::Pickle::WithUnownedBuffer(
+      base::span(reinterpret_cast<uint8_t*>(reply_buf),
+                 base::checked_cast<size_t>(reply_size)));
   base::PickleIterator iter(reply_pickle);
   pid_t nacl_child;
   if (!iter.ReadInt(&nacl_child)) {
@@ -418,7 +420,9 @@ bool NaClForkDelegate::GetTerminationStatus(pid_t pid, bool known_dead,
     return false;
   }
 
-  base::Pickle reply_pickle(reply_buf, reply_size);
+  base::Pickle reply_pickle = base::Pickle::WithUnownedBuffer(
+      base::span(reinterpret_cast<uint8_t*>(reply_buf),
+                 base::checked_cast<size_t>(reply_size)));
   base::PickleIterator iter(reply_pickle);
   int termination_status;
   if (!iter.ReadInt(&termination_status) ||

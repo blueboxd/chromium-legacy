@@ -135,7 +135,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Tests for the native android New Tab Page.
  *
- * <p>TODO(https://crbug.com/906151): Add new goldens and enable ExploreSites.
+ * <p>TODO(crbug.com/40602800): Add new goldens and enable ExploreSites.
  */
 @RunWith(ParameterizedRunner.class)
 @ParameterAnnotations.UseRunnerDelegate(ChromeJUnit4RunnerDelegate.class)
@@ -157,7 +157,7 @@ public class NewTabPageTest {
 
     private static final int ARTICLE_SECTION_HEADER_POSITION = 1;
 
-    private static final int RENDER_TEST_REVISION = 5;
+    private static final int RENDER_TEST_REVISION = 6;
 
     private static final String HISTOGRAM_NTP_MODULE_CLICK = "NewTabPage.Module.Click";
     private static final String HISTOGRAM_NTP_MODULE_LONGCLICK = "NewTabPage.Module.LongClick";
@@ -182,7 +182,7 @@ public class NewTabPageTest {
     @Mock VoiceRecognitionHandler mVoiceRecognitionHandler;
     @Mock FeedReliabilityLogger mFeedReliabilityLogger;
     @Mock private Callback mOnVisitComplete;
-    @Mock private Runnable mOnPageLoaded;
+    @Mock FeedActionDelegate.PageLoadObserver mPageLoadObserver;
     @Mock LogoBridge.Natives mLogoBridgeJniMock;
     @Mock private LogoBridge mLogoBridge;
 
@@ -260,6 +260,7 @@ public class NewTabPageTest {
     @Test
     @MediumTest
     @Feature({"NewTabPage", "FeedNewTabPage", "RenderTest"})
+    @DisableFeatures({ChromeFeatureList.LOGO_POLISH})
     @ParameterAnnotations.UseMethodParameter(MVTParams.class)
     // Disable sign-in to suppress sync promo, as it's unrelated to this render test.
     @Policies.Add(@Policies.Item(key = "BrowserSignin", string = "0"))
@@ -748,7 +749,7 @@ public class NewTabPageTest {
                 () -> {
                     ChromeTabbedActivity activity =
                             (ChromeTabbedActivity) mActivityTestRule.getActivity();
-                    activity.handleBackPressed();
+                    activity.getOnBackPressedDispatcher().onBackPressed();
                     verify(mFeedReliabilityLogger).onNavigateBack();
                 });
     }
@@ -840,7 +841,8 @@ public class NewTabPageTest {
                             WindowOpenDisposition.CURRENT_TAB,
                             new LoadUrlParams(TEST_URL, PageTransition.AUTO_BOOKMARK),
                             false,
-                            mOnPageLoaded,
+                            0,
+                            mPageLoadObserver,
                             mOnVisitComplete);
                     histogramWatcher.assertExpected(
                             HISTOGRAM_NTP_MODULE_CLICK
@@ -853,7 +855,8 @@ public class NewTabPageTest {
                             WindowOpenDisposition.NEW_BACKGROUND_TAB,
                             new LoadUrlParams(TEST_URL, PageTransition.AUTO_BOOKMARK),
                             false,
-                            mOnPageLoaded,
+                            0,
+                            mPageLoadObserver,
                             mOnVisitComplete);
                     histogramWatcher.assertExpected(
                             HISTOGRAM_NTP_MODULE_CLICK
@@ -866,7 +869,8 @@ public class NewTabPageTest {
                             WindowOpenDisposition.OFF_THE_RECORD,
                             new LoadUrlParams(TEST_URL, PageTransition.AUTO_BOOKMARK),
                             false,
-                            mOnPageLoaded,
+                            0,
+                            mPageLoadObserver,
                             mOnVisitComplete);
                     histogramWatcher.assertExpected(
                             HISTOGRAM_NTP_MODULE_CLICK
@@ -1427,7 +1431,7 @@ public class NewTabPageTest {
                         EMAIL, NAME, SigninTestRule.NON_DISPLAYABLE_EMAIL_ACCOUNT_CAPABILITIES);
         mSigninTestRule.waitForSeeding();
         SigninTestUtil.signin(coreAccountInfo);
-        // TODO(https://crbug.com/1132291): Remove the reload once the sign-in without sync observer
+        // TODO(crbug.com/40721874): Remove the reload once the sign-in without sync observer
         //  is implemented.
         TestThreadUtils.runOnUiThreadBlocking(mTab::reload);
     }

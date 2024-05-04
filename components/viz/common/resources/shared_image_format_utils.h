@@ -11,6 +11,8 @@
 #include "ui/gfx/buffer_types.h"
 
 namespace gpu {
+class ClientSharedImage;
+class SharedImageFormatToBufferFormatRestrictedUtilsAccessor;
 class SharedImageFormatRestrictedUtilsAccessor;
 }  // namespace gpu
 
@@ -27,6 +29,7 @@ namespace viz {
 class ContextProviderCommandBuffer;
 class TestContextProvider;
 class TestInProcessContextProvider;
+class TestSharedImageInterface;
 
 // Returns the closest SkColorType for a given single planar `format`.
 //
@@ -95,6 +98,22 @@ class COMPONENT_EXPORT(VIZ_SHARED_IMAGE_FORMAT)
   // GL_ANGLE_rgbx_internal_format extension is available.
   static unsigned int ToGLTextureStorageFormat(SharedImageFormat format,
                                                bool use_angle_rgbx_format);
+};
+
+// Utility function which conceptually belong only on the service side, but are
+// currently used by some clients. Usage is restricted to friended class.
+class COMPONENT_EXPORT(VIZ_SHARED_IMAGE_FORMAT)
+    SharedImageFormatToBufferFormatRestrictedUtils {
+ private:
+  friend class gpu::ClientSharedImage;
+  friend class gpu::SharedImageFormatToBufferFormatRestrictedUtilsAccessor;
+  friend class TestSharedImageInterface;
+
+  // BufferFormat is being transitioned out of SharedImage code (to use
+  // SharedImageFormat instead). Refrain from using this function or preferably
+  // use with single planar SharedImageFormats. Returns BufferFormat for given
+  // `format`.
+  static gfx::BufferFormat ToBufferFormat(SharedImageFormat format);
 };
 
 }  // namespace viz

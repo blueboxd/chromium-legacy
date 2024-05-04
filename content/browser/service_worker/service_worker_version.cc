@@ -503,25 +503,6 @@ void ServiceWorkerVersion::set_fetch_handler_type(
   fetch_handler_type_ = fetch_handler_type;
 }
 
-ServiceWorkerVersion::FetchHandlerType
-ServiceWorkerVersion::EffectiveFetchHandlerType() const {
-  switch (fetch_handler_type()) {
-    case FetchHandlerType::kNoHandler:
-      return FetchHandlerType::kNoHandler;
-    case FetchHandlerType::kNotSkippable:
-      return FetchHandlerType::kNotSkippable;
-    case FetchHandlerType::kEmptyFetchHandler: {
-      if (base::FeatureList::IsEnabled(
-              features::kServiceWorkerSkipIgnorableFetchHandler) &&
-          features::kSkipEmptyFetchHandler.Get()) {
-        return FetchHandlerType::kEmptyFetchHandler;
-      } else {
-        return FetchHandlerType::kNotSkippable;
-      }
-    }
-  }
-}
-
 void ServiceWorkerVersion::set_has_hid_event_handlers(
     bool has_hid_event_handlers) {
   has_hid_event_handlers_ = has_hid_event_handlers;
@@ -769,7 +750,7 @@ int ServiceWorkerVersion::StartRequestWithCustomTimeout(
       request_id, event_type, expiration_time, timeout_behavior);
   DCHECK(is_inserted);
   request_rawptr->timeout_iter = iter;
-  // TODO(crbug.com/1363504): remove the following DCHECK when the cause
+  // TODO(crbug.com/40864997): remove the following DCHECK when the cause
   // identified.
   DCHECK_EQ(request_timeouts_.size(), inflight_requests_.size());
   if (expiration_time > max_request_expiration_time_)
@@ -840,7 +821,7 @@ bool ServiceWorkerVersion::FinishRequestWithFetchCount(int request_id,
       "Handled", was_handled);
   request_timeouts_.erase(request->timeout_iter);
   inflight_requests_.Remove(request_id);
-  // TODO(crbug.com/1363504): remove the following DCHECK when the cause
+  // TODO(crbug.com/40864997): remove the following DCHECK when the cause
   // identified.
   DCHECK_EQ(request_timeouts_.size(), inflight_requests_.size());
 
@@ -925,16 +906,16 @@ void ServiceWorkerVersion::RunAfterStartWorker(
 void ServiceWorkerVersion::AddControllee(
     ServiceWorkerContainerHost* container_host) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  // TODO(crbug.com/1021718): Remove this CHECK once we figure out the cause of
+  // TODO(crbug.com/40657227): Remove this CHECK once we figure out the cause of
   // crash.
   CHECK(container_host);
   const std::string& uuid = container_host->client_uuid();
   CHECK(!container_host->client_uuid().empty());
-  // TODO(crbug.com/1021718): Change to DCHECK once we figure out the cause of
+  // TODO(crbug.com/40657227): Change to DCHECK once we figure out the cause of
   // crash.
   CHECK(!base::Contains(controllee_map_, uuid));
 
-  controllee_map_[uuid] = container_host->GetWeakPtr();
+  controllee_map_[uuid] = container_host->AsWeakPtr();
   embedded_worker_->UpdateForegroundPriority();
   ClearTick(&no_controllees_time_);
 
@@ -960,7 +941,7 @@ void ServiceWorkerVersion::AddControllee(
 
 void ServiceWorkerVersion::RemoveControllee(const std::string& client_uuid) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  // TODO(crbug.com/1015692): Remove this once RemoveControllee() matches with
+  // TODO(crbug.com/40653867): Remove this once RemoveControllee() matches with
   // AddControllee().
   if (!base::Contains(controllee_map_, client_uuid))
     return;
@@ -1008,7 +989,7 @@ void ServiceWorkerVersion::MoveControlleeToBackForwardCacheMap(
 
 void ServiceWorkerVersion::RestoreControlleeFromBackForwardCacheMap(
     const std::string& client_uuid) {
-  // TODO(crbug.com/1021718): Change these to DCHECK once we figure out the
+  // TODO(crbug.com/40657227): Change these to DCHECK once we figure out the
   // cause of crash.
   CHECK(IsBackForwardCacheEnabled());
   CHECK(!base::Contains(controllee_map_, client_uuid));
@@ -1017,9 +998,9 @@ void ServiceWorkerVersion::RestoreControlleeFromBackForwardCacheMap(
     // evicted due to activation, postMessage or claim. In this case, we reload
     // the page without using BackForwardCache, so we can assume that
     // ContainerHost will be deleted soon.
-    // TODO(crbug.com/1021718): Remove this CHECK once we fix the crash.
+    // TODO(crbug.com/40657227): Remove this CHECK once we fix the crash.
     CHECK(base::Contains(controllees_to_be_evicted_, client_uuid));
-    // TODO(crbug.com/1021718): Remove DumpWithoutCrashing once we confirm the
+    // TODO(crbug.com/40657227): Remove DumpWithoutCrashing once we confirm the
     // cause of the crash.
     BackForwardCacheCanStoreDocumentResult can_store;
     can_store.No(controllees_to_be_evicted_.at(client_uuid));
@@ -1058,7 +1039,7 @@ void ServiceWorkerVersion::Uncontrol(const std::string& client_uuid) {
       // |bfcached_controllee_map_|.
       // In this case, |controllees_to_be_evicted_| should contain the
       // controllee.
-      // TODO(crbug.com/1021718): Remove this CHECK once we fix the crash.
+      // TODO(crbug.com/40657227): Remove this CHECK once we fix the crash.
       CHECK(base::Contains(controllees_to_be_evicted_, client_uuid));
       controllees_to_be_evicted_.erase(client_uuid);
     }
@@ -1194,14 +1175,16 @@ void ServiceWorkerVersion::InitializeGlobalScope() {
   // The registration must exist since we keep a reference to it during
   // service worker startup.
   DCHECK(registration);
-  DCHECK(worker_host_);
+  CHECK(worker_host_);
+  CHECK(worker_host_->container_host());
   DCHECK(service_worker_remote_);
   service_worker_remote_->InitializeGlobalScope(
       std::move(service_worker_host), std::move(associated_remote_from_browser),
       std::move(associated_receiver_to_renderer),
-      worker_host_->container_host()->CreateServiceWorkerRegistrationObjectInfo(
+      worker_host_->container_host()->registration_object_manager().CreateInfo(
           std::move(registration)),
-      worker_host_->container_host()->CreateServiceWorkerObjectInfoToSend(this),
+      worker_host_->container_host()->version_object_manager().CreateInfoToSend(
+          this),
       fetch_handler_existence(), std::move(reporting_observer_receiver_),
       ancestor_frame_type_, key_);
 
@@ -1491,6 +1474,7 @@ void ServiceWorkerVersion::OnStarted(
 }
 
 void ServiceWorkerVersion::OnStopping() {
+  TRACE_EVENT0("ServiceWorker", "ServiceWorkerVersion::OnStopping");
   DCHECK(stop_time_.is_null());
   RestartTick(&stop_time_);
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN2(
@@ -1520,10 +1504,12 @@ void ServiceWorkerVersion::OnStopping() {
 }
 
 void ServiceWorkerVersion::OnStopped(blink::EmbeddedWorkerStatus old_status) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   OnStoppedInternal(old_status);
 }
 
 void ServiceWorkerVersion::OnDetached(blink::EmbeddedWorkerStatus old_status) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   OnStoppedInternal(old_status);
 }
 
@@ -1674,7 +1660,7 @@ void ServiceWorkerVersion::GetClientInternal(const std::string& client_uuid,
 
 void ServiceWorkerVersion::OpenNewTab(const GURL& url,
                                       OpenNewTabCallback callback) {
-  // TODO(crbug.com/1199077): After StorageKey implements partitioning update
+  // TODO(crbug.com/40177656): After StorageKey implements partitioning update
   // this to reject with InvalidAccessError if key_ is partitioned.
   OpenWindow(url, service_worker_client_utils::WindowType::NEW_TAB_WINDOW,
              std::move(callback));
@@ -1738,6 +1724,8 @@ void ServiceWorkerVersion::PostMessageToClient(
     receiver_.reset();
     return;
   }
+  base::UmaHistogramBoolean("ServiceWorker.PostMessage.IsExecutionReady",
+                            container_host->is_execution_ready());
   if (!container_host->is_execution_ready()) {
     // It's subtle why this ReportBadMessage is correct. Consider the
     // sequence:
@@ -1906,70 +1894,23 @@ void ServiceWorkerVersion::SkipWaiting(SkipWaitingCallback callback) {
     registration->ActivateWaitingVersionWhenReady();
 }
 
-void ServiceWorkerVersion::RegisterRouter(
-    const blink::ServiceWorkerRouterRules& rules,
-    RegisterRouterCallback callback) {
-  if (!IsStaticRouterEnabled()) {
-    // This renderer should have called this only when the feature is enabled.
-    associated_interface_receiver_.ReportBadMessage(
-        "Unexpected router registration call during the feature is disabled.");
-    return;
-  }
-  switch (router_registration_method_) {
-    case RouterRegistrationMethod::Uninitialized:
-      break;
-    case RouterRegistrationMethod::RegisterRouter:
-      // The renderer should have denied calling this twice.
-    case RouterRegistrationMethod::AddRoutes:
-      // The renderer should have denied calling both RegisterRouter() and
-      // AddRoutes().
-      CHECK(router_evaluator());
-      associated_interface_receiver_.ReportBadMessage(
-          "The ServiceWorker router rules are set twice.");
-      return;
-  }
-  if (!SetupRouterEvaluator(rules)) {
-    // The renderer should have denied calling this method while the setup
-    // fails.
-    // TODO(crbug.com/1371756): revisit this to confirm no case for this error.
-    associated_interface_receiver_.ReportBadMessage(
-        "Failed to configure a router. Possibly a syntax error");
-    return;
-  }
-  router_registration_method_ = RouterRegistrationMethod::RegisterRouter;
-  std::move(callback).Run();
-}
-
 void ServiceWorkerVersion::AddRoutes(
     const blink::ServiceWorkerRouterRules& rules,
-    RegisterRouterCallback callback) {
+    AddRoutesCallback callback) {
   if (!IsStaticRouterEnabled()) {
     // This renderer should have called this only when the feature is enabled.
     associated_interface_receiver_.ReportBadMessage(
         "Unexpected router registration call during the feature is disabled.");
     return;
   }
-  switch (router_registration_method_) {
-    case RouterRegistrationMethod::Uninitialized:
-    case RouterRegistrationMethod::AddRoutes:
-      break;
-    case RouterRegistrationMethod::RegisterRouter:
-      // The renderer should have denied calling both RegisterRouter() and
-      // AddRoutes().
-      CHECK(router_evaluator());
-      associated_interface_receiver_.ReportBadMessage(
-          "The ServiceWorker router rules are set twice.");
-      return;
-  }
   if (!SetupRouterEvaluator(rules)) {
     // The renderer should have denied calling this method while the setup
     // fails.
-    // TODO(crbug.com/1371756): revisit this to confirm no case for this error.
+    // TODO(crbug.com/40241479): revisit this to confirm no case for this error.
     associated_interface_receiver_.ReportBadMessage(
         "Failed to configure a router. Possibly a syntax error");
     return;
   }
-  router_registration_method_ = RouterRegistrationMethod::AddRoutes;
   std::move(callback).Run();
 }
 
@@ -2334,7 +2275,7 @@ void ServiceWorkerVersion::StartWorkerInternal() {
       blink::mojom::ServiceWorkerProviderInfoForStartWorker::New();
   DCHECK(!worker_host_);
   worker_host_ = std::make_unique<content::ServiceWorkerHost>(
-      provider_info->host_remote.InitWithNewEndpointAndPassReceiver(), this,
+      provider_info->host_remote.InitWithNewEndpointAndPassReceiver(), *this,
       context());
 
   auto params = blink::mojom::EmbeddedWorkerStartParams::New();
@@ -2535,7 +2476,7 @@ void ServiceWorkerVersion::OnTimeoutTimer() {
   // Ensure the `request_timeouts_` won't be touched during the loop.
   DCHECK(request_timeouts_.empty());
   request_timeouts_.swap(request_timeouts);
-  // TODO(crbug.com/1363504): remove the following DCHECK when the cause
+  // TODO(crbug.com/40864997): remove the following DCHECK when the cause
   // identified.
   DCHECK_EQ(request_timeouts_.size(), inflight_requests_.size());
 
@@ -2661,7 +2602,7 @@ void ServiceWorkerVersion::SetAllRequestExpirations(
     request->timeout_iter = iter;
   }
   request_timeouts_.swap(new_timeouts);
-  // TODO(crbug.com/1363504): remove the following DCHECK when the cause
+  // TODO(crbug.com/40864997): remove the following DCHECK when the cause
   // identified.
   DCHECK_EQ(request_timeouts_.size(), inflight_requests_.size());
 }
@@ -2731,6 +2672,7 @@ void ServiceWorkerVersion::FoundRegistrationForUpdate(
 
 void ServiceWorkerVersion::OnStoppedInternal(
     blink::EmbeddedWorkerStatus old_status) {
+  TRACE_EVENT0("ServiceWorker", "ServiceWorkerVersion::OnStoppedInternal");
   DCHECK_EQ(blink::EmbeddedWorkerStatus::kStopped, running_status());
   scoped_refptr<ServiceWorkerVersion> protect;
   if (!in_dtor_)
@@ -2740,21 +2682,27 @@ void ServiceWorkerVersion::OnStoppedInternal(
   // the worker was stopping. The worker must be restarted to fulfill the
   // request.
   bool should_restart = !start_callbacks_.empty();
+  bool should_warm_up =
+      will_warm_up_on_stopped_ && !is_stopping_warmed_up_worker_;
   if (is_redundant() || in_dtor_) {
     // This worker will be destroyed soon.
     should_restart = false;
+    should_warm_up = false;
   } else if (ping_controller_.IsTimedOut()) {
     // This worker exhausted its time to run, don't let it restart.
     should_restart = false;
+    should_warm_up = false;
   } else if (old_status == blink::EmbeddedWorkerStatus::kStarting) {
     // This worker unexpectedly stopped because start failed.  Attempting to
     // restart on start failure could cause an endless loop of start attempts,
     // so don't try to restart now.
     should_restart = false;
+    should_warm_up = false;
   } else if (is_stopping_warmed_up_worker_) {
     // This worker is stopped while warmed-up or warming-up. Such workers don't
-    // need to restart.
+    // need to restart nor re-warm-up.
     should_restart = false;
+    should_warm_up = false;
   }
 
   if (!stop_time_.is_null()) {
@@ -2779,7 +2727,7 @@ void ServiceWorkerVersion::OnStoppedInternal(
         blink::ServiceWorkerStatusCode::kErrorStartWorkerFailed));
   }
 
-  // TODO(crbug.com/1363504): remove the following DCHECK when the cause
+  // TODO(crbug.com/40864997): remove the following DCHECK when the cause
   // identified.
   // Failing this DCHECK means, the function is called while
   // the function is modifying contents of request_timeouts_.
@@ -2813,6 +2761,8 @@ void ServiceWorkerVersion::OnStoppedInternal(
   pending_external_requests_.clear();
   worker_is_idle_on_renderer_ = true;
   worker_host_.reset();
+  will_warm_up_on_stopped_ = false;
+  is_stopping_warmed_up_worker_ = false;
 
   for (auto& observer : observers_)
     observer.OnRunningStateChanged(this);
@@ -2822,10 +2772,18 @@ void ServiceWorkerVersion::OnStoppedInternal(
     OnNoWorkInBrowser();
   }
 
-  if (!should_restart && will_warm_up_on_stopped_ && context_) {
-    context_->wrapper()->WarmUpServiceWorker(scope_, key_, base::DoNothing());
+  if (should_warm_up && !should_restart && context_) {
+    // Posts a re-warm-up task so that the warming up operation runs in a
+    // different task.
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+        FROM_HERE, base::BindOnce(
+                       [](base::WeakPtr<ServiceWorkerContextCore> context,
+                          const GURL scope, const blink::StorageKey key) {
+                         context->wrapper()->WarmUpServiceWorker(
+                             scope, key, base::DoNothing());
+                       },
+                       context_, scope_, key_));
   }
-  will_warm_up_on_stopped_ = false;
 }
 
 void ServiceWorkerVersion::FinishStartWorker(
@@ -3065,7 +3023,7 @@ bool ServiceWorkerVersion::SetupRouterEvaluator(
   CHECK(IsStaticRouterEnabled());
   blink::ServiceWorkerRouterRules new_rules;
   // If there are existing router rules, set them first.
-  // TODO(crbug.com/1468184) Consider having a method to merge rules instead of
+  // TODO(crbug.com/40277030) Consider having a method to merge rules instead of
   // replacing each time.
   if (router_evaluator()) {
     for (const auto& e : router_evaluator()->rules().rules) {
@@ -3133,6 +3091,11 @@ void ServiceWorkerVersion::GetAssociatedInterface(
 
   mojo::ScopedInterfaceEndpointHandle handle = receiver.PassHandle();
   associated_registry_->TryBindInterface(name, &handle);
+}
+
+bool ServiceWorkerVersion::BFCacheContainsControllee(
+    const std::string& uuid) const {
+  return base::Contains(bfcached_controllee_map_, uuid);
 }
 
 base::WeakPtr<ServiceWorkerVersion> ServiceWorkerVersion::GetWeakPtr() {

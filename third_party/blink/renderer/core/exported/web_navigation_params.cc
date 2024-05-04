@@ -4,6 +4,7 @@
 
 #include "third_party/blink/public/web/web_navigation_params.h"
 
+#include "base/uuid.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/navigation/navigation_params.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_network_provider.h"
@@ -17,16 +18,19 @@ namespace blink {
 WebNavigationParams::WebNavigationParams()
     : http_method(http_names::kGET),
       devtools_navigation_token(base::UnguessableToken::Create()),
+      base_auction_nonce(base::Uuid::GenerateRandomV4()),
       content_settings(CreateDefaultRendererContentSettings()) {}
 
 WebNavigationParams::~WebNavigationParams() = default;
 
 WebNavigationParams::WebNavigationParams(
     const blink::DocumentToken& document_token,
-    const base::UnguessableToken& devtools_navigation_token)
+    const base::UnguessableToken& devtools_navigation_token,
+    const base::Uuid& base_auction_nonce)
     : http_method(http_names::kGET),
       document_token(document_token),
       devtools_navigation_token(devtools_navigation_token),
+      base_auction_nonce(base_auction_nonce),
       content_settings(CreateDefaultRendererContentSettings()) {}
 
 // static
@@ -41,9 +45,7 @@ std::unique_ptr<WebNavigationParams> WebNavigationParams::CreateFromInfo(
   result->http_content_type =
       info.url_request.HttpHeaderField(http_names::kContentType);
   result->requestor_origin = info.url_request.RequestorOrigin();
-  if (features::IsNewBaseUrlInheritanceBehaviorEnabled()) {
-    result->fallback_base_url = info.requestor_base_url;
-  }
+  result->fallback_base_url = info.requestor_base_url;
   result->frame_load_type = info.frame_load_type;
   result->is_client_redirect = info.is_client_redirect;
   result->navigation_timings.input_start = info.input_start;

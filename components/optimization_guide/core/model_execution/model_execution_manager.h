@@ -12,6 +12,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
+#include "components/optimization_guide/core/model_execution/feature_keys.h"
 #include "components/optimization_guide/core/optimization_guide_features.h"
 #include "components/optimization_guide/core/optimization_guide_model_executor.h"
 #include "components/optimization_guide/core/optimization_target_model_observer.h"
@@ -41,6 +42,7 @@ class ModelExecutionManager : public OptimizationTargetModelObserver {
  public:
   ModelExecutionManager(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      PrefService* local_state,
       signin::IdentityManager* identity_manager,
       scoped_refptr<OnDeviceModelServiceController>
           on_device_model_service_controller,
@@ -60,14 +62,17 @@ class ModelExecutionManager : public OptimizationTargetModelObserver {
   // `log_ai_data_request` may be populated already with any existing work prior
   // to calling this function.
   void ExecuteModel(
-      proto::ModelExecutionFeature feature,
+      ModelBasedCapabilityKey feature,
       const google::protobuf::MessageLite& request_metadata,
       std::unique_ptr<proto::LogAiDataRequest> log_ai_data_request,
       OptimizationGuideModelExecutionResultCallback callback);
 
+  // Returns whether an on-device session can be created for `feature`.
+  bool CanCreateOnDeviceSession(ModelBasedCapabilityKey feature);
+
   // Starts a new session for `feature`.
   std::unique_ptr<OptimizationGuideModelExecutor::Session> StartSession(
-      proto::ModelExecutionFeature feature,
+      ModelBasedCapabilityKey feature,
       const std::optional<SessionConfigParams>& config_params);
 
   // OptimizationTargetModelObserver:
@@ -77,17 +82,9 @@ class ModelExecutionManager : public OptimizationTargetModelObserver {
   void Shutdown();
 
  private:
-  // Called from SessionImpl (via ExecuteRemoteFn) when model execution happens
-  // remotely.
-  void ExecuteModelWithStreaming(
-      proto::ModelExecutionFeature feature,
-      const google::protobuf::MessageLite& request_metadata,
-      std::unique_ptr<proto::LogAiDataRequest> log_ai_data_request,
-      OptimizationGuideModelExecutionResultStreamingCallback callback);
-
   // Invoked when the model execution result is available.
   void OnModelExecuteResponse(
-      proto::ModelExecutionFeature feature,
+      ModelBasedCapabilityKey feature,
       std::unique_ptr<proto::LogAiDataRequest> log_ai_data_request,
       OptimizationGuideModelExecutionResultCallback callback,
       base::expected<const proto::ExecuteResponse,
@@ -106,7 +103,7 @@ class ModelExecutionManager : public OptimizationTargetModelObserver {
   const GURL model_execution_service_url_;
 
   // The active fetchers per ModelExecutionFeature.
-  std::map<proto::ModelExecutionFeature, ModelExecutionFetcher>
+  std::map<ModelBasedCapabilityKey, ModelExecutionFetcher>
       active_model_execution_fetchers_;
 
   // The URL Loader Factory that will be used by the fetchers.

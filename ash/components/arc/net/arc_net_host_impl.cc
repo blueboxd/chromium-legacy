@@ -333,7 +333,7 @@ void ArcNetHostImpl::SetUpFlags() {
 void ArcNetHostImpl::OnConnectionClosed() {
   // Make sure shill doesn't leave an ARC VPN connected after Android
   // goes down.
-  AndroidVpnStateChanged(arc::mojom::ConnectionStateType::NOT_CONNECTED);
+  AndroidVpnDisconnected();
 
   if (!observing_network_state_)
     return;
@@ -524,7 +524,7 @@ void ArcNetHostImpl::CreateNetworkWithEapTranslated(
   }
 
   std::string user_id_hash = ash::LoginState::Get()->primary_user_hash();
-  // TODO(crbug.com/730593): Remove SplitOnceCallback() by updating
+  // TODO(crbug.com/40524549): Remove SplitOnceCallback() by updating
   // the callee interface.
   auto split_callback = base::SplitOnceCallback(std::move(callback));
   GetManagedConfigurationHandler()->CreateConfiguration(
@@ -565,7 +565,7 @@ void ArcNetHostImpl::ForgetNetwork(const std::string& guid,
   }
 
   cached_guid_.clear();
-  // TODO(crbug.com/730593): Remove SplitOnceCallback() by updating
+  // TODO(crbug.com/40524549): Remove SplitOnceCallback() by updating
   // the callee interface.
   auto split_callback = base::SplitOnceCallback(std::move(callback));
   GetManagedConfigurationHandler()->RemoveConfigurationFromCurrentProfile(
@@ -597,7 +597,7 @@ void ArcNetHostImpl::UpdateWifiNetwork(const std::string& guid,
   }
   properties.Set(onc::network_config::kWiFi, std::move(wifi_dict));
 
-  // TODO(crbug.com/730593): Remove SplitOnceCallback() by updating
+  // TODO(crbug.com/40524549): Remove SplitOnceCallback() by updating
   // the callee interface.
   auto split_callback = base::SplitOnceCallback(std::move(callback));
   GetManagedConfigurationHandler()->SetProperties(
@@ -618,7 +618,7 @@ void ArcNetHostImpl::StartConnect(const std::string& guid,
     return;
   }
 
-  // TODO(crbug.com/730593): Remove SplitOnceCallback() by updating
+  // TODO(crbug.com/40524549): Remove SplitOnceCallback() by updating
   // the callee interface.
   auto split_callback = base::SplitOnceCallback(std::move(callback));
   GetNetworkConnectionHandler()->ConnectToNetwork(
@@ -640,7 +640,7 @@ void ArcNetHostImpl::StartDisconnect(const std::string& guid,
     return;
   }
 
-  // TODO(crbug.com/730593): Remove SplitOnceCallback() by updating
+  // TODO(crbug.com/40524549): Remove SplitOnceCallback() by updating
   // the callee interface.
   auto split_callback = base::SplitOnceCallback(std::move(callback));
   GetNetworkConnectionHandler()->DisconnectNetwork(
@@ -783,8 +783,6 @@ base::Value::Dict ArcNetHostImpl::TranslateVpnConfigurationToOnc(
 
   // ARCVPN dictionary
   base::Value::Dict arcvpn_dict;
-  arcvpn_dict.Set(onc::arc_vpn::kTunnelChrome,
-                  cfg.tunnel_chrome_traffic ? "true" : "false");
   vpn_dict.Set(onc::vpn::kArcVpn, std::move(arcvpn_dict));
 
   top_dict.Set(onc::network_config::kVPN, std::move(vpn_dict));
@@ -797,18 +795,9 @@ base::Value::Dict ArcNetHostImpl::TranslateVpnConfigurationToOnc(
 
 void ArcNetHostImpl::AndroidVpnConnected(
     mojom::AndroidVpnConfigurationPtr cfg) {
-  std::string service_path = LookupArcVpnServicePath();
-  if (!service_path.empty()) {
-    GetManagedConfigurationHandler()->SetProperties(
-        service_path, TranslateVpnConfigurationToOnc(*cfg),
-        base::BindOnce(&ArcNetHostImpl::ConnectArcVpn,
-                       weak_factory_.GetWeakPtr(), service_path, std::string()),
-        base::BindOnce(&ArcVpnErrorCallback,
-                       "reconnecting ARC VPN " + service_path));
-    return;
-  }
-
   std::string user_id_hash = ash::LoginState::Get()->primary_user_hash();
+
+  // TODO(b/333809009): Skip ONC translation step.
   GetManagedConfigurationHandler()->CreateConfiguration(
       user_id_hash, TranslateVpnConfigurationToOnc(*cfg),
       base::BindOnce(&ArcNetHostImpl::ConnectArcVpn,
@@ -816,9 +805,28 @@ void ArcNetHostImpl::AndroidVpnConnected(
       base::BindOnce(&ArcVpnErrorCallback, "connecting new ARC VPN"));
 }
 
-void ArcNetHostImpl::AndroidVpnStateChanged(mojom::ConnectionStateType state) {
-  if (state != arc::mojom::ConnectionStateType::NOT_CONNECTED ||
-      arc_vpn_service_path_.empty()) {
+void ArcNetHostImpl::AndroidVpnUpdated(mojom::AndroidVpnConfigurationPtr cfg) {
+  std::string service_path = LookupArcVpnServicePath();
+  if (service_path.empty()) {
+    NET_LOG(ERROR) << __func__ << ": ARC VPN (" << cfg->app_label << ", "
+                   << cfg->app_name << ") doesn't exist";
+    return;
+  }
+
+  // TODO(b/333809009): Skip ONC translation step.
+  GetManagedConfigurationHandler()->SetProperties(
+      service_path, TranslateVpnConfigurationToOnc(*cfg),
+      /*callback=*/base::DoNothing(),
+      base::BindOnce(&ArcVpnErrorCallback, "updating ARC VPN " + service_path));
+}
+
+void ArcNetHostImpl::DEPRECATED_AndroidVpnStateChanged(
+    mojom::ConnectionStateType state) {
+  AndroidVpnDisconnected();
+}
+
+void ArcNetHostImpl::AndroidVpnDisconnected() {
+  if (arc_vpn_service_path_.empty()) {
     return;
   }
 
@@ -1094,9 +1102,6 @@ base::Value::Dict ArcNetHostImpl::TranslateProxyConfiguration(
 
 void ArcNetHostImpl::AddPasspointCredentials(
     mojom::PasspointCredentialsPtr credentials) {
-  if (!ash::features::IsPasspointARCSupportEnabled()) {
-    return;
-  }
   TranslatePasspointCredentialsToDict(
       std::move(credentials),
       base::BindOnce(&ArcNetHostImpl::AddPasspointCredentialsWithProperties,
@@ -1133,12 +1138,6 @@ aura::Window* ArcNetHostImpl::GetAppWindow(const std::string& package_name) {
 void ArcNetHostImpl::RequestPasspointAppApproval(
     mojom::PasspointApprovalRequestPtr request,
     RequestPasspointAppApprovalCallback callback) {
-  if (!ash::features::IsPasspointARCSupportEnabled()) {
-    std::move(callback).Run(
-        mojom::PasspointApprovalResponse::New(/*allow=*/false));
-    return;
-  }
-
   aura::Window* window = GetAppWindow(request->package_name);
   if (!window) {
     NET_LOG(ERROR) << __func__ << ": Failed to get app window";

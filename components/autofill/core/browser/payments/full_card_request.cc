@@ -20,6 +20,7 @@
 #include "components/autofill/core/browser/payments/autofill_payments_feature_availability.h"
 #include "components/autofill/core/browser/payments/payments_autofill_client.h"
 #include "components/autofill/core/browser/payments/payments_util.h"
+#include "components/autofill/core/browser/payments_data_manager.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
@@ -168,9 +169,20 @@ void FullCardRequest::GetFullCardImpl(
 
   request_->fido_assertion_info = std::move(fido_assertion_info);
 
+  // Add appropriate ClientBehaviorConstants to the request based on the
+  // user experience.
   if (ShouldShowCardMetadata(card)) {
     request_->client_behavior_signals.push_back(
         ClientBehaviorConstants::kShowingCardArtImageAndCardProductName);
+  }
+  // TODO(crbug.com/332715322): Refactor FullCardRequest to use
+  // AutofillClient::GetPersonalDataManager() instead of a separate class
+  // variable.
+  if (DidDisplayBenefitForCard(
+          card, autofill_client_.get(),
+          personal_data_manager_->payments_data_manager())) {
+    request_->client_behavior_signals.push_back(
+        ClientBehaviorConstants::kShowingCardBenefits);
   }
 
   // If there is a UI delegate, then perform a CVC check.
@@ -201,7 +213,8 @@ void FullCardRequest::OnUnmaskPromptAccepted(
   if (request_->card.record_type() == CreditCard::RecordType::kLocalCard &&
       !request_->card.guid().empty() &&
       (!user_response.exp_month.empty() || !user_response.exp_year.empty())) {
-    personal_data_manager_->UpdateCreditCard(request_->card);
+    personal_data_manager_->payments_data_manager().UpdateCreditCard(
+        request_->card);
   }
 
   if (!should_unmask_card_) {
@@ -232,7 +245,7 @@ void FullCardRequest::OnUnmaskPromptAccepted(
     SendUnmaskCardRequest();
 }
 
-void FullCardRequest::OnUnmaskPromptClosed() {
+void FullCardRequest::OnUnmaskPromptCancelled() {
   if (result_delegate_) {
     result_delegate_->OnFullCardRequestFailed(request_->card.record_type(),
                                               FailureType::PROMPT_CLOSED);
@@ -268,7 +281,7 @@ void FullCardRequest::SendUnmaskCardRequest() {
 
 void FullCardRequest::OnDidGetRealPan(
     AutofillClient::PaymentsRpcResult result,
-    payments::PaymentsNetworkInterface::UnmaskResponseDetails&
+    const payments::PaymentsNetworkInterface::UnmaskResponseDetails&
         response_details) {
   // If the CVC field is populated, that means the user performed a CVC check.
   // If FIDO AssertionInfo is populated, then the user must have performed FIDO
@@ -367,7 +380,7 @@ void FullCardRequest::OnDidGetRealPan(
         NOTREACHED();
       }
 
-      // TODO(crbug/949269): Once |fido_opt_in| is added to
+      // TODO(crbug.com/40621544): Once |fido_opt_in| is added to
       // UserProvidedUnmaskDetails, clear out |creation_options| from
       // |response_details_| if |user_response.fido_opt_in| was not set to true
       // to avoid an unwanted registration prompt.

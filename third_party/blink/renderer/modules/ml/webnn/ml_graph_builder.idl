@@ -83,6 +83,14 @@ dictionary MLGruOptions {
   sequence<MLActivation> activations;
 };
 
+dictionary MLGruCellOptions {
+  MLOperand bias;
+  MLOperand recurrentBias;
+  boolean resetAfter = true;
+  MLGruWeightLayout layout = "zrn";
+  sequence<MLActivation> activations;
+};
+
 dictionary MLHardSigmoidOptions {
   float alpha = 0.2;
   float beta = 0.5;
@@ -112,6 +120,14 @@ dictionary MLLstmOptions {
   MLOperand initialCellState;
   boolean returnSequence = false;
   MLRecurrentNetworkDirection direction = "forward";
+  MLLstmWeightLayout layout = "iofg";
+  sequence<MLActivation> activations;
+};
+
+dictionary MLLstmCellOptions {
+  MLOperand bias;
+  MLOperand recurrentBias;
+  MLOperand peepholeWeight;
   MLLstmWeightLayout layout = "iofg";
   sequence<MLActivation> activations;
 };
@@ -171,10 +187,6 @@ dictionary MLResample2dOptions {
   sequence<float> scales;
   sequence<[EnforceRange] unsigned long> sizes;
   sequence<[EnforceRange] unsigned long> axes;
-};
-
-dictionary MLSoftplusOptions {
-  float steepness = 1.0;
 };
 
 dictionary MLTransposeOptions {
@@ -252,11 +264,17 @@ dictionary MLTriangularOptions {
 
   [RaisesException] MLOperand gather(MLOperand input, MLOperand indices, optional MLGatherOptions options = {});
 
+  [RaisesException] MLOperand gelu(MLOperand input);
+  [RaisesException] MLActivation gelu();
+
   [RaisesException] MLOperand gemm(MLOperand a, MLOperand b, optional MLGemmOptions options = {});
 
   [RaisesException] sequence<MLOperand> gru(MLOperand input, MLOperand weight, MLOperand recurrentWeight,
                     [EnforceRange] unsigned long steps, [EnforceRange] unsigned long hiddenSize,
                     optional MLGruOptions options = {});
+
+  [RaisesException] MLOperand gruCell(MLOperand input, MLOperand weight, MLOperand recurrentWeight, MLOperand hiddenState,
+                    [EnforceRange] unsigned long hiddenSize, optional MLGruCellOptions options = {});
 
   [RaisesException] MLOperand hardSigmoid(MLOperand x, optional MLHardSigmoidOptions options = {});
   [RaisesException] MLActivation hardSigmoid(optional MLHardSigmoidOptions options = {});
@@ -279,6 +297,10 @@ dictionary MLTriangularOptions {
   [RaisesException] sequence<MLOperand> lstm(MLOperand input, MLOperand weight, MLOperand recurrentWeight,
                                              [EnforceRange] unsigned long steps, [EnforceRange] unsigned long hiddenSize,
                                              optional MLLstmOptions options = {});
+
+  [RaisesException] sequence<MLOperand> lstmCell(MLOperand input, MLOperand weight, MLOperand recurrentWeight,
+                                                 MLOperand hiddenState, MLOperand cellState, [EnforceRange] unsigned long hiddenSize,
+                                                 optional MLLstmCellOptions options = {});
 
   [RaisesException] MLOperand pad(MLOperand input, sequence<[EnforceRange] unsigned long> beginningPadding,
                 sequence<[EnforceRange] unsigned long> endingPadding, optional MLPadOptions options = {});
@@ -316,8 +338,8 @@ dictionary MLTriangularOptions {
   [RaisesException] MLOperand softmax(MLOperand input);
   [RaisesException] MLActivation softmax();
 
-  [RaisesException] MLOperand softplus(MLOperand input, optional MLSoftplusOptions options = {});
-  [RaisesException] MLActivation softplus(optional MLSoftplusOptions options = {});
+  [RaisesException] MLOperand softplus(MLOperand input);
+  [RaisesException] MLActivation softplus();
 
   [RaisesException] MLOperand softsign(MLOperand input);
   [RaisesException] MLActivation softsign();

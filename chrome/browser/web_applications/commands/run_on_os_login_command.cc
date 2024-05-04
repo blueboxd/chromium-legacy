@@ -106,9 +106,6 @@ void RunOnOsLoginCommand::Abort(
     case RunOnOsLoginCommandCompletionState::kAppNotLocallyInstalled:
       stop_reason_ = "App is not locally installed";
       break;
-    case RunOnOsLoginCommandCompletionState::kOSHooksNotProperlySet:
-      stop_reason_ = "OS Hooks were not properly set";
-      break;
     default:
       NOTREACHED_NORETURN();
   }
@@ -134,7 +131,7 @@ void RunOnOsLoginCommand::SetRunOnOsLoginMode() {
   if (login_mode_.value() == current_mode.value) {
     RecordCompletionState(
         RunOnOsLoginCommandCompletionState::kRunOnOsLoginModeAlreadyMatched);
-    OnOsHooksSet(OsHooksErrors());
+    OnOsIntegrationSynchronized();
     return;
   }
 
@@ -145,12 +142,9 @@ void RunOnOsLoginCommand::SetRunOnOsLoginMode() {
   lock_->registrar().NotifyWebAppRunOnOsLoginModeChanged(app_id_,
                                                          login_mode_.value());
 
-  auto synchronize_barrier =
-      OsIntegrationManager::GetBarrierForSynchronize(base::BindOnce(
-          &RunOnOsLoginCommand::OnOsHooksSet, weak_factory_.GetWeakPtr()));
   lock_->os_integration_manager().Synchronize(
-      app_id_, base::BindOnce(synchronize_barrier, OsHooksErrors()));
-  UpdateRunOnOsLoginModeWithOsIntegration(synchronize_barrier);
+      app_id_, base::BindOnce(&RunOnOsLoginCommand::OnOsIntegrationSynchronized,
+                              weak_factory_.GetWeakPtr()));
 }
 
 void RunOnOsLoginCommand::SyncRunOnOsLoginMode() {
@@ -160,66 +154,27 @@ void RunOnOsLoginCommand::SyncRunOnOsLoginMode() {
   }
   login_mode_ = lock_->registrar().GetAppRunOnOsLoginMode(app_id_).value;
 
-  if (AreSubManagersExecuteEnabled()) {
-    // This is temporary solution for preinstalled apps getting fully installed.
-    // Do not run the below 'synchronize' code at all if the expected state ==
-    // the desired state.
-    // TODO(dmurph): Remove this after 'locally installed without os
-    // integration' is implemented for preinstalled apps.
-    // https://crbug.com/1480068
-    std::optional<RunOnOsLoginMode> os_integration_state =
-        lock_->registrar().GetExpectedRunOnOsLoginOsIntegrationState(app_id_);
-    if (os_integration_state && login_mode_.value() == *os_integration_state) {
-      RecordCompletionState(
-          RunOnOsLoginCommandCompletionState::kRunOnOsLoginModeAlreadyMatched);
-      OnOsHooksSet(OsHooksErrors());
-      return;
-    }
-  }
-  auto synchronize_barrier =
-      OsIntegrationManager::GetBarrierForSynchronize(base::BindOnce(
-          &RunOnOsLoginCommand::OnOsHooksSet, weak_factory_.GetWeakPtr()));
-  lock_->os_integration_manager().Synchronize(
-      app_id_, base::BindOnce(synchronize_barrier, OsHooksErrors()));
-  UpdateRunOnOsLoginModeWithOsIntegration(synchronize_barrier);
-}
-
-void RunOnOsLoginCommand::UpdateRunOnOsLoginModeWithOsIntegration(
-    base::RepeatingCallback<void(OsHooksErrors)> os_hooks_callback) {
+  // This is temporary solution for preinstalled apps getting fully installed.
+  // Do not run the below 'synchronize' code at all if the expected state ==
+  // the desired state.
+  // TODO(dmurph): Remove this after 'locally installed without os
+  // integration' is implemented for preinstalled apps.
+  // https://crbug.com/1480068
   std::optional<RunOnOsLoginMode> os_integration_state =
       lock_->registrar().GetExpectedRunOnOsLoginOsIntegrationState(app_id_);
-
   if (os_integration_state && login_mode_.value() == *os_integration_state) {
     RecordCompletionState(
         RunOnOsLoginCommandCompletionState::kRunOnOsLoginModeAlreadyMatched);
-    std::move(os_hooks_callback).Run(OsHooksErrors());
+    OnOsIntegrationSynchronized();
     return;
   }
 
-  // TODO(crbug.com/1401125): Remove InstallOsHooks() and UninstallOsHooks()
-  // once OS integration
-  // sub managers have been implemented.
-  if (login_mode_.value() == RunOnOsLoginMode::kNotRun) {
-    OsHooksOptions os_hooks;
-    os_hooks[OsHookType::kRunOnOsLogin] = true;
-    lock_->os_integration_manager().UninstallOsHooks(
-        app_id_, os_hooks, std::move(os_hooks_callback));
-  } else {
-    InstallOsHooksOptions install_options;
-    install_options.os_hooks[OsHookType::kRunOnOsLogin] = true;
-    install_options.reason = SHORTCUT_CREATION_AUTOMATED;
-    lock_->os_integration_manager().InstallOsHooks(
-        app_id_, std::move(os_hooks_callback), nullptr,
-        std::move(install_options));
-  }
+  lock_->os_integration_manager().Synchronize(
+      app_id_, base::BindOnce(&RunOnOsLoginCommand::OnOsIntegrationSynchronized,
+                              weak_factory_.GetWeakPtr()));
 }
 
-void RunOnOsLoginCommand::OnOsHooksSet(OsHooksErrors errors) {
-  if (errors[OsHookType::kRunOnOsLogin] == true) {
-    Abort(RunOnOsLoginCommandCompletionState::kOSHooksNotProperlySet);
-    return;
-  }
-
+void RunOnOsLoginCommand::OnOsIntegrationSynchronized() {
   if (!completion_state_set_) {
     RecordCompletionState(
         RunOnOsLoginCommandCompletionState::kSuccessfulCompletion);

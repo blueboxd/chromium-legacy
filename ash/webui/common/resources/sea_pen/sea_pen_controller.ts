@@ -5,14 +5,17 @@
 import {SeaPenImageId} from './constants.js';
 import {MantaStatusCode, SeaPenFeedbackMetadata, SeaPenProviderInterface, SeaPenQuery, SeaPenThumbnail} from './sea_pen.mojom-webui.js';
 import * as seaPenAction from './sea_pen_actions.js';
+import {logSeaPenImageSet} from './sea_pen_metrics_logger.js';
 import {SeaPenStoreInterface} from './sea_pen_store.js';
-import {isNonEmptyArray} from './sea_pen_utils.js';
+import {isNonEmptyArray, isPersonalizationApp} from './sea_pen_utils.js';
+import {withMinimumDelay} from './transition.js';
 
 export async function selectRecentSeaPenImage(
     id: SeaPenImageId, provider: SeaPenProviderInterface,
     store: SeaPenStoreInterface): Promise<void> {
+  const originalCurrentSelected = store.data.currentSelected;
   // Returns if the selected image is the current wallpaper.
-  if (id === store.data.currentSelected) {
+  if (id === originalCurrentSelected) {
     return;
   }
   // Batch these changes together to reduce polymer churn as multiple state
@@ -29,44 +32,96 @@ export async function selectRecentSeaPenImage(
   if (!success) {
     console.warn('Error setting wallpaper');
   }
+  if (store.data.loading.setImage === 0) {
+    // Mark the image as applied or revert back to the old one.
+    store.dispatch(seaPenAction.setSelectedRecentSeaPenImageAction(
+        success ? id : originalCurrentSelected));
+  }
   store.endBatchUpdate();
+
+  if (success) {
+    logSeaPenImageSet(/*source=*/ 'Recent');
+  }
 }
 
 export async function searchSeaPenThumbnails(
     query: SeaPenQuery, provider: SeaPenProviderInterface,
     store: SeaPenStoreInterface): Promise<void> {
   store.dispatch(seaPenAction.beginSearchSeaPenThumbnailsAction(query));
-  const {images, statusCode} = await provider.searchWallpaper(query);
+  store.dispatch(seaPenAction.setCurrentSeaPenQueryAction(query));
+  const {images, statusCode} =
+      await withMinimumDelay(provider.searchWallpaper(query));
   if (!isNonEmptyArray(images) || statusCode !== MantaStatusCode.kOk) {
     console.warn('Error generating thumbnails. Status code: ', statusCode);
   }
-  store.dispatch(seaPenAction.setThumbnailResponseStatusCodeAction(statusCode));
-  store.dispatch(seaPenAction.setSeaPenThumbnailsAction(query, images));
+
+  // New requests might have been made for a different template so we should
+  // only return results for the request that matches the template that the user
+  // is using or when the user is not viewing the template to clear the loading
+  // UI.
+  // TODO(b/333924681): Implement a better way to handle the race condition.
+  // The current logic does not handle the case the user lands on the original
+  // template after navigating between different templates.
+  const params = new URLSearchParams(window.location.search);
+  const templateIdParam = params.get('seaPenTemplateId');
+  if (!templateIdParam ||
+      (templateIdParam === query.templateQuery?.id.toString()) ||
+      (templateIdParam === 'Query' && !!query.textQuery)) {
+    store.dispatch(
+        seaPenAction.setThumbnailResponseStatusCodeAction(statusCode));
+    store.dispatch(seaPenAction.setSeaPenThumbnailsAction(query, images));
+  }
 }
 
 export async function selectSeaPenWallpaper(
     thumbnail: SeaPenThumbnail, provider: SeaPenProviderInterface,
     store: SeaPenStoreInterface): Promise<void> {
+  const originalCurrentSelected = store.data.currentSelected;
+
+  let promise: ReturnType<SeaPenProviderInterface['selectSeaPenThumbnail']>;
+  if (isPersonalizationApp()) {
+    promise = withMinimumDelay(provider.selectSeaPenThumbnail(thumbnail.id));
+  } else {
+    // VC Background should not start the visual loading state immediately. The
+    // async request will resolve very quickly.
+    store.beginBatchUpdate();
+    promise = provider.selectSeaPenThumbnail(thumbnail.id);
+  }
+
   store.dispatch(seaPenAction.beginSelectSeaPenThumbnailAction(thumbnail));
-  const {success} = await provider.selectSeaPenThumbnail(thumbnail.id);
+
+  const {success} = await promise;
+
+  store.beginBatchUpdate();
   store.dispatch(
       seaPenAction.endSelectSeaPenThumbnailAction(thumbnail, success));
+
   if (store.data.loading.setImage === 0) {
     // If the user has not already clicked on another thumbnail, treat this
     // thumbnail as set.
     // TODO(b/321252838) improve this with an async observer for VC Background.
     store.dispatch(seaPenAction.setSelectedRecentSeaPenImageAction(
-        success ? thumbnail.id : null));
+        success ? thumbnail.id : originalCurrentSelected));
   }
+  store.endBatchUpdate();
   // Re-fetches the recent Sea Pen image if setting sea pen wallpaper
   // successfully, which means the file has been downloaded successfully.
   if (success) {
+    logSeaPenImageSet(/*source=*/ 'Create');
     await fetchRecentSeaPenData(provider, store);
   }
 }
 
 export async function clearSeaPenThumbnails(store: SeaPenStoreInterface) {
   store.dispatch(seaPenAction.clearSeaPenThumbnailsAction());
+}
+
+export async function cleanUpSwitchingTemplate(store: SeaPenStoreInterface) {
+  store.beginBatchUpdate();
+  store.dispatch(seaPenAction.setThumbnailResponseStatusCodeAction(null));
+  store.dispatch(seaPenAction.clearCurrentSeaPenQueryAction());
+  store.dispatch(seaPenAction.clearSeaPenThumbnailsLoadingAction());
+  store.endBatchUpdate();
 }
 
 export async function deleteRecentSeaPenImage(
@@ -159,28 +214,28 @@ export function openFeedbackDialog(
   provider.openFeedbackDialog(metadata);
 }
 
-export async function getShouldShowSeaPenTermsOfServiceDialog(
+export async function getShouldShowSeaPenIntroductionDialog(
     provider: SeaPenProviderInterface,
     store: SeaPenStoreInterface): Promise<void> {
   const {shouldShowDialog} =
-      await provider.shouldShowSeaPenTermsOfServiceDialog();
+      await provider.shouldShowSeaPenIntroductionDialog();
 
   // Dispatch action to set the should show dialog boolean.
-  store.dispatch(seaPenAction.setShouldShowSeaPenTermsOfServiceDialogAction(
+  store.dispatch(seaPenAction.setShouldShowSeaPenIntroductionDialogAction(
       shouldShowDialog));
 }
 
-export async function acceptSeaPenTermsOfService(
+export async function closeSeaPenIntroductionDialog(
     provider: SeaPenProviderInterface,
     store: SeaPenStoreInterface): Promise<void> {
-  if (!store.data.shouldShowSeaPenTermsOfServiceDialog) {
-    // Do nothing if the terms are already accepted;
+  if (!store.data.shouldShowSeaPenIntroductionDialog) {
+    // Do nothing if the introduction dialog is already closed;
     return;
   }
 
-  await provider.handleSeaPenTermsOfServiceAccepted();
+  await provider.handleSeaPenIntroductionDialogClosed();
 
   // Dispatch action to set the should show dialog boolean.
   store.dispatch(
-      seaPenAction.setShouldShowSeaPenTermsOfServiceDialogAction(false));
+      seaPenAction.setShouldShowSeaPenIntroductionDialogAction(false));
 }

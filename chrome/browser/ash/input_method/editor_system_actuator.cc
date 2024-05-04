@@ -14,6 +14,7 @@
 #include "chrome/browser/ash/input_method/editor_metrics_enums.h"
 #include "chrome/browser/ash/input_method/editor_metrics_recorder.h"
 #include "chrome/browser/ash/input_method/editor_text_insertion.h"
+#include "chrome/browser/ash/input_method/url_utils.h"
 #include "url/url_constants.h"
 
 namespace ash::input_method {
@@ -24,9 +25,25 @@ constexpr char16_t kAnnouncementForFeedback[] = u"Feedback submitted";
 constexpr char16_t kAnnouncementForInsertion[] =
     u"Replacing selected text with suggestion";
 
+constexpr std::string_view
+    kDomainsRequiringParagraphConcatenationWhenInsertingText[] = {
+        "notion",
+        "medium",
+};
+
 bool IsUrlAllowed(const GURL& url) {
   return url.SchemeIs(url::kHttpsScheme) ||
          url.spec().starts_with("chrome://os-settings/osLanguages/input");
+}
+
+EditorTextInsertion::InsertionStrategy GetInsertionStrategy(const GURL& url) {
+  for (std::string_view domain :
+       kDomainsRequiringParagraphConcatenationWhenInsertingText) {
+    if (IsSubDomain(url, domain)) {
+      return EditorTextInsertion::InsertionStrategy::kInsertAsASingleParagraph;
+    }
+  }
+  return EditorTextInsertion::InsertionStrategy::kInsertAsMultipleParagraphs;
 }
 
 }  // namespace
@@ -88,6 +105,23 @@ void EditorSystemActuator::SubmitFeedback(const std::string& description) {
   system_->Announce(kAnnouncementForFeedback);
 }
 
+void EditorSystemActuator::OnTrigger(
+    orca::mojom::TriggerContextPtr trigger_context) {
+  EditorMetricsRecorder* logger = system_->GetMetricsRecorder();
+  logger->SetTone(ToEditorMetricTone(std::move(trigger_context)));
+}
+
+void EditorSystemActuator::EmitMetricEvent(
+    orca::mojom::MetricEvent metric_event) {
+  EditorMetricsRecorder* logger = system_->GetMetricsRecorder();
+  std::optional<EditorStates> editor_state_metric =
+      ToEditorStatesMetric(metric_event);
+
+  if (editor_state_metric.has_value()) {
+    logger->LogEditorState(editor_state_metric.value());
+  }
+}
+
 void EditorSystemActuator::OnFocus(int context_id) {
   if (queued_text_insertion_ == nullptr) {
     return;
@@ -112,11 +146,15 @@ void EditorSystemActuator::QueueTextInsertion(const std::string pending_text) {
   // The text cannot be immediately inserted as the target input is not focused
   // at this point, the WebUI is focused. After closing the WebUI focus will
   // return to the original text input.
-  queued_text_insertion_ =
-      std::make_unique<EditorTextInsertion>(std::move(pending_text));
+  queued_text_insertion_ = std::make_unique<EditorTextInsertion>(
+      std::move(pending_text), GetInsertionStrategy(current_url_));
   EditorMetricsRecorder* logger = system_->GetMetricsRecorder();
   logger->LogEditorState(EditorStates::kTextQueuedForInsertion);
   system_->CloseUI();
+}
+
+void EditorSystemActuator::OnInputContextUpdated(const GURL& url) {
+  current_url_ = url;
 }
 
 }  // namespace ash::input_method

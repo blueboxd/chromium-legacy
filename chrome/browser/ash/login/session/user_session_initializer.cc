@@ -31,7 +31,6 @@
 #include "chrome/browser/ash/plugin_vm/plugin_vm_manager_factory.h"
 #include "chrome/browser/ash/policy/reporting/app_install_event_log_manager_wrapper.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
-#include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part_ash.h"
 #include "chrome/browser/component_updater/crl_set_component_installer.h"
@@ -53,6 +52,7 @@
 #include "chromeos/ash/components/install_attributes/install_attributes.h"
 #include "chromeos/ash/components/network/network_cert_loader.h"
 #include "chromeos/ash/components/peripheral_notification/peripheral_notification_manager.h"
+#include "chromeos/ash/components/settings/cros_settings.h"
 #include "components/live_caption/caption_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user_manager.h"
@@ -108,7 +108,7 @@ void GetCertDBOnIOThread(
 // Note: This unsafely grabs a persistent pointer to the `NssService`'s
 // `NSSCertDatabase` outside of the IO thread, and the `NSSCertDatabase`
 // will be invalidated once the associated profile is shut down.
-// TODO(https://crbug.com/1186373): Provide better lifetime guarantees and
+// TODO(crbug.com/40753707): Provide better lifetime guarantees and
 // pass the Getter to the NetworkCertLoader.
 void OnGotNSSCertDatabaseForUser(net::NSSCertDatabase* database) {
   if (!NetworkCertLoader::IsInitialized())
@@ -200,7 +200,7 @@ void UserSessionInitializer::InitializeCerts(Profile* profile) {
       base::SysInfo::IsRunningOnChromeOS()) {
     // Note: This unsafely grabs a persistent reference to the `NssService`'s
     // `NSSCertDatabase`, which may be invalidated once `profile` is shut down.
-    // TODO(https://crbug.com/1186373): Provide better lifetime guarantees and
+    // TODO(crbug.com/40753707): Provide better lifetime guarantees and
     // pass the `NssCertDatabaseGetter` to the `NetworkCertLoader`.
     content::GetIOThreadTaskRunner({})->PostTask(
         FROM_HERE,
@@ -268,10 +268,6 @@ void UserSessionInitializer::OnUserSessionStarted(bool is_primary_user) {
   // Ensure that the `HoldingSpaceKeyedService` for `profile` is created.
   HoldingSpaceKeyedServiceFactory::GetInstance()->GetService(profile);
 
-  // Ensure that the `BirchKeyedService` for `profile` is created. It is created
-  // one per user in a multiprofile session.
-  BirchKeyedServiceFactory::GetInstance()->GetService(profile);
-
   // Ensure that the `CalendarKeyedService` for `profile` is created. It is
   // created one per user in a multiprofile session.
   CalendarKeyedServiceFactory::GetInstance()->GetService(profile);
@@ -285,6 +281,10 @@ void UserSessionInitializer::OnUserSessionStarted(bool is_primary_user) {
 
   if (is_primary_user) {
     DCHECK_EQ(primary_profile_, profile);
+
+    // Ensure that the `BirchKeyedService` for `profile` is created. It is
+    // created one per user in a multiprofile session.
+    BirchKeyedServiceFactory::GetInstance()->GetService(profile);
 
     // Ensure that PhoneHubManager and EcheAppManager are created for the
     // primary profile.

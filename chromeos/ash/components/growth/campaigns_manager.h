@@ -59,7 +59,43 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_GROWTH) CampaignsManager {
   // TODO(b/308684443): Rename this to `GetCampaignBySlotAndRegisterTrial`.
   const Campaign* GetCampaignBySlot(Slot slot) const;
 
-  ActionMap& actions_map() { return actions_map_; }
+  // Get latest opened app id.
+  const std::string& GetOpenedAppId() const;
+
+  // Set the current opened app. Used in `CampaignsMatcher` for matching
+  // opened app targeting.
+  void SetOpenedApp(const std::string& app_id);
+
+  // Set the current trigger type. Used in `CampaignsMatcher` for matching
+  // trigger targeting.
+  void SetTrigger(TriggeringType trigger_type);
+
+  // Set the current active URL. Used in `CampaignsMatcher` for matching
+  // URL targeting
+  void SetActiveUrl(const GURL& url);
+
+  // Set whether the current user is device owner.
+  void SetIsUserOwner(bool is_user_owner);
+
+  // Select action performer based on the given `action`. Action includes the
+  // action type and action params for performing action.
+  void PerformAction(int campaign_id, const Action* action);
+
+  // Select action performer based on the action type and perform action with
+  // action params.
+  void PerformAction(int campaign_id,
+                     const ActionType action_type,
+                     const base::Value::Dict* params);
+
+  // Clear event stored in the Feature Engagement framework.
+  void ClearEvent(CampaignEvent event, const std::string& id);
+
+  // Notify event to the Feature Engagement framework. Event will be stored and
+  // could be used for targeting.
+  void NotifyEventForTargeting(growth::CampaignEvent event,
+                               const std::string& id);
+
+  void SetOobeCompleteTimeForTesting(base::Time time);
 
  private:
   // Triggred when campaigns component loaded.
@@ -73,6 +109,10 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_GROWTH) CampaignsManager {
   void OnCampaignsLoaded(base::OnceClosure load_callback,
                          std::optional<base::Value::Dict> campaigns);
 
+  // Triggered when loading OOBE timestamp completed.
+  void OnOobeTimestampLoaded(base::OnceClosure load_callback,
+                             base::Time oobe_time);
+
   // Notify observers that campaigns are loaded and CampaignsManager is ready
   // to query.
   void NotifyCampaignsLoaded();
@@ -80,6 +120,8 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_GROWTH) CampaignsManager {
   // Register synthetic trial for growth. It will not work if campaign is
   // incomplete, i.e. missing id.
   void RegisterTrialForCampaign(const Campaign* campaign) const;
+
+  void NotifyEvent(const std::string& event);
 
   raw_ptr<CampaignsManagerClient> client_ = nullptr;
 

@@ -15,7 +15,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
-#include "chrome/browser/ui/web_applications/web_app_controller_browsertest.h"
+#include "chrome/browser/ui/web_applications/web_app_browsertest_base.h"
 #include "chrome/browser/web_applications/external_install_options.h"
 #include "chrome/browser/web_applications/externally_managed_app_registration_task.h"
 #include "chrome/browser/web_applications/os_integration/os_integration_manager.h"
@@ -70,8 +70,7 @@ using testing::Property;
 
 namespace web_app {
 
-class ExternallyManagedAppManagerBrowserTest
-    : public WebAppControllerBrowserTest {
+class ExternallyManagedAppManagerBrowserTest : public WebAppBrowserTestBase {
  public:
   std::unique_ptr<net::test_server::HttpResponse> SimulateRedirectHandler(
       const net::test_server::HttpRequest& request) {
@@ -99,7 +98,7 @@ class ExternallyManagedAppManagerBrowserTest
 
  protected:
   void SetUpOnMainThread() override {
-    WebAppControllerBrowserTest::SetUpOnMainThread();
+    WebAppBrowserTestBase::SetUpOnMainThread();
     // Allow different origins to be handled by the embedded_test_server.
     host_resolver()->AddRule("*", "127.0.0.1");
     test::WaitUntilWebAppProviderAndSubsystemsReady(provider());
@@ -792,8 +791,7 @@ IN_PROC_BROWSER_TEST_F(ExternallyManagedAppManagerBrowserTest,
   GURL url(embedded_test_server()->GetURL("/banners/manifest_test_page.html"));
 
   // Install user app
-  auto install_info = std::make_unique<WebAppInstallInfo>();
-  install_info->start_url = url;
+  auto install_info = WebAppInstallInfo::CreateWithStartUrlForTesting(url);
   install_info->title = u"Test user app";
   webapps::AppId app_id =
       test::InstallWebApp(profile(), std::move(install_info));
@@ -833,13 +831,7 @@ class ExternallyManagedAppManagerBrowserTestShortcut
     : public ExternallyManagedAppManagerBrowserTest,
       public testing::WithParamInterface<bool> {
  public:
-  ExternallyManagedAppManagerBrowserTestShortcut() {
-    scoped_feature_list_.InitWithFeatures(
-        {webapps::features::kCreateShortcutIgnoresManifest}, {});
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
+  ExternallyManagedAppManagerBrowserTestShortcut() = default;
 };
 
 // Tests behavior when ExternalInstallOptions.install_as_shortcut is enabled

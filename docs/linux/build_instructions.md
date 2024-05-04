@@ -12,32 +12,19 @@ Are you a Google employee? See
 
 ## System requirements
 
-*   A 64-bit Intel machine with at least 8GB of RAM. More than 16GB is highly
-    recommended.
-*   At least 100GB of free disk space.
-*   You must have Git and Python v3.8+ installed already (and `python3` must point
+* A 64-bit Intel machine with at least 8GB of RAM. More than 16GB is highly
+    recommended. If your machine has an SSD, it is recommended to have
+    \>=32GB/>=16GB of swap for machines with 8GB/16GB of RAM respectively.
+* At least 100GB of free disk space. It does not have to be on the same drive;
+ Allocate ~50-80GB on HDD for build.
+* You must have Git and Python v3.8+ installed already (and `python3` must point
     to a Python v3.8+ binary). Depot_tools bundles an appropriate version
     of Python in `$depot_tools/python-bin`, if you don't have an appropriate
     version already on your system.
 
 Most development is done on Ubuntu (Chromium's build infrastructure currently
 runs 22.04, Jammy Jellyfish). There are some instructions for other distros
-below, but they are mostly unsupported.
-
-### Docker requirements
-
-While it is not a common setup, Chromium compilation should work from within a
-Docker container. If you choose to compile from within a container for whatever
-reason, you will need to make sure that the following tools are available:
-
-* `curl`
-* `git`
-* `lsb_release`
-* `python3`
-* `sudo`
-
-There may be additional Docker-specific issues during compilation. See
-[this bug](https://crbug.com/1377520) for additional details on this.
+below, but they are mostly unsupported, but installation instructions can be found in [Docker](#docker).
 
 ## Install `depot_tools`
 
@@ -108,7 +95,7 @@ $ ./build/install-build-deps.sh
 ```
 
 You may need to adjust the build dependencies for other distros. There are
-some [notes](#notes) at the end of this document, but we make no guarantees
+some [notes](#notes-for-other-distros) at the end of this document, but we make no guarantees
 for their accuracy.
 
 ### Run the hooks
@@ -148,7 +135,7 @@ $ gn gen out/Default
 * For more info on GN, run `gn help` on the command line or read the
   [quick start guide](https://gn.googlesource.com/gn/+/main/docs/quick_start.md).
 
-### <a name="faster-builds"></a>Faster builds
+### Faster builds
 
 This section contains some things you can change to speed up your builds,
 sorted so that the things that make the biggest difference are first.
@@ -195,6 +182,13 @@ actions. If you would like to use `reclient` with RBE, you'll first need to:
 Next, you'll have to specify your `rbe_instance` in your `.gclient`
 configuration to use the correct one for Chromium contributors:
 
+*** note
+**Warning:** If you are a Google employee, do not follow the instructions below.
+See
+[go/chrome-linux-build#setup-remote-execution](https://goto.google.com/chrome-linux-build#setup-remote-execution)
+instead.
+***
+
 ```
 solutions = [
   {
@@ -210,7 +204,7 @@ solutions = [
 ]
 ```
 
-and run `gclient sync`. This will regenerate the config files in
+And run `gclient sync`. This will regenerate the config files in
 `buildtools/reclient_cfgs` to use the `rbe_instance` that you just added to your
 `.gclient` file.
 
@@ -297,7 +291,9 @@ for additional information). If you use symbolic links from your home directory
 to get to the local physical disk directory where you keep those working
 development directories, consider putting
 
-    alias cd="cd -P"
+```
+alias cd="cd -P"
+```
 
 in your `.bashrc` so that `$PWD` or `cwd` always refers to a physical, not
 logical directory (and make sure `CCACHE_BASEDIR` also refers to a physical
@@ -318,8 +314,9 @@ You can use tmpfs for the build output to reduce the amount of disk writes
 required. I.e. mount tmpfs to the output directory where the build output goes:
 
 As root:
-
-    mount -t tmpfs -o size=20G,nr_inodes=40k,mode=1777 tmpfs /path/to/out
+```
+mount -t tmpfs -o size=20G,nr_inodes=40k,mode=1777 tmpfs /path/to/out
+```
 
 *** note
 **Caveat:** You need to have enough RAM + swap to back the tmpfs. For a full
@@ -330,10 +327,10 @@ or for a release build.
 Quick and dirty benchmark numbers on a HP Z600 (Intel core i7, 16 cores
 hyperthreaded, 12 GB RAM)
 
-*   With tmpfs:
-    *   12m:20s
-*   Without tmpfs
-    *   15m:40s
+* With tmpfs:
+  * 12m:20s
+* Without tmpfs
+  * 15m:40s
 
 ### Smaller builds
 
@@ -357,6 +354,17 @@ You can get a list of all of the other build targets from GN by running `gn ls
 out/Default` from the command line. To compile one, pass the GN label to Ninja
 with no preceding "//" (so, for `//chrome/test:unit_tests` use `autoninja -C
 out/Default chrome/test:unit_tests`).
+
+## Compile a single file
+
+Ninja supports a special [syntax `^`][ninja hat syntax] to compile a single object file specyfing
+the source file. For example, `autoninja -C out/Default ../../base/logging.cc^`
+compiles `obj/base/base/logging.o`.
+
+[ninja hat syntax]: https://ninja-build.org/manual.html#:~:text=There%20is%20also%20a%20special%20syntax%20target%5E%20for%20specifying%20a%20target%20as%20the%20first%20output%20of%20some%20rule%20containing%20the%20source%20you%20put%20in%20the%20command%20line%2C%20if%20one%20exists.%20For%20example%2C%20if%20you%20specify%20target%20as%20foo.c%5E%20then%20foo.o%20will%20get%20built%20(assuming%20you%20have%20those%20targets%20in%20your%20build%20files)
+
+In addition to `foo.cc^`, Siso also supports `foo.h^` syntax to compile
+the corresponding `foo.o` if it exists.
 
 ## Run Chromium
 
@@ -454,12 +462,12 @@ system to build. Try the following build settings (see [GN build
 configuration](https://www.chromium.org/developers/gn-build-configuration) for
 other settings):
 
-*   Build in release mode (debugging symbols require more memory):
+* Build in release mode (debugging symbols require more memory):
     `is_debug = false`
-*   Turn off symbols: `symbol_level = 0`
-*   Build in component mode (this is for development only, it will be slower and
+* Turn off symbols: `symbol_level = 0`
+* Build in component mode (this is for development only, it will be slower and
     may have broken functionality): `is_component_build = true`
-*   For official (ThinLTO) builds on Linux, increase the vm.max_map_count kernel
+* For official (ThinLTO) builds on Linux, increase the vm.max_map_count kernel
     parameter: increase the `vm.max_map_count` value from default (like 65530)
     to for example 262144. You can run the `sudo sysctl -w vm.max_map_count=262144`
     command to set it in the current session from the shell, or add the
@@ -467,13 +475,13 @@ other settings):
 
 ### More links
 
-*   Information about [building with Clang](../clang.md).
-*   You may want to [use a chroot](using_a_chroot.md) to
+* Information about [building with Clang](../clang.md).
+* You may want to [use a chroot](using_a_chroot.md) to
     isolate yourself from versioning or packaging conflicts.
-*   Cross-compiling for ARM? See [LinuxChromiumArm](chromium_arm.md).
-*   Want to use Eclipse as your IDE? See
+* Cross-compiling for ARM? See [LinuxChromiumArm](chromium_arm.md).
+* Want to use Eclipse as your IDE? See
     [LinuxEclipseDev](eclipse_dev.md).
-*   Want to use your built version as your default browser? See
+* Want to use your built version as your default browser? See
     [LinuxDevBuildAsDefaultBrowser](dev_build_as_default_browser.md).
 
 ## Next Steps
@@ -482,7 +490,7 @@ If you want to contribute to the effort toward a Chromium-based browser for
 Linux, please check out the [Linux Development page](development.md) for
 more information.
 
-## Notes for other distros <a name="notes"></a>
+## Notes for other distros
 
 ### Arch Linux
 
@@ -496,8 +504,8 @@ xorg-xdpyinfo
 
 For the optional packages on Arch Linux:
 
-*   `php-cgi` is provided with `pacman`
-*   `wdiff` is not in the main repository but `dwdiff` is. You can get `wdiff`
+* `php-cgi` is provided with `pacman`
+* `wdiff` is not in the main repository but `dwdiff` is. You can get `wdiff`
     in AUR/`yaourt`
 
 ### Crostini (Debian based)
@@ -653,4 +661,115 @@ And then for the Java fonts:
 sudo mkdir -p /usr/share/fonts/truetype/ttf-lucida
 sudo find /usr/lib*/jvm/java-1.6.*-sun-*/jre/lib -iname '*.ttf' -print \
      -exec ln -s {} /usr/share/fonts/truetype/ttf-lucida \;
+```
+
+### Docker
+
+#### Prerequisites
+
+While it is not a common setup, Chromium compilation should work from within a
+Docker container. If you choose to compile from within a container for whatever
+reason, you will need to make sure that the following tools are available:
+
+* `curl`
+* `git`
+* `lsb_release`
+* `python3`
+* `sudo`
+* `file`
+
+There may be additional Docker-specific issues during compilation. See
+[this bug](https://crbug.com/1377520) for additional details on this.
+
+Note: [Clone depot_tools](#install-depot_tools) first.
+
+#### Build Steps
+
+1. Put the following Dockerfile in `/path/to/chromium/`.
+
+```docker
+# Use an official Ubuntu base image with Docker already installed
+FROM ubuntu:22.04
+
+# Set environment variables
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install Mantatory tools (curl git python3) and optional tools (vim sudo)
+RUN apt-get update && \
+    apt-get install -y curl git lsb-release python3 git file vim sudo && \
+    rm -rf /var/lib/apt/lists/*
+
+# Export depot_tools path
+ENV PATH="/depot_tools:${PATH}"
+
+# Configure git for safe.directory
+RUN git config --global --add safe.directory /depot_tools
+
+# Set the working directory to the existing Chromium source directory
+WORKDIR /chromium/src # Default directory, can be just /chromium
+
+# Expose any necessary ports (if needed)
+# EXPOSE 8080
+
+RUN useradd -u 1000 chrom-d
+USER chrom-d # Create normal user with name "chrom-d". Optional and you can use root but not advised.
+
+# Start Chromium Builder "chrom-d" (modify this command as needed)
+# CMD ["autoninja -C out/Default chrome"]
+CMD ["bash"]
+```
+
+2. Build Container
+
+```shell
+# chrom-b is just a name; You can change it but you must reflect the renaming
+# in all commands below
+$ docker build -t chrom-b .
+```
+
+3. Run container as root to install dependencies
+
+```shell
+$ docker run --rm \ # close instance upon exit
+  -it \ # Run docker interactively
+  --name chrom-b \ # with name "chrom-b"
+  -u root \ # with user root
+  -v /path/on/machine/to/chromium:/chromium \ # With chromium folder mounted
+  -v /path/on/machine/to/depot_tools:/depot_tools \ # With depot_tools mounted
+  chrom-b # Run container with image name "chrom-b"
+```
+
+4. Install dependencies:
+
+```shell
+# ./build/install-build-deps.sh # `#` here means run as root which is done in previous step.
+```
+
+5. Save container image with tag-id name `dpv1.0`. Run this on the machine, not in container
+
+```shell
+$ docker ps # Get docker running instances, copy the id you get
+# Save/tag running docker container with name "chrom-b" with "dpv1.0"
+# You can choose any tag name you want but propagate name accordingly
+# You will need to create new tags when working on different parts of
+# chromium which requires installing additional dependencies
+$ docker commit <ID from above step> chrom-b:dpv1.0
+# Optional, just saves space by deleting unnecessary images
+$ docker image rmi chrom-b:latest && docker image prune \
+  && docker container prune && docker builder prune
+```
+
+1. [Run hooks](#run-the-hooks). (On docker or machine if you installed depot_tools on machine)
+2. Exit container.
+
+#### Run container
+
+```shell
+$ docker run --rm \ # close instance upon exit
+  -it \ # Run docker interactively
+  --name chrom-b \ # with name "chrom-b"
+  -u $(id -u):$(id -g) \ # Run container as a non-root user with same UID & GID
+  -v /path/on/machine/to/chromium:/chromium \ # With chromium folder mounted
+  -v /path/on/machine/to/depot_tools:/depot_tools \ # With depot_tools mounted
+  chrom-b:dpv1.0 # Run container with image name "chrom-b" and tag dpv1.0
 ```

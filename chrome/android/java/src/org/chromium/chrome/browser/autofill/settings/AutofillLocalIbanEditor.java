@@ -9,20 +9,31 @@ import android.text.Editable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 
+import androidx.annotation.LayoutRes;
+import androidx.annotation.StringRes;
+import androidx.annotation.VisibleForTesting;
+import androidx.fragment.app.Fragment;
+
 import com.google.android.material.textfield.TextInputLayout;
 
+import org.chromium.base.Callback;
 import org.chromium.build.annotations.UsedByReflection;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.autofill.AutofillEditorBase;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
+import org.chromium.chrome.browser.autofill.PersonalDataManager.Iban;
+import org.chromium.chrome.browser.autofill.PersonalDataManagerFactory;
+import org.chromium.components.autofill.IbanRecordType;
 
-public class AutofillLocalIbanEditor extends AutofillEditorBase {
-    // This class creates a view for adding a local IBAN. A local IBAN gets saved to the
-    // user's device only.
+/**
+ * This class creates a view for adding and editing a local IBAN. A local IBAN gets saved to the
+ * user's device only.
+ */
+public class AutofillLocalIbanEditor extends AutofillIbanEditor {
+    private static Callback<Fragment> sObserverForTest;
+
     protected Button mDoneButton;
     protected EditText mNickname;
     protected TextInputLayout mNicknameLabel;
@@ -34,7 +45,6 @@ public class AutofillLocalIbanEditor extends AutofillEditorBase {
     @Override
     public View onCreateView(
             LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        // TODO(b/309163678): Disable autofill for the fields.
         View v = super.onCreateView(inflater, container, savedInstanceState);
 
         mDoneButton = (Button) v.findViewById(R.id.button_primary);
@@ -45,25 +55,22 @@ public class AutofillLocalIbanEditor extends AutofillEditorBase {
         mNickname.setOnFocusChangeListener(
                 (view, hasFocus) -> mNicknameLabel.setCounterEnabled(hasFocus));
 
+        addIbanDataToEditFields();
         initializeButtons(v);
+        if (sObserverForTest != null) {
+            sObserverForTest.onResult(this);
+        }
         return v;
     }
 
     @Override
-    protected int getLayoutId() {
+    protected @LayoutRes int getLayoutId() {
         return R.layout.autofill_local_iban_editor;
     }
 
     @Override
-    protected int getTitleResourceId(boolean isNewEntry) {
-        // TODO(b/309163678): Use isNewEntry to decide which title to display
-        // (i.e., autofill_add_local_iban or autofill_edit_local_iban).
-        return R.string.autofill_add_local_iban;
-    }
-
-    @Override
-    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-        // TODO(b/309163678): Update this once the AutofillIbanEditor class is added.
+    protected @StringRes int getTitleResourceId(boolean isNewEntry) {
+        return isNewEntry ? R.string.autofill_add_local_iban : R.string.autofill_edit_local_iban;
     }
 
     @Override
@@ -73,24 +80,62 @@ public class AutofillLocalIbanEditor extends AutofillEditorBase {
 
     @Override
     protected boolean saveEntry() {
-        // TODO(b/320757907): Save IBAN from settings page.
-        return false;
+        // If an existing local IBAN is being edited, its GUID and record type are set here. In the
+        // case of a new IBAN, these values are set right before being written to the autofill
+        // table.
+        Iban iban =
+                Iban.create(
+                        /* guid= */ mGUID,
+                        /* label= */ "",
+                        /* nickname= */ mNickname.getText().toString().trim(),
+                        /* recordType= */ mGUID.isEmpty()
+                                ? IbanRecordType.UNKNOWN
+                                : IbanRecordType.LOCAL_IBAN,
+                        /* value= */ mValue.getText().toString());
+        PersonalDataManager personalDataManager =
+                PersonalDataManagerFactory.getForProfile(getProfile());
+        String guid = personalDataManager.addOrUpdateLocalIban(iban);
+        // Return true if the GUID is non-empty (successful operation), and false if the GUID is
+        // empty (unsuccessful).
+        return !guid.isEmpty();
     }
 
     @Override
     protected void deleteEntry() {
-        // TODO(b/309163615): User can delete existing IBANs from settings page.
+        if (mGUID != null) {
+            PersonalDataManagerFactory.getForProfile(getProfile()).deleteIban(mGUID);
+        }
     }
 
     @Override
     protected void initializeButtons(View v) {
         super.initializeButtons(v);
+        mNickname.addTextChangedListener(this);
         mValue.addTextChangedListener(this);
+    }
+
+    @VisibleForTesting
+    public static void setObserverForTest(Callback<Fragment> observerForTest) {
+        sObserverForTest = observerForTest;
+    }
+
+    private void addIbanDataToEditFields() {
+        if (mIban == null) {
+            return;
+        }
+
+        if (!mIban.getNickname().isEmpty()) {
+            mNickname.setText(mIban.getNickname());
+        }
+        if (!mIban.getValue().isEmpty()) {
+            mValue.setText(mIban.getValue());
+        }
     }
 
     private void updateSaveButtonEnabled() {
         // Enable save button if IBAN value is valid.
         mDoneButton.setEnabled(
-                PersonalDataManager.getInstance().isValidIban(mValue.getText().toString()));
+                PersonalDataManagerFactory.getForProfile(getProfile())
+                        .isValidIban(mValue.getText().toString()));
     }
 }

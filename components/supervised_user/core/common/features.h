@@ -14,7 +14,6 @@ namespace supervised_user {
 
 // Experiment to enable kid-friendly content feed.
 BASE_DECLARE_FEATURE(kKidFriendlyContentFeed);
-extern const base::FeatureParam<std::string> kKidFriendlyContentFeedEndpoint;
 
 BASE_DECLARE_FEATURE(kLocalWebApprovals);
 
@@ -22,6 +21,9 @@ BASE_DECLARE_FEATURE(kLocalWebApprovals);
 // on extension installations.
 BASE_DECLARE_FEATURE(
     kEnableSupervisedUserSkipParentApprovalToInstallExtensions);
+
+// Applies new informative strings during the parental extension approval flow.
+BASE_DECLARE_FEATURE(kUpdatedSupervisedUserExtensionApprovalStrings);
 
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN)
 BASE_DECLARE_FEATURE(kEnableExtensionsPermissionsForSupervisedUsersOnDesktop);
@@ -36,9 +38,6 @@ BASE_DECLARE_FEATURE(kEnableExtensionsPermissionsForSupervisedUsersOnDesktop);
 // `kEnableExtensionsPermissionsForSupervisedUsersOnDesktop` is also enabled.
 bool IsSupervisedUserSkipParentApprovalToInstallExtensionsEnabled();
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
-
-// Request priority experiment for ClassifyUrl (for critical path of rendering).
-BASE_DECLARE_FEATURE(kHighestRequestPriorityForClassifyUrl);
 
 // Enable different web sign in interception behaviour for supervised users:
 //
@@ -59,6 +58,10 @@ BASE_DECLARE_FEATURE(kShadowKidsApiWithSafeSites);
 #if BUILDFLAG(IS_ANDROID)
 BASE_DECLARE_FEATURE(kMigrateAccountManagementSettingsToCapabilities);
 #endif
+
+// Uses PrimaryAccountAccessTokenFetcher::Mode::kWaitUntilAvailable for
+// ClassifyUrl fetches.
+BASE_DECLARE_FEATURE(kWaitUntilAccessTokenAvailableForClassifyUrl);
 
 // Returns whether local parent approvals on Family Link user's device are
 // enabled.

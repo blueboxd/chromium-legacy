@@ -10,7 +10,6 @@
 #import "ios/chrome/browser/default_browser/model/utils_test_support.h"
 #import "ios/chrome/browser/first_run/model/first_run.h"
 #import "ios/chrome/browser/ntp/model/set_up_list_prefs.h"
-#import "ios/chrome/browser/parcel_tracking/features.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/ui/content_suggestions/magic_stack_half_sheet_consumer.h"
 #import "ios/chrome/browser/ui/content_suggestions/set_up_list/utils.h"
@@ -27,9 +26,8 @@ using startup_metric_utils::FirstRunSentinelCreationResult;
 class MagicStackHalfSheetMediatorTest : public PlatformTest {
  public:
   void SetUp() override {
-    scoped_feature_list_.InitWithFeatures({kMagicStack, kSafetyCheckMagicStack,
-                                           kTabResumption, kIOSParcelTracking},
-                                          {});
+    scoped_feature_list_.InitWithFeatures(
+        {kSafetyCheckMagicStack, kTabResumption}, {});
 
     // Necessary set up for kIOSSetUpList.
     local_state_.Get()->ClearPref(set_up_list_prefs::kDisabled);

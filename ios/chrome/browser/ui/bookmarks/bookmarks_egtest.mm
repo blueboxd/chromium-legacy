@@ -144,8 +144,9 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
       removeBookmarkWithTitle:@"Folder 1"
                     inStorage:BookmarkModelType::kLocalOrSyncable];
 
-  // Verify the empty background appears because Folder 3 is deleted.
-  [BookmarkEarlGreyUI verifyEmptyBackgroundAppears];
+  // Ensure Folder 1.1 is seen, that means it successfully comes back to Mobile
+  // Bookmarks.
+  [BookmarkEarlGreyUI verifyBookmarkFolderIsSeen:@"Folder 1.1"];
 }
 
 // Test deleting grand parent is reflected in the bookmarks folder editor UI.
@@ -176,8 +177,9 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
       removeBookmarkWithTitle:@"Folder 1"
                     inStorage:BookmarkModelType::kLocalOrSyncable];
 
-  // Verify the empty background appears because Folder 3 is deleted.
-  [BookmarkEarlGreyUI verifyEmptyBackgroundAppears];
+  // Ensure Folder 1.1 is seen, that means it successfully comes back to Mobile
+  // Bookmarks.
+  [BookmarkEarlGreyUI verifyBookmarkFolderIsSeen:@"Folder 1.1"];
 }
 
 // Test to set bookmarks in multiple tabs.
@@ -226,8 +228,7 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
                                           BookmarksContextMenuEditButton()]
       performAction:grey_tap()];
   // Tap the Folder button.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Change Folder")]
-      performAction:grey_tap()];
+  [BookmarkEarlGreyUI openFolderPicker];
   // Close the folder chooser, bookmark editor and the bookmark list.
   [[EarlGrey
       selectElementWithMatcher:grey_allOf(BookmarksNavigationBarBackButton(),
@@ -256,8 +257,7 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
                                           BookmarksContextMenuEditButton()]
       performAction:grey_tap()];
   // Tap the Folder button.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Change Folder")]
-      performAction:grey_tap()];
+  [BookmarkEarlGreyUI openFolderPicker];
   // Close the folder chooser, bookmark editor and the bookmark list.
   [[EarlGrey
       selectElementWithMatcher:grey_allOf(BookmarksNavigationBarBackButton(),
@@ -286,8 +286,7 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
       performAction:grey_tap()];
 
   // Tap the Folder button.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Change Folder")]
-      performAction:grey_tap()];
+  [BookmarkEarlGreyUI openFolderPicker];
 
   // Create a new folder.
   [BookmarkEarlGreyUI addFolderWithName:nil
@@ -945,8 +944,7 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
       performAction:grey_tap()];
 
   // Tap the Folder button and verify folder chooser UI is displayed.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Change Folder")]
-      performAction:grey_tap()];
+  [BookmarkEarlGreyUI openFolderPicker];
   [[EarlGrey
       selectElementWithMatcher:
           grey_accessibilityID(kBookmarkFolderPickerViewContainerIdentifier)]
@@ -965,8 +963,7 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
 
   // Tap on Folder button to open folder chooser UI and verify `New Folder`
   // section is not visible.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Change Folder")]
-      performAction:grey_tap()];
+  [BookmarkEarlGreyUI openFolderPicker];
   [[EarlGrey
       selectElementWithMatcher:
           grey_accessibilityID(kBookmarkFolderPickerViewContainerIdentifier)]
@@ -1263,7 +1260,7 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
       assertWithMatcher:grey_notNil()];
 }
 
-// TODO(crbug.com/695749): Add egtests for:
+// TODO(crbug.com/40508042): Add egtests for:
 // 1. Spinner background.
 // 2. Reorder bookmarks. (make sure it won't clear the row selection on table)
 // 3. Test new folder name is committed when name editing is interrupted by

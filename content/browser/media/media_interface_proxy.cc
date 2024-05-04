@@ -78,6 +78,7 @@
 #if BUILDFLAG(ALLOW_OOP_VIDEO_DECODER)
 #include "content/public/browser/stable_video_decoder_factory.h"
 #include "media/base/media_switches.h"
+#include "mojo/public/cpp/bindings/message.h"
 #endif  // BUILDFLAG(ALLOW_OOP_VIDEO_DECODER)
 
 namespace content {
@@ -211,7 +212,7 @@ class FrameInterfaceFactoryImpl : public media::mojom::FrameInterfaceFactory,
       mojo::PendingReceiver<media::mojom::DCOMPSurfaceRegistry> receiver)
       override {
     if (media::SupportMediaFoundationPlayback()) {
-      // TODO(crbug.com/1233379): Pass IO task runner and remove the PostTask()
+      // TODO(crbug.com/40191522): Pass IO task runner and remove the PostTask()
       // in DCOMPSurfaceRegistryBroker after bug fixed.
       mojo::MakeSelfOwnedReceiver(
           std::make_unique<DCOMPSurfaceRegistryBroker>(), std::move(receiver));
@@ -310,7 +311,10 @@ void MediaInterfaceProxy::CreateVideoDecoder(
       break;
     case media::OOPVDMode::kEnabledWithoutGpuProcessAsProxy:
       // Well-behaved clients shouldn't call CreateVideoDecoder() in this OOP-VD
-      // mode.
+      // mode and MediaInterfaceProxy::CreateVideoDecoder() should always be
+      // called during a message dispatch.
+      CHECK(mojo::IsInMessageDispatch());
+      mojo::ReportBadMessage("CreateVideoDecoder() called unexpectedly");
       return;
     case media::OOPVDMode::kDisabled:
       break;
@@ -319,6 +323,28 @@ void MediaInterfaceProxy::CreateVideoDecoder(
   factory->CreateVideoDecoder(std::move(receiver),
                               std::move(oop_video_decoder));
 }
+
+#if BUILDFLAG(ALLOW_OOP_VIDEO_DECODER)
+void MediaInterfaceProxy::CreateStableVideoDecoder(
+    mojo::PendingReceiver<media::stable::mojom::StableVideoDecoder>
+        video_decoder) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  switch (media::GetOutOfProcessVideoDecodingMode()) {
+    case media::OOPVDMode::kEnabledWithGpuProcessAsProxy:
+    case media::OOPVDMode::kDisabled:
+      // Well-behaved clients shouldn't call CreateStableVideoDecoder() in this
+      // OOP-VD mode and MediaInterfaceProxy::CreateStableVideoDecoder() should
+      // always be called during a message dispatch.
+      CHECK(mojo::IsInMessageDispatch());
+      mojo::ReportBadMessage("CreateStableVideoDecoder() called unexpectedly");
+      return;
+    case media::OOPVDMode::kEnabledWithoutGpuProcessAsProxy:
+      render_frame_host().GetProcess()->CreateStableVideoDecoder(
+          std::move(video_decoder));
+      break;
+  }
+}
+#endif  // BUILDFLAG(ALLOW_OOP_VIDEO_DECODER)
 
 void MediaInterfaceProxy::CreateAudioEncoder(
     mojo::PendingReceiver<media::mojom::AudioEncoder> receiver) {
@@ -538,9 +564,9 @@ void MediaInterfaceProxy::ConnectToMediaFoundationService(
 
   // Passing an empty CdmType as MediaFoundation-based CDMs don't use CdmStorage
   // currently.
-  // TODO(crbug.com/1231162): This works but is a bit hacky. CdmType is used for
-  // both CDM-process-isolation and storage isolation. We probably still want to
-  // have the information on whether we want to use CdmStorage in CDM
+  // TODO(crbug.com/40779490): This works but is a bit hacky. CdmType is used
+  // for both CDM-process-isolation and storage isolation. We probably still
+  // want to have the information on whether we want to use CdmStorage in CDM
   // registration and populate that info here.
   mf_service.CreateInterfaceFactory(
       mf_interface_factory_remote_.BindNewPipeAndPassReceiver(),

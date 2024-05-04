@@ -13,7 +13,6 @@
 #include "base/values.h"
 #include "chrome/browser/web_applications/commands/web_app_command.h"
 #include "chrome/browser/web_applications/locks/noop_lock.h"
-#include "chrome/browser/web_applications/os_integration/os_integration_manager.h"
 #include "chrome/browser/web_applications/web_app_install_manager.h"
 #include "chrome/browser/web_applications/web_app_install_params.h"
 #include "chrome/browser/web_applications/web_app_install_utils.h"
@@ -115,11 +114,11 @@ class FetchManifestAndInstallCommand
   void OnDialogCompleted(bool user_accepted,
                          std::unique_ptr<WebAppInstallInfo> web_app_info);
   void OnInstallFinalizedMaybeReparentTab(const webapps::AppId& app_id,
-                                          webapps::InstallResultCode code,
-                                          OsHooksErrors os_hooks_errors);
+                                          webapps::InstallResultCode code);
 
   void OnInstallCompleted(const webapps::AppId& app_id,
                           webapps::InstallResultCode code);
+  void MeasureUserInstalledAppHistogram(webapps::InstallResultCode code);
 
   const webapps::WebappInstallSource install_surface_;
   const base::WeakPtr<content::WebContents> web_contents_;
@@ -136,7 +135,6 @@ class FetchManifestAndInstallCommand
 
   InstallErrorLogEntry install_error_log_entry_;
 
-  webapps::AppId app_id_;
   std::unique_ptr<WebAppInstallInfo> web_app_info_;
   blink::mojom::ManifestPtr opt_manifest_;
   bool valid_manifest_for_crafted_web_app_ = false;

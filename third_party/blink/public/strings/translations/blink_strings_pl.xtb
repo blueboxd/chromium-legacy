@@ -12,12 +12,12 @@
 <translation id="1588438908519853928">Normalny</translation>
 <translation id="1591562245178063882">W tym miesiącu</translation>
 <translation id="1637811476055996098">Wybierz pliki</translation>
+<translation id="1680090928918677457">Używaj kamery</translation>
 <translation id="1681022320378710418">bieżąca godzina</translation>
 <translation id="1727839386348365796">Zakraplacz</translation>
 <translation id="1729654308190250600">Podaj adres e-mail.</translation>
 <translation id="1758486001363313524">Inny...</translation>
 <translation id="1787192514241997742">łączny czas: <ph name="REMAINING_TIME" /></translation>
-<translation id="1800494066469288780">Zezwól na używanie kamery</translation>
 <translation id="1822429046913737220">rano/po południu</translation>
 <translation id="1832974991323546415">odtwarzanie na urządzeniu zdalnym</translation>
 <translation id="1921819250265091946">dd</translation>
@@ -54,7 +54,6 @@
 <translation id="3220661731597678625">bieżący krok</translation>
 <translation id="3321030238473337787">Szybkość odtwarzania</translation>
 <translation id="3329013043687509092">Nasycenie</translation>
-<translation id="3377518164566272702">Zezwól na używanie mikrofonu i kamery</translation>
 <translation id="3450233048674729344">Wartość nie może być większa niż <ph name="MAXIMUM" />.</translation>
 <translation id="3732799496749320381">mm</translation>
 <translation id="3754210790023674521">Wyłącz tryb obrazu w obrazie</translation>
@@ -77,6 +76,7 @@
 <translation id="4912200001568447310">bieżący element</translation>
 <translation id="4915360478455618802">Pokaż selektor godziny</translation>
 <translation id="4924138096460353083">nieokreślony</translation>
+<translation id="49269513399674318">Używaj mikrofonu</translation>
 <translation id="4950364064308314478">Pokaż selektor lokalnej daty i godziny</translation>
 <translation id="4971739861736909480">Wybrano <ph name="ACCNAME" /></translation>
 <translation id="4975562563186953947">Wybrano: <ph name="SELECTED_COUNT" /></translation>
@@ -144,6 +144,7 @@
 <translation id="7080893216867146095">Udostępnianie lokalizacji dozwolone</translation>
 <translation id="709897737746224366">Podaj wartość w wymaganym formacie.</translation>
 <translation id="7102274145889307184">bieżąca lokalizacja</translation>
+<translation id="7134810312945846184">Używaj mikrofonu i kamery</translation>
 <translation id="7263440858009898357">Wybierz element z listy.</translation>
 <translation id="7320576522385648310">buforowanie</translation>
 <translation id="7341556277900466204">Podgląd koloru</translation>
@@ -188,7 +189,6 @@
 <translation id="9132465097189459683">Inny...</translation>
 <translation id="9155987714137265666"><ph name="WEEK" />, początek <ph name="WEEK_START_DATE" /></translation>
 <translation id="916607977885256133">Obraz w obrazie</translation>
-<translation id="918430632320614861">Zezwól na używanie mikrofonu</translation>
 <translation id="945780513535800434">Częściowo zaznaczono</translation>
 <translation id="954003015749068518">włącz tryb obrazu w obrazie</translation>
 </translationbundle>

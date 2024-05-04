@@ -34,7 +34,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
+#if !BUILDFLAG(IS_ANDROID)
 // components/webauthn/core is a desktop-only dependency of
 // components/password_manager/core. gn cannot parse the preprocessor directive
 // above when checking includes, so we need nogncheck here.
@@ -68,7 +68,7 @@ struct MockSavedPasswordsPresenterObserver : SavedPasswordsPresenter::Observer {
 using StrictMockSavedPasswordsPresenterObserver =
     ::testing::StrictMock<MockSavedPasswordsPresenterObserver>;
 
-#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
+#if !BUILDFLAG(IS_ANDROID)
 constexpr char kPasskeyCredentialId[] = "abcd";
 constexpr char kPasskeyRPID[] = "passkeys.com";
 constexpr char kPasskeyUserId[] = "1234";
@@ -109,7 +109,7 @@ class SavedPasswordsPresenterTest : public testing::Test {
   }
 
   TestPasswordStore& store() { return *store_; }
-#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
+#if !BUILDFLAG(IS_ANDROID)
   webauthn::TestPasskeyModel& passkey_store() { return test_passkey_store_; }
 #endif
   SavedPasswordsPresenter& presenter() { return presenter_; }
@@ -131,7 +131,7 @@ class SavedPasswordsPresenterTest : public testing::Test {
   scoped_refptr<TestPasswordStore> store_ =
       base::MakeRefCounted<TestPasswordStore>();
   FakeAffiliationService affiliation_service_;
-#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
+#if !BUILDFLAG(IS_ANDROID)
   webauthn::TestPasskeyModel test_passkey_store_;
   SavedPasswordsPresenter presenter_{&affiliation_service_, store_,
                                      /*account_store=*/nullptr,
@@ -172,7 +172,7 @@ TEST_F(SavedPasswordsPresenterTest, NotifyObservers) {
 
   // Remove should notify, and observers should be passed an empty list.
   EXPECT_CALL(observer, OnSavedPasswordsChanged);
-  store().RemoveLogin(form);
+  store().RemoveLogin(FROM_HERE, form);
   RunUntilIdle();
   EXPECT_TRUE(store().IsEmpty());
 
@@ -834,7 +834,7 @@ TEST_F(SavedPasswordsPresenterTest,
   }
 }
 
-#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
+#if !BUILDFLAG(IS_ANDROID)
 TEST_F(SavedPasswordsPresenterTest, GetSavedCredentialsWithPasskeys) {
   // Password grouping is required for passkey support.
   if (!IsGroupingEnabled()) {
@@ -1146,7 +1146,7 @@ TEST_F(SavedPasswordsPresenterWithTwoStoresTest, AddCredentialsToBothStores) {
   RunUntilIdle();
 
   EXPECT_CALL(observer, OnSavedPasswordsChanged);
-  profile_store().RemoveLogin(profile_store_form);
+  profile_store().RemoveLogin(FROM_HERE, profile_store_form);
   RunUntilIdle();
 
   EXPECT_CALL(observer, OnSavedPasswordsChanged);
@@ -2024,8 +2024,8 @@ TEST_F(SavedPasswordsPresenterMoveToAccountTest, MovesToAccount) {
 
   EXPECT_CALL(*account_store(), AddLogin(form_1, _));
   EXPECT_CALL(*account_store(), AddLogin(form_2, _));
-  EXPECT_CALL(*profile_store(), RemoveLogin(form_1));
-  EXPECT_CALL(*profile_store(), RemoveLogin(form_2));
+  EXPECT_CALL(*profile_store(), RemoveLogin(_, form_1));
+  EXPECT_CALL(*profile_store(), RemoveLogin(_, form_2));
 
   presenter().MoveCredentialsToAccount(
       credentials,
@@ -2060,7 +2060,7 @@ TEST_F(SavedPasswordsPresenterMoveToAccountTest,
   RunUntilIdle();
 
   EXPECT_CALL(*account_store(), AddLogin).Times(0);
-  EXPECT_CALL(*profile_store(), RemoveLogin(form_profile));
+  EXPECT_CALL(*profile_store(), RemoveLogin(_, form_profile));
 
   presenter().MoveCredentialsToAccount(
       credentials,

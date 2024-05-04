@@ -5,21 +5,21 @@
 #include "chrome/services/sharing/nearby/nearby_connections.h"
 
 #include <algorithm>
+#include <string_view>
 
 #include "base/feature_list.h"
 #include "base/files/file_util.h"
-#include "base/strings/string_piece.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "chrome/browser/nearby_sharing/logging/logging.h"
-#include "chrome/services/sharing/nearby/common/nearby_features.h"
 #include "chrome/services/sharing/nearby/nearby_connections_conversions.h"
-#include "chrome/services/sharing/nearby/nearby_presence_conversions.h"
 #include "chrome/services/sharing/nearby/platform/input_file.h"
+#include "chromeos/ash/components/nearby/presence/conversions/nearby_presence_conversions.h"
 #include "chromeos/ash/services/nearby/public/mojom/nearby_connections_types.mojom.h"
 #include "chromeos/ash/services/nearby/public/mojom/webrtc.mojom.h"
 #include "components/cross_device/logging/logging.h"
+#include "components/cross_device/nearby/nearby_features.h"
 #include "services/network/public/mojom/p2p.mojom.h"
 #include "third_party/nearby/src/connections/core.h"
 #include "third_party/nearby/src/connections/v3/bandwidth_info.h"
@@ -105,19 +105,12 @@ v3::ConnectionListener CreateConnectionListenerV3(
               return;
             }
 
-            // Currently, Presence will be the main consumer of this listener,
-            // so casting is safe since `NearbyDevice` is the superclass of
-            // `PresenceDevice`.
-            remote->OnConnectionInitiated(
-                ash::nearby::presence::BuildPresenceMojomDevice(
-                    static_cast<const ::nearby::presence::PresenceDevice&>(
-                        remote_device)),
+            remote->OnConnectionInitiatedV3(
+                remote_device.GetEndpointId(),
                 mojom::InitialConnectionInfoV3::New(
                     info.authentication_digits, info.raw_authentication_token,
                     info.is_incoming_connection,
-                    // TODO(b/314197753): Change to info.authentication_status
-                    // when implemented in the Nearby library.
-                    mojom::AuthenticationStatus::kSuccess));
+                    AuthenticationStatusToMojom(info.authentication_status)));
           },
       .result_cb =
           [remote](const NearbyDevice& remote_device,
@@ -126,14 +119,8 @@ v3::ConnectionListener CreateConnectionListenerV3(
               return;
             }
 
-            // `result_cb` receives a `v3::ConnectionsDevice` which can't be
-            // cast to `::nearby::presence::PresenceDevice&` so we build a
-            // `PresenceDevice` mojom with just the endpoint since clients
-            // overriding `OnConnectionResult()` only need the endpoint ID.
-            remote->OnConnectionResult(
-                ash::nearby::presence::BuildPresenceMojomDevice(
-                    presence::PresenceDevice(remote_device.GetEndpointId())),
-                StatusToMojom(result.status.value));
+            remote->OnConnectionResultV3(remote_device.GetEndpointId(),
+                                         StatusToMojom(result.status.value));
           },
       .disconnected_cb =
           [remote, cb = std::move(on_endpoint_disconnected_cb)](
@@ -142,15 +129,8 @@ v3::ConnectionListener CreateConnectionListenerV3(
               return;
             }
 
-            // Build a value before deleting what `remote_device` references are
-            // in the map. Similar to `result_cb`, `disconnected_cb` receives a
-            // `v3::ConnectionsDevice` and clients only need the endpoint ID.
-            auto device_ptr = ash::nearby::presence::BuildPresenceMojomDevice(
-                presence::PresenceDevice(remote_device.GetEndpointId()));
-
             std::move(cb).Run(remote_device.GetEndpointId());
-
-            remote->OnDisconnected(std::move(device_ptr));
+            remote->OnDisconnectedV3(remote_device.GetEndpointId());
           },
       .bandwidth_changed_cb =
           [remote](const NearbyDevice& remote_device,
@@ -159,10 +139,11 @@ v3::ConnectionListener CreateConnectionListenerV3(
               return;
             }
 
-            // TODO(b/308178927): Change out the `NOTIMPLEMENTED()` macro call
-            // to `remote->OnBandwidthChanged()` when the logic is fully
-            // implemented.
-            NOTIMPLEMENTED();
+            remote->OnBandwidthChangedV3(
+                remote_device.GetEndpointId(),
+                mojom::BandwidthInfo::New(
+                    BandwidthQualityToMojom(bandwidth_info.quality),
+                    MediumToMojom(bandwidth_info.medium)));
           },
   };
 }
@@ -180,9 +161,11 @@ NearbyConnections& NearbyConnections::GetInstance() {
 
 NearbyConnections::NearbyConnections(
     mojo::PendingReceiver<mojom::NearbyConnections> nearby_connections,
+    NearbyDeviceProvider* presence_device_provider,
     nearby::api::LogMessage::Severity min_log_severity,
     base::OnceClosure on_disconnect)
     : nearby_connections_(this, std::move(nearby_connections)),
+      presence_local_device_provider_(presence_device_provider),
       thread_task_runner_(base::SingleThreadTaskRunner::GetCurrentDefault()) {
   nearby::api::LogMessage::SetMinLogSeverity(min_log_severity);
 
@@ -221,7 +204,9 @@ void NearbyConnections::StartAdvertising(
       .enable_bluetooth_listening = options->enable_bluetooth_listening,
       .enable_webrtc_listening = options->enable_webrtc_listening,
       .fast_advertisement_service_uuid =
-          options->fast_advertisement_service_uuid.canonical_value()};
+          options->fast_advertisement_service_uuid.has_value()
+              ? options->fast_advertisement_service_uuid->canonical_value()
+              : std::string()};
 
   advertising_options.strategy = StrategyFromMojom(options->strategy);
   advertising_options.allowed =
@@ -378,7 +363,7 @@ void NearbyConnections::AcceptConnection(
   // Capturing Core* is safe as Core owns PayloadListener.
   PayloadListener payload_listener = {
       .payload_cb =
-          [&, remote, core = GetCore(service_id)](base::StringPiece endpoint_id,
+          [&, remote, core = GetCore(service_id)](std::string_view endpoint_id,
                                                   Payload payload) {
             if (!remote) {
               return;
@@ -424,7 +409,7 @@ void NearbyConnections::AcceptConnection(
             }
           },
       .payload_progress_cb =
-          [&, remote](base::StringPiece endpoint_id,
+          [&, remote](std::string_view endpoint_id,
                       const PayloadProgressInfo& info) {
             if (!remote) {
               return;
@@ -462,7 +447,7 @@ void NearbyConnections::AcceptConnection(
                 // previous kInProgress update with the same |bytes_transferred|
                 // value.
                 // Since we have completed fetching the full payload, return the
-                // completed payload as a "bytes" payload.
+                // completed payload as a bytes payload.
                 remote->OnPayloadReceived(
                     std::string(endpoint_id),
                     mojom::Payload::New(
@@ -595,13 +580,14 @@ void NearbyConnections::RequestConnectionV3(
   const std::string& endpoint_id = remote_device->endpoint_id;
 
   if (base::Contains(endpoint_id_to_presence_device_map, endpoint_id)) {
-    CD_LOG(INFO, Feature::NP)
+    CD_LOG(INFO, Feature::NEARBY_INFRA)
         << __func__ << "PresenceDevice already exists in map.";
   } else {
     std::unique_ptr<presence::PresenceDevice> presence_device =
         std::make_unique<presence::PresenceDevice>(endpoint_id);
-    presence_device->SetMetadata(ash::nearby::presence::MetadataFromMojom(
-        remote_device->metadata.get()));
+    presence_device->SetDeviceIdentityMetaData(
+        ash::nearby::presence::MetadataFromMojom(
+            remote_device->metadata.get()));
     endpoint_id_to_presence_device_map.insert_or_assign(
         endpoint_id, std::move(presence_device));
   }
@@ -636,8 +622,11 @@ void NearbyConnections::AcceptConnectionV3(
                 mojom::BytesPayloadPtr bytes_payload = mojom::BytesPayload::New(
                     ByteArrayToMojom(payload.AsBytes()));
 
-                // TODO(b/308178927): Call `remote->OnPayloadReceived()` when
-                // callback is implemented.
+                remote->OnPayloadReceivedV3(
+                    remote_device.GetEndpointId(),
+                    mojom::Payload::New(payload.GetId(),
+                                        mojom::PayloadContent::NewBytes(
+                                            std::move(bytes_payload))));
                 break;
               }
               case PayloadType::kFile: {
@@ -655,8 +644,11 @@ void NearbyConnections::AcceptConnectionV3(
                 mojom::FilePayloadPtr file_payload =
                     mojom::FilePayload::New(std::move(file));
 
-                // TODO(b/308178927): Call `remote->OnPayloadReceived()` when
-                // callback is implemented.
+                remote->OnPayloadReceivedV3(
+                    remote_device.GetEndpointId(),
+                    mojom::Payload::New(payload.GetId(),
+                                        mojom::PayloadContent::NewFile(
+                                            std::move(file_payload))));
                 break;
               }
               case PayloadType::kStream: {
@@ -676,8 +668,11 @@ void NearbyConnections::AcceptConnectionV3(
               return;
             }
 
-            // TODO(b/308178927): Call `remote->OnPayloadTransferUpdate()` when
-            // callback is implemented.
+            remote->OnPayloadTransferUpdateV3(
+                remote_device.GetEndpointId(),
+                mojom::PayloadTransferUpdate::New(
+                    info.payload_id, PayloadStatusToMojom(info.status),
+                    info.total_bytes, info.bytes_transferred));
 
             if (!buffer_manager_.IsTrackingPayload(info.payload_id)) {
               return;
@@ -690,12 +685,26 @@ void NearbyConnections::AcceptConnectionV3(
                 buffer_manager_.StopTrackingFailedPayload(info.payload_id);
                 break;
               case PayloadProgressInfo::Status::kInProgress:
+                // Note that `info.bytes_transferred` is a cumulative measure of
+                // bytes that have been sent so far in the payload.
                 buffer_manager_.HandleBytesTransferred(info.payload_id,
                                                        info.bytes_transferred);
                 break;
               case PayloadProgressInfo::Status::kSuccess:
-                // TODO(b/308178927): Call `remote->OnPayloadReceived()` when
-                // callback is implemented.
+                // When kSuccess is passed, we are guaranteed to have received
+                // a previous kInProgress update with the same
+                // |bytes_transferred| value. Since we have completed fetching
+                // the full payload, return the completed payload as a bytes
+                // payload.
+                remote->OnPayloadReceivedV3(
+                    remote_device.GetEndpointId(),
+                    mojom::Payload::New(
+                        info.payload_id,
+                        mojom::PayloadContent::NewBytes(
+                            mojom::BytesPayload::New(ByteArrayToMojom(
+                                buffer_manager_
+                                    .GetCompletePayloadAndStopTracking(
+                                        info.payload_id))))));
                 break;
             }
           }};
@@ -748,6 +757,12 @@ void NearbyConnections::DisconnectFromDeviceV3(
 
             RemovePresenceDevice(service_id, remote_device->endpoint_id);
           });
+}
+
+void NearbyConnections::RegisterServiceWithPresenceDeviceProvider(
+    const std::string& service_id) {
+  CHECK(presence_local_device_provider_);
+  GetCore(service_id)->RegisterDeviceProvider(presence_local_device_provider_);
 }
 
 base::File NearbyConnections::ExtractInputFile(int64_t payload_id) {

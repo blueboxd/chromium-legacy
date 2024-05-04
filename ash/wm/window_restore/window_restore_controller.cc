@@ -29,7 +29,6 @@
 #include "base/containers/adapters.h"
 #include "base/containers/contains.h"
 #include "base/functional/bind.h"
-#include "base/metrics/histogram_functions.h"
 #include "base/task/single_thread_task_runner.h"
 #include "components/app_restore/full_restore_utils.h"
 #include "components/app_restore/window_properties.h"
@@ -66,7 +65,7 @@ constexpr ShellWindowId kAppParentContainers[19] = {
 };
 
 // The types of apps currently supported by window restore.
-// TODO(crbug.com/1164472): Checking app type is temporary solution until we
+// TODO(crbug.com/40163553): Checking app type is temporary solution until we
 // can get windows which are allowed to window restore from the
 // FullRestoreService.
 constexpr AppType kSupportedAppTypes[5] = {
@@ -98,19 +97,12 @@ void MaybeRestoreOutOfBoundsWindows(aura::Window* window) {
 
   const auto& closest_display =
       display::Screen::GetScreen()->GetDisplayNearestWindow(window);
-  gfx::Rect display_area = closest_display.work_area();
+  const gfx::Rect display_area = closest_display.work_area();
   if (display_area.Contains(current_bounds))
     return;
 
-  // Adjust the bounds so that at least 30% of the window bounds is visible.
-  auto get_minimum_length = [](int length) -> int {
-    return std::max(
-        kMinimumOnScreenArea,
-        static_cast<int>(std::round(length * kMinimumPercentOnScreenArea)));
-  };
-  AdjustBoundsToEnsureWindowVisibility(
-      display_area, get_minimum_length(current_bounds.width()),
-      get_minimum_length(current_bounds.height()), &current_bounds);
+  AdjustBoundsToEnsureMinimumWindowVisibility(
+      display_area, /*client_controlled=*/false, &current_bounds);
 
   auto* window_state = WindowState::Get(window);
   if (window_state->HasRestoreBounds()) {
@@ -539,8 +531,8 @@ void WindowRestoreController::SaveWindowImpl(
     mru_windows =
         Shell::Get()->mru_window_tracker()->BuildMruWindowList(kAllDesks);
   }
-  std::unique_ptr<app_restore::WindowInfo> window_info = BuildWindowInfo(
-      window, activation_index, /*for_saved_desks=*/false, mru_windows);
+  std::unique_ptr<app_restore::WindowInfo> window_info =
+      BuildWindowInfo(window, activation_index, mru_windows);
   ::full_restore::SaveWindowInfo(*window_info);
 
   if (g_save_window_callback_for_testing)
@@ -560,7 +552,7 @@ void WindowRestoreController::RestoreStateTypeAndClearLaunchedKey(
       // case we want to track it before it becomes visible. This will allow us
       // to snap the window before it is shown and skip first showing the window
       // in normal or maximized state.
-      // TODO(crbug.com/1164472): Investigate splitview for ARC apps, which
+      // TODO(crbug.com/40163553): Investigate splitview for ARC apps, which
       // are not managed by TabletModeWindowManager.
       Shell::Get()->tablet_mode_controller()->AddWindow(window);
 

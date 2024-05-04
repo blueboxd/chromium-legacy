@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/ash/login/testapi/oobe_test_api_handler.h"
 
+#include <optional>
+
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/public/ash_interfaces.h"
@@ -32,9 +34,12 @@
 #include "chrome/browser/ui/ash/login_screen_client_impl.h"
 #include "chrome/browser/ui/webui/ash/login/hid_detection_screen_handler.h"
 #include "chromeos/ash/components/assistant/buildflags.h"
+#include "chromeos/ash/components/login/auth/public/saml_password_attributes.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
 #include "components/account_id/account_id.h"
 #include "components/login/localized_values_builder.h"
+#include "components/metrics/metrics_pref_names.h"
+#include "components/metrics/metrics_service.h"
 #include "components/user_manager/user_manager.h"
 #include "services/device/public/mojom/input_service.mojom.h"
 #include "ui/display/screen.h"
@@ -57,6 +62,8 @@ void OobeTestAPIHandler::DeclareJSCallbacks() {
               &OobeTestAPIHandler::SkipToLoginForTesting);
   AddCallback("OobeTestApi.skipPostLoginScreens",
               &OobeTestAPIHandler::SkipPostLoginScreens);
+  AddCallback("OobeTestApi.completeLogin",
+              &OobeTestAPIHandler::HandleCompleteLogin);
   AddCallback("OobeTestApi.loginAsGuest", &OobeTestAPIHandler::LoginAsGuest);
   AddCallback("OobeTestApi.showGaiaDialog",
               &OobeTestAPIHandler::ShowGaiaDialog);
@@ -66,13 +73,13 @@ void OobeTestAPIHandler::DeclareJSCallbacks() {
   // this one you need to add a function into login/test_api/test_api.js.
   AddCallback("OobeTestApi.getPrimaryDisplayName",
               &OobeTestAPIHandler::HandleGetPrimaryDisplayName);
-  AddCallback("OobeTestApi.emulateDevicesForTesting",
-              &OobeTestAPIHandler::EmulateDevicesConnectedForTesting);
 
   AddCallback("OobeTestApi.getShouldSkipChoobe",
               &OobeTestAPIHandler::HandleGetShouldSkipChoobe);
   AddCallback("OobeTestApi.getShouldSkipTouchpadScroll",
               &OobeTestAPIHandler::HandleGetShouldSkipTouchpadScroll);
+  AddCallback("OobeTestApi.getMetricsClientID",
+              &OobeTestAPIHandler::HandleGetMetricsClientID);
 }
 
 void OobeTestAPIHandler::GetAdditionalParameters(base::Value::Dict* dict) {
@@ -87,6 +94,10 @@ void OobeTestAPIHandler::GetAdditionalParameters(base::Value::Dict* dict) {
 
   dict->Set("testapi_isFingerprintSupported",
             quick_unlock::IsFingerprintSupported());
+
+  dict->Set("testapi_shouldSkipAiIntro", AiIntroScreen::ShouldBeSkipped());
+
+  dict->Set("testapi_shouldSkipTuna", TunaScreen::ShouldBeSkipped());
 
   dict->Set("testapi_shouldSkipAssistant",
             features::IsOobeSkipAssistantEnabled() ||
@@ -172,37 +183,35 @@ void OobeTestAPIHandler::SkipToLoginForTesting() {
   controller->SkipToLoginForTesting();  // IN-TEST
 }
 
-void OobeTestAPIHandler::EmulateDevicesConnectedForTesting() {
-  HIDDetectionScreen* screen_ = static_cast<HIDDetectionScreen*>(
-      WizardController::default_controller()->GetScreen(
-          HIDDetectionView::kScreenId));
-  VLOG(1) << "EmulateDevicesConnectedForTesting";
-  auto touchscreen = device::mojom::InputDeviceInfo::New();
-  touchscreen->id = "fake_touchscreen";
-  touchscreen->subsystem = device::mojom::InputDeviceSubsystem::SUBSYSTEM_INPUT;
-  touchscreen->type = device::mojom::InputDeviceType::TYPE_UNKNOWN;
-  touchscreen->is_touchscreen = true;
-  screen_->InputDeviceAddedForTesting(std::move(touchscreen));  // IN-TEST
-
-  auto mouse = device::mojom::InputDeviceInfo::New();
-  mouse->id = "fake_mouse";
-  mouse->subsystem = device::mojom::InputDeviceSubsystem::SUBSYSTEM_INPUT;
-  mouse->type = device::mojom::InputDeviceType::TYPE_USB;
-  mouse->is_mouse = true;
-  screen_->InputDeviceAddedForTesting(std::move(mouse));  // IN-TEST
-
-  auto keyboard = device::mojom::InputDeviceInfo::New();
-  keyboard->id = "fake_keyboard";
-  keyboard->subsystem = device::mojom::InputDeviceSubsystem::SUBSYSTEM_INPUT;
-  keyboard->type = device::mojom::InputDeviceType::TYPE_USB;
-  keyboard->is_keyboard = true;
-  screen_->InputDeviceAddedForTesting(std::move(keyboard));  // IN-TEST
-}
-
 void OobeTestAPIHandler::SkipPostLoginScreens() {
   VLOG(1) << "SkipPostLoginScreens";
   WizardController::default_controller()
       ->SkipPostLoginScreensForTesting();  // IN-TEST
+}
+
+void OobeTestAPIHandler::HandleCompleteLogin(const std::string& gaia_id,
+                                             const std::string& typed_email,
+                                             const std::string& password) {
+  VLOG(1) << __func__;
+  DCHECK(!typed_email.empty());
+  DCHECK(!gaia_id.empty());
+  const std::string sanitized_email = gaia::SanitizeEmail(typed_email);
+  LoginDisplayHost::default_host()->SetDisplayEmail(sanitized_email);
+  const AccountId account_id =
+      login::GetAccountId(typed_email, gaia_id, AccountType::GOOGLE);
+  const user_manager::User* const user =
+      user_manager::UserManager::Get()->FindUser(account_id);
+
+  std::unique_ptr<UserContext> user_context =
+      login::BuildUserContextForGaiaSignIn(
+          user ? user->GetType() : user_manager::UserType::kRegular,
+          login::GetAccountId(typed_email, gaia_id, AccountType::GOOGLE),
+          /*using_saml=*/false, /*using_saml_api=*/false, password,
+          SamlPasswordAttributes(),
+          /*sync_trusted_vault_keys=*/std::nullopt,
+          /*challenge_response_key=*/std::nullopt);
+
+  LoginDisplayHost::default_host()->CompleteLogin(*user_context);
 }
 
 void OobeTestAPIHandler::LoginAsGuest() {
@@ -272,6 +281,23 @@ void OobeTestAPIHandler::HandleGetShouldSkipTouchpadScroll(
                                 InputDeviceSettingsController::Get()
                                     ->GetConnectedTouchpads()
                                     .empty());
+}
+
+void OobeTestAPIHandler::HandleGetMetricsClientID(
+    const std::string& callback_id) {
+  std::string client_id;
+  if (g_browser_process->metrics_service()) {
+    client_id = g_browser_process->metrics_service()->GetClientId();
+  }
+
+  // Early in OOBE `metrics_service()->GetClientId()` will return an empty
+  // string. If that's the case look for the client ID in the preference
+  // `kMetricsProvisionalClientID`.
+  if (client_id.empty()) {
+    client_id = g_browser_process->local_state()->GetString(
+        metrics::prefs::kMetricsProvisionalClientID);
+  }
+  ResolveJavascriptCallback(base::Value(callback_id), client_id);
 }
 
 }  // namespace ash

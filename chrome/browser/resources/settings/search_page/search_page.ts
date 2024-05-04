@@ -6,14 +6,13 @@
  * @fileoverview
  * 'settings-search-page' is the settings page containing search settings.
  */
-import 'chrome://resources/cr_elements/policy/cr_policy_pref_indicator.js';
+import '/shared/settings/controls/cr_policy_pref_indicator.js';
 import 'chrome://resources/cr_elements/cr_shared_style.css.js';
 import 'chrome://resources/cr_elements/cr_toast/cr_toast.js';
 import 'chrome://resources/cr_elements/cr_shared_vars.css.js';
 import 'chrome://resources/cr_elements/md_select.css.js';
 import 'chrome://resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
 import '/shared/settings/controls/extension_controlled_indicator.js';
-import '../i18n_setup.js';
 import '../settings_page/settings_animated_pages.js';
 import '../settings_page/settings_subpage.js';
 import '../settings_shared.css.js';
@@ -24,10 +23,10 @@ import type {CrToastElement} from 'chrome://resources/cr_elements/cr_toast/cr_to
 import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
 import {WebUiListenerMixin} from 'chrome://resources/cr_elements/web_ui_listener_mixin.js';
 import {assert} from 'chrome://resources/js/assert.js';
-import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {BaseMixin} from '../base_mixin.js';
+import {loadTimeData} from '../i18n_setup.js';
 import {routes} from '../route.js';
 import {Router} from '../router.js';
 import type {SearchEngine, SearchEnginesBrowserProxy, SearchEnginesInfo} from '../search_engines_page/search_engines_browser_proxy.js';
@@ -56,8 +55,7 @@ export class SettingsSearchPageElement extends SettingsSearchPageElementBase {
        */
       searchEngines_: Array,
 
-      // Whether the `SearchEngineChoice` or `SearchEngineChoiceFre` features
-      // are enabled or not.
+      // Whether the `SearchEngineChoiceTrigger` feature is enabled.
       searchEngineChoiceSettingsUi_: {
         type: Boolean,
         value() {

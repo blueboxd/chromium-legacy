@@ -19,7 +19,6 @@
 #include "base/files/file_util.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
-#include "base/functional/concurrent_callbacks.h"
 #include "base/run_loop.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
@@ -59,7 +58,7 @@
 #include "chrome/browser/ui/toolbar/app_menu_model.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
-#include "chrome/browser/ui/web_applications/web_app_controller_browsertest.h"
+#include "chrome/browser/ui/web_applications/web_app_browsertest_base.h"
 #include "chrome/browser/ui/web_applications/web_app_dialogs.h"
 #include "chrome/browser/ui/web_applications/web_app_launch_utils.h"
 #include "chrome/browser/ui/web_applications/web_app_menu_model.h"
@@ -130,12 +129,12 @@
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS)
-#include "chrome/browser/metrics/structured/event_logging_features.h"
 #include "components/metrics/structured/test/test_structured_metrics_recorder.h"
 #include "ui/views/test/dialog_test.h"
 #include "ui/views/widget/any_widget_observer.h"
 #include "ui/views/widget/widget.h"
-// TODO(crbug.com/1125897): Enable gn check once it handles conditional includes
+// TODO(crbug.com/40147906): Enable gn check once it handles conditional
+// includes
 #include "chromeos/constants/chromeos_features.h"
 #include "components/metrics/structured/structured_events.h"  // nogncheck
 #endif
@@ -191,13 +190,60 @@ std::vector<std::wstring> GetFileExtensionsForProgId(
 
 #endif  // BUILDFLAG(IS_WIN)
 
+// Waits for a Browser to be set to last active.
+class BrowserActivationWaiter : public BrowserListObserver {
+ public:
+  explicit BrowserActivationWaiter(const Browser* browser) : browser_(browser) {
+    BrowserList::AddObserver(this);
+    // When the active browser closes, the next "last active browser" in the
+    // BrowserList might not be immediately activated. So we need to wait for
+    // the "last active browser" to actually be active.
+    if (chrome::FindLastActive() == browser_ &&
+        browser_->window()->IsActive()) {
+      observed_ = true;
+    }
+  }
+
+  BrowserActivationWaiter(const BrowserActivationWaiter&) = delete;
+  BrowserActivationWaiter& operator=(const BrowserActivationWaiter&) = delete;
+
+  ~BrowserActivationWaiter() override { BrowserList::RemoveObserver(this); }
+
+  // Runs a message loop until the `browser_` supplied to the constructor is
+  // activated, or returns immediately if `browser_` has already become active.
+  // Should only be called once.
+  void WaitForActivation() {
+    if (observed_) {
+      return;
+    }
+    run_loop_.Run();
+  }
+
+ private:
+  // BrowserListObserver:
+  void OnBrowserSetLastActive(Browser* browser) override {
+    if (browser != browser_) {
+      return;
+    }
+
+    observed_ = true;
+    if (run_loop_.running()) {
+      run_loop_.Quit();
+    }
+  }
+
+  const raw_ptr<const Browser> browser_;
+  bool observed_ = false;
+  base::RunLoop run_loop_;
+};
+
 }  // namespace
 
 namespace web_app {
 
 using ::base::BucketsAre;
 
-class WebAppBrowserTest : public WebAppControllerBrowserTest {
+class WebAppBrowserTest : public WebAppBrowserTestBase {
  public:
   GURL GetSecureAppURL() {
     return https_server()->GetURL("app.com", "/ssl/google.html");
@@ -571,12 +617,18 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, OpenInChrome) {
     EXPECT_EQ(1, browser()->tab_strip_model()->count());
     ASSERT_EQ(2u, chrome::GetBrowserCount(browser()->profile()));
 
+    ui_test_utils::BrowserChangeObserver on_close(
+        app_browser,
+        ui_test_utils::BrowserChangeObserver::ChangeType::kRemoved);
     chrome::ExecuteCommand(app_browser, IDC_OPEN_IN_CHROME);
 
     // The browser frame is closed next event loop so it's still safe to access
     // here.
     EXPECT_EQ(0, app_browser->tab_strip_model()->count());
 
+    // Wait until the browser actually gets closed. This invalidates
+    // |app_browser|.
+    on_close.Wait();
     EXPECT_EQ(2, browser()->tab_strip_model()->count());
     EXPECT_EQ(1, browser()->tab_strip_model()->active_index());
     EXPECT_EQ(
@@ -584,8 +636,6 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, OpenInChrome) {
         browser()->tab_strip_model()->GetActiveWebContents()->GetVisibleURL());
   }
 
-  // Wait until the browser actually gets closed. This invalidates
-  // |app_browser|.
   content::RunAllPendingInMessageLoop();
   ASSERT_EQ(1u, chrome::GetBrowserCount(browser()->profile()));
 }
@@ -728,8 +778,9 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, DesktopPWAsOpenLinksInNewTab) {
   ASSERT_TRUE(app_browser->app_controller());
 
   EXPECT_EQ(chrome::GetTotalBrowserCount(), 2u);
-  Browser* browser2 = CreateBrowser(app_browser->profile());
-  ui_test_utils::WaitForBrowserSetLastActive(browser2);
+  Browser* browser2 =
+      ui_test_utils::OpenNewEmptyWindowAndWaitUntilSetAsLastActive(
+          app_browser->profile());
   EXPECT_EQ(chrome::GetTotalBrowserCount(), 3u);
 
   TabStripModel* model2 = browser2->tab_strip_model();
@@ -737,7 +788,6 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, DesktopPWAsOpenLinksInNewTab) {
   EXPECT_EQ(model2->count(), 2);
   model2->SelectPreviousTab();
   EXPECT_EQ(model2->active_index(), 0);
-  ui_test_utils::WaitForBrowserSetLastActive(browser2);
 
   NavigateParams param(app_browser, GURL("http://www.google.com/"),
                        ui::PAGE_TRANSITION_LINK);
@@ -745,7 +795,6 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, DesktopPWAsOpenLinksInNewTab) {
   param.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
 
   ui_test_utils::NavigateToURL(&param);
-  ui_test_utils::WaitForBrowserSetLastActive(browser2);
 
   EXPECT_EQ(chrome::GetTotalBrowserCount(), 3u);
   EXPECT_EQ(model2->count(), 3);
@@ -774,7 +823,7 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, PWASizeIsCorrectlyRestored) {
 
 // Tests that using window.open to create a popup window out of scope results in
 // a correctly sized window.
-// TODO(crbug.com/1234260): Stabilize the test.
+// TODO(crbug.com/40781381): Stabilize the test.
 #if BUILDFLAG(IS_LINUX)
 #define MAYBE_OffScopePWAPopupsHaveCorrectSize \
   DISABLED_OffScopePWAPopupsHaveCorrectSize
@@ -814,7 +863,7 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest,
 
 // Tests that using window.open to create a popup window in scope results in
 // a correctly sized window.
-// TODO(crbug.com/1234260): Stabilize the test.
+// TODO(crbug.com/40781381): Stabilize the test.
 #if BUILDFLAG(IS_LINUX)
 #define MAYBE_InScopePWAPopupsHaveCorrectSize \
   DISABLED_InScopePWAPopupsHaveCorrectSize
@@ -946,7 +995,7 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, NoTabSelectedMenuCrash) {
 }
 
 // Tests that PWA menus have an uninstall option.
-// TODO(crbug.com/1271118): Flaky on mac arm64.
+// TODO(crbug.com/40805374): Flaky on mac arm64.
 #if BUILDFLAG(IS_MAC) && defined(ARCH_CPU_ARM64)
 #define MAYBE_UninstallMenuOption DISABLED_UninstallMenuOption
 #else
@@ -1051,7 +1100,12 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, MenuOptionsOutsideInstalledPwaScope) {
       https_server()->GetURL("/banners/no_manifest_test_page.html"));
 
   EXPECT_EQ(GetAppMenuCommandState(IDC_CREATE_SHORTCUT, new_browser), kEnabled);
-  EXPECT_EQ(GetAppMenuCommandState(IDC_INSTALL_PWA, new_browser), kNotPresent);
+  AppMenuCommandState install_pwa_state =
+      base::FeatureList::IsEnabled(features::kWebAppUniversalInstall)
+          ? kEnabled
+          : kNotPresent;
+  EXPECT_EQ(GetAppMenuCommandState(IDC_INSTALL_PWA, new_browser),
+            install_pwa_state);
   EXPECT_EQ(GetAppMenuCommandState(IDC_OPEN_IN_PWA_WINDOW, new_browser),
             kNotPresent);
 }
@@ -1090,10 +1144,6 @@ class WebAppBrowserCrOSEventsTest : public WebAppBrowserTest {
     return https_server()->GetURL(
         "/banners/manifest_test_page_screenshots.html");
   }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_{
-      metrics::structured::kAppDiscoveryLogging};
 };
 
 IN_PROC_BROWSER_TEST_F(WebAppBrowserCrOSEventsTest,
@@ -1221,9 +1271,8 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, CanInstallOverBrowserTabPwa) {
 
   // Change display mode to open in tab.
   auto* provider = WebAppProvider::GetForTest(profile());
-  provider->sync_bridge_unsafe().SetAppUserDisplayMode(
-      app_id, web_app::mojom::UserDisplayMode::kBrowser,
-      /*is_user_action=*/false);
+  provider->sync_bridge_unsafe().SetAppUserDisplayModeForTesting(
+      app_id, web_app::mojom::UserDisplayMode::kBrowser);
 
   Browser* const new_browser =
       NavigateInNewWindowAndAwaitInstallabilityCheck(GetInstallableAppURL());
@@ -1255,9 +1304,8 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, NoOpenInAppForBrowserTabPwa) {
 
   // Change display mode to open in tab.
   auto* provider = WebAppProvider::GetForTest(profile());
-  provider->sync_bridge_unsafe().SetAppUserDisplayMode(
-      app_id, web_app::mojom::UserDisplayMode::kBrowser,
-      /*is_user_action=*/false);
+  provider->sync_bridge_unsafe().SetAppUserDisplayModeForTesting(
+      app_id, web_app::mojom::UserDisplayMode::kBrowser);
 
   NavigateViaLinkClickToURLAndWait(browser(), app_url);
   EXPECT_EQ(GetAppMenuCommandState(IDC_CREATE_SHORTCUT, browser()), kEnabled);
@@ -1299,7 +1347,15 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest_DetailedInstallDialog,
                     .GetCommandsInstallingForWebContentsForTesting());
 }
 
-IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, WindowsOffsetForMultiWindowPWA) {
+// TODO(b/330221671): Deflake and re-enable.
+#if BUILDFLAG(IS_CHROMEOS_LACROS) || BUILDFLAG(IS_LINUX)
+#define MAYBE_WindowsOffsetForMultiWindowPWA \
+  DISABLED_WindowsOffsetForMultiWindowPWA
+#else
+#define MAYBE_WindowsOffsetForMultiWindowPWA WindowsOffsetForMultiWindowPWA
+#endif
+IN_PROC_BROWSER_TEST_F(WebAppBrowserTest,
+                       MAYBE_WindowsOffsetForMultiWindowPWA) {
   const GURL app_url(kExampleURL);
   const webapps::AppId app_id = InstallPWA(app_url);
 
@@ -1310,8 +1366,14 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, WindowsOffsetForMultiWindowPWA) {
   EXPECT_EQ(BrowserList::GetInstance()->size(), 2u);
 
   // Make the window small so that we don't hit the edge when creating a new
-  // one that is offset.
-  first_browser->window()->SetBounds(gfx::Rect(0, 0, 50, 50));
+  // one that is offset, and ensure that it is still in the working area of the
+  // window.
+  const gfx::Rect work_area =
+      display::Screen::GetScreen()
+          ->GetDisplayMatching(first_browser->window()->GetRestoredBounds())
+          .work_area();
+  ui_test_utils::SetAndWaitForBounds(
+      *first_browser, gfx::Rect(work_area.x(), work_area.y(), 50, 50));
 
   Browser* second_browser = LaunchWebAppBrowserAndWait(app_id);
   EXPECT_NE(nullptr, second_browser);
@@ -1319,6 +1381,7 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, WindowsOffsetForMultiWindowPWA) {
 
   auto bounds1 = first_browser->window()->GetRestoredBounds();
   auto bounds2 = second_browser->window()->GetRestoredBounds();
+
   EXPECT_EQ(bounds1.x() + WindowSizer::kWindowTilePixels, bounds2.x());
   EXPECT_EQ(bounds1.y() + WindowSizer::kWindowTilePixels, bounds2.y());
 
@@ -1327,11 +1390,6 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, WindowsOffsetForMultiWindowPWA) {
   // sure at least some of the window is visible, but don't force the entire
   // window on screen. As such, only run these checks on Mac and Chrome OS.
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_CHROMEOS)
-  const gfx::Rect work_area =
-      display::Screen::GetScreen()
-          ->GetDisplayMatching(first_browser->window()->GetRestoredBounds())
-          .work_area();
-
   // Resize the second window larger so that subsequent new windows will hit the
   // edge of the screen when offset.
   second_browser->window()->SetBounds(work_area);
@@ -1392,12 +1450,7 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, ReparentWebAppForSecureActiveTab) {
 
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
 IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, ShortcutIconCorrectColor) {
-  os_hooks_suppress_.reset();
   base::ScopedAllowBlockingForTesting allow_blocking;
-
-  std::unique_ptr<OsIntegrationTestOverrideImpl::BlockingRegistration>
-      registration = OsIntegrationTestOverrideImpl::OverrideForTesting();
-
   EXPECT_TRUE(ui_test_utils::NavigateToURL(
       browser(),
       https_server()->GetURL(
@@ -1420,12 +1473,12 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, ShortcutIconCorrectColor) {
   std::vector<SkColor> expected_pixel_colors = {SkColorSetRGB(92, 92, 92)};
   std::optional<SkColor> icon_pixel_color = std::nullopt;
 #if BUILDFLAG(IS_MAC)
-  icon_pixel_color = registration->test_override->GetShortcutIconTopLeftColor(
-      profile(), registration->test_override->chrome_apps_folder(), app_id,
+  icon_pixel_color = os_integration_override().GetShortcutIconTopLeftColor(
+      profile(), os_integration_override().chrome_apps_folder(), app_id,
       provider->registrar_unsafe().GetAppShortName(app_id));
 #elif BUILDFLAG(IS_WIN)
-  icon_pixel_color = registration->test_override->GetShortcutIconTopLeftColor(
-      profile(), registration->test_override->application_menu(), app_id,
+  icon_pixel_color = os_integration_override().GetShortcutIconTopLeftColor(
+      profile(), os_integration_override().application_menu(), app_id,
       provider->registrar_unsafe().GetAppShortName(app_id));
   expected_pixel_colors.push_back(SkColorSetRGB(91, 91, 91));
   expected_pixel_colors.push_back(SkColorSetRGB(90, 90, 90));
@@ -1460,11 +1513,7 @@ struct ShortcutsMenuItem {
 };
 
 IN_PROC_BROWSER_TEST_F(WebAppBrowserTest_ShortcutMenu, ShortcutsMenuSuccess) {
-  os_hooks_suppress_.reset();
   base::ScopedAllowBlockingForTesting allow_blocking;
-
-  std::unique_ptr<OsIntegrationTestOverrideImpl::BlockingRegistration>
-      registration = OsIntegrationTestOverrideImpl::OverrideForTesting();
   NavigateViaLinkClickToURLAndWait(
       browser(),
       https_server()->GetURL(
@@ -1536,11 +1585,7 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest_ShortcutMenu, ShortcutsMenuSuccess) {
 
 IN_PROC_BROWSER_TEST_F(WebAppBrowserTest_ShortcutMenu,
                        ShortcutsMenuRegistrationWithNoShortcuts) {
-  os_hooks_suppress_.reset();
   base::ScopedAllowBlockingForTesting allow_blocking;
-
-  std::unique_ptr<OsIntegrationTestOverrideImpl::BlockingRegistration>
-      registration = OsIntegrationTestOverrideImpl::OverrideForTesting();
   NavigateViaLinkClickToURLAndWait(
       browser(),
       https_server()->GetURL("/banners/"
@@ -1584,34 +1629,19 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest_ShortcutMenu,
   // No shortcuts should be read.
   EXPECT_TRUE(shortcuts_menu_items.empty());
 
-  bool sub_manager_execute_enabled = AreSubManagersExecuteEnabled();
   base::test::TestFuture<webapps::UninstallResultCode> future;
   provider().scheduler().RemoveUserUninstallableManagements(
       app_id, webapps::WebappUninstallSource::kAppMenu, future.GetCallback());
   EXPECT_TRUE(UninstallSucceeded(future.Get()));
-  if (sub_manager_execute_enabled) {
-    // TODO(crbug.com/1401125): Sub manager code smartly knows that there
-    // aren't any shortcuts menu data, so doesn't do anything. The old OS
-    // integration code does not read current OS states, so it triggers
-    // the histogram. Clean up once sub managers are released.
-    EXPECT_THAT(tester.GetAllSamples("WebApp.ShortcutsMenuUnregistered.Result"),
-                BucketsAre(base::Bucket(true, 0), base::Bucket(false, 0)));
-  } else {
-    EXPECT_THAT(tester.GetAllSamples("WebApp.ShortcutsMenuUnregistered.Result"),
-                BucketsAre(base::Bucket(true, 1)));
-  }
+  EXPECT_THAT(tester.GetAllSamples("WebApp.ShortcutsMenuUnregistered.Result"),
+              BucketsAre(base::Bucket(true, 0), base::Bucket(false, 0)));
 }
 
 #endif
 
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX)
 IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, WebAppCreateAndDeleteShortcut) {
-  os_hooks_suppress_.reset();
-
   base::ScopedAllowBlockingForTesting allow_blocking;
-
-  std::unique_ptr<OsIntegrationTestOverrideImpl::BlockingRegistration>
-      registration = OsIntegrationTestOverrideImpl::OverrideForTesting();
 
   auto* provider = WebAppProvider::GetForTest(profile());
 
@@ -1633,7 +1663,7 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, WebAppCreateAndDeleteShortcut) {
   EXPECT_EQ(provider->registrar_unsafe().GetAppShortName(app_id),
             GetInstallableAppName());
 
-  EXPECT_TRUE(registration->test_override->IsShortcutCreated(
+  EXPECT_TRUE(os_integration_override().IsShortcutCreated(
       profile(), app_id, provider->registrar_unsafe().GetAppShortName(app_id)));
 
   // Uninstall the web app
@@ -1644,38 +1674,33 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, WebAppCreateAndDeleteShortcut) {
 
 #if BUILDFLAG(IS_WIN)
   base::FilePath desktop_shortcut_path =
-      registration->test_override->GetShortcutPath(
-          profile(), registration->test_override->desktop(), app_id,
+      os_integration_override().GetShortcutPath(
+          profile(), os_integration_override().desktop(), app_id,
           provider->registrar_unsafe().GetAppShortName(app_id));
   base::FilePath app_menu_shortcut_path =
-      registration->test_override->GetShortcutPath(
-          profile(), registration->test_override->application_menu(), app_id,
+      os_integration_override().GetShortcutPath(
+          profile(), os_integration_override().application_menu(), app_id,
           provider->registrar_unsafe().GetAppShortName(app_id));
   EXPECT_FALSE(base::PathExists(desktop_shortcut_path));
   EXPECT_FALSE(base::PathExists(app_menu_shortcut_path));
 #elif BUILDFLAG(IS_MAC)
-  base::FilePath app_shortcut_path =
-      registration->test_override->GetShortcutPath(
-          profile(), registration->test_override->chrome_apps_folder(), app_id,
-          provider->registrar_unsafe().GetAppShortName(app_id));
+  base::FilePath app_shortcut_path = os_integration_override().GetShortcutPath(
+      profile(), os_integration_override().chrome_apps_folder(), app_id,
+      provider->registrar_unsafe().GetAppShortName(app_id));
   EXPECT_FALSE(base::PathExists(app_shortcut_path));
 #elif BUILDFLAG(IS_LINUX)
   base::FilePath desktop_shortcut_path =
-      registration->test_override->GetShortcutPath(
-          profile(), registration->test_override->desktop(), app_id,
+      os_integration_override().GetShortcutPath(
+          profile(), os_integration_override().desktop(), app_id,
           provider->registrar_unsafe().GetAppShortName(app_id));
   EXPECT_FALSE(base::PathExists(desktop_shortcut_path));
 #endif
 }
 
 IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, RunOnOsLoginMetrics) {
-  os_hooks_suppress_.reset();
   GURL pwa_url("https://test-app.com");
 
   base::ScopedAllowBlockingForTesting allow_blocking;
-
-  std::unique_ptr<OsIntegrationTestOverrideImpl::BlockingRegistration>
-      registration = OsIntegrationTestOverrideImpl::OverrideForTesting();
 
   auto* provider = WebAppProvider::GetForTest(profile());
   const webapps::AppId& app_id = InstallPWA(pwa_url);
@@ -1696,11 +1721,11 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, RunOnOsLoginMetrics) {
         run_loop.Quit();
       }));
   run_loop.Run();
-  EXPECT_TRUE(OsIntegrationTestOverrideImpl::Get()->IsRunOnOsLoginEnabled(
+  EXPECT_TRUE(os_integration_override().IsRunOnOsLoginEnabled(
       profile(), app_id, provider->registrar_unsafe().GetAppShortName(app_id)));
 
   test::UninstallAllWebApps(profile());
-  EXPECT_FALSE(OsIntegrationTestOverrideImpl::Get()->IsRunOnOsLoginEnabled(
+  EXPECT_FALSE(os_integration_override().IsRunOnOsLoginEnabled(
       profile(), app_id, provider->registrar_unsafe().GetAppShortName(app_id)));
   EXPECT_THAT(tester.GetAllSamples("WebApp.RunOnOsLogin.Unregistration.Result"),
               BucketsAre(base::Bucket(true, 2)));
@@ -1723,12 +1748,6 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, ReparentLastBrowserTab) {
 using WebAppBrowserTestUpdateShortcutResult = WebAppBrowserTest;
 
 IN_PROC_BROWSER_TEST_F(WebAppBrowserTestUpdateShortcutResult, UpdateShortcut) {
-  os_hooks_suppress_.reset();
-  base::ScopedAllowBlockingForTesting allow_blocking;
-  std::unique_ptr<OsIntegrationTestOverrideImpl::BlockingRegistration>
-      blocking_registration =
-          OsIntegrationTestOverrideImpl::OverrideForTesting(base::GetHomeDir());
-
   NavigateViaLinkClickToURLAndWait(browser(), GetInstallableAppURL());
 
   WebAppProvider* provider = WebAppProvider::GetForTest(profile());
@@ -1777,7 +1796,7 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, ReparentDisplayBrowserApp) {
   web_app_info->scope = app_url.GetWithoutFilename();
   web_app_info->display_mode = DisplayMode::kBrowser;
   web_app_info->user_display_mode = mojom::UserDisplayMode::kStandalone;
-  web_app_info->title = u"A Shortcut App";
+  web_app_info->title = u"A Non installable App";
   const webapps::AppId app_id = InstallWebApp(std::move(web_app_info));
 
   base::HistogramTester tester;
@@ -2021,8 +2040,8 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, NewAppWindow) {
 
   WebAppProvider::GetForTest(profile())
       ->sync_bridge_unsafe()
-      .SetAppUserDisplayMode(app_id, web_app::mojom::UserDisplayMode::kBrowser,
-                             /*is_user_action=*/false);
+      .SetAppUserDisplayModeForTesting(
+          app_id, web_app::mojom::UserDisplayMode::kBrowser);
   EXPECT_EQ(browser()->tab_strip_model()->count(), 1);
 
   ui_test_utils::AllBrowserTabAddedWaiter tab_waiter;
@@ -2049,6 +2068,9 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, PopupLocationBar) {
 
   Browser* const popup_browser = web_app::CreateWebApplicationWindow(
       profile(), app_id, WindowOpenDisposition::NEW_POPUP, /*restore_id=*/0);
+  BrowserActivationWaiter activation_waiter(popup_browser);
+  popup_browser->window()->Show();
+  activation_waiter.WaitForActivation();
 
   EXPECT_TRUE(
       popup_browser->CanSupportWindowFeature(Browser::FEATURE_LOCATIONBAR));
@@ -2094,7 +2116,11 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, BrowserDisplayNotInstallable) {
       "manifest_test_page.html?manifest=manifest_display_browser.json");
   NavigateAndAwaitInstallabilityCheck(browser(), url);
 
-  EXPECT_EQ(GetAppMenuCommandState(IDC_INSTALL_PWA, browser()), kNotPresent);
+  AppMenuCommandState install_state =
+      base::FeatureList::IsEnabled(features::kWebAppUniversalInstall)
+          ? kEnabled
+          : kNotPresent;
+  EXPECT_EQ(GetAppMenuCommandState(IDC_INSTALL_PWA, browser()), install_state);
 
   // Install using Create Shortcut.
   SetAutoAcceptWebAppDialogForTesting(/*auto_accept=*/true,
@@ -2107,7 +2133,8 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, BrowserDisplayNotInstallable) {
 
   // Navigate to this site again and install should still be disabled.
   Browser* new_browser = NavigateInNewWindowAndAwaitInstallabilityCheck(url);
-  EXPECT_EQ(GetAppMenuCommandState(IDC_INSTALL_PWA, new_browser), kNotPresent);
+  EXPECT_EQ(GetAppMenuCommandState(IDC_INSTALL_PWA, new_browser),
+            install_state);
 }
 
 IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, WindowControlsOverlay) {
@@ -2251,7 +2278,7 @@ class WebAppBrowserTest_FileHandler : public WebAppBrowserTest {
 #endif  // BUILDFLAG(IS_WIN)
 };
 
-// TODO(crbug.com/1320285): Flaky on Mac.
+// TODO(crbug.com/40223463): Flaky on Mac.
 #if BUILDFLAG(IS_MAC)
 #define MAYBE_RegKeysFileExtension DISABLED_RegKeysFileExtension
 #else
@@ -2259,13 +2286,8 @@ class WebAppBrowserTest_FileHandler : public WebAppBrowserTest {
 #endif
 IN_PROC_BROWSER_TEST_F(WebAppBrowserTest_FileHandler,
                        MAYBE_RegKeysFileExtension) {
-  os_hooks_suppress_.reset();
   base::ScopedAllowBlockingForTesting allow_blocking;
   base::HistogramTester tester;
-
-  std::unique_ptr<OsIntegrationTestOverrideImpl::BlockingRegistration>
-      registration =
-          OsIntegrationTestOverrideImpl::OverrideForTesting(base::GetHomeDir());
   std::vector<std::string> expected_extensions{"bar", "baz", "foo", "foobar"};
 
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -2318,8 +2340,8 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest_FileHandler,
 #elif BUILDFLAG(IS_MAC)
   for (auto extension : expected_extensions) {
     const base::FilePath test_file_path =
-        registration->test_override->chrome_apps_folder().AppendASCII(
-            "test." + extension);
+        os_integration_override().chrome_apps_folder().AppendASCII("test." +
+                                                                   extension);
     const base::File test_file(test_file_path, base::File::FLAG_CREATE_ALWAYS |
                                                    base::File::FLAG_WRITE);
     const GURL test_file_url = net::FilePathToFileURL(test_file_path);
@@ -2328,7 +2350,7 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest_FileHandler,
         << "The default app to open the file is wrong. "
         << "File extension: " + extension;
   }
-  ASSERT_TRUE(registration->test_override->DeleteChromeAppsDir());
+  ASSERT_TRUE(os_integration_override().DeleteChromeAppsDir());
 #endif
 
   // Uninstall the web app
@@ -2350,7 +2372,7 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest_FileHandler,
 #endif
 }
 
-// TODO(crbug.com/1270961): Disabled because it is flaky on Mac.
+// TODO(crbug.com/40805261): Disabled because it is flaky on Mac.
 #if BUILDFLAG(IS_MAC)
 #define MAYBE_UserDenyFileHandlingPermission \
   DISABLED_UserDenyFileHandlingPermission
@@ -2359,12 +2381,7 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest_FileHandler,
 #endif
 IN_PROC_BROWSER_TEST_F(WebAppBrowserTest_FileHandler,
                        MAYBE_UserDenyFileHandlingPermission) {
-  os_hooks_suppress_.reset();
   base::ScopedAllowBlockingForTesting allow_blocking;
-
-  std::unique_ptr<OsIntegrationTestOverrideImpl::BlockingRegistration>
-      registration =
-          OsIntegrationTestOverrideImpl::OverrideForTesting(base::GetHomeDir());
   std::vector<std::string> expected_extensions{"bar", "baz", "foo", "foobar"};
 
   ASSERT_TRUE(embedded_test_server()->Start());

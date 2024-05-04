@@ -122,11 +122,6 @@ ToolbarButton::ToolbarButton(PressedCallback callback,
   // allocate the property once and modify the value.
   SetProperty(views::kInternalPaddingKey, gfx::Insets());
 
-  if (features::IsChromeRefresh2023() &&
-      base::FeatureList::IsEnabled(features::kChromeRefresh2023TopChromeFont)) {
-    label()->SetTextStyle(views::style::STYLE_BODY_4_EMPHASIS);
-  }
-
   SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
   views::FocusRing::Get(this)->SetOutsetFocusRingDisabled(true);
 }
@@ -387,7 +382,7 @@ const gfx::Insets ToolbarButton::GetTargetInsets() const {
 }
 
 const gfx::Size ToolbarButton::GetTargetSize() const {
-  const gfx::Size current_preferred_size = CalculatePreferredSize();
+  const gfx::Size current_preferred_size = CalculatePreferredSize({});
   const gfx::Insets current_insets = GetInsets();
   const gfx::Size target_contents_size =
       current_preferred_size - current_insets.size();
@@ -499,7 +494,7 @@ void ToolbarButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 
 std::u16string ToolbarButton::GetTooltipText(const gfx::Point& p) const {
   // Suppress tooltip when IPH is showing.
-  // TODO(crbug.com/1419653): Investigate if we should suppress tooltip for all
+  // TODO(crbug.com/40258442): Investigate if we should suppress tooltip for all
   // Buttons rather than just ToolbarButtons when IPH is on.
   return has_in_product_help_promo_ ? std::u16string()
                                     : views::LabelButton::GetTooltipText(p);
@@ -604,8 +599,8 @@ namespace {
 
 // The default duration does not work well for dark mode where the animation has
 // to make a big contrast difference.
-// TODO(crbug.com/967317): This needs to be consistent with the duration of the
-// border animation in ToolbarIconContainerView.
+// TODO(crbug.com/40629276): This needs to be consistent with the duration of
+// the border animation in ToolbarIconContainerView.
 constexpr base::TimeDelta kHighlightAnimationDuration = base::Milliseconds(300);
 
 SkColor FadeWithAnimation(SkColor color, const gfx::Animation& animation) {

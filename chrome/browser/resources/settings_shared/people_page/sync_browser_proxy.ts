@@ -18,10 +18,18 @@ export interface StoredAccount {
 }
 
 /**
- * TODO(crbug.com/1322559): signedIn doesn't indicate if the user is signed-in,
- * but instead if the user is syncing.
- * TODO(crbug.com/1107771): signedIn actually means having primary account with
- * sync consent. Rename to make this clear.
+ * Equivalent to C++ counterpart.
+ * @see chrome/browser/ui/webui/settings/people_handler.h
+ */
+export enum SignedInState {
+  SIGNED_OUT = 0,
+  SIGNED_IN = 1,
+  SYNCING = 2,
+  SIGNED_IN_PAUSED = 3,
+  WEB_ONLY_SIGNED_IN = 4,
+}
+
+/**
  * @see chrome/browser/ui/webui/settings/people_handler.cc
  */
 export interface SyncStatus {
@@ -33,7 +41,7 @@ export interface SyncStatus {
   hasUnrecoverableError?: boolean;
   managed?: boolean;
   firstSetupInProgress?: boolean;
-  signedIn?: boolean;
+  signedInState?: SignedInState;
   signedInUsername?: string;
   statusActionText?: string;
   statusText?: string;
@@ -142,6 +150,20 @@ export enum TrustedVaultBannerState {
   NOT_SHOWN = 0,
   OFFER_OPT_IN = 1,
   OPTED_IN = 2,
+}
+
+// Always keep in sync with `ChromeSigninUserChoice` (C++).
+export enum ChromeSigninUserChoice {
+  NO_CHOICE = 0,
+  ALWAYS_ASK = 1,
+  SIGNIN = 2,
+  DO_NOT_SIGNIN = 3,
+}
+
+export interface ChromeSigninUserChoiceInfo {
+  shouldShowSettings: boolean;
+  choice: ChromeSigninUserChoice;
+  signedInEmail: string;
 }
 
 /**
@@ -266,6 +288,18 @@ export interface SyncBrowserProxy {
    * Forces a trusted-vault-banner-state-changed event to be fired.
    */
   sendTrustedVaultBannerStateChanged(): void;
+
+  /**
+   * Sets the ChromeSigninUserChoice from the signed in email after a user
+   * choice on the UI.
+   */
+  setChromeSigninUserChoice(
+      choice: ChromeSigninUserChoice, signedInEmail: string): void;
+
+  /**
+   * Gets the information related to the Chrome Signin user choice settings.
+   */
+  getChromeSigninUserChoiceInfo(): Promise<ChromeSigninUserChoiceInfo>;
 }
 
 export class SyncBrowserProxyImpl implements SyncBrowserProxy {
@@ -357,6 +391,15 @@ export class SyncBrowserProxyImpl implements SyncBrowserProxy {
 
   sendTrustedVaultBannerStateChanged() {
     chrome.send('SyncTrustedVaultBannerStateDispatch');
+  }
+
+  setChromeSigninUserChoice(
+      choice: ChromeSigninUserChoice, signedInEmail: string): void {
+    chrome.send('SetChromeSigninUserChoice', [choice, signedInEmail]);
+  }
+
+  getChromeSigninUserChoiceInfo(): Promise<ChromeSigninUserChoiceInfo> {
+    return sendWithPromise('GetChromeSigninUserChoiceInfo');
   }
 
   static getInstance(): SyncBrowserProxy {

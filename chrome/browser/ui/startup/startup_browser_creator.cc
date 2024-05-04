@@ -41,6 +41,7 @@
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/platform_apps/app_load_service.h"
 #include "chrome/browser/apps/platform_apps/platform_app_launch.h"
+#include "chrome/browser/ash/crosapi/browser_data_migrator.h"
 #include "chrome/browser/browser_features.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
@@ -328,6 +329,7 @@ bool CanOpenProfileOnStartup(StartupProfileInfo profile_info) {
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
 StartupProfileModeReason ShouldShowProfilePickerAtProcessLaunch(
     ProfileManager* profile_manager,
+    bool has_command_line_specified_profile_directory,
     const base::CommandLine& command_line) {
   // Skip the profile picker when Chrome is restarted (e.g. after an update) so
   // that the session can be restored.
@@ -340,8 +342,8 @@ StartupProfileModeReason ShouldShowProfilePickerAtProcessLaunch(
                                      g_browser_process->local_state(),
                                      /*show_warning=*/false) ||
       command_line.HasSwitch(switches::kIncognito) ||
-      command_line.HasSwitch(switches::kProfileDirectory)) {
-    // TODO(https://crbug.com/1418976): The profile directory and guest mode
+      has_command_line_specified_profile_directory) {
+    // TODO(crbug.com/40257919): The profile directory and guest mode
     // were already tested in the calling function `GetStartupProfilePath()`.
     // Consolidate these checks.
     return StartupProfileModeReason::kIncognitoModeRequested;
@@ -375,7 +377,7 @@ StartupProfileModeReason ShouldShowProfilePickerAtProcessLaunch(
   base::FilePath profile_basename =
       NotificationLaunchId::GetNotificationLaunchProfileBaseName(command_line);
   if (!profile_basename.empty()) {
-    // TODO(https://crbug.com/1418976): The notification ID was already tested
+    // TODO(crbug.com/40257919): The notification ID was already tested
     // in the calling function `GetStartupProfilePath()`. Consolidate these
     // checks.
     return StartupProfileModeReason::kNotificationLaunchIdWin2;
@@ -430,7 +432,7 @@ Profile* GetPrivateProfileIfRequested(const base::CommandLine& command_line,
 StartupProfileInfo GetProfilePickerStartupProfileInfo() {
   // We can only show the profile picker if the system profile (where the
   // profile picker lives) also exists (or is creatable).
-  // TODO(crbug.com/1271859): Remove unnecessary system profile check here.
+  // TODO(crbug.com/40205861): Remove unnecessary system profile check here.
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   if (!profile_manager->GetProfile(ProfileManager::GetSystemProfilePath()))
     return {.profile = nullptr, .mode = StartupProfileMode::kError};
@@ -445,7 +447,7 @@ bool IsSilentLaunchEnabled(const base::CommandLine& command_line,
   // this function. But `LaunchBrowser()` can be called directly, for example by
   // //chrome/browser/ash/login/session/user_session_manager.cc, so it has to be
   // checked again.
-  // TODO(https://crbug.com/1293024): Investigate minimizing duplicate checks.
+  // TODO(crbug.com/40819749): Investigate minimizing duplicate checks.
 
   if (command_line.HasSwitch(switches::kNoStartupWindow))
     return true;
@@ -581,6 +583,27 @@ void OpenNewWindowForFirstRun(
                                 /*restore_tabbed_browser=*/true);
 }
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS) || BUILDFLAG(ENABLE_DICE_SUPPORT)
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+// Returns the app id of the kiosk app associated with the current user session.
+// Returns nullopt for non-kiosk user sessions and for ARC kiosk sessions, since
+// crash recovery is not supported there.
+std::optional<ash::KioskAppId> GetAppId(const base::CommandLine& command_line,
+                                        Profile* profile) {
+  const user_manager::User* user =
+      ash::ProfileHelper::Get()->GetUserByProfile(profile);
+  if (user && user->GetType() == user_manager::UserType::kKioskApp) {
+    return ash::KioskAppId::ForChromeApp(
+        command_line.GetSwitchValueASCII(::switches::kAppId),
+        user->GetAccountId());
+  } else if (user && user->GetType() == user_manager::UserType::kWebKioskApp) {
+    return ash::KioskAppId::ForWebApp(user->GetAccountId());
+  } else {
+    return std::nullopt;
+  }
+}
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
 }  // namespace
 
 StartupProfileMode StartupProfileModeFromReason(
@@ -761,17 +784,18 @@ void StartupBrowserCreator::LaunchBrowserForLastProfiles(
         // workspace will handle the app restore from user's workspace copy.
         // Otherwise if safe mode is on, floating workspace will only emit
         // notification and then delegate the actual work to full restore.
-        if (!ash::floating_workspace_util::ShouldHandleRestartRestore()) {
-          // If FullRestoreService is available for the profile (i.e. the full
-          // restore feature is enabled and the profile is a regular user
-          // profile), defer the browser launching to FullRestoreService code.
-          auto* full_restore_service =
-              ash::full_restore::FullRestoreService::GetForProfile(
-                  profile_to_open);
-          if (full_restore_service) {
-            full_restore_service->LaunchBrowserWhenReady();
-            return;
-          }
+        if (ash::floating_workspace_util::ShouldHandleRestartRestore()) {
+          return;
+        }
+        // If FullRestoreService is available for the profile (i.e. the full
+        // restore feature is enabled and the profile is a regular user
+        // profile), defer the browser launching to FullRestoreService code.
+        auto* full_restore_service =
+            ash::full_restore::FullRestoreService::GetForProfile(
+                profile_to_open);
+        if (full_restore_service) {
+          full_restore_service->LaunchBrowserWhenReady();
+          return;
         }
       }
 #endif
@@ -1007,26 +1031,34 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
 
   if (chrome::IsRunningInForcedAppMode()) {
     Profile* profile = profile_info.profile;
-    user_manager::User* user =
-        ash::ProfileHelper::Get()->GetUserByProfile(profile);
-    if (user && user->GetType() == user_manager::UserType::kKioskApp) {
-      ash::LaunchAppOrDie(
-          profile, ash::KioskAppId::ForChromeApp(
-                       command_line.GetSwitchValueASCII(switches::kAppId),
-                       user->GetAccountId()));
-    } else if (user &&
-               user->GetType() == user_manager::UserType::kWebKioskApp) {
-      ash::LaunchAppOrDie(profile,
-                          ash::KioskAppId::ForWebApp(user->GetAccountId()));
+
+    // Skip browser launch since app mode launches its app window.
+    silent_launch = true;
+
+    if (auto app_id = GetAppId(command_line, profile); app_id.has_value()) {
+      if (ash::BrowserDataMigratorImpl::IsFirstLaunchAfterMigration(
+              g_browser_process->local_state())) {
+        // After a lacros migration the kiosk app should not go through the
+        // crash recovery flow but instead use the full launch process, since
+        // the crash recovery flow does not wait for the force installed
+        // extensions to be installed.
+        // Force the full launch by going back to the login screen and remember
+        // the app to be launched in the local state.
+        LOG(INFO) << "Forcing the kiosk user to log out since it's the first "
+                     "launch after a migration";
+        ash::SetOneTimeAutoLaunchKioskAppId(*g_browser_process->local_state(),
+                                            app_id.value());
+        chrome::AttemptUserExit();
+        return false;
+      } else {
+        ash::LaunchAppOrDie(profile, app_id.value());
+      }
     } else {
       // If we are here, we are either in ARC kiosk session or the user is
       // invalid. We should terminate the session in such cases.
       chrome::AttemptUserExit();
       return false;
     }
-
-    // Skip browser launch since app mode launches its app window.
-    silent_launch = true;
   }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
@@ -1307,7 +1339,7 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
   // the launch behavior here isn't quite the correct behavior for an app launch
   // on Mac OS, this behavior is better than nothing and should result in the
   // app shim getting regenerated to hopefully fix future app launches.
-  // TODO(https://crbug.com/1232763): Some integration tests also rely on this
+  // TODO(crbug.com/40191242): Some integration tests also rely on this
   // code. Ideally those would be fixed to test the normal app launch path on
   // Mac instead, and this code should be changed to make it harder to
   // accidentally write tests that don't test the normal app launch path.
@@ -1542,7 +1574,7 @@ StartupProfilePathInfo GetStartupProfilePath(
   if (profiles::IsGuestModeRequested(command_line,
                                      g_browser_process->local_state(),
                                      /* show_warning= */ false)) {
-    // TODO(crbug.com/1150326): return a guest profile instead.
+    // TODO(crbug.com/40157821): return a guest profile instead.
     return {.path = profiles::GetDefaultProfileDir(user_data_dir),
             .reason = StartupProfileModeReason::kGuestModeRequested};
   }
@@ -1555,8 +1587,16 @@ StartupProfilePathInfo GetStartupProfilePath(
   }
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
-  base::FilePath profile_directory =
+  base::FilePath command_line_profile_directory =
       command_line.GetSwitchValuePath(switches::kProfileDirectory);
+
+  if (!command_line_profile_directory.empty() &&
+      command_line.HasSwitch(switches::kIgnoreProfileDirectoryIfNotExists) &&
+      !base::DirectoryExists(
+          user_data_dir.Append(command_line_profile_directory))) {
+    command_line_profile_directory = base::FilePath();
+  }
+
 #if BUILDFLAG(IS_MAC)
   // On Mac OS, when an app shim fails to dlopen chrome, the app shim falls back
   // to trying to launch chrome passing its app-id on the command line. In this
@@ -1566,16 +1606,18 @@ StartupProfilePathInfo GetStartupProfilePath(
   // right profile to use, it is good enough for the purpose of (indirectly)
   // triggering a rebuild of the app shim, which should resolve whatever
   // problem existed that let to this situation.
-  if (profile_directory.empty() && command_line.HasSwitch(switches::kAppId)) {
+  if (command_line_profile_directory.empty() &&
+      command_line.HasSwitch(switches::kAppId)) {
     std::string app_id = command_line.GetSwitchValueASCII(switches::kAppId);
     std::set<base::FilePath> profile_paths =
         AppShimRegistry::Get()->GetInstalledProfilesForApp(app_id);
-    if (!profile_paths.empty())
-      profile_directory = profile_paths.begin()->BaseName();
+    if (!profile_paths.empty()) {
+      command_line_profile_directory = profile_paths.begin()->BaseName();
+    }
   }
 #endif
-  if (!profile_directory.empty()) {
-    return {.path = user_data_dir.Append(profile_directory),
+  if (!command_line_profile_directory.empty()) {
+    return {.path = user_data_dir.Append(command_line_profile_directory),
             .reason = StartupProfileModeReason::kProfileDirSwitch};
   }
 
@@ -1621,7 +1663,9 @@ StartupProfilePathInfo GetStartupProfilePath(
   }
 
   StartupProfileModeReason show_picker_reason =
-      ShouldShowProfilePickerAtProcessLaunch(profile_manager, command_line);
+      ShouldShowProfilePickerAtProcessLaunch(
+          profile_manager, !command_line_profile_directory.empty(),
+          command_line);
 
   if (StartupProfileModeFromReason(show_picker_reason) ==
       StartupProfileMode::kProfilePicker) {

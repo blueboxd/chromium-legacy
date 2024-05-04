@@ -57,13 +57,17 @@
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
+#include "third_party/blink/renderer/core/html/forms/html_field_set_element.h"
+#include "third_party/blink/renderer/core/html/forms/html_form_element.h"
 #include "third_party/blink/renderer/core/html/forms/radio_node_list.h"
 #include "third_party/blink/renderer/core/html/html_collection.h"
 #include "third_party/blink/renderer/core/html/html_dialog_element.h"
 #include "third_party/blink/renderer/core/html/html_document.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 #include "third_party/blink/renderer/core/html/html_tag_collection.h"
+#include "third_party/blink/renderer/core/html/html_template_element.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
+#include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/layout/layout_text.h"
 #include "third_party/blink/renderer/core/layout/layout_text_combine.h"
@@ -680,6 +684,10 @@ LayoutBox* ContainerNode::GetLayoutBoxForScrolling() const {
   return GetLayoutBox();
 }
 
+bool ContainerNode::IsReadingOrderContainer() const {
+  return GetLayoutBox() ? GetLayoutBox()->IsReadingOrderContainer() : false;
+}
+
 void ContainerNode::Trace(Visitor* visitor) const {
   visitor->Trace(first_child_);
   visitor->Trace(last_child_);
@@ -732,7 +740,9 @@ Node* ContainerNode::RemoveChild(Node* old_child,
 
   Node* child = old_child;
 
-  GetDocument().RemoveFocusedElementOfSubtree(*child);
+  if (!GetDocument().StatePreservingAtomicMoveInProgress()) {
+    GetDocument().RemoveFocusedElementOfSubtree(*child);
+  }
 
   // Events fired when blurring currently focused node might have moved this
   // child into a different parent.
@@ -796,8 +806,10 @@ void ContainerNode::RemoveBetween(Node* previous_child,
 
   DCHECK_EQ(old_child.parentNode(), this);
 
-  if (InActiveDocument())
+  if (InActiveDocument() &&
+      !GetDocument().StatePreservingAtomicMoveInProgress()) {
     old_child.DetachLayoutTree();
+  }
 
   if (next_child)
     next_child->SetPreviousSibling(previous_child);
@@ -1045,7 +1057,7 @@ void ContainerNode::NotifyNodeAtEndOfBuildingFragmentTree(
 
   // No node-lists should have been created at this (otherwise
   // InvalidateNodeListCaches() would need to be called).
-  DCHECK(!HasRareData() || !RareData()->NodeLists());
+  DCHECK(!RareData() || !RareData()->NodeLists());
 
   if (node.IsContainerNode()) {
     DynamicTo<ContainerNode>(node)->ChildrenChanged(change);
@@ -1350,14 +1362,6 @@ static void DispatchChildRemovalEvents(Node& child) {
   }
 }
 
-bool ContainerNode::HasRestyleFlagInternal(DynamicRestyleFlags mask) const {
-  return RareData()->HasRestyleFlag(mask);
-}
-
-bool ContainerNode::HasRestyleFlagsInternal() const {
-  return RareData()->HasRestyleFlags();
-}
-
 void ContainerNode::SetRestyleFlag(DynamicRestyleFlags mask) {
   DCHECK(IsElementNode() || IsShadowRoot());
   EnsureRareData().SetRestyleFlag(mask);
@@ -1500,13 +1504,15 @@ void ContainerNode::InvalidateNodeListCachesInAncestors(
   if (change && change->type == ChildrenChangeType::kTextChanged)
     return;
 
-  if (HasRareData() && (!attr_name || IsAttributeNode())) {
-    if (NodeListsNodeData* lists = RareData()->NodeLists()) {
-      if (ChildNodeList* child_node_list = lists->GetChildNodeList(*this)) {
-        if (change) {
-          child_node_list->ChildrenChanged(*change);
-        } else {
-          child_node_list->InvalidateCache();
+  if (!attr_name || IsAttributeNode()) {
+    if (const NodeRareData* data = RareData()) {
+      if (NodeListsNodeData* lists = data->NodeLists()) {
+        if (ChildNodeList* child_node_list = lists->GetChildNodeList(*this)) {
+          if (change) {
+            child_node_list->ChildrenChanged(*change);
+          } else {
+            child_node_list->InvalidateCache();
+          }
         }
       }
     }
@@ -1583,7 +1589,8 @@ String ContainerNode::FindTextInElementWith(
   for (Element& element : ElementTraversal::DescendantsOf(*this)) {
     if (element.HasOnlyText()) {
       const String& text = element.TextFromChildren();
-      if (text.Find(substring) != WTF::kNotFound && validity_checker(text)) {
+      if (text.FindIgnoringASCIICase(substring) != WTF::kNotFound &&
+          validity_checker(text)) {
         return text;
       }
     }
@@ -1736,7 +1743,7 @@ String ContainerNode::getHTML(const GetHTMLOptions* options,
   DCHECK(IsShadowRoot() || IsElementNode());
   ShadowRootInclusion shadow_root_inclusion{
       options->serializableShadowRoots()
-          ? ShadowRootInclusion::Behavior::kIncludeAllSerializableShadowRoots
+          ? ShadowRootInclusion::Behavior::kIncludeAnySerializableShadowRoots
           : ShadowRootInclusion::Behavior::kOnlyProvidedShadowRoots};
   for (auto& shadow_root : options->shadowRoots()) {
     shadow_root_inclusion.include_shadow_roots.insert(shadow_root);

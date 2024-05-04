@@ -3,13 +3,17 @@
 // found in the LICENSE file.
 
 import {assertNotReached} from '../assert.js';
+import {SupportedWifiSecurityType} from '../barcode_chip.js';
+import {SessionBehavior} from '../memory_usage.js';
 import {
+  BarcodeContentType,
   DocScanActionType,
   DocScanFixType,
   DocScanResultActionType,
   GifResultType,
   IntentResultType,
   LaunchType,
+  LowStorageActionType,
   RecordType,
   ShutterType,
 } from '../metrics.js';
@@ -18,6 +22,7 @@ import {
   AspectRatioSet,
   Facing,
   Mode,
+  PerfEvent,
   PhotoResolutionLevel,
   VideoResolutionLevel,
 } from '../type.js';
@@ -60,7 +65,7 @@ export function convertModeToMojo(mode: string): mojoType.Mode {
 /**
  * Converts the camera facing to the mojo enum to be used in metrics.
  */
-export function convertFacingToMojo(facing: Facing): mojoType.Facing {
+export function convertFacingToMojo(facing: Facing|null): mojoType.Facing {
   switch (facing) {
     case Facing.USER:
       return mojoType.Facing.kUser;
@@ -69,7 +74,7 @@ export function convertFacingToMojo(facing: Facing): mojoType.Facing {
     case Facing.EXTERNAL:
       return mojoType.Facing.kExternal;
     default:
-      assertNotReached();
+      return mojoType.Facing.kUnknown;
   }
 }
 
@@ -284,4 +289,124 @@ export function convertDocScanFixTypeToMojo(fixType: number): number {
     mojoFixTypes |= mojoType.DocScanFixType.kRotation;
   }
   return mojoFixTypes;
+}
+
+/**
+ * Converts the low storage action type to the mojo enum to be used in metrics.
+ */
+export function convertLowStorageActionTypeToMojo(
+    actionType: LowStorageActionType): mojoType.LowStorageActionType {
+  switch (actionType) {
+    case LowStorageActionType.MANAGE_STORAGE_AUTO_STOP:
+      return mojoType.LowStorageActionType.kManageStorageAutoStop;
+    case LowStorageActionType.MANAGE_STORAGE_CANNOT_START:
+      return mojoType.LowStorageActionType.kManageStorageCannotStart;
+    case LowStorageActionType.SHOW_AUTO_STOP_DIALOG:
+      return mojoType.LowStorageActionType.kShowAutoStopDialog;
+    case LowStorageActionType.SHOW_CANNOT_START_DIALOG:
+      return mojoType.LowStorageActionType.kShowCannotStartDialog;
+    case LowStorageActionType.SHOW_WARNING_MSG:
+      return mojoType.LowStorageActionType.kShowWarningMessage;
+    default:
+      assertNotReached();
+  }
+}
+
+/**
+ * Converts the barcode content type to the mojo enum to be used in metrics.
+ */
+export function convertBarcodeContentTypeToMojo(
+    contentType: BarcodeContentType): mojoType.BarcodeContentType {
+  switch (contentType) {
+    case BarcodeContentType.TEXT:
+      return mojoType.BarcodeContentType.kText;
+    case BarcodeContentType.URL:
+      return mojoType.BarcodeContentType.kUrl;
+    case BarcodeContentType.WIFI:
+      return mojoType.BarcodeContentType.kWiFi;
+    default:
+      assertNotReached();
+  }
+}
+
+/**
+ * Converts the Wi-Fi security type to the mojo enum to be used in metrics.
+ */
+export function convertWifiSecurityTypeToMojo(securityType: string):
+    mojoType.WifiSecurityType {
+  switch (securityType) {
+    case SupportedWifiSecurityType.WEP:
+      return mojoType.WifiSecurityType.kWep;
+    case SupportedWifiSecurityType.WPA:
+      return mojoType.WifiSecurityType.kWpa;
+    case SupportedWifiSecurityType.EAP:
+      return mojoType.WifiSecurityType.kEap;
+    default:
+      return mojoType.WifiSecurityType.kNone;
+  }
+}
+
+/**
+ * Converts the perf event type to the mojo enum to be used in metrics.
+ */
+export function convertPerfEventTypeToMojo(perfEventType: PerfEvent):
+    mojoType.PerfEventType {
+  switch (perfEventType) {
+    case PerfEvent.CAMERA_SWITCHING:
+      return mojoType.PerfEventType.kCameraSwitching;
+    case PerfEvent.GIF_CAPTURE_POST_PROCESSING:
+      return mojoType.PerfEventType.kGifCapturePostProcessing;
+    case PerfEvent.LAUNCHING_FROM_LAUNCH_APP_COLD:
+      return mojoType.PerfEventType.kLaunchingFromLaunchAppCold;
+    case PerfEvent.LAUNCHING_FROM_LAUNCH_APP_WARM:
+      return mojoType.PerfEventType.kLaunchingFromLaunchAppWarm;
+    case PerfEvent.LAUNCHING_FROM_WINDOW_CREATION:
+      return mojoType.PerfEventType.kLaunchingFromWindowCreation;
+    case PerfEvent.MODE_SWITCHING:
+      return mojoType.PerfEventType.kModeSwitching;
+    case PerfEvent.PHOTO_CAPTURE_POST_PROCESSING:
+      return mojoType.PerfEventType.kPhotoCapturePostProcessing;
+    case PerfEvent.PHOTO_CAPTURE_SHUTTER:
+      return mojoType.PerfEventType.kPhotoCaptureShutter;
+    case PerfEvent.PHOTO_TAKING:
+      return mojoType.PerfEventType.kPhotoTaking;
+    case PerfEvent.PORTRAIT_MODE_CAPTURE_POST_PROCESSING:
+      return mojoType.PerfEventType.kPortraitModeCapturePostProcessing;
+    case PerfEvent.TIME_LAPSE_CAPTURE_POST_PROCESSING:
+      return mojoType.PerfEventType.kTimelapseCapturePostProcessing;
+    case PerfEvent.VIDEO_CAPTURE_POST_PROCESSING:
+      return mojoType.PerfEventType.kVideoCapturePostProcessing;
+    default:
+      assertNotReached();
+  }
+}
+
+/**
+ * Converts the session behavior to the integer aligned with the definition in
+ * the mojo enum that can be used in metrics.
+ */
+export function convertSessionBehaviorToMojo(sessionBehavior: number): number {
+  let mojoBehaviors = 0;
+  if ((sessionBehavior & SessionBehavior.TAKE_NORMAL_PHOTO) !== 0) {
+    mojoBehaviors |= mojoType.UserBehavior.kTakeNormalPhoto;
+  }
+  if ((sessionBehavior & SessionBehavior.TAKE_PORTRAIT_PHOTO) !== 0) {
+    mojoBehaviors |= mojoType.UserBehavior.kTakePortraitPhoto;
+  }
+  if ((sessionBehavior & SessionBehavior.SCAN_BARCODE) !== 0) {
+    mojoBehaviors |= mojoType.UserBehavior.kScanBarcode;
+  }
+  if ((sessionBehavior & SessionBehavior.SCAN_DOCUMENT) !== 0) {
+    mojoBehaviors |= mojoType.UserBehavior.kScanDocument;
+  }
+  if ((sessionBehavior & SessionBehavior.RECORD_NORMAL_VIDEO) !== 0) {
+    mojoBehaviors |= mojoType.UserBehavior.kRecordNormalVideo;
+  }
+  if ((sessionBehavior & SessionBehavior.RECORD_GIF_VIDEO) !== 0) {
+    mojoBehaviors |= mojoType.UserBehavior.kRecordGifVideo;
+  }
+  if ((sessionBehavior & SessionBehavior.RECORD_TIME_LAPSE_VIDEO) !== 0) {
+    mojoBehaviors |= mojoType.UserBehavior.kRecordTimelapseVideo;
+  }
+  return mojoBehaviors;
 }

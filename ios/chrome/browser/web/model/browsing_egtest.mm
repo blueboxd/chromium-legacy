@@ -83,9 +83,11 @@ class ReloadResponseProvider : public web::DataResponseProvider {
 // Matcher for the title of the current tab (on tablet only), which is
 // sufficiently visible.
 id<GREYMatcher> TabWithTitle(const std::string& tab_title) {
-  return grey_allOf(grey_accessibilityLabel(base::SysUTF8ToNSString(tab_title)),
-                    grey_kindOfClassName(@"TabStripTabCell"),
-                    grey_sufficientlyVisible(), nil);
+  return grey_allOf(
+      grey_accessibilityLabel(base::SysUTF8ToNSString(tab_title)),
+      grey_ancestor(grey_kindOfClassName(@"TabStripTabCell")),
+      grey_not(grey_accessibilityTrait(UIAccessibilityTraitStaticText)),
+      grey_sufficientlyVisible(), nil);
 }
 
 // Tests that page successfully reloads.
@@ -164,7 +166,7 @@ id<GREYMatcher> TabWithTitle(const std::string& tab_title) {
 // Tests that clicking a link with URL changed by onclick uses the href of the
 // anchor tag instead of the one specified in JavaScript. Also verifies a new
 // tab is opened by target '_blank'.
-// TODO(crbug.com/688223): WKWebView does not open a new window as expected by
+// TODO(crbug.com/41299306): WKWebView does not open a new window as expected by
 // this test.
 - (void)DISABLED_testBrowsingPreventDefaultWithLinkOpenedByJavascript {
   // Create map of canned responses and set up the test HTML server.
@@ -202,7 +204,7 @@ id<GREYMatcher> TabWithTitle(const std::string& tab_title) {
 
 // Tests tapping a link that navigates to a page that immediately navigates
 // again via document.location.href.
-// TODO(crbug.com/1352105): Flaky on iPhone.
+// TODO(crbug.com/40234734): Flaky on iPhone.
 - (void)DISABLED_testBrowsingWindowDataLinkScriptRedirect {
   // Create map of canned responses and set up the test HTML server.
   std::map<GURL, std::string> responses;
@@ -313,7 +315,7 @@ id<GREYMatcher> TabWithTitle(const std::string& tab_title) {
 // Tests that evaluating user JavaScript that causes navigation correctly
 // modifies history.
 - (void)testBrowsingUserJavaScriptNavigation {
-  // TODO(crbug.com/703855): Keyboard entry inside the omnibox fails only on
+  // TODO(crbug.com/40511873): Keyboard entry inside the omnibox fails only on
   // iPad.
   if ([ChromeEarlGrey isIPadIdiom])
     return;
@@ -337,7 +339,7 @@ id<GREYMatcher> TabWithTitle(const std::string& tab_title) {
   [ChromeEarlGreyUI focusOmniboxAndType:script];
 
   if (@available(iOS 16, *)) {
-    // TODO(crbug.com/1331347): Move this logic into EG.
+    // TODO(crbug.com/40227513): Move this logic into EG.
     XCUIApplication* app = [[XCUIApplication alloc] init];
     [[[app keyboards] buttons][@"go"] tap];
   } else {
@@ -357,7 +359,7 @@ id<GREYMatcher> TabWithTitle(const std::string& tab_title) {
 
 // Tests that evaluating non-navigation user JavaScript doesn't affect history.
 - (void)testBrowsingUserJavaScriptWithoutNavigation {
-  // TODO(crbug.com/703855): Keyboard entry inside the omnibox fails only on
+  // TODO(crbug.com/40511873): Keyboard entry inside the omnibox fails only on
   // iPad.
   if ([ChromeEarlGrey isIPadIdiom])
     return;
@@ -377,7 +379,7 @@ id<GREYMatcher> TabWithTitle(const std::string& tab_title) {
 
   // Execute some JavaScript in the omnibox.
   [ChromeEarlGreyUI focusOmniboxAndType:@"javascript:document.write('foo')"];
-  // TODO(crbug.com/1454516): Use simulatePhysicalKeyboardEvent until
+  // TODO(crbug.com/40916974): Use simulatePhysicalKeyboardEvent until
   // replaceText can properly handle \n.
   [ChromeEarlGrey simulatePhysicalKeyboardEvent:@"\n" flags:0];
   [ChromeEarlGrey waitForWebStateContainingText:"foo"];

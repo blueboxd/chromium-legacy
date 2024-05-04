@@ -5,6 +5,7 @@
 #include "content/browser/code_cache/generated_code_cache.h"
 
 #include <iostream>
+#include <string_view>
 
 #include "base/feature_list.h"
 #include "base/functional/bind.h"
@@ -12,6 +13,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/numerics/byte_conversions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "components/services/storage/public/cpp/big_io_buffer.h"
@@ -114,7 +116,7 @@ std::string GetCacheKey(const GURL& resource_url,
   if (net::HttpCache::IsSplitCacheEnabled() &&
       base::FeatureList::IsEnabled(
           net::features::kSplitCodeCacheByNetworkIsolationKey)) {
-    // TODO(https://crbug.com/1346188):  Transient NIKs return nullopt when
+    // TODO(crbug.com/40232395):  Transient NIKs return nullopt when
     // their ToCacheKeyString() method is invoked, as they generally shouldn't
     // be written to disk. This code is currently reached for transient NIKs,
     // which needs to be fixed.
@@ -151,28 +153,26 @@ constexpr size_t kInlineDataLimit = 4096;
 // by a Finch experiment.
 constexpr size_t kDedicatedDataLimit = 16384;
 
-void WriteCommonDataHeader(scoped_refptr<net::IOBufferWithSize> buffer,
+void WriteCommonDataHeader(net::IOBufferWithSize* buffer,
                            const base::Time& response_time,
                            uint32_t data_size) {
-  DCHECK_LE(static_cast<int>(kHeaderSizeInBytes), buffer->size());
-  int64_t serialized_time =
-      response_time.ToDeltaSinceWindowsEpoch().InMicroseconds();
-  memcpy(buffer->data(), &serialized_time, kResponseTimeSizeInBytes);
-  // Copy size to small data buffer.
-  memcpy(buffer->data() + kResponseTimeSizeInBytes, &data_size,
-         kDataSizeInBytes);
+  auto header =
+      base::as_writable_bytes(buffer->span()).first<kHeaderSizeInBytes>();
+  auto [header_time, header_size] = header.split_at<kResponseTimeSizeInBytes>();
+  header_time.copy_from(base::numerics::I64ToLittleEndian(
+      response_time.ToDeltaSinceWindowsEpoch().InMicroseconds()));
+  header_size.copy_from(base::numerics::U32ToLittleEndian(data_size));
 }
 
-void ReadCommonDataHeader(scoped_refptr<net::IOBufferWithSize> buffer,
+void ReadCommonDataHeader(net::IOBufferWithSize* buffer,
                           base::Time* response_time,
                           uint32_t* data_size) {
-  DCHECK_LE(static_cast<int>(kHeaderSizeInBytes), buffer->size());
-  int64_t raw_response_time;
-  memcpy(&raw_response_time, buffer->data(), kResponseTimeSizeInBytes);
+  auto header = base::as_bytes(buffer->span().first<kHeaderSizeInBytes>());
+  auto [header_time, header_size] = header.split_at<kResponseTimeSizeInBytes>();
+  int64_t raw_response_time = base::numerics::I64FromLittleEndian(header_time);
   *response_time = base::Time::FromDeltaSinceWindowsEpoch(
       base::Microseconds(raw_response_time));
-  memcpy(data_size, buffer->data() + kResponseTimeSizeInBytes,
-         kDataSizeInBytes);
+  *data_size = base::numerics::U32FromLittleEndian(header_size);
 }
 
 static_assert(mojo_base::BigBuffer::kMaxInlineBytes <=
@@ -197,15 +197,18 @@ net::CacheType CodeCacheTypeToNetCacheType(
 bool GeneratedCodeCache::IsValidHeader(
     scoped_refptr<net::IOBufferWithSize> small_buffer) const {
   size_t buffer_size = small_buffer->size();
-  if (buffer_size < kHeaderSizeInBytes)
+  if (buffer_size < kHeaderSizeInBytes) {
     return false;
-  uint32_t data_size;
-  memcpy(&data_size, small_buffer->data() + kResponseTimeSizeInBytes,
-         kDataSizeInBytes);
-  if (data_size <= kInlineDataLimit)
+  }
+  base::Time response_time;
+  uint32_t data_size = 0;
+  ReadCommonDataHeader(small_buffer.get(), &response_time, &data_size);
+  if (data_size <= kInlineDataLimit) {
     return buffer_size == kHeaderSizeInBytes + data_size;
-  if (!ShouldDeduplicateEntry(data_size))
+  }
+  if (!ShouldDeduplicateEntry(data_size)) {
     return buffer_size == kHeaderSizeInBytes;
+  }
   return buffer_size == kHeaderSizeInBytes + kSHAKeySizeInBytes;
 }
 
@@ -448,7 +451,9 @@ void GeneratedCodeCache::WriteEntry(const GURL& url,
     small_buffer = base::MakeRefCounted<net::IOBufferWithSize>(
         kHeaderSizeInBytes + data.size());
     // Copy |data| into the small buffer.
-    memcpy(small_buffer->data() + kHeaderSizeInBytes, data.data(), data.size());
+    base::as_writable_bytes(small_buffer->span())
+        .subspan(kHeaderSizeInBytes)
+        .copy_from(data);
     // Write 0 bytes and truncate stream 1 to clear any stale data.
     large_buffer = base::MakeRefCounted<BigIOBuffer>(mojo_base::BigBuffer());
   } else if (!ShouldDeduplicateEntry(data_size)) {
@@ -467,23 +472,22 @@ void GeneratedCodeCache::WriteEntry(const GURL& url,
 
     // Make a copy of the data before hashing. A compromised renderer could
     // change shared memory before we can compute the hash and write the data.
-    // TODO(1135729) Eliminate this copy when the shared memory can't be written
-    // by the sender.
+    // TODO(crbug.com/40151989) Eliminate this copy when the shared memory can't
+    // be written by the sender.
     mojo_base::BigBuffer copy({data.data(), data.size()});
     if (copy.size() != data.size())
       return;
     data = mojo_base::BigBuffer();  // Release the old buffer.
     uint8_t result[crypto::kSHA256Length];
     crypto::SHA256HashString(
-        base::StringPiece(reinterpret_cast<char*>(copy.data()), copy.size()),
+        std::string_view(reinterpret_cast<char*>(copy.data()), copy.size()),
         result, std::size(result));
     std::string checksum_key = base::HexEncode(result);
-    small_buffer = base::MakeRefCounted<net::IOBufferWithSize>(
-        kHeaderSizeInBytes + kSHAKeySizeInBytes);
-    // Copy |checksum_key| into the small buffer.
     DCHECK_EQ(kSHAKeySizeInBytes, checksum_key.length());
-    memcpy(small_buffer->data() + kHeaderSizeInBytes, checksum_key.data(),
-           kSHAKeySizeInBytes);
+    small_buffer = base::MakeRefCounted<net::IOBufferWithSize>(
+        kHeaderSizeInBytes + checksum_key.length());
+    // Copy |checksum_key| into the small buffer.
+    small_buffer->span().subspan(kHeaderSizeInBytes).copy_from(checksum_key);
     // Write 0 bytes and truncate stream 1 to clear any stale data.
     large_buffer = base::MakeRefCounted<BigIOBuffer>(mojo_base::BigBuffer());
 
@@ -496,7 +500,7 @@ void GeneratedCodeCache::WriteEntry(const GURL& url,
                                                   large_buffer2);
     EnqueueOperation(std::move(op2));
   }
-  WriteCommonDataHeader(small_buffer, response_time, data_size);
+  WriteCommonDataHeader(small_buffer.get(), response_time, data_size);
 
   // Create the write operation.
   auto op = std::make_unique<PendingOperation>(Operation::kWrite, key,
@@ -836,13 +840,13 @@ void GeneratedCodeCache::ReadComplete(PendingOperation* op) {
     if (op->operation() != Operation::kFetchWithSHAKey) {
       base::Time response_time;
       uint32_t data_size = 0;
-      ReadCommonDataHeader(op->small_buffer(), &response_time, &data_size);
+      ReadCommonDataHeader(op->small_buffer().get(), &response_time,
+                           &data_size);
       if (data_size <= kInlineDataLimit) {
         // Small data. Copy the data from the small buffer.
         DCHECK_EQ(0, op->large_buffer()->size());
-        mojo_base::BigBuffer data(data_size);
-        memcpy(data.data(), op->small_buffer()->data() + kHeaderSizeInBytes,
-               data_size);
+        mojo_base::BigBuffer data(base::as_bytes(op->small_buffer()->span())
+                                      .subspan(kHeaderSizeInBytes, data_size));
         op->RunReadCallback(this, response_time, std::move(data));
       } else if (!ShouldDeduplicateEntry(data_size)) {
         // Large data below the merging threshold, or deduplication is disabled.

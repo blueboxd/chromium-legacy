@@ -17,7 +17,9 @@
 #include "base/task/sequenced_task_runner.h"
 #include "chrome/browser/ash/app_list/search/local_image_search/annotation_storage.h"
 #include "chrome/browser/ash/app_list/search/local_image_search/image_content_annotator.h"
-#include "chrome/browser/ash/app_list/search/local_image_search/optical_character_recognizer.h"
+#include "chrome/browser/screen_ai/public/optical_character_recognizer.h"
+
+class Profile;
 
 namespace base {
 class FilePathWatcher;
@@ -44,6 +46,7 @@ class ImageAnnotationWorker {
   explicit ImageAnnotationWorker(
       const base::FilePath& root_path,
       const std::vector<base::FilePath>& excluded_paths,
+      Profile* profile,
       bool use_file_watchers,
       bool use_ocr,
       bool use_ica);
@@ -111,7 +114,8 @@ class ImageAnnotationWorker {
 
   // ML models used as DLCs.
   ImageContentAnnotator image_content_annotator_;
-  OpticalCharacterRecognizer optical_character_recognizer_;
+  scoped_refptr<screen_ai::OpticalCharacterRecognizer>
+      optical_character_recognizer_;
 
   const bool use_file_watchers_;
   const bool use_ica_;
@@ -119,7 +123,12 @@ class ImageAnnotationWorker {
   base::queue<base::FilePath> files_to_process_;
   int num_retries_passed_ = 0;
 
+  // Indexing limit params.
+  const int indexing_limit_;
+  int num_indexing_images_ = 0;
+
   base::OneShotTimer timeout_timer_;
+  base::TimeTicks queue_processing_start_time_;
   // Owned by this class.
   const scoped_refptr<base::SequencedTaskRunner> task_runner_;
   SEQUENCE_CHECKER(sequence_checker_);

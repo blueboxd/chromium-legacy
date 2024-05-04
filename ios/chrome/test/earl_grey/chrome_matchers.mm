@@ -198,6 +198,10 @@ id<GREYMatcher> OmniboxContainingText(const std::string& text) {
       omniboxContainingText:base::SysUTF8ToNSString(text)];
 }
 
+id<GREYMatcher> OmniboxContainingAutocompleteText(NSString* text) {
+  return [ChromeMatchersAppInterface omniboxContainingAutocompleteText:text];
+}
+
 id<GREYMatcher> OmniboxAutocompleteLabel() {
   return [ChromeMatchersAppInterface omniboxAutocompleteLabel];
 }
@@ -375,18 +379,6 @@ id<GREYMatcher> SettingsAccountButton() {
 
 id<GREYMatcher> SettingsAccountsCollectionView() {
   return [ChromeMatchersAppInterface settingsAccountsCollectionView];
-}
-
-id<GREYMatcher> SettingsImportDataImportButton() {
-  return [ChromeMatchersAppInterface settingsImportDataImportButton];
-}
-
-id<GREYMatcher> SettingsImportDataKeepSeparateButton() {
-  return [ChromeMatchersAppInterface settingsImportDataKeepSeparateButton];
-}
-
-id<GREYMatcher> SettingsImportDataContinueButton() {
-  return [ChromeMatchersAppInterface settingsImportDataContinueButton];
 }
 
 id<GREYMatcher> SettingsSafetyCheckTableView() {
@@ -651,6 +643,18 @@ id<GREYMatcher> TabGridCellAtIndex(unsigned int index) {
   return [ChromeMatchersAppInterface tabGridCellAtIndex:index];
 }
 
+id<GREYMatcher> TabGridGroupCellAtIndex(unsigned int index) {
+  return [ChromeMatchersAppInterface tabGridGroupCellAtIndex:index];
+}
+
+id<GREYMatcher> TabStripCellAtIndex(unsigned int index) {
+  return [ChromeMatchersAppInterface tabStripCellAtIndex:index];
+}
+
+id<GREYMatcher> TabStripGroupCellAtIndex(unsigned int index) {
+  return [ChromeMatchersAppInterface tabStripGroupCellAtIndex:index];
+}
+
 id<GREYMatcher> TabGridDoneButton() {
   return [ChromeMatchersAppInterface tabGridDoneButton];
 }
@@ -689,6 +693,14 @@ id<GREYMatcher> TabGridIncognitoTabsPanelButton() {
 
 id<GREYMatcher> TabGridOtherDevicesPanelButton() {
   return [ChromeMatchersAppInterface tabGridOtherDevicesPanelButton];
+}
+
+id<GREYMatcher> TabGridTabGroupsPanelButton() {
+  return [ChromeMatchersAppInterface tabGridTabGroupsPanelButton];
+}
+
+id<GREYMatcher> TabGridThirdPanelButton() {
+  return [ChromeMatchersAppInterface tabGridThirdPanelButton];
 }
 
 id<GREYMatcher> TabGridNormalModePageControl() {

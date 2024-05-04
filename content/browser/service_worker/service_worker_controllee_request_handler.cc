@@ -26,6 +26,7 @@
 #include "content/browser/service_worker/service_worker_main_resource_loader_interceptor.h"
 #include "content/browser/service_worker/service_worker_metrics.h"
 #include "content/browser/service_worker/service_worker_registration.h"
+#include "content/browser/service_worker/service_worker_security_utils.h"
 #include "content/public/browser/allow_service_worker_result.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -87,73 +88,10 @@ const char* FetchHandlerTypeToString(
       return "empty fetch handler";
   }
 }
-
-bool ShouldBypassFetchHandlerForMainResource(ServiceWorkerVersion& version) {
-  if (!base::FeatureList::IsEnabled(
-          features::kServiceWorkerBypassFetchHandler)) {
-    return false;
-  }
-
-  if (features::kServiceWorkerBypassFetchHandlerTarget.Get() !=
-      features::ServiceWorkerBypassFetchHandlerTarget::kMainResource) {
-    return false;
-  }
-
-  // If the feature is enabled, the main resource request bypasses ServiceWorker
-  // and starts the worker in parallel for subsequent subresources.
-  switch (features::kServiceWorkerBypassFetchHandlerStrategy.Get()) {
-    // kFeatureOptIn means that the feature relies on the manual feature
-    // toggle from about://flags etc, which is triggered by developers. We
-    // bypass fetch handler regardless of the url matching in this case.
-    case features::ServiceWorkerBypassFetchHandlerStrategy::kFeatureOptIn:
-      RecordSkipReason(
-          ServiceWorkerControlleeRequestHandler::FetchHandlerSkipReason::
-              kMainResourceSkippedDueToFeatureFlag);
-      return true;
-    // If kAllowList, the allowlist should be specified. In this case, main
-    // resource fetch handlers are bypassed only when the sha256 checksum of the
-    // script is in the allowlist.
-    case features::ServiceWorkerBypassFetchHandlerStrategy::kAllowList:
-      if (content::service_worker_loader_helpers::
-              FetchHandlerBypassedHashStrings()
-                  .contains(version.sha256_script_checksum())) {
-        version.CountFeature(
-            blink::mojom::WebFeature::
-                kServiceWorkerBypassFetchHandlerForMainResource);
-        RecordSkipReason(
-            ServiceWorkerControlleeRequestHandler::FetchHandlerSkipReason::
-                kMainResourceSkippedBecauseMatchedWithAllowedScriptList);
-        return true;
-      }
-      return false;
-  }
-
-  NOTREACHED();
-  return false;
-}
-
-bool ShouldBypassFetchHandlerForMainResourceByOriginTrial(
-    ServiceWorkerVersion& version) {
-  if (version.origin_trial_tokens() &&
-      version.origin_trial_tokens()->contains(
-          "ServiceWorkerBypassFetchHandlerForMainResource")) {
-    RecordSkipReason(
-        ServiceWorkerControlleeRequestHandler::FetchHandlerSkipReason::
-            kMainResourceSkippedDueToOriginTrial);
-    // The UseCounter for
-    // kServiceWorkerBypassFetchHandlerForMainResourceByOriginTrial should only
-    // capture the usage of this feature invoked by the Origin Trial for the OT
-    // measurement purpose.
-    version.CountFeature(
-        blink::mojom::WebFeature::
-            kServiceWorkerBypassFetchHandlerForMainResourceByOriginTrial);
-    return true;
-  }
-
-  return false;
-}
-
 }  // namespace
+
+std::optional<int> ServiceWorkerControlleeRequestHandler::
+    start_service_worker_for_empty_fetch_handler_duration_for_testing_;
 
 ServiceWorkerControlleeRequestHandler::ServiceWorkerControlleeRequestHandler(
     base::WeakPtr<ServiceWorkerContextCore> context,
@@ -245,7 +183,7 @@ void ServiceWorkerControlleeRequestHandler::MaybeCreateLoader(
   // Fall back for the subsequent offline page interceptor to load the offline
   // snapshot of the page if required.
   //
-  // TODO(crbug.com/876527): Figure out how offline page interception should
+  // TODO(crbug.com/40590410): Figure out how offline page interception should
   // interact with URLLoaderThrottles. It might be incorrect to use
   // |tentative_resource_request.headers| here, since throttles can rewrite
   // headers between now and when the request handler passed to
@@ -360,7 +298,9 @@ void ServiceWorkerControlleeRequestHandler::ContinueWithRegistration(
 
   AllowServiceWorkerResult allow_service_worker =
       GetContentClient()->browser()->AllowServiceWorker(
-          registration->scope(), container_host_->site_for_cookies(),
+          registration->scope(),
+          service_worker_security_utils::site_for_cookies(
+              container_host_->key()),
           container_host_->top_frame_origin(), /*script_url=*/GURL(),
           context_->wrapper()->browser_context());
 
@@ -533,7 +473,7 @@ void ServiceWorkerControlleeRequestHandler::ContinueWithActivatedVersion(
     return;
   }
 
-  switch (active_version->EffectiveFetchHandlerType()) {
+  switch (active_version->fetch_handler_type()) {
     case ServiceWorkerVersion::FetchHandlerType::kNoHandler: {
       RecordSkipReason(FetchHandlerSkipReason::kNoFetchHandler);
       TRACE_EVENT_WITH_FLOW1(
@@ -554,94 +494,21 @@ void ServiceWorkerControlleeRequestHandler::ContinueWithActivatedVersion(
           TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "Info",
           "The fetch handler is skippable. Falling back to network",
           "FetchHandlerType",
-          FetchHandlerTypeToString(
-              active_version->EffectiveFetchHandlerType()));
+          FetchHandlerTypeToString(active_version->fetch_handler_type()));
       active_version->CountFeature(
           blink::mojom::WebFeature::kServiceWorkerSkippedForEmptyFetchHandler);
       CompleteWithoutLoader();
-      if (!features::kStartServiceWorkerForEmptyFetchHandler.Get()) {
-        return;
-      }
-      if (features::kAsyncStartServiceWorkerForEmptyFetchHandler.Get()) {
-        int duration =
-            features::kAsyncStartServiceWorkerForEmptyFetchHandlerDurationInMs
-                .Get();
-        constexpr int kDurationThresholdInMs = 10 * 1000;  // 10 seconds.
-        if (duration < 0 || duration > kDurationThresholdInMs) {
-          LOG(ERROR) << "Ignored out-of-range duration:" << duration;
-          duration = 0;
-        }
-        base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
-            FROM_HERE,
-            base::BindOnce(
-                &ServiceWorkerControlleeRequestHandler::MaybeStartServiceWorker,
-                weak_factory_.GetWeakPtr(), std::move(active_version),
-                ServiceWorkerMetrics::EventType::SKIP_EMPTY_FETCH_HANDLER),
-            base::Milliseconds(duration));
-        return;
-      }
-      MaybeStartServiceWorker(
-          std::move(active_version),
-          ServiceWorkerMetrics::EventType::SKIP_EMPTY_FETCH_HANDLER);
+
+      base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
+          FROM_HERE,
+          base::BindOnce(
+              &ServiceWorkerControlleeRequestHandler::MaybeStartServiceWorker,
+              weak_factory_.GetWeakPtr(), std::move(active_version),
+              ServiceWorkerMetrics::EventType::SKIP_EMPTY_FETCH_HANDLER),
+          base::Milliseconds(GetServiceWorkerForEmptyFetchHandlerDurationMs()));
       return;
     }
     case ServiceWorkerVersion::FetchHandlerType::kNotSkippable: {
-      // When FetchHandlerType::kNotSkippable, then check if the fetch handler
-      // should bypassed or not. First, check the origin trial token. If there
-      // is no valid origin trial token, then check the eligibility based on the
-      // feature flag and the url.
-      if (ShouldBypassFetchHandlerForMainResourceByOriginTrial(
-              *active_version) ||
-          ShouldBypassFetchHandlerForMainResource(*active_version)) {
-        // If true, the main resource request bypasses ServiceWorker and starts
-        // the worker in parallel for subsequent subresources.
-        CompleteWithoutLoader();
-        MaybeStartServiceWorker(
-            std::move(active_version),
-            ServiceWorkerMetrics::EventType::BYPASS_MAIN_RESOURCE);
-        return;
-      }
-      // If the feature param ServiceWorkerBypassFetchHandlerTarget is
-      // |kAllOnlyIfServiceWorkerNotStarted| takes effect and the ServiceWorker
-      // isn't started yet, skip the fetch handler and then start the
-      // ServiceWorker.
-      if (base::FeatureList::IsEnabled(
-              features::kServiceWorkerBypassFetchHandler) &&
-          features::kServiceWorkerBypassFetchHandlerTarget.Get() ==
-              features::ServiceWorkerBypassFetchHandlerTarget::
-                  kAllOnlyIfServiceWorkerNotStarted) {
-        switch (active_version->running_status()) {
-          case blink::EmbeddedWorkerStatus::kStopped:
-          case blink::EmbeddedWorkerStatus::kStopping:
-          case blink::EmbeddedWorkerStatus::kStarting:
-            // If the status is STARTING, the Serviceworker is not actually
-            // started yet. So it makes sense to skip the fetch handler.
-            active_version->set_fetch_handler_bypass_option(
-                blink::mojom::ServiceWorkerFetchHandlerBypassOption::
-                    kBypassOnlyIfServiceWorkerNotStarted);
-            CompleteWithoutLoader();
-            RecordSkipReason(
-                active_version->running_status() ==
-                        blink::EmbeddedWorkerStatus::kStarting
-                    ? FetchHandlerSkipReason::
-                          kBypassFetchHandlerForAllOnlyIfServiceWorkerNotStarted_Status_Starting
-                    : FetchHandlerSkipReason::
-                          kBypassFetchHandlerForAllOnlyIfServiceWorkerNotStarted_Status_Stop);
-            base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
-                FROM_HERE,
-                base::BindOnce(&ServiceWorkerControlleeRequestHandler::
-                                   MaybeStartServiceWorker,
-                               weak_factory_.GetWeakPtr(),
-                               std::move(active_version),
-                               ServiceWorkerMetrics::EventType::
-                                   BYPASS_ONLY_IF_SERVICE_WORKER_NOT_STARTED));
-            return;
-          case blink::EmbeddedWorkerStatus::kRunning:
-            active_version->set_fetch_handler_bypass_option(
-                blink::mojom::ServiceWorkerFetchHandlerBypassOption::kDefault);
-            break;
-        }
-      }
       // Otherwise, record the skip reason as kNotSkipped.
       RecordSkipReason(FetchHandlerSkipReason::kNotSkipped);
       TRACE_EVENT_WITH_FLOW1(
@@ -796,6 +663,20 @@ void ServiceWorkerControlleeRequestHandler::MaybeStartServiceWorker(
       event_type,
       base::BindOnce(&ServiceWorkerControlleeRequestHandler::DidStartWorker,
                      weak_factory_.GetWeakPtr()));
+}
+
+int ServiceWorkerControlleeRequestHandler::
+    GetServiceWorkerForEmptyFetchHandlerDurationMs() {
+  if (start_service_worker_for_empty_fetch_handler_duration_for_testing_) {
+    return start_service_worker_for_empty_fetch_handler_duration_for_testing_
+        .value();
+  }
+  return kStartServiceWorkerForEmptyFetchHandlerDurationInMs;
+}
+
+void ServiceWorkerControlleeRequestHandler::
+    SetStartServiceWorkerForEmptyFetchHandlerDurationForTesting(int duration) {
+  start_service_worker_for_empty_fetch_handler_duration_for_testing_ = duration;
 }
 
 }  // namespace content

@@ -9,6 +9,7 @@ import signal
 import sys
 
 import collections
+import json
 import logging
 import os
 import psutil
@@ -16,12 +17,14 @@ import shutil
 import subprocess
 import threading
 import time
+from typing import List, Optional
 
 import constants
 import file_util
 import gtest_utils
 import mac_util
 import iossim_util
+import shard_util
 import test_apps
 from test_result_util import ResultCollection, TestResult, TestStatus
 import test_runner_errors
@@ -36,7 +39,7 @@ HOST_IS_DOWN_ERROR = 'Domain=NSPOSIXErrorDomain Code=64 "Host is down"'
 MIG_SERVER_DIED_ERROR = '(ipc/mig) server died'
 
 
-# TODO(crbug.com/1077277): Move commonly used error classes to
+# TODO(crbug.com/40129082): Move commonly used error classes to
 # test_runner_errors module.
 class TestRunnerError(test_runner_errors.Error):
   """Base class for TestRunner-related errors."""
@@ -222,7 +225,7 @@ def terminate_process(proc, proc_name):
     LOGGER.info('Error while killing a process: %s' % ex)
 
 
-# TODO(crbug.com/1044812): Moved print_process_output to utils class.
+# TODO(crbug.com/40115765): Moved print_process_output to utils class.
 def print_process_output(proc,
                          proc_name=None,
                          parser=None,
@@ -273,7 +276,7 @@ def print_process_output(proc,
 
     # This is a temporary mitigation to surface this issue so that
     # test runner can clear runtime cache for the next run.
-    # TODO(crbug.com/1370522): remove this workaround once the issue
+    # TODO(crbug.com/40241048): remove this workaround once the issue
     # is resolved.
     if HOST_IS_DOWN_ERROR in line:
       raise HostIsDownError()
@@ -314,10 +317,10 @@ def get_current_xcode_info():
   }
 
 
-def init_test_result_defaults():
+def init_test_result_defaults(is_eg_test=False):
   return {
       'version': 3,
-      'path_delimiter': '.',
+      'path_delimiter': '/' if is_eg_test else '.',
       'seconds_since_epoch': int(time.time()),
       # This will be overwritten when the tests complete successfully.
       'interrupted': True,
@@ -395,7 +398,7 @@ class TestRunner(object):
       if not os.path.exists(self.xctest_path):
         raise XCTestPlugInNotFoundError(self.xctest_path)
 
-  # TODO(crbug.com/1185295): Move this method to a utils class.
+  # TODO(crbug.com/40172018): Move this method to a utils class.
   @staticmethod
   def remove_proxy_settings():
     """removes any proxy settings which may remain from a previous run."""
@@ -565,8 +568,8 @@ class TestRunner(object):
     """
     parser = gtest_utils.GTestLogParser()
 
-    # TODO(crbug.com/812705): Implement test sharding for unit tests.
-    # TODO(crbug.com/812712): Use thread pool for DeviceTestRunner as well.
+    # TODO(crbug.com/41370857): Implement test sharding for unit tests.
+    # TODO(crbug.com/41370858): Use thread pool for DeviceTestRunner as well.
     proc = self.start_proc(cmd)
     old_handler = self.set_sigterm_handler(
         lambda _signum, _frame: self.handle_sigterm(proc))
@@ -584,7 +587,7 @@ class TestRunner(object):
 
     LOGGER.info('Populating test location info for test results...')
     if isinstance(self, SimulatorTestRunner):
-      # TODO(crbug.com/1091345): currently we have some tests suites that are
+      # TODO(crbug.com/40134137): currently we have some tests suites that are
       # written in ios_internal, so not all test repos are public. We should
       # figure out a way to identify test repo info depending on the test suite.
       parser.ParseAndPopulateTestResultLocations(DEFAULT_TEST_REPO,
@@ -1049,9 +1052,9 @@ class DeviceTestRunner(TestRunner):
 
   def shutdown_and_restart(self):
     """Restart the device, wait for two minutes."""
-    # TODO(crbug.com/760399): swarming bot ios 11 devices turn to be unavailable
-    # in a few hours unexpectedly, which is assumed as an ios beta issue. Should
-    # remove this method once the bug is fixed.
+    # TODO(crbug.com/41341969): swarming bot ios 11 devices turn to be
+    # unavailable in a few hours unexpectedly, which is assumed as an ios beta
+    # issue. Should remove this method once the bug is fixed.
     if self.restart:
       LOGGER.info('Restarting device, wait for two minutes.')
       try:
@@ -1074,7 +1077,7 @@ class DeviceTestRunner(TestRunner):
     try:
       print_process_output(self.start_proc(cmd))
     except subprocess.CalledProcessError:
-      # TODO(crbug.com/828951): Raise the exception when the bug is fixed.
+      # TODO(crbug.com/41380784): Raise the exception when the bug is fixed.
       LOGGER.warning('Failed to retrieve crash reports from device.')
 
   def tear_down(self):
@@ -1160,7 +1163,7 @@ class DeviceTestRunner(TestRunner):
         repeat_count=self.repeat_count,
         test_args=self.test_args)
 
-  # TODO(crbug.com/1469697): there's a bug in Xcode 15 such that the devices
+  # TODO(crbug.com/40277601): there's a bug in Xcode 15 such that the devices
   # will get disconnected from Xcode after a reboot. We should revisit this
   # later to see if Apple will resolve this issue. Moreover, if the issue is
   # not resolved, we should aim to add some restrictions to this call such
@@ -1169,4 +1172,8 @@ class DeviceTestRunner(TestRunner):
     if xcode_util.using_xcode_15_or_higher():
       LOGGER.warning(
           "Restarting usbmuxd to ensure device is re-paired to Xcode...")
-      mac_util.stop_usbmuxd()
+      try:
+        mac_util.kill_usbmuxd()
+      except subprocess.CalledProcessError as e:
+        logging.exception('Unable to restart usbmuxd:')
+        logging.error(e)

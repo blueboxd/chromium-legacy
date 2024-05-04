@@ -10,13 +10,15 @@
 #include <string>
 #include <string_view>
 
+#include "base/feature_list.h"
 #include "base/logging.h"
+#include "base/memory/raw_ptr.h"
 #include "base/notreached.h"
 #include "base/types/cxx23_to_underlying.h"
 #include "base/types/strong_alias.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/field_types.h"
-#include "components/autofill/core/browser/ui/popup_item_ids.h"
+#include "components/autofill/core/browser/ui/suggestion_type.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
 #include "ui/gfx/image/image.h"
 #include "url/gurl.h"
@@ -24,12 +26,27 @@
 namespace autofill {
 
 struct Suggestion {
+  struct PasswordSuggestionDetails {
+    friend bool operator==(const PasswordSuggestionDetails&,
+                           const PasswordSuggestionDetails&) = default;
+    std::u16string password;
+    // Stores either the password signon realm or the Android app name for which
+    // the password was saved.
+    std::u16string display_signon_realm;
+    // This flag is set to `false` for the manual fallback suggestions which
+    // represent exact, strongly affiliated, PSL and weakly affiliated matches
+    // for the domain the suggestions are shown for. All other suggestions have
+    // this flag set to `true`.
+    bool is_cross_domain;
+  };
+
   using IsLoading = base::StrongAlias<class IsLoadingTag, bool>;
   using Guid = base::StrongAlias<class GuidTag, std::string>;
   using InstrumentId = base::StrongAlias<class InstrumentIdTag, uint64_t>;
   using BackendId = absl::variant<Guid, InstrumentId>;
   using ValueToFill = base::StrongAlias<struct ValueToFill, std::u16string>;
-  using Payload = absl::variant<BackendId, GURL, ValueToFill>;
+  using Payload =
+      absl::variant<BackendId, GURL, ValueToFill, PasswordSuggestionDetails>;
 
   // The text information shown on the UI layer for a Suggestion.
   struct Text {
@@ -61,6 +78,7 @@ struct Suggestion {
   enum class Icon {
     kNoIcon,
     kAccount,
+    // TODO(b/40266549): Rename to Undo.
     kClear,
     kCreate,
     kCode,
@@ -85,7 +103,7 @@ struct Suggestion {
     kSettings,
     kSettingsAndroid,
     kUndo,
-    // Credit card icons
+    // Payment method icons
     kCardGeneric,
     kCardAmericanExpress,
     kCardDiners,
@@ -97,27 +115,32 @@ struct Suggestion {
     kCardTroy,
     kCardUnionPay,
     kCardVisa,
+    kIban,
   };
 
+  // TODO(b/335194240): Consolidate expected param types for these constructors.
+  // Some expect UTF16 strings and others UTF8, while internally we only use
+  // UTF16. The ones expecting UTF8 are only used by tests and could be easily
+  // refactored.
   Suggestion();
   explicit Suggestion(std::u16string main_text);
-  explicit Suggestion(PopupItemId popup_item_id);
-  Suggestion(std::u16string main_text, PopupItemId popup_item_id);
+  explicit Suggestion(SuggestionType type);
+  Suggestion(std::u16string main_text, SuggestionType type);
   // Constructor for unit tests. It will convert the strings from UTF-8 to
   // UTF-16.
   Suggestion(std::string_view main_text,
              std::string_view label,
              Icon icon,
-             PopupItemId popup_item_id);
+             SuggestionType type);
   Suggestion(std::string_view main_text,
              std::vector<std::vector<Text>> labels,
              Icon icon,
-             PopupItemId popup_item_id);
+             SuggestionType type);
   Suggestion(std::string_view main_text,
              std::string_view minor_text,
              std::string_view label,
              Icon icon,
-             PopupItemId popup_item_id);
+             SuggestionType type);
   Suggestion(const Suggestion& other);
   Suggestion(Suggestion&& other);
   Suggestion& operator=(const Suggestion& other);
@@ -140,12 +163,20 @@ struct Suggestion {
 
 #if DCHECK_IS_ON()
   bool Invariant() const {
-    switch (popup_item_id) {
-      case PopupItemId::kFillPassword:
-        return absl::holds_alternative<ValueToFill>(payload);
-      case PopupItemId::kSeePromoCodeDetails:
+    switch (type) {
+      case SuggestionType::kPasswordEntry:
+        // Manual fallback password suggestions store the password to preview or
+        // fill in the suggestion's payload. Regular per-domain contain empty
+        // `BackendId`.
+        // TODO(b/333992198): Use `PasswordSuggestionDetails` for all
+        // suggestions with `SuggestionType::kPasswordEntry`.
+        return absl::holds_alternative<BackendId>(payload) ||
+               absl::holds_alternative<PasswordSuggestionDetails>(payload);
+      case SuggestionType::kFillPassword:
+        return absl::holds_alternative<PasswordSuggestionDetails>(payload);
+      case SuggestionType::kSeePromoCodeDetails:
         return absl::holds_alternative<GURL>(payload);
-      case PopupItemId::kIbanEntry:
+      case SuggestionType::kIbanEntry:
         return absl::holds_alternative<ValueToFill>(payload) ||
                absl::holds_alternative<BackendId>(payload);
       default:
@@ -165,7 +196,7 @@ struct Suggestion {
   Payload payload;
 
   // Determines popup identifier for the suggestion.
-  PopupItemId popup_item_id = PopupItemId::kAutocompleteEntry;
+  SuggestionType type = SuggestionType::kAutocompleteEntry;
 
   // The texts that will be displayed on the first line in a suggestion. The
   // order of showing the two texts on the first line depends on whether it is
@@ -218,8 +249,7 @@ struct Suggestion {
   IsLoading is_loading = IsLoading(false);
 
   // The In-Product-Help feature that should be shown for the suggestion.
-  // TODO(1432893): Consider making it `const Feature*`.
-  std::string feature_for_iph;
+  raw_ptr<const base::Feature> feature_for_iph = nullptr;
 
   // If specified, this text will be played back as voice over for a11y.
   std::optional<std::u16string> voice_over;
@@ -228,8 +258,8 @@ struct Suggestion {
   // suggestion.
   std::optional<std::u16string> acceptance_a11y_announcement;
 
-  // When `popup_item_id` is
-  // `PopupItemId::k(Address|CreditCard)FieldByFieldFilling`, specifies the
+  // When `type` is
+  // `SuggestionType::k(Address|CreditCard)FieldByFieldFilling`, specifies the
   // `FieldType` used to build the suggestion's `main_text`.
   std::optional<FieldType> field_by_field_filling_type_used;
 
@@ -237,10 +267,10 @@ struct Suggestion {
   // accept it by clicking on it.
   bool is_acceptable = true;
 
-  // Denotes whether this suggestion was hidden prior to the effects caused by
-  // kAutofillUseAddressRewriterInProfileSubsetComparison.
-  // TODO(crbug.com/1439742): Remove when the feature launches.
-  bool hidden_prior_to_address_rewriter_usage = false;
+  // If true, the user will see the suggestion in a "disabled and grayed-out"
+  // form. This field should be true only when `is_acceptable` is false  which
+  // will make the suggestion deactivated and unclickable.
+  bool apply_deactivated_style = false;
 };
 
 std::string_view ConvertIconToPrintableString(Suggestion::Icon icon);

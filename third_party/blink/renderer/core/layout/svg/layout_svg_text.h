@@ -33,10 +33,11 @@ class LayoutSVGText final : public LayoutSVGBlock {
 
  private:
   // LayoutObject override:
-  void UpdateLayout() override;
+  SVGLayoutResult UpdateSVGLayout(const SVGLayoutInfo&) override;
   // Update LayoutObject state after layout has completed. Returns true if
   // boundaries needs to be propagated (because of a change to the transform).
-  bool UpdateAfterSvgLayout(bool bounds_changed);
+  bool UpdateAfterSVGLayout(const SVGLayoutInfo&, bool bounds_changed);
+
   const char* GetName() const override;
   bool IsSVGText() const final {
     NOT_DESTROYED();

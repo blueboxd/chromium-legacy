@@ -162,7 +162,7 @@ std::string GetAppName(Profile* profile, const std::string& app_id) {
   if (!name.empty())
     return name;
 
-  // TODO(crbug.com/1194370): Remove once Chrome Apps are gone or Lacros
+  // TODO(crbug.com/40758396): Remove once Chrome Apps are gone or Lacros
   // launches, as note-taking Chrome Apps will not be supported in Lacros.
   const extensions::Extension* chrome_app =
       extensions::ExtensionRegistry::Get(profile)->enabled_extensions().GetByID(
@@ -275,7 +275,7 @@ void NoteTakingHelper::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-// TODO(crbug.com/1332379): Remove this method and observe LockScreenHelper for
+// TODO(crbug.com/40227659): Remove this method and observe LockScreenHelper for
 // app updates instead.
 void NoteTakingHelper::NotifyAppUpdated(Profile* profile,
                                         const std::string& app_id) {

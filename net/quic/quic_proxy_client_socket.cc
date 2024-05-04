@@ -5,6 +5,7 @@
 #include "net/quic/quic_proxy_client_socket.h"
 
 #include <cstdio>
+#include <string_view>
 #include <utility>
 
 #include "base/functional/bind.h"
@@ -220,7 +221,7 @@ int QuicProxyClientSocket::Write(
                                 buf->data());
 
   int rv = stream_->WriteStreamData(
-      base::StringPiece(buf->data(), buf_len), false,
+      std::string_view(buf->data(), buf_len), false,
       base::BindOnce(&QuicProxyClientSocket::OnWriteComplete,
                      weak_factory_.GetWeakPtr()));
   if (rv == OK)
@@ -341,8 +342,11 @@ int QuicProxyClientSocket::DoSendRequest() {
 
   if (proxy_delegate_) {
     HttpRequestHeaders proxy_delegate_headers;
-    proxy_delegate_->OnBeforeTunnelRequest(proxy_chain_, proxy_chain_index_,
-                                           &proxy_delegate_headers);
+    int result = proxy_delegate_->OnBeforeTunnelRequest(
+        proxy_chain_, proxy_chain_index_, &proxy_delegate_headers);
+    if (result < 0) {
+      return result;
+    }
     request_.extra_headers.MergeFrom(proxy_delegate_headers);
   }
 

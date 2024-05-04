@@ -25,10 +25,8 @@ import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.Features.EnableFeatures;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.compositor.layouts.components.CompositorButton;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel;
@@ -974,9 +972,6 @@ public class TabStripTest {
     @Test
     @LargeTest
     @Feature({"TabStrip"})
-    @EnableFeatures({
-        ChromeFeatureList.ADVANCED_PERIPHERALS_SUPPORT_TAB_STRIP,
-    })
     @Restriction(UiRestriction.RESTRICTION_TYPE_TABLET)
     public void testHoverOnTabStrip() throws Exception {
         // Open a few regular tabs.
@@ -1028,8 +1023,7 @@ public class TabStripTest {
         StripLayoutTab lastHoveredTab =
                 stripLayoutHelperManager.getActiveStripLayoutHelper().getLastHoveredTab();
         Assert.assertEquals("The last hovered tab is not set correctly.", tab1, lastHoveredTab);
-        Assert.assertFalse(
-                "|mFolioAttached| for tab1 should be false.", tab1.getFolioAttachedForTesting());
+        Assert.assertFalse("|mFolioAttached| for tab1 should be false.", tab1.getFolioAttached());
         Assert.assertEquals(
                 "tab1 container bottom margin should match.",
                 StripLayoutHelper.FOLIO_DETACHED_BOTTOM_MARGIN_DP,
@@ -1045,10 +1039,8 @@ public class TabStripTest {
                                 MotionEvent.ACTION_HOVER_MOVE, xMove, yMove));
         lastHoveredTab = stripLayoutHelperManager.getActiveStripLayoutHelper().getLastHoveredTab();
         Assert.assertEquals("The last hovered tab is not set correctly.", tab2, lastHoveredTab);
-        Assert.assertFalse(
-                "|mFolioAttached| for tab2 should be false.", tab2.getFolioAttachedForTesting());
-        Assert.assertTrue(
-                "|mFolioAttached| for tab1 should be true.", tab1.getFolioAttachedForTesting());
+        Assert.assertFalse("|mFolioAttached| for tab2 should be false.", tab2.getFolioAttached());
+        Assert.assertTrue("|mFolioAttached| for tab1 should be true.", tab1.getFolioAttached());
         Assert.assertEquals(
                 "tab1 container bottom margin should match.",
                 StripLayoutHelper.FOLIO_ATTACHED_BOTTOM_MARGIN_DP,
@@ -1064,15 +1056,13 @@ public class TabStripTest {
                                 MotionEvent.ACTION_HOVER_EXIT, xExit, yExit));
         lastHoveredTab = stripLayoutHelperManager.getActiveStripLayoutHelper().getLastHoveredTab();
         Assert.assertNull("The last hovered tab is not set correctly.", lastHoveredTab);
-        Assert.assertTrue(
-                "|mFolioAttached| for tab2 should be true.", tab2.getFolioAttachedForTesting());
+        Assert.assertTrue("|mFolioAttached| for tab2 should be true.", tab2.getFolioAttached());
     }
 
     /** Tests hover cards shown in standard as well as incognito tab models. */
     @Test
     @LargeTest
     @Feature({"TabStrip"})
-    @EnableFeatures({ChromeFeatureList.ADVANCED_PERIPHERALS_SUPPORT_TAB_STRIP})
     @Restriction(UiRestriction.RESTRICTION_TYPE_TABLET)
     public void testHoverOnTabStrip_switchTabModel() throws Exception {
         // Open regular tabs.
@@ -1148,9 +1138,6 @@ public class TabStripTest {
     @Test
     @LargeTest
     @Feature({"TabStrip"})
-    @EnableFeatures({
-        ChromeFeatureList.ADVANCED_PERIPHERALS_SUPPORT_TAB_STRIP,
-    })
     @Restriction(UiRestriction.RESTRICTION_TYPE_TABLET)
     public void testTabHoverStateClearedOnActivityPause() throws Exception {
         TabModel model = sActivityTestRule.getActivity().getTabModelSelector().getModel(false);

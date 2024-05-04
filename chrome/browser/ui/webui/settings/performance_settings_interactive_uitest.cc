@@ -15,12 +15,13 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_element_identifiers.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/performance_controls/test_support/battery_saver_browser_test_mixin.h"
 #include "chrome/browser/ui/performance_controls/test_support/memory_saver_interactive_test_mixin.h"
-#include "chrome/browser/ui/performance_controls/test_support/webui_interactive_test_mixin.h"
 #include "chrome/browser/ui/tabs/tab_enums.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/feedback/feedback_dialog.h"
+#include "chrome/browser/ui/webui/test_support/webui_interactive_test_mixin.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "chrome/test/interaction/interactive_browser_test.h"
@@ -125,8 +126,9 @@ class MemorySettingsInteractiveTest
 IN_PROC_BROWSER_TEST_F(MemorySettingsInteractiveTest, MemorySaverPrefChanged) {
   RunTestSequence(
       InstrumentTab(kPerformanceSettingsPage),
-      NavigateWebContents(kPerformanceSettingsPage,
-                          GURL(chrome::kChromeUIPerformanceSettingsURL)),
+      NavigateWebContents(
+          kPerformanceSettingsPage,
+          GURL(chrome::GetSettingsUrl(chrome::kPerformanceSubPage))),
       WaitForElementToRender(kPerformanceSettingsPage, kMemorySaverToggleQuery),
       WaitForButtonStateChange(kPerformanceSettingsPage,
                                kMemorySaverToggleQuery, true),
@@ -141,7 +143,7 @@ IN_PROC_BROWSER_TEST_F(MemorySettingsInteractiveTest, MemorySaverPrefChanged) {
       ClickElement(kPerformanceSettingsPage, kMemorySaverToggleQuery),
       WaitForButtonStateChange(kPerformanceSettingsPage,
                                kMemorySaverToggleQuery, true),
-      CheckMemorySaverModePrefState(MemorySaverModeState::kEnabledOnTimer));
+      CheckMemorySaverModePrefState(MemorySaverModeState::kEnabled));
 }
 
 IN_PROC_BROWSER_TEST_F(MemorySettingsInteractiveTest,
@@ -156,8 +158,9 @@ IN_PROC_BROWSER_TEST_F(MemorySettingsInteractiveTest,
 
   RunTestSequence(
       InstrumentTab(kPerformanceSettingsPage),
-      NavigateWebContents(kPerformanceSettingsPage,
-                          GURL(chrome::kChromeUIPerformanceSettingsURL)),
+      NavigateWebContents(
+          kPerformanceSettingsPage,
+          GURL(chrome::GetSettingsUrl(chrome::kPerformanceSubPage))),
       InstrumentNextTab(kLearnMorePage),
       ClickElement(kPerformanceSettingsPage, memory_saver_learn_more),
       WaitForShow(kLearnMorePage),
@@ -172,8 +175,9 @@ IN_PROC_BROWSER_TEST_F(MemorySettingsInteractiveTest,
 
   RunTestSequence(
       InstrumentTab(kPerformanceSettingsPage),
-      NavigateWebContents(kPerformanceSettingsPage,
-                          GURL(chrome::kChromeUIPerformanceSettingsURL)),
+      NavigateWebContents(
+          kPerformanceSettingsPage,
+          GURL(chrome::GetSettingsUrl(chrome::kPerformanceSubPage))),
       WaitForElementToRender(kPerformanceSettingsPage, kMemorySaverToggleQuery),
       WaitForButtonStateChange(kPerformanceSettingsPage,
                                kMemorySaverToggleQuery, true),
@@ -189,7 +193,7 @@ IN_PROC_BROWSER_TEST_F(MemorySettingsInteractiveTest,
       ClickElement(kPerformanceSettingsPage, kMemorySaverToggleQuery),
       WaitForButtonStateChange(kPerformanceSettingsPage,
                                kMemorySaverToggleQuery, true),
-      CheckMemorySaverModeLogged(MemorySaverModeState::kEnabledOnTimer, 1,
+      CheckMemorySaverModeLogged(MemorySaverModeState::kEnabled, 1,
                                  histogram_tester));
 }
 
@@ -199,8 +203,9 @@ IN_PROC_BROWSER_TEST_F(MemorySettingsInteractiveTest,
                        MemorySaverSendFeedbackDialogOpens) {
   RunTestSequence(
       InstrumentTab(kPerformanceSettingsPage),
-      NavigateWebContents(kPerformanceSettingsPage,
-                          GURL(chrome::kChromeUIPerformanceSettingsURL)),
+      NavigateWebContents(
+          kPerformanceSettingsPage,
+          GURL(chrome::GetSettingsUrl(chrome::kPerformanceSubPage))),
       ClickElement(kPerformanceSettingsPage, kMemorySaverFeedbackButton),
       InAnyContext(WaitForShow(FeedbackDialog::kFeedbackDialogForTesting)));
 }
@@ -215,7 +220,8 @@ IN_PROC_BROWSER_TEST_F(MemorySettingsCrosInteractiveTest,
   InstallSystemApps();
 
   DEFINE_LOCAL_ELEMENT_IDENTIFIER_VALUE(kOsFeedbackDialogElementId);
-  CreateBrowserWindow(GURL(chrome::kChromeUIPerformanceSettingsURL));
+  CreateBrowserWindow(
+      GURL(chrome::GetSettingsUrl(chrome::kPerformanceSubPage)));
   Browser* const browser = chrome::FindLastActive();
   ASSERT_NE(browser, nullptr);
 
@@ -263,8 +269,9 @@ IN_PROC_BROWSER_TEST_F(MemorySaverSettingsMultiStateModeInteractiveTest,
                        MemorySaverPrefChanged) {
   RunTestSequence(
       InstrumentTab(kPerformanceSettingsPage),
-      NavigateWebContents(kPerformanceSettingsPage,
-                          GURL(chrome::kChromeUIPerformanceSettingsURL)),
+      NavigateWebContents(
+          kPerformanceSettingsPage,
+          GURL(chrome::GetSettingsUrl(chrome::kPerformanceSubPage))),
       WaitForElementToRender(kPerformanceSettingsPage, kMemorySaverToggleQuery),
       WaitForButtonStateChange(kPerformanceSettingsPage,
                                kMemorySaverToggleQuery, true),
@@ -273,7 +280,7 @@ IN_PROC_BROWSER_TEST_F(MemorySaverSettingsMultiStateModeInteractiveTest,
       ClickElement(kPerformanceSettingsPage, kDiscardOnTimerQuery),
       WaitForButtonStateChange(kPerformanceSettingsPage, kDiscardOnTimerQuery,
                                true),
-      CheckMemorySaverModePrefState(MemorySaverModeState::kEnabledOnTimer),
+      CheckMemorySaverModePrefState(MemorySaverModeState::kEnabled),
 
       // Turn off memory saver mode
       ClickElement(kPerformanceSettingsPage, kMemorySaverToggleQuery),
@@ -298,8 +305,9 @@ IN_PROC_BROWSER_TEST_F(MemorySaverSettingsMultiStateModeInteractiveTest,
 
   RunTestSequence(
       InstrumentTab(kPerformanceSettingsPage),
-      NavigateWebContents(kPerformanceSettingsPage,
-                          GURL(chrome::kChromeUIPerformanceSettingsURL)),
+      NavigateWebContents(
+          kPerformanceSettingsPage,
+          GURL(chrome::GetSettingsUrl(chrome::kPerformanceSubPage))),
       WaitForElementToRender(kPerformanceSettingsPage, kMemorySaverToggleQuery),
       WaitForButtonStateChange(kPerformanceSettingsPage,
                                kMemorySaverToggleQuery, true),
@@ -323,93 +331,19 @@ IN_PROC_BROWSER_TEST_F(MemorySaverSettingsMultiStateModeInteractiveTest,
       WaitForIronListCollapseStateChange(kPerformanceSettingsPage,
                                          iron_collapse),
 
-      // Change memory saver setting to discard tabs based on timer
-      ClickElement(kPerformanceSettingsPage, kDiscardOnTimerQuery),
-      WaitForButtonStateChange(kPerformanceSettingsPage, kDiscardOnTimerQuery,
-                               true),
-      CheckMemorySaverModeLogged(MemorySaverModeState::kEnabledOnTimer, 1,
-                                 histogram_tester),
-
       // Change memory saver setting to discard tabs based on usage
       ClickElement(kPerformanceSettingsPage, kDiscardOnUsageQuery),
       WaitForButtonStateChange(kPerformanceSettingsPage, kDiscardOnUsageQuery,
                                true),
+      CheckMemorySaverModeLogged(MemorySaverModeState::kDeprecated, 1,
+                                 histogram_tester),
+
+      // Change memory saver setting to discard tabs based on timer
+      ClickElement(kPerformanceSettingsPage, kDiscardOnTimerQuery),
+      WaitForButtonStateChange(kPerformanceSettingsPage, kDiscardOnTimerQuery,
+                               true),
       CheckMemorySaverModeLogged(MemorySaverModeState::kEnabled, 2,
                                  histogram_tester));
-}
-
-// Checks that the selected discard timer value is preserved as the high
-// efficiency mode gets toggled
-IN_PROC_BROWSER_TEST_F(MemorySaverSettingsMultiStateModeInteractiveTest,
-                       DiscardTimerStateIsPreserved) {
-  const DeepQuery discard_time_menu = {
-      "settings-ui", "settings-main", "settings-basic-page",
-      "settings-performance-page",
-      "settings-dropdown-menu#discardTimeDropdown"};
-
-  const DeepQuery discard_time_drop_down = {
-      "settings-ui",
-      "settings-main",
-      "settings-basic-page",
-      "settings-performance-page",
-      "settings-dropdown-menu#discardTimeDropdown",
-      "select#dropdownMenu"};
-
-  const DeepQuery iron_collapse = {
-      "settings-ui", "settings-main", "settings-basic-page",
-      "settings-performance-page", "iron-collapse#radioGroupCollapse"};
-
-  const std::string discard_timer_value = "5";
-
-  RunTestSequence(
-      InstrumentTab(kPerformanceSettingsPage),
-      NavigateWebContents(kPerformanceSettingsPage,
-                          GURL(chrome::kChromeUIPerformanceSettingsURL)),
-      WaitForElementToRender(kPerformanceSettingsPage, kMemorySaverToggleQuery),
-      WaitForButtonStateChange(kPerformanceSettingsPage,
-                               kMemorySaverToggleQuery, true),
-
-      // Select discard on timer option
-      ClickElement(kPerformanceSettingsPage, kDiscardOnTimerQuery),
-      WaitForButtonStateChange(kPerformanceSettingsPage, kDiscardOnTimerQuery,
-                               true),
-      WaitForDisabledStateChange(kPerformanceSettingsPage,
-                                 discard_time_drop_down, false),
-
-      // Change the selected timer value
-      ExecuteJsAt(
-          kPerformanceSettingsPage, discard_time_drop_down,
-          base::ReplaceStringPlaceholders("(el) => { el.value = $1}",
-                                          {discard_timer_value}, nullptr)),
-
-      // Turn off memory saver mode
-      ClickElement(kPerformanceSettingsPage, kMemorySaverToggleQuery),
-      WaitForButtonStateChange(kPerformanceSettingsPage,
-                               kMemorySaverToggleQuery, false),
-      // Turn memory saver mode back on
-      ClickElement(kPerformanceSettingsPage, kMemorySaverToggleQuery),
-      WaitForIronListCollapseStateChange(kPerformanceSettingsPage,
-                                         iron_collapse),
-      CheckJsResultAt(kPerformanceSettingsPage, discard_time_drop_down,
-                      "(el) => el.value", discard_timer_value),
-      WaitForDisabledStateChange(kPerformanceSettingsPage, discard_time_menu,
-                                 true),
-      WaitForButtonStateChange(kPerformanceSettingsPage, kDiscardOnUsageQuery,
-                               true),
-
-      // Change discard settings to discard tabs based on timer
-      ClickElement(kPerformanceSettingsPage, kDiscardOnTimerQuery),
-      WaitForButtonStateChange(kPerformanceSettingsPage, kDiscardOnTimerQuery,
-                               true),
-      CheckJsResultAt(kPerformanceSettingsPage, discard_time_drop_down,
-                      "(el) => el.value", discard_timer_value),
-
-      // Change discard settings to discard tabs based on usage
-      ClickElement(kPerformanceSettingsPage, kDiscardOnUsageQuery),
-      WaitForButtonStateChange(kPerformanceSettingsPage, kDiscardOnUsageQuery,
-                               true),
-      CheckJsResultAt(kPerformanceSettingsPage, discard_time_drop_down,
-                      "(el) => el.value", discard_timer_value));
 }
 
 #if !BUILDFLAG(IS_CHROMEOS)
@@ -442,8 +376,9 @@ IN_PROC_BROWSER_TEST_F(BatterySettingsInteractiveTest,
 
   RunTestSequence(
       InstrumentTab(kPerformanceSettingsPage),
-      NavigateWebContents(kPerformanceSettingsPage,
-                          GURL(chrome::kChromeUIPerformanceSettingsURL)),
+      NavigateWebContents(
+          kPerformanceSettingsPage,
+          GURL(chrome::GetSettingsUrl(chrome::kPerformanceSubPage))),
       InstrumentNextTab(kLearnMorePage),
       ClickElement(kPerformanceSettingsPage, battery_saver_learn_more),
       WaitForShow(kLearnMorePage),
@@ -474,8 +409,9 @@ IN_PROC_BROWSER_TEST_F(BatterySettingsInteractiveTest,
   base::HistogramTester histogram_tester;
   RunTestSequence(
       InstrumentTab(kPerformanceSettingsPage),
-      NavigateWebContents(kPerformanceSettingsPage,
-                          GURL(chrome::kChromeUIPerformanceSettingsURL)),
+      NavigateWebContents(
+          kPerformanceSettingsPage,
+          GURL(chrome::GetSettingsUrl(chrome::kPerformanceSubPage))),
       WaitForElementToRender(kPerformanceSettingsPage, battery_saver_toggle),
       WaitForButtonStateChange(kPerformanceSettingsPage, battery_saver_toggle,
                                true),
@@ -519,8 +455,9 @@ IN_PROC_BROWSER_TEST_F(BatterySettingsInteractiveTest,
                        BatterySaverSendFeedbackDialogOpens) {
   RunTestSequence(
       InstrumentTab(kPerformanceSettingsPage),
-      NavigateWebContents(kPerformanceSettingsPage,
-                          GURL(chrome::kChromeUIPerformanceSettingsURL)),
+      NavigateWebContents(
+          kPerformanceSettingsPage,
+          GURL(chrome::GetSettingsUrl(chrome::kPerformanceSubPage))),
       ClickElement(kPerformanceSettingsPage, kBatterySaverFeedbackButton),
       InAnyContext(WaitForShow(FeedbackDialog::kFeedbackDialogForTesting)));
 }
@@ -554,7 +491,8 @@ IN_PROC_BROWSER_TEST_F(BatterySettingsInteractiveTest,
       "settings-ui", "settings-main", "settings-basic-page",
       "settings-battery-page", "cr-link-row#batterySaverOSSettingsLinkRow"};
 
-  CreateBrowserWindow(GURL(chrome::kChromeUIPerformanceSettingsURL));
+  CreateBrowserWindow(
+      GURL(chrome::GetSettingsUrl(chrome::kPerformanceSubPage)));
   Browser* const browser = chrome::FindLastActive();
   ASSERT_NE(browser, nullptr);
 
@@ -576,7 +514,8 @@ IN_PROC_BROWSER_TEST_F(BatterySettingsInteractiveTest,
   InstallSystemApps();
 
   DEFINE_LOCAL_ELEMENT_IDENTIFIER_VALUE(kOsFeedbackDialogElementId);
-  CreateBrowserWindow(GURL(chrome::kChromeUIPerformanceSettingsURL));
+  CreateBrowserWindow(
+      GURL(chrome::GetSettingsUrl(chrome::kPerformanceSubPage)));
   Browser* const browser = chrome::FindLastActive();
   ASSERT_NE(browser, nullptr);
 
@@ -668,10 +607,12 @@ IN_PROC_BROWSER_TEST_F(TabDiscardExceptionsSettingsInteractiveTest,
 
   RunTestSequence(
       InstrumentTab(kPerformanceSettingsPage),
-      NavigateWebContents(kPerformanceSettingsPage,
-                          GURL(chrome::kChromeUIPerformanceSettingsURL)),
-      WaitForWebContentsReady(kPerformanceSettingsPage,
-                              GURL(chrome::kChromeUIPerformanceSettingsURL)),
+      NavigateWebContents(
+          kPerformanceSettingsPage,
+          GURL(chrome::GetSettingsUrl(chrome::kPerformanceSubPage))),
+      WaitForWebContentsReady(
+          kPerformanceSettingsPage,
+          GURL(chrome::GetSettingsUrl(chrome::kPerformanceSubPage))),
       AddInstrumentedTab(kSecondTabContent, GetURL("example.com")),
       SelectTab(kTabStripElementId, 0), WaitForShow(kPerformanceSettingsPage),
       OpenAddExceptionDialog(kPerformanceSettingsPage),
@@ -690,8 +631,9 @@ IN_PROC_BROWSER_TEST_F(TabDiscardExceptionsSettingsInteractiveTest,
                        UpdatesEntryListLive) {
   RunTestSequence(
       InstrumentTab(kPerformanceSettingsPage),
-      NavigateWebContents(kPerformanceSettingsPage,
-                          GURL(chrome::kChromeUIPerformanceSettingsURL)),
+      NavigateWebContents(
+          kPerformanceSettingsPage,
+          GURL(chrome::GetSettingsUrl(chrome::kPerformanceSubPage))),
       // Make sure there is no entry in the tab picker since there are no other
       // tabs open
       OpenAddExceptionDialog(kPerformanceSettingsPage),
@@ -718,8 +660,9 @@ IN_PROC_BROWSER_TEST_F(TabDiscardExceptionsSettingsInteractiveTest,
 
   RunTestSequence(
       InstrumentTab(kPerformanceSettingsPage),
-      NavigateWebContents(kPerformanceSettingsPage,
-                          GURL(chrome::kChromeUIPerformanceSettingsURL)),
+      NavigateWebContents(
+          kPerformanceSettingsPage,
+          GURL(chrome::GetSettingsUrl(chrome::kPerformanceSubPage))),
       // Open a site that is already on the exclusion list
       AddInstrumentedTab(kSecondTabContent, GetURL("example.com")),
       SelectTab(kTabStripElementId, 0), WaitForShow(kPerformanceSettingsPage),

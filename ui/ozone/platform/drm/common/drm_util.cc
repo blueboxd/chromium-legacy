@@ -14,6 +14,7 @@
 
 #include <memory>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -23,7 +24,6 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "ui/base/ui_base_switches.h"
@@ -283,7 +283,6 @@ std::optional<std::string> ReadFileAndTrim(const base::FilePath& path) {
   return std::string(
       base::TrimWhitespaceASCII(data, base::TrimPositions::TRIM_ALL));
 }
-
 }  // namespace
 
 ScopedDrmPropertyPtr FindDrmProperty(const DrmWrapper& drm,
@@ -407,15 +406,11 @@ GetDisplayInfosAndInvalidCrtcs(const DrmWrapper& drm) {
   }
 
   base::flat_map<drmModeConnector*, int> connector_crtcs;
-  for (auto* c : available_connectors) {
-    uint32_t possible_crtcs = 0;
-    for (int i = 0; i < c->count_encoders; ++i) {
-      ScopedDrmEncoderPtr encoder = drm.GetEncoder(c->encoders[i]);
-      if (!encoder)
-        continue;
-      possible_crtcs |= encoder->possible_crtcs;
-    }
-    connector_crtcs[c] = possible_crtcs;
+  for (auto* connector : available_connectors) {
+    std::vector<uint32_t> encoder_ids(
+        connector->encoders, connector->encoders + connector->count_encoders);
+    connector_crtcs[connector] =
+        GetPossibleCrtcsBitmaskFromEncoders(drm, encoder_ids);
   }
   // Make sure to start assigning a crtc to the connector that supports the
   // fewest crtcs first.
@@ -463,6 +458,38 @@ GetDisplayInfosAndInvalidCrtcs(const DrmWrapper& drm) {
 HardwareDisplayControllerInfoList GetAvailableDisplayControllerInfos(
     const DrmWrapper& drm) {
   return GetDisplayInfosAndInvalidCrtcs(drm).first;
+}
+
+uint32_t GetPossibleCrtcsBitmaskFromEncoders(
+    const DrmWrapper& drm,
+    const std::vector<uint32_t>& encoder_ids) {
+  uint32_t possible_crtcs = 0;
+  for (uint32_t encoder_id : encoder_ids) {
+    ScopedDrmEncoderPtr encoder = drm.GetEncoder(encoder_id);
+    if (!encoder) {
+      continue;
+    }
+    possible_crtcs |= encoder->possible_crtcs;
+  }
+
+  return possible_crtcs;
+}
+
+std::vector<uint32_t> GetPossibleCrtcIdsFromBitmask(
+    const DrmWrapper& drm,
+    const uint32_t possible_crtcs_bitmask) {
+  std::vector<uint32_t> crtcs;
+  ScopedDrmResourcesPtr resources = drm.GetResources();
+  for (int i = 0; i < resources->count_crtcs; i++) {
+    // CRTC mask of |possible_crtcs_bitmask| is just 1 offset by the index in
+    // drm_crtc_index().
+    const uint32_t current_crtc_mask = 1 << i;
+    if (possible_crtcs_bitmask & current_crtc_mask) {
+      crtcs.push_back(resources->crtcs[i]);
+    }
+  }
+
+  return crtcs;
 }
 
 bool SameMode(const drmModeModeInfo& lhs, const drmModeModeInfo& rhs) {
@@ -595,7 +622,7 @@ std::unique_ptr<display::DisplaySnapshot> CreateDisplaySnapshot(
         edid_parser.has_overscan_flag() && edid_parser.overscan_flag();
     color_info.color_space = display::GetColorSpaceFromEdid(edid_parser);
     // Populate the EDID primaries and gamma from the gfx::ColorSpace.
-    // TODO(https://crbug.com/1505062): Extract this directly.
+    // TODO(crbug.com/40945652): Extract this directly.
     if (auto sk_color_space = color_info.color_space.ToSkColorSpace()) {
       skcms_TransferFunction fn;
       skcms_Matrix3x3 to_xyzd50;
@@ -706,7 +733,7 @@ std::vector<uint64_t> ParsePathBlob(const drmModePropertyBlobRes& path_blob) {
   std::string path_str(
       static_cast<char*>(path_blob.data),
       base::strict_cast<std::string::size_type>(path_blob.length));
-  base::StringPiece path_string_piece(path_str);
+  std::string_view path_string_piece(path_str);
   path_string_piece = base::TrimString(path_string_piece, std::string("\0", 1u),
                                        base::TRIM_TRAILING);
 

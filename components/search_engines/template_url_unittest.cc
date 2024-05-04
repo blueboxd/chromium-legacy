@@ -29,6 +29,7 @@
 #include "third_party/metrics_proto/omnibox_event.pb.h"
 #include "third_party/metrics_proto/omnibox_input_type.pb.h"
 #include "third_party/omnibox_proto/chrome_searchbox_stats.pb.h"
+#include "ui/base/device_form_factor.h"
 
 using base::ASCIIToUTF16;
 using CreatedByPolicy = TemplateURLData::CreatedByPolicy;
@@ -1160,6 +1161,49 @@ TEST_F(TemplateURLTest, ParseURLNestedParameter) {
   EXPECT_TRUE(valid);
 }
 
+TEST_F(TemplateURLTest, SearchSourceId) {
+  const std::string base_url_str("http://google.com/?");
+  const std::string query_params_str("{google:sourceId}");
+  const std::string full_url_str = base_url_str + query_params_str;
+  search_terms_data_.set_google_base_url(base_url_str);
+
+  TemplateURLData data;
+  data.SetURL(full_url_str);
+  TemplateURL url(data);
+  EXPECT_TRUE(url.url_ref().IsValid(search_terms_data_));
+  ASSERT_FALSE(url.url_ref().SupportsReplacement(search_terms_data_));
+  TemplateURLRef::SearchTermsArgs search_terms_args;
+
+  // Check that the URL is correct for the default `RequestSource::SEARCHBOX`.
+  GURL result(
+      url.url_ref().ReplaceSearchTerms(search_terms_args, search_terms_data_));
+  ASSERT_TRUE(result.is_valid());
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
+  EXPECT_EQ("http://google.com/?sourceid=chrome-mobile&", result.spec());
+#else
+  EXPECT_EQ("http://google.com/?sourceid=chrome&", result.spec());
+#endif
+
+  // Check that the URL is correct for the lens searchboxes.
+  search_terms_args.request_source = RequestSource::CONTEXTUAL_SEARCHBOX;
+  result = GURL(
+      url.url_ref().ReplaceSearchTerms(search_terms_args, search_terms_data_));
+  ASSERT_TRUE(result.is_valid());
+  EXPECT_EQ("http://google.com/?source=chrome.gsc&", result.spec());
+
+  search_terms_args.request_source = RequestSource::SEARCH_SIDE_PANEL_SEARCHBOX;
+  result = GURL(
+      url.url_ref().ReplaceSearchTerms(search_terms_args, search_terms_data_));
+  ASSERT_TRUE(result.is_valid());
+  EXPECT_EQ("http://google.com/?source=chrome.gsc&", result.spec());
+
+  search_terms_args.request_source = RequestSource::LENS_SIDE_PANEL_SEARCHBOX;
+  result = GURL(
+      url.url_ref().ReplaceSearchTerms(search_terms_args, search_terms_data_));
+  ASSERT_TRUE(result.is_valid());
+  EXPECT_EQ("http://google.com/?source=chrome.gsc&", result.spec());
+}
+
 TEST_F(TemplateURLTest, SearchClient) {
   const std::string base_url_str("http://google.com/?");
   const std::string terms_str("{searchTerms}&{google:searchClient}");
@@ -1201,18 +1245,87 @@ TEST_F(TemplateURLTest, SuggestClient) {
   ASSERT_FALSE(url.url_ref().SupportsReplacement(search_terms_data_));
   TemplateURLRef::SearchTermsArgs search_terms_args;
 
-  // Check that the URL is correct when a client is not present.
+  // Check that the URL is correct for the default `RequestSource::SEARCHBOX`.
   GURL result(
       url.url_ref().ReplaceSearchTerms(search_terms_args, search_terms_data_));
   ASSERT_TRUE(result.is_valid());
-  EXPECT_EQ("http://google.com/?client=", result.spec());
+#if BUILDFLAG(IS_ANDROID)
+  if (ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_PHONE) {
+    EXPECT_EQ("http://google.com/?client=chrome", result.spec());
+  } else {
+    EXPECT_EQ("http://google.com/?client=chrome-omni", result.spec());
+  }
+#elif BUILDFLAG(IS_IOS)
+  EXPECT_EQ("http://google.com/?client=chrome", result.spec());
+#else
+  EXPECT_EQ("http://google.com/?client=chrome-omni", result.spec());
+#endif
 
-  // Check that the URL is correct when a client is present.
-  search_terms_data_.set_suggest_client("suggest_client");
-  GURL result_2(
+  // Check that the URL is correct for the lens searchboxes.
+  search_terms_args.request_source = RequestSource::CONTEXTUAL_SEARCHBOX;
+  result = GURL(
       url.url_ref().ReplaceSearchTerms(search_terms_args, search_terms_data_));
-  ASSERT_TRUE(result_2.is_valid());
-  EXPECT_EQ("http://google.com/?client=suggest_client", result_2.spec());
+  ASSERT_TRUE(result.is_valid());
+  EXPECT_EQ("http://google.com/?client=chrome-contextual", result.spec());
+
+  search_terms_args.request_source = RequestSource::SEARCH_SIDE_PANEL_SEARCHBOX;
+  result = GURL(
+      url.url_ref().ReplaceSearchTerms(search_terms_args, search_terms_data_));
+  ASSERT_TRUE(result.is_valid());
+  EXPECT_EQ("http://google.com/?client=chrome-contextual", result.spec());
+
+  search_terms_args.request_source = RequestSource::LENS_SIDE_PANEL_SEARCHBOX;
+  result = GURL(
+      url.url_ref().ReplaceSearchTerms(search_terms_args, search_terms_data_));
+  ASSERT_TRUE(result.is_valid());
+  EXPECT_EQ("http://google.com/?client=chrome-multimodal", result.spec());
+}
+
+TEST_F(TemplateURLTest, SuggestRequestIdentifier) {
+  const std::string base_url_str("http://google.com/?");
+  const std::string query_params_str("gs_ri={google:suggestRid}");
+  const std::string full_url_str = base_url_str + query_params_str;
+  search_terms_data_.set_google_base_url(base_url_str);
+
+  TemplateURLData data;
+  data.SetURL(full_url_str);
+  TemplateURL url(data);
+  EXPECT_TRUE(url.url_ref().IsValid(search_terms_data_));
+  ASSERT_FALSE(url.url_ref().SupportsReplacement(search_terms_data_));
+  TemplateURLRef::SearchTermsArgs search_terms_args;
+
+  // Check that the URL is correct for the default `RequestSource::SEARCHBOX`.
+  GURL result(
+      url.url_ref().ReplaceSearchTerms(search_terms_args, search_terms_data_));
+  ASSERT_TRUE(result.is_valid());
+#if BUILDFLAG(IS_ANDROID)
+  if (ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_PHONE) {
+    EXPECT_EQ("http://google.com/?gs_ri=chrome-mobile-ext-ansg", result.spec());
+  } else {
+    EXPECT_EQ("http://google.com/?gs_ri=chrome-ext-ansg", result.spec());
+  }
+#else
+  EXPECT_EQ("http://google.com/?gs_ri=chrome-ext-ansg", result.spec());
+#endif
+
+  // Check that the URL is correct for the lens searchboxes.
+  search_terms_args.request_source = RequestSource::CONTEXTUAL_SEARCHBOX;
+  result = GURL(
+      url.url_ref().ReplaceSearchTerms(search_terms_args, search_terms_data_));
+  ASSERT_TRUE(result.is_valid());
+  EXPECT_EQ("http://google.com/?gs_ri=", result.spec());
+
+  search_terms_args.request_source = RequestSource::SEARCH_SIDE_PANEL_SEARCHBOX;
+  result = GURL(
+      url.url_ref().ReplaceSearchTerms(search_terms_args, search_terms_data_));
+  ASSERT_TRUE(result.is_valid());
+  EXPECT_EQ("http://google.com/?gs_ri=", result.spec());
+
+  search_terms_args.request_source = RequestSource::LENS_SIDE_PANEL_SEARCHBOX;
+  result = GURL(
+      url.url_ref().ReplaceSearchTerms(search_terms_args, search_terms_data_));
+  ASSERT_TRUE(result.is_valid());
+  EXPECT_EQ("http://google.com/?gs_ri=", result.spec());
 }
 
 TEST_F(TemplateURLTest, ZeroSuggestCacheDuration) {

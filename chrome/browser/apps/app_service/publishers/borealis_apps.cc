@@ -4,9 +4,12 @@
 
 #include "chrome/browser/apps/app_service/publishers/borealis_apps.h"
 
+#include <optional>
+
 #include "ash/public/cpp/app_menu_constants.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
+#include "base/strings/string_number_conversions.h"
 #include "chrome/browser/apps/app_service/app_icon/app_icon_factory.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
@@ -16,6 +19,7 @@
 #include "chrome/browser/ash/borealis/borealis_app_uninstaller.h"
 #include "chrome/browser/ash/borealis/borealis_context_manager.h"
 #include "chrome/browser/ash/borealis/borealis_features.h"
+#include "chrome/browser/ash/borealis/borealis_metrics.h"
 #include "chrome/browser/ash/borealis/borealis_prefs.h"
 #include "chrome/browser/ash/borealis/borealis_service.h"
 #include "chrome/browser/ash/borealis/borealis_util.h"
@@ -204,6 +208,15 @@ void BorealisApps::CreateAppOverrides(
   // Special handling for the steam client itself.
   if (registration.app_id() == borealis::kClientAppId) {
     app->permissions = CreatePermissions(profile());
+  } else {
+    // Identify games to App Service by PackageId.
+    // Steam games have PackageIds like "steam:123", where 123 is the Steam Game
+    // ID.
+    std::optional<int> app_id = borealis::ParseSteamGameId(registration.Exec());
+    if (app_id) {
+      app->installer_package_id = PackageId(
+          PackageType::kBorealis, base::NumberToString(app_id.value()));
+    }
   }
 }
 
@@ -226,7 +239,8 @@ void BorealisApps::LaunchAppWithIntent(const std::string& app_id,
                                        WindowInfoPtr window_info,
                                        LaunchCallback callback) {
   borealis::BorealisService::GetForProfile(profile())->AppLauncher().Launch(
-      app_id, base::DoNothing());
+      app_id, borealis::BorealisLaunchSource::kSteamInstallerApp,
+      base::DoNothing());
 }
 
 void BorealisApps::SetPermission(const std::string& app_id,

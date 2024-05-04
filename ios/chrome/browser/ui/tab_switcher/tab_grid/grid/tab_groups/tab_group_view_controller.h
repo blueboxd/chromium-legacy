@@ -7,21 +7,23 @@
 
 #import <UIKit/UIKit.h>
 
+#import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_view_delegate.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/tab_groups/tab_group_consumer.h"
 
-@class BaseGridViewController;
+@class TabGroupGridViewController;
 class TabGroup;
 @protocol TabGroupsCommands;
 @protocol TabGroupMutator;
 
 // Tab group view controller displaying one group.
-@interface TabGroupViewController : UIViewController <TabGroupConsumer>
+@interface TabGroupViewController
+    : UIViewController <GridViewDelegate, TabGroupConsumer>
 
 // Mutator used to send notification to the tab group  model.
 @property(nonatomic, weak) id<TabGroupMutator> mutator;
 
 // The embedded grid view controller.
-@property(nonatomic, readonly) BaseGridViewController* gridViewController;
+@property(nonatomic, readonly) TabGroupGridViewController* gridViewController;
 
 // Initiates a TabGroupViewController with `handler` to handle user action,
 // `lightTheme` to YES to have a light theme, `tabGroup` to get tab group
@@ -29,6 +31,9 @@ class TabGroup;
 - (instancetype)initWithHandler:(id<TabGroupsCommands>)handler
                      lightTheme:(BOOL)lightTheme
                        tabGroup:(const TabGroup*)tabGroup;
+
+// Let this view controller know that its content will appear.
+- (void)contentWillAppearAnimated:(BOOL)animated;
 
 // Methods handling the presentation animation of this view controller.
 - (void)prepareForPresentation;

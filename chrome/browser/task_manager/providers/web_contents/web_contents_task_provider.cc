@@ -130,10 +130,10 @@ void WebContentsTaskProvider::WebContentsEntry::CreateAllTasks() {
         // `WebContents::ForEachRenderFrameHost` does not iterate over
         // speculative or pending commit RFHs.
         //
-        // TODO(https://crbug.com/1429070): Move this CHECK into
+        // TODO(crbug.com/40262518): Move this CHECK into
         // `WebContents::ForEachRenderFrameHost`.
         CHECK_NE(state, RenderFrameHost::LifecycleState::kPendingCommit);
-        // TODO(https://crbug.com/1429070):
+        // TODO(crbug.com/40262518):
         // `WebContents::ForEachRenderFrameHost` should explicitly exclude
         // `kPendingDeletion`, just like `kSpeculative` and `kPendingCommit`.
         if (state == RenderFrameHost::LifecycleState::kPendingDeletion) {
@@ -276,7 +276,7 @@ void WebContentsTaskProvider::WebContentsEntry::DidFinishNavigation(
   // navigation, since neither |RenderFrameDeleted| nor |RenderFrameHostChanged|
   // is fired to delete the existing task, we do not recreate them.
   //
-  // TODO(https://crbug.com/1183639): DidFinishNavigation is not called when we
+  // TODO(crbug.com/40171294): DidFinishNavigation is not called when we
   // create initial empty documents, and as a result, we will not create new
   // tasks for these empty documents if they are in a different process from
   // their embedder/opener (eg: an empty fenced frame or a blank tab created by

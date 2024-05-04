@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <string_view>
 #include <utility>
 
 #include "base/feature_list.h"
@@ -26,6 +27,7 @@
 #include "media/base/video_frame.h"
 #include "media/formats/mp4/mp4_status.h"
 #include "media/media_buildflags.h"
+#include "media/mojo/clients/mojo_audio_encoder.h"
 #include "media/mojo/clients/mojo_video_encoder_metrics_provider.h"
 #include "media/muxers/live_webm_muxer_delegate.h"
 #include "media/muxers/mp4_muxer.h"
@@ -49,13 +51,17 @@
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
+#if BUILDFLAG(IS_WIN)
+#include "media/gpu/windows/mf_audio_encoder.h"
+#endif
+
 using base::TimeTicks;
 
 namespace blink {
 
 BASE_FEATURE(kMediaRecorderEnableMp4Muxer,
              "MediaRecorderEnableMp4Muxer",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 namespace {
 
 constexpr double kDefaultVideoFrameRate = 30.0;
@@ -184,11 +190,10 @@ bool CanSupportVideoType(const String& type) {
     return true;
   }
 
-#if BUILDFLAG(USE_PROPRIETARY_CODECS)
   if (base::FeatureList::IsEnabled(kMediaRecorderEnableMp4Muxer)) {
     return EqualStringView(type, "video/mp4");
   }
-#endif
+
   return false;
 }
 
@@ -198,27 +203,26 @@ bool CanSupportAudioType(const String& type) {
     return true;
   }
 
-#if BUILDFLAG(USE_PROPRIETARY_CODECS)
   if (base::FeatureList::IsEnabled(kMediaRecorderEnableMp4Muxer)) {
     return EqualStringView(type, "audio/mp4");
   }
-#endif
+
   return false;
 }
 
-#if BUILDFLAG(USE_PROPRIETARY_CODECS)
 bool IsAllowedMp4Type(const String& type) {
   return EqualIgnoringASCIICase(type, "video/mp4") ||
          EqualIgnoringASCIICase(type, "audio/mp4");
 }
-#endif
 
-bool IsMp4MuxerRequired(AudioTrackRecorder::CodecId audio_codec_id) {
-#if BUILDFLAG(USE_PROPRIETARY_CODECS)
-  return audio_codec_id == AudioTrackRecorder::CodecId::kAac;
-#else
-  return false;
-#endif
+bool IsMp4MuxerRequired(const String& type) {
+  // The function should be called only after type and codecs are validated
+  // by `CanSupportMimeType()` first in code path.
+  if (!base::FeatureList::IsEnabled(kMediaRecorderEnableMp4Muxer)) {
+    return false;
+  }
+
+  return IsAllowedMp4Type(type);
 }
 
 }  // anonymous namespace
@@ -267,21 +271,28 @@ bool MediaRecorderHandler::CanSupportMimeType(const String& type,
       video ? std::end(kVideoCodecs) : std::end(kAudioCodecs);
 
   bool mp4_mime_type = false;
-#if BUILDFLAG(USE_PROPRIETARY_CODECS)
+
   mp4_mime_type = IsAllowedMp4Type(type);
   if (mp4_mime_type) {
     static const char* const kVideoCodecsForMP4[] = {
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
         "avc1",
         "mp4a.40.2",
+#endif
+        "vp9",
+        "opus",
     };
-    static const char* const kAudioCodecsForMp4[] = {"mp4a.40.2"};
+    static const char* const kAudioCodecsForMp4[] = {
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
+        "mp4a.40.2",
+#endif
+        "opus"};
 
     relevant_codecs_begin =
         video ? std::begin(kVideoCodecsForMP4) : std::begin(kAudioCodecsForMp4);
     relevant_codecs_end =
         video ? std::end(kVideoCodecsForMP4) : std::end(kAudioCodecsForMp4);
   }
-#endif
 
   std::vector<std::string> codecs_list;
   media::SplitCodecs(web_codecs.Utf8(), &codecs_list);
@@ -315,6 +326,11 @@ bool MediaRecorderHandler::CanSupportMimeType(const String& type,
     }
 
     if (!match) {
+      return false;
+    }
+
+    if (codec_string == "mp4a.40.2" &&
+        !media::MojoAudioEncoder::IsSupported(media::AudioCodec::kAAC)) {
       return false;
     }
 
@@ -444,7 +460,7 @@ bool MediaRecorderHandler::Start(int timeslice,
     return false;
   }
 
-  const bool use_mp4_muxer = IsMp4MuxerRequired(audio_codec_id_);
+  const bool use_mp4_muxer = IsMp4MuxerRequired(type);
 
   // For each track in tracks, if the User Agent cannot record the track using
   // the current configuration, abort. See step 14 in
@@ -459,12 +475,10 @@ bool MediaRecorderHandler::Start(int timeslice,
       return false;
     }
 
-#if BUILDFLAG(USE_PROPRIETARY_CODECS)
     if (use_mp4_muxer &&
         !base::FeatureList::IsEnabled(kMediaRecorderEnableMp4Muxer)) {
       return false;
     }
-#endif
   }
 
   std::unique_ptr<media::Muxer> muxer;
@@ -478,8 +492,20 @@ bool MediaRecorderHandler::Start(int timeslice,
   if (use_mp4_muxer) {
     muxer = std::make_unique<media::Mp4Muxer>(
         audio_codec, use_video_tracks, use_audio_tracks,
-        std::make_unique<media::Mp4MuxerDelegate>(write_callback),
+        std::make_unique<media::Mp4MuxerDelegate>(
+            audio_codec, video_codec_profile_.profile,
+            video_codec_profile_.level, write_callback),
         optional_timeslice);
+
+#if BUILDFLAG(IS_WIN)
+    // Windows OS uses MediaFoundation for MP4 muxing, which requires the
+    // specific audio bit rate for AAC encoding.
+    if (audio_bits_per_second_ != 0u) {
+      audio_bits_per_second_ =
+          media::MFAudioEncoder::ClampAccCodecBitrate(audio_bits_per_second_);
+      recorder_->UpdateAudioBitrate(audio_bits_per_second_);
+    }
+#endif
   } else {
     muxer = std::make_unique<media::WebmMuxer>(
         audio_codec, use_video_tracks, use_audio_tracks,
@@ -908,7 +934,7 @@ MediaRecorderHandler::CreateVideoEncoderMetricsProvider() {
       ->CreateVideoEncoderMetricsProvider();
 }
 
-void MediaRecorderHandler::WriteData(base::StringPiece data) {
+void MediaRecorderHandler::WriteData(std::string_view data) {
   DCHECK(IsMainThread());
   DVLOG(3) << __func__ << " " << data.length() << "B";
   if (invalidated_)

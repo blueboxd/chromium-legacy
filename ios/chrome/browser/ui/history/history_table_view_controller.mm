@@ -357,7 +357,7 @@ const CGFloat kButtonHorizontalPadding = 30.0;
 
 - (void)historyEntriesStatusItem:(HistoryEntriesStatusItem*)item
                didRequestOpenURL:(const GURL&)URL {
-  // TODO(crbug.com/805190): Migrate. This will navigate to the status message
+  // TODO(crbug.com/41366648): Migrate. This will navigate to the status message
   // "Show Full History" URL.
 }
 
@@ -527,7 +527,7 @@ const CGFloat kButtonHorizontalPadding = 30.0;
         [self.tableViewModel itemAtIndexPath:indexPath]);
     BrowsingHistoryService::HistoryEntry entry;
     entry.url = object.URL;
-    // TODO(crbug.com/634507) Remove base::TimeXXX::ToInternalValue().
+    // TODO(crbug.com/40479288) Remove base::TimeXXX::ToInternalValue().
     entry.all_timestamps.insert(object.timestamp.ToInternalValue());
     entries.push_back(entry);
   }
@@ -978,6 +978,19 @@ const CGFloat kButtonHorizontalPadding = 30.0;
   } else {
     [self configureViewsForEditModeWithAnimation:YES];
   }
+
+  // Force update a11y actions based on edit mode.
+  for (int section = 0; section < self.tableViewModel.numberOfSections;
+       section++) {
+    if (![self.tableViewModel numberOfItemsInSection:section]) {
+      continue;
+    }
+    NSInteger sectionIdentifier =
+        [self.tableViewModel sectionIdentifierForSectionIndex:section];
+    [self reconfigureCellsForItems:
+              [self.tableViewModel
+                  itemsInSectionWithIdentifier:sectionIdentifier]];
+  }
 }
 
 // Default TableView and NavigationBar UIToolbar configuration.
@@ -1286,7 +1299,7 @@ const CGFloat kButtonHorizontalPadding = 30.0;
   return _cancelButton;
 }
 
-// TODO(crbug.com/831865): Find a way to disable the button when a VC is
+// TODO(crbug.com/41382611): Find a way to disable the button when a VC is
 // presented.
 - (UIBarButtonItem*)clearBrowsingDataButton {
   if (!_clearBrowsingDataButton) {

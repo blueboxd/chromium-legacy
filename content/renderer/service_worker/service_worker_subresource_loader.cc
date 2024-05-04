@@ -366,48 +366,51 @@ void ServiceWorkerSubresourceLoader::StartRequest(
 void ServiceWorkerSubresourceLoader::DispatchFetchEvent() {
   // Evaluate the registered routing info first, because this result may bypass
   // ServiceWorker start process.
-  const auto eval_result = MaybeEvaluateRouterConditions();
   enum RaceNetworkRequestMode {
     kDefault,
     kForced,
     kSkipped
   } race_network_request_mode = kDefault;
-  if (eval_result) {  // matched the rule.
-    const auto& sources = eval_result->sources;
-    // TODO(crbug.com/1371756): support other sources in the full form.
-    // https://github.com/yoshisatoyanagisawa/service-worker-static-routing-api/blob/main/final-form.md
-    auto source_type = sources[0].type;
-    set_used_router_source_type(source_type);
 
-    auto router_info = network::mojom::ServiceWorkerRouterInfo::New();
-    router_info->rule_id_matched = eval_result->id;
-    router_info->matched_source_type = source_type;
-    response_head_->service_worker_router_info = std::move(router_info);
+  if (controller_connector_->router_evaluator()) {
+    response_head_->service_worker_router_info =
+        network::mojom::ServiceWorkerRouterInfo::New();
+    auto* router_info = response_head_->service_worker_router_info.get();
 
-    switch (source_type) {
-      case network::mojom::ServiceWorkerRouterSourceType::kNetwork:
-        // Network fallback is requested.
-        {
-          auto timing = blink::mojom::ServiceWorkerFetchEventTiming::New();
-          timing->dispatch_event_time = base::TimeTicks::Now();
-          timing->respond_with_settled_time = base::TimeTicks::Now();
-          OnFallback(std::nullopt, std::move(timing));
-        }
-        return;
-      case network::mojom::ServiceWorkerRouterSourceType::kRace:
-        race_network_request_mode = kForced;
-        break;
-      case network::mojom::ServiceWorkerRouterSourceType::kFetchEvent:
-        race_network_request_mode = kSkipped;
-        break;
-      case network::mojom::ServiceWorkerRouterSourceType::kCache:
-        controller_connector_->CallCacheStorageMatch(
-            sources[0].cache_source->cache_name,
-            blink::mojom::FetchAPIRequest::From(resource_request_),
-            base::BindOnce(
-                &ServiceWorkerSubresourceLoader::DidCacheStorageMatch,
-                weak_factory_.GetWeakPtr(), base::TimeTicks::Now()));
-        return;
+    const auto eval_result = EvaluateRouterConditions();
+    if (eval_result) {  // matched the rule.
+      const auto& sources = eval_result->sources;
+      auto source_type = sources[0].type;
+      set_used_router_source_type(source_type);
+
+      router_info->rule_id_matched = eval_result->id;
+      router_info->matched_source_type = source_type;
+
+      switch (source_type) {
+        case network::mojom::ServiceWorkerRouterSourceType::kNetwork:
+          // Network fallback is requested.
+          {
+            auto timing = blink::mojom::ServiceWorkerFetchEventTiming::New();
+            timing->dispatch_event_time = base::TimeTicks::Now();
+            timing->respond_with_settled_time = base::TimeTicks::Now();
+            OnFallback(std::nullopt, std::move(timing));
+          }
+          return;
+        case network::mojom::ServiceWorkerRouterSourceType::kRace:
+          race_network_request_mode = kForced;
+          break;
+        case network::mojom::ServiceWorkerRouterSourceType::kFetchEvent:
+          race_network_request_mode = kSkipped;
+          break;
+        case network::mojom::ServiceWorkerRouterSourceType::kCache:
+          controller_connector_->CallCacheStorageMatch(
+              sources[0].cache_source->cache_name,
+              blink::mojom::FetchAPIRequest::From(resource_request_),
+              base::BindOnce(
+                  &ServiceWorkerSubresourceLoader::DidCacheStorageMatch,
+                  weak_factory_.GetWeakPtr(), base::TimeTicks::Now()));
+          return;
+      }
     }
   }
 
@@ -611,8 +614,8 @@ void ServiceWorkerSubresourceLoader::OnResponseStream(
     blink::mojom::FetchAPIResponsePtr response,
     blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream,
     blink::mojom::ServiceWorkerFetchEventTimingPtr timing) {
-  // TODO(crbug.com/1342408): remove the following workaround when we can always
-  // expect CPUs have invariant TSC.
+  // TODO(crbug.com/40851723): remove the following workaround when we can
+  // always expect CPUs have invariant TSC.
   timing = AdjustTimingIfNeededCrBug1342408(std::move(timing));
   TRACE_EVENT_WITH_FLOW0(
       "ServiceWorker", "ServiceWorkerSubresourceLoader::OnResponseStream",
@@ -700,7 +703,7 @@ void ServiceWorkerSubresourceLoader::OnFallback(
       // fallback request is not dispatched. OnFallback doesn't delete the
       // instance and flip the status. Those are handled in the process of
       // RaceNetworkRequest handling.
-      // TODO(crbug.com/1432075) Fallback response should be handled as a
+      // TODO(crbug.com/40263783) Fallback response should be handled as a
       // fallback. The response from RaceNetworkRequest is currently handled by
       // the code path for the non-fallback case.
       return;
@@ -1293,12 +1296,9 @@ bool ServiceWorkerSubresourceLoader::IsMainResourceLoader() {
 }
 
 std::optional<ServiceWorkerRouterEvaluator::Result>
-ServiceWorkerSubresourceLoader::MaybeEvaluateRouterConditions() const {
+ServiceWorkerSubresourceLoader::EvaluateRouterConditions() const {
   auto* router_evaluator = controller_connector_->router_evaluator();
-  if (!router_evaluator) {
-    return {};
-  }
-  CHECK(router_evaluator->IsValid());
+  CHECK(router_evaluator && router_evaluator->IsValid());
   // Avoid calling GetRecentRunningStatus() if there is no rules that
   // need running status.
   // Getting recent running status sends IPC to the browser process,

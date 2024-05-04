@@ -10,6 +10,7 @@
 #include <stddef.h>
 
 #include <memory>
+#include <string_view>
 #include <vector>
 
 #include "base/containers/circular_deque.h"
@@ -91,7 +92,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientStream
     // Writes |data| to the peer. Closes the write side if |fin| is true.
     // If the data could not be written immediately, returns ERR_IO_PENDING
     // and invokes |callback| asynchronously when the write completes.
-    int WriteStreamData(base::StringPiece data,
+    int WriteStreamData(std::string_view data,
                         bool fin,
                         CompletionOnceCallback callback);
 
@@ -104,7 +105,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientStream
 
     // Writes |packet| to server by constructing a UDP payload from
     // packet and sending the datagram on the stream.
-    int WriteConnectUdpPayload(absl::string_view packet);
+    int WriteConnectUdpPayload(std::string_view packet);
 
     // Reads at most |buf_len| bytes into |buf|. Returns the number of bytes
     // read.
@@ -123,9 +124,17 @@ class NET_EXPORT_PRIVATE QuicChromiumClientStream
     // Sends a RST_STREAM frame to the peer and closes the streams.
     void Reset(quic::QuicRstStreamErrorCode error_code);
 
+    // Registers |visitor| to receive HTTP/3 datagrams on the stream.
+    void RegisterHttp3DatagramVisitor(Http3DatagramVisitor* visitor);
+
+    // Unregisters an HTTP/3 datagram visitor.
+    void UnregisterHttp3DatagramVisitor();
+
     quic::QuicStreamId id() const;
     quic::QuicErrorCode connection_error() const;
     quic::QuicRstStreamErrorCode stream_error() const;
+    uint64_t connection_wire_error() const;
+    uint64_t ietf_application_error() const;
     bool fin_sent() const;
     bool fin_received() const;
     uint64_t stream_bytes_read() const;
@@ -152,6 +161,12 @@ class NET_EXPORT_PRIVATE QuicChromiumClientStream
     void SetRequestIdempotency(Idempotency idempotency);
     // Returns the idempotency of the request.
     Idempotency GetRequestIdempotency() const;
+
+    // Returns the largest payload that will fit into a single MESSAGE frame at
+    // any point during the connection.  This assumes the version and
+    // connection ID lengths do not change. Returns zero if the stream or
+    // session are closed.
+    quic::QuicPacketLength GetGuaranteedLargestMessagePayload() const;
 
    private:
     friend class QuicChromiumClientStream;
@@ -202,6 +217,8 @@ class NET_EXPORT_PRIVATE QuicChromiumClientStream
     quic::QuicStreamId id_;
     quic::QuicErrorCode connection_error_;
     quic::QuicRstStreamErrorCode stream_error_;
+    uint64_t connection_wire_error_ = 0;
+    uint64_t ietf_application_error_ = 0;
     bool fin_sent_;
     bool fin_received_;
     uint64_t stream_bytes_read_;
@@ -294,6 +311,15 @@ class NET_EXPORT_PRIVATE QuicChromiumClientStream
     return can_migrate_to_cellular_network_;
   }
 
+  // True if the underlying QUIC session supports HTTP/3 Datagrams.
+  bool SupportsH3Datagram() const;
+
+  // Returns the largest payload that will fit into a single MESSAGE frame at
+  // any point during the connection.  This assumes the version and
+  // connection ID lengths do not change. Returns zero if the stream or
+  // session are closed.
+  quic::QuicPacketLength GetGuaranteedLargestMessagePayload() const;
+
   // True if this stream is the first data stream created on this session.
   bool IsFirstStream();
 
@@ -303,6 +329,10 @@ class NET_EXPORT_PRIVATE QuicChromiumClientStream
 
   bool DeliverTrailingHeaders(spdy::Http2HeaderBlock* header_block,
                               int* frame_len);
+
+  static constexpr char kHttp3DatagramDroppedHistogram[] =
+      "Net.QuicChromiumClientStream."
+      "Http3DatagramDroppedOnWriteConnectUdpPayload";
 
   using quic::QuicSpdyStream::HasBufferedData;
   using quic::QuicStream::sequencer;

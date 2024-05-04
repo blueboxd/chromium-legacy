@@ -8,14 +8,20 @@
 #include <memory>
 #include <optional>
 
+#include "build/build_config.h"
 #include "crypto/crypto_export.h"
 #include "crypto/signature_verifier.h"
+
+#if BUILDFLAG(IS_MAC)
+#import <Security/Security.h>
+#endif  // BUILDFLAG(IS_MAC)
 
 namespace crypto {
 
 // UnexportableSigningKey provides a hardware-backed signing oracle on platforms
 // that support it. Current support is:
 //   Windows: RSA_PKCS1_SHA256 via TPM 1.2+ and ECDSA_SHA256 via TPM 2.0.
+//   macOS: ECDSA_SHA256 via the Secure Enclave.
 //   Tests: ECDSA_SHA256 via ScopedMockUnexportableSigningKeyForTesting.
 //
 // See also //components/unexportable_keys for a higher-level key management
@@ -54,6 +60,12 @@ class CRYPTO_EXPORT UnexportableSigningKey {
   // Note: this may take a second or more to run.
   virtual std::optional<std::vector<uint8_t>> SignSlowly(
       base::span<const uint8_t> data) = 0;
+
+#if BUILDFLAG(IS_MAC)
+  // Returns the underlying reference to a Keychain key owned by the current
+  // instance.
+  virtual SecKeyRef GetSecKeyRef() const = 0;
+#endif  // BUILDFLAG(IS_MAC)
 };
 
 // UnexportableKeyProvider creates |UnexportableSigningKey|s.
@@ -64,6 +76,23 @@ class CRYPTO_EXPORT UnexportableKeyProvider {
   // Platform-specific configuration parameters for the provider.
   struct Config {
 #if BUILDFLAG(IS_MAC)
+    // Determines the level of user verification needed to sign with the key.
+    // https://developer.apple.com/documentation/security/secaccesscontrolcreateflags?language=objc
+    enum class AccessControl {
+      // No access control. User presence is not required to access this secret.
+      kNone,
+
+      // Either biometry or the local account password are required to access
+      // this secret. This is equivalent to kSecAccessControlUserPresence.
+      // Note that if you set this and choose not to pass an authenticated
+      // LAContext when signing, macOS will prompt the user for biometrics and
+      // the thread will block until that resolves.
+      kUserPresence,
+
+      // Like `kUserPresence` but also allows authorization via an Apple Watch.
+      kUserPresenceOrWatch,
+    };
+
     // The keychain access group the key is shared with. The binary must be
     // codesigned with the corresponding entitlement.
     // https://developer.apple.com/documentation/bundleresources/entitlements/keychain-access-groups?language=objc
@@ -77,6 +106,9 @@ class CRYPTO_EXPORT UnexportableKeyProvider {
     // tag.
     // https://developer.apple.com/documentation/security/ksecattrapplicationtag?language=objc
     std::string application_tag;
+
+    // The access control set for keys created by the provider.
+    AccessControl access_control = AccessControl::kNone;
 #endif  // BUILDFLAG(IS_MAC)
   };
 
@@ -115,7 +147,10 @@ class CRYPTO_EXPORT UnexportableKeyProvider {
   // key on such implementations. For stateless implementations, this is a
   // no-op.
   // Returns true on successful deletion, false otherwise.
-  virtual bool DeleteSigningKey(base::span<const uint8_t> wrapped_key) = 0;
+  // This can sometimes block, and therefore must not be called from the UI
+  // thread.
+  virtual bool DeleteSigningKeySlowly(
+      base::span<const uint8_t> wrapped_key) = 0;
 };
 
 // This is an experimental API as it uses an unofficial Windows API.

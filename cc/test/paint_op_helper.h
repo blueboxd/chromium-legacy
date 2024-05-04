@@ -7,8 +7,10 @@
 
 #include <sstream>
 #include <string>
+#include <vector>
 
 #include "base/strings/stringprintf.h"
+#include "cc/paint/draw_looper.h"
 #include "cc/paint/paint_filter.h"
 #include "cc/paint/paint_op.h"
 #include "cc/paint/paint_op_buffer_iterator.h"
@@ -41,6 +43,22 @@ class PaintOpHelper {
   template <typename T>
   static std::string ToString(const std::optional<T>& opt) {
     return opt.has_value() ? ToString(*opt) : "(nil)";
+  }
+
+  template <typename T>
+  static std::string ToString(const std::vector<T>& vec) {
+    std::ostringstream str;
+    str << "{";
+    bool is_first = true;
+    for (const T& element : vec) {
+      if (!is_first) {
+        str << ", ";
+      }
+      str << ToString(element);
+      is_first = false;
+    }
+    str << "}";
+    return str.str();
   }
 
   static std::string ToString(const PaintOp& base_op) {
@@ -120,6 +138,14 @@ class PaintOpHelper {
             << ", flags=" << ToString(op.flags);
         break;
       }
+      case PaintOpType::kDrawArc: {
+        const auto& op = static_cast<const DrawArcOp&>(base_op);
+        str << "DrawArcOp(oval=" << ToString(op.oval)
+            << ", start_angle=" << ToString(op.start_angle_degrees)
+            << ", sweep_angle=" << ToString(op.sweep_angle_degrees)
+            << ", flags=" << ToString(op.flags) << ")";
+        break;
+      }
       case PaintOpType::kDrawOval: {
         const auto& op = static_cast<const DrawOvalOp&>(base_op);
         str << "oval=" << ToString(op.oval) << ", flags=" << ToString(op.flags);
@@ -145,6 +171,12 @@ class PaintOpHelper {
         const auto& op = static_cast<const DrawRRectOp&>(base_op);
         str << "rrect=" << ToString(op.rrect)
             << ", flags=" << ToString(op.flags);
+        break;
+      }
+      case PaintOpType::kDrawScrollingContents: {
+        str << "scroll_element_id="
+            << static_cast<const DrawScrollingContentsOp&>(base_op)
+                   .scroll_element_id;
         break;
       }
       case PaintOpType::kDrawSkottie: {
@@ -190,6 +222,12 @@ class PaintOpHelper {
         const auto& op = static_cast<const SaveLayerAlphaOp&>(base_op);
         str << "bounds=" << ToString(op.bounds)
             << ", alpha=" << ToString(op.alpha);
+        break;
+      }
+      case PaintOpType::kSaveLayerFilters: {
+        const auto& op = static_cast<const SaveLayerFiltersOp&>(base_op);
+        str << "flags=" << ToString(op.flags)
+            << ", filters=" << ToString(op.filters);
         break;
       }
       case PaintOpType::kScale: {
@@ -488,17 +526,9 @@ class PaintOpHelper {
     return "ColorFilter";
   }
 
-  static std::string ToString(const SkMaskFilter& filter) {
-    return "SkMaskFilter";
-  }
+  static std::string ToString(const PathEffect& effect) { return "PathEffect"; }
 
-  static std::string ToString(const SkPathEffect& effect) {
-    return "SkPathEffect";
-  }
-
-  static std::string ToString(const SkDrawLooper& looper) {
-    return "SkDrawLooper";
-  }
+  static std::string ToString(const DrawLooper& looper) { return "DrawLooper"; }
 
   static std::string ToString(PaintCanvas::AnnotationType type) {
     switch (type) {
@@ -933,7 +963,6 @@ class PaintOpHelper {
     str << ", strokeCap=" << ToString(flags.getStrokeCap());
     str << ", strokeJoin=" << ToString(flags.getStrokeJoin());
     str << ", colorFilter=" << ToString(flags.getColorFilter());
-    str << ", maskFilter=" << ToString(flags.getMaskFilter());
     str << ", shader=" << ToString(flags.getShader());
     str << ", hasShader=" << flags.HasShader();
     str << ", shaderIsOpaque=" << (flags.HasShader() && flags.ShaderIsOpaque());

@@ -97,6 +97,9 @@ def executor_kwargs(logger, test_type, test_environment, run_info_data,
     chrome_options["args"].append("--use-fake-ui-for-media-stream")
     # Use a fake UI for FedCM to allow testing it.
     chrome_options["args"].append("--use-fake-ui-for-fedcm")
+    # This is needed until https://github.com/web-platform-tests/wpt/pull/40709
+    # is merged.
+    chrome_options["args"].append("--enable-features=FedCmWithoutWellKnownEnforcement")
     # Use a fake UI for digital identity to allow testing it.
     chrome_options["args"].append("--use-fake-ui-for-digital-identity")
     # Shorten delay for Reporting <https://w3c.github.io/reporting/>.
@@ -112,6 +115,10 @@ def executor_kwargs(logger, test_type, test_environment, run_info_data,
     # The GenericSensorExtraClasses flag enables the browser-side
     # implementation of sensors such as Ambient Light Sensor.
     chrome_options["args"].append("--enable-features=GenericSensorExtraClasses")
+    # Do not show Chrome for Testing infobar. For other Chromium build this
+    # flag is no-op. Required to avoid flakiness in tests, as the infobar
+    # changes the viewport, which can happen during the test run.
+    chrome_options["args"].append("--disable-infobars")
 
     # Classify `http-private`, `http-public` and https variants in the
     # appropriate IP address spaces.
@@ -131,8 +138,14 @@ def executor_kwargs(logger, test_type, test_environment, run_info_data,
         chrome_options["args"].append(
             "--ip-address-space-overrides=" + address_space_overrides_arg)
 
+    # Always disable antialiasing on the Ahem font.
+    blink_features = ['DisableAhemAntialias']
+
     if kwargs["enable_mojojs"]:
-        chrome_options["args"].append("--enable-blink-features=MojoJS,MojoJSTest")
+        blink_features.append('MojoJS')
+        blink_features.append('MojoJSTest')
+
+    chrome_options["args"].append("--enable-blink-features=" + ','.join(blink_features))
 
     if kwargs["enable_swiftshader"]:
         # https://chromium.googlesource.com/chromium/src/+/HEAD/docs/gpu/swiftshader.md

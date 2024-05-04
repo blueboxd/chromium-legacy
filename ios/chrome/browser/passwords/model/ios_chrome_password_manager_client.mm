@@ -27,7 +27,6 @@
 #import "components/sync/service/sync_service.h"
 #import "components/translate/core/browser/translate_manager.h"
 #import "components/ukm/ios/ukm_url_recorder.h"
-#import "ios/chrome/browser/credential_provider_promo/model/features.h"
 #import "ios/chrome/browser/passwords/model/ios_chrome_account_password_store_factory.h"
 #import "ios/chrome/browser/passwords/model/ios_chrome_password_reuse_manager_factory.h"
 #import "ios/chrome/browser/passwords/model/ios_chrome_profile_password_store_factory.h"
@@ -134,7 +133,7 @@ void IOSChromePasswordManagerClient::AutomaticPasswordSave(
 }
 
 void IOSChromePasswordManagerClient::PromptUserToEnableAutosignin() {
-  // TODO(crbug.com/435048): Implement this method.
+  // TODO(crbug.com/40394758): Implement this method.
   NOTIMPLEMENTED();
 }
 
@@ -209,11 +208,9 @@ void IOSChromePasswordManagerClient::NotifySuccessfulLoginWithExistingPassword(
         submitted_manager) {
   helper_.NotifySuccessfulLoginWithExistingPassword(
       std::move(submitted_manager));
-  if (IsCredentialProviderExtensionPromoEnabled()) {
-    [bridge_
-        showCredentialProviderPromo:CredentialProviderPromoTrigger::
-                                        SuccessfulLoginUsingExistingPassword];
-  }
+  [bridge_
+      showCredentialProviderPromo:CredentialProviderPromoTrigger::
+                                      SuccessfulLoginUsingExistingPassword];
 }
 
 void IOSChromePasswordManagerClient::NotifyStorePasswordCalled() {
@@ -257,8 +254,9 @@ url::Origin IOSChromePasswordManagerClient::GetLastCommittedOrigin() const {
 }
 
 autofill::LanguageCode IOSChromePasswordManagerClient::GetPageLanguage() const {
-  // TODO(crbug.com/912597): Add WebState to the IOSChromePasswordManagerClient
-  // to be able to get the pages LanguageState from the TranslateManager.
+  // TODO(crbug.com/41430413): Add WebState to the
+  // IOSChromePasswordManagerClient to be able to get the pages LanguageState
+  // from the TranslateManager.
   return autofill::LanguageCode();
 }
 

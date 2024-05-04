@@ -55,7 +55,14 @@ gfx::Size LayoutManagerBase::GetPreferredSize(
     const View* host,
     const SizeBounds& available_size) const {
   DCHECK_EQ(host_view_, host);
-  return CalculateProposedLayout(available_size).host_size;
+  if (available_size.is_fully_bounded()) {
+    return CalculateProposedLayout(available_size).host_size;
+  } else if (available_size.width().is_bounded()) {
+    int width = available_size.width().value();
+    return gfx::Size(width, GetPreferredHeightForWidth(host, width));
+  }
+
+  return GetPreferredSize(host);
 }
 
 gfx::Size LayoutManagerBase::GetMinimumSize(const View* host) const {
@@ -110,7 +117,7 @@ void LayoutManagerBase::OnViewPropertyChanged(View* observed_view,
 
   if (key == kViewIgnoredByLayoutKey) {
     const bool ignored = observed_view->GetProperty(kViewIgnoredByLayoutKey);
-    // TODO(crbug.com/1524149): Shouldn't need to check this, the framework
+    // TODO(crbug.com/41497094): Shouldn't need to check this, the framework
     // should avoid calling us when the value hasn't changed.
     if (ignored == ui::ClassPropertyCaster<bool>::FromInt64(old_value)) {
       return;
@@ -139,6 +146,12 @@ ProposedLayout LayoutManagerBase::GetProposedLayout(
     cached_layout_ = CalculateProposedLayout(SizeBounds(host_size));
   }
   return cached_layout_;
+}
+
+ProposedLayout LayoutManagerBase::GetProposedLayout(
+    const SizeBounds& size_bounds,
+    PassKeyType) const {
+  return CalculateProposedLayout(size_bounds);
 }
 
 LayoutManagerBase::LayoutManagerBase() = default;

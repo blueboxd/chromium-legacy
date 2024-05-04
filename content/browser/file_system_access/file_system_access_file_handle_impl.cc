@@ -475,7 +475,7 @@ void FileSystemAccessFileHandleImpl::DidGetMetaDataForBlob(
   base::FilePath::StringType extension = url().path().Extension();
   if (!extension.empty()) {
     std::string mime_type;
-    // TODO(https://crbug.com/962306): Using GetMimeTypeFromExtension and
+    // TODO(crbug.com/41458368): Using GetMimeTypeFromExtension and
     // including platform defined mime type mappings might be nice/make sense,
     // however that method can potentially block and thus can't be called from
     // the IO thread.
@@ -484,7 +484,7 @@ void FileSystemAccessFileHandleImpl::DidGetMetaDataForBlob(
       content_type = std::move(mime_type);
     }
   }
-  // TODO(https://crbug.com/962306): Consider some kind of fallback type when
+  // TODO(crbug.com/41458368): Consider some kind of fallback type when
   // the above mime type detection fails.
 
   mojo::PendingRemote<blink::mojom::Blob> blob_remote;
@@ -515,7 +515,7 @@ void FileSystemAccessFileHandleImpl::CreateFileWriterImpl(
   DCHECK_EQ(GetWritePermissionStatus(),
             blink::mojom::PermissionStatus::GRANTED);
 
-  // TODO(crbug.com/1241401): Expand this check to all backends.
+  // TODO(crbug.com/40194651): Expand this check to all backends.
   if (url().type() == storage::kFileSystemTypeLocal) {
     base::ThreadPool::PostTaskAndReplyWithResult(
         FROM_HERE, {base::MayBlock()},
@@ -648,7 +648,7 @@ void FileSystemAccessFileHandleImpl::DidTakeSwapLock(
     // existence check and when file contents are copied to the new file.
     // However, since we've acquired an exclusive lock to the swap file, this
     // is only possible if the file is created external to this API.
-    // TODO(https://crbug.com/1382215): Consider requiring a lock to create an
+    // TODO(crbug.com/40245515): Consider requiring a lock to create an
     // empty file, e.g. parent.getFileHandle(swapFileName, {create: true}).
     manager()->DoFileSystemOperation(
         FROM_HERE, &FileSystemOperationRunner::FileExists,
@@ -692,7 +692,7 @@ void FileSystemAccessFileHandleImpl::DidCheckSwapFileExists(
   }
 
 #if BUILDFLAG(IS_MAC)
-  // TODO(https://crbug.com/1413443): Expand use of copy-on-write swap files
+  // TODO(crbug.com/40255657): Expand use of copy-on-write swap files
   // to other file systems which support it.
   if (CanUseCowSwapFile()) {
     CreateClonedSwapFile(count, swap_url, auto_close, std::move(lock),

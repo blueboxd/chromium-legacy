@@ -4,6 +4,7 @@
 
 import {SeaPenImageId} from 'chrome://resources/ash/common/sea_pen/constants.js';
 import {MantaStatusCode, RecentSeaPenImageInfo, RecentSeaPenThumbnailData, SeaPenFeedbackMetadata, SeaPenProviderInterface, SeaPenQuery, SeaPenThumbnail} from 'chrome://resources/ash/common/sea_pen/sea_pen.mojom-webui.js';
+import {SeaPenTemplateChip, SeaPenTemplateId, SeaPenTemplateOption} from 'chrome://resources/ash/common/sea_pen/sea_pen_generated.mojom-webui.js';
 import {isSeaPenImageId} from 'chrome://resources/ash/common/sea_pen/sea_pen_utils.js';
 import {stringToMojoString16} from 'chrome://resources/js/mojo_type_util.js';
 import {assertTrue} from 'chrome://webui-test/chai_assert.js';
@@ -37,17 +38,31 @@ export class TestSeaPenProvider extends TestBrowserProxy implements
   ];
 
   recentImageInfo2: RecentSeaPenImageInfo = {
-    userVisibleQuery: {
-      text: 'test freeform query',
-      templateTitle: '',
+    query: {
+      templateQuery: {
+        id: SeaPenTemplateId.kGlowscapes,
+        options: Object.fromEntries([
+          [
+            SeaPenTemplateChip.kGlowscapesLandscape,
+            SeaPenTemplateOption.kGlowscapesLandscapeCoralReef,
+          ],
+          [
+            SeaPenTemplateChip.kGlowscapesFeature,
+            SeaPenTemplateOption.kGlowscapesFeatureFlower,
+          ],
+        ]),
+        userVisibleQuery: {
+          text: 'test template query',
+          templateTitle: 'test template title',
+        },
+      },
     },
     creationTime: stringToMojoString16('Dec 15, 2023'),
   };
 
   recentImageInfo3: RecentSeaPenImageInfo = {
-    userVisibleQuery: {
-      text: 'test template query',
-      templateTitle: 'test template title',
+    query: {
+      textQuery: 'test freeform query',
     },
     creationTime: stringToMojoString16('Dec 31, 2023'),
   };
@@ -71,7 +86,11 @@ export class TestSeaPenProvider extends TestBrowserProxy implements
       ReturnType<SeaPenProviderInterface['selectSeaPenThumbnail']> =
           Promise.resolve({success: true});
 
-  shouldShowSeaPenTermsOfServiceDialogResponse = true;
+  selectSeaPenRecentImageResponse:
+      ReturnType<SeaPenProviderInterface['selectRecentSeaPenImage']> =
+          Promise.resolve({success: true});
+
+  shouldShowSeaPenIntroductionDialogResponse = true;
 
   constructor() {
     super([
@@ -81,8 +100,8 @@ export class TestSeaPenProvider extends TestBrowserProxy implements
       'getRecentSeaPenImages',
       'getRecentSeaPenImageThumbnail',
       'deleteRecentSeaPenImage',
-      'shouldShowSeaPenTermsOfServiceDialog',
-      'handleSeaPenTermsOfServiceAccepted',
+      'shouldShowSeaPenIntroductionDialog',
+      'handleSeaPenIntroductionDialogClosed',
     ]);
   }
 
@@ -105,7 +124,7 @@ export class TestSeaPenProvider extends TestBrowserProxy implements
     assertTrue(
         isSeaPenImageId(id), `id must be SeaPenImageId but received: ${id}`);
     this.methodCalled('selectRecentSeaPenImage', id);
-    return Promise.resolve({success: true});
+    return this.selectSeaPenRecentImageResponse;
   }
 
   getRecentSeaPenImages() {
@@ -135,14 +154,14 @@ export class TestSeaPenProvider extends TestBrowserProxy implements
     return;
   }
 
-  shouldShowSeaPenTermsOfServiceDialog() {
-    this.methodCalled('shouldShowSeaPenTermsOfServiceDialog');
+  shouldShowSeaPenIntroductionDialog() {
+    this.methodCalled('shouldShowSeaPenIntroductionDialog');
     return Promise.resolve(
-        {shouldShowDialog: this.shouldShowSeaPenTermsOfServiceDialogResponse});
+        {shouldShowDialog: this.shouldShowSeaPenIntroductionDialogResponse});
   }
 
-  handleSeaPenTermsOfServiceAccepted() {
-    this.methodCalled('handleSeaPenTermsOfServiceAccepted');
-    this.shouldShowSeaPenTermsOfServiceDialogResponse = false;
+  handleSeaPenIntroductionDialogClosed() {
+    this.methodCalled('handleSeaPenIntroductionDialogClosed');
+    this.shouldShowSeaPenIntroductionDialogResponse = false;
   }
 }

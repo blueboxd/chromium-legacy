@@ -41,6 +41,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.hub.HubFieldTrial;
+import org.chromium.chrome.browser.tab_ui.RecyclerViewPosition;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.ui.base.ViewUtils;
@@ -141,8 +142,7 @@ class TabListRecyclerView extends RecyclerView
     private ImageView mShadowImageView;
     private int mShadowTopOffset;
     private TabListOnScrollListener mScrollListener;
-    // It is null when gts-tab animation is disabled or switching from Start surface to GTS.
-    @Nullable private RecyclerView.ItemAnimator mOriginalAnimator;
+    private RecyclerView.ItemAnimator mOriginalAnimator;
     // Null unless item animations are disabled.
     @Nullable private RecyclerView.ItemAnimator mDisabledAnimatorHolder;
     // Null if there is no runnable to execute on the next layout.
@@ -299,18 +299,13 @@ class TabListRecyclerView extends RecyclerView
                         mSuppressCapture = true;
                         mListener.finishedShowing();
                         // Restore the original value.
-                        // TODO(crbug.com/1315676): Remove the null check after decoupling Start
-                        // surface layout and grid tab switcher layout.
-                        if (mOriginalAnimator != null) {
-                            setItemAnimator(mOriginalAnimator);
-                            mOriginalAnimator = null;
-                        }
+                        setItemAnimator(mOriginalAnimator);
                         setShadowVisibility(computeVerticalScrollOffset() > 0);
                         if (mDynamicView != null) {
                             unregisterDynamicView();
                             mDynamicView.dropCachedBitmap();
                         }
-                        // TODO(crbug.com/972157): remove this band-aid after we know why GTS is
+                        // TODO(crbug.com/40631247): remove this band-aid after we know why GTS is
                         // invisible.
                         if (TabUiFeatureUtilities.isTabToGtsAnimationEnabled(getContext())) {
                             ViewUtils.requestLayout(
@@ -421,7 +416,8 @@ class TabListRecyclerView extends RecyclerView
         // If there is no resource loader it isn't necessary to create a dynamic view.
         if (loader == null) return;
 
-        // TODO(crbug/1409886): Consider reducing capture frequency or only capturing once. There
+        // TODO(crbug.com/40254111): Consider reducing capture frequency or only capturing once.
+        // There
         // was some discussion about this in crbug/1386265. However, it was punted on due to mid-end
         // devices having difficulty producing thumbnails before the first capture to avoid the
         // transition being jarring. This is exacerbated by multi-thumbnails which need to be
@@ -704,7 +700,7 @@ class TabListRecyclerView extends RecyclerView
     }
 
     // TabGridAccessibilityHelper implementation.
-    // TODO(crbug.com/1032095): Add e2e tests for implementation below when tab grid is enabled for
+    // TODO(crbug.com/40110745): Add e2e tests for implementation below when tab grid is enabled for
     // accessibility mode.
     @Override
     @SuppressLint("NewApi")

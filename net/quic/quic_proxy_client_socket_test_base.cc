@@ -10,6 +10,7 @@
 #include "base/strings/strcat.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/time/default_tick_clock.h"
+#include "net/base/connection_endpoint_metadata.h"
 #include "net/base/network_anonymization_key.h"
 #include "net/base/privacy_mode.h"
 #include "net/base/proxy_chain.h"
@@ -188,10 +189,11 @@ void QuicProxyClientSocketTestBase::InitializeSession() {
           kQuicYieldAfterDurationMilliseconds),
       /*cert_verify_flags=*/0, quic::test::DefaultQuicConfig(),
       std::make_unique<TestQuicCryptoClientConfigHandle>(&crypto_config_),
-      dns_start, dns_end, base::DefaultTickClock::GetInstance(),
+      "CONNECTION_UNKNOWN", dns_start, dns_end,
+      base::DefaultTickClock::GetInstance(),
       base::SingleThreadTaskRunner::GetCurrentDefault().get(),
-      /*socket_performance_watcher=*/nullptr, HostResolverEndpointResult(),
-      NetLog::Get());
+      /*socket_performance_watcher=*/nullptr, ConnectionEndpointMetadata(),
+      /*report_ecn=*/true, NetLogWithSource::Make(NetLogSourceType::NONE));
 
   writer->set_delegate(session_.get());
 
@@ -358,6 +360,13 @@ QuicProxyClientSocketTestBase::ConstructServerDataPacket(
     std::string_view data) {
   return server_maker_.MakeDataPacket(packet_number, client_data_stream_id1_,
                                       !kFin, data);
+}
+
+std::unique_ptr<quic::QuicReceivedPacket>
+QuicProxyClientSocketTestBase::ConstructServerDatagramPacket(
+    uint64_t packet_number,
+    std::string_view data) {
+  return server_maker_.MakeDatagramPacket(packet_number, data);
 }
 
 std::unique_ptr<quic::QuicReceivedPacket>

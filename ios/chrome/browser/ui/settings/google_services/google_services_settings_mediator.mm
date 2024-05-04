@@ -79,7 +79,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ParcelTrackingItemType,
 };
 
-// TODO(crbug.com/1244632): Use the Authentication Service sign-in status API
+// TODO(crbug.com/40788009): Use the Authentication Service sign-in status API
 // instead of this when available.
 // Returns true when sign-in can be enabled/disabled by the user from the
 // google service settings.
@@ -128,7 +128,7 @@ bool GetStatusForSigninPolicy() {
 @property(nonatomic, strong, readonly)
     PrefBackedBoolean* allowChromeSigninPreference;
 // Preference value for the "Help improve Chromium's features" for Wifi-Only.
-// TODO(crbug.com/872101): Needs to create the UI to change from Wifi-Only to
+// TODO(crbug.com/40588486): Needs to create the UI to change from Wifi-Only to
 // always
 @property(nonatomic, strong, readonly)
     PrefBackedBoolean* sendDataUsageWifiOnlyPreference;

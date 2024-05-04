@@ -95,6 +95,12 @@ inline constexpr char kTrackingProtectionSilentOnboardedSince[] =
 inline constexpr char kBlockAll3pcToggleEnabled[] =
     "tracking_protection.block_all_3pc_toggle_enabled";
 
+// Synced boolean that indicates whether 3PC are allowed for a user post-3PCD.
+// Can only be set via the BlockThirdPartyCookies enterprise policy.
+// Takes precedence over kBlockAll3pcToggleEnabled.
+inline constexpr char kAllowAll3pcToggleEnabled[] =
+    "tracking_protection.allow_all_3pc_toggle_enabled";
+
 // Synced enum that indicates the level of tracking protection the user has
 // selected on the tracking protection page.
 inline constexpr char kTrackingProtectionLevel[] =
@@ -111,26 +117,12 @@ inline constexpr char kIpProtectionEnabled[] =
     "tracking_protection.ip_protection_enabled";
 
 // Synced boolean that indicates whether the user has enabled the
-// anti-fingerprinting setting.
-inline constexpr char kAntiFingerprintingEnabled[] =
-    "tracking_protection.anti_fingerprinting_enabled";
+// fingerprinting protection setting.
+inline constexpr char kFingerprintingProtectionEnabled[] =
+    "tracking_protection.fingerprinting_protection_enabled";
 
 // Whether to send the DNT header.
 inline constexpr char kEnableDoNotTrack[] = "enable_do_not_track";
-
-// Sentiment Survey Prefs
-
-// Indicates which group the profile belongs to.
-inline constexpr char kTrackingProtectionSentimentSurveyGroup[] =
-    "tracking_protection.tracking_protection_sentiment_survey_group";
-
-// Indicates the time the profile becomes eligible for surveying.
-inline constexpr char kTrackingProtectionSentimentSurveyStartTime[] =
-    "tracking_protection.tracking_protection_sentiment_survey_start_time";
-
-// Indicates the time the profile is no longer eligible for surveying.
-inline constexpr char kTrackingProtectionSentimentSurveyEndTime[] =
-    "tracking_protection.tracking_protection_sentiment_survey_end_time";
 
 }  // namespace prefs
 
@@ -169,26 +161,6 @@ enum class TrackingProtectionOnboardingAckAction {
   // Acked by clicking the close button/ESC/Swipe away.
   kClosed = 5,
   kMaxValue = kClosed,
-};
-
-// Different tracking protection sentiment survey groups stored in the pref
-// above.
-enum class TrackingProtectionSentimentSurveyGroup {
-  // No Group Set.
-  kNotSet = 0,
-  // Profile is to be surveyed shortly after being added to the Mode B Control
-  // Group.
-  kControlImmediate = 1,
-  // Profile is to be surveyed shortly after being added to the Mode B Treatment
-  // Group.
-  kTreatmentImmediate = 2,
-  // Profile is to be surveyed after a delay after being added to the Mode B
-  // Control Group.
-  kControlDelayed = 3,
-  // Profile is to be surveyed after a delay after being added to the Mode B
-  // Treatment Group.
-  kTreatmentDelayed = 4,
-  kMaxValue = kTreatmentDelayed,
 };
 
 void RegisterProfilePrefs(PrefRegistrySimple* registry);

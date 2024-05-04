@@ -4,6 +4,7 @@
 """Product classes that encapsulate the interfaces for the testing targets"""
 
 import contextlib
+import functools
 import logging
 
 from blinkpy.common import path_finder
@@ -36,7 +37,9 @@ def make_product_registry():
     respective classes.
     """
     product_registry = {}
-    product_classes = [Chrome, ContentShell, ChromeiOS, ChromeAndroid, WebView]
+    product_classes = [
+        Chrome, HeadlessShell, ContentShell, ChromeiOS, ChromeAndroid, WebView
+    ]
     for product_cls in product_classes:
         names = [product_cls.name] + product_cls.aliases
         product_registry.update((name, product_cls) for name in names)
@@ -65,17 +68,20 @@ class Product:
         with self._tasks:
             yield
 
+    @functools.cached_property
+    def processes(self) -> int:
+        if self._options.child_processes:
+            return self._options.child_processes
+        elif self._options.wrapper:
+            _log.info('Defaulting to 1 worker because of debugging option '
+                      '`--wrapper`')
+            return 1
+        else:
+            return self._port.default_child_processes()
+
     def product_specific_options(self):
         """Product-specific wptrunner parameters needed to run tests."""
-        processes = self._options.child_processes
-        if not processes:
-            if self._options.wrapper:
-                _log.info('Defaulting to 1 worker because of debugging '
-                          'option `--wrapper`')
-                processes = 1
-            else:
-                processes = self._port.default_child_processes()
-        return {'processes': processes}
+        return {'processes': self.processes}
 
     def additional_webdriver_args(self):
         """Additional webdriver parameters for the product"""
@@ -106,6 +112,10 @@ class Chrome(Product):
             'webdriver_binary':
             self.default_webdriver_binary,
         }
+
+
+class HeadlessShell(Chrome):
+    name = 'headless_shell'
 
 
 class ContentShell(Product):
@@ -180,7 +190,7 @@ class ChromeAndroidBase(Product):
                 config.Install()
 
                 # use '--child-processes' to decide how many emulators to launch
-                for _ in range(max(self._options.child_processes or 1, 1)):
+                for _ in range(max(self.processes, 1)):
                     instance = config.CreateInstance()
                     instances.append(instance)
 

@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 #include "components/autofill/core/browser/metrics/placeholder_metrics.h"
+
 #include "base/test/metrics/histogram_tester.h"
+#include "components/autofill/core/browser/address_data_manager.h"
 #include "components/autofill/core/browser/autofill_form_test_utils.h"
 #include "components/autofill/core/browser/metrics/autofill_metrics_test_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -181,8 +183,8 @@ TEST_F(PlaceholderMetricsTest,
   cached_form->field(2)->set_may_use_prefilled_placeholder(true);
   cached_form->field(3)->set_may_use_prefilled_placeholder(false);
   cached_form->field(4)->set_may_use_prefilled_placeholder(false);
-  form.fields[2].value = u"changed";
-  form.fields[3].value = u"changed";
+  form.fields[2].set_value(u"changed");
+  form.fields[3].set_value(u"changed");
   SubmitForm(form);
 
   ResetDriverToCommitMetrics();
@@ -262,13 +264,14 @@ TEST_F(PlaceholderMetricsValueStatusTest,
   SeeForm();
   ClassifyThePreFilledFieldAsPlaceholder();
   FillTestProfile(form_);
-  form_.fields[1].value = kPreFilledValue;
+  form_.fields[1].set_value(kPreFilledValue);
   SubmitFormAndExpect(AutofillPreFilledValueStatus::
                           kPreFilledValueWasManuallyRestoredAfterAutofill);
 }
 
 TEST_F(PlaceholderMetricsValueStatusTest, ValueWasRestoredByAutofill) {
   form_description_.fields[1].value = personal_data()
+                                          .address_data_manager()
                                           .GetProfileByGUID(kTestProfileId)
                                           ->GetRawInfo(kPreFilledType);
   form_description_.fields[1].is_autofilled = true;
@@ -282,7 +285,7 @@ TEST_F(PlaceholderMetricsValueStatusTest, ValueWasRestoredByAutofill) {
 TEST_F(PlaceholderMetricsValueStatusTest, ValueChangedToEmpty) {
   SeeForm();
   FillTestProfile(form_);
-  form_.fields[1].value = u"";
+  form_.fields[1].set_value(u"");
   SubmitFormAndExpect(
       AutofillPreFilledValueStatus::kPreFilledValueChangedToEmpty);
 }
@@ -291,9 +294,10 @@ TEST_F(PlaceholderMetricsValueStatusTest,
        ValueChangedToWhatWouldHaveBeenFilled) {
   SeeForm();
   FillTestProfile(form_);
-  form_.fields[1].value = personal_data()
-                              .GetProfileByGUID(kTestProfileId)
-                              ->GetRawInfo(kPreFilledType);
+  form_.fields[1].set_value(personal_data()
+                                .address_data_manager()
+                                .GetProfileByGUID(kTestProfileId)
+                                ->GetRawInfo(kPreFilledType));
   SubmitFormAndExpect(AutofillPreFilledValueStatus::
                           kPreFilledValueChangedToWhatWouldHaveBeenFilled);
 }
@@ -303,9 +307,10 @@ TEST_F(PlaceholderMetricsValueStatusTest,
   SeeForm();
   FillTestProfile(form_);
   FillProfileByGUID(form_, kTestProfile2Id);
-  form_.fields[1].value = personal_data()
-                              .GetProfileByGUID(kTestProfile2Id)
-                              ->GetRawInfo(kPreFilledType);
+  form_.fields[1].set_value(personal_data()
+                                .address_data_manager()
+                                .GetProfileByGUID(kTestProfile2Id)
+                                ->GetRawInfo(kPreFilledType));
   SubmitFormAndExpect(AutofillPreFilledValueStatus::
                           kPreFilledValueChangedToWhatWouldHaveBeenFilled);
 }
@@ -315,9 +320,10 @@ TEST_F(PlaceholderMetricsValueStatusTest,
   SeeForm();
   ClassifyThePreFilledFieldAsPlaceholder();
   FillTestProfile(form_);
-  form_.fields[1].value = personal_data()
-                              .GetProfileByGUID(kTestProfile2Id)
-                              ->GetRawInfo(kPreFilledType);
+  form_.fields[1].set_value(personal_data()
+                                .address_data_manager()
+                                .GetProfileByGUID(kTestProfile2Id)
+                                ->GetRawInfo(kPreFilledType));
   ;
   SubmitFormAndExpect(AutofillPreFilledValueStatus::
                           kPreFilledValueChangedToCorrespondingFieldType);
@@ -326,7 +332,7 @@ TEST_F(PlaceholderMetricsValueStatusTest,
 TEST_F(PlaceholderMetricsValueStatusTest, ValueChangedToAnyOtherValue) {
   SeeForm();
   FillTestProfile(form_);
-  form_.fields[1].value = u"any other value";
+  form_.fields[1].set_value(u"any other value");
   SubmitFormAndExpect(AutofillPreFilledValueStatus::kPreFilledValueChanged);
 }
 

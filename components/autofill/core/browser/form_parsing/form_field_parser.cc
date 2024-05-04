@@ -8,17 +8,18 @@
 #include <cstddef>
 #include <iterator>
 #include <numeric>
+#include <string_view>
 
 #include "base/auto_reset.h"
 #include "base/containers/flat_map.h"
 #include "base/memory/raw_ptr.h"
-#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/form_parsing/address_field_parser.h"
+#include "components/autofill/core/browser/form_parsing/address_field_parser_ng.h"
 #include "components/autofill/core/browser/form_parsing/autofill_parsing_utils.h"
 #include "components/autofill/core/browser/form_parsing/autofill_scanner.h"
 #include "components/autofill/core/browser/form_parsing/credit_card_field_parser.h"
@@ -55,7 +56,7 @@ constexpr bool IsEmpty(const char16_t* s) {
 }
 
 AutofillRegexCache& GetAutofillRegexCache() {
-  // TODO(crbug.com/1309848): If ParseForm() is called from the same thread,
+  // TODO(crbug.com/40219607): If ParseForm() is called from the same thread,
   // use a thread-unsafe parser.
   static base::NoDestructor<AutofillRegexCache> cache(ThreadSafe(true));
   return *cache;
@@ -67,8 +68,8 @@ RegexMatchesCache::RegexMatchesCache(int capacity) : cache_(capacity) {}
 RegexMatchesCache::~RegexMatchesCache() = default;
 
 RegexMatchesCache::Key RegexMatchesCache::BuildKey(
-    base::StringPiece16 input,
-    base::StringPiece16 pattern) {
+    std::u16string_view input,
+    std::u16string_view pattern) {
   return Key(std::hash<std::u16string_view>{}(input),
              std::hash<std::u16string_view>{}(pattern));
 }
@@ -105,8 +106,8 @@ ParsingContext::~ParsingContext() = default;
 // static
 bool FormFieldParser::MatchesRegexWithCache(
     ParsingContext& context,
-    base::StringPiece16 input,
-    base::StringPiece16 pattern,
+    std::u16string_view input,
+    std::u16string_view pattern,
     std::vector<std::u16string>* groups) {
   RegexMatchesCache::Key key;
   if (!groups && context.matches_cache) {
@@ -148,8 +149,11 @@ void FormFieldParser::ParseFormFields(
                       field_candidates);
 
   // Address pass.
-  ParseFormFieldsPass(AddressFieldParser::Parse, context, processed_fields,
-                      field_candidates);
+  ParseFormFieldsPass(base::FeatureList::IsEnabled(
+                          features::kAutofillEnableAddressFieldParserNG)
+                          ? AddressFieldParserNG::Parse
+                          : AddressFieldParser::Parse,
+                      context, processed_fields, field_candidates);
 
   // Numeric quantity pass.
   ParseFormFieldsPass(NumericQuantityFieldParser::Parse, context,
@@ -339,7 +343,7 @@ bool FormFieldParser::FieldMatchesMatchPatternRef(
     base::span<const MatchPatternRef> patterns,
     const AutofillField& field,
     const char* regex_name,
-    MatchParams (*projection)(const MatchParams&)) {
+    std::initializer_list<MatchParams (*)(const MatchParams&)> projections) {
   // Calling the regex engine with multiple smaller regexes is less efficient
   // than calling it with one larger regex. For this reasons, positive_patterns
   // are batched by OR-ing them together. Since matching further depends on the
@@ -353,10 +357,12 @@ bool FormFieldParser::FieldMatchesMatchPatternRef(
     CHECK(!IsEmpty(pattern.positive_pattern));
     MatchParams match_params(pattern.match_field_attributes,
                              pattern.form_control_types);
-    if (projection) {
-      match_params = (*projection)(match_params);
+    for (auto projection : projections) {
+      if (projection) {
+        match_params = (*projection)(match_params);
+      }
     }
-    if (!MatchesFormControlType(field.form_control_type,
+    if (!MatchesFormControlType(field.form_control_type(),
                                 match_params.field_types)) {
       continue;
     }
@@ -397,7 +403,7 @@ bool FormFieldParser::FieldMatchesMatchPatternRef(
 // static
 bool FormFieldParser::ParseField(ParsingContext& context,
                                  AutofillScanner* scanner,
-                                 base::StringPiece16 pattern,
+                                 std::u16string_view pattern,
                                  base::span<const MatchPatternRef> patterns,
                                  raw_ptr<AutofillField>* match,
                                  const char* regex_name) {
@@ -409,7 +415,7 @@ bool FormFieldParser::ParseField(ParsingContext& context,
 bool FormFieldParser::ParseFieldSpecificsWithLegacyPattern(
     ParsingContext& context,
     AutofillScanner* scanner,
-    base::StringPiece16 pattern,
+    std::u16string_view pattern,
     MatchParams match_type,
     raw_ptr<AutofillField>* match,
     const char* regex_name) {
@@ -417,7 +423,7 @@ bool FormFieldParser::ParseFieldSpecificsWithLegacyPattern(
     return false;
   }
   AutofillField* field = scanner->Cursor();
-  if (!MatchesFormControlType(field->form_control_type,
+  if (!MatchesFormControlType(field->form_control_type(),
                               match_type.field_types)) {
     return false;
   }
@@ -444,7 +450,7 @@ bool FormFieldParser::ParseFieldSpecificsWithNewPatterns(
   }
   AutofillField* field = scanner->Cursor();
   if (FieldMatchesMatchPatternRef(context, patterns, *field, regex_name,
-                                  projection)) {
+                                  {projection})) {
     if (match) {
       *match = field;
     }
@@ -458,7 +464,7 @@ bool FormFieldParser::ParseFieldSpecificsWithNewPatterns(
 bool FormFieldParser::ParseFieldSpecifics(
     ParsingContext& context,
     AutofillScanner* scanner,
-    base::StringPiece16 pattern,
+    std::u16string_view pattern,
     const MatchParams& match_type,
     base::span<const MatchPatternRef> patterns,
     raw_ptr<AutofillField>* match,
@@ -561,8 +567,8 @@ FormFieldParser::RemoveCheckableFields(
     // interferes with correctly understanding ADDRESS_LINE2.
     // Ignore fields marked as presentational, unless for 'select' fields (for
     // synthetic fields.)
-    if (IsCheckable(field->check_status) ||
-        (field->role == FormFieldData::RoleAttribute::kPresentation &&
+    if (IsCheckable(field->check_status()) ||
+        (field->role() == FormFieldData::RoleAttribute::kPresentation &&
          !field->IsSelectElement())) {
       continue;
     }
@@ -573,22 +579,22 @@ FormFieldParser::RemoveCheckableFields(
 
 bool FormFieldParser::Match(ParsingContext& context,
                             const AutofillField* field,
-                            base::StringPiece16 pattern,
+                            std::u16string_view pattern,
                             DenseSet<MatchAttribute> match_attributes,
                             const char* regex_name) {
   bool found_match = false;
   std::string_view match_type_string;
-  base::StringPiece16 value;
+  std::u16string_view value;
   std::vector<std::u16string> matches;
   std::vector<std::u16string>* capture_destination =
       context.log_manager && context.log_manager->IsLoggingActive() ? &matches
                                                                     : nullptr;
 
-  // TODO(crbug/1165780): Remove once shared labels are launched.
+  // TODO(crbug.com/40741721): Remove once shared labels are launched.
   const std::u16string& label =
       context.autofill_enable_support_for_parsing_with_shared_labels
           ? field->parseable_label()
-          : field->label;
+          : field->label();
 
   const std::u16string& name = field->parseable_name();
 
@@ -606,18 +612,18 @@ bool FormFieldParser::Match(ParsingContext& context,
     value = name;
   } else if (match_label && pattern != kEmptyLabelRegex &&
              context.autofill_always_parse_placeholders &&
-             MatchesRegexWithCache(context, field->placeholder, pattern,
+             MatchesRegexWithCache(context, field->placeholder(), pattern,
                                    capture_destination)) {
     // Placeholders are matched against the same regexes as labels. However, to
     // prevent false positives in `ParseEmptyLabel()`, matches in placeholders
     // are explicitly prevented for `kEmptyLabelRegex`.
-    // TODO(crbug.com/1317961): The label and placeholder cases should logically
-    // be grouped together. Placeholder is currently last, because for the finch
-    // study we want the group assignment to happen as late as possible.
-    // Reorder once the change is rolled out.
+    // TODO(crbug.com/40222716): The label and placeholder cases should
+    // logically be grouped together. Placeholder is currently last, because for
+    // the finch study we want the group assignment to happen as late as
+    // possible. Reorder once the change is rolled out.
     found_match = true;
     match_type_string = "Match in placeholder";
-    value = field->placeholder;
+    value = field->placeholder();
   }
 
   if (found_match && capture_destination) {

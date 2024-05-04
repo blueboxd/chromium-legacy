@@ -30,7 +30,7 @@
 #include "net/cert/internal/cert_issuer_source_aia.h"
 #include "net/cert/internal/revocation_checker.h"
 #include "net/cert/internal/system_trust_store.h"
-#include "net/cert/known_roots.h"
+#include "net/cert/signed_certificate_timestamp_and_status.h"
 #include "net/cert/test_root_certs.h"
 #include "net/cert/time_conversions.h"
 #include "net/cert/x509_certificate.h"
@@ -47,17 +47,23 @@
 #include "third_party/boringssl/src/pki/trust_store_collection.h"
 #include "third_party/boringssl/src/pki/trust_store_in_memory.h"
 
+#if BUILDFLAG(CHROME_ROOT_STORE_SUPPORTED)
+#include "base/version_info/version_info.h"  // nogncheck
+#include "net/cert/internal/trust_store_chrome.h"
+#endif
+
 using bssl::CertErrorId;
 
 namespace net {
 
 namespace {
 
-// Very conservative iteration count limit.
-// TODO(https://crbug.com/634470): Remove this in favor of
-// kPathBuilderIterationLimitNew.
-constexpr uint32_t kPathBuilderIterationLimit = 25000;
-constexpr uint32_t kPathBuilderIterationLimitNew = 20;
+// To avoid a denial-of-service risk, cap iterations by the path builder.
+// Without a limit, path building is potentially exponential. This limit was
+// set based on UMA histograms in the wild. See https://crrev.com/c/4903550.
+//
+// TODO(crbug.com/41267856): Move this limit into BoringSSL as a default.
+constexpr uint32_t kPathBuilderIterationLimit = 20;
 
 constexpr base::TimeDelta kMaxVerificationTime = base::Seconds(60);
 
@@ -65,6 +71,8 @@ constexpr base::TimeDelta kPerAttemptMinVerificationTimeLimit =
     base::Seconds(5);
 
 DEFINE_CERT_ERROR_ID(kPathLacksEVPolicy, "Path does not have an EV policy");
+DEFINE_CERT_ERROR_ID(kChromeRootConstraintsFailed,
+                     "Path does not satisfy CRS constraints");
 
 base::Value::Dict NetLogCertParams(const CRYPTO_BUFFER* cert_handle,
                                    const bssl::CertErrors& errors) {
@@ -117,7 +125,7 @@ base::Value::Dict NetLogPathBuilderResultPath(
   dict.Set("is_valid", result_path.IsValid());
   dict.Set("last_cert_trust", result_path.last_cert_trust.ToDebugString());
   dict.Set("certificates", PEMCertValueList(result_path.certs));
-  // TODO(crbug.com/634484): netlog user_constrained_policy_set.
+  // TODO(crbug.com/40479281): netlog user_constrained_policy_set.
   std::string errors_string =
       result_path.errors.ToDebugString(result_path.certs);
   if (!errors_string.empty())
@@ -128,7 +136,7 @@ base::Value::Dict NetLogPathBuilderResultPath(
 base::Value::Dict NetLogPathBuilderResult(
     const bssl::CertPathBuilder::Result& result) {
   base::Value::Dict dict;
-  // TODO(crbug.com/634484): include debug data (or just have things netlog it
+  // TODO(crbug.com/40479281): include debug data (or just have things netlog it
   // directly).
   dict.Set("has_valid_path", result.HasValidPath());
   dict.Set("best_result_index", static_cast<int>(result.best_result_index));
@@ -209,6 +217,13 @@ class CertVerifyProcTrustStore {
     }
     return system_trust_store_->IsKnownRoot(trust_anchor);
   }
+
+#if BUILDFLAG(CHROME_ROOT_STORE_SUPPORTED)
+  base::span<const ChromeRootCertConstraints> GetChromeRootConstraints(
+      const bssl::ParsedCertificate* cert) const {
+    return system_trust_store_->GetChromeRootConstraints(cert);
+  }
+#endif
 
   bool IsAdditionalTrustAnchor(
       const bssl::ParsedCertificate* trust_anchor) const {
@@ -307,20 +322,41 @@ class PathBuilderDelegateImpl : public bssl::SimplePathBuilderDelegate {
  private:
   void CheckPathAfterVerificationImpl(const bssl::CertPathBuilder& path_builder,
                                       bssl::CertPathBuilderResultPath* path) {
+    PathBuilderDelegateDataImpl* delegate_data =
+        PathBuilderDelegateDataImpl::GetOrCreate(path);
+
+    // TODO(https://crbug.com/1211074, https://crbug.com/848277): making a
+    // temporary X509Certificate just to pass into CTVerifier and
+    // CTPolicyEnforcer is silly, refactor so they take CRYPTO_BUFFER or
+    // ParsedCertificate or something.
+    std::vector<bssl::UniquePtr<CRYPTO_BUFFER>> intermediates;
+    if (path->certs.size() > 1) {
+      intermediates.push_back(bssl::UpRef(path->certs[1]->cert_buffer()));
+    }
+    auto cert_for_ct_verify = X509Certificate::CreateFromBuffer(
+        bssl::UpRef(path->certs[0]->cert_buffer()), std::move(intermediates));
+    ct_verifier_->Verify(cert_for_ct_verify.get(), stapled_leaf_ocsp_response_,
+                         sct_list_from_tls_extension_, &delegate_data->scts,
+                         *net_log_);
+
     // Check any extra constraints that might exist outside of the certificates.
     CheckExtraConstraints(path->certs, &path->errors);
+#if BUILDFLAG(CHROME_ROOT_STORE_SUPPORTED)
+    CheckChromeRootConstraints(path);
+#endif
 
-    // If the path is already invalid, don't check revocation status. The chain
-    // is expected to be valid when doing revocation checks (since for instance
-    // the correct issuer for a certificate may need to be known). Also if
-    // certificates are already expired, obtaining their revocation status may
-    // fail.
+    // If the path is already invalid, don't check revocation status. The
+    // chain is expected to be valid when doing revocation checks (since for
+    // instance the correct issuer for a certificate may need to be known).
+    // Also if certificates are already expired, obtaining their revocation
+    // status may fail.
     //
     // TODO(eroman): When CertVerifyProcBuiltin fails to find a valid path,
     //               whatever (partial/incomplete) path it does return should
     //               minimally be checked with the CRLSet.
-    if (!path->IsValid())
+    if (!path->IsValid()) {
       return;
+    }
 
     // If EV was requested the certificate must chain to a recognized EV root
     // and have one of its recognized EV policy OIDs.
@@ -347,11 +383,9 @@ class PathBuilderDelegateImpl : public bssl::SimplePathBuilderDelegate {
         break;
     }
 
-    if (policy.check_revocation)
+    if (policy.check_revocation) {
       *checked_revocation_for_some_path_ = true;
-
-    PathBuilderDelegateDataImpl* delegate_data =
-        PathBuilderDelegateDataImpl::GetOrCreate(path);
+    }
 
     // Check the revocation status for each certificate in the chain according
     // to |policy|. Depending on the policy, errors will be added to the
@@ -362,20 +396,6 @@ class PathBuilderDelegateImpl : public bssl::SimplePathBuilderDelegate {
                                   &path->errors,
                                   &delegate_data->stapled_ocsp_verify_result);
 
-    // TODO(https://crbug.com/1211074, https://crbug.com/848277): making a
-    // temporary X509Certificate just to pass into CTVerifier and
-    // CTPolicyEnforcer is silly, refactor so they take CRYPTO_BUFFER or
-    // ParsedCertificate or something.
-    std::vector<bssl::UniquePtr<CRYPTO_BUFFER>> intermediates;
-    if (path->certs.size() > 1) {
-      intermediates.push_back(bssl::UpRef(path->certs[1]->cert_buffer()));
-    }
-    auto cert_for_ct_verify = X509Certificate::CreateFromBuffer(
-        bssl::UpRef(path->certs[0]->cert_buffer()), std::move(intermediates));
-    ct_verifier_->Verify(cert_for_ct_verify.get(), stapled_leaf_ocsp_response_,
-                         sct_list_from_tls_extension_, &delegate_data->scts,
-                         *net_log_);
-
     ct::SCTList verified_scts;
     for (const auto& sct_and_status : delegate_data->scts) {
       if (sct_and_status.status == ct::SCT_STATUS_OK) {
@@ -385,6 +405,96 @@ class PathBuilderDelegateImpl : public bssl::SimplePathBuilderDelegate {
     delegate_data->ct_policy_compliance = ct_policy_enforcer_->CheckCompliance(
         cert_for_ct_verify.get(), verified_scts, *net_log_);
   }
+
+#if BUILDFLAG(CHROME_ROOT_STORE_SUPPORTED)
+  // Returns the SCTs from `scts` that are verified successfully and signed by
+  // a log which was not disqualified.
+  ct::SCTList ValidScts(const SignedCertificateTimestampAndStatusList& scts) {
+    ct::SCTList valid_scts;
+    for (const auto& sct_and_status : scts) {
+      if (sct_and_status.status != ct::SCT_STATUS_OK) {
+        continue;
+      }
+      std::optional<base::Time> disqualification_time =
+          ct_policy_enforcer_->GetLogDisqualificationTime(
+              sct_and_status.sct->log_id);
+      // TODO(https://crbug.com/40840044): use the same time source here as for
+      // the rest of verification.
+      if (disqualification_time && base::Time::Now() >= disqualification_time) {
+        continue;
+      }
+      valid_scts.push_back(sct_and_status.sct);
+    }
+    return valid_scts;
+  }
+
+  bool CheckPathSatisfiesChromeRootConstraint(
+      bssl::CertPathBuilderResultPath* path,
+      const ChromeRootCertConstraints& constraint) {
+    PathBuilderDelegateDataImpl* delegate_data =
+        PathBuilderDelegateDataImpl::GetOrCreate(path);
+
+    // TODO(https://crbug.com/40941039): add more specific netlog or CertError
+    // logs about which constraint failed exactly? (Note that it could be
+    // confusing when there are multiple ChromeRootCertConstraints objects,
+    // would need to clearly distinguish which set of constraints had errors.)
+
+    if (ct_policy_enforcer_->IsCtEnabled()) {
+      if (constraint.sct_not_after.has_value()) {
+        bool found_matching_sct = false;
+        for (const auto& sct : ValidScts(delegate_data->scts)) {
+          if (sct->timestamp <= constraint.sct_not_after.value()) {
+            found_matching_sct = true;
+            break;
+          }
+        }
+        if (!found_matching_sct) {
+          return false;
+        }
+      }
+
+      if (constraint.sct_all_after.has_value()) {
+        ct::SCTList valid_scts = ValidScts(delegate_data->scts);
+        if (valid_scts.empty()) {
+          return false;
+        }
+        for (const auto& sct : ValidScts(delegate_data->scts)) {
+          if (sct->timestamp <= constraint.sct_all_after.value()) {
+            return false;
+          }
+        }
+      }
+    }
+
+    if (constraint.min_version.has_value() &&
+        version_info::GetVersion() < constraint.min_version.value()) {
+      return false;
+    }
+
+    if (constraint.max_version_exclusive.has_value() &&
+        version_info::GetVersion() >=
+            constraint.max_version_exclusive.value()) {
+      return false;
+    }
+
+    return true;
+  }
+
+  void CheckChromeRootConstraints(bssl::CertPathBuilderResultPath* path) {
+    if (base::span<const ChromeRootCertConstraints> constraints =
+            trust_store_->GetChromeRootConstraints(path->certs.back().get());
+        !constraints.empty()) {
+      bool found_valid_constraint = false;
+      for (const ChromeRootCertConstraints& constraint : constraints) {
+        found_valid_constraint |=
+            CheckPathSatisfiesChromeRootConstraint(path, constraint);
+      }
+      if (!found_valid_constraint) {
+        path->errors.GetOtherErrors()->AddError(kChromeRootConstraintsFailed);
+      }
+    }
+  }
+#endif
 
   // Check extra constraints that aren't encoded in the certificates themselves.
   void CheckExtraConstraints(const bssl::ParsedCertificateList& certs,
@@ -493,14 +603,15 @@ class PathBuilderDelegateImpl : public bssl::SimplePathBuilderDelegate {
     return NoRevocationChecking();
   }
 
-  // Returns true if |path| chains to an EV root, and the chain conforms to one
-  // of its EV policy OIDs. When building paths all candidate EV policy OIDs
-  // were requested, so it is just a matter of testing each of the policies the
-  // chain conforms to.
+  // Returns true if |path| chains to an EV root, and the chain conforms to
+  // one of its EV policy OIDs. When building paths all candidate EV policy
+  // OIDs were requested, so it is just a matter of testing each of the
+  // policies the chain conforms to.
   bool ConformsToEVPolicy(const bssl::CertPathBuilderResultPath* path) {
     const bssl::ParsedCertificate* root = path->GetTrustedCert();
-    if (!root)
+    if (!root) {
       return false;
+    }
 
     SHA256HashValue root_fingerprint;
     crypto::SHA256HashString(root->der_cert().AsStringView(),
@@ -691,7 +802,7 @@ void AddIntermediatesToIssuerSource(X509Certificate* x509_cert,
     bssl::CertErrors errors;
     std::shared_ptr<const bssl::ParsedCertificate> cert =
         ParseCertificateFromBuffer(intermediate.get(), &errors);
-    // TODO(crbug.com/634484): this duplicates the logging of the input chain
+    // TODO(crbug.com/40479281): this duplicates the logging of the input chain
     // maybe should only log if there is a parse error/warning?
     net_log.AddEvent(NetLogEventType::CERT_VERIFY_PROC_INPUT_CERT, [&] {
       return NetLogCertParams(intermediate.get(), errors);
@@ -758,7 +869,8 @@ void MapPathBuilderErrorsToCertStatus(const bssl::CertPathErrors& errors,
       errors.ContainsError(bssl::cert_errors::kNoIssuersFound) ||
       errors.ContainsError(bssl::cert_errors::kSubjectDoesNotMatchIssuer) ||
       errors.ContainsError(bssl::cert_errors::kDeadlineExceeded) ||
-      errors.ContainsError(bssl::cert_errors::kIterationLimitExceeded)) {
+      errors.ContainsError(bssl::cert_errors::kIterationLimitExceeded) ||
+      errors.ContainsError(kChromeRootConstraintsFailed)) {
     *cert_status |= CERT_STATUS_AUTHORITY_INVALID;
   }
 
@@ -839,7 +951,7 @@ bssl::CertPathBuilder::Result TryBuildPath(
 
   if (verification_type == VerificationType::kEV) {
     GetEVPolicyOids(ev_metadata, target.get(), &user_initial_policy_set);
-    // TODO(crbug.com/634484): netlog user_initial_policy_set.
+    // TODO(crbug.com/40479281): netlog user_initial_policy_set.
   } else {
     user_initial_policy_set = {bssl::der::Input(bssl::kAnyPolicyOid)};
   }
@@ -864,7 +976,7 @@ bssl::CertPathBuilder::Result TryBuildPath(
   path_builder.AddCertIssuerSource(intermediates);
 
   // Allow the path builder to discover intermediates through AIA fetching.
-  // TODO(crbug.com/634484): hook up netlog to AIA.
+  // TODO(crbug.com/40479281): hook up netlog to AIA.
   if (!(flags & CertVerifyProc::VERIFY_DISABLE_NETWORK_FETCHES)) {
     if (net_fetcher) {
       aia_cert_issuer_source.emplace(net_fetcher);
@@ -874,12 +986,7 @@ bssl::CertPathBuilder::Result TryBuildPath(
     }
   }
 
-  if (base::FeatureList::IsEnabled(
-          features::kNewCertPathBuilderIterationLimit)) {
-    path_builder.SetIterationLimit(kPathBuilderIterationLimitNew);
-  } else {
-    path_builder.SetIterationLimit(kPathBuilderIterationLimit);
-  }
+  path_builder.SetIterationLimit(kPathBuilderIterationLimit);
 
   return path_builder.Run();
 }
@@ -895,7 +1002,7 @@ int AssignVerifyResult(X509Certificate* input_cert,
       result.GetBestPathPossiblyInvalid();
 
   if (!best_path_possibly_invalid) {
-    // TODO(crbug.com/634443): What errors to communicate? Maybe the path
+    // TODO(crbug.com/41267838): What errors to communicate? Maybe the path
     // builder should always return some partial path (even if just containing
     // the target), then there is a bssl::CertErrors to test.
     verify_result->cert_status |= CERT_STATUS_AUTHORITY_INVALID;
@@ -907,22 +1014,12 @@ int AssignVerifyResult(X509Certificate* input_cert,
 
   AppendPublicKeyHashes(partial_path, &verify_result->public_key_hashes);
 
-  for (auto it = verify_result->public_key_hashes.rbegin();
-       it != verify_result->public_key_hashes.rend() &&
-       !verify_result->is_issued_by_known_root;
-       ++it) {
-    verify_result->is_issued_by_known_root =
-        GetNetTrustAnchorHistogramIdForSPKI(*it) != 0;
-  }
-
   bool path_is_valid = partial_path.IsValid();
 
   const bssl::ParsedCertificate* trusted_cert = partial_path.GetTrustedCert();
   if (trusted_cert) {
-    if (!verify_result->is_issued_by_known_root) {
-      verify_result->is_issued_by_known_root =
-          trust_store->IsKnownRoot(trusted_cert);
-    }
+    verify_result->is_issued_by_known_root =
+        trust_store->IsKnownRoot(trusted_cert);
 
     verify_result->is_issued_by_additional_trust_anchor =
         trust_store->IsAdditionalTrustAnchor(trusted_cert);
@@ -1026,7 +1123,7 @@ int CertVerifyProcBuiltin::VerifyInternal(X509Certificate* input_cert,
   }
 #endif
 
-  // TODO(crbug.com/1477317): Netlog extra configuration information stored
+  // TODO(crbug.com/40928765): Netlog extra configuration information stored
   // inside CertVerifyProcBuiltin (e.g. certs in additional_trust_store and
   // system trust store)
 
@@ -1036,7 +1133,7 @@ int CertVerifyProcBuiltin::VerifyInternal(X509Certificate* input_cert,
     bssl::CertErrors parsing_errors;
     target =
         ParseCertificateFromBuffer(input_cert->cert_buffer(), &parsing_errors);
-    // TODO(crbug.com/634484): this duplicates the logging of the input chain
+    // TODO(crbug.com/40479281): this duplicates the logging of the input chain
     // maybe should only log if there is a parse error/warning?
     net_log.AddEvent(NetLogEventType::CERT_VERIFY_PROC_TARGET_CERT, [&] {
       return NetLogCertParams(input_cert->cert_buffer(), parsing_errors);

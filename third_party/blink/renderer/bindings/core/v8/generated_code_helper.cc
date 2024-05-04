@@ -96,7 +96,8 @@ void ExceptionToRejectPromiseScope::ConvertExceptionToRejectPromise() {
   // are created in the relevant realm of the context object.
   ScriptState* script_state = ScriptState::ForCurrentRealm(info_);
   V8SetReturnValue(
-      info_, ScriptPromise::Reject(script_state, exception_state_).V8Value());
+      info_,
+      ScriptPromiseUntyped::Reject(script_state, exception_state_).V8Value());
 }
 
 namespace bindings {
@@ -119,8 +120,6 @@ void SetupIDLInterfaceTemplate(
   prototype_template->Set(
       v8::Symbol::GetToStringTag(isolate), class_string,
       static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontEnum));
-
-  instance_template->SetInternalFieldCount(kV8DefaultWrapperInternalFieldCount);
 }
 
 void SetupIDLNamespaceTemplate(
@@ -151,8 +150,6 @@ void SetupIDLObservableArrayBackingListTemplate(
     v8::Local<v8::FunctionTemplate> interface_template) {
   interface_template->SetClassName(
       V8AtomicString(isolate, wrapper_type_info->interface_name));
-
-  instance_template->SetInternalFieldCount(kV8DefaultWrapperInternalFieldCount);
 }
 
 void SetupIDLIteratorTemplate(
@@ -195,8 +192,6 @@ void SetupIDLIteratorTemplate(
   prototype_template->Set(
       v8::Symbol::GetToStringTag(isolate), v8_class_string,
       static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontEnum));
-
-  instance_template->SetInternalFieldCount(kV8DefaultWrapperInternalFieldCount);
 }
 
 std::optional<size_t> FindIndexInEnumStringTable(
@@ -321,8 +316,6 @@ v8::MaybeLocal<v8::Value> CreateLegacyFactoryFunctionFunction(
             .As<v8::FunctionTemplate>();
     function_template->Inherit(interface_template);
     function_template->SetClassName(V8AtomicString(isolate, func_name));
-    function_template->InstanceTemplate()->SetInternalFieldCount(
-        kV8DefaultWrapperInternalFieldCount);
     per_isolate_data->AddV8Template(world, callback_key, function_template);
   }
 
@@ -406,7 +399,7 @@ void PerformAttributeSetCEReactionsReflect(
 
   CEReactionsScope ce_reactions_scope;
 
-  Element* blink_receiver = V8Element::ToWrappableUnsafe(info.This());
+  Element* blink_receiver = V8Element::ToWrappableUnsafe(isolate, info.This());
   auto&& arg_value = NativeValueTraits<IDLType>::NativeValue(isolate, info[0],
                                                              exception_state);
   if (UNLIKELY(exception_state.HadException()))

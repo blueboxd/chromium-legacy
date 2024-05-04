@@ -44,6 +44,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "components/flags_ui/pref_service_flags_storage.h"
 #include "components/metrics/android_metrics_helper.h"
+#include "components/performance_manager/public/performance_manager.h"
 #include "components/policy/core/common/management/management_service.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -78,7 +79,7 @@
 #include "chrome/browser/flags/android/chrome_session_state.h"
 #endif  // BUILDFLAG(IS_ANDROID)
 
-// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
+// TODO(crbug.com/40118868): Revisit the macro expression once build flag switch
 // of lacros-chrome is complete.
 #if defined(__GLIBC__) && (BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS))
 #include <gnu/libc-version.h>
@@ -93,7 +94,6 @@
 
 #include "base/files/file_path.h"
 #include "base/path_service.h"
-#include "base/win/base_win_buildflags.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/windows_version.h"
@@ -137,8 +137,8 @@ constexpr char kUnexportableKeysKeychainAccessGroup[] =
 
 void RecordMemoryMetrics();
 
-// Gets the delay for logging memory related metrics for testing.
-std::optional<base::TimeDelta> GetDelayForNextMemoryLogTest() {
+// Gets the delay for logging memory related metrics. Minimum is 1 second.
+base::TimeDelta GetDelayForNextMemoryLogTest() {
   int test_delay_in_minutes;
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
@@ -146,24 +146,28 @@ std::optional<base::TimeDelta> GetDelayForNextMemoryLogTest() {
       base::StringToInt(command_line->GetSwitchValueASCII(
                             switches::kTestMemoryLogDelayInMinutes),
                         &test_delay_in_minutes)) {
-    return base::Minutes(test_delay_in_minutes);
+    // Setting --test-memory-log-delay-in-minutes=0 is useful for testing the
+    // feature, but zero delay tends to overwhelm the system.
+    return test_delay_in_minutes <= 0 ? base::Seconds(1)
+                                      : base::Minutes(test_delay_in_minutes);
   }
-  return std::nullopt;
+  return memory_instrumentation::GetDelayForNextMemoryLog();
 }
 
 // Records memory metrics after a delay.
 void RecordMemoryMetricsAfterDelay() {
   content::GetUIThreadTaskRunner({})->PostDelayedTask(
       FROM_HERE, base::BindOnce(&RecordMemoryMetrics),
-      GetDelayForNextMemoryLogTest().value_or(
-          memory_instrumentation::GetDelayForNextMemoryLog()));
+      GetDelayForNextMemoryLogTest());
 }
 
-// Records memory metrics, and then triggers memory colleciton after a delay.
+// Records memory metrics, and then triggers memory collection after a delay.
 void RecordMemoryMetrics() {
   scoped_refptr<ProcessMemoryMetricsEmitter> emitter(
       new ProcessMemoryMetricsEmitter);
   emitter->FetchAndEmitProcessMemoryMetrics();
+
+  performance_manager::PerformanceManager::RecordMemoryMetrics();
 
   RecordMemoryMetricsAfterDelay();
 }
@@ -365,7 +369,7 @@ enum class UmaLinuxDistro {
   kMaxValue = kZorin,
 };
 
-enum UMALinuxGlibcVersion {
+enum UMALinuxGlibcVersion : uint32_t {
   UMA_LINUX_GLIBC_NOT_PARSEABLE,
   UMA_LINUX_GLIBC_UNKNOWN,
   UMA_LINUX_GLIBC_2_11,
@@ -702,7 +706,7 @@ void RecordLinuxDistro() {
 #endif  // BUILDFLAG(IS_LINUX)
 
 void RecordLinuxGlibcVersion() {
-// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
+// TODO(crbug.com/40118868): Revisit the macro expression once build flag switch
 // of lacros-chrome is complete.
 #if defined(__GLIBC__) && (BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS))
   base::Version version(gnu_get_libc_version());
@@ -744,7 +748,7 @@ void OnIsPinnedToTaskbarResult(bool succeeded, bool is_pinned_to_taskbar) {
   // If Chrome is not pinned to taskbar, clear the recording that the installer
   // pinned Chrome to the taskbar, so that if the user pins Chrome back to the
   // taskbar, we don't count launches as coming from an installer-pinned
-  // shortcut.  TODO(https://crbug.com/1353953): We currently only check if
+  // shortcut.  TODO(crbug.com/40235395): We currently only check if
   // Chrome is pinned to the taskbar 1 out every 100 launches, which makes this
   // less meaningful, so if keeping track of whether the installer pinned Chrome
   // to the taskbar is important, we need to deal with that.
@@ -800,7 +804,7 @@ bool IsParallelDllLoadingEnabled() {
 // process.
 void RecordAppCompatMetrics() {
   HMODULE mod = ::GetModuleHandleW(L"AcLayers.dll");
-  base::UmaHistogramBoolean("Windows.AcLayersLoaded", mod ? true : false);
+  base::UmaHistogramBoolean("Windows.AcLayersLoaded", !!mod);
 }
 
 #endif  // BUILDFLAG(IS_WIN)
@@ -971,7 +975,6 @@ void ChromeBrowserMainExtraPartsMetrics::PreBrowserStart() {
 
   // Records whether or not the Segment heap is in use.
 #if BUILDFLAG(IS_WIN)
-
   if (base::win::GetVersion() >= base::win::Version::WIN10_20H1) {
     ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial("WinSegmentHeap",
 #if BUILDFLAG(ENABLE_SEGMENT_HEAP)
@@ -984,17 +987,6 @@ void ChromeBrowserMainExtraPartsMetrics::PreBrowserStart() {
     ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial("WinSegmentHeap",
                                                               "NotSupported");
   }
-
-  // Records whether or not CFG indirect call dispatch guards are present
-  // or not.
-  ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial("WinCFG",
-#if BUILDFLAG(WIN_ENABLE_CFG_GUARDS)
-                                                            "Enabled"
-#else
-                                                            "Disabled"
-#endif
-  );
-
 #endif  // BUILDFLAG(IS_WIN)
 
   // Register synthetic Finch trials proposed by PartitionAlloc.

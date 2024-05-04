@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <clocale>
 #include <limits>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -19,7 +20,6 @@
 #include "base/logging.h"
 #include "base/memory/raw_ptr.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
@@ -2152,7 +2152,7 @@ void TestRunnerBindings::CopyImageThen(int x,
   GetWebFrame()->CopyImageAtForTesting(gfx::Point(x, y));
   auto sequence_number_after = sequence_number_before;
   while (sequence_number_before.value() == sequence_number_after.value()) {
-    // TODO(crbug.com/872076): Ideally we would CHECK here that the mojo call
+    // TODO(crbug.com/40588468): Ideally we would CHECK here that the mojo call
     // succeeded, but this crashes under some circumstances (crbug.com/1232810).
     remote_clipboard->GetSequenceNumber(ui::ClipboardBuffer::kCopyPaste,
                                         &sequence_number_after);
@@ -2781,15 +2781,15 @@ static std::string GetPageRangesStringFromMetadata(
 printing::PageRanges TestRunner::GetPrintingPageRanges(
     blink::WebLocalFrame* frame) const {
   const std::string page_ranges_string = GetPageRangesStringFromMetadata(frame);
-  const std::vector<base::StringPiece> range_strings =
+  const std::vector<std::string_view> range_strings =
       base::SplitStringPiece(page_ranges_string, ",", base::TRIM_WHITESPACE,
                              base::SPLIT_WANT_NONEMPTY);
   printing::PageRanges result;
 
-  for (const base::StringPiece& range_string : range_strings) {
+  for (std::string_view range_string : range_strings) {
     // The format for each range is "<int> | <int>? - <int>?" where the page
     // numbers are 1-indexed.
-    const std::vector<base::StringPiece> page_strings = base::SplitStringPiece(
+    const std::vector<std::string_view> page_strings = base::SplitStringPiece(
         range_string, "-", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
     bool invalid = false;
 

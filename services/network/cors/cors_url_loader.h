@@ -31,6 +31,9 @@
 #include "url/origin.h"
 
 namespace network {
+namespace mojom {
+enum class SharedDictionaryError : int32_t;
+}  // namespace mojom
 
 class URLLoaderFactory;
 class NetworkContext;
@@ -63,7 +66,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoader
       int32_t request_id,
       uint32_t options,
       DeleteCallback delete_callback,
-      const ResourceRequest& resource_request,
+      ResourceRequest resource_request,
       bool ignore_isolated_world_origin,
       bool skip_cors_enabled_scheme_check,
       mojo::PendingRemote<mojom::URLLoaderClient> client,
@@ -117,6 +120,11 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoader
   void OnTransferSizeUpdated(int32_t transfer_size_diff) override;
   void OnComplete(const URLLoaderCompletionStatus& status) override;
 
+  // Cancel the request because network revocation was triggered.
+  void CancelRequestIfNonceMatchesAndUrlNotExempted(
+      const base::UnguessableToken& nonce,
+      const std::set<GURL>& exemptions);
+
   static network::mojom::FetchResponseType CalculateResponseTaintingForTesting(
       const GURL& url,
       mojom::RequestMode request_mode,
@@ -158,6 +166,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoader
   // Reports an ORB error for `request_` to DevTools, if possible.
   void ReportOrbErrorToDevTools();
 
+  // Reports an SharedDictionaryError for `request_` to DevTools, if possible.
+  void MaybeReportSharedDictionaryErrorToDevTools(
+      mojom::SharedDictionaryError error);
+
   // Handles OnComplete() callback.
   void HandleComplete(URLLoaderCompletionStatus status);
 
@@ -186,18 +198,13 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoader
   // Returns a clone of the value returned by `GetClientSecurityState()`.
   mojom::ClientSecurityStatePtr CloneClientSecurityState() const;
 
-  // TODO(crbug.com/1478868): This is an interim method only for AFP block list
-  // experiment. This method should not be used for other use cases. This will
-  // be removed when AFP block list logic is migrated to subresource filter.
-  bool ShouldBlockRequestForAfpExperiment(GURL request_url);
-
   // Returns whether preflight errors due exclusively to Private Network Access
   // checks should be ignored.
   //
   // This is used to soft-launch Private Network Access preflights: we send
   // preflights but do not require them to succeed.
   //
-  // TODO(https://crbug.com/1268378): Remove this once preflight enforcement
+  // TODO(crbug.com/40204695): Remove this once preflight enforcement
   // is enabled.
   bool ShouldIgnorePrivateNetworkAccessErrors(
       mojom::IPAddressSpace target_address_space) const;
@@ -207,7 +214,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoader
   // This is used to soft-launch Private Network Access preflights: we send
   // preflights but do not require them to succeed.
   //
-  // TODO(https://crbug.com/1268378): Remove this once preflight enforcement
+  // TODO(crbug.com/40204695): Remove this once preflight enforcement
   // is enabled.
   PrivateNetworkAccessPreflightBehavior
   GetPrivateNetworkAccessPreflightBehavior(
@@ -220,6 +227,12 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoader
   static std::optional<std::string> GetHeaderString(
       const mojom::URLResponseHead& response,
       const std::string& header_name);
+
+  // Parses the "Shared-Storage-Cross-Origin-Worklet-Allowed" response header
+  // into a Structured Fields Boolean, and returns the result. Returns false if
+  // the header does not exist or if the parsing fails.
+  static bool CheckSharedStorageCrossOriginWorkletAllowedResponseHeader(
+      const mojom::URLResponseHead& response);
 
   void OnSharedDictionaryWritten(bool success);
 
@@ -338,7 +351,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoader
   // INVARIANT: if this is true, then
   // `ShouldIgnorePrivateNetworkAccessErrors()` is also true.
   //
-  // TODO(https://crbug.com/1268378): Remove this along with
+  // TODO(crbug.com/40204695): Remove this along with
   // `ShouldIgnorePrivateNetworkAccessErrors()`.
   bool sending_pna_only_warning_preflight_ = false;
 

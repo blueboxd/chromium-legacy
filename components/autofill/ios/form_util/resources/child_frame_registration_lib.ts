@@ -52,13 +52,13 @@ function processChildFrameMessage(payload: MessageEvent): void {
   }
   const command: string|undefined = payload.data?.command;
   if (command && command == REGISTER_AS_CHILD_FRAME_COMMAND) {
-    // TODO(crbug.com/1440471): this should send an Ack (see below).
+    // TODO(crbug.com/40266126): this should send an Ack (see below).
     const remoteId = payload.data?.remoteFrameId;
     if (typeof remoteId == 'string') {
       registerSelfWithRemoteToken(remoteId);
     }
   }
-  // TODO(crbug.com/1440471): This should accept an Ack (see below).
+  // TODO(crbug.com/40266126): This should accept an Ack (see below).
 }
 
 /**
@@ -74,7 +74,7 @@ function processChildFrameMessage(payload: MessageEvent): void {
 function registerChildFrame(frame: HTMLIFrameElement): string {
   const remoteFrameId: string = generateRandomId();
 
-  // TODO(crbug.com/1440471): Instead of a timeout, this should wait for an Ack
+  // TODO(crbug.com/40266126): Instead of a timeout, this should wait for an Ack
   // and resend until it gets one. The child frame may not yet be loaded.
   setTimeout(() => {
     if (frame.contentWindow) {
@@ -90,7 +90,7 @@ function registerChildFrame(frame: HTMLIFrameElement): string {
   return remoteFrameId;
 }
 
-// TODO(crbug.com/1430814): This is exposed via gCrWeb to enable use in
+// TODO(crbug.com/40263245): This is exposed via gCrWeb to enable use in
 // form_handlers.js. When that file is converted to TS, this can be removed.
 gCrWeb.child_frame_registration = {processChildFrameMessage};
 

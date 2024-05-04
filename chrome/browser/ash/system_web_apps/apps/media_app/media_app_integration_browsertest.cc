@@ -301,7 +301,7 @@ class NotificationWatcher : public NotificationDisplayService::Observer {
       : profile_(profile) {
     // Notifications only fire if the device is "online". Simulate that.
     network_portal_detector.SimulateDefaultNetworkState(
-        ash::NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE);
+        ash::NetworkPortalDetectorMixin::NetworkStatus::kOnline);
 
     NotificationDisplayService::GetForProfile(profile_)->AddObserver(this);
   }
@@ -660,7 +660,7 @@ bool isAppBarButtonOn(content::WebContents* app, const std::string& selector) {
     (async function isAppBarButtonOn() {
       const button =
           await getNode('$1', ['backlight-app-bar', 'backlight-app']);
-      return button.hasAttribute('toggled');
+      return button.hasAttribute('selected');
     })();
   )";
   return MediaAppUiBrowserTest::EvalJsInAppFrame(
@@ -777,7 +777,7 @@ IN_PROC_BROWSER_TEST_P(MediaAppIntegrationWithFilesAppTest,
 
   constexpr char kHasSaveDiscardButtons[] = R"(
     (async function hasSaveDiscardButtons() {
-      const discardButton = await getNode('ea-button[label="Discard edits"]',
+      const discardButton = await getNode('#DiscardEdits',
           ['backlight-app-bar', 'backlight-app']);
       const saveButton = await getNode('backlight-split-button[label="Save"]',
           ['backlight-app-bar', 'backlight-app']);
@@ -798,7 +798,7 @@ IN_PROC_BROWSER_TEST_P(MediaAppIntegrationWithFilesAppTest,
           ['backlight-crop-panel', 'backlight-image-handler']);
       rotateAntiClockwiseButton.click();
       const doneButton = await waitForNode(
-          'ea-button[label="Done"]', ['backlight-app-bar', 'backlight-app']);
+          '#Done', ['backlight-app-bar', 'backlight-app']);
       doneButton.click();
       await waitForNode('backlight-split-button[label="Save"]',
           ['backlight-app-bar', 'backlight-app']);
@@ -980,11 +980,6 @@ IN_PROC_BROWSER_TEST_P(MediaAppIntegrationTest, MediaAppEligibleOpenTask) {
   for (const auto& file_path : file_paths) {
     std::vector<file_manager::file_tasks::FullTaskDescriptor> result =
         file_manager::test::GetTasksForFile(profile(), file_path);
-
-    // Files SWA internal task "select" matches any file, we ignore it here.
-    std::erase_if(result, [](auto task) {
-      return task.task_descriptor.app_id == file_manager::kFileManagerSwaAppId;
-    });
 
     ASSERT_LT(0u, result.size());
     EXPECT_EQ(1u, result.size());

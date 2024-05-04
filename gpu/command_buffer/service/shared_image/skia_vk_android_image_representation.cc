@@ -9,7 +9,6 @@
 #include "components/viz/common/gpu/vulkan_context_provider.h"
 #include "components/viz/common/resources/shared_image_format_utils.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
-#include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/command_buffer/service/shared_image/shared_image_representation.h"
@@ -293,6 +292,11 @@ SkiaVkAndroidImageRepresentation::GetEndAccessState() {
   if (!vulkan_image_)
     return nullptr;
 
+  // `kSingleDeviceUsage` defines the set of usages for which only the Vulkan
+  // device from SharedContextState is used. If the SI has any usages outside
+  // this set (e.g., if it has any GLES2 usage, including
+  // RASTER_OVER_GLES2_ONLY), then it will be accessed beyond the Vulkan device
+  // from SharedContextState and hence does not have single-device usage.
   const uint32_t kSingleDeviceUsage =
       SHARED_IMAGE_USAGE_DISPLAY_READ | SHARED_IMAGE_USAGE_DISPLAY_WRITE |
       SHARED_IMAGE_USAGE_RASTER_READ | SHARED_IMAGE_USAGE_RASTER_WRITE |

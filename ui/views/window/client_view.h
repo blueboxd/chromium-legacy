@@ -61,7 +61,8 @@ class VIEWS_EXPORT ClientView : public View {
   virtual void UpdateWindowRoundedCorners(int corner_radius);
 
   // Overridden from View:
-  gfx::Size CalculatePreferredSize() const override;
+  gfx::Size CalculatePreferredSize(
+      const SizeBounds& available_size) const override;
   int GetHeightForWidth(int width) const override;
   gfx::Size GetMinimumSize() const override;
   gfx::Size GetMaximumSize() const override;
@@ -89,7 +90,7 @@ class VIEWS_EXPORT ClientView : public View {
   // pointed to by `contents_view_`, even though `contents_view_` was previously
   // a child view of `this`.
   //
-  // TODO(https://crbug.com/1475438): Fix that. Good luck!
+  // TODO(crbug.com/40279653): Fix that. Good luck!
   raw_ptr<View, DisableDanglingPtrDetection> contents_view_;
 };
 

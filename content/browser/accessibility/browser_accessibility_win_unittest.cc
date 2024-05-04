@@ -4,16 +4,15 @@
 
 #include "content/browser/accessibility/browser_accessibility_win.h"
 
-#include <memory>
-#include <string>
-#include <vector>
-
 #include <objbase.h>
+
 #include <stdint.h>
 #include <wrl/client.h>
 
 #include <memory>
+#include <string>
 #include <utility>
+#include <vector>
 
 #include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
@@ -23,12 +22,12 @@
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/accessibility/browser_accessibility_manager_win.h"
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
-#include "content/browser/accessibility/test_browser_accessibility_delegate.h"
 #include "content/browser/renderer_host/legacy_render_widget_host_win.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/platform/ax_platform_node_win.h"
+#include "ui/accessibility/platform/test_ax_platform_tree_manager_delegate.h"
 #include "ui/base/win/atl_module.h"
 
 namespace content {
@@ -106,7 +105,7 @@ class BrowserAccessibilityWinTest : public ::testing::Test {
   ~BrowserAccessibilityWinTest() override;
 
  protected:
-  std::unique_ptr<TestBrowserAccessibilityDelegate>
+  std::unique_ptr<ui::TestAXPlatformTreeManagerDelegate>
       test_browser_accessibility_delegate_;
 
  private:
@@ -122,7 +121,7 @@ BrowserAccessibilityWinTest::~BrowserAccessibilityWinTest() {}
 void BrowserAccessibilityWinTest::SetUp() {
   ui::win::CreateATLModuleIfNeeded();
   test_browser_accessibility_delegate_ =
-      std::make_unique<TestBrowserAccessibilityDelegate>();
+      std::make_unique<ui::TestAXPlatformTreeManagerDelegate>();
 }
 
 // Actual tests ---------------------------------------------------------------
@@ -240,7 +239,7 @@ TEST_F(BrowserAccessibilityWinTest, TestChildrenChange) {
   text2.id = 2;
   text2.role = ax::mojom::Role::kStaticText;
   text2.SetName("new text");
-  AXEventNotificationDetails event_bundle;
+  ui::AXUpdatesAndEvents event_bundle;
   event_bundle.updates.resize(1);
   event_bundle.updates[0].nodes.push_back(text2);
   ASSERT_TRUE(manager->OnAccessibilityEvents(event_bundle));
@@ -303,7 +302,7 @@ TEST_F(BrowserAccessibilityWinTest, TestChildrenChangeNoLeaks) {
   // Notify the BrowserAccessibilityManager that the div node and its children
   // were removed and ensure that only one BrowserAccessibility instance exists.
   root.child_ids.clear();
-  AXEventNotificationDetails event_bundle;
+  ui::AXUpdatesAndEvents event_bundle;
   event_bundle.updates.resize(1);
   event_bundle.updates[0].nodes.push_back(root);
   ASSERT_TRUE(manager->OnAccessibilityEvents(event_bundle));
@@ -1017,7 +1016,7 @@ TEST_F(BrowserAccessibilityWinTest, TestCreateEmptyDocument) {
 
   // Verify the root is as we expect by default.
   BrowserAccessibility* root = manager->GetBrowserAccessibilityRoot();
-  EXPECT_EQ(1, root->GetId());
+  EXPECT_EQ(ui::kInitialEmptyDocumentRootNodeID, root->GetId());
   EXPECT_EQ(ax::mojom::Role::kRootWebArea, root->GetRole());
   EXPECT_EQ(ax::mojom::State::kNone, root->GetState());
 
@@ -1035,7 +1034,7 @@ TEST_F(BrowserAccessibilityWinTest, TestCreateEmptyDocument) {
   tree1_2.AddStringAttribute(ax::mojom::StringAttribute::kInputType, "text");
 
   // Process a load complete.
-  AXEventNotificationDetails event_bundle;
+  ui::AXUpdatesAndEvents event_bundle;
   event_bundle.updates.resize(1);
   event_bundle.updates[0].node_id_to_clear = root->GetId();
   event_bundle.updates[0].root_id = tree1_1.id;
@@ -1043,9 +1042,8 @@ TEST_F(BrowserAccessibilityWinTest, TestCreateEmptyDocument) {
   event_bundle.updates[0].nodes.push_back(tree1_2);
   ASSERT_TRUE(manager->OnAccessibilityEvents(event_bundle));
 
-  // The root should have been cleared,not replaced, because in the former case
-  // this could cause multiple focus and load complete events.
-  EXPECT_EQ(root, manager->GetBrowserAccessibilityRoot());
+  // The root for the initial empty document is replaced.
+  root = manager->GetBrowserAccessibilityRoot();
 
   BrowserAccessibility* acc1_2 = manager->GetFromID(2);
   EXPECT_EQ(ax::mojom::Role::kTextField, acc1_2->GetRole());
@@ -1099,7 +1097,7 @@ TEST_F(BrowserAccessibilityWinTest, EmptyDocHasUniqueIdWin) {
 
   // Verify the root is as we expect by default.
   BrowserAccessibility* root = manager->GetBrowserAccessibilityRoot();
-  EXPECT_EQ(1, root->GetId());
+  EXPECT_EQ(ui::kInitialEmptyDocumentRootNodeID, root->GetId());
   EXPECT_EQ(ax::mojom::Role::kRootWebArea, root->GetRole());
   EXPECT_EQ(ax::mojom::State::kNone, root->GetState());
 
@@ -3169,7 +3167,7 @@ TEST_F(BrowserAccessibilityWinTest, AccChildOnlyReturnsDescendants) {
                       child_unique_id_variant, &result));
 }
 
-// TODO(crbug.com/929563): Disabled due to flakiness.
+// TODO(crbug.com/41439880): Disabled due to flakiness.
 TEST_F(BrowserAccessibilityWinTest, DISABLED_TestIAccessible2Relations) {
   ui::AXNodeData root;
   root.id = 1;
@@ -3287,7 +3285,7 @@ TEST_F(BrowserAccessibilityWinTest, DISABLED_TestIAccessible2Relations) {
   std::vector<int32_t> labelledby_ids = {3};
   child1.AddIntListAttribute(ax::mojom::IntListAttribute::kLabelledbyIds,
                              labelledby_ids);
-  AXEventNotificationDetails event_bundle;
+  ui::AXUpdatesAndEvents event_bundle;
   event_bundle.updates.resize(1);
   event_bundle.updates[0].nodes.push_back(child1);
   ASSERT_TRUE(manager->OnAccessibilityEvents(event_bundle));

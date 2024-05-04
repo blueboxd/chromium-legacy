@@ -54,7 +54,6 @@ import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbarC
 import org.chromium.chrome.browser.dependency_injection.ChromeActivityCommonsModule;
 import org.chromium.chrome.browser.dependency_injection.ModuleFactoryOverrides;
 import org.chromium.chrome.browser.flags.ActivityType;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager.Observer;
 import org.chromium.chrome.browser.fullscreen.FullscreenOptions;
@@ -87,9 +86,6 @@ import org.chromium.components.embedder_support.delegate.WebContentsDelegateAndr
  */
 public abstract class BaseCustomTabActivity extends ChromeActivity<BaseCustomTabActivityComponent> {
     protected static Integer sOverrideCoreCountForTesting;
-
-    // Fallback study name used for experiments ids.
-    public static final String GSA_FALLBACK_STUDY_NAME = "GsaExperiments";
 
     protected BaseCustomTabRootUiCoordinator mBaseCustomTabRootUiCoordinator;
     protected BrowserServicesIntentDataProvider mIntentDataProvider;
@@ -385,18 +381,13 @@ public abstract class BaseCustomTabActivity extends ChromeActivity<BaseCustomTab
         super.performPreInflationStartup();
 
         if (mIntentDataProvider.isPartialCustomTab()) {
-            if (ChromeFeatureList.sCctResizableSideSheet.isEnabled()) {
-                @AnimRes
-                int startAnimResId =
-                        PartialCustomTabDisplayManager.getStartAnimationOverride(
-                                this,
-                                getIntentDataProvider(),
-                                getIntentDataProvider().getAnimationEnterRes());
-                overridePendingTransition(startAnimResId, R.anim.no_anim);
-            } else if (getIntentDataProvider().isPartialHeightCustomTab()) {
-                // Take care of only the bottom sheet animation if side sheet is not enabled.
-                overridePendingTransition(R.anim.slide_in_up, R.anim.no_anim);
-            }
+            @AnimRes
+            int startAnimResId =
+                    PartialCustomTabDisplayManager.getStartAnimationOverride(
+                            this,
+                            getIntentDataProvider(),
+                            getIntentDataProvider().getAnimationEnterRes());
+            overridePendingTransition(startAnimResId, R.anim.no_anim);
         }
 
         WebappExtras webappExtras = getIntentDataProvider().getWebappExtras();
@@ -469,8 +460,15 @@ public abstract class BaseCustomTabActivity extends ChromeActivity<BaseCustomTab
     @Override
     public void finishNativeInitialization() {
         if (isTaskRoot()) {
-            UsageStatsService.createPageViewObserverIfEnabled(
-                    this, getActivityTabProvider(), getTabContentManagerSupplier());
+            getProfileProviderSupplier()
+                    .runSyncOrOnAvailable(
+                            (profileProvider) -> {
+                                UsageStatsService.createPageViewObserverIfEnabled(
+                                        this,
+                                        profileProvider.getOriginalProfile(),
+                                        getActivityTabProvider(),
+                                        getTabContentManagerSupplier());
+                            });
         }
         if (!getIntentDataProvider().isWebappOrWebApkActivity()) {
             mTabController.finishNativeInitialization();
@@ -547,7 +545,7 @@ public abstract class BaseCustomTabActivity extends ChromeActivity<BaseCustomTab
                 isMenuIconAtStart,
                 mBaseCustomTabRootUiCoordinator::isPageInsightsHubEnabled,
                 mBaseCustomTabRootUiCoordinator.getReadAloudControllerSupplier(),
-                mIntentDataProvider.getClientPackageName() != null);
+                mIntentDataProvider.getClientPackageNameIdentitySharing() != null);
     }
 
     @Override
@@ -772,8 +770,7 @@ public abstract class BaseCustomTabActivity extends ChromeActivity<BaseCustomTab
         if (experimentIds != null) {
             // When ids are set through the intent, we don't want them to override the existing ids.
             boolean override = false;
-            UmaSessionStats.registerExternalExperiment(
-                    GSA_FALLBACK_STUDY_NAME, experimentIds, override);
+            UmaSessionStats.registerExternalExperiment(experimentIds, override);
         }
         super.maybePreconnect();
     }

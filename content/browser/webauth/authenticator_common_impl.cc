@@ -7,6 +7,7 @@
 #include <array>
 #include <optional>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -17,6 +18,7 @@
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
@@ -66,7 +68,6 @@
 #endif
 
 #if BUILDFLAG(IS_WIN)
-#include "device/fido/features.h"
 #include "device/fido/win/authenticator.h"
 #include "device/fido/win/webauthn_api.h"
 #endif
@@ -109,8 +110,8 @@ WebAuthenticationDelegate* GetWebAuthenticationDelegate() {
 std::string Base64UrlEncode(const base::span<const uint8_t> input) {
   std::string ret;
   base::Base64UrlEncode(
-      base::StringPiece(reinterpret_cast<const char*>(input.data()),
-                        input.size()),
+      std::string_view(reinterpret_cast<const char*>(input.data()),
+                       input.size()),
       base::Base64UrlEncodePolicy::OMIT_PADDING, &ret);
   return ret;
 }
@@ -161,12 +162,12 @@ bool AddTransportsFromCertificate(
   static constexpr uint8_t kTransportTypesOID[] = {
       0x2b, 0x06, 0x01, 0x04, 0x01, 0x82, 0xe5, 0x1c, 0x02, 0x01, 0x01};
   bool present, critical;
-  base::StringPiece contents;
+  std::string_view contents;
   if (!net::asn1::ExtractExtensionFromDERCert(
-          base::StringPiece(reinterpret_cast<const char*>(der_cert.data()),
-                            der_cert.size()),
-          base::StringPiece(reinterpret_cast<const char*>(kTransportTypesOID),
-                            sizeof(kTransportTypesOID)),
+          std::string_view(reinterpret_cast<const char*>(der_cert.data()),
+                           der_cert.size()),
+          std::string_view(reinterpret_cast<const char*>(kTransportTypesOID),
+                           sizeof(kTransportTypesOID)),
           &present, &critical, &contents) ||
       !present) {
     return false;
@@ -249,18 +250,15 @@ bool UsesDiscoverableCreds(const device::CtapGetAssertionRequest& request) {
 base::flat_set<device::FidoTransportProtocol> GetWebAuthnTransports(
     RenderFrameHost* render_frame_host,
     device::FidoDiscoveryFactory* discovery_factory,
-    bool uses_discoverable_creds) {
+    bool uses_discoverable_creds,
+    std::optional<bool> is_uvpaa_override) {
   base::flat_set<device::FidoTransportProtocol> transports;
   transports.insert(device::FidoTransportProtocol::kUsbHumanInterfaceDevice);
 
   // Only instantiate platform discovery if the embedder hasn't chosen to
   // override IsUserVerifyingPlatformAuthenticatorAvailable() to be false.
   // Chrome disables platform authenticators in Guest modes this way.
-  std::optional<bool> embedder_isuvpaa_override =
-      GetWebAuthenticationDelegate()
-          ->IsUserVerifyingPlatformAuthenticatorAvailableOverride(
-              render_frame_host);
-  if (!embedder_isuvpaa_override || *embedder_isuvpaa_override) {
+  if (!is_uvpaa_override || *is_uvpaa_override) {
     transports.insert(device::FidoTransportProtocol::kInternal);
   }
 
@@ -374,6 +372,26 @@ std::optional<device::CredProtectRequest> ProtectionPolicyToCredProtect(
               device::UserVerificationRequirement::kPreferred) {
         return device::CredProtectRequest::kUVRequired;
       }
+#if BUILDFLAG(IS_WIN)
+      // On Windows, if webauthn.dll is version two or below, rk=preferred
+      // cannot be expressed and will be mapped to rk=false. Some security keys
+      // have a bug where they'll return credProtect=1 when credProtect=2 is
+      // requested for non-discoverable credentials. Thus, for these versions
+      // of webauthn.dll, treat rk=preferred as rk=discouraged for the purposes
+      // of credProtect, because that's what will ultimately be sent to the
+      // security key.
+      //
+      // If a site explicitly requests a credProtect level, we'll still respect
+      // that because they are presumably going to check the response.
+      if (base::FeatureList::IsEnabled(
+              device::kWebAuthnCredProtectWin10BugWorkaround) &&
+          make_credential_options.resident_key ==
+              device::ResidentKeyRequirement::kPreferred &&
+          device::WinWebAuthnApi::GetDefault() &&
+          device::WinWebAuthnApi::GetDefault()->Version() < 3) {
+        return std::nullopt;
+      }
+#endif
       if (make_credential_options.resident_key !=
           device::ResidentKeyRequirement::kDiscouraged) {
         // Otherwise, kUVOrCredIDRequired is made the default unless
@@ -627,10 +645,9 @@ void AuthenticatorCommonImpl::StartMakeCredentialRequest(
       req_state_->caller_origin, req_state_->relying_party_id, RequestSource(),
       device::FidoRequestType::kMakeCredential,
       req_state_->make_credential_options->resident_key,
-      req_state_->ctap_make_credential_request->user_verification,
-      base::span<const device::CableDiscoveryData>(),
-      GetWebAuthenticationDelegate()->IsEnclaveAuthenticatorAvailable(
-          GetBrowserContext()),
+      req_state_->make_credential_options->user_verification,
+      req_state_->ctap_make_credential_request->user.name,
+      base::span<const device::CableDiscoveryData>(), enclave_available_,
       discovery_factory());
   SetHints(req_state_->request_delegate.get(), req_state_->hints);
 
@@ -640,7 +657,8 @@ void AuthenticatorCommonImpl::StartMakeCredentialRequest(
   base::flat_set<device::FidoTransportProtocol> transports =
       GetWebAuthnTransports(
           GetRenderFrameHost(), discovery_factory(),
-          UsesDiscoverableCreds(*req_state_->make_credential_options));
+          UsesDiscoverableCreds(*req_state_->make_credential_options),
+          is_uvpaa_override_);
 
   req_state_->request_handler =
       std::make_unique<device::MakeCredentialRequestHandler>(
@@ -682,9 +700,8 @@ void AuthenticatorCommonImpl::StartGetAssertionRequest(
       req_state_->caller_origin, req_state_->relying_party_id, RequestSource(),
       device::FidoRequestType::kGetAssertion,
       /*resident_key_requirement=*/std::nullopt,
-      req_state_->ctap_get_assertion_request->user_verification, cable_pairings,
-      GetWebAuthenticationDelegate()->IsEnclaveAuthenticatorAvailable(
-          GetBrowserContext()),
+      req_state_->ctap_get_assertion_request->user_verification,
+      /*user_name=*/std::nullopt, cable_pairings, enclave_available_,
       discovery_factory());
 #if BUILDFLAG(IS_CHROMEOS)
   discovery_factory()->set_get_assertion_request_for_legacy_credential_check(
@@ -695,7 +712,8 @@ void AuthenticatorCommonImpl::StartGetAssertionRequest(
   base::flat_set<device::FidoTransportProtocol> transports =
       GetWebAuthnTransports(
           GetRenderFrameHost(), discovery_factory(),
-          UsesDiscoverableCreds(*req_state_->ctap_get_assertion_request));
+          UsesDiscoverableCreds(*req_state_->ctap_get_assertion_request),
+          is_uvpaa_override_);
 
   auto request_handler = std::make_unique<device::GetAssertionRequestHandler>(
       discovery_factory(), transports, *req_state_->ctap_get_assertion_request,
@@ -749,7 +767,7 @@ void AuthenticatorCommonImpl::MakeCredential(
   req_state_->is_payment_request = options->is_payment_credential_creation;
   req_state_->hints.insert(options->hints.begin(), options->hints.end());
 
-  // TODO(crbug.com/1459443): remove this and everything else from
+  // TODO(crbug.com/40274309): remove this and everything else from
   // the CL that added it if this is unused by June 2024.
   if (options->timeout &&
       base::FeatureList::IsEnabled(device::kWebAuthnLinkingExperimentation) &&
@@ -989,8 +1007,7 @@ void AuthenticatorCommonImpl::ContinueMakeCredentialAfterRpIdCheck(
     req_state_->requested_extensions.insert(RequestExtension::kPRF);
     req_state_->ctap_make_credential_request->hmac_secret = true;
 
-    if (options->prf_input &&
-        base::FeatureList::IsEnabled(device::kWebAuthnPRFEvalDuringCreate)) {
+    if (options->prf_input) {
       std::optional<device::PRFInput> prf_input =
           ParsePRFInputForMakeCredential(options->prf_input);
       if (!prf_input) {
@@ -1044,6 +1061,27 @@ void AuthenticatorCommonImpl::ContinueMakeCredentialAfterRpIdCheck(
   req_state_->ctap_make_credential_request->attestation_preference =
       attestation;
 
+  GetWebAuthenticationDelegate()->IsEnclaveAuthenticatorAvailable(
+      GetBrowserContext(),
+      base::BindOnce(&AuthenticatorCommonImpl::
+                         ContinueMakeCredentialAfterEnclaveAvailabilityCheck,
+                     weak_factory_.GetWeakPtr()));
+}
+
+void AuthenticatorCommonImpl::
+    ContinueMakeCredentialAfterEnclaveAvailabilityCheck(bool available) {
+  enclave_available_ = available;
+  GetWebAuthenticationDelegate()
+      ->IsUserVerifyingPlatformAuthenticatorAvailableOverride(
+          GetRenderFrameHost(),
+          base::BindOnce(&AuthenticatorCommonImpl::
+                             ContinueMakeCredentialAfterIsUvpaaOverrideCheck,
+                         weak_factory_.GetWeakPtr()));
+}
+
+void AuthenticatorCommonImpl::ContinueMakeCredentialAfterIsUvpaaOverrideCheck(
+    std::optional<bool> is_uvpaa_override) {
+  is_uvpaa_override_ = is_uvpaa_override;
   StartMakeCredentialRequest(/*allow_skipping_pin_touch=*/true);
 }
 
@@ -1063,7 +1101,7 @@ void AuthenticatorCommonImpl::GetAssertion(
   req_state_->is_payment_request = !payment_options.is_null();
   req_state_->hints.insert(options->hints.begin(), options->hints.end());
 
-  // TODO(crbug.com/1459443): remove this and everything else from
+  // TODO(crbug.com/40274309): remove this and everything else from
   // the CL that added it if this is unused by June 2024.
   if (options->timeout &&
       base::FeatureList::IsEnabled(device::kWebAuthnLinkingExperimentation) &&
@@ -1078,7 +1116,7 @@ void AuthenticatorCommonImpl::GetAssertion(
     // These are magic values that a site can set to experiment with different
     // conditional UI behaviours.
     //
-    // TODO(crbug.com/1456525): remove this and everything else from
+    // TODO(crbug.com/40066138): remove this and everything else from
     // the CL that added it if this is unused by June 2024.
     switch (options->timeout->InMilliseconds()) {
       case 324441:
@@ -1334,7 +1372,27 @@ void AuthenticatorCommonImpl::ContinueGetAssertionAfterRpIdCheck(
       options->extensions->large_blob_read;
   req_state_->ctap_get_assertion_options->large_blob_write =
       options->extensions->large_blob_write;
+  GetWebAuthenticationDelegate()->IsEnclaveAuthenticatorAvailable(
+      GetBrowserContext(),
+      base::BindOnce(&AuthenticatorCommonImpl::
+                         ContinueGetAssertionAfterEnclaveAvailabilityCheck,
+                     weak_factory_.GetWeakPtr()));
+}
 
+void AuthenticatorCommonImpl::ContinueGetAssertionAfterEnclaveAvailabilityCheck(
+    bool available) {
+  enclave_available_ = available;
+  GetWebAuthenticationDelegate()
+      ->IsUserVerifyingPlatformAuthenticatorAvailableOverride(
+          GetRenderFrameHost(),
+          base::BindOnce(&AuthenticatorCommonImpl::
+                             ContinueGetAssertionAfterIsUvpaaOverrideCheck,
+                         weak_factory_.GetWeakPtr()));
+}
+
+void AuthenticatorCommonImpl::ContinueGetAssertionAfterIsUvpaaOverrideCheck(
+    std::optional<bool> is_uvpaa_override) {
+  is_uvpaa_override_ = is_uvpaa_override;
   StartGetAssertionRequest(/*allow_skipping_pin_touch=*/true);
 }
 
@@ -1353,10 +1411,18 @@ void AuthenticatorCommonImpl::IsUserVerifyingPlatformAuthenticatorAvailable(
   }
 
   // Check for a delegate override. Chrome overrides IsUVPAA() in Guest mode.
-  std::optional<bool> is_uvpaa_override =
-      GetWebAuthenticationDelegate()
-          ->IsUserVerifyingPlatformAuthenticatorAvailableOverride(
-              GetRenderFrameHost());
+  GetWebAuthenticationDelegate()
+      ->IsUserVerifyingPlatformAuthenticatorAvailableOverride(
+          GetRenderFrameHost(),
+          base::BindOnce(
+              &AuthenticatorCommonImpl::ContinueIsUvpaaAfterOverrideCheck,
+              weak_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void AuthenticatorCommonImpl::ContinueIsUvpaaAfterOverrideCheck(
+    blink::mojom::Authenticator::
+        IsUserVerifyingPlatformAuthenticatorAvailableCallback callback,
+    std::optional<bool> is_uvpaa_override) {
   if (is_uvpaa_override) {
     std::move(callback).Run(*is_uvpaa_override);
     return;
@@ -1391,12 +1457,24 @@ void AuthenticatorCommonImpl::IsConditionalMediationAvailable(
         callback) {
   // Conditional mediation is always supported if the virtual environment is
   // providing a platform authenticator.
-  std::optional<bool> embedder_isuvpaa_override =
-      GetWebAuthenticationDelegate()
-          ->IsUserVerifyingPlatformAuthenticatorAvailableOverride(
-              GetRenderFrameHost());
-  if (embedder_isuvpaa_override.has_value()) {
-    std::move(callback).Run(*embedder_isuvpaa_override);
+  GetWebAuthenticationDelegate()
+      ->IsUserVerifyingPlatformAuthenticatorAvailableOverride(
+          GetRenderFrameHost(),
+          base::BindOnce(
+              &AuthenticatorCommonImpl::
+                  ContinueIsConditionalMediationAvailableAfterOverrideCheck,
+              weak_factory_.GetWeakPtr(), std::move(caller_origin),
+              std::move(callback)));
+}
+
+void AuthenticatorCommonImpl::
+    ContinueIsConditionalMediationAvailableAfterOverrideCheck(
+        url::Origin caller_origin,
+        blink::mojom::Authenticator::IsConditionalMediationAvailableCallback
+            callback,
+        std::optional<bool> is_uvpaa_override) {
+  if (is_uvpaa_override.has_value()) {
+    std::move(callback).Run(*is_uvpaa_override);
     return;
   }
   // Conditional requests cannot be proxied, signal the feature as unavailable.
@@ -1884,7 +1962,7 @@ void AuthenticatorCommonImpl::BeginRequestTimeout(
                                           weak_factory_.GetWeakPtr()));
 }
 
-// TODO(crbug.com/814418): Add web tests to verify timeouts are
+// TODO(crbug.com/41371792): Add web tests to verify timeouts are
 // indistinguishable from NOT_ALLOWED_ERROR cases.
 void AuthenticatorCommonImpl::OnTimeout() {
   if (req_state_->awaiting_attestation_response) {
@@ -2001,12 +2079,12 @@ AuthenticatorCommonImpl::CreateMakeCredentialResponse(
     case AttestationErasureOption::kIncludeAttestation:
       break;
     case AttestationErasureOption::kEraseAttestationButIncludeAaguid:
-          response_data.attestation_object.EraseAttestationStatement(
-              device::AttestationObject::AAGUID::kInclude);
+      response_data.attestation_object.EraseAttestationStatement(
+          device::AttestationObject::AAGUID::kInclude);
       break;
     case AttestationErasureOption::kEraseAttestationAndAaguid:
-          response_data.attestation_object.EraseAttestationStatement(
-              device::AttestationObject::AAGUID::kErase);
+      response_data.attestation_object.EraseAttestationStatement(
+          device::AttestationObject::AAGUID::kErase);
       break;
   }
 

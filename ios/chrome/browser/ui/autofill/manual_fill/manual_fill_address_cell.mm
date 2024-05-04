@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_address_cell.h"
 
 #import "base/metrics/user_metrics.h"
+#import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/shared/ui/list_model/list_model.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_cell_utils.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_content_injector.h"
@@ -45,10 +46,9 @@
 
 @interface ManualFillAddressCell ()
 
-// Separator line between cells, if needed.
-@property(nonatomic, strong) UIView* grayLine;
-
 // The label with the line1 -- line2.
+// TODO(crbug.com/326398845): Remove property once the Keyboard Accessory
+// Upgrade feature has launched both on iPhone and iPad.
 @property(nonatomic, strong) UILabel* addressLabel;
 
 // The dynamic constraints for all the lines (i.e. not set in createView).
@@ -94,6 +94,9 @@
 // The content delegate for this item.
 @property(nonatomic, weak) id<ManualFillContentInjector> contentInjector;
 
+// Layout guide for the cell's content.
+@property(nonatomic, strong) UILayoutGuide* layoutGuide;
+
 @end
 
 @implementation ManualFillAddressCell
@@ -128,67 +131,74 @@
   }
   self.contentInjector = contentInjector;
 
-  NSMutableArray<UIView*>* verticalLeadViews = [[NSMutableArray alloc] init];
-  UIView* guide = self.grayLine;
+  // Holds the views whose leading anchor is constrained relative to the cell's
+  // leading anchor.
+  std::vector<ManualFillCellView> verticalLeadViews;
 
-  NSString* blackText = nil;
-  NSString* grayText = nil;
+  if (!IsKeyboardAccessoryUpgradeEnabled()) {
+    NSString* blackText = nil;
+    NSString* grayText = nil;
 
-  // Top label is the address summary and fallbacks on city and email.
-  if (address.line1.length) {
-    blackText = address.line1;
-    grayText = address.line2.length ? address.line2 : nil;
-  } else if (address.line2.length) {
-    blackText = address.line2;
-  } else if (address.city.length) {
-    blackText = address.city;
-  } else if (address.emailAddress.length) {
-    blackText = address.emailAddress;
-  }
-
-  NSMutableAttributedString* attributedString = nil;
-  if (blackText.length) {
-    attributedString = [[NSMutableAttributedString alloc]
-        initWithString:blackText
-            attributes:@{
-              NSForegroundColorAttributeName :
-                  [UIColor colorNamed:kTextPrimaryColor],
-              NSFontAttributeName :
-                  [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline]
-            }];
-    if (grayText.length) {
-      NSString* formattedGrayText =
-          [NSString stringWithFormat:@" –– %@", grayText];
-      NSDictionary* attributes = @{
-        NSForegroundColorAttributeName :
-            [UIColor colorNamed:kTextSecondaryColor],
-        NSFontAttributeName :
-            [UIFont preferredFontForTextStyle:UIFontTextStyleBody]
-      };
-      NSAttributedString* grayAttributedString =
-          [[NSAttributedString alloc] initWithString:formattedGrayText
-                                          attributes:attributes];
-      [attributedString appendAttributedString:grayAttributedString];
+    // Top label is the address summary and fallbacks on city and email.
+    if (address.line1.length) {
+      blackText = address.line1;
+      grayText = address.line2.length ? address.line2 : nil;
+    } else if (address.line2.length) {
+      blackText = address.line2;
+    } else if (address.city.length) {
+      blackText = address.city;
+    } else if (address.emailAddress.length) {
+      blackText = address.emailAddress;
     }
-  }
 
-  if (attributedString) {
-    self.addressLabel.attributedText = attributedString;
-    [verticalLeadViews addObject:self.addressLabel];
+    NSMutableAttributedString* attributedString = nil;
+    if (blackText.length) {
+      attributedString = [[NSMutableAttributedString alloc]
+          initWithString:blackText
+              attributes:@{
+                NSForegroundColorAttributeName :
+                    [UIColor colorNamed:kTextPrimaryColor],
+                NSFontAttributeName :
+                    [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline]
+              }];
+      if (grayText.length) {
+        NSString* formattedGrayText =
+            [NSString stringWithFormat:@" –– %@", grayText];
+        NSDictionary* attributes = @{
+          NSForegroundColorAttributeName :
+              [UIColor colorNamed:kTextSecondaryColor],
+          NSFontAttributeName :
+              [UIFont preferredFontForTextStyle:UIFontTextStyleBody]
+        };
+        NSAttributedString* grayAttributedString =
+            [[NSAttributedString alloc] initWithString:formattedGrayText
+                                            attributes:attributes];
+        [attributedString appendAttributedString:grayAttributedString];
+      }
+    }
+
+    if (attributedString) {
+      self.addressLabel.attributedText = attributedString;
+      AddViewToVerticalLeadViews(self.addressLabel,
+                                 ManualFillCellView::ElementType::kOther,
+                                 verticalLeadViews);
+    }
   }
 
   self.dynamicConstraints = [[NSMutableArray alloc] init];
 
-  BOOL largeTypes = UIContentSizeCategoryIsAccessibilityCategory(
-      UIScreen.mainScreen.traitCollection.preferredContentSizeCategory);
-
-  // Name line, first middle and last.
+  // First, middle and last names are presented on the same line when possible.
   NSMutableArray<UIView*>* nameLineViews = [[NSMutableArray alloc] init];
 
   bool showFirstName = address.firstName.length;
   bool showMiddleName = address.middleNameOrInitial.length;
   bool showLastName = address.lastName.length;
 
+  // Holds the chip buttons related to the name that are vertical leads.
+  NSMutableArray<UIView*>* nameGroupVerticalLeadChips =
+      [[NSMutableArray alloc] init];
+
+  // First name chip button.
   if (showFirstName) {
     [self.firstNameButton setTitle:address.firstName
                           forState:UIControlStateNormal];
@@ -198,6 +208,7 @@
     self.firstNameButton.hidden = YES;
   }
 
+  // Middle name chip button.
   if (showMiddleName) {
     [self.middleNameButton setTitle:address.middleNameOrInitial
                            forState:UIControlStateNormal];
@@ -207,6 +218,7 @@
     self.middleNameButton.hidden = YES;
   }
 
+  // Last name chip button.
   if (showLastName) {
     [self.lastNameButton setTitle:address.lastName
                          forState:UIControlStateNormal];
@@ -216,41 +228,49 @@
     self.lastNameButton.hidden = YES;
   }
 
-  [self layMultipleViews:nameLineViews
-          withLargeTypes:largeTypes
-                 onGuide:guide
-      addFirstLineViewTo:verticalLeadViews];
+  LayViewsHorizontallyWhenPossible(nameLineViews, self.layoutGuide,
+                                   self.dynamicConstraints,
+                                   nameGroupVerticalLeadChips);
 
-  // Company line.
+  // Holds the chip buttons related to the company name that are vertical leads.
+  NSMutableArray<UIView*>* companyGroupVerticalLeadChips =
+      [[NSMutableArray alloc] init];
+
+  // Company line chip button.
   if (address.company.length) {
     [self.companyButton setTitle:address.company forState:UIControlStateNormal];
-    [verticalLeadViews addObject:self.companyButton];
+    [companyGroupVerticalLeadChips addObject:self.companyButton];
     self.companyButton.hidden = NO;
   } else {
     self.companyButton.hidden = YES;
   }
 
-  // Address line 1.
+  // Holds the chip buttons related to the address that are vertical leads.
+  NSMutableArray<UIView*>* addressGroupVerticalLeadChips =
+      [[NSMutableArray alloc] init];
+
+  // Address line 1 chip button.
   if (address.line1.length) {
     [self.line1Button setTitle:address.line1 forState:UIControlStateNormal];
-    [verticalLeadViews addObject:self.line1Button];
+    [addressGroupVerticalLeadChips addObject:self.line1Button];
     self.line1Button.hidden = NO;
   } else {
     self.line1Button.hidden = YES;
   }
 
-  // Address line 2.
+  // Address line 2 chip button.
   if (address.line2.length) {
     [self.line2Button setTitle:address.line2 forState:UIControlStateNormal];
-    [verticalLeadViews addObject:self.line2Button];
+    [addressGroupVerticalLeadChips addObject:self.line2Button];
     self.line2Button.hidden = NO;
   } else {
     self.line2Button.hidden = YES;
   }
 
-  // Zip and city line.
+  // ZIP code and city are presented on the same line when possible.
   NSMutableArray<UIView*>* zipCityLineViews = [[NSMutableArray alloc] init];
 
+  // ZIP code chip button.
   if (address.zip.length) {
     [self.zipButton setTitle:address.zip forState:UIControlStateNormal];
     [zipCityLineViews addObject:self.zipButton];
@@ -259,6 +279,7 @@
     self.zipButton.hidden = YES;
   }
 
+  // City chip button.
   if (address.city.length) {
     [self.cityButton setTitle:address.city forState:UIControlStateNormal];
     [zipCityLineViews addObject:self.cityButton];
@@ -267,15 +288,15 @@
     self.cityButton.hidden = YES;
   }
 
-  [self layMultipleViews:zipCityLineViews
-          withLargeTypes:largeTypes
-                 onGuide:guide
-      addFirstLineViewTo:verticalLeadViews];
+  LayViewsHorizontallyWhenPossible(zipCityLineViews, self.layoutGuide,
+                                   self.dynamicConstraints,
+                                   addressGroupVerticalLeadChips);
 
-  // State and country line.
+  // State and country are presented on the same line when possible.
   NSMutableArray<UIView*>* stateCountryLineViews =
       [[NSMutableArray alloc] init];
 
+  // State chip button.
   if (address.state.length) {
     [self.stateButton setTitle:address.state forState:UIControlStateNormal];
     [stateCountryLineViews addObject:self.stateButton];
@@ -284,6 +305,7 @@
     self.stateButton.hidden = YES;
   }
 
+  // Country chip button.
   if (address.country.length) {
     [self.countryButton setTitle:address.country forState:UIControlStateNormal];
     [stateCountryLineViews addObject:self.countryButton];
@@ -292,76 +314,70 @@
     self.countryButton.hidden = YES;
   }
 
-  [self layMultipleViews:stateCountryLineViews
-          withLargeTypes:largeTypes
-                 onGuide:guide
-      addFirstLineViewTo:verticalLeadViews];
+  LayViewsHorizontallyWhenPossible(stateCountryLineViews, self.layoutGuide,
+                                   self.dynamicConstraints,
+                                   addressGroupVerticalLeadChips);
 
+  // Holds the chip buttons related to the contact info that are vertical leads.
+  NSMutableArray<UIView*>* contactInfoGroupVerticalLeadChips =
+      [[NSMutableArray alloc] init];
+
+  // Phone number chip button.
   if (address.phoneNumber.length) {
     [self.phoneNumberButton setTitle:address.phoneNumber
                             forState:UIControlStateNormal];
-    [verticalLeadViews addObject:self.phoneNumberButton];
+    [contactInfoGroupVerticalLeadChips addObject:self.phoneNumberButton];
     self.phoneNumberButton.hidden = NO;
   } else {
     self.phoneNumberButton.hidden = YES;
   }
 
+  // Email address chip button.
   if (address.emailAddress.length) {
     [self.emailAddressButton setTitle:address.emailAddress
                              forState:UIControlStateNormal];
-    [verticalLeadViews addObject:self.emailAddressButton];
+    [contactInfoGroupVerticalLeadChips addObject:self.emailAddressButton];
     self.emailAddressButton.hidden = NO;
   } else {
     self.emailAddressButton.hidden = YES;
   }
 
+  AddChipGroupsToVerticalLeadViews(
+      @[
+        nameGroupVerticalLeadChips, companyGroupVerticalLeadChips,
+        addressGroupVerticalLeadChips, contactInfoGroupVerticalLeadChips
+      ],
+      verticalLeadViews);
+
+  // Set and activate constraints.
   AppendVerticalConstraintsSpacingForViews(self.dynamicConstraints,
-                                           verticalLeadViews, self.contentView);
+                                           verticalLeadViews, self.layoutGuide);
   [NSLayoutConstraint activateConstraints:self.dynamicConstraints];
 }
 
 #pragma mark - Private
 
-// Dynamically lay givens `views` on `guide`, adding first view of every
-// generated line to `addFirstLineViewTo`. If `largeTypes` is true, fields are
-// laid out vertically one per line, otherwise horizontally on one line.
-// Constraints are added to `self.dynamicConstraints` property.
-- (void)layMultipleViews:(NSArray<UIView*>*)views
-          withLargeTypes:(BOOL)largeTypes
-                 onGuide:(UIView*)guide
-      addFirstLineViewTo:(NSMutableArray<UIView*>*)verticalLeadViews {
-  if (views.count == 0)
-    return;
-  if (largeTypes) {
-    for (UIView* view in views) {
-      AppendHorizontalConstraintsForViews(
-          self.dynamicConstraints, @[ view ], guide, kChipsHorizontalMargin,
-          AppendConstraintsHorizontalEqualOrSmallerThanGuide);
-      [verticalLeadViews addObject:view];
-    }
-  } else {
-    AppendHorizontalConstraintsForViews(
-        self.dynamicConstraints, views, guide, kChipsHorizontalMargin,
-        AppendConstraintsHorizontalSyncBaselines |
-            AppendConstraintsHorizontalEqualOrSmallerThanGuide);
-    [verticalLeadViews addObject:views.firstObject];
-  }
-}
-
 // Creates and sets up the view hierarchy.
 - (void)createViewHierarchy {
+  self.layoutGuide = AddLayoutGuideToContentView(
+      self.contentView,
+      /*cell_has_header=*/!IsKeyboardAccessoryUpgradeEnabled());
+
   self.selectionStyle = UITableViewCellSelectionStyleNone;
 
-  self.grayLine = CreateGraySeparatorForContainer(self.contentView);
+  if (!IsKeyboardAccessoryUpgradeEnabled()) {
+    CreateGraySeparatorForContainer(self.contentView);
+  }
 
   NSMutableArray<NSLayoutConstraint*>* staticConstraints =
       [[NSMutableArray alloc] init];
 
-  self.addressLabel = CreateLabel();
-  [self.contentView addSubview:self.addressLabel];
-  AppendHorizontalConstraintsForViews(staticConstraints, @[ self.addressLabel ],
-                                      self.contentView,
-                                      kButtonHorizontalMargin);
+  if (!IsKeyboardAccessoryUpgradeEnabled()) {
+    self.addressLabel = CreateLabel();
+    [self.contentView addSubview:self.addressLabel];
+    AppendHorizontalConstraintsForViews(
+        staticConstraints, @[ self.addressLabel ], self.layoutGuide);
+  }
 
   self.firstNameButton =
       CreateChipWithSelectorAndTarget(@selector(userDidTapAddressInfo:), self);
@@ -379,7 +395,7 @@
       CreateChipWithSelectorAndTarget(@selector(userDidTapAddressInfo:), self);
   [self.contentView addSubview:self.companyButton];
   AppendHorizontalConstraintsForViews(
-      staticConstraints, @[ self.companyButton ], self.grayLine,
+      staticConstraints, @[ self.companyButton ], self.layoutGuide,
       kChipsHorizontalMargin,
       AppendConstraintsHorizontalEqualOrSmallerThanGuide);
 
@@ -387,7 +403,7 @@
       CreateChipWithSelectorAndTarget(@selector(userDidTapAddressInfo:), self);
   [self.contentView addSubview:self.line1Button];
   AppendHorizontalConstraintsForViews(
-      staticConstraints, @[ self.line1Button ], self.grayLine,
+      staticConstraints, @[ self.line1Button ], self.layoutGuide,
       kChipsHorizontalMargin,
       AppendConstraintsHorizontalEqualOrSmallerThanGuide);
 
@@ -395,7 +411,7 @@
       CreateChipWithSelectorAndTarget(@selector(userDidTapAddressInfo:), self);
   [self.contentView addSubview:self.line2Button];
   AppendHorizontalConstraintsForViews(
-      staticConstraints, @[ self.line2Button ], self.grayLine,
+      staticConstraints, @[ self.line2Button ], self.layoutGuide,
       kChipsHorizontalMargin,
       AppendConstraintsHorizontalEqualOrSmallerThanGuide);
 
@@ -419,7 +435,7 @@
       CreateChipWithSelectorAndTarget(@selector(userDidTapAddressInfo:), self);
   [self.contentView addSubview:self.phoneNumberButton];
   AppendHorizontalConstraintsForViews(
-      staticConstraints, @[ self.phoneNumberButton ], self.grayLine,
+      staticConstraints, @[ self.phoneNumberButton ], self.layoutGuide,
       kChipsHorizontalMargin,
       AppendConstraintsHorizontalEqualOrSmallerThanGuide);
 
@@ -427,7 +443,7 @@
       CreateChipWithSelectorAndTarget(@selector(userDidTapAddressInfo:), self);
   [self.contentView addSubview:self.emailAddressButton];
   AppendHorizontalConstraintsForViews(
-      staticConstraints, @[ self.emailAddressButton ], self.grayLine,
+      staticConstraints, @[ self.emailAddressButton ], self.layoutGuide,
       kChipsHorizontalMargin,
       AppendConstraintsHorizontalEqualOrSmallerThanGuide);
 

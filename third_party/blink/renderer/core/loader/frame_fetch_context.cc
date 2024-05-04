@@ -178,7 +178,7 @@ struct FrameFetchContext::FrozenState final : GarbageCollected<FrozenState> {
               float device_pixel_ratio,
               const String& user_agent,
               base::optional_ref<const UserAgentMetadata> user_agent_metadata,
-              bool is_svg_image_chrome_client,
+              bool is_isolated_svg_chrome_client,
               bool is_prerendering,
               const String& reduced_accept_language)
       : url(url),
@@ -189,7 +189,7 @@ struct FrameFetchContext::FrozenState final : GarbageCollected<FrozenState> {
         device_pixel_ratio(device_pixel_ratio),
         user_agent(user_agent),
         user_agent_metadata(user_agent_metadata.CopyAsOptional()),
-        is_svg_image_chrome_client(is_svg_image_chrome_client),
+        is_isolated_svg_chrome_client(is_isolated_svg_chrome_client),
         is_prerendering(is_prerendering),
         reduced_accept_language(reduced_accept_language) {}
 
@@ -202,7 +202,7 @@ struct FrameFetchContext::FrozenState final : GarbageCollected<FrozenState> {
   const float device_pixel_ratio;
   const String user_agent;
   const std::optional<UserAgentMetadata> user_agent_metadata;
-  const bool is_svg_image_chrome_client;
+  const bool is_isolated_svg_chrome_client;
   const bool is_prerendering;
   const String reduced_accept_language;
 
@@ -270,6 +270,23 @@ scoped_refptr<const SecurityOrigin> FrameFetchContext::GetTopFrameOrigin()
   if (GetResourceFetcherProperties().IsDetached())
     return frozen_state_->top_frame_origin;
   return document_->TopFrameOrigin();
+}
+
+const Vector<KURL>& FrameFetchContext::GetPotentiallyUnusedPreloads() const {
+  if (LocalFrame* frame = GetFrame()) {
+    if (LCPCriticalPathPredictor* lcpp = frame->GetLCPP()) {
+      return lcpp->unused_preloads();
+    }
+  }
+  return empty_unused_preloads_;
+}
+
+void FrameFetchContext::AddLcpPredictedCallback(base::OnceClosure callback) {
+  if (LocalFrame* frame = FrameFetchContext::GetFrame()) {
+    if (LCPCriticalPathPredictor* lcpp = frame->GetLCPP()) {
+      lcpp->AddLCPPredictedCallback(std::move(callback));
+    }
+  }
 }
 
 SubresourceFilter* FrameFetchContext::GetSubresourceFilter() const {
@@ -447,9 +464,9 @@ void FrameFetchContext::AddClientHintsIfNecessary(
           ? document_->domWindow()->GetSecurityContext().GetPermissionsPolicy()
           : nullptr;
 
-  url::Origin resource_origin =
-      SecurityOrigin::Create(request.Url())->ToUrlOrigin();
-  bool is_1p_origin = IsFirstPartyOrigin(request.Url());
+  const scoped_refptr<SecurityOrigin> resource_origin =
+      SecurityOrigin::Create(request.Url());
+  bool is_1p_origin = IsFirstPartyOrigin(resource_origin.get());
 
   std::optional<UserAgentMetadata> ua = GetUserAgentMetadata();
 
@@ -484,8 +501,8 @@ void FrameFetchContext::AddClientHintsIfNecessary(
   // by browser (from accept-ch header on this response or previously persisted)
   // with renderer-parsed http-equiv merged in.
   BaseFetchContext::AddClientHintsIfNecessary(
-      GetClientHintsPreferences(), resource_origin, is_1p_origin, ua, policy,
-      image_info, prefers_color_scheme, prefers_reduced_motion,
+      GetClientHintsPreferences(), resource_origin->ToUrlOrigin(), is_1p_origin,
+      ua, policy, image_info, prefers_color_scheme, prefers_reduced_motion,
       prefers_reduced_transparency, request);
 }
 
@@ -550,6 +567,18 @@ bool FrameFetchContext::DoesLCPPHaveAnyHintData() {
   return lcpp->HasAnyHintData();
 }
 
+bool FrameFetchContext::DoesLCPPHaveLcpElementLocatorHintData() {
+  if (GetResourceFetcherProperties().IsDetached()) {
+    return false;
+  }
+
+  LCPCriticalPathPredictor* lcpp = GetFrame()->GetLCPP();
+  if (!lcpp) {
+    return false;
+  }
+  return !lcpp->lcp_element_locators().empty();
+}
+
 void FrameFetchContext::SetFirstPartyCookie(ResourceRequest& request) {
   // Set the first party for cookies url if it has not been set yet (new
   // requests). This value will be updated during redirects, consistent with
@@ -569,7 +598,8 @@ bool FrameFetchContext::AllowScript() const {
   return script_enabled;
 }
 
-bool FrameFetchContext::IsFirstPartyOrigin(const KURL& url) const {
+bool FrameFetchContext::IsFirstPartyOrigin(
+    const SecurityOrigin* resource_origin) const {
   if (GetResourceFetcherProperties().IsDetached())
     return false;
 
@@ -578,7 +608,7 @@ bool FrameFetchContext::IsFirstPartyOrigin(const KURL& url) const {
       .Top()
       .GetSecurityContext()
       ->GetSecurityOrigin()
-      ->IsSameOriginWith(SecurityOrigin::Create(url).get());
+      ->IsSameOriginWith(resource_origin);
 }
 
 bool FrameFetchContext::ShouldBlockRequestByInspector(const KURL& url) const {
@@ -609,11 +639,11 @@ ContentSecurityPolicy* FrameFetchContext::GetContentSecurityPolicyForWorld(
       world);
 }
 
-bool FrameFetchContext::IsSVGImageChromeClient() const {
+bool FrameFetchContext::IsIsolatedSVGChromeClient() const {
   if (GetResourceFetcherProperties().IsDetached())
-    return frozen_state_->is_svg_image_chrome_client;
+    return frozen_state_->is_isolated_svg_chrome_client;
 
-  return GetFrame()->GetChromeClient().IsSVGImageChromeClient();
+  return GetFrame()->GetChromeClient().IsIsolatedSVGChromeClient();
 }
 
 void FrameFetchContext::CountUsage(WebFeature feature) const {
@@ -789,7 +819,7 @@ FetchContext* FrameFetchContext::Detach() {
   frozen_state_ = MakeGarbageCollected<FrozenState>(
       Url(), GetContentSecurityPolicy(), GetSiteForCookies(),
       GetTopFrameOrigin(), client_hints_prefs, GetDevicePixelRatio(),
-      GetUserAgent(), GetUserAgentMetadata(), IsSVGImageChromeClient(),
+      GetUserAgent(), GetUserAgentMetadata(), IsIsolatedSVGChromeClient(),
       IsPrerendering(), GetReducedAcceptLanguage());
   document_loader_ = nullptr;
   document_ = nullptr;

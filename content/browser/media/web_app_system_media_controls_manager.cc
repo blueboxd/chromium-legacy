@@ -109,9 +109,16 @@ void WebAppSystemMediaControlsManager::OnFocusGained(
     return;
   }
 
-  // Check if the web contents found is in a dPWA.
+  // Check if the web contents found is in a dPWA. Occasionally, we've found it
+  // is possible that the web contents does not have a delegate - we should just
+  // abort in that scenario.
+  WebContentsDelegate* web_contents_delegate = web_contents->GetDelegate();
+  if (!web_contents_delegate) {
+    return;
+  }
+
   bool is_web_contents_for_web_app =
-      web_contents->GetDelegate()->ShouldUseInstancedSystemMediaControls() ||
+      web_contents_delegate->ShouldUseInstancedSystemMediaControls() ||
       always_assume_web_app_for_testing_;
   if (!is_web_contents_for_web_app) {
     // Non-webapp updates are handled by media_keys_listener_manager_impl and do
@@ -179,20 +186,34 @@ void WebAppSystemMediaControlsManager::OnFocusGained(
 void WebAppSystemMediaControlsManager::OnFocusLost(
     media_session::mojom::AudioFocusRequestStatePtr state) {
   CHECK(initialized_);
+
+  if (!state->request_id) {
+    return;
+  }
+
+  auto it = controls_map_.find(state->request_id.value());
+
+  // There will be no entry if it was a browser session that lost focus.
+  if (it == controls_map_.end()) {
+    return;
+  }
+
+  system_media_controls::SystemMediaControls* system_media_controls =
+      it->second->GetSystemMediaControls();
+  // Tell the OS that audio stopped and to hide the UI. These are the same
+  // cleanup steps taken by SMCNotifier when it receives audio stopped
+  // messages via MediaControllerObserver.
+  system_media_controls->SetPlaybackStatus(
+      system_media_controls::SystemMediaControls::PlaybackStatus::kStopped);
+  system_media_controls->ClearMetadata();
 }
 
 void WebAppSystemMediaControlsManager::OnRequestIdReleased(
     const base::UnguessableToken& request_id) {
   CHECK(initialized_);
-  DVLOG(1) << "WebAppSystemMediaControlsManager::OnRequestIdReleased, "
-              "request id = "
-           << request_id;
 
   auto it = controls_map_.find(request_id);
   if (it == controls_map_.end()) {
-    DVLOG(1) << "WebAppSystemMediaControlsManager::OnFocusLost, no match for "
-                "request id = "
-             << request_id;
     return;
   }
 

@@ -11,7 +11,6 @@
 #import "ios/chrome/browser/shared/model/browser/browser.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/shared/model/prefs/pref_names.h"
-#import "ios/chrome/browser/shared/public/commands/browsing_data_commands.h"
 #import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/signin/model/authentication_service_factory.h"
@@ -74,10 +73,8 @@
   ChromeBrowserState* browserState = browser->GetBrowserState();
   ChromeAccountManagerService* accountManagerService =
       ChromeAccountManagerServiceFactory::GetForBrowserState(browserState);
-  BOOL canShowWithZeroIdentities =
-      accessPoint != signin_metrics::AccessPoint::ACCESS_POINT_WEB_SIGNIN &&
-      IsConsistencyNewAccountInterfaceEnabled();
-  if (!accountManagerService->HasIdentities() && !canShowWithZeroIdentities) {
+  if (!accountManagerService->HasIdentities() &&
+      accessPoint == signin_metrics::AccessPoint::ACCESS_POINT_WEB_SIGNIN) {
     RecordConsistencyPromoUserAction(
         signin_metrics::AccountConsistencyPromoAction::SUPPRESSED_NO_ACCOUNTS,
         accessPoint);
@@ -292,14 +289,13 @@
 
 // Starts the sign-in flow.
 - (void)startSignIn {
-  AuthenticationFlow* authenticationFlow =
-      [[AuthenticationFlow alloc] initWithBrowser:self.browser
-                                         identity:self.selectedIdentity
-                                      accessPoint:self.accessPoint
-                                 postSignInAction:PostSignInAction::kNone
-                         presentingViewController:self.navigationController];
-  authenticationFlow.dispatcher = HandlerForProtocol(
-      self.browser->GetCommandDispatcher(), BrowsingDataCommands);
+  AuthenticationFlow* authenticationFlow = [[AuthenticationFlow alloc]
+               initWithBrowser:self.browser
+                      identity:self.selectedIdentity
+                   accessPoint:self.accessPoint
+             postSignInActions:PostSignInActionSet({PostSignInAction::kNone})
+      presentingViewController:self.navigationController];
+  authenticationFlow.precedingHistorySync = YES;
   [self.consistencyPromoSigninMediator
       signinWithAuthenticationFlow:authenticationFlow];
 }
@@ -321,12 +317,6 @@
 }
 
 #pragma mark - ConsistencyDefaultAccountCoordinatorDelegate
-
-- (void)consistencyDefaultAccountCoordinatorAllIdentityRemoved:
-    (ConsistencyDefaultAccountCoordinator*)coordinator {
-  [self interruptWithAction:SigninCoordinatorInterrupt::DismissWithAnimation
-                 completion:nil];
-}
 
 - (void)consistencyDefaultAccountCoordinatorSkip:
     (ConsistencyDefaultAccountCoordinator*)coordinator {

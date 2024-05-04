@@ -27,7 +27,7 @@ BASE_FEATURE(kSegmentationPlatformUserVisibleTaskRunner,
 
 BASE_FEATURE(kSegmentationPlatformAdaptiveToolbarV2Feature,
              "SegmentationPlatformAdaptiveToolbarV2Feature",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kSegmentationPlatformLowEngagementFeature,
              "SegmentationPlatformLowEngagementFeature",
@@ -116,7 +116,7 @@ BASE_FEATURE(kSegmentationPlatformTabResumptionRanker,
 BASE_FEATURE(kSegmentationPlatformIosModuleRanker,
              "SegmentationPlatformIosModuleRanker",
 #if BUILDFLAG(IS_IOS)
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 #else
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
@@ -145,5 +145,9 @@ BASE_FEATURE(kSegmentationPlatformSignalDbCache,
 #else
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
+
+BASE_FEATURE(kSegmentationPlatformComposePromotion,
+             "SegmentationPlatformComposePromotion",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 }  // namespace segmentation_platform::features

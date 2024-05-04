@@ -17,12 +17,9 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.Criteria;
-import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.DoNotBatch;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.Features;
-import org.chromium.base.test.util.Matchers;
+import org.chromium.base.test.util.Features.EnableFeatures;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ActivityTabProvider.ActivityTabTabObserver;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -45,6 +42,7 @@ import java.util.concurrent.TimeoutException;
 @DoNotBatch(reason = "waitForActivityCompletelyLoaded is unhappy when batched - more work needed")
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
+@EnableFeatures(ChromeFeatureList.ANDROID_HUB)
 public class ActivityTabProviderTest {
     /** A test observer that provides access to the tab being observed. */
     private static class TestActivityTabTabObserver extends ActivityTabTabObserver {
@@ -175,6 +173,8 @@ public class ActivityTabProviderTest {
                 "The activity tab should be the model's selected tab.",
                 getModelSelectedTab(),
                 mActivityTab);
+
+        LayoutTestUtils.waitForLayout(mActivity.getLayoutManager(), LayoutType.BROWSING);
     }
 
     /**
@@ -308,45 +308,5 @@ public class ActivityTabProviderTest {
                 tabObserver.mObservedTab);
 
         tabObserver.destroy();
-    }
-
-    /** Test activityTabProvider before layout state provider is available. */
-    @Test
-    @SmallTest
-    @Feature({"ActivityTabObserver"})
-    @Features.EnableFeatures({
-        ChromeFeatureList.INSTANT_START,
-        ChromeFeatureList.BACK_GESTURE_REFACTOR
-    })
-    public void testBeforeLayoutManagerAvailable() {
-        ActivityTabProvider activityTabProvider =
-                TestThreadUtils.runOnUiThreadBlockingNoException(ActivityTabProvider::new);
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> {
-                    activityTabProvider.setTabModelSelector(mActivity.getTabModelSelector());
-                });
-        ChromeTabUtils.fullyLoadUrlInNewTab(
-                InstrumentationRegistry.getInstrumentation(),
-                mActivity,
-                ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL,
-                false);
-        assertEquals(
-                "The activity tab should be the selected tab.",
-                getModelSelectedTab(),
-                activityTabProvider.get());
-
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> {
-                    mActivity.getLayoutManager().showLayout(LayoutType.TAB_SWITCHER, false);
-                    activityTabProvider.setLayoutStateProvider(mActivity.getLayoutManager());
-                });
-        CriteriaHelper.pollInstrumentationThread(
-                () -> {
-                    Criteria.checkThat(
-                            "The activity tab should be null on tab switcher.",
-                            activityTabProvider.get(),
-                            Matchers.equalTo(null));
-                });
-        TestThreadUtils.runOnUiThreadBlocking(activityTabProvider::destroy);
     }
 }

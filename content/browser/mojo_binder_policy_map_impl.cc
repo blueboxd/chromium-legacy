@@ -4,6 +4,8 @@
 
 #include "content/browser/mojo_binder_policy_map_impl.h"
 
+#include <string_view>
+
 #include "base/feature_list.h"
 #include "base/no_destructor.h"
 #include "content/common/dom_automation_controller.mojom.h"
@@ -118,7 +120,7 @@ void RegisterChannelAssociatedPoliciesForSameOriginPrerendering(
     MojoBinderPolicyMap& map) {
   // Basic skeleton. All of them are critical to load a page so their policies
   // have to be kGrant.
-  // TODO(https://crbug.com/1259007): Message-level control should be performed.
+  // TODO(crbug.com/40201285): Message-level control should be performed.
   map.SetAssociatedPolicy<mojom::FrameHost>(MojoBinderAssociatedPolicy::kGrant);
   map.SetAssociatedPolicy<blink::mojom::LocalFrameHost>(
       MojoBinderAssociatedPolicy::kGrant);
@@ -159,7 +161,7 @@ void RegisterChannelAssociatedPoliciesForSameOriginPrerendering(
       MojoBinderAssociatedPolicy::kGrant);
 
   // Pages with FetchLater API calls should be allowed to prerender.
-  // TODO(crbug.com/1465781): Update according to feedback from
+  // TODO(crbug.com/40276121): Update according to feedback from
   // https://github.com/WICG/pending-beacon/issues/82
   map.SetAssociatedPolicy<blink::mojom::FetchLaterLoaderFactory>(
       MojoBinderAssociatedPolicy::kGrant);
@@ -218,7 +220,7 @@ class BrowserInterfaceBrokerMojoBinderPolicyMapHolder {
   }
 
  private:
-  // TODO(https://crbug.com/1145976): Set default policy map for content/.
+  // TODO(crbug.com/40156088): Set default policy map for content/.
   // Changes to `same_origin_map_` require security review.
   MojoBinderPolicyMapImpl same_origin_map_;
 
@@ -290,13 +292,13 @@ MojoBinderPolicyMapImpl::GetAssociatedMojoBinderPolicyOrDieForTesting(
 }
 
 void MojoBinderPolicyMapImpl::SetPolicyByName(
-    const base::StringPiece& name,
+    const std::string_view& name,
     MojoBinderNonAssociatedPolicy policy) {
   non_associated_policy_map_.emplace(name, policy);
 }
 
 void MojoBinderPolicyMapImpl::SetPolicyByName(
-    const base::StringPiece& name,
+    const std::string_view& name,
     MojoBinderAssociatedPolicy policy) {
   associated_policy_map_.emplace(name, policy);
 }

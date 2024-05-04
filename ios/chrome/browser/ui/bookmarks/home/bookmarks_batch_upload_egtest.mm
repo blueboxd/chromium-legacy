@@ -9,7 +9,6 @@
 #import "base/ios/ios_util.h"
 #import "base/strings/sys_string_conversions.h"
 #import "components/signin/public/base/signin_pref_names.h"
-#import "components/sync/base/features.h"
 #import "ios/chrome/browser/bookmarks/model/bookmark_model_type.h"
 #import "ios/chrome/browser/metrics/model/metrics_app_interface.h"
 #import "ios/chrome/browser/shared/model/prefs/pref_names.h"
@@ -138,12 +137,6 @@ void DismissBatchUploadConfirmationSnackbar(int count, NSString* email) {
 
 @implementation BookmarksBatchUploadTestCase
 
-- (AppLaunchConfiguration)appConfigurationForTestCase {
-  AppLaunchConfiguration config;
-  config.features_enabled.push_back(syncer::kReplaceSyncPromosWithSignInPromos);
-  return config;
-}
-
 - (void)setUp {
   [super setUp];
   [BookmarkEarlGrey waitForBookmarkModelsLoaded];
@@ -230,6 +223,34 @@ void DismissBatchUploadConfirmationSnackbar(int count, NSString* email) {
   [BookmarkEarlGrey addBookmarkWithTitle:@"example1"
                                      URL:@"https://www.example1.com"
                                inStorage:BookmarkModelType::kLocalOrSyncable];
+  [ChromeEarlGreyUI waitForAppToIdle];
+
+  [BookmarkEarlGreyUI openBookmarks];
+
+  // Verify that the batch upload section is not visible.
+  ExpectNoBatchUploadDialog();
+
+  GREYAssertNil(
+      [MetricsAppInterface
+           expectCount:0
+             forBucket:YES
+          forHistogram:
+              @"IOS.Bookmarks.BulkSaveBookmarksInAccountViewRecreated"],
+      @"Invalid metric count.");
+}
+
+// Tests that no batch upload dialog is shown if the user is syncing.
+- (void)testNoBatchUploadDialogIfSyncing {
+  // Add one local bookmark.
+  [BookmarkEarlGrey addBookmarkWithTitle:@"example1"
+                                     URL:@"https://www.example1.com"
+                               inStorage:BookmarkModelType::kLocalOrSyncable];
+  [ChromeEarlGreyUI waitForAppToIdle];
+
+  // Adds `fakeIdentity` and turns sync on.
+  FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
+  [SigninEarlGrey signinAndEnableLegacySyncFeature:fakeIdentity];
+  [SigninEarlGrey verifySignedInWithFakeIdentity:fakeIdentity];
   [ChromeEarlGreyUI waitForAppToIdle];
 
   [BookmarkEarlGreyUI openBookmarks];
@@ -410,7 +431,7 @@ void DismissBatchUploadConfirmationSnackbar(int count, NSString* email) {
 
 // Tests that no batch upload dialog is shown if there are no local bookmarks.
 - (void)testNoBatchUploadDialogIfNoLocalBookmarks {
-  // TODO(crbug.com/1451511): Add ASSERT for no local bookmarks.
+  // TODO(crbug.com/40065376): Add ASSERT for no local bookmarks.
 
   // Adds and signs in with `fakeIdentity`.
   FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
@@ -675,7 +696,7 @@ void DismissBatchUploadConfirmationSnackbar(int count, NSString* email) {
               forHistogram:@"IOS.Bookmarks.BulkSaveBookmarksInAccountCount"],
       @"Invalid metric count.");
 
-  // TODO(crbug.com/1451511): Verify that the bookmarks have been moved to the
+  // TODO(crbug.com/40065376): Verify that the bookmarks have been moved to the
   // account model and the local bookmark model is empty.
 }
 

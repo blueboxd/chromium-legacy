@@ -6,6 +6,8 @@
 
 #include <Security/Security.h>
 
+#include <string_view>
+
 #include "base/apple/foundation_util.h"
 #include "base/apple/osstatus_logging.h"
 #include "base/atomicops.h"
@@ -404,7 +406,7 @@ class TrustDomainCacheFullCerts {
 
  private:
   void HistogramTrustDomainCertCount(size_t count) const {
-    base::StringPiece domain_name;
+    std::string_view domain_name;
     switch (domain_) {
       case kSecTrustSettingsDomainUser:
         domain_name = "User";
@@ -1043,7 +1045,7 @@ void TrustStoreMac::SyncGetIssuersOf(const bssl::ParsedCertificate* cert,
     std::shared_ptr<const bssl::ParsedCertificate> anchor_cert =
         bssl::ParsedCertificate::Create(std::move(buffer), options, &errors);
     if (!anchor_cert) {
-      // TODO(crbug.com/634443): return errors better.
+      // TODO(crbug.com/41267838): return errors better.
       LOG(ERROR) << "Error parsing issuer certificate:\n"
                  << errors.ToDebugString();
       continue;
@@ -1058,18 +1060,12 @@ bssl::CertificateTrust TrustStoreMac::GetTrust(
   TrustStatus trust_status = trust_cache_->IsCertTrusted(cert);
   switch (trust_status) {
     case TrustStatus::TRUSTED: {
-      bssl::CertificateTrust trust;
-      if (base::FeatureList::IsEnabled(
-              features::kTrustStoreTrustedLeafSupport)) {
-        // Mac trust settings don't distinguish between trusted anchors and
-        // trusted leafs, return a trust record valid for both, which will
-        // depend on the context the certificate is encountered in.
-        trust = bssl::CertificateTrust::ForTrustAnchorOrLeaf()
-                    .WithEnforceAnchorExpiry();
-      } else {
-        trust =
-            bssl::CertificateTrust::ForTrustAnchor().WithEnforceAnchorExpiry();
-      }
+      // Mac trust settings don't distinguish between trusted anchors and
+      // trusted leafs, return a trust record valid for both, which will
+      // depend on the context the certificate is encountered in.
+      bssl::CertificateTrust trust =
+          bssl::CertificateTrust::ForTrustAnchorOrLeaf()
+              .WithEnforceAnchorExpiry();
       if (IsLocalAnchorConstraintsEnforcementEnabled()) {
         trust = trust.WithEnforceAnchorConstraints()
                     .WithRequireAnchorBasicConstraints();

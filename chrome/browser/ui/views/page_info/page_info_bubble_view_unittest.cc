@@ -37,7 +37,6 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "chrome/test/views/chrome_test_views_delegate.h"
-#include "components/browsing_data/core/features.h"
 #include "components/content_settings/core/browser/content_settings_uma_util.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/cookie_blocking_3pcd_status.h"
@@ -577,7 +576,7 @@ TEST_F(PageInfoBubbleViewTest, SetPermissionInfo) {
   // However, since the setting is now default, recreating the dialog with
   // those settings should omit the permission from the UI.
   //
-  // TODO(https://crbug.com/829576): Reconcile the comment above with the fact
+  // TODO(crbug.com/40570388): Reconcile the comment above with the fact
   // that |num_expected_children| is not, at this point, 0 and therefore the
   // permission is not being omitted from the UI.
   api_->SetPermissionInfo(list);
@@ -903,7 +902,7 @@ TEST_F(PageInfoBubbleViewTest, SetPermissionInfoForUsbGuard) {
   // However, since the setting is now default, recreating the dialog with
   // those settings should omit the permission from the UI.
   //
-  // TODO(https://crbug.com/829576): Reconcile the comment above with the fact
+  // TODO(crbug.com/40570388): Reconcile the comment above with the fact
   // that |num_expected_children| is not, at this point, 0 and therefore the
   // permission is not being omitted from the UI.
   api_->SetPermissionInfo(list);

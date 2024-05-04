@@ -33,6 +33,8 @@
 #include "components/account_manager_core/account_manager_facade.h"
 #endif
 
+class PrefRegistrySimple;
+
 namespace signin {
 class AccountReconcilorDelegate;
 enum class SetAccountsInCookieResult;
@@ -126,6 +128,8 @@ class AccountReconcilor
   AccountReconcilor& operator=(const AccountReconcilor&) = delete;
 
   ~AccountReconcilor() override;
+
+  static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
   // Initializes the account reconcilor. Should be called once after
   // construction.
@@ -406,7 +410,9 @@ class AccountReconcilor
   void OnRefreshTokensLoaded() override;
   void OnErrorStateOfRefreshTokenUpdatedForAccount(
       const CoreAccountInfo& account_info,
-      const GoogleServiceAuthError& error) override;
+      const GoogleServiceAuthError& error,
+      signin_metrics::SourceForRefreshTokenOperation token_operation_source)
+      override;
   void OnAccountsInCookieUpdated(
       const signin::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
       const GoogleServiceAuthError& error) override;

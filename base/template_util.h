@@ -7,12 +7,8 @@
 
 #include <stddef.h>
 
-#include <iosfwd>
 #include <iterator>
 #include <type_traits>
-#include <utility>
-
-#include "base/compiler_specific.h"
 
 namespace base {
 
@@ -40,25 +36,6 @@ template <>
 struct priority_tag<0> {};
 
 }  // namespace internal
-
-namespace internal {
-
-// The indirection with std::is_enum<T> is required, because instantiating
-// std::underlying_type_t<T> when T is not an enum is UB prior to C++20.
-template <typename T, bool = std::is_enum_v<T>>
-struct IsScopedEnumImpl : std::false_type {};
-
-template <typename T>
-struct IsScopedEnumImpl<T, /*std::is_enum_v<T>=*/true>
-    : std::negation<std::is_convertible<T, std::underlying_type_t<T>>> {};
-
-}  // namespace internal
-
-// Implementation of C++23's std::is_scoped_enum
-//
-// Reference: https://en.cppreference.com/w/cpp/types/is_scoped_enum
-template <typename T>
-struct is_scoped_enum : internal::IsScopedEnumImpl<T> {};
 
 }  // namespace base
 

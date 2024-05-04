@@ -32,11 +32,14 @@
 
 #include "base/containers/adapters.h"
 #include "third_party/blink/public/mojom/use_counter/metrics/web_feature.mojom-blink.h"
+#include "third_party/blink/public/web/web_print_page_description.h"
+#include "third_party/blink/public/web/web_print_params.h"
 #include "third_party/blink/renderer/core/animation/css/compositor_keyframe_value_factory.h"
 #include "third_party/blink/renderer/core/animation/css/css_animations.h"
 #include "third_party/blink/renderer/core/animation/document_animations.h"
 #include "third_party/blink/renderer/core/animation/element_animations.h"
 #include "third_party/blink/renderer/core/animation/invalidatable_interpolation.h"
+#include "third_party/blink/renderer/core/css/anchor_evaluator.h"
 #include "third_party/blink/renderer/core/css/cascade_layer_map.h"
 #include "third_party/blink/renderer/core/css/container_query_evaluator.h"
 #include "third_party/blink/renderer/core/css/css_custom_ident_value.h"
@@ -47,7 +50,6 @@
 #include "third_party/blink/renderer/core/css/css_initial_color_value.h"
 #include "third_party/blink/renderer/core/css/css_keyframe_rule.h"
 #include "third_party/blink/renderer/core/css/css_keyframes_rule.h"
-#include "third_party/blink/renderer/core/css/css_position_fallback_rule.h"
 #include "third_party/blink/renderer/core/css/css_position_try_rule.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css/css_rule_list.h"
@@ -55,7 +57,6 @@
 #include "third_party/blink/renderer/core/css/css_selector_watch.h"
 #include "third_party/blink/renderer/core/css/css_style_declaration.h"
 #include "third_party/blink/renderer/core/css/css_style_rule.h"
-#include "third_party/blink/renderer/core/css/css_try_rule.h"
 #include "third_party/blink/renderer/core/css/element_rule_collector.h"
 #include "third_party/blink/renderer/core/css/font_face.h"
 #include "third_party/blink/renderer/core/css/out_of_flow_data.h"
@@ -91,7 +92,9 @@
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
 #include "third_party/blink/renderer/core/html/html_body_element.h"
+#include "third_party/blink/renderer/core/html/html_html_element.h"
 #include "third_party/blink/renderer/core/html/html_iframe_element.h"
+#include "third_party/blink/renderer/core/html/html_image_element.h"
 #include "third_party/blink/renderer/core/html/html_slot_element.h"
 #include "third_party/blink/renderer/core/html/shadow/shadow_element_names.h"
 #include "third_party/blink/renderer/core/html/track/text_track.h"
@@ -144,10 +147,7 @@ bool ShouldStoreOldStyle(const StyleRecalcContext& style_recalc_context,
   // descendants of elements with anchor queries as well.
   return (style_recalc_context.container ||
           state.StyleBuilder().HasAnchorFunctions() ||
-          (RuntimeEnabledFeatures::
-               CSSAnchorPositioningCascadeFallbackEnabled() &&
-           (state.StyleBuilder().PositionFallback() != nullptr ||
-            state.StyleBuilder().GetPositionTryOptions() != nullptr))) &&
+          state.StyleBuilder().GetPositionTryOptions() != nullptr) &&
          state.CanAffectAnimations();
 }
 
@@ -260,11 +260,6 @@ String ComputeBaseComputedStyleDiff(const ComputedStyle* base_computed_style,
   }
   if (!CSSPropertyEquality::PropertiesEqual(
           PropertyHandle(CSSProperty::Get(CSSPropertyID::kMaskImage)),
-          *base_computed_style, computed_style)) {
-    exclusions.insert(DebugField::mask_);
-  }
-  if (!CSSPropertyEquality::PropertiesEqual(
-          PropertyHandle(CSSProperty::Get(CSSPropertyID::kWebkitMaskImage)),
           *base_computed_style, computed_style)) {
     exclusions.insert(DebugField::mask_);
   }
@@ -797,7 +792,7 @@ void StyleResolver::MatchPseudoPartRules(const Element& part_matching_element,
                                                  const_cast<Element&>(*host));
       collector.ClearMatchedRules();
       collector.BeginAddingAuthorRulesForTreeScope(resolver->GetTreeScope());
-      resolver->CollectMatchingPartPseudoRules(collector, current_names,
+      resolver->CollectMatchingPartPseudoRules(collector, &current_names,
                                                for_shadow_pseudo);
       collector.SortAndTransferMatchedRules(
           CascadeOrigin::kAuthor, /*is_vtt_embedded_style=*/false, tracker_);
@@ -818,29 +813,9 @@ void StyleResolver::MatchPseudoPartRules(const Element& part_matching_element,
   }
 }
 
-// Declarations within @position-try rules match when ResolveStyle is invoked
-// with that rule explicitly specified to match.
-//
-// See OutOfFlowData::GetTryPropertyValueSet.
-// See StyleEngine::UpdateStyleForOutOfFlow.
-void StyleResolver::MatchPositionTryRules(const Element& element,
-                                          ElementRuleCollector& collector) {
-  // If StyleEngine::UpdateStyleForOutOfFlow was called with a PseudoElement,
-  // the CSSPropertyValueSet we need is stored on the OutOfFlowData of that
-  // pseudo element. However, when resolving the style of that pseudo element,
-  // `element` is the _originating element_, not the pseudo element itself.
-  PseudoId pseudo_id = collector.GetPseudoId();
-  const Element* try_element =
-      pseudo_id == kPseudoIdNone
-          ? &element
-          : element.GetPseudoElement(pseudo_id, collector.GetPseudoArgument());
-  if (try_element) {
-    if (OutOfFlowData* data = try_element->GetOutOfFlowData()) {
-      collector.AddTryStyleProperties(data->GetTryPropertyValueSet());
-      collector.AddTryTacticsStyleProperties(
-          data->GetTryTacticsPropertyValueSet());
-    }
-  }
+void StyleResolver::MatchPositionTryRules(ElementRuleCollector& collector) {
+  collector.AddTryStyleProperties();
+  collector.AddTryTacticsStyleProperties();
 }
 
 void StyleResolver::MatchAuthorRules(const Element& element,
@@ -849,7 +824,7 @@ void StyleResolver::MatchAuthorRules(const Element& element,
   MatchSlottedRules(element, collector, tracker_);
   MatchElementScopeRules(element, collector, tracker_);
   MatchPseudoPartRules(element, collector);
-  MatchPositionTryRules(element, collector);
+  MatchPositionTryRules(collector);
 }
 
 void StyleResolver::MatchUserRules(ElementRuleCollector& collector) {
@@ -1126,6 +1101,8 @@ const ComputedStyle* StyleResolver::ResolveStyle(
         state, style_request.IsPseudoStyleRequest() ? nullptr : element);
   }
 
+  ApplyAnchorData(state);
+
   IncrementResolvedStyleCounters(style_request, GetDocument());
 
   if (!style_request.IsPseudoStyleRequest()) {
@@ -1194,29 +1171,14 @@ void StyleResolver::InitStyle(Element& element,
     // if the element has no rules for this highlight pseudo, we skip resolution
     // entirely (leaving the scoped_refptr untouched). The bad news is that if
     // the element has rules but no matched properties, we currently clone.
-
     state.SetStyle(*parent_style);
 
-    // Custom Properties on highlight pseudos are taken from :root, due to the
-    // standard practice of putting document wide custom properties on :root.
-    // The highlight pseudo that requires the variables will have a non-pseudo
-    // parent style (as the root of the highlight inheritance chain).
-    bool parent_is_initial_style = parent_style->StyleType() == kPseudoIdNone;
-    DCHECK(parent_style->StyleType() == style_request.pseudo_id ||
-           parent_is_initial_style);
-
-    if (parent_is_initial_style) {
-      DCHECK(!parent_style->InheritedVariables());
-      DCHECK(!parent_style->NonInheritedVariables());
-      // Style on the root itself has no root element, so use the originating
-      // element which will be the root.
-      const ComputedStyle* source_style = state.RootElementStyle()
-                                              ? state.RootElementStyle()
-                                              : state.OriginatingElementStyle();
-      DCHECK(source_style);
-      state.StyleBuilder().CopyInheritedVariablesFrom(source_style);
-      state.StyleBuilder().CopyNonInheritedVariablesFrom(source_style);
-    }
+    // Highlight Pseudos do not support custom properties defined on the
+    // pseudo itself. They may use var() references but those must be resolved
+    // against the originating element. Share the variables from the originating
+    // style.
+    state.StyleBuilder().CopyInheritedVariablesFrom(state.OriginatingElementStyle());
+    state.StyleBuilder().CopyNonInheritedVariablesFrom(state.OriginatingElementStyle());
   } else {
     state.CreateNewStyle(
         source_for_noninherited, *parent_style,
@@ -1368,6 +1330,14 @@ bool CanApplyInlineStyleIncrementally(Element* element,
   // and we don't support that. It should be rare to animate elements
   // _both_ with animations and mutating inline style anyway.
   if (GetElementAnimations(state) || element->GetComputedStyle()->BaseData()) {
+    return false;
+  }
+
+  // ComputedStyles produced by OOF-interleaving (StyleEngine::
+  // UpdateStyleForOutOfFlow) have this flag set. We can not apply the style
+  // incrementally on top of this, because ComputedStyles produced by normal
+  // style recalcs should not have this flag.
+  if (element->GetComputedStyle()->HasAnchorEvaluator()) {
     return false;
   }
 
@@ -1780,7 +1750,17 @@ const ComputedStyle* StyleResolver::StyleForPage(
   StyleResolverState state(GetDocument(), *root_element,
                            nullptr /* StyleRecalcContext */,
                            StyleRequest(parent_style));
-  state.CreateNewStyle(*parent_style, *parent_style);
+  state.CreateNewStyle(*InitialStyleForElement(), *parent_style);
+
+  if (parent_style->Display() == EDisplay::kNone) {
+    // The root is display:none. One page box will still be created, but no
+    // properties should apply.
+    return InitialStyleForElement();
+  }
+
+  auto& builder = state.StyleBuilder();
+  // Page boxes are blocks.
+  builder.SetDisplay(EDisplay::kBlock);
 
   STACK_UNINITIALIZED StyleCascade cascade(state);
 
@@ -1792,12 +1772,44 @@ const ComputedStyle* StyleResolver::StyleForPage(
       CascadeOrigin::kUserAgent, nullptr /* tree_scope */,
       nullptr /* layer_map */);
 
+  // Calling this function without being in print mode is unusual and special,
+  // but it happens from unit tests, if nothing else.
+  if (GetDocument().Printing()) {
+    const WebPrintParams& params = GetDocument().GetFrame()->GetPrintParams();
+    const WebPrintPageDescription& description =
+        params.default_page_description;
+    // Set margins from print settings. They may be overridden by author styles,
+    // unless params.ignore_css_margins is set.
+    auto* set =
+        MakeGarbageCollected<MutableCSSPropertyValueSet>(kHTMLStandardMode);
+    auto* value = CSSNumericLiteralValue::Create(
+        description.margin_top, CSSPrimitiveValue::UnitType::kPixels);
+    set->SetProperty(CSSPropertyID::kMarginTop, *value,
+                     /*important=*/params.ignore_css_margins);
+    value = CSSNumericLiteralValue::Create(
+        description.margin_right, CSSPrimitiveValue::UnitType::kPixels);
+    set->SetProperty(CSSPropertyID::kMarginRight, *value,
+                     /*important=*/params.ignore_css_margins);
+    value = CSSNumericLiteralValue::Create(
+        description.margin_bottom, CSSPrimitiveValue::UnitType::kPixels);
+    set->SetProperty(CSSPropertyID::kMarginBottom, *value,
+                     /*important=*/params.ignore_css_margins);
+    value = CSSNumericLiteralValue::Create(
+        description.margin_left, CSSPrimitiveValue::UnitType::kPixels);
+    set->SetProperty(CSSPropertyID::kMarginLeft, *value,
+                     /*important=*/params.ignore_css_margins);
+    cascade.MutableMatchResult().AddMatchedProperties(
+        set, CascadeOrigin::kUserAgent);
+  }
+
   if (ScopedStyleResolver* scoped_resolver =
           GetDocument().GetScopedStyleResolver()) {
     scoped_resolver->MatchPageRules(collector);
   }
 
   cascade.Apply();
+
+  state.LoadPendingResources();
 
   // Now return the style.
   return state.TakeStyle();
@@ -1856,6 +1868,13 @@ ComputedStyleBuilder StyleResolver::InitialStyleBuilderForElement() const {
       engine.MaybeCreateAndGetInitialData();
   if (initial_data) {
     builder.SetInitialData(std::move(initial_data));
+  }
+
+  if (RuntimeEnabledFeatures::PreferDefaultScrollbarStylesEnabled()) {
+    Settings* settings = GetDocument().GetSettings();
+    if (settings && settings->GetPrefersDefaultScrollbarStyles()) {
+      builder.SetPrefersDefaultScrollbarStyles(true);
+    }
   }
 
   return builder;
@@ -2071,6 +2090,23 @@ bool StyleResolver::ApplyAnimatedStyle(StyleResolverState& state,
       *animating_element, state.AnimationUpdate(), state.StyleBuilder());
 
   return apply;
+}
+
+void StyleResolver::ApplyAnchorData(StyleResolverState& state) {
+  if (AnchorEvaluator* evaluator =
+          state.CssToLengthConversionData().GetAnchorEvaluator()) {
+    // Pre-compute anchor-center offset so that the OOF layout code does not
+    // need to set up an AnchorEvaluator but simply retrieve the offsets from
+    // the ComputedStyle.
+    if (std::optional<PhysicalOffset> offset =
+            evaluator->ComputeAnchorCenterOffsets(state.StyleBuilder());
+        offset.has_value()) {
+      state.StyleBuilder().SetAnchorCenterOffset(offset);
+    }
+
+    // See ComputedStyle::HasAnchorFunctionsWithoutEvaluator.
+    state.StyleBuilder().SetHasAnchorEvaluator();
+  }
 }
 
 StyleResolver::FindKeyframesRuleResult StyleResolver::FindKeyframesRule(
@@ -2382,13 +2418,11 @@ bool StyleResolver::CanReuseBaseComputedStyle(const StyleResolverState& state) {
   // TODO(crbug.com/40943044): If we need to disable the optimization for
   // elements with position-fallback/anchor(), we probably need to disable
   // for descendants of such elements as well.
-  if (RuntimeEnabledFeatures::CSSAnchorPositioningCascadeFallbackEnabled() &&
-      (base_style->PositionFallback() != nullptr ||
-       base_style->GetPositionTryOptions() != nullptr)) {
+  if (base_style->GetPositionTryOptions() != nullptr) {
     return false;
   }
 
-  if (base_style->HasAnchorFunctions()) {
+  if (base_style->HasAnchorFunctions() || base_style->HasAnchorEvaluator()) {
     // TODO(crbug.com/41483417): Enable this optimization for styles with
     // anchor queries.
     return false;
@@ -2949,7 +2983,7 @@ void StyleResolver::PropagateStyleToViewport() {
                                        overflow_style->OverscrollBehaviorY())));
       }
 
-      if (overflow_style->HasCustomScrollbarStyle(GetDocument())) {
+      if (overflow_style->HasCustomScrollbarStyle(document_element)) {
         update_scrollbar_style = true;
       }
     }
@@ -2987,7 +3021,7 @@ void StyleResolver::PropagateStyleToViewport() {
     PROPAGATE_FROM(document_element_style, ScrollbarWidth, SetScrollbarWidth,
                    EScrollbarWidth::kAuto);
     PROPAGATE_FROM(document_element_style, ScrollbarColor, SetScrollbarColor,
-                   std::nullopt);
+                   nullptr);
     PROPAGATE_FROM(document_element_style, ForcedColorAdjust,
                    SetForcedColorAdjust, EForcedColorAdjust::kAuto);
     if (RuntimeEnabledFeatures::UsedColorSchemeRootScrollbarsEnabled()) {
@@ -3154,39 +3188,6 @@ Element& StyleResolver::EnsureElementForFormattedText() {
   return *formatted_text_element_;
 }
 
-StyleRulePositionFallback* StyleResolver::ResolvePositionFallbackRule(
-    const TreeScope* tree_scope,
-    AtomicString position_fallback_name) {
-  if (!tree_scope) {
-    tree_scope = &GetDocument();
-  }
-
-  StyleRulePositionFallback* position_fallback_rule = nullptr;
-  for (; tree_scope; tree_scope = tree_scope->ParentTreeScope()) {
-    if (ScopedStyleResolver* resolver = tree_scope->GetScopedStyleResolver()) {
-      position_fallback_rule =
-          resolver->PositionFallbackForName(position_fallback_name);
-      if (position_fallback_rule) {
-        break;
-      }
-    }
-  }
-
-  // Try UA rules if no author rule matches
-  if (!position_fallback_rule) {
-    for (const auto& rule : CSSDefaultStyleSheets::Instance()
-                                .DefaultHtmlStyle()
-                                ->PositionFallbackRules()) {
-      if (position_fallback_name == rule->Name()) {
-        position_fallback_rule = rule;
-        break;
-      }
-    }
-  }
-
-  return position_fallback_rule;
-}
-
 StyleRulePositionTry* StyleResolver::ResolvePositionTryRule(
     const TreeScope* tree_scope,
     AtomicString position_try_name) {
@@ -3217,43 +3218,6 @@ StyleRulePositionTry* StyleResolver::ResolvePositionTryRule(
   }
 
   return position_try_rule;
-}
-
-const ComputedStyle* StyleResolver::ResolvePositionFallbackStyle(
-    Element& element,
-    unsigned index) {
-  const ComputedStyle& base_style = element.ComputedStyleRef();
-  const ScopedCSSName* position_fallback = base_style.PositionFallback();
-  DCHECK(position_fallback);
-
-  const TreeScope* tree_scope = position_fallback->GetTreeScope();
-  if (!tree_scope) {
-    tree_scope = &GetDocument();
-  }
-
-  StyleRulePositionFallback* position_fallback_rule =
-      ResolvePositionFallbackRule(tree_scope, position_fallback->GetName());
-
-  if (!position_fallback_rule ||
-      index >= position_fallback_rule->ChildRules().size()) {
-    return nullptr;
-  }
-
-  StyleRuleTry* try_rule =
-      To<StyleRuleTry>(position_fallback_rule->ChildRules()[index].Get());
-  StyleResolverState state(GetDocument(), element);
-  state.SetStyle(base_style);
-  const CSSPropertyValueSet& properties = try_rule->Properties();
-
-  STACK_UNINITIALIZED StyleCascade cascade(state);
-  cascade.MutableMatchResult().BeginAddingAuthorRulesForTreeScope(*tree_scope);
-  AddMatchedPropertiesOptions options;
-  options.valid_property_filter = ValidPropertyFilter::kPositionTry;
-  cascade.MutableMatchResult().AddMatchedProperties(
-      &properties, CascadeOrigin::kAuthor, options);
-  cascade.Apply();
-
-  return state.TakeStyle();
 }
 
 }  // namespace blink

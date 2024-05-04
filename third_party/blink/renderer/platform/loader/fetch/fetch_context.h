@@ -189,11 +189,29 @@ class PLATFORM_EXPORT FetchContext : public GarbageCollected<FetchContext> {
   // Returns true iff we have LCPP hint data for the fetch context.
   virtual bool DoesLCPPHaveAnyHintData() { return false; }
 
+  // Returns true iff we have LCP element locator hint data for the fetch
+  // context.
+  virtual bool DoesLCPPHaveLcpElementLocatorHintData() { return false; }
+
   // Returns the origin of the top frame in the document or the dedicated
   // worker. This returns nullptr for Shared Workers and Service Workers.
   virtual scoped_refptr<const SecurityOrigin> GetTopFrameOrigin() const {
     return nullptr;
   }
+
+  // Returns the list of potentially unused preload URLs flagged by the LCP
+  // predcitor, which is attached to the frame. This returns an empty Vector for
+  // Shared Workers and Service Workers.
+  virtual const Vector<KURL>& GetPotentiallyUnusedPreloads() const {
+    return empty_unused_preloads_;
+  }
+
+  virtual void AddLcpPredictedCallback(base::OnceClosure callback) {
+    NOTIMPLEMENTED();
+  }
+
+ protected:
+  const Vector<KURL> empty_unused_preloads_;
 };
 
 }  // namespace blink

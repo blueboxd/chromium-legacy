@@ -12,11 +12,14 @@
 #include "build/config/chromebox_for_meetings/buildflags.h"
 #include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/extensions/extension_apitest.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/ash/components/install_attributes/stub_install_attributes.h"
 #include "chromeos/ash/components/settings/cros_settings_names.h"
+#include "chromeos/ash/components/system/fake_statistics_provider.h"
+#include "chromeos/ash/components/system/statistics_provider.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/test/browser_test.h"
 #include "ui/aura/window.h"
@@ -64,7 +67,8 @@ IN_PROC_BROWSER_TEST_F(ChromeOSInfoPrivateTest, DISABLED_TestGetAndSet) {
   ASSERT_FALSE(prefs->GetBoolean(ash::prefs::kAccessibilityAutoclickEnabled));
   ASSERT_FALSE(prefs->GetBoolean(ash::prefs::kAccessibilityCursorColorEnabled));
 
-  ASSERT_FALSE(profile()->GetPrefs()->GetBoolean(ash::prefs::kSendFunctionKeys));
+  ASSERT_FALSE(
+      profile()->GetPrefs()->GetBoolean(ash::prefs::kSendFunctionKeys));
 
   ASSERT_TRUE(RunExtensionTest("chromeos_info_private/basic", {},
                                {.load_as_component = true}))
@@ -196,7 +200,7 @@ IN_PROC_BROWSER_TEST_F(ChromeOSInfoPrivateTest, StylusSupported) {
       << message_;
 }
 
-// TODO(https://crbug.com/814675): Excluded from Mash because pointer events
+// TODO(crbug.com/40564126): Excluded from Mash because pointer events
 // aren't seen.
 IN_PROC_BROWSER_TEST_F(ChromeOSInfoPrivateTest, StylusSeen) {
   ui::DeviceDataManagerTestApi test_api;
@@ -316,5 +320,44 @@ IN_PROC_BROWSER_TEST_F(ChromeOSManagedDeviceInfoPrivateTest, Managed) {
   ASSERT_TRUE(RunExtensionTest(
       "chromeos_info_private/extended",
       {.custom_arg = "managed", .launch_as_platform_app = true}))
+      << message_;
+}
+
+class ChromeOSInfoPrivateDeviceRequisitionTest
+    : public ChromeOSInfoPrivateTest {
+ public:
+  ChromeOSInfoPrivateDeviceRequisitionTest() {
+    fake_statistics_provider_.SetVpdStatus(
+        ash::system::StatisticsProvider::VpdStatus::kValid);
+  }
+
+  ChromeOSInfoPrivateDeviceRequisitionTest(
+      const ChromeOSInfoPrivateDeviceRequisitionTest&) = delete;
+  ChromeOSInfoPrivateDeviceRequisitionTest& operator=(
+      const ChromeOSInfoPrivateDeviceRequisitionTest&) = delete;
+
+  ~ChromeOSInfoPrivateDeviceRequisitionTest() override = default;
+
+ protected:
+  ash::system::ScopedFakeStatisticsProvider fake_statistics_provider_;
+};
+
+IN_PROC_BROWSER_TEST_F(ChromeOSInfoPrivateDeviceRequisitionTest,
+                       TestDeviceRequisitionUnset) {
+  fake_statistics_provider_.ClearMachineStatistic(
+      ash::system::kOemDeviceRequisitionKey);
+  ASSERT_TRUE(RunExtensionTest("chromeos_info_private/extended",
+                               {.custom_arg = "Device Requisition - Unset",
+                                .launch_as_platform_app = true}))
+      << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(ChromeOSInfoPrivateDeviceRequisitionTest,
+                       TestDeviceRequisitionRemora) {
+  fake_statistics_provider_.SetMachineStatistic(
+      ash::system::kOemDeviceRequisitionKey, "remora");
+  ASSERT_TRUE(RunExtensionTest("chromeos_info_private/extended",
+                               {.custom_arg = "Device Requisition - Remora",
+                                .launch_as_platform_app = true}))
       << message_;
 }

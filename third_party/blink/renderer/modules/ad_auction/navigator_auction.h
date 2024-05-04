@@ -54,66 +54,71 @@ class MODULES_EXPORT NavigatorAuction final
   static NavigatorAuction& From(ExecutionContext*, Navigator&);
 
   // TODO(crbug.com/1441988): Make `const AuctionAdInterestGroup*` after rename.
-  ScriptPromise joinAdInterestGroup(ScriptState*,
-                                    AuctionAdInterestGroup*,
-                                    std::optional<double>,
-                                    ExceptionState&);
-  static ScriptPromise joinAdInterestGroup(ScriptState*,
-                                           Navigator&,
-                                           AuctionAdInterestGroup*,
-                                           double,
-                                           ExceptionState&);
-  static ScriptPromise joinAdInterestGroup(ScriptState*,
-                                           Navigator&,
-                                           AuctionAdInterestGroup*,
-                                           ExceptionState&);
-  ScriptPromise leaveAdInterestGroup(ScriptState*,
-                                     const AuctionAdInterestGroupKey*,
-                                     ExceptionState&);
-  static ScriptPromise leaveAdInterestGroup(ScriptState*,
-                                            Navigator&,
-                                            const AuctionAdInterestGroupKey*,
-                                            ExceptionState&);
+  ScriptPromise<IDLUndefined> joinAdInterestGroup(ScriptState*,
+                                                  AuctionAdInterestGroup*,
+                                                  std::optional<double>,
+                                                  ExceptionState&);
+  static ScriptPromise<IDLUndefined> joinAdInterestGroup(
+      ScriptState*,
+      Navigator&,
+      AuctionAdInterestGroup*,
+      double,
+      ExceptionState&);
+  static ScriptPromise<IDLUndefined> joinAdInterestGroup(
+      ScriptState*,
+      Navigator&,
+      AuctionAdInterestGroup*,
+      ExceptionState&);
+  ScriptPromise<IDLUndefined> leaveAdInterestGroup(
+      ScriptState*,
+      const AuctionAdInterestGroupKey*,
+      ExceptionState&);
+  static ScriptPromise<IDLUndefined> leaveAdInterestGroup(
+      ScriptState*,
+      Navigator&,
+      const AuctionAdInterestGroupKey*,
+      ExceptionState&);
 
   // Implicit leaveAdInterestGroup - only supported when called from within
   // a fenced frame showing FLEDGE ads.
-  ScriptPromise leaveAdInterestGroupForDocument(ScriptState*, ExceptionState&);
-  static ScriptPromise leaveAdInterestGroup(ScriptState*,
-                                            Navigator&,
-                                            ExceptionState&);
+  ScriptPromise<IDLUndefined> leaveAdInterestGroupForDocument(ScriptState*,
+                                                              ExceptionState&);
+  static ScriptPromise<IDLUndefined> leaveAdInterestGroup(ScriptState*,
+                                                          Navigator&,
+                                                          ExceptionState&);
 
-  ScriptPromise clearOriginJoinedAdInterestGroups(ScriptState*,
-                                                  const String,
-                                                  const Vector<String>,
-                                                  ExceptionState&);
-  static ScriptPromise clearOriginJoinedAdInterestGroups(ScriptState*,
-                                                         Navigator&,
-                                                         const String,
-                                                         ExceptionState&);
-  static ScriptPromise clearOriginJoinedAdInterestGroups(ScriptState*,
-                                                         Navigator&,
-                                                         const String,
-                                                         const Vector<String>,
-                                                         ExceptionState&);
+  ScriptPromise<IDLUndefined> clearOriginJoinedAdInterestGroups(
+      ScriptState*,
+      const String,
+      const Vector<String>,
+      ExceptionState&);
+  static ScriptPromise<IDLUndefined> clearOriginJoinedAdInterestGroups(
+      ScriptState*,
+      Navigator&,
+      const String,
+      ExceptionState&);
+  static ScriptPromise<IDLUndefined> clearOriginJoinedAdInterestGroups(
+      ScriptState*,
+      Navigator&,
+      const String,
+      const Vector<String>,
+      ExceptionState&);
 
   void updateAdInterestGroups();
   static void updateAdInterestGroups(ScriptState*, Navigator&, ExceptionState&);
   // TODO(crbug.com/1441988): Make `const AuctionAdConfig*` after rename.
-  ScriptPromiseTyped<IDLNullable<V8UnionFencedFrameConfigOrUSVString>>
-  runAdAuction(ScriptState*,
-               AuctionAdConfig*,
-               ExceptionState&,
-               base::TimeTicks start_time = base::TimeTicks::Now());
-  static ScriptPromise runAdAuction(ScriptState*,
-                                    Navigator&,
-                                    AuctionAdConfig*,
-                                    ExceptionState&);
+  ScriptPromise<IDLNullable<V8UnionFencedFrameConfigOrUSVString>> runAdAuction(
+      ScriptState*,
+      AuctionAdConfig*,
+      ExceptionState&,
+      base::TimeTicks start_time = base::TimeTicks::Now());
+  static ScriptPromise<IDLNullable<V8UnionFencedFrameConfigOrUSVString>>
+  runAdAuction(ScriptState*, Navigator&, AuctionAdConfig*, ExceptionState&);
 
-  ScriptPromiseTyped<IDLString> createAuctionNonce(ScriptState*,
-                                                   ExceptionState&);
-  static ScriptPromiseTyped<IDLString> createAuctionNonce(ScriptState*,
-                                                          Navigator&,
-                                                          ExceptionState&);
+  ScriptPromise<IDLString> createAuctionNonce(ScriptState*, ExceptionState&);
+  static ScriptPromise<IDLString> createAuctionNonce(ScriptState*,
+                                                     Navigator&,
+                                                     ExceptionState&);
 
   // If called from a FencedFrame that was navigated to the URN resulting from
   // an interest group ad auction, returns a Vector of ad component URNs
@@ -133,59 +138,59 @@ class MODULES_EXPORT NavigatorAuction final
                                             uint16_t num_ad_components,
                                             ExceptionState& exception_state);
 
-  ScriptPromiseTyped<IDLUSVString> deprecatedURNToURL(
+  ScriptPromise<IDLUSVString> deprecatedURNToURL(
       ScriptState* script_state,
       const String& urn_uuid,
       bool send_reports,
       ExceptionState& exception_state);
 
-  static ScriptPromiseTyped<IDLUSVString> deprecatedURNToURL(
+  static ScriptPromise<IDLUSVString> deprecatedURNToURL(
       ScriptState* script_state,
       Navigator& navigator,
       const V8UnionFencedFrameConfigOrUSVString* urn_or_config,
       bool send_reports,
       ExceptionState& exception_state);
 
-  ScriptPromise deprecatedReplaceInURN(
+  ScriptPromise<IDLUndefined> deprecatedReplaceInURN(
       ScriptState* script_state,
       const String& urn_uuid,
       const Vector<std::pair<String, String>>& replacement,
       ExceptionState& exception_state);
 
-  static ScriptPromise deprecatedReplaceInURN(
+  static ScriptPromise<IDLUndefined> deprecatedReplaceInURN(
       ScriptState* script_state,
       Navigator& navigator,
       const V8UnionFencedFrameConfigOrUSVString* urn_or_config,
       const Vector<std::pair<String, String>>& replacement,
       ExceptionState& exception_state);
 
-  ScriptPromiseTyped<AdAuctionData> getInterestGroupAdAuctionData(
+  ScriptPromise<AdAuctionData> getInterestGroupAdAuctionData(
       ScriptState* script_state,
       const AdAuctionDataConfig* config,
       ExceptionState& exception_state,
       base::TimeTicks start_time = base::TimeTicks::Now());
-  static ScriptPromiseTyped<AdAuctionData> getInterestGroupAdAuctionData(
+  static ScriptPromise<AdAuctionData> getInterestGroupAdAuctionData(
       ScriptState* script_state,
       Navigator& navigator,
       const AdAuctionDataConfig* config,
       ExceptionState& exception_state);
 
-  ScriptPromise createAdRequest(ScriptState*,
-                                const AdRequestConfig*,
-                                ExceptionState&);
-  static ScriptPromise createAdRequest(ScriptState*,
-                                       Navigator&,
-                                       const AdRequestConfig*,
-                                       ExceptionState&);
-  ScriptPromiseTyped<IDLString> finalizeAd(ScriptState*,
-                                           const Ads*,
-                                           const AuctionAdConfig*,
-                                           ExceptionState&);
-  static ScriptPromiseTyped<IDLString> finalizeAd(ScriptState*,
-                                                  Navigator&,
-                                                  const Ads*,
-                                                  const AuctionAdConfig*,
-                                                  ExceptionState&);
+  ScriptPromise<Ads> createAdRequest(ScriptState*,
+                                     const AdRequestConfig*,
+                                     ExceptionState&);
+  static ScriptPromise<Ads> createAdRequest(ScriptState*,
+                                            Navigator&,
+                                            const AdRequestConfig*,
+                                            ExceptionState&);
+  ScriptPromise<IDLString> finalizeAd(ScriptState*,
+                                      const Ads*,
+                                      const AuctionAdConfig*,
+                                      ExceptionState&);
+  static ScriptPromise<IDLString> finalizeAd(ScriptState*,
+                                             Navigator&,
+                                             const Ads*,
+                                             const AuctionAdConfig*,
+                                             ExceptionState&);
 
   // Web-exposed API that returns whether an opaque-ads fenced frame would be
   // allowed to be created in the current active document of this node after
@@ -239,7 +244,7 @@ class MODULES_EXPORT NavigatorAuction final
 
   // Completion callback for joinInterestGroup() Mojo calls.
   void JoinComplete(bool is_cross_origin,
-                    ScriptPromiseResolver* resolver,
+                    ScriptPromiseResolver<IDLUndefined>* resolver,
                     bool failed_well_known_check);
 
   // Tells the browser process to start `pending_leave`. Its callback will be
@@ -248,7 +253,7 @@ class MODULES_EXPORT NavigatorAuction final
 
   // Completion callback for clearOriginJoinedAdInterestGroups() Mojo calls.
   void LeaveComplete(bool is_cross_origin,
-                     ScriptPromiseResolver* resolver,
+                     ScriptPromiseResolver<IDLUndefined>* resolver,
                      bool failed_well_known_check);
 
   // Tells the browser process to start `pending_clear`. Its callback will be
@@ -257,27 +262,27 @@ class MODULES_EXPORT NavigatorAuction final
 
   // Completion callback for leaveInterestGroup() Mojo calls.
   void ClearComplete(bool is_cross_origin,
-                     ScriptPromiseResolver* resolver,
+                     ScriptPromiseResolver<IDLUndefined>* resolver,
                      bool failed_well_known_check);
 
   // Completion callback for createAuctionNonce() Mojo call.
-  void CreateAuctionNonceComplete(ScriptPromiseResolverTyped<IDLString>*,
+  void CreateAuctionNonceComplete(ScriptPromiseResolver<IDLString>*,
                                   const base::Uuid& nonce);
   // Completion callback for createAdRequest() Mojo call.
-  void AdsRequested(ScriptPromiseResolver* resolver,
+  void AdsRequested(ScriptPromiseResolver<Ads>* resolver,
                     const WTF::String& ads_guid);
   // Completion callback for finalizeAd() Mojo call.
-  void FinalizeAdComplete(ScriptPromiseResolverTyped<IDLString>* resolver,
+  void FinalizeAdComplete(ScriptPromiseResolver<IDLString>* resolver,
                           const std::optional<KURL>& creative_url);
   // Completion callback for Mojo call made by deprecatedURNToURL().
-  void GetURLFromURNComplete(ScriptPromiseResolverTyped<IDLUSVString>*,
+  void GetURLFromURNComplete(ScriptPromiseResolver<IDLUSVString>*,
                              const std::optional<KURL>&);
   // Completion callback for Mojo call made by deprecatedReplaceInURNComplete().
-  void ReplaceInURNComplete(ScriptPromiseResolver* resolver);
+  void ReplaceInURNComplete(ScriptPromiseResolver<IDLUndefined>* resolver);
 
   void GetInterestGroupAdAuctionDataComplete(
       base::TimeTicks start_time,
-      ScriptPromiseResolverTyped<AdAuctionData>* resolver,
+      ScriptPromiseResolver<AdAuctionData>* resolver,
       mojo_base::BigBuffer request,
       const std::optional<base::Uuid>& request_id,
       const WTF::String& error_message);
@@ -287,6 +292,13 @@ class MODULES_EXPORT NavigatorAuction final
   JoinLeaveQueue<PendingJoin> queued_cross_site_joins_;
   JoinLeaveQueue<PendingLeave> queued_cross_site_leaves_;
   JoinLeaveQueue<PendingClear> queued_cross_site_clears_;
+
+  // The next available auction nonce suffix, used alongside the
+  // base_auction_nonce provided by the Browser process to create unique auction
+  // nonces when createAuctionNonce is called and
+  // FledgeCreateAuctionNonceSynchronousResolution is enabled. Though this
+  // counter has 32 bits, only the least significant 24 bits are used.
+  uint32_t auction_nonce_counter_ = 0;
 
   HeapMojoRemote<mojom::blink::AdAuctionService> ad_auction_service_;
   Member<ProtectedAudience> protected_audience_;

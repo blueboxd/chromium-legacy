@@ -28,16 +28,17 @@
 import {CrLitElement} from '//resources/lit/v3_0/lit.rollup.js';
 import type {PropertyValues} from '//resources/lit/v3_0/lit.rollup.js';
 
-import {CrPaperRippleMixin} from '../cr_paper_ripple_mixin.js';
+import {CrRippleMixin} from '../cr_ripple/cr_ripple_mixin.js';
 
 import {getCss} from './cr_checkbox.css.js';
 import {getHtml} from './cr_checkbox.html.js';
 
-const CrCheckboxElementBase = CrPaperRippleMixin(CrLitElement);
+const CrCheckboxElementBase = CrRippleMixin(CrLitElement);
 
 export interface CrCheckboxElement {
   $: {
     checkbox: HTMLElement,
+    labelContainer: HTMLElement,
   };
 }
 
@@ -75,20 +76,17 @@ export class CrCheckboxElement extends CrCheckboxElementBase {
 
   checked: boolean = false;
   disabled: boolean = false;
-  ariaDescription?: string;
+  override ariaDescription: string|null;
   ariaLabelOverride?: string;
   override tabIndex: number = 0;
 
   override firstUpdated() {
     this.addEventListener('click', this.onClick_.bind(this));
     this.addEventListener('pointerup', this.hideRipple_.bind(this));
-    if (document.documentElement.hasAttribute('chrome-refresh-2023')) {
-      this.addEventListener('pointerdown', this.showRipple_.bind(this));
-      this.addEventListener('pointerleave', this.hideRipple_.bind(this));
-    } else {
-      this.addEventListener('blur', this.hideRipple_.bind(this));
-      this.addEventListener('focus', this.showRipple_.bind(this));
-    }
+    this.$.labelContainer.addEventListener(
+        'pointerdown', this.showRipple_.bind(this));
+    this.$.labelContainer.addEventListener(
+        'pointerleave', this.hideRipple_.bind(this));
   }
 
   override willUpdate(changedProperties: PropertyValues<this>) {
@@ -183,13 +181,12 @@ export class CrCheckboxElement extends CrCheckboxElementBase {
     }
   }
 
-  // Overridden from CrPaperRippleMixin
+  // Overridden from CrRippleMixin
   override createRipple() {
     this.rippleContainer = this.$.checkbox;
     const ripple = super.createRipple();
-    ripple.id = 'ink';
     ripple.setAttribute('recenters', '');
-    ripple.classList.add('circle', 'toggle-ink');
+    ripple.classList.add('circle');
     return ripple;
   }
 }

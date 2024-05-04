@@ -6,14 +6,14 @@
 
 #include <algorithm>
 #include <numeric>
+#include <string_view>
 #include <utility>
 
-#include "base/big_endian.h"
 #include "base/containers/span.h"
+#include "base/containers/span_reader.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/rand_util.h"
-#include "base/strings/string_piece.h"
 #include "net/base/ip_address.h"
 #include "net/dns/dns_response.h"
 #include "net/dns/public/dns_protocol.h"
@@ -25,7 +25,7 @@ static const size_t kSrvRecordMinimumSize = 6;
 // Minimal HTTPS rdata is 2 octets priority + 1 octet empty name.
 static constexpr size_t kHttpsRdataMinimumSize = 3;
 
-bool RecordRdata::HasValidSize(base::StringPiece data, uint16_t type) {
+bool RecordRdata::HasValidSize(std::string_view data, uint16_t type) {
   switch (type) {
     case dns_protocol::kTypeSRV:
       return data.size() >= kSrvRecordMinimumSize;
@@ -54,18 +54,18 @@ SrvRecordRdata::~SrvRecordRdata() = default;
 
 // static
 std::unique_ptr<SrvRecordRdata> SrvRecordRdata::Create(
-    base::StringPiece data,
+    std::string_view data,
     const DnsRecordParser& parser) {
   if (!HasValidSize(data, kType))
     return nullptr;
 
   auto rdata = base::WrapUnique(new SrvRecordRdata());
 
-  auto reader = base::BigEndianReader::FromStringPiece(data);
+  auto reader = base::SpanReader(base::as_byte_span(data));
   // 2 bytes for priority, 2 bytes for weight, 2 bytes for port.
-  reader.ReadU16(&rdata->priority_);
-  reader.ReadU16(&rdata->weight_);
-  reader.ReadU16(&rdata->port_);
+  reader.ReadU16BigEndian(rdata->priority_);
+  reader.ReadU16BigEndian(rdata->weight_);
+  reader.ReadU16BigEndian(rdata->port_);
 
   if (!parser.ReadName(data.substr(kSrvRecordMinimumSize).data(),
                        &rdata->target_)) {
@@ -94,7 +94,7 @@ ARecordRdata::~ARecordRdata() = default;
 
 // static
 std::unique_ptr<ARecordRdata> ARecordRdata::Create(
-    base::StringPiece data,
+    std::string_view data,
     const DnsRecordParser& parser) {
   if (!HasValidSize(data, kType))
     return nullptr;
@@ -120,7 +120,7 @@ AAAARecordRdata::~AAAARecordRdata() = default;
 
 // static
 std::unique_ptr<AAAARecordRdata> AAAARecordRdata::Create(
-    base::StringPiece data,
+    std::string_view data,
     const DnsRecordParser& parser) {
   if (!HasValidSize(data, kType))
     return nullptr;
@@ -146,7 +146,7 @@ CnameRecordRdata::~CnameRecordRdata() = default;
 
 // static
 std::unique_ptr<CnameRecordRdata> CnameRecordRdata::Create(
-    base::StringPiece data,
+    std::string_view data,
     const DnsRecordParser& parser) {
   auto rdata = base::WrapUnique(new CnameRecordRdata());
 
@@ -174,7 +174,7 @@ PtrRecordRdata::~PtrRecordRdata() = default;
 
 // static
 std::unique_ptr<PtrRecordRdata> PtrRecordRdata::Create(
-    base::StringPiece data,
+    std::string_view data,
     const DnsRecordParser& parser) {
   auto rdata = base::WrapUnique(new PtrRecordRdata());
 
@@ -201,7 +201,7 @@ TxtRecordRdata::~TxtRecordRdata() = default;
 
 // static
 std::unique_ptr<TxtRecordRdata> TxtRecordRdata::Create(
-    base::StringPiece data,
+    std::string_view data,
     const DnsRecordParser& parser) {
   auto rdata = base::WrapUnique(new TxtRecordRdata());
 
@@ -236,7 +236,7 @@ NsecRecordRdata::~NsecRecordRdata() = default;
 
 // static
 std::unique_ptr<NsecRecordRdata> NsecRecordRdata::Create(
-    base::StringPiece data,
+    std::string_view data,
     const DnsRecordParser& parser) {
   auto rdata = base::WrapUnique(new NsecRecordRdata());
 
@@ -262,7 +262,7 @@ std::unique_ptr<NsecRecordRdata> NsecRecordRdata::Create(
   if (header->block_number != 0 || header->length == 0 || header->length > 32)
     return nullptr;
 
-  base::StringPiece bitmap_data = data.substr(next_domain_length + 2);
+  std::string_view bitmap_data = data.substr(next_domain_length + 2);
 
   // Since we may only have one block, the data length must be exactly equal to
   // the domain length plus bitmap size.

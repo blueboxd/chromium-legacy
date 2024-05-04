@@ -17,12 +17,15 @@
 //! local machine. It keeps state in two files in the working directory:
 //! "state.transparent" and "state.confidential".
 
+extern crate alloc;
 extern crate base64;
+extern crate cbor;
 extern crate crypto;
 extern crate handshake;
 extern crate hex;
 extern crate processor;
 
+use cbor::{cbor, Value};
 use crypto::P256Scalar;
 use processor::{ClientState, StateUpdate};
 use std::io::{Read, Write};
@@ -211,12 +214,13 @@ impl EnclaveServer {
         let mut seen_first_line = false;
         let mut websocket_key: Option<String> = None;
         let mut websocket_protocol: Option<String> = None;
+        let mut has_reauthentication_header = false;
         loop {
             let line = match next_line(&conn) {
                 Ok(line) => line,
                 Err(NextLineError::OtherError) => return,
                 Err(NextLineError::TlsHandshake) => panic!(
-                    "TLS handshake recevied. This server only speaks plaintext. Ensure that you have specified the address with ws://, not wss://"
+                    "TLS handshake received. This server only speaks plaintext. Ensure that you have specified the address with ws://, not wss://"
                 ),
             };
             if line.is_empty() {
@@ -235,6 +239,7 @@ impl EnclaveServer {
             match key.to_lowercase().as_str() {
                 "sec-websocket-key" => websocket_key = Some(String::from(value.trim())),
                 "sec-websocket-protocol" => websocket_protocol = Some(String::from(value.trim())),
+                "reauthentication" => has_reauthentication_header = true,
                 _ => (),
             }
         }
@@ -301,33 +306,45 @@ impl EnclaveServer {
             })
             .unwrap_or(ClientState::Initial);
 
-        let (result_array, state_update) = match processor::process_client_msg(
+        let cbor_response = match processor::process_client_msg(
             client_state,
-            // This timestamp is fixed so that any XML files submitted by tests will be considered
-            // unexpired.
-            1707344402,
+            processor::ExternalContext {
+                // This timestamp is fixed so that any XML files submitted by tests will be
+                // considered unexpired.
+                current_time_epoch_millis: 1707344402000,
+                client_device_identifier: Vec::new(),
+                is_reauthenticated: has_reauthentication_header,
+            },
             &handshake_response.handshake_hash,
             commands,
         ) {
-            Ok(result) => result,
-            Err(e) => {
-                eprintln!("{:?}", e);
-                return;
+            Ok((result_array, state_update)) => {
+                let state_data = match state_update {
+                    StateUpdate::Major(data) => Some(data),
+                    StateUpdate::Minor(data) => Some(data),
+                    StateUpdate::None => None,
+                };
+
+                if let Some(state_data) = state_data {
+                    std::fs::write(CONFIDENTIAL_PATH, &state_data.confidential).unwrap();
+                    std::fs::write(TRANSPARENT_PATH, &state_data.transparent).unwrap();
+                }
+
+                cbor!({"ok": result_array})
+            }
+            Err(err) => {
+                eprintln!("{:?}", err);
+
+                let err = match err {
+                    processor::Error::UnknownClient => Value::Int(0),
+                    processor::Error::Str(s) => Value::String(String::from(s)),
+                    _ => Value::String(format!("{:?}", err)),
+                };
+                cbor!({"err": err})
             }
         };
 
-        let state_data = match state_update {
-            StateUpdate::Major(data) => Some(data),
-            StateUpdate::Minor(data) => Some(data),
-            StateUpdate::None => None,
-        };
-
-        if let Some(state_data) = state_data {
-            std::fs::write(CONFIDENTIAL_PATH, &state_data.confidential).unwrap();
-            std::fs::write(TRANSPARENT_PATH, &state_data.transparent).unwrap();
-        }
-
-        let cmd_response = handshake_response.crypter.encrypt(&result_array.to_bytes()).unwrap();
+        let cmd_response = handshake_response.crypter.encrypt(&cbor_response.to_bytes()).unwrap();
         write_msg(&conn, &cmd_response);
     }
 }

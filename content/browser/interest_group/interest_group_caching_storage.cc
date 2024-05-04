@@ -25,10 +25,7 @@
 
 namespace {
 bool CacheIsEnabled() {
-  // Do not use cache for the testing population.
-  return !base::FeatureList::IsEnabled(
-             features::kCookieDeprecationFacilitatedTesting) &&
-         base::FeatureList::IsEnabled(features::kFledgeUseInterestGroupCache);
+  return base::FeatureList::IsEnabled(features::kFledgeUseInterestGroupCache);
 }
 
 std::optional<content::SingleStorageInterestGroup>
@@ -215,6 +212,14 @@ void InterestGroupCachingStorage::UpdateInterestGroup(
       .Then(std::move(notify_callback));
 }
 
+void InterestGroupCachingStorage::AllowUpdateIfOlderThan(
+    const blink::InterestGroupKey& group_key,
+    base::TimeDelta update_if_older_than) {
+  interest_group_storage_
+      .AsyncCall(&InterestGroupStorage::AllowUpdateIfOlderThan)
+      .WithArgs(group_key, update_if_older_than);
+}
+
 void InterestGroupCachingStorage::ReportUpdateFailed(
     const blink::InterestGroupKey& group_key,
     bool parse_failure) {
@@ -288,21 +293,21 @@ void InterestGroupCachingStorage::UpdateKAnonymity(
 }
 
 void InterestGroupCachingStorage::GetLastKAnonymityReported(
-    const std::string& key,
+    const std::string& hashed_key,
     base::OnceCallback<void(std::optional<base::Time>)> callback) {
   interest_group_storage_
       .AsyncCall(&InterestGroupStorage::GetLastKAnonymityReported)
-      .WithArgs(key)
+      .WithArgs(hashed_key)
       .Then(std::move(callback));
 }
 
 void InterestGroupCachingStorage::UpdateLastKAnonymityReported(
-    const std::string& key) {
+    const std::string& hashed_key) {
   // We don't need to invalidate any cached objects here because this value is
   // not loaded in GetInterestGroupsForOwner.
   interest_group_storage_
       .AsyncCall(&InterestGroupStorage::UpdateLastKAnonymityReported)
-      .WithArgs(key);
+      .WithArgs(hashed_key);
 }
 
 void InterestGroupCachingStorage::GetInterestGroup(

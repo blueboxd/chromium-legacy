@@ -5,6 +5,7 @@
 #include "gpu/command_buffer/service/service_utils.h"
 
 #include <string>
+#include <string_view>
 
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -33,7 +34,7 @@ namespace gles2 {
 namespace {
 
 bool GetUintFromSwitch(const base::CommandLine* command_line,
-                       const base::StringPiece& switch_string,
+                       std::string_view switch_string,
                        uint32_t* value) {
   if (!command_line->HasSwitch(switch_string)) {
     return false;
@@ -103,8 +104,10 @@ gl::GLContextAttribs GenerateGLContextAttribsForCompositor(
     attribs.global_texture_share_group = true;
     attribs.global_semaphore_share_group = true;
 
-    attribs.robust_resource_initialization = true;
-    attribs.robust_buffer_access = true;
+    // Disable resource initialization and buffer bounds checks for trusted
+    // contexts.
+    attribs.robust_resource_initialization = false;
+    attribs.robust_buffer_access = false;
   }
 
   bool force_es2_context = gl::GetGlWorkarounds().disable_es3gl_context;
@@ -356,18 +359,24 @@ bool MSAAIsSlow(const GpuDriverBugWorkarounds& workarounds) {
 }  // namespace gles2
 
 #if BUILDFLAG(IS_MAC)
-void SetMacOSSpecificTextureTargetFromCurrentGLImplementation() {
+uint32_t GetMacOSSpecificTextureTargetForCurrentGLImplementation() {
   // On MacOS, the default texture target for native GpuMemoryBuffers is
   // GL_TEXTURE_RECTANGLE_ARB. This is due to CGL's requirements for creating
   // a GL surface. However, when ANGLE is used on top of SwiftShader or Metal,
   // it's necessary to use GL_TEXTURE_2D instead.
-  // TODO(crbug.com/1056312): The proper behavior is to check the config
+  // TODO(crbug.com/40676774): The proper behavior is to check the config
   // parameter set by the EGL_ANGLE_iosurface_client_buffer extension
   if (gl::GetGLImplementation() == gl::kGLImplementationEGLANGLE &&
       (gl::GetANGLEImplementation() == gl::ANGLEImplementation::kSwiftShader ||
        gl::GetANGLEImplementation() == gl::ANGLEImplementation::kMetal)) {
-    SetMacOSSpecificTextureTarget(GL_TEXTURE_2D);
+    return GL_TEXTURE_2D;
   }
+  return GL_TEXTURE_RECTANGLE_ARB;
+}
+
+void SetMacOSSpecificTextureTargetFromCurrentGLImplementation() {
+  SetMacOSSpecificTextureTarget(
+      GetMacOSSpecificTextureTargetForCurrentGLImplementation());
 }
 #endif  // BUILDFLAG(IS_MAC)
 

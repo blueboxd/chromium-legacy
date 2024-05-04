@@ -54,7 +54,7 @@ scoped_refptr<PasswordFormMetricsRecorder> CreatePasswordFormMetricsRecorder(
       is_main_frame_secure, kTestSourceId, pref_service);
 }
 
-// TODO(crbug.com/738921) Replace this with generalized infrastructure.
+// TODO(crbug.com/40528506) Replace this with generalized infrastructure.
 // Verifies that the metric |metric_name| was recorded with value |value| in the
 // single entry of |test_ukm_recorder_| exactly |expected_count| times.
 void ExpectUkmValueCount(ukm::TestUkmRecorder* test_ukm_recorder,
@@ -599,22 +599,26 @@ PasswordForm ConvertToPasswordForm(
   PasswordForm password_form;
   for (const auto& field : fields) {
     FormFieldData form_field;
-    form_field.value = ASCIIToUTF16(field.value);
-    form_field.user_input = ASCIIToUTF16(field.user_input);
+    form_field.set_value(ASCIIToUTF16(field.value));
+    form_field.set_user_input(ASCIIToUTF16(field.user_input));
 
     if (field.user_typed)
-      form_field.properties_mask |= FieldPropertiesFlags::kUserTyped;
+      form_field.set_properties_mask(form_field.properties_mask() |
+                                     FieldPropertiesFlags::kUserTyped);
 
     if (field.manually_filled)
-      form_field.properties_mask |=
-          FieldPropertiesFlags::kAutofilledOnUserTrigger;
+      form_field.set_properties_mask(
+          form_field.properties_mask() |
+          FieldPropertiesFlags::kAutofilledOnUserTrigger);
 
     if (field.automatically_filled)
-      form_field.properties_mask |= FieldPropertiesFlags::kAutofilledOnPageLoad;
+      form_field.set_properties_mask(
+          form_field.properties_mask() |
+          FieldPropertiesFlags::kAutofilledOnPageLoad);
 
-    form_field.form_control_type =
+    form_field.set_form_control_type(
         field.is_password ? autofill::FormControlType::kInputPassword
-                          : autofill::FormControlType::kInputText;
+                          : autofill::FormControlType::kInputText);
 
     std::u16string value =
         ASCIIToUTF16(field.user_input.empty() ? field.value : field.user_input);

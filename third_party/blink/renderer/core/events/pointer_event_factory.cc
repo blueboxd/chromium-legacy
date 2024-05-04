@@ -5,11 +5,13 @@
 #include "third_party/blink/renderer/core/events/pointer_event_factory.h"
 
 #include "base/trace_event/trace_event.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_device_properties_init.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_pointer_event_init.h"
 #include "third_party/blink/renderer/core/events/pointer_event_util.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/input/device_properties.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/pointer_type_names.h"
@@ -85,8 +87,7 @@ void UpdateCommonPointerEventInit(const WebPointerEvent& web_pointer_event,
 
   MouseEvent::SetCoordinatesFromWebPointerProperties(
       web_pointer_event_in_root_frame, dom_window, pointer_event_init);
-  if (RuntimeEnabledFeatures::ConsolidatedMovementXYEnabled() &&
-      !web_pointer_event.is_raw_movement_event &&
+  if (!web_pointer_event.is_raw_movement_event &&
       (web_pointer_event.GetType() == WebInputEvent::Type::kPointerMove ||
        web_pointer_event.GetType() == WebInputEvent::Type::kPointerRawUpdate)) {
     float device_scale_factor = 1;
@@ -210,8 +211,9 @@ HeapVector<Member<PointerEvent>> PointerEventFactory::CreateEventSequence(
 
       last_global_position = event.PositionInScreen();
 
-      if (pointer_event_init->hasDeviceId()) {
-        new_event_init->setDeviceId(pointer_event_init->deviceId());
+      if (pointer_event_init->hasDeviceProperties()) {
+        new_event_init->setDeviceProperties(
+            pointer_event_init->deviceProperties());
       }
 
       PointerEvent* pointer_event =
@@ -377,7 +379,10 @@ PointerEvent* PointerEventFactory::Create(
   SetLastPosition(pointer_event_init->pointerId(),
                   web_pointer_event.PositionInScreen(), event_type);
 
-  pointer_event_init->setDeviceId(GetBlinkDeviceId(web_pointer_event));
+  DevicePropertiesInit* device_properties_init = DevicePropertiesInit::Create();
+  device_properties_init->setUniqueId(GetBlinkDeviceId(web_pointer_event));
+  pointer_event_init->setDeviceProperties(
+      DeviceProperties::Create(device_properties_init));
 
   return PointerEvent::Create(type, pointer_event_init,
                               web_pointer_event.TimeStamp());
@@ -447,7 +452,10 @@ PointerEvent* PointerEventFactory::CreatePointerCancelEvent(
 
   SetEventSpecificFields(pointer_event_init, event_type_names::kPointercancel);
 
-  pointer_event_init->setDeviceId(device_id);
+  DevicePropertiesInit* device_properties_init = DevicePropertiesInit::Create();
+  device_properties_init->setUniqueId(device_id);
+  pointer_event_init->setDeviceProperties(
+      DeviceProperties::Create(device_properties_init));
 
   return PointerEvent::Create(event_type_names::kPointercancel,
                               pointer_event_init, platfrom_time_stamp);
@@ -477,7 +485,9 @@ PointerEvent* PointerEventFactory::CreatePointerEventFrom(
       pointer_event->tangentialPressure());
   pointer_event_init->setTwist(pointer_event->twist());
   pointer_event_init->setView(pointer_event->view());
-  pointer_event_init->setDeviceId(pointer_event->deviceId());
+  if (pointer_event->deviceProperties()) {
+    pointer_event_init->setDeviceProperties(pointer_event->deviceProperties());
+  }
 
   SetEventSpecificFields(pointer_event_init, type);
 
@@ -563,7 +573,8 @@ void PointerEventFactory::Clear() {
   pointer_id_to_attributes_.insert(kMouseId, attributes);
 
   current_id_ = PointerEventFactory::kMouseId + 1;
-  current_device_id_ = PointerEventFactory::kMouseId + 1;
+  current_device_id_ = 1;
+  device_id_for_mouse_ = 0;
 }
 
 PointerId PointerEventFactory::AddOrUpdateIdAndActiveButtons(
@@ -751,15 +762,20 @@ int32_t PointerEventFactory::GetBlinkDeviceId(
     const WebPointerEvent& web_pointer_event) {
   if (web_pointer_event.pointer_type ==
       WebPointerProperties::PointerType::kMouse) {
-    return PointerEventFactory::kMouseId;
+    if (device_id_for_mouse_ == 0) {
+      device_id_for_mouse_ = current_device_id_++;
+    }
+    return device_id_for_mouse_;
   }
 
   const int32_t incoming_id = web_pointer_event.device_id;
+  // Invalid device id in browser is -1, however, an invalid uniqueId
+  // is 0 as per the PointerEvent specification.
   if (incoming_id == -1) {
-    return -1;
+    return 0;
   }
 
-  auto result = device_id_browser_to_blink_mapping_.insert(incoming_id, -1);
+  auto result = device_id_browser_to_blink_mapping_.insert(incoming_id, 0);
   if (result.is_new_entry) {
     result.stored_value->value = current_device_id_++;
   }

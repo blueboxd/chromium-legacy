@@ -15,7 +15,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "chrome/browser/apps/app_service/app_icon/app_icon_source.h"
+#include "chrome/browser/apps/app_service/app_icon_source.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
@@ -80,7 +80,7 @@ const char kForceInstallDialogQueryString[] = "showForceInstallDialog";
 
 // The Youtube app is incorrectly hardcoded to be a 'bookmark app'. However, it
 // is a platform app.
-// TODO(crbug.com/1065748): Remove this hack once the youtube app is fixed.
+// TODO(crbug.com/40124309): Remove this hack once the youtube app is fixed.
 bool IsYoutubeExtension(const std::string& extension_id) {
   return extension_id == extension_misc::kYoutubeAppId;
 }
@@ -274,23 +274,8 @@ void AppHomePageHandler::LaunchAppInternal(
 void AppHomePageHandler::SetUserDisplayMode(
     const std::string& app_id,
     web_app::mojom::UserDisplayMode user_display_mode) {
-  web_app_provider_->scheduler().ScheduleCallback(
-      "AppHomePageHandler::SetWebAppDisplayMode",
-      web_app::AppLockDescription(app_id),
-      base::BindOnce(
-          [](const webapps::AppId& app_id,
-             web_app::mojom::UserDisplayMode user_display_mode,
-             web_app::AppLock& lock, base::Value::Dict& debug_value) {
-            if (lock.registrar().IsLocallyInstalled(app_id)) {
-              debug_value.Set("user_display_mode",
-                              base::ToString(user_display_mode));
-              lock.sync_bridge().SetAppUserDisplayMode(app_id,
-                                                       user_display_mode,
-                                                       /*is_user_action=*/true);
-            }
-          },
-          app_id, user_display_mode),
-      /*on_complete=*/base::DoNothing());
+  web_app_provider_->scheduler().SetUserDisplayMode(app_id, user_display_mode,
+                                                    base::DoNothing());
 }
 
 app_home::mojom::AppInfoPtr AppHomePageHandler::GetApp(
@@ -407,7 +392,7 @@ app_home::mojom::AppInfoPtr AppHomePageHandler::CreateAppInfoPtrFromExtension(
 
   app_info->icon_url = extensions::ExtensionIconSource::GetIconURL(
       extension, extension_misc::EXTENSION_ICON_LARGE,
-      ExtensionIconSet::MATCH_BIGGER, false /*grayscale*/);
+      ExtensionIconSet::Match::kBigger, false /*grayscale*/);
 
   app_info->may_show_run_on_os_login_mode = false;
   app_info->may_toggle_run_on_os_login_mode = false;

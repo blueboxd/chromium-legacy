@@ -569,7 +569,7 @@ class MSEChangeTypeTest
         ReadTestDataFile(file_two.filename);
     source.AppendAtTime(file_one_end_time, file_two_contents->data(),
                         file_two.append_bytes == kAppendWholeFile
-                            ? file_two_contents->data_size()
+                            ? file_two_contents->size()
                             : file_two.append_bytes);
     source.EndOfStream();
     ranges = pipeline_->GetBufferedTimeRanges();
@@ -717,7 +717,7 @@ TEST_F(PipelineIntegrationTest, WaveLayoutChange) {
   ASSERT_TRUE(WaitUntilOnEnded());
 }
 
-// TODO(https://crbug.com/1354581): At most one of Playback9Channels48000hz and
+// TODO(crbug.com/40235621): At most one of Playback9Channels48000hz and
 // Playback9Channels44100hz will pass, because for 9+ channel files the hardware
 // sample rate has to match the file's sample rate. They are both disabled
 // because different CI configurations have different hardware sample rates. To
@@ -836,7 +836,7 @@ TEST_F(PipelineIntegrationTest, TrackStatusChangesAfterPipelineEnded) {
   OnSelectedVideoTrackChanged(MediaTrack::Id("1"));
 }
 
-// TODO(https://crbug.com/1009964): Enable test when MacOS flake is fixed.
+// TODO(crbug.com/40101269): Enable test when MacOS flake is fixed.
 #if BUILDFLAG(IS_MAC)
 #define MAYBE_TrackStatusChangesWhileSuspended \
   DISABLED_TrackStatusChangesWhileSuspended
@@ -1484,7 +1484,7 @@ TEST_F(PipelineIntegrationTest, MSE_ConfigChange_AV1_WebM) {
   scoped_refptr<DecoderBuffer> second_file =
       ReadTestDataFile("bear-av1-640x480.webm");
   source.AppendAtTime(base::Seconds(kAppendTimeSec), second_file->data(),
-                      second_file->data_size());
+                      second_file->size());
   source.EndOfStream();
 
   Play();
@@ -1512,7 +1512,7 @@ TEST_F(PipelineIntegrationTest, MSE_ConfigChange_WebM) {
   scoped_refptr<DecoderBuffer> second_file =
       ReadTestDataFile("bear-640x360.webm");
   source.AppendAtTime(base::Seconds(kAppendTimeSec), second_file->data(),
-                      second_file->data_size());
+                      second_file->size());
   source.EndOfStream();
 
   Play();
@@ -1546,8 +1546,7 @@ TEST_F(PipelineIntegrationTest, MSE_AudioConfigChange_WebM) {
   scoped_refptr<DecoderBuffer> second_file =
       ReadTestDataFile("bear-320x240-audio-only-48khz.webm");
   ASSERT_TRUE(source.AppendAtTime(base::Seconds(kAppendTimeSec),
-                                  second_file->data(),
-                                  second_file->data_size()));
+                                  second_file->data(), second_file->size()));
   source.EndOfStream();
 
   Play();
@@ -1605,8 +1604,8 @@ TEST_F(PipelineIntegrationTest, MSE_FillUpBuffer) {
     source.Seek(media_time);
     // Ask MediaSource to evict buffered data if buffering limit has been
     // reached (the data will be evicted from the front of the buffered range).
-    source.EvictCodedFrames(media_time, file->data_size());
-    source.AppendAtTime(media_time, file->data(), file->data_size());
+    source.EvictCodedFrames(media_time, file->size());
+    source.AppendAtTime(media_time, file->data(), file->size());
     task_environment_.RunUntilIdle();
 
     buffered_ranges = pipeline_->GetBufferedTimeRanges();
@@ -1627,7 +1626,7 @@ TEST_F(PipelineIntegrationTest, MSE_GCWithDisabledVideoStream) {
   // larger than audio, so setting memory limits to half of file data_size will
   // ensure that video SourceBuffer is above memory limit and the audio
   // SourceBuffer is below the memory limit.
-  source.SetMemoryLimits(file->data_size() / 2);
+  source.SetMemoryLimits(file->size() / 2);
 
   // Disable the video track and start playback. Renderer won't read from the
   // disabled video stream, so the video stream read position should be 0.
@@ -1664,7 +1663,7 @@ TEST_F(PipelineIntegrationTest, MSE_ConfigChange_Encrypted_WebM) {
       ReadTestDataFile("bear-640x360-av_enc-av.webm");
 
   source.AppendAtTime(base::Seconds(kAppendTimeSec), second_file->data(),
-                      second_file->data_size());
+                      second_file->size());
   source.EndOfStream();
 
   Play();
@@ -1694,7 +1693,7 @@ TEST_F(PipelineIntegrationTest, MSE_ConfigChange_ClearThenEncrypted_WebM) {
       ReadTestDataFile("bear-640x360-av_enc-av.webm");
 
   source.AppendAtTime(base::Seconds(kAppendTimeSec), second_file->data(),
-                      second_file->data_size());
+                      second_file->size());
   source.EndOfStream();
 
   Play();
@@ -1727,7 +1726,7 @@ TEST_F(PipelineIntegrationTest, MSE_ConfigChange_EncryptedThenClear_WebM) {
       ReadTestDataFile("bear-640x360.webm");
 
   source.AppendAtTime(base::Seconds(kAppendTimeSec), second_file->data(),
-                      second_file->data_size());
+                      second_file->size());
   source.EndOfStream();
 
   Play();
@@ -1968,7 +1967,7 @@ TEST_F(PipelineIntegrationTest, MSE_MP3_TimestampOffset) {
   scoped_refptr<DecoderBuffer> second_file = ReadTestDataFile("sfx.mp3");
   source.AppendAtTimeWithWindow(append_time, append_time + mp3_preroll_duration,
                                 kInfiniteDuration, second_file->data(),
-                                second_file->data_size());
+                                second_file->size());
   source.EndOfStream();
 
   Play();
@@ -2026,7 +2025,7 @@ TEST_F(PipelineIntegrationTest, MSE_ADTS_TimestampOffset) {
   scoped_refptr<DecoderBuffer> second_file = ReadTestDataFile("sfx.adts");
   source.AppendAtTimeWithWindow(
       append_time, append_time + adts_preroll_duration, kInfiniteDuration,
-      second_file->data(), second_file->data_size());
+      second_file->data(), second_file->size());
   source.EndOfStream();
 
   Play();
@@ -2112,7 +2111,7 @@ TEST_F(PipelineIntegrationTest, BasicPlaybackXHE_AAC) {
   // provided by the operating system and will apply DRC based on device
   // specific params.
 
-  // TODO(crbug.com/1289825): Seeking doesn't always work properly when using
+  // TODO(crbug.com/40817722): Seeking doesn't always work properly when using
   // ffmpeg since it doesn't handle non-keyframe xHE-AAC samples properly.
 }
 
@@ -2180,7 +2179,7 @@ TEST_F(PipelineIntegrationTest, MSE_ConfigChange_MP4) {
   scoped_refptr<DecoderBuffer> second_file =
       ReadTestDataFile("bear-1280x720-av_frag.mp4");
   source.AppendAtTime(base::Seconds(kAppendTimeSec), second_file->data(),
-                      second_file->data_size());
+                      second_file->size());
   source.EndOfStream();
 
   Play();
@@ -2216,7 +2215,7 @@ TEST_F(PipelineIntegrationTest, MSE_ConfigChange_Encrypted_MP4_CENC_VideoOnly) {
   scoped_refptr<DecoderBuffer> second_file =
       ReadTestDataFile("bear-1280x720-v_frag-cenc.mp4");
   source.AppendAtTime(base::Seconds(kAppendTimeSec), second_file->data(),
-                      second_file->data_size());
+                      second_file->size());
   source.EndOfStream();
 
   Play();
@@ -2243,7 +2242,7 @@ TEST_F(PipelineIntegrationTest,
   scoped_refptr<DecoderBuffer> second_file =
       ReadTestDataFile("bear-1280x720-v_frag-cenc-key_rotation.mp4");
   source.AppendAtTime(base::Seconds(kAppendTimeSec), second_file->data(),
-                      second_file->data_size());
+                      second_file->size());
   source.EndOfStream();
 
   Play();
@@ -2270,7 +2269,7 @@ TEST_F(PipelineIntegrationTest, MSE_ConfigChange_ClearThenEncrypted_MP4_CENC) {
   source.set_expected_append_result(
       TestMediaSource::ExpectedAppendResult::kFailure);
   source.AppendAtTime(base::Seconds(kAppendTimeSec), second_file->data(),
-                      second_file->data_size());
+                      second_file->size());
 
   source.EndOfStream();
 
@@ -2298,7 +2297,7 @@ TEST_F(PipelineIntegrationTest, MSE_ConfigChange_EncryptedThenClear_MP4_CENC) {
   source.set_expected_append_result(
       TestMediaSource::ExpectedAppendResult::kFailure);
   source.AppendAtTime(base::Seconds(kAppendTimeSec), second_file->data(),
-                      second_file->data_size());
+                      second_file->size());
 
   source.EndOfStream();
 
@@ -2326,9 +2325,7 @@ TEST_F(PipelineIntegrationTest, StereoAACMarkedAsMono) {
 
 // Verify files which change configuration midstream fail gracefully.
 TEST_F(PipelineIntegrationTest, MidStreamConfigChangesFail) {
-  ASSERT_EQ(PIPELINE_OK, Start("midstream_config_change.mp3"));
-  Play();
-  ASSERT_EQ(WaitUntilEndedOrError(), PIPELINE_ERROR_DECODE);
+  ASSERT_EQ(PIPELINE_ERROR_DECODE, Start("midstream_config_change.mp3"));
 }
 
 TEST_F(PipelineIntegrationTest, BasicPlayback_16x9AspectRatio) {

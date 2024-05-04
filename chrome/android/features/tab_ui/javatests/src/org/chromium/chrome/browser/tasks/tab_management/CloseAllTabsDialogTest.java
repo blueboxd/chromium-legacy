@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.tasks.tab_management;
 
 import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
-import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withEffectiveVisibility;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 
@@ -73,7 +72,7 @@ public class CloseAllTabsDialogTest {
                 mActivityTestRule.getActivity().getTabModelSelectorSupplier().get();
 
         navigateToCloseAllTabsDialog(selector);
-        onViewWaiting(withId(org.chromium.chrome.test.R.id.positive_button)).perform(click());
+        onViewWaiting(withId(org.chromium.chrome.test.R.id.positive_button), true).perform(click());
 
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> {
@@ -90,7 +89,8 @@ public class CloseAllTabsDialogTest {
                 mActivityTestRule.getActivity().getTabModelSelectorSupplier().get();
 
         navigateToCloseAllTabsDialog(selector);
-        onViewWaiting(withId(org.chromium.chrome.test.R.id.negative_button)).perform(click());
+
+        onViewWaiting(withId(org.chromium.chrome.test.R.id.negative_button), true).perform(click());
 
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> {
@@ -106,8 +106,6 @@ public class CloseAllTabsDialogTest {
 
         // Open the AppMenu in the Tab Switcher and ensure it shows.
         TabUiTestHelper.enterTabSwitcher(mActivityTestRule.getActivity());
-        onViewWaiting(withId(org.chromium.chrome.test.R.id.tab_switcher_toolbar))
-                .check(matches(isDisplayed()));
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> {
                     AppMenuTestSupport.showAppMenu(

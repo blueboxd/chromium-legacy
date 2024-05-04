@@ -69,7 +69,7 @@ bool WebGPUTest::WebGPUSharedImageSupported() const {
 #if (BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || \
      BUILDFLAG(IS_WIN)) &&                                                 \
     BUILDFLAG(USE_DAWN)
-  // TODO(crbug.com/1172447): Re-enable on AMD when the RX 5500 XT issues are
+  // TODO(crbug.com/40166640): Re-enable on AMD when the RX 5500 XT issues are
   // resolved.
   return !GPUTestBotConfig::CurrentConfigMatches("Linux AMD");
 #else
@@ -135,11 +135,8 @@ void WebGPUTest::Initialize(const Options& options) {
   webgpu_impl()->SetLostContextCallback(base::BindLambdaForTesting(
       []() { GTEST_FAIL() << "Context lost unexpectedly."; }));
 
-  {
-    // Use the wire procs for the test main thread.
-    DawnProcTable procs = webgpu()->GetAPIChannel()->GetProcs();
-    dawnProcSetPerThreadProcs(&procs);
-  }
+  // Use the wire procs for the test main thread.
+  dawnProcSetPerThreadProcs(&dawn::wire::client::GetProcs());
 
   instance_ = wgpu::Instance(webgpu()->GetAPIChannel()->GetWGPUInstance());
 

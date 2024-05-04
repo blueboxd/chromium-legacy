@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <string>
+#include <string_view>
 #include <utility>
 
 #include "base/functional/bind.h"
@@ -14,7 +15,6 @@
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_split.h"
 #include "build/build_config.h"
-#include "gpu/command_buffer/service/abstract_texture.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
 #include "gpu/command_buffer/service/decoder_client.h"
 #include "gpu/command_buffer/service/feature_info.h"
@@ -296,22 +296,6 @@ GLES2DecoderPassthroughImpl::ScopedPixelLocalStorageInterrupt::
 PassthroughResources::PassthroughResources() : texture_object_map(nullptr) {}
 PassthroughResources::~PassthroughResources() = default;
 
-#if !BUILDFLAG(IS_ANDROID)
-void PassthroughResources::DestroyPendingTextures(bool has_context) {
-  if (!has_context) {
-    for (scoped_refptr<TexturePassthrough> iter :
-         textures_pending_destruction) {
-      iter->MarkContextLost();
-    }
-  }
-  textures_pending_destruction.clear();
-}
-
-bool PassthroughResources::HasTexturesPendingDestruction() const {
-  return !textures_pending_destruction.empty();
-}
-#endif
-
 void PassthroughResources::SuspendSharedImageAccessIfNeeded() {
   for (auto& [texture_id, shared_image_data] : texture_shared_image_map) {
     shared_image_data.SuspendAccessIfNeeded();
@@ -391,9 +375,6 @@ void PassthroughResources::Destroy(gl::GLApi* api,
   }
   texture_object_map.Clear();
   texture_shared_image_map.clear();
-#if !BUILDFLAG(IS_ANDROID)
-  DestroyPendingTextures(have_context);
-#endif
 }
 
 PassthroughResources::SharedImageData::SharedImageData() = default;
@@ -863,40 +844,40 @@ gpu::ContextResult GLES2DecoderPassthroughImpl::Initialize(
 
     if (request_optional_extensions_) {
       static constexpr const char* kOptionalFunctionalityExtensions[] = {
-        "GL_ANGLE_depth_texture",
-        "GL_ANGLE_framebuffer_multisample",
-        "GL_ANGLE_get_tex_level_parameter",
-        "GL_ANGLE_instanced_arrays",
-        "GL_ANGLE_memory_object_flags",
-        "GL_ANGLE_pack_reverse_row_order",
-        "GL_ANGLE_translated_shader_source",
-        "GL_CHROMIUM_path_rendering",
-        "GL_EXT_blend_minmax",
-        "GL_EXT_discard_framebuffer",
-        "GL_EXT_disjoint_timer_query",
-        "GL_EXT_multisampled_render_to_texture",
-        "GL_EXT_occlusion_query_boolean",
-        "GL_EXT_sRGB",
-        "GL_EXT_sRGB_write_control",
-        "GL_EXT_texture_format_BGRA8888",
-        "GL_EXT_texture_norm16",
-        "GL_EXT_texture_rg",
-        "GL_EXT_texture_sRGB_decode",
-        "GL_EXT_texture_storage",
-        "GL_EXT_unpack_subimage",
-        "GL_KHR_parallel_shader_compile",
-        "GL_KHR_robust_buffer_access_behavior",
+          "GL_ANGLE_depth_texture",
+          "GL_ANGLE_framebuffer_multisample",
+          "GL_ANGLE_get_tex_level_parameter",
+          "GL_ANGLE_instanced_arrays",
+          "GL_ANGLE_memory_object_flags",
+          "GL_ANGLE_pack_reverse_row_order",
+          "GL_ANGLE_translated_shader_source",
+          "GL_CHROMIUM_path_rendering",
+          "GL_EXT_blend_minmax",
+          "GL_EXT_discard_framebuffer",
+          "GL_EXT_disjoint_timer_query",
+          "GL_EXT_multisampled_render_to_texture",
+          "GL_EXT_occlusion_query_boolean",
+          "GL_EXT_sRGB",
+          "GL_EXT_sRGB_write_control",
+          "GL_EXT_texture_format_BGRA8888",
+          "GL_EXT_texture_norm16",
+          "GL_EXT_texture_rg",
+          "GL_EXT_texture_sRGB_decode",
+          "GL_EXT_texture_storage",
+          "GL_EXT_unpack_subimage",
+          "GL_KHR_parallel_shader_compile",
+          "GL_KHR_robust_buffer_access_behavior",
 #if BUILDFLAG(IS_CHROMEOS)
-        // Required for Webgl to display in overlay on ChromeOS devices.
-        // TODO(crbug.com/1379081): Consider for other platforms.
-        "GL_MESA_framebuffer_flip_y",
+          // Required for Webgl to display in overlay on ChromeOS devices.
+          // TODO(crbug.com/40244202): Consider for other platforms.
+          "GL_MESA_framebuffer_flip_y",
 #endif
-        "GL_NV_pack_subimage",
-        "GL_OES_depth32",
-        "GL_OES_packed_depth_stencil",
-        "GL_OES_rgb8_rgba8",
-        "GL_OES_vertex_array_object",
-        "NV_EGL_stream_consumer_external",
+          "GL_NV_pack_subimage",
+          "GL_OES_depth32",
+          "GL_OES_packed_depth_stencil",
+          "GL_OES_rgb8_rgba8",
+          "GL_OES_vertex_array_object",
+          "NV_EGL_stream_consumer_external",
       };
       RequestExtensions(api(), requestable_extensions,
                         kOptionalFunctionalityExtensions,
@@ -956,8 +937,6 @@ gpu::ContextResult GLES2DecoderPassthroughImpl::Initialize(
   bind_generates_resource_ = group_->bind_generates_resource();
 
   resources_ = group_->passthrough_resources();
-
-  mailbox_manager_ = group_->mailbox_manager();
 
   // Query information about the texture units
   GLint num_texture_units = 0;
@@ -1054,12 +1033,6 @@ gpu::ContextResult GLES2DecoderPassthroughImpl::Initialize(
     api()->glViewportFn(0, 0, initial_size.width(), initial_size.height());
   }
 
-  // Initialize the tracked scissor and viewport state and then apply the
-  // surface offsets if needed.
-  api()->glGetIntegervFn(GL_VIEWPORT, viewport_);
-  api()->glGetIntegervFn(GL_SCISSOR_BOX, scissor_);
-  ApplySurfaceDrawOffset();
-
 #if BUILDFLAG(IS_MAC)
   // On mac we need the ANGLE_texture_rectangle extension to support IOSurface
   // backbuffers, but we don't want it exposed to WebGL user shaders. This
@@ -1102,19 +1075,6 @@ void GLES2DecoderPassthroughImpl::Destroy(bool have_context) {
       bound_texture.texture = nullptr;
     }
   }
-
-#if !BUILDFLAG(IS_ANDROID)
-  if (resources_) {  // Initialize may not have been called yet.
-    for (AbstractTexture* iter : abstract_textures_) {
-      resources_->textures_pending_destruction.insert(
-          iter->OnDecoderWillDestroy());
-    }
-    abstract_textures_.clear();
-    if (have_context) {
-      resources_->DestroyPendingTextures(/*has_context=*/true);
-    }
-  }
-#endif
 
   for (PendingQuery& pending_query : pending_queries_) {
     if (!have_context) {
@@ -1325,10 +1285,6 @@ bool GLES2DecoderPassthroughImpl::MakeCurrent() {
   ProcessReadPixels(false);
   ProcessQueries(false);
 
-#if !BUILDFLAG(IS_ANDROID)
-  resources_->DestroyPendingTextures(/*has_context=*/true);
-#endif
-
   return true;
 }
 
@@ -1537,13 +1493,7 @@ void GLES2DecoderPassthroughImpl::ProcessPendingQueries(bool did_finish) {
 }
 
 bool GLES2DecoderPassthroughImpl::HasMoreIdleWork() const {
-  bool has_more_idle_work =
-      gpu_tracer_->HasTracesToProcess() || !pending_read_pixels_.empty();
-#if !BUILDFLAG(IS_ANDROID)
-  has_more_idle_work =
-      has_more_idle_work || resources_->HasTexturesPendingDestruction();
-#endif
-  return has_more_idle_work;
+  return gpu_tracer_->HasTracesToProcess() || !pending_read_pixels_.empty();
 }
 
 void GLES2DecoderPassthroughImpl::PerformIdleWork() {
@@ -1628,44 +1578,6 @@ gpu::gles2::ErrorState* GLES2DecoderPassthroughImpl::GetErrorState() {
 
 void GLES2DecoderPassthroughImpl::WaitForReadPixels(
     base::OnceClosure callback) {}
-
-#if !BUILDFLAG(IS_ANDROID)
-std::unique_ptr<AbstractTexture>
-GLES2DecoderPassthroughImpl::CreateAbstractTexture(GLenum target,
-                                                   GLenum internal_format,
-                                                   GLsizei width,
-                                                   GLsizei height,
-                                                   GLsizei depth,
-                                                   GLint border,
-                                                   GLenum format,
-                                                   GLenum type) {
-  // We can't support cube maps because the abstract texture does not allow it.
-  DCHECK(target != GL_TEXTURE_CUBE_MAP);
-  GLuint service_id = 0;
-  api()->glGenTexturesFn(1, &service_id);
-  scoped_refptr<TexturePassthrough> texture(
-      new TexturePassthrough(service_id, target));
-
-  // Unretained is safe, because of the destruction cb.
-  std::unique_ptr<AbstractTexture> abstract_texture =
-      std::make_unique<AbstractTexture>(texture, this);
-
-  abstract_textures_.insert(abstract_texture.get());
-  return abstract_texture;
-}
-
-void GLES2DecoderPassthroughImpl::OnAbstractTextureDestroyed(
-    AbstractTexture* abstract_texture,
-    scoped_refptr<TexturePassthrough> texture) {
-  DCHECK(texture);
-  abstract_textures_.erase(abstract_texture);
-  if (context_->IsCurrent(nullptr)) {
-    resources_->DestroyPendingTextures(true);
-  } else {
-    resources_->textures_pending_destruction.insert(std::move(texture));
-  }
-}
-#endif
 
 bool GLES2DecoderPassthroughImpl::WasContextLost() const {
   return context_lost_;
@@ -1873,24 +1785,6 @@ error::Error GLES2DecoderPassthroughImpl::PatchGetNumericResults(GLenum pname,
           !GetClientID(&vertex_array_id_map_, *params, params)) {
         return error::kInvalidArguments;
       }
-      break;
-
-    case GL_VIEWPORT:
-      // The applied viewport and scissor could be offset by the current
-      // surface, return the tracked values instead
-      if (length < 4) {
-        return error::kInvalidArguments;
-      }
-      base::ranges::copy(viewport_, params);
-      break;
-
-    case GL_SCISSOR_BOX:
-      // The applied viewport and scissor could be offset by the current
-      // surface, return the tracked values instead
-      if (length < 4) {
-        return error::kInvalidArguments;
-      }
-      base::ranges::copy(scissor_, params);
       break;
 
     case GL_MAX_PIXEL_LOCAL_STORAGE_PLANES_ANGLE:
@@ -2110,7 +2004,7 @@ bool GLES2DecoderPassthroughImpl::LazySharedContextState::Initialize() {
   const GpuDriverBugWorkarounds& workarounds =
       group->feature_info()->workarounds();
 
-  // TODO(crbug.com/1444777): Add copying shared image to GL Texture support
+  // TODO(crbug.com/40064510): Add copying shared image to GL Texture support
   // within Graphite.
   shared_context_state_ = base::MakeRefCounted<SharedContextState>(
       impl_->context_->share_group(), std::move(gl_surface),
@@ -2728,7 +2622,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleSetActiveURLCHROMIUM(
   if (!url_str)
     return error::kInvalidArguments;
 
-  GURL url(base::StringPiece(url_str, size));
+  GURL url(std::string_view(url_str, size));
   client()->SetActiveURL(std::move(url));
   return error::kNoError;
 }
@@ -2805,27 +2699,6 @@ GLES2DecoderPassthroughImpl::GLenumToTextureTarget(GLenum target) {
     default:
       return TextureTarget::kUnkown;
   }
-}
-
-gfx::Vector2d GLES2DecoderPassthroughImpl::GetSurfaceDrawOffset() const {
-  if (bound_draw_framebuffer_ != 0 || offscreen_) {
-    return gfx::Vector2d();
-  }
-  return surface_->GetDrawOffset();
-}
-
-void GLES2DecoderPassthroughImpl::ApplySurfaceDrawOffset() {
-  if (offscreen_ || !surface_->SupportsDCLayers()) {
-    return;
-  }
-
-  gfx::Vector2d framebuffer_offset = GetSurfaceDrawOffset();
-  api()->glViewportFn(viewport_[0] + framebuffer_offset.x(),
-                      viewport_[1] + framebuffer_offset.y(), viewport_[2],
-                      viewport_[3]);
-  api()->glScissorFn(scissor_[0] + framebuffer_offset.x(),
-                     scissor_[1] + framebuffer_offset.y(), scissor_[2],
-                     scissor_[3]);
 }
 
 bool GLES2DecoderPassthroughImpl::CheckErrorCallbackState() {

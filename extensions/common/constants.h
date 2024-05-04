@@ -204,10 +204,11 @@ enum class AppLaunchSource {
   kSourceProtocolHandler = 25,  // App launch via protocol handler.
   kSourceReparenting = 26,      // APP launch via reparenting.
   kSourceAppHomePage = 27,      // App launch from chrome://apps (App Home).
+  kSourceFocusMode = 28,        // App launch from Focus Mode panel.
 
   // Add any new values above this one, and update kMaxValue to the highest
   // enumerator value.
-  kMaxValue = kSourceAppHomePage,
+  kMaxValue = kSourceFocusMode,
 };
 
 // This enum is used for the launch type the user wants to use for an
@@ -400,7 +401,7 @@ EXTENSIONS_EXPORT bool IsQuickOfficeExtension(std::string_view extension_id);
 // Returns if the app is managed by extension default apps. This is a hardcoded
 // list of default apps for Windows/Linux/MacOS platforms that should be
 // migrated from extension to web app.
-// TODO(https://crbug.com/1257275): remove after deault app migration is done.
+// TODO(crbug.com/40796281): remove after deault app migration is done.
 // This function is copied from
 // chrome/browser/web_applications/extension_status_utils.h.
 EXTENSIONS_EXPORT bool IsPreinstalledAppId(std::string_view app_id);

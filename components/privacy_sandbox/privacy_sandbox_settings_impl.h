@@ -5,7 +5,6 @@
 #ifndef COMPONENTS_PRIVACY_SANDBOX_PRIVACY_SANDBOX_SETTINGS_IMPL_H_
 #define COMPONENTS_PRIVACY_SANDBOX_PRIVACY_SANDBOX_SETTINGS_IMPL_H_
 
-#include <optional>
 #include <set>
 
 #include "base/gtest_prod_util.h"
@@ -33,9 +32,9 @@ class PrivacySandboxSettingsImpl : public PrivacySandboxSettings,
  public:
   // Ideally the only external locations that call this constructor are the
   // factory, and dedicated tests.
-  // TODO(crbug.com/1406840): Currently tests dedicated to other components rely
-  // on this interface, they should be migrated to something better (such as a
-  // dedicated test builder)
+  // TODO(crbug.com/40252892): Currently tests dedicated to other components
+  // rely on this interface, they should be migrated to something better (such
+  // as a dedicated test builder)
   PrivacySandboxSettingsImpl(
       std::unique_ptr<Delegate> delegate,
       HostContentSettingsMap* host_content_settings_map,
@@ -43,6 +42,9 @@ class PrivacySandboxSettingsImpl : public PrivacySandboxSettings,
       TrackingProtectionSettings* tracking_protection_settings,
       PrefService* pref_service);
   ~PrivacySandboxSettingsImpl() override;
+
+  // KeyedService:
+  void Shutdown() override;
 
   // PrivacySandboxSettings:
   bool IsTopicsAllowed() const override;
@@ -207,11 +209,10 @@ class PrivacySandboxSettingsImpl : public PrivacySandboxSettings,
   base::ObserverList<Observer>::Unchecked observers_;
 
   std::unique_ptr<Delegate> delegate_;
-  raw_ptr<HostContentSettingsMap, AcrossTasksDanglingUntriaged>
-      host_content_settings_map_;
+  raw_ptr<HostContentSettingsMap> host_content_settings_map_;
   scoped_refptr<content_settings::CookieSettings> cookie_settings_;
   raw_ptr<TrackingProtectionSettings> tracking_protection_settings_;
-  raw_ptr<PrefService, DanglingUntriaged> pref_service_;
+  raw_ptr<PrefService> pref_service_;
   PrefChangeRegistrar pref_change_registrar_;
 
   base::ScopedObservation<TrackingProtectionSettings,

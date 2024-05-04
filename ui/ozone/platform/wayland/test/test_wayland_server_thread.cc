@@ -110,20 +110,8 @@ bool TestWaylandServerThread::Start() {
   if (config_.enable_aura_shell == EnableAuraShellProtocol::kEnabled) {
     // The aura output managers should be initialized before any wl_output
     // globals.
-    if (config_.aura_output_manager_protocol ==
-        AuraOutputManagerProtocol::kEnabledV2) {
-      if (!zaura_output_manager_v2_.Initialize(display_.get())) {
-        return false;
-      }
-    } else if (config_.aura_output_manager_protocol ==
-               AuraOutputManagerProtocol::kEnabledV1) {
-      if (!zaura_output_manager_.Initialize(display_.get())) {
-        return false;
-      }
-    } else {
-      if (!zxdg_output_manager_.Initialize(display_.get())) {
-        return false;
-      }
+    if (!zaura_output_manager_v2_.Initialize(display_.get())) {
+      return false;
     }
 
     output_.set_aura_shell_enabled();
@@ -221,6 +209,20 @@ void TestWaylandServerThread::RunAndWait(base::OnceClosure closure) {
   run_loop.Run();
 }
 
+void TestWaylandServerThread::Post(
+    base::OnceCallback<void(TestWaylandServerThread*)> callback) {
+  base::OnceClosure closure =
+      base::BindOnce(std::move(callback), base::Unretained(this));
+  Post(std::move(closure));
+}
+
+void TestWaylandServerThread::Post(base::OnceClosure closure) {
+  task_runner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&TestWaylandServerThread::DoRun,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(closure)));
+}
+
 MockWpPresentation* TestWaylandServerThread::EnsureAndGetWpPresentation() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (wp_presentation_.resource())
@@ -240,9 +242,6 @@ TestSurfaceAugmenter* TestWaylandServerThread::EnsureSurfaceAugmenter() {
 void TestWaylandServerThread::OnTestOutputFlush(
     TestOutput* test_output,
     const TestOutputMetrics& metrics) {
-  if (zaura_output_manager_.resource()) {
-    zaura_output_manager_.SendOutputMetrics(test_output, metrics);
-  }
   if (zaura_output_manager_v2_.resource()) {
     zaura_output_manager_v2_.SendOutputMetrics(test_output, metrics);
   }

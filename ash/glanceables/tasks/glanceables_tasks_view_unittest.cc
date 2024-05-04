@@ -8,11 +8,13 @@
 
 #include "ash/api/tasks/fake_tasks_client.h"
 #include "ash/constants/ash_features.h"
+#include "ash/glanceables/common/glanceables_error_message_view.h"
 #include "ash/glanceables/common/glanceables_list_footer_view.h"
+#include "ash/glanceables/common/glanceables_util.h"
 #include "ash/glanceables/common/glanceables_view_id.h"
 #include "ash/glanceables/common/test/glanceables_test_new_window_delegate.h"
 #include "ash/glanceables/glanceables_controller.h"
-#include "ash/glanceables/tasks/glanceables_task_view_v2.h"
+#include "ash/glanceables/tasks/glanceables_task_view.h"
 #include "ash/glanceables/tasks/test/glanceables_tasks_test_util.h"
 #include "ash/shell.h"
 #include "ash/style/combobox.h"
@@ -20,6 +22,7 @@
 #include "ash/test/ash_test_base.h"
 #include "base/memory/raw_ptr.h"
 #include "base/strings/strcat.h"
+#include "base/test/gtest_tags.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/metrics/user_action_tester.h"
 #include "base/test/scoped_feature_list.h"
@@ -64,14 +67,13 @@ class GlanceablesTasksViewTest : public AshTestBase {
     view_ = widget_->SetContentsView(std::make_unique<GlanceablesTasksView>(
         fake_glanceables_tasks_client_->task_lists()));
 
-    GlanceablesTaskViewV2::SetIsNetworkConnectedForTest(true);
+    glanceables_util::SetIsNetworkConnectedForTest(true);
   }
 
   void TearDown() override {
     // Destroy `widget_` first, before destroying `LayoutProvider` (needed in
     // the `views::Combobox`'s destruction chain).
-    view_ = nullptr;
-    widget_.reset();
+    CloseWidget();
     AshTestBase::TearDown();
   }
 
@@ -85,11 +87,17 @@ class GlanceablesTasksViewTest : public AshTestBase {
     }
 
     // Simulate closing the glanceables bubble to cache the tasks.
-    fake_glanceables_tasks_client_->OnGlanceablesBubbleClosed();
+    fake_glanceables_tasks_client_->OnGlanceablesBubbleClosed(
+        base::DoNothing());
 
     // Recreate the tasks view to update the task views.
     view_ = widget_->SetContentsView(std::make_unique<GlanceablesTasksView>(
         fake_glanceables_tasks_client_->task_lists()));
+  }
+
+  void CloseWidget() {
+    view_ = nullptr;
+    widget_.reset();
   }
 
   Combobox* GetComboBoxView() const {
@@ -131,8 +139,8 @@ class GlanceablesTasksViewTest : public AshTestBase {
         base::to_underlying(GlanceablesViewId::kProgressBar)));
   }
 
-  const views::View* GetErrorMessage() const {
-    return views::AsViewClass<views::View>(view_->GetViewByID(
+  const GlanceablesErrorMessageView* GetErrorMessage() const {
+    return views::AsViewClass<GlanceablesErrorMessageView>(view_->GetViewByID(
         base::to_underlying(GlanceablesViewId::kGlanceablesErrorMessageView)));
   }
 
@@ -159,6 +167,17 @@ class GlanceablesTasksViewTest : public AshTestBase {
 
   const GlanceablesTestNewWindowDelegate new_window_delegate_;
 };
+
+TEST_F(GlanceablesTasksViewTest, RecordShowTimeHistogramOnClose) {
+  base::HistogramTester histogram_tester;
+  histogram_tester.ExpectTotalCount(
+      "Ash.Glanceables.TimeManagement.Tasks.TotalShowTime", 0);
+
+  CloseWidget();
+
+  histogram_tester.ExpectTotalCount(
+      "Ash.Glanceables.TimeManagement.Tasks.TotalShowTime", 1);
+}
 
 TEST_F(GlanceablesTasksViewTest, ShowsProgressBarWhileLoadingTasks) {
   tasks_client()->set_paused(true);
@@ -509,7 +528,7 @@ TEST_F(GlanceablesTasksViewTest, OpenBrowserWithEmptyNewTaskDoesntCrash) {
 
 TEST_F(GlanceablesTasksViewTest, HandlesErrorAfterAdding) {
   tasks_client()->set_paused(true);
-  tasks_client()->set_run_with_errors(true);
+  tasks_client()->set_update_errors(true);
 
   const auto* const task_items_container_view = GetTaskItemsContainerView();
   ASSERT_TRUE(task_items_container_view);
@@ -530,11 +549,13 @@ TEST_F(GlanceablesTasksViewTest, HandlesErrorAfterAdding) {
   EXPECT_EQ(tasks_client()->RunPendingAddTaskCallbacks(), 1u);
   EXPECT_EQ(task_items_container_view->children().size(), 2u);
   EXPECT_TRUE(GetErrorMessage());
+  EXPECT_EQ(GetErrorMessage()->GetMessageForTest(), u"Couldn't edit task.");
+  EXPECT_EQ(GetErrorMessage()->GetButtonForTest()->GetText(), u"Dismiss");
 }
 
 TEST_F(GlanceablesTasksViewTest, HandlesErrorAfterEditing) {
   tasks_client()->set_paused(true);
-  tasks_client()->set_run_with_errors(true);
+  tasks_client()->set_update_errors(true);
 
   const auto* const task_items_container_view = GetTaskItemsContainerView();
   ASSERT_TRUE(task_items_container_view);
@@ -542,9 +563,10 @@ TEST_F(GlanceablesTasksViewTest, HandlesErrorAfterEditing) {
   EXPECT_EQ(task_items_container_view->children().size(), 2u);
   EXPECT_FALSE(GetErrorMessage());
 
-  const auto* const title_label = views::AsViewClass<views::Label>(
+  const auto* title_label = views::AsViewClass<views::Label>(
       task_items_container_view->children()[0]->GetViewByID(
           base::to_underlying(GlanceablesViewId::kTaskItemTitleLabel)));
+
   GestureTapOn(title_label);
   GetEventGenerator()->PressAndReleaseKey(ui::VKEY_SPACE);
   GetEventGenerator()->PressAndReleaseKey(ui::VKEY_U);
@@ -559,9 +581,74 @@ TEST_F(GlanceablesTasksViewTest, HandlesErrorAfterEditing) {
   EXPECT_EQ(tasks_client()->RunPendingUpdateTaskCallbacks(), 1u);
   EXPECT_EQ(task_items_container_view->children().size(), 2u);
   EXPECT_TRUE(GetErrorMessage());
+  EXPECT_EQ(GetErrorMessage()->GetMessageForTest(), u"Couldn't edit task.");
+  EXPECT_EQ(GetErrorMessage()->GetButtonForTest()->GetText(), u"Dismiss");
 
-  // TODO(b/308446582): Confirm if the title needs to be reverted back in case
-  // of error.
+  // Revert the task title to the one before editing.
+  title_label = views::AsViewClass<views::Label>(
+      task_items_container_view->children()[0]->GetViewByID(
+          base::to_underlying(GlanceablesViewId::kTaskItemTitleLabel)));
+  EXPECT_EQ(title_label->GetText(), u"Task List 1 Item 1 Title");
+}
+
+TEST_F(GlanceablesTasksViewTest, HandlesErrorAfterChangingTaskList) {
+  const auto* const task_items_container_view = GetTaskItemsContainerView();
+  ASSERT_TRUE(task_items_container_view);
+  EXPECT_FALSE(GetErrorMessage());
+
+  // Disconnect the network for test.
+  glanceables_util::SetIsNetworkConnectedForTest(false);
+
+  // Switch to another task list. The error message should show up immediately
+  // and ask users to try again after connecting to the network.
+  MenuSelectionAt(2);
+  EXPECT_TRUE(GetErrorMessage());
+  EXPECT_EQ(GetErrorMessage()->GetMessageForTest(),
+            u"Couldn't load items. Try again when online.");
+  EXPECT_EQ(GetErrorMessage()->GetButtonForTest()->GetText(), u"Dismiss");
+
+  // The task list should be reset to the one before switch.
+  const std::optional<size_t> selected_index =
+      GetComboBoxView()->GetSelectedIndex();
+  ASSERT_TRUE(selected_index.has_value());
+  EXPECT_EQ(GetComboBoxView()->GetTextForRow(selected_index.value()),
+            u"Task List 1 Title");
+}
+
+TEST_F(GlanceablesTasksViewTest, TasksContainerIsInvisibleWhenNoTask) {
+  // Check that task list items from the first list are shown.
+  auto* combobox = GetComboBoxView();
+  EXPECT_EQ(combobox->GetTextForRow(combobox->GetSelectedIndex().value()),
+            u"Task List 1 Title");
+
+  // Click on the combo box to show the task lists.
+  LeftClickOn(combobox);
+
+  // Go to the list with no task in it.
+  auto* third_menu_item_label = combobox->MenuItemAtIndex(2);
+  ASSERT_TRUE(third_menu_item_label);
+  LeftClickOn(third_menu_item_label);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(combobox->GetTextForRow(combobox->GetSelectedIndex().value()),
+            u"Task List 3 Title (empty)");
+
+  const auto* const task_items_container = GetTaskItemsContainerView();
+  EXPECT_EQ(task_items_container->children().size(), 0u);
+  EXPECT_FALSE(task_items_container->GetVisible());
+
+  // Click on the "Add a task" button. The task container should be visible now.
+  auto* add_task_button = GetAddNewTaskButton();
+  ASSERT_TRUE(add_task_button);
+  LeftClickOn(add_task_button);
+  EXPECT_EQ(task_items_container->children().size(), 1u);
+  EXPECT_TRUE(task_items_container->GetVisible());
+
+  // Commit the empty new task, which removes the temporary task view. The task
+  // container is reset to invisible.
+  GetEventGenerator()->PressAndReleaseKey(ui::VKEY_ESCAPE);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(task_items_container->children().size(), 0u);
+  EXPECT_FALSE(task_items_container->GetVisible());
 }
 
 TEST_F(GlanceablesTasksViewTest, ShowTasksWebUIFromHeaderView) {
@@ -569,7 +656,7 @@ TEST_F(GlanceablesTasksViewTest, ShowTasksWebUIFromHeaderView) {
   const auto* const header_icon_button = GetHeaderIconView();
   GestureTapOn(header_icon_button);
   EXPECT_EQ(new_window_delegate()->GetLastOpenedUrl(),
-            "https://calendar.google.com/calendar/u/0/r/week?opentasks=1");
+            "https://tasks.google.com/");
   EXPECT_EQ(1, user_actions.GetActionCount(
                    "Glanceables_Tasks_LaunchTasksApp_HeaderButton"));
   EXPECT_EQ(0, user_actions.GetActionCount(
@@ -577,6 +664,9 @@ TEST_F(GlanceablesTasksViewTest, ShowTasksWebUIFromHeaderView) {
 }
 
 TEST_F(GlanceablesTasksViewTest, ShowTasksWebUIFromEditInBrowserView) {
+  base::AddFeatureIdTagToTestResult(
+      "screenplay-75d32091-1825-49cb-843b-8bb9d998a47d");
+
   base::HistogramTester histogram_tester;
   base::UserActionTester user_actions;
   const auto* const title_label = views::AsViewClass<views::Label>(
@@ -593,6 +683,8 @@ TEST_F(GlanceablesTasksViewTest, ShowTasksWebUIFromEditInBrowserView) {
 
   // Verify that tapping on the button will record the action.
   GestureTapOn(edit_in_browser_button);
+  EXPECT_EQ(new_window_delegate()->GetLastOpenedUrl(),
+            "https://tasks.google.com/task/TaskListItem1");
   EXPECT_EQ(1, user_actions.GetActionCount(
                    "Glanceables_Tasks_LaunchTasksApp_EditInGoogleTasksButton"));
   histogram_tester.ExpectTotalCount(

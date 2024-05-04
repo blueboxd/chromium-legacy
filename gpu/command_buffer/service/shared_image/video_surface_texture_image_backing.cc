@@ -10,7 +10,6 @@
 #include "components/viz/common/resources/resource_sizes.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/command_buffer/service/abstract_texture_android.h"
-#include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/command_buffer/service/shared_image/shared_image_representation.h"
@@ -132,7 +131,7 @@ class VideoSurfaceTextureImageBacking::
         abstract_texture_(std::move(abstract_texture)),
         passthrough_texture_(gles2::TexturePassthrough::CheckedCast(
             abstract_texture_->GetTextureBase())) {
-    // TODO(https://crbug.com/1172769): Remove this CHECK.
+    // TODO(crbug.com/40166788): Remove this CHECK.
     CHECK(passthrough_texture_);
   }
 

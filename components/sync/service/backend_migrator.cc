@@ -132,7 +132,7 @@ void BackendMigrator::OnConfigureDoneImpl(
       Intersection(result.requested_types, to_migrate_);
   // This intersection check is to determine if our disable request
   // was interrupted by a user changing preferred types.
-  if (state_ == DISABLING_TYPES && !intersection.Empty()) {
+  if (state_ == DISABLING_TYPES && !intersection.empty()) {
     SDVLOG(1) << "Disable request interrupted by user changing types";
     RestartMigration();
     return;
@@ -158,7 +158,7 @@ void BackendMigrator::OnConfigureDoneImpl(
     // DataTypeManager, which means it's never returned in GetPurgedDataTypes().
     // Luckily, there's no need to wait until NIGORI is purged, because that
     // takes effect immediately.
-    // TODO(crbug.com/1142771): try to find better way to implement this logic.
+    // TODO(crbug.com/40154783): try to find better way to implement this logic.
     purged_types.Put(NIGORI);
 
     if (!purged_types.HasAll(to_migrate_)) {

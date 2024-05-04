@@ -13,12 +13,12 @@ namespace autofillPrivate {
 
     // Controls whether the Autofill Sync toggle should be available (duplicated
     // from the Sync Settings page) on the Autofill Settings page.
-    // TODO(crbug.com/1502843): Remove when toggle becomes available on the Sync
+    // TODO(crbug.com/40943238): Remove when toggle becomes available on the Sync
     // page for non-syncing users.
     boolean isAutofillSyncToggleAvailable;
 
     // Represents the UserSelectableType::kAutofill state (enabled or not).
-    // TODO(crbug.com/1502843): Remove when toggle becomes available on the Sync
+    // TODO(crbug.com/40943238): Remove when toggle becomes available on the Sync
     // page for non-syncing users.
     boolean isAutofillSyncToggleEnabled;
   };
@@ -119,6 +119,7 @@ namespace autofillPrivate {
     SINGLE_USERNAME_FORGOT_PASSWORD,
     ADDRESS_HOME_APT,
     ADDRESS_HOME_APT_TYPE,
+    ADDRESS_HOME_HOUSE_NUMBER_AND_APT,
     SINGLE_USERNAME_WITH_INTERMEDIATE_VALUES,
     MAX_VALID_FIELD_TYPE
   };
@@ -364,12 +365,6 @@ namespace autofillPrivate {
     // validation.
     static void isValidIban(
         DOMString ibanValue, IsValidIbanCallback callback);
-
-    // Clears the data associated with a wallet card which was saved
-    // locally so that the saved copy is masked (e.g., "Card ending
-    // in 1234").
-    // |guid|: GUID of the credit card to mask.
-    static void maskCreditCard(DOMString guid);
 
     // Triggers local credit cards migration.
     static void migrateCreditCards();

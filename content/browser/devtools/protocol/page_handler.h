@@ -165,6 +165,7 @@ class PageHandler : public DevToolsDomainHandler,
                                Maybe<std::string> download_path) override;
 
   void GetAppManifest(
+      protocol::Maybe<std::string> manifest_id,
       std::unique_ptr<GetAppManifestCallback> callback) override;
 
   Response SetWebLifecycleState(const std::string& state) override;
@@ -214,11 +215,6 @@ class PageHandler : public DevToolsDomainHandler,
       const std::optional<blink::web_pref::WebPreferences>& original_web_prefs,
       const gfx::Image& image);
 
-  void GotManifest(std::unique_ptr<GetAppManifestCallback> callback,
-                   const GURL& manifest_url,
-                   ::blink::mojom::ManifestPtr parsed_manifest,
-                   blink::mojom::ManifestDebugInfoPtr debug_info);
-
   // RenderWidgetHostObserver overrides.
   void RenderWidgetHostVisibilityChanged(RenderWidgetHost* widget_host,
                                          bool became_visible) override;
@@ -258,9 +254,9 @@ class PageHandler : public DevToolsDomainHandler,
   // to be requested. This changes due to window resizing.
   gfx::Size last_surface_size_;
 
-  RenderFrameHostImpl* host_;
-  EmulationHandler* emulation_handler_;
-  BrowserHandler* browser_handler_;
+  raw_ptr<RenderFrameHostImpl> host_;
+  raw_ptr<EmulationHandler> emulation_handler_;
+  raw_ptr<BrowserHandler> browser_handler_;
 
   std::unique_ptr<Page::Frontend> frontend_;
 

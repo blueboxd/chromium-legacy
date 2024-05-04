@@ -10,14 +10,14 @@ import android.view.ViewGroup;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
-import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.compositor.layouts.phone.SimpleAnimationLayout;
 import org.chromium.chrome.browser.hub.HubLayoutDependencyHolder;
 import org.chromium.chrome.browser.layouts.LayoutType;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab_ui.TabContentManager;
+import org.chromium.chrome.browser.tab_ui.TabSwitcher;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
-import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher;
 import org.chromium.chrome.browser.theme.TopUiThemeColorProvider;
 import org.chromium.chrome.browser.toolbar.ControlContainer;
 import org.chromium.chrome.features.start_surface.StartSurface;
@@ -44,6 +44,7 @@ public class LayoutManagerChromePhone extends LayoutManagerChrome {
      * @param tabSwitcherSupplier Supplier for an interface to talk to the Grid Tab Switcher when
      *     Start surface refactor is enabled. Used to create overviewLayout if it has value,
      *     otherwise will use the accessibility overview layout.
+     * @param tabModelSelectorSupplier Supplier for an interface to talk to the Tab Model Selector.
      * @param browserControlsStateProvider The {@link BrowserControlsStateProvider} for top
      *     controls.
      * @param tabContentManagerSupplier Supplier of the {@link TabContentManager} instance.
@@ -57,6 +58,7 @@ public class LayoutManagerChromePhone extends LayoutManagerChrome {
             ViewGroup contentContainer,
             Supplier<StartSurface> startSurfaceSupplier,
             Supplier<TabSwitcher> tabSwitcherSupplier,
+            Supplier<TabModelSelector> tabModelSelectorSupplier,
             BrowserControlsStateProvider browserControlsStateProvider,
             ObservableSupplier<TabContentManager> tabContentManagerSupplier,
             Supplier<TopUiThemeColorProvider> topUiThemeColorProvider,
@@ -67,6 +69,7 @@ public class LayoutManagerChromePhone extends LayoutManagerChrome {
                 contentContainer,
                 startSurfaceSupplier,
                 tabSwitcherSupplier,
+                tabModelSelectorSupplier,
                 browserControlsStateProvider,
                 tabContentManagerSupplier,
                 topUiThemeColorProvider,

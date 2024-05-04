@@ -6,6 +6,7 @@
 
 #include "base/containers/contains.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/autofill/core/browser/address_data_manager.h"
 #include "components/autofill/core/browser/geo/autofill_country.h"
 #include "components/autofill/core/browser/profile_requirement_utils.h"
 #include "components/autofill/core/common/autofill_features.h"
@@ -27,43 +28,6 @@ bool IsOriginPartOfDeletionInfo(const std::optional<url::Origin>& origin,
 }
 
 }  // anonymous namespace
-
-std::string GetPredictedCountryCode(
-    const AutofillProfile& profile,
-    const GeoIpCountryCode& variation_country_code,
-    const std::string& app_locale,
-    LogBuffer* import_log_buffer) {
-  // Try to acquire the country code form the filled form.
-  std::string country_code =
-      base::UTF16ToASCII(profile.GetRawInfo(ADDRESS_HOME_COUNTRY));
-
-  if (import_log_buffer && !country_code.empty()) {
-    *import_log_buffer << LogMessage::kImportAddressProfileFromFormCountrySource
-                       << "Country entry in form." << CTag{};
-  }
-
-  // As a fallback, use the variation service state to get a country code.
-  if (country_code.empty() && !variation_country_code.value().empty()) {
-    country_code = variation_country_code.value();
-    if (import_log_buffer) {
-      *import_log_buffer
-          << LogMessage::kImportAddressProfileFromFormCountrySource
-          << "Variations service." << CTag{};
-    }
-  }
-
-  // As the last resort, derive the country code from the app_locale.
-  if (country_code.empty()) {
-    country_code = AutofillCountry::CountryCodeForLocale(app_locale);
-    if (import_log_buffer && !country_code.empty()) {
-      *import_log_buffer
-          << LogMessage::kImportAddressProfileFromFormCountrySource
-          << "App locale." << CTag{};
-    }
-  }
-
-  return country_code;
-}
 
 MultiStepImportMerger::MultiStepImportMerger(
     const std::string& app_locale,
@@ -155,8 +119,8 @@ void MultiStepImportMerger::OnBrowsingHistoryCleared(
     Clear();
 }
 
-void MultiStepImportMerger::OnPersonalDataChanged(
-    PersonalDataManager& personal_data_manager) {
+void MultiStepImportMerger::OnAddressDataChanged(
+    AddressDataManager& address_data_manager) {
   auto it = multistep_candidates_.begin();
   while (it != multistep_candidates_.end()) {
     // `it` might get erased, so `it++` at the end of the loop doesn't suffice.
@@ -164,7 +128,7 @@ void MultiStepImportMerger::OnPersonalDataChanged(
     // Incomplete profiles are not imported yet, so they cannot have changed.
     if (it->is_imported) {
       AutofillProfile* stored_profile =
-          personal_data_manager.GetProfileByGUID(it->profile.guid());
+          address_data_manager.GetProfileByGUID(it->profile.guid());
       if (!stored_profile) {
         // The profile was deleted, so we shouldn't offer importing it again.
         multistep_candidates_.erase(it, next);

@@ -236,6 +236,10 @@ void RunOrPostTaskOnUIThread(const base::Location& location,
 
 }  // namespace
 
+ServiceWorkerContextSynchronousObserverList::
+    ServiceWorkerContextSynchronousObserverList() = default;
+ServiceWorkerContextSynchronousObserverList::
+    ~ServiceWorkerContextSynchronousObserverList() = default;
 
 // static
 bool ServiceWorkerContext::ScopeMatches(const GURL& scope, const GURL& url) {
@@ -264,6 +268,8 @@ ServiceWorkerContextWrapper::ServiceWorkerContextWrapper(
     BrowserContext* browser_context)
     : core_observer_list_(
           base::MakeRefCounted<ServiceWorkerContextObserverList>()),
+      core_sync_observer_list_(
+          base::MakeRefCounted<ServiceWorkerContextSynchronousObserverList>()),
       browser_context_(browser_context),
       process_manager_(std::make_unique<ServiceWorkerProcessManager>()) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -312,13 +318,14 @@ void ServiceWorkerContextWrapper::InitInternal(
   context_core_ = std::make_unique<ServiceWorkerContextCore>(
       quota_manager_proxy, special_storage_policy,
       std::move(non_network_pending_loader_factory_bundle_for_update_check),
-      core_observer_list_.get(), this);
+      core_observer_list_.get(), core_sync_observer_list_.get(), this);
 }
 
 void ServiceWorkerContextWrapper::Shutdown() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   ClearRunningServiceWorkers();
+  NotifyRunningServiceWorkerStoppedToSynchronousObserver();
   storage_partition_ = nullptr;
   storage_control_.reset();
   context_core_.reset();
@@ -515,6 +522,7 @@ void ServiceWorkerContextWrapper::OnStopped(int64_t version_id) {
 }
 
 void ServiceWorkerContextWrapper::OnDeleteAndStartOver() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   is_deleting_and_starting_over_ = true;
   ClearRunningServiceWorkers();
 }
@@ -554,6 +562,30 @@ void ServiceWorkerContextWrapper::RemoveObserver(
   observer_list_.RemoveObserver(observer);
 }
 
+void ServiceWorkerContextWrapper::AddSyncObserver(
+    ServiceWorkerContextObserverSynchronous* observer) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  core_sync_observer_list_->observers.AddObserver(observer);
+}
+
+void ServiceWorkerContextWrapper::RemoveSyncObserver(
+    ServiceWorkerContextObserverSynchronous* observer) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  core_sync_observer_list_->observers.RemoveObserver(observer);
+}
+
+void ServiceWorkerContextWrapper::
+    NotifyRunningServiceWorkerStoppedToSynchronousObserver() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  for (const auto& kv : running_service_workers_) {
+    int64_t version_id = kv.first;
+    for (auto& observer : core_sync_observer_list_->observers) {
+      observer.OnStopped(version_id, kv.second.scope);
+    }
+  }
+}
+
 void ServiceWorkerContextWrapper::RegisterServiceWorker(
     const GURL& script_url,
     const blink::StorageKey& key,
@@ -572,7 +604,7 @@ void ServiceWorkerContextWrapper::RegisterServiceWorker(
       net::SimplifyUrlForRequest(options.scope), options.type,
       options.update_via_cache);
 
-  // TODO(https://crbug.com/1239551): initialize remaining fields
+  // TODO(crbug.com/40056874): initialize remaining fields
   PolicyContainerPolicies policy_container_policies;
   policy_container_policies.is_web_secure_context =
       network::IsUrlPotentiallyTrustworthy(script_url);
@@ -596,6 +628,7 @@ void ServiceWorkerContextWrapper::UnregisterServiceWorker(
     const GURL& scope,
     const blink::StorageKey& key,
     ResultCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   UnregisterServiceWorkerImpl(scope, key, /*is_immediate=*/false,
                               std::move(callback));
 }
@@ -604,6 +637,7 @@ void ServiceWorkerContextWrapper::UnregisterServiceWorkerImmediately(
     const GURL& scope,
     const blink::StorageKey& key,
     ResultCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   UnregisterServiceWorkerImpl(scope, key, /*is_immediate=*/true,
                               std::move(callback));
 }
@@ -804,6 +838,7 @@ void ServiceWorkerContextWrapper::StartServiceWorkerAndDispatchMessage(
     const blink::StorageKey& key,
     blink::TransferableMessage message,
     ResultCallback result_callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // Ensure the callback is called asynchronously.
   auto wrapped_callback = base::BindOnce(
       [](ResultCallback callback, bool success) {
@@ -816,7 +851,7 @@ void ServiceWorkerContextWrapper::StartServiceWorkerAndDispatchMessage(
   // message's parent task ID.
   message.parent_task_id = std::nullopt;
 
-  // TODO(https://crbug.com/1295029): Don't post task to the UI thread. Instead,
+  // TODO(crbug.com/40820909): Don't post task to the UI thread. Instead,
   // make all call sites run on the UI thread.
   RunOrPostTaskOnUIThread(
       FROM_HERE,
@@ -898,7 +933,8 @@ void ServiceWorkerContextWrapper::DidStartServiceWorkerForMessageDispatch(
   event->source_info_for_service_worker =
       version->worker_host()
           ->container_host()
-          ->GetOrCreateServiceWorkerObjectHost(version)
+          ->version_object_manager()
+          .GetOrCreateHost(version)
           ->CreateCompleteObjectInfoToSend();
 
   int request_id = version->StartRequest(
@@ -1116,14 +1152,12 @@ ServiceWorkerContextWrapper::GetWindowClientFrameRoutingIds(
       new std::vector<GlobalRenderFrameHostId>());
   if (!context_core_)
     return rfh_ids;
-  for (std::unique_ptr<ServiceWorkerContextCore::ContainerHostIterator> it =
-           context_core_->GetWindowClientContainerHostIterator(
-               key,
-               /*include_reserved_clients=*/false);
-       !it->IsAtEnd(); it->Advance()) {
-    ServiceWorkerContainerHost* container_host = it->GetContainerHost();
-    DCHECK(container_host->IsContainerForWindowClient());
-    rfh_ids->push_back(container_host->GetRenderFrameHostId());
+  for (auto it = context_core_->GetWindowServiceWorkerClients(
+           key,
+           /*include_reserved_clients=*/false);
+       !it.IsAtEnd(); ++it) {
+    DCHECK(it->IsContainerForWindowClient());
+    rfh_ids->push_back(it->GetRenderFrameHostId());
   }
 
   return rfh_ids;
@@ -1709,7 +1743,17 @@ void ServiceWorkerContextWrapper::DidFindRegistrationForWarmUp(
       registration->active_version()->running_status() ==
           blink::EmbeddedWorkerStatus::kRunning) {
     std::move(callback).Run();
-    MaybeProcessPendingWarmUpRequest();
+
+    // This code can be called from `ServiceWorkerVersion::FinishStartWorker`
+    // and `ServiceWorkerVersion::OnTimeoutTimer` just before stopping service
+    // worker. To avoid start warming up the next warm-up candidate,
+    // `MaybeProcessPendingWarmUpRequest` needs to be asynchronously called to
+    // wait for stopping the current service worker. (see: http://b/40874535)
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            &ServiceWorkerContextWrapper::MaybeProcessPendingWarmUpRequest,
+            this));
     return;
   }
 
@@ -1729,7 +1773,16 @@ void ServiceWorkerContextWrapper::DidWarmUpServiceWorker(
 
   std::move(callback).Run();
 
-  MaybeProcessPendingWarmUpRequest();
+  // This code can be called from `ServiceWorkerVersion::FinishStartWorker` and
+  // `ServiceWorkerVersion::OnTimeoutTimer` just before stopping service worker.
+  // To avoid start warming up the next warm-up candidate,
+  // `MaybeProcessPendingWarmUpRequest` needs to be asynchronously called to
+  // wait for stopping the current service worker. (see: http://b/40874535)
+  base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &ServiceWorkerContextWrapper::MaybeProcessPendingWarmUpRequest,
+          this));
 }
 
 ServiceWorkerContextCore* ServiceWorkerContextWrapper::context() {
@@ -1775,7 +1828,7 @@ void ServiceWorkerContextWrapper::BindStorageControl(
       !base::FeatureList::IsEnabled(kServiceWorkerStorageControlOnIOThread);
 #else
       // The storage service always runs out of process on Desktop platforms.
-      // TODO(crbug.com/1055677): ServiceWorkerStorageControlImpl instance
+      // TODO(crbug.com/40120038): ServiceWorkerStorageControlImpl instance
       // should live in the storage service. Currently,
       // ServiceWorkerStorageControlImpl runs on UI thread to keep the previous
       // behavior.
@@ -1803,8 +1856,8 @@ void ServiceWorkerContextWrapper::BindStorageControl(
                        std::move(receiver), user_data_directory_,
                        database_task_runner));
   } else if (run_storage_control_on_ui_thread) {
-    // TODO(crbug.com/1055677): Use storage_partition() to bind the control when
-    // ServiceWorkerStorageControl is sandboxed in the Storage Service.
+    // TODO(crbug.com/40120038): Use storage_partition() to bind the control
+    // when ServiceWorkerStorageControl is sandboxed in the Storage Service.
     DCHECK(!storage_control_);
 
     // The database task runner is BLOCK_SHUTDOWN in order to support
@@ -1847,7 +1900,7 @@ ServiceWorkerContextWrapper::GetLoaderFactoryForUpdateCheck(
     const GURL& scope,
     network::mojom::ClientSecurityStatePtr client_security_state) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  // TODO(https://crbug.com/1211361): Do we want to instrument this with
+  // TODO(crbug.com/40767578): Do we want to instrument this with
   // devtools? It is currently not recorded at all.
   return GetLoaderFactoryForBrowserInitiatedRequest(
       scope,
@@ -1894,8 +1947,9 @@ ServiceWorkerContextWrapper::GetLoaderFactoryForBrowserInitiatedRequest(
       storage_partition_->browser_context(), /*frame=*/nullptr,
       ChildProcessHost::kInvalidUniqueID,
       ContentBrowserClient::URLLoaderFactoryType::kServiceWorkerScript,
-      scope_origin, /*navigation_id=*/std::nullopt, ukm::kInvalidSourceIdObj,
-      factory_builder, &header_client, &bypass_redirect_checks,
+      scope_origin, net::IsolationInfo(),
+      /*navigation_id=*/std::nullopt, ukm::kInvalidSourceIdObj, factory_builder,
+      &header_client, &bypass_redirect_checks,
       /*disable_secure_dns=*/nullptr,
       /*factory_override=*/nullptr,
       /*navigation_response_task_runner=*/nullptr);

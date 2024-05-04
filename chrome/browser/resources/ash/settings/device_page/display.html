@@ -44,6 +44,11 @@
     margin-bottom: 20px;
   }
 
+  #brightnessSliderWrapper {
+    min-width: 200px;
+    display: flex;
+    flex-direction: column;
+  }
 </style>
 
 <!-- Display Shiny Performance Mode Controller -->
@@ -166,6 +171,44 @@
         <option value="0">$i18n{displayScreenPrimary}</option>
         <option value="1">$i18n{displayScreenExtended}</option>
       </select>
+    </div>
+  </template>
+
+  <!-- Display brightness controls -->
+  <template is="dom-if" restamp
+      if="[[showBrightnessControls_(selectedDisplay)]]">
+    <template is="dom-if" restamp
+        if="[[showAutoBrightnessToggle_(hasAmbientLightSensor_)]]">
+      <div class="settings-box indented" id="autoBrightnessToggleRow"
+          on-click="onAutoBrightnessToggleRowClicked_" actionable-row>
+        <div class="start settings-box-text">
+          <div id="autoBrightnessToggleLabel" class="start" aria-hidden="true">
+              $i18n{displayAutoBrightnessToggleLabel}
+          </div>
+          <div id="autoBrightnessToggleSubtitle" class="secondary"
+              aria-hidden="true">
+            $i18n{displayAutoBrightnessToggleSubtitle}
+          </div>
+        </div>
+        <cr-toggle id="autoBrightnessToggle"
+            checked="[[isAmbientLightSensorEnabled_]]"
+            on-change="onAutoBrightnessToggleChange_"
+            aria-labelledby="autoBrightnessToggleLabel">
+        </cr-toggle>
+      </div>
+    </template>
+    <div class="settings-box indented">
+      <div id="brightnessControlsTitle" class="start" aria-hidden="true">
+        $i18n{displayBrightnessLabel}
+      </div>
+      <div id="brightnessSliderWrapper">
+        <cr-slider id="brightnessSlider" min="[[brightnessSliderMin_]]"
+            max="[[brightnessSliderMax_]]" key-press-slider-increment="10"
+            value="[[currentInternalScreenBrightness_]]"
+            on-cr-slider-value-changed="onDisplayBrightnessSliderChanged_"
+            aria-labelledby="brightnessControlsTitle">
+        </cr-slider>
+      </div>
     </div>
   </template>
 

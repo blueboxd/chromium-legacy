@@ -86,6 +86,7 @@ class FeedStream : public FeedApi,
     virtual void ClearAll() = 0;
     virtual AccountInfo GetAccountInfo() = 0;
     virtual bool IsSigninAllowed() = 0;
+    virtual bool IsSupervisedAccount() = 0;
     virtual void PrefetchImage(const GURL& url) = 0;
     virtual void RegisterExperiments(const Experiments& experiments) = 0;
     virtual void RegisterFeedUserSettingsFieldTrial(
@@ -351,6 +352,8 @@ class FeedStream : public FeedApi,
   bool ClearAllInProgress() const { return clear_all_in_progress_; }
 
   bool IsEnabledAndVisible();
+
+  bool IsWebFeedEnabled();
 
   PrefService* profile_prefs() const { return profile_prefs_; }
 

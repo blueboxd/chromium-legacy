@@ -114,6 +114,9 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode final
 
   const ScrollPaintPropertyNode& Unalias() const = delete;
 
+  // See PaintPropertyNode::ChangedSequenceNumber().
+  void ClearChangedToRoot(int sequence_number) const;
+
   cc::OverscrollBehavior::Type OverscrollBehaviorX() const {
     return state_.overscroll_behavior.x;
   }
@@ -149,6 +152,10 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode final
   bool UserScrollableVertical() const {
     return state_.user_scrollable_vertical;
   }
+  bool UserScrollable() const {
+    return UserScrollableHorizontal() || UserScrollableVertical();
+  }
+
   bool PreventViewportScrollingFromInner() const {
     return state_.prevent_viewport_scrolling_from_inner;
   }

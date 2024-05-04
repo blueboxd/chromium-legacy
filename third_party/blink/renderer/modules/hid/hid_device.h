@@ -74,18 +74,19 @@ class MODULES_EXPORT HIDDevice
   String productName() const;
   const HeapVector<Member<HIDCollectionInfo>>& collections() const;
 
-  ScriptPromise open(ScriptState* script_state,
-                     ExceptionState& exception_state);
-  ScriptPromise close(ScriptState*);
-  ScriptPromise forget(ScriptState*, ExceptionState& exception_state);
-  ScriptPromise sendReport(ScriptState*,
-                           uint8_t report_id,
-                           const DOMArrayPiece& data);
-  ScriptPromise sendFeatureReport(ScriptState*,
-                                  uint8_t report_id,
-                                  const DOMArrayPiece& data);
-  ScriptPromiseTyped<DOMDataView> receiveFeatureReport(ScriptState*,
-                                                       uint8_t report_id);
+  ScriptPromise<IDLUndefined> open(ScriptState* script_state,
+                                   ExceptionState& exception_state);
+  ScriptPromise<IDLUndefined> close(ScriptState*);
+  ScriptPromise<IDLUndefined> forget(ScriptState*,
+                                     ExceptionState& exception_state);
+  ScriptPromise<IDLUndefined> sendReport(ScriptState*,
+                                         uint8_t report_id,
+                                         const DOMArrayPiece& data);
+  ScriptPromise<IDLUndefined> sendFeatureReport(ScriptState*,
+                                                uint8_t report_id,
+                                                const DOMArrayPiece& data);
+  ScriptPromise<NotShared<DOMDataView>> receiveFeatureReport(ScriptState*,
+                                                             uint8_t report_id);
 
   // ExecutionContextLifecycleObserver:
   void ContextDestroyed() override;
@@ -102,32 +103,31 @@ class MODULES_EXPORT HIDDevice
   void Trace(Visitor*) const override;
 
  private:
-  bool EnsureNoDeviceChangeInProgress(ScriptPromiseResolver* resolver) const;
-  bool EnsureDeviceIsNotForgotten(ScriptPromiseResolver* resolver) const;
+  bool EnsureNoDeviceChangeInProgress(
+      ScriptPromiseResolverBase* resolver) const;
+  bool EnsureDeviceIsNotForgotten(ScriptPromiseResolverBase* resolver) const;
 
   void OnServiceConnectionError();
 
-  void FinishOpen(ScriptPromiseResolver*,
+  void FinishOpen(ScriptPromiseResolver<IDLUndefined>*,
                   mojo::PendingRemote<device::mojom::blink::HidConnection>);
-  void FinishForget(ScriptPromiseResolver*);
-  void FinishSendReport(ScriptPromiseResolver*, bool success);
-  void FinishReceiveReport(ScriptPromiseResolver*,
-                           bool success,
-                           uint8_t report_id,
-                           const std::optional<Vector<uint8_t>>&);
-  void FinishSendFeatureReport(ScriptPromiseResolver*, bool success);
-  void FinishReceiveFeatureReport(ScriptPromiseResolverTyped<DOMDataView>*,
-                                  bool success,
-                                  const std::optional<Vector<uint8_t>>&);
+  void FinishForget(ScriptPromiseResolver<IDLUndefined>*);
+  void FinishSendReport(ScriptPromiseResolver<IDLUndefined>*, bool success);
+  void FinishSendFeatureReport(ScriptPromiseResolver<IDLUndefined>*,
+                               bool success);
+  void FinishReceiveFeatureReport(
+      ScriptPromiseResolver<NotShared<DOMDataView>>*,
+      bool success,
+      const std::optional<Vector<uint8_t>>&);
 
-  void MarkRequestComplete(ScriptPromiseResolver*);
+  void MarkRequestComplete(ScriptPromiseResolverBase*);
 
   Member<ServiceInterface> parent_;
   device::mojom::blink::HidDeviceInfoPtr device_info_;
   HeapMojoRemote<device::mojom::blink::HidConnection> connection_;
   HeapMojoReceiver<device::mojom::blink::HidConnectionClient, HIDDevice>
       receiver_;
-  HeapHashSet<Member<ScriptPromiseResolver>> device_requests_;
+  HeapHashSet<Member<ScriptPromiseResolverBase>> device_requests_;
   HeapVector<Member<HIDCollectionInfo>> collections_;
   bool device_state_change_in_progress_ = false;
   bool device_is_forgotten_ = false;

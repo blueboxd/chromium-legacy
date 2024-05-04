@@ -31,7 +31,6 @@
 <translation id="1620510694547887537">Cámara</translation>
 <translation id="1633720957382884102">Sitios relacionados</translation>
 <translation id="1644574205037202324">Historial</translation>
-<translation id="1647582022260550163">¿Confirmas que quieres restablecer los permisos y borrar las cookies y los datos de sitios?</translation>
 <translation id="1652197001188145583">Cuando esta opción está activada, los sitios pueden solicitar permiso para usar dispositivos NFC. Cuando está desactivada, los sitios no pueden usar dispositivos NFC.</translation>
 <translation id="1660204651932907780">Permitir que los sitios reproduzcan sonido (recomendado)</translation>
 <translation id="1677097821151855053">Se utilizan cookies y otros datos del sitio para recordar tu información y actividad. De esta manera, podrás acceder a tu cuenta y ver anuncios personalizados, entre otras cosas. Para administrar las cookies de todos los sitios, visita la <ph name="BEGIN_LINK" />Configuración<ph name="END_LINK" />.</translation>
@@ -94,12 +93,12 @@
 <translation id="2501278716633472235">Ir atrás</translation>
 <translation id="2546283357679194313">Datos de sitios y cookies</translation>
 <translation id="2550801787432930915">Tarjeta de reducción de precio</translation>
-<translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{1 cookie bloqueada}other{# cookies bloqueadas}}</translation>
 <translation id="2570922361219980984">El acceso a la ubicación también está desactivado en este dispositivo. Actívalo en la <ph name="BEGIN_LINK" />Configuración de Android<ph name="END_LINK" />.</translation>
 <translation id="257931822824936280">Expandido; haz clic para contraer.</translation>
 <translation id="2586657967955657006">Portapapeles</translation>
 <translation id="2597457036804169544">No aplicar el Tema oscuro para los sitios</translation>
 <translation id="2606760465469169465">Verificación automática</translation>
+<translation id="2613007545732217283"><ph name="HOST_NAME" /> <ph name="SEPARATOR" /> <ph name="RECENCY" /></translation>
 <translation id="2621115761605608342">Permitir la ejecución de JavaScript para un sitio específico</translation>
 <translation id="2653659639078652383">Enviar</translation>
 <translation id="2677748264148917807">Abandonar</translation>
@@ -122,9 +121,7 @@
 <translation id="2979365474350987274">Las cookies de terceros están limitadas</translation>
 <translation id="3008272652534848354">Restablecer permisos</translation>
 <translation id="301521992641321250">Bloqueado de forma automática</translation>
-<translation id="3025010840409371499"><ph name="RECENCY" /> <ph name="SEPARATOR" /> <ph name="HOST_NAME" /></translation>
 <translation id="3069226013421428034">Permite el acceso de terceros a un sitio específico.</translation>
-<translation id="3082992102194421695">{COUNT,plural, =1{Vence mañana}other{Vence en # días}}</translation>
 <translation id="310297983047869047">Diapositiva anterior</translation>
 <translation id="3109724472072898302">Contraído</translation>
 <translation id="3114012059975132928">Reproductor de video</translation>
@@ -177,6 +174,7 @@
 <translation id="3895926599014793903">Forzar habilitación de zoom</translation>
 <translation id="3908288065506437185">Bloquear cookies de terceros en el modo Incógnito</translation>
 <translation id="3918378745482005425">Es posible que no puedas usar algunas funciones. Los sitios relacionados también pueden usar cookies de terceros.</translation>
+<translation id="3933121352599513978">Contraer solicitudes no deseadas (recomendado)</translation>
 <translation id="3955193568934677022">Permitir que los sitios reproduzcan contenido protegido (recomendado)</translation>
 <translation id="3967822245660637423">Descarga completa</translation>
 <translation id="3974105241379491420">Los sitios pueden solicitar permiso para usar la información que guardaron sobre ti</translation>
@@ -198,7 +196,9 @@
 <translation id="4278390842282768270">Permitidas</translation>
 <translation id="429312253194641664">Un sitio está reproduciendo contenido multimedia</translation>
 <translation id="42981349822642051">Expandir</translation>
+<translation id="4336219115486912529">{COUNT,plural, =1{Vence mañana}other{Vence dentro de # días}}</translation>
 <translation id="4336566011000459927">Chrome volverá a limitar las cookies hoy</translation>
+<translation id="4336836404251800362"><ph name="RECENCY" /> <ph name="SEPARATOR" /> Tu pestaña más reciente</translation>
 <translation id="4338831206024587507">Todos los sitios en <ph name="DOMAIN" /></translation>
 <translation id="4402755511846832236">No permitir que los sitios sepan cuando estás usando activamente este dispositivo</translation>
 <translation id="4412992751769744546">Permitir cookies de terceros</translation>
@@ -289,6 +289,7 @@
 <translation id="5853982612236235577">Cuando esta opción está activada, los sitios pueden preguntarte si quieres recibir notificaciones. Cuando está desactivada, los sitios no pueden enviar notificaciones.</translation>
 <translation id="5860033963881614850">Desactivado</translation>
 <translation id="5876056640971328065">Pausar video</translation>
+<translation id="5877248419911025165">Contraer todas las solicitudes</translation>
 <translation id="5884085660368669834">Preferencia de sitio</translation>
 <translation id="5887687176710214216">Última visita: ayer</translation>
 <translation id="5916664084637901428">Activado</translation>
@@ -345,6 +346,7 @@
 <translation id="6612358246767739896">Contenido protegido</translation>
 <translation id="662080504995468778">Permanecer aquí</translation>
 <translation id="6653342741369270081">Toca el botón Atrás para salir de la pantalla completa.</translation>
+<translation id="6670377348676659110">{TILE_COUNT,plural, =1{Ocultar la opción Continuar con esta pestaña}other{Ocultar la opción Continuar con estas pestañas}}</translation>
 <translation id="6689172468748959065">Fotos de perfil</translation>
 <translation id="6697925417670533197">Descargas activas</translation>
 <translation id="6722828510648505498">Bloquea los mensajes de acceso de servicios de identidad.</translation>
@@ -398,7 +400,6 @@
 <translation id="7561196759112975576">Siempre</translation>
 <translation id="757524316907819857">Impedir que los sitios reproduzcan contenido protegido</translation>
 <translation id="7594634374516752650">Conectado a un dispositivo Bluetooth</translation>
-<translation id="7641339528570811325">Borrar datos de navegación…</translation>
 <translation id="7649070708921625228">Ayuda</translation>
 <translation id="7658239707568436148">Cancelar</translation>
 <translation id="7667547420449112975">El maravilloso mago de Oz</translation>
@@ -456,7 +457,6 @@
 <translation id="8441146129660941386">Buscar más atrás</translation>
 <translation id="8444433999583714703">Para permitir que <ph name="APP_NAME" /> acceda a tu ubicación, actívala también en la <ph name="BEGIN_LINK" />Configuración de Android<ph name="END_LINK" />.</translation>
 <translation id="8447861592752582886">Revocar permiso para el dispositivo</translation>
-<translation id="8451050538944905715">{NUM_SELECTED,plural, =1{1 cookie en uso}other{# cookies en uso}}</translation>
 <translation id="8487700953926739672">Disponible sin conexión</translation>
 <translation id="848952951823693243">Solicitar siempre el sitio móvil</translation>
 <translation id="8499083585497694743">Dejar de silenciar el micrófono</translation>
@@ -484,7 +484,6 @@
 <translation id="8803526663383843427">Cuando está activada</translation>
 <translation id="8805385115381080995">La navegación es más rápida porque el sitio tiene menos probabilidades de pedirte que verifiques si eres una persona real.</translation>
 <translation id="8816026460808729765">Impedir que los sitios accedan a los sensores</translation>
-<translation id="8843699287283948910">Ocultar pestañas de otros dispositivos</translation>
 <translation id="8847988622838149491">USB</translation>
 <translation id="8874790741333031443">Intenta permitir temporalmente cookies de terceros, lo que implica menos protección al navegar, pero aumenta las probabilidades de que las funciones del sitio funcionen como se espera.</translation>
 <translation id="8889294078294184559">A medida que navegas, los sitios pueden comprobar con Chrome y verificar con otro sitio que hayas visitado que eres una persona real.</translation>
@@ -497,6 +496,7 @@
 <translation id="8959122750345127698">Navegación inaccesible: <ph name="URL" /></translation>
 <translation id="8986362086234534611">Borrar</translation>
 <translation id="8990043154272859344">Saldrás de todos los sitios</translation>
+<translation id="8993853206419610596">Expandir todas las solicitudes</translation>
 <translation id="9002538116239926534">Cuando esta opción está activada, los sitios pueden guardar datos en tu dispositivo. Cuando está desactivada, los sitios no pueden guardar datos en tu dispositivo.</translation>
 <translation id="9011903857143958461">Se permitió <ph name="SITE_NAME" /></translation>
 <translation id="9019902583201351841">Administrado por tus padres</translation>

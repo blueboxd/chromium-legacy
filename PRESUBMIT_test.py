@@ -4761,7 +4761,7 @@ class VerifyDcheckParentheses(unittest.TestCase):
       # own thing at their own risk.
       MockFile('okay3.cc', ['PA_DCHECK_IS_ON']),
       MockFile('okay4.cc', ['#if PA_DCHECK_IS_ON']),
-      MockFile('okay6.cc', ['BUILDFLAG(PA_DCHECK_IS_ON)']),
+      MockFile('okay6.cc', ['PA_BUILDFLAG(PA_DCHECK_IS_ON)']),
     ]
     errors = PRESUBMIT.CheckDCHECK_IS_ONHasBraces(input_api, MockOutputApi())
     self.assertEqual(0, len(errors))
@@ -5308,6 +5308,24 @@ class CheckInlineConstexprDefinitionsInHeadersTest(unittest.TestCase):
       MockAffectedFile('src/class.h', lines)
     ]
     warnings = PRESUBMIT.CheckInlineConstexprDefinitionsInHeaders(input_api, MockOutputApi())
+    self.assertEqual(0, len(warnings))
+
+  def testTodoBugReferencesWithOldBugId(self):
+    """Tests that an old monorail bug ID in a TODO fails."""
+    input_api = MockInputApi()
+    input_api.files = [
+      MockAffectedFile('src/helpers.h', ['// TODO(crbug.com/12345)'])
+    ]
+    warnings = PRESUBMIT.CheckTodoBugReferences(input_api, MockOutputApi())
+    self.assertEqual(1, len(warnings))
+
+  def testTodoBugReferencesWithUpdatedBugId(self):
+    """Tests that a new issue tracker bug ID in a TODO passes."""
+    input_api = MockInputApi()
+    input_api.files = [
+      MockAffectedFile('src/helpers.h', ['// TODO(crbug.com/40781525)'])
+    ]
+    warnings = PRESUBMIT.CheckTodoBugReferences(input_api, MockOutputApi())
     self.assertEqual(0, len(warnings))
 
 if __name__ == '__main__':

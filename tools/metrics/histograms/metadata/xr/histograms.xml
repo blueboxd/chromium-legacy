@@ -32,14 +32,14 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="VRViewerType" enum="VRViewerType" expires_after="2024-06-30">
+<histogram name="VRViewerType" enum="VRViewerType" expires_after="2024-10-20">
   <owner>alcooper@chromium.org</owner>
   <owner>xr-dev@chromium.org</owner>
   <summary>The type of headset being used for VR.</summary>
 </histogram>
 
 <histogram name="XR.ARCore.DepthBufferSizeInPixels" units="pixels"
-    expires_after="2024-06-10">
+    expires_after="2024-09-22">
   <owner>bialpio@chromium.org</owner>
   <owner>xr-dev@chromium.org</owner>
   <summary>

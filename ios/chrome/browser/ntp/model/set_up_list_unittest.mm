@@ -7,6 +7,7 @@
 #import "base/memory/raw_ptr.h"
 #import "base/strings/sys_string_conversions.h"
 #import "base/test/gtest_util.h"
+#import "base/test/metrics/histogram_tester.h"
 #import "base/test/scoped_feature_list.h"
 #import "components/password_manager/core/browser/password_manager_util.h"
 #import "components/prefs/scoped_user_pref_update.h"
@@ -66,7 +67,7 @@ class SetUpListTest : public PlatformTest {
 
   // Get the test BrowserState.
   ChromeBrowserState* GetBrowserState() {
-    return test_manager_->GetLastUsedBrowserState();
+    return test_manager_->GetLastUsedBrowserStateForTesting();
   }
 
   // Get the LocalState prefs.
@@ -174,7 +175,7 @@ class SetUpListTest : public PlatformTest {
   web::WebTaskEnvironment task_environment_;
   base::test::ScopedFeatureList feature_list_;
   raw_ptr<PrefService> prefs_;
-  std::unique_ptr<ios::ChromeBrowserStateManager> test_manager_;
+  std::unique_ptr<TestChromeBrowserStateManager> test_manager_;
   raw_ptr<AuthenticationService> auth_service_;
   SetUpList* set_up_list_;
 };
@@ -211,17 +212,14 @@ TEST_F(SetUpListTest, SignInSyncReactsToAccountChanges) {
   BuildSetUpList();
   ExpectListToInclude(SetUpListItemType::kSignInSync, YES);
   EXPECT_EQ(GetItemState(SetUpListItemType::kSignInSync),
-            SetUpListItemState::kCompleteNotInList);
+            SetUpListItemState::kCompleteInList);
 
   SetItemState(SetUpListItemType::kSignInSync,
-               SetUpListItemState::kCompleteInList);
-  BuildSetUpList();
-  ExpectListToInclude(SetUpListItemType::kSignInSync, YES);
-  EXPECT_EQ(GetItemState(SetUpListItemType::kSignInSync),
-            SetUpListItemState::kCompleteNotInList);
-
+               SetUpListItemState::kCompleteNotInList);
   BuildSetUpList();
   ExpectListToNotInclude(SetUpListItemType::kSignInSync);
+  EXPECT_EQ(GetItemState(SetUpListItemType::kSignInSync),
+            SetUpListItemState::kCompleteNotInList);
 }
 
 // Tests that the SetUpList uses the correct criteria when including the
@@ -235,17 +233,14 @@ TEST_F(SetUpListTest, BuildListWithDefaultBrowser) {
   BuildSetUpList();
   ExpectListToInclude(SetUpListItemType::kDefaultBrowser, YES);
   EXPECT_EQ(GetItemState(SetUpListItemType::kDefaultBrowser),
-            SetUpListItemState::kCompleteNotInList);
+            SetUpListItemState::kCompleteInList);
 
   SetItemState(SetUpListItemType::kDefaultBrowser,
-               SetUpListItemState::kCompleteInList);
-  BuildSetUpList();
-  ExpectListToInclude(SetUpListItemType::kDefaultBrowser, YES);
-  EXPECT_EQ(GetItemState(SetUpListItemType::kDefaultBrowser),
-            SetUpListItemState::kCompleteNotInList);
-
+               SetUpListItemState::kCompleteNotInList);
   BuildSetUpList();
   ExpectListToNotInclude(SetUpListItemType::kDefaultBrowser);
+  EXPECT_EQ(GetItemState(SetUpListItemType::kDefaultBrowser),
+            SetUpListItemState::kCompleteNotInList);
 }
 
 // Tests that the SetUpList uses the correct criteria when including the
@@ -259,17 +254,14 @@ TEST_F(SetUpListTest, BuildListWithAutofill) {
   BuildSetUpList();
   ExpectListToInclude(SetUpListItemType::kAutofill, YES);
   EXPECT_EQ(GetItemState(SetUpListItemType::kAutofill),
-            SetUpListItemState::kCompleteNotInList);
+            SetUpListItemState::kCompleteInList);
 
   SetItemState(SetUpListItemType::kAutofill,
-               SetUpListItemState::kCompleteInList);
-  BuildSetUpList();
-  ExpectListToInclude(SetUpListItemType::kAutofill, YES);
-  EXPECT_EQ(GetItemState(SetUpListItemType::kAutofill),
-            SetUpListItemState::kCompleteNotInList);
-
+               SetUpListItemState::kCompleteNotInList);
   BuildSetUpList();
   ExpectListToNotInclude(SetUpListItemType::kAutofill);
+  EXPECT_EQ(GetItemState(SetUpListItemType::kAutofill),
+            SetUpListItemState::kCompleteNotInList);
 }
 
 // Tests that the SetUpList uses the correct criteria when including the
@@ -284,17 +276,14 @@ TEST_F(SetUpListTest, BuildListWithNotifications_Tips) {
   BuildSetUpList();
   ExpectListToInclude(SetUpListItemType::kNotifications, YES);
   EXPECT_EQ(GetItemState(SetUpListItemType::kNotifications),
-            SetUpListItemState::kCompleteNotInList);
+            SetUpListItemState::kCompleteInList);
 
   SetItemState(SetUpListItemType::kNotifications,
-               SetUpListItemState::kCompleteInList);
-  BuildSetUpList();
-  ExpectListToInclude(SetUpListItemType::kNotifications, YES);
-  EXPECT_EQ(GetItemState(SetUpListItemType::kNotifications),
-            SetUpListItemState::kCompleteNotInList);
-
+               SetUpListItemState::kCompleteNotInList);
   BuildSetUpList();
   ExpectListToNotInclude(SetUpListItemType::kNotifications);
+  EXPECT_EQ(GetItemState(SetUpListItemType::kNotifications),
+            SetUpListItemState::kCompleteNotInList);
 }
 
 // Tests that the SetUpList uses the correct criteria when including the
@@ -313,17 +302,14 @@ TEST_F(SetUpListTest, BuildListWithNotifications_Content) {
   BuildSetUpList();
   ExpectListToInclude(SetUpListItemType::kNotifications, YES);
   EXPECT_EQ(GetItemState(SetUpListItemType::kNotifications),
-            SetUpListItemState::kCompleteNotInList);
+            SetUpListItemState::kCompleteInList);
 
   SetItemState(SetUpListItemType::kNotifications,
-               SetUpListItemState::kCompleteInList);
-  BuildSetUpList();
-  ExpectListToInclude(SetUpListItemType::kNotifications, YES);
-  EXPECT_EQ(GetItemState(SetUpListItemType::kNotifications),
-            SetUpListItemState::kCompleteNotInList);
-
+               SetUpListItemState::kCompleteNotInList);
   BuildSetUpList();
   ExpectListToNotInclude(SetUpListItemType::kNotifications);
+  EXPECT_EQ(GetItemState(SetUpListItemType::kNotifications),
+            SetUpListItemState::kCompleteNotInList);
 }
 
 // Tests that the SetUpList uses the correct criteria when including the
@@ -351,9 +337,12 @@ TEST_F(SetUpListTest, ObservesPrefs) {
 // Tests that `allItemsComplete` correctly returns whether all items are
 // complete.
 TEST_F(SetUpListTest, AllItemsComplete) {
+  base::HistogramTester histogram_tester;
   feature_list_.InitAndEnableFeature(kIOSTipsNotifications);
   BuildSetUpList();
   EXPECT_FALSE([set_up_list_ allItemsComplete]);
+  histogram_tester.ExpectBucketCount("IOS.SetUpList.AllItemsCompleted", true,
+                                     0);
 
   set_up_list_prefs::MarkItemComplete(GetLocalState(),
                                       SetUpListItemType::kSignInSync);
@@ -365,6 +354,32 @@ TEST_F(SetUpListTest, AllItemsComplete) {
                                       SetUpListItemType::kNotifications);
 
   EXPECT_TRUE([set_up_list_ allItemsComplete]);
+  histogram_tester.ExpectBucketCount("IOS.SetUpList.AllItemsCompleted", true,
+                                     1);
+}
+
+TEST_F(SetUpListTest, RecordsAllItemsCompleteOnce) {
+  base::HistogramTester histogram_tester;
+  feature_list_.InitAndEnableFeature(kIOSTipsNotifications);
+  BuildSetUpList();
+  histogram_tester.ExpectBucketCount("IOS.SetUpList.AllItemsCompleted", true,
+                                     0);
+
+  set_up_list_prefs::MarkItemComplete(GetLocalState(),
+                                      SetUpListItemType::kSignInSync);
+  set_up_list_prefs::MarkItemComplete(GetLocalState(),
+                                      SetUpListItemType::kDefaultBrowser);
+  set_up_list_prefs::MarkItemComplete(GetLocalState(),
+                                      SetUpListItemType::kAutofill);
+  set_up_list_prefs::MarkItemComplete(GetLocalState(),
+                                      SetUpListItemType::kNotifications);
+  histogram_tester.ExpectBucketCount("IOS.SetUpList.AllItemsCompleted", true,
+                                     1);
+
+  // Ensure that this metric is not double-counted, when rebuilding the list.
+  BuildSetUpList();
+  histogram_tester.ExpectBucketCount("IOS.SetUpList.AllItemsCompleted", true,
+                                     1);
 }
 
 // Tests that the Set Up List can be disabled.
@@ -379,7 +394,7 @@ TEST_F(SetUpListTest, Disable) {
 
 // Tests that the Set Up List item order is correct with kMagicStack enabled.
 TEST_F(SetUpListTest, MagicStackItemOrder) {
-  feature_list_.InitWithFeatures({kMagicStack, kIOSTipsNotifications}, {});
+  feature_list_.InitWithFeatures({kIOSTipsNotifications}, {});
   BuildSetUpList();
 
   EXPECT_EQ(GetItemIndex(SetUpListItemType::kDefaultBrowser), 0u);

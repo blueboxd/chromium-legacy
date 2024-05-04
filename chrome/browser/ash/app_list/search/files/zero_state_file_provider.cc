@@ -119,6 +119,13 @@ void ZeroStateFileProvider::SetSearchResults(
           ash::AppListSearchResultType::kZeroStateFile,
           ash::SearchResultDisplayType::kContinue, score, std::u16string(),
           FileResult::Type::kFile, profile_);
+      if (results[i].modified_time) {
+        result->SetContinueFileSuggestionType(
+            ash::ContinueFileSuggestionType::kModifiedByCurrentUserFile);
+      } else if (results[i].viewed_time) {
+        result->SetContinueFileSuggestionType(
+            ash::ContinueFileSuggestionType::kViewedFile);
+      }
       new_results.push_back(std::move(result));
     }
   }

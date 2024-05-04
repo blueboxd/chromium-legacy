@@ -23,6 +23,7 @@
 #include "base/task/single_thread_task_runner.h"
 #include "base/time/clock.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "components/feature_engagement/internal/availability_model_impl.h"
 #include "components/feature_engagement/internal/blocked_iph_features.h"
 #include "components/feature_engagement/internal/chrome_variations_configuration.h"
@@ -120,7 +121,7 @@ Tracker* Tracker::Create(
     const base::FilePath& storage_dir,
     const scoped_refptr<base::SequencedTaskRunner>& background_task_runner,
     leveldb_proto::ProtoDatabaseProvider* db_provider,
-    base::WeakPtr<TrackerEventExporter> event_exporter,
+    std::unique_ptr<TrackerEventExporter> event_exporter,
     const ConfigurationProviderList& configuration_providers,
     std::unique_ptr<SessionController> session_controller) {
   DVLOG(2) << "Creating Tracker";
@@ -174,8 +175,8 @@ Tracker* Tracker::Create(
   return new TrackerImpl(
       std::move(event_model), std::move(availability_model),
       std::move(configuration), std::make_unique<DisplayLockControllerImpl>(),
-      std::move(condition_validator), std::move(time_provider), event_exporter,
-      std::move(session_controller));
+      std::move(condition_validator), std::move(time_provider),
+      std::move(event_exporter), std::move(session_controller));
 }
 
 TrackerImpl::TrackerImpl(
@@ -185,7 +186,7 @@ TrackerImpl::TrackerImpl(
     std::unique_ptr<DisplayLockController> display_lock_controller,
     std::unique_ptr<ConditionValidator> condition_validator,
     std::unique_ptr<TimeProvider> time_provider,
-    base::WeakPtr<TrackerEventExporter> event_exporter,
+    std::unique_ptr<TrackerEventExporter> event_exporter,
     std::unique_ptr<SessionController> session_controller)
     : event_model_(std::move(event_model)),
       availability_model_(std::move(availability_model)),
@@ -193,7 +194,7 @@ TrackerImpl::TrackerImpl(
       display_lock_controller_(std::move(display_lock_controller)),
       condition_validator_(std::move(condition_validator)),
       time_provider_(std::move(time_provider)),
-      event_exporter_(event_exporter),
+      event_exporter_(std::move(event_exporter)),
       session_controller_(std::move(session_controller)),
       event_model_initialization_finished_(false),
       availability_model_initialization_finished_(false) {
@@ -459,6 +460,14 @@ void TrackerImpl::UnregisterPriorityNotificationHandler(
     const base::Feature& feature) {
   priority_notification_handlers_.erase(feature.name);
 }
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+void TrackerImpl::UpdateConfig(const base::Feature& feature,
+                               const ConfigurationProvider* provider) {
+  CHECK(IsInitialized());
+  configuration_->UpdateConfig(feature, provider);
+}
+#endif
 
 const Configuration* TrackerImpl::GetConfigurationForTesting() const {
   CHECK_IS_TEST();

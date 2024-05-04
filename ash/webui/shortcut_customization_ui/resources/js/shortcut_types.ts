@@ -14,9 +14,6 @@ import {AcceleratorConfigurationProviderInterface, AcceleratorResultData, Accele
 /**
  * @fileoverview
  * Type aliases for the mojo API.
- *
- * TODO(zentaro): When the fake API is replaced by mojo these can be
- * re-aliased to the corresponding mojo types, or replaced by them.
  */
 
 /**
@@ -29,6 +26,7 @@ export enum Modifier {
   CONTROL = 1 << 2,
   ALT = 1 << 3,
   COMMAND = 1 << 4,
+  FN_KEY = 1 << 5,
 }
 
 /**
@@ -210,7 +208,6 @@ export interface ShortcutSearchHandlerInterface extends SearchHandlerInterface {
 
 /**
  * Type alias for the ShortcutProviderInterface.
- * TODO(zentaro): Replace with a real mojo type when implemented.
  */
 export interface ShortcutProviderInterface extends
     AcceleratorConfigurationProviderInterface {

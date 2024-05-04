@@ -6,6 +6,7 @@
 
 #include <cstddef>
 #include <memory>
+#include <string_view>
 #include <utility>
 
 #include "base/base64.h"
@@ -16,6 +17,7 @@
 #include "base/functional/callback_helpers.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/safe_sprintf.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
@@ -783,7 +785,7 @@ class CaptureScreenshotTest : public DevToolsProtocolTest {
 
 IN_PROC_BROWSER_TEST_F(CaptureScreenshotTest,
                        CaptureScreenshotBeyondViewport_OutOfView) {
-  // TODO(crbug.com/653637) This test fails consistently on low-end Android
+  // TODO(crbug.com/40488022) This test fails consistently on low-end Android
   // devices.
   if (base::SysInfo::IsLowEndDevice())
     return;
@@ -826,7 +828,7 @@ IN_PROC_BROWSER_TEST_F(CaptureScreenshotTest,
 
 IN_PROC_BROWSER_TEST_F(CaptureScreenshotTest,
                        CaptureScreenshotBeyondViewport_IFrame) {
-  // TODO(crbug.com/653637) This test fails consistently on low-end Android
+  // TODO(crbug.com/40488022) This test fails consistently on low-end Android
   // devices.
   if (base::SysInfo::IsLowEndDevice())
     return;
@@ -875,11 +877,11 @@ IN_PROC_BROWSER_TEST_F(CaptureScreenshotTest,
 }
 
 // ChromeOS and Android has fading out scrollbars, which makes the test flacky.
-// TODO(crbug.com/1150059) Android has a problem with changing scale.
-// TODO(crbug.com/1147911) Android Lollipop has a problem with capturing
+// TODO(crbug.com/40157725) Android has a problem with changing scale.
+// TODO(crbug.com/40156819) Android Lollipop has a problem with capturing
 // screenshot.
-// TODO(crbug.com/1156767) Flaky on linux-lacros-tester-rel
-// TODO(crbug.com/1286261): Failing on MacOS.
+// TODO(crbug.com/40736077) Flaky on linux-lacros-tester-rel
+// TODO(crbug.com/40815512): Failing on MacOS.
 #if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS_ASH) || \
     BUILDFLAG(IS_CHROMEOS_LACROS) || BUILDFLAG(IS_MAC)
 #define MAYBE_CaptureScreenshotBeyondViewport_InnerScrollbarsAreShown \
@@ -891,7 +893,7 @@ IN_PROC_BROWSER_TEST_F(CaptureScreenshotTest,
 IN_PROC_BROWSER_TEST_F(
     CaptureScreenshotTest,
     MAYBE_CaptureScreenshotBeyondViewport_InnerScrollbarsAreShown) {
-  // TODO(crbug.com/653637) This test fails consistently on low-end Android
+  // TODO(crbug.com/40488022) This test fails consistently on low-end Android
   // devices.
   if (base::SysInfo::IsLowEndDevice())
     return;
@@ -1096,7 +1098,7 @@ IN_PROC_BROWSER_TEST_F(CaptureScreenshotTest, TransparentScreenshotsViewport) {
 }
 
 IN_PROC_BROWSER_TEST_F(CaptureScreenshotTest,
-// TODO(crbug.com/1381597): Fix this failing test
+// TODO(crbug.com/40876878): Fix this failing test
 #if BUILDFLAG(IS_ANDROID)
                        DISABLED_TransparentScreenshotsBeyondViewport) {
 #else
@@ -1211,7 +1213,7 @@ IN_PROC_BROWSER_TEST_F(CaptureScreenshotTest,
 #endif  // !BUILDFLAG(IS_ANDROID)
 }
 
-// TODO(crbug.com/1366271): Semi-transparent screenshots of viewport fail on
+// TODO(crbug.com/40239673): Semi-transparent screenshots of viewport fail on
 // android devices - a scrollbar is showing.
 #if !BUILDFLAG(IS_ANDROID)
 IN_PROC_BROWSER_TEST_F(CaptureScreenshotTest, TransparentScreenshotsFull) {
@@ -1342,7 +1344,7 @@ IN_PROC_BROWSER_TEST_F(CaptureScreenshotTest, TransparentScreenshotsFull) {
 // use of setDeviceMetricsOverride and setDefaultBackgroundColorOverride
 IN_PROC_BROWSER_TEST_F(CaptureScreenshotTest,
                        CaptureScreenshotBeyondViewport_Emulation) {
-  // TODO(crbug.com/653637) This test fails consistently on low-end Android
+  // TODO(crbug.com/40488022) This test fails consistently on low-end Android
   // devices.
   if (base::SysInfo::IsLowEndDevice())
     return;
@@ -1500,7 +1502,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, DISABLED_SynthesizeTapGesture) {
 }
 #endif  // BUILDFLAG(IS_ANDROID)
 
-// TODO(crbug.com/1303155): Flaky on multiple bots.
+// TODO(crbug.com/40825729): Flaky on multiple bots.
 IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, DISABLED_PageCrash) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL test_url = embedded_test_server()->GetURL("/devtools/navigation.html");
@@ -1610,7 +1612,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, PageCrashClearsPendingCommands) {
   EXPECT_THAT(console_messages_, ElementsAre("first page", "second page"));
 }
 
-// TODO(crbug.com/1280531): Disabled due to flakiness. Flaky on mac and linux
+// TODO(crbug.com/40811521): Disabled due to flakiness. Flaky on mac and linux
 // la-cros
 IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest,
                        DISABLED_NavigationPreservesMessages) {
@@ -1667,7 +1669,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, CrossSiteNoDetach) {
   EXPECT_FALSE(HasExistingNotification());
 }
 
-// TODO(crbug.com/1280746): Flaky on MacOS.
+// TODO(crbug.com/40811670): Flaky on MacOS.
 IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, DISABLED_CrossSiteNavigation) {
   content::SetupCrossSiteRedirector(embedded_test_server());
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -2535,6 +2537,62 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, SetAndGetCookies) {
 }
 
 IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest,
+                       ReturnsCookiesOnlyForAttachableUrls) {
+  SetNotAttachableHosts({"b.test"});
+  content::SetupCrossSiteRedirector(embedded_test_server());
+  ASSERT_TRUE(embedded_test_server()->Start());
+  std::string cookies_to_set = "/set-cookie?foo=bar";
+
+  GURL url = embedded_test_server()->GetURL("b.test", cookies_to_set);
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+  url = embedded_test_server()->GetURL("c.test", cookies_to_set);
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+  url = embedded_test_server()->GetURL(
+      "a.test", "/cross_site_iframe_factory.html?a.test(b.test(),c.test())");
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  Attach();
+  const base::Value::List* storage_cookies =
+      SendCommandSync("Storage.getCookies")->FindList("cookies");
+  ASSERT_EQ(1ul, storage_cookies->size());
+  EXPECT_EQ("foo", *storage_cookies->front().GetDict().FindString("name"));
+  EXPECT_EQ("c.test", *storage_cookies->front().GetDict().FindString("domain"));
+
+  const base::Value::List* network_all_cookies =
+      SendCommandSync("Network.getAllCookies")->FindList("cookies");
+  ASSERT_EQ(1ul, network_all_cookies->size());
+  EXPECT_EQ("foo", *network_all_cookies->front().GetDict().FindString("name"));
+  EXPECT_EQ("c.test",
+            *network_all_cookies->front().GetDict().FindString("domain"));
+
+  const base::Value::List* network_cookies_no_param =
+      SendCommandSync("Network.getCookies")->FindList("cookies");
+  ASSERT_EQ(1ul, network_cookies_no_param->size());
+  EXPECT_EQ("foo",
+            *network_cookies_no_param->front().GetDict().FindString("name"));
+  EXPECT_EQ("c.test",
+            *network_cookies_no_param->front().GetDict().FindString("domain"));
+
+  base::Value::List urls;
+  urls.Append(embedded_test_server()
+                  ->GetURL("b.com", "/cross_site_iframe_factory.html?b.test()")
+                  .spec());
+  urls.Append(embedded_test_server()
+                  ->GetURL("c.com", "/cross_site_iframe_factory.html?c.test()")
+                  .spec());
+  base::Value::Dict params;
+  params.Set("urls", std::move(urls));
+  const base::Value::List* network_cookies_with_param =
+      SendCommandSync("Network.getAllCookies", std::move(params))
+          ->FindList("cookies");
+  ASSERT_EQ(1ul, network_cookies_with_param->size());
+  EXPECT_EQ("foo",
+            *network_cookies_with_param->front().GetDict().FindString("name"));
+  EXPECT_EQ("c.test", *network_cookies_with_param->front().GetDict().FindString(
+                          "domain"));
+}
+
+IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest,
                        AutoAttachToOOPIFAfterNavigationStarted) {
   ASSERT_TRUE(embedded_test_server()->Start());
   IsolateOriginsForTesting(embedded_test_server(), shell()->web_contents(),
@@ -2981,6 +3039,7 @@ class CountingDownloadFileFactory : public download::DownloadFileFactory {
       const base::FilePath& default_downloads_directory,
       std::unique_ptr<download::InputStream> stream,
       uint32_t download_id,
+      const base::FilePath& duplicate_download_file_path,
       base::WeakPtr<download::DownloadDestinationObserver> observer) override {
     return new CountingDownloadFile(std::move(save_info),
                                     default_downloads_directory,
@@ -3038,8 +3097,8 @@ class DownloadCreateObserver : DownloadManager::Observer {
   }
 
  private:
-  DownloadManager* manager_;
-  download::DownloadItem* item_;
+  raw_ptr<DownloadManager> manager_;
+  raw_ptr<download::DownloadItem> item_;
   bool received_item_response_;
   base::OnceClosure completion_closure_;
 };
@@ -3888,7 +3947,7 @@ class NetworkResponseProtocolECHTest : public NetworkResponseProtocolTest {
     SetReplaceSystemDnsConfig();
   }
 
-  GURL GetURL(base::StringPiece path) {
+  GURL GetURL(std::string_view path) {
     return ech_server_.GetURL(kHostname, path);
   }
 

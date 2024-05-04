@@ -29,8 +29,8 @@ reviewer.
 
 <variants name="DIPSDatabaseOperation">
   <variant name="ClearTimestamps" summary="ClearTimestamps"/>
-  <variant name="FilterSitesWithInteractionOrWaa"
-      summary="FilterSitesWithInteractionOrWaa"/>
+  <variant name="FilterSitesWithProtectiveEvent"
+      summary="FilterSitesWithProtectiveEvent"/>
   <variant name="GetSitesThatBounced" summary="GetSitesThatBounced"/>
   <variant name="GetSitesThatBouncedWithState"
       summary="GetSitesThatBouncedWithState"/>
@@ -161,7 +161,7 @@ reviewer.
 </histogram>
 
 <histogram name="Privacy.CookieControlsActivated.PageRefreshCount"
-    units="count" expires_after="2024-07-14">
+    units="count" expires_after="2024-09-15">
   <owner>olesiamarukhno@google.com</owner>
   <owner>sauski@google.com</owner>
   <owner>kmg@google.com</owner>
@@ -172,7 +172,7 @@ reviewer.
 </histogram>
 
 <histogram name="Privacy.CookieControlsActivated.SaaRequested"
-    enum="BooleanEnabled" expires_after="2024-07-14">
+    enum="BooleanEnabled" expires_after="2024-09-15">
   <owner>olesiamarukhno@google.com</owner>
   <owner>sauski@google.com</owner>
   <owner>kmg@google.com</owner>
@@ -183,7 +183,7 @@ reviewer.
 </histogram>
 
 <histogram name="Privacy.CookieControlsActivated.SiteDataAccessType"
-    enum="ThirdPartySiteDataAccessType" expires_after="2024-07-14">
+    enum="ThirdPartySiteDataAccessType" expires_after="2024-09-15">
   <owner>olesiamarukhno@google.com</owner>
   <owner>sauski@google.com</owner>
   <owner>kmg@google.com</owner>
@@ -195,7 +195,7 @@ reviewer.
 </histogram>
 
 <histogram name="Privacy.CookieControlsActivated.SiteEngagementScore"
-    units="units" expires_after="2024-07-14">
+    units="units" expires_after="2024-09-15">
   <owner>olesiamarukhno@google.com</owner>
   <owner>sauski@google.com</owner>
   <owner>kmg@google.com</owner>
@@ -222,17 +222,6 @@ reviewer.
     <variant name=".RegularProfile"
         summary="from version M-109. It is recorded only for regular profiles"/>
   </token>
-</histogram>
-
-<histogram name="Privacy.CookiesInUseDialog.Action"
-    enum="CookiesInUseDialogActions" expires_after="2024-02-20">
-  <owner>alimariam@google.com</owner>
-  <owner>olesiamarukhno@google.com</owner>
-  <owner>sauski@google.com</owner>
-  <summary>
-    Logging actions done by the user while interacting with the &quot;Cookies in
-    use&quot; dialog.
-  </summary>
 </histogram>
 
 <histogram name="Privacy.DeleteBrowsingData.Action"
@@ -368,7 +357,7 @@ reviewer.
 </histogram>
 
 <histogram name="Privacy.DIPS.DeletionLatency2" units="ms"
-    expires_after="2024-07-14">
+    expires_after="2024-09-15">
   <owner>wanderview@chromium.org</owner>
   <owner>src/chrome/browser/dips/OWNERS</owner>
   <summary>
@@ -397,7 +386,7 @@ reviewer.
 </histogram>
 
 <histogram name="Privacy.DIPS.DIPSErrorCodes" enum="DIPSErrorCode"
-    expires_after="2024-08-25">
+    expires_after="2024-10-28">
   <owner>wanderview@chromium.org</owner>
   <owner>src/chrome/browser/dips/OWNERS</owner>
   <summary>
@@ -413,7 +402,7 @@ reviewer.
 </histogram>
 
 <histogram name="Privacy.DIPS.TimeFromNavigationCommitToClientBounce"
-    units="ms" expires_after="2024-04-22">
+    units="ms" expires_after="2024-08-22">
   <owner>jdh@chromium.org</owner>
   <owner>rtarpine@chromium.org</owner>
   <owner>src/chrome/browser/dips/OWNERS</owner>
@@ -475,7 +464,7 @@ reviewer.
 </histogram>
 
 <histogram name="PrivacyGuide.CanShowNTPPromo" enum="Boolean"
-    expires_after="2024-06-02">
+    expires_after="2024-10-06">
   <owner>msramek@chromium.org</owner>
   <owner>rainhard@chromium.org</owner>
   <owner>chrome-privacy-controls@google.com</owner>
@@ -528,7 +517,7 @@ reviewer.
 
 <histogram
     name="PrivacySandbox.AggregationService.ReportSender.HttpResponseOrNetErrorCode"
-    enum="CombinedHttpResponseAndNetErrorCode" expires_after="2024-08-04">
+    enum="CombinedHttpResponseAndNetErrorCode" expires_after="2024-10-06">
   <owner>alexmt@chromium.org</owner>
   <owner>linnan@chromium.org</owner>
   <summary>
@@ -562,7 +551,7 @@ reviewer.
 
 <histogram
     name="PrivacySandbox.AggregationService.ScheduledRequests.AssemblyTime"
-    units="ms" expires_after="2024-07-21">
+    units="ms" expires_after="2024-09-22">
   <owner>dmcardle@chromium.org</owner>
   <owner>alexmt@chromium.org</owner>
   <owner>linnan@chromium.org</owner>
@@ -576,7 +565,7 @@ reviewer.
 
 <histogram
     name="PrivacySandbox.AggregationService.ScheduledRequests.DelayFromOriginalReportTime"
-    units="ms" expires_after="2024-07-21">
+    units="ms" expires_after="2024-09-22">
   <owner>dmcardle@chromium.org</owner>
   <owner>alexmt@chromium.org</owner>
   <owner>linnan@chromium.org</owner>
@@ -593,7 +582,7 @@ reviewer.
 
 <histogram
     name="PrivacySandbox.AggregationService.ScheduledRequests.NumRetriesBeforeSuccess"
-    units="retries" expires_after="2024-07-21">
+    units="retries" expires_after="2024-09-22">
   <owner>alexmt@chromium.org</owner>
   <owner>linnan@chromium.org</owner>
   <summary>
@@ -605,7 +594,7 @@ reviewer.
 
 <histogram
     name="PrivacySandbox.AggregationService.ScheduledRequests.SendAttemptTime"
-    units="ms" expires_after="2024-07-21">
+    units="ms" expires_after="2024-09-22">
   <owner>dmcardle@chromium.org</owner>
   <owner>alexmt@chromium.org</owner>
   <owner>linnan@chromium.org</owner>
@@ -618,7 +607,7 @@ reviewer.
 </histogram>
 
 <histogram name="PrivacySandbox.AggregationService.ScheduledRequests.Status"
-    enum="AggregationServiceObserverReportStatus" expires_after="2024-07-21">
+    enum="AggregationServiceObserverReportStatus" expires_after="2024-09-22">
   <owner>alexmt@chromium.org</owner>
   <owner>linnan@chromium.org</owner>
   <summary>
@@ -629,7 +618,7 @@ reviewer.
 </histogram>
 
 <histogram name="PrivacySandbox.AggregationService.Scheduler.TimerFireDelay"
-    units="ms" expires_after="2024-07-21">
+    units="ms" expires_after="2024-09-22">
   <owner>dmcardle@chromium.org</owner>
   <owner>alexmt@chromium.org</owner>
   <owner>linnan@chromium.org</owner>
@@ -645,7 +634,7 @@ reviewer.
 
 <histogram
     name="PrivacySandbox.AggregationService.Storage.RequestsRetrievalTime"
-    units="ms" expires_after="2024-07-21">
+    units="ms" expires_after="2024-09-22">
   <owner>dmcardle@chromium.org</owner>
   <owner>alexmt@chromium.org</owner>
   <owner>linnan@chromium.org</owner>
@@ -657,7 +646,7 @@ reviewer.
 </histogram>
 
 <histogram name="PrivacySandbox.AggregationService.Storage.Sql.CreationTime2"
-    units="ms" expires_after="2024-08-11">
+    units="ms" expires_after="2024-10-13">
   <owner>alexmt@chromium.org</owner>
   <owner>linnan@chromium.org</owner>
   <summary>
@@ -669,7 +658,7 @@ reviewer.
 </histogram>
 
 <histogram name="PrivacySandbox.AggregationService.Storage.Sql.Error"
-    enum="SqliteLoggedResultCode" expires_after="2024-08-11">
+    enum="SqliteLoggedResultCode" expires_after="2024-10-13">
   <owner>dmcardle@chromium.org</owner>
   <owner>apaseltiner@chromium.org</owner>
   <summary>
@@ -693,7 +682,7 @@ reviewer.
 
 <histogram
     name="PrivacySandbox.AggregationService.Storage.Sql.RequestDelayFromUpdatedReportTime2"
-    units="ms" expires_after="2024-07-21">
+    units="ms" expires_after="2024-09-22">
   <owner>dmcardle@chromium.org</owner>
   <owner>alexmt@chromium.org</owner>
   <owner>linnan@chromium.org</owner>
@@ -712,7 +701,7 @@ reviewer.
 
 <histogram
     name="PrivacySandbox.AggregationService.Storage.Sql.StoredRequestsPerReportingOrigin"
-    units="requests" expires_after="2024-07-23">
+    units="requests" expires_after="2024-09-22">
   <owner>alexmt@chromium.org</owner>
   <owner>linnan@chromium.org</owner>
   <summary>
@@ -724,7 +713,7 @@ reviewer.
 
 <histogram
     name="PrivacySandbox.AggregationService.Storage.Sql.StoreRequestHasCapacity"
-    enum="Boolean" expires_after="2024-07-21">
+    enum="Boolean" expires_after="2024-09-22">
   <owner>alexmt@chromium.org</owner>
   <owner>linnan@chromium.org</owner>
   <summary>
@@ -736,7 +725,7 @@ reviewer.
 
 <histogram
     name="PrivacySandbox.AggregationService.UnscheduledRequests.AssemblyTime"
-    units="ms" expires_after="2024-07-21">
+    units="ms" expires_after="2024-09-22">
   <owner>dmcardle@chromium.org</owner>
   <owner>alexmt@chromium.org</owner>
   <owner>linnan@chromium.org</owner>
@@ -769,7 +758,7 @@ reviewer.
 
 <histogram
     name="PrivacySandbox.AggregationService.UnscheduledRequests.SendAttemptTime"
-    units="ms" expires_after="2024-07-21">
+    units="ms" expires_after="2024-09-22">
   <owner>dmcardle@chromium.org</owner>
   <owner>alexmt@chromium.org</owner>
   <owner>linnan@chromium.org</owner>
@@ -786,7 +775,7 @@ reviewer.
 </histogram>
 
 <histogram name="PrivacySandbox.AggregationService.UnscheduledRequests.Status"
-    enum="AggregationServiceObserverReportStatus" expires_after="2024-07-21">
+    enum="AggregationServiceObserverReportStatus" expires_after="2024-09-22">
   <owner>alexmt@chromium.org</owner>
   <owner>linnan@chromium.org</owner>
   <summary>
@@ -808,7 +797,7 @@ reviewer.
 
 <histogram
     name="PrivacySandbox.Attestations.InitializationDuration.ComponentReadyFromApplicationStart"
-    units="ms" expires_after="2024-07-07">
+    units="ms" expires_after="2024-09-15">
   <owner>shivanisha@chromium.org</owner>
   <owner>xiaochenzh@chromium.org</owner>
   <summary>
@@ -820,7 +809,7 @@ reviewer.
 
 <histogram
     name="PrivacySandbox.Attestations.InitializationDuration.ComponentReadyFromApplicationStartWithInterruption"
-    units="ms" expires_after="2024-07-07">
+    units="ms" expires_after="2024-09-15">
   <owner>shivanisha@chromium.org</owner>
   <owner>xiaochenzh@chromium.org</owner>
   <summary>
@@ -835,7 +824,7 @@ reviewer.
 
 <histogram
     name="PrivacySandbox.Attestations.InitializationDuration.ComponentReadyFromBrowserWindowFirstPaint"
-    units="ms" expires_after="2024-07-07">
+    units="ms" expires_after="2024-09-15">
   <owner>shivanisha@chromium.org</owner>
   <owner>xiaochenzh@chromium.org</owner>
   <summary>
@@ -870,8 +859,20 @@ reviewer.
   </summary>
 </histogram>
 
+<histogram name="PrivacySandbox.Attestations.IsSiteAttested.FirstCheckTime"
+    units="ms" expires_after="2024-09-01">
+  <owner>shivanisha@chromium.org</owner>
+  <owner>xiaochenzh@chromium.org</owner>
+  <summary>
+    Records the duration from Chrome startup to the first Privacy Sandbox API
+    attestation check. This metric should be recorded at most once per Chrome
+    session. Here the measurement is taken from the time Chrome application
+    starts.
+  </summary>
+</histogram>
+
 <histogram name="PrivacySandbox.Attestations.Parsing.SentinelVersion"
-    units="version" expires_after="2024-07-14">
+    units="version" expires_after="2024-09-15">
   <owner>shivanisha@chromium.org</owner>
   <owner>xiaochenzh@chromium.org</owner>
   <summary>
@@ -937,7 +938,7 @@ reviewer.
 <histogram
     name="PrivacySandbox.PrivateAggregation.Budgeter.BudgetValidityStatus2"
     enum="PrivacySandboxPrivateAggregationBudgeterBudgetValidityStatus2"
-    expires_after="2024-04-28">
+    expires_after="M130">
   <owner>anthonygarant@chromium.org</owner>
   <owner>alexmt@chromium.org</owner>
   <owner>measurement-api-dev+metrics@google.com</owner>
@@ -1010,7 +1011,7 @@ reviewer.
 </histogram>
 
 <histogram name="PrivacySandbox.PrivateAggregation.BudgetStorage.InitTime"
-    units="ms" expires_after="2024-07-21">
+    units="ms" expires_after="2024-09-22">
   <owner>dmcardle@chromium.org</owner>
   <owner>alexmt@chromium.org</owner>
   <owner>linnan@chromium.org</owner>
@@ -1074,6 +1075,23 @@ reviewer.
     pipe which specifies a timeout, the outcome of the timeout. Recorded at the
     timeout or disconnection time whichever occurs first, or when it's canceled
     due to error, or on browser shutdown if it's still scheduled with pipe open.
+  </summary>
+</histogram>
+
+<histogram
+    name="PrivacySandbox.PrivateAggregation.Host.TimeToGenerateReportRequestWithContextId"
+    units="ms" expires_after="2024-09-21">
+  <owner>dmcardle@chromium.org</owner>
+  <owner>alexmt@chromium.org</owner>
+  <summary>
+    Records the duration of time that elapses from the moment that
+    PrivateAggregationHost is notified of a timeout or mojo pipe disconnection
+    until it generates a report request. It is recorded just before passing the
+    request to the aggregation_service layer. It is only recorded for requests
+    with a context ID; corresponding reports will be sent with a reduced delay
+    and thus may inadvertently reveal more information via their send time. The
+    intent is to capture the duration of time spent in shared resources such as
+    PrivateAggregationBudgeter.
   </summary>
 </histogram>
 
@@ -1317,17 +1335,6 @@ reviewer.
 </histogram>
 
 <histogram
-    name="PrivacySandbox.TrackingProtection.OnboardingStartup.SentimentSurveyGroup"
-    enum="SentimentSurveyGroupMetrics" expires_after="2024-09-30">
-  <owner>jacobstanley@google.com</owner>
-  <owner>koilos@google.com</owner>
-  <summary>
-    Records the user's sentiment survey group. This occurs once per profile
-    during the browser startup.
-  </summary>
-</histogram>
-
-<histogram
     name="PrivacySandbox.TrackingProtection.OnboardingStartup.SinceFirstNoticeRequest"
     units="ms" expires_after="2024-09-30">
   <owner>boujane@google.com</owner>
@@ -1380,38 +1387,6 @@ reviewer.
   <summary>
     Records the time it takes while waiting to be onboarded to 3PCD. This occurs
     once per profile during the startup of onboarding.
-  </summary>
-</histogram>
-
-<histogram
-    name="PrivacySandbox.TrackingProtection.SentimentSurvey.HatsGroupRegisteredAndEligible"
-    enum="SentimentSurveyGroupMetrics" expires_after="2024-09-30">
-  <owner>jacobstanley@google.com</owner>
-  <owner>koilos@google.com</owner>
-  <summary>
-    Records the group that the profile is part of in RunHatsLogic function
-    before the ProbabilityCheck.
-  </summary>
-</histogram>
-
-<histogram name="PrivacySandbox.TrackingProtection.SentimentSurvey.Registered"
-    enum="SentimentSurveyGroupMetrics" expires_after="2024-09-30">
-  <owner>jacobstanley@google.com</owner>
-  <owner>koilos@google.com</owner>
-  <summary>
-    Records the group that the profile is registered to for the sentiment
-    survey. This occurs once per profile.
-  </summary>
-</histogram>
-
-<histogram name="PrivacySandbox.TrackingProtection.SentimentSurvey.WasSurveyed"
-    enum="Boolean" expires_after="2024-09-30">
-  <owner>jacobstanley@google.com</owner>
-  <owner>koilos@google.com</owner>
-  <summary>
-    WARNING: the values in this histograms are inverted. See b/313698252.
-    Currently, true is recorded when the profile was not presented with a survey
-    and false otherwise.
   </summary>
 </histogram>
 

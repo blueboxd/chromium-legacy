@@ -5,6 +5,7 @@
 #include "chrome/browser/ash/login/app_mode/kiosk_launch_controller.h"
 
 #include <memory>
+#include <optional>
 
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
@@ -28,6 +29,7 @@
 #include "chrome/browser/ash/app_mode/kiosk_app_types.h"
 #include "chrome/browser/ash/app_mode/kiosk_chrome_app_manager.h"
 #include "chrome/browser/ash/app_mode/kiosk_controller.h"
+#include "chrome/browser/ash/app_mode/kiosk_controller_impl.h"
 #include "chrome/browser/ash/app_mode/web_app/web_kiosk_app_manager.h"
 #include "chrome/browser/ash/crosapi/crosapi_ash.h"
 #include "chrome/browser/ash/crosapi/crosapi_manager.h"
@@ -60,6 +62,7 @@
 #include "chromeos/ash/components/standalone_browser/feature_refs.h"
 #include "chromeos/ash/components/standalone_browser/standalone_browser_features.h"
 #include "chromeos/ash/components/sync_wifi/network_test_helper.h"
+#include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "components/account_id/account_id.h"
 #include "components/crash/core/common/crash_key.h"
 #include "components/policy/core/browser/browser_policy_connector_base.h"
@@ -205,6 +208,9 @@ class KioskLaunchControllerTest : public extensions::ExtensionServiceTestBase {
     accelerator_controller_ = fake_accelerator_controller.get();
     controller_ = std::make_unique<KioskLaunchController>(
         /*host=*/nullptr, view_.get(), FakeLoadProfileCallback(),
+        /*done_callback=*/launch_done_future_.GetCallback(),
+        /*attempt_restart=*/base::DoNothing(),
+        /*attempt_logout=*/base::DoNothing(),
         base::BindRepeating(
             &KioskLaunchControllerTest::BuildFakeKioskAppLauncher,
             base::Unretained(this)),
@@ -306,6 +312,8 @@ class KioskLaunchControllerTest : public extensions::ExtensionServiceTestBase {
     fake_user_manager_->LoginUser(kiosk_app_id().account_id);
   }
 
+  auto& launch_done_future() { return launch_done_future_; }
+
  private:
   void SetDeviceEnterpriseManaged() {
     cros_settings_test_helper().InstallAttributes()->SetCloudManaged(
@@ -318,7 +326,8 @@ class KioskLaunchControllerTest : public extensions::ExtensionServiceTestBase {
     AccountId account_id(AccountId::FromUserEmail(email));
     kiosk_app_id_ = KioskAppId::ForWebApp(account_id);
 
-    kiosk_controller_ = std::make_unique<KioskController>();
+    kiosk_controller_ =
+        std::make_unique<KioskControllerImpl>(fake_user_manager_.Get());
     WebKioskAppManager::Get()->AddAppForTesting(kiosk_app_id_.account_id,
                                                 GURL(kInstallUrl));
   }
@@ -347,23 +356,30 @@ class KioskLaunchControllerTest : public extensions::ExtensionServiceTestBase {
   std::unique_ptr<ChromeKeyboardControllerClientTestHelper>
       keyboard_controller_client_;
   std::unique_ptr<KioskController> kiosk_controller_;
+  base::test::TestFuture<std::optional<KioskAppLaunchError::Error>>
+      launch_done_future_;
 
-  std::unique_ptr<base::AutoReset<std::optional<bool>>>
-      can_configure_network_for_testing_;
+  base::AutoReset<std::optional<bool>> can_configure_network_for_testing_ =
+      NetworkUiController::SetCanConfigureNetworkForTesting(true);
+
+  base::AutoReset<bool> block_system_session_creation_ =
+      KioskLaunchController::BlockSystemSessionCreationForTesting();
 
   user_manager::TypedScopedUserManager<ash::FakeChromeUserManager>
       fake_user_manager_{std::make_unique<ash::FakeChromeUserManager>()};
 
   KioskProfileLoader::ResultCallback on_profile_loaded_callback_;
   std::unique_ptr<FakeAppLaunchSplashScreenHandler> view_;
-  raw_ptr<FakeKioskAppLauncher, DanglingUntriaged> app_launcher_ =
-      nullptr;  // owned by `controller_`.
-  base::WeakPtr<FakeNetworkMonitor>
-      network_monitor_;  // owned by `controller_`.
   int app_launchers_created_ = 0;
   std::unique_ptr<KioskLaunchController> controller_;
-  raw_ptr<FakeAcceleratorController>
-      accelerator_controller_;  // owned by `controller_`.
+
+  // owned by `controller_`.
+  raw_ptr<FakeKioskAppLauncher, DanglingUntriaged> app_launcher_ = nullptr;
+  // owned by `controller_`.
+  base::WeakPtr<FakeNetworkMonitor> network_monitor_;
+  // owned by `controller_`.
+  raw_ptr<FakeAcceleratorController> accelerator_controller_ = nullptr;
+
   KioskAppId kiosk_app_id_;
 };
 
@@ -479,6 +495,61 @@ TEST_F(KioskLaunchControllerTest, AppLaunchedShouldStartSession) {
       HasViewState(
           AppLaunchSplashScreenView::AppLaunchState::kWaitingAppWindow));
   EXPECT_TRUE(session_manager::SessionManager::Get()->IsSessionStarted());
+}
+
+TEST_F(KioskLaunchControllerTest, AppWindowCreatedShouldInvokeOnDoneCallback) {
+  RunUntilAppPrepared();
+  FireSplashScreenTimer();
+  launcher().observers().NotifyAppLaunched();
+  ASSERT_FALSE(launch_done_future().IsReady());
+
+  launcher().observers().NotifyAppWindowCreated();
+
+  ASSERT_TRUE(launch_done_future().IsReady());
+
+  auto error_maybe = launch_done_future().Get();
+  EXPECT_EQ(error_maybe, std::nullopt);
+}
+
+TEST_F(KioskLaunchControllerTest, SplashScreenTimerShouldInvokeOnDoneCallback) {
+  RunUntilAppPrepared();
+  launcher().observers().NotifyAppLaunched();
+  launcher().observers().NotifyAppWindowCreated();
+
+  // Not done yet since the splash screen remains up until the timer is fired.
+  ASSERT_FALSE(launch_done_future().IsReady());
+
+  FireSplashScreenTimer();
+
+  ASSERT_TRUE(launch_done_future().IsReady());
+
+  auto error_maybe = launch_done_future().Get();
+  EXPECT_EQ(error_maybe, std::nullopt);
+}
+
+TEST_F(KioskLaunchControllerTest, ShouldInvokeOnDoneCallbackOnError) {
+  controller().Start(kiosk_app_id(), /*auto_launch=*/false);
+
+  ASSERT_FALSE(launch_done_future().IsReady());
+  FinishLoadingProfileWithError(KioskAppLaunchError::Error::kUnableToMount);
+  ASSERT_TRUE(launch_done_future().IsReady());
+
+  auto error_maybe = launch_done_future().Get();
+  EXPECT_EQ(error_maybe, KioskAppLaunchError::Error::kUnableToMount);
+}
+
+TEST_F(KioskLaunchControllerTest,
+       ShouldInvokeOnDoneCallbackOnAlreadyMountedError) {
+  // The Already Mounted error has it's own `return` statement so this test
+  // ensures the callback is also invoked in this code path.
+  controller().Start(kiosk_app_id(), /*auto_launch=*/false);
+
+  ASSERT_FALSE(launch_done_future().IsReady());
+  FinishLoadingProfileWithError(KioskAppLaunchError::Error::kAlreadyMounted);
+  ASSERT_TRUE(launch_done_future().IsReady());
+
+  auto error_maybe = launch_done_future().Get();
+  EXPECT_EQ(error_maybe, KioskAppLaunchError::Error::kAlreadyMounted);
 }
 
 TEST_F(KioskLaunchControllerTest,
@@ -902,12 +973,12 @@ class KioskLaunchControllerUsingLacrosTest : public testing::Test {
     keyboard_controller_client_ =
         ChromeKeyboardControllerClientTestHelper::InitializeWithFake();
 
-    can_configure_network_for_testing_ =
-        NetworkUiController::SetCanConfigureNetworkForTesting(true);
-
     view_ = std::make_unique<FakeAppLaunchSplashScreenHandler>();
     controller_ = std::make_unique<KioskLaunchController>(
         /*host=*/nullptr, view_.get(), FakeLoadProfileCallback(),
+        /*done_callback=*/base::DoNothing(),
+        /*attempt_restart=*/base::DoNothing(),
+        /*attempt_logout=*/base::DoNothing(),
         base::BindRepeating(
             &KioskLaunchControllerUsingLacrosTest::BuildFakeKioskAppLauncher,
             base::Unretained(this)),
@@ -979,7 +1050,8 @@ class KioskLaunchControllerUsingLacrosTest : public testing::Test {
   }
 
   void SetUpKioskAppInAppManager() {
-    kiosk_controller_ = std::make_unique<KioskController>();
+    kiosk_controller_ =
+        std::make_unique<KioskControllerImpl>(fake_user_manager_.Get());
     WebKioskAppManager::Get()->AddAppForTesting(kiosk_app_id_.account_id,
                                                 GURL(kInstallUrl));
   }

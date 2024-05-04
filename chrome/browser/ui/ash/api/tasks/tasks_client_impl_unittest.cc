@@ -7,17 +7,33 @@
 #include <algorithm>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "ash/api/tasks/tasks_types.h"
+#include "ash/constants/ash_pref_names.h"
+#include "ash/glanceables/glanceables_metrics.h"
 #include "base/command_line.h"
 #include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_future.h"
+#include "base/values.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/apps/app_service/publishers/app_publisher.h"
+#include "chrome/browser/prefs/browser_prefs.h"
+#include "chrome/browser/web_applications/web_app_id_constants.h"
+#include "chrome/test/base/testing_browser_process.h"
+#include "chrome/test/base/testing_profile.h"
+#include "chrome/test/base/testing_profile_manager.h"
+#include "components/policy/core/common/policy_pref_names.h"
+#include "components/services/app_service/public/cpp/app.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/test/browser_task_environment.h"
 #include "google_apis/common/api_error_codes.h"
 #include "google_apis/common/dummy_auth_service.h"
@@ -83,14 +99,16 @@ constexpr char kDefaultTasksResponseContent[] = R"(
           "title": "Parent task, level 1",
           "status": "needsAction",
           "due": "2023-04-19T00:00:00.000Z",
-          "updated": "2023-01-30T22:19:22.812Z"
+          "updated": "2023-01-30T22:19:22.812Z",
+          "webViewLink": "https://tasks.google.com/task/id1"
         },
         {
           "id": "qwe",
           "title": "Child task, level 2",
           "parent": "asd",
           "status": "needsAction",
-          "updated": "2022-12-21T23:38:22.590Z"
+          "updated": "2022-12-21T23:38:22.590Z",
+          "webViewLink": "https://tasks.google.com/task/id2"
         },
         {
           "id": "zxc",
@@ -98,7 +116,8 @@ constexpr char kDefaultTasksResponseContent[] = R"(
           "status": "needsAction",
           "links": [{"type": "email"}],
           "notes": "Lorem ipsum dolor sit amet",
-          "updated": "2022-12-21T23:38:22.590Z"
+          "updated": "2022-12-21T23:38:22.590Z",
+          "webViewLink": "https://tasks.google.com/task/id3"
         }
       ]
     }
@@ -146,9 +165,121 @@ class TestListModelObserver : public ui::ListModelObserver {
 
 }  // namespace
 
+class TasksClientImplIsDisabledByAdminTest : public testing::Test {
+ public:
+  TasksClientImplIsDisabledByAdminTest()
+      : profile_manager_(
+            TestingProfileManager(TestingBrowserProcess::GetGlobal())) {}
+
+  void SetUp() override { ASSERT_TRUE(profile_manager_.SetUp()); }
+
+  std::unique_ptr<sync_preferences::TestingPrefServiceSyncable>
+  GetDefaultPrefs() const {
+    auto prefs =
+        std::make_unique<sync_preferences::TestingPrefServiceSyncable>();
+    RegisterUserProfilePrefs(prefs->registry());
+    return prefs;
+  }
+
+  TestingProfile* CreateTestingProfile(
+      std::unique_ptr<sync_preferences::TestingPrefServiceSyncable> prefs) {
+    return profile_manager_.CreateTestingProfile(
+        "profile@example.com", std::move(prefs), u"User Name", /*avatar_id=*/0,
+        TestingProfile::TestingFactories());
+  }
+
+  TasksClientImpl CreateClientForProfile(Profile* profile) const {
+    return TasksClientImpl(
+        profile,
+        base::BindLambdaForTesting(
+            [&](const std::vector<std::string>& scopes,
+                const net::NetworkTrafficAnnotationTag& traffic_annotation_tag)
+                -> std::unique_ptr<google_apis::RequestSender> {
+              return nullptr;
+            }),
+        TRAFFIC_ANNOTATION_FOR_TESTS);
+  }
+
+  const base::HistogramTester* histogram_tester() const {
+    return &histogram_tester_;
+  }
+
+ private:
+  content::BrowserTaskEnvironment task_environment_;
+  const base::HistogramTester histogram_tester_;
+  TestingProfileManager profile_manager_;
+};
+
+TEST_F(TasksClientImplIsDisabledByAdminTest, Default) {
+  auto* const profile = CreateTestingProfile(GetDefaultPrefs());
+  EXPECT_FALSE(CreateClientForProfile(profile).IsDisabledByAdmin());
+  histogram_tester()->ExpectUniqueSample(
+      "Ash.ContextualGoogleIntegrations.GoogleTasks.Status",
+      ContextualGoogleIntegrationStatus::kEnabled,
+      /*expected_bucket_count=*/1);
+}
+
+TEST_F(TasksClientImplIsDisabledByAdminTest,
+       NoTasksInContextualGoogleIntegrationsPref) {
+  auto prefs = GetDefaultPrefs();
+  base::Value::List enabled_integrations;
+  enabled_integrations.Append(prefs::kGoogleCalendarIntegrationName);
+  enabled_integrations.Append(prefs::kGoogleClassroomIntegrationName);
+  prefs->SetList(prefs::kContextualGoogleIntegrationsConfiguration,
+                 std::move(enabled_integrations));
+
+  auto* const profile = CreateTestingProfile(std::move(prefs));
+  EXPECT_TRUE(CreateClientForProfile(profile).IsDisabledByAdmin());
+  histogram_tester()->ExpectUniqueSample(
+      "Ash.ContextualGoogleIntegrations.GoogleTasks.Status",
+      ContextualGoogleIntegrationStatus::kDisabledByPolicy,
+      /*expected_bucket_count=*/1);
+}
+
+TEST_F(TasksClientImplIsDisabledByAdminTest, DisabledCalendarApp) {
+  auto* const profile = CreateTestingProfile(GetDefaultPrefs());
+
+  std::vector<apps::AppPtr> app_deltas;
+  app_deltas.push_back(apps::AppPublisher::MakeApp(
+      apps::AppType::kWeb, web_app::kGoogleCalendarAppId,
+      apps::Readiness::kDisabledByPolicy, "Calendar",
+      apps::InstallReason::kUser, apps::InstallSource::kBrowser));
+
+  apps::AppServiceProxyFactory::GetForProfile(profile)->OnApps(
+      std::move(app_deltas), apps::AppType::kWeb,
+      /*should_notify_initialized=*/true);
+
+  EXPECT_TRUE(CreateClientForProfile(profile).IsDisabledByAdmin());
+  histogram_tester()->ExpectUniqueSample(
+      "Ash.ContextualGoogleIntegrations.GoogleTasks.Status",
+      ContextualGoogleIntegrationStatus::kDisabledByAppBlock,
+      /*expected_bucket_count=*/1);
+}
+
+TEST_F(TasksClientImplIsDisabledByAdminTest, BlockedTasksUrl) {
+  auto prefs = GetDefaultPrefs();
+  base::Value::List blocklist;
+  blocklist.Append("tasks.google.com");
+  prefs->SetManagedPref(policy::policy_prefs::kUrlBlocklist,
+                        std::move(blocklist));
+
+  auto* const profile = CreateTestingProfile(std::move(prefs));
+  EXPECT_TRUE(CreateClientForProfile(profile).IsDisabledByAdmin());
+  histogram_tester()->ExpectUniqueSample(
+      "Ash.ContextualGoogleIntegrations.GoogleTasks.Status",
+      ContextualGoogleIntegrationStatus::kDisabledByUrlBlock,
+      /*expected_bucket_count=*/1);
+}
+
 class TasksClientImplTest : public testing::Test {
  public:
+  TasksClientImplTest()
+      : profile_manager_(
+            TestingProfileManager(TestingBrowserProcess::GetGlobal())) {}
+
   void SetUp() override {
+    ASSERT_TRUE(profile_manager_.SetUp());
+
     auto create_request_sender_callback = base::BindLambdaForTesting(
         [&](const std::vector<std::string>& scopes,
             const net::NetworkTrafficAnnotationTag& traffic_annotation_tag) {
@@ -157,8 +288,11 @@ class TasksClientImplTest : public testing::Test {
               url_loader_factory_, task_environment_.GetMainThreadTaskRunner(),
               "test-user-agent", traffic_annotation_tag);
         });
-    client_ = std::make_unique<TasksClientImpl>(create_request_sender_callback,
-                                                TRAFFIC_ANNOTATION_FOR_TESTS);
+    client_ = std::make_unique<TasksClientImpl>(
+        profile_manager_.CreateTestingProfile("profile@example.com",
+                                              /*is_main_profile=*/true,
+                                              url_loader_factory_),
+        create_request_sender_callback, TRAFFIC_ANNOTATION_FOR_TESTS);
 
     test_server_.RegisterRequestHandler(
         base::BindRepeating(&TestRequestHandler::HandleRequest,
@@ -179,6 +313,7 @@ class TasksClientImplTest : public testing::Test {
  private:
   content::BrowserTaskEnvironment task_environment_{
       base::test::TaskEnvironment::MainThreadType::IO};
+  TestingProfileManager profile_manager_;
   net::EmbeddedTestServer test_server_;
   scoped_refptr<network::TestSharedURLLoaderFactory> url_loader_factory_ =
       base::MakeRefCounted<network::TestSharedURLLoaderFactory>(
@@ -342,7 +477,7 @@ TEST_F(TasksClientImplTest,
   EXPECT_EQ(task_lists->GetItemAt(0)->id, "qwerty");
   EXPECT_EQ(task_lists->GetItemAt(1)->id, "asdfgh");
 
-  client()->OnGlanceablesBubbleClosed();
+  client()->OnGlanceablesBubbleClosed(base::DoNothing());
 
   // Request to get tasks after glanceables bubble was closed should trigger
   // another fetch.
@@ -408,7 +543,7 @@ TEST_F(TasksClientImplTest, GlanceablesBubbleClosedWhileFetchingTaskLists) {
   client()->GetTaskLists(/*force_fetch=*/false, future.GetRepeatingCallback());
 
   // Simulate bubble closure before first request response arrives.
-  client()->OnGlanceablesBubbleClosed();
+  client()->OnGlanceablesBubbleClosed(base::DoNothing());
 
   ASSERT_TRUE(future.Wait());
 
@@ -511,7 +646,7 @@ TEST_F(TasksClientImplTest, GetTaskListsReturnsCachedResultsOnHttpError) {
       ApiErrorCode::HTTP_SUCCESS,
       /*expected_bucket_count=*/1);
 
-  client()->OnGlanceablesBubbleClosed();
+  client()->OnGlanceablesBubbleClosed(base::DoNothing());
 
   TaskListsFuture failure_future;
   client()->GetTaskLists(/*force_fetch=*/true, failure_future.GetCallback());
@@ -604,7 +739,7 @@ TEST_F(TasksClientImplTest,
       ApiErrorCode::HTTP_SUCCESS,
       /*expected_bucket_count=*/1);
 
-  client()->OnGlanceablesBubbleClosed();
+  client()->OnGlanceablesBubbleClosed(base::DoNothing());
 
   TaskListsFuture failure_future;
   client()->GetTaskLists(/*force_fetch=*/true, failure_future.GetCallback());
@@ -732,7 +867,7 @@ TEST_F(TasksClientImplTest, GlanceablesBubbleClosedWhileFetchingTaskListsPage) {
   client()->set_task_lists_request_callback_for_testing(
       base::BindLambdaForTesting([&](const std::string& page_token) {
         if (page_token == "qwe") {
-          client()->OnGlanceablesBubbleClosed();
+          client()->OnGlanceablesBubbleClosed(base::DoNothing());
         }
       }));
   TaskListsFuture future;
@@ -877,7 +1012,7 @@ TEST_F(TasksClientImplTest, AbandonedTaskListsRemovedFromCache) {
   EXPECT_EQ(tasks->GetItemAt(0)->id, "asd");
   EXPECT_EQ(tasks->GetItemAt(1)->id, "zxc");
 
-  client()->OnGlanceablesBubbleClosed();
+  client()->OnGlanceablesBubbleClosed(base::DoNothing());
 
   TaskListsFuture refreshed_task_list_future;
   client()->GetTaskLists(/*force_fetch=*/true,
@@ -943,6 +1078,8 @@ TEST_F(TasksClientImplTest, GetTasks) {
   EXPECT_FALSE(root_tasks->GetItemAt(0)->has_notes);
   EXPECT_EQ(FormatTimeAsString(root_tasks->GetItemAt(0)->updated),
             "2023-01-30T22:19:22.812Z");
+  EXPECT_EQ(root_tasks->GetItemAt(0)->web_view_link,
+            "https://tasks.google.com/task/id1");
 
   EXPECT_EQ(root_tasks->GetItemAt(1)->id, "zxc");
   EXPECT_EQ(root_tasks->GetItemAt(1)->title, "Parent task 2, level 1");
@@ -953,6 +1090,8 @@ TEST_F(TasksClientImplTest, GetTasks) {
   EXPECT_TRUE(root_tasks->GetItemAt(1)->has_notes);
   EXPECT_EQ(FormatTimeAsString(root_tasks->GetItemAt(1)->updated),
             "2022-12-21T23:38:22.590Z");
+  EXPECT_EQ(root_tasks->GetItemAt(1)->web_view_link,
+            "https://tasks.google.com/task/id3");
 
   histogram_tester()->ExpectTotalCount(
       "Ash.Glanceables.Api.Tasks.GetTasks.Latency", /*expected_count=*/1);
@@ -1204,7 +1343,7 @@ TEST_F(TasksClientImplTest,
 
   // Simulate glanceables bubble closure, which should cause the next tasks call
   // to fetch fresh list of tasks.
-  client()->OnGlanceablesBubbleClosed();
+  client()->OnGlanceablesBubbleClosed(base::DoNothing());
 
   TasksFuture refresh_future;
   client()->GetTasks("test-task-list-id", /*force_fetch=*/false,
@@ -1272,7 +1411,7 @@ TEST_F(TasksClientImplTest, GlanceablesBubbleClosedWhileFetchingTasks) {
 
   // Simulate glanceables bubble closure, which should cause the next tasks call
   // to fetch fresh list of tasks.
-  client()->OnGlanceablesBubbleClosed();
+  client()->OnGlanceablesBubbleClosed(base::DoNothing());
   ASSERT_TRUE(future.Wait());
 
   const auto [success, root_tasks] = future.Take();
@@ -1380,7 +1519,7 @@ TEST_F(TasksClientImplTest, GetTasksReturnsCachedResultsOnHttpError) {
       "Ash.Glanceables.Api.Tasks.GetTasks.Status", ApiErrorCode::HTTP_SUCCESS,
       /*expected_bucket_count=*/1);
 
-  client()->OnGlanceablesBubbleClosed();
+  client()->OnGlanceablesBubbleClosed(base::DoNothing());
 
   TasksFuture failed_future;
   client()->GetTasks("test-task-list-id", /*force_fetch=*/true,
@@ -1475,7 +1614,7 @@ TEST_F(TasksClientImplTest, GetTasksReturnsCachedResultsOnPartialHttpError) {
       "Ash.Glanceables.Api.Tasks.GetTasks.Status", ApiErrorCode::HTTP_SUCCESS,
       /*expected_bucket_count=*/1);
 
-  client()->OnGlanceablesBubbleClosed();
+  client()->OnGlanceablesBubbleClosed(base::DoNothing());
 
   TasksFuture failure_future;
   client()->GetTasks("task-list-1", /*force_fetch=*/true,
@@ -1620,7 +1759,7 @@ TEST_F(TasksClientImplTest, GlanceablesBubbleClosedWhileFetchingTasksPage) {
       [&](const std::string& task_list_id, const std::string& page_token) {
         ASSERT_EQ("test-task-list-id", task_list_id);
         if (page_token == "qwe") {
-          client()->OnGlanceablesBubbleClosed();
+          client()->OnGlanceablesBubbleClosed(base::DoNothing());
         }
       }));
 

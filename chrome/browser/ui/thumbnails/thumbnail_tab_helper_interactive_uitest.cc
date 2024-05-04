@@ -155,9 +155,11 @@ class ThumbnailTabHelperInteractiveTest : public InProcessBrowserTest {
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
+// TODO(crbug.com/40883117) flakes on ChromeOS and MSAN/TSAN/ASAN builders.
+// TODO(crbug.com/335997050) timeout on ARM64 debug builder.
 #if BUILDFLAG(IS_CHROMEOS) || defined(THREAD_SANITIZER) || \
-    defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER)
-// TODO(crbug.com/1399402) flakes on ChromeOS and MSAN/TSAN/ASAN builders.
+    defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER) || \
+    (BUILDFLAG(IS_WIN) && defined(ARCH_CPU_ARM64) && !defined(NDEBUG))
 #define MAYBE_TabLoadTriggersScreenshot DISABLED_TabLoadTriggersScreenshot
 #else
 #define MAYBE_TabLoadTriggersScreenshot TabLoadTriggersScreenshot
@@ -173,8 +175,11 @@ IN_PROC_BROWSER_TEST_F(ThumbnailTabHelperInteractiveTest,
   WaitForAndVerifyThumbnail(browser(), 1);
 }
 
-// TODO(crbug.com/1399402) flakes on ChromeOS and MSAN/TSAN/ASAN builders.
-#if BUILDFLAG(IS_CHROMEOS) || defined(MEMORY_SANITIZER)
+// TODO(crbug.com/40883117) flakes on ChromeOS and MSAN/TSAN/ASAN builders.
+// TODO(crbug.com/335997050) timeout on ARM64 debug builder.
+#if BUILDFLAG(IS_CHROMEOS) || defined(THREAD_SANITIZER) || \
+    defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER) || \
+    (BUILDFLAG(IS_WIN) && defined(ARCH_CPU_ARM64) && !defined(NDEBUG))
 #define MAYBE_TabDiscardPreservesScreenshot \
   DISABLED_TabDiscardPreservesScreenshot
 #else
@@ -213,7 +218,7 @@ IN_PROC_BROWSER_TEST_F(ThumbnailTabHelperInteractiveTest,
 
 // On browser restore, some tabs may not be loaded. Requesting a
 // thumbnail for one of these tabs should trigger load and capture.
-// TODO(crbug.com/1399402): Flaky on Mac, ChromeOS,
+// TODO(crbug.com/40883117): Flaky on Mac, ChromeOS,
 // and various sanitizer builds.
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_CHROMEOS) ||             \
     defined(THREAD_SANITIZER) || defined(ADDRESS_SANITIZER) || \
@@ -248,7 +253,7 @@ IN_PROC_BROWSER_TEST_F(ThumbnailTabHelperInteractiveTest,
   browser2 = GetBrowser(1);
 
   EXPECT_EQ(kTabCount, browser2->tab_strip_model()->count());
-  EXPECT_EQ(kTabCount - 1, browser2->tab_strip_model()->active_index());
+  EXPECT_EQ(0, browser2->tab_strip_model()->active_index());
 
   // These tabs shouldn't want to be loaded.
   for (int tab_idx = 1; tab_idx < kTabCount - 1; ++tab_idx) {

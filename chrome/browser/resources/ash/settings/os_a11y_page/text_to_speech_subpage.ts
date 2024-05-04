@@ -12,7 +12,7 @@ import 'chrome://resources/ash/common/cr_elements/cr_shared_vars.css.js';
 import '../controls/settings_toggle_button.js';
 import '../settings_shared.css.js';
 
-import {PrefsMixin} from 'chrome://resources/cr_components/settings_prefs/prefs_mixin.js';
+import {PrefsMixin} from '/shared/settings/prefs/prefs_mixin.js';
 import {I18nMixin} from 'chrome://resources/ash/common/cr_elements/i18n_mixin.js';
 import {WebUiListenerMixin} from 'chrome://resources/ash/common/cr_elements/web_ui_listener_mixin.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
@@ -110,6 +110,7 @@ export class SettingsTextToSpeechSubpageElement extends
         type: Object,
         value: () => new Set<Setting>([
           Setting.kChromeVox,
+          Setting.kPdfOcrOnOff,
           Setting.kSelectToSpeak,
         ]),
       },
@@ -174,11 +175,10 @@ export class SettingsTextToSpeechSubpageElement extends
       case ScreenAiInstallStatus.DOWNLOAD_FAILED:
         return this.i18n('pdfOcrDownloadErrorLabel');
       case ScreenAiInstallStatus.DOWNLOADED:
-        return this.i18n('pdfOcrDownloadCompleteLabel');
+        // Show the default subtitle if downloading is done.
+        // fallthrough
       case ScreenAiInstallStatus.NOT_DOWNLOADED:
-        // No subtitle update in this case
-      default:
-        // This is a generic subtitle describing the feature.
+        // No subtitle update, so show a generic subtitle describing PDF OCR.
         return this.i18n('pdfOcrSubtitle');
     }
   }

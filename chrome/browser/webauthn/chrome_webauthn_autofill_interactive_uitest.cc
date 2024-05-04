@@ -17,15 +17,15 @@
 #include "chrome/browser/ssl/cert_verifier_browser_test.h"
 #include "chrome/browser/sync/device_info_sync_service_factory.h"
 #include "chrome/browser/sync/sync_service_factory.h"
-#include "chrome/browser/ui/autofill/autofill_popup_controller_impl.h"
+#include "chrome/browser/ui/autofill/autofill_suggestion_controller.h"
 #include "chrome/browser/ui/autofill/chrome_autofill_client.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/webauthn/chrome_authenticator_request_delegate.h"
 #include "chrome/browser/webauthn/passkey_model_factory.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/autofill/core/browser/ui/popup_hiding_reasons.h"
-#include "components/autofill/core/browser/ui/popup_item_ids.h"
+#include "components/autofill/core/browser/ui/suggestion_hiding_reason.h"
+#include "components/autofill/core/browser/ui/suggestion_type.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/network_session_configurator/common/network_switches.h"
@@ -157,7 +157,7 @@ class WebAuthnAutofillIntegrationTest : public CertVerifierBrowserTest {
 
   void SetUp() override {
     scoped_feature_list_.InitWithFeatures(
-        {syncer::kSyncWebauthnCredentials, device::kWebAuthnNewPasskeyUI},
+        {syncer::kSyncWebauthnCredentials},
         /*disabled_features=*/{
             // Disable this feature explicitly, as it can cause unexpected email
             // fields to be parsed in these tests.
@@ -250,7 +250,7 @@ class WebAuthnAutofillIntegrationTest : public CertVerifierBrowserTest {
         browser()->tab_strip_model()->GetActiveWebContents();
     autofill::ChromeAutofillClient* autofill_client =
         autofill::ChromeAutofillClient::FromWebContentsForTesting(web_contents);
-    autofill_client->KeepPopupOpenForTesting();
+    autofill_client->SetKeepPopupOpenForTesting(true);
 
     // Execute the Conditional UI request.
     content::DOMMessageQueue message_queue(web_contents);
@@ -259,20 +259,21 @@ class WebAuthnAutofillIntegrationTest : public CertVerifierBrowserTest {
     // Interact with the username field until the popup shows up. This has the
     // effect of waiting for the browser to send the renderer the password
     // information, and waiting for the UI to render.
-    base::WeakPtr<autofill::AutofillPopupControllerImpl> popup_controller;
-    while (!popup_controller) {
+    base::WeakPtr<autofill::AutofillSuggestionController> suggestion_controller;
+    while (!suggestion_controller) {
       content::SimulateMouseClickOrTapElementWithId(web_contents, "username");
-      popup_controller = autofill_client->popup_controller_for_testing();
+      suggestion_controller =
+          autofill_client->suggestion_controller_for_testing();
     }
 
     // Find the webauthn credential on the suggestions list.
-    auto suggestions = popup_controller->GetSuggestions();
+    auto suggestions = suggestion_controller->GetSuggestions();
     size_t suggestion_index = 0;
     size_t webauthn_entry_count = 0;
     autofill::Suggestion webauthn_entry;
     for (size_t i = 0; i < suggestions.size(); ++i) {
-      if (suggestions[i].popup_item_id ==
-          autofill::PopupItemId::kWebauthnCredential) {
+      if (suggestions[i].type ==
+          autofill::SuggestionType::kWebauthnCredential) {
         webauthn_entry = suggestions[i];
         suggestion_index = i;
         webauthn_entry_count++;
@@ -286,8 +287,8 @@ class WebAuthnAutofillIntegrationTest : public CertVerifierBrowserTest {
     EXPECT_EQ(webauthn_entry.icon, autofill::Suggestion::Icon::kGlobe);
 
     // Click the credential.
-    popup_controller->DisableThresholdForTesting(true);
-    popup_controller->AcceptSuggestion(suggestion_index);
+    suggestion_controller->DisableThresholdForTesting(true);
+    suggestion_controller->AcceptSuggestion(suggestion_index);
     std::string result;
     ASSERT_TRUE(message_queue.WaitForMessage(&result));
     EXPECT_EQ(result, "\"webauthn: OK\"");
@@ -299,7 +300,7 @@ class WebAuthnAutofillIntegrationTest : public CertVerifierBrowserTest {
         browser()->tab_strip_model()->GetActiveWebContents();
     autofill::ChromeAutofillClient* autofill_client =
         autofill::ChromeAutofillClient::FromWebContentsForTesting(web_contents);
-    autofill_client->KeepPopupOpenForTesting();
+    autofill_client->SetKeepPopupOpenForTesting(true);
 
     // Execute the Conditional UI request.
     content::DOMMessageQueue message_queue(web_contents);
@@ -308,20 +309,21 @@ class WebAuthnAutofillIntegrationTest : public CertVerifierBrowserTest {
     // Interact with the username field until the popup shows up. This has the
     // effect of waiting for the browser to send the renderer the password
     // information, and waiting for the UI to render.
-    base::WeakPtr<autofill::AutofillPopupController> popup_controller;
-    while (!popup_controller) {
+    base::WeakPtr<autofill::AutofillSuggestionController> suggestion_controller;
+    while (!suggestion_controller) {
       content::SimulateMouseClickOrTapElementWithId(web_contents, "username");
-      popup_controller = autofill_client->popup_controller_for_testing();
+      suggestion_controller =
+          autofill_client->suggestion_controller_for_testing();
     }
 
     // Find the webauthn credential on the suggestions list.
-    auto suggestions = popup_controller->GetSuggestions();
+    auto suggestions = suggestion_controller->GetSuggestions();
     size_t suggestion_index;
     autofill::Suggestion webauthn_entry;
     for (suggestion_index = 0; suggestion_index < suggestions.size();
          ++suggestion_index) {
-      if (suggestions[suggestion_index].popup_item_id ==
-          autofill::PopupItemId::kWebauthnCredential) {
+      if (suggestions[suggestion_index].type ==
+          autofill::SuggestionType::kWebauthnCredential) {
         webauthn_entry = suggestions[suggestion_index];
         break;
       }
@@ -340,21 +342,22 @@ class WebAuthnAutofillIntegrationTest : public CertVerifierBrowserTest {
     EXPECT_EQ(result, "\"error AbortError: signal is aborted without reason\"");
 
     // The popup may have gone away while waiting. If not, make sure it's gone.
-    if (popup_controller) {
-      popup_controller->Hide(autofill::PopupHidingReason::kUserAborted);
+    if (suggestion_controller) {
+      suggestion_controller->Hide(
+          autofill::SuggestionHidingReason::kUserAborted);
     }
 
     // Interact with the username field. Since there is still a saved password,
     // the popup should eventually show up.
-    while (!popup_controller) {
+    while (!suggestion_controller) {
       content::SimulateMouseClickOrTapElementWithId(web_contents, "username");
-      popup_controller = autofill_client->popup_controller_for_testing();
+      suggestion_controller =
+          autofill_client->suggestion_controller_for_testing();
     }
-    for (const auto& suggestion : popup_controller->GetSuggestions()) {
-      EXPECT_NE(suggestion.popup_item_id,
-                autofill::PopupItemId::kWebauthnCredential);
-      EXPECT_NE(suggestion.popup_item_id,
-                autofill::PopupItemId::kWebauthnSignInWithAnotherDevice);
+    for (const auto& suggestion : suggestion_controller->GetSuggestions()) {
+      EXPECT_NE(suggestion.type, autofill::SuggestionType::kWebauthnCredential);
+      EXPECT_NE(suggestion.type,
+                autofill::SuggestionType::kWebauthnSignInWithAnotherDevice);
     }
   }
 
@@ -452,7 +455,7 @@ IN_PROC_BROWSER_TEST_F(WebAuthnDevtoolsAutofillIntegrationTest, GPMPasskeys) {
       browser()->tab_strip_model()->GetActiveWebContents();
   autofill::ChromeAutofillClient* autofill_client =
       autofill::ChromeAutofillClient::FromWebContentsForTesting(web_contents);
-  autofill_client->KeepPopupOpenForTesting();
+  autofill_client->SetKeepPopupOpenForTesting(true);
 
   // Execute the Conditional UI request.
   content::DOMMessageQueue message_queue(web_contents);
@@ -461,20 +464,20 @@ IN_PROC_BROWSER_TEST_F(WebAuthnDevtoolsAutofillIntegrationTest, GPMPasskeys) {
   // Interact with the username field until the popup shows up. This has the
   // effect of waiting for the browser to send the renderer the password
   // information, and waiting for the UI to render.
-  base::WeakPtr<autofill::AutofillPopupControllerImpl> popup_controller;
-  while (!popup_controller) {
+  base::WeakPtr<autofill::AutofillSuggestionController> suggestion_controller;
+  while (!suggestion_controller) {
     content::SimulateMouseClickOrTapElementWithId(web_contents, "username");
-    popup_controller = autofill_client->popup_controller_for_testing();
+    suggestion_controller =
+        autofill_client->suggestion_controller_for_testing();
   }
 
   // Find the webauthn credential on the suggestions list.
-  auto suggestions = popup_controller->GetSuggestions();
+  auto suggestions = suggestion_controller->GetSuggestions();
   size_t suggestion_index = 0;
   size_t webauthn_entry_count = 0;
   autofill::Suggestion webauthn_entry;
   for (size_t i = 0; i < suggestions.size(); ++i) {
-    if (suggestions[i].popup_item_id ==
-        autofill::PopupItemId::kWebauthnCredential) {
+    if (suggestions[i].type == autofill::SuggestionType::kWebauthnCredential) {
       webauthn_entry = suggestions[i];
       suggestion_index = i;
       webauthn_entry_count++;
@@ -489,12 +492,18 @@ IN_PROC_BROWSER_TEST_F(WebAuthnDevtoolsAutofillIntegrationTest, GPMPasskeys) {
   EXPECT_EQ(webauthn_entry.icon, autofill::Suggestion::Icon::kGlobe);
 
   // Click the credential.
-  popup_controller->DisableThresholdForTesting(true);
-  popup_controller->AcceptSuggestion(suggestion_index);
+  suggestion_controller->DisableThresholdForTesting(true);
+  suggestion_controller->AcceptSuggestion(suggestion_index);
   std::string result;
   ASSERT_TRUE(message_queue.WaitForMessage(&result));
   EXPECT_EQ(result, "\"webauthn: OK\"");
 
+  // Tapping a GPM passkey will not automatically hide the popup
+  // because the enclave might still be loading. Manually hide the
+  // popup so that the autofill client can be destroyed, avoiding
+  // a DCHECK on test tear down.
+  autofill_client->HideAutofillSuggestions(
+      autofill::SuggestionHidingReason::kTabGone);
   // The tracker outlives the test. Clean up the device_info to avoid flakiness.
   tracker->Remove(&device_info);
 }
@@ -511,7 +520,7 @@ IN_PROC_BROWSER_TEST_F(WebAuthnDevtoolsAutofillIntegrationTest,
       browser()->tab_strip_model()->GetActiveWebContents();
   autofill::ChromeAutofillClient* autofill_client =
       autofill::ChromeAutofillClient::FromWebContentsForTesting(web_contents);
-  autofill_client->KeepPopupOpenForTesting();
+  autofill_client->SetKeepPopupOpenForTesting(true);
 
   // Execute the Conditional UI request.
   content::DOMMessageQueue message_queue(web_contents);
@@ -520,17 +529,17 @@ IN_PROC_BROWSER_TEST_F(WebAuthnDevtoolsAutofillIntegrationTest,
   // Interact with the username field until the popup shows up. This has the
   // effect of waiting for the browser to send the renderer the password
   // information, and waiting for the UI to render.
-  base::WeakPtr<autofill::AutofillPopupControllerImpl> popup_controller;
-  while (!popup_controller) {
+  base::WeakPtr<autofill::AutofillSuggestionController> suggestion_controller;
+  while (!suggestion_controller) {
     content::SimulateMouseClickOrTapElementWithId(web_contents, "username");
-    popup_controller = autofill_client->popup_controller_for_testing();
+    suggestion_controller =
+        autofill_client->suggestion_controller_for_testing();
   }
 
   // There should be no webauthn suggestions.
-  auto suggestions = popup_controller->GetSuggestions();
+  auto suggestions = suggestion_controller->GetSuggestions();
   for (const auto& suggestion : suggestions) {
-    ASSERT_NE(suggestion.popup_item_id,
-              autofill::PopupItemId::kWebauthnCredential);
+    ASSERT_NE(suggestion.type, autofill::SuggestionType::kWebauthnCredential);
   }
 
   // Simulate the user opting in to sync by injecting a phone and a passkey.
@@ -550,11 +559,12 @@ IN_PROC_BROWSER_TEST_F(WebAuthnDevtoolsAutofillIntegrationTest,
   size_t suggestion_index;
   while (!webauthn_entry) {
     content::SimulateMouseClickOrTapElementWithId(web_contents, "username");
-    popup_controller = autofill_client->popup_controller_for_testing();
-    suggestions = popup_controller->GetSuggestions();
+    suggestion_controller =
+        autofill_client->suggestion_controller_for_testing();
+    suggestions = suggestion_controller->GetSuggestions();
     for (size_t i = 0; i < suggestions.size(); ++i) {
-      if (suggestions[i].popup_item_id ==
-          autofill::PopupItemId::kWebauthnCredential) {
+      if (suggestions[i].type ==
+          autofill::SuggestionType::kWebauthnCredential) {
         webauthn_entry = suggestions[i];
         suggestion_index = i;
       }
@@ -567,12 +577,18 @@ IN_PROC_BROWSER_TEST_F(WebAuthnDevtoolsAutofillIntegrationTest,
   EXPECT_EQ(webauthn_entry->icon, autofill::Suggestion::Icon::kGlobe);
 
   // Click the credential.
-  popup_controller->DisableThresholdForTesting(true);
-  popup_controller->AcceptSuggestion(suggestion_index);
+  suggestion_controller->DisableThresholdForTesting(true);
+  suggestion_controller->AcceptSuggestion(suggestion_index);
   std::string result;
   ASSERT_TRUE(message_queue.WaitForMessage(&result));
   EXPECT_EQ(result, "\"webauthn: OK\"");
 
+  // Tapping a GPM passkey will not automatically hide the popup
+  // because the enclave might still be loading. Manually hide the
+  // popup so that the autofill client can be destroyed, avoiding
+  // a DCHECK on test tear down.
+  autofill_client->HideAutofillSuggestions(
+      autofill::SuggestionHidingReason::kTabGone);
   // The tracker outlives the test. Clean up the device_info to avoid flakiness.
   tracker->Remove(&device_info);
 }

@@ -4,10 +4,14 @@
 
 #include "chrome/browser/ui/views/global_media_controls/media_item_ui_helper.h"
 
+#include <string>
+
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/global_media_controls/cast_media_notification_item.h"
 #include "chrome/browser/ui/global_media_controls/media_item_ui_metrics.h"
+#include "chrome/browser/ui/views/global_media_controls/cast_device_selector_view.h"
 #include "chrome/browser/ui/views/global_media_controls/media_dialog_view.h"
 #include "chrome/browser/ui/views/global_media_controls/media_item_ui_cast_footer_view.h"
 #include "chrome/browser/ui/views/global_media_controls/media_item_ui_device_selector_view.h"
@@ -24,28 +28,6 @@
 #include "ui/color/color_id.h"
 
 namespace {
-
-bool ShouldShowDeviceSelectorView(
-    const std::string& item_id,
-    base::WeakPtr<media_message_center::MediaNotificationItem> item,
-    Profile* profile) {
-  auto source_type = item->GetSourceType();
-  if (source_type == media_message_center::SourceType::kCast) {
-    return false;
-  }
-  if (!media_router::GlobalMediaControlsCastStartStopEnabled(profile) &&
-      !base::FeatureList::IsEnabled(
-          media::kGlobalMediaControlsSeamlessTransfer)) {
-    return false;
-  }
-  // Hide device selector view if the local media session has started Remote
-  // Playback or Tab Mirroring.
-  if (source_type == media_message_center::SourceType::kLocalMediaSession &&
-      GetSessionRoute(item_id, item, profile).has_value()) {
-    return false;
-  }
-  return true;
-}
 
 void UpdateMediaSessionItemReceiverName(
     base::WeakPtr<media_message_center::MediaNotificationItem> item,
@@ -64,6 +46,103 @@ void UpdateMediaSessionItemReceiverName(
 }
 
 }  // namespace
+
+HostAndClientPair::HostAndClientPair() = default;
+HostAndClientPair::HostAndClientPair(HostAndClientPair&&) = default;
+HostAndClientPair& HostAndClientPair::operator=(HostAndClientPair&&) = default;
+HostAndClientPair::~HostAndClientPair() = default;
+
+bool ShouldShowDeviceSelectorView(
+    Profile* profile,
+    global_media_controls::mojom::DeviceService* device_service,
+    const std::string& item_id,
+    const base::WeakPtr<media_message_center::MediaNotificationItem>& item,
+
+    MediaItemUIDeviceSelectorDelegate* selector_delegate) {
+  if (!device_service || !selector_delegate || !profile || !item) {
+    return false;
+  }
+
+  auto source_type = item->GetSourceType();
+  if (source_type == media_message_center::SourceType::kCast) {
+    return false;
+  }
+  if (!media_router::GlobalMediaControlsCastStartStopEnabled(profile) &&
+      !base::FeatureList::IsEnabled(
+          media::kGlobalMediaControlsSeamlessTransfer)) {
+    return false;
+  }
+  // Hide device selector view if the local media session has started Remote
+  // Playback or Tab Mirroring.
+  if (source_type == media_message_center::SourceType::kLocalMediaSession &&
+      GetSessionRoute(item_id, item, profile).has_value()) {
+    return false;
+  }
+  return true;
+}
+
+HostAndClientPair CreateHostAndClient(
+    Profile* profile,
+    const std::string& id,
+    const base::WeakPtr<media_message_center::MediaNotificationItem>& item,
+    global_media_controls::mojom::DeviceService* device_service) {
+  mojo::PendingRemote<global_media_controls::mojom::DeviceListHost> host;
+  mojo::PendingRemote<global_media_controls::mojom::DeviceListClient> client;
+  auto client_receiver = client.InitWithNewPipeAndPassReceiver();
+  if (media_router::GlobalMediaControlsCastStartStopEnabled(profile)) {
+    if (item->GetSourceType() ==
+        media_message_center::SourceType::kLocalMediaSession) {
+      device_service->GetDeviceListHostForSession(
+          id, host.InitWithNewPipeAndPassReceiver(), std::move(client));
+    } else {
+      device_service->GetDeviceListHostForPresentation(
+          host.InitWithNewPipeAndPassReceiver(), std::move(client));
+    }
+  }
+  HostAndClientPair host_and_client;
+  host_and_client.host = std::move(host);
+  host_and_client.client = std::move(client_receiver);
+
+  return host_and_client;
+}
+
+base::RepeatingClosure GetStopCastingCallback(
+    Profile* profile,
+    const std::string& id,
+    const base::WeakPtr<media_message_center::MediaNotificationItem>& item) {
+  base::RepeatingClosure stop_casting_callback;
+
+  // Show a footer view for a local media item when it has an associated Remote
+  // Playback session or a Tab Mirroring Session.
+  if (item->GetSourceType() !=
+      media_message_center::SourceType::kLocalMediaSession) {
+    return stop_casting_callback;
+  }
+  auto route = GetSessionRoute(id, item, profile);
+  UpdateMediaSessionItemReceiverName(item, route);
+  if (!route.has_value()) {
+    return stop_casting_callback;
+  }
+
+  const auto& route_id = route->media_route_id();
+  auto cast_mode = HasRemotePlaybackRoute(item)
+                       ? media_router::MediaCastMode::REMOTE_PLAYBACK
+                       : media_router::MediaCastMode::TAB_MIRROR;
+
+  stop_casting_callback = base::BindRepeating(
+      [](const std::string& route_id, media_router::MediaRouter* router,
+         media_router::MediaCastMode cast_mode) {
+        router->TerminateRoute(route_id);
+        MediaItemUIMetrics::RecordStopCastingMetrics(cast_mode);
+        if (cast_mode == media_router::MediaCastMode::TAB_MIRROR) {
+          MediaDialogView::HideDialog();
+        }
+      },
+      route_id,
+      media_router::MediaRouterFactory::GetApiForBrowserContext(profile),
+      cast_mode);
+  return stop_casting_callback;
+}
 
 bool HasRemotePlaybackRoute(
     base::WeakPtr<media_message_center::MediaNotificationItem> item) {
@@ -141,30 +220,28 @@ BuildDeviceSelector(
     global_media_controls::GlobalMediaControlsEntryPoint entry_point,
     bool show_devices,
     std::optional<media_message_center::MediaColorTheme> media_color_theme) {
-  if (!device_service || !selector_delegate || !profile ||
-      !ShouldShowDeviceSelectorView(id, item, profile)) {
+  if (!ShouldShowDeviceSelectorView(profile, device_service, id, item,
+                                    selector_delegate)) {
     return nullptr;
   }
+
+  auto device_set = CreateHostAndClient(profile, id, item, device_service);
+
+#if !BUILDFLAG(IS_CHROMEOS)
+  if (media_color_theme.has_value()) {
+    return std::make_unique<CastDeviceSelectorView>(
+        std::move(device_set.host), std::move(device_set.client),
+        media_color_theme.value(), show_devices);
+  }
+#endif
 
   const bool is_local_media_session =
       item->GetSourceType() ==
       media_message_center::SourceType::kLocalMediaSession;
-  const bool gmc_cast_start_stop_enabled =
-      media_router::GlobalMediaControlsCastStartStopEnabled(profile);
-  mojo::PendingRemote<global_media_controls::mojom::DeviceListHost> host;
-  mojo::PendingRemote<global_media_controls::mojom::DeviceListClient> client;
-  auto client_receiver = client.InitWithNewPipeAndPassReceiver();
-  if (gmc_cast_start_stop_enabled) {
-    if (is_local_media_session) {
-      device_service->GetDeviceListHostForSession(
-          id, host.InitWithNewPipeAndPassReceiver(), std::move(client));
-    } else {
-      device_service->GetDeviceListHostForPresentation(
-          host.InitWithNewPipeAndPassReceiver(), std::move(client));
-    }
-  }
+
   return std::make_unique<MediaItemUIDeviceSelectorView>(
-      id, selector_delegate, std::move(host), std::move(client_receiver),
+      id, selector_delegate, std::move(device_set.host),
+      std::move(device_set.client),
       /*has_audio_output=*/is_local_media_session, entry_point, show_devices,
       media_color_theme);
 }
@@ -200,61 +277,56 @@ std::unique_ptr<global_media_controls::MediaItemUIFooter> BuildFooter(
             static_cast<CastMediaNotificationItem*>(item.get())->GetWeakPtr()));
   }
 
-  // Show a footer view for a local media item when it has an associated Remote
-  // Playback session or a Tab Mirroring Session.
-  if (item->GetSourceType() !=
-      media_message_center::SourceType::kLocalMediaSession) {
+  base::RepeatingClosure stop_casting_cb =
+      GetStopCastingCallback(profile, id, item);
+  if (stop_casting_cb.is_null()) {
     return nullptr;
   }
 
-  auto route = GetSessionRoute(id, item, profile);
-  UpdateMediaSessionItemReceiverName(item, route);
-  if (!route.has_value()) {
-    return nullptr;
-  }
-
-  const auto& route_id = route->media_route_id();
-  auto cast_mode = HasRemotePlaybackRoute(item)
-                       ? media_router::MediaCastMode::REMOTE_PLAYBACK
-                       : media_router::MediaCastMode::TAB_MIRROR;
-
-  auto stop_casting_cb = base::BindRepeating(
-      [](const std::string& route_id, media_router::MediaRouter* router,
-         media_router::MediaCastMode cast_mode) {
-        router->TerminateRoute(route_id);
-        MediaItemUIMetrics::RecordStopCastingMetrics(cast_mode);
-        if (cast_mode == media_router::MediaCastMode::TAB_MIRROR) {
-          MediaDialogView::HideDialog();
-        }
-      },
-      route_id,
-      media_router::MediaRouterFactory::GetApiForBrowserContext(profile),
-      cast_mode);
   return std::make_unique<MediaItemUILegacyCastFooterView>(
       std::move(stop_casting_cb));
 }
 
 media_message_center::MediaColorTheme GetMediaColorTheme() {
   media_message_center::MediaColorTheme theme;
-  theme.primary_foreground_color_id = ui::kColorPrimaryForeground;
-  theme.secondary_foreground_color_id = ui::kColorSecondaryForeground;
+  theme.primary_foreground_color_id = ui::kColorSysOnSurface;
+  theme.secondary_foreground_color_id = ui::kColorSysOnSurfaceSubtle;
 
   // Colors for the play/pause button.
-  theme.play_button_foreground_color_id = ui::kColorSysPrimary;
-  theme.play_button_container_color_id = ui::kColorSysPrimaryContainer;
-  theme.pause_button_foreground_color_id = ui::kColorSysPrimary;
-  theme.pause_button_container_color_id = ui::kColorSysPrimaryContainer;
+  theme.play_button_foreground_color_id = ui::kColorSysOnTonalContainer;
+  theme.play_button_container_color_id = ui::kColorSysTonalContainer;
+  theme.pause_button_foreground_color_id = ui::kColorSysOnTonalContainer;
+  theme.pause_button_container_color_id = ui::kColorSysTonalContainer;
 
   // Colors for the progress view.
-  theme.playing_progress_foreground_color_id = ui::kColorSysPrimary;
-  theme.playing_progress_background_color_id = ui::kColorSysPrimaryContainer;
-  theme.paused_progress_foreground_color_id = ui::kColorSysPrimary;
-  theme.paused_progress_background_color_id = ui::kColorSysPrimaryContainer;
+  theme.playing_progress_foreground_color_id = ui::kColorSysOnTonalContainer;
+  theme.playing_progress_background_color_id = ui::kColorSysTonalContainer;
+  theme.paused_progress_foreground_color_id = ui::kColorSysOnTonalContainer;
+  theme.paused_progress_background_color_id = ui::kColorSysTonalContainer;
 
   theme.background_color_id = ui::kColorSysSurface2;
+  theme.device_selector_border_color_id = ui::kColorSysDivider;
   theme.device_selector_background_color_id = ui::kColorSysSurface5;
   theme.error_foreground_color_id = ui::kColorSysError;
   theme.error_container_color_id = ui::kColorSysErrorContainer;
   theme.focus_ring_color_id = ui::kColorSysStateFocusRing;
   return theme;
+}
+
+const gfx::VectorIcon& GetVectorIcon(
+    global_media_controls::mojom::IconType icon) {
+  switch (icon) {
+    case global_media_controls::mojom::IconType::kInfo:
+      return kInfoIcon;
+    case global_media_controls::mojom::IconType::kSpeaker:
+      return kSpeakerIcon;
+    case global_media_controls::mojom::IconType::kSpeakerGroup:
+      return kSpeakerGroupIcon;
+    case global_media_controls::mojom::IconType::kInput:
+      return kInputIcon;
+    case global_media_controls::mojom::IconType::kThrobber:
+    case global_media_controls::mojom::IconType::kTv:
+    case global_media_controls::mojom::IconType::kUnknown:
+      return kTvIcon;
+  }
 }

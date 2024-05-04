@@ -81,11 +81,11 @@
 #include "chrome/browser/ash/plugin_vm/plugin_vm_pref_names.h"
 #include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
-#include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/ash/settings/supervised_user_cros_settings_provider.h"
 #include "chrome/browser/ash/system/timezone_util.h"
 #include "chrome/browser/extensions/api/settings_private/chromeos_resolve_time_zone_by_geolocation_method_short.h"
 #include "chrome/browser/extensions/api/settings_private/chromeos_resolve_time_zone_by_geolocation_on_off.h"
+#include "chromeos/ash/components/settings/cros_settings.h"
 #include "chromeos/ash/components/settings/cros_settings_names.h"
 #include "chromeos/ash/services/assistant/public/cpp/assistant_prefs.h"
 #include "chromeos/components/quick_answers/public/cpp/quick_answers_prefs.h"
@@ -209,6 +209,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
       settings_api::PrefType::kBoolean;
 #endif
   (*s_allowlist)[::prefs::kShowHomeButton] = settings_api::PrefType::kBoolean;
+  (*s_allowlist)[::prefs::kShowForwardButton] =
+      settings_api::PrefType::kBoolean;
 
   // Appearance settings.
   (*s_allowlist)[::prefs::kCurrentThemeID] = settings_api::PrefType::kString;
@@ -357,12 +359,14 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
       settings_api::PrefType::kBoolean;
   (*s_allowlist)[::prefs::kBlockAll3pcToggleEnabled] =
       settings_api::PrefType::kBoolean;
+  (*s_allowlist)[::prefs::kAllowAll3pcToggleEnabled] =
+      settings_api::PrefType::kBoolean;
   (*s_allowlist)[::prefs::kTrackingProtectionLevel] =
       settings_api::PrefType::kNumber;
   (*s_allowlist)[::prefs::kEnableDoNotTrack] = settings_api::PrefType::kBoolean;
   (*s_allowlist)[::prefs::kIpProtectionEnabled] =
       settings_api::PrefType::kBoolean;
-  (*s_allowlist)[::prefs::kAntiFingerprintingEnabled] =
+  (*s_allowlist)[::prefs::kFingerprintingProtectionEnabled] =
       settings_api::PrefType::kBoolean;
 
   // Sync and personalization page.
@@ -430,6 +434,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
   (*s_allowlist)[::prefs::kOfficeFilesAlwaysMoveToDrive] =
       settings_api::PrefType::kBoolean;
   (*s_allowlist)[::prefs::kOfficeFilesAlwaysMoveToOneDrive] =
+      settings_api::PrefType::kBoolean;
+  (*s_allowlist)[::prefs::kLocalUserFilesAllowed] =
       settings_api::PrefType::kBoolean;
 #endif
 
@@ -586,12 +592,14 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
       settings_api::PrefType::kNumber;
   (*s_allowlist)[ash::prefs::kShouldAlwaysShowAccessibilityMenu] =
       settings_api::PrefType::kBoolean;
+  (*s_allowlist)[ash::prefs::kAccessibilityCursorColor] =
+      settings_api::PrefType::kNumber;
   (*s_allowlist)[ash::prefs::kAccessibilityDictationLocale] =
       settings_api::PrefType::kString;
   (*s_allowlist)[ash::prefs::kAccessibilityLargeCursorDipSize] =
       settings_api::PrefType::kNumber;
-  (*s_allowlist)[ash::prefs::kAccessibilityCursorColor] =
-      settings_api::PrefType::kNumber;
+  (*s_allowlist)[ash::prefs::kAccessibilityMagnifierFollowsSts] =
+      settings_api::PrefType::kBoolean;
   (*s_allowlist)
       [ash::prefs::kAccessibilityScreenMagnifierFocusFollowingEnabled] =
           settings_api::PrefType::kBoolean;
@@ -681,6 +689,18 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
           settings_api::PrefType::kNumber;
   (*s_allowlist)[ash::prefs::kAccessibilityMonoAudioEnabled] =
       settings_api::PrefType::kBoolean;
+  (*s_allowlist)[ash::prefs::kAccessibilityMouseKeysEnabled] =
+      settings_api::PrefType::kBoolean;
+  (*s_allowlist)[ash::prefs::kAccessibilityMouseKeysShortcutToPauseEnabled] =
+      settings_api::PrefType::kBoolean;
+  (*s_allowlist)[ash::prefs::kAccessibilityMouseKeysDisableInTextFields] =
+      settings_api::PrefType::kBoolean;
+  (*s_allowlist)[ash::prefs::kAccessibilityMouseKeysAcceleration] =
+      settings_api::PrefType::kNumber;
+  (*s_allowlist)[ash::prefs::kAccessibilityMouseKeysMaxSpeed] =
+      settings_api::PrefType::kNumber;
+  (*s_allowlist)[ash::prefs::kAccessibilityMouseKeysDominantHand] =
+      settings_api::PrefType::kBoolean;
   (*s_allowlist)
       [ash::prefs::kAccessibilityEnhancedNetworkVoicesInSelectToSpeakAllowed] =
           settings_api::PrefType::kBoolean;
@@ -721,6 +741,10 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
       settings_api::PrefType::kBoolean;
   (*s_allowlist)[ash::prefs::kAccessibilityFaceGazeGesturesToMacros] =
       settings_api::PrefType::kDictionary;
+  (*s_allowlist)[ash::prefs::kAccessibilityFaceGazeGesturesToConfidence] =
+      settings_api::PrefType::kDictionary;
+  (*s_allowlist)[ash::prefs::kAccessibilityCaretBlinkInterval] =
+      settings_api::PrefType::kNumber;
 
   // Text to Speech.
   (*s_allowlist)[::prefs::kTextToSpeechLangToVoiceName] =
@@ -763,6 +787,10 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
 
   // App - Enable Isolated Web Apps
   (*s_allowlist)[::ash::prefs::kIsolatedWebAppsEnabled] =
+      settings_api::PrefType::kBoolean;
+
+  // App - On-Device Parental Controls
+  (*s_allowlist)[::ash::prefs::kOnDeviceAppControlsSetupCompleted] =
       settings_api::PrefType::kBoolean;
 
   // Ambient Mode.
@@ -834,6 +862,7 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
       settings_api::PrefType::kBoolean;
   (*s_allowlist)[ash::kRevenEnableDeviceHWDataUsage] =
       settings_api::PrefType::kBoolean;
+  (*s_allowlist)[ash::prefs::kMahiEnabled] = settings_api::PrefType::kBoolean;
 
   // Bluetooth & Internet settings.
   (*s_allowlist)[ash::kAllowBluetooth] = settings_api::PrefType::kBoolean;
@@ -853,6 +882,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
       settings_api::PrefType::kString;
   (*s_allowlist)[arc::prefs::kAlwaysOnVpnLockdown] =
       settings_api::PrefType::kBoolean;
+  (*s_allowlist)[::ash::prefs::kSoftwareScanningEnabled] =
+      settings_api::PrefType::kNumber;
 
   // Restore apps and pages on startup
   (*s_allowlist)[ash::prefs::kRestoreAppsAndPagesPrefName] =
@@ -1113,21 +1144,22 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
   (*s_allowlist)[performance_manager::user_tuning::prefs::
                      kManagedTabDiscardingExceptions] =
       settings_api::PrefType::kList;
+  (*s_allowlist)
+      [performance_manager::user_tuning::prefs::kDiscardRingTreatmentEnabled] =
+          settings_api::PrefType::kBoolean;
 
   // AI settings.
   (*s_allowlist)
       [optimization_guide::prefs::kModelExecutionMainToggleSettingState] =
           settings_api::PrefType::kNumber;
   (*s_allowlist)[optimization_guide::prefs::GetSettingEnabledPrefName(
-      optimization_guide::proto::ModelExecutionFeature::
-          MODEL_EXECUTION_FEATURE_COMPOSE)] = settings_api::PrefType::kNumber;
-  (*s_allowlist)[optimization_guide::prefs::GetSettingEnabledPrefName(
-      optimization_guide::proto::ModelExecutionFeature::
-          MODEL_EXECUTION_FEATURE_TAB_ORGANIZATION)] =
+      optimization_guide::UserVisibleFeatureKey::kCompose)] =
       settings_api::PrefType::kNumber;
   (*s_allowlist)[optimization_guide::prefs::GetSettingEnabledPrefName(
-      optimization_guide::proto::ModelExecutionFeature::
-          MODEL_EXECUTION_FEATURE_WALLPAPER_SEARCH)] =
+      optimization_guide::UserVisibleFeatureKey::kTabOrganization)] =
+      settings_api::PrefType::kNumber;
+  (*s_allowlist)[optimization_guide::prefs::GetSettingEnabledPrefName(
+      optimization_guide::UserVisibleFeatureKey::kWallpaperSearch)] =
       settings_api::PrefType::kNumber;
 
   return *s_allowlist;

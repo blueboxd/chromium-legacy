@@ -78,63 +78,6 @@ public class JsJavaInteractionTest extends AwParameterizedTest {
     private AwContents mAwContents;
     private TestWebMessageListener mListener;
 
-    private static class TestWebMessageListener implements WebMessageListener {
-        private LinkedBlockingQueue<Data> mQueue = new LinkedBlockingQueue<>();
-
-        public static class Data {
-            private MessagePayload mPayload;
-            public Uri mTopLevelOrigin;
-            public Uri mSourceOrigin;
-            public boolean mIsMainFrame;
-            public JsReplyProxy mReplyProxy;
-            public MessagePort[] mPorts;
-
-            public Data(
-                    MessagePayload payload,
-                    Uri topLevelOrigin,
-                    Uri sourceOrigin,
-                    boolean isMainFrame,
-                    JsReplyProxy replyProxy,
-                    MessagePort[] ports) {
-                mPayload = payload;
-                mTopLevelOrigin = topLevelOrigin;
-                mSourceOrigin = sourceOrigin;
-                mIsMainFrame = isMainFrame;
-                mReplyProxy = replyProxy;
-                mPorts = ports;
-            }
-
-            public String getAsString() {
-                return mPayload.getAsString();
-            }
-
-            public byte[] getAsArrayBuffer() {
-                return mPayload.getAsArrayBuffer();
-            }
-        }
-
-        @Override
-        public void onPostMessage(
-                MessagePayload payload,
-                Uri topLevelOrigin,
-                Uri sourceOrigin,
-                boolean isMainFrame,
-                JsReplyProxy replyProxy,
-                MessagePort[] ports) {
-            mQueue.add(
-                    new Data(
-                            payload, topLevelOrigin, sourceOrigin, isMainFrame, replyProxy, ports));
-        }
-
-        public Data waitForOnPostMessage() throws Exception {
-            return AwActivityTestRule.waitForNextQueueElement(mQueue);
-        }
-
-        public boolean hasNoMoreOnPostMessage() {
-            return mQueue.isEmpty();
-        }
-    }
-
     public JsJavaInteractionTest(AwSettingsMutation param) {
         this.mActivityTestRule = new AwActivityTestRule(param.getMutation());
     }
@@ -335,7 +278,8 @@ public class JsJavaInteractionTest extends AwParameterizedTest {
     @SmallTest
     @Feature({"AndroidWebView", "JsJavaInteraction"})
     public void testAddWebMessageListenerAffectsRendererInitiatedNavigation() throws Throwable {
-        // TODO(crbug.com/969842): We'd either replace the following html file with a file contains
+        // TODO(crbug.com/40630430): We'd either replace the following html file with a file
+        // contains
         // no JavaScript code or add a test to ensure that evaluateJavascript() won't
         // over-trigger DidClearWindowObject.
         loadUrlFromPath(POST_MESSAGE_WITH_PORTS_HTML);
@@ -722,7 +666,7 @@ public class JsJavaInteractionTest extends AwParameterizedTest {
     public void testJsReplyProxyWorks() throws Throwable {
         addWebMessageListenerOnUiThread(mAwContents, JS_OBJECT_NAME, new String[] {"*"}, mListener);
 
-        final String url = loadUrlFromPath(POST_MESSAGE_REPLY_HTML);
+        loadUrlFromPath(POST_MESSAGE_REPLY_HTML);
 
         TestWebMessageListener.Data data = mListener.waitForOnPostMessage();
 
@@ -745,7 +689,7 @@ public class JsJavaInteractionTest extends AwParameterizedTest {
     public void testPostArrayBufferEncodeToString() throws Throwable {
         addWebMessageListenerOnUiThread(mAwContents, JS_OBJECT_NAME, new String[] {"*"}, mListener);
 
-        final String url = loadUrlFromPath(POST_MESSAGE_ARRAYBUFFER_TITLE_HTML);
+        loadUrlFromPath(POST_MESSAGE_ARRAYBUFFER_TITLE_HTML);
 
         TestWebMessageListener.Data data = mListener.waitForOnPostMessage();
         final String messageStr = HELLO + "FromJava";
@@ -763,7 +707,7 @@ public class JsJavaInteractionTest extends AwParameterizedTest {
 
     private void verifyPostArrayBufferWorks(byte[] content) throws Exception {
         addWebMessageListenerOnUiThread(mAwContents, JS_OBJECT_NAME, new String[] {"*"}, mListener);
-        final String url = loadUrlFromPath(POST_MESSAGE_ARRAYBUFFER_REPLY_HTML);
+        loadUrlFromPath(POST_MESSAGE_ARRAYBUFFER_REPLY_HTML);
         TestWebMessageListener.Data data = mListener.waitForOnPostMessage();
         data.mReplyProxy.postMessage(new MessagePayload(content));
         data = mListener.waitForOnPostMessage();
@@ -803,7 +747,7 @@ public class JsJavaInteractionTest extends AwParameterizedTest {
             throws Throwable {
         final byte[] content = (HELLO + "FromJava").getBytes(StandardCharsets.UTF_8);
         addWebMessageListenerOnUiThread(mAwContents, JS_OBJECT_NAME, new String[] {"*"}, mListener);
-        final String url = loadUrlFromPath(POST_MESSAGE_NULL_OR_UNDEFINED_HTML);
+        loadUrlFromPath(POST_MESSAGE_NULL_OR_UNDEFINED_HTML);
         TestWebMessageListener.Data data = mListener.waitForOnPostMessage();
         data.mReplyProxy.postMessage(new MessagePayload(content));
 
@@ -828,7 +772,7 @@ public class JsJavaInteractionTest extends AwParameterizedTest {
         addWebMessageListenerOnUiThread(
                 mAwContents, JS_OBJECT_NAME_2, new String[] {"*"}, webMessageListener2);
 
-        final String url = loadUrlFromPath(POST_MESSAGE_REPLY_HTML);
+        loadUrlFromPath(POST_MESSAGE_REPLY_HTML);
 
         // Listener for myObject.
         final String listener1 =
@@ -894,7 +838,7 @@ public class JsJavaInteractionTest extends AwParameterizedTest {
     public void testJsReplyProxyDropsMessageIfJsObjectIsGone() throws Throwable {
         addWebMessageListenerOnUiThread(mAwContents, JS_OBJECT_NAME, new String[] {"*"}, mListener);
 
-        final String url = loadUrlFromPath(POST_MESSAGE_REPLY_HTML);
+        loadUrlFromPath(POST_MESSAGE_REPLY_HTML);
 
         TestWebMessageListener.Data data = mListener.waitForOnPostMessage();
 
@@ -902,7 +846,7 @@ public class JsJavaInteractionTest extends AwParameterizedTest {
 
         // Load the same url again.
         loadUrlFromPath(POST_MESSAGE_REPLY_HTML);
-        TestWebMessageListener.Data data2 = mListener.waitForOnPostMessage();
+        mListener.waitForOnPostMessage();
 
         // Use the previous JsReplyProxy to send message. It should drop the message.
         proxy.postMessage(new MessagePayload(NEW_TITLE));
@@ -996,7 +940,7 @@ public class JsJavaInteractionTest extends AwParameterizedTest {
     public void testJsObjectRemoveOnMessage() throws Throwable {
         addWebMessageListenerOnUiThread(mAwContents, JS_OBJECT_NAME, new String[] {"*"}, mListener);
 
-        final String url = loadUrlFromPath(POST_MESSAGE_REPLY_HTML);
+        loadUrlFromPath(POST_MESSAGE_REPLY_HTML);
 
         TestWebMessageListener.Data data = mListener.waitForOnPostMessage();
 
@@ -1582,16 +1526,13 @@ public class JsJavaInteractionTest extends AwParameterizedTest {
             final String[] allowedOriginRules,
             final WebMessageListener listener)
             throws Exception {
-        AwActivityTestRule.checkJavaScriptEnabled(awContents);
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> awContents.addWebMessageListener(jsObjectName, allowedOriginRules, listener));
+        TestWebMessageListener.addWebMessageListenerOnUiThread(
+                awContents, jsObjectName, allowedOriginRules, listener);
     }
 
     private static void removeWebMessageListenerOnUiThread(
             final AwContents awContents, final String jsObjectName) throws Exception {
-        AwActivityTestRule.checkJavaScriptEnabled(awContents);
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> awContents.removeWebMessageListener(jsObjectName));
+        TestWebMessageListener.removeWebMessageListenerOnUiThread(awContents, jsObjectName);
     }
 
     private static boolean hasJavaScriptObject(

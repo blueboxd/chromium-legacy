@@ -66,8 +66,8 @@ bool UserEducationConfigurationProvider::MaybeProvideFeatureConfiguration(
 
   const auto* const promo_spec = registry_.GetParamsForFeature(feature);
   const bool is_unlimited =
-      promo_spec->promo_subtype() ==
-          user_education::FeaturePromoSpecification::PromoSubtype::kPerApp ||
+      promo_spec->promo_subtype() == user_education::FeaturePromoSpecification::
+                                         PromoSubtype::kKeyedNotice ||
       promo_spec->promo_subtype() == user_education::FeaturePromoSpecification::
                                          PromoSubtype::kLegalNotice ||
       promo_spec->promo_subtype() == user_education::FeaturePromoSpecification::
@@ -96,7 +96,8 @@ bool UserEducationConfigurationProvider::MaybeProvideFeatureConfiguration(
 
     case user_education::FeaturePromoSpecification::PromoType::kToast:
     case user_education::FeaturePromoSpecification::PromoType::kLegacy:
-      // Toasts can always show and do not impact other IPH.
+    case user_education::FeaturePromoSpecification::PromoType::kRotating:
+      // Toasts and rotating promos can always show and do not impact other IPH.
       break;
 
     case user_education::FeaturePromoSpecification::PromoType::kUnspecified:

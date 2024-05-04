@@ -38,7 +38,7 @@ class TabMenuBridgeTest : public ::testing::Test {
     profile_ = std::make_unique<TestingProfile>();
     rvh_test_enabler_ = std::make_unique<content::RenderViewHostTestEnabler>();
     delegate_ = std::make_unique<TabStripModelUiHelperDelegate>();
-    model_ = std::make_unique<TabStripModel>(delegate_.get(), nullptr);
+    model_ = std::make_unique<TabStripModel>(delegate_.get(), profile_.get());
     menu_root_ = ItemWithTitle(@"Tab");
     menu_ = [[NSMenu alloc] initWithTitle:@"Tab"];
     menu_root_.submenu = menu_;
@@ -112,7 +112,7 @@ class TabMenuBridgeTest : public ::testing::Test {
     int index = ModelIndexForTabNamed(old_name);
     if (index >= 0) {
       std::unique_ptr<content::WebContents> old_contents =
-          model()->ReplaceWebContentsAt(index, CreateWebContents(new_name));
+          model()->DiscardWebContentsAt(index, CreateWebContents(new_name));
       // Let the old WebContents be destroyed here.
     }
   }
@@ -155,6 +155,8 @@ class TabMenuBridgeTest : public ::testing::Test {
     ASSERT_EQ(active_items.size(), 1u);
     EXPECT_EQ(name, active_items[0]);
   }
+
+  TestingProfile* profile() { return profile_.get(); }
 
  private:
   NSMenuItem* ItemWithTitle(NSString* title) {
@@ -260,7 +262,7 @@ TEST_F(TabMenuBridgeTest, SwappingBridgeRecreatesMenu) {
 
   AddModelTabNamed("Tab 1");
 
-  auto model2 = std::make_unique<TabStripModel>(delegate(), nullptr);
+  auto model2 = std::make_unique<TabStripModel>(delegate(), profile());
   model2->AppendWebContents(CreateWebContents("Tab 2"), true);
 
   bridge = std::make_unique<TabMenuBridge>(model2.get(), menu_root());

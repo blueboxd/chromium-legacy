@@ -588,7 +588,7 @@ void StoreExtensionsInjectingScripts(
     const std::vector<const Extension*>& extensions,
     ScriptInjectionTracker::ScriptType script_type,
     content::RenderProcessHost& process) {
-  // ContentScriptTracker never removes entries from this set - once a
+  // ScriptInjectionTracker never removes entries from this set - once a
   // renderer process gains an ability to talk on behalf of a content script,
   // it retains this ability forever.  Note that the `process_data` will be
   // destroyed together with the RenderProcessHost (see also a comment inside
@@ -685,7 +685,7 @@ void ScriptInjectionTracker::ReadyToCommitNavigation(
   // Notify URLLoaderFactoryManager for both user and content scripts. This
   // needs to happen at ReadyToCommitNavigation time (i.e. before constructing a
   // URLLoaderFactory that will be sent to the Renderer in a Commit IPC).
-  // TODO(crbug.com/1495177): This should only use webview scripts, since it's
+  // TODO(crbug.com/40286422): This should only use webview scripts, since it's
   // not needed for all extensions.
   extensions_injecting_content_scripts.reserve(
       extensions_injecting_content_scripts.size() +

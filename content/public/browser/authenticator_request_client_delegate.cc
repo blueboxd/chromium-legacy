@@ -4,11 +4,11 @@
 
 #include "content/public/browser/authenticator_request_client_delegate.h"
 
+#include <string_view>
 #include <utility>
 
 #include "base/functional/callback.h"
 #include "base/functional/callback_helpers.h"
-#include "base/strings/string_piece.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "content/browser/webauth/authenticator_environment.h"
@@ -77,17 +77,20 @@ bool WebAuthenticationDelegate::IsFocused(WebContents* web_contents) {
   return true;
 }
 
-std::optional<bool> WebAuthenticationDelegate::
+void WebAuthenticationDelegate::
     IsUserVerifyingPlatformAuthenticatorAvailableOverride(
-        RenderFrameHost* render_frame_host) {
+        RenderFrameHost* render_frame_host,
+        base::OnceCallback<void(std::optional<bool>)> callback) {
   FrameTreeNode* frame_tree_node =
       static_cast<RenderFrameHostImpl*>(render_frame_host)->frame_tree_node();
   if (AuthenticatorEnvironment::GetInstance()->IsVirtualAuthenticatorEnabledFor(
           frame_tree_node)) {
-    return AuthenticatorEnvironment::GetInstance()
-        ->HasVirtualUserVerifyingPlatformAuthenticator(frame_tree_node);
+    std::move(callback).Run(
+        AuthenticatorEnvironment::GetInstance()
+            ->HasVirtualUserVerifyingPlatformAuthenticator(frame_tree_node));
+    return;
   }
-  return std::nullopt;
+  std::move(callback).Run(std::nullopt);
 }
 
 WebAuthenticationRequestProxy* WebAuthenticationDelegate::MaybeGetRequestProxy(
@@ -96,9 +99,10 @@ WebAuthenticationRequestProxy* WebAuthenticationDelegate::MaybeGetRequestProxy(
   return nullptr;
 }
 
-bool WebAuthenticationDelegate::IsEnclaveAuthenticatorAvailable(
-    BrowserContext* browser_context) {
-  return false;
+void WebAuthenticationDelegate::IsEnclaveAuthenticatorAvailable(
+    BrowserContext* browser_context,
+    base::OnceCallback<void(bool)> callback) {
+  std::move(callback).Run(false);
 }
 
 #if BUILDFLAG(IS_MAC)
@@ -158,6 +162,7 @@ void AuthenticatorRequestClientDelegate::ConfigureDiscoveries(
     device::FidoRequestType request_type,
     std::optional<device::ResidentKeyRequirement> resident_key_requirement,
     device::UserVerificationRequirement user_verification_requirement,
+    std::optional<std::string_view> user_name,
     base::span<const device::CableDiscoveryData> pairings_from_extension,
     bool is_enclave_authenticator_available,
     device::FidoDiscoveryFactory* fido_discovery_factory) {}
@@ -170,7 +175,7 @@ void AuthenticatorRequestClientDelegate::SelectAccount(
         callback) {
   // Automatically choose the first account to allow resident keys for virtual
   // authenticators without a browser implementation, e.g. on content shell.
-  // TODO(crbug.com/991666): Provide a way to determine which account gets
+  // TODO(crbug.com/40639383): Provide a way to determine which account gets
   // picked.
   DCHECK(virtual_environment_);
   std::move(callback).Run(std::move(responses.at(0)));
@@ -215,7 +220,7 @@ void AuthenticatorRequestClientDelegate::FidoAuthenticatorAdded(
     const device::FidoAuthenticator& authenticator) {}
 
 void AuthenticatorRequestClientDelegate::FidoAuthenticatorRemoved(
-    base::StringPiece device_id) {}
+    std::string_view device_id) {}
 
 bool AuthenticatorRequestClientDelegate::SupportsPIN() const {
   return false;

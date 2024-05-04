@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_WEBAUTHN_AUTHENTICATOR_REQUEST_BUBBLE_H_
 #define CHROME_BROWSER_UI_WEBAUTHN_AUTHENTICATOR_REQUEST_BUBBLE_H_
 
-class AuthenticatorRequestDialogModel;
+struct AuthenticatorRequestDialogModel;
 
 namespace content {
 class WebContents;

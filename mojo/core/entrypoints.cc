@@ -82,6 +82,13 @@ MojoResult MojoSerializeMessageImpl(
   return g_core->SerializeMessage(message, options);
 }
 
+MojoResult MojoReserveMessageCapacityImpl(MojoMessageHandle message,
+                                          uint32_t payload_buffer_size,
+                                          uint32_t* buffer_size) {
+  return g_core->ReserveMessageCapacity(message, payload_buffer_size,
+                                        buffer_size);
+}
+
 MojoResult MojoAppendMessageDataImpl(
     MojoMessageHandle message,
     uint32_t additional_payload_size,
@@ -404,7 +411,8 @@ MojoSystemThunks2 g_thunks = {sizeof(g_thunks),
                               MojoSetQuotaImpl,
                               MojoQueryQuotaImpl,
                               MojoShutdownImpl,
-                              MojoSetDefaultProcessErrorHandlerImpl};
+                              MojoSetDefaultProcessErrorHandlerImpl,
+                              MojoReserveMessageCapacityImpl};
 
 }  // namespace
 

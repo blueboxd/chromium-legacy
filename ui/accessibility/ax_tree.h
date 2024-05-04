@@ -270,7 +270,7 @@ class AX_EXPORT AXTree {
 #endif
 
   // Accumulate errors as there can be more than one before Chrome is crashed
-  // via AccessibilityFatalError();
+  // via UnrecoverableAccessibilityError();
   // In an AX_FAIL_FAST_BUILD or if |is_fatal|, will assert/crash immediately.
   void RecordError(const AXTreeUpdateState& update_state,
                    std::string new_error,
@@ -353,7 +353,10 @@ class AX_EXPORT AXTree {
       const AXTreeData* new_tree_data,
       const AXNodeData& new_data);
 
-  void UpdateReverseRelations(AXNode* node, const AXNodeData& new_data);
+  // Update maps that track which relations are pointing to |node|.
+  void UpdateReverseRelations(AXNode* node,
+                              const AXNodeData& new_data,
+                              bool is_new_node = false);
 
   // Sets a flag indicating whether the tree is currently being updated or not.
   // If the tree is being updated, then its internal pointers might be invalid

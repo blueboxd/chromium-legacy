@@ -30,11 +30,15 @@ extern NSString* const kMaskedPasswordTitle;
 // previous password item.
 @property(nonatomic, readonly) BOOL isConnectedToPreviousItem;
 
+// TODO(crbug.com/326398845): Remove the `isConnectedToPreviousItem` and
+// `isConnectedToNextItem` params once the Keyboard Accessory Upgrade feature
+// has launched both on iPhone and iPad.
 - (instancetype)initWithCredential:(ManualFillCredential*)credential
          isConnectedToPreviousItem:(BOOL)isConnectedToPreviousItem
              isConnectedToNextItem:(BOOL)isConnectedToNextItem
                    contentInjector:
                        (id<ManualFillContentInjector>)contentInjector
+                       menuActions:(NSArray<UIAction*>*)menuActions
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)initWithType:(NSInteger)type NS_UNAVAILABLE;
@@ -49,11 +53,13 @@ extern NSString* const kMaskedPasswordTitle;
 @property(nonatomic, readonly) NSString* uniqueIdentifier;
 
 // Updates the cell with the `credential`. If the user iteracts with it, the
-// `delegate` will be notified.
+// `contentInjector` will be notified. `menuActions` are the UIActions that
+// should be available from the cell's overflow menu button.
 - (void)setUpWithCredential:(ManualFillCredential*)credential
     isConnectedToPreviousCell:(BOOL)isConnectedToPreviousCell
         isConnectedToNextCell:(BOOL)isConnectedToNextCell
-              contentInjector:(id<ManualFillContentInjector>)contentInjector;
+              contentInjector:(id<ManualFillContentInjector>)contentInjector
+                  menuActions:(NSArray<UIAction*>*)menuActions;
 
 // Configures the cell for the passed favicon attributes.
 - (void)configureWithFaviconAttributes:(FaviconAttributes*)attributes;

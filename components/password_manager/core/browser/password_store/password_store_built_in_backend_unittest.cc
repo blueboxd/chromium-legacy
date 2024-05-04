@@ -14,6 +14,7 @@
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
 #include "base/functional/callback_helpers.h"
+#include "base/location.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_feature_list.h"
@@ -25,6 +26,7 @@
 #include "components/password_manager/core/browser/affiliation/mock_affiliated_match_helper.h"
 #include "components/password_manager/core/browser/features/password_features.h"
 #include "components/password_manager/core/browser/password_form.h"
+#include "components/password_manager/core/browser/password_manager_buildflags.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/password_store/login_database.h"
 #include "components/password_manager/core/browser/password_store/password_store_backend.h"
@@ -150,7 +152,7 @@ class PasswordStoreBuiltInBackendTest : public testing::Test {
   void SetUp() override {
     OSCryptMocker::SetUp();
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-#if BUILDFLAG(IS_ANDROID)
+#if !BUILDFLAG(USE_LOGIN_DATABASE_AS_BACKEND)
     pref_service_.registry()->RegisterBooleanPref(
         password_manager::prefs::kEmptyProfileStoreLoginDatabase, false);
 #endif
@@ -271,7 +273,7 @@ TEST_F(PasswordStoreBuiltInBackendTest, TestRemoveLoginAsync) {
   EXPECT_CALL(
       mock_reply,
       Run(VariantWith<PasswordChanges>(Optional(ElementsAre(remove_change)))));
-  backend->RemoveLoginAsync(form, mock_reply.Get());
+  backend->RemoveLoginAsync(FROM_HERE, form, mock_reply.Get());
   RunUntilIdle();
 }
 
@@ -513,7 +515,7 @@ TEST_F(PasswordStoreBuiltInBackendTest, RemoveLoginAsyncMetrics) {
   PasswordStoreChange remove_change =
       PasswordStoreChange(PasswordStoreChange::REMOVE, form);
 
-  backend->RemoveLoginAsync(form, base::DoNothing());
+  backend->RemoveLoginAsync(FROM_HERE, form, base::DoNothing());
 
   AdvanceClock(kLatencyDelta);
   RunUntilIdle();
@@ -539,7 +541,7 @@ TEST_F(PasswordStoreBuiltInBackendTest, RemoveLoginAsyncFailsMetrics) {
   PasswordStoreChange remove_change =
       PasswordStoreChange(PasswordStoreChange::REMOVE, form);
 
-  bad_backend->RemoveLoginAsync(form, base::DoNothing());
+  bad_backend->RemoveLoginAsync(FROM_HERE, form, base::DoNothing());
 
   AdvanceClock(kLatencyDelta);
   RunUntilIdle();
@@ -566,7 +568,8 @@ TEST_F(PasswordStoreBuiltInBackendTest,
   backend->AddLoginAsync(form, base::DoNothing());
   RunUntilIdle();
 
-  backend->RemoveLoginsCreatedBetweenAsync(kStart, kEnd, base::DoNothing());
+  backend->RemoveLoginsCreatedBetweenAsync(FROM_HERE, kStart, kEnd,
+                                           base::DoNothing());
 
   AdvanceClock(kLatencyDelta);
   RunUntilIdle();
@@ -595,7 +598,8 @@ TEST_F(PasswordStoreBuiltInBackendTest,
   backend->AddLoginAsync(form, base::DoNothing());
   RunUntilIdle();
 
-  backend->RemoveLoginsCreatedBetweenAsync(kStart, kEnd, base::DoNothing());
+  backend->RemoveLoginsCreatedBetweenAsync(FROM_HERE, kStart, kEnd,
+                                           base::DoNothing());
 
   AdvanceClock(kLatencyDelta);
   RunUntilIdle();
@@ -621,7 +625,8 @@ TEST_F(PasswordStoreBuiltInBackendTest,
   PasswordStoreBackend* bad_backend =
       Initialize(std::make_unique<BadLoginDatabase>());
 
-  bad_backend->RemoveLoginsCreatedBetweenAsync(kStart, kEnd, base::DoNothing());
+  bad_backend->RemoveLoginsCreatedBetweenAsync(FROM_HERE, kStart, kEnd,
+                                               base::DoNothing());
 
   AdvanceClock(kLatencyDelta);
   RunUntilIdle();
@@ -650,9 +655,9 @@ TEST_F(PasswordStoreBuiltInBackendTest, RemoveLoginsByURLAndTimeAsyncMetrics) {
   backend->AddLoginAsync(form, base::DoNothing());
   RunUntilIdle();
 
-  backend->RemoveLoginsByURLAndTimeAsync(base::BindRepeating(&AnyUrl), kStart,
-                                         kEnd, base::DoNothing(),
-                                         base::DoNothing());
+  backend->RemoveLoginsByURLAndTimeAsync(
+      FROM_HERE, base::BindRepeating(&AnyUrl), kStart, kEnd, base::DoNothing(),
+      base::DoNothing());
 
   AdvanceClock(kLatencyDelta);
   RunUntilIdle();
@@ -681,9 +686,9 @@ TEST_F(PasswordStoreBuiltInBackendTest,
   backend->AddLoginAsync(form, base::DoNothing());
   RunUntilIdle();
 
-  backend->RemoveLoginsByURLAndTimeAsync(base::BindRepeating(&AnyUrl), kStart,
-                                         kEnd, base::DoNothing(),
-                                         base::DoNothing());
+  backend->RemoveLoginsByURLAndTimeAsync(
+      FROM_HERE, base::BindRepeating(&AnyUrl), kStart, kEnd, base::DoNothing(),
+      base::DoNothing());
 
   AdvanceClock(kLatencyDelta);
   RunUntilIdle();
@@ -853,7 +858,7 @@ TEST_F(PasswordStoreBuiltInBackendTest,
   RunUntilIdle();
 }
 
-#if BUILDFLAG(IS_ANDROID)
+#if !BUILDFLAG(USE_LOGIN_DATABASE_AS_BACKEND)
 TEST_F(PasswordStoreBuiltInBackendTest, NotAbleToSavePasswordsEmptyDB) {
   base::test::ScopedFeatureList features(
       password_manager::features::kUnifiedPasswordManagerSyncOnlyInGMSCore);

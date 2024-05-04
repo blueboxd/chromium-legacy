@@ -48,27 +48,6 @@ class TrackingProtectionOnboarding : public KeyedService {
     kMaxValue = kOnboarded,
   };
 
-  // Enum used for interfacing with the onboarding service to indicate the HaTS
-  // group the profile belongs to.
-  enum class SentimentSurveyGroup {
-    kNotSet = 0,
-    kControlImmediate = 1,
-    kTreatmentImmediate = 2,
-    kControlDelayed = 3,
-    kTreatmentDelayed = 4,
-  };
-
-  // Enum used for emitting metrics during the process of the Sentiment Survey
-  // given to users.
-  enum class SentimentSurveyGroupMetrics {
-    kControlImmediate = 0,
-    kTreatmentImmediate = 1,
-    kControlDelayed = 2,
-    kTreatmentDelayed = 3,
-    kNotSet = 4,
-    kMaxValue = kNotSet,
-  };
-
   // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.privacy_sandbox
   enum class NoticeAction {
     // Other action taken - notice dismissed due to other actions.
@@ -152,6 +131,9 @@ class TrackingProtectionOnboarding : public KeyedService {
                                bool is_silent_onboarding_enabled = false);
   ~TrackingProtectionOnboarding() override;
 
+  // KeyedService:
+  void Shutdown() override;
+
   virtual void AddObserver(Observer* observer);
   virtual void RemoveObserver(Observer* observer);
 
@@ -215,21 +197,6 @@ class TrackingProtectionOnboarding : public KeyedService {
   // Called by UI code to determine if we should show the onboarding notice to
   // the user.
   bool ShouldShowOnboardingNotice();
-
-  // HaTS
-  // TODO(b:308320418) These should ideally live in a separate Tracking
-  // Protection HaTS service, and not be tied to the onboarding one.
-
-  // Returns whether or not the profile requires a fresh survey registration.
-  bool RequiresSentimentSurveyGroup();
-
-  // Registers the profile in the requested group, and optionally sets its start
-  // and end survey time.
-  void RegisterSentimentSurveyGroup(SentimentSurveyGroup group);
-
-  // Computes HaTS eligibility for the profile. Will return kNotSet if the
-  // profile isn't to be shown a survey.
-  SentimentSurveyGroup GetEligibleSurveyGroup();
 
   // Returns the time delta from Onboarded to Acknowledged.
   std::optional<base::TimeDelta> OnboardedToAcknowledged();

@@ -31,7 +31,6 @@
 <translation id="1620510694547887537">ካሜራ</translation>
 <translation id="1633720957382884102">ተዛማጅ ጣቢያዎች</translation>
 <translation id="1644574205037202324">ታሪክ</translation>
-<translation id="1647582022260550163">እርግጠኛ ነዎት ፈቃዶችን ዳግም ማስጀመር እና ኩኪዎችን እና የጣቢያ ውሂብን ማጽዳት ይፈልጋሉ?</translation>
 <translation id="1652197001188145583">ሲበራ፣ ጣቢያዎች የNFC መሳሪያዎችን ለመጠቀም መጠየቅ ይችላሉ። ሲጠፋ፣ ጣቢያዎች የNFC መሳሪያዎችን መጠቀም አይችሉም።</translation>
 <translation id="1660204651932907780">ጣቢያዎች ድምጽን እንዲያጫውቱ ፍቀድ (የሚመከር)</translation>
 <translation id="1677097821151855053">ኩኪዎች እና ሌላ የጣቢያ ውሂብ እርስዎን ለማስታወስ ያገለግላሉ፣ ለምሳሌ እርስዎን ለማስገባት ወይም ማስታወቂያዎችን ግላዊ ለማድረግ። ለሁሉም ጣቢያዎች ኩኪዎችን ለማቀናበር፣ <ph name="BEGIN_LINK" />ቅንብሮችን<ph name="END_LINK" /> ይመልከቱ።</translation>
@@ -94,12 +93,12 @@
 <translation id="2501278716633472235">ወደ ኋላ ተመለስ</translation>
 <translation id="2546283357679194313">ኩኪዎች እና የጣቢያ ውሂብ</translation>
 <translation id="2550801787432930915">የዋጋ ቅናሽ ካርድ</translation>
-<translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{1 ኩኪ ታግዷል}one{# ኩኪዎች ታግደዋል}other{# ኩኪዎች ታግደዋል}}</translation>
 <translation id="2570922361219980984">የአካባቢ መዳረሻ እንዲሁም ለዚህ መሣሪያ ጠፍቷል። በ<ph name="BEGIN_LINK" />Android ቅንብሮች<ph name="END_LINK" /> ውስጥ ያብሩት።</translation>
 <translation id="257931822824936280">ተዘርግቷል - ለመሰብሰብ ጠቅ ያድርጉ</translation>
 <translation id="2586657967955657006">የቅንጥብ ሰሌዳ</translation>
 <translation id="2597457036804169544">ጠቆር ያለ ገጽታን ጣቢያዎች ላይ አትተግብር</translation>
 <translation id="2606760465469169465">በራስ-ሰር ማረጋገጥ</translation>
+<translation id="2613007545732217283"><ph name="HOST_NAME" /> <ph name="SEPARATOR" /> <ph name="RECENCY" /></translation>
 <translation id="2621115761605608342">ጃቫስክሪፕትን ለአንድ የተወሰነ ጣቢያ ፍቀድ።</translation>
 <translation id="2653659639078652383">አስገባ</translation>
 <translation id="2677748264148917807">ለቅቀህ ውጣ</translation>
@@ -122,9 +121,7 @@
 <translation id="2979365474350987274">የሦስተኛ ወገን ኩኪዎች የተገደቡ ናቸው</translation>
 <translation id="3008272652534848354">ፈቃዶችን ዳግም ያቀናብሩ</translation>
 <translation id="301521992641321250">በራስ-ሰር ታግዷል</translation>
-<translation id="3025010840409371499"><ph name="RECENCY" /> <ph name="SEPARATOR" /> <ph name="HOST_NAME" /></translation>
 <translation id="3069226013421428034">ለአንድ የተወሰነ ጣቢያ የሦስተኛ ወገን መግባትን ይፍቀዱ።</translation>
-<translation id="3082992102194421695">{COUNT,plural, =1{ነገ ጊዜው ያበቃል}one{በ# ቀን ውስጥ ጊዜው ያበቃል}other{በ# ቀናት ውስጥ ጊዜው ያበቃል}}</translation>
 <translation id="310297983047869047">ቀዳሚ ተንሸራታች</translation>
 <translation id="3109724472072898302">ተሰብስቧል</translation>
 <translation id="3114012059975132928">ቪዲዮ ማጫወቻ</translation>
@@ -177,6 +174,7 @@
 <translation id="3895926599014793903">ማጉላት አንቃን ያስገድዱ</translation>
 <translation id="3908288065506437185">በማንነትን የማያሳውቅ ሁነታ ውስጥ የሦስተኛ ወገን ኩኪዎችን ያግዱ</translation>
 <translation id="3918378745482005425">አንዳንድ ባህሪያት ላይሰሩ ይችላሉ። የተገናኙ ጣቢያዎች አሁንም የሦስተኛ ወገን ኩኪዎችን መጠቀም ይችላሉ።</translation>
+<translation id="3933121352599513978">ያልተፈለጉ ጥያቄዎችን ሰብስብ (የሚመከር)</translation>
 <translation id="3955193568934677022">ጥበቃ የሚደረግበትን ይዘት እንዲያጫውቱ ለጣቢያዎች ፍቀድ (የሚመከር)</translation>
 <translation id="3967822245660637423">ማውረድ ተጠናቅቋል</translation>
 <translation id="3974105241379491420">ጣቢያዎች ስለ እርስዎ ያስቀመጡትን መረጃ ለመጠቀም ሊጠይቁዎት ይችላሉ</translation>
@@ -198,7 +196,9 @@
 <translation id="4278390842282768270">ተፈቅዷል</translation>
 <translation id="429312253194641664">አንድ ጣቢያ ሚዲያን በማጫወት ላይ ነው</translation>
 <translation id="42981349822642051">ዘርጋ</translation>
+<translation id="4336219115486912529">{COUNT,plural, =1{ነገ ጊዜው ያበቃል}one{በ# ቀን ውስጥ ጊዜው ያበቃል}other{በ# ቀናት ውስጥ ጊዜው ያበቃል}}</translation>
 <translation id="4336566011000459927">Chrome ዛሬ እንደገና ኩኪዎችን ያግዳል</translation>
+<translation id="4336836404251800362"><ph name="RECENCY" /> <ph name="SEPARATOR" /> የእርስዎ የመጨረሻ ትር</translation>
 <translation id="4338831206024587507">በ<ph name="DOMAIN" /> ስር ያሉ ሁሉም ጣቢያዎች</translation>
 <translation id="4402755511846832236">እርስዎ ይህን መሣሪያ በንቃት ሲጠቀሙ ጣቢያዎች እንዳያውቁ ያግዱ</translation>
 <translation id="4412992751769744546">የሶስተኛ ወገን ኩኪዎችን ፍቀድ</translation>
@@ -289,6 +289,7 @@
 <translation id="5853982612236235577">ሲበራ፣ ጣቢያዎች ማሳወቂያዎችን ለመላክ መጠየቅ ይችላሉ። ሲጠፋ፣ ጣቢያዎች ማሳወቂያዎችን መላክ አይችሉም።</translation>
 <translation id="5860033963881614850">አጥፋ</translation>
 <translation id="5876056640971328065">ቪዲዮ ባለበት አቁም</translation>
+<translation id="5877248419911025165">ሁሉንም ጥያቄዎች ይሰብስቡ</translation>
 <translation id="5884085660368669834">የጣቢያ ምርጫ</translation>
 <translation id="5887687176710214216">ለመጨረሻ ጊዜ የተጎበኘው ትላንትና</translation>
 <translation id="5916664084637901428">በርቷል</translation>
@@ -306,6 +307,7 @@
 <translation id="6064125863973209585">የተጠናቀቁ ማውረዶች</translation>
 <translation id="6071501408666570960">ከዚህ ጣቢያ ዘግተው እንዲወጡ ሊደረጉ ይችላሉ</translation>
 <translation id="6120483543004435978">ሲበራ፣ ጣቢያዎች መሳሪያዎን በንቃት ሲጠቀሙ ለማወቅ መጠየቅ ይችላሉ። ሲጠፋ፣ ጣቢያዎች መሳሪያዎን በንቃት ሲጠቀሙ ማወቅ አይችሉም።</translation>
+<translation id="6140839633433422817">እርግጠኛ ነዎት ፈቃዶችን ዳግም ማስጀመር እና ኩኪዎችን እና የጣቢያ ውሂብን መሰረዝ ይፈልጋሉ?</translation>
 <translation id="6165508094623778733">የበለጠ ለመረዳት</translation>
 <translation id="6171020522141473435">ሲበራ፣ ጣቢያዎች የብሉቱዝ መሳሪያዎችን ለመጠቀም መጠየቅ ይችላሉ። ሲጠፋ፣ ጣቢያዎች የብሉቱዝ መሳሪያዎችን መጠቀም አይችሉም።</translation>
 <translation id="6177111841848151710">ለአሁኑ የፍለጋ ፕሮግራም ታግዷል</translation>
@@ -345,6 +347,7 @@
 <translation id="6612358246767739896">ጥበቃ የሚደረግለት ይዘት</translation>
 <translation id="662080504995468778">ቆይ</translation>
 <translation id="6653342741369270081">ከሙሉ ማያ ገጽ ለመውጣት የተመለስ አዝራሩን ይጫኑ።</translation>
+<translation id="6670377348676659110">{TILE_COUNT,plural, =1{በዚህ ትር ቀጥልን ደብቅ}one{በዚህ ትር ቀጥልን ደብቅ}other{በእነዚህ ትሮች ቀጥልን ደብቅ}}</translation>
 <translation id="6689172468748959065">የመገለጫ ፎቶዎች</translation>
 <translation id="6697925417670533197">ንቁ ውርዶች</translation>
 <translation id="6722828510648505498">የመግቢያ መጠይቆችን ከማንነት አገልግሎቶች ያግዱ።</translation>
@@ -398,7 +401,6 @@
 <translation id="7561196759112975576">ሁልጊዜ</translation>
 <translation id="757524316907819857">ጣቢያዎች ጥበቃ የሚደረግለትን ይዘት እንዳያጫውቱ ያግዱ</translation>
 <translation id="7594634374516752650">ከብሉቱዝ መሣሪያ ጋር ተገናኝቷል</translation>
-<translation id="7641339528570811325">የአሰሳ ውሂብን አጽዳ…</translation>
 <translation id="7649070708921625228">እገዛ</translation>
 <translation id="7658239707568436148">ይቅር</translation>
 <translation id="7667547420449112975">አስደናቂው የኦዝ ምትሃተኛ</translation>
@@ -456,7 +458,6 @@
 <translation id="8441146129660941386">ወደኋላ ፈልግ</translation>
 <translation id="8444433999583714703"><ph name="APP_NAME" /> የእርስዎን መገኛ አካባቢ እንዲደርስበት ለማድረግ፣ በተጨማሪ በ <ph name="BEGIN_LINK" />Android ቅንብሮች<ph name="END_LINK" /> ውስጥ መገኛ አካባቢን ያብሩ።</translation>
 <translation id="8447861592752582886">የመሣሪያ ፈቃድ ሻር</translation>
-<translation id="8451050538944905715">{NUM_SELECTED,plural, =1{በጥቅም ላይ ያለ 1 ኩኪ}one{# ጥቅም ላይ የዋሉ ኩኪዎች}other{# ጥቅም ላይ የዋሉ ኩኪዎች}}</translation>
 <translation id="8487700953926739672">ከመስመር ውጭ ይገኛል</translation>
 <translation id="848952951823693243">ሁልጊዜ የሞባይል ጣቢያን ጠይቅ</translation>
 <translation id="8499083585497694743">የማይክሮፎን ድምፀ-ከል አንሳ</translation>
@@ -484,7 +485,6 @@
 <translation id="8803526663383843427">ሲበራ</translation>
 <translation id="8805385115381080995">አንድ ጣቢያ እርስዎ እውነተኛ ሰው መሆንዎን እንዲያረጋግጡ ሊጠይቅዎ የሚችልበት ዕድል አነስተኛ ስለሆነ ማሰስ ፈጣን ነው</translation>
 <translation id="8816026460808729765">ጣቢያዎች ዳሳሾችን እንዳይደርሱ ያግዱ</translation>
-<translation id="8843699287283948910">ትሮችን ከሌሎች መሳሪያዎች ደብቅ</translation>
 <translation id="8847988622838149491">ዩ ኤስ ቢ</translation>
 <translation id="8874790741333031443">በጊዜያዊነት የሦስተኛ ወገን ኩኪዎችን ለመፍቀድ ይሞክሩ፣ ይህ ማለት ያነሰ የአሰሳ ጥበቃ ነው ነገር ግን የጣቢያ ባህሪያት እንደተጠበቀው የመሥራት ዕድላቸው ከፍተኛ ነው።</translation>
 <translation id="8889294078294184559">ማሰስዎን ሲቀጥሉ እውነተኛ ሰው ሊሆኑ እንደሚችሉ ጣቢያዎች በChrome መፈተሽ እና እርስዎ ከዚህ ቀደም በጎበኙት ጣቢያ ላይ ማረጋገጥ ይችላሉ</translation>
@@ -497,6 +497,7 @@
 <translation id="8959122750345127698">ዳሰሳ ሊደረስበት አይችልም፦ <ph name="URL" /></translation>
 <translation id="8986362086234534611">እርሳ</translation>
 <translation id="8990043154272859344">ከሁሉም ጣቢያዎች ዘግተው እንዲወጡ ይደረጋሉ</translation>
+<translation id="8993853206419610596">ሁሉንም ጥያቄዎች አስወግድ</translation>
 <translation id="9002538116239926534">ሲበራ፣ ጣቢያዎች በመሣሪያዎ ላይ ውሂብ ማስቀመጥ ይችላሉ። ሲጠፋ፣ ጣቢያዎች በመሣሪያዎ ላይ ውሂብ ማስቀመጥ አይችሉም።</translation>
 <translation id="9011903857143958461"><ph name="SITE_NAME" /> ተፈቅዷል</translation>
 <translation id="9019902583201351841">በእርስዎ ወላጆች የሚቀናበር</translation>

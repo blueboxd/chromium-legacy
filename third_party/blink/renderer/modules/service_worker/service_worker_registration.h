@@ -42,7 +42,7 @@ class ServiceWorkerRegistration final
   using IDLType = ServiceWorkerRegistration;
   using WebType = WebServiceWorkerRegistrationObjectInfo;
   static ServiceWorkerRegistration* Take(
-      ScriptPromiseResolver*,
+      ScriptPromiseResolverBase*,
       WebServiceWorkerRegistrationObjectInfo);
 
   ServiceWorkerRegistration(ExecutionContext*,
@@ -79,15 +79,17 @@ class ServiceWorkerRegistration final
 
   int64_t RegistrationId() const { return registration_id_; }
 
-  void EnableNavigationPreload(bool enable, ScriptPromiseResolver* resolver);
+  void EnableNavigationPreload(bool enable,
+                               ScriptPromiseResolver<IDLUndefined>* resolver);
   void GetNavigationPreloadState(
-      ScriptPromiseResolverTyped<NavigationPreloadState>* resolver);
-  void SetNavigationPreloadHeader(const String& value,
-                                  ScriptPromiseResolver* resolver);
+      ScriptPromiseResolver<NavigationPreloadState>* resolver);
+  void SetNavigationPreloadHeader(
+      const String& value,
+      ScriptPromiseResolver<IDLUndefined>* resolver);
 
-  ScriptPromiseTyped<ServiceWorkerRegistration> update(ScriptState*,
-                                                       ExceptionState&);
-  ScriptPromiseTyped<IDLBoolean> unregister(ScriptState*, ExceptionState&);
+  ScriptPromise<ServiceWorkerRegistration> update(ScriptState*,
+                                                  ExceptionState&);
+  ScriptPromise<IDLBoolean> unregister(ScriptState*, ExceptionState&);
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(updatefound, kUpdatefound)
 
@@ -113,8 +115,8 @@ class ServiceWorkerRegistration final
 
   void UpdateInternal(
       mojom::blink::FetchClientSettingsObjectPtr mojom_settings_object,
-      ScriptPromiseResolverTyped<ServiceWorkerRegistration>* resolver);
-  void UnregisterInternal(ScriptPromiseResolverTyped<IDLBoolean>* resolver);
+      ScriptPromiseResolver<ServiceWorkerRegistration>* resolver);
+  void UnregisterInternal(ScriptPromiseResolver<IDLBoolean>* resolver);
 
   Member<ServiceWorker> installing_;
   Member<ServiceWorker> waiting_;
@@ -154,7 +156,7 @@ class ServiceWorkerRegistrationArray {
   using IDLType = IDLSequence<ServiceWorkerRegistration>;
   using WebType = WebVector<WebServiceWorkerRegistrationObjectInfo>;
   static HeapVector<Member<ServiceWorkerRegistration>> Take(
-      ScriptPromiseResolver* resolver,
+      ScriptPromiseResolverBase* resolver,
       WebType web_service_worker_registrations) {
     HeapVector<Member<ServiceWorkerRegistration>> registrations;
     for (auto& registration : web_service_worker_registrations) {

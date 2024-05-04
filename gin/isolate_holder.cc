@@ -107,7 +107,7 @@ IsolateHolder::IsolateHolder(
   isolate_data_ = std::make_unique<PerIsolateData>(
       isolate_, allocator, access_mode_, task_runner,
       std::move(low_priority_task_runner));
-  //  TODO(https://crbug.com/1347092): Refactor such that caller need not
+  //  TODO(crbug.com/40854483): Refactor such that caller need not
   //  provide params when creating a snapshot.
   if (isolate_creation_mode == IsolateCreationMode::kCreateSnapshot) {
     // This branch is called when creating a V8 snapshot for Blink.
@@ -180,7 +180,6 @@ IsolateHolder::getDefaultIsolateParams() {
   params->array_buffer_allocator = g_array_buffer_allocator;
   params->allow_atomics_wait = true;
   params->external_references = g_reference_table;
-  params->only_terminate_in_safe_scope = true;
   params->embedder_wrapper_type_index = kWrapperInfoIndex;
   params->embedder_wrapper_object_index = kEncodedValueIndex;
   params->fatal_error_callback = g_fatal_error_callback;

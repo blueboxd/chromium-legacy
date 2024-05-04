@@ -25,13 +25,14 @@ build_webui("build") {
     "//ui/webui/resources/mojo:build_ts",
   ]
 
+  webui_context_type = "trusted"
+
   attribution_reporting_component_folder = "components/attribution_reporting"
   attribution_reporting_content_folder = "content/browser/attribution_reporting"
   network_folder = "services/network/public/mojom"
 
   mojo_files = [
     "$root_gen_dir/$attribution_reporting_component_folder/registration.mojom-webui.ts",
-    "$root_gen_dir/$attribution_reporting_component_folder/registration_header_type.mojom-webui.ts",
     "$root_gen_dir/$attribution_reporting_component_folder/source_registration_time_config.mojom-webui.ts",
     "$root_gen_dir/$attribution_reporting_component_folder/source_type.mojom-webui.ts",
     "$root_gen_dir/$attribution_reporting_component_folder/trigger_data_matching.mojom-webui.ts",

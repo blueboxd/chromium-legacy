@@ -56,6 +56,7 @@ bool ShouldRequestEarlyExit(const SyncProtocolError& error) {
     case THROTTLED:
     case TRANSIENT_ERROR:
     case PARTIAL_FAILURE:
+    case UNKNOWN_ERROR:
       return false;
     case NOT_MY_BIRTHDAY:
     case CLIENT_DATA_OBSOLETE:
@@ -67,11 +68,6 @@ bool ShouldRequestEarlyExit(const SyncProtocolError& error) {
       // waiting forever. So assert we would send something.
       DCHECK_NE(error.action, UNKNOWN_ACTION);
       return true;
-    case UNKNOWN_ERROR:
-      // TODO(crbug.com/1081266): This NOTREACHED is questionable because the
-      // sync server can cause it.
-      NOTREACHED();
-      return false;
     case CONFLICT:
     case INVALID_MESSAGE:
       NOTREACHED();
@@ -248,7 +244,7 @@ void SyncSchedulerImpl::ScheduleConfiguration(
   DCHECK(!pending_configure_params_);
 
   // Only reconfigure if we have types to download.
-  if (!types_to_download.Empty()) {
+  if (!types_to_download.empty()) {
     // Cache configuration parameters since TrySyncCycleJob() posts a task.
     pending_configure_params_ = std::make_unique<ConfigurationParams>(
         origin, types_to_download, std::move(ready_task));
@@ -319,7 +315,7 @@ void SyncSchedulerImpl::ScheduleLocalNudge(ModelType type) {
 
 void SyncSchedulerImpl::ScheduleLocalRefreshRequest(ModelTypeSet types) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(!types.Empty());
+  DCHECK(!types.empty());
 
   SDVLOG(2) << "Scheduling sync because of local refresh request for "
             << ModelTypeSetToDebugString(types);

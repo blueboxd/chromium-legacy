@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 import type {CrToastManagerElement, DownloadsItemElement} from 'chrome://downloads/downloads.js';
-import {BrowserProxy, DangerType, IconLoaderImpl, loadTimeData, SafeBrowsingState, State} from 'chrome://downloads/downloads.js';
+import {BrowserProxy, DangerType, IconLoaderImpl, loadTimeData, SafeBrowsingState, State, TailoredWarningType} from 'chrome://downloads/downloads.js';
 import {stringToMojoString16, stringToMojoUrl} from 'chrome://resources/js/mojo_type_util.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {assertEquals, assertFalse, assertNotReached, assertTrue} from 'chrome://webui-test/chai_assert.js';
@@ -362,6 +362,65 @@ suite('item tests', function() {
                 'description-color'));
       });
 
+  test('description text overridden by tailored warning type', () => {
+    loadTimeData.overrideValues({improvedDownloadWarningsUX: true});
+    const item = document.createElement('downloads-item');
+    document.body.innerHTML = window.trustedTypes!.emptyHTML;
+    document.body.appendChild(item);
+
+    function assertDescriptionText(expected: string) {
+      assertEquals(
+          expected,
+          item.shadowRoot!.querySelector('.description:not([hidden])')!
+              .textContent!.trim());
+    }
+
+    // Suspicious archive
+    item.set('data', createDownload({
+               filePath: 'unique1',
+               hideDate: false,
+               state: State.kDangerous,
+               dangerType: DangerType.kUncommonContent,
+               tailoredWarningType: TailoredWarningType.kSuspiciousArchive,
+             }));
+    assertDescriptionText(
+        loadTimeData.getString('dangerUncommonSuspiciousArchiveDesc'));
+
+    // Cookie theft without account
+    item.set('data', createDownload({
+               filePath: 'unique1',
+               hideDate: false,
+               state: State.kDangerous,
+               dangerType: DangerType.kCookieTheft,
+               tailoredWarningType: TailoredWarningType.kCookieTheft,
+             }));
+    assertDescriptionText(loadTimeData.getString('dangerDownloadCookieTheft'));
+
+    // Cookie theft with account
+    item.set(
+        'data', createDownload({
+          filePath: 'unique1',
+          hideDate: false,
+          state: State.kDangerous,
+          dangerType: DangerType.kCookieTheft,
+          tailoredWarningType: TailoredWarningType.kCookieTheftWithAccountInfo,
+          accountEmail: 'alice@gmail.com',
+        }));
+    assertDescriptionText(loadTimeData.getStringF(
+        'dangerDownloadCookieTheftAndAccountDesc', 'alice@gmail.com'));
+
+    // Cookie theft with empty account
+    item.set(
+        'data', createDownload({
+          filePath: 'unique1',
+          hideDate: false,
+          state: State.kDangerous,
+          dangerType: DangerType.kCookieTheft,
+          tailoredWarningType: TailoredWarningType.kCookieTheftWithAccountInfo,
+        }));
+    assertDescriptionText(loadTimeData.getString('dangerDownloadCookieTheft'));
+  });
+
   test(
       'icon aria-hidden determined by display type for improvedDownloadWarningsUX',
       () => {
@@ -572,4 +631,46 @@ suite('item tests', function() {
     assertTrue(toastManager.slottedHidden);
     assertFalse(item.getMoreActionsMenu().open);
   });
+
+  // <if expr="_google_chrome">
+  test('ESBDownloadRowPromoShownAndClicked', async () => {
+    const item = document.createElement('downloads-item');
+    document.body.innerHTML = window.trustedTypes!.emptyHTML;
+    document.body.appendChild(item);
+    item.showEsbPromotion = true;
+    item.set('data', createDownload({
+               dangerType: DangerType.kDangerousFile,
+               fileExternallyRemoved: false,
+               hideDate: true,
+               state: State.kDangerous,
+               isDangerous: true,
+               url: stringToMojoUrl('http://evil.com'),
+             }));
+    flush();
+    const esbPromo =
+        item.shadowRoot!.querySelector<HTMLElement>('#esb-download-row-promo');
+    assertTrue(!!esbPromo);
+    assertTrue(isVisible(esbPromo));
+    esbPromo.click();
+    await testDownloadsProxy.handler.whenCalled('openEsbSettings');
+  });
+
+  test('ESBDownloadRowPromoNotShown', () => {
+    const item = document.createElement('downloads-item');
+    document.body.innerHTML = window.trustedTypes!.emptyHTML;
+    document.body.appendChild(item);
+    item.showEsbPromotion = false;
+    item.set('data', createDownload({
+               dangerType: DangerType.kDangerousFile,
+               fileExternallyRemoved: false,
+               hideDate: true,
+               state: State.kDangerous,
+               isDangerous: true,
+               url: stringToMojoUrl('http://evil.com'),
+             }));
+    flush();
+    const esbPromo = item.shadowRoot!.querySelector('#esb-download-row-promo');
+    assertFalse(isVisible(esbPromo));
+  });
+  // </if>
 });

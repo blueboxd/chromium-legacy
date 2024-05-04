@@ -139,6 +139,13 @@ interface GpuChannel {
   // GPU IO thread, which is never allowed to block.
   [Sync, NoInterrupt] Flush() => ();
 
+  // `version_buffer` is a handle to a shared memory region that only
+  // contains a single 64 bit atomic integer used as a flushed message id.
+  // The number is read from renderers and updated from the
+  // gpu process on FlushDeferredRequests.
+  [Sync] GetSharedMemoryForFlushId() =>
+    (mojo_base.mojom.ReadOnlySharedMemoryRegion? version_buffer);
+
   // Tells the GPU process to create a new command buffer. A corresponding
   // CommandBufferStub is created.  If `params` provides a non-null
   // SurfaceHandle, |size| is ignored and it will render directly to the native
@@ -164,7 +171,11 @@ interface GpuChannel {
                       uint64 decode_release_count);
 
   // Sends a batch of DeferredRequests to be executed by the service.
-  FlushDeferredRequests(array<DeferredRequest> requests);
+  // `flushed_deferred_message_id` is used to update the per-channel id of
+  // messages confirmed to be flushed that's read on the client side through
+  // shared memory obtained by GetSharedMemoryForFlushId().
+  FlushDeferredRequests(array<DeferredRequest> requests,
+      uint32 flushed_deferred_message_id);
 
   // Create a GpuMemoryBuffer on IO thread. Note that this needs to be a
   // blocking call on calling client's thread in order to return the
@@ -237,6 +248,15 @@ interface GpuChannel {
       handle<platform> service_handle, handle<platform> sysmem_token,
       gfx.mojom.BufferFormat format, gfx.mojom.BufferUsage usage,
       bool register_with_image_pipe);
+
+  // Updates the contents of the GpuMemoryBuffer associated with the shared
+  // image. Necessary on platforms like Windows where we use shared memory GMBs
+  // for readback from D3D texture shared images. The copy, if successful, is
+  // complete when the callback runs.
+  [EnableIf=is_win]
+  CopyToGpuMemoryBufferAsync(
+      Mailbox mailbox, array<SyncToken> sync_token_dependencies,
+      uint32 release_id) => (bool success);
 };
 
 // Interface used to issue commands to a specific CommandBuffer instance in the
@@ -349,7 +369,7 @@ interface DCOMPTexture {
   // pattern in `StreamTexture::StartListening()` to delay notifications until
   // the client side is ready.
   //
-  // TODO(crbug.com/999747): Investigate if we can remove this by having the
+  // TODO(crbug.com/40642952): Investigate if we can remove this by having the
   // `client` as a parameter to `CreateDCOMPTexture()`.
   StartListening(pending_associated_remote<DCOMPTextureClient> client);
 
@@ -641,6 +661,8 @@ struct AddReferenceToSharedImageParams {
 
 // Updates the contents of the GpuMemoryBuffer associated with the shared image.
 // Necessary on platforms like Windows where renderer cannot create native GMBs.
+// The command performs synchronization with the GPU so the copy is complete
+// after the command runs.
 [EnableIf=is_win]
 struct CopyToGpuMemoryBufferParams {
   // The mailbox identifying the shared image which should update its GMB.

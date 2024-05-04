@@ -70,7 +70,46 @@ NSString* kPageHTML = @"<html>"
 
 // Return the base menu depending on the environment.
 NSMutableArray* GetExpectedMenu() {
-  if (@available(iOS 17, *)) {
+  if (@available(iOS 17.4, *)) {
+    return [NSMutableArray arrayWithArray:@[
+      @"0:m:com.apple.menu.standard-edit",
+      @"1:c:cut:",
+      @"1:c:copy:",
+      @"1:c:paste:",
+      @"1:c:delete:",
+      @"1:c:select:",
+      @"1:c:selectAll:",
+      @"0:m:com.apple.menu.replace",
+      @"1:c:promptForReplace:",
+      @"1:c:transliterateChinese:",
+      @"1:c:_insertDrawing:",
+      @"1:m:com.apple.menu.autofill",
+      @"2:m:com.apple.menu.insert-from-external-sources",
+      @"2:c:captureTextFromCamera:",
+      @"0:m:com.apple.menu.open",
+      @"0:m:com.apple.menu.format",
+      @"1:m:com.apple.menu.text-style",
+      @"2:c:toggleBoldface:",
+      @"2:c:toggleItalics:",
+      @"2:c:toggleUnderline:",
+      @"1:m:com.apple.menu.writing-direction",
+      @"2:c:makeTextWritingDirectionRightToLeft:",
+      @"2:c:makeTextWritingDirectionLeftToRight:",
+      @"1:c:_showTextFormattingOptions:",
+      @"0:m:com.apple.menu.lookup",
+      @"1:c:findSelected:",
+      @"1:c:_define:",
+      @"1:c:_translate:",
+      @"0:m:com.apple.menu.learn",
+      @"1:c:addShortcut:",
+      @"0:m:com.apple.command.speech",
+      @"1:c:_accessibilitySpeak:",
+      @"1:c:_accessibilitySpeakLanguageSelection:",
+      @"1:c:_accessibilityPauseSpeaking:",
+      @"0:m:com.apple.menu.share",
+      @"1:c:share:"
+    ]];
+  } else if (@available(iOS 17, *)) {
     return [NSMutableArray arrayWithArray:@[
       @"0:m:com.apple.menu.standard-edit",
       @"1:c:cut:",
@@ -233,9 +272,7 @@ void AddLinkToText(NSMutableArray* menu) {
 class BrowserEditMenuHandlerTest : public PlatformTest {
  public:
   BrowserEditMenuHandlerTest()
-      : task_environment_(web::WebTaskEnvironment::Options::DEFAULT,
-                          base::test::TaskEnvironment::TimeSource::MOCK_TIME),
-        web_client_(std::make_unique<ChromeWebClient>()),
+      : web_client_(std::make_unique<ChromeWebClient>()),
         web_state_list_(&web_state_list_delegate_) {
     browser_state_ = TestChromeBrowserState::Builder().Build();
 
@@ -282,7 +319,8 @@ class BrowserEditMenuHandlerTest : public PlatformTest {
   }
 
  protected:
-  web::WebTaskEnvironment task_environment_;
+  web::WebTaskEnvironment task_environment_{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
   web::ScopedTestingWebClient web_client_;
   std::unique_ptr<TestChromeBrowserState> browser_state_;
   FakeWebStateListDelegate web_state_list_delegate_;

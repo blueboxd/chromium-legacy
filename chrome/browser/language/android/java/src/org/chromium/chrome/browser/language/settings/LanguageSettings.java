@@ -95,7 +95,7 @@ public class LanguageSettings extends ChromeBaseSettingsFragment
 
         ContentLanguagesPreference mLanguageListPref =
                 (ContentLanguagesPreference) findPreference(PREFERRED_LANGUAGES_KEY);
-        mLanguageListPref.initialize(this, getPrefService());
+        mLanguageListPref.initialize(this, getProfile(), getPrefService());
 
         ChromeSwitchPreference translateSwitch =
                 (ChromeSwitchPreference) findPreference(TRANSLATE_SWITCH_KEY);
@@ -143,7 +143,7 @@ public class LanguageSettings extends ChromeBaseSettingsFragment
 
         ContentLanguagesPreference mLanguageListPref =
                 (ContentLanguagesPreference) findPreference(CONTENT_LANGUAGES_KEY);
-        mLanguageListPref.initialize(this, getPrefService());
+        mLanguageListPref.initialize(this, getProfile(), getPrefService());
 
         setupTranslateSection(mLanguageListPref);
     }
@@ -158,7 +158,7 @@ public class LanguageSettings extends ChromeBaseSettingsFragment
 
         LanguageItemPickerPreference appLanguagePreference =
                 (LanguageItemPickerPreference) findPreference(APP_LANGUAGE_PREFERENCE_KEY);
-        appLanguagePreference.setLanguageItem(AppLocaleUtils.getAppLanguagePref());
+        appLanguagePreference.setLanguageItem(getProfile(), AppLocaleUtils.getAppLanguagePref());
         appLanguagePreference.useLanguageItemForTitle(true);
         setSelectLanguageLauncher(
                 appLanguagePreference,
@@ -166,14 +166,15 @@ public class LanguageSettings extends ChromeBaseSettingsFragment
                 REQUEST_CODE_CHANGE_APP_LANGUAGE,
                 LanguagesManager.LanguageSettingsPageType.CHANGE_CHROME_LANGUAGE);
 
-        mAppLanguageDelegate.setup(this, appLanguagePreference);
+        mAppLanguageDelegate.setup(this, appLanguagePreference, getProfile());
     }
 
     /**
-     * Setup the translate preferences section.  A switch preferences controls if translate is
+     * Setup the translate preferences section. A switch preferences controls if translate is
      * enabled/disabled and will hide all advanced settings when disabled.
+     *
      * @param contentLanguagesPreference ContentLanguagesPreference reference to update about state
-     *         changes.
+     *     changes.
      */
     private void setupTranslateSection(ContentLanguagesPreference contentLanguagesPreference) {
         // Setup expandable advanced settings section.
@@ -191,7 +192,8 @@ public class LanguageSettings extends ChromeBaseSettingsFragment
         // Setup target language preference.
         LanguageItemPickerPreference targetLanguagePreference =
                 (LanguageItemPickerPreference) findPreference(TARGET_LANGUAGE_KEY);
-        targetLanguagePreference.setLanguageItem(TranslateBridge.getTargetLanguageForChromium());
+        targetLanguagePreference.setLanguageItem(
+                getProfile(), TranslateBridge.getTargetLanguageForChromium(getProfile()));
         setSelectLanguageLauncher(
                 targetLanguagePreference,
                 LanguagesManager.LanguageListType.TARGET_LANGUAGES,
@@ -201,14 +203,15 @@ public class LanguageSettings extends ChromeBaseSettingsFragment
                 Pref.PREF_TRANSLATE_RECENT_TARGET,
                 () -> {
                     targetLanguagePreference.setLanguageItem(
-                            TranslateBridge.getTargetLanguageForChromium());
+                            getProfile(),
+                            TranslateBridge.getTargetLanguageForChromium(getProfile()));
                 });
 
         // Setup always translate preference.
         LanguageItemListPreference alwaysTranslatePreference =
                 (LanguageItemListPreference) findPreference(ALWAYS_LANGUAGES_KEY);
         alwaysTranslatePreference.setFragmentListDelegate(
-                new AlwaysTranslateListFragment.ListDelegate());
+                new AlwaysTranslateListFragment.ListDelegate(getProfile()));
         mPrefChangeRegistrar.addObserver(
                 Pref.PREF_ALWAYS_TRANSLATE_LIST, alwaysTranslatePreference);
         setLanguageListPreferenceClickListener(alwaysTranslatePreference);
@@ -217,7 +220,7 @@ public class LanguageSettings extends ChromeBaseSettingsFragment
         LanguageItemListPreference neverTranslatePreference =
                 (LanguageItemListPreference) findPreference(NEVER_LANGUAGES_KEY);
         neverTranslatePreference.setFragmentListDelegate(
-                new NeverTranslateListFragment.ListDelegate());
+                new NeverTranslateListFragment.ListDelegate(getProfile()));
         mPrefChangeRegistrar.addObserver(Pref.BLOCKED_LANGUAGES, neverTranslatePreference);
         setLanguageListPreferenceClickListener(neverTranslatePreference);
 
@@ -273,7 +276,7 @@ public class LanguageSettings extends ChromeBaseSettingsFragment
 
         String code = data.getStringExtra(SelectLanguageFragment.INTENT_SELECTED_LANGUAGE);
         if (requestCode == REQUEST_CODE_ADD_ACCEPT_LANGUAGE) {
-            LanguagesManager.getInstance().addToAcceptLanguages(code);
+            LanguagesManager.getForProfile(getProfile()).addToAcceptLanguages(code);
             LanguagesManager.recordAction(
                     LanguagesManager.LanguageSettingsActionType.LANGUAGE_ADDED);
         } else if (requestCode == REQUEST_CODE_CHANGE_APP_LANGUAGE) {
@@ -288,12 +291,12 @@ public class LanguageSettings extends ChromeBaseSettingsFragment
                                 .getLanguage();
             }
             // Set the default target language to match the new app language.
-            TranslateBridge.setDefaultTargetLanguage(code);
+            TranslateBridge.setDefaultTargetLanguage(getProfile(), code);
         } else if (requestCode == REQUEST_CODE_CHANGE_TARGET_LANGUAGE) {
             LanguageItemPickerPreference targetLanguagePreference =
                     (LanguageItemPickerPreference) findPreference(TARGET_LANGUAGE_KEY);
-            targetLanguagePreference.setLanguageItem(code);
-            TranslateBridge.setDefaultTargetLanguage(code);
+            targetLanguagePreference.setLanguageItem(getProfile(), code);
+            TranslateBridge.setDefaultTargetLanguage(getProfile(), code);
             LanguagesManager.recordAction(
                     LanguagesManager.LanguageSettingsActionType.CHANGE_TARGET_LANGUAGE);
         }

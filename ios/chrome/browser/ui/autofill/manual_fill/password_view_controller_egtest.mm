@@ -9,17 +9,19 @@
 #import "components/password_manager/core/browser/password_ui_utils.h"
 #import "components/password_manager/core/common/password_manager_features.h"
 #import "components/strings/grit/components_strings.h"
-#import "components/sync/base/features.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/signin/model/fake_system_identity.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui_test_util.h"
 #import "ios/chrome/browser/ui/autofill/autofill_app_interface.h"
+#import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_constants.h"
+#import "ios/chrome/browser/ui/passwords/bottom_sheet/password_suggestion_bottom_sheet_app_interface.h"
 #import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_constants.h"
 #import "ios/chrome/browser/ui/settings/password/password_manager_egtest_utils.h"
 #import "ios/chrome/browser/ui/settings/password/password_manager_ui_features.h"
 #import "ios/chrome/browser/ui/settings/password/password_settings_app_interface.h"
 #import "ios/chrome/browser/ui/settings/password/passwords_table_view_constants.h"
+#import "ios/chrome/common/ui/elements/form_input_accessory_view.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_actions.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
@@ -91,15 +93,50 @@ id<GREYMatcher> CancelUsingOtherPasswordButton() {
                     grey_interactable(), nullptr);
 }
 
+// Matcher for the expanded password manual fill view button.
+id<GREYMatcher> PasswordManualFillViewButton() {
+  return grey_allOf(grey_accessibilityLabel(l10n_util::GetNSString(
+                        IDS_IOS_AUTOFILL_PASSWORD_AUTOFILL_DATA)),
+                    grey_ancestor(grey_accessibilityID(
+                        kFormInputAccessoryViewAccessibilityID)),
+                    nil);
+}
+
+// Matcher for the overflow menu button shown in the password cells.
+id<GREYMatcher> OverflowMenuButton() {
+  return grey_allOf(
+      ButtonWithAccessibilityLabelId(
+          IDS_IOS_MANUAL_FALLBACK_THREE_DOT_MENU_BUTTON_ACCESSIBILITY_LABEL),
+      grey_interactable(), nullptr);
+}
+
+// Matcher for the "Edit" action made available by the overflow menu button.
+id<GREYMatcher> OverflowMenuEditAction() {
+  return grey_allOf(ButtonWithAccessibilityLabelId(IDS_IOS_EDIT_ACTION_TITLE),
+                    grey_interactable(), nullptr);
+}
+
+// Matcher for the "Autofill Form" button shown in the password cells.
+id<GREYMatcher> AutofillFormButton() {
+  return grey_allOf(ButtonWithAccessibilityLabelId(
+                        IDS_IOS_MANUAL_FALLBACK_AUTOFILL_FORM_BUTTON_TITLE),
+                    grey_interactable(), nullptr);
+}
+
 // Opens the password manual fill view and verifies that the password view
 // controller is visible afterwards.
-void OpenPasswordManualFillView() {
+void OpenPasswordManualFillView(bool has_suggestions) {
   id<GREYMatcher> button_to_tap;
   if ([AutofillAppInterface isKeyboardAccessoryUpgradeEnabled]) {
-    button_to_tap = grey_accessibilityLabel(
-        l10n_util::GetNSString(IDS_IOS_AUTOFILL_ACCNAME_AUTOFILL_DATA));
+    button_to_tap = has_suggestions
+                        ? grey_accessibilityLabel(l10n_util::GetNSString(
+                              IDS_IOS_AUTOFILL_ACCNAME_AUTOFILL_DATA))
+                        : PasswordManualFillViewButton();
   } else {
     button_to_tap = ManualFallbackPasswordIconMatcher();
+    [[EarlGrey selectElementWithMatcher:
+                   chrome_test_util::ManualFallbackFormSuggestionViewMatcher()]
+        performAction:grey_scrollToContentEdge(kGREYContentEdgeRight)];
   }
 
   // Tap the button that'll open the password manual fill view.
@@ -121,7 +158,7 @@ void CheckPasswordManagerUIDismissesAfterFailedAuthentication(
       performAction:TapWebElementWithId(kFormElementUsername)];
 
   // Open the password manual fill view.
-  OpenPasswordManualFillView();
+  OpenPasswordManualFillView(/*has_suggestions=*/false);
 
   // Simulate failed authentication.
   [PasswordSettingsAppInterface mockReauthenticationModuleExpectedResult:
@@ -156,6 +193,22 @@ void CheckPasswordFillingOptionIsVisible(NSString* site) {
 
   [[EarlGrey selectElementWithMatcher:ManualFallbackPasswordButtonMatcher()]
       assertWithMatcher:grey_sufficientlyVisible()];
+}
+
+// Verifies that the keyboard is up and not covered by the password manual fill
+// view.
+void CheckKeyboardIsUpAndNotCovered() {
+  // Verify the keyboard is not covered by the profiles view.
+  // TODO(crbug.com/332956674): Remove version check once fixed.
+  if (@available(iOS 17.4, *)) {
+    // Skip verification.
+  } else {
+    GREYAssertTrue([EarlGrey isKeyboardShownWithError:nil],
+                   @"Keyboard should be shown");
+  }
+
+  [[EarlGrey selectElementWithMatcher:ManualFallbackPasswordTableViewMatcher()]
+      assertWithMatcher:grey_notVisible()];
 }
 
 }  // namespace
@@ -198,26 +251,6 @@ void CheckPasswordFillingOptionIsVisible(NSString* site) {
 - (AppLaunchConfiguration)appConfigurationForTestCase {
   AppLaunchConfiguration config;
 
-  if ([self
-          isRunningTest:@selector
-          (testPasswordGenerationOnManualFallbackSignedInNotSyncingAccount)] ||
-      [self isRunningTest:@selector
-            (testPasswordGenerationFallbackSignedInNotSyncingPasswordsDisabled
-                )] ||
-      [self
-          isRunningTest:@selector
-          (testPasswordGenerationFallbackSignedInNotSyncingEncryptionError)]) {
-    config.features_enabled.push_back(
-        syncer::kReplaceSyncPromosWithSignInPromos);
-  }
-  if ([self isRunningTest:@selector
-            (testPasswordControllerSupportsIFrameMessaging)] ||
-      [self isRunningTest:@selector
-            (testPasswordControllerPresentsUnsecureAlert)]) {
-    config.features_disabled.push_back(
-        password_manager::features::kIOSPasswordBottomSheet);
-  }
-
   if ([self shouldEnableKeyboardAccessoryUpgradeFeature]) {
     config.features_enabled.push_back(kIOSKeyboardAccessoryUpgrade);
   } else {
@@ -237,19 +270,12 @@ void CheckPasswordFillingOptionIsVisible(NSString* site) {
 
 // Opens the "Other Passwords" screen.
 - (void)openOtherPasswords {
-  // TODO(crbug.com/326405006): Adapt test once the "Select Password..." action
-  // works with the Keyboard Accessory Upgrade feature.
-  if ([AutofillAppInterface isKeyboardAccessoryUpgradeEnabled]) {
-    EARL_GREY_TEST_SKIPPED(@"The Select Password... action does not yet work "
-                           @"with the Keyboard Accessory Upgrade feature.");
-  }
-
   // Bring up the keyboard.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
       performAction:TapWebElementWithId(kFormElementUsername)];
 
   // Open the password manual fill view.
-  OpenPasswordManualFillView();
+  OpenPasswordManualFillView(/*has_suggestions=*/false);
 
   // Tap the "Select Password..." action.
   [[EarlGrey selectElementWithMatcher:ManualFallbackOtherPasswordsMatcher()]
@@ -277,13 +303,13 @@ void CheckPasswordFillingOptionIsVisible(NSString* site) {
 
   // Open the password manual fill view and verify that the password controller
   // table view is visible.
-  OpenPasswordManualFillView();
+  OpenPasswordManualFillView(/*has_suggestions=*/false);
 }
 
 // Tests that the passwords view controller contains the "Manage Passwords..."
 // and "Manage Settings..." actions.
 - (void)testPasswordsViewControllerContainsManageActions {
-  // TODO(crbug.com/1352059): Re-enable when flake fixed.
+  // TODO(crbug.com/40857537): Re-enable when flake fixed.
   if ([ChromeEarlGrey isIPadIdiom]) {
     EARL_GREY_TEST_DISABLED(@"Test flaky failing on iPad.")
   }
@@ -293,7 +319,7 @@ void CheckPasswordFillingOptionIsVisible(NSString* site) {
       performAction:TapWebElementWithId(kFormElementUsername)];
 
   // Open the password manual fill view.
-  OpenPasswordManualFillView();
+  OpenPasswordManualFillView(/*has_suggestions=*/false);
 
   // Verify the password controller contains the "Manage Passwords..." action.
   [[EarlGrey selectElementWithMatcher:ManualFallbackManagePasswordsMatcher()]
@@ -306,25 +332,18 @@ void CheckPasswordFillingOptionIsVisible(NSString* site) {
 
 // Tests that the "Manage Passwords..." action works.
 - (void)testManagePasswordsActionOpensPasswordManager {
-  // TODO(crbug.com/326405046): Adapt test once the "Manage Passwords..." action
-  // works with the Keyboard Accessory Upgrade feature.
-  if ([AutofillAppInterface isKeyboardAccessoryUpgradeEnabled]) {
-    EARL_GREY_TEST_SKIPPED(@"The Manage Passwords... action does not yet work "
-                           @"with the Keyboard Accessory Upgrade feature.");
-  }
-
   // Bring up the keyboard.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
       performAction:TapWebElementWithId(kFormElementUsername)];
 
   // Open the password manual fill view.
-  OpenPasswordManualFillView();
+  OpenPasswordManualFillView(/*has_suggestions=*/false);
 
   // Tap the "Manage Passwords..." action.
   [[EarlGrey selectElementWithMatcher:ManualFallbackManagePasswordsMatcher()]
       performAction:grey_tap()];
 
-  // Verify the password settings opened.
+  // Verify that the Password Manager opened.
   // Changed minimum visible percentage to 70% for Passwords table view in
   // settings because subviews cover > 25% in smaller screens(eg. iPhone 6s).
   [[EarlGrey
@@ -335,32 +354,21 @@ void CheckPasswordFillingOptionIsVisible(NSString* site) {
 // Tests that the Password Manager is dismissed when local authentication fails
 // after tapping "Manage Passwords...".
 - (void)testManagePasswordsActionWithFailedAuthDismissesPasswordManager {
-  // TODO(crbug.com/326405046): Adapt test once the "Manage Passwords..." action
-  // works with the Keyboard Accessory Upgrade feature.
-  if ([AutofillAppInterface isKeyboardAccessoryUpgradeEnabled]) {
-    EARL_GREY_TEST_SKIPPED(@"The Manage Passwords... action does not yet work "
-                           @"with the Keyboard Accessory Upgrade feature.");
-  }
-
   CheckPasswordManagerUIDismissesAfterFailedAuthentication(
       ManualFallbackManagePasswordsMatcher());
+
+  // The keyboard should be visible.
+  CheckKeyboardIsUpAndNotCovered();
 }
 
 // Tests that the "Manage Settings..." action works.
 - (void)testManageSettingsActionOpensPasswordSettings {
-  // TODO(crbug.com/326405262): Adapt test once the "Manage Settings..." action
-  // works with the Keyboard Accessory Upgrade feature.
-  if ([AutofillAppInterface isKeyboardAccessoryUpgradeEnabled]) {
-    EARL_GREY_TEST_SKIPPED(@"The Manage Settings... action does not yet work "
-                           @"with the Keyboard Accessory Upgrade feature.");
-  }
-
   // Bring up the keyboard.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
       performAction:TapWebElementWithId(kFormElementUsername)];
 
   // Open the password manual fill view.
-  OpenPasswordManualFillView();
+  OpenPasswordManualFillView(/*has_suggestions=*/false);
 
   // Tap the "Manage Passwords..." action.
   [[EarlGrey selectElementWithMatcher:ManualFallbackManageSettingsMatcher()]
@@ -376,26 +384,15 @@ void CheckPasswordFillingOptionIsVisible(NSString* site) {
 // Tests that Password Settings is dismissed when local authentication fails
 // after tapping "Manage Settings...".
 - (void)testManageSettingsActionWithFailedAuthDismissesPasswordSettings {
-  // TODO(crbug.com/326405262): Adapt test once the "Manage Settings..." action
-  // works with the Keyboard Accessory Upgrade feature.
-  if ([AutofillAppInterface isKeyboardAccessoryUpgradeEnabled]) {
-    EARL_GREY_TEST_SKIPPED(@"The Manage Settings... action does not yet work "
-                           @"with the Keyboard Accessory Upgrade feature.");
-  }
-
   CheckPasswordManagerUIDismissesAfterFailedAuthentication(
       ManualFallbackManageSettingsMatcher());
+
+  // The keyboard should be visible.
+  CheckKeyboardIsUpAndNotCovered();
 }
 
 // Tests that the "Manage Passwords..." action works in incognito mode.
 - (void)testManagePasswordsActionOpensPasswordSettingsInIncognito {
-  // TODO(crbug.com/326405046): Adapt test once the "Manage Passwords..." action
-  // works with the Keyboard Accessory Upgrade feature.
-  if ([AutofillAppInterface isKeyboardAccessoryUpgradeEnabled]) {
-    EARL_GREY_TEST_SKIPPED(@"The Manage Passwords... action does not yet work "
-                           @"with the Keyboard Accessory Upgrade feature.");
-  }
-
   // Open a tab in incognito.
   [ChromeEarlGrey openNewIncognitoTab];
   [self loadLoginPage];
@@ -405,13 +402,13 @@ void CheckPasswordFillingOptionIsVisible(NSString* site) {
       performAction:TapWebElementWithId(kFormElementUsername)];
 
   // Open the password manual fill view.
-  OpenPasswordManualFillView();
+  OpenPasswordManualFillView(/*has_suggestions=*/false);
 
   // Tap the "Manage Passwords..." action.
   [[EarlGrey selectElementWithMatcher:ManualFallbackManagePasswordsMatcher()]
       performAction:grey_tap()];
 
-  // Verify the password settings opened.
+  // Verify that the Password Manager opened.
   // Changed minimum visible percentage to 70% for Passwords table view in
   // settings because subviews cover > 25% in smaller screens(eg. iPhone 6s).
   [[EarlGrey
@@ -421,13 +418,6 @@ void CheckPasswordFillingOptionIsVisible(NSString* site) {
 
 // Tests that the "Manage Settings..." action works in incognito mode.
 - (void)testManageSettingsActionOpensPasswordSettingsInIncognito {
-  // TODO(crbug.com/326405262): Adapt test once the "Manage Settings..." action
-  // works with the Keyboard Accessory Upgrade feature.
-  if ([AutofillAppInterface isKeyboardAccessoryUpgradeEnabled]) {
-    EARL_GREY_TEST_SKIPPED(@"The Manage Settings... action does not yet work "
-                           @"with the Keyboard Accessory Upgrade feature.");
-  }
-
   // Open a tab in incognito.
   [ChromeEarlGrey openNewIncognitoTab];
   [self loadLoginPage];
@@ -437,7 +427,7 @@ void CheckPasswordFillingOptionIsVisible(NSString* site) {
       performAction:TapWebElementWithId(kFormElementUsername)];
 
   // Open the password manual fill view.
-  OpenPasswordManualFillView();
+  OpenPasswordManualFillView(/*has_suggestions=*/false);
 
   // Tap the "Manage Settings..." action.
   [[EarlGrey selectElementWithMatcher:ManualFallbackManageSettingsMatcher()]
@@ -452,13 +442,6 @@ void CheckPasswordFillingOptionIsVisible(NSString* site) {
 
 // Tests that the "Select Password..." action works in incognito mode.
 - (void)testSelectPasswordActionInIncognito {
-  // TODO(crbug.com/326405006): Adapt test once the "Select Password..." action
-  // works with the Keyboard Accessory Upgrade feature.
-  if ([AutofillAppInterface isKeyboardAccessoryUpgradeEnabled]) {
-    EARL_GREY_TEST_SKIPPED(@"The Select Password... action does not yet work "
-                           @"with the Keyboard Accessory Upgrade feature.");
-  }
-
   // Open a tab in incognito.
   [ChromeEarlGrey openNewIncognitoTab];
   [self loadLoginPage];
@@ -473,23 +456,20 @@ void CheckPasswordFillingOptionIsVisible(NSString* site) {
 // Tests that returning from "Manage Settings..." leaves the keyboard and the
 // icons in the right state.
 - (void)testPasswordsStateAfterPresentingManageSettings {
-  // TODO(crbug.com/326405262): Adapt test once the "Manage Settings..." action
-  // works with the Keyboard Accessory Upgrade feature.
-  if ([AutofillAppInterface isKeyboardAccessoryUpgradeEnabled]) {
-    EARL_GREY_TEST_SKIPPED(@"The Manage Settings... action does not yet work "
-                           @"with the Keyboard Accessory Upgrade feature.");
-  }
-
   // Bring up the keyboard.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
       performAction:TapWebElementWithId(kFormElementUsername)];
 
   // Open the password manual fill view.
-  OpenPasswordManualFillView();
+  OpenPasswordManualFillView(/*has_suggestions=*/false);
 
-  // Verify the status of the icon.
-  [[EarlGrey selectElementWithMatcher:ManualFallbackPasswordIconMatcher()]
-      assertWithMatcher:grey_not(grey_userInteractionEnabled())];
+  // Icons are not present when the Keyboard Accessory Upgrade feature is
+  // enabled.
+  if (![AutofillAppInterface isKeyboardAccessoryUpgradeEnabled]) {
+    // Verify the status of the icon.
+    [[EarlGrey selectElementWithMatcher:ManualFallbackPasswordIconMatcher()]
+        assertWithMatcher:grey_not(grey_userInteractionEnabled())];
+  }
 
   // Tap the "Manage Passwords..." action.
   [[EarlGrey selectElementWithMatcher:ManualFallbackManageSettingsMatcher()]
@@ -503,28 +483,30 @@ void CheckPasswordFillingOptionIsVisible(NSString* site) {
   [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
       performAction:grey_tap()];
 
-  // Verify the status of the icons.
-  [[EarlGrey selectElementWithMatcher:ManualFallbackPasswordIconMatcher()]
-      assertWithMatcher:grey_sufficientlyVisible()];
-  [[EarlGrey selectElementWithMatcher:ManualFallbackPasswordIconMatcher()]
-      assertWithMatcher:grey_userInteractionEnabled()];
-  [[EarlGrey selectElementWithMatcher:ManualFallbackKeyboardIconMatcher()]
-      assertWithMatcher:grey_not(grey_sufficientlyVisible())];
+  // TODO(crbug.com/332956674): Keyboard and keyboard accessory are not present
+  // on iOS 17.4+, remove version check once fixed.
+  if (@available(iOS 17.4, *)) {
+    // Skip verifications.
+  } else {
+    // Icons are not present when the Keyboard Accessory Upgrade feature is
+    // enabled.
+    if (![AutofillAppInterface isKeyboardAccessoryUpgradeEnabled]) {
+      // Verify the status of the icons.
+      [[EarlGrey selectElementWithMatcher:ManualFallbackPasswordIconMatcher()]
+          assertWithMatcher:grey_sufficientlyVisible()];
+      [[EarlGrey selectElementWithMatcher:ManualFallbackPasswordIconMatcher()]
+          assertWithMatcher:grey_userInteractionEnabled()];
+      [[EarlGrey selectElementWithMatcher:ManualFallbackKeyboardIconMatcher()]
+          assertWithMatcher:grey_not(grey_sufficientlyVisible())];
+    }
+  }
 
-  // Verify the keyboard is not cover by the password view.
-  [[EarlGrey selectElementWithMatcher:ManualFallbackPasswordTableViewMatcher()]
-      assertWithMatcher:grey_notVisible()];
+  // Verify that the keyboard is not covered by the password view.
+  CheckKeyboardIsUpAndNotCovered();
 }
 
 // Tests that the "Select Password..." action works.
-- (void)testUseOtherPasswordActionOpens {
-  // TODO(crbug.com/326405006): Adapt test once the "Select Password..." action
-  // works with the Keyboard Accessory Upgrade feature.
-  if ([AutofillAppInterface isKeyboardAccessoryUpgradeEnabled]) {
-    EARL_GREY_TEST_SKIPPED(@"The Select Password... action does not yet work "
-                           @"with the Keyboard Accessory Upgrade feature.");
-  }
-
+- (void)testSelectPasswordActionOpensOtherPasswordList {
   [self openOtherPasswords];
 
   [[EarlGrey
@@ -533,20 +515,13 @@ void CheckPasswordFillingOptionIsVisible(NSString* site) {
 }
 
 // Tests that the "Select Password..." screen won't open if canceled.
-- (void)testUseOtherPasswordActionCloses {
-  // TODO(crbug.com/326405006): Adapt test once the "Select Password..." action
-  // works with the Keyboard Accessory Upgrade feature.
-  if ([AutofillAppInterface isKeyboardAccessoryUpgradeEnabled]) {
-    EARL_GREY_TEST_SKIPPED(@"The Select Password... action does not yet work "
-                           @"with the Keyboard Accessory Upgrade feature.");
-  }
-
+- (void)testCancellingSelectPasswordAction {
   // Bring up the keyboard.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
       performAction:TapWebElementWithId(kFormElementUsername)];
 
   // Open the password manual fill view.
-  OpenPasswordManualFillView();
+  OpenPasswordManualFillView(/*has_suggestions=*/false);
 
   // Tap the "Select Password..." action.
   [[EarlGrey selectElementWithMatcher:ManualFallbackOtherPasswordsMatcher()]
@@ -556,20 +531,14 @@ void CheckPasswordFillingOptionIsVisible(NSString* site) {
   [[EarlGrey selectElementWithMatcher:CancelUsingOtherPasswordButton()]
       performAction:grey_tap()];
 
-  // Verify the use other passwords not opened.
+  // Verify that the other password list is not opened.
   [[EarlGrey
       selectElementWithMatcher:ManualFallbackOtherPasswordsDismissMatcher()]
       assertWithMatcher:grey_nil()];
 }
 
-- (void)testCloseOtherPasswordsViaSwipeDown {
-  // TODO(crbug.com/326405006): Adapt test once the "Select Password..." action
-  // works with the Keyboard Accessory Upgrade feature.
-  if ([AutofillAppInterface isKeyboardAccessoryUpgradeEnabled]) {
-    EARL_GREY_TEST_SKIPPED(@"The Select Password... action does not yet work "
-                           @"with the Keyboard Accessory Upgrade feature.");
-  }
-
+// Tests that the other password list can be dismissed with a swipe down.
+- (void)testClosingOtherPasswordListViaSwipeDown {
   [self openOtherPasswords];
 
   [[EarlGrey
@@ -593,16 +562,41 @@ void CheckPasswordFillingOptionIsVisible(NSString* site) {
       assertWithMatcher:grey_sufficientlyVisible()];
 }
 
-// Tests that the "Select Password..." UI is dismissed after failed local
-// authentication.
-- (void)testUseOtherPasswordUIDismissedAfterFailedAuth {
-  // TODO(crbug.com/326405006): Adapt test once the "Select Password..." action
-  // works with the Keyboard Accessory Upgrade feature.
-  if ([AutofillAppInterface isKeyboardAccessoryUpgradeEnabled]) {
-    EARL_GREY_TEST_SKIPPED(@"The Select Password... action does not yet work "
-                           @"with the Keyboard Accessory Upgrade feature.");
+// Tests that the "Select Password..." action is only availbale when there are
+// saved passwords in the password stores.
+- (void)testSelectPasswordActionAvailability {
+  if (![AutofillAppInterface isKeyboardAccessoryUpgradeEnabled]) {
+    EARL_GREY_TEST_DISABLED(@"This test is not relevant when the Keyboard "
+                            @"Accessory Upgrade feature is disabled.")
   }
 
+  // Delete all saved passwords.
+  [AutofillAppInterface clearProfilePasswordStore];
+
+  // Bring up the keyboard.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
+      performAction:TapWebElementWithId(kFormElementUsername)];
+
+  // Open the password manual fill view.
+  OpenPasswordManualFillView(/*has_suggestions=*/false);
+
+  // The "Select Password..." action shouldn't be visible as there a no saved
+  // passwords.
+  [[EarlGrey selectElementWithMatcher:ManualFallbackOtherPasswordsMatcher()]
+      assertWithMatcher:grey_notVisible()];
+
+  // Save a password.
+  [AutofillAppInterface saveExamplePasswordFormToProfileStore];
+
+  // The "Select Password..." action should now be visible as there's a saved
+  // password available.
+  [[EarlGrey selectElementWithMatcher:ManualFallbackOtherPasswordsMatcher()]
+      assertWithMatcher:grey_interactable()];
+}
+
+// Tests that the "Select Password..." UI is dismissed after failed local
+// authentication.
+- (void)testOtherPasswordListUIDismissedAfterFailedAuth {
   // Setup failed authentication.
   [PasswordSettingsAppInterface mockReauthenticationModuleExpectedResult:
                                     ReauthenticationResult::kFailure];
@@ -630,18 +624,14 @@ void CheckPasswordFillingOptionIsVisible(NSString* site) {
   [[EarlGrey
       selectElementWithMatcher:ManualFallbackOtherPasswordsDismissMatcher()]
       assertWithMatcher:grey_nil()];
+
+  // The keyboard should be visible.
+  CheckKeyboardIsUpAndNotCovered();
 }
 
 // Tests that returning from "Select Password..." leaves the view and icons
 // in the right state.
-- (void)testPasswordsStateAfterPresentingUseOtherPassword {
-  // TODO(crbug.com/326405006): Adapt test once the "Select Password..." action
-  // works with the Keyboard Accessory Upgrade feature.
-  if ([AutofillAppInterface isKeyboardAccessoryUpgradeEnabled]) {
-    EARL_GREY_TEST_SKIPPED(@"The Select Password... action does not yet work "
-                           @"with the Keyboard Accessory Upgrade feature.");
-  }
-
+- (void)testPasswordsStateAfterPresentingOtherPasswordList {
   [self openOtherPasswords];
 
   [[EarlGrey
@@ -652,35 +642,37 @@ void CheckPasswordFillingOptionIsVisible(NSString* site) {
   [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
       performAction:grey_tap()];
 
-  // Verify the status of the icons.
-  [[EarlGrey selectElementWithMatcher:ManualFallbackPasswordIconMatcher()]
-      assertWithMatcher:grey_sufficientlyVisible()];
-  [[EarlGrey selectElementWithMatcher:ManualFallbackPasswordIconMatcher()]
-      assertWithMatcher:grey_userInteractionEnabled()];
-  [[EarlGrey selectElementWithMatcher:ManualFallbackKeyboardIconMatcher()]
-      assertWithMatcher:grey_not(grey_sufficientlyVisible())];
+  // TODO(crbug.com/332956674): Keyboard and keyboard accessory are not present
+  // on iOS 17.4+, remove version check once fixed.
+  if (@available(iOS 17.4, *)) {
+    // Skip verifications.
+  } else {
+    // Icons are not present when the Keyboard Accessory Upgrade feature is
+    // enabled.
+    if (![AutofillAppInterface isKeyboardAccessoryUpgradeEnabled]) {
+      // Verify the status of the icons.
+      [[EarlGrey selectElementWithMatcher:ManualFallbackPasswordIconMatcher()]
+          assertWithMatcher:grey_sufficientlyVisible()];
+      [[EarlGrey selectElementWithMatcher:ManualFallbackPasswordIconMatcher()]
+          assertWithMatcher:grey_userInteractionEnabled()];
+      [[EarlGrey selectElementWithMatcher:ManualFallbackKeyboardIconMatcher()]
+          assertWithMatcher:grey_not(grey_sufficientlyVisible())];
+    }
+  }
 
-  // Verify the keyboard is not cover by the password view.
-  [[EarlGrey selectElementWithMatcher:ManualFallbackPasswordTableViewMatcher()]
-      assertWithMatcher:grey_notVisible()];
+  // Verify that the keyboard is not covered by the password view.
+  CheckKeyboardIsUpAndNotCovered();
 }
 
 // Tests that the Password View Controller is still present after tapping the
 // search bar.
 - (void)testPasswordControllerWhileSearching {
-  // TODO(crbug.com/326405006): Adapt test once the "Select Password..." action
-  // works with the Keyboard Accessory Upgrade feature.
-  if ([AutofillAppInterface isKeyboardAccessoryUpgradeEnabled]) {
-    EARL_GREY_TEST_SKIPPED(@"The Select Password... action does not yet work "
-                           @"with the Keyboard Accessory Upgrade feature.");
-  }
-
   // Bring up the keyboard.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
       performAction:TapWebElementWithId(kFormElementUsername)];
 
   // Open the password manual fill view.
-  OpenPasswordManualFillView();
+  OpenPasswordManualFillView(/*has_suggestions=*/false);
 
   // Tap the "Select Password..." action.
   [[EarlGrey selectElementWithMatcher:ManualFallbackOtherPasswordsMatcher()]
@@ -690,8 +682,7 @@ void CheckPasswordFillingOptionIsVisible(NSString* site) {
   [[EarlGrey selectElementWithMatcher:ConfirmUsingOtherPasswordButton()]
       performAction:grey_tap()];
 
-  // Verify the use other passwords opened and that the saved password is
-  // visible.
+  // Verify that the all saved password list is visible.
   [[EarlGrey
       selectElementWithMatcher:ManualFallbackOtherPasswordsDismissMatcher()]
       assertWithMatcher:grey_sufficientlyVisible()];
@@ -707,6 +698,18 @@ void CheckPasswordFillingOptionIsVisible(NSString* site) {
                  @"Keyboard Should be Shown");
   [[EarlGrey selectElementWithMatcher:ManualFallbackPasswordTableViewMatcher()]
       assertWithMatcher:grey_minimumVisiblePercent(0.5)];
+  CheckPasswordFillingOptionIsVisible(/*site=*/@"example.com");
+
+  // Search for a term that shouldn't give any results.
+  [[EarlGrey selectElementWithMatcher:ManualFallbackPasswordSearchBarMatcher()]
+      performAction:grey_replaceText(@"example1")];
+  [[EarlGrey selectElementWithMatcher:grey_text(@"example.com")]
+      assertWithMatcher:grey_notVisible()];
+
+  // Search for a term that matches with the saved credential.
+  [[EarlGrey selectElementWithMatcher:ManualFallbackPasswordSearchBarMatcher()]
+      performAction:grey_replaceText(@"AMPL")];
+  CheckPasswordFillingOptionIsVisible(/*site=*/@"example.com");
 }
 
 // Tests that the Password View Controller is dismissed when tapping the
@@ -724,7 +727,7 @@ void CheckPasswordFillingOptionIsVisible(NSString* site) {
       performAction:TapWebElementWithId(kFormElementUsername)];
 
   // Open the password manual fill view.
-  OpenPasswordManualFillView();
+  OpenPasswordManualFillView(/*has_suggestions=*/false);
 
   // Tap on the keyboard icon.
   [[EarlGrey selectElementWithMatcher:ManualFallbackKeyboardIconMatcher()]
@@ -749,7 +752,7 @@ void CheckPasswordFillingOptionIsVisible(NSString* site) {
       performAction:TapWebElementWithId(kFormElementUsername)];
 
   // Open the password manual fill view.
-  OpenPasswordManualFillView();
+  OpenPasswordManualFillView(/*has_suggestions=*/false);
 
   [ChromeEarlGreyUI
       dismissByTappingOnTheWindowOfPopover:
@@ -768,7 +771,7 @@ void CheckPasswordFillingOptionIsVisible(NSString* site) {
 
 // Tests that the Password View Controller is dismissed when tapping the
 // keyboard.
-// TODO(crbug.com/909629): started to be flaky and sometimes opens full list
+// TODO(crbug.com/41428686): started to be flaky and sometimes opens full list
 // when typing text.
 - (void)DISABLED_testTappingKeyboardDismissPasswordControllerPopOver {
   if (![ChromeEarlGrey isIPadIdiom]) {
@@ -779,7 +782,7 @@ void CheckPasswordFillingOptionIsVisible(NSString* site) {
       performAction:TapWebElementWithId(kFormElementUsername)];
 
   // Open the password manual fill view.
-  OpenPasswordManualFillView();
+  OpenPasswordManualFillView(/*has_suggestions=*/false);
 
   [[EarlGrey selectElementWithMatcher:ManualFallbackPasswordTableViewMatcher()]
       performAction:grey_replaceText(@"text")];
@@ -799,7 +802,7 @@ void CheckPasswordFillingOptionIsVisible(NSString* site) {
       performAction:TapWebElementWithId(kFormElementUsername)];
 
   // Open the password manual fill view.
-  OpenPasswordManualFillView();
+  OpenPasswordManualFillView(/*has_suggestions=*/false);
 
   [EarlGrey rotateDeviceToOrientation:UIDeviceOrientationLandscapeLeft
                                 error:nil];
@@ -811,6 +814,9 @@ void CheckPasswordFillingOptionIsVisible(NSString* site) {
 
 // Tests that content is injected in iframe messaging.
 - (void)testPasswordControllerSupportsIFrameMessaging {
+  // Disable the password bottom sheet.
+  [PasswordSuggestionBottomSheetAppInterface disableBottomSheet];
+
   const GURL URL = self.testServer->GetURL(kIFrameHTMLFile);
   NSString* URLString = base::SysUTF8ToNSString(URL.spec());
   [AutofillAppInterface savePasswordFormForURLSpec:URLString];
@@ -826,7 +832,7 @@ void CheckPasswordFillingOptionIsVisible(NSString* site) {
                  @"Keyboard Should be Shown");
 
   // Open the password manual fill view.
-  OpenPasswordManualFillView();
+  OpenPasswordManualFillView(/*has_suggestions=*/true);
 
   CheckPasswordFillingOptionIsVisible(
       /*site=*/base::SysUTF8ToNSString(self.URL.host()));
@@ -846,6 +852,9 @@ void CheckPasswordFillingOptionIsVisible(NSString* site) {
 // Tests that an alert is shown when trying to fill a password in an unsecure
 // field.
 - (void)testPasswordControllerPresentsUnsecureAlert {
+  // Disable the password bottom sheet.
+  [PasswordSuggestionBottomSheetAppInterface disableBottomSheet];
+
   // Only Objc objects can cross the EDO portal.
   NSString* URLString = base::SysUTF8ToNSString(self.URL.spec());
   [AutofillAppInterface savePasswordFormForURLSpec:URLString];
@@ -861,7 +870,7 @@ void CheckPasswordFillingOptionIsVisible(NSString* site) {
                  @"Keyboard Should be Shown");
 
   // Open the password manual fill view.
-  OpenPasswordManualFillView();
+  OpenPasswordManualFillView(/*has_suggestions=*/true);
 
   CheckPasswordFillingOptionIsVisible(
       /*site=*/base::SysUTF8ToNSString(self.URL.host()));
@@ -914,7 +923,7 @@ void CheckPasswordFillingOptionIsVisible(NSString* site) {
       performAction:TapWebElementWithId(kFormElementUsername)];
 
   // Open the password manual fill view.
-  OpenPasswordManualFillView();
+  OpenPasswordManualFillView(/*has_suggestions=*/false);
 
   // Assert that the "no passwords found" message is visible.
   id<GREYMatcher> noPasswordsFoundMessage = grey_accessibilityLabel(
@@ -924,13 +933,7 @@ void CheckPasswordFillingOptionIsVisible(NSString* site) {
 }
 
 // Tests password generation on manual fallback.
-// TODO(crbug.com/1394448): enable the test with fix.
-- (void)DISABLED_testPasswordGenerationOnManualFallback {
-  // Disable the test on iOS 15.3 due to build failure.
-  // TODO(crbug.com/1304685): enable the test with fix.
-  if (@available(iOS 15.3, *)) {
-    EARL_GREY_TEST_DISABLED(@"Test disabled on iOS 15.3.");
-  }
+- (void)testPasswordGenerationOnManualFallback {
   [SigninEarlGreyUI signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]];
   [ChromeEarlGrey waitForSyncEngineInitialized:YES
                                    syncTimeout:base::Seconds(10)];
@@ -942,7 +945,7 @@ void CheckPasswordFillingOptionIsVisible(NSString* site) {
       performAction:TapWebElementWithId(kFormElementPassword)];
 
   // Open the password manual fill view.
-  OpenPasswordManualFillView();
+  OpenPasswordManualFillView(/*has_suggestions=*/false);
 
   // Select a 'Suggest Password...' option.
   [[EarlGrey selectElementWithMatcher:ManualFallbackSuggestPasswordMatcher()]
@@ -972,7 +975,7 @@ void CheckPasswordFillingOptionIsVisible(NSString* site) {
       performAction:TapWebElementWithId(kFormElementPassword)];
 
   // Open the password manual fill view.
-  OpenPasswordManualFillView();
+  OpenPasswordManualFillView(/*has_suggestions=*/false);
 
   // Verify a 'Suggest Password...' option is showing.
   [[EarlGrey selectElementWithMatcher:ManualFallbackSuggestPasswordMatcher()]
@@ -1006,7 +1009,7 @@ void CheckPasswordFillingOptionIsVisible(NSString* site) {
       performAction:TapWebElementWithId(kFormElementPassword)];
 
   // Open the password manual fill view.
-  OpenPasswordManualFillView();
+  OpenPasswordManualFillView(/*has_suggestions=*/false);
 
   // Verify the 'Suggest Password...' option is not shown.
   [[EarlGrey selectElementWithMatcher:ManualFallbackSuggestPasswordMatcher()]
@@ -1042,11 +1045,116 @@ void CheckPasswordFillingOptionIsVisible(NSString* site) {
       performAction:TapWebElementWithId(kFormElementPassword)];
 
   // Open the password manual fill view.
-  OpenPasswordManualFillView();
+  OpenPasswordManualFillView(/*has_suggestions=*/false);
 
   // Verify the 'Suggest Password...' option is not shown.
   [[EarlGrey selectElementWithMatcher:ManualFallbackSuggestPasswordMatcher()]
       assertWithMatcher:grey_notVisible()];
+}
+
+// Tests that the overflow menu button is only visible when the Keyboard
+// Accessory Upgrade feature is enabled.
+- (void)testOverflowMenuVisibility {
+  // Disable the password bottom sheet.
+  [PasswordSuggestionBottomSheetAppInterface disableBottomSheet];
+
+  // Save password for site.
+  NSString* URLString = base::SysUTF8ToNSString(self.URL.spec());
+  [AutofillAppInterface savePasswordFormForURLSpec:URLString];
+
+  [self loadLoginPage];
+
+  // Bring up the keyboard.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
+      performAction:TapWebElementWithId(kFormElementUsername)];
+
+  // Wait for the accessory icon to appear.
+  GREYAssertTrue([EarlGrey isKeyboardShownWithError:nil],
+                 @"Keyboard Should be Shown");
+
+  // Open the password manual fill view.
+  OpenPasswordManualFillView(/*has_suggestions=*/true);
+
+  if ([AutofillAppInterface isKeyboardAccessoryUpgradeEnabled]) {
+    [[EarlGrey selectElementWithMatcher:OverflowMenuButton()]
+        assertWithMatcher:grey_sufficientlyVisible()];
+  } else {
+    [[EarlGrey selectElementWithMatcher:OverflowMenuButton()]
+        assertWithMatcher:grey_notVisible()];
+  }
+}
+
+// Tests the "Edit" action of the overflow menu button displays the password's
+// details in edit mode.
+- (void)testEditPasswordFromOverflowMenu {
+  if (![AutofillAppInterface isKeyboardAccessoryUpgradeEnabled]) {
+    EARL_GREY_TEST_DISABLED(@"This test is not relevant when the Keyboard "
+                            @"Accessory Upgrade feature is disabled.")
+  }
+
+  // Disable the password bottom sheet.
+  [PasswordSuggestionBottomSheetAppInterface disableBottomSheet];
+
+  // Save password for site.
+  NSString* URLString = base::SysUTF8ToNSString(self.URL.spec());
+  [AutofillAppInterface savePasswordFormForURLSpec:URLString];
+
+  [self loadLoginPage];
+
+  // Bring up the keyboard.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
+      performAction:TapWebElementWithId(kFormElementUsername)];
+
+  // Wait for the accessory icon to appear.
+  GREYAssertTrue([EarlGrey isKeyboardShownWithError:nil],
+                 @"Keyboard Should be Shown");
+
+  // Open the password manual fill view.
+  OpenPasswordManualFillView(/*has_suggestions=*/true);
+
+  // Tap the overflow menu button and select the "Edit" action.
+  [[EarlGrey selectElementWithMatcher:OverflowMenuButton()]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:OverflowMenuEditAction()]
+      performAction:grey_tap()];
+
+  // TODO(crbug.com/326413057): Check that the password details opened in search
+  // mode.
+}
+
+// Tests that tapping the "Autofill Form" button fills the password form with
+// the right data.
+- (void)testAutofillFormButtonFillsForm {
+  if (![AutofillAppInterface isKeyboardAccessoryUpgradeEnabled]) {
+    EARL_GREY_TEST_DISABLED(@"This test is not relevant when the Keyboard "
+                            @"Accessory Upgrade feature is disabled.")
+  }
+
+  // Disable the password bottom sheet.
+  [PasswordSuggestionBottomSheetAppInterface disableBottomSheet];
+
+  // Save password for site.
+  NSString* URLString = base::SysUTF8ToNSString(self.URL.spec());
+  [AutofillAppInterface savePasswordFormForURLSpec:URLString];
+
+  [self loadLoginPage];
+
+  // Bring up the keyboard.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
+      performAction:TapWebElementWithId(kFormElementUsername)];
+
+  // Wait for the accessory icon to appear.
+  GREYAssertTrue([EarlGrey isKeyboardShownWithError:nil],
+                 @"Keyboard Should be Shown");
+
+  // Open the password manual fill view.
+  OpenPasswordManualFillView(/*has_suggestions=*/true);
+
+  [[EarlGrey selectElementWithMatcher:AutofillFormButton()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  // TODO(crbug.com/326413161): Perform tap on the button and assert that the
+  // form was filled.
 }
 
 @end

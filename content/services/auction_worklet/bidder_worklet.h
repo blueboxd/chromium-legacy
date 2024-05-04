@@ -15,6 +15,7 @@
 #include <vector>
 
 #include "base/containers/flat_map.h"
+#include "base/containers/lru_cache.h"
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/functional/callback.h"
 #include "base/functional/callback_helpers.h"
@@ -30,6 +31,7 @@
 #include "content/services/auction_worklet/public/mojom/auction_worklet_service.mojom.h"
 #include "content/services/auction_worklet/public/mojom/bidder_worklet.mojom.h"
 #include "content/services/auction_worklet/public/mojom/private_aggregation_request.mojom-forward.h"
+#include "content/services/auction_worklet/set_bid_bindings.h"
 #include "content/services/auction_worklet/trusted_signals.h"
 #include "content/services/auction_worklet/trusted_signals_request_manager.h"
 #include "content/services/auction_worklet/worklet_loader.h"
@@ -81,6 +83,13 @@ class CONTENT_EXPORT BidderWorklet : public mojom::BidderWorklet,
   using PrivateAggregationRequests =
       std::vector<auction_worklet::mojom::PrivateAggregationRequestPtr>;
 
+  // Classification of how trusted signals related to this worklet.
+  enum class SignalsOriginRelation {
+    kNoTrustedSignals,
+    kSameOriginSignals,
+    kCrossOriginSignals,
+  };
+
   // Starts loading the worklet script on construction, as well as the trusted
   // bidding data, if necessary. Will then call the script's generateBid()
   // function and invoke the callback with the results. Callback will always be
@@ -122,10 +131,19 @@ class CONTENT_EXPORT BidderWorklet : public mojom::BidderWorklet,
   static bool IsKAnon(const mojom::BidderWorkletNonSharedParams*
                           bidder_worklet_non_shared_params,
                       const std::string& key);
-  static bool IsKAnon(const mojom::BidderWorkletNonSharedParams*
-                          bidder_worklet_non_shared_params,
-                      const GURL& script_source_url,
-                      const mojom::BidderWorkletBidPtr& bid);
+
+  // This doesn't look at the component ads.
+  static bool IsMainAdKAnon(const mojom::BidderWorkletNonSharedParams*
+                                bidder_worklet_non_shared_params,
+                            const GURL& script_source_url,
+                            const mojom::BidderWorkletBidPtr& bid);
+
+  static bool IsComponentAdKAnon(
+      const mojom::BidderWorkletNonSharedParams*
+          bidder_worklet_non_shared_params,
+      const blink::AdDescriptor& ad_component_descriptor);
+
+  static bool SupportMultiBid();
 
   // mojom::BidderWorklet implementation:
   void BeginGenerateBid(
@@ -175,6 +193,7 @@ class CONTENT_EXPORT BidderWorklet : public mojom::BidderWorklet,
       uint8_t browser_signal_recency,
       const url::Origin& browser_signal_seller_origin,
       const std::optional<url::Origin>& browser_signal_top_level_seller_origin,
+      const std::optional<base::TimeDelta> browser_signal_reporting_timeout,
       std::optional<uint32_t> bidding_signals_data_version,
       uint64_t trace_id,
       ReportWinCallback report_win_callback) override;
@@ -298,6 +317,7 @@ class CONTENT_EXPORT BidderWorklet : public mojom::BidderWorklet,
     uint8_t browser_signal_recency;
     url::Origin browser_signal_seller_origin;
     std::optional<url::Origin> browser_signal_top_level_seller_origin;
+    std::optional<base::TimeDelta> browser_signal_reporting_timeout;
     std::optional<uint32_t> bidding_signals_data_version;
     uint64_t trace_id;
 
@@ -380,7 +400,7 @@ class CONTENT_EXPORT BidderWorklet : public mojom::BidderWorklet,
       SingleGenerateBidResult();
       SingleGenerateBidResult(
           std::unique_ptr<ContextRecycler> context_recycler_for_rerun,
-          std::vector<mojom::BidderWorkletBidPtr> bids,
+          std::vector<SetBidBindings::BidAndComponentTarget> bids,
           std::optional<uint32_t> bidding_signals_data_version,
           std::optional<GURL> debug_loss_report_url,
           std::optional<GURL> debug_win_report_url,
@@ -403,7 +423,7 @@ class CONTENT_EXPORT BidderWorklet : public mojom::BidderWorklet,
       // it's returned here to be available for any re-run for k-anonymity.
       std::unique_ptr<ContextRecycler> context_recycler_for_rerun;
 
-      std::vector<mojom::BidderWorkletBidPtr> bids;
+      std::vector<SetBidBindings::BidAndComponentTarget> bids;
       std::optional<uint32_t> bidding_signals_data_version;
       std::optional<GURL> debug_loss_report_url;
       std::optional<GURL> debug_win_report_url;
@@ -447,6 +467,7 @@ class CONTENT_EXPORT BidderWorklet : public mojom::BidderWorklet,
         const url::Origin& browser_signal_seller_origin,
         const std::optional<url::Origin>&
             browser_signal_top_level_seller_origin,
+        const std::optional<base::TimeDelta> browser_signal_reporting_timeout,
         const std::optional<uint32_t>& bidding_signals_data_version,
         uint64_t trace_id,
         ReportWinCallbackInternal callback);
@@ -568,14 +589,24 @@ class CONTENT_EXPORT BidderWorklet : public mojom::BidderWorklet,
     mojom::AuctionWorkletPermissionsPolicyStatePtr permissions_policy_state_;
     const std::optional<GURL> wasm_helper_url_;
     const std::optional<GURL> trusted_bidding_signals_url_;
+    const std::optional<url::Origin> trusted_bidding_signals_origin_;
 
     // This must be above the ContextRecyclers, since they own
     // SharedStorageBindings, which have raw pointers to it.
     mojo::Remote<mojom::AuctionSharedStorageHost> shared_storage_host_remote_;
 
-    std::unique_ptr<ContextRecycler> context_recycler_for_origin_group_mode_;
-    url::Origin join_origin_for_origin_group_mode_;
+    // ContextRecyclers for "group-by-origin" execution mode. The number of
+    // previously-used contexts to keep track of is configured by
+    // kFledgeNumberBidderWorkletGroupByOriginContextsToKeepValue.
+    base::LRUCache<url::Origin, std::unique_ptr<ContextRecycler>>
+        context_recyclers_for_origin_group_mode_;
+
+    // ContextRecycler for "frozen-context" execution mode.
     std::unique_ptr<ContextRecycler> context_recycler_for_frozen_context_;
+
+    // If FledgeAlwaysReuseBidderContext is enabled, the execution mode is
+    // ignored and the context below is always reused.
+    std::unique_ptr<ContextRecycler> context_recycler_for_always_reuse_feature_;
 
     SEQUENCE_CHECKER(v8_sequence_checker_);
   };
@@ -583,9 +614,9 @@ class CONTENT_EXPORT BidderWorklet : public mojom::BidderWorklet,
   void ResumeIfPaused();
   void Start();
 
-  void OnScriptDownloaded(WorkletLoader::Result worklet_script,
+  void OnScriptDownloaded(std::vector<WorkletLoader::Result> worklet_scripts,
                           std::optional<std::string> error_msg);
-  void OnWasmDownloaded(WorkletWasmLoader::Result worklet_script,
+  void OnWasmDownloaded(std::vector<WorkletWasmLoader::Result> worklet_scripts,
                         std::optional<std::string> error_msg);
   void MaybeRecordCodeWait();
   void RunReadyTasks();

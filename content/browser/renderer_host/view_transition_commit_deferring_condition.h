@@ -20,6 +20,8 @@ struct ViewTransitionState;
 
 namespace content {
 class NavigationRequest;
+class RenderFrameHostImpl;
+class ScopedViewTransitionResources;
 
 class CONTENT_EXPORT ViewTransitionCommitDeferringCondition
     : public CommitDeferringCondition {
@@ -40,13 +42,14 @@ class CONTENT_EXPORT ViewTransitionCommitDeferringCondition
   explicit ViewTransitionCommitDeferringCondition(
       NavigationRequest& navigation_request);
 
-  void OnSnapshotAck(base::WeakPtr<NavigationRequest> navigation_request,
-                     const blink::ViewTransitionState& view_transition_state);
+  void OnSnapshotAckFromRenderer(
+      const blink::ViewTransitionState& view_transition_state);
   void OnSnapshotTimeout();
   base::TimeDelta GetSnapshotCallbackTimeout() const;
 
-  base::OnceClosure resume_processing_callback_;
-
+  std::unique_ptr<ScopedViewTransitionResources> resources_;
+  base::WeakPtr<RenderFrameHostImpl> old_rfh_;
+  base::OnceClosure resume_navigation_;
   base::WeakPtrFactory<ViewTransitionCommitDeferringCondition> weak_factory_{
       this};
 };

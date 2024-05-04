@@ -11,11 +11,13 @@
 
 #include <memory>
 
+#include "base/containers/heap_array.h"
 #include "base/files/file_path.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "ui/accessibility/accessibility_features.h"
+#include "ui/accessibility/platform/ax_platform.h"
 #include "ui/accessibility/platform/ax_platform_node_win.h"
 #include "ui/gfx/animation/animation.h"
 #include "ui/gfx/win/singleton_hwnd_observer.h"
@@ -111,7 +113,7 @@ class WindowsAccessibilityEnabler
   }
 
   void AddAXModeForUIA(ui::AXMode mode) {
-    DCHECK(::features::IsUiaProviderEnabled());
+    DCHECK(::ui::AXPlatform::GetInstance().IsUiaProviderEnabled());
 
     // Firing a UIA event can cause UIA to call back into our APIs, don't
     // consider this to be usage.
@@ -156,6 +158,7 @@ class BrowserAccessibilityStateImplWin : public BrowserAccessibilityStateImpl {
   BrowserAccessibilityStateImplWin();
 
  protected:
+  void InitBackgroundTasks() override;
   void UpdateHistogramsOnOtherThread() override;
   void UpdateUniqueUserHistograms() override;
 
@@ -166,6 +169,10 @@ class BrowserAccessibilityStateImplWin : public BrowserAccessibilityStateImpl {
 BrowserAccessibilityStateImplWin::BrowserAccessibilityStateImplWin() {
   ui::GetWinAccessibilityAPIUsageObserverList().AddObserver(
       new WindowsAccessibilityEnabler());
+}
+
+void BrowserAccessibilityStateImplWin::InitBackgroundTasks() {
+  BrowserAccessibilityStateImpl::InitBackgroundTasks();
 
   singleton_hwnd_observer_ = std::make_unique<gfx::SingletonHwndObserver>(
       base::BindRepeating(&OnWndProc));
@@ -194,13 +201,13 @@ void BrowserAccessibilityStateImplWin::UpdateHistogramsOnOtherThread() {
 
   // Get the file paths of all DLLs loaded.
   HANDLE process = GetCurrentProcess();
-  HMODULE* modules = NULL;
+  HMODULE* modules = nullptr;
   DWORD bytes_required;
   if (!EnumProcessModules(process, modules, 0, &bytes_required))
     return;
 
-  std::unique_ptr<char[]> buffer(new char[bytes_required]);
-  modules = reinterpret_cast<HMODULE*>(buffer.get());
+  auto buffer = base::HeapArray<uint8_t>::WithSize(bytes_required);
+  modules = reinterpret_cast<HMODULE*>(buffer.data());
   DWORD ignore;
   if (!EnumProcessModules(process, modules, bytes_required, &ignore))
     return;

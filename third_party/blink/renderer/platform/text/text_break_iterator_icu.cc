@@ -37,7 +37,6 @@
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string_hash.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/thread_specific.h"
-#include "third_party/blink/renderer/platform/wtf/threading_primitives.h"
 
 namespace blink {
 
@@ -698,12 +697,13 @@ TextBreakIterator* WordBreakIterator(const String& string,
   return WordBreakIterator(string.Span16().subspan(start, length));
 }
 
-TextBreakIterator* AcquireLineBreakIterator(base::span<const LChar> string,
-                                            const AtomicString& locale,
-                                            const UChar* prior_context,
-                                            unsigned prior_context_length) {
-  TextBreakIterator* iterator =
-      LineBreakIteratorPool::SharedPool().Take(locale);
+PooledBreakIterator AcquireLineBreakIterator(
+    base::span<const LChar> string,
+    const AtomicString& locale,
+    const UChar* prior_context = nullptr,
+    unsigned prior_context_length = 0) {
+  PooledBreakIterator iterator{
+      LineBreakIteratorPool::SharedPool().Take(locale)};
   if (!iterator) {
     return nullptr;
   }
@@ -733,12 +733,13 @@ TextBreakIterator* AcquireLineBreakIterator(base::span<const LChar> string,
   return iterator;
 }
 
-TextBreakIterator* AcquireLineBreakIterator(base::span<const UChar> string,
-                                            const AtomicString& locale,
-                                            const UChar* prior_context,
-                                            unsigned prior_context_length) {
-  TextBreakIterator* iterator =
-      LineBreakIteratorPool::SharedPool().Take(locale);
+PooledBreakIterator AcquireLineBreakIterator(
+    base::span<const UChar> string,
+    const AtomicString& locale,
+    const UChar* prior_context = nullptr,
+    unsigned prior_context_length = 0) {
+  PooledBreakIterator iterator{
+      LineBreakIteratorPool::SharedPool().Take(locale)};
   if (!iterator) {
     return nullptr;
   }
@@ -765,7 +766,16 @@ TextBreakIterator* AcquireLineBreakIterator(base::span<const UChar> string,
   return iterator;
 }
 
-void ReleaseLineBreakIterator(TextBreakIterator* iterator) {
+PooledBreakIterator AcquireLineBreakIterator(StringView string,
+                                             const AtomicString& locale) {
+  if (string.Is8Bit()) {
+    return AcquireLineBreakIterator(string.Span8(), locale);
+  }
+  return AcquireLineBreakIterator(string.Span16(), locale);
+}
+
+void ReturnBreakIteratorToPool::operator()(void* ptr) const {
+  TextBreakIterator* iterator = static_cast<TextBreakIterator*>(ptr);
   DCHECK(iterator);
   LineBreakIteratorPool::SharedPool().Put(iterator);
 }

@@ -1292,7 +1292,7 @@ TEST(ProcessGTestOutputTest, RunMockTests) {
   EXPECT_GT(*test_results[2].timestamp, Time());
 }
 
-// TODO(crbug.com/1498237): Enable the test once GetAppOutputAndError
+// TODO(crbug.com/40287376): Enable the test once GetAppOutputAndError
 // can collect stdout and stderr on Fuchsia.
 #if !BUILDFLAG(IS_FUCHSIA)
 TEST(ProcessGTestOutputTest, FoundTestCaseNotEnforced) {
@@ -1353,7 +1353,7 @@ TEST(ProcessGTestOutputTest, FoundTestCaseNotEnforced) {
 }
 #endif  // !BUILDFLAG(IS_FUCHSIA)
 
-// TODO(crbug.com/1094369): Enable leaked-child checks on other platforms.
+// TODO(crbug.com/40135391): Enable leaked-child checks on other platforms.
 #if BUILDFLAG(IS_FUCHSIA)
 
 // Test that leaves a child process running. The test is DISABLED_, so it can

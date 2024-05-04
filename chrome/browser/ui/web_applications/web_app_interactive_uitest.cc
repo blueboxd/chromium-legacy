@@ -7,7 +7,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/web_applications/web_app_controller_browsertest.h"
+#include "chrome/browser/ui/web_applications/web_app_browsertest_base.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -26,21 +26,23 @@ namespace {
 constexpr const char kExampleURL[] = "http://example.org/";
 }
 
-class WebAppInteractiveUiTest : public WebAppControllerBrowserTest {};
+class WebAppInteractiveUiTest : public WebAppBrowserTestBase {};
 
-// Disabled everywhere except ChromeOS and Mac because those are the only
-// platforms with functional display mocking at the moment. While a partial
+// Disabled everywhere except ChromeOS, Mac and Windows because those are the
+// only platforms with functional display mocking at the moment. While a partial
 // solution is possible using display::Screen::SetScreenInstance on other
 // platforms, window placement doesn't work right with a faked Screen
 // instance.
-#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_CHROMEOS_ASH)
-#define MAYBE_TabOpensOnCorrectDisplay TabOpensOnCorrectDisplay
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_WIN)
+#define MAYBE_TabOpensOnCorrectDisplayMultiScreen \
+  TabOpensOnCorrectDisplayMultiScreen
 #else
-#define MAYBE_TabOpensOnCorrectDisplay DISABLED_TabOpensOnCorrectDisplay
+#define MAYBE_TabOpensOnCorrectDisplayMultiScreen \
+  DISABLED_TabOpensOnCorrectDisplayMultiScreen
 #endif
 // Tests that PWAs that open in a tab open tabs on the correct display.
 IN_PROC_BROWSER_TEST_F(WebAppInteractiveUiTest,
-                       MAYBE_TabOpensOnCorrectDisplay) {
+                       MAYBE_TabOpensOnCorrectDisplayMultiScreen) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   display::test::DisplayManagerTestApi(ash::Shell::Get()->display_manager())
       .UpdateDisplay("801x802,802x803");

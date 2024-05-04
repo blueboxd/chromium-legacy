@@ -15,7 +15,7 @@
 namespace {
 
 // Clean up user defaults.
-// TODO(crbug.com/1462404): Safe to remove in M123+.
+// TODO(crbug.com/40274920): Safe to remove in M123+.
 void CleanUpWhatsNewUserDefaults() {
   NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
 
@@ -73,6 +73,12 @@ const char* WhatsNewTypeToString(WhatsNewType type) {
       return "BottomOmnibox";
     case WhatsNewType::kESB:
       return "ESB";
+    case WhatsNewType::kPWMWidget:
+      return "PWMWidget";
+    case WhatsNewType::kPinnedTabs:
+      return "PinnedTabs";
+    case WhatsNewType::kInactiveTabs:
+      return "InactiveTabs";
     case WhatsNewType::kError:
       return nil;
   };

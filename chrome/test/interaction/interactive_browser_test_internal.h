@@ -11,7 +11,6 @@
 
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
-#include "base/template_util.h"
 #include "base/values.h"
 #include "chrome/test/interaction/interaction_test_util_browser.h"
 #include "chrome/test/interaction/tracked_element_webcontents.h"
@@ -46,6 +45,8 @@ class InteractiveBrowserTestPrivate
   void AddInstrumentedWebContents(
       std::unique_ptr<WebContentsInteractionTestUtil>
           instrumented_web_contents);
+
+  bool IsInstrumentedWebContents(ui::ElementIdentifier element_id) const;
 
   static std::string DeepQueryToString(
       const WebContentsInteractionTestUtil::DeepQuery& deep_query);

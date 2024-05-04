@@ -12,6 +12,7 @@
 #include "components/omnibox/browser/vector_icons.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/search_engines/template_url_starter_pack_data.h"
+#include "components/strings/grit/components_strings.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -31,10 +32,15 @@ SelectedKeywordView::GetKeywordLabelNames(const std::u16string& keyword,
     bool is_ask_google_keyword = false;
     names.short_name = service->GetKeywordShortName(
         keyword, &is_extension_keyword, &is_ask_google_keyword);
-    names.full_name = (is_extension_keyword || is_ask_google_keyword)
-                          ? names.short_name
-                          : l10n_util::GetStringFUTF16(
-                                IDS_OMNIBOX_KEYWORD_TEXT_MD, names.short_name);
+    if (is_ask_google_keyword) {
+      names.full_name = l10n_util::GetStringFUTF16(
+          IDS_OMNIBOX_SELECTED_KEYWORD_CHAT_TEXT, names.short_name);
+    } else if (is_extension_keyword) {
+      names.full_name = names.short_name;
+    } else {
+      names.full_name = l10n_util::GetStringFUTF16(IDS_OMNIBOX_KEYWORD_TEXT_MD,
+                                                   names.short_name);
+    }
   }
   return names;
 }
@@ -51,7 +57,7 @@ SelectedKeywordView::SelectedKeywordView(
   partial_label_.SetVisible(false);
   label()->SetElideBehavior(gfx::FADE_TAIL);
 
-  // TODO(crbug.com/1411342): `IconLabelBubbleView::GetAccessibleNodeData`
+  // TODO(crbug.com/40890218): `IconLabelBubbleView::GetAccessibleNodeData`
   // would set the name to explicitly empty when the name was missing.
   // That function no longer exists. As a result we need to handle that here.
   // Regarding this view's namelessness: Until this view has a keyword and
@@ -98,7 +104,8 @@ SkColor SelectedKeywordView::GetForegroundColor() const {
   return GetColorProvider()->GetColor(kColorOmniboxKeywordSelected);
 }
 
-gfx::Size SelectedKeywordView::CalculatePreferredSize() const {
+gfx::Size SelectedKeywordView::CalculatePreferredSize(
+    const views::SizeBounds& available_size) const {
   // Height will be ignored by the LocationBarView.
   return GetSizeForLabelWidth(full_label_.GetPreferredSize().width());
 }

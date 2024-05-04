@@ -61,6 +61,7 @@ source_set("password_store_impl") {
     "//components/autofill/core/common",
     "//components/os_crypt/sync:os_crypt",
     "//components/password_manager/core/browser:metrics_util",
+    "//components/password_manager/core/browser:password_manager_buildflags",
     "//components/password_manager/core/browser/affiliation:affiliation_match_helper",
     "//components/password_manager/core/browser/features:password_features",
     "//components/password_manager/core/browser/sync",
@@ -70,6 +71,7 @@ source_set("password_store_impl") {
     "//components/safe_browsing/core/common:safe_browsing_prefs",
     "//components/sync/base",
     "//components/sync/base:features",
+    "//components/sync/engine",
     "//components/sync/model",
     "//components/sync/protocol",
     "//sql",
@@ -80,6 +82,8 @@ source_set("password_store_impl") {
   if (is_android) {
     sources += [
       "android_backend_error.h",
+      "password_model_type_controller_delegate_android.cc",
+      "password_model_type_controller_delegate_android.h",
       "split_stores_and_local_upm.cc",
       "split_stores_and_local_upm.h",
     ]
@@ -164,6 +168,7 @@ source_set("unit_tests") {
     "//components/autofill/core/common",
     "//components/os_crypt/sync:os_crypt",
     "//components/os_crypt/sync:test_support",
+    "//components/password_manager/core/browser:password_manager_buildflags",
     "//components/password_manager/core/browser:test_support",
     "//components/password_manager/core/browser/affiliation:affiliation_match_helper",
     "//components/password_manager/core/browser/affiliation:test_support",

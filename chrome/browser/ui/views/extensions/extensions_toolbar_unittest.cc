@@ -11,8 +11,9 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/scripting_permissions_modifier.h"
-#include "chrome/browser/extensions/site_permissions_helper.h"
+#include "chrome/browser/extensions/extension_tab_util.h"
+#include "chrome/browser/extensions/permissions/scripting_permissions_modifier.h"
+#include "chrome/browser/extensions/permissions/site_permissions_helper.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 #include "components/crx_file/id_util.h"
@@ -193,6 +194,20 @@ void ExtensionsToolbarUnitTest::UpdateUserSiteSetting(
   waiter.WaitForUserPermissionsSettingsChange();
 }
 
+void ExtensionsToolbarUnitTest::AddSiteAccessRequest(
+    const extensions::Extension& extension,
+    content::WebContents* web_contents) {
+  int tab_id = extensions::ExtensionTabUtil::GetTabId(web_contents);
+  permissions_manager_->AddSiteAccessRequest(web_contents, tab_id, extension);
+}
+
+void ExtensionsToolbarUnitTest::RemoveSiteAccessRequest(
+    const extensions::Extension& extension,
+    content::WebContents* web_contents) {
+  int tab_id = extensions::ExtensionTabUtil::GetTabId(web_contents);
+  permissions_manager_->RemoveSiteAccessRequest(tab_id, extension.id());
+}
+
 PermissionsManager::UserSiteSetting
 ExtensionsToolbarUnitTest::GetUserSiteSetting(const GURL& url) {
   return permissions_manager_->GetUserSiteSetting(url::Origin::Create(url));
@@ -219,7 +234,7 @@ ExtensionsToolbarUnitTest::GetPinnedExtensionViews() {
     if (views::IsViewClass<ToolbarActionView>(child)) {
       ToolbarActionView* const action = static_cast<ToolbarActionView*>(child);
 #if BUILDFLAG(IS_MAC)
-      // TODO(crbug.com/1045212): Use IsActionVisibleOnToolbar() because it
+      // TODO(crbug.com/40670141): Use IsActionVisibleOnToolbar() because it
       // queries the underlying model and not GetVisible(), as that relies on an
       // animation running, which is not reliable in unit tests on Mac.
       const bool is_visible = extensions_container()->IsActionVisibleOnToolbar(
@@ -242,7 +257,7 @@ std::vector<std::string> ExtensionsToolbarUnitTest::GetPinnedExtensionNames() {
 
 void ExtensionsToolbarUnitTest::WaitForAnimation() {
 #if BUILDFLAG(IS_MAC)
-  // TODO(crbug.com/1045212): we avoid using animations on Mac due to the lack
+  // TODO(crbug.com/40670141): we avoid using animations on Mac due to the lack
   // of support in unit tests. Therefore this is a no-op.
 #else
   views::test::WaitForAnimatingLayoutManager(extensions_container());

@@ -364,7 +364,7 @@ IN_PROC_BROWSER_TEST_P(CodeCacheBrowserTest,
 
     FetchHistogramsFromChildProcesses();
 
-    // TODO(https://crbug.com/964467): The kMiss and kCreate counts are zero
+    // TODO(crbug.com/40628019): The kMiss and kCreate counts are zero
     // here because for Dedicated Workers and Shared Workers the Generated Code
     // Cache isn't used yet. Once it is, update these counts (there are two
     // scripts that could be cached, depending on the implementation -
@@ -398,7 +398,7 @@ IN_PROC_BROWSER_TEST_P(CodeCacheBrowserTest,
     histogram_tester.ExpectBucketCount(
         "SiteIsolatedCodeCache.JS.Behaviour",
         GeneratedCodeCache::CacheEntryStatus::kMiss, 0);
-    // TODO(https://crbug.com/964467): Once the Generated Code Cache is used for
+    // TODO(crbug.com/40628019): Once the Generated Code Cache is used for
     // Shared Workers, check that the scripts loaded from the worker context
     // were re-used from the test section above.
     histogram_tester.ExpectBucketCount(
@@ -419,7 +419,7 @@ IN_PROC_BROWSER_TEST_P(CodeCacheBrowserTest,
 
     FetchHistogramsFromChildProcesses();
 
-    // TODO(https://crbug.com/964467): Once the Generated Code Cache is used
+    // TODO(crbug.com/40628019): Once the Generated Code Cache is used
     // for Shared Workers, check that the worker scripts re-used in the test
     // section above do not get re-used for this part of the test when
     // `IsCachePartitioningEnabled()` returns true (but are re-used otherwise).
@@ -432,20 +432,14 @@ IN_PROC_BROWSER_TEST_P(CodeCacheBrowserTest,
   }
 }
 
-class LocalCompileHintsBrowserTest : public ContentBrowserTest {
+class CompileHintsBrowserTest : public ContentBrowserTest {
  public:
-  LocalCompileHintsBrowserTest() {
-    local_compile_hints_.InitAndEnableFeature(
-        blink::features::kLocalCompileHints);
-    interactive_detector_ignore_fcp_.InitAndEnableFeature(
-        blink::features::kInteractiveDetectorIgnoreFcp);
-  }
+  CompileHintsBrowserTest() = default;
 
   void SetUpOnMainThread() override {
     host_resolver()->AddRule("*", "127.0.0.1");
-    embedded_test_server()->RegisterRequestHandler(
-        base::BindRepeating(&LocalCompileHintsBrowserTest::CachedScriptHandler,
-                            base::Unretained(this)));
+    embedded_test_server()->RegisterRequestHandler(base::BindRepeating(
+        &CompileHintsBrowserTest::CachedScriptHandler, base::Unretained(this)));
     ASSERT_TRUE(embedded_test_server()->Start());
   }
 
@@ -494,10 +488,31 @@ class LocalCompileHintsBrowserTest : public ContentBrowserTest {
     }
     return nullptr;
   }
+};
+
+class LocalCompileHintsBrowserTest : public CompileHintsBrowserTest {
+ public:
+  LocalCompileHintsBrowserTest() {
+    local_compile_hints_.InitAndEnableFeature(
+        blink::features::kLocalCompileHints);
+    interactive_detector_ignore_fcp_.InitAndEnableFeature(
+        blink::features::kInteractiveDetectorIgnoreFcp);
+  }
 
  private:
   base::test::ScopedFeatureList local_compile_hints_;
   base::test::ScopedFeatureList interactive_detector_ignore_fcp_;
+};
+
+class NoLocalCompileHintsBrowserTest : public CompileHintsBrowserTest {
+ public:
+  NoLocalCompileHintsBrowserTest() {
+    local_compile_hints_.InitAndDisableFeature(
+        blink::features::kLocalCompileHints);
+  }
+
+ private:
+  base::test::ScopedFeatureList local_compile_hints_;
 };
 
 class CodeCacheSizeChecker {
@@ -545,6 +560,73 @@ class CodeCacheSizeChecker {
   base::OnceClosure done_callback_;
 };
 
+IN_PROC_BROWSER_TEST_F(NoLocalCompileHintsBrowserTest, NoCompileHints) {
+  // TODO(chromium:1495723): Migrate this test to use use counters once we no
+  // longer have the histograms.
+
+  // With this, we can query the code cache in a unified way in platforms which
+  // use origin locks differently.
+  CodeCacheHostImpl::SetUseEmptySecondaryKeyForTesting();
+
+  GURL cacheable_page =
+      embedded_test_server()->GetURL("c.com", "/cacheable.html");
+  GURL other_page = embedded_test_server()->GetURL("a.com", "/empty.html");
+
+  {
+    // Navigate to the page which requests a cacheable
+    // javascript resource (/cacheable.js).
+    base::HistogramTester histogram_tester;
+    EXPECT_TRUE(NavigateToURL(shell(), cacheable_page));
+
+    FetchHistogramsFromChildProcesses();
+    EXPECT_EQ(
+        1, histogram_tester.GetBucketCount(
+               blink::v8_compile_hints::kStatusHistogram,
+               blink::v8_compile_hints::Status::
+                   kNoCompileHintsClassicNonStreaming) +
+               histogram_tester.GetBucketCount(
+                   blink::v8_compile_hints::kStatusHistogram,
+                   blink::v8_compile_hints::Status::kNoCompileHintsStreaming));
+  }
+
+  // Navigate away.
+  EXPECT_TRUE(NavigateToURL(shell(), other_page));
+
+  {
+    // Navigate to the same test page again and check that local compile hints
+    // weren't hit.
+    base::HistogramTester histogram_tester;
+    EXPECT_TRUE(NavigateToURL(shell(), cacheable_page));
+
+    FetchHistogramsFromChildProcesses();
+
+    EXPECT_EQ(
+        1, histogram_tester.GetBucketCount(
+               blink::v8_compile_hints::kStatusHistogram,
+               blink::v8_compile_hints::Status::
+                   kNoCompileHintsClassicNonStreaming) +
+               histogram_tester.GetBucketCount(
+                   blink::v8_compile_hints::kStatusHistogram,
+                   blink::v8_compile_hints::Status::kNoCompileHintsStreaming));
+  }
+
+  // Navigate away.
+  EXPECT_TRUE(NavigateToURL(shell(), other_page));
+
+  {
+    // Navigate to the same test page again and check for a code cache hit.
+    base::HistogramTester histogram_tester;
+    EXPECT_TRUE(NavigateToURL(shell(), cacheable_page));
+
+    FetchHistogramsFromChildProcesses();
+
+    histogram_tester.ExpectBucketCount(
+        blink::v8_compile_hints::kStatusHistogram,
+        blink::v8_compile_hints::Status::kConsumeCodeCacheClassicNonStreaming,
+        1);
+  }
+}
+
 IN_PROC_BROWSER_TEST_F(LocalCompileHintsBrowserTest, LocalCompileHints) {
   // TODO(chromium:1495723): Migrate this test to use use counters once we no
   // longer have the histograms.
@@ -588,6 +670,10 @@ IN_PROC_BROWSER_TEST_F(LocalCompileHintsBrowserTest, LocalCompileHints) {
                          blink::v8_compile_hints::kStatusHistogram,
                          blink::v8_compile_hints::Status::
                              kProduceCompileHintsStreaming));
+    EXPECT_EQ(1,
+              histogram_tester.GetBucketCount(
+                  blink::v8_compile_hints::kLocalCompileHintsGeneratedHistogram,
+                  blink::v8_compile_hints::LocalCompileHintsGenerated::kFinal));
   }
 
   // Navigate away.

@@ -13,7 +13,7 @@
 #include "base/functional/bind.h"
 #include "base/location.h"
 #include "base/memory/nonscannable_memory.h"
-#include "base/memory/raw_ptr.h"
+#include "base/memory/stack_allocated.h"
 #include "base/no_destructor.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_job.h"
@@ -61,70 +61,13 @@ class ConvertableToTraceFormatWrapper final
   std::unique_ptr<v8::ConvertableToTraceFormat> inner_;
 };
 
-#if !BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
-class EnabledStateObserverImpl final
-    : public base::trace_event::TraceLog::EnabledStateObserver {
- public:
-  EnabledStateObserverImpl() {
-    base::trace_event::TraceLog::GetInstance()->AddEnabledStateObserver(this);
-  }
 
-  EnabledStateObserverImpl(const EnabledStateObserverImpl&) = delete;
-
-  EnabledStateObserverImpl& operator=(const EnabledStateObserverImpl&) = delete;
-
-  ~EnabledStateObserverImpl() override {
-    base::trace_event::TraceLog::GetInstance()->RemoveEnabledStateObserver(
-        this);
-  }
-
-  void OnTraceLogEnabled() final {
-    base::AutoLock lock(mutex_);
-    for (auto* o : observers_) {
-      o->OnTraceEnabled();
-    }
-  }
-
-  void OnTraceLogDisabled() final {
-    base::AutoLock lock(mutex_);
-    for (auto* o : observers_) {
-      o->OnTraceDisabled();
-    }
-  }
-
-  void AddObserver(v8::TracingController::TraceStateObserver* observer) {
-    {
-      base::AutoLock lock(mutex_);
-      DCHECK(!observers_.count(observer));
-      observers_.insert(observer);
-    }
-
-    // Fire the observer if recording is already in progress.
-    if (base::trace_event::TraceLog::GetInstance()->IsEnabled())
-      observer->OnTraceEnabled();
-  }
-
-  void RemoveObserver(v8::TracingController::TraceStateObserver* observer) {
-    base::AutoLock lock(mutex_);
-    DCHECK(observers_.count(observer) == 1);
-    observers_.erase(observer);
-  }
-
- private:
-  base::Lock mutex_;
-  std::unordered_set<v8::TracingController::TraceStateObserver*> observers_;
-};
-
-base::LazyInstance<EnabledStateObserverImpl>::Leaky g_trace_state_dispatcher =
-    LAZY_INSTANCE_INITIALIZER;
-#endif  // !BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
-
-#if BUILDFLAG(USE_PARTITION_ALLOC)
+#if PA_BUILDFLAG(USE_PARTITION_ALLOC)
 
 base::LazyInstance<gin::PageAllocator>::Leaky g_page_allocator =
     LAZY_INSTANCE_INITIALIZER;
 
-#endif  // BUILDFLAG(USE_PARTITION_ALLOC)
+#endif  // PA_BUILDFLAG(USE_PARTITION_ALLOC)
 
 base::TaskPriority ToBaseTaskPriority(v8::TaskPriority priority) {
   switch (priority) {
@@ -138,6 +81,8 @@ base::TaskPriority ToBaseTaskPriority(v8::TaskPriority priority) {
 }
 
 class JobDelegateImpl : public v8::JobDelegate {
+  STACK_ALLOCATED();
+
  public:
   explicit JobDelegateImpl(base::JobDelegate* delegate) : delegate_(delegate) {}
   JobDelegateImpl() = default;
@@ -154,7 +99,7 @@ class JobDelegateImpl : public v8::JobDelegate {
   bool IsJoiningThread() const override { return delegate_->IsJoiningThread(); }
 
  private:
-  raw_ptr<base::JobDelegate> delegate_;
+  base::JobDelegate* delegate_ = nullptr;
 };
 
 class JobHandleImpl : public v8::JobHandle {
@@ -237,80 +182,6 @@ class V8Platform::TracingControllerImpl : public v8::TracingController {
   ~TracingControllerImpl() override = default;
 
   // TracingController implementation.
-#if !BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
-  const uint8_t* GetCategoryGroupEnabled(const char* name) override {
-    return TRACE_EVENT_API_GET_CATEGORY_GROUP_ENABLED(name);
-  }
-  uint64_t AddTraceEvent(
-      char phase,
-      const uint8_t* category_enabled_flag,
-      const char* name,
-      const char* scope,
-      uint64_t id,
-      uint64_t bind_id,
-      int32_t num_args,
-      const char** arg_names,
-      const uint8_t* arg_types,
-      const uint64_t* arg_values,
-      std::unique_ptr<v8::ConvertableToTraceFormat>* arg_convertables,
-      unsigned int flags) override {
-    base::trace_event::TraceArguments args(
-        num_args, arg_names, arg_types,
-        reinterpret_cast<const unsigned long long*>(arg_values),
-        arg_convertables);
-    DCHECK_LE(num_args, 2);
-    base::trace_event::TraceEventHandle handle =
-        TRACE_EVENT_API_ADD_TRACE_EVENT_WITH_BIND_ID(
-            phase, category_enabled_flag, name, scope, id, bind_id, &args,
-            flags);
-    uint64_t result;
-    memcpy(&result, &handle, sizeof(result));
-    return result;
-  }
-  uint64_t AddTraceEventWithTimestamp(
-      char phase,
-      const uint8_t* category_enabled_flag,
-      const char* name,
-      const char* scope,
-      uint64_t id,
-      uint64_t bind_id,
-      int32_t num_args,
-      const char** arg_names,
-      const uint8_t* arg_types,
-      const uint64_t* arg_values,
-      std::unique_ptr<v8::ConvertableToTraceFormat>* arg_convertables,
-      unsigned int flags,
-      int64_t timestampMicroseconds) override {
-    base::trace_event::TraceArguments args(
-        num_args, arg_names, arg_types,
-        reinterpret_cast<const unsigned long long*>(arg_values),
-        arg_convertables);
-    DCHECK_LE(num_args, 2);
-    base::TimeTicks timestamp =
-        base::TimeTicks() + base::Microseconds(timestampMicroseconds);
-    base::trace_event::TraceEventHandle handle =
-        TRACE_EVENT_API_ADD_TRACE_EVENT_WITH_THREAD_ID_AND_TIMESTAMP(
-            phase, category_enabled_flag, name, scope, id, bind_id,
-            TRACE_EVENT_API_CURRENT_THREAD_ID, timestamp, &args, flags);
-    uint64_t result;
-    memcpy(&result, &handle, sizeof(result));
-    return result;
-  }
-  void UpdateTraceEventDuration(const uint8_t* category_enabled_flag,
-                                const char* name,
-                                uint64_t handle) override {
-    base::trace_event::TraceEventHandle traceEventHandle;
-    memcpy(&traceEventHandle, &handle, sizeof(handle));
-    TRACE_EVENT_API_UPDATE_TRACE_EVENT_DURATION(category_enabled_flag, name,
-                                                traceEventHandle);
-  }
-  void AddTraceStateObserver(TraceStateObserver* observer) override {
-    g_trace_state_dispatcher.Get().AddObserver(observer);
-  }
-  void RemoveTraceStateObserver(TraceStateObserver* observer) override {
-    g_trace_state_dispatcher.Get().RemoveObserver(observer);
-  }
-#endif  // !BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
 };
 
 // static
@@ -320,19 +191,19 @@ V8Platform::V8Platform() : tracing_controller_(new TracingControllerImpl) {}
 
 V8Platform::~V8Platform() = default;
 
-#if BUILDFLAG(USE_PARTITION_ALLOC)
+#if PA_BUILDFLAG(USE_PARTITION_ALLOC)
 PageAllocator* V8Platform::GetPageAllocator() {
   return g_page_allocator.Pointer();
 }
 
-#if BUILDFLAG(ENABLE_THREAD_ISOLATION)
+#if PA_BUILDFLAG(ENABLE_THREAD_ISOLATION)
 ThreadIsolatedAllocator* V8Platform::GetThreadIsolatedAllocator() {
   if (!GetThreadIsolationData().Initialized()) {
     return nullptr;
   }
   return GetThreadIsolationData().allocator.get();
 }
-#endif  // BUILDFLAG(ENABLE_THREAD_ISOLATION)
+#endif  // PA_BUILDFLAG(ENABLE_THREAD_ISOLATION)
 
 void V8Platform::OnCriticalMemoryPressure() {
 // We only have a reservation on 32-bit Windows systems.
@@ -351,7 +222,7 @@ v8::ZoneBackingAllocator* V8Platform::GetZoneBackingAllocator() {
   } allocator;
   return &allocator;
 }
-#endif  // BUILDFLAG(USE_PARTITION_ALLOC)
+#endif  // PA_BUILDFLAG(USE_PARTITION_ALLOC)
 
 std::shared_ptr<v8::TaskRunner> V8Platform::GetForegroundTaskRunner(
     v8::Isolate* isolate,

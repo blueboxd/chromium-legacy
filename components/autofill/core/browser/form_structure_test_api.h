@@ -12,6 +12,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/raw_ref.h"
 #include "components/autofill/core/browser/form_structure.h"
+#include "components/autofill/core/browser/form_structure_sectioning_util.h"
 
 namespace autofill {
 
@@ -20,8 +21,8 @@ class FormStructureTestApi {
  public:
   using ShouldBeParsedParams = FormStructure::ShouldBeParsedParams;
 
-  explicit FormStructureTestApi(FormStructure* form_structure)
-      : form_structure_(*form_structure) {}
+  explicit FormStructureTestApi(FormStructure& form_structure)
+      : form_structure_(form_structure) {}
 
   AutofillField& PushField() {
     form_structure_->fields_.push_back(std::make_unique<AutofillField>());
@@ -68,9 +69,7 @@ class FormStructureTestApi {
   // returns NO_INFORMATION.
   AutofillUploadContents::Field::VoteType get_username_vote_type();
 
-  void IdentifySections(bool ignore_autocomplete) {
-    form_structure_->IdentifySections(ignore_autocomplete);
-  }
+  void AssignSections() { autofill::AssignSections(form_structure_->fields_); }
 
   bool phone_rationalized(const Section& section) const {
     return base::Contains(form_structure_->phone_rationalized_, section);
@@ -90,12 +89,8 @@ class FormStructureTestApi {
   const raw_ref<FormStructure> form_structure_;
 };
 
-inline FormStructureTestApi test_api(FormStructure* form_structure) {
-  return FormStructureTestApi(form_structure);
-}
-
 inline FormStructureTestApi test_api(FormStructure& form_structure) {
-  return FormStructureTestApi(&form_structure);
+  return FormStructureTestApi(form_structure);
 }
 
 }  // namespace autofill

@@ -20,7 +20,7 @@
 #include "chrome/browser/apps/app_service/promise_apps/promise_app.h"
 #include "chrome/browser/apps/app_service/promise_apps/promise_app_registry_cache.h"
 #include "chrome/browser/apps/app_service/promise_apps/promise_app_service.h"
-#include "chrome/browser/apps/app_service/web_contents_app_id_utils.h"
+#include "chrome/browser/apps/browser_instance/web_contents_instance_id_utils.h"
 #include "chrome/browser/ash/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ash/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ash/app_list/internal_app/internal_app_metadata.h"
@@ -49,6 +49,7 @@
 #include "components/services/app_service/public/cpp/shortcut/shortcut_registry_cache.h"
 #include "components/services/app_service/public/cpp/types_util.h"
 #include "content/public/browser/navigation_entry.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_util.h"
 #include "net/base/url_util.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -260,6 +261,24 @@ ash::AppStatus ShelfControllerHelper::GetAppStatus(Profile* profile,
       });
 
   return status;
+}
+
+// static
+bool ShelfControllerHelper::IsAppDefaultInstalled(Profile* profile,
+                                                  const std::string& app_id) {
+  if (!apps::AppServiceProxyFactory::IsAppServiceAvailableForProfile(profile)) {
+    return false;
+  }
+
+  bool default_installed = false;
+  apps::AppServiceProxyFactory::GetForProfile(profile)
+      ->AppRegistryCache()
+      .ForOneApp(app_id, [&default_installed](const apps::AppUpdate& update) {
+        default_installed =
+            update.InstallReason() == apps::InstallReason::kDefault ||
+            update.InstallReason() == apps::InstallReason::kSystem;
+      });
+  return default_installed;
 }
 
 std::string ShelfControllerHelper::GetAppID(content::WebContents* tab) {
@@ -517,6 +536,11 @@ bool ShelfControllerHelper::IsValidIDForArcApp(
     }
     if (!arc::IsArcPlayStoreEnabledForProfile(profile()) &&
         arc::IsArcPlayStoreEnabledPreferenceManagedForProfile(profile())) {
+      return false;
+    }
+    extensions::ExtensionRegistry* registry =
+        extensions::ExtensionRegistry::Get(profile_);
+    if (!registry->GetInstalledExtension(arc::kPlayStoreAppId)) {
       return false;
     }
     return true;

@@ -33,11 +33,11 @@ class RuleIteratorImpl : public RuleIterator {
  public:
   RuleIteratorImpl(const Iterator& current_rule,
                    const Iterator& rule_end,
-                   scoped_refptr<RefCountedAutoLock> auto_lock,
+                   std::unique_ptr<base::AutoLock> auto_lock,
                    base::AutoReset<bool> iterating)
-      : current_rule_(current_rule),
+      : auto_lock_(std::move(auto_lock)),
+        current_rule_(current_rule),
         rule_end_(rule_end),
-        auto_lock_(std::move(auto_lock)),
         iterating_(std::move(iterating)) {}
   ~RuleIteratorImpl() override = default;
 
@@ -54,9 +54,9 @@ class RuleIteratorImpl : public RuleIterator {
   }
 
  private:
+  std::unique_ptr<base::AutoLock> auto_lock_;
   Iterator current_rule_;
   Iterator rule_end_;
-  scoped_refptr<RefCountedAutoLock> auto_lock_;
   base::AutoReset<bool> iterating_;
 };
 
@@ -68,8 +68,7 @@ std::unique_ptr<RuleIterator> OriginValueMap::GetRuleIterator(
   // must be passed to the |RuleIteratorImpl| in a locked state, so that nobody
   // can access |entries_| after |find()| but before the |RuleIteratorImpl| is
   // created.
-  scoped_refptr<RefCountedAutoLock> auto_lock =
-      MakeRefCounted<RefCountedAutoLock>(lock_);
+  auto auto_lock = std::make_unique<base::AutoLock>(lock_);
   if (base::FeatureList::IsEnabled(features::kIndexedHostContentSettingsMap)) {
     auto it = entry_index().find(content_type);
     if (it == entry_index().end()) {

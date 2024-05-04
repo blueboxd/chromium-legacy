@@ -6,9 +6,9 @@
 
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/system/sys_info.h"
 
-namespace lens {
-namespace features {
+namespace lens::features {
 
 BASE_FEATURE(kLensStandalone,
              "LensStandalone",
@@ -47,6 +47,40 @@ BASE_FEATURE(kEnableContextMenuInLensSidePanel,
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kLensOverlay, "LensOverlay", base::FEATURE_DISABLED_BY_DEFAULT);
+const base::FeatureParam<int> kLensOverlayMinRamMb{&kLensOverlay, "min_ram_mb",
+                                                   /*default=value=*/-1};
+const base::FeatureParam<std::string> kResultsSearchUrl{
+    &kLensOverlay, "results-search-url", "https://www.google.com/search"};
+const base::FeatureParam<int> kLensOverlayScreenshotRenderQuality{
+    &kLensOverlay, "overlay-screenshot-render-quality", 90};
+const base::FeatureParam<int> kLensOverlayImageCompressionQuality{
+    &kLensOverlay, "image-compression-quality", 40};
+const base::FeatureParam<int> kLensOverlayImageMaxArea{
+    &kLensOverlay, "image-dimensions-max-area", 1300000};
+const base::FeatureParam<int> kLensOverlayImageMaxHeight{
+    &kLensOverlay, "image-dimensions-max-height", 1500};
+const base::FeatureParam<int> kLensOverlayImageMaxWidth{
+    &kLensOverlay, "image-dimensions-max-width", 1500};
+const base::FeatureParam<bool> kLensOverlayDebuggingMode{
+    &kLensOverlay, "debugging-mode", false};
+const base::FeatureParam<int> kLensOverlayVerticalTextMargin{
+    &kLensOverlay, "text-vertical-margin", 4};
+const base::FeatureParam<int> kLensOverlayHorizontalTextMargin{
+    &kLensOverlay, "text-horizontal-margin", 4};
+const base::FeatureParam<bool> kLensOverlaySearchBubble{&kLensOverlay,
+                                                        "search-bubble", false};
+const base::FeatureParam<bool> kLensOverlayEnableShimmer{
+    &kLensOverlay, "enable-shimmer", false};
+
+constexpr base::FeatureParam<std::string> kLensOverlayEndpointUrl{
+    &kLensOverlay, "endpoint-url",
+    "https://lensfrontend-pa.googleapis.com/v1/crupload"};
+
+constexpr base::FeatureParam<bool> kUseOauthForLensOverlayRequests{
+    &kLensOverlay, "use-oauth-for-requests", true};
+
+constexpr base::FeatureParam<int> kLensOverlayClusterInfoLifetimeSeconds{
+    &kLensOverlay, "cluster-info-lifetime-seconds", 600};
 
 constexpr base::FeatureParam<std::string> kHomepageURLForLens{
     &kLensStandalone, "lens-homepage-url", "https://lens.google.com/v3/"};
@@ -176,8 +210,67 @@ bool GetShouldIssueProcessPrewarmingForLens() {
 }
 
 bool IsLensOverlayEnabled() {
-  return base::FeatureList::IsEnabled(kLensOverlay);
+  if (!base::FeatureList::IsEnabled(kLensOverlay)) {
+    return false;
+  }
+  static int phys_mem_mb = base::SysInfo::AmountOfPhysicalMemoryMB();
+  return phys_mem_mb > kLensOverlayMinRamMb.Get();
 }
 
-}  // namespace features
-}  // namespace lens
+std::string GetLensOverlayResultsSearchURL() {
+  return kResultsSearchUrl.Get();
+}
+
+int GetLensOverlayImageCompressionQuality() {
+  return kLensOverlayImageCompressionQuality.Get();
+}
+
+int GetLensOverlayScreenshotRenderQuality() {
+  return kLensOverlayScreenshotRenderQuality.Get();
+}
+
+int GetLensOverlayImageMaxArea() {
+  return kLensOverlayImageMaxArea.Get();
+}
+
+int GetLensOverlayImageMaxHeight() {
+  return kLensOverlayImageMaxHeight.Get();
+}
+
+int GetLensOverlayImageMaxWidth() {
+  return kLensOverlayImageMaxWidth.Get();
+}
+
+std::string GetLensOverlayEndpointURL() {
+  return kLensOverlayEndpointUrl.Get();
+}
+
+bool IsLensOverlayDebuggingEnabled() {
+  return kLensOverlayDebuggingMode.Get();
+}
+
+bool UseOauthForLensOverlayRequests() {
+  return kUseOauthForLensOverlayRequests.Get();
+}
+
+int GetLensOverlayClusterInfoLifetimeSeconds() {
+  return kLensOverlayClusterInfoLifetimeSeconds.Get();
+}
+
+int GetLensOverlayVerticalTextMargin() {
+  return kLensOverlayVerticalTextMargin.Get();
+}
+
+int GetLensOverlayHorizontalTextMargin() {
+  return kLensOverlayHorizontalTextMargin.Get();
+}
+
+bool IsLensOverlaySearchBubbleEnabled() {
+  return kLensOverlaySearchBubble.Get();
+}
+
+bool IsLensOverlayShimmerEnabled() {
+  return kLensOverlayEnableShimmer.Get();
+}
+
+}  // namespace lens::features

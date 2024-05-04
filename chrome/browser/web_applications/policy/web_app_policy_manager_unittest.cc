@@ -5,6 +5,7 @@
 #include "chrome/browser/web_applications/policy/web_app_policy_manager.h"
 
 #include <memory>
+#include <string_view>
 #include <tuple>
 #include <utility>
 #include <vector>
@@ -53,6 +54,7 @@
 #include "components/crx_file/id_util.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/webapps/browser/install_result_code.h"
+#include "components/webapps/common/web_app_id.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -320,7 +322,7 @@ ExternalInstallOptions GetCustomAppIconInstallOptions(
   return options;
 }
 
-void SetWebAppSettingsListPref(Profile* profile, const base::StringPiece pref) {
+void SetWebAppSettingsListPref(Profile* profile, const std::string_view pref) {
   ASSERT_OK_AND_ASSIGN(
       auto result,
       base::JSONReader::ReadAndReturnValueWithError(
@@ -330,7 +332,7 @@ void SetWebAppSettingsListPref(Profile* profile, const base::StringPiece pref) {
 }
 
 void SetWebAppInstallForceListPref(Profile* profile,
-                                   const base::StringPiece pref) {
+                                   const std::string_view pref) {
   ASSERT_OK_AND_ASSIGN(
       auto result,
       base::JSONReader::ReadAndReturnValueWithError(
@@ -356,7 +358,7 @@ class WebAppPolicyManagerTestBase : public ChromeRenderViewHostTestHarness {
     // Need to run the ChromeRenderViewHostTestHarness::SetUp() after the fake
     // user manager set up so that the scoped_user_manager can be destructed in
     // the correct order.
-    // TODO(crbug.com/1463865): Consider setting up a fake user in all Ash web
+    // TODO(crbug.com/40275387): Consider setting up a fake user in all Ash web
     // app tests.
     auto user_manager = std::make_unique<ash::FakeChromeUserManager>();
     auto* fake_user_manager = user_manager.get();
@@ -461,9 +463,7 @@ class WebAppPolicyManagerTestBase : public ChromeRenderViewHostTestHarness {
  protected:
   void InstallPwa(const std::string& url) {
     std::unique_ptr<WebAppInstallInfo> web_app_info =
-        std::make_unique<WebAppInstallInfo>(
-            GenerateManifestIdFromStartUrlOnly(GURL(url)));
-    web_app_info->start_url = GURL(url);
+        WebAppInstallInfo::CreateWithStartUrlForTesting(GURL(url));
     web_app::test::InstallWebApp(profile(), std::move(web_app_info));
   }
 
@@ -1692,8 +1692,7 @@ class WebAppPolicyForceUnregistrationTest : public WebAppTest {
         web_app::kDesktopPWAsForceUnregisterOSIntegration);
     {
       base::ScopedAllowBlockingForTesting allow_blocking;
-      test_override_ =
-          OsIntegrationTestOverrideImpl::OverrideForTesting(base::GetHomeDir());
+      test_override_ = OsIntegrationTestOverrideImpl::OverrideForTesting();
     }
     provider_ = FakeWebAppProvider::Get(profile());
 
@@ -1705,7 +1704,7 @@ class WebAppPolicyForceUnregistrationTest : public WebAppTest {
         profile(), file_handler_manager.get(), protocol_handler_manager.get());
     auto os_integration_manager = std::make_unique<OsIntegrationManager>(
         profile(), std::move(shortcut_manager), std::move(file_handler_manager),
-        std::move(protocol_handler_manager), /*url_handler_manager=*/nullptr);
+        std::move(protocol_handler_manager));
 
     provider_->SetOsIntegrationManager(std::move(os_integration_manager));
     test::AwaitStartWebAppProviderAndSubsystems(profile());
@@ -1737,14 +1736,13 @@ class WebAppPolicyForceUnregistrationTest : public WebAppTest {
       std::map<SquareSizePx, SkBitmap> icon_map,
       const GURL manifest_id) {
     std::unique_ptr<WebAppInstallInfo> info =
-        std::make_unique<WebAppInstallInfo>();
-    info->start_url = manifest_id;
+        std::make_unique<WebAppInstallInfo>(webapps::ManifestId(manifest_id),
+                                            /*start_url=*/manifest_id);
     // The name of the app should also change, otherwise on Mac and Windows, the
     // shortcuts are stored as name(1) and gets wiped out with name.
     info->title = base::UTF8ToUTF16(manifest_id.host());
     info->user_display_mode = web_app::mojom::UserDisplayMode::kStandalone;
     info->icon_bitmaps.any = std::move(icon_map);
-    info->manifest_id = manifest_id;
     base::test::TestFuture<const webapps::AppId&, webapps::InstallResultCode>
         result;
     provider().scheduler().InstallFromInfoWithParams(

@@ -88,7 +88,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="interstitial.CloseReason" enum="InterstitialCloseReason"
-    expires_after="2024-07-14">
+    expires_after="2024-09-15">
   <owner>xinghuilu@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -100,7 +100,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="interstitial.enterprise_block.decision"
-    enum="SecurityInterstitialDecision" expires_after="2024-08-11">
+    enum="SecurityInterstitialDecision" expires_after="2025-01-21">
   <owner>domfc@chromium.org</owner>
   <owner>dpr-eng@google.com</owner>
   <summary>
@@ -120,7 +120,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="interstitial.enterprise_block.interaction"
-    enum="SecurityInterstitialInteraction" expires_after="2024-05-26">
+    enum="SecurityInterstitialInteraction" expires_after="2025-01-21">
   <owner>domfc@chromium.org</owner>
   <owner>dpr-eng@google.com</owner>
   <summary>
@@ -345,7 +345,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="interstitial.{SecurityInterstitialSBType}decision{RepeatVisit}{IsPostCommitInterstitialSuffix}"
-    enum="SecurityInterstitialDecision" expires_after="2024-07-23">
+    enum="SecurityInterstitialDecision" expires_after="2024-09-22">
   <owner>xinghuilu@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -395,7 +395,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="interstitial.{SecurityInterstitialSBType}interaction{IsPostCommitInterstitialSuffix}"
-    enum="SecurityInterstitialInteraction" expires_after="2024-07-23">
+    enum="SecurityInterstitialInteraction" expires_after="2024-09-22">
   <owner>xinghuilu@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -436,7 +436,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="interstitial.{SecurityInterstitialSBType}show_delay{SecurityInterstitialSBWithSourceType}"
-    units="ms" expires_after="2024-07-23">
+    units="ms" expires_after="2024-09-22">
   <owner>xinghuilu@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -454,7 +454,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="TypedNavigationUpgradeThrottle.Event"
-    enum="TypedNavigationUpgradeThrottleEvent" expires_after="2024-07-21">
+    enum="TypedNavigationUpgradeThrottleEvent" expires_after="2024-09-22">
   <owner>meacer@chromium.org</owner>
   <owner>trusty-transport@chromium.org</owner>
   <summary>

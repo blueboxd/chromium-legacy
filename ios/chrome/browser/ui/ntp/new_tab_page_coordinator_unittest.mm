@@ -9,12 +9,15 @@
 #import "base/test/metrics/histogram_tester.h"
 #import "base/test/scoped_feature_list.h"
 #import "base/test/task_environment.h"
+#import "components/commerce/core/mock_shopping_service.h"
 #import "components/variations/service/variations_service.h"
 #import "components/variations/service/variations_service_client.h"
 #import "components/variations/synthetic_trial_registry.h"
+#import "ios/chrome/browser/commerce/model/shopping_service_factory.h"
 #import "ios/chrome/browser/favicon/model/ios_chrome_large_icon_service_factory.h"
 #import "ios/chrome/browser/ntp/model/new_tab_page_tab_helper.h"
 #import "ios/chrome/browser/search_engines/model/template_url_service_factory.h"
+#import "ios/chrome/browser/segmentation_platform/model/segmentation_platform_service_factory.h"
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
 #import "ios/chrome/browser/shared/model/browser/test/test_browser.h"
 #import "ios/chrome/browser/shared/model/browser_state/test_chrome_browser_state.h"
@@ -72,7 +75,7 @@ using variations::VariationsServiceClient;
 
 namespace {
 
-// TODO(crbug.com/1167566): Remove when fake VariationsServiceClient created.
+// TODO(crbug.com/40742801): Remove when fake VariationsServiceClient created.
 class TestVariationsServiceClient : public VariationsServiceClient {
  public:
   TestVariationsServiceClient() = default;
@@ -156,6 +159,18 @@ class NewTabPageCoordinatorTest : public PlatformTest {
     test_cbs_builder.AddTestingFactory(
         AuthenticationServiceFactory::GetInstance(),
         AuthenticationServiceFactory::GetDefaultFactory());
+    test_cbs_builder.AddTestingFactory(
+        commerce::ShoppingServiceFactory::GetInstance(),
+        base::BindRepeating(
+            [](web::BrowserState*) -> std::unique_ptr<KeyedService> {
+              return std::make_unique<commerce::MockShoppingService>();
+            }));
+    test_cbs_builder.AddTestingFactory(
+        segmentation_platform::SegmentationPlatformServiceFactory::
+            GetInstance(),
+        base::BindRepeating(
+            segmentation_platform::SegmentationPlatformServiceFactory::
+                GetDefaultFactory()));
     browser_state_ = test_cbs_builder.Build();
     AuthenticationServiceFactory::CreateAndInitializeForBrowserState(
         browser_state_.get(),
@@ -203,7 +218,7 @@ class NewTabPageCoordinatorTest : public PlatformTest {
     // Mocks the component factory so that the NTP is tested with a fake feed.
     // This allows testing of feed-dependent views, such as the feed top
     // section.
-    // TODO(crbug.com/1441139): Replace this with a
+    // TODO(crbug.com/40266435): Replace this with a
     // FakeNewTabPageComponentFactory implementation.
     component_factory_mock_ =
         OCMPartialMock([[NewTabPageComponentFactory alloc] init]);
@@ -404,35 +419,9 @@ TEST_F(NewTabPageCoordinatorTest, StartIsStartShowing) {
       std::make_unique<ScopedBlockSwizzler>([NewTabPageMediator class],
                                             @selector(setUp), swizzle_block);
 
-  id coordinator_mock = OCMClassMock([ContentSuggestionsCoordinator class]);
-  ContentSuggestionsCoordinator* mockContentSuggestionsCoordinator =
-      coordinator_mock;
-
-  // Set next NTP as start surface. Test that starting the NTP and navigating to
-  // it configures the start surface.
-  OCMExpect([coordinator_mock alloc]).andReturn(coordinator_mock);
-  OCMExpect([coordinator_mock initWithBaseViewController:[OCMArg any]
-                                                 browser:browser_.get()])
-      .andReturn(mockContentSuggestionsCoordinator);
   NewTabPageTabHelper::FromWebState(web_state_)->SetShowStartSurface(true);
-  OCMExpect([coordinator_mock configureStartSurfaceIfNeeded]);
   [coordinator_ start];
   [coordinator_ didNavigateToNTPInWebState:web_state_];
-
-  // Test opening a Start surface with another NTP tab opened in the background
-  // (e.g. the NTP coordinator is already started).
-  [coordinator_ didNavigateAwayFromNTP];
-  [coordinator_ stop];
-  OCMExpect([coordinator_mock alloc]).andReturn(coordinator_mock);
-  OCMExpect([coordinator_mock initWithBaseViewController:[OCMArg any]
-                                                 browser:browser_.get()])
-      .andReturn(mockContentSuggestionsCoordinator);
-  [coordinator_ start];
-  NewTabPageTabHelper::FromWebState(web_state_)->SetShowStartSurface(true);
-  OCMExpect([coordinator_mock configureStartSurfaceIfNeeded]);
-  [coordinator_ didNavigateToNTPInWebState:web_state_];
-  EXPECT_OCMOCK_VERIFY(coordinator_mock);
-
   // Test `-didNavigateAwayFromNTPWithinWebState` when currently showing Start
   // resets the configuration.
   [coordinator_ didNavigateAwayFromNTP];
@@ -442,16 +431,9 @@ TEST_F(NewTabPageCoordinatorTest, StartIsStartShowing) {
 
   // Test the active WebState updates NTP Start state to false if it
   // began as true.
-  // NewTabPageTabHelper::FromWebState(web_state_)->SetShowStartSurface(true);
-  OCMExpect([coordinator_mock alloc]).andReturn(coordinator_mock);
-  OCMExpect([coordinator_mock initWithBaseViewController:[OCMArg any]
-                                                 browser:browser_.get()])
-      .andReturn(mockContentSuggestionsCoordinator);
-  OCMExpect([coordinator_mock configureStartSurfaceIfNeeded]);
   NewTabPageTabHelper::FromWebState(web_state_)->SetShowStartSurface(true);
   [coordinator_ start];
   [coordinator_ didNavigateToNTPInWebState:web_state_];
-  EXPECT_OCMOCK_VERIFY(coordinator_mock);
   // Save reference before `web_state_` is set to new active WebState.
   web::WebState* start_web_state = web_state_;
   // Simulate the active WebState change callback.
@@ -461,57 +443,6 @@ TEST_F(NewTabPageCoordinatorTest, StartIsStartShowing) {
   // original WebState's TabHelper should be NO.
   EXPECT_FALSE(NewTabPageTabHelper::FromWebState(start_web_state)
                    ->ShouldShowStartSurface());
-  [coordinator_ stop];
-
-  // Test `-start` doesn't set `isStartShowing` if NTPTabHelper's
-  // `-ShouldShowStartSurface` is false.
-  NewTabPageTabHelper::FromWebState(web_state_)->SetShowStartSurface(false);
-  [[coordinator_mock reject] configureStartSurfaceIfNeeded];
-  SetNTPAsCurrentURL();
-  [coordinator_ start];
-  [coordinator_ didNavigateToNTPInWebState:web_state_];
-  EXPECT_OCMOCK_VERIFY(coordinator_mock);
-  [coordinator_ stop];
-}
-
-// Tests that tapping on the fake omnibox logs the correct metric depending on
-// if Start is configured.
-TEST_F(NewTabPageCoordinatorTest, FakeboxTappedMetricLogging) {
-  CreateCoordinator(/*off_the_record=*/false);
-  SetupCommandHandlerMocks();
-
-  // Test `-start` sets `isStartShowing` to true/false, depending on
-  // SetShowStartSurface.
-  NewTabPageTabHelper::FromWebState(web_state_)->SetShowStartSurface(true);
-  [coordinator_ start];
-  [coordinator_ didNavigateToNTPInWebState:web_state_];
-  histogram_tester_->ExpectUniqueSample("IOS.Start.Click",
-                                        IOSHomeActionType::kFakebox, 0);
-  [coordinator_ fakeboxTapped];
-  histogram_tester_->ExpectUniqueSample("IOS.Start.Click",
-                                        IOSHomeActionType::kFakebox, 1);
-  web::FakeNavigationContext navigation_context;
-  navigation_context.SetUrl(GURL("chrome://version"));
-  static_cast<web::FakeWebState*>(web_state_)
-      ->OnNavigationStarted(&navigation_context);
-  [coordinator_ didNavigateAwayFromNTP];
-  [coordinator_ stopIfNeeded];
-  ASSERT_FALSE(coordinator_.started);
-
-  // Simulate navigate away and then back to non-Start NTP.
-  SetNTPAsCurrentURL();
-  [coordinator_ start];
-  [coordinator_ didNavigateToNTPInWebState:web_state_];
-  histogram_tester_->ExpectUniqueSample("IOS.Start.Click",
-                                        IOSHomeActionType::kFakebox, 1);
-  histogram_tester_->ExpectUniqueSample("IOS.NTP.Click",
-                                        IOSHomeActionType::kFakebox, 0);
-  [coordinator_ fakeboxTapped];
-  histogram_tester_->ExpectUniqueSample("IOS.Start.Click",
-                                        IOSHomeActionType::kFakebox, 1);
-  histogram_tester_->ExpectUniqueSample("IOS.NTP.Click",
-                                        IOSHomeActionType::kFakebox, 1);
-  [coordinator_ didNavigateAwayFromNTP];
   [coordinator_ stop];
 }
 
@@ -530,6 +461,9 @@ TEST_F(NewTabPageCoordinatorTest, ShortcutsStartMetricLogging) {
 
   histogram_tester_->ExpectUniqueSample("IOS.Start.Click",
                                         IOSHomeActionType::kShortcuts, 0);
+  histogram_tester_->ExpectUniqueSample(
+      "IOS.MagicStack.Module.Click.OnStart",
+      ContentSuggestionsModuleType::kShortcuts, 0);
   histogram_tester_->ExpectTotalCount(kStartTimeSpentHistogram, 0);
   histogram_tester_->ExpectTotalCount(kStartImpressionHistogram, 1);
 
@@ -553,6 +487,9 @@ TEST_F(NewTabPageCoordinatorTest, ShortcutsStartMetricLogging) {
   // ShouldShowStartSurface() to false.
   histogram_tester_->ExpectUniqueSample("IOS.Start.Click",
                                         IOSHomeActionType::kShortcuts, 1);
+  histogram_tester_->ExpectUniqueSample(
+      "IOS.MagicStack.Module.Click.OnStart",
+      ContentSuggestionsModuleType::kShortcuts, 1);
   histogram_tester_->ExpectTotalCount(kStartTimeSpentHistogram, 1);
   histogram_tester_->ExpectTotalCount(kStartImpressionHistogram, 1);
   EXPECT_FALSE(
@@ -659,7 +596,6 @@ TEST_F(NewTabPageCoordinatorTest, ProxiesNTPViewControllerMethods) {
   [coordinator_ start];
   [coordinator_ didNavigateToNTPInWebState:web_state_];
 
-  ExpectMethodToProxyToVC(@selector(stopScrolling), @selector(stopScrolling));
   ExpectMethodToProxyToVC(@selector(isScrolledToTop),
                           @selector(isNTPScrolledToTop));
   ExpectMethodToProxyToVC(@selector(willUpdateSnapshot),

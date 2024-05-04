@@ -524,8 +524,16 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   void FlushCachedClientCertIfNeeded(
       const net::HostPortPair& host,
       const scoped_refptr<net::X509Certificate>& certificate) override;
+  void FlushMatchingCachedClientCert(
+      const scoped_refptr<net::X509Certificate>& certificate) override;
   void SetCookieDeprecationLabel(
       const std::optional<std::string>& label) override;
+  void RevokeNetworkForNonces(const std::vector<base::UnguessableToken>& nonces,
+                              RevokeNetworkForNoncesCallback callback) override;
+  void ExemptUrlFromNetworkRevocationForNonce(
+      const GURL& exempted_url,
+      const base::UnguessableToken& nonce,
+      ExemptUrlFromNetworkRevocationForNonceCallback callback) override;
 
   // Destroys |request| when a proxy lookup completes.
   void OnProxyLookupComplete(ProxyLookupRequest* proxy_lookup_request);
@@ -595,6 +603,11 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
     return url_loader_factories_.size();
   }
 
+  // Returns whether all URLLoaderFactories owned by `this` are bound to
+  // `bound_network`.
+  bool AllURLLoaderFactoriesAreBoundToNetworkForTesting(
+      net::handles::NetworkHandle bound_network) const;
+
   // Maintains Trust Tokens protocol state
   // (https://github.com/WICG/trust-token-api). Used by URLLoader to check
   // preconditions before annotating requests with protocol-related headers
@@ -653,10 +666,11 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
       const std::vector<net::ReportingEndpoint>& endpoints) override;
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 
-  // TODO(crbug.com/1478868): This is an interim method only for AFP block list
-  // experiment. This method should not be used for other use cases. This will
-  // be removed when AFP block list logic is migrated to subresource filter.
-  bool AfpBlockListExperimentEnabled() const;
+  // Checks whether network access for the partition nonce `nonce` and url
+  // `url` is allowed. See `network_revocation_nonces_` and
+  // `network_revocation_exemptions_`.
+  bool IsNetworkForNonceAndUrlAllowed(const base::UnguessableToken& nonce,
+                                      const GURL& url) const;
 
  private:
   class NetworkContextHttpAuthPreferences : public net::HttpAuthPreferences {
@@ -678,7 +692,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
           url_loader_factory_for_cert_net_fetcher,
       scoped_refptr<SessionCleanupCookieStore>,
       OnURLRequestContextBuilderConfiguredCallback
-          on_url_request_context_builder_configured);
+          on_url_request_context_builder_configured,
+      net::handles::NetworkHandle bound_network);
   scoped_refptr<SessionCleanupCookieStore> MakeSessionCleanupCookieStore()
       const;
 
@@ -734,7 +749,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   // `cert_verify_result.cert_status` and
   // `cert_verify_result.policy_compliance`. Returns net::OK or
   // net::ERR_CERTIFICATE_TRANSPARENCY_REQUIRED.
-  // TODO(crbug.com/828447): This code is more-or-less duplicated in
+  // TODO(crbug.com/41380502): This code is more-or-less duplicated in
   // SSLClientSocket and QUIC. Fold this into some CertVerifier-shaped class
   // in //net.
   int CheckCTRequirementsForSignedExchange(
@@ -790,6 +805,15 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
 
   mojom::NetworkContextParamsPtr params_;
 
+  // These must be below the URLRequestContext, so they're destroyed before it
+  // is.
+  // These should also be above receiver_ so the bindings are destroyed prior to
+  // the callbacks themselves.
+  std::vector<std::unique_ptr<HttpCacheDataRemover>> http_cache_data_removers_;
+  std::vector<std::unique_ptr<HttpCacheDataCounter>> http_cache_data_counters_;
+  std::set<std::unique_ptr<ProxyLookupRequest>, base::UniquePtrComparator>
+      proxy_lookup_requests_;
+
   // If non-null, called when the mojo pipe for the NetworkContext is closed.
   OnConnectionCloseCallback on_connection_close_callback_;
 
@@ -825,13 +849,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
 #if BUILDFLAG(ENABLE_WEBSOCKETS)
   std::unique_ptr<WebSocketFactory> websocket_factory_;
 #endif  // BUILDFLAG(ENABLE_WEBSOCKETS)
-
-  // These must be below the URLRequestContext, so they're destroyed before it
-  // is.
-  std::vector<std::unique_ptr<HttpCacheDataRemover>> http_cache_data_removers_;
-  std::vector<std::unique_ptr<HttpCacheDataCounter>> http_cache_data_counters_;
-  std::set<std::unique_ptr<ProxyLookupRequest>, base::UniquePtrComparator>
-      proxy_lookup_requests_;
 
   std::set<std::unique_ptr<WebTransport>, base::UniquePtrComparator>
       web_transports_;
@@ -972,6 +989,21 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
 
   scoped_refptr<MojoBackendFileOperationsFactory>
       http_cache_file_operations_factory_;
+
+  // A data structure that tracks partition nonces whose network requests
+  // should be blocked, for fenced frames network revocation.
+  // https://github.com/WICG/fenced-frame/blob/master/explainer/fenced_frames_with_local_unpartitioned_data_access.md#revoking-network-access
+  // New nonces are inserted by `RevokeNetworkForNonce`,
+  // and membership is checked with `IsNetworkForNonceAndUrlAllowed`.
+  std::set<base::UnguessableToken> network_revocation_nonces_;
+
+  // A data structure that tracks urls that should be exempted from network
+  // revocation, to facilitate testing.
+  // New urls are inserted by
+  // `ExemptUrlFromNetworkRevocationForNonce`
+  // and membership is checked with `IsNetworkForNonceAndUrlAllowed`.
+  std::map<base::UnguessableToken, std::set<GURL>>
+      network_revocation_exemptions_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

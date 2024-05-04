@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/check.h"
+#include "base/containers/contains.h"
 #include "base/containers/extend.h"
 #include "base/files/file_util.h"
 #include "base/notimplemented.h"
@@ -48,15 +49,10 @@ FakeNearbyConnections::~FakeNearbyConnections() = default;
 
 bool FakeNearbyConnections::SendFile(int64_t payload_id,
                                      std::vector<uint8_t>* transferred_bytes) {
-  constexpr int kTestFileSizeInBytes = 1000;
-  // To be more realistic, divide file transmission into a few chunks rather
-  // than delivering it all at once.
-  constexpr int kTestFileNumChunks = 4;
-
   if (transferred_bytes) {
     transferred_bytes->clear();
   }
-  if (!payload_listener_.is_bound()) {
+  if (!remote_to_local_payload_listener_.is_bound()) {
     LOG(ERROR) << "Payload listener not bound. Cannot send file yet.";
     return false;
   }
@@ -69,7 +65,7 @@ bool FakeNearbyConnections::SendFile(int64_t payload_id,
 
   RegisteredFilePayload file_handles = std::move(registered_files_iter->second);
   registered_files_.erase(registered_files_iter);
-  payload_listener_->OnPayloadReceived(
+  remote_to_local_payload_listener_->OnPayloadReceived(
       remote_endpoint_id_,
       ::nearby::connections::mojom::Payload::New(
           payload_id, ::nearby::connections::mojom::PayloadContent::NewFile(
@@ -77,16 +73,17 @@ bool FakeNearbyConnections::SendFile(int64_t payload_id,
                               std::move(file_handles.input_file)))));
 
   // For a successful case, break the file into 4 equal size chunks. For any
-  // failure case, transfer 1/4 of the file and then fail.
+  // failure case, transfer one chunk of the file and then fail.
+  PayloadStatus final_status = final_file_payload_status_.contains(payload_id)
+                                   ? final_file_payload_status_.at(payload_id)
+                                   : PayloadStatus::kSuccess;
   size_t num_chunks_to_transfer =
-      final_file_payload_status_ ==
-              ::nearby::connections::mojom::PayloadStatus::kSuccess
-          ? kTestFileNumChunks
-          : 1;
+      final_status == PayloadStatus::kSuccess ? test_file_num_chunks_ : 1;
   size_t total_bytes_transferred = 0;
   for (size_t chunk_idx = 0; chunk_idx < num_chunks_to_transfer; ++chunk_idx) {
-    const std::vector<uint8_t> new_chunk =
-        base::RandBytesAsVector(kTestFileSizeInBytes / kTestFileNumChunks);
+    const std::vector<uint8_t> new_chunk = base::RandBytesAsVector(
+        test_file_size_in_bytes_ / test_file_num_chunks_);
+    CHECK(!new_chunk.empty());
     base::File& output_file = file_handles.output_file;
     if (!output_file.WriteAtCurrentPosAndCheck(new_chunk) ||
         !output_file.Flush()) {
@@ -98,18 +95,53 @@ bool FakeNearbyConnections::SendFile(int64_t payload_id,
       base::Extend(*transferred_bytes, new_chunk);
     }
     total_bytes_transferred += new_chunk.size();
-    payload_listener_->OnPayloadTransferUpdate(
+    remote_to_local_payload_listener_->OnPayloadTransferUpdate(
         remote_endpoint_id_,
         ::nearby::connections::mojom::PayloadTransferUpdate::New(
-            payload_id,
-            ::nearby::connections::mojom::PayloadStatus::kInProgress,
-            kTestFileSizeInBytes, total_bytes_transferred));
+            payload_id, PayloadStatus::kInProgress, test_file_size_in_bytes_,
+            total_bytes_transferred));
   }
-  payload_listener_->OnPayloadTransferUpdate(
+  remote_to_local_payload_listener_->OnPayloadTransferUpdate(
       remote_endpoint_id_,
       ::nearby::connections::mojom::PayloadTransferUpdate::New(
-          payload_id, final_file_payload_status_, kTestFileSizeInBytes,
+          payload_id, final_status, test_file_size_in_bytes_,
           total_bytes_transferred));
+  return true;
+}
+
+void FakeNearbyConnections::SetFinalFilePayloadStatus(PayloadStatus status,
+                                                      int64_t payload_id) {
+  final_file_payload_status_[payload_id] = status;
+}
+
+bool FakeNearbyConnections::SendBytesPayload(int64_t payload_id,
+                                             const std::string& bytes) {
+  if (!remote_to_local_payload_listener_.is_bound()) {
+    LOG(ERROR) << "Payload listener not bound. Cannot send bytes yet.";
+    return false;
+  }
+
+  remote_to_local_payload_listener_->OnPayloadReceived(
+      remote_endpoint_id_,
+      ::nearby::connections::mojom::Payload::New(
+          payload_id,
+          ::nearby::connections::mojom::PayloadContent::NewBytes(
+              ::nearby::connections::mojom::BytesPayload::New(
+                  std::vector<uint8_t>(bytes.begin(), bytes.end())))));
+  remote_to_local_payload_listener_->OnPayloadTransferUpdate(
+      remote_endpoint_id_,
+      ::nearby::connections::mojom::PayloadTransferUpdate::New(
+          payload_id, PayloadStatus::kSuccess, bytes.size(), bytes.size()));
+  return true;
+}
+
+bool FakeNearbyConnections::SimulateRemoteDisconnect() {
+  if (!connection_listener_.is_bound()) {
+    return false;
+  }
+  auto connection_listener = std::move(connection_listener_);
+  DisconnectFromEndpoint(kServiceId, remote_endpoint_id_, base::DoNothing());
+  connection_listener->OnDisconnected(remote_endpoint_id_);
   return true;
 }
 
@@ -125,11 +157,13 @@ void FakeNearbyConnections::StartAdvertising(
                  << service_id;
   }
 
-  if (connection_listener_.is_bound()) {
+  if (is_advertising_) {
     std::move(callback).Run(Status::kAlreadyAdvertising);
     return;
   }
 
+  is_advertising_ = true;
+  connection_listener_.reset();
   connection_listener_.Bind(std::move(listener));
 
   // 1) Advertising starts successfully.
@@ -159,12 +193,11 @@ void FakeNearbyConnections::StartAdvertising(
 
 void FakeNearbyConnections::StopAdvertising(const std::string& service_id,
                                             StopAdvertisingCallback callback) {
-  if (service_id == kServiceId && connection_listener_.is_bound()) {
-    connection_listener_.reset();
-  } else {
+  if (service_id != kServiceId || !is_advertising_) {
     GTEST_FAIL() << "StopAdvertising() call invalid. service_id=" << service_id
-                 << " connection_listener_=" << connection_listener_.is_bound();
+                 << " is_advertising_=" << is_advertising_;
   }
+  is_advertising_ = false;
   std::move(callback).Run(Status::kSuccess);
 }
 
@@ -208,11 +241,11 @@ void FakeNearbyConnections::DisconnectFromEndpoint(
     DisconnectFromEndpointCallback callback) {
   if (service_id == kServiceId && endpoint_id == remote_endpoint_id_) {
     connection_listener_.reset();
-    payload_listener_.reset();
+    remote_to_local_payload_listener_.reset();
     registered_files_.clear();
   } else {
-    GTEST_FAIL() << "StopAdvertising() call invalid. service_id=" << service_id
-                 << " endpoint_id=" << endpoint_id;
+    GTEST_FAIL() << "DisconnectFromEndpoint() call invalid. service_id="
+                 << service_id << " endpoint_id=" << endpoint_id;
   }
   std::move(callback).Run(Status::kSuccess);
 }
@@ -233,12 +266,12 @@ void FakeNearbyConnections::AcceptConnection(
                  << " connection_listener_=" << connection_listener_.is_bound();
   }
 
-  if (payload_listener_.is_bound()) {
+  if (remote_to_local_payload_listener_.is_bound()) {
     std::move(callback).Run(Status::kAlreadyConnectedToEndpoint);
     return;
   }
 
-  payload_listener_.Bind(std::move(listener));
+  remote_to_local_payload_listener_.Bind(std::move(listener));
   std::move(callback).Run(Status::kSuccess);
   // In reality, the user would be prompted with a visual pin at this point and
   // need to confirm the transfer on the remote device before moving on. For
@@ -246,6 +279,10 @@ void FakeNearbyConnections::AcceptConnection(
   // (ChromeOS just sent the remote device an "accept connection", and now
   // the remote device sends an "accept connection" back).
   connection_listener_->OnConnectionAccepted(remote_endpoint_id_);
+
+  if (connection_established_listener_) {
+    connection_established_listener_.Run();
+  }
 }
 
 void FakeNearbyConnections::RejectConnection(
@@ -260,7 +297,28 @@ void FakeNearbyConnections::SendPayload(
     const std::vector<std::string>& endpoint_ids,
     ::nearby::connections::mojom::PayloadPtr payload,
     SendPayloadCallback callback) {
-  NOTIMPLEMENTED();
+  if (service_id != kServiceId) {
+    GTEST_FAIL() << "Sending payload to unexpected service_id " << service_id;
+  }
+
+  if (!base::Contains(endpoint_ids, remote_endpoint_id_)) {
+    std::move(callback).Run(Status::kEndpointUnknown);
+    return;
+  }
+
+  // `remote_to_local_payload_listener_` is only bound after both sides of the
+  // connection have been accepted. Although `remote_to_local_payload_listener_`
+  // is not used in this method, it reflects reality. The local device cannot
+  // send a payload until the connection is formed.
+  if (!remote_to_local_payload_listener_.is_bound()) {
+    std::move(callback).Run(Status::kOutOfOrderApiCall);
+    return;
+  }
+
+  if (local_to_remote_payload_listener_) {
+    local_to_remote_payload_listener_.Run(std::move(payload));
+  }
+  std::move(callback).Run(Status::kSuccess);
 }
 
 void FakeNearbyConnections::CancelPayload(const std::string& service_id,
@@ -338,6 +396,11 @@ void FakeNearbyConnections::DisconnectFromDeviceV3(
     const std::string& service_id,
     ash::nearby::presence::mojom::PresenceDevicePtr remote_device,
     DisconnectFromDeviceV3Callback callback) {
+  NOTIMPLEMENTED();
+}
+
+void FakeNearbyConnections::RegisterServiceWithPresenceDeviceProvider(
+    const std::string& service_id) {
   NOTIMPLEMENTED();
 }
 

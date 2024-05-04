@@ -835,14 +835,7 @@ void ChromeShelfController::PinAppAtIndex(const std::string& app_id,
   if (target_index < 0 || model_->IsAppPinned(app_id))
     return;
 
-  ash::ShelfItem item;
-  item.type = ash::TYPE_PINNED_APP;
-  item.id = ash::ShelfID(app_id);
-
-  model_->AddAt(target_index, item,
-                std::make_unique<AppShortcutShelfItemController>(item.id));
-
-  ReportUpdateShelfIconList(model_);
+  EnsureAppPinnedInModelAtIndex(app_id, /*current_index=*/-1, target_index);
 }
 
 int ChromeShelfController::PinnedItemIndexByAppID(const std::string& app_id) {
@@ -1693,7 +1686,7 @@ void ChromeShelfController::AddAppUpdaterAndIconLoader(Profile* profile) {
       app_icon_loaders_for_profile.emplace_back(
           std::make_unique<AppServiceShortcutIconLoader>(
               profile, extension_misc::EXTENSION_ICON_MEDIUM,
-              // TODO(crbug.com/1480423): Update the size after the effects
+              // TODO(crbug.com/40281395): Update the size after the effects
               // visual done.
               extension_misc::EXTENSION_ICON_SMALLISH, this));
     }

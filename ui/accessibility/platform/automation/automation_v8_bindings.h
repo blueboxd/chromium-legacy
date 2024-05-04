@@ -200,6 +200,15 @@ class COMPONENT_EXPORT(AX_PLATFORM) AutomationV8Bindings {
       const v8::FunctionCallbackInfo<v8::Value>& args) const;
 
   // Args: string ax_tree_id.
+  // returns: token.high and token.low used to represent an
+  // AXTreeID in is unguessable token format. Note that they are returned in
+  // string format and later converted to BigInt in JS. This is necessary
+  // because when converting uint64_t to JS number format they lose precision,
+  // which fails to build the correct AXTreeID.
+  void StringAXTreeIDToUnguessableToken(
+      const v8::FunctionCallbackInfo<v8::Value>& args) const;
+
+  // Args: string ax_tree_id.
   void SetDesktopID(const v8::FunctionCallbackInfo<v8::Value>& args);
 
   // Args: string ax_tree_id, int node_id
@@ -223,9 +232,6 @@ class COMPONENT_EXPORT(AX_PLATFORM) AutomationV8Bindings {
   // Returns: JS object with bindings back to the native AutomationPosition.
   void CreateAutomationPosition(
       const v8::FunctionCallbackInfo<v8::Value>& args);
-
-  void IsInteractPermitted(
-      const v8::FunctionCallbackInfo<v8::Value>& args) const;
 
   // Args: string ax_tree_id, int node_id
   // Returns: JS object with a string key for each state flag that's set.

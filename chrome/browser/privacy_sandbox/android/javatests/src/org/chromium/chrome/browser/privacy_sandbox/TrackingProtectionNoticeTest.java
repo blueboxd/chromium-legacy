@@ -21,6 +21,8 @@ import static org.mockito.Mockito.when;
 import static org.chromium.chrome.browser.privacy_sandbox.TrackingProtectionNoticeController.NOTICE_CONTROLLER_EVENT_HISTOGRAM;
 import static org.chromium.ui.test.util.ViewUtils.onViewWaiting;
 
+import android.os.Build;
+
 import androidx.test.espresso.Espresso;
 import androidx.test.filters.SmallTest;
 
@@ -32,7 +34,6 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.FeatureList;
-import org.chromium.base.StrictModeContext;
 import org.chromium.base.test.params.ParameterAnnotations;
 import org.chromium.base.test.params.ParameterAnnotations.UseRunnerDelegate;
 import org.chromium.base.test.params.ParameterProvider;
@@ -40,6 +41,7 @@ import org.chromium.base.test.params.ParameterSet;
 import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.HistogramWatcher;
 import org.chromium.base.test.util.JniMocker;
@@ -132,7 +134,8 @@ public final class TrackingProtectionNoticeTest {
         testValues.addFeatureFlagOverride(
                 ChromeFeatureList.TRACKING_PROTECTION_NOTICE_REQUEST_TRACKING, false);
         FeatureList.setTestValues(testValues);
-        var notShownWatcher =
+        // TODO(https://crbug.com/330768875) Fix flaky `notShownWatcher` assertion.
+        /*var notShownWatcher =
                 HistogramWatcher.newBuilder()
                         .expectIntRecords(
                                 NOTICE_CONTROLLER_EVENT_HISTOGRAM,
@@ -141,14 +144,16 @@ public final class TrackingProtectionNoticeTest {
                                 NoticeControllerEvent.NON_SECURE_CONNECTION,
                                 NoticeControllerEvent.NOTICE_REQUESTED_BUT_NOT_SHOWN)
                         .build();
+        */
 
         mFakeTrackingProtectionBridge.setRequiredNotice(NoticeType.ONBOARDING);
 
         sActivityTestRule.startMainActivityOnBlankPage();
         onView(withId(R.id.message_banner)).check(doesNotExist());
-        notShownWatcher.assertExpected();
+        // notShownWatcher.assertExpected();
 
-        var pageLoadWatcher =
+        // TODO(https://crbug.com/330768875) Fix flaky histogram assertion.
+        /* var pageLoadWatcher =
                 HistogramWatcher.newBuilder()
                         .expectIntRecords(
                                 NOTICE_CONTROLLER_EVENT_HISTOGRAM,
@@ -156,9 +161,10 @@ public final class TrackingProtectionNoticeTest {
                                 NoticeControllerEvent.NON_SECURE_CONNECTION,
                                 NoticeControllerEvent.NOTICE_REQUESTED_BUT_NOT_SHOWN)
                         .build();
+        */
         sActivityTestRule.loadUrl(UrlConstants.NTP_URL);
         onView(withId(R.id.message_banner)).check(doesNotExist());
-        pageLoadWatcher.assertExpected();
+        // pageLoadWatcher.assertExpected();
 
         setConnectionSecurityLevel(ConnectionSecurityLevel.SECURE);
         sActivityTestRule.loadUrl(UrlConstants.GOOGLE_URL);
@@ -213,7 +219,7 @@ public final class TrackingProtectionNoticeTest {
 
     @Test
     @SmallTest
-    // TODO(crbug.com/1497465): Fix flakiness on histogramWatcher assertion.
+    // TODO(crbug.com/40287090): Fix flakiness on histogramWatcher assertion.
     public void testNoticeNotShownMoreThanOnceWhenNewTabWithSecurePageIsOpened() {
         mFakeTrackingProtectionBridge.setRequiredNotice(NoticeType.ONBOARDING);
         sActivityTestRule.startMainActivityOnBlankPage();
@@ -298,6 +304,9 @@ public final class TrackingProtectionNoticeTest {
     @Test
     @SmallTest
     @ParameterAnnotations.UseMethodParameter(TPNoticeTestParams.class)
+    // TODO(crbug.com/40234615): Update Espresso to latest version. SwipeUp doesn't work with the
+    // current Espresso version and newest API levels.
+    @DisableIf.Build(sdk_is_greater_than = Build.VERSION_CODES.R)
     public void testNoticeDismissedByUser(@NoticeType int noticeType) {
         mFakeTrackingProtectionBridge.setRequiredNotice(noticeType);
         setConnectionSecurityLevel(ConnectionSecurityLevel.SECURE);
@@ -379,9 +388,7 @@ public final class TrackingProtectionNoticeTest {
                 .check(
                         (v, noMatchException) -> {
                             if (noMatchException != null) throw noMatchException;
-                            // Allow disk writes and slow calls to render from UI thread.
-                            try (StrictModeContext ignored =
-                                    StrictModeContext.allowAllThreadPolicies()) {
+                            try {
                                 TestThreadUtils.runOnUiThreadBlocking(
                                         () -> RenderTestRule.sanitize(v));
                                 mRenderTestRule.render(v, renderId);

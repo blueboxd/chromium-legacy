@@ -60,6 +60,11 @@ class AndroidPort(linux.LinuxPort):
                 self._filesystem.join(self.web_tests_dir(), 'SlowTests')
             ]))
 
+    def default_child_processes(self):
+        # Test against a single device by default to avoid timeouts
+        return 1
+
+
 # product constants used by the wpt runner.
 ANDROID_WEBVIEW = 'android_webview'
 CHROME_ANDROID = 'chrome_android'
@@ -70,6 +75,3 @@ PRODUCTS_TO_STEPNAMES = {
     ANDROID_WEBVIEW: 'system_webview_wpt',
     CHROME_ANDROID: 'chrome_public_wpt',
 }
-
-# Android web tests directory, which contains override expectation files
-ANDROID_WEB_TESTS_DIR = os.path.join(get_blink_dir(), 'web_tests', 'android')

@@ -165,7 +165,7 @@ bool ParseNonTransparentRGBACSSColorString(
 #if BUILDFLAG(IS_MAC)
   // On Mac, any opacity lower than 90% leaves rendering artifacts which make
   // it appear like there is a layer of faint text beneath the actual text.
-  // TODO(crbug.com/1199419): Fix the rendering issue and then remove this
+  // TODO(crbug.com/40177817): Fix the rendering issue and then remove this
   // workaround.
   a_int = std::max(static_cast<uint16_t>(SkColorGetA(color_provider->GetColor(
                        ui::kColorLiveCaptionBubbleBackgroundDefault))),
@@ -285,7 +285,7 @@ class CaptionBubbleFrameView : public views::BubbleFrameView {
     reset_inactivity_timer_cb_.Run();
   }
 
-  // TODO(crbug.com/1055150): This does not work on Linux because the bubble is
+  // TODO(crbug.com/40119836): This does not work on Linux because the bubble is
   // not a top-level view, so it doesn't receive events. See crbug.com/1074054
   // for more about why it doesn't work.
   int NonClientHitTest(const gfx::Point& point) override {
@@ -504,7 +504,7 @@ END_METADATA
 #if defined(NEED_FOCUS_FOR_ACCESSIBILITY)
 // A helper class to the CaptionBubbleLabel which observes AXMode changes and
 // updates the CaptionBubbleLabel focus behavior in response.
-// TODO(crbug.com/1191091): Implement a ui::AXModeObserver::OnAXModeRemoved
+// TODO(crbug.com/40756389): Implement a ui::AXModeObserver::OnAXModeRemoved
 // method which observes the removal of AXModes. Without that, the caption
 // bubble label will remain focusable once accessibility is enabled, even if
 // accessibility is later disabled.
@@ -536,7 +536,11 @@ class CaptionBubbleLabelAXModeObserver : public ui::AXModeObserver {
 CaptionBubble::CaptionBubble(PrefService* profile_prefs,
                              const std::string& application_locale,
                              base::OnceClosure destroyed_callback)
-    : profile_prefs_(profile_prefs),
+    : views::BubbleDialogDelegateView(nullptr,
+                                      views::BubbleBorder::TOP_LEFT,
+                                      views::BubbleBorder::DIALOG_SHADOW,
+                                      true),
+      profile_prefs_(profile_prefs),
       destroyed_callback_(std::move(destroyed_callback)),
       application_locale_(application_locale),
       is_expanded_(
@@ -642,7 +646,7 @@ void CaptionBubble::Init() {
   title->SetBackgroundColor(SK_ColorTRANSPARENT);
   title->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
   title->SetText(l10n_util::GetStringUTF16(IDS_LIVE_CAPTION_BUBBLE_TITLE));
-  title->GetViewAccessibility().OverrideIsIgnored(true);
+  title->GetViewAccessibility().SetIsIgnored(true);
 
   // Define an error message that will be displayed in the caption bubble if a
   // generic error is encountered.
@@ -790,7 +794,7 @@ void CaptionBubble::Init() {
                             base::Unretained(this)));
     language_label->SetHorizontalAlignment(
         gfx::HorizontalAlignment::ALIGN_LEFT);
-    language_label->GetViewAccessibility().OverrideIsIgnored(true);
+    language_label->GetViewAccessibility().SetIsIgnored(true);
 
     source_language_code_ =
         profile_prefs_->GetString(prefs::kLiveCaptionLanguageCode);
@@ -1485,7 +1489,7 @@ void CaptionBubble::UpdateContentSize() {
                          ? content_height - kLineHeightDip * text_scale_factor
                          : content_height;
   label_->SetPreferredSize(gfx::Size(width - kSidePaddingDip, label_height));
-  auto button_size = close_button_->GetPreferredSize();
+  auto button_size = close_button_->GetPreferredSize({});
   auto left_header_width = width - 3 * button_size.width();
   left_header_container_->SetPreferredSize(
       gfx::Size(left_header_width, button_size.height()));
@@ -1494,7 +1498,7 @@ void CaptionBubble::UpdateContentSize() {
     download_progress_label_->SetPreferredSize(
         gfx::Size(width, content_height));
     language_label_->SetPreferredSize(
-        language_label_->CalculatePreferredSize());
+        language_label_->CalculatePreferredSize({}));
   }
 
 #if BUILDFLAG(IS_WIN)
@@ -1503,21 +1507,20 @@ void CaptionBubble::UpdateContentSize() {
   if (HasMediaFoundationError()) {
     width = kMaxWidthDip;
     content_height =
-        media_foundation_renderer_error_message_->GetPreferredSize().height();
+        media_foundation_renderer_error_message_->GetPreferredSize({}).height();
   }
 #endif
 
   // The header height is the same as the close button height. The footer height
   // is the same as the expand button height.
   SetPreferredSize(gfx::Size(
-      width, content_height + close_button_->GetPreferredSize().height() +
-                 expand_button_->GetPreferredSize().height()));
+      width, content_height + close_button_->GetPreferredSize({}).height() +
+                 expand_button_->GetPreferredSize({}).height()));
 }
 
 void CaptionBubble::Redraw() {
   UpdateBubbleAndTitleVisibility();
   UpdateContentSize();
-  SizeToContents();
 }
 
 void CaptionBubble::ShowInactive() {

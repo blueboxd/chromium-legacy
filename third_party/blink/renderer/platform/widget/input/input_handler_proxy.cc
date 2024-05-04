@@ -296,6 +296,10 @@ void InputHandlerProxy::HandleInputEventWithLatencyInfo(
     DispatchSingleInputEvent(std::move(event_with_callback),
                              tick_clock_->NowTicks());
     return;
+  } else if (event_with_callback->event().IsGestureScroll() &&
+             event_with_callback->metrics()) {
+    event_with_callback->metrics()->AsScroll()->set_begin_frame_args(
+        current_begin_frame_args_);
   }
 
   base::ScopedSampleMetadata metadata(
@@ -1390,22 +1394,13 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleTouchEnd(
     }
   }
 
-  EventDisposition result = DID_NOT_HANDLE;
-  // If all other touch events in this interaction sequence were dropped, we can
-  // safely drop the touchend too.
-  if (base::FeatureList::IsEnabled(
-          features::kDroppedTouchSequenceIncludesTouchEnd) &&
-      touch_result_.has_value() && touch_result_ == DROP_EVENT) {
-    result = DROP_EVENT;
-  }
-
   if (touch_event.touches_length == 1)
     touch_result_.reset();
 
   if (main_thread_touch_sequence_start_disposition_.has_value())
     main_thread_touch_sequence_start_disposition_.reset();
 
-  return result;
+  return DID_NOT_HANDLE;
 }
 
 void InputHandlerProxy::Animate(base::TimeTicks time) {
@@ -1449,6 +1444,7 @@ void InputHandlerProxy::UpdateRootLayerStateForSynchronousInputHandler(
 
 void InputHandlerProxy::DeliverInputForBeginFrame(
     const viz::BeginFrameArgs& args) {
+  current_begin_frame_args_ = args;
   if (!scroll_predictor_)
     DispatchQueuedInputEvents(true /* frame_aligned */);
 

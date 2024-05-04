@@ -5,6 +5,7 @@
 #include "chrome/browser/signin/dice_response_handler.h"
 
 #include <memory>
+#include <string_view>
 #include <utility>
 
 #include "base/check.h"
@@ -16,8 +17,8 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
-#include "chrome/browser/signin/signin_features.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/about_signin_internals.h"
 #include "components/signin/core/browser/account_reconcilor.h"
 #include "components/signin/core/browser/dice_account_reconcilor_delegate.h"
@@ -26,6 +27,8 @@
 #include "components/signin/public/base/consent_level.h"
 #include "components/signin/public/base/signin_buildflags.h"
 #include "components/signin/public/base/signin_metrics.h"
+#include "components/signin/public/base/signin_pref_names.h"
+#include "components/signin/public/base/signin_switches.h"
 #include "components/signin/public/base/test_signin_client.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
@@ -226,6 +229,10 @@ class DiceResponseHandlerTest : public testing::Test,
     return dice_params;
   }
 
+  sync_preferences::TestingPrefServiceSyncable& pref_service() {
+    return pref_service_;
+  }
+
   void RunSignoutTest(
       const DiceResponseParams& dice_params,
       const std::vector<CoreAccountId>& secondary_with_valid_refresh_tokens,
@@ -233,7 +240,7 @@ class DiceResponseHandlerTest : public testing::Test,
       bool invalid_primary_account);
 
 #if BUILDFLAG(ENABLE_BOUND_SESSION_CREDENTIALS)
-  void EnableRegistrationTokenHelper(base::StringPiece authorization_code) {
+  void EnableRegistrationTokenHelper(std::string_view authorization_code) {
     EXPECT_CALL(mock_registration_token_helper_factory_,
                 Run(_, authorization_code, _, _))
         .WillOnce(Invoke([this](Unused, Unused, Unused, auto callback) {
@@ -371,8 +378,24 @@ void DiceResponseHandlerTest::RunSignoutTest(
   }
 }
 
+class SigninDiceResponseHandlerTestPreconnect
+    : public DiceResponseHandlerTest,
+      public ::testing::WithParamInterface<bool> {
+ public:
+  SigninDiceResponseHandlerTestPreconnect() {
+    feature_list_.InitWithFeatureState(
+        switches::kPreconnectAccountCapabilitiesPostSignin,
+        PreconnectEnabled());
+  }
+
+  bool PreconnectEnabled() { return GetParam(); }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
 // Checks that a SIGNIN action triggers a token exchange request.
-TEST_F(DiceResponseHandlerTest, Signin) {
+TEST_P(SigninDiceResponseHandlerTestPreconnect, Signin) {
   DiceResponseParams dice_params = MakeDiceParams(DiceAction::SIGNIN);
   const auto& account_info = dice_params.signin_info->account_info;
   CoreAccountId account_id = identity_manager()->PickAccountIdForAccount(
@@ -406,7 +429,14 @@ TEST_F(DiceResponseHandlerTest, Signin) {
   // Check that the AccessPoint was propagated from the delegate.
   EXPECT_EQ(extended_account_info.access_point,
             signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS);
+  EXPECT_EQ(
+      identity_test_env_.GetNumCallsToPrepareForFetchingAccountCapabilities(),
+      PreconnectEnabled() ? 1 : 0);
 }
+
+INSTANTIATE_TEST_SUITE_P(PreconnectEnabled,
+                         SigninDiceResponseHandlerTestPreconnect,
+                         ::testing::Bool());
 
 #if BUILDFLAG(ENABLE_BOUND_SESSION_CREDENTIALS)
 // Checks that a SIGNIN action triggers a token exchange request.
@@ -1074,7 +1104,7 @@ class ExplicitBrowserSigninDiceResponseHandlerSignoutTest
 };
 
 TEST_F(ExplicitBrowserSigninDiceResponseHandlerSignoutTest,
-       SignoutSigininPrimaryAccount) {
+       SignoutSigninPrimaryAccount) {
   // Setup.
   // Configure Dice params.
   DiceResponseParams dice_params = MakeDiceParams(DiceAction::SIGNOUT);
@@ -1093,10 +1123,37 @@ TEST_F(ExplicitBrowserSigninDiceResponseHandlerSignoutTest,
   EXPECT_TRUE(
       identity_manager()->HasPrimaryAccount(signin::ConsentLevel::kSignin));
 
-  // Receive signout response including sync and secondary account.
+  // Receive signout response including primary and secondary account.
   RunSignoutTest(dice_params, {secondary_not_signed_out.account_id},
                  primary_account.account_id,
                  /*invalid_primary_account=*/true);
 }
 
+TEST_F(ExplicitBrowserSigninDiceResponseHandlerSignoutTest,
+       SignoutImplicitPrimaryAccountSignin) {
+  // Setup.
+  // Configure Dice params.
+  DiceResponseParams dice_params = MakeDiceParams(DiceAction::SIGNOUT);
+  const char kSecondarySignedOutEmail[] = "secondary_signed_out@gmail.com";
+  dice_params.signout_info->account_infos.push_back(
+      GetDiceResponseParamsAccountInfo(kSecondarySignedOutEmail));
+  const std::string dice_primary_account_email =
+      dice_params.signout_info->account_infos[0].email;
+  // Configure Chrome.
+  AccountInfo primary_account = identity_test_env_.MakePrimaryAccountAvailable(
+      dice_primary_account_email, signin::ConsentLevel::kSignin);
+  // Mark as implicit sign in.
+  pref_service().SetBoolean(prefs::kExplicitBrowserSignin, false);
+  identity_test_env_.MakeAccountAvailable(kSecondarySignedOutEmail);
+  AccountInfo secondary_not_signed_out =
+      identity_test_env_.MakeAccountAvailable("other@gmail.com");
+  EXPECT_EQ(identity_manager()->GetAccountsWithRefreshTokens().size(), 3U);
+  EXPECT_TRUE(
+      identity_manager()->HasPrimaryAccount(signin::ConsentLevel::kSignin));
+
+  // Receive signout response including primary and secondary account.
+  RunSignoutTest(dice_params, {secondary_not_signed_out.account_id},
+                 /*primary_account=*/CoreAccountId(),
+                 /*invalid_primary_account=*/false);
+}
 }  // namespace

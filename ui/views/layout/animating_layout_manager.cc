@@ -88,13 +88,13 @@ struct AnimatingLayoutManager::LayoutFadeInfo {
   // How the child view is fading.
   LayoutFadeType fade_type;
   // The child view which is fading.
-  raw_ptr<View, DanglingUntriaged> child_view = nullptr;
+  raw_ptr<View> child_view = nullptr;
   // The view previous (leading side) to the fading view which is in both the
   // starting and target layout, or null if none.
-  raw_ptr<View, DanglingUntriaged> prev_view = nullptr;
+  raw_ptr<View> prev_view = nullptr;
   // The view next (trailing side) to the fading view which is in both the
   // starting and target layout, or null if none.
-  raw_ptr<View, DanglingUntriaged> next_view = nullptr;
+  raw_ptr<View> next_view = nullptr;
   // The full-size bounds, normalized to the orientation of the layout manager,
   // that |child_view| starts with, if fading out, or ends with, if fading in.
   NormalizedRect reference_bounds;
@@ -386,6 +386,36 @@ gfx::Size AnimatingLayoutManager::GetPreferredSize(const View* host) const {
           &result, orientation(),
           GetCrossAxis(orientation(),
                        target_layout_manager()->GetPreferredSize(host)));
+      return result;
+    }
+    case BoundsAnimationMode::kAnimateBothAxes:
+      return current_layout_.host_size;
+  }
+}
+
+gfx::Size AnimatingLayoutManager::GetPreferredSize(
+    const View* host,
+    const SizeBounds& available_size) const {
+  if (!target_layout_manager()) {
+    return gfx::Size();
+  }
+
+  // If animation is disabled, preferred size does not change with current
+  // animation state.
+  if (!gfx::Animation::ShouldRenderRichAnimation()) {
+    return target_layout_manager()->GetPreferredSize(host, available_size);
+  }
+
+  switch (bounds_animation_mode_) {
+    case BoundsAnimationMode::kUseHostBounds:
+      return target_layout_manager()->GetPreferredSize(host, available_size);
+    case BoundsAnimationMode::kAnimateMainAxis: {
+      // Animating only main axis, so cross axis is preferred size.
+      gfx::Size result = current_layout_.host_size;
+      SetCrossAxis(
+          &result, orientation(),
+          GetCrossAxis(orientation(), target_layout_manager()->GetPreferredSize(
+                                          host, available_size)));
       return result;
     }
     case BoundsAnimationMode::kAnimateBothAxes:

@@ -118,6 +118,8 @@ class IdentifiabilityStudyStateTest : public ::testing::Test {
     prefs::RegisterPrivacyBudgetPrefs(pref_service_.registry());
     pref_service()->SetInteger(prefs::kPrivacyBudgetGeneration,
                                kTestingStudyGeneration);
+    scoped_feature_list_.InitAndDisableFeature(
+        features::kIdentifiabilityStudyMetaExperiment);
   }
 
   TestingPrefServiceSimple* pref_service() { return &pref_service_; }
@@ -126,6 +128,7 @@ class IdentifiabilityStudyStateTest : public ::testing::Test {
   TestingPrefServiceSimple pref_service_;
   test::ScopedPrivacyBudgetConfig::Parameters config_parameters_;
   test::ScopedPrivacyBudgetConfig config_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 TEST(IdentifiabilityStudyStateStandaloneTest, InstantiateAndInitialize) {
@@ -689,7 +692,7 @@ TEST(IdentifiabilityStudyStateStandaloneTest, NextOffsetIsTooExpensive) {
   EXPECT_THAT(state.seen_surfaces(), ElementsAre(kRegularSurface1));
 }
 
-// TODO(1407940): Flaky on all platforms
+// TODO(crbug.com/40888212): Flaky on all platforms
 TEST(IdentifiabilityStudyStateStandaloneTest, DISABLED_ReachesPivotPoint) {
   test::ScopedPrivacyBudgetConfig::Parameters parameters;
   parameters.active_surface_budget = kTestingActiveSurfaceBudget;

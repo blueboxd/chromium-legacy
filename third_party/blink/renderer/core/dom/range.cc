@@ -54,6 +54,7 @@
 #include "third_party/blink/renderer/core/highlight/highlight_registry.h"
 #include "third_party/blink/renderer/core/html/html_body_element.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
+#include "third_party/blink/renderer/core/html/html_html_element.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_text.h"
 #include "third_party/blink/renderer/core/layout/layout_text_fragment.h"
@@ -1384,34 +1385,16 @@ bool AreRangesEqual(const Range* a, const Range* b) {
 static inline void BoundaryNodeChildrenWillBeRemoved(
     RangeBoundaryPoint& boundary,
     ContainerNode& container) {
-  for (Node* node_to_be_removed = container.firstChild(); node_to_be_removed;
-       node_to_be_removed = node_to_be_removed->nextSibling()) {
-    if (boundary.ChildBefore() == node_to_be_removed) {
-      boundary.SetToStartOfNode(container);
-      return;
-    }
-
-    for (Node* n = &boundary.Container(); n; n = n->parentNode()) {
-      if (n == node_to_be_removed) {
-        boundary.SetToStartOfNode(container);
-        return;
-      }
-    }
+  if (container.contains(&boundary.Container())) {
+    boundary.SetToStartOfNode(container);
   }
 }
 
 static void BoundaryShadowNodeChildrenWillBeRemoved(
     RangeBoundaryPoint& boundary,
     ContainerNode& container) {
-  for (Node* node_to_be_removed = container.firstChild(); node_to_be_removed;
-       node_to_be_removed = node_to_be_removed->nextSibling()) {
-    for (Node* n = &boundary.Container(); n;
-         n = n->ParentOrShadowHostElement()) {
-      if (n == node_to_be_removed) {
-        boundary.SetToStartOfNode(container);
-        return;
-      }
-    }
+  if (boundary.Container().IsDescendantOrShadowDescendantOf(&container)) {
+    boundary.SetToStartOfNode(container);
   }
 }
 

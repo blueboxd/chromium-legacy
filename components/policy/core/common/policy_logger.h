@@ -55,6 +55,8 @@
 #define POLICY_FETCHING ::policy::PolicyLogger::Log::Source::kPolicyFetching
 #define PLATFORM_POLICY ::policy::PolicyLogger::Log::Source::kPlatformPolicy
 #define REMOTE_COMMANDS ::policy::PolicyLogger::Log::Source::kRemoteCommands
+#define DEVICE_TRUST ::policy::PolicyLogger::Log::Source::kDeviceTrust
+#define OIDC_ENROLLMENT ::policy::PolicyLogger::Log::Source::kOidcEnrollment
 
 namespace policy {
 
@@ -71,6 +73,8 @@ class POLICY_EXPORT PolicyLogger {
       kPlatformPolicy,
       kAuthentication,
       kRemoteCommands,
+      kDeviceTrust,
+      kOidcEnrollment,
     };
     enum class Severity { kInfo, kWarning, kError, kVerbose };
 
@@ -164,7 +168,7 @@ class POLICY_EXPORT PolicyLogger {
 
   // Clears `logs_` and sets `is_log_deletion_scheduled_` as cleanup after every
   // test.
-  void ResetLoggerAfterTest();
+  void ResetLoggerForTesting();
 
  private:
   // Adds a new log to the logs_ list and calls `ScheduleOldLogsDeletion` if

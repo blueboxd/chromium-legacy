@@ -10,6 +10,7 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/style/close_button.h"
+#include "ash/style/rounded_label_widget.h"
 #include "ash/style/system_shadow.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_drop_target.h"
@@ -42,6 +43,10 @@ void OverviewTestBase::EnterTabletMode() {
   test_api.DetachAllMice();
   test_api.EnterTabletMode();
   base::RunLoop().RunUntilIdle();
+}
+
+void OverviewTestBase::LeaveTabletMode() {
+  TabletModeControllerTestApi().LeaveTabletMode();
 }
 
 bool OverviewTestBase::InOverviewSession() const {

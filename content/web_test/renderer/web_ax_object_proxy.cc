@@ -321,8 +321,6 @@ gin::ObjectTemplateBuilder WebAXObjectProxy::GetObjectTemplateBuilder(
       .SetProperty("isSelectable", &WebAXObjectProxy::IsSelectable)
       .SetProperty("isMultiLine", &WebAXObjectProxy::IsMultiLine)
       .SetProperty("isMultiSelectable", &WebAXObjectProxy::IsMultiSelectable)
-      .SetProperty("isSelectedOptionActive",
-                   &WebAXObjectProxy::IsSelectedOptionActive)
       .SetProperty("isExpanded", &WebAXObjectProxy::IsExpanded)
       .SetProperty("checked", &WebAXObjectProxy::Checked)
       .SetProperty("isVisible", &WebAXObjectProxy::IsVisible)
@@ -902,13 +900,6 @@ bool WebAXObjectProxy::IsMultiSelectable() {
   return GetAXNodeData().HasState(ax::mojom::State::kMultiselectable);
 }
 
-bool WebAXObjectProxy::IsSelectedOptionActive() {
-  if (!UpdateLayout()) {
-    return false;
-  }
-  return accessibility_object_.IsSelectedOptionActive();
-}
-
 bool WebAXObjectProxy::IsExpanded() {
   if (!UpdateLayout()) {
     return false;
@@ -978,7 +969,7 @@ bool WebAXObjectProxy::IsIgnored() {
   if (!UpdateLayout()) {
     return false;
   }
-  return accessibility_object_.AccessibilityIsIgnored();
+  return accessibility_object_.IsIgnored();
 }
 
 v8::Local<v8::Object> WebAXObjectProxy::ActiveDescendant() {
@@ -1730,7 +1721,7 @@ int WebAXObjectProxy::ScrollY() {
 
 std::string WebAXObjectProxy::ToString() {
   UpdateLayout();
-  return accessibility_object_.ToString().Utf8();
+  return accessibility_object_.ToString(/*verbose*/ false).Utf8();
 }
 
 float WebAXObjectProxy::BoundsX() {

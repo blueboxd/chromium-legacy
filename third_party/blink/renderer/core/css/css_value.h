@@ -203,6 +203,9 @@ class CORE_EXPORT CSSValue : public GarbageCollected<CSSValue> {
   bool IsLightDarkValuePair() const {
     return class_type_ == kLightDarkValuePairClass;
   }
+  bool IsAppearanceAutoBaseSelectValuePair() const {
+    return class_type_ == kAppearanceAutoBaseSelectValuePairClass;
+  }
 
   bool IsScrollValue() const { return class_type_ == kScrollClass; }
   bool IsViewValue() const { return class_type_ == kViewClass; }
@@ -251,6 +254,7 @@ class CORE_EXPORT CSSValue : public GarbageCollected<CSSValue> {
     kURIClass,
     kValuePairClass,
     kLightDarkValuePairClass,
+    kAppearanceAutoBaseSelectValuePairClass,
     kScrollClass,
     kViewClass,
     kRatioClass,
@@ -369,6 +373,11 @@ class CORE_EXPORT CSSValue : public GarbageCollected<CSSValue> {
   // The flag is true if the value contains such references but hasn't been
   // populated with a tree scope.
   uint8_t needs_tree_scope_population_ : 1;  // NOLINT
+
+  // Whether this value originally came from a quirksmode-specific declaration.
+  // Used for use counting of such situations (to see if we can try to remove
+  // the functionality).
+  uint8_t was_quirky_ : 1 = false;
 
  private:
   const uint8_t class_type_;  // ClassType

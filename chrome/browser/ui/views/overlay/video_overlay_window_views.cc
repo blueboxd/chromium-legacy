@@ -329,15 +329,16 @@ std::unique_ptr<VideoOverlayWindowViews> VideoOverlayWindowViews::Create(
     }
   }
 
-  bool is_private = !(overlay_window->GetController()
-                          ->GetWebContents()
-                          ->GetRenderWidgetHostView()
-                          ->GetTextInputClient()
-                          ->ShouldDoLearning());
-  if (is_private) {
-    ui::tsf_inputscope::SetPrivateInputScope(
-        overlay_window->GetNativeWindow()->GetHost()->GetAcceleratedWidget());
-  }
+  InputScope input_scope = overlay_window->GetController()
+                                   ->GetWebContents()
+                                   ->GetRenderWidgetHostView()
+                                   ->GetTextInputClient()
+                                   ->ShouldDoLearning()
+                               ? IS_DEFAULT
+                               : IS_PRIVATE;
+  ui::tsf_inputscope::SetInputScope(
+      overlay_window->GetNativeWindow()->GetHost()->GetAcceleratedWidget(),
+      input_scope);
 #endif  // BUILDFLAG(IS_WIN)
 
   PictureInPictureOcclusionTracker* tracker =
@@ -1287,7 +1288,8 @@ void VideoOverlayWindowViews::ShowInactive() {
   // If there is an existing overlay view, remove it now.
   RemoveOverlayViewIfExists();
 
-  // TODO(crbug.com/1472386): Confirm whether the anchor should remain as FLOAT.
+  // TODO(crbug.com/40278613): Confirm whether the anchor should remain as
+  // FLOAT.
   auto overlay_view =
       get_overlay_view_cb_
           ? get_overlay_view_cb_.Run()

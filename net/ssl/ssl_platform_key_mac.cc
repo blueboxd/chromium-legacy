@@ -258,7 +258,7 @@ class API_AVAILABLE(macosx(10.12)) SSLPlatformKeySecKey
   ~SSLPlatformKeySecKey() override = default;
 
   std::string GetProviderName() override {
-    // TODO(https://crbug.com/900721): Is there a more descriptive name to
+    // TODO(crbug.com/41423739): Is there a more descriptive name to
     // return?
     return "SecKey";
   }
@@ -351,8 +351,6 @@ class API_AVAILABLE(macosx(10.12)) SSLPlatformKeySecKey
   base::apple::ScopedCFTypeRef<SecKeyRef> key_;
 };
 
-}  // namespace
-
 scoped_refptr<SSLPrivateKey> CreateSSLPrivateKeyForSecKey(
     const X509Certificate* certificate,
     SecKeyRef key) {
@@ -381,4 +379,19 @@ scoped_refptr<SSLPrivateKey> CreateSSLPrivateKeyForSecKey(
 
 }  // namespace
 
+scoped_refptr<SSLPrivateKey> WrapUnexportableKey(
+    const crypto::UnexportableSigningKey& unexportable_key) {
+  bssl::UniquePtr<EVP_PKEY> pubkey =
+      ParseSpki(unexportable_key.GetSubjectPublicKeyInfo());
+  if (!pubkey) {
+    return nullptr;
+  }
+
+  return base::MakeRefCounted<ThreadedSSLPrivateKey>(
+      std::make_unique<SSLPlatformKeySecKey>(std::move(pubkey),
+                                             unexportable_key.GetSecKeyRef()),
+      GetSSLPlatformKeyTaskRunner());
+}
+
 #pragma clang diagnostic pop  // "-Wdeprecated-declarations"
+}  // namespace net

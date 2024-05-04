@@ -73,8 +73,8 @@ enum class Result {
   kRemoveCreditCard_Success = 90,
   kRemoveCreditCard_ReadFailure = 91,
   kRemoveCreditCard_WriteFailure = 92,
-  kAddFullServerCreditCard_Success = 100,
-  kAddFullServerCreditCard_Failure = 101,
+  kAddServerCreditCardForTesting_Success = 100,
+  kAddServerCreditCardForTesting_Failure = 101,
   kUnmaskServerCreditCard_Success = 110,
   kUnmaskServerCreditCard_Failure = 111,
   kMaskServerCreditCard_Success = 120,
@@ -94,8 +94,7 @@ enum class Result {
   kAddUpiId_Failure = 181,
   kClearAllServerData_Success = 190,
   kClearAllServerData_Failure = 191,
-  kClearAllLocalData_Success = 200,
-  kClearAllLocalData_Failure = 201,
+  // Clearing of local data (200, 201) is deprecated.
   kRemoveAutofillDataModifiedBetween_Success = 210,
   kRemoveAutofillDataModifiedBetween_Failure = 211,
   kRemoveOriginURLsModifiedBetween_Success = 220,
@@ -233,6 +232,17 @@ void AutofillWebDataBackendImpl::NotifyOnAutofillChangedBySync(
   ui_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(on_autofill_changed_by_sync_callback_, model_type));
+}
+
+void AutofillWebDataBackendImpl::NotifyOnServerCvcChanged(
+    const ServerCvcChange& change) {
+  CHECK(owning_task_runner()->RunsTasksInCurrentSequence());
+
+  // DB sequence notification.
+  for (AutofillWebDataServiceObserverOnDBSequence& db_observer :
+       db_observer_list_) {
+    db_observer.ServerCvcChanged(change);
+  }
 }
 
 base::SupportsUserData* AutofillWebDataBackendImpl::GetDBUserData() {
@@ -414,7 +424,7 @@ WebDatabase::State AutofillWebDataBackendImpl::RemoveAutofillProfile(
   }
 
   // Send GUID-based notification.
-  // TODO(crbug.com/1420547): The change event for removal operations shouldn't
+  // TODO(crbug.com/40258814): The change event for removal operations shouldn't
   // need to include the deleted profile. The GUID should suffice.
   AutofillProfileChange change(AutofillProfileChange::REMOVE, guid, *profile);
   for (auto& db_observer : db_observer_list_)
@@ -549,24 +559,6 @@ WebDatabase::State AutofillWebDataBackendImpl::RemoveCreditCard(
   return WebDatabase::COMMIT_NEEDED;
 }
 
-WebDatabase::State AutofillWebDataBackendImpl::AddFullServerCreditCard(
-    const CreditCard& credit_card,
-    WebDatabase* db) {
-  DCHECK(owning_task_runner()->RunsTasksInCurrentSequence());
-  if (!PaymentsAutofillTable::FromWebDatabase(db)->AddFullServerCreditCard(
-          credit_card)) {
-    ReportResult(Result::kAddFullServerCreditCard_Failure);
-    return WebDatabase::COMMIT_NOT_NEEDED;
-  }
-
-  for (auto& db_observer : db_observer_list_) {
-    db_observer.CreditCardChanged(CreditCardChange(
-        CreditCardChange::ADD, credit_card.guid(), credit_card));
-  }
-  ReportResult(Result::kAddFullServerCreditCard_Success);
-  return WebDatabase::COMMIT_NEEDED;
-}
-
 std::unique_ptr<WDTypedResult> AutofillWebDataBackendImpl::GetCreditCards(
     WebDatabase* db) {
   DCHECK(owning_task_runner()->RunsTasksInCurrentSequence());
@@ -584,20 +576,6 @@ std::unique_ptr<WDTypedResult> AutofillWebDataBackendImpl::GetServerCreditCards(
       credit_cards);
   return std::make_unique<WDResult<std::vector<std::unique_ptr<CreditCard>>>>(
       AUTOFILL_CREDITCARDS_RESULT, std::move(credit_cards));
-}
-
-WebDatabase::State AutofillWebDataBackendImpl::UnmaskServerCreditCard(
-    const CreditCard& card,
-    const std::u16string& full_number,
-    WebDatabase* db) {
-  DCHECK(owning_task_runner()->RunsTasksInCurrentSequence());
-  if (PaymentsAutofillTable::FromWebDatabase(db)->UnmaskServerCreditCard(
-          card, full_number)) {
-    ReportResult(Result::kUnmaskServerCreditCard_Success);
-    return WebDatabase::COMMIT_NEEDED;
-  }
-  ReportResult(Result::kUnmaskServerCreditCard_Failure);
-  return WebDatabase::COMMIT_NOT_NEEDED;
 }
 
 WebDatabase::State AutofillWebDataBackendImpl::UpdateServerCardMetadata(
@@ -733,8 +711,8 @@ WebDatabase::State AutofillWebDataBackendImpl::AddServerCvc(
     const ServerCvcChange change{ServerCvcChange::ADD, instrument_id,
                                  server_cvc};
     for (auto& db_observer : db_observer_list_) {
-      // TODO(crbug/1477924): Add integration tests for Add, Remove and Update
-      // for Wallet Credential data.
+      // TODO(crbug.com/40929129): Add integration tests for Add, Remove and
+      // Update for Wallet Credential data.
       db_observer.ServerCvcChanged(change);
     }
     ReportResult(Result::kAddServerCvc_Success);
@@ -891,19 +869,6 @@ WebDatabase::State AutofillWebDataBackendImpl::ClearAllServerData(
   return WebDatabase::COMMIT_NOT_NEEDED;
 }
 
-WebDatabase::State AutofillWebDataBackendImpl::ClearAllLocalData(
-    WebDatabase* db) {
-  DCHECK(owning_task_runner()->RunsTasksInCurrentSequence());
-  bool a_succeeded =
-      AddressAutofillTable::FromWebDatabase(db)->ClearAllLocalData();
-  bool b_succeeded =
-      PaymentsAutofillTable::FromWebDatabase(db)->ClearAllLocalData();
-  ReportResult(a_succeeded && b_succeeded ? Result::kClearAllLocalData_Success
-                                          : Result::kClearAllLocalData_Failure);
-  return a_succeeded || b_succeeded ? WebDatabase::COMMIT_NEEDED
-                                    : WebDatabase::COMMIT_NOT_NEEDED;
-}
-
 WebDatabase::State
 AutofillWebDataBackendImpl::RemoveAutofillDataModifiedBetween(
     const base::Time& delete_begin,
@@ -973,6 +938,24 @@ WebDatabase::State AutofillWebDataBackendImpl::ClearAllCreditCardBenefits(
   }
   ReportResult(Result::kClearAllCreditCardBenefits_Failure);
   return WebDatabase::COMMIT_NOT_NEEDED;
+}
+
+WebDatabase::State AutofillWebDataBackendImpl::AddServerCreditCardForTesting(
+    const CreditCard& credit_card,
+    WebDatabase* db) {
+  DCHECK(owning_task_runner()->RunsTasksInCurrentSequence());
+  if (!PaymentsAutofillTable::FromWebDatabase(db)
+           ->AddServerCreditCardForTesting(credit_card)) {
+    ReportResult(Result::kAddServerCreditCardForTesting_Failure);
+    return WebDatabase::COMMIT_NOT_NEEDED;
+  }
+
+  for (auto& db_observer : db_observer_list_) {
+    db_observer.CreditCardChanged(CreditCardChange(
+        CreditCardChange::ADD, credit_card.guid(), credit_card));
+  }
+  ReportResult(Result::kAddServerCreditCardForTesting_Success);
+  return WebDatabase::COMMIT_NEEDED;
 }
 
 }  // namespace autofill

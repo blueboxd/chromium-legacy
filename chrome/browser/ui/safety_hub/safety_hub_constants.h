@@ -45,9 +45,6 @@ enum class SafetyHubCardState {
 
 // Smallest time duration between two subsequent password checks.
 extern const base::TimeDelta kMinTimeBetweenPasswordChecks;
-// When the password check didn't run at its scheduled time (e.g. client was
-// offline) it will be scheduled to run within this time frame.
-extern const base::TimeDelta kPasswordCheckOverdueTimeWindow;
 
 // An enum of the different Safety Hub modules that are available. This should
 // be updated whenever a notification for a new module is added to or removed
@@ -87,6 +84,16 @@ enum class SafetyHubSurfaces {
   kSafetyHubPage = 1,
   kMaxValue = kSafetyHubPage,
 };
+
+// This string is used for the key of the base::Value dictionary we assign to
+// the REVOKED_ABUSIVE_NOTIFICATION_PERMISSION value.
+extern const char kRevokedStatusDictKeyStr[];
+// When users take action to grant a permission despite warnings against doing
+// so, we should ignore the origin in future auto revocations. To do this, we
+// will assign the REVOKED_ABUSIVE_NOTIFICATION_PERMISSION permission
+// base::Value to the "ignore" string. Otherwise, the value should be "revoke".
+extern const char kIgnoreStr[];
+extern const char kRevokeStr[];
 
 }  // namespace safety_hub
 

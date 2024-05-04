@@ -4,6 +4,8 @@
 
 #include "components/commerce/core/shopping_service_test_base.h"
 
+#include <optional>
+
 #include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/containers/flat_map.h"
@@ -19,6 +21,7 @@
 #include "components/commerce/core/proto/merchant_trust.pb.h"
 #include "components/commerce/core/proto/price_insights.pb.h"
 #include "components/commerce/core/proto/price_tracking.pb.h"
+#include "components/commerce/core/proto/product_category.pb.h"
 #include "components/commerce/core/proto/shopping_page_types.pb.h"
 #include "components/optimization_guide/core/optimization_guide_switches.h"
 #include "components/optimization_guide/proto/common_types.pb.h"
@@ -104,7 +107,7 @@ void MockOptGuideDecider::CanApplyOptimizationOnDemand(
     const base::flat_set<OptimizationType>& optimization_types,
     RequestContext request_context,
     OnDemandOptimizationGuideDecisionRepeatingCallback callback,
-    RequestContextMetadata* request_context_metadata) {
+    std::optional<RequestContextMetadata> request_context_metadata) {
   if (optimization_types.contains(OptimizationType::PRICE_TRACKING)) {
     for (const GURL& url : urls) {
       if (on_demand_shopping_responses_.find(url.spec()) ==
@@ -151,7 +154,8 @@ OptimizationMetadata MockOptGuideDecider::BuildPriceTrackingResponse(
     const std::string& country_code,
     const int64_t amount_micros,
     const std::string& currency_code,
-    const std::string& gpc_title) {
+    const std::string& gpc_title,
+    const std::vector<std::vector<std::string>>& product_categories) {
   OptimizationMetadata meta;
 
   PriceTrackingData price_tracking_data;
@@ -177,6 +181,18 @@ OptimizationMetadata MockOptGuideDecider::BuildPriceTrackingResponse(
   ProductPrice* price = buyable_product->mutable_current_price();
   price->set_currency_code(currency_code);
   price->set_amount_micros(amount_micros);
+
+  if (product_categories.size() > 0) {
+    CategoryData* category_data = buyable_product->mutable_category_data();
+    for (auto category : product_categories) {
+      ProductCategory* product_category =
+          category_data->add_product_categories();
+      for (auto label : category) {
+        CategoryLabel* category_label = product_category->add_category_labels();
+        category_label->set_category_default_label(label);
+      }
+    }
+  }
 
   Any any;
   any.set_type_url(price_tracking_data.GetTypeName());
@@ -353,20 +369,22 @@ void MockOptGuideDecider::SetDefaultShoppingPage(bool default_shopping_page) {
 }
 
 MockWebWrapper::MockWebWrapper(const GURL& last_committed_url,
-                               bool is_off_the_record)
-    : MockWebWrapper(last_committed_url, is_off_the_record, nullptr) {}
-
-MockWebWrapper::MockWebWrapper(const GURL& last_committed_url,
                                bool is_off_the_record,
-                               base::Value* result)
+                               base::Value* result,
+                               std::u16string title)
     : last_committed_url_(last_committed_url),
       is_off_the_record_(is_off_the_record),
-      mock_js_result_(result) {}
+      mock_js_result_(result),
+      title_(title) {}
 
 MockWebWrapper::~MockWebWrapper() = default;
 
 const GURL& MockWebWrapper::GetLastCommittedURL() {
   return last_committed_url_;
+}
+
+const std::u16string& MockWebWrapper::GetTitle() {
+  return title_;
 }
 
 bool MockWebWrapper::IsFirstLoadForNavigationFinished() {
@@ -439,6 +457,11 @@ ShoppingServiceTestBase::ShoppingServiceTestBase()
   RegisterPrefs(pref_service_->registry());
   pref_service_->registry()->RegisterBooleanPref(
       unified_consent::prefs::kUrlKeyedAnonymizedDataCollectionEnabled, false);
+  // These tests use a dedicated BookmarkModel instance for account bookmarks.
+  // Let BookmarkModel know about it, so it can return the correct value in
+  // BookmarkModel::IsLocalOnlyNode().
+  account_bookmark_model_
+      ->SetLoadedAccountBookmarksFileAsLocalOrSyncableBookmarksForTest();
 }
 
 ShoppingServiceTestBase::~ShoppingServiceTestBase() = default;
@@ -450,7 +473,7 @@ void ShoppingServiceTestBase::SetUp() {
       identity_test_env_->identity_manager(), sync_service_.get(),
       base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
           test_url_loader_factory_.get()),
-      nullptr, nullptr, nullptr, nullptr, nullptr,
+      nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
       std::make_unique<TestWebExtractor>());
 }
 
@@ -483,9 +506,18 @@ void ShoppingServiceTestBase::DidNavigateAway(WebWrapper* web,
   base::RunLoop().RunUntilIdle();
 }
 
+void ShoppingServiceTestBase::WebWrapperCreated(WebWrapper* web) {
+  shopping_service_->WebWrapperCreated(web);
+  base::RunLoop().RunUntilIdle();
+}
+
 void ShoppingServiceTestBase::WebWrapperDestroyed(WebWrapper* web) {
   shopping_service_->WebWrapperDestroyed(web);
   base::RunLoop().RunUntilIdle();
+}
+
+void ShoppingServiceTestBase::OnWebWrapperSwitched(WebWrapper* web) {
+  shopping_service_->OnWebWrapperSwitched(web);
 }
 
 void ShoppingServiceTestBase::MergeProductInfoData(
@@ -501,6 +533,10 @@ int ShoppingServiceTestBase::GetProductInfoCacheOpenURLCount(const GURL& url) {
 const ProductInfo* ShoppingServiceTestBase::GetFromProductInfoCache(
     const GURL& url) {
   return shopping_service_->GetFromProductInfoCache(url);
+}
+
+CommerceInfoCache& ShoppingServiceTestBase::GetCache() {
+  return shopping_service_->commerce_info_cache_;
 }
 
 }  // namespace commerce

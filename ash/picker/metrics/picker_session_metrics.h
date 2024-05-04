@@ -1,4 +1,4 @@
-// Copyright 2023 The Chromium Authors
+// Copyright 2024 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,69 +6,73 @@
 #define ASH_PICKER_METRICS_PICKER_SESSION_METRICS_H_
 
 #include <optional>
+#include <string>
 
-#include "ash/ash_export.h"
-#include "base/time/time.h"
+#include "ash/public/cpp/picker/picker_category.h"
+#include "ash/public/cpp/picker/picker_search_result.h"
 
 namespace ui {
-class PresentationTimeRecorder;
-}
-
-namespace views {
-class Widget;
-}
+class TextInputClient;
+}  // namespace ui
 
 namespace ash {
 
-// Records metrics for a session of using Picker, such as latency, memory usage,
-// and user funnel metrics.
-class ASH_EXPORT PickerSessionMetrics {
+// Records metrics for a session of using Picker.
+class PickerSessionMetrics {
  public:
-  // `trigger_event_timestamp` is the timestamp of the event that triggered the
-  // session. By default, this uses the time PickerSessionMetrics is created.
-  // Call `StartRecording` to start recording metrics for the session.
-  PickerSessionMetrics(
-      base::TimeTicks trigger_start_timestamp = base::TimeTicks::Now());
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  enum class SessionOutcome {
+    // The outcome is unknown.
+    kUnknown = 0,
+    // User inserts or copies a result.
+    kInsertedOrCopied = 1,
+    // User abandons the session (e.g. by closing the window without inserting).
+    kAbandoned = 2,
+    // User selects an action to open another window, e.g. the Emoji picker.
+    kRedirected = 3,
+    // User selects an action related to text format.
+    kFormat = 4,
+    kMaxValue = kFormat,
+  };
+
+  PickerSessionMetrics();
   ~PickerSessionMetrics();
 
-  // Starts recording metrics for this session.
-  // `widget` is the widget that contains the Picker UI. It must outlive this
-  // class.
-  void StartRecording(views::Widget& widget);
+  // Sets session outcome. This is expected to be called exactly once during
+  // a session.
+  void SetOutcome(SessionOutcome outcome);
 
-  // Stops recording metrics for this session.
-  // This should be called, for example, when the widget containing the Picker
-  // UI is destroyed.
-  void StopRecording();
+  // Sets user action. This is expected to be called at most once during a
+  // session.
+  // TODO(b/336402739): replace the argument type with some action enum after
+  // refactor.
+  void SetAction(PickerCategory action);
 
-  // Marks a focus event on the picker search field.
-  void MarkInputFocus();
+  // Sets the search result which user inserts. This is expected to be called at
+  // most once during a session.
+  void SetInsertedResult(PickerSearchResult inserted_result, int index);
 
-  // Marks that the search field contents changed.
-  void MarkContentsChanged();
+  // Updates the search query to latest and accumulates total edits.
+  void UpdateSearchQuery(std::u16string_view search_query);
 
-  // Marks that the search results were updated.
-  void MarkSearchResultsUpdated();
+  // Records CrOS event metrics when a picker session starts.
+  void OnStartSession(ui::TextInputClient* client);
 
  private:
-  bool is_recording_ = false;
+  // Records CrOS event metrics when a picker session finishes.
+  void OnFinishSession();
 
-  // The timestamp of earliest the feature was triggered.
-  base::TimeTicks trigger_start_timestamp_;
+  SessionOutcome outcome_ = SessionOutcome::kUnknown;
 
-  // Whether the first input focus has been marked yet.
-  bool marked_first_focus_ = false;
+  // TODO(b/336402739): replace the type with some action enum after refactor.
+  std::optional<PickerCategory> action_;
 
-  // The timestamp of when the current search started.
-  std::optional<base::TimeTicks> search_start_timestamp_;
+  std::optional<PickerSearchResult> inserted_result_;
+  int result_index_ = -1;
 
-  // Records the presentation delay when search field contents change.
-  std::unique_ptr<ui::PresentationTimeRecorder>
-      search_field_presentation_time_recorder_;
-
-  // Records the presentation delay of updating the results page.
-  std::unique_ptr<ui::PresentationTimeRecorder>
-      results_presentation_time_recorder_;
+  int search_query_total_edits_ = 0;
+  int search_query_length_ = 0;
 };
 
 }  // namespace ash

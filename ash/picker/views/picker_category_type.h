@@ -12,9 +12,12 @@ namespace ash {
 
 // Used to group related categories together.
 enum class ASH_EXPORT PickerCategoryType {
-  kExpressions,
-  kLinks,
-  kFiles,
+  kEditorWrite,
+  kEditorRewrite,
+  kGeneral,
+  kCalculations,
+  kCaseTransformations,
+  kFormatting,
 };
 
 ASH_EXPORT PickerCategoryType GetPickerCategoryType(PickerCategory category);

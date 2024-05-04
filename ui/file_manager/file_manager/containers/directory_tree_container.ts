@@ -127,6 +127,7 @@ export class DirectoryTreeContainer {
   private uiEntries_: State['uiEntries']|null = null;
   /** Android apps data from the store. */
   private androidApps_: State['androidApps']|null = null;
+  private materializedViews_: State['materializedViews'] = [];
 
   constructor(container: HTMLElement, private directoryModel_: DirectoryModel) {
     this.tree.id = 'directory-tree';
@@ -283,7 +284,7 @@ export class DirectoryTreeContainer {
       // lose some status (e.g. focus/rename), check if we need to restore
       // them or not.
       if (exists) {
-        if (isFocused) {
+        if (isFocused && !fileData?.disabled) {
           this.restoreFocus_(navigationRootItem, /* isExisting= */ true);
         }
         if (isRenaming) {
@@ -293,7 +294,7 @@ export class DirectoryTreeContainer {
       }
       // For newly rendered items, check if they are the next item to
       // focus.
-      if (this.fileKeyToFocus_ === navigationRoot.key) {
+      if (this.fileKeyToFocus_ === navigationRoot.key && !fileData?.disabled) {
         // Item with file key to focus is rendered for the first time (e.g.
         // right after rename finishes), focus on it.
         this.fileKeyToFocus_ = null;
@@ -356,11 +357,6 @@ export class DirectoryTreeContainer {
     if (window.IN_TEST) {
       this.addAttributesForTesting_(element, fileData, navigationRoot);
     }
-
-    // TODO(b/228139439): The current menu/command implementation requires a
-    // valid `.entry` existed on the tree item. We should remove this `.entry`
-    // when refactoring the command part.
-    (element as any).entry = fileData.entry;
 
     element.expanded = fileData.expanded;
     element.mayHaveChildren =
@@ -432,7 +428,7 @@ export class DirectoryTreeContainer {
         // lose some status (e.g. focus/rename), check if we need to restore
         // them or not.
         if (exists) {
-          if (isFocused) {
+          if (isFocused && !childFileData?.disabled) {
             this.restoreFocus_(navigationItem, /* isExisting= */ true);
           }
           if (isRenaming) {
@@ -442,7 +438,7 @@ export class DirectoryTreeContainer {
         }
         // For newly rendered items, check if they are the next item to
         // rename/focus.
-        if (this.fileKeyToFocus_ === childKey) {
+        if (this.fileKeyToFocus_ === childKey && !childFileData?.disabled) {
           // Item with file key to focus is rendered for the first time (e.g.
           // right after rename finishes), focus on it.
           this.fileKeyToFocus_ = null;
@@ -1035,11 +1031,13 @@ export class DirectoryTreeContainer {
     const {volumes, folderShortcuts, uiEntries, androidApps} = state;
     if (this.volumes_ !== volumes ||
         this.folderShortcuts_ !== folderShortcuts ||
-        this.uiEntries_ !== uiEntries || this.androidApps_ !== androidApps) {
+        this.uiEntries_ !== uiEntries || this.androidApps_ !== androidApps ||
+        this.materializedViews_ !== state.materializedViews) {
       this.volumes_ = volumes;
       this.folderShortcuts_ = folderShortcuts;
       this.uiEntries_ = uiEntries;
       this.androidApps_ = androidApps;
+      this.materializedViews_ = state.materializedViews;
       return true;
     }
 

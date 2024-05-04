@@ -55,20 +55,24 @@ void SVGShapePainter::Paint(const PaintInfo& paint_info) {
   // Shapes cannot have children so do not call TransformCullRect.
 
   ScopedSVGTransformState transform_state(paint_info, layout_svg_shape_);
+  const PaintInfo& content_paint_info = transform_state.ContentPaintInfo();
+
   {
-    ScopedSVGPaintState paint_state(layout_svg_shape_, paint_info);
-    SVGModelObjectPainter::RecordHitTestData(layout_svg_shape_, paint_info);
+    ScopedSVGPaintState paint_state(layout_svg_shape_, content_paint_info);
+    SVGModelObjectPainter::RecordHitTestData(layout_svg_shape_,
+                                             content_paint_info);
     SVGModelObjectPainter::RecordRegionCaptureData(layout_svg_shape_,
-                                                   paint_info);
+                                                   content_paint_info);
     if (!DrawingRecorder::UseCachedDrawingIfPossible(
-            paint_info.context, layout_svg_shape_, paint_info.phase)) {
-      SVGDrawingRecorder recorder(paint_info.context, layout_svg_shape_,
-                                  paint_info.phase);
-      PaintShape(paint_info);
+            content_paint_info.context, layout_svg_shape_,
+            content_paint_info.phase)) {
+      SVGDrawingRecorder recorder(content_paint_info.context, layout_svg_shape_,
+                                  content_paint_info.phase);
+      PaintShape(content_paint_info);
     }
   }
 
-  SVGModelObjectPainter(layout_svg_shape_).PaintOutline(paint_info);
+  SVGModelObjectPainter(layout_svg_shape_).PaintOutline(content_paint_info);
 }
 
 void SVGShapePainter::PaintShape(const PaintInfo& paint_info) {
@@ -278,16 +282,21 @@ void SVGShapePainter::PaintMarker(const PaintInfo& paint_info,
   // It's expensive to track the transformed paint cull rect for each
   // marker so just disable culling. The shape paint call will already
   // be culled if it is outside the paint info cull rect.
-  SVGObjectPainter object_painter(layout_svg_shape_,
-                                  paint_info.GetSvgContextPaints());
+  auto* context_paints = paint_info.GetSvgContextPaints();
+  if (context_paints) {
+    transform.PostConcat(context_paints->transform);
+  }
+  SVGObjectPainter object_painter(layout_svg_shape_, context_paints);
   SvgContextPaints marker_context_paints(
       object_painter.ResolveContextPaint(
           layout_svg_shape_.StyleRef().FillPaint()),
       object_painter.ResolveContextPaint(
-          layout_svg_shape_.StyleRef().StrokePaint()));
-  PaintInfo marker_paint_info(builder.Context(), CullRect::Infinite(),
-                              paint_info.phase, paint_info.GetPaintFlags(),
-                              &marker_context_paints);
+          layout_svg_shape_.StyleRef().StrokePaint()),
+      transform);
+  PaintInfo marker_paint_info(
+      builder.Context(), CullRect::Infinite(), paint_info.phase,
+      paint_info.DescendantPaintingBlocked(), paint_info.GetPaintFlags(),
+      &marker_context_paints);
   SVGContainerPainter(marker).Paint(marker_paint_info);
   builder.EndRecording(*canvas);
 

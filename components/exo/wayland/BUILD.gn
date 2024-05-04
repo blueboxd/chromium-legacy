@@ -55,6 +55,8 @@ source_set("wayland") {
     "wayland_pointer_delegate.h",
     "wayland_positioner.cc",
     "wayland_positioner.h",
+    "wayland_protocol_logger.cc",
+    "wayland_protocol_logger.h",
     "wayland_touch_delegate.cc",
     "wayland_touch_delegate.h",
     "wayland_watcher.cc",
@@ -244,6 +246,7 @@ static_library("ui_controls_protocol") {
     "//ui/base:test_support",
     "//ui/base/wayland:wayland_display_util",
     "//ui/events",
+    "//ui/events:gesture_detection",
   ]
 }
 
@@ -310,6 +313,7 @@ source_set("unit_tests") {
     "wayland_display_util_unittest.cc",
     "wayland_keyboard_delegate_unittest.cc",
     "wayland_positioner_unittest.cc",
+    "wayland_protocol_logger_unittest.cc",
     "wl_data_device_manager_unittest.cc",
     "zaura_output_manager_unittest.cc",
     "zaura_output_manager_v2_unittest.cc",

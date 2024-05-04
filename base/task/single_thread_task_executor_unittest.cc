@@ -48,13 +48,13 @@
 #endif
 
 #if BUILDFLAG(IS_WIN)
+#include <windows.h>
+
 #include "base/message_loop/message_pump_win.h"
 #include "base/process/memory.h"
 #include "base/win/current_module.h"
 #include "base/win/message_window.h"
 #include "base/win/scoped_handle.h"
-
-#include <windows.h>
 #endif
 
 using ::testing::IsNull;
@@ -1289,7 +1289,7 @@ TEST_P(SingleThreadTaskExecutorTypedTest, RunLoopQuitOrderAfter) {
 // accumulated in the pipe per two posts, so we should repeat 128K times to
 // reproduce the bug.
 #if BUILDFLAG(IS_CHROMEOS)
-// TODO(crbug.com/1188497): This test is unreasonably slow on CrOS and flakily
+// TODO(crbug.com/40754898): This test is unreasonably slow on CrOS and flakily
 // times out (100x slower than other platforms which take < 1s to complete
 // it).
 #define MAYBE_RecursivePostsDoNotFloodPipe DISABLED_RecursivePostsDoNotFloodPipe
@@ -1358,28 +1358,6 @@ TEST_P(SingleThreadTaskExecutorTypedTest,
                     Unretained(&nested_run_loop)));
             nested_run_loop.Run();
 
-            run_loop->Quit();
-          },
-          Unretained(&run_loop)));
-  run_loop.Run();
-}
-
-TEST_P(SingleThreadTaskExecutorTypedTest,
-       ApplicationTasksAllowedInNativeNestedLoopExplicitlyInScope) {
-  SingleThreadTaskExecutor executor(GetParam());
-  RunLoop run_loop;
-  executor.task_runner()->PostTask(
-      FROM_HERE,
-      BindOnce(
-          [](RunLoop* run_loop) {
-            {
-              CurrentThread::ScopedAllowApplicationTasksInNativeNestedLoop
-                  allow_nestable_tasks;
-              EXPECT_TRUE(CurrentThread::Get()
-                              ->ApplicationTasksAllowedInNativeNestedLoop());
-            }
-            EXPECT_FALSE(CurrentThread::Get()
-                             ->ApplicationTasksAllowedInNativeNestedLoop());
             run_loop->Quit();
           },
           Unretained(&run_loop)));
@@ -1714,7 +1692,7 @@ TEST(SingleThreadTaskExecutorTest,
   run_loop.Run();
 }
 
-// TODO(https://crbug.com/890016): Enable once multiple layers of nested loops
+// TODO(crbug.com/40595757): Enable once multiple layers of nested loops
 // works.
 TEST(SingleThreadTaskExecutorTest,
      DISABLED_UnwindingMultipleSubPumpsDoesntStarveApplicationTasks) {
@@ -2065,6 +2043,29 @@ TEST(SingleThreadTaskExecutorTest, AlwaysHaveUserMessageWhenNesting) {
   g_loop_to_quit_from_message_handler = nullptr;
 }
 #endif  // BUILDFLAG(IS_WIN)
+
+TEST(SingleThreadTaskExecutorTest,
+     ApplicationTasksAllowedInNativeNestedLoopExplicitlyInScope) {
+  // Only UI pumps support native loops.
+  SingleThreadTaskExecutor executor(MessagePumpType::UI);
+  RunLoop run_loop;
+  executor.task_runner()->PostTask(
+      FROM_HERE,
+      BindOnce(
+          [](RunLoop* run_loop) {
+            {
+              CurrentThread::ScopedAllowApplicationTasksInNativeNestedLoop
+                  allow_nestable_tasks;
+              EXPECT_TRUE(CurrentThread::Get()
+                              ->ApplicationTasksAllowedInNativeNestedLoop());
+            }
+            EXPECT_FALSE(CurrentThread::Get()
+                             ->ApplicationTasksAllowedInNativeNestedLoop());
+            run_loop->Quit();
+          },
+          Unretained(&run_loop)));
+  run_loop.Run();
+}
 
 // Verify that tasks posted to and code running in the scope of the same
 // SingleThreadTaskExecutor access the same SequenceLocalStorage values.

@@ -29,13 +29,10 @@ class ExtensionsMenuTestUtil : public ExtensionActionTestHelper {
 
   // ExtensionActionTestHelper:
   int NumberOfBrowserActions() override;
-  int VisibleBrowserActions() override;
   bool HasAction(const extensions::ExtensionId& id) override;
   void InspectPopup(const extensions::ExtensionId& id) override;
-  bool HasIcon(const extensions::ExtensionId& id) override;
   gfx::Image GetIcon(const extensions::ExtensionId& id) override;
   void Press(const extensions::ExtensionId& id) override;
-  std::string GetTooltip(const extensions::ExtensionId& id) override;
   gfx::NativeView GetPopupNativeView() override;
   bool HasPopup() override;
   bool HidePopup() override;

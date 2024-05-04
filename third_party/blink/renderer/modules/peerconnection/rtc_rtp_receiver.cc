@@ -163,12 +163,11 @@ RTCRtpReceiver::getContributingSources(ScriptState* script_state,
       script_state, exception_state, this);
 }
 
-ScriptPromiseTyped<RTCStatsReport> RTCRtpReceiver::getStats(
+ScriptPromise<RTCStatsReport> RTCRtpReceiver::getStats(
     ScriptState* script_state) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   auto* resolver =
-      MakeGarbageCollected<ScriptPromiseResolverTyped<RTCStatsReport>>(
-          script_state);
+      MakeGarbageCollected<ScriptPromiseResolver<RTCStatsReport>>(script_state);
   auto promise = resolver->Promise();
   receiver_->GetStats(WTF::BindOnce(WebRTCStatsReportCallbackResolver,
                                     WrapPersistent(resolver)));
@@ -187,12 +186,12 @@ RTCInsertableStreams* RTCRtpReceiver::createEncodedStreams(
     return nullptr;
   }
   if (kind() == MediaKind::kAudio)
-    return createEncodedAudioStreams(script_state, exception_state);
+    return CreateEncodedAudioStreams(script_state, exception_state);
   DCHECK_EQ(kind(), MediaKind::kVideo);
-  return createEncodedVideoStreams(script_state, exception_state);
+  return CreateEncodedVideoStreams(script_state, exception_state);
 }
 
-RTCInsertableStreams* RTCRtpReceiver::createEncodedAudioStreams(
+RTCInsertableStreams* RTCRtpReceiver::CreateEncodedAudioStreams(
     ScriptState* script_state,
     ExceptionState& exception_state) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -218,7 +217,7 @@ RTCInsertableStreams* RTCRtpReceiver::createEncodedAudioStreams(
   return encoded_audio_streams_.Get();
 }
 
-RTCInsertableStreams* RTCRtpReceiver::createEncodedVideoStreams(
+RTCInsertableStreams* RTCRtpReceiver::CreateEncodedVideoStreams(
     ScriptState* script_state,
     ExceptionState& exception_state) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);

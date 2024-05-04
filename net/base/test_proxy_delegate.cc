@@ -74,6 +74,9 @@ void TestProxyDelegate::OnResolveProxy(
   }
 }
 
+void TestProxyDelegate::OnSuccessfulRequestAfterFailures(
+    const ProxyRetryInfoMap& proxy_retry_info) {}
+
 void TestProxyDelegate::OnFallback(const ProxyChain& bad_chain, int net_error) {
 }
 
@@ -83,7 +86,7 @@ std::string TestProxyDelegate::GetExtraHeaderValue(
   return ProxyServerToProxyUri(proxy_server);
 }
 
-void TestProxyDelegate::OnBeforeTunnelRequest(
+Error TestProxyDelegate::OnBeforeTunnelRequest(
     const ProxyChain& proxy_chain,
     size_t chain_index,
     HttpRequestHeaders* extra_headers) {
@@ -94,6 +97,8 @@ void TestProxyDelegate::OnBeforeTunnelRequest(
         *extra_header_name_,
         GetExtraHeaderValue(proxy_chain.GetProxyServer(chain_index)));
   }
+
+  return OK;
 }
 
 Error TestProxyDelegate::OnTunnelHeadersReceived(

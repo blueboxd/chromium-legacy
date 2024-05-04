@@ -122,10 +122,10 @@ DOMViewTransition* ViewTransitionSupplement::startViewTransition(
     Document& document,
     ViewTransitionOptions* options,
     ExceptionState& exception_state) {
-  CHECK(!options || (options->hasUpdate() && options->hasType()));
+  CHECK(!options || (options->hasUpdate() && options->hasTypes()));
   return StartViewTransitionInternal(
       script_state, document, options ? options->update() : nullptr,
-      options ? options->type() : std::nullopt, exception_state);
+      options ? options->types() : std::nullopt, exception_state);
 }
 
 DOMViewTransition* ViewTransitionSupplement::startViewTransition(
@@ -165,9 +165,19 @@ DOMViewTransition* ViewTransitionSupplement::StartTransition(
   transition_ =
       ViewTransition::CreateFromScript(&document, callback, types, this);
 
+  if (document.hidden()) {
+    auto skipped_transition = transition_;
+    skipped_transition->SkipTransition(
+        ViewTransition::PromiseResponse::kRejectInvalidState);
+
+    DCHECK(!transition_);
+    return skipped_transition->GetScriptDelegate();
+  }
+
   // If there is a transition in a parent frame, give that precedence over a
   // transition in a child frame.
-  if (HasActiveTransitionInAncestorFrame(document.GetFrame())) {
+  if (!RuntimeEnabledFeatures::ConcurrentViewTransitionsEnabled() &&
+      HasActiveTransitionInAncestorFrame(document.GetFrame())) {
     auto skipped_transition = transition_;
     skipped_transition->SkipTransition();
 
@@ -177,10 +187,20 @@ DOMViewTransition* ViewTransitionSupplement::StartTransition(
 
   // Skip transitions in all frames associated with this widget. We can only
   // have one transition per widget/CC.
-  SkipTransitionInAllLocalFrames(document.GetFrame());
+  if (!RuntimeEnabledFeatures::ConcurrentViewTransitionsEnabled()) {
+    SkipTransitionInAllLocalFrames(document.GetFrame());
+  }
   DCHECK(transition_);
 
   return transition_->GetScriptDelegate();
+}
+
+void ViewTransitionSupplement::DidChangeVisibilityState() {
+  if (GetSupplementable()->hidden() && transition_) {
+    transition_->SkipTransition(
+        ViewTransition::PromiseResponse::kRejectInvalidState);
+  }
+  SendOptInStatusToHost();
 }
 
 void ViewTransitionSupplement::SendOptInStatusToHost() {
@@ -191,7 +211,7 @@ void ViewTransitionSupplement::SendOptInStatusToHost() {
   }
 
   document->GetFrame()->GetLocalFrameHostRemote().OnViewTransitionOptInChanged(
-      document->domWindow()->HasBeenRevealed()
+      (document->domWindow()->HasBeenRevealed() && !document->hidden())
           ? cross_document_opt_in_
           : mojom::blink::ViewTransitionSameOriginOptIn::kDisabled);
 }
@@ -209,26 +229,35 @@ void ViewTransitionSupplement::SetCrossDocumentOptIn(
 // static
 void ViewTransitionSupplement::SnapshotDocumentForNavigation(
     Document& document,
+    const blink::ViewTransitionToken& navigation_id,
     mojom::blink::PageSwapEventParamsPtr params,
     ViewTransition::ViewTransitionStateCallback callback) {
   DCHECK(RuntimeEnabledFeatures::ViewTransitionOnNavigationEnabled());
   auto* supplement = From(document);
-  supplement->StartTransition(document, std::move(params), std::move(callback));
+  supplement->StartTransition(document, navigation_id, std::move(params),
+                              std::move(callback));
 }
 
 void ViewTransitionSupplement::StartTransition(
     Document& document,
+    const blink::ViewTransitionToken& navigation_id,
     mojom::blink::PageSwapEventParamsPtr params,
     ViewTransition::ViewTransitionStateCallback callback) {
+  // TODO(khushalsagar): Per spec, we should be checking the opt-in at this
+  // point. See step 2 in
+  // https://drafts.csswg.org/css-view-transitions-2/#setup-outbound-transition.
+
   if (transition_) {
     // We should skip a transition if one exists, regardless of how it was
     // created, since navigation transition takes precedence.
     transition_->SkipTransition();
   }
+
   DCHECK(!transition_)
       << "SkipTransition() should finish existing |transition_|";
   transition_ = ViewTransition::CreateForSnapshotForNavigation(
-      &document, std::move(callback), this);
+      &document, navigation_id, std::move(callback), cross_document_types_,
+      this);
 
   auto* page_swap_event = MakeGarbageCollected<PageSwapEvent>(
       document, std::move(params), transition_->GetScriptDelegate());
@@ -306,26 +335,16 @@ ViewTransitionSupplement::TakePendingRequests() {
   return std::move(pending_requests_);
 }
 
-void ViewTransitionSupplement::OnMetaTagChanged(
-    const AtomicString& content_value) {
-  auto cross_document_opt_in =
-      EqualIgnoringASCIICase(content_value, "same-origin")
-          ? mojom::blink::ViewTransitionSameOriginOptIn::kEnabled
-          : mojom::blink::ViewTransitionSameOriginOptIn::kDisabled;
-
-  SetCrossDocumentOptIn(cross_document_opt_in);
-}
-
 void ViewTransitionSupplement::OnViewTransitionsStyleUpdated(
-    bool cross_document_enabled) {
+    bool cross_document_enabled,
+    const Vector<String>& types) {
   CHECK(RuntimeEnabledFeatures::ViewTransitionOnNavigationEnabled());
-  // TODO(https://crbug.com/1463966): Remove meta tag opt-in - ignore the case
-  // where both are specified for now.
-
+  CHECK(RuntimeEnabledFeatures::ViewTransitionTypesEnabled() || types.empty());
   SetCrossDocumentOptIn(
       cross_document_enabled
           ? mojom::blink::ViewTransitionSameOriginOptIn::kEnabled
           : mojom::blink::ViewTransitionSameOriginOptIn::kDisabled);
+  cross_document_types_ = types;
 }
 
 void ViewTransitionSupplement::WillInsertBody() {
@@ -367,6 +386,8 @@ ViewTransitionSupplement::ResolveCrossDocumentViewTransition() {
     return nullptr;
   }
 
+  transition_->InitTypes(cross_document_types_);
+
   // TODO(https://crbug.com/1502628): This is where types from the used
   // @view-transition should be applied.
 
@@ -375,9 +396,8 @@ ViewTransitionSupplement::ResolveCrossDocumentViewTransition() {
 
 viz::ViewTransitionElementResourceId
 ViewTransitionSupplement::GenerateResourceId(
-    const viz::TransitionId& transition_id) {
-  CHECK(!transition_id.is_empty());
-  return viz::ViewTransitionElementResourceId(transition_id,
+    const blink::ViewTransitionToken& transition_token) {
+  return viz::ViewTransitionElementResourceId(transition_token,
                                               ++resource_local_id_sequence_);
 }
 

@@ -7,52 +7,47 @@ package org.chromium.chrome.browser.tab_resumption;
 import android.content.res.Resources;
 import android.text.TextUtils;
 
+import org.chromium.base.cached_flags.BooleanCachedFieldTrialParameter;
+import org.chromium.base.cached_flags.IntCachedFieldTrialParameter;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
-import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
-import org.chromium.chrome.browser.sync.SyncServiceFactory;
 import org.chromium.components.embedder_support.util.UrlUtilities;
-import org.chromium.components.signin.identitymanager.ConsentLevel;
 import org.chromium.url.GURL;
 
 import java.util.concurrent.TimeUnit;
 
 /** Utilities for the tab resumption module. */
 public class TabResumptionModuleUtils {
+    private static final int DEFAULT_MAX_TILES_NUMBER = 2;
+
     /** Callback to handle click on suggestion tiles. */
-    public interface SuggestionClickCallback {
-        void onSuggestionClick(GURL gurl);
+    public interface SuggestionClickCallbacks {
+        // Called to open a URL.
+        void onSuggestionClickByUrl(GURL gurl);
+
+        // Called to switch to an existing Tab.
+        void onSuggestionClickByTabId(int tabId);
     }
 
-    /**
-     * Returns whether to show the tab resumption module. Only shows if the following are met:
-     *
-     * <pre>
-     * 1. Feature flags TAB_RESUMPTION_MODULE_ANDROID is enabled;
-     * 2. The user has signed in;
-     * 3. The user has turned on sync.
-     * </pre>
-     */
-    static boolean shouldShowTabResumptionModule(Profile profile) {
-        if (!ChromeFeatureList.sTabResumptionModuleAndroid.isEnabled()) {
-            // TODO(crbug.com/1515325): Record metrics here.
-            return false;
-        }
+    private static final String TAB_RESUMPTION_V2_PARAM = "enable_v2";
+    public static final BooleanCachedFieldTrialParameter TAB_RESUMPTION_V2 =
+            ChromeFeatureList.newBooleanCachedFieldTrialParameter(
+                    ChromeFeatureList.TAB_RESUMPTION_MODULE_ANDROID,
+                    TAB_RESUMPTION_V2_PARAM,
+                    false);
 
-        if (!IdentityServicesProvider.get()
-                .getIdentityManager(profile)
-                .hasPrimaryAccount(ConsentLevel.SYNC)) {
-            // TODO(crbug.com/1515325): Record metrics here.
-            return false;
-        }
+    private static final String TAB_RESUMPTION_MAX_TILES_NUMBER_PARAM = "max_tiles_number";
+    public static final IntCachedFieldTrialParameter TAB_RESUMPTION_MAX_TILES_NUMBER =
+            ChromeFeatureList.newIntCachedFieldTrialParameter(
+                    ChromeFeatureList.TAB_RESUMPTION_MODULE_ANDROID,
+                    TAB_RESUMPTION_MAX_TILES_NUMBER_PARAM,
+                    DEFAULT_MAX_TILES_NUMBER);
 
-        if (!SyncServiceFactory.getForProfile(profile).hasKeepEverythingSynced()) {
-            // TODO(crbug.com/1515325): Record metrics here.
-            return false;
-        }
-
-        return true;
-    }
+    private static final String TAB_RESUMPTION_USE_SALIENT_IMAGE_PARAM = "use_salient_image";
+    public static final BooleanCachedFieldTrialParameter TAB_RESUMPTION_USE_SALIENT_IMAGE =
+            ChromeFeatureList.newBooleanCachedFieldTrialParameter(
+                    ChromeFeatureList.TAB_RESUMPTION_MODULE_ANDROID,
+                    TAB_RESUMPTION_USE_SALIENT_IMAGE_PARAM,
+                    false);
 
     /**
      * Computes the string representation of how recent an event was, given the time delta.

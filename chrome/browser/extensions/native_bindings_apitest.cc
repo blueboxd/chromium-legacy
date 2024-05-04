@@ -137,7 +137,7 @@ class NativeBindingsRestrictedToDeveloperModeApiTest
 
  private:
   // The userScripts API is currently behind a feature restriction.
-  // TODO(crbug.com/1472902): Remove once the feature is stable for awhile.
+  // TODO(crbug.com/40926805): Remove once the feature is stable for awhile.
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
@@ -793,7 +793,7 @@ IN_PROC_BROWSER_TEST_F(NativeBindingsRestrictedToDeveloperModeApiTest,
 
 // Tests that changing the developer mode setting affects existing renderers
 // for service worker contexts (which run off the main thread in the renderer).
-// TODO(crbug.com/1505673): Test flaky on multiple platforms
+// TODO(crbug.com/40946312): Test flaky on multiple platforms
 IN_PROC_BROWSER_TEST_F(
     NativeBindingsRestrictedToDeveloperModeApiTest,
     DISABLED_SwitchingDeveloperModeAffectsExistingRenderers_ServiceWorkers) {

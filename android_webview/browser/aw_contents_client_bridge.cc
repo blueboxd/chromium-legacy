@@ -5,14 +5,17 @@
 #include "android_webview/browser/aw_contents_client_bridge.h"
 
 #include <memory>
+#include <string_view>
 #include <utility>
 
+#include "android_webview/browser/network_service/net_helpers.h"
 #include "android_webview/browser_jni_headers/AwContentsClientBridge_jni.h"
 #include "android_webview/common/devtools_instrumentation.h"
 #include "android_webview/grit/components_strings.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
+#include "base/android/scoped_java_ref.h"
 #include "base/containers/span.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
@@ -126,7 +129,7 @@ void AwContentsClientBridge::AllowCertificateError(int cert_error,
   if (!obj)
     return;
 
-  base::StringPiece der_string =
+  std::string_view der_string =
       net::x509_util::CryptoBufferAsStringPiece(cert->cert_buffer());
   ScopedJavaLocalRef<jbyteArray> jcert =
       base::android::ToJavaByteArray(env, base::as_byte_span(der_string));
@@ -234,7 +237,7 @@ void AwContentsClientBridge::ProvideClientCertificateResponse(
                                                       &encoded_chain_strings);
   }
 
-  std::vector<base::StringPiece> encoded_chain;
+  std::vector<std::string_view> encoded_chain;
   for (size_t i = 0; i < encoded_chain_strings.size(); ++i)
     encoded_chain.push_back(encoded_chain_strings[i]);
 
@@ -340,6 +343,7 @@ bool AwContentsClientBridge::ShouldOverrideUrlLoading(
     bool has_user_gesture,
     bool is_redirect,
     bool is_outermost_main_frame,
+    const net::HttpRequestHeaders& request_headers,
     bool* ignore_navigation) {
   *ignore_navigation = false;
   JNIEnv* env = AttachCurrentThread();
@@ -349,8 +353,20 @@ bool AwContentsClientBridge::ShouldOverrideUrlLoading(
   ScopedJavaLocalRef<jstring> jurl = ConvertUTF16ToJavaString(env, url);
   devtools_instrumentation::ScopedEmbedderCallbackTask(
       "shouldOverrideUrlLoading");
+
+  std::vector<std::string> header_names;
+  std::vector<std::string> header_values;
+  ConvertRequestHeadersToVectors(request_headers, &header_names,
+                                 &header_values);
+
+  ScopedJavaLocalRef<jobjectArray> jheader_names =
+      ToJavaArrayOfStrings(env, header_names);
+  ScopedJavaLocalRef<jobjectArray> jheader_values =
+      ToJavaArrayOfStrings(env, header_values);
+
   *ignore_navigation = Java_AwContentsClientBridge_shouldOverrideUrlLoading(
-      env, obj, jurl, has_user_gesture, is_redirect, is_outermost_main_frame);
+      env, obj, jurl, has_user_gesture, is_redirect, jheader_names,
+      jheader_values, is_outermost_main_frame);
   if (HasException(env)) {
     // Tell the chromium message loop to not perform any tasks after the current
     // one - we want to make sure we return to Java cleanly without first making

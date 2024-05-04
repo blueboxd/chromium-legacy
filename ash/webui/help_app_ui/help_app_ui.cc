@@ -53,10 +53,11 @@ HelpAppUI::HelpAppUI(content::WebUI* web_ui,
       web_ui->GetWebContents()->GetBrowserContext();
   content::WebUIDataSource* host_source =
       CreateAndAddHostDataSource(browser_context);
-  // We need a CSP override to use the chrome-untrusted:// and almanac://
-  // schemes in the host.
+  // We need a CSP override to use the chrome-untrusted://, almanac:// and
+  // cros-apps:// schemes in the host.
   std::string csp = base::StrCat({"frame-src ", kChromeUIHelpAppUntrustedURL,
-                                  " ", chromeos::kAppInstallUriScheme, ":;"});
+                                  " ", chromeos::kAppInstallUriScheme, ": ",
+                                  chromeos::kLegacyAppInstallUriScheme, ":;"});
   host_source->OverrideContentSecurityPolicy(
       network::mojom::CSPDirectiveName::FrameSrc, csp);
 
@@ -64,7 +65,7 @@ HelpAppUI::HelpAppUI(content::WebUI* web_ui,
   web_ui->AddRequestableScheme(content::kChromeUIUntrustedScheme);
 
   // Register common permissions for chrome-untrusted:// pages.
-  // TODO(https://crbug.com/1113568): Remove this after common permissions are
+  // TODO(crbug.com/40710326): Remove this after common permissions are
   // granted by default.
   auto* permissions_allowlist = WebUIAllowlist::GetOrCreate(browser_context);
   const url::Origin untrusted_origin =
@@ -87,7 +88,7 @@ HelpAppUI::HelpAppUI(content::WebUI* web_ui,
   }
 
   // Register common permissions for chrome-untrusted:// pages.
-  // TODO(https://crbug.com/1113568): Remove this after common permissions are
+  // TODO(crbug.com/40710326): Remove this after common permissions are
   // granted by default.
   auto* magazine_permissions_allowlist =
       WebUIAllowlist::GetOrCreate(browser_context);

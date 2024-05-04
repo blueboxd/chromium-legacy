@@ -9,10 +9,10 @@
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
-#include "chrome/browser/signin/signin_features.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/search_engines/template_url_service.h"
+#include "components/signin/public/base/signin_switches.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -376,7 +376,7 @@ TEST(StartupTabProviderTest, GetCommandLineTabs) {
   }
 }
 
-// This test fails on Windows. TODO(crbug.com/1439648): Investigate and
+// This test fails on Windows. TODO(crbug.com/40265634): Investigate and
 // fix this test on Windows.
 #if BUILDFLAG(IS_WIN)
 #define MAYBE_GetCommandLineTabsFileUrl DISABLED_GetCommandLineTabsFileUrl

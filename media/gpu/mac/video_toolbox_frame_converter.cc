@@ -10,6 +10,7 @@
 #include "base/functional/callback_helpers.h"
 #include "base/logging.h"
 #include "base/task/bind_post_task.h"
+#include "components/viz/common/resources/shared_image_format.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
@@ -21,6 +22,7 @@
 #include "media/base/mac/video_frame_mac.h"
 #include "media/base/media_log.h"
 #include "media/base/media_switches.h"
+#include "media/base/video_types.h"
 #include "media/gpu/mac/video_toolbox_decompression_metadata.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/rect.h"
@@ -50,6 +52,10 @@ std::optional<viz::SharedImageFormat> PixelFormatToImageFormat(
       return viz::MultiPlaneFormat::kP010;
     case kCVPixelFormatType_420YpCbCr8VideoRange_8A_TriPlanar:
       return viz::MultiPlaneFormat::kNV12A;
+    case kCVPixelFormatType_32BGRA:
+      return viz::SinglePlaneFormat::kBGRA_8888;
+    case kCVPixelFormatType_64RGBAHalf:
+      return viz::SinglePlaneFormat::kRGBA_F16;
     default:
       return std::nullopt;
   }
@@ -63,6 +69,10 @@ VideoPixelFormat PixelFormatToVideoPixelFormat(OSType pixel_format) {
       return PIXEL_FORMAT_P016LE;
     case kCVPixelFormatType_420YpCbCr8VideoRange_8A_TriPlanar:
       return PIXEL_FORMAT_NV12A;
+    case kCVPixelFormatType_32BGRA:
+      return PIXEL_FORMAT_ARGB;
+    case kCVPixelFormatType_64RGBAHalf:
+      return PIXEL_FORMAT_RGBAF16;
     default:
       return PIXEL_FORMAT_UNKNOWN;
   }
@@ -81,7 +91,7 @@ VideoToolboxFrameConverter::VideoToolboxFrameConverter(
       get_stub_cb_(std::move(get_stub_cb)) {
   DVLOG(1) << __func__;
   DCHECK(get_stub_cb_);
-  DCHECK(IsMultiPlaneFormatForHardwareVideoEnabled());
+  CHECK(IsMultiPlaneFormatForHardwareVideoEnabled());
 }
 
 VideoToolboxFrameConverter::~VideoToolboxFrameConverter() {
@@ -230,15 +240,13 @@ void VideoToolboxFrameConverter::Convert(
     return;
   }
 
-  // TODO(crbug.com/1331597): Ensure that the frame color space matches the
+  // TODO(crbug.com/40227557): Ensure that the frame color space matches the
   // IOSurface color space. There doesn't seem to be a way to specify it for
   // H.264 unless we create the format description manually.
   frame->set_color_space(metadata->color_space);
   frame->set_hdr_metadata(metadata->hdr_metadata);
   frame->set_shared_image_format_type(
-      IsMultiPlaneFormatForHardwareVideoEnabled()
-          ? SharedImageFormatType::kSharedImageFormat
-          : SharedImageFormatType::kLegacy);
+      SharedImageFormatType::kSharedImageFormat);
   if (metadata->duration != kNoTimestamp && !metadata->duration.is_zero()) {
     frame->metadata().frame_duration = metadata->duration;
   }
@@ -247,7 +255,7 @@ void VideoToolboxFrameConverter::Convert(
   // (not just submitted).
   frame->metadata().read_lock_fences_enabled = true;
   frame->metadata().is_webgpu_compatible = is_webgpu_compatible;
-  // TODO(crbug.com/1331597): VideoToolbox can report software usage, should
+  // TODO(crbug.com/40227557): VideoToolbox can report software usage, should
   // we plumb that through?
   frame->metadata().power_efficient = true;
 

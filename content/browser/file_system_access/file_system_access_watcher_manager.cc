@@ -61,7 +61,7 @@ blink::mojom::FileSystemAccessChangeTypePtr ToMojoChangeType(
       return blink::mojom::FileSystemAccessChangeType::NewModified(
           blink::mojom::FileSystemAccessChangeTypeModified::New());
     case FileSystemAccessChangeSource::ChangeType::kMoved:
-      // TODO(https://crbug.com/1488864): Support setting
+      // TODO(crbug.com/40283773): Support setting
       // `former_relative_path`.
       return blink::mojom::FileSystemAccessChangeType::NewMoved(
           blink::mojom::FileSystemAccessChangeTypeMoved::New());
@@ -178,16 +178,13 @@ void FileSystemAccessWatcherManager::OnRawChange(
     const FileSystemAccessChangeSource::ChangeInfo& change_info) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  // TODO(https://crbug.com/1488864): Use `change_info.cookie` to connect
+  // TODO(crbug.com/40283773): Use `change_info.cookie` to connect
   // related events.
   //
-  // TODO(https://crbug.com/1488874): Ignore changes caused by API
+  // TODO(crbug.com/40283778): Ignore changes caused by API
   // implementation details, such as writes to swap files.
   //
-  // TODO(https://crbug.com/1488875): Discard changes corresponding to
-  // non-fully-active pages.
-  //
-  // TODO(https://crbug.com/1447240): Batch changes.
+  // TODO(crbug.com/40268906): Batch changes.
 
   const std::list<Observation::Change> changes = {
       {changed_url, ToMojoChangeType(error, change_info.change_type),
@@ -232,7 +229,7 @@ void FileSystemAccessWatcherManager::RemoveObserver(Observation* observation) {
   // Remove the respective source if we own it and it was the only observer
   // for this scope.
   //
-  // TODO(https://crbug.com/1019297): Handle initializing sources.
+  // TODO(crbug.com/40105284): Handle initializing sources.
   base::EraseIf(owned_sources_, [&](const auto& source) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     return source->scope().Contains(newly_unobserved_scope) &&
@@ -259,7 +256,7 @@ void FileSystemAccessWatcherManager::EnsureSourceIsInitializedForScope(
         on_source_initialized) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  // TODO(https://crbug.com/1489057): Handle overlapping scopes and initializing
+  // TODO(crbug.com/40283894): Handle overlapping scopes and initializing
   // sources.
 
   FileSystemAccessChangeSource* raw_change_source = nullptr;
@@ -273,7 +270,7 @@ void FileSystemAccessWatcherManager::EnsureSourceIsInitializedForScope(
   } else {
     auto owned_change_source = CreateOwnedSourceForScope(scope);
     if (!owned_change_source) {
-      // TODO(https://crbug.com/1019297): Watching `scope` is not supported.
+      // TODO(crbug.com/40105284): Watching `scope` is not supported.
       std::move(on_source_initialized)
           .Run(file_system_access_error::FromStatus(
               blink::mojom::FileSystemAccessStatus::kNotSupportedError));
@@ -309,7 +306,7 @@ void FileSystemAccessWatcherManager::DidInitializeSource(
     // If we owned this source, remove it. A source which is not initialized
     // will not notify of changes, so there's no use keeping it around.
     //
-    // TODO(https://crbug.com/1019297): Decide how to handle unowned sources
+    // TODO(crbug.com/40105284): Decide how to handle unowned sources
     // which fail to initialize.
     base::EraseIf(
         owned_sources_,
@@ -354,7 +351,7 @@ FileSystemAccessWatcherManager::CreateOwnedSourceForScope(
     CHECK(scope.root_url().type() !=
           storage::FileSystemType::kFileSystemTypeTemporary);
 
-    // TODO(https://crbug.com/1489061): Support non-local file systems.
+    // TODO(crbug.com/40283896): Support non-local file systems.
     return nullptr;
   }
 

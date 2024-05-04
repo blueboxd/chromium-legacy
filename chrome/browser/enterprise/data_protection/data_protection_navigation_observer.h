@@ -10,6 +10,7 @@
 
 #include "base/functional/callback_forward.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/enterprise/data_protection/data_protection_page_user_data.h"
 #include "components/safe_browsing/core/common/proto/realtimeapi.pb.h"
 #include "content/public/browser/navigation_handle_user_data.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -40,7 +41,28 @@ class DataProtectionNavigationObserver
   // Callback that is meant to update data protection settings. For now,
   // it is only accepts a std::string parameter for the watermark string.
   // change this when adding new data protection settings.
-  using Callback = base::OnceCallback<void(const std::string&)>;
+  using Callback = base::OnceCallback<void(const UrlSettings&)>;
+
+  // Log values for source of realtime URL lookup verdict. This is used to log
+  // metrics as DataProtectionURLVerdictSource, so numeric values must not be
+  // changed.
+  enum class URLVerdictSource {
+    // Verdict has been stored in the current Page's UserData.
+    kPageUserData = 0,
+
+    // Verdict has been stored by this class's lookup callback in the
+    // `watermark_text_` member.
+    kCachedLookupResult = 1,
+
+    // Verdict was not cached, so we needed to perform a lookup in
+    // DidFinishNavigation().
+    kPostNavigationLookup = 2,
+
+    // Verdict was stored in the WebContents' UserData.
+    kWebContentsUserData = 3,
+
+    kMaxValue = kWebContentsUserData
+  };
 
   // Creates a DataProtectionNavigationObserver if needed.  For example, the
   // user data may not be needed for internal chrome URLs, if this is a same doc
@@ -75,11 +97,15 @@ class DataProtectionNavigationObserver
 
   ~DataProtectionNavigationObserver() override;
 
+  static void SetLookupServiceForTesting(
+      safe_browsing::RealTimeUrlLookupServiceBase* lookup_service);
+
  private:
   friend class content::NavigationHandleUserData<
       DataProtectionNavigationObserver>;
 
-  void OnLookupComplete(const std::string& watermark_text);
+  void OnLookupComplete(
+      std::unique_ptr<safe_browsing::RTLookupResponse> rt_lookup_response);
 
   // content::WebContentsObserver:
   void DidRedirectNavigation(
@@ -89,9 +115,12 @@ class DataProtectionNavigationObserver
 
   bool is_from_cache_ = false;
 
-  // The full watermark string to show over the page. Empty if no watermark
-  // verdict has been obtained.
-  std::optional<std::string> watermark_text_;
+  // Screenshots are allowed unless explicitly blocked.
+  bool allow_screenshot_ = true;
+
+  // The verdict indicating what watermark should be shown, if populated. Used
+  // for reporting as well.
+  std::unique_ptr<safe_browsing::RTLookupResponse> rt_lookup_response_;
 
   // Identifier string to show in the watermark if needed. This is either a user
   // email or a device ID.
@@ -105,12 +134,6 @@ class DataProtectionNavigationObserver
 
   NAVIGATION_HANDLE_USER_DATA_KEY_DECL();
 };
-
-// Return the watermark string to display if present in `threat_info`. Revealed
-// for testing
-std::string GetWatermarkString(
-    const std::string& identifier,
-    const safe_browsing::RTLookupResponse::ThreatInfo& threat_info);
 
 }  // namespace enterprise_data_protection
 

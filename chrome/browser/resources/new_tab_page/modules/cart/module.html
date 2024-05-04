@@ -63,18 +63,13 @@
 
   #consentCard,
   .cart-container {
-    background-color: var(--color-new-tab-page-module-item-background);
+    background-color: var(--color-sys-base-container-elevated);
     border: 1px solid var(--color-new-tab-page-border);
     border-radius: var(--ntp-module-item-border-radius);
     display: inline-flex;
     flex-direction: column;
     height: 140px;
     margin: 0 4px;
-  }
-
-  :host-context([chrome-refresh-2023]) #consentCard,
-  :host-context([chrome-refresh-2023]) .cart-container {
-    background-color: var(--color-sys-base-container-elevated);
   }
 
   .cart-container {
@@ -171,8 +166,8 @@
   }
 
   .action-button {
-    --text-color-action: var(--color-new-tab-page-action-button-foreground);
-    background-color: var(--color-new-tab-page-action-button-background);
+    --cr-button-text-color: var(--color-new-tab-page-action-button-foreground);
+    --cr-button-background-color: var(--color-new-tab-page-action-button-background);
   }
 
   .cart-title {
@@ -375,7 +370,7 @@
       <div id="consentContainer">
         <template id="consentCardElement" is="dom-if"
             if="[[showDiscountConsent]]">
-          <!-- TODO(crbug.com/1298116): Move this template to
+          <!-- TODO(crbug.com/40215404): Move this template to
             discount_consent_card. -->
           <template is="dom-if" if="[[!discountConsentHasTwoSteps_]]" restamp>
             <div id="consentCard">

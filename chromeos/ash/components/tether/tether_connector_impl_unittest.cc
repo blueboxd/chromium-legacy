@@ -67,14 +67,15 @@ using ::testing::Optional;
 class FakeConnectTetheringOperation : public ConnectTetheringOperation {
  public:
   FakeConnectTetheringOperation(
-      multidevice::RemoteDeviceRef device_to_connect,
+      const TetherHost& tether_host,
       device_sync::DeviceSyncClient* device_sync_client,
       secure_channel::SecureChannelClient* secure_channel_client,
       bool setup_required)
-      : ConnectTetheringOperation(device_to_connect,
+      : ConnectTetheringOperation(tether_host,
                                   device_sync_client,
                                   secure_channel_client,
                                   setup_required),
+        tether_host_(tether_host),
         setup_required_(setup_required) {}
 
   ~FakeConnectTetheringOperation() override = default;
@@ -93,14 +94,12 @@ class FakeConnectTetheringOperation : public ConnectTetheringOperation {
     NotifyObserversOfConnectionFailure(error_code);
   }
 
-  multidevice::RemoteDeviceRef GetRemoteDevice() {
-    EXPECT_EQ(1u, remote_devices().size());
-    return remote_devices()[0];
-  }
+  TetherHost tether_host() { return tether_host_; }
 
   bool setup_required() { return setup_required_; }
 
  private:
+  TetherHost tether_host_;
   bool setup_required_;
 };
 
@@ -118,12 +117,12 @@ class FakeConnectTetheringOperationFactory
  protected:
   // ConnectTetheringOperation::Factory:
   std::unique_ptr<ConnectTetheringOperation> CreateInstance(
-      multidevice::RemoteDeviceRef device_to_connect,
+      const TetherHost& tether_host,
       device_sync::DeviceSyncClient* device_sync_client,
       secure_channel::SecureChannelClient* secure_channel_client,
       bool setup_required) override {
     FakeConnectTetheringOperation* operation =
-        new FakeConnectTetheringOperation(device_to_connect, device_sync_client,
+        new FakeConnectTetheringOperation(tether_host, device_sync_client,
                                           secure_channel_client,
                                           setup_required);
     created_operations_.push_back(operation);
@@ -164,7 +163,7 @@ class TetherConnectorImplTest : public testing::Test {
         std::make_unique<FakeWifiHotspotConnector>(NetworkHandler::Get());
     fake_active_host_ = std::make_unique<FakeActiveHost>();
     fake_tether_host_fetcher_ =
-        std::make_unique<FakeTetherHostFetcher>(test_devices_);
+        std::make_unique<FakeTetherHostFetcher>(test_devices_[0]);
     mock_tether_host_response_recorder_ =
         std::make_unique<MockTetherHostResponseRecorder>();
     device_id_tether_network_guid_map_ =
@@ -281,6 +280,7 @@ class TetherConnectorImplTest : public testing::Test {
     multidevice::RemoteDeviceRef test_device =
         test_devices_[setup_required ? 1 : 0];
 
+    fake_tether_host_fetcher_->SetTetherHost(test_device);
     CallConnect(GetTetherNetworkGuid(test_device.GetDeviceId()));
     EXPECT_EQ(ActiveHost::ActiveHostStatus::CONNECTING,
               fake_active_host_->GetActiveHostStatus());
@@ -352,6 +352,7 @@ class TetherConnectorImplTest : public testing::Test {
 };
 
 TEST_F(TetherConnectorImplTest, TestCannotFetchDevice) {
+  fake_tether_host_fetcher_->SetTetherHost(std::nullopt);
   // Base64-encoded version of "nonexistentDeviceId".
   const char kNonexistentDeviceId[] = "bm9uZXhpc3RlbnREZXZpY2VJZA==";
 
@@ -634,9 +635,11 @@ TEST_F(TetherConnectorImplTest, TestSuccessfulConnection) {
                   HostConnectionMetricsLogger::ConnectionToHostResult::SUCCESS,
                   test_devices_[0].GetDeviceId(), Eq(std::nullopt)));
 
-  EXPECT_CALL(*mock_tether_host_response_recorder_,
-              RecordSuccessfulConnectTetheringResponse(test_devices_[0]));
+  EXPECT_CALL(
+      *mock_tether_host_response_recorder_,
+      RecordSuccessfulConnectTetheringResponse(test_devices_[0].GetDeviceId()));
 
+  fake_tether_host_fetcher_->SetTetherHost(test_devices_[0]);
   CallConnect(GetTetherNetworkGuid(test_devices_[0].GetDeviceId()));
   EXPECT_EQ(ActiveHost::ActiveHostStatus::CONNECTING,
             fake_active_host_->GetActiveHostStatus());
@@ -691,6 +694,7 @@ TEST_F(TetherConnectorImplTest, TestSuccessfulConnection_SetupRequired) {
   EXPECT_FALSE(
       fake_notification_presenter_->is_setup_required_notification_shown());
 
+  fake_tether_host_fetcher_->SetTetherHost(test_devices_[1]);
   CallConnect(GetTetherNetworkGuid(test_devices_[1].GetDeviceId()));
   EXPECT_FALSE(
       fake_notification_presenter_->is_setup_required_notification_shown());
@@ -729,6 +733,7 @@ TEST_F(TetherConnectorImplTest,
                   HostConnectionMetricsLogger::ConnectionToHostResult::SUCCESS,
                   test_devices_[1].GetDeviceId(), Eq(std::nullopt)));
 
+  fake_tether_host_fetcher_->SetTetherHost(test_devices_[0]);
   CallConnect(GetTetherNetworkGuid(test_devices_[0].GetDeviceId()));
   EXPECT_EQ(ActiveHost::ActiveHostStatus::CONNECTING,
             fake_active_host_->GetActiveHostStatus());
@@ -742,6 +747,7 @@ TEST_F(TetherConnectorImplTest,
   EXPECT_EQ(1u, fake_operation_factory_->created_operations().size());
 
   // Before the created operation replies, start a new connection to device 1.
+  fake_tether_host_fetcher_->SetTetherHost(test_devices_[1]);
   CallConnect(GetTetherNetworkGuid(test_devices_[1].GetDeviceId()));
   // The first connection attempt should have resulted in a connect canceled
   // error.
@@ -794,6 +800,7 @@ TEST_F(TetherConnectorImplTest,
                   HostConnectionMetricsLogger::ConnectionToHostResult::SUCCESS,
                   test_devices_[1].GetDeviceId(), Eq(std::nullopt)));
 
+  fake_tether_host_fetcher_->SetTetherHost(test_devices_[0]);
   CallConnect(GetTetherNetworkGuid(test_devices_[0].GetDeviceId()));
   EXPECT_EQ(ActiveHost::ActiveHostStatus::CONNECTING,
             fake_active_host_->GetActiveHostStatus());
@@ -814,6 +821,7 @@ TEST_F(TetherConnectorImplTest,
 
   // While the connection to the Wi-Fi network is in progress, start a new
   // connection attempt.
+  fake_tether_host_fetcher_->SetTetherHost(test_devices_[1]);
   CallConnect(GetTetherNetworkGuid(test_devices_[1].GetDeviceId()));
   // The first connection attempt should have resulted in a connect canceled
   // error.

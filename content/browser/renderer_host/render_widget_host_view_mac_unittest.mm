@@ -488,7 +488,7 @@ class MockRenderWidgetHostImpl : public RenderWidgetHostImpl {
 
   void SetupMockRenderInputRouter() {
     mock_render_input_router_ = std::make_unique<MockRenderInputRouter>(
-        this, this, MakeFlingScheduler(),
+        this, this, MakeFlingScheduler(), this,
         base::SingleThreadTaskRunner::GetCurrentDefault());
     SetupInputRouter();
   }
@@ -531,6 +531,7 @@ class RenderWidgetHostViewMacTest : public RenderViewHostImplTestHarness {
     window_.pretendIsKeyWindow = YES;
     [window_.contentView addSubview:rwhv_cocoa_];
     [rwhv_cocoa_ setFrame:window_.contentView.bounds];
+    rwhv_mac_->Show();
 
     base::RunLoop().RunUntilIdle();
     process_host_->sink().ClearMessages();
@@ -1452,19 +1453,9 @@ TEST_F(RenderWidgetHostViewMacTest,
   process_host.Cleanup();
 }
 
-class RenderWidgetHostViewMacPinchTest
-    : public RenderWidgetHostViewMacTest,
-      public testing::WithParamInterface<bool> {
+class RenderWidgetHostViewMacPinchTest : public RenderWidgetHostViewMacTest {
  public:
-  RenderWidgetHostViewMacPinchTest() : async_events_enabled_(GetParam()) {
-    if (async_events_enabled_) {
-      scoped_feature_list_.InitAndEnableFeature(
-          features::kTouchpadAsyncPinchEvents);
-    } else {
-      scoped_feature_list_.InitAndDisableFeature(
-          features::kTouchpadAsyncPinchEvents);
-    }
-  }
+  RenderWidgetHostViewMacPinchTest() = default;
 
   RenderWidgetHostViewMacPinchTest(const RenderWidgetHostViewMacPinchTest&) =
       delete;
@@ -1480,16 +1471,9 @@ class RenderWidgetHostViewMacPinchTest
     NSEvent* pinchEndEvent = MockPinchEvent(NSEventPhaseEnded, 0);
     [rwhv_cocoa_ magnifyWithEvent:pinchEndEvent];
   }
-
-  const bool async_events_enabled_;
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
-INSTANTIATE_TEST_SUITE_P(, RenderWidgetHostViewMacPinchTest, testing::Bool());
-
-TEST_P(RenderWidgetHostViewMacPinchTest, PinchThresholding) {
+TEST_F(RenderWidgetHostViewMacPinchTest, PinchThresholding) {
   // Do a gesture that crosses the threshold.
   {
     NSEvent* pinchUpdateEvents[3] = {
@@ -1524,32 +1508,14 @@ TEST_P(RenderWidgetHostViewMacPinchTest, PinchThresholding) {
     base::RunLoop().RunUntilIdle();
     events = host_->GetAndResetDispatchedMessages();
 
-    if (async_events_enabled_) {
-      EXPECT_EQ("MouseWheel GesturePinchBegin GesturePinchUpdate",
-                GetMessageNames(events));
-    } else {
-      EXPECT_EQ("MouseWheel", GetMessageNames(events));
-      // Now acking the synthetic mouse wheel does produce GesturePinch events.
-      events[0]->ToEvent()->CallCallback(
-          blink::mojom::InputEventResultState::kNoConsumerExists);
-      events = host_->GetAndResetDispatchedMessages();
-      EXPECT_EQ("GesturePinchBegin GesturePinchUpdate",
-                GetMessageNames(events));
-    }
+    EXPECT_EQ("MouseWheel GesturePinchBegin GesturePinchUpdate",
+              GetMessageNames(events));
 
     // The third update still has zoom enabled.
     [rwhv_cocoa_ magnifyWithEvent:pinchUpdateEvents[2]];
     base::RunLoop().RunUntilIdle();
     events = host_->GetAndResetDispatchedMessages();
-    if (async_events_enabled_) {
-      EXPECT_EQ("MouseWheel GesturePinchUpdate", GetMessageNames(events));
-    } else {
-      EXPECT_EQ("MouseWheel", GetMessageNames(events));
-      events[0]->ToEvent()->CallCallback(
-          blink::mojom::InputEventResultState::kNoConsumerExists);
-      events = host_->GetAndResetDispatchedMessages();
-      EXPECT_EQ("GesturePinchUpdate", GetMessageNames(events));
-    }
+    EXPECT_EQ("MouseWheel GesturePinchUpdate", GetMessageNames(events));
 
     SendEndPinchEvent();
     base::RunLoop().RunUntilIdle();

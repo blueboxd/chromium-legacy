@@ -6,15 +6,29 @@
 
 Using a specified builder name, this tool can build and/or launch a test the
 same way it's done on the bots. See the README.md in //tools/utr/ for more info.
+
+Any additional args passed at the end of the invocation will be passed down
+as-is to all triggered tests. Example uses:
+
+- vpython3 run.py -B $BUCKET -b $BUILDER -t $TEST compile
+- vpython3 run.py -B $BUCKET -b $BUILDER -t $TEST compile-and-test
+- vpython3 run.py -B $BUCKET -b $BUILDER -t $TEST test --gtest_filter=Test.Case
 """
 
 import argparse
 import logging
+import os
+import pathlib
 import sys
 
 import builders
 import cipd
 import recipe
+
+from rich.logging import RichHandler
+
+_THIS_DIR = pathlib.Path(__file__).resolve().parent
+_SRC_DIR = _THIS_DIR.parents[1]
 
 
 def add_common_args(parser):
@@ -31,9 +45,12 @@ def add_common_args(parser):
                       help='Skip all prompts about config mismatches.')
   parser.add_argument('--test',
                       '-t',
-                      nargs='+',
                       required=True,
-                      help='Name of test suite(s) to replicate.')
+                      action='append',
+                      default=[],
+                      dest='tests',
+                      help='Name of test suite(s) to replicate. Pass multiple '
+                      'times for multiple tests.')
   parser.add_argument('--builder',
                       '-b',
                       required=True,
@@ -47,9 +64,16 @@ def add_common_args(parser):
       '--build-dir',
       '--out-dir',
       '-o',
+      type=pathlib.Path,
       help='Path to the build dir to use for compilation and/or for invoking '
       'test binaries. Will use the output path used by the builder if not '
       'specified (likely //out/Release/).')
+  parser.add_argument(
+      '--recipe-dir',
+      '--recipe-path',
+      '-r',
+      type=pathlib.Path,
+      help='Path to override the recipe bundle with a local checkout.')
 
 
 def add_compile_args(parser):
@@ -65,37 +89,80 @@ def add_compile_args(parser):
       "Will use the builder's settings if not specified.")
 
 
-def parse_args():
-  parser = argparse.ArgumentParser(description=__doc__)
+def add_test_args(parser):
+  parser.add_argument(
+      'additional_test_args',
+      nargs='*',
+      help='The args listed here will be appended to the test cmd-lines.')
+
+
+def parse_args(args=None):
+  """Parse cmd line args.
+
+  Args:
+    args: Cmd line args to parse. Only passed in unittests. Otherwise uses argv.
+  Returns:
+    An argparse.ArgumentParser.
+  """
+  parser = argparse.ArgumentParser(
+      description=__doc__,
+      # Custom formatter to preserve line breaks in the docstring
+      formatter_class=argparse.RawDescriptionHelpFormatter)
   add_common_args(parser)
   subparsers = parser.add_subparsers(dest='run_mode')
 
   compile_subp = subparsers.add_parser(
-      'compile', help='Only compiles. WARNING: this mode is not yet supported.')
+      'compile',
+      aliases=['build'],
+      help='Only compiles. WARNING: this mode is not yet supported.')
   add_compile_args(compile_subp)
 
   test_subp = subparsers.add_parser(
       'test',
       help='Only run/trigger tests. WARNING: this mode is not yet supported.')
+  add_test_args(test_subp)
 
   compile_and_test_subp = subparsers.add_parser(
       'compile-and-test',
+      aliases=['build-and-test', 'run'],
       help='Both compile and run/trigger tests. WARNING: this mode is not yet '
       'supported.')
   add_compile_args(compile_and_test_subp)
+  add_test_args(compile_and_test_subp)
 
-  return parser.parse_args()
+  args = parser.parse_args(args)
+  if not args.run_mode:
+    parser.print_help()
+    parser.error('Please select a run_mode: compile,test,compile-and-test')
+  return args
 
 
 def main():
   args = parse_args()
-  logging.basicConfig(level=logging.DEBUG if args.verbosity else logging.WARN,
-                      format='%(message)s')
+  logging.basicConfig(level=logging.DEBUG if args.verbosity else logging.INFO,
+                      format='%(message)s',
+                      handlers=[
+                          RichHandler(show_time=False,
+                                      show_level=False,
+                                      show_path=False,
+                                      markup=True)
+                      ])
+
+  cipd_bin_path = _SRC_DIR.joinpath('third_party', 'depot_tools', '.cipd_bin')
+  if not cipd_bin_path.exists():
+    logging.warning(
+        ".cipd_bin folder not found. 'gclient sync' may need to be run")
+  else:
+    os.environ["PATH"] = str(cipd_bin_path) + os.pathsep + os.environ["PATH"]
 
   if not recipe.check_rdb_auth():
     return 1
 
-  bundle_root = cipd.fetch_recipe_bundle(args.verbosity)
+  if not args.recipe_dir:
+    recipes_path = cipd.fetch_recipe_bundle(args.verbosity).joinpath('recipes')
+  else:
+    recipes_path = args.recipe_dir.joinpath('recipes', 'recipes.py')
+
   builder_props, swarming_server = builders.find_builder_props(
       args.bucket, args.builder)
   if not builder_props:
@@ -104,16 +171,17 @@ def main():
   skip_compile = args.run_mode == 'test'
   skip_test = args.run_mode == 'compile'
   recipe_runner = recipe.LegacyRunner(
-      bundle_root,
+      recipes_path,
       builder_props,
       args.bucket,
       args.builder,
       swarming_server,
-      args.test,
+      args.tests,
       skip_compile,
       skip_test,
       args.force,
       args.build_dir,
+      additional_test_args=None if skip_test else args.additional_test_args,
   )
   exit_code, error_msg = recipe_runner.run_recipe(
       filter_stdout=args.verbosity < 2)

@@ -20,8 +20,7 @@ source_set("set_up_list") {
     "set_up_list_show_more_item_view.mm",
     "set_up_list_show_more_view_controller.h",
     "set_up_list_show_more_view_controller.mm",
-    "set_up_list_view.h",
-    "set_up_list_view.mm",
+    "set_up_list_tap_delegate.h",
   ]
   deps = [
     ":constants",
@@ -33,6 +32,7 @@ source_set("set_up_list") {
     "//components/signin/public/identity_manager/objc",
     "//components/sync/base:features",
     "//ios/chrome/app/strings",
+    "//ios/chrome/browser/default_browser/model:utils",
     "//ios/chrome/browser/ntp/model:set_up_list",
     "//ios/chrome/browser/ntp/model:set_up_list_item_type",
     "//ios/chrome/browser/ntp/model:set_up_list_prefs",
@@ -121,7 +121,7 @@ source_set("content_notification_promo_ui") {
   deps = [
     ":constants",
     "//ios/chrome/app/strings",
-    "//ios/chrome/browser/ui/content_suggestions/set_up_list/resources:content_notification_promo_banner",
+    "//ios/chrome/browser/ui/content_suggestions/set_up_list/resources",
     "//ios/chrome/common/ui/promo_style",
     "//ui/base",
   ]
@@ -151,10 +151,7 @@ source_set("utils") {
 
 source_set("unit_tests") {
   testonly = true
-  sources = [
-    "set_up_list_default_browser_promo_coordinator_unittest.mm",
-    "set_up_list_view_unittest.mm",
-  ]
+  sources = [ "set_up_list_default_browser_promo_coordinator_unittest.mm" ]
   deps = [
     ":constants",
     ":default_browser_promo",

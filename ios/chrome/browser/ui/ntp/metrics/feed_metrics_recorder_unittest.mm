@@ -463,7 +463,7 @@ TEST_F(FeedMetricsRecorderTest, TimeSpent_RecordedCorrectly) {
   EXPECT_EQ(kTimeForFeedTimeMetric, recorder_.timeSpentInFeed);
 }
 
-// TODO(crbug.com/1403009) Add test to check if the histogram is recorded
+// TODO(crbug.com/40885127) Add test to check if the histogram is recorded
 // appropriately.
 
 #pragma mark - Unit tests of histogram methods.
@@ -610,18 +610,6 @@ TEST_F(FeedMetricsRecorderTest, Actions_FirstFollowGoToFeedButtonTapped) {
 // Testing `recordFirstFollowTappedGotIt`.
 TEST_F(FeedMetricsRecorderTest, Actions_FirstFollowGotItButtonTapped) {
   EXPECT_ACTION(kFirstFollowGotItButtonTapped, recordFirstFollowTappedGotIt);
-}
-
-// Testing `recordSignInPromoUIContinueTapped`.
-TEST_F(FeedMetricsRecorderTest, Actions_FeedSignInPromoUIContinueTapped) {
-  EXPECT_ACTION(kFeedSignInPromoUIContinueTapped,
-                recordSignInPromoUIContinueTapped);
-}
-
-// Testing `recordSignInPromoUICancelTapped`.
-TEST_F(FeedMetricsRecorderTest, Actions_FeedSignInPromoUICancelTapped) {
-  EXPECT_ACTION(kFeedSignInPromoUICancelTapped,
-                recordSignInPromoUICancelTapped);
 }
 
 // Testing `recordShowSignInOnlyUIWithUserId` with user Id.

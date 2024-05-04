@@ -50,6 +50,7 @@ class GPU_GLES2_EXPORT WrappedSkImageBackingFactory
       SkAlphaType alpha_type,
       uint32_t usage,
       std::string debug_label,
+      bool is_thread_safe,
       base::span<const uint8_t> pixel_data) override;
   std::unique_ptr<SharedImageBacking> CreateSharedImage(
       const Mailbox& mailbox,
@@ -85,6 +86,7 @@ class GPU_GLES2_EXPORT WrappedSkImageBackingFactory
   scoped_refptr<SharedContextState> context_state_;
   const bool use_graphite_;
   const bool is_drdc_enabled_;
+  const bool graphite_supports_compressed_textures_;
 };
 
 }  // namespace gpu

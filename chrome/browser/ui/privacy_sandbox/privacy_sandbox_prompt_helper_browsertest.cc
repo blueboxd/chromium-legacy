@@ -272,7 +272,7 @@ IN_PROC_BROWSER_TEST_P(PrivacySandboxPromptHelperTestWithParam,
         1}});
 }
 
-// TODO(crbug.com/1452014): Debug and re-enable the test.
+// TODO(crbug.com/40270789): Debug and re-enable the test.
 # if BUILDFLAG(IS_CHROMEOS)
 # define MAYBE_PromptOpensOnHistory DISABLED_PromptOpensOnHistory
 # else
@@ -346,7 +346,7 @@ IN_PROC_BROWSER_TEST_P(PrivacySandboxPromptHelperTestWithParam, NoPromptSync) {
   EXPECT_CALL(*mock_privacy_sandbox_service(),
               PromptOpenedForBrowser(browser(), testing::_))
       .Times(0);
-  test_sync_service()->SetSetupInProgress(true);
+  test_sync_service()->SetSetupInProgress();
   ASSERT_TRUE(ui_test_utils::NavigateToURLWithDisposition(
       browser(), GURL(chrome::kChromeUINewTabPageURL),
       WindowOpenDisposition::NEW_FOREGROUND_TAB,

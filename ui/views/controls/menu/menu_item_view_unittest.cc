@@ -63,7 +63,11 @@ class SquareView : public views::View {
   ~SquareView() override = default;
 
  private:
-  gfx::Size CalculatePreferredSize() const override { return gfx::Size(1, 1); }
+  gfx::Size CalculatePreferredSize(
+      const SizeBounds& available_size) const override {
+    int width = available_size.width().value_or(1);
+    return gfx::Size(width, width);
+  }
   int GetHeightForWidth(int width) const override { return width; }
 };
 
@@ -88,11 +92,11 @@ TEST_F(MenuItemViewUnitTest, TestMenuItemViewWithFlexibleWidthChild) {
 
   // The first item should be the label view.
   ASSERT_EQ(label_view, submenu->GetMenuItemAt(0));
-  gfx::Size label_size = label_view->GetPreferredSize();
+  gfx::Size label_size = label_view->GetPreferredSize({});
 
   // The second item should be the flexible view.
   ASSERT_EQ(flexible_view, submenu->GetMenuItemAt(1));
-  gfx::Size flexible_size = flexible_view->GetPreferredSize();
+  gfx::Size flexible_size = flexible_view->GetPreferredSize({});
 
   EXPECT_EQ(1, flexible_size.width());
 
@@ -103,7 +107,7 @@ TEST_F(MenuItemViewUnitTest, TestMenuItemViewWithFlexibleWidthChild) {
   // The submenu should be tall enough to allow for both menu items at the
   // given width. (It may be taller if there is padding between/around the
   // items.)
-  EXPECT_GE(submenu->GetPreferredSize().height(),
+  EXPECT_GE(submenu->GetPreferredSize({}).height(),
             label_size.height() + flex_height);
 }
 
@@ -203,7 +207,7 @@ class TouchableMenuItemViewTest : public ViewsTestBase {
   }
 
   gfx::Size AppendItemAndGetSize(int i, const std::u16string& title) {
-    return menu_item_view_->AppendMenuItem(i, title)->GetPreferredSize();
+    return menu_item_view_->AppendMenuItem(i, title)->GetPreferredSize({});
   }
 
  private:
@@ -256,7 +260,7 @@ class MenuItemViewLayoutTest : public ViewsTestBase {
     submenu_parent_ = std::make_unique<View>();
     submenu_parent_->AddChildView(submenu);
     submenu_parent_->SetPosition(gfx::Point(0, 0));
-    submenu_parent_->SetSize(submenu->GetPreferredSize());
+    submenu_parent_->SetSize(submenu->GetPreferredSize({}));
   }
 
   void SetUp() override {

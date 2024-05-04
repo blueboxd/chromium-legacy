@@ -1,0 +1,62 @@
+// Copyright 2024 The Chromium Authors
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/browser/ash/file_manager/indexing/file_index_service.h"
+
+#include "chrome/browser/ash/file_manager/indexing/file_index_impl.h"
+#include "chrome/browser/ash/file_manager/indexing/ram_storage.h"
+
+namespace file_manager {
+
+// Currently FileIndexService implements FileIndex interface. It also
+// uses FileIndexImpl that implements the same interface to delegate
+// all details to it. This gives us a lean FileIndexService, though
+// in practive all code from FileIndexImpl could be moved here. The
+// current structure of the classes is as follows:
+//
+//      [ File Index  ]
+//      [ (interface) ]
+//             ^
+//             |
+//             +------------------.
+//             |                  |
+//  [ FileIndexService ]----<>[ FileIndexImpl ]
+//                                 |
+//                                 |
+//             [ IndexStorage ]<>--'
+//             [ (interface)  ]
+//                      ^
+//                      |
+//               -------+--------
+//               |               |
+//        [ RamStorage ]   [ SqlStorage ]
+
+FileIndexService::FileIndexService(Profile* profile)
+    : file_index_impl_(
+          std::make_unique<FileIndexImpl>(std::make_unique<RamStorage>())) {
+  DCHECK(profile);
+}
+
+FileIndexService::~FileIndexService() = default;
+
+OpResults FileIndexService::UpdateFile(const std::vector<Term>& terms,
+                                       const FileInfo& info) {
+  return file_index_impl_->UpdateFile(terms, info);
+}
+
+OpResults FileIndexService::AugmentFile(const std::vector<Term>& terms,
+                                        const FileInfo& info) {
+  return file_index_impl_->AugmentFile(terms, info);
+}
+
+OpResults FileIndexService::RemoveFile(const GURL& url) {
+  return file_index_impl_->RemoveFile(url);
+}
+
+// Searches the index for file info matching the specified query.
+SearchResults FileIndexService::Search(const Query& query) {
+  return file_index_impl_->Search(query);
+}
+
+}  // namespace file_manager

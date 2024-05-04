@@ -291,8 +291,9 @@ void HTMLCanvasElement::ColorSchemeMayHaveChanged() {
 void HTMLCanvasElement::ParseAttribute(
     const AttributeModificationParams& params) {
   if (params.name == html_names::kWidthAttr ||
-      params.name == html_names::kHeightAttr)
+      params.name == html_names::kHeightAttr) {
     Reset();
+  }
   HTMLElement::ParseAttribute(params);
 }
 
@@ -316,28 +317,30 @@ Node::InsertionNotificationRequest HTMLCanvasElement::InsertedInto(
   return HTMLElement::InsertedInto(node);
 }
 
-void HTMLCanvasElement::setHeight(unsigned value,
-                                  ExceptionState& exception_state) {
+bool HTMLCanvasElement::SizeChangesAreAllowed(ExceptionState& exception_state) {
   if (IsOffscreenCanvasRegistered()) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidStateError,
         "Cannot resize canvas after call to transferControlToOffscreen().");
-    return;
+    return false;
   }
-  SetUnsignedIntegralAttribute(html_names::kHeightAttr, value,
-                               kDefaultCanvasHeight);
+  return true;
+}
+
+void HTMLCanvasElement::setHeight(unsigned value,
+                                  ExceptionState& exception_state) {
+  if (SizeChangesAreAllowed(exception_state)) {
+    SetUnsignedIntegralAttribute(html_names::kHeightAttr, value,
+                                 kDefaultCanvasHeight);
+  }
 }
 
 void HTMLCanvasElement::setWidth(unsigned value,
                                  ExceptionState& exception_state) {
-  if (IsOffscreenCanvasRegistered()) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kInvalidStateError,
-        "Cannot resize canvas after call to transferControlToOffscreen().");
-    return;
+  if (SizeChangesAreAllowed(exception_state)) {
+    SetUnsignedIntegralAttribute(html_names::kWidthAttr, value,
+                                 kDefaultCanvasWidth);
   }
-  SetUnsignedIntegralAttribute(html_names::kWidthAttr, value,
-                               kDefaultCanvasWidth);
 }
 
 void HTMLCanvasElement::SetSize(gfx::Size new_size) {
@@ -728,8 +731,9 @@ void HTMLCanvasElement::DoDeferredPaintInvalidation() {
     DoPaintInvalidation(gfx::ToEnclosingRect(invalidation_rect));
   }
 
-  if (context_ && HasImageBitmapContext() && context_->CcLayer())
-    context_->CcLayer()->SetNeedsDisplay();
+  if (IsImageBitmapRenderingContext() && RenderingContext()->CcLayer()) {
+    RenderingContext()->CcLayer()->SetNeedsDisplay();
+  }
 
   NotifyListenersCanvasChanged();
   did_notify_listeners_for_current_frame_ = true;
@@ -1618,28 +1622,25 @@ HTMLCanvasElement::GetSourceImageForCanvasInternal(
     // TransferControlToOffscreen is asynchronous, this will need to finish the
     // first Frame in order to have a first OffscreenCanvasFrame.
     image = OffscreenCanvasFrame()->Bitmap();
-  } else if (!context_) {
-    image = GetTransparentImage();
-  } else if (HasImageBitmapContext()) {
-    image = context_->GetImage(reason);
-
-    if (!image)
-      image = GetTransparentImage();
-  } else if (IsWebGL()) {
-    // TODO(ccameron): Canvas should produce sRGB images.
-    // https://crbug.com/672299
-    // Because WebGL sources always require making a copy of the back buffer, we
-    // use paintRenderingResultsToCanvas instead of getImage in order to keep a
-    // cached copy of the backing in the canvas's resource provider.
-    RenderingContext()->PaintRenderingResultsToCanvas(kBackBuffer);
-    if (ResourceProvider())
-      image = ResourceProvider()->Snapshot(reason);
-    else
-      image = GetTransparentImage();
   } else {
-    image = RenderingContext()->GetImage(reason);
-    if (!image)
+    if (IsWebGL() || IsWebGPU()) {
+      // TODO(https://crbug.com/672299): Canvas should produce sRGB images.
+      // Because WebGL/WebGPU sources always require copying the back buffer,
+      // we use PaintRenderingResultsToCanvas instead of GetImage in order to
+      // keep a cached copy of the backing in the canvas's resource provider.
+      RenderingContext()->PaintRenderingResultsToCanvas(kBackBuffer);
+      // TODO(sunnyps): Check what PaintRenderingResultsToCanvas returns. It
+      // seems the above returns false unexpectedly in some tests.
+      if (ResourceProvider()) {
+        image = ResourceProvider()->Snapshot(reason);
+      }
+    } else if (RenderingContext()) {
+      // This is either CanvasRenderingContext2D or ImageBitmapRenderingContext.
+      image = RenderingContext()->GetImage(reason);
+    }
+    if (!image) {
       image = GetTransparentImage();
+    }
   }
 
   if (!image) {
@@ -1662,14 +1663,17 @@ bool HTMLCanvasElement::WouldTaintOrigin() const {
 gfx::SizeF HTMLCanvasElement::ElementSize(
     const gfx::SizeF&,
     const RespectImageOrientationEnum) const {
-  if (context_ && HasImageBitmapContext()) {
-    scoped_refptr<Image> image = context_->GetImage(FlushReason::kNone);
-    if (image)
+  if (IsImageBitmapRenderingContext()) {
+    scoped_refptr<Image> image =
+        RenderingContext()->GetImage(FlushReason::kNone);
+    if (image) {
       return gfx::SizeF(image->width(), image->height());
+    }
     return gfx::SizeF(0, 0);
   }
-  if (OffscreenCanvasFrame())
+  if (OffscreenCanvasFrame()) {
     return gfx::SizeF(OffscreenCanvasFrame()->Size());
+  }
   return gfx::SizeF(width(), height());
 }
 
@@ -1677,7 +1681,7 @@ gfx::Size HTMLCanvasElement::BitmapSourceSize() const {
   return Size();
 }
 
-ScriptPromiseTyped<ImageBitmap> HTMLCanvasElement::CreateImageBitmap(
+ScriptPromise<ImageBitmap> HTMLCanvasElement::CreateImageBitmap(
     ScriptState* script_state,
     std::optional<gfx::Rect> crop_rect,
     const ImageBitmapOptions* options,
@@ -1686,7 +1690,7 @@ ScriptPromiseTyped<ImageBitmap> HTMLCanvasElement::CreateImageBitmap(
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidStateError,
         "`createImageBitmap()` cannot be called with open layers.");
-    return ScriptPromiseTyped<ImageBitmap>();
+    return ScriptPromise<ImageBitmap>();
   }
   return ImageBitmapSource::FulfillImageBitmap(
       script_state, MakeGarbageCollected<ImageBitmap>(this, crop_rect, options),
@@ -1911,12 +1915,6 @@ CanvasResourceProvider* HTMLCanvasElement::GetOrCreateCanvasResourceProvider(
   }
 
   return CanvasRenderingContextHost::GetOrCreateCanvasResourceProvider(hint);
-}
-
-bool HTMLCanvasElement::HasImageBitmapContext() const {
-  if (!context_)
-    return false;
-  return context_->IsImageBitmapRenderingContext();
 }
 
 scoped_refptr<StaticBitmapImage> HTMLCanvasElement::GetTransparentImage() {

@@ -51,8 +51,9 @@ struct XRRuntimeSessionOptions {
 
   // The following options are used for permission requests and showing module
   // install UI.
-  // TODO(crbug.com/854655): Remove these fields, and do permission checks, show
-  // module install UI in the browser process before calling out to devices.
+  // TODO(crbug.com/41395699): Remove these fields, and do permission checks,
+  // show module install UI in the browser process before calling out to
+  // devices.
   int32 render_process_id;
   int32 render_frame_id;
 
@@ -110,7 +111,7 @@ interface XRRuntime {
 };
 
 // Information required for rendering, used by ImmersiveOverlay.
-// TODO(https://crbug.com/1126608): This struct currently contains subset of
+// TODO(crbug.com/40718594): This struct currently contains subset of
 // data contained by XRFrameData, move it to vr_service.mojom and refactor
 // XRFrameData so that it embeds this struct.
 struct XRRenderInfo

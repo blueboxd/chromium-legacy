@@ -1360,14 +1360,9 @@ export class InvokeSharesheetCommand extends FilesCommand {
     const dlpSourceUrls =
         fileManager.metadataModel.getCache(entries, ['sourceUrl'])
             .map(m => m.sourceUrl || '');
-    chrome.fileManagerPrivate.invokeSharesheet(
-        entries.map(e => unwrapEntry(e)) as Entry[], launchSource,
-        dlpSourceUrls, () => {
-          if (chrome.runtime.lastError) {
-            console.warn(chrome.runtime.lastError.message);
-            return;
-          }
-        });
+    chrome.fileManagerPrivate
+        .invokeSharesheet(entriesToURLs(entries), launchSource, dlpSourceUrls)
+        .catch(console.warn);
   }
 
   override canExecute(event: CanExecuteEvent, fileManager: CommandHandlerDeps) {
@@ -1395,16 +1390,13 @@ export class InvokeSharesheetCommand extends FilesCommand {
     event.command.disabled =
         !fileManager.ui.actionbar.contains(event.target as Node);
 
-    chrome.fileManagerPrivate.sharesheetHasTargets(
-        entries.map(e => unwrapEntry(e)) as Entry[], (hasTargets: boolean) => {
-          if (chrome.runtime.lastError) {
-            console.warn(chrome.runtime.lastError.message);
-            return;
-          }
+    chrome.fileManagerPrivate.sharesheetHasTargets(entriesToURLs(entries))
+        .then((hasTargets: boolean) => {
           event.command.setHidden(!hasTargets);
           event.canExecute = hasTargets;
           event.command.disabled = !hasTargets;
-        });
+        })
+        .catch(console.warn);
   }
 }
 
@@ -2382,7 +2374,7 @@ export class BrowserBackCommand extends FilesCommand {
     // TODO(fukino): It should be better to minimize Files app only when there
     // is no back stack, and otherwise use BrowserBack for history navigation.
     // https://crbug.com/624100.
-    // TODO(https://crbug.com/1097066): Implement minimize for files SWA, then
+    // TODO(crbug.com/40701086): Implement minimize for files SWA, then
     // call its minimize() function here.
   }
 }

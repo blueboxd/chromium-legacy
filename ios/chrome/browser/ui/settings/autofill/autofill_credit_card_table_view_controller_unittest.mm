@@ -9,7 +9,9 @@
 #import "base/test/ios/wait_util.h"
 #import "base/test/scoped_feature_list.h"
 #import "base/uuid.h"
+#import "components/autofill/core/browser/address_data_manager.h"
 #import "components/autofill/core/browser/data_model/credit_card.h"
+#import "components/autofill/core/browser/payments_data_manager.h"
 #import "components/autofill/core/browser/personal_data_manager.h"
 #import "components/autofill/core/browser/personal_data_manager_test_utils.h"
 #import "components/autofill/core/common/autofill_features.h"
@@ -73,8 +75,10 @@ class AutofillCreditCardTableViewControllerTest
                            base::ASCIIToUTF16(card_holder_name));
     credit_card.SetRawInfo(autofill::CREDIT_CARD_NUMBER,
                            base::ASCIIToUTF16(card_number));
-    personal_data_manager->OnAcceptedLocalCreditCardSave(credit_card);
-    personal_data_manager->get_alternative_state_name_map_updater_for_testing()
+    personal_data_manager->payments_data_manager()
+        .OnAcceptedLocalCreditCardSave(credit_card);
+    personal_data_manager->address_data_manager()
+        .get_alternative_state_name_map_updater_for_testing()
         ->set_local_state_for_testing(local_state_.Get());
     std::move(waiter).Wait();  // Wait for completion of the async operation.
   }
@@ -109,10 +113,12 @@ TEST_F(AutofillCreditCardTableViewControllerTest, TestInitialization) {
   CreateController();
   CheckController();
 
-  // Expect one switch section.
-  EXPECT_EQ(1, NumberOfSections());
-  // Expect switch section to contain one row (the credit card Autofill toggle).
+  // Expect two switch sections (the credit card Autofill switch and the
+  // mandatory reauth switch).
+  ASSERT_EQ(2, NumberOfSections());
+  // Expect each switch section to contain one row.
   EXPECT_EQ(1, NumberOfItemsInSection(0));
+  EXPECT_EQ(1, NumberOfItemsInSection(1));
 }
 
 // Adding a single credit card results in a credit card section.
@@ -121,10 +127,11 @@ TEST_F(AutofillCreditCardTableViewControllerTest, TestOneCreditCard) {
   CreateController();
   CheckController();
 
-  // Expect two sections (switch and credit card section).
-  EXPECT_EQ(2, NumberOfSections());
+  // Expect three sections (credit card switch, mandatory reauth switch and
+  // credit card section).
+  ASSERT_EQ(3, NumberOfSections());
   // Expect credit card section to contain one row (the credit card itself).
-  EXPECT_EQ(1, NumberOfItemsInSection(1));
+  EXPECT_EQ(1, NumberOfItemsInSection(2));
 }
 
 // Deleting the only credit card results in item deletion and section deletion.
@@ -134,14 +141,15 @@ TEST_F(AutofillCreditCardTableViewControllerTest,
   CreateController();
   CheckController();
 
-  // Expect two sections (switch and credit card section).
-  EXPECT_EQ(2, NumberOfSections());
+  // Expect three sections (credit card Autofill switch, mandatory reauth switch
+  // and credit card section).
+  ASSERT_EQ(3, NumberOfSections());
   // Expect credit card section to contain one row (the credit card itself).
-  EXPECT_EQ(1, NumberOfItemsInSection(1));
+  EXPECT_EQ(1, NumberOfItemsInSection(2));
 
   // Delete the credit card item and check that the section is removed.
-  EXPECT_TRUE(DeleteItemAndWait(1, 0, ^{
-    return NumberOfSections() == 1;
+  EXPECT_TRUE(DeleteItemAndWait(2, 0, ^{
+    return NumberOfSections() == 2;
   }));
 }
 
@@ -154,7 +162,8 @@ TEST_F(AutofillCreditCardTableViewControllerTest,
   autofill::PersonalDataManager* personal_data_manager =
       autofill::PersonalDataManagerFactory::GetForBrowserState(
           chrome_browser_state_.get());
-  EXPECT_TRUE(personal_data_manager->IsPaymentMethodsMandatoryReauthEnabled());
+  EXPECT_TRUE(personal_data_manager->payments_data_manager()
+                  .IsPaymentMethodsMandatoryReauthEnabled());
 
   CreateController();
   CheckController();

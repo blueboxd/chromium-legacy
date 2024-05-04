@@ -30,9 +30,9 @@ std::unique_ptr<NavigationEntryScreenshot> RemoveScreenshotFromEntry(
 }  // namespace
 
 bool AreBackForwardTransitionsEnabled() {
-  // TODO(https://crbug.com/1414164): We might want to disable this feature on
+  // TODO(crbug.com/40256003): We might want to disable this feature on
   // low-end devices.
-  return base::FeatureList::IsEnabled(features::kBackForwardTransitions);
+  return base::FeatureList::IsEnabled(blink::features::kBackForwardTransitions);
 }
 
 NavigationEntryScreenshotCache::NavigationEntryScreenshotCache(
@@ -124,7 +124,7 @@ void NavigationEntryScreenshotCache::EvictScreenshotsUntilUnderBudgetOrEmpty() {
   // is not true for Android where native OS gesture navigation only takes the
   // user back (even right-edge swipe).
   //
-  // TODO(crbug.com/1415332): Iterate on the eviction strategy based on metrics
+  // TODO(crbug.com/40256524): Iterate on the eviction strategy based on metrics
   // when this launches.
   //
   // Ex: [3, 4&, 5*, 6&, 7, 8&], where "*" means the last committed entry and

@@ -9,6 +9,8 @@
 
 #import <set>
 
+class TabGroup;
+
 namespace web {
 class WebStateID;
 }  // namespace web
@@ -18,16 +20,9 @@ class WebStateID;
 // Tells the receiver to insert a new item at the end of the list. Return YES if
 // it inserted an element, NO otherwise.
 - (BOOL)addNewItem;
-// Tells the receiver to insert a new item at `index`. It is an error to call
-// this method with an `index` greater than the number of items in the model.
-- (void)insertNewItemAtIndex:(NSUInteger)index;
 // Tells the receiver to select the item with identifier `itemID`. If there is
 // no item with that identifier, no change in selection should be made.
 - (BOOL)isItemWithIDSelected:(web::WebStateID)itemID;
-// Tells the receiver to move the item with identifier `itemID` to `index`. If
-// there is no item with that identifier, no move should be made. It is an error
-// to pass a value for `index` outside of the bounds of the items array.
-- (void)moveItemWithID:(web::WebStateID)itemID toIndex:(NSUInteger)index;
 // Tells the receiver to close the items with the identifiers in `itemIDs`.
 // ItemIDs which are not associated with any item are ignored.
 - (void)closeItemsWithIDs:(const std::set<web::WebStateID>&)itemIDs;
@@ -42,9 +37,6 @@ class WebStateID;
 // Tells the receiver to discard saved closed items. If the consumer has saved
 // closed items, it will discard them. Otherwise, this is a no-op.
 - (void)discardSavedClosedItems;
-// Returns the menu to display when the Add To button is selected for `items`.
-- (NSArray<UIMenuElement*>*)addToButtonMenuElementsForItems:
-    (const std::set<web::WebStateID>&)itemIDs;
 
 // Tells the receiver to perform a search using `searchText` and update the list
 // of visible items based on the result.
@@ -60,12 +52,26 @@ class WebStateID;
                                    completion:(void (^)(size_t))completion;
 
 // Tells the receiver to select the item with identifier `itemID`. If there is
-// no item with that identifier, no change in selection should be made.
-- (void)selectItemWithID:(web::WebStateID)itemID pinned:(BOOL)pinned;
+// no item with that identifier, no change in selection should be made. `pinned`
+// is `YES` If the selected item is a pinned item. `isFirstActionOnTabGrid` is
+// whether the itme selection is the first action that happens since the user
+// enters tab grid.
+- (void)selectItemWithID:(web::WebStateID)itemID
+                    pinned:(BOOL)pinned
+    isFirstActionOnTabGrid:(BOOL)isFirstActionOnTabGrid;
+
+// Tells the receiver to select the `tabGroup`.
+- (void)selectTabGroup:(const TabGroup*)tabGroup;
 
 // Tells the receiver to close the item with identifier `itemID`. If there is
 // no item with that identifier, no item is closed.
 - (void)closeItemWithID:(web::WebStateID)itemID;
+
+// Tells the receiver to close the `group`.
+- (void)closeTabGroup:(const TabGroup*)group;
+
+// Tells the receiver to ungroup the `group`.
+- (void)ungroupTabGroup:(const TabGroup*)group;
 
 // Tells the receiver to pin or unpin the tab with identifier `itemID`.
 - (void)setPinState:(BOOL)pinState forItemWithID:(web::WebStateID)itemID;

@@ -118,6 +118,10 @@ class Command(object):
       _Method.POST, '/session/:sessionId/window/minimize')
   FULLSCREEN_WINDOW = (
       _Method.POST, '/session/:sessionId/window/fullscreen')
+  SET_DEVICE_POSTURE = (
+      _Method.POST, '/session/:sessionId/deviceposture')
+  CLEAR_DEVICE_POSTURE = (
+      _Method.DELETE, '/session/:sessionId/deviceposture')
   CLOSE = (_Method.DELETE, '/session/:sessionId/window')
   DRAG_ELEMENT = (_Method.POST, '/session/:sessionId/element/:id/drag')
   GET_ELEMENT_VALUE_OF_CSS_PROPERTY = (
@@ -257,6 +261,9 @@ class Command(object):
   RESET_COOLDOWN = (
       _Method.POST,
       '/session/:sessionId/fedcm/resetcooldown')
+  RUN_BOUNCE_TRACKING_MITIGATIONS = (
+        _Method.DELETE,
+        '/session/:sessionId/storage/run_bounce_tracking_mitigations')
 
   # Custom Chrome commands.
   IS_LOADING = (_Method.GET, '/session/:sessionId/is_loading')

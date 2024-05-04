@@ -8,7 +8,6 @@
 #include <optional>
 #include <utility>
 
-#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/network_config_service.h"
 #include "base/containers/fixed_flat_map.h"
 #include "base/containers/flat_set.h"
@@ -42,13 +41,13 @@
 #include "chrome/browser/ash/printing/usb_printer_notification_controller.h"
 #include "chrome/browser/ash/printing/zeroconf_printer_detector.h"
 #include "chrome/browser/ash/scanning/zeroconf_scanner_detector.h"
-#include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/printing/print_preview_sticky_settings.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/ash/components/dbus/dlcservice/dlcservice_client.h"
 #include "chromeos/ash/components/dbus/printscanmgr/printscanmgr_client.h"
+#include "chromeos/ash/components/settings/cros_settings.h"
 #include "chromeos/printing/cups_printer_status.h"
 #include "chromeos/printing/printing_constants.h"
 #include "chromeos/printing/uri.h"
@@ -727,8 +726,6 @@ class CupsPrintersManagerImpl
   void QueryPrinterForAutoConf(
       const Printer& printer,
       base::OnceCallback<void(bool)> callback) override {
-    CHECK(ash::features::IsPrintPreviewDiscoveredPrintersEnabled());
-
     if (!IsIppUri(printer.uri())) {
       std::move(callback).Run(false);
       return;

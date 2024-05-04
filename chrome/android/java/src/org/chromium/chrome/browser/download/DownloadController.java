@@ -13,6 +13,8 @@ import org.jni_zero.NativeMethods;
 
 import org.chromium.chrome.browser.pdf.PdfPage;
 import org.chromium.chrome.browser.pdf.PdfUtils;
+import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.ui.native_page.NativePage;
 import org.chromium.components.download.DownloadCollectionBridge;
@@ -32,7 +34,7 @@ public class DownloadController {
     private static void onDownloadCompleted(@Nullable Tab tab, DownloadInfo downloadInfo) {
         MediaStoreHelper.addImageToGalleryOnSDCard(
                 downloadInfo.getFilePath(), downloadInfo.getMimeType());
-        if (!PdfUtils.useAndroidPdfViewer()
+        if (!PdfUtils.shouldOpenPdfInline()
                 || tab == null
                 || !downloadInfo.getMimeType().equals(MimeTypeUtils.PDF_MIME_TYPE)) {
             return;
@@ -122,16 +124,32 @@ public class DownloadController {
 
     @CalledByNative
     private static void onPdfDownloadStarted(Tab tab, DownloadInfo downloadInfo) {
-        if (!PdfUtils.useAndroidPdfViewer()) {
+        if (!PdfUtils.shouldOpenPdfInline()) {
             return;
         }
+        // TODO(b/338138743): Cancel download and skip loadUrl if there is another navigation before
+        //  pdf download started.
         LoadUrlParams param = new LoadUrlParams(downloadInfo.getUrl());
         param.setIsPdf(true);
+        // If the download url matches the tab’s url, avoid duplicate navigation entries by
+        // replacing the current entry.
+        param.setShouldReplaceCurrentEntry(
+                downloadInfo.getUrl().getSpec().equals(tab.getUrl().getSpec()));
         tab.loadUrl(param);
+        tab.addObserver(
+                new EmptyTabObserver() {
+                    @Override
+                    public void onDestroyed(Tab tab) {
+                        DownloadControllerJni.get()
+                                .cancelDownload(tab.getProfile(), downloadInfo.getDownloadGuid());
+                    }
+                });
     }
 
     @NativeMethods
     interface Natives {
         void onAcquirePermissionResult(long callbackId, boolean granted, String permissionToUpdate);
+
+        void cancelDownload(Profile profile, String downloadGuid);
     }
 }

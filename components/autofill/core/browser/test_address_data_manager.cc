@@ -11,10 +11,19 @@
 namespace autofill {
 
 TestAddressDataManager::TestAddressDataManager(
-    base::RepeatingClosure notify_pdm_observers)
+    const std::string& app_locale)
     : AddressDataManager(/*webdata_service=*/nullptr,
-                         notify_pdm_observers,
-                         "en-US") {}
+                         /*pref_service=*/nullptr,
+                         /*local_state=*/nullptr,
+                         /*sync_service=*/nullptr,
+                         /*identity_manager=*/nullptr,
+                         /*strike_database=*/nullptr,
+                         /*variation_country_code=*/GeoIpCountryCode("US"),
+                         app_locale) {
+  // Not initialized through the base class constructor call, since
+  // `inmemory_strike_database_` is not initialized at this point.
+  SetStrikeDatabase(&inmemory_strike_database_);
+}
 
 TestAddressDataManager::~TestAddressDataManager() = default;
 
@@ -23,14 +32,14 @@ void TestAddressDataManager::AddProfile(const AutofillProfile& profile) {
       std::make_unique<AutofillProfile>(profile);
   profile_ptr->FinalizeAfterImport();
   GetProfileStorage(profile.source()).push_back(std::move(profile_ptr));
-  notify_pdm_observers_.Run();
+  NotifyObservers();
 }
 
 void TestAddressDataManager::UpdateProfile(const AutofillProfile& profile) {
   AutofillProfile* existing_profile = GetProfileByGUID(profile.guid());
   if (existing_profile) {
     *existing_profile = profile;
-    notify_pdm_observers_.Run();
+    NotifyObservers();
   }
 }
 
@@ -40,6 +49,7 @@ void TestAddressDataManager::RemoveProfile(const std::string& guid) {
       GetProfileStorage(profile->source());
   profiles.erase(base::ranges::find(profiles, profile,
                                     &std::unique_ptr<AutofillProfile>::get));
+  NotifyObservers();
 }
 
 void TestAddressDataManager::LoadProfiles() {
@@ -54,6 +64,29 @@ void TestAddressDataManager::RecordUseOf(const AutofillProfile& profile) {
   if (AutofillProfile* adm_profile = GetProfileByGUID(profile.guid())) {
     adm_profile->RecordAndLogUse();
   }
+}
+
+AddressCountryCode TestAddressDataManager::GetDefaultCountryCodeForNewAddress()
+    const {
+  if (default_country_code_.has_value()) {
+    return default_country_code_.value();
+  }
+  return AddressDataManager::GetDefaultCountryCodeForNewAddress();
+}
+
+bool TestAddressDataManager::IsAutofillProfileEnabled() const {
+  // Return the value of autofill_profile_enabled_ if it has been set,
+  // otherwise fall back to the normal behavior of checking the pref_service.
+  if (autofill_profile_enabled_.has_value()) {
+    return autofill_profile_enabled_.value();
+  }
+  return AddressDataManager::IsAutofillProfileEnabled();
+}
+
+bool TestAddressDataManager::IsEligibleForAddressAccountStorage() const {
+  return eligible_for_account_storage_.has_value()
+             ? *eligible_for_account_storage_
+             : AddressDataManager::IsEligibleForAddressAccountStorage();
 }
 
 void TestAddressDataManager::ClearProfiles() {

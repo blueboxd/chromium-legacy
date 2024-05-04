@@ -36,6 +36,11 @@ extern NSString* const kBatchUploadRecommendationItemAccessibilityIdentifier;
 // Accessibility identifier for batch upload item.
 extern NSString* const kBatchUploadAccessibilityIdentifier;
 
+// Accessibility identifier for the Personalize Google Services item.
+extern NSString* const kPersonalizeGoogleServicesIdentifier;
+// Accessibility identifier for the Personalize Google Services view.
+extern NSString* const kPersonalizeGoogleServicesViewIdentifier;
+
 // Sections used in Sync Settings page.
 typedef NS_ENUM(NSInteger, SyncSettingsSectionIdentifier) {
   // Section for all the sync settings.
@@ -112,11 +117,6 @@ typedef NS_ENUM(NSInteger, SyncSettingsItemType) {
 
 // States for Sync Settings page to be in.
 enum class SyncSettingsAccountState {
-  // The user clicked "settings" in the Sync opt-in screen.
-  // TODO(crbug.com/40066949): Remove usage of kAdvancedInitialSyncSetup
-  // after kSync users are migrated to kSignin in phase 3. See
-  // ConsentLevel::kSync documentation for details.
-  kAdvancedInitialSyncSetup,
   // The user is viewing sync settings page when Sync-the-feature is on.
   // TODO(crbug.com/40066949): Remove usage of kSyncing after kSync users are
   // migrated to kSignin in phase 3. See ConsentLevel::kSync documentation for

@@ -70,6 +70,14 @@ chromium-metrics-reviews@google.com.
              not have contained email addresses."/>
 </enum>
 
+<enum name="AutofillAddNewAddressPromptOutcome">
+  <summary>
+    Describes the user's decision on the 'And new address' prompt.
+  </summary>
+  <int value="0" label="Accepted and saved a new address."/>
+  <int value="1" label="Canceled explicitly or ignored"/>
+</enum>
+
 <enum name="AutofillAddressProfileImportCountrySpecificFieldRequirement">
   <int value="0" label="All required fields present"/>
   <int value="1" label="Missing: ZIP"/>
@@ -317,7 +325,8 @@ chromium-metrics-reviews@google.com.
 <enum name="AutofillDeveloperEngagement">
   <int value="0" label="Fillable form parsed without type hints"/>
   <int value="1" label="Fillable form parsed with type hints"/>
-  <int value="2" label="Includes UPI-VPA type hint"/>
+  <int value="2"
+      label="(Obsolete) Includes UPI-VPA type hint (removed 04/2024)"/>
 </enum>
 
 <enum name="AutofilledFieldUserEditingStatus">
@@ -521,6 +530,8 @@ Called by update_autofill_enums.py.-->
   <int value="2417" label="ADDRESS_HOME_BETWEEN_STREETS_1: accepted"/>
   <int value="2432" label="ADDRESS_HOME_BETWEEN_STREETS_2: edited"/>
   <int value="2433" label="ADDRESS_HOME_BETWEEN_STREETS_2: accepted"/>
+  <int value="2448" label="ADDRESS_HOME_HOUSE_NUMBER_AND_APT: edited"/>
+  <int value="2449" label="ADDRESS_HOME_HOUSE_NUMBER_AND_APT: accepted"/>
   <int value="2464" label="SINGLE_USERNAME_FORGOT_PASSWORD: edited"/>
   <int value="2465" label="SINGLE_USERNAME_FORGOT_PASSWORD: accepted"/>
   <int value="2496" label="ADDRESS_HOME_APT: edited"/>
@@ -1192,6 +1203,25 @@ Called by update_autofill_enums.py.-->
   <int value="11529"
       label="ADDRESS_HOME_DEPENDENT_LOCALITY_AND_LANDMARK: False Negative
              (Unknown)"/>
+  <int value="11776" label="ADDRESS_HOME_HOUSE_NUMBER_AND_APT: True Positive"/>
+  <int value="11777"
+      label="ADDRESS_HOME_HOUSE_NUMBER_AND_APT: True Negative (Ambiguous)"/>
+  <int value="11778"
+      label="ADDRESS_HOME_HOUSE_NUMBER_AND_APT: True Negative (Unknown)"/>
+  <int value="11779"
+      label="ADDRESS_HOME_HOUSE_NUMBER_AND_APT: True Negative (Empty)"/>
+  <int value="11780"
+      label="ADDRESS_HOME_HOUSE_NUMBER_AND_APT: False Positive (Mismatch)"/>
+  <int value="11781"
+      label="ADDRESS_HOME_HOUSE_NUMBER_AND_APT: False Positive (Ambiguous)"/>
+  <int value="11782"
+      label="ADDRESS_HOME_HOUSE_NUMBER_AND_APT: False Positive (Unknown)"/>
+  <int value="11783"
+      label="ADDRESS_HOME_HOUSE_NUMBER_AND_APT: False Positive (Empty)"/>
+  <int value="11784"
+      label="ADDRESS_HOME_HOUSE_NUMBER_AND_APT: False Negative (Mismatch)"/>
+  <int value="11785"
+      label="ADDRESS_HOME_HOUSE_NUMBER_AND_APT: False Negative (Unknown)"/>
 </enum>
 
 <enum name="AutofillFillingMethodMetric">
@@ -1360,15 +1390,62 @@ Called by update_autofill_enums.py.-->
              (once)"/>
   <int value="87" label="Masked server card suggestion selected"/>
   <int value="88" label="Masked server card suggestion selected (once)"/>
-</enum>
-
-<enum name="AutofillFormSubmittedState">
-  <int value="0" label="Non fillable form or new data"/>
-  <int value="1" label="Fillable form, autofilled all"/>
-  <int value="2" label="Fillable form, autofilled some"/>
-  <int value="3" label="Fillable form, autofilled none, did show suggestions"/>
-  <int value="4"
-      label="Fillable form, autofilled none, did not show suggestions"/>
+  <int value="89"
+      label="Suggestions containing cards with a benefit available were shown"/>
+  <int value="90"
+      label="Suggestions were shown, and no card had a benefit available"/>
+  <int value="91"
+      label="Suggestions containing cards with a benefit available were shown
+             (once)"/>
+  <int value="92"
+      label="Suggestions were shown, and no card had a benefit available
+             (once)"/>
+  <int value="93"
+      label="Suggestion for a masked server card with a benefit available was
+             selected"/>
+  <int value="94"
+      label="Suggestion for a masked server card with no benefit available
+             was selected"/>
+  <int value="95"
+      label="Suggestion for a masked server card with a benefit available was
+             selected (once)"/>
+  <int value="96"
+      label="Suggestion for a masked server card with no benefit available
+             was selected (once)"/>
+  <int value="97"
+      label="Suggestion for a masked server card with a benefit available was
+             filled"/>
+  <int value="98"
+      label="Suggestion for a masked server card with no benefit available
+             was filled"/>
+  <int value="99"
+      label="Suggestion for a masked server card with a benefit available was
+             filled (once)"/>
+  <int value="100"
+      label="Suggestion for a masked server card with no benefit available
+             was filled (once)"/>
+  <int value="101"
+      label="Form was about to be submitted after a suggestion for a masked
+             server card with a benefit available was filled (once)"/>
+  <int value="102"
+      label="Form was about to be submitted after a suggestion for masked
+             server card with no benefit available was filled (once)"/>
+  <int value="103"
+      label="Form was submitted after a suggestion for a masked server card
+             with a benefit available was filled (once)"/>
+  <int value="104"
+      label="Form was submitted after a suggestion for a masked server card
+             with no benefit available was filled (once)"/>
+  <int value="105"
+      label="Suggestion for a masked server card was selected after
+             suggestions containing cards with a benefit available were shown
+             (once)"/>
+  <int value="106"
+      label="Suggestion for a masked server card was filled after suggestions
+             containing cards with a benefit available were shown (once)"/>
+  <int value="107"
+      label="Form was submitted after suggestions containing cards with a
+             benefit available were shown (once)"/>
 </enum>
 
 <enum name="AutofillGetRealPanResult">
@@ -1378,6 +1455,19 @@ Called by update_autofill_enums.py.-->
   <int value="3" label="Network error"/>
   <int value="4" label="Virtual card retriable failure"/>
   <int value="5" label="Virtual card non-retriable failure"/>
+</enum>
+
+<enum name="AutofillInDevtoolsAvailableTestAddressesCountries">
+  <int value="0" label="United States test address selected"/>
+  <int value="1" label="Brazil test address selected"/>
+  <int value="2" label="Mexico test address selected"/>
+  <int value="3" label="Japan test address selected"/>
+  <int value="4" label="India test address selected"/>
+</enum>
+
+<enum name="AutofillInDevtoolsTestAddressesEvents">
+  <int value="0" label="Suggestion shown"/>
+  <int value="1" label="Suggestion Selected"/>
 </enum>
 
 <enum name="AutofillLocalCardMigrationBubbleOffer">
@@ -1435,17 +1525,21 @@ Called by update_autofill_enums.py.-->
   <int value="2" label="Manage cards button pressed"/>
 </enum>
 
+<enum name="AutofillManuallyAddedAddressSurface">
+  <summary>
+    Describes the surface used by the user for adding a new address.
+  </summary>
+  <int value="0"
+      label="Context menu, after trigger manual fallback and having no
+             addresses stored."/>
+  <int value="1" label="Settings page."/>
+</enum>
+
 <enum name="AutofillOfferNotificationBubbleResult">
   <int value="0" label="User closed bubble via OK button"/>
   <int value="1" label="User closed bubble via corner X"/>
   <int value="2" label="User did not interact with the bubble"/>
   <int value="3" label="Bubble lost focus and was deactivated"/>
-</enum>
-
-<enum name="AutofillOfferNotificationInfoBarResult">
-  <int value="0" label="User closed infobar via OK button"/>
-  <int value="1" label="User closed infobar via corner X"/>
-  <int value="2" label="User did not interact with the infobar"/>
 </enum>
 
 <enum name="AutofillOptionsReferrer">
@@ -1491,67 +1585,6 @@ Called by update_autofill_enums.py.-->
   <int value="4"
       label="OTP input dialog closed automatically after a server failure
              response"/>
-</enum>
-
-<enum name="AutofillPopupHidingReason">
-  <int value="0" label="A suggestion was accepted."/>
-  <int value="1" label="An interstitial page displaces the popup."/>
-  <int value="2"
-      label="A field isn't edited anymore but remains focused for now."/>
-  <int value="3" label="Focus removed from field. Follows kEndEditing."/>
-  <int value="4"
-      label="Scrolling or zooming into the page displaces the popup."/>
-  <int value="5" label="A navigation on the page or frame level."/>
-  <int value="6" label="The popup is or would become empty."/>
-  <int value="7" label="The renderer explicitly requested closing the popup."/>
-  <int value="8"
-      label="The tab with the popup is destroyed, hidden or has become
-             inactive."/>
-  <int value="9" label="The popup contains stale data."/>
-  <int value="10"
-      label="The user explicitly dismissed the popup (e.g. ESC key)."/>
-  <int value="11"
-      label="The popup view (or its controller) goes out of scope."/>
-  <int value="12" label="The platform-native UI changed (e.g. window resize)."/>
-  <int value="13"
-      label="Not enough space in the content area to display at least one row
-             of the popup within the bounds of the content area."/>
-  <int value="14"
-      label="The popup would overlap with another open prompt, and may hide
-             sensitive information in the prompt."/>
-  <int value="15"
-      label="The anchor element for which the popup would be shown is not
-             visible in the content area."/>
-  <int value="16" label="The frame holds a pointer lock."/>
-  <int value="17"
-      label="The password generation popup would overlap and hide autofill
-             popup."/>
-  <int value="18"
-      label="The Touch To Fill surface is shown instead of autofill
-             suggestions."/>
-  <int value="19"
-      label="The context menu is shown instead of the autofill suggestions."/>
-  <int value="20"
-      label="The Fast Checkout surface is shown instead of autofill
-             suggestions."/>
-  <int value="21"
-      label="The Picture-in-picture window overlaps with the autofill
-             suggestion."/>
-  <int value="22"
-      label="The context menu was open after the autofill popup, which could
-             overlap with the autofill popup."/>
-  <int value="23"
-      label="No frame currently has focus. This case is caught for safety
-             because it might be reachable due to race conditions."/>
-  <int value="24"
-      label="The sub-popup was closed, e.g. because the mouse was moved to a
-             different suggestion in the parent popup."/>
-  <int value="25"
-      label="The user edited the field. Currently applied only to Compose
-             suggestions."/>
-  <int value="26"
-      label="The popup has faded due to an expired timer. Currently applied
-             only to Compose suggestions."/>
 </enum>
 
 <enum name="AutofillPredictionsComparisonResult">
@@ -3028,6 +3061,24 @@ Called by update_autofill_enums.py.-->
   <int value="918"
       label="ADDRESS_HOME_BETWEEN_STREETS_2 - Predictions different - Value
              agrees with both predictions"/>
+  <int value="919"
+      label="ADDRESS_HOME_HOUSE_NUMBER_AND_APT - Predictions equal - Value
+             agrees"/>
+  <int value="920"
+      label="ADDRESS_HOME_HOUSE_NUMBER_AND_APT - Predictions equal - Value
+             disagrees"/>
+  <int value="921"
+      label="ADDRESS_HOME_HOUSE_NUMBER_AND_APT - Predictions different -
+             Value agrees with old prediction"/>
+  <int value="922"
+      label="ADDRESS_HOME_HOUSE_NUMBER_AND_APT - Predictions different -
+             Value agrees with new prediction"/>
+  <int value="923"
+      label="ADDRESS_HOME_HOUSE_NUMBER_AND_APT - Predictions different -
+             Value agrees with neither prediction"/>
+  <int value="924"
+      label="ADDRESS_HOME_HOUSE_NUMBER_AND_APT - Predictions different -
+             Value agrees with both predictions"/>
   <int value="925"
       label="SINGLE_USERNAME_FORGOT_PASSWORD - Predictions equal - Value
              agrees"/>
@@ -3274,6 +3325,7 @@ Called by update_autofill_enums.py.-->
   <int value="8" label="StreetAddress"/>
   <int value="9" label="DependentLocality"/>
   <int value="11" label="Company"/>
+  <int value="12" label="AdminLevel2"/>
 </enum>
 
 <enum name="AutofillSharedStorageServerCardDataSetResult">
@@ -3338,6 +3390,67 @@ Called by update_autofill_enums.py.-->
   <int value="3" label="Expiration date did not match, masked server card"/>
 </enum>
 
+<enum name="AutofillSuggestionHidingReason">
+  <int value="0" label="A suggestion was accepted."/>
+  <int value="1" label="An interstitial page displaces the popup."/>
+  <int value="2"
+      label="A field isn't edited anymore but remains focused for now."/>
+  <int value="3" label="Focus removed from field. Follows kEndEditing."/>
+  <int value="4"
+      label="Scrolling or zooming into the page displaces the popup."/>
+  <int value="5" label="A navigation on the page or frame level."/>
+  <int value="6" label="The popup is or would become empty."/>
+  <int value="7" label="The renderer explicitly requested closing the popup."/>
+  <int value="8"
+      label="The tab with the popup is destroyed, hidden or has become
+             inactive."/>
+  <int value="9" label="The popup contains stale data."/>
+  <int value="10"
+      label="The user explicitly dismissed the popup (e.g. ESC key)."/>
+  <int value="11"
+      label="The popup view (or its controller) goes out of scope."/>
+  <int value="12" label="The platform-native UI changed (e.g. window resize)."/>
+  <int value="13"
+      label="Not enough space in the content area to display at least one row
+             of the popup within the bounds of the content area."/>
+  <int value="14"
+      label="The popup would overlap with another open prompt, and may hide
+             sensitive information in the prompt."/>
+  <int value="15"
+      label="The anchor element for which the popup would be shown is not
+             visible in the content area."/>
+  <int value="16" label="The frame holds a pointer lock."/>
+  <int value="17"
+      label="The password generation popup would overlap and hide autofill
+             popup."/>
+  <int value="18"
+      label="The Touch To Fill surface is shown instead of autofill
+             suggestions."/>
+  <int value="19"
+      label="The context menu is shown instead of the autofill suggestions."/>
+  <int value="20"
+      label="The Fast Checkout surface is shown instead of autofill
+             suggestions."/>
+  <int value="21"
+      label="The Picture-in-picture window overlaps with the autofill
+             suggestion."/>
+  <int value="22"
+      label="The context menu was open after the autofill popup, which could
+             overlap with the autofill popup."/>
+  <int value="23"
+      label="No frame currently has focus. This case is caught for safety
+             because it might be reachable due to race conditions."/>
+  <int value="24"
+      label="The sub-popup was closed, e.g. because the mouse was moved to a
+             different suggestion in the parent popup."/>
+  <int value="25"
+      label="The user edited the field. Currently applied only to Compose
+             suggestions."/>
+  <int value="26"
+      label="The popup has faded due to an expired timer. Currently applied
+             only to Compose suggestions."/>
+</enum>
+
 <enum name="AutofillSuggestionManageType">
   <int value="0" label="Other"/>
   <int value="1" label="(Obsolete) Personal Information. Deprecated in M122"/>
@@ -3372,28 +3485,6 @@ Called by update_autofill_enums.py.-->
   <int value="9" label="Did opt out of local save"/>
   <int value="10" label="Local save stayed enabled"/>
   <int value="11" label="Closed, abandon unmasking"/>
-</enum>
-
-<enum name="AutofillUserHappiness">
-  <summary>
-    These metrics track the user happiness about Autofill on address and credit
-    card forms. Starting from M63, these metrics are also split between
-    Autofill.UserHappiness.Address and Autofill.UserHappiness.CreditCard.
-  </summary>
-  <int value="0" label="Forms loaded"/>
-  <int value="1" label="Deprecated 1"/>
-  <int value="2" label="Deprecated 2"/>
-  <int value="3" label="Deprecated 3"/>
-  <int value="4" label="Deprecated 4"/>
-  <int value="5" label="User did type"/>
-  <int value="6" label="Suggestions shown"/>
-  <int value="7" label="Suggestions shown (once)"/>
-  <int value="8" label="User triggered autofill"/>
-  <int value="9" label="User triggered autofill (once)"/>
-  <int value="10" label="User edited autofilled field"/>
-  <int value="11" label="User edited autofilled field (once)"/>
-  <int value="12" label="User entered a UPI VPA into a form"/>
-  <int value="13" label="A field was populated by autofill"/>
 </enum>
 
 <enum name="AutofillValuePatterns">
@@ -3448,571 +3539,6 @@ Called by update_autofill_enums.py.-->
   <int value="0" label="Accepted"/>
   <int value="1" label="Declined immediately"/>
   <int value="2" label="Declined after accepting"/>
-</enum>
-
-<enum name="AutofillWebViewEventsBitmask">
-  <summary>
-    A bitmask indicating which fields differed during a FormDataAndroid
-    similarity check.
-  </summary>
-  <int value="0" label="None"/>
-  <int value="1" label="Structure sent"/>
-  <int value="2" label="Suggestion shown"/>
-  <int value="3" label="Structure sent, suggestion shown"/>
-  <int value="4" label="Autofilled"/>
-  <int value="5" label="Structure sent, autofilled"/>
-  <int value="6" label="Suggestion shown, autofilled"/>
-  <int value="7" label="Structure sent, suggestion shown, autofilled"/>
-  <int value="8" label="Changed field"/>
-  <int value="9" label="Structure sent, changed field"/>
-  <int value="10" label="Suggestion shown, changed field"/>
-  <int value="11" label="Structure sent, suggestion shown, changed field"/>
-  <int value="12" label="Autofilled, changed field"/>
-  <int value="13" label="Structure sent, autofilled, changed field"/>
-  <int value="14" label="Suggestion shown, autofilled, changed field"/>
-  <int value="15"
-      label="Structure sent, suggestion shown, autofilled, changed field"/>
-  <int value="16" label="Changed autofilled field"/>
-  <int value="17" label="Structure sent, changed autofilled field"/>
-  <int value="18" label="Suggestion shown, changed autofilled field"/>
-  <int value="19"
-      label="Structure sent, suggestion shown, changed autofilled field"/>
-  <int value="20" label="Autofilled, changed autofilled field"/>
-  <int value="21" label="Structure sent, autofilled, changed autofilled field"/>
-  <int value="22"
-      label="Suggestion shown, autofilled, changed autofilled field"/>
-  <int value="23"
-      label="Structure sent, suggestion shown, autofilled, changed autofilled
-             field"/>
-  <int value="24" label="Changed field, changed autofilled field"/>
-  <int value="25"
-      label="Structure sent, changed field, changed autofilled field"/>
-  <int value="26"
-      label="Suggestion shown, changed field, changed autofilled field"/>
-  <int value="27"
-      label="Structure sent, suggestion shown, changed field, changed
-             autofilled field"/>
-  <int value="28" label="Autofilled, changed field, changed autofilled field"/>
-  <int value="29"
-      label="Structure sent, autofilled, changed field, changed autofilled
-             field"/>
-  <int value="30"
-      label="Suggestion shown, autofilled, changed field, changed autofilled
-             field"/>
-  <int value="31"
-      label="Structure sent, suggestion shown, autofilled, changed field,
-             changed autofilled field"/>
-  <int value="32" label="Changed visibility"/>
-  <int value="33" label="Structure sent, changed visibility"/>
-  <int value="34" label="Suggestion shown, changed visibility"/>
-  <int value="35" label="Structure sent, suggestion shown, changed visibility"/>
-  <int value="36" label="Autofilled, changed visibility"/>
-  <int value="37" label="Structure sent, autofilled, changed visibility"/>
-  <int value="38" label="Suggestion shown, autofilled, changed visibility"/>
-  <int value="39"
-      label="Structure sent, suggestion shown, autofilled, changed visibility"/>
-  <int value="40" label="Changed field, changed visibility"/>
-  <int value="41" label="Structure sent, changed field, changed visibility"/>
-  <int value="42" label="Suggestion shown, changed field, changed visibility"/>
-  <int value="43"
-      label="Structure sent, suggestion shown, changed field, changed
-             visibility"/>
-  <int value="44" label="Autofilled, changed field, changed visibility"/>
-  <int value="45"
-      label="Structure sent, autofilled, changed field, changed visibility"/>
-  <int value="46"
-      label="Suggestion shown, autofilled, changed field, changed visibility"/>
-  <int value="47"
-      label="Structure sent, suggestion shown, autofilled, changed field,
-             changed visibility"/>
-  <int value="48" label="Changed autofilled field, changed visibility"/>
-  <int value="49"
-      label="Structure sent, changed autofilled field, changed visibility"/>
-  <int value="50"
-      label="Suggestion shown, changed autofilled field, changed visibility"/>
-  <int value="51"
-      label="Structure sent, suggestion shown, changed autofilled field,
-             changed visibility"/>
-  <int value="52"
-      label="Autofilled, changed autofilled field, changed visibility"/>
-  <int value="53"
-      label="Structure sent, autofilled, changed autofilled field, changed
-             visibility"/>
-  <int value="54"
-      label="Suggestion shown, autofilled, changed autofilled field, changed
-             visibility"/>
-  <int value="55"
-      label="Structure sent, suggestion shown, autofilled, changed autofilled
-             field, changed visibility"/>
-  <int value="56"
-      label="Changed field, changed autofilled field, changed visibility"/>
-  <int value="57"
-      label="Structure sent, changed field, changed autofilled field, changed
-             visibility"/>
-  <int value="58"
-      label="Suggestion shown, changed field, changed autofilled field,
-             changed visibility"/>
-  <int value="59"
-      label="Structure sent, suggestion shown, changed field, changed
-             autofilled field, changed visibility"/>
-  <int value="60"
-      label="Autofilled, changed field, changed autofilled field, changed
-             visibility"/>
-  <int value="61"
-      label="Structure sent, autofilled, changed field, changed autofilled
-             field, changed visibility"/>
-  <int value="62"
-      label="Suggestion shown, autofilled, changed field, changed autofilled
-             field, changed visibility"/>
-  <int value="63"
-      label="Structure sent, suggestion shown, autofilled, changed field,
-             changed autofilled field, changed visibility"/>
-  <int value="64" label="Submitted"/>
-  <int value="65" label="Structure sent, submitted"/>
-  <int value="66" label="Suggestion shown, submitted"/>
-  <int value="67" label="Structure sent, suggestion shown, submitted"/>
-  <int value="68" label="Autofilled, submitted"/>
-  <int value="69" label="Structure sent, autofilled, submitted"/>
-  <int value="70" label="Suggestion shown, autofilled, submitted"/>
-  <int value="71"
-      label="Structure sent, suggestion shown, autofilled, submitted"/>
-  <int value="72" label="Changed field, submitted"/>
-  <int value="73" label="Structure sent, changed field, submitted"/>
-  <int value="74" label="Suggestion shown, changed field, submitted"/>
-  <int value="75"
-      label="Structure sent, suggestion shown, changed field, submitted"/>
-  <int value="76" label="Autofilled, changed field, submitted"/>
-  <int value="77" label="Structure sent, autofilled, changed field, submitted"/>
-  <int value="78"
-      label="Suggestion shown, autofilled, changed field, submitted"/>
-  <int value="79"
-      label="Structure sent, suggestion shown, autofilled, changed field,
-             submitted"/>
-  <int value="80" label="Changed autofilled field, submitted"/>
-  <int value="81" label="Structure sent, changed autofilled field, submitted"/>
-  <int value="82"
-      label="Suggestion shown, changed autofilled field, submitted"/>
-  <int value="83"
-      label="Structure sent, suggestion shown, changed autofilled field,
-             submitted"/>
-  <int value="84" label="Autofilled, changed autofilled field, submitted"/>
-  <int value="85"
-      label="Structure sent, autofilled, changed autofilled field, submitted"/>
-  <int value="86"
-      label="Suggestion shown, autofilled, changed autofilled field,
-             submitted"/>
-  <int value="87"
-      label="Structure sent, suggestion shown, autofilled, changed autofilled
-             field, submitted"/>
-  <int value="88" label="Changed field, changed autofilled field, submitted"/>
-  <int value="89"
-      label="Structure sent, changed field, changed autofilled field,
-             submitted"/>
-  <int value="90"
-      label="Suggestion shown, changed field, changed autofilled field,
-             submitted"/>
-  <int value="91"
-      label="Structure sent, suggestion shown, changed field, changed
-             autofilled field, submitted"/>
-  <int value="92"
-      label="Autofilled, changed field, changed autofilled field, submitted"/>
-  <int value="93"
-      label="Structure sent, autofilled, changed field, changed autofilled
-             field, submitted"/>
-  <int value="94"
-      label="Suggestion shown, autofilled, changed field, changed autofilled
-             field, submitted"/>
-  <int value="95"
-      label="Structure sent, suggestion shown, autofilled, changed field,
-             changed autofilled field, submitted"/>
-  <int value="96" label="Changed visibility, submitted"/>
-  <int value="97" label="Structure sent, changed visibility, submitted"/>
-  <int value="98" label="Suggestion shown, changed visibility, submitted"/>
-  <int value="99"
-      label="Structure sent, suggestion shown, changed visibility, submitted"/>
-  <int value="100" label="Autofilled, changed visibility, submitted"/>
-  <int value="101"
-      label="Structure sent, autofilled, changed visibility, submitted"/>
-  <int value="102"
-      label="Suggestion shown, autofilled, changed visibility, submitted"/>
-  <int value="103"
-      label="Structure sent, suggestion shown, autofilled, changed
-             visibility, submitted"/>
-  <int value="104" label="Changed field, changed visibility, submitted"/>
-  <int value="105"
-      label="Structure sent, changed field, changed visibility, submitted"/>
-  <int value="106"
-      label="Suggestion shown, changed field, changed visibility, submitted"/>
-  <int value="107"
-      label="Structure sent, suggestion shown, changed field, changed
-             visibility, submitted"/>
-  <int value="108"
-      label="Autofilled, changed field, changed visibility, submitted"/>
-  <int value="109"
-      label="Structure sent, autofilled, changed field, changed visibility,
-             submitted"/>
-  <int value="110"
-      label="Suggestion shown, autofilled, changed field, changed visibility,
-             submitted"/>
-  <int value="111"
-      label="Structure sent, suggestion shown, autofilled, changed field,
-             changed visibility, submitted"/>
-  <int value="112"
-      label="Changed autofilled field, changed visibility, submitted"/>
-  <int value="113"
-      label="Structure sent, changed autofilled field, changed visibility,
-             submitted"/>
-  <int value="114"
-      label="Suggestion shown, changed autofilled field, changed visibility,
-             submitted"/>
-  <int value="115"
-      label="Structure sent, suggestion shown, changed autofilled field,
-             changed visibility, submitted"/>
-  <int value="116"
-      label="Autofilled, changed autofilled field, changed visibility,
-             submitted"/>
-  <int value="117"
-      label="Structure sent, autofilled, changed autofilled field, changed
-             visibility, submitted"/>
-  <int value="118"
-      label="Suggestion shown, autofilled, changed autofilled field, changed
-             visibility, submitted"/>
-  <int value="119"
-      label="Structure sent, suggestion shown, autofilled, changed autofilled
-             field, changed visibility, submitted"/>
-  <int value="120"
-      label="Changed field, changed autofilled field, changed visibility,
-             submitted"/>
-  <int value="121"
-      label="Structure sent, changed field, changed autofilled field, changed
-             visibility, submitted"/>
-  <int value="122"
-      label="Suggestion shown, changed field, changed autofilled field,
-             changed visibility, submitted"/>
-  <int value="123"
-      label="Structure sent, suggestion shown, changed field, changed
-             autofilled field, changed visibility, submitted"/>
-  <int value="124"
-      label="Autofilled, changed field, changed autofilled field, changed
-             visibility, submitted"/>
-  <int value="125"
-      label="Structure sent, autofilled, changed field, changed autofilled
-             field, changed visibility, submitted"/>
-  <int value="126"
-      label="Suggestion shown, autofilled, changed field, changed autofilled
-             field, changed visibility, submitted"/>
-  <int value="127"
-      label="Structure sent, suggestion shown, autofilled, changed field,
-             changed autofilled field, changed visibility, submitted"/>
-  <int value="128" label="Bottom sheet"/>
-  <int value="129" label="Structure sent, bottom sheet"/>
-  <int value="130" label="Suggestion shown, bottom sheet"/>
-  <int value="131" label="Structure sent, suggestion shown, bottom sheet"/>
-  <int value="132" label="Autofilled, bottom sheet"/>
-  <int value="133" label="Structure sent, autofilled, bottom sheet"/>
-  <int value="134" label="Suggestion shown, autofilled, bottom sheet"/>
-  <int value="135"
-      label="Structure sent, suggestion shown, autofilled, bottom sheet"/>
-  <int value="136" label="Changed field, bottom sheet"/>
-  <int value="137" label="Structure sent, changed field, bottom sheet"/>
-  <int value="138" label="Suggestion shown, changed field, bottom sheet"/>
-  <int value="139"
-      label="Structure sent, suggestion shown, changed field, bottom sheet"/>
-  <int value="140" label="Autofilled, changed field, bottom sheet"/>
-  <int value="141"
-      label="Structure sent, autofilled, changed field, bottom sheet"/>
-  <int value="142"
-      label="Suggestion shown, autofilled, changed field, bottom sheet"/>
-  <int value="143"
-      label="Structure sent, suggestion shown, autofilled, changed field,
-             bottom sheet"/>
-  <int value="144" label="Changed autofilled field, bottom sheet"/>
-  <int value="145"
-      label="Structure sent, changed autofilled field, bottom sheet"/>
-  <int value="146"
-      label="Suggestion shown, changed autofilled field, bottom sheet"/>
-  <int value="147"
-      label="Structure sent, suggestion shown, changed autofilled field,
-             bottom sheet"/>
-  <int value="148" label="Autofilled, changed autofilled field, bottom sheet"/>
-  <int value="149"
-      label="Structure sent, autofilled, changed autofilled field, bottom
-             sheet"/>
-  <int value="150"
-      label="Suggestion shown, autofilled, changed autofilled field, bottom
-             sheet"/>
-  <int value="151"
-      label="Structure sent, suggestion shown, autofilled, changed autofilled
-             field, bottom sheet"/>
-  <int value="152"
-      label="Changed field, changed autofilled field, bottom sheet"/>
-  <int value="153"
-      label="Structure sent, changed field, changed autofilled field, bottom
-             sheet"/>
-  <int value="154"
-      label="Suggestion shown, changed field, changed autofilled field,
-             bottom sheet"/>
-  <int value="155"
-      label="Structure sent, suggestion shown, changed field, changed
-             autofilled field, bottom sheet"/>
-  <int value="156"
-      label="Autofilled, changed field, changed autofilled field, bottom
-             sheet"/>
-  <int value="157"
-      label="Structure sent, autofilled, changed field, changed autofilled
-             field, bottom sheet"/>
-  <int value="158"
-      label="Suggestion shown, autofilled, changed field, changed autofilled
-             field, bottom sheet"/>
-  <int value="159"
-      label="Structure sent, suggestion shown, autofilled, changed field,
-             changed autofilled field, bottom sheet"/>
-  <int value="160" label="Changed visibility, bottom sheet"/>
-  <int value="161" label="Structure sent, changed visibility, bottom sheet"/>
-  <int value="162" label="Suggestion shown, changed visibility, bottom sheet"/>
-  <int value="163"
-      label="Structure sent, suggestion shown, changed visibility, bottom
-             sheet"/>
-  <int value="164" label="Autofilled, changed visibility, bottom sheet"/>
-  <int value="165"
-      label="Structure sent, autofilled, changed visibility, bottom sheet"/>
-  <int value="166"
-      label="Suggestion shown, autofilled, changed visibility, bottom sheet"/>
-  <int value="167"
-      label="Structure sent, suggestion shown, autofilled, changed
-             visibility, bottom sheet"/>
-  <int value="168" label="Changed field, changed visibility, bottom sheet"/>
-  <int value="169"
-      label="Structure sent, changed field, changed visibility, bottom sheet"/>
-  <int value="170"
-      label="Suggestion shown, changed field, changed visibility, bottom
-             sheet"/>
-  <int value="171"
-      label="Structure sent, suggestion shown, changed field, changed
-             visibility, bottom sheet"/>
-  <int value="172"
-      label="Autofilled, changed field, changed visibility, bottom sheet"/>
-  <int value="173"
-      label="Structure sent, autofilled, changed field, changed visibility,
-             bottom sheet"/>
-  <int value="174"
-      label="Suggestion shown, autofilled, changed field, changed visibility,
-             bottom sheet"/>
-  <int value="175"
-      label="Structure sent, suggestion shown, autofilled, changed field,
-             changed visibility, bottom sheet"/>
-  <int value="176"
-      label="Changed autofilled field, changed visibility, bottom sheet"/>
-  <int value="177"
-      label="Structure sent, changed autofilled field, changed visibility,
-             bottom sheet"/>
-  <int value="178"
-      label="Suggestion shown, changed autofilled field, changed visibility,
-             bottom sheet"/>
-  <int value="179"
-      label="Structure sent, suggestion shown, changed autofilled field,
-             changed visibility, bottom sheet"/>
-  <int value="180"
-      label="Autofilled, changed autofilled field, changed visibility, bottom
-             sheet"/>
-  <int value="181"
-      label="Structure sent, autofilled, changed autofilled field, changed
-             visibility, bottom sheet"/>
-  <int value="182"
-      label="Suggestion shown, autofilled, changed autofilled field, changed
-             visibility, bottom sheet"/>
-  <int value="183"
-      label="Structure sent, suggestion shown, autofilled, changed autofilled
-             field, changed visibility, bottom sheet"/>
-  <int value="184"
-      label="Changed field, changed autofilled field, changed visibility,
-             bottom sheet"/>
-  <int value="185"
-      label="Structure sent, changed field, changed autofilled field, changed
-             visibility, bottom sheet"/>
-  <int value="186"
-      label="Suggestion shown, changed field, changed autofilled field,
-             changed visibility, bottom sheet"/>
-  <int value="187"
-      label="Structure sent, suggestion shown, changed field, changed
-             autofilled field, changed visibility, bottom sheet"/>
-  <int value="188"
-      label="Autofilled, changed field, changed autofilled field, changed
-             visibility, bottom sheet"/>
-  <int value="189"
-      label="Structure sent, autofilled, changed field, changed autofilled
-             field, changed visibility, bottom sheet"/>
-  <int value="190"
-      label="Suggestion shown, autofilled, changed field, changed autofilled
-             field, changed visibility, bottom sheet"/>
-  <int value="191"
-      label="Structure sent, suggestion shown, autofilled, changed field,
-             changed autofilled field, changed visibility, bottom sheet"/>
-  <int value="192" label="Submitted, bottom sheet"/>
-  <int value="193" label="Structure sent, submitted, bottom sheet"/>
-  <int value="194" label="Suggestion shown, submitted, bottom sheet"/>
-  <int value="195"
-      label="Structure sent, suggestion shown, submitted, bottom sheet"/>
-  <int value="196" label="Autofilled, submitted, bottom sheet"/>
-  <int value="197" label="Structure sent, autofilled, submitted, bottom sheet"/>
-  <int value="198"
-      label="Suggestion shown, autofilled, submitted, bottom sheet"/>
-  <int value="199"
-      label="Structure sent, suggestion shown, autofilled, submitted, bottom
-             sheet"/>
-  <int value="200" label="Changed field, submitted, bottom sheet"/>
-  <int value="201"
-      label="Structure sent, changed field, submitted, bottom sheet"/>
-  <int value="202"
-      label="Suggestion shown, changed field, submitted, bottom sheet"/>
-  <int value="203"
-      label="Structure sent, suggestion shown, changed field, submitted,
-             bottom sheet"/>
-  <int value="204" label="Autofilled, changed field, submitted, bottom sheet"/>
-  <int value="205"
-      label="Structure sent, autofilled, changed field, submitted, bottom
-             sheet"/>
-  <int value="206"
-      label="Suggestion shown, autofilled, changed field, submitted, bottom
-             sheet"/>
-  <int value="207"
-      label="Structure sent, suggestion shown, autofilled, changed field,
-             submitted, bottom sheet"/>
-  <int value="208" label="Changed autofilled field, submitted, bottom sheet"/>
-  <int value="209"
-      label="Structure sent, changed autofilled field, submitted, bottom
-             sheet"/>
-  <int value="210"
-      label="Suggestion shown, changed autofilled field, submitted, bottom
-             sheet"/>
-  <int value="211"
-      label="Structure sent, suggestion shown, changed autofilled field,
-             submitted, bottom sheet"/>
-  <int value="212"
-      label="Autofilled, changed autofilled field, submitted, bottom sheet"/>
-  <int value="213"
-      label="Structure sent, autofilled, changed autofilled field, submitted,
-             bottom sheet"/>
-  <int value="214"
-      label="Suggestion shown, autofilled, changed autofilled field,
-             submitted, bottom sheet"/>
-  <int value="215"
-      label="Structure sent, suggestion shown, autofilled, changed autofilled
-             field, submitted, bottom sheet"/>
-  <int value="216"
-      label="Changed field, changed autofilled field, submitted, bottom sheet"/>
-  <int value="217"
-      label="Structure sent, changed field, changed autofilled field,
-             submitted, bottom sheet"/>
-  <int value="218"
-      label="Suggestion shown, changed field, changed autofilled field,
-             submitted, bottom sheet"/>
-  <int value="219"
-      label="Structure sent, suggestion shown, changed field, changed
-             autofilled field, submitted, bottom sheet"/>
-  <int value="220"
-      label="Autofilled, changed field, changed autofilled field, submitted,
-             bottom sheet"/>
-  <int value="221"
-      label="Structure sent, autofilled, changed field, changed autofilled
-             field, submitted, bottom sheet"/>
-  <int value="222"
-      label="Suggestion shown, autofilled, changed field, changed autofilled
-             field, submitted, bottom sheet"/>
-  <int value="223"
-      label="Structure sent, suggestion shown, autofilled, changed field,
-             changed autofilled field, submitted, bottom sheet"/>
-  <int value="224" label="Changed visibility, submitted, bottom sheet"/>
-  <int value="225"
-      label="Structure sent, changed visibility, submitted, bottom sheet"/>
-  <int value="226"
-      label="Suggestion shown, changed visibility, submitted, bottom sheet"/>
-  <int value="227"
-      label="Structure sent, suggestion shown, changed visibility, submitted,
-             bottom sheet"/>
-  <int value="228"
-      label="Autofilled, changed visibility, submitted, bottom sheet"/>
-  <int value="229"
-      label="Structure sent, autofilled, changed visibility, submitted,
-             bottom sheet"/>
-  <int value="230"
-      label="Suggestion shown, autofilled, changed visibility, submitted,
-             bottom sheet"/>
-  <int value="231"
-      label="Structure sent, suggestion shown, autofilled, changed
-             visibility, submitted, bottom sheet"/>
-  <int value="232"
-      label="Changed field, changed visibility, submitted, bottom sheet"/>
-  <int value="233"
-      label="Structure sent, changed field, changed visibility, submitted,
-             bottom sheet"/>
-  <int value="234"
-      label="Suggestion shown, changed field, changed visibility, submitted,
-             bottom sheet"/>
-  <int value="235"
-      label="Structure sent, suggestion shown, changed field, changed
-             visibility, submitted, bottom sheet"/>
-  <int value="236"
-      label="Autofilled, changed field, changed visibility, submitted, bottom
-             sheet"/>
-  <int value="237"
-      label="Structure sent, autofilled, changed field, changed visibility,
-             submitted, bottom sheet"/>
-  <int value="238"
-      label="Suggestion shown, autofilled, changed field, changed visibility,
-             submitted, bottom sheet"/>
-  <int value="239"
-      label="Structure sent, suggestion shown, autofilled, changed field,
-             changed visibility, submitted, bottom sheet"/>
-  <int value="240"
-      label="Changed autofilled field, changed visibility, submitted, bottom
-             sheet"/>
-  <int value="241"
-      label="Structure sent, changed autofilled field, changed visibility,
-             submitted, bottom sheet"/>
-  <int value="242"
-      label="Suggestion shown, changed autofilled field, changed visibility,
-             submitted, bottom sheet"/>
-  <int value="243"
-      label="Structure sent, suggestion shown, changed autofilled field,
-             changed visibility, submitted, bottom sheet"/>
-  <int value="244"
-      label="Autofilled, changed autofilled field, changed visibility,
-             submitted, bottom sheet"/>
-  <int value="245"
-      label="Structure sent, autofilled, changed autofilled field, changed
-             visibility, submitted, bottom sheet"/>
-  <int value="246"
-      label="Suggestion shown, autofilled, changed autofilled field, changed
-             visibility, submitted, bottom sheet"/>
-  <int value="247"
-      label="Structure sent, suggestion shown, autofilled, changed autofilled
-             field, changed visibility, submitted, bottom sheet"/>
-  <int value="248"
-      label="Changed field, changed autofilled field, changed visibility,
-             submitted, bottom sheet"/>
-  <int value="249"
-      label="Structure sent, changed field, changed autofilled field, changed
-             visibility, submitted, bottom sheet"/>
-  <int value="250"
-      label="Suggestion shown, changed field, changed autofilled field,
-             changed visibility, submitted, bottom sheet"/>
-  <int value="251"
-      label="Structure sent, suggestion shown, changed field, changed
-             autofilled field, changed visibility, submitted, bottom sheet"/>
-  <int value="252"
-      label="Autofilled, changed field, changed autofilled field, changed
-             visibility, submitted, bottom sheet"/>
-  <int value="253"
-      label="Structure sent, autofilled, changed field, changed autofilled
-             field, changed visibility, submitted, bottom sheet"/>
-  <int value="254"
-      label="Suggestion shown, autofilled, changed field, changed autofilled
-             field, changed visibility, submitted, bottom sheet"/>
-  <int value="255"
-      label="Structure sent, suggestion shown, autofilled, changed field,
-             changed autofilled field, changed visibility, submitted, bottom
-             sheet"/>
 </enum>
 
 <enum name="AutofillWebViewFormSimilarityCheckResult">
@@ -4170,7 +3696,7 @@ Called by update_autofill_enums.py.-->
   <int value="1" label="Confirmed"/>
 </enum>
 
-<enum name="BooleanAutofillExtendedMenuEditAddress">
+<enum name="BooleanAutofillEditAddress">
   <int value="0" label="Canceled"/>
   <int value="1" label="Saved"/>
 </enum>
@@ -4238,11 +3764,6 @@ Called by update_autofill_enums.py.-->
 <enum name="BooleanHadPredictions">
   <int value="0" label="No predictions"/>
   <int value="1" label="Has predictions"/>
-</enum>
-
-<enum name="BooleanHiddenPresentationalAutofilled">
-  <int value="0" label="Skipped"/>
-  <int value="1" label="Autofilled"/>
 </enum>
 
 <enum name="BooleanPreviouslyShown">
@@ -4454,6 +3975,13 @@ Called by update_autofill_enums.py.-->
       label="Form passed is different from the one that initiated the session"/>
 </enum>
 
+<enum name="PaymentsWindowUserConsentDialogResult">
+  <int value="0" label="The tab or browser was closed"/>
+  <int value="1" label="The escape key was pressed, closing the dialog"/>
+  <int value="2" label="The cancel button was pressed, closing the dialog"/>
+  <int value="3" label="The accept button was pressed, closing the dialog"/>
+</enum>
+
 <enum name="PhoneNumberGrammarUsage2">
   <int value="0"
       label="Country code: [cc] Area Code: [ac] Prefix: [phone] Suffix:
@@ -4513,6 +4041,14 @@ Called by update_autofill_enums.py.-->
   <int value="14" label="Server and heuristic type, autocomplete=off"/>
 </enum>
 
+<enum name="RendererFillSkipReason">
+  <int value="0" label="Unfillable"/>
+  <int value="1" label="No value to fill"/>
+  <int value="2" label="Previously autofilled"/>
+  <int value="3" label="User-edited text field"/>
+  <int value="4" label="User-edited select field"/>
+</enum>
+
 <enum name="ShowCardsFromGoogleAccountButtonEvent">
   <int value="0" label="Button shown"/>
   <int value="1" label="Button shown (once)"/>
@@ -4528,10 +4064,10 @@ Called by update_autofill_enums.py.-->
   <int value="4" label="Bottom sheet dismissed"/>
 </enum>
 
-<enum name="TouchToFill.CreditCard.TriggerOutcome">
+<enum name="TouchToFill.PaymentMethod.TriggerOutcome">
   <int value="0" label="Shown"/>
   <int value="1" label="Not shown: clicked field not focusable or not empty"/>
-  <int value="2" label="Not shown: no valid cards to display"/>
+  <int value="2" label="Not shown: no valid payment methods to display"/>
   <int value="3" label="Not shown: form or client not secure"/>
   <int value="4" label="Not shown: was shown before"/>
   <int value="5" label="Not shown: could not show Autofill UI"/>
@@ -4551,6 +4087,27 @@ Called by update_autofill_enums.py.-->
   <int value="1" label="Upload was for newly-seen payment method"/>
 </enum>
 
+<enum name="Vcn3dsFlowEvents">
+  <int value="0"
+      label="The flow has started, and the consent dialog or a pop-up are
+             about to be shown"/>
+  <int value="1" label="The consent dialog was skipped"/>
+  <int value="2" label="The consent dialog was accepted"/>
+  <int value="3" label="The consent dialog was declined"/>
+  <int value="4"
+      label="The pop-up was not able to be shown when a show was attempted"/>
+  <int value="5"
+      label="The user cancelled the flow by closing the pop-up before
+             authentication has finished"/>
+  <int value="6" label="The authentication inside of the pop-up failed"/>
+  <int value="7"
+      label="The user cancelled the progress dialog while retrieving the VCN"/>
+  <int value="8"
+      label="The flow failed after pop-up closed while retrieving the VCN"/>
+  <int value="9"
+      label="The flow has successfully completed and retrieved a VCN"/>
+</enum>
+
 <enum name="VirtualCardStandaloneCvcSuggestionFormEvent">
   <int value="0" label="Suggestions shown"/>
   <int value="1" label="Suggestions shown (once)"/>
@@ -4561,25 +4118,6 @@ Called by update_autofill_enums.py.-->
   <int value="6"
       label="Form about to be submitted after suggestion filled (once)"/>
   <int value="7" label="Form submitted after suggestion filled (once)"/>
-</enum>
-
-<enum name="VoteForSelecteOptionValuesEvents">
-  <int value="0" label="ClassifiedAnyField">
-    A form had a non-empty list of determined field types.
-  </int>
-  <int value="1" label="ClassifiedMoreFields">
-    The form of the first bucket had more field types classified due to the
-    AutofillVoteForSelectOptionValues experiment.
-  </int>
-  <int value="2" label="ClassifiedFieldAsCountryField">
-    The form of the first bucket had at least one country field (as in
-    &quot;country name&quot;, not as in a &quot;phone country code field&quot;).
-  </int>
-  <int value="3" label="SwitchedFromCountryToPhoneCountryCode">
-    A form in the &quot;ClassifiedFieldAsCountryField&quot; bucket hat at least
-    one country field flipped to a &quot;phone country code field&quot; due to
-    the AutofillVoteForSelectOptionValues experiment.
-  </int>
 </enum>
 
 <enum name="WebauthnOptInPromoNotOfferedReason">

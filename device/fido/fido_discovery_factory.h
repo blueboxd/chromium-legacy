@@ -25,6 +25,7 @@
 #include "device/fido/fido_request_handler_base.h"
 #include "device/fido/fido_transport_protocol.h"
 #include "device/fido/hid/fido_hid_discovery.h"
+#include "device/fido/network_context_factory.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/usb_manager.mojom.h"
 #include "services/network/public/mojom/network_context.mojom-forward.h"
@@ -71,7 +72,10 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDiscoveryFactory {
       mojo::Remote<device::mojom::UsbDeviceManager>,
       std::string aoa_request_description);
 
-  void set_network_context(network::mojom::NetworkContext*);
+  void set_network_context_factory(
+      NetworkContextFactory network_context_factory) {
+    network_context_factory_ = std::move(network_context_factory);
+  }
 
   // set_cable_pairing_callback installs a repeating callback that will be
   // called when a QR handshake results in a phone wishing to pair with this
@@ -96,12 +100,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDiscoveryFactory {
   get_cable_contact_callback();
 
   void set_hid_ignore_list(base::flat_set<VidPid> hid_ignore_list);
-
-  // Provides a callback that will be called when a passkey is created with
-  // the enclave authenticator in order to save the new passkey to sync data.
-  void set_enclave_passkey_creation_callback(
-      base::RepeatingCallback<void(sync_pb::WebauthnCredentialSpecifics)>
-          callback);
 
   void set_enclave_ui_request_stream(
       std::unique_ptr<FidoDiscoveryBase::EventStream<
@@ -146,7 +144,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDiscoveryFactory {
   // no_cable_linking requests that QR-linked and pre-linked phones be ignored
   // for this discovery.
   //
-  // TODO(crbug.com/1459443): remove this and everything else from the CL that
+  // TODO(crbug.com/40274309): remove this and everything else from the CL that
   // added it if this is unused by June 2024.
   bool no_cable_linking = false;
 
@@ -170,7 +168,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDiscoveryFactory {
   std::optional<mojo::Remote<device::mojom::UsbDeviceManager>>
       usb_device_manager_;
   std::string aoa_request_description_;
-  raw_ptr<network::mojom::NetworkContext> network_context_ = nullptr;
+  NetworkContextFactory network_context_factory_;
   std::optional<std::vector<CableDiscoveryData>> cable_data_;
   std::optional<std::array<uint8_t, cablev2::kQRKeySize>> qr_generator_key_;
   std::optional<FidoRequestType> request_type_;
@@ -192,8 +190,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDiscoveryFactory {
       get_assertion_request_for_legacy_credential_check_;
 #endif  // BUILDFLAG(IS_CHROMEOS)
   base::flat_set<VidPid> hid_ignore_list_;
-  base::RepeatingCallback<void(sync_pb::WebauthnCredentialSpecifics)>
-      enclave_passkey_creation_callback_;
   std::unique_ptr<FidoDiscoveryBase::EventStream<
       std::unique_ptr<enclave::CredentialRequest>>>
       enclave_ui_request_stream_;

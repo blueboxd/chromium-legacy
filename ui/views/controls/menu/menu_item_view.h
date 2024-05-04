@@ -20,7 +20,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/menu_separator_types.h"
 #include "ui/base/themed_vector_icon.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image_skia.h"
@@ -293,6 +292,7 @@ class VIEWS_EXPORT MenuItemView : public View {
 
   // Sets the icon of this menu item.
   void SetIcon(const ui::ImageModel& icon);
+  const ui::ImageModel GetIcon() const;
 
   // Sets the view used to render the icon. This clobbers any icon set via
   // SetIcon(). MenuItemView takes ownership of |icon_view|.
@@ -323,7 +323,8 @@ class VIEWS_EXPORT MenuItemView : public View {
   void OnPaint(gfx::Canvas* canvas) override;
 
   // Returns the preferred size of this item.
-  gfx::Size CalculatePreferredSize() const override;
+  gfx::Size CalculatePreferredSize(
+      const SizeBounds& /*available_size*/) const override;
 
   // Gets the preferred height for the given |width|. This is only different
   // from GetPreferredSize().width() if the item has a child view with flexible
@@ -697,9 +698,8 @@ class VIEWS_EXPORT MenuItemView : public View {
   // and SetIconView() explicitly calls UpdateSelectionBasedStateIfChanged().
   bool update_selection_based_state_in_view_herarchy_changed_ = true;
 
-  const std::u16string new_badge_text_ = l10n_util::GetStringUTF16(
-      features::IsChromeRefresh2023() ? IDS_NEW_BADGE_UPPERCASE
-                                      : IDS_NEW_BADGE);
+  const std::u16string new_badge_text_ =
+      l10n_util::GetStringUTF16(IDS_NEW_BADGE);
 
   std::optional<ui::ColorId> foreground_color_id_;
   std::optional<MenuItemBackground> menu_item_background_;

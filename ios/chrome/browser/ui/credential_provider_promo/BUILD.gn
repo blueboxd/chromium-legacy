@@ -21,7 +21,6 @@ source_set("credential_provider_promo") {
     "//components/feature_engagement/public",
     "//components/prefs",
     "//ios/chrome/app/strings",
-    "//ios/chrome/browser/credential_provider_promo/model:features",
     "//ios/chrome/browser/feature_engagement/model",
     "//ios/chrome/browser/promos_manager/model",
     "//ios/chrome/browser/promos_manager/model:factory",
@@ -58,7 +57,7 @@ source_set("credential_provider_promo_ui") {
     "//ios/chrome/common/ui/confirmation_alert",
     "//ios/public/provider/chrome/browser/lottie:lottie_animation_api",
 
-    # TODO(crbug.com/1412808): uncomment once Lottie framework is added.
+    # TODO(crbug.com/40255443): uncomment once Lottie framework is added.
     # "//ios/third_party/lottie",
     "//ui/base",
   ]
@@ -81,7 +80,6 @@ source_set("unit_tests") {
     "//components/password_manager/core/common",
     "//components/prefs:test_support",
     "//ios/chrome/app/strings",
-    "//ios/chrome/browser/credential_provider_promo/model:features",
     "//ios/chrome/browser/promos_manager/model",
     "//ios/chrome/browser/promos_manager/model:test_support",
     "//ios/chrome/browser/shared/model/browser/test:test_support",

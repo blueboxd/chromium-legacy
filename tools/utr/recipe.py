@@ -10,15 +10,28 @@ import os
 import pathlib
 import shutil
 import subprocess
+import sys
 import tempfile
+
+from collections import namedtuple
+from rich import markdown
+from rich import console
 
 import output_adapter
 
-# Disable noisy asyncio logs.
+# Disable some noisy logs.
 logging.getLogger('asyncio').setLevel(logging.WARNING)
+logging.getLogger('markdown_it').setLevel(logging.WARNING)
 
 _THIS_DIR = pathlib.Path(__file__).resolve().parent
 _SRC_DIR = _THIS_DIR.parents[1]
+
+_RECLIENT_CLI = _SRC_DIR.joinpath('buildtools', 'reclient_cfgs',
+                                  'configure_reclient_cfgs.py')
+_SISO_CLI = _SRC_DIR.joinpath('build', 'config', 'siso', 'configure_siso.py')
+_DEFAULT_RBE_PROJECT = 'rbe-chrome-untrusted'
+
+RerunOption = namedtuple('RerunOption', ['prompt', 'properties'])
 
 
 def check_rdb_auth():
@@ -28,11 +41,13 @@ def check_rdb_auth():
     logging.error("'rdb' binary not found. Is depot_tools not on PATH?")
     return False
   cmd = [rdb_path, 'auth-info']
-  p = subprocess.run(cmd,
-                     stdout=subprocess.PIPE,
-                     stderr=subprocess.STDOUT,
-                     text=True)
-  if p.returncode:
+  try:
+    p = subprocess.run(cmd,
+                       stdout=subprocess.PIPE,
+                       stderr=subprocess.STDOUT,
+                       text=True,
+                       check=True)
+  except subprocess.CalledProcessError:
     logging.error('No rdb auth available:')
     logging.error(p.stdout.strip())
     logging.error("Please run 'rdb auth-login' to authenticate")
@@ -40,12 +55,26 @@ def check_rdb_auth():
   return True
 
 
-def get_yn_resp():
-  prompt = 'Do you wish to proceed? Please enter Y/N to confirm: '
-  resp = input(prompt).strip()
-  if resp and resp.lower() == 'y':
-    return True
-  return False
+def get_prompt_resp(rerun_props):
+  """Prompts the user for how to continue based on recipe output
+
+  Args:
+    rerun_props: A list of namedtuples[str, dict] containing the prompt to show
+        and the dict of properties to use if that prompt is selected.
+  Returns:
+    Dict of properties to use for the next recipe invocation. None or an empty
+        dict of properties indicate the recipe should not be reinvoked.
+  """
+  options = '/'.join(f'({option.prompt[0]}){option.prompt[1:]}'
+                     for option in rerun_props)
+  prompt = (f'How do you wish to proceed? Please enter {options} to confirm: ')
+  resp = input(prompt).strip().lower()
+
+  for option in rerun_props:
+    # An empty resp will default to the first option like a --force run
+    if option.prompt.lower().startswith(resp):
+      return option.properties
+  return None
 
 
 class LegacyRunner:
@@ -59,7 +88,7 @@ class LegacyRunner:
   UTR_RECIPE_NAME = 'chromium/universal_test_runner'
 
   def __init__(self,
-               bundle_root_path,
+               recipes_py,
                builder_props,
                bucket,
                builder,
@@ -68,11 +97,12 @@ class LegacyRunner:
                skip_compile,
                skip_test,
                skip_prompts,
-               build_dir=None):
+               build_dir=None,
+               additional_test_args=None):
     """Constructor for LegacyRunner
 
     Args:
-      bundle_root_path: pathlib.Path to the root of the recipe bundle
+      recipes_py: pathlib.Path to the root of the recipe bundle
       builder_props: Dict containing the props for the builder to run as.
       bucket: Bucket name of the builder to run as.
       builder: Builder name of the builder to run as.
@@ -81,13 +111,22 @@ class LegacyRunner:
       skip_compile: If True, the UTR will only run the tests.
       skip_test: If True, the UTR will only compile.
       skip_prompts: If True, skip Y/N prompts for warnings.
-      builder_dir: pathlib.Path to the build dir to build in. Will use the UTR's
+      build_dir: pathlib.Path to the build dir to build in. Will use the UTR's
           default otherwise if needed.
+      additional_test_args: List of additional args to pass to the tests.
     """
-    self._recipes_py = bundle_root_path.joinpath('recipes')
+    self._recipes_py = recipes_py
     self._swarming_server = swarming_server
     self._skip_prompts = skip_prompts
+    self._console_printer = console.Console()
     assert self._recipes_py.exists()
+
+    # Put all results in "try" realms. "try" should be writable for most devs,
+    # while other realms like "ci" likely aren't. "try" is generally where we
+    # confine untested code, so it's the best fit for our results here.
+    self._luci_realm = 'chrome:try'
+    if self._swarming_server == 'chromium-swarm':
+      self._luci_realm = 'chromium:try'
 
     # Add UTR recipe props. Its schema is located at:
     # https://chromium.googlesource.com/chromium/tools/build/+/HEAD/recipes/recipes/chromium/universal_test_runner.proto
@@ -95,8 +134,15 @@ class LegacyRunner:
     input_props['checkout_path'] = str(_SRC_DIR)
     input_props['$recipe_engine/path'] = {'cache_dir': str(_SRC_DIR.parent)}
     input_props['test_names'] = tests
+    input_props['$build/chromium_swarming'] = {'task_realm': self._luci_realm}
+    if additional_test_args:
+      input_props['additional_test_args'] = additional_test_args
     if build_dir:
-      input_props['build_dir'] = build_dir
+      input_props['build_dir'] = str(build_dir.absolute())
+    # The recipe will overwrite this property so we have to put it preserve it
+    # elsewhere
+    if 'recipe' in input_props:
+      input_props['builder_recipe'] = input_props['recipe']
 
     mode = 'RUN_TYPE_COMPILE_AND_RUN'
     assert not (skip_compile and skip_test)
@@ -119,30 +165,58 @@ class LegacyRunner:
             },
         },
     }
+    # TODO(crbug.com/41492688): Ensure the chrome version for internal builders
+    # when they are added.
+    # Set reclient and siso to use untrusted even for imitating ci builders
+    if not '$build/reclient' in input_props:
+      input_props['$build/reclient'] = {}
+    input_props['$build/reclient']['instance'] = self._get_reclient_instance()
+    if not '$build/siso' in input_props:
+      input_props['$build/siso'] = {}
+    input_props['$build/siso']['project'] = self._get_siso_project()
     self._input_props = input_props
 
-  def _run(self, filter_stdout, additional_props=None):
+  def _get_cmd_output(self, cmd):
+    p = subprocess.run(cmd,
+                       stdout=subprocess.PIPE,
+                       stderr=subprocess.STDOUT,
+                       text=True,
+                       check=False)
+    if p.returncode == 0:
+      return p.stdout.strip()
+    return ''
+
+  def _get_reclient_instance(self):
+    cmd = [
+        'python3',
+        str(_RECLIENT_CLI),
+        '--get-rbe-instance',
+    ]
+    return self._get_cmd_output(cmd) or _DEFAULT_RBE_PROJECT
+
+  def _get_siso_project(self):
+    cmd = [
+        'python3',
+        str(_SISO_CLI),
+        '--get-siso-project',
+    ]
+    return self._get_cmd_output(cmd) or _DEFAULT_RBE_PROJECT
+
+  def _run(self, adapter, rerun_props=None):
     """Internal implementation of invoking `recipes.py run`.
 
     Args:
-      filter_stdout: If True, filters noisy log output from the recipe.
-      additional_props: Dict containing additional props to pass to the recipe.
+      adapter: A output_adapter.Adapter for parsing recipe output.
+      rerun_props: Dict containing additional props to pass to the recipe.
     Returns:
       Tuple of
         exit code of the `recipes.py` invocation,
-        error message of the `recipes.py` invocation,
-        a dict of additional_props the recipe should be re-invoked with
+        summary markdown of the `recipes.py` invocation,
+        a dict of rerun_props the recipe should be re-invoked with
     """
     input_props = self._input_props.copy()
-    input_props.update(additional_props or {})
+    input_props['rerun_options'] = rerun_props or {}
     with tempfile.TemporaryDirectory() as tmp_dir:
-
-      # TODO(crbug.com/41492688): Support both chrome and chromium realms. Just
-      # hard-code 'chromium' for now.
-      # Put all results in "try" realms. "try" should be writable for most devs,
-      # while other realms like "ci" likely aren't. "try" is generally where we
-      # confine untested code, so it's the best fit for our results here.
-      rdb_realm = 'chromium:try'
 
       output_path = pathlib.Path(tmp_dir).joinpath('out.json')
       rerun_props_path = pathlib.Path(tmp_dir).joinpath('rerun_props.json')
@@ -152,7 +226,7 @@ class LegacyRunner:
           'stream',
           '-new',
           '-realm',
-          rdb_realm,
+          self._luci_realm,
           '--',
           self._recipes_py,
           'run',
@@ -171,6 +245,7 @@ class LegacyRunner:
         proc = await asyncio.create_subprocess_exec(
             cmd[0],
             *cmd[1:],
+            limit=1024 * 1024 * 128,  # 128 MiB: there can be massive lines
             env=env,
             stdin=asyncio.subprocess.PIPE,
             stdout=asyncio.subprocess.PIPE,
@@ -178,27 +253,26 @@ class LegacyRunner:
 
         proc.stdin.write(json.dumps(input_props).encode('ascii'))
         proc.stdin.write_eof()
-        if filter_stdout:
-          adapter = output_adapter.LegacyOutputAdapter()
-        else:
-          adapter = output_adapter.PassthroughAdapter()
         while not proc.stdout.at_eof():
-          line = await proc.stdout.readline()
-          adapter.ProcessLine(line.decode('utf-8').strip('\n'))
+          try:
+            line = await proc.stdout.readline()
+            adapter.ProcessLine(line.decode('utf-8').strip(os.linesep))
+          except ValueError:
+            logging.exception('Failed to parse line from the recipe')
         await proc.wait()
         return proc.returncode
 
       returncode = asyncio.run(exec_recipe())
 
       # Try to pull out the summary markdown from the recipe run.
-      failure_reason = None
+      failure_md = ''
       if not output_path.exists():
         logging.error('Recipe output json not found')
       else:
         try:
           with open(output_path) as f:
             output = json.load(f)
-          failure_reason = output.get('failure', {}).get('humanReason')
+          failure_md = output.get('failure', {}).get('humanReason', '')
           # TODO(crbug.com/41492688): Also pull out info about gclient/GN arg
           # mismatches, surface those as a Y/N prompt to the user, and re-run
           # if Y.
@@ -208,12 +282,15 @@ class LegacyRunner:
       # If this file exists, the recipe is signalling to us that there's an
       # issue, and that we need to re-run if we're sure we want to proceed.
       # The contents of the file are the properties we should re-run it with.
-      rerun_props = None
+      rerun_props = []
       if rerun_props_path.exists():
         with open(rerun_props_path) as f:
-          rerun_props = json.load(f)
+          raw_json = json.load(f)
+          for prompt in raw_json:
+            rerun_props.append(
+                RerunOption(prompt=prompt[0], properties=prompt[1]))
 
-      return returncode, failure_reason, rerun_props
+      return returncode, failure_md, rerun_props
 
   def run_recipe(self, filter_stdout=True):
     """Runs the UTR recipe with the settings defined on the CLI.
@@ -224,23 +301,46 @@ class LegacyRunner:
       Tuple of (exit code, error message) of the `recipes.py` invocation.
     """
     rerun_props = None
+    if filter_stdout:
+      adapter = output_adapter.LegacyOutputAdapter()
+    else:
+      adapter = output_adapter.PassthroughAdapter()
     # We might need to run the recipe a handful of times before we receive a
     # final result. Put a cap on the amount of re-runs though, just in case.
     for _ in range(10):
-      exit_code, error_msg, rerun_props = self._run(filter_stdout, rerun_props)
-      if not rerun_props:
-        return exit_code, error_msg
-      else:
-        logging.warning('')
-        logging.warning(error_msg)
-        logging.warning('')
-        if not self._skip_prompts:
-          should_continue = get_yn_resp()
+      exit_code, failure_md, rerun_prop_options = self._run(
+          adapter, rerun_props)
+      # For in-line code snippets in markdown, style them as python. This
+      # seems the least weird-looking.
+      pretty_md = markdown.Markdown(failure_md, inline_code_lexer='python')
+      if not rerun_prop_options:
+        if exit_code:
+          # Use the markdown printer from "rich" to better format the text in
+          # a terminal.
+          md = pretty_md if pretty_md else 'Unknown error'
+          self._console_printer.print(md, style='red')
         else:
-          logging.warning(
-              'Proceeding despite the recipe warning due to the presence of '
-              '"--force".')
-          should_continue = True
-        if not should_continue:
-          return exit_code, 'User-aborted due to warning'
+          logging.info('[green]Success![/]')
+
+        results_link = adapter.GetTestResultsLink()
+        if results_link:
+          logging.info('')
+          logging.info('For futher information, see the full test results at:')
+          logging.info(results_link)
+        return exit_code, 'Build/test failure' if exit_code else None
+      logging.warning('')
+      self._console_printer.print(pretty_md)
+      logging.warning('')
+      if not self._skip_prompts:
+        rerun_props = get_prompt_resp(rerun_prop_options)
+      else:
+        logging.warning(
+            '[yellow]Proceeding despite the recipe warning due to the presence '
+            'of "--force".[/]')
+        if len(rerun_prop_options) < 1 or len(rerun_prop_options[0]) < 2:
+          return 1, 'Received bad run options from the recipe'
+        # Properties of the first option is the default path
+        rerun_props = rerun_prop_options[0].properties
+      if not rerun_props:
+        return exit_code, 'User-aborted due to warning'
     return 1, 'Exceeded too many recipe re-runs'

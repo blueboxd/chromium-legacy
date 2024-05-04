@@ -189,8 +189,6 @@ public class CustomTabPrivacySandboxDialogTest {
     @Restriction(DeviceRestriction.RESTRICTION_TYPE_NON_AUTO)
     @EnableFeatures({
         ChromeFeatureList.CCT_RESIZABLE_FOR_THIRD_PARTIES,
-        ChromeFeatureList.CCT_RESIZABLE_SIDE_SHEET,
-        ChromeFeatureList.CCT_RESIZABLE_SIDE_SHEET_FOR_THIRD_PARTIES,
         ChromeFeatureList.PRIVACY_SANDBOX_ADS_NOTICE_CCT,
         ChromeFeatureList.PRIVACY_SANDBOX_SETTINGS_4
                 + ":force-show-notice-row-for-testing/true/notice-required/true"
@@ -231,7 +229,8 @@ public class CustomTabPrivacySandboxDialogTest {
                 HistogramWatcher.newSingleRecordWatcher(
                         "Startup.Android.PrivacySandbox.AdsNoticeCCTAppIDCheck", true);
         startActivityForResultCCT();
-        onViewWaiting(withId(R.id.privacy_sandbox_dialog)).check(matches(isDisplayed()));
+        // Set checkRootDialog=true to prevent flakiness after api 30 with espresso 30+.
+        onViewWaiting(withId(R.id.privacy_sandbox_dialog), true).check(matches(isDisplayed()));
         shouldShowWatcher.pollInstrumentationThreadUntilSatisfied();
         appIDCheckWatcher.pollInstrumentationThreadUntilSatisfied();
     }

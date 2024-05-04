@@ -82,9 +82,7 @@ void OnGetServiceWorkerPaymentAppsInfo(
 
   for (const auto& app_info : apps) {
     Java_ServiceWorkerPaymentAppBridge_addPaymentAppInfo(
-        env, jappsInfo,
-        ConvertUTF8ToJavaString(env, app_info.second->scope.host()),
-        ConvertUTF8ToJavaString(env, app_info.second->name),
+        env, jappsInfo, app_info.second->scope.host(), app_info.second->name,
         app_info.second->icon == nullptr
             ? nullptr
             : gfx::ConvertToJavaBitmap(*app_info.second->icon));
@@ -159,7 +157,5 @@ JNI_ServiceWorkerPaymentAppBridge_GetSourceIdForPaymentAppFromScope(
   // invoked app inside
   // ChromePaymentRequestService::openPaymentHandlerWindowInternal.
   return content::PaymentAppProviderUtil::GetSourceIdForPaymentAppFromScope(
-      url::GURLAndroid::ToNativeGURL(env, jscope)
-          .get()
-          ->DeprecatedGetOriginAsURL());
+      url::GURLAndroid::ToNativeGURL(env, jscope).DeprecatedGetOriginAsURL());
 }

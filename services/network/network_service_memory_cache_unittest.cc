@@ -262,7 +262,7 @@ class NetworkServiceMemoryCacheTest : public testing::Test {
         network_context_.get(), std::move(factory_params),
         /*resource_scheduler_client=*/nullptr,
         cors_url_loader_factory_remote_.BindNewPipeAndPassReceiver(),
-        &origin_access_list_, /*resource_block_list=*/nullptr);
+        &origin_access_list_);
   }
 
   base::test::TaskEnvironment& task_environment() { return task_environment_; }
@@ -800,7 +800,7 @@ TEST_F(NetworkServiceMemoryCacheTest, CanServe_MultipleVaryHeader) {
   ASSERT_FALSE(CanServeFromMemoryCache(request));
 }
 
-// TODO(https://crbug.com/1339708): Change the test name and the expectation
+// TODO(crbug.com/40230090): Change the test name and the expectation
 // once we implement appropriate Vary checks.
 TEST_F(NetworkServiceMemoryCacheTest, CanServe_UnsupportedVaryHeaderCookie) {
   ResourceRequest request = CreateRequest("/echoheadercache?Cookie");
@@ -821,6 +821,11 @@ TEST_F(NetworkServiceMemoryCacheTest, CanServe_UnsupportedMultipleVaryHeader) {
 }
 
 TEST_F(NetworkServiceMemoryCacheTest, CanServe_DevToolsAttached) {
+  // TODO(crbug.com/328043119): Remove code associated with
+  // kAncestorChainBitEnabledInPartitionedCookies after it's enabled by default.
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      {net::features::kAncestorChainBitEnabledInPartitionedCookies}, {});
   ResourceRequest request = CreateRequest("/cacheable?max-age=120");
   request.devtools_request_id = "fake-id";
   StoreResponseToMemoryCache(request);
@@ -851,8 +856,10 @@ TEST_F(NetworkServiceMemoryCacheTest, CanServe_DevToolsAttached) {
   }
   ASSERT_TRUE(has_expected_header);
 
-  EXPECT_EQ(net::CookiePartitionKey::FromURLForTesting(request.url),
-            devtools_observer.response_cookie_partition_key());
+  EXPECT_EQ(
+      net::CookiePartitionKey::FromURLForTesting(
+          request.url, net::CookiePartitionKey::AncestorChainBit::kCrossSite),
+      devtools_observer.response_cookie_partition_key());
 }
 
 TEST_F(NetworkServiceMemoryCacheTest, CanServe_ClientSecurityStateProvided) {
@@ -1070,7 +1077,7 @@ TEST_F(NetworkServiceMemoryCacheTest, ServeFromCache_DisableLoadTiming) {
 }
 
 TEST_F(NetworkServiceMemoryCacheTest, ServeFromCache_LargeBody) {
-  constexpr uint32_t kReadDataSize = 512;
+  constexpr size_t kReadDataSize = 512;
   // Arbitrary response body size larger than `kReadDataSize`.
   constexpr int kBodySize = 2 * 1024 + 659;
   DCHECK_GE(kMaxPerEntrySize, kBodySize);
@@ -1087,7 +1094,7 @@ TEST_F(NetworkServiceMemoryCacheTest, ServeFromCache_LargeBody) {
   std::string received_body;
   while (true) {
     char buf[kReadDataSize];
-    uint32_t num_bytes = kReadDataSize;
+    size_t num_bytes = kReadDataSize;
     MojoResult result =
         consumer_handle->ReadData(buf, &num_bytes, MOJO_READ_DATA_FLAG_NONE);
 
@@ -1134,10 +1141,10 @@ TEST_F(NetworkServiceMemoryCacheTest,
       pair.client->response_body_release();
 
   // Read the half of the response body.
-  int num_read = 0;
+  size_t num_read = 0;
   while (num_read < kReadDataSize) {
     char buf[kReadDataSize];
-    uint32_t num_bytes = kReadDataSize;
+    size_t num_bytes = kReadDataSize;
     MojoResult result =
         consumer_handle->ReadData(buf, &num_bytes, MOJO_READ_DATA_FLAG_NONE);
     if (result == MOJO_RESULT_SHOULD_WAIT) {
